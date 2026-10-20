@@ -55,3 +55,7 @@ generation = { issue = 661 }
 [[word]]
 text = "старши"
 generation = { issue = 661 }
+
+[[word]]
+text = "и"
+conjunction = {}

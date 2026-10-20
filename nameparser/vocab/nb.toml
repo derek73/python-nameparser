@@ -39,3 +39,7 @@ preposition = { may_be_given = false, expands = "of, nobiliary" }
 [[word]]
 text = "av"
 preposition = { may_be_given = false, expands = "of" }
+
+[[word]]
+text = "født"
+birth_marker = {}

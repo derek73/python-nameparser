@@ -45,3 +45,7 @@ generation = {}
 [[word]]
 text = "v"
 generation = {}
+
+[[word]]
+text = "&"
+conjunction = {}

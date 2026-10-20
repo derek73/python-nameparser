@@ -31,3 +31,7 @@ nobility = { gender = "m", expands = "count", issue = 606 }
 [[word]]
 text = "af"
 preposition = { may_be_given = false, expands = "of, nobiliary" }
+
+[[word]]
+text = "født"
+birth_marker = { issue = 274 }

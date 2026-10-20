@@ -189,3 +189,15 @@ issue = 18
 expands = "baroness"
 gender = "f"
 note = "the feminine of freiherr, written and chained the same way (see its note); unlike freiherr it is not in TITLES"
+
+[[word]]
+text = "und"
+conjunction = {}
+
+[[word]]
+text = "geb"
+birth_marker = { issue = 274 }
+
+[[word]]
+text = "geborene"
+birth_marker = { issue = 274, gender = "f" }

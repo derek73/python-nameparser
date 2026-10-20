@@ -4701,3 +4701,27 @@ text = "mac"
 may_be_given = true
 expands = "son of"
 note = "Mac Miller: a real given name. This is the case that shows #360's vowel heuristic was not the criterion -- 'mac' and 'mc' differ by attestation, not by shape"
+
+[[word]]
+text = "and"
+conjunction = {}
+
+[[word]]
+text = "of"
+conjunction = {}
+
+[[word]]
+text = "the"
+conjunction = {}
+
+[[word]]
+text = "né"
+birth_marker = {}
+
+[[word]]
+text = "née"
+birth_marker = {}
+
+[[word]]
+text = "nee"
+birth_marker = { issue = 274, same_as = "née", note = "née typed without its accent" }

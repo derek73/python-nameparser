@@ -129,3 +129,7 @@ saint = { may_be_given = true, expands = "Saint" }
 [[word]]
 text = "santa"
 saint = { may_be_given = true, expands = "Saint, fem." }
+
+[[word]]
+text = "e"
+conjunction = { may_be_initial = true }

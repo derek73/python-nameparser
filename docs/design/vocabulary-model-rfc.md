@@ -22,7 +22,7 @@ Four phases, in a fixed order:
 
 | Phase | What | Changes parsing? | State |
 |---|---|---|---|
-| 1 | The per-word TOML format, compiled to today's sets | no | shipped in 2.6 (#737, #744); classifying the words still in `und.toml` is #749–#751 |
+| 1 | The per-word TOML format, compiled to today's sets | no | shipped in 2.6 (#737, #744); #749–#751 gave the words in `und.toml` their languages, leaving two particles of unrecorded origin |
 | 2 | Ambiguity derived from clashing readings; the ambiguity gate extended to every reading kind | yes, the first phase that does | #752 |
 | 3 | Language packs that prefer or restrict their language | yes, for callers who choose one | #753, needs 1 and 2 |
 | 4 | Order and shape; the rules a pack can choose; the output model | yes | #754, mostly independent of 2 and 3 |

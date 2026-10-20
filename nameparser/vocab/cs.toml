@@ -35,3 +35,16 @@ issue = [661, 679, 684]
 [[word]]
 text = "starší"
 generation = { issue = 661 }
+
+[[word]]
+text = "roz"
+[word.excluded.birth_marker]
+reason = "Roz, the English diminutive of Rosalind, stands exactly where a marker acts: with it listed, 'Rosalind Roz Smith' reads maiden 'Smith' and takes the given name Rosalind for the family (measured 2026-10-20), a marker taking every word after it; the full rozená stays"
+decided = 2026-08-26
+
+[[word]]
+text = "rozená"
+[word.birth_marker]
+issue = 274
+gender = "f"
+note = "the masculine rozený awaits its own vetting; the abbreviation roz., shared by both, is refused beside it"
