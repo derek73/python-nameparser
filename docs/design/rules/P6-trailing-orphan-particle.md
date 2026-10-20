@@ -6,12 +6,8 @@
 
 - **A post-nominal does not end the name for this purpose**: it is written BEHIND the particle in this listing, so the run is found by looking past trailing words that hold no name — unless such a word is itself particle vocabulary, which makes it part of the run rather than something to look past.
   ```
-  "Jong, Anke de"             →  family="de Jong"
-  "Beethoven, Ludwig van"     →  family="van Beethoven"
-  "Berg, Jan van der"         →  family="van der Berg"
-  "Vega, Juan de la"          →  family_particles="de la"
-  "Beethoven, Ludwig van"     →  family_base="Beethoven"
-  "Beethoven, Ludwig van"     →  family_particles="van"
+  "Berg Jan de Jr."  family-first  →  family="de Berg"
+  "Berg Jan de Jr."  family-first  →  suffix="Jr."
   ```
 - **A particle an index form writes apart with its elision or its hyphen still on it is a particle like any other here**, where the vocabulary lists that spelling — the elided "d'" and the Arabic article in its plain and assimilated spellings, "al-" among them — and of the never-given kind, since written apart the word is the article and nothing else. It joins with a space like every particle; written glued to the family ("d'Ivoi") it is one word and this rule never sees it.
   ```
@@ -26,14 +22,12 @@
   "Ménil Christophe de"  family-first  →  family="de Ménil"
   "Ménil Christophe de"  family-first  →  given="Christophe"
   "Beethoven Ludwig van"  family-first  →  family="van Beethoven"
-  "Berg Jan de Jr."  family-first  →  family="de Berg"
-  "Berg Jan de Jr."  family-first  →  suffix="Jr."
   "Ménil Christophe de"  family-first-given-last  →  given="de"
   "Ménil de"  family-first  →  given="de"  · boundary
   ```
 - **Nothing is asked about the WORD**, and that is what lets one rule read both traditions: the same vocabulary that spells the Dutch tussenvoegsel spells the Vietnamese given name, and the declared order separates them where a comma cannot — one order, not both, as an Accepted bullet below records.
 - **Where nothing has named the family, the particle is read where it stands**, and a particle CAN be a given name there: the never-given vocabulary supplies the reading position leaves open, and forbids nothing (parse("de") reports given "de", and so does every other word in that set).
-- **What reports.** A particle that is also of the AMBIGUOUS credential class (`do`), where neither S6's capitals nor S7's company below reaches it, attaches, and the report gives it this rule's particle fork rather than S4's credential one. The fork is reported, in the kind naming the reading this attachment OVERRODE — what the run was read as before it fired, not what its words are. Where the run was read as a post-nominal, which is the S2 reading this rule outranks, the report is suffix-or-name. Otherwise, where the run holds an ambiguous particle, the reading overridden is that word as a name word, and the report is particle-or-given. Where the attachment overrode neither — a never-given particle read as a name word, which it could never have been — nothing was decided and nothing is reported. So `do`, which sits in the AMBIGUOUS acronym half and was already read as a name word, reports particle-or-given while vd and mc report suffix-or-name, and a run of several words read as name words reports on its ambiguous member if it has one and otherwise reports nothing, whatever its words could have been read as standing alone. Both are pinned in tests/v2/cases.py.
+- **What reports.** After a family comma, a particle that is also of the AMBIGUOUS credential class (`do`), where neither S6's capitals nor S7's company below reaches it, attaches, and the report gives it this rule's particle fork rather than S4's credential one. The fork is reported, in the kind naming the reading this attachment OVERRODE — what the run was read as before it fired, not what its words are. Where the run was read as a post-nominal, which is the S2 reading this rule outranks, the report is suffix-or-name. Otherwise, where the run holds an ambiguous particle, the reading overridden is that word as a name word, and the report is particle-or-given. Where the attachment overrode neither — a never-given particle read as a name word, which it could never have been — nothing was decided and nothing is reported. So after a family comma `do`, which sits in the AMBIGUOUS acronym half and was already read as a name word, reports particle-or-given while vd and mc report suffix-or-name, and a run of several words read as name words reports on its ambiguous member if it has one and otherwise reports nothing, whatever its words could have been read as standing alone. Both are pinned in tests/v2/cases.py.
   ```
   "Nguyen, Thi Van"           →  ambiguities=("particle-or-given",)
   "Berg, Jan vd"              →  ambiguities=("suffix-or-name",)
@@ -45,24 +39,30 @@
 **Because:** a particle ending the name has nothing to link forward to, so it is not doing a particle's work there. What it is doing instead is decided by what the WRITING says, not by the word: a family already named, with the particle left where its position means nothing, is how Dutch and Flemish names are listed ("Beethoven, Ludwig van", the tussenvoegsel trailing the given name but belonging to the surname).
 
 ```
+"Jong, Anke de"             →  family="de Jong"
+"Beethoven, Ludwig van"     →  family="van Beethoven"
+"Berg, Jan van der"         →  family="van der Berg"
+"Vega, Juan de la"          →  family_particles="de la"
+"Beethoven, Ludwig van"     →  family_base="Beethoven"
+"Beethoven, Ludwig van"     →  family_particles="van"
 "Maria Luisa y de la Cruz"  →  family="la Cruz"  · boundary
 "de Anke van y"  family-first-given-last  →  middle="van"  · boundary
 ```
 
 **Except:**
 
-- **A name whose only given word is the particle keeps it**: at least one given word must remain (the words-to-spare test S4 applies to ambiguous suffixes).
+- **After a family comma, a name whose only given word is the particle keeps it**: at least one given word must remain (the words-to-spare test S4 applies to ambiguous suffixes).
   ```
   "Nguyen, Van"               →  given="Van"  · boundary
   ```
-- **The family must hold a base of its own**, since a family that is all particles is not a family written beside anything (R2).
+- **Without a comma, the family must hold a base of its own**, since a family that is all particles is not a family written beside anything (R2).
   ```
   "van Berg Jan de"  family-first  →  family="van"  · boundary
   ```
 
 **Precedence:**
 
-- **A word that is BOTH a particle and suffix vocabulary** ("Berg, Jan vd"): this attachment outranks the suffix reading (S2): a trailing abbreviation after a family comma is the tussenvoegsel far more often than the decoration it collides with.
+- **After a family comma, a word that is BOTH a particle and suffix vocabulary** ("Berg, Jan vd"): this attachment outranks the suffix reading (S2): a trailing abbreviation after a family comma is the tussenvoegsel far more often than the decoration it collides with.
   ```
   "Berg, Jan vd"              →  family="vd Berg"
   ```

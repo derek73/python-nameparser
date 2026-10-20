@@ -46,6 +46,7 @@
 ```
 "abdul salam ahmed salem"   →  given="abdul salam"
 "mohamad ali smith"         →  given="mohamad"  · boundary
+"abdul V Smith"             →  given="abdul V"  · boundary
 ```
 
 **Except:**
@@ -55,12 +56,11 @@
   "abdul Jr Smith Berg"       →  given="abdul"
   "abdul Jr Smith Berg"       →  middle="Jr Smith"
   "abdul Ph. D. Smith Berg"   →  suffix="Ph. D."
-  "abdul V Smith"             →  given="abdul V"  · boundary
   "Berg, abdul Prof."         →  given="abdul"
   "John Smith, Jr., abdul Dr. Smith"  →  title="Dr."
   "Berg, abd née Jones"       →  given="abd"  · boundary
   ```
-- **A particle of the unambiguous suffix vocabulary too (vd, mc)** is declined as the suffix piece it is, though a particle the chain has not taken otherwise joins.
+- **A particle the chain has not taken that is of the unambiguous suffix vocabulary too (vd, mc)** is declined as the suffix piece it is, though such a particle otherwise joins.
   ```
   "Berg, abdul vd"            →  family="vd Berg"
   ```
