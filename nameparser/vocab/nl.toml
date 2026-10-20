@@ -1,46 +1,6 @@
 schema = 1
 
 [[word]]
-text = "'t"
-article = { may_be_given = false, expands = "het, the: \"'t Hooft\"" }
-
-[[word]]
-text = "’t"
-[word.article]
-may_be_given = false
-issue = 700
-expands = "the same, typographic apostrophe"
-same_as = "'t"
-
-[[word]]
-text = "de"
-article = { may_be_given = false, expands = "the: \"de Vries\"" }
-
-[[word]]
-text = "der"
-article = { may_be_given = false, expands = "the: \"van der Berg\"" }
-
-[[word]]
-text = "het"
-article = { may_be_given = false, issue = 18, expands = "the" }
-
-[[word]]
-text = "op"
-preposition = { may_be_given = false, issue = 18, expands = "at, on: \"op den Berg\"" }
-
-[[word]]
-text = "ter"
-preposition = { may_be_given = false, expands = "at the, te der contracted: \"ter Horst\"" }
-
-[[word]]
-text = "vd"
-[word.preposition]
-may_be_given = false
-issue = 18
-expands = "van der, abbreviated"
-note = "Also the British Volunteer Decoration, a suffix acronym: two non-name readings, so C-ii decides it on frequency and the Dutch one wins (decisions/vocabulary-collisions)."
-
-[[word]]
 text = "aan"
 preposition = { may_be_given = true, issue = 18, expands = "on, at: \"aan den Toorn\"" }
 
@@ -52,16 +12,8 @@ issue = 18
 expands = "aan, archaic spelling: \"aen de Landerwer\""
 
 [[word]]
-text = "den"
-article = { may_be_given = true, expands = "the: \"van den Berg\"" }
-
-[[word]]
-text = "heer"
-[word.rank]
-may_be_given = true
-issue = 18
-expands = "lord, the nobiliary 'heer van'"
-note = "added from #18's test \"Johan de heer Van Kampen\" (family 'de heer Van Kampen'), which appears to be two real names run together (Johannes de Heer, a Dutch Protestant figure, and the surname Van Kampen): the string occurs elsewhere only in another name parser's test data (hex.pm full_name_splitter 1.0.3). No real name supports the rank reading, and its may_be_given = true is the unexamined default: nobody has checked Heer as a given name. Removing it moves PARTICLES, so it is left to #766"
+text = "op"
+preposition = { may_be_given = false, issue = 18, expands = "at, on: \"op den Berg\"" }
 
 [[word]]
 text = "te"
@@ -70,6 +22,10 @@ may_be_given = true
 issue = 18
 expands = "at: \"te Riele\""
 note = "Te Awanui-a-Rangi: a Māori given-name element, and in the corpus. Looks like the Dutch preposition 'te', which is why attestation rather than etymology decides"
+
+[[word]]
+text = "ter"
+preposition = { may_be_given = false, expands = "at the, te der contracted: \"ter Horst\"" }
 
 [[word]]
 text = "tho"
@@ -96,3 +52,47 @@ preposition = { may_be_given = true, issue = 18, expands = "van de contracted: \
 [[word]]
 text = "vander"
 preposition = { may_be_given = true, expands = "van der contracted" }
+
+[[word]]
+text = "vd"
+[word.preposition]
+may_be_given = false
+issue = 18
+expands = "van der, abbreviated"
+note = "Also the British Volunteer Decoration, a suffix acronym: two non-name readings, so C-ii decides it on frequency and the Dutch one wins (decisions/vocabulary-collisions)."
+
+[[word]]
+text = "'t"
+article = { may_be_given = false, expands = "het, the: \"'t Hooft\"" }
+
+[[word]]
+text = "’t"
+[word.article]
+may_be_given = false
+issue = 700
+expands = "the same, typographic apostrophe"
+same_as = "'t"
+
+[[word]]
+text = "de"
+article = { may_be_given = false, expands = "the: \"de Vries\"" }
+
+[[word]]
+text = "den"
+article = { may_be_given = true, expands = "the: \"van den Berg\"" }
+
+[[word]]
+text = "der"
+article = { may_be_given = false, expands = "the: \"van der Berg\"" }
+
+[[word]]
+text = "het"
+article = { may_be_given = false, issue = 18, expands = "the" }
+
+[[word]]
+text = "heer"
+[word.rank]
+may_be_given = true
+issue = 18
+expands = "lord, the nobiliary 'heer van'"
+note = "added from #18's test \"Johan de heer Van Kampen\" (family 'de heer Van Kampen'), which appears to be two real names run together (Johannes de Heer, a Dutch Protestant figure, and the surname Van Kampen): the string occurs elsewhere only in another name parser's test data (hex.pm full_name_splitter 1.0.3). No real name supports the rank reading, and its may_be_given = true is the unexamined default: nobody has checked Heer as a given name. Removing it moves PARTICLES, so it is left to #766"

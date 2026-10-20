@@ -1,29 +1,29 @@
 schema = 1
 
 [[word]]
-text = "младший"
-generation = { issue = 661 }
-
-[[word]]
-text = "младшая"
-generation = { issue = 661 }
-
-[[word]]
-text = "старший"
-generation = { issue = 661 }
-
-[[word]]
-text = "старшая"
-generation = { issue = 661 }
-
-[[word]]
 text = "мл"
 [word.generation]
 issue = 679
 note = "мл.; #679 found nothing it collides with in Cyrillic"
 
 [[word]]
+text = "младшая"
+generation = { issue = 661 }
+
+[[word]]
+text = "младший"
+generation = { issue = 661 }
+
+[[word]]
 text = "ст"
 [word.excluded.generation]
 reason = "barely attested after a name, and a plausible false positive among two-letter Cyrillic abbreviations; deferred since #269"
 issue = [269, 661, 679]
+
+[[word]]
+text = "старшая"
+generation = { issue = 661 }
+
+[[word]]
+text = "старший"
+generation = { issue = 661 }

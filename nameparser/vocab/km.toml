@@ -1,11 +1,11 @@
 schema = 1
 
 [[word]]
-text = "ជូនៀរ"
-generation = { issue = 679 }
-
-[[word]]
 text = "ជូនៀ"
 [word.excluded.generation]
 reason = "a given name; ជូនៀរ ships"
 issue = 679
+
+[[word]]
+text = "ជូនៀរ"
+generation = { issue = 679 }

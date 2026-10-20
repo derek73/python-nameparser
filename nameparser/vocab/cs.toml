@@ -1,21 +1,21 @@
 schema = 1
 
 [[word]]
-text = "mladší"
-generation = { issue = 661 }
-
-[[word]]
-text = "starší"
-generation = { issue = 661 }
-
-[[word]]
 text = "ml"
 [word.excluded.generation]
 reason = "pack-shaped: real and standard, but collides with ML initials in other languages written in Latin script"
 issue = [661, 679, 684]
 
 [[word]]
+text = "mladší"
+generation = { issue = 661 }
+
+[[word]]
 text = "st"
 [word.excluded.generation]
 reason = "pack-shaped: real and standard, but St. is Saint in other languages written in Latin script"
 issue = [661, 679, 684]
+
+[[word]]
+text = "starší"
+generation = { issue = 661 }

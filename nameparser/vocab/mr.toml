@@ -1,6 +1,12 @@
 schema = 1
 
 [[word]]
+text = "क"
+[word.excluded.generation]
+reason = "the abbreviation क. is the single-letter initial shape"
+issue = 679
+
+[[word]]
 text = "ज्युनियर"
 generation = { issue = 679 }
 
@@ -23,9 +29,3 @@ issue = [346, 344, 343]
 note = "the Marathi Saheb spelling"
 [word.honorific.excluded]
 attached = "जी ends बनर्जी, मुखर्जी, चटर्जी, so a glued peel would strand a bare virama (बनर् + जी); the 殿 criterion in a non-CJK script (decisions/indic-honorifics)"
-
-[[word]]
-text = "क"
-[word.excluded.generation]
-reason = "the abbreviation क. is the single-letter initial shape"
-issue = 679

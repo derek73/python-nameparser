@@ -1,15 +1,17 @@
 schema = 1
 
 [[word]]
-text = "малодшы"
-generation = { issue = 679 }
+text = "мал"
+[word.excluded.generation]
+reason = "мал. is also \"figure\""
+issue = 679
 
 [[word]]
 text = "малодшая"
 generation = { issue = 679 }
 
 [[word]]
-text = "старэйшы"
+text = "малодшы"
 generation = { issue = 679 }
 
 [[word]]
@@ -17,7 +19,5 @@ text = "старэйшая"
 generation = { issue = 679 }
 
 [[word]]
-text = "мал"
-[word.excluded.generation]
-reason = "мал. is also \"figure\""
-issue = 679
+text = "старэйшы"
+generation = { issue = 679 }

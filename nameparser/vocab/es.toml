@@ -5,6 +5,20 @@ text = "de"
 preposition = { may_be_given = false, expands = "of" }
 
 [[word]]
+text = "del"
+[word.preposition]
+may_be_given = true
+expands = "of the"
+note = "BOTH readings attested: Del Shannon (given name) and del Toro (particle). The ambiguity flag is the answer"
+
+[[word]]
+text = "la"
+[word.article]
+may_be_given = true
+expands = "the, fem. sg."
+note = "La Shawn, La Toya: a given-name element. The Romance article is the particle reading; its PLURALS ('las', 'los') are never-given, being no one's name"
+
+[[word]]
 text = "las"
 [word.article]
 may_be_given = false
@@ -19,20 +33,6 @@ may_be_given = false
 issue = [360, 390]
 expands = "the, masc. pl."
 note = "Same as 'las' -- and the pair is why the #390 fold narrowing regressed \"de los Santos\" to given='Santos', family='de los'."
-
-[[word]]
-text = "del"
-[word.preposition]
-may_be_given = true
-expands = "of the"
-note = "BOTH readings attested: Del Shannon (given name) and del Toro (particle). The ambiguity flag is the answer"
-
-[[word]]
-text = "la"
-[word.article]
-may_be_given = true
-expands = "the, fem. sg."
-note = "La Shawn, La Toya: a given-name element. The Romance article is the particle reading; its PLURALS ('las', 'los') are never-given, being no one's name"
 
 [[word]]
 text = "san"

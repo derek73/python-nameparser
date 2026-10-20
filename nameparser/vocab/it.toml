@@ -1,6 +1,26 @@
 schema = 1
 
 [[word]]
+text = "d'"
+preposition = { may_be_given = false, issue = 700, expands = "of, elided di" }
+
+[[word]]
+text = "d’"
+[word.preposition]
+may_be_given = false
+issue = 700
+expands = "the same, typographic apostrophe"
+same_as = "d'"
+
+[[word]]
+text = "da"
+preposition = { may_be_given = true, expands = "from, of" }
+
+[[word]]
+text = "dal"
+preposition = { may_be_given = true, expands = "from the" }
+
+[[word]]
 text = "de"
 preposition = { may_be_given = false, expands = "of" }
 
@@ -17,16 +37,16 @@ expands = "the same, typographic apostrophe"
 same_as = "de'"
 
 [[word]]
-text = "d'"
-preposition = { may_be_given = false, issue = 700, expands = "of, elided di" }
+text = "degli"
+preposition = { may_be_given = false, expands = "of the, masc. pl." }
 
 [[word]]
-text = "d’"
-[word.preposition]
-may_be_given = false
-issue = 700
-expands = "the same, typographic apostrophe"
-same_as = "d'"
+text = "dei"
+preposition = { may_be_given = false, expands = "of the, masc. pl." }
+
+[[word]]
+text = "del"
+preposition = { may_be_given = true, expands = "of the" }
 
 [[word]]
 text = "dell'"
@@ -41,24 +61,11 @@ expands = "the same, typographic apostrophe"
 same_as = "dell'"
 
 [[word]]
-text = "l'"
-article = { may_be_given = false, expands = "the, elided" }
-
-[[word]]
-text = "l’"
-[word.article]
-may_be_given = false
-issue = 700
-expands = "the same, typographic apostrophe"
-same_as = "l'"
-
-[[word]]
-text = "degli"
-preposition = { may_be_given = false, expands = "of the, masc. pl." }
-
-[[word]]
-text = "dei"
-preposition = { may_be_given = false, expands = "of the, masc. pl." }
+text = "della"
+[word.preposition]
+may_be_given = true
+expands = "of the, fem. sg."
+note = "Della Reese: an ordinary given name"
 
 [[word]]
 text = "delle"
@@ -73,30 +80,23 @@ text = "dello"
 preposition = { may_be_given = false, expands = "of the, masc. sg." }
 
 [[word]]
-text = "da"
-preposition = { may_be_given = true, expands = "from, of" }
-
-[[word]]
-text = "dal"
-preposition = { may_be_given = true, expands = "from the" }
-
-[[word]]
-text = "del"
-preposition = { may_be_given = true, expands = "of the" }
-
-[[word]]
-text = "della"
-[word.preposition]
-may_be_given = true
-expands = "of the, fem. sg."
-note = "Della Reese: an ordinary given name"
-
-[[word]]
 text = "di"
 [word.preposition]
 may_be_given = true
 expands = "of"
 note = "BOTH: Di as a short form of Diana, and the Italian particle (DiCaprio)"
+
+[[word]]
+text = "l'"
+article = { may_be_given = false, expands = "the, elided" }
+
+[[word]]
+text = "l’"
+[word.article]
+may_be_given = false
+issue = 700
+expands = "the same, typographic apostrophe"
+same_as = "l'"
 
 [[word]]
 text = "la"
