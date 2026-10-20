@@ -23,17 +23,26 @@ fields in this order, then a footer under a `---` line::
     **Signal:** a tag or `hub of C3, C4`
     **history:** decisions/S10 · **implemented:** nameparser/x.py
 
-Rules the parser holds, all hard errors naming the rule and line: a
-label is exactly `**Name:**` at the start of a line (a near miss would
-leave its words as unlabelled prose, so it raises); When, Then and
-Because are required and the fields stand in the order above, each at
-most once; a fence is a bare ``` line (a language tag or a ~~~ fence
-raises); every non-blank line inside a fence is an example
-(rules_doc.parse_example_line), and a line outside one that parses as
-an example or opens with a quote raises, since prose there would never
-run; every Except bullet carries an example; a Tolerated field is not
-empty; Because is three sentences at most and Then's paragraph one; below the
-`---` only Signal, the pointer line and `no-boundary:` may appear, and
+Rules the parser holds, all hard errors naming the rule and line: the
+rule runs from its heading to the next markdown heading (a `#` run and
+a space); a label is exactly `**Name:**` at the start of a line (a near
+miss would leave its words as unlabelled prose, so it raises); When,
+Then and Because are required and the fields stand in the order above,
+each at most once; a fence is a bare ``` line (a language tag or a ~~~
+fence raises) holding at least one example; every non-blank line
+inside a fence is an example (rules_doc.parse_example_line), and
+outside one a line, the text after a label or a bullet's text that
+parses as an example or opens with a quote or a bracket
+(``_EXAMPLE_LEADS``: straight, curly and guillemet quotes) raises, as
+does any line holding an arrow and an assertion (`→  family=`), since
+prose there would never run; a bullet is `- ` and text (`* `, `+ `, a
+glued hyphen or an empty bullet raises) and an Except, Precedence or
+Accepted label has at least one; every Except bullet carries an
+example; a Tolerated field is not empty; Because is three sentences at
+most and Then one sentence in one paragraph; a Signal or
+`no-boundary:` line above the `---` raises, and below it only Signal,
+the pointer line (every part `history:`, `implemented:` or `tracked:`
+with a value, none repeated) and `no-boundary:` may appear, and
 `interacts:` is retired. Everything outside a fence, the footer and
 `no-boundary:` is quotable (``skeleton_prose``).
 """
@@ -43,10 +52,13 @@ import re
 from dataclasses import dataclass
 
 from tests.v2.rules_doc import (
-    _EXAMPLE_RE, _HUB_RE, _NEAR_HUB_RE, _NO_BOUNDARY_RE, _POINTER_PART_RE,
-    Example, Rule, parse_example_line)
+    _EXAMPLE_RE, _HUB_RE, _NEAR_HUB_RE, _NO_BOUNDARY_RE, ASSERTABLE_FIELDS,
+    NEAR_SIGNAL_RE, Example, Rule, parse_example_line)
 
 HEADING_RE = re.compile(r"^# ([A-Z]\d+) — ")
+#: What ends a rule's block: a markdown heading, a `#` run and a space.
+#: A prose line opening `#761` is not one.
+_ANY_HEADING_RE = re.compile(r"^#+ ")
 
 _ORDER = ("When", "Tolerated", "Then", "Because",
           "Except", "Precedence", "Accepted")
@@ -60,16 +72,34 @@ _SKELETON_START_RE = re.compile(
     r"^[*_]*(?:when|then|because)[*_]*\s*:", re.IGNORECASE)
 _SIGNAL_LINE_RE = re.compile(r"^\*\*Signal:\*\*\s+(?P<text>\S.*?)\s*$")
 _POINTER_LINE_RE = re.compile(r"^\s*(history|interacts|implemented|tracked):")
+_POINTER_PART_RE = re.compile(
+    r"(?P<key>history|interacts|implemented|tracked):\s*(?P<val>\S.*)")
+#: A footer line written above the footer, in any spelling: read as
+#: prose it would leave the rule's waiver or signal unset.
+_NEAR_NO_BOUNDARY_RE = re.compile(r"^\s*[*_]*no-boundary\b", re.IGNORECASE)
+#: An example's arrow and assertion, wherever it stands: outside a
+#: fence a line holding one is an example that would never run.
+_ARROW_FIELD_RE = re.compile(r"\s→\s+(?P<field>[a-z_]+)=")
+#: A bullet marker other than `- ` then text: `* `, `+ `, or a hyphen
+#: glued to its text.
+_MALFORMED_BULLET_RE = re.compile(r"^(?:[*+](?:\s|$)|-(?! ))")
 _QUOTED_RE = re.compile(r'"[^"]*"')
 _CODE_RE = re.compile(r"`[^`]*`")
 _SENTENCE_END_RE = re.compile(r"[.?!]\s+[A-Z]")
+#: A period after one of these ends no sentence: an initial ("V.
+#: Smith") or a title abbreviation.
+_NOT_TERMINAL_RE = re.compile(
+    r"(?:^|[^\w])(?:[A-Z]|Dr|Mr|Mrs|Ms|St|Prof|Jr|Sr)$")
 #: What parse_example_line treats as an attempted example: a line that
 #: parses as one, or one opening with a quote or a bracket.
 _EXAMPLE_LEADS = ('"', "[", "“", "”", "„", "‘", "’", "«")
 
 
 def _looks_like_example(s: str) -> bool:
-    return bool(_EXAMPLE_RE.match(s)) or s.lstrip().startswith(_EXAMPLE_LEADS)
+    if _EXAMPLE_RE.match(s) or s.lstrip().startswith(_EXAMPLE_LEADS):
+        return True
+    return any(m.group("field") in ASSERTABLE_FIELDS
+               for m in _ARROW_FIELD_RE.finditer(s))
 
 
 @dataclass(frozen=True)
@@ -97,10 +127,20 @@ def strip_bold(s: str) -> str:
 def count_sentences(text: str) -> int:
     """Sentences in prose: quoted spans and backtick spans removed,
     `e.g.`/`i.e.` not terminal, a split being a `.?!` followed by
-    whitespace and a capital."""
+    whitespace and a capital, except a period after an initial (a lone
+    capital, "V. Smith") or after Dr, Mr, Mrs, Ms, St, Prof, Jr or Sr.
+
+    Not detected, so undercounted: a sentence that opens with anything
+    but a capital (lowercase, a digit, a quote or backtick span, which
+    is removed first), and a sentence that ENDS in an initial or one of
+    those abbreviations, since the next one's capital reads as the name
+    the initial belongs to ("It ends in V. Then more." is one)."""
     text = _CODE_RE.sub("", _QUOTED_RE.sub("", text))
     text = text.replace("e.g.", "eg").replace("i.e.", "ie")
-    return len(_SENTENCE_END_RE.findall(text)) + 1
+    return 1 + sum(
+        1 for m in _SENTENCE_END_RE.finditer(text)
+        if not (text[m.start()] == "."
+                and _NOT_TERMINAL_RE.search(text, 0, m.start())))
 
 
 def is_skeleton_block(lines: list[str]) -> bool:
@@ -119,12 +159,17 @@ def skeleton_block_at(
     if m is None:
         return None
     j = i + 1
-    while j < len(lines) and not lines[j].startswith("#"):
+    while j < len(lines) and not _ANY_HEADING_RE.match(lines[j]):
         j += 1
     body = lines[i + 1:j]
     if not is_skeleton_block(body):
         return None
     return m.group(1), [(i + 2 + k, ln) for k, ln in enumerate(body)], j
+
+
+_OUTSIDE_FENCE = (
+    "an example line outside a fence: examples stand inside a bare ``` "
+    "fence, where they run; outside one they would be read as prose: ")
 
 
 class _Bul:
@@ -150,6 +195,8 @@ def parse_skeleton(rule_id: str, lines: list[tuple[int, str]]) -> Rule:
     mode = "closed"                 # prose | bullets | closed
     fence: list[Example] | None = None
     fence_at = 0
+    fence_len = 0                   # len(fence) when it opened
+    gap = False                     # a blank line since the last line
     footer = False
     signal_at: int | None = None
 
@@ -184,7 +231,19 @@ def parse_skeleton(rule_id: str, lines: list[tuple[int, str]]) -> Rule:
             elif nb:
                 rule.no_boundary = nb.group("reason")
             elif _POINTER_LINE_RE.match(strip_bold(body)):
-                for key, val in _POINTER_PART_RE.findall(strip_bold(body)):
+                keys: list[str] = []
+                for part in strip_bold(body).split("·"):
+                    pm = _POINTER_PART_RE.fullmatch(part.strip())
+                    if pm is None:
+                        raise err(
+                            lineno, "every part of the pointer line is "
+                            "`history:`, `implemented:` or `tracked:` and "
+                            f"a value, joined by ` · `: {part.strip()!r}")
+                    key, val = pm.group("key"), pm.group("val")
+                    if key in keys:
+                        raise err(lineno, f"`{key}:` is repeated in the "
+                                  "pointer line")
+                    keys.append(key)
                     items = tuple(
                         v.strip() for v in val.split(",") if v.strip())
                     if key == "interacts":
@@ -204,6 +263,9 @@ def parse_skeleton(rule_id: str, lines: list[tuple[int, str]]) -> Rule:
 
         if fence is not None:
             if line.strip() == "```":
+                if len(fence) == fence_len:
+                    raise err(fence_at, "an empty fence: a fence holds "
+                              "examples, one per line")
                 fence = None
                 continue
             if not line.strip():
@@ -217,11 +279,17 @@ def parse_skeleton(rule_id: str, lines: list[tuple[int, str]]) -> Rule:
             continue
 
         if not line.strip():
+            gap = True
             continue
+        after_gap, gap = gap, False
         if line.strip() == "---" and line == "---":
             footer = True
             cur = None
             continue
+        if NEAR_SIGNAL_RE.match(line) or _NEAR_NO_BOUNDARY_RE.match(line):
+            raise err(lineno, "a `**Signal:**` or `no-boundary:` line "
+                      "belongs below the `---` footer; above it, it "
+                      f"would be read as prose: {line.strip()!r}")
         bm = _BOLD_LABEL_RE.match(line)
         if bm:
             label = bm.group("label")
@@ -243,6 +311,8 @@ def parse_skeleton(rule_id: str, lines: list[tuple[int, str]]) -> Rule:
             seen.append(label)
             cur = label
             text = rest.strip()
+            if _looks_like_example(text):
+                raise err(lineno, _OUTSIDE_FENCE + repr(text))
             if label in _BULLET_ONLY:
                 if text:
                     raise err(lineno, f"{label} takes a `- ` bullet list "
@@ -254,38 +324,51 @@ def parse_skeleton(rule_id: str, lines: list[tuple[int, str]]) -> Rule:
             bullets.setdefault(label, [])
             continue
         if _NEAR_LABEL_RE.match(line):
+            if re.match(r"^\*\*[^*:]+\*\*\s*:", line):
+                how = "the colon goes inside the bold"
+            elif "*" not in line.split(":", 1)[0]:
+                how = "a label is bold"
+            else:
+                how = "a label is spelled exactly so"
             raise err(lineno, "looks like a field label but is not "
-                      f"spelled `**Label:**` (bold, capitalized, colon "
-                      f"inside the bold): {line.strip()!r}")
+                      f"spelled `**Label:**` ({how}, capitalized): "
+                      f"{line.strip()!r}")
 
         inner = line.strip()
         if _looks_like_example(inner):
-            raise err(lineno, "an example line outside a fence: examples "
-                      "stand inside a bare ``` fence, where they run; "
-                      f"outside one they would be read as prose: {inner!r}")
+            raise err(lineno, _OUTSIDE_FENCE + repr(inner))
         if inner.startswith(("```", "~~~")) and inner != "```":
             raise err(lineno, "a fence is a bare ``` line, no language "
                       f"tag and no ~~~: {inner!r}")
         if line.rstrip() == "```":
             if cur is None:
                 raise err(lineno, "a fence outside any field")
-            fence, fence_at = [], lineno
+            fence, fence_at, fence_len = [], lineno, 0
             mode = "closed"
             continue
-        if line.startswith("- "):
+        if line.startswith("- ") and line[2:].strip():
             if cur not in _BULLET_FIELDS:
                 raise err(lineno, f"a bullet outside a field that takes "
                           f"them (Then, Except, Precedence, Accepted): "
                           f"{line.strip()!r}")
-            bullets[cur].append(_Bul(lineno, line[2:].strip()))
+            text = line[2:].strip()
+            if _looks_like_example(text):
+                raise err(lineno, _OUTSIDE_FENCE + repr(text))
+            bullets[cur].append(_Bul(lineno, text))
             mode = "bullets"
             continue
+        if line.rstrip() == "-":
+            raise err(lineno, "an empty bullet: a bullet is `- ` and text")
+        if _MALFORMED_BULLET_RE.match(line):
+            raise err(lineno, "a bullet is `- ` then text, a hyphen and "
+                      f"one space: {line.strip()!r}")
         if line.startswith("  ") and mode == "bullets" and bullets.get(
                 cur or ""):
             last = bullets[cur or ""][-1]
             inner = line.strip()
             if inner == "```":
                 fence, fence_at = last.examples, lineno
+                fence_len = len(fence)
                 continue
             if inner.startswith(("- ", "#")):
                 raise err(lineno, f"a nested list is not part of the "
@@ -293,6 +376,9 @@ def parse_skeleton(rule_id: str, lines: list[tuple[int, str]]) -> Rule:
             last.parts.append(inner)
             continue
         if cur is not None and mode == "prose" and not line.startswith(" "):
+            if cur == "Then" and after_gap and texts["Then"]:
+                raise err(lineno, "Then is one paragraph (detail goes in "
+                          f"a bullet list under it): {line.strip()!r}")
             texts[cur].append(line.strip())
             continue
         raise err(lineno, "a line outside a field (prose belongs in a "
@@ -325,6 +411,10 @@ def parse_skeleton(rule_id: str, lines: list[tuple[int, str]]) -> Rule:
     if "Tolerated" in seen and not texts["Tolerated"]:
         raise ValueError(f"{rule_id}: the **Tolerated:** field is empty; "
                          "a tolerated rule states why")
+    for label in _BULLET_ONLY:
+        if label in seen and not bullets[label]:
+            raise ValueError(f"{rule_id}: the **{label}:** field has no "
+                             "bullets; it is a `- ` bullet list, or absent")
     for b in bullets.get("Except", []):
         if not b.examples:
             raise err(b.lineno, "an Except bullet carries an example "
