@@ -3,6 +3,7 @@
 ## Standing
 
 - A name unit of more than one word carrying title vocabulary reports `title-or-name`, stated in a rule of its own, split out of rules/H4 — 2026-10-20 #761.
+
 Elsewhere: the clause itself (its reach to every such join, the hoist past a peeled title, a maiden name or a claimed word, and the two corpus names it reached) was decided under decisions/H4, in its 2026-09-07 #491 entry and its 2026-09-08 #518 review-round entry.
 
 Open: none in this file.
