@@ -46,6 +46,10 @@
   "Smith, John PhD de Jr."    →  family="de Smith"  · boundary
   ```
 
+**Precedence:**
+
+- **An ambiguous acronym written with its periods** ("John Smith M.A. Jones"): writing the periods makes it unambiguously a credential (S3), so it is no member of the ambiguous class here and starts the run.
+
 ---
 **Signal:** neighbor: an unambiguous credential after the name core, and the rest of its part
 **history:** decisions/S8 · **implemented:** nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py

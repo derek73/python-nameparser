@@ -21,7 +21,7 @@
 
 **Precedence:**
 
-- **The first slot after a family comma** ("Smith, Ma"): this evidence is SECOND there: the count of name words before the comma decides there first (C4), and the case is read only where that count leaves the word a name.
+- **The first slot after a comma** ("Smith, Ma", "John Smith, Ma"): this evidence is SECOND there: the count of name words before the comma decides there first (C4), and the case is read only where that count leaves the word a name.
   ```
   "Smith, MA"                 →  suffix="MA"
   "Smith, Ma"                 →  given="Ma"
