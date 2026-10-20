@@ -5,20 +5,15 @@
 **Then:** a delimiter the policy declares parts a trailing suffix part as a comma would: the words on each side of it read exactly as the parts of the same text written with a comma in its place, so no join, maiden clause or connective reaches across it.
 
 - **The delimiter itself is dropped**, unless it stands alone as the whole of its part.
+- **Only a trailing part is parted**: in the part before the first comma, or in the given part of the listing form (C8), the delimiter is a word (the second Accepted bullet).
 
 **Because:** a caller who declares a suffix delimiter means it to separate suffixes as a comma does, and the simplest reading that honours that is one where it is a comma there.
 
 ```
 "Smith, John, Puig - i Soler" extra_suffix_delimiters-dash →  suffix="Puig, i Soler"
 "Smith, John, PhD - and MD" extra_suffix_delimiters-dash →  suffix="PhD, and MD"
+"Smith, RN - CRNA" extra_suffix_delimiters-dash →  suffix="RN - CRNA"  · boundary
 ```
-
-**Except:**
-
-- **Only a trailing part is parted**: in the part before the first comma, or in the given part of the listing form (C8), the delimiter is a word (the second Accepted bullet).
-  ```
-  "Smith, RN - CRNA" extra_suffix_delimiters-dash →  suffix="RN - CRNA"  · boundary
-  ```
 
 **Accepted:**
 

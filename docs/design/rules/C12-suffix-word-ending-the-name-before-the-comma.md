@@ -51,7 +51,7 @@
 
 **Precedence:**
 
-- **Paired initials after the comma** ("John Smith Jr., M.J."): written dotted, they keep C5's reading and are the given name, the generation staying the suffix; undotted as two capitals, they are this rule's credential (C1).
+- **Paired initials after a listed generation word** ("John Smith Jr., M.J."): written dotted, they keep C5's reading and are the given name, the generation staying the suffix; undotted as two capitals, they are this rule's credential (C1).
 
 **Accepted:**
 

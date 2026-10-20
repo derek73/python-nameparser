@@ -20,7 +20,7 @@
 
 **Precedence:**
 
-- **Under the strict comma-suffix switch** ("Smith, MD I"): C14 still vetoes the initial-shaped ones, so the run ends at them there unless a credential opened the part (C13).
+- **Under the strict comma-suffix switch** ("Smith, MD I"): C14 still vetoes the initial-shaped ones in a part after the comma that is nothing but suffix words, so that part is then no credential run and reads as the listing form's given part, unless a credential opened it (C13); the given part's walk does not consult the switch.
 
 **Accepted:**
 
