@@ -118,10 +118,10 @@ class Structure(Enum):
 
 
 @dataclass(frozen=True, slots=True)
-# rules/A1: "parsing never fails on any input: where the text's
-# structure or a word's reading is genuinely uncertain, the parse
-# completes on the best reading and carries an ambiguity report
-# naming the doubt"
+# rules/A1: "the parse completes on the best reading and carries an
+# ambiguity report naming the doubt, as parsing never fails on any
+# input" -- its Then clause: this is the report's mid-pipeline record,
+# by token index (decisions/A1)
 class PendingAmbiguity:
     """An ambiguity recorded mid-pipeline by token INDEX; assemble
     materializes real Ambiguity objects over the final tokens.

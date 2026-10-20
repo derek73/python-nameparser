@@ -3431,6 +3431,7 @@
 {"name": "john i dr.", "title": "dr.", "given": "john", "family": "i", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "j. i."}
 {"name": "john i phd", "given": "john", "family": "i", "suffix": "phd", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "j. i."}
 {"name": "john j v", "given": "john", "middle": "j", "family": "v", "initials": "j. j. v."}
+{"name": "john j v, PhD", "given": "john", "family": "j", "suffix": "v, PhD", "initials": "j. j."}
 {"name": "john smith", "given": "john", "family": "smith", "initials": "j. s."}
 {"name": "john smith EdD", "given": "john", "family": "smith", "suffix": "EdD", "initials": "j. s."}
 {"name": "john smith MA", "given": "john", "family": "smith", "suffix": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "j. s."}
@@ -3454,6 +3455,7 @@
 {"name": "john smith phd", "given": "john", "family": "smith", "suffix": "phd", "initials": "j. s."}
 {"name": "john smith psyd", "given": "john", "family": "smith", "suffix": "psyd", "initials": "j. s."}
 {"name": "john smith v", "given": "john", "family": "smith", "suffix": "v", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "j. s."}
+{"name": "john smith v, PhD", "given": "john", "family": "smith", "suffix": "v, PhD", "initials": "j. s."}
 {"name": "john smith vi", "given": "john", "family": "smith", "suffix": "vi", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "j. s."}
 {"name": "john smith x.y.z.", "given": "john", "family": "smith", "suffix": "x.y.z.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "j. s."}
 {"name": "john smith xi", "given": "john", "middle": "smith", "family": "xi", "initials": "j. s. x."}

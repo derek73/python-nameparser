@@ -31,6 +31,7 @@ from tests.v2.design_docs import (
     read_decision_files, read_rules_text)
 from tests.v2.rules_doc import (
     Rule, parse_rules_doc, prose_blocks, split_accepted)
+from tests.v2.rules_skeleton import skeleton_prose
 
 REPO = Path(__file__).resolve().parents[2]
 MECH_DOC = MECHANISMS_DOC
@@ -96,11 +97,15 @@ def _norm(s: str) -> str:
 
 
 def _statements() -> dict[str, str]:
-    """What a citation may quote: for a rule, its prose -- the
-    statement and its Accepted: clauses, everything in the block but
-    example, pointer, marker and Signal: lines; for a section letter
-    (`rules/H Background`), the section's Background paragraph; for
-    a mechanism, its Contract statement."""
+    """What a citation may quote: for a rule, its prose. In a block
+    rule that is the statement and its Accepted: clauses, everything in
+    the block but example, pointer, marker and Signal: lines; in a
+    skeleton rule (#761) it is the text of its fields -- When,
+    Tolerated, Then and its bullets, Because, and the Except,
+    Precedence and Accepted bullets -- with the labels, the fences and
+    the footer below `---` left out (rules_skeleton.skeleton_prose);
+    for a section letter (`rules/H Background`), the section's
+    Background paragraph; for a mechanism, its Contract statement."""
     out = prose_blocks(read_rules_text())
     stmts = {rid: _norm(" ".join(body)) for rid, body in out.items()}
     mech = MECH_DOC.read_text(encoding="utf-8")
@@ -274,6 +279,10 @@ def test_the_quotable_text_is_the_prose_and_only_the_prose() -> None:
     assert not _is_excerpt(_norm("Smith Jr."), stmts["S2"])
     assert not _is_excerpt(_norm("its boundaries are the other rules"),
                            stmts["O4"])
+    # a skeleton rule: an Except bullet is quotable, its fenced example not
+    assert _is_excerpt(_norm("A numeral past X is a name word"),
+                       stmts["S10"])
+    assert not _is_excerpt(_norm("John Smith XI"), stmts["S10"])
 
 
 # The recorded negative control: excerpts that stood stale in the tree
@@ -329,12 +338,122 @@ def test_implemented_matches_citing_modules() -> None:
     assert not problems, "\n".join(problems)
 
 
-def test_interacts_ids_exist() -> None:
-    rules = parse_rules_doc(read_rules_text())
+_ID_RE = re.compile(r"\b[A-Z]\d+\b")
+
+
+def _skeleton_texts(r: Rule) -> list[str]:
+    sk = r.skeleton
+    assert sk is not None
+    return skeleton_prose(sk)
+
+
+def named_id_findings(rules: list[Rule]) -> list[str]:
+    """Every rule ID a rule names that no rule has: the advisory
+    ``interacts:`` of a block rule, and for a skeleton rule (which has
+    no ``interacts:``) the IDs written anywhere in its quotable prose,
+    every field's text as rules_skeleton.skeleton_prose lists it. A
+    rule's own ID is not a citation of another."""
     ids = {r.rule_id for r in rules}
-    missing = [f"{r.rule_id} -> {t}" for r in rules
-               for t in r.interacts if t not in ids]
+    out = []
+    for r in rules:
+        named = (_skeleton_texts(r) if r.skeleton is not None else [])
+        found = {t for t in r.interacts}
+        for text in named:
+            found |= set(_ID_RE.findall(text)) - {r.rule_id}
+        out += [f"{r.rule_id} -> {t}" for t in sorted(found)
+                if t not in ids]
+    return out
+
+
+def test_interacts_ids_exist() -> None:
+    missing = named_id_findings(parse_rules_doc(read_rules_text()))
     assert not missing, f"advisory interacts: cite unknown IDs: {missing}"
+
+
+def _skeleton_doc(*, signal: str = "a shape", then: str = "",
+                  bullets: tuple[str, ...] = (), excepts: tuple[str, ...] = (),
+                  precedence: tuple[str, ...] = (),
+                  accepted: tuple[str, ...] = (),
+                  when: str = "a name ends in a thing.",
+                  tolerated: str = "",
+                  because: str = "it is how it is written.",
+                  others: tuple[str, ...] = ("X2",)) -> str:
+    """A synthetic skeleton rule X1, then a block-format rule for each
+    of ``others`` (each under its own heading, which ends the footer)."""
+    out = f'# X1 — one\n\n**When:** {when}\n\n'
+    if tolerated:
+        out += f"**Tolerated:** {tolerated}\n\n"
+    out += f'**Then:** {then or "the thing is read."}\n\n'
+    out += "".join(f"- {b}\n" for b in bullets)
+    out += f"\n**Because:** {because}\n\n"
+    out += '```\n"John Smith III"  →  suffix="III"\n```\n\n'
+    if excepts:
+        out += "**Except:**\n\n" + "".join(
+            f'- {b}\n  ```\n  "John V"  →  family="V"  · boundary\n  ```\n'
+            for b in excepts) + "\n"
+    if precedence:
+        out += "**Precedence:**\n\n" + "".join(
+            f"- {b}\n" for b in precedence) + "\n"
+    if accepted:
+        out += "**Accepted:**\n\n" + "".join(
+            f"- {b}\n" for b in accepted) + "\n"
+    out += (f"---\n**Signal:** {signal}\n"
+            "**history:** decisions/P2 · **implemented:** "
+            "nameparser/_parser.py\n\n")
+    return out + "".join(f"# {o} — other\n\n{o}. Other.\n" for o in others)
+
+
+def test_ids_a_skeleton_rule_names_exist() -> None:
+    doc = _skeleton_doc(precedence=("X9 decides first.",))
+    assert named_id_findings(parse_rules_doc(doc)) == ["X1 -> X9"]
+    # its own ID, and an ID that exists, are fine
+    doc = _skeleton_doc(precedence=("X1 and X2 agree.",))
+    assert named_id_findings(parse_rules_doc(doc)) == []
+    # the block format's interacts: still reports
+    block = ("X1. S.\n      \"a\"  →  given=\"a\"\n"
+             "    no-boundary: synthetic.\n"
+             "    interacts: X9 · implemented: nameparser/_parser.py\n")
+    assert named_id_findings(parse_rules_doc(block)) == ["X1 -> X9"]
+
+
+@pytest.mark.parametrize("field", [
+    "when", "tolerated", "then", "bullets", "because", "excepts",
+    "precedence", "accepted"])
+def test_an_unknown_id_in_any_skeleton_field_is_a_finding(field: str) -> None:
+    # every quotable field is scanned, read off skeleton_prose (#768)
+    text = "X9 says so."
+    value: str | tuple[str, ...] = (
+        (text,) if field in ("bullets", "excepts", "precedence", "accepted")
+        else text)
+    doc = _skeleton_doc(**{field: value})  # type: ignore[arg-type]
+    assert named_id_findings(parse_rules_doc(doc)) == ["X1 -> X9"]
+
+
+def _skeleton_hub_findings(r: Rule, ids: set[str]) -> list[str]:
+    """A skeleton hub's map is the bullet list under its Then: the
+    union of the rule IDs the bullets name. Each hub rule must be in
+    it, each ID in it must be a hub rule, and each bullet must name
+    a rule. There is no ``interacts:`` to check."""
+    assert r.skeleton is not None
+    problems = []
+    bullets = r.skeleton.then_bullets
+    mapped = set().union(*(set(_ID_RE.findall(b.text)) for b in bullets))
+    for rid in r.hub:
+        where = f"{r.rule_id}'s Signal: hub of ... {rid}"
+        if rid not in ids or rid == r.rule_id:
+            problems.append(f"{where}: names no other rule")
+        elif rid not in mapped:
+            problems.append(f"{where}: its statement's map omits it")
+    for rid in sorted(mapped & ids - set(r.hub) - {r.rule_id}):
+        problems.append(f"{r.rule_id}'s map names {rid}, which its "
+                        f"Signal: hub of ... leaves off")
+    for b in bullets:
+        # a bullet naming a rule off the hub list is the "leaves off"
+        # finding above; this one is a bullet naming no rule at all
+        if not set(_ID_RE.findall(b.text)) & ((ids | set(r.hub)) - {r.rule_id}):
+            problems.append(f"{r.rule_id}'s map bullet names no rule of "
+                            f"its hub: {b.text!r}")
+    return problems
 
 
 def hub_findings(rules: list[Rule], prose: dict[str, list[str]]) -> list[str]:
@@ -356,6 +475,9 @@ def hub_findings(rules: list[Rule], prose: dict[str, list[str]]) -> list[str]:
     problems = []
     for r in rules:
         if not r.hub:
+            continue
+        if r.skeleton is not None:
+            problems += _skeleton_hub_findings(r, ids)
             continue
         statement, _ = split_accepted(prose.get(r.rule_id, []))
         sentences = re.split(r"(?<=[.?!])[\"')\]\u201d\u2019]*\s+(?=[A-Z])",
@@ -427,6 +549,49 @@ def test_hub_findings_catch_each_gap(signal: str, interacts: str,
         assert len(got) == 1 and finding in got[0], got
 
 
+@pytest.mark.parametrize("signal, bullets, excepts, finding", [
+    ("hub of X2, X3", ("**Reach:** X2 first.", "**Then:** X3 next."),
+     (), None),
+    # the map omits X3
+    ("hub of X2, X3", ("**Reach:** X2 first.",), (),
+     "its statement's map omits it"),
+    # a map bullet names X4, which the hub list leaves off
+    ("hub of X2, X3", ("X2 first.", "X3 next.", "X4 last."), (),
+     "which its Signal: hub of ... leaves off"),
+    # a map bullet naming no rule of the hub
+    ("hub of X2, X3", ("X2 first.", "X3 next.", "Only the last one."), (),
+     "names no rule of its hub"),
+    # X2 named only in an Except bullet is not in the map
+    ("hub of X2, X3", ("X3 next.",), ("X2 is an exception.",),
+     "its statement's map omits it"),
+    ("hub of X9", ("X9 first.",), (), "names no other rule"),
+])
+def test_skeleton_hub_findings_catch_each_gap(
+        signal: str, bullets: tuple[str, ...], excepts: tuple[str, ...],
+        finding: str | None) -> None:
+    doc = _skeleton_doc(signal=signal, bullets=bullets, excepts=excepts,
+                        others=("X2", "X3", "X4"))
+    rules = parse_rules_doc(doc)
+    got = hub_findings(rules, prose_blocks(doc))
+    # a skeleton rule has no interacts:, so that is never a finding
+    assert not any("interacts:" in g for g in got), got
+    if finding is None:
+        assert got == []
+    else:
+        assert len(got) == 1 and finding in got[0], got
+
+
+def test_a_quote_of_a_bold_lead_matches_and_a_fenced_example_does_not(
+        ) -> None:
+    doc = _skeleton_doc(
+        bullets=("**One letter needs a word to spare** when it is last.",))
+    text = _norm(" ".join(prose_blocks(doc)["X1"]))
+    assert _is_excerpt(_norm("One letter needs a word to spare"), text)
+    assert _is_excerpt(_norm("spare when it is last"), text)
+    # "Smith III" occurs only in the fence
+    assert not _is_excerpt(_norm("John Smith III"), text)
+
+
 def test_doc_internal_anchors_resolve() -> None:
     """Every rules/X / decisions/Y / mechanisms.md#Z reference
     INSIDE the three docs points at a real rule ID, ### key, or
@@ -436,7 +601,8 @@ def test_doc_internal_anchors_resolve() -> None:
              *sorted(DECISIONS_DIR.glob("*.md")), MECH_DOC]
     docs = {str(p.relative_to(REPO)): p.read_text(encoding="utf-8")
             for p in paths}
-    rule_ids = set(re.findall(r"^([A-Z]\d+)\.\s", read_rules_text(), re.M))
+    # the parser's own reading, so a new rule format needs no copy here
+    rule_ids = {r.rule_id for r in parse_rules_doc(read_rules_text())}
     dec_keys = set(read_decision_files())
     mech_slugs = set(re.findall(r"^#{2,3} ([A-Z][A-Z0-9_-]+)",
                                 docs[str(MECH_DOC.relative_to(REPO))], re.M))

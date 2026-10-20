@@ -70,12 +70,32 @@ def test_every_rule_states_its_signal(rule: Rule) -> None:
         f"above its pointer line -- for example a count, a case "
         f"contrast, a shape, a neighbor, a position -- or `Signal: hub of "
         f"X1, X2` (after any signal of its own: `Signal: <its own>; hub "
-        f"of X1, X2`) for a hub")
+        f"of X1, X2`) for a hub. In a skeleton rule the same line is "
+        f"spelled `**Signal:** <tag>` and stands in the footer below "
+        f"`---`, directly above the pointer line")
 
 
 #: The README's recipe for the split candidates, verbatim; in grep's
 #: basic syntax "+" is a literal plus.
-_SPLIT_GREP = "grep -l '^    Signal:.* + ' docs/design/rules/*.md"
+_SPLIT_GREP = (
+    r"grep -lE '^(    Signal:|\*\*Signal:\*\*).* \+ ' docs/design/rules/*.md")
+
+
+#: _SPLIT_GREP's pattern in Python's syntax: either format's Signal line.
+_SPLIT_PATTERN = r"^(    Signal:|\*\*Signal:\*\*).* \+ "
+
+
+def test_the_readmes_worked_example_is_the_rule_it_copies() -> None:
+    """The README shows rules/D2 whole as the skeleton format's worked
+    example (its first ````markdown block); a copy nothing holds to the
+    file drifts the first time D2 is edited."""
+    readme = (RULES_DIR / "README.md").read_text(encoding="utf-8")
+    m = re.search(r"^````markdown\n(.*?)^````$", readme, re.S | re.M)
+    assert m is not None, "rules/README.md lost its ````markdown example"
+    (d2,) = RULES_DIR.glob("D2-*.md")
+    assert m.group(1) == d2.read_text(encoding="utf-8"), (
+        "rules/README.md's worked example differs from rules/D2; "
+        "copy the file into the README again")
 
 
 def test_the_split_candidate_recipe_lists_the_two_signal_rules() -> None:
@@ -84,14 +104,13 @@ def test_the_split_candidate_recipe_lists_the_two_signal_rules() -> None:
         "rules/README.md's split-candidate grep changed; update "
         "_SPLIT_GREP and the translation below together")
     listed = {f.name.split("-")[0] for f in RULES_DIR.glob("*.md")
-              if re.search(r"^    Signal:.* \+ ",
+              if re.search(_SPLIT_PATTERN,
                            f.read_text(encoding="utf-8"), re.M)}
     assert listed == {r.rule_id for r in RULES
                       if r.signal and " + " in r.signal}
-    # The tree holds no candidate since T4's split (2026-10-19), which
-    # leaves the comparison above true of an empty set
-    # however the recipe reads, so the two halves are also held to a
-    # synthetic rule of each kind.
+    # The tree may hold a single candidate, and the comparison above
+    # would then pass for a recipe that only ever lists that one rule,
+    # so the two halves are also held to a synthetic rule of each kind.
     for signal, candidate in (("a shape: x + a count: y", True),
                               ("a shape: x", False)):
         doc = ("X1. Rationale: r.\n    Statement.\n"
@@ -101,7 +120,15 @@ def test_the_split_candidate_recipe_lists_the_two_signal_rules() -> None:
         (rule,) = parse_rules_doc(doc)
         assert rule.signal == signal
         assert (" + " in rule.signal) is candidate
-        assert bool(re.search(r"^    Signal:.* \+ ", doc, re.M)) is candidate
+        assert bool(re.search(_SPLIT_PATTERN, doc, re.M)) is candidate
+        skeleton = ("# X1 — one\n\n**When:** w.\n\n**Then:** t.\n\n"
+                    "**Because:** b.\n\n---\n"
+                    f"**Signal:** {signal}\n"
+                    "**history:** decisions/P2 · **implemented:** "
+                    "nameparser/_parser.py\n")
+        (rule,) = parse_rules_doc(skeleton)
+        assert rule.signal == signal
+        assert bool(re.search(_SPLIT_PATTERN, skeleton, re.M)) is candidate
 
 
 def _check_diagnostic(example: Example) -> None:

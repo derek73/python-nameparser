@@ -255,10 +255,12 @@ _ROMAN = re.compile(r'^(X|IX|IV|V?I{0,3})$', re.I)
 ROMAN = _ROMAN
 
 
-# rules/S10: "A roman numeral ending a name written without a comma
-# reads as the generation" -- which the initial veto would otherwise
-# take: V and I are suffix vocabulary, X a numeral by shape alone, and
-# all three are bare capitals, which inside a name are middle initials.
+# rules/S10: "the numeral reads as the generation: the numerals the
+# vocabulary lists, and those up to X it does not, by their shape
+# alone" -- its Then clause, the `_ROMAN` test; and rules/S10's Except
+# bullet "An initial in front makes it a name word too", the two
+# is_initial_shaped tests on `preceding`. Its one-letter Except, the
+# words-to-spare count, is the callers'. decisions/S10 (#718, #721)
 def is_trailing_numeral_suffix(text: str, preceding: str,
                                one_case: bool | None) -> bool:
     """The trailing walk's roman-numeral fork: a FINAL single-token
