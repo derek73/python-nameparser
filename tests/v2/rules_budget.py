@@ -30,7 +30,8 @@ lines are not counted):
   existing Accepted clause moves the record too.
 
 A skeleton-format rule (#761, rules_skeleton.py) has its own seven,
-read from the parsed fields rather than counted over prose:
+read from the parsed fields rather than counted over prose, the word
+counts off rules_skeleton.skeleton_parts, the list a citation quotes:
 ``words`` (every quotable field but the Accepted bullets: When,
 Tolerated, Then and its bullets, Because, Except and Precedence, so a
 word added anywhere in them moves the record), ``then_words`` (Then
@@ -44,8 +45,10 @@ from __future__ import annotations
 import argparse
 import json
 import re
+from collections.abc import Callable
 from pathlib import Path
 
+from tests.v2 import rules_skeleton
 from tests.v2.design_docs import read_rules_text
 from tests.v2.rules_doc import (
     Rule, parse_rules_doc, prose_blocks, split_accepted)
@@ -64,14 +67,14 @@ _EXCEPTION_RE = re.compile(r"\b(?:except|unless)\b", re.IGNORECASE)
 def _skeleton_row(rule: Rule) -> dict[str, int]:
     sk = rule.skeleton
     assert sk is not None
-    quotable = [sk.when, *([sk.tolerated] if sk.tolerated else []),
-                sk.then, *(b.text for b in sk.then_bullets), sk.because,
-                *(b.text for b in sk.excepts),
-                *(b.text for b in sk.precedence)]
+    parts = rules_skeleton.skeleton_parts(sk)
+
+    def words(keep: Callable[[str], bool]) -> int:
+        return len(" ".join(t for f, t in parts if keep(f)).split())
+
     return {
-        "words": len(" ".join(quotable).split()),
-        "then_words": len(" ".join(
-            [sk.then, *(b.text for b in sk.then_bullets)]).split()),
+        "words": words(lambda f: f != "Accepted"),
+        "then_words": words(lambda f: f in ("Then", "Then bullet")),
         "because_sentences": count_sentences(sk.because),
         "except": len(sk.excepts),
         "precedence": len(sk.precedence),

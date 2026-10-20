@@ -433,16 +433,24 @@ def parse_skeleton(rule_id: str, lines: list[tuple[int, str]]) -> Rule:
     return rule
 
 
+def skeleton_parts(sk: Skeleton) -> list[tuple[str, str]]:
+    """Every quotable field's text, tagged with its field (``Then
+    bullet`` for a bullet under Then), in file order: the one list the
+    quotable prose, the ID check and the size budget all read."""
+    out = [("When", sk.when)]
+    if sk.tolerated is not None:
+        out.append(("Tolerated", sk.tolerated))
+    out.append(("Then", sk.then))
+    out += [("Then bullet", b.text) for b in sk.then_bullets]
+    out.append(("Because", sk.because))
+    out += [("Except", b.text) for b in sk.excepts]
+    out += [("Precedence", b.text) for b in sk.precedence]
+    out += [("Accepted", b.text) for b in sk.accepted]
+    return out
+
+
 def skeleton_prose(sk: Skeleton) -> list[str]:
     """The quotable lines, in file order. Accepted bullets read as
     `Accepted: ` clauses so split_accepted counts them unchanged."""
-    out = [sk.when]
-    if sk.tolerated is not None:
-        out.append(sk.tolerated)
-    out.append(sk.then)
-    out += [b.text for b in sk.then_bullets]
-    out.append(sk.because)
-    out += [b.text for b in sk.excepts]
-    out += [b.text for b in sk.precedence]
-    out += ["Accepted: " + b.text for b in sk.accepted]
-    return out
+    return [("Accepted: " + text if field == "Accepted" else text)
+            for field, text in skeleton_parts(sk)]

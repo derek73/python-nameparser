@@ -170,7 +170,11 @@ class Rule:
     #: rules whose signals it combines; () for a rule that is no hub.
     hub: tuple[str, ...] = ()
     #: The parsed fields of a rule written in the skeleton format
-    #: (rules_skeleton.py); None for a block-format rule.
+    #: (rules_skeleton.py); None for a block-format rule. ``examples``
+    #: above stays the list that runs, in either format; a skeleton's
+    #: ``Bullet.examples`` is a placement view of the same objects (which
+    #: bullet's fence an example stands in), not a second set, and an
+    #: example sits under one bullet at most.
     skeleton: Skeleton | None = None
 
     def has_boundary_or_waiver(self) -> bool:

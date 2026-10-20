@@ -31,6 +31,7 @@ from tests.v2.design_docs import (
     read_decision_files, read_rules_text)
 from tests.v2.rules_doc import (
     Rule, parse_rules_doc, prose_blocks, split_accepted)
+from tests.v2.rules_skeleton import skeleton_prose
 
 REPO = Path(__file__).resolve().parents[2]
 MECH_DOC = MECHANISMS_DOC
@@ -103,9 +104,8 @@ def _statements() -> dict[str, str]:
     Tolerated, Then and its bullets, Because, and the Except,
     Precedence and Accepted bullets -- with the labels, the fences and
     the footer below `---` left out (rules_skeleton.skeleton_prose);
-    for a section letter
-    (`rules/H Background`), the section's Background paragraph; for
-    a mechanism, its Contract statement."""
+    for a section letter (`rules/H Background`), the section's
+    Background paragraph; for a mechanism, its Contract statement."""
     out = prose_blocks(read_rules_text())
     stmts = {rid: _norm(" ".join(body)) for rid, body in out.items()}
     mech = MECH_DOC.read_text(encoding="utf-8")
@@ -344,17 +344,15 @@ _ID_RE = re.compile(r"\b[A-Z]\d+\b")
 def _skeleton_texts(r: Rule) -> list[str]:
     sk = r.skeleton
     assert sk is not None
-    return [sk.when, sk.then, *(b.text for b in sk.then_bullets),
-            *(b.text for b in sk.excepts),
-            *(b.text for b in sk.precedence)]
+    return skeleton_prose(sk)
 
 
 def named_id_findings(rules: list[Rule]) -> list[str]:
     """Every rule ID a rule names that no rule has: the advisory
     ``interacts:`` of a block rule, and for a skeleton rule (which has
-    no ``interacts:``) the IDs written in its When, Then, Then
-    bullets, Except and Precedence. A rule's own ID is not a
-    citation of another."""
+    no ``interacts:``) the IDs written anywhere in its quotable prose,
+    every field's text as rules_skeleton.skeleton_prose lists it. A
+    rule's own ID is not a citation of another."""
     ids = {r.rule_id for r in rules}
     out = []
     for r in rules:
@@ -375,13 +373,19 @@ def test_interacts_ids_exist() -> None:
 def _skeleton_doc(*, signal: str = "a shape", then: str = "",
                   bullets: tuple[str, ...] = (), excepts: tuple[str, ...] = (),
                   precedence: tuple[str, ...] = (),
+                  accepted: tuple[str, ...] = (),
+                  when: str = "a name ends in a thing.",
+                  tolerated: str = "",
+                  because: str = "it is how it is written.",
                   others: tuple[str, ...] = ("X2",)) -> str:
     """A synthetic skeleton rule X1, then a block-format rule for each
     of ``others`` (each under its own heading, which ends the footer)."""
-    out = ('# X1 — one\n\n**When:** a name ends in a thing.\n\n'
-           f'**Then:** {then or "the thing is read."}\n\n')
+    out = f'# X1 — one\n\n**When:** {when}\n\n'
+    if tolerated:
+        out += f"**Tolerated:** {tolerated}\n\n"
+    out += f'**Then:** {then or "the thing is read."}\n\n'
     out += "".join(f"- {b}\n" for b in bullets)
-    out += "\n**Because:** it is how it is written.\n\n"
+    out += f"\n**Because:** {because}\n\n"
     out += '```\n"John Smith III"  →  suffix="III"\n```\n\n'
     if excepts:
         out += "**Except:**\n\n" + "".join(
@@ -390,6 +394,9 @@ def _skeleton_doc(*, signal: str = "a shape", then: str = "",
     if precedence:
         out += "**Precedence:**\n\n" + "".join(
             f"- {b}\n" for b in precedence) + "\n"
+    if accepted:
+        out += "**Accepted:**\n\n" + "".join(
+            f"- {b}\n" for b in accepted) + "\n"
     out += (f"---\n**Signal:** {signal}\n"
             "**history:** decisions/P2 · **implemented:** "
             "nameparser/_parser.py\n\n")
@@ -407,6 +414,19 @@ def test_ids_a_skeleton_rule_names_exist() -> None:
              "    no-boundary: synthetic.\n"
              "    interacts: X9 · implemented: nameparser/_parser.py\n")
     assert named_id_findings(parse_rules_doc(block)) == ["X1 -> X9"]
+
+
+@pytest.mark.parametrize("field", [
+    "when", "tolerated", "then", "bullets", "because", "excepts",
+    "precedence", "accepted"])
+def test_an_unknown_id_in_any_skeleton_field_is_a_finding(field: str) -> None:
+    # every quotable field is scanned, read off skeleton_prose (#768)
+    text = "X9 says so."
+    value: str | tuple[str, ...] = (
+        (text,) if field in ("bullets", "excepts", "precedence", "accepted")
+        else text)
+    doc = _skeleton_doc(**{field: value})  # type: ignore[arg-type]
+    assert named_id_findings(parse_rules_doc(doc)) == ["X1 -> X9"]
 
 
 def _skeleton_hub_findings(r: Rule, ids: set[str]) -> list[str]:

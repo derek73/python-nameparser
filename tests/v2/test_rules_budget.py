@@ -195,6 +195,21 @@ def test_words_added_to_any_quotable_field_move_the_row(
     assert after["X1"]["words"] > before["X1"]["words"]
 
 
+def test_a_field_added_to_the_quotable_parts_moves_words(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # words is read off rules_skeleton.skeleton_parts, the one list
+    # skeleton_prose quotes from, so a field added there is counted
+    # without a second edit here (#768)
+    from tests.v2 import rules_skeleton
+    before = rules_budget.measure(_SKELETON_DOC)["X1"]
+    parts = rules_skeleton.skeleton_parts
+    monkeypatch.setattr(rules_skeleton, "skeleton_parts", lambda sk: [
+        *parts(sk), ("Extra", "one two three")])
+    after = rules_budget.measure(_SKELETON_DOC)["X1"]
+    assert after["words"] == before["words"] + 3
+    assert after["accepted_words"] == before["accepted_words"]
+
+
 def test_a_format_change_is_one_line() -> None:
     block_row = {"words": 9, "exceptions": 1, "accepted": 2,
                  "accepted_words": 19}
