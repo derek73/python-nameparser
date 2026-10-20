@@ -6,7 +6,7 @@ excluded = { salutation = { reason = "Czech and Polish Mr., and the Chinese surn
 
 [[word]]
 text = "paní"
-salutation = { issue = 606, gender = "f", note = "keeps its accent, so the name Pani (~76,000 surnames and ~65,000 given names, India and Indonesia) is untouched; the lexicon folds no accent (decisions/salutation-titles)" }
+salutation = { issue = 606, gender = "f", note = "keeps its accent, so the name Pani (~76,000 surnames and ~65,000 given names, India and Indonesia) is untouched, and the unaccented pani is not shipped; the lexicon folds no accent (decisions/salutation-titles)" }
 
 [[word]]
 text = "rodina"
