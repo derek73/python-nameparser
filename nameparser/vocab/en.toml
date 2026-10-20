@@ -1252,7 +1252,7 @@ occupation = {}
 
 [[word]]
 text = "clergyman"
-occupation = { gender = "m" }
+occupation = {}
 
 [[word]]
 text = "co-founder"
