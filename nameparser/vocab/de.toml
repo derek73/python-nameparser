@@ -119,14 +119,6 @@ text = "ritter"
 nobility = { gender = "m", expands = "knight" }
 
 [[word]]
-text = "ba"
-credential = { may_be_name = true, issue = 18 }
-
-[[word]]
-text = "bsc"
-credential = { cased = "BSc", issue = 18 }
-
-[[word]]
 text = "mda"
 credential = { issue = 18, expands = "Mitglied des Abgeordnetenhauses" }
 
@@ -149,10 +141,6 @@ credential = { issue = 18, expands = "Mitglied der Hamburgischen Bürgerschaft" 
 [[word]]
 text = "mdl"
 credential = { issue = 18, expands = "Mitglied des Landtages" }
-
-[[word]]
-text = "meng"
-credential = { may_be_name = true, issue = 18 }
 
 [[word]]
 text = "stb"

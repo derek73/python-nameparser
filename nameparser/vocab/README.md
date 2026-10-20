@@ -12,7 +12,7 @@ A file is named for a BCP 47 language tag in canonical case: `fr.toml`, `pt-BR.t
 
 Two tags are not languages:
 
-- **`und`** (undetermined) holds the words not yet assigned a language. A few are still here (46 of 1,938 on 2026-10-20, after #751 gave the credentials their languages): the conjunctions, the bound given names, the birth markers and two particles, converted mechanically from the Python lists they used to be; assigning a word to a language means moving its entry to that language's file. The comments above an entry here are the vetting notes that stood above the word in the Python module, in their old order; classifying a category is what turns them into fields.
+- **`und`** (undetermined) holds the words not yet assigned a language. A few are still here (46 of 1,931 on 2026-10-20, after #751 gave the credentials their languages): the conjunctions, the bound given names, the birth markers and two particles, converted mechanically from the Python lists they used to be; assigning a word to a language means moving its entry to that language's file. The comments above an entry here are the vetting notes that stood above the word in the Python module, in their old order; classifying a category is what turns them into fields.
 - **`mul`** (multiple) holds words shared on purpose, such as the Roman numerals.
 
 The script is read from the word, not from the file: `sr.toml` holds `mlađi` and `млађи` side by side. A script subtag (`zh-Hant`) is for a difference the text cannot show.
