@@ -590,8 +590,8 @@ def _split_surname_site(state: ParseState) -> ParseState:
     # entry's stored form is its NFC composition with no case or
     # edge-stop change (#322) -- so an entry AUTHORED in NFD is
     # composed on the way in, raw NFD input matches nothing here, and
-    # the name goes unsplit, which is the no-split rules/W1 already
-    # accepts for NFD text. An empty vocabulary skips the match rather
+    # the name goes unsplit, the no-split NFD degradation that
+    # decisions/W1's 2026-07-29 NFD bullet (ja amendment 1a) accepts. An empty vocabulary skips the match rather
     # than bailing the stage (_longest_entry's max() has nothing to
     # take): a surname-less lexicon declines every token, which is
     # exactly the condition the segmenter is consulted on, so an early
