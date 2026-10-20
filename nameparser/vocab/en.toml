@@ -2,7 +2,7 @@ schema = 1
 
 [[word]]
 text = "wm"
-title = { issue = 68, note = "William, abbreviated, and no title of any kind: added for #68, where 'Wm. Scott Magargee III' read first name 'Wm.', so 'Wm. Smith' reads title Wm. and no given name" }
+title = { issue = 68, note = "William, abbreviated, and no title of any kind: added for #68, where 'Wm. Scott Magargee III' read first name 'Wm.'; a bare 'Wm Smith' reads title Wm and no given name, while the dotted 'Wm.' is taken by the leading period-abbreviation shape rule whether listed or not" }
 
 [[word]]
 text = "goodman"

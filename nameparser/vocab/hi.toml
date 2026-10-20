@@ -66,7 +66,7 @@ excluded = { academic = { reason = "a common surname (Vijaya Lakshmi Pandit); th
 
 [[word]]
 text = "डा"
-academic = { issue = 344, expands = "Dr., the डा. abbreviation (Nepali and older Hindi), matched through the edge-period normalization" }
+academic = { issue = 344, expands = "Dr., the डा. abbreviation (Nepali and older Hindi)", note = "डा. matches through the edge-period normalization" }
 
 [[word]]
 text = "डॉ"
