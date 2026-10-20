@@ -1079,8 +1079,8 @@ def test_non_interference_all_packs_combined() -> None:
 # -- #269: non-Latin default vocabulary (Cyrillic, Greek, Arabic,
 # Hebrew, Devanagari, Bengali) --
 #
-# This is DEFAULT vocabulary (nameparser/vocab/und.toml for titles and
-# conjunctions, ar.toml and he.toml for particles), not a locale pack -- it lives here
+# This is DEFAULT vocabulary (nameparser/vocab/*.toml, which file a
+# word is in by its language), not a locale pack -- it lives here
 # because it's the non-Latin counterpart to the pack tests above. Every
 # row was verified live against a runtime-augmented Lexicon.default()
 # before the data landed (2026-07-17), so these pin actual observed
