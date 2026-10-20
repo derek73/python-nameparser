@@ -12,7 +12,7 @@
 
 **Except:**
 
-- **Where the caller opts to keep a kind of ignorable character** (emoji, or directionality controls), the name does not split at that kind, and a kept character stays in the word it is written in.
+- **Where the caller opts to keep ignorable characters**, the name does not split at the ones kept.
   ```
   "John😀Smith"  keep-emoji    →  given="John😀Smith"  · boundary
   ```

@@ -4,12 +4,12 @@
 
 **Then:** in a name written wholly in one case, which says nothing about any letter in it, a bare letter is an initial wherever its capital would be, and in a name of mixed case a bare lower-case letter is no initial.
 
-- **Every rule that reads an initial differently from a name word reads the lower-case spelling as it reads the capitals**: M4 leaves an initial its given-name reading, O5 reports no convention for one, P3's count passes over one, S10 reads a numeral written as one as the capital numeral it is, and the scan-back of W2's peel, a suffix test that vetoes an initial, vetoes it.
+- **In a name written wholly in one case, every rule that reads an initial differently from a name word reads the lower-case spelling as it reads the capitals**: M4 leaves an initial its given-name reading, O5 reports no convention for one, P3's count passes over one, S10 reads a numeral written as one as the capital numeral it is, and a suffix test that vetoes an initial vetoes it — C14's strict mode, and the scan-back of W2's peel.
 - **A letter whose capital is not an initial by T5** — é, ж — is no initial in either spelling.
   ```
   "é nee smith"               →  family="é"  · boundary
   ```
-- **The case question is asked of the name's own words**, as P8 asks it, so a clause beside the name changes nothing about the name's own letters: a lone letter before a maiden name in capitals is still a name written in one case.
+- **For a letter among the name's own words, the case question is asked of those words**, as P8 asks it, so a clause beside the name changes nothing about the name's own letters: a lone letter before a maiden name in capitals is still a name written in one case.
   ```
   "j nee Smith"               →  given="j"
   ```
@@ -38,7 +38,6 @@
   "jose e lopez"              →  ambiguities=("conjunction-or-initial",)
   "jose y lopez"              →  middle="y"
   ```
-- **Under the strict comma-suffix switch** ("john smith, v"): C14's veto refuses the letter the suffix reading wherever it refuses its capital, since the veto asks this rule whether the letter is an initial.
 
 **Accepted:**
 
