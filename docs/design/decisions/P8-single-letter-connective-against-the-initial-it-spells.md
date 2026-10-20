@@ -3,7 +3,7 @@
 ## Standing
 
 - In a name written in more than one case, a bare Latin capital connective reads as an initial and a Cyrillic capital joins — 2026-07-30 #267; 2026-09-13 #383.
-- In a name written wholly in one case, a member of `conjunctions_ambiguous` (default `e`) reads as an initial and reports `conjunction-or-initial`, and any other single-letter connective joins — 2026-09-13 #383.
+- In a name written wholly in one case, a member of `conjunctions_ambiguous` reads as an initial and reports `conjunction-or-initial`, and any other single-letter connective joins; the default members are `e`, decided here, and `i`, added with the conjunction itself by decisions/P3's #397 entry as this log foresaw — 2026-09-13 #383.
 - Both questions are asked per token, at every name length, over the name's own words: those before a maiden marker's run and outside a delimited clause — 2026-09-13 #383.
 - The subset is the knob, with no switch beside it; that a locale pack cannot remove a member is accepted — 2026-09-13 #383.
 - The facade's `initials()` follows the parse's tags as the core does (the #528 amendment inside the entry) — 2026-09-13 #383.

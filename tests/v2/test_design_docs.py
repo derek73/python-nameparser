@@ -150,7 +150,7 @@ def test_standing_findings_name_each_broken_pointer(
         assert len(found) == 1 and finding in found[0], found
 
 
-def test_standing_needs_a_log_and_is_optional() -> None:
+def test_standing_needs_a_log() -> None:
     assert standing_findings("# C1 — x\n\n## Standing\n\n- a\n") == [
         "## Standing without a ## Log after it"]
     assert standing_findings("# C1 — x\n\n" + _LOG) == []
@@ -203,17 +203,20 @@ def test_every_standing_line_points_at_a_live_entry() -> None:
         assert standing_findings(files[key]) == [], key
 
 
-@pytest.mark.parametrize("files, exempt, finding", [
-    ({"C1": "## Standing", "P2": "log"}, {"P2"}, None),
-    ({"C1": "## Standing", "C14": "log"}, set(), "C14 has no Standing"),
-    ({"C1": "## Standing", "P2": "## Standing"}, {"P2"},
+@pytest.mark.parametrize("files, exempt, ceiling, finding", [
+    ({"C1": "## Standing", "P2": "log"}, {"P2"}, 1, None),
+    ({"C1": "## Standing", "C14": "log"}, set(), 0, "C14 has no Standing"),
+    ({"C1": "## Standing", "P2": "## Standing"}, {"P2"}, 1,
      "P2 has a Standing block: take it off"),
-    ({"C1": "## Standing"}, {"P2"}, "P2 is listed"),
+    ({"C1": "## Standing"}, {"P2"}, 1, "P2 is listed"),
+    ({"C1": "## Standing", "P2": "log", "Z9": "log"}, {"P2", "Z9"}, 1,
+     "lists 2 files, not 1"),
 ], ids=["clean", "new-file-without", "listed-file-gained-one",
-        "listed-file-gone"])
+        "listed-file-gone", "new-file-listed"])
 def test_standing_roster_findings_name_each_break(
-        files: dict[str, str], exempt: set[str], finding: str | None) -> None:
-    found = standing_roster_findings(files, exempt)
+        files: dict[str, str], exempt: set[str], ceiling: int,
+        finding: str | None) -> None:
+    found = standing_roster_findings(files, exempt, ceiling)
     if finding is None:
         assert found == []
     else:

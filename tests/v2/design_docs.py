@@ -108,8 +108,9 @@ def resolve(doc: str, cid: str, folder: Path | None = None) -> Path | None:
     return hits[0] if len(hits) == 1 else None
 
 
-# A decisions file may open with `## Standing`, an index of the
-# decisions in force, before its entries under `## Log`. Each Standing
+# A decisions file opens with `## Standing`, an index of the decisions
+# in force, before its entries under `## Log` -- every file but those
+# listed in decisions_without_standing.json (below). Each Standing
 # bullet ends its claim with the entry that decided it, by date and
 # issue (`— 2026-10-06 #613`); a `Not standing:` line names entries a
 # later one answered. An entry is a log bullet whose head
@@ -149,7 +150,8 @@ def standing_findings(text: str) -> list[str]:
     to the line's end naming no entry (dates match exactly) or
     to one only `SUPERSEDED by` a later entry, a
     Not-standing pointer to no entry, a Standing with no Log. Empty
-    for a file with no Standing block."""
+    for a file with no Standing block, whose absence is
+    standing_roster_findings' question."""
     if "## Standing" not in text:
         return []
     if "\n## Log\n" not in text:
@@ -185,18 +187,28 @@ def standing_findings(text: str) -> list[str]:
 #: older than the 2026-10-19 rule that new files open with one. The
 #: list only shrinks (decisions/README.md, `## Standing`).
 STANDING_EXEMPT = Path(__file__).with_name("decisions_without_standing.json")
+#: The list's length, recorded so that it only shrinks: a file leaving
+#: the list lowers it, and a file joining the list has to raise it.
+STANDING_EXEMPT_CEILING = 88
 
 
 def read_standing_exempt(path: Path = STANDING_EXEMPT) -> set[str]:
     return set(json.loads(path.read_text(encoding="utf-8"))["exempt"])
 
 
-def standing_roster_findings(files: dict[str, str],
-                             exempt: set[str]) -> list[str]:
+def standing_roster_findings(files: dict[str, str], exempt: set[str],
+                             ceiling: int = STANDING_EXEMPT_CEILING
+                             ) -> list[str]:
     """What breaks the Standing ratchet: a file off the exempt list with
     no Standing block, a listed file that has gained one (take it off
-    the list), and a listed key no file carries any more."""
+    the list), a listed key no file carries any more, and a list whose
+    length is not the recorded ceiling."""
     findings = []
+    if len(exempt) != ceiling:
+        findings.append(f"{STANDING_EXEMPT.name} lists {len(exempt)} "
+                        f"files, not {ceiling}: set STANDING_EXEMPT_CEILING "
+                        "to the new length when a file leaves the list; a "
+                        "new file never joins it")
     for key, text in sorted(files.items()):
         has = "## Standing" in text
         if key in exempt and has:

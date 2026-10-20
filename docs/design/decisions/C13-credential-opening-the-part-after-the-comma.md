@@ -2,9 +2,9 @@
 
 ## Standing
 
-- A suffix word that starts S2's credential run, with only titles in front of it, opens the part after the comma as the postnominal part, and every word after it reads as that run reads: a title word as a title, any other as a suffix; each word the opened part takes from the given name is reported — 2026-10-04 #603.
+- A suffix word that starts S8's credential run, with only titles in front of it, opens the part after the comma as the postnominal part, and every word after it reads as that run reads: a title word as a title, any other as a suffix; each word the opened part takes from the given name is reported — 2026-10-04 #603.
 - Behind a one-word name before the comma the opened part is all suffixes (`Doe, PhD Jones`); reading the next word as the given name was declined — 2026-10-04 #603.
-- A title/suffix dual opens nothing, nor does a member of the ambiguous class or a suffix word S2's run start refuses — 2026-10-04 #603.
+- A title/suffix dual opens nothing, nor does a member of the ambiguous class or a suffix word S8's run start refuses — 2026-10-04 #603.
 - The split credential `Ph. D.` starts the run as `PhD` does — 2026-10-04 #603.
 - Under strict mode the veto refuses an initial-shaped word the suffix reading, not the opened run (`Smith, PSM I.`), stated in rules/C14 since its split — 2026-10-04 #603.
 - A title word past the second comma that is not also suffix vocabulary is a title; this is rules/C2's decision, recorded here with #603 — 2026-10-04 #603.
