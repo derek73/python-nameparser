@@ -13,6 +13,54 @@ text = "सौ"
 salutation = { gender = "f", issue = 344, expands = "Sau., Mrs." }
 
 [[word]]
+text = "पंडित"
+style = { issue = 344, expands = "Pandit" }
+
+[[word]]
+text = "पं"
+style = { issue = 344, same_as = "पंडित", expands = "Pandit, abbreviated" }
+
+[[word]]
+text = "महात्मा"
+style = { issue = 344, expands = "Mahatma" }
+
+[[word]]
+text = "सरदार"
+style = { issue = 344, expands = "Sardar" }
+
+[[word]]
+text = "डॉ"
+academic = { issue = 269, expands = "Dr., abbreviated" }
+
+[[word]]
+text = "डॉक्टर"
+academic = { issue = 344, expands = "doctor, full form" }
+
+[[word]]
+text = "प्रा"
+academic = { issue = 344, expands = "Prof., the Marathi abbreviation" }
+
+[[word]]
+text = "प्राध्यापक"
+academic = { issue = 344, expands = "professor, the Sanskritic form" }
+
+[[word]]
+text = "प्रो"
+academic = { issue = 344, expands = "Prof., abbreviated" }
+
+[[word]]
+text = "प्रोफेसर"
+academic = { issue = 344, expands = "professor, full form" }
+
+[[word]]
+text = "महाराजा"
+nobility = { issue = 344, gender = "m", expands = "Maharaja" }
+
+[[word]]
+text = "न्यायमूर्ति"
+office = { issue = 344, expands = "Justice" }
+
+[[word]]
 text = "क"
 [word.excluded.generation]
 reason = "the abbreviation क. is the single-letter initial shape"

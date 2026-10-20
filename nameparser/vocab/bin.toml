@@ -1,0 +1,9 @@
+schema = 1
+
+[[word]]
+text = "edohen"
+nobility = { expands = "a Benin palace chieftaincy title" }
+
+[[word]]
+text = "ekegbian"
+nobility = { expands = "a Benin chieftaincy title" }

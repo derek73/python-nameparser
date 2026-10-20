@@ -3,6 +3,22 @@
 schema = 1
 
 [[word]]
+text = "docent"
+academic = { expands = "the academic rank, spelled alike in Dutch, Swedish, Danish, Norwegian, Polish and Czech" }
+
+[[word]]
+text = "dr"
+academic = { expands = "Doctor, abbreviated alike across the European languages" }
+
+[[word]]
+text = "prof"
+academic = { expands = "Professor, abbreviated alike across the European languages" }
+
+[[word]]
+text = "professor"
+academic = { expands = "spelled alike in English, German, Dutch, the Scandinavian languages and Portuguese" }
+
+[[word]]
 text = "2"
 generation = {}
 

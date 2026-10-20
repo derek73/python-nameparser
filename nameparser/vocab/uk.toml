@@ -9,6 +9,18 @@ text = "пані"
 salutation = { gender = "f", issue = 269, expands = "Mrs." }
 
 [[word]]
+text = "акад"
+academic = { issue = 269, expands = "academician" }
+
+[[word]]
+text = "д-р"
+academic = { issue = 269, expands = "doctor" }
+
+[[word]]
+text = "проф"
+academic = { issue = 269, expands = "professor" }
+
+[[word]]
 text = "молодша"
 generation = { issue = 661 }
 

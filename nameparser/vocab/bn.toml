@@ -61,12 +61,52 @@ text = "শ্রীমতী"
 salutation = { gender = "f", issue = 343, expands = "Shrimati, Mrs." }
 
 [[word]]
+text = "আলহাজ্ব"
+style = { issue = 343, expands = "Alhaj" }
+
+[[word]]
+text = "আলহাজ"
+style = { issue = 343, same_as = "আলহাজ্ব", expands = "Alhaj, the spelling without the ব-phala" }
+
+[[word]]
 text = "ঠাকুর"
 excluded = { style = { reason = "a genuine Bengali honorific (lord, master) that is also Tagore, the surname", issue = 343 } }
 
 [[word]]
 text = "শেখ"
 excluded = { style = { reason = "a clan name and a family name ('শেখ হাসিনা'); the Latin sheikh cluster ships for the Arabic addressing form, while the Indic spellings name the family", issue = 343, decided = 2026-09-06 } }
+
+[[word]]
+text = "অধ্যাপক"
+academic = { issue = 343, expands = "professor" }
+
+[[word]]
+text = "ড"
+academic = { issue = 343, expands = "Dr., the PhD's", note = "the doctor abbreviations split by profession, ড./ডঃ the PhD's and ডাঃ/ডা. the Bangladeshi physician's; a period spelling matches its bare stem through the edge-period normalization, so each stem is listed once, and the visarga ঃ (U+0983, a spacing combining mark) reaches the lexicon intact; no Latin twins, for the reason the sri/shri exclusions in hi.toml give" }
+
+[[word]]
+text = "ডঃ"
+academic = { issue = 343, same_as = "ড", expands = "Dr., the PhD's, visarga spelling" }
+
+[[word]]
+text = "ডক্টর"
+academic = { issue = 343, expands = "doctor, full form" }
+
+[[word]]
+text = "ডা"
+academic = { issue = 343, expands = "Dr., the physician's" }
+
+[[word]]
+text = "ডাঃ"
+academic = { issue = 343, same_as = "ডা", expands = "Dr., the physician's, visarga spelling" }
+
+[[word]]
+text = "ডাক্তার"
+academic = { issue = 343, expands = "doctor, full form (physician)" }
+
+[[word]]
+text = "প্রফেসর"
+academic = { issue = 343, expands = "professor, borrowed form" }
 
 [[word]]
 text = "baba"
@@ -89,12 +129,24 @@ text = "বাবা"
 religious = { addresses = "given", issue = 343, expands = "Baba" }
 
 [[word]]
+text = "মাওলানা"
+religious = { issue = 343, expands = "Maulana" }
+
+[[word]]
+text = "মুফতি"
+religious = { issue = 343, expands = "Mufti", note = "the Latin mufti ships too, in ar.toml" }
+
+[[word]]
 text = "শ্রীল"
 religious = { addresses = "given", issue = 343, expands = "Srila, the Vaishnava honorific (শ্রীল প্রভুপাদ)", note = "no Latin twin; unprefixed শ্রী is the civil salutation" }
 
 [[word]]
 text = "স্বামী"
 religious = { addresses = "given", issue = 343, expands = "Swami" }
+
+[[word]]
+text = "বিচারপতি"
+office = { issue = 343, expands = "Justice" }
 
 [[word]]
 text = "জুনিয়র"

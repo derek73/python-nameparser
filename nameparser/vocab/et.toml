@@ -11,3 +11,7 @@ salutation = { issue = 606, gender = "f" }
 [[word]]
 text = "proua"
 salutation = { issue = 606, gender = "f" }
+
+[[word]]
+text = "krahv"
+nobility = { gender = "m", expands = "count", issue = 606 }

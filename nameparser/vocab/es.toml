@@ -41,6 +41,10 @@ text = "srtas"
 salutation = { gender = "f", same_as = "señoritas" }
 
 [[word]]
+text = "dra"
+academic = { gender = "f", expands = "Doctora, Doutora" }
+
+[[word]]
 text = "de"
 preposition = { may_be_given = false, expands = "of" }
 

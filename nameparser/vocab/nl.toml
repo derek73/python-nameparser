@@ -29,6 +29,22 @@ text = "mevrouwe"
 salutation = { gender = "f", same_as = "mevrouw", expands = "the archaic spelling of mevrouw" }
 
 [[word]]
+text = "baron"
+nobility = { gender = "m" }
+
+[[word]]
+text = "graaf"
+nobility = { gender = "m", expands = "count", issue = 606, note = "borne; one of the three words #606 proposed the graf class for" }
+
+[[word]]
+text = "vrouwe"
+nobility = { gender = "f", expands = "lady, the style of a noblewoman" }
+
+[[word]]
+text = "historicus"
+occupation = {}
+
+[[word]]
 text = "aan"
 preposition = { may_be_given = true, issue = 18, expands = "on, at: \"aan den Toorn\"" }
 

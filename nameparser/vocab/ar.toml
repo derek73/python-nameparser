@@ -1,6 +1,10 @@
 schema = 1
 
 [[word]]
+text = "hajji"
+style = { expands = "one who has made the Hajj" }
+
+[[word]]
 text = "sheikh"
 style = { addresses = "given", gender = "m" }
 
@@ -89,6 +93,22 @@ text = "مهندس"
 academic = { addresses = "given", gender = "m", issue = 269, expands = "engineer", note = "a genuine title in Egyptian usage" }
 
 [[word]]
+text = "imam"
+religious = { note = "addresses by the TITLE, not the given name, and the tradition keeps surnames, so it stays out of GIVEN_NAME_TITLES (#346)" }
+
+[[word]]
+text = "mahdi"
+religious = {}
+
+[[word]]
+text = "mufti"
+religious = {}
+
+[[word]]
+text = "murshid"
+religious = { expands = "a Sufi guide" }
+
+[[word]]
 text = "الحاج"
 religious = { addresses = "given", gender = "m", issue = 269, expands = "the hajji, one who has made the hajj" }
 
@@ -97,12 +117,24 @@ text = "الحاجة"
 religious = { addresses = "given", gender = "f", issue = 269, expands = "the hajja, one who has made the hajj" }
 
 [[word]]
+text = "sultan"
+nobility = {}
+
+[[word]]
+text = "sultana"
+nobility = { gender = "f" }
+
+[[word]]
 text = "أمير"
 excluded = { nobility = { reason = "Amir is a common given name", issue = 269 } }
 
 [[word]]
 text = "سلطان"
 excluded = { nobility = { reason = "Sultan is a common given name", issue = 269 } }
+
+[[word]]
+text = "vizier"
+office = {}
 
 [[word]]
 text = "الأب"

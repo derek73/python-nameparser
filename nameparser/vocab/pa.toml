@@ -1,6 +1,14 @@
 schema = 1
 
 [[word]]
+text = "giani"
+religious = { expands = "a learned Sikh, ਗਿਆਨੀ" }
+
+[[word]]
+text = "gyani"
+religious = { same_as = "giani" }
+
+[[word]]
 text = "guru"
 religious = { addresses = "given", issue = 346 }
 
