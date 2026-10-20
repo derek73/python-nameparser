@@ -65,7 +65,7 @@
   "T3": {"words": 56, "then_words": 23, "because_sentences": 1, "except": 0, "precedence": 0, "accepted": 0, "accepted_words": 0},
   "T4": {"words": 348, "then_words": 217, "because_sentences": 2, "except": 0, "precedence": 2, "accepted": 1, "accepted_words": 56},
   "T5": {"words": 149, "then_words": 95, "because_sentences": 1, "except": 0, "precedence": 0, "accepted": 1, "accepted_words": 42},
-  "W1": {"words": 135, "exceptions": 0, "accepted": 1, "accepted_words": 26},
+  "W1": {"words": 156, "then_words": 105, "because_sentences": 1, "except": 0, "precedence": 0, "accepted": 1, "accepted_words": 25},
   "W2": {"words": 97, "exceptions": 0, "accepted": 2, "accepted_words": 194},
   "W3": {"words": 651, "then_words": 348, "because_sentences": 1, "except": 1, "precedence": 3, "accepted": 0, "accepted_words": 0},
   "W4": {"words": 80, "exceptions": 0, "accepted": 1, "accepted_words": 70}
