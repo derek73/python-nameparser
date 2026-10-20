@@ -27,7 +27,7 @@
   "M3": {"words": 209, "exceptions": 1, "accepted": 1, "accepted_words": 80},
   "M4": {"words": 333, "exceptions": 0, "accepted": 0, "accepted_words": 0},
   "N1": {"words": 95, "then_words": 50, "because_sentences": 1, "except": 1, "precedence": 0, "accepted": 0, "accepted_words": 0},
-  "N2": {"words": 99, "exceptions": 0, "accepted": 0, "accepted_words": 0},
+  "N2": {"words": 131, "then_words": 79, "because_sentences": 1, "except": 0, "precedence": 0, "accepted": 0, "accepted_words": 0},
   "N3": {"words": 46, "exceptions": 0, "accepted": 2, "accepted_words": 188},
   "O1": {"words": 134, "exceptions": 0, "accepted": 1, "accepted_words": 121},
   "O2": {"words": 95, "exceptions": 0, "accepted": 2, "accepted_words": 69},
