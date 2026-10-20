@@ -1,10 +1,10 @@
 # P6 — the trailing orphan particle
 
-**When:** a particle ends the name, with nothing after it to link forward to, as in "Beethoven, Ludwig van".
+**When:** a particle ends the name — post-nominals behind it aside (below) — as in "Beethoven, Ludwig van".
 
 **Then:** where something has already named the family and left the particle in a position that means nothing — after a family comma, or in the middle of a FAMILY_FIRST reading — a particle ending the name attaches to that family name and is written before it.
 
-- **After a family comma the attachment reads the run that ends the name, and a post-nominal does not end it**: a post-nominal is written BEHIND the particle in this listing, so the run is found by looking past trailing words that hold no name — unless such a word is itself particle vocabulary, which makes it part of the run rather than something to look past.
+- **A post-nominal does not end the name for this purpose**: it is written BEHIND the particle in this listing, so the run is found by looking past trailing words that hold no name — unless such a word is itself particle vocabulary, which makes it part of the run rather than something to look past.
   ```
   "Jong, Anke de"             →  family="de Jong"
   "Beethoven, Ludwig van"     →  family="van Beethoven"
@@ -29,13 +29,11 @@
   "Berg Jan de Jr."  family-first  →  family="de Berg"
   "Berg Jan de Jr."  family-first  →  suffix="Jr."
   "Ménil Christophe de"  family-first-given-last  →  given="de"
-  "Maria Luisa y de la Cruz"  →  family="la Cruz"  · boundary
-  "de Anke van y"  family-first-given-last  →  middle="van"  · boundary
   "Ménil de"  family-first  →  given="de"  · boundary
   ```
 - **Nothing is asked about the WORD**, and that is what lets one rule read both traditions: the same vocabulary that spells the Dutch tussenvoegsel spells the Vietnamese given name, and the declared order separates them where a comma cannot — one order, not both, as an Accepted bullet below records.
 - **Where nothing has named the family, the particle is read where it stands**, and a particle CAN be a given name there: the never-given vocabulary supplies the reading position leaves open, and forbids nothing (parse("de") reports given "de", and so does every other word in that set).
-- **What reports.** The fork is reported, in the kind naming the reading this attachment OVERRODE — what the run was read as before it fired, not what its words are. Where the run was read as a post-nominal, which is the S2 reading this rule outranks, the report is suffix-or-name. Otherwise, where the run holds an ambiguous particle, the reading overridden is that word as a name word, and the report is particle-or-given. Where the attachment overrode neither — a never-given particle read as a name word, which it could never have been — nothing was decided and nothing is reported. So `do`, which sits in the AMBIGUOUS acronym half and was already read as a name word, reports particle-or-given while vd and mc report suffix-or-name, and a run of several words read as name words reports on its ambiguous member if it has one and otherwise reports nothing, whatever its words could have been read as standing alone. Both are pinned in tests/v2/cases.py.
+- **What reports.** A word of the AMBIGUOUS credential class that none of the three stand-downs below reaches (S6's capitals, S7's company, P9's run) attaches, and the report gives it this rule's particle fork rather than S4's credential one. The fork is reported, in the kind naming the reading this attachment OVERRODE — what the run was read as before it fired, not what its words are. Where the run was read as a post-nominal, which is the S2 reading this rule outranks, the report is suffix-or-name. Otherwise, where the run holds an ambiguous particle, the reading overridden is that word as a name word, and the report is particle-or-given. Where the attachment overrode neither — a never-given particle read as a name word, which it could never have been — nothing was decided and nothing is reported. So `do`, which sits in the AMBIGUOUS acronym half and was already read as a name word, reports particle-or-given while vd and mc report suffix-or-name, and a run of several words read as name words reports on its ambiguous member if it has one and otherwise reports nothing, whatever its words could have been read as standing alone. Both are pinned in tests/v2/cases.py.
   ```
   "Nguyen, Thi Van"           →  ambiguities=("particle-or-given",)
   "Berg, Jan vd"              →  ambiguities=("suffix-or-name",)
@@ -45,6 +43,11 @@
   ```
 
 **Because:** a particle ending the name has nothing to link forward to, so it is not doing a particle's work there. What it is doing instead is decided by what the WRITING says, not by the word: a family already named, with the particle left where its position means nothing, is how Dutch and Flemish names are listed ("Beethoven, Ludwig van", the tussenvoegsel trailing the given name but belonging to the surname).
+
+```
+"Maria Luisa y de la Cruz"  →  family="la Cruz"  · boundary
+"de Anke van y"  family-first-given-last  →  middle="van"  · boundary
+```
 
 **Except:**
 
@@ -63,7 +66,7 @@
   ```
   "Berg, Jan vd"              →  family="vd Berg"
   ```
-- **Where the capitals speak** ("Doe, John DO"): a word of the AMBIGUOUS credential class, written in capitals in a name written in more than one case, reads as the credential (S6) and this attachment stands down — unless a particle stands immediately in front of it, the two being one particle run by then, which this rule takes whole. Every other spelling of such a word attaches, and the report gives it this rule's particle fork rather than S4's credential one.
+- **Where the capitals speak** ("Doe, John DO"): a word of the AMBIGUOUS credential class, written in capitals in a name written in more than one case, reads as the credential (S6) and this attachment stands down — unless a particle stands immediately in front of it, the two being one particle run by then, which this rule takes whole.
   ```
   "Doe, John DO"              →  suffix="DO"  · boundary
   "Doe, John Do"              →  family="Do Doe"

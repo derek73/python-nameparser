@@ -4,7 +4,7 @@
 
 **Then:** a particle in the name's leading position chains nothing: the words stay separate, and any surname reading the name gets comes from the fold (P1) or from position (O4), never from a join.
 
-- **A title before a leading particle changes nothing**, the title not being a name word, and this is why "Van Johnson" is a given-name reading at all.
+- **Chaining nothing is why a title before a leading particle changes nothing** (the title is not a name word), and why "Van Johnson" is a given-name reading at all.
   ```
   "Sir de Mesnil"             →  pieces=[["Sir"], ["de"], ["Mesnil"]]
   ```
