@@ -52,7 +52,7 @@
   "R5": {"words": 250, "then_words": 154, "because_sentences": 2, "except": 0, "precedence": 0, "accepted": 0, "accepted_words": 0},
   "S1": {"words": 91, "then_words": 24, "because_sentences": 1, "except": 0, "precedence": 1, "accepted": 0, "accepted_words": 0},
   "S2": {"words": 357, "exceptions": 0, "accepted": 3, "accepted_words": 290},
-  "S3": {"words": 424, "exceptions": 3, "accepted": 1, "accepted_words": 88},
+  "S3": {"words": 467, "then_words": 265, "because_sentences": 3, "except": 2, "precedence": 2, "accepted": 1, "accepted_words": 87},
   "S4": {"words": 248, "exceptions": 0, "accepted": 0, "accepted_words": 0},
   "S5": {"words": 587, "exceptions": 3, "accepted": 0, "accepted_words": 0},
   "S6": {"words": 297, "exceptions": 0, "accepted": 0, "accepted_words": 0},
