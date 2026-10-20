@@ -91,7 +91,7 @@ Text is compared by codepoint. The texts are already normalized, so this is the 
 
 The build checks the order and never rewrites a file, because a comment above an entry belongs to it and must move with it, which a TOML reader cannot see. When the build says an entry belongs somewhere else, move it with its comment. The order is checked last, so any other refusal (an exclusion's reason, a `same_as` naming no word) is reported first. The same check refuses a `same_as` chain that loops, in every file.
 
-`und.toml` is exempt. Its entries keep the order of the Python lists they were converted from, and its vetting comments still point at their neighbours ("the TITLES block below"); a word leaving it for a language file takes its place in that file's order.
+`und.toml` is exempt. Its entries keep the order of the Python lists they were converted from, and its vetting comments still point at their neighbours ("the TITLES block below"); a word leaving it for a language file takes its place in that file's order. After moving entries out, re-read every comment that stays behind: a pointer to a neighbour ("above", "below", "the three above") may now name a block that left, and nothing checks it. #769's reviews found two such pointers in comments the PR had already rewritten ("the three above" over the Devanagari civil set, "the reason the Devanagari block above gives" over the Bengali one).
 
 ## Kinds
 
