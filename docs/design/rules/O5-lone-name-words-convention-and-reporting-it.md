@@ -40,11 +40,11 @@
   "毛泽东"                    →  family="毛泽东"
   "毛泽东"                    →  ambiguities=()
   ```
-- **A nickname beside the word does the same (N3)**, except where a suffix stands beside them too, which its count does not set aside, so `'Smitty' Jones Jr.` keeps the convention's reading and its report.
+- **A nickname beside the word also makes it the family name (N3)**, except where a suffix stands beside them too, which its count does not set aside, so `'Smitty' Jones Jr.` keeps the convention's reading and its report.
   ```
   "'Smitty' Jones"            →  family="Jones"  · boundary
   ```
-- **A maiden name beside the word does the same (M4)**, except where the vocabulary or the word's own shape has claimed the word already.
+- **A maiden name beside the word also makes it the family name (M4)**, except where the vocabulary or the word's own shape has claimed the word already.
   ```
   "Smith née Jones"           →  family="Smith"  · boundary
   "Smith née Jones"           →  ambiguities=()
