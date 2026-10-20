@@ -68,5 +68,5 @@
   "W1": {"words": 156, "then_words": 105, "because_sentences": 1, "except": 0, "precedence": 0, "accepted": 1, "accepted_words": 25},
   "W2": {"words": 99, "then_words": 56, "because_sentences": 1, "except": 0, "precedence": 0, "accepted": 2, "accepted_words": 192},
   "W3": {"words": 651, "then_words": 348, "because_sentences": 1, "except": 1, "precedence": 3, "accepted": 0, "accepted_words": 0},
-  "W4": {"words": 80, "exceptions": 0, "accepted": 1, "accepted_words": 70}
+  "W4": {"words": 119, "then_words": 49, "because_sentences": 1, "except": 0, "precedence": 0, "accepted": 1, "accepted_words": 49}
 }
