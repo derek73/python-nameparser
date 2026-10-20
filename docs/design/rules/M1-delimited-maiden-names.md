@@ -1,29 +1,41 @@
 # M1 — delimited maiden names
 
-M1. Rationale: an enclosure the caller has declared to mean maiden
-    holds the former family name; a recognized marker word inside it
-    marks the clause and is not itself part of the name.
-    With a delimiter pair configured for maiden names, its enclosed
-    clause reads as the maiden name — unless the content is
-    suffix-shaped, which S1 takes first — a leading recognized
-    marker being dropped where the clause holds a word past it; a
-    clause of nothing but its marker keeps its words, which may
-    themselves be a surname (Nee).
-    Clauses are independent: two enclosures read as one maiden name,
-    each dropping or keeping its own marker. A pair configured for
-    both maiden and nickname reads maiden. Configuring the pair is
-    what this rule needs for a clause that does not announce itself
-    — markerless content, and a lone marker alike, whether that
-    marker is one word or several; a clause holding a word past its
-    marker reads as the maiden name inside a nickname pair as well
-    (M3), the suffix-shaped content S1 takes excepted there as it is
-    here.
-      "Jane Smith (née Jones)"  maiden-parens  →  maiden="Jones"
-      "Jane Smith (Nee)"  maiden-parens        →  maiden="Nee"  · boundary
-      "Jane Smith (Nee) (Jones)"  maiden-parens  →  maiden="Nee Jones"
-      "Andrew Perkins (MBA)"  maiden-parens  →  suffix="MBA"  · boundary
-      "Maria Kowalska (z domu)"  maiden-parens  →  maiden="z domu"  · boundary
-      "Maria Kowalska (z, domu Nowak)"  maiden-parens  →  maiden="z, domu Nowak"  · boundary
-    Signal: a neighbor: a configured maiden delimiter pair enclosing a clause
-    history: decisions/M1 · interacts: S1, M2, M3, M4 · implemented: nameparser/_pipeline/_extract.py, nameparser/_pipeline/_group.py
+**When:** a delimiter pair the caller configured for maiden names encloses a clause, as in "Jane Smith (née Jones)".
 
+**Then:** its enclosed clause reads as the maiden name, and a leading recognized marker is dropped where the clause holds a word past it.
+
+- **Clauses are independent:** two enclosures read as one maiden name, each dropping or keeping its own marker.
+  ```
+  "Jane Smith (Nee) (Jones)"  maiden-parens  →  maiden="Nee Jones"
+  ```
+- **Configuring the pair is what this rule needs for a clause that does not announce itself** — markerless content, and a lone marker alike, whether that marker is one word or several. A clause holding a word past its marker reads as the maiden name inside a nickname pair as well (M3), the suffix-shaped content S1 takes excepted there as it is here.
+- **A clause of nothing but its marker keeps its words**, which may themselves be a surname (Nee).
+  ```
+  "Jane Smith (Nee)"  maiden-parens        →  maiden="Nee"  · boundary
+  "Maria Kowalska (z domu)"  maiden-parens  →  maiden="z domu"  · boundary
+  ```
+
+**Because:** an enclosure the caller has declared to mean maiden holds the former family name. A recognized marker word inside it marks the clause and is not itself part of the name.
+
+```
+"Jane Smith (née Jones)"  maiden-parens  →  maiden="Jones"
+```
+
+**Except:**
+
+- **A marker followed by a comma is no marker** (M3), and neither is a phrase marker the writer divided with a comma (M2), so the clause keeps all its words.
+  ```
+  "Maria Kowalska (z, domu Nowak)"  maiden-parens  →  maiden="z, domu Nowak"  · boundary
+  ```
+
+**Precedence:**
+
+- **Suffix-shaped content** ("Andrew Perkins (MBA)"): S1 takes it first, and the clause is no maiden name.
+  ```
+  "Andrew Perkins (MBA)"  maiden-parens  →  suffix="MBA"  · boundary
+  ```
+- **A pair configured for both maiden and nickname names** reads maiden: this rule wins over N1.
+
+---
+**Signal:** neighbor
+**history:** decisions/M1 · **implemented:** nameparser/_pipeline/_extract.py, nameparser/_pipeline/_group.py
