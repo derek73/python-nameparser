@@ -134,7 +134,7 @@ A reading's key is its **kind**. The table lists the kinds in their canonical or
 
 A suffix reading goes to `SUFFIX_ACRONYMS` when its `acronym` property is true and to `SUFFIX_WORDS` otherwise; the column shows where each kind goes with `acronym` unwritten. A word has at most one suffix kind (check 4).
 
-The title kinds say what the title is:
+The title kinds say what the title is. The examples include words still generic in `und.toml`, which the later parts of #750 classify:
 
 - `salutation`: a language's everyday form of address, its "Mr" and "Mrs" (`mr`, `mrs`, `mx`, `herr`, `señora`, `г-н`, `श्री`), and the English `master` for a boy;
 - `style`: an honorific style or dignity rather than an office (`hon`, `excellency`, `highness`, `sheikh`);
@@ -147,7 +147,7 @@ The title kinds say what the title is:
 - `kinship`: a family word written as a title (`aunt`, `uncle`);
 - `modifier`: a word that is a title only inside a phrase with a head title (`vice`, `grand`, `assistant`, `his`, `1st`), the class decision 10 of [decisions/vocabulary-model](../../docs/design/decisions/vocabulary-model.md) parks. Today it is a title wherever it stands, like every other kind.
 
-`academic` and `occupation` are told apart by what the word does, not its subject: `Dr` addresses the person, `chemist` describes them. A title takes one kind per file, as a particle does, and check 5 holds every title reading of a word to the same `addresses` whatever its kind. `gender` is recorded on a title marked for one sex (a feminine form, `actress`, `señora`, or one half of a fixed pair, `mr` and `mrs`, `king` and `queen`), and on `mx` as `"n"`; an unmarked noun (`actor`, `doctor`) records none.
+`academic` and `occupation` are told apart by what the word does, not its subject: `Dr` addresses the person, `chemist` describes them. A title is written with one kind per file, as a particle is (a convention, not a check), and check 5 holds every title reading of a word to the same `addresses` whatever its kind. `gender` is recorded, as each title is classified, on one marked for one sex (a feminine form, `actress`, `señora`, or one half of a fixed pair, `mr` and `mrs`, `king` and `queen`), and on `mx` as `"n"`; an unmarked noun (`actor`, `doctor`) records none.
 
 The particle kinds say what the word does in the names of the file's language:
 

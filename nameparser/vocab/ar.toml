@@ -66,7 +66,7 @@ academic = { addresses = "given", gender = "f", issue = 269, expands = "the prof
 
 [[word]]
 text = "الدكتور"
-academic = { addresses = "given", gender = "m", issue = 269, expands = "the doctor", note = "#269: Arabic honorifics precede the GIVEN name; the article forms are never given names, nor are the bare doctor, professor and engineer forms" }
+academic = { addresses = "given", gender = "m", issue = 269, expands = "the doctor", note = "#269, for the group: Arabic honorifics precede the GIVEN name; the article forms are never given names, nor are the bare doctor, professor and engineer forms" }
 
 [[word]]
 text = "الدكتورة"

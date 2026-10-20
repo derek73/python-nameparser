@@ -2396,7 +2396,7 @@ title = {}
 text = "zoologist"
 title = {}
 
-# #606: offices and counts for the languages the block above had
+# #606: offices and noble ranks (Count, Knight) for the languages the block above had
 # none for; its salutations are in their language files. A word
 # whose note begins "borne" is a name somewhere, but rarely the
 # FIRST word of one, and ships on the 'graf' precedent above
@@ -2489,15 +2489,14 @@ title = {}
 text = "καθ"
 title = {}
 
-# #269: Hebrew (the salutations are in he.toml). Geresh/gershayim
-# forms of "doctor" -- both the ASCII-quote spelling ('ד"ר') and the
-# typographic Unicode spelling ('ד״ר' U+05F4 gershayim) ship: probed live
-# against extract_delimited's _open_ok/_close_ok boundary rules
-# (2026-07-17) -- the quote chars sit mid-word (no preceding
-# whitespace before the internal quote and, for the closing "'" one,
-# no following boundary), so both fail the open/close boundary test
-# and are left untouched as literal text. Extraction is provably
-# inert on the ASCII spellings; no delimiter-interaction risk.
+# #269: Hebrew (the salutations are in he.toml). Both spellings of
+# "doctor" ship, the ASCII-quote 'ד"ר' and the typographic 'ד״ר'
+# (U+05F4 gershayim): probed live against extract_delimited's
+# _open_ok/_close_ok boundary rules (2026-07-17), the quote sits
+# mid-word, with no whitespace before it and a letter after it, so it
+# fails both the open and the close boundary test and is left
+# untouched as literal text. Extraction is provably inert on the ASCII
+# spelling (U+05F4 is no delimiter); no delimiter-interaction risk.
 [[word]]
 text = "ד\"ר"
 title = {}
@@ -2544,8 +2543,8 @@ text = "डॉ"
 title = { note = "Dr. abbreviation" }
 
 # #344: the civil set, same no-NEW-Latin-transliterations rule as
-# the three above. The words refused under the collision rule are
-# exclusions in hi.toml.
+# the Devanagari block above. The words refused under the collision
+# rule are exclusions in hi.toml.
 [[word]]
 text = "डॉक्टर"
 title = { note = "Doctor, full form" }
@@ -2600,9 +2599,9 @@ title = { note = "Maulana" }
 text = "महाराजा"
 title = { note = "Maharaja, LEADING (trailing महाराज is a suffix word)" }
 
-# #343: Bengali (bn). NO Latin twins, for the reason the
-# Devanagari block above gives -- transliterated Sri/Md/Mst
-# collide with real given names where the native script cannot.
+# #343: Bengali (bn). NO Latin twins, for the reason the sri/shri
+# exclusions in hi.toml give -- transliterated Sri/Md/Mst collide
+# with real given names where the native script cannot.
 # No NEW Latin transliterations here (sri, mst); Latin md already
 # ships, and for the medical degree
 # (decisions/indic-honorifics). Doctor abbreviations

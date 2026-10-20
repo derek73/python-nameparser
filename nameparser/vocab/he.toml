@@ -2,7 +2,7 @@ schema = 1
 
 [[word]]
 text = "גב'"
-salutation = { gender = "f", issue = 269, expands = "Mrs., the abbreviation", note = "the ASCII-quote spelling: the quote sits mid-word, so delimiter extraction leaves it as text (probed 2026-07-17)" }
+salutation = { gender = "f", issue = 269, expands = "Mrs., the abbreviation", note = "the ASCII-quote spelling: the quote has no whitespace before it, so it opens no delimited span, and with no opener before it a dangling straight apostrophe is literal text (WORD_INTERNAL_DELIMITERS in _pipeline/_extract.py; probed 2026-07-17)" }
 
 [[word]]
 text = "גב׳"

@@ -2,7 +2,7 @@ schema = 1
 
 [[word]]
 text = "bà"
-excluded = { salutation = { reason = "Vietnamese Mrs., refused with ông: Vietnamese names lead with the surname, the position the title claim acts on", issue = 606, decided = 2026-10-04 } }
+excluded = { salutation = { reason = "Vietnamese Mrs., refused as ông's pair without evidence of its own: #606 judged the excluded side from general knowledge, with no count taken (decisions/salutation-titles)", issue = 606, decided = 2026-10-04 } }
 
 [[word]]
 text = "ông"

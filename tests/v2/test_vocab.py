@@ -260,6 +260,10 @@ MUTATIONS = [
     # before #750
     ("excluded-title-kind-sidestepped-by-a-sibling-kind", {"cs.toml": _w('[[word]]\ntext = "pan"\nexcluded = { salutation = "the Chinese surname Pan" }'), "en.toml": _w('[[word]]\ntext = "pan"\noffice = {}')}, "the Chinese surname Pan"),
     ("excluded-title-kind-sidestepped-by-the-generic-kind", {"cs.toml": _w('[[word]]\ntext = "pan"\nexcluded = { salutation = "the Chinese surname Pan" }'), "und.toml": _w('[[word]]\ntext = "pan"\ntitle = {}')}, "the Chinese surname Pan"),
+    # a refused property is refused on every kind of its category, with
+    # the recorded reason: keyed on the kind, check 5 would still refuse
+    # this, but with its own message instead of the reason
+    ("excluded-addresses-reason-shown-across-title-kinds", {"ar.toml": _w('[[word]]\ntext = "sheikh"\nsalutation = { excluded = { addresses = "RECORDED REASON" } }'), "en.toml": _w('[[word]]\ntext = "sheikh"\nnobility = { addresses = "given" }')}, "RECORDED REASON"),
     ("excluded-title-category-refuses-a-kind", {"vi.toml": _w('[[word]]\ntext = "ông"\nexcluded = { title = "a surname that leads" }\nsalutation = {}')}, "a surname that leads"),
     ("excluded-category-in-another-file", {"und.toml": _w('[[word]]\ntext = "rai"\nexcluded = { suffix = "a surname" }'), "en.toml": _w('[[word]]\ntext = "rai"\ncredential = {}')}, "a surname"),
     # a reason written as a table reaches the refusal too
@@ -349,6 +353,14 @@ def test_every_mutation_starts_from_a_pool_the_checks_accept() -> None:
                         '[[word]]\ntext = "d’"\nparticle = { may_be_given = false }')},
         {"und.toml": _w('[[word]]\ntext = "sir and dame"\ntitle = { addresses = "given" }')},
         {"en.toml": _w('[[word]]\ntext = "sir and dame"\nnobility = { addresses = "given" }')},
+        # a same_as may name a word of another title kind: check 7 asks
+        # for the category
+        {"en.toml": _w('[[word]]\ntext = "mr"\nsalutation = {}'),
+         "de.toml": _w('[[word]]\ntext = "mister"\noffice = { same_as = "mr" }')},
+        # a title kind's exclusion refuses the title set, not the word:
+        # its particle reading stays free
+        {"cs.toml": _w('[[word]]\ntext = "pan"\nexcluded = { salutation = "the Chinese surname Pan" }'),
+         "und.toml": _w('[[word]]\ntext = "pan"\nparticle = { may_be_given = true }')},
         # one title in a different kind per file, agreeing on addresses
         {"en.toml": _w('[[word]]\ntext = "sir"\nnobility = { addresses = "given" }'),
          "fr.toml": _w('[[word]]\ntext = "sir"\nsalutation = { addresses = "given" }')},
@@ -774,9 +786,10 @@ _REQUIRED = {"may_be_given"}
 
 @pytest.mark.parametrize("kind", [k for k, c in build.CATEGORY.items() if c == "title"])
 def test_every_title_kind_compiles_its_behavioral_properties(kind: str) -> None:
-    # the compiler reads addresses and cased by category, so a classified
-    # title keeps them (#750): keyed on the generic kind, a nobility sir
-    # would lose GIVEN_NAME_TITLES and its mask
+    # GIVEN_NAME_TITLES is compiled by category, so a classified title
+    # keeps addresses (#750): keyed on the generic kind, a nobility sir
+    # would lose it; and every title kind is allowed `cased`, which the
+    # compiler reads from any reading
     assert _sets_fed(kind, '{ addresses = "given" }') == {"TITLES", "GIVEN_NAME_TITLES"}
     files = {"en.toml": _w(f'[[word]]\ntext = "zzq"\n{kind} = {{ cased = "ZzQ" }}')}
     assert build.compile_files(files)["CAPITALIZATION_EXCEPTIONS"] == {"zzq": "ZzQ"}
