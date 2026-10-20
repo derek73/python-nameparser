@@ -8,7 +8,7 @@
   "C5": {"words": 305, "then_words": 79, "because_sentences": 1, "except": 2, "precedence": 1, "accepted": 1, "accepted_words": 54},
   "C6": {"words": 207, "then_words": 162, "because_sentences": 1, "except": 0, "precedence": 0, "accepted": 0, "accepted_words": 0},
   "C7": {"words": 119, "then_words": 68, "because_sentences": 1, "except": 0, "precedence": 0, "accepted": 0, "accepted_words": 0},
-  "C8": {"words": 151, "exceptions": 1, "accepted": 1, "accepted_words": 37},
+  "C8": {"words": 176, "then_words": 110, "because_sentences": 1, "except": 0, "precedence": 1, "accepted": 1, "accepted_words": 36},
   "C9": {"words": 224, "exceptions": 1, "accepted": 1, "accepted_words": 97},
   "C10": {"words": 126, "exceptions": 1, "accepted": 2, "accepted_words": 136},
   "C11": {"words": 354, "exceptions": 2, "accepted": 0, "accepted_words": 0},
