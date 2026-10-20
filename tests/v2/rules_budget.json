@@ -40,7 +40,7 @@
   "P3": {"words": 639, "then_words": 598, "because_sentences": 1, "except": 0, "precedence": 0, "accepted": 0, "accepted_words": 0},
   "P4": {"words": 188, "then_words": 80, "because_sentences": 1, "except": 1, "precedence": 0, "accepted": 0, "accepted_words": 0},
   "P5": {"words": 659, "then_words": 399, "because_sentences": 1, "except": 2, "precedence": 3, "accepted": 3, "accepted_words": 198},
-  "P6": {"words": 841, "exceptions": 2, "accepted": 5, "accepted_words": 668},
+  "P6": {"words": 948, "then_words": 611, "because_sentences": 2, "except": 2, "precedence": 4, "accepted": 6, "accepted_words": 459},
   "P7": {"words": 120, "exceptions": 0, "accepted": 1, "accepted_words": 29},
   "P8": {"words": 506, "exceptions": 1, "accepted": 1, "accepted_words": 310},
   "P9": {"words": 320, "exceptions": 0, "accepted": 0, "accepted_words": 0},
