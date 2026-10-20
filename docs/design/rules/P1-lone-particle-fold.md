@@ -4,11 +4,10 @@
 
 **Then:** the name is surname-only: the particle run and the name words it attaches to are the family, under every name order.
 
-- **The run is every particle in sequence**, never-given and ambiguous alike: "de la Vega" is one group, not "de" plus a separate "la Vega".
+- **The run is every particle in sequence**, never-given and ambiguous alike: "de la Vega" is one group, not "de" plus a separate "la Vega". An ambiguous particle keeps whatever reading its position gives it.
   ```
   "de la Vega"                →  family="de la Vega"
   "de los Santos"             →  family="de los Santos"
-  "Mc Donald"                 →  family="Mc Donald"
   ```
 - **A title does not move the opening position** (P4).
   ```
@@ -33,16 +32,10 @@
 
 **Because:** a particle OPENING a name has the whole rest of the name to link forward to, so it is doing a particle's work and the piece it heads is a surname written out in full. That is evidence about the writing, not about the word, which is why no declared order contradicts it.
 
-**Except:**
-
-- **An ambiguous particle keeps whatever reading its position gives it.**
-  ```
-  "van Gogh"                  →  given="van"  · boundary
-  ```
-- **A particle standing where a declared order puts the given name reads as that given name.** That slot holds what the caller DECLARED to be the given name, and the never-given vocabulary supplies a reading where position leaves the question open rather than vetoing one position has already given. A particle ending the name is P6's, and only where it landed in a MIDDLE.
-  ```
-  "Mesnil de"  family-first   →  given="de"
-  ```
+```
+"Mc Donald"                 →  family="Mc Donald"
+"van Gogh"                  →  given="van"  · boundary
+```
 
 **Precedence:**
 
@@ -63,8 +56,9 @@
   ```
   "de la Cruz Juan Carlos"  family-first+middle_as_family  →  family="Carlos de la Cruz"
   ```
-- Only the OPENING position is this rule's subject. A particle chain standing inside the name is grouped normally (P2) and positioned by the declared order, so a family-first reading may report it as the given name; what the vocabulary forbids is the bare particle reading as a given name, not any name part that begins with one.
+- Only the OPENING position is this rule's subject. A particle standing where a family-first order puts the given name is not folded: that slot holds what the caller DECLARED to be the given name, and the never-given vocabulary supplies a reading where position leaves the question open rather than vetoing one position has already given. A particle ending the name is P6's, and only where it landed in a MIDDLE. A particle chain standing inside the name is grouped normally (P2) and positioned by the declared order, so a family-first reading may report it as the given name; what the vocabulary forbids is the bare particle reading as a given name, not any name part that begins with one.
   ```
+  "Mesnil de"  family-first   →  given="de"
   "Juan de la Vega"  family-first  →  family="Juan"
   ```
 

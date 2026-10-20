@@ -16,7 +16,7 @@ A rule records an agreement about one situation: when this is in the written nam
 - `**Tolerated:**` — a tolerated rule's reason (see `tolerated:` below), standing right after When; it replaces the block format's `tolerated:` line.
 - `**Then:**` (required) — what results, including what the writing means where the rule interprets it. Its paragraph is ONE sentence. Detail of the result — how far it reaches under each order, a hub's map — goes in a `- ` bullet list directly under it.
 - `**Because:**` (required) — why, in three sentences at most.
-- `**Except:**` — one bullet per place where Then stops being true, opening with a bold lead, each carrying its own fenced example: an exception without its case is a clause nobody can check. This is where the `· boundary` examples usually stand.
+- `**Except:**` — one bullet per place where Then stops being true, opening with a bold lead, each carrying its own fenced example: an exception without its case is a clause nobody can check. This is where the `· boundary` examples usually stand. An input outside When is no exception, even one marking the rule's boundary: it goes in the rule's main fence with its `· boundary` marker, and the sentence it proves goes where its claim belongs, in Then or Accepted.
 - `**Precedence:**` — one bullet per contested input: the input, the rule that wins it, and why. It does what `interacts:` could not, saying what happens where two rules meet.
 - `**Accepted:**` — one bullet per reading taken as the rule's cost, with an example where an input string can show it.
 

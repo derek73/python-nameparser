@@ -34,7 +34,7 @@
   "O3": {"words": 43, "exceptions": 0, "accepted": 0, "accepted_words": 0},
   "O4": {"words": 76, "exceptions": 0, "accepted": 0, "accepted_words": 0},
   "O5": {"words": 452, "exceptions": 3, "accepted": 0, "accepted_words": 0},
-  "P1": {"then_words": 253, "because_sentences": 2, "except": 2, "precedence": 1, "accepted": 4, "accepted_words": 240},
+  "P1": {"then_words": 263, "because_sentences": 2, "except": 0, "precedence": 1, "accepted": 4, "accepted_words": 302},
   "P2": {"words": 248, "exceptions": 0, "accepted": 2, "accepted_words": 169},
   "P3": {"words": 628, "exceptions": 2, "accepted": 0, "accepted_words": 0},
   "P4": {"words": 178, "exceptions": 1, "accepted": 0, "accepted_words": 0},
