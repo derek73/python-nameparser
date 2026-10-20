@@ -113,10 +113,10 @@ def _edit(shipped: dict[str, str], file: str, old: str, new: str) -> dict[str, s
 
 
 def test_dropping_a_flag_changes_the_compiled_module(shipped: dict[str, str]) -> None:
-    files = _edit(shipped, "und.toml", 'text = "ma"\ncredential = { may_be_name = true, ',
-                  'text = "ma"\ncredential = { ')
+    files = _edit(shipped, "en.toml", 'text = "jd"\ncredential = { may_be_name = true, ',
+                  'text = "jd"\ncredential = { ')
     c = _compile(files)
-    assert "ma" not in c["SUFFIX_ACRONYMS_AMBIGUOUS"]
+    assert "jd" not in c["SUFFIX_ACRONYMS_AMBIGUOUS"]
     assert build.render(c) != build.OUTPUT.read_text(encoding="utf-8")
 
 

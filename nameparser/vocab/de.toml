@@ -119,6 +119,62 @@ text = "ritter"
 nobility = { gender = "m", expands = "knight" }
 
 [[word]]
+text = "ba"
+credential = { may_be_name = true, issue = 18 }
+
+[[word]]
+text = "bsc"
+credential = { cased = "BSc", issue = 18 }
+
+[[word]]
+text = "llm"
+credential = { issue = 18 }
+
+[[word]]
+text = "ma"
+credential = { may_be_name = true, issue = 18 }
+
+[[word]]
+text = "mba"
+credential = { issue = 18 }
+
+[[word]]
+text = "mda"
+credential = { issue = 18, expands = "Mitglied des Abgeordnetenhauses" }
+
+[[word]]
+text = "mdb"
+credential = { issue = 18, expands = "Mitglied des Bundestages" }
+
+[[word]]
+text = "mdbb"
+credential = { issue = 18, expands = "Mitglied der Bremischen Bürgerschaft" }
+
+[[word]]
+text = "mdep"
+credential = { issue = 18, expands = "Mitglied des Europäischen Parlaments" }
+
+[[word]]
+text = "mdhb"
+credential = { issue = 18, expands = "Mitglied der Hamburgischen Bürgerschaft" }
+
+[[word]]
+text = "mdl"
+credential = { issue = 18, expands = "Mitglied des Landtages" }
+
+[[word]]
+text = "meng"
+credential = { may_be_name = true, issue = 18 }
+
+[[word]]
+text = "msc"
+credential = { cased = "MSc", issue = 18 }
+
+[[word]]
+text = "stb"
+credential = { issue = 18, expands = "Steuerberater, tax adviser" }
+
+[[word]]
 text = "auf"
 preposition = { may_be_given = false, issue = 18, expands = "upon: \"auf der Heide\"" }
 
