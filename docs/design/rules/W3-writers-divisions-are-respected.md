@@ -1,6 +1,6 @@
 # W3 — the writer's divisions are respected
 
-**When:** a name in an East Asian script is written in a listing form: with a family comma, as in "남궁민수, 지훈", or with the punctuation such a listing carries in with it, such as an edge full stop.
+**When:** a name in an East Asian script is written in a listing form: with a comma, as in "남궁민수, 지훈", or with the punctuation such a listing carries in with it, such as an edge full stop.
 
 **Tolerated:** none of the East Asian writing systems declares a family name with a comma (the W section's Background), and native CJK writing puts no edge full stop of any width on a name word, so every input this rule reads is a listing convention wrapped around a name whose own script has already arranged it. What follows describes what the parser does with such input; it does not promise it: the examples carrying a comma or a period illustrate current behavior, changeable without notice, while "남궁민수", carrying neither, is W1's claim, which is normative.
 
