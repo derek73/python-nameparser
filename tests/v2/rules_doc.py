@@ -1,7 +1,14 @@
 """Parser and annotation registry for docs/design/rules/ example lines.
 
-The grammar (described for humans in the rules README's preamble; this module
-is its executable definition):
+Two rule formats are read, chosen per block (a heading `# ID — name` up
+to the next heading): the BLOCK format described below, and the SKELETON
+format, a block holding a bold `**When:**` line, whose fields, fences and
+footer are defined and parsed by ``rules_skeleton.py`` (``Rule.skeleton``
+is set for those rules only). Both give the same ``Rule`` and the same
+``prose_blocks`` shape, so every consumer reads either.
+
+The block grammar (described for humans in the rules README's preamble;
+this module is its executable definition):
 
     "INPUT" [annotation] →  field=VALUE  [· boundary]
                             [deviates: #N (today: field=VALUE)]
@@ -59,6 +66,10 @@ from __future__ import annotations
 import ast
 import re
 from dataclasses import dataclass, field as dc_field
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from tests.v2.rules_skeleton import Skeleton
 
 
 _RULE_RE = re.compile(r"^([A-Z])(\d+)\.\s")
@@ -154,6 +165,9 @@ class Rule:
     #: For a hub (``Signal: [<own signals>; ]hub of C3, C4``), the
     #: rules whose signals it combines; () for a rule that is no hub.
     hub: tuple[str, ...] = ()
+    #: The parsed fields of a rule written in the skeleton format
+    #: (rules_skeleton.py); None for a block-format rule.
+    skeleton: Skeleton | None = None
 
     def has_boundary_or_waiver(self) -> bool:
         return self.no_boundary is not None or any(
@@ -239,11 +253,53 @@ def _literal(tok: str) -> object:
     return ast.literal_eval(tok)
 
 
+def parse_example_line(line: str, rule_id: str,
+                       lineno: int) -> Example | None:
+    """The example a line holds, None for a line that is no example,
+    and a ValueError for one that looks like an example but does not
+    parse (a silent skip would un-execute a claim). Shared by the block
+    parser and the skeleton parser's fences."""
+    em = _EXAMPLE_RE.match(line)
+    if em:
+        fieldname = em.group("field")
+        if fieldname not in ASSERTABLE_FIELDS:
+            raise ValueError(
+                f"{rule_id}: line {lineno}: field "
+                f"{fieldname!r} not assertable")
+        if em.group("tfield") and em.group("tfield") != fieldname:
+            raise ValueError(
+                f"{rule_id}: line {lineno}: deviates "
+                f"today-field {em.group('tfield')!r} differs from "
+                f"the asserted field {fieldname!r}")
+        return Example(
+            text=em.group("text") or "",
+            annotation=em.group("annot"),
+            field=fieldname,
+            value=_literal(em.group("value")),
+            boundary=bool(em.group("boundary")),
+            deviates_issue=(int(em.group("issue"))
+                            if em.group("issue") else None),
+            today_value=(_literal(em.group("today"))
+                         if em.group("today") else None),
+            subject=em.group("subject"))
+    if line.lstrip().startswith(('"', "[", "“", "”", "„",
+                                 "‘", "’", "«")):
+        raise ValueError(
+            f"{rule_id}: line {lineno} looks like an example "
+            f"but does not parse: {line.strip()!r}")
+    return None
+
+
 def parse_rules_doc(text: str) -> list[Rule]:
+    from tests.v2 import rules_skeleton
     rules: list[Rule] = []
     current: Rule | None = None
     signal_at: int | None = None    # the line a pointer must follow
-    for lineno, line in enumerate(text.splitlines(), 1):
+    all_lines = text.splitlines()
+    skip_to = 0                     # lines up to here are a skeleton block
+    for lineno, line in enumerate(all_lines, 1):
+        if lineno <= skip_to:
+            continue
         if signal_at is not None and not _POINTER_RE.match(line):
             raise ValueError(
                 f"{current.rule_id if current else '?'}: line {signal_at}: "
@@ -253,6 +309,13 @@ def parse_rules_doc(text: str) -> list[Rule]:
         signal_at = None
         if line.startswith("#"):        # a heading ends any rule block
             current = None
+            block = rules_skeleton.skeleton_block_at(all_lines, lineno - 1)
+            if block is not None:
+                rid, numbered, skip_to = block
+                if any(r.rule_id == rid for r in rules):
+                    raise ValueError(
+                        f"duplicate rule ID {rid} at line {lineno}")
+                rules.append(rules_skeleton.parse_skeleton(rid, numbered))
             continue
         m = _RULE_RE.match(line)
         if m:
@@ -271,35 +334,10 @@ def parse_rules_doc(text: str) -> list[Rule]:
                     f"its rule's pointer line: {line.strip()!r}")
             continue
         stripped = line.lstrip()
-        em = _EXAMPLE_RE.match(line)
-        if em:
-            fieldname = em.group("field")
-            if fieldname not in ASSERTABLE_FIELDS:
-                raise ValueError(
-                    f"{current.rule_id}: line {lineno}: field "
-                    f"{fieldname!r} not assertable")
-            if em.group("tfield") and em.group("tfield") != fieldname:
-                raise ValueError(
-                    f"{current.rule_id}: line {lineno}: deviates "
-                    f"today-field {em.group('tfield')!r} differs from "
-                    f"the asserted field {fieldname!r}")
-            current.examples.append(Example(
-                text=em.group("text") or "",
-                annotation=em.group("annot"),
-                field=fieldname,
-                value=_literal(em.group("value")),
-                boundary=bool(em.group("boundary")),
-                deviates_issue=(int(em.group("issue"))
-                                if em.group("issue") else None),
-                today_value=(_literal(em.group("today"))
-                             if em.group("today") else None),
-                subject=em.group("subject")))
+        ex = parse_example_line(line, current.rule_id, lineno)
+        if ex is not None:
+            current.examples.append(ex)
             continue
-        if stripped.startswith(('"', "[", "“", "”", "„",
-                                "‘", "’", "«")):
-            raise ValueError(
-                f"{current.rule_id}: line {lineno} looks like an example "
-                f"but does not parse: {stripped!r}")
         nb = _NO_BOUNDARY_RE.match(line)
         if nb:
             current.no_boundary = nb.group("reason")
@@ -386,12 +424,17 @@ def prose_blocks(text: str) -> dict[str, list[str]]:
     (test_doc_citations.py) and what the size budget counts
     (rules_budget.py), read by one function so the two cannot
     disagree about where a statement ends."""
+    from tests.v2 import rules_skeleton
     out: dict[str, list[str]] = {}
     current: list[str] | None = None
     background: list[str] | None = None
     section = None
     marker = False          # inside a wrapped no-boundary: marker
-    for line in text.splitlines():
+    all_lines = text.splitlines()
+    skip_to = 0             # lines up to here are a skeleton block
+    for lineno, line in enumerate(all_lines, 1):
+        if lineno <= skip_to:
+            continue
         m = _RULE_RE.match(line)
         hm = re.match(r"## .*\(([A-Z])\)\s*$", line)
         if background is not None:
@@ -418,6 +461,12 @@ def prose_blocks(text: str) -> dict[str, list[str]]:
             current.append(line[m.end():])
         elif line.startswith("#"):
             current = None
+            block = rules_skeleton.skeleton_block_at(all_lines, lineno - 1)
+            if block is not None:
+                rid, numbered, skip_to = block
+                parsed = rules_skeleton.parse_skeleton(rid, numbered)
+                assert parsed.skeleton is not None
+                out[rid] = rules_skeleton.skeleton_prose(parsed.skeleton)
         elif current is not None and line.startswith("    ") and not (
                 marker or line.startswith("      ")
                 or _POINTER_RE.match(line)):
