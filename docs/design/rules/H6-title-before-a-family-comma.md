@@ -5,9 +5,6 @@
 **Then:** a run of title words opening the part before a family comma is the title, joining the title field in input order with any title after the comma, and the comma decides the family whatever the order declared, so the reading is the same under every name_order.
 
 - **The run admits a title word only as vocabulary knows it**, never by H2's shape, so an abbreviated word opening a surname that the vocabulary does not list stays in the family.
-  ```
-  "Sta. Maria, Juan"          →  family="Sta. Maria"  · boundary
-  ```
 
 **Because:** the listing form moves the surname to the front and leaves everything else where it was written, so a title written ahead of the name ends up ahead of the surname — `Dr. Smith, John` is `Dr. John Smith` indexed. The comma names the family, and a title is no part of it. But the slot in front of a family comma is a surname's slot as well, and a surname can open with an abbreviated word (`Sta. Maria`, `Sto. Domingo`), so only the vocabulary claims a word there, never H2's shape, and a word that is a particle as well as a title opens a surname rather than ranking a person.
 
@@ -21,6 +18,7 @@
 "Rev. Sr. Smith, Mary"      →  title="Rev. Sr."
 "Dr. Mc Donald, John"       →  family="Mc Donald"
 "Prof. Smith, John, PhD"    →  family="Smith"
+"Sta. Maria, Juan"          →  family="Sta. Maria"  · boundary
 ```
 
 **Except:**
@@ -48,7 +46,7 @@
   ```
   "King Smith, John"          →  title="King"
   ```
-- What keeps a word in the family is the particle stop and nothing else. German ranks other than 'Freiherr' are titles only, so they peel, though since 1919 a rank is part of the legal surname for all of them alike; that is the vocabulary's distinction, not this rule's.
+- What keeps a word in the family is the particle stop and nothing else. German ranks the title vocabulary lists, other than 'Freiherr', are titles only, so they peel, though since 1919 a rank is part of the legal surname for all of them alike; that is the vocabulary's distinction, not this rule's.
   ```
   "Graf Lambsdorff, Otto"     →  title="Graf"
   ```

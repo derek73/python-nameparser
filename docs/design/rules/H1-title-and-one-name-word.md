@@ -18,7 +18,6 @@
   "John III, Sir"             →  given="John"
   "Anne, Princess"            →  given="Anne"
   "Sir John"  family-first    →  given="John"
-  "Sheik Abu Bakar"  family-first  →  given="Abu Bakar"
   "John III, Dr."             →  family="John"  · boundary
   ```
 
@@ -37,13 +36,11 @@
 
 **Except:**
 
-- **A particle surname a comma or P1's fold settled keeps the family.** A particle surname standing alone before the comma stays the family, the comma being the evidence that the part is a surname (C3), and so does a never-given particle with a word behind it and no comma (P1's fold); an ambiguous particle no comma settled, or a bare one, is a word the order placed, and reads given.
+- **A particle surname a comma or P1's fold settled keeps the family.** A particle surname standing alone before the comma stays the family, the comma being the evidence that the part is a surname (C3), and so does a never-given particle with a word behind it and no comma (P1's fold).
   ```
   "van der Berg, Sir"         →  family="van der Berg"  · boundary
   "van Gogh, Sir"             →  family="van Gogh"  · boundary
   "Sir de Mesnil"  family-first  →  family="de Mesnil"
-  "Sir de"  family-first      →  given="de"
-  "St Sir de Mesnil"  family-first  →  given="de Mesnil"
   ```
 
 **Accepted:**
@@ -54,9 +51,12 @@
   "Her Majesty Queen Elizabeth"  →  family=""
   "Smith Sir."                →  family=""
   ```
-- A listing record whose given field holds only a given-name title reads that title's reading, so `Smith, Sir` (a row with the given name missing) reads given `Smith` with the family empty, as `Sir Smith` does: the input names one word and one title, and the title is the only evidence there is. 1.4.0 read the word before the comma as the last name in these rows (`Elizabeth II, Queen`, `John III, Sir`, `Smith, Sir`) but for `Anne, Princess`, which it read as first `Anne`.
+- A listing record whose given field holds only a given-name title reads that title's reading, so `Smith, Sir` (a row with the given name missing) reads given `Smith` with the family empty, as `Sir Smith` does: the input names one word and one title, and the title is the only evidence there is. 1.4.0 read the word before the comma as the last name in these rows (`Elizabeth II, Queen`, `John III, Sir`, `Smith, Sir`) but for `Anne, Princess`, which it read as first `Anne`. An ambiguous particle no comma settled, or a bare one, is a word the order placed, and reads given.
   ```
   "Smith, Sir"                →  family=""
+  "Sheik Abu Bakar"  family-first  →  given="Abu Bakar"
+  "Sir de"  family-first      →  given="de"
+  "St Sir de Mesnil"  family-first  →  given="de Mesnil"
   ```
 - A title word in the run that no vocabulary knows does not change what the run addresses by, the last word being the one asked — `His Excellency Lord Duncan` reads family `Duncan` because `lord` is not a given-name title, not because the run is long. `lord` and `lady` stay out of that list by decision (#519): each addresses by given name only as a courtesy style for children of the senior ranks (`Lord Peter`, `Lady Diana`) and by title or surname for every peer and every wife (`Lord Byron`, `Lady Thatcher`), and the text does not say which the bearer is, which the list cannot express; `prince` and `princess` are in it.
 - A title word that is also borne as a name, though rarely as the first word of one (`graf`, `greve`, `herra`), is the title in front of a name, so a name that BEGINS with it -- a surname written first without a comma, or a given name -- gives that word to the title, under a declared family-first order too. Written last without a period, or alone before a family comma, it is the name; a period behind it makes it the title by H5, as for `Mary Jane King.` (#606), and a name word behind it before a family comma makes it the title by H6.

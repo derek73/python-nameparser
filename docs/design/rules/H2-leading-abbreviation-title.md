@@ -4,7 +4,7 @@
 
 **Then:** an abbreviation opening the part of the name that carries the given name — the whole name, or the part after a family comma — reads as a title even when unlisted, provided it is an unbroken run of two or more letters ending in its one period, the shape outranking vocabulary where it fires, so that a period-marked opening word is a title even when the word is suffix vocabulary.
 
-- **A bare initial does not** (T5), and neither does anything with interior periods, hyphens or digits.
+- **A single-letter initial does not** (T5), and neither does anything with interior periods, hyphens or digits.
   ```
   "J. Smith"                  →  given="J."  · boundary
   "J.R. Smith"                →  given="J.R."  · boundary

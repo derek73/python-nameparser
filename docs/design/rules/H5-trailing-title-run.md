@@ -52,7 +52,7 @@
   ```
   "Mary Smith née Jones Prof." →  title="Prof."
   ```
-- **A bound given-name word in front of a trailing title** (P5): what the title chain leaves is also what counts as a name word to spare (P5). A trailing title word is not one, so a bound given-name word behind one joins exactly as it joins with the title absent — and lands in the same field, the run in FRONT of the joined pair being the run H1 asks about. Said of the comma-less writing, which is where the title chain runs before the reserve is read. After a family comma the reserve reads no peel, but the join declines a trailing title word the title chain takes (P5), so the title is read there too, save the shapes P5's Accepted clause records, as the segment written with an ordinary given name reads it.
+- **A bound given-name word beside a trailing title** (P5): what the title chain leaves is also what counts as a name word to spare (P5). A trailing title word is not one, so a bound given-name word behind one joins exactly as it joins with the title absent — and lands in the same field, the run in FRONT of the joined pair being the run H1 asks about. Said of the comma-less writing, which is where the title chain runs before the reserve is read. After a family comma the reserve reads no peel, but the join declines a trailing title word the title chain takes (P5), so the title is read there too, save the shapes P5's Accepted clause records, as the segment written with an ordinary given name reads it.
   ```
   "Berg, abdul Prof."         →  title="Prof."
   ```
