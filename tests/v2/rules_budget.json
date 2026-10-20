@@ -45,7 +45,7 @@
   "P9": {"words": 320, "exceptions": 0, "accepted": 0, "accepted_words": 0},
   "R1": {"words": 147, "exceptions": 1, "accepted": 1, "accepted_words": 179},
   "R2": {"words": 120, "exceptions": 0, "accepted": 2, "accepted_words": 85},
-  "R3": {"words": 422, "exceptions": 2, "accepted": 2, "accepted_words": 477},
+  "R3": {"then_words": 284, "because_sentences": 2, "except": 2, "precedence": 0, "accepted": 3, "accepted_words": 409},
   "R4": {"words": 883, "exceptions": 1, "accepted": 3, "accepted_words": 565},
   "R5": {"words": 239, "exceptions": 1, "accepted": 0, "accepted_words": 0},
   "S1": {"words": 48, "exceptions": 0, "accepted": 0, "accepted_words": 0},

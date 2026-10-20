@@ -700,9 +700,9 @@ class HumanName:
             if got or not words or not all(self._is_particle(w)
                                            for w in words):
                 return got
-            # rules/R3: "except the particles of a part whose every
-            # word is one, which are not acting as particles there"
-            # -- nothing survived
+            # rules/R3: "A part whose every word is a particle initials
+            # those particles: they are not acting as particles there"
+            # -- its first Except bullet; nothing survived
             # the filter, so the whole group is particles. The
             # facade's twin of the core's
             # UNJOINED_TAG. NOT pinned against it by the case runners,
