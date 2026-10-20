@@ -1327,9 +1327,6 @@ title = {}
 [[word]]
 text = "freiherr"
 title = {}
-[word.particle]
-may_be_given = true
-note = "German rank; since 1919 a former noble title is part of the legal surname, written before the particle (\"Karl-Theodor Freiherr von und zu Guttenberg\"), so it chains like one. Also in TITLES, load-bearing"
 
 [[word]]
 text = "friar"
@@ -2585,9 +2582,6 @@ title = {}
 [[word]]
 text = "st"
 title = {}
-[word.particle]
-may_be_given = true
-note = "Also in TITLES and consumed there before particle logic runs, so moving it changes nothing; kept for the load-bearing TITLES intersection above"
 
 [[word]]
 text = "staff"
@@ -3135,8 +3129,7 @@ title = {}
 # plain-title bucket (family follows) and the same dual geresh/
 # gershayim spelling rule as above. Deferred under the collision
 # rule: bare 'רב' (also the ordinary word "many"). The 'בר'
-# particle deferral is recorded with the other particle decisions,
-# above the never-given particles' Hebrew entries below.
+# particle is refused by an exclusion in he.toml.
 [[word]]
 text = "גברת"
 title = { note = "Mrs./Ms., full form" }
@@ -3385,577 +3378,52 @@ title = { note = "the same, ছ spelling" }
 text = "মোছা"
 title = { note = "the same, period spelling মোছা." }
 
-# ---- particles never borne as a standalone given name ----
-
-# Latin-script members. Every entry here is a grammatical particle --
-# an article, a preposition, or a patronymic marker -- and that is the
-# form a never-given record has to take. One attested bearer settles
-# the AMBIGUOUS side; no amount of searching settles absence, so what
-# is recorded is what the word IS rather than a failed search.
-#
-# The test is POSITIONAL (decisions/vocabulary-collisions C-i,
-# corrected 2026-08-17): membership asks whether the word is borne as
-# a name in the position this rule ACTS on -- leading, or alone in the
-# given role -- not whether a bearer exists anywhere. 'de' is why the
-# qualifier is needed: "De" is a borne Bengali/Odia surname, but a
-# TRAILING one, so it never meets the rule.
-#
-# A BARE entry, here or in PARTICLES below, means nobody has examined
-# it. Absence of a comment is the audit record.
-[[word]]
-text = "'t"
-particle = { may_be_given = false, note = "Dutch contraction of 'het' (\"'t Hooft\"): the article itself" }
-
-[[word]]
-text = "’t"
-particle = { may_be_given = false, note = "the same, typographic apostrophe (#700)" }
-
-[[word]]
-text = "af"
-particle = { may_be_given = false, note = "Danish/Norwegian nobiliary \"of\"" }
-
-[[word]]
-text = "auf"
-particle = { may_be_given = false, note = "German \"upon\" (\"auf der Heide\")" }
-
-[[word]]
-text = "av"
-particle = { may_be_given = false, note = "Swedish/Norwegian \"of\"" }
-
-[[word]]
-text = "bint"
-particle = { may_be_given = false, note = "Arabic \"daughter of\"; native-script بنت below" }
-
-[[word]]
-text = "das"
-[word.particle]
-may_be_given = false
-note = "Portuguese/German \"of the\", fem. pl. Added #360: its own plural partner 'dos' was already here. \"Das\" IS a common Bengali surname, but a TRAILING one -- measured, \"Anjali Das\" and \"Bimal Das\" are untouched, while \"Maria das Neves\" gains the particle it loses today."
-
-[[word]]
-text = "de"
-[word.particle]
-may_be_given = false
-note = "French/Iberian/Italian \"of\". \"De\" IS a borne Bengali and Odia surname -- trailing, so it never reaches this rule. The case that forced C-i's positional qualifier."
-
-[[word]]
-text = "de'"
-particle = { may_be_given = false, note = "Italian elided \"dei\" (\"de' Medici\")" }
-
-[[word]]
-text = "de’"
-[word.particle]
-may_be_given = false
-note = "the same, typographic apostrophe: nothing folds U+2019 to U+0027, so each elided entry is listed in both (#700)"
-
-[[word]]
-text = "d'"
-particle = { may_be_given = false, note = "French/Italian elided \"de\" (\"Ivoi, Paul d'\"). Written" }
-
-[[word]]
-text = "d’"
-[word.particle]
-may_be_given = false
-note = "apart mostly where an index form moves it behind the given name; glued (\"d'Ivoi\") it stays one word (#700)"
-
-[[word]]
-text = "dell'"
-particle = { may_be_given = false, note = "Italian elided \"dello\"/\"della\" (\"dell'Acqua\")" }
-
-[[word]]
-text = "dell’"
-particle = { may_be_given = false }
-
-[[word]]
-text = "l'"
-particle = { may_be_given = false, note = "French/Italian elided article (\"L'Enfant\")" }
-
-[[word]]
-text = "l’"
-particle = { may_be_given = false }
-
-# #700: the Arabic article as an index form writes it, hyphen
-# attached and set behind the given name ("Rashid, Harun al-",
-# "Zaʿīm, Ḥusnī az-"), in its assimilated spellings: 'al-' before a
-# moon letter, assimilated to each of the fourteen sun letters
-# (lām's being 'al-' itself; DMG's ṯ ḏ š ṣ ḍ ṭ ẓ beside the ASCII
-# digraphs), and the Egyptian 'el-' and its assimilations, in ASCII
-# spellings only. The trailing hyphen is the license:
-# written apart, the word is the article and nothing else, so these
-# are never-given where the bare 'al' (Al Gore) is AMBIGUOUS. A
-# closed list rather than a shape rule, by decision on #700. ASCII
-# hyphen-minus only.
-[[word]]
-text = "al-"
-particle = { may_be_given = false }
-
-[[word]]
-text = "ul-"
-particle = { may_be_given = false }
-
-[[word]]
-text = "at-"
-particle = { may_be_given = false }
-
-[[word]]
-text = "aṯ-"
-particle = { may_be_given = false }
-
-[[word]]
-text = "ath-"
-particle = { may_be_given = false }
-
-[[word]]
-text = "ad-"
-particle = { may_be_given = false }
-
-[[word]]
-text = "aḏ-"
-particle = { may_be_given = false }
-
-[[word]]
-text = "adh-"
-particle = { may_be_given = false }
-
-[[word]]
-text = "ar-"
-particle = { may_be_given = false }
-
-[[word]]
-text = "az-"
-particle = { may_be_given = false }
-
-[[word]]
-text = "as-"
-particle = { may_be_given = false }
-
-[[word]]
-text = "aš-"
-particle = { may_be_given = false }
-
-[[word]]
-text = "ash-"
-particle = { may_be_given = false }
-
-[[word]]
-text = "aṣ-"
-particle = { may_be_given = false }
-
-[[word]]
-text = "aḍ-"
-particle = { may_be_given = false }
-
-[[word]]
-text = "aṭ-"
-particle = { may_be_given = false }
-
-[[word]]
-text = "aẓ-"
-particle = { may_be_given = false }
-
-[[word]]
-text = "an-"
-particle = { may_be_given = false }
-
-[[word]]
-text = "el-"
-particle = { may_be_given = false }
-
-[[word]]
-text = "et-"
-particle = { may_be_given = false }
-
-[[word]]
-text = "eth-"
-particle = { may_be_given = false }
-
-[[word]]
-text = "ed-"
-particle = { may_be_given = false }
-
-[[word]]
-text = "edh-"
-particle = { may_be_given = false }
-
-[[word]]
-text = "er-"
-particle = { may_be_given = false }
-
-[[word]]
-text = "ez-"
-particle = { may_be_given = false }
-
-[[word]]
-text = "es-"
-particle = { may_be_given = false }
-
-[[word]]
-text = "esh-"
-particle = { may_be_given = false }
-
-[[word]]
-text = "en-"
-particle = { may_be_given = false }
-
-[[word]]
-text = "degli"
-particle = { may_be_given = false, note = "Italian \"of the\", masc. pl." }
-
-[[word]]
-text = "dei"
-particle = { may_be_given = false, note = "Italian \"of the\", masc. pl." }
-
-[[word]]
-text = "delle"
-particle = { may_be_given = false, note = "Italian \"of the\", fem. pl." }
-
-[[word]]
-text = "delli"
-particle = { may_be_given = false, note = "Italian \"of the\", regional variant of 'dei'" }
-
-[[word]]
-text = "dello"
-particle = { may_be_given = false, note = "Italian \"of the\", masc. sg." }
-
-[[word]]
-text = "dem"
-particle = { may_be_given = false, note = "German dative article" }
-
-[[word]]
-text = "der"
-particle = { may_be_given = false, note = "German article (\"von der Leyen\")" }
-
-[[word]]
-text = "dos"
-particle = { may_be_given = false, note = "Portuguese \"of the\", masc. pl." }
-
-[[word]]
-text = "het"
-particle = { may_be_given = false, note = "Dutch definite article" }
-
-[[word]]
-text = "ibn"
-particle = { may_be_given = false, note = "Arabic \"son of\"; native-script ابن below" }
-
-[[word]]
-text = "las"
-[word.particle]
-may_be_given = false
-note = "Spanish \"the\", fem. pl. Added #360: 'la' was here as AMBIGUOUS (La Shawn, La Toya) but the plurals are not name elements -- no bearer in any position."
-
-[[word]]
-text = "los"
-[word.particle]
-may_be_given = false
-note = "Spanish \"the\", masc. pl. Same as 'las' -- and the pair is why the #390 fold narrowing regressed \"de los Santos\" to given='Santos', family='de los'."
+# ---- the other readings of words whose particle reading has a language ----
+# (#749 moved each particle reading to the files of the languages whose
+# names it occurs in; `uv run python tools/vocab/query.py --word <text>`
+# shows both halves)
 
 [[word]]
 text = "mc"
-[word.particle]
-may_be_given = false
-note = "Contraction of 'Mac'; unlike 'mac' (Mac Miller) it is not a standalone given name. Measured misparse: \"Mc Donald\" gave given='Mc'. Also in SUFFIX_ACRONYMS as Master of Ceremonies, but that is trailing position and unaffected -- \"John Smith MC\" still reads suffix (#360)."
 [word.credential]
 note = "NOT may_be_name though also a particle: #454 closed by design, neither mc nor vd is a borne name (rules/P6's Accepted clause)"
-
-# (CAPITALIZATION_EXCEPTIONS)
-# Irish patronymic particles (#604). Case repair writes a particle
-# in lowercase ('de la Vega'), but Irish writes these capitalized
-# ('Liam Ó Murchú', 'Sinéad Ní Mhurchú'), and a mask outranks the
-# particle lowercase (rules/R4). Each mask is the word's own
-# title case, so a bare word in any other role repairs as it would
-# anyway; the dotted 'u.a.' and 'n.í.' now repair to 'U.A.' and
-# 'N.Í.' (were 'U.a.' and 'N.í.').
-[[word]]
-text = "ní"
-[word.particle]
-may_be_given = false
-note = "Irish \"daughter of\" (\"Sinéad Ní Mhurchú\"), the female patronymic beside 'ó'; never a given name (#604). Its sibling 'nic' is EXCLUDED: an abbreviation of Nicolas and Nicole and a given name of its own (Nic Cage), so it belongs in an opt-in Irish pack, not the defaults."
-cased = "Ní"
-
-[[word]]
-text = "op"
-particle = { may_be_given = false, note = "Dutch \"at/on\" (\"op den Berg\")" }
-
-[[word]]
-text = "ó"
-[word.particle]
-may_be_given = false
-note = "Irish \"descendant of\" (\"Liam Ó Murchú\"); never a given name (#604). The one ONE-LETTER particle, so the letter written with its period is still the initial it spells -- 'Juan Ó. Pérez' is Óscar, not a surname (rules/P7). Unaccented 'o' is EXCLUDED: bare 'O' is a common periodless initial, and the anglicized form is glued (\"O'Neil\") anyway."
-cased = "Ó"
-
-[[word]]
-text = "ste"
-[word.particle]
-may_be_given = false
-note = "Contraction of 'Sainte'; has a vowel, which is why the criterion is \"abbreviation of a word that is never itself a name\" rather than the vowel shape #360 first proposed. Measured misparse: \"Ste Marie\" gave given='Ste'."
-
-[[word]]
-text = "ter"
-particle = { may_be_given = false, note = "Dutch \"at the\" (\"ter Horst\")" }
 
 [[word]]
 text = "vd"
-[word.particle]
-may_be_given = false
-note = "Dutch abbreviation of \"van der\". Also the British Volunteer Decoration, a suffix acronym: two non-name readings, so C-ii decides it on frequency and the Dutch one wins (decisions/vocabulary-collisions)."
 [word.credential]
 note = "NOT may_be_name though also a particle: #454 closed by design, neither mc nor vd is a borne name (rules/P6's Accepted clause)"
-
-[[word]]
-text = "vom"
-particle = { may_be_given = false, note = "German \"from the\"" }
-
-[[word]]
-text = "zu"
-particle = { may_be_given = false, note = "German \"at/to\", nobiliary (\"zu Guttenberg\")" }
-
-# #269: Arabic native-script patronymic/clan particles. Unlike their
-# Latin transliterations, these live in a script namespace with no
-# collision against an unrelated Latin given name, so each is judged
-# on its own semantics rather than mirrored blindly:
-[[word]]
-text = "بن"
-[word.particle]
-may_be_given = false
-note = "\"bin\"/\"ibn\" (son of) -- never a bare given name. Latin 'bin' is in PARTICLES but not in this set; that judgment is unchanged by adding the Arabic-script form."
-
-[[word]]
-text = "بنت"
-particle = { may_be_given = false, note = "\"bint\" (daughter of) -- mirrors Latin 'bint' above." }
-
-[[word]]
-text = "ابن"
-[word.particle]
-may_be_given = false
-note = "\"ibn\" (son of, alternate spelling) -- mirrors Latin 'ibn' above."
-
-[[word]]
-text = "آل"
-[word.particle]
-may_be_given = false
-note = "\"aal\" (family/clan of, e.g. \"Al Saud\") -- distinct from the excluded definite article \"ال\" (#269 explicitly excludes standalone \"ال\"); a clan prefix, never a bare given name."
-
-# #269: Hebrew native-script patronymic particles -- same
-# reasoning as the Arabic ones above: no Latin-script collision,
-# and neither functions as a standalone given name in Hebrew usage.
-# Deferred under the collision rule: 'בר' (Aramaic son-of, as in
-# Bar-Lev) -- Bar is a common modern Israeli given name, and the
-# surname spelling is hyphenated anyway.
-[[word]]
-text = "בן"
-particle = { may_be_given = false, note = "\"ben\" (son of)" }
-
-[[word]]
-text = "בת"
-particle = { may_be_given = false, note = "\"bat\" (daughter of)" }
-
-# ---- particles also borne as given names (may_be_given) ----
-#
-# Words also borne as names in the position the leading-particle rule
-# acts on (decisions/vocabulary-collisions C-i). An entry with a note has
-# been examined; a BARE one is sitting on the conservative default and
-# nobody has looked at it. #360 examined the 12 that appear leading in
-# tools/differential's corpora plus a few more, and left the rest bare
-# rather than record an absence of knowledge as a judgment.
-
-[[word]]
-text = "aan"
-particle = { may_be_given = true }
-
-[[word]]
-text = "aen"
-particle = { may_be_given = true }
-
-[[word]]
-text = "abu"
-bound_given = {}
-[word.particle]
-may_be_given = true
-note = "\"Abu Bakr\" -- Abu reads as the given name; also a bound given-name word, so it joins forward (#269, P5)"
-
-[[word]]
-text = "al"
-[word.particle]
-may_be_given = true
-note = "Al Gore: 'Al' is an ordinary English given name. Also the Arabic definite article, which is the particle reading"
-
-[[word]]
-text = "bar"
-[word.particle]
-may_be_given = true
-note = "Bar Refaeli; a common modern Israeli given name. Aramaic \"son of\" is the particle reading (#269 excludes bare בר)"
-
-[[word]]
-text = "bat"
-particle = { may_be_given = true }
-
-[[word]]
-text = "bin"
-[word.particle]
-may_be_given = true
-note = "Arabic \"son of\", but kept ambiguous deliberately: #269 judged the Latin transliteration separately from the native-script بن, which IS never-given"
-
-[[word]]
-text = "binte"
-[word.particle]
-may_be_given = true
-note = "Singapore spelling of 'binti', kept beside it (#604)"
-
-[[word]]
-text = "binti"
-[word.particle]
-may_be_given = true
-note = "Malay \"daughter of\" (\"Ina binti Navalamar\"), the female partner of 'bin'. Binti is also a given name (Swahili, \"daughter\"), so ambiguous like 'bin' (#604). The abbreviations 'bt'/'bte' are left out: two- and three-letter words nobody has reviewed"
-
-[[word]]
-text = "bon"
-particle = { may_be_given = true }
-
-[[word]]
-text = "da"
-particle = { may_be_given = true }
-
-[[word]]
-text = "dal"
-particle = { may_be_given = true }
-
-[[word]]
-text = "del"
-[word.particle]
-may_be_given = true
-note = "BOTH readings attested: Del Shannon (given name) and del Toro (particle). The ambiguity flag is the answer"
-
-[[word]]
-text = "dela"
-[word.particle]
-may_be_given = true
-note = "Dela is a short form of Adela, and an African name meaning saviour/redeemer -- so the Filipino surname particle (\"Dela Cruz\") is not the only reading"
-
-[[word]]
-text = "della"
-particle = { may_be_given = true, note = "Della Reese: an ordinary given name" }
-
-[[word]]
-text = "den"
-particle = { may_be_given = true }
-
-[[word]]
-text = "di"
-[word.particle]
-may_be_given = true
-note = "BOTH: Di as a short form of Diana, and the Italian particle (DiCaprio)"
-
-[[word]]
-text = "dí"
-particle = { may_be_given = true }
 
 [[word]]
 text = "do"
 credential = { may_be_name = true, expands = "Doctor of Osteopathic Medicine" }
-[word.particle]
-may_be_given = true
-note = "Vietnamese Đỗ leads a great many surnames"
 
 [[word]]
-text = "du"
-[word.particle]
-may_be_given = true
-note = "Du is a Chinese surname (Du Fu), leading under a family-first reading"
+text = "abu"
+bound_given = {}
 
-[[word]]
-text = "freiherrin"
-particle = { may_be_given = true, note = "as above" }
-
-[[word]]
-text = "heer"
-particle = { may_be_given = true }
-
-[[word]]
-text = "la"
-[word.particle]
-may_be_given = true
-note = "La Shawn, La Toya: a given-name element. The Romance article is the particle reading; its PLURALS ('las', 'los') are never-given, being no one's name"
-
-[[word]]
-text = "le"
-[word.particle]
-may_be_given = true
-note = "Lê is among the most common Vietnamese surnames and leads under a family-first reading"
-
-[[word]]
-text = "mac"
-[word.particle]
-may_be_given = true
-note = "Mac Miller: a real given name. This is the case that shows #360's vowel heuristic was not the criterion -- 'mac' and 'mc' differ by attestation, not by shape"
-
-[[word]]
-text = "san"
-[word.particle]
-may_be_given = true
-note = "San San Chiou: a given-name element in Burmese and Chinese naming"
-
-[[word]]
-text = "santa"
-particle = { may_be_given = true }
-
-[[word]]
-text = "te"
-[word.particle]
-may_be_given = true
-note = "Te Awanui-a-Rangi: a Māori given-name element, and in the corpus. Looks like the Dutch preposition 'te', which is why attestation rather than etymology decides"
-
-[[word]]
-text = "tho"
-particle = { may_be_given = true }
-
-[[word]]
-text = "thoe"
-particle = { may_be_given = true }
-
-[[word]]
-text = "ua"
-[word.particle]
-may_be_given = true
-note = "Irish \"descendant of\", the older spelling of 'ó' (\"Seán Ua Buachalla\"). No given-name use found, but searched less thoroughly than 'ó' and 'ní', and C-i defaults to AMBIGUOUS under uncertainty -- so the leading \"Ua Buachalla\" keeps the given reading and reports it, while mid-name the chain is the same either way (#604)"
-cased = "Ua"
-
-[[word]]
-text = "van"
-[word.particle]
-may_be_given = true
-note = "Vietnamese Văn, and Van Johnson -- the canonical particle-or-given ambiguity this whole flag exists for"
-
-[[word]]
-text = "vande"
-particle = { may_be_given = true }
-
-[[word]]
-text = "vander"
-particle = { may_be_given = true }
-
-[[word]]
-text = "vel"
-particle = { may_be_given = true }
-
-[[word]]
-text = "von"
-[word.particle]
-may_be_given = true
-note = "Von Miller: a real given name, so this stays ambiguous even though \"von Braun\" is misparsed today. The case that shows a word can look like a pure particle, BE misparsed as one, and still have a bearer"
-
-# #269: Arabic "abu" (father of), left ambiguous like its Latin
-# transliteration 'abu' above (both spellings): "Abu Bakr" reads
-# "Abu" as a given name, so this stays a PARTICLES-only member, not
-# NON_GIVEN_NAME_PARTICLES.
 [[word]]
 text = "أبو"
-particle = { may_be_given = true }
 bound_given = { note = "\"abu\" (father of), hamza spelling" }
 
 [[word]]
 text = "ابو"
-particle = { may_be_given = true }
 bound_given = { note = "\"abu\", hamza-less spelling" }
+
+# ---- particles of unrecorded origin ----
+# In the prefix list since the earliest history (bon in the 2011 svn
+# import, 45a15394; dí since fc2ea899, 2012) with no record of which
+# language's names they come from, so #749 could give them neither a file nor a kind.
+
+[[word]]
+text = "bon"
+particle = { may_be_given = true, note = "no particle use found; borne as a given name and as a surname (the counts below), so removal is proposed" }
+given = { us_ssa = 274, wikidata = 9, as_of = 2026-10-19, note = "male births only" }
+family = { us_census_2010 = 1123, wikidata = 102, as_of = 2026-10-19, note = "Wikidata bearers mostly French and Italian" }
+
+[[word]]
+text = "dí"
+particle = { may_be_given = true, note = "no particle use found; the Wikidata bearers are Chinese given names (romanized Dí), so removal is proposed" }
+given = { wikidata = 7, as_of = 2026-10-19, note = "5 of 7 PRC citizens; the US sources fold the accent to Di, so their counts are not this spelling's" }
 
 # ---- conjunctions ----
 

@@ -40,8 +40,8 @@ at fault:
    count), an acronym's text free of periods (it is matched with them
    removed), and no entry without a reading or an exclusion;
 4. one suffix kind per word, across files;
-5. the same kind of the same word agrees on every behavioral property
-   in every file;
+5. the same category of the same word agrees on every behavioral
+   property in every file, whatever kind each file gives it;
 6. an excluded kind is absent from every file, along with every other
    kind that compiles to the same set (a name kind refuses only itself),
    and an excluded property never takes a value other than the one it
@@ -161,6 +161,14 @@ CATEGORY: dict[str, str] = {
     "status": "suffix",
     "courtesy": "suffix",
     "particle": "particle",
+    "preposition": "particle",
+    "article": "particle",
+    "patronymic": "particle",
+    "teknonymic": "particle",
+    "clan": "particle",
+    "rank": "particle",
+    "saint": "particle",
+    "alias": "particle",
     "conjunction": "conjunction",
     "bound_given": "bound_given",
     "birth_marker": "relation",
@@ -696,15 +704,19 @@ def check_pool(pool: Pool) -> None:
             raise VocabError(f"{text!r}: one suffix kind per word, got {kinds} "
                              f"({', '.join(sorted({r.file for r in rs}))})")
 
-    # 5: the same kind of the same word agrees on every behavioral
+    # 5: the same category of the same word agrees on every behavioral
     # property in every file -- the default loads them all, so a word
-    # cannot read two ways (per-language behavior is phase 3's)
+    # cannot read two ways (per-language behavior is phase 3's). Keyed
+    # on the CATEGORY, not the kind: the sets are sets of words, and a
+    # particle may take a different kind in each language (`de`, a
+    # preposition in French and an article in Dutch), and two kinds
+    # disagreeing on may_be_given would compile silently to the false
     for text, rs in by_text.items():
         first: dict[str, Reading] = {}
         for r in rs:
             if r.category == "name":
                 continue
-            seen = first.setdefault(r.kind, r)
+            seen = first.setdefault(r.category, r)
             for prop in BEHAVIORAL[r.category]:
                 a, b = _behavior(seen, prop), _behavior(r, prop)
                 if a != b:

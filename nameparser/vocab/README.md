@@ -17,7 +17,7 @@ Two tags are not languages:
 
 The script is read from the word, not from the file: `sr.toml` holds `mlađi` and `млађи` side by side. A script subtag (`zh-Hant`) is for a difference the text cannot show.
 
-The default vocabulary loads every file, so which file a word is in changes nothing about how a name is parsed today. A word may be in more than one file; check 5 of the build makes each kind of it read the same in every file, every behavioral property agreeing.
+The default vocabulary loads every file, so which file a word is in changes nothing about how a name is parsed today. A word may be in more than one file; check 5 of the build makes each category of it read the same in every file, every behavioral property agreeing whatever kind each file gives it.
 
 ## How an entry is built
 
@@ -26,23 +26,30 @@ Each file has `schema = 1` at the top, then one `[[word]]` table per word. An en
 ```toml
 [[word]]
 text = "van"
-[word.particle]
+[word.preposition]
 may_be_given = true
+expands = "of, from"
 note = "Vietnamese Văn, and Van Johnson -- the canonical particle-or-given ambiguity this whole flag exists for"
 ```
 
-`van` has one reading, a particle, with one behavioral property (`may_be_given`: the word is also a given name, so `van Gogh` keeps `van` as the given name and reports the fork) and one descriptive one (`note`, compiled to nothing).
+`van`, in `nl.toml`, has one reading, a particle of the kind `preposition`, with one behavioral property (`may_be_given`: the word is also a given name, so `van Gogh` keeps `van` as the given name and reports the fork) and two descriptive ones (`expands` and `note`, compiled to nothing).
 
 ```toml
 [[word]]
 text = "do"
 credential = { may_be_name = true, expands = "Doctor of Osteopathic Medicine" }
-[word.particle]
+```
+
+```toml
+[[word]]
+text = "do"
+[word.preposition]
 may_be_given = true
+expands = "of the, masc. sg."
 note = "Vietnamese Đỗ leads a great many surnames"
 ```
 
-`do` has two readings in two categories, a credential and a particle, so it is in both `SUFFIX_ACRONYMS` and `PARTICLES`; which one applies is decided by where the word stands. A word's readings are where clashes between categories are recorded: before this format, such a clash was visible only as two sets that happened to overlap.
+`do` has two readings in two categories, a credential (still in `und.toml`) and a particle (a Portuguese preposition, in `pt.toml`), so it is in both `SUFFIX_ACRONYMS` and `PARTICLES`; which one applies is decided by where the word stands. A word's readings are where clashes between categories are recorded: before this format, such a clash was visible only as two sets that happened to overlap.
 
 ```toml
 [[word]]
@@ -74,7 +81,7 @@ Two rules about the `text`:
 
 ## Kinds
 
-A reading's key is its **kind**. Each kind belongs to one **category**, and the category decides which compiled set the reading feeds. For title, suffix, particle and conjunction the category's own name is also a kind (`title = {}`: a title not yet classified), so classifying a word later is a data edit that moves no compiled set. The one exception: a generic `suffix = {}` classified as `credential` moves from `SUFFIX_WORDS` to `SUFFIX_ACRONYMS`, because a credential's `acronym` is true unwritten; write `acronym = false` to keep it where it was. Only the suffix category is classified so far; the others carry their generic kind.
+A reading's key is its **kind**. Each kind belongs to one **category**, and the category decides which compiled set the reading feeds. For title, suffix, particle and conjunction the category's own name is also a kind (`title = {}`: a title not yet classified), so classifying a word later is a data edit that moves no compiled set. The one exception: a generic `suffix = {}` classified as `credential` moves from `SUFFIX_WORDS` to `SUFFIX_ACRONYMS`, because a credential's `acronym` is true unwritten; write `acronym = false` to keep it where it was. The suffix and particle categories are classified (two particles of unrecorded origin, `bon` and `dí`, keep the generic kind in `und.toml`); the others carry their generic kind.
 
 | Kind | Category | Compiled into |
 |---|---|---|
@@ -87,6 +94,14 @@ A reading's key is its **kind**. Each kind belongs to one **category**, and the 
 | `status` | `suffix` | `SUFFIX_WORDS` |
 | `courtesy` | `suffix` | `SUFFIX_WORDS` |
 | `particle` | `particle` | `PARTICLES` |
+| `preposition` | `particle` | `PARTICLES` |
+| `article` | `particle` | `PARTICLES` |
+| `patronymic` | `particle` | `PARTICLES` |
+| `teknonymic` | `particle` | `PARTICLES` |
+| `clan` | `particle` | `PARTICLES` |
+| `rank` | `particle` | `PARTICLES` |
+| `saint` | `particle` | `PARTICLES` |
+| `alias` | `particle` | `PARTICLES` |
 | `conjunction` | `conjunction` | `CONJUNCTIONS` |
 | `bound_given` | `bound_given` | `BOUND_GIVEN_NAMES` |
 | `birth_marker` | `relation` | `MAIDEN_MARKERS` |
@@ -94,6 +109,21 @@ A reading's key is its **kind**. Each kind belongs to one **category**, and the 
 | `family` | `name` | nothing |
 
 A suffix reading goes to `SUFFIX_ACRONYMS` when its `acronym` property is true and to `SUFFIX_WORDS` otherwise; the column shows where each kind goes with `acronym` unwritten. A word has at most one suffix kind (check 4).
+
+The particle kinds say what the word does in the names of the file's language:
+
+- `preposition`: "of", "from", "at", alone or contracted with the article after it (`de`, `van`, `von`, `du`, `del`, `vom`, `ter`);
+- `article`: a definite article standing alone or elided (`la`, `der`, `het`, `'t`, `l'`, the Arabic `al-` and its assimilated spellings);
+- `patronymic`: "son of" or "daughter of", where the word after it is a parent's name (`bin`, `binti`, `ibn`, `بن`, `בן`);
+- `teknonymic`: "father of", naming the bearer by a child (`abu`, `أبو`);
+- `clan`: a lineage prefix, where the word after it is a family name shared by the lineage rather than a parent's name (`mac`, `mc`, `ó`, `ní`, `آل`);
+- `rank`: a former rank written inside the surname (`freiherr`, `heer`);
+- `saint`: "Saint" opening a surname (`san`, `santa`, `st`, `ste`);
+- `alias`: a word joining two surnames of one person (`vel`).
+
+Unlike the suffix kinds, one word may take a different particle kind in each language: `de` is a preposition in `fr.toml` and an article in `nl.toml`. Check 5 holds every particle reading of a word to the same `may_be_given` whatever its kind. On a particle reading, `expands` is the word's meaning in that language, and `note` is reserved for vetting. A never-given particle may rest on its kind and `expands` alone: one attested bearer settles the may-be-given side, but no amount of searching settles absence, so what is recorded is what the word IS (an article, a preposition) rather than a failed search. And a word with `may_be_given = true` whose particle readings carry no `note` in any file sits on the conservative default and nobody has examined it, and so does one whose note says so, as `heer`'s does. The test is per word, because a word's note sits in one of its files, not in each: `mac` is examined though only `en.toml` holds its note.
+
+**Classifying a category adds kinds to every check that tests it.** While a category has only its generic kind, a check that asks for the category and one that asks for the generic kind give the same answer, so a test row written in the generic kind cannot tell them apart. When a category gets its first fine kinds, give every check on that category a row in `tests/v2/test_vocab.py` written in a fine kind, and run each row against the check keyed on the kind to see it fail. #749's review found four particle checks pinned only on the generic `particle` kind once the shipped data used it for two words: the required `may_be_given`, an exclusion refusing a sibling kind, the bound given name that is a never-given particle, and the elided particle's two spellings. Each passed every test when keyed on the kind, which would have let a `preposition = {}` with no `may_be_given` compile silently into the never-given set.
 
 The `name` kinds compile to nothing. They record that a word is borne as a given or family name, with counts (see [Bearer counts](#bearer-counts)), as evidence for a reading or an exclusion.
 

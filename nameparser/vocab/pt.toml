@@ -1,0 +1,32 @@
+schema = 1
+
+[[word]]
+text = "das"
+[word.preposition]
+may_be_given = false
+issue = 360
+expands = "of the, fem. pl."
+note = "Added #360: its own plural partner 'dos' was already here. \"Das\" IS a common Bengali surname, but a TRAILING one -- measured, \"Anjali Das\" and \"Bimal Das\" are untouched, while \"Maria das Neves\" gains the particle it loses today."
+
+[[word]]
+text = "de"
+preposition = { may_be_given = false, expands = "of" }
+
+[[word]]
+text = "dos"
+preposition = { may_be_given = false, expands = "of the, masc. pl." }
+
+[[word]]
+text = "da"
+preposition = { may_be_given = true, expands = "of the, fem. sg." }
+
+[[word]]
+text = "do"
+[word.preposition]
+may_be_given = true
+expands = "of the, masc. sg."
+note = "Vietnamese Đỗ leads a great many surnames"
+
+[[word]]
+text = "santa"
+saint = { may_be_given = true, expands = "Saint, fem." }

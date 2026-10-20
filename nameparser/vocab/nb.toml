@@ -1,0 +1,9 @@
+schema = 1
+
+[[word]]
+text = "af"
+preposition = { may_be_given = false, expands = "of, nobiliary" }
+
+[[word]]
+text = "av"
+preposition = { may_be_given = false, expands = "of" }

@@ -19,3 +19,11 @@ generation = { issue = 679 }
 [[word]]
 text = "سینیئر"
 generation = { issue = 679 }
+
+[[word]]
+text = "ul-"
+[word.article]
+may_be_given = false
+issue = 700
+expands = "the, after a case ending: \"Zia ul-Haq\""
+same_as = "al-"

@@ -199,6 +199,9 @@ MUTATIONS = [
     ("may-be-initial-on-a-word", {"und.toml": _w('[[word]]\ntext = "and"\nconjunction = { may_be_initial = true }')}, "CASED single letter"),
     ("may-be-initial-caseless", {"ar.toml": _w('[[word]]\ntext = "و"\nconjunction = { may_be_initial = true }')}, "CASED single letter"),
     ("particle-without-may-be-given", {"und.toml": _w('[[word]]\ntext = "van"\nparticle = {}')}, "states may_be_given"),
+    # every particle kind, not only the generic one (#749): unwritten,
+    # the flag would read false and put the word in the never-given half
+    ("particle-kind-without-may-be-given", {"nl.toml": _w('[[word]]\ntext = "van"\npreposition = {}')}, "states may_be_given"),
     ("flag-not-a-bool", {"und.toml": _w('[[word]]\ntext = "van"\nparticle = { may_be_given = "yes" }')}, "true or false"),
     ("issue-not-a-number", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = { issue = "661" }')}, "issue number"),
     ("decided-not-a-date", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = { decided = "2026-10-18" }')}, "TOML date"),
@@ -217,6 +220,14 @@ MUTATIONS = [
     # 5: one word reads one way in every file
     ("acronym-disagrees-across-files", {"ja.toml": _w('[[word]]\ntext = "博士"\ncredential = {}'), "zh.toml": _w('[[word]]\ntext = "博士"\ncredential = { acronym = false }')}, "acronym is"),
     ("may-be-given-disagrees-across-files", {"und.toml": _w('[[word]]\ntext = "van"\nparticle = { may_be_given = true }'), "nl.toml": _w('[[word]]\ntext = "van"\nparticle = { may_be_given = false }')}, "may_be_given is"),
+    # keyed on the category: a word may take another particle kind in
+    # each language, and the kinds must still agree (#749 widened this
+    # from the kind; the narrower test let both may_be_given rows through)
+    ("may-be-given-disagrees-across-particle-kinds", {"fr.toml": _w('[[word]]\ntext = "de"\npreposition = { may_be_given = false }'), "nl.toml": _w('[[word]]\ntext = "de"\narticle = { may_be_given = true }')}, "may_be_given is"),
+    # `cased` too: the narrower check let two kinds through to the
+    # per-word mask check, which refused them with its own message
+    ("cased-disagrees-across-particle-kinds", {"und.toml": _w('[[word]]\ntext = "ó"\nparticle = { may_be_given = false, cased = "Ó" }'), "ga.toml": _w('[[word]]\ntext = "ó"\nclan = { may_be_given = false, cased = "ó" }')}, "cased is"),
+    ("may-be-given-disagrees-with-the-generic-kind", {"und.toml": _w('[[word]]\ntext = "van"\nparticle = { may_be_given = true }'), "nl.toml": _w('[[word]]\ntext = "van"\npreposition = { may_be_given = false }')}, "may_be_given is"),
     ("addresses-disagrees-across-files", {"und.toml": _w('[[word]]\ntext = "sir"\ntitle = { addresses = "given" }'), "en.toml": _w('[[word]]\ntext = "sir"\ntitle = {}')}, "addresses is"),
     ("may-be-name-disagrees-across-files", {"en.toml": _w('[[word]]\ntext = "ma"\ncredential = {}'), "und.toml": _w('[[word]]\ntext = "ma"\ncredential = { may_be_name = true }')}, "may_be_name is"),
     # 6: an exclusion holds across files
@@ -229,6 +240,11 @@ MUTATIONS = [
     ("excluded-kind-sidestepped-by-the-generic-kind", {"fr.toml": _w('[[word]]\ntext = "fils"\nexcluded = { generation = "Marie Fils" }'), "und.toml": _w('[[word]]\ntext = "fils"\nsuffix = {}')}, "Marie Fils"),
     ("excluded-kind-sidestepped-by-a-sibling-kind", {"fr.toml": _w('[[word]]\ntext = "fils"\nexcluded = { generation = "Marie Fils" }'), "en.toml": _w('[[word]]\ntext = "fils"\nstatus = {}')}, "Marie Fils"),
     ("excluded-credential-sidestepped-by-an-acronym", {"und.toml": _w('[[word]]\ntext = "rai"\nexcluded = { credential = "a surname" }'), "en.toml": _w('[[word]]\ntext = "rai"\ncourtesy = { acronym = true }')}, "a surname"),
+    # a particle kind's exclusion refuses every other particle kind:
+    # one particle kind per file made this impossible before #749
+    ("excluded-particle-kind-sidestepped-by-a-sibling-kind", {"ar.toml": _w('[[word]]\ntext = "ben"\nexcluded = { patronymic = "Ben is a given name" }'), "pl.toml": _w('[[word]]\ntext = "ben"\npreposition = { may_be_given = false }')}, "Ben is a given name"),
+    ("excluded-particle-kind-sidestepped-by-the-generic-kind", {"ar.toml": _w('[[word]]\ntext = "ben"\nexcluded = { patronymic = "Ben is a given name" }'), "und.toml": _w('[[word]]\ntext = "ben"\nparticle = { may_be_given = true }')}, "Ben is a given name"),
+    ("excluded-particle-category-refuses-a-kind", {"ga.toml": _w('[[word]]\ntext = "o"\nexcluded = { particle = "a periodless initial" }\nclan = { may_be_given = false }')}, "a periodless initial"),
     ("excluded-category-in-another-file", {"und.toml": _w('[[word]]\ntext = "rai"\nexcluded = { suffix = "a surname" }'), "en.toml": _w('[[word]]\ntext = "rai"\ncredential = {}')}, "a surname"),
     # a reason written as a table reaches the refusal too
     ("excluded-kind-with-a-table-reason", {"fr.toml": _w('[[word]]\ntext = "fils"\nexcluded = { generation = { reason = "TABLE REASON", issue = 684 } }'), "en.toml": _w('[[word]]\ntext = "fils"\ngeneration = {}')}, "TABLE REASON"),
@@ -246,8 +262,10 @@ MUTATIONS = [
     ("phrase-particle", {"und.toml": _w('[[word]]\ntext = "de la"\nparticle = { may_be_given = false }')}, "phrase can never match"),
     # 9: a bound given name that is a particle may be given
     ("bound-given-particle-never-given", {"und.toml": _w('[[word]]\ntext = "abu"\nparticle = { may_be_given = false }\nbound_given = {}')}, "may_be_given = true"),
+    ("bound-given-particle-kind-never-given", {"und.toml": _w('[[word]]\ntext = "abu"\nbound_given = {}'), "ar.toml": _w('[[word]]\ntext = "abu"\nteknonymic = { may_be_given = false }')}, "may_be_given = true"),
     # the data invariants that were import-time asserts
     ("elided-particle-without-its-twin", {"und.toml": _w('[[word]]\ntext = "d\'"\nparticle = { may_be_given = false }')}, "U\\+2019 spelling"),
+    ("elided-particle-kind-without-its-twin", {"fr.toml": _w('[[word]]\ntext = "l\'"\narticle = { may_be_given = false }')}, "U\\+2019 spelling"),
     ("one-kind-acronym-and-word", {"en.toml": _w('[[word]]\ntext = "abc"\ncourtesy = {}'), "und.toml": _w('[[word]]\ntext = "abc"\ncourtesy = { acronym = true }')}, "acronym is"),
 ]
 
@@ -585,7 +603,7 @@ def _code(cell: str) -> list[str]:
 def _sets_fed(kind: str, props: str = "{}", text: str = "zzq") -> set[str]:
     """The compiled constants a one-word file holding a `kind` reading
     with `props` puts the word into (a particle states may_be_given)."""
-    if kind == "particle" and "may_be_given" not in props:
+    if build.CATEGORY.get(kind) == "particle" and "may_be_given" not in props:
         props = "{ may_be_given = true }"
     files = {"en.toml": _w(f'[[word]]\ntext = "{text}"\n{kind} = {props}')}
     with warnings.catch_warnings():

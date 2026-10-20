@@ -11,3 +11,68 @@ issue = [679, 684]
 text = "père"
 [word.excluded]
 generation = { reason = "pack-shaped: collides outside French", issue = [679, 684] }
+
+[[word]]
+text = "de"
+[word.preposition]
+may_be_given = false
+expands = "of"
+note = "\"De\" IS a borne Bengali and Odia surname -- trailing, so it never reaches this rule. The case that forced C-i's positional qualifier."
+
+[[word]]
+text = "d'"
+[word.preposition]
+may_be_given = false
+issue = 700
+expands = "of, elided de"
+note = "Written apart mostly where an index form moves it behind the given name (\"Ivoi, Paul d'\"); glued (\"d'Ivoi\") it stays one word."
+
+[[word]]
+text = "d’"
+[word.preposition]
+may_be_given = false
+issue = 700
+expands = "the same, typographic apostrophe"
+same_as = "d'"
+
+[[word]]
+text = "l'"
+article = { may_be_given = false, expands = "the, elided: \"L'Enfant\"" }
+
+[[word]]
+text = "l’"
+[word.article]
+may_be_given = false
+issue = 700
+expands = "the same, typographic apostrophe"
+same_as = "l'"
+
+[[word]]
+text = "ste"
+[word.saint]
+may_be_given = false
+issue = 360
+expands = "Sainte, contracted"
+note = "Has a vowel, which is why the criterion is \"abbreviation of a word that is never itself a name\" rather than the vowel shape #360 first proposed. Measured misparse: \"Ste Marie\" gave given='Ste'."
+
+[[word]]
+text = "du"
+[word.preposition]
+may_be_given = true
+expands = "of the, de le contracted"
+note = "Du is a Chinese surname (Du Fu), leading under a family-first reading"
+
+[[word]]
+text = "la"
+article = { may_be_given = true, expands = "the, fem. sg." }
+
+[[word]]
+text = "le"
+[word.article]
+may_be_given = true
+expands = "the, masc. sg."
+note = "Lê is among the most common Vietnamese surnames and leads under a family-first reading"
+
+[[word]]
+text = "st"
+saint = { may_be_given = true, expands = "Saint, abbreviated" }
