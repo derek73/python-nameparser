@@ -1,0 +1,17 @@
+schema = 1
+
+[[word]]
+text = "doamnă"
+salutation = { issue = 606, gender = "f" }
+
+[[word]]
+text = "doamna"
+salutation = { issue = 606, gender = "f", same_as = "doamnă", expands = "doamnă without the breve" }
+
+[[word]]
+text = "domnișoara"
+salutation = { issue = 606, gender = "f" }
+
+[[word]]
+text = "domnul"
+salutation = { issue = 606, gender = "m" }

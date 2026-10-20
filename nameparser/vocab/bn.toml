@@ -1,6 +1,102 @@
 schema = 1
 
 [[word]]
+text = "mst"
+excluded = { salutation = { reason = "the transliteration of মোসাঃ collides with real names where the native script cannot", issue = 343 } }
+
+[[word]]
+text = "কুমারী"
+excluded = { salutation = { reason = "Kumari is a given name and a family name in this script, so the leading claim fails C-i (decisions/vocabulary-collisions)", issue = 343, decided = 2026-09-06 } }
+
+[[word]]
+text = "জনাব"
+salutation = { gender = "m", issue = 343, expands = "Janab, Mr." }
+
+[[word]]
+text = "বেগম"
+excluded = { salutation = { reason = "Begum is a trailing name element far more often than a leading title", issue = 343, decided = 2026-09-06 } }
+
+[[word]]
+text = "মিঃ"
+salutation = { gender = "m", issue = 343, expands = "Mr., borrowed" }
+
+[[word]]
+text = "মি"
+salutation = { gender = "m", issue = 343, same_as = "মিঃ", expands = "the period spelling মি." }
+
+[[word]]
+text = "মিসেস"
+salutation = { gender = "f", issue = 343, expands = "Mrs., borrowed" }
+
+[[word]]
+text = "মোঃ"
+salutation = { gender = "m", issue = 343, expands = "Md., Mohammad", note = "a name PREFIX, not a title semantically; TITLES is the functional home because `given` must stay the name the person is addressed by (decisions/indic-honorifics)" }
+
+[[word]]
+text = "মো"
+salutation = { gender = "m", issue = 343, same_as = "মোঃ", expands = "the period spelling মো." }
+
+[[word]]
+text = "মোসাঃ"
+salutation = { gender = "f", issue = 343, expands = "Mst., Mosammat, the women's counterpart of মোঃ" }
+
+[[word]]
+text = "মোছাঃ"
+salutation = { gender = "f", issue = 343, same_as = "মোসাঃ", expands = "the ছ spelling" }
+
+[[word]]
+text = "মোছা"
+salutation = { gender = "f", issue = 343, same_as = "মোছাঃ", expands = "the period spelling মোছা." }
+
+[[word]]
+text = "মোসা"
+salutation = { gender = "f", issue = 343, same_as = "মোসাঃ", expands = "the period spelling মোসা." }
+
+[[word]]
+text = "শ্রী"
+salutation = { gender = "m", issue = 343, expands = "Shri, Mr." }
+
+[[word]]
+text = "শ্রীমতী"
+salutation = { gender = "f", issue = 343, expands = "Shrimati, Mrs." }
+
+[[word]]
+text = "ঠাকুর"
+excluded = { style = { reason = "a genuine Bengali honorific (lord, master) that is also Tagore, the surname", issue = 343 } }
+
+[[word]]
+text = "শেখ"
+excluded = { style = { reason = "a clan name and a family name ('শেখ হাসিনা'); the Latin sheikh cluster ships for the Arabic addressing form, while the Indic spellings name the family", issue = 343, decided = 2026-09-06 } }
+
+[[word]]
+text = "baba"
+religious = { addresses = "given", issue = 346 }
+
+[[word]]
+text = "guru"
+religious = { addresses = "given", issue = 346 }
+
+[[word]]
+text = "swami"
+religious = { addresses = "given", issue = 346 }
+
+[[word]]
+text = "গুরু"
+religious = { addresses = "given", issue = 343, expands = "Guru" }
+
+[[word]]
+text = "বাবা"
+religious = { addresses = "given", issue = 343, expands = "Baba" }
+
+[[word]]
+text = "শ্রীল"
+religious = { addresses = "given", issue = 343, expands = "Srila, the Vaishnava honorific (শ্রীল প্রভুপাদ)", note = "no Latin twin; unprefixed শ্রী is the civil salutation" }
+
+[[word]]
+text = "স্বামী"
+religious = { addresses = "given", issue = 343, expands = "Swami" }
+
+[[word]]
 text = "জুনিয়র"
 generation = { issue = 679 }
 

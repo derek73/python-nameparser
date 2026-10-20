@@ -1,5 +1,17 @@
 schema = 1
 
 [[word]]
+text = "malam"
+given = { wikidata = 1, as_of = 2026-10-17, note = "Nigeria; a lower bound" }
+family = { us_census_2010 = 119, wikidata = 5, as_of = 2026-10-17 }
+excluded = { salutation = { reason = "Hausa teacher or Mr.: a decline on the counts, for the lower-bound given-name use, though CLDR's Hausa data files Malam as the title; whoever re-argues it counts Hausa given-name use first. The accepted cost is 'Malam Shehu Bello' reading given Malam", issue = 662, decided = 2026-10-17 } }
+
+[[word]]
+text = "shehu"
+given = { wikidata = 1, as_of = 2026-10-13, note = "Nigeria; a lower bound, Shagari's own entry having no given-name statement" }
+family = { us_census_2010 = 561, wikidata = 180, as_of = 2026-10-13, note = "Wikidata: Nigeria 20, Albania 11" }
+excluded = { style = { reason = "a common Hausa given name: the leading title claim took the given name of Shehu Shagari, who read title Shehu in every release from 1.4.0 through 2.4.1; CLDR's Hausa renderings file it as the given name. Removed 2026-10-13 (#660); not weighed under the graf class", issue = 660, decided = 2026-10-13 } }
+
+[[word]]
 text = "ƙarami"
 generation = { issue = 679, note = "the Younger" }

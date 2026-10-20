@@ -179,6 +179,9 @@ MUTATIONS = [
     ("reading-not-a-table", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = true')}, "must be a table"),
     ("inert-entry", {"en.toml": _w('[[word]]\ntext = "jr"')}, "inert"),
     ("addresses-typo", {"und.toml": _w('[[word]]\ntext = "sheikh"\ntitle = { addresses = "givn" }')}, "must be 'family' or 'given'"),
+    # every title kind, not only the generic one (#750): keyed on the
+    # kind, a typo on a classified title would compile as the family
+    ("addresses-typo-on-a-title-kind", {"ar.toml": _w('[[word]]\ntext = "sheikh"\nstyle = { addresses = "givn" }')}, "must be 'family' or 'given'"),
     ("acronym-with-a-period", {"und.toml": _w('[[word]]\ntext = "x.q"\ncredential = {}')}, "matched with every period removed"),
     ("excluded-property-unknown", {"ja.toml": _w('[[word]]\ntext = "殿"\nhonorific = { excluded = { atached = "x" } }')}, "not a behavioral property"),
     ("excluded-defaulted-property-overridden", {"und.toml": _w('[[word]]\ntext = "mba"\ncredential = { acronym = false, excluded = { acronym = "x" } }')}, "acronym = false is excluded"),
@@ -195,6 +198,7 @@ MUTATIONS = [
     ("excluded-reason-shown-before-one-kind-per-word", {"fr.toml": _w('[[word]]\ntext = "fils"\ncredential = {}\nexcluded = { generation = "RECORDED REASON" }'), "en.toml": _w('[[word]]\ntext = "fils"\ngeneration = {}')}, "RECORDED REASON"),
     ("excluded-property-reason-shown-before-one-kind-per-word", {"ja.toml": _w('[[word]]\ntext = "名"\nhonorific = { excluded = { attached = "RECORDED REASON" } }'), "zh.toml": _w('[[word]]\ntext = "名"\ncourtesy = { attached = { side = "after" } }')}, "RECORDED REASON"),
     ("addresses-reserved-value", {"und.toml": _w('[[word]]\ntext = "sheikh"\ntitle = { addresses = "any" }')}, "reserved for a later phase"),
+    ("addresses-reserved-value-on-a-title-kind", {"en.toml": _w('[[word]]\ntext = "sir"\nnobility = { addresses = "full" }')}, "reserved for a later phase"),
     ("attached-on-an-acronym", {"und.toml": _w('[[word]]\ntext = "mba"\ncredential = { attached = { side = "after" } }')}, "needs a word reading"),
     ("attached-before", {"ja.toml": _w('[[word]]\ntext = "さん"\nhonorific = { attached = { side = "before" } }')}, "side = 'after'"),
     ("may-be-name-on-a-word", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = { may_be_name = true }')}, "may_be_name marks an acronym"),
@@ -231,6 +235,10 @@ MUTATIONS = [
     ("cased-disagrees-across-particle-kinds", {"und.toml": _w('[[word]]\ntext = "ó"\nparticle = { may_be_given = false, cased = "Ó" }'), "ga.toml": _w('[[word]]\ntext = "ó"\nclan = { may_be_given = false, cased = "ó" }')}, "cased is"),
     ("may-be-given-disagrees-with-the-generic-kind", {"und.toml": _w('[[word]]\ntext = "van"\nparticle = { may_be_given = true }'), "nl.toml": _w('[[word]]\ntext = "van"\npreposition = { may_be_given = false }')}, "may_be_given is"),
     ("addresses-disagrees-across-files", {"und.toml": _w('[[word]]\ntext = "sir"\ntitle = { addresses = "given" }'), "en.toml": _w('[[word]]\ntext = "sir"\ntitle = {}')}, "addresses is"),
+    # keyed on the category: a title may take another kind in each file
+    # (#750), and the kinds must still agree on which name they address
+    ("addresses-disagrees-across-title-kinds", {"en.toml": _w('[[word]]\ntext = "sir"\nnobility = { addresses = "given" }'), "fr.toml": _w('[[word]]\ntext = "sir"\nsalutation = {}')}, "addresses is"),
+    ("addresses-disagrees-with-the-generic-title", {"und.toml": _w('[[word]]\ntext = "sir"\ntitle = {}'), "en.toml": _w('[[word]]\ntext = "sir"\nnobility = { addresses = "given" }')}, "addresses is"),
     ("may-be-name-disagrees-across-files", {"en.toml": _w('[[word]]\ntext = "ma"\ncredential = {}'), "und.toml": _w('[[word]]\ntext = "ma"\ncredential = { may_be_name = true }')}, "may_be_name is"),
     # 6: an exclusion holds across files
     ("excluded-kind-in-another-file", {"fr.toml": _w('[[word]]\ntext = "fils"\nexcluded = { generation = "Marie Fils" }'), "en.toml": _w('[[word]]\ntext = "fils"\ngeneration = {}')}, "Marie Fils"),
@@ -247,6 +255,16 @@ MUTATIONS = [
     ("excluded-particle-kind-sidestepped-by-a-sibling-kind", {"ar.toml": _w('[[word]]\ntext = "ben"\nexcluded = { patronymic = "Ben is a given name" }'), "pl.toml": _w('[[word]]\ntext = "ben"\npreposition = { may_be_given = false }')}, "Ben is a given name"),
     ("excluded-particle-kind-sidestepped-by-the-generic-kind", {"ar.toml": _w('[[word]]\ntext = "ben"\nexcluded = { patronymic = "Ben is a given name" }'), "und.toml": _w('[[word]]\ntext = "ben"\nparticle = { may_be_given = true }')}, "Ben is a given name"),
     ("excluded-particle-category-refuses-a-kind", {"ga.toml": _w('[[word]]\ntext = "o"\nexcluded = { particle = "a periodless initial" }\nclan = { may_be_given = false }')}, "a periodless initial"),
+    # a title kind's exclusion refuses every other title kind, and the
+    # title category every kind: one title kind made both impossible
+    # before #750
+    ("excluded-title-kind-sidestepped-by-a-sibling-kind", {"cs.toml": _w('[[word]]\ntext = "pan"\nexcluded = { salutation = "the Chinese surname Pan" }'), "en.toml": _w('[[word]]\ntext = "pan"\noffice = {}')}, "the Chinese surname Pan"),
+    ("excluded-title-kind-sidestepped-by-the-generic-kind", {"cs.toml": _w('[[word]]\ntext = "pan"\nexcluded = { salutation = "the Chinese surname Pan" }'), "und.toml": _w('[[word]]\ntext = "pan"\ntitle = {}')}, "the Chinese surname Pan"),
+    # a refused property is refused on every kind of its category, with
+    # the recorded reason: keyed on the kind, check 5 would still refuse
+    # this, but with its own message instead of the reason
+    ("excluded-addresses-reason-shown-across-title-kinds", {"ar.toml": _w('[[word]]\ntext = "sheikh"\nsalutation = { excluded = { addresses = "RECORDED REASON" } }'), "en.toml": _w('[[word]]\ntext = "sheikh"\nnobility = { addresses = "given" }')}, "RECORDED REASON"),
+    ("excluded-title-category-refuses-a-kind", {"vi.toml": _w('[[word]]\ntext = "ông"\nexcluded = { title = "a surname that leads" }\nsalutation = {}')}, "a surname that leads"),
     ("excluded-category-in-another-file", {"und.toml": _w('[[word]]\ntext = "rai"\nexcluded = { suffix = "a surname" }'), "en.toml": _w('[[word]]\ntext = "rai"\ncredential = {}')}, "a surname"),
     # a reason written as a table reaches the refusal too
     ("excluded-kind-with-a-table-reason", {"fr.toml": _w('[[word]]\ntext = "fils"\nexcluded = { generation = { reason = "TABLE REASON", issue = 684 } }'), "en.toml": _w('[[word]]\ntext = "fils"\ngeneration = {}')}, "TABLE REASON"),
@@ -260,6 +278,7 @@ MUTATIONS = [
     ("cased-disagrees-across-files", {"und.toml": _w('[[word]]\ntext = "ó"\nparticle = { may_be_given = false, cased = "Ó" }'), "ga.toml": _w('[[word]]\ntext = "ó"\nparticle = { may_be_given = false, cased = "ó" }')}, "cased is"),
     # 8: phrases
     ("phrase-title-addressing-the-family", {"und.toml": _w('[[word]]\ntext = "deputy secretary"\ntitle = {}')}, "phrase can never match"),
+    ("phrase-title-kind-addressing-the-family", {"en.toml": _w('[[word]]\ntext = "deputy secretary"\noffice = {}')}, "phrase can never match"),
     ("phrase-with-cased", {"und.toml": _w('[[word]]\ntext = "sir and dame"\ntitle = { addresses = "given", cased = "Sir and Dame" }')}, "looked up per word"),
     ("phrase-particle", {"und.toml": _w('[[word]]\ntext = "de la"\nparticle = { may_be_given = false }')}, "phrase can never match"),
     # 9: a bound given name that is a particle may be given
@@ -274,6 +293,8 @@ MUTATIONS = [
     ("words-out-of-order", {"en.toml": _w('[[word]]\ntext = "sr"\ngeneration = {}\n\n[[word]]\ntext = "jr"\ngeneration = {}')}, "'sr' \\(generation\\) belongs after 'jr'"),
     ("kinds-out-of-order", {"en.toml": _w('[[word]]\ntext = "esq"\ncourtesy = {}\n\n[[word]]\ntext = "jr"\ngeneration = {}')}, "'esq' \\(courtesy\\) belongs after 'jr'"),
     ("categories-out-of-order", {"de.toml": _w('[[word]]\ntext = "von"\npreposition = { may_be_given = false }\n\n[[word]]\ntext = "dr"\ntitle = {}')}, "'von' \\(preposition\\) belongs after 'dr'"),
+    # the title kinds sort in CATEGORY's order, inside the category
+    ("title-kinds-out-of-order", {"en.toml": _w('[[word]]\ntext = "mayor"\noffice = {}\n\n[[word]]\ntext = "mr"\nsalutation = {}')}, "'mayor' \\(office\\) belongs after 'mr'"),
     # a same_as variant sorts after its head, not by its own text: in
     # plain alphabetical order jnr would come first
     ("same-as-variant-before-its-head", {"en.toml": _w('[[word]]\ntext = "jnr"\ngeneration = { same_as = "jr" }\n\n[[word]]\ntext = "jr"\ngeneration = {}')}, "'jnr' \\(generation\\) belongs after 'jr'"),
@@ -331,6 +352,18 @@ def test_every_mutation_starts_from_a_pool_the_checks_accept() -> None:
         {"und.toml": _w('[[word]]\ntext = "d\'"\nparticle = { may_be_given = false }\n\n'
                         '[[word]]\ntext = "d’"\nparticle = { may_be_given = false }')},
         {"und.toml": _w('[[word]]\ntext = "sir and dame"\ntitle = { addresses = "given" }')},
+        {"en.toml": _w('[[word]]\ntext = "sir and dame"\nnobility = { addresses = "given" }')},
+        # a same_as may name a word of another title kind: check 7 asks
+        # for the category
+        {"en.toml": _w('[[word]]\ntext = "mr"\nsalutation = {}'),
+         "de.toml": _w('[[word]]\ntext = "mister"\noffice = { same_as = "mr" }')},
+        # a title kind's exclusion refuses the title set, not the word:
+        # its particle reading stays free
+        {"cs.toml": _w('[[word]]\ntext = "pan"\nexcluded = { salutation = "the Chinese surname Pan" }'),
+         "und.toml": _w('[[word]]\ntext = "pan"\nparticle = { may_be_given = true }')},
+        # one title in a different kind per file, agreeing on addresses
+        {"en.toml": _w('[[word]]\ntext = "sir"\nnobility = { addresses = "given" }'),
+         "fr.toml": _w('[[word]]\ntext = "sir"\nsalutation = { addresses = "given" }')},
         # a zero-width joiner or non-joiner is spelling, and a token keeps it
         {"fa.toml": _w('[[word]]\ntext = "ab\\u200ccd"\ntitle = {}\n\n'
                        '[[word]]\ntext = "ef\\u200dgh"\ntitle = {}')},
@@ -749,6 +782,17 @@ _PROPERTY_PROBES = {
 }
 #: The behavioral properties the build refuses to leave unwritten.
 _REQUIRED = {"may_be_given"}
+
+
+@pytest.mark.parametrize("kind", [k for k, c in build.CATEGORY.items() if c == "title"])
+def test_every_title_kind_compiles_its_behavioral_properties(kind: str) -> None:
+    # GIVEN_NAME_TITLES is compiled by category, so a classified title
+    # keeps addresses (#750): keyed on the generic kind, a nobility sir
+    # would lose it; and every title kind is allowed `cased`, which the
+    # compiler reads from any reading
+    assert _sets_fed(kind, '{ addresses = "given" }') == {"TITLES", "GIVEN_NAME_TITLES"}
+    files = {"en.toml": _w(f'[[word]]\ntext = "zzq"\n{kind} = {{ cased = "ZzQ" }}')}
+    assert build.compile_files(files)["CAPITALIZATION_EXCEPTIONS"] == {"zzq": "ZzQ"}
 
 
 def test_the_readme_lists_every_kind_with_its_category_and_set() -> None:

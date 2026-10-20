@@ -1,6 +1,10 @@
 schema = 1
 
 [[word]]
+text = "guru"
+religious = { addresses = "given", issue = 346 }
+
+[[word]]
 text = "ਜੂਨੀਅਰ"
 generation = { issue = 679 }
 

@@ -1,6 +1,10 @@
 schema = 1
 
 [[word]]
+text = "janab"
+excluded = { salutation = { reason = "unverified, so not shipped: the Devanagari जनाब and Bengali জনাব ship, and the Latin spelling needs its own check (the sri/shri pattern)", issue = 606, decided = 2026-10-04 } }
+
+[[word]]
 text = "جونئیر"
 generation = { issue = 679 }
 

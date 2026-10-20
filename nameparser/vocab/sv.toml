@@ -1,6 +1,26 @@
 schema = 1
 
 [[word]]
+text = "fru"
+salutation = { gender = "f", note = "Fru is also a Cameroonian surname (~10,800, often written surname-first), so 'Fru Anna' reads title Fru; a collision older than #606, recorded in decisions/salutation-titles rather than argued" }
+
+[[word]]
+text = "fröken"
+salutation = { issue = 606, gender = "f" }
+
+[[word]]
+text = "frk"
+salutation = { gender = "f", same_as = "fröken" }
+
+[[word]]
+text = "herr"
+salutation = { gender = "m" }
+
+[[word]]
+text = "hr"
+salutation = { gender = "m", same_as = "herr" }
+
+[[word]]
 text = "af"
 preposition = { may_be_given = false, expands = "of, nobiliary" }
 

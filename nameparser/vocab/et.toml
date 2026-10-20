@@ -1,0 +1,13 @@
+schema = 1
+
+[[word]]
+text = "härra"
+salutation = { issue = 606, gender = "m", note = "keeps its accent, so the surname Harra (~1,100) is untouched; the lexicon folds no accent (decisions/salutation-titles)" }
+
+[[word]]
+text = "preili"
+salutation = { issue = 606, gender = "f" }
+
+[[word]]
+text = "proua"
+salutation = { issue = 606, gender = "f" }

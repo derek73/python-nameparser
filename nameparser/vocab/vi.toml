@@ -1,0 +1,9 @@
+schema = 1
+
+[[word]]
+text = "bà"
+excluded = { salutation = { reason = "Vietnamese Mrs., refused as ông's pair without evidence of its own: #606 judged the excluded side from general knowledge, with no count taken (decisions/salutation-titles)", issue = 606, decided = 2026-10-04 } }
+
+[[word]]
+text = "ông"
+excluded = { salutation = { reason = "Ông is a Vietnamese surname and Vietnamese names lead with the surname, the position the title claim acts on; pinned by the case row salutation_that_leads_a_surname_stays_a_name", issue = 606, decided = 2026-10-04 } }

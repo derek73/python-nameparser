@@ -1,6 +1,18 @@
 schema = 1
 
 [[word]]
+text = "binibini"
+salutation = { issue = 606, gender = "f", note = "borne: ~500 surnames, in Philippine lists writing Surname, Given with a comma, forebears.io, worldwide, rounded, 2026-10-04; shipped under the graf class (decisions/salutation-titles)" }
+
+[[word]]
+text = "ginang"
+salutation = { issue = 606, gender = "f", note = "borne: ~500 surnames, in Philippine lists writing Surname, Given with a comma, forebears.io, worldwide, rounded, 2026-10-04; shipped under the graf class (decisions/salutation-titles)" }
+
+[[word]]
+text = "ginoo"
+salutation = { issue = 606, gender = "m", note = "borne: ~500 surnames, in Philippine lists writing Surname, Given with a comma, forebears.io, worldwide, rounded, 2026-10-04; shipped under the graf class (decisions/salutation-titles)" }
+
+[[word]]
 text = "dela"
 [word.preposition]
 may_be_given = true

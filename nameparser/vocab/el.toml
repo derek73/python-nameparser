@@ -1,6 +1,18 @@
 schema = 1
 
 [[word]]
+text = "κ"
+excluded = { salutation = { reason = "κ. (Mr.) has the initial-and-surname shape: 'Κ. Παπαδόπουλος' would read title 'Κ.' with an empty given, the edge-period fold making the entry match the initial; Latin titles have no bare single letter for the same reason", issue = 269 } }
+
+[[word]]
+text = "κα"
+salutation = { gender = "f", issue = 269, expands = "κυρία, Mrs." }
+
+[[word]]
+text = "κος"
+salutation = { gender = "m", issue = 269, expands = "κύριος, Mr." }
+
+[[word]]
 text = "σίνιορ"
 generation = { issue = 679 }
 

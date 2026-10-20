@@ -1,6 +1,14 @@
 schema = 1
 
 [[word]]
+text = "paron"
+excluded = { salutation = { reason = "Armenian Mr. in Latin script: unverified, so not shipped", issue = 606, decided = 2026-10-04 } }
+
+[[word]]
+text = "tikin"
+excluded = { salutation = { reason = "Armenian Mrs. in Latin script: unverified, so not shipped", issue = 606, decided = 2026-10-04 } }
+
+[[word]]
 text = "ավագ"
 [word.excluded.generation]
 reason = "an Armenian given name, in lists that write the surname first"

@@ -1,6 +1,18 @@
 schema = 1
 
 [[word]]
+text = "gospodin"
+salutation = { issue = 606, gender = "m" }
+
+[[word]]
+text = "gospođa"
+salutation = { issue = 606, gender = "f" }
+
+[[word]]
+text = "gospođica"
+salutation = { issue = 606, gender = "f" }
+
+[[word]]
 text = "ml"
 [word.excluded.generation]
 reason = "pack-shaped: real and standard, but collides with ML initials in other languages written in Latin script"

@@ -1,6 +1,26 @@
 schema = 1
 
 [[word]]
+text = "senhor"
+salutation = { gender = "m" }
+
+[[word]]
+text = "sr"
+salutation = { gender = "m", same_as = "senhor" }
+
+[[word]]
+text = "senhora"
+salutation = { gender = "f" }
+
+[[word]]
+text = "sra"
+salutation = { gender = "f", same_as = "senhora" }
+
+[[word]]
+text = "senhorita"
+salutation = { gender = "f" }
+
+[[word]]
 text = "da"
 preposition = { may_be_given = true, expands = "of the, fem. sg." }
 

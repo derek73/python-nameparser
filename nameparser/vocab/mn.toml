@@ -1,6 +1,10 @@
 schema = 1
 
 [[word]]
+text = "lama"
+religious = { addresses = "given", issue = 346 }
+
+[[word]]
 text = "жр"
 [word.excluded.generation]
 reason = "the initials ЖР"
