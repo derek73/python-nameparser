@@ -702,11 +702,21 @@ def test_main_skips_the_index_for_a_latin_word(
     assert sources[-1] == "Wikidata people"
 
 
+@pytest.mark.parametrize("local", ["none", "not fetched", "fetched"])
 def test_main_adds_the_ends_with_row_for_a_cjk_word(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
-        capsys: pytest.CaptureFixture[str]) -> None:
+        capsys: pytest.CaptureFixture[str], local: str) -> None:
+    # With a local corpus listed, fetched or not: the local rows' loop
+    # once shadowed main's CJK index, so the row read None or a WordIndex.
     monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
     monkeypatch.setattr(tool, "load_census", lambda download: None)
+    module = tool._local_corpora()
+    corpus = module.Local("ctgov-officials", [{"name": "Ann Lee, MD"}],
+                          {"data_date": "2026-10-21"})
+    locals_ = {"none": [],
+               "not fetched": [("ctgov-officials", None, None, "")],
+               "fetched": [("ctgov-officials", corpus, module.word_index(corpus), "")]}
+    monkeypatch.setattr(tool, "load_locals", lambda: locals_[local])
     monkeypatch.setattr(tool, "load_index", lambda download, refresh=False:
                         _index(("Q1", "family", "向殿")))
     _stub_sparql(monkeypatch, [[], [], [{"role": "family", "n": "1"}], []])

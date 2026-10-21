@@ -1097,6 +1097,21 @@ def local_usage(word: str, source: str, local: Local | None,
     return usage
 
 
+def local_rows(word: str, locals_: list[tuple[str, Local | None,
+                                              WordIndex | None, str]]) -> list[Usage]:
+    """One row per local corpus, a corpus that failed to load reported
+    as failed. A function of its own so its loop names cannot shadow
+    main's: written inline there, its `index` replaced the CJK name
+    index the ends-with row reads (#801's review)."""
+    rows = []
+    for source, local, index, error in locals_:
+        row = local_usage(word, source, local, index)
+        if error:
+            row.status, row.note = "failed", error
+        rows.append(row)
+    return rows
+
+
 # -- Wikidata ------------------------------------------------------------
 
 def spellings(word: str) -> list[str]:
@@ -1991,12 +2006,8 @@ def main(argv: list[str] | None = None) -> int:
                            (nppes_row, nppes_error)):
             if error:
                 row.status, row.note = "failed", error
-        usages = [census_row, ssa_row, namdict_row, nppes_row]
-        for source, local, index, error in locals_:
-            row = local_usage(word, source, local, index)
-            if error:
-                row.status, row.note = "failed", error
-            usages.append(row)
+        usages = [census_row, ssa_row, namdict_row, nppes_row,
+                  *local_rows(word, locals_)]
         if not args.no_wikidata:
             usages.append(wikidata_usage(word, args.countries))
             if is_cjk(word):

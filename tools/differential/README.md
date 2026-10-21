@@ -194,7 +194,7 @@ invocation shows it.
 | `corpus_rules.jsonl` | Watch | every example in `docs/design/rules/`, via `build_rules_corpus.py` (#414) | anything the rules doc has no example for |
 | `corpus_shapes.jsonl` | Watch | shape-tagged rows of `tests/v2/cases.py`, via `build_shapes_corpus.py` (#468) | anything no one has tagged a row for |
 
-The jobs are mechanisms.md's NAME-DATA-JOBS: Watch is the snapshot above, Score the agreement records below (`cldr_agreement.py`). Each covers a blind spot of the others. `corpus.jsonl` is reproducible
+The jobs are mechanisms.md#NAME-DATA-JOBS: Watch is the snapshot above, Score the agreement records below (`cldr_agreement.py`). Each covers a blind spot of the others. `corpus.jsonl` is reproducible
 forever from an immutable git ref, while the issue tracker is mutable,
 so regenerating `corpus_issues.jsonl` is an explicit, reviewable act.
 The CJK corpus exists because both of those are structurally blind to
@@ -223,7 +223,7 @@ uv run python tools/differential/build_shapes_corpus.py --coverage
 
 ## Local corpora
 
-A local corpus holds real names that are not committed: fetched into the cache by `local_corpora.py`, read by `snapshot.py --local` and by a row of `tools/name_usage.py`, and seen by no reviewer and no CI run (the Survey job in mechanisms.md's NAME-DATA-JOBS). What reaches the repository is what a contributor cites from it, counts and shapes written with made-up names.
+A local corpus holds real names that are not committed: fetched into the cache by `local_corpora.py`, read by `snapshot.py --local` and by a row of `tools/name_usage.py`, and seen by no reviewer and no CI run (the SURVEY job in mechanisms.md#NAME-DATA-JOBS, and WATCH outside CI). What reaches the repository is what a contributor cites from it, counts and shapes written with made-up names.
 
 ```
 uv run python tools/differential/local_corpora.py fetch ctgov-officials
