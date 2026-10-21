@@ -139,6 +139,9 @@ _LOG = ("## Log\n\n"
         "- 2026-10-26, corrected 2026-10-27 — A.\n"
         "- 2026-10-26 — B.\n"
         "- 2026-09-19 (Derek), #533 — Z.\n"
+        "- 2026-10-28 (Derek), scope corrected 2026-11-09 — Q.\n"
+        "- 2026-10-30, corrected 2026-11-10 and 2026-11-11 — S.\n"
+        "- 2026-10-30 — T.\n"
         "- 2026-09-14, corrected 2026-09-17 — WHERE THE FACT LIVES.\n"
         "- 2026-07 (v2 core, PR #288) — v1 parity.\n"
         "- 2026-10-01 (Derek), #562 — SUPERSEDED by #613. The pair.\n"
@@ -179,6 +182,11 @@ _LOG = ("## Log\n\n"
     ("- Copied head — 2026-10-24, #742 review round.\n", None),
     ("- Two — 2026-10-24 #742 review round, 2026-10-23 #741, Y.\n", None),
     ("\nNot standing: 2026-10-18 #718 reveiw.\n", "not-standing pointer"),
+    # The inner dates name no entry, so reading one as a second pointer
+    # is a finding rather than a silent extra citation.
+    ("- One candidate — 2026-10-28 (Derek), scope corrected 2026-11-09.\n",
+     None),
+    ("- Cut short — 2026-10-30, corrected 2026-11-10.\n", None),
     ("- The round — 2026-09-18, REVIEW ROUND.\n", None),
     ("- Decided once — 2026-10-04 #613.\n", "no entry 2026-10-04 #613"),
     ("- Decided once — 2026-10 #613.\n", "no entry 2026-10 #613"),
@@ -196,6 +204,7 @@ _LOG = ("## Log\n\n"
         "date-inside-the-words", "issue-words-typo", "date-words-typo",
         "head-copied-whole-reads-its-issue", "comma-joined-second-pointer",
         "not-standing-unmatched-words",
+        "one-candidate-date-inside-its-words", "cut-words-date-inside",
         "date-only-qualified-beside-a-bare-date",
         "later-issue-in-a-head",
         "month-only-date", "second-pointer",

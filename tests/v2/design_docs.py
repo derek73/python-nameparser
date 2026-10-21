@@ -15,6 +15,7 @@ renaming a file never breaks one.
 from __future__ import annotations
 
 import json
+import os
 import re
 import unicodedata
 from dataclasses import dataclass
@@ -256,9 +257,9 @@ def _resolve(line: str, m: re.Match[str],
     """The log entries one pointer names."""
     date, num = m["date"], m["num"]
     found = [e for e in entries if _names(e[0], date, num)]
-    if len(found) < 2:
-        return _Resolved(found, 0)
     after = line[m.end():]
+    if len(found) < 2:
+        return _Resolved(found, _read(after, found, date, num))
     # The words end at `.` or `;`, or where the next pointer's date
     # starts (`— 2026-10-17 #718, 2026-10-18 #721`).
     said = re.split(rf"[.;]|{_DATE}", after, maxsplit=1)[0].rstrip(" ,")
@@ -288,7 +289,17 @@ def _resolve(line: str, m: re.Match[str],
         words = said[len(tails[hits[0]]):].lstrip(" ,")
         twin = [e for e in hits if words and e[1].startswith(words)]
         hits = twin or hits
-    return _Resolved(hits, used)
+    return _Resolved(hits, max(used, _read(after, hits, date, num)))
+
+
+def _read(after: str, hits: list[tuple[str, str]], date: str,
+          num: str | None) -> int:
+    """How much of the line the one entry named was read as its head's
+    words -- however much of them the pointer wrote -- so a date among
+    them is not taken for a second pointer."""
+    if len(hits) != 1:
+        return 0
+    return len(os.path.commonprefix([after, _tail(hits[0][0], date, num)]))
 
 
 def _hits(line: str, m: re.Match[str],
