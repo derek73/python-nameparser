@@ -176,7 +176,7 @@ NPPES_SIZE = "673 MB"
 #: NPPES_MIN_ALONE and NPPES_SPELLINGS, beside _resolve, are written into
 #: the tally and checked too, so changing either rebuilds it without a
 #: bump.
-TALLY_VERSION = 1
+TALLY_VERSION = 2  # 2: the tally keeps _resolve's spelling choice
 WIKIDATA_ENDPOINT = "https://query.wikidata.org/sparql"
 USER_AGENT = ("nameparser-name-usage/0.1 "
               "(https://github.com/derek73/python-nameparser)")
@@ -748,6 +748,10 @@ class CredentialTally:
     credentialed: int
     #: Key -> (providers writing it, its commonest spellings with counts).
     tokens: dict[str, tuple[int, list[tuple[str, int]]]]
+    #: A key's letters and digits -> the key _resolve files a spaced
+    #: segment of those letters under ('PAC' -> 'PA-C'), kept so the
+    #: lookup reads the tally's own choice instead of deriving one.
+    joined: dict[str, str]
 
     def __post_init__(self) -> None:
         """What every tally must hold, built or loaded. An empty one
@@ -768,6 +772,10 @@ class CredentialTally:
                     and all(c > 0 for _, c in spellings)):
                 raise ValueError(f"token {key!r} needs a count from 1 to "
                                  "credentialed and a spelling")
+        for letters, key in self.joined.items():
+            if key not in self.tokens or _squash(key) != letters:
+                raise ValueError(f"joined {letters!r} names {key!r}, not a "
+                                 "token with those letters")
 
     def ranked(self) -> list[tuple[str, int, list[tuple[str, int]]]]:
         return sorted(((k, n, s) for k, (n, s) in self.tokens.items()),
@@ -814,7 +822,8 @@ def tally_credentials(rows: Iterator[dict[str, str]]) -> CredentialTally:
     return CredentialTally(
         people, sum(fields.values()),
         {k: (n, spellings[k].most_common(NPPES_SPELLINGS))
-         for k, n in providers.items()})
+         for k, n in providers.items()},
+        {letters: key for letters, (key, _) in joined.items()})
 
 
 def _fetch_nppes(path: Path) -> None:
@@ -877,7 +886,8 @@ def _tally_json(tally: CredentialTally) -> dict[str, Any]:
             "rules": _tally_rules(),
             "people": tally.people, "credentialed": tally.credentialed,
             "tokens": {k: [n, [list(s) for s in spellings]]
-                       for k, (n, spellings) in tally.tokens.items()}}
+                       for k, (n, spellings) in tally.tokens.items()},
+            "joined": tally.joined}
 
 
 def _tally_from_json(data: object) -> CredentialTally | None:
@@ -890,11 +900,14 @@ def _tally_from_json(data: object) -> CredentialTally | None:
             or data.get("source_sha256") != NPPES_SHA256
             or data.get("rules") != _tally_rules()):
         return None
-    people, credentialed, tokens = (data.get("people"), data.get("credentialed"),
-                                    data.get("tokens"))
+    people, credentialed, tokens, joined = (
+        data.get("people"), data.get("credentialed"), data.get("tokens"),
+        data.get("joined"))
     if not (isinstance(people, int) and isinstance(credentialed, int)
-            and isinstance(tokens, dict)):
-        raise ValueError("needs people, credentialed and a tokens map")
+            and isinstance(tokens, dict) and isinstance(joined, dict)
+            and all(isinstance(v, str) for v in joined.values())):
+        raise ValueError("needs people, credentialed, a tokens map and a "
+                         "joined map")
     out: dict[str, tuple[int, list[tuple[str, int]]]] = {}
     for key, value in tokens.items():
         if not (isinstance(value, list) and len(value) == 2
@@ -905,7 +918,7 @@ def _tally_from_json(data: object) -> CredentialTally | None:
             raise ValueError(f"token {key!r} is not [count, spellings]")
         out[key] = (value[0], [(s, n) for s, n in value[1]])
     # Types are checked here; values by CredentialTally itself.
-    return CredentialTally(people, credentialed, out)
+    return CredentialTally(people, credentialed, out, joined)
 
 
 def load_nppes(download: bool) -> CredentialTally | None:
@@ -980,25 +993,24 @@ def credential_usage(word: str, tally: CredentialTally | None) -> Usage:
                       "spell; it spells every one in ASCII")
         return usage
     # Keys differing only in punctuation are spellings of one credential
-    # kept apart (PA-C, PAC). A spaced word is filed as the commonest of
-    # them, as _resolve files a spaced segment, so 'PA C' finds PA-C and
-    # not PAC. _resolve orders them by whole segments and this by
-    # providers; outside ties the two differ in 1 of 2,226 spelling groups
-    # (CPRI, whose one provider writes it twice), measured 2026-10-21. And
-    # every answer names the others, so a spelling few write cannot stand
-    # alone: OTR-L's 416 providers are reported beside OTR/L's 61,789.
+    # kept apart (PA-C, PAC). A spaced word is looked up under the spelling
+    # the tally files those letters under when _resolve joins a segment,
+    # so 'PA C' finds PA-C and not PAC. It does not ask whether _resolve
+    # would join it: 'MD PHD' finds MD/PHD's 721, though the tally counted
+    # those segments as MD and PHD. And every answer names the others, so
+    # a spelling few write cannot stand alone: OTR-L's 416 providers are
+    # reported beside OTR/L's 61,789. A word with no letters or digits
+    # ('-') shares them with nothing.
     letters = _squash(key)
-    sharing: list[tuple[str, int]] = []
-    if letters:  # a word with no letters or digits ('-') shares none
-        sharing = sorted(((k, n) for k, (n, _) in tally.tokens.items()
-                          if k != key and _squash(k) == letters),
-                         key=lambda kn: (-kn[1], kn[0]))
     if key in tally.tokens:
         found: str | None = key
-    elif " " in key and sharing:
-        found = sharing.pop(0)[0]  # and named as found, not as another
+    elif " " in key and letters:
+        found = tally.joined.get(letters)
     else:
         found = None
+    sharing = sorted(((k, n) for k, (n, _) in tally.tokens.items()
+                      if k not in (key, found) and _squash(k) == letters),
+                     key=lambda kn: (-kn[1], kn[0])) if letters else []
     others = ("also written " + ", ".join(f"{k} {n:,}" for k, n in sharing[:3])
               if sharing else "")
     if found is None:

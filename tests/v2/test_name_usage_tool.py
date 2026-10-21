@@ -1670,13 +1670,23 @@ class _Tally(Protocol):
     people: int
     credentialed: int
     tokens: dict[str, tuple[int, list[tuple[str, int]]]]
+    joined: dict[str, str]
 
 
-def _tally(**tokens: int) -> _Tally:
+def _tally(joined: dict[str, str] | None = None, /, **tokens: int) -> _Tally:
+    """A tally of these provider counts. Unless `joined` is given, each
+    unspaced key's letters are filed under the commonest key holding them,
+    as tally_credentials files them when providers and whole segments
+    agree."""
     credentialed = sum(tokens.values()) or 1
+    if joined is None:
+        joined = {}
+        for k, _ in sorted(tokens.items(), key=lambda kn: -kn[1]):
+            if " " not in k:
+                joined.setdefault(tool._squash(k), k)
     return tool.CredentialTally(
         people=max(1000, credentialed), credentialed=credentialed,
-        tokens={k: (n, [(k, n)]) for k, n in tokens.items()})
+        tokens={k: (n, [(k, n)]) for k, n in tokens.items()}, joined=joined)
 
 
 @pytest.mark.parametrize("word", ["m.d.", "MD", "Md", "M. D."])
@@ -1697,6 +1707,17 @@ def test_credential_usage_files_a_spaced_word_as_the_tally_filed_it() -> None:
     tally = _tally(**{"PA-C": 120, "PAC": 6})
     usage = tool.credential_usage("PA C", tally)
     assert usage.credential == 120 and "looked up as PA-C" in usage.note
+
+
+def test_credential_usage_reads_the_tallys_choice_not_the_provider_order() -> None:
+    # The lookup used to re-derive the choice by provider count, and
+    # _resolve made it by whole segments: CPRI's one provider writes it
+    # twice, so _resolve filed 'CPR I' under CPRI while the lookup, by
+    # providers then by key, found CPR-I (measured 2026-10-21).
+    tally = _tally({"CPRI": "CPRI"}, **{"CPR-I": 1, "CPRI": 1})
+    usage = tool.credential_usage("CPR I", tally)
+    assert "looked up as CPRI" in usage.note
+    assert "also written CPR-I 1" in usage.note
 
 
 def test_credential_usage_names_the_other_spellings_of_its_letters() -> None:
@@ -1779,6 +1800,7 @@ def test_load_nppes_downloads_the_pinned_zip_and_caches_its_tally(
     (tmp_path / tool.NPPES_FILE).unlink()
     again = _LOAD_NPPES(download=False)
     assert again is not None and again.tokens == tally.tokens
+    assert again.joined == tally.joined and again.joined
 
 
 def test_load_nppes_refuses_a_zip_that_is_not_the_pinned_one(
@@ -2040,13 +2062,19 @@ def test_load_nppes_refuses_a_source_with_no_individual_provider(
     assert not (tmp_path / tool.NPPES_TALLY).exists()
 
 
+# A row replacing the tokens replaces `joined` with them: left naming a
+# dropped token, it is refused by the joined check before the value under
+# test is read, and the row passes whatever the value check does.
 @pytest.mark.parametrize("change", [
     {"credentialed": 0},              # a share divided by zero
     {"credentialed": 2000},           # more than the people read
-    {"tokens": {"MD": [0, [["MD", 1]]]}},
-    {"tokens": {"MD": [5000, [["MD", 1]]]}},
-    {"tokens": {"MD": [5, []]}},      # --rank printed spellings[0]
-    {"tokens": {"MD": [5, [["MD", 0]]]}},
+    {"tokens": {"MD": [0, [["MD", 1]]]}, "joined": {"MD": "MD"}},
+    {"tokens": {"MD": [5000, [["MD", 1]]]}, "joined": {"MD": "MD"}},
+    {"tokens": {"MD": [5, []]}, "joined": {"MD": "MD"}},  # --rank printed spellings[0]
+    {"tokens": {"MD": [5, [["MD", 0]]]}, "joined": {"MD": "MD"}},
+    {"joined": {"PAC": "PA-C"}},      # names no token
+    {"joined": {"RN": "MD"}},         # names a token of other letters
+    {"joined": None},                 # a version-2 tally without the map
 ])
 def test_load_nppes_refuses_a_tally_whose_values_cannot_be(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
