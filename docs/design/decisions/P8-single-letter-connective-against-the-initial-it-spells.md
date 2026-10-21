@@ -7,8 +7,8 @@
 - Both questions are asked over the name's own words, those before a maiden marker's run and outside a delimited clause; the one-case member's `initial` tag is given per token at every name length, three words included, though no role moves there: `john e smith` capitalizes to `John E Smith` and reports `conjunction-or-initial`, where with `e` removed from the subset it gives `John e Smith` and no report — 2026-09-13 #383 + #479.
 - The subset is the knob, with no switch beside it; that a locale pack cannot remove a member is accepted — 2026-09-13 #383 + #479.
 - The facade's `initials()` follows the parse's tags as the core does (the #528 amendment inside the entry) — 2026-09-13 #383 + #479.
-- An orphan `conjunctions_ambiguous` entry is inert and nothing checks it — 2026-09-13 #383/#479.
-- The `initial` tag is not purely a shape claim: a marked connective in a one-case name carries it (amends decisions/M4) — 2026-09-13 #383/#479.
+- An orphan `conjunctions_ambiguous` entry is inert and nothing checks it — 2026-09-13 #383/#479, `conjunctions_ambiguous` is deliberately.
+- The `initial` tag is not purely a shape claim: a marked connective in a one-case name carries it (amends decisions/M4) — 2026-09-13 #383/#479, AMENDS.
 - Inside a hyphenated word the connective keeps its lowercase in case repair, decided in decisions/R4 — 2026-09-24 #478.
 
 Open: none in this file.

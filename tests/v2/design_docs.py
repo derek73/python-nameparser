@@ -167,8 +167,10 @@ def reused_id_findings(rule_ids: set[str],
 # date and whose first issue is its issue, or names none for a date-only
 # pointer; where several do, the words after the pointer pick the one
 # whose head continues with them (`— 2026-09-14 (Derek)`, `— 2026-10-18
-# #718 review`), and with no such words the one whose head ends there.
-# A pointer still naming entries with different heads is ambiguous. An
+# #718 review`), and with no such words the one whose head ends there;
+# where heads are the same words, the pointer goes on with the words
+# its entry's text opens with (`— 2026-09-13 #383/#479, AMENDS`). A
+# pointer still naming more than one entry is ambiguous. An
 # entry whose text after the head opens with `SUPERSEDED by` is
 # superseded, and a Standing pointer may not rest on it; one opening
 # `SUPERSEDED:` or `SUPERSEDED IN PART:` announces what it replaces and
@@ -239,7 +241,15 @@ def _hits(line: str, m: re.Match[str],
     picked = [e for e in found
               if (tail := _tail(e[0], date, num)) and said
               and (said.startswith(tail) or tail.startswith(said))]
-    return picked or [e for e in found if not _tail(e[0], date, num)] or found
+    hits = (picked or [e for e in found if not _tail(e[0], date, num)]
+            or found)
+    if len(hits) > 1 and len({_clean(head) for head, _ in hits}) == 1:
+        # Twins: entries whose heads are the same words. What the
+        # pointer says past the head names one by how its text opens.
+        words = said[len(_tail(hits[0][0], date, num)):].lstrip(" ,")
+        twin = [e for e in hits if words and e[1].startswith(words)]
+        hits = twin or hits
+    return hits
 
 
 _STANDING_HEADING = re.compile(r"^## Standing$", re.M)
@@ -265,8 +275,8 @@ def has_standing(text: str) -> bool:
 def standing_findings(text: str) -> list[str]:
     """What is wrong with a decisions file's Standing block: a bullet
     with no `— <date>` pointer, any pointer from there to the line's
-    end naming no entry (dates match exactly), naming entries with
-    different heads (ambiguous), or naming a `SUPERSEDED by` entry, a
+    end naming no entry (dates match exactly), naming more than one
+    (ambiguous), or naming a `SUPERSEDED by` entry, a
     Not-standing pointer to no entry, a Standing with no Log after it.
     Empty for a file with no Standing block, whose absence is
     standing_roster_findings' question."""
@@ -291,7 +301,7 @@ def standing_findings(text: str) -> list[str]:
                 hits = _hits(line, m, entries)
                 if not hits:
                     findings.append(f"no entry {m['date']} #{m['num']}")
-                elif len({_clean(head) for head, _ in hits}) > 1:
+                elif len(hits) > 1:
                     findings.append(
                         f"ambiguous pointer {m['date']} #{m['num']}: add "
                         "the words its entry's head continues with")

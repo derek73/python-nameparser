@@ -6,7 +6,7 @@
 - The case fact counts the judged word itself, so `JOHN SMITH Ma` is mixed case and `Ma` leans surname. Whether a cased suffix counts as case evidence is answered for render only (decisions/R5); the parse keeps counting it — 2026-09-14 #289; 2026-09-23 #492.
 - At the first slot after a comma the count goes first, of name words, and the lean is read only where the count leaves the word a name: `Smith, MA` → suffix, `Smith, Ma` and `Smith, ma` → given, `Smith Jr., MA` → suffix 'Jr., MA' — 2026-09-14 (Derek); 2026-10-20 #761.
 - A caseless script carries no lean, and the name-word count still reaches it: `마틴 킹, MA` → suffix 'MA', `毛泽东, MA` → given 'MA' — 2026-09-17.
-- The one-case fact is computed over the name's own words by one shared helper (`_pieces.own_words`), which classify always calls and every later reader of the fact calls rather than copying it — 2026-09-14, corrected.
+- The one-case fact is computed over the name's own words by one shared helper (`_pieces.own_words`), which classify always calls and every other stage that reads the fact calls rather than copying it — 2026-09-14, corrected.
 - `Freiherr von Berg MA` reads family 'von Berg', suffix 'MA', the lean ending P2's chain with no words to spare — 2026-09-15 (Derek).
 - The whole-PR review's five readings stand: an acronym the particle chain absorbs reports `suffix-or-name` (`John van der Berg Ma`); the CJK stage asks the post-comma run with the one-case fact; a by-shape credential in a tail segment raises no `comma-structure`; a word a caller lists as a surname is never caps-shaped; and a dotted listed member takes the lean — 2026-09-18, WHOLE-PR REVIEW ROUND.
 

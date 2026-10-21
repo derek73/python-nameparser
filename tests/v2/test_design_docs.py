@@ -154,7 +154,9 @@ _LOG = ("## Log\n\n"
     ("- The report — 2026-10-18 #718.\n", None),
     ("- The comma — 2026-10-18 #718 review.\n", None),
     ("- One of two — 2026-10-19 #730.\n", "ambiguous pointer 2026-10-19 #730"),
-    ("- Either twin — 2026-10-21 #731/#732.\n", None),
+    ("- Either twin — 2026-10-21 #731/#732.\n",
+     "ambiguous pointer 2026-10-21 #731"),
+    ("- The second twin — 2026-10-21 #731/#732, Y.\n", None),
     ("- The round — 2026-09-18, REVIEW ROUND.\n", None),
     ("- Decided once — 2026-10-04 #613.\n", "no entry 2026-10-04 #613"),
     ("- Decided once — 2026-10 #613.\n", "no entry 2026-10 #613"),
@@ -166,7 +168,8 @@ _LOG = ("## Log\n\n"
         "date-only-qualified-by-its-words", "date-only-shared-date",
         "date-only-qualifier-then-prose", "date-only-bare-beside-qualified",
         "supersession-note-ignored", "issue-bare-picks-unqualified-head",
-        "issue-qualified", "issue-shared-ambiguous", "identical-heads-accepted",
+        "issue-qualified", "issue-shared-ambiguous", "twins-unqualified-ambiguous",
+        "twins-qualified-by-text",
         "date-only-qualified-beside-a-bare-date",
         "later-issue-in-a-head",
         "month-only-date", "second-pointer",
@@ -188,6 +191,8 @@ def test_standing_findings_name_each_broken_pointer(
     ("2026-09-14, corrected.", "2026-09-14, corrected 2026-09-17"),
     ("2026-09-18.", "2026-09-18"),
     ("2026-09-18, REVIEW ROUND.", "2026-09-18, REVIEW ROUND"),
+    ("2026-10-21 #731/#732, X.", "2026-10-21 #731/#732 — X."),
+    ("2026-10-21 #731/#732, Y.", "2026-10-21 #731/#732 — Y."),
 ])
 def test_a_pointer_resolves_to_the_entry_its_words_name(
         pointer: str, head: str) -> None:
@@ -196,7 +201,8 @@ def test_a_pointer_resolves_to_the_entry_its_words_name(
     line = f"- x — {pointer}"
     m = _POINTER_RE.search(line, line.index("— "))
     assert m is not None
-    assert [h for h, _ in _hits(line, m, _entries(_LOG))] == [head]
+    assert [f"{h} — {r}" if "—" in head else h
+            for h, r in _hits(line, m, _entries(_LOG))] == [head]
 
 
 def test_standing_needs_a_log_after_it() -> None:
