@@ -2387,7 +2387,7 @@ credential = {}
 
 [[word]]
 text = "ams"
-credential = {}
+credential = { may_be_name = true, note = "2026-10-21 (#796): US Census 2010 135 surname bearers, Wikidata family 2, NPPES 5 providers (healthcare only). Surname reading is the larger of the two small counts; ambiguous per the revised threshold rule." }
 
 [[word]]
 text = "aphr"
@@ -2539,7 +2539,7 @@ credential = {}
 
 [[word]]
 text = "capa"
-credential = {}
+credential = { may_be_name = true, note = "2026-10-21 (#796): US Census 2010 175 surname bearers, Wikidata family 7, NPPES 11 providers (healthcare only). Surname reading is the larger of the two small counts; ambiguous per the revised threshold rule." }
 
 [[word]]
 text = "capm"
@@ -3494,7 +3494,7 @@ cased = { reason = "a mask applies in every role, and Edd is borne as a given na
 
 [[word]]
 text = "ei"
-credential = {}
+credential = { may_be_name = true, note = "2026-10-21 (#796): US Census 2010 127 surname bearers, Wikidata family 3, NPPES 12 providers (healthcare only); also a Korean given name (nam_dict). Not a healthcare credential (usually Engineer Intern), so NPPES says nothing; C-i default under uncertainty." }
 
 [[word]]
 text = "eit"
