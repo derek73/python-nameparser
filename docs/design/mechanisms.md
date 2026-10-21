@@ -396,6 +396,16 @@ print(len(MAIDEN_MARKERS), 'members ->', len(cls), 'structural classes')"
 
 **Reach for it when.** A test asserts on the ORDER or MEMBERSHIP of a rendered group and the fixture was written to be small.
 
+### SHADOWED-NEGATIVE-ROWS — a new check can answer for an old row
+
+**Problem shape.** A change adds a check to a validator, a constructor or a loader that already has negative rows — rows that build a bad value and assert it is refused — and the new check refuses those rows too, whether it runs before their own checks or after them.
+
+**Contract statement.** After adding such a check, every existing negative row is re-run with its OWN check removed; a row that still passes is being refused by the new check instead, and its fixture is rebuilt to satisfy the new check, so that each row is refused by the one check it names.
+
+**How it works.** This is the inert-measurement class arriving through a SECOND REFUSAL: with a row's own check gone, the row still raises, the suite stays green, and the assertion reads as correct, because a refusal is all it asks for. #798 gave the NPPES credential tally (tools/name_usage.py) a consistency check, that every stored spelling choice names a token. Four rows testing the token values replaced the tokens with a single key and kept the stored choices, which still named the token they had dropped, so the new check refused all four as well, though it runs after the value checks there. The mutation run found it: deleting each of the three value checks those rows guard left the suite green (3 of that run's 38 mutants missed). The fix replaced the stored choices along with the tokens in each row, with a comment above the parametrize saying why. Distinct from TWO-ELEMENT-GROUPS, where the fixture is too small to exercise the code, and from the root AGENTS.md's widened check that quietly narrows: here the old check still works and its test has stopped reaching it.
+
+**Reach for it when.** The check you are adding relates two fields — a cross-field consistency check is the usual cause, since a row editing one field breaks it without meaning to.
+
 ### Field notes — the traps themselves
 
 - Test a function INSIDE a stage on the inputs its caller hands it, not on the stage's finished output. #610's first sweep test built pieces by running `group` whole and handed them to the maiden take's candidate function, but the take runs before any join, so the test read `de VI Prof.` as one piece where production hands it three: a guard checking a structure production never passes in, green for the wrong reason. Review moved the oracle to the take itself by wrapping it (tests/v2/pipeline/test_pieces.py), and recorded the old loop's misses there as the negative control (432), which is what shows the moved harness can still see a difference.
