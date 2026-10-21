@@ -237,7 +237,7 @@ def _hits(line: str, m: re.Match[str],
     found = [e for e in entries if _names(e[0], date, num)]
     if len(found) < 2:
         return found
-    said = re.split(r"[.;]", line[m.end():], 1)[0].rstrip()
+    said = re.split(r"[.;]", line[m.end():], maxsplit=1)[0].rstrip()
     picked = [e for e in found
               if (tail := _tail(e[0], date, num)) and said
               and (said.startswith(tail) or tail.startswith(said))]
