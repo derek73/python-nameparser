@@ -9,10 +9,11 @@ example-line grammar, the ``Example`` and ``Rule`` records, and the
 registries an example's annotation resolves through.
 
 Outside a rule the text holds only section headings (``## Name (X)``),
-each followed by one ``Background:`` paragraph, and blank lines; any
-other line there is refused, since read as nothing it would neither
-run nor be quotable -- a subheading inside a rule file, a misspelled
-rule heading, a fence in a section file.
+each letter once and each followed by one ``Background:`` paragraph,
+and blank lines; any other line there is refused, since read as
+nothing it would neither run nor be quotable -- a subheading inside a
+rule file, a misspelled rule heading, a fence in a section file, and
+those glued to a Background paragraph too.
 
 The example-line grammar (described for humans in the rules README;
 this module is its executable definition):
@@ -240,6 +241,13 @@ def _walk(text: str) -> Iterator[
 
 
 _SECTION_RE = re.compile(r"## .*\(([A-Z])\)\s*$")
+#: Lines that are structure, never a Background paragraph's wrapped
+#: prose: a fence, a heading, a field label, a list item, an example.
+#: A wrapped line may open with a quote (the H and N Backgrounds do),
+#: so a quote alone is not one.
+_STRUCTURE_RE = re.compile(
+    r"^(?:```|~~~|#+ |\*\*[^*]+:\*\*|(?:[-*+]|\d+[.)])(?:\s|$))"
+    r"|\s→\s+[a-z_]+=")
 
 
 def _retired(rid: str, lineno: int, line: str) -> ValueError:
@@ -254,11 +262,19 @@ def _retired(rid: str, lineno: int, line: str) -> ValueError:
 def parse_rules_doc(text: str) -> list[Rule]:
     from tests.v2 import rules_skeleton
     rules: list[Rule] = []
-    section = False                 # a section heading awaits its Background
+    section: str | None = None      # a section heading awaits its Background
     background = False              # inside a Background paragraph
+    letters: set[str] = set()
+
+    def unresolved(lineno: int) -> ValueError:
+        return ValueError(
+            f"line {lineno}: section {section}'s heading has no "
+            f"`Background:` paragraph after it")
+
     for lineno, line, block in _walk(text):
         if block is None:
             after = rules[-1].rule_id if rules else "the start"
+            sm = _SECTION_RE.match(line)
             if _RETIRED_RULE_RE.match(line):
                 raise _retired(line.split(".")[0], lineno, line)
             if NEAR_SIGNAL_RE.match(line):
@@ -268,11 +284,19 @@ def parse_rules_doc(text: str) -> list[Rule]:
                     f"above the pointer line: {line.strip()!r}")
             if not line.strip():
                 background = False
-            elif _SECTION_RE.match(line):
-                section, background = True, False
-            elif section and line.startswith("Background:"):
-                section, background = False, True
-            elif not background:
+            elif sm:
+                if section is not None:
+                    raise unresolved(lineno)
+                if sm.group(1) in letters:
+                    raise ValueError(
+                        f"line {lineno}: section {sm.group(1)} is headed "
+                        f"twice; its first Background would stop being "
+                        f"quotable")
+                letters.add(sm.group(1))
+                section, background = sm.group(1), False
+            elif section is not None and line.startswith("Background:"):
+                section, background = None, True
+            elif not background or _STRUCTURE_RE.search(line):
                 raise ValueError(
                     f"line {lineno}, after {after}: text outside any rule. "
                     f"A rule opens with a `# ID — name` heading, and a "
@@ -280,11 +304,15 @@ def parse_rules_doc(text: str) -> list[Rule]:
                     f"`Background:` paragraph; read as nothing, this line "
                     f"would neither run nor be quotable: {line.strip()!r}")
             continue
-        section = background = False
+        if section is not None:
+            raise unresolved(lineno)
+        background = False
         rid, numbered, _ = block
         if any(r.rule_id == rid for r in rules):
             raise ValueError(f"duplicate rule ID {rid} at line {lineno}")
         rules.append(rules_skeleton.parse_skeleton(rid, numbered))
+    if section is not None:
+        raise unresolved(len(text.splitlines()))
     return rules
 
 
@@ -305,12 +333,12 @@ def prose_blocks(text: str) -> dict[str, list[str]]:
             assert parsed.skeleton is not None
             out[block[0]] = rules_skeleton.skeleton_prose(parsed.skeleton)
             continue
+        hm = _SECTION_RE.match(line)
         if background is not None:
-            if line.strip():
+            if line.strip() and not hm:
                 background.append(line)
                 continue
             background = None
-        hm = _SECTION_RE.match(line)
         if hm:
             section = hm.group(1)
         elif section and line.startswith("Background:"):

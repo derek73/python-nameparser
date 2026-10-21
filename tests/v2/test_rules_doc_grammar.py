@@ -131,6 +131,35 @@ def test_a_block_format_rule_is_refused(doc: str) -> None:
         parse_rules_doc(doc)
 
 
+def test_a_background_may_wrap_onto_a_line_opening_with_a_quote() -> None:
+    # the H and N Backgrounds do: a quote is no structure
+    doc = "## A section (X)\n\nBackground: as in\n\"Rabbi Cohen\".\n\n"
+    assert parse_rules_doc(doc) == []
+    assert prose_blocks(doc)["X"] == ["Background: as in", '"Rabbi Cohen".']
+
+
+@pytest.mark.parametrize("doc, match", [
+    pytest.param("## A section (X)\n", "has no `Background:`", id="at-the-end"),
+    pytest.param("## A section (X)\n\n" + _SECTION, "has no `Background:`",
+                 id="before-another-section"),
+    pytest.param("## A section (X)\n\n" + _rule("X1"), "has no `Background:`",
+                 id="before-a-rule"),
+    pytest.param(_SECTION + _SECTION, "headed twice", id="a-letter-twice"),
+])
+def test_a_section_needs_one_background(doc: str, match: str) -> None:
+    with pytest.raises(ValueError, match=match):
+        parse_rules_doc(doc)
+
+
+def test_the_walkers_agree_on_a_section_glued_to_a_background() -> None:
+    doc = (_SECTION.rstrip("\n") + "\n## B section (Y)\n\n"
+           "Background: y.\n")
+    assert parse_rules_doc(doc) == []
+    assert prose_blocks(doc) == {
+        "X": ["Background: a section's words.", "Wrapped."],
+        "Y": ["Background: y."]}
+
+
 def test_a_signal_line_outside_any_rule_is_an_error() -> None:
     doc = _SECTION + "**Signal:** stray\n"
     with pytest.raises(ValueError, match="outside any rule"):
@@ -153,6 +182,17 @@ def test_a_signal_line_outside_any_rule_is_an_error() -> None:
                  id="a-second-background-paragraph"),
     pytest.param("Background: with no section heading.\n",
                  id="a-background-with-no-heading"),
+    # glued to the Background paragraph, with no blank line (review)
+    pytest.param(_SECTION.rstrip("\n") + '\n```\n"A B"  →  family="B"\n```\n',
+                 id="a-fence-glued-to-a-background"),
+    pytest.param(_SECTION.rstrip("\n") + "\n### Notes\n",
+                 id="a-heading-glued-to-a-background"),
+    pytest.param(_SECTION.rstrip("\n") + "\n**When:** w.\n",
+                 id="a-field-glued-to-a-background"),
+    pytest.param(_SECTION.rstrip("\n") + "\n- an item\n",
+                 id="a-list-glued-to-a-background"),
+    pytest.param(_SECTION.rstrip("\n") + '\nit reads "A B"  →  family="B"\n',
+                 id="an-example-glued-to-a-background"),
 ])
 def test_text_outside_any_rule_is_an_error(doc: str) -> None:
     with pytest.raises(ValueError, match="text outside any rule"):

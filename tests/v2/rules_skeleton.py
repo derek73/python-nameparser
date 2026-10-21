@@ -96,7 +96,7 @@ _NEAR_NO_BOUNDARY_RE = re.compile(r"^\s*[*_]*no-boundary\b", re.IGNORECASE)
 _ARROW_FIELD_RE = re.compile(r"\s→\s+(?P<field>[a-z_]+)=")
 #: A bullet marker other than `- ` then text: `* `, `+ `, a numbered
 #: item (`1. `, `1) `), or a hyphen glued to its text.
-_MALFORMED_BULLET_RE = re.compile(r"^(?:[*+](?:\s|$)|-(?! )|\d+[.)]\s)")
+_MALFORMED_BULLET_RE = re.compile(r"^(?:[*+](?:\s|$)|-(?! )|\d+[.)](?:\s|$))")
 #: A list item in any markdown marker, as a bullet's continuation would
 #: hold a nested list: `- `, `* `, `+ ` or a number and `.` or `)`.
 _NESTED_ITEM_RE = re.compile(r"^(?:[-*+]|\d+[.)])\s")

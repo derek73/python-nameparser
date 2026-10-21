@@ -341,6 +341,9 @@ BAD = {
         _sub('**When:** a name ends in a thing — "John Smith III".\n',
              "**When:** a name holds:\n1. A comma.\n2. A title.\n"),
         "a bullet is"),
+    "a bare numbered item ending a line": (
+        _sub("It is rare otherwise.\n", "It is rare otherwise.\n\n1.\n"),
+        "a bullet is"),
     "a numbered list with a parenthesis": (
         _sub("- **Reach:** only", "1) **Reach:** only"), "a bullet is"),
     "a star bullet under Except": (
