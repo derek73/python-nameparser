@@ -71,6 +71,16 @@ def _no_namdict(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(tool, "load_namdict", lambda download: None)
 
 
+#: The same for the NPPES tally, which a developer's real cache may hold:
+#: a test reading it would pass or fail by what is on that machine.
+_LOAD_NPPES = tool.load_nppes
+
+
+@pytest.fixture(autouse=True)
+def _no_nppes(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(tool, "load_nppes", lambda download: None)
+
+
 def test_the_network_guard_bites() -> None:
     # Negative control for the guard: without it, this call goes to
     # query.wikidata.org.
@@ -220,9 +230,9 @@ def test_render_shows_no_answer_and_unlisted_differently_from_a_count() -> None:
     ])
     rows = {cells[0]: cells[1:]
             for cells in map(str.split, text.splitlines()[2:]) if cells}
-    assert rows["census"] == ["-", "<100"]
-    assert rows["ssa"] == ["-", "-"]
-    assert rows["wikidata"] == ["0+", "12+"]
+    assert rows["census"] == ["-", "<100", "-"]
+    assert rows["ssa"] == ["-", "-", "-"]
+    assert rows["wikidata"] == ["0+", "12+", "-"]
 
 
 def test_spellings_cover_lower_and_capitalized_forms_once() -> None:
@@ -299,7 +309,7 @@ def test_main_reports_json_offline_without_downloading(
     assert list(report) == ["O'Brien", "关"]
     assert [u["source"] for u in report["关"]] == [
         "US Census 2010 surnames", "US SSA given names 1880-",
-        tool.NAMDICT_SOURCE]
+        tool.NAMDICT_SOURCE, tool.NPPES_SOURCE]
     assert report["O'Brien"][0]["family"] == 118557
     assert report["关"][0]["family"] is None  # null, not 0
     assert "SSA given names not downloaded" in err
@@ -336,7 +346,7 @@ def test_main_reports_a_bad_ssa_zip_without_losing_the_other_sources(
         zf.writestr("AK.TXT", "AK,F,1910,Mary,14\n")
     assert tool.main(["--no-wikidata", "--json", "shehu"]) == 2
     out, err = capsys.readouterr()
-    census, ssa, _ = json.loads(out)["shehu"]
+    census, ssa, *_ = json.loads(out)["shehu"]
     assert census["family"] == 561
     assert (ssa["status"], ssa["given"]) == ("failed", None)
     assert "not downloaded" not in err  # the file exists; it is just wrong
@@ -1373,7 +1383,7 @@ def test_namdict_usage_reports_a_missing_name_as_no_answer() -> None:
     usage = tool.namdict_usage("Shehu", tool.read_namdict(_DICT), top=5)
     assert (usage.status, usage.given, usage.given_bands) == ("ok", None, [])
     assert "proves nothing" in usage.note
-    assert tool.render("Shehu", [usage]).splitlines()[2].split()[-2:] == ["-", "-"]
+    assert tool.render("Shehu", [usage]).splitlines()[2].split()[-3:] == ["-", "-", "-"]
 
 
 def test_namdict_usage_names_a_short_form() -> None:
@@ -1397,7 +1407,7 @@ def test_namdict_usage_reports_a_missing_download_without_an_answer() -> None:
 def test_render_shows_the_peak_band_and_the_bands_by_country() -> None:
     usage = tool.namdict_usage("Dean", tool.read_namdict(_DICT), top=5)
     text = tool.render("Dean", [usage])
-    assert text.splitlines()[2].split()[-3:] == ["band", "6", "-"]
+    assert text.splitlines()[2].split()[-4:] == ["band", "6", "-", "-"]
     assert ("given band by country: Country 2 6, Country 0 5, Country 50 2, "
             "Country 30 1") in text
 
@@ -1405,7 +1415,7 @@ def test_render_shows_the_peak_band_and_the_bands_by_country() -> None:
 def test_render_writes_a_band_in_hex_as_the_note_does() -> None:
     usage = tool.namdict_usage("In", tool.read_namdict(_DICT), top=5)
     text = tool.render("In", [usage])
-    assert text.splitlines()[2].split()[-3:] == ["band", "A", "-"]
+    assert text.splitlines()[2].split()[-4:] == ["band", "A", "-", "-"]
     assert "given band by country: Korea A" in text
 
 
@@ -1580,3 +1590,413 @@ def test_main_refuses_fewer_than_one_country(
     with pytest.raises(SystemExit):
         tool.main(["--countries", "0", "In"])
     assert "must be 1 or more" in capsys.readouterr().err
+
+
+# -- NPPES credentials ------------------------------------------------------
+
+def _providers(*fields: str, organizations: int = 0) -> list[dict[str, str]]:
+    rows = [{"entity": "Individual", "pcredential": f} for f in fields]
+    return rows + [{"entity": "Organization", "pcredential": "MD"}] * organizations
+
+
+def _many(field: str, n: int) -> list[str]:
+    return [field] * n
+
+
+def test_tally_counts_a_provider_once_per_credential_and_keeps_spellings() -> None:
+    tally = tool.tally_credentials(iter(_providers("MD, M.D.", "M.D", "")))
+    assert (tally.people, tally.credentialed) == (3, 2)
+    providers, spellings = tally.tokens["MD"]
+    assert providers == 2
+    assert dict(spellings) == {"MD": 1, "M.D.": 1, "M.D": 1}
+
+
+def test_tally_reads_only_individual_providers() -> None:
+    tally = tool.tally_credentials(iter(_providers("RN", organizations=3)))
+    assert tally.people == 1 and tally.tokens["RN"][0] == 1
+    assert "MD" not in tally.tokens
+
+
+def test_tally_joins_one_credential_written_in_pieces() -> None:
+    # PHARMD alone far outnumbers its rarest piece, so the pieces are
+    # one credential; split, 'PHARM D' scored a D the field never meant.
+    fields = _many("PHARMD", 100) + _many("PHARM", 3) + ["PHARM D"]
+    tally = tool.tally_credentials(iter(_providers(*fields)))
+    assert tally.tokens["PHARMD"][0] == 101
+    assert ("PHARM D", 1) in tally.tokens["PHARMD"][1]
+    assert "D" not in tally.tokens and tally.tokens["PHARM"][0] == 3
+
+
+def test_tally_joins_pieces_onto_a_hyphenated_or_slashed_spelling() -> None:
+    fields = _many("PA-C", 100) + _many("OTR/L", 100) + _many("PA", 60) + [
+        "PA C", "OTR L"]
+    tally = tool.tally_credentials(iter(_providers(*fields)))
+    assert tally.tokens["PA-C"][0] == 101 and tally.tokens["OTR/L"][0] == 101
+    assert tally.tokens["PA"][0] == 60
+
+
+def test_tally_splits_credentials_written_side_by_side() -> None:
+    # Each piece is written alone more often than the two joined.
+    fields = _many("MD", 100) + _many("PHD", 80) + _many("MD/PHD", 5) + [
+        "MD PHD"]
+    tally = tool.tally_credentials(iter(_providers(*fields)))
+    assert (tally.tokens["MD"][0], tally.tokens["PHD"][0]) == (101, 81)
+    assert tally.tokens["MD/PHD"][0] == 5
+
+
+def test_tally_keeps_a_job_title_whole() -> None:
+    # PRACTITIONER is never a credential of its own; splitting the title
+    # would have counted NURSE as one 5,803 times on the real file.
+    fields = _many("NURSE", 60) + ["NURSE PRACTITIONER"] * 2
+    tally = tool.tally_credentials(iter(_providers(*fields)))
+    assert tally.tokens["NURSE PRACTITIONER"][0] == 2
+    assert tally.tokens["NURSE"][0] == 60
+    assert "PRACTITIONER" not in tally.tokens
+
+
+def test_tally_splits_after_a_join_inside_one_segment() -> None:
+    fields = (_many("MS", 100) + _many("CCC-SLP", 100) + _many("CCC", 2)
+              + _many("SLP", 60) + ["MS CCC SLP"])
+    tally = tool.tally_credentials(iter(_providers(*fields)))
+    assert tally.tokens["MS"][0] == 101 and tally.tokens["CCC-SLP"][0] == 101
+
+
+def test_tally_drops_a_piece_that_is_only_periods() -> None:
+    fields = _many("MD", 100) + _many("M", 2) + _many("D", 2) + ["M . D."]
+    tally = tool.tally_credentials(iter(_providers(*fields)))
+    assert tally.tokens["MD"][0] == 101
+
+
+class _Tally(Protocol):
+    # tools/ is loaded by path, so mypy cannot see CredentialTally itself.
+    people: int
+    credentialed: int
+    tokens: dict[str, tuple[int, list[tuple[str, int]]]]
+
+
+def _tally(**tokens: int) -> _Tally:
+    return tool.CredentialTally(
+        people=1000, credentialed=sum(tokens.values()) or 1,
+        tokens={k: (n, [(k, n)]) for k, n in tokens.items()})
+
+
+@pytest.mark.parametrize("word", ["m.d.", "MD", "Md", "M. D."])
+def test_credential_usage_matches_as_the_parser_matches_an_acronym(word: str) -> None:
+    usage = tool.credential_usage(word, _tally(MD=40, RN=60))
+    assert (usage.status, usage.credential) == ("ok", 40)
+
+
+def test_credential_usage_finds_a_credential_the_tally_joined() -> None:
+    usage = tool.credential_usage("Ph. D.", _tally(PHD=7))
+    assert usage.credential == 7 and "looked up as PHD" in usage.note
+
+
+def test_credential_usage_files_a_spaced_word_as_the_tally_filed_it() -> None:
+    # The tally files 'PA C' under the commonest key sharing its letters;
+    # the lookup first squashed it to PAC and read 5,910 where the
+    # credential's providers number 122,676 (review of the first version).
+    tally = _tally(**{"PA-C": 120, "PAC": 6})
+    usage = tool.credential_usage("PA C", tally)
+    assert usage.credential == 120 and "looked up as PA-C" in usage.note
+
+
+def test_credential_usage_names_the_other_spellings_of_its_letters() -> None:
+    tally = _tally(**{"PA-C": 120, "PAC": 6})
+    assert "also written PA-C 120" in tool.credential_usage("PAC", tally).note
+    missing = tool.credential_usage("OTR-L", _tally(**{"OTR/L": 60}))
+    assert missing.credential == 0 and "also written OTR/L 60" in missing.note
+
+
+def test_credential_usage_takes_a_spaced_key_the_tally_holds_whole() -> None:
+    tally = _tally(**{"NURSE PRACTITIONER": 9, "NURSEPRACTITIONER": 40})
+    usage = tool.credential_usage("Nurse Practitioner", tally)
+    assert usage.credential == 9
+    assert "also written NURSEPRACTITIONER 40" in usage.note
+
+
+def test_credential_usage_gives_a_word_without_letters_no_siblings() -> None:
+    usage = tool.credential_usage("- -", _tally(**{"-": 5, "MD": 1}))
+    assert usage.credential == 0 and "also written" not in usage.note
+
+
+def test_credential_usage_reports_a_missing_word_as_zero_with_the_scope() -> None:
+    # The field is a census, so 0 is an answer -- but for US healthcare
+    # alone, which the note must carry wherever the zero goes.
+    usage = tool.credential_usage("CPA", _tally(MD=1))
+    assert (usage.status, usage.credential) == ("ok", 0)
+    assert "US healthcare only" in usage.note
+
+
+def test_credential_usage_reports_a_missing_download_without_a_count() -> None:
+    usage = tool.credential_usage("MD", None)
+    assert (usage.status, usage.credential) == ("not downloaded", None)
+    assert "--fetch-nppes" in usage.note
+
+
+def test_render_shows_the_credential_column() -> None:
+    text = tool.render("MA", [tool.credential_usage("MA", _tally(MA=1234))])
+    assert text.splitlines()[1].split()[-1] == "credential"
+    assert text.splitlines()[2].split()[-3:] == ["-", "-", "1,234"]
+
+
+def test_share_never_prints_a_zero_for_a_credential_someone_writes() -> None:
+    assert tool._share(5 / 4_824_544) == "<0.01%"
+    assert tool._share(0.0234) == "2.34%"
+
+
+def _nppes_zip(*fields: str, header: str = "npi,entity,pcredential") -> bytes:
+    buffer = io.BytesIO()
+    lines = [header] + [f'{i},Individual,"{f}"' for i, f in enumerate(fields)]
+    with zipfile.ZipFile(buffer, "w") as zf:
+        zf.writestr(tool.NPPES_MEMBER, "\n".join(lines) + "\n")
+    return buffer.getvalue()
+
+
+def _pin_nppes(monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+               data: bytes) -> None:
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    monkeypatch.setattr(tool, "NPPES_SHA256", hashlib.sha256(data).hexdigest())
+
+
+def _serve_nppes(monkeypatch: pytest.MonkeyPatch, data: bytes) -> None:
+    def answer(request: urllib.request.Request, timeout: float) -> io.BytesIO:
+        assert request.full_url == tool.NPPES_URL
+        return io.BytesIO(data)
+    monkeypatch.setattr(urllib.request, "urlopen", answer)
+
+
+def test_load_nppes_downloads_the_pinned_zip_and_caches_its_tally(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    data = _nppes_zip("MD", "RN, MD")
+    _pin_nppes(monkeypatch, tmp_path, data)
+    _serve_nppes(monkeypatch, data)
+    tally = _LOAD_NPPES(download=True)
+    assert tally is not None and tally.tokens["MD"][0] == 2
+    assert sorted(p.name for p in tmp_path.iterdir()) == [
+        tool.NPPES_TALLY, tool.NPPES_FILE]
+    # The second load reads the tally and never opens the zip.
+    (tmp_path / tool.NPPES_FILE).unlink()
+    again = _LOAD_NPPES(download=False)
+    assert again is not None and again.tokens == tally.tokens
+
+
+def test_load_nppes_refuses_a_zip_that_is_not_the_pinned_one(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    _serve_nppes(monkeypatch, _nppes_zip("MD"))
+    with pytest.raises(ValueError, match="not the pinned"):
+        _LOAD_NPPES(download=True)
+    assert list(tmp_path.iterdir()) == []  # nothing cached, no .part left
+
+
+def test_load_nppes_refuses_a_pinned_zip_without_the_member(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w") as zf:
+        zf.writestr("elsewhere.csv", "entity,pcredential\n")
+    data = buffer.getvalue()
+    _pin_nppes(monkeypatch, tmp_path, data)
+    _serve_nppes(monkeypatch, data)
+    with pytest.raises(ValueError, match="cannot read"):
+        _LOAD_NPPES(download=True)
+    assert list(tmp_path.iterdir()) == []
+
+
+def test_load_nppes_does_not_download_when_told_not_to(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    assert _LOAD_NPPES(download=False) is None
+
+
+def test_load_nppes_refuses_a_cached_zip_that_does_not_match_its_pin(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    # A whole, readable zip of another month (or one missing rows) opens
+    # and tallies without complaint; only the hash says it is not the
+    # file the counts claim to be. A truncated zip did not test this --
+    # it fails to open whether the pin is checked or not.
+    _pin_nppes(monkeypatch, tmp_path, _nppes_zip("MD", "RN"))
+    (tmp_path / tool.NPPES_FILE).write_bytes(_nppes_zip("MD"))
+    with pytest.raises(ValueError, match="not the pinned.*--fetch-nppes"):
+        _LOAD_NPPES(download=False)
+    assert not (tmp_path / tool.NPPES_TALLY).exists()
+
+
+def test_load_nppes_names_a_member_without_the_credential_column(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    data = _nppes_zip("MD", header="npi,entity,credential")
+    _pin_nppes(monkeypatch, tmp_path, data)
+    (tmp_path / tool.NPPES_FILE).write_bytes(data)
+    with pytest.raises(ValueError, match="pcredential"):
+        _LOAD_NPPES(download=False)
+
+
+@pytest.mark.parametrize("stale", [
+    {"version": 0}, {"source_sha256": "0" * 64},
+    {"rules": {"min_alone": 1, "spellings": tool.NPPES_SPELLINGS}}])
+def test_load_nppes_rebuilds_a_tally_from_another_version_or_zip(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        stale: dict[str, object]) -> None:
+    data = _nppes_zip("MD", "MD")
+    _pin_nppes(monkeypatch, tmp_path, data)
+    (tmp_path / tool.NPPES_FILE).write_bytes(data)
+    old = tool._tally_json(_tally(RN=9)) | stale
+    (tmp_path / tool.NPPES_TALLY).write_text(json.dumps(old))
+    tally = _LOAD_NPPES(download=False)
+    assert tally is not None and dict(
+        (k, n) for k, (n, _) in tally.tokens.items()) == {"MD": 2}
+
+
+def test_load_nppes_rebuilds_a_tally_written_before_the_rules_were_recorded(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    data = _nppes_zip("MD")
+    _pin_nppes(monkeypatch, tmp_path, data)
+    (tmp_path / tool.NPPES_FILE).write_bytes(data)
+    old = tool._tally_json(_tally(RN=9))
+    del old["rules"]
+    (tmp_path / tool.NPPES_TALLY).write_text(json.dumps(old))
+    tally = _LOAD_NPPES(download=False)
+    assert tally is not None and "RN" not in tally.tokens
+
+
+def test_load_nppes_leaves_a_stale_tally_unread_when_nothing_can_rebuild_it(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    old = tool._tally_json(_tally(RN=9)) | {"version": 0}
+    (tmp_path / tool.NPPES_TALLY).write_text(json.dumps(old))
+    assert _LOAD_NPPES(download=False) is None
+
+
+@pytest.mark.parametrize("cut", [
+    lambda text: text[:len(text) // 2],              # cut mid-file
+    lambda text: text.replace('"tokens": {', '"tokens": {}, "x": {', 1),
+    lambda text: "[]",
+])
+def test_load_nppes_refuses_a_tally_that_is_not_whole(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        cut: Callable[[str], str]) -> None:
+    # A tally missing tokens would read every credential it lost as 0,
+    # which this source reports as a real zero.
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    text = json.dumps(tool._tally_json(_tally(MD=3, RN=4)))
+    (tmp_path / tool.NPPES_TALLY).write_text(cut(text))
+    with pytest.raises(ValueError, match="unusable.*re-tally"):
+        _LOAD_NPPES(download=False)
+
+
+def _cache_tally(monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+                 tally: _Tally) -> None:
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    monkeypatch.setattr(tool, "load_nppes", _LOAD_NPPES)
+    (tmp_path / tool.NPPES_TALLY).write_text(json.dumps(tool._tally_json(tally)))
+
+
+def test_main_reports_a_cached_tally_offline(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    _cache_tally(monkeypatch, tmp_path, _tally(MA=12, DO=30))
+    assert tool.main(["--no-wikidata", "--json", "ma", "CPA"]) == 0
+    report = json.loads(capsys.readouterr().out)
+    assert [r["credential"] for r in report["ma"]] == [None, None, None, 12]
+    assert report["CPA"][3]["credential"] == 0
+
+
+def test_main_does_not_download_nppes_unless_asked(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    # Online and uncached: without --fetch-nppes the 673 MB download
+    # must not start (the network guard would raise if it did).
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    monkeypatch.setattr(tool, "load_nppes", _LOAD_NPPES)
+    monkeypatch.setattr(tool, "load_census", lambda download: None)
+    _stub_sparql(monkeypatch, [[], []])
+    assert tool.main(["--json", "MD"]) == 0
+    row = json.loads(capsys.readouterr().out)["MD"][3]
+    assert (row["status"], row["credential"]) == ("not downloaded", None)
+
+
+def test_main_fetches_nppes_when_asked(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    data = _nppes_zip("MD", "MD, RN")
+    _pin_nppes(monkeypatch, tmp_path, data)
+    monkeypatch.setattr(tool, "load_nppes", _LOAD_NPPES)
+    monkeypatch.setattr(tool, "load_census", lambda download: None)
+    _serve_nppes(monkeypatch, data)
+    monkeypatch.setattr(tool, "wikidata_usage",
+                        lambda word, top: tool.Usage("Wikidata people"))
+    assert tool.main(["--fetch-nppes", "--json", "MD"]) == 0
+    assert json.loads(capsys.readouterr().out)["MD"][3]["credential"] == 2
+
+
+def test_main_exits_2_on_an_unusable_tally_without_losing_the_other_sources(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    monkeypatch.setattr(tool, "load_nppes", _LOAD_NPPES)
+    with zipfile.ZipFile(tmp_path / tool.CENSUS_FILE, "w") as zf:
+        zf.writestr(tool.CENSUS_MEMBER, _CENSUS)
+    (tmp_path / tool.NPPES_TALLY).write_text("{")
+    assert tool.main(["--no-wikidata", "--json", "shehu"]) == 2
+    census, _, _, nppes = json.loads(capsys.readouterr().out)["shehu"]
+    assert census["family"] == 561
+    assert (nppes["status"], nppes["credential"]) == ("failed", None)
+
+
+def test_main_rank_lists_credentials_with_vocabulary_and_readings(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    _cache_tally(monkeypatch, tmp_path, _tally(MD=50, **{"FNP-C": 40}, ESQ=3))
+    assert tool.main(["--no-wikidata", "--json", "--rank", "5"]) == 0
+    rows = {r["credential"]: r for r in json.loads(capsys.readouterr().out)["rows"]}
+    assert [r["rank"] for r in rows.values()] == [1, 2, 3]
+    assert rows["MD"]["vocabulary"] == "acronym, title"
+    assert (rows["MD"]["after_comma"], rows["MD"]["bare"]) == ("suffix", "suffix")
+    assert rows["FNP-C"]["vocabulary"] == "-"
+    assert (rows["FNP-C"]["after_comma"], rows["FNP-C"]["bare"]) == ("given", "family")
+    assert rows["ESQ"]["vocabulary"] == "suffix word"
+    assert rows["MD"]["census"] == "not downloaded"
+
+
+def test_main_rank_unlisted_keeps_each_credentials_overall_rank(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    _cache_tally(monkeypatch, tmp_path, _tally(MD=50, **{"FNP-C": 40}, MA=30))
+    assert tool.main(["--no-wikidata", "--json", "--rank", "5", "--unlisted"]) == 0
+    rows = json.loads(capsys.readouterr().out)["rows"]
+    assert [(r["credential"], r["rank"]) for r in rows] == [("FNP-C", 2)]
+
+
+def test_main_rank_exits_2_without_a_tally(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    monkeypatch.setattr(tool, "load_nppes", _LOAD_NPPES)
+    assert tool.main(["--no-wikidata", "--rank", "5"]) == 2
+    assert "not cached" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize(("argv", "message"), [
+    ([], "give words"),
+    (["--rank", "5", "MD"], "takes no words"),
+    (["--unlisted", "MD"], "goes with --rank"),
+    (["--rank", "0"], "must be 1 or more"),
+])
+def test_main_refuses_a_rank_request_it_cannot_answer(
+        argv: list[str], message: str,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    with pytest.raises(SystemExit):
+        tool.main(argv)
+    assert message in capsys.readouterr().err
+
+
+@pytest.mark.parametrize(("key", "expected"), [
+    ("MA", "ambiguous acronym"),
+    ("DO", "ambiguous acronym, particle"),
+    ("ESQ", "suffix word"),
+    ("JR", "suffix word"),
+    ("PHD", "acronym"),
+    ("FNP-C", "-"),
+])
+def test_vocabulary_reads_the_suffix_kind_as_the_parser_does(
+        key: str, expected: str) -> None:
+    assert tool._vocabulary(key) == expected
