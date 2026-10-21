@@ -83,6 +83,9 @@ _CORE_ONLY_IDS = frozenset({
     # #296's bundle: the positional read of the pre-comma name under a
     # declared family-first order -- v1 has no name order to declare
     "family_comma_no_name_word_family_first",
+    # #791: the family-first roles of the si rows, which v1 cannot express
+    "family_first_bare_si_is_a_given_name",
+    "family_first_comma_si_is_a_given_name",
     # #687: a declared Vietnamese order, which v1 cannot express
     "trailing_given_name_mai_is_not_a_credential",
     # #700: P6's family-first site for the elided particle, under a

@@ -2877,7 +2877,12 @@ credential = { cased = "ChFC" }
 
 [[word]]
 text = "chi"
-credential = {}
+family = { us_census_2010 = 7273, wikidata = 219, as_of = 2026-10-21 }
+given = { us_ssa = 1326, wikidata = 123, as_of = 2026-10-21 }
+[word.credential]
+may_be_name = true
+issue = 791
+note = "Chi is a common surname (Census 2010: 7,273 family-name bearers, rank 4,843; Wikidata 219+ family) and a Vietnamese given name; measured 2026-10-21 by tools/name_usage.py. No expansion is recorded: the 2019 bulk import (af5bdab, #93) carried none"
 
 [[word]]
 text = "chmc"
@@ -4586,7 +4591,12 @@ credential = {}
 
 [[word]]
 text = "si"
-credential = {}
+family = { us_census_2010 = 1166, wikidata = 275, as_of = 2026-10-21 }
+given = { us_ssa = 185, wikidata = 124, as_of = 2026-10-21 }
+[word.credential]
+may_be_name = true
+issue = 791
+note = "Si is a common surname (Census 2010: 1,166 family-name bearers; Wikidata 275+ family) and a Vietnamese and Chinese given name; measured 2026-10-21 by tools/name_usage.py. No expansion is recorded: the 2019 bulk import (af5bdab, #93) carried none"
 
 [[word]]
 text = "siie"

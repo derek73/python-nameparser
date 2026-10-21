@@ -1316,12 +1316,14 @@ GLUED_HONORIFICS: frozenset[str] = frozenset({
 
 SUFFIX_ACRONYMS_AMBIGUOUS: frozenset[str] = frozenset({
     'ba',
+    'chi',
     'do',
     'ed',
     'jd',
     'lac',
     'ma',
     'meng',
+    'si',
 })
 
 SUFFIX_ACRONYMS: frozenset[str] = frozenset({
