@@ -542,8 +542,10 @@ def test_anchor_in_reach_is_false_only_where_the_pass_is() -> None:
                                skip={rest[2]})
     # a merged split credential is ONE suffix piece of two tokens, and
     # it anchors as the unsplit spelling does wherever it is in the
-    # walk -- after a comma ('John Smith Ph. D. MEng' is the no-comma
-    # peel's Accepted limit, the merged piece standing outside its walk)
+    # walk -- after a comma ('John Smith Ph. D. MEng' is rules/S7's
+    # Accepted shape "a credential written split across two words with
+    # no comma after the name", the merged piece standing outside its
+    # walk; decisions/S7)
     assert parse("Doe, Jane Ph. D. MEng").suffix == "Ph. D. MEng"
     assert parse("Smith, Ph. D. MEng").suffix == "Ph. D. MEng"
     # and the member it speaks for reports as the pick it is

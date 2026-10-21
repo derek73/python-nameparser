@@ -186,7 +186,8 @@ def in_initialless_script(text: str) -> bool:
 # it at the z. `_MARKS` is the general combining blocks -- what NFD of
 # a Latin, Greek or Cyrillic letter produces -- and not the marks that
 # only some scripts write (Indic vowel signs, Arabic and Hebrew
-# points); rules/H2's Accepted clause owns that limit.
+# points); rules/H2's Accepted bullet "The shape is only recognizable
+# as an unbroken run of letters" owns that limit (decisions/H2).
 _MARKS = '[\u0300-\u036f\u1ab0-\u1aff\u1dc0-\u1dff\u20d0-\u20ff\ufe20-\ufe2f]'
 _LETTER = r'[^\W\d_]' + _MARKS + '*'
 _PERIOD_ABBREV = re.compile(r'^(?:' + _LETTER + r'){2,}\.$')

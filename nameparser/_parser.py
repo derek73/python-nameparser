@@ -41,7 +41,7 @@ class Parser:
     vocabulary DECLINES, so a locale pack's surnames always win where
     they match; returning None declines in turn and the token stays
     whole. Two promises narrow when one is supplied (the first is
-    rules/A1's Accepted clause):
+    rules/A1's Accepted bullet "The one exception to totality"):
     parse-totality gains its one exception -- an exception raised by
     the segmenter propagates, because a user-supplied callable's own
     error is a user-code error, not a content error -- and this Parser

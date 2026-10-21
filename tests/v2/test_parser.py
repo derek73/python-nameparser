@@ -1703,8 +1703,10 @@ def test_stacked_activation_warns_only_for_uncovered_scripts() -> None:
 
 #: The corpus names a maiden clause can be appended to without the
 #: clause itself being the variable: Latin script, no comma (a clause
-#: behind a comma is post-comma text, rules/M2's Accepted row), and
-#: no marker already present.
+#: behind a comma is post-comma text: rules/M2's Except bullet "In the
+#: given part after a family comma, in a part after a suffix comma, and
+#: behind a title, a suffix word or a connective, the marker is an
+#: ordinary word", decisions/M2), and no marker already present.
 _LATIN = re.compile(r"^[\x00-\u024f]*$")
 
 

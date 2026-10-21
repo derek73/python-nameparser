@@ -826,12 +826,8 @@ def test_a_trailing_title_is_transparent_to_the_maiden_clause() -> None:
     empty). The invariant is claimed over the forms below and no
     wider. Where the clause KEEPS the credential the spellings differ,
     a clause being one contiguous run: 'Doe nee Smith ba Prof.' gives
-    the title up, 'Doe nee Smith Prof. ba' cannot; and where something
-    in or ahead of the clause would take the title they differ too
-    ('Jane van der Berg nee Smith PhD Prof.' against '... Prof. PhD',
-    'Jane Doe nee Smith do MA Prof.' against '... do Prof. MA') --
-    rules/M2's Accepted pairs, which are examples rather than a
-    complete list. No head or run below has a particle, a bound given
+    the title up, 'Doe nee Smith Prof. ba' cannot -- an example
+    rather than a complete list. No head or run below has a particle, a bound given
     name or an empty name in or ahead of the clause.
 
     An invariant over two INPUTS (docs/design/AGENTS.md axis 11), so it
@@ -2306,8 +2302,9 @@ def _off_switch_findings() -> dict[str, list[str]]:
         # is decisions/P3's own -- a one-case name reads the
         # marked letter as an initial and so reads as its ALL-CAPS
         # twin already did -- and a class letter the caller's lexicon
-        # leaves UNMARKED is the shape P8's Accepted block records
-        # instead, where a bare Latin capital and its lowercase
+        # leaves UNMARKED is the shape rules/P8's Accepted bullet
+        # "Two 1.4.0 parity breaks, one in each direction" records
+        # (decisions/P8) instead, where a bare Latin capital and its lowercase
         # spelling genuinely part. The `conj+v` variant is exactly
         # that caller: it adds 'v' to the connectives and not to the
         # marked subset, so 'carod y rovira, v' and its ALL-CAPS twin

@@ -9,8 +9,9 @@ import pytest
 from tests.v2.design_docs import (
     DECISIONS_DIR, MENTION_RE, RULES_DIR, read_decision_files, read_index,
     STANDING_EXEMPT_ORIGINAL, has_standing, read_rules_text,
-    read_standing_exempt, resolve, slugify, standing_findings,
-    standing_roster_findings, stem_for)
+    read_standing_exempt, resolve, retired_ids, reused_id_findings,
+    rule_file_ids, slugify, standing_findings, standing_roster_findings,
+    stem_for)
 from tests.v2.rules_doc import parse_rules_doc
 
 _FIXTURE_FILES = ("S-suffixes.md", "S1-x.md",
@@ -269,3 +270,76 @@ def test_the_original_exempt_set_is_never_edited() -> None:
     # C1's block. A key added here would let a new file skip its block,
     # so the size is asserted rather than trusted to the comment.
     assert len(STANDING_EXEMPT_ORIGINAL) == 88
+
+
+_RETIRED_ENTRY = ("# X9 — a retired rule\n\n## Standing\n\n"
+                  "Retired: 2026-10-20 #0 — folded into X1.\n\n"
+                  "## Log\n\n- 2026-10-20 #0 — RETIRED.\n")
+
+
+def _retirement_layout(tmp_path: Path, entry: str) -> tuple[Path, Path]:
+    """A rules folder holding X1 and X9, and a decisions folder whose
+    one indexed file, X9's, holds `entry`."""
+    rules, decisions = tmp_path / "rules", tmp_path / "decisions"
+    rules.mkdir(parents=True)
+    decisions.mkdir()
+    (rules / "README.md").write_text("# Rules\n", encoding="utf-8")
+    for name in ("X-section.md", "X1-kept.md", "X9-reused.md"):
+        (rules / name).write_text(f"# {name}\n", encoding="utf-8")
+    (decisions / "README.md").write_text(
+        "# Decisions\n\n- [X9 — a retired rule](X9-retired-rule.md)\n",
+        encoding="utf-8")
+    (decisions / "X9-retired-rule.md").write_text(entry, encoding="utf-8")
+    return rules, decisions
+
+
+def test_a_rule_file_reusing_a_retired_id_is_refused(tmp_path: Path) -> None:
+    # The negative control the real tree cannot give (no rule is
+    # retired yet): a decisions file recording X9's retirement and a
+    # rule file carrying X9 again, read through the same readers the
+    # real-tree test uses.
+    rules, decisions = _retirement_layout(tmp_path, _RETIRED_ENTRY)
+    assert rule_file_ids(rules) == {"X", "X1", "X9"}
+    found = reused_id_findings(rule_file_ids(rules),
+                               read_decision_files(decisions))
+    assert found == ["rules/X9 reuses an ID decisions/X9 records as "
+                     "retired: a new rule takes a new ID"]
+    # and the Retired: line is what bites: the same files without it
+    # pass
+    rules, decisions = _retirement_layout(
+        tmp_path / "control", _RETIRED_ENTRY.replace("Retired:", "Folded:"))
+    assert reused_id_findings(rule_file_ids(rules),
+                              read_decision_files(decisions)) == []
+
+
+@pytest.mark.parametrize("line", [
+    "**Retired:** 2026-10-20 #0", "- Retired: 2026-10-20 #0",
+    "retired: 2026-10-20 #0", "Retired : 2026-10-20 #0",
+    "  Retired: 2026-10-20 #0", "1. Retired: 2026-10-20 #0",
+])
+def test_a_misspelled_retired_line_is_a_finding(line: str) -> None:
+    # each spelling would leave X9 out of retired_ids and the refusal
+    # off for it
+    entry = _RETIRED_ENTRY.replace("Retired: 2026-10-20 #0", line)
+    assert retired_ids({"X9": entry}) == set()
+    found = reused_id_findings({"X9"}, {"X9": entry})
+    assert len(found) == 1 and "is not a line opening 'Retired:'" in found[0]
+
+
+def test_a_retired_line_needs_a_rule_key() -> None:
+    found = reused_id_findings(set(), {"some-slug": _RETIRED_ENTRY})
+    assert found == ["decisions/some-slug carries a Retired: line but is "
+                     "keyed by no rule ID, so it retires nothing"]
+
+
+def test_no_rule_reuses_a_retired_id() -> None:
+    """rules/README.md: a rule ID is never reused. No rule is retired
+    on 2026-10-20, so on the real tree this passes with nothing to
+    refuse; test_a_rule_file_reusing_a_retired_id_is_refused is what
+    shows it bites. The readers must still reach both folders, or the
+    pass would be vacuous for a second reason."""
+    ids = rule_file_ids()
+    assert {"C1", "S2", "H"} <= ids
+    decisions = read_decision_files()
+    assert "C1" in decisions
+    assert reused_id_findings(ids, decisions) == []
