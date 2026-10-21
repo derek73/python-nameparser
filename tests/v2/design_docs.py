@@ -181,9 +181,9 @@ def reused_id_findings(rule_ids: set[str],
 # entry whose text after the head opens with `SUPERSEDED by` is
 # superseded, and a Standing pointer may not rest on it; one opening
 # `SUPERSEDED:` or `SUPERSEDED IN PART:` announces what it replaces and
-# is live. A file's title founds no entry, dated or not: a bundle
-# recorded as undated bullets is opened by a dated log line naming it,
-# whose head can say which part a later decision reversed.
+# is live. A file's title is never read as an entry
+# (`test_a_dated_title_founds_no_entry`); decisions/README.md says how
+# a bundle of undated bullets gains a dated line to point at.
 _DATE = r"\d{4}-\d\d(?:-\d\d)?(?:/\d\d)?"
 # The issue is the first `#N` within 40 characters of the date that no
 # `—`, `.`, `;` or other date interrupts, so a head copied whole
@@ -200,13 +200,18 @@ _ENTRY_RE = re.compile(r"- (?:\*\*)?(?=\d{4}-\d\d)")
 
 
 def _entries(log: str) -> list[tuple[str, str]]:
-    """Each log bullet as its head and the text after it."""
+    """Each log bullet as its head and the text after it. A bold head
+    ends where its bold closes, if that comes before the ` — `
+    (`- **2026-10-15 #5**: text`), and a bold opening the text is not
+    part of it, so `— **SUPERSEDED by** …` still marks the entry."""
     out = []
     for line in log.splitlines():
         m = _ENTRY_RE.match(line)
         if m:
             head, _, rest = line[m.end():].partition(" — ")
-            out.append((head.removesuffix("**"), rest))
+            if m.group(0).endswith("**"):
+                head = head.split("**", 1)[0]
+            out.append((head, rest.removeprefix("**")))
     return out
 
 
@@ -436,17 +441,26 @@ def read_standing_exempt(path: Path = STANDING_EXEMPT) -> set[str]:
     return set(json.loads(path.read_text(encoding="utf-8"))["exempt"])
 
 
-# A reference list -- a file of Declined, Excluded, removal or mapping
-# lines, each already saying what stands -- carries no Standing block, which
-# would copy it. The decisions index names them under this heading; a
-# file there may hold no dated entry, and only a key the exempt list
-# started with may be listed, so no log hides under it.
+# A reference list -- a file of Declined, Excluded, Open, removal or
+# mapping lines, each already saying what stands -- carries no Standing
+# block, which would copy it. The decisions index names them under this
+# heading, and only a key the exempt list started with may be listed. A
+# file there may not take a log's shapes: a dated entry, a bullet
+# opening with a tag and a date (`- (A) 2026-08-17 — …`, as
+# 3-0-reevaluations writes its log), or a dated title (a bundle, as
+# cjk-full-stops is). A log written in none of those shapes is caught
+# only in review.
 _REFERENCE_HEADING = "## Reference lists"
+_LOG_SHAPED = re.compile(
+    r"^- (?:\*\*)?(?:\([^)\n]{1,12}\) )?(?=\d{4}-\d\d)|\A# [^\n]*\d{4}-\d\d",
+    re.M)
 
 
 def reference_lists(readme: str) -> set[str]:
-    """The keys the index lists, one bullet each, under its Reference
-    lists heading; a link in its prose is no listing."""
+    """The keys the index lists, one bullet each (`- [key — …](…)`),
+    under its Reference lists heading, a `## ` line of its own; a link
+    in its prose, or one a bullet holds after other words, is no
+    listing."""
     at = readme.find(f"\n{_REFERENCE_HEADING}\n")
     if at < 0:
         return set()
@@ -470,17 +484,19 @@ def standing_roster_findings(
     has gained one (take it off the list), a listed key no file carries
     any more, a listed key the list did not hold when the rule landed,
     and a heading that misspells `## Standing`; and of a reference list,
-    a Standing block, a dated entry, a place on the exempt list, or a
-    key the list did not hold when the rule landed."""
+    a Standing block, a log's shape (a dated or tagged-date bullet, a
+    dated title), a place on the exempt list, or a key the exempt list
+    did not hold when the rule landed."""
     findings = []
     for key in sorted(reference & files.keys()):
         text = files[key]
         if has_standing(text):
             findings.append(f"{key} is a reference list and carries "
                             "## Standing: index a log under its section")
-        if any(_ENTRY_RE.match(line) for line in text.splitlines()):
-            findings.append(f"{key} is a reference list but holds a dated "
-                            "entry: a log opens with ## Standing")
+        if _LOG_SHAPED.search(text):
+            findings.append(f"{key} is a reference list but is shaped "
+                            "like a log (a dated entry or title): a log "
+                            "opens with ## Standing")
         if key in exempt:
             findings.append(f"{key} is a reference list: take it off "
                             f"{STANDING_EXEMPT.name}")

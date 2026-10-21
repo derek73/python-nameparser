@@ -267,6 +267,15 @@ def test_a_bold_date_opens_an_entry() -> None:
                     "- **NFKC was declined.** Nor this.\n") == [
         ("2026-10-14 #679", "the rest (Derek).** Text."),
         ("2026-10-15/16", "the model.")]
+    assert _entries("- **2026-10-15 #5**: text.\n"
+                    "- **2026-10-14 #679** (Derek) — x.\n"
+                    "- **2026-10-16** — **SUPERSEDED by** 2026-10-17.\n") == [
+        ("2026-10-15 #5", ""), ("2026-10-14 #679", "x."),
+        ("2026-10-16", "SUPERSEDED by** 2026-10-17.")]
+    assert standing_findings(
+        "# C1 — x\n\n## Standing\n\n- a — 2026-10-16.\n\n## Log\n\n"
+        "- **2026-10-16** — **SUPERSEDED by** 2026-10-17.\n") == [
+        "superseded entry 2026-10-16 #None"]
 
 
 def test_a_dated_title_founds_no_entry() -> None:
@@ -396,16 +405,33 @@ def test_reference_lists_are_the_links_under_their_heading() -> None:
               "- [b-list — y](b-list.md)\n- [c-list](c-list.md)\n\n"
               "## Later\n\n- [d-log — z](d-log.md)\n")
     assert reference_lists(readme) == {"b-list", "c-list"}
+    for not_a_listing in ["* [e](e.md)", "> [e](e.md)", "- see [e](e.md)",
+                          "- [x] see [e](e.md)"]:
+        assert reference_lists(
+            f"x\n## Reference lists\n\n{not_a_listing}\n"
+            "- [e2 — y](e2.md)\n") == {"e2"}, not_a_listing
+    for heading in ["### Reference lists", "## Reference lists (old)",
+                    "## Reference lists "]:
+        assert reference_lists(
+            f"x\n{heading}\n\n- [e — y](e.md)\n") == set(), heading
     assert reference_lists("## Named topics\n\n- [a — x](a.md)\n") == set()
 
 
 @pytest.mark.parametrize("files, exempt, finding", [
     ({"C1": "## Standing", "L": "- Declined: x."}, set(), None),
     ({"C1": "## Standing", "L": "- Declined: x.\n- 2026-10-01 — y."}, set(),
-     "L is a reference list but holds a dated entry"),
-    ({"C1": "## Standing", "L": "- (A) 2026-08-17 — parked."}, set(), None),
+     "L is a reference list but is shaped like a log"),
+    ({"C1": "## Standing", "L": "- Declined: x.\n- (A) 2026-08-17 — parked."},
+     set(), "L is a reference list but is shaped like a log"),
     ({"C1": "## Standing", "L": "- **2026-10-01 #5 — y.**"}, set(),
-     "L is a reference list but holds a dated entry"),
+     "L is a reference list but is shaped like a log"),
+    ({"C1": "## Standing",
+      "L": "# L — a bundle (2026-09-10, #322)\n\n- **NFKC declined.**"},
+     set(), "L is a reference list but is shaped like a log"),
+    ({"C1": "## Standing",
+      "L": "# L — x\n\n- abd — ADDED 2026-08-18, see decisions/P5.\n"
+           "- (Derek's call) removed 2026-08-26.\n"},
+     set(), None),
     ({"C1": "## Standing", "L": "## Standing\n- x"}, set(),
      "L is a reference list and carries ## Standing"),
     ({"C1": "## Standing", "L": "- Declined: x."}, {"L"},
@@ -413,8 +439,9 @@ def test_reference_lists_are_the_links_under_their_heading() -> None:
     ({"C1": "## Standing", "N": "- Declined: x."}, set(),
      "N is under Reference lists but was not on"),
 ], ids=["list", "list-with-entry", "list-with-tagged-date",
-        "list-with-bold-entry", "list-with-standing", "list-also-exempt",
-        "list-new-since-the-rule"])
+        "list-with-bold-entry", "list-with-dated-title",
+        "list-with-dates-inside-lines", "list-with-standing",
+        "list-also-exempt", "list-new-since-the-rule"])
 def test_a_reference_list_carries_no_standing_and_no_log(
         files: dict[str, str], exempt: set[str], finding: str | None) -> None:
     listed = {"N"} if "N" in files else {"L"}
