@@ -76,7 +76,6 @@
   "suffix-field-composition",
   "two-input-invariants",
   "v1-xfail-triage",
-  "vocabulary-collisions",
-  "vocabulary-model"
+  "vocabulary-collisions"
  ]
 }
