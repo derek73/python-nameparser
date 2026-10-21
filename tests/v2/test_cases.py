@@ -214,6 +214,20 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
 #: purity check (2026-09-05) refuses every non-space ASCII character
 #: the comma and Latin-letter arms do not, so its probes differ in the
 #: character that trips it rather than in what they are told.
+def test_every_case_name_is_unique() -> None:
+    """A repeated Case name silently shadows one row: pytest parametrizes
+    the ids with a numeric suffix and the table reads as if both rows
+    ran under one name. The review of PR #794 found
+    comma_capital_si_is_a_suffix twice (the John Smith, SI row and the
+    Wang, SI row, which carries a different reading), so this test is
+    the check that would have caught it. Recorded negative control
+    (2026-10-21): with the Wang, SI row renamed back to the duplicate,
+    this test fails naming comma_capital_si_is_a_suffix."""
+    names = [case.id for case in CASES]
+    repeated = sorted({name for name in names if names.count(name) > 1})
+    assert not repeated, f"Case names repeated in tests/v2/cases.py: {repeated}"
+
+
 @pytest.mark.parametrize("kwargs, match", [
     pytest.param(
         dict(text="Beethoven, Ludwig van", shape=2, locale="nl_NL"),

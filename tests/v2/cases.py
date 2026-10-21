@@ -721,7 +721,7 @@ CASES: tuple[Case, ...] = (
                "the credential even as the only word after a name, so "
                "the two-piece guard that keeps bare 'Luo Si' a surname "
                "does not reach it. 1.4.0 read family 'SI'"),
-    Case("comma_capital_si_is_a_suffix", "Wang, SI",
+    Case("comma_capital_si_after_a_surname_is_a_suffix", "Wang, SI",
          {"family": "Wang", "suffix": "SI"},
          ambiguities=("suffix-or-name",),
          classification="fix(#289)",
