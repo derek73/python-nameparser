@@ -228,8 +228,8 @@ def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str
     This view takes NO lexicon, so it has none to fall back to for
     that text: `replace(family='de la vega')` initials every word of
     that field where the same name parsed gives 'j. v.'
-    (rules/R3's Accepted
-    clause, and decisions/R4 for why the fallback was tried
+    (rules/R3's Accepted bullet "This rule reads a part the parser read",
+    the limit this view keeps; decisions/R4 for why the fallback was tried
     and dropped -- #464 is the crossing that would make it
     answerable). Valid spec keys: given, middle, family."""
     if not isinstance(delimiter, str):
@@ -649,7 +649,9 @@ def capitalized(name: ParsedName, lexicon: Lexicon | None, *,
     'de la' where the same words parsed give 'De La'; one set to
     'de y' keeps the 'y' lowercase, as the parse does and as 1.4.0
     did. Parser.revise() is the edit that classifies the value, and
-    gives 'De La' (rules/R4's Accepted boundary).
+    gives 'De La': the boundary of
+    rules/R4's Accepted bullet "The all-particle clause reaches a part"
+    (decisions/R4).
     Idempotent: every _cap_word rule, and the hyphen rule in
     _cap_text, is a fixpoint on its own output, so a repaired name
     comes back unchanged whether or not the gate admits it again

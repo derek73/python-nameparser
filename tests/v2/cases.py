@@ -277,8 +277,10 @@ class Case:
                 f"composed forms belong under tolerated=True, not a "
                 f"shape tag")
         # U+00B7 (间隔号) marks a name transcription, which keeps the
-        # DECLARED order (W4's interpunct Except) -- shape 7's ground,
-        # not shape 6's family-first one. The fullwidth nakaguro U+30FB
+        # DECLARED order: rules/W4's Except bullet "A name the
+        # interpunct divides", the clause shape 7 is checked against
+        # here, where shape 6 is checked against W4's family-first Then
+        # (decisions/W4). The fullwidth nakaguro U+30FB
         # is NOT a transcription marker on its own: decisions/T3 scopes that reading
         # to the codepoint, so U+30FB on non-katakana text is an
         # ordinary Han/Hangul separator and the text reads family-

@@ -338,8 +338,9 @@ def test_repair_keeps_a_plain_connective_the_suffix_field_holds_lower(
         v1 = HumanName(text)
         v1.capitalize(force=True)
         assert str(v1) == forced, text
-    # A SPLICED field is the other way in, and R4's Accepted
-    # paragraph is explicit about it: text nobody read gets the
+    # A SPLICED field is the other way in, and rules/R4's Accepted
+    # bullet "The boundary is drawn per question rather than per field"
+    # is explicit about it (decisions/R4): text nobody read gets the
     # vocabulary's answer, so a suffix set to 'de y' keeps its 'y'
     # exactly as a family set to 'de y' does. 1.4.0 and 2.3.0 both
     # give 'John Smith De, y'.

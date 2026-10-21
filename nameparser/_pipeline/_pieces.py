@@ -805,9 +805,10 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
     -- such a word being a suffix word written as an initial. Under
     strict the numeral gets no suffix reading behind a suffix word, so
     a part no credential opened is no run and the reading is None
-    ('Smith, MD I'); a part a credential opened (C13, C14's Except)
-    still takes the word in through `opened` below and hands it to
-    `absorbed` ('Smith, PSM I.'). The walk reads the token's `initial`
+    ('Smith, MD I'); a part a credential opened (C13) still takes the
+    word in through `opened` below and hands it to `absorbed`
+    ('Smith, PSM I.'), which implements
+    rules/C14's Except bullet "A credential opening the part". The walk reads the token's `initial`
     tag, so a one-case lowercase letter is vetoed as its capital is
     (rules/T4). Reading no policy here silently overrode the one knob a
     caller sets to prevent exactly this (#430). History:
