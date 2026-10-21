@@ -6,7 +6,11 @@ Release Log
 
     **Additions**
 
-    - **Ship the default vocabulary as per-word data files.** The word lists in ``nameparser.config`` are now compiled from ``nameparser/vocab/*.toml``, one file per language, which record what each word can be read as and why a word was left out; the lists and every parse are unchanged from 2.5.0. :issue:`737`
+    - **Ship the default vocabulary as per-word data files.** The word lists in ``nameparser.config`` are now compiled from ``nameparser/vocab/*.toml``, one file per language, which record what each word can be read as and why a word was left out; the re-encoding itself changes no word list and no parse. :issue:`737`
+
+    **Behavior Changes**
+
+    - **Fix a surname spelled Si or Chi reading as a credential.** ``Luo Si`` gives family ``Si``, given ``Luo``, where 2.0.0 through 2.5.0 gave suffix ``Si`` with no family name. A Title-case ``Si`` after a full name takes the family name, as ``Ma`` does, and a capitalized ``SI`` is still a credential. :issue:`791`
 
 * 2.5.0 - October 19, 2026
 

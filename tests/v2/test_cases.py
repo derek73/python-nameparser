@@ -195,10 +195,29 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # '田中さん v' row (one suffix-or-name claim under each order);
     # 1246 -> 1252 the same day: #656's two C12 rows behind a nickname
     # and a maiden clause (one suffix-or-name claim under each order);
-    # 1252 -> 1255 the same day: the C12 row with a title in the part.
-    assert claims == 1255, (
-        f"the field sweep checks {claims} claims, recorded as 1255 on "
-        f"2026-10-18")
+    # 1252 -> 1255 the same day: the C12 row with a title in the part;
+    # 1255 -> 1282 on 2026-10-21: #791's nine reporting rows (si and
+    # chi), one suffix-or-name or given-or-family claim under each order;
+    # 1282 -> 1302 the same day: the review's empty-head, caps and
+    # family-first rows (two reports on 'Luo SI', and the family-first
+    # rows, which carry their own policy and so claim under one order).
+    assert claims == 1302, (
+        f"the field sweep checks {claims} claims, recorded as 1302 on "
+        f"2026-10-21")
+
+
+def test_every_case_name_is_unique() -> None:
+    """A repeated Case name silently shadows one row: pytest parametrizes
+    the ids with a numeric suffix and the table reads as if both rows
+    ran under one name. The review of PR #794 found
+    comma_capital_si_is_a_suffix twice (the John Smith, SI row and the
+    Wang, SI row, which carries a different reading), so this test is
+    the check that would have caught it. Recorded negative control
+    (2026-10-21): with the Wang, SI row renamed back to the duplicate,
+    this test fails naming comma_capital_si_is_a_suffix."""
+    names = [case.id for case in CASES]
+    repeated = sorted({name for name in names if names.count(name) > 1})
+    assert not repeated, f"Case names repeated in tests/v2/cases.py: {repeated}"
 
 
 #: Case.__post_init__'s shape checks, each probed for the message that

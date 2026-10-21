@@ -100,8 +100,10 @@
 {"name": "Juan de y", "shape": 1}
 {"name": "Juan y Garcia", "shape": 1}
 {"name": "Lt.Gov. John Doe", "shape": 1}
+{"name": "Luo Si", "shape": 1}
 {"name": "Maria Kowalska z domu Nowak MA", "shape": 1}
 {"name": "Md Abdul Karim", "shape": 1}
+{"name": "Min Chi", "shape": 1}
 {"name": "Minjun KIM", "shape": 1}
 {"name": "Mr MA", "shape": 1}
 {"name": "Nguyen Van Lac", "shape": 1}
@@ -208,6 +210,7 @@
 {"name": "Smith nee Jones, Jane MA", "shape": 2}
 {"name": "Smith, A.B.", "shape": 2}
 {"name": "Smith, A.B.C.", "shape": 2}
+{"name": "Smith, Chi", "shape": 2}
 {"name": "Smith, Dr. John", "shape": 2}
 {"name": "Smith, E.S.Q.", "shape": 2}
 {"name": "Smith, John", "shape": 2}
@@ -225,6 +228,7 @@
 {"name": "Smith, PhD Ma", "shape": 2}
 {"name": "Smith, meng", "shape": 2}
 {"name": "Van Buren, Ed", "shape": 2}
+{"name": "Wang, Si", "shape": 2}
 {"name": "de la Cruz, Ma", "shape": 2}
 {"name": "de la Vega, Juan", "shape": 2}
 {"name": "doe, jane v phd do", "shape": 2}

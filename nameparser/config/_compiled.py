@@ -1335,6 +1335,7 @@ SUFFIX_ACRONYMS_AMBIGUOUS: frozenset[str] = frozenset({
     'cela',
     'cera',
     'che',
+    'chi',
     'ciro',
     'csi',
     'cua',
@@ -1354,6 +1355,7 @@ SUFFIX_ACRONYMS_AMBIGUOUS: frozenset[str] = frozenset({
     'om',
     'pe',
     'se',
+    'si',
 })
 
 SUFFIX_ACRONYMS: frozenset[str] = frozenset({

@@ -2067,6 +2067,7 @@
 {"name": "Luisa Álvarez Iglesias", "given": "Luisa", "middle": "Álvarez", "family": "Iglesias", "initials": "L. Á. I."}
 {"name": "Luiz Alfredo Garcia-Roza", "given": "Luiz", "middle": "Alfredo", "family": "Garcia-Roza", "initials": "L. A. G."}
 {"name": "Lukardis", "given": "Lukardis", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "L."}
+{"name": "Luo Si", "given": "Luo", "family": "Si", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "L. S."}
 {"name": "Lustig-Prean, Karl", "given": "Karl", "family": "Lustig-Prean", "initials": "K. L."}
 {"name": "Luís de Ataíde", "given": "Luís", "family": "de Ataíde", "initials": "L. A."}
 {"name": "Lárus Pálsson", "given": "Lárus", "family": "Pálsson", "initials": "L. P."}
@@ -2288,6 +2289,7 @@
 {"name": "Millers Pīters", "order": "FAMILY_FIRST", "given": "Pīters", "family": "Millers", "initials": "P. M."}
 {"name": "Millers Pīters Džims", "order": "FAMILY_FIRST", "given": "Pīters", "middle": "Džims", "family": "Millers", "initials": "P. D. M."}
 {"name": "Milton Santacruz Aguilar", "given": "Milton", "middle": "Santacruz", "family": "Aguilar", "initials": "M. S. A."}
+{"name": "Min Chi", "given": "Min", "family": "Chi", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "M. C."}
 {"name": "Mina", "given": "Mina", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "M."}
 {"name": "Mina", "order": "FAMILY_FIRST", "family": "Mina", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "M."}
 {"name": "Minjun KIM", "given": "Minjun", "family": "KIM", "initials": "M. K."}
@@ -2871,6 +2873,7 @@
 {"name": "Smith, Abd", "family": "Smith", "suffix": "Abd", "initials": "S."}
 {"name": "Smith, Cecilia Angela", "given": "Cecilia", "middle": "Angela", "family": "Smith", "initials": "C. A. S."}
 {"name": "Smith, Chancellor of the Exchequer MP", "title": "Chancellor of the Exchequer", "family": "Smith", "suffix": "MP", "initials": "S."}
+{"name": "Smith, Chi", "given": "Chi", "family": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "C. S."}
 {"name": "Smith, Dr.", "title": "Dr.", "family": "Smith", "initials": "S."}
 {"name": "Smith, Dr. John", "title": "Dr.", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Smith, Dr. Jr.", "title": "Dr.", "family": "Smith", "suffix": "Jr.", "initials": "S."}
@@ -3193,6 +3196,7 @@
 {"name": "Waly Mari shu Halimatu", "order": "FAMILY_FIRST", "given": "Mari", "middle": "shu Halimatu", "family": "Waly", "initials": "M. s. H. W."}
 {"name": "Wang M.Eng.", "given": "Wang", "suffix": "M.Eng.", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "W."}
 {"name": "Wang Ma PhD", "given": "Wang", "family": "Ma", "suffix": "PhD", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "W. M."}
+{"name": "Wang, Si", "given": "Si", "family": "Wang", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "S. W."}
 {"name": "Wang, Zhaojun", "given": "Zhaojun", "family": "Wang", "initials": "Z. W."}
 {"name": "Wanjiru wa Kamau", "given": "Wanjiru", "middle": "wa", "family": "Kamau", "initials": "W. w. K."}
 {"name": "Washington Jr. MD, Franklin", "given": "Franklin", "family": "Washington", "suffix": "Jr. MD", "initials": "F. W."}
