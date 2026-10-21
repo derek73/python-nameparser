@@ -159,19 +159,37 @@ def reused_id_findings(rule_ids: set[str],
 # force, ahead of its entries under `## Log` -- every file but those
 # listed in decisions_without_standing.json (below). Each Standing
 # bullet ends its claim with the entry that decided it, by date and
-# issue (`— 2026-10-06 #613`); a `Not standing:` line names entries a
-# later one answered. An entry is a log bullet whose head
-# (the text before its first ` — `) opens with exactly that date and
-# whose first issue number is that one -- a head may name a later issue
-# in a partial-supersession note, which must not answer for its own
-# entry -- or, for a date-only pointer, the one entry of that date
-# whose head names no issue; one whose text after the head opens with
-# `SUPERSEDED by` is superseded, and a Standing pointer may not rest on
-# it alone. An entry opening `SUPERSEDED:` or `SUPERSEDED IN PART:`
-# announces what it replaces and is live.
+# issue (`— 2026-10-06 #613`) or by date alone; a `Not standing:` line
+# names entries a later one answered. An entry is a log bullet, and its
+# head is the text before its first ` — `, read without any
+# parenthesized note saying part of it was superseded (README edit kind
+# 1). A pointer's candidates are the entries whose head opens with
+# exactly its date and whose first issue is its issue -- for a date-only
+# pointer, whose head names no issue. Where several are candidates, the
+# words after the pointer pick the one whose head continues with them,
+# the longest such continuation winning (`— 2026-09-14 (Derek)`,
+# `— 2026-10-18 #718 review`); a date inside those words is part of
+# them, not a second pointer. A pointer with no words names the
+# candidate whose head ends there, and one whose words continue no
+# candidate's head is a finding, since nothing tells a typo from prose
+# there. Where heads are the same words (twins), the words past the
+# head pick the entry whose text opens with them
+# (`— 2026-09-13 #383/#479, AMENDS`): there the words are a key, not
+# prose. A pointer still naming more than one entry is ambiguous. An
+# entry whose text after the head opens with `SUPERSEDED by` is
+# superseded, and a Standing pointer may not rest on it; one opening
+# `SUPERSEDED:` or `SUPERSEDED IN PART:` announces what it replaces and
+# is live.
 _DATE = r"\d{4}-\d\d(?:-\d\d)?(?:/\d\d)?"
+# The issue is the first `#N` within 40 characters of the date that no
+# `—`, `.`, `;` or other date interrupts, so a head copied whole
+# (`2026-10-18 (Derek), #718`) still reads its issue and `— 2026-10-19,
+# 2026-10-18 #721` stays two pointers; an issue written in prose
+# right after a date-only pointer (`— 2026-09-14, see #500`) is read as
+# the pointer's and fails as no entry, so end the pointer first.
 _POINTER_RE = re.compile(
-    rf"(?P<date>{_DATE})(?![\d/-])(?:[^—#.;]{{0,40}}?#(?P<num>\d+))?")
+    rf"(?P<date>{_DATE})(?![\d/-])"
+    rf"(?:(?:(?!\d{{4}}-\d\d)[^—#.;]){{0,40}}?#(?P<num>\d+))?")
 
 
 def _entries(log: str) -> list[tuple[str, str]]:
@@ -184,11 +202,115 @@ def _entries(log: str) -> list[tuple[str, str]]:
     return out
 
 
+def _clean(head: str) -> str:
+    """A head without its parenthesized supersession notes, which can
+    hold parentheses of their own (`(item (ii) superseded by …)`); the
+    word is matched in any case, and a parenthesis never closed is
+    text, not a note."""
+    out: list[str] = []
+    i = 0
+    while i < len(head):
+        if head[i] == "(":
+            depth, j = 0, i
+            while j < len(head):
+                depth += {"(": 1, ")": -1}.get(head[j], 0)
+                if depth == 0:
+                    break
+                j += 1
+            if depth == 0 and "superseded" in head[i:j + 1].lower():
+                while out and out[-1] == " ":
+                    out.pop()
+                i = j + 1
+                continue
+        out.append(head[i])
+        i += 1
+    return "".join(out)
+
+
 def _names(head: str, date: str, num: str | None) -> bool:
+    head = _clean(head)
     m = re.match(_DATE, head)
     first = re.search(r"#(\d+)", head)
     return (m is not None and m.group(0) == date
             and (first.group(1) if first else None) == num)
+
+
+def _tail(head: str, date: str, num: str | None) -> str:
+    """What a head says after the date or issue a pointer names. Asked
+    only of a candidate, whose head holds that issue by `_names`."""
+    head = _clean(head)
+    if num is None:
+        return head[len(date):]
+    at = re.search(rf"#{num}(?!\d)", head)
+    assert at is not None
+    return head[at.end():]
+
+
+@dataclass(frozen=True)
+class _Resolved:
+    hits: list[tuple[str, str]]   # the entries named, as (head, rest)
+    used: int                     # characters of the line the pick read
+    unmatched: str = ""           # words that continue no candidate
+
+
+def _resolve(line: str, m: re.Match[str],
+             entries: list[tuple[str, str]]) -> _Resolved:
+    """The log entries one pointer names."""
+    date, num = m["date"], m["num"]
+    found = [e for e in entries if _names(e[0], date, num)]
+    after = line[m.end():]
+    if len(found) < 2:
+        return _Resolved(found, _read(after, found, date, num))
+    # The words end at `.` or `;`, or where the next pointer's date
+    # starts (`— 2026-10-17 #718, 2026-10-18 #721`).
+    said = re.split(rf"[.;]|{_DATE}", after, maxsplit=1)[0].rstrip(" ,")
+    tails = {e: _tail(e[0], date, num) for e in found}
+    # The whole rest of the line is matched, so a period or a date
+    # inside a head's words is read as part of them.
+    whole = [e for e in found if tails[e] and after.startswith(tails[e])]
+    if whole:
+        longest = max(len(tails[e]) for e in whole)
+        hits = [e for e in whole if len(tails[e]) == longest]
+        used = longest
+    else:
+        cut = [e for e in found if said and tails[e].startswith(said)]
+        if cut:
+            hits, used = cut, len(said)
+        elif said:
+            bare = [e for e in found if not tails[e]]
+            if len({_clean(h) for h, _ in found}) > 1 or not bare:
+                return _Resolved([], 0, said)
+            hits, used = found, 0
+        else:
+            hits = [e for e in found if not tails[e]] or found
+            used = 0
+    if len(hits) > 1 and len({_clean(head) for head, _ in hits}) == 1:
+        # Twins: entries whose heads are the same words. What the
+        # pointer says past the head names one by how its text opens.
+        words = said[len(tails[hits[0]]):].lstrip(" ,")
+        twin = [e for e in hits if words and e[1].startswith(words)]
+        hits = twin or hits
+    return _Resolved(hits, max(used, _read(after, hits, date, num)))
+
+
+def _read(after: str, hits: list[tuple[str, str]], date: str,
+          num: str | None) -> int:
+    """How much of the line the one entry named was read as its head's
+    words -- however much of them the pointer wrote -- so a date among
+    them is not taken for a second pointer."""
+    if len(hits) != 1:
+        return 0
+    tail = _tail(hits[0][0], date, num)
+    n = 0
+    while n < min(len(after), len(tail)) and after[n] == tail[n]:
+        n += 1
+    return n
+
+
+def _hits(line: str, m: re.Match[str],
+          entries: list[tuple[str, str]]) -> list[tuple[str, str]]:
+    """The log entries one pointer names, as (head, rest) pairs."""
+    return _resolve(line, m, entries).hits
 
 
 _STANDING_HEADING = re.compile(r"^## Standing$", re.M)
@@ -213,9 +335,10 @@ def has_standing(text: str) -> bool:
 
 def standing_findings(text: str) -> list[str]:
     """What is wrong with a decisions file's Standing block: a bullet
-    with no `— <date>` pointer, any date-and-issue pointer from there
-    to the line's end naming no entry (dates match exactly) or
-    to one only `SUPERSEDED by` a later entry, a
+    with no `— <date>` pointer, any pointer from there to the line's
+    end naming no entry (dates match exactly), carrying words that
+    continue no candidate's head where its date and issue are shared,
+    naming more than one (ambiguous), or naming a `SUPERSEDED by` entry, a
     Not-standing pointer to no entry, a Standing with no Log after it.
     Empty for a file with no Standing block, whose absence is
     standing_roster_findings' question."""
@@ -236,18 +359,37 @@ def standing_findings(text: str) -> list[str]:
             if not dash:
                 findings.append(f"no entry pointer: {line[:60]}")
                 continue
+            read_to = 0
             for m in _POINTER_RE.finditer(line, dash.start()):
-                hits = [rest for head, rest in entries
-                        if _names(head, m["date"], m["num"])]
-                if not hits or (m["num"] is None and len(hits) > 1):
+                if m.start() < read_to:   # a date inside a pick's words
+                    continue
+                got = _resolve(line, m, entries)
+                hits, read_to = got.hits, m.end() + got.used
+                if got.unmatched:
+                    findings.append(
+                        f"pointer {m['date']} #{m['num']}: "
+                        f"{got.unmatched!r} continues no entry's head")
+                elif not hits:
                     findings.append(f"no entry {m['date']} #{m['num']}")
-                elif all(r.startswith("SUPERSEDED by") for r in hits):
+                elif len(hits) > 1:
+                    findings.append(
+                        f"ambiguous pointer {m['date']} #{m['num']}: add "
+                        "the words its entry's head continues with")
+                elif any(r.startswith("SUPERSEDED by") for _, r in hits):
                     findings.append(
                         f"superseded entry {m['date']} #{m['num']}")
         elif line.startswith("Not standing:"):
+            read_to = 0
             for m in _POINTER_RE.finditer(line):
-                if not any(_names(head, m["date"], m["num"])
-                           for head, _ in entries):
+                if m.start() < read_to:
+                    continue
+                got = _resolve(line, m, entries)
+                read_to = m.end() + got.used
+                if got.unmatched:
+                    findings.append(
+                        f"not-standing pointer {m['date']} #{m['num']}: "
+                        f"{got.unmatched!r} continues no entry's head")
+                elif not got.hits:
                     findings.append(
                         f"not-standing names no entry {m['date']} "
                         f"#{m['num']}")
