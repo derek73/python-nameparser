@@ -1315,7 +1315,6 @@ GLUED_HONORIFICS: frozenset[str] = frozenset({
 })
 
 SUFFIX_ACRONYMS_AMBIGUOUS: frozenset[str] = frozenset({
-    'aas',
     'aba',
     'aca',
     'ace',
@@ -1328,7 +1327,6 @@ SUFFIX_ACRONYMS_AMBIGUOUS: frozenset[str] = frozenset({
     'ba',
     'bem',
     'caha',
-    'cap',
     'capp',
     'caro',
     'cea',

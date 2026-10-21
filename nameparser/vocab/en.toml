@@ -2281,7 +2281,7 @@ credential = {}
 
 [[word]]
 text = "aas"
-credential = { may_be_name = true }
+credential = {}
 
 [[word]]
 text = "aba"
@@ -2535,7 +2535,7 @@ credential = {}
 
 [[word]]
 text = "cap"
-credential = { may_be_name = true }
+credential = {}
 
 [[word]]
 text = "capa"
