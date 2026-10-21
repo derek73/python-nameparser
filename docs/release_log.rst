@@ -10,7 +10,7 @@ Release Log
 
     **Behavior Changes**
 
-    - **Fix a surname spelled Si or Chi reading as a credential.** ``Luo Si`` gives family ``Si``, given ``Luo``, where 2.0.0 through 2.5.0 gave suffix ``Si`` with no family name. A Title-case ``Si`` after a full name takes the family name, as ``Ma`` does, and a capitalized ``SI`` is still a credential. :issue:`791`
+    - **Fix credentials that are also surnames reading as credentials.** ``Luo Si`` and ``Robert Capa`` give a family name, where 2.0.0 through 2.5.0 gave suffix ``Si`` or ``Capa`` with no family name. A Title-case word after a full name takes the family name, as ``Ma`` does; the all-caps form stays a credential (``John Smith CAPA`` keeps suffix ``CAPA``). :issue:`791`, :issue:`796`
 
 * 2.5.0 - October 19, 2026
 
