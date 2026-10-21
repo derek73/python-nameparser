@@ -17,6 +17,12 @@ the review reads it directly and nothing has to be classified (#664).
 git ref, which is how a release asks what moved since the last tag.
 --tree PATH reads with the nameparser package of another checkout
 (the corpus is always this one's), for comparing two trees.
+--local SOURCE reads a local corpus (local_corpora.py) instead of the
+committed ones, against a snapshot kept beside it in the cache, so a
+change can be read against real names that are never committed:
+
+    uv run python tools/differential/snapshot.py --local ctgov-officials --record --tree ../master-checkout
+    uv run python tools/differential/snapshot.py --local ctgov-officials
 
 A corpus that loses names shows them as removed, so a truncated file
 cannot pass for a clean run. compare.py builds its baseline rows with
@@ -262,24 +268,49 @@ def check_source(module_file: str, root: Path = REPO_ROOT) -> Path:
     return at
 
 
+def _local(source: str) -> tuple[Path, list[Path]]:
+    """A local corpus's snapshot path and corpus file, with its
+    attribution printed: a report on it carries its source and date."""
+    if str(HERE) not in sys.path:
+        sys.path.append(str(HERE))
+    import local_corpora
+    corpus = local_corpora.load(source)
+    if corpus is None:
+        raise SystemExit(f"{source} is not fetched: "
+                         f"local_corpora.py fetch {source}")
+    print(corpus.header())
+    return (local_corpora.directory(source) / local_corpora.SNAPSHOT,
+            [local_corpora.corpus_path(source)])
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--record", action="store_true", help="rewrite the snapshot")
     ap.add_argument("--since", metavar="REF",
                     help="compare against the snapshot committed at a git ref")
     ap.add_argument("--tree", metavar="PATH", help="read with another checkout")
-    ap.add_argument("--out", type=Path, default=SNAPSHOT,
-                    help="where --record writes (default: snapshot.jsonl)")
+    ap.add_argument("--out", type=Path,
+                    help="where --record writes (default: snapshot.jsonl, "
+                         "or the local corpus's own snapshot)")
+    ap.add_argument("--local", metavar="SOURCE",
+                    help="read a local corpus from the cache instead of the "
+                         "committed corpora (local_corpora.py)")
     args = ap.parse_args(argv)
+    if args.local and args.since:
+        ap.error("--since reads a committed snapshot; a local corpus has none")
+    snapshot, corpora = SNAPSHOT, None
+    if args.local:
+        snapshot, corpora = _local(args.local)
+    out = args.out or snapshot
     root = Path(args.tree).resolve() if args.tree else REPO_ROOT
     if args.tree:
         sys.path.insert(0, str(root))
-    rows = read(corpus_entries())
+    rows = read(corpus_entries(corpora))
     import nameparser
     check_source(nameparser.__file__, root)
     if args.record:
-        args.out.write_text(dump(rows), encoding="utf-8")
-        print(f"recorded {len(rows)} readings to {args.out}")
+        out.write_text(dump(rows), encoding="utf-8")
+        print(f"recorded {len(rows)} readings to {out}")
         return 0
     if args.since:
         rel = SNAPSHOT.relative_to(Path(subprocess.check_output(
@@ -292,11 +323,18 @@ def main(argv: list[str] | None = None) -> int:
                 f"no {rel} at {args.since}: an unknown ref, or one from "
                 f"before the snapshot existed. For a release tagged "
                 f"before it, use `compare.py --baseline <version>`") from None
+    elif not snapshot.exists():
+        raise SystemExit(f"no snapshot at {snapshot}: record one first, "
+                         f"with --record (and --tree for another checkout)")
     else:
-        text = SNAPSHOT.read_text(encoding="utf-8")
+        text = snapshot.read_text(encoding="utf-8")
     old, new = load(text), {key(r): r for r in rows}
     moves = grouped(old, new)
     print("\n".join(moves) or "matches the snapshot")
+    if moves and args.local:
+        moved = {k for k in set(old) | set(new) if old.get(k) != new.get(k)}
+        print(f"\n{len(moved)} entries differ")
+        return 1
     if moves:
         moved = {k for k in set(old) | set(new) if old.get(k) != new.get(k)}
         cldr = only_in(CLDR_CORPUS, {name for name, _ in moved})

@@ -81,6 +81,15 @@ def _no_nppes(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(tool, "load_nppes", lambda download: None)
 
 
+#: And for the local corpora, which a developer's cache may hold too.
+_LOAD_LOCALS = tool.load_locals
+
+
+@pytest.fixture(autouse=True)
+def _no_locals(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(tool, "load_locals", lambda: [])
+
+
 def test_the_network_guard_bites() -> None:
     # Negative control for the guard: without it, this call goes to
     # query.wikidata.org.
@@ -2153,3 +2162,50 @@ def test_credential_usage_falls_back_to_a_sibling_for_letters_only_phrases_hold(
     assert usage.credential == 50
     assert "looked up as REGISTERED NURSE" in usage.note
     assert "also written" not in usage.note  # found, not also another
+
+
+# -- local corpora ---------------------------------------------------------------
+
+def test_a_local_corpus_not_fetched_names_the_fetch(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    [(source, corpus, index, error)] = _LOAD_LOCALS()
+    assert (source, corpus, index, error) == ("ctgov-officials", None, None, "")
+    row = tool.local_usage("MD", source, corpus, index)
+    assert row.status == "not downloaded"
+    assert "local_corpora.py fetch ctgov-officials" in row.note
+
+
+def test_a_local_corpus_row_counts_officials_and_the_comma_side() -> None:
+    module = tool._local_corpora()
+    corpus = module.Local("ctgov-officials", [{"name": n} for n in (
+        "Ann Lee, M.D.", "MD Bo Wu", "Cy Doe, MD, PhD")], {"data_date": "2026-10-21"})
+    row = tool.local_usage("m.d", "ctgov-officials", corpus, module.word_index(corpus))
+    assert row.status == "ok"
+    assert row.note == ("3 of 3 officials write it, 2 after a comma; "
+                        "written MD 2, M.D. 1; data as of 2026-10-21")
+    missing = tool.local_usage("FNP-C", "ctgov-officials", corpus, module.word_index(corpus))
+    assert missing.note.startswith("0 of 3 officials write it, 0 after a comma; data as of")
+    assert tool.local_usage("..", "ctgov-officials", corpus,
+                            module.word_index(corpus)).status == "unrepresentable"
+
+
+def test_a_local_corpus_row_appears_in_the_report(
+        monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    module = tool._local_corpora()
+    corpus = module.Local("ctgov-officials", [{"name": "Ann Lee, MD"}],
+                          {"data_date": "2026-10-21"})
+    monkeypatch.setattr(tool, "load_locals", lambda: [
+        ("ctgov-officials", corpus, module.word_index(corpus), "")])
+    assert tool.main(["--no-wikidata", "MD"]) == 0
+    out = capsys.readouterr().out
+    assert "ctgov-officials (local corpus)" in out
+    assert "1 of 1 officials write it, 1 after a comma" in out
+
+
+def test_a_local_corpus_that_fails_to_load_fails_the_run(
+        monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    monkeypatch.setattr(tool, "load_locals", lambda: [
+        ("ctgov-officials", None, None, "ValueError: does not match the sha256")])
+    assert tool.main(["--no-wikidata", "MD"]) == 2
+    assert "failed; ValueError: does not match the sha256" in capsys.readouterr().out

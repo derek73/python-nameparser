@@ -96,6 +96,16 @@ What a number means depends on its source, and the report says so:
   online), pinned by sha256, and read once into a tally cached beside
   it; the zip itself is never unpacked.
 
+- Local corpora (tools/differential/local_corpora.py): whole names as
+  people typed them, fetched into the cache by that script and never
+  committed, so this tool only reads them. One row per corpus fetched:
+  how many records write the word anywhere in the name and how many
+  after a comma, matched ignoring case and periods as the parser
+  matches an acronym, with the spellings as written. The first is
+  ClinicalTrials.gov's study officials, where `MD` after a comma is the
+  usual case and a credential before it is the noise worth seeing.
+  Not a census of anyone: it counts what the source's typists wrote.
+
 Both US sources spell names in ASCII letters only, without spaces or
 punctuation (O'Brien is OBRIEN), so a word is folded the same way
 before lookup. A letter the fold cannot carry over (any non-Latin
@@ -133,7 +143,11 @@ from collections.abc import Callable, Iterator
 from dataclasses import asdict, dataclass, field
 from datetime import date
 from pathlib import Path
-from typing import Any, Literal, TypeVar
+from types import ModuleType
+from typing import TYPE_CHECKING, Any, Literal, TypeVar
+
+if TYPE_CHECKING:  # loaded by path at run time, _local_corpora
+    from local_corpora import Local, WordIndex
 
 CENSUS_URL = "https://www2.census.gov/topics/genealogy/2010surnames/names.zip"
 CENSUS_FILE = "census2010_surnames.zip"
@@ -1031,6 +1045,58 @@ def credential_usage(word: str, tally: CredentialTally | None) -> Usage:
     return usage
 
 
+# -- local corpora ---------------------------------------------------------
+
+def _local_corpora() -> ModuleType:
+    """tools/differential/local_corpora.py, which owns the local corpora's
+    cache layout and the checks on loading one, loaded by path the way
+    the differential tools load corpus_build."""
+    here = str(Path(__file__).resolve().parent / "differential")
+    if here not in sys.path:
+        sys.path.append(here)
+    import local_corpora
+    return local_corpora
+
+
+def load_locals() -> list[tuple[str, Local | None, WordIndex | None, str]]:
+    """Every local corpus: (source, the corpus or None when not fetched,
+    its word index, the error that stopped it loading)."""
+    module = _local_corpora()
+    out = []
+    for source in sorted(module.SOURCES):
+        local, error = _attempt(lambda source=source: module.load(source))
+        out.append((source, local,
+                    module.word_index(local) if local is not None else None,
+                    error))
+    return out
+
+
+def local_usage(word: str, source: str, local: Local | None,
+                index: WordIndex | None) -> Usage:
+    module = _local_corpora()
+    usage = Usage(f"{source} (local corpus)")
+    if local is None or index is None:
+        usage.status = "not downloaded"
+        usage.note = (f"not fetched; tools/differential/local_corpora.py "
+                      f"fetch {source}")
+        return usage
+    key = module.word_key(word)
+    if not key:
+        usage.status = "unrepresentable"
+        usage.note = "nothing in it is left once periods and brackets go"
+        return usage
+    unit = module.SOURCES[source].unit
+    anywhere, after = index.anywhere[key], index.after_comma[key]
+    written = index.spellings.get(key)
+    usage.note = _join(
+        f"{anywhere:,} of {len(local.records):,} {unit} write it, "
+        f"{after:,} after a comma",
+        "written " + ", ".join(f"{s} {n:,}" for s, n in written.most_common(3))
+        if written else "",
+        f"data as of {local.meta['data_date']}")
+    return usage
+
+
 # -- Wikidata ------------------------------------------------------------
 
 def spellings(word: str) -> list[str]:
@@ -1914,6 +1980,7 @@ def main(argv: list[str] | None = None) -> int:
         index, index_error = _attempt(
             lambda: load_index(download=True, refresh=args.refresh_index))
 
+    locals_ = load_locals()
     report = {}
     for word in words:
         census_row, ssa_row = census_usage(word, census), ssa_usage(word, ssa)
@@ -1925,6 +1992,11 @@ def main(argv: list[str] | None = None) -> int:
             if error:
                 row.status, row.note = "failed", error
         usages = [census_row, ssa_row, namdict_row, nppes_row]
+        for source, local, index, error in locals_:
+            row = local_usage(word, source, local, index)
+            if error:
+                row.status, row.note = "failed", error
+            usages.append(row)
         if not args.no_wikidata:
             usages.append(wikidata_usage(word, args.countries))
             if is_cjk(word):
