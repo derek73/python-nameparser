@@ -2017,7 +2017,15 @@ def test_credential_usage_folds_an_accented_word_as_the_file_spells_it(
     assert f"looked up as {found}" in usage.note
 
 
-@pytest.mark.parametrize("word", ["博士", "врач"])
+def test_credential_usage_reads_any_dash_as_a_hyphen() -> None:
+    # The file writes only the ASCII hyphen; PA–C (an en dash) read 0
+    # beside PA-C's 122,676 after the first accent fold.
+    for dash in ("\u2013", "\u2010", "\u2014"):
+        usage = tool.credential_usage(f"PA{dash}C", _tally(**{"PA-C": 120}))
+        assert (usage.status, usage.credential) == ("ok", 120), dash
+
+
+@pytest.mark.parametrize("word", ["博士", "врач", "M.D.\u2019", "", "  ", "\u0301"])
 def test_credential_usage_calls_a_non_latin_word_unrepresentable(word: str) -> None:
     # The file spells every credential in ASCII: no answer, never a zero.
     usage = tool.credential_usage(word, _tally(MD=1))

@@ -676,8 +676,9 @@ def namdict_usage(word: str, table: NamDict | None, top: int) -> Usage:
 # A segment kept whole takes any credential in it along: 'MA COUNSELING'
 # is a key of its own, and its providers do not count toward MA. The
 # kept segments holding MS have 1,448 providers, MA 1,212, MD 684 and PHD
-# 420 -- an undercount of at most 1% of each, since some of them write the
-# credential in another segment too. Splitting the credential off
+# 420 -- an undercount of 1.2% of MA, 0.95% of MS and less of the others,
+# a little less still since a few of them write the credential in
+# another segment too. Splitting the credential off
 # instead would split 'NURSE PRACTITIONER' as well, NURSE being written
 # alone 583 times, and give NURSE up to 12,213 more providers (687 write
 # it as a credential); the undercount is the smaller error.
@@ -928,17 +929,21 @@ def _share(fraction: float) -> str:
 
 
 def ascii_credential(word: str) -> str:
-    """The word as the NPPES file could spell it: accents dropped and the
-    letters us_key transliterates spelled out, punctuation and digits
-    kept for credential_key. Empty when a letter has no ASCII spelling --
-    the file holds none (0 of 49,116 keys, 2026-10-21), so such a word
-    can only miss, and a miss must not read as a zero."""
+    """The word as the NPPES file could spell it: accents dropped, the
+    letters us_key transliterates spelled out, any dash written as a
+    hyphen (PA–C is PA-C), and ASCII punctuation and digits kept for
+    credential_key. Empty when anything else non-ASCII is left -- a
+    letter, a curly quote -- since the file holds no such character (0 of
+    49,116 keys, 2026-10-21), and a word that can only miss must not read
+    as a zero."""
     folded = unicodedata.normalize("NFKD", word.translate(_TRANSLITERATE))
     kept = []
     for ch in folded:
         if unicodedata.combining(ch) or unicodedata.category(ch) == "Lm":
             continue
-        if not ch.isascii() and ch.isalpha():
+        if unicodedata.category(ch) == "Pd":
+            ch = "-"
+        if not ch.isascii():
             return ""
         kept.append(ch)
     return "".join(kept)
@@ -952,10 +957,12 @@ def credential_usage(word: str, tally: CredentialTally | None) -> Usage:
                       f"({NPPES_SIZE}, once)")
         return usage
     spelled = ascii_credential(word)
-    if not spelled:
+    if not spelled.strip():
+        # Also a word of nothing but spaces or combining marks, which
+        # would otherwise read "no provider writes" an empty key.
         usage.status = "unrepresentable"
-        usage.note = ("a letter has no ASCII spelling, and the NPPES file "
-                      "spells every credential in ASCII")
+        usage.note = ("nothing in it has an ASCII spelling, and the NPPES "
+                      "file spells every credential in ASCII")
         return usage
     key = credential_key(spelled)
     # Keys differing only in punctuation are spellings of one credential
