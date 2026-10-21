@@ -112,14 +112,23 @@ _NOT_TERMINAL_RE = re.compile(
 _EXAMPLE_LEADS = ('"', "[", "“", "”", "„", "‘", "’", "«")
 
 
-def _looks_like_example(s: str) -> bool:
-    """Whether prose holds an example that would never run. An arrow
-    and an assertion inside a backtick span are prose writing ABOUT the
-    grammar (`` `→  family=` ``), not an example."""
-    if _EXAMPLE_RE.match(s) or s.lstrip().startswith(_EXAMPLE_LEADS):
+def holds_assertion(s: str) -> bool:
+    """Whether prose holds an example's assertion, which would never
+    run there: a line that parses as an example, or an arrow and an
+    assertion anywhere in it. One inside a backtick span is prose
+    writing ABOUT the grammar (`` `→  family=` ``), not an example.
+    Asked of a section's Background too (rules_doc.parse_rules_doc)."""
+    if _EXAMPLE_RE.match(s):
         return True
     return any(m.group("field") in ASSERTABLE_FIELDS
                for m in _ARROW_FIELD_RE.finditer(_CODE_RE.sub("", s)))
+
+
+def _looks_like_example(s: str) -> bool:
+    """holds_assertion, or a line opening with a quote or a bracket,
+    which a rule's prose may not: a Background may, since its wrapped
+    lines do."""
+    return holds_assertion(s) or s.lstrip().startswith(_EXAMPLE_LEADS)
 
 
 @dataclass(frozen=True)

@@ -241,13 +241,14 @@ def _walk(text: str) -> Iterator[
 
 
 _SECTION_RE = re.compile(r"## .*\(([A-Z])\)\s*$")
-#: Lines that are structure, never a Background paragraph's wrapped
-#: prose: a fence, a heading, a field label, a list item, an example.
-#: A wrapped line may open with a quote (the H and N Backgrounds do),
-#: so a quote alone is not one.
+#: Lines at the start of a line that are structure, never a Background
+#: paragraph's wrapped prose: a fence, a heading, a field label, a list
+#: item (only an item numbered 1 can interrupt a paragraph in
+#: CommonMark, so "2026. Then" stays prose). Column 0 only: an indented
+#: fence, a setext underline or a blockquote is not read. A wrapped
+#: line may open with a quote (the H and N Backgrounds do).
 _STRUCTURE_RE = re.compile(
-    r"^(?:```|~~~|#+ |\*\*[^*]+:\*\*|(?:[-*+]|\d+[.)])(?:\s|$))"
-    r"|\s→\s+[a-z_]+=")
+    r"^(?:```|~~~|#+ |\*\*[^*]+:\*\*|(?:[-*+]|1[.)])(?:\s|$))")
 
 
 def _retired(rid: str, lineno: int, line: str) -> ValueError:
@@ -294,9 +295,16 @@ def parse_rules_doc(text: str) -> list[Rule]:
                         f"quotable")
                 letters.add(sm.group(1))
                 section, background = sm.group(1), False
+            elif background and rules_skeleton.holds_assertion(line) or (
+                    section is not None and line.startswith("Background:")
+                    and rules_skeleton.holds_assertion(line)):
+                raise ValueError(
+                    f"line {lineno}, after {after}: an example in a "
+                    f"Background, where it would never run; examples "
+                    f"stand in a rule's fences: {line.strip()!r}")
             elif section is not None and line.startswith("Background:"):
                 section, background = None, True
-            elif not background or _STRUCTURE_RE.search(line):
+            elif not background or _STRUCTURE_RE.match(line):
                 raise ValueError(
                     f"line {lineno}, after {after}: text outside any rule. "
                     f"A rule opens with a `# ID — name` heading, and a "

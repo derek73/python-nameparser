@@ -191,12 +191,35 @@ def test_a_signal_line_outside_any_rule_is_an_error() -> None:
                  id="a-field-glued-to-a-background"),
     pytest.param(_SECTION.rstrip("\n") + "\n- an item\n",
                  id="a-list-glued-to-a-background"),
-    pytest.param(_SECTION.rstrip("\n") + '\nit reads "A B"  →  family="B"\n',
-                 id="an-example-glued-to-a-background"),
 ])
+
+
 def test_text_outside_any_rule_is_an_error(doc: str) -> None:
     with pytest.raises(ValueError, match="text outside any rule"):
         parse_rules_doc(doc)
+
+
+@pytest.mark.parametrize("doc", [
+    pytest.param(_SECTION.rstrip("\n") + '\nit reads "A B"  →  family="B"\n',
+                 id="on-a-wrapped-line"),
+    # every real Background is one line: the example stands on it (review)
+    pytest.param('## A section (X)\n\nBackground: as in "A B"  →  '
+                 'family="B" here.\n', id="on-the-background-line"),
+])
+def test_an_example_in_a_background_is_an_error(doc: str) -> None:
+    with pytest.raises(ValueError, match="an example in a Background"):
+        parse_rules_doc(doc)
+
+
+@pytest.mark.parametrize("line", [
+    pytest.param('as in `"A B"  →  family="B"` here.', id="in-backticks"),
+    pytest.param("2026. Then it changed.", id="a-year-opening-a-line"),
+    pytest.param("12) items were seen.", id="a-number-past-1"),
+])
+def test_a_background_wraps_onto_prose(line: str) -> None:
+    doc = _SECTION.rstrip("\n") + f"\n{line}\n"
+    assert parse_rules_doc(doc) == []
+    assert prose_blocks(doc)["X"][-1] == line
 
 
 #: A rule heading with no field under it: before #761's retirement it
