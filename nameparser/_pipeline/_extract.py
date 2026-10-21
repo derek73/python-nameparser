@@ -72,8 +72,8 @@ def _maiden_marked(content: str, lexicon: Lexicon) -> bool:
     '(z domu Nowak)' has one, '(z domu)' has none. The word after is
     not tested for anything, which is
     rules/M3's Accepted bullet "The word taken after the marker is not tested"
-    (decisions/M3) and the reason a bracketed '(née V)' reads maiden
-    'V' where the bare 'née V' gives M2 a suffix.
+    (decisions/M3) and the reason a bracketed '(née PhD)' reads maiden
+    'PhD' where the bare 'née PhD' gives M2 a suffix.
 
     This stage runs before tokenize, so it calls maiden_marker_run
     itself rather than reading the tags classify will set. The two

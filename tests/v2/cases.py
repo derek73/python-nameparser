@@ -278,8 +278,8 @@ class Case:
                 f"shape tag")
         # U+00B7 (间隔号) marks a name transcription, which keeps the
         # DECLARED order: rules/W4's Except bullet "A name the
-        # interpunct divides", the clause shape 7 is checked against
-        # here, where shape 6 is checked against W4's family-first Then
+        # interpunct divides", the clause shape 7's U+00B7 half is
+        # checked against here, where shape 6 is checked against W4's family-first Then
         # (decisions/W4). The fullwidth nakaguro U+30FB
         # is NOT a transcription marker on its own: decisions/T3 scopes that reading
         # to the codepoint, so U+30FB on non-katakana text is an

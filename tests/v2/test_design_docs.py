@@ -315,7 +315,7 @@ def test_a_rule_file_reusing_a_retired_id_is_refused(tmp_path: Path) -> None:
 @pytest.mark.parametrize("line", [
     "**Retired:** 2026-10-20 #0", "- Retired: 2026-10-20 #0",
     "retired: 2026-10-20 #0", "Retired : 2026-10-20 #0",
-    "  Retired: 2026-10-20 #0",
+    "  Retired: 2026-10-20 #0", "1. Retired: 2026-10-20 #0",
 ])
 def test_a_misspelled_retired_line_is_a_finding(line: str) -> None:
     # each spelling would leave X9 out of retired_ids and the refusal

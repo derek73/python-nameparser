@@ -112,10 +112,11 @@ def resolve(doc: str, cid: str, folder: Path | None = None) -> Path | None:
 # leaves rules/, and its decisions file records the retirement on a line
 # of its own opening `Retired:`; a rule file carrying that ID again is
 # refused. A line that means `Retired:` and misspells it (bold, a list
-# marker, lowercase) would switch the refusal off for its ID, so it is a
+# marker or number, lowercase) would switch the refusal off for its ID, so it is a
 # finding too.
 _RETIRED_RE = re.compile(r"^Retired:", re.M)
-_NEAR_RETIRED = re.compile(r"^[ \t>*_+-]*retired[ \t*_]*:.*$", re.M | re.I)
+_NEAR_RETIRED = re.compile(
+    r"^[ \t>*_+-]*(?:\d+[.)][ \t]*)?retired[ \t*_]*:.*$", re.M | re.I)
 
 
 def rule_file_ids(folder: Path = RULES_DIR) -> set[str]:

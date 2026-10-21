@@ -826,13 +826,8 @@ def test_a_trailing_title_is_transparent_to_the_maiden_clause() -> None:
     empty). The invariant is claimed over the forms below and no
     wider. Where the clause KEEPS the credential the spellings differ,
     a clause being one contiguous run: 'Doe nee Smith ba Prof.' gives
-    the title up, 'Doe nee Smith Prof. ba' cannot; and where something
-    in or ahead of the clause would take the title they differ too
-    ('Jane van der Berg nee Smith PhD Prof.' against '... Prof. PhD',
-    'Jane Doe nee Smith do MA Prof.' against '... do Prof. MA'), the
-    shape rules/M2's Accepted bullet "The run is what the trailing rules read"
-    accepts (decisions/M2). Both lists are examples rather than
-    complete. No head or run below has a particle, a bound given
+    the title up, 'Doe nee Smith Prof. ba' cannot -- an example
+    rather than a complete list. No head or run below has a particle, a bound given
     name or an empty name in or ahead of the clause.
 
     An invariant over two INPUTS (docs/design/AGENTS.md axis 11), so it
