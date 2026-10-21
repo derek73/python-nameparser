@@ -1645,8 +1645,9 @@ def test_tally_splits_credentials_written_side_by_side() -> None:
 
 
 def test_tally_keeps_a_job_title_whole() -> None:
-    # PRACTITIONER is never a credential of its own; splitting the title
-    # would have counted NURSE as one 5,803 times on the real file.
+    # PRACTITIONER is rarely written alone (19 times on the real file);
+    # splitting the title would have counted NURSE for each of the 5,803
+    # providers who write NURSE PRACTITIONER.
     fields = _many("NURSE", 60) + ["NURSE PRACTITIONER"] * 2
     tally = tool.tally_credentials(iter(_providers(*fields)))
     assert tally.tokens["NURSE PRACTITIONER"][0] == 2
@@ -1675,8 +1676,9 @@ class _Tally(Protocol):
 
 
 def _tally(**tokens: int) -> _Tally:
+    credentialed = sum(tokens.values()) or 1
     return tool.CredentialTally(
-        people=1000, credentialed=sum(tokens.values()) or 1,
+        people=max(1000, credentialed), credentialed=credentialed,
         tokens={k: (n, [(k, n)]) for k, n in tokens.items()})
 
 
@@ -2000,3 +2002,116 @@ def test_main_refuses_a_rank_request_it_cannot_answer(
 def test_vocabulary_reads_the_suffix_kind_as_the_parser_does(
         key: str, expected: str) -> None:
     assert tool._vocabulary(key) == expected
+
+
+@pytest.mark.parametrize(("word", "found"), [
+    ("Psicóloga", "PSICOLOGA"),   # the file has no accents at all
+    ("Médico", "MEDICO"),
+    ("Ørn", "ORN"),               # a letter NFKD leaves whole, transliterated
+])
+def test_credential_usage_folds_an_accented_word_as_the_file_spells_it(
+        word: str, found: str) -> None:
+    # Unfolded, the accented key could never match and read a false 0.
+    usage = tool.credential_usage(word, _tally(**{found: 16}))
+    assert (usage.status, usage.credential) == ("ok", 16)
+    assert f"looked up as {found}" in usage.note
+
+
+@pytest.mark.parametrize("word", ["博士", "врач"])
+def test_credential_usage_calls_a_non_latin_word_unrepresentable(word: str) -> None:
+    # The file spells every credential in ASCII: no answer, never a zero.
+    usage = tool.credential_usage(word, _tally(MD=1))
+    assert (usage.status, usage.credential) == ("unrepresentable", None)
+    assert tool.render(word, [usage]).splitlines()[2].split()[-1] == "-"
+
+
+def test_load_nppes_refuses_a_source_with_no_individual_provider(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    # An empty tally answers 0 for every word. Cached, it read "no
+    # provider writes MD" with exit 0 for one run, and was refused only by
+    # the next one's load.
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w") as zf:
+        zf.writestr(tool.NPPES_MEMBER, "npi,entity,pcredential\n1,1,MD\n"
+                                       "2,Organization,MD\n")
+    data = buffer.getvalue()
+    _pin_nppes(monkeypatch, tmp_path, data)
+    (tmp_path / tool.NPPES_FILE).write_bytes(data)
+    with pytest.raises(ValueError, match="no individual provider"):
+        _LOAD_NPPES(download=False)
+    assert not (tmp_path / tool.NPPES_TALLY).exists()
+
+
+@pytest.mark.parametrize("change", [
+    {"credentialed": 0},              # a share divided by zero
+    {"credentialed": 2000},           # more than the people read
+    {"tokens": {"MD": [0, [["MD", 1]]]}},
+    {"tokens": {"MD": [5000, [["MD", 1]]]}},
+    {"tokens": {"MD": [5, []]}},      # --rank printed spellings[0]
+    {"tokens": {"MD": [5, [["MD", 0]]]}},
+])
+def test_load_nppes_refuses_a_tally_whose_values_cannot_be(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        change: dict[str, object]) -> None:
+    # Each parsed as a tally and crashed the run later, outside _attempt,
+    # taking every other source's answer down with it.
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    data = tool._tally_json(_tally(MD=3, RN=4)) | change
+    (tmp_path / tool.NPPES_TALLY).write_text(json.dumps(data))
+    with pytest.raises(ValueError, match="unusable.*re-tally"):
+        _LOAD_NPPES(download=False)
+
+
+def test_main_rank_downloads_nppes_when_online(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    data = _nppes_zip("MD", "MD, RN")
+    _pin_nppes(monkeypatch, tmp_path, data)
+    monkeypatch.setattr(tool, "load_nppes", _LOAD_NPPES)
+    monkeypatch.setattr(tool, "load_census", lambda download: None)
+    _serve_nppes(monkeypatch, data)
+    assert tool.main(["--json", "--rank", "5"]) == 0
+    rows = json.loads(capsys.readouterr().out)["rows"]
+    assert [(r["credential"], r["providers"]) for r in rows] == [
+        ("MD", 2), ("RN", 1)]
+
+
+def test_main_rank_cuts_the_list_at_n(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    _cache_tally(monkeypatch, tmp_path, _tally(MD=50, RN=40, DO=30))
+    assert tool.main(["--no-wikidata", "--json", "--rank", "1"]) == 0
+    rows = json.loads(capsys.readouterr().out)["rows"]
+    assert [r["credential"] for r in rows] == ["MD"]
+
+
+def test_main_rank_reports_a_failed_name_source_and_exits_2(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    # The column must say failed, not the "not downloaded" a missing file
+    # gets, and the run must not exit 0.
+    _cache_tally(monkeypatch, tmp_path, _tally(MD=50))
+    (tmp_path / tool.CENSUS_FILE).write_text("<html>error page</html>")
+    assert tool.main(["--no-wikidata", "--json", "--rank", "3"]) == 2
+    out, err = capsys.readouterr()
+    assert json.loads(out)["rows"][0]["census"] == "failed"
+    assert "US Census 2010 surnames:" in err and "delete it" in err
+
+
+def test_main_rank_prints_a_table(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    # Every other rank test reads --json, so a bad format spec in the
+    # table would have crashed the default output unseen.
+    _cache_tally(monkeypatch, tmp_path, _tally(MD=5000, **{"FNP-C": 40}))
+    assert tool.main(["--no-wikidata", "--rank", "2"]) == 0
+    lines = capsys.readouterr().out.splitlines()
+    assert lines[0].startswith("5,040 of 5,040 individual providers")
+    assert lines[1].split()[:3] == ["rank", "credential", "providers"]
+    assert lines[3].split()[:4] == ["2", "FNP-C", "40", "0.79%"]
+    assert lines[3].split()[4:7] == ["-", "given", "family"]
+
+
+def test_lands_says_split_when_no_field_holds_the_whole_credential() -> None:
+    assert tool._lands("John Smith, PA C", "PA C") == "split"
+    assert tool._lands("John Smith, MD", "MD") == "suffix"

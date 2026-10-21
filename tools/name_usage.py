@@ -169,9 +169,10 @@ NPPES_SOURCE = "NPPES US healthcare credentials"
 NPPES_SIZE = "673 MB"
 #: Bumped whenever what the tally holds or how a field becomes keys
 #: changes -- the `[,;]` split in tally_credentials, credential_key,
-#: _squash or _resolve; a tally written by another version is rebuilt. The
-#: two constants below are written into the tally and checked too, so
-#: changing either rebuilds it without a bump.
+#: _squash or _resolve; a tally written by another version is rebuilt.
+#: NPPES_MIN_ALONE and NPPES_SPELLINGS, beside _resolve, are written into
+#: the tally and checked too, so changing either rebuilds it without a
+#: bump.
 TALLY_VERSION = 1
 WIKIDATA_ENDPOINT = "https://query.wikidata.org/sparql"
 USER_AGENT = ("nameparser-name-usage/0.1 "
@@ -672,6 +673,15 @@ def namdict_usage(word: str, table: NamDict | None, top: int) -> Usage:
 #   rarely written alone at all (PRACTITIONER 19 times, REGISTERED 12),
 #   and the segment stays whole.
 #
+# A segment kept whole takes any credential in it along: 'MA COUNSELING'
+# is a key of its own, and its providers do not count toward MA. The
+# kept segments holding MS have 1,448 providers, MA 1,212, MD 684 and PHD
+# 420 -- an undercount of at most 1% of each, since some of them write the
+# credential in another segment too. Splitting the credential off
+# instead would split 'NURSE PRACTITIONER' as well, NURSE being written
+# alone 583 times, and give NURSE up to 12,213 more providers (687 write
+# it as a credential); the undercount is the smaller error.
+#
 # (Counts measured on the pinned file, 2026-10-21.)
 
 #: A piece written alone fewer times than this, that joins with nothing,
@@ -822,10 +832,17 @@ def _read_nppes(path: Path) -> CredentialTally:
             missing = {"entity", "pcredential"} - set(reader.fieldnames or ())
             if missing:
                 raise ValueError(f"{NPPES_MEMBER} lacks columns {sorted(missing)}")
-            return tally_credentials(reader)
+            tally = tally_credentials(reader)
     except (zipfile.BadZipFile, KeyError, EOFError, zlib.error,
             csv.Error) as exc:
         raise ValueError(f"cannot read {NPPES_MEMBER} ({exc})") from exc
+    # An empty tally would answer 0 for every word -- the false zero this
+    # source must not give. It happens if the entity column's coding
+    # changes ('Individual' read as 1), which the pin cannot see.
+    if not tally.tokens:
+        raise ValueError(f"{NPPES_MEMBER} has no individual provider with a "
+                         f"credential ({tally.people:,} individuals read)")
+    return tally
 
 
 def _tally_rules() -> dict[str, int]:
@@ -855,14 +872,22 @@ def _tally_from_json(data: object) -> CredentialTally | None:
     if not (isinstance(people, int) and isinstance(credentialed, int)
             and isinstance(tokens, dict) and tokens):
         raise ValueError("needs people, credentialed and a non-empty tokens map")
+    # The values are checked as well as the types: a share divides by
+    # `credentialed`, and --rank prints each token's first spelling, so
+    # either would crash the run outside the loader's error handling.
+    if not 0 < credentialed <= people:
+        raise ValueError(f"credentialed {credentialed:,} is not between 1 and "
+                         f"people {people:,}")
     out: dict[str, tuple[int, list[tuple[str, int]]]] = {}
     for key, value in tokens.items():
         if not (isinstance(value, list) and len(value) == 2
-                and isinstance(value[0], int) and isinstance(value[1], list)
+                and isinstance(value[0], int) and 0 < value[0] <= credentialed
+                and isinstance(value[1], list) and value[1]
                 and all(isinstance(s, list) and len(s) == 2
                         and isinstance(s[0], str) and isinstance(s[1], int)
-                        for s in value[1])):
-            raise ValueError(f"token {key!r} is not [count, spellings]")
+                        and s[1] > 0 for s in value[1])):
+            raise ValueError(f"token {key!r} is not [count, spellings] with a "
+                             "count from 1 to credentialed and a spelling")
         out[key] = (value[0], [(s, n) for s, n in value[1]])
     return CredentialTally(people, credentialed, out)
 
@@ -902,6 +927,23 @@ def _share(fraction: float) -> str:
     return "<0.01%" if 0 < fraction < 0.0001 else f"{fraction:.2%}"
 
 
+def ascii_credential(word: str) -> str:
+    """The word as the NPPES file could spell it: accents dropped and the
+    letters us_key transliterates spelled out, punctuation and digits
+    kept for credential_key. Empty when a letter has no ASCII spelling --
+    the file holds none (0 of 49,116 keys, 2026-10-21), so such a word
+    can only miss, and a miss must not read as a zero."""
+    folded = unicodedata.normalize("NFKD", word.translate(_TRANSLITERATE))
+    kept = []
+    for ch in folded:
+        if unicodedata.combining(ch) or unicodedata.category(ch) == "Lm":
+            continue
+        if not ch.isascii() and ch.isalpha():
+            return ""
+        kept.append(ch)
+    return "".join(kept)
+
+
 def credential_usage(word: str, tally: CredentialTally | None) -> Usage:
     usage = Usage(NPPES_SOURCE)
     if tally is None:
@@ -909,14 +951,21 @@ def credential_usage(word: str, tally: CredentialTally | None) -> Usage:
         usage.note = (f"not cached; --fetch-nppes downloads it "
                       f"({NPPES_SIZE}, once)")
         return usage
-    key = credential_key(word)
+    spelled = ascii_credential(word)
+    if not spelled:
+        usage.status = "unrepresentable"
+        usage.note = ("a letter has no ASCII spelling, and the NPPES file "
+                      "spells every credential in ASCII")
+        return usage
+    key = credential_key(spelled)
     # Keys differing only in punctuation are spellings of one credential
     # kept apart (PA-C, PAC). A spaced word is filed as the commonest of
-    # them, as _resolve files a spaced segment (it counts whole segments,
-    # this counts providers; the two orders differ in 1 of 2,226 spelling
-    # groups, CPRI at two providers, measured 2026-10-21), so 'PA C' finds PA-C and
-    # not PAC; and every answer names the others, so OTR-L, which no
-    # provider writes, cannot read 0 without OTR/L's 61,789 beside it.
+    # them, as _resolve files a spaced segment, so 'PA C' finds PA-C and
+    # not PAC. _resolve orders them by whole segments and this by
+    # providers; outside ties the two differ in 1 of 2,226 spelling groups
+    # (CPRI, whose one provider writes it twice), measured 2026-10-21. And
+    # every answer names the others, so a spelling few write cannot stand
+    # alone: OTR-L's 416 providers are reported beside OTR/L's 61,789.
     letters = _squash([key])
     # A word with no letters or digits ('-') shares them with nothing.
     sharing = sorted(((k, n) for k, (n, _) in tally.tokens.items()
@@ -1768,7 +1817,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--rank", type=_positive, metavar="N",
                         help="list the N commonest credentials instead of "
                              "reporting words (downloads NPPES unless "
-                             "--no-wikidata)")
+                             "offline, --no-wikidata)")
     parser.add_argument("--unlisted", action="store_true",
                         help="with --rank: only credentials nameparser's "
                              "vocabulary does not list as a suffix")
