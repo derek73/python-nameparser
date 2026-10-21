@@ -11,14 +11,6 @@ issue = 707
 note = "#707's one ends-with hit, 厄德二世, is the given name Odo with a regnal numeral in its label"
 
 [[word]]
-text = "医学博士"
-[word.credential]
-acronym = false
-issue = 671
-note = "Doctor of Medicine"
-attached = { side = "after", issue = 707 }
-
-[[word]]
 text = "博士"
 [word.credential]
 acronym = false
@@ -29,6 +21,15 @@ excluded = { attached = "glued 田中博士 IS Tanaka Hiroshi, an attested given
 [[word]]
 text = "醫學博士"
 [word.credential]
+acronym = false
+issue = 671
+note = "Doctor of Medicine"
+attached = { side = "after", issue = 707 }
+
+[[word]]
+text = "医学博士"
+[word.credential]
+same_as = "醫學博士"
 acronym = false
 issue = 671
 note = "Doctor of Medicine"
@@ -78,6 +79,7 @@ attached = { side = "after", issue = 707 }
 [[word]]
 text = "太平绅士"
 [word.professional_honorific]
+same_as = "太平紳士"
 issue = 671
 note = "Justice of the Peace (Hong Kong)"
 attached = { side = "after", issue = 707 }
@@ -99,6 +101,7 @@ attached = { side = "after", issue = 707 }
 [[word]]
 text = "社长"
 [word.professional_honorific]
+same_as = "社長"
 issue = 671
 note = "simplified; 长 never occurs in Japanese text, so the entry touches no Japanese name"
 attached = { side = "after", issue = 707 }
@@ -111,6 +114,14 @@ note = "section chief; a form of address after a name"
 attached = { side = "after", issue = 707 }
 
 [[word]]
+text = "课长"
+[word.professional_honorific]
+same_as = "課長"
+issue = 671
+note = "simplified twin of 課長"
+attached = { side = "after", issue = 707 }
+
+[[word]]
 text = "議員"
 [word.professional_honorific]
 issue = 671
@@ -120,15 +131,9 @@ attached = { side = "after", issue = 707 }
 [[word]]
 text = "议员"
 [word.professional_honorific]
+same_as = "議員"
 issue = 671
 note = "legislator"
-attached = { side = "after", issue = 707 }
-
-[[word]]
-text = "课长"
-[word.professional_honorific]
-issue = 671
-note = "simplified twin of 課長"
 attached = { side = "after", issue = 707 }
 
 [[word]]
@@ -142,6 +147,7 @@ attached = "長 alone is a borne given name, so 阿部長 can be 阿部 + 長 (#
 [[word]]
 text = "部长"
 [word.professional_honorific]
+same_as = "部長"
 issue = 671
 note = "simplified twin of 部長"
 excluded = { attached = "the simplified twin of 部長, declined with it (#707)" }
