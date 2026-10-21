@@ -1431,9 +1431,10 @@ def _sdist(member_text: bytes, member: str = tool.NAMDICT_MEMBER) -> bytes:
     return buffer.getvalue()
 
 
-def _serve(monkeypatch: pytest.MonkeyPatch, data: bytes) -> None:
+def _serve(monkeypatch: pytest.MonkeyPatch, data: bytes,
+           url: str | None = None) -> None:
     def answer(request: urllib.request.Request, timeout: float) -> io.BytesIO:
-        assert request.full_url == tool.NAMDICT_URL
+        assert request.full_url == (url or tool.NAMDICT_URL)
         return io.BytesIO(data)
     monkeypatch.setattr(urllib.request, "urlopen", answer)
 
@@ -1599,10 +1600,6 @@ def _providers(*fields: str, organizations: int = 0) -> list[dict[str, str]]:
     return rows + [{"entity": "Organization", "pcredential": "MD"}] * organizations
 
 
-def _many(field: str, n: int) -> list[str]:
-    return [field] * n
-
-
 def test_tally_counts_a_provider_once_per_credential_and_keeps_spellings() -> None:
     tally = tool.tally_credentials(iter(_providers("MD, M.D.", "M.D", "")))
     assert (tally.people, tally.credentialed) == (3, 2)
@@ -1620,7 +1617,7 @@ def test_tally_reads_only_individual_providers() -> None:
 def test_tally_joins_one_credential_written_in_pieces() -> None:
     # PHARMD alone far outnumbers its rarest piece, so the pieces are
     # one credential; split, 'PHARM D' scored a D the field never meant.
-    fields = _many("PHARMD", 100) + _many("PHARM", 3) + ["PHARM D"]
+    fields = ["PHARMD"] * 100 + ["PHARM"] * 3 + ["PHARM D"]
     tally = tool.tally_credentials(iter(_providers(*fields)))
     assert tally.tokens["PHARMD"][0] == 101
     assert ("PHARM D", 1) in tally.tokens["PHARMD"][1]
@@ -1628,7 +1625,7 @@ def test_tally_joins_one_credential_written_in_pieces() -> None:
 
 
 def test_tally_joins_pieces_onto_a_hyphenated_or_slashed_spelling() -> None:
-    fields = _many("PA-C", 100) + _many("OTR/L", 100) + _many("PA", 60) + [
+    fields = ["PA-C"] * 100 + ["OTR/L"] * 100 + ["PA"] * 60 + [
         "PA C", "OTR L"]
     tally = tool.tally_credentials(iter(_providers(*fields)))
     assert tally.tokens["PA-C"][0] == 101 and tally.tokens["OTR/L"][0] == 101
@@ -1637,7 +1634,7 @@ def test_tally_joins_pieces_onto_a_hyphenated_or_slashed_spelling() -> None:
 
 def test_tally_splits_credentials_written_side_by_side() -> None:
     # Each piece is written alone more often than the two joined.
-    fields = _many("MD", 100) + _many("PHD", 80) + _many("MD/PHD", 5) + [
+    fields = ["MD"] * 100 + ["PHD"] * 80 + ["MD/PHD"] * 5 + [
         "MD PHD"]
     tally = tool.tally_credentials(iter(_providers(*fields)))
     assert (tally.tokens["MD"][0], tally.tokens["PHD"][0]) == (101, 81)
@@ -1648,7 +1645,7 @@ def test_tally_keeps_a_job_title_whole() -> None:
     # PRACTITIONER is rarely written alone (19 times on the real file);
     # splitting the title would have counted NURSE for each of the 5,803
     # providers who write NURSE PRACTITIONER.
-    fields = _many("NURSE", 60) + ["NURSE PRACTITIONER"] * 2
+    fields = ["NURSE"] * 60 + ["NURSE PRACTITIONER"] * 2
     tally = tool.tally_credentials(iter(_providers(*fields)))
     assert tally.tokens["NURSE PRACTITIONER"][0] == 2
     assert tally.tokens["NURSE"][0] == 60
@@ -1656,14 +1653,14 @@ def test_tally_keeps_a_job_title_whole() -> None:
 
 
 def test_tally_splits_after_a_join_inside_one_segment() -> None:
-    fields = (_many("MS", 100) + _many("CCC-SLP", 100) + _many("CCC", 2)
-              + _many("SLP", 60) + ["MS CCC SLP"])
+    fields = (["MS"] * 100 + ["CCC-SLP"] * 100 + ["CCC"] * 2
+              + ["SLP"] * 60 + ["MS CCC SLP"])
     tally = tool.tally_credentials(iter(_providers(*fields)))
     assert tally.tokens["MS"][0] == 101 and tally.tokens["CCC-SLP"][0] == 101
 
 
 def test_tally_drops_a_piece_that_is_only_periods() -> None:
-    fields = _many("MD", 100) + _many("M", 2) + _many("D", 2) + ["M . D."]
+    fields = ["MD"] * 100 + ["M"] * 2 + ["D"] * 2 + ["M . D."]
     tally = tool.tally_credentials(iter(_providers(*fields)))
     assert tally.tokens["MD"][0] == 101
 
@@ -1746,32 +1743,34 @@ def test_share_never_prints_a_zero_for_a_credential_someone_writes() -> None:
     assert tool._share(0.0234) == "2.34%"
 
 
-def _nppes_zip(*fields: str, header: str = "npi,entity,pcredential") -> bytes:
+def _nppes_zip(*fields: str, header: str = "npi,entity,pcredential",
+               text: str | None = None, member: str | None = None) -> bytes:
+    """A zip of individual providers with these credential fields, or of
+    `text` as written, under `member` (the pinned member by default)."""
+    if text is None:
+        lines = [header] + [f'{i},Individual,"{f}"' for i, f in enumerate(fields)]
+        text = "\n".join(lines) + "\n"
     buffer = io.BytesIO()
-    lines = [header] + [f'{i},Individual,"{f}"' for i, f in enumerate(fields)]
     with zipfile.ZipFile(buffer, "w") as zf:
-        zf.writestr(tool.NPPES_MEMBER, "\n".join(lines) + "\n")
+        zf.writestr(member or tool.NPPES_MEMBER, text)
     return buffer.getvalue()
 
 
 def _pin_nppes(monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
-               data: bytes) -> None:
+               data: bytes, cached: bool = False) -> None:
+    """Point the cache at tmp_path and the pin at `data`, and with `cached`
+    put `data` there as the downloaded zip."""
     monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
     monkeypatch.setattr(tool, "NPPES_SHA256", hashlib.sha256(data).hexdigest())
-
-
-def _serve_nppes(monkeypatch: pytest.MonkeyPatch, data: bytes) -> None:
-    def answer(request: urllib.request.Request, timeout: float) -> io.BytesIO:
-        assert request.full_url == tool.NPPES_URL
-        return io.BytesIO(data)
-    monkeypatch.setattr(urllib.request, "urlopen", answer)
+    if cached:
+        (tmp_path / tool.NPPES_FILE).write_bytes(data)
 
 
 def test_load_nppes_downloads_the_pinned_zip_and_caches_its_tally(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     data = _nppes_zip("MD", "RN, MD")
     _pin_nppes(monkeypatch, tmp_path, data)
-    _serve_nppes(monkeypatch, data)
+    _serve(monkeypatch, data, tool.NPPES_URL)
     tally = _LOAD_NPPES(download=True)
     assert tally is not None and tally.tokens["MD"][0] == 2
     assert sorted(p.name for p in tmp_path.iterdir()) == [
@@ -1785,7 +1784,7 @@ def test_load_nppes_downloads_the_pinned_zip_and_caches_its_tally(
 def test_load_nppes_refuses_a_zip_that_is_not_the_pinned_one(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
-    _serve_nppes(monkeypatch, _nppes_zip("MD"))
+    _serve(monkeypatch, _nppes_zip("MD"), tool.NPPES_URL)
     with pytest.raises(ValueError, match="not the pinned"):
         _LOAD_NPPES(download=True)
     assert list(tmp_path.iterdir()) == []  # nothing cached, no .part left
@@ -1793,12 +1792,9 @@ def test_load_nppes_refuses_a_zip_that_is_not_the_pinned_one(
 
 def test_load_nppes_refuses_a_pinned_zip_without_the_member(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    buffer = io.BytesIO()
-    with zipfile.ZipFile(buffer, "w") as zf:
-        zf.writestr("elsewhere.csv", "entity,pcredential\n")
-    data = buffer.getvalue()
+    data = _nppes_zip(text="entity,pcredential\n", member="elsewhere.csv")
     _pin_nppes(monkeypatch, tmp_path, data)
-    _serve_nppes(monkeypatch, data)
+    _serve(monkeypatch, data, tool.NPPES_URL)
     with pytest.raises(ValueError, match="cannot read"):
         _LOAD_NPPES(download=True)
     assert list(tmp_path.iterdir()) == []
@@ -1826,8 +1822,7 @@ def test_load_nppes_refuses_a_cached_zip_that_does_not_match_its_pin(
 def test_load_nppes_names_a_member_without_the_credential_column(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     data = _nppes_zip("MD", header="npi,entity,credential")
-    _pin_nppes(monkeypatch, tmp_path, data)
-    (tmp_path / tool.NPPES_FILE).write_bytes(data)
+    _pin_nppes(monkeypatch, tmp_path, data, cached=True)
     with pytest.raises(ValueError, match="pcredential"):
         _LOAD_NPPES(download=False)
 
@@ -1839,8 +1834,7 @@ def test_load_nppes_rebuilds_a_tally_from_another_version_or_zip(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
         stale: dict[str, object]) -> None:
     data = _nppes_zip("MD", "MD")
-    _pin_nppes(monkeypatch, tmp_path, data)
-    (tmp_path / tool.NPPES_FILE).write_bytes(data)
+    _pin_nppes(monkeypatch, tmp_path, data, cached=True)
     old = tool._tally_json(_tally(RN=9)) | stale
     (tmp_path / tool.NPPES_TALLY).write_text(json.dumps(old))
     tally = _LOAD_NPPES(download=False)
@@ -1851,8 +1845,7 @@ def test_load_nppes_rebuilds_a_tally_from_another_version_or_zip(
 def test_load_nppes_rebuilds_a_tally_written_before_the_rules_were_recorded(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     data = _nppes_zip("MD")
-    _pin_nppes(monkeypatch, tmp_path, data)
-    (tmp_path / tool.NPPES_FILE).write_bytes(data)
+    _pin_nppes(monkeypatch, tmp_path, data, cached=True)
     old = tool._tally_json(_tally(RN=9))
     del old["rules"]
     (tmp_path / tool.NPPES_TALLY).write_text(json.dumps(old))
@@ -1923,7 +1916,7 @@ def test_main_fetches_nppes_when_asked(
     _pin_nppes(monkeypatch, tmp_path, data)
     monkeypatch.setattr(tool, "load_nppes", _LOAD_NPPES)
     monkeypatch.setattr(tool, "load_census", lambda download: None)
-    _serve_nppes(monkeypatch, data)
+    _serve(monkeypatch, data, tool.NPPES_URL)
     monkeypatch.setattr(tool, "wikidata_usage",
                         lambda word, top: tool.Usage("Wikidata people"))
     assert tool.main(["--fetch-nppes", "--json", "MD"]) == 0
@@ -2025,7 +2018,8 @@ def test_credential_usage_reads_any_dash_as_a_hyphen() -> None:
         assert (usage.status, usage.credential) == ("ok", 120), dash
 
 
-@pytest.mark.parametrize("word", ["博士", "врач", "M.D.\u2019", "", "  ", "\u0301"])
+@pytest.mark.parametrize("word", ["博士", "врач", "M.D.\u2019", "", "  ", "\u0301",
+                                  ".", ". ."])
 def test_credential_usage_calls_a_non_latin_word_unrepresentable(word: str) -> None:
     # The file spells every credential in ASCII: no answer, never a zero.
     usage = tool.credential_usage(word, _tally(MD=1))
@@ -2038,13 +2032,9 @@ def test_load_nppes_refuses_a_source_with_no_individual_provider(
     # An empty tally answers 0 for every word. Cached, it read "no
     # provider writes MD" with exit 0 for one run, and was refused only by
     # the next one's load.
-    buffer = io.BytesIO()
-    with zipfile.ZipFile(buffer, "w") as zf:
-        zf.writestr(tool.NPPES_MEMBER, "npi,entity,pcredential\n1,1,MD\n"
-                                       "2,Organization,MD\n")
-    data = buffer.getvalue()
-    _pin_nppes(monkeypatch, tmp_path, data)
-    (tmp_path / tool.NPPES_FILE).write_bytes(data)
+    data = _nppes_zip(text="npi,entity,pcredential\n1,1,MD\n"
+                           "2,Organization,MD\n")
+    _pin_nppes(monkeypatch, tmp_path, data, cached=True)
     with pytest.raises(ValueError, match="no individual provider"):
         _LOAD_NPPES(download=False)
     assert not (tmp_path / tool.NPPES_TALLY).exists()
@@ -2077,7 +2067,7 @@ def test_main_rank_downloads_nppes_when_online(
     _pin_nppes(monkeypatch, tmp_path, data)
     monkeypatch.setattr(tool, "load_nppes", _LOAD_NPPES)
     monkeypatch.setattr(tool, "load_census", lambda download: None)
-    _serve_nppes(monkeypatch, data)
+    _serve(monkeypatch, data, tool.NPPES_URL)
     assert tool.main(["--json", "--rank", "5"]) == 0
     rows = json.loads(capsys.readouterr().out)["rows"]
     assert [(r["credential"], r["providers"]) for r in rows] == [

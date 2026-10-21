@@ -160,11 +160,14 @@ NAMDICT_CREDIT = ("nam_dict.txt by Jörg Michael (2008), GNU Free Documentation 
 NAMDICT_COUNTRIES = 55
 #: NBER keeps every month at a fixed URL (2025/08 still answered on
 #: 2026-10-21); CMS's own page keeps only the current one.
-NPPES_URL = "https://data.nber.org/npi/2026/08/core_202608_csv.zip"
+#: The pinned month; re-pinning is this and NPPES_SHA256.
+NPPES_MONTH = "202608"
+NPPES_URL = (f"https://data.nber.org/npi/{NPPES_MONTH[:4]}/{NPPES_MONTH[4:]}/"
+             f"core_{NPPES_MONTH}_csv.zip")
 NPPES_SHA256 = ("5f431813422d843c2021ec839d2eb5f80d3117cc19de660ce70af79767bc1a13")
-NPPES_MEMBER = "core_202608.csv"
-NPPES_FILE = "nppes_core_202608_csv.zip"
-NPPES_TALLY = "nppes_core_202608_credentials.json"
+NPPES_MEMBER = f"core_{NPPES_MONTH}.csv"
+NPPES_FILE = f"nppes_core_{NPPES_MONTH}_csv.zip"
+NPPES_TALLY = f"nppes_core_{NPPES_MONTH}_credentials.json"
 NPPES_SOURCE = "NPPES US healthcare credentials"
 NPPES_SIZE = "673 MB"
 #: Bumped whenever what the tally holds or how a field becomes keys
@@ -256,20 +259,26 @@ def cache_dir() -> Path:
 
 # -- the US sources' spelling ---------------------------------------------
 
+def _folded(word: str) -> Iterator[str]:
+    """The word's characters with the letters NFKD leaves whole
+    transliterated (_TRANSLITERATE) and the rest decomposed, less the
+    marks no ASCII spelling keeps. Combining marks are accents NFKD split
+    off; modifier letters (category Lm) are apostrophe-like marks such
+    as the Hawaiian ʻokina in Kaʻahumanu. Both are dropped, as O'Brien's
+    apostrophe is -- refusing them would leave such names with no
+    answer."""
+    for ch in unicodedata.normalize("NFKD", word.translate(_TRANSLITERATE)):
+        if not (unicodedata.combining(ch) or unicodedata.category(ch) == "Lm"):
+            yield ch
+
+
 def us_key(word: str) -> str:
     """Fold a word the way the Census and SSA lists spell names: ASCII
     letters only, upper-cased. Empty when any letter of the word has no
     ASCII spelling -- a lossy fold looks up a DIFFERENT name, which is
     worse than no lookup."""
-    folded = unicodedata.normalize("NFKD", word.translate(_TRANSLITERATE))
     letters = []
-    for ch in folded:
-        # Combining marks are accents NFKD split off; modifier letters
-        # (category Lm) are apostrophe-like marks such as the Hawaiian
-        # ʻokina in Kaʻahumanu. Both are dropped, as O'Brien's apostrophe
-        # is -- refusing them would leave such names with no answer.
-        if unicodedata.combining(ch) or unicodedata.category(ch) == "Lm":
-            continue
+    for ch in _folded(word):
         if ch.isascii():
             if ch.isalpha():
                 letters.append(ch)
@@ -701,8 +710,8 @@ def credential_key(text: str) -> str:
     return " ".join(text.upper().replace(".", "").split())
 
 
-def _squash(pieces: list[str]) -> str:
-    return "".join(ch for piece in pieces for ch in piece if ch.isalnum())
+def _squash(text: str) -> str:
+    return "".join(ch for ch in text if ch.isalnum())
 
 
 def _resolve(segment: str, alone: Counter[str],
@@ -719,7 +728,7 @@ def _resolve(segment: str, alone: Counter[str],
     i = 0
     while i < len(pieces):
         for j in range(len(pieces), i + 1, -1):
-            hit = joined.get(_squash(pieces[i:j]))
+            hit = joined.get(_squash("".join(pieces[i:j])))
             if hit and hit[1] > min(alone[p] for p in pieces[i:j]):
                 out.append((hit[0], " ".join(written[i:j])))
                 i = j
@@ -739,6 +748,26 @@ class CredentialTally:
     credentialed: int
     #: Key -> (providers writing it, its commonest spellings with counts).
     tokens: dict[str, tuple[int, list[tuple[str, int]]]]
+
+    def __post_init__(self) -> None:
+        """What every tally must hold, built or loaded. An empty one
+        would answer 0 for every word -- the false zero this source must
+        not give -- and happens if the entity column's coding changes
+        ('Individual' read as 1), which the pin cannot see. A share divides
+        by `credentialed`, and --rank prints each token's first spelling,
+        so a cache breaking either would crash the run outside the
+        loader's error handling."""
+        if not self.tokens:
+            raise ValueError(f"no individual provider with a credential "
+                             f"({self.people:,} individuals read)")
+        if not 0 < self.credentialed <= self.people:
+            raise ValueError(f"credentialed {self.credentialed:,} is not "
+                             f"between 1 and people {self.people:,}")
+        for key, (n, spellings) in self.tokens.items():
+            if not (0 < n <= self.credentialed and spellings
+                    and all(c > 0 for _, c in spellings)):
+                raise ValueError(f"token {key!r} needs a count from 1 to "
+                                 "credentialed and a spelling")
 
     def ranked(self) -> list[tuple[str, int, list[tuple[str, int]]]]:
         return sorted(((k, n, s) for k, (n, s) in self.tokens.items()),
@@ -767,9 +796,9 @@ def tally_credentials(rows: Iterator[dict[str, str]]) -> CredentialTally:
                 alone[credential_key(s)] += n
     joined: dict[str, tuple[str, int]] = {}
     for key, n in alone.most_common():
-        squashed = _squash([key])
-        best = joined.get(squashed)
-        joined[squashed] = (best[0] if best else key, (best[1] if best else 0) + n)
+        # The commonest spelling comes first and keeps the entry.
+        spelling, total = joined.get(_squash(key), (key, 0))
+        joined[_squash(key)] = (spelling, total + n)
     providers: Counter[str] = Counter()
     spellings: dict[str, Counter[str]] = {}
     for segments, n in fields.items():
@@ -833,17 +862,10 @@ def _read_nppes(path: Path) -> CredentialTally:
             missing = {"entity", "pcredential"} - set(reader.fieldnames or ())
             if missing:
                 raise ValueError(f"{NPPES_MEMBER} lacks columns {sorted(missing)}")
-            tally = tally_credentials(reader)
+            return tally_credentials(reader)
     except (zipfile.BadZipFile, KeyError, EOFError, zlib.error,
             csv.Error) as exc:
         raise ValueError(f"cannot read {NPPES_MEMBER} ({exc})") from exc
-    # An empty tally would answer 0 for every word -- the false zero this
-    # source must not give. It happens if the entity column's coding
-    # changes ('Individual' read as 1), which the pin cannot see.
-    if not tally.tokens:
-        raise ValueError(f"{NPPES_MEMBER} has no individual provider with a "
-                         f"credential ({tally.people:,} individuals read)")
-    return tally
 
 
 def _tally_rules() -> dict[str, int]:
@@ -871,25 +893,18 @@ def _tally_from_json(data: object) -> CredentialTally | None:
     people, credentialed, tokens = (data.get("people"), data.get("credentialed"),
                                     data.get("tokens"))
     if not (isinstance(people, int) and isinstance(credentialed, int)
-            and isinstance(tokens, dict) and tokens):
-        raise ValueError("needs people, credentialed and a non-empty tokens map")
-    # The values are checked as well as the types: a share divides by
-    # `credentialed`, and --rank prints each token's first spelling, so
-    # either would crash the run outside the loader's error handling.
-    if not 0 < credentialed <= people:
-        raise ValueError(f"credentialed {credentialed:,} is not between 1 and "
-                         f"people {people:,}")
+            and isinstance(tokens, dict)):
+        raise ValueError("needs people, credentialed and a tokens map")
     out: dict[str, tuple[int, list[tuple[str, int]]]] = {}
     for key, value in tokens.items():
         if not (isinstance(value, list) and len(value) == 2
-                and isinstance(value[0], int) and 0 < value[0] <= credentialed
-                and isinstance(value[1], list) and value[1]
+                and isinstance(value[0], int) and isinstance(value[1], list)
                 and all(isinstance(s, list) and len(s) == 2
                         and isinstance(s[0], str) and isinstance(s[1], int)
-                        and s[1] > 0 for s in value[1])):
-            raise ValueError(f"token {key!r} is not [count, spellings] with a "
-                             "count from 1 to credentialed and a spelling")
+                        for s in value[1])):
+            raise ValueError(f"token {key!r} is not [count, spellings]")
         out[key] = (value[0], [(s, n) for s, n in value[1]])
+    # Types are checked here; values by CredentialTally itself.
     return CredentialTally(people, credentialed, out)
 
 
@@ -936,17 +951,17 @@ def ascii_credential(word: str) -> str:
     letter, a curly quote -- since the file holds no such character (0 of
     49,116 keys, 2026-10-21), and a word that can only miss must not read
     as a zero."""
-    folded = unicodedata.normalize("NFKD", word.translate(_TRANSLITERATE))
     kept = []
-    for ch in folded:
-        if unicodedata.combining(ch) or unicodedata.category(ch) == "Lm":
-            continue
+    for ch in _folded(word):
         if unicodedata.category(ch) == "Pd":
             ch = "-"
         if not ch.isascii():
             return ""
         kept.append(ch)
     return "".join(kept)
+
+
+_NPPES_SCOPE = "US healthcare only: a credential of another field reads 0 here"
 
 
 def credential_usage(word: str, tally: CredentialTally | None) -> Usage:
@@ -956,15 +971,14 @@ def credential_usage(word: str, tally: CredentialTally | None) -> Usage:
         usage.note = (f"not cached; --fetch-nppes downloads it "
                       f"({NPPES_SIZE}, once)")
         return usage
-    spelled = ascii_credential(word)
-    if not spelled.strip():
-        # Also a word of nothing but spaces or combining marks, which
-        # would otherwise read "no provider writes" an empty key.
+    # Empty too for a word of nothing but spaces, periods or combining
+    # marks, which would otherwise read "no provider writes" no key.
+    key = credential_key(ascii_credential(word))
+    if not key:
         usage.status = "unrepresentable"
-        usage.note = ("nothing in it has an ASCII spelling, and the NPPES "
-                      "file spells every credential in ASCII")
+        usage.note = ("nothing in it is a credential the NPPES file could "
+                      "spell; it spells every one in ASCII")
         return usage
-    key = credential_key(spelled)
     # Keys differing only in punctuation are spellings of one credential
     # kept apart (PA-C, PAC). A spaced word is filed as the commonest of
     # them, as _resolve files a spaced segment, so 'PA C' finds PA-C and
@@ -973,19 +987,23 @@ def credential_usage(word: str, tally: CredentialTally | None) -> Usage:
     # (CPRI, whose one provider writes it twice), measured 2026-10-21. And
     # every answer names the others, so a spelling few write cannot stand
     # alone: OTR-L's 416 providers are reported beside OTR/L's 61,789.
-    letters = _squash([key])
-    # A word with no letters or digits ('-') shares them with nothing.
-    sharing = sorted(((k, n) for k, (n, _) in tally.tokens.items()
-                      if k != key and _squash([k]) == letters),
-                     key=lambda kn: (-kn[1], kn[0])) if letters else []
-    found = key if key in tally.tokens else (
-        sharing.pop(0)[0] if " " in key and sharing else None)
+    letters = _squash(key)
+    sharing: list[tuple[str, int]] = []
+    if letters:  # a word with no letters or digits ('-') shares none
+        sharing = sorted(((k, n) for k, (n, _) in tally.tokens.items()
+                          if k != key and _squash(k) == letters),
+                         key=lambda kn: (-kn[1], kn[0]))
+    if key in tally.tokens:
+        found: str | None = key
+    elif " " in key and sharing:
+        found = sharing.pop(0)[0]  # and named as found, not as another
+    else:
+        found = None
     others = ("also written " + ", ".join(f"{k} {n:,}" for k, n in sharing[:3])
               if sharing else "")
-    scope = "US healthcare only: a credential of another field reads 0 here"
     if found is None:
         usage.credential = 0
-        usage.note = _join(f"no provider writes {key}", others, scope)
+        usage.note = _join(f"no provider writes {key}", others, _NPPES_SCOPE)
         return usage
     n, spellings = tally.tokens[found]
     usage.credential = n
@@ -993,8 +1011,7 @@ def credential_usage(word: str, tally: CredentialTally | None) -> Usage:
         f"{_share(n / tally.credentialed)} of {tally.credentialed:,} credentialed "
         "providers",
         "written " + ", ".join(f"{s} {c:,}" for s, c in spellings),
-        "" if found == word.upper() else f"looked up as {found}",
-        others, scope)
+        _lookup_note(word, found), others, _NPPES_SCOPE)
     return usage
 
 
@@ -1737,6 +1754,20 @@ def _vocabulary(key: str) -> str:
     return ", ".join(kinds) or "-"
 
 
+def _listed_suffix(key: str) -> bool:
+    from nameparser import Lexicon
+    lexicon, low = Lexicon.default(), key.lower()
+    return (low in lexicon.suffix_acronyms_ambiguous
+            or low in lexicon.suffix_acronyms or low in lexicon.suffix_words)
+
+
+def _cell(usage: Usage, count: int | None, error: str) -> str:
+    """A name source's --rank cell: its count, or why it has none."""
+    if error:
+        return "failed"
+    return _count(count, usage) if usage.status == "ok" else usage.status
+
+
 @dataclass(slots=True)
 class RankRow:
     rank: int
@@ -1754,27 +1785,25 @@ class RankRow:
 
 
 def rank_rows(tally: CredentialTally, top: int, unlisted: bool,
-              census: dict[str, dict[str, str]] | None,
-              ssa: dict[str, Counter[str]] | None) -> list[RankRow]:
+              census: dict[str, dict[str, str]] | None, census_error: str,
+              ssa: dict[str, Counter[str]] | None,
+              ssa_error: str) -> list[RankRow]:
     """The `top` commonest credentials -- only those the vocabulary does
     not list as a suffix, with `unlisted` -- each with the name counts
     and readings. The rank is the credential's place among all of them,
     so a filtered list shows where each one stands."""
     rows = []
     for rank, (key, n, spellings) in enumerate(tally.ranked(), 1):
-        vocabulary = _vocabulary(key)
-        if unlisted and ("acronym" in vocabulary or "suffix word" in vocabulary):
+        if unlisted and _listed_suffix(key):
             continue
         spelling = spellings[0][0]
         census_row, ssa_row = census_usage(key, census), ssa_usage(key, ssa)
         rows.append(RankRow(
-            rank, key, n, n / tally.credentialed, spellings, vocabulary,
+            rank, key, n, n / tally.credentialed, spellings, _vocabulary(key),
             _lands(f"John Smith, {spelling}", spelling),
             _lands(f"John Smith {spelling}", spelling),
-            census_row.status if census_row.status != "ok"
-            else _count(census_row.family, census_row),
-            ssa_row.status if ssa_row.status != "ok"
-            else _count(ssa_row.given, ssa_row)))
+            _cell(census_row, census_row.family, census_error),
+            _cell(ssa_row, ssa_row.given, ssa_error)))
         if len(rows) == top:
             break
     return rows
@@ -1795,6 +1824,12 @@ def render_rank(rows: list[RankRow], tally: CredentialTally) -> str:
             f"{r.census:>7} {r.ssa:>7}  "
             + ", ".join(f"{s} {c:,}" for s, c in r.spellings[:3]))
     return "\n".join(lines)
+
+
+def _ssa_notice(ssa: dict[str, Counter[str]] | None, ssa_error: str) -> None:
+    if ssa is None and not ssa_error:
+        sys.stdout.flush()  # keep the notice after the report, not before it
+        print("\n" + ssa_missing_message(), file=sys.stderr)
 
 
 def _positive(text: str) -> int:
@@ -1888,9 +1923,7 @@ def main(argv: list[str] | None = None) -> int:
                          ensure_ascii=False, indent=2))
     else:
         print("\n\n".join(render(w, us) for w, us in report.items()))
-    if ssa is None and not ssa_error:
-        sys.stdout.flush()  # keep the notice after the report, not before it
-        print("\n" + ssa_missing_message(), file=sys.stderr)
+    _ssa_notice(ssa, ssa_error)
     failed = any(u.status == "failed" or any(s.error for s in u.splits)
                  for us in report.values() for u in us)
     if args.refresh_index and index_error:
@@ -1913,12 +1946,8 @@ def _main_rank(args: argparse.Namespace, nppes: CredentialTally | None,
             "not cached, and --no-wikidata does not download")),
             file=sys.stderr)
         return 2
-    rows = rank_rows(nppes, args.rank, args.unlisted, census, ssa)
-    for row in rows:
-        if census_error:
-            row.census = "failed"
-        if ssa_error:
-            row.ssa = "failed"
+    rows = rank_rows(nppes, args.rank, args.unlisted, census, census_error,
+                     ssa, ssa_error)
     if args.json:
         print(json.dumps({"people": nppes.people,
                           "credentialed": nppes.credentialed,
@@ -1929,9 +1958,7 @@ def _main_rank(args: argparse.Namespace, nppes: CredentialTally | None,
                         ("US SSA given names", ssa_error)):
         if error:
             print(f"{name}: {error}", file=sys.stderr)
-    if ssa is None and not ssa_error:
-        sys.stdout.flush()
-        print("\n" + ssa_missing_message(), file=sys.stderr)
+    _ssa_notice(ssa, ssa_error)
     return 2 if census_error or ssa_error else 0
 
 
