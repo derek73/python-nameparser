@@ -8,7 +8,7 @@ import pytest
 
 from tests.v2.design_docs import (
     DECISIONS_DIR, MENTION_RE, RULES_DIR, read_decision_files, read_index,
-    STANDING_EXEMPT_ORIGINAL, _POINTER_RE, _clean, _entries, _hits,
+    STANDING_EXEMPT_ORIGINAL, _POINTER_RE, _clean, _entries, _founding, _hits,
     has_standing, read_reference_lists, read_rules_text,
     read_standing_exempt, reference_lists, resolve, retired_ids,
     reused_id_findings,
@@ -307,6 +307,19 @@ def test_a_dated_title_founds_an_entry(
         assert found == []
     else:
         assert len(found) == 1 and finding in found[0], found
+
+
+def test_a_founding_entry_and_a_bold_one_are_told_apart() -> None:
+    log = "- **A.** B.\n- **2026-09-10 #322 — later.** C.\n"
+    text = _FOUNDED.format(standing="- a — 2026-09-10 #322.", log=log)
+    entries = _founding(text, log) + _entries(log)
+    for pointer, head in [("— 2026-09-10 #322/#323.", "2026-09-10, #322/#323"),
+                          ("— 2026-09-10 #322.", "2026-09-10 #322")]:
+        line = f"- a {pointer}"
+        m = _POINTER_RE.search(line)
+        assert m is not None
+        assert [h for h, _ in _hits(line, m, entries)] == [head], pointer
+    assert _founding(text, log)[0][1] == "- **A.** B."
 
 
 def test_standing_needs_a_log_after_it() -> None:
