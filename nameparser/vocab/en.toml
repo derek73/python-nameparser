@@ -4300,7 +4300,7 @@ credential = {}
 
 [[word]]
 text = "pa-c"
-credential = { may_be_name = true }
+credential = {}
 
 [[word]]
 text = "pcc"
