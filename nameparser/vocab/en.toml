@@ -2325,7 +2325,7 @@ credential = { may_be_name = true, note = "NPPES 9 US healthcare providers write
 [[word]]
 text = "acha"
 family = { us_census_2010 = 477, wikidata = 26, as_of = 2026-10-21 }
-credential = { may_be_name = true, note = "NPPES 1 US healthcare providers write it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
+credential = { may_be_name = true, note = "NPPES 1 US healthcare provider writes it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
 
 [[word]]
 text = "acp"
@@ -2427,7 +2427,7 @@ credential = {}
 [[word]]
 text = "arm"
 family = { us_census_2010 = 283, wikidata = 8, as_of = 2026-10-21 }
-credential = { may_be_name = true, note = "NPPES 1 US healthcare providers write it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
+credential = { may_be_name = true, note = "NPPES 1 US healthcare provider writes it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
 
 [[word]]
 text = "arrc"
@@ -2454,7 +2454,7 @@ credential = {}
 [[word]]
 text = "asp"
 family = { us_census_2010 = 733, wikidata = 63, as_of = 2026-10-21 }
-credential = { may_be_name = true, note = "NPPES 1 US healthcare providers write it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
+credential = { may_be_name = true, note = "NPPES 1 US healthcare provider writes it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
 
 [[word]]
 text = "atc"
@@ -2540,7 +2540,7 @@ credential = {}
 [[word]]
 text = "caha"
 family = { us_census_2010 = 116, wikidata = 28, as_of = 2026-10-21 }
-credential = { may_be_name = true, note = "NPPES 1 US healthcare providers write it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
+credential = { may_be_name = true, note = "NPPES 1 US healthcare provider writes it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
 
 [[word]]
 text = "caia"
@@ -2756,7 +2756,7 @@ credential = {}
 text = "cela"
 family = { us_census_2010 = 637, wikidata = 18, as_of = 2026-10-21 }
 given = { us_ssa = 90, as_of = 2026-10-21, note = "US SSA births summed over both sexes; Wikidata is a lower bound" }
-credential = { may_be_name = true, note = "NPPES 1 US healthcare providers write it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
+credential = { may_be_name = true, note = "NPPES 1 US healthcare provider writes it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
 
 [[word]]
 text = "cem"
@@ -3541,7 +3541,7 @@ credential = {}
 text = "els"
 family = { us_census_2010 = 362, wikidata = 9, as_of = 2026-10-21 }
 given = { wikidata = 322, as_of = 2026-10-21 }
-credential = { may_be_name = true, note = "NPPES 1 US healthcare providers write it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
+credential = { may_be_name = true, note = "NPPES 1 US healthcare provider writes it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
 
 [[word]]
 text = "emd"
@@ -3692,7 +3692,7 @@ credential = {}
 [[word]]
 text = "fic"
 family = { wikidata = 22, as_of = 2026-10-21 }
-credential = { may_be_name = true, note = "NPPES 1 US healthcare providers write it (healthcare only, August 2026 file). Surname evidence is Wikidata only (no Census bearers); marked on C-i.", issue = 796 }
+credential = { may_be_name = true, note = "NPPES 1 US healthcare provider writes it (healthcare only, August 2026 file). Surname evidence is Wikidata only (no Census bearers); marked on C-i.", issue = 796 }
 
 [[word]]
 text = "ficf"
