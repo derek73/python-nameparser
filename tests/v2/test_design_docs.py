@@ -9,9 +9,9 @@ import pytest
 from tests.v2.design_docs import (
     DECISIONS_DIR, MENTION_RE, RULES_DIR, read_decision_files, read_index,
     STANDING_EXEMPT_ORIGINAL, _POINTER_RE, _clean, _entries, _hits,
-    has_standing,
-    read_rules_text,
-    read_standing_exempt, resolve, retired_ids, reused_id_findings,
+    has_standing, read_reference_lists, read_rules_text,
+    read_standing_exempt, reference_lists, resolve, retired_ids,
+    reused_id_findings,
     rule_file_ids, slugify, standing_findings, standing_roster_findings,
     stem_for)
 from tests.v2.rules_doc import parse_rules_doc
@@ -260,6 +260,55 @@ def test_a_supersession_note_is_dropped_in_any_case_and_only_when_closed(
     assert _clean("2026-09-19 (Derek)") == "2026-09-19 (Derek)"
 
 
+def test_a_bold_date_opens_an_entry() -> None:
+    assert _entries("- **2026-10-14 #679 — the rest (Derek).** Text.\n"
+                    "- **2026-10-15/16** — the model.\n"
+                    "- **Declined 2026-09-25 (#540)** — not an entry.\n"
+                    "- **NFKC was declined.** Nor this.\n") == [
+        ("2026-10-14 #679", "the rest (Derek).** Text."),
+        ("2026-10-15/16", "the model.")]
+
+
+_FOUNDED = ("# cjk-full-stops — which characters (2026-09-10, #322/#323)\n\n"
+            "## Standing\n\n{standing}\n\n## Log\n\n{log}")
+
+
+@pytest.mark.parametrize("title, standing, log, finding", [
+    (None, "- Four stops. — 2026-09-10 #322.", "- **A.** B.\n", None),
+    (None, "- Four stops. — 2026-09-10 #999.", "- **A.** B.\n", "no entry"),
+    (None, "- Four stops. — 2026-09-10 #322.",
+     "- **A.** B.\n- **2026-09-10 #322 — later.** C.\n", None),
+    (None, "- Four stops. — 2026-09-10 #322/#323.",
+     "- **A.** B.\n- **2026-09-10 #322 — later.** C.\n", None),
+    (None, "- Later. — 2026-10-14 #679.",
+     "- **A.** B.\n- **2026-10-14 #679 — the rest.** C.\n", None),
+    (None, "- Four stops. — 2026-09-10 #322.",
+     "SUPERSEDED by 2026-10-01 #9 — gone.\n\n- **A.** B.\n", "superseded"),
+    ("# x — y (2026-10-15 → 2026-10-18)", "- The model. — 2026-10-15.",
+     "- **A.** B.\n", None),
+    ("# x — is_initial across scripts (#320)", "- Per script. — 2026-09-10.",
+     "- **A.** B.\n", "no entry"),
+    ("# x — kept (three since fixed, 2026-09-08 and 2026-09-23)",
+     "- Kept. — 2026-09-08.", "- **A.** B.\n", "no entry"),
+    ("# x — y (2026-09-10, #322) and more", "- Four stops. — 2026-09-10 #322.",
+     "- **A.** B.\n", "no entry"),
+], ids=["founding", "founding-wrong-issue", "bare-pointer-names-the-bold-head",
+        "founding-picked-by-words", "bold-entry", "founding-superseded",
+        "date-range-title", "undated-title", "prose-date-in-title",
+        "title-paren-not-at-line-end"])
+def test_a_dated_title_founds_an_entry(
+        title: str | None, standing: str, log: str,
+        finding: str | None) -> None:
+    text = _FOUNDED.format(standing=standing, log=log)
+    if title is not None:
+        text = title + text[text.index("\n"):]
+    found = standing_findings(text)
+    if finding is None:
+        assert found == []
+    else:
+        assert len(found) == 1 and finding in found[0], found
+
+
 def test_standing_needs_a_log_after_it() -> None:
     assert standing_findings("# C1 — x\n\n## Standing\n\n- a\n") == [
         "## Standing without a ## Log after it"]
@@ -368,9 +417,47 @@ def test_standing_roster_findings_name_each_break(
         assert len(found) == 1 and finding in found[0], found
 
 
+def test_reference_lists_are_the_links_under_their_heading() -> None:
+    readme = ("## Named topics\n\n- [a-log — x](a-log.md)\n\n"
+              "## Reference lists\n\nProse with [a link](x.md).\n\n"
+              "- [b-list — y](b-list.md)\n- [c-list](c-list.md)\n\n"
+              "## Later\n\n- [d-log — z](d-log.md)\n")
+    assert reference_lists(readme) == {"b-list", "c-list"}
+    assert reference_lists("## Named topics\n\n- [a — x](a.md)\n") == set()
+
+
+@pytest.mark.parametrize("files, exempt, finding", [
+    ({"C1": "## Standing", "L": "- Declined: x."}, set(), None),
+    ({"C1": "## Standing", "L": "- Declined: x.\n- 2026-10-01 — y."}, set(),
+     "L is a reference list but holds a dated entry"),
+    ({"C1": "## Standing", "L": "- (A) 2026-08-17 — parked."}, set(), None),
+    ({"C1": "## Standing", "L": "- **2026-10-01 #5 — y.**"}, set(),
+     "L is a reference list but holds a dated entry"),
+    ({"C1": "## Standing", "L": "## Standing\n- x"}, set(),
+     "L is a reference list and carries ## Standing"),
+    ({"C1": "## Standing", "L": "- Declined: x."}, {"L"},
+     "L is a reference list: take it off"),
+], ids=["list", "list-with-entry", "list-with-tagged-date",
+        "list-with-bold-entry", "list-with-standing", "list-also-exempt"])
+def test_a_reference_list_carries_no_standing_and_no_log(
+        files: dict[str, str], exempt: set[str], finding: str | None) -> None:
+    found = standing_roster_findings(files, exempt, frozenset({"L"}),
+                                     reference={"L"})
+    if finding is None:
+        assert found == []
+    else:
+        assert len(found) == 1 and finding in found[0], found
+    # Off the heading, the same file is a log with no block.
+    if finding is None:
+        assert standing_roster_findings(files, exempt, frozenset({"L"})) == [
+            "L has no Standing block: a new decisions file opens with "
+            "## Standing and ## Log"]
+
+
 def test_a_decisions_file_off_the_list_opens_with_standing() -> None:
     assert standing_roster_findings(read_decision_files(),
-                                    read_standing_exempt()) == []
+                                    read_standing_exempt(),
+                                    reference=read_reference_lists()) == []
 
 
 def test_the_original_exempt_set_is_never_edited() -> None:
