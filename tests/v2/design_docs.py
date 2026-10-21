@@ -200,17 +200,23 @@ _ENTRY_RE = re.compile(r"- (?:\*\*)?(?=\d{4}-\d\d)")
 
 
 def _entries(log: str) -> list[tuple[str, str]]:
-    """Each log bullet as its head and the text after it. A bold head
-    ends where its bold closes, if that comes before the ` — `
-    (`- **2026-10-15 #5**: text`), and a bold opening the text is not
-    part of it, so `— **SUPERSEDED by** …` still marks the entry."""
+    """Each log bullet as its head and the text after it. A bold
+    head's markers are not part of it (`- **2026-10-14 #679** (Derek) —
+    x` has the head `2026-10-14 #679 (Derek)`); with no ` — ` in the
+    line, a bold head ends where its bold closes and the text follows
+    it (`- **2026-10-15 #5**: text`); and a bold opening the text is
+    not part of it, so `— **SUPERSEDED by** …` still marks the entry."""
     out = []
     for line in log.splitlines():
         m = _ENTRY_RE.match(line)
         if m:
-            head, _, rest = line[m.end():].partition(" — ")
+            body = line[m.end():]
+            head, dash, rest = body.partition(" — ")
             if m.group(0).endswith("**"):
-                head = head.split("**", 1)[0]
+                if not dash and "**" in body:
+                    head, _, rest = body.partition("**")
+                    rest = rest.lstrip(": ")
+                head = head.replace("**", "")
             out.append((head, rest.removeprefix("**")))
     return out
 

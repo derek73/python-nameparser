@@ -270,12 +270,21 @@ def test_a_bold_date_opens_an_entry() -> None:
     assert _entries("- **2026-10-15 #5**: text.\n"
                     "- **2026-10-14 #679** (Derek) — x.\n"
                     "- **2026-10-16** — **SUPERSEDED by** 2026-10-17.\n") == [
-        ("2026-10-15 #5", ""), ("2026-10-14 #679", "x."),
+        ("2026-10-15 #5", "text."), ("2026-10-14 #679 (Derek)", "x."),
         ("2026-10-16", "SUPERSEDED by** 2026-10-17.")]
+    head = "# C1 — x\n\n## Standing\n\n{}\n\n## Log\n\n"
     assert standing_findings(
-        "# C1 — x\n\n## Standing\n\n- a — 2026-10-16.\n\n## Log\n\n"
-        "- **2026-10-16** — **SUPERSEDED by** 2026-10-17.\n") == [
+        head.format("- a — 2026-10-16.")
+        + "- **2026-10-16** — **SUPERSEDED by** 2026-10-17.\n") == [
         "superseded entry 2026-10-16 #None"]
+    assert standing_findings(
+        head.format("- a — 2026-10-15 #5.")
+        + "- **2026-10-15 #5**: SUPERSEDED by 2026-10-17 #6.\n") == [
+        "superseded entry 2026-10-15 #5"]
+    assert standing_findings(
+        head.format("- a — 2026-10-14 #679 (Derek).")
+        + "- **2026-10-14 #679** (Derek) — x.\n"
+        "- **2026-10-14 #679** (Joe) — y.\n") == []
 
 
 def test_a_dated_title_founds_no_entry() -> None:
