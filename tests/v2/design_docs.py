@@ -17,6 +17,7 @@ from __future__ import annotations
 import json
 import re
 import unicodedata
+from collections.abc import Set as AbstractSet
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -160,7 +161,8 @@ def reused_id_findings(rule_ids: set[str],
 # listed in decisions_without_standing.json (below). Each Standing
 # bullet ends its claim with the entry that decided it, by date and
 # issue (`— 2026-10-06 #613`) or by date alone; a `Not standing:` line
-# names entries a later one answered. An entry is a log bullet, and its
+# names entries a later one answered. An entry is a log bullet opening
+# with its date, bare or in bold (`- **2026-10-14 #679 — …**`), and its
 # head is the text before its first ` — `, read without any
 # parenthesized note saying part of it was superseded (README edit kind
 # 1). A pointer's candidates are the entries whose head opens with
@@ -179,7 +181,9 @@ def reused_id_findings(rule_ids: set[str],
 # entry whose text after the head opens with `SUPERSEDED by` is
 # superseded, and a Standing pointer may not rest on it; one opening
 # `SUPERSEDED:` or `SUPERSEDED IN PART:` announces what it replaces and
-# is live.
+# is live. A file's title is never read as an entry
+# (`test_a_dated_title_founds_no_entry`); decisions/README.md says how
+# a bundle of undated bullets gains a dated line to point at.
 _DATE = r"\d{4}-\d\d(?:-\d\d)?(?:/\d\d)?"
 # The issue is the first `#N` within 40 characters of the date that no
 # `—`, `.`, `;` or other date interrupts, so a head copied whole
@@ -192,13 +196,28 @@ _POINTER_RE = re.compile(
     rf"(?:(?:(?!\d{{4}}-\d\d)[^—#.;]){{0,40}}?#(?P<num>\d+))?")
 
 
+_ENTRY_RE = re.compile(r"- (?:\*\*)?(?=\d{4}-\d\d)")
+
+
 def _entries(log: str) -> list[tuple[str, str]]:
-    """Each log bullet as its head and the text after it."""
+    """Each log bullet as its head and the text after it. A bold
+    head's markers are not part of it (`- **2026-10-14 #679** (Derek) —
+    x` has the head `2026-10-14 #679 (Derek)`); with no ` — ` in the
+    line, a bold head ends where its bold closes and the text follows
+    it (`- **2026-10-15 #5**: text`); and a bold opening the text is
+    not part of it, so `— **SUPERSEDED by** …` still marks the entry."""
     out = []
     for line in log.splitlines():
-        if re.match(r"- \d{4}-\d\d", line):
-            head, _, rest = line[2:].partition(" — ")
-            out.append((head, rest))
+        m = _ENTRY_RE.match(line)
+        if m:
+            body = line[m.end():]
+            head, dash, rest = body.partition(" — ")
+            if m.group(0).endswith("**"):
+                if not dash and "**" in body:
+                    head, _, rest = body.partition("**")
+                    rest = rest.lstrip(": ")
+                head = head.replace("**", "")
+            out.append((head, rest.removeprefix("**")))
     return out
 
 
@@ -428,15 +447,69 @@ def read_standing_exempt(path: Path = STANDING_EXEMPT) -> set[str]:
     return set(json.loads(path.read_text(encoding="utf-8"))["exempt"])
 
 
+# A reference list -- a file of Declined, Excluded, Open, removal or
+# mapping lines, each already saying what stands -- carries no Standing
+# block, which would copy it. The decisions index names them under this
+# heading, and only a key the exempt list started with may be listed. A
+# file there may not take a log's shapes: a dated entry, a bullet
+# opening with a tag and a date (`- (A) 2026-08-17 — …`, as
+# 3-0-reevaluations writes its log), or a dated title (a bundle, as
+# cjk-full-stops is). A log written in none of those shapes is caught
+# only in review.
+_REFERENCE_HEADING = "## Reference lists"
+_LOG_SHAPED = re.compile(
+    r"^- (?:\*\*)?(?:\([^)\n]{1,12}\) )?(?=\d{4}-\d\d)|\A# [^\n]*\d{4}-\d\d",
+    re.M)
+
+
+def reference_lists(readme: str) -> set[str]:
+    """The keys the index lists, one bullet each (`- [key — …](…)`),
+    under its Reference lists heading, a `## ` line of its own; a link
+    in its prose, or one a bullet holds after other words, is no
+    listing."""
+    at = readme.find(f"\n{_REFERENCE_HEADING}\n")
+    if at < 0:
+        return set()
+    end = readme.find("\n## ", at + 1)
+    section = readme[at:end if end >= 0 else len(readme)]
+    return {km.group(0) for line in section.splitlines()
+            if (m := _LINK_RE.match(line, 2)) and line.startswith("- [")
+            and (km := _KEY_RE.match(m.group("title")))}
+
+
+def read_reference_lists(folder: Path = DECISIONS_DIR) -> set[str]:
+    return reference_lists((folder / "README.md").read_text(encoding="utf-8"))
+
+
 def standing_roster_findings(
         files: dict[str, str], exempt: set[str],
-        original: frozenset[str] = STANDING_EXEMPT_ORIGINAL) -> list[str]:
+        original: frozenset[str] = STANDING_EXEMPT_ORIGINAL,
+        reference: AbstractSet[str] = frozenset()) -> list[str]:
     """What breaks the Standing ratchet: a file off the exempt list with
-    no Standing block, a listed file that has gained one (take it off
-    the list), a listed key no file carries any more, a listed key the
-    list did not hold when the rule landed, and a heading that misspells
-    `## Standing`."""
+    no Standing block that is not a reference list, a listed file that
+    has gained one (take it off the list), a listed key no file carries
+    any more, a listed key the list did not hold when the rule landed,
+    and a heading that misspells `## Standing`; and of a reference list,
+    a Standing block, a log's shape (a dated or tagged-date bullet, a
+    dated title), a place on the exempt list, or a key the exempt list
+    did not hold when the rule landed."""
     findings = []
+    for key in sorted(reference & files.keys()):
+        text = files[key]
+        if has_standing(text):
+            findings.append(f"{key} is a reference list and carries "
+                            "## Standing: index a log under its section")
+        if _LOG_SHAPED.search(text):
+            findings.append(f"{key} is a reference list but is shaped "
+                            "like a log (a dated entry or title): a log "
+                            "opens with ## Standing")
+        if key in exempt:
+            findings.append(f"{key} is a reference list: take it off "
+                            f"{STANDING_EXEMPT.name}")
+    for key in sorted(reference - original):
+        findings.append(f"{key} is under Reference lists but was not on "
+                        f"{STANDING_EXEMPT.name} when the rule landed: a "
+                        "new decisions file opens with ## Standing")
     for key, text in sorted(files.items()):
         for line in misspelled_standing(text):
             findings.append(f"{key}: {line!r} is not the heading "
@@ -450,7 +523,7 @@ def standing_roster_findings(
         if key in exempt and has:
             findings.append(f"{key} has a Standing block: take it off "
                             f"{STANDING_EXEMPT.name}")
-        elif key not in exempt and not has:
+        elif key not in exempt and key not in reference and not has:
             findings.append(f"{key} has no Standing block: a new decisions "
                             "file opens with ## Standing and ## Log")
     for key in sorted(exempt - files.keys()):

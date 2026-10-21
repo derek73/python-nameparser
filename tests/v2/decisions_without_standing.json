@@ -1,5 +1,5 @@
 {
- "_comment": "decisions files allowed to lack a ## Standing block: those created before the rule, C1's block landing on 2026-10-19 (C12 and vocabulary-model were created that day, before it). A file leaves the list the day it gains a block; the list must stay inside STANDING_EXEMPT_ORIGINAL in tests/v2/design_docs.py, so it never holds a key it did not start with and a new file never joins it (tests/v2/test_design_docs.py::test_a_decisions_file_off_the_list_opens_with_standing; #762 decides the rest).",
+ "_comment": "decisions files allowed to lack a ## Standing block: those created before the rule, C1's block landing on 2026-10-19 (C12 and vocabulary-model were created that day, before it). A file leaves the list the day it gains a block, or the day the index lists it under Reference lists; the list must stay inside STANDING_EXEMPT_ORIGINAL in tests/v2/design_docs.py, so it never holds a key it did not start with and a new file never joins it (tests/v2/test_design_docs.py::test_a_decisions_file_off_the_list_opens_with_standing; #762 decides the rest).",
  "exempt": [
   "3-0-reevaluations",
   "A1",
@@ -54,7 +54,6 @@
   "W2",
   "W3",
   "W4",
-  "api-churn-declines",
   "cjk-comma-demotion",
   "cjk-full-stops",
   "comma-suffix-arc",
@@ -62,16 +61,13 @@
   "deviates-registry",
   "differential-ledger",
   "generational-words",
-  "given-name-titles",
   "indic-honorifics",
   "initials-repertoire",
-  "legacy-rule-numbers",
   "ma-do",
   "nfd-shapes",
   "normalization-fold",
   "parse-cost",
   "phd-merge",
-  "removed-v1-surface",
   "render-default",
   "review-agent-single-source",
   "salutation-titles",
@@ -81,7 +77,6 @@
   "two-input-invariants",
   "v1-xfail-triage",
   "vocabulary-collisions",
-  "vocabulary-exclusions",
   "vocabulary-model"
  ]
 }
