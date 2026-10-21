@@ -450,12 +450,16 @@ def test_reference_lists_are_the_links_under_their_heading() -> None:
      "L is a reference list and carries ## Standing"),
     ({"C1": "## Standing", "L": "- Declined: x."}, {"L"},
      "L is a reference list: take it off"),
+    ({"C1": "## Standing", "N": "- Declined: x."}, set(),
+     "N is under Reference lists but was not on"),
 ], ids=["list", "list-with-entry", "list-with-tagged-date",
-        "list-with-bold-entry", "list-with-standing", "list-also-exempt"])
+        "list-with-bold-entry", "list-with-standing", "list-also-exempt",
+        "list-new-since-the-rule"])
 def test_a_reference_list_carries_no_standing_and_no_log(
         files: dict[str, str], exempt: set[str], finding: str | None) -> None:
+    listed = {"N"} if "N" in files else {"L"}
     found = standing_roster_findings(files, exempt, frozenset({"L"}),
-                                     reference={"L"})
+                                     reference=listed)
     if finding is None:
         assert found == []
     else:

@@ -451,8 +451,9 @@ def read_standing_exempt(path: Path = STANDING_EXEMPT) -> set[str]:
 
 # A reference list -- a file of Declined, Excluded or mapping lines,
 # each already saying what stands -- carries no Standing block, which
-# would copy it. The decisions index names them under this heading, and
-# a file there may hold no dated entry, so no log hides under it.
+# would copy it. The decisions index names them under this heading; a
+# file there may hold no dated entry, and only a key the exempt list
+# started with may be listed, so no log hides under it.
 _REFERENCE_HEADING = "## Reference lists"
 
 
@@ -482,7 +483,8 @@ def standing_roster_findings(
     has gained one (take it off the list), a listed key no file carries
     any more, a listed key the list did not hold when the rule landed,
     and a heading that misspells `## Standing`; and of a reference list,
-    a Standing block, a dated entry, or a place on the exempt list."""
+    a Standing block, a dated entry, a place on the exempt list, or a
+    key the list did not hold when the rule landed."""
     findings = []
     for key in sorted(reference & files.keys()):
         text = files[key]
@@ -495,6 +497,10 @@ def standing_roster_findings(
         if key in exempt:
             findings.append(f"{key} is a reference list: take it off "
                             f"{STANDING_EXEMPT.name}")
+    for key in sorted(reference - original):
+        findings.append(f"{key} is under Reference lists but was not on "
+                        f"{STANDING_EXEMPT.name} when the rule landed: a "
+                        "new decisions file opens with ## Standing")
     for key, text in sorted(files.items()):
         for line in misspelled_standing(text):
             findings.append(f"{key}: {line!r} is not the heading "
