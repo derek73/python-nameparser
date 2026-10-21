@@ -28,47 +28,19 @@ def test_every_rule_matches_its_recorded_size() -> None:
         "read is a new rule."])
 
 
-_DOC = """\
-X1. Rationale: a reason.
-    The statement, unless it is not.
-      "a b"  →  family="b"
-    Accepted: a cost, except here.
-      "a"  →  given="a"  · boundary
-    Accepted, and a second spelling: two.
-    Accepted rather than repaired: still the second clause.
-    Signal: a count: these words are not counted
-    implemented: nameparser/_parser.py
-X2. Two words.
-    no-boundary: not counted
-    implemented: nameparser/_parser.py
-
-## A section (X)
-
-Background: a section's words are not a rule's.
-"""
-
-
-def test_the_measure_reads_the_statement_alone() -> None:
-    assert rules_budget.measure(_DOC) == {
-        "X1": {"words": 9, "exceptions": 1, "accepted": 2,
-               "accepted_words": 5 + 14},
-        "X2": {"words": 2, "exceptions": 0, "accepted": 0,
-               "accepted_words": 0},
-    }
+def _row(**moved: int) -> dict[str, int]:
+    row = dict.fromkeys(rules_budget.MEASURES, 0)
+    return {**row, **moved}
 
 
 def test_changes_name_each_move_and_each_unmatched_id() -> None:
-    record = {"X1": {"words": 8, "exceptions": 1, "accepted": 1,
-                     "accepted_words": 3},
-              "X3": {"words": 1, "exceptions": 0, "accepted": 0,
-                     "accepted_words": 0}}
-    now = {"X1": {"words": 9, "exceptions": 0, "accepted": 1,
-                  "accepted_words": 3},
-           "X2": {"words": 2, "exceptions": 0, "accepted": 0,
-                  "accepted_words": 0}}
+    record = {"X1": _row(words=8, accepted=1),
+              "X3": _row(words=1)}
+    now = {"X1": _row(words=9),
+           "X2": _row(words=2)}
     assert rules_budget.changes(record, now) == [
         "X1: words grew, 8 -> 9",
-        "X1: exceptions shrank, 1 -> 0",
+        "X1: accepted shrank, 1 -> 0",
         "X2: no record -- a new rule is recorded too",
         "X3: recorded, but no rule has that ID",
     ]
@@ -76,27 +48,27 @@ def test_changes_name_each_move_and_each_unmatched_id() -> None:
 
 
 def test_measure_orders_rules_by_number() -> None:
-    doc = ('X10. Ten.\n    implemented: x.py\n'
-           'X2. Two.\n    implemented: x.py\n')
+    doc = (_SKELETON_DOC.replace("# X1 —", "# X10 —")
+           + "\n" + _SKELETON_DOC.replace("# X1 —", "# X2 —"))
     assert list(rules_budget.measure(doc)) == ["X2", "X10"]
 
 
 def test_measure_refuses_text_the_doc_tests_reject() -> None:
-    with pytest.raises(ValueError, match="Signal"):
-        rules_budget.measure("X1. S.\n    signal: lowercase\n")
+    with pytest.raises(ValueError, match="X1"):
+        rules_budget.measure(_SKELETON_DOC.replace("**Because:**",
+                                                   "Because:"))
 
 
 def test_changes_report_a_measure_the_record_lacks_or_no_longer_has() -> None:
-    now = {"X1": {"words": 1, "exceptions": 0, "accepted": 0,
-                  "accepted_words": 0}}
+    now = {"X1": _row(words=1)}
     assert rules_budget.changes({"X1": {"words": 1}}, now) == [
-        "X1: exceptions grew, None -> 0",
-        "X1: accepted grew, None -> 0",
-        "X1: accepted_words grew, None -> 0",
-    ]
-    stale = {"X1": {**now["X1"], "clauses": 3}}
+        f"X1: {key} grew, None -> 0" for key in rules_budget.MEASURES
+        if key != "words"]
+    # a measure the record holds and the tree no longer takes (a
+    # block-format row's `exceptions`, #761) is named, never ignored
+    stale = {"X1": {**now["X1"], "exceptions": 3}}
     assert rules_budget.changes(stale, now) == [
-        "X1: recorded 'clauses', which is no longer measured"]
+        "X1: recorded 'exceptions', which is no longer measured"]
 
 
 @pytest.mark.parametrize("text, match", [
@@ -208,17 +180,3 @@ def test_a_field_added_to_the_quotable_parts_moves_words(
     after = rules_budget.measure(_SKELETON_DOC)["X1"]
     assert after["words"] == before["words"] + 3
     assert after["accepted_words"] == before["accepted_words"]
-
-
-def test_a_format_change_is_one_line() -> None:
-    block_row = {"words": 9, "exceptions": 1, "accepted": 2,
-                 "accepted_words": 19}
-    skeleton_row = {"words": 27, "then_words": 10, "because_sentences": 2,
-                    "except": 2, "precedence": 1, "accepted": 1,
-                    "accepted_words": 5}
-    expected = [f"X1: format changed: {block_row} -> {skeleton_row}"]
-    assert rules_budget.changes(
-        {"X1": block_row}, {"X1": skeleton_row}) == expected
-    assert rules_budget.changes(
-        {"X1": skeleton_row}, {"X1": block_row}) == [
-        f"X1: format changed: {skeleton_row} -> {block_row}"]

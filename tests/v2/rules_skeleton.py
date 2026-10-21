@@ -1,8 +1,9 @@
-"""Parser for the skeleton rule format (#761), the readable sibling of
-the block format rules_doc.py defines.
+"""Parser for the skeleton rule format (#761), the format every rule in
+docs/design/rules/ is written in.
 
-A rule file opens with its heading and carries seven bold-labelled
-fields in this order, then a footer under a `---` line::
+A rule file opens with its heading and carries up to seven
+bold-labelled fields, When, Then and Because required, in this order,
+then a footer under a `---` line::
 
     # S10 — the trailing roman numeral
 
@@ -24,27 +25,30 @@ fields in this order, then a footer under a `---` line::
     **history:** decisions/S10 · **implemented:** nameparser/x.py
 
 Rules the parser holds, all hard errors naming the rule and line: the
-rule runs from its heading to the next markdown heading (a `#` run and
-a space); a label is exactly `**Name:**` at the start of a line (a near
+rule runs from its heading to the next markdown heading (a `#` run and a
+space); a label is exactly `**Name:**` at the start of a line (a near
 miss would leave its words as unlabelled prose, so it raises); When,
 Then and Because are required and the fields stand in the order above,
 each at most once; a fence is a bare ``` line (a language tag or a ~~~
-fence raises) holding at least one example; every non-blank line
-inside a fence is an example (rules_doc.parse_example_line), and
-outside one a line, the text after a label or a bullet's text that
-parses as an example or opens with a quote or a bracket
-(``_EXAMPLE_LEADS``: straight, curly and guillemet quotes) raises, as
-does any line holding an arrow and an assertion (`→  family=`), since
+fence raises) holding at least one example; every non-blank line inside
+a fence is an example (rules_doc.parse_example_line), and outside one a
+line, the text after a label or a bullet's text that parses as an
+example or opens with a quote or a bracket (``_EXAMPLE_LEADS``:
+straight, curly and guillemet quotes) raises, as does any line holding
+an arrow and an assertion (`→  family=`) outside a backtick span, since
 prose there would never run; a bullet is `- ` and text (`* `, `+ `, a
-glued hyphen or an empty bullet raises) and an Except, Precedence or
-Accepted label has at least one; every Except bullet carries an
-example; a Tolerated field is not empty; Because is three sentences at
-most and Then one sentence in one paragraph; a Signal or
-`no-boundary:` line above the `---` raises, and below it only Signal,
-the pointer line (every part `history:`, `implemented:` or `tracked:`
-with a value, none repeated) and `no-boundary:` may appear, and
-`interacts:` is retired. Everything outside a fence, the footer and
-`no-boundary:` is quotable (``skeleton_prose``).
+numbered item, a glued hyphen or an empty bullet raises, as does a
+nested list or a heading in its continuation lines) and an Except,
+Precedence or Accepted label has at least one; every Except bullet
+carries an example; a Tolerated field is not empty; When, Tolerated and
+Then are one paragraph each, Then one sentence, and Because three
+sentences at most; a Signal or `no-boundary:` line above the `---`
+raises, and below it only Signal, standing directly above the pointer
+line, once, and spelled as a hub's where it names one, the pointer line
+(every part `history:`, `implemented:` or `tracked:` with a value, none
+repeated) and `no-boundary:` may appear, and `interacts:`, the block
+format's advisory pointer, is refused. Everything outside a fence, the
+footer and `no-boundary:` is quotable (``skeleton_prose``).
 """
 from __future__ import annotations
 
@@ -52,8 +56,8 @@ import re
 from dataclasses import dataclass
 
 from tests.v2.rules_doc import (
-    _EXAMPLE_RE, _HUB_RE, _NEAR_HUB_RE, _NO_BOUNDARY_RE, ASSERTABLE_FIELDS,
-    NEAR_SIGNAL_RE, Example, Rule, parse_example_line)
+    _EXAMPLE_RE, _RETIRED_RULE_RE, ASSERTABLE_FIELDS, NEAR_SIGNAL_RE,
+    Example, Rule, _retired, parse_example_line)
 
 HEADING_RE = re.compile(r"^# ([A-Z]\d+) — ")
 #: What ends a rule's block: a markdown heading, a `#` run and a space.
@@ -64,12 +68,22 @@ _ORDER = ("When", "Tolerated", "Then", "Because",
           "Except", "Precedence", "Accepted")
 _BULLET_FIELDS = frozenset({"Then", "Except", "Precedence", "Accepted"})
 _BULLET_ONLY = frozenset({"Except", "Precedence", "Accepted"})
+#: The prose fields refusing a second paragraph; Because is held to its
+#: sentence count instead.
+_ONE_PARAGRAPH = frozenset({"When", "Tolerated", "Then"})
 _BOLD_LABEL_RE = re.compile(r"^\*\*(?P<label>[^*:]+):\*\*")
 _NEAR_LABEL_RE = re.compile(
     r"^[*_\s]*(?:when|then|because|except|precedence|accepted|tolerated"
     r"|rationale)[*_\s]*:", re.IGNORECASE)
-_SKELETON_START_RE = re.compile(
-    r"^[*_]*(?:when|then|because)[*_]*\s*:", re.IGNORECASE)
+_NO_BOUNDARY_RE = re.compile(r"^\s*no-boundary:\s+(?P<reason>\S.*)$")
+#: A hub's signal: the rules it maps, after any signal it reads itself.
+_HUB_RE = re.compile(
+    r"(?:(?P<own>\S.*?); )?hub of (?P<ids>[A-Z]\d+(?:, [A-Z]\d+)*)")
+#: A signal meant as a hub's: one that does not fullmatch _HUB_RE
+#: raises rather than reading as a plain signal, which would leave the
+#: hub's rules unchecked. A plain word holding the letters ("Hubert",
+#: "a hub-like word") is not one.
+_NEAR_HUB_RE = re.compile(r"\bhubs?\b(?!-)", re.IGNORECASE)
 _SIGNAL_LINE_RE = re.compile(r"^\*\*Signal:\*\*\s+(?P<text>\S.*?)\s*$")
 _POINTER_LINE_RE = re.compile(r"^\s*(history|interacts|implemented|tracked):")
 _POINTER_PART_RE = re.compile(
@@ -80,9 +94,12 @@ _NEAR_NO_BOUNDARY_RE = re.compile(r"^\s*[*_]*no-boundary\b", re.IGNORECASE)
 #: An example's arrow and assertion, wherever it stands: outside a
 #: fence a line holding one is an example that would never run.
 _ARROW_FIELD_RE = re.compile(r"\s→\s+(?P<field>[a-z_]+)=")
-#: A bullet marker other than `- ` then text: `* `, `+ `, or a hyphen
-#: glued to its text.
-_MALFORMED_BULLET_RE = re.compile(r"^(?:[*+](?:\s|$)|-(?! ))")
+#: A bullet marker other than `- ` then text: `* `, `+ `, a numbered
+#: item (`1. `, `1) `), or a hyphen glued to its text.
+_MALFORMED_BULLET_RE = re.compile(r"^(?:[*+](?:\s|$)|-(?! )|\d+[.)](?:\s|$))")
+#: A list item in any markdown marker, as a bullet's continuation would
+#: hold a nested list: `- `, `* `, `+ ` or a number and `.` or `)`.
+_NESTED_ITEM_RE = re.compile(r"^(?:[-*+]|\d+[.)])\s")
 _QUOTED_RE = re.compile(r'"[^"]*"')
 _CODE_RE = re.compile(r"`[^`]*`")
 _SENTENCE_END_RE = re.compile(r"[.?!]\s+[A-Z]")
@@ -95,11 +112,23 @@ _NOT_TERMINAL_RE = re.compile(
 _EXAMPLE_LEADS = ('"', "[", "“", "”", "„", "‘", "’", "«")
 
 
-def _looks_like_example(s: str) -> bool:
-    if _EXAMPLE_RE.match(s) or s.lstrip().startswith(_EXAMPLE_LEADS):
+def holds_assertion(s: str) -> bool:
+    """Whether prose holds an example's assertion, which would never
+    run there: a line that parses as an example, or an arrow and an
+    assertion anywhere in it. One inside a backtick span is prose
+    writing ABOUT the grammar (`` `→  family=` ``), not an example.
+    Asked of a section's Background too (rules_doc.parse_rules_doc)."""
+    if _EXAMPLE_RE.match(s):
         return True
     return any(m.group("field") in ASSERTABLE_FIELDS
-               for m in _ARROW_FIELD_RE.finditer(s))
+               for m in _ARROW_FIELD_RE.finditer(_CODE_RE.sub("", s)))
+
+
+def _looks_like_example(s: str) -> bool:
+    """holds_assertion, or a line opening with a quote or a bracket,
+    which a rule's prose may not: a Background may, since its wrapped
+    lines do."""
+    return holds_assertion(s) or s.lstrip().startswith(_EXAMPLE_LEADS)
 
 
 @dataclass(frozen=True)
@@ -143,18 +172,12 @@ def count_sentences(text: str) -> int:
                 and _NOT_TERMINAL_RE.search(text, 0, m.start())))
 
 
-def is_skeleton_block(lines: list[str]) -> bool:
-    """True when the block holds a line opening a When, Then or Because
-    field, in any spelling: a near miss must reach the skeleton parser
-    to raise, not fall to the block parser, which would skip it."""
-    return any(_SKELETON_START_RE.match(ln) for ln in lines)
-
-
 def skeleton_block_at(
         lines: list[str], i: int) -> tuple[str, list[tuple[int, str]], int] | None:
-    """If lines[i] is a skeleton rule's heading: (rule ID, the block's
-    (line number, text) pairs after it, the last line number of the
-    block). Else None."""
+    """If lines[i] is a rule's heading: (rule ID, the block's (line
+    number, text) pairs after it, the last line number of the block).
+    Else None. Every block under a rule heading goes to parse_skeleton,
+    which refuses one holding no field."""
     m = HEADING_RE.match(lines[i])
     if m is None:
         return None
@@ -162,8 +185,6 @@ def skeleton_block_at(
     while j < len(lines) and not _ANY_HEADING_RE.match(lines[j]):
         j += 1
     body = lines[i + 1:j]
-    if not is_skeleton_block(body):
-        return None
     return m.group(1), [(i + 2 + k, ln) for k, ln in enumerate(body)], j
 
 
@@ -248,7 +269,7 @@ def parse_skeleton(rule_id: str, lines: list[tuple[int, str]]) -> Rule:
                         v.strip() for v in val.split(",") if v.strip())
                     if key == "interacts":
                         raise err(
-                            lineno, "interacts: is retired in the skeleton "
+                            lineno, "interacts: is retired with the block "
                             "format; name the rule in Except or Precedence")
                     if key == "implemented":
                         rule.implemented = items
@@ -286,6 +307,8 @@ def parse_skeleton(rule_id: str, lines: list[tuple[int, str]]) -> Rule:
             footer = True
             cur = None
             continue
+        if _RETIRED_RULE_RE.match(line):
+            raise _retired(rule_id, lineno, line)
         if NEAR_SIGNAL_RE.match(line) or _NEAR_NO_BOUNDARY_RE.match(line):
             raise err(lineno, "a `**Signal:**` or `no-boundary:` line "
                       "belongs below the `---` footer; above it, it "
@@ -370,15 +393,20 @@ def parse_skeleton(rule_id: str, lines: list[tuple[int, str]]) -> Rule:
                 fence, fence_at = last.examples, lineno
                 fence_len = len(fence)
                 continue
-            if inner.startswith(("- ", "#")):
+            if _NESTED_ITEM_RE.match(inner):
                 raise err(lineno, f"a nested list is not part of the "
                           f"grammar: {inner!r}")
+            if _ANY_HEADING_RE.match(inner):
+                raise err(lineno, f"a heading inside a bullet is not part "
+                          f"of the grammar: {inner!r}")
             last.parts.append(inner)
             continue
         if cur is not None and mode == "prose" and not line.startswith(" "):
-            if cur == "Then" and after_gap and texts["Then"]:
-                raise err(lineno, "Then is one paragraph (detail goes in "
-                          f"a bullet list under it): {line.strip()!r}")
+            if cur in _ONE_PARAGRAPH and after_gap and texts[cur]:
+                raise err(lineno, f"{cur} is one paragraph"
+                          + (" (detail goes in a bullet list under it)"
+                             if cur == "Then" else "")
+                          + f": {line.strip()!r}")
             texts[cur].append(line.strip())
             continue
         raise err(lineno, "a line outside a field (prose belongs in a "
@@ -429,7 +457,6 @@ def parse_skeleton(rule_id: str, lines: list[tuple[int, str]]) -> Rule:
         excepts=tuple(b.freeze() for b in bullets.get("Except", [])),
         precedence=tuple(b.freeze() for b in bullets.get("Precedence", [])),
         accepted=tuple(b.freeze() for b in bullets.get("Accepted", [])))
-    rule.tolerated = rule.skeleton.tolerated
     return rule
 
 
@@ -450,7 +477,6 @@ def skeleton_parts(sk: Skeleton) -> list[tuple[str, str]]:
 
 
 def skeleton_prose(sk: Skeleton) -> list[str]:
-    """The quotable lines, in file order. Accepted bullets read as
-    `Accepted: ` clauses so split_accepted counts them unchanged."""
-    return [("Accepted: " + text if field == "Accepted" else text)
-            for field, text in skeleton_parts(sk)]
+    """The quotable lines, in file order: each field's text, its label
+    left out."""
+    return [text for _field, text in skeleton_parts(sk)]

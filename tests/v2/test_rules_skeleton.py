@@ -1,13 +1,13 @@
 """Grammar tests for the skeleton rule format (rules_skeleton.py).
 
-DOC is a SYNTHETIC fixture, like test_rules_doc_grammar.py's: it
+HEAD is a SYNTHETIC fixture, like test_rules_doc_grammar.py's: it
 exercises the grammar and tracks no real rule.
 """
 from __future__ import annotations
 
 import pytest
 
-from tests.v2.rules_doc import parse_rules_doc, prose_blocks, split_accepted
+from tests.v2.rules_doc import parse_rules_doc, prose_blocks
 from tests.v2.rules_skeleton import count_sentences
 
 HEAD = '''\
@@ -49,21 +49,8 @@ HEAD = '''\
 **history:** decisions/P2 · **implemented:** nameparser/_parser.py
 '''
 
-OLD = '''\
-
-# X2 — two
-
-X2. Rationale: old format.
-    The old statement.
-      "Jane Doe"  →  family="Doe"  · boundary
-    history: decisions/P3 · interacts: H1 · implemented: nameparser/_parser.py
-'''
-
-DOC = HEAD + OLD
-
-
 def test_a_skeleton_rule_parses_its_fields() -> None:
-    rules = parse_rules_doc(DOC)
+    rules = parse_rules_doc(HEAD)
     r = rules[0]
     sk = r.skeleton
     assert sk is not None
@@ -76,11 +63,10 @@ def test_a_skeleton_rule_parses_its_fields() -> None:
     assert len(sk.accepted) == 1
     assert r.signal == "a shape"
     assert r.implemented == ("nameparser/_parser.py",)
-    assert r.interacts == ()
 
 
 def test_every_example_reaches_rule_examples() -> None:
-    r = parse_rules_doc(DOC)[0]
+    r = parse_rules_doc(HEAD)[0]
     assert [(e.text, e.boundary) for e in r.examples] == [
         ("John Smith III", False), ("John V", True),
         ("John Smith V PhD", False)]
@@ -89,17 +75,9 @@ def test_every_example_reaches_rule_examples() -> None:
     assert r.has_boundary_or_waiver()
 
 
-def test_an_old_rule_beside_a_skeleton_one_parses_as_before() -> None:
-    rules = parse_rules_doc(DOC)
-    assert rules[1].rule_id == "X2"
-    assert rules[1].skeleton is None
-    assert len(rules[1].examples) == 1
-    assert rules[1].interacts == ("H1",)
-
-
 def test_a_fence_under_a_bullet_belongs_to_it_and_a_column_0_fence_does_not(
 ) -> None:
-    sk = parse_rules_doc(DOC)[0].skeleton
+    sk = parse_rules_doc(HEAD)[0].skeleton
     assert sk is not None
     assert sk.then_bullets[0].examples == ()
     assert [e.text for e in sk.excepts[0].examples] == ["John V"]
@@ -107,25 +85,22 @@ def test_a_fence_under_a_bullet_belongs_to_it_and_a_column_0_fence_does_not(
 
 
 def test_skeleton_prose_is_the_fields_without_examples_or_labels() -> None:
-    prose = prose_blocks(DOC)["X1"]
+    prose = prose_blocks(HEAD)["X1"]
     assert any(ln.startswith("One letter needs a word to spare")
                for ln in prose)
     assert not any("→" in ln or "**" in ln for ln in prose)
-    assert prose[-1].startswith("Accepted: ")
-    statement, clauses = split_accepted(prose)
-    assert len(clauses) == 1
-    assert statement[0].startswith("a name ends in a thing")
-    assert prose_blocks(DOC)["X2"][0] == "Rationale: old format."
+    assert prose[0].startswith("a name ends in a thing")
+    assert prose[-1].startswith("A thing with a credential behind it")
 
 
 def test_tolerated_field_sets_rule_tolerated() -> None:
     doc = HEAD.replace(
         "**Then:**", "**Tolerated:** no convention writes it.\n\n**Then:**")
     r = parse_rules_doc(doc)[0]
-    assert r.tolerated == "no convention writes it."
     assert r.skeleton is not None
     assert r.skeleton.tolerated == "no convention writes it."
-    assert parse_rules_doc(HEAD)[0].tolerated is None
+    head = parse_rules_doc(HEAD)[0].skeleton
+    assert head is not None and head.tolerated is None
 
 
 def test_a_hub_signal_and_no_boundary_in_the_footer() -> None:
@@ -192,6 +167,28 @@ def test_a_column_0_line_opening_with_a_hash_is_prose_not_a_heading(
     assert len(r.examples) == 3
 
 
+def test_a_bullet_continuation_opening_with_a_hash_is_prose() -> None:
+    # #768's review: it raised "a nested list" (#761)
+    doc = _sub("- **Before a comma**: C1 decides.\n",
+               "- **Before a comma**: C1 decides.\n  #761 settled it.\n")
+    r = parse_rules_doc(doc)[0]
+    assert r.skeleton is not None
+    assert r.skeleton.precedence[0].text.endswith("#761 settled it.")
+
+
+@pytest.mark.parametrize("old, new", [
+    ("It is rare otherwise.", "It is written `\"a\"  →  family=\"b\"`."),
+    ("- **Before a comma**: C1 decides.",
+     "- **Before a comma**: C1 decides `\"John V\"  →  family=\"V\"`."),
+])
+def test_an_assertion_inside_a_backtick_span_is_prose(old: str,
+                                                      new: str) -> None:
+    # writing ABOUT the grammar is no example (#768's review, #761)
+    r = parse_rules_doc(_sub(old, new))[0]
+    assert r.skeleton is not None
+    assert len(r.examples) == 3
+
+
 def test_tracked_in_the_footer_sets_rule_tracked() -> None:
     doc = _sub("**implemented:** nameparser/_parser.py",
                "**tracked:** #761, #768")
@@ -255,6 +252,17 @@ BAD = {
     "interacts in footer": (
         _sub("**history:** decisions/P2", "**history:** decisions/P2 · "
              "**interacts:** H1"), "interacts: is retired"),
+    # the Signal line in the footer
+    "a second Signal line": (
+        _sub("**Signal:** a shape\n**history:**",
+             "**Signal:** a shape\n**history:** decisions/P3\n"
+             "**Signal:** a count\n**history:**"), "second"),
+    "a Signal line ending the text": (
+        HEAD.replace("**history:** decisions/P2 · **implemented:** "
+                     "nameparser/_parser.py\n", ""), "the text ends"),
+    "a wrapped Signal line": (
+        _sub("**Signal:** a shape\n", "**Signal:** a shape:\nwrapped\n"),
+        "directly above"),
     "stray prose outside a field": (
         _sub("**Precedence:**\n\n- **Before a comma**: C1 decides.\n",
              "**Precedence:**\n\n- **Before a comma**: C1 decides.\n\n"
@@ -328,12 +336,70 @@ BAD = {
         _sub("- **Reach:** only", "* **Reach:** only"), "a bullet is"),
     "a hyphen glued to the bold under Then": (
         _sub("- **Reach:** only", "-**Reach:** only"), "a bullet is"),
+    # numbered, which markdown renders as a list (review)
+    "a numbered list in a prose field": (
+        _sub('**When:** a name ends in a thing — "John Smith III".\n',
+             "**When:** a name holds:\n1. A comma.\n2. A title.\n"),
+        "a bullet is"),
+    "a bare numbered item ending a line": (
+        _sub("It is rare otherwise.\n", "It is rare otherwise.\n\n1.\n"),
+        "a bullet is"),
+    "a numbered list with a parenthesis": (
+        _sub("- **Reach:** only", "1) **Reach:** only"), "a bullet is"),
     "a star bullet under Except": (
         _sub("- **One letter", "* **One letter"), "a bullet is"),
     "a second Then paragraph": (
         _sub("**Then:** the thing is the suffix.\n",
              "**Then:** the thing is the suffix.\n\nand more of it.\n"),
-        "one paragraph"),
+        "Then is one paragraph"),
+    # When and Tolerated as Then, which they accepted silently (#768)
+    "a second When paragraph": (
+        _sub('**When:** a name ends in a thing — "John Smith III".\n',
+             '**When:** a name ends in a thing — "John Smith III".\n\n'
+             "and more of it.\n"), "When is one paragraph"),
+    "a second Tolerated paragraph": (
+        _sub("**Then:**", "**Tolerated:** no convention writes it.\n\n"
+             "and more of it.\n\n**Then:**"),
+        "Tolerated is one paragraph"),
+    # a bullet's continuation lines (#768)
+    "a nested list under a bullet": (
+        _sub("- **Before a comma**: C1 decides.\n",
+             "- **Before a comma**: C1 decides.\n  - nested.\n"),
+        "nested list"),
+    # the other markers a nested list may wear (review)
+    "a nested star list under a bullet": (
+        _sub("- **Before a comma**: C1 decides.\n",
+             "- **Before a comma**: C1 decides.\n  * nested.\n"),
+        "nested list"),
+    "a nested plus list under a bullet": (
+        _sub("- **Before a comma**: C1 decides.\n",
+             "- **Before a comma**: C1 decides.\n  + nested.\n"),
+        "nested list"),
+    "a nested numbered list under a bullet": (
+        _sub("- **Before a comma**: C1 decides.\n",
+             "- **Before a comma**: C1 decides.\n  1. nested.\n"),
+        "nested list"),
+    "a heading under a bullet": (
+        _sub("- **Before a comma**: C1 decides.\n",
+             "- **Before a comma**: C1 decides.\n  ## Heading\n"),
+        "heading inside a bullet"),
+    "an assertion outside a backtick span": (
+        _sub("It is rare otherwise.",
+             "It is `written` so →  family=\"V\" here."),
+        "outside a fence"),
+    # Tolerated, in the spellings an author reaching for it may write
+    "an unbolded Tolerated": (
+        _sub("**Then:**", "Tolerated: why.\n\n**Then:**"),
+        "a label is bold"),
+    "a lowercase Tolerated": (
+        _sub("**Then:**", "**tolerated:** why.\n\n**Then:**"),
+        "unknown field label"),
+    "a Tolerated with its colon outside the bold": (
+        _sub("**Then:**", "**Tolerated**: why.\n\n**Then:**"),
+        "the colon goes inside the bold"),
+    "a block-format tolerated line": (
+        _sub("**Then:**", "tolerated: why.\n\n**Then:**"),
+        "a label is bold"),
     # footer lines above the footer (G6)
     "a Signal line above the footer": (
         _sub("It is rare otherwise.\n",
@@ -360,3 +426,64 @@ def test_malformed_skeleton_raises(name: str) -> None:
     with pytest.raises(ValueError, match="X1") as ei:
         parse_rules_doc(doc)
     assert fragment in str(ei.value)
+
+
+def _signal(text: str) -> str:
+    return _sub("**Signal:** a shape\n", f"{text}\n")
+
+
+#: Footer lines meant as the signal line but spelled otherwise: read as
+#: anything else they would leave the rule with no signal.
+@pytest.mark.parametrize("line", [
+    pytest.param("signal: lowercase", id="lowercase-unbolded"),
+    pytest.param("Signal: a count", id="unbolded"),
+    pytest.param("**Signal :** a count", id="space-before-the-colon"),
+    pytest.param("**Signal:**", id="empty"),
+    pytest.param("**Signals:** a count", id="plural"),
+    pytest.param("**Signal：** a count", id="fullwidth-colon"),
+])
+def test_a_misspelled_signal_line_is_an_error(line: str) -> None:
+    with pytest.raises(ValueError, match="below the `---` footer only"):
+        parse_rules_doc(_signal(line))
+
+
+#: Each would read as a plain signal with its rules unchecked.
+@pytest.mark.parametrize("signal", [
+    pytest.param("hub of C3 and C4", id="malformed-hub"),
+    pytest.param("a shape; hub of C3 C4", id="malformed-hub-after-a-signal"),
+    pytest.param("a shape, hub of C3, C4", id="hub-after-a-comma"),
+    pytest.param("a shape;hub of C3, C4",
+                 id="hub-after-an-unspaced-semicolon"),
+    pytest.param("a shape — hub of C3, C4", id="hub-after-a-dash"),
+    pytest.param("hubs of C3, C4", id="plural-hub"),
+    pytest.param("Hub of C3, C4", id="capitalized-hub"),
+    pytest.param("hub of C3, C4.", id="hub-with-a-full-stop"),
+    pytest.param("hub: C3, C4", id="hub-colon"),
+    # refused by the first form of the check, which raised on the word
+    # anywhere; kept so a narrowing cannot drop it (#737's lesson)
+    pytest.param("hub C3, C4", id="hub-without-of"),
+    pytest.param("a shape; hub C3", id="hub-without-of-after-a-signal"),
+])
+def test_a_malformed_hub_signal_is_an_error(signal: str) -> None:
+    with pytest.raises(ValueError, match="a hub's signal"):
+        parse_rules_doc(_signal(f"**Signal:** {signal}"))
+
+
+def test_a_hub_may_state_its_own_signals_first() -> None:
+    r = parse_rules_doc(_signal(
+        "**Signal:** a position: x + a shape: y; hub of C3, C4"))[0]
+    assert r.hub == ("C3", "C4")
+    assert r.signal == "a position: x + a shape: y; hub of C3, C4"
+
+
+def test_a_word_holding_hub_is_a_plain_signal() -> None:
+    # the near-miss test is not a substring test
+    r = parse_rules_doc(_signal("**Signal:** a shape: Hubert, hub-like"))[0]
+    assert r.hub == ()
+    assert r.signal == "a shape: Hubert, hub-like"
+
+
+def test_a_rule_without_a_signal_line_has_none() -> None:
+    # the negative control: test_rules_doc.py's `signal is not None` is
+    # a question the parser can answer no to
+    assert parse_rules_doc(_sub("**Signal:** a shape\n", ""))[0].signal is None

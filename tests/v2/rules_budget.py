@@ -14,57 +14,34 @@ and says so in the PR, where axis 12 (docs/design/AGENTS.md) asks what
 the new words read. A rule that shrinks fails too, so the record
 follows it down and the words cannot come back unseen.
 
-Four measures for a block-format rule, all over the statement prose a citation may quote
-(rules_doc.prose_blocks, so the Signal:, example, pointer and marker
-lines are not counted):
-
-- ``words``: the statement's words, the Rationale included and the
-  Accepted: clauses not;
-- ``exceptions``: the statement's ``except`` and ``unless`` -- a proxy
-  for the clauses that carve a case out of the rule, which is the way
-  the split rules grew;
-- ``accepted``: the number of Accepted clauses (a line opening
-  ``Accepted:`` or ``Accepted,``, rules_doc.ACCEPTED_RE; the rules
-  write the second as ``Accepted, and ...:``);
-- ``accepted_words``: their words, so a sentence added inside an
-  existing Accepted clause moves the record too.
-
-A skeleton-format rule (#761, rules_skeleton.py) has its own seven,
-read from the parsed fields rather than counted over prose, the word
-counts off rules_skeleton.skeleton_parts, the list a citation quotes:
-``words`` (every quotable field but the Accepted bullets: When,
-Tolerated, Then and its bullets, Because, Except and Precedence, so a
-word added anywhere in them moves the record), ``then_words`` (Then
-and its bullets), ``because_sentences``,
-``except``, ``precedence`` and ``accepted`` (bullet counts) and
-``accepted_words`` (the Accepted bullets' words). A rule that changes
-format shows as one ``format changed`` line, not a line per measure.
+Seven measures, read from the rule's parsed fields (rules_skeleton.py)
+rather than counted over prose, the word counts off
+rules_skeleton.skeleton_parts, the list a citation quotes: ``words``
+(every quotable field but the Accepted bullets: When, Tolerated, Then
+and its bullets, Because, Except and Precedence, so a word added
+anywhere in them moves the record), ``then_words`` (Then and its
+bullets), ``because_sentences``, ``except``, ``precedence`` and
+``accepted`` (bullet counts) and ``accepted_words`` (the Accepted
+bullets' words). The footer, the fences and the labels are not counted.
 """
 from __future__ import annotations
 
 import argparse
 import json
-import re
 from collections.abc import Callable
 from pathlib import Path
 
 from tests.v2 import rules_skeleton
 from tests.v2.design_docs import read_rules_text
-from tests.v2.rules_doc import (
-    Rule, parse_rules_doc, prose_blocks, split_accepted)
+from tests.v2.rules_doc import Rule, parse_rules_doc
 from tests.v2.rules_skeleton import count_sentences
 
 RECORD = Path(__file__).with_name("rules_budget.json")
 RECORD_COMMAND = "uv run python -m tests.v2.rules_budget --record"
-BLOCK_MEASURES = ("words", "exceptions", "accepted", "accepted_words")
-SKELETON_MEASURES = ("words", "then_words", "because_sentences", "except",
-                     "precedence", "accepted", "accepted_words")
+MEASURES = ("words", "then_words", "because_sentences", "except",
+            "precedence", "accepted", "accepted_words")
 
-_RULE_ID_RE = re.compile(r"[A-Z]\d+")
-_EXCEPTION_RE = re.compile(r"\b(?:except|unless)\b", re.IGNORECASE)
-
-
-def _skeleton_row(rule: Rule) -> dict[str, int]:
+def _row(rule: Rule) -> dict[str, int]:
     sk = rule.skeleton
     assert sk is not None
     parts = rules_skeleton.skeleton_parts(sk)
@@ -86,30 +63,8 @@ def _skeleton_row(rule: Rule) -> dict[str, int]:
 def measure(text: str) -> dict[str, dict[str, int]]:
     """Each rule's measures, keyed by rule ID, in ID order. The text is
     parsed first, so a rules text the doc tests reject raises here
-    rather than being measured, and the rules measured are exactly the
-    rules parsed."""
-    rules = parse_rules_doc(text)
-    rule_ids = {r.rule_id for r in rules}
-    skeletons = {r.rule_id: r for r in rules if r.skeleton is not None}
-    out = {}
-    for rid, lines in prose_blocks(text).items():
-        if not _RULE_ID_RE.fullmatch(rid):
-            continue                # a section's Background
-        if rid in skeletons:
-            out[rid] = _skeleton_row(skeletons[rid])
-            continue
-        stmt_lines, clauses = split_accepted(lines)
-        statement = " ".join(stmt_lines)
-        out[rid] = {
-            "words": len(statement.split()),
-            "exceptions": len(_EXCEPTION_RE.findall(statement)),
-            "accepted": len(clauses),
-            "accepted_words": sum(len(" ".join(c).split()) for c in clauses),
-        }
-    if set(out) != rule_ids:
-        raise ValueError(
-            f"the rules measured and the rules parsed differ: "
-            f"{sorted(set(out) ^ rule_ids)}")
+    rather than being measured."""
+    out = {r.rule_id: _row(r) for r in parse_rules_doc(text)}
     return dict(sorted(out.items(),
                        key=lambda kv: (kv[0][0], int(kv[0][1:]))))
 
@@ -155,19 +110,12 @@ def changes(record: dict[str, dict[str, int]],
             out.append(f"{rid}: recorded, but no rule has that ID")
             continue
         old_row, new_row = record[rid], now[rid]
-        formats = (set(BLOCK_MEASURES), set(SKELETON_MEASURES))
-        if (set(old_row) != set(new_row) and set(old_row) in formats
-                and set(new_row) in formats):
-            out.append(f"{rid}: format changed: {old_row} -> {new_row}")
-            continue
-        measures = (SKELETON_MEASURES if set(new_row) == set(SKELETON_MEASURES)
-                    else BLOCK_MEASURES)
-        for key in measures:
+        for key in MEASURES:
             old, new = old_row.get(key), new_row[key]
             if old != new:
                 way = "grew" if old is None or new > old else "shrank"
                 out.append(f"{rid}: {key} {way}, {old} -> {new}")
-        for key in sorted(set(old_row) - set(measures)):
+        for key in sorted(set(old_row) - set(MEASURES)):
             out.append(f"{rid}: recorded {key!r}, which is no longer "
                        f"measured")
     return out
