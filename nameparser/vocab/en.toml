@@ -2877,6 +2877,8 @@ credential = { cased = "ChFC" }
 
 [[word]]
 text = "chi"
+family = { us_census_2010 = 7273, wikidata = 219, as_of = 2026-10-21 }
+given = { us_ssa = 1326, wikidata = 123, as_of = 2026-10-21 }
 [word.credential]
 may_be_name = true
 issue = 791
@@ -4589,6 +4591,8 @@ credential = {}
 
 [[word]]
 text = "si"
+family = { us_census_2010 = 1166, wikidata = 275, as_of = 2026-10-21 }
+given = { us_ssa = 185, wikidata = 124, as_of = 2026-10-21 }
 [word.credential]
 may_be_name = true
 issue = 791

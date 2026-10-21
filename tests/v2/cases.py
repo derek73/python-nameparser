@@ -607,12 +607,12 @@ CASES: tuple[Case, ...] = (
                "ambiguous_acronym_is_a_suffix_when_a_family_name_remains "
                "above"),
     # -- #791: 'si' and 'chi' take the marking 'ba' took. Both are common
-    # surnames (Census 2010: Si 1,166, Chi 7,273) and live credentials
-    # nobody has expanded, so the criterion marks rather than removes
+    # surnames (Census 2010: Si 1,166, Chi 7,273) and credentials with no
+    # recorded expansion, so the criterion marks rather than removes
     # (decisions/suffix-acronym-collisions, 2026-10-21). The bare and
     # comma forms pin the fork; the contrasting spellings pin that the
     # credential still wins with words to spare. Like the #540 rows
-    # below, the bare rows are shape-tagged so the snapshot sees them.
+    # below, the bare and comma rows are shape-tagged so the snapshot sees them.
     Case("bare_si_is_a_surname", "Luo Si",
          {"given": "Luo", "family": "Si"},
          ambiguities=("suffix-or-name",),
@@ -637,14 +637,14 @@ CASES: tuple[Case, ...] = (
          notes="the comma twin of bare_si_is_a_surname: 2.0.0 through "
                "2.5.0 read suffix 'Si' with no given name and reported "
                "nothing; 1.4.0 read given 'Si'",
-         shape=1),
+         shape=2),
     Case("comma_chi_is_a_given_name", "Smith, Chi",
          {"given": "Chi", "family": "Smith"},
          ambiguities=("suffix-or-name",),
          notes="the comma twin of bare_chi_is_a_surname, with the same "
                "history: suffix 'Chi' and no given name through 2.5.0; "
                "given 'Chi' at 1.4.0",
-         shape=1),
+         shape=2),
     Case("capital_si_is_a_suffix_when_a_family_name_remains",
          "John Smith SI",
          {"given": "John", "family": "Smith", "suffix": "SI"},
@@ -686,7 +686,7 @@ CASES: tuple[Case, ...] = (
                "takes the surname the way 'Ma.' does in 'John Smith Ma.'. "
                "1.4.0 read suffix 'Si.' with family 'Smith'; 2.0.0 and "
                "2.5.0 read the same suffix"),
-    Case("credential_run_led_by_a_declined_si", "John Smith Chi PhD",
+    Case("credential_run_led_by_a_declined_chi", "John Smith Chi PhD",
          {"given": "John", "middle": "Smith", "family": "Chi",
           "suffix": "PhD"},
          ambiguities=("suffix-or-name",),
@@ -696,6 +696,53 @@ CASES: tuple[Case, ...] = (
                "walk stops there and the unambiguous PhD behind it is "
                "still peeled. 1.4.0 read suffix 'Chi, PhD' and family "
                "'Smith'"),
+    Case("empty_head_si_is_a_given_name", ", Si",
+         {"given": "Si"},
+         ambiguities=("suffix-or-name",),
+         notes="AGENTS.md's empty-head comma grid: with no name before "
+               "the comma the part is the given name, as 1.4.0 read it "
+               "('first Si')"),
+    Case("empty_head_caps_si_is_a_given_name", ", SI",
+         {"given": "SI"},
+         ambiguities=("suffix-or-name",),
+         notes="the capitals form of the empty-head row, read as the "
+               "given name at 1.4.0 ('first SI')"),
+    Case("nickname_head_si_is_a_given_name", "(Bob), Si",
+         {"nickname": "Bob", "given": "Si"},
+         ambiguities=("suffix-or-name",),
+         notes="the nickname-only head: the nickname is taken first and "
+               "the part reads as the given name, as 1.4.0 read it "
+               "(nickname 'Bob', first 'Si')"),
+    Case("capital_si_after_a_surname_is_a_suffix", "Luo SI",
+         {"given": "Luo", "suffix": "SI"},
+         ambiguities=("given-or-family", "suffix-or-name"),
+         classification="fix(#289)",
+         notes="the caps lean (decisions/S6, #289): all-capitals SI is "
+               "the credential even as the only word after a name, so "
+               "the two-piece guard that keeps bare 'Luo Si' a surname "
+               "does not reach it. 1.4.0 read family 'SI'"),
+    Case("comma_capital_si_is_a_suffix", "Wang, SI",
+         {"family": "Wang", "suffix": "SI"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#289)",
+         notes="the comma form of the caps lean, as 'Smith, BA' reads "
+               "(#289). 1.4.0 read given 'SI' and family 'Wang'"),
+    Case("family_first_bare_si_is_a_given_name", "Luo Si",
+         {"given": "Si", "family": "Luo"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         ambiguities=("suffix-or-name",),
+         classification="fix(#791)",
+         notes="the family-first roles of the bare row: the first word "
+               "is the family name, so 'Si' is the given name. 1.4.0 has "
+               "no name order to compare against"),
+    Case("family_first_comma_si_is_a_given_name", "Wang, Si",
+         {"given": "Si", "family": "Wang"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         ambiguities=("suffix-or-name",),
+         classification="fix(#791)",
+         notes="the comma form under family-first: the comma already "
+               "fixes the family name, so the roles match the default "
+               "order's"),
     # -- #540: 'meng' and 'lac' take the marking 'ba' took, on the same
     # criterion (decisions/suffix-acronym-collisions). MEng and LAc
     # are live credentials; Meng is a Chinese surname and given name,

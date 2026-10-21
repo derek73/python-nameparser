@@ -6,11 +6,11 @@ Release Log
 
     **Additions**
 
-    - **Ship the default vocabulary as per-word data files.** The word lists in ``nameparser.config`` are now compiled from ``nameparser/vocab/*.toml``, one file per language, which record what each word can be read as and why a word was left out; the lists and every parse are unchanged from 2.5.0. :issue:`737`
+    - **Ship the default vocabulary as per-word data files.** The word lists in ``nameparser.config`` are now compiled from ``nameparser/vocab/*.toml``, one file per language, which record what each word can be read as and why a word was left out; the lists and every parse are unchanged from 2.5.0, except for the change to si and chi under Behavior Changes. :issue:`737`
 
     **Behavior Changes**
 
-    - **Fix a surname spelled Si or Chi reading as a credential.** ``Luo Si`` gives family ``Si``, given ``Luo``, where 2.0.0 through 2.5.0 gave suffix ``Si`` and no family name; ``Wang, Si`` gives given ``Si``, where they gave suffix ``Si`` and no given name. A Title-case ``Si`` after a full name takes the family name too, as ``Ma`` does: ``John Smith Si`` gives middle ``Smith``, family ``Si``, where 1.4.0 gave suffix ``Si``. A capitalized ``SI`` after a full name is still a credential. :issue:`791`
+    - **Fix a surname spelled Si or Chi reading as a credential.** ``Luo Si`` gives family ``Si``, given ``Luo``, where 2.0.0 through 2.5.0 gave suffix ``Si`` and no family name; ``Wang, Si`` gives given ``Si``, where they gave suffix ``Si`` and no given name. A Title-case ``Si`` after a full name takes the family name too, as ``Ma`` does: ``John Smith Si`` gives middle ``Smith``, family ``Si``, where 1.4.0 gave suffix ``Si``. A capitalized ``SI`` after a full name is still a credential. The same marking moves ``John Smith (Chi)`` to nickname ``Chi``, ``Smith, John Chi`` to middle ``Chi``, and ``John Smith Chi PhD`` to family ``Chi``, suffix ``PhD``. :issue:`791`
 
 * 2.5.0 - October 19, 2026
 

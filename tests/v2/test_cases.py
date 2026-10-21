@@ -197,10 +197,13 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # and a maiden clause (one suffix-or-name claim under each order);
     # 1252 -> 1255 the same day: the C12 row with a title in the part;
     # 1255 -> 1282 on 2026-10-21: #791's nine reporting rows (si and
-    # chi), one suffix-or-name or given-or-family claim under each order.
-    assert claims == 1282, (
-        f"the field sweep checks {claims} claims, recorded as 1282 on "
-        f"2026-10-18")
+    # chi), one suffix-or-name or given-or-family claim under each order;
+    # 1282 -> 1302 the same day: the review's empty-head, caps and
+    # family-first rows (two reports on 'Luo SI', and the family-first
+    # rows, which carry their own policy and so claim under one order).
+    assert claims == 1302, (
+        f"the field sweep checks {claims} claims, recorded as 1302 on "
+        f"2026-10-21")
 
 
 #: Case.__post_init__'s shape checks, each probed for the message that
