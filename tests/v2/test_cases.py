@@ -206,14 +206,6 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
         f"2026-10-21")
 
 
-#: Case.__post_init__'s shape checks, each probed for the message that
-#: identifies it. A row here is a Case that must fail to construct, not
-#: one that ever joins CASES -- unlike test_case above, this exercises
-#: the dataclass's own validation rather than the parser. One message
-#: is shared by three rows and deliberately: the residue arm of the
-#: purity check (2026-09-05) refuses every non-space ASCII character
-#: the comma and Latin-letter arms do not, so its probes differ in the
-#: character that trips it rather than in what they are told.
 def test_every_case_name_is_unique() -> None:
     """A repeated Case name silently shadows one row: pytest parametrizes
     the ids with a numeric suffix and the table reads as if both rows
@@ -228,6 +220,14 @@ def test_every_case_name_is_unique() -> None:
     assert not repeated, f"Case names repeated in tests/v2/cases.py: {repeated}"
 
 
+#: Case.__post_init__'s shape checks, each probed for the message that
+#: identifies it. A row here is a Case that must fail to construct, not
+#: one that ever joins CASES -- unlike test_case above, this exercises
+#: the dataclass's own validation rather than the parser. One message
+#: is shared by three rows and deliberately: the residue arm of the
+#: purity check (2026-09-05) refuses every non-space ASCII character
+#: the comma and Latin-letter arms do not, so its probes differ in the
+#: character that trips it rather than in what they are told.
 @pytest.mark.parametrize("kwargs, match", [
     pytest.param(
         dict(text="Beethoven, Ludwig van", shape=2, locale="nl_NL"),
