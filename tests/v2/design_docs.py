@@ -181,11 +181,13 @@ def reused_id_findings(rule_ids: set[str],
 # `SUPERSEDED:` or `SUPERSEDED IN PART:` announces what it replaces and
 # is live.
 _DATE = r"\d{4}-\d\d(?:-\d\d)?(?:/\d\d)?"
-# The issue is the date's only when nothing but a short label (`PR`
-# and the like) stands between them, so prose after a date-only
-# pointer (`— 2026-09-14, see #500`) is not read as its issue.
+# The issue is the first `#N` within 40 characters of the date that no
+# `—`, `.` or `;` interrupts, so a head copied whole (`2026-10-18
+# (Derek), #718`) still reads its issue; an issue written in prose
+# right after a date-only pointer (`— 2026-09-14, see #500`) is read as
+# the pointer's and fails as no entry, so end the pointer first.
 _POINTER_RE = re.compile(
-    rf"(?P<date>{_DATE})(?![\d/-])(?:[^—#.;,()]{{0,20}}?#(?P<num>\d+))?")
+    rf"(?P<date>{_DATE})(?![\d/-])(?:[^—#.;]{{0,40}}?#(?P<num>\d+))?")
 
 
 def _entries(log: str) -> list[tuple[str, str]]:
@@ -257,7 +259,9 @@ def _resolve(line: str, m: re.Match[str],
     if len(found) < 2:
         return _Resolved(found, 0)
     after = line[m.end():]
-    said = re.split(r"[.;]", after, maxsplit=1)[0].rstrip()
+    # The words end at `.` or `;`, or where the next pointer's date
+    # starts (`— 2026-10-17 #718, 2026-10-18 #721`).
+    said = re.split(rf"[.;]|{_DATE}", after, maxsplit=1)[0].rstrip(" ,")
     tails = {e: _tail(e[0], date, num) for e in found}
     # The whole rest of the line is matched, so a period or a date
     # inside a head's words is read as part of them.
@@ -316,8 +320,9 @@ def has_standing(text: str) -> bool:
 def standing_findings(text: str) -> list[str]:
     """What is wrong with a decisions file's Standing block: a bullet
     with no `— <date>` pointer, any pointer from there to the line's
-    end naming no entry (dates match exactly), naming more than one
-    (ambiguous), or naming a `SUPERSEDED by` entry, a
+    end naming no entry (dates match exactly), carrying words that
+    continue no candidate's head where its date and issue are shared,
+    naming more than one (ambiguous), or naming a `SUPERSEDED by` entry, a
     Not-standing pointer to no entry, a Standing with no Log after it.
     Empty for a file with no Standing block, whose absence is
     standing_roster_findings' question."""
@@ -364,7 +369,11 @@ def standing_findings(text: str) -> list[str]:
                     continue
                 got = _resolve(line, m, entries)
                 read_to = m.end() + got.used
-                if not got.hits:
+                if got.unmatched:
+                    findings.append(
+                        f"not-standing pointer {m['date']} #{m['num']}: "
+                        f"{got.unmatched!r} continues no entry's head")
+                elif not got.hits:
                     findings.append(
                         f"not-standing names no entry {m['date']} "
                         f"#{m['num']}")
