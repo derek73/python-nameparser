@@ -8,7 +8,8 @@ import pytest
 
 from tests.v2.design_docs import (
     DECISIONS_DIR, MENTION_RE, RULES_DIR, read_decision_files, read_index,
-    STANDING_EXEMPT_ORIGINAL, _POINTER_RE, _entries, _hits, has_standing,
+    STANDING_EXEMPT_ORIGINAL, _POINTER_RE, _clean, _entries, _hits,
+    has_standing,
     read_rules_text,
     read_standing_exempt, resolve, retired_ids, reused_id_findings,
     rule_file_ids, slugify, standing_findings, standing_roster_findings,
@@ -126,6 +127,17 @@ _LOG = ("## Log\n\n"
         "- 2026-10-19 #730 two — Y.\n"
         "- 2026-10-21 #731/#732 — X.\n"
         "- 2026-10-21 #731/#732 — Y.\n"
+        "- 2026-09-19 — W.\n"
+        "- 2026-10-22 #740 — A.\n"
+        "- 2026-10-22 #740 (part superseded by #9) — B.\n"
+        "- 2026-10-23 #741 — X and Y.\n"
+        "- 2026-10-23 #741 — Y.\n"
+        "- 2026-10-24, #742 review — A.\n"
+        "- 2026-10-24, #742 review round — B.\n"
+        "- 2026-10-25 (Derek), v2.4 review — A.\n"
+        "- 2026-10-25 (Derek), v2.5 review — B.\n"
+        "- 2026-10-26, corrected 2026-10-27 — A.\n"
+        "- 2026-10-26 — B.\n"
         "- 2026-09-14, corrected 2026-09-17 — WHERE THE FACT LIVES.\n"
         "- 2026-07 (v2 core, PR #288) — v1 parity.\n"
         "- 2026-10-01 (Derek), #562 — SUPERSEDED by #613. The pair.\n"
@@ -157,6 +169,13 @@ _LOG = ("## Log\n\n"
     ("- Either twin — 2026-10-21 #731/#732.\n",
      "ambiguous pointer 2026-10-21 #731"),
     ("- The second twin — 2026-10-21 #731/#732, Y.\n", None),
+    ("- Noted twin — 2026-10-22 #740, B.\n", None),
+    ("- Opens with — 2026-10-23 #741, Y.\n", None),
+    ("- Trailing space — 2026-09-14 \n", "ambiguous pointer 2026-09-14"),
+    ("- Full words — 2026-10-26, corrected 2026-10-27.\n", None),
+    ("- Typo — 2026-10-18 #718 reveiw.\n", "continues no entry's head"),
+    ("- Typo — 2026-09-19 (Dreek).\n", "continues no entry's head"),
+    ("- Prose — 2026-09-24, see #500.\n", None),
     ("- The round — 2026-09-18, REVIEW ROUND.\n", None),
     ("- Decided once — 2026-10-04 #613.\n", "no entry 2026-10-04 #613"),
     ("- Decided once — 2026-10 #613.\n", "no entry 2026-10 #613"),
@@ -169,7 +188,10 @@ _LOG = ("## Log\n\n"
         "date-only-qualifier-then-prose", "date-only-bare-beside-qualified",
         "supersession-note-ignored", "issue-bare-picks-unqualified-head",
         "issue-qualified", "issue-shared-ambiguous", "twins-unqualified-ambiguous",
-        "twins-qualified-by-text",
+        "twins-qualified-by-text", "twins-differing-by-a-note",
+        "twins-text-opens-with-not-contains", "trailing-space-ambiguous",
+        "date-inside-the-words", "issue-words-typo", "date-words-typo",
+        "issue-in-prose-is-not-the-pointers",
         "date-only-qualified-beside-a-bare-date",
         "later-issue-in-a-head",
         "month-only-date", "second-pointer",
@@ -193,6 +215,15 @@ def test_standing_findings_name_each_broken_pointer(
     ("2026-09-18, REVIEW ROUND.", "2026-09-18, REVIEW ROUND"),
     ("2026-10-21 #731/#732, X.", "2026-10-21 #731/#732 — X."),
     ("2026-10-21 #731/#732, Y.", "2026-10-21 #731/#732 — Y."),
+    ("2026-09-19.", "2026-09-19"),
+    ("2026-09-19 (Derek), again.",
+     "2026-09-19 (Derek) (item (ii) superseded by #9, decisions/S7)"),
+    ("2026-10-23 #741, Y.", "2026-10-23 #741 — Y."),
+    ("2026-10-24 #742 review.", "2026-10-24, #742 review"),
+    ("2026-10-24 #742 review round.", "2026-10-24, #742 review round"),
+    ("2026-10-25 (Derek), v2.5 review.", "2026-10-25 (Derek), v2.5 review"),
+    ("2026-10-26, corrected 2026-10-27.",
+     "2026-10-26, corrected 2026-10-27"),
 ])
 def test_a_pointer_resolves_to_the_entry_its_words_name(
         pointer: str, head: str) -> None:
@@ -203,6 +234,14 @@ def test_a_pointer_resolves_to_the_entry_its_words_name(
     assert m is not None
     assert [f"{h} — {r}" if "—" in head else h
             for h, r in _hits(line, m, _entries(_LOG))] == [head]
+
+
+def test_a_supersession_note_is_dropped_in_any_case_and_only_when_closed(
+        ) -> None:
+    assert _clean("2026-09-19 (SUPERSEDED in part by #9) x") == "2026-09-19 x"
+    assert _clean("2026-09-19 (superseded by #9 #500") == (
+        "2026-09-19 (superseded by #9 #500")
+    assert _clean("2026-09-19 (Derek)") == "2026-09-19 (Derek)"
 
 
 def test_standing_needs_a_log_after_it() -> None:

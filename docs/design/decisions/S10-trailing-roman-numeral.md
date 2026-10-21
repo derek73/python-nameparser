@@ -4,7 +4,7 @@
 
 - A one-letter roman numeral is the generation only with words to spare, counted in name units as S4 counts: `John Smith V` → suffix 'V', while `John V` and `Malcolm X` keep the letter as the family; a title is no word to spare (`Dr Smith V` → family 'V') and a particle chain is one word (`Freiherr von Richthofen V` → family 'von Richthofen V') — 2026-10-17 #718.
 - A lowercase numeral in a mixed-case name is the generation and reports nothing (`John Smith vi`); a name written in one case is counted as its capitals are — 2026-10-17 #718; 2026-10-18 #721.
-- The declined numeral reports `suffix-or-name` as the taken one does, from the site where its branch is taken — 2026-10-18 #718.
+- The declined numeral reports `suffix-or-name` as the taken one does, assign alone reporting it — 2026-10-18 #718; 2026-10-18 #718's PR review.
 - The count is not asked in the given part after a family comma: `Smith, Freiherr von Berg V` keeps suffix 'V' — 2026-10-18 #718 review.
 - A one-letter numeral with a credential behind it is a name word and reports (`John Smith V PhD` → family 'V'); requiring all three name fields, or never reading the comma-less letter as the generation, was declined (`John W. Ingram V` keeps suffix 'V') — 2026-10-18 #721's PR review.
 - A marked letter with no given, middle or family word after it in its part loses its connective report, withdrawn once over final roles, in assemble — 2026-10-18 #722's /simplify pass.
