@@ -15,7 +15,6 @@ renaming a file never breaks one.
 from __future__ import annotations
 
 import json
-import os
 import re
 import unicodedata
 from dataclasses import dataclass
@@ -301,7 +300,11 @@ def _read(after: str, hits: list[tuple[str, str]], date: str,
     them is not taken for a second pointer."""
     if len(hits) != 1:
         return 0
-    return len(os.path.commonprefix([after, _tail(hits[0][0], date, num)]))
+    tail = _tail(hits[0][0], date, num)
+    n = 0
+    while n < min(len(after), len(tail)) and after[n] == tail[n]:
+        n += 1
+    return n
 
 
 def _hits(line: str, m: re.Match[str],
