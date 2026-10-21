@@ -2141,3 +2141,15 @@ def test_main_rank_prints_a_table(
 def test_lands_says_split_when_no_field_holds_the_whole_credential() -> None:
     assert tool._lands("John Smith, PA C", "PA C") == "split"
     assert tool._lands("John Smith, MD", "MD") == "suffix"
+
+
+def test_credential_usage_falls_back_to_a_sibling_for_letters_only_phrases_hold() -> None:
+    # The tally stores a choice only for letters some UNSPACED key holds.
+    # A job title spaced unlike every recorded spelling has none, and the
+    # first version of the stored choice read 0 for it, beside the
+    # sibling's 5,054 -- where the lookup before it had found the sibling.
+    usage = tool.credential_usage("Registered / Nurse",
+                                  _tally(**{"REGISTERED NURSE": 50, "MD": 5}))
+    assert usage.credential == 50
+    assert "looked up as REGISTERED NURSE" in usage.note
+    assert "also written" not in usage.note  # found, not also another

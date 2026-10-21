@@ -997,20 +997,24 @@ def credential_usage(word: str, tally: CredentialTally | None) -> Usage:
     # the tally files those letters under when _resolve joins a segment,
     # so 'PA C' finds PA-C and not PAC. It does not ask whether _resolve
     # would join it: 'MD PHD' finds MD/PHD's 721, though the tally counted
-    # those segments as MD and PHD. And every answer names the others, so
-    # a spelling few write cannot stand alone: OTR-L's 416 providers are
+    # those segments as MD and PHD. Letters only spaced keys hold (a job
+    # title, 'REGISTERED NURSE') have no stored choice, and a word spaced
+    # unlike all of them takes the commonest: 'Registered / Nurse' finds
+    # REGISTERED NURSE's 5,054. And every answer names the others, so a
+    # spelling few write cannot stand alone: OTR-L's 416 providers are
     # reported beside OTR/L's 61,789. A word with no letters or digits
     # ('-') shares them with nothing.
     letters = _squash(key)
+    sharing = sorted(((k, n) for k, (n, _) in tally.tokens.items()
+                      if k != key and _squash(k) == letters),
+                     key=lambda kn: (-kn[1], kn[0])) if letters else []
     if key in tally.tokens:
         found: str | None = key
-    elif " " in key and letters:
-        found = tally.joined.get(letters)
+    elif " " in key and sharing:
+        found = tally.joined.get(letters, sharing[0][0])
+        sharing = [kn for kn in sharing if kn[0] != found]
     else:
         found = None
-    sharing = sorted(((k, n) for k, (n, _) in tally.tokens.items()
-                      if k not in (key, found) and _squash(k) == letters),
-                     key=lambda kn: (-kn[1], kn[0])) if letters else []
     others = ("also written " + ", ".join(f"{k} {n:,}" for k, n in sharing[:3])
               if sharing else "")
     if found is None:
