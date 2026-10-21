@@ -35,7 +35,7 @@ Open: #752 (phase 2, derived ambiguity), #753 (phase 3, language packs), #754 (p
 
 ## Log
 
-- 2026-10-21 #762 — `und.toml` STAYS EXEMPT FROM CHECK 10 BECAUSE IT HOLDS NO LANGUAGE'S WORDS, the ground nameparser/vocab/README.md gives. The 2026-10-19 #747 entry exempted it so its entries could keep the Python lists' order that its vetting comments pointed along; #749 to #751 moved every word out but `bon` and `dí` and its per-entry comments with them, so that reason no longer holds, and tools/vocab/build.py's `UNORDERED` comment now gives this one. No compiled set or check moves.
+- 2026-10-21 #762 (Derek) — `und.toml` STAYS EXEMPT FROM CHECK 10 BECAUSE IT HOLDS NO LANGUAGE'S WORDS, the ground nameparser/vocab/README.md gives. The 2026-10-19 #747 entry exempted it so its entries could keep the Python lists' order that its vetting comments pointed along; #749 to #751 moved every word out but `bon` and `dí` and its per-entry comments with them, so that reason no longer holds, and tools/vocab/build.py's `UNORDERED` comment now gives this one. No compiled set or check moves.
 
 - **2026-10-15/16 — the model (Derek).** Decided over a brainstorm whose notes are gitignored; the durable decisions are these.
   1. The vocabulary redesign comes before adding many packs; it is designed for 3.0 and whatever is safe is pulled forward.
