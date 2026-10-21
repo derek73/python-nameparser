@@ -191,6 +191,26 @@ def _names(head: str, date: str, num: str | None) -> bool:
             and (first.group(1) if first else None) == num)
 
 
+def _hits(line: str, m: re.Match[str],
+          entries: list[tuple[str, str]]) -> list[str]:
+    """The log entries one pointer names. A date-only pointer may carry
+    the opening of its entry's head after the date (`— 2026-09-14
+    (Derek)`), which tells apart entries that share a date and name no
+    issue; text that matches no head is ordinary prose and narrows
+    nothing."""
+    hits = [(head, rest) for head, rest in entries
+            if _names(head, m["date"], m["num"])]
+    if m["num"] is None and len(hits) > 1:
+        said = m["date"] + re.split(r"[.;]", line[m.end():], 1)[0].rstrip()
+        # Only a head carrying words past its date can be named by them,
+        # so a bare-date head never matches a qualified pointer.
+        narrowed = [(head, rest) for head, rest in hits
+                    if len(head) > len(m["date"]) and len(said) > len(m["date"])
+                    and (said.startswith(head) or head.startswith(said))]
+        hits = narrowed or hits
+    return [rest for _, rest in hits]
+
+
 _STANDING_HEADING = re.compile(r"^## Standing$", re.M)
 _LOG_HEADING = re.compile(r"^## Log$", re.M)
 # A line that means the heading and misspells it: the exact match would
@@ -237,8 +257,7 @@ def standing_findings(text: str) -> list[str]:
                 findings.append(f"no entry pointer: {line[:60]}")
                 continue
             for m in _POINTER_RE.finditer(line, dash.start()):
-                hits = [rest for head, rest in entries
-                        if _names(head, m["date"], m["num"])]
+                hits = _hits(line, m, entries)
                 if not hits or (m["num"] is None and len(hits) > 1):
                     findings.append(f"no entry {m['date']} #{m['num']}")
                 elif all(r.startswith("SUPERSEDED by") for r in hits):
@@ -246,8 +265,7 @@ def standing_findings(text: str) -> list[str]:
                         f"superseded entry {m['date']} #{m['num']}")
         elif line.startswith("Not standing:"):
             for m in _POINTER_RE.finditer(line):
-                if not any(_names(head, m["date"], m["num"])
-                           for head, _ in entries):
+                if not _hits(line, m, entries):
                     findings.append(
                         f"not-standing names no entry {m['date']} "
                         f"#{m['num']}")

@@ -115,6 +115,10 @@ def test_resolve_section_letter_is_not_a_rule(folder: Path) -> None:
 
 
 _LOG = ("## Log\n\n"
+        "- 2026-09-14 (Derek) — THE LEAN.\n"
+        "- 2026-09-18 — THE BLAST RADIUS.\n"
+        "- 2026-09-18, REVIEW ROUND — WHAT IT MOVED.\n"
+        "- 2026-09-14, corrected 2026-09-17 — WHERE THE FACT LIVES.\n"
         "- 2026-07 (v2 core, PR #288) — v1 parity.\n"
         "- 2026-10-01 (Derek), #562 — SUPERSEDED by #613. The pair.\n"
         "- 2026-09-24 — SUPERSEDED IN PART: the mark.\n"
@@ -133,13 +137,20 @@ _LOG = ("## Log\n\n"
     ("- The pair — 2026-10-01 #562.\n", "superseded entry"),
     ("- The skip — 2026-10-03 #549.\n", None),
     ("- The mark — 2026-09-24, in part.\n", None),
+    ("- The lean — 2026-09-14 (Derek).\n", None),
+    ("- The fact — 2026-09-14, corrected.\n", None),
+    ("- One of two — 2026-09-14.\n", "no entry 2026-09-14"),
+    ("- The round — 2026-09-18, REVIEW ROUND.\n", None),
     ("- Decided once — 2026-10-04 #613.\n", "no entry 2026-10-04 #613"),
     ("- Decided once — 2026-10 #613.\n", "no entry 2026-10 #613"),
     ("- Decided once — 2026-10-06 #613 and 2026-11-01 #999.\n",
      "no entry 2026-11-01 #999"),
     ("\nNot standing: 2026-10-04 #612.\n", "names no entry"),
 ], ids=["clean", "no-pointer", "wrong-date", "number-prefix", "superseded",
-        "announcing-is-live", "date-only", "later-issue-in-a-head",
+        "announcing-is-live", "date-only", "date-only-qualified",
+        "date-only-qualified-by-its-words", "date-only-shared-date",
+        "date-only-qualified-beside-a-bare-date",
+        "later-issue-in-a-head",
         "month-only-date", "second-pointer",
         "not-standing-missing"])
 def test_standing_findings_name_each_broken_pointer(
