@@ -108,6 +108,52 @@ def resolve(doc: str, cid: str, folder: Path | None = None) -> Path | None:
     return hits[0] if len(hits) == 1 else None
 
 
+# A rule ID is never reused (rules/README.md). A retired rule's file
+# leaves rules/, and its decisions file records the retirement on a line
+# of its own opening `Retired:`; a rule file carrying that ID again is
+# refused. A line that means `Retired:` and misspells it (bold, a list
+# marker, lowercase) would switch the refusal off for its ID, so it is a
+# finding too.
+_RETIRED_RE = re.compile(r"^Retired:", re.M)
+_NEAR_RETIRED = re.compile(r"^[ \t>*_+-]*retired[ \t*_]*:.*$", re.M | re.I)
+
+
+def rule_file_ids(folder: Path = RULES_DIR) -> set[str]:
+    """The ID of every rule and section file in the folder, read from
+    the file names rather than the index, so a file the index misses is
+    still counted."""
+    return {p.stem.split("-", 1)[0] for p in folder.glob("*.md")
+            if p.name != "README.md"
+            and _RULE_KEY_RE.fullmatch(p.stem.split("-", 1)[0])}
+
+
+def retired_ids(decisions: dict[str, str]) -> set[str]:
+    """The keys of the decisions files that record a retirement."""
+    return {key for key, text in decisions.items()
+            if _RETIRED_RE.search(text)}
+
+
+def reused_id_findings(rule_ids: set[str],
+                       decisions: dict[str, str]) -> list[str]:
+    """What breaks never-reused: a rule file whose ID a decisions file
+    records as retired, a `Retired:` line in a decisions file keyed by
+    no rule ID (it retires nothing), and a line misspelling `Retired:`."""
+    findings = []
+    for key, text in sorted(decisions.items()):
+        for m in _NEAR_RETIRED.finditer(text):
+            if not m.group(0).startswith("Retired:"):
+                findings.append(f"decisions/{key}: {m.group(0)!r} is not "
+                                "a line opening 'Retired:'")
+    for key in sorted(retired_ids(decisions)):
+        if not _RULE_KEY_RE.fullmatch(key):
+            findings.append(f"decisions/{key} carries a Retired: line but "
+                            "is keyed by no rule ID, so it retires nothing")
+        elif key in rule_ids:
+            findings.append(f"rules/{key} reuses an ID decisions/{key} "
+                            "records as retired: a new rule takes a new ID")
+    return findings
+
+
 # A decisions file carries `## Standing`, an index of the decisions in
 # force, ahead of its entries under `## Log` -- every file but those
 # listed in decisions_without_standing.json (below). Each Standing
