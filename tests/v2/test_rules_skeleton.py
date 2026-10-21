@@ -97,10 +97,10 @@ def test_tolerated_field_sets_rule_tolerated() -> None:
     doc = HEAD.replace(
         "**Then:**", "**Tolerated:** no convention writes it.\n\n**Then:**")
     r = parse_rules_doc(doc)[0]
-    assert r.tolerated == "no convention writes it."
     assert r.skeleton is not None
     assert r.skeleton.tolerated == "no convention writes it."
-    assert parse_rules_doc(HEAD)[0].tolerated is None
+    head = parse_rules_doc(HEAD)[0].skeleton
+    assert head is not None and head.tolerated is None
 
 
 def test_a_hub_signal_and_no_boundary_in_the_footer() -> None:
@@ -336,6 +336,13 @@ BAD = {
         _sub("- **Reach:** only", "* **Reach:** only"), "a bullet is"),
     "a hyphen glued to the bold under Then": (
         _sub("- **Reach:** only", "-**Reach:** only"), "a bullet is"),
+    # numbered, which markdown renders as a list (review)
+    "a numbered list in a prose field": (
+        _sub('**When:** a name ends in a thing — "John Smith III".\n',
+             "**When:** a name holds:\n1. A comma.\n2. A title.\n"),
+        "a bullet is"),
+    "a numbered list with a parenthesis": (
+        _sub("- **Reach:** only", "1) **Reach:** only"), "a bullet is"),
     "a star bullet under Except": (
         _sub("- **One letter", "* **One letter"), "a bullet is"),
     "a second Then paragraph": (

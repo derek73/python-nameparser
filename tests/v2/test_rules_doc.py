@@ -121,25 +121,50 @@ def test_the_split_candidate_recipe_lists_the_two_signal_rules() -> None:
         assert bool(re.search(_SPLIT_PATTERN, skeleton, re.M)) is candidate
 
 
-def test_the_readme_lists_every_signal_tag_the_rules_use() -> None:
-    """The README's tag list against the footers, both ways: a tag a
-    rule writes that the list leaves out, and a listed tag no rule
-    writes. A tag is a signal's text before its colon, each side of a
-    ` + `, a hub's list left off (#761 found `character`, `separator`
-    and `edge full stop` missing)."""
-    readme = (RULES_DIR / "README.md").read_text(encoding="utf-8")
+def signal_tag_findings(readme: str,
+                        signals: list[str]) -> tuple[set[str], set[str]]:
+    """The tags the signals use that the README's list leaves out, and
+    the listed tags no signal uses. A tag is a signal's text before its
+    colon, each side of a ` + `, a hub's list left off."""
     m = re.search(r"The tags the rules use are (?P<list>[^.]+)\. Two kinds "
                   r"of rule carry none of them: (?P<rest>.+?)\.(?= )", readme)
     assert m is not None, "rules/README.md lost its signal tag list"
     listed = set(re.split(r", | and ", m.group("list")))
     listed |= set(re.findall(r"`([^`]+)`", m.group("rest")))
     used = set()
-    for r in RULES:
-        assert r.signal is not None
-        own = re.sub(r"(?:^|; )hub of .*$", "", r.signal)
+    for signal in signals:
+        own = re.sub(r"(?:^|; )hub of .*$", "", signal)
         used |= {part.split(":")[0] for part in own.split(" + ") if part}
-    assert used - listed == set(), "add these tags to rules/README.md"
-    assert listed - used == set(), "no rule writes these listed tags"
+    return used - listed, listed - used
+
+
+def test_the_readme_lists_every_signal_tag_the_rules_use() -> None:
+    """The README's tag list against the footers, both ways (#761
+    found `character`, `separator` and `edge full stop` missing)."""
+    readme = (RULES_DIR / "README.md").read_text(encoding="utf-8")
+    signals = [r.signal for r in RULES if r.signal is not None]
+    missing, unused = signal_tag_findings(readme, signals)
+    assert missing == set(), "add these tags to rules/README.md"
+    assert unused == set(), "no rule writes these listed tags"
+
+
+_TAGS = ("The tags the rules use are shape, count and none in the name. "
+         "Two kinds of rule carry none of them: A1 writes `none of its "
+         "own`. More.")
+
+
+@pytest.mark.parametrize("signals, missing, unused", [
+    (["shape: x", "count + shape", "none in the name: y",
+      "none of its own: z", "hub of C3"], set(), set()),
+    (["shape", "count", "none in the name", "none of its own", "script: x"],
+     {"script"}, set()),
+    (["shape", "none in the name", "none of its own"], set(), {"count"}),
+    (["shape", "count", "none in the name", "position; hub of C3"],
+     {"position"}, {"none of its own"}),
+])
+def test_signal_tag_findings_run_both_ways(
+        signals: list[str], missing: set[str], unused: set[str]) -> None:
+    assert signal_tag_findings(_TAGS, signals) == (missing, unused)
 
 
 def _check_diagnostic(example: Example) -> None:

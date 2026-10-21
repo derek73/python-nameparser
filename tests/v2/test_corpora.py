@@ -85,15 +85,16 @@ def test_rules_corpus_matches_the_rules_doc() -> None:
 
     # The equality cannot see a generator that silently selects LESS:
     # regenerating then agrees with the degraded selection. The parser
-    # refuses a malformed rule outright, so what the floor still sees is
-    # a rule deleted, or its examples moved out of its fences.
+    # refuses a malformed rule outright, so a degraded selection now
+    # means rules deleted from the tree; a rule losing every example is
+    # the `empty` check's below.
     from .design_docs import read_rules_text
     from .rules_doc import parse_rules_doc
     rules = parse_rules_doc(read_rules_text())
-    assert len(rules) >= 38, (
-        f"docs/design/rules/ parsed to {len(rules)} rules, fewer than the 38 this "
-        f"corpus was built from. A deleted rule shrinks the corpus "
-        f"silently. Ratchet this floor up when rules are added")
+    assert len(rules) >= 70, (
+        f"docs/design/rules/ parsed to {len(rules)} rules, fewer than the 70 "
+        f"this floor was ratcheted to (2026-10-20). A deleted rule shrinks "
+        f"the corpus silently. Ratchet this floor up when rules are added")
     empty = [r.rule_id for r in rules
              if not any(e.text for e in r.examples)]
     assert empty == ["D1", "D2"], (

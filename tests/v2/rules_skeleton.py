@@ -1,8 +1,9 @@
 """Parser for the skeleton rule format (#761), the format every rule in
 docs/design/rules/ is written in.
 
-A rule file opens with its heading and carries seven bold-labelled
-fields in this order, then a footer under a `---` line::
+A rule file opens with its heading and carries up to seven
+bold-labelled fields, When, Then and Because required, in this order,
+then a footer under a `---` line::
 
     # S10 — the trailing roman numeral
 
@@ -36,17 +37,18 @@ example or opens with a quote or a bracket (``_EXAMPLE_LEADS``:
 straight, curly and guillemet quotes) raises, as does any line holding
 an arrow and an assertion (`→  family=`) outside a backtick span, since
 prose there would never run; a bullet is `- ` and text (`* `, `+ `, a
-glued hyphen or an empty bullet raises, as does a nested list or a
-heading in its continuation lines) and an Except, Precedence or Accepted
-label has at least one; every Except bullet carries an example; a
-Tolerated field is not empty; When, Tolerated and Then are one paragraph
-each, Then one sentence, and Because three sentences at most; a Signal
-or `no-boundary:` line above the `---` raises, and below it only Signal,
-the pointer line (every part `history:`, `implemented:` or `tracked:`
-with a value, none repeated) and `no-boundary:` may appear, and
-`interacts:`, the block format's advisory pointer, is refused.
-Everything outside a fence, the footer and `no-boundary:` is quotable
-(``skeleton_prose``).
+numbered item, a glued hyphen or an empty bullet raises, as does a
+nested list or a heading in its continuation lines) and an Except,
+Precedence or Accepted label has at least one; every Except bullet
+carries an example; a Tolerated field is not empty; When, Tolerated and
+Then are one paragraph each, Then one sentence, and Because three
+sentences at most; a Signal or `no-boundary:` line above the `---`
+raises, and below it only Signal, standing directly above the pointer
+line, once, and spelled as a hub's where it names one, the pointer line
+(every part `history:`, `implemented:` or `tracked:` with a value, none
+repeated) and `no-boundary:` may appear, and `interacts:`, the block
+format's advisory pointer, is refused. Everything outside a fence, the
+footer and `no-boundary:` is quotable (``skeleton_prose``).
 """
 from __future__ import annotations
 
@@ -92,9 +94,9 @@ _NEAR_NO_BOUNDARY_RE = re.compile(r"^\s*[*_]*no-boundary\b", re.IGNORECASE)
 #: An example's arrow and assertion, wherever it stands: outside a
 #: fence a line holding one is an example that would never run.
 _ARROW_FIELD_RE = re.compile(r"\s→\s+(?P<field>[a-z_]+)=")
-#: A bullet marker other than `- ` then text: `* `, `+ `, or a hyphen
-#: glued to its text.
-_MALFORMED_BULLET_RE = re.compile(r"^(?:[*+](?:\s|$)|-(?! ))")
+#: A bullet marker other than `- ` then text: `* `, `+ `, a numbered
+#: item (`1. `, `1) `), or a hyphen glued to its text.
+_MALFORMED_BULLET_RE = re.compile(r"^(?:[*+](?:\s|$)|-(?! )|\d+[.)]\s)")
 #: A list item in any markdown marker, as a bullet's continuation would
 #: hold a nested list: `- `, `* `, `+ ` or a number and `.` or `)`.
 _NESTED_ITEM_RE = re.compile(r"^(?:[-*+]|\d+[.)])\s")
@@ -446,7 +448,6 @@ def parse_skeleton(rule_id: str, lines: list[tuple[int, str]]) -> Rule:
         excepts=tuple(b.freeze() for b in bullets.get("Except", [])),
         precedence=tuple(b.freeze() for b in bullets.get("Precedence", [])),
         accepted=tuple(b.freeze() for b in bullets.get("Accepted", [])))
-    rule.tolerated = rule.skeleton.tolerated
     return rule
 
 

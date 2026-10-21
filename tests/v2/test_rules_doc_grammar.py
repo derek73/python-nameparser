@@ -135,3 +135,39 @@ def test_a_signal_line_outside_any_rule_is_an_error() -> None:
     doc = _SECTION + "**Signal:** stray\n"
     with pytest.raises(ValueError, match="outside any rule"):
         parse_rules_doc(doc)
+
+
+#: Text outside any rule that is neither a section heading nor its one
+#: Background paragraph. Read as nothing, each would neither run nor be
+#: quotable, with the rule count still matching the file count (review).
+@pytest.mark.parametrize("doc", [
+    pytest.param(_rule("X1") + '### Notes\n\n```\n"A"  →  family="Q"\n```\n',
+                 id="a-subheading-after-the-footer"),
+    pytest.param(_rule("X1") + _rule("X2").replace("# X2 —", "# x2 —"),
+                 id="a-misspelled-rule-heading"),
+    pytest.param(_SECTION + '```\n"A B"  →  family="B"\n```\n',
+                 id="a-fence-after-a-background"),
+    pytest.param(_SECTION + "**When:** stray.\n",
+                 id="a-field-in-a-section-file"),
+    pytest.param(_SECTION + "A second paragraph.\n",
+                 id="a-second-background-paragraph"),
+    pytest.param("Background: with no section heading.\n",
+                 id="a-background-with-no-heading"),
+])
+def test_text_outside_any_rule_is_an_error(doc: str) -> None:
+    with pytest.raises(ValueError, match="text outside any rule"):
+        parse_rules_doc(doc)
+
+
+#: A rule heading with no field under it: before #761's retirement it
+#: produced no rule and dropped its examples silently (review).
+@pytest.mark.parametrize("body, match", [
+    pytest.param("", "missing the \\*\\*When:\\*\\* field", id="empty"),
+    pytest.param('```\n"a b"  →  family="b"\n```\n', "fence outside any field",
+                 id="only-a-fence"),
+    pytest.param("prose.\n", "a line outside a field", id="only-prose"),
+])
+def test_a_rule_heading_with_no_field_is_an_error(body: str,
+                                                  match: str) -> None:
+    with pytest.raises(ValueError, match=match):
+        parse_rules_doc(f"# X1 — one\n\n{body}")

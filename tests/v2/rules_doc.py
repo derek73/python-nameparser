@@ -4,9 +4,15 @@ Every rule is written in the skeleton format (#761): a heading
 `# ID — name`, bold-labelled fields, fenced examples and a footer, up
 to the next markdown heading. ``rules_skeleton.py`` defines and parses
 the format; this module splits the rules text into rule blocks and
-section Backgrounds, and owns what both formats once shared: the
+section Backgrounds, and owns what the skeleton parser builds on: the
 example-line grammar, the ``Example`` and ``Rule`` records, and the
 registries an example's annotation resolves through.
+
+Outside a rule the text holds only section headings (``## Name (X)``),
+each followed by one ``Background:`` paragraph, and blank lines; any
+other line there is refused, since read as nothing it would neither
+run nor be quotable -- a subheading inside a rule file, a misspelled
+rule heading, a fence in a section file.
 
 The example-line grammar (described for humans in the rules README;
 this module is its executable definition):
@@ -83,10 +89,6 @@ class Rule:
     #: exclusive with ``implemented:`` -- a rule points at code or at
     #: the issues that will produce it, never at neither.
     tracked: tuple[str, ...] = ()
-    #: The ``**Tolerated:**`` field's reason, or None for a normative rule.
-    #: A tolerated rule's examples illustrate what the parser does
-    #: today rather than promise it; no tool treats them differently.
-    tolerated: str | None = None
     #: The ``**Signal:**`` line's text: what in the written name the
     #: rule reads. None only where the line is missing, which the doc
     #: tests refuse for the real rules.
@@ -237,6 +239,9 @@ def _walk(text: str) -> Iterator[
         i = block[2] if block is not None else i + 1
 
 
+_SECTION_RE = re.compile(r"## .*\(([A-Z])\)\s*$")
+
+
 def _retired(rid: str, lineno: int, line: str) -> ValueError:
     return ValueError(
         f"{rid}: line {lineno} opens a rule in the block format, which "
@@ -249,17 +254,33 @@ def _retired(rid: str, lineno: int, line: str) -> ValueError:
 def parse_rules_doc(text: str) -> list[Rule]:
     from tests.v2 import rules_skeleton
     rules: list[Rule] = []
+    section = False                 # a section heading awaits its Background
+    background = False              # inside a Background paragraph
     for lineno, line, block in _walk(text):
         if block is None:
+            after = rules[-1].rule_id if rules else "the start"
             if _RETIRED_RULE_RE.match(line):
                 raise _retired(line.split(".")[0], lineno, line)
             if NEAR_SIGNAL_RE.match(line):
-                after = rules[-1].rule_id if rules else "the start"
                 raise ValueError(
                     f"line {lineno}, after {after}: a signal line outside "
                     f"any rule; it belongs in its rule's footer, directly "
                     f"above the pointer line: {line.strip()!r}")
+            if not line.strip():
+                background = False
+            elif _SECTION_RE.match(line):
+                section, background = True, False
+            elif section and line.startswith("Background:"):
+                section, background = False, True
+            elif not background:
+                raise ValueError(
+                    f"line {lineno}, after {after}: text outside any rule. "
+                    f"A rule opens with a `# ID — name` heading, and a "
+                    f"section file holds its `## Name (X)` heading and one "
+                    f"`Background:` paragraph; read as nothing, this line "
+                    f"would neither run nor be quotable: {line.strip()!r}")
             continue
+        section = background = False
         rid, numbered, _ = block
         if any(r.rule_id == rid for r in rules):
             raise ValueError(f"duplicate rule ID {rid} at line {lineno}")
@@ -289,7 +310,7 @@ def prose_blocks(text: str) -> dict[str, list[str]]:
                 background.append(line)
                 continue
             background = None
-        hm = re.match(r"## .*\(([A-Z])\)\s*$", line)
+        hm = _SECTION_RE.match(line)
         if hm:
             section = hm.group(1)
         elif section and line.startswith("Background:"):

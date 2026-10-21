@@ -64,8 +64,8 @@ def test_changes_report_a_measure_the_record_lacks_or_no_longer_has() -> None:
     assert rules_budget.changes({"X1": {"words": 1}}, now) == [
         f"X1: {key} grew, None -> 0" for key in rules_budget.MEASURES
         if key != "words"]
-    # a block-format row (#761 retired the format) reads as measures
-    # gone and measures missing, never as matching
+    # a measure the record holds and the tree no longer takes (a
+    # block-format row's `exceptions`, #761) is named, never ignored
     stale = {"X1": {**now["X1"], "exceptions": 3}}
     assert rules_budget.changes(stale, now) == [
         "X1: recorded 'exceptions', which is no longer measured"]

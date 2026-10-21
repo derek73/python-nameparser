@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import re
 import subprocess
+from collections.abc import Callable
 from pathlib import Path
 from typing import NamedTuple
 
@@ -265,16 +266,16 @@ def test_an_elided_excerpt_must_keep_its_order() -> None:
 
 def test_the_quotable_text_is_the_prose_and_only_the_prose() -> None:
     stmts = _statements()
-    # an Accepted: clause, and a Background's wrapped lines, are quotable
+    # an Accepted bullet, and a Background's wrapped lines, are quotable
     assert _is_excerpt(_norm("an unambiguous suffix is consumed even "
                              "when that leaves no family name at all"),
                        stmts["S2"])
     assert _is_excerpt(_norm("another's opener"), stmts["N"])
-    # an example line, and a wrapped no-boundary: marker, are not
+    # an example line, and a footer no-boundary: waiver, are not
     assert not _is_excerpt(_norm("Smith Jr."), stmts["S2"])
     assert not _is_excerpt(_norm("its boundaries are the other rules"),
                            stmts["O4"])
-    # a skeleton rule: an Except bullet is quotable, its fenced example not
+    # an Except bullet is quotable, its fenced example not
     assert _is_excerpt(_norm("A numeral past X is a name word"),
                        stmts["S10"])
     assert not _is_excerpt(_norm("John Smith XI"), stmts["S10"])
@@ -313,25 +314,55 @@ def _bullet_leads(rule_id: str, label: str) -> list[str]:
             _BULLET_LEAD_RE.finditer(body)]
 
 
-def test_a_citation_naming_a_bullet_quotes_its_bold_lead() -> None:
-    """A comment that names a rule's Except or Precedence bullet quotes
-    the bullet's bold lead, which is the bullet's name; a description
-    of the bullet can drift from it unseen, and the excerpt check holds
-    a quote only to the rule's text, so another sentence of the rule
-    would pass it (#768's review: S10's comment named "its one-letter
-    Except" by what it does)."""
-    found = 0
-    for c in _citations():
+def bullet_lead_findings(
+        citations: list[Citation],
+        leads: Callable[[str, str], list[str]] = _bullet_leads,
+) -> tuple[int, list[str]]:
+    """How many citations name a rule's Except or Precedence bullet and
+    quote it, and those whose quote is not one of that rule's bold leads
+    under that label."""
+    found, problems = 0, []
+    for c in citations:
         lm = re.search(r"\b(Except|Precedence) bullet", c.lead)
         if lm is None or c.doc != "rules" or not c.excerpts:
             continue
         found += 1
-        leads = _bullet_leads(c.cid, lm.group(1))
-        assert any(c.excerpts[0].startswith(lead) for lead in leads), (
-            f"{c.path.name}:{c.line} quotes rules/{c.cid}'s "
-            f"{lm.group(1)} bullet as {c.excerpts[0]!r}; quote the "
-            f"bullet's bold lead, one of {leads}")
+        named = leads(c.cid, lm.group(1))
+        if not any(c.excerpts[0].startswith(lead) for lead in named):
+            problems.append(
+                f"{c.path.name}:{c.line} quotes rules/{c.cid}'s "
+                f"{lm.group(1)} bullet as {c.excerpts[0]!r}; quote the "
+                f"bullet's bold lead, one of {named}")
+    return found, problems
+
+
+def test_a_citation_naming_a_bullet_quotes_its_bold_lead() -> None:
+    """A comment that names a rule's Except or Precedence bullet and
+    quotes it quotes the bullet's bold lead, which is the bullet's name:
+    the excerpt check holds a quote only to the rule's text, so another
+    sentence of the rule would pass it (#768's review). A comment that
+    describes a bullet without quoting it is not read here."""
+    found, problems = bullet_lead_findings(_citations())
     assert found >= 2, "no citation names a bullet; the check reads nothing"
+    assert not problems, "\n".join(problems)
+
+
+@pytest.mark.parametrize("label, quote, finding", [
+    ("Except", "one letter needs words", False),
+    ("Except", "either reading is reported", True),
+    ("Precedence", "before a comma", False),
+    ("Precedence", "one letter needs words", True),
+])
+def test_bullet_lead_findings_catch_a_quote_that_is_no_lead(
+        label: str, quote: str, finding: bool) -> None:
+    leads = {"Except": ["one letter needs words"],
+             "Precedence": ["before a comma"]}
+    c = Citation(path=Path("x.py"), line=1, doc="rules", cid="X1",
+                 excerpts=(quote,), colon=False, lead=f"'s {label} bullet ")
+    found, problems = bullet_lead_findings(
+        [c], lambda cid, lab: leads[lab])
+    assert found == 1
+    assert bool(problems) is finding, problems
 
 
 def test_retired_excerpts_stay_rejected() -> None:
@@ -491,7 +522,8 @@ def hub_findings(rules: list[Rule]) -> list[str]:
     """A hub's ``**Signal:** ... hub of ...`` names the rules stating
     the signals it combines, and its map is the bullet list under its
     Then; each rule on the list must be another rule and named by a
-    bullet, and the check runs both ways: a rule a bullet names that
+    bullet, every bullet must name one of them, and the check runs both
+    ways: a rule a bullet names that
     the Signal: line leaves off is a finding too, which is the half of
     S2's lost S9 (named in neither its map nor its pointer line before
     PR #745) the first direction alone would miss."""
