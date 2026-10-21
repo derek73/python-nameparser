@@ -436,8 +436,8 @@ def read_standing_exempt(path: Path = STANDING_EXEMPT) -> set[str]:
     return set(json.loads(path.read_text(encoding="utf-8"))["exempt"])
 
 
-# A reference list -- a file of Declined, Excluded or mapping lines,
-# each already saying what stands -- carries no Standing block, which
+# A reference list -- a file of Declined, Excluded, removal or mapping
+# lines, each already saying what stands -- carries no Standing block, which
 # would copy it. The decisions index names them under this heading; a
 # file there may hold no dated entry, and only a key the exempt list
 # started with may be listed, so no log hides under it.
