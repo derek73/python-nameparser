@@ -8,7 +8,8 @@ import pytest
 
 from tests.v2.design_docs import (
     DECISIONS_DIR, MENTION_RE, RULES_DIR, read_decision_files, read_index,
-    STANDING_EXEMPT_ORIGINAL, has_standing, read_rules_text,
+    STANDING_EXEMPT_ORIGINAL, _POINTER_RE, _entries, _hits, has_standing,
+    read_rules_text,
     read_standing_exempt, resolve, retired_ids, reused_id_findings,
     rule_file_ids, slugify, standing_findings, standing_roster_findings,
     stem_for)
@@ -118,6 +119,13 @@ _LOG = ("## Log\n\n"
         "- 2026-09-14 (Derek) — THE LEAN.\n"
         "- 2026-09-18 — THE BLAST RADIUS.\n"
         "- 2026-09-18, REVIEW ROUND — WHAT IT MOVED.\n"
+        "- 2026-09-19 (Derek) (item (ii) superseded by #9, decisions/S7) — Z.\n"
+        "- 2026-10-18 (Derek), #718 — THE REPORT.\n"
+        "- 2026-10-18, #718 review — THE COMMA.\n"
+        "- 2026-10-19 #730 one — X.\n"
+        "- 2026-10-19 #730 two — Y.\n"
+        "- 2026-10-21 #731/#732 — X.\n"
+        "- 2026-10-21 #731/#732 — Y.\n"
         "- 2026-09-14, corrected 2026-09-17 — WHERE THE FACT LIVES.\n"
         "- 2026-07 (v2 core, PR #288) — v1 parity.\n"
         "- 2026-10-01 (Derek), #562 — SUPERSEDED by #613. The pair.\n"
@@ -139,7 +147,14 @@ _LOG = ("## Log\n\n"
     ("- The mark — 2026-09-24, in part.\n", None),
     ("- The lean — 2026-09-14 (Derek).\n", None),
     ("- The fact — 2026-09-14, corrected.\n", None),
-    ("- One of two — 2026-09-14.\n", "no entry 2026-09-14"),
+    ("- One of two — 2026-09-14.\n", "ambiguous pointer 2026-09-14"),
+    ("- The lean — 2026-09-14 (Derek), decided again.\n", None),
+    ("- The blast — 2026-09-18.\n", None),
+    ("- Old shape — 2026-09-19 (Derek).\n", None),
+    ("- The report — 2026-10-18 #718.\n", None),
+    ("- The comma — 2026-10-18 #718 review.\n", None),
+    ("- One of two — 2026-10-19 #730.\n", "ambiguous pointer 2026-10-19 #730"),
+    ("- Either twin — 2026-10-21 #731/#732.\n", None),
     ("- The round — 2026-09-18, REVIEW ROUND.\n", None),
     ("- Decided once — 2026-10-04 #613.\n", "no entry 2026-10-04 #613"),
     ("- Decided once — 2026-10 #613.\n", "no entry 2026-10 #613"),
@@ -149,6 +164,9 @@ _LOG = ("## Log\n\n"
 ], ids=["clean", "no-pointer", "wrong-date", "number-prefix", "superseded",
         "announcing-is-live", "date-only", "date-only-qualified",
         "date-only-qualified-by-its-words", "date-only-shared-date",
+        "date-only-qualifier-then-prose", "date-only-bare-beside-qualified",
+        "supersession-note-ignored", "issue-bare-picks-unqualified-head",
+        "issue-qualified", "issue-shared-ambiguous", "identical-heads-accepted",
         "date-only-qualified-beside-a-bare-date",
         "later-issue-in-a-head",
         "month-only-date", "second-pointer",
@@ -161,6 +179,24 @@ def test_standing_findings_name_each_broken_pointer(
         assert found == []
     else:
         assert len(found) == 1 and finding in found[0], found
+
+
+@pytest.mark.parametrize("pointer, head", [
+    ("2026-10-18 #718.", "2026-10-18 (Derek), #718"),
+    ("2026-10-18 #718 review.", "2026-10-18, #718 review"),
+    ("2026-09-14 (Derek), decided again.", "2026-09-14 (Derek)"),
+    ("2026-09-14, corrected.", "2026-09-14, corrected 2026-09-17"),
+    ("2026-09-18.", "2026-09-18"),
+    ("2026-09-18, REVIEW ROUND.", "2026-09-18, REVIEW ROUND"),
+])
+def test_a_pointer_resolves_to_the_entry_its_words_name(
+        pointer: str, head: str) -> None:
+    # Resolving is not enough: a pointer that lands on a sibling entry
+    # of the same date and issue passes every finding, so pin the target.
+    line = f"- x — {pointer}"
+    m = _POINTER_RE.search(line, line.index("— "))
+    assert m is not None
+    assert [h for h, _ in _hits(line, m, _entries(_LOG))] == [head]
 
 
 def test_standing_needs_a_log_after_it() -> None:

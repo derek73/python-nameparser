@@ -159,16 +159,20 @@ def reused_id_findings(rule_ids: set[str],
 # force, ahead of its entries under `## Log` -- every file but those
 # listed in decisions_without_standing.json (below). Each Standing
 # bullet ends its claim with the entry that decided it, by date and
-# issue (`— 2026-10-06 #613`); a `Not standing:` line names entries a
-# later one answered. An entry is a log bullet whose head
-# (the text before its first ` — `) opens with exactly that date and
-# whose first issue number is that one -- a head may name a later issue
-# in a partial-supersession note, which must not answer for its own
-# entry -- or, for a date-only pointer, the one entry of that date
-# whose head names no issue; one whose text after the head opens with
-# `SUPERSEDED by` is superseded, and a Standing pointer may not rest on
-# it alone. An entry opening `SUPERSEDED:` or `SUPERSEDED IN PART:`
-# announces what it replaces and is live.
+# issue (`— 2026-10-06 #613`) or by date alone; a `Not standing:` line
+# names entries a later one answered. An entry is a log bullet, and its
+# head is the text before its first ` — `, read without any
+# parenthesized note saying part of it was superseded (README edit kind
+# 1). A pointer names the entries whose head opens with exactly its
+# date and whose first issue is its issue, or names none for a date-only
+# pointer; where several do, the words after the pointer pick the one
+# whose head continues with them (`— 2026-09-14 (Derek)`, `— 2026-10-18
+# #718 review`), and with no such words the one whose head ends there.
+# A pointer still naming entries with different heads is ambiguous. An
+# entry whose text after the head opens with `SUPERSEDED by` is
+# superseded, and a Standing pointer may not rest on it; one opening
+# `SUPERSEDED:` or `SUPERSEDED IN PART:` announces what it replaces and
+# is live.
 _DATE = r"\d{4}-\d\d(?:-\d\d)?(?:/\d\d)?"
 _POINTER_RE = re.compile(
     rf"(?P<date>{_DATE})(?![\d/-])(?:[^—#.;]{{0,40}}?#(?P<num>\d+))?")
@@ -184,31 +188,58 @@ def _entries(log: str) -> list[tuple[str, str]]:
     return out
 
 
+def _clean(head: str) -> str:
+    """A head without its parenthesized supersession notes, which can
+    hold parentheses of their own (`(item (ii) superseded by …)`)."""
+    out: list[str] = []
+    i = 0
+    while i < len(head):
+        if head[i] == "(":
+            depth, j = 0, i
+            while j < len(head):
+                depth += {"(": 1, ")": -1}.get(head[j], 0)
+                if depth == 0:
+                    break
+                j += 1
+            if "superseded" in head[i:j + 1]:
+                while out and out[-1] == " ":
+                    out.pop()
+                i = j + 1
+                continue
+        out.append(head[i])
+        i += 1
+    return "".join(out)
+
+
 def _names(head: str, date: str, num: str | None) -> bool:
+    head = _clean(head)
     m = re.match(_DATE, head)
     first = re.search(r"#(\d+)", head)
     return (m is not None and m.group(0) == date
             and (first.group(1) if first else None) == num)
 
 
+def _tail(head: str, date: str, num: str | None) -> str:
+    """What a head says after the date or issue a pointer names."""
+    head = _clean(head)
+    if num is None:
+        return head[len(date):]
+    at = re.search(rf"#{num}(?!\d)", head)
+    return head[at.end():] if at else ""
+
+
 def _hits(line: str, m: re.Match[str],
-          entries: list[tuple[str, str]]) -> list[str]:
-    """The log entries one pointer names. A date-only pointer may carry
-    the opening of its entry's head after the date (`— 2026-09-14
-    (Derek)`), which tells apart entries that share a date and name no
-    issue; text that matches no head is ordinary prose and narrows
-    nothing."""
-    hits = [(head, rest) for head, rest in entries
-            if _names(head, m["date"], m["num"])]
-    if m["num"] is None and len(hits) > 1:
-        said = m["date"] + re.split(r"[.;]", line[m.end():], 1)[0].rstrip()
-        # Only a head carrying words past its date can be named by them,
-        # so a bare-date head never matches a qualified pointer.
-        narrowed = [(head, rest) for head, rest in hits
-                    if len(head) > len(m["date"]) and len(said) > len(m["date"])
-                    and (said.startswith(head) or head.startswith(said))]
-        hits = narrowed or hits
-    return [rest for _, rest in hits]
+          entries: list[tuple[str, str]]) -> list[tuple[str, str]]:
+    """The log entries one pointer names, as (head, rest) pairs."""
+    date, num = m["date"], m["num"]
+    found = [e for e in entries if _names(e[0], date, num)]
+    if len(found) < 2:
+        return found
+    said = re.split(r"[.;]", line[m.end():], 1)[0].rstrip()
+    picked = [e for e in found
+              if (tail := _tail(e[0], date, num)) and said
+              and (said.startswith(tail) or tail.startswith(said))]
+    return picked or [e for e in found if not _tail(e[0], date, num)] or found
 
 
 _STANDING_HEADING = re.compile(r"^## Standing$", re.M)
@@ -233,9 +264,9 @@ def has_standing(text: str) -> bool:
 
 def standing_findings(text: str) -> list[str]:
     """What is wrong with a decisions file's Standing block: a bullet
-    with no `— <date>` pointer, any date-and-issue pointer from there
-    to the line's end naming no entry (dates match exactly) or
-    to one only `SUPERSEDED by` a later entry, a
+    with no `— <date>` pointer, any pointer from there to the line's
+    end naming no entry (dates match exactly), naming entries with
+    different heads (ambiguous), or naming a `SUPERSEDED by` entry, a
     Not-standing pointer to no entry, a Standing with no Log after it.
     Empty for a file with no Standing block, whose absence is
     standing_roster_findings' question."""
@@ -258,9 +289,13 @@ def standing_findings(text: str) -> list[str]:
                 continue
             for m in _POINTER_RE.finditer(line, dash.start()):
                 hits = _hits(line, m, entries)
-                if not hits or (m["num"] is None and len(hits) > 1):
+                if not hits:
                     findings.append(f"no entry {m['date']} #{m['num']}")
-                elif all(r.startswith("SUPERSEDED by") for r in hits):
+                elif len({_clean(head) for head, _ in hits}) > 1:
+                    findings.append(
+                        f"ambiguous pointer {m['date']} #{m['num']}: add "
+                        "the words its entry's head continues with")
+                elif any(r.startswith("SUPERSEDED by") for _, r in hits):
                     findings.append(
                         f"superseded entry {m['date']} #{m['num']}")
         elif line.startswith("Not standing:"):
