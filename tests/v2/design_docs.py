@@ -183,12 +183,14 @@ def reused_id_findings(rule_ids: set[str],
 # is live.
 _DATE = r"\d{4}-\d\d(?:-\d\d)?(?:/\d\d)?"
 # The issue is the first `#N` within 40 characters of the date that no
-# `—`, `.` or `;` interrupts, so a head copied whole (`2026-10-18
-# (Derek), #718`) still reads its issue; an issue written in prose
+# `—`, `.`, `;` or other date interrupts, so a head copied whole
+# (`2026-10-18 (Derek), #718`) still reads its issue and `— 2026-10-19,
+# 2026-10-18 #721` stays two pointers; an issue written in prose
 # right after a date-only pointer (`— 2026-09-14, see #500`) is read as
 # the pointer's and fails as no entry, so end the pointer first.
 _POINTER_RE = re.compile(
-    rf"(?P<date>{_DATE})(?![\d/-])(?:[^—#.;]{{0,40}}?#(?P<num>\d+))?")
+    rf"(?P<date>{_DATE})(?![\d/-])"
+    rf"(?:(?:(?!\d{{4}}-\d\d)[^—#.;]){{0,40}}?#(?P<num>\d+))?")
 
 
 def _entries(log: str) -> list[tuple[str, str]]:
