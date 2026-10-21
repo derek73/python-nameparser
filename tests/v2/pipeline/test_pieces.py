@@ -421,8 +421,13 @@ def test_the_walks_own_leading_piece_never_anchors_what_follows_it(
     # 'Om' is no longer the walk's own leading piece once 'John' is,
     # so it anchors 'Ma' exactly as any other unambiguous credential
     # standing in front does
+    # 2026-10-21: 'om' is now an ambiguous credential (decisions/
+    # suffix-acronym-collisions, the 33-word batch), so the run is no
+    # longer read as a suffix: 'Om' is a middle name and 'Ma' the family,
+    # reported as suffix-or-name
     n = parse("John Om Ma")
-    assert (n.family, n.suffix) == ("", "Om Ma")
+    assert (n.given, n.middle, n.family, n.suffix) == ("John", "Om", "Ma", "")
+    assert [str(a.kind) for a in n.ambiguities] == ["suffix-or-name"]
 
 
 def test_a_reserve_kept_leading_piece_beside_a_genuine_family_loss(

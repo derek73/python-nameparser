@@ -1232,25 +1232,6 @@
   },
   "text": "Shemuʾel ben Ḥofni"
  },
- "119436167/particle-it/sorting": {
-  "family": {
-   "expected": "Pèrs di",
-   "got": "Pèrs"
-  },
-  "family_particles": {
-   "expected": "di",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Ciro",
-   "got": ""
-  },
-  "suffix": {
-   "expected": "",
-   "got": "Ciro di"
-  },
-  "text": "Pèrs, Ciro di"
- },
  "1194558798/direct-ir-af/givenFirst": {
   "family": {
    "expected": "",

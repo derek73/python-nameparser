@@ -2281,11 +2281,11 @@ credential = {}
 
 [[word]]
 text = "aas"
-credential = {}
+credential = { may_be_name = true }
 
 [[word]]
 text = "aba"
-credential = {}
+credential = { may_be_name = true }
 
 [[word]]
 text = "abc"
@@ -2307,7 +2307,7 @@ credential = {}
 
 [[word]]
 text = "aca"
-credential = {}
+credential = { may_be_name = true }
 
 [[word]]
 text = "acas"
@@ -2315,11 +2315,11 @@ credential = {}
 
 [[word]]
 text = "ace"
-credential = {}
+credential = { may_be_name = true }
 
 [[word]]
 text = "acha"
-credential = {}
+credential = { may_be_name = true }
 
 [[word]]
 text = "acp"
@@ -2359,7 +2359,7 @@ credential = {}
 
 [[word]]
 text = "ala"
-credential = {}
+credential = { may_be_name = true }
 
 [[word]]
 text = "alc"
@@ -2367,7 +2367,7 @@ credential = {}
 
 [[word]]
 text = "alp"
-credential = {}
+credential = { may_be_name = true }
 
 [[word]]
 text = "am"
@@ -2415,7 +2415,7 @@ credential = {}
 
 [[word]]
 text = "arm"
-credential = {}
+credential = { may_be_name = true }
 
 [[word]]
 text = "arrc"
@@ -2423,7 +2423,7 @@ credential = {}
 
 [[word]]
 text = "asa"
-credential = {}
+credential = { may_be_name = true }
 
 [[word]]
 text = "asc"
@@ -2439,7 +2439,7 @@ credential = {}
 
 [[word]]
 text = "asp"
-credential = {}
+credential = { may_be_name = true }
 
 [[word]]
 text = "atc"
@@ -2475,7 +2475,7 @@ credential = {}
 
 [[word]]
 text = "bem"
-credential = {}
+credential = { may_be_name = true }
 
 [[word]]
 text = "bls-i"
@@ -2523,7 +2523,7 @@ credential = {}
 
 [[word]]
 text = "caha"
-credential = {}
+credential = { may_be_name = true }
 
 [[word]]
 text = "caia"
@@ -2535,7 +2535,7 @@ credential = {}
 
 [[word]]
 text = "cap"
-credential = {}
+credential = { may_be_name = true }
 
 [[word]]
 text = "capa"
@@ -2547,7 +2547,7 @@ credential = {}
 
 [[word]]
 text = "capp"
-credential = {}
+credential = { may_be_name = true }
 
 [[word]]
 text = "caps"
@@ -2555,7 +2555,7 @@ credential = {}
 
 [[word]]
 text = "caro"
-credential = {}
+credential = { may_be_name = true }
 
 [[word]]
 text = "cas"
@@ -2711,7 +2711,7 @@ credential = {}
 
 [[word]]
 text = "cea"
-credential = {}
+credential = { may_be_name = true }
 
 [[word]]
 text = "ceas"
@@ -2731,7 +2731,7 @@ credential = {}
 
 [[word]]
 text = "cela"
-credential = {}
+credential = { may_be_name = true }
 
 [[word]]
 text = "cem"
@@ -2743,7 +2743,7 @@ credential = {}
 
 [[word]]
 text = "cera"
-credential = {}
+credential = { may_be_name = true }
 
 [[word]]
 text = "cet"
@@ -2865,7 +2865,7 @@ credential = {}
 
 [[word]]
 text = "che"
-credential = {}
+credential = { may_be_name = true }
 
 [[word]]
 text = "ches"
@@ -2965,7 +2965,7 @@ credential = {}
 
 [[word]]
 text = "ciro"
-credential = {}
+credential = { may_be_name = true }
 
 [[word]]
 text = "cisa"
@@ -3209,7 +3209,7 @@ credential = {}
 
 [[word]]
 text = "csi"
-credential = {}
+credential = { may_be_name = true }
 
 [[word]]
 text = "csp"
@@ -3265,7 +3265,7 @@ credential = {}
 
 [[word]]
 text = "cua"
-credential = {}
+credential = { may_be_name = true }
 
 [[word]]
 text = "cusp"
@@ -3475,7 +3475,7 @@ credential = {}
 
 [[word]]
 text = "ea"
-credential = {}
+credential = { may_be_name = true }
 
 [[word]]
 text = "ed"
@@ -3497,7 +3497,7 @@ credential = {}
 
 [[word]]
 text = "els"
-credential = {}
+credential = { may_be_name = true }
 
 [[word]]
 text = "emd"
@@ -3525,7 +3525,7 @@ credential = {}
 
 [[word]]
 text = "erd"
-credential = {}
+credential = { may_be_name = true }
 
 [[word]]
 text = "evp"
@@ -3589,7 +3589,7 @@ credential = {}
 
 [[word]]
 text = "faia"
-credential = {}
+credential = { may_be_name = true }
 
 [[word]]
 text = "faicp"
@@ -3645,7 +3645,7 @@ credential = {}
 
 [[word]]
 text = "fic"
-credential = {}
+credential = { may_be_name = true }
 
 [[word]]
 text = "ficf"
@@ -4266,11 +4266,11 @@ credential = {}
 
 [[word]]
 text = "obi"
-credential = {}
+credential = { may_be_name = true }
 
 [[word]]
 text = "oca"
-credential = {}
+credential = { may_be_name = true }
 
 [[word]]
 text = "ocm"
@@ -4287,6 +4287,7 @@ credential = {}
 [[word]]
 text = "om"
 [word.credential]
+may_be_name = true
 note = "NOT may_be_name: weighed 2026-09-07 with #342, no surname evidence worth standing behind, and OM is the Order of Merit"
 
 [[word]]
@@ -4299,7 +4300,7 @@ credential = {}
 
 [[word]]
 text = "pa-c"
-credential = {}
+credential = { may_be_name = true }
 
 [[word]]
 text = "pcc"
@@ -4311,7 +4312,7 @@ credential = {}
 
 [[word]]
 text = "pe"
-credential = {}
+credential = { may_be_name = true }
 
 [[word]]
 text = "pfmp"
@@ -4566,6 +4567,7 @@ credential = {}
 [[word]]
 text = "se"
 [word.credential]
+may_be_name = true
 note = "NOT may_be_name: weighed 2026-09-07 with #342, no surname evidence worth standing behind"
 
 [[word]]
