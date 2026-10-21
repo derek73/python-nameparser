@@ -2063,8 +2063,8 @@ def test_load_nppes_refuses_a_source_with_no_individual_provider(
 
 
 # A row replacing the tokens replaces `joined` with them: left naming a
-# dropped token, it is refused by the joined check before the value under
-# test is read, and the row passes whatever the value check does.
+# dropped token, it is refused by the joined check too, so with its own
+# value check deleted it still passes (mechanisms.md#SHADOWED-NEGATIVE-ROWS).
 @pytest.mark.parametrize("change", [
     {"credentialed": 0},              # a share divided by zero
     {"credentialed": 2000},           # more than the people read
