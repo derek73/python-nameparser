@@ -181,10 +181,9 @@ def reused_id_findings(rule_ids: set[str],
 # entry whose text after the head opens with `SUPERSEDED by` is
 # superseded, and a Standing pointer may not rest on it; one opening
 # `SUPERSEDED:` or `SUPERSEDED IN PART:` announces what it replaces and
-# is live. A file whose title ends in a parenthesis opening with a date
-# (`# cjk-full-stops — … (2026-09-10, #322/#323)`) has a founding entry
-# too: that parenthesis is its head, and the log's text ahead of its
-# first dated bullet is its text, the bundle the title dates.
+# is live. A file's title founds no entry, dated or not: a bundle
+# recorded as undated bullets is opened by a dated log line naming it,
+# whose head can say which part a later decision reversed.
 _DATE = r"\d{4}-\d\d(?:-\d\d)?(?:/\d\d)?"
 # The issue is the first `#N` within 40 characters of the date that no
 # `—`, `.`, `;` or other date interrupts, so a head copied whole
@@ -198,8 +197,6 @@ _POINTER_RE = re.compile(
 
 
 _ENTRY_RE = re.compile(r"- (?:\*\*)?(?=\d{4}-\d\d)")
-_FOUNDING_RE = re.compile(rf"\A# [^\n]*\((?P<head>{_DATE}[^()\n]*)\)[ \t]*$",
-                          re.M)
 
 
 def _entries(log: str) -> list[tuple[str, str]]:
@@ -211,16 +208,6 @@ def _entries(log: str) -> list[tuple[str, str]]:
             head, _, rest = line[m.end():].partition(" — ")
             out.append((head.removesuffix("**"), rest))
     return out
-
-
-def _founding(text: str, log: str) -> list[tuple[str, str]]:
-    """The entry a dated title names, its text the log's opening ahead
-    of the first dated bullet; none for an undated title."""
-    m = _FOUNDING_RE.match(text)
-    if m is None:
-        return []
-    first = re.search(r"^- (?:\*\*)?\d{4}-\d\d", log, re.M)
-    return [(m["head"], log[:first.start() if first else len(log)].strip())]
 
 
 def _clean(head: str) -> str:
@@ -372,7 +359,7 @@ def standing_findings(text: str) -> list[str]:
     if log_head is None:
         return ["## Standing without a ## Log after it"]
     standing, log = text[head.end():log_head.start()], text[log_head.end():]
-    entries = _founding(text, log) + _entries(log)
+    entries = _entries(log)
     findings = []
     for line in standing.splitlines():
         if line.startswith("- "):

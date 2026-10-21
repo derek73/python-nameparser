@@ -8,7 +8,7 @@ import pytest
 
 from tests.v2.design_docs import (
     DECISIONS_DIR, MENTION_RE, RULES_DIR, read_decision_files, read_index,
-    STANDING_EXEMPT_ORIGINAL, _POINTER_RE, _clean, _entries, _founding, _hits,
+    STANDING_EXEMPT_ORIGINAL, _POINTER_RE, _clean, _entries, _hits,
     has_standing, read_reference_lists, read_rules_text,
     read_standing_exempt, reference_lists, resolve, retired_ids,
     reused_id_findings,
@@ -269,57 +269,17 @@ def test_a_bold_date_opens_an_entry() -> None:
         ("2026-10-15/16", "the model.")]
 
 
-_FOUNDED = ("# cjk-full-stops — which characters (2026-09-10, #322/#323)\n\n"
-            "## Standing\n\n{standing}\n\n## Log\n\n{log}")
-
-
-@pytest.mark.parametrize("title, standing, log, finding", [
-    (None, "- Four stops. — 2026-09-10 #322.", "- **A.** B.\n", None),
-    (None, "- Four stops. — 2026-09-10 #999.", "- **A.** B.\n", "no entry"),
-    (None, "- Four stops. — 2026-09-10 #322.",
-     "- **A.** B.\n- **2026-09-10 #322 — later.** C.\n", None),
-    (None, "- Four stops. — 2026-09-10 #322/#323.",
-     "- **A.** B.\n- **2026-09-10 #322 — later.** C.\n", None),
-    (None, "- Later. — 2026-10-14 #679.",
-     "- **A.** B.\n- **2026-10-14 #679 — the rest.** C.\n", None),
-    (None, "- Four stops. — 2026-09-10 #322.",
-     "SUPERSEDED by 2026-10-01 #9 — gone.\n\n- **A.** B.\n", "superseded"),
-    ("# x — y (2026-10-15 → 2026-10-18)", "- The model. — 2026-10-15.",
-     "- **A.** B.\n", None),
-    ("# x — is_initial across scripts (#320)", "- Per script. — 2026-09-10.",
-     "- **A.** B.\n", "no entry"),
-    ("# x — kept (three since fixed, 2026-09-08 and 2026-09-23)",
-     "- Kept. — 2026-09-08.", "- **A.** B.\n", "no entry"),
-    ("# x — y (2026-09-10, #322) and more", "- Four stops. — 2026-09-10 #322.",
-     "- **A.** B.\n", "no entry"),
-], ids=["founding", "founding-wrong-issue", "bare-pointer-names-the-bold-head",
-        "founding-picked-by-words", "bold-entry", "founding-superseded",
-        "date-range-title", "undated-title", "prose-date-in-title",
-        "title-paren-not-at-line-end"])
-def test_a_dated_title_founds_an_entry(
-        title: str | None, standing: str, log: str,
-        finding: str | None) -> None:
-    text = _FOUNDED.format(standing=standing, log=log)
-    if title is not None:
-        text = title + text[text.index("\n"):]
-    found = standing_findings(text)
-    if finding is None:
-        assert found == []
-    else:
-        assert len(found) == 1 and finding in found[0], found
-
-
-def test_a_founding_entry_and_a_bold_one_are_told_apart() -> None:
-    log = "- **A.** B.\n- **2026-09-10 #322 — later.** C.\n"
-    text = _FOUNDED.format(standing="- a — 2026-09-10 #322.", log=log)
-    entries = _founding(text, log) + _entries(log)
-    for pointer, head in [("— 2026-09-10 #322/#323.", "2026-09-10, #322/#323"),
-                          ("— 2026-09-10 #322.", "2026-09-10 #322")]:
-        line = f"- a {pointer}"
-        m = _POINTER_RE.search(line)
-        assert m is not None
-        assert [h for h, _ in _hits(line, m, entries)] == [head], pointer
-    assert _founding(text, log)[0][1] == "- **A.** B."
+def test_a_dated_title_founds_no_entry() -> None:
+    title = "# cjk-full-stops — which characters (2026-09-10, #322/#323)\n\n"
+    block = "## Standing\n\n- Four stops. — 2026-09-10 #322.\n\n## Log\n\n"
+    assert standing_findings(title + block + "- **A.** B.\n") == [
+        "no entry 2026-09-10 #322"]
+    assert standing_findings(
+        title + block + "- 2026-09-10 #322/#323 — the bundle below.\n"
+        "- **A.** B.\n") == []
+    assert standing_findings(
+        title + block.replace("2026-09-10 #322", "2026-10-14 #679")
+        + "- **A.** B.\n- **2026-10-14 #679 — the rest.** C.\n") == []
 
 
 def test_standing_needs_a_log_after_it() -> None:
