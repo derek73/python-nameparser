@@ -7,12 +7,14 @@ The reconciled v1-style banks (`tests/test_*.py`) carried eight `@pytest.mark.xf
 ## Standing
 
 - A trailing `I` before a further comma stays a middle initial, the commoner reading: `Maier, Amy I, Jr.` reads middle 'I', suffix 'Jr.', where `Maier, Amy I` reads suffix 'I' (rules/C9) — 2026-09-01 (Derek's triage)
-- `king` stays in TITLES for the addressing forms: `Dr King Jr` reads title 'Dr', family 'King', suffix 'Jr' (H3's peel floor, since 2026-09-08) with `title-or-name` reported, and `King, Dr Jr` reads the same fields — 2026-09-01 (Derek's triage)
+- `king` stays in TITLES for the addressing forms: `Dr King Jr` reads title 'Dr', family 'King', suffix 'Jr' (H3's peel floor, since 2026-09-08), and `King, Dr Jr` reads the same fields — 2026-09-01 (Derek's triage)
 - `ben` stays out of the particles, colliding with the given name Ben where the particle claim acts: `Ahmad ben Husain` reads middle 'ben', family 'Husain' — 2026-09-01 (Derek's triage)
-- An input that is all titles takes its last title word as the name and reports `title-or-name` (rules/H4): `The Right Hon. the President of the Queen's Bench Division` reads family 'Division' — 2026-09-01 (Derek's triage)
+- An input that is all titles takes its last title word as the name, a convention accepted rather than defended: `The Right Hon. the President of the Queen's Bench Division` reads family 'Division' — 2026-09-01 (Derek's triage)
 - The two surviving markers are #490's, cited by issue: `E.T. Smith` and `U.S. District Judge Marc Thomas Treadwell`, dotted initials against dotted vocabulary; #489's `Her Majesty Queen Elizabeth` (given 'Elizabeth') was fixed on 2026-09-08 — 2026-09-01
 - `juan garcia III` repairs to `Juan Garcia III` and its test is an ordinary pin — 2026-09-23 #492.
 - #485's `xfail:` corpus-label prefix is not adopted: a surviving marker carries its issue number, and a decided reading moving is a classified change — 2026-09-01 #485.
+
+Elsewhere: the `title-or-name` report on the word the title peel leaves standing (`Dr King Jr`, `The Right Hon. … Division`) is decisions/H4's 2026-09-07 #491 entry.
 
 Open: [#490](https://github.com/derek73/python-nameparser/issues/490) — dotted initials against dotted title and credential vocabulary.
 

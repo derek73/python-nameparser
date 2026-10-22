@@ -4,7 +4,7 @@
 
 - Every raise in the locale-apply path is a plain `TypeError` or `ValueError`, so the rewrap with the locale's code cannot break on an exotic exception signature — 2026-07 PR #288.
 
-The two Declined lines below (2026-07-27) stand as written: no zh-vs-ja kind, and `order` stays reserved and unemitted for script-resolved names, while `segmentation` fires on a genuine multi-split fork (`夏侯惇` and `남궁민수` under `locales.ZH` report it).
+The two Declined lines below (2026-07-27) stand as written: no zh-vs-ja kind, and `order` stays reserved and unemitted for script-resolved names, while `segmentation` fires on a genuine multi-split fork (`夏侯惇` under `locales.ZH` reports it, and `남궁민수` by default).
 
 Open: none in this file.
 

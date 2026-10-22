@@ -9,8 +9,6 @@
 - A maiden clause's numeral is not held to its capitals, an Accepted clause of the rule: `john smith nee x x` reads suffix 'x', maiden 'x', as 2.2.0 through 2.4.2 read it — 2026-10-18 #731 reverted
 - The written shape of an initial is rules/T5's, and this rule keeps the case contrast — 2026-10-19
 
-Not standing: 2026-10-18 #731; the maiden take's one-case candidate test, reverted by the entry after it.
-
 Open: none in this file.
 
 ## Log
