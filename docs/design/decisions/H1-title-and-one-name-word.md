@@ -10,6 +10,8 @@
 - H1 decides the field of the one name word before a comma with no given name after it, and of the one name word of a name read family-first: `Elizabeth II, Queen` → given 'Elizabeth', `Smith, Sir` → given 'Smith' with the family empty, `Sir John` and `Pope Francis` given under every order — 2026-10-18 #720.
 - A particle surname keeps the family where something settled it, a comma (`van der Berg, Sir`, `Van, Sir`) or P1's fold asked of the leading name piece (`Sir de Mesnil`); an ambiguous particle no comma settled reads given (`Sheik Abu Bakar`, `Sir Van` family-first), and so does a never-given one the fold does not take (`St Sir de Mesnil` under every order) — 2026-10-18 #720.
 
+Elsewhere: the graf class, a title word borne as a name but rarely as its first word shipping as a title (`Greve Anna` → title 'Greve', family 'Anna'), is decisions/salutation-titles' 2026-10-04 #606 bundle; the renunciate fold, a given-name title before one name word (`Swami Vivekananda` → given 'Vivekananda'), is decisions/indic-honorifics' 2026-09-06 #346/#344/#343 bundle.
+
 Open: [#348](https://github.com/derek73/python-nameparser/issues/348) (whether a word that is both a title and a given name reports an ambiguity; `Prince Fielder` reads given 'Fielder').
 
 ## Log
