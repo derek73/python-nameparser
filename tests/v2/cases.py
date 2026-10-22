@@ -7591,10 +7591,10 @@ CASES: tuple[Case, ...] = (
          {"given": "John", "family": "Smith", "suffix": "PhD née, Jones"},
          policy=_SD,
          ambiguities=("comma-structure",),
-         notes="the marker ends its part with nothing behind it, as it "
-               "does before a typed comma, so it takes no clause "
-               "(rules/C10's maiden-marker Accepted entry, #549). 2.0.0 through "
-               "2.3.0 read maiden 'Jones', stepping past the core"),
+         notes="a marker in a part after a suffix comma is an ordinary "
+               "word, core or no core, so it takes no clause (rules/M2, "
+               "#601; rules/C10's maiden-marker Accepted entry). 2.0.0 "
+               "through 2.3.0 read maiden 'Jones', stepping past the core"),
     Case("suffix_delimiter_core_that_survives_is_a_boundary_too",
          "Smith, MD - PhD - FACS",
          {"title": "MD", "given": "-", "family": "Smith",
