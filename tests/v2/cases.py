@@ -715,6 +715,44 @@ CASES: tuple[Case, ...] = (
                "ambiguous set in a name with words to spare keeps its "
                "credential reading (rules/S6), so the fork is pinned "
                "in both directions"),
+    # -- #797: credentials the comma path read as the given name because
+    # no list held them (NPPES and ClinicalTrials.gov counts, in the
+    # entries' notes). Listed, they end the name; a bare ambiguous one
+    # still reads family where the name has no word to spare.
+    Case("comma_mixed_case_credential_is_a_suffix", "John Smith, MBChB",
+         {"given": "John", "family": "Smith", "suffix": "MBChB"},
+         classification="fix(#797)",
+         notes="a listed mixed-case credential no shape rule catches: "
+               "1.4.0 and 2.5.0 read given 'MBChB', family 'John Smith'"),
+    Case("comma_slash_joined_credential_is_a_suffix", "John Smith, OTR/L",
+         {"given": "John", "family": "Smith", "suffix": "OTR/L"},
+         classification="fix(#797)",
+         notes="a listed slash-joined credential, matched as one token "
+               "like the listed PA-C; the shape that would read an "
+               "unlisted one stays open in #797"),
+    Case("one_word_head_two_capital_credential", "Smith, DM",
+         {"family": "Smith", "suffix": "DM"},
+         classification="fix(#797)",
+         notes="the one-word-head comma path (AGENTS.md's comma sweep): "
+               "a listed two-capital credential no longer reads as "
+               "paired initials (given 'DM'), as MS and MA do not"),
+    Case("empty_head_joined_credential", ", FNP-C",
+         {"suffix": "FNP-C"},
+         classification="fix(#797)",
+         notes="the empty-head comma path, with a hyphen-joined word"),
+    Case("comma_pa_keeps_its_suffix_and_reports_the_fork", "John Smith, PA",
+         {"given": "John", "family": "Smith", "suffix": "PA"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#797)",
+         notes="PA is ambiguous (Census 739 family, SSA 1,343 given), so "
+               "the credential reading is reported as a fork"),
+    Case("john_pa_is_a_family_name", "John Pa",
+         {"given": "John", "family": "Pa"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#797)",
+         notes="the other direction of PA's fork: no word to spare, so "
+               "the family name. Before #797 this read the same, with "
+               "no fork reported"),
     Case("empty_head_si_is_a_given_name", ", Si",
          {"given": "Si"},
          ambiguities=("suffix-or-name",),

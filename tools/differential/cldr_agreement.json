@@ -14,11 +14,7 @@
   },
   "given_names": {
    "expected": "Cornelia Margarita Sofia Aletta",
-   "got": "den Berg Cornelia Margarita Sofia Aletta MBChB"
-  },
-  "suffix": {
-   "expected": "MBChB PhD",
-   "got": "PhD"
+   "got": "den Berg Cornelia Margarita Sofia Aletta"
   },
   "text": "van den Berg Cornelia Margarita Sofia Aletta MBChB PhD"
  },
@@ -10900,36 +10896,6 @@
    "got": ""
   },
   "text": "Kevin"
- },
- "sw/nativeFull/givenFirst": {
-  "family": {
-   "expected": "Masalu",
-   "got": "MB"
-  },
-  "family_base": {
-   "expected": "Masalu",
-   "got": "MB"
-  },
-  "given_names": {
-   "expected": "Adam Juma Agape Shukurani",
-   "got": "Adam Juma Agape Shukurani Masalu"
-  },
-  "suffix": {
-   "expected": "MB",
-   "got": ""
-  },
-  "text": "Bw. Adam Juma Agape Shukurani Masalu MB"
- },
- "sw/nativeFull/surnameFirst": {
-  "given_names": {
-   "expected": "Adam Juma Agape Shukurani",
-   "got": "Adam Juma Agape Shukurani MB"
-  },
-  "suffix": {
-   "expected": "MB",
-   "got": ""
-  },
-  "text": "Masalu Adam Juma Agape Shukurani MB"
  },
  "sw/nativeG/sorting": {
   "family": {
