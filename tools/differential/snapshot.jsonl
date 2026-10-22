@@ -1526,6 +1526,9 @@
 {"name": "John Q. Smith", "given": "John", "middle": "Q.", "family": "Smith", "initials": "J. Q. S."}
 {"name": "John Quincy Smith i", "given": "John", "middle": "Quincy", "family": "Smith", "suffix": "i", "initials": "J. Q. S."}
 {"name": "John Smith", "given": "John", "family": "Smith", "initials": "J. S."}
+{"name": "John Smith (M.A.)", "given": "John", "family": "Smith", "suffix": "M.A.", "initials": "J. S."}
+{"name": "John Smith (MA)", "given": "John", "family": "Smith", "nickname": "MA", "ambiguities": ["SUFFIX_OR_NICKNAME"], "initials": "J. S."}
+{"name": "John Smith (PhD MA)", "given": "John", "family": "Smith", "nickname": "PhD MA", "ambiguities": ["SUFFIX_OR_NICKNAME"], "initials": "J. S."}
 {"name": "John Smith 1.4", "given": "John", "middle": "Smith", "family": "1.4", "initials": "J. S. 1."}
 {"name": "John Smith B.Tech.", "given": "John", "family": "Smith", "suffix": "B.Tech.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "John Smith C.H.A.", "given": "John", "family": "Smith", "suffix": "C.H.A.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
