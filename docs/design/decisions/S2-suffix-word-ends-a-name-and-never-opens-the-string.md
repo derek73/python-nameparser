@@ -2,7 +2,9 @@
 
 ## Standing
 
-- The trailing run of a main segment (no comma, or the part before a suffix comma) of three or more pieces is read once, after the `Ph. D.` merge, the maiden take and P3's connective joins and before the particle chain (P2) and the bound given-name join (P5), and binds: neither join reaches a word it took (`John van der Berg Prof.` → title 'Prof.', family 'van der Berg' under the default order), and a salutation keeps its connective (`Mr. and Mrs.` → title 'Mr. and Mrs.') — 2026-10-07 #614.
+Examples name each field as the default order reads it; under the family-first orders the given and family names trade places.
+
+- The trailing run of a main segment (no comma, or the part before a suffix comma) of three or more pieces is read once, after the `Ph. D.` merge, the maiden take and P3's connective joins and before the particle chain (P2) and the bound given-name join (P5), and binds: neither join reaches a word it took (`John van der Berg Prof.` → title 'Prof.', family 'van der Berg'), and a salutation keeps its connective (`Mr. and Mrs.` → title 'Mr. and Mrs.') — 2026-10-07 #614.
 - The read counts a particle run and the plain words the chain joins to it as one name word, and a connective join as one, while a word the read weighs (a suffix word, a member of the ambiguous class by listing or by shape, an initial, a roman numeral by shape, a period-marked title) keeps a unit of its own: `Freiherr von Berg X.Y.Z.` keeps family 'von Berg X.Y.Z.', `Juan de la Vega VI` reads suffix 'VI' and `Freiherr von Berg MA X.Y.Z.` suffix 'MA X.Y.Z.' — 2026-10-07 #614; 2026-10-08 #620.
 - The count is taken as marks over the pieces as written, asking the chain's own run end, never through a merged copy of the pieces — 2026-10-08 #620.
 - Group merges each run of two or more adjacent particles past the chain's leading position before the read, so the read counts, stops at and absorbs the run as one piece; the merged piece keeps `prefix` and drops `title` — 2026-10-10 #625.

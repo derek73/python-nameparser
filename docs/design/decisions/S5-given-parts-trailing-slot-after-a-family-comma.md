@@ -2,6 +2,8 @@
 
 ## Standing
 
+Examples name each field as the default order reads it; under the family-first orders the given and family names trade places.
+
 - After a family comma a member of the ambiguous class ending the given part is read by its writing, not the count, and reports whichever way it goes: `Doe, John MA` → suffix 'MA', `Doe, John Ma` → middle 'Ma', `Doe, John X.Y.Z.` → suffix 'X.Y.Z.'; the bare-acronym half restores 1.4.0's role, the dotted half leaves it to agree with `John Doe X.Y.Z.` — 2026-09-18 #531, THE COMMA REPORT'S REACH NOW.
 - Accepted with it: one-case and caseless names take the credential with no case evidence (`doe, john ma` → suffix 'ma', `田中, 太郎 MA` → suffix 'MA'), `Doe, John van MA` reads family 'van Doe', suffix 'MA', `Doe, John Prof. MA` gains title 'Prof.', and `DOE, JOHN ED` reads suffix 'ED' — 2026-09-18 #531, THE COMMA REPORT'S REACH NOW.
 - `do`, the one member that is also a particle, is read by its capitals at this slot: in a mixed-case name `Doe, John DO` reads suffix 'DO', and every other spelling attaches to the family by P6, which reports the fork (`Doe, John do` → family 'do Doe'); the one-case `SMITH, JOHN DO` reading family 'DO SMITH' is the accepted cost, paired with `NASCIMENTO, EDSON ARANTES DO` — 2026-09-18 #531, CAPITALS DECIDE.
