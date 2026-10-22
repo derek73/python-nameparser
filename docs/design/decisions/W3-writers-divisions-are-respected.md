@@ -1,5 +1,18 @@
 # W3 — the writer's divisions are respected
 
+## Standing
+
+- A segmenter answers where an undivided name divides, so it is asked only when the gated token is the name part's only script-written one: `山田 太郎` was divided by its writer and keeps family '山田'; the peeled tail is exempt, and a spaced honorific counts as a division, which keeps `佐藤 氏`, `田中 様`, `鈴木 先生` and `中村 教授` whole at the cost of the one division `山田太郎 様` — 2026-08.
+- Under a family comma the honorific split-off runs ahead of the stand-down, so it crosses the comma (`김, 민준씨` → family '김', given '민준', suffix '씨') while division stands down for vocabulary and segmenter alike (`남궁민수, 지훈` → family '남궁민수'); every comma form is tolerated input, described rather than promised — 2026-08 #312.
+- The stage runs after comma segmentation, so the comma structure never depends on the split: `김민준, Jr.` reads family '김민준', suffix 'Jr.' — 2026-07.
+- The comma crossing is stated at W3 rather than at W2, the comma being the part no East Asian writing system produces, and the rule's comma and period examples are watched by the snapshot and pinned at HEAD by tolerated case rows rather than promised — 2026-10-19 #761.
+
+Elsewhere: the line between promised and tolerated input is format purity, decisions/cjk-comma-demotion's 2026-09-01 #469 entries; the division and the split-off follow C1's own reading of the comma (`Dr 김민준, MA` → title 'Dr', family '김', given '민준', suffix 'MA'), decisions/C1's 2026-10-06 (Derek), #613 entry; the period shapes (`田中さん.` → family '田中', suffix 'さん.'), decisions/cjk-full-stops.
+
+Open: none in this file.
+
+## Log
+
 - 2026-08 (segmenter amendment 2026-07-29) — a segmenter answers where an UNDIVIDED name divides, so it is consulted only when the gated token is the name part's only script-written one: "山田 太郎" was divided by its writer and must not have its family divided again. The peeled tail is exempt (that boundary was manufactured, not written); a SPACED honorific is not — at that position it cannot be told from a spaced name element. The trade was measured before deciding: counting spaced honorifics keeps four real surnames whole (佐藤 氏, 田中 様, 鈴木 先生, 中村 教授) and costs the one division 山田太郎 様.
 - 2026-08 #312 — under FAMILY_COMMA the whole stage stood down until the peel moved in front of the gate: the comma doctrine is about the input's structure, not the split's source, so it covers vocabulary and segmenter identically, while an honorific is no part of the name whichever side of the comma it glues to.
 - 2026-07 — the stage runs AFTER comma segmentation on purpose: running before would make the comma structure depend on the split ("김민준, Jr." pre-split would read suffix-comma on vocabulary alone; as written it stays the listing form).
