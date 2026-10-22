@@ -18,7 +18,7 @@
 
 Not standing: the skeleton migration, carried out — 2026-10-19 #761 (skeleton migration).
 
-Elsewhere: R3's earlier history, the #461 backout and the all-particle readmission, a family of nothing but particles contributing its words — decisions/R2's 2026-08-29 #461 and 2026-08-18 #404/#385 entries; a spliced field initialing every word on the core view (`replace(family='de la vega')` → 'j. d. l. v.') — decisions/R4's 2026-08-29 (#458 review, then the review of PR #463) entry; the snapshot recording `initials()`, so an initials-only change shows there — decisions/differential-ledger's 2026-10-13 #664 entry.
+Elsewhere: R3's earlier history, the #461 backout and the all-particle readmission, a family of nothing but particles contributing its words — decisions/R2's 2026-08-29 #461 and 2026-08-18 #404/#385 entries; a spliced field initialing every word on the core view (`replace(family='de la vega')` → 'j. d. l. v.') — decisions/R4's 2026-08-29 (#458 review, then the review of PR #463) entry; the snapshot recording `initials()`, so an initials-only change shows there — decisions/differential-ledger's 2026-10-13 #664, a committed snapshot replaces the classified gate entry.
 
 Open: [#464](https://github.com/derek73/python-nameparser/issues/464) — a `Parser.initials` crossing, which would let `initials()` answer a spliced field under the parse's vocabulary.
 
