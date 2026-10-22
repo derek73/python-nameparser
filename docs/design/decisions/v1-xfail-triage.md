@@ -14,7 +14,7 @@ The reconciled v1-style banks (`tests/test_*.py`) carried eight `@pytest.mark.xf
 - `juan garcia III` repairs to `Juan Garcia III` and its test is an ordinary pin — 2026-09-23 #492.
 - #485's `xfail:` corpus-label prefix is not adopted: a surviving marker carries its issue number, and a decided reading moving is a classified change — 2026-09-01 #485.
 
-Elsewhere: the `title-or-name` report on the word the title peel leaves standing (`Dr King Jr`, `The Right Hon. … Division`) is decisions/H4's 2026-09-07 #491 entry.
+Elsewhere: the `title-or-name` report on the word the title peel leaves standing (`Dr King Jr`, `The Right Hon. … Division`) is decisions/H4's 2026-09-07 #491 entry, reaching `Dr King Jr` since decisions/H3's 2026-09-08 #316 floor left `King` standing.
 
 Open: [#490](https://github.com/derek73/python-nameparser/issues/490) — dotted initials against dotted title and credential vocabulary.
 

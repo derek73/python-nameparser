@@ -3,6 +3,7 @@
 ## Standing
 
 - The rule fires only where the nickname accompanies exactly one piece in total, decided in assignment where the count is settled, and a title counts against it: `'Smitty' Jones` reads family 'Jones', while `'Smitty' Dr. Jones` reaches H1, which since #410 names the family, so it reads family 'Jones' too — 2026-07 PR #288.
+
 Not standing: 2026-10-19 #761, the skeleton migration, carried out.
 
 Elsewhere: the bare spelling's one name word reads as the family name by M4, which reaches the bracketed and the bare spelling alike, decisions/M4's 2026-08-27 #445 entries; a punctuation-only clause is a nickname this rule counts (`Jones (,)` → family 'Jones'), decisions/N1's 2026-10-12 #653 entry.
