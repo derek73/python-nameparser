@@ -148,7 +148,10 @@ _LOG = ("## Log\n\n"
         "- 2026-09-24 — SUPERSEDED IN PART: the mark.\n"
         "- 2026-10-03 #549 — SUPERSEDED: the skip is reversed.\n"
         "- 2026-10-04 #611 (in part superseded by #613) — FILED.\n"
-        "- 2026-10-06 #613 — DECIDED ONCE.\n")
+        "- 2026-10-06 #613 — DECIDED ONCE.\n"
+        "- 2026-10-31 #750 (PR on x) — A.\n"
+        "- 2026-10-31 #750 — B.\n"
+        "- 2026-10-31 #750 — C.\n")
 
 
 @pytest.mark.parametrize("standing, finding", [
@@ -194,6 +197,19 @@ _LOG = ("## Log\n\n"
     ("- Decided once — 2026-10-06 #613 and 2026-11-01 #999.\n",
      "no entry 2026-11-01 #999"),
     ("\nNot standing: 2026-10-04 #612.\n", "names no entry"),
+    ("- Beside a labelled head — 2026-10-31 #750, C.\n", None),
+    ("- The labelled head — 2026-10-31 #750 (PR on x).\n", None),
+    ("- Either bare twin — 2026-10-31 #750.\n",
+     "ambiguous pointer 2026-10-31 #750"),
+    ("- Keyed by no text — 2026-10-31 #750, D.\n",
+     "ambiguous pointer 2026-10-31 #750"),
+    ("- One bare head — 2026-10-18 #718, THE REPORT.\n",
+     "continues no entry's head"),
+    ("\nNot standing: 2026-10-31 #750, typo here.\n",
+     "ambiguous not-standing pointer 2026-10-31 #750"),
+    ("\nNot standing: 2026-10-31 #750.\n",
+     "ambiguous not-standing pointer 2026-10-31 #750"),
+    ("\nNot standing: 2026-10-31 #750, C.\n", None),
 ], ids=["clean", "no-pointer", "wrong-date", "number-prefix", "superseded",
         "announcing-is-live", "date-only", "date-only-qualified",
         "date-only-qualified-by-its-words", "date-only-shared-date",
@@ -210,7 +226,13 @@ _LOG = ("## Log\n\n"
         "date-only-qualified-beside-a-bare-date",
         "later-issue-in-a-head",
         "month-only-date", "second-pointer",
-        "not-standing-missing"])
+        "not-standing-missing", "twins-beside-a-labelled-head",
+        "labelled-head-beside-twins", "twins-beside-a-label-unqualified",
+        "twins-beside-a-label-keyed-by-no-text",
+        "one-bare-head-words-are-no-twin-key",
+        "not-standing-twin-key-typo-ambiguous",
+        "not-standing-twins-unqualified-ambiguous",
+        "not-standing-twin-key-resolves"])
 def test_standing_findings_name_each_broken_pointer(
         standing: str, finding: str | None) -> None:
     found = standing_findings(f"# C1 — x\n\n## Standing\n\n{standing}\n"
