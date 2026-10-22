@@ -10,7 +10,7 @@
 - Neighbour-scoping the drop is declined: it would read `Jane Smith nee Nee Jones` as maiden 'Jones' where it reads 'Nee Jones' — 2026-08-04 #329.
 - A clause of nothing but a phrase marker keeps its words too, so `Maria Kowalska (z domu)` under a declared pair reads maiden 'z domu', a name nobody bears, emitted deliberately because the parser cannot know the pair did not enclose an unfamiliar surname — 2026-08-26 #434.
 
-Not standing: 2026-08-05 #329, the deferral of marker detection inside a nickname clause to #335, carried out when M3 landed (2026-08-26 #335 (M3)); its premise is corrected by 2026-08-26 #335; the differential gates both entries measure were retired in #664.
+Not standing: 2026-08-05 #329, the deferral of marker detection inside a nickname clause to #335, carried out when M3 landed (#335); its premise is corrected by 2026-08-26 #335; the differential gates both entries measure were retired in #664.
 
 Elsewhere: a marker followed by a comma is no marker in this rule's drop, nor a phrase marker the writer divided with a comma (`Maria Kowalska (z, domu Nowak)` and `Jane (née ,Jones) Smith` under a declared pair keep maiden 'z, domu Nowak' and 'née ,Jones') — decisions/N1's 2026-10-12 #653 entry; the delimiters trumping every reading inside them (`Jane Doe (nee Smith MA)` → maiden 'Smith MA', reporting nothing) — decisions/M2's 2026-09-19 (Derek), #533 review — THE DELIMITERS TRUMP entry; the phrase marker itself — decisions/M2's 2026-08-26 #434 entry.
 

@@ -416,6 +416,11 @@ def standing_findings(text: str) -> list[str]:
                     findings.append(
                         f"not-standing names no entry {m['date']} "
                         f"#{m['num']}")
+                elif len(got.hits) > 1:
+                    findings.append(
+                        f"ambiguous not-standing pointer {m['date']} "
+                        f"#{m['num']}: add the words its entry's head "
+                        "continues with")
     return findings
 
 

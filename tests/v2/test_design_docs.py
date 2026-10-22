@@ -205,6 +205,11 @@ _LOG = ("## Log\n\n"
      "ambiguous pointer 2026-10-31 #750"),
     ("- One bare head — 2026-10-18 #718, THE REPORT.\n",
      "continues no entry's head"),
+    ("\nNot standing: 2026-10-31 #750, typo here.\n",
+     "ambiguous not-standing pointer 2026-10-31 #750"),
+    ("\nNot standing: 2026-10-31 #750.\n",
+     "ambiguous not-standing pointer 2026-10-31 #750"),
+    ("\nNot standing: 2026-10-31 #750, C.\n", None),
 ], ids=["clean", "no-pointer", "wrong-date", "number-prefix", "superseded",
         "announcing-is-live", "date-only", "date-only-qualified",
         "date-only-qualified-by-its-words", "date-only-shared-date",
@@ -224,7 +229,10 @@ _LOG = ("## Log\n\n"
         "not-standing-missing", "twins-beside-a-labelled-head",
         "labelled-head-beside-twins", "twins-beside-a-label-unqualified",
         "twins-beside-a-label-keyed-by-no-text",
-        "one-bare-head-words-are-no-twin-key"])
+        "one-bare-head-words-are-no-twin-key",
+        "not-standing-twin-key-typo-ambiguous",
+        "not-standing-twins-unqualified-ambiguous",
+        "not-standing-twin-key-resolves"])
 def test_standing_findings_name_each_broken_pointer(
         standing: str, finding: str | None) -> None:
     found = standing_findings(f"# C1 — x\n\n## Standing\n\n{standing}\n"
