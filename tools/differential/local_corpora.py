@@ -127,23 +127,32 @@ CTGOV_PAGE = 1000  # the API's largest page
 CTGOV_FIELDS = "NCTId,OverallOfficialName,OverallOfficialRole"
 CTGOV_RETRIES = 4
 #: What a long run of requests meets and a retry survives: a refused or
-#: dropped connection, a timeout, a body cut short (http.client's
-#: IncompleteRead, or JSON that does not parse), a 5xx, a 429.
-_TRANSIENT = (OSError, http.client.HTTPException, ValueError)
+#: dropped connection or a timeout (OSError, which URLError and HTTPError
+#: are), a body cut short in the read (http.client's IncompleteRead), a
+#: 5xx or a 429; and, caught apart from these, a body that arrived but
+#: does not parse.
+_TRANSIENT = (OSError, http.client.HTTPException)
+
+
+class _Unparsed(Exception):
+    """A response body that is not JSON: cut short in transit."""
 
 
 def _get_json(url: str) -> dict[str, Any]:
-    """`url`'s JSON object, retried with a backoff: one page per thousand
-    studies (608 on 2026-10-21), and starting over would cost the whole
-    run. Any other 4xx is the request's fault and is raised, as is the
-    last attempt's error."""
+    """`url`'s JSON object, retried with a backoff and a line on stderr
+    for each retry: one page per thousand studies (608 on 2026-10-21),
+    and starting over would cost the whole run. Any other 4xx is the
+    request's fault and is raised, as is the last attempt's error."""
     for attempt in range(CTGOV_RETRIES):
         try:
             body = corpus_build.fetch_bytes(url, user_agent=USER_AGENT,
                                             timeout=60, delay=0.1)
-            data = corpus_build.parse_json(body, url)
+            try:
+                data = corpus_build.parse_json(body, url)
+            except ValueError as exc:
+                raise _Unparsed(str(exc)) from None
             break
-        except _TRANSIENT as exc:
+        except (*_TRANSIENT, _Unparsed) as exc:
             wait = 2 ** attempt
             if isinstance(exc, urllib.error.HTTPError):
                 if exc.code < 500 and exc.code != 429:
@@ -155,6 +164,8 @@ def _get_json(url: str) -> dict[str, Any]:
                 raise
             if isinstance(exc, urllib.error.HTTPError):
                 exc.close()  # an HTTPError holds the response open
+            print(f"  retrying in {wait}s after {type(exc).__name__}: {url}",
+                  file=sys.stderr)
             time.sleep(wait)
     if not isinstance(data, dict):
         raise ValueError(f"{url} answered {type(data).__name__}, not an object")
@@ -186,9 +197,10 @@ def fetch_ctgov() -> Fetched:
 
     The registry is refreshed daily, so the data date is read before and
     after: a fetch that straddles a refresh mixes two days and is
-    refused. And the distinct studies paged must number the totalCount
-    the first page states, so a fetch cut short, or one that met a page
-    twice and missed another, cannot pass for the registry. An official
+    refused. A study paged twice is refused, since its officials would
+    count twice, and the studies paged must number the totalCount the
+    first page states, so a fetch cut short cannot pass for the
+    registry. An official
     with no name is counted rather than dropped in silence, so a renamed
     field shows as a count in the header instead of a smaller registry."""
     before, api = _ctgov_version()
@@ -204,6 +216,9 @@ def fetch_ctgov() -> Fetched:
         for study in page["studies"]:
             section = study["protocolSection"]
             nct = section["identificationModule"]["nctId"]
+            if nct in studies:
+                raise ValueError(f"{nct} was paged twice: the pages shifted "
+                                 f"under the fetch; fetch again")
             studies.add(nct)
             for official in section.get("contactsLocationsModule", {}).get(
                     "overallOfficials", []):
@@ -217,7 +232,7 @@ def fetch_ctgov() -> Fetched:
         raise ValueError(f"ClinicalTrials.gov refreshed during the fetch "
                          f"({before} -> {after}); fetch again")
     if len(studies) != total:
-        raise ValueError(f"paged {len(studies):,} distinct studies of the "
+        raise ValueError(f"paged {len(studies):,} studies of the "
                          f"{total:,} the API counted; fetch again")
     return Fetched(records, before, {"api_version": api, "studies": total,
                                      "officials_without_a_name": nameless})
@@ -239,15 +254,10 @@ def directory(source: str) -> Path:
     return corpus_build.cache_dir(f"local/{source}")
 
 
-#: The line breaks str.splitlines() splits on and json.dumps writes
-#: unescaped: a name pasted from a document can hold one, and written
-#: raw it would cut its record in two for any reader splitting lines.
-_LINE_BREAKS = str.maketrans({"\x85": "\\u0085", " ": "\\u2028",
-                              " ": "\\u2029"})
-
-
 def _lines(texts: Iterable[str]) -> bytes:
-    return "".join(t.translate(_LINE_BREAKS) + "\n" for t in texts).encode()
+    """`texts` as lines of a JSONL file, escaped as corpus_build.LINE_BREAKS
+    says."""
+    return "".join(t.translate(corpus_build.LINE_BREAKS) + "\n" for t in texts).encode()
 
 
 def fetch(source: str) -> Local:
@@ -301,7 +311,8 @@ def load(source: str) -> Local | None:
         raise ValueError(f"{path / META} was not written by this version of "
                          f"this tool{again}")
     for key, kind in _META_KEYS.items():
-        if not isinstance(meta.get(key), kind):
+        value = meta.get(key)
+        if not isinstance(value, kind) or isinstance(value, bool):
             raise ValueError(f"{path / META} has no {kind.__name__} {key!r}{again}")
     bodies = {}
     for name, key in ((RAW, "sha256"), (CORPUS, "corpus_sha256")):
@@ -354,17 +365,32 @@ def tally(local: Local) -> tuple[Counter[str], int]:
 #: A hyphen stays inside a word (FNP-C), and a period inside a token
 #: (M.D.) is folded away by word_key.
 _TOKEN_SPLIT = re.compile(r"[\s,;/]+")
-_EDGE = re.compile(r"^[^\w]+|[^\w]+$")
+#: Kept at a word's edge though punctuation: what marks a particle
+#: written to join the next word (d', al-), which the vocabulary lists
+#: and this lookup is asked about.
+_JOINERS = frozenset("'\u2019-")
+
+
+def _strippable(char: str) -> bool:
+    return unicodedata.category(char)[0] in "PS" and char not in _JOINERS
 
 
 def word_key(word: str) -> str:
     """One word as the lookup matches it: composed (NFC), periods dropped,
-    any other punctuation at its edges stripped, and case folded with
-    casefold(). 'M.D.', 'MD;' and '(MD)' all find 'md'. Close to the
-    parser's acronym match (which drops periods and lowers case) but not
-    the same fold: casefold() also folds 'ß' to 'ss'."""
+    other punctuation and symbols at its edges stripped, apostrophes and
+    hyphens kept, and case folded with casefold(). 'M.D.', 'MD;' and
+    '(MD)' all find 'md', while d' stays d' and never finds the initial
+    D. A combining mark is part of its letter, not punctuation, so a
+    final vowel sign or haraka stays. Close to the parser's acronym match
+    (which drops periods and lowers case) but not the same fold:
+    casefold() also folds 'ß' to 'ss'."""
     word = unicodedata.normalize("NFC", word).replace(".", "")
-    return _EDGE.sub("", word).casefold()
+    start, end = 0, len(word)
+    while start < end and _strippable(word[start]):
+        start += 1
+    while end > start and _strippable(word[end - 1]):
+        end -= 1
+    return word[start:end].casefold()
 
 
 def words(text: str) -> list[str]:
@@ -407,19 +433,20 @@ def word_index(local: Local) -> WordIndex:
 
 def phrase_counts(local: Local, keys: list[str]) -> tuple[int, int]:
     """The records writing the words `keys` in a row (a spaced query,
-    'Ph. D.' as ['ph', 'd']), and those writing them in a row after the
-    first comma. Scans every record: a phrase is no key of the index."""
+    'Ph. D.' as ['ph', 'd']), and those where such a run starts after
+    the first comma. The separators between the words are not compared:
+    'MD/PhD' finds 'MD, PhD' and 'Smith MD, PhD' too. Scans every record,
+    since a phrase is no key of the index."""
     n = len(keys)
     anywhere = after = 0
     for record in local.records:
         head, _, tail = record["name"].partition(",")
-        found = []
-        for text in (head, tail):
-            got = words(text)
-            found.append(any(got[i:i + n] == keys for i in range(len(got) - n + 1)))
-        if any(found):
+        first = words(head)
+        got = first + words(tail)
+        starts = [i for i in range(len(got) - n + 1) if got[i:i + n] == keys]
+        if starts:
             anywhere += 1
-        if found[1]:
+        if any(i >= len(first) for i in starts):
             after += 1
     return anywhere, after
 

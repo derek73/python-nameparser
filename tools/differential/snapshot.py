@@ -41,6 +41,11 @@ from pathlib import Path
 from typing import Any
 
 HERE = Path(__file__).resolve().parent
+# The shared corpus helpers, found as the corpus builders find them (see
+# corpus_build's docstring for why the directory is appended).
+if str(HERE) not in sys.path:
+    sys.path.append(str(HERE))
+from corpus_build import LINE_BREAKS  # noqa: E402
 REPO_ROOT = HERE.parents[1]
 SNAPSHOT = HERE / "snapshot.jsonl"
 RECORD_COMMAND = "uv run python tools/differential/snapshot.py --record"
@@ -105,7 +110,7 @@ def corpus_entries(paths: list[Path] | None = None) -> list[Entry]:
         raise SystemExit(f"no corpus files found in {HERE}")
     found: set[Entry] = set()
     for path in paths:
-        lines = [ln for ln in path.read_text(encoding="utf-8").splitlines()
+        lines = [ln for ln in path.read_text(encoding="utf-8").split("\n")
                  if ln.strip()]
         if not lines:
             raise SystemExit(f"{path.name} is empty")
@@ -204,11 +209,13 @@ def key(r: dict[str, Any]) -> tuple[str, str]:
 
 
 def dump(rows: list[dict[str, Any]]) -> str:
-    return "".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows)
+    return "".join(json.dumps(r, ensure_ascii=False).translate(LINE_BREAKS) + "\n"
+                   for r in rows)
 
 
 def load(text: str) -> dict[tuple[str, str], dict[str, Any]]:
-    return {key(r): r for r in map(json.loads, text.splitlines()) if r}
+    # split, not splitlines: see LINE_BREAKS.
+    return {key(r): r for r in map(json.loads, filter(None, text.split("\n"))) if r}
 
 
 def _flat(r: dict[str, Any]) -> dict[str, str]:
@@ -273,8 +280,6 @@ def _local(source: str) -> tuple[Path, list[Path], dict[str, str]]:
     local_corpora.load against its sha256), and what names this fetch of
     it, with its attribution printed: a report on it carries its source
     and date."""
-    if str(HERE) not in sys.path:
-        sys.path.append(str(HERE))
     import local_corpora
     try:
         corpus = local_corpora.load(source)
@@ -298,6 +303,25 @@ def _fetch_record(snapshot: Path) -> Path:
     return snapshot.with_name(snapshot.name + ".source.json")
 
 
+def _check_fetch(snapshot: Path, fetch: dict[str, str], source: str) -> None:
+    """Refuse a local snapshot recorded from another fetch of its corpus,
+    or with no readable record of its fetch, before reading anything."""
+    try:
+        recorded = json.loads(_fetch_record(snapshot).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        recorded = None
+    if not isinstance(recorded, dict):
+        recorded = {}
+    if recorded.get("corpus_sha256") != fetch["corpus_sha256"]:
+        raise SystemExit(
+            f"{snapshot} was recorded from another fetch of {source} (data "
+            f"as of {recorded.get('data_date', 'unknown')}; the corpus now "
+            f"is {fetch['data_date']}), so it would report the names the "
+            f"source gained and lost as moves. Record it again from the "
+            f"base checkout: snapshot.py --local {source} --record "
+            f"--tree <base checkout>")
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--record", action="store_true", help="rewrite the snapshot")
@@ -317,6 +341,8 @@ def main(argv: list[str] | None = None) -> int:
     if args.local:
         snapshot, corpora, fetch = _local(args.local)
     out = args.out or snapshot
+    if fetch is not None and not args.record and snapshot.exists():
+        _check_fetch(snapshot, fetch, args.local)
     root = Path(args.tree).resolve() if args.tree else REPO_ROOT
     if args.tree:
         sys.path.insert(0, str(root))
@@ -344,19 +370,6 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit(f"no snapshot at {snapshot}: record one first, "
                          f"with --record (and --tree for another checkout)")
     else:
-        if fetch is not None:
-            record = _fetch_record(snapshot)
-            recorded = (json.loads(record.read_text(encoding="utf-8"))
-                        if record.exists() else {})
-            if recorded.get("corpus_sha256") != fetch["corpus_sha256"]:
-                raise SystemExit(
-                    f"{snapshot} was recorded from another fetch of "
-                    f"{args.local} (data as of "
-                    f"{recorded.get('data_date', 'unknown')}; the corpus now "
-                    f"is {fetch['data_date']}), so it would report the names "
-                    f"the source gained and lost as moves. Record it again "
-                    f"from the base checkout: snapshot.py --local "
-                    f"{args.local} --record --tree <base checkout>")
         text = snapshot.read_text(encoding="utf-8")
     old, new = load(text), {key(r): r for r in rows}
     moves = grouped(old, new)

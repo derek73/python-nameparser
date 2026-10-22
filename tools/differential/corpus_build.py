@@ -85,6 +85,15 @@ def cached_json(cache: Path, key: str, label: str, fetch: Callable[[], bytes],
     return data
 
 
+#: The line breaks str.splitlines() cuts at and json.dumps(...,
+#: ensure_ascii=False) writes unescaped, as JSON escapes for a writer to
+#: put in their place: a name pasted from a document can hold one, and
+#: written raw it would cut its line in two for a reader that splits
+#: lines (AGENTS.md's Gotchas, #801).
+LINE_BREAKS = str.maketrans({"\x85": "\\u0085", "\u2028": "\\u2028",
+                             "\u2029": "\\u2029"})
+
+
 def corpus_lines(rows: Iterable[dict[str, Any]]) -> list[str]:
     """One harness line per distinct (text, shape), sorted for stable
     diffs: a bare JSON string, or {"name", "shape"} where a shape is set."""
@@ -96,8 +105,9 @@ def corpus_lines(rows: Iterable[dict[str, Any]]) -> list[str]:
         pairs.add((str(row["text"]), shape))
     # An untagged line sorts before every tagged one of the same text, so
     # the order never rests on set iteration (shape 0 would tie with None).
-    return [json.dumps(text, ensure_ascii=False) if shape is None
-            else json.dumps({"name": text, "shape": shape}, ensure_ascii=False)
+    return [(json.dumps(text, ensure_ascii=False) if shape is None
+             else json.dumps({"name": text, "shape": shape}, ensure_ascii=False)
+             ).translate(LINE_BREAKS)
             for text, shape in sorted(pairs, key=lambda p: (p[0], -1 if p[1] is None else p[1]))]
 
 

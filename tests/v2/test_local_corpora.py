@@ -138,18 +138,22 @@ def test_a_fetch_cut_short_is_refused(
     first = {**_PAGES[0]}
     del first["nextPageToken"]
     _serve(monkeypatch, tmp_path, pages=[first])
-    with pytest.raises(ValueError, match="paged 2 distinct studies of the 3"):
+    with pytest.raises(ValueError, match="paged 2 studies of the 3"):
         local.fetch(_SOURCE)
     assert local.load(_SOURCE) is None
 
 
-def test_a_fetch_paging_a_study_twice_and_missing_one_is_refused(
-        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    # Three studies paged, as many as totalCount, but NCT1 twice and NCT3
-    # never: a count of the studies paged would pass it.
+@pytest.mark.parametrize("total", [3, 2], ids=["and one missed", "and none missed"])
+def test_a_fetch_paging_a_study_twice_is_refused(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, total: int) -> None:
+    # NCT1 paged twice. With NCT3 missed, a count of the studies paged
+    # equals totalCount; with none missed, a count of the DISTINCT studies
+    # does (the first fix's check, which let the repeat's officials count
+    # twice). Both rows, so neither check can come back alone.
+    first = {**_PAGES[0], "totalCount": total}
     _serve(monkeypatch, tmp_path, pages=[
-        _PAGES[0], {"studies": [_study("NCT1", "Ann Lee, MD, PhD")]}])
-    with pytest.raises(ValueError, match="paged 2 distinct studies of the 3"):
+        first, {"studies": [_study("NCT1", "Ann Lee, MD, PhD")]}])
+    with pytest.raises(ValueError, match="NCT1 was paged twice"):
         local.fetch(_SOURCE)
 
 
@@ -191,6 +195,25 @@ def test_a_transient_failure_is_retried(
     fetched = _serve(monkeypatch, tmp_path, fail=_once(answer))
     local.fetch(_SOURCE)
     assert sum("pageToken" in u for u in fetched) == 2
+
+
+def test_a_retry_says_so_on_stderr(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    _serve(monkeypatch, tmp_path, fail=_once(_http_error(503)))
+    local.fetch(_SOURCE)
+    assert "retrying in 1s after HTTPError" in capsys.readouterr().err
+
+
+def test_an_error_that_is_not_the_network_is_not_retried(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    # A bug, not a dropped connection: four attempts would hide it for
+    # seconds and then raise it anyway.
+    fetched = _serve(monkeypatch, tmp_path, fail=lambda url: ValueError("a bug")
+                     if "studies" in url else None)
+    with pytest.raises(ValueError, match="a bug"):
+        local.fetch(_SOURCE)
+    assert sum("studies" in u for u in fetched) == 1
 
 
 def test_a_rate_limit_waits_as_long_as_the_server_asks(
@@ -287,7 +310,8 @@ def test_a_corpus_file_that_no_longer_matches_its_sha256_is_refused(
     ({"version": 1}, "not written by this version"),
     ({"sha256": None}, "no str 'sha256'"),
     ({"data_date": 3}, "no str 'data_date'"),
-], ids=["old version", "missing key", "wrong type"])
+    ({"records": True}, "no int 'records'"),
+], ids=["old version", "missing key", "wrong type", "bool for int"])
 def test_a_meta_file_load_cannot_trust_is_refused_with_the_way_out(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
         changes: dict[str, object], match: str) -> None:
@@ -388,13 +412,25 @@ def test_a_word_is_counted_anywhere_and_after_a_comma_ignoring_case_and_periods(
 
 @pytest.mark.parametrize("name", [
     "Bob Ray, MD/PhD", "Bob Ray, MD;", "Bob Ray, MD; PhD", "Bob Ray, (MD)",
-    "Bob Ray, MD-", "Bob Ray, “MD”"])
+    "Bob Ray, “MD”", "Bob Ray, [MD]:"])
 def test_a_word_is_found_beside_any_punctuation(name: str) -> None:
     # Cut only at spaces and commas, 'MD/PhD' and 'MD;' were words of
     # their own, and a lookup of MD read zero: 3,698 officials' names
     # held a slash and 548 a semicolon on 2026-10-21.
     index = local.word_index(_corpus(name))
     assert (index.anywhere["md"], index.after_comma["md"]) == (1, 1)
+
+
+@pytest.mark.parametrize(("word", "other"), [
+    ("d'", "D"), ("d’", "D"), ("al-", "Al"),
+    ("शर्मा", "शर्म"), ("محمدٌ", "محمد")])
+def test_a_word_keeps_what_tells_it_from_another(word: str, other: str) -> None:
+    # The first edge fold stripped apostrophes, hyphens and combining
+    # marks: d' answered as the initial D (5,954 officials, 2026-10-21),
+    # al- as Al, and a final vowel sign or haraka was lost.
+    assert local.word_key(word) != local.word_key(other)
+    index = local.word_index(_corpus(f"Ann {other} Lee"))
+    assert index.anywhere[local.word_key(word)] == 0
 
 
 def test_a_decomposed_letter_finds_its_composed_twin() -> None:
@@ -411,10 +447,12 @@ def test_spellings_are_counted_once_per_record() -> None:
 
 
 def test_a_spaced_word_is_matched_as_its_words_in_a_row() -> None:
+    # 'Ed Ph, D' runs across the comma, starting before it: written, not
+    # after a comma. 'Di Fox, PhD' is the joined spelling, not the phrase.
     corpus = _corpus("Ann Lee, Ph. D.", "Bo Wu, Ph D, MD", "Ph D Cy", "Di Fox, PhD",
                      "Ed Ph, D")
     assert local.words("Ph. D.") == ["ph", "d"]
-    assert local.phrase_counts(corpus, ["ph", "d"]) == (3, 2)
+    assert local.phrase_counts(corpus, ["ph", "d"]) == (4, 2)
 
 
 # -- snapshot.py --local -----------------------------------------------------------
@@ -501,3 +539,30 @@ def test_snapshot_refuses_since_with_local(
         snapshot.main(["--local", _SOURCE, "--since", "v2.5.0"])
     assert raised.value.code == 2
     assert "--since reads a committed snapshot" in capsys.readouterr().err
+
+
+def test_snapshot_reads_a_local_name_holding_a_line_break(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    # The first fix escaped the cache's files; snapshot.py's own dump and
+    # load still wrote the parsed name raw and cut it at the break.
+    _fetched(monkeypatch, tmp_path, "Cy\x85Doe, PhD", "Ann\u2028Lee, MD", "Bo Wu")
+    assert snapshot.main(["--local", _SOURCE, "--record"]) == 0
+    assert snapshot.main(["--local", _SOURCE]) == 0
+
+
+@pytest.mark.parametrize("sidecar", ["{", "[]", None], ids=["not json", "not a dict", "missing"])
+def test_snapshot_refuses_a_snapshot_with_no_readable_fetch_before_reading_names(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, sidecar: str | None) -> None:
+    folder = _fetched(monkeypatch, tmp_path)
+    assert snapshot.main(["--local", _SOURCE, "--record"]) == 0
+    record = folder / "snapshot.jsonl.source.json"
+    if sidecar is None:
+        record.unlink()
+    else:
+        record.write_text(sidecar)
+
+    def unread(entries: object) -> list[dict[str, Any]]:
+        raise AssertionError("parsed every name before refusing")
+    monkeypatch.setattr(snapshot, "read", unread)
+    with pytest.raises(SystemExit, match="recorded from another fetch"):
+        snapshot.main(["--local", _SOURCE])
