@@ -5,6 +5,7 @@
 - Under Turkic handling a name of exactly four name words ending in a standalone marker reads family-first, at v1 parity: `Ali Ahmad Vali oglu` under `locales.TR_AZ` → family 'Ali', given 'Ahmad', middle 'Vali oglu'; any other count keeps the positional reading, the marker standing in a name field (`Ali Ahmad oglu` → family 'oglu') — 2026-07-02 PR #288.
 - The marker patterns are NFC literals with `qızı` a literal alternative, dotless ı not case-folding to i, so all-caps `QIZI` falls to the ASCII alternative and decomposed input does not match (`Ali Ahmad Vali oğlu` typed decomposed → family 'oğlu'); suffix-attached Kazakh and Uzbek patronymics (`Әбішұлы`) are out of scope — 2026-07-02.
 - The rotation stands down under a declared family-first order by O1's gate on the order assign read: `oglu Ahmad Vali Ali` under FAMILY_FIRST reads family 'oglu' as plain FAMILY_FIRST does, and `Ali Ahmad Vali oglu` under FAMILY_FIRST_GIVEN_LAST reads given 'oglu', middle 'Ahmad Vali' — 2026-09-07 #384.
+- Re-deriving the order from the marker under a declared family-first order, and reporting where the marker and the declared order disagree, are declined for decisions/O1's reasons — 2026-09-07 #384.
 
 Not standing: 2026-08-15, the same open interaction question as decisions/O1's, answered by 2026-09-07 #384.
 
