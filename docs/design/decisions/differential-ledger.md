@@ -4,7 +4,20 @@ The differential ledgers were the classified gate 2.0 shipped behind: `tools/dif
 
 Archived 2026-10-19 under rule 3 of the decisions folder's entry conventions (#759): eleven arcs of entries, about 33,000 words, were cut to the tombstones below, every one superseded by the retirement. The full text is in git — `git show fe85bb3d:docs/design/decisions/differential-ledger.md` — and in the PRs each tombstone names. The retirement entry is the one decision in force and stands in full; the passages other entries cite stand as one line each, and three Declined entries about surviving code stand as written.
 
-## differential-ledger, the arcs before retirement (2026-07-24 to 2026-09-05)
+## Standing
+
+- `tools/differential/snapshot.jsonl` records every corpus name's reading, one line per (name, order): the seven role fields, the ambiguity kinds and `initials()`, and what `HumanName` reads differently, under `facade`; `tests/v2/test_snapshot.py` fails on drift and prints the moves grouped by changed field, and a change that moves readings re-records, so the PR diff of the snapshot is the list of names it moved. Nothing is classified, and a reviewer can approve a large diff without reading it, the grouping being the mitigation; the ledgers, their guards and the contract/radar tiers are gone, trimming them having been declined — 2026-10-13 #664, a committed snapshot.
+- `compare.py` stays, unclassified: it runs a released wheel against the tree behind the version tell, the tree-side path check and a stripped `PYTHONPATH`, prints the snapshot's grouped report and exits 0. It answers how a release tagged before the snapshot read the corpus names, and the 1.4 promise is a question asked of it (`--baseline 1.4.0`), not a gate; for a later release `snapshot.py --since <tag>` is the cheaper answer — 2026-10-13 #664, `compare.py` stays.
+- The CLDR agreement ratchet stays beside the snapshot, answering agreement with a corpus's stated fields rather than stability (`tests/v2/test_cldr_agreement.py`) — 2026-10-13 #664, the CLDR agreement ratchet.
+- `Policy`'s fields are annotated with what they store, not widened to every input the constructor accepts, since every reader would see the union; a `.pyi` stub typing `__init__` wide and the attributes narrow is a 3.0 candidate (decisions/3-0-reevaluations) — 2026-07-24 #332.
+- The tree side of a comparison must import this checkout's source package, `is_relative_to(<repo> / "nameparser")` and not anywhere under the repository, whose `.venv/`, `build/` and `dist/` can hold a released wheel; `compare.py` asks `snapshot.check_source` for it — 2026-07-24 #332.
+- `DEFAULT_BASELINE` rotates at every release as a step of the AGENTS.md release checklist, not as an issue — 2026-07-24 #332.
+
+Open: none in this file.
+
+## Log
+
+### differential-ledger, the arcs before retirement (2026-07-24 to 2026-09-05)
 
 - 2026-07-24 to 2026-08-07, the tooling arc (#332, #333, #334) — harvested 2026-08-15 from the release-arc session; measurements are that session's, spot-checked at landing. The two-corpus design (corpus_issues.jsonl beside the v1-test-bank corpus, since v1 test banks are blind to anything 2.0 added), ledger fields named by `Role`, and the sentinel-set over-match check (mechanisms.md#SENTINEL-SET-OVER-MATCH-CHECK). SUPERSEDED by 2026-10-13 #664 — except three of its Declined entries, below, which are about code and process that survive the ledgers.
 - 2026-08, the dormancy arc (#328–#376) — measurements are that session's, the machinery verified present at landing. `[[never]]` exclusions sorted ahead of the rules, so an exclusion only ever removes a name; a rule that claims nothing is dormant and is refused. SUPERSEDED by 2026-10-13 #664 —
@@ -29,7 +42,7 @@ Declined (the tooling arc's, harvested as above, kept because they are not about
 - `_check_tree` as is_relative_to(REPO_ROOT) (2026-08-05 #332) — accepts .venv/, build/ and dist/ copies inside the repo; the invariant is "is the source package", so the predicate is is_relative_to(REPO_ROOT / "nameparser").
 - An issue for rotating DEFAULT_BASELINE (2026-08-07) — it recurs every release; it lives in the AGENTS.md release checklist beside the VERSION bump instead (#333 must land first).
 
-## differential-ledger, retired for a snapshot (2026-10-13, #664)
+### differential-ledger, retired for a snapshot (2026-10-13, #664)
 
 The ledgers' last arc. They were built to show that 2.0 changed nothing against 1.4 except fixes the release log lists, and they did; as a standing check every later behavior change had to be classified once per ledger, and the guards policing the ledgers outgrew the ledgers.
 
