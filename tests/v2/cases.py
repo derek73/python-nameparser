@@ -800,6 +800,85 @@ CASES: tuple[Case, ...] = (
          notes="the comma form under family-first: the comma already "
                "fixes the family name, so the roles match the default "
                "order's"),
+    # -- #793: a period-marked ambiguous member alone after a family comma
+    # is bound as a title by the listing form (rules/C8), the class
+    # 'Smith, Dr.' reads in, and its report names the title field; it
+    # had said "read as a credential" of a word in the title.
+    Case("comma_period_si_is_a_title", "John, Si.",
+         {"title": "Si.", "family": "John"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(comma-family)",
+         notes="#793's subject: the one-word head keeps the family and "
+               "the period-marked 'Si.' is bound as a title, as 'Smith, "
+               "Dr.' is; 1.4.0 read title 'Si.' with first 'John'. The "
+               "report says 'read as a title' (test_cases.py's field "
+               "sweep holds it), where it had said 'read as a credential'"),
+    Case("comma_period_ma_is_a_title", "John, Ma.",
+         {"title": "Ma.", "family": "John"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(comma-family)",
+         notes="the same shape for the oldest marked member: 1.4.0 read "
+               "title 'Ma.' with first 'John'"),
+    # -- #793's comment (the #794 review): the #791 members in a suffix
+    # run, behind a title, written all-lower, and where no report
+    # belongs. These pin today's readings; none moved in #793.
+    Case("comma_si_before_a_generation_is_a_given_name", "Smith, Si Jr.",
+         {"given": "Si", "family": "Smith", "suffix": "Jr."},
+         ambiguities=("suffix-or-name",),
+         notes="the suffix behind it does not make 'Si' a credential: "
+               "the word after the comma is the given name, as 1.4.0 "
+               "read it"),
+    Case("si_ahead_of_a_generation_is_a_surname", "John Smith Si Jr.",
+         {"given": "John", "middle": "Smith", "family": "Si",
+          "suffix": "Jr."},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#791)",
+         notes="title_case_si_is_a_surname_with_words_to_spare with a "
+               "generation behind it: the peel takes 'Jr.' and declines "
+               "the Title-case member (rules/S6). 1.4.0 read suffix "
+               "'Si, Jr.' with family 'Smith'"),
+    Case("comma_si_before_a_third_part_is_a_given_name", "Smith, Si, PhD",
+         {"given": "Si", "family": "Smith", "suffix": "PhD"},
+         ambiguities=("suffix-or-name",),
+         notes="a part past the second comma holds the credential, so "
+               "the given part keeps 'Si', as 1.4.0 read it"),
+    Case("title_head_si_is_a_surname", "Dr. Luo Si",
+         {"title": "Dr.", "given": "Luo", "family": "Si"},
+         ambiguities=("suffix-or-name",),
+         notes="a title in front is no word to spare (rules/P4), so the "
+               "two-word fork of bare_si_is_a_surname is unchanged; "
+               "1.4.0 read the same roles"),
+    Case("title_head_si_behind_a_surname_shaped_given", "Dr. Smith Si",
+         {"title": "Dr.", "given": "Smith", "family": "Si"},
+         ambiguities=("suffix-or-name",),
+         notes="the same with a given name that is also a surname: "
+               "position decides, as at 1.4.0"),
+    Case("title_head_capital_si_is_a_suffix", "Dr. Luo SI",
+         {"title": "Dr.", "family": "Luo", "suffix": "SI"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#289)",
+         notes="capital_si_after_a_surname_is_a_suffix behind a title: "
+               "the caps lean takes SI, and H1 makes the one name word "
+               "left the family. 1.4.0 read first 'Luo', last 'SI'"),
+    Case("one_case_si_with_words_to_spare_is_a_suffix", "john smith si",
+         {"given": "john", "family": "smith", "suffix": "si"},
+         ambiguities=("suffix-or-name",),
+         notes="the twin of the all-lower meng rows: in a name written "
+               "in one case the count decides, and two words are left "
+               "to spare. 1.4.0 read the same suffix"),
+    Case("leading_si_is_a_given_name_without_a_report", "Si Luo",
+         {"given": "Si", "family": "Luo"},
+         notes="the absence contrast: the suffix vocabulary claims only "
+               "the last word of a name, so a leading member is a given "
+               "name and nothing is reported. 1.4.0 read the same"),
+    Case("leading_chi_is_a_given_name_without_a_report", "Chi Smith",
+         {"given": "Chi", "family": "Smith"},
+         notes="the same absence for 'chi'; 1.4.0 read the same"),
+    Case("interior_si_is_a_middle_name_without_a_report", "Luo Si Smith",
+         {"given": "Luo", "middle": "Si", "family": "Smith"},
+         notes="the interior position, where the member chooses nothing "
+               "(mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE); 1.4.0 "
+               "read the same"),
     # -- #540: 'meng' and 'lac' take the marking 'ba' took, on the same
     # criterion (decisions/suffix-acronym-collisions). MEng and LAc
     # are live credentials; Meng is a Chinese surname and given name,
