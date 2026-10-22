@@ -18,7 +18,7 @@
   "Jon Dough and"             →  initials="J. D."
   "Juan de y"                 →  initials="J. y."
   ```
-- **The first letter is the one the word's composed spelling begins with**, written in the form the writer used: a letter written as a base letter followed by its combining accent initials whole, and so does a syllable written as its separate parts.
+- **The first letter is the one the word's composed spelling begins with**, written in the form the writer used: a letter written as a base letter followed by its combining accent initials whole, and so does a syllable written as its separate parts, wherever the two compose to one character; a mark that never composes with its letter (a nukta after ज, whose precomposed U+095B is excluded from composition) is left out of the initial, while the precomposed letter keeps it.
   ```
   "émile zola"                →  initials="e\u0301. z."
   "マイケル ジャクソン"            →  initials="マ. シ\u3099."

@@ -88,7 +88,8 @@ from nameparser._policy import Policy
 #: re-asked by the chain and the reserve and read again by assign
 #: (decisions/parse-cost). The 3.12-3.15 rows read 289/326 from
 #: #614's /simplify on and were corrected in #620, which moved no row
-#: (decisions/parse-cost).
+#: (decisions/parse-cost). Then down by 4 on every row in #624 and up
+#: by 3 in #625, to the figures below (decisions/parse-cost).
 _CALL_BASELINE = {
     (3, 11): {"parse": 307, "facade": 344},
     (3, 12): {"parse": 288, "facade": 325},

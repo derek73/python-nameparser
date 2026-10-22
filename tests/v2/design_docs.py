@@ -14,7 +14,6 @@ renaming a file never breaks one.
 """
 from __future__ import annotations
 
-import json
 import re
 import unicodedata
 from collections.abc import Set as AbstractSet
@@ -157,8 +156,8 @@ def reused_id_findings(rule_ids: set[str],
 
 
 # A decisions file carries `## Standing`, an index of the decisions in
-# force, ahead of its entries under `## Log` -- every file but those
-# listed in decisions_without_standing.json (below). Each Standing
+# force, ahead of its entries under `## Log` -- every file but the
+# reference lists (below). Each Standing
 # bullet ends its claim with the entry that decided it, by date and
 # issue (`— 2026-10-06 #613`) or by date alone; a `Not standing:` line
 # names entries a later one answered. An entry is a log bullet opening
@@ -426,48 +425,22 @@ def standing_findings(text: str) -> list[str]:
     return findings
 
 
-#: The decisions files allowed to lack a Standing block: every file
-#: created before the rule, C1's block landing on 2026-10-19
-#: (decisions/README.md, `## Standing`). It never holds a key it did not
-#: hold when the rule landed.
-STANDING_EXEMPT = Path(__file__).with_name("decisions_without_standing.json")
-#: The list as recorded when the rule landed. Never edited: the list
-#: must stay inside it, so a new file cannot join the list, alone or in
-#: exchange for one that leaves it.
-STANDING_EXEMPT_ORIGINAL = frozenset({
-    '3-0-reevaluations', 'A1', 'A2', 'C10', 'C11', 'C12', 'C3', 'C4',
-    'C5', 'C6', 'C7', 'C8', 'C9', 'D1', 'D2', 'H1', 'H2', 'H3', 'H4',
-    'H5', 'H6', 'M1', 'M2', 'M3', 'M4', 'N1', 'N2', 'N3', 'O1', 'O2',
-    'O4', 'O5', 'P1', 'P2', 'P3', 'P5', 'P6', 'P7', 'R1', 'R2', 'R3',
-    'R4', 'R5', 'S10', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9',
-    'T1', 'T3', 'T4', 'W1', 'W2', 'W3', 'W4', 'api-churn-declines',
-    'cjk-comma-demotion', 'cjk-full-stops', 'comma-suffix-arc',
-    'comparison-surface', 'deviates-registry', 'differential-ledger',
-    'generational-words', 'given-name-titles', 'indic-honorifics',
-    'initials-repertoire', 'legacy-rule-numbers', 'ma-do', 'nfd-shapes',
-    'normalization-fold', 'parse-cost', 'phd-merge',
-    'removed-v1-surface', 'render-default',
-    'review-agent-single-source', 'salutation-titles',
-    'script-table-placement', 'suffix-acronym-collisions',
-    'suffix-field-composition', 'two-input-invariants',
-    'v1-xfail-triage', 'vocabulary-collisions', 'vocabulary-exclusions',
-    'vocabulary-model'})
-
-
-def read_standing_exempt(path: Path = STANDING_EXEMPT) -> set[str]:
-    return set(json.loads(path.read_text(encoding="utf-8"))["exempt"])
-
-
 # A reference list -- a file of Declined, Excluded, Open, removal or
 # mapping lines, each already saying what stands -- carries no Standing
 # block, which would copy it. The decisions index names them under this
-# heading, and only a key the exempt list started with may be listed. A
+# heading, and only the five in REFERENCE_LISTS may be listed: a new
+# decisions file opens with ## Standing whatever it holds (#762). A
 # file there may not take a log's shapes: a dated entry, a bullet
 # opening with a tag and a date (`- (A) 2026-08-17 — …`, as
 # 3-0-reevaluations writes its log), or a dated title (a bundle, as
 # cjk-full-stops is). A log written in none of those shapes is caught
 # only in review.
 _REFERENCE_HEADING = "## Reference lists"
+#: The reference lists, fixed when #762 finished giving every other
+#: decisions file a Standing block (2026-10-22).
+REFERENCE_LISTS = frozenset({
+    'api-churn-declines', 'given-name-titles', 'legacy-rule-numbers',
+    'removed-v1-surface', 'vocabulary-exclusions'})
 _LOG_SHAPED = re.compile(
     r"^- (?:\*\*)?(?:\([^)\n]{1,12}\) )?(?=\d{4}-\d\d)|\A# [^\n]*\d{4}-\d\d",
     re.M)
@@ -493,17 +466,13 @@ def read_reference_lists(folder: Path = DECISIONS_DIR) -> set[str]:
 
 
 def standing_roster_findings(
-        files: dict[str, str], exempt: set[str],
-        original: frozenset[str] = STANDING_EXEMPT_ORIGINAL,
-        reference: AbstractSet[str] = frozenset()) -> list[str]:
-    """What breaks the Standing ratchet: a file off the exempt list with
-    no Standing block that is not a reference list, a listed file that
-    has gained one (take it off the list), a listed key no file carries
-    any more, a listed key the list did not hold when the rule landed,
-    and a heading that misspells `## Standing`; and of a reference list,
-    a Standing block, a log's shape (a dated or tagged-date bullet, a
-    dated title), a place on the exempt list, or a key the exempt list
-    did not hold when the rule landed."""
+        files: dict[str, str], reference: AbstractSet[str],
+        allowed: AbstractSet[str] = REFERENCE_LISTS) -> list[str]:
+    """What breaks the Standing rule: a file with no Standing block that
+    is not a reference list, and a heading that misspells
+    `## Standing`; and of a reference list, a Standing block, a log's
+    shape (a dated or tagged-date bullet, a dated title), or a key
+    outside the fixed set."""
     findings = []
     for key in sorted(reference & files.keys()):
         text = files[key]
@@ -514,30 +483,16 @@ def standing_roster_findings(
             findings.append(f"{key} is a reference list but is shaped "
                             "like a log (a dated entry or title): a log "
                             "opens with ## Standing")
-        if key in exempt:
-            findings.append(f"{key} is a reference list: take it off "
-                            f"{STANDING_EXEMPT.name}")
-    for key in sorted(reference - original):
-        findings.append(f"{key} is under Reference lists but was not on "
-                        f"{STANDING_EXEMPT.name} when the rule landed: a "
-                        "new decisions file opens with ## Standing")
+    for key in sorted(reference - allowed):
+        findings.append(f"{key} is under Reference lists but is not one "
+                        "of REFERENCE_LISTS: a decisions file opens with "
+                        "## Standing")
     for key, text in sorted(files.items()):
         for line in misspelled_standing(text):
             findings.append(f"{key}: {line!r} is not the heading "
                             "'## Standing'")
-    for key in sorted(exempt - original):
-        findings.append(f"{key} is listed in {STANDING_EXEMPT.name} but "
-                        "was not on it when the rule landed: a new "
-                        "decisions file opens with ## Standing instead")
     for key, text in sorted(files.items()):
-        has = has_standing(text)
-        if key in exempt and has:
-            findings.append(f"{key} has a Standing block: take it off "
-                            f"{STANDING_EXEMPT.name}")
-        elif key not in exempt and key not in reference and not has:
-            findings.append(f"{key} has no Standing block: a new decisions "
+        if key not in reference and not has_standing(text):
+            findings.append(f"{key} has no Standing block: a decisions "
                             "file opens with ## Standing and ## Log")
-    for key in sorted(exempt - files.keys()):
-        findings.append(f"{key} is listed in {STANDING_EXEMPT.name} "
-                        "but no decisions file carries it")
     return findings

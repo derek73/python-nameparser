@@ -8,9 +8,9 @@ import pytest
 
 from tests.v2.design_docs import (
     DECISIONS_DIR, MENTION_RE, RULES_DIR, read_decision_files, read_index,
-    STANDING_EXEMPT_ORIGINAL, _POINTER_RE, _clean, _entries, _hits,
+    REFERENCE_LISTS, _POINTER_RE, _clean, _entries, _hits,
     has_standing, read_reference_lists, read_rules_text,
-    read_standing_exempt, reference_lists, resolve, retired_ids,
+    reference_lists, resolve, retired_ids,
     reused_id_findings,
     rule_file_ids, slugify, standing_findings, standing_roster_findings,
     stem_for)
@@ -390,40 +390,24 @@ def test_every_standing_line_points_at_a_live_entry() -> None:
         assert standing_findings(files[key]) == [], key
 
 
-_ORIGINAL = frozenset({"P2", "A1"})
-
-
-@pytest.mark.parametrize("files, exempt, finding", [
-    ({"C1": "## Standing", "P2": "log", "A1": "log"}, {"P2", "A1"}, None),
+@pytest.mark.parametrize("files, finding", [
+    ({"C1": "## Standing", "L": "- Declined: x."}, None),
     ({"C1": "## Standing", "C14": "- 2026-10-20 — the `## Standing` rule.",
-      "P2": "log", "A1": "log"}, {"P2", "A1"}, "C14 has no Standing"),
-    ({"C1": "## Standing", "P2": "log", "A1": "## Standing"}, {"P2"},
-     None),
-    ({"C1": "## Standing", "C14": "log", "P2": "log", "A1": "log"},
-     {"P2", "A1"}, "C14 has no Standing"),
-    ({"C1": "## Standing", "P2": "## Standing", "A1": "log"}, {"P2", "A1"},
-     "P2 has a Standing block: take it off"),
-    ({"C1": "## Standing", "A1": "log"}, {"P2", "A1"},
-     "P2 is listed in decisions_without_standing.json but no decisions"),
-    ({"P2": "log", "A1": "log", "Z9": "log"}, {"P2", "A1", "Z9"},
-     "was not on it when the rule landed"),
-    ({"C1": "## Standing", "P2": "log", "A1": "## Standing \n- a"},
-     {"P2", "A1"}, "'## Standing ' is not the heading"),
-    ({"C1": "## Standing", "P2": "log", "A1": "### Standing\n- a"},
-     {"P2", "A1"}, "'### Standing' is not the heading"),
-    ({"C1": "## Standing", "P2": "log", "A1": "  ## Standing\n- a"},
-     {"P2", "A1"}, "'  ## Standing' is not the heading"),
-    ({"P2": "log", "A1": "## Standing", "Z9": "log"}, {"P2", "Z9"},
-     "was not on it when the rule landed"),
-], ids=["clean", "prose-mention-is-no-block", "listed-file-left",
-        "new-file-without",
-        "listed-file-gained-one", "listed-file-gone", "new-file-listed",
+      "L": "- Declined: x."}, "C14 has no Standing"),
+    ({"C1": "## Standing", "C14": "log", "L": "- Declined: x."},
+     "C14 has no Standing"),
+    ({"C1": "## Standing", "L": "## Standing \n- a"},
+     "'## Standing ' is not the heading"),
+    ({"C1": "## Standing", "L": "### Standing\n- a"},
+     "'### Standing' is not the heading"),
+    ({"C1": "## Standing", "L": "  ## Standing\n- a"},
+     "'  ## Standing' is not the heading"),
+], ids=["clean", "prose-mention-is-no-block", "file-without",
         "misspelled-heading-trailing-space", "misspelled-heading-level",
-        "misspelled-heading-indented",
-        "new-file-swapped-in"])
+        "misspelled-heading-indented"])
 def test_standing_roster_findings_name_each_break(
-        files: dict[str, str], exempt: set[str], finding: str | None) -> None:
-    found = standing_roster_findings(files, exempt, _ORIGINAL)
+        files: dict[str, str], finding: str | None) -> None:
+    found = standing_roster_findings(files, {"L"}, frozenset({"L"}))
     if finding is None:
         assert found == []
     else:
@@ -448,58 +432,55 @@ def test_reference_lists_are_the_links_under_their_heading() -> None:
     assert reference_lists("## Named topics\n\n- [a — x](a.md)\n") == set()
 
 
-@pytest.mark.parametrize("files, exempt, finding", [
-    ({"C1": "## Standing", "L": "- Declined: x."}, set(), None),
-    ({"C1": "## Standing", "L": "- Declined: x.\n- 2026-10-01 — y."}, set(),
+@pytest.mark.parametrize("files, finding", [
+    ({"C1": "## Standing", "L": "- Declined: x."}, None),
+    ({"C1": "## Standing", "L": "- Declined: x.\n- 2026-10-01 — y."},
      "L is a reference list but is shaped like a log"),
     ({"C1": "## Standing", "L": "- Declined: x.\n- (A) 2026-08-17 — parked."},
-     set(), "L is a reference list but is shaped like a log"),
-    ({"C1": "## Standing", "L": "- **2026-10-01 #5 — y.**"}, set(),
+     "L is a reference list but is shaped like a log"),
+    ({"C1": "## Standing", "L": "- **2026-10-01 #5 — y.**"},
      "L is a reference list but is shaped like a log"),
     ({"C1": "## Standing",
       "L": "# L — a bundle (2026-09-10, #322)\n\n- **NFKC declined.**"},
-     set(), "L is a reference list but is shaped like a log"),
+     "L is a reference list but is shaped like a log"),
     ({"C1": "## Standing",
       "L": "# L — x\n\n- abd — ADDED 2026-08-18, see decisions/P5.\n"
            "- (Derek's call) removed 2026-08-26.\n"},
-     set(), None),
-    ({"C1": "## Standing", "L": "## Standing\n- x"}, set(),
+     None),
+    ({"C1": "## Standing", "L": "## Standing\n- x"},
      "L is a reference list and carries ## Standing"),
-    ({"C1": "## Standing", "L": "- Declined: x."}, {"L"},
-     "L is a reference list: take it off"),
-    ({"C1": "## Standing", "N": "- Declined: x."}, set(),
-     "N is under Reference lists but was not on"),
+    ({"C1": "## Standing", "N": "- Declined: x."},
+     "N is under Reference lists but is not one"),
 ], ids=["list", "list-with-entry", "list-with-tagged-date",
         "list-with-bold-entry", "list-with-dated-title",
         "list-with-dates-inside-lines", "list-with-standing",
-        "list-also-exempt", "list-new-since-the-rule"])
+        "list-new-since-the-rule"])
 def test_a_reference_list_carries_no_standing_and_no_log(
-        files: dict[str, str], exempt: set[str], finding: str | None) -> None:
+        files: dict[str, str], finding: str | None) -> None:
     listed = {"N"} if "N" in files else {"L"}
-    found = standing_roster_findings(files, exempt, frozenset({"L"}),
-                                     reference=listed)
+    found = standing_roster_findings(files, listed, frozenset({"L"}))
     if finding is None:
         assert found == []
     else:
         assert len(found) == 1 and finding in found[0], found
     # Off the heading, the same file is a log with no block.
     if finding is None:
-        assert standing_roster_findings(files, exempt, frozenset({"L"})) == [
-            "L has no Standing block: a new decisions file opens with "
+        assert standing_roster_findings(files, set(), frozenset({"L"})) == [
+            "L has no Standing block: a decisions file opens with "
             "## Standing and ## Log"]
 
 
-def test_a_decisions_file_off_the_list_opens_with_standing() -> None:
+def test_every_decisions_file_opens_with_standing_or_is_a_reference_list(
+        ) -> None:
     assert standing_roster_findings(read_decision_files(),
-                                    read_standing_exempt(),
-                                    reference=read_reference_lists()) == []
+                                    read_reference_lists()) == []
 
 
-def test_the_original_exempt_set_is_never_edited() -> None:
-    # The list the rule landed with: 88 decisions files created before
-    # C1's block. A key added here would let a new file skip its block,
-    # so the size is asserted rather than trusted to the comment.
-    assert len(STANDING_EXEMPT_ORIGINAL) == 88
+def test_the_reference_lists_are_a_fixed_five() -> None:
+    # Fixed when #762 finished (2026-10-22): a key added here would let a
+    # new file skip its block, so the size is asserted rather than
+    # trusted to the comment.
+    assert len(REFERENCE_LISTS) == 5
 
 
 _RETIRED_ENTRY = ("# X9 — a retired rule\n\n## Standing\n\n"
