@@ -17,7 +17,7 @@
 
 **Accepted:**
 
-- A maiden marker in a part a declared delimiter separates takes no clause, as no marker in a part after a suffix comma does, the marker being an ordinary word there (M2). Releases 2.0 through 2.3 read past the delimiter and took the clause; the comma reading is accepted as the cost of one rule for a declared separator.
+- A maiden marker in a part a declared delimiter separates takes no clause. The delimiter costs nothing here: a marker in a part after a suffix comma is an ordinary word with or without a core (M2), so 'Smith, John, MD née Jones Smith' takes none either. Releases 2.0 through 2.3 read past the delimiter and took the clause.
   ```
   "Smith, John, MD - née Jones Smith" extra_suffix_delimiters-dash →  suffix="MD, née Jones Smith"
   ```
