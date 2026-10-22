@@ -4,7 +4,7 @@ ONE GAP SEEN FROM TWO SIDES, which is why the two issues were answered together.
 
 ## Standing
 
-- `_lexicon.FULL_STOPS` (`.．。｡`: the ASCII period and the fullwidth, ideographic and halfwidth ideographic stops) answers "which characters are a period" once, read by the lookup and storage fold, the script-classification fold, the surname site's head match, the honorific peel's tail match and the render's lone-initial mask rule (`_render.py`), so `김민준 씨．`, `씨。` and `씨｡` each read suffix as `씨.` does — 2026-09-10 #322.
+- `_lexicon.FULL_STOPS` (`.．。｡`: the ASCII period and the fullwidth, ideographic and halfwidth ideographic stops) answers "which characters are a period" once, read by the lookup and storage fold, the script-classification fold, the surname site's head match, and the honorific peel's tail match, so `김민준 씨．`, `씨。` and `씨｡` each read suffix as `씨.` does — 2026-09-10 #322.
 - A stop glued to a name word is read at the edge of every site that reads the set, not only the lookup: `양. 지훈` reads given '지훈', family '양.', `양 지훈.` keeps its family-first order, `김. 민준` divides as family '김.', given '민준', and `김민준.` as family '김', given '민준.', the stop riding with the remainder — 2026-09-10 #322.
 - A stop on a glued honorific rides with it: `田中さん.` reads family '田中', suffix 'さん.' and `김민준씨.` family '김', suffix '씨.', as their stop-less spellings do — 2026-09-10 #322.
 - H2's opening-abbreviation shape declines a period-marked word carrying a script with no initials, so `田中.` reads family '田中.' and `田中. 太郎` family '田中.', given '太郎' while `Smith. John` and `Проф. Иванов` keep title; the veto is contains-any, so a word carrying such a character is no title even beside Latin letters — 2026-09-10 #322.
