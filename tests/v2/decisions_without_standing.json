@@ -72,10 +72,8 @@
   "review-agent-single-source",
   "salutation-titles",
   "script-table-placement",
-  "suffix-acronym-collisions",
   "suffix-field-composition",
   "two-input-invariants",
-  "v1-xfail-triage",
-  "vocabulary-collisions"
+  "v1-xfail-triage"
  ]
 }
