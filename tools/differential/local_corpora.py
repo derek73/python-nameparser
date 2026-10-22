@@ -1,7 +1,8 @@
 """Local corpora: whole names fetched into the cache, never committed.
 
-A local corpus is the SURVEY job in mechanisms.md#NAME-DATA-JOBS, where
-"the job decides where its data lives": real names as people type them, read with the snapshot's machinery, kept out
+A local corpus does the SURVEY job of the five in
+mechanisms.md#NAME-DATA-JOBS ("the job decides where its data lives"):
+real names as people type them, read with the snapshot's machinery, kept out
 of the repository because the names are real people's and nobody vetted
 them for publication. It also does WATCH outside CI (snapshot.py --local),
 but neither gates CI nor feeds SCORE, whose scorer reads only committed

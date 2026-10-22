@@ -410,7 +410,7 @@ print(len(MAIDEN_MARKERS), 'members ->', len(cls), 'structural classes')"
 
 **Problem shape.** A new source of names turns up (a registry, a dataset, a dump) and the question is what to build for it: a committed corpus, a column in a tool, a script that writes vocabulary.
 
-**Contract statement.** A name source does one or more of five jobs — WATCH, SCORE, COUNT, DERIVE and SURVEY — and the job decides where its data lives. Only WATCH in CI and SCORE need the names in the repository, so a source whose names cannot be committed still does COUNT, DERIVE and SURVEY, and WATCH outside CI.
+**Contract statement.** A name source does one or more of five jobs — WATCH, SCORE, COUNT, DERIVE and SURVEY — and the job decides where its data lives. Only WATCH in CI and SCORE need the names in the repository, so a source whose names cannot be committed still does COUNT and SURVEY, WATCH outside CI, and DERIVE where its terms let a derived list ship.
 
 **How it works.** WATCH asks whether a change moved a name: a committed corpus, `snapshot.jsonl` and a test that fails, or a local corpus read with `snapshot.py --local`, which no CI run sees. SCORE asks whether the parser agrees with someone who knows the fields: a committed fields file and agreement record, read by `cldr_agreement.py` from the repository alone. COUNT asks how one word is used: a cached source behind a row of `tools/name_usage.py`, with only the counts cited. DERIVE asks what a shipped list should hold: a cached source and a script writing the vocabulary (`tools/zh_surnames.py`). SURVEY asks how people write whole names, and how OFTEN they write each shape: a cached local corpus (`tools/differential/local_corpora.py`).
 
