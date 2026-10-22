@@ -361,8 +361,10 @@ def standing_findings(text: str) -> list[str]:
     with no `— <date>` pointer, any pointer from there to the line's
     end naming no entry (dates match exactly), carrying words that
     continue no candidate's head where its date and issue are shared,
-    naming more than one (ambiguous), or naming a `SUPERSEDED by` entry, a
-    Not-standing pointer to no entry, a Standing with no Log after it.
+    naming more than one (ambiguous), or naming a `SUPERSEDED by` entry;
+    a Not-standing pointer naming no entry, carrying such words or
+    naming more than one (a superseded entry is what it may name); a
+    Standing with no Log after it.
     Empty for a file with no Standing block, whose absence is
     standing_roster_findings' question."""
     head = _STANDING_HEADING.search(text)

@@ -13,7 +13,7 @@
 
 Not standing: the ledger markers the entry corrected, that ledger having been retired in #664 — 2026-08-27 #445, what the ledger's; the re-measurement of #449's population the entry promised, taken in decisions/O5's #449 entry — 2026-08-27 #445, the relationship to #449.
 
-Elsewhere: a marker counts only behind a surname, so `'Smitty' Jones Jr. née Smith` takes no clause and reads given 'Jones', middle 'Jr. née', family 'Smith' — decisions/M2's 2026-10-04 (Derek), #601 entry; the `initial` tag that carve-out reads is no longer purely a shape claim — decisions/P8's 2026-09-13 #383/#479, AMENDS entry; a one-case bare letter is the initial its capital is (`j nee smith` → given 'j' under the default order) — decisions/T4's 2026-10-18, #723 entry; the maiden name no longer making H1 decline — decisions/H1's 2026-08-25 (#410) entry; the report a lone name word with nothing to decide it carries — decisions/O5.
+Elsewhere: a marker counts only behind a surname, so `'Smitty' Jones Jr. née Smith` takes no clause and reads no maiden name (given 'Jones', middle 'Jr. née', family 'Smith' under the default order) — decisions/M2's 2026-10-04 (Derek), #601 entry; the `initial` tag that carve-out reads is no longer purely a shape claim — decisions/P8's 2026-09-13 #383/#479, AMENDS entry; a one-case bare letter is the initial its capital is (`j nee smith` → given 'j' under the default order) — decisions/T4's 2026-10-18, #723 entry; the maiden name no longer making H1 decline — decisions/H1's 2026-08-25 (#410) entry; the report a lone name word with nothing to decide it carries — decisions/O5.
 
 Open: none in this file.
 
