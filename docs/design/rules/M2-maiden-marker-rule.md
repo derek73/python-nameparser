@@ -4,7 +4,7 @@
 
 **Then:** a marker that counts takes the words after it as the maiden name, and is itself dropped.
 
-- **Where a marker counts.** A recognized maiden marker counts only in the part of the name that holds the family name — the whole name where no comma divides it or before a suffix comma (C1), the part before a family comma — and only with a name word straight before it. A word of the leading title run is no name word there, a lone title included; neither is a word of the unambiguous suffix vocabulary, unless it opens the name (S2), nor a connective (P3). A particle is one: with nothing after it to attach to, it is no particle there.
+- **Where a marker counts.** A recognized maiden marker counts only in the part of the name that holds the family name — the whole name where no comma divides it or before a suffix comma (C1), the part before a family comma — and only with a name word straight before it. A word of the leading title run is no name word there, a lone title included; neither is a word of the unambiguous suffix vocabulary, unless it is the first word of its part, a bare suffix word never opening the string (S2), nor a connective (P3). A particle is one: with nothing after it to attach to, it is no particle there.
   ```
   "Doe nee Smith, Jane"         →  maiden="Smith"
   "Mai Le née Nguyen"           →  maiden="Nguyen"
@@ -70,6 +70,7 @@
   "Jane Smith, née Jones"       →  maiden=""
   "Smith, John, PhD née Jones"  →  maiden=""
   "Jane Doe PhD nee Smith"      →  maiden=""
+  "Dr. Jr née Jones"            →  maiden=""  · boundary
   "Jane and née Jones"          →  maiden=""
   "Dr. nee Smith PhD Prof."     →  maiden=""  · boundary
   "Dr. nee Smith PhD Prof."     →  family="Smith"  · boundary
