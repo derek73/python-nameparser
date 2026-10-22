@@ -2,12 +2,14 @@
 
 ## Standing
 
-- The trailing run of a main segment (no comma, or the part before a suffix comma) of three or more pieces is read once, after the `Ph. D.` merge, the maiden take and P3's connective joins and before the particle chain (P2) and the bound given-name join (P5), and binds: neither join reaches a word it took (`John van der Berg Prof.` → title 'Prof.', family 'van der Berg'), and a salutation keeps its connective (`Mr. and Mrs.` → title 'Mr. and Mrs.') — 2026-10-07 #614.
+- The trailing run of a main segment (no comma, or the part before a suffix comma) of three or more pieces is read once, after the `Ph. D.` merge, the maiden take and P3's connective joins and before the particle chain (P2) and the bound given-name join (P5), and binds: neither join reaches a word it took (`John van der Berg Prof.` → title 'Prof.', family 'van der Berg' under the default order), and a salutation keeps its connective (`Mr. and Mrs.` → title 'Mr. and Mrs.') — 2026-10-07 #614.
 - The read counts a particle run and the plain words the chain joins to it as one name word, and a connective join as one, while a word the read weighs (a suffix word, a member of the ambiguous class by listing or by shape, an initial, a roman numeral by shape, a period-marked title) keeps a unit of its own: `Freiherr von Berg X.Y.Z.` keeps family 'von Berg X.Y.Z.', `Juan de la Vega VI` reads suffix 'VI' and `Freiherr von Berg MA X.Y.Z.` suffix 'MA X.Y.Z.' — 2026-10-07 #614; 2026-10-08 #620.
 - The count is taken as marks over the pieces as written, asking the chain's own run end, never through a merged copy of the pieces — 2026-10-08 #620.
 - Group merges each run of two or more adjacent particles past the chain's leading position before the read, so the read counts, stops at and absorbs the run as one piece; the merged piece keeps `prefix` and drops `title` — 2026-10-10 #625.
 - A pick the particle chain takes into the name is reported by the chain, in its own words (`Jan vd Ma` → family 'vd Ma', reported), and assign reports the read's other picks — 2026-10-07 #614.
-- Where the run is not read once (a segment of fewer than three pieces, or a run with a name piece inside it, as in `John Dr. G.J.`), group re-asks the peel and assign reads for itself, the procedure before #614 — 2026-10-07 #614.
+- Where the run is not read once (a segment of fewer than three pieces, or a run with a name piece inside it, as in `John Dr. G.J.`), group re-asks the peel and assign reads for itself, the procedure before #614; and where a name group's joins leave no name word in front of the run, assign reads it again so it keeps one — 2026-10-07 #614.
+- The numeral fork reads the piece in front of the numeral as written, not the unit's first word (`John van B and Smith X` → family 'van B and Smith X') — 2026-10-08 #620.
+- The chain reports `particle-or-given` where its run claims something past the particle or is a run the merge made (`Freiherr von der`) — 2026-10-10 #625.
 
 Not standing: the split of 2026-10-17 #682, the clause move of 2026-10-19 and the skeleton migration of 2026-10-20 #761, each carried out.
 
