@@ -1387,11 +1387,13 @@
 {"name": "Jane Smith (Nee) (Jones)", "given": "Jane", "family": "Smith", "nickname": "Nee Jones", "initials": "J. S."}
 {"name": "Jane Smith (née Jones)", "given": "Jane", "family": "Smith", "maiden": "Jones", "initials": "J. S."}
 {"name": "Jane Smith (née Jr.)", "given": "Jane", "middle": "Smith", "family": "née", "suffix": "Jr.", "initials": "J. S. n."}
+{"name": "Jane Smith (née PhD)", "given": "Jane", "family": "Smith", "maiden": "PhD", "initials": "J. S."}
 {"name": "Jane Smith (née V)", "given": "Jane", "family": "Smith", "maiden": "V", "initials": "J. S."}
 {"name": "Jane Smith (née)", "given": "Jane", "family": "Smith", "nickname": "née", "initials": "J. S."}
 {"name": "Jane Smith born Jones", "given": "Jane", "middle": "Smith born", "family": "Jones", "initials": "J. S. b. J."}
 {"name": "Jane Smith née Jones", "given": "Jane", "family": "Smith", "maiden": "Jones", "initials": "J. S."}
 {"name": "Jane Smith née Jones PhD", "given": "Jane", "family": "Smith", "suffix": "PhD", "maiden": "Jones", "initials": "J. S."}
+{"name": "Jane Smith née PhD", "given": "Jane", "middle": "Smith", "family": "née", "suffix": "PhD", "initials": "J. S. n."}
 {"name": "Jane Smith née V", "given": "Jane", "family": "Smith", "maiden": "V", "initials": "J. S."}
 {"name": "Jane Smith, née Jones", "given": "née", "middle": "Jones", "family": "Jane Smith", "initials": "n. J. J. S."}
 {"name": "Jane and née Jones", "given": "Jane and née", "family": "Jones", "initials": "J. n. J."}

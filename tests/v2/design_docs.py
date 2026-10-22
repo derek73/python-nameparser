@@ -175,7 +175,8 @@ def reused_id_findings(rule_ids: set[str],
 # candidate whose head ends there, and one whose words continue no
 # candidate's head is a finding, since nothing tells a typo from prose
 # there. Where heads are the same words (twins), the words past the
-# head pick the entry whose text opens with them
+# head pick the entry whose text opens with them, also where another
+# head of that date and issue continues past those words
 # (`— 2026-09-13 #383/#479, AMENDS`): there the words are a key, not
 # prose. A pointer still naming more than one entry is ambiguous. An
 # entry whose text after the head opens with `SUPERSEDED by` is
@@ -296,10 +297,13 @@ def _resolve(line: str, m: re.Match[str],
         if cut:
             hits, used = cut, len(said)
         elif said:
+            # Words past a bare head are a twin key where two or more
+            # heads end at the pointer, though another head continues.
             bare = [e for e in found if not tails[e]]
-            if len({_clean(h) for h, _ in found}) > 1 or not bare:
+            if not bare or (len(bare) < 2
+                            and len({_clean(h) for h, _ in found}) > 1):
                 return _Resolved([], 0, said)
-            hits, used = found, 0
+            hits, used = bare, 0
         else:
             hits = [e for e in found if not tails[e]] or found
             used = 0

@@ -37,9 +37,11 @@
 
 **Accepted:**
 
-- The word taken after the marker is not tested for being a name word, so unlike M2's bare take this one does not stop at a suffix word — the same two words read one way bracketed and another way bare. This does not contradict the S1 example under Precedence: S1 asks whether the WHOLE clause is suffix-shaped, which the trailing period makes true of the one and false of the other, so only the V clause reaches this rule.
+- The word taken after the marker is not tested for being a name word, so unlike M2's bare take this one does not stop at a suffix word — the same two words read one way bracketed and another way bare. This does not contradict the S1 example under Precedence: S1 asks whether the WHOLE clause is suffix-shaped, which the trailing period makes true of the one and false of the other, so only the V and PhD clauses reach this rule.
   ```
   "Jane Smith (née V)"        →  maiden="V"
+  "Jane Smith (née PhD)"      →  maiden="PhD"
+  "Jane Smith née PhD"        →  suffix="PhD"  · boundary
   ```
 
 ---

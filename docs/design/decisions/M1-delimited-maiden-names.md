@@ -1,10 +1,27 @@
 # M1 — delimited maiden names
 
-- 2026-07-03 (maiden-bucket design, landed via the v2 core, PR
-  #288) — the maiden reading of a delimiter pair is opt-in because
+## Standing
+
+- No delimiter pair reads as maiden by default; a caller declares one in `maiden_delimiters`, because enclosure conventions vary — 2026-07-03 PR #288.
+- A marker-led clause holding a word past its marker reads as maiden without the pair declared (M3), so what declaring a pair buys is a markerless clause and a clause of nothing but its marker: `Cherice J. (Johnson) Williams` reads nickname 'Johnson' by default and maiden 'Johnson' under a declared pair, and this rule still governs every clause in a declared pair — 2026-08-26 #335 (M3).
+- A pair declared for both maiden and nickname names reads maiden, the overlap canonicalized out of the effective nickname set before parsing and through `apply_patch` too, silently; the v1 facade keeps v1's nickname-wins reading by subtracting on its side — 2026-07-18.
+- The marker word inside a declared clause is dropped where the clause holds a word past the marker run (`Jane Smith (née Jones)` → maiden 'Jones'), and a clause of nothing but its marker keeps its words, Nee being an attested surname (`Jane Smith (Nee)` → maiden 'Nee') — 2026-08-04 #329; 2026-08-26 #434.
+- Clauses are independent, each dropping or keeping its own marker (`Jane Smith (Nee) (Jones)` → maiden 'Nee Jones' under a declared pair), and the contentless `(née —)` alone parses to every field empty and `bool()` False — 2026-08-04 #329.
+- Neighbour-scoping the drop is declined: it would read `Jane Smith nee Nee Jones` as maiden 'Jones' where it reads 'Nee Jones' — 2026-08-04 #329.
+- A clause of nothing but a phrase marker keeps its words too, so `Maria Kowalska (z domu)` under a declared pair reads maiden 'z domu', a name nobody bears, emitted deliberately because the parser cannot know the pair did not enclose an unfamiliar surname — 2026-08-26 #434.
+
+Not standing: 2026-08-05 #329, the deferral of marker detection inside a nickname clause to #335, carried out when M3 landed (2026-08-26 #335 (M3)); its premise is corrected by 2026-08-26 #335; the differential gates both entries measure were retired in #664.
+
+Elsewhere: a marker followed by a comma is no marker in this rule's drop, nor a phrase marker the writer divided with a comma (`Maria Kowalska (z, domu Nowak)` and `Jane (née ,Jones) Smith` under a declared pair keep maiden 'z, domu Nowak' and 'née ,Jones') — decisions/N1's 2026-10-12 #653 entry; the delimiters trumping every reading inside them (`Jane Doe (nee Smith MA)` → maiden 'Smith MA', reporting nothing) — decisions/M2's 2026-09-19 (Derek), #533 review — THE DELIMITERS TRUMP entry; the phrase marker itself — decisions/M2's 2026-08-26 #434 entry.
+
+Open: none in this file.
+
+## Log
+
+- 2026-07-03 (maiden-bucket design, landed via the v2 core, PR #288) (where its opt-in boundary runs superseded in part by 2026-08-26 #335 (M3) below) — the maiden reading of a delimiter pair is opt-in because
   enclosure conventions genuinely vary; there is no default pair.
 - 2026-07-18 (cc7063f; Derek's proposal out of a docs-review pain point — routing parens to maiden used to require editing both buckets in tandem, and the nickname default's contents were not discoverable) — bucket overlap is canonicalized before parsing: a pair listed for maiden is dropped from the effective nickname set (maiden wins), and the public DEFAULT_NICKNAME_DELIMITERS constant landed with it. The v1 facade restores v1's nickname-wins reading by pre-subtracting on its side. Weighed and ruled the same day: maiden-wins applies THROUGH apply_patch too — a pack's maiden pair silently removes a user's unrelated explicit nickname pair; warn-on-removal was considered (a silent-failure review flagged the site) and rejected, the silence ruled intended.
-- 2026-08-04 #329 (PR #331) — the marker word inside a delimited clause is dropped from a multi-word clause during grouping; the extraction itself keeps the whole enclosed span, so nothing is lost when there is no marker. Three decisions argued separately: the clause-size guard exists because Nee is an attested surname (Irish Ní/Nee, a Chinese romanization) — load-bearing, not defensive, and mutation-proven; clauses are independent — "(Nee) (Jones)" reads maiden "Nee Jones", each clause dropping or keeping its own marker (the first implementation leaked across clauses, a real defect); and the contentless "(née —)" alone now parses to every field empty and bool() False (an explicit alternative keeping maiden "née —" was rejected; pinned by the maiden_marker_delimited_content_free case).
+- 2026-08-04 #329 (PR #331) (its "multi-word clause" condition and "clause-size guard" superseded in part by 2026-08-26 #434 below) — the marker word inside a delimited clause is dropped from a multi-word clause during grouping; the extraction itself keeps the whole enclosed span, so nothing is lost when there is no marker. Three decisions argued separately: the clause-size guard exists because Nee is an attested surname (Irish Ní/Nee, a Chinese romanization) — load-bearing, not defensive, and mutation-proven; clauses are independent — "(Nee) (Jones)" reads maiden "Nee Jones", each clause dropping or keeping its own marker (the first implementation leaked across clauses, a real defect); and the contentless "(née —)" alone now parses to every field empty and bool() False (an explicit alternative keeping maiden "née —" was rejected; pinned by the maiden_marker_delimited_content_free case).
 - M1 and M2 are disjoint by construction, which is the no-conflict guarantee: M2's walk covers joining structure that role-bearing words never enter, while M1's drop reaches only extracted content. Verified independently at review over 7,775 records: 967 diffs, every one in the maiden field.
 
 Declined:
