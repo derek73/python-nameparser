@@ -3,10 +3,9 @@
 ## Standing
 
 - A delimiter the policy declares parts a trailing suffix part as a comma would: each side reads as the same text with a comma in the delimiter's place, the core dropped, so no join, maiden walk or link reaches across it (`Smith, John, PhD - and MD` → suffix 'PhD, and MD' under `extra_suffix_delimiters={' - '}`) — 2026-10-03 #549.
-- A maiden marker beside a core takes no clause, accepted as the cost of one rule for a declared separator: `Smith, John, MD - née Jones Smith` → suffix 'MD, née Jones Smith' — 2026-10-03 #549.
 - Outside a trailing part, before the first comma or in the listing form's given part, the core stays a word (v1 parity), and a core inside a token keeps the token whole (`RN/CRNA` under `/`) — 2026-10-03 #549.
 
-Elsewhere: a maiden marker in a part after a suffix comma is an ordinary word, so `Smith, John, PhD née Puig - i Soler` reads suffix 'PhD née Puig, i Soler' with no maiden name, where #549 gave maiden 'Puig' — decisions/M2's 2026-10-04 (Derek), #601 entry; `Smith, RN - CRNA` reads suffix 'RN - CRNA', the core a word of the run a credential opens — decisions/C13's 2026-10-04 (Derek), #603 entry.
+Elsewhere: a maiden marker in a part after a suffix comma is an ordinary word, core or no core, so `Smith, John, PhD née Puig - i Soler` reads suffix 'PhD née Puig, i Soler' with no maiden name, where #549 gave maiden 'Puig', and the clause #549 accepted losing beside a core (`Smith, John, MD - née Jones Smith` → suffix 'MD, née Jones Smith') is lost without one too (`Smith, John, MD née Jones Smith` → suffix 'MD née Jones Smith') — decisions/M2's 2026-10-04 (Derek), #601 entry; `Smith, RN - CRNA` reads suffix 'RN - CRNA', the core a word of the run a credential opens — decisions/C13's 2026-10-04 (Derek), #603 entry.
 
 Open: none in this file.
 

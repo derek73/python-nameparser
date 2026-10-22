@@ -2,12 +2,12 @@
 
 ## Standing
 
-- Inside a comma part a one-character suffix word is read by what stands before it: behind another suffix word it continues the run, with a period or without (`Smith, PSM I` → suffix 'PSM I'; `Smith, PSM I.` → suffix 'PSM I.'), and behind a name word a period makes it a middle initial while the bare letter is the suffix (`Smith, John V.` → middle 'V.'; `Smith, John V` → suffix 'V', v1 parity) — 2026-08-25 #430.
+- Inside a comma part a one-character suffix word is read by what stands before it: behind another suffix word it continues the run, with a period or without (`Smith, PSM I` → suffix 'PSM I'; `Smith, PSM I.` → suffix 'PSM I.'), and behind a name word an ASCII period makes it a middle initial while the bare letter, with no further comma after it, is the suffix (`Smith, John V.` → middle 'V.'; `Smith, John V` → suffix 'V', v1 parity) — 2026-08-25 #430.
 - The class is one-character suffix vocabulary, not a roman numeral (`Smith, John 2.` → middle '2.'), and a run's first word that is title vocabulary too stays in the run (`Smith, MD I` → suffix 'MD I'; `Smith, Jr. I` → suffix 'Jr. I') — 2026-08-25 #430.
 - The no-comma numeral predicate is not asked in the given part, so a numeral behind an initial stays the suffix (`Chang, Andy C I` → middle 'C', suffix 'I') — 2026-08-25 #430.
 - The given part's walk is strict-blind and the fork reports nothing: `Smith, John V` reads suffix 'V' under `lenient_comma_suffixes=False` as under the default, with no `suffix-or-name`, where `John Smith V` reports — 2026-08-25 #430.
 
-Elsewhere: the strict switch, which vetoes the numeral in the comma's decision and in a part that is nothing but suffix words — decisions/C14's 2026-10-19 (Derek), #761 entry; a credential starting a run to the end of its part, which reads `Smith, John PSM I I.` as suffix 'PSM I I.' where #430 had accepted middle 'I I.' — decisions/S8's 2026-10-04 (Derek), #602 entry.
+Elsewhere: the strict switch, which vetoes the numeral in the comma's decision and in a part that is nothing but suffix words — decisions/C14's 2026-10-19 (Derek), #761 entry; a credential starting a run to the end of its part, which reads `Smith, John PSM I I.` as suffix 'PSM I I.' where #430 had accepted middle 'I I.', and `Smith, John PhD I, Jr.` as suffix 'PhD I, Jr.' where rules/C9's further-comma clause still says middle 'I' — decisions/S8's 2026-10-04 (Derek), #602 entry; a bare letter behind a name word with a suffix comma after it stays a middle initial (`Smith, John V, Jr.` → middle 'V', suffix 'Jr.') — decisions/v1-xfail-triage's 2026-09-01 (Derek's triage) entry; an ideographic or fullwidth full stop is no abbreviation mark there (`Smith, John V。` → suffix 'V。') — decisions/cjk-full-stops' 2026-09-10 #322/#323 bundle.
 
 Open: none in this file.
 
