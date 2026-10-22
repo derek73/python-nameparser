@@ -1,5 +1,15 @@
 # suffix-field-composition — three kinds of thing in one field
 
+## Standing
+
+- `suffix` stays one field holding generational words, credentials and postnominal honorifics; the composition is recorded, with the command that re-counts it, instead of splitting the field — 2026-08-16 #326.
+
+Elsewhere: generation and credential are separate kinds in the vocabulary, though they still compile into the one field, decisions/vocabulary-model's 2026-10-15/16 entry (item 3).
+
+Open: [#326](https://github.com/derek73/python-nameparser/issues/326) — whether `suffix` splits into generation and credentials; whether the honorifics belong in `suffix` at all is deliberately undecided here.
+
+## Log
+
 - 2026-08-16 (suffix keystone; #326) — measured composition of suffix_words (40 entries): 11 generational (i, ii, iii, iv, v, jr, jnr, sr, snr, junior, 2), 5 neither (dr, esq, esquire, ret, vet), and 24 POSTNOMINAL HONORIFICS — 20 CJK (さん, さま, くん, ちゃん, 様, 殿, 氏, 先生, 博士, 教授, 女士, 小姐, 씨, 양, 군, 님, 박사, 박사님, 교수님, 선생님) and 4 Hebrew (ז"ל, ז״ל, שליט"א, שליט״א). The honorifics are the LARGEST group.
 - Decision: do NOT split the field. Record the composition; #296,
   #291, #325 and #289 proceed on their own terms rather than
