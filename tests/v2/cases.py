@@ -696,6 +696,25 @@ CASES: tuple[Case, ...] = (
                "walk stops there and the unambiguous PhD behind it is "
                "still peeled. 1.4.0 read suffix 'Chi, PhD' and family "
                "'Smith'"),
+    # -- #796: 'capa' (Census 175, NPPES 11) and its fork. A surname with
+    # no words to spare reads family; the all-caps credential with a
+    # name in front keeps its suffix (rules/S6, the case signal).
+    Case("robert_capa_is_a_surname", "Robert Capa",
+         {"given": "Robert", "family": "Capa"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#796)",
+         notes="the surname fork: 'Capa' has no word to spare for a "
+               "credential, so it is the family name and the fork is "
+               "reported. Before #796 it read suffix 'Capa' with no "
+               "family name"),
+    Case("all_caps_capa_is_still_a_credential", "John Smith CAPA",
+         {"given": "John", "family": "Smith", "suffix": "CAPA"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#796)",
+         notes="the contrasting spelling: an all-caps member of the "
+               "ambiguous set in a name with words to spare keeps its "
+               "credential reading (rules/S6), so the fork is pinned "
+               "in both directions"),
     Case("empty_head_si_is_a_given_name", ", Si",
          {"given": "Si"},
          ambiguities=("suffix-or-name",),

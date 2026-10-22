@@ -2116,7 +2116,7 @@
 {"name": "Magnús Eiríksson", "given": "Magnús", "family": "Eiríksson", "initials": "M. E."}
 {"name": "Magnús Jónsson", "given": "Magnús", "family": "Jónsson", "initials": "M. J."}
 {"name": "Mahathir bin Mohamad", "given": "Mahathir", "family": "bin Mohamad", "initials": "M. M."}
-{"name": "Maheen Farooqi, ACA", "given": "Maheen", "family": "Farooqi", "suffix": "ACA", "initials": "M. F."}
+{"name": "Maheen Farooqi, ACA", "given": "Maheen", "family": "Farooqi", "suffix": "ACA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "M. F."}
 {"name": "Mahmud II.", "given": "Mahmud", "suffix": "II.", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "M."}
 {"name": "Mai Le née Nguyen", "given": "Mai", "family": "Le", "maiden": "Nguyen", "initials": "M. L."}
 {"name": "Maid Marion", "title": "Maid", "given": "Marion", "initials": "M."}
@@ -2580,7 +2580,7 @@
 {"name": "Prof. Ɖr. MƉ Samʊwɛl fan ƉAM Fostɛɛŋ", "title": "Prof. Ɖr.", "given": "MƉ", "middle": "Samʊwɛl fan ƉAM", "family": "Fostɛɛŋ", "initials": "M. S. f. Ɖ. F."}
 {"name": "Prof. Ɖr. MƉ fan ƉAM ƉOMIŊGO Fostɛɛŋ Samʊwɛl", "order": "FAMILY_FIRST", "title": "Prof. Ɖr.", "given": "fan", "middle": "ƉAM ƉOMIŊGO Fostɛɛŋ Samʊwɛl", "family": "MƉ", "initials": "f. Ɖ. Ɖ. F. S. M."}
 {"name": "Prop. Dr. Ada Cornelia César Martín von Brühl González Domingo MD DDS", "title": "Prop. Dr.", "given": "Ada", "middle": "Cornelia César Martín", "family": "von Brühl González Domingo", "suffix": "MD DDS", "initials": "A. C. C. M. B. G. D."}
-{"name": "Pèrs, Ciro di", "family": "Pèrs", "suffix": "Ciro di", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P."}
+{"name": "Pèrs, Ciro di", "given": "Ciro", "family": "di Pèrs", "ambiguities": ["PARTICLE_OR_GIVEN", "SUFFIX_OR_NAME"], "initials": "C. P."}
 {"name": "Pérez Lucía", "order": "FAMILY_FIRST", "given": "Lucía", "family": "Pérez", "initials": "L. P."}
 {"name": "Pérez, Juan Ó.", "given": "Juan", "middle": "Ó.", "family": "Pérez", "initials": "J. Ó. P."}
 {"name": "Pérez, Lucía", "given": "Lucía", "family": "Pérez", "initials": "L. P."}

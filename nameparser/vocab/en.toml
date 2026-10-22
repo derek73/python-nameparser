@@ -2285,7 +2285,9 @@ credential = {}
 
 [[word]]
 text = "aba"
-credential = {}
+family = { us_census_2010 = 231, wikidata = 18, as_of = 2026-10-21 }
+given = { us_ssa = 32, wikidata = 40, as_of = 2026-10-21, note = "US SSA births summed over both sexes; Wikidata is a lower bound" }
+credential = { may_be_name = true, note = "NPPES 183 US healthcare providers write it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
 
 [[word]]
 text = "abc"
@@ -2307,7 +2309,8 @@ credential = {}
 
 [[word]]
 text = "aca"
-credential = {}
+family = { us_census_2010 = 375, as_of = 2026-10-21 }
+credential = { may_be_name = true, note = "NPPES 141 US healthcare providers write it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
 
 [[word]]
 text = "acas"
@@ -2315,11 +2318,14 @@ credential = {}
 
 [[word]]
 text = "ace"
-credential = {}
+family = { us_census_2010 = 1199, wikidata = 8, as_of = 2026-10-21 }
+given = { us_ssa = 26483, wikidata = 45, as_of = 2026-10-21, note = "US SSA births summed over both sexes; Wikidata is a lower bound" }
+credential = { may_be_name = true, note = "NPPES 9 US healthcare providers write it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
 
 [[word]]
 text = "acha"
-credential = {}
+family = { us_census_2010 = 477, wikidata = 26, as_of = 2026-10-21 }
+credential = { may_be_name = true, note = "NPPES 1 US healthcare provider writes it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
 
 [[word]]
 text = "acp"
@@ -2359,7 +2365,9 @@ credential = {}
 
 [[word]]
 text = "ala"
-credential = {}
+family = { us_census_2010 = 743, wikidata = 14, as_of = 2026-10-21 }
+given = { us_ssa = 943, wikidata = 163, as_of = 2026-10-21, note = "US SSA births summed over both sexes; Wikidata is a lower bound" }
+credential = { may_be_name = true, note = "NPPES 3 US healthcare providers write it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
 
 [[word]]
 text = "alc"
@@ -2367,7 +2375,9 @@ credential = {}
 
 [[word]]
 text = "alp"
-credential = {}
+family = { us_census_2010 = 116, wikidata = 55, as_of = 2026-10-21 }
+given = { us_ssa = 467, wikidata = 75, as_of = 2026-10-21, note = "US SSA births summed over both sexes; Wikidata is a lower bound" }
+credential = { may_be_name = true, note = "NPPES 0 US healthcare providers write it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
 
 [[word]]
 text = "am"
@@ -2387,7 +2397,8 @@ credential = {}
 
 [[word]]
 text = "ams"
-credential = {}
+family = { us_census_2010 = 135, wikidata = 2, as_of = 2026-10-21 }
+credential = { may_be_name = true, note = "NPPES 5 US healthcare providers write it (healthcare only, August 2026 file). Surname reading is the larger of the two small counts (#796's revised rule).", issue = 796 }
 
 [[word]]
 text = "aphr"
@@ -2415,7 +2426,8 @@ credential = {}
 
 [[word]]
 text = "arm"
-credential = {}
+family = { us_census_2010 = 283, wikidata = 8, as_of = 2026-10-21 }
+credential = { may_be_name = true, note = "NPPES 1 US healthcare provider writes it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
 
 [[word]]
 text = "arrc"
@@ -2423,7 +2435,9 @@ credential = {}
 
 [[word]]
 text = "asa"
-credential = {}
+family = { us_census_2010 = 508, wikidata = 5, as_of = 2026-10-21 }
+given = { us_ssa = 23067, wikidata = 283, as_of = 2026-10-21, note = "US SSA births summed over both sexes; Wikidata is a lower bound" }
+credential = { may_be_name = true, note = "NPPES 3 US healthcare providers write it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
 
 [[word]]
 text = "asc"
@@ -2439,7 +2453,8 @@ credential = {}
 
 [[word]]
 text = "asp"
-credential = {}
+family = { us_census_2010 = 733, wikidata = 63, as_of = 2026-10-21 }
+credential = { may_be_name = true, note = "NPPES 1 US healthcare provider writes it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
 
 [[word]]
 text = "atc"
@@ -2475,7 +2490,8 @@ credential = {}
 
 [[word]]
 text = "bem"
-credential = {}
+family = { us_census_2010 = 339, wikidata = 29, as_of = 2026-10-21 }
+credential = { may_be_name = true, note = "NPPES 0 US healthcare providers write it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
 
 [[word]]
 text = "bls-i"
@@ -2523,7 +2539,8 @@ credential = {}
 
 [[word]]
 text = "caha"
-credential = {}
+family = { us_census_2010 = 116, wikidata = 28, as_of = 2026-10-21 }
+credential = { may_be_name = true, note = "NPPES 1 US healthcare provider writes it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
 
 [[word]]
 text = "caia"
@@ -2539,7 +2556,8 @@ credential = {}
 
 [[word]]
 text = "capa"
-credential = {}
+family = { us_census_2010 = 175, wikidata = 7, as_of = 2026-10-21 }
+credential = { may_be_name = true, note = "NPPES 11 US healthcare providers write it (healthcare only, August 2026 file). Surname reading is the larger of the two small counts (#796's revised rule).", issue = 796 }
 
 [[word]]
 text = "capm"
@@ -2547,7 +2565,9 @@ credential = {}
 
 [[word]]
 text = "capp"
-credential = {}
+family = { us_census_2010 = 1588, wikidata = 13, as_of = 2026-10-21 }
+given = { us_ssa = 5, as_of = 2026-10-21, note = "US SSA births summed over both sexes; Wikidata is a lower bound" }
+credential = { may_be_name = true, note = "NPPES 7 US healthcare providers write it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
 
 [[word]]
 text = "caps"
@@ -2555,7 +2575,9 @@ credential = {}
 
 [[word]]
 text = "caro"
-credential = {}
+family = { us_census_2010 = 10064, wikidata = 236, as_of = 2026-10-21 }
+given = { us_ssa = 274, wikidata = 50, as_of = 2026-10-21, note = "US SSA births summed over both sexes; Wikidata is a lower bound" }
+credential = { may_be_name = true, note = "NPPES 0 US healthcare providers write it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
 
 [[word]]
 text = "cas"
@@ -2711,7 +2733,8 @@ credential = {}
 
 [[word]]
 text = "cea"
-credential = {}
+family = { us_census_2010 = 1275, wikidata = 21, as_of = 2026-10-21 }
+credential = { may_be_name = true, note = "NPPES 13 US healthcare providers write it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
 
 [[word]]
 text = "ceas"
@@ -2731,7 +2754,9 @@ credential = {}
 
 [[word]]
 text = "cela"
-credential = {}
+family = { us_census_2010 = 637, wikidata = 18, as_of = 2026-10-21 }
+given = { us_ssa = 90, as_of = 2026-10-21, note = "US SSA births summed over both sexes; Wikidata is a lower bound" }
+credential = { may_be_name = true, note = "NPPES 1 US healthcare provider writes it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
 
 [[word]]
 text = "cem"
@@ -2743,7 +2768,9 @@ credential = {}
 
 [[word]]
 text = "cera"
-credential = {}
+family = { us_census_2010 = 1224, wikidata = 18, as_of = 2026-10-21 }
+given = { us_ssa = 1410, as_of = 2026-10-21, note = "US SSA births summed over both sexes; Wikidata is a lower bound" }
+credential = { may_be_name = true, note = "NPPES 0 US healthcare providers write it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
 
 [[word]]
 text = "cet"
@@ -2865,7 +2892,9 @@ credential = {}
 
 [[word]]
 text = "che"
-credential = {}
+family = { us_census_2010 = 2393, wikidata = 5936, as_of = 2026-10-21 }
+given = { us_ssa = 2469, wikidata = 48, as_of = 2026-10-21, note = "US SSA births summed over both sexes; Wikidata is a lower bound" }
+credential = { may_be_name = true, note = "NPPES 16 US healthcare providers write it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
 
 [[word]]
 text = "ches"
@@ -2878,7 +2907,7 @@ credential = { cased = "ChFC" }
 [[word]]
 text = "chi"
 family = { us_census_2010 = 7273, wikidata = 219, as_of = 2026-10-21 }
-given = { us_ssa = 1326, wikidata = 123, as_of = 2026-10-21 }
+given = { us_ssa = 1326, wikidata = 123, as_of = 2026-10-21, note = "US SSA births summed over both sexes; Wikidata is a lower bound" }
 [word.credential]
 may_be_name = true
 issue = 791
@@ -2970,7 +2999,9 @@ credential = {}
 
 [[word]]
 text = "ciro"
-credential = {}
+family = { us_census_2010 = 265, wikidata = 6, as_of = 2026-10-21 }
+given = { us_ssa = 2587, wikidata = 409, as_of = 2026-10-21, note = "US SSA births summed over both sexes; Wikidata is a lower bound" }
+credential = { may_be_name = true, note = "NPPES 0 US healthcare providers write it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
 
 [[word]]
 text = "cisa"
@@ -3214,7 +3245,8 @@ credential = {}
 
 [[word]]
 text = "csi"
-credential = {}
+family = { wikidata = 590, as_of = 2026-10-21 }
+credential = { may_be_name = true, note = "NPPES 95 US healthcare providers write it (healthcare only, August 2026 file). Surname evidence is Wikidata only (no Census bearers); marked on C-i.", issue = 796 }
 
 [[word]]
 text = "csp"
@@ -3270,7 +3302,8 @@ credential = {}
 
 [[word]]
 text = "cua"
-credential = {}
+family = { us_census_2010 = 1082, wikidata = 3, as_of = 2026-10-21 }
+credential = { may_be_name = true, note = "NPPES 2 US healthcare providers write it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
 
 [[word]]
 text = "cusp"
@@ -3480,7 +3513,9 @@ credential = {}
 
 [[word]]
 text = "ea"
-credential = {}
+family = { us_census_2010 = 496, wikidata = 2, as_of = 2026-10-21 }
+given = { us_ssa = 11, wikidata = 11, as_of = 2026-10-21, note = "US SSA births summed over both sexes; Wikidata is a lower bound" }
+credential = { may_be_name = true, note = "NPPES 2 US healthcare providers write it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
 
 [[word]]
 text = "ed"
@@ -3494,7 +3529,9 @@ cased = { reason = "a mask applies in every role, and Edd is borne as a given na
 
 [[word]]
 text = "ei"
-credential = {}
+family = { us_census_2010 = 127, wikidata = 3, as_of = 2026-10-21 }
+given = { wikidata = 4, as_of = 2026-10-21 }
+credential = { may_be_name = true, note = "NPPES 12 US healthcare providers write it (healthcare only, August 2026 file). Not a healthcare credential (usually Engineer Intern): NPPES says nothing about it; marked under C-i's default under uncertainty.", issue = 796 }
 
 [[word]]
 text = "eit"
@@ -3502,7 +3539,9 @@ credential = {}
 
 [[word]]
 text = "els"
-credential = {}
+family = { us_census_2010 = 362, wikidata = 9, as_of = 2026-10-21 }
+given = { wikidata = 322, as_of = 2026-10-21 }
+credential = { may_be_name = true, note = "NPPES 1 US healthcare provider writes it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
 
 [[word]]
 text = "emd"
@@ -3530,7 +3569,8 @@ credential = {}
 
 [[word]]
 text = "erd"
-credential = {}
+family = { us_census_2010 = 222, wikidata = 1, as_of = 2026-10-21 }
+credential = { may_be_name = true, note = "NPPES 0 US healthcare providers write it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
 
 [[word]]
 text = "evp"
@@ -3594,7 +3634,8 @@ credential = {}
 
 [[word]]
 text = "faia"
-credential = {}
+family = { us_census_2010 = 271, wikidata = 7, as_of = 2026-10-21 }
+credential = { may_be_name = true, note = "NPPES 0 US healthcare providers write it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
 
 [[word]]
 text = "faicp"
@@ -3650,7 +3691,8 @@ credential = {}
 
 [[word]]
 text = "fic"
-credential = {}
+family = { wikidata = 22, as_of = 2026-10-21 }
+credential = { may_be_name = true, note = "NPPES 1 US healthcare provider writes it (healthcare only, August 2026 file). Surname evidence is Wikidata only (no Census bearers); marked on C-i.", issue = 796 }
 
 [[word]]
 text = "ficf"
@@ -4271,11 +4313,15 @@ credential = {}
 
 [[word]]
 text = "obi"
-credential = {}
+family = { us_census_2010 = 1403, wikidata = 28, as_of = 2026-10-21 }
+given = { us_ssa = 299, wikidata = 17, as_of = 2026-10-21, note = "US SSA births summed over both sexes; Wikidata is a lower bound" }
+credential = { may_be_name = true, note = "NPPES 0 US healthcare providers write it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
 
 [[word]]
 text = "oca"
-credential = {}
+family = { us_census_2010 = 344, wikidata = 2, as_of = 2026-10-21 }
+given = { us_ssa = 16, as_of = 2026-10-21, note = "US SSA births summed over both sexes; Wikidata is a lower bound" }
+credential = { may_be_name = true, note = "NPPES 0 US healthcare providers write it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
 
 [[word]]
 text = "ocm"
@@ -4291,8 +4337,9 @@ credential = {}
 
 [[word]]
 text = "om"
-[word.credential]
-note = "NOT may_be_name: weighed 2026-09-07 with #342, no surname evidence worth standing behind, and OM is the Order of Merit"
+family = { us_census_2010 = 784, wikidata = 135, as_of = 2026-10-21 }
+given = { us_ssa = 2321, wikidata = 10, as_of = 2026-10-21, note = "US SSA births summed over both sexes; Wikidata is a lower bound" }
+credential = { may_be_name = true, note = "NPPES 66 US healthcare providers write it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
 
 [[word]]
 text = "oscp"
@@ -4316,7 +4363,8 @@ credential = {}
 
 [[word]]
 text = "pe"
-credential = {}
+family = { us_census_2010 = 582, wikidata = 305, as_of = 2026-10-21 }
+credential = { may_be_name = true, note = "NPPES 44 US healthcare providers write it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
 
 [[word]]
 text = "pfmp"
@@ -4570,8 +4618,9 @@ credential = {}
 
 [[word]]
 text = "se"
-[word.credential]
-note = "NOT may_be_name: weighed 2026-09-07 with #342, no surname evidence worth standing behind"
+family = { us_census_2010 = 384, wikidata = 1, as_of = 2026-10-21 }
+given = { us_ssa = 18, wikidata = 1, as_of = 2026-10-21, note = "US SSA births summed over both sexes; Wikidata is a lower bound" }
+credential = { may_be_name = true, note = "NPPES 18 US healthcare providers write it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
 
 [[word]]
 text = "secb"
@@ -4592,7 +4641,7 @@ credential = {}
 [[word]]
 text = "si"
 family = { us_census_2010 = 1166, wikidata = 275, as_of = 2026-10-21 }
-given = { us_ssa = 185, wikidata = 124, as_of = 2026-10-21 }
+given = { us_ssa = 185, wikidata = 124, as_of = 2026-10-21, note = "US SSA births summed over both sexes; Wikidata is a lower bound" }
 [word.credential]
 may_be_name = true
 issue = 791

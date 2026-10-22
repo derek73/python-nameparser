@@ -200,9 +200,11 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # chi), one suffix-or-name or given-or-family claim under each order;
     # 1282 -> 1302 the same day: the review's empty-head, caps and
     # family-first rows (two reports on 'Luo SI', and the family-first
-    # rows, which carry their own policy and so claim under one order).
-    assert claims == 1302, (
-        f"the field sweep checks {claims} claims, recorded as 1302 on "
+    # rows, which carry their own policy and so claim under one order);
+    # 1302 -> 1308 on 2026-10-21: #796's two case rows (Robert Capa,
+    # John Smith CAPA), each claiming under the three orders.
+    assert claims == 1308, (
+        f"the field sweep checks {claims} claims, recorded as 1308 on "
         f"2026-10-21")
 
 
