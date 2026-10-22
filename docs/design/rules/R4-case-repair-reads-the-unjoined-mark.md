@@ -39,7 +39,7 @@
   ```
   "Juan McDonald"             →  capitalized_forced="Juan McDonald"
   ```
-- **A credential acronym the exceptions map does not carry is an initialism**, so a single-case word the parse put in the suffix role from the acronym vocabulary, or read as a credential by its dotted shape alone (S3) or by its capitals (S9), repairs to its all-caps spelling rather than a title-cased one, and that repair outranks the Mac/Mc convention where a word fits both (MCSE, not McSe). A roman numeral the parse put in the suffix role is written in capitals the way a generation is written, whether or not the vocabulary lists it (VI as well as III). A suffix word that is neither an acronym, a numeral nor an exceptions-map entry -- the generational `jr`, `sr` -- keeps its title case.
+- **A credential acronym the exceptions map does not carry is an initialism**, so a single-case word the parse put in the suffix role from the acronym vocabulary (written whole across any hyphen or slash it holds, `OTR/L`, not as two name words), or read as a credential by its dotted shape alone (S3) or by its capitals (S9), repairs to its all-caps spelling rather than a title-cased one, and that repair outranks the Mac/Mc convention where a word fits both (MCSE, not McSe). A roman numeral the parse put in the suffix role is written in capitals the way a generation is written, whether or not the vocabulary lists it (VI as well as III). A suffix word that is neither an acronym, a numeral nor an exceptions-map entry -- the generational `jr`, `sr` -- keeps its title case.
   ```
   "john smith md"             →  capitalized="John Smith MD"
   "john smith m.d."           →  capitalized="John Smith M.D."
@@ -54,7 +54,15 @@
   "john smith, v"             →  capitalized="John Smith V"
   "john smith mba"            →  capitalized="John Smith MBA"
   "john smith mcse"           →  capitalized="John Smith MCSE"
+  "john smith, otr/l"         →  capitalized="John Smith OTR/L"
+  "JOHN SMITH, FNP-BC"        →  capitalized="John Smith FNP-BC"
+  "john smith pa-c"           →  capitalized="John Smith PA-C"
   "john smith jr"             →  capitalized="John Smith Jr"  · boundary
+  "John Smith, otr/l"         →  capitalized="John Smith otr/l"  · boundary
+  "John Smith, otr/l"         →  capitalized_forced="John Smith OTR/L"  · boundary
+  "john smith-jones"          →  capitalized="John Smith-Jones"  · boundary
+  "jean-luc picard"           →  capitalized="Jean-Luc Picard"  · boundary
+  "dipl.-ing john smith"      →  capitalized="Dipl.-Ing John Smith"  · boundary
   "Md Abdul Karim"            →  capitalized_forced="Md Abdul Karim"
   ```
 - **Inside a hyphenated word, a part that is connective vocabulary with a worded part on each side of it keeps its lowercase**, the hyphens being the writer joining the name around it (Ortega-y-Gasset); at either end of the hyphenated word it is repaired as ordinary name text. A single letter marked with a period is read as an initial there, as the parse reads it, never as the connective. A bare letter is not: the hyphen is the writer's join, so the interior connective is read as one even in a name written wholly in one case, where the same letter spaced reads as an initial if the vocabulary marks it as reading both ways (P8).

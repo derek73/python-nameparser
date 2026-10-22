@@ -740,6 +740,38 @@ def test_a_mixed_case_credential_listed_for_797_repairs_to_its_mask() -> None:
         assert parse(text).capitalized().suffix == suffix, text
 
 
+def test_a_joined_acronym_repairs_whole_and_a_recorded_casing_wins() -> None:
+    """#808: a listed acronym credential joined by a hyphen or slash is
+    one word, written in capitals across the join, where the per-word
+    walk capitalized each side as a name part ('Otr/L'). No shipped
+    joined entry records a casing, so the contrast is a caller's mask:
+    laid over the whole token, it wins in any role. Hyphenated name
+    parts and titles are not acronym credentials and keep their
+    per-part repair."""
+    for text, suffix in (("john smith, otr/l", "OTR/L"),
+                         ("JOHN SMITH, FNP-BC", "FNP-BC"),
+                         ("john smith pa-c", "PA-C"),
+                         ("john smith ccc/slp", "CCC/SLP")):
+        assert parse(text).capitalized().suffix == suffix, text
+    assert parse("John Smith, otr/l").capitalized().suffix == "otr/l"
+    assert parse("John Smith, otr/l").capitalized(force=True).suffix \
+        == "OTR/L"
+    for text, whole in (("john smith-jones", "John Smith-Jones"),
+                        ("jean-luc picard", "Jean-Luc Picard"),
+                        ("maria da-silva", "Maria da-Silva"),
+                        ("dipl.-ing john smith", "Dipl.-Ing John Smith")):
+        assert str(parse(text).capitalized()) == whole, text
+    default = Lexicon.default()
+    masked = dataclasses.replace(default, capitalization_exceptions=(
+        *default.capitalization_exceptions,
+        ("otr/l", "OTr/L"), ("pa-c", "Pa-C")))
+    parser = Parser(lexicon=masked)
+    for text, suffix in (("john smith, otr/l", "OTr/L"),
+                         ("JOHN SMITH, PA-C", "Pa-C"),
+                         ("john smith fnp-c", "FNP-C")):
+        assert parser.capitalized(parser.parse(text)).suffix == suffix, text
+
+
 def test_a_mask_applies_whatever_role_the_word_took() -> None:
     """The map stays role-free (#459): an entry is the caller saying
     how a word is written, wherever it stands. The acronym and
