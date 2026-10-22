@@ -9,7 +9,7 @@
 
 Elsewhere: the strict switch, which vetoes the numeral in the comma's decision and in a part that is nothing but suffix words — decisions/C14's 2026-10-19 (Derek), #761 entry; a credential starting a run to the end of its part, which reads `Smith, John PSM I I.` as suffix 'PSM I I.' where #430 had accepted middle 'I I.' — decisions/S8's 2026-10-04 (Derek), #602 entry; the same run, unrecorded in that entry, reads `Smith, John PhD I, Jr.` and `Smith, John PhD I., Jr.` as suffix 'PhD I, Jr.' and 'PhD I., Jr.' (middle 'I' and 'I.' before #602), which rules/C9's further-comma clause and its Accepted bullet still give as the middle initial; a bare letter behind a name word with a suffix comma after it stays a middle initial (`Smith, John V, Jr.` → middle 'V', suffix 'Jr.') — decisions/v1-xfail-triage's 2026-09-01 (Derek's triage) entry; an ideographic or fullwidth full stop is no abbreviation mark there (`Smith, John V。` → suffix 'V。') — decisions/cjk-full-stops' 2026-09-10 #322/#323 bundle.
 
-Open: whether rules/C9's further-comma clause or the parser is right for a letter behind a credential since #602 (`Smith, John PhD I, Jr.`); no issue filed yet.
+Open: [#819](https://github.com/derek73/python-nameparser/issues/819) (whether rules/C9's further-comma clause or the parser is right for a letter behind a credential since #602, `Smith, John PhD I, Jr.`).
 
 ## Log
 
