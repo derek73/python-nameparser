@@ -268,19 +268,34 @@ def check_source(module_file: str, root: Path = REPO_ROOT) -> Path:
     return at
 
 
-def _local(source: str) -> tuple[Path, list[Path]]:
-    """A local corpus's snapshot path and corpus file, with its
-    attribution printed: a report on it carries its source and date."""
+def _local(source: str) -> tuple[Path, list[Path], dict[str, str]]:
+    """A local corpus's snapshot path, its corpus file (checked by
+    local_corpora.load against its sha256), and what names this fetch of
+    it, with its attribution printed: a report on it carries its source
+    and date."""
     if str(HERE) not in sys.path:
         sys.path.append(str(HERE))
     import local_corpora
-    corpus = local_corpora.load(source)
+    try:
+        corpus = local_corpora.load(source)
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from None
     if corpus is None:
         raise SystemExit(f"{source} is not fetched: "
                          f"local_corpora.py fetch {source}")
     print(corpus.header())
+    fetch = {"data_date": corpus.meta["data_date"],
+             "corpus_sha256": corpus.meta["corpus_sha256"]}
     return (local_corpora.directory(source) / local_corpora.SNAPSHOT,
-            [local_corpora.corpus_path(source)])
+            [local_corpora.corpus_path(source)], fetch)
+
+
+def _fetch_record(snapshot: Path) -> Path:
+    """Beside a local snapshot: the fetch of the corpus it was recorded
+    from. A corpus fetched again holds other names, and compared with a
+    snapshot of the old fetch every name the registry gained or lost
+    would read as a move of the parser's."""
+    return snapshot.with_name(snapshot.name + ".source.json")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -298,9 +313,9 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
     if args.local and args.since:
         ap.error("--since reads a committed snapshot; a local corpus has none")
-    snapshot, corpora = SNAPSHOT, None
+    snapshot, corpora, fetch = SNAPSHOT, None, None
     if args.local:
-        snapshot, corpora = _local(args.local)
+        snapshot, corpora, fetch = _local(args.local)
     out = args.out or snapshot
     root = Path(args.tree).resolve() if args.tree else REPO_ROOT
     if args.tree:
@@ -310,6 +325,8 @@ def main(argv: list[str] | None = None) -> int:
     check_source(nameparser.__file__, root)
     if args.record:
         out.write_text(dump(rows), encoding="utf-8")
+        if fetch is not None:
+            _fetch_record(out).write_text(json.dumps(fetch), encoding="utf-8")
         print(f"recorded {len(rows)} readings to {out}")
         return 0
     if args.since:
@@ -327,13 +344,28 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit(f"no snapshot at {snapshot}: record one first, "
                          f"with --record (and --tree for another checkout)")
     else:
+        if fetch is not None:
+            record = _fetch_record(snapshot)
+            recorded = (json.loads(record.read_text(encoding="utf-8"))
+                        if record.exists() else {})
+            if recorded.get("corpus_sha256") != fetch["corpus_sha256"]:
+                raise SystemExit(
+                    f"{snapshot} was recorded from another fetch of "
+                    f"{args.local} (data as of "
+                    f"{recorded.get('data_date', 'unknown')}; the corpus now "
+                    f"is {fetch['data_date']}), so it would report the names "
+                    f"the source gained and lost as moves. Record it again "
+                    f"from the base checkout: snapshot.py --local "
+                    f"{args.local} --record --tree <base checkout>")
         text = snapshot.read_text(encoding="utf-8")
     old, new = load(text), {key(r): r for r in rows}
     moves = grouped(old, new)
     print("\n".join(moves) or "matches the snapshot")
     if moves and args.local:
         moved = {k for k in set(old) | set(new) if old.get(k) != new.get(k)}
-        print(f"\n{len(moved)} entries differ")
+        print(f"\n{len(moved)} entries differ from the snapshot recorded "
+              f"from this fetch. To make another tree the baseline: "
+              f"snapshot.py --local {args.local} --record --tree <checkout>")
         return 1
     if moves:
         moved = {k for k in set(old) | set(new) if old.get(k) != new.get(k)}

@@ -98,10 +98,13 @@ What a number means depends on its source, and the report says so:
 
 - Local corpora (tools/differential/local_corpora.py): whole names as
   people typed them, fetched into the cache by that script and never
-  committed, so this tool only reads them. One row per corpus fetched:
-  how many records write the word anywhere in the name and how many
-  after a comma, matched ignoring case and periods as the parser
-  matches an acronym, with the spellings as written. The first is
+  committed, so this tool only reads them. One row per local corpus,
+  one not yet fetched naming the command that fetches it: the source's
+  credit and data date, how many records write the word anywhere in the
+  name and how many after a comma, and the spellings as written. Words
+  are matched ignoring case, periods and edge punctuation
+  (local_corpora.word_key); a spaced word ('Ph. D.') is matched as its
+  words in a row, with the joined spelling's count beside it. The first is
   ClinicalTrials.gov's study officials, where `MD` after a comma is the
   usual case and a credential before it is the noise worth seeing.
   Not a census of anyone: it counts what the source's typists wrote.
@@ -147,7 +150,7 @@ from types import ModuleType
 from typing import TYPE_CHECKING, Any, Literal, TypeVar
 
 if TYPE_CHECKING:  # loaded by path at run time, _local_corpora
-    from local_corpora import Local, WordIndex
+    from local_corpora import Local
 
 CENSUS_URL = "https://www2.census.gov/topics/genealogy/2010surnames/names.zip"
 CENSUS_FILE = "census2010_surnames.zip"
@@ -1058,54 +1061,60 @@ def _local_corpora() -> ModuleType:
     return local_corpora
 
 
-def load_locals() -> list[tuple[str, Local | None, WordIndex | None, str]]:
+def load_locals() -> list[tuple[str, Local | None, str]]:
     """Every local corpus: (source, the corpus or None when not fetched,
-    its word index, the error that stopped it loading)."""
+    the error that stopped it loading). load() refuses with ValueError
+    anything it cannot read, so a damaged corpus fails its own row."""
     module = _local_corpora()
-    out = []
-    for source in sorted(module.SOURCES):
-        local, error = _attempt(lambda source=source: module.load(source))
-        out.append((source, local,
-                    module.word_index(local) if local is not None else None,
-                    error))
-    return out
+    return [(source, *_attempt(lambda source=source: module.load(source)))
+            for source in sorted(module.SOURCES)]
 
 
-def local_usage(word: str, source: str, local: Local | None,
-                index: WordIndex | None) -> Usage:
+def local_usage(word: str, source: str, local: Local | None) -> Usage:
     module = _local_corpora()
     usage = Usage(f"{source} (local corpus)")
-    if local is None or index is None:
+    if local is None:
         usage.status = "not downloaded"
         usage.note = (f"not fetched; tools/differential/local_corpora.py "
                       f"fetch {source}")
         return usage
-    key = module.word_key(word)
-    if not key:
+    keys = module.words(word)
+    if not keys:
         usage.status = "unrepresentable"
-        usage.note = "nothing in it is left once periods and brackets go"
+        usage.note = "nothing in it is left once periods and punctuation go"
         return usage
     unit = module.SOURCES[source].unit
-    anywhere, after = index.anywhere[key], index.after_comma[key]
-    written = index.spellings.get(key)
+    credit = f"{module.SOURCES[source].credit}, data as of {local.meta['data_date']}"
+    index = local.index
+    if len(keys) == 1:
+        anywhere, after = index.anywhere[keys[0]], index.after_comma[keys[0]]
+        written = index.spellings.get(keys[0])
+        spelled = ("written " + ", ".join(f"{s} {n:,}" for s, n in
+                                          written.most_common(3))
+                   if written else "")
+    else:
+        # A spaced word ('Ph. D.') is no key of the index, which holds
+        # single words: its words are looked for in a row instead, and
+        # the same letters written as one word are reported beside it.
+        anywhere, after = module.phrase_counts(local, keys)
+        joined = "".join(keys)
+        spelled = (f"as one word '{joined}' {index.anywhere[joined]:,}"
+                   if index.anywhere[joined] else "")
     usage.note = _join(
+        credit,
         f"{anywhere:,} of {len(local.records):,} {unit} write it, "
-        f"{after:,} after a comma",
-        "written " + ", ".join(f"{s} {n:,}" for s, n in written.most_common(3))
-        if written else "",
-        f"data as of {local.meta['data_date']}")
+        f"{after:,} after a comma", spelled)
     return usage
 
 
-def local_rows(word: str, locals_: list[tuple[str, Local | None,
-                                              WordIndex | None, str]]) -> list[Usage]:
+def local_rows(word: str, locals_: list[tuple[str, Local | None, str]]) -> list[Usage]:
     """One row per local corpus, a corpus that failed to load reported
     as failed. A function of its own so its loop names cannot shadow
     main's: written inline there, its `index` replaced the CJK name
-    index the ends-with row reads (#801's review)."""
+    index the ends-with row reads."""
     rows = []
-    for source, local, index, error in locals_:
-        row = local_usage(word, source, local, index)
+    for source, local, error in locals_:
+        row = local_usage(word, source, local)
         if error:
             row.status, row.note = "failed", error
         rows.append(row)
