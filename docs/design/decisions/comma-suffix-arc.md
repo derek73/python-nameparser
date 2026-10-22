@@ -10,9 +10,9 @@ its decline-by-measurement evidence in the issue body; "z domu" folded into it 2
 - Multi-word vocabulary merges where the render tag is applied, not where the role is assigned, since the suffix view comma-joins suffix words not tagged `joined`: `John Smith, LEED AP` renders suffix 'LEED AP' — 2026-07-26 #291.
 - An unlisted abbreviation ending a name gets no structural fallback, the corpora being blind to it, and reads as a name word (`John Smith Xyz.` → family 'Xyz.'); written as two or more dotted chunks it is the exception, S9's shape class (`John Smith X.Y.Z.` → suffix 'X.Y.Z.') — 2026-07-26 #291.
 
-Not standing: plan amendment 1's repair, carried out by #296's first commit and its condition widened from all titles to no name word by the #428 review (decisions/C8) — 2026-08-01.
+Not standing: plan amendment 1's repair, carried out by #296's first commit — 2026-08-01.
 
-Elsewhere: the audit table's dispositions as shipped, `md` kept a dual and `ms` and `sa` kept out of the ambiguous set — decisions/C8's 2026-08-23 #296 and 2026-08-23 #428 Standing lines; the trailing slot read by vocabulary, a period-marked title word there a title (`John Smith Prof.` → title 'Prof.') — decisions/H5's 2026-09-08 #316 entry; the dotted shape class — decisions/S9's 2026-09-14 (Derek) entry headed #516's DOTTED HALF IS A SWITCH.
+Elsewhere: the audit table's dispositions as shipped, `md` kept a dual and `ms` and `sa` kept out of the ambiguous set — decisions/C8's 2026-08-23 #296 and 2026-08-23 #428 Standing lines, the second also holding the repair's condition, no name word; the trailing slot read by vocabulary, a period-marked title word there a title (`John Smith Prof.` → title 'Prof.') — decisions/H5's 2026-09-08 #316 entry; the dotted shape class — decisions/S9's 2026-09-14 (Derek) entry headed #516's DOTTED HALF IS A SWITCH.
 
 Open: none in this file.
 
@@ -22,7 +22,7 @@ Open: none in this file.
 
 The approved 19-word TITLES∩suffix audit table (2026-07-30/08-01, intent for the unshipped bundle): jr, junior, phd, md, do and se DROP from TITLES (se: Structural Engineer is the PE/SE post-nominal pair, no prenominal convention — v1 residue); dr drops from SUFFIX_WORDS and sra from the suffix sets (v1 residue); sr, lt, cpl, cpt, cpo, csm, sgm, ra and vc KEEP dual membership (position decides); ms and sa keep dual membership AND join the ambiguous set (the periods gate). Derek's framing thesis for the whole table: v1's sets encoded where the v1 PARSER needed words to be, not where words can occur. Amendment A6: once SUFFIX_PHRASES ships, the glued peel's token-level post-nominal test cannot step over a phrase segment ("김민준씨, LEED AP" will not peel) — #291 owns deciding that, with a case row either way.
 
-- 2026-08-01 (plan amendment 1, Derek's call: "ship + repair the merge") — dropping dr/ms from the suffix vocabulary flips segment() to FAMILY_COMMA and degrades "John Smith, Dr." to family="John Smith" (mechanisms.md#VOCABULARY-FEEDS-STRUCTURE is this shape); the approved repair, ordered FIRST in the bundle so no commit introduces a regression a later one heals: assign segment 0 positionally when segment 1 is nothing but titles.
+- 2026-08-01 (plan amendment 1, Derek's call: "ship + repair the merge") (its condition superseded by decisions/C8's 2026-08-23 #428 entry, which reads no name word where this says nothing but titles) — dropping dr/ms from the suffix vocabulary flips segment() to FAMILY_COMMA and degrades "John Smith, Dr." to family="John Smith" (mechanisms.md#VOCABULARY-FEEDS-STRUCTURE is this shape); the approved repair, ordered FIRST in the bundle so no commit introduces a regression a later one heals: assign segment 0 positionally when segment 1 is nothing but titles.
 
 - 2026-08-23 #291 — #291 CLOSED WORKING AS DESIGNED: the `Amended 2026-08-23` paragraph under the first Declined entry below.
 
