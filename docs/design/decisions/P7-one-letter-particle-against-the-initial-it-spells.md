@@ -2,6 +2,8 @@
 
 ## Standing
 
+Examples read under the default order unless a line names another.
+
 - A one-letter word written with its period is an initial and not a particle, whatever particle the letter spells, in every position (`Juan Ó. Pérez` and `Pérez, Juan Ó.` → middle 'Ó.', `Ó. Pérez` → given 'Ó.', under the default order), and both `initials()` keep it; written bare it is the particle (`Juan Ó Pérez` → family 'Ó Pérez'), the accepted cost for an accented initial written without its period — 2026-10-04 #604.
 - The veto is one helper, `_lexicon._spells_an_initial`, asked after a membership hit at every reader of the particle vocabulary — classify's tags, the unit count before a comma, case repair and the facade — so `Ó. Pérez, Ed` reads as `Q. Pérez, Ed` does — 2026-10-04 #604.
 - The period is the ASCII one, so `Juan Ó。 Pérez` keeps the particle; the check for the scripts that write no initials is not reproduced, and a caller's one-character Han, Hangul or kana particle written with a period is vetoed, an accepted residue no shipped particle reaches — 2026-10-04 (design review; Derek).
