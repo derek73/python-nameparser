@@ -553,6 +553,27 @@ def _sub_words(cap: Callable[[str], str], text: str) -> str:
     return "".join(out) + text[at:]
 
 
+def _joined_whole(text: str, role: Role, lex: Lexicon) -> str | None:
+    """`text` repaired as ONE word where it holds a hyphen or slash and
+    the vocabulary records it whole: by its recorded casing (a mask, in
+    any role, as _cap_word applies it), else in capitals as a listed
+    acronym credential in the suffix role ('pa-c', 'otr/l'). None where
+    neither holds and the per-word walk takes the token (#808)."""
+    if "-" not in text and "/" not in text:
+        return None
+    normalized = _normalize(text)
+    undotted = normalized.replace(".", "")
+    for key in (normalized, undotted):
+        mask = lex.capitalization_exceptions_map.get(key)
+        if mask is not None:
+            masked = _apply_mask(text, mask)
+            if masked is not None:
+                return masked
+    if role is Role.SUFFIX and undotted in lex.suffix_acronyms:
+        return text.upper()
+    return None
+
+
 def _cap_text(text: str, role: Role, tags: frozenset[str],
               lex: Lexicon) -> str:
     # word-by-word within the token text: hyphenated names capitalize
@@ -578,6 +599,14 @@ def _cap_text(text: str, role: Role, tags: frozenset[str],
             and _lowers_as_particle(_normalize(text), text, role, tags,
                                     lex)):
         return text.lower()
+    # rules/R4: "A credential acronym the exceptions map does not carry
+    # is an initialism" -- written whole when a hyphen or slash joins
+    # it, since the per-word walk below would capitalize 'otr/l' as the
+    # two name words 'Otr/L'; and a recorded casing is laid over the
+    # whole token for the same reason. decisions/R4 (#808).
+    if not text.isalpha() and (
+            whole := _joined_whole(text, role, lex)) is not None:
+        return whole
     if "-" not in text:
         return _sub_words(cap, text)
     parts = text.split("-")

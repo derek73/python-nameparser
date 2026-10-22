@@ -1,5 +1,18 @@
 # H2 — the leading-abbreviation title
 
+## Standing
+
+- An abbreviation of two or more letters ending in its one period, opening the part that carries the given name (the whole name, or the part after a family comma), is a title even unlisted and even where it is suffix vocabulary, and a single-letter initial is not: `Insp. Jane Morse` → title 'Insp.', `Morse, Det. Insp. Jane` → title 'Det. Insp.', `Esq. Smith` → title 'Esq.', `J. Smith` → given 'J.' — 2026-06-30 #288.
+- The shape is an unbroken run of letters, so an unlisted abugida abbreviation stays a name word and only vocabulary recognizes it — 2026-06-30 #288.
+- The shape declines a period-marked word carrying a script with no initials: `田中. 太郎` → family '田中.', where `Smith. John` keeps title 'Smith.' — 2026-09-10.
+- C13 wins for a credential opening the part after a family comma (`Smith, Esq. John` → suffix 'Esq. John'), and the shape still reads a title there for a word that starts no S8 run (`Smith, Insp. John`, `Smith, Ma. John` → title) — 2026-10-20 #761.
+
+Elsewhere: #316's question 2, a symmetric leading rule reading `Esq. Smith` as a suffix, is declined and the trailing slot reads vocabulary, decisions/H5's 2026-09-08 #316 entry (the undated `Decided 2026-09-08` paragraph below records the hook it closed here); the shape does not fire before a family comma, decisions/H6's 2026-10-17 #701 and 2026-10-18 #710 entries; a letter typed decomposed is the same letter to the shape, decisions/nfd-shapes' 2026-10-12 #652 entry, and the script veto reads the composed spelling, its 2026-10-13 #665 entry; halfwidth katakana is classified since #594 (decisions/W4).
+
+Open: none in this file.
+
+## Log
+
 - 2026-06-30 (leading-period-title design; v2 core, PR #288) — the shape test is v1 parity (period_abbreviation): two-plus letters then a period, bare initials exempt. Its site is the head of the part CARRYING THE GIVEN NAME — the whole name, or the post-comma part under a family comma — not "the head of the name"; that scope correction is PR #315 (2026-08-01, docs-only), verified against 1.4.0 from PyPI, so the parity claim is real and the narrower description never was. The extraction litmus (2026-08-15): the spec drafted this rule as
   "recognized by vocabulary, not by written shape" and the live
   parser falsified that framing — the shape heuristic is real, and what the abugida gap (#343/#344) shows is its LIMIT, not its absence. Recorded as the rule's Accepted consequence — and the 2026-08-15 landing initially re-narrowed the scope to "name- opening", correcting one error while preserving another; the eighth review round fixed it.
