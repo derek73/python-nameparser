@@ -44,6 +44,7 @@ Entry conventions:
 
 ## Suffixes: generational & credentials (S)
 
+- [S1 — a bracketed credential is not a nickname](S1-bracketed-credential-is-not-a-nickname.md)
 - [S2 — a suffix word ends a name and never opens the string](S2-suffix-word-ends-a-name-and-never-opens-the-string.md)
 - [S3 — credentials written with interior periods](S3-credentials-written-with-interior-periods.md)
 - [S4 — the ambiguous acronym needs words to spare](S4-ambiguous-acronym-needs-words-to-spare.md)

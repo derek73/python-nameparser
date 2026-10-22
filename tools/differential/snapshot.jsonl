@@ -1528,6 +1528,7 @@
 {"name": "John Quincy Smith i", "given": "John", "middle": "Quincy", "family": "Smith", "suffix": "i", "initials": "J. Q. S."}
 {"name": "John Smith", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "John Smith (M.A.)", "given": "John", "family": "Smith", "suffix": "M.A.", "initials": "J. S."}
+{"name": "John Smith (MA PhD)", "given": "John", "family": "Smith", "nickname": "MA PhD", "ambiguities": ["SUFFIX_OR_NICKNAME"], "initials": "J. S."}
 {"name": "John Smith (MA)", "given": "John", "family": "Smith", "nickname": "MA", "ambiguities": ["SUFFIX_OR_NICKNAME"], "initials": "J. S."}
 {"name": "John Smith (MA.)", "given": "John", "family": "Smith", "suffix": "MA.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "John Smith (MBA PhD.)", "given": "John", "family": "Smith", "suffix": "MBA PhD.", "initials": "J. S."}
