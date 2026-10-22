@@ -9,7 +9,7 @@
 - `gov` is a title (`Lt. Gov. Smith, John` → title 'Lt. Gov.'), the first piece the run leaves is the family whatever it is (`Dr. PhD Smith, John` → family 'PhD Smith'), and the particle stop is all that keeps a rank in the family, so `Graf Lambsdorff, Otto` reads title 'Graf' — 2026-10-17 #701.
 - The comma-less writing of an abbreviated surname is not this rule's and still splits it (`Juan Sta. Maria` → middle 'Sta.', family 'Maria'); listing `sta` and `sto` as particles is weighed and not decided — 2026-10-18 #710.
 
-Open: [#709](https://github.com/derek73/python-nameparser/issues/709) (whether `graf`, `fürst`, `prinz` and the other ranks read as `freiherr` does). The `sta`/`sto` listing has no issue of its own.
+Open: [#709](https://github.com/derek73/python-nameparser/issues/709) (whether `graf`, `fürst`, `prinz` and the other ranks read as `freiherr` does); [#725](https://github.com/derek73/python-nameparser/issues/725) (whether `sta` and `sto` join the particles, so `Juan Sta. Maria` reads family 'Sta. Maria').
 
 ## Log
 
