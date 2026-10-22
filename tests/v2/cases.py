@@ -800,7 +800,7 @@ CASES: tuple[Case, ...] = (
          notes="the comma form under family-first: the comma already "
                "fixes the family name, so the roles match the default "
                "order's"),
-    # -- #793: a period-marked marked member alone after a family comma
+    # -- #793: a period-marked ambiguous member alone after a family comma
     # is bound as a title by the listing form (rules/C8), the class
     # 'Smith, Dr.' reads in, and its report names the title field; it
     # had said "read as a credential" of a word in the title.
