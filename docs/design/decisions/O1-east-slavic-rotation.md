@@ -1,5 +1,17 @@
 # O1 — East Slavic rotation
 
+## Standing
+
+- East Slavic handling is opt-in, the shape v1 set in PR #154 because unconditional detection breaks Latin names whose endings collide (the log's undated first line), and v2 kept the rotation at v1 parity, rebuilding position from assigned roles: `Сидоров Иван Петрович` under `locales.RU` → family 'Сидоров', given 'Иван', middle 'Петрович' — 2026-07-12 PR #288.
+- The rotation is scoped to the default order by a gate on the order assign read: under FAMILY_FIRST `Мицкевич Адам Юзеф` reads family 'Мицкевич', given 'Адам', middle 'Юзеф' as plain FAMILY_FIRST does, and the natural-order `Иван Петрович Сидоров` reads family 'Иван', given 'Петрович', middle 'Сидоров', an accepted consequence pinned in tests/v2/test_locales.py rather than in rules/O1's examples — 2026-09-07 #384.
+- Re-deriving the order from the patronymic trace under a declared family-first order, and reporting where the trace and the declared order disagree, are declined — 2026-09-07 #384.
+
+Not standing: 2026-08-15; the rotation and name-order question it left riding the order-constants issue, which closed without answering it, answered by 2026-09-07 #384.
+
+Open: none in this file.
+
+## Log
+
 - (v1 era, PR #154) — why patronymic handling is OPT-IN at all: unconditional detection breaks ordinary Latin names whose endings collide (Martin, Franklin, Benjamin), the finding that forced v1's Russian work behind a flag and set the opt-in shape v2 inherited.
 - 2026-07-12 (landed in the v2 core, PR #288) — v1 parity pinned live: the rotation reconstructs token position from assigned roles, which is faithful to v1 only under the default given-first order.
 

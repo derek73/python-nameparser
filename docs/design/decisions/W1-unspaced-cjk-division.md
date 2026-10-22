@@ -1,5 +1,24 @@
 # W1 — unspaced CJK division
 
+## Standing
+
+- Korean division is on by default and an unrecognized word stays whole, an unsplit name being recoverable where a wrong split is not: `김민준` → family '김', given '민준', `남궁민수` → family '남궁', `뿡민준` → family '뿡민준' — 2026-07-27 #271.
+- Han division is opt-in per pack, Han text not identifying its language: `毛泽东` reads family '毛泽东' by default and family '毛' under `locales.ZH`; a listed surname is a dictionary certainty and wins before a pluggable segmenter is asked — 2026-07-29 #272.
+- Japanese division is delegated to namedivider, and JMnedict is not bundled as segmentation data (the log's Declined line) — 2026-07-29 #272.
+- Script classification composes its input to NFC while segmentation reads the raw text, so a decomposed name degrades to no split, never a wrong one: `김민준` typed decomposed reads family '김민준'; vocabulary matching composes too since #322, the correction inside the entry — 2026-07-29.
+- `locales.ZH` and `locales.JA` are corpus alternatives; stacked, a listed Chinese surname still wins before the segmenter (`高橋一郎` divides 高 + 橋一郎 under ZH+JA as under ZH alone), and kana gating follows the script function order uses, so a wholly-katakana token never gates in — 2026-08.
+- The ZH single-character list is the census rows plus the union of Taiwan's and Wikidata's top 300, written by `tools/zh_surnames.py`, so `柯洁` and `关羽` under `locales.ZH` read family '柯' and '关' — 2026-10-18 #695.
+- Accepted under `locales.ZH`: a Japanese name splits wrongly more often (`安達禎` → family '安'), and so does a transcription written without the 间隔号 (`安娜` → family '安', given '娜') — 2026-10-18 #695.
+- A listed compound wins over its first character whatever the name's length, and a token that is wholly a surname stays whole: `张简明` → family '张简', given '明', and `张简` → family '张简' under `locales.ZH`; compounds stay hand-curated against bearer data, 东野 and 成公 left out — 2026-10-18 #695.
+- A pack holding every ranked surname, a stricter divide-after-the-first-character mode, the unlicensed or copyrighted sources and the unattested Hundred Family Surnames compounds are declined — 2026-10-18 #695.
+- A name the interpunct divides stands division down, vocabulary and segmenter alike (decisions/T3, #298), and rules/W1 states it as an Except rather than an Accepted cost: `安东尼·陈志明` under `locales.ZH` → family '陈志明', given '安东尼' — 2026-10-20 (Derek), #761.
+
+Elsewhere: a segmenter is asked only of a name its writer left undivided, decisions/W3's 2026-08 entry; the Japanese surnames and married doubles kept out of the ZH list, decisions/vocabulary-exclusions' #695 lines.
+
+Open: none in this file.
+
+## Log
+
 - 2026-07-27 #271 (decision; shipped in 2.1.0 via PR #294) — Korean division ships as a default: the census surname list is closed, hangul is self-selecting (a hangul entry can only match hangul text), and being unsplit is recoverable while a wrong split is not — which is also why an unrecognized name stays whole. The filed proposal (#271, 2026-07-07) asked for OPT-IN segmentation for Korean too, "like all localization"; default-on is the later refinement, and the census/self-selecting argument above is what justified promoting Korean past the blanket opt-in stance.
 - 2026-07-29 #272 (the ja amendment; shipped in 2.1.0 via PR #297) — Han division is opt-in per language pack because Han text does not identify its language (高橋一郎 under a Chinese list divides wrongly); a pluggable segmenter takes what the vocabulary declines, so pack + segmenter compose mechanically: a listed surname is a dictionary certainty and wins.
 
