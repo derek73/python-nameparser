@@ -2,7 +2,7 @@
 
 **When:** an unlisted word written in capitals or in dotted chunks stands where a suffix may stand, as in "John Smith XYZ".
 
-**Then:** an unlisted word joins the ambiguous class (S4) by SHAPE where the caller asks for it.
+**Then:** an unlisted word joins the ambiguous class (S4) by SHAPE, in the positions each shape is admitted: the dotted shape by default, the caps shape by default in one position and elsewhere where the caller asks for it.
 
 - **The two shapes.** Two or more period-separated chunks is one such shape, admitted by default (S3); an unlisted all-caps alphabetic word of two or more letters, standing in a suffix position of a mixed-case name and belonging to no wordlist, is the other.
 - **Where the caps shape is admitted by default.** By default that second shape is admitted in one position only, the part after a comma with two or more name words before it (C4, C6): French and Korean records write the SURNAME in capitals, and that convention puts the capitals at the end of a name or before a comma, never after a comma behind a full name.
