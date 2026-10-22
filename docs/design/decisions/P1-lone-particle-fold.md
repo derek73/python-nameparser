@@ -3,16 +3,15 @@
 ## Standing
 
 - The fold's site is read from the joining structure, a lone never-given particle PIECE opening the name, not from the roles assigned, so the fold holds under every name order (`de Mesnil` → family 'de Mesnil' under all three) — 2026-08 #359.
-- A title does not move the opening position: `Sir de Mesnil` reads as `de Mesnil` does, and so do the title-particles at the head, bare or period-marked (`St de Mesnil`, `Freiherr. de Mesnil` → family 'de Mesnil') — 2026-08 #367.
+- A title does not move the opening position: `Sir de Mesnil` reads as `de Mesnil` does, family 'de Mesnil' under every order — 2026-08 #367.
 - Grouping is vocabulary's job and assignment the declared order's, the one reach of an order into grouping's question being the leading run's stopping point, below — 2026-08-16 #364, #365, #368; 2026-08-17.
 - Under the default order the leading run takes the rest of the name (`de Mesnil Jean`, `de la Cruz Juan Carlos` → all family), and that is the reading rather than a gap: a name order is a property of the data source, a never-given particle marks where a surname begins, and the remedy for a family-first listing is the declaration or the family comma — 2026-08-17; 2026-09-07 #471.
 - Under a family-first order the run takes the particles and ONE name unit and lays the rest out by the order (`de Mesnil Jean` → family 'de Mesnil', given 'Jean'), the declaration being evidence of where the surname ends — 2026-08-17.
 - The stop lives in the fold, reading the order assign actually used, and a unit is a particle chain, a conjunction join or a bound given-name pair read off the tags (`de la Vega y Santos Juan` family-first → family 'de la Vega y Santos') — 2026-08-18 #395.
 - A particle chain inside the name is grouped and positioned like any other group, so `Juan de la Vega` under a family-first order reads family 'Juan', given 'de la Vega': what the never-given vocabulary forbids is the bare particle as a given name, not a name part that begins with one — 2026-08-16 #368 REVERSED.
-- The GIVEN position under a family-first order is no fold site (`Mesnil de` family-first → given 'de'); the decision is decisions/P6's 2026-08-30 #467 entry, and rules/P1 keeps the reading in its last Accepted bullet — 2026-10-19 #761 (skeleton migration).
 - A bare particle has nothing to fold into and is a lone name word read by O5: `de` → given 'de' under the default order, family 'de' under a family-first one — 2026-10-19 (Derek), #761.
 
-Elsewhere: which particles are never-given is decisions/vocabulary-collisions' criterion, applied by #360 (2026-08-18), which moved `mc` and `ste` into the set.
+Elsewhere: a word of both the title and the particle vocabulary at the head (`St`, `Freiherr`, bare or period-marked) is rules/P4's exception and not this fold's site, the particle behind it being inside a name P2's chain makes (`St de Mesnil Jean` family-first → title 'St', family 'de Mesnil Jean') — decisions/P2's 2026-10-10 (Derek), #624 entry. The GIVEN position under a family-first order is no fold site (`Mesnil de` family-first → given 'de') — decisions/P6's 2026-08-30 #467 entry, the rule's record of dropping it being this file's 2026-10-19 #761 (skeleton migration) entry. Which particles are never-given is decisions/vocabulary-collisions' criterion, applied by #360 (2026-08-18), which moved `mc` and `ste` into the set.
 
 Open: none in this file. Reporting an ambiguity on the shapes neither order settles was left out of the 2026-09-07 #471 entry on purpose and is no open question here.
 
