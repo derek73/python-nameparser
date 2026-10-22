@@ -155,6 +155,11 @@ def test_a_report_names_the_field_its_word_lands_in(
     and so not one `_FIELD_CLAIMS` lists, and `, Ma Dr.` (H1 moving it
     to the family) is pinned instead by test_assign.py's verbatim
     detail. No row reached that shape until #626's review.
+
+    #793's control, measured 2026-10-21: with the comma stage's
+    listed-member report worded "read as a credential" again, this
+    test fails 6 parses -- `John, Si.` and `John, Ma.` under each
+    order, a word the listing form binds as a title.
     """
     pn = _swept(case.id, order)
     for a in pn.ambiguities:
@@ -204,9 +209,12 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # 1302 -> 1308 on 2026-10-21: #796's two case rows (Robert Capa,
     # John Smith CAPA), each claiming under the three orders;
     # 1308 -> 1314 the same day: #797's PA and John Pa rows, each
-    # claiming one suffix-or-name report under the three orders.
-    assert claims == 1314, (
-        f"the field sweep checks {claims} claims, recorded as 1314 on "
+    # claiming one suffix-or-name report under the three orders;
+    # 1314 -> 1341 the same day: #793's nine reporting rows ('John,
+    # Si.', 'John, Ma.' and the #794 review's seven), one
+    # suffix-or-name claim each under the three orders.
+    assert claims == 1341, (
+        f"the field sweep checks {claims} claims, recorded as 1341 on "
         f"2026-10-21")
 
 

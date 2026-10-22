@@ -540,12 +540,16 @@ def decide(state: ParseState) -> ParseState:
             f"{what}; the part before the comma holds {names} name words, "
             f"so it is read as a credential run", tuple(part)))
     elif len(p1[0]) == 1 and p1[0][0] in listed:
-        # the first word after the comma reports as it always does
+        # the first word after the comma reports as it always does,
+        # naming the role bound above: the listing form binds a word
+        # the reading declines as a title ('John, Si.', #793), and no
+        # later rule moves a word of the emptied part
         i = p1[0][0]
+        field = "a credential" if reading[0] else "a title"
         ambiguities.append(PendingAmbiguity(
             AmbiguityKind.SUFFIX_OR_NAME,
             f"{tokens[i].text!r} after the comma is also an ordinary name "
-            f"word; read as a credential", (i,)))
+            f"word; read as {field}", (i,)))
     # rules/S7: "A member the company decides reports the fork as a
     # counted pick does" -- reported where it decided: a member the
     # anchor read as a credential after its own writing declined (#544)
