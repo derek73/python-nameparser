@@ -183,19 +183,19 @@ instead, and pass the result to ``capitalized()``:
 
     >>> import dataclasses
     >>> from nameparser import parse
-    >>> str(parse("jane smith dphil").capitalized())
-    'Jane Smith Dphil'
+    >>> str(parse("jane smith dclinpsy").capitalized())
+    'Jane Smith Dclinpsy'
     >>> default = Lexicon.default()
     >>> lex = dataclasses.replace(
     ...     default,
     ...     capitalization_exceptions=tuple(default.capitalization_exceptions)
-    ...     + (("dphil", "DPhil"),))
-    >>> str(parse("jane smith dphil").capitalized(lex))
-    'Jane Smith DPhil'
-    >>> str(parse("JANE SMITH D.PHIL.").capitalized(lex))
-    'Jane Smith D.Phil.'
+    ...     + (("dclinpsy", "DClinPsy"),))
+    >>> str(parse("jane smith dclinpsy").capitalized(lex))
+    'Jane Smith DClinPsy'
+    >>> str(parse("JANE SMITH D.CLINPSY.").capitalized(lex))
+    'Jane Smith D.ClinPsy.'
 
-Note the ``tuple(...) + ...``: assigning a bare ``(("dphil", "DPhil"),)``
+Note the ``tuple(...) + ...``: assigning a bare ``(("dclinpsy", "DClinPsy"),)``
 would *replace* the default exceptions rather than extend them, so
 the shipped masks (``phd``, ``bsc``, ``psyd`` and the rest) would be
 lost and those words fall back to the all-capitals acronym repair:
@@ -287,11 +287,11 @@ Acronyms the vocabulary doesn't list
 An acronym ``suffix_acronyms`` doesn't list repairs according to how it
 is written:
 
-- **Plain** (``dphil``), it parses as an ordinary name word and repairs
-  as one: ``Dphil``, as in the first example above.
-- **Dotted** (``d.phil.``), it is a suffix by shape alone (see
+- **Plain** (``dclinpsy``), it parses as an ordinary name word and repairs
+  as one: ``Dclinpsy``, as in the first example above.
+- **Dotted** (``d.clinpsy.``), it is a suffix by shape alone (see
   :ref:`unlisted-credentials`) and repairs in all capitals the same as
-  a listed acronym does: ``D.PHIL.``.
+  a listed acronym does: ``D.CLINPSY.``.
 
 Either way, give it a ``suffix_acronyms`` entry, or a mask of its own,
 rather than relying on this fallback.
