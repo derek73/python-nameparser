@@ -18,6 +18,7 @@
   ```
   "John Smith (PhD MBA)"      →  nickname="PhD MBA"
   "John Smith (PhD MBA)"      →  ambiguities=()
+  "John Smith (MA PhD)"       →  ambiguities=("suffix-or-nickname",)
   "John Smith (MBA PhD.)"     →  suffix="MBA PhD."  · boundary
   ```
 
@@ -26,7 +27,6 @@
   "John Smith (MA)"           →  nickname="MA"
   "John Smith (MA)"           →  ambiguities=("suffix-or-nickname",)
   "John Smith PhD (MA)"       →  nickname="MA"
-  "John Smith (MA PhD)"       →  ambiguities=("suffix-or-nickname",)
   "John Smith (M.A.)"         →  suffix="M.A."  · boundary
   "John Smith (MA.)"          →  suffix="MA."  · boundary
   ```
@@ -34,7 +34,7 @@
 **Precedence:**
 
 - **A bracketed clause led by a maiden marker** ("Jane Smith (née Jr.)"): suffix-shaped content is taken here first, and the clause is no maiden name (M3), so M2's delimiter precedence never reaches it.
-- **A marker-led clause of two or more words** ("Jane Smith (née Jones)"): M3 wins, reading it as the maiden name; its content is not suffix-shaped, so this rule leaves the clause to its pair and to M3.
+- **A clause M3 reads as a maiden name** ("Jane Smith (née Jones)"): its content is not suffix-shaped, so this rule leaves it to M3; the marker-led clause that is suffix-shaped is the bullet above.
 
 ---
 **Signal:** shape: suffix-shaped content inside brackets or quotes
