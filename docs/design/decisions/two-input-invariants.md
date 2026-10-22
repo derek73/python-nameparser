@@ -1,5 +1,16 @@
 # two-input-invariants — checking a rule against something that is not the code
 
+## Standing
+
+- A rule is checked against an invariant relating two DIFFERENT inputs, which consults no rule statement, so it can find a rule that is wrong (docs/design/AGENTS.md's axis 11) — 2026-08-31 #473.
+- The worked invariant: `Family, Given Particle` under the default order and `Family Given Particle` under FAMILY_FIRST parse alike for every particle but `do`, `mc` and `vd`, the particle-and-suffix words, the families and givens being drawn from outside the particle vocabulary; `tests/v2/test_order_correspondence.py` holds it, asserting the disagreeing set is exactly those three — 2026-08-31 #473.
+
+Elsewhere: why #473's "0 of 216 → 216 of 216" figure cannot be trusted is decisions/P6's.
+
+Open: none in this file.
+
+## Log
+
 - 2026-08-31 (#473; earned by #461 and #466) — AGENTS.md axis 11. Axes 1–10 compare a document to another document, to its own examples, or to the implementation, so all ten can only find code that disagrees with a rule; none can find a rule that is wrong. #461 was backed out and #466 closed unmerged for exactly that reason, a month apart, each after a review round that found real defects and missed the premise beneath them. An invariant relating two DIFFERENT inputs consults no rule statement and is not blind that way.
 
 - The worked invariant: for a name written `Family Given Particle`, the family-comma writing under the default order and the comma-less writing under FAMILY_FIRST must parse alike. Measured 2026-08-31 on 9f1d46e, comparing the non-empty role fields over `nameparser.config.particles.PARTICLES` × six families × six givens: it holds on all 36 pairs for 67 of the 70 particles, and fails on all 36 for `do`, `mc` and `vd` — precisely the words that are also suffix vocabulary, which rules/P6's Accepted consequence already names as the contested memberships. The invariant found that set from behavior alone, having read no rule.
