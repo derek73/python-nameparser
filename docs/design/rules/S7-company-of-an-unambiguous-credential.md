@@ -5,7 +5,7 @@
 **Then:** a member of the ambiguous set standing BEHIND an unambiguous credential in one run of suffix words — members of the class between them passing the run on — reads as the credential whatever its writing and whatever the count, at every trailing slot S4 names: the degree in front says what the run is.
 
 - **Only a credential in front speaks; one behind the member says nothing about it.**
-- **What ends the run.** A connective (P3), a particle (P2) — a word of both the particle and the suffix vocabulary heads the family name behind it — and a single-letter roman numeral, in any case — one letter, the shape a bare middle initial is written in, where a multi-letter one such as 'III' speaks — speak for nothing and end the run; so does any name word. A particle of this class standing behind a credential is still spoken for: the exclusion is of the word in front.
+- **What ends the run.** A connective (P3), a particle (P2) — a word of both the particle and the suffix vocabulary heads the family name behind it — and a single-letter roman numeral, in any case — one letter, the shape a bare middle initial is written in, where a multi-letter one such as 'III' speaks — speak for nothing and end the run; so does any name word. A particle of this class standing behind a credential is still spoken for: the exclusion is of the word in front. These end the company, not a credential's run: where the run starts (S8), a one-letter numeral and a name word behind the credential are the run's ('John Smith PhD V Ma' and 'John Smith PhD Jones Ma' read wholly as suffix), and in the part after a comma (C13) so is a connective ('Smith, PhD and Ma').
   ```
   "doe, jane v phd do"        →  suffix="phd do"
   ```

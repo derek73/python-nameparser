@@ -47,7 +47,7 @@
 - **A title run in front of a trailing suffix word** ("Dr King Jr"): a title run leaves one NAME word standing and a post-nominal cannot be it (H3), so `Dr King Jr` reads family `King`, suffix `Jr` exactly as this rule states.
 - **Written case and the count, at the bare ambiguous acronym** ("Jack MA"): written case outranks the count in a mixed-case name everywhere but the first slot after a comma, where the count decides first (S6, C4); the given part's trailing slot after a family comma is read without the count (S5); and an unambiguous credential in front outranks both (S7).
 - **An ambiguous acronym written with its periods** ("Jack M.A."): it counts unambiguously, and is not the bare acronym S4 counts words to spare for (S3).
-- **A credential's run against its company** ("John Smith PhD Prof. Ma"): a title standing between the credential and the member, and a member a particle chain (P2) had taken, are the credential's run's (S8), where the company could not reach them (S7).
+- **A credential's run against its company** ("John Smith PhD Prof. Ma"): a title standing between the credential and the member, and a member a particle chain (P2) had taken, are the credential's run's (S8), where the company could not reach them (S7); so are a one-letter numeral and a name word, and after a comma a connective (C13), which end the company but not the run.
 
 **Accepted:**
 
