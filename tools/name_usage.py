@@ -97,7 +97,7 @@ What a number means depends on its source, and the report says so:
   it; the zip itself is never unpacked.
 
 - Local corpora (tools/differential/local_corpora.py): whole names as
-  people typed them, fetched into the cache by that script and never
+  a source holds them, fetched into the cache by that script and never
   committed, so this tool only reads them. One row per local corpus,
   one not yet fetched naming the command that fetches it: the source's
   credit and data date, how many records write the word anywhere in the
@@ -106,8 +106,11 @@ What a number means depends on its source, and the report says so:
   (local_corpora.word_key); a spaced word ('Ph. D.') is matched as its
   words in a row, with the joined spelling's count beside it. The first is
   ClinicalTrials.gov's study officials, where `MD` after a comma is the
-  usual case and a credential before it is the noise worth seeing.
-  Not a census of anyone: it counts what the source's typists wrote.
+  usual case and a credential before it is the noise worth seeing; the
+  second the FEC's individual contributors, nearly every name written
+  family, comma, given in capitals by a filer's form, so a count there is
+  a word typed into a field rather than into a whole name.
+  Not a census of anyone: it counts what each source holds.
 
 Both US sources spell names in ASCII letters only, without spaces or
 punctuation (O'Brien is OBRIEN), so a word is folded the same way
