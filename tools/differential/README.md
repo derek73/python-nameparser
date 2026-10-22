@@ -181,20 +181,20 @@ invocation shows it.
 
 ## The corpora
 
-| File | Source | Blind to |
-|---|---|---|
-| `corpus.jsonl` | v1's own test suite at a pinned ref | anything 2.0 added: v1's authors had no reason to test a typographic nickname delimiter or a Cyrillic title |
-| `corpus_issues.jsonl` | name-like strings harvested from the GitHub issue tracker | anything nobody ever reported |
-| `corpus_cjk.jsonl` | the CJK-bearing rows of `tests/v2/cases.py`, via `build_cjk_corpus.py` (#295) | anything the case table itself missed |
-| `corpus_cldr.jsonl` | Unicode CLDR's person-name formatting test data at `release-48`: each fictional name's long, formal rendering in givenFirst, surnameFirst and sorting order, about 110 locales in native scripts, via `build_cldr_corpus.py` (2026-10-12); Unicode-3.0, notice in `cldr_LICENSE` | real-world name distributions: the names are written to fill every field, so full-house names are over-represented and plain two-word names under-represented |
-| `corpus_gnd.jsonl` | the German National Library's authority file (GND, via lobid), real people who are deceased and have a Wikipedia article: each preferred name as cataloged (`Gogh, Vincent van`) and, outside family-first areas, a given-first rendering composed from its fields (a regnal name is composed only, `Johann II.`, without its German descriptor), sampled by shape and area via `build_gnd_corpus.py` (2026-10-16); CC0, credit in `gnd_LICENSE` | names as their bearers write them: German library romanization and German forms for historic figures, Latin script only, titles, credentials and nicknames kept out of the preferred name (a few slip into a `personalName`: `Imam Bonjol`), and the catalog's entry rules (not the bearer's culture) decide what counts as a surname |
-| `corpus_wikidata.jsonl` | Wikidata, real public figures (deceased, or with at least 10 sitelinks) whose item states a second surname (P1950: Spain, Mexico, Colombia) or a patronymic (P5056: Russia, the Soviet Union, the Russian Empire, Iceland, Malaysia): each P1559 native-language name and own-language label whose every word aligns with exactly one stated part, via `build_wikidata_corpus.py` (2026-10-16); CC0, credit in `wikidata_LICENSE` | everything the strict alignment drops: short display forms without the second surname, nicknames, and names with an unrecorded part, so tidy names are over-represented; only those eight citizenships; no titles, credentials or suffixes |
-| `corpus_wikidata_native.jsonl` | Wikidata, real public figures (deceased, or with at least 10 sitelinks) with a name written in their own script: Hangul, Han and kana, Arabic (Syria, Egypt, Saudi Arabia, Iran), Hebrew, Georgian, Armenian, Greek, Cyrillic beyond Russian (Serbia, Bulgaria, Ukraine, Kazakhstan), Bengali, Devanagari and Thai, 20 strata sampled by country and language. Each person's first P1559 or own-language label whose every word, or every character in unspaced text, aligns with exactly one stated part, via `build_wikidata_native_corpus.py` (2026-10-16). CC0, credit in `wikidata_native_LICENSE` | everything the strict alignment drops, which in these scripts is most names: Arabic nasab chains (`بن` is no connective in Arabic script), `آل` family names and kunyas (most Arabic items state no family name), Chinese names whose given name has no item (most), Japanese names whose given-name item holds only a kana reading, and names whose parts are labelled only in Latin script (most Devanagari, Bengali and Thai items, so those strata are 10–25 names); transcriptions with the 间隔号; Urdu and Marathi entirely; no titles, credentials or suffixes |
-| `corpus_conventions.jsonl` | invented names patterned on naming conventions the other corpora barely cover -- no family name, religious names, positional patronymics, honorifics after the name -- from the hand-written table in `conventions.py`, via `build_conventions_corpus.py` (#686) | real names, and every convention nobody has written a row for: about one row per convention, so it shows that a convention moved, not how often |
-| `corpus_rules.jsonl` | every example in `docs/design/rules/`, via `build_rules_corpus.py` (#414) | anything the rules doc has no example for |
-| `corpus_shapes.jsonl` | shape-tagged rows of `tests/v2/cases.py`, via `build_shapes_corpus.py` (#468) | anything no one has tagged a row for |
+| File | Job | Source | Blind to |
+|---|---|---|---|
+| `corpus.jsonl` | Watch | v1's own test suite at a pinned ref | anything 2.0 added: v1's authors had no reason to test a typographic nickname delimiter or a Cyrillic title |
+| `corpus_issues.jsonl` | Watch | name-like strings harvested from the GitHub issue tracker | anything nobody ever reported |
+| `corpus_cjk.jsonl` | Watch | the CJK-bearing rows of `tests/v2/cases.py`, via `build_cjk_corpus.py` (#295) | anything the case table itself missed |
+| `corpus_cldr.jsonl` | Watch, Score | Unicode CLDR's person-name formatting test data at `release-48`: each fictional name's long, formal rendering in givenFirst, surnameFirst and sorting order, about 110 locales in native scripts, via `build_cldr_corpus.py` (2026-10-12); Unicode-3.0, notice in `cldr_LICENSE` | real-world name distributions: the names are written to fill every field, so full-house names are over-represented and plain two-word names under-represented |
+| `corpus_gnd.jsonl` | Watch, Score | the German National Library's authority file (GND, via lobid), real people who are deceased and have a Wikipedia article: each preferred name as cataloged (`Gogh, Vincent van`) and, outside family-first areas, a given-first rendering composed from its fields (a regnal name is composed only, `Johann II.`, without its German descriptor), sampled by shape and area via `build_gnd_corpus.py` (2026-10-16); CC0, credit in `gnd_LICENSE` | names as their bearers write them: German library romanization and German forms for historic figures, Latin script only, titles, credentials and nicknames kept out of the preferred name (a few slip into a `personalName`: `Imam Bonjol`), and the catalog's entry rules (not the bearer's culture) decide what counts as a surname |
+| `corpus_wikidata.jsonl` | Watch, Score | Wikidata, real public figures (deceased, or with at least 10 sitelinks) whose item states a second surname (P1950: Spain, Mexico, Colombia) or a patronymic (P5056: Russia, the Soviet Union, the Russian Empire, Iceland, Malaysia): each P1559 native-language name and own-language label whose every word aligns with exactly one stated part, via `build_wikidata_corpus.py` (2026-10-16); CC0, credit in `wikidata_LICENSE` | everything the strict alignment drops: short display forms without the second surname, nicknames, and names with an unrecorded part, so tidy names are over-represented; only those eight citizenships; no titles, credentials or suffixes |
+| `corpus_wikidata_native.jsonl` | Watch, Score | Wikidata, real public figures (deceased, or with at least 10 sitelinks) with a name written in their own script: Hangul, Han and kana, Arabic (Syria, Egypt, Saudi Arabia, Iran), Hebrew, Georgian, Armenian, Greek, Cyrillic beyond Russian (Serbia, Bulgaria, Ukraine, Kazakhstan), Bengali, Devanagari and Thai, 20 strata sampled by country and language. Each person's first P1559 or own-language label whose every word, or every character in unspaced text, aligns with exactly one stated part, via `build_wikidata_native_corpus.py` (2026-10-16). CC0, credit in `wikidata_native_LICENSE` | everything the strict alignment drops, which in these scripts is most names: Arabic nasab chains (`بن` is no connective in Arabic script), `آل` family names and kunyas (most Arabic items state no family name), Chinese names whose given name has no item (most), Japanese names whose given-name item holds only a kana reading, and names whose parts are labelled only in Latin script (most Devanagari, Bengali and Thai items, so those strata are 10–25 names); transcriptions with the 间隔号; Urdu and Marathi entirely; no titles, credentials or suffixes |
+| `corpus_conventions.jsonl` | Watch, Score | invented names patterned on naming conventions the other corpora barely cover -- no family name, religious names, positional patronymics, honorifics after the name -- from the hand-written table in `conventions.py`, via `build_conventions_corpus.py` (#686) | real names, and every convention nobody has written a row for: about one row per convention, so it shows that a convention moved, not how often |
+| `corpus_rules.jsonl` | Watch | every example in `docs/design/rules/`, via `build_rules_corpus.py` (#414) | anything the rules doc has no example for |
+| `corpus_shapes.jsonl` | Watch | shape-tagged rows of `tests/v2/cases.py`, via `build_shapes_corpus.py` (#468) | anything no one has tagged a row for |
 
-Each covers a blind spot of the others. `corpus.jsonl` is reproducible
+The jobs are mechanisms.md#NAME-DATA-JOBS: Watch is the snapshot above, Score the agreement records below (`cldr_agreement.py`). Each covers a blind spot of the others. `corpus.jsonl` is reproducible
 forever from an immutable git ref, while the issue tracker is mutable,
 so regenerating `corpus_issues.jsonl` is an explicit, reviewable act.
 The CJK corpus exists because both of those are structurally blind to
@@ -220,6 +220,31 @@ two orders is two entries. `--coverage` prints names per shape:
 uv run python tools/differential/build_shapes_corpus.py
 uv run python tools/differential/build_shapes_corpus.py --coverage
 ```
+
+## Local corpora
+
+A local corpus holds real names that are not committed: fetched into the cache by `local_corpora.py`, read by `snapshot.py --local` and by a row of `tools/name_usage.py`, and seen by no reviewer and no CI run (the SURVEY job in mechanisms.md#NAME-DATA-JOBS, and WATCH outside CI). What reaches the repository is what a contributor cites from it, counts and shapes written with made-up names.
+
+```
+uv run python tools/differential/local_corpora.py fetch ctgov-officials
+uv run python tools/differential/local_corpora.py tally ctgov-officials --top 50
+uv run python tools/name_usage.py --no-wikidata MA FNP-C
+```
+
+To read what a branch moves, record the local snapshot with the base checkout, then check with the branch:
+
+```
+uv run python tools/differential/snapshot.py --local ctgov-officials --record --tree ../master-checkout
+uv run python tools/differential/snapshot.py --local ctgov-officials
+```
+
+`compare.py --corpus` takes the cached `corpus.jsonl` too, against a release.
+
+| Source | What it is | Blind to |
+|---|---|---|
+| `ctgov-officials` | every overall official of every study on ClinicalTrials.gov, whatever the role (principal investigators, study directors and chairs, and a few sub-investigators and officials with no role), the name as the sponsor's staff typed it into a free-text field: credentials run together (`MBBS,FCPS`), job titles in the name, all-caps and all-lowercase names, typos. Fetched from API v2 (NLM) | names outside clinical research, which is mostly medicine and heavily credentialed; names nobody typed by hand |
+
+A live source has no fixed snapshot to pin, so the cached copy is the pin: `meta.json` holds the source's data date and the sha256 of `raw.jsonl` and `corpus.jsonl`, checked on every load, and every report, the `name_usage.py` row included, carries the source and that date. Quote a count with the date, and expect a later fetch to differ. A local snapshot records which fetch it was read from, and `snapshot.py --local` refuses to compare it with a corpus fetched since, which would report the names the source gained and lost as moves: after a `fetch --refresh`, record again from the base checkout. ClinicalTrials.gov's terms ask anyone redistributing its data to credit it, show NLM's processing date and say what was changed; keeping the names in the cache and citing counts with that header meets them.
 
 ## Corpus provenance
 

@@ -9,6 +9,7 @@ pytest's sense, and several modules want them by name.
 """
 import importlib.util
 import json
+import sys
 import time
 import urllib.request
 from pathlib import Path
@@ -56,6 +57,10 @@ def load_tool(stem: str) -> ModuleType:
         f"differential_{stem}", _TOOLS / f"{stem}.py")
     assert spec is not None and spec.loader is not None, stem
     module = importlib.util.module_from_spec(spec)
+    # Registered before it runs: @dataclass looks the module up in
+    # sys.modules to check string annotations, and fails on a module
+    # loaded by path that is not in it (local_corpora.py's dataclasses).
+    sys.modules[spec.name] = module
     spec.loader.exec_module(module)
     return module
 

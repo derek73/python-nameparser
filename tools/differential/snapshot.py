@@ -17,6 +17,12 @@ the review reads it directly and nothing has to be classified (#664).
 git ref, which is how a release asks what moved since the last tag.
 --tree PATH reads with the nameparser package of another checkout
 (the corpus is always this one's), for comparing two trees.
+--local SOURCE reads a local corpus (local_corpora.py) instead of the
+committed ones, against a snapshot kept beside it in the cache, so a
+change can be read against real names that are never committed:
+
+    uv run python tools/differential/snapshot.py --local ctgov-officials --record --tree ../master-checkout
+    uv run python tools/differential/snapshot.py --local ctgov-officials
 
 A corpus that loses names shows them as removed, so a truncated file
 cannot pass for a clean run. compare.py builds its baseline rows with
@@ -35,6 +41,11 @@ from pathlib import Path
 from typing import Any
 
 HERE = Path(__file__).resolve().parent
+# The shared corpus helpers, found as the corpus builders find them (see
+# corpus_build's docstring for why the directory is appended).
+if str(HERE) not in sys.path:
+    sys.path.append(str(HERE))
+from corpus_build import jsonl_line, jsonl_lines  # noqa: E402
 REPO_ROOT = HERE.parents[1]
 SNAPSHOT = HERE / "snapshot.jsonl"
 RECORD_COMMAND = "uv run python tools/differential/snapshot.py --record"
@@ -99,8 +110,7 @@ def corpus_entries(paths: list[Path] | None = None) -> list[Entry]:
         raise SystemExit(f"no corpus files found in {HERE}")
     found: set[Entry] = set()
     for path in paths:
-        lines = [ln for ln in path.read_text(encoding="utf-8").splitlines()
-                 if ln.strip()]
+        lines = jsonl_lines(path.read_text(encoding="utf-8"))
         if not lines:
             raise SystemExit(f"{path.name} is empty")
         found.update(_corpus_line(path, ln, orders) for ln in lines)
@@ -117,7 +127,7 @@ def only_in(path: Path, names: set[str]) -> set[str]:
     orders = {k: s.order for k, s in load_shapes().items()}
     def held(p: Path) -> set[str]:
         return {_corpus_line(p, ln, orders)[0]
-                for ln in p.read_text(encoding="utf-8").splitlines() if ln.strip()}
+                for ln in jsonl_lines(p.read_text(encoding="utf-8"))}
     others = set().union(*(held(p) for p in sorted(HERE.glob("corpus*.jsonl"))
                            if p != path))
     return (names & held(path)) - others
@@ -198,11 +208,11 @@ def key(r: dict[str, Any]) -> tuple[str, str]:
 
 
 def dump(rows: list[dict[str, Any]]) -> str:
-    return "".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows)
+    return "".join(jsonl_line(r) + "\n" for r in rows)
 
 
 def load(text: str) -> dict[tuple[str, str], dict[str, Any]]:
-    return {key(r): r for r in map(json.loads, text.splitlines()) if r}
+    return {key(r): r for r in map(json.loads, jsonl_lines(text)) if r}
 
 
 def _flat(r: dict[str, Any]) -> dict[str, str]:
@@ -262,24 +272,79 @@ def check_source(module_file: str, root: Path = REPO_ROOT) -> Path:
     return at
 
 
+def _local(source: str) -> tuple[Path, list[Path], dict[str, str]]:
+    """A local corpus's snapshot path, its corpus file (checked by
+    local_corpora.load against its sha256), and what names this fetch of
+    it, with its attribution printed: a report on it carries its source
+    and date."""
+    import local_corpora
+    corpus = local_corpora.require(source)
+    print(corpus.header())
+    fetch = {"data_date": corpus.meta["data_date"],
+             "corpus_sha256": corpus.meta["corpus_sha256"]}
+    return (local_corpora.directory(source) / local_corpora.SNAPSHOT,
+            [local_corpora.corpus_path(source)], fetch)
+
+
+def _fetch_record(snapshot: Path) -> Path:
+    """Beside a local snapshot: the fetch of the corpus it was recorded
+    from. A corpus fetched again holds other names, and compared with a
+    snapshot of the old fetch every name the registry gained or lost
+    would read as a move of the parser's."""
+    return snapshot.with_name(snapshot.name + ".source.json")
+
+
+def _check_fetch(snapshot: Path, fetch: dict[str, str], source: str) -> None:
+    """Refuse a local snapshot recorded from another fetch of its corpus,
+    or with no readable record of its fetch, before reading anything."""
+    try:
+        recorded = json.loads(_fetch_record(snapshot).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        recorded = {}
+    if not isinstance(recorded, dict):
+        recorded = {}
+    if recorded.get("corpus_sha256") != fetch["corpus_sha256"]:
+        raise SystemExit(
+            f"{snapshot} was recorded from another fetch of {source} (data "
+            f"as of {recorded.get('data_date', 'unknown')}; the corpus now "
+            f"is {fetch['data_date']}), so it would report the names the "
+            f"source gained and lost as moves. Record it again from the "
+            f"base checkout: snapshot.py --local {source} --record "
+            f"--tree <base checkout>")
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--record", action="store_true", help="rewrite the snapshot")
     ap.add_argument("--since", metavar="REF",
                     help="compare against the snapshot committed at a git ref")
     ap.add_argument("--tree", metavar="PATH", help="read with another checkout")
-    ap.add_argument("--out", type=Path, default=SNAPSHOT,
-                    help="where --record writes (default: snapshot.jsonl)")
+    ap.add_argument("--out", type=Path,
+                    help="where --record writes (default: snapshot.jsonl, "
+                         "or the local corpus's own snapshot)")
+    ap.add_argument("--local", metavar="SOURCE",
+                    help="read a local corpus from the cache instead of the "
+                         "committed corpora (local_corpora.py)")
     args = ap.parse_args(argv)
+    if args.local and args.since:
+        ap.error("--since reads a committed snapshot; a local corpus has none")
+    snapshot, corpora, fetch = SNAPSHOT, None, None
+    if args.local:
+        snapshot, corpora, fetch = _local(args.local)
+    out = args.out or snapshot
+    if fetch is not None and not args.record and snapshot.exists():
+        _check_fetch(snapshot, fetch, args.local)
     root = Path(args.tree).resolve() if args.tree else REPO_ROOT
     if args.tree:
         sys.path.insert(0, str(root))
-    rows = read(corpus_entries())
+    rows = read(corpus_entries(corpora))
     import nameparser
     check_source(nameparser.__file__, root)
     if args.record:
-        args.out.write_text(dump(rows), encoding="utf-8")
-        print(f"recorded {len(rows)} readings to {args.out}")
+        out.write_text(dump(rows), encoding="utf-8")
+        if fetch is not None:
+            _fetch_record(out).write_text(json.dumps(fetch), encoding="utf-8")
+        print(f"recorded {len(rows)} readings to {out}")
         return 0
     if args.since:
         rel = SNAPSHOT.relative_to(Path(subprocess.check_output(
@@ -292,19 +357,28 @@ def main(argv: list[str] | None = None) -> int:
                 f"no {rel} at {args.since}: an unknown ref, or one from "
                 f"before the snapshot existed. For a release tagged "
                 f"before it, use `compare.py --baseline <version>`") from None
+    elif not snapshot.exists():
+        raise SystemExit(f"no snapshot at {snapshot}: record one first, "
+                         f"with --record (and --tree for another checkout)")
     else:
-        text = SNAPSHOT.read_text(encoding="utf-8")
+        text = snapshot.read_text(encoding="utf-8")
     old, new = load(text), {key(r): r for r in rows}
     moves = grouped(old, new)
     print("\n".join(moves) or "matches the snapshot")
-    if moves:
-        moved = {k for k in set(old) | set(new) if old.get(k) != new.get(k)}
-        cldr = only_in(CLDR_CORPUS, {name for name, _ in moved})
-        print(f"\n{len(moved)} entries differ, {len(cldr)} of their names "
-              f"held only by {CLDR_CORPUS.name}")
-    if moves and not args.since:
+    if not moves:
+        return 0
+    moved = {k for k in set(old) | set(new) if old.get(k) != new.get(k)}
+    if args.local:
+        print(f"\n{len(moved)} entries differ from the snapshot recorded "
+              f"from this fetch. To make another tree the baseline: "
+              f"snapshot.py --local {args.local} --record --tree <checkout>")
+        return 1
+    cldr = only_in(CLDR_CORPUS, {name for name, _ in moved})
+    print(f"\n{len(moved)} entries differ, {len(cldr)} of their names "
+          f"held only by {CLDR_CORPUS.name}")
+    if not args.since:
         print(f"\nif these moves are intended: {RECORD_COMMAND}")
-    return 1 if moves else 0
+    return 1
 
 
 if __name__ == "__main__":

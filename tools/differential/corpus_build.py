@@ -27,15 +27,25 @@ from pathlib import Path
 from typing import Any
 
 
-def cache_dir(name: str) -> Path:
+def cache_dir(name: str, *, create: bool = True) -> Path:
     """The builder's cache directory, outside the repository:
     $NAMEPARSER_TOOLS_CACHE or ~/.cache/nameparser-tools, as
-    tools/name_usage.py uses."""
+    tools/name_usage.py uses. Created unless `create` is false, for a
+    reader that only looks."""
     root = Path(os.environ.get("NAMEPARSER_TOOLS_CACHE",
                                Path.home() / ".cache" / "nameparser-tools"))
     path = root / name
-    path.mkdir(parents=True, exist_ok=True)
+    if create:
+        path.mkdir(parents=True, exist_ok=True)
     return path
+
+
+def write_atomic(path: Path, body: bytes) -> None:
+    """Write `body` to `path` through a .part file beside it and a
+    rename, so an interrupted run leaves no truncated file."""
+    partial = path.with_name(path.name + ".part")
+    partial.write_bytes(body)
+    os.replace(partial, path)
 
 
 def fetch_bytes(url: str, *, user_agent: str, timeout: int, data: bytes | None = None,
@@ -79,10 +89,31 @@ def cached_json(cache: Path, key: str, label: str, fetch: Callable[[], bytes],
                      f"{cached} (cached {label}; delete it or pass --refresh)")
     body = fetch()
     data = check(body, label)
-    partial = cached.with_suffix(".part")
-    partial.write_bytes(body)
-    os.replace(partial, cached)
+    write_atomic(cached, body)
     return data
+
+
+#: The line breaks str.splitlines() cuts at and json.dumps(...,
+#: ensure_ascii=False) writes unescaped, as JSON escapes to put in their
+#: place: a name pasted from a document can hold one, and written raw it
+#: would cut its line in two for a reader that splits lines (AGENTS.md's
+#: Gotchas, #801). corpus_lines and fields_lines, snapshot.py,
+#: cldr_agreement.py and local_corpora.py write with jsonl_line and read
+#: with jsonl_lines; the corpus builders that write their own lines
+#: (build_cjk, _conventions, _shapes, _rules, _issues) do not yet.
+_LINE_BREAKS = str.maketrans({"\x85": "\\u0085", "\u2028": "\\u2028",
+                             "\u2029": "\\u2029"})
+
+
+def jsonl_line(obj: object, *, sort_keys: bool = False) -> str:
+    """`obj` as one JSONL line (no newline): json.dumps with the line
+    breaks escaped."""
+    return json.dumps(obj, ensure_ascii=False, sort_keys=sort_keys).translate(_LINE_BREAKS)
+
+
+def jsonl_lines(text: str) -> list[str]:
+    """A JSONL file's non-blank lines, cut at "\n" only."""
+    return [line for line in text.split("\n") if line.strip()]
 
 
 def corpus_lines(rows: Iterable[dict[str, Any]]) -> list[str]:
@@ -96,8 +127,7 @@ def corpus_lines(rows: Iterable[dict[str, Any]]) -> list[str]:
         pairs.add((str(row["text"]), shape))
     # An untagged line sorts before every tagged one of the same text, so
     # the order never rests on set iteration (shape 0 would tie with None).
-    return [json.dumps(text, ensure_ascii=False) if shape is None
-            else json.dumps({"name": text, "shape": shape}, ensure_ascii=False)
+    return [jsonl_line(text if shape is None else {"name": text, "shape": shape})
             for text, shape in sorted(pairs, key=lambda p: (p[0], -1 if p[1] is None else p[1]))]
 
 
@@ -111,8 +141,7 @@ def fields_lines(rows: Iterable[dict[str, Any]]) -> list[str]:
         if key in keyed:
             raise ValueError(f"duplicate rendering {key}")
         keyed[key] = row
-    return [json.dumps(keyed[k], ensure_ascii=False, sort_keys=True)
-            for k in sorted(keyed)]
+    return [jsonl_line(keyed[k], sort_keys=True) for k in sorted(keyed)]
 
 
 def write_corpus(rows: list[dict[str, Any]], corpus: Path, fields: Path) -> None:

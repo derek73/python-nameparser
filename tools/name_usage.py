@@ -96,6 +96,19 @@ What a number means depends on its source, and the report says so:
   online), pinned by sha256, and read once into a tally cached beside
   it; the zip itself is never unpacked.
 
+- Local corpora (tools/differential/local_corpora.py): whole names as
+  people typed them, fetched into the cache by that script and never
+  committed, so this tool only reads them. One row per local corpus,
+  one not yet fetched naming the command that fetches it: the source's
+  credit and data date, how many records write the word anywhere in the
+  name and how many after a comma, and the spellings as written. Words
+  are matched ignoring case, periods and edge punctuation
+  (local_corpora.word_key); a spaced word ('Ph. D.') is matched as its
+  words in a row, with the joined spelling's count beside it. The first is
+  ClinicalTrials.gov's study officials, where `MD` after a comma is the
+  usual case and a credential before it is the noise worth seeing.
+  Not a census of anyone: it counts what the source's typists wrote.
+
 Both US sources spell names in ASCII letters only, without spaces or
 punctuation (O'Brien is OBRIEN), so a word is folded the same way
 before lookup. A letter the fold cannot carry over (any non-Latin
@@ -133,7 +146,11 @@ from collections.abc import Callable, Iterator
 from dataclasses import asdict, dataclass, field
 from datetime import date
 from pathlib import Path
-from typing import Any, Literal, TypeVar
+from types import ModuleType
+from typing import TYPE_CHECKING, Any, Literal, TypeVar
+
+if TYPE_CHECKING:  # loaded by path at run time, _local_corpora
+    from local_corpora import Local
 
 CENSUS_URL = "https://www2.census.gov/topics/genealogy/2010surnames/names.zip"
 CENSUS_FILE = "census2010_surnames.zip"
@@ -1031,6 +1048,65 @@ def credential_usage(word: str, tally: CredentialTally | None) -> Usage:
     return usage
 
 
+# -- local corpora ---------------------------------------------------------
+
+def _local_corpora() -> ModuleType:
+    """tools/differential/local_corpora.py, which owns the local corpora's
+    cache layout and the checks on loading one, loaded by path the way
+    the differential tools load corpus_build."""
+    here = str(Path(__file__).resolve().parent / "differential")
+    if here not in sys.path:
+        sys.path.append(here)
+    import local_corpora
+    return local_corpora
+
+
+def load_locals() -> list[tuple[str, Local | None, str]]:
+    """Every local corpus: (source, the corpus or None when not fetched,
+    the error that stopped it loading). load() refuses with ValueError
+    anything it cannot read, so a damaged corpus fails its own row."""
+    module = _local_corpora()
+    return [(source, *_attempt(lambda source=source: module.load(source)))
+            for source in sorted(module.SOURCES)]
+
+
+def local_usage(word: str, source: str, local: Local | None) -> Usage:
+    module = _local_corpora()
+    usage = Usage(f"{source} (local corpus)")
+    if local is None:
+        usage.status = "not downloaded"
+        usage.note = f"not fetched; {module.fetch_command(source)}"
+        return usage
+    found = module.lookup(local, word)
+    if found is None:
+        usage.status = "unrepresentable"
+        usage.note = "nothing in it is left once periods and punctuation go"
+        return usage
+    if found.joined is None:
+        spelled = ("written " + ", ".join(f"{s} {n:,}" for s, n in
+                                          found.spellings.most_common(3))
+                   if found.spellings else "")
+    else:
+        joined = "".join(module.words(word))
+        spelled = f"as one word '{joined}' {found.joined:,}" if found.joined else ""
+    usage.note = _join(
+        local.credit,
+        f"{found.anywhere:,} of {len(local.records):,} "
+        f"{module.SOURCES[source].unit} write it, {found.after_comma:,} after "
+        f"a comma", spelled)
+    return usage
+
+
+def local_rows(word: str, locals_: list[tuple[str, Local | None, str]]) -> list[Usage]:
+    """One row per local corpus, a corpus that failed to load reported
+    as failed. A function of its own so its loop names cannot shadow
+    main's: written inline there, its `index` replaced the CJK name
+    index the ends-with row reads."""
+    return [Usage(f"{source} (local corpus)", status="failed", note=error)
+            if error else local_usage(word, source, local)
+            for source, local, error in locals_]
+
+
 # -- Wikidata ------------------------------------------------------------
 
 def spellings(word: str) -> list[str]:
@@ -1914,6 +1990,7 @@ def main(argv: list[str] | None = None) -> int:
         index, index_error = _attempt(
             lambda: load_index(download=True, refresh=args.refresh_index))
 
+    locals_ = load_locals()
     report = {}
     for word in words:
         census_row, ssa_row = census_usage(word, census), ssa_usage(word, ssa)
@@ -1924,7 +2001,8 @@ def main(argv: list[str] | None = None) -> int:
                            (nppes_row, nppes_error)):
             if error:
                 row.status, row.note = "failed", error
-        usages = [census_row, ssa_row, namdict_row, nppes_row]
+        usages = [census_row, ssa_row, namdict_row, nppes_row,
+                  *local_rows(word, locals_)]
         if not args.no_wikidata:
             usages.append(wikidata_usage(word, args.countries))
             if is_cjk(word):

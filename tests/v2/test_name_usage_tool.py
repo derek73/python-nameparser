@@ -81,6 +81,15 @@ def _no_nppes(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(tool, "load_nppes", lambda download: None)
 
 
+#: And for the local corpora, which a developer's cache may hold too.
+_LOAD_LOCALS = tool.load_locals
+
+
+@pytest.fixture(autouse=True)
+def _no_locals(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(tool, "load_locals", lambda: [])
+
+
 def test_the_network_guard_bites() -> None:
     # Negative control for the guard: without it, this call goes to
     # query.wikidata.org.
@@ -693,11 +702,19 @@ def test_main_skips_the_index_for_a_latin_word(
     assert sources[-1] == "Wikidata people"
 
 
+@pytest.mark.parametrize("local", ["none", "not fetched", "fetched"])
 def test_main_adds_the_ends_with_row_for_a_cjk_word(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
-        capsys: pytest.CaptureFixture[str]) -> None:
+        capsys: pytest.CaptureFixture[str], local: str) -> None:
+    # With a local corpus listed, fetched or not: the local rows' loop
+    # once shadowed main's CJK index, so the row read None or a WordIndex.
     monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
     monkeypatch.setattr(tool, "load_census", lambda download: None)
+    corpus = _local("Ann Lee, MD")
+    locals_ = {"none": [],
+               "not fetched": [("ctgov-officials", None, "")],
+               "fetched": [("ctgov-officials", corpus, "")]}
+    monkeypatch.setattr(tool, "load_locals", lambda: locals_[local])
     monkeypatch.setattr(tool, "load_index", lambda download, refresh=False:
                         _index(("Q1", "family", "向殿")))
     _stub_sparql(monkeypatch, [[], [], [{"role": "family", "n": "1"}], []])
@@ -2153,3 +2170,94 @@ def test_credential_usage_falls_back_to_a_sibling_for_letters_only_phrases_hold(
     assert usage.credential == 50
     assert "looked up as REGISTERED NURSE" in usage.note
     assert "also written" not in usage.note  # found, not also another
+
+
+# -- local corpora ---------------------------------------------------------------
+
+_CREDIT = "ClinicalTrials.gov (NLM) study officials, data as of 2026-10-21"
+
+
+def _local(*names: str) -> object:
+    return tool._local_corpora().Local(
+        "ctgov-officials", [{"name": n} for n in names], {"data_date": "2026-10-21"})
+
+
+def test_a_local_corpus_not_fetched_names_the_fetch(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    [(source, corpus, error)] = _LOAD_LOCALS()
+    assert (source, corpus, error) == ("ctgov-officials", None, "")
+    row = tool.local_usage("MD", source, corpus)
+    assert row.status == "not downloaded"
+    assert "local_corpora.py fetch ctgov-officials" in row.note
+
+
+def test_a_local_corpus_row_counts_officials_and_the_comma_side() -> None:
+    corpus = _local("Ann Lee, M.D.", "MD Bo Wu", "Cy Doe, MD, PhD", "Di Fox, MD/PhD",
+                    "Ed Ng, md; MD")
+    row = tool.local_usage("m.d", "ctgov-officials", corpus)
+    assert row.status == "ok"
+    # The credit and date lead, as ClinicalTrials.gov's terms ask; the
+    # spellings count records, so none exceeds the officials writing it.
+    assert row.note == (f"{_CREDIT}; 5 of 5 officials write it, 4 after a comma; "
+                        "written MD 4, M.D. 1, md 1")
+    assert tool.local_usage("PhD", "ctgov-officials", corpus).note.startswith(
+        f"{_CREDIT}; 2 of 5 officials write it, 2 after a comma")
+    missing = tool.local_usage("FNP-C", "ctgov-officials", corpus)
+    assert missing.note == f"{_CREDIT}; 0 of 5 officials write it, 0 after a comma"
+    assert tool.local_usage("..", "ctgov-officials", corpus).status == "unrepresentable"
+
+
+@pytest.mark.parametrize("word", ["Ph. D.", "Ph D", "ph d,"])
+def test_a_spaced_word_is_looked_up_as_its_words_in_a_row(word: str) -> None:
+    # As one key it could match no word of the index, so it read zero.
+    corpus = _local("Ann Lee, Ph. D.", "Bo Wu, Ph D", "Cy Doe, PhD")
+    row = tool.local_usage(word, "ctgov-officials", corpus)
+    assert row.note == (f"{_CREDIT}; 2 of 3 officials write it, 2 after a comma; "
+                        "as one word 'phd' 1")
+
+
+def test_a_local_corpus_row_appears_in_the_report(
+        monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    monkeypatch.setattr(tool, "load_locals", lambda: [
+        ("ctgov-officials", _local("Ann Lee, MD"), "")])
+    assert tool.main(["--no-wikidata", "MD"]) == 0
+    out = capsys.readouterr().out
+    assert "ctgov-officials (local corpus)" in out
+    assert "1 of 1 officials write it, 1 after a comma" in out
+
+
+def test_a_local_corpus_that_fails_to_load_fails_the_run(
+        monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    monkeypatch.setattr(tool, "load_locals", lambda: [
+        ("ctgov-officials", None, "ValueError: does not match the sha256")])
+    assert tool.main(["--no-wikidata", "MD"]) == 2
+    assert "failed; ValueError: does not match the sha256" in capsys.readouterr().out
+
+
+@pytest.mark.parametrize("damage", ["meta key", "record shape"])
+def test_a_damaged_local_corpus_fails_its_row_not_the_run(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str], damage: str) -> None:
+    # The real loader over a real cache: a meta.json missing a key raised
+    # KeyError, which _attempt does not catch, and took every row down.
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    module = tool._local_corpora()
+    monkeypatch.setitem(module.SOURCES, "ctgov-officials", module.Source(
+        module.SOURCES["ctgov-officials"].credit, "officials",
+        lambda: module.Fetched([{"name": "Ann Lee, MD"}], "2026-10-21", {})))
+    module.fetch("ctgov-officials")
+    folder = tmp_path / "local" / "ctgov-officials"
+    meta = json.loads((folder / "meta.json").read_text())
+    if damage == "meta key":
+        del meta["sha256"]
+    else:
+        raw = b'{"nom": "Ann Lee, MD"}\n'
+        (folder / "raw.jsonl").write_bytes(raw)
+        meta["sha256"] = hashlib.sha256(raw).hexdigest()
+    (folder / "meta.json").write_text(json.dumps(meta))
+    monkeypatch.setattr(tool, "load_locals", _LOAD_LOCALS)
+    assert tool.main(["--no-wikidata", "MD"]) == 2
+    out = capsys.readouterr().out
+    assert "ctgov-officials (local corpus)" in out and "failed; ValueError" in out
+    assert "US Census 2010 surnames" in out

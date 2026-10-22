@@ -106,6 +106,12 @@ ROLES = ("title", "given_names", "family", "suffix",
 #: then drop it is the 3.0 design's question, not this one.
 PENDING_ROLES = {"surname2": "family", "patronymic": "given_names"}
 HERE = Path(__file__).resolve().parent
+# The shared JSONL reader, found as the corpus builders find corpus_build
+# (see its docstring for why the directory is appended).
+if str(HERE) not in sys.path:
+    sys.path.append(str(HERE))
+from corpus_build import jsonl_lines  # noqa: E402
+
 FIELDS = HERE / "cldr_fields.jsonl"
 RECORD = HERE / "cldr_agreement.json"
 LOCALE_RECORD = HERE / "cldr_agreement_locales.json"
@@ -306,8 +312,7 @@ def parse_rendering(text: str, shape: int | None, pack: str | None = None) -> Pa
 def load_rows(path: Path = FIELDS) -> list[dict[str, Any]]:
     """A fields file's rows. An empty file is an error: compared against
     an empty record it would agree with everything."""
-    rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()
-            if line.strip()]
+    rows = [json.loads(line) for line in jsonl_lines(path.read_text(encoding="utf-8"))]
     if not rows:
         raise ValueError(f"{path} holds no renderings; rebuild it with its "
                          f"build_*_corpus.py")
