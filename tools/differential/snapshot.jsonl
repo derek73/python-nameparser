@@ -709,6 +709,7 @@
 {"name": "Dr. John Smith", "title": "Dr.", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Dr. John Smith Prof.", "title": "Dr. Prof.", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Dr. John van der Berg", "title": "Dr.", "given": "John", "family": "van der Berg", "initials": "J. B."}
+{"name": "Dr. Jr née Jones", "title": "Dr.", "given": "Jr", "middle": "née", "family": "Jones", "initials": "J. n. J."}
 {"name": "Dr. Jr., John", "given": "John", "family": "Dr.", "suffix": "Jr.", "initials": "J. D."}
 {"name": "Dr. Juan Q. Velasquez y Garcia", "title": "Dr.", "given": "Juan", "middle": "Q.", "family": "Velasquez y Garcia", "initials": "J. Q. V. G."}
 {"name": "Dr. Juan Q. Velasquez y Garcia III", "title": "Dr.", "given": "Juan", "middle": "Q.", "family": "Velasquez y Garcia", "suffix": "III", "initials": "J. Q. V. G."}
@@ -1704,6 +1705,7 @@
 {"name": "Jon Dough and of", "given": "Jon", "family": "Dough and of", "initials": "J. D."}
 {"name": "Jon Irazabal Agirre", "given": "Jon", "middle": "Irazabal", "family": "Agirre", "initials": "J. I. A."}
 {"name": "Jonas Lukas Petrauskas", "given": "Jonas", "middle": "Lukas", "family": "Petrauskas", "initials": "J. L. P."}
+{"name": "Jones Jr. née Smith", "given": "Jones", "middle": "Jr. née", "family": "Smith", "initials": "J. J. n. S."}
 {"name": "Jones née", "given": "Jones", "family": "née", "initials": "J. n."}
 {"name": "Jong Anke de", "given": "Jong", "middle": "Anke", "family": "de", "initials": "J. A. d."}
 {"name": "Jong van der", "given": "Jong", "family": "van der", "initials": "J. v. d."}
