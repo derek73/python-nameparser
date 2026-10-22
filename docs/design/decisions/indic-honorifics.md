@@ -15,6 +15,8 @@ Closes #346, #344 and #343 as one bundle: each CLASS is decided once, and each s
 - Title vocabulary beats the one-letter-plus-period initial shape, measured and pinned by rows and not a rule: `ড. মুহাম্মদ ইউনূস` reads title 'ড.' while `র. কে. নারায়ণ`, with no entry behind it, keeps its initials — 2026-09-06 #346.
 - An unlisted abugida honorific stays a name word, and rules/H2's executable example of it is `প্রকৌশলী. Sen`, so whoever ships প্রকৌশলী moves the example first; the Tier 4 candidates in the Indic scripts (transliterated military ranks, Advocate, Engineer, Marhum, the kinship forms, मां/माता/মা, the hafiz/syed/shahid forms) are skipped pending a corpus check and not declined — 2026-09-06 #346.
 
+Elsewhere: the bundle's class-level refusals are recorded under decisions/vocabulary-exclusions, not here: the Latin forms of the Indic titles belonging to the opt-in packs of #345 (2026-09-06, #344), the native spelling shipping alone where a transliteration collides with real names (sri/shri, sant, pandit, mst), the ban on the spaced trailing set becoming glued honorifics, and the per-word title refusals (ঠাকুর/ठाकुर, कुमारी/কুমারী, बेगम/বেগম, শেখ/शेख, आचार्य, राजा/रानी), each an `excluded` entry (`uv run python tools/vocab/query.py --excluded title`).
+
 Open: #514 (whether the Tibetan prefix titles Tulku, Khenpo, Geshe, Kyabje and Jetsun fold like `Lama Zopa`); #345 (hi and bn locale packs for Latin-transliterated Indic honorifics).
 
 ## Log

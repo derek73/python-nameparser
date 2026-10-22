@@ -4,7 +4,7 @@ ONE GAP SEEN FROM TWO SIDES, which is why the two issues were answered together.
 
 ## Standing
 
-- `_lexicon.FULL_STOPS` (`.．。｡`: the ASCII period and the fullwidth, ideographic and halfwidth ideographic stops) answers "which characters are a period" once, read by the lookup and storage fold, the script-classification fold, the surname site's head match and the honorific peel's tail match, so `김민준 씨．`, `씨。` and `씨｡` each read suffix as `씨.` does — 2026-09-10 #322.
+- `_lexicon.FULL_STOPS` (`.．。｡`: the ASCII period and the fullwidth, ideographic and halfwidth ideographic stops) answers "which characters are a period" once, read by the lookup and storage fold, the script-classification fold, the surname site's head match, the honorific peel's tail match and the render's lone-initial mask rule (`_render.py`), so `김민준 씨．`, `씨。` and `씨｡` each read suffix as `씨.` does — 2026-09-10 #322.
 - A stop glued to a name word is read at the edge of every site that reads the set, not only the lookup: `양. 지훈` reads given '지훈', family '양.', `양 지훈.` keeps its family-first order, `김. 민준` divides as family '김.', given '민준', and `김민준.` as family '김', given '민준.', the stop riding with the remainder — 2026-09-10 #322.
 - A stop on a glued honorific rides with it: `田中さん.` reads family '田中', suffix 'さん.' and `김민준씨.` family '김', suffix '씨.', as their stop-less spellings do — 2026-09-10 #322.
 - H2's opening-abbreviation shape declines a period-marked word carrying a script with no initials, so `田中.` reads family '田中.' and `田中. 太郎` family '田中.', given '太郎' while `Smith. John` and `Проф. Иванов` keep title; the veto is contains-any, so a word carrying such a character is no title even beside Latin letters — 2026-09-10 #322.
@@ -14,7 +14,6 @@ ONE GAP SEEN FROM TWO SIDES, which is why the two issues were answered together.
 - A pluggable segmenter is handed the core of a token, its trailing stops removed, and a leading stop keeps a token out of the surname site only (`.김민준` stays one word) and not out of the honorific peel (`.김민준씨` peels to `.김민준` and `씨`) — 2026-09-10 #322.
 - A bracketed CJK credential degrades, a limit kept and not fixed: `(김민준.) John Smith` reads given '김', middle '민준. John', family 'Smith', since S1's escape calls a clause suffix-shaped by its ASCII period alone — 2026-09-10 #322.
 - A `Lexicon` pickled before 2.3.0 whose caller-added entries the widened fold touches is refused at load, with the rebuild-from-source fix carried by the 2.3.0 release note and no forgiving load path — 2026-09-10 #322 (Derek).
-- The entry corrected four lines of earlier entries: the abbreviation-marks bullet of decisions/indic-honorifics (the fold now composes NFC and strips all four stops), W1's 2026-07-29 §1a bullet (matching is folded too, so what stays raw is segmentation), the 2026-09-05 five-parse bullet of decisions/cjk-comma-demotion and the principle bullet of decisions/initials-repertoire — 2026-09-10 #322.
 
 Not standing: the halfwidth-kana limit and the segmenter limit of the "Recorded limits" bullet, both CLOSED, the first by #594 (decisions/W4) and the second by the review round that recorded it — 2026-09-10 #322.
 
