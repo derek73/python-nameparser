@@ -157,11 +157,11 @@ def _get_json(url: str) -> dict[str, Any]:
                 raise _Unparsed(str(exc)) from None
             break
         except (*_TRANSIENT, _Unparsed) as exc:
-            http = isinstance(exc, urllib.error.HTTPError)
-            if http and exc.code < 500 and exc.code != 429 or attempt == CTGOV_RETRIES - 1:
+            if (isinstance(exc, urllib.error.HTTPError) and exc.code < 500
+                    and exc.code != 429 or attempt == CTGOV_RETRIES - 1):
                 raise
             wait = 2 ** attempt
-            if http:
+            if isinstance(exc, urllib.error.HTTPError):
                 after = exc.headers.get("Retry-After", "") if exc.headers else ""
                 if after.isdigit():
                     wait = max(wait, min(int(after), 60))

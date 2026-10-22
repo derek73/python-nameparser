@@ -468,7 +468,7 @@ def test_a_spaced_word_is_matched_as_its_words_in_a_row() -> None:
 
 def test_a_phrase_with_a_word_written_nowhere_scans_nothing(
         monkeypatch: pytest.MonkeyPatch) -> None:
-    corpus = _corpus("Ann Lee, MD")
+    corpus: Any = _corpus("Ann Lee, MD")
     corpus.index  # noqa: B018 -- built before the scan is forbidden
 
     def scanned(local_: object) -> object:
