@@ -176,6 +176,7 @@
 {"name": "Andrew Perkins (MBA)", "given": "Andrew", "family": "Perkins", "suffix": "MBA", "initials": "A. P."}
 {"name": "Andrew Perkins (Mgr.)", "title": "Mgr.", "given": "Andrew", "family": "Perkins", "initials": "A. P."}
 {"name": "Andrew Perkins (XYZ)", "given": "Andrew", "family": "Perkins", "nickname": "XYZ", "initials": "A. P."}
+{"name": "Andrew Perkins «MBA»", "given": "Andrew", "family": "Perkins", "suffix": "MBA", "initials": "A. P."}
 {"name": "Andrew Perkins, Jr., Col. (Ret)", "title": "Col.", "given": "Andrew", "family": "Perkins", "suffix": "Jr., Ret", "initials": "A. P."}
 {"name": "Andrews, M.D.", "family": "Andrews", "suffix": "M.D.", "initials": "A."}
 {"name": "Andrés David Padilla Mejía", "given": "Andrés", "middle": "David Padilla", "family": "Mejía", "initials": "A. D. P. M."}
@@ -1529,6 +1530,8 @@
 {"name": "John Smith (M.A.)", "given": "John", "family": "Smith", "suffix": "M.A.", "initials": "J. S."}
 {"name": "John Smith (MA)", "given": "John", "family": "Smith", "nickname": "MA", "ambiguities": ["SUFFIX_OR_NICKNAME"], "initials": "J. S."}
 {"name": "John Smith (MA.)", "given": "John", "family": "Smith", "suffix": "MA.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
+{"name": "John Smith (MBA PhD.)", "given": "John", "family": "Smith", "suffix": "MBA PhD.", "initials": "J. S."}
+{"name": "John Smith (PhD MBA)", "given": "John", "family": "Smith", "nickname": "PhD MBA", "initials": "J. S."}
 {"name": "John Smith 1.4", "given": "John", "middle": "Smith", "family": "1.4", "initials": "J. S. 1."}
 {"name": "John Smith B.Tech.", "given": "John", "family": "Smith", "suffix": "B.Tech.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "John Smith C.H.A.", "given": "John", "family": "Smith", "suffix": "C.H.A.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
