@@ -44,9 +44,9 @@ from nameparser._pipeline._vocab import (
 from nameparser._types import AmbiguityKind, Role, Span
 
 
-# rules/S1: "a bracketed clause whose content is suffix-shaped is
-# not a nickname: the brackets are dropped and the content reads
-# exactly as if written bare"
+# rules/S1: "an enclosed clause whose content is suffix-shaped is
+# not a nickname: the brackets or quotes are dropped and the content
+# reads exactly as if written bare"
 def _suffix_shaped(content: str, lexicon: Lexicon) -> bool:
     """v1 parse_nicknames' escape (parser.py:1125-1141): an unambiguous
     suffix_words member (edge-normalized), an unambiguous acronym
