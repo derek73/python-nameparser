@@ -121,9 +121,10 @@
   ```
   "Jane Doe (nee Smith Prof.)"  →  title="Prof."
   ```
-- A marker behind a credential is an ordinary word, and the credential's run (S8) takes it in with everything after it.
+- A marker behind a credential is an ordinary word, and where the credential's run (S8) starts it takes the marker in with everything after it.
   ```
   "Jane Doe Jr. nee Smith"      →  suffix="Jr. nee Smith"  · boundary
+  "Jones Jr. née Smith"         →  maiden=""  · boundary
   ```
 
 ---
