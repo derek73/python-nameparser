@@ -402,7 +402,7 @@
 {"name": "Bunsen, Frances von", "given": "Frances", "family": "von Bunsen", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "F. B."}
 {"name": "Bustamante y Rivero, José Luis", "given": "José", "middle": "Luis", "family": "Bustamante y Rivero", "initials": "J. L. B. R."}
 {"name": "Buḥturī, al-Walīd Ibn-ʿUbaid al-", "given": "al-Walīd", "middle": "Ibn-ʿUbaid", "family": "al- Buḥturī", "initials": "a. I. B."}
-{"name": "Bw. Adam Juma Agape Shukurani Masalu MB", "title": "Bw.", "given": "Adam", "middle": "Juma Agape Shukurani Masalu", "family": "MB", "initials": "A. J. A. S. M. M."}
+{"name": "Bw. Adam Juma Agape Shukurani Masalu MB", "title": "Bw.", "given": "Adam", "middle": "Juma Agape Shukurani", "family": "Masalu", "suffix": "MB", "initials": "A. J. A. S. M."}
 {"name": "Bābak Yaḥyā Ibn-Muʿāḏ al-Ḫurramī", "given": "Bābak", "middle": "Yaḥyā Ibn-Muʿāḏ", "family": "al-Ḫurramī", "initials": "B. Y. I. a."}
 {"name": "Bāqir Ḫān", "given": "Bāqir", "family": "Ḫān", "initials": "B. Ḫ."}
 {"name": "Bērziņa Anna", "order": "FAMILY_FIRST", "given": "Anna", "family": "Bērziņa", "initials": "A. B."}
@@ -1545,7 +1545,7 @@
 {"name": "John Smith Jr., AD Sr. and Mr.", "title": "Sr. and Mr.", "given": "John", "family": "Smith", "suffix": "Jr., AD", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "John Smith Jr., J.", "given": "J.", "family": "John Smith", "suffix": "Jr.", "initials": "J. J. S."}
 {"name": "John Smith Jr., M.J.", "given": "M.J.", "family": "John Smith", "suffix": "Jr.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "M. J. S."}
-{"name": "John Smith Jr., MBChB PhD", "given": "John", "family": "Smith", "suffix": "Jr., MBChB PhD", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
+{"name": "John Smith Jr., MBChB PhD", "given": "John", "family": "Smith", "suffix": "Jr., MBChB PhD", "initials": "J. S."}
 {"name": "John Smith Jr., MJ", "given": "John", "family": "Smith", "suffix": "Jr., MJ", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "John Smith Jr., Mr. and Mrs. AD", "title": "Mr. and Mrs.", "given": "John", "family": "Smith", "suffix": "Jr., AD", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "John Smith Jr., PhD", "given": "John", "family": "Smith", "suffix": "Jr., PhD", "initials": "J. S."}
@@ -2226,7 +2226,7 @@
 {"name": "María Rubio Tejero", "given": "María", "middle": "Rubio", "family": "Tejero", "initials": "M. R. T."}
 {"name": "María de la O Lejárraga y García", "given": "María", "family": "de la O Lejárraga y García", "initials": "M. O. L. G."}
 {"name": "María del Pilar Hurtado Montaño", "given": "María", "family": "del Pilar Hurtado Montaño", "initials": "M. P. H. M."}
-{"name": "Masalu Adam Juma Agape Shukurani MB", "order": "FAMILY_FIRST", "given": "Adam", "middle": "Juma Agape Shukurani MB", "family": "Masalu", "initials": "A. J. A. S. M. M."}
+{"name": "Masalu Adam Juma Agape Shukurani MB", "order": "FAMILY_FIRST", "given": "Adam", "middle": "Juma Agape Shukurani", "family": "Masalu", "suffix": "MB", "initials": "A. J. A. S. M."}
 {"name": "Masalu, Adam Juma Agape Shukurani", "given": "Adam", "middle": "Juma Agape Shukurani", "family": "Masalu", "initials": "A. J. A. S. M."}
 {"name": "Mathilde Therese von Thurn und Taxis", "given": "Mathilde", "middle": "Therese", "family": "von Thurn und Taxis", "initials": "M. T. T. T."}
 {"name": "Matsumoto, Shunichi", "given": "Shunichi", "family": "Matsumoto", "initials": "S. M."}
@@ -2575,7 +2575,7 @@
 {"name": "Prof. Dr. von Brühl Plácido Domingo Ada Cornelia César Martín, MD DDS", "order": "FAMILY_FIRST", "title": "Prof. Dr.", "given": "Brühl", "middle": "Plácido Domingo Ada Cornelia César Martín", "family": "von", "suffix": "MD DDS", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "B. P. D. A. C. C. M. v."}
 {"name": "Prof. Smith, Dr. John", "title": "Prof. Dr.", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Prof. Smith, John, PhD", "title": "Prof.", "given": "John", "family": "Smith", "suffix": "PhD", "initials": "J. S."}
-{"name": "Prof. dr. Cornelia Margarita Sofia Aletta van den Berg jnr., MBChB PhD", "title": "Prof. dr.", "given": "Cornelia", "middle": "Margarita Sofia Aletta", "family": "van den Berg", "suffix": "jnr., MBChB PhD", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "C. M. S. A. B."}
+{"name": "Prof. dr. Cornelia Margarita Sofia Aletta van den Berg jnr., MBChB PhD", "title": "Prof. dr.", "given": "Cornelia", "middle": "Margarita Sofia Aletta", "family": "van den Berg", "suffix": "jnr., MBChB PhD", "initials": "C. M. S. A. B."}
 {"name": "Prof. dr. MD Chirurgie dentară Eva-Eleonora Karl Hans von der Ruhr Jr.", "title": "Prof. dr. MD", "given": "Chirurgie", "middle": "dentară Eva-Eleonora Karl Hans", "family": "von der Ruhr", "suffix": "Jr.", "initials": "C. d. E. K. H. R."}
 {"name": "Prof. Ɖr. MƉ Samʊwɛl fan ƉAM Fostɛɛŋ", "title": "Prof. Ɖr.", "given": "MƉ", "middle": "Samʊwɛl fan ƉAM", "family": "Fostɛɛŋ", "initials": "M. S. f. Ɖ. F."}
 {"name": "Prof. Ɖr. MƉ fan ƉAM ƉOMIŊGO Fostɛɛŋ Samʊwɛl", "order": "FAMILY_FIRST", "title": "Prof. Ɖr.", "given": "fan", "middle": "ƉAM ƉOMIŊGO Fostɛɛŋ Samʊwɛl", "family": "MƉ", "initials": "f. Ɖ. Ɖ. F. S. M."}
@@ -3578,7 +3578,7 @@
 {"name": "van Berg Jan de", "given": "van", "middle": "Berg Jan", "family": "de", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "v. B. J. d."}
 {"name": "van Gogh", "given": "van", "family": "Gogh", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "v. G."}
 {"name": "van Gogh, Sir", "title": "Sir", "family": "van Gogh", "initials": "G."}
-{"name": "van den Berg Cornelia Margarita Sofia Aletta MBChB PhD", "order": "FAMILY_FIRST", "given": "den Berg Cornelia Margarita Sofia Aletta MBChB", "family": "van", "suffix": "PhD", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "d. B. C. M. S. A. M. v."}
+{"name": "van den Berg Cornelia Margarita Sofia Aletta MBChB PhD", "order": "FAMILY_FIRST", "given": "den Berg Cornelia Margarita Sofia Aletta", "family": "van", "suffix": "MBChB PhD", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "d. B. C. M. S. A. v."}
 {"name": "van den Volf Ada Kornelia Sezar Martin M.D. Ph.D.", "order": "FAMILY_FIRST", "given": "den Volf Ada Kornelia Sezar Martin", "family": "van", "suffix": "M.D. Ph.D.", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "d. V. A. K. S. M. v."}
 {"name": "van den Volf Ada Kornelia Yeva Sofiya M.D. Ph.D.", "order": "FAMILY_FIRST", "given": "den Volf Ada Kornelia Yeva Sofiya", "family": "van", "suffix": "M.D. Ph.D.", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "d. V. A. K. Y. S. v."}
 {"name": "van den Volf Becker Schmidt, Prof. Dr. Ada Kornelia Sezar Martin M.D. Ph.D.", "title": "Prof. Dr.", "given": "Ada", "middle": "Kornelia Sezar Martin", "family": "van den Volf Becker Schmidt", "suffix": "M.D. Ph.D.", "initials": "A. K. S. M. V. B. S."}

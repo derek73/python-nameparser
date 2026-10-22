@@ -11,6 +11,7 @@ Release Log
     **Behavior Changes**
 
     - **Fix credentials that are also surnames reading as credentials.** ``Luo Si`` and ``Robert Capa`` give a family name, where 2.0.0 through 2.5.0 gave suffix ``Si`` or ``Capa`` with no family name. A Title-case word after a full name takes the family name, as ``Ma`` does; the all-caps form stays a credential (``John Smith CAPA`` keeps suffix ``CAPA``). :issue:`791`, :issue:`796`
+    - **Fix more credentials after a comma reading as the given name.** ``John Smith, MBChB`` and ``John Smith, OTR/L`` give suffix ``MBChB`` and ``OTR/L``, where 2.0.0 through 2.5.0 gave given ``MBChB`` and family ``John Smith``; 36 degrees and certifications are listed, and ``PA`` is marked ambiguous (``John Pa`` keeps the family name). An unlisted hyphen- or slash-joined credential still reverses. :issue:`797`
 
 * 2.5.0 - October 19, 2026
 

@@ -725,6 +725,21 @@ def test_a_mask_recases_the_word_as_the_writer_punctuated_it() -> None:
                            force=False).suffix == "iii"
 
 
+def test_a_mixed_case_credential_listed_for_797_repairs_to_its_mask() -> None:
+    """#797 listed credentials whose proper spelling is mixed case
+    (MBChB, DPhil, MDPhD); a listed acronym with no mask repairs in
+    capitals, so each carries one. Lowercase and capitals read alike, a
+    dotted spelling keeps its dots, and a comma credential repairs the
+    same as a trailing one. A joined spelling (fnp-c) has no mask here:
+    its case repair is a separate rule."""
+    for text, suffix in (("jane smith mbchb", "MBChB"),
+                         ("JANE SMITH MBCHB", "MBChB"),
+                         ("jane smith, dphil", "DPhil"),
+                         ("jane smith m.b.ch.b.", "M.B.Ch.B."),
+                         ("jane smith mdphd", "MDPhD")):
+        assert parse(text).capitalized().suffix == suffix, text
+
+
 def test_a_mask_applies_whatever_role_the_word_took() -> None:
     """The map stays role-free (#459): an entry is the caller saying
     how a word is written, wherever it stands. The acronym and
