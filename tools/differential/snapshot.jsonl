@@ -1284,6 +1284,7 @@
 {"name": "JOHN SMITH MA", "given": "JOHN", "family": "SMITH", "suffix": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "JOHN SMITH NEE X X", "given": "JOHN", "family": "SMITH", "maiden": "X X", "initials": "J. S."}
 {"name": "JOHN SMITH PH.D.", "given": "JOHN", "family": "SMITH", "suffix": "PH.D.", "initials": "J. S."}
+{"name": "JOHN SMITH, FNP-BC", "given": "JOHN", "family": "SMITH", "suffix": "FNP-BC", "initials": "J. S."}
 {"name": "JOHN SMITH, MA", "given": "JOHN", "family": "SMITH", "suffix": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "JOHN SMITH, VD MA", "given": "JOHN", "family": "SMITH", "suffix": "VD MA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "JOHN V", "given": "JOHN", "family": "V", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. V."}
@@ -1652,6 +1653,7 @@
 {"name": "John Smith, X.Y.Z.", "given": "John", "family": "Smith", "suffix": "X.Y.Z.", "initials": "J. S."}
 {"name": "John Smith, X.Y.Z. MA", "given": "John", "family": "Smith", "suffix": "X.Y.Z. MA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "John Smith, XYZ", "given": "John", "family": "Smith", "suffix": "XYZ", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
+{"name": "John Smith, otr/l", "given": "John", "family": "Smith", "suffix": "otr/l", "initials": "J. S."}
 {"name": "John Smith, vd Ma", "given": "John", "family": "Smith", "suffix": "vd Ma", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "John V", "given": "John", "family": "V", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. V."}
 {"name": "John V, Dr.", "title": "Dr.", "given": "John", "family": "V", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. V."}
@@ -3404,6 +3406,7 @@
 {"name": "de los Santos", "family": "de los Santos", "initials": "S."}
 {"name": "der, y van", "given": "y", "family": "van der", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "y. v. d."}
 {"name": "dhr. Bertus Wevers Harry Robert de Jong jr. mp", "title": "dhr.", "given": "Bertus", "middle": "Wevers Harry Robert", "family": "de Jong", "suffix": "jr. mp", "initials": "B. W. H. R. J."}
+{"name": "dipl.-ing john smith", "title": "dipl.-ing", "given": "john", "family": "smith", "initials": "j. s."}
 {"name": "doe, jane phd vd ma", "given": "jane", "family": "doe", "suffix": "phd vd ma", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "j. d."}
 {"name": "doe, jane v phd do", "given": "jane", "middle": "v", "family": "doe", "suffix": "phd do", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "j. v. d."}
 {"name": "doe, john ma", "given": "john", "family": "doe", "suffix": "ma", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "j. d."}
@@ -3444,6 +3447,7 @@
 {"name": "jack ma", "given": "jack", "family": "ma", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "j. m."}
 {"name": "jacobus henricus van 't hoff", "given": "jacobus", "middle": "henricus", "family": "van 't hoff", "ambiguities": ["UNBALANCED_DELIMITER"], "initials": "j. h. h."}
 {"name": "jane doe nee smith ma", "given": "jane", "family": "doe", "suffix": "ma", "maiden": "smith", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "j. d."}
+{"name": "jean-luc picard", "given": "jean-luc", "family": "picard", "initials": "j. p."}
 {"name": "jenap Atajan Saparowiç Gurdow magistr, ylymlaryň kandidaty", "given": "ylymlaryň", "middle": "kandidaty", "family": "jenap Atajan Saparowiç Gurdow magistr", "initials": "y. k. j. A. S. G. m."}
 {"name": "joao da silva do amaral de souza", "given": "joao", "middle": "da silva do amaral", "family": "de souza", "initials": "j. s. a. s."}
 {"name": "john doe", "given": "john", "family": "doe", "initials": "j. d."}
@@ -3475,6 +3479,7 @@
 {"name": "john smith meng", "given": "john", "family": "smith", "suffix": "meng", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "j. s."}
 {"name": "john smith nee x x", "given": "john", "family": "smith", "suffix": "x", "maiden": "x", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "j. s."}
 {"name": "john smith p.h.d.", "given": "john", "family": "smith", "suffix": "p.h.d.", "initials": "j. s."}
+{"name": "john smith pa-c", "given": "john", "family": "smith", "suffix": "pa-c", "initials": "j. s."}
 {"name": "john smith ph. d.", "given": "john", "family": "smith", "suffix": "ph. d.", "initials": "j. s."}
 {"name": "john smith ph.d.", "given": "john", "family": "smith", "suffix": "ph.d.", "initials": "j. s."}
 {"name": "john smith phd", "given": "john", "family": "smith", "suffix": "phd", "initials": "j. s."}
@@ -3486,9 +3491,11 @@
 {"name": "john smith xi", "given": "john", "middle": "smith", "family": "xi", "initials": "j. s. x."}
 {"name": "john smith, ma", "given": "john", "family": "smith", "suffix": "ma", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "j. s."}
 {"name": "john smith, md ma", "given": "john", "family": "smith", "suffix": "md ma", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "j. s."}
+{"name": "john smith, otr/l", "given": "john", "family": "smith", "suffix": "otr/l", "initials": "j. s."}
 {"name": "john smith, phd meng", "given": "john", "family": "smith", "suffix": "phd meng", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "j. s."}
 {"name": "john smith, v", "given": "john", "family": "smith", "suffix": "v", "initials": "j. s."}
 {"name": "john smith, vi", "given": "vi", "family": "john smith", "initials": "v. j. s."}
+{"name": "john smith-jones", "given": "john", "family": "smith-jones", "initials": "j. s."}
 {"name": "john v", "given": "john", "family": "v", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "j. v."}
 {"name": "john van der berg ma", "given": "john", "family": "van der berg", "suffix": "ma", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "j. b."}
 {"name": "john van e phd", "given": "john", "family": "van e", "suffix": "phd", "initials": "j. e."}
