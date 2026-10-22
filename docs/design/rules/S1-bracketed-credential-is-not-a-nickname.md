@@ -13,12 +13,13 @@
 
 **Except:**
 
-- **A member of the ambiguous class (S4) written without periods** anywhere in the clause keeps the clause a nickname, and the fork is reported: the word is also a name, so the brackets may hold the name the person goes by, an accepted cost (decisions/suffix-acronym-collisions). The company of a credential in front of it (S7) does not reach into the clause, and the dotted spelling is no member (S3).
+- **A clause that is one member of the ambiguous class (S4), not ending in a period,** stays a nickname, and the fork is reported: the word is also a name, so the brackets may hold the name the person goes by, an accepted cost (decisions/suffix-acronym-collisions). A credential standing in front of the brackets does not speak for it (S7), and a final period makes the clause suffix-shaped, a member's included.
   ```
   "John Smith (MA)"           →  nickname="MA"
   "John Smith (MA)"           →  ambiguities=("suffix-or-nickname",)
-  "John Smith (PhD MA)"       →  nickname="PhD MA"
+  "John Smith PhD (MA)"       →  nickname="MA"
   "John Smith (M.A.)"         →  suffix="M.A."  · boundary
+  "John Smith (MA.)"          →  suffix="MA."  · boundary
   ```
 
 **Precedence:**
