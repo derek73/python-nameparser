@@ -16,6 +16,7 @@ import unicodedata
 import urllib.error
 import urllib.parse
 import urllib.request
+import zipfile
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
@@ -271,6 +272,238 @@ def test_an_unknown_source_names_the_known_ones() -> None:
         local.directory("nppes")
     with pytest.raises(ValueError, match=_SOURCE):
         local.fetch("nppes")
+
+
+# -- FEC individual contributions ------------------------------------------------
+
+_FEC = "fec-individuals"
+_FEC_DATE = (2026, 10, 18, 16, 17, 0)
+
+
+def _fec_row(entity: str, name: str, columns: int = 21) -> str:
+    cols = ["C00000001", "N", "Q3", "P2026", "1", "15", entity, name,
+            "BRAINTREE", "MA", "02184", "SELF", "HOMEMAKER", "10132026",
+            "100", "", "SA1", "1", "", "", "1"]
+    return "|".join(cols[:columns])
+
+
+#: Two people, one giving twice and once with the name padded, a
+#: committee, a person with no name, a line cut short and a line in
+#: Latin-1: 7 lines.
+_FEC_LINES = [
+    _fec_row("IND", "LEE, ANN"), _fec_row("IND", "ROE JR, BOB MR"),
+    _fec_row("IND", " LEE, ANN "), _fec_row("PAC", "ACME PAC"),
+    _fec_row("IND", " "), _fec_row("IND", "WU, BO", columns=20),
+]
+_FEC_LATIN1 = _fec_row("IND", "PE\xd1A, JOS\xc9").encode("latin-1")
+
+
+def _fec_body(lines: list[str], *extra: bytes) -> bytes:
+    return b"".join([*(line.encode() + b"\n" for line in lines),
+                     *(line + b"\n" for line in extra)])
+
+
+def _fec_zip(path: Path, body: bytes | None = None,
+             date: tuple[int, int, int, int, int, int] = _FEC_DATE) -> bytes:
+    """A cycle's zip at `path`, holding the whole file and a by_date
+    slice holding only its first line, stamped alike: a fetch reading
+    the slice instead would lose names; its bytes."""
+    if body is None:
+        body = _fec_body(_FEC_LINES, _FEC_LATIN1)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with zipfile.ZipFile(path, "w") as archive:
+        archive.writestr(zipfile.ZipInfo("itcont.txt", date), body)
+        archive.writestr(zipfile.ZipInfo("by_date/itcont_2026_slice.txt", date),
+                         body.split(b"\n", 1)[0] + b"\n")
+    return path.read_bytes()
+
+
+class _Download:
+    """A streamed download: read(n) hands out `body` in pieces, the
+    headers stating `length` (none when it is None), and raises `fail`
+    once the first piece is out."""
+
+    def __init__(self, body: bytes, length: int | None,
+                 fail: Exception | None = None) -> None:
+        self.body, self.fail = body, fail
+        self.headers = {} if length is None else {"Content-Length": str(length)}
+        self.sent = False
+
+    def __enter__(self) -> "_Download":
+        return self
+
+    def __exit__(self, *exc: object) -> None:
+        return None
+
+    def read(self, n: int) -> bytes:
+        if self.sent and self.fail:
+            raise self.fail
+        chunk, self.body = self.body[:n], self.body[n:]
+        self.sent = True
+        return chunk
+
+
+def _fec_cache(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    monkeypatch.setattr(local, "FEC_CHUNK", 64)  # several reads, not one
+    return tmp_path / "local" / _FEC / local.FEC_ZIP
+
+
+def _serve_fec(monkeypatch: pytest.MonkeyPatch, *responses: _Download) -> list[str]:
+    """Answer each download with the next of `responses`; the URLs asked."""
+    queue, asked = list(responses), []
+
+    def urlopen(request: urllib.request.Request, timeout: int) -> _Download:
+        asked.append(request.full_url)
+        if not queue:
+            pytest.fail(f"an unexpected download of {request.full_url}")
+        return queue.pop(0)
+    monkeypatch.setattr(urllib.request, "urlopen", urlopen)
+    return asked
+
+
+def test_a_fec_fetch_keeps_each_person_s_name_once_and_counts_the_rest(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    _fec_zip(_fec_cache(monkeypatch, tmp_path))
+    _serve_fec(monkeypatch)  # a cached zip is not downloaded again
+    monkeypatch.setattr(local, "FEC_MAX_BAD", 1)  # a fixture of 7 lines
+    corpus = local.fetch(_FEC)
+    assert corpus.records == [{"name": "LEE, ANN"}, {"name": "PEÑA, JOSÉ"},
+                              {"name": "ROE JR, BOB MR"}]
+    assert corpus.meta["data_date"] == "2026-10-18T16:17:00"
+    assert corpus.meta["detail"] == {
+        "cycle": local.FEC_CYCLE, "file": f"{local.FEC_ZIP}/itcont.txt",
+        "rows": 7, "individual_contributions": 5, "rows_from_other_entities": 1,
+        "individuals_without_a_name": 1, "lines_not_21_columns": 1,
+        "lines_not_utf8": 1}
+    assert corpus.header().endswith("3 names (local corpus fec-individuals)")
+
+
+@pytest.mark.parametrize(("lines", "match"), [
+    ([_fec_row("IND", "LEE, ANN") + "|X"] * 2 + [_fec_row("IND", "WU, BO")],
+     "2 of 3 lines .* are not 21 columns"),
+    # The 22nd column dropped and one inserted before NAME: 21 columns,
+    # entity in place, and NAME now holding the city.
+    (["|".join(_fec_row("IND", "x").split("|")[:7] + ["BRAINTREE", "LEE, ANN"]
+               + _fec_row("IND", "x").split("|")[8:20])],
+     "0 of 1 names hold a comma"),
+], ids=["lines not 21 columns", "a column moved under NAME"])
+def test_a_fec_file_whose_layout_has_changed_is_refused(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        lines: list[str], match: str) -> None:
+    _fec_zip(_fec_cache(monkeypatch, tmp_path), _fec_body(lines))
+    with pytest.raises(ValueError, match=match):
+        local.fetch(_FEC)
+    assert local.load(_FEC) is None
+
+
+def test_a_fec_file_mostly_not_utf8_is_refused(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    _fec_zip(_fec_cache(monkeypatch, tmp_path),
+             _fec_body([_fec_row("IND", "LEE, ANN")], _FEC_LATIN1))
+    with pytest.raises(ValueError, match="1 of 2 lines .* are not UTF-8"):
+        local.fetch(_FEC)
+
+
+@pytest.mark.parametrize("damage", ["not a zip", "no itcont.txt"])
+def test_a_fec_zip_that_cannot_be_read_names_the_way_out(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, damage: str) -> None:
+    path = _fec_cache(monkeypatch, tmp_path)
+    path.parent.mkdir(parents=True)
+    if damage == "not a zip":
+        path.write_bytes(_fec_zip(tmp_path / "whole.zip")[:-40])
+        match = "fetch fec-individuals --refresh"
+    else:
+        with zipfile.ZipFile(path, "w") as archive:
+            archive.writestr("itcont_renamed.txt", b"")
+        match = "holds no itcont.txt"
+    with pytest.raises(ValueError, match=match):
+        local.fetch(_FEC)
+
+
+def test_a_fec_fetch_downloads_the_zip_when_it_is_missing(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    path = _fec_cache(monkeypatch, tmp_path)
+    monkeypatch.setattr(local, "FEC_MAX_BAD", 1)
+    body = _fec_zip(tmp_path / "elsewhere.zip")
+    stale = path.with_name("indiv24.zip")
+    stale.parent.mkdir(parents=True)
+    stale.write_bytes(b"the last cycle's zip")
+    assert _serve_fec(monkeypatch, _Download(body, len(body))) == []
+    assert len(local.fetch(_FEC).records) == 3
+    assert path.read_bytes() == body
+    assert not stale.exists()
+
+
+@pytest.mark.parametrize("stated", [10**6, -1, None],
+                         ids=["cut short", "longer than stated", "no length"])
+def test_a_fec_download_that_does_not_match_its_length_is_refused(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, stated: int | None) -> None:
+    path = _fec_cache(monkeypatch, tmp_path)
+    body = _fec_zip(tmp_path / "elsewhere.zip")
+    length = None if stated is None else len(body) - 1 if stated < 0 else stated
+    _serve_fec(monkeypatch, _Download(body, length))
+    with pytest.raises(ValueError, match="fetch again"):
+        local.fetch(_FEC)
+    assert not path.exists() and not path.with_name(path.name + ".part").exists()
+    assert local.load(_FEC) is None
+
+
+def test_a_fec_download_cut_off_mid_stream_leaves_no_part_file(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    path = _fec_cache(monkeypatch, tmp_path)
+    body = _fec_zip(tmp_path / "elsewhere.zip")
+    _serve_fec(monkeypatch, _Download(body, len(body),
+                                      http.client.IncompleteRead(b"")))
+    with pytest.raises(http.client.IncompleteRead):
+        local.fetch(_FEC)
+    assert not path.exists() and not path.with_name(path.name + ".part").exists()
+
+
+def test_a_fec_refresh_rebuilds_the_corpus_from_a_new_download(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    # Re-reading the cached zip would reproduce the same file under a
+    # refresh, with the same names and data date.
+    path = _fec_cache(monkeypatch, tmp_path)
+    monkeypatch.setattr(local, "FEC_MAX_BAD", 1)
+    _fec_zip(path)
+    newer = _fec_zip(tmp_path / "newer.zip", _fec_body([_fec_row("IND", "WU, BO")]),
+                     date=(2026, 10, 25, 9, 0, 0))
+    asked = _serve_fec(monkeypatch, _Download(newer, len(newer)))
+    assert local.main(["fetch", _FEC]) == 0
+    assert asked == []
+    assert local.main(["fetch", _FEC, "--refresh"]) == 0
+    assert asked == [local.FEC_URL]
+    corpus = local.load(_FEC)
+    assert corpus is not None and corpus.records == [{"name": "WU, BO"}]
+    assert corpus.meta["data_date"] == "2026-10-25T09:00:00"
+
+
+def test_a_failed_fec_refresh_keeps_the_zip_and_the_corpus_it_had(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    path = _fec_cache(monkeypatch, tmp_path)
+    monkeypatch.setattr(local, "FEC_MAX_BAD", 1)
+    cached = _fec_zip(path)
+    _serve_fec(monkeypatch, _Download(cached[:100], len(cached)))
+    before = local.fetch(_FEC)
+    with pytest.raises(ValueError, match="fetch again"):
+        local.main(["fetch", _FEC, "--refresh"])
+    assert path.read_bytes() == cached
+    assert not path.with_name(path.name + ".part").exists()
+    assert local.load(_FEC) == before
+
+
+def test_a_fec_corpus_of_another_cycle_is_refused_on_load(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    # Bumping FEC_CYCLE would otherwise label the cached cycle's names
+    # with the new cycle's credit.
+    _fec_zip(_fec_cache(monkeypatch, tmp_path))
+    monkeypatch.setattr(local, "FEC_MAX_BAD", 1)
+    local.fetch(_FEC)
+    monkeypatch.setattr(local, "FEC_CYCLE", "2028")
+    with pytest.raises(ValueError, match=f"holds the 2026 cycle.*reads the 2028 cycle"
+                                          f".*fetch {_FEC} --refresh"):
+        local.load(_FEC)
 
 
 # -- load ----------------------------------------------------------------------

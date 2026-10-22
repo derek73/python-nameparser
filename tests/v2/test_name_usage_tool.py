@@ -2185,11 +2185,15 @@ def _local(*names: str) -> object:
 def test_a_local_corpus_not_fetched_names_the_fetch(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
-    [(source, corpus, error)] = _LOAD_LOCALS()
-    assert (source, corpus, error) == ("ctgov-officials", None, "")
-    row = tool.local_usage("MD", source, corpus)
-    assert row.status == "not downloaded"
-    assert "local_corpora.py fetch ctgov-officials" in row.note
+    # One row per source, every one not fetched naming its own fetch.
+    loaded = _LOAD_LOCALS()
+    assert loaded == [(source, None, "")
+                      for source in sorted(tool._local_corpora().SOURCES)]
+    assert {"ctgov-officials", "fec-individuals"} <= {s for s, _, _ in loaded}
+    for source, corpus, _ in loaded:
+        row = tool.local_usage("MD", source, corpus)
+        assert row.status == "not downloaded"
+        assert f"local_corpora.py fetch {source}" in row.note
 
 
 def test_a_local_corpus_row_counts_officials_and_the_comma_side() -> None:
