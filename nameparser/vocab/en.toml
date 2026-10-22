@@ -3497,11 +3497,11 @@ credential = { cased = "DMin" }
 
 [[word]]
 text = "dmsc"
-credential = { expands = "Doctor of Medical Science", note = "NPPES 221 US healthcare providers (August 2026 file); 674 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
+credential = { cased = "DMSc", expands = "Doctor of Medical Science", note = "NPPES 221 US healthcare providers (August 2026 file); 674 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
 
 [[word]]
 text = "dmsci"
-credential = { expands = "Doctor of Medical Science", note = "107 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21), and no NPPES provider, write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
+credential = { cased = "DMSci", expands = "Doctor of Medical Science", note = "107 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21), and no NPPES provider, write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
 
 [[word]]
 text = "dnp"
@@ -3513,7 +3513,7 @@ credential = { may_be_name = true, expands = "Doctor of Osteopathic Medicine" }
 
 [[word]]
 text = "dphil"
-credential = { expands = "Doctor of Philosophy", note = "NPPES 72 US healthcare providers (August 2026 file); 296 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
+credential = { cased = "DPhil", expands = "Doctor of Philosophy", note = "NPPES 72 US healthcare providers (August 2026 file); 296 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
 
 [[word]]
 text = "dpm"
@@ -4125,11 +4125,11 @@ credential = {}
 
 [[word]]
 text = "mbbch"
-credential = { expands = "Bachelor of Medicine, Bachelor of Surgery", note = "NPPES 813 US healthcare providers (August 2026 file); 190 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
+credential = { cased = "MBBCh", expands = "Bachelor of Medicine, Bachelor of Surgery", note = "NPPES 813 US healthcare providers (August 2026 file); 190 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
 
 [[word]]
 text = "mbchb"
-credential = { expands = "Bachelor of Medicine, Bachelor of Surgery", note = "NPPES 568 US healthcare providers (August 2026 file); 1,154 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
+credential = { cased = "MBChB", expands = "Bachelor of Medicine, Bachelor of Surgery", note = "NPPES 568 US healthcare providers (August 2026 file); 1,154 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
 
 [[word]]
 text = "mbe"
@@ -4196,7 +4196,7 @@ credential = { cased = "MDiv" }
 
 [[word]]
 text = "mdphd"
-credential = { expands = "Doctor of Medicine and Doctor of Philosophy", note = "NPPES 61 US healthcare providers (August 2026 file); 129 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
+credential = { cased = "MDPhD", expands = "Doctor of Medicine and Doctor of Philosophy", note = "NPPES 61 US healthcare providers (August 2026 file); 129 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
 
 [[word]]
 text = "mem"
@@ -4218,7 +4218,7 @@ credential = {}
 
 [[word]]
 text = "mhsc"
-credential = { expands = "Master of Health Science", note = "NPPES 80 US healthcare providers (August 2026 file); 104 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
+credential = { cased = "MHSc", expands = "Master of Health Science", note = "NPPES 80 US healthcare providers (August 2026 file); 104 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
 
 [[word]]
 text = "micp"
@@ -4262,11 +4262,11 @@ credential = {}
 
 [[word]]
 text = "mmed"
-credential = { expands = "Master of Medicine", note = "NPPES 25 US healthcare providers (August 2026 file); 189 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
+credential = { cased = "MMed", expands = "Master of Medicine", note = "NPPES 25 US healthcare providers (August 2026 file); 189 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
 
 [[word]]
 text = "mmsc"
-credential = { expands = "Master of Medical Science", note = "NPPES 432 US healthcare providers (August 2026 file); 111 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
+credential = { cased = "MMSc", expands = "Master of Medical Science", note = "NPPES 432 US healthcare providers (August 2026 file); 111 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
 
 [[word]]
 text = "mnaa"
@@ -4290,7 +4290,7 @@ credential = {}
 
 [[word]]
 text = "mphil"
-credential = { expands = "Master of Philosophy", note = "NPPES 153 US healthcare providers (August 2026 file); 110 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
+credential = { cased = "MPhil", expands = "Master of Philosophy", note = "NPPES 153 US healthcare providers (August 2026 file); 110 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
 
 [[word]]
 text = "mpse"
@@ -4756,11 +4756,11 @@ credential = {}
 
 [[word]]
 text = "scd"
-credential = { expands = "Doctor of Science", note = "NPPES 145 US healthcare providers (August 2026 file); 593 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
+credential = { cased = "ScD", expands = "Doctor of Science", note = "NPPES 145 US healthcare providers (August 2026 file); 593 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
 
 [[word]]
 text = "scm"
-credential = { expands = "Master of Science", note = "NPPES 108 US healthcare providers (August 2026 file); 102 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
+credential = { cased = "ScM", expands = "Master of Science", note = "NPPES 108 US healthcare providers (August 2026 file); 102 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
 
 [[word]]
 text = "scmp"
