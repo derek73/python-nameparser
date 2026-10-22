@@ -532,8 +532,8 @@ class AmbiguityKind(StrEnum):
     #: and reports. The particle chain is the commonest joiner but not
     #: the only one: the bound-given join takes a member into its pair
     #: the same way, so "Berg, abdul MA" reads given ``abdul MA`` in
-    #: silence. Where a particle the suffix vocabulary
-    #: does not also claim stands BEHIND it, the given part ends at
+    #: silence. Where a particle the suffix vocabulary does not
+    #: also claim as an unambiguous word stands BEHIND it, the given part ends at
     #: that particle as this walk reads it, and the attachment that
     #: moves the particle to the family runs a stage too late to
     #: re-open the question -- so "Doe, John MA do" keeps middle
