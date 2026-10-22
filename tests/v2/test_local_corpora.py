@@ -257,6 +257,15 @@ def test_a_source_detail_cannot_replace_what_load_checks(
     assert loaded is not None and loaded.meta["records"] == 1
 
 
+def test_looking_for_a_corpus_creates_no_folder(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    # name_usage.py looks on every run; a user who never fetched one
+    # should not find empty folders in the cache.
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    assert local.load(_SOURCE) is None
+    assert not (tmp_path / "local").exists()
+
+
 def test_an_unknown_source_names_the_known_ones() -> None:
     with pytest.raises(ValueError, match=_SOURCE):
         local.directory("nppes")
@@ -267,13 +276,14 @@ def test_an_unknown_source_names_the_known_ones() -> None:
 # -- load ----------------------------------------------------------------------
 
 def _fetched(monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
-             *names: str) -> Path:
-    """A corpus of `names` fetched into tmp_path's cache; its folder."""
+             *names: str, date: str = _DATE) -> Path:
+    """A corpus of `names` fetched into tmp_path's cache, with no network
+    behind it; its folder."""
     monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
     records = [{"name": n} for n in names or ("Ann Lee, MD", "Bo Wu, PhD")]
     monkeypatch.setitem(local.SOURCES, _SOURCE, local.Source(
         local.SOURCES[_SOURCE].credit, "officials",
-        lambda: local.Fetched(records, _DATE, {})))
+        lambda: local.Fetched(records, date, {})))
     local.fetch(_SOURCE)
     return _folder(tmp_path)
 
@@ -449,10 +459,22 @@ def test_spellings_are_counted_once_per_record() -> None:
 def test_a_spaced_word_is_matched_as_its_words_in_a_row() -> None:
     # 'Ed Ph, D' runs across the comma, starting before it: written, not
     # after a comma. 'Di Fox, PhD' is the joined spelling, not the phrase.
+    # 'Fy Ph D, Ph D' writes it on both sides: after a comma too.
     corpus = _corpus("Ann Lee, Ph. D.", "Bo Wu, Ph D, MD", "Ph D Cy", "Di Fox, PhD",
-                     "Ed Ph, D")
+                     "Ed Ph, D", "Fy Ph D, Ph D")
     assert local.words("Ph. D.") == ["ph", "d"]
-    assert local.phrase_counts(corpus, ["ph", "d"]) == (4, 2)
+    assert local.phrase_counts(corpus, ["ph", "d"]) == (5, 3)
+
+
+def test_a_phrase_with_a_word_written_nowhere_scans_nothing(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    corpus = _corpus("Ann Lee, MD")
+    corpus.index  # noqa: B018 -- built before the scan is forbidden
+
+    def scanned(local_: object) -> object:
+        raise AssertionError("scanned every name for a word no name holds")
+    monkeypatch.setattr(local, "_names", scanned)
+    assert local.phrase_counts(corpus, ["md", "zz"]) == (0, 0)
 
 
 # -- snapshot.py --local -----------------------------------------------------------
@@ -460,13 +482,12 @@ def test_a_spaced_word_is_matched_as_its_words_in_a_row() -> None:
 def test_snapshot_reads_a_local_corpus_against_its_own_snapshot(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
         capsys: pytest.CaptureFixture[str]) -> None:
-    _serve(monkeypatch, tmp_path)
-    local.fetch(_SOURCE)
+    _fetched(monkeypatch, tmp_path)
     with pytest.raises(SystemExit, match="no snapshot"):
         snapshot.main(["--local", _SOURCE])
     assert snapshot.main(["--local", _SOURCE, "--record"]) == 0
     recorded = _folder(tmp_path) / "snapshot.jsonl"
-    assert len(recorded.read_text().splitlines()) == 3
+    assert len(recorded.read_text().splitlines()) == 2
     assert snapshot.main(["--local", _SOURCE]) == 0
     assert "matches the snapshot" in capsys.readouterr().out
 
@@ -489,12 +510,9 @@ def test_snapshot_refuses_a_corpus_fetched_after_its_snapshot(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     # Fetched again, the registry has gained and lost names; compared
     # with the old snapshot they would read as the parser's moves.
-    _serve(monkeypatch, tmp_path)
-    local.fetch(_SOURCE)
+    _fetched(monkeypatch, tmp_path)
     assert snapshot.main(["--local", _SOURCE, "--record"]) == 0
-    _serve(monkeypatch, tmp_path, dates=("2026-10-22T09:00:04",) * 2, pages=[
-        {"totalCount": 1, "studies": [_study("NCT9", "Eve Moe, DO")]}])
-    local.fetch(_SOURCE)
+    _fetched(monkeypatch, tmp_path, "Eve Moe, DO", date="2026-10-22T09:00:04")
     with pytest.raises(SystemExit, match="recorded from another fetch") as raised:
         snapshot.main(["--local", _SOURCE])
     assert _DATE in str(raised.value) and "2026-10-22T09:00:04" in str(raised.value)
@@ -504,11 +522,10 @@ def test_snapshot_refuses_a_corpus_fetched_after_its_snapshot(
 
 def test_snapshot_records_a_local_snapshot_where_out_says(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    _serve(monkeypatch, tmp_path)
-    local.fetch(_SOURCE)
+    _fetched(monkeypatch, tmp_path)
     out = tmp_path / "elsewhere.jsonl"
     assert snapshot.main(["--local", _SOURCE, "--record", "--out", str(out)]) == 0
-    assert len(out.read_text().splitlines()) == 3
+    assert len(out.read_text().splitlines()) == 2
     assert json.loads((tmp_path / "elsewhere.jsonl.source.json").read_text())[
         "data_date"] == _DATE
     assert not (_folder(tmp_path) / "snapshot.jsonl").exists()
@@ -533,8 +550,7 @@ def test_snapshot_refuses_since_with_local(
         capsys: pytest.CaptureFixture[str]) -> None:
     # Fetched first: on an empty cache the not-fetched refusal answered
     # for this row, and the --since guard could go unnoticed.
-    _serve(monkeypatch, tmp_path)
-    local.fetch(_SOURCE)
+    _fetched(monkeypatch, tmp_path)
     with pytest.raises(SystemExit) as raised:
         snapshot.main(["--local", _SOURCE, "--since", "v2.5.0"])
     assert raised.value.code == 2

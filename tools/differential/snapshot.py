@@ -45,7 +45,7 @@ HERE = Path(__file__).resolve().parent
 # corpus_build's docstring for why the directory is appended).
 if str(HERE) not in sys.path:
     sys.path.append(str(HERE))
-from corpus_build import LINE_BREAKS  # noqa: E402
+from corpus_build import jsonl_line, jsonl_lines  # noqa: E402
 REPO_ROOT = HERE.parents[1]
 SNAPSHOT = HERE / "snapshot.jsonl"
 RECORD_COMMAND = "uv run python tools/differential/snapshot.py --record"
@@ -110,8 +110,7 @@ def corpus_entries(paths: list[Path] | None = None) -> list[Entry]:
         raise SystemExit(f"no corpus files found in {HERE}")
     found: set[Entry] = set()
     for path in paths:
-        lines = [ln for ln in path.read_text(encoding="utf-8").split("\n")
-                 if ln.strip()]
+        lines = jsonl_lines(path.read_text(encoding="utf-8"))
         if not lines:
             raise SystemExit(f"{path.name} is empty")
         found.update(_corpus_line(path, ln, orders) for ln in lines)
@@ -128,7 +127,7 @@ def only_in(path: Path, names: set[str]) -> set[str]:
     orders = {k: s.order for k, s in load_shapes().items()}
     def held(p: Path) -> set[str]:
         return {_corpus_line(p, ln, orders)[0]
-                for ln in p.read_text(encoding="utf-8").splitlines() if ln.strip()}
+                for ln in jsonl_lines(p.read_text(encoding="utf-8"))}
     others = set().union(*(held(p) for p in sorted(HERE.glob("corpus*.jsonl"))
                            if p != path))
     return (names & held(path)) - others
@@ -209,13 +208,11 @@ def key(r: dict[str, Any]) -> tuple[str, str]:
 
 
 def dump(rows: list[dict[str, Any]]) -> str:
-    return "".join(json.dumps(r, ensure_ascii=False).translate(LINE_BREAKS) + "\n"
-                   for r in rows)
+    return "".join(jsonl_line(r) + "\n" for r in rows)
 
 
 def load(text: str) -> dict[tuple[str, str], dict[str, Any]]:
-    # split, not splitlines: see LINE_BREAKS.
-    return {key(r): r for r in map(json.loads, filter(None, text.split("\n"))) if r}
+    return {key(r): r for r in map(json.loads, jsonl_lines(text)) if r}
 
 
 def _flat(r: dict[str, Any]) -> dict[str, str]:
@@ -281,13 +278,7 @@ def _local(source: str) -> tuple[Path, list[Path], dict[str, str]]:
     it, with its attribution printed: a report on it carries its source
     and date."""
     import local_corpora
-    try:
-        corpus = local_corpora.load(source)
-    except ValueError as exc:
-        raise SystemExit(str(exc)) from None
-    if corpus is None:
-        raise SystemExit(f"{source} is not fetched: "
-                         f"local_corpora.py fetch {source}")
+    corpus = local_corpora.require(source)
     print(corpus.header())
     fetch = {"data_date": corpus.meta["data_date"],
              "corpus_sha256": corpus.meta["corpus_sha256"]}
@@ -309,7 +300,7 @@ def _check_fetch(snapshot: Path, fetch: dict[str, str], source: str) -> None:
     try:
         recorded = json.loads(_fetch_record(snapshot).read_text(encoding="utf-8"))
     except (OSError, ValueError):
-        recorded = None
+        recorded = {}
     if not isinstance(recorded, dict):
         recorded = {}
     if recorded.get("corpus_sha256") != fetch["corpus_sha256"]:
@@ -374,20 +365,20 @@ def main(argv: list[str] | None = None) -> int:
     old, new = load(text), {key(r): r for r in rows}
     moves = grouped(old, new)
     print("\n".join(moves) or "matches the snapshot")
-    if moves and args.local:
-        moved = {k for k in set(old) | set(new) if old.get(k) != new.get(k)}
+    if not moves:
+        return 0
+    moved = {k for k in set(old) | set(new) if old.get(k) != new.get(k)}
+    if args.local:
         print(f"\n{len(moved)} entries differ from the snapshot recorded "
               f"from this fetch. To make another tree the baseline: "
               f"snapshot.py --local {args.local} --record --tree <checkout>")
         return 1
-    if moves:
-        moved = {k for k in set(old) | set(new) if old.get(k) != new.get(k)}
-        cldr = only_in(CLDR_CORPUS, {name for name, _ in moved})
-        print(f"\n{len(moved)} entries differ, {len(cldr)} of their names "
-              f"held only by {CLDR_CORPUS.name}")
-    if moves and not args.since:
+    cldr = only_in(CLDR_CORPUS, {name for name, _ in moved})
+    print(f"\n{len(moved)} entries differ, {len(cldr)} of their names "
+          f"held only by {CLDR_CORPUS.name}")
+    if not args.since:
         print(f"\nif these moves are intended: {RECORD_COMMAND}")
-    return 1 if moves else 0
+    return 1
 
 
 if __name__ == "__main__":

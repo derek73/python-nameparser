@@ -710,9 +710,7 @@ def test_main_adds_the_ends_with_row_for_a_cjk_word(
     # once shadowed main's CJK index, so the row read None or a WordIndex.
     monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
     monkeypatch.setattr(tool, "load_census", lambda download: None)
-    module = tool._local_corpora()
-    corpus = module.Local("ctgov-officials", [{"name": "Ann Lee, MD"}],
-                          {"data_date": "2026-10-21"})
+    corpus = _local("Ann Lee, MD")
     locals_ = {"none": [],
                "not fetched": [("ctgov-officials", None, "")],
                "fetched": [("ctgov-officials", corpus, "")]}

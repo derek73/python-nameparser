@@ -168,3 +168,15 @@ def test_an_interrupted_cache_write_leaves_no_cache_file(
         corpus_build.cached_json(tmp_path, "k", "label", lambda: b'{"a": 1}',
                                  _check, refresh=False)
     assert not list(tmp_path.glob("*.json"))
+
+
+@pytest.mark.parametrize("brk", ["\x85", "\u2028", "\u2029"])
+def test_a_jsonl_line_holding_a_line_break_reads_back_as_one_line(brk: str) -> None:
+    # json.dumps writes these raw and str.splitlines() cuts at them; the
+    # writer escapes them, and the reader cuts at "\n" only in case a
+    # file was written some other way.
+    row = {"name": f"Ann{brk}Lee, MD"}
+    line = corpus_build.jsonl_line(row)
+    assert brk not in line and json.loads(line) == row
+    raw = json.dumps(row, ensure_ascii=False)
+    assert [json.loads(x) for x in corpus_build.jsonl_lines(f"{raw}\n\n{raw}\n")] == [row, row]

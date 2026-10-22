@@ -51,7 +51,6 @@ import functools
 import hashlib
 import http.client
 import json
-import os
 import re
 import sys
 import time
@@ -59,7 +58,7 @@ import unicodedata
 import urllib.error
 import urllib.parse
 from collections import Counter
-from collections.abc import Callable, Iterable, Iterator
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -107,10 +106,15 @@ class Local:
     records: list[dict[str, str]]
     meta: dict[str, Any]
 
+    @property
+    def credit(self) -> str:
+        """The source's credit and its data date, which ClinicalTrials.gov's
+        terms ask every report to carry."""
+        return f"{SOURCES[self.source].credit}, data as of {self.meta['data_date']}"
+
     def header(self) -> str:
         """The attribution every report opens with."""
-        return (f"{SOURCES[self.source].credit}, data as of "
-                f"{self.meta['data_date']}; {len(self.records):,} "
+        return (f"{self.credit}; {len(self.records):,} "
                 f"{SOURCES[self.source].unit} (local corpus {self.source})")
 
     @functools.cached_property
@@ -153,16 +157,14 @@ def _get_json(url: str) -> dict[str, Any]:
                 raise _Unparsed(str(exc)) from None
             break
         except (*_TRANSIENT, _Unparsed) as exc:
+            http = isinstance(exc, urllib.error.HTTPError)
+            if http and exc.code < 500 and exc.code != 429 or attempt == CTGOV_RETRIES - 1:
+                raise
             wait = 2 ** attempt
-            if isinstance(exc, urllib.error.HTTPError):
-                if exc.code < 500 and exc.code != 429:
-                    raise
+            if http:
                 after = exc.headers.get("Retry-After", "") if exc.headers else ""
                 if after.isdigit():
                     wait = max(wait, min(int(after), 60))
-            if attempt == CTGOV_RETRIES - 1:
-                raise
-            if isinstance(exc, urllib.error.HTTPError):
                 exc.close()  # an HTTPError holds the response open
             print(f"  retrying in {wait}s after {type(exc).__name__}: {url}",
                   file=sys.stderr)
@@ -247,17 +249,17 @@ SOURCES: dict[str, Source] = {
 
 # -- the cache ---------------------------------------------------------------
 
-def directory(source: str) -> Path:
+def directory(source: str, *, create: bool = True) -> Path:
     if source not in SOURCES:
         raise ValueError(f"no local corpus {source!r}; the sources are "
                          + ", ".join(sorted(SOURCES)))
-    return corpus_build.cache_dir(f"local/{source}")
+    return corpus_build.cache_dir(f"local/{source}", create=create)
 
 
-def _lines(texts: Iterable[str]) -> bytes:
-    """`texts` as lines of a JSONL file, escaped as corpus_build.LINE_BREAKS
-    says."""
-    return "".join(t.translate(corpus_build.LINE_BREAKS) + "\n" for t in texts).encode()
+def fetch_command(source: str, *, refresh: bool = False) -> str:
+    """The command that fetches `source`, for messages that name it."""
+    return (f"tools/differential/local_corpora.py fetch {source}"
+            + (" --refresh" if refresh else ""))
 
 
 def fetch(source: str) -> Local:
@@ -270,27 +272,22 @@ def fetch(source: str) -> Local:
         raise ValueError(f"{source}: the fetch found no names")
     if any(not isinstance(r.get("name"), str) for r in fetched.records):
         raise ValueError(f"{source}: a fetched record has no name")
-    raw = _lines(json.dumps(r, ensure_ascii=False, sort_keys=True)
-                 for r in fetched.records)
-    corpus = _lines(corpus_build.corpus_lines(
-        {"text": r["name"], "shape": None} for r in fetched.records))
-    _write(path / RAW, raw)
-    _write(path / CORPUS, corpus)
+    raw = "".join(corpus_build.jsonl_line(r, sort_keys=True) + "\n"
+                  for r in fetched.records).encode()
+    lines = corpus_build.corpus_lines(
+        {"text": r["name"], "shape": None} for r in fetched.records)
+    corpus = ("\n".join(lines) + "\n").encode()
+    corpus_build.write_atomic(path / RAW, raw)
+    corpus_build.write_atomic(path / CORPUS, corpus)
     meta = {"version": META_VERSION, "source": source,
             "data_date": fetched.data_date,
             "fetched": time.strftime("%Y-%m-%d"),
-            "records": len(fetched.records), "names": corpus.count(b"\n"),
+            "records": len(fetched.records), "names": len(lines),
             "sha256": hashlib.sha256(raw).hexdigest(),
             "corpus_sha256": hashlib.sha256(corpus).hexdigest(),
             "detail": fetched.detail}
-    _write(path / META, json.dumps(meta, indent=2).encode())
+    corpus_build.write_atomic(path / META, json.dumps(meta, indent=2).encode())
     return Local(source, fetched.records, meta)
-
-
-def _write(path: Path, body: bytes) -> None:
-    partial = path.with_name(path.name + ".part")
-    partial.write_bytes(body)
-    os.replace(partial, path)
 
 
 def load(source: str) -> Local | None:
@@ -299,10 +296,10 @@ def load(source: str) -> Local | None:
     version or shape, a raw.jsonl or corpus.jsonl its sha256 does not
     match, a record without a name -- raises ValueError naming the way
     out: a damaged file must not read as a smaller corpus."""
-    path = directory(source)
+    path = directory(source, create=False)
     if not (path / META).exists():
         return None
-    again = f"; fetch it again: local_corpora.py fetch {source} --refresh"
+    again = f"; fetch it again: {fetch_command(source, refresh=True)}"
     try:
         meta = json.loads((path / META).read_text(encoding="utf-8"))
     except ValueError as exc:
@@ -314,26 +311,37 @@ def load(source: str) -> Local | None:
         value = meta.get(key)
         if not isinstance(value, kind) or isinstance(value, bool):
             raise ValueError(f"{path / META} has no {kind.__name__} {key!r}{again}")
-    bodies = {}
-    for name, key in ((RAW, "sha256"), (CORPUS, "corpus_sha256")):
+
+    def verified(name: str, key: str) -> bytes:
         body = (path / name).read_bytes() if (path / name).exists() else b""
         if hashlib.sha256(body).hexdigest() != meta[key]:
             raise ValueError(f"{path / name} does not match the sha256 in "
                              f"{META}{again}")
-        bodies[name] = body
-    raw = bodies[RAW]
-    # split, not splitlines: a record may hold a line break splitlines
-    # would cut it at (written escaped since meta version 2, but a reader
-    # should not depend on that).
-    records = [json.loads(line) for line in raw.decode().split("\n") if line]
+        return body
+
+    raw = verified(RAW, "sha256")
+    verified(CORPUS, "corpus_sha256")
+    records = [json.loads(line) for line in corpus_build.jsonl_lines(raw.decode())]
     if any(not isinstance(r, dict) or not isinstance(r.get("name"), str)
            for r in records):
         raise ValueError(f"{path / RAW} holds a record without a name{again}")
     return Local(source, records, meta)
 
 
+def require(source: str) -> Local:
+    """The cached corpus for a command that cannot go on without it:
+    exits naming the fetch where it is missing or damaged."""
+    try:
+        local = load(source)
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from None
+    if local is None:
+        raise SystemExit(f"{source} is not fetched: {fetch_command(source)}")
+    return local
+
+
 def corpus_path(source: str) -> Path:
-    return directory(source) / CORPUS
+    return directory(source, create=False) / CORPUS
 
 
 # -- views -------------------------------------------------------------------
@@ -375,6 +383,7 @@ def _strippable(char: str) -> bool:
     return unicodedata.category(char)[0] in "PS" and char not in _JOINERS
 
 
+@functools.cache
 def word_key(word: str) -> str:
     """One word as the lookup matches it: composed (NFC), periods dropped,
     other punctuation and symbols at its edges stripped, apostrophes and
@@ -383,7 +392,8 @@ def word_key(word: str) -> str:
     D. A combining mark is part of its letter, not punctuation, so a
     final vowel sign or haraka stays. Close to the parser's acronym match
     (which drops periods and lowers case) but not the same fold:
-    casefold() also folds 'ß' to 'ss'."""
+    casefold() also folds 'ß' to 'ss'. Cached: a corpus repeats its
+    words (1.88 million tokens, 169,208 distinct, on 2026-10-21)."""
     word = unicodedata.normalize("NFC", word).replace(".", "")
     start, end = 0, len(word)
     while start < end and _strippable(word[start]):
@@ -393,10 +403,17 @@ def word_key(word: str) -> str:
     return word[start:end].casefold()
 
 
+def _keyed(text: str) -> list[tuple[str, str]]:
+    """`text` cut into words, each as (its key, the token as written),
+    words that fold to nothing dropped."""
+    return [(key, token) for token in _TOKEN_SPLIT.split(text)
+            if (key := word_key(token))]
+
+
 def words(text: str) -> list[str]:
     """`text` as the lookup's words: cut where the index cuts a name,
     each folded by word_key, empty words dropped."""
-    return [k for k in map(word_key, _TOKEN_SPLIT.split(text)) if k]
+    return [key for key, _ in _keyed(text)]
 
 
 @dataclass(frozen=True)
@@ -409,25 +426,26 @@ class WordIndex:
     spellings: dict[str, Counter[str]]
 
 
+def _names(local: Local) -> Counter[str]:
+    """Each distinct name with the records writing it: a name repeats
+    across a source's records (536,981 officials, 352,104 names)."""
+    return Counter(record["name"] for record in local.records)
+
+
 def word_index(local: Local) -> WordIndex:
     anywhere: Counter[str] = Counter()
     after: Counter[str] = Counter()
     spellings: dict[str, Counter[str]] = {}
-    for record in local.records:
-        head, _, tail = record["name"].partition(",")
-        seen: set[str] = set()
-        seen_after: set[str] = set()
-        written: set[tuple[str, str]] = set()
-        for text, bucket in ((head, seen), (tail, seen_after)):
-            for token in _TOKEN_SPLIT.split(text):
-                key = word_key(token)
-                if key:
-                    bucket.add(key)
-                    written.add((key, token))
-        anywhere.update(seen | seen_after)
-        after.update(seen_after)
-        for key, token in written:
-            spellings.setdefault(key, Counter())[token] += 1
+    for name, n in _names(local).items():
+        head, _, tail = name.partition(",")
+        before, behind = _keyed(head), _keyed(tail)
+        after_keys = {key for key, _ in behind}
+        for key in {key for key, _ in before} | after_keys:
+            anywhere[key] += n
+        for key in after_keys:
+            after[key] += n
+        for key, token in set(before + behind):
+            spellings.setdefault(key, Counter())[token] += n
     return WordIndex(anywhere, after, spellings)
 
 
@@ -435,20 +453,48 @@ def phrase_counts(local: Local, keys: list[str]) -> tuple[int, int]:
     """The records writing the words `keys` in a row (a spaced query,
     'Ph. D.' as ['ph', 'd']), and those where such a run starts after
     the first comma. The separators between the words are not compared:
-    'MD/PhD' finds 'MD, PhD' and 'Smith MD, PhD' too. Scans every record,
-    since a phrase is no key of the index."""
+    'MD/PhD' finds 'MD, PhD' and 'Smith MD, PhD' too. Scans the names,
+    since a phrase is no key of the index; none is scanned when one of
+    its words is written nowhere."""
+    if any(not local.index.anywhere[key] for key in keys):
+        return 0, 0
     n = len(keys)
     anywhere = after = 0
-    for record in local.records:
-        head, _, tail = record["name"].partition(",")
+    for name, count in _names(local).items():
+        head, _, tail = name.partition(",")
         first = words(head)
         got = first + words(tail)
         starts = [i for i in range(len(got) - n + 1) if got[i:i + n] == keys]
         if starts:
-            anywhere += 1
+            anywhere += count
         if any(i >= len(first) for i in starts):
-            after += 1
+            after += count
     return anywhere, after
+
+
+@dataclass(frozen=True)
+class Lookup:
+    """One word's answer: the records writing it anywhere and after a
+    comma; for a single word its spellings, for a spaced one the records
+    writing its words joined into one."""
+    anywhere: int
+    after_comma: int
+    spellings: Counter[str]
+    joined: int | None
+
+
+def lookup(local: Local, word: str) -> Lookup | None:
+    """`word` looked up in `local`, or None when nothing is left of it
+    once folded (words). A spaced word is matched as its words in a row."""
+    keys = words(word)
+    if not keys:
+        return None
+    index = local.index
+    if len(keys) == 1:
+        return Lookup(index.anywhere[keys[0]], index.after_comma[keys[0]],
+                      index.spellings.get(keys[0], Counter()), None)
+    anywhere, after = phrase_counts(local, keys)
+    return Lookup(anywhere, after, Counter(), index.anywhere["".join(keys)])
 
 
 # -- the command line ----------------------------------------------------------
@@ -484,10 +530,7 @@ def main(argv: list[str] | None = None) -> int:
             print(", ".join(f"{k} {v:,}" if isinstance(v, int) else f"{k} {v}"
                             for k, v in sorted(local.meta["detail"].items())))
         return 0
-    local = load(args.source)
-    if local is None:
-        raise SystemExit(f"{args.source} is not fetched: "
-                         f"local_corpora.py fetch {args.source}")
+    local = require(args.source)
     parts, with_comma = tally(local)
     print(local.header())
     print(f"{with_comma:,} hold a comma; the text after each comma, by "

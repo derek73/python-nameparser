@@ -1075,35 +1075,25 @@ def local_usage(word: str, source: str, local: Local | None) -> Usage:
     usage = Usage(f"{source} (local corpus)")
     if local is None:
         usage.status = "not downloaded"
-        usage.note = (f"not fetched; tools/differential/local_corpora.py "
-                      f"fetch {source}")
+        usage.note = f"not fetched; {module.fetch_command(source)}"
         return usage
-    keys = module.words(word)
-    if not keys:
+    found = module.lookup(local, word)
+    if found is None:
         usage.status = "unrepresentable"
         usage.note = "nothing in it is left once periods and punctuation go"
         return usage
-    unit = module.SOURCES[source].unit
-    credit = f"{module.SOURCES[source].credit}, data as of {local.meta['data_date']}"
-    index = local.index
-    if len(keys) == 1:
-        anywhere, after = index.anywhere[keys[0]], index.after_comma[keys[0]]
-        written = index.spellings.get(keys[0])
+    if found.joined is None:
         spelled = ("written " + ", ".join(f"{s} {n:,}" for s, n in
-                                          written.most_common(3))
-                   if written else "")
+                                          found.spellings.most_common(3))
+                   if found.spellings else "")
     else:
-        # A spaced word ('Ph. D.') is no key of the index, which holds
-        # single words: its words are looked for in a row instead, and
-        # the same letters written as one word are reported beside it.
-        anywhere, after = module.phrase_counts(local, keys)
-        joined = "".join(keys)
-        spelled = (f"as one word '{joined}' {index.anywhere[joined]:,}"
-                   if index.anywhere[joined] else "")
+        joined = "".join(module.words(word))
+        spelled = f"as one word '{joined}' {found.joined:,}" if found.joined else ""
     usage.note = _join(
-        credit,
-        f"{anywhere:,} of {len(local.records):,} {unit} write it, "
-        f"{after:,} after a comma", spelled)
+        local.credit,
+        f"{found.anywhere:,} of {len(local.records):,} "
+        f"{module.SOURCES[source].unit} write it, {found.after_comma:,} after "
+        f"a comma", spelled)
     return usage
 
 
@@ -1112,13 +1102,9 @@ def local_rows(word: str, locals_: list[tuple[str, Local | None, str]]) -> list[
     as failed. A function of its own so its loop names cannot shadow
     main's: written inline there, its `index` replaced the CJK name
     index the ends-with row reads."""
-    rows = []
-    for source, local, error in locals_:
-        row = local_usage(word, source, local)
-        if error:
-            row.status, row.note = "failed", error
-        rows.append(row)
-    return rows
+    return [Usage(f"{source} (local corpus)", status="failed", note=error)
+            if error else local_usage(word, source, local)
+            for source, local, error in locals_]
 
 
 # -- Wikidata ------------------------------------------------------------
