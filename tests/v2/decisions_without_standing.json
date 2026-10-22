@@ -1,7 +1,6 @@
 {
  "_comment": "decisions files allowed to lack a ## Standing block: those created before the rule, C1's block landing on 2026-10-19 (C12 and vocabulary-model were created that day, before it). A file leaves the list the day it gains a block, or the day the index lists it under Reference lists; the list must stay inside STANDING_EXEMPT_ORIGINAL in tests/v2/design_docs.py, so it never holds a key it did not start with and a new file never joins it (tests/v2/test_design_docs.py::test_a_decisions_file_off_the_list_opens_with_standing; #762 decides the rest).",
  "exempt": [
-  "3-0-reevaluations",
   "A1",
   "A2",
   "D1",
@@ -16,14 +15,9 @@
   "T1",
   "T3",
   "T4",
-  "comma-suffix-arc",
   "comparison-surface",
-  "deviates-registry",
-  "differential-ledger",
-  "parse-cost",
   "phd-merge",
   "render-default",
-  "review-agent-single-source",
   "suffix-field-composition",
   "two-input-invariants",
   "v1-xfail-triage"
