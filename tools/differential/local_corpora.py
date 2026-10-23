@@ -666,10 +666,11 @@ def _tw_cache_zip(report: dict[str, Any], body: bytes) -> None:
 
 
 def _tw_lines(text: str) -> list[str]:
-    """`text` cut into its lines at "\\n" alone, each keeping its ending:
-    str.splitlines() would cut at U+2028 and the other separators, which
-    a name may hold (corpus_build.jsonl_lines)."""
-    return re.findall(r"[^\n]*\n|[^\n]+$", text)
+    """`text` cut into its lines at CRLF, CR or LF, each keeping its
+    ending, as csv reads a file opened with newline="" and no further:
+    str.splitlines() would cut at U+2028 and the other separators too,
+    which a name may hold (corpus_build.jsonl_lines)."""
+    return re.findall(r"[^\r\n]*(?:\r\n|\r|\n)|[^\r\n]+$", text)
 
 
 def _tw_rows(text: str, width: int, counts: Counter[str]) -> Iterator[list[str]]:
@@ -681,7 +682,11 @@ def _tw_rows(text: str, width: int, counts: Counter[str]) -> Iterator[list[str]]
     whole row alone, the record is cut back into its lines, each read
     alone: the lines as wide as the header are rows, and the rest are
     counted as cut by the quote. Otherwise it stays one record (a phone
-    field holding two numbers on two lines, 8 on 2026-10-22)."""
+    field holding two numbers on two lines, 8 on 2026-10-22). Two stray
+    quotes in rows one after the other close each other and make one
+    record as wide as the header out of two rows, which no line read
+    alone as quoted shows: where every line of a record reads as a whole
+    row with quotes taken literally, those are its rows."""
     lines = _tw_lines(text)
     reader = csv.reader(lines)
     next(reader, None)
@@ -689,6 +694,13 @@ def _tw_rows(text: str, width: int, counts: Counter[str]) -> Iterator[list[str]]
     for record in reader:
         end = reader.line_num
         if end - start > 1:
+            literal = [next(csv.reader([line], quoting=csv.QUOTE_NONE), [])
+                       for line in lines[start:end]]
+            if all(len(row) == width for row in literal):
+                counts["records_cut_back_into_their_lines"] += 1
+                yield from literal
+                start = end
+                continue
             alone = [next(csv.reader([line]), []) for line in lines[start:end]]
             if any(len(row) == width for row in alone[1:]):
                 counts["records_cut_back_into_their_lines"] += 1
@@ -728,7 +740,12 @@ def _tw_read(incomes: bytes, report: dict[str, Any], label: str, names: set[str]
         header.index(column) for column in (TW_CATEGORY, TW_DONOR, TW_SERIAL, TW_CANDIDATE))
     serials = _tw_serial_names(int(report["yearOrSerial"]))
     mine = Counter[str]()
-    for row in _tw_rows(text, len(header), mine):
+    try:
+        rows = list(_tw_rows(text, len(header), mine))
+    except csv.Error as exc:
+        raise ValueError(f"{label}'s {TW_INCOMES} is not a CSV file csv can "
+                         f"read ({exc})") from None
+    for row in rows:
         mine["rows"] += 1
         if len(row) != len(header):
             mine["rows_not_as_long_as_the_header"] += 1
@@ -800,12 +817,16 @@ def fetch_tw() -> Fetched:
         _tw_read(incomes, report, label, names, counts)
         if downloaded is not None:
             _tw_cache_zip(report, downloaded)
-    for key, total in [(key, "rows") for key in _TW_BAD] + [
-            ("donations_naming_a_masked_donor", "individual_donations")]:
+    for key, total, what in (
+            ("rows_not_as_long_as_the_header", "rows",
+             "rows are not as long as their file's header"),
+            ("rows_without_a_category", "rows", "rows are without a category"),
+            ("rows_cut_by_a_stray_quote", "rows", "rows are cut by a stray quote"),
+            ("donations_naming_a_masked_donor", "individual_donations",
+             "individual donations name a masked donor")):
         if counts[key] > counts[total] * TW_MAX_BAD:
-            raise ValueError(f"{counts[key]:,} of {counts[total]:,} {total} are "
-                             f"{key.split('_', 1)[1].replace('_', ' ')}: the files' "
-                             f"layout has changed")
+            raise ValueError(f"{counts[key]:,} of {counts[total]:,} {what}: the "
+                             f"files' layout has changed")
     if _tw_versions(_tw_reports()) != _tw_versions(reports):
         raise ValueError("the platform published, replaced or withdrew a report "
                          "during the fetch; fetch again")

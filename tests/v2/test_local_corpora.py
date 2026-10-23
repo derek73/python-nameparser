@@ -891,14 +891,62 @@ def test_rows_a_stray_quote_takes_in_are_read_back(
              _line("趙六", phone='02"')]
     _serve_tw(monkeypatch, listings=[_TW_LISTING[:1]],
               zips={(_TW_ELECTION, _TW_AREA, 1): _tw_zip(_tw_incomes_text(lines))})
+    corpus = local.fetch(_TW)  # every line whole with quotes taken literally
+    assert len(corpus.records) == 4
+    assert corpus.meta["detail"]["records_cut_back_into_their_lines"] == 1
+    assert corpus.meta["detail"]["rows_cut_by_a_stray_quote"] == 0
+    # A line between holding a quoted comma is no whole row read
+    # literally: the lines are read alone as quoted, the opening line cut.
+    lines[2] = _line("林一二", phone='"02,03"')
+    for cached in _tw_cache(_tw_home).iterdir():
+        cached.unlink()
+    _serve_tw(monkeypatch, listings=[_TW_LISTING[:1]],
+              zips={(_TW_ELECTION, _TW_AREA, 1): _tw_zip(_tw_incomes_text(lines))})
     monkeypatch.setattr(local, "TW_MAX_BAD", 1)
     corpus = local.fetch(_TW)
     assert {"name": "陳大文"} in corpus.records and {"name": "林一二"} in corpus.records
-    detail = corpus.meta["detail"]
-    assert detail["records_cut_back_into_their_lines"] == 1
-    assert detail["rows_cut_by_a_stray_quote"] >= 1
+    assert corpus.meta["detail"]["rows_cut_by_a_stray_quote"] >= 1
     monkeypatch.setattr(local, "TW_MAX_BAD", 1 / 10_000)
     with pytest.raises(ValueError, match="rows are cut by a stray quote"):
+        local.fetch(_TW)
+
+
+def test_two_stray_quotes_one_row_after_another_lose_neither_row(
+        monkeypatch: pytest.MonkeyPatch, _tw_home: Path) -> None:
+    # The second quote closes the first: one record as wide as the
+    # header out of two rows, which no line read alone as quoted shows.
+    lines = [_line("王小明", address='"臺北市'), _line("陳大文", address='"臺南市'),
+             _line("林一二")]
+    _serve_tw(monkeypatch, listings=[_TW_LISTING[:1]],
+              zips={(_TW_ELECTION, _TW_AREA, 1): _tw_zip(_tw_incomes_text(lines))})
+    corpus = local.fetch(_TW)
+    assert corpus.records == [{"name": "林一二"}, {"name": "王小明"}, {"name": "陳大文"}]
+    assert corpus.meta["detail"]["records_cut_back_into_their_lines"] == 1
+
+
+@pytest.mark.parametrize("ending", ["\r", "\r\n", "\n"], ids=["CR", "CRLF", "LF"])
+def test_a_bare_cr_ends_a_line_as_csv_reads_one(
+        monkeypatch: pytest.MonkeyPatch, _tw_home: Path, ending: str) -> None:
+    # A stray CR in a cell cuts its row in two short rows, counted, as
+    # csv.reader over a file opened with newline="" reads it, and a file
+    # whose lines end in CR alone reads whole.
+    text = ending.join([",".join(local.TW_HEADER), _line("王小明"),
+                        _line("陳大文", address="臺北\r市"), _line("林一二")]) + ending
+    _serve_tw(monkeypatch, listings=[_TW_LISTING[:1]],
+              zips={(_TW_ELECTION, _TW_AREA, 1): _tw_zip(text.encode("utf-8-sig"))})
+    monkeypatch.setattr(local, "TW_MAX_BAD", 1)
+    corpus = local.fetch(_TW)
+    assert corpus.records == [{"name": "林一二"}, {"name": "王小明"}]
+    assert corpus.meta["detail"]["rows_not_as_long_as_the_header"] == 2
+
+
+def test_a_tw_file_csv_cannot_read_is_refused_naming_the_report(
+        monkeypatch: pytest.MonkeyPatch, _tw_home: Path) -> None:
+    huge = _line("王小明", address='"' + "x" * 200_000)  # past csv's field limit
+    text = f"{','.join(local.TW_HEADER)}\r\n{huge}\r\n"
+    _serve_tw(monkeypatch, listings=[_TW_LISTING[:1]],
+              zips={(_TW_ELECTION, _TW_AREA, 1): _tw_zip(text.encode("utf-8-sig"))})
+    with pytest.raises(ValueError, match="report 1's incomes.csv is not a CSV file"):
         local.fetch(_TW)
 
 
@@ -919,8 +967,8 @@ def test_a_masked_donor_name_is_counted_and_refused_past_the_share(
     # corpus with masked ones.
     _serve_tw(monkeypatch, listings=[_TW_LISTING[:1]], zips=_tw_first(
         _tw_row("個人捐贈收入", "王*明"), _tw_row("個人捐贈收入", "陳大文")))
-    with pytest.raises(ValueError, match="1 of 2 individual_donations are naming "
-                                         "a masked donor"):
+    with pytest.raises(ValueError, match="1 of 2 individual donations name a "
+                                         "masked donor"):
         local.fetch(_TW)
     monkeypatch.setattr(local, "TW_MAX_BAD", 1)
     corpus = local.fetch(_TW)
