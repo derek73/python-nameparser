@@ -80,7 +80,7 @@ _TW_MASK = re.compile(r"[*＊○]")
 #: More than this share of the fetch's rows not as long as their file's
 #: header, without a category, or cut off by a stray quote, or of its
 #: individual donations naming a masked donor, refuses the fetch, as
-#: FEC_MAX_BAD does. One 2021 residual report held a row with no
+#: local_fec.FEC_MAX_BAD does. One 2021 residual report held a row with no
 #: category, an income of NT$53 with no donor ID (2026-10-22).
 TW_MAX_BAD = 1 / 10_000
 #: More than this share of ONE report's rows bad refuses the fetch too:

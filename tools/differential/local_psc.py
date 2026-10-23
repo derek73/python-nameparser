@@ -68,7 +68,7 @@ _PSC_EXTRACT = re.compile(r"psc-snapshot-(\d{4}-\d{2}-\d{2})_(\d+)of(\d+)\.v(\d+
 #: The corpus keeps one filed name in PSC_SAMPLE, chosen by a hash of the
 #: record (psc_sampled). The whole snapshot held 8,322,939 distinct filed
 #: names on 2026-10-22, 1.09 GB as JSON lines, and a local corpus is held
-#: in memory whole (Local.records), and snapshot.py --local reads every
+#: in memory whole (local_corpora.Local.records), and snapshot.py --local reads every
 #: name with both APIs. A record's hash does not move with the snapshot,
 #: so a refetch keeps or drops the same record as before, and no
 #: nationality or shape is favoured.

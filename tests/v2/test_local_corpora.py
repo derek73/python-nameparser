@@ -1,4 +1,5 @@
-"""Offline checks on tools/differential/local_corpora.py.
+"""Offline checks on tools/differential/local_corpora.py and its source
+modules (local_core.py and the local_<source>.py modules).
 
 A local corpus is fetched once from a live source and then trusted as
 the pin, so what these pin is the fetch's refusals (a fetch straddling
@@ -2581,19 +2582,25 @@ def _globals_read(code: types.CodeType) -> set[str]:
     return names
 
 
-def test_local_corpora_binds_no_constant_a_fetch_reads() -> None:
-    # A test patches a fetch's constant on the module that reads it
-    # (core.RETRIES, tse.TSE_MAX_BAD). Were local_corpora to bind the same
-    # object too, a patch set on it would be taken and reach no fetch, and
-    # the test would pass with its guard off; unbound, the patch raises.
-    # PSC is the source's name, a key of SOURCES that local_agreement
-    # reads, and no fetch's setting.
-    bound = {name for module in (core, ctgov, fec, tse, tw, ukec, psc)
-             for name, value in vars(module).items()
-             if name.isupper() and name != "TYPE_CHECKING"  # typing's, imported
-             and not isinstance(value, types.ModuleType)
-             and getattr(local, name, None) is value}
-    assert bound == {"PSC"}
+def test_no_module_imports_a_sibling_constant() -> None:
+    # A test patches a constant on the module that holds it (core.RETRIES,
+    # tse.TSE_MAX_BAD), and every other reader reads it through that
+    # module. A `from local_x import CONSTANT` would bind a second name a
+    # patch on local_x cannot reach, and a test could pass with its guard
+    # off. The modules are SOURCES' own, so a new source is covered. PSC is
+    # the source's name, a key of SOURCES that local_agreement reads, and
+    # no fetch's setting.
+    import ast
+    sources = {source.fetch.__module__ for source in local.SOURCES.values()}
+    assert sources == {m.__name__ for m in (ctgov, fec, tse, tw, ukec, psc)}
+    siblings = {"local_corpora", "local_core", *sources}
+    imported = {(path.stem, alias.name)
+                for path in (Path(str(local.__file__)).parent / f"{s}.py"
+                             for s in sorted(siblings))
+                for node in ast.walk(ast.parse(path.read_text(encoding="utf-8")))
+                if isinstance(node, ast.ImportFrom) and node.module in siblings
+                for alias in node.names if alias.name.lstrip("_").isupper()}
+    assert imported == {("local_corpora", "PSC")}
 
 
 def test_the_fold_lists_everything_its_functions_call_and_read() -> None:

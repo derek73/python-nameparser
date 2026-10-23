@@ -2,8 +2,9 @@
 the retry policy, the gate on what a reader reads past, downloads, and
 the cache folder.
 
-local_corpora.py holds the SOURCES registry, the cache's own files and
-the command line; each local_<source>.py holds one source's fetch. A
+local_corpora.py holds the SOURCES registry, the cache's own files, the
+views (tally, pairs, the word index) and the command line; each
+local_<source>.py holds one source's fetch. A
 source module imports this one and never local_corpora, which imports
 the source modules to build SOURCES.
 """
@@ -35,7 +36,7 @@ class Fetched:
     records: list[dict[str, str]]
     data_date: str
     #: Anything else worth keeping (API version, counts), stored in
-    #: meta.json under "detail", where it cannot replace a key load() checks.
+    #: meta.json under "detail", where it cannot replace a key local_corpora.load() checks.
     detail: dict[str, Any]
 
 
@@ -49,7 +50,7 @@ class Source:
     #: an input cached beside the corpus: fetches that input anew,
     #: replacing the cached copy only once the new one is whole.
     renew: Callable[[], None] | None = None
-    #: Why load() should refuse a meta.json this version of the source
+    #: Why local_corpora.load() should refuse a meta.json this version of the source
     #: did not write (another FEC cycle), or "" to accept it.
     check: Callable[[dict[str, Any]], str] | None = None
 
