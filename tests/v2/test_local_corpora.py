@@ -1059,6 +1059,569 @@ def test_a_tse_corpus_of_other_elections_is_refused_on_load(
         local.load(_TSE)
 
 
+# -- Taiwan political donations ------------------------------------------------
+
+_TW = "tw-donors"
+_TW_ELECTION, _TW_AREA = "109年立法委員選舉", "臺北市"
+#: A masked ID, an address and a phone that must never reach the corpus.
+_TW_PRIVATE = ("A12****789", "臺北市中正區某某路1號", "02-2****678")
+#: An area's code in its zip's name, as the platform's names carry one.
+_TW_AREA_CODES = {"臺北市": "63000", "新北市": "65000"}
+_FIRST, _RESIDUAL = "首次申報", "第1次賸餘"
+
+
+def _tw_row(category: str, donor: str, serial: str = _FIRST,
+            columns: int = 25) -> list[str]:
+    row = ["1", "候選人甲", _TW_ELECTION, serial, "1081201", category, donor,
+           _TW_PRIVATE[0], "1000", "0", "現金", "1081202", "", "", "", _TW_PRIVATE[1],
+           _TW_PRIVATE[2], "", "", "", "", "", "", "", ""]
+    return row[:columns]
+
+
+def _tw_csv(rows: list[list[str]], header: tuple[str, ...] | None = None) -> bytes:
+    out = io.StringIO()
+    writer = csv.writer(out, lineterminator="\r\n")
+    writer.writerow(header or local.TW_HEADER)
+    writer.writerows(rows)
+    return out.getvalue().encode("utf-8-sig")
+
+
+def _tw_zip(incomes: bytes | None,
+            date: tuple[int, int, int, int, int, int] = (2023, 9, 12, 14, 4, 54)) -> bytes:
+    """A report zip holding `incomes` as incomes.csv (none when it is
+    None) beside an expenditures.csv, deflated as the platform's zips
+    are."""
+    out = io.BytesIO()
+    with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as archive:
+        if incomes is not None:
+            archive.writestr(zipfile.ZipInfo("incomes.csv", date, ), incomes,
+                             zipfile.ZIP_DEFLATED)
+        archive.writestr(zipfile.ZipInfo("expenditures.csv", date), b"")
+    return out.getvalue()
+
+
+def _tw_report(serial: int = 1, election: str = _TW_ELECTION, area: str = _TW_AREA,
+               version: str = "112091204") -> dict[str, Any]:
+    return {"type": "Election", "yearOrSerial": float(serial), "electionName": election,
+            "electionArea": area,
+            "zipFileName": f"election-{version}-{serial}-{_TW_AREA_CODES[area]}.zip"}
+
+
+def _tw_first(*rows: list[str]) -> dict[tuple[str, str, int], bytes]:
+    """The zips of a listing of the first report alone, holding `rows`."""
+    return {(_TW_ELECTION, _TW_AREA, 1): _tw_zip(_tw_csv(list(rows)))}
+
+
+#: Two reports of one election: a donor in both, one padded with
+#: spaces, a business, an anonymous gift, and donations naming no one.
+#: The first report is the newer file, so the data date is not simply
+#: the last report's.
+_TW_ZIPS = {
+    (_TW_ELECTION, _TW_AREA, 1): _tw_zip(_tw_csv([
+        _tw_row("個人捐贈收入", "王小明"), _tw_row("個人捐贈收入", " 陳大文 "),
+        _tw_row("營利事業捐贈收入", "某某股份有限公司"), _tw_row("匿名捐贈", "匿名"),
+        _tw_row("個人捐贈收入", " ")]), date=(2024, 3, 1, 9, 0, 0)),
+    (_TW_ELECTION, _TW_AREA, 2): _tw_zip(_tw_csv([
+        _tw_row("個人捐贈收入", "王小明", _RESIDUAL), _tw_row("個人捐贈收入", "林一二", _RESIDUAL),
+        _tw_row("個人捐贈收入", "匿名", _RESIDUAL), _tw_row("個人捐贈收入", "-", _RESIDUAL)])),
+}
+_TW_LISTING = [_tw_report(1), _tw_report(2)]
+
+TwAnswer = Exception | bytes
+
+
+def _serve_tw(monkeypatch: pytest.MonkeyPatch, *,
+              listings: list[list[dict[str, Any]]] | None = None,
+              zips: dict[tuple[str, str, int], bytes] | None = None,
+              counted: int | None = None,
+              fail: Callable[[str], TwAnswer | None] = lambda url: None) -> list[str]:
+    """Answer the listing from `listings` in turn (the last one again
+    once they run out), paged by page and pageSize and counted as
+    `counted` (their length when None), and each download from `zips` by
+    its election, area and serial. `fail` may answer a URL instead. The
+    URLs asked."""
+    monkeypatch.setattr(time, "sleep", lambda s: None)
+    listings = listings or [_TW_LISTING]
+    zips = _TW_ZIPS if zips is None else zips
+    asked: list[str] = []
+    turn = iter(listings)
+    current: list[dict[str, Any]] = []
+
+    def urlopen(request: urllib.request.Request, timeout: int) -> _Response:
+        url = request.full_url
+        asked.append(url)
+        if (answer := fail(url)) is not None:
+            if isinstance(answer, Exception):
+                raise answer
+            return _Response(answer)
+        query = {k: v[0] for k, v in urllib.parse.parse_qs(
+            urllib.parse.urlsplit(url).query, keep_blank_values=True).items()}
+        if "/search/elections" in url:
+            if query["page"] == "1":
+                current[:] = next(turn, current)
+            size, page = int(query["pageSize"]), int(query["page"])
+            body: Any = {"paging": {"recordCount": len(current) if counted is None
+                                    else counted},
+                         "data": current[(page - 1) * size:page * size]}
+            return _Response(json.dumps(body).encode())
+        return _Response(zips[(query["ElectionName"], query["ElectionArea"],
+                               int(query["YearOrSerial"]))])
+    monkeypatch.setattr(urllib.request, "urlopen", urlopen)
+    return asked
+
+
+def _tw_downloads(monkeypatch: pytest.MonkeyPatch,
+                  listings: list[list[dict[str, Any]]] | None = None,
+                  zips: dict[tuple[str, str, int], bytes] | None = None) -> list[str]:
+    """Fetch over _serve_tw; the serial of each report downloaded."""
+    asked = _serve_tw(monkeypatch, listings=listings, zips=zips)
+    local.fetch(_TW)
+    return _tw_serials(asked)
+
+
+def _tw_serials(asked: list[str]) -> list[str]:
+    return [urllib.parse.parse_qs(urllib.parse.urlsplit(u).query)["YearOrSerial"][0]
+            for u in asked if "/Search/download" in u]
+
+
+def _tw_cache(tmp_path: Path) -> Path:
+    return tmp_path / "local" / _TW / "reports"
+
+
+@pytest.fixture
+def _tw_home(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    return tmp_path
+
+
+def test_a_tw_fetch_keeps_each_donor_s_name_once_and_counts_the_rest(
+        monkeypatch: pytest.MonkeyPatch, _tw_home: Path) -> None:
+    _serve_tw(monkeypatch)
+    corpus = local.fetch(_TW)
+    assert corpus.records == [{"name": "林一二"}, {"name": "王小明"}, {"name": "陳大文"}]
+    assert corpus.meta["data_date"] == "2024-03-01T09:00:00"  # the newer file's
+    assert corpus.meta["detail"] == {
+        "reports": 2, "first_reports": 1, "elections": 1, "rows": 9,
+        "individual_donations": 7, "rows_from_other_categories": 2,
+        "donations_without_a_name": 3, "donations_naming_a_masked_donor": 0,
+        "rows_of_a_report_with_no_income": 0, "records_cut_back_into_their_lines": 0,
+        "rows_not_as_long_as_the_header": 0, "rows_without_a_category": 0,
+        "rows_cut_by_a_stray_quote": 0}
+    assert corpus.header().startswith("Control Yuan political donation reports")
+    assert "Open Government Data License, version 1.0" in corpus.header()
+    assert corpus.header().endswith("3 names (local corpus tw-donors)")
+
+
+def test_a_tw_fetch_keeps_only_the_donor_column(
+        monkeypatch: pytest.MonkeyPatch, _tw_home: Path) -> None:
+    _serve_tw(monkeypatch)
+    local.fetch(_TW)
+    for name in ("raw.jsonl", "corpus.jsonl", "meta.json"):
+        text = (_tw_home / "local" / _TW / name).read_text(encoding="utf-8")
+        assert not [field for field in _TW_PRIVATE if field in text], name
+
+
+def test_a_tw_fetch_asks_for_each_listed_report_s_zip(
+        monkeypatch: pytest.MonkeyPatch, _tw_home: Path) -> None:
+    asked = _serve_tw(monkeypatch)
+    local.fetch(_TW)
+    downloads = [urllib.parse.parse_qs(urllib.parse.urlsplit(u).query,
+                                       keep_blank_values=True)
+                 for u in asked if "/Search/download" in u]
+    assert [(d["ElectionName"], d["ElectionArea"], d["YearOrSerial"], d["DownloadType"])
+            for d in downloads] == [([_TW_ELECTION], [_TW_AREA], [s], ["3"])
+                                    for s in ("1", "2")]
+
+
+def test_a_tw_fetch_pauses_after_each_download(
+        monkeypatch: pytest.MonkeyPatch, _tw_home: Path) -> None:
+    sleeps: list[float] = []
+    _serve_tw(monkeypatch)
+    monkeypatch.setattr(time, "sleep", sleeps.append)
+    local.fetch(_TW)
+    assert sleeps.count(local.TW_DELAY) == 2 and local.TW_DELAY >= 1
+
+
+def test_a_tw_listing_of_several_pages_is_read_whole(
+        monkeypatch: pytest.MonkeyPatch, _tw_home: Path) -> None:
+    monkeypatch.setattr(local, "TW_PAGE", 1)
+    _serve_tw(monkeypatch)
+    assert local.fetch(_TW).meta["detail"]["reports"] == 2
+
+
+@pytest.mark.timeout(30)  # a listing loop that never stops hangs, not fails
+@pytest.mark.parametrize(("listing", "counted", "match"), [
+    (_TW_LISTING[:1], 2, "listed 1 reports of the 2"),
+    ([_TW_LISTING[0], _TW_LISTING[0]], None, "listed twice"),
+    ([_TW_LISTING[0], {**_TW_LISTING[1], "zipFileName": _TW_LISTING[0]["zipFileName"]}],
+     None, "zip name .* another report has"),
+    ([{**_TW_LISTING[0], "type": "Party"}], None, "type 'Party'"),
+    ([{**_TW_LISTING[0], "yearOrSerial": 7.0}], None, "serial 7.0"),
+], ids=["cut short", "a report twice", "two reports one zip", "not an election's",
+        "an unknown serial"])
+def test_a_tw_listing_that_cannot_be_trusted_is_refused(
+        monkeypatch: pytest.MonkeyPatch, _tw_home: Path,
+        listing: list[dict[str, Any]], counted: int | None, match: str) -> None:
+    _serve_tw(monkeypatch, listings=[listing], counted=counted)
+    with pytest.raises(ValueError, match=match):
+        local.fetch(_TW)
+    assert local.load(_TW) is None
+
+
+@pytest.mark.parametrize("changed", [
+    [*_TW_LISTING, _tw_report(1, area="新北市")],
+    [_TW_LISTING[0], _tw_report(2, version="113010100")],
+    _TW_LISTING[:1],
+], ids=["a report published", "a report replaced", "a report withdrawn"])
+def test_a_tw_fetch_whose_listing_moves_under_it_is_refused(
+        monkeypatch: pytest.MonkeyPatch, _tw_home: Path,
+        changed: list[dict[str, Any]]) -> None:
+    _serve_tw(monkeypatch, listings=[_TW_LISTING, changed])
+    with pytest.raises(ValueError, match="published, replaced or withdrew a report"):
+        local.fetch(_TW)
+    assert local.load(_TW) is None
+
+
+_TW_RENAMED = tuple("捐贈者" if c == "捐贈者／支出對象" else c for c in local.TW_HEADER)
+#: A column inserted before the category's, the last dropped: 25
+#: columns, and the donor column now holding the category.
+_TW_SHIFTED = (*local.TW_HEADER[:5], "新欄位", *local.TW_HEADER[5:24])
+#: The category column named twice, in place of a column not read.
+_TW_TWICE = tuple("收支科目" if c == "地址" else c for c in local.TW_HEADER)
+
+
+@pytest.mark.parametrize(("incomes", "match"), [
+    (_tw_csv([_tw_row("個人捐贈收入", "王小明")], header=_TW_RENAMED), "has the header"),
+    (_tw_csv([_tw_row("個人捐贈收入", "王小明")], header=_TW_SHIFTED), "has the header"),
+    (_tw_csv([_tw_row("個人捐贈收入", "王小明")], header=_TW_TWICE), "has the header"),
+    (_tw_csv([_tw_row("個人捐贈收入", "王小明")], header=local.TW_HEADER[:5]),
+     "has the header"),
+    (_tw_csv([_tw_row("政治團體捐贈收入", "王小明")]), "the category '政治團體捐贈收入'"),
+    (_tw_csv([_tw_row("個人捐贈收入", "王小明")]).decode("utf-8-sig").encode("big5"),
+     "is not UTF-8"),
+], ids=["a column renamed", "a column inserted", "a column twice",
+        "a needed column missing", "an unknown category", "Big5"])
+def test_a_tw_report_whose_layout_has_changed_is_refused(
+        monkeypatch: pytest.MonkeyPatch, _tw_home: Path, incomes: bytes, match: str) -> None:
+    _serve_tw(monkeypatch, listings=[_TW_LISTING[:1]],
+              zips={(_TW_ELECTION, _TW_AREA, 1): _tw_zip(incomes)})
+    with pytest.raises(ValueError, match=match):
+        local.fetch(_TW)
+    assert local.load(_TW) is None
+
+
+@pytest.mark.parametrize("serial", [_FIRST, "第一次賸餘", _RESIDUAL])
+def test_a_tw_zip_of_another_report_is_refused(
+        monkeypatch: pytest.MonkeyPatch, _tw_home: Path, serial: str) -> None:
+    # A server answering a residual report with the first report's zip,
+    # or the reverse, would merge one report's donors into another's.
+    listing = [_tw_report(3)]
+    zips = {(_TW_ELECTION, _TW_AREA, 3): _tw_zip(_tw_csv([
+        _tw_row("個人捐贈收入", "王小明", serial)]))}
+    _serve_tw(monkeypatch, listings=[listing], zips=dict(zips))
+    with pytest.raises(ValueError, match="the zip is another report's"):
+        local.fetch(_TW)
+    assert not _tw_cache(_tw_home).exists()  # so a later fetch asks again
+    # Its own serial, in either numerals, is read.
+    for version, own in (("113010101", "第2次賸餘"), ("113010102", "第二次賸餘")):
+        zips[(_TW_ELECTION, _TW_AREA, 3)] = _tw_zip(_tw_csv([
+            _tw_row("個人捐贈收入", "王小明", own)]))
+        listing[0] = _tw_report(3, version=version)
+        assert _tw_downloads(monkeypatch, listings=[listing], zips=zips) == ["3"], own
+
+
+def test_a_tw_report_missing_a_column_it_does_not_read_is_read_by_name(
+        monkeypatch: pytest.MonkeyPatch, _tw_home: Path) -> None:
+    # A 2020 by-election's report had no 更正註記, which a check of the
+    # header against all 25 columns found on 2026-10-22; the column
+    # after it moved up one, so a reader indexing TW_HEADER reads the
+    # wrong one. The test reverses the header to move every column.
+    header = tuple(reversed([c for c in local.TW_HEADER if c != "更正註記"]))
+    row = dict(zip(local.TW_HEADER, _tw_row("個人捐贈收入", "王小明")))
+    zips = {(_TW_ELECTION, _TW_AREA, 1): _tw_zip(_tw_csv([[row[c] for c in header]],
+                                                         header=header))}
+    _serve_tw(monkeypatch, listings=[_TW_LISTING[:1]], zips=zips)
+    assert local.fetch(_TW).records == [{"name": "王小明"}]
+
+
+def test_a_tw_report_with_no_income_is_counted_and_read_past(
+        monkeypatch: pytest.MonkeyPatch, _tw_home: Path) -> None:
+    # Such a report writes one row, every column a dash but the
+    # candidate's, as a by-election's report did on 2026-10-22.
+    empty = ["-"] * 25
+    empty[1] = "候選人乙"
+    zips = {**_TW_ZIPS, (_TW_ELECTION, _TW_AREA, 2): _tw_zip(_tw_csv([empty]))}
+    _serve_tw(monkeypatch, zips=zips)
+    corpus = local.fetch(_TW)
+    assert corpus.records == [{"name": "王小明"}, {"name": "陳大文"}]
+    assert corpus.meta["detail"]["rows_of_a_report_with_no_income"] == 1
+    assert corpus.meta["detail"]["rows"] == 6
+
+
+def _dashed(**filled: str) -> list[str]:
+    """A row of dashes but the candidate's column and `filled`."""
+    row: dict[str, str] = {**dict.fromkeys(local.TW_HEADER, "-"),
+                           "擬參選人／政黨": "候選人乙", **filled}
+    return [row[c] for c in local.TW_HEADER]
+
+
+@pytest.mark.parametrize("row", [
+    _tw_row("-", "王小明"),
+    _dashed(收入金額="1000"),
+], ids=["a donor named", "an amount filled"])
+def test_a_tw_dash_category_in_a_row_that_is_not_empty_is_refused(
+        monkeypatch: pytest.MonkeyPatch, _tw_home: Path, row: list[str]) -> None:
+    _serve_tw(monkeypatch, listings=[_TW_LISTING[:1]], zips=_tw_first(row))
+    with pytest.raises(ValueError, match="the category '-'"):
+        local.fetch(_TW)
+
+
+@pytest.mark.parametrize(("bad", "key", "match"), [
+    (_tw_row("個人捐贈收入", "王小明", columns=24), "rows_not_as_long_as_the_header",
+     "1 of 2 rows are not as long as"),
+    (_tw_row("", "王小明"), "rows_without_a_category", "1 of 2 rows are without a category"),
+], ids=["short rows", "rows without a category"])
+def test_a_tw_fetch_with_too_many_bad_rows_is_refused(
+        monkeypatch: pytest.MonkeyPatch, _tw_home: Path,
+        bad: list[str], key: str, match: str) -> None:
+    # The share is the whole fetch's: one bad row of two is half, which
+    # the share for one report lets through.
+    _serve_tw(monkeypatch, listings=[_TW_LISTING[:1]],
+              zips=_tw_first(bad, _tw_row("個人捐贈收入", "陳大文")))
+    with pytest.raises(ValueError, match=match):
+        local.fetch(_TW)
+    monkeypatch.setattr(local, "TW_MAX_BAD", 1)  # under the share: counted
+    corpus = local.fetch(_TW)
+    assert corpus.records == [{"name": "陳大文"}]
+    assert corpus.meta["detail"][key] == 1
+
+
+def test_a_small_tw_report_whose_rows_are_all_bad_is_refused(
+        monkeypatch: pytest.MonkeyPatch, _tw_home: Path) -> None:
+    # Over the whole fetch its rows are a sliver; alone they are all of
+    # it, and a report whose donors all go must not pass for read.
+    big = [_tw_row("個人捐贈收入", f"王小{n}") for n in range(30)]
+    short = [_tw_row("個人捐贈收入", f"陳大{n}", _RESIDUAL, columns=24) for n in range(3)]
+    zips = {(_TW_ELECTION, _TW_AREA, 1): _tw_zip(_tw_csv(big)),
+            (_TW_ELECTION, _TW_AREA, 2): _tw_zip(_tw_csv(short))}
+    monkeypatch.setattr(local, "TW_MAX_BAD", 1)
+    _serve_tw(monkeypatch, zips=zips)
+    with pytest.raises(ValueError, match="3 of .* report 2's rows are read past"):
+        local.fetch(_TW)
+
+
+def _tw_incomes_text(lines: list[str]) -> bytes:
+    return ("\r\n".join([",".join(local.TW_HEADER), *lines]) + "\r\n").encode("utf-8-sig")
+
+
+def _line(donor: str, address: str = "臺北市", phone: str = "02") -> str:
+    row = _tw_row("個人捐贈收入", donor)
+    row[15], row[16] = address, phone
+    return ",".join(row)
+
+
+def test_rows_a_stray_quote_takes_in_are_read_back(
+        monkeypatch: pytest.MonkeyPatch, _tw_home: Path) -> None:
+    # An address opening with a quote nothing closes until a later row:
+    # the rows between, 169 in three reports on 2026-10-22, would go
+    # into one field and their donors with them.
+    lines = [_line("王小明", address='"臺北市'), _line("陳大文"), _line("林一二"),
+             _line("趙六", phone='02"')]
+    _serve_tw(monkeypatch, listings=[_TW_LISTING[:1]],
+              zips={(_TW_ELECTION, _TW_AREA, 1): _tw_zip(_tw_incomes_text(lines))})
+    corpus = local.fetch(_TW)  # every line whole with quotes taken literally
+    assert len(corpus.records) == 4
+    assert corpus.meta["detail"]["records_cut_back_into_their_lines"] == 1
+    assert corpus.meta["detail"]["rows_cut_by_a_stray_quote"] == 0
+    # A line between holding a quoted comma is no whole row read
+    # literally: the lines are read alone as quoted, the opening line cut.
+    lines[2] = _line("林一二", phone='"02,03"')
+    for cached in _tw_cache(_tw_home).iterdir():
+        cached.unlink()
+    _serve_tw(monkeypatch, listings=[_TW_LISTING[:1]],
+              zips={(_TW_ELECTION, _TW_AREA, 1): _tw_zip(_tw_incomes_text(lines))})
+    monkeypatch.setattr(local, "TW_MAX_BAD", 1)
+    corpus = local.fetch(_TW)
+    assert {"name": "陳大文"} in corpus.records and {"name": "林一二"} in corpus.records
+    assert corpus.meta["detail"]["rows_cut_by_a_stray_quote"] >= 1
+    monkeypatch.setattr(local, "TW_MAX_BAD", 1 / 10_000)
+    with pytest.raises(ValueError, match="rows are cut by a stray quote"):
+        local.fetch(_TW)
+
+
+def test_two_stray_quotes_one_row_after_another_lose_neither_row(
+        monkeypatch: pytest.MonkeyPatch, _tw_home: Path) -> None:
+    # The second quote closes the first: one record as wide as the
+    # header out of two rows, which no line read alone as quoted shows.
+    lines = [_line("王小明", address='"臺北市'), _line("陳大文", address='"臺南市'),
+             _line("林一二")]
+    _serve_tw(monkeypatch, listings=[_TW_LISTING[:1]],
+              zips={(_TW_ELECTION, _TW_AREA, 1): _tw_zip(_tw_incomes_text(lines))})
+    corpus = local.fetch(_TW)
+    assert corpus.records == [{"name": "林一二"}, {"name": "王小明"}, {"name": "陳大文"}]
+    assert corpus.meta["detail"]["records_cut_back_into_their_lines"] == 1
+
+
+@pytest.mark.parametrize("ending", ["\r", "\r\n", "\n"], ids=["CR", "CRLF", "LF"])
+def test_a_bare_cr_ends_a_line_as_csv_reads_one(
+        monkeypatch: pytest.MonkeyPatch, _tw_home: Path, ending: str) -> None:
+    # A stray CR in a cell cuts its row in two short rows, counted, as
+    # csv.reader over a file opened with newline="" reads it, and a file
+    # whose lines end in CR alone reads whole.
+    text = ending.join([",".join(local.TW_HEADER), _line("王小明"),
+                        _line("陳大文", address="臺北\r市"), _line("林一二")]) + ending
+    _serve_tw(monkeypatch, listings=[_TW_LISTING[:1]],
+              zips={(_TW_ELECTION, _TW_AREA, 1): _tw_zip(text.encode("utf-8-sig"))})
+    monkeypatch.setattr(local, "TW_MAX_BAD", 1)
+    corpus = local.fetch(_TW)
+    assert corpus.records == [{"name": "林一二"}, {"name": "王小明"}]
+    assert corpus.meta["detail"]["rows_not_as_long_as_the_header"] == 2
+
+
+def test_a_tw_file_csv_cannot_read_is_refused_naming_the_report(
+        monkeypatch: pytest.MonkeyPatch, _tw_home: Path) -> None:
+    huge = _line("王小明", address='"' + "x" * 200_000)  # past csv's field limit
+    text = f"{','.join(local.TW_HEADER)}\r\n{huge}\r\n"
+    _serve_tw(monkeypatch, listings=[_TW_LISTING[:1]],
+              zips={(_TW_ELECTION, _TW_AREA, 1): _tw_zip(text.encode("utf-8-sig"))})
+    with pytest.raises(ValueError, match="report 1's incomes.csv is not a CSV file"):
+        local.fetch(_TW)
+
+
+def test_a_quoted_field_spanning_two_lines_stays_one_row(
+        monkeypatch: pytest.MonkeyPatch, _tw_home: Path) -> None:
+    # A quoted field that truly spans lines, its second line no row
+    # (none was found on 2026-10-22: all 12 multi-line records were
+    # rows a stray quote joined).
+    lines = [_line("王小明", phone='"02\r\n09"'), _line("陳大文")]
+    _serve_tw(monkeypatch, listings=[_TW_LISTING[:1]],
+              zips={(_TW_ELECTION, _TW_AREA, 1): _tw_zip(_tw_incomes_text(lines))})
+    corpus = local.fetch(_TW)
+    assert corpus.records == [{"name": "王小明"}, {"name": "陳大文"}]
+    assert corpus.meta["detail"]["records_cut_back_into_their_lines"] == 0
+
+
+def test_a_masked_donor_name_is_counted_and_refused_past_the_share(
+        monkeypatch: pytest.MonkeyPatch, _tw_home: Path) -> None:
+    # A platform that began masking names as it masks IDs would fill the
+    # corpus with masked ones.
+    _serve_tw(monkeypatch, listings=[_TW_LISTING[:1]], zips=_tw_first(
+        _tw_row("個人捐贈收入", "王*明"), _tw_row("個人捐贈收入", "陳大文")))
+    with pytest.raises(ValueError, match="1 of 2 individual donations name a "
+                                         "masked donor"):
+        local.fetch(_TW)
+    monkeypatch.setattr(local, "TW_MAX_BAD", 1)
+    corpus = local.fetch(_TW)
+    assert corpus.records == [{"name": "陳大文"}]
+    assert corpus.meta["detail"]["donations_naming_a_masked_donor"] == 1
+
+
+def test_a_tw_zip_with_no_incomes_file_is_refused_and_not_cached(
+        monkeypatch: pytest.MonkeyPatch, _tw_home: Path) -> None:
+    asked = _serve_tw(monkeypatch, listings=[_TW_LISTING[:1]],
+                      zips={(_TW_ELECTION, _TW_AREA, 1): _tw_zip(None)})
+    with pytest.raises(ValueError, match="holds no incomes.csv"):
+        local.fetch(_TW)
+    assert _tw_serials(asked) == ["1"]  # not retried
+    assert not list(_tw_cache(_tw_home).glob("*.zip"))  # nor kept to refuse again
+
+
+def _corrupt(body: bytes) -> bytes:
+    """`body` with a byte of its deflated member flipped."""
+    at = body.index(b"incomes.csv") + 40
+    return body[:at] + bytes([body[at] ^ 0xFF]) + body[at + 1:]
+
+
+@pytest.mark.parametrize("damage", [lambda b: b[:-30], _corrupt],
+                         ids=["cut short", "a member that does not inflate"])
+def test_a_damaged_tw_zip_is_fetched_again(
+        monkeypatch: pytest.MonkeyPatch, _tw_home: Path,
+        damage: Callable[[bytes], bytes]) -> None:
+    bad = [damage(_TW_ZIPS[(_TW_ELECTION, _TW_AREA, 1)])]
+    asked = _serve_tw(monkeypatch, fail=lambda url: bad.pop()
+                      if "/Search/download" in url and bad else None)
+    assert len(local.fetch(_TW).records) == 3
+    assert _tw_serials(asked) == ["1", "1", "2"]
+
+
+def test_a_listed_tw_report_that_keeps_failing_is_raised(
+        monkeypatch: pytest.MonkeyPatch, _tw_home: Path) -> None:
+    # The platform answers a fault with the 500 it gives a report that
+    # does not exist; the listing says this one does, so it is no absence.
+    asked = _serve_tw(monkeypatch, fail=lambda url: _http_error(500)
+                      if "/Search/download" in url else None)
+    with pytest.raises(urllib.error.HTTPError) as raised:
+        local.fetch(_TW)
+    raised.value.close()
+    assert len(_tw_serials(asked)) == local.CTGOV_RETRIES
+    assert local.load(_TW) is None
+
+
+def test_a_tw_refetch_downloads_only_the_reports_rebuilt_since(
+        monkeypatch: pytest.MonkeyPatch, _tw_home: Path) -> None:
+    # A refresh would otherwise download every listed report again.
+    assert _tw_downloads(monkeypatch) == ["1", "2"]
+    assert _tw_downloads(monkeypatch) == []
+    rebuilt = [_TW_LISTING[0], _tw_report(2, version="113010100")]
+    zips = {**_TW_ZIPS, (_TW_ELECTION, _TW_AREA, 2): _tw_zip(_tw_csv([
+        _tw_row("個人捐贈收入", "趙六", _RESIDUAL)]))}
+    assert _tw_downloads(monkeypatch, listings=[rebuilt], zips=zips) == ["2"]
+    assert sorted(p.name for p in _tw_cache(_tw_home).iterdir()) == [
+        "election-112091204-1-63000.zip", "election-113010100-2-63000.zip"]
+    corpus = local.load(_TW)
+    assert corpus is not None and {"name": "趙六"} in corpus.records
+
+
+def test_a_refused_tw_fetch_keeps_its_zips_and_goes_on_where_it_stopped(
+        monkeypatch: pytest.MonkeyPatch, _tw_home: Path) -> None:
+    stale = _tw_cache(_tw_home) / "election-100000000-1-63000.zip"
+    stale.parent.mkdir(parents=True)
+    stale.write_bytes(b"a report the listing no longer names")
+    asked = _serve_tw(monkeypatch, fail=lambda url: _http_error(500)
+                      if "YearOrSerial=2" in url else None)
+    with pytest.raises(urllib.error.HTTPError) as raised:
+        local.fetch(_TW)
+    raised.value.close()
+    assert stale.exists()  # deleted only by a fetch that passes its checks
+    assert _tw_serials(asked)[0] == "1"
+    assert _tw_downloads(monkeypatch) == ["2"]
+    assert not stale.exists()
+
+
+def test_a_tw_refresh_rebuilds_the_corpus_from_the_cached_zips(
+        monkeypatch: pytest.MonkeyPatch, _tw_home: Path) -> None:
+    asked = _serve_tw(monkeypatch)
+    assert local.main(["fetch", _TW]) == 0
+    first = (_tw_home / "local" / _TW / "meta.json").read_bytes()
+    assert local.main(["fetch", _TW, "--refresh"]) == 0
+    assert _tw_serials(asked) == ["1", "2"]  # each downloaded once
+    assert sum("/search/elections" in u for u in asked) == 4  # listed again
+    corpus = local.load(_TW)
+    assert corpus is not None and len(corpus.records) == 3
+    assert json.loads(first)["sha256"] == corpus.meta["sha256"]
+
+
+def test_a_cached_tw_zip_cut_short_is_downloaded_again(
+        monkeypatch: pytest.MonkeyPatch, _tw_home: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    _tw_downloads(monkeypatch)
+    cached = _tw_cache(_tw_home) / "election-112091204-1-63000.zip"
+    cached.write_bytes(cached.read_bytes()[:-30])
+    assert _tw_downloads(monkeypatch) == ["1"]
+    assert cached.read_bytes() == _TW_ZIPS[(_TW_ELECTION, _TW_AREA, 1)]
+    assert "downloading again a cached zip that is not whole" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("name", ["../meta.json", "a/b.zip", "", None])
+def test_a_tw_zip_name_that_is_no_file_name_is_refused(
+        monkeypatch: pytest.MonkeyPatch, _tw_home: Path, name: str | None) -> None:
+    # The name is the platform's, and the cache writes a file under it.
+    _serve_tw(monkeypatch, listings=[[{**_TW_LISTING[0], "zipFileName": name}]])
+    with pytest.raises(ValueError, match="no file name this tool caches"):
+        local.fetch(_TW)
+    assert not _tw_cache(_tw_home).exists()
+
+
 # -- UK Electoral Commission donations ---------------------------------------------
 
 _UKEC = "ukec-individuals"
