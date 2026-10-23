@@ -205,6 +205,7 @@ TITLES: frozenset[str] = frozenset({
     'classical',
     'clergyman',
     'clerk',
+    'cllr',
     'cmsaf',
     'cmsgt',
     'co-chair',
