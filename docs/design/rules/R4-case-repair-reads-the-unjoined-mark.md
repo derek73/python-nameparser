@@ -16,6 +16,10 @@
   "AHMAD IBN-ʿALĪ"            →  capitalized="Ahmad ibn-ʿAlī"
   "Ahmad al-ʿAbbas"           →  capitalized_forced="Ahmad al-ʿAbbas"
   "ʻIOLANI KAMAKA"            →  capitalized="ʻIolani Kamaka"
+  "LT.GOV. JOHN DOE"          →  capitalized="Lt.Gov. John Doe"
+  "lt.gov john doe"           →  capitalized="Lt.Gov John Doe"
+  "st.john smith"             →  capitalized="St.John Smith"
+  "J.Smith"                   →  capitalized_forced="J.Smith"
   "john 3rd smith"            →  capitalized="John 3rd Smith"  · boundary
   ```
 - **A vocabulary entry records casing as a mask** — its word's letters, each in the case it takes — and repair lays it over the word as the writer punctuated it, so the one entry for phd repairs phd to PhD and ph.d. to Ph.D.; the mask applies wherever the word stands, whatever the parse read it as. A run of two or more letters beside a full stop takes the mask's case letter by letter and is never an initial.
@@ -109,13 +113,6 @@
   ```
   "john smith p.h.d."         →  capitalized="John Smith P.H.D."
   ```
-- **An abbreviation's written ending** — two or more letters after a word's last full stop, with no full stop of their own — stays lowercase, as Italian writes Sig.ra and Dott.ssa; a single letter there is a run-together initial and a run closed by its own full stop is a word of its own, and each of those is written as one.
-  ```
-  "SIG.RA MARIA ROSSI"        →  capitalized="Sig.ra Maria Rossi"
-  "dott.ssa anna bianchi"     →  capitalized="Dott.ssa Anna Bianchi"
-  "garcía márquez, g.j"       →  capitalized="G.J García Márquez"  · boundary
-  "LT.GOV. JOHN DOE"          →  capitalized="Lt.Gov. John Doe"  · boundary
-  ```
 - **A word of the acronym or numeral class that parsed as an ordinary name word** repairs as that name word unless the exceptions map carries it (qc mp gives Qc MP, phd smith gives PhD Smith): those two classes read the role and the mask does not.
   ```
   "qc mp"                     →  capitalized="Qc MP"  · boundary
@@ -124,23 +121,13 @@
   "john smith, vi"            →  capitalized="Vi John Smith"  · boundary
   ```
 
-**Precedence:**
-
-- **A recorded casing and the acronym clause outrank an abbreviation's written ending**: the ending reads a word's shape, and a vocabulary entry or the suffix acronym vocabulary says how that word itself is written.
-  ```
-  "john smith m.sc"           →  capitalized="John Smith M.Sc"
-  "john smith m.ba"           →  capitalized="John Smith M.BA"
-  ```
-
 **Accepted:**
 
-- The written-ending clause reads shape alone, so it lowercases what follows a word's last full stop wherever no closing stop follows it, a joined name written without one included; and it leaves to the word clause a lowercase ending the writer did close, so a Latin degree written joined repairs as the same degree written spaced does. Each reading is the one 1.4.0 through 2.5.0 gave or the spaced spelling gives.
+- An abbreviation the vocabulary does not list, whose lowercase letters after its full stop are the word's own ending rather than a word, is written as two words: the shape that divides run-together initials and joined words cannot tell an ending from either, and only a listed casing can.
   ```
-  "lt.gov john doe"           →  capitalized="Lt.gov John Doe"  · boundary
-  "J.Smith"                   →  capitalized_forced="J.smith"  · boundary
+  "SIG.RA MARIA ROSSI"        →  capitalized="Sig.Ra Maria Rossi"  · boundary
   "dr.philol. laima berzina"  →  capitalized="Dr.Philol. Laima Berzina"  · boundary
   ```
-
 - A name written in one case whose hyphenated bare initials spell a connective pays for the hyphen clause — its interior letter is lowered as the connective though the writer meant an initial, where the same letters spaced keep their capitals. The hyphen is the writer's join, and reading the one shape both ways would need the case evidence a one-case name does not carry.
   ```
   "J-E-P DUPONT"              →  capitalized="J-e-P Dupont"  · boundary

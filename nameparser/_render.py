@@ -526,19 +526,13 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
 # the whole word gave 'J.r.r.' -- and "A word that opens with a
 # modifier letter that has no case" "takes its capital on the letter
 # after that mark" ('ʿalī' is 'ʿAlī'); "A digit is not passed over
-# that way" ('3rd' stays '3rd'). The Except clause is the last chunk:
-# "an abbreviation's written ending" stays lowercase ('Sig.ra',
-# 'Dott.ssa'), which is what str.capitalize() always gave it.
-# decisions/R4 (#838).
+# that way" ('3rd' stays '3rd'). decisions/R4 (#838).
 def _title_chunks(word: str) -> str:
     """`word` title-cased chunk by chunk between its full stops, each
     chunk from its first character that is not a modifier letter
     (category Lm). That category also holds the apostrophe 'ŉ'
     upper-cases into, so 'ʼNa' is a fixpoint of repair."""
-    chunks = [_title_chunk(chunk) for chunk in word.split(".")]
-    if len(chunks) > 1 and sum(c.isalpha() for c in chunks[-1]) > 1:
-        chunks[-1] = chunks[-1].lower()
-    return ".".join(chunks)
+    return ".".join(_title_chunk(chunk) for chunk in word.split("."))
 
 
 def _title_chunk(chunk: str) -> str:

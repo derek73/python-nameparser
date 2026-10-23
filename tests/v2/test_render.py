@@ -1168,7 +1168,7 @@ def test_a_lengthening_mask_is_not_a_fixpoint_under_a_second_forced_pass(
     first = parse("john a.ß smith").capitalized(lex, force=True)
     assert first.middle == "A.SS"
     second = first.capitalized(lex, force=True)
-    assert second.middle == "A.ss"
+    assert second.middle == "A.Ss"
     assert second.middle != first.middle
 
 
