@@ -524,7 +524,8 @@ def test_a_fec_corpus_of_another_cycle_is_refused_on_load(
 # -- TSE campaign donations ------------------------------------------------------
 
 _TSE = "tse-donors"
-#: An invented CPF, which must reach no file the fetch writes.
+#: An invented CPF, which must reach no file the fetch writes, whether
+#: in its own column or typed into a name.
 _CPF = "52998224725"
 _TSE_HEADER = (["DT_GERACAO", "AA_ELEICAO", "DS_ORIGEM_RECEITA", "NR_CPF_CNPJ_DOADOR",
                 "NM_DOADOR", "NM_DOADOR_RFB"] + [f"COL_{i}" for i in range(54)])
@@ -544,23 +545,38 @@ def _tse_csv(rows: list[list[str]], header: list[str] = _TSE_HEADER,
     return out.getvalue().encode(encoding)
 
 
+_PF = local.TSE_INDIVIDUALS
 #: 2022: one donor twice (once padded), a donor whose filed name is
 #: not the registry's, a person with no name, a party, a row cut short
-#: and a name holding cp1252's right quote. 2024: the first donor
-#: again, the same filed name beside another registry name, and a
-#: donor the registry has no name for.
+#: and a filed name holding cp1252's right quote. 2024: the first donor
+#: again, the same filed name beside another registry name, a donor the
+#: registry has no name for, a blank name, a registry name holding the
+#: right quote, and three numbers typed into a name: the CPF bare, the
+#: CPF formatted, and five digits in a registry name.
 _TSE_ROWS = {
-    "2022": [_tse_row(local.TSE_INDIVIDUALS, "ANA SOUZA", "ANA SOUZA"),
-             _tse_row(local.TSE_INDIVIDUALS, " ANA SOUZA ", "ANA SOUZA"),
-             _tse_row(local.TSE_INDIVIDUALS, "JOSE DA SILVA JR", "JOSÉ DA SILVA JUNIOR"),
-             _tse_row(local.TSE_INDIVIDUALS, "#NULO", "#NULO"),
+    "2022": [_tse_row(_PF, "ANA SOUZA", "ANA SOUZA"),
+             _tse_row(_PF, " ANA SOUZA ", "ANA SOUZA"),
+             _tse_row(_PF, "JOSE DA SILVA JR", "JOSÉ DA SILVA JUNIOR"),
+             _tse_row(_PF, "#NULO", "#NULO"),
              _tse_row(_PARTY, "PARTIDO DO EXEMPLO", "PARTIDO DO EXEMPLO"),
-             _tse_row(local.TSE_INDIVIDUALS, "RUI MOTA", "RUI MOTA", columns=59),
-             _tse_row(local.TSE_INDIVIDUALS, "LIA D’AVILA", "LIA D AVILA")],
-    "2024": [_tse_row(local.TSE_INDIVIDUALS, "ANA SOUZA", "ANA SOUZA"),
-             _tse_row(local.TSE_INDIVIDUALS, "ANA SOUZA", "ANA MARIA SOUZA"),
-             _tse_row(local.TSE_INDIVIDUALS, "BIA COSTA", "#NULO")],
+             _tse_row(_PF, "RUI MOTA", "RUI MOTA", columns=59),
+             _tse_row(_PF, "LIA D’AVILA", "LIA D AVILA")],
+    "2024": [_tse_row(_PF, "ANA SOUZA", "ANA SOUZA"),
+             _tse_row(_PF, "ANA SOUZA", "ANA MARIA SOUZA"),
+             _tse_row(_PF, "BIA COSTA", "#NULO"),
+             _tse_row(_PF, "   ", "EVA LOPES"),
+             _tse_row(_PF, "RUI DELIA", "RUI D’ELIA"),
+             _tse_row(_PF, f"DOADOR {_CPF}", "DOADOR"),
+             _tse_row(_PF, "ANA 529.982.247-25", "ANA"),
+             _tse_row(_PF, "CAIO REIS", "CAIO REIS 12345")],
 }
+_TSE_RECORDS = [
+    {"name": "ANA SOUZA", "registry": "ANA MARIA SOUZA"},
+    {"name": "ANA SOUZA", "registry": "ANA SOUZA"},
+    {"name": "BIA COSTA", "registry": ""},
+    {"name": "JOSE DA SILVA JR", "registry": "JOSÉ DA SILVA JUNIOR"},
+    {"name": "LIA D’AVILA", "registry": "LIA D AVILA"},
+    {"name": "RUI DELIA", "registry": "RUI D’ELIA"}]
 _TSE_STAMPS = {"2022": (2026, 10, 18, 18, 10, 28), "2024": (2026, 10, 22, 2, 28, 38)}
 
 
@@ -574,10 +590,14 @@ def _tse_zip(year: str, member: bytes | None = None,
     with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as archive:
         archive.writestr(zipfile.ZipInfo(f"receitas_candidatos_{year}_BA.csv",
                                          _TSE_STAMPS[year]),
-                         _tse_csv([_tse_row(local.TSE_INDIVIDUALS, "SO NO ESTADO", "")]))
+                         _tse_csv([_tse_row(_PF, "SO NO ESTADO", "")]))
         archive.writestr(zipfile.ZipInfo(name or f"receitas_candidatos_{year}_BRASIL.csv",
                                          _TSE_STAMPS[year]), member)
     return out.getvalue()
+
+
+def _url(year: str) -> str:
+    return str(local.TSE_URL.format(year=year))
 
 
 class _Answer:
@@ -590,29 +610,46 @@ class _Answer:
     def __exit__(self, *exc: object) -> None:
         return None
 
-    def read(self) -> bytes:
-        return self.body
+    def read(self, n: int = -1) -> bytes:
+        return self.body if n < 0 else self.body[:n]
 
 
 class _Cdn:
-    """The CDN: HEAD states each zip's length and ETag, and a Range
-    request with a matching If-Range is answered in part, any other
-    whole, as a server answers for a file replaced since the HEAD."""
+    """The CDN: HEAD states each zip's length, ETag and byte ranges, and
+    a Range request with a matching If-Range is answered in part with
+    its Content-Range, any other whole, as a server answers for a file
+    replaced since the HEAD."""
 
     def __init__(self, zips: dict[str, bytes]) -> None:
-        self.zips = {local.TSE_URL.format(year=y): body for y, body in zips.items()}
+        self.zips = {_url(y): body for y, body in zips.items()}
         self.etag = '"v1"'
         self.head: dict[str, str] | None = None  # headers replacing HEAD's
+        self.head_etag: str | None = None  # the ETag HEAD states, "" for none
+        self.last_modified = ""  # the Last-Modified HEAD states, if any
+        self.head_failures: list[Exception] = []  # raised by the next HEADs
         self.failures: list[Exception] = []  # raised by the next range requests
         self.short = 0  # range answers to cut a byte short
+        self.long = False  # range answers to send a byte past the range
+        self.content_range: str | None = None  # a Content-Range replacing the true one
+        self.replace_after: int | None = None  # range requests before a new ETag
         self.ranges = 0
 
     def urlopen(self, request: urllib.request.Request, timeout: int) -> _Answer:
         body = self.zips[request.full_url]
         if request.get_method() == "HEAD":
-            return _Answer(200, b"", self.head if self.head is not None else
-                           {"Content-Length": str(len(body)), "ETag": self.etag})
+            if self.head_failures:
+                raise self.head_failures.pop(0)
+            if self.head is not None:
+                return _Answer(200, b"", self.head)
+            etag = self.etag if self.head_etag is None else self.head_etag
+            return _Answer(200, b"", {"Content-Length": str(len(body)),
+                                      "Accept-Ranges": "bytes",
+                                      **({"ETag": etag} if etag else {}),
+                                      **({"Last-Modified": self.last_modified}
+                                         if self.last_modified else {})})
         self.ranges += 1
+        if self.replace_after is not None and self.ranges > self.replace_after:
+            self.etag = '"v2"'
         if self.failures:
             raise self.failures.pop(0)
         if request.get_header("If-range") != self.etag:
@@ -622,7 +659,10 @@ class _Cdn:
         if self.short:
             self.short -= 1
             part = part[:-1]
-        return _Answer(206, part, {})
+        if self.long:
+            part += b"!"
+        return _Answer(206, part, {"Content-Range": self.content_range
+                                   or f"bytes {start}-{end}/{len(body)}"})
 
 
 @pytest.fixture
@@ -630,32 +670,38 @@ def cdn(monkeypatch: pytest.MonkeyPatch) -> _Cdn:
     served = _Cdn({year: _tse_zip(year) for year in local.TSE_ELECTIONS})
     monkeypatch.setattr(urllib.request, "urlopen", served.urlopen)
     monkeypatch.setattr(local, "TSE_BLOCK", 256)  # many ranges, not one
-    monkeypatch.setattr(local, "TSE_MAX_BAD", 1)  # a fixture of 10 rows
+    # A fixture of 15 rows holds more of each kind of damage than the
+    # real file may: the tests of each limit set it back.
+    monkeypatch.setattr(local, "TSE_MAX_BAD", 1)
+    monkeypatch.setattr(local, "TSE_MAX_MISSING", 1)
     monkeypatch.setattr(time, "sleep", lambda s: None)
     return served
 
 
+def _serve_member(cdn: _Cdn, year: str, member: bytes) -> None:
+    cdn.zips[_url(year)] = _tse_zip(year, member)
+
+
 def test_a_tse_fetch_keeps_each_donor_s_pair_once_and_counts_the_rest(cdn: _Cdn) -> None:
     corpus = local.fetch(_TSE)
-    assert corpus.records == [
-        {"name": "ANA SOUZA", "registry": "ANA MARIA SOUZA"},
-        {"name": "ANA SOUZA", "registry": "ANA SOUZA"},
-        {"name": "BIA COSTA", "registry": ""},
-        {"name": "JOSE DA SILVA JR", "registry": "JOSÉ DA SILVA JUNIOR"},
-        {"name": "LIA D’AVILA", "registry": "LIA D AVILA"}]
-    assert corpus.meta["names"] == 4  # corpus.jsonl holds each filed name once
+    assert corpus.records == _TSE_RECORDS
+    assert corpus.meta["names"] == 5  # corpus.jsonl holds each filed name once
     assert corpus.meta["data_date"] == "2026-10-18T18:10:28 (2022), 2026-10-22T02:28:38 (2024)"
     assert corpus.meta["detail"] == {
         "elections": "2022 2024",
         "2022_rows": 7, "2022_rows_from_individuals": 5, "2022_new_records": 3,
-        "2022_rows_not_60_columns": 1, "2022_individuals_without_a_name": 1,
-        "2022_individuals_without_a_registry_name": 0, "2022_names_read_as_cp1252": 1,
-        "2024_rows": 3, "2024_rows_from_individuals": 3, "2024_new_records": 2,
-        "2024_rows_not_60_columns": 0, "2024_individuals_without_a_name": 0,
-        "2024_individuals_without_a_registry_name": 1, "2024_names_read_as_cp1252": 0,
-        "records_whose_name_differs_from_the_registry": 4}
+        "2022_rows_not_60_columns": 1, "2022_lines_folded_into_a_field": 0,
+        "2022_individuals_without_a_name": 1,
+        "2022_individuals_without_a_registry_name": 0,
+        "2022_individuals_whose_name_holds_a_number": 0, "2022_rows_read_as_cp1252": 1,
+        "2024_rows": 8, "2024_rows_from_individuals": 8, "2024_new_records": 3,
+        "2024_rows_not_60_columns": 0, "2024_lines_folded_into_a_field": 0,
+        "2024_individuals_without_a_name": 1,
+        "2024_individuals_without_a_registry_name": 1,
+        "2024_individuals_whose_name_holds_a_number": 3, "2024_rows_read_as_cp1252": 1,
+        "records_whose_name_differs_from_the_registry": 5}
     assert corpus.header().startswith("TSE (Tribunal Superior Eleitoral)")
-    assert corpus.header().endswith("5 names (local corpus tse-donors)")
+    assert corpus.header().endswith("6 name pairs (local corpus tse-donors)")
     assert cdn.ranges > 4  # read in ranges, not in one answer
 
 
@@ -664,10 +710,22 @@ def test_a_tse_fetch_writes_no_column_but_the_two_names(cdn: _Cdn) -> None:
     folder = local.directory(_TSE)
     for path in folder.iterdir():
         text = path.read_text(encoding="utf-8")
-        assert _CPF not in text and "COL_" not in text and "x\"" not in text, path.name
+        for leak in (_CPF, "529.982.247-25", "12345", "COL_", "x\""):
+            assert leak not in text, (path.name, leak)
     corpus = local.load(_TSE)
     assert corpus is not None
     assert {key for r in corpus.records for key in r} == {"name", "registry"}
+
+
+def test_a_tse_file_s_columns_are_found_by_name(cdn: _Cdn) -> None:
+    # The registry before the name and the origin last: read by position,
+    # the names would swap and every category would be unknown.
+    order = [0, 1, 5, 4] + list(range(6, 60)) + [3, 2]
+    for year in local.TSE_ELECTIONS:
+        _serve_member(cdn, year, _tse_csv([[row[i] for i in order] if len(row) == 60
+                                           else row for row in _TSE_ROWS[year]],
+                                          [_TSE_HEADER[i] for i in order]))
+    assert local.fetch(_TSE).records == _TSE_RECORDS
 
 
 @pytest.mark.parametrize(("header", "match"), [
@@ -677,8 +735,7 @@ def test_a_tse_fetch_writes_no_column_but_the_two_names(cdn: _Cdn) -> None:
 ], ids=["a column dropped", "a column renamed"])
 def test_a_tse_file_whose_header_has_changed_is_refused(
         cdn: _Cdn, header: list[str], match: str) -> None:
-    cdn.zips[local.TSE_URL.format(year="2024")] = _tse_zip(
-        "2024", _tse_csv(_TSE_ROWS["2024"], header))
+    _serve_member(cdn, "2024", _tse_csv(_TSE_ROWS["2024"], header))
     with pytest.raises(ValueError, match=match):
         local.fetch(_TSE)
     assert local.load(_TSE) is None
@@ -687,71 +744,139 @@ def test_a_tse_file_whose_header_has_changed_is_refused(
 @pytest.mark.parametrize(("member", "match"), [
     # The individuals' category renamed: read as one more category, the
     # election would have no individual donors.
-    (_tse_csv([_tse_row("Recursos de Pessoas Físicas", "ANA SOUZA", "ANA SOUZA")]),
+    (_tse_csv([_tse_row("Recursos de Pessoas Físicas", "ANA SOUZA", "ANA SOUZA")] * 10),
      "1 DS_ORIGEM_RECEITA value.*'Recursos de Pessoas Físicas'"),
     # The file written in UTF-8: físicas no longer spells the category.
-    (_tse_csv([_tse_row(local.TSE_INDIVIDUALS, "ANA SOUZA", "ANA SOUZA")],
-              encoding="utf-8"),
+    (_tse_csv([_tse_row(_PF, "ANA SOUZA", "ANA SOUZA")] * 10, encoding="utf-8"),
      "1 DS_ORIGEM_RECEITA value.*'Recursos de pessoas fÃ"),
 ], ids=["a category renamed", "the file in UTF-8"])
 def test_a_tse_file_whose_categories_have_changed_is_refused(
         cdn: _Cdn, member: bytes, match: str) -> None:
-    cdn.zips[local.TSE_URL.format(year="2022")] = _tse_zip("2022", member)
+    _serve_member(cdn, "2022", member)
     with pytest.raises(ValueError, match=match):
         local.fetch(_TSE)
 
 
-def test_a_tse_file_with_too_many_malformed_rows_is_refused(
-        cdn: _Cdn, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(local, "TSE_MAX_BAD", 1 / 10)  # 1 of 7 rows passes no longer
-    with pytest.raises(ValueError, match="1 of 7 rows .* are not 60 columns"):
+def test_a_tse_category_held_by_a_few_rows_is_not_quoted(cdn: _Cdn) -> None:
+    # A row misread into 60 columns can put a CPF where the origin was.
+    _serve_member(cdn, "2022", _tse_csv(
+        [_tse_row(_CPF, "ANA SOUZA", "ANA SOUZA")] * 9 + [_tse_row(_PF, "ANA", "ANA")]))
+    with pytest.raises(ValueError, match="each in fewer than 10 rows") as raised:
         local.fetch(_TSE)
+    assert _CPF not in str(raised.value)
 
 
-def test_a_tse_zip_without_the_national_member_is_refused(cdn: _Cdn) -> None:
-    cdn.zips[local.TSE_URL.format(year="2022")] = _tse_zip(
-        "2022", name="receitas_candidatos_2022_BRASIL_v2.csv")
-    with pytest.raises(ValueError, match="holds no receitas_candidatos_2022_BRASIL.csv"):
-        local.fetch(_TSE)
-
-
-def test_a_tse_zip_replaced_during_the_read_is_refused(
-        cdn: _Cdn, monkeypatch: pytest.MonkeyPatch) -> None:
-    def replace_after_head(request: urllib.request.Request, timeout: int) -> _Answer:
-        answer = _Cdn.urlopen(cdn, request, timeout)
-        if request.get_method() == "HEAD" and "2024" in request.full_url:
-            cdn.etag = '"v2"'
-        return answer
-    monkeypatch.setattr(urllib.request, "urlopen", replace_after_head)
-    with pytest.raises(ValueError, match="2024.zip changed during the fetch .*HTTP 200"):
+@pytest.mark.parametrize(("rows", "match"), [
+    ([], "0 of 0 rows .* are from individuals"),
+    ([_tse_row("#NULO", "ANA SOUZA", "ANA SOUZA")] * 9 + [_tse_row(_PF, "ANA", "ANA")],
+     "1 of 10 rows .* are from individuals"),
+], ids=["the header alone", "the individuals moved to another category"])
+def test_a_tse_election_with_too_few_individuals_is_refused(
+        cdn: _Cdn, monkeypatch: pytest.MonkeyPatch,
+        rows: list[list[str]], match: str) -> None:
+    monkeypatch.setattr(local, "TSE_MIN_INDIVIDUALS", 0.11)  # 1 of 10 falls short
+    _serve_member(cdn, "2024", _tse_csv(rows))
+    with pytest.raises(ValueError, match=match):
         local.fetch(_TSE)
     assert local.load(_TSE) is None
 
 
-@pytest.mark.parametrize("head", [{"ETag": '"v1"'}, {"Content-Length": "100"}],
-                         ids=["no length", "no ETag"])
-def test_a_tse_zip_that_cannot_be_read_in_ranges_safely_is_refused(
-        cdn: _Cdn, head: dict[str, str]) -> None:
-    cdn.head = head
-    with pytest.raises(ValueError, match="states no length or no ETag"):
+@pytest.mark.parametrize(("name", "registry", "match"), [
+    ("#NULO", "ANA SOUZA", "carry no name"),
+    ("ANA SOUZA", "", "carry no registry name"),
+], ids=["names masked", "registry names masked"])
+def test_a_tse_election_whose_names_are_masked_is_refused(
+        cdn: _Cdn, monkeypatch: pytest.MonkeyPatch,
+        name: str, registry: str, match: str) -> None:
+    monkeypatch.setattr(local, "TSE_MAX_MISSING", 1 / 100)
+    _serve_member(cdn, "2022", _tse_csv([_tse_row(_PF, "ANA SOUZA", "ANA SOUZA")]))
+    _serve_member(cdn, "2024", _tse_csv([_tse_row(_PF, name, registry)]))
+    with pytest.raises(ValueError, match=f"1 of 1 individuals' rows .* {match}"):
         local.fetch(_TSE)
 
 
-def test_a_tse_zip_with_only_a_last_modified_date_is_read(
-        cdn: _Cdn, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(local, "TSE_ELECTIONS", ("2022",))
-    cdn.etag = "Tue, 18 Oct 2026 18:25:05 GMT"
-    cdn.head = {"Content-Length": str(len(cdn.zips[local.TSE_URL.format(year="2022")])),
-                "Last-Modified": cdn.etag}
-    assert len(local.fetch(_TSE).records) == 3
+@pytest.mark.parametrize(("member", "match"), [
+    (_tse_csv(_TSE_ROWS["2022"]), "1 rows not 60 columns in 7 rows"),
+    # A field holding a line break: two lines, one row.
+    (_tse_csv([_tse_row(_PF, "ANA\r\nSOUZA", "ANA SOUZA"), _tse_row(_PF, "BO", "BO")]),
+     "1 lines folded into another row's field in 2 rows"),
+], ids=["a row not 60 columns", "a line folded into a field"])
+def test_a_tse_file_with_too_many_malformed_lines_is_refused(
+        cdn: _Cdn, monkeypatch: pytest.MonkeyPatch, member: bytes, match: str) -> None:
+    monkeypatch.setattr(local, "TSE_MAX_BAD", 1 / 10)
+    _serve_member(cdn, "2022", member)
+    with pytest.raises(ValueError, match=match):
+        local.fetch(_TSE)
 
 
-def test_a_tse_range_cut_short_or_dropped_is_retried(
-        cdn: _Cdn, capsys: pytest.CaptureFixture[str]) -> None:
+def test_a_tse_zip_without_the_national_member_is_refused(cdn: _Cdn) -> None:
+    cdn.zips[_url("2022")] = _tse_zip("2022", name="receitas_candidatos_2022_BRASIL_v2.csv")
+    with pytest.raises(ValueError, match="holds no receitas_candidatos_2022_BRASIL.csv"):
+        local.fetch(_TSE)
+
+
+def test_a_tse_answer_that_is_not_a_zip_names_the_way_out(cdn: _Cdn) -> None:
+    cdn.zips[_url("2022")] = b"<html>" + b"x" * 494  # a CDN's error page
+    with pytest.raises(ValueError, match="2022.zip is not a readable zip.*fetch again"):
+        local.fetch(_TSE)
+
+
+@pytest.mark.parametrize("after", [0, 6], ids=["at the start", "inside the member"])
+def test_a_tse_zip_replaced_during_the_read_is_refused(cdn: _Cdn, after: int) -> None:
+    cdn.zips[_url("2022")] = _tse_zip("2022", _tse_csv(_TSE_ROWS["2022"] * 20))
+    cdn.replace_after = after
+    with pytest.raises(ValueError, match="2022.zip answered a range request whole "
+                                         r"\(HTTP 200\)"):
+        local.fetch(_TSE)
+    assert local.load(_TSE) is None
+
+
+@pytest.mark.parametrize(("content_range", "long"), [
+    ("bytes 0-9/10", False), (None, True)], ids=["another range", "a byte too many"])
+def test_a_tse_part_that_is_not_the_range_asked_for_is_refused(
+        cdn: _Cdn, content_range: str | None, long: bool) -> None:
+    cdn.content_range, cdn.long = content_range, long
+    with pytest.raises(ValueError, match=r"answered bytes \d+-\d+ of .*fetch again"):
+        local.fetch(_TSE)
+    assert cdn.ranges == 1  # refused, not retried
+
+
+@pytest.mark.parametrize("head", [
+    {"ETag": '"v1"', "Accept-Ranges": "bytes"},
+    {"Content-Length": "100", "Accept-Ranges": "bytes"},
+    {"Content-Length": "100", "ETag": 'W/"v1"'},
+    {"Content-Length": "100", "ETag": '"v1"', "Accept-Ranges": "none"},
+], ids=["no length", "no validator", "a weak ETag alone", "no byte ranges"])
+def test_a_tse_zip_that_cannot_be_read_in_ranges_safely_is_refused(
+        cdn: _Cdn, head: dict[str, str]) -> None:
+    cdn.head = head
+    with pytest.raises(ValueError, match="states no length, no strong ETag"):
+        local.fetch(_TSE)
+
+
+@pytest.mark.parametrize("etag", ["", 'W/"v1"'], ids=["no ETag", "a weak ETag"])
+def test_a_tse_zip_with_a_last_modified_date_is_read_by_it(cdn: _Cdn, etag: str) -> None:
+    cdn.etag = cdn.last_modified = "Tue, 18 Oct 2026 18:25:05 GMT"
+    cdn.head_etag = etag
+    assert local.fetch(_TSE).records == _TSE_RECORDS
+
+
+def test_a_tse_strong_etag_is_preferred_to_the_last_modified_date(cdn: _Cdn) -> None:
+    # The fake honours the ETag alone: If-Range sent with the date would
+    # be answered whole.
+    cdn.last_modified = "Tue, 18 Oct 2026 18:25:05 GMT"
+    assert local.fetch(_TSE).records == _TSE_RECORDS
+
+
+def test_a_tse_request_cut_short_or_dropped_is_retried(
+        cdn: _Cdn, monkeypatch: pytest.MonkeyPatch,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    monkeypatch.setattr(local, "CTGOV_RETRIES", 5)  # four failures on one range
     cdn.short = 1
-    cdn.failures = [urllib.error.URLError("reset"), _http_error(503)]
-    assert len(local.fetch(_TSE).records) == 5
-    assert capsys.readouterr().err.count("retrying in") == 3
+    cdn.head_failures = [urllib.error.URLError("reset")]
+    cdn.failures = [urllib.error.URLError("reset"), _http_error(503), _http_error(429)]
+    assert local.fetch(_TSE).records == _TSE_RECORDS
+    assert capsys.readouterr().err.count("retrying in") == 5
 
 
 def test_a_tse_range_refused_by_the_server_is_raised_at_once(cdn: _Cdn) -> None:
