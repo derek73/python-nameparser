@@ -81,6 +81,29 @@ class _Response:
         return self.body
 
 
+def own_cache(monkeypatch: pytest.MonkeyPatch,
+              tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """Point the tools' cache at a fresh scratch folder and return it:
+    what each local-corpus test module's autouse fixture does, so that a
+    test that forgets to set a cache, or a guard that stops keeping a
+    test's corpus out of it, writes there rather than into the
+    developer's real cache."""
+    path = tmp_path_factory.mktemp("cache")
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(path))
+    return path
+
+
+def plant_corpus(monkeypatch: pytest.MonkeyPatch, corpora: ModuleType, source: str,
+                 records: list[dict[str, str]], date: str, unit: str) -> None:
+    """`records` fetched as `source`'s local corpus into the cache, with no
+    network: through a Source carrying the real one's credit and nothing
+    else, so that none of the real source's renew or check applies."""
+    monkeypatch.setitem(corpora.SOURCES, source, corpora.Source(
+        corpora.SOURCES[source].credit, unit,
+        lambda: corpora.Fetched(list(records), date, {})))
+    corpora.fetch(source)
+
+
 def serve(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, body: bytes, *,
           requests: list[urllib.request.Request] | None = None,
           sleeps: list[float] | None = None) -> list[str]:

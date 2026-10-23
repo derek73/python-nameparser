@@ -17,7 +17,7 @@ import pytest
 
 from nameparser import Parser
 
-from ._differential_fixtures import load_tool
+from ._differential_fixtures import load_tool, own_cache, plant_corpus
 
 agreement = load_tool("local_agreement")
 corpora = agreement.local_corpora
@@ -28,10 +28,7 @@ _LISTED = agreement._title_words(Parser().lexicon)
 
 @pytest.fixture(autouse=True)
 def _own_cache(monkeypatch: pytest.MonkeyPatch, tmp_path_factory: pytest.TempPathFactory) -> Path:
-    """Every test's cache is its own, as in test_local_corpora.py."""
-    path = tmp_path_factory.mktemp("cache")
-    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(path))
-    return path
+    return own_cache(monkeypatch, tmp_path_factory)
 
 
 def _filed(title: str = "", forename: str = "", middle_name: str = "", surname: str = "",
@@ -99,10 +96,7 @@ def test_a_title_box_holding_an_unlisted_word_the_parse_reads_otherwise_is_set_a
 
 def _corpus(monkeypatch: pytest.MonkeyPatch, *records: dict[str, str]) -> None:
     """A PSC corpus of `records` fetched into the cache, no network behind it."""
-    monkeypatch.setitem(corpora.SOURCES, _PSC, corpora.Source(
-        corpora.SOURCES[_PSC].credit, "filed names",
-        lambda: corpora.Fetched(list(records), "2026-10-22", {})))
-    corpora.fetch(_PSC)
+    plant_corpus(monkeypatch, corpora, _PSC, list(records), "2026-10-22", "filed names")
 
 
 _ALL = (_AGREES, _DOUBLE_SURNAME, _SUFFIX, _JOB_TITLE, _SHAPE_TITLE)

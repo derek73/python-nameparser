@@ -31,7 +31,7 @@ from typing import Any
 
 import pytest
 
-from ._differential_fixtures import _Response, load_tool
+from ._differential_fixtures import _Response, load_tool, own_cache, plant_corpus
 
 local = load_tool("local_corpora")
 snapshot = load_tool("snapshot")
@@ -42,12 +42,7 @@ _DATE = "2026-10-21T09:00:05"
 
 @pytest.fixture(autouse=True)
 def _own_cache(monkeypatch: pytest.MonkeyPatch, tmp_path_factory: pytest.TempPathFactory) -> Path:
-    """Every test's cache is its own: a test that forgets to set one, or a
-    guard that stops keeping a test's corpus out of the cache, writes
-    into a scratch folder rather than the developer's real cache."""
-    path = tmp_path_factory.mktemp("cache")
-    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(path))
-    return path
+    return own_cache(monkeypatch, tmp_path_factory)
 
 
 def _study(nct: str, *officials: str) -> dict[str, Any]:
@@ -2326,10 +2321,7 @@ def _fetched(monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
     behind it; its folder."""
     monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
     records = [{"name": n} for n in names or ("Ann Lee, MD", "Bo Wu, PhD")]
-    monkeypatch.setitem(local.SOURCES, _SOURCE, local.Source(
-        local.SOURCES[_SOURCE].credit, "officials",
-        lambda: local.Fetched(records, date, {})))
-    local.fetch(_SOURCE)
+    plant_corpus(monkeypatch, local, _SOURCE, records, date, "officials")
     return _folder(tmp_path)
 
 

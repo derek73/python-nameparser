@@ -31,6 +31,8 @@ from typing import Any, Protocol
 
 import pytest
 
+from ._differential_fixtures import own_cache, plant_corpus
+
 _PATH = Path(__file__).parents[2] / "tools" / "name_usage.py"
 
 
@@ -90,7 +92,7 @@ def _no_locals(monkeypatch: pytest.MonkeyPatch,
                tmp_path_factory: pytest.TempPathFactory) -> None:
     # The cache too: a local corpus's word index is written there, and a
     # test's must never land in the developer's.
-    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path_factory.mktemp("cache")))
+    own_cache(monkeypatch, tmp_path_factory)
     monkeypatch.setattr(tool, "load_locals", lambda: [])
 
 
@@ -2258,10 +2260,8 @@ def test_records_damaged_after_the_index_was_cached_fail_their_own_row(
     # word then reads them first in the lookup, outside its guard.
     monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
     module = tool._local_corpora()
-    monkeypatch.setitem(module.SOURCES, "ctgov-officials", module.Source(
-        module.SOURCES["ctgov-officials"].credit, "officials",
-        lambda: module.Fetched([{"name": "Ann Lee, Ph. D."}], "2026-10-21", {})))
-    module.fetch("ctgov-officials")
+    plant_corpus(monkeypatch, module, "ctgov-officials", [{"name": "Ann Lee, Ph. D."}],
+                 "2026-10-21", "officials")
     _LOAD_LOCALS()  # builds and caches the index
     locals_ = [row for row in _LOAD_LOCALS() if row[0] == "ctgov-officials"]
     (tmp_path / "local" / "ctgov-officials" / "raw.jsonl").write_text("")
@@ -2277,10 +2277,8 @@ def test_a_damaged_local_corpus_fails_its_row_not_the_run(
     # KeyError, which _attempt does not catch, and took every row down.
     monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
     module = tool._local_corpora()
-    monkeypatch.setitem(module.SOURCES, "ctgov-officials", module.Source(
-        module.SOURCES["ctgov-officials"].credit, "officials",
-        lambda: module.Fetched([{"name": "Ann Lee, MD"}], "2026-10-21", {})))
-    module.fetch("ctgov-officials")
+    plant_corpus(monkeypatch, module, "ctgov-officials", [{"name": "Ann Lee, MD"}],
+                 "2026-10-21", "officials")
     folder = tmp_path / "local" / "ctgov-officials"
     meta = json.loads((folder / "meta.json").read_text())
     if damage == "meta key":
