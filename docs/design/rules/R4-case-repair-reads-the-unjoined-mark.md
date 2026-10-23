@@ -20,6 +20,9 @@
   "lt.gov john doe"           →  capitalized="Lt.Gov John Doe"
   "st.john smith"             →  capitalized="St.John Smith"
   "J.Smith"                   →  capitalized_forced="J.Smith"
+  "J.MCDONALD SMITH"          →  capitalized="J.McDonald Smith"
+  "m.ʿali smith"              →  capitalized="M.ʿAli Smith"
+  "É.J. DUPONT"               →  capitalized="É.J. Dupont"
   "john 3rd smith"            →  capitalized="John 3rd Smith"  · boundary
   ```
 - **A vocabulary entry records casing as a mask** — its word's letters, each in the case it takes — and repair lays it over the word as the writer punctuated it, so the one entry for phd repairs phd to PhD and ph.d. to Ph.D.; the mask applies wherever the word stands, whatever the parse read it as. A run of two or more letters beside a full stop takes the mask's case letter by letter and is never an initial.
@@ -116,14 +119,14 @@
 - **A word of the acronym or numeral class that parsed as an ordinary name word** repairs as that name word unless the exceptions map carries it (qc mp gives Qc MP, phd smith gives PhD Smith): those two classes read the role and the mask does not.
   ```
   "qc mp"                     →  capitalized="Qc MP"  · boundary
-  "Jack X.Y.Z."               →  capitalized_forced="Jack X.Y.Z."  · boundary
+  "Jack XY.ZW."               →  capitalized_forced="Jack Xy.Zw."  · boundary
   "john smith xi"             →  capitalized="John Smith Xi"  · boundary
   "john smith, vi"            →  capitalized="Vi John Smith"  · boundary
   ```
 
 **Accepted:**
 
-- An abbreviation the vocabulary does not list, whose lowercase letters after its full stop are the word's own ending rather than a word, is written as two words: the shape that divides run-together initials and joined words cannot tell an ending from either, and only a listed casing can.
+- An abbreviation the vocabulary does not list, whose letters after a full stop are the word's own ending rather than a word, is written as two words: the shape that divides run-together initials and joined words cannot tell an ending from either, and only a listed casing can.
   ```
   "SIG.RA MARIA ROSSI"        →  capitalized="Sig.Ra Maria Rossi"  · boundary
   "dr.philol. laima berzina"  →  capitalized="Dr.Philol. Laima Berzina"  · boundary

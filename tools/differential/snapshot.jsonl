@@ -1265,6 +1265,7 @@
 {"name": "J. née Smith", "given": "J.", "maiden": "Smith", "initials": "J."}
 {"name": "J. Ó. Pérez", "given": "J.", "middle": "Ó.", "family": "Pérez", "initials": "J. Ó. P."}
 {"name": "J.A. K.D.", "given": "J.A.", "family": "K.D.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. K."}
+{"name": "J.MCDONALD SMITH", "given": "J.MCDONALD", "family": "SMITH", "initials": "J. S.", "capitalized": "J.McDonald Smith"}
 {"name": "J.R. Smith", "given": "J.R.", "family": "Smith", "initials": "J. S."}
 {"name": "J.R.R. Tolkien", "given": "J.R.R.", "family": "Tolkien", "initials": "J. T."}
 {"name": "J.Smith", "given": "J.Smith", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "J."}
@@ -1315,6 +1316,7 @@
 {"name": "Jack Wei Ma", "given": "Jack", "middle": "Wei", "family": "Ma", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. W. M."}
 {"name": "Jack X.Y.I.", "given": "Jack", "family": "X.Y.I.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. X."}
 {"name": "Jack X.Y.Z.", "given": "Jack", "family": "X.Y.Z.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. X."}
+{"name": "Jack XY.ZW.", "given": "Jack", "family": "XY.ZW.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. X.", "capitalized_force": "Jack Xy.Zw."}
 {"name": "Jackson de Figueiredo", "given": "Jackson", "family": "de Figueiredo", "initials": "J. F."}
 {"name": "Jacobsen Christopher Hans", "order": "FAMILY_FIRST", "given": "Christopher", "middle": "Hans", "family": "Jacobsen", "initials": "C. H. J."}
 {"name": "Jacobsen, Christopher Hans", "given": "Christopher", "middle": "Hans", "family": "Jacobsen", "initials": "C. H. J."}
@@ -3537,6 +3539,7 @@
 {"name": "lt.gov john doe", "title": "lt.gov", "given": "john", "family": "doe", "initials": "j. d.", "capitalized": "Lt.Gov John Doe"}
 {"name": "m.d ph.d. Inger Marie Adele Synnøve von Wolf jr.", "given": "m.d", "middle": "ph.d. Inger Marie Adele Synnøve", "family": "von Wolf", "suffix": "jr.", "initials": "m. p. I. M. A. S. W.", "capitalized_force": "M.D Ph.D. Inger Marie Adele Synnøve von Wolf Jr."}
 {"name": "m.d ph.d. von Wolf Inger Marie Adele Synnøve", "order": "FAMILY_FIRST", "given": "ph.d.", "middle": "von Wolf Inger Marie Adele Synnøve", "family": "m.d", "initials": "p. W. I. M. A. S. m.", "capitalized_force": "Ph.D. von Wolf Inger Marie Adele Synnøve M.D"}
+{"name": "m.ʿali smith", "given": "m.ʿali", "family": "smith", "initials": "m. s.", "capitalized": "M.ʿAli Smith"}
 {"name": "mack johnson", "given": "mack", "family": "johnson", "initials": "m. j.", "capitalized": "Mack Johnson"}
 {"name": "maria da-silva", "given": "maria", "family": "da-silva", "initials": "m. d.", "capitalized": "Maria da-Silva"}
 {"name": "maria silva-e-sousa", "given": "maria", "family": "silva-e-sousa", "initials": "m. s.", "capitalized": "Maria Silva-e-Sousa"}
@@ -3687,6 +3690,7 @@
 {"name": "Ásmundur Sveinsson", "given": "Ásmundur", "family": "Sveinsson", "initials": "Á. S."}
 {"name": "Ásta Ragnheiður Jóhannesdóttir", "given": "Ásta", "middle": "Ragnheiður", "family": "Jóhannesdóttir", "initials": "Á. R. J."}
 {"name": "É née Smith", "family": "É", "maiden": "Smith", "initials": "É."}
+{"name": "É.J. DUPONT", "given": "É.J.", "family": "DUPONT", "initials": "É. D.", "capitalized": "É.J. Dupont"}
 {"name": "Étienne Lauréault de Foncemagne", "given": "Étienne", "middle": "Lauréault", "family": "de Foncemagne", "initials": "É. L. F."}
 {"name": "Íris Adólfsdóttir", "given": "Íris", "family": "Adólfsdóttir", "initials": "Í. A."}
 {"name": "Íris Adólfsdóttir", "order": "FAMILY_FIRST", "given": "Adólfsdóttir", "family": "Íris", "initials": "A. Í."}

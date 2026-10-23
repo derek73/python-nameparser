@@ -683,16 +683,38 @@ def test_capitalized_is_idempotent() -> None:
 
 def test_a_word_takes_its_capital_past_a_caseless_lead() -> None:
     """rules/R4 (#838): a modifier letter opening a word is passed over
-    to the letter after it, so 'ŉ', which upper-cases to the modifier
-    apostrophe plus 'N', is now a fixpoint ('ʼNa' gave 'ʼna' on a
-    second pass). An apostrophe of any spelling is no word character
-    at all, so a word after it was already capitalized and still is."""
+    to the letter after it, so 'ʼNa', the repair of 'ŉa' ('ŉ'
+    upper-cases to the modifier apostrophe plus 'N'), is a fixpoint.
+    An apostrophe written as ', ‘ or ’ is no word character at all, so
+    a word after it was already capitalized and still is: those rows
+    are parity pins, not controls."""
     once = parse("ŉa smith").capitalized()
     assert once.given == "ʼNa"
     assert once.capitalized(force=True) == once
+    # and inside the Mac/Mc prefix's name run, which the chunk step
+    # repairs too
+    mac = parse("mcŉa smith").capitalized()
+    assert mac.given == "McʼNa"
+    assert mac.capitalized(force=True) == mac
     for lead in ("'", "‘", "’"):
         assert parse(f"{lead}abd smith").capitalized().given \
             == f"{lead}Abd"
+
+
+def test_a_recorded_casing_keeps_an_abbreviations_ending() -> None:
+    """rules/R4's Accepted cost (#838): an unlisted abbreviation's
+    ending after its full stop is written as a word ('Sig.Ra'), and a
+    listed casing is the remedy, asked before the chunk split."""
+    lex = dataclasses.replace(
+        Lexicon.default(),
+        capitalization_exceptions=(
+            *Lexicon.default().capitalization_exceptions,
+            ("sigra", "Sigra")))
+    masked = Parser(lexicon=lex)
+    name = "SIG.RA MARIA ROSSI"
+    assert str(parse(name).capitalized()) == "Sig.Ra Maria Rossi"
+    assert str(masked.capitalized(masked.parse(name))) \
+        == "Sig.ra Maria Rossi"
 
 
 def test_capitalized_with_explicit_lexicon() -> None:
@@ -1162,7 +1184,8 @@ def test_a_lengthening_mask_is_not_a_fixpoint_under_a_second_forced_pass(
     which is a different letter sequence from the stored key 'a.ß' --
     not merely a different case of the same one -- so the exceptions
     map lookup that found the entry on the first pass misses on the
-    second, and the word falls through to plain title-casing."""
+    second, and the word falls through to plain title-casing, which
+    writes each full-stop chunk as a word ('A.Ss', #838)."""
     lex = dataclasses.replace(Lexicon.default(),
                               capitalization_exceptions=(("a.ß", "aß"),))
     first = parse("john a.ß smith").capitalized(lex, force=True)
