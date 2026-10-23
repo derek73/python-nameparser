@@ -187,10 +187,27 @@ def case_views(rendered: str, plain: str, forced: str) -> dict[str, str]:
     """The case views as a row records them: each only where it moves
     something -- capitalized() against the name as parsed, and
     capitalized(force=True) against capitalized() -- so a name the
-    repair leaves alone records nothing, and a role move that changes
-    no case moves no case view."""
+    repair leaves alone records nothing. A view is the whole repaired
+    name, so in a name repair does change, a role move that changes the
+    rendering moves the view too, with no word changing case."""
     return {"_capitalized": plain if plain != rendered else "",
             "_capitalized_force": forced if forced != plain else ""}
+
+
+def unrecorded_views(old: dict[tuple[str, str], dict[str, Any]],
+                     new: dict[tuple[str, str], dict[str, Any]]
+                     ) -> tuple[str, ...]:
+    """The case views `old` predates -- none of its rows carries one --
+    dropped from `new`'s rows in place, so a snapshot recorded before
+    #826 (v2.5.0's, or a local snapshot) does not report every name
+    the views reach as moved: 910 of the 961 entries `--since v2.5.0`
+    reported on 2026-10-22 were the keys appearing, not moves."""
+    if any(v in r for r in old.values() for v in CASE_VIEWS):
+        return ()
+    for r in new.values():
+        for v in CASE_VIEWS:
+            r.pop(v, None)
+    return CASE_VIEWS
 
 
 def facade_view(r: dict[str, Any]) -> dict[str, Any]:
@@ -389,6 +406,10 @@ def main(argv: list[str] | None = None) -> int:
     else:
         text = snapshot.read_text(encoding="utf-8")
     old, new = load(text), {key(r): r for r in rows}
+    if dropped := unrecorded_views(old, new):
+        print(f"not compared: {', '.join(dropped)} -- the snapshot read "
+              f"against records no case view (it predates #826); "
+              f"compare.py --baseline compares them\n")
     moves = grouped(old, new)
     print("\n".join(moves) or "matches the snapshot")
     if not moves:
