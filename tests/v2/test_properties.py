@@ -64,6 +64,18 @@ def test_capitalized_idempotent(text: str) -> None:
     assert once.capitalized() == once
 
 
+@given(st.text(alphabet=st.sampled_from("aAbBmcC.ʿʻŉ3 -'"), max_size=40))
+@settings(max_examples=200, deadline=None, derandomize=True)
+def test_capitalized_is_a_fixpoint_past_full_stops_and_modifiers(
+        text: str) -> None:
+    # _ALPHABET holds no modifier letter (Lm) and is shared, so this
+    # alphabet is its own: full stops, Lm leads, 'ŉ' and a Mac prefix,
+    # under both views (#838)
+    for force in (False, True):
+        once = parse(text).capitalized(force=force)
+        assert once.capitalized(force=force) == once
+
+
 @given(st.text(alphabet=_ALPHABET, max_size=100))
 @settings(max_examples=200, deadline=None, derandomize=True)
 def test_render_reparse_reaches_fixpoint(text: str) -> None:
