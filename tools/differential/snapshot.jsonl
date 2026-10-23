@@ -532,7 +532,6 @@
 {"name": "DOE, MARY JO MA", "given": "MARY", "middle": "JO", "family": "DOE", "suffix": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "M. J. D.", "capitalized": "Mary Jo Doe MA"}
 {"name": "DR DOE", "title": "DR", "family": "DOE", "initials": "D.", "capitalized": "Dr Doe"}
 {"name": "DR. NÉE JUAN y LOPEZ", "title": "DR.", "given": "NÉE", "family": "JUAN y LOPEZ", "initials": "N. J. L.", "capitalized_force": "Dr. Née Juan y Lopez"}
-{"name": "DUT.RA MARIA SILVA", "title": "DUT.RA", "given": "MARIA", "family": "SILVA", "initials": "M. S.", "capitalized": "Dut.Ra Maria Silva"}
 {"name": "Dale, Antonius van", "given": "Antonius", "family": "van Dale", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "A. D."}
 {"name": "Dalen, Cornelis van", "given": "Cornelis", "family": "van Dalen", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "C. D."}
 {"name": "Dame Mary", "title": "Dame", "given": "Mary", "initials": "M."}
@@ -2712,7 +2711,7 @@
 {"name": "S. V. D.", "given": "S.", "middle": "V.", "family": "D.", "initials": "S. V. D."}
 {"name": "SEÁN Ó MURCHÚ", "given": "SEÁN", "family": "Ó MURCHÚ", "initials": "S. M.", "capitalized": "Seán Ó Murchú"}
 {"name": "SHIRLEY MACLAINE", "given": "SHIRLEY", "family": "MACLAINE", "initials": "S. M.", "capitalized": "Shirley MacLaine"}
-{"name": "SIG.RA MARIA ROSSI", "title": "SIG.RA", "given": "MARIA", "family": "ROSSI", "initials": "M. R.", "capitalized": "Sig.ra Maria Rossi"}
+{"name": "SIG.RA MARIA ROSSI", "title": "SIG.RA", "given": "MARIA", "family": "ROSSI", "initials": "M. R.", "capitalized": "Sig.Ra Maria Rossi"}
 {"name": "SMITH VD MA, JOHN", "given": "JOHN", "family": "SMITH VD MA", "initials": "J. S. M.", "capitalized": "John Smith vd Ma"}
 {"name": "SMITH VD, JOHN", "given": "JOHN", "family": "SMITH", "suffix": "VD", "initials": "J. S.", "capitalized": "John Smith VD"}
 {"name": "SMITH, JOHN DO", "given": "JOHN", "family": "DO SMITH", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "J. S.", "capitalized": "John do Smith"}
@@ -3424,7 +3423,6 @@
 {"name": "doe, john ma", "given": "john", "family": "doe", "suffix": "ma", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "j. d.", "capitalized": "John Doe MA"}
 {"name": "donovan mcnabb-smith", "given": "donovan", "family": "mcnabb-smith", "initials": "d. m.", "capitalized": "Donovan McNabb-Smith"}
 {"name": "dos Santos", "family": "dos Santos", "initials": "S."}
-{"name": "dott.ssa anna bianchi", "title": "dott.ssa", "given": "anna", "family": "bianchi", "initials": "a. b.", "capitalized": "Dott.ssa Anna Bianchi"}
 {"name": "dr Slađana Vera Milenković dipl. inž.", "title": "dr", "given": "Slađana", "middle": "Vera Milenković dipl.", "family": "inž.", "initials": "S. V. M. d. i.", "capitalized_force": "Dr Slađana Vera Milenković Dipl. Inž."}
 {"name": "dr Vincent James van Gogh dr", "title": "dr", "given": "Vincent", "middle": "James", "family": "van Gogh dr", "initials": "V. J. G. d.", "capitalized_force": "Dr Vincent James van Gogh Dr"}
 {"name": "dr Vincent van Gogh dr", "title": "dr", "given": "Vincent", "family": "van Gogh dr", "initials": "V. G. d.", "capitalized_force": "Dr Vincent van Gogh Dr"}
@@ -3440,6 +3438,7 @@
 {"name": "dr. née juan y lopez", "title": "dr.", "given": "née", "middle": "juan y", "family": "lopez", "initials": "n. j. y. l.", "capitalized": "Dr. Née Juan Y Lopez"}
 {"name": "dr. p. Gabrielė Aldona Petraitytė", "title": "dr.", "given": "p.", "middle": "Gabrielė Aldona", "family": "Petraitytė", "initials": "p. G. A. P.", "capitalized_force": "Dr. P. Gabrielė Aldona Petraitytė"}
 {"name": "dr. sc. Branko Hrvoje Marić mlađi, prof.", "title": "dr. sc. prof.", "given": "Branko", "middle": "Hrvoje", "family": "Marić", "suffix": "mlađi", "initials": "B. H. M.", "capitalized_force": "Dr. Sc. Prof. Branko Hrvoje Marić Mlađi"}
+{"name": "dr.philol. laima berzina", "title": "dr.philol.", "given": "laima", "family": "berzina", "initials": "l. b.", "capitalized": "Dr.Philol. Laima Berzina"}
 {"name": "e and e", "given": "e and e", "ambiguities": ["CONJUNCTION_OR_INITIAL"], "initials": "e. e.", "capitalized": "E and E"}
 {"name": "e j smith", "given": "e", "middle": "j", "family": "smith", "ambiguities": ["CONJUNCTION_OR_INITIAL"], "initials": "e. j. s.", "capitalized": "E J Smith"}
 {"name": "émile zola", "given": "émile", "family": "zola", "initials": "é. z.", "capitalized": "Émile Zola"}

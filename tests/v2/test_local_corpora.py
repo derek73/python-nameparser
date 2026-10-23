@@ -2312,6 +2312,103 @@ def test_a_phrase_with_a_word_written_nowhere_scans_nothing(
     assert local.phrase_counts(corpus, ["md", "zz"]) == (0, 0)
 
 
+# -- pairs -------------------------------------------------------------------------
+
+#: One invented pair of each shape, in PAIR_SHAPES's order.
+_PAIRS = [
+    ("ANA SOUZA", "ANA SOUZA", "the same"),
+    ("ANA SOUZA", "", "no reference name"),
+    ("Ana Souza", "ANA SOUZA", "case only"),
+    ("JOSE LIMA", "JOSÉ LIMA", "accents only"),
+    ("ANA  SOUZA-LIMA", "ANA SOUZA LIMA", "punctuation or spacing only"),
+    ("SOUZA ANA", "ANA SOUZA", "the same words reordered"),
+    ("ANA SILVA", "ANA DA SILVA", "words left out"),
+    ("ANA DA SILVA", "ANA SILVA", "words added"),
+    ("ANA M SILVA", "ANA MARIA SILVA", "words shortened"),
+    ("ANA SOUSA", "ANA SOUZA", "words misspelled"),
+    ("ANA M SOUZA", "ANA MARIA DA SOUZA", "words left out and shortened"),
+    ("ANA SOUZA RIBEIRO", "ANA SOUZA CAMPOS", "mostly the same words"),
+    ("BIA COSTA", "ANA SOUZA", "few words in common"),
+]
+
+
+def test_each_pair_shape_has_a_pair() -> None:
+    assert [shape for _, _, shape in _PAIRS] == list(local.PAIR_SHAPES)
+
+
+@pytest.mark.parametrize(("filed", "reference", "shape"), _PAIRS,
+                         ids=[shape for _, _, shape in _PAIRS])
+def test_a_pair_takes_the_first_shape_it_fits(filed: str, reference: str, shape: str) -> None:
+    assert local.pair_shape(filed, reference) == shape
+
+
+@pytest.mark.parametrize(("filed", "reference", "shape"), [
+    # An accent and a word left out: not accents only.
+    ("JOSE SILVA", "JOSÉ DA SILVA", "words left out"),
+    # Two words misspelled is the most a misspelling takes.
+    ("ANA SOUSA RIBERO", "ANA SOUZA RIBEIRO", "words misspelled"),
+    # Three, and no word left in common.
+    ("ANNA SOUSA RIBERO", "ANA SOUZA RIBEIRO", "few words in common"),
+    # A word too unlike its counterpart is not a misspelling.
+    ("ANA SOUZA", "ANA SANTOS", "mostly the same words"),
+], ids=["accent and a word", "two misspelled", "three misspelled", "unlike"])
+def test_a_pair_s_shape_at_its_edges(filed: str, reference: str, shape: str) -> None:
+    assert local.pair_shape(filed, reference) == shape
+
+
+def _paired(*pairs: tuple[str, str]) -> object:
+    return local.Local("tse-donors", {"data_date": _DATE},
+                       [{"name": a, "registry": b} for a, b in pairs])
+
+
+def test_the_pairs_view_counts_shapes_and_the_words_left_out_and_added() -> None:
+    found = local.pair_counts(_paired(*[(a, b) for a, b, _ in _PAIRS],
+                                      ("BO WU", "BO DE WU"), ("CY LIMA", "CY DA LIMA")))
+    assert found.total == len(_PAIRS) + 2
+    assert found.shapes["words left out"] == 3
+    assert found.left_out == {"DA": 2, "DE": 1}
+    assert found.added == {"DA": 1}
+    assert found.agreement is None
+
+
+def test_the_pairs_view_lists_only_words_many_pairs_share() -> None:
+    # A word left out of nine pairs could be one family's: not listed.
+    found = local.pair_counts(_paired(*[("ANA SILVA", "ANA DA SILVA")] * 10,
+                                      *[("BO WU", "BO NOVAIS WU")] * 9))
+    report = local.format_pairs(found, top=15)
+    assert "words most often left out: DA 10" in report
+    assert "NOVAIS" not in report
+    assert "19 differing" in report and "words added" not in report
+
+
+def test_the_pairs_view_counts_the_pairs_whose_spellings_share_a_surname() -> None:
+    found = local.pair_counts(_paired(
+        ("ANA SILVA", "ANA DA SILVA"), ("ANA M SILVA", "ANA MARIA SILVA"),
+        ("PEDRO ALVES FH", "PEDRO ALVES FILHO"), ("ANA SOUZA", "ANA SOUZA")),
+        agreement=True)
+    # FH is too unlike FILHO to be its misspelling.
+    assert found.agreement == {"words left out": (1, 1), "words shortened": (1, 1),
+                               "mostly the same words": (0, 1)}
+    assert "(one surname in 0%)" in local.format_pairs(found, top=15)
+
+
+def test_the_pairs_view_refuses_a_source_with_no_reference_name(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    _fetched(monkeypatch, tmp_path)
+    with pytest.raises(SystemExit, match="carry no reference name"):
+        local.main(["pairs", _SOURCE])
+
+
+def test_the_pairs_command_reports_a_fetched_corpus(
+        cdn: _Cdn, capsys: pytest.CaptureFixture[str]) -> None:
+    local.fetch(_TSE)
+    capsys.readouterr()
+    assert local.main(["pairs", _TSE]) == 0
+    out = capsys.readouterr().out
+    assert out.startswith("TSE (Tribunal Superior Eleitoral)")
+    assert "6 pairs; 1 the same, 5 differing:" in out
+
+
 # -- snapshot.py --local -----------------------------------------------------------
 
 def test_snapshot_reads_a_local_corpus_against_its_own_snapshot(

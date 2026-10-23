@@ -1,16 +1,8 @@
 schema = 1
 
 [[word]]
-text = "sig"
-excluded = { salutation = { reason = "Sig is borne as a given name (US SSA 50+ male, Wikidata 11+ given, Norway and the United States; the FEC contributors write 'SMITH, SIG' 16 times), measured 2026-10-22 with tools/name_usage.py; with its period, 'Sig.' already reads as a title by its shape (rules/H2)", issue = 840 } }
-
-[[word]]
 text = "signora"
 salutation = { gender = "f" }
-
-[[word]]
-text = "sig.ra"
-salutation = { gender = "f", same_as = "signora", cased = "Sig.ra", issue = 840 }
 
 [[word]]
 text = "signore"
@@ -23,54 +15,6 @@ salutation = { gender = "m", same_as = "signore" }
 [[word]]
 text = "signorina"
 salutation = { gender = "f" }
-
-[[word]]
-text = "sig.na"
-salutation = { gender = "f", same_as = "signorina", cased = "Sig.na", issue = 840 }
-
-[[word]]
-text = "ch.ma"
-style = { gender = "f", expands = "chiarissima, as a letter addresses a university professor", cased = "Ch.ma", issue = 840 }
-
-[[word]]
-text = "ch.mo"
-style = { gender = "m", expands = "chiarissimo, as a letter addresses a university professor", cased = "Ch.mo", issue = 840 }
-
-[[word]]
-text = "gent.le"
-style = { expands = "gentile, the commonest heading of a letter", cased = "Gent.le", issue = 840 }
-
-[[word]]
-text = "gent.ma"
-style = { gender = "f", expands = "gentilissima, as a letter is headed", cased = "Gent.ma", issue = 840 }
-
-[[word]]
-text = "gent.mo"
-style = { gender = "m", expands = "gentilissimo, as a letter is headed", cased = "Gent.mo", issue = 840 }
-
-[[word]]
-text = "ill.ma"
-style = { gender = "f", expands = "illustrissima", cased = "Ill.ma", issue = 840 }
-
-[[word]]
-text = "ill.mo"
-style = { gender = "m", expands = "illustrissimo", cased = "Ill.mo", issue = 840 }
-
-[[word]]
-text = "preg.ma"
-style = { gender = "f", expands = "pregiatissima, as a letter is headed", cased = "Preg.ma", issue = 840 }
-
-[[word]]
-text = "preg.mo"
-style = { gender = "m", expands = "pregiatissimo, as a letter is headed", cased = "Preg.mo", issue = 840 }
-
-[[word]]
-text = "dott.ssa"
-academic = { gender = "f", expands = "dottoressa", cased = "Dott.ssa", issue = 840 }
-
-[[word]]
-text = "prof.ssa"
-academic = { gender = "f", expands = "professoressa", cased = "Prof.ssa", issue = 840 }
 
 [[word]]
 text = "gentiluomo"
