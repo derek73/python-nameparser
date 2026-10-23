@@ -8,9 +8,11 @@ write, the retries a long run needs, and the views' counting. The
 failure that matters is a SMALLER corpus passing for the whole one: its
 counts read as real zeros. The network is a stub answering by URL.
 """
+import csv
 import email.message
 import hashlib
 import http.client
+import io
 import json
 import re
 import time
@@ -517,6 +519,152 @@ def test_a_fec_corpus_of_another_cycle_is_refused_on_load(
     with pytest.raises(ValueError, match=f"holds the 2026 cycle.*reads the 2028 cycle"
                                           f".*fetch {_FEC} --refresh"):
         local.load(_FEC)
+
+
+# -- UK Electoral Commission donations ---------------------------------------------
+
+_UKEC = "ukec-individuals"
+#: 2026-10-23T03:13:19Z, as the search states it.
+_UKEC_GENERATED = "/Date(1792725199000)/"
+
+
+def _ukec_row(name: str, status: str = "Individual", donor_id: str = "1",
+              fields: int = 29) -> list[str]:
+    row = [""] * max(fields, 29)
+    row[local.UKEC_COLUMNS.index("DonorName")] = name
+    row[local.UKEC_COLUMNS.index("DonorStatus")] = status
+    row[local.UKEC_COLUMNS.index("DonorId")] = donor_id
+    return row[:fields]
+
+
+#: One person under two IDs and once with the name padded, a name holding
+#: a comma, a company, an individual with no name and a row cut short:
+#: 7 rows.
+_UKEC_ROWS = [
+    _ukec_row("Mr Bo Wu", donor_id="1"), _ukec_row("Mr Bo Wu", donor_id="2"),
+    _ukec_row(" Mr Bo Wu ", donor_id="2"), _ukec_row("Lee, Ann", donor_id="3"),
+    _ukec_row("Acme Ltd", status="Company", donor_id="4"),
+    _ukec_row(" ", donor_id="5"), _ukec_row("Cy Roe", fields=28),
+]
+
+
+def _ukec_csv(rows: list[list[str]] = _UKEC_ROWS,
+              header: tuple[str, ...] | None = None, bom: bytes = b"\xef\xbb\xbf") -> bytes:
+    out = io.StringIO(newline="")
+    writer = csv.writer(out, lineterminator="\r\n")
+    writer.writerow(local.UKEC_COLUMNS if header is None else header)
+    writer.writerows(rows)
+    return bom + out.getvalue().encode()
+
+
+def _serve_ukec(monkeypatch: pytest.MonkeyPatch, body: bytes,
+                *totals: int) -> list[str]:
+    """Answer the export with `body` and the search with each of `totals`
+    in turn (the rows of `body` twice, by default); the URLs asked."""
+    counts = iter(totals or (body.count(b"\r\n") - 1,) * 2)
+    asked: list[str] = []
+
+    def urlopen(request: urllib.request.Request, timeout: int) -> _Response:
+        asked.append(request.full_url)
+        if request.full_url == local.UKEC_CSV_URL:
+            return _Response(body)
+        assert request.full_url == local.UKEC_COUNT_URL
+        return _Response(json.dumps({"Total": next(counts),
+                                     "Generated": _UKEC_GENERATED}).encode())
+    monkeypatch.setattr(urllib.request, "urlopen", urlopen)
+    return asked
+
+
+def test_the_ukec_count_asks_the_export_s_own_filter() -> None:
+    # A count under another filter would vouch for an export it did not count.
+    def query(url: str) -> list[tuple[str, str]]:
+        return urllib.parse.parse_qsl(urllib.parse.urlsplit(url).query,
+                                      keep_blank_values=True)
+    csv_query, count_query = query(local.UKEC_CSV_URL), query(local.UKEC_COUNT_URL)
+    assert ("donorStatus", "individual") in csv_query
+    assert [p for p in csv_query if p[0] != "rows"] == [
+        p for p in count_query if p[0] != "rows"]
+
+
+def test_a_ukec_fetch_keeps_each_person_s_name_once_and_counts_the_rest(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(local, "UKEC_MAX_BAD", 1)  # a fixture of 7 rows
+    asked = _serve_ukec(monkeypatch, _ukec_csv())
+    corpus = local.fetch(_UKEC)
+    assert asked == [local.UKEC_COUNT_URL, local.UKEC_CSV_URL, local.UKEC_COUNT_URL]
+    assert corpus.records == [{"name": "Lee, Ann"}, {"name": "Mr Bo Wu"}]
+    assert corpus.meta["data_date"] == "2026-10-23T03:13:19Z"
+    assert corpus.meta["detail"] == {
+        "donations": 7, "donor_ids": 4, "individuals_without_a_name": 1,
+        "rows_not_29_fields": 1, "rows_not_individual": 1}
+    assert corpus.header().endswith("2 names (local corpus ukec-individuals)")
+
+
+def test_a_ukec_export_without_a_bom_reads_the_same(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(local, "UKEC_MAX_BAD", 1)
+    assert local._ukec_read(_ukec_csv(bom=b""), 7) == local._ukec_read(_ukec_csv(), 7)
+
+
+@pytest.mark.parametrize("header", [
+    tuple("DonorFullName" if c == "DonorName" else c for c in local.UKEC_COLUMNS),
+    (*local.UKEC_COLUMNS, "DonorTitle"),
+    local.UKEC_COLUMNS[:-1],
+], ids=["a column renamed", "a column added", "a column dropped"])
+def test_a_ukec_export_whose_header_has_changed_is_refused(
+        monkeypatch: pytest.MonkeyPatch, header: tuple[str, ...]) -> None:
+    _serve_ukec(monkeypatch, _ukec_csv([_ukec_row("Mr Bo Wu")], header=header))
+    with pytest.raises(ValueError, match="header is not the 29 columns"):
+        local.fetch(_UKEC)
+    assert local.load(_UKEC) is None
+
+
+@pytest.mark.parametrize(("totals", "match"), [
+    ((8, 8), "held 7 donations where the search counts 8"),
+    ((6, 6), "held 7 donations where the search counts 6"),
+    ((7, 8), r"register changed during the fetch \(7 -> 8"),
+], ids=["a capped or cut export", "an export holding more", "a register that grew"])
+def test_a_ukec_export_that_is_not_the_whole_register_is_refused(
+        monkeypatch: pytest.MonkeyPatch, totals: tuple[int, int], match: str) -> None:
+    monkeypatch.setattr(local, "UKEC_MAX_BAD", 1)
+    _serve_ukec(monkeypatch, _ukec_csv(), *totals)
+    with pytest.raises(ValueError, match=match):
+        local.fetch(_UKEC)
+    assert local.load(_UKEC) is None
+
+
+@pytest.mark.parametrize(("rows", "match"), [
+    ([_ukec_row("Acme Ltd", status="Company")] * 2 + [_ukec_row("Mr Bo Wu")],
+     "2 of 3 rows .* from a donor that is not 'Individual'"),
+    ([_ukec_row("Mr Bo Wu", fields=30)] * 2 + [_ukec_row("Cy Roe")],
+     "2 of 3 rows .* not 29 fields"),
+], ids=["the filter no longer applied", "rows not 29 fields"])
+def test_a_ukec_export_holding_rows_it_cannot_read_is_refused(
+        monkeypatch: pytest.MonkeyPatch, rows: list[list[str]], match: str) -> None:
+    _serve_ukec(monkeypatch, _ukec_csv(rows))
+    with pytest.raises(ValueError, match=match):
+        local.fetch(_UKEC)
+
+
+def test_a_ukec_export_that_is_not_utf8_is_refused(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    body = _ukec_csv([_ukec_row("Mr Bo Wu")]).replace(b"Wu", b"W\xfc")
+    _serve_ukec(monkeypatch, body)
+    with pytest.raises(ValueError, match="not UTF-8"):
+        local.fetch(_UKEC)
+
+
+@pytest.mark.parametrize("answer", [
+    {"Generated": _UKEC_GENERATED}, {"Total": "7", "Generated": _UKEC_GENERATED},
+    {"Total": 7}, [],
+], ids=["no Total", "a Total not a number", "no Generated", "not an object"])
+def test_a_ukec_search_that_states_no_count_is_refused(
+        monkeypatch: pytest.MonkeyPatch, answer: object) -> None:
+    def urlopen(request: urllib.request.Request, timeout: int) -> _Response:
+        return _Response(json.dumps(answer).encode())
+    monkeypatch.setattr(urllib.request, "urlopen", urlopen)
+    with pytest.raises(ValueError, match="states no"):
+        local.fetch(_UKEC)
 
 
 # -- load ----------------------------------------------------------------------

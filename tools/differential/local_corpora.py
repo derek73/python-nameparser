@@ -69,15 +69,31 @@ to names written in their spoken order. The FEC's terms (52 U.S.C.
 30111(a)(4)) bar using the names to solicit contributions or for any
 commercial purpose, which the credit line every report opens with
 repeats; only the NAME column is kept.
+
+ukec-individuals -- the distinct names of every individual donor in the
+UK Electoral Commission's register of donations since 2001, to parties,
+their members, third parties, permitted participants and regulated
+donees, from the search's CSV export (9.5 MB on 2026-10-22, fetched
+whole on every fetch). A name as the donee's return gave it, so mostly
+in its spoken order, mixed case, with the title the donor used: of the
+15,214 names in the data dated 2026-10-23, parse() read a title in
+8,219 and a suffix in 320 (MP, OBE, CBE, QC), 9 were in capitals and 2
+held a comma. So it is the population for titled
+British names, and blind to the family-comma shape. The Commission
+publishes its documents under the Open Government Licence v3.0, but
+the register states no reuse terms of its own, which the credit line
+says; only the DonorName column is kept.
 """
 from __future__ import annotations
 
 import argparse
+import csv
 import functools
 import dataclasses
 import hashlib
 import http.client
 import inspect
+import io
 import json
 import os
 import re
@@ -441,6 +457,128 @@ def check_fec(meta: dict[str, Any]) -> str:
         f"holds the {cycle} cycle, and this tool reads the {FEC_CYCLE} cycle")
 
 
+# -- UK Electoral Commission donations -----------------------------------------
+
+#: The register's search, filtered to donations from individuals, as the
+#: site's own search page asks for them. The CSV export ignores `rows`
+#: (rows=10 returned all 42,355 on 2026-10-22), and the JSON search
+#: answering the same filter states the register's total, which is how a
+#: capped or cut export is told from the whole register.
+UKEC_API = "https://search.electoralcommission.org.uk/api"
+UKEC_QUERY: list[tuple[str, str]] = [
+    ("start", "0"), ("rows", "1000000"), ("query", ""), ("sort", "AcceptedDate"),
+    ("order", "desc"), *(("et", et) for et in ("pp", "ppm", "tp", "perpar", "rd")),
+    ("date", "Reported"), ("from", ""), ("to", ""), ("rptPd", ""),
+    ("prePoll", "false"), ("postPoll", "true"), ("donorStatus", "individual"),
+    ("isIrishSourceYes", "true"), ("isIrishSourceNo", "true")]
+UKEC_CSV_URL = f"{UKEC_API}/csv/Donations?{urllib.parse.urlencode(UKEC_QUERY)}"
+UKEC_COUNT_URL = f"{UKEC_API}/search/Donations?" + urllib.parse.urlencode(
+    [(k, "1" if k == "rows" else v) for k, v in UKEC_QUERY])
+#: The export's header on 2026-10-22, which a fetch requires exactly: the
+#: names are read by column name, but a renamed or added column is a
+#: changed export whose meaning nobody has checked.
+UKEC_COLUMNS = (
+    "ECRef", "RegulatedEntityName", "RegulatedEntityType", "Value", "AcceptedDate",
+    "AccountingUnitName", "DonorName", "AccountingUnitsAsCentralParty",
+    "IsSponsorship", "DonorStatus", "RegulatedDoneeType",
+    "CompanyRegistrationNumber", "Postcode", "DonationType", "NatureOfDonation",
+    "PurposeOfVisit", "DonationAction", "ReceivedDate", "ReportedDate",
+    "IsReportedPrePoll", "ReportingPeriodName", "IsBequest", "IsAggregation",
+    "RegulatedEntityId", "AccountingUnitId", "DonorId", "CampaigningName",
+    "RegisterName", "IsIrishSource")
+UKEC_INDIVIDUAL = "Individual"
+#: The share of rows a fetch skips before refusing the export: rows that
+#: are not 29 fields, and rows from a donor that is not an individual,
+#: which the filter asks the server to leave out (none of 42,355 rows
+#: was either on 2026-10-22).
+UKEC_MAX_BAD = 1 / 10_000
+
+
+def _ukec_total() -> tuple[int, str]:
+    """The register's total for the filter, and the time the search
+    answered, from the JSON search."""
+    body = corpus_build.fetch_bytes(UKEC_COUNT_URL, user_agent=USER_AGENT,
+                                    timeout=60)
+    data = corpus_build.parse_json(body, UKEC_COUNT_URL)
+    if not isinstance(data, dict) or not isinstance(data.get("Total"), int):
+        raise ValueError(f"{UKEC_COUNT_URL} states no Total")
+    stamp = re.fullmatch(r"/Date\((\d+)\)/", str(data.get("Generated", "")))
+    if not stamp:
+        raise ValueError(f"{UKEC_COUNT_URL} states no Generated time")
+    when = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(int(stamp[1]) / 1000))
+    return data["Total"], when
+
+
+def _ukec_read(body: bytes, total: int) -> Fetched:
+    try:
+        text = body.decode("utf-8-sig")
+    except UnicodeDecodeError as exc:
+        raise ValueError(f"the export is not UTF-8 ({exc}); fetch again") from None
+    rows = csv.reader(io.StringIO(text, newline=""))
+    header = tuple(next(rows, ()))
+    if header != UKEC_COLUMNS:
+        raise ValueError(f"the export's header is not the {len(UKEC_COLUMNS)} "
+                         f"columns UKEC_COLUMNS names: {', '.join(header)}")
+    status, name_at, donor_at = (UKEC_COLUMNS.index(c) for c in (
+        "DonorStatus", "DonorName", "DonorId"))
+    names: set[str] = set()
+    donor_ids: set[str] = set()
+    statuses: Counter[str] = Counter()
+    count = malformed = nameless = 0
+    for row in rows:
+        count += 1
+        if len(row) != len(UKEC_COLUMNS):
+            malformed += 1
+            continue
+        statuses[row[status]] += 1
+        if row[status] != UKEC_INDIVIDUAL:
+            continue
+        donor_ids.add(row[donor_at])
+        if name := row[name_at].strip():
+            names.add(name)
+        else:
+            nameless += 1
+    other = count - malformed - statuses[UKEC_INDIVIDUAL]
+    if count != total:
+        raise ValueError(f"the export held {count:,} donations where the search "
+                         f"counts {total:,}: a capped or cut export; fetch again")
+    for skipped, what in ((malformed, f"not {len(UKEC_COLUMNS)} fields"),
+                          (other, f"from a donor that is not {UKEC_INDIVIDUAL!r}")):
+        if skipped > count * UKEC_MAX_BAD:
+            raise ValueError(f"{skipped:,} of {count:,} rows of the export are "
+                             f"{what}: the export is not the one this reads")
+    return Fetched([{"name": name} for name in sorted(names)], "", {
+        "donations": count, "donor_ids": len(donor_ids),
+        "individuals_without_a_name": nameless,
+        "rows_not_29_fields": malformed, "rows_not_individual": other})
+
+
+def fetch_ukec() -> Fetched:
+    """The distinct names of every individual donor in the register, one
+    record per name, from the export's DonorName column; the other
+    columns are read past.
+
+    A record is a NAME, not a donation or a DonorId: the Commission
+    issues a donor a new ID often enough that an ID is no person (15,214
+    names held 24,473 IDs in the data dated 2026-10-23, and 2,663 names
+    held several IDs at one donee alone), so a count of IDs would weight
+    a name by how often it was reported. The register's total is read before and
+    after the export, which must hold exactly that many rows, so a
+    register that grew during the fetch, or an export cut or capped,
+    is refused; the data date is when the first search answered. A row
+    that is not 29 fields, or from a donor that is not an individual, is
+    counted and skipped, and past UKEC_MAX_BAD the export is refused; an
+    individual with no name is counted."""
+    before, when = _ukec_total()
+    print(f"downloading {before:,} donations from {UKEC_API} ...", file=sys.stderr)
+    body = corpus_build.fetch_bytes(UKEC_CSV_URL, user_agent=USER_AGENT, timeout=300)
+    after, _ = _ukec_total()
+    if after != before:
+        raise ValueError(f"the register changed during the fetch ({before:,} -> "
+                         f"{after:,} donations); fetch again")
+    return dataclasses.replace(_ukec_read(body, before), data_date=when)
+
+
 SOURCES: dict[str, Source] = {
     "ctgov-officials": Source(
         credit="ClinicalTrials.gov (NLM) study officials", unit="officials",
@@ -449,6 +587,10 @@ SOURCES: dict[str, Source] = {
         credit=f"FEC individual contributions, {FEC_CYCLE} cycle "
                f"(52 U.S.C. 30111(a)(4): not for soliciting or commercial use)",
         unit="names", fetch=fetch_fec, renew=renew_fec, check=check_fec),
+    "ukec-individuals": Source(
+        credit="UK Electoral Commission register of donations, individual "
+               "donors (reuse terms for the register not stated)",
+        unit="names", fetch=fetch_ukec),
 }
 
 
