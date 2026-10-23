@@ -33,8 +33,6 @@ import corpus_build
 from local_core import Fetched, _refuse_past, _retried
 
 
-# -- UK Electoral Commission donations -----------------------------------------
-
 #: The register's search, filtered to donations from individuals, with
 #: the search page's other defaults (prePoll=false among them, which
 #: leaves out the donations reported only before a poll). The CSV export ignores `rows`

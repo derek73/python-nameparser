@@ -13,6 +13,7 @@ import email.message
 import gzip
 import hashlib
 import http.client
+import importlib
 import io
 import json
 import os
@@ -35,6 +36,13 @@ from ._differential_fixtures import _Response, load_tool, own_cache, plant_corpu
 
 local = load_tool("local_corpora")
 snapshot = load_tool("snapshot")
+# The modules local_corpora imports, by name: the objects whose globals
+# the fetches read, so a patch reaches the code only when it is set on
+# the module holding the name (local_core.RETRIES, local_fec.FEC_MAX_BAD).
+# A second load by path (load_tool) would be a copy nothing reads.
+core, ctgov, fec, tse, tw, ukec, psc = (
+    importlib.import_module(f"local_{key}")
+    for key in ("core", "ctgov", "fec", "tse", "tw", "ukec", "psc"))
 
 _SOURCE = "ctgov-officials"
 _DATE = "2026-10-21T09:00:05"
@@ -256,7 +264,7 @@ def test_the_last_attempt_raises_its_own_error(
         local.fetch(_SOURCE)
     assert raised.value.code == 503
     raised.value.close()
-    assert sum("studies" in u for u in fetched) == local.RETRIES
+    assert sum("studies" in u for u in fetched) == core.RETRIES
 
 
 def test_a_source_detail_cannot_replace_what_load_checks(
@@ -358,8 +366,8 @@ class _Download:
 
 def _fec_cache(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
     monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
-    monkeypatch.setattr(local, "CHUNK", 64)  # several reads, not one
-    return tmp_path / "local" / _FEC / local.FEC_ZIP
+    monkeypatch.setattr(core, "CHUNK", 64)  # several reads, not one
+    return tmp_path / "local" / _FEC / fec.FEC_ZIP
 
 
 def _serve_fec(monkeypatch: pytest.MonkeyPatch, *responses: _Download) -> list[str]:
@@ -379,13 +387,13 @@ def test_a_fec_fetch_keeps_each_person_s_name_once_and_counts_the_rest(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     _fec_zip(_fec_cache(monkeypatch, tmp_path))
     _serve_fec(monkeypatch)  # a cached zip is not downloaded again
-    monkeypatch.setattr(local, "FEC_MAX_BAD", 1)  # a fixture of 7 lines
+    monkeypatch.setattr(fec, "FEC_MAX_BAD", 1)  # a fixture of 7 lines
     corpus = local.fetch(_FEC)
     assert corpus.records == [{"name": "LEE, ANN"}, {"name": "PEÑA, JOSÉ"},
                               {"name": "ROE JR, BOB MR"}]
     assert corpus.meta["data_date"] == "2026-10-18T16:17:00"
     assert corpus.meta["detail"] == {
-        "cycle": local.FEC_CYCLE, "file": f"{local.FEC_ZIP}/itcont.txt",
+        "cycle": fec.FEC_CYCLE, "file": f"{fec.FEC_ZIP}/itcont.txt",
         "rows": 7, "individual_contributions": 5, "rows_from_other_entities": 1,
         "individuals_without_a_name": 1, "lines_not_21_columns": 1,
         "lines_not_utf8": 1}
@@ -437,7 +445,7 @@ def test_a_fec_zip_that_cannot_be_read_names_the_way_out(
 def test_a_fec_fetch_downloads_the_zip_when_it_is_missing(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     path = _fec_cache(monkeypatch, tmp_path)
-    monkeypatch.setattr(local, "FEC_MAX_BAD", 1)
+    monkeypatch.setattr(fec, "FEC_MAX_BAD", 1)
     body = _fec_zip(tmp_path / "elsewhere.zip")
     stale = path.with_name("indiv24.zip")
     stale.parent.mkdir(parents=True)
@@ -478,7 +486,7 @@ def test_a_fec_refresh_rebuilds_the_corpus_from_a_new_download(
     # Re-reading the cached zip would reproduce the same file under a
     # refresh, with the same names and data date.
     path = _fec_cache(monkeypatch, tmp_path)
-    monkeypatch.setattr(local, "FEC_MAX_BAD", 1)
+    monkeypatch.setattr(fec, "FEC_MAX_BAD", 1)
     _fec_zip(path)
     newer = _fec_zip(tmp_path / "newer.zip", _fec_body([_fec_row("IND", "WU, BO")]),
                      date=(2026, 10, 25, 9, 0, 0))
@@ -486,7 +494,7 @@ def test_a_fec_refresh_rebuilds_the_corpus_from_a_new_download(
     assert local.main(["fetch", _FEC]) == 0
     assert asked == []
     assert local.main(["fetch", _FEC, "--refresh"]) == 0
-    assert asked == [local.FEC_URL]
+    assert asked == [fec.FEC_URL]
     corpus = local.load(_FEC)
     assert corpus is not None and corpus.records == [{"name": "WU, BO"}]
     assert corpus.meta["data_date"] == "2026-10-25T09:00:00"
@@ -495,7 +503,7 @@ def test_a_fec_refresh_rebuilds_the_corpus_from_a_new_download(
 def test_a_failed_fec_refresh_keeps_the_zip_and_the_corpus_it_had(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     path = _fec_cache(monkeypatch, tmp_path)
-    monkeypatch.setattr(local, "FEC_MAX_BAD", 1)
+    monkeypatch.setattr(fec, "FEC_MAX_BAD", 1)
     cached = _fec_zip(path)
     _serve_fec(monkeypatch, _Download(cached[:100], len(cached)))
     before = local.fetch(_FEC)
@@ -511,9 +519,9 @@ def test_a_fec_corpus_of_another_cycle_is_refused_on_load(
     # Bumping FEC_CYCLE would otherwise label the cached cycle's names
     # with the new cycle's credit.
     _fec_zip(_fec_cache(monkeypatch, tmp_path))
-    monkeypatch.setattr(local, "FEC_MAX_BAD", 1)
+    monkeypatch.setattr(fec, "FEC_MAX_BAD", 1)
     local.fetch(_FEC)
-    monkeypatch.setattr(local, "FEC_CYCLE", "2028")
+    monkeypatch.setattr(fec, "FEC_CYCLE", "2028")
     with pytest.raises(ValueError, match=f"holds the 2026 cycle.*reads the 2028 cycle"
                                           f".*fetch {_FEC} --refresh"):
         local.load(_FEC)
@@ -543,7 +551,7 @@ def _tse_csv(rows: list[list[str]], header: list[str] = _TSE_HEADER,
     return out.getvalue().encode(encoding)
 
 
-_PF = local.TSE_INDIVIDUALS
+_PF = tse.TSE_INDIVIDUALS
 #: 2022: one donor twice (once padded), a donor whose filed name is
 #: not the registry's, a person with no name, a party, a row cut short
 #: and a filed name holding cp1252's right quote. 2024: the first donor
@@ -605,7 +613,7 @@ def _tse_zip(year: str, member: bytes | None = None, name: str | None = None,
 
 
 def _url(year: str) -> str:
-    return str(local.TSE_URL.format(year=year))
+    return str(tse.TSE_URL.format(year=year))
 
 
 class _Answer:
@@ -689,14 +697,14 @@ class _Cdn:
 
 @pytest.fixture
 def cdn(monkeypatch: pytest.MonkeyPatch) -> _Cdn:
-    served = _Cdn({year: _tse_zip(year) for year in local.TSE_ELECTIONS})
+    served = _Cdn({year: _tse_zip(year) for year in tse.TSE_ELECTIONS})
     monkeypatch.setattr(urllib.request, "urlopen", served.urlopen)
-    monkeypatch.setattr(local, "TSE_BLOCK", 256)  # many ranges, not one
+    monkeypatch.setattr(tse, "TSE_BLOCK", 256)  # many ranges, not one
     # A fixture of 15 rows holds more of each kind of damage than the
     # real file may: the tests of each limit set it back.
-    monkeypatch.setattr(local, "TSE_MAX_BAD", 1)
-    monkeypatch.setattr(local, "TSE_MAX_MISSING", 1)
-    monkeypatch.setattr(local, "TSE_MAX_NUMBERED", 1)
+    monkeypatch.setattr(tse, "TSE_MAX_BAD", 1)
+    monkeypatch.setattr(tse, "TSE_MAX_MISSING", 1)
+    monkeypatch.setattr(tse, "TSE_MAX_NUMBERED", 1)
     monkeypatch.setattr(time, "sleep", lambda s: None)
     return served
 
@@ -747,7 +755,7 @@ def test_a_tse_file_s_columns_are_found_by_name(cdn: _Cdn) -> None:
     # The registry before the name and the origin last: read by position,
     # the names would swap and every category would be unknown.
     order = [0, 1, 5, 4] + list(range(6, 60)) + [3, 2]
-    for year in local.TSE_ELECTIONS:
+    for year in tse.TSE_ELECTIONS:
         _serve_member(cdn, year, _tse_csv([[row[i] for i in order] if len(row) == 60
                                            else row for row in _TSE_ROWS[year]],
                                           [_TSE_HEADER[i] for i in order]))
@@ -800,7 +808,7 @@ def test_a_tse_category_held_by_a_few_rows_is_not_quoted(cdn: _Cdn) -> None:
 def test_a_tse_election_with_too_few_individuals_is_refused(
         cdn: _Cdn, monkeypatch: pytest.MonkeyPatch,
         rows: list[list[str]], match: str) -> None:
-    monkeypatch.setattr(local, "TSE_MIN_INDIVIDUALS", 0.11)  # 1 of 10 falls short
+    monkeypatch.setattr(tse, "TSE_MIN_INDIVIDUALS", 0.11)  # 1 of 10 falls short
     _serve_member(cdn, "2024", _tse_csv(rows))
     with pytest.raises(ValueError, match=match):
         local.fetch(_TSE)
@@ -814,7 +822,7 @@ def test_a_tse_election_with_too_few_individuals_is_refused(
 def test_a_tse_election_whose_names_are_masked_is_refused(
         cdn: _Cdn, monkeypatch: pytest.MonkeyPatch,
         name: str, registry: str, match: str) -> None:
-    monkeypatch.setattr(local, "TSE_MAX_MISSING", 1 / 100)
+    monkeypatch.setattr(tse, "TSE_MAX_MISSING", 1 / 100)
     _serve_member(cdn, "2022", _tse_csv([_tse_row(_PF, "ANA SOUZA", "ANA SOUZA")]))
     _serve_member(cdn, "2024", _tse_csv([_tse_row(_PF, name, registry)]))
     with pytest.raises(ValueError, match=f"1 of 1 individuals' rows .* {match}"):
@@ -831,7 +839,7 @@ def test_a_tse_election_whose_names_are_masked_is_refused(
 ], ids=["a row short", "a row long", "a line folded into a field"])
 def test_a_tse_file_with_too_many_malformed_lines_is_refused(
         cdn: _Cdn, monkeypatch: pytest.MonkeyPatch, member: bytes, match: str) -> None:
-    monkeypatch.setattr(local, "TSE_MAX_BAD", 1 / 10)
+    monkeypatch.setattr(tse, "TSE_MAX_BAD", 1 / 10)
     _serve_member(cdn, "2022", member)
     with pytest.raises(ValueError, match=match):
         local.fetch(_TSE)
@@ -855,7 +863,7 @@ def test_a_tse_zip_replaced_during_the_read_is_refused(
         cdn: _Cdn, monkeypatch: pytest.MonkeyPatch, year: str, after: int) -> None:
     # The member stored and long, so that the seventh range falls inside
     # it, and its 20 repeats not refused for their few distinct names.
-    monkeypatch.setattr(local, "TSE_MIN_DISTINCT", 0)
+    monkeypatch.setattr(tse, "TSE_MIN_DISTINCT", 0)
     cdn.zips[_url("2022")] = _tse_zip("2022", _tse_csv(_TSE_ROWS["2022"] * 20),
                                       stored=True)
     cdn.replace_year, cdn.replace_after = year, after
@@ -906,7 +914,7 @@ def test_a_tse_strong_etag_is_preferred_to_the_last_modified_date(cdn: _Cdn) -> 
 def test_a_tse_request_cut_short_or_dropped_is_retried(
         cdn: _Cdn, monkeypatch: pytest.MonkeyPatch,
         capsys: pytest.CaptureFixture[str]) -> None:
-    monkeypatch.setattr(local, "RETRIES", 5)  # four failures on one range
+    monkeypatch.setattr(core, "RETRIES", 5)  # four failures on one range
     cdn.short = 1
     cdn.head_failures = [urllib.error.URLError("reset")]
     cdn.failures = [urllib.error.URLError("reset"), _http_error(503), _http_error(429)]
@@ -936,7 +944,7 @@ def _tse_names(n: int) -> list[list[str]]:
 @pytest.mark.parametrize("mask", ["#NE", "***", "-4", "#NULO#", _CPF])
 def test_a_tse_column_masked_with_no_letter_is_refused(
         cdn: _Cdn, monkeypatch: pytest.MonkeyPatch, column: str, mask: str) -> None:
-    monkeypatch.setattr(local, "TSE_MAX_MISSING", 1 / 100)
+    monkeypatch.setattr(tse, "TSE_MAX_MISSING", 1 / 100)
     _serve_member(cdn, "2022", _tse_csv(_tse_names(4)))  # 2022 within the limits
     rows = [_tse_row(_PF, mask if column == "name" else f"ANA {_letters(i)}",
                      mask if column == "registry" else f"ANA {_letters(i)}")
@@ -950,7 +958,7 @@ def test_a_tse_column_masked_with_no_letter_is_refused(
 
 def test_a_tse_numeric_column_moved_under_a_name_is_refused(
         cdn: _Cdn, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(local, "TSE_MAX_NUMBERED", 1 / 1000)
+    monkeypatch.setattr(tse, "TSE_MAX_NUMBERED", 1 / 1000)
     _serve_member(cdn, "2022", _tse_csv(_tse_names(4)))
     _serve_member(cdn, "2024", _tse_csv(
         [_tse_row(_PF, f"ANA {_letters(i)}", f"CEP 401{i:05d}") for i in range(20)]))
@@ -976,7 +984,7 @@ def test_a_tse_election_at_each_limit_is_read(
     # 100 rows: the distinct floor exactly. A registry name of 4 digits is
     # kept, a filed name of 5 is not.
     for name in ("TSE_MAX_MISSING", "TSE_MAX_NUMBERED"):
-        monkeypatch.setattr(local, name, 1 / 100)
+        monkeypatch.setattr(tse, name, 1 / 100)
     _serve_member(cdn, "2022", _tse_csv(_tse_names(4)))
     rows = ([_tse_row(_PARTY, "PARTIDO", "PARTIDO")] * 900
             + [_tse_row(_PF, f"ANA {_letters(i % 25)}", f"ANA {_letters(i % 25)}")
@@ -1001,7 +1009,7 @@ def test_a_tse_election_at_each_limit_is_read(
 def test_a_tse_unknown_value_is_quoted_only_when_it_reads_as_a_category(
         cdn: _Cdn, monkeypatch: pytest.MonkeyPatch,
         rows: list[list[str]], shown: bool) -> None:
-    monkeypatch.setattr(local, "TSE_QUOTED_SHARE", 1 / 2)
+    monkeypatch.setattr(tse, "TSE_QUOTED_SHARE", 1 / 2)
     _serve_member(cdn, "2022", _tse_csv(rows))
     with pytest.raises(ValueError, match="outside TSE_ORIGINS") as raised:
         local.fetch(_TSE)
@@ -1029,11 +1037,11 @@ def test_a_tse_rate_limit_waits_as_long_as_the_server_asks(
 
 
 def test_a_tse_range_failing_every_attempt_raises_the_last_error(cdn: _Cdn) -> None:
-    cdn.failures = [_http_error(503) for _ in range(local.RETRIES)]
+    cdn.failures = [_http_error(503) for _ in range(core.RETRIES)]
     with pytest.raises(urllib.error.HTTPError) as raised:
         local.fetch(_TSE)
     raised.value.close()
-    assert cdn.ranges == local.RETRIES
+    assert cdn.ranges == core.RETRIES
 
 
 def test_a_tse_server_that_states_no_accept_ranges_is_read(cdn: _Cdn) -> None:
@@ -1042,7 +1050,7 @@ def test_a_tse_server_that_states_no_accept_ranges_is_read(cdn: _Cdn) -> None:
 
 
 def test_a_tse_range_file_refuses_a_seek_before_its_start(cdn: _Cdn) -> None:
-    reader = local._RangeFile(_url("2022"))
+    reader = tse._RangeFile(_url("2022"))
     with pytest.raises(OSError, match="cannot seek"):
         reader.seek(-1)
     assert reader.tell() == 0
@@ -1051,7 +1059,7 @@ def test_a_tse_range_file_refuses_a_seek_before_its_start(cdn: _Cdn) -> None:
 def test_a_tse_corpus_of_other_elections_is_refused_on_load(
         cdn: _Cdn, monkeypatch: pytest.MonkeyPatch) -> None:
     local.fetch(_TSE)
-    monkeypatch.setattr(local, "TSE_ELECTIONS", ("2022", "2024", "2026"))
+    monkeypatch.setattr(tse, "TSE_ELECTIONS", ("2022", "2024", "2026"))
     with pytest.raises(ValueError, match=f"holds the elections 2022 2024.*reads "
                                          f"2022 2024 2026.*fetch {_TSE} --refresh"):
         local.load(_TSE)
@@ -1079,7 +1087,7 @@ def _tw_row(category: str, donor: str, serial: str = _FIRST,
 def _tw_csv(rows: list[list[str]], header: tuple[str, ...] | None = None) -> bytes:
     out = io.StringIO()
     writer = csv.writer(out, lineterminator="\r\n")
-    writer.writerow(header or local.TW_HEADER)
+    writer.writerow(header or tw.TW_HEADER)
     writer.writerows(rows)
     return out.getvalue().encode("utf-8-sig")
 
@@ -1237,12 +1245,12 @@ def test_a_tw_fetch_pauses_after_each_download(
     _serve_tw(monkeypatch)
     monkeypatch.setattr(time, "sleep", sleeps.append)
     local.fetch(_TW)
-    assert sleeps.count(local.TW_DELAY) == 2 and local.TW_DELAY >= 1
+    assert sleeps.count(tw.TW_DELAY) == 2 and tw.TW_DELAY >= 1
 
 
 def test_a_tw_listing_of_several_pages_is_read_whole(
         monkeypatch: pytest.MonkeyPatch, _tw_home: Path) -> None:
-    monkeypatch.setattr(local, "TW_PAGE", 1)
+    monkeypatch.setattr(tw, "TW_PAGE", 1)
     _serve_tw(monkeypatch)
     assert local.fetch(_TW).meta["detail"]["reports"] == 2
 
@@ -1280,19 +1288,19 @@ def test_a_tw_fetch_whose_listing_moves_under_it_is_refused(
     assert local.load(_TW) is None
 
 
-_TW_RENAMED = tuple("捐贈者" if c == "捐贈者／支出對象" else c for c in local.TW_HEADER)
+_TW_RENAMED = tuple("捐贈者" if c == "捐贈者／支出對象" else c for c in tw.TW_HEADER)
 #: A column inserted before the category's, the last dropped: 25
 #: columns, and the donor column now holding the category.
-_TW_SHIFTED = (*local.TW_HEADER[:5], "新欄位", *local.TW_HEADER[5:24])
+_TW_SHIFTED = (*tw.TW_HEADER[:5], "新欄位", *tw.TW_HEADER[5:24])
 #: The category column named twice, in place of a column not read.
-_TW_TWICE = tuple("收支科目" if c == "地址" else c for c in local.TW_HEADER)
+_TW_TWICE = tuple("收支科目" if c == "地址" else c for c in tw.TW_HEADER)
 
 
 @pytest.mark.parametrize(("incomes", "match"), [
     (_tw_csv([_tw_row("個人捐贈收入", "王小明")], header=_TW_RENAMED), "has the header"),
     (_tw_csv([_tw_row("個人捐贈收入", "王小明")], header=_TW_SHIFTED), "has the header"),
     (_tw_csv([_tw_row("個人捐贈收入", "王小明")], header=_TW_TWICE), "has the header"),
-    (_tw_csv([_tw_row("個人捐贈收入", "王小明")], header=local.TW_HEADER[:5]),
+    (_tw_csv([_tw_row("個人捐贈收入", "王小明")], header=tw.TW_HEADER[:5]),
      "has the header"),
     (_tw_csv([_tw_row("政治團體捐贈收入", "王小明")]), "the category '政治團體捐贈收入'"),
     (_tw_csv([_tw_row("個人捐贈收入", "王小明")]).decode("utf-8-sig").encode("big5"),
@@ -1334,8 +1342,8 @@ def test_a_tw_report_missing_a_column_it_does_not_read_is_read_by_name(
     # header against all 25 columns found on 2026-10-22; the column
     # after it moved up one, so a reader indexing TW_HEADER reads the
     # wrong one. The test reverses the header to move every column.
-    header = tuple(reversed([c for c in local.TW_HEADER if c != "更正註記"]))
-    row = dict(zip(local.TW_HEADER, _tw_row("個人捐贈收入", "王小明")))
+    header = tuple(reversed([c for c in tw.TW_HEADER if c != "更正註記"]))
+    row = dict(zip(tw.TW_HEADER, _tw_row("個人捐贈收入", "王小明")))
     zips = {(_TW_ELECTION, _TW_AREA, 1): _tw_zip(_tw_csv([[row[c] for c in header]],
                                                          header=header))}
     _serve_tw(monkeypatch, listings=[_TW_LISTING[:1]], zips=zips)
@@ -1358,9 +1366,9 @@ def test_a_tw_report_with_no_income_is_counted_and_read_past(
 
 def _dashed(**filled: str) -> list[str]:
     """A row of dashes but the candidate's column and `filled`."""
-    row: dict[str, str] = {**dict.fromkeys(local.TW_HEADER, "-"),
+    row: dict[str, str] = {**dict.fromkeys(tw.TW_HEADER, "-"),
                            "擬參選人／政黨": "候選人乙", **filled}
-    return [row[c] for c in local.TW_HEADER]
+    return [row[c] for c in tw.TW_HEADER]
 
 
 @pytest.mark.parametrize("row", [
@@ -1388,7 +1396,7 @@ def test_a_tw_fetch_with_too_many_bad_rows_is_refused(
               zips=_tw_first(bad, _tw_row("個人捐贈收入", "陳大文")))
     with pytest.raises(ValueError, match=match):
         local.fetch(_TW)
-    monkeypatch.setattr(local, "TW_MAX_BAD", 1)  # under the share: counted
+    monkeypatch.setattr(tw, "TW_MAX_BAD", 1)  # under the share: counted
     corpus = local.fetch(_TW)
     assert corpus.records == [{"name": "陳大文"}]
     assert corpus.meta["detail"][key] == 1
@@ -1402,14 +1410,14 @@ def test_a_small_tw_report_whose_rows_are_all_bad_is_refused(
     short = [_tw_row("個人捐贈收入", f"陳大{n}", _RESIDUAL, columns=24) for n in range(3)]
     zips = {(_TW_ELECTION, _TW_AREA, 1): _tw_zip(_tw_csv(big)),
             (_TW_ELECTION, _TW_AREA, 2): _tw_zip(_tw_csv(short))}
-    monkeypatch.setattr(local, "TW_MAX_BAD", 1)
+    monkeypatch.setattr(tw, "TW_MAX_BAD", 1)
     _serve_tw(monkeypatch, zips=zips)
     with pytest.raises(ValueError, match="3 of .* report 2's rows are read past"):
         local.fetch(_TW)
 
 
 def _tw_incomes_text(lines: list[str]) -> bytes:
-    return ("\r\n".join([",".join(local.TW_HEADER), *lines]) + "\r\n").encode("utf-8-sig")
+    return ("\r\n".join([",".join(tw.TW_HEADER), *lines]) + "\r\n").encode("utf-8-sig")
 
 
 def _line(donor: str, address: str = "臺北市", phone: str = "02") -> str:
@@ -1438,11 +1446,11 @@ def test_rows_a_stray_quote_takes_in_are_read_back(
         cached.unlink()
     _serve_tw(monkeypatch, listings=[_TW_LISTING[:1]],
               zips={(_TW_ELECTION, _TW_AREA, 1): _tw_zip(_tw_incomes_text(lines))})
-    monkeypatch.setattr(local, "TW_MAX_BAD", 1)
+    monkeypatch.setattr(tw, "TW_MAX_BAD", 1)
     corpus = local.fetch(_TW)
     assert {"name": "陳大文"} in corpus.records and {"name": "林一二"} in corpus.records
     assert corpus.meta["detail"]["rows_cut_by_a_stray_quote"] >= 1
-    monkeypatch.setattr(local, "TW_MAX_BAD", 1 / 10_000)
+    monkeypatch.setattr(tw, "TW_MAX_BAD", 1 / 10_000)
     with pytest.raises(ValueError, match="rows are cut by a stray quote"):
         local.fetch(_TW)
 
@@ -1466,11 +1474,11 @@ def test_a_bare_cr_ends_a_line_as_csv_reads_one(
     # A stray CR in a cell cuts its row in two short rows, counted, as
     # csv.reader over a file opened with newline="" reads it, and a file
     # whose lines end in CR alone reads whole.
-    text = ending.join([",".join(local.TW_HEADER), _line("王小明"),
+    text = ending.join([",".join(tw.TW_HEADER), _line("王小明"),
                         _line("陳大文", address="臺北\r市"), _line("林一二")]) + ending
     _serve_tw(monkeypatch, listings=[_TW_LISTING[:1]],
               zips={(_TW_ELECTION, _TW_AREA, 1): _tw_zip(text.encode("utf-8-sig"))})
-    monkeypatch.setattr(local, "TW_MAX_BAD", 1)
+    monkeypatch.setattr(tw, "TW_MAX_BAD", 1)
     corpus = local.fetch(_TW)
     assert corpus.records == [{"name": "林一二"}, {"name": "王小明"}]
     assert corpus.meta["detail"]["rows_not_as_long_as_the_header"] == 2
@@ -1479,7 +1487,7 @@ def test_a_bare_cr_ends_a_line_as_csv_reads_one(
 def test_a_tw_file_csv_cannot_read_is_refused_naming_the_report(
         monkeypatch: pytest.MonkeyPatch, _tw_home: Path) -> None:
     huge = _line("王小明", address='"' + "x" * 200_000)  # past csv's field limit
-    text = f"{','.join(local.TW_HEADER)}\r\n{huge}\r\n"
+    text = f"{','.join(tw.TW_HEADER)}\r\n{huge}\r\n"
     _serve_tw(monkeypatch, listings=[_TW_LISTING[:1]],
               zips={(_TW_ELECTION, _TW_AREA, 1): _tw_zip(text.encode("utf-8-sig"))})
     with pytest.raises(ValueError, match="report 1's incomes.csv is not a CSV file"):
@@ -1508,7 +1516,7 @@ def test_a_masked_donor_name_is_counted_and_refused_past_the_share(
     with pytest.raises(ValueError, match="1 of 2 individual donations name a "
                                          "masked donor"):
         local.fetch(_TW)
-    monkeypatch.setattr(local, "TW_MAX_BAD", 1)
+    monkeypatch.setattr(tw, "TW_MAX_BAD", 1)
     corpus = local.fetch(_TW)
     assert corpus.records == [{"name": "陳大文"}]
     assert corpus.meta["detail"]["donations_naming_a_masked_donor"] == 1
@@ -1551,7 +1559,7 @@ def test_a_listed_tw_report_that_keeps_failing_is_raised(
     with pytest.raises(urllib.error.HTTPError) as raised:
         local.fetch(_TW)
     raised.value.close()
-    assert len(_tw_serials(asked)) == local.RETRIES
+    assert len(_tw_serials(asked)) == core.RETRIES
     assert local.load(_TW) is None
 
 
@@ -1630,9 +1638,9 @@ _UKEC_GENERATED = "/Date(1792725199000)/"
 def _ukec_row(name: str, status: str = "Individual", donor_id: str = "1",
               fields: int = 29) -> list[str]:
     row = [""] * max(fields, 29)
-    row[local.UKEC_COLUMNS.index("DonorName")] = name
-    row[local.UKEC_COLUMNS.index("DonorStatus")] = status
-    row[local.UKEC_COLUMNS.index("DonorId")] = donor_id
+    row[ukec.UKEC_COLUMNS.index("DonorName")] = name
+    row[ukec.UKEC_COLUMNS.index("DonorStatus")] = status
+    row[ukec.UKEC_COLUMNS.index("DonorId")] = donor_id
     return row[:fields]
 
 
@@ -1654,7 +1662,7 @@ def _ukec_csv(rows: list[list[str]] = _UKEC_ROWS,
               header: tuple[str, ...] | None = None, bom: bytes = b"\xef\xbb\xbf") -> bytes:
     out = io.StringIO(newline="")
     writer = csv.writer(out, lineterminator="\r\n")
-    writer.writerow(local.UKEC_COLUMNS if header is None else header)
+    writer.writerow(ukec.UKEC_COLUMNS if header is None else header)
     writer.writerows(rows)
     return bom + out.getvalue().encode()
 
@@ -1671,9 +1679,9 @@ def _serve_ukec(monkeypatch: pytest.MonkeyPatch, body: bytes,
 
     def urlopen(request: urllib.request.Request, timeout: int) -> _Response:
         asked.append(request.full_url)
-        if request.full_url == local.UKEC_CSV_URL:
+        if request.full_url == ukec.UKEC_CSV_URL:
             return _Response(body)
-        assert request.full_url == local.UKEC_COUNT_URL
+        assert request.full_url == ukec.UKEC_COUNT_URL
         return _Response(json.dumps({"Total": next(counts),
                                      "Generated": next(stamps)}).encode())
     monkeypatch.setattr(urllib.request, "urlopen", urlopen)
@@ -1682,8 +1690,8 @@ def _serve_ukec(monkeypatch: pytest.MonkeyPatch, body: bytes,
 
 def _tolerate_a_small_fixture(monkeypatch: pytest.MonkeyPatch) -> None:
     """Let _UKEC_ROWS, whose 8 rows skip one of each kind, pass the shares."""
-    monkeypatch.setattr(local, "UKEC_MAX_BAD", 1)
-    monkeypatch.setattr(local, "UKEC_MAX_NAMELESS", 1)
+    monkeypatch.setattr(ukec, "UKEC_MAX_BAD", 1)
+    monkeypatch.setattr(ukec, "UKEC_MAX_NAMELESS", 1)
 
 
 def _failing_once(monkeypatch: pytest.MonkeyPatch, url: str) -> list[str]:
@@ -1709,9 +1717,9 @@ def test_a_ukec_request_failing_once_is_retried(
     # either ended the fetch, where every other source retries.
     _tolerate_a_small_fixture(monkeypatch)
     _serve_ukec(monkeypatch, _ukec_csv())
-    failed = _failing_once(monkeypatch, getattr(local, which))
+    failed = _failing_once(monkeypatch, getattr(ukec, which))
     assert local.fetch(_UKEC).records
-    assert failed == [getattr(local, which)]
+    assert failed == [getattr(ukec, which)]
 
 
 def test_a_ukec_search_answering_no_json_is_refused_as_a_value_error(
@@ -1728,7 +1736,7 @@ def test_a_ukec_search_answering_no_json_is_refused_as_a_value_error(
     monkeypatch.setattr(urllib.request, "urlopen", urlopen)
     with pytest.raises(ValueError, match="is not JSON"):
         local.fetch(_UKEC)
-    assert asked == [local.UKEC_COUNT_URL] * local.RETRIES
+    assert asked == [ukec.UKEC_COUNT_URL] * core.RETRIES
 
 
 def test_the_ukec_count_asks_the_export_s_own_filter() -> None:
@@ -1736,7 +1744,7 @@ def test_the_ukec_count_asks_the_export_s_own_filter() -> None:
     def query(url: str) -> list[tuple[str, str]]:
         return urllib.parse.parse_qsl(urllib.parse.urlsplit(url).query,
                                       keep_blank_values=True)
-    csv_query, count_query = query(local.UKEC_CSV_URL), query(local.UKEC_COUNT_URL)
+    csv_query, count_query = query(ukec.UKEC_CSV_URL), query(ukec.UKEC_COUNT_URL)
     assert ("donorStatus", "individual") in csv_query
     assert [p for p in csv_query if p[0] != "rows"] == [
         p for p in count_query if p[0] != "rows"]
@@ -1747,7 +1755,7 @@ def test_a_ukec_fetch_keeps_each_person_s_name_once_and_counts_the_rest(
     _tolerate_a_small_fixture(monkeypatch)
     asked = _serve_ukec(monkeypatch, _ukec_csv())
     corpus = local.fetch(_UKEC)
-    assert asked == [local.UKEC_COUNT_URL, local.UKEC_CSV_URL, local.UKEC_COUNT_URL]
+    assert asked == [ukec.UKEC_COUNT_URL, ukec.UKEC_CSV_URL, ukec.UKEC_COUNT_URL]
     assert corpus.records == [{"name": "Dee Fox"}, {"name": "Lee, Ann"},
                               {"name": "Mr Bo Wu"}]
     # The first search's time, not the second's.
@@ -1761,13 +1769,13 @@ def test_a_ukec_fetch_keeps_each_person_s_name_once_and_counts_the_rest(
 def test_a_ukec_export_without_a_bom_reads_the_same(
         monkeypatch: pytest.MonkeyPatch) -> None:
     _tolerate_a_small_fixture(monkeypatch)
-    assert local._ukec_read(_ukec_csv(bom=b""), 8) == local._ukec_read(_ukec_csv(), 8)
+    assert ukec._ukec_read(_ukec_csv(bom=b""), 8) == ukec._ukec_read(_ukec_csv(), 8)
 
 
 @pytest.mark.parametrize("header", [
-    tuple("DonorFullName" if c == "DonorName" else c for c in local.UKEC_COLUMNS),
-    (*local.UKEC_COLUMNS, "DonorTitle"),
-    local.UKEC_COLUMNS[:-1],
+    tuple("DonorFullName" if c == "DonorName" else c for c in ukec.UKEC_COLUMNS),
+    (*ukec.UKEC_COLUMNS, "DonorTitle"),
+    ukec.UKEC_COLUMNS[:-1],
 ], ids=["a column renamed", "a column added", "a column dropped"])
 def test_a_ukec_export_whose_header_has_changed_is_refused(
         monkeypatch: pytest.MonkeyPatch, header: tuple[str, ...]) -> None:
@@ -1995,14 +2003,14 @@ def _serve_psc(monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
     linked) and each part file with its answer: bytes to serve, or an
     exception to raise. Returns the file names downloaded."""
     monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
-    monkeypatch.setattr(local, "CHUNK", 64)  # several reads, not one
-    monkeypatch.setattr(local, "PSC_SAMPLE", 1)  # every record, unless a test samples
+    monkeypatch.setattr(core, "CHUNK", 64)  # several reads, not one
+    monkeypatch.setattr(psc, "PSC_SAMPLE", 1)  # every record, unless a test samples
     page = _psc_page(*parts) if page is None else page
     asked: list[str] = []
 
     def urlopen(request: urllib.request.Request, timeout: int) -> _Response | _Download:
         url = request.full_url
-        if url == local.PSC_PAGE:
+        if url == psc.PSC_PAGE:
             return _Response(page)
         file = url.rsplit("/", 1)[1]
         asked.append(file)
@@ -2027,19 +2035,19 @@ def _psc_snapshot(monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
 def test_a_psc_listing_failing_once_is_retried(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     _psc_snapshot(monkeypatch, tmp_path)
-    failed = _failing_once(monkeypatch, local.PSC_PAGE)
-    day, parts = local._psc_listing()
-    assert (day, len(parts), failed) == (_PSC_DAY, len(_PSC_PARTS), [local.PSC_PAGE])
+    failed = _failing_once(monkeypatch, psc.PSC_PAGE)
+    day, parts = psc._psc_listing()
+    assert (day, len(parts), failed) == (_PSC_DAY, len(_PSC_PARTS), [psc.PSC_PAGE])
 
 
 def _gone(file: str) -> urllib.error.HTTPError:
-    return urllib.error.HTTPError(f"{local.PSC_PAGE}/{file}", 404, "Not Found",
+    return urllib.error.HTTPError(f"{psc.PSC_PAGE}/{file}", 404, "Not Found",
                                   email.message.Message(), None)
 
 
 def test_a_psc_fetch_keeps_each_filed_name_once_and_counts_the_rest(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    monkeypatch.setattr(local, "PSC_MAX_BAD", 1)  # a fixture of 9 lines
+    monkeypatch.setattr(psc, "PSC_MAX_BAD", 1)  # a fixture of 9 lines
     asked = _psc_snapshot(monkeypatch, tmp_path)
     corpus = local.fetch(_PSC)
     assert asked == _psc_files()
@@ -2055,7 +2063,7 @@ def test_a_psc_fetch_keeps_each_filed_name_once_and_counts_the_rest(
     ]
     assert corpus.meta["data_date"] == _PSC_DAY
     assert corpus.meta["detail"] == {
-        "parts": 2, "sample": "1 in 1", "lines": 9, local.PSC_KINDS[0]: 6, local.PSC_KINDS[1]: 1,
+        "parts": 2, "sample": "1 in 1", "lines": 9, psc.PSC_KINDS[0]: 6, psc.PSC_KINDS[1]: 1,
         "records_of_other_kinds": 2, "individuals_without_a_nationality": 1,
         "sampled_names_that_are_empty": 1}
     assert corpus.header().endswith("4 filed names (local corpus psc-individuals)")
@@ -2066,7 +2074,7 @@ def test_a_psc_fetch_writes_no_field_but_the_name_its_boxes_and_the_nationality(
     _psc_snapshot(monkeypatch, tmp_path)
     local.fetch(_PSC)
     folder = tmp_path / "local" / _PSC
-    kept = set(local.PSC_KEPT)
+    kept = set(psc.PSC_KEPT)
     for path in [folder / "raw.jsonl", *(folder / "parts").iterdir()]:
         text = (gzip.decompress(path.read_bytes()) if path.suffix == ".gz"
                 else path.read_bytes()).decode()
@@ -2083,19 +2091,19 @@ def test_a_psc_sample_keeps_the_same_records_whatever_part_files_them(
     people = [_psc_person(f"Ann Lee{n}") for n in range(40)]
     _psc_snapshot(monkeypatch, tmp_path, {1: _psc_lines(*people[:25]),
                                           2: _psc_lines(*people[25:])})
-    monkeypatch.setattr(local, "PSC_SAMPLE", 4)
+    monkeypatch.setattr(psc, "PSC_SAMPLE", 4)
     corpus = local.fetch(_PSC)
     kept = corpus.records
     assert 0 < len(kept) < 20 and corpus.meta["detail"]["sample"] == "1 in 4"
-    assert all(local.psc_sampled(_extract_line(r)) for r in kept)
+    assert all(psc.psc_sampled(_extract_line(r)) for r in kept)
     # Filed by other parts, in another order, the same records are kept.
     _psc_snapshot(monkeypatch, tmp_path, {1: _psc_lines(*people[30:]),
                                           2: _psc_lines(*reversed(people[:30]))})
-    monkeypatch.setattr(local, "PSC_SAMPLE", 4)
+    monkeypatch.setattr(psc, "PSC_SAMPLE", 4)
     shutil.rmtree(tmp_path / "local" / _PSC / "parts")
     assert local.fetch(_PSC).records == kept
     # The control: with every record kept, all 40 are there.
-    monkeypatch.setattr(local, "PSC_SAMPLE", 1)
+    monkeypatch.setattr(psc, "PSC_SAMPLE", 1)
     assert len(local.fetch(_PSC).records) == 40
 
 
@@ -2121,7 +2129,7 @@ def test_a_psc_snapshot_whose_layout_has_changed_is_refused(
     assert local.load(_PSC) is None
     # The control: past the threshold the same snapshot is read, the bad
     # record counted and dropped, so the threshold is what refused it.
-    monkeypatch.setattr(local, "PSC_MAX_BAD", 1)
+    monkeypatch.setattr(psc, "PSC_MAX_BAD", 1)
     assert [r["name"] for r in local.fetch(_PSC).records] == ["Mr Bo Wu"]
 
 
@@ -2150,7 +2158,7 @@ def test_a_psc_part_gone_mid_fetch_is_refused_and_the_next_run_resumes(
     folder = tmp_path / "local" / _PSC
     assert not (folder / "parts").exists()
     assert sorted(p.name for p in (folder / "parts.new").iterdir()) == [
-        local._extract_name(files[0])]
+        psc._extract_name(files[0])]
     parts[files[1]] = _psc_part(2, _PSC_PARTS[2])
     assert len(local.fetch(_PSC).records) == 4
     assert asked == [*files, files[1]]  # part 1 was not downloaded again
@@ -2168,7 +2176,7 @@ def test_a_resumed_psc_fetch_drops_what_another_day_left(
     assert len(local.fetch(_PSC).records) == 4
     assert asked == _psc_files()
     assert sorted(p.name for p in (tmp_path / "local" / _PSC / "parts").iterdir()) == [
-        local._extract_name(f) for f in _psc_files()]
+        psc._extract_name(f) for f in _psc_files()]
 
 
 def test_a_failed_psc_refresh_keeps_the_parts_and_the_corpus_it_had(
@@ -2183,7 +2191,7 @@ def test_a_failed_psc_refresh_keeps_the_parts_and_the_corpus_it_had(
         local.main(["fetch", _PSC, "--refresh"])
     assert local.load(_PSC) == before
     assert sorted(p.name for p in (tmp_path / "local" / _PSC / "parts").iterdir()) == [
-        local._extract_name(f) for f in _psc_files()]
+        psc._extract_name(f) for f in _psc_files()]
     # The control: the same refresh, whole, replaces both.
     _serve_psc(monkeypatch, tmp_path, {newer[0]: b"", newer[1]: cut})
     assert local.main(["fetch", _PSC, "--refresh"]) == 0
@@ -2195,7 +2203,7 @@ def test_a_psc_cache_missing_a_part_is_refused_with_the_way_out(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     _psc_snapshot(monkeypatch, tmp_path)
     local.fetch(_PSC)
-    (tmp_path / "local" / _PSC / "parts" / local._extract_name(_psc_files()[1])
+    (tmp_path / "local" / _PSC / "parts" / psc._extract_name(_psc_files()[1])
      ).unlink()
     with pytest.raises(ValueError, match=r"holds parts \[1\] of \[2\].*--refresh"):
         local.fetch(_PSC)
@@ -2224,15 +2232,15 @@ def _plant(tmp_path: Path, day: str, bodies: dict[int, bytes] = _PSC_PARTS,
     for n, file in enumerate(_psc_files(of, day), 1):
         zipped = tmp_path / file
         zipped.write_bytes(_psc_part(n, bodies[n], of, day))
-        (where / local._extract_name(file)).write_bytes(
-            local._psc_extract(zipped, file.replace(".zip", ".txt")))
+        (where / psc._extract_name(file)).write_bytes(
+            psc._psc_extract(zipped, file.replace(".zip", ".txt")))
     return where
 
 
 def test_a_psc_cache_holding_parts_of_two_snapshots_is_refused_before_any_is_read(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     _serve_psc(monkeypatch, tmp_path, {})  # no download is expected
-    monkeypatch.setattr(local, "PSC_MAX_BAD", 1)
+    monkeypatch.setattr(psc, "PSC_MAX_BAD", 1)
     parts = _plant(tmp_path, _PSC_DAY)
     assert len(local.fetch(_PSC).records) == 4  # the control: one snapshot
     _plant(tmp_path, "2026-10-21")
@@ -2240,9 +2248,9 @@ def test_a_psc_cache_holding_parts_of_two_snapshots_is_refused_before_any_is_rea
         local.fetch(_PSC)
     for path in parts.glob("*2026-10-21*"):
         path.unlink()
-    (parts / local._extract_name(_psc_files(day="2026-10-21")[1])).write_bytes(
-        (parts / local._extract_name(_psc_files()[1])).read_bytes())
-    (parts / local._extract_name(_psc_files()[1])).unlink()
+    (parts / psc._extract_name(_psc_files(day="2026-10-21")[1])).write_bytes(
+        (parts / psc._extract_name(_psc_files()[1])).read_bytes())
+    (parts / psc._extract_name(_psc_files()[1])).unlink()
     with pytest.raises(ValueError, match=r"dated \['2026-10-21', '2026-10-22'\]"):
         local.fetch(_PSC)
 
@@ -2250,12 +2258,12 @@ def test_a_psc_cache_holding_parts_of_two_snapshots_is_refused_before_any_is_rea
 def test_a_psc_snapshot_whose_person_kind_was_renamed_is_refused(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     people = [_psc_person(f"Ann Lee{n}", kind="individual-person-renamed") for n in range(9)]
-    owner = _psc_person("Bo Wu", kind=local.PSC_KINDS[1])
+    owner = _psc_person("Bo Wu", kind=psc.PSC_KINDS[1])
     _psc_snapshot(monkeypatch, tmp_path, {1: _psc_lines(*people, owner)})
     with pytest.raises(ValueError, match="1 of 10 lines are .* records: a kind"):
         local.fetch(_PSC)
     # The control: under the kind's own name, the same snapshot is read.
-    monkeypatch.setattr(local, "PSC_KINDS", ("individual-person-renamed", local.PSC_KINDS[1]))
+    monkeypatch.setattr(psc, "PSC_KINDS", ("individual-person-renamed", psc.PSC_KINDS[1]))
     shutil.rmtree(tmp_path / "local" / _PSC / "parts")
     assert len(local.fetch(_PSC).records) == 10
 
@@ -2276,9 +2284,9 @@ def test_a_damaged_psc_extract_is_refused_naming_the_refresh(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
         damage: Callable[[bytes], bytes], match: str) -> None:
     _serve_psc(monkeypatch, tmp_path, {})
-    monkeypatch.setattr(local, "PSC_MAX_BAD", 1)
+    monkeypatch.setattr(psc, "PSC_MAX_BAD", 1)
     parts = _plant(tmp_path, _PSC_DAY)
-    first = parts / local._extract_name(_psc_files()[0])
+    first = parts / psc._extract_name(_psc_files()[0])
     assert b'"lines": 7' in gzip.decompress(first.read_bytes())
     first.write_bytes(damage(first.read_bytes()))
     with pytest.raises(ValueError, match=f"{match}.*fetch {_PSC} --refresh"):
@@ -2288,9 +2296,9 @@ def test_a_damaged_psc_extract_is_refused_naming_the_refresh(
 def test_a_psc_extract_of_another_version_is_neither_read_nor_resumed(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     asked = _psc_snapshot(monkeypatch, tmp_path)
-    monkeypatch.setattr(local, "PSC_EXTRACT_VERSION", 0)
+    monkeypatch.setattr(psc, "PSC_EXTRACT_VERSION", 0)
     parts = _plant(tmp_path, _PSC_DAY)
-    monkeypatch.setattr(local, "PSC_EXTRACT_VERSION", 1)
+    monkeypatch.setattr(psc, "PSC_EXTRACT_VERSION", 1)
     with pytest.raises(ValueError, match="is not an extract of version 1"):
         local.fetch(_PSC)
     # Staged for a resume, the old version's extracts are downloaded anew.
@@ -2304,7 +2312,7 @@ def test_a_psc_corpus_of_another_sample_is_refused_on_load(
     _psc_snapshot(monkeypatch, tmp_path)
     local.fetch(_PSC)
     assert local.load(_PSC) is not None  # the control
-    monkeypatch.setattr(local, "PSC_SAMPLE", 8)
+    monkeypatch.setattr(psc, "PSC_SAMPLE", 8)
     with pytest.raises(ValueError, match=r"keeps 1 in 1 filed names.*keeps 1 in 8"
                                           f".*fetch {_PSC} --refresh"):
         local.load(_PSC)
@@ -2571,6 +2579,21 @@ def _globals_read(code: types.CodeType) -> set[str]:
         if isinstance(const, types.CodeType):
             names |= _globals_read(const)
     return names
+
+
+def test_local_corpora_binds_no_constant_a_fetch_reads() -> None:
+    # A test patches a fetch's constant on the module that reads it
+    # (core.RETRIES, tse.TSE_MAX_BAD). Were local_corpora to bind the same
+    # object too, a patch set on it would be taken and reach no fetch, and
+    # the test would pass with its guard off; unbound, the patch raises.
+    # PSC is the source's name, a key of SOURCES that local_agreement
+    # reads, and no fetch's setting.
+    bound = {name for module in (core, ctgov, fec, tse, tw, ukec, psc)
+             for name, value in vars(module).items()
+             if name.isupper() and name != "TYPE_CHECKING"  # typing's, imported
+             and not isinstance(value, types.ModuleType)
+             and getattr(local, name, None) is value}
+    assert bound == {"PSC"}
 
 
 def test_the_fold_lists_everything_its_functions_call_and_read() -> None:

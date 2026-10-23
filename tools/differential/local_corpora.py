@@ -40,13 +40,17 @@ $NAMEPARSER_TOOLS_CACHE (default ~/.cache/nameparser-tools), and
 
 A live source has no fixed snapshot to pin, so the cached copy IS the
 pin: a count quoted from it names the data date the header prints, and
-a later fetch may differ. A new source is a SOURCES row: a fetch
-function returning the records and the source's data date, and for a
-source that caches its own input, the hooks that renew it on a
-refresh and refuse a corpus read from another version of it (tw-donors
-needs neither: each zip it caches is named by the version the listing
-gives).
-
+a later fetch may differ. A new source is a module of its own,
+local_<source>.py, built on local_core.py's shared machinery, and a
+SOURCES row: a fetch function returning the records and the source's
+data date, and for a source that caches its own input, the hooks that
+renew it on a refresh and refuse a corpus read from another version of
+it (tw-donors needs neither: each zip it caches is named by the version
+the listing gives). What each source is, what it is the population for
+and what its terms allow is its module's docstring: local_ctgov.py
+(ctgov-officials), local_fec.py (fec-individuals), local_tse.py
+(tse-donors), local_tw.py (tw-donors), local_ukec.py (ukec-individuals)
+and local_psc.py (psc-individuals).
 """
 from __future__ import annotations
 
@@ -78,11 +82,14 @@ if _HERE not in sys.path:
     sys.path.append(_HERE)
 
 import corpus_build  # noqa: E402
+import local_core  # noqa: E402
 from local_core import Fetched as Fetched, Source, _again, fetch_command  # noqa: E402
 from local_ctgov import fetch_ctgov  # noqa: E402
-from local_fec import FEC_CYCLE, check_fec, fetch_fec, renew_fec  # noqa: E402
+import local_fec  # noqa: E402
+import local_tse  # noqa: E402
+from local_fec import check_fec, fetch_fec, renew_fec  # noqa: E402
 from local_psc import PSC, check_psc, fetch_psc, renew_psc  # noqa: E402
-from local_tse import TSE_ELECTIONS, check_tse, fetch_tse  # noqa: E402
+from local_tse import check_tse, fetch_tse  # noqa: E402
 from local_tw import fetch_tw  # noqa: E402
 from local_ukec import fetch_ukec  # noqa: E402
 
@@ -150,12 +157,12 @@ SOURCES: dict[str, Source] = {
         credit="ClinicalTrials.gov (NLM) study officials", unit="officials",
         fetch=fetch_ctgov),
     "fec-individuals": Source(
-        credit=f"FEC individual contributions, {FEC_CYCLE} cycle "
+        credit=f"FEC individual contributions, {local_fec.FEC_CYCLE} cycle "
                f"(52 U.S.C. 30111(a)(4): not for soliciting or commercial use)",
         unit="names", fetch=fetch_fec, renew=renew_fec, check=check_fec),
     "tse-donors": Source(
         credit=f"TSE (Tribunal Superior Eleitoral) candidates' receipts from "
-               f"individuals, {' and '.join(TSE_ELECTIONS)} elections "
+               f"individuals, {' and '.join(local_tse.TSE_ELECTIONS)} elections "
                f"(dadosabertos.tse.jus.br, CC BY)",
         unit="name pairs", fetch=fetch_tse, check=check_tse),
     "tw-donors": Source(
@@ -183,7 +190,7 @@ def directory(source: str, *, create: bool = True) -> Path:
     if source not in SOURCES:
         raise ValueError(f"no local corpus {source!r}; the sources are "
                          + ", ".join(sorted(SOURCES)))
-    return corpus_build.cache_dir(f"local/{source}", create=create)
+    return local_core.directory(source, create=create)
 
 
 def fetch(source: str) -> Local:

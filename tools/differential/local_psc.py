@@ -33,8 +33,6 @@ from local_core import (Fetched, _again, _download, _pinned, _refuse_past, _retr
                         directory)
 
 
-# -- Companies House people with significant control -------------------------
-
 PSC = "psc-individuals"
 PSC_PAGE = "https://download.companieshouse.gov.uk/en_pscdata.html"
 #: A part of the day's snapshot as the page links it: its file, date,
