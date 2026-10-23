@@ -41,7 +41,9 @@ pin: a count quoted from it names the data date the header prints, and
 a later fetch may differ. A new source is a SOURCES row: a fetch
 function returning the records and the source's data date, and for a
 source that caches its own input, the hooks that renew it on a
-refresh and refuse a corpus read from another version of it.
+refresh and refuse a corpus read from another version of it (tw-donors
+needs neither: each zip it caches is named by the version the listing
+gives).
 
 ctgov-officials -- every overall official of every study on
 ClinicalTrials.gov, whatever the role (principal investigators, study
@@ -75,11 +77,13 @@ campaign finance report Taiwan's Control Yuan publishes on its political
 donation platform (ardata.cy.gov.tw, the zips data.gov.tw lists): 454
 reports of 64 elections on 2026-10-22, presidential, legislative and
 local: every report from 2018's elections on, and the residual reports
-of 2014's and 2016's. Each report's zip is cached whole beside the
-corpus (40 MB), under the name the platform's listing gives it, so a
-refresh downloads only the reports published or rebuilt since. Names as a candidate's staff typed them into a filing, published
-in full where the ID, address and phone beside them are masked: of the
-308,653 on 2026-10-05, 296,803 were three Han characters, 5,449 four
+of 2014's and 2016's. Each report's zip is cached whole in a reports/
+folder beside the corpus (40 MB on 2026-10-22), under the name the
+platform's listing gives it, so a refresh downloads only the reports
+published or rebuilt since. Names as a candidate's staff typed them
+into a filing, published in full where the ID, address and phone
+beside them are masked: of the
+308,663 on 2026-10-05, 296,816 were three Han characters, 5,449 four
 and 5,260 two, so it is the population for unspaced Han names written
 family first, and for the married double surname (冠夫姓) a four-
 character name often is. Under the Open Government Data License,
@@ -109,6 +113,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 import zipfile
+import zlib
 from collections import Counter
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
@@ -232,9 +237,9 @@ class _Unparsed(Exception):
 
 
 def _get_json(url: str) -> dict[str, Any]:
-    """`url`'s JSON object, fetched by _retried: one page per thousand
-    studies (608 on 2026-10-21), and starting over would cost the whole
-    run."""
+    """`url`'s JSON object, fetched by _retried: a long paged run
+    (ClinicalTrials.gov's 608 pages on 2026-10-21) should not start over
+    for one failed page."""
     data = _retried(url, lambda body: corpus_build.parse_json(body, url), 0.1)
     if not isinstance(data, dict):
         raise ValueError(f"{url} answered {type(data).__name__}, not an object")
@@ -243,10 +248,10 @@ def _get_json(url: str) -> dict[str, Any]:
 
 def _retried(url: str, read: Callable[[bytes], _T], delay: float) -> _T:
     """`url`'s body as `read` reads it, retried with a backoff and a line
-    on stderr for each retry, `read` raising ValueError for a body cut
-    short in transit; `delay` seconds of sleep after each request. Any
-    other 4xx is the request's fault and is raised, as is the last
-    attempt's error."""
+    on stderr for each retry; any ValueError from `read` is retried as a
+    body cut short in transit, and `delay` seconds of sleep follow each
+    request. A 4xx other than 429 is the request's fault and is raised,
+    as is the last attempt's error."""
     for attempt in range(CTGOV_RETRIES):
         try:
             body = corpus_build.fetch_bytes(url, user_agent=USER_AGENT,
@@ -254,7 +259,7 @@ def _retried(url: str, read: Callable[[bytes], _T], delay: float) -> _T:
             try:
                 return read(body)
             except ValueError as exc:
-                raise _Unparsed(str(exc)) from None
+                raise _Unparsed(f"{url}: {exc}") from None
         except (*_TRANSIENT, _Unparsed) as exc:
             if (isinstance(exc, urllib.error.HTTPError) and exc.code < 500
                     and exc.code != 429 or attempt == CTGOV_RETRIES - 1):
@@ -488,7 +493,13 @@ TW_HEADER = (
     "存入專戶日期", "返還/繳庫", "支出用途", "金錢類", "地址", "聯絡電話",
     "應揭露之支出對象", "支出對象之內部人員姓名", "支出對象之內部人員職稱",
     "政黨之內部人員姓名", "政黨之內部人員職稱", "關係", "更正註記", "資料更正日期")
-TW_CATEGORY, TW_DONOR = "收支科目", "捐贈者／支出對象"
+TW_CATEGORY, TW_DONOR, TW_SERIAL = "收支科目", "捐贈者／支出對象", "申報序號／年度"
+#: The candidate's column, the one a report with no income fills in
+#: the single row it writes, every other column holding TW_EMPTY.
+TW_CANDIDATE = "擬參選人／政黨"
+#: The columns every file must hold, the ones read.
+TW_NEEDED = frozenset({TW_CATEGORY, TW_DONOR, TW_SERIAL, TW_CANDIDATE})
+TW_EMPTY = "-"
 TW_INDIVIDUAL = "個人捐贈收入"
 #: The income categories a candidate's report holds (the platform's
 #: classTypes with ctrlTp 0): individual, business, party and civic
@@ -496,28 +507,40 @@ TW_INDIVIDUAL = "個人捐贈收入"
 TW_CATEGORIES = frozenset({
     TW_INDIVIDUAL, "營利事業捐贈收入", "政黨捐贈收入", "人民團體捐贈收入",
     "匿名捐贈", "其他收入"})
-#: The candidate's column, the one a report with no income fills in
-#: the single row it writes, every other column holding TW_EMPTY.
-TW_CANDIDATE = "擬參選人／政黨"
-#: The columns every file must hold, the ones read.
-TW_NEEDED = frozenset({TW_CATEGORY, TW_DONOR, TW_CANDIDATE})
-TW_EMPTY = "-"
 #: A report's serial: 1 the first report, 2 to 6 the five reports on
 #: the money left over.
 TW_SERIALS = range(1, 7)
-#: More than this share of rows not as long as their file's header, or
-#: of rows with an empty category, refuses the fetch, as FEC_MAX_BAD
-#: does. A row with no category is read past: one 2021 residual report
-#: held one, an income of NT$53 with no donor ID (2026-10-22).
+_TW_NUMERALS = "一二三四五"
+#: A donor cell that holds no name: anonymous (19 individual donations
+#: wrote it on 2026-10-22) or a dash.
+TW_NO_NAME = frozenset({"匿名", TW_EMPTY})
+#: A character that masks part of a name (3 donor names held an
+#: asterisk on 2026-10-22): such a name is counted, not kept.
+_TW_MASK = re.compile(r"[*＊○]")
+#: More than this share of the fetch's rows not as long as their file's
+#: header, without a category, or cut off by a stray quote, or of its
+#: individual donations naming a masked donor, refuses the fetch, as
+#: FEC_MAX_BAD does. One 2021 residual report held a row with no
+#: category, an income of NT$53 with no donor ID (2026-10-22).
 TW_MAX_BAD = 1 / 10_000
+#: More than this share of ONE report's rows bad refuses the fetch too:
+#: the share over the whole fetch would let a small report's rows all
+#: go (the worst report on 2026-10-22 had 1 bad row of 6).
+TW_MAX_REPORT_BAD = 1 / 2
+#: What a row is counted as when it is read past without a name.
+_TW_BAD = ("rows_not_as_long_as_the_header", "rows_without_a_category",
+           "rows_cut_by_a_stray_quote")
 
 
 def _tw_reports() -> list[dict[str, Any]]:
     """Every election report the platform lists, paged: the listing is
     what says a report exists, since the download answers a report that
-    does not and a fault alike, with a 500 and an incident number."""
+    does not and a fault alike, with a 500 and an incident number. Two
+    reports listed under one zip name are refused, since the cache keeps
+    a zip by its name."""
     reports: list[dict[str, Any]] = []
     seen: set[tuple[str, str, int]] = set()
+    zips: set[object] = set()
     page, count = 1, None
     while count is None or len(reports) < count:
         query = urllib.parse.urlencode({"page": page, "pageSize": TW_PAGE})
@@ -535,7 +558,11 @@ def _tw_reports() -> list[dict[str, Any]]:
             if key in seen:
                 raise ValueError(f"{key} was listed twice: the listing shifted "
                                  f"under the fetch; fetch again")
+            if row["zipFileName"] in zips:
+                raise ValueError(f"{key} is listed under the zip name "
+                                 f"{row['zipFileName']!r} another report has")
             seen.add(key)
+            zips.add(row["zipFileName"])
             reports.append(row)
         page += 1
     if len(reports) != count:
@@ -560,10 +587,19 @@ def _tw_url(report: dict[str, Any]) -> str:
         "SearchType": 2, "DownloadType": 3})
 
 
+def _tw_serial_names(serial: int) -> frozenset[str]:
+    """How a report's rows write its serial: 首次申報 for the first, 第N次賸餘
+    for a residual one, N in either numerals (both are written)."""
+    if serial == 1:
+        return frozenset({"首次申報"})
+    return frozenset({f"第{serial - 1}次賸餘", f"第{_TW_NUMERALS[serial - 2]}次賸餘"})
+
+
 def _tw_incomes(body: bytes) -> tuple[bytes, str] | None:
     """A report zip's incomes.csv and its timestamp, None where the zip
-    holds none, or ValueError where the body is no whole zip: a download
-    cut short, which _retried retries."""
+    holds none, or ValueError where the body is no whole zip or its
+    member does not inflate: a download cut short or damaged, which
+    _retried retries."""
     try:
         with zipfile.ZipFile(io.BytesIO(body)) as archive:
             if TW_INCOMES not in archive.namelist():
@@ -571,8 +607,10 @@ def _tw_incomes(body: bytes) -> tuple[bytes, str] | None:
             member = archive.getinfo(TW_INCOMES)
             stamp = "{:04d}-{:02d}-{:02d}T{:02d}:{:02d}:{:02d}".format(*member.date_time)
             return archive.read(member), stamp
-    except zipfile.BadZipFile as exc:
-        raise ValueError(f"not a whole zip ({exc})") from None
+    except (zipfile.BadZipFile, zlib.error, EOFError) as exc:
+        start = body[:2]
+        raise ValueError(f"not a whole zip ({type(exc).__name__}: {exc}; it starts "
+                         f"{start!r})") from None
 
 
 #: The cached reports' folder, beside the corpus.
@@ -587,74 +625,143 @@ def _tw_whole(body: bytes) -> bytes:
     return body
 
 
-def _tw_report_zip(report: dict[str, Any], label: str) -> bytes:
-    """A listed report's zip, read from the reports folder where an
-    earlier fetch cached it under the name the listing gives, else
-    downloaded and cached there. The name carries the date the platform
-    built the zip, so a rebuilt report is downloaded anew, and a cached
-    zip that is no whole zip is too."""
+def _tw_cached(report: dict[str, Any]) -> Path:
+    return directory("tw-donors") / TW_REPORTS / report["zipFileName"]
+
+
+def _tw_report_zip(report: dict[str, Any],
+                   label: str) -> tuple[bytes, str, bytes | None]:
+    """A listed report's incomes.csv, its timestamp, and the zip when it
+    was downloaded rather than read from the reports folder, where an
+    earlier fetch cached it under the name the listing gives. The name
+    carries the date the platform built the zip, so a rebuilt report is
+    downloaded anew, and a cached zip that is no whole zip is too. A zip
+    holding no incomes.csv is refused without being retried: a layout
+    the tool was not written for, or one bad answer. The caller caches a
+    downloaded zip only once its rows are read (_tw_cache_zip), since a
+    cached zip that is refused would refuse every later fetch."""
     name = report["zipFileName"]
     if not isinstance(name, str) or not _TW_ZIP_NAME.fullmatch(name):
         raise ValueError(f"{label} is listed with the zip name {name!r}, which is "
                          f"no file name this tool caches; the listing has changed")
-    path = directory("tw-donors") / TW_REPORTS / name
+    path = _tw_cached(report)
     if path.exists():
-        body = path.read_bytes()
         try:
-            return _tw_whole(body)
+            if got := _tw_incomes(path.read_bytes()):
+                return (*got, None)
         except ValueError:
-            print(f"  downloading again a cached zip cut short: {path}", file=sys.stderr)
+            print(f"  downloading again a cached zip that is not whole: {path}",
+                  file=sys.stderr)
     body = _retried(_tw_url(report), _tw_whole, TW_DELAY)
+    if (got := _tw_incomes(body)) is None:
+        raise ValueError(f"{label}'s zip holds no {TW_INCOMES}: the reports' "
+                         f"layout has changed")
+    return (*got, body)
+
+
+def _tw_cache_zip(report: dict[str, Any], body: bytes) -> None:
+    path = _tw_cached(report)
     path.parent.mkdir(exist_ok=True)
     corpus_build.write_atomic(path, body)
-    return body
 
 
-def _tw_read(incomes: bytes, label: str, names: set[str], counts: Counter[str]) -> None:
+def _tw_lines(text: str) -> list[str]:
+    """`text` cut into its lines at "\\n" alone, each keeping its ending:
+    str.splitlines() would cut at U+2028 and the other separators, which
+    a name may hold (corpus_build.jsonl_lines)."""
+    return re.findall(r"[^\n]*\n|[^\n]+$", text)
+
+
+def _tw_rows(text: str, width: int, counts: Counter[str]) -> Iterator[list[str]]:
+    """incomes.csv's records after its header. A record whose field
+    holds line breaks is a quoted field spanning lines, or a stray quote
+    opening a field and taking the rows after it in until another
+    closes it: two 2020 reports held four, which took 157 rows in
+    (2026-10-22). Where one of the lines after its first reads as a
+    whole row alone, the record is cut back into its lines, each read
+    alone: the lines as wide as the header are rows, and the rest are
+    counted as cut by the quote. Otherwise it stays one record (a phone
+    field holding two numbers on two lines, 8 on 2026-10-22)."""
+    lines = _tw_lines(text)
+    reader = csv.reader(lines)
+    next(reader, None)
+    start = reader.line_num
+    for record in reader:
+        end = reader.line_num
+        if end - start > 1:
+            alone = [next(csv.reader([line]), []) for line in lines[start:end]]
+            if any(len(row) == width for row in alone[1:]):
+                counts["records_cut_back_into_their_lines"] += 1
+                for row in alone:
+                    if len(row) == width:
+                        yield row
+                    else:
+                        counts["rows_cut_by_a_stray_quote"] += 1
+                start = end
+                continue
+        start = end
+        yield record
+
+
+def _tw_read(incomes: bytes, report: dict[str, Any], label: str, names: set[str],
+             counts: Counter[str]) -> None:
     """Add a report's donor names to `names`, counting into `counts`
     what is read past. A header or a category this tool was not written
     for is refused, not read: a moved column would put another field's
     values in the corpus, so a header holding a column TW_HEADER does
     not name, a column twice, or not every column TW_NEEDED names is
-    refused; one missing a column the tool does not read is read. The
-    one row a report with no income writes, every column a dash but the
-    candidate's, is counted apart."""
+    refused; one missing a column the tool does not read is read. A row
+    whose serial is not the report's is refused: the zip is another
+    report's. The one row a report with no income writes, every column a
+    dash but the candidate's, is counted apart."""
     try:
         text = incomes.decode("utf-8-sig")
     except UnicodeDecodeError as exc:
         raise ValueError(f"{label}'s {TW_INCOMES} is not UTF-8 ({exc})") from None
-    rows = csv.reader(io.StringIO(text, newline=""))
-    header = next(rows, [])
+    header = next(csv.reader(_tw_lines(text)), [])
     if (not set(header) <= set(TW_HEADER) or len(set(header)) != len(header)
             or not TW_NEEDED <= set(header)):
         raise ValueError(f"{label}'s {TW_INCOMES} has the header {tuple(header)}, "
                          f"which is not columns of TW_HEADER, each once, holding "
                          f"those TW_NEEDED names")
-    category_at, donor_at, candidate_at = (
-        header.index(column) for column in (TW_CATEGORY, TW_DONOR, TW_CANDIDATE))
-    for row in rows:
-        counts["rows"] += 1
+    category_at, donor_at, serial_at, candidate_at = (
+        header.index(column) for column in (TW_CATEGORY, TW_DONOR, TW_SERIAL, TW_CANDIDATE))
+    serials = _tw_serial_names(int(report["yearOrSerial"]))
+    mine = Counter[str]()
+    for row in _tw_rows(text, len(header), mine):
+        mine["rows"] += 1
         if len(row) != len(header):
-            counts["rows_not_as_long_as_the_header"] += 1
+            mine["rows_not_as_long_as_the_header"] += 1
+            continue
+        if {f for i, f in enumerate(row) if i != candidate_at} == {TW_EMPTY}:
+            mine["rows_of_a_report_with_no_income"] += 1
             continue
         category = row[category_at]
-        if {f for i, f in enumerate(row) if i != candidate_at} == {TW_EMPTY}:
-            counts["rows_of_a_report_with_no_income"] += 1
-            continue
         if not category:
-            counts["rows_without_a_category"] += 1
+            mine["rows_without_a_category"] += 1
             continue
         if category not in TW_CATEGORIES:
             raise ValueError(f"{label}'s {TW_INCOMES} holds the category "
                              f"{category!r}, which TW_CATEGORIES does not list")
+        if row[serial_at] not in serials:
+            raise ValueError(f"{label}'s {TW_INCOMES} holds a row of the report "
+                             f"{row[serial_at]!r}: the zip is another report's")
         if category != TW_INDIVIDUAL:
-            counts["rows_from_other_categories"] += 1
+            mine["rows_from_other_categories"] += 1
             continue
-        counts["individual_donations"] += 1
-        if name := row[donor_at].strip():
-            names.add(name)
+        mine["individual_donations"] += 1
+        name = row[donor_at].strip()
+        if not name or name in TW_NO_NAME:
+            mine["donations_without_a_name"] += 1
+        elif _TW_MASK.search(name):
+            mine["donations_naming_a_masked_donor"] += 1
         else:
-            counts["donations_without_a_name"] += 1
+            names.add(name)
+    bad = sum(mine[key] for key in _TW_BAD)
+    if bad > (mine["rows"] + mine["rows_cut_by_a_stray_quote"]) * TW_MAX_REPORT_BAD:
+        raise ValueError(f"{bad:,} of {label}'s rows are read past as malformed: "
+                         f"the file's layout has changed")
+    counts.update(mine)
 
 
 def fetch_tw() -> Fetched:
@@ -666,14 +773,19 @@ def fetch_tw() -> Fetched:
     gave to, as the FEC source keeps one per name. Only the donor column
     of the rows the category marks as individual donations is kept, its
     spaces stripped; the masked ID, address and phone columns and the
-    amounts are read past. Each report's zip is cached (_tw_report_zip),
-    so a fetch cut short or refused goes on where it stopped, and a
-    refresh downloads only the reports published or rebuilt since; a
-    cached zip the listing no longer names is deleted once the fetch has
-    read the rest. The listing is read again at the end, and a
-    report published or replaced during the fetch refuses it. The data
-    date is the newest incomes.csv's own timestamp, which carries no time
-    zone."""
+    amounts are read past, and a donor cell that holds no name or a
+    masked one is counted. Each report's zip is cached
+    (_tw_report_zip), so a fetch cut short or refused goes on where it
+    stopped, and a refresh downloads only the reports published or
+    rebuilt since: a zip rebuilt under the name it had is not seen, and
+    deleting the reports folder downloads every one again. A cached zip
+    the listing no longer names is deleted at the end of a fetch that
+    passes its checks, and a downloaded zip is cached only once its rows
+    are read, so a zip refused is downloaded again rather than refused
+    from the cache for good. The listing is read again at the end, and a
+    report published, replaced or withdrawn during the fetch refuses it.
+    The data date is the newest incomes.csv's own timestamp, which
+    carries no time zone."""
     reports = _tw_reports()
     names: set[str] = set()
     counts: Counter[str] = Counter()
@@ -683,35 +795,35 @@ def fetch_tw() -> Fetched:
             print(f"  {number:,} of {len(reports):,} reports", file=sys.stderr)
         label = f"{report['electionName']} {report['electionArea']} " \
                 f"report {int(report['yearOrSerial'])}"
-        got = _tw_incomes(_tw_report_zip(report, label))
-        if got is None:
-            raise ValueError(f"{label}'s zip holds no {TW_INCOMES}: the reports' "
+        incomes, stamp, downloaded = _tw_report_zip(report, label)
+        stamps.append(stamp)
+        _tw_read(incomes, report, label, names, counts)
+        if downloaded is not None:
+            _tw_cache_zip(report, downloaded)
+    for key, total in [(key, "rows") for key in _TW_BAD] + [
+            ("donations_naming_a_masked_donor", "individual_donations")]:
+        if counts[key] > counts[total] * TW_MAX_BAD:
+            raise ValueError(f"{counts[key]:,} of {counts[total]:,} {total} are "
+                             f"{key.split('_', 1)[1].replace('_', ' ')}: the files' "
                              f"layout has changed")
-        stamps.append(got[1])
-        _tw_read(got[0], label, names, counts)
-    for key, what in (("rows_not_as_long_as_the_header",
-                       "not as long as their file's header"),
-                      ("rows_without_a_category", "without a category")):
-        if counts[key] > counts["rows"] * TW_MAX_BAD:
-            raise ValueError(f"{counts[key]:,} of {counts['rows']:,} rows are "
-                             f"{what}: the files' layout has changed")
     if _tw_versions(_tw_reports()) != _tw_versions(reports):
-        raise ValueError("the platform published or replaced a report during "
-                         "the fetch; fetch again")
+        raise ValueError("the platform published, replaced or withdrew a report "
+                         "during the fetch; fetch again")
     listed = {r["zipFileName"] for r in reports}
     for stale in (directory("tw-donors") / TW_REPORTS).glob("*.zip"):
         if stale.name not in listed:
             stale.unlink()
-    return Fetched([{"name": name} for name in sorted(names)], max(stamps, default=""), {
+    detail: dict[str, Any] = {
         "reports": len(reports),
         "first_reports": sum(int(r["yearOrSerial"]) == 1 for r in reports),
-        "elections": len({r["electionName"] for r in reports}),
-        "rows": counts["rows"], "individual_donations": counts["individual_donations"],
-        "rows_from_other_categories": counts["rows_from_other_categories"],
-        "donations_without_a_name": counts["donations_without_a_name"],
-        "rows_of_a_report_with_no_income": counts["rows_of_a_report_with_no_income"],
-        "rows_without_a_category": counts["rows_without_a_category"],
-        "rows_not_as_long_as_the_header": counts["rows_not_as_long_as_the_header"]})
+        "elections": len({r["electionName"] for r in reports})}
+    for key in ("rows", "individual_donations", "rows_from_other_categories",
+                "donations_without_a_name", "donations_naming_a_masked_donor",
+                "rows_of_a_report_with_no_income", "records_cut_back_into_their_lines",
+                *_TW_BAD):
+        detail[key] = counts[key]
+    return Fetched([{"name": name} for name in sorted(names)], max(stamps, default=""),
+                   detail)
 
 
 SOURCES: dict[str, Source] = {
