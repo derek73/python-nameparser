@@ -30,6 +30,11 @@ $NAMEPARSER_TOOLS_CACHE (default ~/.cache/nameparser-tools), and
 - snapshot.jsonl, and snapshot.jsonl.source.json naming the corpus it
   was recorded from, so a snapshot is never compared with a corpus
   fetched after it.
+- wordindex.json -- the word index tools/name_usage.py looks words up
+  in, written on first use and keyed to the records and the fold
+  (cached_index), so a single-word lookup parses neither raw.jsonl's
+  records nor the names (load() still reads both files for their
+  sha256).
 
 A live source has no fixed snapshot to pin, so the cached copy IS the
 pin: a count quoted from it names the data date the header prints, and
@@ -69,13 +74,16 @@ from __future__ import annotations
 
 import argparse
 import functools
+import dataclasses
 import hashlib
 import http.client
+import inspect
 import json
 import os
 import re
 import sys
 import time
+import types
 import unicodedata
 import urllib.error
 import urllib.parse
@@ -83,7 +91,7 @@ import urllib.request
 import zipfile
 from collections import Counter
 from collections.abc import Callable, Iterator
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -98,10 +106,18 @@ import corpus_build  # noqa: E402
 USER_AGENT = ("python-nameparser local_corpora "
               "(https://github.com/derek73/python-nameparser)")
 RAW, CORPUS, META, SNAPSHOT = "raw.jsonl", "corpus.jsonl", "meta.json", "snapshot.jsonl"
+INDEX = "wordindex.json"
 META_VERSION = 2  # 2: corpus.jsonl's sha256, and the source's detail nested
 #: The keys load() needs in meta.json, with their types.
 _META_KEYS = {"version": int, "source": str, "data_date": str, "records": int,
               "names": int, "sha256": str, "corpus_sha256": str, "detail": dict}
+
+
+class CorpusDamaged(ValueError):
+    """A cached corpus that is not what fetch() wrote: its message names
+    the fetch that replaces it. A ValueError, which every caller already
+    catches, but a class of its own, so that a caller guarding a lookup
+    catches the corpus's damage and not a bug of its own."""
 
 
 @dataclass(frozen=True)
@@ -132,10 +148,28 @@ class Source:
 
 @dataclass(frozen=True)
 class Local:
-    """A local corpus as loaded: its records and meta.json."""
+    """A local corpus as loaded: meta.json, and its records, read from
+    raw.jsonl on first use: a lookup answered from the cached word index
+    needs none of them (1,893,964 FEC records took 1.1s to parse on
+    2026-10-22). Two loads of one fetch compare equal, the meta.json a
+    fetch writes holding the sha256 of the records."""
     source: str
-    records: list[dict[str, str]]
     meta: dict[str, Any]
+    #: The records when they are already in hand (a fetch, a test).
+    preloaded: list[dict[str, str]] | None = field(default=None, compare=False,
+                                                   repr=False)
+
+    # No slots=True: the cached properties write the instance __dict__.
+    @functools.cached_property
+    def records(self) -> list[dict[str, str]]:
+        if self.preloaded is not None:
+            return self.preloaded
+        return read_records(self.source, self.meta)
+
+    @property
+    def size(self) -> int:
+        """How many records, without reading them where meta.json says."""
+        return self.meta["records"] if "records" in self.meta else len(self.records)
 
     @property
     def credit(self) -> str:
@@ -146,14 +180,14 @@ class Local:
 
     def header(self) -> str:
         """The attribution every report opens with."""
-        return (f"{self.credit}; {len(self.records):,} "
+        return (f"{self.credit}; {self.size:,} "
                 f"{SOURCES[self.source].unit} (local corpus {self.source})")
 
     @functools.cached_property
     def index(self) -> WordIndex:
-        """The word index, built on first use: a few seconds over the
-        whole ClinicalTrials.gov corpus."""
-        return word_index(self)
+        """The word index, read from its cache beside the corpus or built
+        and cached there (cached_index)."""
+        return cached_index(self)
 
 
 # -- ClinicalTrials.gov ------------------------------------------------------
@@ -458,52 +492,71 @@ def fetch(source: str) -> Local:
             "corpus_sha256": hashlib.sha256(corpus).hexdigest(),
             "detail": fetched.detail}
     corpus_build.write_atomic(path / META, json.dumps(meta, indent=2).encode())
-    return Local(source, fetched.records, meta)
+    return Local(source, meta, fetched.records)
 
 
 def load(source: str) -> Local | None:
     """The cached corpus, or None when it was never fetched. Anything
     else that is not the corpus fetch() wrote -- a meta.json of another
     version or shape, a raw.jsonl or corpus.jsonl its sha256 does not
-    match, a record without a name -- raises ValueError naming the way
-    out: a damaged file must not read as a smaller corpus."""
+    match -- raises CorpusDamaged naming the way out: a damaged file must
+    not read as a smaller corpus. The records are read on first use, and
+    a record without a name raises there (read_records)."""
     path = directory(source, create=False)
     if not (path / META).exists():
         return None
-    again = f"; fetch it again: {fetch_command(source, refresh=True)}"
+    again = _again(source)
     try:
         meta = json.loads((path / META).read_text(encoding="utf-8"))
     except ValueError as exc:
-        raise ValueError(f"{path / META} is not JSON ({exc}){again}") from None
+        raise CorpusDamaged(f"{path / META} is not JSON ({exc}){again}") from None
     if not isinstance(meta, dict) or meta.get("version") != META_VERSION:
-        raise ValueError(f"{path / META} was not written by this version of "
+        raise CorpusDamaged(f"{path / META} was not written by this version of "
                          f"this tool{again}")
     for key, kind in _META_KEYS.items():
         value = meta.get(key)
         if not isinstance(value, kind) or isinstance(value, bool):
-            raise ValueError(f"{path / META} has no {kind.__name__} {key!r}{again}")
+            raise CorpusDamaged(f"{path / META} has no {kind.__name__} {key!r}{again}")
     if (check := SOURCES[source].check) and (why := check(meta)):
-        raise ValueError(f"{path / META} {why}{again}")
+        raise CorpusDamaged(f"{path / META} {why}{again}")
 
-    def verified(name: str, key: str) -> bytes:
-        body = (path / name).read_bytes() if (path / name).exists() else b""
-        if hashlib.sha256(body).hexdigest() != meta[key]:
-            raise ValueError(f"{path / name} does not match the sha256 in "
-                             f"{META}{again}")
-        return body
+    _verified(source, RAW, meta["sha256"])
+    _verified(source, CORPUS, meta["corpus_sha256"])
+    return Local(source, meta)
 
-    raw = verified(RAW, "sha256")
-    verified(CORPUS, "corpus_sha256")
+
+def _again(source: str) -> str:
+    return f"; fetch it again: {fetch_command(source, refresh=True)}"
+
+
+def _verified(source: str, name: str, sha256: str) -> bytes:
+    """`source`'s file `name`, or ValueError naming the way out unless
+    it matches the sha256 meta.json gives it."""
+    path = directory(source, create=False) / name
+    body = path.read_bytes() if path.exists() else b""
+    if hashlib.sha256(body).hexdigest() != sha256:
+        raise CorpusDamaged(f"{path} does not match the sha256 in {META}{_again(source)}")
+    return body
+
+
+def read_records(source: str, meta: dict[str, Any]) -> list[dict[str, str]]:
+    """raw.jsonl's records, checked against its sha256 again (load()
+    checked it, but the file is read later and may have changed), each
+    holding a name, or CorpusDamaged naming the way out."""
+    raw = _verified(source, RAW, meta["sha256"])
     records = [json.loads(line) for line in corpus_build.jsonl_lines(raw.decode())]
     if any(not isinstance(r, dict) or not isinstance(r.get("name"), str)
            for r in records):
-        raise ValueError(f"{path / RAW} holds a record without a name{again}")
-    return Local(source, records, meta)
+        raise CorpusDamaged(f"{directory(source, create=False) / RAW} holds a record "
+                         f"without a name{_again(source)}")
+    return records
 
 
 def require(source: str) -> Local:
     """The cached corpus for a command that cannot go on without it:
-    exits naming the fetch where it is missing or damaged."""
+    exits naming the fetch where it is missing or damaged. Damage to the
+    records shows only once they are read, which main's tally catches
+    the same way."""
     try:
         local = load(source)
     except ValueError as exc:
@@ -593,15 +646,21 @@ def words(text: str) -> list[str]:
 class WordIndex:
     """Per word key: the records writing it anywhere, those writing it
     after a comma, and its spellings as written, each counted by the
-    records writing it (once a record, however often it repeats one)."""
-    anywhere: Counter[str]
-    after_comma: Counter[str]
-    spellings: dict[str, Counter[str]]
+    records writing it (once a record, however often it repeats one).
+    Plain dicts, built or read back from the cache alike, so a missing
+    key reads the same from either: read them with .get(key, 0). Not
+    Counters, so that a cached index needs none rebuilt over it (0.37s of
+    the 0.61s a cached FEC index took to load with them, measured
+    2026-10-22)."""
+    anywhere: dict[str, int]
+    after_comma: dict[str, int]
+    spellings: dict[str, dict[str, int]]
 
 
 def _names(local: Local) -> Counter[str]:
     """Each distinct name with the records writing it: a name repeats
-    across a source's records (536,981 officials, 352,104 names)."""
+    across a source's records (536,981 officials, 352,104 names on
+    2026-10-21)."""
     return Counter(record["name"] for record in local.records)
 
 
@@ -619,7 +678,100 @@ def word_index(local: Local) -> WordIndex:
             after[key] += n
         for key, token in set(before + behind):
             spellings.setdefault(key, Counter())[token] += n
-    return WordIndex(anywhere, after, spellings)
+    return WordIndex(anywhere=dict(anywhere), after_comma=dict(after),
+                     spellings={key: dict(seen) for key, seen in spellings.items()})
+
+
+#: The functions that decide an index's contents from the records, and
+#: the constants they read: a change to any makes a cached index stale,
+#: so fold_fingerprint hashes them rather than trusting a version number
+#: to be bumped. tests/v2/test_local_corpora.py holds these lists to what
+#: the functions call and read.
+_FOLD_CODE = ("word_key", "_strippable", "_keyed", "_names", "word_index")
+_FOLD_CONSTANTS = ("_TOKEN_SPLIT", "_JOINERS")
+
+
+def _stable(value: object) -> str:
+    """repr(), with sets sorted: a frozenset's order moves with the
+    process's string hashing."""
+    if isinstance(value, (set, frozenset)):
+        return "{" + ", ".join(sorted(_stable(v) for v in value)) + "}"
+    if isinstance(value, tuple):
+        return "(" + ", ".join(_stable(v) for v in value) + ")"
+    if isinstance(value, re.Pattern):
+        return f"re({value.pattern!r}, {value.flags})"
+    return repr(value)
+
+
+def _code_digest(code: types.CodeType) -> list[str]:
+    """What a function does, as the interpreter will run it: its
+    bytecode, the names and constants it reads, and its nested code,
+    without line numbers, so moving it does not count as a change."""
+    parts = [code.co_code.hex(), repr(code.co_names), repr(code.co_varnames)]
+    for const in code.co_consts:
+        parts += (_code_digest(const) if isinstance(const, types.CodeType)
+                  else [_stable(const)])
+    return parts
+
+
+def fold_fingerprint() -> str:
+    """A hash of what turns the records into an index, read from the code
+    that is running rather than the source on disk, which may have been
+    edited since: _FOLD_CODE's functions and corpus_build.jsonl_lines
+    (which cuts raw.jsonl into records), _FOLD_CONSTANTS, WordIndex's
+    fields, and the Unicode database that casefold(), NFC and the
+    category test read, which a new Python may move. The bytecode is the
+    interpreter's own, so a new Python rebuilds the index too."""
+    module = globals()
+    functions = [module[name] for name in _FOLD_CODE] + [corpus_build.jsonl_lines]
+    parts = [part for fn in functions for part in _code_digest(inspect.unwrap(fn).__code__)]
+    parts += [_stable(module[name]) for name in _FOLD_CONSTANTS]
+    parts += [repr([f.name for f in dataclasses.fields(WordIndex)]),
+              unicodedata.unidata_version, sys.version]
+    return hashlib.sha256("\0".join(parts).encode()).hexdigest()
+
+
+def _is_counts(value: object) -> bool:
+    return isinstance(value, dict) and all(
+        type(n) is int for n in value.values())
+
+
+def cached_index(local: Local) -> WordIndex:
+    """`local`'s word index, read from wordindex.json beside the corpus
+    where its key matches and its counts are counts, else built and
+    written there. The key is the records' sha256 and fold_fingerprint(),
+    so a refetch, or a change to how a word is cut or folded, rebuilds it
+    rather than answering from a stale index. A Local with no sha256 (a
+    test's) is built and not cached. An index file that is not an index,
+    or not this one, is built over, with a line on stderr: it is derived
+    from the corpus, never the corpus itself."""
+    sha = local.meta.get("sha256")
+    if not isinstance(sha, str):
+        return word_index(local)
+    path = directory(local.source, create=False) / INDEX
+    key = f"{sha}:{fold_fingerprint()}"
+    if path.exists():
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+            if (isinstance(data, dict) and data.get("key") == key
+                    and _is_counts(data.get("anywhere"))
+                    and _is_counts(data.get("after_comma"))
+                    and isinstance(data.get("spellings"), dict)
+                    and all(_is_counts(seen) for seen in data["spellings"].values())):
+                return WordIndex(anywhere=data["anywhere"],
+                                 after_comma=data["after_comma"],
+                                 spellings=data["spellings"])
+            why = "built from other records or by another fold, or not an index"
+        except (OSError, ValueError) as exc:
+            why = str(exc)
+        print(f"rebuilding the word index at {path}: {why}", file=sys.stderr)
+    index = word_index(local)
+    body = json.dumps({"key": key, **dataclasses.asdict(index)}, ensure_ascii=False)
+    try:
+        corpus_build.write_atomic(path, body.encode())
+    except OSError as exc:
+        print(f"could not cache the word index at {path}: {exc}", file=sys.stderr)
+    return index
 
 
 def phrase_counts(local: Local, keys: list[str]) -> tuple[int, int]:
@@ -629,7 +781,7 @@ def phrase_counts(local: Local, keys: list[str]) -> tuple[int, int]:
     'MD/PhD' finds 'MD, PhD' and 'Smith MD, PhD' too. Scans the names,
     since a phrase is no key of the index; none is scanned when one of
     its words is written nowhere."""
-    if any(not local.index.anywhere[key] for key in keys):
+    if any(not local.index.anywhere.get(key, 0) for key in keys):
         return 0, 0
     n = len(keys)
     anywhere = after = 0
@@ -664,10 +816,10 @@ def lookup(local: Local, word: str) -> Lookup | None:
         return None
     index = local.index
     if len(keys) == 1:
-        return Lookup(index.anywhere[keys[0]], index.after_comma[keys[0]],
-                      index.spellings.get(keys[0], Counter()), None)
+        return Lookup(index.anywhere.get(keys[0], 0), index.after_comma.get(keys[0], 0),
+                      Counter(index.spellings.get(keys[0], {})), None)
     anywhere, after = phrase_counts(local, keys)
-    return Lookup(anywhere, after, Counter(), index.anywhere["".join(keys)])
+    return Lookup(anywhere, after, Counter(), index.anywhere.get("".join(keys), 0))
 
 
 # -- the command line ----------------------------------------------------------
@@ -706,7 +858,10 @@ def main(argv: list[str] | None = None) -> int:
                             for k, v in sorted(local.meta["detail"].items())))
         return 0
     local = require(args.source)
-    parts, with_comma = tally(local)
+    try:
+        parts, with_comma = tally(local)
+    except CorpusDamaged as exc:  # the records, read here first
+        raise SystemExit(str(exc)) from None
     print(local.header())
     print(f"{with_comma:,} hold a comma; the text after each comma, by "
           f"{SOURCES[args.source].unit} writing it:")

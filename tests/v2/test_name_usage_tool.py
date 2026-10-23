@@ -86,7 +86,11 @@ _LOAD_LOCALS = tool.load_locals
 
 
 @pytest.fixture(autouse=True)
-def _no_locals(monkeypatch: pytest.MonkeyPatch) -> None:
+def _no_locals(monkeypatch: pytest.MonkeyPatch,
+               tmp_path_factory: pytest.TempPathFactory) -> None:
+    # The cache too: a local corpus's word index is written there, and a
+    # test's must never land in the developer's.
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path_factory.mktemp("cache")))
     monkeypatch.setattr(tool, "load_locals", lambda: [])
 
 
@@ -2179,7 +2183,7 @@ _CREDIT = "ClinicalTrials.gov (NLM) study officials, data as of 2026-10-21"
 
 def _local(*names: str) -> object:
     return tool._local_corpora().Local(
-        "ctgov-officials", [{"name": n} for n in names], {"data_date": "2026-10-21"})
+        "ctgov-officials", {"data_date": "2026-10-21"}, [{"name": n} for n in names])
 
 
 def test_a_local_corpus_not_fetched_names_the_fetch(
@@ -2239,6 +2243,32 @@ def test_a_local_corpus_that_fails_to_load_fails_the_run(
     assert "failed; ValueError: does not match the sha256" in capsys.readouterr().out
 
 
+def test_a_bug_in_a_lookup_is_raised_not_reported_as_a_failed_row(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    def broken(*args: object) -> None:
+        raise ValueError("a bug, not a damaged corpus")
+    monkeypatch.setattr(tool._local_corpora(), "lookup", broken)
+    with pytest.raises(ValueError, match="a bug"):
+        tool.local_rows("MD", [("ctgov-officials", _local("Ann Lee, MD"), "")])
+
+
+def test_records_damaged_after_the_index_was_cached_fail_their_own_row(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    # A cached index answers load_locals without the records; a spaced
+    # word then reads them first in the lookup, outside its guard.
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    module = tool._local_corpora()
+    monkeypatch.setitem(module.SOURCES, "ctgov-officials", module.Source(
+        module.SOURCES["ctgov-officials"].credit, "officials",
+        lambda: module.Fetched([{"name": "Ann Lee, Ph. D."}], "2026-10-21", {})))
+    module.fetch("ctgov-officials")
+    _LOAD_LOCALS()  # builds and caches the index
+    locals_ = [row for row in _LOAD_LOCALS() if row[0] == "ctgov-officials"]
+    (tmp_path / "local" / "ctgov-officials" / "raw.jsonl").write_text("")
+    [row] = tool.local_rows("Ph. D.", locals_)
+    assert row.status == "failed" and "does not match the sha256" in row.note
+
+
 @pytest.mark.parametrize("damage", ["meta key", "record shape"])
 def test_a_damaged_local_corpus_fails_its_row_not_the_run(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
@@ -2263,5 +2293,5 @@ def test_a_damaged_local_corpus_fails_its_row_not_the_run(
     monkeypatch.setattr(tool, "load_locals", _LOAD_LOCALS)
     assert tool.main(["--no-wikidata", "MD"]) == 2
     out = capsys.readouterr().out
-    assert "ctgov-officials (local corpus)" in out and "failed; ValueError" in out
+    assert "ctgov-officials (local corpus)" in out and "failed; CorpusDamaged" in out
     assert "US Census 2010 surnames" in out
