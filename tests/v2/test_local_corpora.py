@@ -261,7 +261,7 @@ def test_the_last_attempt_raises_its_own_error(
         local.fetch(_SOURCE)
     assert raised.value.code == 503
     raised.value.close()
-    assert sum("studies" in u for u in fetched) == local.CTGOV_RETRIES
+    assert sum("studies" in u for u in fetched) == local.RETRIES
 
 
 def test_a_source_detail_cannot_replace_what_load_checks(
@@ -363,7 +363,7 @@ class _Download:
 
 def _fec_cache(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
     monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
-    monkeypatch.setattr(local, "FEC_CHUNK", 64)  # several reads, not one
+    monkeypatch.setattr(local, "CHUNK", 64)  # several reads, not one
     return tmp_path / "local" / _FEC / local.FEC_ZIP
 
 
@@ -911,7 +911,7 @@ def test_a_tse_strong_etag_is_preferred_to_the_last_modified_date(cdn: _Cdn) -> 
 def test_a_tse_request_cut_short_or_dropped_is_retried(
         cdn: _Cdn, monkeypatch: pytest.MonkeyPatch,
         capsys: pytest.CaptureFixture[str]) -> None:
-    monkeypatch.setattr(local, "CTGOV_RETRIES", 5)  # four failures on one range
+    monkeypatch.setattr(local, "RETRIES", 5)  # four failures on one range
     cdn.short = 1
     cdn.head_failures = [urllib.error.URLError("reset")]
     cdn.failures = [urllib.error.URLError("reset"), _http_error(503), _http_error(429)]
@@ -1034,11 +1034,11 @@ def test_a_tse_rate_limit_waits_as_long_as_the_server_asks(
 
 
 def test_a_tse_range_failing_every_attempt_raises_the_last_error(cdn: _Cdn) -> None:
-    cdn.failures = [_http_error(503) for _ in range(local.CTGOV_RETRIES)]
+    cdn.failures = [_http_error(503) for _ in range(local.RETRIES)]
     with pytest.raises(urllib.error.HTTPError) as raised:
         local.fetch(_TSE)
     raised.value.close()
-    assert cdn.ranges == local.CTGOV_RETRIES
+    assert cdn.ranges == local.RETRIES
 
 
 def test_a_tse_server_that_states_no_accept_ranges_is_read(cdn: _Cdn) -> None:
@@ -1556,7 +1556,7 @@ def test_a_listed_tw_report_that_keeps_failing_is_raised(
     with pytest.raises(urllib.error.HTTPError) as raised:
         local.fetch(_TW)
     raised.value.close()
-    assert len(_tw_serials(asked)) == local.CTGOV_RETRIES
+    assert len(_tw_serials(asked)) == local.RETRIES
     assert local.load(_TW) is None
 
 
@@ -1689,6 +1689,34 @@ def _tolerate_a_small_fixture(monkeypatch: pytest.MonkeyPatch) -> None:
     """Let _UKEC_ROWS, whose 8 rows skip one of each kind, pass the shares."""
     monkeypatch.setattr(local, "UKEC_MAX_BAD", 1)
     monkeypatch.setattr(local, "UKEC_MAX_NAMELESS", 1)
+
+
+def _failing_once(monkeypatch: pytest.MonkeyPatch, url: str) -> list[str]:
+    """Make the stubbed urlopen raise a 503 the first time `url` is asked,
+    with no sleep between attempts; the URLs that failed."""
+    served: Callable[..., object] = urllib.request.urlopen
+    failed: list[str] = []
+
+    def flaky(request: urllib.request.Request, timeout: int) -> object:
+        if request.full_url == url and not failed:
+            failed.append(url)
+            raise _http_error(503)
+        return served(request, timeout)
+    monkeypatch.setattr(urllib.request, "urlopen", flaky)
+    monkeypatch.setattr(time, "sleep", lambda seconds: None)
+    return failed
+
+
+@pytest.mark.parametrize("which", ["UKEC_COUNT_URL", "UKEC_CSV_URL"])
+def test_a_ukec_request_failing_once_is_retried(
+        monkeypatch: pytest.MonkeyPatch, which: str) -> None:
+    # The register's search and export once went out bare: one 503 in
+    # either ended the fetch, where every other source retries.
+    _tolerate_a_small_fixture(monkeypatch)
+    _serve_ukec(monkeypatch, _ukec_csv())
+    failed = _failing_once(monkeypatch, getattr(local, which))
+    assert local.fetch(_UKEC).records
+    assert failed == [getattr(local, which)]
 
 
 def test_the_ukec_count_asks_the_export_s_own_filter() -> None:
@@ -1955,7 +1983,7 @@ def _serve_psc(monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
     linked) and each part file with its answer: bytes to serve, or an
     exception to raise. Returns the file names downloaded."""
     monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
-    monkeypatch.setattr(local, "FEC_CHUNK", 64)  # several reads, not one
+    monkeypatch.setattr(local, "CHUNK", 64)  # several reads, not one
     monkeypatch.setattr(local, "PSC_SAMPLE", 1)  # every record, unless a test samples
     page = _psc_page(*parts) if page is None else page
     asked: list[str] = []
@@ -1982,6 +2010,14 @@ def _psc_snapshot(monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
     return _serve_psc(monkeypatch, tmp_path, {
         file: _psc_part(n, bodies[n], of, day)
         for n, file in enumerate(_psc_files(of, day), 1)})
+
+
+def test_a_psc_listing_failing_once_is_retried(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    _psc_snapshot(monkeypatch, tmp_path)
+    failed = _failing_once(monkeypatch, local.PSC_PAGE)
+    day, parts = local._psc_listing()
+    assert (day, len(parts), failed) == (_PSC_DAY, len(_PSC_PARTS), [local.PSC_PAGE])
 
 
 def _gone(file: str) -> urllib.error.HTTPError:

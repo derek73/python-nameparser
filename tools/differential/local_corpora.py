@@ -273,7 +273,10 @@ class Local:
 CTGOV_API = "https://clinicaltrials.gov/api/v2"
 CTGOV_PAGE = 1000  # the API's largest page
 CTGOV_FIELDS = "NCTId,OverallOfficialName,OverallOfficialRole"
-CTGOV_RETRIES = 4
+#: Attempts per request, for every source that retries.
+RETRIES = 4
+#: How much of a streamed download is read at a time.
+CHUNK = 1 << 20
 #: What a long run of requests meets and a retry survives: a refused or
 #: dropped connection or a timeout (OSError, which URLError and HTTPError
 #: are), a body cut short in the read (http.client's IncompleteRead), a
@@ -299,33 +302,43 @@ def _get_json(url: str) -> dict[str, Any]:
     return data
 
 
-def _retried(url: str, read: Callable[[bytes], _T], delay: float) -> _T:
-    """`url`'s body as `read` reads it, retried with a backoff and a line
-    on stderr for each retry; any ValueError from `read` is retried as a
-    body cut short in transit, and `delay` seconds of sleep follow each
-    request. A 4xx other than 429 is the request's fault and is raised,
-    as is the last attempt's error."""
-    for attempt in range(CTGOV_RETRIES):
+def _backed_off(exc: Exception, attempt: int, url: str) -> bool:
+    """The retry policy every source shares, after `exc` on try `attempt`
+    of `url`: False where the caller should raise it (a 4xx other than
+    429 is the request's fault, and the last attempt's error is the
+    fetch's), else True once a backoff of 2**attempt seconds, or the
+    Retry-After a server asks for up to a minute, has been slept, with a
+    line on stderr."""
+    if (isinstance(exc, urllib.error.HTTPError) and exc.code < 500
+            and exc.code != 429 or attempt == RETRIES - 1):
+        return False
+    wait = 2 ** attempt
+    if isinstance(exc, urllib.error.HTTPError):
+        after = exc.headers.get("Retry-After", "") if exc.headers else ""
+        if after.isdigit():
+            wait = max(wait, min(int(after), 60))
+        exc.close()  # an HTTPError holds the response open
+    print(f"  retrying in {wait}s after {type(exc).__name__}: {url}", file=sys.stderr)
+    time.sleep(wait)
+    return True
+
+
+def _retried(url: str, read: Callable[[bytes], _T], delay: float, *,
+             timeout: int = 60) -> _T:
+    """`url`'s body as `read` reads it, under _backed_off's policy; any
+    ValueError from `read` is retried as a body cut short in transit, and
+    `delay` seconds of sleep follow each request."""
+    for attempt in range(RETRIES):
         try:
             body = corpus_build.fetch_bytes(url, user_agent=USER_AGENT,
-                                            timeout=60, delay=delay)
+                                            timeout=timeout, delay=delay)
             try:
                 return read(body)
             except ValueError as exc:
                 raise _Unparsed(f"{url}: {exc}") from None
         except (*_TRANSIENT, _Unparsed) as exc:
-            if (isinstance(exc, urllib.error.HTTPError) and exc.code < 500
-                    and exc.code != 429 or attempt == CTGOV_RETRIES - 1):
+            if not _backed_off(exc, attempt, url):
                 raise
-            wait = 2 ** attempt
-            if isinstance(exc, urllib.error.HTTPError):
-                after = exc.headers.get("Retry-After", "") if exc.headers else ""
-                if after.isdigit():
-                    wait = max(wait, min(int(after), 60))
-                exc.close()  # an HTTPError holds the response open
-            print(f"  retrying in {wait}s after {type(exc).__name__}: {url}",
-                  file=sys.stderr)
-            time.sleep(wait)
     raise AssertionError("unreachable: the last attempt raises")
 
 
@@ -405,7 +418,6 @@ FEC_MEMBER = "itcont.txt"
 #: The file's columns (the FEC's contributions-by-individuals file
 #: description): 21, pipe-separated, ENTITY_TP the 7th and NAME the 8th.
 FEC_COLUMNS, FEC_ENTITY, FEC_NAME = 21, 6, 7
-FEC_CHUNK = 1 << 20
 #: The file has no header row to check the columns against, so a fetch
 #: refuses one that no longer looks like the file the constants above
 #: were written for: more than this share of its lines malformed or not
@@ -431,7 +443,7 @@ def _download(url: str, path: Path) -> None:
         with urllib.request.urlopen(request, timeout=60) as response, \
                 partial.open("wb") as out:
             stated = response.headers.get("Content-Length", "")
-            while chunk := response.read(FEC_CHUNK):
+            while chunk := response.read(CHUNK):
                 out.write(chunk)
                 got += len(chunk)
         if not stated.isdigit() or int(stated) != got:
@@ -705,7 +717,7 @@ class _RangeFile(io.RawIOBase):
         up to one byte past `want` so that a longer part shows; a shorter
         one is retried as a body cut short. The last attempt's error, or
         any 4xx but a 429, is kept in self.error and raised."""
-        for attempt in range(CTGOV_RETRIES):
+        for attempt in range(RETRIES):
             try:
                 with urllib.request.urlopen(request, timeout=60) as response:
                     body = b""
@@ -715,20 +727,10 @@ class _RangeFile(io.RawIOBase):
                             raise http.client.IncompleteRead(body, want - len(body))
                     return response.status, response.headers, body
             except _TRANSIENT as exc:
-                if (isinstance(exc, urllib.error.HTTPError) and exc.code < 500
-                        and exc.code != 429 or attempt == CTGOV_RETRIES - 1):
+                if not _backed_off(exc, attempt, self.url):
                     self.error = exc
                     raise
-                wait = 2 ** attempt
-                if isinstance(exc, urllib.error.HTTPError):
-                    after = exc.headers.get("Retry-After", "") if exc.headers else ""
-                    if after.isdigit():
-                        wait = max(wait, min(int(after), 60))
-                    exc.close()  # an HTTPError holds the response open
-                print(f"  retrying in {wait}s after {type(exc).__name__}: "
-                      f"{self.url}", file=sys.stderr)
-                time.sleep(wait)
-        raise AssertionError("unreachable")
+        raise AssertionError("unreachable: the last attempt raises")
 
 
 def _tse_read(year: str, archive: zipfile.ZipFile,
@@ -1309,9 +1311,8 @@ UKEC_MAX_NAMELESS = 1 / 1000
 def _ukec_total() -> tuple[int, str]:
     """The register's total for the filter, and the time the search
     answered, from the JSON search."""
-    body = corpus_build.fetch_bytes(UKEC_COUNT_URL, user_agent=USER_AGENT,
-                                    timeout=60)
-    data = corpus_build.parse_json(body, UKEC_COUNT_URL)
+    data = _retried(UKEC_COUNT_URL,
+                    lambda body: corpus_build.parse_json(body, UKEC_COUNT_URL), 0)
     if not isinstance(data, dict):
         raise ValueError(f"{UKEC_COUNT_URL} states no Total")
     total = data.get("Total")
@@ -1407,7 +1408,7 @@ def fetch_ukec() -> Fetched:
     two, or UKEC_MAX_NAMELESS of the third, the export is refused."""
     before, when = _ukec_total()
     print(f"downloading {before:,} donations from {UKEC_API} ...", file=sys.stderr)
-    body = corpus_build.fetch_bytes(UKEC_CSV_URL, user_agent=USER_AGENT, timeout=300)
+    body = _retried(UKEC_CSV_URL, lambda body: body, 0, timeout=300)
     after, _ = _ukec_total()
     if after != before:
         raise ValueError(f"the register changed during the fetch ({before:,} -> "
@@ -1524,7 +1525,7 @@ def _psc_listing() -> tuple[str, list[tuple[int, str]]]:
     each part's number and file, or ValueError where the page links no
     parts, or parts of more than one snapshot, or not every part. A part
     linked twice is one part."""
-    page = corpus_build.fetch_bytes(PSC_PAGE, user_agent=USER_AGENT, timeout=60)
+    page = _retried(PSC_PAGE, lambda body: body, 0)
     links = PSC_PART.findall(page.decode("utf-8", "replace"))
     if not links:
         raise ValueError(f"{PSC_PAGE} links no snapshot parts: the page has changed")
