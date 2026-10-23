@@ -207,7 +207,7 @@ def test_a_line_that_is_not_a_record_is_refused_as_damage(
     _corpus(monkeypatch, *_ALL)
     loaded = corpora.load(_PSC)
     raw = _own_cache / "local" / _PSC / "raw.jsonl"
-    for damage in ('{"name": ', '["a list"]'):
+    for damage in ('{"name": ', '["a list"]', '{"name": "Al Ng", "surname": 1}'):
         lines = raw.read_text().splitlines(keepends=True)
         raw.write_text("".join(lines[:1] + [damage + "\n"] + lines[1:]))
         # Through score(), which reads each record before the stream ends.
@@ -235,8 +235,21 @@ def test_a_record_written_by_another_scorer_is_refused(
     _corpus(monkeypatch, *_ALL)
     assert agreement.main([_PSC, "--record"]) == 0
     before = agreement.scorer_fingerprint()
+    # Each part of the code that decides a record's entry moves the
+    # fingerprint: how a field is compared, which records get an entry,
+    # and how an entry is keyed.
+    for name, changed in (("fold", lambda text: text.casefold()),
+                          ("score", lambda rows, fielded, parser: None),
+                          ("key", lambda record: str(record))):
+        with monkeypatch.context() as patch:
+            patch.setattr(agreement, name, changed)
+            assert agreement.scorer_fingerprint() != before, name
+    with monkeypatch.context() as patch:
+        patch.setattr(agreement.corpus_build, "jsonl_line",
+                      lambda obj, sort_keys=False: str(obj))
+        assert agreement.scorer_fingerprint() != before, "jsonl_line"
+    assert agreement.scorer_fingerprint() == before
     monkeypatch.setattr(agreement, "fold", lambda text: text.casefold())
-    assert agreement.scorer_fingerprint() != before
     with pytest.raises(SystemExit, match="another version of this scorer"):
         agreement.main([_PSC])
 

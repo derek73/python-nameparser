@@ -158,8 +158,8 @@ def group_of(record: dict[str, str], fielded: Fielded) -> str:
 
 def records(local: local_corpora.Local) -> Iterator[dict[str, str]]:
     """raw.jsonl's records, streamed rather than held, checked against
-    its sha256 once the last is read, and each holding a name as it is
-    read: CorpusDamaged either way, before any caller reports or
+    its sha256 once the last is read, and each holding a name and
+    nothing but strings as it is read: CorpusDamaged either way, before any caller reports or
     records what it read."""
     path = local_corpora.directory(local.source, create=False) / local_corpora.RAW
     damaged = local_corpora.CorpusDamaged(
@@ -173,7 +173,8 @@ def records(local: local_corpora.Local) -> Iterator[dict[str, str]]:
                 record = json.loads(line)
             except ValueError:
                 raise damaged from None
-            if not isinstance(record, dict) or not isinstance(record.get("name"), str):
+            if (not isinstance(record, dict) or not isinstance(record.get("name"), str)
+                    or not all(isinstance(v, str) for v in record.values())):
                 raise damaged
             yield record
     if digest.hexdigest() != local.meta["sha256"]:
@@ -293,12 +294,15 @@ def read_record(path: Path, local: local_corpora.Local) -> dict[str, dict[str, A
 
 #: What decides a record's reading, besides the parser: scorer_fingerprint
 #: hashes them, as local_corpora.fold_fingerprint hashes the word fold.
-_SCORER_CODE = ("fold", "_title_words", "unlisted", "read", "_box", "Reading")
+_SCORER_CODE = ("fold", "_title_words", "unlisted", "read", "_box", "Reading",
+                "key", "score")
 
 
 def scorer_fingerprint() -> str:
-    """A hash of the code that turns a parse into a record's entry
-    (_SCORER_CODE) and of FIELDED, read from the running code."""
+    """A hash of the code that turns a parse into a record's entry and
+    decides which records get one (_SCORER_CODE), of
+    corpus_build.jsonl_line, which writes an entry's key, and of FIELDED,
+    read from the running code."""
     module = globals()
     parts = [repr(sorted((k, repr(v)) for k, v in FIELDED.items()))]
     for name in _SCORER_CODE:
@@ -307,6 +311,7 @@ def scorer_fingerprint() -> str:
                      if isinstance(target, type) else [target])
         for fn in functions:
             parts += local_corpora._code_digest(fn.__code__)
+    parts += local_corpora._code_digest(corpus_build.jsonl_line.__code__)
     return hashlib.sha256("\0".join(parts).encode()).hexdigest()
 
 
