@@ -1067,7 +1067,8 @@ def _local_corpora() -> ModuleType:
 def load_locals() -> list[tuple[str, Local | None, str]]:
     """Every local corpus: (source, the corpus or None when not fetched,
     the error that stopped it loading). load() refuses with ValueError
-    anything it cannot read, so a damaged corpus fails its own row."""
+    anything it cannot read, so a damaged corpus fails its own row; the
+    records are read later, in the lookup, which guards its own."""
     module = _local_corpora()
     return [(source, *_attempt(lambda source=source: module.load(source)))
             for source in sorted(module.SOURCES)]
@@ -1094,7 +1095,7 @@ def local_usage(word: str, source: str, local: Local | None) -> Usage:
         spelled = f"as one word '{joined}' {found.joined:,}" if found.joined else ""
     usage.note = _join(
         local.credit,
-        f"{found.anywhere:,} of {len(local.records):,} "
+        f"{found.anywhere:,} of {local.size:,} "
         f"{module.SOURCES[source].unit} write it, {found.after_comma:,} after "
         f"a comma", spelled)
     return usage
@@ -1106,8 +1107,20 @@ def local_rows(word: str, locals_: list[tuple[str, Local | None, str]]) -> list[
     main's: written inline there, its `index` replaced the CJK name
     index the ends-with row reads."""
     return [Usage(f"{source} (local corpus)", status="failed", note=error)
-            if error else local_usage(word, source, local)
+            if error else _guarded_local_usage(word, source, local)
             for source, local, error in locals_]
+
+
+def _guarded_local_usage(word: str, source: str, local: Local | None) -> Usage:
+    """local_usage, a corpus failing its own row: the records are read
+    first here (building an uncached index, or scanning the names for a
+    spaced word), after load_locals' guard. Only the corpus's damage is
+    caught, and a file it cannot read; a bug raises."""
+    try:
+        return local_usage(word, source, local)
+    except (_local_corpora().CorpusDamaged, OSError) as exc:
+        return Usage(f"{source} (local corpus)", status="failed",
+                     note=f"{type(exc).__name__}: {exc}")
 
 
 # -- Wikidata ------------------------------------------------------------

@@ -9,9 +9,12 @@ failure that matters is a SMALLER corpus passing for the whole one: its
 counts read as real zeros. The network is a stub answering by URL.
 """
 import email.message
+import hashlib
 import http.client
 import json
+import re
 import time
+import types
 import unicodedata
 import urllib.error
 import urllib.parse
@@ -30,6 +33,16 @@ snapshot = load_tool("snapshot")
 
 _SOURCE = "ctgov-officials"
 _DATE = "2026-10-21T09:00:05"
+
+
+@pytest.fixture(autouse=True)
+def _own_cache(monkeypatch: pytest.MonkeyPatch, tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """Every test's cache is its own: a test that forgets to set one, or a
+    guard that stops keeping a test's corpus out of the cache, writes
+    into a scratch folder rather than the developer's real cache."""
+    path = tmp_path_factory.mktemp("cache")
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(path))
+    return path
 
 
 def _study(nct: str, *officials: str) -> dict[str, Any]:
@@ -626,10 +639,239 @@ def test_tally_reports_the_parts_after_commas_under_the_attribution(
     assert out[2:] == ["          2  MD"]
 
 
+# -- the cached word index -------------------------------------------------------
+
+def _looked_up(word: str = "MD") -> tuple[Any, Any]:
+    """A fresh load of the corpus, and `word` looked up in it."""
+    loaded = local.load(_SOURCE)
+    assert loaded is not None
+    return loaded, local.lookup(loaded, word)
+
+
+def test_a_lookup_answered_from_the_cached_index_reads_no_records(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    folder = _fetched(monkeypatch, tmp_path, "Ann Lee, MD", "Bo Wu, MD, PhD", "Cy Doe")
+    first, built = _looked_up()
+    assert "records" in vars(first) and (folder / local.INDEX).exists()
+    again, cached = _looked_up()
+    assert cached == built
+    assert "records" not in vars(again)
+    assert again.header() == first.header()
+
+
+def test_the_cached_index_is_the_index_it_was_built_as(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    _fetched(monkeypatch, tmp_path, "Ann Lee, M.D.", "MD Bo Wu", "Cy Doe, MD, PhD",
+             "Pe\u00f1a, Jos\u00e9", "Ed Ng, md; MD")
+    first, _ = _looked_up()
+    built = local.word_index(first)
+    again, _ = _looked_up()
+    assert again.index == local.WordIndex(
+        dict(built.anywhere), dict(built.after_comma),
+        {k: dict(v) for k, v in built.spellings.items()})
+
+
+def test_a_built_index_reads_a_missing_word_as_a_cached_one_does(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    # A Counter answers 0 for a missing key where the cached dict raises:
+    # a reader written against a built index would fail on a cached one.
+    _fetched(monkeypatch, tmp_path, "Ann Lee, MD")
+    built, _ = _looked_up()
+    cached, _ = _looked_up()
+    for index in (built.index, cached.index):
+        with pytest.raises(KeyError):
+            index.anywhere["absent"]  # noqa: B018
+        with pytest.raises(KeyError):
+            index.spellings["md"]["absent"]  # noqa: B018
+
+
+def test_a_refetch_rebuilds_the_cached_index(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    _fetched(monkeypatch, tmp_path, "Ann Lee, MD")
+    _looked_up()
+    _fetched(monkeypatch, tmp_path, "Ann Lee, MD", "Bo Wu, MD")
+    _, found = _looked_up()
+    assert found is not None and found.anywhere == 2
+
+
+def test_the_cached_index_is_read_only_under_its_own_key(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    # Doctored counts under the right key are served, which shows the
+    # file is what answers; under another fold's key they are not.
+    folder = _fetched(monkeypatch, tmp_path, "Ann Lee, MD")
+    _looked_up()
+    data = json.loads((folder / local.INDEX).read_text())
+    data["anywhere"]["md"] = 99
+    (folder / local.INDEX).write_text(json.dumps(data))
+    _, found = _looked_up()
+    assert found is not None and found.anywhere == 99
+    monkeypatch.setattr(local, "fold_fingerprint", lambda: "another fold")
+    _, found = _looked_up()
+    assert found is not None and found.anywhere == 1
+
+
+def _another(name: str) -> object:
+    """A stand-in for one of the fold's functions or constants that
+    differs from it."""
+    value = getattr(local, name)
+    if isinstance(value, re.Pattern):
+        return re.compile(r"\s+")
+    if isinstance(value, frozenset):
+        return frozenset("'")
+    return lambda *args: None
+
+
+@pytest.mark.parametrize("change", [*local._FOLD_CODE, *local._FOLD_CONSTANTS])
+def test_a_change_to_how_a_word_is_cut_or_folded_changes_the_key(
+        monkeypatch: pytest.MonkeyPatch, change: str) -> None:
+    before = local.fold_fingerprint()
+    monkeypatch.setattr(local, change, _another(change))
+    assert local.fold_fingerprint() != before
+
+
+def test_a_change_to_how_raw_jsonl_is_cut_into_records_changes_the_key(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    before = local.fold_fingerprint()
+    monkeypatch.setattr(local.corpus_build, "jsonl_lines", lambda text: [])
+    assert local.fold_fingerprint() != before
+
+
+def test_the_key_is_the_same_in_every_process() -> None:
+    # A frozenset constant's iteration order moves with string hashing,
+    # which differs per process: hashed unsorted, the key would too, and
+    # no cache would ever be read twice.
+    import subprocess
+    import sys
+    run = [sys.executable, "-c", "import sys; sys.path.insert(0, 'tools/differential'); "
+           "import local_corpora; print(local_corpora.fold_fingerprint())"]
+    keys = {subprocess.run(run, capture_output=True, text=True, check=True,
+                           env={**__import__("os").environ, "PYTHONHASHSEED": seed},
+                           cwd=Path(__file__).resolve().parents[2]).stdout
+            for seed in ("1", "2", "3")}
+    assert len(keys) == 1 and keys != {""}
+
+
+def _globals_read(code: types.CodeType) -> set[str]:
+    names = set(code.co_names)
+    for const in code.co_consts:
+        if isinstance(const, types.CodeType):
+            names |= _globals_read(const)
+    return names
+
+
+def test_the_fold_lists_everything_its_functions_call_and_read() -> None:
+    # _FOLD_CODE is kept by hand: a helper the fold starts calling, or a
+    # constant it starts reading, left off it, leaves the key unmoved by
+    # a change to that helper.
+    import inspect
+    module = vars(local)
+    read = set().union(*(_globals_read(inspect.unwrap(module[name]).__code__)
+                         for name in local._FOLD_CODE))
+    unlisted = set()
+    for name in read & module.keys():
+        value = module[name]
+        if isinstance(value, types.ModuleType):
+            continue
+        if getattr(value, "__module__", None) != local.__name__ and not name.isupper() \
+                and not name.startswith("_"):
+            continue  # imported: Counter
+        if name in (*local._FOLD_CODE, *local._FOLD_CONSTANTS, "WordIndex"):
+            continue
+        unlisted.add(name)
+    assert unlisted == set()
+
+
+@pytest.mark.parametrize("damage", ["{", "[]", '{"key": 1}'],
+                         ids=["not JSON", "not an object", "no counts"])
+def test_a_cached_index_that_cannot_be_read_is_built_over(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, damage: str) -> None:
+    folder = _fetched(monkeypatch, tmp_path, "Ann Lee, MD")
+    (folder / local.INDEX).write_text(damage)
+    _, found = _looked_up()
+    assert found is not None and found.anywhere == 1
+    assert json.loads((folder / local.INDEX).read_text())["anywhere"] == {
+        "ann": 1, "lee": 1, "md": 1}
+
+
+def test_a_corpus_not_read_from_the_cache_is_never_cached(_own_cache: Path) -> None:
+    # A test's corpus has no sha256 to key an index on; cached under the
+    # key "None", it would answer for the real corpus of that source. The
+    # folder exists, as on a machine that fetched it, so a write would land.
+    (_own_cache / "local" / _SOURCE).mkdir(parents=True)
+    corpus: Any = _corpus("Ann Lee, MD")
+    assert corpus.index.anywhere == {"ann": 1, "lee": 1, "md": 1}
+    assert not list(_own_cache.rglob(local.INDEX))
+
+
+def test_an_index_that_cannot_be_written_still_answers(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    _fetched(monkeypatch, tmp_path, "Ann Lee, MD")
+
+    def refuse(path: Path, body: bytes) -> None:
+        raise PermissionError(f"read-only: {path}")
+    monkeypatch.setattr(local.corpus_build, "write_atomic", refuse)
+    _, found = _looked_up()
+    assert found is not None and found.anywhere == 1
+    assert "could not cache the word index" in capsys.readouterr().err
+
+
+def test_a_spaced_word_absent_from_the_cached_index_reads_no_records(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    _fetched(monkeypatch, tmp_path, "Ann Lee, Ph. D.", "Bo Wu, PhD")
+    _looked_up()
+    loaded, found = _looked_up("Ph. Q.")
+    assert found is not None and found.anywhere == 0
+    assert "records" not in vars(loaded)
+    loaded, found = _looked_up("Ph. D.")
+    assert found is not None and (found.anywhere, found.joined) == (1, 1)
+
+
+@pytest.mark.parametrize("damage", [
+    {"anywhere": {"md": "1"}}, {"anywhere": {"md": True}}, {"anywhere": {"md": None}},
+    {"after_comma": []}, {"spellings": {"md": 5}}, {"spellings": {"md": {"MD": "1"}}},
+], ids=["a count as text", "a count as a bool", "no count", "counts as a list",
+        "spellings as a number", "a spelling count as text"])
+def test_an_index_under_its_own_key_with_counts_that_are_not_counts_is_built_over(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        damage: dict[str, Any], capsys: pytest.CaptureFixture[str]) -> None:
+    folder = _fetched(monkeypatch, tmp_path, "Ann Lee, MD")
+    _looked_up()
+    data = json.loads((folder / local.INDEX).read_text())
+    (folder / local.INDEX).write_text(json.dumps({**data, **damage}))
+    _, found = _looked_up()
+    assert found is not None and (found.anywhere, found.spellings) == (1, {"MD": 1})
+    assert "rebuilding the word index" in capsys.readouterr().err
+
+
+def test_tally_over_damaged_records_exits_naming_the_fetch(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    # load() no longer parses the records, so their damage first shows
+    # in tally, which must exit as require() does, not with a traceback.
+    folder = _fetched(monkeypatch, tmp_path)
+    raw = b'{"nom": "Ann Lee, MD"}\n'
+    (folder / "raw.jsonl").write_bytes(raw)
+    _rewrite_meta(folder, sha256=hashlib.sha256(raw).hexdigest())
+    with pytest.raises(SystemExit, match=f"record without a name.*fetch {_SOURCE} --refresh"):
+        local.main(["tally", _SOURCE])
+
+
+def test_a_record_without_a_name_fails_when_the_records_are_read(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    folder = _fetched(monkeypatch, tmp_path)
+    raw = b'{"nom": "Ann Lee, MD"}\n'
+    (folder / "raw.jsonl").write_bytes(raw)
+    _rewrite_meta(folder, sha256=hashlib.sha256(raw).hexdigest())
+    loaded = local.load(_SOURCE)
+    assert loaded is not None
+    with pytest.raises(ValueError, match="record without a name"):
+        loaded.records  # noqa: B018
+
+
 # -- views -------------------------------------------------------------------------
 
 def _corpus(*names: str) -> object:
-    return local.Local(_SOURCE, [{"name": n} for n in names], {"data_date": _DATE})
+    return local.Local(_SOURCE, {"data_date": _DATE}, [{"name": n} for n in names])
 
 
 def test_the_tally_counts_each_part_after_a_comma_once_per_record() -> None:
@@ -648,9 +890,9 @@ def test_a_comma_inside_parentheses_cuts_a_part_unlike_the_parser() -> None:
 def test_a_word_is_counted_anywhere_and_after_a_comma_ignoring_case_and_periods() -> None:
     index = local.word_index(_corpus(
         "Ann Lee, M.D.", "MD Bo Wu", "Cy Doe, md, MD", "Dr. Ma Li, (Psychiatry)"))
-    assert (index.anywhere["md"], index.after_comma["md"]) == (3, 2)
-    assert (index.anywhere["psychiatry"], index.after_comma["psychiatry"]) == (1, 1)
-    assert (index.anywhere["ma"], index.after_comma["ma"]) == (1, 0)
+    assert (index.anywhere.get("md", 0), index.after_comma.get("md", 0)) == (3, 2)
+    assert (index.anywhere.get("psychiatry", 0), index.after_comma.get("psychiatry", 0)) == (1, 1)
+    assert (index.anywhere.get("ma", 0), index.after_comma.get("ma", 0)) == (1, 0)
 
 
 @pytest.mark.parametrize("name", [
@@ -661,7 +903,7 @@ def test_a_word_is_found_beside_any_punctuation(name: str) -> None:
     # their own, and a lookup of MD read zero: 3,698 officials' names
     # held a slash and 548 a semicolon on 2026-10-21.
     index = local.word_index(_corpus(name))
-    assert (index.anywhere["md"], index.after_comma["md"]) == (1, 1)
+    assert (index.anywhere.get("md", 0), index.after_comma.get("md", 0)) == (1, 1)
 
 
 @pytest.mark.parametrize(("word", "other"), [
@@ -673,19 +915,19 @@ def test_a_word_keeps_what_tells_it_from_another(word: str, other: str) -> None:
     # al- as Al, and a final vowel sign or haraka was lost.
     assert local.word_key(word) != local.word_key(other)
     index = local.word_index(_corpus(f"Ann {other} Lee"))
-    assert index.anywhere[local.word_key(word)] == 0
+    assert index.anywhere.get(local.word_key(word), 0) == 0
 
 
 def test_a_decomposed_letter_finds_its_composed_twin() -> None:
     index = local.word_index(_corpus(unicodedata.normalize("NFD", "Ana Žic, MD")))
-    assert index.anywhere[local.word_key("Žic")] == 1
+    assert index.anywhere.get(local.word_key("Žic"), 0) == 1
 
 
 def test_spellings_are_counted_once_per_record() -> None:
     # Two records, one writing MD twice: a spelling count above the
     # record count read as more officials than wrote the word.
     index = local.word_index(_corpus("Di Fox, MD, MD", "Ed Ng, MD"))
-    assert index.anywhere["md"] == 2
+    assert index.anywhere.get("md", 0) == 2
     assert index.spellings["md"] == {"MD": 2}
 
 
