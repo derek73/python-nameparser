@@ -67,10 +67,14 @@ def test_a_snapshot_predating_the_case_views_is_not_compared_on_them() -> None:
            for k, r in new.items()}
     assert snapshot.unrecorded_views(old, new) == snapshot.CASE_VIEWS
     assert not snapshot.grouped(old, new)
+    # A snapshot that records a view on one row, or only the plain
+    # view, still compares both: a name repair leaves alone records none.
+    rows = snapshot.read([("john smith", None), ("John Smith", None)])
     new = {snapshot.key(r): dict(r) for r in rows}
     current = {k: dict(r) for k, r in new.items()}
     assert snapshot.unrecorded_views(current, new) == ()
     assert new == current
+    assert not any("capitalized_force" in r for r in current.values())
 
 
 def test_a_name_leaving_the_corpus_is_reported() -> None:
