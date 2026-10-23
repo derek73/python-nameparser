@@ -20,8 +20,9 @@ $NAMEPARSER_TOOLS_CACHE (default ~/.cache/nameparser-tools), and
 
 - raw.jsonl -- one record per name as the source gave it, with where it
   came from where the source says: a ClinicalTrials.gov official, with
-  the study and role; one distinct FEC name, alone. The counts are
-  counted from here.
+  the study and role; one distinct FEC or UK Electoral Commission name,
+  alone; one distinct pair of a TSE donor's filed name and the tax
+  registry's name for the same donor. The counts are counted from here.
 - corpus.jsonl -- the distinct names, in the corpus line format
   snapshot.py and compare.py --corpus read.
 - meta.json -- the source's own date for the data, what was fetched, and
@@ -78,7 +79,7 @@ federal tax registry's name for the same CPF. Each election's national
 member is read from the CDN in ranges, not downloaded whole, so a
 fetch (the first, or `fetch --refresh`) reads the current file. A record
 is a pair, so counts are of pairs. Like the FEC's, nearly all in capitals
-(845,502 of 848,355 filed names fetched 2026-10-23) but in spoken order
+(845,498 of 848,351 filed names fetched 2026-10-22) but in spoken order
 with no comma (184 records held one), and with particles (DE, DA, DOS) and
 agnomens (FILHO, NETO, JUNIOR) throughout. The portal publishes the data
 under CC BY, which the credit line names; only the two name columns are
@@ -123,6 +124,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 import zipfile
+import zlib
 from collections import Counter
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
@@ -512,29 +514,42 @@ TSE_ORIGINS = frozenset({
 #: in the file dated 2026-10-18.
 TSE_BLOCK = 1 << 20
 #: As FEC_MAX_BAD, for rows that are not TSE_COLUMNS columns and for
-#: physical lines the csv reader folded into another row's field: none
-#: of 2,715,955 rows in the two files dated 2026-10-18 and 2026-10-22
-#: was malformed.
+#: physical lines that fall inside a quoted field (a quote left open,
+#: or a line break typed into a name): none of 2,715,955 rows in the
+#: two files dated 2026-10-18 and 2026-10-23 was either.
 TSE_MAX_BAD = 1 / 10_000
 #: An election is refused where fewer of its rows than this are from
 #: individuals (78% of 2022's and 28% of 2024's on 2026-10-22), since a
 #: member published as its header alone, or with the individuals'
 #: donations moved under another listed category, would otherwise pass
-#: as an election with few donors; or where more of its individuals'
-#: rows than TSE_MAX_MISSING carry no name or no registry name (none
-#: did), which is what a masked column would show.
+#: as an election with few donors; where more of its individuals' rows
+#: than TSE_MAX_MISSING carry no name or no registry name, a value with
+#: no letter counted as none (20 and 41 rows did, in the files dated
+#: 2026-10-18 and 2026-10-23), which is what a masked column would
+#: show; where more than TSE_MAX_NUMBERED carry a number beside letters
+#: (7 and 42 did), which is what a numeric column moved under a name
+#: would show; or where its distinct filed names, or its distinct
+#: registry names, are fewer than TSE_MIN_DISTINCT of its individuals'
+#: rows (filed names 89% of 2022's and 72% of 2024's on 2026-10-22),
+#: which is what a column masked with one word would show.
 TSE_MIN_INDIVIDUALS = 1 / 10
 TSE_MAX_MISSING = 1 / 100
+TSE_MAX_NUMBERED = 1 / 1000
+TSE_MIN_DISTINCT = 1 / 4
 #: A name holding more digits than this is not kept, nor its pair: some
 #: campaigns typed a number into the name field (98 individuals' rows
-#: in the files dated 2026-10-18 and 2026-10-23, 54 of their names
-#: exactly 11 digits on 2026-10-22, a CPF's length), and a record must
-#: hold no identifier. No registry name held more than 4.
+#: in the files dated 2026-10-18 and 2026-10-23 before a name with no
+#: letter was counted as missing, 54 of their names exactly 11 digits,
+#: a CPF's length), and a record must hold no identifier. No registry
+#: name held more than 4.
 TSE_MAX_DIGITS = 4
 #: An unknown DS_ORIGEM_RECEITA value is quoted in the refusal only when
-#: this many rows hold it, as a category does: a row misread into 60
-#: columns can put a name or a CPF in that column, once.
+#: it holds no digit and at least this many rows, and this share of all
+#: rows, hold it, as a category does: a header that no longer matches
+#: its rows puts names and CPFs in that column, and a frequent donor's
+#: name can repeat, but not in a thousandth of an election's rows.
 TSE_QUOTED_ORIGIN = 10
+TSE_QUOTED_SHARE = 1 / 1000
 #: The file is Latin-1 by its bytes but written from Windows: read as
 #: cp1252, where the five bytes cp1252 leaves undefined stay Latin-1.
 #: One byte in 0x80-0x9F appeared in 2022's 432 MB, in no name, and none
@@ -629,7 +644,8 @@ class _RangeFile(io.RawIOBase):
     def _request(self, request: urllib.request.Request, want: int | None = None
                  ) -> tuple[int, Any, bytes]:
         """The status, headers and body of `request`'s answer, retried as
-        _get_json retries (a member is up to about 170 requests, and
+        _get_json retries, Retry-After included (a member is up to about
+        170 requests, and
         starting over costs them all). The body is read only from a 206,
         up to one byte past `want` so that a longer part shows; a shorter
         one is retried as a body cut short. The last attempt's error, or
@@ -648,11 +664,15 @@ class _RangeFile(io.RawIOBase):
                         and exc.code != 429 or attempt == CTGOV_RETRIES - 1):
                     self.error = exc
                     raise
+                wait = 2 ** attempt
                 if isinstance(exc, urllib.error.HTTPError):
+                    after = exc.headers.get("Retry-After", "") if exc.headers else ""
+                    if after.isdigit():
+                        wait = max(wait, min(int(after), 60))
                     exc.close()  # an HTTPError holds the response open
-                print(f"  retrying in {2 ** attempt}s after {type(exc).__name__}: "
+                print(f"  retrying in {wait}s after {type(exc).__name__}: "
                       f"{self.url}", file=sys.stderr)
-                time.sleep(2 ** attempt)
+                time.sleep(wait)
         raise AssertionError("unreachable")
 
 
@@ -667,6 +687,7 @@ def _tse_read(year: str, archive: zipfile.ZipFile,
     stamp = "{:04d}-{:02d}-{:02d}T{:02d}:{:02d}:{:02d}".format(*info.date_time)
     counts: Counter[str] = Counter()
     before = len(pairs)
+    distinct: set[tuple[str, str]] = set()
     with archive.open(info) as binary, \
             io.TextIOWrapper(binary, encoding="latin-1", newline="") as text:
         rows = csv.reader(text, delimiter=";")
@@ -693,23 +714,27 @@ def _tse_read(year: str, archive: zipfile.ZipFile,
             name = raw_name.translate(_CP1252).strip()
             registry = raw_registry.translate(_CP1252).strip()
             counts["cp1252"] += name != raw_name.strip() or registry != raw_registry.strip()
-            if not name or name == "#NULO":
+            if _missing(name):
                 counts["nameless"] += 1
                 continue
-            if registry == "#NULO":
+            if _missing(registry):
                 registry = ""
             if max(_digits(name), _digits(registry)) > TSE_MAX_DIGITS:
                 counts["numbered"] += 1
                 continue
             counts["no_registry"] += not registry
-            pairs.add((name, registry))
+            distinct.add((name, registry))
         # The physical lines read past the header, against the rows: a
-        # quote left open folds the lines after it into one field.
+        # line inside a quoted field, a quote left open or a line break
+        # typed into a name, is read without making a row.
         folded = rows.line_num - 1 - counts["rows"]
+    pairs |= distinct
     if unknown:
-        common = sorted(v for v, n in unknown.items() if n >= TSE_QUOTED_ORIGIN)
+        floor = max(TSE_QUOTED_ORIGIN, counts["rows"] * TSE_QUOTED_SHARE)
+        common = sorted(v for v, n in unknown.items()
+                        if n >= floor and not _digits(v))
         shown = (f"such as {common[0]!r}" if common else
-                 f"each in fewer than {TSE_QUOTED_ORIGIN} rows (not shown)")
+                 "none held by enough rows to be a category (not shown)")
         raise ValueError(f"{member} holds {len(unknown)} {TSE_ORIGIN} value(s) "
                          f"outside TSE_ORIGINS, {shown}: the file's categories, "
                          f"its layout or its encoding have changed")
@@ -722,13 +747,22 @@ def _tse_read(year: str, archive: zipfile.ZipFile,
         raise ValueError(f"{counts['individual']:,} of {counts['rows']:,} rows of "
                          f"{member} are from individuals: the file is cut short or "
                          f"its categories have moved")
-    for count, what in ((counts["nameless"], "no name"),
-                        (counts["no_registry"], "no registry name")):
-        if count > counts["individual"] * TSE_MAX_MISSING:
+    for count, limit, what in (
+            (counts["nameless"], TSE_MAX_MISSING, "no name"),
+            (counts["no_registry"], TSE_MAX_MISSING, "no registry name"),
+            (counts["numbered"], TSE_MAX_NUMBERED, "a number in a name")):
+        if count > counts["individual"] * limit:
             raise ValueError(f"{count:,} of {counts['individual']:,} individuals' rows "
-                             f"of {member} carry {what}: the column may be masked")
+                             f"of {member} carry {what}: a name column may be "
+                             f"masked or moved")
+    for column, index in ((TSE_NAME, 0), (TSE_REGISTRY, 1)):
+        seen = len({pair[index] for pair in distinct})
+        if seen < counts["individual"] * TSE_MIN_DISTINCT:
+            raise ValueError(f"{member}'s {counts['individual']:,} individuals' rows "
+                             f"hold {seen:,} distinct {column}: the column may be masked")
     return stamp, {f"{year}_rows": counts["rows"],
                    f"{year}_rows_from_individuals": counts["individual"],
+                   f"{year}_records": len(distinct),
                    f"{year}_new_records": len(pairs) - before,
                    f"{year}_rows_not_{TSE_COLUMNS}_columns": counts["malformed"],
                    f"{year}_lines_folded_into_a_field": folded,
@@ -742,29 +776,37 @@ def _digits(text: str) -> int:
     return sum(char.isdigit() for char in text)
 
 
+def _missing(name: str) -> bool:
+    """No name: empty, a placeholder the TSE writes with a leading # (its
+    #NULO, #NE), or one with no letter (***, -4)."""
+    return name.startswith("#") or not any(char.isalpha() for char in name)
+
+
 def fetch_tse() -> Fetched:
     """The individual donors to candidates in each of TSE_ELECTIONS, one
     record per distinct pair of NM_DOADOR, the name as the candidate's
     accounts filed it, and NM_DOADOR_RFB, the federal tax registry's
     name for the same donor's CPF: a typed name with its reference form
-    beside it (the pairs differ in 205,936 of 854,542 records fetched
-    2026-10-23). A donor in both elections under the same pair is one
+    beside it (the pairs differ in 205,925 of 854,531 records fetched
+    2026-10-22). A donor in both elections under the same pair is one
     record; under two spellings, two.
 
     Only those two columns are read into a record. The CPF beside them is
     unmasked in the file, and like every other column it is read past,
-    never stored or printed; a name holding more than TSE_MAX_DIGITS
-    digits is dropped with its pair and counted, since a number typed
+    never stored or printed; a pair either of whose names holds more than
+    TSE_MAX_DIGITS digits is dropped and counted, since a number typed
     into the name field may be one. Each election's national member is
     read in ranges from the CDN (_RangeFile) rather than cached: the
     zips are replaced every few days, so a cached one goes stale within
     the week, and a fetch reads 209 MB of members where the zips are
     1.82 GB (2026-10-22). A row that is not TSE_COLUMNS columns, or a
     line folded into another row's field, is counted, past TSE_MAX_BAD
-    refusing the file, as do a header that is not TSE_COLUMNS wide or
-    lacks the three columns, a category outside TSE_ORIGINS, too few
-    rows from individuals (TSE_MIN_INDIVIDUALS) and too many without a
-    name or a registry name (TSE_MAX_MISSING)."""
+    refusing the file, as do a zip without the national member, a header
+    that is not TSE_COLUMNS wide or lacks the three columns, a category
+    outside TSE_ORIGINS, too few rows from individuals
+    (TSE_MIN_INDIVIDUALS), too many without a name or a registry name
+    (TSE_MAX_MISSING) or with a number in one (TSE_MAX_NUMBERED), and
+    too few distinct pairs (TSE_MIN_DISTINCT)."""
     pairs: set[tuple[str, str]] = set()
     detail: dict[str, Any] = {"elections": " ".join(TSE_ELECTIONS)}
     stamps = []
@@ -779,6 +821,9 @@ def fetch_tse() -> Fetched:
             if reader.error is not None:
                 raise reader.error from None
             raise ValueError(f"{url} is not a readable zip ({exc}); fetch again") from None
+        except (csv.Error, zlib.error, EOFError) as exc:
+            raise ValueError(f"{TSE_MEMBER.format(year=year)} in {url} cannot be "
+                             f"read ({type(exc).__name__}: {exc}); fetch again") from None
         stamps.append(f"{stamp} ({year})")
         detail.update(counts)
     detail["records_whose_name_differs_from_the_registry"] = sum(
