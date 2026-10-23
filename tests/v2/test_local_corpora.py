@@ -2715,6 +2715,169 @@ def test_a_phrase_with_a_word_written_nowhere_scans_nothing(
     assert local.phrase_counts(corpus, ["md", "zz"]) == (0, 0)
 
 
+# -- pairs -------------------------------------------------------------------------
+
+#: One invented pair of each shape, in PAIR_SHAPES's order.
+_PAIRS = [
+    ("ANA SOUZA", "ANA SOUZA", "the same"),
+    ("ANA SOUZA", "", "no reference name"),
+    ("--", "ANA SOUZA", "no filed name"),
+    ("Ana Souza", "ANA SOUZA", "case only"),
+    ("JOSE LIMA", "JOSÉ LIMA", "accents only"),
+    ("Jose Lima", "JOSÉ LIMA", "case and accents"),
+    ("ANA  SOUZA-LIMA", "ANA SOUZA LIMA", "punctuation or spacing only"),
+    ("SOUZA ANA", "ANA SOUZA", "the same words reordered"),
+    ("ANA SILVA", "ANA DA SILVA", "words left out"),
+    ("ANA DA SILVA", "ANA SILVA", "words added"),
+    ("ANA M SILVA", "ANA MARIA SILVA", "words shortened"),
+    ("ANA SOUSA", "ANA SOUZA", "words misspelled"),
+    ("ANA M SOUZA", "ANA MARIA DA SOUZA", "words left out and shortened"),
+    ("ANA SOUZA RIBEIRO", "ANA SOUZA CAMPOS", "mostly the same words"),
+    ("BIA COSTA", "ANA SOUZA", "few words in common"),
+]
+
+
+def test_each_pair_shape_has_a_pair() -> None:
+    assert [shape for _, _, shape in _PAIRS] == list(local.PAIR_SHAPES)
+
+
+@pytest.mark.parametrize(("filed", "reference", "shape"), _PAIRS,
+                         ids=[shape for _, _, shape in _PAIRS])
+def test_a_pair_takes_the_first_shape_it_fits(filed: str, reference: str, shape: str) -> None:
+    assert local.pair_shape(filed, reference) == shape
+
+
+@pytest.mark.parametrize(("filed", "reference", "shape"), [
+    # An accent and a word left out: not accents only.
+    ("JOSE SILVA", "JOSÉ DA SILVA", "words left out"),
+    # Two words misspelled is the most a misspelling takes.
+    ("ANA SOUSA RIBERO", "ANA SOUZA RIBEIRO", "words misspelled"),
+    # Three, and no word left in common.
+    ("ANNA SOUSA RIBERO", "ANA SOUZA RIBEIRO", "few words in common"),
+    # A word too unlike its counterpart is not a misspelling: 0.75 is,
+    # 0.727 is not.
+    ("ANA SOUZA", "ANA SANTOS", "mostly the same words"),
+    ("ANA LIMA", "ANA LIMO", "words misspelled"),
+    ("ANA ROCHA", "ANA ROSHAN", "mostly the same words"),
+    # A word both shortened and alike enough to be misspelled: shortened.
+    ("ANA SOUZ", "ANA SOUZA", "words shortened"),
+    # Two words run together are spacing, not a word changed.
+    ("ANA SOUZALIMA", "ANA SOUZA LIMA", "punctuation or spacing only"),
+    # Mostly the same words: all but one of the shorter name's words,
+    # and at least one word.
+    ("ANA SOUZA", "ANA LIMA COSTA RIBEIRO", "mostly the same words"),
+    ("ANA", "BIA", "few words in common"),
+    # Left out and shortened keeps the order: out of order, mostly.
+    ("SOUZA A", "ANA SOUZA", "mostly the same words"),
+], ids=["accent and a word", "two misspelled", "three misspelled", "unlike",
+        "alike at the limit", "alike under the limit", "shortened before misspelled",
+        "run together", "mostly, the shorter name's words", "one word each",
+        "shortened out of order"])
+def test_a_pair_s_shape_at_its_edges(filed: str, reference: str, shape: str) -> None:
+    assert local.pair_shape(filed, reference) == shape
+
+
+def _paired(*pairs: tuple[str, str]) -> object:
+    return local.Local("tse-donors", {"data_date": _DATE},
+                       [{"name": a, "registry": b} for a, b in pairs])
+
+
+def test_the_pairs_view_counts_shapes_and_the_words_left_out_and_added() -> None:
+    # A pair leaving DE out twice counts DE once, and a pair leaving out
+    # one of its two DEs counts it too.
+    found = local.pair_counts(_paired(*[(a, b) for a, b, _ in _PAIRS],
+                                      ("BO WU", "BO DE WU"), ("CY LIMA", "CY DA LIMA"),
+                                      ("DI LUZ", "DI DE LUZ DE MELO"),
+                                      ("EVA DE LUZ", "EVA DE LUZ DE MELO")))
+    assert found.total == len(_PAIRS) + 4
+    assert found.shapes["words left out"] == 5
+    assert found.left_out == {"DA": 2, "DE": 3, "MELO": 2}
+    assert found.added == {"DA": 1}
+    assert found.agreement is None
+
+
+def test_the_pairs_view_lists_only_words_many_pairs_share() -> None:
+    # A word left out of nine pairs could be one family's: not listed.
+    found = local.pair_counts(_paired(*[("ANA SILVA", "ANA DA SILVA")] * 10,
+                                      *[("BO WU", "BO NOVAIS WU")] * 9,
+                                      *[("CY DO LIMA", "CY LIMA")] * 10,
+                                      ("EVA LIMA", "EVA LIMA")))
+    report = local.format_pairs(found, top=15)
+    assert "words most often left out: DA 10\n" in report + "\n"
+    assert "NOVAIS" not in report
+    assert "words most often added: DO 10" in report
+    assert "30 pairs; 1 the same, 29 differing:" in report
+    assert "         19   65.5%  words left out" in report  # a share of those differing
+
+
+def test_the_pairs_view_lists_the_top_words_asked_for() -> None:
+    found = local.pair_counts(_paired(*[("ANA SILVA", "ANA DA SILVA")] * 11,
+                                      *[("BO WU", "BO DE WU")] * 10))
+    assert "left out: DA 11\n" in local.format_pairs(found, top=1) + "\n"
+    assert "left out: DA 11, DE 10" in local.format_pairs(found, top=2)
+
+
+def test_the_pairs_view_counts_the_pairs_whose_spellings_share_a_surname() -> None:
+    # Two readings with no surname (one word each) share none; a pair
+    # with no reference name is not parsed.
+    found = local.pair_counts(_paired(
+        ("ANA SILVA", "ANA DA SILVA"), ("ANA M SILVA", "ANA MARIA SILVA"),
+        ("PEDRO ALVES FH", "PEDRO ALVES FILHO"), ("ANA SOUZA", "ANA SOUZA"),
+        ("ANA", "ANNA"), ("BO WU", "")),
+        agreement=True)
+    # FH is too unlike FILHO to be its misspelling.
+    assert found.agreement == {"words left out": (1, 1), "words shortened": (1, 1),
+                               "mostly the same words": (0, 1),
+                               "words misspelled": (0, 1)}
+    report = local.format_pairs(found, top=15)
+    assert "(one surname in 0%)" in report
+    assert "  no reference name\n" in report  # with no agreement beside it
+
+
+def test_the_pairs_view_lists_the_accents_only_pairs_read_with_two_surnames() -> None:
+    # JUNIOR is a suffix and JÚNIOR is not, so the readings part; the
+    # accent on JOSÉ moves nothing. Fewer than ten: not listed.
+    found = local.pair_counts(_paired(*[("JOSE SILVA JÚNIOR", "JOSÉ SILVA JUNIOR")] * 10,
+                                      *[("JOSE SILVA", "JOSÉ SILVA")] * 10,
+                                      *[("ANA SÁ", "ANA SA")] * 9), agreement=True)
+    assert found.agreement == {"accents only": (10, 29)}
+    assert found.accent_splits == {"JÚNIOR / JUNIOR": 10, "SÁ / SA": 9}
+    report = local.format_pairs(found, top=15)
+    assert ("accents-only pairs read with two surnames, by their last words: "
+            "JÚNIOR / JUNIOR 10") in report
+    assert "SÁ / SA" not in report
+
+
+def test_the_pairs_view_refuses_a_source_with_no_reference_name(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    _fetched(monkeypatch, tmp_path)
+    with pytest.raises(SystemExit, match="carry no reference name"):
+        local.main(["pairs", _SOURCE])
+
+
+@pytest.mark.parametrize(("records", "match"), [
+    ([], "holds no records"),
+    ([{"name": "ANA", "registry": "ANA"}, {"name": "BO"}], "carry no reference name"),
+], ids=["no records", "one record without"])
+def test_the_pairs_view_refuses_records_it_cannot_pair(
+        records: list[dict[str, str]], match: str) -> None:
+    with pytest.raises(ValueError, match=match):
+        local.pair_counts(local.Local("tse-donors", {"data_date": _DATE}, records))
+
+
+def test_the_pairs_command_reports_a_fetched_corpus(
+        cdn: _Cdn, capsys: pytest.CaptureFixture[str]) -> None:
+    local.fetch(_TSE)
+    capsys.readouterr()
+    assert local.main(["pairs", _TSE]) == 0
+    out = capsys.readouterr().out
+    assert out.startswith("TSE (Tribunal Superior Eleitoral)")
+    assert "6 pairs; 1 the same, 5 differing:" in out
+    assert "one surname" not in out
+    assert local.main(["pairs", _TSE, "--agreement"]) == 0
+    assert "(one surname in" in capsys.readouterr().out
+
+
 # -- snapshot.py --local -----------------------------------------------------------
 
 def test_snapshot_reads_a_local_corpus_against_its_own_snapshot(
