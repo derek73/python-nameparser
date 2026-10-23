@@ -165,7 +165,7 @@ import urllib.request
 import zipfile
 import zlib
 from collections import Counter
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, TypeVar
@@ -300,6 +300,16 @@ def _get_json(url: str) -> dict[str, Any]:
     if not isinstance(data, dict):
         raise ValueError(f"{url} answered {type(data).__name__}, not an object")
     return data
+
+
+def _refuse_past(rows: Iterable[tuple[int, int, float, str]], why: str) -> None:
+    """The gate every source puts on what it reads past: for each
+    (count, of, share, what), refuse with "count of `of` what: why" once
+    count is more than `share` of `of`. A file whose layout moved under
+    a reader would otherwise read as a smaller corpus."""
+    for count, of, share, what in rows:
+        if count > of * share:
+            raise ValueError(f"{count:,} of {of:,} {what}: {why}")
 
 
 def _backed_off(exc: Exception, attempt: int, url: str) -> bool:
@@ -492,11 +502,10 @@ def _fec_read(path: Path) -> Fetched:
                     names.add(name)
                 else:
                     nameless += 1
-    for count, what in ((malformed, f"not {FEC_COLUMNS} columns"),
-                        (latin1, "not UTF-8")):
-        if count > rows * FEC_MAX_BAD:
-            raise ValueError(f"{count:,} of {rows:,} lines of {path} are {what}: "
-                             f"the file's layout has changed under FEC_COLUMNS")
+    _refuse_past(((count, rows, FEC_MAX_BAD, f"lines of {path} are {what}")
+                  for count, what in ((malformed, f"not {FEC_COLUMNS} columns"),
+                                      (latin1, "not UTF-8"))),
+                 "the file's layout has changed under FEC_COLUMNS")
     with_comma = sum("," in name for name in names)
     if names and with_comma < len(names) * FEC_MIN_COMMA:
         raise ValueError(f"{with_comma:,} of {len(names):,} names hold a comma: "
@@ -804,14 +813,13 @@ def _tse_read(year: str, archive: zipfile.ZipFile,
         raise ValueError(f"{counts['individual']:,} of {counts['rows']:,} rows of "
                          f"{member} are from individuals: the file is cut short or "
                          f"its categories have moved")
-    for count, limit, what in (
-            (counts["nameless"], TSE_MAX_MISSING, "no name"),
-            (counts["no_registry"], TSE_MAX_MISSING, "no registry name"),
-            (counts["numbered"], TSE_MAX_NUMBERED, "a number in a name")):
-        if count > counts["individual"] * limit:
-            raise ValueError(f"{count:,} of {counts['individual']:,} individuals' rows "
-                             f"of {member} carry {what}: a name column may be "
-                             f"masked or moved")
+    _refuse_past(((count, counts["individual"], limit,
+                   f"individuals' rows of {member} carry {what}")
+                  for count, limit, what in (
+                      (counts["nameless"], TSE_MAX_MISSING, "no name"),
+                      (counts["no_registry"], TSE_MAX_MISSING, "no registry name"),
+                      (counts["numbered"], TSE_MAX_NUMBERED, "a number in a name"))),
+                 "a name column may be masked or moved")
     for column, index in ((TSE_NAME, 0), (TSE_REGISTRY, 1)):
         seen = len({pair[index] for pair in distinct})
         if seen < counts["individual"] * TSE_MIN_DISTINCT:
@@ -1236,16 +1244,15 @@ def fetch_tw() -> Fetched:
         _tw_read(incomes, report, label, names, counts)
         if downloaded is not None:
             _tw_cache_zip(report, downloaded)
-    for key, total, what in (
-            ("rows_not_as_long_as_the_header", "rows",
-             "rows are not as long as their file's header"),
-            ("rows_without_a_category", "rows", "rows are without a category"),
-            ("rows_cut_by_a_stray_quote", "rows", "rows are cut by a stray quote"),
-            ("donations_naming_a_masked_donor", "individual_donations",
-             "individual donations name a masked donor")):
-        if counts[key] > counts[total] * TW_MAX_BAD:
-            raise ValueError(f"{counts[key]:,} of {counts[total]:,} {what}: the "
-                             f"files' layout has changed")
+    _refuse_past(((counts[key], counts[total], TW_MAX_BAD, what)
+                  for key, total, what in (
+                      ("rows_not_as_long_as_the_header", "rows",
+                       "rows are not as long as their file's header"),
+                      ("rows_without_a_category", "rows", "rows are without a category"),
+                      ("rows_cut_by_a_stray_quote", "rows", "rows are cut by a stray quote"),
+                      ("donations_naming_a_masked_donor", "individual_donations",
+                       "individual donations name a masked donor"))),
+                 "the files' layout has changed")
     if _tw_versions(_tw_reports()) != _tw_versions(reports):
         raise ValueError("the platform published, replaced or withdrew a report "
                          "during the fetch; fetch again")
@@ -1374,13 +1381,12 @@ def _ukec_rows(rows: list[list[str]], text: str, total: int) -> Fetched:
     if count != total:
         raise ValueError(f"the export held {count:,} donations where the search "
                          f"counts {total:,}: a capped or cut export; fetch again")
-    for skipped, share, what in (
-            (malformed, UKEC_MAX_BAD, f"not {len(UKEC_COLUMNS)} fields"),
-            (other, UKEC_MAX_BAD, f"from a donor that is not {UKEC_INDIVIDUAL!r}"),
-            (nameless, UKEC_MAX_NAMELESS, "from an individual with no name")):
-        if skipped > count * share:
-            raise ValueError(f"{skipped:,} of {count:,} rows of the export are "
-                             f"{what}: the export is not the one this reads")
+    _refuse_past(((skipped, count, share, f"rows of the export are {what}")
+                  for skipped, share, what in (
+                      (malformed, UKEC_MAX_BAD, f"not {len(UKEC_COLUMNS)} fields"),
+                      (other, UKEC_MAX_BAD, f"from a donor that is not {UKEC_INDIVIDUAL!r}"),
+                      (nameless, UKEC_MAX_NAMELESS, "from an individual with no name"))),
+                 "the export is not the one this reads")
     return Fetched([{"name": name} for name in sorted(names)], "", {
         "donations": count, "donor_ids": len(donor_ids),
         "individuals_without_a_name": nameless,
@@ -1643,15 +1649,13 @@ def _psc_read(parts: Path) -> Fetched:
         raise ValueError(f"{individuals:,} of {counts['lines']:,} lines are "
                          f"{' or '.join(PSC_KINDS)} records: a kind has been "
                          f"renamed or moved under PSC_KINDS")
-    for key, of, what in (
-            ("lines_not_json", counts["lines"], "lines are not JSON"),
-            ("individuals_without_name_elements", individuals,
-             "individuals have no name_elements"),
-            ("names_not_their_boxes_joined", individuals,
-             "individuals' display names are not their four boxes joined")):
-        if counts[key] > of * PSC_MAX_BAD:
-            raise ValueError(f"{counts[key]:,} of {of:,} {what}: the snapshot's "
-                             f"layout has changed under PSC_ELEMENTS")
+    _refuse_past(((counts[key], of, PSC_MAX_BAD, what) for key, of, what in (
+                      ("lines_not_json", counts["lines"], "lines are not JSON"),
+                      ("individuals_without_name_elements", individuals,
+                       "individuals have no name_elements"),
+                      ("names_not_their_boxes_joined", individuals,
+                       "individuals' display names are not their four boxes joined"))),
+                 "the snapshot's layout has changed under PSC_ELEMENTS")
     records = [json.loads(line) for line in sorted(lines)]
     named_records = [record for record in records if "name" in record]
     if len(named_records) < len(records):
