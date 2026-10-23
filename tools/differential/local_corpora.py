@@ -20,8 +20,8 @@ $NAMEPARSER_TOOLS_CACHE (default ~/.cache/nameparser-tools), and
 
 - raw.jsonl -- one record per name as the source gave it, with where it
   came from where the source says: a ClinicalTrials.gov official, with
-  the study and role; one distinct FEC name, alone. The counts are
-  counted from here.
+  the study and role; one distinct FEC or Taiwan donor name, alone.
+  The counts are counted from here.
 - corpus.jsonl -- the distinct names, in the corpus line format
   snapshot.py and compare.py --corpus read.
 - meta.json -- the source's own date for the data, what was fetched, and
@@ -69,15 +69,35 @@ to names written in their spoken order. The FEC's terms (52 U.S.C.
 30111(a)(4)) bar using the names to solicit contributions or for any
 commercial purpose, which the credit line every report opens with
 repeats; only the NAME column is kept.
+
+tw-donors -- the distinct names of every individual donor in every
+campaign finance report Taiwan's Control Yuan publishes on its political
+donation platform (ardata.cy.gov.tw, the zips data.gov.tw lists): 454
+reports of 64 elections on 2026-10-22, presidential, legislative and
+local: every report from 2018's elections on, and the residual reports
+of 2014's and 2016's. Each report's zip is cached whole beside the
+corpus (40 MB), under the name the platform's listing gives it, so a
+refresh downloads only the reports published or rebuilt since. Names as a candidate's staff typed them into a filing, published
+in full where the ID, address and phone beside them are masked: of the
+308,653 on 2026-10-05, 296,803 were three Han characters, 5,449 four
+and 5,260 two, so it is the population for unspaced Han names written
+family first, and for the married double surname (冠夫姓) a four-
+character name often is. Under the Open Government Data License,
+version 1.0, which the credit line every report opens with names, with
+the platform's own bar on using the data for profit, credit
+investigation or another improper purpose; only the donor column is
+kept.
 """
 from __future__ import annotations
 
 import argparse
+import csv
 import functools
 import dataclasses
 import hashlib
 import http.client
 import inspect
+import io
 import json
 import os
 import re
@@ -93,7 +113,7 @@ from collections import Counter
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, TypeVar
 
 # The shared fetch and cache helpers (corpus_build.py), found by putting
 # this directory on sys.path: see corpus_build's docstring for why.
@@ -204,24 +224,37 @@ CTGOV_RETRIES = 4
 _TRANSIENT = (OSError, http.client.HTTPException)
 
 
+_T = TypeVar("_T")
+
+
 class _Unparsed(Exception):
     """A response body that is not JSON: cut short in transit."""
 
 
 def _get_json(url: str) -> dict[str, Any]:
-    """`url`'s JSON object, retried with a backoff and a line on stderr
-    for each retry: one page per thousand studies (608 on 2026-10-21),
-    and starting over would cost the whole run. Any other 4xx is the
-    request's fault and is raised, as is the last attempt's error."""
+    """`url`'s JSON object, fetched by _retried: one page per thousand
+    studies (608 on 2026-10-21), and starting over would cost the whole
+    run."""
+    data = _retried(url, lambda body: corpus_build.parse_json(body, url), 0.1)
+    if not isinstance(data, dict):
+        raise ValueError(f"{url} answered {type(data).__name__}, not an object")
+    return data
+
+
+def _retried(url: str, read: Callable[[bytes], _T], delay: float) -> _T:
+    """`url`'s body as `read` reads it, retried with a backoff and a line
+    on stderr for each retry, `read` raising ValueError for a body cut
+    short in transit; `delay` seconds of sleep after each request. Any
+    other 4xx is the request's fault and is raised, as is the last
+    attempt's error."""
     for attempt in range(CTGOV_RETRIES):
         try:
             body = corpus_build.fetch_bytes(url, user_agent=USER_AGENT,
-                                            timeout=60, delay=0.1)
+                                            timeout=60, delay=delay)
             try:
-                data = corpus_build.parse_json(body, url)
+                return read(body)
             except ValueError as exc:
                 raise _Unparsed(str(exc)) from None
-            break
         except (*_TRANSIENT, _Unparsed) as exc:
             if (isinstance(exc, urllib.error.HTTPError) and exc.code < 500
                     and exc.code != 429 or attempt == CTGOV_RETRIES - 1):
@@ -235,9 +268,7 @@ def _get_json(url: str) -> dict[str, Any]:
             print(f"  retrying in {wait}s after {type(exc).__name__}: {url}",
                   file=sys.stderr)
             time.sleep(wait)
-    if not isinstance(data, dict):
-        raise ValueError(f"{url} answered {type(data).__name__}, not an object")
-    return data
+    raise AssertionError("unreachable: the last attempt raises")
 
 
 def _ctgov_version() -> tuple[str, str]:
@@ -441,6 +472,248 @@ def check_fec(meta: dict[str, Any]) -> str:
         f"holds the {cycle} cycle, and this tool reads the {FEC_CYCLE} cycle")
 
 
+# -- Taiwan political donations ------------------------------------------------
+
+TW_API = "https://ardata.cy.gov.tw/api/v1"
+TW_PAGE = 1000  # one page held all 454 reports on 2026-10-22
+#: The seconds of sleep after each report's download.
+TW_DELAY = 1.0
+TW_INCOMES = "incomes.csv"
+#: The columns incomes.csv may hold, in the order the newest reports
+#: write them; an older report omits some (a 2020 by-election's had no
+#: 更正註記), so a file is read by its own header's names.
+TW_HEADER = (
+    "序號", "擬參選人／政黨", "選舉名稱", "申報序號／年度", "交易日期", "收支科目",
+    "捐贈者／支出對象", "身分證／統一編號", "收入金額", "支出金額", "捐贈方式",
+    "存入專戶日期", "返還/繳庫", "支出用途", "金錢類", "地址", "聯絡電話",
+    "應揭露之支出對象", "支出對象之內部人員姓名", "支出對象之內部人員職稱",
+    "政黨之內部人員姓名", "政黨之內部人員職稱", "關係", "更正註記", "資料更正日期")
+TW_CATEGORY, TW_DONOR = "收支科目", "捐贈者／支出對象"
+TW_INDIVIDUAL = "個人捐贈收入"
+#: The income categories a candidate's report holds (the platform's
+#: classTypes with ctrlTp 0): individual, business, party and civic
+#: group donations, anonymous gifts, other income.
+TW_CATEGORIES = frozenset({
+    TW_INDIVIDUAL, "營利事業捐贈收入", "政黨捐贈收入", "人民團體捐贈收入",
+    "匿名捐贈", "其他收入"})
+#: The candidate's column, the one a report with no income fills in
+#: the single row it writes, every other column holding TW_EMPTY.
+TW_CANDIDATE = "擬參選人／政黨"
+#: The columns every file must hold, the ones read.
+TW_NEEDED = frozenset({TW_CATEGORY, TW_DONOR, TW_CANDIDATE})
+TW_EMPTY = "-"
+#: A report's serial: 1 the first report, 2 to 6 the five reports on
+#: the money left over.
+TW_SERIALS = range(1, 7)
+#: More than this share of rows not as long as their file's header, or
+#: of rows with an empty category, refuses the fetch, as FEC_MAX_BAD
+#: does. A row with no category is read past: one 2021 residual report
+#: held one, an income of NT$53 with no donor ID (2026-10-22).
+TW_MAX_BAD = 1 / 10_000
+
+
+def _tw_reports() -> list[dict[str, Any]]:
+    """Every election report the platform lists, paged: the listing is
+    what says a report exists, since the download answers a report that
+    does not and a fault alike, with a 500 and an incident number."""
+    reports: list[dict[str, Any]] = []
+    seen: set[tuple[str, str, int]] = set()
+    page, count = 1, None
+    while count is None or len(reports) < count:
+        query = urllib.parse.urlencode({"page": page, "pageSize": TW_PAGE})
+        data = _get_json(f"{TW_API}/search/elections?{query}")
+        count = int(data["paging"]["recordCount"])
+        if not data["data"]:
+            break
+        for row in data["data"]:
+            serial = row["yearOrSerial"]
+            if row["type"] != "Election" or serial not in TW_SERIALS:
+                raise ValueError(f"a listed report is not an election's first or "
+                                 f"residual report: type {row['type']!r}, serial "
+                                 f"{serial!r}; the listing has changed")
+            key = (row["electionName"], row["electionArea"], int(serial))
+            if key in seen:
+                raise ValueError(f"{key} was listed twice: the listing shifted "
+                                 f"under the fetch; fetch again")
+            seen.add(key)
+            reports.append(row)
+        page += 1
+    if len(reports) != count:
+        raise ValueError(f"listed {len(reports):,} reports of the {count:,} the "
+                         f"platform counted; fetch again")
+    return reports
+
+
+def _tw_versions(reports: list[dict[str, Any]]) -> set[tuple[str, str, int, str]]:
+    """Each report with the zip its listing names, which carries the
+    date the platform built it: a replaced report lists another."""
+    return {(r["electionName"], r["electionArea"], int(r["yearOrSerial"]),
+             r["zipFileName"]) for r in reports}
+
+
+def _tw_url(report: dict[str, Any]) -> str:
+    """A report's zip, asked for by the fields its listing row gives."""
+    return f"{TW_API}/Search/download?" + urllib.parse.urlencode({
+        "ElectionName": report["electionName"],
+        "ElectionArea": report["electionArea"], "AccountNumber": "",
+        "YearOrSerial": int(report["yearOrSerial"]), "Version": "",
+        "SearchType": 2, "DownloadType": 3})
+
+
+def _tw_incomes(body: bytes) -> tuple[bytes, str] | None:
+    """A report zip's incomes.csv and its timestamp, None where the zip
+    holds none, or ValueError where the body is no whole zip: a download
+    cut short, which _retried retries."""
+    try:
+        with zipfile.ZipFile(io.BytesIO(body)) as archive:
+            if TW_INCOMES not in archive.namelist():
+                return None
+            member = archive.getinfo(TW_INCOMES)
+            stamp = "{:04d}-{:02d}-{:02d}T{:02d}:{:02d}:{:02d}".format(*member.date_time)
+            return archive.read(member), stamp
+    except zipfile.BadZipFile as exc:
+        raise ValueError(f"not a whole zip ({exc})") from None
+
+
+#: The cached reports' folder, beside the corpus.
+TW_REPORTS = "reports"
+#: A listed zip's name, the only kind cached under it: the name is the
+#: platform's and becomes a path.
+_TW_ZIP_NAME = re.compile(r"[\w-]+\.zip", re.ASCII)
+
+
+def _tw_whole(body: bytes) -> bytes:
+    _tw_incomes(body)  # raises ValueError where the zip is cut short
+    return body
+
+
+def _tw_report_zip(report: dict[str, Any], label: str) -> bytes:
+    """A listed report's zip, read from the reports folder where an
+    earlier fetch cached it under the name the listing gives, else
+    downloaded and cached there. The name carries the date the platform
+    built the zip, so a rebuilt report is downloaded anew, and a cached
+    zip that is no whole zip is too."""
+    name = report["zipFileName"]
+    if not isinstance(name, str) or not _TW_ZIP_NAME.fullmatch(name):
+        raise ValueError(f"{label} is listed with the zip name {name!r}, which is "
+                         f"no file name this tool caches; the listing has changed")
+    path = directory("tw-donors") / TW_REPORTS / name
+    if path.exists():
+        body = path.read_bytes()
+        try:
+            return _tw_whole(body)
+        except ValueError:
+            print(f"  downloading again a cached zip cut short: {path}", file=sys.stderr)
+    body = _retried(_tw_url(report), _tw_whole, TW_DELAY)
+    path.parent.mkdir(exist_ok=True)
+    corpus_build.write_atomic(path, body)
+    return body
+
+
+def _tw_read(incomes: bytes, label: str, names: set[str], counts: Counter[str]) -> None:
+    """Add a report's donor names to `names`, counting into `counts`
+    what is read past. A header or a category this tool was not written
+    for is refused, not read: a moved column would put another field's
+    values in the corpus, so a header holding a column TW_HEADER does
+    not name, a column twice, or not every column TW_NEEDED names is
+    refused; one missing a column the tool does not read is read. The
+    one row a report with no income writes, every column a dash but the
+    candidate's, is counted apart."""
+    try:
+        text = incomes.decode("utf-8-sig")
+    except UnicodeDecodeError as exc:
+        raise ValueError(f"{label}'s {TW_INCOMES} is not UTF-8 ({exc})") from None
+    rows = csv.reader(io.StringIO(text, newline=""))
+    header = next(rows, [])
+    if (not set(header) <= set(TW_HEADER) or len(set(header)) != len(header)
+            or not TW_NEEDED <= set(header)):
+        raise ValueError(f"{label}'s {TW_INCOMES} has the header {tuple(header)}, "
+                         f"which is not columns of TW_HEADER, each once, holding "
+                         f"those TW_NEEDED names")
+    category_at, donor_at, candidate_at = (
+        header.index(column) for column in (TW_CATEGORY, TW_DONOR, TW_CANDIDATE))
+    for row in rows:
+        counts["rows"] += 1
+        if len(row) != len(header):
+            counts["rows_not_as_long_as_the_header"] += 1
+            continue
+        category = row[category_at]
+        if {f for i, f in enumerate(row) if i != candidate_at} == {TW_EMPTY}:
+            counts["rows_of_a_report_with_no_income"] += 1
+            continue
+        if not category:
+            counts["rows_without_a_category"] += 1
+            continue
+        if category not in TW_CATEGORIES:
+            raise ValueError(f"{label}'s {TW_INCOMES} holds the category "
+                             f"{category!r}, which TW_CATEGORIES does not list")
+        if category != TW_INDIVIDUAL:
+            counts["rows_from_other_categories"] += 1
+            continue
+        counts["individual_donations"] += 1
+        if name := row[donor_at].strip():
+            names.add(name)
+        else:
+            counts["donations_without_a_name"] += 1
+
+
+def fetch_tw() -> Fetched:
+    """The distinct names of every individual donor in every election
+    report the platform lists, one record per name.
+
+    Every report is read, the first and the residual ones alike, and a
+    name is kept once however many reports, candidates or elections it
+    gave to, as the FEC source keeps one per name. Only the donor column
+    of the rows the category marks as individual donations is kept, its
+    spaces stripped; the masked ID, address and phone columns and the
+    amounts are read past. Each report's zip is cached (_tw_report_zip),
+    so a fetch cut short or refused goes on where it stopped, and a
+    refresh downloads only the reports published or rebuilt since; a
+    cached zip the listing no longer names is deleted once the fetch has
+    read the rest. The listing is read again at the end, and a
+    report published or replaced during the fetch refuses it. The data
+    date is the newest incomes.csv's own timestamp, which carries no time
+    zone."""
+    reports = _tw_reports()
+    names: set[str] = set()
+    counts: Counter[str] = Counter()
+    stamps: list[str] = []
+    for number, report in enumerate(reports, 1):
+        if number % 50 == 0:
+            print(f"  {number:,} of {len(reports):,} reports", file=sys.stderr)
+        label = f"{report['electionName']} {report['electionArea']} " \
+                f"report {int(report['yearOrSerial'])}"
+        got = _tw_incomes(_tw_report_zip(report, label))
+        if got is None:
+            raise ValueError(f"{label}'s zip holds no {TW_INCOMES}: the reports' "
+                             f"layout has changed")
+        stamps.append(got[1])
+        _tw_read(got[0], label, names, counts)
+    for key, what in (("rows_not_as_long_as_the_header",
+                       "not as long as their file's header"),
+                      ("rows_without_a_category", "without a category")):
+        if counts[key] > counts["rows"] * TW_MAX_BAD:
+            raise ValueError(f"{counts[key]:,} of {counts['rows']:,} rows are "
+                             f"{what}: the files' layout has changed")
+    if _tw_versions(_tw_reports()) != _tw_versions(reports):
+        raise ValueError("the platform published or replaced a report during "
+                         "the fetch; fetch again")
+    listed = {r["zipFileName"] for r in reports}
+    for stale in (directory("tw-donors") / TW_REPORTS).glob("*.zip"):
+        if stale.name not in listed:
+            stale.unlink()
+    return Fetched([{"name": name} for name in sorted(names)], max(stamps, default=""), {
+        "reports": len(reports),
+        "first_reports": sum(int(r["yearOrSerial"]) == 1 for r in reports),
+        "elections": len({r["electionName"] for r in reports}),
+        "rows": counts["rows"], "individual_donations": counts["individual_donations"],
+        "rows_from_other_categories": counts["rows_from_other_categories"],
+        "donations_without_a_name": counts["donations_without_a_name"],
+        "rows_of_a_report_with_no_income": counts["rows_of_a_report_with_no_income"],
+        "rows_without_a_category": counts["rows_without_a_category"],
+        "rows_not_as_long_as_the_header": counts["rows_not_as_long_as_the_header"]})
+
+
 SOURCES: dict[str, Source] = {
     "ctgov-officials": Source(
         credit="ClinicalTrials.gov (NLM) study officials", unit="officials",
@@ -449,6 +722,12 @@ SOURCES: dict[str, Source] = {
         credit=f"FEC individual contributions, {FEC_CYCLE} cycle "
                f"(52 U.S.C. 30111(a)(4): not for soliciting or commercial use)",
         unit="names", fetch=fetch_fec, renew=renew_fec, check=check_fec),
+    "tw-donors": Source(
+        credit="Control Yuan political donation reports (ardata.cy.gov.tw), "
+               "Open Government Data License, version 1.0 (Taiwan) "
+               "(the platform's terms: not for profit, credit investigation "
+               "or other improper use)",
+        unit="names", fetch=fetch_tw),
 }
 
 
