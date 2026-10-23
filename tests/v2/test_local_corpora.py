@@ -10,11 +10,14 @@ counts read as real zeros. The network is a stub answering by URL.
 """
 import csv
 import email.message
+import gzip
 import hashlib
 import http.client
 import io
 import json
+import os
 import re
+import shutil
 import time
 import types
 import unicodedata
@@ -1877,6 +1880,406 @@ def test_a_ukec_search_that_states_no_count_is_refused(
     monkeypatch.setattr(urllib.request, "urlopen", urlopen)
     with pytest.raises(ValueError, match="states no"):
         local.fetch(_UKEC)
+
+
+# -- Companies House people with significant control ------------------------------
+
+_PSC = "psc-individuals"
+_PSC_DAY = "2026-10-22"
+_PSC_PERSON = "individual-person-with-significant-control"
+
+
+def _psc_person(name: str, nationality: str | None = "British",
+                kind: str = _PSC_PERSON, **elements: str) -> dict[str, Any]:
+    """A PSC record as the snapshot writes it, its boxes from `elements`
+    (or split from `name`: forename, then surname), with the fields the
+    corpus must not keep."""
+    if not elements:
+        forename, _, surname = name.partition(" ")
+        elements = {"title": "Mr", "forename": forename, "surname": surname}
+        name = f"Mr {name}"
+    data: dict[str, Any] = {
+        "kind": kind, "name": name, "name_elements": elements,
+        "address": {"premises": "1 Invented Row", "postal_code": "ZZ1 1ZZ"},
+        "date_of_birth": {"month": 4, "year": 1970}, "country_of_residence": "England",
+        "natures_of_control": ["ownership-of-shares-75-to-100-percent"]}
+    if nationality is not None:
+        data["nationality"] = nationality
+    return {"company_number": "00000001", "data": data}
+
+
+def _psc_lines(*records: dict[str, Any] | str) -> bytes:
+    return b"".join((r if isinstance(r, str) else json.dumps(r)).encode() + b"\n"
+                    for r in records)
+
+
+#: Part 1: a person, a person filed twice (two companies), a company, a
+#: super-secure PSC with no name, a person with no nationality, and a
+#: person whose name and boxes are all empty.
+#: Part 2: the first person again, filed by another company, and an
+#: overseas entity's beneficial owner.
+_PSC_PARTS = {
+    1: _psc_lines(_psc_person("Ann Lee"), _psc_person("Bo Wu"), _psc_person("Bo Wu"),
+                  {"data": {"kind": "corporate-entity-person-with-significant-control",
+                            "name": "Invented Holdings Ltd"}},
+                  {"data": {"kind": "super-secure-person-with-significant-control"}},
+                  _psc_person("Cy Doe", nationality=None),
+                  _psc_person("", title="", forename="", surname="")),
+    2: _psc_lines(_psc_person("Ann Lee"),
+                  _psc_person("Dr Di Fox Roe", "Irish", "individual-beneficial-owner",
+                              title="Dr", forename="Di", middle_name="Fox",
+                              surname="Roe")),
+}
+
+
+def _psc_part(n: int, body: bytes, of: int = 2, day: str = _PSC_DAY,
+              member: str | None = None) -> bytes:
+    """Part `n` of `of` as the download serves it: a zip of one JSON-lines file."""
+    out = io.BytesIO()
+    with zipfile.ZipFile(out, "w") as archive:
+        archive.writestr(member or f"psc-snapshot-{day}_{n}of{of}.txt", body)
+    return out.getvalue()
+
+
+def _psc_page(*files: str) -> bytes:
+    return "".join(f'<a href="{f}">{f}</a> (74Mb)\n' for f in files).encode()
+
+
+def _psc_files(of: int = 2, day: str = _PSC_DAY) -> list[str]:
+    return [f"psc-snapshot-{day}_{n}of{of}.zip" for n in range(1, of + 1)]
+
+
+def _serve_psc(monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+               parts: dict[str, Answer], page: bytes | None = None) -> list[str]:
+    """Answer the download page with `page` (every file in `parts`
+    linked) and each part file with its answer: bytes to serve, or an
+    exception to raise. Returns the file names downloaded."""
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    monkeypatch.setattr(local, "FEC_CHUNK", 64)  # several reads, not one
+    monkeypatch.setattr(local, "PSC_SAMPLE", 1)  # every record, unless a test samples
+    page = _psc_page(*parts) if page is None else page
+    asked: list[str] = []
+
+    def urlopen(request: urllib.request.Request, timeout: int) -> _Response | _Download:
+        url = request.full_url
+        if url == local.PSC_PAGE:
+            return _Response(page)
+        file = url.rsplit("/", 1)[1]
+        asked.append(file)
+        answer = parts.get(file)
+        if isinstance(answer, Exception):
+            raise answer
+        if answer is None:
+            pytest.fail(f"an unexpected download of {url}")
+        return _Download(answer, len(answer))
+    monkeypatch.setattr(urllib.request, "urlopen", urlopen)
+    return asked
+
+
+def _psc_snapshot(monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+                  bodies: dict[int, bytes] = _PSC_PARTS, day: str = _PSC_DAY) -> list[str]:
+    of = len(bodies)
+    return _serve_psc(monkeypatch, tmp_path, {
+        file: _psc_part(n, bodies[n], of, day)
+        for n, file in enumerate(_psc_files(of, day), 1)})
+
+
+def _gone(file: str) -> urllib.error.HTTPError:
+    return urllib.error.HTTPError(f"{local.PSC_PAGE}/{file}", 404, "Not Found",
+                                  email.message.Message(), None)
+
+
+def test_a_psc_fetch_keeps_each_filed_name_once_and_counts_the_rest(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(local, "PSC_MAX_BAD", 1)  # a fixture of 9 lines
+    asked = _psc_snapshot(monkeypatch, tmp_path)
+    corpus = local.fetch(_PSC)
+    assert asked == _psc_files()
+    # In the order of their lines, whose keys are sorted: by forename.
+    assert corpus.records == [
+        {"name": "Mr Ann Lee", "title": "Mr", "forename": "Ann", "surname": "Lee",
+         "nationality": "British"},
+        {"name": "Mr Bo Wu", "title": "Mr", "forename": "Bo", "surname": "Wu",
+         "nationality": "British"},
+        {"name": "Mr Cy Doe", "title": "Mr", "forename": "Cy", "surname": "Doe"},
+        {"name": "Dr Di Fox Roe", "title": "Dr", "forename": "Di", "middle_name": "Fox",
+         "surname": "Roe", "nationality": "Irish"},
+    ]
+    assert corpus.meta["data_date"] == _PSC_DAY
+    assert corpus.meta["detail"] == {
+        "parts": 2, "sample": "1 in 1", "lines": 9, local.PSC_KINDS[0]: 6, local.PSC_KINDS[1]: 1,
+        "records_of_other_kinds": 2, "individuals_without_a_nationality": 1,
+        "sampled_names_that_are_empty": 1}
+    assert corpus.header().endswith("4 filed names (local corpus psc-individuals)")
+
+
+def test_a_psc_fetch_writes_no_field_but_the_name_its_boxes_and_the_nationality(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    _psc_snapshot(monkeypatch, tmp_path)
+    local.fetch(_PSC)
+    folder = tmp_path / "local" / _PSC
+    kept = set(local.PSC_KEPT)
+    for path in [folder / "raw.jsonl", *(folder / "parts").iterdir()]:
+        text = (gzip.decompress(path.read_bytes()) if path.suffix == ".gz"
+                else path.read_bytes()).decode()
+        for leaked in ("Invented Row", "ZZ1", "1970", "England", "00000001",
+                       "ownership", "Invented Holdings"):
+            assert leaked not in text, (path.name, leaked)
+        for line in text.splitlines():
+            row = json.loads(line)
+            assert "part" in row or set(row) <= kept, (path.name, row)
+
+
+def test_a_psc_sample_keeps_the_same_records_whatever_part_files_them(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    people = [_psc_person(f"Ann Lee{n}") for n in range(40)]
+    _psc_snapshot(monkeypatch, tmp_path, {1: _psc_lines(*people[:25]),
+                                          2: _psc_lines(*people[25:])})
+    monkeypatch.setattr(local, "PSC_SAMPLE", 4)
+    corpus = local.fetch(_PSC)
+    kept = corpus.records
+    assert 0 < len(kept) < 20 and corpus.meta["detail"]["sample"] == "1 in 4"
+    assert all(local.psc_sampled(_extract_line(r)) for r in kept)
+    # Filed by other parts, in another order, the same records are kept.
+    _psc_snapshot(monkeypatch, tmp_path, {1: _psc_lines(*people[30:]),
+                                          2: _psc_lines(*reversed(people[:30]))})
+    monkeypatch.setattr(local, "PSC_SAMPLE", 4)
+    shutil.rmtree(tmp_path / "local" / _PSC / "parts")
+    assert local.fetch(_PSC).records == kept
+    # The control: with every record kept, all 40 are there.
+    monkeypatch.setattr(local, "PSC_SAMPLE", 1)
+    assert len(local.fetch(_PSC).records) == 40
+
+
+def _extract_line(record: dict[str, str]) -> str:
+    """A record as its extract line, the text psc_sampled hashes."""
+    return local.corpus_build.jsonl_line(record, sort_keys=True)
+
+
+@pytest.mark.parametrize(("bad", "match"), [
+    ({"data": {"kind": _PSC_PERSON, "name": "Mr Ann Lee"}},
+     "1 of 2 individuals have no name_elements"),
+    (_psc_person("Mr Ann  Lee", title="Mr", forename="Ann", surname="Lee"),
+     "1 of 2 individuals' display names are not their four boxes joined"),
+    ("{not json", "1 of 2 lines are not JSON"),
+], ids=["no name_elements", "a name not its boxes joined", "a line not JSON"])
+def test_a_psc_snapshot_whose_layout_has_changed_is_refused(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        bad: dict[str, Any] | str, match: str) -> None:
+    good = _psc_person("Bo Wu")
+    _psc_snapshot(monkeypatch, tmp_path, {1: _psc_lines(bad, good)})
+    with pytest.raises(ValueError, match=match):
+        local.fetch(_PSC)
+    assert local.load(_PSC) is None
+    # The control: past the threshold the same snapshot is read, the bad
+    # record counted and dropped, so the threshold is what refused it.
+    monkeypatch.setattr(local, "PSC_MAX_BAD", 1)
+    assert [r["name"] for r in local.fetch(_PSC).records] == ["Mr Bo Wu"]
+
+
+@pytest.mark.parametrize(("page", "match"), [
+    (b"<p>The snapshot has moved.</p>", "links no snapshot parts"),
+    (_psc_page(*_psc_files(3)[:2]), r"parts \[1, 2\] of \[3\]"),
+    (_psc_page(_psc_files()[0], _psc_files(day="2026-10-23")[1]),
+     r"dated \['2026-10-22', '2026-10-23'\]"),
+], ids=["no parts", "a part missing", "parts of two days"])
+def test_a_psc_page_that_lists_no_whole_snapshot_is_refused(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, page: bytes, match: str) -> None:
+    asked = _serve_psc(monkeypatch, tmp_path, {}, page)
+    with pytest.raises(ValueError, match=match):
+        local.fetch(_PSC)
+    assert asked == []
+
+
+def test_a_psc_part_gone_mid_fetch_is_refused_and_the_next_run_resumes(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    files = _psc_files()
+    parts: dict[str, Answer] = {files[0]: _psc_part(1, _PSC_PARTS[1]),
+                                files[1]: _gone(files[1])}
+    asked = _serve_psc(monkeypatch, tmp_path, parts)
+    with pytest.raises(ValueError, match="replaced during the fetch; fetch again"):
+        local.fetch(_PSC)
+    folder = tmp_path / "local" / _PSC
+    assert not (folder / "parts").exists()
+    assert sorted(p.name for p in (folder / "parts.new").iterdir()) == [
+        local._extract_name(files[0])]
+    parts[files[1]] = _psc_part(2, _PSC_PARTS[2])
+    assert len(local.fetch(_PSC).records) == 4
+    assert asked == [*files, files[1]]  # part 1 was not downloaded again
+    assert not (folder / "parts.new").exists()
+
+
+def test_a_resumed_psc_fetch_drops_what_another_day_left(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    asked = _psc_snapshot(monkeypatch, tmp_path)
+    staging = tmp_path / "local" / _PSC / "parts.new"
+    staging.mkdir(parents=True)
+    stale = staging / "psc-snapshot-2026-10-21_1of2.jsonl.gz"
+    stale.write_bytes(gzip.compress(b'{"part": "yesterday", "counts": {}}\n'))
+    (staging / "psc-snapshot-2026-10-22_2of2.zip.part").write_bytes(b"cut")
+    assert len(local.fetch(_PSC).records) == 4
+    assert asked == _psc_files()
+    assert sorted(p.name for p in (tmp_path / "local" / _PSC / "parts").iterdir()) == [
+        local._extract_name(f) for f in _psc_files()]
+
+
+def test_a_failed_psc_refresh_keeps_the_parts_and_the_corpus_it_had(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    _psc_snapshot(monkeypatch, tmp_path)
+    before = local.fetch(_PSC)
+    newer = _psc_files(day="2026-10-23")
+    cut = _psc_part(2, _PSC_PARTS[2], day="2026-10-23")
+    _serve_psc(monkeypatch, tmp_path, {newer[0]: _psc_part(1, _PSC_PARTS[1], day="2026-10-23"),
+                                       newer[1]: cut[:-10]})
+    with pytest.raises(ValueError, match="fetch again"):
+        local.main(["fetch", _PSC, "--refresh"])
+    assert local.load(_PSC) == before
+    assert sorted(p.name for p in (tmp_path / "local" / _PSC / "parts").iterdir()) == [
+        local._extract_name(f) for f in _psc_files()]
+    # The control: the same refresh, whole, replaces both.
+    _serve_psc(monkeypatch, tmp_path, {newer[0]: b"", newer[1]: cut})
+    assert local.main(["fetch", _PSC, "--refresh"]) == 0
+    after = local.load(_PSC)
+    assert after is not None and after.meta["data_date"] == "2026-10-23"
+
+
+def test_a_psc_cache_missing_a_part_is_refused_with_the_way_out(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    _psc_snapshot(monkeypatch, tmp_path)
+    local.fetch(_PSC)
+    (tmp_path / "local" / _PSC / "parts" / local._extract_name(_psc_files()[1])
+     ).unlink()
+    with pytest.raises(ValueError, match=r"holds parts \[1\] of \[2\].*--refresh"):
+        local.fetch(_PSC)
+
+
+@pytest.mark.parametrize(("body", "match"), [
+    (b"not a zip at all", "is not a readable zip"),
+    (_psc_part(1, _PSC_PARTS[1], of=1, member="renamed.txt"),
+     "holds no psc-snapshot-2026-10-22_1of1.txt"),
+], ids=["not a zip", "no member of its own name"])
+def test_a_psc_part_that_cannot_be_read_is_refused(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, body: bytes, match: str) -> None:
+    _serve_psc(monkeypatch, tmp_path, {_psc_files(1)[0]: body})
+    with pytest.raises(ValueError, match=match):
+        local.fetch(_PSC)
+    assert not list((tmp_path / "local" / _PSC / "parts.new").glob("*.zip*"))
+
+
+def _plant(tmp_path: Path, day: str, bodies: dict[int, bytes] = _PSC_PARTS,
+           folder: str = "parts") -> Path:
+    """The extracts of a snapshot of `bodies` dated `day`, written into
+    the cache's `folder` as renew_psc would write them; the folder."""
+    where = tmp_path / "local" / _PSC / folder
+    where.mkdir(parents=True, exist_ok=True)
+    of = len(bodies)
+    for n, file in enumerate(_psc_files(of, day), 1):
+        zipped = tmp_path / file
+        zipped.write_bytes(_psc_part(n, bodies[n], of, day))
+        (where / local._extract_name(file)).write_bytes(
+            local._psc_extract(zipped, file.replace(".zip", ".txt")))
+    return where
+
+
+def test_a_psc_cache_holding_parts_of_two_snapshots_is_refused_before_any_is_read(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    _serve_psc(monkeypatch, tmp_path, {})  # no download is expected
+    monkeypatch.setattr(local, "PSC_MAX_BAD", 1)
+    parts = _plant(tmp_path, _PSC_DAY)
+    assert len(local.fetch(_PSC).records) == 4  # the control: one snapshot
+    _plant(tmp_path, "2026-10-21")
+    with pytest.raises(ValueError, match=r"holds part 1 twice.*--refresh"):
+        local.fetch(_PSC)
+    for path in parts.glob("*2026-10-21*"):
+        path.unlink()
+    (parts / local._extract_name(_psc_files(day="2026-10-21")[1])).write_bytes(
+        (parts / local._extract_name(_psc_files()[1])).read_bytes())
+    (parts / local._extract_name(_psc_files()[1])).unlink()
+    with pytest.raises(ValueError, match=r"dated \['2026-10-21', '2026-10-22'\]"):
+        local.fetch(_PSC)
+
+
+def test_a_psc_snapshot_whose_person_kind_was_renamed_is_refused(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    people = [_psc_person(f"Ann Lee{n}", kind="individual-person-renamed") for n in range(9)]
+    owner = _psc_person("Bo Wu", kind=local.PSC_KINDS[1])
+    _psc_snapshot(monkeypatch, tmp_path, {1: _psc_lines(*people, owner)})
+    with pytest.raises(ValueError, match="1 of 10 lines are .* records: a kind"):
+        local.fetch(_PSC)
+    # The control: under the kind's own name, the same snapshot is read.
+    monkeypatch.setattr(local, "PSC_KINDS", ("individual-person-renamed", local.PSC_KINDS[1]))
+    shutil.rmtree(tmp_path / "local" / _PSC / "parts")
+    assert len(local.fetch(_PSC).records) == 10
+
+
+@pytest.mark.parametrize(("damage", "match"), [
+    (lambda body: body[:-10], "is not an extract this tool wrote"),
+    (lambda body: b"not gzip", "is not an extract this tool wrote"),
+    (lambda body: gzip.compress(b"{not json\n"), "is not an extract this tool wrote"),
+    (lambda body: gzip.compress(
+        gzip.decompress(body).replace(b"_1of2.txt", b"_2of2.txt", 1)),
+     "its header does not describe it"),
+    (lambda body: gzip.compress(
+        gzip.decompress(body).replace(b'"lines": 7', b'"lines": "7"', 1)),
+     "its header does not describe it"),
+], ids=["cut short", "not gzip", "header not JSON", "another part's header",
+        "a count not a number"])
+def test_a_damaged_psc_extract_is_refused_naming_the_refresh(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        damage: Callable[[bytes], bytes], match: str) -> None:
+    _serve_psc(monkeypatch, tmp_path, {})
+    monkeypatch.setattr(local, "PSC_MAX_BAD", 1)
+    parts = _plant(tmp_path, _PSC_DAY)
+    first = parts / local._extract_name(_psc_files()[0])
+    assert b'"lines": 7' in gzip.decompress(first.read_bytes())
+    first.write_bytes(damage(first.read_bytes()))
+    with pytest.raises(ValueError, match=f"{match}.*fetch {_PSC} --refresh"):
+        local.fetch(_PSC)
+
+
+def test_a_psc_extract_of_another_version_is_neither_read_nor_resumed(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    asked = _psc_snapshot(monkeypatch, tmp_path)
+    monkeypatch.setattr(local, "PSC_EXTRACT_VERSION", 0)
+    parts = _plant(tmp_path, _PSC_DAY)
+    monkeypatch.setattr(local, "PSC_EXTRACT_VERSION", 1)
+    with pytest.raises(ValueError, match="is not an extract of version 1"):
+        local.fetch(_PSC)
+    # Staged for a resume, the old version's extracts are downloaded anew.
+    os.replace(parts, parts.with_name("parts.new"))
+    assert len(local.fetch(_PSC).records) == 4
+    assert asked == _psc_files()
+
+
+def test_a_psc_corpus_of_another_sample_is_refused_on_load(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    _psc_snapshot(monkeypatch, tmp_path)
+    local.fetch(_PSC)
+    assert local.load(_PSC) is not None  # the control
+    monkeypatch.setattr(local, "PSC_SAMPLE", 8)
+    with pytest.raises(ValueError, match=r"keeps 1 in 1 filed names.*keeps 1 in 8"
+                                          f".*fetch {_PSC} --refresh"):
+        local.load(_PSC)
+
+
+def test_a_psc_page_linking_each_part_twice_is_one_snapshot(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    files = _psc_files()
+    _serve_psc(monkeypatch, tmp_path, {
+        f: _psc_part(n, _PSC_PARTS[n]) for n, f in enumerate(files, 1)},
+        page=_psc_page(*files, *files))
+    assert len(local.fetch(_PSC).records) == 4
+
+
+def test_a_psc_fetch_cut_off_between_its_two_renames_resumes_without_downloading(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    asked = _serve_psc(monkeypatch, tmp_path, {}, _psc_page(*_psc_files()))  # any download fails
+    _plant(tmp_path, "2026-10-21", folder="parts.old")
+    _plant(tmp_path, _PSC_DAY, folder="parts.new")
+    assert len(local.fetch(_PSC).records) == 4
+    assert asked == []
+    folder = tmp_path / "local" / _PSC
+    assert sorted(p.name for p in folder.iterdir() if p.is_dir()) == ["parts"]
 
 
 # -- load ----------------------------------------------------------------------
