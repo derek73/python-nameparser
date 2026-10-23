@@ -25,7 +25,13 @@ uv run python tools/differential/snapshot.py --since v2.5.0
 ```
 
 Each line holds one (name, order): the seven role fields, the reported
-ambiguity kinds and `initials()` on the 2.0 surface, and, under
+ambiguity kinds, `initials()` and the two case-repair views on the 2.0
+surface (#826) -- `capitalized` where `capitalized()` renders other than
+the name as parsed, `capitalized_force` where `capitalized(force=True)`
+renders other than `capitalized()` does. A name repair leaves alone
+records neither, but a view is the whole repaired name, so in a name
+repair does change, a role move that changes the rendering moves the
+view too, whether or not a word's case changed -- and, under
 `facade`, whatever `HumanName` reads differently from the 2.0 surface
 (3 names on 2026-10-13). Empty values are left out, so a reading that
 gains a field shows as one added key.
@@ -43,7 +49,11 @@ against the snapshot as committed at that tag: the names this release
 moved. That is the measurement a release-note claim about moved names
 is drawn from. Count CLDR's fictional renderings out of such a figure,
 or say it includes them: the closing line says how many moved names
-only `corpus_cldr.jsonl` holds.
+only `corpus_cldr.jsonl` holds. A snapshot committed before #826
+records no case view, so against one (`--since v2.5.0`) the views are
+not compared and the report says so; a case claim for that release is
+read from `compare.py --baseline 2.5.0`, which computes the views on
+both sides.
 
 `--tree PATH` reads with another checkout's `nameparser` (the corpus is
 always this checkout's), and checks that the import really came from

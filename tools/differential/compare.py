@@ -140,6 +140,11 @@ def _v2_row(p):
         {a.kind.name for a in getattr(p, "ambiguities", ())})
     # #484: the derived initials() view
     row["_initials"] = p.initials() or ""
+    # #826: the case-repair views, as snapshot.case_views() records them
+    rendered, plain = str(p), str(p.capitalized())
+    forced = str(p.capitalized(force=True))
+    row["_capitalized"] = plain if plain != rendered else ""
+    row["_capitalized_force"] = forced if forced != plain else ""
     return row
 
 

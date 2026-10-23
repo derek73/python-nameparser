@@ -138,15 +138,27 @@ def _run_template(line: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]
     return tell, row
 
 
-@pytest.mark.parametrize("name,order", [
+_BOTH = frozenset({"capitalized", "capitalized_force"})
+
+
+@pytest.mark.parametrize("name,order,views", [
     # The one corpus name whose facade and core initials differ
     # ('J. P D.' against 'J. P. D.'), so a row that read the core's
     # value into the facade's slot cannot pass.
-    ("Ph. D., John", None),
-    ("Ménil Christophe du", "FAMILY_FIRST"),
+    ("Ph. D., John", None, frozenset()),
+    ("Ménil Christophe du", "FAMILY_FIRST", frozenset()),
+    # The case views (#826), one row per arm of the worker's copy of
+    # snapshot.case_views: both views (the plain repair keeps the
+    # mixed-case 'EdD', the forced one does not); the plain one alone,
+    # order-bearing; the forced one alone. With only the first, a
+    # worker comparing plain against forced, or forced against the
+    # parse, passed every row (measured 2026-10-22, PR #837's review).
+    ("john smith EdD", None, _BOTH),
+    ("ménil christophe du", "FAMILY_FIRST", frozenset({"capitalized"})),
+    ("John Smith EdD", None, frozenset({"capitalized_force"})),
 ])
 def test_the_worker_reads_a_line_as_the_tree_does(
-        name: str, order: str | None) -> None:
+        name: str, order: str | None, views: frozenset[str]) -> None:
     """The worker's row and snapshot.read's are separate code on two
     sides of a process boundary; a comparison means a behavior change
     only while both turn the same parse into the same snapshot row."""
@@ -154,8 +166,10 @@ def test_the_worker_reads_a_line_as_the_tree_does(
     if order is not None:
         # the facade is never consulted for an order-bearing entry
         assert "facade" not in raw
-    assert snapshot.row(name, order, raw.get("v2"), raw.get("facade")) \
-        == snapshot.read([(name, order)])[0]
+    tree = snapshot.read([(name, order)])[0]
+    # the row still reaches the arm it is here for
+    assert set(snapshot.CASE_VIEWS) & set(tree) == views
+    assert snapshot.row(name, order, raw.get("v2"), raw.get("facade")) == tree
 
 
 _WHEEL = "/Users/x/.cache/uv/environments-v2/w/lib/python3.11/" \

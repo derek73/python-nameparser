@@ -2,8 +2,12 @@
 
 snapshot.jsonl holds one line per (name, order) across every
 corpus*.jsonl beside this script: the seven role fields, the reported
-ambiguity kinds and initials() on the 2.0 surface, plus the facade's
-v1 fields wherever they say something the 2.0 row does not.
+ambiguity kinds, initials() and the two case-repair views on the 2.0
+surface, plus the facade's v1 fields wherever they say something the
+2.0 row does not. The case views are recorded only where they move
+something: `capitalized` where capitalized() renders other than the
+name as parsed, `capitalized_force` where capitalized(force=True)
+renders other than capitalized() does (#826).
 tests/v2/test_snapshot.py fails when the tree's readings stop matching
 it. A change that moves readings re-records, and the PR diff of
 snapshot.jsonl is the list of names it moved -- one line per name, so
@@ -138,7 +142,8 @@ def row(name: str, order: str | None, v2: dict[str, Any] | None,
     """One snapshot line from one name's readings.
 
     `v2` is the 2.0 surface as {role: value, "_ambiguities": [...],
-    "_initials": ...}; `facade` is HumanName's as {v1 field: value,
+    "_initials": ..., "_capitalized": ..., "_capitalized_force": ...},
+    the case views as case_views() gives them; `facade` is HumanName's as {v1 field: value,
     "_initials": ...}, or None where it is not read (an order-bearing
     entry, whose facade is never consulted). Empty values are left
     out, so a reading that gains a field shows as one added key. With
@@ -159,6 +164,9 @@ def row(name: str, order: str | None, v2: dict[str, Any] | None,
         out["ambiguities"] = list(v2["_ambiguities"])
     if v2["_initials"]:
         out["initials"] = v2["_initials"]
+    for view in CASE_VIEWS:
+        if v2[f"_{view}"]:
+            out[view] = v2[f"_{view}"]
     if facade is not None:
         differs = {f: facade[V1_FOR[f]] for f in V2_FIELDS
                    if facade[V1_FOR[f]] != v2[f]}
@@ -167,6 +175,39 @@ def row(name: str, order: str | None, v2: dict[str, Any] | None,
         if differs:
             out["facade"] = differs
     return out
+
+
+#: The case-repair views a row records, in the order case_views()
+#: gives them. The facade's capitalize() is not read: it renders
+#: through the same repair, so it differs only where its fields do.
+CASE_VIEWS = ("capitalized", "capitalized_force")
+
+
+def case_views(rendered: str, plain: str, forced: str) -> dict[str, str]:
+    """The case views as a row records them: each only where it moves
+    something -- capitalized() against the name as parsed, and
+    capitalized(force=True) against capitalized() -- so a name the
+    repair leaves alone records nothing. A view is the whole repaired
+    name, so in a name repair does change, a role move that changes the
+    rendering moves the view too, with no word changing case."""
+    return {"_capitalized": plain if plain != rendered else "",
+            "_capitalized_force": forced if forced != plain else ""}
+
+
+def unrecorded_views(old: dict[tuple[str, str], dict[str, Any]],
+                     new: dict[tuple[str, str], dict[str, Any]]
+                     ) -> tuple[str, ...]:
+    """The case views `old` predates -- none of its rows carries one --
+    dropped from `new`'s rows in place, so a snapshot recorded before
+    #826 (v2.5.0's, or a local snapshot) does not report every name
+    the views reach as moved: 910 of the 961 entries `--since v2.5.0`
+    reported on 2026-10-22 were the keys appearing, not moves."""
+    if any(v in r for r in old.values() for v in CASE_VIEWS):
+        return ()
+    for r in new.values():
+        for v in CASE_VIEWS:
+            r.pop(v, None)
+    return CASE_VIEWS
 
 
 def facade_view(r: dict[str, Any]) -> dict[str, Any]:
@@ -194,6 +235,8 @@ def read(entries: list[Entry]) -> list[dict[str, Any]]:
         v2 = {f: getattr(p, f) or "" for f in V2_FIELDS}
         v2["_ambiguities"] = sorted({a.kind.name for a in p.ambiguities})
         v2["_initials"] = p.initials() or ""
+        v2.update(case_views(str(p), str(parsers[order].capitalized(p)),
+                             str(parsers[order].capitalized(p, force=True))))
         facade = None
         if order is None:
             hn = HumanName(name)
@@ -363,6 +406,10 @@ def main(argv: list[str] | None = None) -> int:
     else:
         text = snapshot.read_text(encoding="utf-8")
     old, new = load(text), {key(r): r for r in rows}
+    if dropped := unrecorded_views(old, new):
+        print(f"not compared: {', '.join(dropped)} -- the snapshot read "
+              f"against records no case view (it predates #826); "
+              f"compare.py --baseline compares them\n")
     moves = grouped(old, new)
     print("\n".join(moves) or "matches the snapshot")
     if not moves:
