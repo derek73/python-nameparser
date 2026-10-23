@@ -30,8 +30,7 @@ if TYPE_CHECKING:
     from _typeshed import WriteableBuffer
 
 import local_core
-from local_core import (Fetched, USER_AGENT, _TRANSIENT, _backed_off, _pinned,
-                        _refuse_past, _zip_stamp)
+from local_core import Fetched, _backed_off, _pinned, _refuse_past, _zip_stamp
 
 
 #: The latest general election and the latest municipal one. An older
@@ -65,7 +64,7 @@ TSE_ORIGINS = frozenset({
 #: The bytes a Range request asks for: 43 requests read 2022's member
 #: in the file dated 2026-10-18.
 TSE_BLOCK = 1 << 20
-#: As FEC_MAX_BAD, for rows that are not TSE_COLUMNS columns and for
+#: As local_fec.FEC_MAX_BAD, for rows that are not TSE_COLUMNS columns and for
 #: physical lines that fall inside a quoted field (a quote left open,
 #: or a line break typed into a name): none of 2,715,955 rows in the
 #: two files dated 2026-10-18 and 2026-10-23 was either.
@@ -130,7 +129,7 @@ class _RangeFile(io.RawIOBase):
         #: that does not name it, and fetch_tse raises this instead.
         self.error: Exception | None = None
         request = urllib.request.Request(url, method="HEAD",
-                                         headers={"User-Agent": USER_AGENT})
+                                         headers={"User-Agent": local_core.USER_AGENT})
         _, headers, _ = self._request(request)
         length = headers.get("Content-Length", "")
         etag = headers.get("ETag", "")
@@ -176,7 +175,7 @@ class _RangeFile(io.RawIOBase):
         for raises a ValueError naming what came instead."""
         end = start + want - 1
         request = urllib.request.Request(self.url, headers={
-            "User-Agent": USER_AGENT, "If-Range": self.validator,
+            "User-Agent": local_core.USER_AGENT, "If-Range": self.validator,
             "Range": f"bytes={start}-{end}"})
         status, headers, data = self._request(request, want)
         if status != 206:
@@ -195,10 +194,9 @@ class _RangeFile(io.RawIOBase):
 
     def _request(self, request: urllib.request.Request, want: int | None = None
                  ) -> tuple[int, Any, bytes]:
-        """The status, headers and body of `request`'s answer, retried as
-        _get_json retries, Retry-After included (a member is up to about
-        170 requests, and
-        starting over costs them all). The body is read only from a 206,
+        """The status, headers and body of `request`'s answer, retried under
+        local_core's policy (_backed_off), Retry-After included (a member
+        is up to about 170 requests, and starting over costs them all). The body is read only from a 206,
         up to one byte past `want` so that a longer part shows; a shorter
         one is retried as a body cut short. The last attempt's error, or
         any 4xx but a 429, is kept in self.error and raised."""
@@ -211,7 +209,7 @@ class _RangeFile(io.RawIOBase):
                         if len(body) < want:
                             raise http.client.IncompleteRead(body, want - len(body))
                     return response.status, response.headers, body
-            except _TRANSIENT as exc:
+            except local_core._TRANSIENT as exc:
                 if not _backed_off(exc, attempt, self.url):
                     self.error = exc
                     raise

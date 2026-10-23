@@ -52,7 +52,10 @@ def load_tool(stem: str) -> ModuleType:
     --doctest-modules over the corpus builders, so these are imported
     this way rather than made importable. Each main() is behind a
     __name__ guard; the one import-time effect is that a corpus builder
-    appends its own directory to sys.path to find corpus_build.py."""
+    appends its own directory to sys.path to find corpus_build.py (and
+    local_corpora.py its local_core and local_<source> modules, which it
+    imports under their bare names: a test reaches those with
+    importlib.import_module, never a second load by path)."""
     spec = importlib.util.spec_from_file_location(
         f"differential_{stem}", _TOOLS / f"{stem}.py")
     assert spec is not None and spec.loader is not None, stem

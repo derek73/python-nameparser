@@ -98,7 +98,8 @@ def cached_json(cache: Path, key: str, label: str, fetch: Callable[[], bytes],
 #: place: a name pasted from a document can hold one, and written raw it
 #: would cut its line in two for a reader that splits lines (AGENTS.md's
 #: Gotchas, #801). corpus_lines and fields_lines, snapshot.py,
-#: cldr_agreement.py and local_corpora.py write with jsonl_line and read
+#: cldr_agreement.py, local_corpora.py, local_psc.py's extracts and
+#: local_agreement.py write with jsonl_line and read
 #: with jsonl_lines; the corpus builders that write their own lines
 #: (build_cjk, _conventions, _shapes, _rules, _issues) do not yet.
 _LINE_BREAKS = str.maketrans({"\x85": "\\u0085", "\u2028": "\\u2028",

@@ -7,7 +7,7 @@ role), the name as the sponsor's staff typed it into a free-text field,
 with credentials, job titles and typos left in. Fetched from API v2
 (NLM). ClinicalTrials.gov's terms ask anyone redistributing the data to
 credit it, show NLM's processing date and say what was changed: every
-report here and the tools/name_usage.py row carry the credit and the
+report local_corpora.py prints and the tools/name_usage.py row carry the credit and the
 date, and the names are kept unchanged.
 """
 from __future__ import annotations

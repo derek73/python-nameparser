@@ -23,7 +23,8 @@ $NAMEPARSER_TOOLS_CACHE (default ~/.cache/nameparser-tools), and
   came from where the source says: a ClinicalTrials.gov official, with
   the study and role; one distinct FEC, Taiwan or UK donor name, alone;
   one distinct pair of a TSE donor's filed name and the tax registry's
-  name for the same donor. The counts are counted from here.
+  name for the same donor; one distinct PSC filed name, with its four
+  boxes and nationality. The counts are counted from here.
 - corpus.jsonl -- the distinct names, in the corpus line format
   snapshot.py and compare.py --corpus read.
 - meta.json -- the source's own date for the data, what was fetched, and
@@ -43,9 +44,9 @@ pin: a count quoted from it names the data date the header prints, and
 a later fetch may differ. A new source is a module of its own,
 local_<source>.py, built on local_core.py's shared machinery, and a
 SOURCES row: a fetch function returning the records and the source's
-data date, and for a source that caches its own input, the hooks that
-renew it on a refresh and refuse a corpus read from another version of
-it (tw-donors needs neither: each zip it caches is named by the version
+data date, and for a source whose fetch depends on a cached input or a
+pinned setting, the hooks that renew it on a refresh and refuse a corpus
+read from another version of it (tw-donors needs neither: each zip it caches is named by the version
 the listing gives). What each source is, what it is the population for
 and what its terms allow is its module's docstring: local_ctgov.py
 (ctgov-officials), local_fec.py (fec-individuals), local_tse.py
@@ -70,13 +71,12 @@ from collections import Counter
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
-if TYPE_CHECKING:
-    pass
-
-# The shared fetch and cache helpers (corpus_build.py), found by putting
-# this directory on sys.path: see corpus_build's docstring for why.
+# The shared fetch and cache helpers (corpus_build.py, local_core.py) and
+# the source modules (local_<source>.py), found by putting this directory
+# on sys.path, which the source modules rely on rather than doing it
+# themselves: see corpus_build's docstring for why.
 _HERE = str(Path(__file__).resolve().parent)
 if _HERE not in sys.path:
     sys.path.append(_HERE)
