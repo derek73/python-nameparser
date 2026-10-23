@@ -25,6 +25,13 @@ text = "dra"
 academic = { gender = "f", expands = "Doctora, Doutora" }
 
 [[word]]
+text = "júnior"
+[word.generation]
+same_as = "jr"
+issue = 843
+note = "the standard Portuguese spelling of Junior: tse-donors (2026-10-22) has 991 distinct filed names ending in it, 983 records ending in it where the tax registry's name ends JUNIOR. Its collisions are junior's: a given name (Wikidata 37+ as Júnior, 2026-10-23) where the suffix claim does not act, and 49+ Wikidata family bearers"
+
+[[word]]
 text = "da"
 preposition = { may_be_given = true, expands = "of the, fem. sg." }
 

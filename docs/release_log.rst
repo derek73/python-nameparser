@@ -16,6 +16,7 @@ Release Log
     - **Add Cllr as a title.** ``Cllr John Smith`` gives title ``Cllr``, first ``John``, last ``Smith``, where 1.4.0 through 2.5.0 gave first ``Cllr``, middle ``John``. A bare ``Cllr`` after the name is still a name word. :issue:`847`
     - **Fix case repair lowering a capital after a full stop or an ayn.** ``j.r.r. tolkien`` repairs to ``J.R.R. Tolkien`` and ``AHMAD IBN-ʿALĪ`` to ``Ahmad ibn-ʿAlī``, where 1.4.0 through 2.5.0 gave ``J.r.r.`` and ``ʿalī``. A joined word is written the same way (``st.john`` gives ``St.John``), so an unlisted abbreviation's ending is capitalized too: ``dr.philol.`` gives ``Dr.Philol.``. :issue:`838`
     - **Add the Italian abbreviated salutations such as Sig.ra and Dott.ssa as titles.** ``Dott.ssa Anna Bianchi`` gives title ``Dott.ssa``, first ``Anna``, where 1.4.0 through 2.5.0 gave first ``Dott.ssa``, middle ``Anna``, and ``SIG.RA MARIA ROSSI`` repairs to ``Sig.ra Maria Rossi``. A bare ``Sig`` or ``Ing`` is still read as a first name. :issue:`840`
+    - **Add Júnior as a suffix.** ``José Silva Júnior`` gives last ``Silva``, suffix ``Júnior``, as ``José Silva Junior`` does, where 1.4.0 through 2.5.0 gave middle ``Silva``, last ``Júnior``. ``Filho``, ``Neto`` and ``Sobrinho`` still read as the last name. :issue:`843`
 
 * 2.5.0 - October 19, 2026
 

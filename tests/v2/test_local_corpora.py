@@ -2922,17 +2922,20 @@ def test_the_pairs_view_counts_the_pairs_whose_spellings_share_a_surname() -> No
 
 
 def test_the_pairs_view_lists_the_accents_only_pairs_read_with_two_surnames() -> None:
-    # JUNIOR is a suffix and JÚNIOR is not, so the readings part; the
-    # accent on JOSÉ moves nothing. Fewer than ten: not listed.
-    found = local.pair_counts(_paired(*[("JOSE SILVA JÚNIOR", "JOSÉ SILVA JUNIOR")] * 10,
+    # SA is a credential and SÁ is not, so the readings part; JÚNIOR and
+    # JUNIOR are both suffixes (#843), and the accent on JOSÉ moves
+    # nothing. Fewer than ten: not listed.
+    found = local.pair_counts(_paired(*[("ANA SÁ", "ANA SA")] * 10,
+                                      *[("JOSE SILVA JÚNIOR", "JOSÉ SILVA JUNIOR")] * 10,
                                       *[("JOSE SILVA", "JOSÉ SILVA")] * 10,
-                                      *[("ANA SÁ", "ANA SA")] * 9), agreement=True)
-    assert found.agreement == {"accents only": (10, 29)}
-    assert found.accent_splits == {"JÚNIOR / JUNIOR": 10, "SÁ / SA": 9}
+                                      *[("JOSE SILVA MÁ", "JOSÉ SILVA MA")] * 9),
+                              agreement=True)
+    assert found.agreement == {"accents only": (20, 39)}
+    assert found.accent_splits == {"SÁ / SA": 10, "MÁ / MA": 9}
     report = local.format_pairs(found, top=15)
     assert ("accents-only pairs read with two surnames, by their last words: "
-            "JÚNIOR / JUNIOR 10") in report
-    assert "SÁ / SA" not in report
+            "SÁ / SA 10") in report
+    assert "MÁ / MA" not in report
 
 
 def test_the_pairs_view_refuses_a_source_with_no_reference_name(

@@ -16,6 +16,8 @@
 "John Smith Jr."            →  suffix="Jr."
 "Antonio Pavlović mlađi"    →  family="Pavlović"
 "Antonio Pavlović mlađi"    →  suffix="mlađi"
+"José Silva Júnior"         →  suffix="Júnior"
+"Pedro Alves Filho"         →  family="Filho"  · boundary
 "Агриппина Младшая"         →  suffix="Младшая"
 "جورج بوش الابن"            →  suffix="الابن"
 "ロバート・ダウニー・ジュニア"  →  suffix="ジュニア"
