@@ -703,19 +703,19 @@ def test_a_word_takes_its_capital_past_a_caseless_lead() -> None:
 
 def test_a_recorded_casing_keeps_an_abbreviations_ending() -> None:
     """rules/R4's Accepted cost (#838): an unlisted abbreviation's
-    ending after its full stop is written as a word ('Dr.Philol.'),
-    and a listed casing is the remedy, asked before the chunk split --
-    the one the shipped Italian salutations carry (#840)."""
+    ending after its full stop is written as a word ('Dut.Ra'), and a
+    listed casing is the remedy, asked before the chunk split -- the
+    one the shipped Italian salutations carry (#840)."""
     lex = dataclasses.replace(
         Lexicon.default(),
         capitalization_exceptions=(
             *Lexicon.default().capitalization_exceptions,
-            ("dr.philol", "Dr.philol")))
+            ("dut.ra", "Dut.ra")))
     masked = Parser(lexicon=lex)
-    name = "DR.PHILOL. LAIMA BERZINA"
-    assert str(parse(name).capitalized()) == "Dr.Philol. Laima Berzina"
+    name = "DUT.RA MARIA SILVA"
+    assert str(parse(name).capitalized()) == "Dut.Ra Maria Silva"
     assert str(masked.capitalized(masked.parse(name))) \
-        == "Dr.philol. Laima Berzina"
+        == "Dut.ra Maria Silva"
 
 
 def test_capitalized_with_explicit_lexicon() -> None:

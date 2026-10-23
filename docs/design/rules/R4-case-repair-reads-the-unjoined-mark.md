@@ -130,8 +130,7 @@
 
 - An abbreviation the vocabulary does not list, whose letters after a full stop are the word's own ending rather than a word, is written as two words: the shape that divides run-together initials and joined words cannot tell an ending from either, and only a listed casing can.
   ```
-  "dr.philol. laima berzina"  →  capitalized="Dr.Philol. Laima Berzina"  · boundary
-  "st.repr. gregers werle"    →  capitalized="St.Repr. Gregers Werle"  · boundary
+  "DUT.RA MARIA SILVA"        →  capitalized="Dut.Ra Maria Silva"  · boundary
   ```
 - A name written in one case whose hyphenated bare initials spell a connective pays for the hyphen clause — its interior letter is lowered as the connective though the writer meant an initial, where the same letters spaced keep their capitals. The hyphen is the writer's join, and reading the one shape both ways would need the case evidence a one-case name does not carry.
   ```
