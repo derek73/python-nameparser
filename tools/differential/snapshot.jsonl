@@ -2711,7 +2711,7 @@
 {"name": "S. V. D.", "given": "S.", "middle": "V.", "family": "D.", "initials": "S. V. D."}
 {"name": "SEÁN Ó MURCHÚ", "given": "SEÁN", "family": "Ó MURCHÚ", "initials": "S. M.", "capitalized": "Seán Ó Murchú"}
 {"name": "SHIRLEY MACLAINE", "given": "SHIRLEY", "family": "MACLAINE", "initials": "S. M.", "capitalized": "Shirley MacLaine"}
-{"name": "SIG.RA MARIA ROSSI", "title": "SIG.RA", "given": "MARIA", "family": "ROSSI", "initials": "M. R.", "capitalized": "Sig.Ra Maria Rossi"}
+{"name": "SIG.RA MARIA ROSSI", "title": "SIG.RA", "given": "MARIA", "family": "ROSSI", "initials": "M. R.", "capitalized": "Sig.ra Maria Rossi"}
 {"name": "SMITH VD MA, JOHN", "given": "JOHN", "family": "SMITH VD MA", "initials": "J. S. M.", "capitalized": "John Smith vd Ma"}
 {"name": "SMITH VD, JOHN", "given": "JOHN", "family": "SMITH", "suffix": "VD", "initials": "J. S.", "capitalized": "John Smith VD"}
 {"name": "SMITH, JOHN DO", "given": "JOHN", "family": "DO SMITH", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "J. S.", "capitalized": "John do Smith"}
@@ -3423,6 +3423,7 @@
 {"name": "doe, john ma", "given": "john", "family": "doe", "suffix": "ma", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "j. d.", "capitalized": "John Doe MA"}
 {"name": "donovan mcnabb-smith", "given": "donovan", "family": "mcnabb-smith", "initials": "d. m.", "capitalized": "Donovan McNabb-Smith"}
 {"name": "dos Santos", "family": "dos Santos", "initials": "S."}
+{"name": "dott.ssa anna bianchi", "title": "dott.ssa", "given": "anna", "family": "bianchi", "initials": "a. b.", "capitalized": "Dott.ssa Anna Bianchi"}
 {"name": "dr Slađana Vera Milenković dipl. inž.", "title": "dr", "given": "Slađana", "middle": "Vera Milenković dipl.", "family": "inž.", "initials": "S. V. M. d. i.", "capitalized_force": "Dr Slađana Vera Milenković Dipl. Inž."}
 {"name": "dr Vincent James van Gogh dr", "title": "dr", "given": "Vincent", "middle": "James", "family": "van Gogh dr", "initials": "V. J. G. d.", "capitalized_force": "Dr Vincent James van Gogh Dr"}
 {"name": "dr Vincent van Gogh dr", "title": "dr", "given": "Vincent", "family": "van Gogh dr", "initials": "V. G. d.", "capitalized_force": "Dr Vincent van Gogh Dr"}
@@ -3593,6 +3594,7 @@
 {"name": "smith, john e phd", "given": "john", "middle": "e", "family": "smith", "suffix": "phd", "initials": "j. e. s.", "capitalized": "John E Smith PhD"}
 {"name": "st.john smith", "title": "st.john", "family": "smith", "initials": "s.", "capitalized": "St.John Smith"}
 {"name": "st.repr. Gregers Werle Marve Almar von Fleksnes jr.", "title": "st.repr.", "given": "Gregers", "middle": "Werle Marve Almar", "family": "von Fleksnes", "suffix": "jr.", "initials": "G. W. M. A. F.", "capitalized_force": "St.Repr. Gregers Werle Marve Almar von Fleksnes Jr."}
+{"name": "st.repr. gregers werle", "title": "st.repr.", "given": "gregers", "family": "werle", "initials": "g. w.", "capitalized": "St.Repr. Gregers Werle"}
 {"name": "st.repr. von Fleksnes Gregers Werle Marve Almar", "order": "FAMILY_FIRST", "title": "st.repr.", "given": "Fleksnes", "middle": "Gregers Werle Marve Almar", "family": "von", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "F. G. W. M. A. v.", "capitalized_force": "St.Repr. Fleksnes Gregers Werle Marve Almar Von"}
 {"name": "test", "given": "test", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "t.", "capitalized": "Test"}
 {"name": "the and Jon Dough", "given": "the and Jon", "family": "Dough", "initials": "J. D."}
