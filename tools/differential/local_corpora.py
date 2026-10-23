@@ -302,6 +302,24 @@ def _get_json(url: str) -> dict[str, Any]:
     return data
 
 
+def _zip_stamp(info: zipfile.ZipInfo) -> str:
+    """A zip member's own timestamp, as a data date: the sources that
+    ship a zip state no other date for what is in it."""
+    return "{:04d}-{:02d}-{:02d}T{:02d}:{:02d}:{:02d}".format(*info.date_time)
+
+
+def _pinned(key: str, wanted: Callable[[], str], says: str
+            ) -> Callable[[dict[str, Any]], str]:
+    """A Source.check refusing a corpus whose meta.json detail `key` is
+    not `wanted()` now, read at check time so that a change to the
+    constant behind it refuses corpora fetched before; `says` words the
+    refusal, with {held} and {wanted}."""
+    def check(meta: dict[str, Any]) -> str:
+        held, now = meta["detail"].get(key), wanted()
+        return "" if held == now else says.format(held=held, wanted=now)
+    return check
+
+
 def _refuse_past(rows: Iterable[tuple[int, int, float, str]], why: str) -> None:
     """The gate every source puts on what it reads past: for each
     (count, of, share, what), refuse with "count of `of` what: why" once
@@ -482,7 +500,7 @@ def _fec_read(path: Path) -> Fetched:
         if FEC_MEMBER not in archive.namelist():
             raise ValueError(f"{path} holds no {FEC_MEMBER}")
         member = archive.getinfo(FEC_MEMBER)
-        stamp = "{:04d}-{:02d}-{:02d}T{:02d}:{:02d}:{:02d}".format(*member.date_time)
+        stamp = _zip_stamp(member)
         with archive.open(member) as lines:
             for line in lines:
                 rows += 1
@@ -550,10 +568,8 @@ def renew_fec() -> None:
     _fec_download(directory("fec-individuals") / FEC_ZIP)
 
 
-def check_fec(meta: dict[str, Any]) -> str:
-    cycle = meta["detail"].get("cycle")
-    return "" if cycle == FEC_CYCLE else (
-        f"holds the {cycle} cycle, and this tool reads the {FEC_CYCLE} cycle")
+check_fec = _pinned("cycle", lambda: FEC_CYCLE,
+                    "holds the {held} cycle, and this tool reads the {wanted} cycle")
 
 
 # -- TSE campaign donations (Brazil) -------------------------------------------
@@ -750,7 +766,7 @@ def _tse_read(year: str, archive: zipfile.ZipFile,
     if member not in archive.namelist():
         raise ValueError(f"{TSE_URL.format(year=year)} holds no {member}")
     info = archive.getinfo(member)
-    stamp = "{:04d}-{:02d}-{:02d}T{:02d}:{:02d}:{:02d}".format(*info.date_time)
+    stamp = _zip_stamp(info)
     counts: Counter[str] = Counter()
     before = len(pairs)
     distinct: set[tuple[str, str]] = set()
@@ -897,11 +913,8 @@ def fetch_tse() -> Fetched:
                     for name, registry in sorted(pairs)], ", ".join(stamps), detail)
 
 
-def check_tse(meta: dict[str, Any]) -> str:
-    elections = meta["detail"].get("elections")
-    wanted = " ".join(TSE_ELECTIONS)
-    return "" if elections == wanted else (
-        f"holds the elections {elections}, and this tool reads {wanted}")
+check_tse = _pinned("elections", lambda: " ".join(TSE_ELECTIONS),
+                    "holds the elections {held}, and this tool reads {wanted}")
 
 
 # -- Taiwan political donations ------------------------------------------------
@@ -1032,7 +1045,7 @@ def _tw_incomes(body: bytes) -> tuple[bytes, str] | None:
             if TW_INCOMES not in archive.namelist():
                 return None
             member = archive.getinfo(TW_INCOMES)
-            stamp = "{:04d}-{:02d}-{:02d}T{:02d}:{:02d}:{:02d}".format(*member.date_time)
+            stamp = _zip_stamp(member)
             return archive.read(member), stamp
     except (zipfile.BadZipFile, zlib.error, EOFError) as exc:
         start = body[:2]
@@ -1526,6 +1539,13 @@ def _psc_extract(path: Path, member: str) -> bytes:
     return gzip.compress("".join(f"{line}\n" for line in [header, *sorted(lines)]).encode())
 
 
+def _one_snapshot(dates: set[str], totals: set[int], numbers: list[int]) -> bool:
+    """Whether parts `numbers`, dated `dates` and each one of `totals`,
+    are every part of one snapshot."""
+    return (len(dates) == 1 and len(totals) == 1
+            and sorted(numbers) == list(range(1, max(totals) + 1)))
+
+
 def _psc_listing() -> tuple[str, list[tuple[int, str]]]:
     """The day's snapshot as the download page lists it: its date and
     each part's number and file, or ValueError where the page links no
@@ -1537,7 +1557,7 @@ def _psc_listing() -> tuple[str, list[tuple[int, str]]]:
         raise ValueError(f"{PSC_PAGE} links no snapshot parts: the page has changed")
     dates, totals = {d for _, d, _, _ in links}, {int(m) for *_, m in links}
     numbers = sorted(int(n) for _, _, n, _ in set(links))
-    if len(dates) != 1 or len(totals) != 1 or numbers != list(range(1, max(totals) + 1)):
+    if not _one_snapshot(dates, totals, numbers):
         raise ValueError(f"{PSC_PAGE} links parts {numbers} of {sorted(totals)} "
                          f"dated {sorted(dates)}, not every part of one snapshot; "
                          f"fetch again")
@@ -1633,8 +1653,7 @@ def _psc_read(parts: Path) -> Fetched:
         found[number] = path
         dates.add(named[1])
         totals.add(int(named[3]))
-    if (len(dates) != 1 or len(totals) != 1
-            or sorted(found) != list(range(1, max(totals) + 1))):
+    if not _one_snapshot(dates, totals, list(found)):
         raise ValueError(f"{parts} holds parts {sorted(found)} of {sorted(totals)} "
                          f"dated {sorted(dates)}, not every part of one snapshot"
                          f"{_again(PSC)}")
@@ -1677,10 +1696,8 @@ def fetch_psc() -> Fetched:
     return _psc_read(parts)
 
 
-def check_psc(meta: dict[str, Any]) -> str:
-    sample = meta["detail"].get("sample")
-    return "" if sample == f"1 in {PSC_SAMPLE}" else (
-        f"keeps {sample} filed names, and this tool keeps 1 in {PSC_SAMPLE}")
+check_psc = _pinned("sample", lambda: f"1 in {PSC_SAMPLE}",
+                    "keeps {held} filed names, and this tool keeps {wanted}")
 
 
 SOURCES: dict[str, Source] = {
