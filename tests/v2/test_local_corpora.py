@@ -885,7 +885,7 @@ def _line(donor: str, address: str = "臺北市", phone: str = "02") -> str:
 def test_rows_a_stray_quote_takes_in_are_read_back(
         monkeypatch: pytest.MonkeyPatch, _tw_home: Path) -> None:
     # An address opening with a quote nothing closes until a later row:
-    # the rows between, two 2020 reports' 157 on 2026-10-22, would go
+    # the rows between, 169 in three reports on 2026-10-22, would go
     # into one field and their donors with them.
     lines = [_line("王小明", address='"臺北市'), _line("陳大文"), _line("林一二"),
              _line("趙六", phone='02"')]
@@ -952,7 +952,9 @@ def test_a_tw_file_csv_cannot_read_is_refused_naming_the_report(
 
 def test_a_quoted_field_spanning_two_lines_stays_one_row(
         monkeypatch: pytest.MonkeyPatch, _tw_home: Path) -> None:
-    # Two phone numbers on two lines, as 8 records held on 2026-10-22.
+    # A quoted field that truly spans lines, its second line no row
+    # (none was found on 2026-10-22: all 12 multi-line records were
+    # rows a stray quote joined).
     lines = [_line("王小明", phone='"02\r\n09"'), _line("陳大文")]
     _serve_tw(monkeypatch, listings=[_TW_LISTING[:1]],
               zips={(_TW_ELECTION, _TW_AREA, 1): _tw_zip(_tw_incomes_text(lines))})

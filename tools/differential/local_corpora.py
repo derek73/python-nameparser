@@ -83,7 +83,7 @@ platform's listing gives it, so a refresh downloads only the reports
 published or rebuilt since. Names as a candidate's staff typed them
 into a filing, published in full where the ID, address and phone
 beside them are masked: of the
-308,663 on 2026-10-05, 296,816 were three Han characters, 5,449 four
+308,667 on 2026-10-05, 296,820 were three Han characters, 5,449 four
 and 5,260 two, so it is the population for unspaced Han names written
 family first, and for the married double surname (冠夫姓) a four-
 character name often is. Under the Open Government Data License,
@@ -694,17 +694,17 @@ def _tw_lines(text: str) -> list[str]:
 def _tw_rows(text: str, width: int, counts: Counter[str]) -> Iterator[list[str]]:
     """incomes.csv's records after its header. A record whose field
     holds line breaks is a quoted field spanning lines, or a stray quote
-    opening a field and taking the rows after it in until another
-    closes it: two 2020 reports held four, which took 157 rows in
-    (2026-10-22). Where one of the lines after its first reads as a
-    whole row alone, the record is cut back into its lines, each read
-    alone: the lines as wide as the header are rows, and the rest are
-    counted as cut by the quote. Otherwise it stays one record (a phone
-    field holding two numbers on two lines, 8 on 2026-10-22). Two stray
-    quotes in rows one after the other close each other and make one
-    record as wide as the header out of two rows, which no line read
-    alone as quoted shows: where every line of a record reads as a whole
-    row with quotes taken literally, those are its rows."""
+    opening a field and taking the rows after it in until another quote
+    closes it: on 2026-10-22, 12 records in three reports took in 169
+    rows that way, and every line of all 12 read as a whole row with
+    quotes taken literally. So where every line of a record does, those
+    are its rows; this also parts two rows that two stray quotes, one
+    after the other, joined into one record exactly as wide as the
+    header (8 of the 12). Else, where one of the lines after its first
+    reads as a whole row alone as quoted, the record is cut back into
+    its lines, each read alone: the lines as wide as the header are
+    rows, and the rest are counted as cut by the quote. Otherwise it
+    stays one record, a quoted field that truly spans lines."""
     lines = _tw_lines(text)
     reader = csv.reader(lines)
     next(reader, None)
