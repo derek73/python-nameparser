@@ -124,7 +124,22 @@
   "john smith, vi"            →  capitalized="Vi John Smith"  · boundary
   ```
 
+**Precedence:**
+
+- **A recorded casing and the acronym clause outrank an abbreviation's written ending**: the ending reads a word's shape, and a vocabulary entry or the suffix acronym vocabulary says how that word itself is written.
+  ```
+  "john smith m.sc"           →  capitalized="John Smith M.Sc"
+  "john smith m.ba"           →  capitalized="John Smith M.BA"
+  ```
+
 **Accepted:**
+
+- The written-ending clause reads shape alone, so it lowercases what follows a word's last full stop wherever no closing stop follows it, a joined name written without one included; and it leaves to the word clause a lowercase ending the writer did close, so a Latin degree written joined repairs as the same degree written spaced does. Each reading is the one 1.4.0 through 2.5.0 gave or the spaced spelling gives.
+  ```
+  "lt.gov john doe"           →  capitalized="Lt.gov John Doe"  · boundary
+  "J.Smith"                   →  capitalized_forced="J.smith"  · boundary
+  "dr.philol. laima berzina"  →  capitalized="Dr.Philol. Laima Berzina"  · boundary
+  ```
 
 - A name written in one case whose hyphenated bare initials spell a connective pays for the hyphen clause — its interior letter is lowered as the connective though the writer meant an initial, where the same letters spaced keep their capitals. The hyphen is the writer's join, and reading the one shape both ways would need the case evidence a one-case name does not carry.
   ```

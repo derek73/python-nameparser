@@ -1267,6 +1267,7 @@
 {"name": "J.A. K.D.", "given": "J.A.", "family": "K.D.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. K."}
 {"name": "J.R. Smith", "given": "J.R.", "family": "Smith", "initials": "J. S."}
 {"name": "J.R.R. Tolkien", "given": "J.R.R.", "family": "Tolkien", "initials": "J. T."}
+{"name": "J.Smith", "given": "J.Smith", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "J.", "capitalized_force": "J.smith"}
 {"name": "J.씨", "given": "J.", "suffix": "씨", "initials": "J."}
 {"name": "JA KD", "given": "JA", "family": "KD", "initials": "J. K.", "capitalized": "Ja Kd"}
 {"name": "JACK MA", "given": "JACK", "family": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. M.", "capitalized": "Jack Ma"}
@@ -3436,6 +3437,7 @@
 {"name": "dr. née juan y lopez", "title": "dr.", "given": "née", "middle": "juan y", "family": "lopez", "initials": "n. j. y. l.", "capitalized": "Dr. Née Juan Y Lopez"}
 {"name": "dr. p. Gabrielė Aldona Petraitytė", "title": "dr.", "given": "p.", "middle": "Gabrielė Aldona", "family": "Petraitytė", "initials": "p. G. A. P.", "capitalized_force": "Dr. P. Gabrielė Aldona Petraitytė"}
 {"name": "dr. sc. Branko Hrvoje Marić mlađi, prof.", "title": "dr. sc. prof.", "given": "Branko", "middle": "Hrvoje", "family": "Marić", "suffix": "mlađi", "initials": "B. H. M.", "capitalized_force": "Dr. Sc. Prof. Branko Hrvoje Marić Mlađi"}
+{"name": "dr.philol. laima berzina", "title": "dr.philol.", "given": "laima", "family": "berzina", "initials": "l. b.", "capitalized": "Dr.Philol. Laima Berzina"}
 {"name": "e and e", "given": "e and e", "ambiguities": ["CONJUNCTION_OR_INITIAL"], "initials": "e. e.", "capitalized": "E and E"}
 {"name": "e j smith", "given": "e", "middle": "j", "family": "smith", "ambiguities": ["CONJUNCTION_OR_INITIAL"], "initials": "e. j. s.", "capitalized": "E J Smith"}
 {"name": "émile zola", "given": "émile", "family": "zola", "initials": "é. z.", "capitalized": "Émile Zola"}
@@ -3484,7 +3486,9 @@
 {"name": "john smith iii.", "given": "john", "family": "smith", "suffix": "iii.", "initials": "j. s.", "capitalized": "John Smith III."}
 {"name": "john smith ix", "given": "john", "family": "smith", "suffix": "ix", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "j. s.", "capitalized": "John Smith IX"}
 {"name": "john smith jr", "given": "john", "family": "smith", "suffix": "jr", "initials": "j. s.", "capitalized": "John Smith Jr"}
+{"name": "john smith m.ba", "given": "john", "family": "smith", "suffix": "m.ba", "initials": "j. s.", "capitalized": "John Smith M.BA"}
 {"name": "john smith m.d.", "given": "john", "family": "smith", "suffix": "m.d.", "initials": "j. s.", "capitalized": "John Smith M.D."}
+{"name": "john smith m.sc", "given": "john", "family": "smith", "suffix": "m.sc", "initials": "j. s.", "capitalized": "John Smith M.Sc"}
 {"name": "john smith mba", "given": "john", "family": "smith", "suffix": "mba", "initials": "j. s.", "capitalized": "John Smith MBA"}
 {"name": "john smith mcse", "given": "john", "family": "smith", "suffix": "mcse", "initials": "j. s.", "capitalized": "John Smith MCSE"}
 {"name": "john smith md", "given": "john", "family": "smith", "suffix": "md", "initials": "j. s.", "capitalized": "John Smith MD"}
@@ -3534,6 +3538,7 @@
 {"name": "juan y-garcia-lopez", "given": "juan", "family": "y-garcia-lopez", "initials": "j. y.", "capitalized": "Juan Y-Garcia-Lopez"}
 {"name": "larry james edward johnson v", "given": "larry", "middle": "james edward", "family": "johnson", "suffix": "v", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "l. j. e. j.", "capitalized": "Larry James Edward Johnson V"}
 {"name": "lt. gen. john a. kenneth doe iv", "title": "lt. gen.", "given": "john", "middle": "a. kenneth", "family": "doe", "suffix": "iv", "initials": "j. a. k. d.", "capitalized": "Lt. Gen. John A. Kenneth Doe IV"}
+{"name": "lt.gov john doe", "title": "lt.gov", "given": "john", "family": "doe", "initials": "j. d.", "capitalized": "Lt.gov John Doe"}
 {"name": "m.d ph.d. Inger Marie Adele Synnøve von Wolf jr.", "given": "m.d", "middle": "ph.d. Inger Marie Adele Synnøve", "family": "von Wolf", "suffix": "jr.", "initials": "m. p. I. M. A. S. W.", "capitalized_force": "M.D Ph.D. Inger Marie Adele Synnøve von Wolf Jr."}
 {"name": "m.d ph.d. von Wolf Inger Marie Adele Synnøve", "order": "FAMILY_FIRST", "given": "ph.d.", "middle": "von Wolf Inger Marie Adele Synnøve", "family": "m.d", "initials": "p. W. I. M. A. S. m.", "capitalized_force": "Ph.D. von Wolf Inger Marie Adele Synnøve M.D"}
 {"name": "mack johnson", "given": "mack", "family": "johnson", "initials": "m. j.", "capitalized": "Mack Johnson"}
