@@ -1857,8 +1857,9 @@ def tally(local: Local) -> tuple[Counter[str], int]:
 #: record's "registry"), in the order pair_shape asks: a pair takes the
 #: first that fits.
 PAIR_SHAPES = (
-    "the same", "no reference name", "case only", "accents only",
-    "punctuation or spacing only", "the same words reordered",
+    "the same", "no reference name", "no filed name", "case only",
+    "accents only", "case and accents", "punctuation or spacing only",
+    "the same words reordered",
     "words left out", "words added", "words shortened", "words misspelled",
     "words left out and shortened", "mostly the same words",
     "few words in common")
@@ -1870,10 +1871,16 @@ _PAIR_WORD = re.compile(r"[^\s.,'’-]+")
 PAIR_MISSPELLED = 0.75
 
 
+def _unmarked(name: str) -> str:
+    """`name` with its combining marks dropped (accents; a letter that
+    does not decompose, ø or ł, stays)."""
+    return "".join(c for c in unicodedata.normalize("NFD", name)
+                   if not unicodedata.combining(c))
+
+
 def _bare(name: str) -> str:
     """`name` in capitals with its accents dropped."""
-    return "".join(c for c in unicodedata.normalize("NFD", name.upper())
-                   if not unicodedata.combining(c))
+    return _unmarked(name.upper())
 
 
 def _pair_words(name: str) -> list[str]:
@@ -1894,12 +1901,16 @@ def pair_shape(filed: str, reference: str) -> str:
         return "the same"
     if not reference:
         return "no reference name"
+    a, b = _pair_words(filed), _pair_words(reference)
+    if not a:
+        return "no filed name"
     if filed.upper() == reference.upper():
         return "case only"
-    if _bare(filed) == _bare(reference):
+    if _unmarked(filed) == _unmarked(reference):
         return "accents only"
-    a, b = _pair_words(filed), _pair_words(reference)
-    if a == b:
+    if _bare(filed) == _bare(reference):
+        return "case and accents"
+    if "".join(a) == "".join(b):
         return "punctuation or spacing only"
     if sorted(a) == sorted(b):
         return "the same words reordered"
@@ -1924,7 +1935,9 @@ def pair_shape(filed: str, reference: str) -> str:
 
 
 #: The least pairs a word must be left out of, or added to, to be
-#: listed: a word in fewer could be part of one person's name.
+#: listed (each pair counting a word once): a word in fewer could be
+#: part of one person's name. The same floor holds for the accents-only
+#: disagreements, listed by the two spellings' last words.
 PAIR_WORD_FLOOR = 10
 
 
@@ -1944,11 +1957,13 @@ def format_pairs(found: PairCounts, top: int) -> str:
             agree, parsed = found.agreement[shape]
             line += f"  (one surname in {agree / parsed:.0%})"
         lines.append(line)
-    for words, what in ((found.left_out, "left out"), (found.added, "added")):
+    for words, what in ((found.left_out, "words most often left out"),
+                        (found.added, "words most often added"),
+                        (found.accent_splits, "accents-only pairs read with two "
+                                              "surnames, by their last words")):
         listed = [(w, n) for w, n in words.most_common(top) if n >= PAIR_WORD_FLOOR]
         if listed:
-            lines.append(f"words most often {what}: "
-                         + ", ".join(f"{w} {n:,}" for w, n in listed))
+            lines.append(f"{what}: " + ", ".join(f"{w} {n:,}" for w, n in listed))
     return "\n".join(lines)
 
 
@@ -1957,12 +1972,15 @@ class PairCounts:
     """What pair_counts finds: the pairs of each shape, the reference
     name's words a filed name leaves out and the words it adds (in the
     pairs of those two shapes), and, where asked, how many pairs of each
-    shape parse() reads with one surname."""
+    shape parse() reads with one surname, and the accents-only pairs it
+    reads with two, keyed by the two spellings' last words ("JÚNIOR /
+    JUNIOR"). Each pair counts a word once."""
     shapes: Counter[str]
     left_out: Counter[str]
     added: Counter[str]
     #: shape -> (pairs whose surnames agree, pairs parsed)
     agreement: dict[str, tuple[int, int]] | None = None
+    accent_splits: Counter[str] = field(default_factory=Counter)
 
     @property
     def total(self) -> int:
@@ -1972,8 +1990,10 @@ class PairCounts:
 def surname(name: str) -> str:
     """The last word of the family name parse() reads in `name`, in
     capitals without accents, or "" where it reads none: the word two
-    spellings of one person should share whatever else differs (a
-    particle or a second surname left out, a middle name shortened)."""
+    spellings of one person should share unless the last surname itself
+    is what one leaves out (a particle or a middle name left out, a
+    middle name shortened, accents or case changed). Two readings with no
+    surname do not share one."""
     from nameparser import parse
 
     family = _pair_words(parse(name).family)
@@ -1982,16 +2002,20 @@ def surname(name: str) -> str:
 
 def pair_counts(local: Local, *, agreement: bool = False) -> PairCounts:
     """Each record's pair_shape. A source whose records carry no
-    reference name raises ValueError. With `agreement`, every pair that
-    differs is parsed both ways and its two surnames compared, which
+    reference name raises ValueError. With `agreement`, every pair with a
+    reference name that differs is parsed both ways and its two surnames
+    compared, agreeing only where both read one, which
     parses each distinct name once (39s for tse-donors on 2026-10-22)."""
-    if not local.records or any("registry" not in r for r in local.records):
+    if not local.records:
+        raise ValueError(f"{local.source} holds no records")
+    if any("registry" not in r for r in local.records):
         raise ValueError(f"{local.source}'s records carry no reference name "
                          f"to pair a filed name with")
     shapes: Counter[str] = Counter()
     left_out: Counter[str] = Counter()
     added: Counter[str] = Counter()
     tally_agree: dict[str, list[int]] = {}
+    accent_splits: Counter[str] = Counter()
     seen: dict[str, str] = {}
     for record in local.records:
         filed, reference = record["name"], record["registry"]
@@ -1999,19 +2023,23 @@ def pair_counts(local: Local, *, agreement: bool = False) -> PairCounts:
         shapes[shape] += 1
         a, b = _pair_words(filed), _pair_words(reference)
         if shape == "words left out":
-            left_out.update((Counter(b) - Counter(a)).elements())
+            left_out.update((Counter(b) - Counter(a)).keys())
         elif shape == "words added":
-            added.update((Counter(a) - Counter(b)).elements())
+            added.update((Counter(a) - Counter(b)).keys())
         if agreement and shape not in ("the same", "no reference name"):
             for name in (filed, reference):
                 if name not in seen:
                     seen[name] = surname(name)
             counts = tally_agree.setdefault(shape, [0, 0])
-            counts[0] += seen[filed] == seen[reference]
+            one = seen[filed] == seen[reference] != ""
+            counts[0] += one
             counts[1] += 1
+            if shape == "accents only" and not one:
+                accent_splits[f"{filed.split()[-1].upper()} / "
+                              f"{reference.split()[-1].upper()}"] += 1
     return PairCounts(shapes, left_out, added,
                       {s: (n[0], n[1]) for s, n in tally_agree.items()}
-                      if agreement else None)
+                      if agreement else None, accent_splits)
 
 
 #: Where a name is cut into words: spaces, commas, semicolons, slashes.
