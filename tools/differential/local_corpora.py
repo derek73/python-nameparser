@@ -1060,11 +1060,6 @@ TW_REPORTS = "reports"
 _TW_ZIP_NAME = re.compile(r"[\w-]+\.zip", re.ASCII)
 
 
-def _tw_whole(body: bytes) -> bytes:
-    _tw_incomes(body)  # raises ValueError where the zip is cut short
-    return body
-
-
 def _tw_cached(report: dict[str, Any]) -> Path:
     return directory("tw-donors") / TW_REPORTS / report["zipFileName"]
 
@@ -1092,8 +1087,10 @@ def _tw_report_zip(report: dict[str, Any],
         except ValueError:
             print(f"  downloading again a cached zip that is not whole: {path}",
                   file=sys.stderr)
-    body = _retried(_tw_url(report), _tw_whole, TW_DELAY)
-    if (got := _tw_incomes(body)) is None:
+    # Read inside _retried, so that a zip cut short is retried, and once.
+    body, got = _retried(_tw_url(report), lambda body: (body, _tw_incomes(body)),
+                         TW_DELAY)
+    if got is None:
         raise ValueError(f"{label}'s zip holds no {TW_INCOMES}: the reports' "
                          f"layout has changed")
     return (*got, body)
@@ -2067,11 +2064,12 @@ def pair_counts(local: Local, *, agreement: bool = False) -> PairCounts:
         filed, reference = record["name"], record["registry"]
         shape = pair_shape(filed, reference)
         shapes[shape] += 1
-        a, b = _pair_words(filed), _pair_words(reference)
-        if shape == "words left out":
-            left_out.update((Counter(b) - Counter(a)).keys())
-        elif shape == "words added":
-            added.update((Counter(a) - Counter(b)).keys())
+        if shape in ("words left out", "words added"):
+            a, b = Counter(_pair_words(filed)), Counter(_pair_words(reference))
+            if shape == "words left out":
+                left_out.update((b - a).keys())
+            else:
+                added.update((a - b).keys())
         if agreement and shape not in ("the same", "no reference name"):
             for name in (filed, reference):
                 if name not in seen:
