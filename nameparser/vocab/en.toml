@@ -941,6 +941,10 @@ text = "councillor"
 office = {}
 
 [[word]]
+text = "cllr"
+office = { same_as = "councillor", issue = 847, note = "British abbreviation, written without the period; opens 508 of 15,214 names in ukec-individuals (2026-10-23), none borne as a name in any source" }
+
+[[word]]
 text = "counsel"
 office = { issue = 606, note = "borne: ~730 surnames (Australia, the US, England), forebears.io, worldwide, rounded, 2026-10-04; shipped under the graf class (decisions/salutation-titles)" }
 

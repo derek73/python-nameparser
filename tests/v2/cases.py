@@ -4213,6 +4213,15 @@ CASES: tuple[Case, ...] = (
                "'governor' abbreviated; 1.4.0 through 2.4.2 read given "
                "'Gov'. 236 US Census surname bearers, so a surname "
                "written first loses it (decisions/H6)"),
+    Case("bare_cllr_opening_a_name_is_a_title",
+         "Cllr John Smith",
+         {"title": "Cllr", "given": "John", "family": "Smith"},
+         classification="fix(#847)",
+         notes="'cllr' is 'councillor' abbreviated, as 'gov' is "
+               "'governor'; 1.4.0 through 2.5.0 read given 'Cllr', "
+               "middle 'John'. The period-marked 'Cllr.' was already "
+               "a title by shape, and a bare trailing 'Cllr' stays a "
+               "name word (rules/H5)"),
     Case("the_comma_count_counts_names_not_words_behind_a_suffix",
          "Smith Jr, Ma",
          {"given": "Ma", "family": "Smith", "suffix": "Jr"},
