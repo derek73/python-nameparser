@@ -723,6 +723,25 @@ def test_a_ukec_export_cut_inside_its_last_row_is_refused(
     assert local.load(_UKEC) is None
 
 
+def test_a_ukec_export_ending_in_a_long_row_is_not_taken_for_a_cut_one(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # A cut only shortens a row, so a whole export whose last row is one
+    # of the malformed few UKEC_MAX_BAD tolerates is read, not refused
+    # as cut: a refetch would return the same export.
+    rows = [_ukec_row(f"Bo Wu {i}") for i in range(_UKEC_MANY - 1)]
+    rows.append(_ukec_row("Cy Roe", fields=30))
+    _serve_ukec(monkeypatch, _ukec_csv(rows))
+    assert local.fetch(_UKEC).meta["detail"]["rows_not_29_fields"] == 1
+
+
+def test_a_ukec_export_ending_in_a_blank_line_is_refused(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    rows = [_ukec_row(f"Bo Wu {i}") for i in range(_UKEC_MANY)]
+    _serve_ukec(monkeypatch, _ukec_csv(rows) + b"\r\n", _UKEC_MANY, _UKEC_MANY)
+    with pytest.raises(ValueError, match="cut short or blank"):
+        local.fetch(_UKEC)
+
+
 def test_a_ukec_export_that_is_not_utf8_is_refused(
         monkeypatch: pytest.MonkeyPatch) -> None:
     body = _ukec_csv([_ukec_row("Mr Bo Wu")]).replace(b"Wu", b"W\xfc")

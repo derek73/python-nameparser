@@ -81,7 +81,9 @@ the donee's return gave it, so mostly in its spoken order, mixed case,
 with the title the donor used: of its 15,214 names on 2026-10-22,
 parse() read a title in 8,219 and a suffix in 320 (MP, OBE, CBE, QC),
 9 were in capitals and 2 held a comma. So it is the population for
-titled British names, and blind to the family-comma shape. The Commission
+titled British names, and blind to the family-comma shape. The
+counts are dated by the day they were fetched; the data date the
+fetch stamps, the search's own time in UTC, was 2026-10-23T03:13:19Z. The Commission
 publishes its documents under the Open Government Licence v3.0, but
 the register states no reuse terms of its own, which the credit line
 says; only the DonorName column is kept.
@@ -538,9 +540,12 @@ def _ukec_rows(rows: list[list[str]], text: str, total: int) -> Fetched:
         raise ValueError(f"the export's header is not the {len(UKEC_COLUMNS)} "
                          f"columns UKEC_COLUMNS names: {', '.join(header)}")
     # csv returns a body cut inside its last row as a short last row,
-    # which the count below would take for a whole one.
-    if not text.endswith("\n") or len(rows[-1]) != len(UKEC_COLUMNS):
-        raise ValueError("the export's last row is cut short; fetch again")
+    # which the count below would take for a whole one. A cut only
+    # shortens a row, so a long last row is left to the malformed share;
+    # the export ended with a line break on 2026-10-22.
+    if not text.endswith("\n") or len(rows[-1]) < len(UKEC_COLUMNS):
+        raise ValueError("the export's last row is cut short or blank; "
+                         "fetch again")
     status, name_at, donor_at = (UKEC_COLUMNS.index(c) for c in (
         "DonorStatus", "DonorName", "DonorId"))
     names: set[str] = set()
