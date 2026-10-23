@@ -7,8 +7,10 @@ box set aside as filer error), each beside the reading with the decision
 off, and the record's refusals: no record, a record that is not one, a record of
 another fetch or another scorer, and a corpus damaged under the stream. The names are invented.
 """
+import hashlib
 import json
 import sys
+import unicodedata
 from pathlib import Path
 
 import pytest
@@ -217,6 +219,25 @@ def test_a_line_that_is_not_a_record_is_refused_as_damage(
     assert len(list(agreement.records(loaded))) == len(_ALL)  # the control
 
 
+def test_a_record_holding_a_value_that_is_not_text_is_refused_as_damage(
+        monkeypatch: pytest.MonkeyPatch, _own_cache: Path) -> None:
+    # With its sha256 rewritten to match, as a fetch that wrote a number
+    # into a box would leave it, only the stream's own check sees it, and
+    # the scorer would otherwise fold a number as a name's box.
+    _corpus(monkeypatch, *_ALL)
+    folder = _own_cache / "local" / _PSC
+    raw = folder / "raw.jsonl"
+    body = raw.read_bytes() + b'{"name": "Al Ng", "surname": 1}\n'
+    raw.write_bytes(body)
+    meta = json.loads((folder / "meta.json").read_text())
+    meta["sha256"] = hashlib.sha256(body).hexdigest()
+    (folder / "meta.json").write_text(json.dumps(meta))
+    loaded = corpora.load(_PSC)
+    assert loaded is not None
+    with pytest.raises(corpora.CorpusDamaged, match="not text.*fetch it again"):
+        list(agreement.records(loaded))
+
+
 @pytest.mark.parametrize("body", ["", "{not json\n", '["a list"]\n',
                                   '{"raw_sha256": "x"}\n{"got": {}}\n'],
                          ids=["empty", "header not JSON", "header not an object",
@@ -248,6 +269,11 @@ def test_a_record_written_by_another_scorer_is_refused(
         patch.setattr(agreement.corpus_build, "jsonl_line",
                       lambda obj, sort_keys=False: str(obj))
         assert agreement.scorer_fingerprint() != before, "jsonl_line"
+    # fold() casefolds, so a Python whose Unicode database moves it reads
+    # names differently; its moves would be the database's, not the parser's.
+    with monkeypatch.context() as patch:
+        patch.setattr(unicodedata, "unidata_version", "0.0.0")
+        assert agreement.scorer_fingerprint() != before, "unidata_version"
     assert agreement.scorer_fingerprint() == before
     monkeypatch.setattr(agreement, "fold", lambda text: text.casefold())
     with pytest.raises(SystemExit, match="another version of this scorer"):

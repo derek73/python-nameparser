@@ -1819,17 +1819,41 @@ def _verified(source: str, name: str, sha256: str) -> bytes:
     return body
 
 
+def iter_records(source: str, meta: dict[str, Any], *,
+                 text_only: bool = False) -> Iterator[dict[str, str]]:
+    """raw.jsonl's records, streamed rather than held: each holding a
+    name, and with `text_only` nothing but strings, as it is read, and
+    the file checked against its sha256 (load() checked it, but the file
+    is read later and may have changed) once the last is read;
+    CorpusDamaged naming the way out either way. A caller must not act
+    on what it read before the iterator is exhausted."""
+    path = directory(source, create=False) / RAW
+    mismatch = f"{path} does not match the sha256 in {META}{_again(source)}"
+    if not path.exists():
+        raise CorpusDamaged(mismatch)
+    digest = hashlib.sha256()
+    with path.open("rb") as raw:
+        for line in raw:
+            digest.update(line)
+            if not line.strip():
+                continue
+            try:
+                record = json.loads(line)
+            except ValueError:
+                raise CorpusDamaged(mismatch) from None
+            if not isinstance(record, dict) or not isinstance(record.get("name"), str):
+                raise CorpusDamaged(f"{path} holds a record without a name{_again(source)}")
+            if text_only and not all(isinstance(v, str) for v in record.values()):
+                raise CorpusDamaged(f"{path} holds a record with a value that is not "
+                                    f"text{_again(source)}")
+            yield record
+    if digest.hexdigest() != meta["sha256"]:
+        raise CorpusDamaged(mismatch)
+
+
 def read_records(source: str, meta: dict[str, Any]) -> list[dict[str, str]]:
-    """raw.jsonl's records, checked against its sha256 again (load()
-    checked it, but the file is read later and may have changed), each
-    holding a name, or CorpusDamaged naming the way out."""
-    raw = _verified(source, RAW, meta["sha256"])
-    records = [json.loads(line) for line in corpus_build.jsonl_lines(raw.decode())]
-    if any(not isinstance(r, dict) or not isinstance(r.get("name"), str)
-           for r in records):
-        raise CorpusDamaged(f"{directory(source, create=False) / RAW} holds a record "
-                         f"without a name{_again(source)}")
-    return records
+    """raw.jsonl's records, every one read and checked (iter_records)."""
+    return list(iter_records(source, meta))
 
 
 def require(source: str) -> Local:
@@ -2183,21 +2207,28 @@ def _code_digest(code: types.CodeType) -> list[str]:
     return parts
 
 
-def fold_fingerprint() -> str:
-    """A hash of what turns the records into an index, read from the code
-    that is running rather than the source on disk, which may have been
-    edited since: _FOLD_CODE's functions and corpus_build.jsonl_lines
-    (which cuts raw.jsonl into records), _FOLD_CONSTANTS, WordIndex's
-    fields, and the Unicode database that casefold(), NFC and the
-    category test read, which a new Python may move. The bytecode is the
-    interpreter's own, so a new Python rebuilds the index too."""
-    module = globals()
-    functions = [module[name] for name in _FOLD_CODE] + [corpus_build.jsonl_lines]
+def code_fingerprint(functions: Iterable[Callable[..., object]],
+                     extra: Iterable[str] = ()) -> str:
+    """A hash of `functions` as the interpreter will run them, read from
+    the running code rather than the source on disk, which may have been
+    edited since; of `extra`; and of the Unicode database that
+    casefold(), NFC and the category tests read and the interpreter whose
+    bytecode it is, which a new Python may move: the key for a result
+    cached from what that code made."""
     parts = [part for fn in functions for part in _code_digest(inspect.unwrap(fn).__code__)]
-    parts += [_stable(module[name]) for name in _FOLD_CONSTANTS]
-    parts += [repr([f.name for f in dataclasses.fields(WordIndex)]),
-              unicodedata.unidata_version, sys.version]
+    parts += [*extra, unicodedata.unidata_version, sys.version]
     return hashlib.sha256("\0".join(parts).encode()).hexdigest()
+
+
+def fold_fingerprint() -> str:
+    """code_fingerprint of what turns the records into an index:
+    _FOLD_CODE's functions and corpus_build.jsonl_lines (which cuts
+    raw.jsonl into records), _FOLD_CONSTANTS and WordIndex's fields."""
+    module = globals()
+    return code_fingerprint(
+        [*(module[name] for name in _FOLD_CODE), corpus_build.jsonl_lines],
+        [*(_stable(module[name]) for name in _FOLD_CONSTANTS),
+         repr([f.name for f in dataclasses.fields(WordIndex)])])
 
 
 def _is_counts(value: object) -> bool:
