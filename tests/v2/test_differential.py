@@ -144,6 +144,9 @@ def _run_template(line: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]
     # value into the facade's slot cannot pass.
     ("Ph. D., John", None),
     ("Ménil Christophe du", "FAMILY_FIRST"),
+    # Records both case views (#826): the plain repair keeps the
+    # mixed-case suffix as written ('EdD'), the forced one does not.
+    ("john smith EdD", None),
 ])
 def test_the_worker_reads_a_line_as_the_tree_does(
         name: str, order: str | None) -> None:
@@ -154,8 +157,10 @@ def test_the_worker_reads_a_line_as_the_tree_does(
     if order is not None:
         # the facade is never consulted for an order-bearing entry
         assert "facade" not in raw
-    assert snapshot.row(name, order, raw.get("v2"), raw.get("facade")) \
-        == snapshot.read([(name, order)])[0]
+    tree = snapshot.read([(name, order)])[0]
+    assert snapshot.row(name, order, raw.get("v2"), raw.get("facade")) == tree
+    if name == "john smith EdD":
+        assert all(view in tree for view in snapshot.CASE_VIEWS)
 
 
 _WHEEL = "/Users/x/.cache/uv/environments-v2/w/lib/python3.11/" \

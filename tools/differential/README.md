@@ -25,7 +25,11 @@ uv run python tools/differential/snapshot.py --since v2.5.0
 ```
 
 Each line holds one (name, order): the seven role fields, the reported
-ambiguity kinds and `initials()` on the 2.0 surface, and, under
+ambiguity kinds, `initials()` and the two case-repair views on the 2.0
+surface (#826) -- `capitalized` where `capitalized()` renders other than
+the name as parsed, `capitalized_force` where `capitalized(force=True)`
+renders other than `capitalized()` does, so a role move that changes no
+case moves no case view -- and, under
 `facade`, whatever `HumanName` reads differently from the 2.0 surface
 (3 names on 2026-10-13). Empty values are left out, so a reading that
 gains a field shows as one added key.
