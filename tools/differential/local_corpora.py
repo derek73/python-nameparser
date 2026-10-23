@@ -288,7 +288,7 @@ _TRANSIENT = (OSError, http.client.HTTPException)
 _T = TypeVar("_T")
 
 
-class _Unparsed(Exception):
+class _Unparsed(ValueError):
     """A response body that is not JSON: cut short in transit."""
 
 
@@ -520,9 +520,8 @@ def _fec_read(path: Path) -> Fetched:
                     names.add(name)
                 else:
                     nameless += 1
-    _refuse_past(((count, rows, FEC_MAX_BAD, f"lines of {path} are {what}")
-                  for count, what in ((malformed, f"not {FEC_COLUMNS} columns"),
-                                      (latin1, "not UTF-8"))),
+    _refuse_past([(malformed, rows, FEC_MAX_BAD, f"lines of {path} are not {FEC_COLUMNS} columns"),
+                  (latin1, rows, FEC_MAX_BAD, f"lines of {path} are not UTF-8")],
                  "the file's layout has changed under FEC_COLUMNS")
     with_comma = sum("," in name for name in names)
     if names and with_comma < len(names) * FEC_MIN_COMMA:
@@ -829,12 +828,12 @@ def _tse_read(year: str, archive: zipfile.ZipFile,
         raise ValueError(f"{counts['individual']:,} of {counts['rows']:,} rows of "
                          f"{member} are from individuals: the file is cut short or "
                          f"its categories have moved")
-    _refuse_past(((count, counts["individual"], limit,
-                   f"individuals' rows of {member} carry {what}")
-                  for count, limit, what in (
-                      (counts["nameless"], TSE_MAX_MISSING, "no name"),
-                      (counts["no_registry"], TSE_MAX_MISSING, "no registry name"),
-                      (counts["numbered"], TSE_MAX_NUMBERED, "a number in a name"))),
+    carry = f"individuals' rows of {member} carry"
+    _refuse_past([(counts["nameless"], counts["individual"], TSE_MAX_MISSING, f"{carry} no name"),
+                  (counts["no_registry"], counts["individual"], TSE_MAX_MISSING,
+                   f"{carry} no registry name"),
+                  (counts["numbered"], counts["individual"], TSE_MAX_NUMBERED,
+                   f"{carry} a number in a name")],
                  "a name column may be masked or moved")
     for column, index in ((TSE_NAME, 0), (TSE_REGISTRY, 1)):
         seen = len({pair[index] for pair in distinct})
@@ -1254,14 +1253,15 @@ def fetch_tw() -> Fetched:
         _tw_read(incomes, report, label, names, counts)
         if downloaded is not None:
             _tw_cache_zip(report, downloaded)
-    _refuse_past(((counts[key], counts[total], TW_MAX_BAD, what)
-                  for key, total, what in (
-                      ("rows_not_as_long_as_the_header", "rows",
-                       "rows are not as long as their file's header"),
-                      ("rows_without_a_category", "rows", "rows are without a category"),
-                      ("rows_cut_by_a_stray_quote", "rows", "rows are cut by a stray quote"),
-                      ("donations_naming_a_masked_donor", "individual_donations",
-                       "individual donations name a masked donor"))),
+    rows, donations = counts["rows"], counts["individual_donations"]
+    _refuse_past([(counts["rows_not_as_long_as_the_header"], rows, TW_MAX_BAD,
+                   "rows are not as long as their file's header"),
+                  (counts["rows_without_a_category"], rows, TW_MAX_BAD,
+                   "rows are without a category"),
+                  (counts["rows_cut_by_a_stray_quote"], rows, TW_MAX_BAD,
+                   "rows are cut by a stray quote"),
+                  (counts["donations_naming_a_masked_donor"], donations, TW_MAX_BAD,
+                   "individual donations name a masked donor")],
                  "the files' layout has changed")
     if _tw_versions(_tw_reports()) != _tw_versions(reports):
         raise ValueError("the platform published, replaced or withdrew a report "
@@ -1391,11 +1391,11 @@ def _ukec_rows(rows: list[list[str]], text: str, total: int) -> Fetched:
     if count != total:
         raise ValueError(f"the export held {count:,} donations where the search "
                          f"counts {total:,}: a capped or cut export; fetch again")
-    _refuse_past(((skipped, count, share, f"rows of the export are {what}")
-                  for skipped, share, what in (
-                      (malformed, UKEC_MAX_BAD, f"not {len(UKEC_COLUMNS)} fields"),
-                      (other, UKEC_MAX_BAD, f"from a donor that is not {UKEC_INDIVIDUAL!r}"),
-                      (nameless, UKEC_MAX_NAMELESS, "from an individual with no name"))),
+    are = "rows of the export are"
+    _refuse_past([(malformed, count, UKEC_MAX_BAD, f"{are} not {len(UKEC_COLUMNS)} fields"),
+                  (other, count, UKEC_MAX_BAD,
+                   f"{are} from a donor that is not {UKEC_INDIVIDUAL!r}"),
+                  (nameless, count, UKEC_MAX_NAMELESS, f"{are} from an individual with no name")],
                  "the export is not the one this reads")
     return Fetched([{"name": name} for name in sorted(names)], "", {
         "donations": count, "donor_ids": len(donor_ids),
@@ -1665,12 +1665,12 @@ def _psc_read(parts: Path) -> Fetched:
         raise ValueError(f"{individuals:,} of {counts['lines']:,} lines are "
                          f"{' or '.join(PSC_KINDS)} records: a kind has been "
                          f"renamed or moved under PSC_KINDS")
-    _refuse_past(((counts[key], of, PSC_MAX_BAD, what) for key, of, what in (
-                      ("lines_not_json", counts["lines"], "lines are not JSON"),
-                      ("individuals_without_name_elements", individuals,
-                       "individuals have no name_elements"),
-                      ("names_not_their_boxes_joined", individuals,
-                       "individuals' display names are not their four boxes joined"))),
+    _refuse_past([(counts["lines_not_json"], counts["lines"], PSC_MAX_BAD,
+                   "lines are not JSON"),
+                  (counts["individuals_without_name_elements"], individuals, PSC_MAX_BAD,
+                   "individuals have no name_elements"),
+                  (counts["names_not_their_boxes_joined"], individuals, PSC_MAX_BAD,
+                   "individuals' display names are not their four boxes joined")],
                  "the snapshot's layout has changed under PSC_ELEMENTS")
     records = [json.loads(line) for line in sorted(lines)]
     named_records = [record for record in records if "name" in record]
@@ -1816,41 +1816,26 @@ def _verified(source: str, name: str, sha256: str) -> bytes:
     return body
 
 
-def iter_records(source: str, meta: dict[str, Any], *,
-                 text_only: bool = False) -> Iterator[dict[str, str]]:
-    """raw.jsonl's records, streamed rather than held: each holding a
-    name, and with `text_only` nothing but strings, as it is read, and
-    the file checked against its sha256 (load() checked it, but the file
-    is read later and may have changed) once the last is read;
-    CorpusDamaged naming the way out either way. A caller must not act
-    on what it read before the iterator is exhausted."""
+def read_records(source: str, meta: dict[str, Any], *,
+                 text_only: bool = False) -> list[dict[str, str]]:
+    """raw.jsonl's records, the file checked against its sha256 first
+    (load() checked it, but the file is read later and may have changed)
+    and cut by corpus_build.jsonl_lines, each holding a name, and with
+    `text_only` nothing but strings; CorpusDamaged naming the way out
+    otherwise. Read whole: streaming the lines cost more than holding
+    them (1.99s against 1.15s for fec-individuals, 2026-10-23)."""
     path = directory(source, create=False) / RAW
-    mismatch = f"{path} does not match the sha256 in {META}{_again(source)}"
-    if not path.exists():
-        raise CorpusDamaged(mismatch)
-    digest = hashlib.sha256()
-    with path.open("rb") as raw:
-        for line in raw:
-            digest.update(line)
-            if not line.strip():
-                continue
-            try:
-                record = json.loads(line)
-            except ValueError:
-                raise CorpusDamaged(mismatch) from None
-            if not isinstance(record, dict) or not isinstance(record.get("name"), str):
-                raise CorpusDamaged(f"{path} holds a record without a name{_again(source)}")
-            if text_only and not all(isinstance(v, str) for v in record.values()):
-                raise CorpusDamaged(f"{path} holds a record with a value that is not "
-                                    f"text{_again(source)}")
-            yield record
-    if digest.hexdigest() != meta["sha256"]:
-        raise CorpusDamaged(mismatch)
-
-
-def read_records(source: str, meta: dict[str, Any]) -> list[dict[str, str]]:
-    """raw.jsonl's records, every one read and checked (iter_records)."""
-    return list(iter_records(source, meta))
+    raw = _verified(source, RAW, meta["sha256"])
+    try:
+        records = [json.loads(line) for line in corpus_build.jsonl_lines(raw.decode())]
+    except ValueError:
+        raise CorpusDamaged(f"{path} holds a line that is not JSON{_again(source)}") from None
+    if any(not isinstance(r, dict) or not isinstance(r.get("name"), str) for r in records):
+        raise CorpusDamaged(f"{path} holds a record without a name{_again(source)}")
+    if text_only and any(not isinstance(v, str) for r in records for v in r.values()):
+        raise CorpusDamaged(f"{path} holds a record with a value that is not "
+                            f"text{_again(source)}")
+    return records
 
 
 def require(source: str) -> Local:
@@ -2220,11 +2205,12 @@ def code_fingerprint(functions: Iterable[Callable[..., object]],
 
 def fold_fingerprint() -> str:
     """code_fingerprint of what turns the records into an index:
-    _FOLD_CODE's functions and corpus_build.jsonl_lines (which cuts
-    raw.jsonl into records), _FOLD_CONSTANTS and WordIndex's fields."""
+    _FOLD_CODE's functions, read_records and corpus_build.jsonl_lines
+    (which read raw.jsonl into the records Local.records holds, where
+    _names takes them), _FOLD_CONSTANTS and WordIndex's fields."""
     module = globals()
     return code_fingerprint(
-        [*(module[name] for name in _FOLD_CODE), corpus_build.jsonl_lines],
+        [*(module[name] for name in _FOLD_CODE), read_records, corpus_build.jsonl_lines],
         [*(_stable(module[name]) for name in _FOLD_CONSTANTS),
          repr([f.name for f in dataclasses.fields(WordIndex)])])
 

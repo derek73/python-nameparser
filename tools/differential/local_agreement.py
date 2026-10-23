@@ -156,10 +156,11 @@ def group_of(record: dict[str, str], fielded: Fielded) -> str:
 
 
 def records(local: local_corpora.Local) -> Iterator[dict[str, str]]:
-    """raw.jsonl's records, streamed and checked (local_corpora.
-    iter_records), each nothing but strings: CorpusDamaged before any
-    caller reports or records what it read."""
-    return local_corpora.iter_records(local.source, local.meta, text_only=True)
+    """raw.jsonl's records, every one read and checked before the first
+    is handed out (local_corpora.read_records), each nothing but
+    strings: CorpusDamaged before any caller reports or records what it
+    read."""
+    return iter(local_corpora.read_records(local.source, local.meta, text_only=True))
 
 
 @dataclass

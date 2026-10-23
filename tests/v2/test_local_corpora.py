@@ -1714,6 +1714,23 @@ def test_a_ukec_request_failing_once_is_retried(
     assert failed == [getattr(local, which)]
 
 
+def test_a_ukec_search_answering_no_json_is_refused_as_a_value_error(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # An error page served with HTTP 200 is retried as a body cut short,
+    # and once the retries run out the fetch must still fail as a
+    # ValueError, as the other refusals do, not as the retry's own class.
+    monkeypatch.setattr(time, "sleep", lambda seconds: None)
+    asked: list[str] = []
+
+    def urlopen(request: urllib.request.Request, timeout: int) -> _Response:
+        asked.append(request.full_url)
+        return _Response(b"<html>Service Unavailable</html>")
+    monkeypatch.setattr(urllib.request, "urlopen", urlopen)
+    with pytest.raises(ValueError, match="is not JSON"):
+        local.fetch(_UKEC)
+    assert asked == [local.UKEC_COUNT_URL] * local.RETRIES
+
+
 def test_the_ukec_count_asks_the_export_s_own_filter() -> None:
     # A count under another filter would vouch for an export it did not count.
     def query(url: str) -> list[tuple[str, str]]:
@@ -2520,10 +2537,16 @@ def test_a_change_to_how_a_word_is_cut_or_folded_changes_the_key(
     assert local.fold_fingerprint() != before
 
 
+@pytest.mark.parametrize("reader", ["read_records", "corpus_build.jsonl_lines"])
 def test_a_change_to_how_raw_jsonl_is_cut_into_records_changes_the_key(
-        monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch: pytest.MonkeyPatch, reader: str) -> None:
+    # The index is built from Local.records, an attribute the fold's own
+    # functions read without calling what fills it, so the walk in
+    # test_the_fold_lists_everything_its_functions_call_and_read cannot
+    # see these two; they are hashed by name.
     before = local.fold_fingerprint()
-    monkeypatch.setattr(local.corpus_build, "jsonl_lines", lambda text: [])
+    owner = local.corpus_build if reader.startswith("corpus_build.") else local
+    monkeypatch.setattr(owner, reader.rsplit(".", 1)[-1], lambda *args, **kwargs: [])
     assert local.fold_fingerprint() != before
 
 
@@ -2647,15 +2670,21 @@ def test_tally_over_damaged_records_exits_naming_the_fetch(
         local.main(["tally", _SOURCE])
 
 
-def test_a_record_without_a_name_fails_when_the_records_are_read(
-        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+@pytest.mark.parametrize(("raw", "match"), [
+    (b'{"nom": "Ann Lee, MD"}\n', "record without a name"),
+    (b'{"name": "Ann Lee, MD"\n', "a line that is not JSON"),
+], ids=["a record without a name", "a line that is not JSON"])
+def test_a_damaged_record_fails_when_the_records_are_read(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, raw: bytes, match: str) -> None:
+    # With the sha256 rewritten to match, only the record checks see it,
+    # and each must raise CorpusDamaged, which name_usage's per-row guard
+    # catches, not the bare ValueError a JSON error is.
     folder = _fetched(monkeypatch, tmp_path)
-    raw = b'{"nom": "Ann Lee, MD"}\n'
     (folder / "raw.jsonl").write_bytes(raw)
     _rewrite_meta(folder, sha256=hashlib.sha256(raw).hexdigest())
     loaded = local.load(_SOURCE)
     assert loaded is not None
-    with pytest.raises(ValueError, match="record without a name"):
+    with pytest.raises(local.CorpusDamaged, match=match):
         loaded.records  # noqa: B018
 
 
