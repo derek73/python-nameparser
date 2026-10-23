@@ -165,7 +165,7 @@ import urllib.request
 import zipfile
 import zlib
 from collections import Counter
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, TypeVar
@@ -273,7 +273,10 @@ class Local:
 CTGOV_API = "https://clinicaltrials.gov/api/v2"
 CTGOV_PAGE = 1000  # the API's largest page
 CTGOV_FIELDS = "NCTId,OverallOfficialName,OverallOfficialRole"
-CTGOV_RETRIES = 4
+#: Attempts per request, for every source that retries.
+RETRIES = 4
+#: How much of a streamed download is read at a time.
+CHUNK = 1 << 20
 #: What a long run of requests meets and a retry survives: a refused or
 #: dropped connection or a timeout (OSError, which URLError and HTTPError
 #: are), a body cut short in the read (http.client's IncompleteRead), a
@@ -285,7 +288,7 @@ _TRANSIENT = (OSError, http.client.HTTPException)
 _T = TypeVar("_T")
 
 
-class _Unparsed(Exception):
+class _Unparsed(ValueError):
     """A response body that is not JSON: cut short in transit."""
 
 
@@ -299,33 +302,71 @@ def _get_json(url: str) -> dict[str, Any]:
     return data
 
 
-def _retried(url: str, read: Callable[[bytes], _T], delay: float) -> _T:
-    """`url`'s body as `read` reads it, retried with a backoff and a line
-    on stderr for each retry; any ValueError from `read` is retried as a
-    body cut short in transit, and `delay` seconds of sleep follow each
-    request. A 4xx other than 429 is the request's fault and is raised,
-    as is the last attempt's error."""
-    for attempt in range(CTGOV_RETRIES):
+def _zip_stamp(info: zipfile.ZipInfo) -> str:
+    """A zip member's own timestamp, as a data date: the sources that
+    ship a zip state no other date for what is in it."""
+    return "{:04d}-{:02d}-{:02d}T{:02d}:{:02d}:{:02d}".format(*info.date_time)
+
+
+def _pinned(key: str, wanted: Callable[[], str], says: str
+            ) -> Callable[[dict[str, Any]], str]:
+    """A Source.check refusing a corpus whose meta.json detail `key` is
+    not `wanted()` now, read at check time so that a change to the
+    constant behind it refuses corpora fetched before; `says` words the
+    refusal, with {held} and {wanted}."""
+    def check(meta: dict[str, Any]) -> str:
+        held, now = meta["detail"].get(key), wanted()
+        return "" if held == now else says.format(held=held, wanted=now)
+    return check
+
+
+def _refuse_past(rows: Iterable[tuple[int, int, float, str]], why: str) -> None:
+    """The gate every source puts on what it reads past: for each
+    (count, of, share, what), refuse with "count of `of` what: why" once
+    count is more than `share` of `of`. A file whose layout moved under
+    a reader would otherwise read as a smaller corpus."""
+    for count, of, share, what in rows:
+        if count > of * share:
+            raise ValueError(f"{count:,} of {of:,} {what}: {why}")
+
+
+def _backed_off(exc: Exception, attempt: int, url: str) -> bool:
+    """The retry policy every source shares, after `exc` on try `attempt`
+    of `url`: False where the caller should raise it (a 4xx other than
+    429 is the request's fault, and the last attempt's error is the
+    fetch's), else True once a backoff of 2**attempt seconds, or the
+    Retry-After a server asks for up to a minute, has been slept, with a
+    line on stderr."""
+    if (isinstance(exc, urllib.error.HTTPError) and exc.code < 500
+            and exc.code != 429 or attempt == RETRIES - 1):
+        return False
+    wait = 2 ** attempt
+    if isinstance(exc, urllib.error.HTTPError):
+        after = exc.headers.get("Retry-After", "") if exc.headers else ""
+        if after.isdigit():
+            wait = max(wait, min(int(after), 60))
+        exc.close()  # an HTTPError holds the response open
+    print(f"  retrying in {wait}s after {type(exc).__name__}: {url}", file=sys.stderr)
+    time.sleep(wait)
+    return True
+
+
+def _retried(url: str, read: Callable[[bytes], _T], delay: float, *,
+             timeout: int = 60) -> _T:
+    """`url`'s body as `read` reads it, under _backed_off's policy; any
+    ValueError from `read` is retried as a body cut short in transit, and
+    `delay` seconds of sleep follow each request."""
+    for attempt in range(RETRIES):
         try:
             body = corpus_build.fetch_bytes(url, user_agent=USER_AGENT,
-                                            timeout=60, delay=delay)
+                                            timeout=timeout, delay=delay)
             try:
                 return read(body)
             except ValueError as exc:
                 raise _Unparsed(f"{url}: {exc}") from None
         except (*_TRANSIENT, _Unparsed) as exc:
-            if (isinstance(exc, urllib.error.HTTPError) and exc.code < 500
-                    and exc.code != 429 or attempt == CTGOV_RETRIES - 1):
+            if not _backed_off(exc, attempt, url):
                 raise
-            wait = 2 ** attempt
-            if isinstance(exc, urllib.error.HTTPError):
-                after = exc.headers.get("Retry-After", "") if exc.headers else ""
-                if after.isdigit():
-                    wait = max(wait, min(int(after), 60))
-                exc.close()  # an HTTPError holds the response open
-            print(f"  retrying in {wait}s after {type(exc).__name__}: {url}",
-                  file=sys.stderr)
-            time.sleep(wait)
     raise AssertionError("unreachable: the last attempt raises")
 
 
@@ -405,7 +446,6 @@ FEC_MEMBER = "itcont.txt"
 #: The file's columns (the FEC's contributions-by-individuals file
 #: description): 21, pipe-separated, ENTITY_TP the 7th and NAME the 8th.
 FEC_COLUMNS, FEC_ENTITY, FEC_NAME = 21, 6, 7
-FEC_CHUNK = 1 << 20
 #: The file has no header row to check the columns against, so a fetch
 #: refuses one that no longer looks like the file the constants above
 #: were written for: more than this share of its lines malformed or not
@@ -431,7 +471,7 @@ def _download(url: str, path: Path) -> None:
         with urllib.request.urlopen(request, timeout=60) as response, \
                 partial.open("wb") as out:
             stated = response.headers.get("Content-Length", "")
-            while chunk := response.read(FEC_CHUNK):
+            while chunk := response.read(CHUNK):
                 out.write(chunk)
                 got += len(chunk)
         if not stated.isdigit() or int(stated) != got:
@@ -460,7 +500,7 @@ def _fec_read(path: Path) -> Fetched:
         if FEC_MEMBER not in archive.namelist():
             raise ValueError(f"{path} holds no {FEC_MEMBER}")
         member = archive.getinfo(FEC_MEMBER)
-        stamp = "{:04d}-{:02d}-{:02d}T{:02d}:{:02d}:{:02d}".format(*member.date_time)
+        stamp = _zip_stamp(member)
         with archive.open(member) as lines:
             for line in lines:
                 rows += 1
@@ -480,11 +520,9 @@ def _fec_read(path: Path) -> Fetched:
                     names.add(name)
                 else:
                     nameless += 1
-    for count, what in ((malformed, f"not {FEC_COLUMNS} columns"),
-                        (latin1, "not UTF-8")):
-        if count > rows * FEC_MAX_BAD:
-            raise ValueError(f"{count:,} of {rows:,} lines of {path} are {what}: "
-                             f"the file's layout has changed under FEC_COLUMNS")
+    _refuse_past([(malformed, rows, FEC_MAX_BAD, f"lines of {path} are not {FEC_COLUMNS} columns"),
+                  (latin1, rows, FEC_MAX_BAD, f"lines of {path} are not UTF-8")],
+                 "the file's layout has changed under FEC_COLUMNS")
     with_comma = sum("," in name for name in names)
     if names and with_comma < len(names) * FEC_MIN_COMMA:
         raise ValueError(f"{with_comma:,} of {len(names):,} names hold a comma: "
@@ -529,10 +567,8 @@ def renew_fec() -> None:
     _fec_download(directory("fec-individuals") / FEC_ZIP)
 
 
-def check_fec(meta: dict[str, Any]) -> str:
-    cycle = meta["detail"].get("cycle")
-    return "" if cycle == FEC_CYCLE else (
-        f"holds the {cycle} cycle, and this tool reads the {FEC_CYCLE} cycle")
+check_fec = _pinned("cycle", lambda: FEC_CYCLE,
+                    "holds the {held} cycle, and this tool reads the {wanted} cycle")
 
 
 # -- TSE campaign donations (Brazil) -------------------------------------------
@@ -705,7 +741,7 @@ class _RangeFile(io.RawIOBase):
         up to one byte past `want` so that a longer part shows; a shorter
         one is retried as a body cut short. The last attempt's error, or
         any 4xx but a 429, is kept in self.error and raised."""
-        for attempt in range(CTGOV_RETRIES):
+        for attempt in range(RETRIES):
             try:
                 with urllib.request.urlopen(request, timeout=60) as response:
                     body = b""
@@ -715,20 +751,10 @@ class _RangeFile(io.RawIOBase):
                             raise http.client.IncompleteRead(body, want - len(body))
                     return response.status, response.headers, body
             except _TRANSIENT as exc:
-                if (isinstance(exc, urllib.error.HTTPError) and exc.code < 500
-                        and exc.code != 429 or attempt == CTGOV_RETRIES - 1):
+                if not _backed_off(exc, attempt, self.url):
                     self.error = exc
                     raise
-                wait = 2 ** attempt
-                if isinstance(exc, urllib.error.HTTPError):
-                    after = exc.headers.get("Retry-After", "") if exc.headers else ""
-                    if after.isdigit():
-                        wait = max(wait, min(int(after), 60))
-                    exc.close()  # an HTTPError holds the response open
-                print(f"  retrying in {wait}s after {type(exc).__name__}: "
-                      f"{self.url}", file=sys.stderr)
-                time.sleep(wait)
-        raise AssertionError("unreachable")
+        raise AssertionError("unreachable: the last attempt raises")
 
 
 def _tse_read(year: str, archive: zipfile.ZipFile,
@@ -739,7 +765,7 @@ def _tse_read(year: str, archive: zipfile.ZipFile,
     if member not in archive.namelist():
         raise ValueError(f"{TSE_URL.format(year=year)} holds no {member}")
     info = archive.getinfo(member)
-    stamp = "{:04d}-{:02d}-{:02d}T{:02d}:{:02d}:{:02d}".format(*info.date_time)
+    stamp = _zip_stamp(info)
     counts: Counter[str] = Counter()
     before = len(pairs)
     distinct: set[tuple[str, str]] = set()
@@ -802,14 +828,13 @@ def _tse_read(year: str, archive: zipfile.ZipFile,
         raise ValueError(f"{counts['individual']:,} of {counts['rows']:,} rows of "
                          f"{member} are from individuals: the file is cut short or "
                          f"its categories have moved")
-    for count, limit, what in (
-            (counts["nameless"], TSE_MAX_MISSING, "no name"),
-            (counts["no_registry"], TSE_MAX_MISSING, "no registry name"),
-            (counts["numbered"], TSE_MAX_NUMBERED, "a number in a name")):
-        if count > counts["individual"] * limit:
-            raise ValueError(f"{count:,} of {counts['individual']:,} individuals' rows "
-                             f"of {member} carry {what}: a name column may be "
-                             f"masked or moved")
+    carry = f"individuals' rows of {member} carry"
+    _refuse_past([(counts["nameless"], counts["individual"], TSE_MAX_MISSING, f"{carry} no name"),
+                  (counts["no_registry"], counts["individual"], TSE_MAX_MISSING,
+                   f"{carry} no registry name"),
+                  (counts["numbered"], counts["individual"], TSE_MAX_NUMBERED,
+                   f"{carry} a number in a name")],
+                 "a name column may be masked or moved")
     for column, index in ((TSE_NAME, 0), (TSE_REGISTRY, 1)):
         seen = len({pair[index] for pair in distinct})
         if seen < counts["individual"] * TSE_MIN_DISTINCT:
@@ -887,11 +912,8 @@ def fetch_tse() -> Fetched:
                     for name, registry in sorted(pairs)], ", ".join(stamps), detail)
 
 
-def check_tse(meta: dict[str, Any]) -> str:
-    elections = meta["detail"].get("elections")
-    wanted = " ".join(TSE_ELECTIONS)
-    return "" if elections == wanted else (
-        f"holds the elections {elections}, and this tool reads {wanted}")
+check_tse = _pinned("elections", lambda: " ".join(TSE_ELECTIONS),
+                    "holds the elections {held}, and this tool reads {wanted}")
 
 
 # -- Taiwan political donations ------------------------------------------------
@@ -1022,7 +1044,7 @@ def _tw_incomes(body: bytes) -> tuple[bytes, str] | None:
             if TW_INCOMES not in archive.namelist():
                 return None
             member = archive.getinfo(TW_INCOMES)
-            stamp = "{:04d}-{:02d}-{:02d}T{:02d}:{:02d}:{:02d}".format(*member.date_time)
+            stamp = _zip_stamp(member)
             return archive.read(member), stamp
     except (zipfile.BadZipFile, zlib.error, EOFError) as exc:
         start = body[:2]
@@ -1035,11 +1057,6 @@ TW_REPORTS = "reports"
 #: A listed zip's name, the only kind cached under it: the name is the
 #: platform's and becomes a path.
 _TW_ZIP_NAME = re.compile(r"[\w-]+\.zip", re.ASCII)
-
-
-def _tw_whole(body: bytes) -> bytes:
-    _tw_incomes(body)  # raises ValueError where the zip is cut short
-    return body
 
 
 def _tw_cached(report: dict[str, Any]) -> Path:
@@ -1069,8 +1086,10 @@ def _tw_report_zip(report: dict[str, Any],
         except ValueError:
             print(f"  downloading again a cached zip that is not whole: {path}",
                   file=sys.stderr)
-    body = _retried(_tw_url(report), _tw_whole, TW_DELAY)
-    if (got := _tw_incomes(body)) is None:
+    # Read inside _retried, so that a zip cut short is retried, and once.
+    body, got = _retried(_tw_url(report), lambda body: (body, _tw_incomes(body)),
+                         TW_DELAY)
+    if got is None:
         raise ValueError(f"{label}'s zip holds no {TW_INCOMES}: the reports' "
                          f"layout has changed")
     return (*got, body)
@@ -1234,16 +1253,16 @@ def fetch_tw() -> Fetched:
         _tw_read(incomes, report, label, names, counts)
         if downloaded is not None:
             _tw_cache_zip(report, downloaded)
-    for key, total, what in (
-            ("rows_not_as_long_as_the_header", "rows",
-             "rows are not as long as their file's header"),
-            ("rows_without_a_category", "rows", "rows are without a category"),
-            ("rows_cut_by_a_stray_quote", "rows", "rows are cut by a stray quote"),
-            ("donations_naming_a_masked_donor", "individual_donations",
-             "individual donations name a masked donor")):
-        if counts[key] > counts[total] * TW_MAX_BAD:
-            raise ValueError(f"{counts[key]:,} of {counts[total]:,} {what}: the "
-                             f"files' layout has changed")
+    rows, donations = counts["rows"], counts["individual_donations"]
+    _refuse_past([(counts["rows_not_as_long_as_the_header"], rows, TW_MAX_BAD,
+                   "rows are not as long as their file's header"),
+                  (counts["rows_without_a_category"], rows, TW_MAX_BAD,
+                   "rows are without a category"),
+                  (counts["rows_cut_by_a_stray_quote"], rows, TW_MAX_BAD,
+                   "rows are cut by a stray quote"),
+                  (counts["donations_naming_a_masked_donor"], donations, TW_MAX_BAD,
+                   "individual donations name a masked donor")],
+                 "the files' layout has changed")
     if _tw_versions(_tw_reports()) != _tw_versions(reports):
         raise ValueError("the platform published, replaced or withdrew a report "
                          "during the fetch; fetch again")
@@ -1309,9 +1328,8 @@ UKEC_MAX_NAMELESS = 1 / 1000
 def _ukec_total() -> tuple[int, str]:
     """The register's total for the filter, and the time the search
     answered, from the JSON search."""
-    body = corpus_build.fetch_bytes(UKEC_COUNT_URL, user_agent=USER_AGENT,
-                                    timeout=60)
-    data = corpus_build.parse_json(body, UKEC_COUNT_URL)
+    data = _retried(UKEC_COUNT_URL,
+                    lambda body: corpus_build.parse_json(body, UKEC_COUNT_URL), 0)
     if not isinstance(data, dict):
         raise ValueError(f"{UKEC_COUNT_URL} states no Total")
     total = data.get("Total")
@@ -1373,13 +1391,12 @@ def _ukec_rows(rows: list[list[str]], text: str, total: int) -> Fetched:
     if count != total:
         raise ValueError(f"the export held {count:,} donations where the search "
                          f"counts {total:,}: a capped or cut export; fetch again")
-    for skipped, share, what in (
-            (malformed, UKEC_MAX_BAD, f"not {len(UKEC_COLUMNS)} fields"),
-            (other, UKEC_MAX_BAD, f"from a donor that is not {UKEC_INDIVIDUAL!r}"),
-            (nameless, UKEC_MAX_NAMELESS, "from an individual with no name")):
-        if skipped > count * share:
-            raise ValueError(f"{skipped:,} of {count:,} rows of the export are "
-                             f"{what}: the export is not the one this reads")
+    are = "rows of the export are"
+    _refuse_past([(malformed, count, UKEC_MAX_BAD, f"{are} not {len(UKEC_COLUMNS)} fields"),
+                  (other, count, UKEC_MAX_BAD,
+                   f"{are} from a donor that is not {UKEC_INDIVIDUAL!r}"),
+                  (nameless, count, UKEC_MAX_NAMELESS, f"{are} from an individual with no name")],
+                 "the export is not the one this reads")
     return Fetched([{"name": name} for name in sorted(names)], "", {
         "donations": count, "donor_ids": len(donor_ids),
         "individuals_without_a_name": nameless,
@@ -1407,7 +1424,7 @@ def fetch_ukec() -> Fetched:
     two, or UKEC_MAX_NAMELESS of the third, the export is refused."""
     before, when = _ukec_total()
     print(f"downloading {before:,} donations from {UKEC_API} ...", file=sys.stderr)
-    body = corpus_build.fetch_bytes(UKEC_CSV_URL, user_agent=USER_AGENT, timeout=300)
+    body = _retried(UKEC_CSV_URL, lambda body: body, 0, timeout=300)
     after, _ = _ukec_total()
     if after != before:
         raise ValueError(f"the register changed during the fetch ({before:,} -> "
@@ -1519,18 +1536,25 @@ def _psc_extract(path: Path, member: str) -> bytes:
     return gzip.compress("".join(f"{line}\n" for line in [header, *sorted(lines)]).encode())
 
 
+def _one_snapshot(dates: set[str], totals: set[int], numbers: list[int]) -> bool:
+    """Whether parts `numbers`, dated `dates` and each one of `totals`,
+    are every part of one snapshot."""
+    return (len(dates) == 1 and len(totals) == 1
+            and sorted(numbers) == list(range(1, max(totals) + 1)))
+
+
 def _psc_listing() -> tuple[str, list[tuple[int, str]]]:
     """The day's snapshot as the download page lists it: its date and
     each part's number and file, or ValueError where the page links no
     parts, or parts of more than one snapshot, or not every part. A part
     linked twice is one part."""
-    page = corpus_build.fetch_bytes(PSC_PAGE, user_agent=USER_AGENT, timeout=60)
+    page = _retried(PSC_PAGE, lambda body: body, 0)
     links = PSC_PART.findall(page.decode("utf-8", "replace"))
     if not links:
         raise ValueError(f"{PSC_PAGE} links no snapshot parts: the page has changed")
     dates, totals = {d for _, d, _, _ in links}, {int(m) for *_, m in links}
     numbers = sorted(int(n) for _, _, n, _ in set(links))
-    if len(dates) != 1 or len(totals) != 1 or numbers != list(range(1, max(totals) + 1)):
+    if not _one_snapshot(dates, totals, numbers):
         raise ValueError(f"{PSC_PAGE} links parts {numbers} of {sorted(totals)} "
                          f"dated {sorted(dates)}, not every part of one snapshot; "
                          f"fetch again")
@@ -1626,8 +1650,7 @@ def _psc_read(parts: Path) -> Fetched:
         found[number] = path
         dates.add(named[1])
         totals.add(int(named[3]))
-    if (len(dates) != 1 or len(totals) != 1
-            or sorted(found) != list(range(1, max(totals) + 1))):
+    if not _one_snapshot(dates, totals, list(found)):
         raise ValueError(f"{parts} holds parts {sorted(found)} of {sorted(totals)} "
                          f"dated {sorted(dates)}, not every part of one snapshot"
                          f"{_again(PSC)}")
@@ -1642,15 +1665,13 @@ def _psc_read(parts: Path) -> Fetched:
         raise ValueError(f"{individuals:,} of {counts['lines']:,} lines are "
                          f"{' or '.join(PSC_KINDS)} records: a kind has been "
                          f"renamed or moved under PSC_KINDS")
-    for key, of, what in (
-            ("lines_not_json", counts["lines"], "lines are not JSON"),
-            ("individuals_without_name_elements", individuals,
-             "individuals have no name_elements"),
-            ("names_not_their_boxes_joined", individuals,
-             "individuals' display names are not their four boxes joined")):
-        if counts[key] > of * PSC_MAX_BAD:
-            raise ValueError(f"{counts[key]:,} of {of:,} {what}: the snapshot's "
-                             f"layout has changed under PSC_ELEMENTS")
+    _refuse_past([(counts["lines_not_json"], counts["lines"], PSC_MAX_BAD,
+                   "lines are not JSON"),
+                  (counts["individuals_without_name_elements"], individuals, PSC_MAX_BAD,
+                   "individuals have no name_elements"),
+                  (counts["names_not_their_boxes_joined"], individuals, PSC_MAX_BAD,
+                   "individuals' display names are not their four boxes joined")],
+                 "the snapshot's layout has changed under PSC_ELEMENTS")
     records = [json.loads(line) for line in sorted(lines)]
     named_records = [record for record in records if "name" in record]
     if len(named_records) < len(records):
@@ -1672,10 +1693,8 @@ def fetch_psc() -> Fetched:
     return _psc_read(parts)
 
 
-def check_psc(meta: dict[str, Any]) -> str:
-    sample = meta["detail"].get("sample")
-    return "" if sample == f"1 in {PSC_SAMPLE}" else (
-        f"keeps {sample} filed names, and this tool keeps 1 in {PSC_SAMPLE}")
+check_psc = _pinned("sample", lambda: f"1 in {PSC_SAMPLE}",
+                    "keeps {held} filed names, and this tool keeps {wanted}")
 
 
 SOURCES: dict[str, Source] = {
@@ -1797,16 +1816,25 @@ def _verified(source: str, name: str, sha256: str) -> bytes:
     return body
 
 
-def read_records(source: str, meta: dict[str, Any]) -> list[dict[str, str]]:
-    """raw.jsonl's records, checked against its sha256 again (load()
-    checked it, but the file is read later and may have changed), each
-    holding a name, or CorpusDamaged naming the way out."""
+def read_records(source: str, meta: dict[str, Any], *,
+                 text_only: bool = False) -> list[dict[str, str]]:
+    """raw.jsonl's records, the file checked against its sha256 first
+    (load() checked it, but the file is read later and may have changed)
+    and cut by corpus_build.jsonl_lines, each holding a name, and with
+    `text_only` nothing but strings; CorpusDamaged naming the way out
+    otherwise. Read whole: streaming the lines cost more than holding
+    them (1.99s against 1.15s for fec-individuals, 2026-10-23)."""
+    path = directory(source, create=False) / RAW
     raw = _verified(source, RAW, meta["sha256"])
-    records = [json.loads(line) for line in corpus_build.jsonl_lines(raw.decode())]
-    if any(not isinstance(r, dict) or not isinstance(r.get("name"), str)
-           for r in records):
-        raise CorpusDamaged(f"{directory(source, create=False) / RAW} holds a record "
-                         f"without a name{_again(source)}")
+    try:
+        records = [json.loads(line) for line in corpus_build.jsonl_lines(raw.decode())]
+    except ValueError:
+        raise CorpusDamaged(f"{path} holds a line that is not JSON{_again(source)}") from None
+    if any(not isinstance(r, dict) or not isinstance(r.get("name"), str) for r in records):
+        raise CorpusDamaged(f"{path} holds a record without a name{_again(source)}")
+    if text_only and any(not isinstance(v, str) for r in records for v in r.values()):
+        raise CorpusDamaged(f"{path} holds a record with a value that is not "
+                            f"text{_again(source)}")
     return records
 
 
@@ -2021,11 +2049,12 @@ def pair_counts(local: Local, *, agreement: bool = False) -> PairCounts:
         filed, reference = record["name"], record["registry"]
         shape = pair_shape(filed, reference)
         shapes[shape] += 1
-        a, b = _pair_words(filed), _pair_words(reference)
-        if shape == "words left out":
-            left_out.update((Counter(b) - Counter(a)).keys())
-        elif shape == "words added":
-            added.update((Counter(a) - Counter(b)).keys())
+        if shape in ("words left out", "words added"):
+            a, b = Counter(_pair_words(filed)), Counter(_pair_words(reference))
+            if shape == "words left out":
+                left_out.update((b - a).keys())
+            else:
+                added.update((a - b).keys())
         if agreement and shape not in ("the same", "no reference name"):
             for name in (filed, reference):
                 if name not in seen:
@@ -2161,21 +2190,29 @@ def _code_digest(code: types.CodeType) -> list[str]:
     return parts
 
 
-def fold_fingerprint() -> str:
-    """A hash of what turns the records into an index, read from the code
-    that is running rather than the source on disk, which may have been
-    edited since: _FOLD_CODE's functions and corpus_build.jsonl_lines
-    (which cuts raw.jsonl into records), _FOLD_CONSTANTS, WordIndex's
-    fields, and the Unicode database that casefold(), NFC and the
-    category test read, which a new Python may move. The bytecode is the
-    interpreter's own, so a new Python rebuilds the index too."""
-    module = globals()
-    functions = [module[name] for name in _FOLD_CODE] + [corpus_build.jsonl_lines]
+def code_fingerprint(functions: Iterable[Callable[..., object]],
+                     extra: Iterable[str] = ()) -> str:
+    """A hash of `functions` as the interpreter will run them, read from
+    the running code rather than the source on disk, which may have been
+    edited since; of `extra`; and of the Unicode database that
+    casefold(), NFC and the category tests read and the interpreter whose
+    bytecode it is, which a new Python may move: the key for a result
+    cached from what that code made."""
     parts = [part for fn in functions for part in _code_digest(inspect.unwrap(fn).__code__)]
-    parts += [_stable(module[name]) for name in _FOLD_CONSTANTS]
-    parts += [repr([f.name for f in dataclasses.fields(WordIndex)]),
-              unicodedata.unidata_version, sys.version]
+    parts += [*extra, unicodedata.unidata_version, sys.version]
     return hashlib.sha256("\0".join(parts).encode()).hexdigest()
+
+
+def fold_fingerprint() -> str:
+    """code_fingerprint of what turns the records into an index:
+    _FOLD_CODE's functions, read_records and corpus_build.jsonl_lines
+    (which read raw.jsonl into the records Local.records holds, where
+    _names takes them), _FOLD_CONSTANTS and WordIndex's fields."""
+    module = globals()
+    return code_fingerprint(
+        [*(module[name] for name in _FOLD_CODE), read_records, corpus_build.jsonl_lines],
+        [*(_stable(module[name]) for name in _FOLD_CONSTANTS),
+         repr([f.name for f in dataclasses.fields(WordIndex)])])
 
 
 def _is_counts(value: object) -> bool:

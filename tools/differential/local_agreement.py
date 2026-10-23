@@ -48,12 +48,11 @@ compared, is refused rather than reported as the parser's moves.
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import sys
 import types
 from collections import Counter
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -157,28 +156,11 @@ def group_of(record: dict[str, str], fielded: Fielded) -> str:
 
 
 def records(local: local_corpora.Local) -> Iterator[dict[str, str]]:
-    """raw.jsonl's records, streamed rather than held, checked against
-    its sha256 once the last is read, and each holding a name and
-    nothing but strings as it is read: CorpusDamaged either way, before any caller reports or
-    records what it read."""
-    path = local_corpora.directory(local.source, create=False) / local_corpora.RAW
-    damaged = local_corpora.CorpusDamaged(
-        f"{path} does not match the sha256 in {local_corpora.META}; fetch it "
-        f"again: {local_corpora.fetch_command(local.source, refresh=True)}")
-    digest = hashlib.sha256()
-    with path.open("rb") as raw:
-        for line in raw:
-            digest.update(line)
-            try:
-                record = json.loads(line)
-            except ValueError:
-                raise damaged from None
-            if (not isinstance(record, dict) or not isinstance(record.get("name"), str)
-                    or not all(isinstance(v, str) for v in record.values())):
-                raise damaged
-            yield record
-    if digest.hexdigest() != local.meta["sha256"]:
-        raise damaged
+    """raw.jsonl's records, every one read and checked before the first
+    is handed out (local_corpora.read_records), each nothing but
+    strings: CorpusDamaged before any caller reports or records what it
+    read."""
+    return iter(local_corpora.read_records(local.source, local.meta, text_only=True))
 
 
 @dataclass
@@ -299,20 +281,19 @@ _SCORER_CODE = ("fold", "_title_words", "unlisted", "read", "_box", "Reading",
 
 
 def scorer_fingerprint() -> str:
-    """A hash of the code that turns a parse into a record's entry and
-    decides which records get one (_SCORER_CODE), of
-    corpus_build.jsonl_line, which writes an entry's key, and of FIELDED,
-    read from the running code."""
+    """local_corpora.code_fingerprint of the code that turns a parse into
+    a record's entry and decides which records get one (_SCORER_CODE, a
+    class by its methods), of corpus_build.jsonl_line, which writes an
+    entry's key, and of FIELDED."""
     module = globals()
-    parts = [repr(sorted((k, repr(v)) for k, v in FIELDED.items()))]
+    functions: list[Callable[..., object]] = []
     for name in _SCORER_CODE:
         target = module[name]
-        functions = ([v for v in vars(target).values() if isinstance(v, types.FunctionType)]
-                     if isinstance(target, type) else [target])
-        for fn in functions:
-            parts += local_corpora._code_digest(fn.__code__)
-    parts += local_corpora._code_digest(corpus_build.jsonl_line.__code__)
-    return hashlib.sha256("\0".join(parts).encode()).hexdigest()
+        functions += ([v for v in vars(target).values() if isinstance(v, types.FunctionType)]
+                      if isinstance(target, type) else [target])
+    return local_corpora.code_fingerprint(
+        [*functions, corpus_build.jsonl_line],
+        [repr(sorted((k, repr(v)) for k, v in FIELDED.items()))])
 
 
 def _record_command(source: str) -> str:

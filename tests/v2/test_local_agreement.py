@@ -7,15 +7,17 @@ box set aside as filer error), each beside the reading with the decision
 off, and the record's refusals: no record, a record that is not one, a record of
 another fetch or another scorer, and a corpus damaged under the stream. The names are invented.
 """
+import hashlib
 import json
 import sys
+import unicodedata
 from pathlib import Path
 
 import pytest
 
 from nameparser import Parser
 
-from ._differential_fixtures import load_tool
+from ._differential_fixtures import load_tool, own_cache, plant_corpus
 
 agreement = load_tool("local_agreement")
 corpora = agreement.local_corpora
@@ -26,10 +28,7 @@ _LISTED = agreement._title_words(Parser().lexicon)
 
 @pytest.fixture(autouse=True)
 def _own_cache(monkeypatch: pytest.MonkeyPatch, tmp_path_factory: pytest.TempPathFactory) -> Path:
-    """Every test's cache is its own, as in test_local_corpora.py."""
-    path = tmp_path_factory.mktemp("cache")
-    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(path))
-    return path
+    return own_cache(monkeypatch, tmp_path_factory)
 
 
 def _filed(title: str = "", forename: str = "", middle_name: str = "", surname: str = "",
@@ -97,10 +96,7 @@ def test_a_title_box_holding_an_unlisted_word_the_parse_reads_otherwise_is_set_a
 
 def _corpus(monkeypatch: pytest.MonkeyPatch, *records: dict[str, str]) -> None:
     """A PSC corpus of `records` fetched into the cache, no network behind it."""
-    monkeypatch.setitem(corpora.SOURCES, _PSC, corpora.Source(
-        corpora.SOURCES[_PSC].credit, "filed names",
-        lambda: corpora.Fetched(list(records), "2026-10-22", {})))
-    corpora.fetch(_PSC)
+    plant_corpus(monkeypatch, corpora, _PSC, list(records), "2026-10-22", "filed names")
 
 
 _ALL = (_AGREES, _DOUBLE_SURNAME, _SUFFIX, _JOB_TITLE, _SHAPE_TITLE)
@@ -217,6 +213,25 @@ def test_a_line_that_is_not_a_record_is_refused_as_damage(
     assert len(list(agreement.records(loaded))) == len(_ALL)  # the control
 
 
+def test_a_record_holding_a_value_that_is_not_text_is_refused_as_damage(
+        monkeypatch: pytest.MonkeyPatch, _own_cache: Path) -> None:
+    # With its sha256 rewritten to match, as a fetch that wrote a number
+    # into a box would leave it, only the stream's own check sees it, and
+    # the scorer would otherwise fold a number as a name's box.
+    _corpus(monkeypatch, *_ALL)
+    folder = _own_cache / "local" / _PSC
+    raw = folder / "raw.jsonl"
+    body = raw.read_bytes() + b'{"name": "Al Ng", "surname": 1}\n'
+    raw.write_bytes(body)
+    meta = json.loads((folder / "meta.json").read_text())
+    meta["sha256"] = hashlib.sha256(body).hexdigest()
+    (folder / "meta.json").write_text(json.dumps(meta))
+    loaded = corpora.load(_PSC)
+    assert loaded is not None
+    with pytest.raises(corpora.CorpusDamaged, match="not text.*fetch it again"):
+        list(agreement.records(loaded))
+
+
 @pytest.mark.parametrize("body", ["", "{not json\n", '["a list"]\n',
                                   '{"raw_sha256": "x"}\n{"got": {}}\n'],
                          ids=["empty", "header not JSON", "header not an object",
@@ -248,6 +263,11 @@ def test_a_record_written_by_another_scorer_is_refused(
         patch.setattr(agreement.corpus_build, "jsonl_line",
                       lambda obj, sort_keys=False: str(obj))
         assert agreement.scorer_fingerprint() != before, "jsonl_line"
+    # fold() casefolds, so a Python whose Unicode database moves it reads
+    # names differently; its moves would be the database's, not the parser's.
+    with monkeypatch.context() as patch:
+        patch.setattr(unicodedata, "unidata_version", "0.0.0")
+        assert agreement.scorer_fingerprint() != before, "unidata_version"
     assert agreement.scorer_fingerprint() == before
     monkeypatch.setattr(agreement, "fold", lambda text: text.casefold())
     with pytest.raises(SystemExit, match="another version of this scorer"):

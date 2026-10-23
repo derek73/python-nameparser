@@ -31,7 +31,7 @@ from typing import Any
 
 import pytest
 
-from ._differential_fixtures import _Response, load_tool
+from ._differential_fixtures import _Response, load_tool, own_cache, plant_corpus
 
 local = load_tool("local_corpora")
 snapshot = load_tool("snapshot")
@@ -42,12 +42,7 @@ _DATE = "2026-10-21T09:00:05"
 
 @pytest.fixture(autouse=True)
 def _own_cache(monkeypatch: pytest.MonkeyPatch, tmp_path_factory: pytest.TempPathFactory) -> Path:
-    """Every test's cache is its own: a test that forgets to set one, or a
-    guard that stops keeping a test's corpus out of the cache, writes
-    into a scratch folder rather than the developer's real cache."""
-    path = tmp_path_factory.mktemp("cache")
-    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(path))
-    return path
+    return own_cache(monkeypatch, tmp_path_factory)
 
 
 def _study(nct: str, *officials: str) -> dict[str, Any]:
@@ -261,7 +256,7 @@ def test_the_last_attempt_raises_its_own_error(
         local.fetch(_SOURCE)
     assert raised.value.code == 503
     raised.value.close()
-    assert sum("studies" in u for u in fetched) == local.CTGOV_RETRIES
+    assert sum("studies" in u for u in fetched) == local.RETRIES
 
 
 def test_a_source_detail_cannot_replace_what_load_checks(
@@ -363,7 +358,7 @@ class _Download:
 
 def _fec_cache(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
     monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
-    monkeypatch.setattr(local, "FEC_CHUNK", 64)  # several reads, not one
+    monkeypatch.setattr(local, "CHUNK", 64)  # several reads, not one
     return tmp_path / "local" / _FEC / local.FEC_ZIP
 
 
@@ -911,7 +906,7 @@ def test_a_tse_strong_etag_is_preferred_to_the_last_modified_date(cdn: _Cdn) -> 
 def test_a_tse_request_cut_short_or_dropped_is_retried(
         cdn: _Cdn, monkeypatch: pytest.MonkeyPatch,
         capsys: pytest.CaptureFixture[str]) -> None:
-    monkeypatch.setattr(local, "CTGOV_RETRIES", 5)  # four failures on one range
+    monkeypatch.setattr(local, "RETRIES", 5)  # four failures on one range
     cdn.short = 1
     cdn.head_failures = [urllib.error.URLError("reset")]
     cdn.failures = [urllib.error.URLError("reset"), _http_error(503), _http_error(429)]
@@ -1034,11 +1029,11 @@ def test_a_tse_rate_limit_waits_as_long_as_the_server_asks(
 
 
 def test_a_tse_range_failing_every_attempt_raises_the_last_error(cdn: _Cdn) -> None:
-    cdn.failures = [_http_error(503) for _ in range(local.CTGOV_RETRIES)]
+    cdn.failures = [_http_error(503) for _ in range(local.RETRIES)]
     with pytest.raises(urllib.error.HTTPError) as raised:
         local.fetch(_TSE)
     raised.value.close()
-    assert cdn.ranges == local.CTGOV_RETRIES
+    assert cdn.ranges == local.RETRIES
 
 
 def test_a_tse_server_that_states_no_accept_ranges_is_read(cdn: _Cdn) -> None:
@@ -1556,7 +1551,7 @@ def test_a_listed_tw_report_that_keeps_failing_is_raised(
     with pytest.raises(urllib.error.HTTPError) as raised:
         local.fetch(_TW)
     raised.value.close()
-    assert len(_tw_serials(asked)) == local.CTGOV_RETRIES
+    assert len(_tw_serials(asked)) == local.RETRIES
     assert local.load(_TW) is None
 
 
@@ -1689,6 +1684,51 @@ def _tolerate_a_small_fixture(monkeypatch: pytest.MonkeyPatch) -> None:
     """Let _UKEC_ROWS, whose 8 rows skip one of each kind, pass the shares."""
     monkeypatch.setattr(local, "UKEC_MAX_BAD", 1)
     monkeypatch.setattr(local, "UKEC_MAX_NAMELESS", 1)
+
+
+def _failing_once(monkeypatch: pytest.MonkeyPatch, url: str) -> list[str]:
+    """Make the stubbed urlopen raise a 503 the first time `url` is asked,
+    with no sleep between attempts; the URLs that failed."""
+    served: Callable[..., object] = urllib.request.urlopen
+    failed: list[str] = []
+
+    def flaky(request: urllib.request.Request, timeout: int) -> object:
+        if request.full_url == url and not failed:
+            failed.append(url)
+            raise _http_error(503)
+        return served(request, timeout)
+    monkeypatch.setattr(urllib.request, "urlopen", flaky)
+    monkeypatch.setattr(time, "sleep", lambda seconds: None)
+    return failed
+
+
+@pytest.mark.parametrize("which", ["UKEC_COUNT_URL", "UKEC_CSV_URL"])
+def test_a_ukec_request_failing_once_is_retried(
+        monkeypatch: pytest.MonkeyPatch, which: str) -> None:
+    # The register's search and export once went out bare: one 503 in
+    # either ended the fetch, where every other source retries.
+    _tolerate_a_small_fixture(monkeypatch)
+    _serve_ukec(monkeypatch, _ukec_csv())
+    failed = _failing_once(monkeypatch, getattr(local, which))
+    assert local.fetch(_UKEC).records
+    assert failed == [getattr(local, which)]
+
+
+def test_a_ukec_search_answering_no_json_is_refused_as_a_value_error(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # An error page served with HTTP 200 is retried as a body cut short,
+    # and once the retries run out the fetch must still fail as a
+    # ValueError, as the other refusals do, not as the retry's own class.
+    monkeypatch.setattr(time, "sleep", lambda seconds: None)
+    asked: list[str] = []
+
+    def urlopen(request: urllib.request.Request, timeout: int) -> _Response:
+        asked.append(request.full_url)
+        return _Response(b"<html>Service Unavailable</html>")
+    monkeypatch.setattr(urllib.request, "urlopen", urlopen)
+    with pytest.raises(ValueError, match="is not JSON"):
+        local.fetch(_UKEC)
+    assert asked == [local.UKEC_COUNT_URL] * local.RETRIES
 
 
 def test_the_ukec_count_asks_the_export_s_own_filter() -> None:
@@ -1955,7 +1995,7 @@ def _serve_psc(monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
     linked) and each part file with its answer: bytes to serve, or an
     exception to raise. Returns the file names downloaded."""
     monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
-    monkeypatch.setattr(local, "FEC_CHUNK", 64)  # several reads, not one
+    monkeypatch.setattr(local, "CHUNK", 64)  # several reads, not one
     monkeypatch.setattr(local, "PSC_SAMPLE", 1)  # every record, unless a test samples
     page = _psc_page(*parts) if page is None else page
     asked: list[str] = []
@@ -1982,6 +2022,14 @@ def _psc_snapshot(monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
     return _serve_psc(monkeypatch, tmp_path, {
         file: _psc_part(n, bodies[n], of, day)
         for n, file in enumerate(_psc_files(of, day), 1)})
+
+
+def test_a_psc_listing_failing_once_is_retried(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    _psc_snapshot(monkeypatch, tmp_path)
+    failed = _failing_once(monkeypatch, local.PSC_PAGE)
+    day, parts = local._psc_listing()
+    assert (day, len(parts), failed) == (_PSC_DAY, len(_PSC_PARTS), [local.PSC_PAGE])
 
 
 def _gone(file: str) -> urllib.error.HTTPError:
@@ -2290,10 +2338,7 @@ def _fetched(monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
     behind it; its folder."""
     monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
     records = [{"name": n} for n in names or ("Ann Lee, MD", "Bo Wu, PhD")]
-    monkeypatch.setitem(local.SOURCES, _SOURCE, local.Source(
-        local.SOURCES[_SOURCE].credit, "officials",
-        lambda: local.Fetched(records, date, {})))
-    local.fetch(_SOURCE)
+    plant_corpus(monkeypatch, local, _SOURCE, records, date, "officials")
     return _folder(tmp_path)
 
 
@@ -2492,10 +2537,16 @@ def test_a_change_to_how_a_word_is_cut_or_folded_changes_the_key(
     assert local.fold_fingerprint() != before
 
 
+@pytest.mark.parametrize("reader", ["read_records", "corpus_build.jsonl_lines"])
 def test_a_change_to_how_raw_jsonl_is_cut_into_records_changes_the_key(
-        monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch: pytest.MonkeyPatch, reader: str) -> None:
+    # The index is built from Local.records, an attribute the fold's own
+    # functions read without calling what fills it, so the walk in
+    # test_the_fold_lists_everything_its_functions_call_and_read cannot
+    # see these two; they are hashed by name.
     before = local.fold_fingerprint()
-    monkeypatch.setattr(local.corpus_build, "jsonl_lines", lambda text: [])
+    owner = local.corpus_build if reader.startswith("corpus_build.") else local
+    monkeypatch.setattr(owner, reader.rsplit(".", 1)[-1], lambda *args, **kwargs: [])
     assert local.fold_fingerprint() != before
 
 
@@ -2619,15 +2670,21 @@ def test_tally_over_damaged_records_exits_naming_the_fetch(
         local.main(["tally", _SOURCE])
 
 
-def test_a_record_without_a_name_fails_when_the_records_are_read(
-        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+@pytest.mark.parametrize(("raw", "match"), [
+    (b'{"nom": "Ann Lee, MD"}\n', "record without a name"),
+    (b'{"name": "Ann Lee, MD"\n', "a line that is not JSON"),
+], ids=["a record without a name", "a line that is not JSON"])
+def test_a_damaged_record_fails_when_the_records_are_read(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, raw: bytes, match: str) -> None:
+    # With the sha256 rewritten to match, only the record checks see it,
+    # and each must raise CorpusDamaged, which name_usage's per-row guard
+    # catches, not the bare ValueError a JSON error is.
     folder = _fetched(monkeypatch, tmp_path)
-    raw = b'{"nom": "Ann Lee, MD"}\n'
     (folder / "raw.jsonl").write_bytes(raw)
     _rewrite_meta(folder, sha256=hashlib.sha256(raw).hexdigest())
     loaded = local.load(_SOURCE)
     assert loaded is not None
-    with pytest.raises(ValueError, match="record without a name"):
+    with pytest.raises(local.CorpusDamaged, match=match):
         loaded.records  # noqa: B018
 
 
