@@ -15,7 +15,7 @@ Closes #606 (#662 later added owura and bapak, last bullet). No parser code move
 
 - The Italian abbreviated salutations and letter-heading honorifics whose letters after the full stop are the word's own ending ship as titles with `cased` masks: `sig.ra`, `sig.na`, `dott.ssa`, `prof.ssa`, `gent.mo`, `gent.ma`, `gent.le`, `ill.mo`, `ill.ma`, `ch.mo`, `ch.ma`, `preg.mo`, `preg.ma` (`Dott.ssa Anna Bianchi` reads title 'Dott.ssa', given 'Anna'; `SIG.RA MARIA ROSSI` repairs to 'Sig.ra Maria Rossi'); the bare `sig` and `ing` are excluded as given names, their period-marked spellings already titles by H2's shape — 2026-10-22 #840.
 
-Open: none in this file.
+Open: [#848](https://github.com/derek73/python-nameparser/issues/848) — a bare `Ing` after a comma read as a credential rather than the given name (`Viera Sevcikova, Ing`), the suffix question #840's `ing` exclusion leaves open.
 
 ## Log
 

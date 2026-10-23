@@ -16,7 +16,7 @@ academic = { expands = "Doctor, abbreviated alike across the European languages"
 
 [[word]]
 text = "ing"
-excluded = { academic = { reason = "Ing is borne as a given name (nam_dict band 5 in Sweden, Wikidata 10+ given) and as a surname (US Census 1,814), measured 2026-10-22 with tools/name_usage.py; with its period, 'Ing.' (Ingegnere, Ingenieur) already reads as a title by its shape (rules/H2). Not decided here: ClinicalTrials.gov officials write a bare Ing after a comma as a credential (43 of 52), and 9 of those names reverse ('Viera Sevcikova, Ing' gives given 'Ing'), a suffix question", issue = 840 } }
+excluded = { academic = { reason = "Ing is borne as a given name (nam_dict band 5 in Sweden, Wikidata 10+ given) and as a surname (US Census 1,814), measured 2026-10-22 with tools/name_usage.py; with its period, 'Ing.' (Ingegnere, Ingenieur) already reads as a title by its shape (rules/H2). Not decided here: ClinicalTrials.gov officials write a bare Ing after a comma as a credential (43 of 52), and 9 of those names reverse ('Viera Sevcikova, Ing' gives given 'Ing'), a suffix question, #848", issue = 840 } }
 
 [[word]]
 text = "prof"
