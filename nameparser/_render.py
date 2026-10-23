@@ -518,7 +518,34 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
             end = _past_marks(word, run.end())
         return (word[:cut].capitalize() + word[cut:end].capitalize()
                 + word[end:])
-    return word.capitalize()
+    return _title_chunks(word)
+
+
+# rules/R4: "Each run of letters a full stop divides is written as a
+# word of its own" -- 'j.r.r.' is 'J.R.R.', where str.capitalize() on
+# the whole word gave 'J.r.r.' -- and "A word that opens with a
+# modifier letter that has no case" "takes its capital on the letter
+# after that mark" ('ʿalī' is 'ʿAlī'); "A digit is not passed over
+# that way" ('3rd' stays '3rd'). The Except clause is the last chunk:
+# "an abbreviation's written ending" stays lowercase ('Sig.ra',
+# 'Dott.ssa'), which is what str.capitalize() always gave it.
+# decisions/R4 (#838).
+def _title_chunks(word: str) -> str:
+    """`word` title-cased chunk by chunk between its full stops, each
+    chunk from its first character that is not a modifier letter
+    (category Lm). That category also holds the apostrophe 'ŉ'
+    upper-cases into, so 'ʼNa' is a fixpoint of repair."""
+    chunks = [_title_chunk(chunk) for chunk in word.split(".")]
+    if len(chunks) > 1 and sum(c.isalpha() for c in chunks[-1]) > 1:
+        chunks[-1] = chunks[-1].lower()
+    return ".".join(chunks)
+
+
+def _title_chunk(chunk: str) -> str:
+    lead = 0
+    while lead < len(chunk) and unicodedata.category(chunk[lead]) == "Lm":
+        lead += 1
+    return chunk[:lead] + chunk[lead:].capitalize()
 
 
 def _past_marks(text: str, end: int) -> int:
@@ -694,11 +721,10 @@ def capitalized(name: ParsedName, lexicon: Lexicon | None, *,
     letter), so the repaired word's own folded spelling ('a.ss') no
     longer matches the exceptions map's key ('a.ß'), and a second
     forced pass over that output cannot find the entry the first
-    pass did. The same lengthening reaches plain title-casing with no
-    mask involved: 'ŉ' (a single letter) upper-cases to the two
-    CASED characters 'ʼN', so str.capitalize() on 'ŉa' gives 'ʼNa'
-    but on THAT output gives 'ʼna' -- the 'N' is no longer the
-    word's first character, so the second pass lower-cases it.
+    pass did. Plain title-casing no longer lengthens that way: 'ŉ'
+    (a single letter) upper-cases to 'ʼN', whose apostrophe is a
+    modifier letter that _title_chunks passes over, so 'ʼNa' comes
+    back as 'ʼNa' (#838; it gave 'ʼna' before).
     A letter that upper-cases to a base letter plus a COMBINING MARK
     ('ǰ' to 'J' + a combining caron) is not such a case since #542:
     a word runs on through its marks (_sub_words), so 'J̌o' is one

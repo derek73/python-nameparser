@@ -681,6 +681,20 @@ def test_capitalized_is_idempotent() -> None:
     assert once.capitalized(force=True) == once
 
 
+def test_a_word_takes_its_capital_past_a_caseless_lead() -> None:
+    """rules/R4 (#838): a modifier letter opening a word is passed over
+    to the letter after it, so 'ŉ', which upper-cases to the modifier
+    apostrophe plus 'N', is now a fixpoint ('ʼNa' gave 'ʼna' on a
+    second pass). An apostrophe of any spelling is no word character
+    at all, so a word after it was already capitalized and still is."""
+    once = parse("ŉa smith").capitalized()
+    assert once.given == "ʼNa"
+    assert once.capitalized(force=True) == once
+    for lead in ("'", "‘", "’"):
+        assert parse(f"{lead}abd smith").capitalized().given \
+            == f"{lead}Abd"
+
+
 def test_capitalized_with_explicit_lexicon() -> None:
     # empty lexicon: no particle rule, no exceptions -> plain capitalize
     out = _lowercase_mac().capitalized(Lexicon.empty())
@@ -862,12 +876,14 @@ def test_a_credential_read_by_its_shape_repairs_to_capitals() -> None:
     # the same shape read as the FAMILY -- no words to spare -- is a
     # name word
     assert parse("Jack X.Y.Z.").family == "X.Y.Z."
+    # repaired as a name word, whose full stops divide it into words
+    # of their own (#838)
     assert str(parse("Jack X.Y.Z.").capitalized(force=True)) \
-        == "Jack X.y.z."
+        == "Jack X.Y.Z."
     # and with the dotted-shape switch off it is family by position
     off = Parser(policy=Policy(unlisted_dotted_suffixes=False))
     assert str(off.capitalized(off.parse("john smith x.y.z."))) \
-        == "John Smith X.y.z."
+        == "John Smith X.Y.Z."
     # the opt-in all-caps half writes the same tag
     caps = Parser(policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE))
     assert str(caps.capitalized(caps.parse("John Smith XYZ"),

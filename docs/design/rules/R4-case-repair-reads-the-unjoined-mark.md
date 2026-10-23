@@ -9,6 +9,15 @@
   "josé garcía"               →  capitalized="Jose\u0301 Garci\u0301a"
   "JOSÉ GARCÍA"               →  capitalized="Jose\u0301 Garci\u0301a"
   ```
+- **Each run of letters a full stop divides is written as a word of its own**, so run-together initials keep a capital apiece. A word that opens with a modifier letter that has no case — the ayn and hamza of romanized Arabic, the Hawaiian okina — takes its capital on the letter after that mark, as a word opening with an apostrophe does. A digit is not passed over that way: it stands first in its word.
+  ```
+  "j.r.r. tolkien"            →  capitalized="J.R.R. Tolkien"
+  "A.B. Vajpayee"             →  capitalized_forced="A.B. Vajpayee"
+  "AHMAD IBN-ʿALĪ"            →  capitalized="Ahmad ibn-ʿAlī"
+  "Ahmad al-ʿAbbas"           →  capitalized_forced="Ahmad al-ʿAbbas"
+  "ʻIOLANI KAMAKA"            →  capitalized="ʻIolani Kamaka"
+  "john 3rd smith"            →  capitalized="John 3rd Smith"  · boundary
+  ```
 - **A vocabulary entry records casing as a mask** — its word's letters, each in the case it takes — and repair lays it over the word as the writer punctuated it, so the one entry for phd repairs phd to PhD and ph.d. to Ph.D.; the mask applies wherever the word stands, whatever the parse read it as. A run of two or more letters beside a full stop takes the mask's case letter by letter and is never an initial.
   ```
   "john smith phd"            →  capitalized="John Smith PhD"
@@ -100,10 +109,17 @@
   ```
   "john smith p.h.d."         →  capitalized="John Smith P.H.D."
   ```
+- **An abbreviation's written ending** — two or more letters after a word's last full stop, with no full stop of their own — stays lowercase, as Italian writes Sig.ra and Dott.ssa; a single letter there is a run-together initial and a run closed by its own full stop is a word of its own, and each of those is written as one.
+  ```
+  "SIG.RA MARIA ROSSI"        →  capitalized="Sig.ra Maria Rossi"
+  "dott.ssa anna bianchi"     →  capitalized="Dott.ssa Anna Bianchi"
+  "garcía márquez, g.j"       →  capitalized="G.J García Márquez"  · boundary
+  "LT.GOV. JOHN DOE"          →  capitalized="Lt.Gov. John Doe"  · boundary
+  ```
 - **A word of the acronym or numeral class that parsed as an ordinary name word** repairs as that name word unless the exceptions map carries it (qc mp gives Qc MP, phd smith gives PhD Smith): those two classes read the role and the mask does not.
   ```
   "qc mp"                     →  capitalized="Qc MP"  · boundary
-  "Jack X.Y.Z."               →  capitalized_forced="Jack X.y.z."  · boundary
+  "Jack X.Y.Z."               →  capitalized_forced="Jack X.Y.Z."  · boundary
   "john smith xi"             →  capitalized="John Smith Xi"  · boundary
   "john smith, vi"            →  capitalized="Vi John Smith"  · boundary
   ```
