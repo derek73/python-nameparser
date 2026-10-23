@@ -1140,6 +1140,7 @@ SUFFIX_WORDS: frozenset[str] = frozenset({
     'jnr',
     'jr',
     'junior',
+    'júnior',
     'mladšia',
     'mladší',
     'mlajša',

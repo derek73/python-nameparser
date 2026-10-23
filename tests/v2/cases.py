@@ -1294,6 +1294,18 @@ CASES: tuple[Case, ...] = (
          {"given": "Antonio", "family": "Pavlović", "suffix": "mlađi"},
          classification="fix(#661)",
          notes="1.4.0 and 2.4.2 read middle 'mlađi'"),
+    Case("an_accented_spelling_of_junior", "José Silva Júnior",
+         {"given": "José", "family": "Silva", "suffix": "Júnior"},
+         classification="fix(#843)",
+         notes="the Portuguese spelling reads as 'José Silva Junior' "
+               "does. 1.4.0 and 2.5.0 read middle 'Silva', family "
+               "'Júnior'"),
+    Case("an_agnomen_stays_the_family_name", "Pedro Alves Filho",
+         {"given": "Pedro", "middle": "Alves", "family": "Filho"},
+         classification="parity",
+         notes="Filho, Neto and Sobrinho are not suffix vocabulary: "
+               "whether they read as suffixes is open on #843. The "
+               "contrast row for the one above"),
     Case("a_feminine_generational_word_in_cyrillic", "Агриппина Младшая",
          {"given": "Агриппина", "suffix": "Младшая"},
          classification="fix(#661)",

@@ -1779,6 +1779,7 @@
 {"name": "José Mataix Monllor", "given": "José", "middle": "Mataix", "family": "Monllor", "initials": "J. M. M."}
 {"name": "José Perianes Carro", "given": "José", "middle": "Perianes", "family": "Carro", "initials": "J. P. C."}
 {"name": "José Robles Pazos", "given": "José", "middle": "Robles", "family": "Pazos", "initials": "J. R. P."}
+{"name": "José Silva Júnior", "given": "José", "family": "Silva", "suffix": "Júnior", "initials": "J. S."}
 {"name": "José Vilató Ruiz", "given": "José", "middle": "Vilató", "family": "Ruiz", "initials": "J. V. R."}
 {"name": "Jovan Dragan Popović", "given": "Jovan", "middle": "Dragan", "family": "Popović", "initials": "J. D. P."}
 {"name": "Joybert, Marc de", "given": "Marc", "family": "de Joybert", "initials": "M. J."}
@@ -2506,6 +2507,7 @@
 {"name": "Pavlović, Antonio mlađi", "given": "Antonio", "family": "Pavlović", "suffix": "mlađi", "initials": "A. P.", "capitalized_force": "Antonio Pavlović Mlađi"}
 {"name": "Pedro", "given": "Pedro", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "P."}
 {"name": "Pedro", "order": "FAMILY_FIRST", "family": "Pedro", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "P."}
+{"name": "Pedro Alves Filho", "given": "Pedro", "middle": "Alves", "family": "Filho", "initials": "P. A. F."}
 {"name": "Pedro Cañas Serrano", "given": "Pedro", "middle": "Cañas", "family": "Serrano", "initials": "P. C. S."}
 {"name": "Pedro Galindo Galarza", "given": "Pedro", "middle": "Galindo", "family": "Galarza", "initials": "P. G. G."}
 {"name": "Pedro Infante Torrentera", "given": "Pedro", "middle": "Infante", "family": "Torrentera", "initials": "P. I. T."}
