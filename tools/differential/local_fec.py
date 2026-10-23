@@ -27,8 +27,6 @@ from local_core import (Fetched, _download, _pinned, _refuse_past, _zip_stamp,
                         directory, fetch_command)
 
 
-# -- FEC individual contributions --------------------------------------------
-
 FEC_CYCLE = "2026"
 FEC_ZIP = f"indiv{FEC_CYCLE[2:]}.zip"
 FEC_URL = f"https://www.fec.gov/files/bulk-downloads/{FEC_CYCLE}/{FEC_ZIP}"

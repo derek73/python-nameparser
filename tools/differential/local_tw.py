@@ -39,8 +39,6 @@ from local_core import (Fetched, _get_json, _refuse_past, _retried, _zip_stamp,
                         directory)
 
 
-# -- Taiwan political donations ------------------------------------------------
-
 TW_API = "https://ardata.cy.gov.tw/api/v1"
 TW_PAGE = 1000  # one page held all 454 reports on 2026-10-22
 #: The seconds of sleep after each report's download.

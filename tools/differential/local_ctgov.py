@@ -20,8 +20,6 @@ from typing import Any
 from local_core import Fetched, _get_json
 
 
-# -- ClinicalTrials.gov ------------------------------------------------------
-
 CTGOV_API = "https://clinicaltrials.gov/api/v2"
 CTGOV_PAGE = 1000  # the API's largest page
 CTGOV_FIELDS = "NCTId,OverallOfficialName,OverallOfficialRole"

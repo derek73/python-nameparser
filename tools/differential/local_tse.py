@@ -29,11 +29,10 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from _typeshed import WriteableBuffer
 
-from local_core import (Fetched, RETRIES, USER_AGENT, _TRANSIENT, _backed_off, _pinned,
+import local_core
+from local_core import (Fetched, USER_AGENT, _TRANSIENT, _backed_off, _pinned,
                         _refuse_past, _zip_stamp)
 
-
-# -- TSE campaign donations (Brazil) -------------------------------------------
 
 #: The latest general election and the latest municipal one. An older
 #: election is one more year here: 2018's national member was 26 MB
@@ -203,7 +202,7 @@ class _RangeFile(io.RawIOBase):
         up to one byte past `want` so that a longer part shows; a shorter
         one is retried as a body cut short. The last attempt's error, or
         any 4xx but a 429, is kept in self.error and raised."""
-        for attempt in range(RETRIES):
+        for attempt in range(local_core.RETRIES):
             try:
                 with urllib.request.urlopen(request, timeout=60) as response:
                     body = b""
