@@ -8,7 +8,7 @@
   ```
   "John Smith, A.B."          →  ambiguities=("suffix-or-name",)
   ```
-- **A run the count leaves in the listing form reports as S7 reads the words in it**: a word of the class read as the credential because a credential in front speaks for it reports, and one its own capitals made the credential does not unless it opens the part, where it is the first word after the comma and reports as that word always does ('Doe, MA PhD', 'John Smith, MA MA'). So a run whose every such word is written in capitals reads whole in silence only behind another credential ('John Smith, PhD MA', 'Smith, PhD MA'), as does a part read as titles before a lone given name ('Smith, Ms MD Ma').
+- **A run the count leaves in the listing form reports as S7 reads the words in it**: a word of the class read as the credential because a credential in front speaks for it reports, and one its own capitals made the credential does not unless it opens the part, where it is the first word after the comma and reports as that word always does ('Doe, MA PhD', 'John Smith, MA MA'). So a run whose every such word is written in capitals reads whole in silence only behind another credential ('John Smith, PhD MA', 'Smith, PhD MA'), as does a part read as titles before a lone given name ('Smith, Ms RA Ma').
   ```
   "Doe, MA PhD"               →  ambiguities=("suffix-or-name",)
   "John Smith, PhD DO DO"     →  ambiguities=()  · boundary

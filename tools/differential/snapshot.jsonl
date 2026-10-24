@@ -1558,7 +1558,7 @@
 {"name": "John Smith Jr", "given": "John", "family": "Smith", "suffix": "Jr", "initials": "J. S."}
 {"name": "John Smith Jr.", "given": "John", "family": "Smith", "suffix": "Jr.", "initials": "J. S."}
 {"name": "John Smith Jr. Prof.", "title": "Prof.", "given": "John", "family": "Smith", "suffix": "Jr.", "initials": "J. S."}
-{"name": "John Smith Jr., AD MD", "given": "John", "family": "Smith", "suffix": "Jr., AD MD", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
+{"name": "John Smith Jr., AD RA", "given": "John", "family": "Smith", "suffix": "Jr., AD RA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "John Smith Jr., AD Sr. and Mr.", "title": "Sr. and Mr.", "given": "John", "family": "Smith", "suffix": "Jr., AD", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "John Smith Jr., J.", "given": "J.", "family": "John Smith", "suffix": "Jr.", "initials": "J. J. S."}
 {"name": "John Smith Jr., M.J.", "given": "M.J.", "family": "John Smith", "suffix": "Jr.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "M. J. S."}
@@ -2110,7 +2110,6 @@
 {"name": "MD DDS", "given": "MD", "suffix": "DDS", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "M.", "capitalized": "Md DDS"}
 {"name": "MD DDS Dut.ra Prof.ra von Brühl González Domingo Maria Giusepa Juana Teresa", "order": "FAMILY_FIRST", "given": "DDS", "middle": "Dut.ra Prof.ra von Brühl González Domingo Maria Giusepa Juana Teresa", "family": "MD", "initials": "D. D. P. B. G. D. M. G. J. T. M.", "capitalized_force": "Dds Dut.Ra Prof.Ra von Brühl González Domingo Maria Giusepa Juana Teresa Md"}
 {"name": "MD DDS von Brühl César Martín Ada Cornelia", "order": "FAMILY_FIRST", "given": "DDS", "middle": "von Brühl César Martín Ada Cornelia", "family": "MD", "initials": "D. B. C. M. A. C. M.", "capitalized_force": "Dds von Brühl César Martín Ada Cornelia Md"}
-{"name": "MD PhD Jr., John", "given": "John", "family": "MD", "suffix": "PhD Jr.", "initials": "J. M.", "capitalized_force": "John Md PhD Jr."}
 {"name": "MD, DO, DDS", "given": "DO", "family": "MD", "suffix": "DDS", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "D. M.", "capitalized": "Do Md DDS"}
 {"name": "MD, PHD", "family": "MD", "suffix": "PHD", "initials": "M.", "capitalized": "Md PhD"}
 {"name": "MP Pēteris Kārlis Ozoliņš", "given": "MP", "middle": "Pēteris Kārlis", "family": "Ozoliņš", "initials": "M. P. K. O.", "capitalized_force": "Mp Pēteris Kārlis Ozoliņš"}
@@ -2626,6 +2625,7 @@
 {"name": "Quincy Adams", "given": "Quincy", "family": "Adams", "initials": "Q. A."}
 {"name": "Quinquela Martín, Benito", "given": "Benito", "family": "Quinquela Martín", "initials": "B. Q. M."}
 {"name": "RA DDS", "title": "RA", "family": "DDS", "initials": "D.", "capitalized": "Ra Dds"}
+{"name": "RA PhD Jr., John", "given": "John", "family": "RA", "suffix": "PhD Jr.", "initials": "J. R.", "capitalized_force": "John Ra PhD Jr."}
 {"name": "RONALD MACDONALD", "given": "RONALD", "family": "MACDONALD", "initials": "R. M.", "capitalized": "Ronald MacDonald"}
 {"name": "RONALD MCDONALD", "given": "RONALD", "family": "MCDONALD", "initials": "R. M.", "capitalized": "Ronald McDonald"}
 {"name": "Rabbi Cohen", "title": "Rabbi", "family": "Cohen", "initials": "C."}
@@ -3134,6 +3134,7 @@
 {"name": "US Magistrate Judge T Michael Putnam", "title": "US Magistrate Judge", "given": "T", "middle": "Michael", "family": "Putnam", "initials": "T. M. P.", "capitalized_force": "Us Magistrate Judge T Michael Putnam"}
 {"name": "US Magistrate-Judge Elizabeth E Campbell", "title": "US Magistrate-Judge", "given": "Elizabeth", "middle": "E", "family": "Campbell", "initials": "E. E. C.", "capitalized_force": "Us Magistrate-Judge Elizabeth E Campbell"}
 {"name": "Uddin, Md Karim", "family": "Uddin", "suffix": "Md Karim", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "U.", "capitalized_force": "Uddin MD Karim"}
+{"name": "Uddin, Mr Md Karim", "title": "Mr", "family": "Uddin", "suffix": "Md Karim", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "U.", "capitalized_force": "Mr Uddin MD Karim"}
 {"name": "Ueshiba, Morihei", "given": "Morihei", "family": "Ueshiba", "initials": "M. U."}
 {"name": "Uexküll, Jakob von", "given": "Jakob", "family": "von Uexküll", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "J. U."}
 {"name": "Uffenbach, Zacharias Konrad von", "given": "Zacharias", "middle": "Konrad", "family": "von Uffenbach", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "Z. K. U."}

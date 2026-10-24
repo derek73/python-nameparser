@@ -20,7 +20,7 @@
 
 **Precedence:**
 
-- **Under the strict comma-suffix switch** ("Smith, MD I"): C14 governs a part after the comma that is nothing but suffix words; the given part's walk does not consult the switch.
+- **Under the strict comma-suffix switch** ("Smith, RA I"): C14 governs a part after the comma that is nothing but suffix words; the given part's walk does not consult the switch.
 
 **Accepted:**
 

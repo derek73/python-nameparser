@@ -9968,7 +9968,8 @@ CASES: tuple[Case, ...] = (
                "left 'abu' the leading name piece and the bound join "
                "read given 'Abu' (1.4.0 read family 'Abu Sayed' "
                "too, behind title 'Md'). The filer's surname box holds "
-               "'Sayed' (17 of #853's 1,300 PSC names take this shape, "
+               "'Sayed' (18 of #853's 1,300 PSC names lose their family "
+               "name this way, "
                "with 'Abu', 'Al' or 'Bin'); the gap is the spelled-out "
                "name's, not Md's (decisions/indic-honorifics)",
          shape=1),
@@ -9985,6 +9986,17 @@ CASES: tuple[Case, ...] = (
                "380 ClinicalTrials.gov officials ('John Smith, MD "
                "Jones' shapes) the title reading had misread "
                "(decisions/indic-honorifics)",
+         shape=2),
+    Case("md_behind_a_title_opening_a_family_comma_given_part",
+         "Uddin, Mr Md Karim",
+         {"title": "Mr", "family": "Uddin", "suffix": "Md Karim"},
+         classification="fix(#853)",
+         ambiguities=("suffix-or-name",),
+         notes="the same accepted cost behind a title: C13's run "
+               "starts behind titles alone, so the title in front "
+               "does not stand 'Md' down. The title reading gave "
+               "title 'Mr Md', given 'Karim' (decisions/indic-"
+               "honorifics)",
          shape=2),
     Case("audit_md_after_comma_is_the_degree", "Smith, MD",
          {"family": "Smith", "suffix": "MD"},

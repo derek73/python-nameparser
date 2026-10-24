@@ -17,7 +17,7 @@
   ```
 - **In that part a title reads as a title**, whether one word or a run of title words a connective joins (P3, C7), a dual inside such a run included, and any other word, a title and suffix dual among them, as a suffix.
   ```
-  "John Smith Jr., AD MD"     →  suffix="Jr., AD MD"
+  "John Smith Jr., AD RA"     →  suffix="Jr., AD RA"
   "John Smith Jr., Sir AD"    →  title="Sir"
   "John Smith Jr., Sir AD"    →  suffix="Jr., AD"
   "John Smith Jr., Mr. and Mrs. AD"  →  title="Mr. and Mrs."
