@@ -54,10 +54,15 @@ jobs:
       run: uv run mypy
     - name: Run Tests
       run: |
+        # Two passes: the suite in parallel (pyproject's addopts), which
+        # deselects the clock-timed `serial` tests, then those alone, since
+        # other workers' load fails their timing ratios (tests/conftest.py).
         if [ "$COVERAGE_ON" = "true" ]; then
-          uv run pytest --cov=nameparser --cov-report=xml
+          uv run pytest --cov=nameparser --cov-report=
+          uv run pytest -n0 -m serial --cov=nameparser --cov-append --cov-report=xml
         else
           uv run pytest
+          uv run pytest -n0 -m serial
         fi
         uv run --with build python -m build --sdist
         uv run --with twine twine check dist/*
@@ -128,3 +133,4 @@ jobs:
       run: |
         uv run python -c "import namedivider"
         uv run pytest tests/v2/ -q
+        uv run pytest tests/v2/ -q -n0 -m serial

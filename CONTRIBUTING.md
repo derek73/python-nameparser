@@ -11,7 +11,10 @@ Install dev dependencies:
 Running Tests
 ---------------
 
-    uv run pytest  # --doctest-modules is set in pyproject.toml, so doctests run automatically
+    uv run pytest  # parallel; --doctest-modules is set in pyproject.toml, so doctests run too
+    uv run pytest -n0 -m serial  # the clock-timed benchmarks, which a parallel run skips
+
+`-n0` runs the whole suite serially in one process.
 
 Run a single test file or test:
 
