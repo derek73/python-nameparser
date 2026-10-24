@@ -103,11 +103,6 @@ text = "engineer"
 academic = { expands = "the address of an engineer, 'Engr. Cruz' in the Philippines and Nigeria" }
 
 [[word]]
-text = "md"
-academic = { note = "the medical degree written before the name (#32); a leading Md. abbreviating Muhammad lands in the same field (decisions/indic-honorifics)" }
-credential = {}
-
-[[word]]
 text = "nurse"
 academic = { expands = "the address of a nurse, 'Nurse Smith'" }
 
@@ -4193,6 +4188,11 @@ credential = {}
 [[word]]
 text = "mct"
 credential = {}
+
+[[word]]
+text = "md"
+credential = {}
+excluded = { academic = { reason = "a leading Md abbreviates Muhammad, a given name: 1,246 of 1,300 UK PSC filers with Md first in the forename box typed it there alone (2026-10-23), and a title reading took it from them", issue = 853 } }
 
 [[word]]
 text = "mdiv"

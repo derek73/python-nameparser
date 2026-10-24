@@ -1,7 +1,7 @@
 # comma-suffix-arc — #291/#296/#316 (2026-07-26 → 2026-08-01)
 
 #291 was filed 2026-07-26 out of the 2.0 vocabulary cleanup, with
-its decline-by-measurement evidence in the issue body; "z domu" folded into it 2026-07-27 (see Excluded, MAIDEN_MARKERS). Intent for #291 and #296 is settled by the approved bundle spec; #296 (with #325) SHIPPED 2026-08-23 as the bundle's first three commits, with one deviation from the audit table recorded at decisions/C8 ('md' keeps dual membership — bare 'Md' is Muhammad); #291 was UNSHIPPED then, carried as a deviates: marker on C1 (#291 closed 2026-08-24; the marker came off with #564 in 2.4). The arc's bookkeeping: #291/#296 moved milestone v2.1 → v2.2 on 2026-08-01 (with #289/#293); the 2026-07-30 design doc was amended in place 2026-08-01 (A1–A6); its durable content is HERE rather than in the gitignored doc; #316 (trailing titles) was filed the same day, carrying the esq cleanup as a Related section.
+its decline-by-measurement evidence in the issue body; "z domu" folded into it 2026-07-27 (see Excluded, MAIDEN_MARKERS). Intent for #291 and #296 is settled by the approved bundle spec; #296 (with #325) SHIPPED 2026-08-23 as the bundle's first three commits, with one deviation from the audit table recorded at decisions/C8 ('md' keeps dual membership — bare 'Md' is Muhammad; reversed 2026-10-23, #853, decisions/indic-honorifics); #291 was UNSHIPPED then, carried as a deviates: marker on C1 (#291 closed 2026-08-24; the marker came off with #564 in 2.4). The arc's bookkeeping: #291/#296 moved milestone v2.1 → v2.2 on 2026-08-01 (with #289/#293); the 2026-07-30 design doc was amended in place 2026-08-01 (A1–A6); its durable content is HERE rather than in the gitignored doc; #316 (trailing titles) was filed the same day, carrying the esq cleanup as a Related section.
 
 ## Standing
 
@@ -12,7 +12,7 @@ its decline-by-measurement evidence in the issue body; "z domu" folded into it 2
 
 Not standing: plan amendment 1's repair, carried out by #296's first commit — 2026-08-01.
 
-Elsewhere: the audit table's dispositions as shipped, `md` kept a dual and `ms` and `sa` kept out of the ambiguous set — decisions/C8's 2026-08-23 #296 and 2026-08-23 #428 Standing lines, the second also holding the repair's condition, no name word; the trailing slot read by vocabulary, a period-marked title word there a title (`John Smith Prof.` → title 'Prof.') — decisions/H5's 2026-09-08 #316 entry; the dotted shape class — decisions/S9's 2026-09-14 (Derek) entry headed #516's DOTTED HALF IS A SWITCH.
+Elsewhere: the audit table's dispositions as shipped, `md` kept a dual (until #853) and `ms` and `sa` kept out of the ambiguous set — decisions/C8's 2026-08-23 #296 and 2026-08-23 #428 Standing lines, the second also holding the repair's condition, no name word; the trailing slot read by vocabulary, a period-marked title word there a title (`John Smith Prof.` → title 'Prof.') — decisions/H5's 2026-09-08 #316 entry; the dotted shape class — decisions/S9's 2026-09-14 (Derek) entry headed #516's DOTTED HALF IS A SWITCH.
 
 Open: none in this file.
 

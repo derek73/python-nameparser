@@ -213,7 +213,7 @@ def _behind_a_generation(state: ParseState, seg0: Sequence[int],
         # a title reads as a title, a word or a run a connective joins
         # ('Mr. and Mrs.', a dual inside it included); a lone dual of
         # the title and the suffix vocabulary is the suffix here, the
-        # slot being postnominal ('John Smith Jr., AD MD'): C13's two
+        # slot being postnominal ('John Smith Jr., AD RA'): C13's two
         # predicates, asked in C13's order
         title = (not is_suffix_piece(p, pt, tokens)
                  and is_title_piece(p, pt, tokens))
@@ -406,7 +406,7 @@ def decide(state: ParseState) -> ParseState:
             # it stands behind that word, so one scan answers every
             # pair. Asked per pair, the scan re-walked every word in
             # front of each one, quadratic in the part ('John Smith, ' +
-            # 'MD '*k + 'G.J. '*k, the duals never ending it; #563's
+            # 'RA '*k + 'G.J. '*k, the duals never ending it; #563's
             # shape, back in #613 and caught in review)
             speaker = -1
             for k, p in enumerate(p1):

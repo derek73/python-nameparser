@@ -418,7 +418,7 @@ def leading_titles(pieces: Sequence[Sequence[int]],
     # with no title at all.
     #
     # Two residuals. A run whose last word IS suffix vocabulary is not
-    # given back, so 'Dr King MD PhD' still reads title 'Dr King MD',
+    # given back, so 'Dr King RA PhD' still reads title 'Dr King RA',
     # family 'PhD'. And the floor asks is_suffix_piece, which vetoes a
     # bare initial-shaped numeral, so 'Dr King V' keeps the whole run
     # as the title and reads the numeral as the name -- given 'V',
@@ -576,7 +576,7 @@ def _anchors(piece: Sequence[int], tokens: Sequence[WorkToken]) -> bool:
     retired single-character vocabulary matches for the same reason.
     Not because a numeral is no credential -- a multi-letter suffix
     word ('III', 'Jr') anchors like any other suffix piece
-    (`is_single_letter_numeral`). A title/suffix DUAL ('ms', 'md',
+    (`is_single_letter_numeral`). A title/suffix DUAL ('ms', 'ra',
     'sr') does anchor, except in the given part's
     leading title run, where it stands in title position ('Smith, Ms
     Ma' is Ms. Ma Smith); that exclusion is the callers', which start
@@ -617,7 +617,7 @@ def credential_anchors(order: Sequence[int],
 
     The caller decides where the walk starts, and starts it past the
     leading title run, where a title/suffix dual reads as a title
-    ('Smith, MD MA Ma' keeps its middle name). Where `order` holds the
+    ('Smith, RA MA Ma' keeps its middle name). Where `order` holds the
     name part, its own leading position is the name the reserve keeps
     -- `rest[0]` at the no-comma peel, the given part's own first
     piece at the given-slot call sites -- so ITS writing never anchors
@@ -654,7 +654,7 @@ def given_slot_anchors(pieces: Sequence[Sequence[int]],
     rather than by position: the pass over `start` to `end`, `skip`
     spliced out, and False before `start`, from `end` on and at every
     skipped piece. `start` is where the leading title run ends, so a
-    title/suffix dual standing in it anchors nothing ('Smith, MD MA
+    title/suffix dual standing in it anchors nothing ('Smith, RA MA
     Ma'), and the piece at `start` is the given name the reserve keeps.
     The one home of that query for assign's given slot."""
     stop = len(pieces) if end is None else end
@@ -738,9 +738,9 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
     later credential: the dual makes the next name-position word the
     given name, and reading the part wholly as credentials would
     stack the anchor's guess on the dual's ('Smith, Ms Ma', 'Smith,
-    Ms MD Ma' and 'Smith, MD PhD Ma' keep a given name, 'Smith,
-    Prof. MD Ma' too). The walk then reads the part, and its given
-    slot's company starts past that given name ('Smith, MD PhD Jr
+    Ms RA Ma' and 'Smith, RA PhD Ma' keep a given name, 'Smith,
+    Prof. RA Ma' too). The walk then reads the part, and its given
+    slot's company starts past that given name ('Smith, RA PhD Jr
     Ma' reads suffix 'Jr Ma'). A plain title ahead of the credential
     does not stop this reading ('Smith, Dr. PhD LAc' reads title
     'Dr.', suffix 'PhD LAc').
@@ -805,7 +805,7 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
     -- such a word being a suffix word written as an initial. Under
     strict the numeral gets no suffix reading behind a suffix word, so
     a part no credential opened is no run and the reading is None
-    ('Smith, MD I'); a part a credential opened (C13) still takes the
+    ('Smith, RA I'); a part a credential opened (C13) still takes the
     word in through `opened` below and hands it to `absorbed`
     ('Smith, PSM I.'), which implements
     rules/C14's Except bullet "A credential opening the part". The walk reads the token's `initial`
@@ -842,7 +842,7 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
     # stood there: once one has, nothing in the part anchors. Tracked
     # here rather than read off `leading_titles`, whose period-shape
     # inference counts a suffix like 'Esq.' into the run ('Smith, Esq.
-    # MD Ma' keeps its anchored 'Ma' only by this walk's reading).
+    # RA Ma' keeps its anchored 'Ma' only by this walk's reading).
     leading = True
     dual_led = False
     # #603: the first suffix word of the leading run, which may open

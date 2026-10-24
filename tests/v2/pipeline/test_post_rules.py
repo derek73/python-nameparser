@@ -24,7 +24,7 @@ from nameparser._types import (FOLDED_TAG, STABLE_TAGS,
 # absent while shipping as titles, and `la` sat in the never-given half
 # while shipping as ambiguous.
 _LEX = Lexicon(
-    titles=frozenset({"mr", "sir", "dr", "md"}),
+    titles=frozenset({"mr", "sir", "dr"}),
     given_name_titles=frozenset({"sir"}),
     particles=frozenset({"de", "der", "ibn", "la", "van", "vd"}),
     particles_ambiguous=frozenset({"la", "van"}),

@@ -4,7 +4,7 @@
 
 - The leading title run gives back its last word where everything behind the run is suffix pieces and that word is not suffix vocabulary: `Dr King Jr` → title 'Dr', family 'King', suffix 'Jr' — 2026-09-08 #316.
 - It gives back one word only: a joined title unit stays the title (`Prince of Wales Jr` → family 'Jr'), and where the word given back is the whole name it reads as the given name (`Dr Jr` → given 'Dr', suffix 'Jr', reporting `title-or-name`) — 2026-09-08 #316.
-- The floor asks about the run's last word and nothing else: a run ending in suffix vocabulary keeps it (`Dr King MD PhD` → title 'Dr King MD'), and a bare numeral behind the run is the numeral fork's, not this floor's (`Dr King V` → title 'Dr King', given 'V') — 2026-09-08 #316.
+- The floor asks about the run's last word and nothing else: a run ending in suffix vocabulary keeps it (`Dr King RA PhD` → title 'Dr King RA'), and a bare numeral behind the run is the numeral fork's, not this floor's (`Dr King V` → title 'Dr King', given 'V') — 2026-09-08 #316.
 
 Open: none in this file.
 

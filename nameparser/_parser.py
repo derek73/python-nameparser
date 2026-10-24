@@ -215,7 +215,7 @@ class Parser:
             dropped = set(state.dropped)
             # Force the role BEFORE the entry pass: it keys on
             # Role.SUFFIX, and a bare value's sub-parse reads its words
-            # as a name ('MD PhD' is a title and a family there), so
+            # as a name ('RA PhD' is a title and a family there), so
             # inside the sub-parse it joined nothing. The sub-parse's
             # tags are KEPT, "joined" included: a within-piece mark
             # (the Ph. D. merge) is role-blind and right for every

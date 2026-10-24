@@ -1310,7 +1310,9 @@ def test_non_interference_all_packs_combined() -> None:
     ("র. কে. নারায়ণ", "given", "র."),
     ("র. কে. নারায়ণ", "middle", "কে."),
     ("র. কে. নারায়ণ", "family", "নারায়ণ"),
-    # The mirror of cases.py's audit_md_leading_stays_a_title. Both
+    # These mirrored Latin md until #853 made a leading Md the given
+    # name (cases.py's audit_md_leading_is_the_given_name); the Bengali
+    # spellings stay titles, no filed data reaching them. Both
     # spellings of the abbreviation ship: the visarga form মোঃ (the visarga ঃ (U+0983) is a spacing
     # combining mark, and the lookup fold strips only edge periods and
     # whitespace, so it reaches the lexicon intact) and the period

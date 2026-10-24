@@ -9122,26 +9122,22 @@
  "ro/foreignFull/givenFirst": {
   "given_names": {
    "expected": "Eva-Eleonora Karl Hans",
-   "got": "Chirurgie dentară Eva-Eleonora Karl Hans"
+   "got": "MD Chirurgie dentară Eva-Eleonora Karl Hans"
   },
   "suffix": {
    "expected": "MD Chirurgie dentară Jr.",
    "got": "Jr."
   },
-  "text": "Prof. dr. MD Chirurgie dentară Eva-Eleonora Karl Hans von der Ruhr Jr.",
-  "title": {
-   "expected": "Prof. dr.",
-   "got": "Prof. dr. MD"
-  }
+  "text": "Prof. dr. MD Chirurgie dentară Eva-Eleonora Karl Hans von der Ruhr Jr."
  },
  "ro/foreignFull/surnameFirst": {
   "family": {
    "expected": "von der Ruhr",
-   "got": "Chirurgie"
+   "got": "MD"
   },
   "family_base": {
    "expected": "Ruhr",
-   "got": "Chirurgie"
+   "got": "MD"
   },
   "family_particles": {
    "expected": "von der",
@@ -9149,7 +9145,7 @@
   },
   "given_names": {
    "expected": "Eva-Eleonora Karl Hans",
-   "got": "dentară von der Ruhr Prof. dr. Eva-Eleonora Karl Hans"
+   "got": "Chirurgie dentară von der Ruhr Prof. dr. Eva-Eleonora Karl Hans"
   },
   "suffix": {
    "expected": "MD Chirurgie dentară Jr.",
@@ -9158,7 +9154,7 @@
   "text": "MD Chirurgie dentară von der Ruhr Prof. dr. Eva-Eleonora Karl Hans Jr.",
   "title": {
    "expected": "Prof. dr.",
-   "got": "MD"
+   "got": ""
   }
  },
  "ro/foreignG/sorting": {
@@ -9343,11 +9339,11 @@
  "sc/foreignFull/surnameFirst": {
   "family": {
    "expected": "von Brühl González Domingo",
-   "got": "DDS"
+   "got": "MD"
   },
   "family_base": {
    "expected": "Brühl González Domingo",
-   "got": "DDS"
+   "got": "MD"
   },
   "family_particles": {
    "expected": "von",
@@ -9355,7 +9351,7 @@
   },
   "given_names": {
    "expected": "Maria Giusepa Juana Teresa",
-   "got": "Dut.ra Prof.ra von Brühl González Domingo Maria Giusepa Juana Teresa"
+   "got": "DDS Dut.ra Prof.ra von Brühl González Domingo Maria Giusepa Juana Teresa"
   },
   "suffix": {
    "expected": "MD DDS",
@@ -9364,7 +9360,7 @@
   "text": "MD DDS Dut.ra Prof.ra von Brühl González Domingo Maria Giusepa Juana Teresa",
   "title": {
    "expected": "Dut.ra Prof.ra",
-   "got": "MD"
+   "got": ""
   }
  },
  "sc/foreignG/sorting": {
@@ -11797,17 +11793,13 @@
  "tr/foreignFull/givenFirst": {
   "given_names": {
    "expected": "Ada Cornelia César Martín",
-   "got": "DDS Ada Cornelia César Martín"
+   "got": "MD DDS Ada Cornelia César Martín"
   },
   "suffix": {
    "expected": "MD DDS Jr",
    "got": "Jr"
   },
-  "text": "Prof. Dr. MD DDS Ada Cornelia César Martín von Brühl Jr",
-  "title": {
-   "expected": "Prof. Dr.",
-   "got": "Prof. Dr. MD"
-  }
+  "text": "Prof. Dr. MD DDS Ada Cornelia César Martín von Brühl Jr"
  },
  "tr/foreignFull/surnameFirst": {
   "family": {
@@ -12368,11 +12360,11 @@
  "vi/foreignFull/surnameFirst": {
   "family": {
    "expected": "von Brühl",
-   "got": "DDS"
+   "got": "MD"
   },
   "family_base": {
    "expected": "Brühl",
-   "got": "DDS"
+   "got": "MD"
   },
   "family_particles": {
    "expected": "von",
@@ -12380,17 +12372,13 @@
   },
   "given_names": {
    "expected": "César Martín Ada Cornelia",
-   "got": "von Brühl César Martín Ada Cornelia"
+   "got": "DDS von Brühl César Martín Ada Cornelia"
   },
   "suffix": {
    "expected": "MD DDS",
    "got": ""
   },
-  "text": "MD DDS von Brühl César Martín Ada Cornelia",
-  "title": {
-   "expected": "",
-   "got": "MD"
-  }
+  "text": "MD DDS von Brühl César Martín Ada Cornelia"
  },
  "vi/foreignG/sorting": {
   "family": {
