@@ -12,7 +12,7 @@ scripts or more, a "mixed" or "none" script() not counted), and for
 Arabic-script names: 17,074 spellings of
 7,833 persons, 5,347 of them spelled in Latin too, in the file dated
 2024-03-15. Latin is most of it (1,203,634 of 1,317,586 spellings, then
-Cyrillic 66,673, Katakana 13,039 and Han 8,016); the Indic scripts are
+Cyrillic 66,673, Arabic 17,074, Katakana 13,039 and Han 8,016); the Indic scripts are
 few (Devanagari 827 spellings, Bengali 419, Tamil 328, Malayalam 183,
 the rest under 80 each). 1,510 of the Arabic spellings hold an Arabic
 comma (U+060C), which the parser reads as a comma.
@@ -53,28 +53,33 @@ JRC_FILE = "entities.gzip"
 JRC_SHA256 = "43144cee881ba8a81573ae28c089dffce0ca634d342791414628a5d54997a7d0"
 #: The pinned file's Last-Modified, its data date: the file states none.
 JRC_DATE = "2024-03-15T14:08:28Z"
-#: How the file is read into records, stored in meta.json's detail: a
-#: change to what _jrc_read keeps or to script() bumps it, so that a
-#: corpus read the old way is refused on load (check_jrc) rather than
-#: counted under labels the code no longer gives.
-JRC_READ_VERSION = 1
+#: How the file is read into records, stored in meta.json's detail with
+#: the Unicode version script() read: a change to what _jrc_read keeps,
+#: to how it builds a name or to script() must bump it by hand, and a
+#: corpus read the old way is then refused on load (check_jrc) rather
+#: than counted under labels the code no longer gives.
+JRC_READ_VERSION = 2
 #: A line: entity id, type, language and name, tab-separated, the name's
 #: words joined by "+". Lines end in CRLF.
 JRC_COLUMNS = 4
 JRC_PERSON, JRC_ORGANISATION = "P", "O"
 #: The language of a spelling the JRC did not mark: 1,317,644 of the
-#: 1,338,463 person rows. A row with any other language is a
-#: morphological variant of one that has it: an inflected form (a
-#: Russian name in another case, a Slovene or Polish one with its case
-#: ending) or an Arabic one with a word glued to it (و "and", ل "for",
-#: ال "the"). Of the 20,819 marked rows in the pinned file, every one's
-#: entity also held an unmarked spelling, and 18,594 had the same number
-#: of words as one and, word by word in order, either every word the
-#: same or sharing at least its first letter with the other and no more
-#: than three letters past their common start (an ending), or every word
-#: the other with no more than three letters glued to its front (a
-#: prefix); so the fetch drops them, counted by language,
-#: rather than read an ending or a conjunction as part of a name. The
+#: 1,338,463 person rows. A row the JRC marks with a language is, where
+#: measured, a morphological variant of an unmarked spelling of the same
+#: entity: an inflected form (a Russian name in another case, a Slovene
+#: or Polish one with its case ending) or an Arabic one with a word glued
+#: to it (و "and", ل "for", ال "the"). Of the 20,819 marked rows in the
+#: pinned file, every one's entity also held an unmarked spelling, and
+#: 18,594 had the same number of words as one and, word by word in
+#: order, either every word the same or sharing at least its first
+#: letter with the other and no more than three letters past their
+#: common start (an ending), or every word the other with no more than
+#: three letters glued to its front (a prefix). The other 2,225 (1,680 of
+#: them Arabic) fit neither as stated and were not measured further. The
+#: fetch drops every marked row, all 20,819, on the JRC's marking alone,
+#: counted by language, rather than read an ending or a conjunction as
+#: part of a name, and counts the entities left with no spelling
+#: (JRC_MAX_LOST). The
 #: unmarked spellings still hold some inflected forms the JRC did not
 #: mark: 22,732 of the 66,673 distinct unmarked spellings whose script()
 #: is Cyrillic are, by the ending rule above, another Cyrillic spelling
@@ -96,6 +101,14 @@ JRC_MIN_PERSONS = 1 / 2
 #: refused: 20,819 of 1,338,463 (1.6%) in the pinned file. A file whose
 #: every row came marked would otherwise be dropped whole.
 JRC_MAX_MARKED = 1 / 10
+#: The most entities that may be left with no spelling, every one of
+#: theirs marked, before the file is refused: none of the pinned file's
+#: 819,209 were.
+JRC_MAX_LOST = 1 / 1000
+#: The most person rows that may repeat a spelling their entity already
+#: has before the file is refused: 58 of 1,338,463 in the pinned file. A
+#: layout that collapsed rows would otherwise read as a smaller corpus.
+JRC_MAX_REPEATED = 1 / 1000
 
 #: A script's name as the first word of its letters' Unicode names
 #: gives it, where that word is not the script's own name.
@@ -115,9 +128,10 @@ def script(name: str) -> str:
     """The script `name`'s letters are written in, from the first word
     of each letter's Unicode name ("Latin", "Cyrillic", "Arabic", "Han"
     for CJK, "Katakana" counting the prolonged sound mark), "mixed" where
-    its letters are in two or more, and "none" where it has no letter.
-    Coarser than the parser's own script test, which names only the
-    scripts it treats apart, and enough to key a pair of spellings by."""
+    its letters are in two or more, and "none" where no letter names a
+    script. A heuristic over the names, not the Unicode Script property
+    the parser's own script test reads; enough to key a pair of scripts
+    by in the groups view."""
     found = set()
     for char in name:
         if char.isalpha():
@@ -130,19 +144,37 @@ def script(name: str) -> str:
     return found.pop() if len(found) == 1 else "mixed"
 
 
+def _kept(path: Path) -> Path:
+    """Where a download that is not the pinned file is kept beside `path`."""
+    return path.with_name(path.name + ".new")
+
+
+def _settled(path: Path) -> bool:
+    """Whether `path` is the pinned file, once a download kept beside it
+    (_kept) has replaced it where the pin has moved to that download: no
+    download is needed then."""
+    if path.exists() and _sha256(path) == JRC_SHA256:
+        return True
+    kept = _kept(path)
+    if kept.exists() and _sha256(kept) == JRC_SHA256:
+        os.replace(kept, path)
+        return True
+    return False
+
+
 def _jrc_download(path: Path) -> None:
-    """Download JRC_URL to `path`, through a file beside it that replaces
-    `path` only once its sha256 is JRC_SHA256's: the JRC serves only its
-    current file, so a refresh that overwrote the pinned one with a newer
-    one would leave the corpus nothing to be rebuilt from. A download
-    that is not the pinned file is left beside it, to be measured."""
-    new = path.with_name(path.name + ".new")
-    # A download kept by an earlier mismatch, once the pin has moved to it.
-    if not (new.exists() and _sha256(new) == JRC_SHA256):
-        _download(JRC_URL, new)
+    """Download JRC_URL to `path`, through a file beside it (_kept) that
+    replaces `path` only once its sha256 is JRC_SHA256's: the JRC serves
+    only its current file, so a download that overwrote the pinned one
+    with a newer one would leave the corpus nothing to be rebuilt from,
+    and the pinned file could not be downloaded again. A download that is
+    not the pinned file is left beside it, to be measured."""
+    new = _kept(path)
+    _download(JRC_URL, new)
     held = _sha256(new)
     if held != JRC_SHA256:
-        old = (f"the cached file at {path} is untouched" if path.exists()
+        old = (f"the cached file at {path} is untouched, and cannot be "
+               f"downloaded again if it is lost" if path.exists()
                else "no file is cached")
         raise ValueError(f"{JRC_URL} served a file with sha256 {held}, not the "
                          f"pinned JRC_SHA256: it is kept at {new}, and {old}. "
@@ -164,7 +196,8 @@ def _jrc_read(path: Path) -> Fetched:
     says."""
     counts: Counter[str] = Counter()
     marked: Counter[str] = Counter()
-    kept: set[tuple[int, str]] = set()
+    kept: set[tuple[str, str]] = set()
+    marked_entities: set[str] = set()
     last = b"\n"
     with gzip.open(path, "rb") as lines:
         for raw in lines:
@@ -180,7 +213,7 @@ def _jrc_read(path: Path) -> Fetched:
                 counts["bad"] += 1
                 continue
             entity, kind, language, written = cols
-            name = " ".join(word for word in written.split("+") if word).strip()
+            name = " ".join(written.replace("+", " ").split())
             if (not _ID.fullmatch(entity) or kind not in (JRC_PERSON, JRC_ORGANISATION)
                     or not (language == JRC_UNMARKED or _LANGUAGE.fullmatch(language))
                     or not name):
@@ -192,11 +225,12 @@ def _jrc_read(path: Path) -> Fetched:
             counts["persons"] += 1
             if language != JRC_UNMARKED:
                 marked[language] += 1
+                marked_entities.add(entity)
                 continue
-            if (int(entity), name) in kept:
+            if (entity, name) in kept:
                 counts["repeated"] += 1
                 continue
-            kept.add((int(entity), name))
+            kept.add((entity, name))
     if not last.endswith(b"\n"):
         raise ValueError(f"{path} ends inside a line: the file is cut short; "
                          f"download it again: {fetch_command(JRC, refresh=True)}")
@@ -211,39 +245,52 @@ def _jrc_read(path: Path) -> Fetched:
                    f"person rows of {path} carry a language")],
                  f"the file no longer marks a plain spelling {JRC_UNMARKED!r}")
     entities = Counter(entity for entity, _ in kept)
-    records = [{"entity": str(entity), "name": name, "script": script(name)}
-               for entity, name in sorted(kept)]
+    lost = len(marked_entities - entities.keys())
+    _refuse_past([(lost, len(entities) + lost, JRC_MAX_LOST,
+                   f"persons of {path} have marked spellings only")],
+                 "dropping the marked rows would drop the persons")
+    _refuse_past([(counts["repeated"], counts["persons"], JRC_MAX_REPEATED,
+                   f"person rows of {path} repeat a spelling")],
+                 "the file's rows may have collapsed")
+    # Sorted by the number an id is, then as written: "01" and "1" stay
+    # two entities, as the file writes them.
+    records = [{"entity": entity, "name": name, "script": script(name)}
+               for entity, name in sorted(kept, key=lambda k: (int(k[0]), k))]
     detail: dict[str, int | str] = {
-        "sha256": JRC_SHA256, "read_version": JRC_READ_VERSION, "lines": counts["lines"],
+        "sha256": JRC_SHA256, "read_version": JRC_READ_VERSION,
+        "unicode": unicodedata.unidata_version, "lines": counts["lines"],
         "lines_read_past": counts["bad"], "organisation_rows": counts["organisations"],
         "person_rows": counts["persons"],
         "marked_variants_dropped": sum(marked.values()),
         "marked_variants_by_language": " ".join(
             f"{lang}:{n}" for lang, n in sorted(marked.items(), key=lambda kv: (-kv[1], kv[0]))),
         "repeated_spellings": counts["repeated"], "entities": len(entities),
+        "entities_with_marked_spellings_only": lost,
         "entities_with_one_spelling": sum(n == 1 for n in entities.values()),
         "spellings_holding_a_replacement_character": sum(
-            "�" in r["name"] for r in records)}
+            "\ufffd" in r["name"] for r in records)}
     return Fetched(records, JRC_DATE, detail)
 
 
 def fetch_jrc() -> Fetched:
     """One record per distinct spelling of a person entity: its entity
-    id, the name with its "+" read as spaces (runs of them as one) and
-    its script(). Read from the gzip cached beside the corpus,
-    downloaded when missing and again by `fetch --refresh` (a download
-    that is not the pinned file replaces nothing, _jrc_download), and
-    refused unless its sha256 is JRC_SHA256's.
+    id, the name with its "+" and its whitespace read as single spaces,
+    and its script(). Read from the gzip cached beside the corpus,
+    downloaded when no file is cached (a kept download the pin has moved
+    to is adopted instead, _settled) and refused unless its sha256 is
+    JRC_SHA256's.
 
     Organisation rows are counted and read past, as are person rows
     carrying a language (JRC_UNMARKED says why), by language, and a
     spelling an entity repeats. A line that is not JRC_COLUMNS
     well-formed columns or not UTF-8 is counted, and past JRC_MAX_BAD
     refuses the file; so do a gzip cut short or a file ending inside a
-    line, fewer person rows than JRC_MIN_PERSONS, and more marked ones
-    than JRC_MAX_MARKED."""
+    line, person rows under JRC_MIN_PERSONS of the well-formed lines (or
+    none), marked rows past JRC_MAX_MARKED, entities left with no
+    spelling past JRC_MAX_LOST and repeated spellings past
+    JRC_MAX_REPEATED."""
     path = directory(JRC) / JRC_FILE
-    if not path.exists():
+    if not _settled(path) and not path.exists():
         _jrc_download(path)
     held = _sha256(path)
     if held != JRC_SHA256:
@@ -258,9 +305,14 @@ def fetch_jrc() -> Fetched:
 
 
 def renew_jrc() -> None:
-    """Download the current file over the cached one, where it is the
-    pinned file (_jrc_download)."""
-    _jrc_download(directory(JRC) / JRC_FILE)
+    """What `fetch --refresh` runs first: a download, unless the cached
+    file is the pinned one already (_settled). The pinned file cannot
+    change, so downloading it again gains nothing, and once the JRC
+    serves a newer file a refresh would fail where a corpus read the old
+    way only needed reading again from the cached file."""
+    path = directory(JRC) / JRC_FILE
+    if not _settled(path):
+        _jrc_download(path)
 
 
 _check_file = _pinned("sha256", lambda: JRC_SHA256,
@@ -269,9 +321,13 @@ _check_file = _pinned("sha256", lambda: JRC_SHA256,
 _check_read = _pinned("read_version", lambda: JRC_READ_VERSION,
                       "was read by read version {held}, and this tool reads "
                       "version {wanted}")
+_check_unicode = _pinned("unicode", lambda: unicodedata.unidata_version,
+                         "was labelled under Unicode {held}, and this Python "
+                         "reads Unicode {wanted}")
 
 
 def check_jrc(meta: dict[str, Any]) -> str:
-    """Why a corpus fetched under another pin, or read another way, is
-    refused: its file's sha256, then its read version."""
-    return _check_file(meta) or _check_read(meta)
+    """Why a corpus fetched under another pin, read another way, or
+    labelled by script() under another Unicode version is refused: its
+    file's sha256, its read version, then its Unicode version."""
+    return _check_file(meta) or _check_read(meta) or _check_unicode(meta)
