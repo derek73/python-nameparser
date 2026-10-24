@@ -26,9 +26,12 @@ $NAMEPARSER_TOOLS_CACHE (default ~/.cache/nameparser-tools), and
   one distinct pair of a TSE donor's filed name and the tax registry's
   name for the same donor; one distinct PSC filed name, with its four
   boxes and nationality; one distinct spelling of a JRC-Names person,
-  with its entity and script. The counts are counted from here.
+  with its entity and script; one distinct pair of a Nepali
+  candidate's romanized name and the Devanagari one. The counts are
+  counted from here.
 - corpus.jsonl -- the distinct names, in the corpus line format
-  snapshot.py and compare.py --corpus read.
+  snapshot.py and compare.py --corpus read: each record's "name", and
+  for nepal-candidates its Devanagari name too (Source.corpus_keys).
 - meta.json -- the source's own date for the data, what was fetched, and
   the sha256 of both files, checked on every load: a truncated file
   would otherwise read as a run of false zeros.
@@ -37,8 +40,8 @@ $NAMEPARSER_TOOLS_CACHE (default ~/.cache/nameparser-tools), and
   fetched after it; snapshot.sample-N.jsonl and its .source.json for a
   --sample N reading; and baselines/, the recordings snapshot.py reuses.
 - wordindex.json -- the word index tools/name_usage.py looks words up
-  in, written on first use and keyed to the records and the fold
-  (cached_index), so a single-word lookup parses neither raw.jsonl's
+  in, written on first use and keyed to the records, the fold and the
+  record keys it reads (cached_index), so a single-word lookup parses neither raw.jsonl's
   records nor the names (load() still reads both files for their
   sha256).
 
@@ -54,7 +57,8 @@ the listing gives). What each source is, what it is the population for
 and what its terms allow is its module's docstring: local_ctgov.py
 (ctgov-officials), local_fec.py (fec-individuals), local_tse.py
 (tse-donors), local_tw.py (tw-donors), local_ukec.py (ukec-individuals),
-local_psc.py (psc-individuals) and local_jrc.py (jrc-names).
+local_psc.py (psc-individuals), local_jrc.py (jrc-names) and
+local_nepal.py (nepal-candidates).
 """
 from __future__ import annotations
 
@@ -92,6 +96,7 @@ import local_fec  # noqa: E402
 import local_tse  # noqa: E402
 from local_fec import check_fec, fetch_fec, renew_fec  # noqa: E402
 from local_jrc import JRC, check_jrc, fetch_jrc, renew_jrc  # noqa: E402
+from local_nepal import check_nepal, fetch_nepal  # noqa: E402
 from local_psc import PSC, check_psc, fetch_psc, renew_psc  # noqa: E402
 from local_tse import check_tse, fetch_tse  # noqa: E402
 from local_tw import fetch_tw  # noqa: E402
@@ -149,6 +154,13 @@ class Local:
         return (f"{self.credit}; {self.size:,} "
                 f"{SOURCES[self.source].unit} (local corpus {self.source})")
 
+    @property
+    def corpus_keys(self) -> tuple[str, ...]:
+        """The record keys whose names the corpus and the word index read
+        (Source.corpus_keys), or "name" alone for a source not in SOURCES."""
+        source = SOURCES.get(self.source)
+        return source.corpus_keys if source else ("name",)
+
     @functools.cached_property
     def index(self) -> WordIndex:
         """The word index, read from its cache beside the corpus or built
@@ -179,6 +191,11 @@ SOURCES: dict[str, Source] = {
         credit="UK Electoral Commission register of donations, individual "
                "donors (reuse terms for the register not stated)",
         unit="names", fetch=fetch_ukec),
+    "nepal-candidates": Source(
+        credit="Election Commission, Nepal: candidates of the 2079 BS (2022) "
+               "local elections (result.election.gov.np; no licence stated)",
+        unit="name pairs", fetch=fetch_nepal, check=check_nepal,
+        corpus_keys=("name", "devanagari")),
 
     PSC: Source(
         credit="Companies House people with significant control, individuals "
@@ -210,12 +227,21 @@ def fetch(source: str) -> Local:
     fetched = SOURCES[source].fetch()
     if not fetched.records:
         raise ValueError(f"{source}: the fetch found no names")
-    if any(not isinstance(r.get("name"), str) for r in fetched.records):
+    if any(not isinstance(r.get("name"), str) or not r["name"].strip()
+           for r in fetched.records):
         raise ValueError(f"{source}: a fetched record has no name")
+    keys = SOURCES[source].corpus_keys
+    for key in keys[1:]:
+        if any(not isinstance(r.get(key, ""), str) for r in fetched.records):
+            raise ValueError(f"{source}: a fetched record's {key!r} is not text")
+        if not any(r.get(key, "").strip() for r in fetched.records):
+            raise ValueError(f"{source}: no fetched record holds the corpus key "
+                             f"{key!r}: a key misspelled, or a column emptied")
     raw = "".join(corpus_build.jsonl_line(r, sort_keys=True) + "\n"
                   for r in fetched.records).encode()
     lines = corpus_build.corpus_lines(
-        {"text": r["name"], "shape": None} for r in fetched.records)
+        {"text": r[key], "shape": None} for r in fetched.records
+        for key in keys if r.get(key, "").strip())
     corpus = ("\n".join(lines) + "\n").encode()
     corpus_build.write_atomic(path / RAW, raw)
     corpus_build.write_atomic(path / CORPUS, corpus)
@@ -223,6 +249,7 @@ def fetch(source: str) -> Local:
             "data_date": fetched.data_date,
             "fetched": time.strftime("%Y-%m-%d"),
             "records": len(fetched.records), "names": len(lines),
+            "corpus_keys": list(keys),
             "sha256": hashlib.sha256(raw).hexdigest(),
             "corpus_sha256": hashlib.sha256(corpus).hexdigest(),
             "detail": fetched.detail}
@@ -254,6 +281,13 @@ def load(source: str) -> Local | None:
             raise CorpusDamaged(f"{path / META} has no {kind.__name__} {key!r}{again}")
     if (check := SOURCES[source].check) and (why := check(meta)):
         raise CorpusDamaged(f"{path / META} {why}{again}")
+    # A meta.json written before corpus_keys were recorded holds "name"'s
+    # corpus, as every source's then was.
+    keys = list(SOURCES[source].corpus_keys)
+    if meta.get("corpus_keys", ["name"]) != keys:
+        raise CorpusDamaged(f"{path / META} holds a corpus of the record keys "
+                            f"{meta.get('corpus_keys', ['name'])}, and this tool "
+                            f"reads {keys}{again}")
 
     _verified(source, RAW, meta["sha256"])
     _verified(source, CORPUS, meta["corpus_sha256"])
@@ -802,20 +836,30 @@ class WordIndex:
     spellings: dict[str, dict[str, int]]
 
 
-def _names(local: Local) -> Counter[str]:
-    """Each distinct name with the records writing it: a name repeats
-    across a source's records (536,981 officials, 352,104 names on
-    2026-10-21)."""
-    return Counter(record["name"] for record in local.records)
+def _names(local: Local) -> Counter[tuple[str, ...]]:
+    """Each distinct tuple of a record's names (its distinct non-empty
+    values under the source's corpus_keys, as the corpus reads them),
+    with the records writing it: a name repeats across a source's
+    records (536,981 officials, 352,104 names on 2026-10-21). Reading
+    every key lets a lookup of a Devanagari word in nepal-candidates find
+    the records whose Devanagari name holds it; keeping a record's names
+    together counts a word both of them write once."""
+    keys = local.corpus_keys
+    return Counter(tuple(dict.fromkeys(record[key] for key in keys if record.get(key)))
+                   for record in local.records)
 
 
 def word_index(local: Local) -> WordIndex:
     anywhere: Counter[str] = Counter()
     after: Counter[str] = Counter()
     spellings: dict[str, Counter[str]] = {}
-    for name, n in _names(local).items():
-        head, _, tail = name.partition(",")
-        before, behind = _keyed(head), _keyed(tail)
+    for names, n in _names(local).items():
+        before: list[tuple[str, str]] = []
+        behind: list[tuple[str, str]] = []
+        for name in names:
+            head, _, tail = name.partition(",")
+            before += _keyed(head)
+            behind += _keyed(tail)
         after_keys = {key for key, _ in behind}
         for key in {key for key, _ in before} | after_keys:
             anywhere[key] += n
@@ -892,8 +936,9 @@ def _is_counts(value: object) -> bool:
 def cached_index(local: Local) -> WordIndex:
     """`local`'s word index, read from wordindex.json beside the corpus
     where its key matches and its counts are counts, else built and
-    written there. The key is the records' sha256 and fold_fingerprint(),
-    so a refetch, or a change to how a word is cut or folded, rebuilds it
+    written there. The key is the records' sha256, fold_fingerprint()
+    and the corpus_keys read, so a refetch, or a change to how a word is
+    cut or folded or to which of a record's names are read, rebuilds it
     rather than answering from a stale index. A Local with no sha256 (a
     test's) is built and not cached. An index file that is not an index,
     or not this one, is built over, with a line on stderr: it is derived
@@ -902,7 +947,7 @@ def cached_index(local: Local) -> WordIndex:
     if not isinstance(sha, str):
         return word_index(local)
     path = directory(local.source, create=False) / INDEX
-    key = f"{sha}:{fold_fingerprint()}"
+    key = f"{sha}:{fold_fingerprint()}:{','.join(local.corpus_keys)}"
     if path.exists():
         try:
             data = json.loads(path.read_text(encoding="utf-8"))
@@ -938,15 +983,17 @@ def phrase_counts(local: Local, keys: list[str]) -> tuple[int, int]:
         return 0, 0
     n = len(keys)
     anywhere = after = 0
-    for name, count in _names(local).items():
-        head, _, tail = name.partition(",")
-        first = words(head)
-        got = first + words(tail)
-        starts = [i for i in range(len(got) - n + 1) if got[i:i + n] == keys]
-        if starts:
-            anywhere += count
-        if any(i >= len(first) for i in starts):
-            after += count
+    for names, count in _names(local).items():
+        found = found_after = False
+        for name in names:
+            head, _, tail = name.partition(",")
+            first = words(head)
+            got = first + words(tail)
+            starts = [i for i in range(len(got) - n + 1) if got[i:i + n] == keys]
+            found = found or bool(starts)
+            found_after = found_after or any(i >= len(first) for i in starts)
+        anywhere += count * found
+        after += count * found_after
     return anywhere, after
 
 

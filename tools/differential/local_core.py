@@ -17,7 +17,7 @@ import time
 import urllib.error
 import urllib.request
 import zipfile
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, TypeVar
@@ -53,6 +53,12 @@ class Source:
     #: Why local_corpora.load() should refuse a meta.json this version of the source
     #: did not write (another FEC cycle), or "" to accept it.
     check: Callable[[dict[str, Any]], str] | None = None
+    #: The record keys whose values the corpus and the word index hold as
+    #: names, an empty value skipped: "name", and for a source whose
+    #: records carry the name in a second script, that script's key
+    #: (nepal-candidates' "devanagari"). meta.json records them, and a
+    #: corpus written under other keys is refused on load.
+    corpus_keys: tuple[str, ...] = ("name",)
 
 
 #: Attempts per request, for every source that retries.
@@ -134,14 +140,16 @@ def _backed_off(exc: Exception, attempt: int, url: str) -> bool:
 
 
 def _retried(url: str, read: Callable[[bytes], _T], delay: float, *,
-             timeout: int = 60) -> _T:
+             timeout: int = 60, headers: Mapping[str, str] | None = None) -> _T:
     """`url`'s body as `read` reads it, under _backed_off's policy; any
     ValueError from `read` is retried as a body cut short in transit, and
-    `delay` seconds of sleep follow each request."""
+    `delay` seconds of sleep follow each request. `headers` go with each
+    request, a User-Agent among them replacing USER_AGENT."""
     for attempt in range(RETRIES):
         try:
             body = corpus_build.fetch_bytes(url, user_agent=USER_AGENT,
-                                            timeout=timeout, delay=delay)
+                                            timeout=timeout, delay=delay,
+                                            headers=headers)
             try:
                 return read(body)
             except ValueError as exc:

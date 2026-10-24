@@ -10,6 +10,7 @@ failure that matters is a SMALLER corpus passing for the whole one: its
 counts read as real zeros. The network is a stub answering by URL.
 """
 import csv
+import dataclasses
 import email.message
 import gzip
 import hashlib
@@ -41,9 +42,9 @@ snapshot = load_tool("snapshot")
 # the fetches read, so a patch reaches the code only when it is set on
 # the module holding the name (local_core.RETRIES, local_fec.FEC_MAX_BAD).
 # A second load by path (load_tool) would be a copy nothing reads.
-core, ctgov, fec, tse, tw, ukec, psc, jrc = (
+core, ctgov, fec, tse, tw, ukec, psc, jrc, nepal = (
     importlib.import_module(f"local_{key}")
-    for key in ("core", "ctgov", "fec", "tse", "tw", "ukec", "psc", "jrc"))
+    for key in ("core", "ctgov", "fec", "tse", "tw", "ukec", "psc", "jrc", "nepal"))
 
 _SOURCE = "ctgov-officials"
 _DATE = "2026-10-21T09:00:05"
@@ -177,6 +178,19 @@ def test_a_fetch_paging_a_study_twice_is_refused(
     _serve(monkeypatch, tmp_path, pages=[
         first, {"studies": [_study("NCT1", "Ann Lee, MD, PhD")]}])
     with pytest.raises(ValueError, match="NCT1 was paged twice"):
+        local.fetch(_SOURCE)
+
+
+@pytest.mark.parametrize("name", ["", " ", None, 3],
+                         ids=["empty", "blank", "null", "a number"])
+def test_a_fetched_record_whose_name_is_empty_or_not_text_is_refused(
+        monkeypatch: pytest.MonkeyPatch, name: object) -> None:
+    # The corpus skips a second key's empty value (Source.corpus_keys);
+    # an empty "name" is a fetch's own fault, refused rather than skipped.
+    monkeypatch.setitem(local.SOURCES, _SOURCE, local.Source(
+        "credit", "names", lambda: local.Fetched([{"name": "Ann Lee"}, {"name": name}],
+                                                 _DATE, {})))
+    with pytest.raises(ValueError, match="a fetched record has no name"):
         local.fetch(_SOURCE)
 
 
@@ -1931,6 +1945,742 @@ def test_a_ukec_search_that_states_no_count_is_refused(
         local.fetch(_UKEC)
 
 
+# -- Nepal's local election candidates -------------------------------------------
+
+_NEPAL = "nepal-candidates"
+_NEPAL_TOKEN = "a" * 32
+
+
+def _nepal_row(romanized: object, devanagari: object = "राम बहादुर", **extra: object
+               ) -> dict[str, object]:
+    """A candidate as a local body's file writes one, every name invented."""
+    return {"CandidateName": devanagari, "CandidateNameEng": romanized,
+            "Gender": "पुरुष", "Age": 40, "Ward": 1, "PostId": 6, "CandidateID": 1,
+            "PartyID": 2, "SymbolID": 3, "TotalVoteReceived": 99, **extra}
+
+
+#: Three bodies: a pair twice in one body (once padded) and again in
+#: another, the same Devanagari under a second romanization, a candidate
+#: with no Devanagari name, and an empty file.
+_NEPAL_FILES: dict[int, object] = {
+    101: [_nepal_row("Dil Maya B.K.", "दिल माया वि.क."),
+          _nepal_row("Sita Kumari K.C.", "सीता कुमारी के.सी."),
+          _nepal_row(" Dil Maya B.K. ", "दिल माया वि.क. "),
+          _nepal_row("Hari Thapa", "")],
+    102: [_nepal_row("Dil Maya B.K.", "दिल माया वि.क."),
+          _nepal_row("Dil Maya BK", "दिल माया वि.क.")],
+    103: [],
+}
+
+
+def _nepal_error(url: str, code: int) -> urllib.error.HTTPError:
+    return urllib.error.HTTPError(url, code, "x", email.message.Message(), None)
+
+
+class _Root(_Response):
+    """The site's root page, setting `cookies`."""
+
+    def __init__(self, *cookies: str) -> None:
+        super().__init__(b"<html></html>")
+        self.headers = email.message.Message()
+        for cookie in cookies:
+            self.headers["Set-Cookie"] = cookie
+
+
+class _Site:
+    """result.election.gov.np, offline. The root sets a token; the
+    handler answers 403 to a request not echoing the current one, else
+    the lookup from `files`' ids and each file from `files` (a list
+    served as JSON, bytes as they are, an exception raised; a missing id
+    is a 404). `expire` makes a token lapse after that many handler
+    requests, as a session does."""
+
+    def __init__(self, monkeypatch: pytest.MonkeyPatch, files: dict[int, object],
+                 *, bom: bytes = b"\xef\xbb\xbf", listed: object = None) -> None:
+        self.files, self.bom, self.listed = files, bom, listed
+        self.requests: list[urllib.request.Request] = []
+        self.tokens = 0
+        self.expire: int | None = None
+        self.used = 0
+        monkeypatch.setattr(time, "sleep", lambda seconds: None)
+        monkeypatch.setattr(nepal, "NEPAL_BODIES", len(files))
+        # Pinned as if an empty file had held one candidate before it
+        # was blanked: every real file did.
+        monkeypatch.setattr(nepal, "NEPAL_CANDIDATES", sum(
+            len(rows) or 1 for rows in files.values() if isinstance(rows, list)))
+        monkeypatch.setattr(urllib.request, "urlopen", self.urlopen)
+
+    @property
+    def token(self) -> str:
+        return f"{_NEPAL_TOKEN[:-1]}{self.tokens}"
+
+    def handler(self, path: str) -> str:
+        return nepal.NEPAL_HANDLER + path
+
+    def urlopen(self, request: urllib.request.Request, timeout: int) -> _Response:
+        url = request.full_url
+        self.requests.append(request)
+        if url == nepal.NEPAL_SITE:
+            self.tokens += 1
+            self.used = 0
+            return _Root("ASP.NET_SessionId=s1; path=/; HttpOnly",
+                         f"CsrfToken={self.token}; path=/")
+        assert url.startswith(nepal.NEPAL_HANDLER)
+        self.used += 1
+        if (request.get_header("X-csrf-token") != self.token
+                or f"CsrfToken={self.token}" not in (request.get_header("Cookie") or "")
+                or self.expire is not None and self.used > self.expire):
+            raise _nepal_error(url, 403)
+        path = url[len(nepal.NEPAL_HANDLER):]
+        if path == nepal.NEPAL_LOOKUP:
+            listed = self.listed if self.listed is not None else [
+                {"id": i, "name": "नगरपालिका", "parentId": 1} for i in self.files]
+            return _Response(self.bom + json.dumps(listed).encode())
+        body = int(path.rsplit("/", 1)[1].removesuffix(".json"))
+        if body not in self.files:
+            raise _nepal_error(url, 404)
+        answer = self.files[body]
+        if callable(answer):
+            answer = answer()
+        if isinstance(answer, Exception):
+            raise answer
+        if isinstance(answer, bytes):
+            return _Response(answer)
+        return _Response(self.bom + json.dumps(answer, ensure_ascii=False).encode())
+
+    def asked(self) -> list[str]:
+        return [r.full_url.removeprefix(nepal.NEPAL_HANDLER) for r in self.requests]
+
+
+@pytest.fixture
+def site(monkeypatch: pytest.MonkeyPatch) -> _Site:
+    return _Site(monkeypatch, dict(_NEPAL_FILES))
+
+
+def _tolerate_nepal_s_small_fixture(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Let _NEPAL_FILES, whose 6 candidates include one with no
+    Devanagari name and whose 3 files one that is empty, pass
+    NEPAL_MAX_NAMELESS, NEPAL_MAX_MISSING and NEPAL_MAX_SHORT."""
+    monkeypatch.setattr(nepal, "NEPAL_MAX_NAMELESS", 1)
+    monkeypatch.setattr(nepal, "NEPAL_MAX_MISSING", 1)
+    monkeypatch.setattr(nepal, "NEPAL_MAX_SHORT", 1)
+
+
+def test_a_nepal_fetch_keeps_each_pair_once_and_counts_the_rest(
+        site: _Site, monkeypatch: pytest.MonkeyPatch) -> None:
+    _tolerate_nepal_s_small_fixture(monkeypatch)
+    corpus = local.fetch(_NEPAL)
+    assert corpus.records == [
+        {"name": "Dil Maya B.K.", "devanagari": "दिल माया वि.क."},
+        {"name": "Dil Maya BK", "devanagari": "दिल माया वि.क."},
+        {"name": "Hari Thapa", "devanagari": ""},
+        {"name": "Sita Kumari K.C.", "devanagari": "सीता कुमारी के.सी."}]
+    assert re.fullmatch(r"\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ", corpus.meta["data_date"])
+    assert corpus.meta["detail"] == {
+        "election": "Election2079", "local_bodies": 3, "local_bodies_missing": "",
+        "local_bodies_empty": "103", "files": 3, "candidates": 6,
+        "without_the_name_keys": 0, "without_a_romanized_name": 0,
+        "without_a_devanagari_name": 1, "devanagari_name_without_devanagari": 0,
+        "romanized_name_not_latin": 0, "sessions_renewed": 0, "largest_file": 4}
+    assert corpus.meta["corpus_keys"] == ["name", "devanagari"]
+    assert corpus.header().endswith("4 name pairs (local corpus nepal-candidates)")
+    assert site.asked() == [nepal.NEPAL_SITE, nepal.NEPAL_LOOKUP,
+                            *(nepal.NEPAL_BODY.format(id=i) for i in (101, 102, 103))]
+
+
+def test_a_nepal_fetch_writes_no_field_but_the_two_names(
+        site: _Site, monkeypatch: pytest.MonkeyPatch, _own_cache: Path) -> None:
+    # Gender, age, ward, votes and the ids stay in the site's files.
+    _tolerate_nepal_s_small_fixture(monkeypatch)
+    local.fetch(_NEPAL)
+    raw = (_own_cache / "local" / _NEPAL / "raw.jsonl").read_text()
+    assert {key for line in raw.splitlines() for key in json.loads(line)} == {
+        "name", "devanagari"}
+    assert "पुरुष" not in raw and "99" not in raw
+
+
+def test_a_nepal_corpus_holds_both_scripts_names_for_the_snapshot(
+        site: _Site, monkeypatch: pytest.MonkeyPatch, _own_cache: Path) -> None:
+    # The romanized name is the record's "name"; the Devanagari one is
+    # read too, so a snapshot watches both scripts, an empty one skipped.
+    _tolerate_nepal_s_small_fixture(monkeypatch)
+    local.fetch(_NEPAL)
+    corpus = _own_cache / "local" / _NEPAL / "corpus.jsonl"
+    texts = sorted(json.loads(line) for line in corpus.read_text().splitlines())
+    assert texts == ["Dil Maya B.K.", "Dil Maya BK", "Hari Thapa", "Sita Kumari K.C.",
+                     "दिल माया वि.क.", "सीता कुमारी के.सी."]
+    assert local.load(_NEPAL).meta["names"] == 6
+    assert snapshot.main(["--local", _NEPAL, "--record"]) == 0
+    recorded = _own_cache / "local" / _NEPAL / "snapshot.jsonl"
+    assert len(recorded.read_text().splitlines()) == 6
+
+
+def test_a_nepal_name_keeps_its_vowel_signs_virama_and_joiners(
+        monkeypatch: pytest.MonkeyPatch, _own_cache: Path) -> None:
+    # What the corpus is for: the combining marks and the ZWJ/ZWNJ a
+    # Devanagari name is written with reach the corpus as written.
+    joined = "क्\u200dष्मा प्\u200cरसाद"
+    _Site(monkeypatch, {7: [_nepal_row("Ksma Prasad", joined)]})
+    local.fetch(_NEPAL)
+    corpus = (_own_cache / "local" / _NEPAL / "corpus.jsonl").read_text()
+    assert joined in {json.loads(line) for line in corpus.splitlines()}
+
+
+def test_every_nepal_request_carries_the_site_s_own_check(
+        site: _Site, monkeypatch: pytest.MonkeyPatch) -> None:
+    # The site's double-submit check: its CsrfToken cookie echoed in a
+    # header, with the Referer its pages send, and a User-Agent of a
+    # browser's form, the site refusing one holding "python".
+    _tolerate_nepal_s_small_fixture(monkeypatch)
+    local.fetch(_NEPAL)
+    for request in site.requests:
+        agent = request.get_header("User-agent") or ""
+        assert agent.startswith("Mozilla/5.0") and "python" not in agent.lower()
+    for request in site.requests[1:]:
+        assert request.get_header("X-csrf-token") == site.token
+        assert request.get_header("Referer") == nepal.NEPAL_SITE
+        assert request.get_header("Cookie") == f"ASP.NET_SessionId=s1; CsrfToken={site.token}"
+
+
+def test_a_nepal_token_the_site_no_longer_holds_renews_the_session(
+        site: _Site, monkeypatch: pytest.MonkeyPatch,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    # A fetch can outlast a session: a 403 renews it, counted, and asks again.
+    _tolerate_nepal_s_small_fixture(monkeypatch)
+    site.expire = 2
+    corpus = local.fetch(_NEPAL)
+    assert len(corpus.records) == 4
+    assert corpus.meta["detail"]["sessions_renewed"] == 1
+    assert site.asked().count(nepal.NEPAL_SITE) == 2
+    assert "renewing the session after a 403" in capsys.readouterr().err
+
+
+def test_a_nepal_403_after_a_renewed_session_is_raised(
+        site: _Site, monkeypatch: pytest.MonkeyPatch) -> None:
+    # A file the site keeps refusing is no missing file: the fetch stops.
+    site.files[102] = lambda: _nepal_error("u", 403)
+    with pytest.raises(urllib.error.HTTPError, match="403") as raised:
+        local.fetch(_NEPAL)
+    raised.value.close()
+    assert site.asked().count(nepal.NEPAL_BODY.format(id=102)) == 2
+    assert local.load(_NEPAL) is None
+
+
+def test_a_nepal_server_error_is_retried_and_its_last_raised(
+        site: _Site, monkeypatch: pytest.MonkeyPatch) -> None:
+    errors = iter([_nepal_error("u", 503)])
+    site.files[102] = lambda: next(errors, _NEPAL_FILES[102])
+    _tolerate_nepal_s_small_fixture(monkeypatch)
+    assert len(local.fetch(_NEPAL).records) == 4
+    site.files[102] = lambda: _nepal_error("u", 503)
+    with pytest.raises(urllib.error.HTTPError, match="503") as raised:
+        local.fetch(_NEPAL)
+    raised.value.close()
+    assert site.asked().count(nepal.NEPAL_BODY.format(id=102)) == 2 + core.RETRIES
+
+
+_NEPAL_WHOLE = json.dumps(_NEPAL_FILES[101], ensure_ascii=False).encode()
+
+
+@pytest.mark.parametrize("cut", [
+    lambda body: body[:-1],
+    lambda body: body[:body.rindex(b"}") + 1],
+    lambda body: body[:body.rindex(b"},") + 2],
+    lambda body: body[:body.rindex("माया".encode()) + 2],
+    lambda body: b"",
+], ids=["before the closing bracket", "after a whole candidate",
+        "after a candidate's comma", "inside a letter", "empty"])
+def test_a_nepal_file_cut_short_fails_to_parse_and_is_refused(
+        site: _Site, cut: Callable[[bytes], bytes]) -> None:
+    # A JSON array cut anywhere short of its end does not parse, so a cut
+    # file is retried as one cut in transit and never read as a body
+    # with fewer candidates.
+    site.files[101] = cut(_NEPAL_WHOLE)
+    with pytest.raises(ValueError, match="is not UTF-8 JSON"):
+        local.fetch(_NEPAL)
+    assert site.asked().count(nepal.NEPAL_BODY.format(id=101)) == core.RETRIES
+    assert local.load(_NEPAL) is None
+
+
+def test_a_nepal_file_cut_once_is_read_whole_on_the_retry(
+        site: _Site, monkeypatch: pytest.MonkeyPatch) -> None:
+    answers = iter([_NEPAL_WHOLE[:-1]])
+    site.files[101] = lambda: next(answers, _NEPAL_WHOLE)
+    _tolerate_nepal_s_small_fixture(monkeypatch)
+    assert len(local.fetch(_NEPAL).records) == 4
+
+
+def test_a_nepal_file_with_or_without_a_bom_reads_the_same(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    _tolerate_nepal_s_small_fixture(monkeypatch)
+    _Site(monkeypatch, dict(_NEPAL_FILES))
+    with_bom = local.fetch(_NEPAL).records
+    _Site(monkeypatch, dict(_NEPAL_FILES), bom=b"")
+    assert local.fetch(_NEPAL).records == with_bom
+
+
+@pytest.mark.parametrize("answer", [b"{}", b"[1]", b"null", b'{"rows": []}'],
+                         ids=["an object", "not candidates", "null", "a wrapped list"])
+def test_a_nepal_file_that_is_not_a_list_of_candidates_is_refused(
+        site: _Site, answer: bytes) -> None:
+    site.files[101] = answer
+    with pytest.raises(ValueError, match="is not a list of candidates"):
+        local.fetch(_NEPAL)
+
+
+@pytest.mark.parametrize(("listed", "match"), [
+    ([{"id": 101}, {"id": 102}], "lists 2 local bodies .* not the 3"),
+    ([{"id": 101}, {"id": 102}, {"id": 103}, {"id": 104}], "lists 4 local bodies"),
+    ([{"id": 101}, {"id": 101}, {"id": 102}], r"\(2 distinct ids\)"),
+    ([{"id": 101}, {"id": "102"}, {"id": 103}], "not a list of local bodies"),
+    ([{"id": 101}, {"id": True}, {"id": 103}], "not a list of local bodies"),
+    ({"bodies": []}, "not a list of local bodies"),
+], ids=["one fewer", "one more", "an id twice", "an id as text", "an id a boolean",
+        "not a list"])
+def test_a_nepal_lookup_that_has_changed_is_refused(
+        monkeypatch: pytest.MonkeyPatch, listed: object, match: str) -> None:
+    _Site(monkeypatch, dict(_NEPAL_FILES), listed=listed)
+    with pytest.raises(ValueError, match=match):
+        local.fetch(_NEPAL)
+
+
+def _nepal_bodies(n: int, missing: int = 0, empty: int = 0) -> dict[int, object]:
+    """`n` bodies of one candidate each, the first `missing` of them
+    answered as missing and the `empty` after those answered empty."""
+    return {i: [] if i < missing + empty else
+            [_nepal_row(f"Ram {_letters(i)}", f"राम {i}")] for i in range(missing, n)}
+
+
+@pytest.mark.parametrize(("missing", "empty"), [(7, 0), (8, 0), (0, 7), (0, 8), (4, 3), (4, 4)])
+def test_a_nepal_fetch_is_refused_past_its_real_share_of_missing_or_empty_files(
+        monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str],
+        missing: int, empty: int) -> None:
+    # NEPAL_MAX_MISSING unpatched, and NEPAL_BODIES set back to its
+    # shipped 753 (which the next test holds): 7 of 753 files missing or
+    # empty pass, the ids of both kept, and 8 are refused. An empty file
+    # counts as a missing one: a site that blanked its files would
+    # otherwise read as a smaller election.
+    site = _Site(monkeypatch, _nepal_bodies(753, missing, empty))
+    monkeypatch.setattr(nepal, "NEPAL_BODIES", 753)
+    monkeypatch.setattr(nepal, "NEPAL_CANDIDATES", 753)
+    site.listed = [{"id": i, "name": "", "parentId": 1} for i in range(753)]
+    if missing + empty == 7:
+        detail = local.fetch(_NEPAL).meta["detail"]
+        assert detail["local_bodies_missing"] == " ".join(map(str, range(missing)))
+        assert detail["local_bodies_empty"] == " ".join(map(str, range(missing, 7)))
+        assert detail["files"] == 753 - missing
+        assert "750 of 753 local bodies" in capsys.readouterr().err
+    else:
+        with pytest.raises(ValueError, match="8 of 753 local bodies' files are missing"
+                                             r" \(HTTP 404\) or empty"):
+            local.fetch(_NEPAL)
+
+
+def test_the_shipped_nepal_body_count_is_the_lookup_s() -> None:
+    # The count the share above is taken at, as the lookup listed it.
+    assert nepal.NEPAL_BODIES == 753
+
+
+def test_the_nepal_user_agent_is_one_the_site_answers() -> None:
+    # The site refuses a User-Agent holding "python" or "curl" with a 403
+    # (2026-10-24), which would read as a lapsed token and then stop the fetch.
+    agent = nepal.NEPAL_USER_AGENT.lower()
+    assert "python" not in agent and "curl" not in agent
+
+
+def _hundred(*bad: dict[str, object]) -> list[dict[str, object]]:
+    """100 candidates: `bad`, then good ones."""
+    good = [_nepal_row(f"Ram {_letters(i)}", f"राम {i}") for i in range(100 - len(bad))]
+    return [*bad, *good]
+
+
+@pytest.mark.parametrize(("bad", "key", "match"), [
+    ({"CandidateID": 1}, "without_the_name_keys", "have no CandidateName or"),
+    (_nepal_row("  "), "without_a_romanized_name", "have no romanized name"),
+    (_nepal_row(None), "without_a_romanized_name", "have no romanized name"),
+    (_nepal_row("- - -"), "without_a_romanized_name", "have no romanized name"),
+    (_nepal_row("12 34"), "without_a_romanized_name", "have no romanized name"),
+    (_nepal_row("Ram Zed", "१२३"), "without_a_devanagari_name", "have no Devanagari name"),
+    (_nepal_row("Ram Zed", "| |"), "without_a_devanagari_name", "have no Devanagari name"),
+    (_nepal_row("Ram Zed", ""), "without_a_devanagari_name", "have no Devanagari name"),
+    (_nepal_row("Ram Zed", "राम ज़ेड", CandidateName=None), "without_a_devanagari_name",
+     "have no Devanagari name"),
+], ids=["no name keys", "a blank romanized name", "a null romanized name",
+        "a placeholder for the romanized name", "digits for the romanized name",
+        "digits for the Devanagari name", "a placeholder for the Devanagari name",
+        "a blank Devanagari name", "a null Devanagari name"])
+@pytest.mark.parametrize("count", [1, 2])
+def test_a_nepal_fetch_is_refused_past_its_real_share_of_nameless_candidates(
+        monkeypatch: pytest.MonkeyPatch, bad: dict[str, object], key: str, match: str,
+        count: int) -> None:
+    # At NEPAL_MAX_NAMELESS, unpatched: 1 of 100 passes and 2 are refused.
+    _Site(monkeypatch, {1: _hundred(*[bad] * count)})
+    if count == 1:
+        assert local.fetch(_NEPAL).meta["detail"][key] == 1
+    else:
+        with pytest.raises(ValueError, match=f"2 of 100 (candidates |)?{match}"):
+            local.fetch(_NEPAL)
+
+
+@pytest.mark.parametrize(("bad", "key", "match"), [
+    (_nepal_row("Ram Zed", "Ram Zed"), "devanagari_name_without_devanagari",
+     "CandidateName values hold no Devanagari"),
+    (_nepal_row("राम ज़ेड", "राम ज़ेड"), "romanized_name_not_latin",
+     "CandidateNameEng values are not Latin"),
+], ids=["Latin under Devanagari", "Devanagari under the romanized name"])
+@pytest.mark.parametrize("count", [1, 2])
+def test_a_nepal_fetch_is_refused_past_its_real_share_of_names_in_the_wrong_script(
+        monkeypatch: pytest.MonkeyPatch, bad: dict[str, object], key: str, match: str,
+        count: int) -> None:
+    # Two columns swapped, or a romanization dropped, at
+    # NEPAL_MAX_WRONG_SCRIPT, unpatched: 1 of 100 passes, 2 are refused.
+    _Site(monkeypatch, {1: _hundred(*[bad] * count)})
+    if count == 1:
+        assert local.fetch(_NEPAL).meta["detail"][key] == 1
+    else:
+        with pytest.raises(ValueError, match=f"2 of 100 (candidates |)?{match}"):
+            local.fetch(_NEPAL)
+
+
+@pytest.mark.parametrize("word", ["Rām Śarmā", "Kṛṣṇa Ṭhākura", "Saʼadi"],
+                         ids=["Latin Extended", "IAST's dotted letters", "a modifier letter"])
+def test_a_nepal_romanized_name_in_any_latin_is_latin(
+        monkeypatch: pytest.MonkeyPatch, word: str) -> None:
+    # A romanization may write IAST's dotted letters (Latin Extended
+    # Additional) or an apostrophe as a letter: 5 of 100 such names would
+    # refuse the fetch were they read as another script.
+    _Site(monkeypatch, {1: _hundred(*[_nepal_row(f"{word} {_letters(i)}")
+                                      for i in range(5)])})
+    assert local.fetch(_NEPAL).meta["detail"]["romanized_name_not_latin"] == 0
+
+
+@pytest.mark.parametrize("column", ["CandidateNameEng", "CandidateName"])
+def test_a_nepal_column_masked_with_one_word_is_refused(
+        monkeypatch: pytest.MonkeyPatch, column: str) -> None:
+    # Each pair stays distinct by the other column, so the pairs alone
+    # would pass a masked column.
+    masked = "Xxx" if column == "CandidateNameEng" else "राम"
+    _Site(monkeypatch, {1: [{**row, column: masked} for row in _hundred()]})
+    with pytest.raises(ValueError, match=f"hold 1 distinct {column}: the column may be masked"):
+        local.fetch(_NEPAL)
+
+
+@pytest.mark.parametrize("column", ["CandidateNameEng", "CandidateName"])
+@pytest.mark.parametrize("distinct", [25, 24])
+def test_a_nepal_column_is_refused_below_its_real_share_of_distinct_names(
+        monkeypatch: pytest.MonkeyPatch, column: str, distinct: int) -> None:
+    # At NEPAL_MIN_DISTINCT, unpatched: 25 distinct names in 100
+    # candidates pass and 24 are refused, the other column distinct.
+    def word(i: int) -> str:
+        return f"Ram {_letters(i % distinct)}" if column == "CandidateNameEng" \
+            else f"राम {i % distinct}"
+    _Site(monkeypatch, {1: [{**row, column: word(i)} for i, row in enumerate(_hundred())]})
+    if distinct == 25:
+        assert local.fetch(_NEPAL).records
+    else:
+        with pytest.raises(ValueError, match=f"hold 24 distinct {column}"):
+            local.fetch(_NEPAL)
+
+
+def test_a_nepal_devanagari_word_is_looked_up_in_the_devanagari_names(
+        site: _Site, monkeypatch: pytest.MonkeyPatch) -> None:
+    # The word index reads every name the corpus holds, so a Devanagari
+    # word is counted in the records whose Devanagari name writes it, not
+    # read as a false zero; the romanized names are read as before.
+    _tolerate_nepal_s_small_fixture(monkeypatch)
+    local.fetch(_NEPAL)
+    loaded = local.load(_NEPAL)
+    assert loaded is not None
+    assert local.lookup(loaded, "माया").anywhere == 2
+    assert local.lookup(loaded, "Maya").anywhere == 2
+    assert local.lookup(loaded, "B.K.").anywhere == 2  # BK folds alike
+    # A phrase is read in each name, the Devanagari as the romanized.
+    assert local.lookup(loaded, "दिल माया").anywhere == 2
+    assert local.lookup(loaded, "सीता कुमारी").anywhere == 1
+
+
+@pytest.mark.parametrize("word", ["Bishnu", "Bishnu Kumar"], ids=["a word", "a phrase"])
+def test_a_word_both_of_a_record_s_names_write_counts_the_record_once(
+        monkeypatch: pytest.MonkeyPatch, word: str) -> None:
+    # A Devanagari name left partly in Latin shares words with the
+    # romanization; the index counts records, not names, and a spelling
+    # once a record.
+    _Site(monkeypatch, {1: _hundred(_nepal_row("Bishnu Kumar Zed", "Bishnu Kumar राम"))})
+    local.fetch(_NEPAL)
+    loaded = local.load(_NEPAL)
+    assert loaded is not None
+    found = local.lookup(loaded, word)
+    assert found.anywhere == 1
+    if word == "Bishnu":
+        assert found.spellings == {"Bishnu": 1}
+
+
+def test_a_phrase_is_not_matched_across_a_record_s_two_names(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # Each name is read alone: the romanization's last word and the
+    # Devanagari name's first are not a phrase.
+    _Site(monkeypatch, {1: _hundred(_nepal_row("Opal Zed", "Bishnu राम"))})
+    local.fetch(_NEPAL)
+    loaded = local.load(_NEPAL)
+    assert loaded is not None
+    assert local.lookup(loaded, "Zed").anywhere == 1
+    assert local.lookup(loaded, "Zed Bishnu").anywhere == 0
+
+
+def test_the_cached_index_is_keyed_to_the_names_it_reads(
+        site: _Site, monkeypatch: pytest.MonkeyPatch) -> None:
+    # A source that starts or stops reading a record's second name must
+    # not answer from an index built over the other set, nor load a
+    # corpus.jsonl built from it.
+    _tolerate_nepal_s_small_fixture(monkeypatch)
+    local.fetch(_NEPAL)
+    loaded = local.load(_NEPAL)
+    assert loaded is not None
+    assert local.lookup(loaded, "माया").anywhere == 2
+    monkeypatch.setitem(local.SOURCES, _NEPAL, dataclasses.replace(
+        local.SOURCES[_NEPAL], corpus_keys=("name",)))
+    with pytest.raises(local.CorpusDamaged, match=r"record keys \['name', 'devanagari'\]"):
+        local.load(_NEPAL)
+    # The index, read from the cache beside the same records, is rebuilt.
+    assert local.lookup(local.Local(_NEPAL, loaded.meta), "माया").anywhere == 0
+
+
+def test_a_corpus_fetched_before_its_keys_were_recorded_reads_as_name_alone(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    # Every cached corpus fetched before corpus_keys were recorded was
+    # built from "name": it loads for a source reading "name" alone.
+    folder = _fetched(monkeypatch, tmp_path)
+    _rewrite_meta(folder, corpus_keys=None)
+    assert local.load(_SOURCE) is not None
+
+
+def test_a_nepal_election_whose_files_hold_no_names_is_refused(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # Past the nameless share's own refusal, which a wholly nameless
+    # election would meet first, the empty corpus is still refused.
+    monkeypatch.setattr(nepal, "NEPAL_MAX_NAMELESS", 1)
+    _Site(monkeypatch, {1: [_nepal_row(""), _nepal_row(" ")]})
+    with pytest.raises(ValueError, match="hold no candidate with a name"):
+        local.fetch(_NEPAL)
+
+
+@pytest.mark.parametrize("cookies", [[], ["CsrfToken=; path=/"]],
+                         ids=["no cookie", "an empty token"])
+def test_a_nepal_site_that_sets_no_token_is_refused(
+        site: _Site, monkeypatch: pytest.MonkeyPatch, cookies: list[str]) -> None:
+    monkeypatch.setattr(urllib.request, "urlopen", lambda request, timeout: _Root(*cookies))
+    with pytest.raises(ValueError, match="set no CsrfToken cookie"):
+        local.fetch(_NEPAL)
+
+
+def test_a_nepal_root_failing_once_is_retried(
+        site: _Site, monkeypatch: pytest.MonkeyPatch) -> None:
+    _tolerate_nepal_s_small_fixture(monkeypatch)
+    failed = _failing_once(monkeypatch, nepal.NEPAL_SITE)
+    assert len(local.fetch(_NEPAL).records) == 4
+    assert failed == [nepal.NEPAL_SITE]
+
+
+def test_a_nepal_corpus_of_another_election_is_refused_on_load(
+        site: _Site, monkeypatch: pytest.MonkeyPatch, _own_cache: Path) -> None:
+    _tolerate_nepal_s_small_fixture(monkeypatch)
+    local.fetch(_NEPAL)
+    monkeypatch.setattr(nepal, "NEPAL_ELECTION", "Election2084")
+    with pytest.raises(local.CorpusDamaged, match="holds the election Election2079"):
+        local.load(_NEPAL)
+
+
+def test_the_pairs_view_does_not_pair_two_scripts(
+        site: _Site, monkeypatch: pytest.MonkeyPatch) -> None:
+    # The pairs view compares the letters of two spellings, which a
+    # Devanagari name and its romanization share none of; the Devanagari
+    # is kept under its own key, not as a reference name.
+    _tolerate_nepal_s_small_fixture(monkeypatch)
+    local.fetch(_NEPAL)
+    with pytest.raises(SystemExit, match="carry no reference name"):
+        local.main(["pairs", _NEPAL])
+
+
+def test_the_shipped_nepal_candidate_count_is_the_files_whole() -> None:
+    # The count every whole fetch must read, as the 753 files held it.
+    assert nepal.NEPAL_CANDIDATES == 152_960
+
+
+@pytest.mark.parametrize("change", [-1, 1], ids=["one fewer", "one more"])
+def test_a_nepal_election_of_another_size_with_every_file_whole_is_refused(
+        site: _Site, monkeypatch: pytest.MonkeyPatch, change: int) -> None:
+    # A site that trimmed its files (to the winners, or to one post), or
+    # added to them, is refused however well formed what is left: with
+    # every file read the count must be the pinned one, exactly.
+    _tolerate_nepal_s_small_fixture(monkeypatch)
+    del site.files[103]  # the empty one: every file whole
+    monkeypatch.setattr(nepal, "NEPAL_BODIES", 2)
+    monkeypatch.setattr(nepal, "NEPAL_CANDIDATES", 6 - change)
+    with pytest.raises(ValueError, match="hold 6 candidates, 0 missing or empty"):
+        local.fetch(_NEPAL)
+
+
+@pytest.mark.parametrize(("pin", "refused"), [(7, False), (6, True), (5, True)],
+                         ids=["one a lost file", "the pin itself", "over the pin"])
+def test_a_nepal_election_with_a_file_lost_reads_at_most_the_pin_less_a_candidate_a_file(
+        site: _Site, monkeypatch: pytest.MonkeyPatch, pin: int, refused: bool) -> None:
+    # Every real file held a candidate, so with the empty file 103 the 6
+    # read must be at most the pin less one: the count landing on the pin
+    # with a file lost is the site's files grown by what it lost.
+    _tolerate_nepal_s_small_fixture(monkeypatch)
+    monkeypatch.setattr(nepal, "NEPAL_CANDIDATES", pin)
+    if refused:
+        with pytest.raises(ValueError, match="hold 6 candidates, 1 missing or empty"):
+            local.fetch(_NEPAL)
+    else:
+        assert local.fetch(_NEPAL).meta["detail"]["local_bodies_empty"] == "103"
+
+
+@pytest.mark.parametrize("held", [980, 979])
+def test_a_nepal_election_with_a_file_missing_is_refused_past_its_real_shortfall(
+        monkeypatch: pytest.MonkeyPatch, held: int) -> None:
+    # With a file missing the count cannot be exact: at NEPAL_MAX_SHORT,
+    # unpatched, 20 of 1,000 short pass and 21 are refused.
+    _Site(monkeypatch, {2: [_nepal_row(f"Ram {_letters(i)}", f"राम {i}")
+                            for i in range(held)]},
+          listed=[{"id": i, "name": "", "parentId": 1} for i in (1, 2)])
+    monkeypatch.setattr(nepal, "NEPAL_BODIES", 2)
+    monkeypatch.setattr(nepal, "NEPAL_CANDIDATES", 1000)
+    monkeypatch.setattr(nepal, "NEPAL_MAX_MISSING", 1)
+    if held == 980:
+        assert local.fetch(_NEPAL).meta["detail"]["local_bodies_missing"] == "1"
+    else:
+        with pytest.raises(ValueError, match="21 of 1,000 NEPAL_CANDIDATES are missing"):
+            local.fetch(_NEPAL)
+
+
+def test_a_nepal_site_answering_every_body_with_one_file_is_refused(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # A cache serving one file under every id: every file whole and well
+    # formed, the count matching, and the names four, read 40 times over.
+    four = [_nepal_row(f"Ram {_letters(i)}", f"राम {i}") for i in range(4)]
+    _Site(monkeypatch, {i: list(four) for i in range(40)})
+    with pytest.raises(ValueError, match="distinct CandidateNameEng: the column may be masked"):
+        local.fetch(_NEPAL)
+
+
+@pytest.mark.parametrize("missing", ["CandidateName", "CandidateNameEng"])
+@pytest.mark.parametrize("count", [1, 2])
+def test_a_nepal_candidate_without_one_name_key_is_counted(
+        monkeypatch: pytest.MonkeyPatch, missing: str, count: int) -> None:
+    bad = {k: v for k, v in _nepal_row("Ram Zed", "राम ज़ेड").items() if k != missing}
+    _Site(monkeypatch, {1: _hundred(*[bad] * count)})
+    if count == 1:
+        assert local.fetch(_NEPAL).meta["detail"]["without_the_name_keys"] == 1
+    else:
+        with pytest.raises(ValueError, match="2 of 100 candidates have no CandidateName or"):
+            local.fetch(_NEPAL)
+
+
+def test_a_nepal_lookup_answered_as_missing_is_raised_not_counted(
+        site: _Site, monkeypatch: pytest.MonkeyPatch) -> None:
+    # Only a body's file is counted as missing; without the lookup there
+    # is no election to read.
+    served = site.urlopen
+
+    def urlopen(request: urllib.request.Request, timeout: int) -> object:
+        if request.full_url == nepal.NEPAL_HANDLER + nepal.NEPAL_LOOKUP:
+            site.requests.append(request)
+            raise _nepal_error(request.full_url, 404)
+        return served(request, timeout)
+    monkeypatch.setattr(urllib.request, "urlopen", urlopen)
+    with pytest.raises(urllib.error.HTTPError, match="404") as raised:
+        local.fetch(_NEPAL)
+    raised.value.close()
+    assert site.asked().count(nepal.NEPAL_LOOKUP) == 1
+    assert local.load(_NEPAL) is None
+
+
+@pytest.mark.parametrize(("code", "asked"), [(503, None), (403, 1)],
+                         ids=["a server error every time", "a refusal"])
+def test_a_nepal_root_that_does_not_answer_is_raised(
+        site: _Site, monkeypatch: pytest.MonkeyPatch, code: int, asked: int | None) -> None:
+    # A 5xx at the root is retried and its last raised; a 403, what the
+    # site answers a refused User-Agent, is raised at once, never read as
+    # a site that sets no token.
+    served = site.urlopen
+
+    def urlopen(request: urllib.request.Request, timeout: int) -> object:
+        if request.full_url == nepal.NEPAL_SITE:
+            site.requests.append(request)
+            raise _nepal_error(request.full_url, code)
+        return served(request, timeout)
+    monkeypatch.setattr(urllib.request, "urlopen", urlopen)
+    with pytest.raises(urllib.error.HTTPError, match=str(code)) as raised:
+        local.fetch(_NEPAL)
+    raised.value.close()
+    assert site.asked() == [nepal.NEPAL_SITE] * (asked or core.RETRIES)
+
+
+@pytest.mark.parametrize(("cookies", "token", "header"), [
+    (["CsrfToken=abc; path=/; Priority=High", "ASP.NET_SessionId=s1; HttpOnly"],
+     "abc", "ASP.NET_SessionId=s1; CsrfToken=abc"),
+    (['CsrfToken="a=b"; path=/'], '"a=b"', 'CsrfToken="a=b"'),
+    (["CsrfToken=abc", "lang=ne np; path=/"], "abc", "CsrfToken=abc; lang=ne np"),
+], ids=["an attribute the stdlib does not know", "a quoted value", "a value with a space"])
+def test_a_nepal_cookie_is_sent_as_the_site_set_it(
+        monkeypatch: pytest.MonkeyPatch, cookies: list[str], token: str, header: str) -> None:
+    # An attribute is no cookie, a value is sent as written, and no
+    # cookie the site set is left out.
+    monkeypatch.setattr(urllib.request, "urlopen", lambda request, timeout: _Root(*cookies))
+    assert nepal._session() == {"User-Agent": nepal.NEPAL_USER_AGENT,
+                                "Referer": nepal.NEPAL_SITE, "X-CSRF-Token": token,
+                                "Cookie": header}
+
+
+@pytest.mark.parametrize("cookie", ["=abc; path=/", "Secure; path=/"],
+                         ids=["no name", "no equals sign"])
+def test_a_nepal_cookie_this_cannot_read_is_refused(
+        monkeypatch: pytest.MonkeyPatch, cookie: str) -> None:
+    # Read past, it would leave a cookie out of every request, and the
+    # fetch die on a 403 that hides why.
+    monkeypatch.setattr(urllib.request, "urlopen",
+                        lambda request, timeout: _Root("CsrfToken=abc", cookie))
+    with pytest.raises(ValueError, match="set a cookie with no name"):
+        nepal._session()
+
+
+@pytest.mark.parametrize(("records", "match"), [
+    ([{"name": "Ann Lee", "devanagari": 3}], "'devanagari' is not text"),
+    ([{"name": "Ann Lee", "devanagari": " "}],
+     "no fetched record holds the corpus key 'devanagari'"),
+    ([{"name": "Ann Lee", "devanagri": "राम"}],
+     "no fetched record holds the corpus key 'devanagari'"),
+], ids=["a value not text", "a value blank", "a key misspelled"])
+def test_a_second_corpus_key_the_records_do_not_fill_is_refused(
+        monkeypatch: pytest.MonkeyPatch, records: list[dict[str, object]], match: str) -> None:
+    # Skipped in silence, its names would never reach the snapshot.
+    monkeypatch.setitem(local.SOURCES, _NEPAL, dataclasses.replace(
+        local.SOURCES[_NEPAL], fetch=lambda: local.Fetched(records, _DATE, {}), check=None))
+    with pytest.raises(ValueError, match=match):
+        local.fetch(_NEPAL)
+    assert local.load(_NEPAL) is None
+
+
+@pytest.mark.parametrize("source", sorted(set(local.SOURCES) - {_NEPAL}))
+def test_every_other_source_s_corpus_and_index_read_the_name_alone(
+        monkeypatch: pytest.MonkeyPatch, source: str) -> None:
+    # A record's other keys (psc's boxes, tse's registry name) are no
+    # names of the corpus or the word index.
+    record = {"name": "Ann Lee", "given": "Bo Wu", "devanagari": "Cy Doe",
+              "registry": "Dee Fox"}
+    monkeypatch.setitem(local.SOURCES, source, dataclasses.replace(
+        local.SOURCES[source], fetch=lambda: local.Fetched([record], _DATE, {}),
+        check=None, renew=None))
+    local.fetch(source)
+    lines = local.corpus_path(source).read_text().splitlines()
+    assert [json.loads(line) for line in lines] == ["Ann Lee"]
+    loaded = local.load(source)
+    assert loaded is not None
+    assert local.lookup(loaded, "Lee").anywhere == 1
+    assert [local.lookup(loaded, w).anywhere for w in ("Wu", "Cy", "Fox")] == [0, 0, 0]
+
+
 # -- Companies House people with significant control ------------------------------
 
 _PSC = "psc-individuals"
@@ -2591,7 +3341,7 @@ def test_no_module_imports_a_sibling_constant() -> None:
     # JRC are sources' names, keys of SOURCES, and no fetch's setting.
     import ast
     sources = {source.fetch.__module__ for source in local.SOURCES.values()}
-    assert sources == {m.__name__ for m in (ctgov, fec, tse, tw, ukec, psc, jrc)}
+    assert sources == {m.__name__ for m in (ctgov, fec, tse, tw, ukec, psc, jrc, nepal)}
     siblings = {"local_corpora", "local_core", *sources}
     imported = {(path.stem, alias.name)
                 for path in (Path(str(local.__file__)).parent / f"{s}.py"
