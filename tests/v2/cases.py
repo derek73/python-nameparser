@@ -792,6 +792,14 @@ CASES: tuple[Case, ...] = (
          notes="the dotted move's boundary: after a one-word head the "
                "family comma stands and Ing. stays the title it was, now "
                "reporting the fork"),
+    Case("one_word_head_capitals_ing_is_a_credential", "Novak, ING.",
+         {"family": "Novak", "suffix": "ING."},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#848)",
+         notes="the capitals lean (rules/S6): in a name not written "
+               "wholly in capitals, ING. reads as MA. and PA. do, the "
+               "credential even after a one-word head, where 'Novak, "
+               "Ing.' keeps the title; master read title 'ING.'"),
     Case("comma_dotted_initials_ing_are_a_credential", "Smith, I.N.G.",
          {"family": "Smith", "suffix": "I.N.G."},
          classification="fix(#848)",
