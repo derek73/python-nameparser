@@ -103,9 +103,12 @@
 {"name": "Luo Si", "shape": 1}
 {"name": "Maria Kowalska z domu Nowak MA", "shape": 1}
 {"name": "Md Abdul Karim", "shape": 1}
+{"name": "Md Abu Sayed", "shape": 1}
+{"name": "Md Rahman", "shape": 1}
 {"name": "Min Chi", "shape": 1}
 {"name": "Minjun KIM", "shape": 1}
 {"name": "Mr MA", "shape": 1}
+{"name": "Mr Md Karim Uddin", "shape": 1}
 {"name": "Nguyen Van Lac", "shape": 1}
 {"name": "Sir Bob Andrew Dole", "shape": 1}
 {"name": "Wang M.Eng.", "shape": 1}
@@ -219,14 +222,15 @@
 {"name": "Smith, John V, Jr.", "shape": 2}
 {"name": "Smith, John, Extra, Jr.", "shape": 2}
 {"name": "Smith, MA", "shape": 2}
-{"name": "Smith, MD PhD Ma", "shape": 2}
 {"name": "Smith, MEng", "shape": 2}
 {"name": "Smith, Ma", "shape": 2}
-{"name": "Smith, Ms MD Ma", "shape": 2}
 {"name": "Smith, Ms Ma", "shape": 2}
+{"name": "Smith, Ms RA Ma", "shape": 2}
 {"name": "Smith, PhD MEng", "shape": 2}
 {"name": "Smith, PhD Ma", "shape": 2}
+{"name": "Smith, RA PhD Ma", "shape": 2}
 {"name": "Smith, meng", "shape": 2}
+{"name": "Uddin, Md Karim", "shape": 2}
 {"name": "Van Buren, Ed", "shape": 2}
 {"name": "Wang, Si", "shape": 2}
 {"name": "de la Cruz, Ma", "shape": 2}

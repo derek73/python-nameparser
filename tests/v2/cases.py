@@ -1874,22 +1874,22 @@ CASES: tuple[Case, ...] = (
                "given name. 1.4.0 and 2.3.0 read the same",
          shape=2),
     Case("a_dual_opening_the_given_part_anchors_nothing",
-         "Smith, MD MEng",
-         {"title": "MD", "given": "MEng", "family": "Smith"},
+         "Smith, RA MEng",
+         {"title": "RA", "given": "MEng", "family": "Smith"},
          notes="the same exclusion for the other chunked member. "
-               "1.4.0 read the same; 2.3.0 read suffix 'MD MEng', "
+               "1.4.0 read the same; 2.3.0 read suffix 'RA MEng', "
                "the reading #540's marking moved"),
     Case("a_dual_opening_the_given_part_turns_the_anchor_off",
-         "Smith, Ms MD Ma",
-         {"title": "Ms MD", "given": "Ma", "family": "Smith"},
+         "Smith, Ms RA Ma",
+         {"title": "Ms RA", "given": "Ma", "family": "Smith"},
          notes="a dual opening the given part is a title there, and a "
                "part whose leading title run holds one is anchored by "
                "nothing, the second dual standing in that same run. "
                "1.4.0 and 2.3.0 read the same",
          shape=2),
     Case("a_dual_opening_the_given_part_silences_a_later_degree",
-         "Smith, MD PhD Ma",
-         {"title": "MD", "given": "PhD", "middle": "Ma",
+         "Smith, RA PhD Ma",
+         {"title": "RA", "given": "PhD", "middle": "Ma",
           "family": "Smith"},
          classification="fix(#296)",
          ambiguities=("suffix-or-name",),
@@ -1899,7 +1899,7 @@ CASES: tuple[Case, ...] = (
                "so 'PhD' speaks for nothing here and 'Ma' ends the "
                "given part as a middle name, reported by the given "
                "slot. 2.2.0 and 2.3.0 read the same fields; 1.4.0 "
-               "through 2.1.0 title 'MD PhD', first 'Ma', 'phd' being "
+               "through 2.1.0 title 'RA PhD', first 'Ma', 'phd' being "
                "title vocabulary until #296",
          shape=2),
     Case("a_numeral_in_front_anchors_nothing",
@@ -7671,8 +7671,8 @@ CASES: tuple[Case, ...] = (
                "#601; rules/C10's maiden-marker Accepted entry). 2.0.0 "
                "through 2.3.0 read maiden 'Jones', stepping past the core"),
     Case("suffix_delimiter_core_that_survives_is_a_boundary_too",
-         "Smith, MD - PhD - FACS",
-         {"title": "MD", "given": "-", "family": "Smith",
+         "Smith, RA - PhD - FACS",
+         {"title": "RA", "given": "-", "family": "Smith",
           "suffix": "PhD - FACS"},
          policy=_SD,
          classification="fix(#602)",
@@ -9113,15 +9113,16 @@ CASES: tuple[Case, ...] = (
                "piece is ONE WORD: a joined unit led by a title is a "
                "title run, and handing it back would turn a title into "
                "a given name and leave the name with no title at all"),
-    Case("title_run_floor_declines_an_all_suffix_input", "MD DDS",
-         {"title": "MD", "family": "DDS"}, classification="parity",
+    Case("title_run_floor_declines_an_all_suffix_input", "RA DDS",
+         {"title": "RA", "family": "DDS"}, classification="parity",
          notes="negative control: the word the run would give back is "
-               "`MD`, which IS suffix vocabulary, so the floor "
-               "declines. `md` is title vocabulary too, so the run is "
-               "`MD` and H1's fold claims `DDS` -- not the bare-suffix "
+               "`RA`, which IS suffix vocabulary, so the floor "
+               "declines. `ra` is title vocabulary too, so the run is "
+               "`RA` and H1's fold claims `DDS` -- not the bare-suffix "
                "carve-out, which reads the FIRST word as the name and "
-               "reports `suffix-or-name` (`DDS MD`). Nothing reports "
-               "here"),
+               "reports `suffix-or-name` (`DDS RA`). Nothing reports "
+               "here. Spelled with `MD` until #853 took md out of the "
+               "titles"),
     Case("title_run_floor_declines_a_split_credential", "Jr. Ph. D.",
          {"title": "Jr.", "suffix": "Ph. D."}, classification="parity",
          notes="negative control: `Jr.` is suffix vocabulary wearing "
@@ -9933,26 +9934,63 @@ CASES: tuple[Case, ...] = (
          classification="fix(#296)",
          notes="same as audit_phd_leading_is_a_name: 'jr' is never "
                "prenominal in any tradition"),
-    Case("audit_md_leading_stays_a_title", "Md Abdul Karim",
-         {"title": "Md", "given": "Abdul", "family": "Karim"},
-         notes="the one word the 2026-07-30 table got wrong: 'md' KEEPS "
-               "dual membership. Bare 'Md' before a name is the "
-               "Bengali and South Asian Muslim abbreviation of "
-               "Muhammad (#343/#345's corpus rows), a prenominal use "
-               "the 'postnominal only' disposition did not consider; "
-               "'MD' after the name is the degree. Position decides, "
-               "as for 'sr'. The shape-1 tag rides on that disposition "
-               "-- 'md' is the ONE deviation from the approved "
-               "2026-07-30 audit table (decisions/comma-suffix-arc), "
-               "so if the deviation is "
-               "ever reversed this row stops being a Title Given "
-               "Family arrangement and the tag has to move to another "
-               "row rather than the expectations being edited under it",
+    Case("audit_md_leading_is_the_given_name", "Md Abdul Karim",
+         {"given": "Md", "middle": "Abdul", "family": "Karim"},
+         classification="fix(#853)",
+         notes="bare 'Md' before a name abbreviates Muhammad, a given "
+               "name, and reads as the spelled-out 'Mohammad Abdul "
+               "Karim' does. 1.4.0 through 2.5.0 "
+               "read title 'Md', given 'Abdul': 'md' was a title from "
+               "#32 (the medical degree written before the name) until "
+               "#853, which measured the forename box UK filers type "
+               "it into (decisions/indic-honorifics). 'MD' after the "
+               "name is still the degree",
          shape=1),
+    Case("md_after_a_title_is_the_given_name", "Mr Md Karim Uddin",
+         {"title": "Mr", "given": "Md", "middle": "Karim",
+          "family": "Uddin"},
+         classification="fix(#853)",
+         notes="the shape #853 was filed on: 'md' in a title run had "
+               "joined it, title 'Mr Md', given 'Karim'",
+         shape=1),
+    Case("md_before_a_lone_family_name_is_the_given_name", "Md Rahman",
+         {"given": "Md", "family": "Rahman"},
+         classification="fix(#853)",
+         notes="the title reading left the given name empty here "
+               "(rules/H1's fold of a title and one name word)",
+         shape=1),
+    Case("md_before_a_particle_gives_it_to_the_family", "Md Abu Sayed",
+         {"given": "Md", "family": "Abu Sayed"},
+         classification="fix(#853)",
+         notes="an accepted cost of #853: 'abu' behind a given name "
+               "is a particle starting the family, as in the spelled-"
+               "out 'Mohammad Abu Sayed', where the title reading had "
+               "left 'abu' the leading name piece and the bound join "
+               "read given 'Abu' (1.4.0 read family 'Abu Sayed' "
+               "too, behind title 'Md'). The filer's surname box holds "
+               "'Sayed' (17 of #853's 1,300 PSC names take this shape, "
+               "with 'Abu', 'Al' or 'Bin'); the gap is the spelled-out "
+               "name's, not Md's (decisions/indic-honorifics)",
+         shape=1),
+    Case("md_opening_a_family_comma_given_part_is_a_credential",
+         "Uddin, Md Karim",
+         {"family": "Uddin", "suffix": "Md Karim"},
+         classification="fix(#853)",
+         ambiguities=("suffix-or-name",),
+         notes="an accepted cost of #853: a credential opening the "
+               "part after a family comma starts a credential run to "
+               "its end (rules/C13), and 'md' is a credential with no "
+               "title reading left to stand it down, so the given name "
+               "is lost. 9 FEC names take this shape, against about "
+               "380 ClinicalTrials.gov officials ('John Smith, MD "
+               "Jones' shapes) the title reading had misread "
+               "(decisions/indic-honorifics)",
+         shape=2),
     Case("audit_md_after_comma_is_the_degree", "Smith, MD",
          {"family": "Smith", "suffix": "MD"},
          classification="fix(#296)",
-         notes="the third leg of 'position decides' for 'md'"),
+         notes="'md' after a comma is the degree, as it is at the "
+               "end of a name"),
     # -- #346: the renunciate class. A title of religious renunciation
     # addresses the GIVEN name AND belongs to a tradition that
     # abolishes the surname, so rules/H1's given-name-title fold is
@@ -10334,16 +10372,17 @@ CASES: tuple[Case, ...] = (
                "there is no abbreviation, so the numeral is the "
                "generation it looks like. This row is what makes "
                "#432's fix a period test rather than a numeral test"),
-    Case("family_comma_title_resets_the_credential_run", "Smith, MD Dr. I",
-         {"title": "MD Dr.", "given": "I", "family": "Smith"},
+    Case("family_comma_title_resets_the_credential_run", "Smith, RA Dr. I",
+         {"title": "RA Dr.", "given": "I", "family": "Smith"},
          notes="THE RESET. A title ends the run: what follows a bare "
                "title is not continuing a credential, so the numeral "
                "behind it does not join and the segment is no run at "
                "all, leaving the walk to read the dual and the title as "
                "the given part's titles and 'I' as its given name. "
-               "Without the reset the numeral continues the 'MD' in "
+               "Without the reset the numeral continues the 'RA' in "
                "front of the title and the part reads title 'Dr.', "
-               "suffix 'MD I'. Spelled with the dual 'MD' since #603: "
+               "suffix 'RA I'. Spelled with a dual since #603, 'MD' "
+               "until #853 took md out of the titles and 'RA' since: "
                "'Smith, PSM Dr. I', this row until then, is a part the "
                "credential 'PSM' OPENS, which reads as #602's run reads "
                "whatever stands behind it (rules/C13) -- title 'Dr.', "

@@ -1985,16 +1985,16 @@ def test_main_exits_2_on_an_unusable_tally_without_losing_the_other_sources(
 def test_main_rank_lists_credentials_with_vocabulary_and_readings(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
         capsys: pytest.CaptureFixture[str]) -> None:
-    _cache_tally(monkeypatch, tmp_path, _tally(MD=50, **{"QRS-C": 40}, ESQ=3))
+    _cache_tally(monkeypatch, tmp_path, _tally(RA=50, **{"QRS-C": 40}, ESQ=3))
     assert tool.main(["--no-wikidata", "--json", "--rank", "5"]) == 0
     rows = {r["credential"]: r for r in json.loads(capsys.readouterr().out)["rows"]}
     assert [r["rank"] for r in rows.values()] == [1, 2, 3]
-    assert rows["MD"]["vocabulary"] == "acronym, title"
-    assert (rows["MD"]["after_comma"], rows["MD"]["bare"]) == ("suffix", "suffix")
+    assert rows["RA"]["vocabulary"] == "acronym, title"
+    assert (rows["RA"]["after_comma"], rows["RA"]["bare"]) == ("suffix", "suffix")
     assert rows["QRS-C"]["vocabulary"] == "-"
     assert (rows["QRS-C"]["after_comma"], rows["QRS-C"]["bare"]) == ("given", "family")
     assert rows["ESQ"]["vocabulary"] == "suffix word"
-    assert rows["MD"]["census"] == "not downloaded"
+    assert rows["RA"]["census"] == "not downloaded"
 
 
 def test_main_rank_unlisted_keeps_each_credentials_overall_rank(

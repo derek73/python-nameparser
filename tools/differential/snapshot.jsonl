@@ -1504,8 +1504,8 @@
 {"name": "John Doe, CLU, CFP, LUTC", "given": "John", "family": "Doe", "suffix": "CLU, CFP, LUTC", "ambiguities": ["COMMA_STRUCTURE"], "initials": "J. D.", "capitalized_force": "John Doe CLU, CFP, Lutc"}
 {"name": "John Doe, Jr.", "given": "John", "family": "Doe", "suffix": "Jr.", "initials": "J. D."}
 {"name": "John Doe, Jr.,,", "given": "John", "family": "Doe", "suffix": "Jr.", "initials": "J. D."}
-{"name": "John Doe, MD - PhD - FACS", "title": "MD", "given": "-", "family": "John Doe", "suffix": "PhD - FACS", "initials": "-. J. D.", "capitalized_force": "Md - John Doe PhD - FACS"}
-{"name": "John Doe, MD - PhD, FACS", "title": "MD", "given": "-", "family": "John Doe", "suffix": "PhD, FACS", "initials": "-. J. D.", "capitalized_force": "Md - John Doe PhD, FACS"}
+{"name": "John Doe, MD - PhD - FACS", "given": "John", "family": "Doe", "suffix": "MD - PhD - FACS", "initials": "J. D."}
+{"name": "John Doe, MD - PhD, FACS", "given": "John", "family": "Doe", "suffix": "MD - PhD, FACS", "initials": "J. D."}
 {"name": "John Doe, MD, PhD", "given": "John", "family": "Doe", "suffix": "MD, PhD", "initials": "J. D."}
 {"name": "John Doe, MD-PhD-", "given": "MD-PhD-", "family": "John Doe", "initials": "M. J. D.", "capitalized_force": "Md-PhD- John Doe"}
 {"name": "John Doe, Msc.Ed.", "given": "John", "family": "Doe", "suffix": "Msc.Ed.", "initials": "J. D."}
@@ -1629,7 +1629,6 @@
 {"name": "John Smith, Jr., van der Berg Prof.", "title": "Prof.", "given": "John", "family": "Smith", "suffix": "Jr., van der Berg", "ambiguities": ["COMMA_STRUCTURE"], "initials": "J. S.", "capitalized_force": "Prof. John Smith Jr., Van Der Berg"}
 {"name": "John Smith, LEED AP", "given": "John", "family": "Smith", "suffix": "LEED AP", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "John Smith, MA", "given": "John", "family": "Smith", "suffix": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
-{"name": "John Smith, MD Jones", "title": "MD", "given": "Jones", "family": "John Smith", "initials": "J. J. S.", "capitalized_force": "Md Jones John Smith"}
 {"name": "John Smith, MD MEng", "given": "John", "family": "Smith", "suffix": "MD MEng", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S.", "capitalized_force": "John Smith MD MENG"}
 {"name": "John Smith, MD, Bart", "given": "John", "family": "Smith", "suffix": "MD, Bart", "ambiguities": ["COMMA_STRUCTURE"], "initials": "J. S."}
 {"name": "John Smith, MD, Ma", "given": "John", "family": "Smith", "suffix": "MD, Ma", "ambiguities": ["COMMA_STRUCTURE"], "initials": "J. S.", "capitalized_force": "John Smith MD, MA"}
@@ -1654,6 +1653,7 @@
 {"name": "John Smith, PhD X.Y.", "given": "John", "family": "Smith", "suffix": "PhD X.Y.", "initials": "J. S."}
 {"name": "John Smith, PhD XYZ", "given": "John", "family": "Smith", "suffix": "PhD XYZ", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "John Smith, PhD vd DO", "given": "John", "family": "Smith", "suffix": "PhD vd DO", "initials": "J. S.", "capitalized_force": "John Smith PhD VD DO"}
+{"name": "John Smith, RA Jones", "title": "RA", "given": "Jones", "family": "John Smith", "initials": "J. J. S.", "capitalized_force": "Ra Jones John Smith"}
 {"name": "John Smith, RAI", "given": "John", "family": "Smith", "suffix": "RAI", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "John Smith, V Jr.", "given": "John", "family": "Smith", "suffix": "V Jr.", "initials": "J. S."}
 {"name": "John Smith, V MD", "given": "John", "family": "Smith", "suffix": "V MD", "initials": "J. S."}
@@ -2105,11 +2105,11 @@
 {"name": "M. Jean-Nicolas Louis Marcel de Bouchart fils", "given": "M.", "middle": "Jean-Nicolas Louis Marcel", "family": "de Bouchart fils", "initials": "M. J. L. M. B. f.", "capitalized_force": "M. Jean-Nicolas Louis Marcel de Bouchart Fils"}
 {"name": "M. de Bouchart Jean-Nicolas Louis Marcel fils", "order": "FAMILY_FIRST", "given": "de Bouchart Jean-Nicolas Louis Marcel fils", "family": "M.", "initials": "d. B. J. L. M. f. M.", "capitalized_force": "De Bouchart Jean-Nicolas Louis Marcel Fils M."}
 {"name": "MANƉELA Rolanɖ Alfɔns", "order": "FAMILY_FIRST", "given": "Rolanɖ", "middle": "Alfɔns", "family": "MANƉELA", "initials": "R. A. M.", "capitalized_force": "Rolanɖ Alfɔns Manɖela"}
-{"name": "MD - DO - DDS", "title": "MD", "given": "-", "family": "DO -", "suffix": "DDS", "initials": "-. -.", "capitalized": "Md - do - DDS"}
-{"name": "MD Chirurgie dentară von der Ruhr Prof. dr. Eva-Eleonora Karl Hans Jr.", "order": "FAMILY_FIRST", "title": "MD", "given": "dentară", "middle": "von der Ruhr Prof. dr. Eva-Eleonora Karl Hans", "family": "Chirurgie", "suffix": "Jr.", "initials": "d. R. P. d. E. K. H. C.", "capitalized_force": "Md Dentară von der Ruhr Prof. Dr. Eva-Eleonora Karl Hans Chirurgie Jr."}
-{"name": "MD DDS", "title": "MD", "family": "DDS", "initials": "D.", "capitalized": "Md Dds"}
-{"name": "MD DDS Dut.ra Prof.ra von Brühl González Domingo Maria Giusepa Juana Teresa", "order": "FAMILY_FIRST", "title": "MD", "given": "Dut.ra", "middle": "Prof.ra von Brühl González Domingo Maria Giusepa Juana Teresa", "family": "DDS", "initials": "D. P. B. G. D. M. G. J. T. D.", "capitalized_force": "Md Dut.Ra Prof.Ra von Brühl González Domingo Maria Giusepa Juana Teresa Dds"}
-{"name": "MD DDS von Brühl César Martín Ada Cornelia", "order": "FAMILY_FIRST", "title": "MD", "given": "von Brühl César Martín Ada Cornelia", "family": "DDS", "initials": "v. B. C. M. A. C. D.", "capitalized_force": "Md Von Brühl César Martín Ada Cornelia Dds"}
+{"name": "MD - DO - DDS", "given": "MD", "middle": "-", "family": "DO -", "suffix": "DDS", "initials": "M. -. -.", "capitalized": "Md - do - DDS"}
+{"name": "MD Chirurgie dentară von der Ruhr Prof. dr. Eva-Eleonora Karl Hans Jr.", "order": "FAMILY_FIRST", "given": "Chirurgie", "middle": "dentară von der Ruhr Prof. dr. Eva-Eleonora Karl Hans", "family": "MD", "suffix": "Jr.", "initials": "C. d. R. P. d. E. K. H. M.", "capitalized_force": "Chirurgie Dentară von der Ruhr Prof. Dr. Eva-Eleonora Karl Hans Md Jr."}
+{"name": "MD DDS", "given": "MD", "suffix": "DDS", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "M.", "capitalized": "Md DDS"}
+{"name": "MD DDS Dut.ra Prof.ra von Brühl González Domingo Maria Giusepa Juana Teresa", "order": "FAMILY_FIRST", "given": "DDS", "middle": "Dut.ra Prof.ra von Brühl González Domingo Maria Giusepa Juana Teresa", "family": "MD", "initials": "D. D. P. B. G. D. M. G. J. T. M.", "capitalized_force": "Dds Dut.Ra Prof.Ra von Brühl González Domingo Maria Giusepa Juana Teresa Md"}
+{"name": "MD DDS von Brühl César Martín Ada Cornelia", "order": "FAMILY_FIRST", "given": "DDS", "middle": "von Brühl César Martín Ada Cornelia", "family": "MD", "initials": "D. B. C. M. A. C. M.", "capitalized_force": "Dds von Brühl César Martín Ada Cornelia Md"}
 {"name": "MD PhD Jr., John", "given": "John", "family": "MD", "suffix": "PhD Jr.", "initials": "J. M.", "capitalized_force": "John Md PhD Jr."}
 {"name": "MD, DO, DDS", "given": "DO", "family": "MD", "suffix": "DDS", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "D. M.", "capitalized": "Do Md DDS"}
 {"name": "MD, PHD", "family": "MD", "suffix": "PHD", "initials": "M.", "capitalized": "Md PhD"}
@@ -2266,7 +2266,9 @@
 {"name": "Mañé i Miravet, Teresa", "given": "Teresa", "family": "Mañé i Miravet", "initials": "T. M. M."}
 {"name": "Maǧrīṭī, Abu-'l-Qāsim Maslama Ibn-Aḥmad al-", "given": "Abu-'l-Qāsim", "middle": "Maslama Ibn-Aḥmad", "family": "al- Maǧrīṭī", "initials": "A. M. I. M.", "capitalized_force": "Abu-'L-Qāsim Maslama ibn-Aḥmad al- Maǧrīṭī"}
 {"name": "Mc Donald", "family": "Mc Donald", "initials": "D.", "capitalized_force": "mc Donald"}
-{"name": "Md Abdul Karim", "title": "Md", "given": "Abdul", "family": "Karim", "initials": "A. K."}
+{"name": "Md Abdul Karim", "given": "Md", "middle": "Abdul", "family": "Karim", "initials": "M. A. K."}
+{"name": "Md Abu Sayed", "given": "Md", "family": "Abu Sayed", "initials": "M. S.", "capitalized_force": "Md abu Sayed"}
+{"name": "Md Rahman", "given": "Md", "family": "Rahman", "initials": "M. R."}
 {"name": "Md,, Phd", "family": "Md", "suffix": "Phd", "initials": "M.", "capitalized_force": "Md PhD"}
 {"name": "Md. Abdul Karim", "title": "Md.", "given": "Abdul", "family": "Karim", "initials": "A. K."}
 {"name": "Medici, Clarice de'", "given": "Clarice", "family": "de' Medici", "initials": "C. M."}
@@ -2349,6 +2351,7 @@
 {"name": "Mozart Wolfgang Amadeus", "order": "FAMILY_FIRST", "given": "Wolfgang", "middle": "Amadeus", "family": "Mozart", "initials": "W. A. M."}
 {"name": "Mozart, Wolfgang Amadeus", "given": "Wolfgang", "middle": "Amadeus", "family": "Mozart", "initials": "W. A. M."}
 {"name": "Mr MA", "title": "Mr", "family": "MA", "initials": "M.", "capitalized_force": "Mr Ma"}
+{"name": "Mr Md Karim Uddin", "title": "Mr", "given": "Md", "middle": "Karim", "family": "Uddin", "initials": "M. K. U."}
 {"name": "Mr XXX", "title": "Mr", "family": "XXX", "initials": "X.", "capitalized_force": "Mr Xxx"}
 {"name": "Mr. & Mrs. John Smith", "title": "Mr. & Mrs.", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Mr. Bertram Wilberforce Henry Robert Wooster Jr, MP", "title": "Mr.", "given": "Bertram", "middle": "Wilberforce Henry Robert", "family": "Wooster", "suffix": "Jr, MP", "initials": "B. W. H. R. W."}
@@ -2587,7 +2590,7 @@
 {"name": "Prof. Dr. Adama Coulibaly Camara Massamba won Baar Dominique Goudiaby MD DDS", "title": "Prof. Dr.", "given": "Adama", "middle": "Coulibaly Camara Massamba won Baar Dominique", "family": "Goudiaby", "suffix": "MD DDS", "initials": "A. C. C. M. w. B. D. G.", "capitalized_force": "Prof. Dr. Adama Coulibaly Camara Massamba Won Baar Dominique Goudiaby MD DDS"}
 {"name": "Prof. Dr. Anna Cornelia Eva Sophia van den Wolf jr. M.D. Ph.D.", "title": "Prof. Dr.", "given": "Anna", "middle": "Cornelia Eva Sophia", "family": "van den Wolf", "suffix": "jr. M.D. Ph.D.", "initials": "A. C. E. S. W.", "capitalized_force": "Prof. Dr. Anna Cornelia Eva Sophia van den Wolf Jr. M.D. Ph.D."}
 {"name": "Prof. Dr. Brühl, Ada", "title": "Prof. Dr.", "given": "Ada", "family": "Brühl", "initials": "A. B."}
-{"name": "Prof. Dr. MD DDS Ada Cornelia César Martín von Brühl Jr", "title": "Prof. Dr. MD", "given": "DDS", "middle": "Ada Cornelia César Martín", "family": "von Brühl", "suffix": "Jr", "initials": "D. A. C. C. M. B.", "capitalized_force": "Prof. Dr. Md Dds Ada Cornelia César Martín von Brühl Jr"}
+{"name": "Prof. Dr. MD DDS Ada Cornelia César Martín von Brühl Jr", "title": "Prof. Dr.", "given": "MD", "middle": "DDS Ada Cornelia César Martín", "family": "von Brühl", "suffix": "Jr", "initials": "M. D. A. C. C. M. B.", "capitalized_force": "Prof. Dr. Md Dds Ada Cornelia César Martín von Brühl Jr"}
 {"name": "Prof. Dr. Mary Lou Cesare Martín von Brühl Jr., Dr. Ph.D", "title": "Prof. Dr. Dr.", "given": "Mary", "middle": "Lou Cesare Martín", "family": "von Brühl", "suffix": "Jr., Ph.D", "initials": "M. L. C. M. B."}
 {"name": "Prof. Dr. Mary Sue Marie von Miller II, MD DDS", "title": "Prof. Dr.", "given": "Mary", "middle": "Sue Marie", "family": "von Miller", "suffix": "II, MD DDS", "initials": "M. S. M. M."}
 {"name": "Prof. Dr. María Florencia Martina Cristina von Brühl Jr., MD DDS", "title": "Prof. Dr.", "given": "María", "middle": "Florencia Martina Cristina", "family": "von Brühl", "suffix": "Jr., MD DDS", "initials": "M. F. M. C. B."}
@@ -2599,7 +2602,7 @@
 {"name": "Prof. Smith, Dr. John", "title": "Prof. Dr.", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Prof. Smith, John, PhD", "title": "Prof.", "given": "John", "family": "Smith", "suffix": "PhD", "initials": "J. S."}
 {"name": "Prof. dr. Cornelia Margarita Sofia Aletta van den Berg jnr., MBChB PhD", "title": "Prof. dr.", "given": "Cornelia", "middle": "Margarita Sofia Aletta", "family": "van den Berg", "suffix": "jnr., MBChB PhD", "initials": "C. M. S. A. B.", "capitalized_force": "Prof. Dr. Cornelia Margarita Sofia Aletta van den Berg Jnr., MBChB PhD"}
-{"name": "Prof. dr. MD Chirurgie dentară Eva-Eleonora Karl Hans von der Ruhr Jr.", "title": "Prof. dr. MD", "given": "Chirurgie", "middle": "dentară Eva-Eleonora Karl Hans", "family": "von der Ruhr", "suffix": "Jr.", "initials": "C. d. E. K. H. R.", "capitalized_force": "Prof. Dr. Md Chirurgie Dentară Eva-Eleonora Karl Hans von der Ruhr Jr."}
+{"name": "Prof. dr. MD Chirurgie dentară Eva-Eleonora Karl Hans von der Ruhr Jr.", "title": "Prof. dr.", "given": "MD", "middle": "Chirurgie dentară Eva-Eleonora Karl Hans", "family": "von der Ruhr", "suffix": "Jr.", "initials": "M. C. d. E. K. H. R.", "capitalized_force": "Prof. Dr. Md Chirurgie Dentară Eva-Eleonora Karl Hans von der Ruhr Jr."}
 {"name": "Prof. Ɖr. MƉ Samʊwɛl fan ƉAM Fostɛɛŋ", "title": "Prof. Ɖr.", "given": "MƉ", "middle": "Samʊwɛl fan ƉAM", "family": "Fostɛɛŋ", "initials": "M. S. f. Ɖ. F.", "capitalized_force": "Prof. Ɖr. Mɖ Samʊwɛl Fan Ɖam Fostɛɛŋ"}
 {"name": "Prof. Ɖr. MƉ fan ƉAM ƉOMIŊGO Fostɛɛŋ Samʊwɛl", "order": "FAMILY_FIRST", "title": "Prof. Ɖr.", "given": "fan", "middle": "ƉAM ƉOMIŊGO Fostɛɛŋ Samʊwɛl", "family": "MƉ", "initials": "f. Ɖ. Ɖ. F. S. M.", "capitalized_force": "Prof. Ɖr. Fan Ɖam Ɖomiŋgo Fostɛɛŋ Samʊwɛl Mɖ"}
 {"name": "Prop. Dr. Ada Cornelia César Martín von Brühl González Domingo MD DDS", "title": "Prop. Dr.", "given": "Ada", "middle": "Cornelia César Martín", "family": "von Brühl González Domingo", "suffix": "MD DDS", "initials": "A. C. C. M. B. G. D."}
@@ -2622,6 +2625,7 @@
 {"name": "Quertenmont, Andreas Bernardus de", "given": "Andreas", "middle": "Bernardus", "family": "de Quertenmont", "initials": "A. B. Q."}
 {"name": "Quincy Adams", "given": "Quincy", "family": "Adams", "initials": "Q. A."}
 {"name": "Quinquela Martín, Benito", "given": "Benito", "family": "Quinquela Martín", "initials": "B. Q. M."}
+{"name": "RA DDS", "title": "RA", "family": "DDS", "initials": "D.", "capitalized": "Ra Dds"}
 {"name": "RONALD MACDONALD", "given": "RONALD", "family": "MACDONALD", "initials": "R. M.", "capitalized": "Ronald MacDonald"}
 {"name": "RONALD MCDONALD", "given": "RONALD", "family": "MCDONALD", "initials": "R. M.", "capitalized": "Ronald McDonald"}
 {"name": "Rabbi Cohen", "title": "Rabbi", "family": "Cohen", "initials": "C."}
@@ -2937,16 +2941,15 @@
 {"name": "Smith, Jr., PhD", "family": "Smith", "suffix": "Jr., PhD", "initials": "S."}
 {"name": "Smith, LEED AP", "given": "LEED", "middle": "AP", "family": "Smith", "initials": "L. A. S.", "capitalized_force": "Leed Ap Smith"}
 {"name": "Smith, MA", "family": "Smith", "suffix": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "S."}
-{"name": "Smith, MD - PhD - FACS", "title": "MD", "given": "-", "family": "Smith", "suffix": "PhD - FACS", "initials": "-. S.", "capitalized_force": "Md - Smith PhD - FACS"}
+{"name": "Smith, MD - PhD - FACS", "family": "Smith", "suffix": "MD - PhD - FACS", "initials": "S."}
 {"name": "Smith, MD PhD", "family": "Smith", "suffix": "MD PhD", "initials": "S."}
-{"name": "Smith, MD PhD Ma", "title": "MD", "given": "PhD", "middle": "Ma", "family": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. M. S.", "capitalized_force": "Md PhD Ma Smith"}
 {"name": "Smith, MEng", "given": "MEng", "family": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "M. S.", "capitalized_force": "Meng Smith"}
 {"name": "Smith, Ma", "given": "Ma", "family": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "M. S."}
 {"name": "Smith, Ma. John", "title": "Ma.", "given": "John", "family": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "Smith, Major. John", "title": "Major.", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Smith, Ms Jane", "title": "Ms", "given": "Jane", "family": "Smith", "initials": "J. S."}
-{"name": "Smith, Ms MD Ma", "title": "Ms MD", "given": "Ma", "family": "Smith", "initials": "M. S.", "capitalized_force": "Ms Md Ma Smith"}
 {"name": "Smith, Ms Ma", "title": "Ms", "given": "Ma", "family": "Smith", "initials": "M. S."}
+{"name": "Smith, Ms RA Ma", "title": "Ms RA", "given": "Ma", "family": "Smith", "initials": "M. S.", "capitalized_force": "Ms Ra Ma Smith"}
 {"name": "Smith, Ms.", "family": "Smith", "suffix": "Ms.", "initials": "S.", "capitalized_force": "Smith MS."}
 {"name": "Smith, Ms. Jane", "title": "Ms.", "given": "Jane", "family": "Smith", "initials": "J. S."}
 {"name": "Smith, PSM I", "family": "Smith", "suffix": "PSM I", "initials": "S."}
@@ -2962,6 +2965,7 @@
 {"name": "Smith, PhD MEng", "family": "Smith", "suffix": "PhD MEng", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "S.", "capitalized_force": "Smith PhD MENG"}
 {"name": "Smith, PhD Ma", "family": "Smith", "suffix": "PhD Ma", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "S.", "capitalized_force": "Smith PhD MA"}
 {"name": "Smith, Prof.", "title": "Prof.", "family": "Smith", "initials": "S."}
+{"name": "Smith, RA PhD Ma", "title": "RA", "given": "PhD", "middle": "Ma", "family": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. M. S.", "capitalized_force": "Ra PhD Ma Smith"}
 {"name": "Smith, RN - CRNA", "family": "Smith", "suffix": "RN - CRNA", "initials": "S."}
 {"name": "Smith, Sir", "title": "Sir", "given": "Smith", "initials": "S."}
 {"name": "Smith, Sr.", "family": "Smith", "suffix": "Sr.", "initials": "S."}
@@ -3011,7 +3015,7 @@
 {"name": "Steinunn Sigurðardóttir", "given": "Steinunn", "family": "Sigurðardóttir", "initials": "S. S."}
 {"name": "Stephan Guðmundsson Stephansson", "given": "Stephan", "middle": "Guðmundsson", "family": "Stephansson", "initials": "S. G. S."}
 {"name": "Steven Hardman", "given": "Steven", "family": "Hardman", "initials": "S. H."}
-{"name": "Steven Hardman, MD - DO - DDS", "title": "MD", "given": "-", "middle": "DO -", "family": "Steven Hardman", "suffix": "DDS", "initials": "-. -. S. H.", "capitalized_force": "Md - do - Steven Hardman DDS"}
+{"name": "Steven Hardman, MD - DO - DDS", "given": "Steven", "family": "Hardman", "suffix": "MD - DO - DDS", "initials": "S. H."}
 {"name": "Steven Hardman, MD, DO, DDS", "given": "Steven", "family": "Hardman", "suffix": "MD, DO, DDS", "initials": "S. H."}
 {"name": "Steven Hardman, RN - CRNA", "given": "Steven", "family": "Hardman", "suffix": "RN - CRNA", "initials": "S. H."}
 {"name": "Stober Sasilia Hamis", "order": "FAMILY_FIRST", "given": "Sasilia", "middle": "Hamis", "family": "Stober", "initials": "S. H. S."}
@@ -3129,6 +3133,7 @@
 {"name": "UNILEVER LTD", "given": "UNILEVER", "family": "LTD", "initials": "U. L.", "capitalized": "Unilever Ltd"}
 {"name": "US Magistrate Judge T Michael Putnam", "title": "US Magistrate Judge", "given": "T", "middle": "Michael", "family": "Putnam", "initials": "T. M. P.", "capitalized_force": "Us Magistrate Judge T Michael Putnam"}
 {"name": "US Magistrate-Judge Elizabeth E Campbell", "title": "US Magistrate-Judge", "given": "Elizabeth", "middle": "E", "family": "Campbell", "initials": "E. E. C.", "capitalized_force": "Us Magistrate-Judge Elizabeth E Campbell"}
+{"name": "Uddin, Md Karim", "family": "Uddin", "suffix": "Md Karim", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "U.", "capitalized_force": "Uddin MD Karim"}
 {"name": "Ueshiba, Morihei", "given": "Morihei", "family": "Ueshiba", "initials": "M. U."}
 {"name": "Uexküll, Jakob von", "given": "Jakob", "family": "von Uexküll", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "J. U."}
 {"name": "Uffenbach, Zacharias Konrad von", "given": "Zacharias", "middle": "Konrad", "family": "von Uffenbach", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "Z. K. U."}

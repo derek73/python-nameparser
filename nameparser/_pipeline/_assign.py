@@ -1461,8 +1461,8 @@ def assign(state: ParseState) -> ParseState:
         # Berg'), or where everything behind it is post-nominal, which
         # leaves no family word to address -- H3's concern, by a
         # stricter test than H3's one-word give-back, so this is not
-        # `leading_titles` ('MD PhD Jr., John' keeps family 'MD', where
-        # 'MD PhD Jr. John' reads title 'MD'). A dual is a title wherever
+        # `leading_titles` ('RA PhD Jr., John' keeps family 'RA', where
+        # 'RA PhD Jr. John' reads title 'RA'). A dual is a title wherever
         # a name word follows it ('Rev. Sr. Smith, Mary').
         # `is_title_piece` is H5's vocabulary read, so the two slots that
         # refuse the shape agree on what a title word is.

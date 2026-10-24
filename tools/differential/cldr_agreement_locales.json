@@ -399,17 +399,13 @@
  "tr/foreignFull/givenFirst": {
   "given_names": {
    "expected": "Ada Cornelia César Martín",
-   "got": "DDS Ada Cornelia César Martín"
+   "got": "MD DDS Ada Cornelia César Martín"
   },
   "suffix": {
    "expected": "MD DDS Jr",
    "got": "Jr"
   },
-  "text": "Prof. Dr. MD DDS Ada Cornelia César Martín von Brühl Jr",
-  "title": {
-   "expected": "Prof. Dr.",
-   "got": "Prof. Dr. MD"
-  }
+  "text": "Prof. Dr. MD DDS Ada Cornelia César Martín von Brühl Jr"
  },
  "tr/foreignFull/surnameFirst": {
   "family": {

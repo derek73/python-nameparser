@@ -133,7 +133,7 @@ def test_strict_ends_the_run_at_the_initial_shaped_numeral() -> None:
     the opened part takes it in all the same, and hands it to the
     caller to report.
     """
-    pieces, ptags, tokens, one_case = _comma_part("Smith, MD I")
+    pieces, ptags, tokens, one_case = _comma_part("Smith, RA I")
     args = (pieces, ptags, tokens)
     assert segment_suffix_reading(*args, True, one_case) == (True, True)
     assert segment_suffix_reading(*args, False, one_case) is None
@@ -176,21 +176,21 @@ def test_a_dual_in_the_leading_title_run_turns_the_anchor_off() -> None:
     as the parent did, its given slot's company starting past the
     given name. A plain title does not do this, and a dual behind a
     credential anchors like any suffix word."""
-    for text in ("Smith, Ms Ma", "Smith, Ms MD Ma", "Smith, MD PhD Ma",
-                 "Smith, MD MS Ma", "SMITH, MD MS BA",
-                 "Smith, Prof. MD Ma", "smith, prof. md ma",
-                 "Smith, Dr. MD PhD Ma"):
+    for text in ("Smith, Ms Ma", "Smith, Ms RA Ma", "Smith, RA PhD Ma",
+                 "Smith, RA MS Ma", "SMITH, RA MS BA",
+                 "Smith, Prof. RA Ma", "smith, prof. ra ma",
+                 "Smith, Dr. RA PhD Ma"):
         assert _comma_part_reading(text)[0] is None, text
     assert _comma_part_reading("Smith, Dr. PhD LAc") == (
         (False, True, True), [2])
     assert _comma_part_reading("Smith, PhD Ms Ma") == (
         (True, True, True), [2])
     # with no member to anchor, the dual reads as the suffix it is
-    assert _comma_part_reading("Smith, MD PhD") == ((True, True), [])
+    assert _comma_part_reading("Smith, RA PhD") == ((True, True), [])
     # and the walk's given slot, past the given name, reads its own
     # company as behind any given name
-    assert parse("Smith, MD PhD Jr Ma").suffix == "Jr Ma"
-    assert parse("Smith, MD PhD Jr Ma").given == "PhD"
+    assert parse("Smith, RA PhD Jr Ma").suffix == "Jr Ma"
+    assert parse("Smith, RA PhD Jr Ma").given == "PhD"
 
 
 def _leading(text: str) -> int:
@@ -223,7 +223,7 @@ def test_the_leading_run_declines_to_give_back_a_suffix_word() -> None:
     what leaves the whole-segment carve-out and the all-title inputs
     exactly as they were.
     """
-    assert _leading("MD DDS") == 1         # 'MD' is suffix vocabulary
+    assert _leading("RA DDS") == 1         # 'RA' is suffix vocabulary
     assert _leading("Jr. Ph. D.") == 1     # so is 'Jr.'
     assert _leading("Marquess of Bath") == 1   # nothing behind the run
     assert _leading("Dr.") == 1            # the whole-segment carve-out
@@ -578,10 +578,10 @@ def test_a_multi_letter_numeral_anchors_like_any_suffix_word() -> None:
 def test_the_anchor_pass_starts_past_the_leading_title_run() -> None:
     # a title/suffix dual opening the given part is a title there and
     # anchors nothing, at the given slot and in the part read whole
-    assert parse("Smith, MD MA Ma").middle == "Ma"
+    assert parse("Smith, RA MA Ma").middle == "Ma"
     assert parse("Smith, Ms Ma").given == "Ma"
     # past that position the same dual anchors
-    assert parse("John Smith MD MEng").suffix == "MD MEng"
+    assert parse("John Smith RA MEng").suffix == "RA MEng"
 
 
 def test_the_given_slot_asks_the_anchor_only_when_the_writing_declines(

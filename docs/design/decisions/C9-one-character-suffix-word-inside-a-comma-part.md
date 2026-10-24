@@ -3,7 +3,7 @@
 ## Standing
 
 - Inside a comma part a one-character suffix word is read by what stands before it: behind another suffix word it continues the run, with a period or without (`Smith, PSM I` → suffix 'PSM I'; `Smith, PSM I.` → suffix 'PSM I.'), and behind a name word an ASCII period makes it a middle initial while the bare letter, with no further comma after it, is the suffix (`Smith, John V.` → middle 'V.'; `Smith, John V` → suffix 'V', v1 parity) — 2026-08-25 #430.
-- The class is one-character suffix vocabulary, not a roman numeral (`Smith, John 2.` → middle '2.'), and a run's first word that is title vocabulary too stays in the run (`Smith, MD I` → suffix 'MD I'; `Smith, Jr. I` → suffix 'Jr. I') — 2026-08-25 #430.
+- The class is one-character suffix vocabulary, not a roman numeral (`Smith, John 2.` → middle '2.'), and a run's first word that is title vocabulary too stays in the run (`Smith, RA I` → suffix 'RA I'; `Smith, Jr. I` → suffix 'Jr. I') — 2026-08-25 #430.
 - The no-comma numeral predicate is not asked in the given part, so a numeral behind an initial stays the suffix (`Chang, Andy C I` → middle 'C', suffix 'I') — 2026-08-25 #430.
 - The given part's walk is strict-blind and the fork reports nothing: `Smith, John V` reads suffix 'V' under `lenient_comma_suffixes=False` as under the default, with no `suffix-or-name`, where `John Smith V` reports — 2026-08-25 #430.
 

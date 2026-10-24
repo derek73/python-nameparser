@@ -19,7 +19,7 @@
 
 - **A word of both the title and the suffix vocabulary opens nothing, and nor does a credential behind one**: in front of a given name it is the listing form's title ('Smith, Ms Jane'), and no count of the words before the comma tells a surname of two words from a given name and a family name.
   ```
-  "John Smith, MD Jones"      →  given="Jones"  · boundary
+  "John Smith, RA Jones"      →  given="Jones"  · boundary
   "Smith, Ms Jane"            →  title="Ms"  · boundary
   ```
 

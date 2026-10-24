@@ -490,7 +490,6 @@ TITLES: frozenset[str] = frozenset({
     'mcpo',
     'mcpoc',
     'mcpon',
-    'md',
     'me',
     'member',
     'memoirist',
