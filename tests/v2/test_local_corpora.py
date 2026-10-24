@@ -3331,7 +3331,7 @@ def test_the_source_digest_is_the_package_as_it_is_on_disk(tmp_path: Path) -> No
 
 def test_the_source_digest_follows_a_symlinked_subpackage(tmp_path: Path) -> None:
     # The import follows the link, so the digest must read through it.
-    digests = []
+    digests: list[str] = []
     for target in ("x = 1\n", "x = 2\n"):
         root = tmp_path / f"tree{len(digests)}"
         (root / "real" / "sub").mkdir(parents=True)
