@@ -567,8 +567,8 @@ listed below.
    * - ``extra_suffix_delimiters``
      - ``frozenset[str]``
      - Adds separators that split suffix groups, e.g. ``" - "`` for
-       ``"Jane Smith, RN - CRNA"``. Additions only — the comma always
-       splits suffix groups and cannot be replaced. See
+       ``"Jane Smith, RN - CRNA"``. Additions only — the comma and the
+       semicolon always split suffix groups and cannot be replaced. See
        :ref:`suffix-delimiters`.
    * - ``lenient_comma_suffixes``
      - ``bool``
@@ -1049,8 +1049,18 @@ instead of extending them, the same trap as ``capitalization_exceptions``:
 Suffixes not separated by commas
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+A semicolon separates post-nominals as a comma does, with no
+configuration. Glued to the word before it, it stays in the suffix as
+written:
+
+.. doctest::
+
+    >>> name = parse("Jane Smith, RN; CRNA")
+    >>> name.given, name.family, name.suffix
+    ('Jane', 'Smith', 'RN; CRNA')
+
 ``extra_suffix_delimiters`` handles sources that separate post-nominals
-with something other than a comma. Undeclared, the separator is a word.
+with something else. Undeclared, the separator is a word.
 Since 2.4 such a name still parses when a credential opens the part
 after the comma, because that makes the whole part the suffix, but the
 separator stays in the suffix as written. Declared, it splits the

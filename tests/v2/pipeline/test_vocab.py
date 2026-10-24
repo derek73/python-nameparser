@@ -9,7 +9,7 @@ from nameparser._lexicon import (
 )
 from nameparser._pipeline._vocab import (
     ambiguous_class_candidate, ambiguous_class_member, ambiguous_lean,
-    caps_shape_candidate, comma_follows_marker,
+    caps_shape_candidate, comma_follows_marker, delimiter_cores,
     effective_script, is_initial, is_initial_shaped, is_one_case,
     is_single_letter_numeral,
     is_suffix_lenient, is_suffix_strict, is_title_shaped, is_wholly_suffix,
@@ -205,6 +205,28 @@ _SUFFIX_LEX = Lexicon(
     suffix_acronyms=frozenset({"phd", "md"}),
     suffix_words=frozenset({"jr", "v"}),
 )
+
+
+def test_the_semicolon_is_a_core_every_policy_has() -> None:
+    # a declared delimiter adds to the semicolon, and none removes it
+    # (decisions/C10)
+    assert delimiter_cores(frozenset()) == {";"}
+    assert delimiter_cores(frozenset({" - ", "/"})) == {";", "-", "/"}
+
+
+def test_a_word_with_a_semicolon_glued_reads_as_the_word() -> None:
+    # a glued word reads by the test it gets alone (decisions/C10) -- at
+    # either end, beside another suffix word, and through the strict
+    # test when the caller asks for it ('V' is an initial there)
+    lex, pol = _SUFFIX_LEX, Policy()
+    assert is_wholly_suffix(["MD;", "PhD"], lex, pol)
+    assert is_wholly_suffix([";PhD"], lex, pol)
+    assert is_wholly_suffix(["MD;PhD"], lex, pol)
+    assert not is_wholly_suffix(["Smith;", "PhD"], lex, pol)
+    assert not is_wholly_suffix(["MD;Smith"], lex, pol)
+    assert is_wholly_suffix(["V;", "MD"], lex, pol)
+    assert not is_wholly_suffix(["V;", "MD"], lex, pol, strict=True)
+    assert is_wholly_suffix(["Jr.;", "MD"], lex, pol, strict=True)
 
 
 def test_is_wholly_suffix() -> None:

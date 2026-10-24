@@ -545,11 +545,51 @@ def is_suffix_lenient(text: str, lexicon: Lexicon) -> bool:
         or _is_suffix_strict_n(n, text, lexicon)
 
 
+#: The suffix delimiter every policy has, beside the comma. rules/C10:
+#: "The semicolon is a delimiter by default" -- "no policy removes the
+#: semicolon, as none removes the comma", so a policy's
+#: extra_suffix_delimiters add to it. decisions/C10 (D15).
+BUILTIN_SUFFIX_DELIMITERS = frozenset({";"})
+
+
 def delimiter_cores(policy_delimiters: frozenset[str]) -> frozenset[str]:
-    """Configured suffix delimiters with surrounding whitespace
-    stripped: ' - ' -> '-'. Whitespace-padded delimiters surface as
-    standalone tokens; the stripped core is what tokenize produced."""
-    return frozenset(d.strip() for d in policy_delimiters if d.strip())
+    """The built-in suffix delimiters with the configured ones,
+    surrounding whitespace stripped: ' - ' -> '-'. Whitespace-padded
+    delimiters surface as standalone tokens; the stripped core is what
+    tokenize produced."""
+    if not policy_delimiters:
+        return BUILTIN_SUFFIX_DELIMITERS
+    return BUILTIN_SUFFIX_DELIMITERS | frozenset(
+        d.strip() for d in policy_delimiters if d.strip())
+
+
+# rules/C10: "the word keeps the delimiter in its text and reads as it
+# would without it" -- the word, for every site that reads one: the
+# tags classify writes, the comma decision's shape tests, C2's flag
+# and the run test below (decisions/C10).
+def glued_stem(text: str, cores: frozenset[str]) -> str | None:
+    """The word a delimiter core glued to ONE end of `text` leaves
+    ('MD;' -> 'MD', ';PhD' -> 'PhD'), or None: no core in the text, a
+    core standing alone, one inside a word ('MD;PhD', which
+    splits_into_suffixes reads), more than one, or a core that is
+    itself a word (see glues). Callers test `core in text` inline
+    first, so a word with no core pays no frame."""
+    for core in cores:
+        if core in text and glues(core):
+            stems = text.split(core)
+            if len(stems) == 2 and (not stems[0]) != (not stems[1]):
+                return stems[0] or stems[1]
+            return None
+    return None
+
+
+def glues(core: str) -> bool:
+    """Whether a delimiter core can be GLUED to a word: one written
+    without a letter or digit (';', '/', '-'). A core that is a word
+    (' and ' under a declared policy) is found inside other words by
+    the substring test ('Stand'), so it parts only standing alone
+    (rules/C10's glued bullet)."""
+    return not any(ch.isalnum() for ch in core)
 
 
 def splits_into_suffixes(text: str, cores: frozenset[str],
@@ -557,9 +597,11 @@ def splits_into_suffixes(text: str, cores: frozenset[str],
     """v1 expand_suffix_delimiter parity for delimiters WITHOUT
     whitespace ('RN/CRNA' with '/'): the token counts as a suffix when
     some core splits it into >=2 non-empty parts that are all suffixes.
-    The token text is never rewritten (anti-#100): it takes Role.SUFFIX
-    whole, which renders 'RN/CRNA' where v1 rendered 'RN, CRNA' -- the
-    documented divergence, release-log classified."""
+    A core glued to ONE word ('MD;') is is_wholly_suffix's to read, by
+    the test it gives that word alone (D15). The token text is never
+    rewritten (anti-#100): it takes Role.SUFFIX whole, which renders
+    'RN/CRNA' where v1 rendered 'RN, CRNA' -- the documented
+    divergence, release-log classified."""
     for core in cores:
         if core in text:
             parts = [part for part in text.split(core) if part]
@@ -1111,7 +1153,8 @@ def name_word_count(texts: Sequence[str], lexicon: Lexicon,
 
 def is_wholly_suffix(texts: Sequence[str], lexicon: Lexicon,
                      policy: Policy, one_case: bool | None = None,
-                     letters_one_case: bool | None = None) -> bool:
+                     letters_one_case: bool | None = None,
+                     strict: bool = False) -> bool:
     """Every token in a RUN counts as a suffix -- C1's suffix test of
     a run, shared by `_comma.decide`, segment's C2 flag on a tail part
     and the peel (#319).
@@ -1167,26 +1210,41 @@ def is_wholly_suffix(texts: Sequence[str], lexicon: Lexicon,
     class, dotted or caps, reaches the comma form through this
     predicate at all -- only through classify's shape tags and
     `_comma.decide`'s caps test (#613).
+
+    A delimiter core glued to one word ('MD;', ';PhD') leaves the word
+    read by the test it would get without the core (D15, rules/C10),
+    so 'MD;' counts where 'MD' does. `strict` asks the strict token
+    test whatever the policy says: `_comma.decide` passes it behind a
+    head that is not a whole name, where C8 reads 'Smith, V MD' with
+    the initial veto, so that 'Smith, V; MD' reads as its space twin.
     """
     if not texts:
         return False
-    lenient = policy.lenient_comma_suffixes
+    lenient = policy.lenient_comma_suffixes and not strict
     # v1 expand_suffix_delimiter parity (#206): a configured delimiter
     # is TRANSPARENT in the all-suffix tests -- v1 split the part string
     # on the delimiter before checking, so the delimiter never counted
     cores = delimiter_cores(policy.extra_suffix_delimiters)
 
     def counts_as_suffix(text: str) -> bool:
-        if text in cores:
-            return True
         if (one_case is not None
                 and ambiguous_class_member(text, lexicon)
                 and ambiguous_lean(text, one_case) == "credential"):
             return True
-        return ((is_suffix_lenient(text, lexicon) if lenient
-                 else is_suffix_strict(text, lexicon, letters_one_case))
-                or period_joined_vocab(text, lexicon) == "suffix"
-                or (bool(cores) and splits_into_suffixes(text, cores, lexicon)))
+        if ((is_suffix_lenient(text, lexicon) if lenient
+             else is_suffix_strict(text, lexicon, letters_one_case))
+                or period_joined_vocab(text, lexicon) == "suffix"):
+            return True
+        # the split only where a core stands in the word: the built-in
+        # ';' makes `cores` non-empty for every policy, and a call per
+        # word would be a frame on every name word a run test asks
+        for core in cores:
+            if core in text:
+                stem = glued_stem(text, cores)
+                if stem is not None:
+                    return counts_as_suffix(stem)
+                return splits_into_suffixes(text, cores, lexicon)
+        return False
 
     merged = list(texts)
     k = 0
@@ -1195,7 +1253,7 @@ def is_wholly_suffix(texts: Sequence[str], lexicon: Lexicon,
             merged[k:k + 2] = ["phd"]
         else:
             k += 1
-    return all(counts_as_suffix(t) for t in merged)
+    return all(t in cores or counts_as_suffix(t) for t in merged)
 
 
 # The two derived views of a marker vocabulary, cached per-vocabulary

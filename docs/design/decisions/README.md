@@ -78,7 +78,7 @@ Entry conventions:
 - [C7 — a postnominal part is read before any join](C7-postnominal-part-is-read-before-any-join.md)
 - [C8 — the listing form's part after the comma](C8-listing-forms-part-after-the-comma.md)
 - [C9 — a one-character suffix word inside a comma part](C9-one-character-suffix-word-inside-a-comma-part.md)
-- [C10 — a declared delimiter parts a trailing suffix part](C10-declared-delimiter-parts-a-trailing-suffix-part.md)
+- [C10 — a suffix delimiter parts a suffix run](C10-suffix-delimiter-parts-a-suffix-run.md)
 - [C11 — what the comma decision reports](C11-what-the-comma-decision-reports.md)
 - [C12 — a suffix word ending the name before the comma](C12-suffix-word-ending-the-name-before-the-comma.md)
 - [C13 — a credential opening the part after the comma](C13-credential-opening-the-part-after-the-comma.md)
