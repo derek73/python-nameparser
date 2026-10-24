@@ -753,6 +753,38 @@ CASES: tuple[Case, ...] = (
          notes="the other direction of PA's fork: no word to spare, so "
                "the family name. Before #797 this read the same, with "
                "no fork reported"),
+    # -- #848: Ing, the engineering degree of Czech, Slovak, Austrian
+    # and Romanian names, is marked ambiguous as PA is, the surname
+    # reading being substantial (Census 1,814).
+    Case("comma_ing_is_a_credential", "Viera Sevcikova, Ing",
+         {"given": "Viera", "family": "Sevcikova", "suffix": "Ing"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#848)",
+         notes="1.4.0 through 2.5.0 read the unlisted word as the given "
+               "name after a family comma: given 'Ing', family 'Viera "
+               "Sevcikova'"),
+    Case("john_ing_is_a_family_name", "John Ing",
+         {"given": "John", "family": "Ing"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#848)",
+         notes="the other direction of Ing's fork: no word to spare, so "
+               "the family name, now reported"),
+    Case("family_comma_ing_is_a_given_name", "HO, ING",
+         {"given": "ING", "family": "HO"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#848)",
+         notes="a one-word head keeps the family comma, so the bearer of "
+               "the Chinese given name keeps it, now reported"),
+    Case("comma_dotted_ing_beside_a_title_splits", "Martin Hulin, Ing., Mgr., PhD.",
+         {"given": "Martin", "family": "Hulin", "title": "Mgr.",
+          "suffix": "Ing., PhD."},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#848)",
+         notes="the accepted cost: Ing. after a comma is a credential "
+               "now, where 2.5.0 read it as a title by its shape "
+               "(rules/H2), as Mgr. still is. Czech writes both "
+               "before the name, so the pair is split across two fields; "
+               "given and family are right either way"),
     Case("empty_head_si_is_a_given_name", ", Si",
          {"given": "Si"},
          ambiguities=("suffix-or-name",),

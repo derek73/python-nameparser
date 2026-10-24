@@ -212,10 +212,12 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # claiming one suffix-or-name report under the three orders;
     # 1314 -> 1341 the same day: #793's nine reporting rows ('John,
     # Si.', 'John, Ma.' and the #794 review's seven), one
-    # suffix-or-name claim each under the three orders.
-    assert claims == 1341, (
-        f"the field sweep checks {claims} claims, recorded as 1341 on "
-        f"2026-10-21")
+    # suffix-or-name claim each under the three orders; 1341 -> 1353
+    # on 2026-10-23: #848's four Ing rows, one suffix-or-name claim
+    # each under the three orders.
+    assert claims == 1353, (
+        f"the field sweep checks {claims} claims, recorded as 1353 on "
+        f"2026-10-23")
 
 
 def test_every_case_name_is_unique() -> None:
