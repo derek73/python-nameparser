@@ -92,9 +92,8 @@ two-word modern names; Chinese rows are names whose given name has an
 item, a minority; most Japanese items are refused because the
 given-name item holds only a kana reading; Devanagari, Bengali, Urdu
 and Thai items are mostly labelled in Latin script only, so those
-strata keep 1 to 3 in 100 pooled and are small: Hindi's whole
-population of 4,806 yielded 149, and Dari in Afghanistan, left out, 4
-of 291 (2026-10-23). A transcribed foreign name written with the 间隔号
+strata are small: Hindi's whole population of 4,806 yields 147 in build
+order, and Dari in Afghanistan, left out, 4 of 291 (2026-10-23). A transcribed foreign name written with the 间隔号
 (·) never aligns. No title, credential or suffix is in any text, and
 Wikidata's P734 is a convention, not a fact, where a culture has no
 family name (an Arabic nisba such as `البغدادي` is entered as one).
@@ -183,7 +182,7 @@ class Stratum(NamedTuple):
     language: str     # a LANGUAGES key
     quota: int
     #: How many people the query takes, sized from the yield measured on
-    #: 2026-10-16.
+    #: 2026-10-16 (2026-10-23 for the strata a STRATA comment so dates).
     pool: int
     #: The fewest names the build accepts; below it, it stops. Set below
     #: the quota where the yield is thin enough that a re-pool could
@@ -218,15 +217,18 @@ STRATA = (
     Stratum("fa-ir", "Q794", "fa", 30, 600, least=25),  # 49
     Stratum("uk-ua", "Q212", "uk", 30, 900, least=25),  # 38, before feminine forms
     Stratum("bn-in", "Q668", "bn", 25, 900, least=20),  # 29
-    # Measured 2026-10-23 with no quota cap; hi-in is the whole population.
-    Stratum("hi-in", "Q668", "hi", 60, 5000, least=50, whole=True),  # 149 of 4806
-    Stratum("mr-in", "Q668", "mr", 30, 3000, least=25),  # 50 of 3000
-    Stratum("ur-in", "Q668", "ur", 12, 3000, least=10),  # 17 of 3000
+    # The four India strata share their people: each takes no one an
+    # earlier one took. Yields measured 2026-10-23 in build order with no
+    # quota cap; hi-in's pool is the whole population, and ur-in's yield
+    # is its quota, the floor its only margin.
+    Stratum("hi-in", "Q668", "hi", 60, 5000, least=50, whole=True),  # 147 of 4806
+    Stratum("mr-in", "Q668", "mr", 30, 3000, least=25),  # 40 of 3000
+    Stratum("ur-in", "Q668", "ur", 12, 3000, least=10),  # 12 of 3000
     # The pools below are the whole population on 2026-10-16.
     Stratum("bn-bd", "Q902", "bn", 15, 600, least=12, whole=True),  # 26 of 563
     Stratum("kk-kz", "Q232", "kk", 15, 600, least=12, whole=True),  # 22 of 491
     Stratum("th-th", "Q869", "th", 10, 600, least=8, whole=True),   # 13 of 224
-    # The whole population on 2026-10-23, measured with no quota cap.
+    # The whole population on 2026-10-23, yields measured with no quota cap.
     Stratum("ur-pk", "Q843", "ur", 20, 1600, least=15, whole=True),  # 24 of 1456
     Stratum("ne-np", "Q837", "ne", 10, 200, least=8, whole=True),    # 12 of 170
 )
