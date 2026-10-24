@@ -780,11 +780,25 @@ CASES: tuple[Case, ...] = (
           "suffix": "Ing., PhD."},
          ambiguities=("suffix-or-name",),
          classification="fix(#848)",
-         notes="the accepted cost: Ing. after a comma is a credential "
-               "now, where 2.5.0 read it as a title by its shape "
+         notes="the accepted cost: Ing. after a full name and a comma "
+               "is a credential now, where 2.5.0 read it as a title by its shape "
                "(rules/H2), as Mgr. still is. Czech writes both "
                "before the name, so the pair is split across two fields; "
                "given and family are right either way"),
+    Case("one_word_head_dotted_ing_stays_a_title", "Novak, Ing.",
+         {"family": "Novak", "title": "Ing."},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#848)",
+         notes="the dotted move's boundary: after a one-word head the "
+               "family comma stands and Ing. stays the title it was, now "
+               "reporting the fork"),
+    Case("comma_dotted_initials_ing_are_a_credential", "Smith, I.N.G.",
+         {"family": "Smith", "suffix": "I.N.G."},
+         classification="fix(#848)",
+         notes="the accepted cost: the dotted spelling of an ambiguous "
+               "member reads as the credential with no report, as "
+               "'Smith, M.A.' does; before #848 this read given 'I.N.G.', "
+               "reported"),
     Case("empty_head_si_is_a_given_name", ", Si",
          {"given": "Si"},
          ambiguities=("suffix-or-name",),

@@ -214,9 +214,10 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # Si.', 'John, Ma.' and the #794 review's seven), one
     # suffix-or-name claim each under the three orders; 1341 -> 1353
     # on 2026-10-23: #848's four Ing rows, one suffix-or-name claim
-    # each under the three orders.
-    assert claims == 1353, (
-        f"the field sweep checks {claims} claims, recorded as 1353 on "
+    # each under the three orders; 1353 -> 1356 the same day: the
+    # review's 'Novak, Ing.' row.
+    assert claims == 1356, (
+        f"the field sweep checks {claims} claims, recorded as 1356 on "
         f"2026-10-23")
 
 
