@@ -4630,6 +4630,7 @@
 {"name": "احمد", "given": "احمد", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "ا."}
 {"name": "احمد", "order": "FAMILY_FIRST", "family": "احمد", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "ا."}
 {"name": "احمد گلشیری", "given": "احمد", "family": "گلشیری", "initials": "ا. گ."}
+{"name": "اختر رضا خان", "given": "اختر", "middle": "رضا", "family": "خان", "initials": "ا. ر. خ."}
 {"name": "ادا كورنەليا فون بريۋل جۋنيور، ءتىس دارىگەرى", "given": "ءتىس", "middle": "دارىگەرى", "family": "ادا كورنەليا فون بريۋل جۋنيور", "initials": "ء. د. ا. ك. ف. ب. ج."}
 {"name": "ارین اډلر", "given": "ارین", "family": "اډلر", "initials": "ا. ا."}
 {"name": "استوبر، زازیلیا هایمیش", "order": "FAMILY_FIRST", "given": "زازیلیا", "middle": "هایمیش", "family": "استوبر", "initials": "ز. ه. ا."}
@@ -4638,11 +4639,14 @@
 {"name": "اسەم", "order": "FAMILY_FIRST", "family": "اسەم", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "ا."}
 {"name": "اصغر شازیہ", "order": "FAMILY_FIRST", "given": "شازیہ", "family": "اصغر", "initials": "ش. ا."}
 {"name": "اصغر، شازیہ", "order": "FAMILY_FIRST", "given": "شازیہ", "family": "اصغر", "initials": "ش. ا."}
+{"name": "اقبال قریشی", "given": "اقبال", "family": "قریشی", "initials": "ا. ق."}
 {"name": "الدكتور عايدة كورنيليا سيزار مارتن فون برول الإبن، طبيب وجراح", "title": "الدكتور", "given": "طبيب", "middle": "وجراح", "family": "عايدة كورنيليا سيزار مارتن فون برول", "suffix": "الإبن", "initials": "ط. و. ع. ك. س. م. ف. ب."}
 {"name": "السيد أحمد رامي نجيب محفوظ أبو الأغا الابن، النائب", "given": "النائب", "family": "السيد أحمد رامي نجيب محفوظ أبو الأغا", "suffix": "الابن", "initials": "ا. ا. أ. ر. ن. م. ا."}
 {"name": "العامر، كمال مجدي", "order": "FAMILY_FIRST", "given": "كمال", "middle": "مجدي", "family": "العامر", "initials": "ك. م. ا."}
 {"name": "النجار، سميرة", "order": "FAMILY_FIRST", "given": "سميرة", "family": "النجار", "initials": "س. ا."}
 {"name": "امید رضا ملایری", "given": "امید", "middle": "رضا", "family": "ملایری", "initials": "ا. ر. م."}
+{"name": "انو آغا", "given": "انو", "family": "آغا", "initials": "ا. آ."}
+{"name": "انیتا اگنی ہوتری", "given": "انیتا", "middle": "اگنی", "family": "ہوتری", "initials": "ا. ا. ہ."}
 {"name": "اډلر ارین", "order": "FAMILY_FIRST", "given": "ارین", "family": "اډلر", "initials": "ا. ا."}
 {"name": "بالقىباي ماقسات", "order": "FAMILY_FIRST", "given": "ماقسات", "family": "بالقىباي", "initials": "م. ب."}
 {"name": "بالقىباي، ماقسات توقماحامبەتۇلى", "order": "FAMILY_FIRST", "given": "ماقسات", "middle": "توقماحامبەتۇلى", "family": "بالقىباي", "initials": "م. ت. ب."}
@@ -4658,13 +4662,17 @@
 {"name": "جورج إسحاق", "given": "جورج", "family": "إسحاق", "initials": "ج. إ."}
 {"name": "جورج بوش الابن", "given": "جورج", "family": "بوش", "suffix": "الابن", "initials": "ج. ب."}
 {"name": "جورج ميشيل", "given": "جورج", "family": "ميشيل", "initials": "ج. م."}
+{"name": "جوزف پال", "given": "جوزف", "family": "پال", "initials": "ج. پ."}
 {"name": "جيانيس كريستو", "given": "جيانيس", "family": "كريستو", "initials": "ج. ك."}
 {"name": "جيهان السادات", "given": "جيهان", "family": "السادات", "initials": "ج. ا."}
+{"name": "جیسی پال", "given": "جیسی", "family": "پال", "initials": "ج. پ."}
 {"name": "حاتم علي", "given": "حاتم", "family": "علي", "initials": "ح. ع."}
 {"name": "حاتم منصور", "given": "حاتم", "family": "منصور", "initials": "ح. م."}
 {"name": "حازم هاشم", "given": "حازم", "family": "هاشم", "initials": "ح. ه."}
 {"name": "حسن دانشفر", "given": "حسن", "family": "دانشفر", "initials": "ح. د."}
 {"name": "حسن شحاتة", "given": "حسن", "family": "شحاتة", "initials": "ح. ش."}
+{"name": "حسن عابدی", "given": "حسن", "family": "عابدی", "initials": "ح. ع."}
+{"name": "حسن ناصر", "given": "حسن", "family": "ناصر", "initials": "ح. ن."}
 {"name": "حسني سبح", "given": "حسني", "family": "سبح", "initials": "ح. س."}
 {"name": "حسين خطاب", "given": "حسين", "family": "خطاب", "initials": "ح. خ."}
 {"name": "حسین امینی", "given": "حسین", "family": "امینی", "initials": "ح. ا."}
@@ -4674,10 +4682,12 @@
 {"name": "حمدان شلبي", "given": "حمدان", "family": "شلبي", "initials": "ح. ش."}
 {"name": "حمدي الحريري", "given": "حمدي", "family": "الحريري", "initials": "ح. ا."}
 {"name": "حميدة الطاهر", "given": "حميدة", "family": "الطاهر", "initials": "ح. ا."}
+{"name": "حنیف خان", "given": "حنیف", "family": "خان", "initials": "ح. خ."}
 {"name": "خالد عزيز", "given": "خالد", "family": "عزيز", "initials": "خ. ع."}
 {"name": "خان مریم نواز", "order": "FAMILY_FIRST", "given": "مریم", "middle": "نواز", "family": "خان", "initials": "م. ن. خ."}
 {"name": "خان، مریم نواز", "order": "FAMILY_FIRST", "given": "مریم", "middle": "نواز", "family": "خان", "initials": "م. ن. خ."}
 {"name": "خضر الأحمد", "given": "خضر", "family": "الأحمد", "initials": "خ. ا."}
+{"name": "دلیپ کور ٹوانہ", "given": "دلیپ", "middle": "کور", "family": "ٹوانہ", "initials": "د. ک. ٹ."}
 {"name": "رائد المتني", "given": "رائد", "family": "المتني", "initials": "ر. ا."}
 {"name": "رامي مخلوف", "given": "رامي", "family": "مخلوف", "initials": "ر. م."}
 {"name": "رجاء يوسف", "given": "رجاء", "family": "يوسف", "initials": "ر. ي."}
@@ -4687,17 +4697,22 @@
 {"name": "رمضان ديب", "given": "رمضان", "family": "ديب", "initials": "ر. د."}
 {"name": "رنا أحمد", "given": "رنا", "family": "أحمد", "initials": "ر. أ."}
 {"name": "ريما الجفالي", "given": "ريما", "family": "الجفالي", "initials": "ر. ا."}
+{"name": "رینوکا شرما", "given": "رینوکا", "family": "شرما", "initials": "ر. ش."}
 {"name": "زازیلیا هایمیش استوبر", "given": "زازیلیا", "middle": "هایمیش", "family": "استوبر", "initials": "ز. ه. ا."}
 {"name": "زكي مبارك", "given": "زكي", "family": "مبارك", "initials": "ز. م."}
 {"name": "زكية إبراهيم", "given": "زكية", "family": "إبراهيم", "initials": "ز. إ."}
 {"name": "زيزيليا ھئمش اسٽوبر", "given": "زيزيليا", "middle": "ھئمش", "family": "اسٽوبر", "initials": "ز. ھ. ا."}
 {"name": "زيزينيا هاميش ستوبر", "given": "زيزينيا", "middle": "هاميش", "family": "ستوبر", "initials": "ز. ه. س."}
 {"name": "زیزیلیا همیش سټوبر", "given": "زیزیلیا", "middle": "همیش", "family": "سټوبر", "initials": "ز. ه. س."}
+{"name": "سارہ خان", "given": "سارہ", "family": "خان", "initials": "س. خ."}
 {"name": "سامانتا", "given": "سامانتا", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "س."}
 {"name": "سامانتا", "order": "FAMILY_FIRST", "family": "سامانتا", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "س."}
 {"name": "سامي الكيالي", "given": "سامي", "family": "الكيالي", "initials": "س. ا."}
 {"name": "ستوبر، زيزينيا هاميش", "order": "FAMILY_FIRST", "given": "زيزينيا", "middle": "هاميش", "family": "ستوبر", "initials": "ز. ه. س."}
+{"name": "ستیش شرما", "given": "ستیش", "family": "شرما", "initials": "س. ش."}
 {"name": "سحر كامل", "given": "سحر", "family": "كامل", "initials": "س. ك."}
+{"name": "سعدیہ خان", "given": "سعدیہ", "family": "خان", "initials": "س. خ."}
+{"name": "سعدیہ دہلوی", "given": "سعدیہ", "family": "دہلوی", "initials": "س. د."}
 {"name": "سعيد حماد", "given": "سعيد", "family": "حماد", "initials": "س. ح."}
 {"name": "سلام امینی", "given": "سلام", "family": "امینی", "initials": "س. ا."}
 {"name": "سلطان البرقان", "given": "سلطان", "family": "البرقان", "initials": "س. ا."}
@@ -4726,6 +4741,9 @@
 {"name": "سیروس گرجستانی", "given": "سیروس", "family": "گرجستانی", "initials": "س. گ."}
 {"name": "سەسيليا شتوبەر", "given": "سەسيليا", "family": "شتوبەر", "initials": "س. ش."}
 {"name": "شازیہ اصغر", "given": "شازیہ", "family": "اصغر", "initials": "ش. ا."}
+{"name": "شاہدہ رضا", "given": "شاہدہ", "family": "رضا", "initials": "ش. ر."}
+{"name": "شاہین رضا", "given": "شاہین", "family": "رضا", "initials": "ش. ر."}
+{"name": "شبیر اختر", "given": "شبیر", "family": "اختر", "initials": "ش. ا."}
 {"name": "شتوبەر سەسيليا", "order": "FAMILY_FIRST", "given": "سەسيليا", "family": "شتوبەر", "initials": "س. ش."}
 {"name": "شتوبەر، سەسيليا حەمىش", "order": "FAMILY_FIRST", "given": "سەسيليا", "middle": "حەمىش", "family": "شتوبەر", "initials": "س. ح. ش."}
 {"name": "شهره آغداشلو", "given": "شهره", "family": "آغداشلو", "initials": "ش. آ."}
@@ -4739,9 +4757,13 @@
 {"name": "صنع الله إبراهيم", "given": "صنع", "middle": "الله", "family": "إبراهيم", "initials": "ص. ا. إ."}
 {"name": "طارق سلامة", "given": "طارق", "family": "سلامة", "initials": "ط. س."}
 {"name": "طارق عبد العزيز", "given": "طارق", "middle": "عبد", "family": "العزيز", "initials": "ط. ع. ا."}
+{"name": "طارق فتح", "given": "طارق", "family": "فتح", "initials": "ط. ف."}
+{"name": "طاہر داوڑ", "given": "طاہر", "family": "داوڑ", "initials": "ط. د."}
 {"name": "طلعت زكريا", "given": "طلعت", "family": "زكريا", "initials": "ط. ز."}
 {"name": "عائشة ذو الغنى", "given": "عائشة", "middle": "ذو", "family": "الغنى", "initials": "ع. ذ. ا."}
 {"name": "عادل التويجري", "given": "عادل", "family": "التويجري", "initials": "ع. ا."}
+{"name": "عارف علوی", "given": "عارف", "family": "علوی", "initials": "ع. ع."}
+{"name": "عارف وزیر", "given": "عارف", "family": "وزیر", "initials": "ع. و."}
 {"name": "عالي القرشي", "given": "عالي", "family": "القرشي", "initials": "ع. ا."}
 {"name": "عباس شفیعی", "given": "عباس", "family": "شفیعی", "initials": "ع. ش."}
 {"name": "عباس وفایی", "given": "عباس", "family": "وفایی", "initials": "ع. و."}
@@ -4767,6 +4789,8 @@
 {"name": "عدنان بركات", "given": "عدنان", "family": "بركات", "initials": "ع. ب."}
 {"name": "عدنان خاشقجي", "given": "عدنان", "family": "خاشقجي", "initials": "ع. خ."}
 {"name": "عدنان مصطفى", "given": "عدنان", "family": "مصطفى", "initials": "ع. م."}
+{"name": "عرفان خان", "given": "عرفان", "family": "خان", "initials": "ع. خ."}
+{"name": "عرفان صدیقی", "given": "عرفان", "family": "صدیقی", "initials": "ع. ص."}
 {"name": "عزت‌الله انتظامی", "given": "عزت‌الله", "family": "انتظامی", "initials": "ع. ا."}
 {"name": "علي الرواس", "given": "علي", "family": "الرواس", "initials": "ع. ا."}
 {"name": "علي القرني", "given": "علي", "family": "القرني", "initials": "ع. ا."}
@@ -4774,14 +4798,17 @@
 {"name": "علیرضا بیرانوند", "given": "علیرضا", "family": "بیرانوند", "initials": "ع. ب."}
 {"name": "علی‌اصغر زارعی", "given": "علی‌اصغر", "family": "زارعی", "initials": "ع. ز."}
 {"name": "علی‌اکبر حیدری", "given": "علی‌اکبر", "family": "حیدری", "initials": "ع. ح."}
+{"name": "عمران خان", "given": "عمران", "family": "خان", "initials": "ع. خ."}
 {"name": "غادة السمان", "given": "غادة", "family": "السمان", "initials": "غ. ا."}
 {"name": "غسان جبري", "given": "غسان", "family": "جبري", "initials": "غ. ج."}
+{"name": "غلام اللہ خان", "given": "غلام", "middle": "اللہ", "family": "خان", "initials": "غ. ا. خ."}
 {"name": "فائق عرقسُوسي", "given": "فائق", "family": "عرقسُوسي", "initials": "ف. ع."}
 {"name": "فاروق خورشيد", "given": "فاروق", "family": "خورشيد", "initials": "ف. خ."}
 {"name": "فاروق عطية", "given": "فاروق", "family": "عطية", "initials": "ف. ع."}
 {"name": "فايزة حسين", "given": "فايزة", "family": "حسين", "initials": "ف. ح."}
 {"name": "فتحي قورة", "given": "فتحي", "family": "قورة", "initials": "ف. ق."}
 {"name": "فتح‌الله بنی‌صدر", "given": "فتح‌الله", "family": "بنی‌صدر", "initials": "ف. ب."}
+{"name": "فرح خان", "given": "فرح", "family": "خان", "initials": "ف. خ."}
 {"name": "فريد الأطرش", "given": "فريد", "family": "الأطرش", "initials": "ف. ا."}
 {"name": "فریدون ابراهیمی", "given": "فریدون", "family": "ابراهیمی", "initials": "ف. ا."}
 {"name": "فون برول، عايدة كورنيليا سيزار مارتن", "order": "FAMILY_FIRST", "given": "عايدة", "middle": "كورنيليا سيزار مارتن", "family": "فون برول", "initials": "ع. ك. س. م. ف. ب."}
@@ -4798,6 +4825,7 @@
 {"name": "لويس جريس", "given": "لويس", "family": "جريس", "initials": "ل. ج."}
 {"name": "مازن المبارك", "given": "مازن", "family": "المبارك", "initials": "م. ا."}
 {"name": "ماقسات بالقىباي", "given": "ماقسات", "family": "بالقىباي", "initials": "م. ب."}
+{"name": "مانی شرما", "given": "مانی", "family": "شرما", "initials": "م. ش."}
 {"name": "محترم برٽرم ولبرفورس ھينري رابرٽ ووسٽر ايم پي", "given": "محترم", "middle": "برٽرم ولبرفورس ھينري رابرٽ ووسٽر ايم", "family": "پي", "initials": "م. ب. و. ھ. ر. و. ا. پ."}
 {"name": "محمد البغدادي", "given": "محمد", "family": "البغدادي", "initials": "م. ا."}
 {"name": "محمد الزعبي", "given": "محمد", "family": "الزعبي", "initials": "م. ا."}
@@ -4841,7 +4869,9 @@
 {"name": "مۇللەر كەيت", "order": "FAMILY_FIRST", "given": "كەيت", "family": "مۇللەر", "initials": "ك. م."}
 {"name": "مۇللەر، كەيت", "order": "FAMILY_FIRST", "given": "كەيت", "family": "مۇللەر", "initials": "ك. م."}
 {"name": "نادية زغلول", "given": "نادية", "family": "زغلول", "initials": "ن. ز."}
+{"name": "نادیہ خان", "given": "نادیہ", "family": "خان", "initials": "ن. خ."}
 {"name": "ناصر الأنصاري", "given": "ناصر", "family": "الأنصاري", "initials": "ن. ا."}
+{"name": "ناہید اختر", "given": "ناہید", "family": "اختر", "initials": "ن. ا."}
 {"name": "نبيل درويش", "given": "نبيل", "family": "درويش", "initials": "ن. د."}
 {"name": "نبيل فهمي", "given": "نبيل", "family": "فهمي", "initials": "ن. ف."}
 {"name": "نبيهة حداد", "given": "نبيهة", "family": "حداد", "initials": "ن. ح."}
@@ -4882,38 +4912,85 @@
 {"name": "ژیلا", "order": "FAMILY_FIRST", "family": "ژیلا", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "ژ."}
 {"name": "ښاغلی. برټرام ولبرفورس هنري رابرټ ووسټر ایم پی", "title": "ښاغلی.", "given": "برټرام", "middle": "ولبرفورس هنري رابرټ ووسټر ایم", "family": "پی", "initials": "ب. و. ه. ر. و. ا. پ."}
 {"name": "کاتیا مولر", "given": "کاتیا", "family": "مولر", "initials": "ک. م."}
+{"name": "کمال ایرانی", "given": "کمال", "family": "ایرانی", "initials": "ک. ا."}
 {"name": "کیتی مولر", "given": "کیتی", "family": "مولر", "initials": "ک. م."}
 {"name": "کیوان وحدانی", "given": "کیوان", "family": "وحدانی", "initials": "ک. و."}
 {"name": "ڪئٿي ملر", "given": "ڪئٿي", "family": "ملر", "initials": "ڪ. م."}
+{"name": "ہاشم خان", "given": "ہاشم", "family": "خان", "initials": "ہ. خ."}
 {"name": "یاسمین راشد سدرہ منیر ندیم رضا ایم ڈی ڈی ڈی ایس", "given": "یاسمین", "middle": "راشد سدرہ منیر ندیم رضا ایم ڈی ڈی ڈی", "family": "ایس", "initials": "ی. ر. س. م. ن. ر. ا. ڈ. ڈ. ڈ. ا."}
 {"name": "अंजलि देवी", "given": "अंजलि", "family": "देवी", "initials": "अ. द."}
 {"name": "अंजलि शर्मा", "given": "अंजलि", "family": "शर्मा", "initials": "अ. श."}
+{"name": "अंबिका सोनी", "given": "अंबिका", "family": "सोनी", "initials": "अ. स."}
 {"name": "अक्षय कुमार", "given": "अक्षय", "family": "कुमार", "initials": "अ. क."}
+{"name": "अखिल मिश्रा", "given": "अखिल", "family": "मिश्रा", "initials": "अ. म."}
+{"name": "अजित पवार", "given": "अजित", "family": "पवार", "initials": "अ. प."}
+{"name": "अण्णा जोशी", "given": "अण्णा", "family": "जोशी", "initials": "अ. ज."}
+{"name": "अदिति शर्मा", "given": "अदिति", "family": "शर्मा", "initials": "अ. श."}
+{"name": "अनिल कपूर", "given": "अनिल", "family": "कपूर", "initials": "अ. क."}
 {"name": "अनिल जोशी", "given": "अनिल", "family": "जोशी", "initials": "अ. ज."}
+{"name": "अनिल मेहता", "given": "अनिल", "family": "मेहता", "initials": "अ. म."}
+{"name": "अनिल शर्मा", "given": "अनिल", "family": "शर्मा", "initials": "अ. श."}
+{"name": "अनुपम खेर", "given": "अनुपम", "family": "खेर", "initials": "अ. ख."}
+{"name": "अनुराधा आचार्य", "given": "अनुराधा", "family": "आचार्य", "initials": "अ. आ."}
+{"name": "अनुराधा कोइराला", "given": "अनुराधा", "family": "कोइराला", "initials": "अ. क."}
+{"name": "अनुराधा भट्टाचार्य", "given": "अनुराधा", "family": "भट्टाचार्य", "initials": "अ. भ."}
+{"name": "अभिषेक कपूर", "given": "अभिषेक", "family": "कपूर", "initials": "अ. क."}
+{"name": "अमर सिंह", "given": "अमर", "family": "सिंह", "initials": "अ. स."}
+{"name": "अमित कुमार", "given": "अमित", "family": "कुमार", "initials": "अ. क."}
+{"name": "अरुण कौल", "given": "अरुण", "family": "कौल", "initials": "अ. क."}
 {"name": "अरुणा ईरानी", "given": "अरुणा", "family": "ईरानी", "initials": "अ. ई."}
+{"name": "अर्जुन कपूर", "given": "अर्जुन", "family": "कपूर", "initials": "अ. क."}
 {"name": "आलिया हमीश हेमंत", "given": "आलिया", "middle": "हमीश", "family": "हेमंत", "initials": "आ. ह. ह."}
+{"name": "उत्तम कुँवर", "given": "उत्तम", "family": "कुँवर", "initials": "उ. क."}
 {"name": "एडा कर्नेलिया सिजर मार्टिन भोन ब्रुहल एमडी डिडिएस", "given": "एडा", "middle": "कर्नेलिया सिजर मार्टिन भोन ब्रुहल एमडी", "family": "डिडिएस", "initials": "ए. क. स. म. भ. ब. ए. ड."}
+{"name": "ऐश्वर्या राय", "given": "ऐश्वर्या", "family": "राय", "initials": "ऐ. र."}
 {"name": "काठे मुलर", "given": "काठे", "family": "मुलर", "initials": "क. म."}
 {"name": "काथा बाउमान", "given": "काथा", "family": "बाउमान", "initials": "क. ब."}
+{"name": "किरण देसाई", "given": "किरण", "family": "देसाई", "initials": "क. द."}
+{"name": "किशोर कुमार", "given": "किशोर", "family": "कुमार", "initials": "क. क."}
 {"name": "कीथ ब्राउन", "given": "कीथ", "family": "ब्राउन", "initials": "क. ब."}
+{"name": "कुणाल कपूर", "given": "कुणाल", "family": "कपूर", "initials": "क. क."}
 {"name": "क्याथी मुलर", "given": "क्याथी", "family": "मुलर", "initials": "क. म."}
+{"name": "गणेश आचार्य", "given": "गणेश", "family": "आचार्य", "initials": "ग. आ."}
 {"name": "गांवकर शांति", "order": "FAMILY_FIRST", "given": "शांति", "family": "गांवकर", "initials": "श. ग."}
 {"name": "गांवकर, शांति", "given": "शांति", "family": "गांवकर", "initials": "श. ग."}
+{"name": "गिरिजा देवी", "given": "गिरिजा", "family": "देवी", "initials": "ग. द."}
+{"name": "गीता उपाध्याय", "given": "गीता", "family": "उपाध्याय", "initials": "ग. उ."}
 {"name": "जाजिला हामिश स्टोबा", "given": "जाजिला", "middle": "हामिश", "family": "स्टोबा", "initials": "ज. ह. स."}
 {"name": "जाजिला हार्निस स्टोबर", "given": "जाजिला", "middle": "हार्निस", "family": "स्टोबर", "initials": "ज. ह. स."}
 {"name": "जोनस मैरी सिलविया", "order": "FAMILY_FIRST", "given": "मैरी", "middle": "सिलविया", "family": "जोनस", "initials": "म. स. ज."}
 {"name": "जोनस, मैरी सिलविया", "given": "मैरी", "middle": "सिलविया", "family": "जोनस", "initials": "म. स. ज."}
+{"name": "ज्ञानेन्द्र वीर विक्रम शाहदेव", "given": "ज्ञानेन्द्र", "middle": "वीर विक्रम", "family": "शाहदेव", "initials": "ज. व. व. श."}
 {"name": "दिशा", "given": "दिशा", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "द."}
 {"name": "दिशा", "order": "FAMILY_FIRST", "family": "दिशा", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "द."}
+{"name": "दीपा मेहता", "given": "दीपा", "family": "मेहता", "initials": "द. म."}
+{"name": "दीप्ति भटनागर", "given": "दीप्ति", "family": "भटनागर", "initials": "द. भ."}
 {"name": "दुर्गाबाई देशमुख", "given": "दुर्गाबाई", "family": "देशमुख", "initials": "द. द."}
 {"name": "दे सोजा ए मेनेजेस श्री फ्रांसिस शावियेर जुआंव आंतोन धा., एमपी", "order": "FAMILY_FIRST", "given": "एमपी", "family": "दे सोजा ए मेनेजेस श्री फ्रांसिस शावियेर जुआंव आंतोन धा.", "initials": "ए. द. स. ए. म. श. फ. श. ज. आ. ध."}
+{"name": "देवकी पंडित", "given": "देवकी", "family": "पंडित", "initials": "द. प."}
 {"name": "देशपांडे धिरज", "order": "FAMILY_FIRST", "given": "धिरज", "family": "देशपांडे", "initials": "ध. द."}
 {"name": "देशपांडे श्री. धिरज देशपांडे विजय देशपांडे क., एम. पी.", "order": "FAMILY_FIRST", "title": "एम.", "given": "पी.", "family": "देशपांडे श्री. धिरज देशपांडे विजय देशपांडे क.", "initials": "प. द. श. ध. द. व. द. क."}
 {"name": "देशपांडे, धिरज", "given": "धिरज", "family": "देशपांडे", "initials": "ध. द."}
 {"name": "देशपांडे, धिरज देशपांडे विजय देशपांडे", "given": "धिरज", "middle": "देशपांडे विजय देशपांडे", "family": "देशपांडे", "initials": "ध. द. व. द. द."}
 {"name": "धिरज देशपांडे", "given": "धिरज", "family": "देशपांडे", "initials": "ध. द."}
+{"name": "नम्रता श्रेष्ठ", "given": "नम्रता", "family": "श्रेष्ठ", "initials": "न. श."}
+{"name": "निधि राज़दान", "given": "निधि", "family": "राज़दान", "initials": "न. र."}
+{"name": "निधि सिंह", "given": "निधि", "family": "सिंह", "initials": "न. स."}
+{"name": "निरूपा रॉय", "given": "निरूपा", "family": "रॉय", "initials": "न. र."}
+{"name": "निशा अधिकारी", "given": "निशा", "family": "अधिकारी", "initials": "न. अ."}
+{"name": "नीरज चोपडा", "given": "नीरज", "family": "चोपडा", "initials": "न. च."}
+{"name": "नीरव मोदी", "given": "नीरव", "family": "मोदी", "initials": "न. म."}
+{"name": "पंकज त्रिपाठी", "given": "पंकज", "family": "त्रिपाठी", "initials": "प. त."}
 {"name": "पोख्रेल रमिता", "order": "FAMILY_FIRST", "given": "रमिता", "family": "पोख्रेल", "initials": "र. प."}
 {"name": "पोख्रेल, रमिता", "given": "रमिता", "family": "पोख्रेल", "initials": "र. प."}
+{"name": "प्रकाश जावडेकर", "given": "प्रकाश", "family": "जावडेकर", "initials": "प. ज."}
+{"name": "प्रतिभा सिंह", "given": "प्रतिभा", "family": "सिंह", "initials": "प. स."}
+{"name": "प्रवीण कुमार", "given": "प्रवीण", "family": "कुमार", "initials": "प. क."}
+{"name": "प्राची देसाई", "given": "प्राची", "family": "देसाई", "initials": "प. द."}
+{"name": "प्राची शाह", "given": "प्राची", "family": "शाह", "initials": "प. श."}
+{"name": "प्रिया बापट", "given": "प्रिया", "family": "बापट", "initials": "प. ब."}
+{"name": "प्रीत भरारा", "given": "प्रीत", "family": "भरारा", "initials": "प. भ."}
+{"name": "प्रीति झंगियानी", "given": "प्रीति", "family": "झंगियानी", "initials": "प. झ."}
 {"name": "प्रेमप्रसाद हिमलाल वास्तोला", "given": "प्रेमप्रसाद", "middle": "हिमलाल", "family": "वास्तोला", "initials": "प. ह. व."}
 {"name": "प्रो. डॉ. आडा कोर्नेलिया सेजार मार्टिन वॉन ब्रूह्ल गॉन्जालेज डोमिंगो जेआर, बी.ए. एल.एल.बी", "title": "प्रो. डॉ.", "given": "बी.ए.", "middle": "एल.एल.बी", "family": "आडा कोर्नेलिया सेजार मार्टिन वॉन ब्रूह्ल गॉन्जालेज डोमिंगो जेआर", "initials": "ब. ए. आ. क. स. म. व. ब. ग. ड. ज."}
 {"name": "प्रोफे.डॉ. अदा शर्मा सीझर मार्टिन व्हॉन ब्र्यूल ज्यु., एम. डी. डी. डी. एस.", "title": "प्रोफे.डॉ. एम.", "given": "डी.", "middle": "डी. डी. एस.", "family": "अदा शर्मा सीझर मार्टिन व्हॉन ब्र्यूल ज्यु.", "initials": "ड. ड. ड. ए. अ. श. स. म. व. ब. ज."}
@@ -4926,49 +5003,85 @@
 {"name": "बर्ट्राम विलबरफोर्स हेनरी रोबर्ट वुस्टर एमपी", "given": "बर्ट्राम", "middle": "विलबरफोर्स हेनरी रोबर्ट वुस्टर", "family": "एमपी", "initials": "ब. व. ह. र. व. ए."}
 {"name": "बाउमान काथा", "order": "FAMILY_FIRST", "given": "काथा", "family": "बाउमान", "initials": "क. ब."}
 {"name": "बाउमान, काथा", "given": "काथा", "family": "बाउमान", "initials": "क. ब."}
+{"name": "बीना देवी", "given": "बीना", "family": "देवी", "initials": "ब. द."}
 {"name": "ब्राउन कीथ", "order": "FAMILY_FIRST", "given": "कीथ", "family": "ब्राउन", "initials": "क. ब."}
 {"name": "ब्राउन, कीथ", "given": "कीथ", "family": "ब्राउन", "initials": "क. ब."}
 {"name": "ब्रुहल, एडा कर्नेलिया सिजर मार्टिन भोन", "given": "एडा", "middle": "कर्नेलिया सिजर मार्टिन भोन", "family": "ब्रुहल", "initials": "ए. क. स. म. भ. ब."}
 {"name": "ब्रूह्ल, आडा कोर्नेलिया सेजार मार्टिन वॉन", "given": "आडा", "middle": "कोर्नेलिया सेजार मार्टिन वॉन", "family": "ब्रूह्ल", "initials": "आ. क. स. म. व. ब."}
 {"name": "ब्र्यूल, अदा शर्मा सीझर मार्टिन व्हॉन", "given": "अदा", "middle": "शर्मा सीझर मार्टिन व्हॉन", "family": "ब्र्यूल", "initials": "अ. श. स. म. व. ब."}
+{"name": "भानुभक्त आचार्य", "given": "भानुभक्त", "family": "आचार्य", "initials": "भ. आ."}
+{"name": "भारत भूषण", "given": "भारत", "family": "भूषण", "initials": "भ. भ."}
 {"name": "भोन ब्रुहल एडा कर्नेलिया सिजर मार्टिन एमडी डिडिएस", "order": "FAMILY_FIRST", "given": "ब्रुहल", "middle": "एडा कर्नेलिया सिजर मार्टिन एमडी डिडिएस", "family": "भोन", "initials": "ब. ए. क. स. म. ए. ड. भ."}
 {"name": "मनीष मल्होत्रा", "given": "मनीष", "family": "मल्होत्रा", "initials": "म. म."}
+{"name": "ममता कुलकर्णी", "given": "ममता", "family": "कुलकर्णी", "initials": "म. क."}
 {"name": "माधुरी", "given": "माधुरी", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "म."}
 {"name": "माधुरी", "order": "FAMILY_FIRST", "family": "माधुरी", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "म."}
+{"name": "मानव कौल", "given": "मानव", "family": "कौल", "initials": "म. क."}
 {"name": "मारिया हेलेना फर्नॅन्डेज", "given": "मारिया", "middle": "हेलेना", "family": "फर्नॅन्डेज", "initials": "म. ह. फ."}
+{"name": "मीना शाह", "given": "मीना", "family": "शाह", "initials": "म. श."}
 {"name": "मुकेश अंबानी", "given": "मुकेश", "family": "अंबानी", "initials": "म. अ."}
 {"name": "मुलर काठे", "order": "FAMILY_FIRST", "given": "काठे", "family": "मुलर", "initials": "क. म."}
 {"name": "मुलर क्याथी", "order": "FAMILY_FIRST", "given": "क्याथी", "family": "मुलर", "initials": "क. म."}
 {"name": "मुलर, काठे", "given": "काठे", "family": "मुलर", "initials": "क. म."}
 {"name": "मुलर, क्याथी", "given": "क्याथी", "family": "मुलर", "initials": "क. म."}
+{"name": "मेरी रॉय", "given": "मेरी", "family": "रॉय", "initials": "म. र."}
 {"name": "मैरी सिलविया जोनस", "given": "मैरी", "middle": "सिलविया", "family": "जोनस", "initials": "म. स. ज."}
+{"name": "मोहित रैना", "given": "मोहित", "family": "रैना", "initials": "म. र."}
+{"name": "मोहित शर्मा", "given": "मोहित", "family": "शर्मा", "initials": "म. श."}
+{"name": "यशपाल शर्मा", "given": "यशपाल", "family": "शर्मा", "initials": "य. श."}
+{"name": "रजत कपूर", "given": "रजत", "family": "कपूर", "initials": "र. क."}
 {"name": "रणबीर कपूर", "given": "रणबीर", "family": "कपूर", "initials": "र. क."}
 {"name": "रमिता पोख्रेल", "given": "रमिता", "family": "पोख्रेल", "initials": "र. प."}
+{"name": "रमेश सक्सेना", "given": "रमेश", "family": "सक्सेना", "initials": "र. स."}
 {"name": "रवि राय", "given": "रवि", "family": "राय", "initials": "र. र."}
 {"name": "रवि शंकर", "given": "रवि", "family": "शंकर", "initials": "र. श."}
+{"name": "राजेश कुमार", "given": "राजेश", "family": "कुमार", "initials": "र. क."}
+{"name": "राजेश खन्ना", "given": "राजेश", "family": "खन्ना", "initials": "र. ख."}
+{"name": "राजेश शर्मा", "given": "राजेश", "family": "शर्मा", "initials": "र. श."}
+{"name": "राजेश हमाल", "given": "राजेश", "family": "हमाल", "initials": "र. ह."}
+{"name": "राम कपूर", "given": "राम", "family": "कपूर", "initials": "र. क."}
 {"name": "राम शर्मा साहब मोहन", "given": "राम", "family": "शर्मा", "suffix": "साहब मोहन", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "र. श."}
+{"name": "राम सुतार", "given": "राम", "family": "सुतार", "initials": "र. स."}
+{"name": "राय लक्ष्मी", "order": "FAMILY_FIRST", "given": "लक्ष्मी", "family": "राय", "initials": "ल. र."}
+{"name": "राहुल गाँधी", "given": "राहुल", "family": "गाँधी", "initials": "र. ग."}
+{"name": "राहुल बजाज", "order": "FAMILY_FIRST", "given": "बजाज", "family": "राहुल", "initials": "ब. र."}
+{"name": "राहुल रॉय", "given": "राहुल", "family": "रॉय", "initials": "र. र."}
+{"name": "राहुल शर्मा", "given": "राहुल", "family": "शर्मा", "initials": "र. श."}
+{"name": "रितेश देशमुख", "given": "रितेश", "family": "देशमुख", "initials": "र. द."}
 {"name": "रिधान समीर फडके", "given": "रिधान", "middle": "समीर", "family": "फडके", "initials": "र. स. फ."}
+{"name": "रेणुका सिंह", "given": "रेणुका", "family": "सिंह", "initials": "र. स."}
 {"name": "रॉबर्ट", "given": "रॉबर्ट", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "र."}
 {"name": "रॉबर्ट", "order": "FAMILY_FIRST", "family": "रॉबर्ट", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "र."}
 {"name": "रोहित शर्मा", "given": "रोहित", "family": "शर्मा", "initials": "र. श."}
+{"name": "लक्ष्मी गौतम", "given": "लक्ष्मी", "family": "गौतम", "initials": "ल. ग."}
+{"name": "लक्ष्मीप्रसाद देवकोटा", "given": "लक्ष्मीप्रसाद", "family": "देवकोटा", "initials": "ल. द."}
 {"name": "लता मंगेशकर", "given": "लता", "family": "मंगेशकर", "initials": "ल. म."}
 {"name": "ललित", "given": "ललित", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "ल."}
 {"name": "ललित", "order": "FAMILY_FIRST", "family": "ललित", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "ल."}
 {"name": "ललित मोहन शर्मा", "given": "ललित", "middle": "मोहन", "family": "शर्मा", "initials": "ल. म. श."}
 {"name": "ललित शर्मा", "given": "ललित", "family": "शर्मा", "initials": "ल. श."}
+{"name": "वसंत देसाई", "given": "वसंत", "family": "देसाई", "initials": "व. द."}
+{"name": "वसंत बापट", "given": "वसंत", "family": "बापट", "initials": "व. ब."}
 {"name": "वास्तोला प्रेमप्रसाद हिमलाल", "order": "FAMILY_FIRST", "given": "प्रेमप्रसाद", "middle": "हिमलाल", "family": "वास्तोला", "initials": "प. ह. व."}
 {"name": "वास्तोला, प्रेमप्रसाद हिमलाल", "given": "प्रेमप्रसाद", "middle": "हिमलाल", "family": "वास्तोला", "initials": "प. ह. व."}
+{"name": "विजय मल्ल", "given": "विजय", "family": "मल्ल", "initials": "व. म."}
 {"name": "वुस्टर बर्ट्राम विलबरफोर्स हेनरी रोबर्ट एमपी", "order": "FAMILY_FIRST", "given": "बर्ट्राम", "middle": "विलबरफोर्स हेनरी रोबर्ट एमपी", "family": "वुस्टर", "initials": "ब. व. ह. र. ए. व."}
 {"name": "वुस्टर, बर्ट्राम विलबरफोर्स हेनरी रोबर्ट", "given": "बर्ट्राम", "middle": "विलबरफोर्स हेनरी रोबर्ट", "family": "वुस्टर", "initials": "ब. व. ह. र. व."}
 {"name": "वॉन ब्रूह्ल गॉन्जालेज डोमिंगो प्रो. डॉ. आडा कोर्नेलिया सेजार मार्टिन जेआर, बी.ए. एल.एल.बी", "order": "FAMILY_FIRST", "given": "बी.ए.", "middle": "एल.एल.बी", "family": "वॉन ब्रूह्ल गॉन्जालेज डोमिंगो प्रो. डॉ. आडा कोर्नेलिया सेजार मार्टिन जेआर", "initials": "ब. ए. व. ब. ग. ड. प. ड. आ. क. स. म. ज."}
 {"name": "वॉन वॉटसन, माइकल जॉन एम॰डी॰, पी॰एच॰डी॰", "given": "माइकल", "middle": "जॉन एम॰डी॰", "family": "वॉन वॉटसन", "suffix": "पी॰एच॰डी॰", "ambiguities": ["COMMA_STRUCTURE"], "initials": "म. ज. ए. व. व."}
 {"name": "व्हॉन ब्र्यूल प्रोफे.डॉ. अदा शर्मा सीझर मार्टिन ज्यु., एम. डी. डी. डी. एस.", "order": "FAMILY_FIRST", "title": "एम.", "given": "डी.", "middle": "डी. डी. एस.", "family": "व्हॉन ब्र्यूल प्रोफे.डॉ. अदा शर्मा सीझर मार्टिन ज्यु.", "initials": "ड. ड. ड. ए. व. ब. प. अ. श. स. म. ज."}
+{"name": "शरद कपूर", "given": "शरद", "family": "कपूर", "initials": "श. क."}
+{"name": "शरद जोशी", "given": "शरद", "family": "जोशी", "initials": "श. ज."}
+{"name": "शरद पवार", "given": "शरद", "family": "पवार", "initials": "श. प."}
+{"name": "शरद मल्होत्रा", "given": "शरद", "family": "मल्होत्रा", "initials": "श. म."}
 {"name": "शर्मा ललित", "order": "FAMILY_FIRST", "given": "ललित", "family": "शर्मा", "initials": "ल. श."}
 {"name": "शर्मा ललित मोहन", "order": "FAMILY_FIRST", "given": "ललित", "middle": "मोहन", "family": "शर्मा", "initials": "ल. म. श."}
 {"name": "शर्मा, ललित", "given": "ललित", "family": "शर्मा", "initials": "ल. श."}
 {"name": "शर्मा, ललित कुमार एम॰डी॰", "given": "ललित", "middle": "कुमार एम॰डी॰", "family": "शर्मा", "initials": "ल. क. ए. श."}
 {"name": "शर्मा, ललित मोहन", "given": "ललित", "middle": "मोहन", "family": "शर्मा", "initials": "ल. म. श."}
+{"name": "शांता कुमार", "given": "शांता", "family": "कुमार", "initials": "श. क."}
 {"name": "शांति गांवकर", "given": "शांति", "family": "गांवकर", "initials": "श. ग."}
+{"name": "शिवांगी जोशी", "given": "शिवांगी", "family": "जोशी", "initials": "श. ज."}
 {"name": "श्री फ्रांसिस शावियेर जुआंव आंतोन दे सोजा ए मेनेजेस धा., एमपी", "title": "श्री", "given": "एमपी", "family": "फ्रांसिस शावियेर जुआंव आंतोन दे सोजा ए मेनेजेस धा.", "initials": "ए. फ. श. ज. आ. द. स. ए. म. ध."}
 {"name": "श्री ललित कुमार शर्मा एम॰डी॰", "title": "श्री", "given": "ललित", "middle": "कुमार शर्मा", "family": "एम॰डी॰", "initials": "ल. क. श. ए."}
 {"name": "श्री शर्मा ललित कुमार, एम॰डी॰", "order": "FAMILY_FIRST", "title": "श्री", "given": "एम॰डी॰", "family": "शर्मा ललित कुमार", "initials": "ए. श. ल. क."}
@@ -4978,14 +5091,18 @@
 {"name": "सिंदबाद", "order": "FAMILY_FIRST", "family": "सिंदबाद", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "स."}
 {"name": "सिनबाद", "given": "सिनबाद", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "स."}
 {"name": "सिनबाद", "order": "FAMILY_FIRST", "family": "सिनबाद", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "स."}
+{"name": "सुनंदा पुष्कर", "given": "सुनंदा", "family": "पुष्कर", "initials": "स. प."}
 {"name": "सुन्दर", "given": "सुन्दर", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "स."}
 {"name": "सुन्दर", "order": "FAMILY_FIRST", "family": "सुन्दर", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "स."}
+{"name": "सुशील कोइराला", "given": "सुशील", "family": "कोइराला", "initials": "स. क."}
 {"name": "सोजा, फ्रांसिस शावियेर जुआंव आंतोन दे", "given": "फ्रांसिस", "middle": "शावियेर जुआंव आंतोन दे", "family": "सोजा", "initials": "फ. श. ज. आ. द. स."}
+{"name": "सोनिया गाँधी", "given": "सोनिया", "family": "गाँधी", "initials": "स. ग."}
 {"name": "सौंदर्या शर्मा", "given": "सौंदर्या", "family": "शर्मा", "initials": "स. श."}
 {"name": "स्टोबर जाजिला हार्निस", "order": "FAMILY_FIRST", "given": "जाजिला", "middle": "हार्निस", "family": "स्टोबर", "initials": "ज. ह. स."}
 {"name": "स्टोबर, जाजिला हार्निस", "given": "जाजिला", "middle": "हार्निस", "family": "स्टोबर", "initials": "ज. ह. स."}
 {"name": "स्टोबा जाजिला हामिश", "order": "FAMILY_FIRST", "given": "जाजिला", "middle": "हामिश", "family": "स्टोबा", "initials": "ज. ह. स."}
 {"name": "स्टोबा, जाजिला हामिश", "given": "जाजिला", "middle": "हामिश", "family": "स्टोबा", "initials": "ज. ह. स."}
+{"name": "स्मिता बंसल", "given": "स्मिता", "family": "बंसल", "initials": "स. ब."}
 {"name": "हेमंत आलिया हमीश", "order": "FAMILY_FIRST", "given": "आलिया", "middle": "हमीश", "family": "हेमंत", "initials": "आ. ह. ह."}
 {"name": "हेमंत, आलिया हमीश", "given": "आलिया", "middle": "हमीश", "family": "हेमंत", "initials": "आ. ह. ह."}
 {"name": "অজিত পাণ্ডে", "given": "অজিত", "family": "পাণ্ডে", "initials": "অ. প."}
