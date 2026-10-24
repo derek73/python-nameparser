@@ -8,8 +8,9 @@ script-conditional readings -- family-first order for Han, Hangul and
 kana, Korean surname segmentation -- had been tested against no real
 name. It holds no honorific, so it does not exercise the CJK honorific
 peel; it shows only that the peel leaves plain names alone. This corpus holds real names as Wikidata writes
-them in Arabic, Hebrew, Devanagari, Bengali, Thai, Greek, Georgian,
-Armenian, Hangul, Han and kana, and Cyrillic beyond Russian. Wikidata is
+them in Arabic (with Persian and Urdu), Hebrew, Devanagari (Hindi,
+Marathi and Nepali), Bengali, Thai, Greek, Georgian, Armenian, Hangul,
+Han and kana, and Cyrillic beyond Russian. Wikidata is
 CC0.
 
     uv run python tools/differential/build_wikidata_native_corpus.py
@@ -61,9 +62,11 @@ P734 surname, P5056 patronymic). What this builder adds:
 A stratum that falls below its floor stops the build before anything is
 written, as does a query matching nothing or a response that is not what
 was asked for. A stratum's count says what was sampled, not how common
-the shape is. Its pool is sized from the yield measured on 2026-10-16.
+the shape is. Its pool is sized from the yield measured on 2026-10-16
+(2026-10-23 for the Hindi, Marathi, Urdu and Nepali strata).
 Where the yield was thin (under about two and a half times the quota),
-or the pool is the whole population (Thailand, Kazakhstan, Bangladesh),
+or the pool is the whole population (Thailand, Kazakhstan, Bangladesh,
+Hindi in India, Urdu in Pakistan, Nepal),
 the floor is set below the quota, leaving a margin a re-pool may lose.
 A pool short of its size stops the build unless the stratum is marked
 as its whole population, and so does a stratum so marked whose pool
@@ -87,11 +90,12 @@ script, and `آل` family names and kunyas are missing because most
 Arabic items state no family name, so the Arabic rows are mostly
 two-word modern names; Chinese rows are names whose given name has an
 item, a minority; most Japanese items are refused because the
-given-name item holds only a kana reading; Devanagari, Bengali and Thai items are
-mostly labelled in Latin script only, so those strata are small. A
-transcribed foreign name written with the 间隔号 (·) never aligns.
-Urdu and Marathi are left out: 8 and 5 names of 600 aligned
-(2026-10-16). No title, credential or suffix is in any text, and
+given-name item holds only a kana reading; Devanagari, Bengali, Urdu
+and Thai items are mostly labelled in Latin script only, so those
+strata keep 1 to 3 in 100 pooled and are small: Hindi's whole
+population of 4,806 yielded 149, and Dari in Afghanistan, left out, 4
+of 291 (2026-10-23). A transcribed foreign name written with the 间隔号
+(·) never aligns. No title, credential or suffix is in any text, and
 Wikidata's P734 is a convention, not a fact, where a culture has no
 family name (an Arabic nisba such as `البغدادي` is entered as one).
 """
@@ -155,6 +159,9 @@ LANGUAGES = {
     "fa": Language(("fa",), ("ARABIC",)),
     "he": Language(("he",), ("HEBREW",)),
     "hi": Language(("hi",), ("DEVANAGARI",)),
+    "mr": Language(("mr",), ("DEVANAGARI",)),
+    "ne": Language(("ne",), ("DEVANAGARI",)),
+    "ur": Language(("ur",), ("ARABIC",)),
     "bn": Language(("bn",), ("BENGALI",)),
     "th": Language(("th",), ("THAI",)),
     "el": Language(("el",), ("GREEK",), _GREEK),
@@ -211,11 +218,17 @@ STRATA = (
     Stratum("fa-ir", "Q794", "fa", 30, 600, least=25),  # 49
     Stratum("uk-ua", "Q212", "uk", 30, 900, least=25),  # 38, before feminine forms
     Stratum("bn-in", "Q668", "bn", 25, 900, least=20),  # 29
-    Stratum("hi-in", "Q668", "hi", 15, 1000, least=12),  # 21
+    # Measured 2026-10-23 with no quota cap; hi-in is the whole population.
+    Stratum("hi-in", "Q668", "hi", 60, 5000, least=50, whole=True),  # 149 of 4806
+    Stratum("mr-in", "Q668", "mr", 30, 3000, least=25),  # 50 of 3000
+    Stratum("ur-in", "Q668", "ur", 12, 3000, least=10),  # 17 of 3000
     # The pools below are the whole population on 2026-10-16.
     Stratum("bn-bd", "Q902", "bn", 15, 600, least=12, whole=True),  # 26 of 563
     Stratum("kk-kz", "Q232", "kk", 15, 600, least=12, whole=True),  # 22 of 491
     Stratum("th-th", "Q869", "th", 10, 600, least=8, whole=True),   # 13 of 224
+    # The whole population on 2026-10-23, measured with no quota cap.
+    Stratum("ur-pk", "Q843", "ur", 20, 1600, least=15, whole=True),  # 24 of 1456
+    Stratum("ne-np", "Q837", "ne", 10, 200, least=8, whole=True),    # 12 of 170
 )
 
 LICENSE_TEXT = """\

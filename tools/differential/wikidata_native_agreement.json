@@ -736,6 +736,17 @@
   },
   "text": "吉川亨"
  },
+ "Q21074354/ur-in/givenFirst": {
+  "family": {
+   "expected": "اگنی ہوتری",
+   "got": "ہوتری"
+  },
+  "given_names": {
+   "expected": "انیتا",
+   "got": "انیتا اگنی"
+  },
+  "text": "انیتا اگنی ہوتری"
+ },
  "Q21438706/ja-jp/surnameFirst": {
   "family": {
    "expected": "桜井",
@@ -1021,6 +1032,17 @@
    "got": ""
   },
   "text": "韩红"
+ },
+ "Q46675/ur-in/givenFirst": {
+  "family": {
+   "expected": "رضا خان",
+   "got": "خان"
+  },
+  "given_names": {
+   "expected": "اختر",
+   "got": "اختر رضا"
+  },
+  "text": "اختر رضا خان"
  },
  "Q470059/zh-cn/surnameFirst": {
   "family": {
