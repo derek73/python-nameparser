@@ -3073,3 +3073,145 @@ def test_snapshot_refuses_a_snapshot_with_no_readable_fetch_before_reading_names
     monkeypatch.setattr(snapshot, "read", unread)
     with pytest.raises(SystemExit, match="recorded from another fetch"):
         snapshot.main(["--local", _SOURCE])
+
+
+def _unread(*args: object, **kwargs: object) -> list[dict[str, Any]]:
+    raise AssertionError("parsed the names")
+
+
+def test_snapshot_refuses_a_check_with_no_snapshot_before_reading_names(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    _fetched(monkeypatch, tmp_path)
+    monkeypatch.setattr(snapshot, "read", _unread)
+    with pytest.raises(SystemExit, match="no snapshot"):
+        snapshot.main(["--local", _SOURCE])
+
+
+def test_a_local_snapshot_does_not_read_the_facade(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    # A name the facade reads otherwise: the committed snapshot records
+    # its facade, a local one does not.
+    folder = _fetched(monkeypatch, tmp_path, "Ph. D., John")
+    assert "facade" in snapshot.read([("Ph. D., John", None)])[0]
+    assert snapshot.main(["--local", _SOURCE, "--record"]) == 0
+    assert "facade" not in json.loads((folder / "snapshot.jsonl").read_text())
+
+
+def test_a_local_snapshot_recorded_with_the_facade_compares_without_it(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    folder = _fetched(monkeypatch, tmp_path)
+    assert snapshot.main(["--local", _SOURCE, "--record"]) == 0
+    recorded = folder / "snapshot.jsonl"
+    rows = [json.loads(r) for r in recorded.read_text().splitlines()]
+    rows[0]["facade"] = {"last": "Elsewhere"}
+    recorded.write_text("".join(json.dumps(r) + "\n" for r in rows))
+    capsys.readouterr()
+    assert snapshot.main(["--local", _SOURCE]) == 0
+    assert "not compared: facade" in capsys.readouterr().out
+
+
+_MANY = tuple(f"Ann Lee{i}, MD" for i in range(40))
+
+
+def test_a_sample_reads_against_a_snapshot_of_its_own(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    folder = _fetched(monkeypatch, tmp_path, *_MANY)
+    assert snapshot.main(["--local", _SOURCE, "--record", "--sample", "3"]) == 0
+    kept = (folder / "snapshot.sample-3.jsonl").read_text().splitlines()
+    assert 0 < len(kept) < len(_MANY)
+    assert not (folder / "snapshot.jsonl").exists()
+    capsys.readouterr()
+    assert snapshot.main(["--local", _SOURCE, "--sample", "3"]) == 0
+    assert f"a 1-in-3 sample: {len(kept)} of {len(_MANY)} entries" in capsys.readouterr().out
+    with pytest.raises(SystemExit, match="no snapshot"):
+        snapshot.main(["--local", _SOURCE])
+
+
+def test_a_sample_is_never_compared_with_a_snapshot_of_another(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    folder = _fetched(monkeypatch, tmp_path, *_MANY)
+    whole = str(folder / "snapshot.jsonl")
+    assert snapshot.main(["--local", _SOURCE, "--record", "--sample", "3", "--out", whole]) == 0
+    with pytest.raises(SystemExit, match="recorded from a 1-in-3 sample"):
+        snapshot.main(["--local", _SOURCE])
+
+
+@pytest.mark.parametrize("argv", [["--sample", "3"], ["--local", _SOURCE, "--sample", "1"]],
+                         ids=["without --local", "N below 2"])
+def test_snapshot_refuses_a_sample_it_cannot_take(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, argv: list[str]) -> None:
+    _fetched(monkeypatch, tmp_path)
+    with pytest.raises(SystemExit) as raised:
+        snapshot.main(argv)
+    assert raised.value.code == 2
+
+
+def test_a_recording_of_a_committed_tree_is_reused_and_keyed_by_it(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    folder = _fetched(monkeypatch, tmp_path)
+    monkeypatch.setattr(snapshot, "_source_tree", lambda root: "a" * 40)
+    assert snapshot.main(["--local", _SOURCE, "--record"]) == 0
+    recorded = (folder / "snapshot.jsonl").read_text()
+    assert len(list((folder / "baselines").glob("*.jsonl.gz"))) == 1
+    (folder / "snapshot.jsonl").unlink()
+    monkeypatch.setattr(snapshot, "read", _unread)
+    capsys.readouterr()
+    assert snapshot.main(["--local", _SOURCE, "--record"]) == 0
+    assert "copied from" in capsys.readouterr().out
+    assert (folder / "snapshot.jsonl").read_text() == recorded
+    # Another tree, another sample, another fetch: each its own key.
+    monkeypatch.setattr(snapshot, "_source_tree", lambda root: "b" * 40)
+    with pytest.raises(AssertionError, match="parsed the names"):
+        snapshot.main(["--local", _SOURCE, "--record"])
+    monkeypatch.setattr(snapshot, "_source_tree", lambda root: "a" * 40)
+    with pytest.raises(AssertionError, match="parsed the names"):
+        snapshot.main(["--local", _SOURCE, "--record", "--sample", "2"])
+    _fetched(monkeypatch, tmp_path, "Eve Moe, DO")
+    with pytest.raises(AssertionError, match="parsed the names"):
+        snapshot.main(["--local", _SOURCE, "--record"])
+
+
+def test_a_tree_not_exactly_committed_keeps_no_baseline(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    folder = _fetched(monkeypatch, tmp_path)
+    monkeypatch.setattr(snapshot, "_source_tree", lambda root: None)
+    assert snapshot.main(["--local", _SOURCE, "--record"]) == 0
+    assert not (folder / "baselines").exists()
+
+
+def test_the_least_recently_used_baselines_are_dropped(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    folder = _fetched(monkeypatch, tmp_path)
+    monkeypatch.setattr(snapshot, "BASELINES_KEPT", 2)
+    for i, tree in enumerate("abc"):
+        monkeypatch.setattr(snapshot, "_source_tree", lambda root, t=tree: t * 40)
+        assert snapshot.main(["--local", _SOURCE, "--record"]) == 0
+        for p in (folder / "baselines").glob("*.jsonl.gz"):
+            if f"-{tree * 16}-" in p.name:
+                os.utime(p, (1_000_000 + i, 1_000_000 + i))
+    kept = sorted(p.name for p in (folder / "baselines").glob("*.jsonl.gz"))
+    assert len(kept) == 2 and not any(f"-{'a' * 16}-" in k for k in kept)
+
+
+def test_the_source_tree_is_named_only_where_it_is_committed(tmp_path: Path) -> None:
+    import subprocess
+
+    def git(*args: str) -> None:
+        subprocess.run(["git", "-C", str(tmp_path), *args], check=True, capture_output=True)
+    assert snapshot._source_tree(tmp_path) is None  # not a checkout
+    git("init", "-q")
+    (tmp_path / "nameparser").mkdir()
+    (tmp_path / "nameparser" / "a.py").write_text("x = 1\n")
+    git("add", ".")
+    git("-c", "user.name=t", "-c", "user.email=t@t", "-c", "commit.gpgsign=false",
+        "commit", "-qm", "c")
+    tree = snapshot._source_tree(tmp_path)
+    assert tree is not None and len(tree) == 40
+    (tmp_path / "nameparser" / "b.py").write_text("")  # untracked
+    assert snapshot._source_tree(tmp_path) is None
+    (tmp_path / "nameparser" / "b.py").unlink()
+    (tmp_path / "nameparser" / "a.py").write_text("x = 2\n")  # modified
+    assert snapshot._source_tree(tmp_path) is None

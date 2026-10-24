@@ -32,7 +32,8 @@ $NAMEPARSER_TOOLS_CACHE (default ~/.cache/nameparser-tools), and
   would otherwise read as a run of false zeros.
 - snapshot.jsonl, and snapshot.jsonl.source.json naming the corpus it
   was recorded from, so a snapshot is never compared with a corpus
-  fetched after it.
+  fetched after it; snapshot.sample-N.jsonl for a --sample N reading;
+  and baselines/, the recordings of committed trees snapshot.py reuses.
 - wordindex.json -- the word index tools/name_usage.py looks words up
   in, written on first use and keyed to the records and the fold
   (cached_index), so a single-word lookup parses neither raw.jsonl's

@@ -251,6 +251,8 @@ uv run python tools/differential/snapshot.py --local ctgov-officials --record --
 uv run python tools/differential/snapshot.py --local ctgov-officials
 ```
 
+A local reading parses in a worker process per CPU (`--jobs N` to change that) and does not read the facade, whose v1 compatibility is the committed corpora's question. Measured 2026-10-23 on a 12-CPU machine: a 20,000-name sample cost about 120 µs a name for the 2.0 parse and its renders, and the facade about as much again; a check of `fec-individuals` (1,893,964 names) took 49s, and of `ctgov-officials` (352,104) 9.6s, which in one process with the facade had cost about 7.5 minutes and 85s. A recording from a tree whose `nameparser/` is exactly a commit is kept gzipped in `baselines/` beside the snapshot, under a key of the fetch, the git tree of `nameparser/` (so two commits that differ only outside it share one), the interpreter's version and `snapshot.py`'s own code; recording that base again copies it (0.3s for `ctgov-officials`) rather than parsing. A tree with uncommitted or untracked files in `nameparser/` is never kept. The four most recently recorded or reused baselines are kept per source. A snapshot recorded before 2026-10-23 may carry facade rows; a check against one sets them aside and says so. `--sample N` reads a fixed 1-in-N sample, chosen by a hash of the name, into `snapshot.sample-N.jsonl`, for iterating on a change; a sample is never compared with a snapshot of the whole corpus or of another sample, and a count quoted from one says it is a sample.
+
 `compare.py --corpus` takes the cached `corpus.jsonl` too, against a release.
 
 | Source | What it is | Blind to |
