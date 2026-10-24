@@ -3073,3 +3073,285 @@ def test_snapshot_refuses_a_snapshot_with_no_readable_fetch_before_reading_names
     monkeypatch.setattr(snapshot, "read", unread)
     with pytest.raises(SystemExit, match="recorded from another fetch"):
         snapshot.main(["--local", _SOURCE])
+
+
+def _unread(*args: object, **kwargs: object) -> list[dict[str, Any]]:
+    raise AssertionError("parsed the names")
+
+
+def test_snapshot_refuses_a_check_with_no_snapshot_before_reading_names(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    _fetched(monkeypatch, tmp_path)
+    monkeypatch.setattr(snapshot, "read", _unread)
+    with pytest.raises(SystemExit, match="no snapshot"):
+        snapshot.main(["--local", _SOURCE])
+
+
+def test_a_local_snapshot_does_not_read_the_facade(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    # A name the facade reads otherwise: the committed snapshot records
+    # its facade, a local one does not.
+    folder = _fetched(monkeypatch, tmp_path, "Ph. D., John")
+    assert "facade" in snapshot.read([("Ph. D., John", None)])[0]
+    assert snapshot.main(["--local", _SOURCE, "--record"]) == 0
+    assert "facade" not in json.loads((folder / "snapshot.jsonl").read_text())
+
+
+def test_a_local_snapshot_recorded_with_the_facade_compares_without_it(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    folder = _fetched(monkeypatch, tmp_path)
+    assert snapshot.main(["--local", _SOURCE, "--record"]) == 0
+    recorded = folder / "snapshot.jsonl"
+    rows = [json.loads(r) for r in recorded.read_text().splitlines()]
+    rows[0]["facade"] = {"last": "Elsewhere"}
+    recorded.write_text("".join(json.dumps(r) + "\n" for r in rows))
+    capsys.readouterr()
+    assert snapshot.main(["--local", _SOURCE]) == 0
+    assert "not compared: facade" in capsys.readouterr().out
+
+
+_MANY = tuple(f"Ann Lee{i}, MD" for i in range(40))
+
+
+def test_a_sample_reads_against_a_snapshot_of_its_own(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    folder = _fetched(monkeypatch, tmp_path, *_MANY)
+    assert snapshot.main(["--local", _SOURCE, "--record", "--sample", "3"]) == 0
+    kept = (folder / "snapshot.sample-3.jsonl").read_text().splitlines()
+    assert 0 < len(kept) < len(_MANY)
+    assert not (folder / "snapshot.jsonl").exists()
+    capsys.readouterr()
+    assert snapshot.main(["--local", _SOURCE, "--sample", "3"]) == 0
+    assert f"a 1-in-3 sample: {len(kept)} of {len(_MANY)} entries" in capsys.readouterr().out
+    with pytest.raises(SystemExit, match="no snapshot"):
+        snapshot.main(["--local", _SOURCE])
+
+
+def test_a_sample_is_never_compared_with_a_snapshot_of_another(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    folder = _fetched(monkeypatch, tmp_path, *_MANY)
+    whole = str(folder / "snapshot.jsonl")
+    assert snapshot.main(["--local", _SOURCE, "--record", "--sample", "3", "--out", whole]) == 0
+    with pytest.raises(SystemExit, match="recorded from a 1-in-3 sample"):
+        snapshot.main(["--local", _SOURCE])
+
+
+@pytest.mark.parametrize("argv", [["--sample", "3"], ["--local", _SOURCE, "--sample", "1"]],
+                         ids=["without --local", "N below 2"])
+def test_snapshot_refuses_a_sample_it_cannot_take(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, argv: list[str]) -> None:
+    _fetched(monkeypatch, tmp_path)
+    with pytest.raises(SystemExit) as raised:
+        snapshot.main(argv)
+    assert raised.value.code == 2
+
+
+def test_a_local_recording_and_check_run_in_workers(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    # The wiring only main assembles: spawned workers importing this
+    # file by name, reading the names main gave them.
+    folder = _fetched(monkeypatch, tmp_path, *_MANY)
+    monkeypatch.setattr(snapshot, "PARALLEL_FLOOR", 1)
+    assert snapshot.main(["--local", _SOURCE, "--record", "--jobs", "2"]) == 0
+    serial = [json.loads(r) for r in (folder / "snapshot.jsonl").read_text().splitlines()]
+    assert serial == snapshot.read([(n, None) for n in sorted(_MANY)], facade=False)
+    capsys.readouterr()
+    assert snapshot.main(["--local", _SOURCE, "--jobs", "2"]) == 0
+    assert "matches the snapshot" in capsys.readouterr().out
+
+
+def _digest(monkeypatch: pytest.MonkeyPatch, *values: str) -> None:
+    """snapshot._source_digest answering `values` in turn, then the last."""
+    answers = list(values)
+    monkeypatch.setattr(snapshot, "_source_digest",
+                        lambda root: answers.pop(0) if len(answers) > 1 else answers[0])
+
+
+def _baselines(folder: Path) -> list[Path]:
+    return sorted((folder / "baselines").glob("*.jsonl.gz"))
+
+
+def test_a_recording_is_reused_for_the_same_package_and_fetch(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    folder = _fetched(monkeypatch, tmp_path)
+    _digest(monkeypatch, "a" * 64)
+    assert snapshot.main(["--local", _SOURCE, "--record"]) == 0
+    recorded = (folder / "snapshot.jsonl").read_text()
+    assert len(_baselines(folder)) == 1
+    (folder / "snapshot.jsonl").unlink()
+    (folder / "snapshot.jsonl.source.json").unlink()
+    real_read = snapshot.read
+    monkeypatch.setattr(snapshot, "read", _unread)
+    capsys.readouterr()
+    assert snapshot.main(["--local", _SOURCE, "--record"]) == 0
+    assert "copied from" in capsys.readouterr().out
+    assert (folder / "snapshot.jsonl").read_text() == recorded
+    # The copy wrote its fetch record too, so a check can read against it.
+    monkeypatch.setattr(snapshot, "read", real_read)
+    assert snapshot.main(["--local", _SOURCE]) == 0
+
+
+def test_a_recording_is_not_reused_for_another_package_sample_or_fetch(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    _fetched(monkeypatch, tmp_path)
+    _digest(monkeypatch, "a" * 64)
+    assert snapshot.main(["--local", _SOURCE, "--record"]) == 0
+    monkeypatch.setattr(snapshot, "read", _unread)
+    _digest(monkeypatch, "b" * 64)
+    with pytest.raises(AssertionError, match="parsed the names"):
+        snapshot.main(["--local", _SOURCE, "--record"])
+    _digest(monkeypatch, "a" * 64)
+    with pytest.raises(AssertionError, match="parsed the names"):
+        snapshot.main(["--local", _SOURCE, "--record", "--sample", "2"])
+    _fetched(monkeypatch, tmp_path, "Eve Moe, DO")
+    with pytest.raises(AssertionError, match="parsed the names"):
+        snapshot.main(["--local", _SOURCE, "--record"])
+
+
+def test_the_baseline_key_is_taken_from_the_tree_that_is_read(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    # Keyed by the checkout running the tool instead of --tree's, a base
+    # recorded after the branch would copy the branch's readings, and
+    # the check would report no moves.
+    _fetched(monkeypatch, tmp_path)
+    base = (tmp_path / "base").resolve()
+    asked: list[Path] = []
+
+    def digest(root: Path) -> str:
+        asked.append(root)
+        return ("b" if root == base else "a") * 64
+    monkeypatch.setattr(snapshot, "_source_digest", digest)
+    assert snapshot.main(["--local", _SOURCE, "--record"]) == 0
+    monkeypatch.setattr(snapshot, "read", _unread)
+    with pytest.raises(AssertionError, match="parsed the names"):
+        snapshot.main(["--local", _SOURCE, "--record", "--tree", str(base)])
+    assert asked[-1] == base
+
+
+def test_a_package_that_changes_during_the_read_keeps_no_baseline(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    folder = _fetched(monkeypatch, tmp_path)
+    _digest(monkeypatch, "a" * 64, "b" * 64)
+    assert snapshot.main(["--local", _SOURCE, "--record"]) == 0
+    assert "changed while it was read" in capsys.readouterr().out
+    assert (folder / "snapshot.jsonl").exists() and not _baselines(folder)
+
+
+@pytest.mark.parametrize("damage", ["truncated", "corrupt", "short", "empty"])
+def test_a_damaged_baseline_is_deleted_and_the_names_read(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str], damage: str) -> None:
+    folder = _fetched(monkeypatch, tmp_path)
+    _digest(monkeypatch, "a" * 64)
+    assert snapshot.main(["--local", _SOURCE, "--record"]) == 0
+    recorded = (folder / "snapshot.jsonl").read_text()
+    [kept] = _baselines(folder)
+    if damage == "truncated":
+        kept.write_bytes(kept.read_bytes()[:-12])
+    elif damage == "corrupt":
+        # The first deflate byte, past the 10-byte header the keep
+        # writes: a bad block header raises zlib.error, not an OSError.
+        data = bytearray(kept.read_bytes())
+        data[10] ^= 0xFF
+        kept.write_bytes(bytes(data))
+    else:
+        with gzip.open(kept, "wt", encoding="utf-8") as f:
+            f.write(recorded.splitlines(keepends=True)[0] if damage == "short" else "")
+    capsys.readouterr()
+    assert snapshot.main(["--local", _SOURCE, "--record"]) == 0
+    out = capsys.readouterr().out
+    assert "deleted the kept baseline" in out and "copied from" not in out
+    assert (folder / "snapshot.jsonl").read_text() == recorded
+    [rewritten] = _baselines(folder)
+    with gzip.open(rewritten, "rt", encoding="utf-8") as f:
+        assert f.read() == recorded
+
+
+def test_a_baseline_that_cannot_be_kept_leaves_the_recording(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    folder = _fetched(monkeypatch, tmp_path)
+    _digest(monkeypatch, "a" * 64)
+
+    def full(fd: int) -> None:
+        raise OSError(28, "No space left on device")
+    monkeypatch.setattr(snapshot.os, "fsync", full)
+    assert snapshot.main(["--local", _SOURCE, "--record"]) == 0
+    out = capsys.readouterr().out
+    assert "baseline was not kept" in out and "recorded 2 readings" in out
+    assert (folder / "snapshot.jsonl").exists() and not _baselines(folder)
+
+
+def test_the_least_recently_used_baselines_and_stale_partials_are_dropped(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    folder = _fetched(monkeypatch, tmp_path)
+    monkeypatch.setattr(snapshot, "BASELINES_KEPT", 2)
+    (folder / "baselines").mkdir()
+    stale = folder / "baselines" / "x.jsonl.gz.1.partial"
+    fresh = folder / "baselines" / "y.jsonl.gz.2.partial"
+    stale.write_text("")
+    fresh.write_text("")
+    os.utime(stale, (1_000_000, 1_000_000))
+    for i, tree in enumerate("abc"):
+        _digest(monkeypatch, tree * 64)
+        assert snapshot.main(["--local", _SOURCE, "--record"]) == 0
+        [new] = [p for p in _baselines(folder) if f"-{tree * 16}-" in p.name]
+        os.utime(new, (2_000_000 + i, 2_000_000 + i))
+    kept = [p.name for p in _baselines(folder)]
+    assert len(kept) == 2 and not any(f"-{'a' * 16}-" in k for k in kept)
+    assert not stale.exists() and fresh.exists()
+
+
+def test_the_source_digest_is_the_package_as_it_is_on_disk(tmp_path: Path) -> None:
+    import shutil as sh
+    one, two = tmp_path / "one", tmp_path / "two"
+    for root in (one, two):
+        (root / "nameparser").mkdir(parents=True)
+        (root / "nameparser" / "a.py").write_text("x = 1\n")
+    assert snapshot._source_digest(one) == snapshot._source_digest(two)
+    first = snapshot._source_digest(one)
+    (one / "nameparser" / "__pycache__").mkdir()
+    (one / "nameparser" / "__pycache__" / "a.cpython-311.pyc").write_bytes(b"x")
+    assert snapshot._source_digest(one) == first  # bytecode caches aside
+    for change in ("edited", "added", "renamed"):
+        sh.rmtree(two)
+        (two / "nameparser").mkdir(parents=True)
+        files = {"edited": {"a.py": "x = 2\n"},
+                 "added": {"a.py": "x = 1\n", "b.pyc": "sourceless"},
+                 "renamed": {"b.py": "x = 1\n"}}[change]
+        for name, body in files.items():
+            (two / "nameparser" / name).write_text(body)
+        assert snapshot._source_digest(two) != first, change
+
+
+def test_the_source_digest_follows_a_symlinked_subpackage(tmp_path: Path) -> None:
+    # The import follows the link, so the digest must read through it.
+    digests: list[str] = []
+    for target in ("x = 1\n", "x = 2\n"):
+        root = tmp_path / f"tree{len(digests)}"
+        (root / "real" / "sub").mkdir(parents=True)
+        (root / "real" / "sub" / "m.py").write_text(target)
+        (root / "nameparser").mkdir()
+        (root / "nameparser" / "sub").symlink_to(root / "real" / "sub")
+        digests.append(snapshot._source_digest(root))
+    assert digests[0] != digests[1]
+
+
+def test_a_baseline_another_run_pruned_is_not_reported_as_unkept(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    _fetched(monkeypatch, tmp_path)
+    _digest(monkeypatch, "a" * 64)
+    real_mtime = snapshot._mtime
+
+    def vanished(path: Path) -> float | None:
+        path.unlink()
+        return real_mtime(path)
+    monkeypatch.setattr(snapshot, "_mtime", vanished)
+    assert snapshot.main(["--local", _SOURCE, "--record"]) == 0
+    assert "not kept" not in capsys.readouterr().out

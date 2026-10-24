@@ -2,6 +2,10 @@
 (tools/differential/snapshot.py, #664). A failure lists the moved names
 grouped by which fields changed; re-record if the moves are intended,
 and the diff of snapshot.jsonl is then the review's list of moves."""
+import pytest
+
+import nameparser
+
 from ._differential_fixtures import load_tool
 
 snapshot = load_tool("snapshot")
@@ -99,3 +103,48 @@ def test_a_name_only_cldr_holds_is_counted_out() -> None:
     cldr = snapshot.only_in(snapshot.CLDR_CORPUS,
                             {cldr_name, "Jane (Janey, Jo) Smith", shared})
     assert cldr == {cldr_name}
+
+
+@pytest.mark.parametrize("facade", [True, False])
+def test_a_parallel_read_matches_the_serial_one(
+        monkeypatch: pytest.MonkeyPatch, facade: bool) -> None:
+    # A row the facade reads otherwise and one under another order, so
+    # a worker dropping either half reads differently.
+    entries = [*snapshot.corpus_entries()[:60], ("Ph. D., John", None)]
+    serial = snapshot.read(entries, facade=facade)
+    assert any("order" in r for r in serial)
+    assert any("facade" in r for r in serial) is facade
+    monkeypatch.setattr(snapshot, "PARALLEL_FLOOR", 1)
+    assert snapshot.read(entries, facade=facade, jobs=2) == serial
+
+
+def test_a_worker_that_read_another_nameparser_aborts_the_read(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # The negative control for the check: the workers import the real
+    # package, so a parent that believes it imported another one sees
+    # every chunk come back from elsewhere.
+    monkeypatch.setattr(snapshot, "PARALLEL_FLOOR", 1)
+    monkeypatch.setattr(nameparser, "__file__", "/elsewhere/nameparser/__init__.py")
+    with pytest.raises(SystemExit, match="a worker imported nameparser from"):
+        snapshot.read([("John Smith", None), ("Jane Doe", None)], jobs=2)
+
+
+def test_a_read_without_the_facade_drops_only_the_facade() -> None:
+    # A name the facade reads otherwise, so the row has a facade to drop.
+    with_facade, without = (snapshot.read([("Ph. D., John", None)], facade=f)[0]
+                            for f in (True, False))
+    assert "facade" in with_facade
+    assert without == {k: v for k, v in with_facade.items() if k != "facade"}
+
+
+def test_a_sample_is_chosen_by_name_and_keeps_every_order_of_one() -> None:
+    entries = snapshot.corpus_entries()
+    kept = snapshot.sampled(entries, 7)
+    assert 0 < len(kept) < len(entries)
+    # Pinned, so a per-process hash (hash() under PYTHONHASHSEED) would
+    # fail here rather than pick other names in the base's process.
+    assert snapshot.sampled([("John Smith", None), ("Mary Major", None)], 3) \
+        == [("John Smith", None)]
+    names = {n for n, _ in kept}
+    assert {e for e in entries if e[0] in names} == set(kept)
+    assert any(o for _, o in kept), "pick another N: no order-bearing entry kept"

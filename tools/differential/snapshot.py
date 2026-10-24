@@ -28,6 +28,22 @@ change can be read against real names that are never committed:
     uv run python tools/differential/snapshot.py --local ctgov-officials --record --tree ../master-checkout
     uv run python tools/differential/snapshot.py --local ctgov-officials
 
+A local snapshot does not read the facade: v1 compatibility is the
+committed corpora's question, and the facade's parse was about half the
+cost of a local reading (measured 2026-10-23, tools/differential/
+README.md's "Local corpora"). --sample N reads a fixed 1-in-N sample of
+a local corpus, chosen by a hash of the name so a sample recorded from
+one tree and checked from another holds the same names, into a
+snapshot of its own (snapshot.sample-N.jsonl). A local recording is
+also kept, gzipped, under baselines/ beside the snapshot, keyed by the
+corpus fetch, a hash of the files in the read tree's nameparser/, the
+interpreter's minor version and the code that writes a row
+(snapshot.py, corpus_build.py, shapes.py), so recording the same base
+again copies it instead of parsing.
+
+Any reading of PARALLEL_FLOOR entries or more, committed or local,
+parses in --jobs worker processes (default: every CPU).
+
 A corpus that loses names shows them as removed, so a truncated file
 cannot pass for a clean run. compare.py builds its baseline rows with
 row() too, so a released wheel's readings and the tree's are compared
@@ -36,11 +52,19 @@ in one shape.
 from __future__ import annotations
 
 import argparse
+import gzip
+import hashlib
+import importlib
 import importlib.util
 import json
+import multiprocessing
+import os
 import subprocess
 import sys
+import time
+import zlib
 from collections import defaultdict
+from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 from typing import Any
 
@@ -221,8 +245,46 @@ def facade_view(r: dict[str, Any]) -> dict[str, Any]:
     return out
 
 
-def read(entries: list[Entry]) -> list[dict[str, Any]]:
-    """The tree's row for every entry."""
+#: Below this many entries read() parses in-process even when given
+#: jobs: a worker costs an interpreter start and a nameparser import.
+PARALLEL_FLOOR = 5000
+
+
+def read(entries: list[Entry], *, facade: bool = True,
+         jobs: int = 1) -> list[dict[str, Any]]:
+    """The tree's row for every entry, in the entries' order.
+
+    With `facade` false the v1 facade is not read and no row carries a
+    `facade` key. With `jobs` above 1 and at least PARALLEL_FLOOR
+    entries, contiguous chunks are read in that many spawned worker
+    processes, which inherit this process's sys.path (so --tree's
+    checkout comes first there too); a worker that imported nameparser
+    from anywhere but where this process did aborts the run, the
+    check_source trap in a place check_source cannot see."""
+    if jobs <= 1 or len(entries) < PARALLEL_FLOOR:
+        return _read_chunk(entries, facade)[1]
+    import nameparser
+    here = Path(nameparser.__file__).resolve()
+    # A worker unpickles the chunk function by its module's name, and
+    # a test loads this file by path under another; the bare name
+    # resolves in the worker because HERE is on the inherited sys.path.
+    by_name = importlib.import_module("snapshot")
+    size = -(-len(entries) // (jobs * 4))
+    chunks = [entries[i:i + size] for i in range(0, len(entries), size)]
+    rows: list[dict[str, Any]] = []
+    with ProcessPoolExecutor(jobs, mp_context=multiprocessing.get_context("spawn")) as pool:
+        for at, part in pool.map(by_name._read_chunk, chunks, [facade] * len(chunks)):
+            if Path(at).resolve() != here:
+                raise SystemExit(
+                    f"a worker imported nameparser from {at}, not {here}, "
+                    f"so its rows would be another tree's readings. Aborted.")
+            rows.extend(part)
+    return rows
+
+
+def _read_chunk(entries: list[Entry], facade: bool) -> tuple[str, list[dict[str, Any]]]:
+    """The nameparser this process imported, and its row for every
+    entry; read()'s unit of work in a worker and out of one."""
     import nameparser
     from nameparser import HumanName, Parser, Policy
 
@@ -237,13 +299,13 @@ def read(entries: list[Entry]) -> list[dict[str, Any]]:
         v2["_initials"] = p.initials() or ""
         v2.update(case_views(str(p), str(parsers[order].capitalized(p)),
                              str(parsers[order].capitalized(p, force=True))))
-        facade = None
-        if order is None:
+        v1 = None
+        if facade and order is None:
             hn = HumanName(name)
-            facade = {k: v or "" for k, v in hn.as_dict().items() if k in V1_FIELDS}
-            facade["_initials"] = hn.initials() or ""
-        rows.append(row(name, order, v2, facade))
-    return rows
+            v1 = {k: v or "" for k, v in hn.as_dict().items() if k in V1_FIELDS}
+            v1["_initials"] = hn.initials() or ""
+        rows.append(row(name, order, v2, v1))
+    return nameparser.__file__, rows
 
 
 def key(r: dict[str, Any]) -> tuple[str, str]:
@@ -315,18 +377,145 @@ def check_source(module_file: str, root: Path = REPO_ROOT) -> Path:
     return at
 
 
-def _local(source: str) -> tuple[Path, list[Path], dict[str, str]]:
-    """A local corpus's snapshot path, its corpus file (checked by
-    local_corpora.load against its sha256), and what names this fetch of
-    it, with its attribution printed: a report on it carries its source
-    and date."""
+def _local(source: str, sample: int | None
+           ) -> tuple[Path, list[Path], dict[str, Any]]:
+    """A local corpus's snapshot path (a sample's own, for --sample),
+    its corpus file (checked by local_corpora.load against its sha256),
+    and what names this fetch of it and the sample, with its attribution
+    printed: a report on it carries its source and date."""
     import local_corpora
     corpus = local_corpora.require(source)
     print(corpus.header())
-    fetch = {"data_date": corpus.meta["data_date"],
-             "corpus_sha256": corpus.meta["corpus_sha256"]}
-    return (local_corpora.directory(source) / local_corpora.SNAPSHOT,
-            [local_corpora.corpus_path(source)], fetch)
+    fetch: dict[str, Any] = {"data_date": corpus.meta["data_date"],
+                             "corpus_sha256": corpus.meta["corpus_sha256"]}
+    snapshot = local_corpora.directory(source) / local_corpora.SNAPSHOT
+    if sample is not None:
+        fetch["sample"] = sample
+        snapshot = snapshot.with_name(f"{snapshot.stem}.sample-{sample}{snapshot.suffix}")
+    return snapshot, [local_corpora.corpus_path(source)], fetch
+
+
+def sampled(entries: list[Entry], every: int) -> list[Entry]:
+    """The entries a 1-in-`every` sample keeps, chosen by a hash of the
+    name rather than at random: a sample recorded from one tree and
+    checked from another holds the same names, and a name read under
+    two orders stays whole."""
+    return [e for e in entries
+            if int.from_bytes(hashlib.blake2b(
+                e[0].encode("utf-8", "surrogatepass"), digest_size=8).digest(),
+                "big") % every == 0]
+
+
+#: How many recorded baselines a local corpus keeps, whole or sampled
+#: alike, the least recently recorded or reused dropped first: an FEC
+#: snapshot was 249 MB plain and 41 MB gzipped on 2026-10-23.
+BASELINES_KEPT = 4
+#: A partial baseline older than this is a crashed write's, not a
+#: running one's, and is deleted when a baseline is kept.
+_PARTIAL_STALE_SECONDS = 86400
+
+
+def _source_digest(root: Path) -> str:
+    """A hash of every file under `root`'s nameparser/ as it is on disk,
+    __pycache__ aside: what the import reads, so an uncommitted edit, a
+    gitignored file, a sourceless module or a copy outside any checkout
+    keys as itself. git's view of the tree was the first key and could
+    name the wrong one: an ignored copy inside a checkout (build/lib)
+    took the checkout's tree, and status shows neither ignored nor
+    assume-unchanged files (#859's review)."""
+    h = hashlib.sha256()
+    package = root / "nameparser"
+    files = []
+    # os.walk follows a symlinked subpackage, as the import does;
+    # Path.rglob does not descend into one.
+    for at, dirs, names in os.walk(package, followlinks=True):
+        dirs[:] = [d for d in dirs if d != "__pycache__"]
+        files.extend(Path(at) / n for n in names)
+    for path in sorted(files):
+        if path.is_file():
+            h.update(path.relative_to(package).as_posix().encode() + b"\0")
+            h.update(path.read_bytes() + b"\0")
+    return h.hexdigest()
+
+
+def _baseline(snapshot: Path, fetch: dict[str, Any], digest: str) -> Path:
+    """Where a recording of `fetch` from a package of `digest` is kept.
+    The key holds what a reading depends on besides the names: the
+    package's files, the interpreter's minor version (unicodedata moves
+    between Python versions), and the code that decides what a row
+    records and how its line is written."""
+    tool = hashlib.sha256(b"".join(
+        (HERE / f).read_bytes()
+        for f in ("snapshot.py", "corpus_build.py", "shapes.py"))).hexdigest()[:12]
+    sample = f"-sample-{fetch['sample']}" if "sample" in fetch else ""
+    py = f"py{sys.version_info[0]}{sys.version_info[1]}"
+    return (snapshot.parent / "baselines"
+            / f"{fetch['corpus_sha256'][:12]}-{digest[:16]}-{py}-{tool}{sample}.jsonl.gz")
+
+
+def _reused(baseline: Path, entries: int) -> str | None:
+    """A kept baseline's text, or None where there is none to reuse. A
+    damaged one -- unreadable, or holding another number of rows than
+    the corpus has entries, as a write cut short would -- is deleted
+    with a note, and the names are read instead."""
+    if not baseline.exists():
+        return None
+    try:
+        with gzip.open(baseline, "rt", encoding="utf-8") as f:
+            text = f.read()
+    except (OSError, EOFError, zlib.error, UnicodeDecodeError) as e:
+        why = f"unreadable ({e})"
+    else:
+        if (rows := text.count("\n")) == entries:
+            return text
+        why = f"{rows} rows for {entries} entries"
+    print(f"deleted the kept baseline {baseline.name}: {why}; reading the names\n")
+    baseline.unlink()
+    return None
+
+
+def _keep_baseline(path: Path, text: str) -> None:
+    """Keep `text` at `path`, written whole and synced before it takes
+    the name, then drop the least recently used baselines and stale
+    partial writes. A failure is reported, not raised: the snapshot it
+    would have saved recording again is already written."""
+    try:
+        path.parent.mkdir(exist_ok=True)
+        partial = path.with_name(f"{path.name}.{os.getpid()}.partial")
+        with open(partial, "wb") as raw:
+            # No file name or time in the header: the partial's name is
+            # not the baseline's, and identical readings give equal bytes.
+            with gzip.GzipFile(filename="", fileobj=raw, mode="wb",
+                               compresslevel=1, mtime=0) as f:
+                f.write(text.encode("utf-8"))
+            raw.flush()
+            os.fsync(raw.fileno())
+        partial.replace(path)
+    except OSError as e:
+        print(f"the snapshot is recorded, but its baseline was not kept: {e}")
+        return
+    _prune(path.parent)
+
+
+def _mtime(path: Path) -> float | None:
+    try:
+        return path.stat().st_mtime
+    except FileNotFoundError:  # another run pruned it meanwhile
+        return None
+
+
+def _prune(folder: Path) -> None:
+    """Drop all but the BASELINES_KEPT most recently used baselines, and
+    partial writes old enough to be a crashed run's. A file another run
+    removed first is skipped, not reported."""
+    stale = time.time() - _PARTIAL_STALE_SECONDS
+    kept = sorted((m, p) for p in folder.glob("*.jsonl.gz")
+                  if (m := _mtime(p)) is not None)
+    old = [p for _, p in kept[:-BASELINES_KEPT]]
+    old += [p for p in folder.glob("*.partial")
+            if (m := _mtime(p)) is not None and m < stale]
+    for p in old:
+        p.unlink(missing_ok=True)
 
 
 def _fetch_record(snapshot: Path) -> Path:
@@ -337,7 +526,7 @@ def _fetch_record(snapshot: Path) -> Path:
     return snapshot.with_name(snapshot.name + ".source.json")
 
 
-def _check_fetch(snapshot: Path, fetch: dict[str, str], source: str) -> None:
+def _check_fetch(snapshot: Path, fetch: dict[str, Any], source: str) -> None:
     """Refuse a local snapshot recorded from another fetch of its corpus,
     or with no readable record of its fetch, before reading anything."""
     try:
@@ -354,6 +543,16 @@ def _check_fetch(snapshot: Path, fetch: dict[str, str], source: str) -> None:
             f"source gained and lost as moves. Record it again from the "
             f"base checkout: snapshot.py --local {source} --record "
             f"--tree <base checkout>")
+    if recorded.get("sample") != fetch.get("sample"):
+        raise SystemExit(
+            f"{snapshot} was recorded from "
+            f"{_describe_sample(recorded.get('sample'))} of {source}, and "
+            f"this run reads {_describe_sample(fetch.get('sample'))}: every "
+            f"name in one and not the other would read as a move")
+
+
+def _describe_sample(sample: object) -> str:
+    return "the whole corpus" if sample is None else f"a 1-in-{sample} sample"
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -368,25 +567,64 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--local", metavar="SOURCE",
                     help="read a local corpus from the cache instead of the "
                          "committed corpora (local_corpora.py)")
+    ap.add_argument("--sample", type=int, metavar="N",
+                    help="with --local: read a fixed 1-in-N sample of the "
+                         "corpus, against a snapshot of the same sample")
+    ap.add_argument("--jobs", type=int, metavar="N", default=os.cpu_count() or 1,
+                    help="parse in N worker processes (default: every CPU)")
     args = ap.parse_args(argv)
     if args.local and args.since:
         ap.error("--since reads a committed snapshot; a local corpus has none")
+    if args.sample is not None and not args.local:
+        ap.error("--sample reads a local corpus; the committed snapshot is whole")
+    if args.sample is not None and args.sample < 2:
+        ap.error("--sample N keeps 1 name in N, so N must be 2 or more")
     snapshot, corpora, fetch = SNAPSHOT, None, None
     if args.local:
-        snapshot, corpora, fetch = _local(args.local)
+        snapshot, corpora, fetch = _local(args.local, args.sample)
     out = args.out or snapshot
-    if fetch is not None and not args.record and snapshot.exists():
+    if not (args.record or args.since or snapshot.exists()):
+        raise SystemExit(f"no snapshot at {snapshot}: record one first, "
+                         f"with --record (and --tree for another checkout)")
+    if fetch is not None and not args.record:
         _check_fetch(snapshot, fetch, args.local)
     root = Path(args.tree).resolve() if args.tree else REPO_ROOT
+    entries = corpus_entries(corpora)
+    if args.sample is not None:
+        whole, entries = len(entries), sampled(entries, args.sample)
+        print(f"a 1-in-{args.sample} sample: {len(entries)} of {whole} entries\n")
+    baseline = digest = None
+    if fetch is not None and args.record:
+        digest = _source_digest(root)
+        baseline = _baseline(snapshot, fetch, digest)
+        if (text := _reused(baseline, len(entries))) is not None:
+            out.write_text(text, encoding="utf-8")
+            _fetch_record(out).write_text(json.dumps(fetch), encoding="utf-8")
+            try:
+                os.utime(baseline)
+            except FileNotFoundError:  # another run pruned it meanwhile
+                pass
+            print(f"recorded {len(entries)} readings to {out}, copied from "
+                  f"{baseline.name}: this nameparser/ was read from this "
+                  f"fetch before")
+            return 0
     if args.tree:
         sys.path.insert(0, str(root))
-    rows = read(corpus_entries(corpora))
+    rows = read(entries, facade=not args.local, jobs=args.jobs)
     import nameparser
     check_source(nameparser.__file__, root)
     if args.record:
-        out.write_text(dump(rows), encoding="utf-8")
+        text = dump(rows)
+        out.write_text(text, encoding="utf-8")
         if fetch is not None:
             _fetch_record(out).write_text(json.dumps(fetch), encoding="utf-8")
+            # Keyed before the read: a package that changed during it
+            # may have been read half old and half new, so it keeps none.
+            if baseline is not None and _source_digest(root) == digest:
+                _keep_baseline(baseline, text)
+            elif baseline is not None:
+                print(f"{root / 'nameparser'} changed while it was read, so "
+                      f"no baseline was kept; record again")
         print(f"recorded {len(rows)} readings to {out}")
         return 0
     if args.since:
@@ -400,12 +638,14 @@ def main(argv: list[str] | None = None) -> int:
                 f"no {rel} at {args.since}: an unknown ref, or one from "
                 f"before the snapshot existed. For a release tagged "
                 f"before it, use `compare.py --baseline <version>`") from None
-    elif not snapshot.exists():
-        raise SystemExit(f"no snapshot at {snapshot}: record one first, "
-                         f"with --record (and --tree for another checkout)")
     else:
         text = snapshot.read_text(encoding="utf-8")
     old, new = load(text), {key(r): r for r in rows}
+    if args.local and any("facade" in r for r in old.values()):
+        for r in old.values():
+            r.pop("facade", None)
+        print("not compared: facade -- the snapshot read against was "
+              "recorded when a local reading still read the facade\n")
     if dropped := unrecorded_views(old, new):
         print(f"not compared: {', '.join(dropped)} -- the snapshot read "
               f"against records no case view (it predates #826); "
