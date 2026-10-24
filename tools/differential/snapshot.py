@@ -62,6 +62,7 @@ import os
 import subprocess
 import sys
 import time
+import zlib
 from collections import defaultdict
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
@@ -424,8 +425,14 @@ def _source_digest(root: Path) -> str:
     assume-unchanged files (#859's review)."""
     h = hashlib.sha256()
     package = root / "nameparser"
-    for path in sorted(package.rglob("*")):
-        if path.is_file() and "__pycache__" not in path.relative_to(package).parts:
+    files = []
+    # os.walk follows a symlinked subpackage, as the import does;
+    # Path.rglob does not descend into one.
+    for at, dirs, names in os.walk(package, followlinks=True):
+        dirs[:] = [d for d in dirs if d != "__pycache__"]
+        files.extend(Path(at) / n for n in names)
+    for path in sorted(files):
+        if path.is_file():
             h.update(path.relative_to(package).as_posix().encode() + b"\0")
             h.update(path.read_bytes() + b"\0")
     return h.hexdigest()
@@ -456,7 +463,7 @@ def _reused(baseline: Path, entries: int) -> str | None:
     try:
         with gzip.open(baseline, "rt", encoding="utf-8") as f:
             text = f.read()
-    except (OSError, EOFError, UnicodeDecodeError) as e:
+    except (OSError, EOFError, zlib.error, UnicodeDecodeError) as e:
         why = f"unreadable ({e})"
     else:
         if (rows := text.count("\n")) == entries:
@@ -476,20 +483,39 @@ def _keep_baseline(path: Path, text: str) -> None:
         path.parent.mkdir(exist_ok=True)
         partial = path.with_name(f"{path.name}.{os.getpid()}.partial")
         with open(partial, "wb") as raw:
-            with gzip.GzipFile(fileobj=raw, mode="wb", compresslevel=1) as f:
+            # No file name or time in the header: the partial's name is
+            # not the baseline's, and identical readings give equal bytes.
+            with gzip.GzipFile(filename="", fileobj=raw, mode="wb",
+                               compresslevel=1, mtime=0) as f:
                 f.write(text.encode("utf-8"))
             raw.flush()
             os.fsync(raw.fileno())
         partial.replace(path)
-        kept = sorted(path.parent.glob("*.jsonl.gz"), key=lambda p: p.stat().st_mtime)
-        for old in kept[:-BASELINES_KEPT]:
-            old.unlink()
-        stale = time.time() - _PARTIAL_STALE_SECONDS
-        for old in path.parent.glob("*.partial"):
-            if old.stat().st_mtime < stale:
-                old.unlink()
     except OSError as e:
         print(f"the snapshot is recorded, but its baseline was not kept: {e}")
+        return
+    _prune(path.parent)
+
+
+def _mtime(path: Path) -> float | None:
+    try:
+        return path.stat().st_mtime
+    except FileNotFoundError:  # another run pruned it meanwhile
+        return None
+
+
+def _prune(folder: Path) -> None:
+    """Drop all but the BASELINES_KEPT most recently used baselines, and
+    partial writes old enough to be a crashed run's. A file another run
+    removed first is skipped, not reported."""
+    stale = time.time() - _PARTIAL_STALE_SECONDS
+    kept = sorted((m, p) for p in folder.glob("*.jsonl.gz")
+                  if (m := _mtime(p)) is not None)
+    old = [p for _, p in kept[:-BASELINES_KEPT]]
+    old += [p for p in folder.glob("*.partial")
+            if (m := _mtime(p)) is not None and m < stale]
+    for p in old:
+        p.unlink(missing_ok=True)
 
 
 def _fetch_record(snapshot: Path) -> Path:
@@ -574,7 +600,10 @@ def main(argv: list[str] | None = None) -> int:
         if (text := _reused(baseline, len(entries))) is not None:
             out.write_text(text, encoding="utf-8")
             _fetch_record(out).write_text(json.dumps(fetch), encoding="utf-8")
-            os.utime(baseline)
+            try:
+                os.utime(baseline)
+            except FileNotFoundError:  # another run pruned it meanwhile
+                pass
             print(f"recorded {len(entries)} readings to {out}, copied from "
                   f"{baseline.name}: this nameparser/ was read from this "
                   f"fetch before")

@@ -3242,7 +3242,7 @@ def test_a_package_that_changes_during_the_read_keeps_no_baseline(
     assert (folder / "snapshot.jsonl").exists() and not _baselines(folder)
 
 
-@pytest.mark.parametrize("damage", ["truncated", "short", "empty"])
+@pytest.mark.parametrize("damage", ["truncated", "corrupt", "short", "empty"])
 def test_a_damaged_baseline_is_deleted_and_the_names_read(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
         capsys: pytest.CaptureFixture[str], damage: str) -> None:
@@ -3253,6 +3253,12 @@ def test_a_damaged_baseline_is_deleted_and_the_names_read(
     [kept] = _baselines(folder)
     if damage == "truncated":
         kept.write_bytes(kept.read_bytes()[:-12])
+    elif damage == "corrupt":
+        # The first deflate byte, past the 10-byte header the keep
+        # writes: a bad block header raises zlib.error, not an OSError.
+        data = bytearray(kept.read_bytes())
+        data[10] ^= 0xFF
+        kept.write_bytes(bytes(data))
     else:
         with gzip.open(kept, "wt", encoding="utf-8") as f:
             f.write(recorded.splitlines(keepends=True)[0] if damage == "short" else "")
@@ -3321,3 +3327,31 @@ def test_the_source_digest_is_the_package_as_it_is_on_disk(tmp_path: Path) -> No
         for name, body in files.items():
             (two / "nameparser" / name).write_text(body)
         assert snapshot._source_digest(two) != first, change
+
+
+def test_the_source_digest_follows_a_symlinked_subpackage(tmp_path: Path) -> None:
+    # The import follows the link, so the digest must read through it.
+    digests = []
+    for target in ("x = 1\n", "x = 2\n"):
+        root = tmp_path / f"tree{len(digests)}"
+        (root / "real" / "sub").mkdir(parents=True)
+        (root / "real" / "sub" / "m.py").write_text(target)
+        (root / "nameparser").mkdir()
+        (root / "nameparser" / "sub").symlink_to(root / "real" / "sub")
+        digests.append(snapshot._source_digest(root))
+    assert digests[0] != digests[1]
+
+
+def test_a_baseline_another_run_pruned_is_not_reported_as_unkept(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    _fetched(monkeypatch, tmp_path)
+    _digest(monkeypatch, "a" * 64)
+    real_mtime = snapshot._mtime
+
+    def vanished(path: Path) -> float | None:
+        path.unlink()
+        return real_mtime(path)
+    monkeypatch.setattr(snapshot, "_mtime", vanished)
+    assert snapshot.main(["--local", _SOURCE, "--record"]) == 0
+    assert "not kept" not in capsys.readouterr().out
