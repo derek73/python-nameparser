@@ -34,6 +34,12 @@ import pytest
 from nameparser import ParsedName, Parser, parse
 from nameparser._policy import Policy
 
+#: The whole module, though only the clock-timed tests need it: a
+#: parallel run's load fails their ratios (tests/conftest.py), and the
+#: frame-count tests beside them cost too little to be worth splitting
+#: the module's one serial pass.
+pytestmark = pytest.mark.serial
+
 
 #: What one parse of the reference name is allowed to cost, counted in
 #: Python frame entries rather than seconds (#475). A wall-clock bound

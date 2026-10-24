@@ -54,6 +54,7 @@ dev = [
   "ruff (>=0.15)",
   "pytest-timeout>=2.4.0",
   "pytest-cov>=6",
+  "pytest-xdist>=3.6",
   "hypothesis",
 ]
 
@@ -103,7 +104,16 @@ check_untyped_defs = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests", "nameparser"]
-addopts = "--doctest-modules"
+# Parallel by default: the suite is CPU-bound and took 110s serial
+# against 35s on 8 workers (measured 2026-10-23). worksteal because the
+# property grids are a few long tests among 23,000 short ones, and
+# fixed chunks left one worker running them alone. -n0 runs serially.
+addopts = "--doctest-modules -n auto --dist worksteal"
+markers = [
+    # deselected in a parallel run by tests/conftest.py; run them with
+    # `uv run pytest -n0 -m serial`
+    "serial: measures the clock, so other workers' load can fail it",
+]
 python_classes = ["*Tests", "*TestCase"]
 # Fail if an xfail-marked test unexpectedly passes, so a fixed/regressed
 # expectation surfaces instead of silently turning into an xpass.

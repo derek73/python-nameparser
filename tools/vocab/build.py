@@ -87,6 +87,10 @@ from types import ModuleType
 from typing import Any, TypedDict
 
 ROOT = Path(__file__).resolve().parents[2]
+# bound at import like VOCAB and OUTPUT below, so a test repointing ROOT
+# at a fixture tree does not move the parser's own module out from under
+# a cold _LEXICON cache
+_LEXICON_PATH = ROOT / "nameparser" / "_lexicon.py"
 
 
 def _load_lexicon_module() -> ModuleType:
@@ -101,8 +105,7 @@ def _load_lexicon_module() -> ModuleType:
     own; tests/v2/test_vocab.py's
     test_the_build_does_not_import_the_package_it_writes holds that."""
     import importlib.util
-    path = ROOT / "nameparser" / "_lexicon.py"
-    spec = importlib.util.spec_from_file_location("_vocab_build_lexicon", path)
+    spec = importlib.util.spec_from_file_location("_vocab_build_lexicon", _LEXICON_PATH)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     # registered before it runs: its dataclasses look their module up
