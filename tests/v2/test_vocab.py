@@ -695,6 +695,16 @@ def test_a_warning_raised_as_an_error_exits_2(tmp_path: Path, monkeypatch: pytes
         assert build.main(["--check"]) == 2
 
 
+def test_a_repointed_root_does_not_move_the_lexicon_module(tmp_path: Path,
+                                                           monkeypatch: pytest.MonkeyPatch) -> None:
+    # the tests above repoint ROOT at a fixture tree holding no
+    # _lexicon.py; a cold cache must still load the parser's own, or
+    # each of them passes only after another test has warmed it
+    monkeypatch.setattr(build, "_LEXICON", [])
+    monkeypatch.setattr(build, "ROOT", tmp_path)
+    assert build._normalize(" Dr. ") == "dr"
+
+
 def test_a_broken_lexicon_module_exits_3(monkeypatch: pytest.MonkeyPatch) -> None:
     def broken() -> ModuleType:
         raise SyntaxError("conflict markers")
