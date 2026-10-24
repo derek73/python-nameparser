@@ -73,6 +73,9 @@ _TRANSLATED = frozenset({
 #: to the unsubtracted default pushes every parenthesis-maiden row
 #: into this set and turns nothing red.
 _CORE_ONLY_IDS = frozenset({
+    # #864: the dotted switch turned off, which the v1 shim does not
+    # translate (decisions/S9)
+    "paired_initials_under_the_switch_off_read_the_same",
     # #718: S10's count under a declared family-first order, which v1
     # cannot express
     "a_lone_numeral_counts_in_units_under_family_first",

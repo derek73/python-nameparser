@@ -1748,7 +1748,6 @@ SUFFIX_ACRONYMS: frozenset[str] = frozenset({
     'fws',
     'gba',
     'gbe',
-    'gc',
     'gcb',
     'gchs',
     'gcie',

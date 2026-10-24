@@ -3212,6 +3212,101 @@ CASES: tuple[Case, ...] = (
                "four letters, and the Indian degree reads as the "
                "credential it is",
          shape=1),
+    # #864: paired initials (two dotted single letters, a cased
+    # script) are no word of the class at the trailing slots, so a
+    # surname written that way (Nepali B.K., K.C.) keeps the family;
+    # the fork is still reported. Each row has a twin that does move:
+    # three dotted letters (the X.Y.Z. rows above), a listed credential
+    # (D.C.), a caseless script's pair, a pair behind a suffix word.
+    Case("paired_initials_ending_a_name_are_its_family",
+         "Ram Bahadur B.K.",
+         {"given": "Ram", "middle": "Bahadur", "family": "B.K."},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#864)",
+         notes="2.3.0's reading (wheel); 2.4.0 through 2.5.0 read "
+               "family 'Bahadur', suffix 'B.K.' by S3's words-to-spare "
+               "count"),
+    Case("paired_initials_without_their_final_period",
+         "Sita Kumari K.C",
+         {"given": "Sita", "middle": "Kumari", "family": "K.C"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#864)",
+         notes="the second period is optional, as C5 writes the shape"),
+    Case("paired_initials_in_a_one_case_name",
+         "RAM BAHADUR B.K.",
+         {"given": "RAM", "middle": "BAHADUR", "family": "B.K."},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#864)",
+         notes="case says nothing about the dotted shape (S3), so the "
+               "capitals read as the mixed-case name does"),
+    Case("paired_initials_before_a_suffix_comma",
+         "Ram Bahadur B.K., PhD",
+         {"given": "Ram", "middle": "Bahadur", "family": "B.K.",
+          "suffix": "PhD"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#864)",
+         notes="the part before a suffix comma reads as the name "
+               "written without it (C1): 2.4.0 through 2.5.0 read "
+               "suffix 'B.K., PhD'"),
+    Case("paired_initials_trailing_the_given_part",
+         "Bahadur, Ram B.K.",
+         {"given": "Ram", "middle": "B.K.", "family": "Bahadur"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#864)",
+         notes="after a family comma the pair is a middle name, 1.4.0's "
+               "and 2.3.0's reading (wheels)"),
+    Case("paired_initials_ending_a_maiden_clause",
+         "Jane Doe nee Smith B.K.",
+         {"given": "Jane", "family": "Doe", "maiden": "Smith B.K."},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#864)",
+         notes="2.3.0's reading (wheel); 2.4.0 through 2.5.0 read "
+               "suffix 'B.K.' at the clause's end (M2)"),
+    Case("paired_initials_behind_a_suffix_word_join_the_run",
+         "Ram Bahadur PhD B.K.",
+         {"given": "Ram", "family": "Bahadur", "suffix": "PhD B.K."},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#516)",
+         notes="the boundary: behind an unambiguous credential the "
+               "pair joins the run as any dotted-shape word does, the "
+               "reading the switch off gives too"),
+    Case("a_listed_two_letter_credential_keeps_the_suffix",
+         "Hari Bahadur D.C.",
+         {"given": "Hari", "family": "Bahadur", "suffix": "D.C."},
+         notes="the boundary on the vocabulary side: Doctor of "
+               "Chiropractic is listed, so the shape question is never "
+               "asked (99,172 NPPES providers write it, decisions/S3)"),
+    Case("paired_initials_in_a_caseless_script_keep_the_position_reading",
+         "สมชาย ใจดี พ.บ.",
+         {"given": "สมชาย", "family": "ใจดี", "suffix": "พ.บ."},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#516)",
+         notes="the boundary on the script side: Thai writes its "
+               "abbreviations as dotted letters, degrees among them "
+               "(the MD here), and has no capitals to write initials "
+               "in"),
+    Case("gc_is_a_family_name_with_nothing_to_spare",
+         "Hari G.C.",
+         {"given": "Hari", "family": "G.C."},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#864)",
+         notes="gc left the suffix acronyms (decisions/suffix-acronym-"
+               "collisions): 1.4.0's reading; 2.0.0 through 2.5.0 read "
+               "suffix 'G.C.' and no family"),
+    Case("gc_is_a_family_name_with_words_to_spare",
+         "Hari Bahadur G.C.",
+         {"given": "Hari", "middle": "Bahadur", "family": "G.C."},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#864)",
+         notes="unlisted, it reads as the paired initials it is spelled "
+               "in; 1.4.0 through 2.5.0 read suffix 'G.C.'"),
+    Case("paired_initials_under_the_switch_off_read_the_same",
+         "Ram Bahadur B.K.",
+         {"given": "Ram", "middle": "Bahadur", "family": "B.K."},
+         policy=Policy(unlisted_dotted_suffixes=False),
+         ambiguities=("suffix-or-name",),
+         notes="the pair reads as the switch off reads every dotted "
+               "word, and that reading is unchanged"),
     Case("the_s3_boundary_example_moves", "John Smith Q.W.E.R.T.",
          {"given": "John", "family": "Smith", "suffix": "Q.W.E.R.T."},
          classification="fix(#516)",
@@ -3335,26 +3430,29 @@ CASES: tuple[Case, ...] = (
          shape=3),
     Case("two_pairs_behind_a_particle_surname_open_the_given_part",
          "De La Cruz, M.J. K.L.",
-         {"given": "M.J.", "family": "De La Cruz", "suffix": "K.L."},
+         {"given": "M.J.", "family": "De La Cruz", "middle": "K.L."},
          classification="fix(#575)",
          ambiguities=("suffix-or-name", "suffix-or-name"),
          notes="'De La Cruz' is one name word (#575), so the count no "
                "longer reaches the part and it reads as 'Cruz, M.J. "
                "K.L.' does (Derek, 2026-10-01). #563 had read it as a "
-               "flipped credential run with no given name. 1.4.0 read "
-               "given 'M.J.', middle 'K.L.'",
+               "flipped credential run with no given name. 'K.L.' then "
+               "ends the given part, where paired initials are a name "
+               "word since #864 (suffix 'K.L.' before it): 1.4.0's "
+               "reading, given 'M.J.', middle 'K.L.'",
          shape=2),
     Case("a_class_member_in_front_of_paired_initials_does_not_speak",
          "García Márquez, Ed G.J.",
-         {"given": "Ed", "family": "García Márquez", "suffix": "G.J."},
+         {"given": "Ed", "family": "García Márquez", "middle": "G.J."},
          classification="fix(#516)",
          ambiguities=("suffix-or-name", "suffix-or-name"),
          notes="#563 second review round: 'Ed' is a listed ambiguous "
                "member, and S7's company lets only an unambiguous "
                "credential speak, so the comma keeps the family. 'G.J.' "
-               "then ends the given part, the slot #563 left alone, "
-               "where the dotted shape reads a credential as in 'Doe, "
-               "John R.T.'; both forks report. 1.4.0 and 2.3.0 read "
+               "then ends the given part, the slot #563 left alone and "
+               "#864 settled: paired initials are a name word there, "
+               "as in 'Doe, John R.T.', where they read suffix 'G.J.' "
+               "before; both forks report. 1.4.0 and 2.3.0 read "
                "middle 'G.J.'",
          shape=3),
     Case("three_run_together_initials_behind_a_double_surname_read_as_a_credential",
@@ -11171,8 +11269,8 @@ CASES: tuple[Case, ...] = (
                "'Prof.' into the family as 0c54662b did (family 'von "
                "Berg Prof.'; #614's /simplify, mutation)"),
     Case("a_run_with_a_name_inside_keeps_the_bound_join_two_views",
-         "abdul Dr. G.J.",
-         {"title": "Dr.", "given": "abdul", "family": "G.J."},
+         "abdul Dr. X.Y.Z.",
+         {"title": "Dr.", "given": "abdul", "family": "X.Y.Z."},
          ambiguities=("suffix-or-name",),
          classification="fix(#516)",
          notes="the read is declined (the H5 title stands in front of "
@@ -11180,11 +11278,15 @@ CASES: tuple[Case, ...] = (
                "both views as before #614: the chain takes 'Dr.', and "
                "a piece the chain takes is no word to join (#614's "
                "/simplify: the one main-segment row reaching that "
-               "branch) (1.4.0 middle 'Dr.'; 2.2-2.3 given 'abdul Dr.'; "
-               "bisected to #516)"),
+               "branch) (1.4.0 middle 'Dr.'; 2.3.0 given 'abdul Dr.', "
+               "on the wheels; bisected to #516). Written 'abdul Dr. "
+               "G.J.' until #864, whose paired initials are no word of "
+               "the class there and read as 'abdul Dr. Smith' does "
+               "(given 'abdul Dr.')"),
     Case("a_weighed_word_the_chain_may_join_counts_as_a_word",
-         "Freiherr von Berg G.J. G.J.",
-         {"title": "Freiherr", "family": "von Berg G.J.", "suffix": "G.J."},
+         "Freiherr von Berg X.Y.Z. X.Y.Z.",
+         {"title": "Freiherr", "family": "von Berg X.Y.Z.",
+          "suffix": "X.Y.Z."},
          ambiguities=("particle-or-given", "suffix-or-name",
                       "suffix-or-name"),
          classification="fix(#614)",
@@ -11196,7 +11298,9 @@ CASES: tuple[Case, ...] = (
                "and kept both in the family, 1.4.0's reading, and the "
                "review found the same fold losing 'Freiherr von Berg MA "
                "X.Y.Z.' its suffix (adf6da88 given 'von Berg G.J.', "
-               "family 'G.J.')"),
+               "family 'G.J.'). Written with 'G.J.' until #864, whose "
+               "paired initials are no word the trailing reading "
+               "weighs (family 'von Berg G.J. G.J.')"),
     Case("a_particle_run_is_one_name_word_before_a_credential",
          "John der la Jr. Prof. Smith",
          {"given": "John", "family": "der la", "title": "Prof.",
