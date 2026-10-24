@@ -105,10 +105,17 @@ def test_a_name_only_cldr_holds_is_counted_out() -> None:
     assert cldr == {cldr_name}
 
 
-def test_a_parallel_read_matches_the_serial_one(monkeypatch: pytest.MonkeyPatch) -> None:
-    entries = snapshot.corpus_entries()[:60]
+@pytest.mark.parametrize("facade", [True, False])
+def test_a_parallel_read_matches_the_serial_one(
+        monkeypatch: pytest.MonkeyPatch, facade: bool) -> None:
+    # A row the facade reads otherwise and one under another order, so
+    # a worker dropping either half reads differently.
+    entries = [*snapshot.corpus_entries()[:60], ("Ph. D., John", None)]
+    serial = snapshot.read(entries, facade=facade)
+    assert any("order" in r for r in serial)
+    assert any("facade" in r for r in serial) is facade
     monkeypatch.setattr(snapshot, "PARALLEL_FLOOR", 1)
-    assert snapshot.read(entries, jobs=2) == snapshot.read(entries)
+    assert snapshot.read(entries, facade=facade, jobs=2) == serial
 
 
 def test_a_worker_that_read_another_nameparser_aborts_the_read(
@@ -134,7 +141,10 @@ def test_a_sample_is_chosen_by_name_and_keeps_every_order_of_one() -> None:
     entries = snapshot.corpus_entries()
     kept = snapshot.sampled(entries, 7)
     assert 0 < len(kept) < len(entries)
-    assert set(snapshot.sampled(entries[::-1], 7)) == set(kept)
+    # Pinned, so a per-process hash (hash() under PYTHONHASHSEED) would
+    # fail here rather than pick other names in the base's process.
+    assert snapshot.sampled([("John Smith", None), ("Mary Major", None)], 3) \
+        == [("John Smith", None)]
     names = {n for n, _ in kept}
     assert {e for e in entries if e[0] in names} == set(kept)
     assert any(o for _, o in kept), "pick another N: no order-bearing entry kept"

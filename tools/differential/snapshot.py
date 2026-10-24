@@ -29,16 +29,20 @@ change can be read against real names that are never committed:
     uv run python tools/differential/snapshot.py --local ctgov-officials
 
 A local snapshot does not read the facade: v1 compatibility is the
-committed corpora's question, and the facade's parse was half the cost
-of a local reading. --sample N reads a fixed 1-in-N sample of a local
-corpus, chosen by a hash of the name so a sample recorded from one tree
-and checked from another holds the same names, into a snapshot of its
-own (snapshot.sample-N.jsonl). A recording from a tree whose
-nameparser/ is exactly a commit is also kept, gzipped, under
-baselines/ beside the snapshot, keyed by the corpus fetch, the git
-tree of nameparser/, the interpreter's version and this file's own
-contents, so recording the same base again copies it instead of
-parsing. --jobs N parses in N worker processes (default: every CPU).
+committed corpora's question, and the facade's parse was about half the
+cost of a local reading (measured 2026-10-23, tools/differential/
+README.md's "Local corpora"). --sample N reads a fixed 1-in-N sample of
+a local corpus, chosen by a hash of the name so a sample recorded from
+one tree and checked from another holds the same names, into a
+snapshot of its own (snapshot.sample-N.jsonl). A local recording is
+also kept, gzipped, under baselines/ beside the snapshot, keyed by the
+corpus fetch, a hash of the files in the read tree's nameparser/, the
+interpreter's minor version and the code that writes a row
+(snapshot.py, corpus_build.py, shapes.py), so recording the same base
+again copies it instead of parsing.
+
+Any reading of PARALLEL_FLOOR entries or more, committed or local,
+parses in --jobs worker processes (default: every CPU).
 
 A corpus that loses names shows them as removed, so a truncated file
 cannot pass for a clean run. compare.py builds its baseline rows with
@@ -57,6 +61,7 @@ import multiprocessing
 import os
 import subprocess
 import sys
+import time
 from collections import defaultdict
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
@@ -400,55 +405,91 @@ def sampled(entries: list[Entry], every: int) -> list[Entry]:
                 "big") % every == 0]
 
 
-#: How many recorded baselines a local corpus keeps, the least recently
-#: recorded or reused dropped first: an FEC snapshot is 250 MB plain.
+#: How many recorded baselines a local corpus keeps, whole or sampled
+#: alike, the least recently recorded or reused dropped first: an FEC
+#: snapshot was 249 MB plain and 41 MB gzipped on 2026-10-23.
 BASELINES_KEPT = 4
+#: A partial baseline older than this is a crashed write's, not a
+#: running one's, and is deleted when a baseline is kept.
+_PARTIAL_STALE_SECONDS = 86400
 
 
-def _source_tree(root: Path) -> str | None:
-    """The git tree hash of `root`'s nameparser/ as committed, or None
-    where the package on disk is not exactly that tree (uncommitted or
-    untracked files in it) or `root` is not a git checkout. The tree,
-    not the commit: two commits that differ only outside nameparser/
-    read every name alike."""
-    def git(*args: str) -> str:
-        return subprocess.run(["git", "-C", str(root), *args], capture_output=True,
-                              text=True, check=True).stdout
-    try:
-        if git("status", "--porcelain", "--untracked-files=all", "--", "nameparser"):
-            return None
-        return git("rev-parse", "HEAD:nameparser").strip() or None
-    except (OSError, subprocess.CalledProcessError):
-        return None
+def _source_digest(root: Path) -> str:
+    """A hash of every file under `root`'s nameparser/ as it is on disk,
+    __pycache__ aside: what the import reads, so an uncommitted edit, a
+    gitignored file, a sourceless module or a copy outside any checkout
+    keys as itself. git's view of the tree was the first key and could
+    name the wrong one: an ignored copy inside a checkout (build/lib)
+    took the checkout's tree, and status shows neither ignored nor
+    assume-unchanged files (#859's review)."""
+    h = hashlib.sha256()
+    package = root / "nameparser"
+    for path in sorted(package.rglob("*")):
+        if path.is_file() and "__pycache__" not in path.relative_to(package).parts:
+            h.update(path.relative_to(package).as_posix().encode() + b"\0")
+            h.update(path.read_bytes() + b"\0")
+    return h.hexdigest()
 
 
-def _baseline(snapshot: Path, fetch: dict[str, Any], root: Path) -> Path | None:
-    """Where a recording of `fetch` from `root` is kept, or None where
-    it cannot be keyed. The key holds what a reading depends on besides
-    the names: the source package's tree, the interpreter (unicodedata
-    moves between Python versions), and the code that decides what a
-    row records and how its line is written."""
-    tree = _source_tree(root)
-    if tree is None:
-        return None
+def _baseline(snapshot: Path, fetch: dict[str, Any], digest: str) -> Path:
+    """Where a recording of `fetch` from a package of `digest` is kept.
+    The key holds what a reading depends on besides the names: the
+    package's files, the interpreter's minor version (unicodedata moves
+    between Python versions), and the code that decides what a row
+    records and how its line is written."""
     tool = hashlib.sha256(b"".join(
-        (HERE / f).read_bytes() for f in ("snapshot.py", "corpus_build.py"))
-    ).hexdigest()[:12]
+        (HERE / f).read_bytes()
+        for f in ("snapshot.py", "corpus_build.py", "shapes.py"))).hexdigest()[:12]
     sample = f"-sample-{fetch['sample']}" if "sample" in fetch else ""
     py = f"py{sys.version_info[0]}{sys.version_info[1]}"
     return (snapshot.parent / "baselines"
-            / f"{fetch['corpus_sha256'][:12]}-{tree[:16]}-{py}-{tool}{sample}.jsonl.gz")
+            / f"{fetch['corpus_sha256'][:12]}-{digest[:16]}-{py}-{tool}{sample}.jsonl.gz")
+
+
+def _reused(baseline: Path, entries: int) -> str | None:
+    """A kept baseline's text, or None where there is none to reuse. A
+    damaged one -- unreadable, or holding another number of rows than
+    the corpus has entries, as a write cut short would -- is deleted
+    with a note, and the names are read instead."""
+    if not baseline.exists():
+        return None
+    try:
+        with gzip.open(baseline, "rt", encoding="utf-8") as f:
+            text = f.read()
+    except (OSError, EOFError, UnicodeDecodeError) as e:
+        why = f"unreadable ({e})"
+    else:
+        if (rows := text.count("\n")) == entries:
+            return text
+        why = f"{rows} rows for {entries} entries"
+    print(f"deleted the kept baseline {baseline.name}: {why}; reading the names\n")
+    baseline.unlink()
+    return None
 
 
 def _keep_baseline(path: Path, text: str) -> None:
-    path.parent.mkdir(exist_ok=True)
-    partial = path.with_name(path.name + ".partial")
-    with gzip.open(partial, "wt", encoding="utf-8", compresslevel=1) as f:
-        f.write(text)
-    partial.replace(path)
-    kept = sorted(path.parent.glob("*.jsonl.gz"), key=lambda p: p.stat().st_mtime)
-    for old in kept[:-BASELINES_KEPT]:
-        old.unlink()
+    """Keep `text` at `path`, written whole and synced before it takes
+    the name, then drop the least recently used baselines and stale
+    partial writes. A failure is reported, not raised: the snapshot it
+    would have saved recording again is already written."""
+    try:
+        path.parent.mkdir(exist_ok=True)
+        partial = path.with_name(f"{path.name}.{os.getpid()}.partial")
+        with open(partial, "wb") as raw:
+            with gzip.GzipFile(fileobj=raw, mode="wb", compresslevel=1) as f:
+                f.write(text.encode("utf-8"))
+            raw.flush()
+            os.fsync(raw.fileno())
+        partial.replace(path)
+        kept = sorted(path.parent.glob("*.jsonl.gz"), key=lambda p: p.stat().st_mtime)
+        for old in kept[:-BASELINES_KEPT]:
+            old.unlink()
+        stale = time.time() - _PARTIAL_STALE_SECONDS
+        for old in path.parent.glob("*.partial"):
+            if old.stat().st_mtime < stale:
+                old.unlink()
+    except OSError as e:
+        print(f"the snapshot is recorded, but its baseline was not kept: {e}")
 
 
 def _fetch_record(snapshot: Path) -> Path:
@@ -522,24 +563,24 @@ def main(argv: list[str] | None = None) -> int:
     if fetch is not None and not args.record:
         _check_fetch(snapshot, fetch, args.local)
     root = Path(args.tree).resolve() if args.tree else REPO_ROOT
-    baseline = (_baseline(snapshot, fetch, root)
-                if fetch is not None and args.record else None)
-    if baseline is not None and baseline.exists():
-        with gzip.open(baseline, "rt", encoding="utf-8") as f:
-            text = f.read()
-        out.write_text(text, encoding="utf-8")
-        _fetch_record(out).write_text(json.dumps(fetch), encoding="utf-8")
-        os.utime(baseline)
-        print(f"recorded {text.count(chr(10))} readings to {out}, copied from "
-              f"{baseline.name}: this tree's nameparser/ was read from this "
-              f"fetch before")
-        return 0
-    if args.tree:
-        sys.path.insert(0, str(root))
     entries = corpus_entries(corpora)
     if args.sample is not None:
         whole, entries = len(entries), sampled(entries, args.sample)
         print(f"a 1-in-{args.sample} sample: {len(entries)} of {whole} entries\n")
+    baseline = digest = None
+    if fetch is not None and args.record:
+        digest = _source_digest(root)
+        baseline = _baseline(snapshot, fetch, digest)
+        if (text := _reused(baseline, len(entries))) is not None:
+            out.write_text(text, encoding="utf-8")
+            _fetch_record(out).write_text(json.dumps(fetch), encoding="utf-8")
+            os.utime(baseline)
+            print(f"recorded {len(entries)} readings to {out}, copied from "
+                  f"{baseline.name}: this nameparser/ was read from this "
+                  f"fetch before")
+            return 0
+    if args.tree:
+        sys.path.insert(0, str(root))
     rows = read(entries, facade=not args.local, jobs=args.jobs)
     import nameparser
     check_source(nameparser.__file__, root)
@@ -548,8 +589,13 @@ def main(argv: list[str] | None = None) -> int:
         out.write_text(text, encoding="utf-8")
         if fetch is not None:
             _fetch_record(out).write_text(json.dumps(fetch), encoding="utf-8")
-            if baseline is not None:
+            # Keyed before the read: a package that changed during it
+            # may have been read half old and half new, so it keeps none.
+            if baseline is not None and _source_digest(root) == digest:
                 _keep_baseline(baseline, text)
+            elif baseline is not None:
+                print(f"{root / 'nameparser'} changed while it was read, so "
+                      f"no baseline was kept; record again")
         print(f"recorded {len(rows)} readings to {out}")
         return 0
     if args.since:
