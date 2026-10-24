@@ -13,6 +13,7 @@ and shapes written with made-up names.
     uv run python tools/differential/local_corpora.py fetch ctgov-officials
     uv run python tools/differential/local_corpora.py tally ctgov-officials
     uv run python tools/differential/local_corpora.py pairs tse-donors
+    uv run python tools/differential/local_corpora.py groups jrc-names
     uv run python tools/differential/snapshot.py --local ctgov-officials
 
 `fetch` writes three files into local/<source>/ under
@@ -24,7 +25,8 @@ $NAMEPARSER_TOOLS_CACHE (default ~/.cache/nameparser-tools), and
   the study and role; one distinct FEC, Taiwan or UK donor name, alone;
   one distinct pair of a TSE donor's filed name and the tax registry's
   name for the same donor; one distinct PSC filed name, with its four
-  boxes and nationality. The counts are counted from here.
+  boxes and nationality; one distinct spelling of a JRC-Names person,
+  with its entity and script. The counts are counted from here.
 - corpus.jsonl -- the distinct names, in the corpus line format
   snapshot.py and compare.py --corpus read.
 - meta.json -- the source's own date for the data, what was fetched, and
@@ -51,8 +53,8 @@ read from another version of it (tw-donors needs neither: each zip it caches is 
 the listing gives). What each source is, what it is the population for
 and what its terms allow is its module's docstring: local_ctgov.py
 (ctgov-officials), local_fec.py (fec-individuals), local_tse.py
-(tse-donors), local_tw.py (tw-donors), local_ukec.py (ukec-individuals)
-and local_psc.py (psc-individuals).
+(tse-donors), local_tw.py (tw-donors), local_ukec.py (ukec-individuals),
+local_psc.py (psc-individuals) and local_jrc.py (jrc-names).
 """
 from __future__ import annotations
 
@@ -89,6 +91,7 @@ from local_ctgov import fetch_ctgov  # noqa: E402
 import local_fec  # noqa: E402
 import local_tse  # noqa: E402
 from local_fec import check_fec, fetch_fec, renew_fec  # noqa: E402
+from local_jrc import JRC, check_jrc, fetch_jrc, renew_jrc  # noqa: E402
 from local_psc import PSC, check_psc, fetch_psc, renew_psc  # noqa: E402
 from local_tse import check_tse, fetch_tse  # noqa: E402
 from local_tw import fetch_tw  # noqa: E402
@@ -182,6 +185,11 @@ SOURCES: dict[str, Source] = {
                "(a public register: Companies House sets no terms on its use, "
                "and data protection law applies to the names)",
         unit="filed names", fetch=fetch_psc, renew=renew_psc, check=check_psc),
+    JRC: Source(
+        credit="JRC-Names (European Commission Joint Research Centre), person "
+               "entities (licensed under the JRC-Names EULA: personal use, no "
+               "redistribution or derivative works)",
+        unit="spellings", fetch=fetch_jrc, renew=renew_jrc, check=check_jrc),
 }
 
 
@@ -518,6 +526,176 @@ def pair_counts(local: Local, *, agreement: bool = False) -> PairCounts:
                       if agreement else None, accent_splits)
 
 
+#: What the groups view compares between two spellings of one person,
+#: in the order it reports them: whether parse() reads a title, a suffix,
+#: a given name and a family name, how many words the family is, and
+#: where it stands among the name's words (reading).
+GROUP_FIELDS = ("title", "suffix", "given", "family", "family words", "family at")
+#: The name-bearing roles, among which reading places the family.
+_NAME_ROLES = frozenset({"given", "middle", "family"})
+
+
+Reading = tuple[bool, bool, bool, bool, int, str]
+
+
+def _read(name: str) -> tuple[Reading, str, str]:
+    """reading(name), and the title and the suffix parse() reads."""
+    from nameparser import parse
+
+    parsed = parse(name)
+    roles = [str(t.role) for t in parsed.tokens if str(t.role) in _NAME_ROLES]
+    family = [i for i, role in enumerate(roles) if role == "family"]
+    if not family:
+        at = "none"
+    elif len(family) == len(roles):
+        at = "whole"
+    elif family == list(range(len(family))):
+        at = "first"
+    elif family == list(range(len(roles) - len(family), len(roles))):
+        at = "last"
+    else:
+        at = "inner"
+    return ((bool(parsed.title), bool(parsed.suffix), bool(parsed.given),
+             bool(parsed.family), len(parsed.family.split()), at),
+            parsed.title, parsed.suffix)
+
+
+def reading(name: str) -> Reading:
+    """The structure parse() gives `name`, one value per GROUP_FIELDS:
+    title read, suffix read, given found, family found, the family's
+    words, and where the family stands among the given, middle and
+    family words: "first", "last", "whole" (it is all of them), "inner"
+    or "none". Counts and positions, never the words themselves, so two
+    spellings in different scripts compare."""
+    return _read(name)[0]
+
+
+def _differing(one: set[Reading], other: set[Reading] | None = None) -> set[str]:
+    """The GROUP_FIELDS in which the readings `one` disagree among
+    themselves (more than one value), or, given `other`, in which no
+    reading of `one` agrees with any of `other` (no value in common): two
+    Latin spellings that differ between themselves do not make the
+    Latin and the Cyrillic spellings differ where a Cyrillic one reads
+    as either Latin one does."""
+    if other is None:
+        return {f for i, f in enumerate(GROUP_FIELDS) if len({r[i] for r in one}) > 1}
+    return {f for i, f in enumerate(GROUP_FIELDS)
+            if {r[i] for r in one}.isdisjoint({r[i] for r in other})}
+
+
+@dataclass(frozen=True)
+class GroupCounts:
+    """What group_counts finds, every count a count of PERSONS, not of
+    spellings or of pairs, so that a person spelled 600 ways weighs what
+    one spelled twice does. Keyed by a pair of scripts ("Cyrillic /
+    Latin", "Latin / Latin"), and by "any" for all of a person's
+    spellings taken together."""
+    #: The persons with two or more spellings, and those spellings.
+    persons: int
+    spellings: int
+    #: pair -> the persons with two spellings in those scripts.
+    groups: Counter[str]
+    #: pair -> those whose spellings read alike: within one script, all
+    #: of them read one way; across two, some spelling in one reads, in
+    #: every field, as some spelling in the other does.
+    agree: Counter[str]
+    #: (pair, a GROUP_FIELDS member) -> those whose spellings disagree in
+    #: the field (_differing): within one script's for "Latin / Latin",
+    #: between the two scripts' for "Cyrillic / Latin".
+    differ: Counter[tuple[str, str]]
+    #: The titles, and the suffixes, of a person some of whose spellings
+    #: read one and others none, folded by word_key, counted once a
+    #: person: two spellings reading two titles (Sheikh, Shaikh) with no
+    #: untitled spelling beside them add nothing.
+    titles: Counter[str]
+    suffixes: Counter[str]
+
+
+def group_counts(local: Local) -> GroupCounts:
+    """Each person with two or more spellings, from a source whose
+    records carry an "entity" and a "script": every spelling's reading
+    compared by the pair of scripts the spellings are written in, as
+    _differing says. A distinct name is parsed once. A source without
+    entities raises ValueError."""
+    if not local.records:
+        raise ValueError(f"{local.source} holds no records")
+    if any("entity" not in r or "script" not in r for r in local.records):
+        raise ValueError(f"{local.source}'s records carry no entity and script "
+                         f"to group spellings by")
+    by_entity: dict[str, list[tuple[str, str]]] = {}
+    for record in local.records:
+        by_entity.setdefault(record["entity"], []).append((record["script"], record["name"]))
+    read: dict[str, tuple[Reading, str, str]] = {}
+    groups: Counter[str] = Counter()
+    agree: Counter[str] = Counter()
+    differ: Counter[tuple[str, str]] = Counter()
+    titles: Counter[str] = Counter()
+    suffixes: Counter[str] = Counter()
+    persons = spellings = 0
+    for variants in by_entity.values():
+        if len(variants) < 2:
+            continue
+        persons += 1
+        spellings += len(variants)
+        by_script: dict[str, set[Reading]] = {}
+        written: Counter[str] = Counter()
+        for script, name in variants:
+            if name not in read:
+                read[name] = _read(name)
+            by_script.setdefault(script, set()).add(read[name][0])
+            written[script] += 1
+        everything = set().union(*by_script.values())
+        # pair -> (the fields read apart, whether the spellings read alike)
+        compared = {"any": (_differing(everything), len(everything) == 1)}
+        scripts = sorted(by_script)
+        for i, first in enumerate(scripts):
+            for second in scripts[i:]:
+                one = by_script[first]
+                if first != second:
+                    compared[f"{first} / {second}"] = (
+                        _differing(one, by_script[second]),
+                        not one.isdisjoint(by_script[second]))
+                elif written[first] > 1:
+                    compared[f"{first} / {first}"] = (_differing(one), len(one) == 1)
+        for pair, (fields, alike) in compared.items():
+            groups[pair] += 1
+            if alike:
+                agree[pair] += 1
+            differ.update((pair, field) for field in fields)
+        for counter, at in ((titles, 0), (suffixes, 1)):
+            if len({r[at] for r in everything}) > 1:
+                counter.update({word_key(read[name][1 + at]) for _, name in variants
+                                if read[name][0][at]} - {""})
+    return GroupCounts(persons, spellings, groups, agree, differ, titles, suffixes)
+
+
+def format_groups(found: GroupCounts, top: int) -> str:
+    """The report `groups` prints: per pair of scripts, the persons with
+    two spellings in them, the share whose spellings read alike
+    (GroupCounts.agree), and the share whose spellings read each field
+    apart (_differing); then the titles and suffixes read in some of a
+    person's spellings and in none of the others, listed only where
+    PAIR_WORD_FLOOR persons share one. Counts and words only."""
+    lines = [f"{found.persons:,} persons with two or more spellings "
+             f"({found.spellings:,} spellings); by the scripts of two of them:"]
+    pairs = ["any", *sorted((p for p in found.groups if p != "any"),
+                            key=lambda p: (-found.groups[p], p))[:top]]
+    for pair in pairs:
+        n = found.groups[pair]
+        if not n:
+            continue
+        shares = ", ".join(f"{field} {found.differ[(pair, field)] / n:.1%}"
+                           for field in GROUP_FIELDS if found.differ[(pair, field)])
+        lines.append(f"  {n:>9,}  {found.agree[pair] / n:6.1%} alike  {pair}"
+                     + (f"; differ in {shares}" if shares else ""))
+    for words, what in ((found.titles, "titles read in some spellings only"),
+                        (found.suffixes, "suffixes read in some spellings only")):
+        listed = [(w, n) for w, n in words.most_common(top) if n >= PAIR_WORD_FLOOR]
+        if listed:
+            lines.append(f"{what}: " + ", ".join(f"{w} {n:,}" for w, n in listed))
+    return "\n".join(lines)
+
+
 #: Where a name is cut into words: spaces, commas, semicolons, slashes.
 #: A hyphen stays inside a word (FNP-C), and a period inside a token
 #: (M.D.) is folded away by word_key.
@@ -773,6 +951,12 @@ def main(argv: list[str] | None = None) -> int:
     pair.add_argument("--agreement", action="store_true",
                       help="also parse each pair that differs and count the "
                            "pairs whose two spellings share a surname")
+    group = sub.add_parser("groups", help="compare the readings of each person's "
+                                          "spellings, by the scripts they are in")
+    group.add_argument("source", choices=sorted(SOURCES))
+    group.add_argument("--top", type=int, default=20, metavar="N",
+                       help="pairs of scripts, and titles and suffixes, to list "
+                            "(default 20)")
     args = ap.parse_args(argv)
     if args.command == "fetch":
         local = None
@@ -804,6 +988,14 @@ def main(argv: list[str] | None = None) -> int:
             raise SystemExit(str(exc)) from None
         print(local.header())
         print(format_pairs(found, args.top))
+        return 0
+    if args.command == "groups":
+        try:
+            grouped = group_counts(local)
+        except ValueError as exc:  # CorpusDamaged included: the records, read here first
+            raise SystemExit(str(exc)) from None
+        print(local.header())
+        print(format_groups(grouped, args.top))
         return 0
     try:
         parts, with_comma = tally(local)

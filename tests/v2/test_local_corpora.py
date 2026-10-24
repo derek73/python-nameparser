@@ -41,9 +41,9 @@ snapshot = load_tool("snapshot")
 # the fetches read, so a patch reaches the code only when it is set on
 # the module holding the name (local_core.RETRIES, local_fec.FEC_MAX_BAD).
 # A second load by path (load_tool) would be a copy nothing reads.
-core, ctgov, fec, tse, tw, ukec, psc = (
+core, ctgov, fec, tse, tw, ukec, psc, jrc = (
     importlib.import_module(f"local_{key}")
-    for key in ("core", "ctgov", "fec", "tse", "tw", "ukec", "psc"))
+    for key in ("core", "ctgov", "fec", "tse", "tw", "ukec", "psc", "jrc"))
 
 _SOURCE = "ctgov-officials"
 _DATE = "2026-10-21T09:00:05"
@@ -2587,12 +2587,11 @@ def test_no_module_imports_a_sibling_constant() -> None:
     # tse.TSE_MAX_BAD), and every other reader reads it through that
     # module. A `from local_x import CONSTANT` would bind a second name a
     # patch on local_x cannot reach, and a test could pass with its guard
-    # off. The modules are SOURCES' own, so a new source is covered. PSC is
-    # the source's name, a key of SOURCES that local_agreement reads, and
-    # no fetch's setting.
+    # off. The modules are SOURCES' own, so a new source is covered. PSC and
+    # JRC are sources' names, keys of SOURCES, and no fetch's setting.
     import ast
     sources = {source.fetch.__module__ for source in local.SOURCES.values()}
-    assert sources == {m.__name__ for m in (ctgov, fec, tse, tw, ukec, psc)}
+    assert sources == {m.__name__ for m in (ctgov, fec, tse, tw, ukec, psc, jrc)}
     siblings = {"local_corpora", "local_core", *sources}
     imported = {(path.stem, alias.name)
                 for path in (Path(str(local.__file__)).parent / f"{s}.py"
@@ -2600,7 +2599,7 @@ def test_no_module_imports_a_sibling_constant() -> None:
                 for node in ast.walk(ast.parse(path.read_text(encoding="utf-8")))
                 if isinstance(node, ast.ImportFrom) and node.module in siblings
                 for alias in node.names if alias.name.lstrip("_").isupper()}
-    assert imported == {("local_corpora", "PSC")}
+    assert imported == {("local_corpora", "PSC"), ("local_corpora", "JRC")}
 
 
 def test_the_fold_lists_everything_its_functions_call_and_read() -> None:
