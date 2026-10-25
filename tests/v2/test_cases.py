@@ -246,9 +246,9 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # 1508 -> 1514 the same day: its numeral and capitals rows; 1514
     # -> 1517 the same day: its carried-member rows; 1517 -> 1520 the
     # same day: its joined-surname row; 1520 -> 1523 the same day: the
-    # floor's fils rows.
-    assert claims == 1523, (
-        f"the field sweep checks {claims} claims, recorded as 1523 on "
+    # floor's fils rows; 1523 -> 1529 the same day: its comma rows.
+    assert claims == 1529, (
+        f"the field sweep checks {claims} claims, recorded as 1529 on "
         f"2026-10-25")
 
 

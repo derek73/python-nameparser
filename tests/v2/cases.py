@@ -1730,6 +1730,18 @@ CASES: tuple[Case, ...] = (
          classification="parity",
          notes="no name before the comma, so no family is named and the "
                "floor holds before the case cue (rules/S11, #890)"),
+    Case("fils_in_lower_case_after_one_name_word_and_a_comma", "Dumas, fils",
+         {"given": "fils", "family": "Dumas"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="at the first slot after a comma the count decides alone, "
+               "lower case adding nothing to it (rules/S11, C4, #890)"),
+    Case("fils_in_lower_case_after_a_joined_salutation", "Mr. and Mrs., fils",
+         {"given": "fils", "family": "Mr. and Mrs."},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="the joined salutation is no family word for the case cue "
+               "to rely on (rules/S11, #890)"),
     Case("a_one_letter_generation_is_off_by_default", "Juan Pérez H.",
          {"given": "Juan", "middle": "Pérez", "family": "H."},
          classification="parity",

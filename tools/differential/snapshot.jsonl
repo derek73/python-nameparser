@@ -823,6 +823,7 @@
 {"name": "Dumas fils", "given": "Dumas", "family": "fils", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "D. f.", "capitalized_force": "Dumas Fils"}
 {"name": "Dumas, Alexandre Fils", "given": "Alexandre", "middle": "Fils", "family": "Dumas", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "A. F. D."}
 {"name": "Dumas, Alexandre fils", "given": "Alexandre", "family": "Dumas", "suffix": "fils", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "A. D."}
+{"name": "Dumas, fils", "given": "fils", "family": "Dumas", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "f. D.", "capitalized_force": "Fils Dumas"}
 {"name": "Dumreicher, Johann von", "given": "Johann", "family": "von Dumreicher", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "J. D."}
 {"name": "Dut.ra Prof.ra Maria Giusepa Juana Teresa von Brühl González Domingo", "title": "Dut.ra Prof.ra", "given": "Maria", "middle": "Giusepa Juana Teresa", "family": "von Brühl González Domingo", "initials": "M. G. J. T. B. G. D.", "capitalized_force": "Dut.Ra Prof.Ra Maria Giusepa Juana Teresa von Brühl González Domingo"}
 {"name": "Dòmhnall Iain Tormod Caimbeul", "given": "Dòmhnall", "middle": "Iain Tormod", "family": "Caimbeul", "initials": "D. I. T. C."}

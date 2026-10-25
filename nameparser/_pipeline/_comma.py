@@ -488,7 +488,7 @@ def decide(state: ParseState) -> ParseState:
     if maybe:
         reading = segment_suffix_reading(
             p1, pt1, tokens, pol.lenient_comma_suffixes, state.one_case,
-            anchored, absorbed, licensed, head_named=names >= 1)
+            anchored, absorbed, licensed, head_named=names >= 2)
     if not listing:
         if whole is None:
             whole = _whole_name(seg0, tokens)
@@ -573,7 +573,7 @@ def decide(state: ParseState) -> ParseState:
                    and len(listed) == len(members)
                    and all(listed_lean(tokens[i], state.one_case)
                            == "credential"
-                           and (names >= 1
+                           and (names >= 2
                                 or AMBIGUOUS_WORD_TAG not in tokens[i].tags)
                            for i in listed))
         member_set = frozenset(members)
