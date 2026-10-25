@@ -1635,8 +1635,8 @@ CASES: tuple[Case, ...] = (
          "Jane Doe nee Ed. D.",
          {"given": "Jane", "family": "Doe", "maiden": "Ed. D."},
          classification="fix(#752)",
-         notes="S11: the clause keeps the pair, which a declined pair "
-               "reports nothing for; its "
+         notes="S11: the clause keeps the pair, a pair the count "
+               "declined, which reports nothing; its "
                "first word is a listed member, and the first version "
                "reported 'Ed.' as the word ending the clause, which "
                "'D.' is. 1.4.0 read middle 'Doe nee Ed.', last 'D.'"),
@@ -1659,6 +1659,16 @@ CASES: tuple[Case, ...] = (
                "word; the first version joined it, given 'Abdul MB ChB', "
                "where master read suffix 'MB ChB'. 1.4.0 read first "
                "'Abdul MB', middle 'ChB'"),
+    Case("a_split_credential_behind_an_opening_credential_reports_once",
+         "Smith, MD Pharm D",
+         {"family": "Smith", "suffix": "MD Pharm D"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#752)",
+         notes="S11: the pair the opening credential's run takes (C13) "
+               "reports itself, once, as 'John Smith MD Pharm D' does; "
+               "the review found it reported twice, as a word the run "
+               "absorbed and as the pair. Master reported 'Pharm' and "
+               "'D' as two absorbed words"),
     Case("the_split_degree_outranks_a_pair_overlapping_it",
          "Jane Doe Dr. Ph. D.",
          {"title": "Dr.", "given": "Jane", "family": "Doe",

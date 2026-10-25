@@ -351,8 +351,9 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     # left it a name word, which is a fork too
     last = pieces[end - 1]
     word = tokens[last[0]]
-    # a one-word member: a split credential the clause keeps is read in
-    # silence (rules/S11), and its first word is not the clause's last
+    # a one-word member: a split credential the clause keeps is one the
+    # count declined, which reports nothing (rules/S11), and its first
+    # word is not the clause's last
     if len(last) == 1 and not word.tags.isdisjoint(_AMBIGUOUS_CREDENTIAL_TAGS):
         ambiguities.append(PendingAmbiguity(
             AmbiguityKind.SUFFIX_OR_NAME,

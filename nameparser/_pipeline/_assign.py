@@ -1693,4 +1693,3 @@ def assign(state: ParseState) -> ParseState:
     return copy_with(state, tokens=tuple(tokens),
                      order=order,
                      ambiguities=tuple(ambiguities))
-

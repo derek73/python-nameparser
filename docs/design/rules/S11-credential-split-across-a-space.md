@@ -30,7 +30,7 @@
   "John Smith Pharm D Jones"  →  suffix="Pharm D Jones"
   "Smith, John Pharm D Jones"  →  suffix="Pharm D Jones"
   ```
-- **What reports.** Where the count takes the pair, the reading is reported, as either reading of a member is (S4), its words being a given name and an initial as often as a credential's chunks; where the count declines it, the two words read as they read unmerged and report what they reported.
+- **What reports.** Where the count takes the pair, the reading is reported, as either reading of a member is (S4), its words being a given name and an initial as often as a credential's chunks; where the count declines it, the two words read as they read unmerged and report what they reported. After a comma the pair reports only where the comma's own report does not already cover the part (C11), and a part past the second comma reports as C2 says.
   ```
   "John Smith Pharm D"        →  ambiguities=("suffix-or-name",)
   "John Smith, Pharm D"       →  ambiguities=("suffix-or-name",)

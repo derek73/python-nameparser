@@ -665,7 +665,8 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
     # makes it the postnominal part however it goes on" -- each word it takes that
     # would have made it the given part, as #602's run reports them
     for k in absorbed:
-        if has_name_content(p1[k], tokens):
+        # a split credential the run takes reports itself, below
+        if has_name_content(p1[k], tokens) and "split" not in pt1[k]:
             text = " ".join(tokens[i].text for i in p1[k])
             ambiguities.append(PendingAmbiguity(
                 AmbiguityKind.SUFFIX_OR_NAME,
