@@ -6,27 +6,30 @@ excluded = { salutation = { reason = "Sig is borne as a given name (US SSA 50+ m
 
 [[word]]
 text = "signora"
-salutation = { gender = "f" }
+salutation = { gender = "f", after_given = true }
+given = { us_ssa = 90, as_of = 2026-10-24, note = "kept for after_given (decisions/H8)" }
 
 [[word]]
 text = "sig.ra"
-salutation = { gender = "f", same_as = "signora", cased = "Sig.ra", issue = 840 }
+salutation = { gender = "f", same_as = "signora", cased = "Sig.ra", issue = 840, after_given = true }
 
 [[word]]
 text = "signore"
-salutation = { gender = "m" }
+salutation = { gender = "m", excluded = { after_given = "a surname (Census 2010 SIGNORE), and middle names are drawn from surnames" } }
+family = { us_census_2010 = 895, wikidata = 17, as_of = 2026-10-24 }
 
 [[word]]
 text = "signor"
-salutation = { gender = "m", same_as = "signore" }
+salutation = { gender = "m", same_as = "signore", excluded = { after_given = "a surname (Census 2010 SIGNOR), and middle names are drawn from surnames" } }
+family = { us_census_2010 = 999, wikidata = 4, as_of = 2026-10-24 }
 
 [[word]]
 text = "signorina"
-salutation = { gender = "f" }
+salutation = { gender = "f", after_given = true }
 
 [[word]]
 text = "sig.na"
-salutation = { gender = "f", same_as = "signorina", cased = "Sig.na", issue = 840 }
+salutation = { gender = "f", same_as = "signorina", cased = "Sig.na", issue = 840, after_given = true }
 
 [[word]]
 text = "ch.ma"

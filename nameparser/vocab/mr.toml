@@ -6,11 +6,11 @@ salutation = { gender = "m", issue = 269, expands = "Shri, Mr." }
 
 [[word]]
 text = "श्रीमती"
-salutation = { gender = "f", issue = 269, expands = "Shrimati, Mrs." }
+salutation = { gender = "f", issue = 269, expands = "Shrimati, Mrs.", after_given = true }
 
 [[word]]
 text = "सौ"
-salutation = { gender = "f", issue = 344, expands = "Sau., Mrs." }
+salutation = { gender = "f", issue = 344, expands = "Sau., Mrs.", after_given = true }
 
 [[word]]
 text = "महात्मा"

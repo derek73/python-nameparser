@@ -552,6 +552,24 @@ def test_snapshot_removing_a_conjunction_turns_the_marker_off() -> None:
     assert name.initials() == "j. e. s."
 
 
+def test_snapshot_removing_a_title_turns_its_after_given_reading_off() -> None:
+    # The deciding case for after_given_titles (#835, rules/H8), which has
+    # no v1 manager of its own: the snapshot intersects AFTER_GIVEN_TITLES
+    # with the v1 title set, so the marker drops the deleted title. The
+    # parse check below is held by classify too, which tags a marker
+    # entry only where it is a title, so the intersection is kept for
+    # `_snapshot() == Lexicon.default()` legibility, as
+    # conjunctions_ambiguous' is; the set assertion is what pins it
+    c = Constants()
+    assert HumanName("Doe, Jane Mrs", constants=c).title == "Mrs"   # baseline
+    c.titles.remove("mrs")
+    lexicon, _, _ = c._snapshot()
+    assert "mrs" not in lexicon.after_given_titles
+    name = HumanName("Doe, Jane Mrs", constants=c)
+    assert (name.title, name.first, name.middle, name.last) == (
+        "", "Jane", "Mrs", "Doe")
+
+
 def test_snapshot_field_translation() -> None:
     c = Constants()
     lexicon, policy, defaults = c._snapshot()

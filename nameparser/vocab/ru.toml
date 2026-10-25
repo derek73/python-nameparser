@@ -2,11 +2,11 @@ schema = 1
 
 [[word]]
 text = "г-жа"
-salutation = { gender = "f", issue = 269, expands = "госпожа, Mrs." }
+salutation = { gender = "f", issue = 269, expands = "госпожа, Mrs.", after_given = true }
 
 [[word]]
 text = "г-н"
-salutation = { gender = "m", issue = 269, expands = "господин, Mr." }
+salutation = { gender = "m", issue = 269, expands = "господин, Mr.", after_given = true }
 
 [[word]]
 text = "акад"

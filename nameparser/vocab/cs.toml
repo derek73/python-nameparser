@@ -6,7 +6,8 @@ excluded = { salutation = { reason = "Czech and Polish Mr., and the Chinese surn
 
 [[word]]
 text = "paní"
-salutation = { issue = 606, gender = "f", note = "keeps its accent, so the name Pani (~76,000 surnames and ~65,000 given names, India and Indonesia) is untouched, and the unaccented pani is not shipped; the lexicon folds no accent (decisions/salutation-titles)" }
+salutation = { issue = 606, gender = "f", note = "keeps its accent, so the name Pani (~76,000 surnames and ~65,000 given names, India and Indonesia) is untouched, and the unaccented pani is not shipped; the lexicon folds no accent (decisions/salutation-titles)", excluded = { after_given = "spelled PANI, a surname (Census 2010), and middle names are drawn from surnames" } }
+family = { us_census_2010 = 403, as_of = 2026-10-24, note = "counted as PANI, the Census writing no diacritics" }
 
 [[word]]
 text = "rodina"
@@ -14,7 +15,7 @@ excluded = { salutation = { reason = "Czech 'family', and a Russian surname, oft
 
 [[word]]
 text = "slečna"
-salutation = { issue = 606, gender = "f" }
+salutation = { issue = 606, gender = "f", after_given = true }
 
 [[word]]
 text = "ml"

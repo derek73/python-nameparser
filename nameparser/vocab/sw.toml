@@ -2,4 +2,6 @@ schema = 1
 
 [[word]]
 text = "bwana"
-salutation = { gender = "m", expands = "Mr., sir" }
+salutation = { gender = "m", expands = "Mr., sir", after_given = true }
+given = { us_ssa = 5, as_of = 2026-10-24 }
+family = { wikidata = 1, as_of = 2026-10-24, note = "kept for after_given (decisions/H8)" }

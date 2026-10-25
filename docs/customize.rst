@@ -102,8 +102,8 @@ Removing works the same way, and drops the word from recognition:
     >>> Parser(lexicon=lean).parse("Professor Robert Johns").title
     ''
 
-A few fields mark a subset of another — ``given_name_titles`` over
-``titles``, ``particles_ambiguous`` over ``particles``,
+A few fields mark a subset of another — ``given_name_titles`` and
+``after_given_titles`` over ``titles``, ``particles_ambiguous`` over ``particles``,
 ``suffix_acronyms_ambiguous`` over ``suffix_acronyms``,
 ``conjunctions_ambiguous`` over ``conjunctions``, and
 ``honorific_tails`` over ``suffix_words``. Entries belong in the base
@@ -111,13 +111,13 @@ field too, so add to both and remove from the marker first. Three of
 them enforce that — ``particles_ambiguous``, ``suffix_acronyms_ambiguous``
 and ``honorific_tails`` raise ``ValueError`` naming the orphans, because
 an orphan in each of those does real harm rather than nothing. The
-other two are deliberately unchecked because an orphan there is inert:
+other three are deliberately unchecked because an orphan there is inert:
 ``given_name_titles`` matches a title run as one space-joined string, or
 by that run's last word, so a legitimate entry like ``"sir and dame"``
-is no single word in ``titles``; and a ``conjunctions_ambiguous`` entry
-is only ever read for a word that is a conjunction, so
-``remove(conjunctions={"e"})`` simply works and the stale marker entry
-is never consulted.
+is no single word in ``titles``; and a ``conjunctions_ambiguous`` or
+``after_given_titles`` entry is only ever read for a word that is a
+conjunction or a title, so ``remove(conjunctions={"e"})`` simply works
+and the stale marker entry is never consulted.
 
 .. _title-detection-off:
 

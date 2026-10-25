@@ -30,6 +30,7 @@ nothing: the tags this stage writes do vary by it ('씨.' is not tagged
 
 Tags emitted -- stable (API): "particle", "conjunction", "initial";
 namespaced (unstable): "vocab:title", "vocab:given-title",
+"vocab:after-given-title",
 "vocab:suffix", "vocab:suffix-word", "vocab:suffix-ambiguous",
 "vocab:particle-ambiguous", "vocab:bound-given", "vocab:maiden-marker",
 "vocab:maiden-marker-cont"; and, in a namespace of its own,
@@ -128,6 +129,10 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
         tags.add("vocab:title")
     if n in lex.given_name_titles:
         tags.add("vocab:given-title")
+    # rules/H8: "the word joins the title field" -- tagged only where the
+    # word is a title too, so an entry outside `titles` is inert
+    if n in lex.after_given_titles and n in lex.titles:
+        tags.add("vocab:after-given-title")
     if suffix_as_written(n, token.text, lex):
         tags.add("vocab:suffix")
     if n in lex.suffix_words:

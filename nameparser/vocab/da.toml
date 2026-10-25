@@ -2,7 +2,7 @@ schema = 1
 
 [[word]]
 text = "familie"
-salutation = { issue = 606, expands = "the family addressed, 'Familie Hansen'" }
+salutation = { issue = 606, expands = "the family addressed, 'Familie Hansen'", after_given = true }
 
 [[word]]
 text = "fru"
@@ -10,11 +10,11 @@ salutation = { gender = "f" }
 
 [[word]]
 text = "frøken"
-salutation = { gender = "f" }
+salutation = { gender = "f", after_given = true }
 
 [[word]]
 text = "frk"
-salutation = { gender = "f", same_as = "frøken" }
+salutation = { gender = "f", same_as = "frøken", after_given = true }
 
 [[word]]
 text = "herr"

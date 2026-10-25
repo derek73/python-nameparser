@@ -1074,6 +1074,8 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             # rules/P5: "nor a title word a trailing rule reads as a
             # title" -- after a family comma one H5's trailing run takes
             # from the given part, read as the comma-less name reads it,
+            # plus the bare salutations H8 adds after a family comma
+            # (`salutations=True`),
             # which the LENIENT join reads no peel for and so asks here,
             # only where a title word follows ('Berg, abdul Prof.',
             # #637; where the given part's own walk then reads the words
@@ -1092,7 +1094,8 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                         and (site is ClauseSite.TAIL
                              or fk + 1 in tail_reading(
                                  peel_walk(fk, ptags), pieces, ptags,
-                                 tokens, one_case)[1]))):
+                                 tokens, one_case,
+                                 salutations=True)[1]))):
                 pass
             elif bound_join is BoundJoin.LENIENT:
                 # post-comma the family is fixed and the pair is the

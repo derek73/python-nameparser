@@ -2,11 +2,11 @@ schema = 1
 
 [[word]]
 text = "batoni"
-salutation = { issue = 606, gender = "m", note = "borne: ~1,100 surnames (the painter Pompeo Batoni) and ~300 given-name uses (Tanzania), forebears.io, worldwide, rounded, 2026-10-04; shipped under the graf class (decisions/salutation-titles)" }
+salutation = { issue = 606, gender = "m", note = "borne: ~1,100 surnames (the painter Pompeo Batoni) and ~300 given-name uses (Tanzania), forebears.io, worldwide, rounded, 2026-10-04; shipped under the graf class (decisions/salutation-titles)", after_given = true }
 
 [[word]]
 text = "kalbatoni"
-salutation = { issue = 606, gender = "f" }
+salutation = { issue = 606, gender = "f", after_given = true }
 
 [[word]]
 text = "grafi"

@@ -2,7 +2,8 @@ schema = 1
 
 [[word]]
 text = "señor"
-salutation = { gender = "m" }
+salutation = { gender = "m", excluded = { after_given = "spelled SENOR, a surname (Census 2010), and middle names are drawn from surnames" } }
+family = { us_census_2010 = 282, wikidata = 2, as_of = 2026-10-24, note = "the Census count is of SENOR, which writes no diacritics" }
 
 [[word]]
 text = "sr"
@@ -10,35 +11,39 @@ salutation = { gender = "m", same_as = "señor" }
 
 [[word]]
 text = "señora"
-salutation = { gender = "f" }
+salutation = { gender = "f", excluded = { after_given = "a given name (US SSA, as Senora), borne as a middle name" } }
+given = { us_ssa = 1065, as_of = 2026-10-24, note = "counted as SENORA, the SSA writing no diacritics" }
 
 [[word]]
 text = "sra"
-salutation = { gender = "f", same_as = "señora" }
+salutation = { gender = "f", same_as = "señora", after_given = true }
+given = { us_ssa = 27, as_of = 2026-10-24 }
+family = { us_census_2010 = 149, as_of = 2026-10-24, note = "kept for after_given (decisions/H8)" }
 
 [[word]]
 text = "señores"
-salutation = { expands = "the plural of señor" }
+salutation = { expands = "the plural of señor", after_given = true }
 
 [[word]]
 text = "sres"
-salutation = { same_as = "señores" }
+salutation = { same_as = "señores", after_given = true }
 
 [[word]]
 text = "señorita"
-salutation = { gender = "f" }
+salutation = { gender = "f", after_given = true }
+given = { us_ssa = 6, as_of = 2026-10-24, note = "counted as SENORITA; kept for after_given (decisions/H8)" }
 
 [[word]]
 text = "srta"
-salutation = { gender = "f", same_as = "señorita" }
+salutation = { gender = "f", same_as = "señorita", after_given = true }
 
 [[word]]
 text = "señoritas"
-salutation = { gender = "f" }
+salutation = { gender = "f", after_given = true }
 
 [[word]]
 text = "srtas"
-salutation = { gender = "f", same_as = "señoritas" }
+salutation = { gender = "f", same_as = "señoritas", after_given = true }
 
 [[word]]
 text = "dra"

@@ -1431,17 +1431,21 @@ def credential_run(rest: Sequence[int], peel: Peel, p: int,
 def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
                      ptags: Sequence[Set[str]],
                      tokens: Sequence[WorkToken],
-                     end: int | None = None) -> int:
+                     end: int | None = None,
+                     salutations: bool = False) -> int:
     """How many pieces of `rest` the trailing title chain LEAVES
     standing: `rest[:kept]` are the name pieces and `rest[kept:]` the
-    period-marked title words the chain took, in piece order. Counted
+    title words the chain took (period-marked, or under `salutations`
+    a bare salutation), in piece order. Counted
     the way `peel_trailing` counts, so the two answers compose without
     arithmetic at the call site. `rest` is the caller's NAME pieces:
     on the no-comma path what the S2 peel left, after a family comma
     the segment's pieces that the segment's own suffix reading does
     not claim, and in `tail_reading` the leftovers of whichever peel
     is current. `end`, where given, reads `rest[:end]` without the
-    copy, for `tail_reading`'s passes.
+    copy, for `tail_reading`'s passes. `salutations` is the given
+    part after a family comma asking, where a bare salutation the
+    vocabulary marks `after_given` chains as well (rules/H8).
     Floor: the first position of `rest` is never taken, so one name
     piece stands and a name is never all title. An empty
     `rest` returns 0, which is what leaves assign's bare-suffix
@@ -1474,9 +1478,16 @@ def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
         # the shape is ANDed with is_title_piece, so the word is listed
         # vocabulary, and a listed CJK title wearing a stop should read
         # as a title.
-        if (len(piece) == 1
-                and _PERIOD_ABBREV.match(tokens[piece[0]].text)
-                and is_title_piece(piece, ptags[idx], tokens)):
+        if len(piece) == 1 and (
+                (_PERIOD_ABBREV.match(tokens[piece[0]].text)
+                 and is_title_piece(piece, ptags[idx], tokens))
+                # rules/H8: "the given part after it ends in a word whose
+                # title reading is a salutation" -- the salutation chains
+                # as a period-marked title does ("It reads as the
+                # period-marked spelling reads"); a tag test, so a name
+                # word pays no frame
+                or (salutations and "vocab:after-given-title"
+                    in tokens[piece[0]].tags)):
             k -= 1
             continue
         break
@@ -1575,6 +1586,7 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
                   one_case: bool | None,
                   units: Sequence[int] | None = None,
                   count_numeral: bool = True,
+                  salutations: bool = False,
                   ) -> tuple[list[int], tuple[int, ...], Peel]:
     """The S2 peel and the H5 chain read together to a FIXED POINT:
     peel, chain, splice the chained pieces out, peel again over what
@@ -1649,7 +1661,8 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
     spliced pieces. The fuzz that checked this against the
     re-peeling loop, the three conditions each shown load-bearing by
     a weakened copy failing it, is recorded on the PR closing #558.
-    `count_numeral` is `peel_trailing`'s, passed to every pass.
+    `count_numeral` is `peel_trailing`'s, passed to every pass, and
+    `salutations` is `trailing_titles`', passed to every chain.
     The splice itself is never materialized in between: the runs are
     collected back to front and joined once.
     """
@@ -1663,7 +1676,7 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
                            units=units, second=second,
                            count_numeral=count_numeral)
     kept = trailing_titles(rest, pieces, ptags, tokens,
-                           end=peeled.names)
+                           end=peeled.names, salutations=salutations)
     if kept == peeled.names:
         p = run_start(rest, peeled.names, pieces, ptags, tokens, units)
         return rest, (), (peeled if p == peeled.names else credential_run(
@@ -1713,7 +1726,7 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
             picks = list(peeled.picks)
             numeral = peeled.numeral
         kept = trailing_titles(rest, pieces, ptags, tokens,
-                               end=peeled.names)
+                               end=peeled.names, salutations=salutations)
     if behind:
         rest = rest[:hi] + [j for run in reversed(behind) for j in run]
     final = Peel(peeled.names, numeral, tuple(picks), None)
@@ -1959,7 +1972,8 @@ def trailing_run_start(start: int, pieces: Sequence[Sequence[int]],
     bound for a reading that takes the trailing titles as well as the
     suffixes, as assign's walk does in the given part after a family
     comma (#623), where `trailing_start` sees only the suffixes and
-    `trailing_start_past_titles` leaves the titles inside the bound."""
+    `trailing_start_past_titles` leaves the titles inside the bound.
+    The chain takes a bare salutation too, as that walk does (rules/H8)."""
     # rules/S4: "the given part's trailing slot after a family comma is
     # read without it (S5)" -- the numeral half of the count, which
     # assign's walk there never asks either, so the chain this bounds
@@ -1967,7 +1981,7 @@ def trailing_run_start(start: int, pieces: Sequence[Sequence[int]],
     # acronym half is still counted here, as before #718
     rest, titled, peel = tail_reading(peel_walk(start, ptags), pieces,
                                       ptags, tokens, one_case,
-                                      count_numeral=False)
+                                      count_numeral=False, salutations=True)
     first = len(pieces)
     for k in rest[peel.names:]:
         first = min(first, k)

@@ -62,10 +62,12 @@ run per entry as each file loads, and 4-7, 9 and 10 over the whole pool
 in check_pool, 6 first and 10 last;
 
 plus the data invariants that were asserts: may_be_initial only on a
-cased single letter, and an elided particle in both apostrophes (#700).
+cased single letter, an elided particle in both apostrophes (#700), and
+after_given only on a salutation reading (#835).
 No post-nominal is both an acronym and a word, by checks 4 and 5; a
 final check in compile_pool is the backstop. The subset relations
-(GIVEN_NAME_TITLES in TITLES, each marker set in its base) need no
+(GIVEN_NAME_TITLES and AFTER_GIVEN_TITLES in TITLES, each marker set in
+its base) need no
 check: a flag cannot exist without its reading. The one soft finding, a
 name reading on a word with no vocabulary reading and no exclusion, is
 a VocabWarning, which the shipped-data test turns into an error.
@@ -208,7 +210,7 @@ UNORDERED = "und.toml"
 #: Behavioral properties per category: each compiles into a field, and
 #: its allowed values are exactly what today's pipeline does.
 BEHAVIORAL: dict[str, frozenset[str]] = {
-    "title": frozenset({"addresses", "cased"}),
+    "title": frozenset({"addresses", "after_given", "cased"}),
     "suffix": frozenset({"acronym", "may_be_name", "attached", "cased"}),
     "particle": frozenset({"may_be_given", "cased"}),
     "conjunction": frozenset({"may_be_initial", "cased"}),
@@ -263,7 +265,7 @@ class Reading:
         return bool(self.props.get("acronym", self.kind == "credential"))
 
     def flag(self, prop: str) -> bool:
-        """A `may_be_*` flag: unwritten, false."""
+        """A `may_be_*` flag or `after_given`: unwritten, false."""
         return bool(self.props.get(prop, False))
 
     @property
@@ -723,7 +725,8 @@ def _check_reading(r: Reading, pool: Pool) -> None:
         if k not in allowed:
             raise _reserved_or_unknown(where, k, allowed)
     _check_descriptive(where, p)
-    for flag in ("acronym", "may_be_name", "may_be_given", "may_be_initial"):
+    for flag in ("acronym", "may_be_name", "may_be_given", "may_be_initial",
+                 "after_given"):
         if flag in p and not isinstance(p[flag], bool):
             raise VocabError(f"{where}: {flag} must be true or false")
     if r.category == "title":
@@ -733,6 +736,13 @@ def _check_reading(r: Reading, pool: Pool) -> None:
                              f"for a later phase; phase 1 has 'family' and 'given'")
         if addresses not in ("family", "given"):
             raise VocabError(f"{where}: addresses must be 'family' or 'given'")
+        if r.flag("after_given") and r.kind != "salutation":
+            # a salutation is a form of address, where an office or a
+            # rank is borne as a middle name: the reason the given
+            # part's end may read one as a title (decisions/H8, #835)
+            raise VocabError(f"{where}: after_given is allowed on a "
+                             f"salutation reading only, not on {r.kind!r} "
+                             f"(rules/H8)")
     if r.category == "suffix":
         acronym = r.acronym
         if acronym and "." in r.text:
@@ -968,7 +978,7 @@ def _behavior(r: Reading, prop: str) -> object:
     if prop == "attached":
         att = r.props.get("attached")
         return None if att is None else att.get("side")
-    if prop.startswith("may_be"):
+    if prop.startswith("may_be") or prop == "after_given":
         return r.flag(prop)
     return r.props.get(prop)
 
@@ -978,6 +988,7 @@ def _behavior(r: Reading, prop: str) -> object:
 CONSTANTS = (
     ("GIVEN_NAME_TITLES", "titles"),
     ("TITLES", "titles"),
+    ("AFTER_GIVEN_TITLES", "titles"),
     ("NON_GIVEN_NAME_PARTICLES", "particles"),
     ("PARTICLES", "particles"),
     ("CONJUNCTIONS", "conjunctions"),
@@ -997,6 +1008,7 @@ class Compiled(TypedDict):
     order, typed as _compiled.py declares it."""
     GIVEN_NAME_TITLES: frozenset[str]
     TITLES: frozenset[str]
+    AFTER_GIVEN_TITLES: frozenset[str]
     NON_GIVEN_NAME_PARTICLES: frozenset[str]
     PARTICLES: frozenset[str]
     CONJUNCTIONS: frozenset[str]
@@ -1021,6 +1033,7 @@ def compile_pool(pool: Pool) -> Compiled:
     check_pool(pool)
     titles: set[str] = set()
     given_titles: set[str] = set()
+    after_given: set[str] = set()
     particles: set[str] = set()
     never_given: set[str] = set()
     conjunctions: set[str] = set()
@@ -1040,6 +1053,8 @@ def compile_pool(pool: Pool) -> Compiled:
             titles.add(t)
             if r.addresses == "given":
                 given_titles.add(t)
+            if r.flag("after_given"):
+                after_given.add(t)
         elif r.category == "suffix":
             if r.acronym:
                 acronyms.add(t)
@@ -1067,6 +1082,7 @@ def compile_pool(pool: Pool) -> Compiled:
     out = Compiled(
         GIVEN_NAME_TITLES=frozenset(given_titles),
         TITLES=frozenset(titles),
+        AFTER_GIVEN_TITLES=frozenset(after_given),
         NON_GIVEN_NAME_PARTICLES=frozenset(never_given),
         PARTICLES=frozenset(particles),
         CONJUNCTIONS=frozenset(conjunctions),

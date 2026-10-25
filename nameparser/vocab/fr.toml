@@ -2,23 +2,23 @@ schema = 1
 
 [[word]]
 text = "madame"
-salutation = { gender = "f" }
+salutation = { gender = "f", after_given = true }
 
 [[word]]
 text = "mme"
-salutation = { gender = "f", same_as = "madame" }
+salutation = { gender = "f", same_as = "madame", after_given = true }
 
 [[word]]
 text = "mademoiselle"
-salutation = { gender = "f" }
+salutation = { gender = "f", after_given = true }
 
 [[word]]
 text = "mlle"
-salutation = { gender = "f", same_as = "mademoiselle" }
+salutation = { gender = "f", same_as = "mademoiselle", after_given = true }
 
 [[word]]
 text = "monsieur"
-salutation = { gender = "m" }
+salutation = { gender = "m", after_given = true }
 
 [[word]]
 text = "cheikh"

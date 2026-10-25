@@ -2,11 +2,12 @@ schema = 1
 
 [[word]]
 text = "пан"
-salutation = { gender = "m", issue = 269, expands = "Mr." }
+salutation = { gender = "m", issue = 269, expands = "Mr.", excluded = { after_given = "a surname in Cyrillic (Wikidata), and middle names are drawn from surnames" } }
+family = { wikidata = 743, as_of = 2026-10-24 }
 
 [[word]]
 text = "пані"
-salutation = { gender = "f", issue = 269, expands = "Mrs." }
+salutation = { gender = "f", issue = 269, expands = "Mrs.", after_given = true }
 
 [[word]]
 text = "акад"

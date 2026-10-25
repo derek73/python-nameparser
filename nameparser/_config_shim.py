@@ -1048,6 +1048,7 @@ class Constants:
         from nameparser.config.maiden_markers import MAIDEN_MARKERS
         from nameparser.config.suffixes import GLUED_HONORIFICS
         from nameparser.config.surnames import KOREAN_SURNAMES
+        from nameparser.config.titles import AFTER_GIVEN_TITLES
         # Every set field and every capitalization_exceptions key passes
         # _v1_matchable BEFORE any set algebra below: an entry v1 could
         # never match, or one Lexicon folds to empty (#582), is dropped
@@ -1207,6 +1208,14 @@ class Constants:
                 # stops mattering, the same rule ambiguous_acronyms gets
                 # against suffix_acronyms above.
                 honorific_tails=GLUED_HONORIFICS & suffix_words,
+                # likewise no v1 manager: the salutations ending a given
+                # part are 2.6 behavior (#835), so they ride in the
+                # snapshot only, and the one v1 knob that reaches them is
+                # deleting the title. Lexicon does not check this pair
+                # (classify reads a member only where it is a title too),
+                # so the intersection is kept for `_snapshot() ==
+                # Lexicon.default()` legibility, as conjunctions_ambiguous'.
+                after_given_titles=AFTER_GIVEN_TITLES & titles,
                 # TupleManager is dict[str, object] (v1 parity: values were
                 # never statically str-typed); every real entry is a str,
                 # same assumption _DelimiterManager's sentinel lookup makes.
