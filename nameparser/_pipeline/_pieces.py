@@ -732,6 +732,7 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
                            anchored: list[int] | None = None,
                            absorbed: list[int] | None = None,
                            licensed: Container[int] = (),
+                           head_named: bool = True,
                            ) -> tuple[bool, ...] | None:
     """How each piece of a no-name segment reads: True a suffix, False
     a title. None when the segment holds a name word and so is not a
@@ -888,8 +889,13 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
             continue
         member = (len(piece) == 1
                   and AMBIGUOUS_ACRONYM_TAG in tokens[piece[0]].tags)
+        # rules/S11: "The floor holds first" -- a generation word's
+        # writing settles it only where the part before the comma names
+        # a family, `head_named` (', Dr. fils' keeps family 'fils')
         if member and listed_lean(tokens[piece[0]], one_case) \
-                == "credential":
+                == "credential" and (
+                    head_named
+                    or AMBIGUOUS_WORD_TAG not in tokens[piece[0]].tags):
             leading = False
             out.append(True)
             continue

@@ -36,7 +36,8 @@ from nameparser._pipeline._pieces import (
     listed_lean, own_words, segment_suffix_reading,
 )
 from nameparser._pipeline._state import (
-    AMBIGUOUS_ACRONYM_TAG, SHAPE_ACRONYM_TAG, ParseState, PendingAmbiguity,
+    AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, SHAPE_ACRONYM_TAG, ParseState,
+    PendingAmbiguity,
     Structure, WorkToken, copy_with,
 )
 from nameparser._pipeline._vocab import (
@@ -487,7 +488,7 @@ def decide(state: ParseState) -> ParseState:
     if maybe:
         reading = segment_suffix_reading(
             p1, pt1, tokens, pol.lenient_comma_suffixes, state.one_case,
-            anchored, absorbed, licensed)
+            anchored, absorbed, licensed, head_named=names >= 1)
     if not listing:
         if whole is None:
             whole = _whole_name(seg0, tokens)
@@ -571,7 +572,10 @@ def decide(state: ParseState) -> ParseState:
         settled = (len(p1) > 1 and bool(members)
                    and len(listed) == len(members)
                    and all(listed_lean(tokens[i], state.one_case)
-                           == "credential" for i in listed))
+                           == "credential"
+                           and (names >= 1
+                                or AMBIGUOUS_WORD_TAG not in tokens[i].tags)
+                           for i in listed))
         member_set = frozenset(members)
         pairs = [k for k, p in enumerate(p1) if p[0] in member_set
                  and (is_paired_initials(texts[p[0]])

@@ -1725,6 +1725,11 @@ CASES: tuple[Case, ...] = (
          notes="the comma has named the family, so lower case settles the "
                "generation (rules/S5, S6). 1.4.0 and 2.6.0 read middle "
                "'fils'"),
+    Case("fils_in_lower_case_after_an_empty_head", ", Dr. fils",
+         {"title": "Dr.", "family": "fils"},
+         classification="parity",
+         notes="no name before the comma, so no family is named and the "
+               "floor holds before the case cue (rules/S11, #890)"),
     Case("a_one_letter_generation_is_off_by_default", "Juan Pérez H.",
          {"given": "Juan", "middle": "Pérez", "family": "H."},
          classification="parity",
