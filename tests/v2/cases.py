@@ -1481,6 +1481,26 @@ CASES: tuple[Case, ...] = (
                "family 'Ma'), which #602 retires; 2.3.0 read this same "
                "way, and 1.4.0 middle 'Smith PhD', last 'Prof.', suffix "
                "'Ma'"),
+    # the split credential's periods are optional, each half on its own
+    # (v1's fix_phd, `_vocab.split_pair`): every spelling is one suffix
+    # piece, at the end of a name, behind a family comma and after a
+    # suffix comma (#752's test review: no row held a periodless pair)
+    Case("a_split_degree_without_its_periods_merges",
+         "John Smith Ph D",
+         {"given": "John", "family": "Smith", "suffix": "Ph D"},
+         classification="parity"),
+    Case("a_split_degree_with_one_period_merges",
+         "John Smith Ph. D",
+         {"given": "John", "family": "Smith", "suffix": "Ph. D"},
+         classification="parity"),
+    Case("a_split_degree_without_its_periods_merges_in_the_given_part",
+         "Smith, John Ph D",
+         {"given": "John", "family": "Smith", "suffix": "Ph D"},
+         classification="parity"),
+    Case("a_split_degree_in_capitals_merges_after_a_suffix_comma",
+         "John Smith, PH D",
+         {"given": "John", "family": "Smith", "suffix": "PH D"},
+         classification="parity"),
     Case("a_split_degree_in_front_is_out_of_the_walk",
          "John Smith Ph. D. MEng",
          {"given": "John", "middle": "Smith", "family": "MEng",

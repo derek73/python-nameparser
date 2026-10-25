@@ -234,10 +234,11 @@ def _behind_a_generation(state: ParseState, seg0: Sequence[int],
     # a numeral by shape alone (VI to X) is the generation the trailing
     # fork reads, as the listed ones are (#610's class: 'VI' beside 'V'
     # and 'III'), and not one it reads as an initial's neighbour
-    # ('John J VI, AD')
-    if not reads_as_generation(
-            last, tokens[seg0[-2]].text, state.one_case,
-            listed="vocab:suffix-word" in tokens[seg0[-1]].tags):
+    # ('John J VI, AD'). C12's evidence is broader than a generation:
+    # any suffix word ('Jr.', 'Esq.') counts, by its tag
+    if ("vocab:suffix-word" not in tokens[seg0[-1]].tags
+            and not reads_as_generation(
+                last, tokens[seg0[-2]].text, state.one_case)):
         return None
     # the generation set aside, the name's own words in front of it are
     # a whole name: 'Smith VI' is one word and a numeral, as 'Smith III'

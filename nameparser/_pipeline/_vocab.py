@@ -287,35 +287,31 @@ ROMAN = _ROMAN
 # rules/S10's Except bullet "A numeral of one letter needs words to
 # spare", is the callers'. decisions/S10 (#718, #721)
 # mechanisms.md#ONE-PREDICATE-PER-QUESTION ("exactly one predicate answers it and every other site calls that one")
-# -- the trailing fork's numeral test, which C12 asks with its
-# suffix-word tag as `listed`; other numeral sites still answer on
-# their own, named in the decisions entry (decisions/vocabulary-model,
-# #752)
-def reads_as_generation(text: str, preceding: str, one_case: bool | None,
-                        *, listed: bool = False) -> bool:
-    """Whether a word ending a name reads as the generation (or, with
-    `listed`, as the suffix word the caller's tags say it is): the
+# -- the numeral's predicate, which every numeral rule is to ask;
+# today its shape half, and the sites still recognizing a numeral on
+# their own are named in the decisions entry (decisions/vocabulary-
+# model, #752)
+def reads_as_generation(text: str, preceding: str,
+                        one_case: bool | None) -> bool:
+    """Whether a word ending a name reads as the generation: the
     trailing walk's roman-numeral fork, a FINAL single-token piece
     that is a roman numeral reading as the suffix when the piece
     before it does not look like part of an initial run -- for a
-    one-letter numeral a necessary
-    condition only, the caller's words-to-spare count deciding
+    one-letter numeral a necessary condition only, the caller's words-to-spare count deciding
     (rules/S10, #718). `preceding` is that piece's first token;
     the callers establish that `text` is last and that a name piece
     precedes it.
 
-    `listed` is the caller's own answer from the word's tags, and
-    answers yes whatever the shape. Only C12's evidence passes it, and
-    passes the suffix-word tag, which every suffix word carries, so
-    'Jr.' and 'Esq.' answer yes there as 'III' does: C12 asks whether
-    the part ends in a suffix word or a numeral the fork reads.
-    Other sites still recognize a numeral without this predicate,
-    each keeping the answer it had before #752; decisions/vocabulary-
-    model lists those found. Among them is the peel's `is_suffix_piece`,
-    which takes a listed numeral but vetoes one carrying the `initial`
-    tag ('V', 'I'), so passing `listed` at the peel's fork would move
-    'John J. V'. Giving every
-    numeral rule this one reading is #784, #774 and #819's change.
+    It answers by SHAPE alone: the listed numerals 'ii' to 'iv' are
+    still recognized by the vocabulary at each site that takes them,
+    and reading them here is the change that has every numeral rule
+    ask this predicate (#784, #774, #819). It cannot read them yet
+    without moving a reading: the peel reaches its fork only after
+    `is_suffix_piece` has declined, so the listed numerals the fork
+    meets are those carrying the `initial` tag ('V', 'I'), and a yes
+    for them would move 'John J. V'. Other sites still recognize a
+    numeral without this predicate, each keeping the answer it had
+    before #752; decisions/vocabulary-model lists those found.
 
     is_initial_shaped, not is_initial: this asks whether the preceding
     piece looks like part of an initial run, which is a question
@@ -330,10 +326,9 @@ def reads_as_generation(text: str, preceding: str, one_case: bool | None,
     capitals are not, stay as they were. None (the maiden take's
     superset view passes it) gets the shape test alone, which admits
     more and so stays a superset."""
-    return listed or (
-        _ROMAN.match(text) is not None
-        and not is_initial_shaped(preceding)
-        and not (one_case and is_initial_shaped(preceding.upper())))
+    return (_ROMAN.match(text) is not None
+            and not is_initial_shaped(preceding)
+            and not (one_case and is_initial_shaped(preceding.upper())))
 
 
 # rules/S10: "a numeral written in lower case in a name of mixed case is

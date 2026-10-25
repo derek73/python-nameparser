@@ -11,7 +11,8 @@ from nameparser._pipeline._vocab import (
     ambiguous_class_candidate, ambiguous_class_member, ambiguous_lean,
     caps_shape_candidate, comma_follows_marker, delimiter_cores, glued_stem,
     effective_script, is_initial, is_initial_shaped, is_one_case,
-    is_single_letter_numeral,
+    SPLIT_PAIR_OPENS, is_cased_paired_initials, is_paired_initials,
+    is_single_letter_numeral, split_pair,
     is_suffix_lenient, is_suffix_strict, is_title_shaped, is_wholly_suffix,
     maiden_marker_run, name_word_count, period_joined_vocab, written_as_a_name,
     resolve_script_set, single_script,
@@ -253,6 +254,8 @@ def test_is_wholly_suffix() -> None:
     # too, but only because _SUFFIX_LEX is synthetic -- under
     # Lexicon.default(), 'ph' IS in suffix_acronyms.)
     assert is_wholly_suffix(["Ph.", "D."], lex, pol)
+    # either period may be left off ('Ph D', 'PH D'), v1's fix_phd
+    assert is_wholly_suffix(["Ph", "D"], lex, pol)
     assert not is_wholly_suffix(["Ph."], lex, pol)
     assert is_wholly_suffix(["Ph.", "D.", "Jr."], lex, pol)
     # and the pair is found wherever it sits, not only at the head of
@@ -871,6 +874,31 @@ def test_a_listed_member_written_in_period_closed_chunks_is_dotted(
     # that spell nothing listed
     for text in ("Meng.", "Ma.", "M.Eng", "MEng", "X.Eng."):
         assert not is_suffix_strict(text, lex), text
+
+
+def test_split_pair_opens_is_a_necessary_condition_of_split_pair() -> None:
+    # every caller asks SPLIT_PAIR_OPENS C-level before split_pair, so a
+    # split_pair widened past it would never be reached for the new
+    # opener (#752); the periods are optional and the case free
+    words = ["Ph.", "Ph", "PH.", "ph", "pH", "D.", "D", "d", "Pharm.",
+             "M.", "MD", "Phd", "Ph..", "", "Smith"]
+    for first in words:
+        for second in words:
+            if split_pair(first, second):
+                assert SPLIT_PAIR_OPENS.fullmatch(first), (first, second)
+    assert all(split_pair(a, b) for a in ("Ph.", "Ph", "PH", "ph.")
+               for b in ("D.", "D", "d"))
+    assert not split_pair("Ph.", "D..") and not split_pair("Phd", "D.")
+
+
+def test_cased_paired_initials_is_the_bare_shape_in_a_cased_script() -> None:
+    for text in ("M.J.", "m.j.", "M.J", "Ж.Ш."):
+        assert is_cased_paired_initials(text), text
+    # Thai writes an abbreviation as dotted letters and has no case
+    # (rules/S3); the bare predicate, which C5 asks, still takes it
+    assert is_paired_initials("พ.บ.")
+    assert not is_cased_paired_initials("พ.บ.")
+    assert not is_cased_paired_initials("X.Y.Z.")
 
 
 def test_is_single_letter_numeral() -> None:
