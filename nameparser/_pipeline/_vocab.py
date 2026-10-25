@@ -300,16 +300,17 @@ def reads_as_generation(text: str, preceding: str, one_case: bool | None,
     the callers establish that `text` is last and that a name piece
     precedes it.
 
-    `listed` is the vocabulary path, the second of the two ways a
-    numeral is recognized today: the caller's own answer from the
-    word's tags, which a caller asking it passes in and which answers
-    yes whatever the shape ('III' and 'Jr.' alike, rules/C12's suffix
-    word). Only C12's evidence passes it: the peel takes a listed
-    numeral through `is_suffix_piece` before its fork asks this
-    predicate, and S8's run start asks the vocabulary alone, so the
-    two recognizers still answer apart at those sites, each caller
-    keeping the answer it had before #752. Giving every numeral rule
-    this one reading is #784, #774 and #819's change.
+    `listed` is the caller's own answer from the word's tags, and
+    answers yes whatever the shape. Only C12's evidence passes it, and
+    passes the suffix-word tag, which every suffix word carries, so
+    'Jr.' and 'Esq.' answer yes there as 'III' does: C12 asks whether
+    the part ends in a suffix word or a numeral the fork reads.
+    S8's run start (#784), C1's listing form (#774) and the peel's
+    `is_suffix_piece`, which takes 'ii' to 'iv' and vetoes 'i' and
+    'v' as initial-shaped, still recognize a numeral without this
+    predicate, each keeping the answer it had before #752; passing
+    `listed` at the peel's fork would move 'John J. V'. Giving every
+    numeral rule this one reading is #784, #774 and #819's change.
 
     is_initial_shaped, not is_initial: this asks whether the preceding
     piece looks like part of an initial run, which is a question
