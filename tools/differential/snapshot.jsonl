@@ -2645,8 +2645,10 @@
 {"name": "Pedro Junior fils", "given": "Pedro", "suffix": "Junior fils", "ambiguities": ["GIVEN_OR_FAMILY", "SUFFIX_OR_NAME"], "initials": "P."}
 {"name": "Pedro López Ruiz H.", "given": "Pedro", "middle": "López Ruiz", "family": "H.", "initials": "P. L. R. H."}
 {"name": "Pedro M.Filho", "given": "Pedro", "family": "M.Filho", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. M."}
+{"name": "Pedro MA Filho", "given": "Pedro", "middle": "MA", "family": "Filho", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. M. F.", "capitalized_force": "Pedro Ma Filho"}
 {"name": "Pedro Morales Pino", "given": "Pedro", "middle": "Morales", "family": "Pino", "initials": "P. M. P."}
 {"name": "Pedro PhD Neto", "given": "Pedro", "middle": "PhD", "family": "Neto", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. P. N."}
+{"name": "Pedro VI Filho", "given": "Pedro", "middle": "VI", "family": "Filho", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. V. F.", "capitalized_force": "Pedro Vi Filho"}
 {"name": "Pedro de Neto", "given": "Pedro", "family": "de", "suffix": "Neto", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. d.", "capitalized_force": "Pedro De Neto"}
 {"name": "Pendeta Zaba", "given": "Pendeta", "family": "Zaba", "initials": "P. Z."}
 {"name": "Penkauskienė Sofija Rita", "order": "FAMILY_FIRST", "given": "Sofija", "middle": "Rita", "family": "Penkauskienė", "initials": "S. R. P."}

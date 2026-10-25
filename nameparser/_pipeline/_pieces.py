@@ -1125,6 +1125,27 @@ def second_unit(rest: Sequence[int], units: Sequence[int]) -> int:
     return len(rest)
 
 
+def _peeled_in_front(piece: Sequence[int], ptags: Set[str],
+                     tokens: Sequence[WorkToken], preceding: str | None,
+                     one_case: bool | None) -> bool:
+    """Whether the walk would peel `piece` standing in front of a
+    generation word that is also a name, so that its count looks past
+    it (rules/S11, #890): a suffix piece; a numeral of two or more
+    letters the trailing fork reads as the generation ('Pedro VI
+    Filho'); and a member of the ambiguous class whose writing makes it
+    the suffix ('Pedro MA Filho', 'Pedro fils Netto')."""
+    if is_suffix_piece(piece, ptags, tokens):
+        return True
+    if len(piece) != 1:
+        return False
+    tok = tokens[piece[0]]
+    stem = tok.text.rstrip(".")
+    if (len(stem) > 1 and _ROMAN.match(stem) is not None
+            and reads_as_generation(tok.text, tok.tags, preceding, one_case)):
+        return True
+    return listed_lean(tok, one_case) == "credential"
+
+
 def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
                    ptags: Sequence[Set[str]],
                    tokens: Sequence[WorkToken],
@@ -1281,8 +1302,10 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
             # as the word it spares and then peeled as well
             front = k - 2
             if AMBIGUOUS_WORD_TAG in tokens[piece[0]].tags:
-                while front >= 0 and is_suffix_piece(
-                        pieces[rest[front]], ptags[rest[front]], tokens):
+                while front >= 0 and _peeled_in_front(
+                        pieces[rest[front]], ptags[rest[front]], tokens,
+                        tokens[pieces[rest[front - 1]][0]].text
+                        if front >= 1 else None, one_case):
                     front -= 1
             if lean == "credential" or (lean is None and front >= second):
                 k -= 1

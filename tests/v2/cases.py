@@ -1653,6 +1653,20 @@ CASES: tuple[Case, ...] = (
          notes="only name words in front of an agnomen count toward its "
                "words to spare, so the suffix word there spares nothing "
                "and keeps no company (rules/S11, #890)"),
+    Case("a_numeral_in_front_of_an_agnomen_is_no_word_to_spare", "Pedro VI Filho",
+         {"given": "Pedro", "middle": "VI", "family": "Filho"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="what the trailing run would take in front of an agnomen "
+               "is no word to spare for it, a numeral the fork reads or "
+               "a member its writing makes a suffix (rules/S11, #890)"),
+    Case("a_credential_in_capitals_in_front_of_an_agnomen_is_no_word_to_spare", "Pedro MA Filho",
+         {"given": "Pedro", "middle": "MA", "family": "Filho"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="what the trailing run would take in front of an agnomen "
+               "is no word to spare for it, a numeral the fork reads or "
+               "a member its writing makes a suffix (rules/S11, #890)"),
     Case("fils_after_a_name", "Alexandre Dumas fils",
          {"given": "Alexandre", "family": "Dumas", "suffix": "fils"},
          classification="fix(#752)",
