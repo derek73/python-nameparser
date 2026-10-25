@@ -586,9 +586,8 @@ def _joined_credential(text: str, lexicon: Lexicon) -> bool:
     so the recursion is one level deep. A loop rather than `all()` over
     a generator, which would cost a frame per chunk: a hyphenated name
     ('Smith-Jones') stops at its first chunk."""
+    # the caller found a joiner, so there are two chunks at least
     chunks = _JOINERS.split(text)
-    if len(chunks) < 2:
-        return False
     whole = False  # a chunk that is not a single ASCII character
     for c in chunks:
         if not (c and suffix_as_written(_normalize(c), c, lexicon)):
