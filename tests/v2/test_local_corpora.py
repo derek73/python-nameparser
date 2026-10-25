@@ -34,7 +34,13 @@ from typing import Any
 
 import pytest
 
-from ._differential_fixtures import _Response, load_tool, own_cache, plant_corpus
+from ._differential_fixtures import (
+    _Response,
+    checkout_copy,
+    load_tool,
+    own_cache,
+    plant_corpus,
+)
 
 local = load_tool("local_corpora")
 snapshot = load_tool("snapshot")
@@ -4089,6 +4095,164 @@ def test_the_source_digest_follows_a_symlinked_subpackage(tmp_path: Path) -> Non
         (root / "nameparser" / "sub").symlink_to(root / "real" / "sub")
         digests.append(snapshot._source_digest(root))
     assert digests[0] != digests[1]
+
+
+# -- snapshot.py --local --base -------------------------------------------------
+
+def _shared(folder: Path) -> dict[str, tuple[int, bytes]]:
+    """The shared snapshot's files beside a local corpus, as mtime and
+    bytes, for a check that --base left them alone."""
+    return {p.name: (p.stat().st_mtime_ns, p.read_bytes())
+            for p in sorted(folder.glob("snapshot*"))}
+
+
+def test_a_base_check_reports_a_change_planted_in_the_base_and_none_across_a_copy(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    # The harness must be able to report a difference: a base read from
+    # the head's tree by mistake would show no move across a planted one.
+    folder = _fetched(monkeypatch, tmp_path)
+    planted = checkout_copy(tmp_path / "planted", planted=True)
+    assert snapshot.main(["--local", _SOURCE, "--base", str(planted)]) == 1
+    out = capsys.readouterr().out
+    assert f"base: {planted.resolve()}, nameparser/ " in out and "recorded it now" in out
+    assert "2 entries differ from the base" in out
+    # The control: an unplanted copy is the head's package byte for byte.
+    copy = checkout_copy(tmp_path / "copy")
+    assert snapshot.main(["--local", _SOURCE, "--base", str(copy)]) == 0
+    out = capsys.readouterr().out
+    assert "matches the base" in out and "byte-identical" in out
+    assert len(_baselines(folder)) == 2
+
+
+def test_a_base_check_never_touches_the_shared_snapshot(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    folder = _fetched(monkeypatch, tmp_path)
+    base = checkout_copy(tmp_path / "base", planted=True)
+    assert snapshot.main(["--local", _SOURCE, "--base", str(base)]) == 1
+    assert not _shared(folder)  # none was there, and none was written
+    assert snapshot.main(["--local", _SOURCE, "--record"]) == 0
+    before = _shared(folder)
+    assert set(before) == {"snapshot.jsonl", "snapshot.jsonl.source.json"}
+    # A shared snapshot that would read as a move, ignored by --base.
+    (folder / "snapshot.jsonl").write_text("")
+    before = _shared(folder)
+    copy = checkout_copy(tmp_path / "copy")
+    assert snapshot.main(["--local", _SOURCE, "--base", str(copy)]) == 0
+    assert snapshot.main(["--local", _SOURCE, "--base", str(copy), "--sample", "2"]) == 0
+    assert _shared(folder) == before
+    assert not list((folder / "baselines").glob(".base-*"))  # the child's scratch is gone
+
+
+def test_a_kept_base_is_reused_without_reading_it_again(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    _fetched(monkeypatch, tmp_path)
+    base = checkout_copy(tmp_path / "base", planted=True)
+    assert snapshot.main(["--local", _SOURCE, "--base", str(base)]) == 1
+    capsys.readouterr()
+
+    def unrecorded(*args: object) -> None:
+        raise AssertionError("recorded the base again")
+    monkeypatch.setattr(snapshot, "_record_base", unrecorded)
+    assert snapshot.main(["--local", _SOURCE, "--base", str(base)]) == 1
+    out = capsys.readouterr().out
+    assert "reused the kept baseline" in out and "2 entries differ" in out
+    # An edit to the base keys it as another package, read again.
+    (base / "nameparser" / "_edited.py").write_text("")
+    with pytest.raises(AssertionError, match="recorded the base again"):
+        snapshot.main(["--local", _SOURCE, "--base", str(base)])
+
+
+def test_a_base_check_composes_with_a_sample(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    folder = _fetched(monkeypatch, tmp_path, *(f"Ann Lee{n}, MD" for n in range(12)))
+    base = checkout_copy(tmp_path / "base", planted=True)
+    assert snapshot.main(["--local", _SOURCE, "--base", str(base), "--sample", "2"]) == 1
+    out = capsys.readouterr().out
+    held = int(re.search(r"a 1-in-2 sample: (\d+) of 12 entries", out)[1])  # type: ignore[index]
+    assert 0 < held < 12 and f"{held} entries differ from the base" in out
+    [kept] = _baselines(folder)
+    assert kept.name.endswith("-sample-2.jsonl.gz")
+
+
+def test_a_base_that_is_the_tree_read_or_no_checkout_is_refused(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    _fetched(monkeypatch, tmp_path)
+    with pytest.raises(SystemExit, match="is the tree being read"):
+        snapshot.main(["--local", _SOURCE, "--base", str(snapshot.REPO_ROOT)])
+    other = checkout_copy(tmp_path / "other")
+    with pytest.raises(SystemExit, match="is the tree being read"):
+        snapshot.main(["--local", _SOURCE, "--base", str(other), "--tree", str(other)])
+    with pytest.raises(SystemExit, match="no nameparser package"):
+        snapshot.main(["--local", _SOURCE, "--base", str(tmp_path / "empty")])
+    assert not _baselines(_folder(tmp_path))
+
+
+def test_a_base_whose_import_fails_is_refused_with_the_childs_output(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    _fetched(monkeypatch, tmp_path)
+    base = checkout_copy(tmp_path / "base")
+    with open(base / "nameparser" / "__init__.py", "a", encoding="utf-8") as f:
+        f.write("\nraise ImportError('planted')\n")
+    with pytest.raises(SystemExit, match="(?s)recording the base .* failed.*planted"):
+        snapshot.main(["--local", _SOURCE, "--base", str(base)])
+    assert not _baselines(_folder(tmp_path))
+
+
+def test_a_base_child_is_started_without_the_import_path_overrides(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # A unit check, not an end-to-end one: --tree's sys.path entry already
+    # outranks a PYTHONPATH entry in the child, so no decoy can show the
+    # strip; it is kept as compare.py's worker keeps it, against an
+    # import made before the insert.
+    monkeypatch.setenv("PYTHONPATH", "/decoy")
+    monkeypatch.setenv("PYTHONHOME", "/decoy")
+    env = snapshot.child_env()
+    assert "PYTHONPATH" not in env and "PYTHONHOME" not in env and env
+
+
+def test_a_kept_baseline_another_run_pruned_is_read_as_none_kept(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    # Pruned between a lookup and the open, it is not damage to delete:
+    # read as damage, its unlink raised on the file already gone.
+    kept = tmp_path / "gone.jsonl.gz"
+    with gzip.open(kept, "wt", encoding="utf-8") as f:
+        f.write("{}\n{}\n")
+    real_open = gzip.open
+
+    def pruned_first(path: Path, mode: str, encoding: str) -> object:
+        Path(path).unlink()
+        return real_open(path, mode, encoding=encoding)
+    monkeypatch.setattr(snapshot.gzip, "open", pruned_first)
+    assert snapshot._reused(kept, 2) is None
+    assert "deleted the kept baseline" not in capsys.readouterr().out
+
+
+def test_a_scratch_folder_a_killed_run_left_is_swept_once_stale(tmp_path: Path) -> None:
+    stale, fresh = snapshot.scratch(tmp_path), snapshot.scratch(tmp_path)
+    (stale / "base.jsonl").write_text("x\n")
+    os.utime(stale, (1_000_000, 1_000_000))
+    snapshot._prune(tmp_path)
+    assert not stale.exists() and fresh.exists()
+
+
+@pytest.mark.parametrize("extra", [["--record"], ["--out", "x.jsonl"]])
+def test_a_base_check_refuses_to_record(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str], extra: list[str]) -> None:
+    _fetched(monkeypatch, tmp_path)
+    with pytest.raises(SystemExit) as raised:
+        snapshot.main(["--local", _SOURCE, "--base", str(tmp_path), *extra])
+    assert raised.value.code == 2 and "--base compares" in capsys.readouterr().err
+
+
+def test_a_base_check_needs_a_local_corpus(capsys: pytest.CaptureFixture[str]) -> None:
+    with pytest.raises(SystemExit) as raised:
+        snapshot.main(["--base", "."])
+    assert raised.value.code == 2 and "--base reads a local corpus" in capsys.readouterr().err
 
 
 def test_a_baseline_another_run_pruned_is_not_reported_as_unkept(

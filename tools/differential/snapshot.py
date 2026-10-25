@@ -25,6 +25,16 @@ git ref, which is how a release asks what moved since the last tag.
 committed ones, against a snapshot kept beside it in the cache, so a
 change can be read against real names that are never committed:
 
+    uv run python tools/differential/snapshot.py --local ctgov-officials --base ../master-checkout
+
+--base PATH reads the base checkout's readings from a kept baseline
+(below), recording one in a child process where none is kept, and
+compares this tree against them; it never reads or writes the shared
+snapshot beside the corpus, so a session measuring while another
+records cannot be handed that session's readings as its base. Without
+--base a check compares against that shared snapshot, which whoever
+last recorded decides:
+
     uv run python tools/differential/snapshot.py --local ctgov-officials --record --tree ../master-checkout
     uv run python tools/differential/snapshot.py --local ctgov-officials
 
@@ -59,8 +69,10 @@ import importlib.util
 import json
 import multiprocessing
 import os
+import shutil
 import subprocess
 import sys
+import tempfile
 import time
 import zlib
 from collections import defaultdict
@@ -407,9 +419,13 @@ def sampled(entries: list[Entry], every: int) -> list[Entry]:
 
 
 #: How many recorded baselines a local corpus keeps, whole or sampled
-#: alike, the least recently recorded or reused dropped first: an FEC
-#: snapshot was 249 MB plain and 41 MB gzipped on 2026-10-23.
-BASELINES_KEPT = 4
+#: alike, the least recently recorded or reused dropped first. Sized for
+#: four sessions measuring at once, each keeping a base and a head with
+#: room for one more: at 4 (before --base) parallel sessions evicted
+#: each other's bases (2026-10-25). The largest is FEC's, 249 MB plain
+#: and 41.7 MB gzipped (2026-10-25), so ten cost about 420 MB for it and
+#: about 1.2 GB across the eight local corpora (122 MB a reading).
+BASELINES_KEPT = 10
 #: A partial baseline older than this is a crashed write's, not a
 #: running one's, and is deleted when a baseline is kept.
 _PARTIAL_STALE_SECONDS = 86400
@@ -458,11 +474,11 @@ def _reused(baseline: Path, entries: int) -> str | None:
     damaged one -- unreadable, or holding another number of rows than
     the corpus has entries, as a write cut short would -- is deleted
     with a note, and the names are read instead."""
-    if not baseline.exists():
-        return None
     try:
         with gzip.open(baseline, "rt", encoding="utf-8") as f:
             text = f.read()
+    except FileNotFoundError:  # none kept, or another run pruned it
+        return None
     except (OSError, EOFError, zlib.error, UnicodeDecodeError) as e:
         why = f"unreadable ({e})"
     else:
@@ -470,7 +486,7 @@ def _reused(baseline: Path, entries: int) -> str | None:
             return text
         why = f"{rows} rows for {entries} entries"
     print(f"deleted the kept baseline {baseline.name}: {why}; reading the names\n")
-    baseline.unlink()
+    baseline.unlink(missing_ok=True)  # another run may have found it too
     return None
 
 
@@ -504,18 +520,31 @@ def _mtime(path: Path) -> float | None:
         return None
 
 
-def _prune(folder: Path) -> None:
-    """Drop all but the BASELINES_KEPT most recently used baselines, and
-    partial writes old enough to be a crashed run's. A file another run
-    removed first is skipped, not reported."""
+def _prune(folder: Path, pattern: str = "*.jsonl.gz") -> None:
+    """Drop all but the BASELINES_KEPT most recently used `pattern`
+    files, and partial writes old enough to be a crashed run's, a base's
+    scratch folder (scratch()) among them. A file another run removed
+    first is skipped, not reported."""
     stale = time.time() - _PARTIAL_STALE_SECONDS
-    kept = sorted((m, p) for p in folder.glob("*.jsonl.gz")
+    kept = sorted((m, p) for p in folder.glob(pattern)
                   if (m := _mtime(p)) is not None)
     old = [p for _, p in kept[:-BASELINES_KEPT]]
-    old += [p for p in folder.glob("*.partial")
+    old += [p for glob in ("*.partial", "*.part") for p in folder.glob(glob)
             if (m := _mtime(p)) is not None and m < stale]
     for p in old:
-        p.unlink(missing_ok=True)
+        if p.is_dir():
+            shutil.rmtree(p, ignore_errors=True)
+        else:
+            p.unlink(missing_ok=True)
+
+
+def scratch(folder: Path) -> Path:
+    """A folder of this run's own for a child's recording, inside the
+    kept records' `folder`: unique, so two sessions recording the same
+    base at once never share a file, and named as a partial write, so
+    _prune sweeps one a killed run left behind."""
+    folder.mkdir(parents=True, exist_ok=True)
+    return Path(tempfile.mkdtemp(prefix=".base-", suffix=".partial", dir=folder))
 
 
 def _fetch_record(snapshot: Path) -> Path:
@@ -542,7 +571,9 @@ def _check_fetch(snapshot: Path, fetch: dict[str, Any], source: str) -> None:
             f"is {fetch['data_date']}), so it would report the names the "
             f"source gained and lost as moves. Record it again from the "
             f"base checkout: snapshot.py --local {source} --record "
-            f"--tree <base checkout>")
+            f"--tree <base checkout>; or, where another session may be "
+            f"measuring, check against a base you name instead: "
+            f"snapshot.py --local {source} --base <base checkout>")
     if recorded.get("sample") != fetch.get("sample"):
         raise SystemExit(
             f"{snapshot} was recorded from "
@@ -555,12 +586,97 @@ def _describe_sample(sample: object) -> str:
     return "the whole corpus" if sample is None else f"a 1-in-{sample} sample"
 
 
+def base_root(path: str, head: Path) -> Path:
+    """--base's checkout, resolved: refused where it holds no nameparser
+    package, whose digest would key an empty tree, or where it is the
+    tree being read, which would compare a tree with itself and report
+    no moves whatever the change."""
+    root = Path(path).resolve()
+    if not (root / "nameparser" / "__init__.py").is_file():
+        raise SystemExit(f"--base {path}: no nameparser package at "
+                         f"{root / 'nameparser'}; name a checkout")
+    if root == head:
+        raise SystemExit(f"--base {path} is the tree being read ({head}): a "
+                         f"tree compared with itself reports no moves. Name "
+                         f"the base checkout, or pass --tree for the other side")
+    return root
+
+
+def head_line(root: Path, base: Path) -> str:
+    """Which tree was read against the base, by its package's digest,
+    taken after the read so that it covers what the import saw. Two
+    equal digests are said outright: a check that cannot move is a
+    clean run's look-alike."""
+    head = _source_digest(root)
+    if head == _source_digest(base):
+        return (f"head: {root} holds a nameparser/ byte-identical to the "
+                f"base's ({head[:16]}), so no reading can move\n")
+    return f"head: {root}, nameparser/ {head[:16]}\n"
+
+
+def child_env() -> dict[str, str]:
+    """A child's environment with the import-path overrides stripped, as
+    compare.py's worker has it: a PYTHONPATH entry would outrank the
+    --tree the child is handed (check_source then aborts it)."""
+    return {k: v for k, v in os.environ.items()
+            if k not in ("PYTHONPATH", "PYTHONHOME")}
+
+
+def _record_base(root: Path, source: str, sample: int | None, jobs: int,
+                 out: Path) -> None:
+    """`root`'s readings of `source` recorded to `out` in a child process
+    (one process imports one nameparser), which keeps them as a baseline
+    and refuses a package other than `root`'s, as --record --tree does."""
+    command = [sys.executable, str(HERE / "snapshot.py"), "--local", source,
+               "--record", "--tree", str(root), "--out", str(out),
+               "--jobs", str(jobs)]
+    if sample is not None:
+        command += ["--sample", str(sample)]
+    done = subprocess.run(command, env=child_env(), capture_output=True, text=True)
+    if done.returncode:
+        raise SystemExit(f"recording the base {root} failed:\n{done.stdout}{done.stderr}")
+
+
+def _base_text(root: Path, snapshot: Path, fetch: dict[str, Any], source: str,
+               sample: int | None, entries: int, jobs: int) -> str:
+    """The base checkout's readings, from the baseline kept for its
+    package's digest, or recorded into one now, and a line saying which
+    base was read. Never the shared snapshot: that is whoever recorded
+    last, and a sibling session's record would pass for this base."""
+    digest = _source_digest(root)
+    baseline = _baseline(snapshot, fetch, digest)
+    if (text := _reused(baseline, entries)) is not None:
+        try:
+            os.utime(baseline)
+        except FileNotFoundError:  # another run pruned it meanwhile
+            pass
+        how = f"reused the kept baseline {baseline.name}"
+    else:
+        at = scratch(baseline.parent)
+        try:
+            _record_base(root, source, sample, jobs, at / "base.jsonl")
+            text = (at / "base.jsonl").read_text(encoding="utf-8")
+        finally:
+            shutil.rmtree(at, ignore_errors=True)
+        if _source_digest(root) != digest:
+            raise SystemExit(f"{root / 'nameparser'} changed while it was read, "
+                             f"so its readings may be half old and half new; "
+                             f"run again")
+        how = "recorded it now"
+    print(f"base: {root}, nameparser/ {digest[:16]}; {how}\n")
+    return text
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--record", action="store_true", help="rewrite the snapshot")
     ap.add_argument("--since", metavar="REF",
                     help="compare against the snapshot committed at a git ref")
     ap.add_argument("--tree", metavar="PATH", help="read with another checkout")
+    ap.add_argument("--base", metavar="PATH",
+                    help="with --local: compare against the readings of this "
+                         "checkout, kept by its package's digest, instead of "
+                         "the shared snapshot")
     ap.add_argument("--out", type=Path,
                     help="where --record writes (default: snapshot.jsonl, "
                          "or the local corpus's own snapshot)")
@@ -579,16 +695,23 @@ def main(argv: list[str] | None = None) -> int:
         ap.error("--sample reads a local corpus; the committed snapshot is whole")
     if args.sample is not None and args.sample < 2:
         ap.error("--sample N keeps 1 name in N, so N must be 2 or more")
+    if args.base and not args.local:
+        ap.error("--base reads a local corpus; for the committed corpora, "
+                 "--since compares against a ref")
+    if args.base and (args.record or args.out):
+        ap.error("--base compares and records nothing but its kept baseline; "
+                 "drop --record and --out")
     snapshot, corpora, fetch = SNAPSHOT, None, None
     if args.local:
         snapshot, corpora, fetch = _local(args.local, args.sample)
     out = args.out or snapshot
-    if not (args.record or args.since or snapshot.exists()):
+    root = Path(args.tree).resolve() if args.tree else REPO_ROOT
+    base = base_root(args.base, root) if args.base else None
+    if not (args.record or args.since or base or snapshot.exists()):
         raise SystemExit(f"no snapshot at {snapshot}: record one first, "
                          f"with --record (and --tree for another checkout)")
-    if fetch is not None and not args.record:
+    if fetch is not None and not (args.record or base):
         _check_fetch(snapshot, fetch, args.local)
-    root = Path(args.tree).resolve() if args.tree else REPO_ROOT
     entries = corpus_entries(corpora)
     if args.sample is not None:
         whole, entries = len(entries), sampled(entries, args.sample)
@@ -610,9 +733,16 @@ def main(argv: list[str] | None = None) -> int:
             return 0
     if args.tree:
         sys.path.insert(0, str(root))
+    based = None
+    if base is not None:
+        assert fetch is not None
+        based = _base_text(base, snapshot, fetch, args.local, args.sample,
+                           len(entries), args.jobs)
     rows = read(entries, facade=not args.local, jobs=args.jobs)
     import nameparser
     check_source(nameparser.__file__, root)
+    if base is not None:
+        print(head_line(root, base))
     if args.record:
         text = dump(rows)
         out.write_text(text, encoding="utf-8")
@@ -638,6 +768,8 @@ def main(argv: list[str] | None = None) -> int:
                 f"no {rel} at {args.since}: an unknown ref, or one from "
                 f"before the snapshot existed. For a release tagged "
                 f"before it, use `compare.py --baseline <version>`") from None
+    elif based is not None:
+        text = based
     else:
         text = snapshot.read_text(encoding="utf-8")
     old, new = load(text), {key(r): r for r in rows}
@@ -651,14 +783,19 @@ def main(argv: list[str] | None = None) -> int:
               f"against records no case view (it predates #826); "
               f"compare.py --baseline compares them\n")
     moves = grouped(old, new)
-    print("\n".join(moves) or "matches the snapshot")
+    print("\n".join(moves) or ("matches the base" if base else "matches the snapshot"))
     if not moves:
         return 0
     moved = {k for k in set(old) | set(new) if old.get(k) != new.get(k)}
+    if base is not None:
+        print(f"\n{len(moved)} entries differ from the base {base}")
+        return 1
     if args.local:
         print(f"\n{len(moved)} entries differ from the snapshot recorded "
-              f"from this fetch. To make another tree the baseline: "
-              f"snapshot.py --local {args.local} --record --tree <checkout>")
+              f"from this fetch, which whoever recorded last chose. To make "
+              f"another tree the baseline: snapshot.py --local {args.local} "
+              f"--record --tree <checkout>; to check against a base you "
+              f"name instead: snapshot.py --local {args.local} --base <checkout>")
         return 1
     cldr = only_in(CLDR_CORPUS, {name for name, _ in moved})
     print(f"\n{len(moved)} entries differ, {len(cldr)} of their names "
