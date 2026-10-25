@@ -576,6 +576,12 @@ CASES: tuple[Case, ...] = (
          {"given": "Ana", "middle": "María", "family": "García–López"},
          policy=_TWO, classification="parity",
          notes="#754 review: the spelling twin of the hyphen row"),
+    Case("two_family_names_counts_a_fullwidth_hyphen_as_a_hyphen",
+         "Ana María García\uff0dLópez",
+         {"given": "Ana", "middle": "María", "family": "García\uff0dLópez"},
+         policy=_TWO, classification="parity",
+         notes="#875 review: the fullwidth twin of the hyphen row; it "
+               "counted as one word and took 'María'"),
     Case("two_family_names_takes_no_spaced_dash",
          "Ana María García - López",
          {"given": "Ana", "middle": "María García -", "family": "López"},
