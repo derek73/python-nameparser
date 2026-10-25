@@ -22,6 +22,8 @@ from nameparser._lexicon import Lexicon
 from nameparser._policy import Policy
 from nameparser._types import (SHAPE_ACRONYM_TAG, AmbiguityKind,
                                Role, Segmenter, Span)
+from nameparser._types import SPLIT_CREDENTIAL_TAG as SPLIT_CREDENTIAL_TAG
+from nameparser._types import SPLIT_MEMBER_TAG as SPLIT_MEMBER_TAG
 
 if TYPE_CHECKING:
     from nameparser._pipeline._pieces import TailRead
@@ -107,6 +109,9 @@ AGNOMEN_TAG = "vocab:agnomen"
 #: with no Python frame, on a branch every chained name reaches.
 _AMBIGUOUS_CREDENTIAL_TAGS = frozenset(
     {AMBIGUOUS_ACRONYM_TAG, SHAPE_ACRONYM_TAG})
+
+# SPLIT_CREDENTIAL_TAG and SPLIT_MEMBER_TAG are defined and explained in
+# _types beside SHAPE_ACRONYM_TAG, case repair reading them too.
 
 #: The roles that make a piece a name word (rules/P6's walk), and
 #: the roles of a word not yet read as one: a suffix, or nothing yet

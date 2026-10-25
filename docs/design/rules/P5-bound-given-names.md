@@ -51,11 +51,12 @@
 
 **Except:**
 
-- **The join never absorbs a marker standing as a word of its own** — a marker is not a name word (M2) — nor a word of the unambiguous suffix vocabulary (S2), wherever position will then place it, nor a title word a trailing rule reads as a title: one the trailing title run (H5) takes from the given part after a family comma, read as the comma-less name reads it with the bare salutations H8 adds, or any title word in a part past the second comma (C2).
+- **The join never absorbs a marker standing as a word of its own** — a marker is not a name word (M2) — nor a word of the unambiguous suffix vocabulary (S2), wherever position will then place it, nor a credential split across a space (S12) that the given part after a family comma holds, nor a title word a trailing rule reads as a title: one the trailing title run (H5) takes from the given part after a family comma, read as the comma-less name reads it with the bare salutations H8 adds, or any title word in a part past the second comma (C2).
   ```
   "abdul Jr Smith Berg"       →  given="abdul"
   "abdul Jr Smith Berg"       →  middle="Jr Smith"
   "abdul Ph. D. Smith Berg"   →  suffix="Ph. D."
+  "Rahman, Abdul MB ChB"      →  suffix="MB ChB"
   "Berg, abdul Prof."         →  given="abdul"
   "John Smith, Jr., abdul Dr. Smith"  →  title="Dr."
   "Berg, abd née Jones"       →  given="abd"  · boundary

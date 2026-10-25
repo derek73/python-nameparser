@@ -11,7 +11,7 @@
   "Smith, John PhD Jones"     →  suffix="PhD Jones"
   "John Smith PhD Prof. Ma"   →  suffix="PhD Ma"
   "Eric H. Holder Jr. Attorney General"  →  title="Attorney General"
-  "John Smith Ph. D. Jones"   →  suffix="Ph. D. Jones"  deviates: #827 (today: suffix="Ph. D.")
+  "John Smith Ph. D. Jones"   →  suffix="Ph. D. Jones"
   ```
 - **How the name words are counted.** A lone particle is not a name word for the count, 'de Mesnil' being one surname, unless the credential stands right behind it, leaving it nothing to join: then it counts as a name word of its own ('John von PhD Jones'). A particle run with the words the chain joins to it is one name word, 'der la' and 'la Smith Secretary' each counting once (P2).
   ```
@@ -51,6 +51,10 @@
 
 **Precedence:**
 
+- **A credential split across a space** ("John Smith Pharm D Jones"): it is a member of the ambiguous class and starts the run all the same, behind the two name words its own count asks for (S12).
+  ```
+  "John Smith Pharm D Jones"  →  suffix="Pharm D Jones"
+  ```
 - **An ambiguous acronym written with its periods** ("John Smith M.A. Jones"): writing the periods makes it unambiguously a credential (S3), so it is no member of the ambiguous class here and starts the run.
 
 ---

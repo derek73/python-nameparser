@@ -32,19 +32,20 @@ from collections.abc import Sequence
 
 from nameparser._lexicon import Lexicon, _normalize
 from nameparser._pipeline._pieces import (
+    split_credential_report,
     has_name_content, is_suffix_piece, is_title_piece, join_connectives,
     listed_lean, own_words, segment_suffix_reading,
 )
 from nameparser._pipeline._state import (
-    AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, SHAPE_ACRONYM_TAG, ParseState,
-    PendingAmbiguity,
+    AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, SHAPE_ACRONYM_TAG,
+    SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, ParseState, PendingAmbiguity,
     Structure, WorkToken, copy_with,
 )
 from nameparser._pipeline._vocab import (
-    ROMAN, SPLIT_PAIR_OPENS, caps_shape_candidate, claimed_as_non_name,
+    ROMAN, caps_shape_candidate, claimed_as_non_name,
     composed_len, delimiter_cores, glued_stem, glues, is_caps_word,
     is_paired_initials, is_single_letter_numeral, is_wholly_suffix,
-    name_word_count, reads_as_generation, split_pair, surname_unit_facts,
+    name_word_count, reads_as_generation, surname_unit_facts,
     unit_ends, written_as_a_name,
 )
 from nameparser._policy import CapsSuffixes
@@ -52,20 +53,26 @@ from nameparser._types import AmbiguityKind, Role
 
 
 def _pieces(seg: Sequence[int], tokens: Sequence[WorkToken],
+            splits: bool = True,
             ) -> tuple[list[list[int]], list[set[str]]]:
-    """One piece per token but a split credential (`split_pair`),
-    which group's first merge builds (group alone declines a pair at
-    the head of the string, rules/S2) -- the part as it stands before
-    any join. Every piece a fresh list, as `merge_pieces` requires."""
+    """One piece per token but a split credential (`split_pair`, read
+    off the tag classify wrote on its first word), which group's first
+    merge builds (group alone declines a pair at the head of the
+    string, rules/S2) -- the part as it stands before any join: the
+    Ph./D. pair tagged "suffix", any other "split", a member of the
+    ambiguous class for rules/C4's count, unless `splits` is False.
+    Every piece a fresh list, as `merge_pieces` requires."""
     pieces: list[list[int]] = []
     ptags: list[set[str]] = []
     k = 0
     while k < len(seg):
         a = seg[k]
-        if (k + 1 < len(seg) and SPLIT_PAIR_OPENS.fullmatch(tokens[a].text)
-                and split_pair(tokens[a].text, tokens[seg[k + 1]].text)):
+        tags = tokens[a].tags
+        if k + 1 < len(seg) and (SPLIT_CREDENTIAL_TAG in tags
+                                 or splits and SPLIT_MEMBER_TAG in tags):
             pieces.append([a, seg[k + 1]])
-            ptags.append({"suffix"})
+            ptags.append({"suffix" if SPLIT_CREDENTIAL_TAG in tags
+                          else "split"})
             k += 2
         else:
             pieces.append([a])
@@ -75,10 +82,11 @@ def _pieces(seg: Sequence[int], tokens: Sequence[WorkToken],
 
 
 def _reading_pieces(part: Sequence[int], tokens: Sequence[WorkToken],
+                    splits: bool = True,
                     ) -> tuple[list[list[int]], list[set[str]]]:
     """The part as the reading takes it: `_pieces`, then the one join it
     can hold."""
-    pieces, ptags = _pieces(part, tokens)
+    pieces, ptags = _pieces(part, tokens, splits)
     # The one join a postnominal part can hold, made here so the reading
     # sees it: rules/P3's connective joining its neighbours where the
     # neighbour it takes its kind from is a title, which makes the
@@ -172,7 +180,8 @@ def _whole_name(seg0: Sequence[int], tokens: Sequence[WorkToken]) -> bool:
     word to the count an unambiguous credential takes."""
     # rules/C3: "a particle run and the one name word it attaches to are
     # one word"
-    pieces, ptags = _pieces(seg0, tokens)
+    # the part before a family comma merges no member pair (rules/S12)
+    pieces, ptags = _pieces(seg0, tokens, False)
     named: set[int] = set()
     for piece, tags in zip(pieces, ptags):
         if not is_suffix_piece(piece, tags, tokens):
@@ -268,12 +277,33 @@ def _behind_a_generation(state: ParseState, seg0: Sequence[int],
     return tuple(reading)
 
 
-def decide(state: ParseState) -> ParseState:
+def decide(state: ParseState, splits: bool | None = True) -> ParseState:
     """The structure of a comma form, and the postnominal part bound.
-    Returns `state` unchanged where the listing form stands."""
+    Returns `state` unchanged where the listing form stands.
+
+    `splits` is for the retry below alone: None reads the part with each
+    split credential merged and asks nothing further, False with none
+    merged."""
     if (state.structure is not Structure.FAMILY_COMMA
             or len(state.segments) < 2):
         return state
+    # rules/S12: "where the count declines it, the pair is the two words
+    # it is written as" -- the part read with each split credential
+    # merged, and read again as written where the reading did not take
+    # one as a credential, so a declined pair reads as it reads unmerged
+    # (an 'MB' it hid opens the part again, rules/C13). A loop, and the
+    # retry a call of this function only where a pair stands, so a part
+    # holding none pays no frame for it.
+    if splits:
+        heads: list[int] = []
+        for i in state.segments[1]:
+            if SPLIT_MEMBER_TAG in state.tokens[i].tags:
+                heads.append(i)
+        if heads:
+            out = decide(state, None)
+            if all(out.tokens[i].role is Role.SUFFIX for i in heads):
+                return out
+            return decide(state, False)
     seg0, seg1 = state.segments[0], state.segments[1]
     # Nothing after the comma: nothing to read. An EMPTY part BEFORE it
     # is read on, being no whole name (`_whole_name` answers no), so
@@ -325,7 +355,7 @@ def decide(state: ParseState) -> ParseState:
                     and AMBIGUOUS_ACRONYM_TAG not in tags):
                 tokens[i] = copy_with(
                     tokens[i], tags=tags | {AMBIGUOUS_ACRONYM_TAG})
-    p1, pt1 = _reading_pieces(part, tokens)
+    p1, pt1 = _reading_pieces(part, tokens, splits is not False)
     anchored: list[int] = []
     absorbed: list[int] = []
     # A core in the part, standing alone or glued to a word or inside
@@ -352,7 +382,10 @@ def decide(state: ParseState) -> ParseState:
     # The words of the class in the part, and the unlisted all-caps
     # words the caps shape could admit: only a part holding one asks
     # the count, so 'Smith, John' and 'John Smith, PhD' never build it.
-    maybe = [p[0] for p in p1 if len(p) == 1
+    # A split credential is a word of the class too (rules/S3), its
+    # piece tag the test.
+    maybe = [p[0] for p, pt in zip(p1, pt1) if "split" in pt
+             or len(p) == 1
              and (AMBIGUOUS_ACRONYM_TAG in (tags := tokens[p[0]].tags)
                   or ("vocab:suffix" not in tags
                       and (texts[p[0]].isupper()
@@ -432,9 +465,11 @@ def decide(state: ParseState) -> ParseState:
         # the words not of the class are asked as C1's suffix test asks
         # them, the lenient word test by default ('Ma B.')
         others: list[str] = []
-        for p in p1:
-            if len(p) == 1 and (AMBIGUOUS_ACRONYM_TAG in tokens[p[0]].tags
-                                or p[0] in caps):
+        for p, pt in zip(p1, pt1):
+            if ("split" in pt
+                    or len(p) == 1
+                    and (AMBIGUOUS_ACRONYM_TAG in tokens[p[0]].tags
+                         or p[0] in caps)):
                 licensed.add(p[0])
             else:
                 # a loop, not a comprehension: a listcomp is a frame
@@ -587,6 +622,7 @@ def decide(state: ParseState) -> ParseState:
                      and all(p[0] in member_set
                              or is_title_piece(p, pt, tokens)
                              for p, pt in zip(p1[:pairs[0]], pt1)))
+    part_reported = behind_generation
     if behind_generation:
         # rules/C11: "A decision either way at the comma C1 reads is
         # reported" -- here the suffix word before the comma decided it,
@@ -597,6 +633,7 @@ def decide(state: ParseState) -> ParseState:
             f"follows {tokens[seg0[-1]].text!r}, so it is read as a "
             f"credential run; it may be a name", tuple(taken)))
     elif whole and run and ((listed and not settled) or caps or pair_only):
+        part_reported = True
         if len(part) == 1:
             what = (f"{tokens[part[0]].text!r} after the comma is also an "
                     f"ordinary name word")
@@ -631,12 +668,20 @@ def decide(state: ParseState) -> ParseState:
     # makes it the postnominal part however it goes on" -- each word it takes that
     # would have made it the given part, as #602's run reports them
     for k in absorbed:
-        if has_name_content(p1[k], tokens):
+        # a split credential the run takes reports itself, below
+        if has_name_content(p1[k], tokens) and "split" not in pt1[k]:
             text = " ".join(tokens[i].text for i in p1[k])
             ambiguities.append(PendingAmbiguity(
                 AmbiguityKind.SUFFIX_OR_NAME,
                 f"{text!r} follows a credential, so it reads as part of the "
                 f"suffix run; it may be a name word", tuple(p1[k])))
+    # rules/S12: "where the count takes the pair, the reading is reported"
+    # -- C4's count took it, unless the flip it took part in reported
+    # the part
+    if not part_reported:
+        for k, piece in enumerate(p1):
+            if "split" in pt1[k] and reading[k]:
+                ambiguities.append(split_credential_report(piece, tokens))
     # Every word of the part is bound above or dropped as a core, so the
     # segment hands group nothing to join -- emptied here, where the
     # binding is, as #601's take removes what it binds, rather than

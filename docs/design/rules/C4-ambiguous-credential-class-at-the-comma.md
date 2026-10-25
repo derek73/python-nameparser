@@ -1,6 +1,6 @@
 # C4 — the ambiguous credential class at the comma
 
-**When:** a word of the ambiguous credential class — a bare acronym the vocabulary marks as also an ordinary name, and a word admitted to the class by shape, which S3 defines and bounds — stands in the part after the comma the decision (C1) reads, as in "John Smith, Ma".
+**When:** a word of the ambiguous credential class — a bare acronym the vocabulary marks as also an ordinary name, a word admitted to the class by shape, which S3 defines and bounds, and a credential split across a space, which S12 defines — stands in the part after the comma the decision (C1) reads, as in "John Smith, Ma".
 
 **Then:** the count before the comma is of NAME words rather than of words, and two or more of them read the part after the comma as the credential run, whatever case the name is written in.
 

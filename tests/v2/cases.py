@@ -1501,19 +1501,183 @@ CASES: tuple[Case, ...] = (
          "John Smith, PH D",
          {"given": "John", "family": "Smith", "suffix": "PH D"},
          classification="parity"),
-    Case("a_split_degree_in_front_is_out_of_the_walk",
+    Case("a_split_degree_in_front_starts_the_run",
          "John Smith Ph. D. MEng",
-         {"given": "John", "middle": "Smith", "family": "MEng",
-          "suffix": "Ph. D."},
-         classification="fix(#540)",
+         {"given": "John", "family": "Smith", "suffix": "Ph. D. MEng"},
+         classification="fix(#827)",
          ambiguities=("suffix-or-name",),
-         notes="rules/S7's Accepted limit: the merged 'Ph. D.' is "
-               "read as a suffix at any position and so is not in the "
-               "no-comma walk the company is read over, and the "
-               "member's writing decides. The comma and given-slot "
-               "spellings do reach it ('Doe, Jane Ph. D. MEng' reads "
-               "suffix 'Ph. D. MEng'). Unchanged by #544; 2.3.0 read "
-               "suffix 'Ph. D. MEng', and 1.4.0 'Ph. D., MEng'"),
+         notes="S8: the merged 'Ph. D.' starts the credential's "
+               "run as its one-word spelling 'PhD' does, though the "
+               "walk leaves it out, so the 'MEng' behind it is in the "
+               "run and reported. Until #827 the member's own writing "
+               "decided and it read family 'MEng'; 2.3.0 read suffix "
+               "'Ph. D. MEng', and 1.4.0 'Ph. D., MEng'"),
+    # #752, phase 2e: every other credential written split across a
+    # space merges as a member of the ambiguous class, the count
+    # deciding it (rules/S12); the controls are the spellings it
+    # leaves split
+    Case("a_split_credential_with_words_to_spare_is_the_suffix",
+         "John Smith Pharm. D.",
+         {"given": "John", "family": "Smith", "suffix": "Pharm. D."},
+         classification="fix(#752)",
+         ambiguities=("suffix-or-name",),
+         notes="S3: 'Pharm. D.' folds to the listed 'pharmd', "
+               "and neither half is suffix vocabulary on its own, so "
+               "the two words are one credential, read with the words "
+               "to spare a bare member needs (S4) and reported as a "
+               "member is. "
+               "1.4.0 read middle 'Smith Pharm.', last 'D.'"),
+    Case("a_split_credential_with_no_words_to_spare_is_two_words",
+         "John Pharm D",
+         {"given": "John", "middle": "Pharm", "family": "D"},
+         notes="S4's count: one name word in front leaves "
+               "nothing to spare, so the pair is split back into the "
+               "two words it is written as and reads as they read "
+               "unmerged"),
+    Case("a_split_credential_behind_a_whole_name_after_a_comma",
+         "John Smith, Pharm D",
+         {"given": "John", "family": "Smith", "suffix": "Pharm D"},
+         classification="fix(#752)",
+         ambiguities=("suffix-or-name",),
+         notes="C4's count: two name words before the comma make "
+               "the part the credential run. 1.4.0 read first 'Pharm', "
+               "middle 'D', last 'John Smith'"),
+    Case("a_split_credential_behind_one_word_after_a_comma",
+         "Smith, Pharm D",
+         {"given": "Pharm", "middle": "D", "family": "Smith"},
+         notes="C4's count: one name word before the comma "
+               "reads the part as the given part, where the pair is "
+               "the given name's own words"),
+    Case("a_given_name_and_initial_that_spell_a_credential",
+         "SMITH, SAM E.",
+         {"given": "SAM", "middle": "E.", "family": "SMITH"},
+         notes="C4's count is what keeps this a name: 'SAM E.' "
+               "folds to the listed 'same', and FEC's donor list writes "
+               "a given name and its initial so behind a one-word "
+               "family (decisions/vocabulary-model, 2026-10-25 #752)"),
+    Case("a_split_credential_opening_with_one_letter_stays_split",
+         "John Smith M. Sc.",
+         {"given": "John", "middle": "Smith M.", "family": "Sc."},
+         notes="S3's opening letter: a single letter opening the "
+               "pair is a middle initial far more often ('SMITH, JOHN "
+               "A. MS.' folds to 'ams'), so the pair never merges, the "
+               "accepted cost being 'M. Sc.' and 'M. D.'"),
+    Case("a_split_credential_ending_the_given_part",
+         "Smith, John Pharm D",
+         {"given": "John", "family": "Smith", "suffix": "Pharm D"},
+         classification="fix(#752)",
+         ambiguities=("suffix-or-name",),
+         notes="S5: a member ending the given part after a "
+               "family comma reads as the credential where its writing "
+               "says nothing else, and a split one says nothing. 1.4.0 "
+               "read middle 'Pharm D'"),
+    Case("a_split_credential_starts_the_run_in_the_given_part",
+         "Smith, John Pharm D Jones",
+         {"given": "John", "family": "Smith", "suffix": "Pharm D Jones"},
+         classification="fix(#752)",
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="S8: the merged pair starts the run after the "
+               "given word, as 'PharmD' does, and the name word it "
+               "absorbs is reported. 1.4.0 read middle 'Pharm D Jones'"),
+    Case("a_split_credential_starts_the_run_behind_two_name_words",
+         "John Smith Pharm D Jones",
+         {"given": "John", "family": "Smith", "suffix": "Pharm D Jones"},
+         classification="fix(#752)",
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="S8: two name words in front, the words to spare "
+               "S4 asks of the pair, start the run there. 1.4.0 read "
+               "middle 'Smith Pharm D', last 'Jones'"),
+    Case("a_split_credential_behind_a_particle_run_reads_as_a_shape_member",
+         "St van Berg Pharm D",
+         {"title": "St", "family": "van Berg Pharm D"},
+         ambiguities=("particle-or-given",),
+         notes="S3: no writing to lean on, so the pair reads as a "
+               "member admitted by shape does ('St van Berg X.Y.Z.' "
+               "keeps its family): the particle chain is one name "
+               "word, which leaves none to spare"),
+    Case("a_split_credential_ends_a_maiden_clause",
+         "Jane Doe nee Smith Pharm D",
+         {"given": "Jane", "family": "Doe", "maiden": "Smith",
+          "suffix": "Pharm D"},
+         classification="fix(#752)",
+         ambiguities=("suffix-or-name",),
+         notes="M2: the clause ends at the trailing run the "
+               "clause-free name reads, which takes the pair as "
+               "'Jane Doe Pharm D' does. 1.4.0 read middle 'Doe nee "
+               "Smith Pharm', last 'D'"),
+    Case("a_split_credential_reports_itself_not_an_absorbed_word",
+         "John Smith MB ChB",
+         {"given": "John", "family": "Smith", "suffix": "MB ChB"},
+         classification="fix(#752)",
+         ambiguities=("suffix-or-name",),
+         notes="'MB ChB' is one listed credential, 'mbchb', where 'mb' "
+               "started the run and reported 'ChB' as a name word it "
+               "absorbed; the pair reports itself instead, as a member "
+               "the count took. 1.4.0 read middle 'Smith MB', last 'ChB'"),
+    Case("a_split_credential_beside_a_connective_stays_two_words",
+         "John Smith Pharm D and Mary",
+         {"given": "John", "middle": "Smith Pharm", "family": "D and Mary"},
+         notes="S12: a connective joins the words beside it, so a pair "
+               "it borders is no credential; merged, the join took the "
+               "pair into a wider piece the count then read whole (the "
+               "first version's 'Pharm D and Mary' suffix, found by "
+               "review)"),
+    Case("no_split_credential_merges_before_a_family_comma",
+         "MB ChB, PhD",
+         {"family": "MB ChB", "suffix": "PhD"},
+         classification="fix(#752)",
+         notes="S12: the part before a family comma merges no member "
+               "pair, so C3's count of it reads the two words as "
+               "written, the tree's reading before #752 (the first "
+               "version read given 'MB', family 'ChB'). 1.4.0 read "
+               "first 'MB', last 'ChB'"),
+    Case("a_split_credential_ending_a_maiden_clause_reports_nothing",
+         "Jane Doe nee Ed. D.",
+         {"given": "Jane", "family": "Doe", "maiden": "Ed. D."},
+         classification="fix(#752)",
+         notes="S12: the clause keeps the pair, a pair the count "
+               "declined, which reports nothing; its "
+               "first word is a listed member, and the first version "
+               "reported 'Ed.' as the word ending the clause, which "
+               "'D.' is. 1.4.0 read middle 'Doe nee Ed.', last 'D.'"),
+    Case("a_split_credential_stops_the_particle_chain_in_the_given_part",
+         "Smith, John van Pharm D",
+         {"given": "John", "family": "van Smith", "suffix": "Pharm D"},
+         classification="fix(#752)",
+         ambiguities=("particle-or-given", "suffix-or-name"),
+         notes="S12: merged ahead of group's joins, the pair stops the "
+               "chain as 'PharmD' does, and P6 attaches the particle; "
+               "merged after them (the design-docs review's first fix), "
+               "the chain took 'Pharm' into the particle's run. 1.4.0 "
+               "read middle 'van Pharm D'"),
+    Case("a_bound_given_name_declines_a_split_credential",
+         "Rahman, Abdul MB ChB",
+         {"given": "Abdul", "family": "Rahman", "suffix": "MB ChB"},
+         classification="fix(#752)",
+         ambiguities=("suffix-or-name",),
+         notes="P5: the join declines the pair as it declines a suffix "
+               "word; the first version joined it, given 'Abdul MB ChB', "
+               "where master read suffix 'MB ChB'. 1.4.0 read first "
+               "'Abdul MB', middle 'ChB'"),
+    Case("a_split_credential_behind_an_opening_credential_reports_once",
+         "Smith, MD Pharm D",
+         {"family": "Smith", "suffix": "MD Pharm D"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#752)",
+         notes="S12: the pair the opening credential's run takes (C13) "
+               "reports itself, once, as 'John Smith MD Pharm D' does; "
+               "the review found it reported twice, as a word the run "
+               "absorbed and as the pair. Master reported 'Pharm' and "
+               "'D' as two absorbed words"),
+    Case("the_split_degree_outranks_a_pair_overlapping_it",
+         "Jane Doe Dr. Ph. D.",
+         {"title": "Dr.", "given": "Jane", "family": "Doe",
+          "suffix": "Ph. D."},
+         classification="fix(#752)",
+         notes="'Dr. Ph.' folds to the listed 'drph', which would "
+               "leave 'D.' a word of its own; the Ph./D. pair takes "
+               "precedence, keeping the tree's reading before #752's "
+               "widened pair test. 1.4.0 read suffix 'Ph. D., Dr.'"),
     Case("a_member_the_particle_chain_took_is_out_of_reach",
          "John Smith PhD Do Do",
          {"given": "John", "family": "Smith", "suffix": "PhD Do Do"},

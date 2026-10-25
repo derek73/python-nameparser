@@ -246,9 +246,13 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # 1508 -> 1514 the same day: its numeral and capitals rows; 1514
     # -> 1517 the same day: its carried-member rows; 1517 -> 1520 the
     # same day: its joined-surname row; 1520 -> 1523 the same day: the
-    # floor's fils rows; 1523 -> 1529 the same day: its comma rows.
-    assert claims == 1529, (
-        f"the field sweep checks {claims} claims, recorded as 1529 on "
+    # floor's fils rows; 1523 -> 1529 the same day: its comma rows;
+    # 1529 -> 1568 the same day, #891 (phase 2e) merged over it: the
+    # split-credential rows, two run rows and the particle-chain row
+    # (9), the split credential's own report on nine rows (27) and the
+    # opening-credential row (3), each claim under the three orders.
+    assert claims == 1568, (
+        f"the field sweep checks {claims} claims, recorded as 1568 on "
         f"2026-10-25")
 
 

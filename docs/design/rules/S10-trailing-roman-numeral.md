@@ -113,16 +113,14 @@
 
 **Accepted:**
 
-- A numeral of one letter with another suffix word behind it is not the last word of the name and is read as any word there is, so a one-letter numeral before a credential is the family name, and the reading is reported, as either reading of the fork is. A lone letter there abbreviates a surname as often as it numbers a generation.
+- A numeral of one letter with another suffix word behind it is not the last word of the name and is read as any word there is, so a one-letter numeral before a credential is the family name, and the reading is reported, as either reading of the fork is, whether the credential is written as one word or split across two (S12). A lone letter there abbreviates a surname as often as it numbers a generation.
   ```
   "John Smith V PhD"          →  family="V"
   "John Smith V PhD"          →  ambiguities=("suffix-or-name",)
+  "John Smith V Ph. D."       →  family="V"
+  "John Smith V Ph. D."       →  ambiguities=("suffix-or-name",)
   "john i phd"                →  ambiguities=("suffix-or-name",)
   "Jane Doe nee Smith V PhD"  →  ambiguities=("suffix-or-name",)
-  ```
-- A credential written split across two words is read as one with the numeral in front of it, the run taking both, as 1.4.0 read it.
-  ```
-  "John Smith V Ph. D."       →  suffix="V Ph. D."
   ```
 - A generation written in Title case in a mixed-case name reads as a name word, the lean that keeps a surname such as 'Vi' a name taking it too.
   ```

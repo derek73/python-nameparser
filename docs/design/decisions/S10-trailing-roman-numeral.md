@@ -12,6 +12,8 @@
 - A bare letter in a one-case name is the initial its capital is (rules/T4), and the one-letter numerals are an instance of that rule — 2026-10-18 #723.
 - The one-letter reading rests on the count, not on the generation being rare, and a one-case part before a capitalized credential reads under C12 (`john j v, PhD`) — 2026-10-19 #761.
 
+Elsewhere: a one-letter numeral before a credential split across a space reads as it reads before the one-word spelling (`John Smith V Ph. D.` → family 'V', reported), where 2.3.0 through 2.6.0 read suffix 'V Ph. D.' (1.4.0 suffix 'Ph. D., V') — decisions/S12's 2026-10-25 #752 entry.
+
 Open: none in this file.
 
 ## Log

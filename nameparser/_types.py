@@ -171,6 +171,20 @@ UNCLASSIFIED_TAG = "vocab:unclassified"
 #: membership half, since the stages read both halves from one module.
 SHAPE_ACRONYM_TAG = "shape:acronym"
 
+#: The tags classify writes on the FIRST word of a credential written
+#: split across a space (`_pipeline._vocab.split_pair`), naming the
+#: piece tag the pair merges with: SPLIT_CREDENTIAL_TAG the Ph./D. pair,
+#: merged as an unambiguous suffix ("suffix"), and SPLIT_MEMBER_TAG any
+#: other, merged as a member of the ambiguous class ("split", rules/S12).
+#: Written by classify because it is the one stage that sees every
+#: adjacent pair with the lexicon in hand, so group's merge and
+#: `_comma._pieces` read the decision off a tag, C-level, rather than
+#: each asking the vocabulary of every pair; and defined here, at the
+#: bottom of the graph, because case repair reads them too, repairing
+#: a split credential in the suffix as its one-word twin.
+SPLIT_CREDENTIAL_TAG = "split:credential"
+SPLIT_MEMBER_TAG = "split:member"
+
 #: The one-element tag set its two producers stamp, built once.
 _UNCLASSIFIED = frozenset({UNCLASSIFIED_TAG})
 

@@ -599,12 +599,12 @@ def test_the_reserve_counts_what_the_trailing_read_left() -> None:
     n = parse("John J. V")
     assert (n.middle, n.family, n.suffix) == ("J.", "V", "")
     # and behind a merged credential, which assign drops from its walk
-    # so the V is last in it, the family survives
+    # so the V is last in it, the numeral is the name word it is behind
+    # 'PhD' (rules/S10, #752), so the name reads as its one-word twin
     n = parse("abdul Smith V Ph. D.")
-    # no comma between the numeral and the merged credential, so the two
-    # are one entry (#436); the V-is-last-in-the-walk point above is a
-    # claim about the ROLES and is untouched
-    assert (n.given, n.family, n.suffix) == ("abdul", "Smith", "V Ph. D.")
+    assert (n.given, n.family, n.suffix) == ("abdul Smith", "V", "Ph. D.")
+    twin = parse("abdul Smith V PhD")
+    assert (twin.given, twin.family, twin.suffix) == ("abdul Smith", "V", "PhD")
 
 
 def test_the_reserve_spares_the_family_the_acronym_fork_would_take() -> None:

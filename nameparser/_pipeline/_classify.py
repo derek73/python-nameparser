@@ -34,8 +34,12 @@ namespaced (unstable): "vocab:title", "vocab:given-title",
 "vocab:suffix", "vocab:suffix-word", "vocab:suffix-ambiguous",
 "vocab:suffix-word-ambiguous", "vocab:agnomen",
 "vocab:particle-ambiguous", "vocab:bound-given", "vocab:maiden-marker",
-"vocab:maiden-marker-cont"; and, in a namespace of its own,
-"shape:acronym".
+"vocab:maiden-marker-cont"; in a namespace of its own,
+"shape:acronym"; and in another, "split:credential" and
+"split:member", written on the first word of a credential split across
+a space (`_vocab.split_pair`) to name the piece the pair merges into:
+the Ph./D. pair's unambiguous suffix, or any other pair's member of the
+ambiguous class (rules/S12).
 "vocab:maiden-marker" tags the HEAD of a maiden marker, which is a
 whole marker whenever the marker is one word; the continuation tag
 carries the rest of a PHRASE marker ("z domu"), so a site asking
@@ -64,13 +68,15 @@ from nameparser._lexicon import _normalize, _spells_an_initial
 from nameparser._policy import CapsSuffixes
 from nameparser._pipeline._state import (
     AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, SHAPE_ACRONYM_TAG,
-    ParseState, PendingAmbiguity, WorkToken, copy_with,
+    SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, ParseState, PendingAmbiguity,
+    WorkToken, copy_with,
 )
 from nameparser._types import AmbiguityKind, Role
 from nameparser._pipeline._vocab import (
-    BUILTIN_SUFFIX_DELIMITERS, _INITIAL, caps_shape_candidate, composed_len,
-    delimiter_cores, glued_stem, is_cased_paired_initials, is_initial,
-    is_one_case, period_joined_vocab, suffix_as_written, tag_marker_runs,
+    BUILTIN_SUFFIX_DELIMITERS, SPLIT_CHUNK, SPLIT_PAIR_OPENS, _INITIAL, caps_shape_candidate,
+    composed_len, delimiter_cores, glued_stem, is_cased_paired_initials,
+    is_initial, is_one_case, period_joined_vocab, split_pair,
+    suffix_as_written, tag_marker_runs,
 )
 from nameparser._pipeline._pieces import own_words
 
@@ -406,6 +412,66 @@ def classify(state: ParseState) -> ParseState:
         tokens = tuple(
             copy_with(t, tags=t.tags - _JOINING_TAGS) if i in stemmed else t
             for i, t in enumerate(tokens))
+    # rules/S12: "a credential written split across a space reads as one
+    # word" -- each adjacent pair of a segment asked once, here, and
+    # the answer written on its first word for group's merge and the
+    # comma's reading of its part (`_vocab.split_pair`). The shape and
+    # the fold's membership are asked first, in C, so an ordinary pair
+    # of words pays no frame; a token carrying a role is delimited
+    # content, which no pair reaches.
+    split: dict[int, str] | None = None
+    acronyms = state.lexicon.suffix_acronyms
+    words = state.lexicon.suffix_words
+    for seg in state.segments:
+        for j in range(len(seg) - 1):
+            a, b = tokens[seg[j]], tokens[seg[j + 1]]
+            if (SPLIT_CHUNK.fullmatch(a.text) is not None
+                    and SPLIT_CHUNK.fullmatch(b.text) is not None
+                    and a.role is None and b.role is None
+                    # the opening letter, the length a superset of the
+                    # predicate's count of composed letters ('i i' folds
+                    # to the listed 'ii' and opens with one)
+                    and (len(a.text.rstrip(".")) >= 2
+                         or a.text.endswith(".") and b.text.endswith(".")
+                         and (len(b.text) == 2 or not b.text.isascii()))
+                    # the Ph./D. pair whatever the vocabulary, as v1's
+                    # fix_phd merged it; any other only where its words
+                    # are not two suffix words, two credentials already,
+                    # and its fold is listed, composed in C where it is
+                    # not ASCII
+                    and (SPLIT_PAIR_OPENS.fullmatch(a.text) is not None
+                         or not ("vocab:suffix" in a.tags
+                                 and "vocab:suffix" in b.tags)
+                         and ((fold := (a.text + b.text).replace(".", "")
+                               .lower()) in acronyms or fold in words
+                              or not fold.isascii()
+                              and ((nfc := unicodedata.normalize(
+                                  "NFC", fold)) in acronyms
+                                   or nfc in words)))
+                    and (kind := split_pair(a.text, b.text,
+                                            state.lexicon)) is not None
+                    # a member pair a connective borders is no credential:
+                    # the connective joins the words beside it
+                    and (kind == "suffix" or (
+                        j == 0
+                        or "conjunction" not in tokens[seg[j - 1]].tags)
+                        and (j + 2 >= len(seg)
+                             or "conjunction" not in tokens[seg[j + 2]].tags))
+                    # the Ph./D. pair outranks a pair overlapping it:
+                    # 'Dr. Ph. D.' is no 'Dr. Ph.' ('drph') and a 'D.'
+                    and not (kind == "split" and j + 2 < len(seg)
+                             and split_pair(b.text, tokens[seg[j + 2]].text,
+                                            state.lexicon) == "suffix")):
+                if split is None:
+                    split = {}
+                split[seg[j]] = (SPLIT_CREDENTIAL_TAG if kind == "suffix"
+                                 else SPLIT_MEMBER_TAG)
+    if split is not None:
+        # a loop, not a generator, which is a frame per token resumed
+        written = list(tokens)
+        for i, tag in split.items():
+            written[i] = copy_with(written[i], tags=written[i].tags | {tag})
+        tokens = tuple(written)
     # Delimited content whose vocabulary cannot settle it: extract's
     # escape sends an UNambiguous suffix straight through ("(MBA)" ->
     # suffix) and keeps everything else as a nickname, so an AMBIGUOUS

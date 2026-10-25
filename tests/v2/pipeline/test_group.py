@@ -734,12 +734,17 @@ def test_the_reserve_counts_the_names_the_read_left_before_a_numeral() -> None:
 def test_the_numeral_is_last_among_the_pieces_assign_keeps() -> None:
     # assign drops a group-flagged credential piece (the Ph. D. merge)
     # from its walk at ANY position before the trailing peel, so a
-    # numeral can be last in that walk without being the last piece:
-    # 'abdul Smith V Ph. D.' read given 'abdul Smith', family '',
-    # suffix 'V, Ph. D.' where 'John Smith V Ph. D.' keeps family
-    # 'Smith'. Found by the code review.
+    # numeral can be last in that walk without being the last piece.
+    # A one-letter numeral with the merged credential behind it is a
+    # name word, as it is behind 'PhD' (rules/S10, #752), so the bound
+    # given-name join has the three name words it needs and joins as it
+    # does for 'abdul Smith V PhD'. (Until #752 the walk read the V as
+    # the generation here, which kept the pair apart: the first fix of
+    # this test's defect, found by the code review, pinned that.)
     out = _grouped("abdul Smith V Ph. D.")
-    assert _piece_texts(out) == [["abdul", "Smith", "V", "Ph. D."]]
+    assert _piece_texts(out) == [["abdul Smith", "V", "Ph. D."]]
+    assert (_piece_texts(_grouped("abdul Smith V PhD"))
+            == [["abdul Smith", "V", "PhD"]])
 
 
 def test_the_numeral_fork_is_not_mirrored_after_a_family_comma() -> None:

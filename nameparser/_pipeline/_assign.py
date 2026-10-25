@@ -97,6 +97,7 @@ from nameparser._pipeline._vocab import (
     reads_as_a_reported_numeral, reads_as_generation, resolve_script_set,
 )
 from nameparser._pipeline._pieces import (
+    split_credential_report,
     anchor_in_reach, credential_at_the_given_slot, given_slot_anchors,
     _NOT_A_RUN_START, has_name_content, is_lone_never_given_particle,
     Peel, TailRead, is_suffix_piece, is_title_piece, leading_titles,
@@ -543,10 +544,15 @@ def _assign_main(seg_idx: int, state: ParseState,
     # does). Decided here, where the trailing read has said what that
     # run is
     # `_ROMAN` first, C-level, so an ordinary name word pays no frame
-    if (len(name_pieces) >= 2 and (suffix_pieces or titled_tail)
+    if (len(name_pieces) >= 2
             and len(last := pieces[name_pieces[-1]]) == 1
             and _ROMAN.match((word := tokens[last[0]].text).rstrip("."))
             is not None
+            # the trailing run, or the Ph./D. pair, which the walk
+            # leaves out, behind it
+            and (suffix_pieces or titled_tail
+                 or name_pieces[-1] + 1 < len(pieces)
+                 and "suffix" in ptags[name_pieces[-1] + 1])
             and tuple(last) not in peeled.picks
             and reads_as_a_reported_numeral(
                 word, tokens[last[0]].tags,
@@ -1209,6 +1215,13 @@ def assign(state: ParseState) -> ParseState:
                 # credential list behind it makes the credential
                 # reading likelier rather than less.
                 piece = pieces[m]
+                # rules/S12: a split credential reads "as a member of the
+                # ambiguous class", here read as the class is with no
+                # writing to lean on and in silence, as group merges it
+                # only behind the given word
+                if len(piece) == 2 and "split" in ptags[m]:
+                    return (m >= trailing_floor(m, titled)
+                            and not attaches_the_lead(m, titled))
                 if len(piece) == 1:
                     tok = tokens[piece[0]]
                     if AMBIGUOUS_ACRONYM_TAG in tok.tags:
@@ -1357,7 +1370,7 @@ def assign(state: ParseState) -> ParseState:
             for m in range(n + 1, len(pieces)):
                 tags = tokens[pieces[m][0]].tags
                 if (m not in titled_idx
-                        and ("suffix" in ptags[m]
+                        and ("suffix" in ptags[m] or "split" in ptags[m]
                              or (("vocab:suffix" in tags
                                   or _ROMAN.match(tokens[pieces[m][0]].text
                                                   .rstrip(".")) is not None)
@@ -1448,8 +1461,10 @@ def assign(state: ParseState) -> ParseState:
                             f"{tokens[piece[0]].text!r} ending the given "
                             f"part is also an ordinary name word; read "
                             f"as a credential", (piece[0],)))
-                    elif not suffix_here and has_name_content(piece,
-                                                              tokens):
+                    # the run's own first word is the credential that
+                    # starts it, a split one ('Pharm D') included
+                    elif (not suffix_here and m != sticky_from
+                          and has_name_content(piece, tokens)):
                         ambiguities.append(_absorbed(piece, tokens))
                     _set_roles(tokens, piece, Role.SUFFIX)
                     continue
@@ -1663,6 +1678,18 @@ def assign(state: ParseState) -> ParseState:
                            and not any("vocab:suffix" in tokens[i].tags
                                        for i in piece))
                        else Role.SUFFIX)
+    # rules/S12: "where the count takes the pair, the reading is reported" -- at
+    # the end of a name, at the end of the given part, as a run start,
+    # here where its roles are final (the part a comma's decision binds reports in `_comma`, a
+    # pair a maiden clause releases in group). A loop over the piece
+    # tags, so a name with no pair pays no frame for it.
+    for seg_idx in range(min(tail, len(state.segments))):
+        for piece, ptags_ in zip(state.pieces[seg_idx],
+                                 state.piece_tags[seg_idx]):
+            if ("split" in ptags_ and len(piece) == 2
+                    and tokens[piece[0]].role is Role.SUFFIX
+                    and tokens[piece[1]].role is Role.SUFFIX):
+                ambiguities.append(split_credential_report(piece, tokens))
     return copy_with(state, tokens=tuple(tokens),
                      order=order,
                      ambiguities=tuple(ambiguities))
