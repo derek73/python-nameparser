@@ -59,6 +59,9 @@ about either:
   holding whitespace no word carries, in a vocabulary set or as a
   ``capitalization_exceptions`` key — is dropped with a ``UserWarning``
   naming it, since 2.4
+* a ``Lexicon``, ``Policy`` or ``Parser`` pickled by 2.5 or earlier
+  raises ``ValueError`` on load since 2.6, each having gained a field;
+  re-pickle after upgrading
 
 A silent change: comparing with ``==``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -289,7 +292,9 @@ through the 2.0 API only.
 Renamed word lists (2.2)
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-The vocabulary that feeds both columns lives in ``nameparser.config``,
+The vocabulary that feeds both columns is exposed by ``nameparser.config``
+(compiled since 2.6 from ``nameparser/vocab/*.toml``, all but the Korean
+surname list),
 and in 2.2 its module and constant names moved to the vocabulary the
 ``Lexicon`` column speaks — particles, bound given names, given-name
 titles, suffix words. Terminology only; one of the four kept 1.x's
@@ -385,13 +390,13 @@ could hold two disagreeing defaults with nothing to say so.
 
 ``CAPITALIZATION_EXCEPTIONS`` is the constant the freeze left out. It
 is a mapping rather than a set, and it is still a plain mutable
-``dict`` — ``CAPITALIZATION_EXCEPTIONS["dphil"] = "DPhil"`` runs on 2.2 and
+``dict`` — ``CAPITALIZATION_EXCEPTIONS["dclinpsy"] = "DClinPsy"`` runs on 2.2 and
 raises nothing. Everything just said about split defaults still applies
-to it, unchanged and measured on 2.2: an edit after the first parse
+to it, unchanged and measured on 2.2 and again on 2.6: an edit after the first parse
 reaches a freshly built ``Constants``, and neither
 ``Lexicon.default()`` nor the shared ``CONSTANTS``. The advice below is
 the same advice — configure the object, with
-``constants.capitalization_exceptions["dphil"] = "DPhil"`` on a private
+``constants.capitalization_exceptions["dclinpsy"] = "DClinPsy"`` on a private
 ``Constants``, or for the 2.0 API a ``dataclasses.replace()`` that
 extends the default pairs rather than replacing them
 (:ref:`case-exceptions`).
@@ -649,12 +654,12 @@ in tokenization rather than by policy, so a name written with either
 still divides at the dot, and still renders with a space, whatever
 those two fields are set to.
 
-Changed in 2.3, 2.4 and 2.5
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Changed in 2.3, 2.4, 2.5 and 2.6
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Later releases moved more 1.4 readings, and these reach ``HumanName``
 as well; 2.1 and 2.2 read every one of them as 1.4 did. The release
-log's 2.3, 2.4 and 2.5 sections carry the reasoning; these are the shapes to
+log's 2.3, 2.4, 2.5 and 2.6 sections carry the reasoning; these are the shapes to
 grep your fixtures for, with what 1.4 read:
 
 - ``"Her Majesty Queen Elizabeth"``, ``"Prince Harry"`` (2.3) — a lone
@@ -722,6 +727,25 @@ grep your fixtures for, with what 1.4 read:
   are titles: 1.4 read first ``Bapak``, middle ``Dwi``.
 - ``capitalize()`` on ``"jacobus henricus van 't hoff"`` (2.5) — 1.4
   wrote ``van 'T Hoff``.
+- ``"Maria de Sa"`` and ``"John Smith SA"`` (2.6) — ``Sa`` is no longer
+  a credential: 1.4 read last ``de``, suffix ``Sa``, and suffix ``SA``.
+- ``"Cllr John Smith"`` and ``"Dott.ssa Anna Bianchi"`` (2.6) — ``Cllr``
+  and the Italian abbreviated salutations are titles: 1.4 read first
+  ``Cllr`` and ``Dott.ssa``, middle ``John`` and ``Anna``.
+- ``"José Silva Júnior"`` (2.6) — 1.4 read middle ``Silva``, last
+  ``Júnior``.
+- ``"John Smith, MD; PhD"`` (2.6) — a semicolon between post-nominals
+  reads as a comma: 1.4 read first ``MD;``, last ``John Smith``.
+- ``"Mr Md Karim Uddin"`` and ``"Wm Smith"`` (2.6) — ``Md`` and ``Wm``
+  are the given names they abbreviate: 1.4 read title ``Mr Md`` and
+  ``Wm``.
+- ``"Doe, Jane Mrs"`` (2.6) — a salutation ending the given name after a
+  family comma is the title: 1.4 read middle ``Mrs``.
+- A zero-width space or byte-order mark (2.6) divides words as a space
+  does: 1.4 kept it in the word beside it, so ``"\u200bDr. John Smith"``
+  read first ``Dr.``.
+- ``capitalize()`` on ``"j.r.r. tolkien"`` (2.6) — 1.4 wrote ``J.r.r.``;
+  repair now capitalizes after a full stop or an ayn.
 
 .. doctest::
 
@@ -798,3 +822,28 @@ grep your fixtures for, with what 1.4 read:
     >>> vant.capitalize(force=True)
     >>> str(vant)
     "Jacobus Henricus van 't Hoff"
+    >>> HumanName("Maria de Sa").last
+    'de Sa'
+    >>> HumanName("John Smith SA").last
+    'SA'
+    >>> HumanName("Cllr John Smith").title
+    'Cllr'
+    >>> HumanName("Dott.ssa Anna Bianchi").title
+    'Dott.ssa'
+    >>> HumanName("José Silva Júnior").suffix
+    'Júnior'
+    >>> HumanName("John Smith, MD; PhD").suffix
+    'MD; PhD'
+    >>> md_karim = HumanName("Mr Md Karim Uddin")
+    >>> md_karim.title, md_karim.first
+    ('Mr', 'Md')
+    >>> HumanName("Wm Smith").first
+    'Wm'
+    >>> HumanName("Doe, Jane Mrs").title
+    'Mrs'
+    >>> HumanName("\u200bDr. John Smith").title
+    'Dr.'
+    >>> tolkien = HumanName("j.r.r. tolkien")
+    >>> tolkien.capitalize()
+    >>> str(tolkien)
+    'J.R.R. Tolkien'

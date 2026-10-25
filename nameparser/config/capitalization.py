@@ -30,11 +30,11 @@ CAPITALIZATION_EXCEPTIONS -- meng, edd, lac, ded). A
 suffix the writer spelled in more than one case (``EdD``) needs no
 entry either: repair keeps it as written unless forced. A caller's
 OWN acronym -- one absent from ``suffix_acronyms`` -- depends on how
-it is written. Written PLAINLY (``dphil``) it parses as an ordinary
-name word and repairs as one (``Dphil``). Written DOTTED
-(``d.phil.``) it is a suffix by shape alone, with no vocabulary
+it is written. Written PLAINLY (``dclinpsy``) it parses as an ordinary
+name word and repairs as one (``Dclinpsy``). Written DOTTED
+(``d.clinpsy.``) it is a suffix by shape alone, with no vocabulary
 entry needed to read it as one, and repairs in all capitals the same
-as a listed acronym does (``D.PHIL.``). Either way, a caller who
+as a listed acronym does (``D.CLINPSY.``). Either way, a caller who
 wants a specific spelling needs a ``suffix_acronyms`` entry
 (``Lexicon.add(suffix_acronyms={...})`` in the 2.0 API,
 ``constants.suffix_acronyms.add(...)`` in the v1 one) or a mask of
