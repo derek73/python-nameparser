@@ -4214,9 +4214,21 @@ def test_a_base_child_is_started_without_the_import_path_overrides(
 
 
 def test_a_kept_baseline_another_run_pruned_is_read_as_none_kept(
-        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    # Pruned between a lookup and the open, it is not damage to delete.
-    assert snapshot._reused(tmp_path / "gone.jsonl.gz", 2) is None
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    # Pruned between a lookup and the open, it is not damage to delete:
+    # read as damage, its unlink raised on the file already gone.
+    kept = tmp_path / "gone.jsonl.gz"
+    with gzip.open(kept, "wt", encoding="utf-8") as f:
+        f.write("{}\n{}\n")
+    real_open = gzip.open
+
+    def pruned_first(path: Path, mode: str, encoding: str) -> object:
+        Path(path).unlink()
+        return real_open(path, mode, encoding=encoding)
+    monkeypatch.setattr(snapshot.gzip, "open", pruned_first)
+    assert snapshot._reused(kept, 2) is None
+    assert "deleted the kept baseline" not in capsys.readouterr().out
 
 
 def test_a_scratch_folder_a_killed_run_left_is_swept_once_stale(tmp_path: Path) -> None:

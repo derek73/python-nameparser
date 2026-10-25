@@ -284,9 +284,9 @@ def read_record(path: Path, local: local_corpora.Local) -> dict[str, dict[str, A
             f"{local.meta['data_date']}). {again}")
     # A record written before the header counted its entries passes; a
     # count that disagrees is a write cut short on a line boundary.
-    if recorded.get("entries", len(entries)) != len(entries):
-        raise SystemExit(f"{path} holds {len(entries):,} of the "
-                         f"{recorded['entries']:,} entries its header counts. {again}")
+    if (count := recorded.get("entries", len(entries))) != len(entries):
+        raise SystemExit(f"{path} holds {len(entries):,} entries where its header "
+                         f"counts {count!r}. {again}")
     if recorded.get("scorer") != scorer_fingerprint():
         raise SystemExit(f"{path} was recorded by another version of this scorer, "
                          f"so its moves would be the scorer's. {again}")

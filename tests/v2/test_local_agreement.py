@@ -361,7 +361,11 @@ def test_a_kept_base_record_is_reused_and_a_damaged_one_scored_again(
     assert "reused the kept record" in capsys.readouterr().out
     # A record cut short on a line boundary still parses line by line;
     # its header's count is what refuses it.
-    for damage in ("not a record\n", "".join(recorded.decode().splitlines(keepends=True)[:-1])):
+    header = json.loads(recorded.decode().splitlines()[0])
+    uncounted = json.dumps({**header, "entries": None}) + "\n" + "".join(
+        recorded.decode().splitlines(keepends=True)[1:])
+    for damage in ("not a record\n", "".join(recorded.decode().splitlines(keepends=True)[:-1]),
+                   uncounted):
         kept.write_text(damage)
         with pytest.raises(AssertionError, match="scored the base again"):
             agreement.main([_PSC, "--base", str(base)])
@@ -381,10 +385,20 @@ def test_a_base_that_changed_while_it_was_scored_keeps_no_record(
     # put its folder on sys.path), not a second load by path.
     snapshot = importlib.import_module("snapshot")
     answers = ["a" * 64, "b" * 64]
-    monkeypatch.setattr(snapshot, "_source_digest",
-                        lambda root: answers.pop(0) if answers else "c" * 64)
+    published: list[bool] = []
+
+    def digest(root: Path) -> str:
+        if not answers:
+            return "c" * 64
+        if len(answers) == 1:  # the check after the score: nothing kept yet
+            published.append(bool(_kept(_own_cache)))
+        return answers.pop(0)
+    monkeypatch.setattr(snapshot, "_source_digest", digest)
     with pytest.raises(SystemExit, match="changed while it was scored"):
         agreement.main([_PSC, "--base", str(base)])
+    # Written to the kept path before the check, a sibling could have
+    # reused it as the base it was keyed for in between.
+    assert published == [False]
     assert not _kept(_own_cache)
     assert not list((_own_cache / "local" / _PSC / agreement.KEPT).glob(".base-*"))
 
