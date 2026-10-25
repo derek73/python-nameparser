@@ -566,14 +566,11 @@ def _numeral_behind_the_initial_veto(piece: Sequence[int],
     """
     if len(piece) != 1:
         return False
-    tok = tokens[piece[0]]
-    if "vocab:suffix" not in tok.tags or "initial" not in tok.tags:
-        return False
-    # a one-letter numeral is the numeral's predicate's to answer, which
-    # in a comma part reads it by the vocabulary, as here (#752)
-    if _ROMAN.match(stem := tok.text.rstrip(".")) is not None and stem:
-        return reads_as_generation(stem, tok.tags, None, None)
-    return True
+    # A one-letter numeral here is the numeral's predicate's yes by
+    # construction: in a comma part it reads one by the vocabulary, and
+    # the tag below is that vocabulary (#752), so it is not asked again.
+    tags = tokens[piece[0]].tags
+    return "vocab:suffix" in tags and "initial" in tags
 
 
 def _anchors(piece: Sequence[int], tokens: Sequence[WorkToken]) -> bool:
@@ -954,8 +951,10 @@ class Peel(NamedTuple):
     trailing run, #752),
     `picks` the bare ambiguous acronyms the peel had to resolve, in
     peel order, either way (the last may sit at rest[names - 1]), and
-    a one-letter numeral the fork declined for want of words to spare
-    (#718), always the walk's last piece and a name.
+    a numeral the fork declined, a one-letter one for want of words to
+    spare (#718), always the walk's last piece, or one of two or more
+    letters for its Title case (#752), anywhere in the trailing run,
+    and a name unless a credential run in front of it takes it.
     `anchors` is `peel_trailing`'s working state for `tail_reading`
     alone -- the walk's `credential_anchors` pass over `rest` where a
     member needed one, handed to the next pass of the fixed point
@@ -1347,6 +1346,7 @@ def run_start(rest: Sequence[int], names: int,
                      or _ROMAN.match(tokens[pieces[q][0]].text.rstrip("."))
                      is not None)
                 and tags.isdisjoint(_NOT_A_RUN_START)
+                # p >= 2 here: two name words stand in front
                 and starts_a_credential_run(
                     pieces[q], ptags[q], tokens,
                     tokens[pieces[rest[p - 1]][0]].text, one_case)):

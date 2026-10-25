@@ -352,13 +352,16 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
             f"than reading it as one", tuple(last)))
     elif tuple(last) in picked:
         # rules/S10: "either reading is reported" -- a numeral the read
-        # declined for want of words to spare, which the clause keeps
+        # declined, for want of words to spare or for its Title case,
+        # which the clause keeps
+        why = ("but the name has no other word to spare for it"
+               if len(word.text.rstrip(".")) == 1
+               else "but written in Title case it leans to the name")
         ambiguities.append(PendingAmbiguity(
             AmbiguityKind.SUFFIX_OR_NAME,
             f"{word.text!r} ending the maiden name is a roman numeral, "
-            f"but the name has no other word to spare for it; the "
-            f"maiden marker's clause keeps it rather than reading it as "
-            f"a generational suffix", tuple(last)))
+            f"{why}; the maiden marker's clause keeps it rather than "
+            f"reading it as a generational suffix", tuple(last)))
     elif (released and len(last) == 1 and end - 2 >= lo
           and reads_as_a_reported_numeral(
               word.text, word.tags, tokens[pieces[end - 2][0]].text,

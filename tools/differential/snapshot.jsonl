@@ -2974,6 +2974,7 @@
 {"name": "Smith V, John", "given": "John", "family": "Smith V", "initials": "J. S. V."}
 {"name": "Smith VI, AD", "given": "AD", "family": "Smith", "suffix": "VI", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "A. S.", "capitalized_force": "Ad Smith VI"}
 {"name": "Smith VI, John", "given": "John", "family": "Smith", "suffix": "VI", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
+{"name": "Smith Vi, John", "given": "John", "family": "Smith Vi", "initials": "J. S. V."}
 {"name": "Smith and King", "given": "Smith and King", "ambiguities": ["TITLE_OR_NAME"], "initials": "S. K."}
 {"name": "Smith born", "given": "Smith", "family": "born", "initials": "S. b.", "capitalized_force": "Smith Born"}
 {"name": "Smith nee Jones, Jane MA", "given": "Jane", "family": "Smith", "suffix": "MA", "maiden": "Jones", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
@@ -3014,6 +3015,7 @@
 {"name": "Smith, John PhD I., Jr.", "given": "John", "middle": "I.", "family": "Smith", "suffix": "PhD, Jr.", "initials": "J. I. S."}
 {"name": "Smith, John PhD Jones", "given": "John", "family": "Smith", "suffix": "PhD Jones", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "Smith, John PhD de Jr.", "given": "John", "family": "de Smith", "suffix": "PhD, Jr.", "initials": "J. S."}
+{"name": "Smith, John PhD É, Jr.", "given": "John", "family": "Smith", "suffix": "PhD É, Jr.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "Smith, John Prof.", "title": "Prof.", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Smith, John V", "given": "John", "family": "Smith", "suffix": "V", "initials": "J. S."}
 {"name": "Smith, John V MD", "given": "John", "middle": "V", "family": "Smith", "suffix": "MD", "initials": "J. V. S."}
@@ -3280,6 +3282,7 @@
 {"name": "Varano, Costanza da", "given": "Costanza", "family": "da Varano", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "C. V."}
 {"name": "Vatson Con Hamiş", "order": "FAMILY_FIRST", "given": "Con", "middle": "Hamiş", "family": "Vatson", "initials": "C. H. V."}
 {"name": "Vega Smith", "given": "Vega", "family": "Smith", "initials": "V. S."}
+{"name": "Vega y Lopez V, Mary", "given": "Mary", "family": "Vega y Lopez", "suffix": "V", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "M. V. L."}
 {"name": "Vega, Juan de la", "given": "Juan", "family": "de la Vega", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "J. V."}
 {"name": "Velasquez y Garcia, Dr. Juan", "title": "Dr.", "given": "Juan", "family": "Velasquez y Garcia", "initials": "J. V. G."}
 {"name": "Velasquez y Garcia, Dr. Juan III", "title": "Dr.", "given": "Juan", "family": "Velasquez y Garcia", "suffix": "III", "initials": "J. V. G."}

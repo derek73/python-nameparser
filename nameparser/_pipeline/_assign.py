@@ -60,7 +60,9 @@ particle out of that position) -- whatever role name_order assigns --
 and, since #613, at P6's attachment after a family comma where the run
 holds an ambiguous particle ("Beethoven, Ludwig van").
 Emits SUFFIX_OR_NAME at these sites: the trailing roman numeral, taken
-or (since #718) declined for want of words to spare, each
+or declined (since #718 for want of words to spare, since #752 for its
+Title case), a numeral ending the family part before a family comma,
+one of two or more letters ending a given part's walk, each
 ambiguous acronym the trailing peel had to resolve, the bare-suffix
 carve-out where an input that is nothing but post-nominal vocabulary
 gets its first word made into the name (H4's suffix half, #491),
@@ -564,10 +566,20 @@ def _assign_main(seg_idx: int, state: ParseState,
         # declined pick (#718), which carries neither credential tag
         # (the acronym fork's picks carry one) and is never a suffix
         if token.tags.isdisjoint(_AMBIGUOUS_CREDENTIAL_TAGS):
+            # a pick a credential run in front then took is the run's
+            # absorbed name word (rules/S8); otherwise it is declined
+            # for want of words to spare (one letter) or for its Title
+            # case (two or more, rules/S10's lean)
+            if token.role is Role.SUFFIX:
+                ambiguities.append(_absorbed(piece, tokens))
+                continue
+            why = ("is a roman numeral, but the name has no other word "
+                   "to spare for it" if len(token.text.rstrip(".")) == 1
+                   else "is a roman numeral written in Title case, which "
+                        "leans to the name")
             ambiguities.append(PendingAmbiguity(
                 AmbiguityKind.SUFFIX_OR_NAME,
-                f"{token.text!r} is a roman numeral, but the name has "
-                f"no other word to spare for it; read as ", piece,
+                f"{token.text!r} {why}; read as ", piece,
                 field_tail=" rather than a generational suffix"))
             continue
         declined = ("a name part" if token.role is Role.SUFFIX
@@ -603,10 +615,23 @@ def _assign_main(seg_idx: int, state: ParseState,
     return order
 
 
+def _family_words(pieces: Sequence[Sequence[int]],
+                  tokens: Sequence[WorkToken]) -> int:
+    """The name words of the family part in front of a numeral, counted
+    as rules/C3 counts them: a particle run and the word it attaches to
+    are one word, a connective join counts as its words ('Vega y Lopez'
+    is two). Asked only of a numeral piece, so a family part pays no
+    frame for it."""
+    return sum(max(1, sum("conjunction" not in tokens[i].tags
+                          and "particle" not in tokens[i].tags
+                          for i in piece))
+               for piece in pieces)
+
+
 def _family_part_numeral(word: WorkToken, preceding: str, names: int,
                          one_case: bool | None) -> Role | None:
     """The role of a roman numeral ending the family part before a
-    family comma, behind `names` pieces of that part, as the comma-less
+    family comma, behind `names` name words of that part, as the comma-less
     name reads one ending it (rules/S10), or None where the numeral's
     predicate reads no numeral there (an initial in front, a letter with
     its period): the suffix where it reads as the generation, a
@@ -643,11 +668,11 @@ def _reads_as_a_trailing_suffix(piece: Sequence[int],
     is_suffix_piece said no, and a lenient single token it refuses is
     one carrying the `initial` tag, so the shape is already implied.
 
-    NOT reads_as_generation, though it answers the period half:
-    it also refuses a numeral behind an initial-shaped piece, which is
-    a no-comma rule and the opposite of this path's v1 parity --
-    'Chang, Andy C I' is first Andy, middle C, suffix I, and asking
-    that predicate here made the numeral a middle. The #401/#421 entry
+    reads_as_generation is asked with no word in front (`preceding`
+    None): its initial-in-front refusal is a no-comma rule and the
+    opposite of this path's v1 parity -- 'Chang, Andy C I' is first
+    Andy, middle C, suffix I, and asking it with the word in front
+    made the numeral a middle. The #401/#421 entry
     under decisions/P5 records the same fork declining to transfer
     to this walk under LENIENT.
     """
@@ -1602,7 +1627,8 @@ def assign(state: ParseState) -> ParseState:
                             for j in range(k + 1, len(fam_pieces)))
                     and (numeral := _family_part_numeral(
                         word, tokens[fam_pieces[k - 1][0]].text,
-                        k - lead, state.one_case)) is not None):
+                        _family_words(fam_pieces[lead:k], tokens),
+                        state.one_case)) is not None):
                 _set_roles(tokens, piece, numeral)
                 # reported where taken: a name word here is the family
                 # name the comma has just named, which nobody misreads
