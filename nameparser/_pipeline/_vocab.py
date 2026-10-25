@@ -597,8 +597,8 @@ def split_pair(first: str, second: str, lexicon: Lexicon) -> str | None:
     a member of the ambiguous class, which the count decides (rules/S4,
     rules/C4). Its first chunk has two or more letters: a single
     letter opening the pair is a middle initial far more often (FEC
-    writes 'SMITH, JOHN A. MS.', and 'A. MS.' folds to the listed
-    'ams'), so 'M. Sc.' and 'M. D.' stay two words. Two dotted single
+    writes 'SMITH, JOHN G. MR.', and 'G. MR.' folds to the listed
+    'gmr'), so 'M. Sc.' and 'M. D.' stay two words. Two dotted single
     letters are the one opening letter asked further, and asked of
     #872's predicate rather than a copy: in a script with capitals
     they are paired initials (`is_cased_paired_initials`), the reading

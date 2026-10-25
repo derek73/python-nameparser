@@ -18,9 +18,8 @@
   "John von PhD Jones"        →  family="von"
   "John von PhD Jones"        →  suffix="PhD Jones"
   ```
-- **What is a credential here.** A title word never starts the run, and neither does a member of the ambiguous class, a single letter, a connective, a word that is also particle or bound given-name vocabulary: a credential is the writer's mark that the post-nominals have begun, and those carry no such mark. An honorific or a generational word carries it as a credential does, whatever its script. A credential split across a space (S11) is the one member of the class that carries it, its other reading being two words of the name, which the two name words standing in front of it already leave the name without.
+- **What is a credential here.** A title word never starts the run, and neither does a member of the ambiguous class, a single letter, a connective, a word that is also particle or bound given-name vocabulary: a credential is the writer's mark that the post-nominals have begun, and those carry no such mark. An honorific or a generational word carries it as a credential does, whatever its script.
   ```
-  "John Smith Pharm D Jones"  →  suffix="Pharm D Jones"
   "Mary Jane King Smith"      →  family="Smith"
   "Josep Carod i Rovira"      →  family="Carod i Rovira"
   "Mohamed Ali Abd Allah"     →  family="Allah"
@@ -52,6 +51,10 @@
 
 **Precedence:**
 
+- **A credential split across a space** ("John Smith Pharm D Jones"): it is a member of the ambiguous class and starts the run all the same, behind the two name words its own count asks for (S11).
+  ```
+  "John Smith Pharm D Jones"  →  suffix="Pharm D Jones"
+  ```
 - **An ambiguous acronym written with its periods** ("John Smith M.A. Jones"): writing the periods makes it unambiguously a credential (S3), so it is no member of the ambiguous class here and starts the run.
 
 ---

@@ -10,7 +10,7 @@
   "John Smith Pharm D"        →  suffix="Pharm D"
   "John Smith Psy. D."        →  suffix="Psy. D."
   "John Smith M. D."          →  family="D."  · boundary
-  "Jane Doe de A Junior"      →  family="de A"  · boundary
+  "Jane Doe de D Junior"      →  family="de D"  · boundary
   "John Smith Pharm D and Mary"  →  family="D and Mary"  · boundary
   ```
 - **Case repair** writes the pair as it writes the one-word spelling, the letters of the two words cased as their fold is.
@@ -52,9 +52,10 @@
   "Jane Doe Dr. Ph. D."       →  title="Dr."
   "Jane Doe Dr. Ph. D."       →  suffix="Ph. D."
   ```
-- **Two dotted single letters** in a script that writes capitals are paired initials, which S3 reads as the name word they are written as, and never merge; in a script without capitals they merge where their letters spell listed vocabulary, which no default entry does.
+- **Two dotted single letters** in a script that writes capitals are paired initials, which S3 reads as the name word they are written as, and never merge, nor do they in a script that writes no abbreviations, which wears no abbreviation's periods (S3); in any other script without capitals they merge where their letters spell listed vocabulary, which no default entry does.
   ```
   "John Smith J. R."          →  family="R."  · boundary
+  "John Smith 博. 士."          →  family="士."  · boundary
   ```
 - **The part before a family comma** reads no member of the class as a suffix, so no pair merges there.
   ```
@@ -70,6 +71,14 @@
 - **A one-letter numeral in front** ("John Smith V Pharm D"): it is the name word S10 reads before any credential, one word or split.
   ```
   "John Smith V Pharm D"      →  family="V"
+  ```
+- **Written case** ("Jack PHARM D"): the pair carries no case of its own for S6 to read, its two words being two spellings, so the count alone decides it, as it decides a member admitted by shape.
+  ```
+  "Jack PHARM D"              →  family="D"
+  ```
+- **The given part's report** ("Smith, John Pharm D"): S5 reads the pair as it reads a member ending the given part, and the pair reports nothing there either, which is this rule's silence.
+  ```
+  "Smith, John Pharm D"       →  ambiguities=()
   ```
 
 **Accepted:**
