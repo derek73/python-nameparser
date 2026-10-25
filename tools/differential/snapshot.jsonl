@@ -278,6 +278,7 @@
 {"name": "Babić, Marijana Tomislav", "given": "Marijana", "middle": "Tomislav", "family": "Babić", "initials": "M. T. B."}
 {"name": "Babić, Marijana Tomislav", "order": "FAMILY_FIRST", "given": "Marijana", "middle": "Tomislav", "family": "Babić", "initials": "M. T. B."}
 {"name": "Badurad", "given": "Badurad", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "B."}
+{"name": "Bahadur, Ram B.K.", "given": "Ram", "middle": "B.K.", "family": "Bahadur", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "R. B. B."}
 {"name": "Bailey, Liberty Hyde", "given": "Liberty", "middle": "Hyde", "family": "Bailey", "initials": "L. H. B."}
 {"name": "Baker (Johnson), Jenny", "given": "Jenny", "family": "Baker", "nickname": "Johnson", "initials": "J. B."}
 {"name": "Baker (Jr.), Jenny", "given": "Jenny", "family": "Baker", "suffix": "Jr.", "initials": "J. B."}
@@ -549,7 +550,7 @@
 {"name": "Daði Freyr Pétursson", "given": "Daði", "middle": "Freyr", "family": "Pétursson", "initials": "D. F. P."}
 {"name": "De Groot", "family": "De Groot", "initials": "G.", "capitalized_force": "de Groot"}
 {"name": "De La Cruz, Ed", "given": "Ed", "family": "De La Cruz", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "E. C.", "capitalized_force": "Ed de la Cruz"}
-{"name": "De La Cruz, M.J. K.L.", "given": "M.J.", "family": "De La Cruz", "suffix": "K.L.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "M. C.", "capitalized_force": "M.J. de la Cruz K.L."}
+{"name": "De La Cruz, M.J. K.L.", "given": "M.J.", "middle": "K.L.", "family": "De La Cruz", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "M. K. C.", "capitalized_force": "M.J. K.L. de la Cruz"}
 {"name": "De La Cruz, M.J. PhD", "given": "M.J.", "family": "De La Cruz", "suffix": "PhD", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "M. C.", "capitalized_force": "M.J. de la Cruz PhD"}
 {"name": "Dean Koontz", "given": "Dean", "family": "Koontz", "initials": "D. K."}
 {"name": "Dean Martin", "given": "Dean", "family": "Martin", "initials": "D. M."}
@@ -990,7 +991,7 @@
 {"name": "Garcia de Jalon", "given": "Garcia", "family": "de Jalon", "initials": "G. J."}
 {"name": "Garcia y Lopez", "given": "Garcia", "middle": "y", "family": "Lopez", "initials": "G. y. L."}
 {"name": "Garcia-Roza, Luiz Alfredo", "given": "Luiz", "middle": "Alfredo", "family": "Garcia-Roza", "initials": "L. A. G."}
-{"name": "García Márquez, Ed G.J.", "given": "Ed", "family": "García Márquez", "suffix": "G.J.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "E. G. M."}
+{"name": "García Márquez, Ed G.J.", "given": "Ed", "middle": "G.J.", "family": "García Márquez", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "E. G. G. M."}
 {"name": "García Márquez, G.J", "given": "G.J", "family": "García Márquez", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "G. G. M."}
 {"name": "García Márquez, G.J.", "given": "G.J.", "family": "García Márquez", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "G. G. M."}
 {"name": "García Márquez, G.J.R.", "given": "García", "family": "Márquez", "suffix": "G.J.R.", "initials": "G. M."}
@@ -1354,6 +1355,7 @@
 {"name": "Jane Doe (nee Smith) MA", "given": "Jane", "family": "Doe", "suffix": "MA", "maiden": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. D."}
 {"name": "Jane Doe Jr. nee Smith", "given": "Jane", "family": "Doe", "suffix": "Jr. nee Smith", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. D.", "capitalized_force": "Jane Doe Jr. Nee Smith"}
 {"name": "Jane Doe Jr. nee Smith Ma", "given": "Jane", "family": "Doe", "suffix": "Jr. nee Smith Ma", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. D.", "capitalized_force": "Jane Doe Jr. Nee Smith MA"}
+{"name": "Jane Doe MA R.T.", "given": "Jane", "middle": "Doe MA", "family": "R.T.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. D. M. R.", "capitalized_force": "Jane Doe Ma R.T."}
 {"name": "Jane Doe PhD nee Smith", "given": "Jane", "family": "Doe", "suffix": "PhD nee Smith", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. D.", "capitalized_force": "Jane Doe PhD Nee Smith"}
 {"name": "Jane Doe geb. Smith MA", "given": "Jane", "family": "Doe", "suffix": "MA", "maiden": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. D."}
 {"name": "Jane Doe nee King.", "given": "Jane", "family": "Doe", "maiden": "King.", "initials": "J. D."}
@@ -1365,6 +1367,7 @@
 {"name": "Jane Doe nee Puig i III", "given": "Jane", "family": "Doe", "suffix": "i III", "maiden": "Puig", "initials": "J. D.", "capitalized_force": "Jane Doe (Puig) I III"}
 {"name": "Jane Doe nee Puig i Soler", "given": "Jane", "family": "Doe", "maiden": "Puig i Soler", "initials": "J. D."}
 {"name": "Jane Doe nee Smith 2", "given": "Jane", "family": "Doe", "suffix": "2", "maiden": "Smith", "initials": "J. D."}
+{"name": "Jane Doe nee Smith B.K.", "given": "Jane", "family": "Doe", "maiden": "Smith B.K.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. D."}
 {"name": "Jane Doe nee Smith DO DO", "given": "Jane", "family": "Doe", "suffix": "DO DO", "maiden": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. D."}
 {"name": "Jane Doe nee Smith MA", "given": "Jane", "family": "Doe", "suffix": "MA", "maiden": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. D."}
 {"name": "Jane Doe nee Smith MA JD", "given": "Jane", "family": "Doe", "suffix": "MA JD", "maiden": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. D."}
@@ -1570,6 +1573,7 @@
 {"name": "John Smith Jr., PhD", "given": "John", "family": "Smith", "suffix": "Jr., PhD", "initials": "J. S."}
 {"name": "John Smith Jr., Sir AD", "title": "Sir", "given": "John", "family": "Smith", "suffix": "Jr., AD", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "John Smith Jr., þingmaður", "given": "John", "family": "Smith", "suffix": "Jr., þingmaður", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S.", "capitalized_force": "John Smith Jr., Þingmaður"}
+{"name": "John Smith K.C.", "given": "John", "middle": "Smith", "family": "K.C.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S. K."}
 {"name": "John Smith M.A.", "given": "John", "family": "Smith", "suffix": "M.A.", "initials": "J. S."}
 {"name": "John Smith MA", "given": "John", "family": "Smith", "suffix": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "John Smith MC", "given": "John", "family": "Smith", "suffix": "MC", "initials": "J. S."}
@@ -2636,6 +2640,7 @@
 {"name": "Quinquela Martín, Benito", "given": "Benito", "family": "Quinquela Martín", "initials": "B. Q. M."}
 {"name": "RA DDS", "title": "RA", "family": "DDS", "initials": "D.", "capitalized": "Ra Dds"}
 {"name": "RA PhD Jr., John", "given": "John", "family": "RA", "suffix": "PhD Jr.", "initials": "J. R.", "capitalized_force": "John Ra PhD Jr."}
+{"name": "RAM BAHADUR B.K.", "given": "RAM", "middle": "BAHADUR", "family": "B.K.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "R. B. B.", "capitalized": "Ram Bahadur B.K."}
 {"name": "RONALD MACDONALD", "given": "RONALD", "family": "MACDONALD", "initials": "R. M.", "capitalized": "Ronald MacDonald"}
 {"name": "RONALD MCDONALD", "given": "RONALD", "family": "MCDONALD", "initials": "R. M.", "capitalized": "Ronald McDonald"}
 {"name": "Rabbi Cohen", "title": "Rabbi", "family": "Cohen", "initials": "C."}
@@ -2649,6 +2654,9 @@
 {"name": "Rafael Sousa dos Anjos", "given": "Rafael", "middle": "Sousa", "family": "dos Anjos", "initials": "R. S. A."}
 {"name": "Rafael Viciana Aráez", "given": "Rafael", "middle": "Viciana", "family": "Aráez", "initials": "R. V. A."}
 {"name": "Ragnar Bjarnason", "given": "Ragnar", "family": "Bjarnason", "initials": "R. B."}
+{"name": "Ram Bahadur B.K.", "given": "Ram", "middle": "Bahadur", "family": "B.K.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "R. B. B."}
+{"name": "Ram Bahadur B.K., PhD", "given": "Ram", "middle": "Bahadur", "family": "B.K.", "suffix": "PhD", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "R. B. B."}
+{"name": "Ram Bahadur PhD B.K.", "given": "Ram", "family": "Bahadur", "suffix": "PhD B.K.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "R. B."}
 {"name": "Ramadhan Karta Hadimadja", "given": "Ramadhan", "middle": "Karta", "family": "Hadimadja", "initials": "R. K. H."}
 {"name": "Ramon Ferran i Pagès", "given": "Ramon", "family": "Ferran i Pagès", "initials": "R. F. P."}
 {"name": "Ramón Arellano Félix", "given": "Ramón", "middle": "Arellano", "family": "Félix", "initials": "R. A. F."}
@@ -2873,6 +2881,7 @@
 {"name": "Sirius", "given": "Sirius", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "S."}
 {"name": "Sister Mary", "title": "Sister", "given": "Mary", "initials": "M."}
 {"name": "Sister Souljah", "title": "Sister", "given": "Souljah", "initials": "S."}
+{"name": "Sita Kumari K.C", "given": "Sita", "middle": "Kumari", "family": "K.C", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "S. K. K."}
 {"name": "Siv Friðleifsdóttir", "given": "Siv", "family": "Friðleifsdóttir", "initials": "S. F."}
 {"name": "Skapti Ólafsson", "given": "Skapti", "family": "Ólafsson", "initials": "S. Ó."}
 {"name": "Skeggjason Hr. Geir Jón Magnús Brynjar yngri, þingmaður", "order": "FAMILY_FIRST", "given": "Hr.", "middle": "Geir Jón Magnús Brynjar", "family": "Skeggjason", "suffix": "yngri, þingmaður", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "H. G. J. M. B. S.", "capitalized_force": "Hr. Geir Jón Magnús Brynjar Skeggjason Yngri, Þingmaður"}
@@ -5400,6 +5409,7 @@
 {"name": "มึลเลอร์, เคเทอ", "given": "เคเทอ", "family": "มึลเลอร์", "initials": "เ. ม."}
 {"name": "วอน บรืล กอนซาเลซ โดมิงโก ศ.ดร. เอดา คอร์เนเลีย เซซาร์ มาร์ติน พ.บ. ท.บ.", "order": "FAMILY_FIRST", "given": "บรืล", "middle": "กอนซาเลซ โดมิงโก ศ.ดร. เอดา คอร์เนเลีย เซซาร์ มาร์ติน", "family": "วอน", "suffix": "พ.บ. ท.บ.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "บ. ก. โ. ศ. เ. ค. เ. ม. ว."}
 {"name": "ศ.ดร. เอดา คอร์เนเลีย เซซาร์ มาร์ติน วอน บรืล พ.บ. ท.บ.", "given": "ศ.ดร.", "middle": "เอดา คอร์เนเลีย เซซาร์ มาร์ติน วอน", "family": "บรืล", "suffix": "พ.บ. ท.บ.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "ศ. เ. ค. เ. ม. ว. บ."}
+{"name": "สมชาย ใจดี พ.บ.", "given": "สมชาย", "family": "ใจดี", "suffix": "พ.บ.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "ส. ใ."}
 {"name": "สโตเบอร์ ซาซิเลีย ฮามิช", "order": "FAMILY_FIRST", "given": "ซาซิเลีย", "middle": "ฮามิช", "family": "สโตเบอร์", "initials": "ซ. ฮ. ส."}
 {"name": "สโตเบอร์, ซาซิเลีย ฮามิช", "given": "ซาซิเลีย", "middle": "ฮามิช", "family": "สโตเบอร์", "initials": "ซ. ฮ. ส."}
 {"name": "เกรียงศักดิ์ โกวิทวาณิช", "given": "เกรียงศักดิ์", "family": "โกวิทวาณิช", "initials": "เ. โ."}

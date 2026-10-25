@@ -1948,7 +1948,7 @@ def test_group_hands_assign_the_trailing_read() -> None:
     (read,) = out.tail_reads
     assert read is not None
     assert sorted(out.tokens[i].text for i in read.titles) == ["Prof."]
-    assert _grouped("John Dr. G.J.", lexicon=lex).tail_reads == (None,)
+    assert _grouped("John Dr. X.Y.Z.", lexicon=lex).tail_reads == (None,)
     assert _grouped("John Smith", lexicon=lex).tail_reads == (None,)
 
 

@@ -17,7 +17,8 @@ from nameparser._pipeline._state import (
 from nameparser._pipeline._tokenize import tokenize
 from nameparser._pipeline._vocab import (
     ambiguous_class_candidate, ambiguous_class_member,
-    caps_shape_candidate, surname_unit_facts, surname_unit_tags,
+    caps_shape_candidate, is_paired_initials, surname_unit_facts,
+    surname_unit_tags,
 )
 from nameparser._policy import Policy
 from nameparser._types import AmbiguityKind, Role
@@ -586,6 +587,10 @@ def test_delimited_content_never_joins_the_shape_class() -> None:
 @pytest.mark.parametrize("word,policy,one_case", [
     ("X.Y.Z.", Policy(), None),
     ("A.B.", Policy(), None),
+    # #864: paired initials of a cased script are held back from the
+    # class outside the comma; a caseless script's pair is not
+    ("B.K", Policy(), None),
+    ("พ.บ.", Policy(), None),
     ("M.A.", Policy(), None),
     ("A.B.C.", Policy(), None),
     ("Msc.Ed.", Policy(), None),
@@ -671,7 +676,13 @@ def test_ambiguous_class_candidate_agrees_with_the_tag(
     candidate = (ambiguous_class_candidate(word, lex, policy)
                  or (policy.unlisted_caps_suffixes
                      and caps_shape_candidate(word, lex, policy, one_case)))
-    assert candidate == ("vocab:suffix-ambiguous" in tags)
+    # rules/S3's paired initials, the one shape the two answers part
+    # on by design: the candidate (segment's, before the comma has
+    # been read) admits them, and classify holds the class tag back,
+    # which `_comma.decide` restores at the comma C5 reads (#864)
+    paired = (is_paired_initials(word) and word.upper() != word.lower()
+              and not ambiguous_class_member(word, lex))
+    assert (candidate and not paired) == ("vocab:suffix-ambiguous" in tags)
     shape_member = candidate and not ambiguous_class_member(word, lex)
     assert (SHAPE_ACRONYM_TAG in tags) == shape_member
 

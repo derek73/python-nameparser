@@ -1152,13 +1152,26 @@ is taken silently:
     >>> cred.suffix, cred.ambiguities
     ('X.Y.Z.', ())
 
-Four things are not this shape. A token the vocabulary already knows
+Five things are not this shape. A token the vocabulary already knows
 (``M.A.``, ``Ph.D.``) is read by the vocabulary. A single trailing
 period is how any word is abbreviated, so ``"John Smith Xyz."`` keeps
 family ``Xyz.``. Every chunk must be alphabetic, so a digit anywhere
-refuses it (``"John Smith 1.4"`` keeps family ``1.4``). And a script
+refuses it (``"John Smith 1.4"`` keeps family ``1.4``). A script
 with no period abbreviations of its own refuses it too
-(``"John Smith 田.中."`` keeps family ``田.中.``).
+(``"John Smith 田.中."`` keeps family ``田.中.``). And two single
+letters, each with its period, are how initials are written, and how
+some surnames are, such as the Nepali ``B.K.``: in a script with
+capitals they stay a name word wherever they end a name, given part or
+clause, and still report the fork, while three letters or more are a
+credential as before. Right after a comma they are the exception above:
+
+.. doctest::
+
+    >>> nepali = parse("Ram Bahadur B.K.")
+    >>> nepali.middle, nepali.family
+    ('Bahadur', 'B.K.')
+    >>> parse("Doe, John B.K.").middle
+    'B.K.'
 
 Setting the field to ``False`` reads such a token as name material
 everywhere, and still reports the fork. It does not bring back the

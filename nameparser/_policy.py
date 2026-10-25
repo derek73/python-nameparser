@@ -735,7 +735,11 @@ class Policy:
     #: "john smith x.y.z." reads as the mixed-case spelling does.
     #: Whole-token vocabulary still wins ("M.A.", "Ph.D.", "A.B.C."),
     #: and a single trailing period is not this shape ("John Smith
-    #: Xyz." keeps family ``Xyz.``). ``False`` reads such a token as
+    #: Xyz." keeps family ``Xyz.``), and nor are paired initials, two
+    #: single letters each followed by a period in a script with
+    #: capitals ("Ram Bahadur B.K." keeps family ``B.K.``) except
+    #: right after a comma, where they are the given name unless
+    #: something in the part speaks for them. ``False`` reads such a token as
     #: name material everywhere, as 2.3 did for a token no chunk
     #: claimed; the roman-chunk retirement (rules/S3) is not
     #: behind this switch, and still reports the fork.

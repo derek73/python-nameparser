@@ -1135,7 +1135,7 @@ def test_the_trailing_read_declines_where_there_is_nothing_to_split() -> None:
     where the run holds a name piece (a title in front of a name word
     the peel declined), which is read as before #614."""
     assert _read("Dr.")[1] is None
-    assert _read("John Dr. G.J.")[1] is None
+    assert _read("John Dr. X.Y.Z.")[1] is None
 
 
 def _units(text: str) -> list[tuple[str, int]]:

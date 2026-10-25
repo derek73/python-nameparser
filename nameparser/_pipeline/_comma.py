@@ -306,6 +306,21 @@ def decide(state: ParseState) -> ParseState:
     part = [i for i in seg1 if i not in core_set] if core_idx else list(seg1)
     if not part:
         return state
+    if pol.unlisted_dotted_suffixes:
+        # rules/S3: "Paired initials are the exception [...] where S4
+        # would count words to spare for them they are the name word
+        # they are written as" -- classify holds the class tag back from
+        # them, and at this comma C5 reads them instead (S3's Precedence
+        # bullet), so they rejoin the class for C5's count. Shape-tagged
+        # and untagged with the switch on is exactly that word
+        # (classify's dotted branch), asked of the tags in C
+        # (decisions/S3 (#864)).
+        for i in part:
+            tags = tokens[i].tags
+            if (SHAPE_ACRONYM_TAG in tags
+                    and AMBIGUOUS_ACRONYM_TAG not in tags):
+                tokens[i] = copy_with(
+                    tokens[i], tags=tags | {AMBIGUOUS_ACRONYM_TAG})
     p1, pt1 = _reading_pieces(part, tokens)
     anchored: list[int] = []
     absorbed: list[int] = []
