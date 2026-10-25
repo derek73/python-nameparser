@@ -10,6 +10,8 @@ rest of the facade in 3.0. The vocabulary data modules beside them
 ...) are not compatibility surface at all: they are the word lists the
 2.0 :class:`~nameparser.Lexicon` is built from, they are named for its
 fields since 2.2 (#293), and its documentation cross-references them.
+Since 2.6 the word lists (all but ``surnames.py``) re-export sets
+compiled from the per-word TOML files in ``nameparser/vocab/`` (#737).
 
 ``RegexTupleManager`` is re-exported unchanged from the shim purely for
 pickle compatibility: a v1.4 ``Constants`` blob's ``regexes`` field was
