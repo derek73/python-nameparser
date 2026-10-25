@@ -759,8 +759,9 @@ military = { same_as = "radm" }
 
 [[word]]
 text = "sa"
-military = { expands = "Seaman Apprentice" }
-credential = { note = "NOT may_be_name, for the reason recorded on ms (decisions/C8)" }
+family = { us_census_2010 = 1600, wikidata = 182, as_of = 2026-10-24, note = "The Census writes no diacritics, so its 1,600 is Sa and Sá together (37.88% Asian/PI, so much of it is Korean, Chinese or Vietnamese Sa); Wikidata is a lower bound: 110 as Sá (Portugal, Brazil) plus 72 as Sa" }
+given = { us_ssa = 73, wikidata = 2, as_of = 2026-10-24, note = "US SSA births summed over both sexes; Wikidata is a lower bound; nam_dict band 5 (banded in 3 countries: Korea, Vietnam, China)" }
+excluded = { military = { reason = "Seaman Apprentice, with no bearer in any corpus: every name read with SA as its title in the committed and local corpora is a person whose given name is Sa (Sa Liu, Mohamad Sa Haichal) or the Arabic Sa ad (Sa ad Hariri), or whose Portuguese surname Sá is written without its accent (Ricardo Sa Pinto); as a title it also took the slot after a family comma and ahead of a name", issue = 857, decided = 2026-10-25 }, credential = { reason = "no person in the corpora writes it: the corpora's SA and S.A. suffixes are companies (Galderma S.A.), the South African qualifier in FCP(SA), and the initials S.A. typed without stops (MANN, S.A.); the Portuguese surname Sá written without its accent (Maria de Sa) is the reading to protect, and as a credential it needed the may_be_name flag, which left a capitals name ending in SA a suffix (MARIA DE SA). NPPES lists 167 US healthcare providers who write it, unread by item", issue = 857, decided = 2026-10-25 } }
 
 [[word]]
 text = "scpo"

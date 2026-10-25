@@ -12,13 +12,13 @@ its decline-by-measurement evidence in the issue body; "z domu" folded into it 2
 
 Not standing: plan amendment 1's repair, carried out by #296's first commit — 2026-08-01.
 
-Elsewhere: the audit table's dispositions as shipped, `md` kept a dual (until #853) and `ms` and `sa` kept out of the ambiguous set — decisions/C8's 2026-08-23 #296 and 2026-08-23 #428 Standing lines, the second also holding the repair's condition, no name word; the trailing slot read by vocabulary, a period-marked title word there a title (`John Smith Prof.` → title 'Prof.') — decisions/H5's 2026-09-08 #316 entry; the dotted shape class — decisions/S9's 2026-09-14 (Derek) entry headed #516's DOTTED HALF IS A SWITCH.
+Elsewhere: the audit table's dispositions as shipped, `md` kept a dual (until #853) and `ms` and `sa` kept out of the ambiguous set (`sa` until 2026-10-25, #857, when it left the vocabulary) — decisions/C8's 2026-08-23 #296 and 2026-08-23 #428 Standing lines, the second also holding the repair's condition, no name word; the trailing slot read by vocabulary, a period-marked title word there a title (`John Smith Prof.` → title 'Prof.') — decisions/H5's 2026-09-08 #316 entry; the dotted shape class — decisions/S9's 2026-09-14 (Derek) entry headed #516's DOTTED HALF IS A SWITCH.
 
 Open: none in this file.
 
 ## Log
 
-- 2026-07-26 #291/#296/#316 (its audit table's `ms` and `sa` joining the ambiguous set superseded by decisions/C8's 2026-08-23 (review of PR #428, four reviewers) entry; its trailing-abbreviation decline superseded for the dotted spelling by decisions/S9's 2026-09-14 (Derek) entry headed #516's DOTTED HALF IS A SWITCH) — THE COMMA-SUFFIX ARC, 2026-07-26 → 2026-08-01: the paragraph, the plan amendment and the Declined entries below.
+- 2026-07-26 #291/#296/#316 (its audit table's `ms` and `sa` joining the ambiguous set superseded by decisions/C8's 2026-08-23 (review of PR #428, four reviewers) entry (`sa` left the vocabulary instead on 2026-10-25, #857, decisions/C8); its trailing-abbreviation decline superseded for the dotted spelling by decisions/S9's 2026-09-14 (Derek) entry headed #516's DOTTED HALF IS A SWITCH) — THE COMMA-SUFFIX ARC, 2026-07-26 → 2026-08-01: the paragraph, the plan amendment and the Declined entries below.
 
 The approved 19-word TITLES∩suffix audit table (2026-07-30/08-01, intent for the unshipped bundle): jr, junior, phd, md, do and se DROP from TITLES (se: Structural Engineer is the PE/SE post-nominal pair, no prenominal convention — v1 residue); dr drops from SUFFIX_WORDS and sra from the suffix sets (v1 residue); sr, lt, cpl, cpt, cpo, csm, sgm, ra and vc KEEP dual membership (position decides); ms and sa keep dual membership AND join the ambiguous set (the periods gate). Derek's framing thesis for the whole table: v1's sets encoded where the v1 PARSER needed words to be, not where words can occur. Amendment A6: once SUFFIX_PHRASES ships, the glued peel's token-level post-nominal test cannot step over a phrase segment ("김민준씨, LEED AP" will not peel) — #291 owns deciding that, with a case row either way.
 

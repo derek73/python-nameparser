@@ -2000,7 +2000,7 @@
 {"name": "Khaled el-Hassani ben el-Hachemi", "given": "Khaled", "middle": "el-Hassani ben", "family": "el-Hachemi", "initials": "K. e. b. e.", "capitalized_force": "Khaled El-Hassani Ben El-Hachemi"}
 {"name": "Kho Liang Ie", "given": "Kho", "middle": "Liang", "family": "Ie", "initials": "K. L. I."}
 {"name": "Khun Malee", "given": "Khun", "family": "Malee", "initials": "K. M."}
-{"name": "Khun Sa", "given": "Khun", "suffix": "Sa", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "K.", "capitalized_force": "Khun SA"}
+{"name": "Khun Sa", "given": "Khun", "family": "Sa", "initials": "K. S."}
 {"name": "Ki, Tomonori", "given": "Tomonori", "family": "Ki", "initials": "T. K."}
 {"name": "Kim Min Ho", "order": "FAMILY_FIRST", "given": "Min", "middle": "Ho", "family": "Kim", "initials": "M. H. K."}
 {"name": "Kim, Jr.", "family": "Kim", "suffix": "Jr.", "initials": "K."}
