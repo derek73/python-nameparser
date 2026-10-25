@@ -63,8 +63,8 @@ from nameparser._pipeline._state import (
 )
 from nameparser._pipeline._vocab import (
     _PERIOD_ABBREV, _ROMAN, Lean, ambiguous_lean, in_initialless_script,
-    is_single_letter_numeral, numeral_settled_by_case,
-    reads_as_generation, tag_marker_runs,
+    is_listed_numeral, is_single_letter_numeral, numeral_leans_to_the_name,
+    numeral_settled_by_case, reads_as_generation, tag_marker_runs,
 )
 
 
@@ -467,7 +467,9 @@ def is_suffix_piece(piece: Sequence[int], ptags: Set[str],
 # starts #602's credential run, one predicate for the trailing peel and
 # the given-part walk (mechanisms.md#ONE-PREDICATE-PER-QUESTION)
 def starts_a_credential_run(piece: Sequence[int], ptags: Set[str],
-                            tokens: Sequence[WorkToken]) -> bool:
+                            tokens: Sequence[WorkToken],
+                            preceding: str | None = None,
+                            one_case: bool | None = None) -> bool:
     """Whether one piece starts #602's run: an unambiguous suffix
     word of two or more letters, in any script -- a credential acronym,
     a generational word or an honorific -- that no other vocabulary
@@ -492,16 +494,29 @@ def starts_a_credential_run(piece: Sequence[int], ptags: Set[str],
     asks only of the pieces `peel_walk` keeps, and the walk drops the
     merged piece, so 'John Smith Ph. D. Jones' still reads family
     'Jones'.
+
+    A roman numeral of two or more letters starts it where
+    `_vocab.reads_as_generation` reads it as the generation, with
+    `preceding` and `one_case` that predicate's (#784): 'John Smith VI
+    Jones' as 'John Smith III Jones'.
     """
     if "suffix" in ptags:
         # the Ph./D. pair alone: a connective join keeps the tag on the
         # wider piece ('Ph. D. and Mary'), which starts nothing, as
         # 'PhD and Mary' does not
         return len(piece) == 2
-    if len(piece) != 1 or not is_suffix_piece(piece, ptags, tokens):
+    if len(piece) != 1:
         return False
     tok = tokens[piece[0]]
     if not tok.tags.isdisjoint(_NOT_A_RUN_START):
+        return False
+    # rules/S8: "a roman numeral of two or more letters that reads as
+    # the generation" -- asked of the numeral's predicate, which the
+    # vocabulary's own numerals answer too
+    stem = tok.text.rstrip(".")
+    if len(stem) >= 2 and _ROMAN.match(stem) is not None:
+        return reads_as_generation(tok.text, tok.tags, preceding, one_case)
+    if not is_suffix_piece(piece, ptags, tokens):
         return False
     # C-level, no generator frame per character
     letters = "".join(filter(str.isalpha, tok.text.lower()))
@@ -551,6 +566,9 @@ def _numeral_behind_the_initial_veto(piece: Sequence[int],
     """
     if len(piece) != 1:
         return False
+    # A one-letter numeral here is the numeral's predicate's yes by
+    # construction: in a comma part it reads one by the vocabulary, and
+    # the tag below is that vocabulary (#752), so it is not asked again.
     tags = tokens[piece[0]].tags
     return "vocab:suffix" in tags and "initial" in tags
 
@@ -925,14 +943,18 @@ class Peel(NamedTuple):
     of positions in the caller's `rest`: rest[:names] are the name
     pieces and rest[names:] the suffixes. The other two are pieces --
     token-index tuples, as PendingAmbiguity wants them -- and each is
-    one token long: `numeral` is the piece the roman-numeral fork
-    took as a call, which is reported (None when it did not fire, and
-    for a numeral its lower case settled, which is taken unrecorded;
-    always the walk's last piece),
+    one token long: `numerals` are the pieces the roman-numeral fork
+    took as a call, each reported, in peel order (none for a numeral
+    its lower case settled or the vocabulary lists in two or more
+    letters, which is taken unrecorded; a one-letter one is always the
+    walk's last piece, one of two or more letters anywhere in its
+    trailing run, #752),
     `picks` the bare ambiguous acronyms the peel had to resolve, in
     peel order, either way (the last may sit at rest[names - 1]), and
-    a one-letter numeral the fork declined for want of words to spare
-    (#718), always the walk's last piece and a name.
+    a numeral the fork declined, a one-letter one for want of words to
+    spare (#718), always the walk's last piece, or one of two or more
+    letters for its Title case (#752), anywhere in the trailing run,
+    and a name unless a credential run in front of it takes it.
     `anchors` is `peel_trailing`'s working state for `tail_reading`
     alone -- the walk's `credential_anchors` pass over `rest` where a
     member needed one, handed to the next pass of the fixed point
@@ -940,7 +962,7 @@ class Peel(NamedTuple):
     `tail_reading` returns carries None."""
 
     names: int
-    numeral: tuple[int, ...] | None
+    numerals: tuple[tuple[int, ...], ...]
     picks: tuple[tuple[int, ...], ...]
     anchors: list[bool] | None
     #: #602 (`credential_run`): the pieces in rest[names:] that are
@@ -997,7 +1019,7 @@ def trailing_start(start: int, pieces: Sequence[Sequence[int]],
     rest = peel_walk(start, ptags)
     names = run_start(rest, peel_trailing(rest, pieces, ptags, tokens,
                                           one_case).names,
-                      pieces, ptags, tokens)
+                      pieces, ptags, tokens, one_case=one_case)
     return rest[names] if names < len(rest) else len(pieces)
 
 
@@ -1123,8 +1145,9 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
     `start` on were already peeled, with `anchors` the pass an earlier
     walk built (or None). Only `tail_reading` passes them, and its
     docstring states when that answers what a fresh walk would. The
-    returned picks are the resumed walk's own; the numeral is never
-    read, `start` standing short of the walk's last piece.
+    returned picks and numerals are the resumed walk's own; a
+    one-letter numeral is never read, `start` standing short of the
+    walk's last piece.
 
     `second` is where the second name unit opens in `rest`
     (`second_unit`), the caller's to find once; positions are units
@@ -1141,9 +1164,11 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
     `count_numeral` False takes a one-letter numeral without asking
     for words to spare: the given part after a family comma is read
     without the count, and its chain bound must not ask it (#718).
+    Every numeral is weighed by `_vocab.reads_as_generation`, the one
+    predicate every numeral rule asks (#752).
     """
     picks: list[tuple[int, ...]] = []
-    numeral: tuple[int, ...] | None = None
+    numerals: list[tuple[int, ...]] = []
     # where the second name unit opens in `rest`, found once a member
     # asks; positions are units where `units` is None
     k = len(rest) if start is None else start
@@ -1156,32 +1181,48 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
         if is_suffix_piece(piece, ptags[rest[k - 1]], tokens):
             k -= 1
             continue
-        # a final single token that is a roman numeral, after a piece
-        # that is not initial-shaped; the predicate's docstring carries
-        # the is_initial_shaped reasoning (#320). rules/S10: "A numeral
-        # of one letter needs words to spare, as a bare ambiguous
-        # acronym does" -- the acronym fork's own count,
-        # below, so 'John V' keeps family 'V' (#718). Declined, it is a
-        # pick, since "either reading is reported", and no branch below
-        # can take a numeral
-        if (k == len(rest) and k >= 2 and len(piece) == 1
-                and reads_as_generation(
-                    text := tokens[piece[0]].text,
-                    tokens[pieces[rest[k - 2]][0]].text, one_case)):
-            # rules/S10: "a numeral written in lower case in a name of
-            # mixed case is the generation and reports nothing" --
-            # decided here once: taken as any suffix word is, and not
-            # recorded as the fork's call, so no reporter meets it
-            if numeral_settled_by_case(text, one_case):
-                k -= 1
-                continue
-            if (not is_single_letter_numeral(text) or not count_numeral
-                    or k - 2 >= second):
-                numeral = tuple(piece)
-                k -= 1
-                continue
-            picks.append(tuple(piece))
-            break
+        # rules/S10: "the numeral reads as the generation" -- every
+        # numeral the suffix test above refused, the listed ones it took
+        # being the predicate's yes too. One of two or more letters is
+        # read anywhere in the trailing run ('John Smith VI MD' as 'John
+        # Smith III MD', #784); one of one letter only where it ends the
+        # walk, since with a credential behind it it is the name word
+        # S10's Accepted clause keeps (#721). `_ROMAN` on the stem first,
+        # C-level, so a name word pays no frame. A one-letter numeral
+        # "needs words to spare, as a bare ambiguous acronym does" --
+        # the acronym fork's own count, below, so 'John V' keeps family
+        # 'V' (#718). Declined, it is a pick, since "either reading is
+        # reported", and no branch below can take a numeral
+        if (k >= 2 and len(piece) == 1
+                and _ROMAN.match(text := tokens[piece[0]].text.rstrip("."))
+                is not None and text
+                and (k == len(rest) or len(text) > 1)):
+            tok = tokens[piece[0]]
+            if reads_as_generation(tok.text, tok.tags,
+                                   tokens[pieces[rest[k - 2]][0]].text,
+                                   one_case):
+                # rules/S10: "a numeral written in lower case in a name
+                # of mixed case is the generation and reports nothing"
+                # -- decided here once: taken as any suffix word is, and
+                # not recorded as the fork's call, so no reporter meets
+                # it
+                if numeral_settled_by_case(tok.text, one_case):
+                    k -= 1
+                    continue
+                if (len(text) > 1 or not count_numeral
+                        or k - 2 >= second):
+                    numerals.append(tuple(piece))
+                    k -= 1
+                    continue
+                picks.append(tuple(piece))
+                break
+            # rules/S10: "a Title-case numeral in a name of mixed case
+            # leans to the name" -- weighed and declined, so reported
+            if numeral_leans_to_the_name(
+                    tok.text, tok.tags,
+                    tokens[pieces[rest[k - 2]][0]].text, one_case):
+                picks.append(tuple(piece))
+                break
         # A bare ambiguous acronym ("MA", not "M.A.") is a credential
         # only when peeling it still leaves a given AND a family name.
         # With two pieces, "one of them is a credential" is the less
@@ -1257,7 +1298,7 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
                 k -= 1
                 continue
         break
-    return Peel(k, numeral, tuple(picks), anchors)
+    return Peel(k, tuple(numerals), tuple(picks), anchors)
 
 
 # rules/S8: "A credential after the name core starts a run to the
@@ -1268,7 +1309,8 @@ def run_start(rest: Sequence[int], names: int,
               pieces: Sequence[Sequence[int]],
               ptags: Sequence[Set[str]],
               tokens: Sequence[WorkToken],
-              units: Sequence[int] | None = None) -> int:
+              units: Sequence[int] | None = None,
+              one_case: bool | None = None) -> int:
     """Where #602's run starts in `rest[:names]`: the position of the
     first credential that starts one (`starts_a_credential_run`) with
     two name pieces in front of it, or `names` where none does -- with
@@ -1299,9 +1341,15 @@ def run_start(rest: Sequence[int], names: int,
     for p in range(names):
         q = rest[p]
         tags = tokens[pieces[q][0]].tags
-        if (core + lone >= 2 and "vocab:suffix" in tags
+        if (core + lone >= 2
+                and ("vocab:suffix" in tags
+                     or _ROMAN.match(tokens[pieces[q][0]].text.rstrip("."))
+                     is not None)
                 and tags.isdisjoint(_NOT_A_RUN_START)
-                and starts_a_credential_run(pieces[q], ptags[q], tokens)):
+                # p >= 2 here: two name words stand in front
+                and starts_a_credential_run(
+                    pieces[q], ptags[q], tokens,
+                    tokens[pieces[rest[p - 1]][0]].text, one_case)):
             return p
         # a lone particle is not yet a name: 'de Mesnil' is one surname
         # -- unless it opens a chain run, which is then the surname
@@ -1392,7 +1440,8 @@ def has_name_content(piece: Sequence[int],
 def credential_run(rest: Sequence[int], peel: Peel, p: int,
                    pieces: Sequence[Sequence[int]],
                    ptags: Sequence[Set[str]],
-                   tokens: Sequence[WorkToken]) -> Peel:
+                   tokens: Sequence[WorkToken],
+                   one_case: bool | None = None) -> Peel:
     """`peel` with its name count cut back to `p`, where #602's run
     starts (`run_start`, which the caller asks first so that a name
     with no run pays one frame, not two).
@@ -1406,6 +1455,15 @@ def credential_run(rest: Sequence[int], peel: Peel, p: int,
     a run, leaves both lists without the title test's frame."""
     run_titles: list[int] = []
     absorbed: list[tuple[int, ...]] = []
+    # a numeral starting the run is read as the generation, which a
+    # shape alone makes a call, reported as the peel's are (rules/S10)
+    numerals = peel.numerals
+    start = pieces[rest[p]]
+    if (len(start) == 1 and _ROMAN.match(
+            (tok := tokens[start[0]]).text.rstrip(".")) is not None
+            and not is_listed_numeral(tok.text, tok.tags)
+            and not numeral_settled_by_case(tok.text, one_case)):
+        numerals = (tuple(start), *numerals)
     for q in rest[p + 1:peel.names]:
         if is_suffix_piece(pieces[q], ptags[q], tokens):
             continue
@@ -1415,7 +1473,7 @@ def credential_run(rest: Sequence[int], peel: Peel, p: int,
         piece = tuple(pieces[q])
         if piece not in peel.picks and has_name_content(piece, tokens):
             absorbed.append(piece)
-    return Peel(p, peel.numeral, peel.picks, peel.anchors,
+    return Peel(p, numerals, peel.picks, peel.anchors,
                 tuple(run_titles), tuple(absorbed))
 
 
@@ -1534,12 +1592,14 @@ def trailing_candidates(lo: int, pieces: Sequence[Sequence[int]],
     Back from the end over every piece the peel or the chain admits on
     its own terms -- a suffix piece, a member of the ambiguous class,
     an initial-shaped suffix word, a period-marked title word -- and
-    over a roman numeral by the numeral fork's SHAPE test (which asks
-    no vocabulary: 'VI' is in no list), where nothing stands behind it
-    but such title words and group-flagged suffix pieces: the chain
-    takes the titles first and the walk never holds the flagged pieces
-    ('Ph. D.'), so either way the numeral is the walk's last piece and
-    the fork reads it. Then back to the first
+    over a roman numeral the numeral's predicate admits, asked with no
+    case so it stays a superset: one of two or more letters wherever it
+    stands, the peel reading it anywhere in the run (#752), and one of
+    one letter where nothing stands behind it but such title words and
+    group-flagged suffix pieces: the chain takes the titles first and
+    the walk never holds the flagged pieces ('Ph. D.'), so either way
+    that numeral is the walk's last piece and the fork reads it. Then
+    back to the first
     credential that starts #602's run, whose words the run takes
     whatever they are. A BARE title word is no candidate: H5's chain
     does not take one, and in the view it would only inflate the count
@@ -1558,9 +1618,11 @@ def trailing_candidates(lo: int, pieces: Sequence[Sequence[int]],
                 or is_suffix_piece(piece, ptags[k], tokens)
                 or (len(piece) == 1 and (
                     not tokens[piece[0]].tags.isdisjoint(_TRAILING_WORD_TAGS)
-                    or (titles_behind and reads_as_generation(
-                        tokens[piece[0]].text,
-                        tokens[pieces[k - 1][0]].text, None))))):
+                    or ((titles_behind
+                         or len(tokens[piece[0]].text.rstrip(".")) > 1)
+                        and reads_as_generation(
+                            tokens[piece[0]].text, tokens[piece[0]].tags,
+                            tokens[pieces[k - 1][0]].text, None))))):
             break
         # a group-flagged suffix piece is outside the peel's walk
         # altogether (`peel_walk` drops it), so it is behind the
@@ -1571,8 +1633,12 @@ def trailing_candidates(lo: int, pieces: Sequence[Sequence[int]],
     # name word pays no frame
     return next((j for j in range(lo + 1, c)
                  if ("suffix" in ptags[j]
-                     or "vocab:suffix" in tokens[pieces[j][0]].tags)
-                 and starts_a_credential_run(pieces[j], ptags[j], tokens)),
+                     or "vocab:suffix" in tokens[pieces[j][0]].tags
+                     or _ROMAN.match(tokens[pieces[j][0]].text.rstrip("."))
+                     is not None)
+                 and starts_a_credential_run(
+                     pieces[j], ptags[j], tokens,
+                     tokens[pieces[j - 1][0]].text)),
                 c)
 
 
@@ -1678,9 +1744,10 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
     kept = trailing_titles(rest, pieces, ptags, tokens,
                            end=peeled.names, salutations=salutations)
     if kept == peeled.names:
-        p = run_start(rest, peeled.names, pieces, ptags, tokens, units)
+        p = run_start(rest, peeled.names, pieces, ptags, tokens, units,
+                      one_case)
         return rest, (), (peeled if p == peeled.names else credential_run(
-            rest, peeled, p, pieces, ptags, tokens))
+            rest, peeled, p, pieces, ptags, tokens, one_case))
     # `rest[:hi]` stands as written; `behind` holds the peeled runs
     # the splices left after it, and `titled` the chained ones, each
     # back to front -- a pass's run goes in FRONT of what the pass
@@ -1690,7 +1757,7 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
     behind_count = 0
     titled: list[list[int]] = []
     picks = list(peeled.picks)
-    numeral = peeled.numeral
+    numerals = list(peeled.numerals)
     while kept < peeled.names:
         names = peeled.names
         titled.append(rest[kept:names])
@@ -1714,6 +1781,7 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
                                    units=units, second=second,
                                    count_numeral=count_numeral)
             picks.extend(peeled.picks)
+            numerals.extend(peeled.numerals)
         else:
             rest = rest[:hi] + [j for run in reversed(behind) for j in run]
             if units is not None and second >= hi:
@@ -1724,16 +1792,17 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
                                    units=units, second=second,
                                    count_numeral=count_numeral)
             picks = list(peeled.picks)
-            numeral = peeled.numeral
+            numerals = list(peeled.numerals)
         kept = trailing_titles(rest, pieces, ptags, tokens,
                                end=peeled.names, salutations=salutations)
     if behind:
         rest = rest[:hi] + [j for run in reversed(behind) for j in run]
-    final = Peel(peeled.names, numeral, tuple(picks), None)
-    p = run_start(rest, final.names, pieces, ptags, tokens, units)
+    final = Peel(peeled.names, tuple(numerals), tuple(picks), None)
+    p = run_start(rest, final.names, pieces, ptags, tokens, units,
+                  one_case)
     return (rest, tuple(j for run in reversed(titled) for j in run),
             final if p == final.names else credential_run(
-                rest, final, p, pieces, ptags, tokens))
+                rest, final, p, pieces, ptags, tokens, one_case))
 
 
 class TailRead(NamedTuple):
@@ -1899,7 +1968,8 @@ def _weighed(piece: Sequence[int], tokens: Sequence[WorkToken]) -> bool:
         return False
     tok = tokens[piece[0]]
     return (not tok.tags.isdisjoint(_WEIGHED_TAGS)
-            or _ROMAN.match(tok.text) is not None
+            or _ROMAN.match(stem := tok.text.rstrip(".")) is not None
+            and stem != ""
             or "vocab:title" in tok.tags
             and _PERIOD_ABBREV.match(tok.text) is not None)
 

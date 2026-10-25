@@ -238,7 +238,8 @@ def _behind_a_generation(state: ParseState, seg0: Sequence[int],
     # any suffix word ('Jr.', 'Esq.') counts, by its tag
     if ("vocab:suffix-word" not in tokens[seg0[-1]].tags
             and not reads_as_generation(
-                last, tokens[seg0[-2]].text, state.one_case)):
+                last, tokens[seg0[-1]].tags, tokens[seg0[-2]].text,
+                state.one_case)):
         return None
     # the generation set aside, the name's own words in front of it are
     # a whole name: 'Smith VI' is one word and a numeral, as 'Smith III'
@@ -377,7 +378,7 @@ def decide(state: ParseState) -> ParseState:
     # the helper)
     generation = bool(seg0) and (
         "vocab:suffix-word" in tokens[seg0[-1]].tags
-        or ROMAN.match(tokens[seg0[-1]].text) is not None)
+        or ROMAN.match(tokens[seg0[-1]].text.rstrip(".")) is not None)
     behind_generation = listing = False
     contrast: bool | None = None
     if not maybe:

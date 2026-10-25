@@ -108,7 +108,7 @@ A clash not settled at step 2 is reported at the decision site (mechanisms.md#AM
 
 A reading whose writing offers no cue is one the gate could only guess, so it is `default = false`: recorded in the TOML, compiled to nothing by default, turned on by a pack in phase 3. Spanish `H.`, German regnal `I.` and Czech `st.` are the first.
 
-**The numerals ask one predicate.** `i` to `v` are vocabulary and `vi` to `x` are shape, and today some rules ask only the vocabulary, so `John Smith III MD` and `John Smith VI MD` read differently (#784, #774). One predicate answers for every spelling the way the trailing numeral rule does (shape, the count for one letter, an initial in front, the period, the case), and every rule that asks either recognizer asks it. Listing `vi` to `x` instead was measured and declined: a middle initial `X` would read as a generation.
+**The numerals ask one predicate.** `i` to `v` are vocabulary and `vi` to `x` are shape, and until 2f some rules asked only the vocabulary, so `John Smith III MD` and `John Smith VI MD` read differently (#784, #774). One predicate answers for every spelling the way the trailing numeral rule does (shape, the count for one letter, an initial in front, the period, the case), and every rule that asks either recognizer asks it. Listing `vi` to `x` instead was measured and declined: a middle initial `X` would read as a generation.
 
 **`fils` and the agnomens show what kind-specific cues buy.** `fils` is gated by its case and the count, so `Alexandre Dumas fils` is to read suffix `fils` while `Marie Fils` keeps her family name, reported. The Brazilian agnomens are to be gated by the count alone: case would say nothing, and the plain generation reading breaks real surnames (`Ana Neto`) and given names.
 

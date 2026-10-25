@@ -736,17 +736,6 @@
   },
   "text": "Abu-'l-Fidāʾ Ismāʿīl Ibn-ʿAlī"
  },
- "118513257/regnal/givenFirst": {
-  "family": {
-   "expected": "",
-   "got": "VIII."
-  },
-  "suffix": {
-   "expected": "VIII.",
-   "got": ""
-  },
-  "text": "Bonifatius VIII."
- },
  "118528947/regnal/givenFirst": {
   "family": {
    "expected": "",
@@ -834,17 +823,6 @@
    "got": "Meister E."
   },
   "text": "Meister E. S."
- },
- "118690477/regnal/givenFirst": {
-  "family": {
-   "expected": "",
-   "got": "VI."
-  },
-  "suffix": {
-   "expected": "VI.",
-   "got": ""
-  },
-  "text": "Georg VI."
  },
  "118716158/direct-ir-af/givenFirst": {
   "family": {
@@ -999,17 +977,6 @@
    "got": "Manuel Marulanda"
   },
   "text": "Manuel Marulanda Vélez"
- },
- "119022397/regnal/givenFirst": {
-  "family": {
-   "expected": "",
-   "got": "VII."
-  },
-  "suffix": {
-   "expected": "VII.",
-   "got": ""
-  },
-  "text": "Konstantin VII."
  },
  "119075067/compound-latam/givenFirst": {
   "family": {
