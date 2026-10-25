@@ -1,0 +1,2 @@
+# Codecov still reports its commit statuses; this only drops the per-PR comment.
+comment: false
