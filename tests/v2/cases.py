@@ -10597,8 +10597,8 @@ CASES: tuple[Case, ...] = (
          {"given": "ANA", "family": "SILVA", "suffix": "SA"},
          ambiguities=("suffix-or-name",),
          notes="the accepted cost: S6 reads a one-case word with words "
-               "to spare as a credential, so tse-donors' SÁ / SA pairs "
-               "of this shape still part (#857)"),
+               "to spare as a credential, so tse-donors' 255 SÁ / SA pairs "
+               "still part (#857)"),
     Case("capitals_sa_after_a_particle_stays_the_suffix", "MARIA DE SA",
          {"given": "MARIA", "family": "DE", "suffix": "SA"},
          ambiguities=("suffix-or-name",)),
