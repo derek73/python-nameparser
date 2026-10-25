@@ -2,7 +2,7 @@ schema = 1
 
 [[word]]
 text = "wm"
-title = { issue = 68, note = "William, abbreviated, and no title of any kind: added for #68, where 'Wm. Scott Magargee III' read first name 'Wm.'; a bare 'Wm Smith' reads title Wm and no given name, while the dotted 'Wm.' is taken by the leading period-abbreviation shape rule whether listed or not" }
+excluded = { title = { reason = "William, abbreviated, and no title of any kind: #68 asked that 'Wm. Scott Magargee III' not read given name 'Wm.', a request judged mistaken, since Wm is the given name; a bare 'WM' opened the given part 69 times in the FEC donor list on master, every one read as a title. The dotted 'Wm.' is still taken by the leading period-abbreviation shape rule whether listed or not", issue = 68, decided = 2026-10-22 } }
 
 [[word]]
 text = "goodman"

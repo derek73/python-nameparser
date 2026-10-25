@@ -10807,6 +10807,28 @@ CASES: tuple[Case, ...] = (
          {"title": "Mr.", "given": "John", "family": "Smith"},
          classification="fix(#316)"),
 
+    # -- #789: `wm` (William) is no title. Bare, it is the given name in
+    # every position; dotted, H2's shape still takes it at the head of
+    # the given part, and vocabulary no longer does anywhere else.
+    Case("wm_bare_is_the_given_name", "Wm Smith",
+         {"given": "Wm", "family": "Smith"},
+         classification="fix(#789)",
+         notes="1.4.0 through 2.5.0 read title 'Wm' and no given name"),
+    Case("wm_bare_behind_a_title_is_the_given_name", "Dr. Wm Smith",
+         {"title": "Dr.", "given": "Wm", "family": "Smith"},
+         classification="fix(#789)"),
+    Case("wm_dotted_opening_the_name_is_h2s_title", "Wm. Smith",
+         {"title": "Wm.", "family": "Smith"},
+         notes="rules/H2's shape reads an unlisted abbreviation here, "
+               "listed or not; a given reading that outranks it is "
+               "phase 2's (#752), and this row should move with it"),
+    Case("wm_dotted_trailing_is_a_name_word", "John Smith Wm.",
+         {"given": "John", "middle": "Smith", "family": "Wm."},
+         notes="H5 read a listed `wm` as a title here from 2.3.0 "
+               "through 2.5.0; unlisted, it is a name word again"),
+    Case("wm_dotted_trailing_after_a_family_comma", "Smith, John Wm.",
+         {"given": "John", "middle": "Wm.", "family": "Smith"}),
+
     # -- #316(a): the trailing title RUN. The leading slot has a SHAPE
     # rule that outranks vocabulary (H2); the trailing slot has no
     # shape rule and reads vocabulary only. #316(b), the bare-safe
