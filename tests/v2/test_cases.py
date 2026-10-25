@@ -234,9 +234,10 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # the same day: #857's four sa rows and the reported 'Smith, SA',
     # each a suffix-or-name claim under the orders it reaches; 1415 ->
     # 1430 the same day: the review's seven sa rows, three of them
-    # reporting.
-    assert claims == 1430, (
-        f"the field sweep checks {claims} claims, recorded as 1430 on "
+    # reporting; 1430 -> 1433 the same day: the code review's 'Smith, Sa'
+    # row, which reports under each order.
+    assert claims == 1433, (
+        f"the field sweep checks {claims} claims, recorded as 1433 on "
         f"2026-10-24")
 
 

@@ -10615,6 +10615,17 @@ CASES: tuple[Case, ...] = (
     Case("sa_after_a_family_comma_in_title_position_reports", "Smith, SA John",
          {"title": "SA", "given": "John", "family": "Smith"},
          ambiguities=("suffix-or-name",)),
+    Case("bare_sa_after_a_family_comma_reads_the_title", "Smith, Sa",
+         {"title": "Sa", "family": "Smith"},
+         ambiguities=("suffix-or-name",),
+         notes="accepted (#857): the title dual, once gated, leaves the "
+               "credential run; 2.5.0 read suffix 'Sa'"),
+    Case("trailing_sa_after_a_credential_reads_the_title",
+         "Smith, John PhD Sa",
+         {"title": "Sa", "given": "John", "family": "Smith",
+          "suffix": "PhD"},
+         notes="accepted (#857), and unreported where the 'Ma' twin "
+               "reports"),
     Case("sa_after_a_middle_name_is_the_surname", "Maria Silva Sa",
          {"given": "Maria", "middle": "Silva", "family": "Sa"},
          ambiguities=("suffix-or-name",)),

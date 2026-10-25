@@ -760,7 +760,8 @@ military = { same_as = "radm" }
 [[word]]
 text = "sa"
 military = { expands = "Seaman Apprentice" }
-family = { us_census_2010 = 1600, wikidata = 110, as_of = 2026-10-23, note = "Census counts Sa and Sá together (folded); Wikidata is a lower bound, matched as Sá" }
+family = { us_census_2010 = 1600, wikidata = 182, as_of = 2026-10-24, note = "The Census writes no diacritics, so its 1,600 is Sa and Sá together (37.88% Asian/PI, so much of it is Korean, Chinese or Vietnamese Sa); Wikidata is a lower bound: 110 as Sá (Portugal, Brazil) plus 72 as Sa" }
+given = { us_ssa = 73, wikidata = 2, as_of = 2026-10-24, note = "US SSA births summed over both sexes; Wikidata is a lower bound; nam_dict band 5 (banded in 3 countries: Korea, Vietnam, China)" }
 credential = { may_be_name = true, issue = 857, note = "NPPES 167 US healthcare providers write it (healthcare only, August 2026 file). Marked for the Portuguese surname Sá written without its accent (Maria de Sa). Unlike ms it is safe: John Smith, SA keeps suffix SA (decisions/C8)" }
 
 [[word]]
