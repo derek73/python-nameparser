@@ -1353,6 +1353,7 @@
 {"name": "Jane Doe (nee Smith) MA", "given": "Jane", "family": "Doe", "suffix": "MA", "maiden": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. D."}
 {"name": "Jane Doe Jr. nee Smith", "given": "Jane", "family": "Doe", "suffix": "Jr. nee Smith", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. D.", "capitalized_force": "Jane Doe Jr. Nee Smith"}
 {"name": "Jane Doe Jr. nee Smith Ma", "given": "Jane", "family": "Doe", "suffix": "Jr. nee Smith Ma", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. D.", "capitalized_force": "Jane Doe Jr. Nee Smith MA"}
+{"name": "Jane Doe MA R.T.", "given": "Jane", "middle": "Doe MA", "family": "R.T.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. D. M. R.", "capitalized_force": "Jane Doe Ma R.T."}
 {"name": "Jane Doe PhD nee Smith", "given": "Jane", "family": "Doe", "suffix": "PhD nee Smith", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. D.", "capitalized_force": "Jane Doe PhD Nee Smith"}
 {"name": "Jane Doe geb. Smith MA", "given": "Jane", "family": "Doe", "suffix": "MA", "maiden": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. D."}
 {"name": "Jane Doe nee King.", "given": "Jane", "family": "Doe", "maiden": "King.", "initials": "J. D."}

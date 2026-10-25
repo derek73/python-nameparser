@@ -22,6 +22,7 @@
 **Precedence:**
 
 - **Paired initials at the first slot after a comma** ("García Márquez, G.J."): the dotted shape does not take every promise of the class with it, and the comma's decision reads them as the given name unless something speaks for them (C5).
+- **Paired initials at a trailing slot** ("Ram Bahadur B.K."): the dotted shape does not admit them to the class where the words-to-spare count would read them, and they are the name word they are written as (S3).
 - **A flip to the credential run at the first slot after a comma** ("John Smith, X.Y.Z."): the dotted shape does not take this promise either: the comma's decision makes it in silence where no listed member takes part, unless paired initials speak only for each other (C11).
 
 ---

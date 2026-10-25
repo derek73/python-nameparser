@@ -31,6 +31,8 @@
 "John Smith Msc.Ed."  unlisted_dotted_suffixes-off  →  suffix="Msc.Ed."
 "Jack Ma."                  →  family="Ma."  · boundary
 "John Smith Xyz."           →  family="Xyz."  · boundary
+"Ram Bahadur PhD B.K."      →  suffix="PhD B.K."
+"สมชาย ใจดี พ.บ."             →  suffix="พ.บ."
 ```
 
 **Except:**
@@ -39,7 +41,7 @@
   ```
   "Jack X.Y.I."               →  family="X.Y.I."  · boundary
   ```
-- **Paired initials are the exception**, two single letters each followed by a period, the second period optional, in a script that writes capitals: where S4 would count words to spare for them they are the name word they are written as, as the switch off reads every such word, and the fork is still reported. Two dotted single letters is how initials are written in such a script, and how some surnames are (Nepali B.K., K.C.), while a script without capitals writes its abbreviations that way, degrees among them, and keeps the position reading; behind a suffix word the pair joins the credential run as any word of this shape does.
+- **Paired initials are the exception**, as C5 defines them, in a script that writes capitals: where S4 would count words to spare for them they are the name word they are written as, as the switch off reads every such word, and the fork is still reported. Two dotted single letters is how initials are written in such a script, and how some surnames are (Nepali B.K., K.C.), while a script without capitals writes its abbreviations that way, degrees among them; behind an unambiguous suffix word the pair joins the credential run.
   ```
   "Ram Bahadur B.K."          →  family="B.K."
   "Ram Bahadur B.K."          →  middle="Bahadur"
@@ -48,8 +50,6 @@
   "Bahadur, Ram B.K."         →  middle="B.K."
   "Ram Bahadur B.K., PhD"     →  family="B.K."
   "Jane Doe nee Smith B.K."   →  maiden="Smith B.K."
-  "Ram Bahadur PhD B.K."      →  suffix="PhD B.K."  · boundary
-  "สมชาย ใจดี พ.บ."             →  suffix="พ.บ."  · boundary
   ```
 - **The position reading is a caller switch, ON by default**, and the example lines name it; turned off, such a word is name material and the chunk rule still decides the rest.
   ```
@@ -67,8 +67,13 @@
   ```
   "John Smith K.C."           →  family="K.C."
   ```
+- Paired initials behind a credential that is itself ambiguous, a listed one or one this rule reads by position, end the name and take the credential into it: the reading 1.4.0 through 2.3.0 gave, where a run of credentials is the likelier writing.
+  ```
+  "Jane Doe MA R.T."          →  family="R.T."
+  "Jane Doe MA R.T."          →  middle="Doe MA"
+  ```
 - The initialless-script clause carries no example line of its own. Every input that exercises it composes a script that writes no abbreviations with a period that only a Latin convention writes — `John Smith 田.中.` is the shape — and a composed form no writing system produces is tolerated input rather than contract, which an example of a normative rule would promise. So the witnesses are the tolerated row tests/v2/cases.py's an_initialless_script_glued_into_periods_is_not_this_shape and the CJK assertions in tests/v2/pipeline/test_vocab.py's test_period_joined_vocab_retires_the_single_character_chunk. W3 states the same precedence for the same reason.
 
 ---
-**Signal:** shape: a word with interior periods, read by its chunks or as the acronym its letters spell
+**Signal:** shape: a word with interior periods, read by its chunks or as the acronym its letters spell, and for paired initials whether its script writes capitals
 **history:** decisions/S3 · **implemented:** nameparser/_pipeline/_classify.py, nameparser/_pipeline/_comma.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py

@@ -256,9 +256,8 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
             # shipped ambiguous vocabulary carries no periods, so
             # nothing default changes.
             tags.add(SHAPE_ACRONYM_TAG)
-            # rules/S3: "Paired initials are the exception, two single
-            # letters each followed by a period, the second period
-            # optional, in a script that writes capitals" -- the shape
+            # rules/S3: "Paired initials are the exception, as C5 defines
+            # them, in a script that writes capitals" -- the shape
             # tag alone, as with the switch off, so the trailing slots
             # read them as a name word and report the fork; the comma
             # restores the class tag where C5 reads them

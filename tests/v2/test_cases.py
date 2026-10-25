@@ -222,9 +222,10 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # Karim' row, the same claim behind a title; 1365 -> 1393 on
     # 2026-10-24: #864's paired-initials and gc rows, nine claiming one
     # suffix-or-name report under each order and the switch-off row,
-    # which carries its own policy, under one.
-    assert claims == 1393, (
-        f"the field sweep checks {claims} claims, recorded as 1393 on "
+    # which carries its own policy, under one; 1393 -> 1396 the same
+    # day: the review's 'Jane Doe MA R.T.' row, one claim under each.
+    assert claims == 1396, (
+        f"the field sweep checks {claims} claims, recorded as 1396 on "
         f"2026-10-24")
 
 

@@ -3270,6 +3270,16 @@ CASES: tuple[Case, ...] = (
          notes="the boundary: behind an unambiguous credential the "
                "pair joins the run as any dotted-shape word does, the "
                "reading the switch off gives too"),
+    Case("paired_initials_behind_an_ambiguous_credential_end_the_name",
+         "Jane Doe MA R.T.",
+         {"given": "Jane", "middle": "Doe MA", "family": "R.T."},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#864)",
+         notes="rules/S3's Accepted cost: only an unambiguous suffix "
+               "word in front makes the pair the run's, so behind the "
+               "ambiguous MA the pair ends the name and takes MA in. "
+               "1.4.0 through 2.3.0 read the same; 2.4.0 through 2.5.0 "
+               "suffix 'MA R.T.'"),
     Case("a_listed_two_letter_credential_keeps_the_suffix",
          "Hari Bahadur D.C.",
          {"given": "Hari", "family": "Bahadur", "suffix": "D.C."},

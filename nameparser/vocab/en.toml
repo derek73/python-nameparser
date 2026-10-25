@@ -3812,7 +3812,7 @@ credential = {}
 [[word]]
 text = "gc"
 [word.excluded.credential]
-reason = "G.C. (Gharti Chhetri) is a Nepali surname written as two dotted initials, ending 85 of 126,981 name pairs in Nepal's 2079 BS local election candidates, where GC as a credential (the George Cross among its expansions) is written by 239 of 4,824,544 NPPES providers and no ClinicalTrials.gov official after a comma: removed 2026-10-24 by the relative-frequency criterion (decisions/suffix-acronym-collisions). Unlisted, G.C. reads as the paired initials rules/S3 leaves to the name, and GC as any unlisted capitals"
+reason = "G.C. (Gharti Chhetri) is a Nepali surname written as two dotted initials, ending 80 of 126,981 name pairs in Nepal's 2079 BS local election candidates, where GC as a credential (the George Cross among its expansions) is written by 239 of 4,824,544 NPPES providers and no ClinicalTrials.gov official after a comma: removed 2026-10-24 by the relative-frequency criterion (decisions/suffix-acronym-collisions). Unlisted, G.C. reads as the paired initials rules/S3 leaves to the name, and GC as any unlisted capitals"
 issue = 864
 
 [[word]]
