@@ -64,7 +64,7 @@ Every clash the parser decides is between readings of one token, and phase 2 put
 - **Declared name readings**, `given` and `family`, written by hand on a word some file claims or refuses (decision 11), with dated counts as provenance that never compute a reading (decision 12). Nobody maintains surname lists.
 - **Shape readings**, which today are rules standing around the vocabulary: the initial ([rules/T4](rules/T4-bare-letter-as-an-initial.md), a bare letter as an initial; [rules/T5](rules/T5-written-shape-of-an-initial.md), the written shape of an initial), the leading abbreviation title ([rules/H2](rules/H2-leading-abbreviation-title.md)), the dotted acronym ([rules/S3](rules/S3-credentials-written-with-interior-periods.md)), the capitals acronym ([rules/S9](rules/S9-unlisted-words-that-join-the-ambiguous-class-by-shape.md), unlisted words that join the ambiguous class by shape), the roman numeral past the listed ones ([rules/S10](rules/S10-trailing-roman-numeral.md)), paired initials ([rules/C5](rules/C5-paired-initials-after-the-comma.md), paired initials after the comma), and the joined and split spellings of a credential that phase 2 adds.
 
-Shape readings join the pool because of decision 20: a vocabulary reading can outrank a shape-derived one only if the shape's answer is a reading the gate weighs, not a verdict already written into a tag. Settling a clash by rewriting a tag also erases the word's other readings: retagging a capitals `DO` as an unambiguous credential let its particle reading take it into the family (`Doe, John DO`), which is why the case cue for credentials (#785) waits for the pool.
+Shape readings join the pool because of decision 20, which lets a pack's preferred reading outrank a shape-derived one, and which phase 2 applies in the default as well (an abbreviated given name over the leading-abbreviation title, below): a reading can outrank a shape-derived one only if the shape's answer is a reading the gate weighs, not a verdict already written into a tag. Settling a clash by rewriting a tag also erases the word's other readings: retagging a capitals `DO` as an unambiguous credential let its particle reading take it into the family (`Doe, John DO`), which is why the case cue for credentials (#785) waits for the pool.
 
 ### Ambiguity from readings
 
@@ -110,7 +110,7 @@ A reading whose writing offers no cue is one the gate could only guess, so it is
 
 **`fils` and the agnomens show what kind-specific cues buy.** `fils` is gated by its case and the count, so `Alexandre Dumas fils` is to read suffix `fils` while `Marie Fils` keeps her family name, reported. The Brazilian agnomens are gated by the count alone: case would say nothing, and the plain generation reading breaks real surnames (`Ana Neto`) and given names.
 
-**A credential's spelling is a form cue.** A credential joined by `-` or `/` reads as one when every chunk is listed and none is ambiguous, since a hyphen also joins names (`Smith-Jones`); an unlisted word of capitals joined that way joins the ambiguous class after a comma, gated by the name's case contrast. A credential split across a space (`Pharm. D.`, generalizing the `Ph. D.` merge) merges only where its first chunk has two or more letters, and the merged piece is a member of the ambiguous class, decided by the comma count and words to spare: an opening single letter is a middle initial (`SMITH, JOHN A. MS.` holds an initial and a salutation, not a credential `AMS`), which is also why #872 stopped reading two dotted single letters as a credential. The merged piece starts the credential's run (#827), once the numeral predicate answers the numeral before a credential.
+**A credential's spelling is a form cue.** A credential joined by `-` or `/` reads as one when every chunk is listed and none is ambiguous, since a hyphen also joins names (`Smith-Jones`); an unlisted word of capitals joined that way joins the ambiguous class after a comma, gated by the name's case contrast. A credential split across a space (`Pharm. D.`, generalizing the `Ph. D.` merge) merges only where its first chunk has two or more letters, and the merged piece is a member of the ambiguous class, decided by the comma count and words to spare: an opening single letter is a middle initial (`SMITH, JOHN A. MS.` holds an initial and a salutation, not a credential `AMS`). #872 made the same judgment for the joined spelling (`A.B.`), in scripts with capitals and outside the slot right after a comma. The merged piece is also to start the credential's run (#827), once the numeral predicate answers the numeral before a credential; since [rules/S8](rules/S8-credentials-trailing-run.md) refuses a member of the ambiguous class as a run start, how the two combine is the split-credential PR's to state (today's `Ph. D.` merge is unambiguous, and S8 already covers it).
 
 ### The front of the name
 
@@ -126,7 +126,7 @@ Which title words get a given reading is decided one word at a time (decision 16
 
 ### Brackets
 
-A bracketed or quoted credential escapes the nickname reading where its writing settles it ([rules/S1](rules/S1-bracketed-credential-is-not-a-nickname.md), #810): with interior periods, or in capitals in a name of mixed case, the case asked of the whole name. `(Ed)` stays a nickname, and so does content standing inside the name rather than after it (`Jean 'JD' Smith`).
+A bracketed or quoted credential is to escape the nickname reading where its writing settles it (#810): with interior periods, or in capitals in a name of mixed case, the case asked of the whole name. Today [rules/S1](rules/S1-bracketed-credential-is-not-a-nickname.md) keeps every member of the ambiguous class written without periods a nickname (`John Smith (MA)` → nickname `MA`), and S1 is amended when the escape lands. `(Ed)` stays a nickname, and so does content standing inside the name rather than after it (`Jean 'JD' Smith`).
 
 ### Readings on the parse
 
@@ -148,15 +148,15 @@ Each sub-phase is one PR, measured on its own base: the committed snapshot read 
 | 2d | joined unlisted capitals after a comma | 2b |
 | 2e | split credentials, and the merged piece starting the run (#827) | 2b, 2f |
 | 2f | every numeral rule asks one predicate (#784, #774, #819) | 2b |
-| 2g | capitals settle a listed credential (#785), through the pool | 2a |
+| 2g | capitals settle a listed credential (#785), through the pool | 2a, 2b |
 | 2h | generation readings gated by kind: `fils`, the agnomens, `default = false` | 2b |
 | 2i | the front of the name: the phrase partner, the contested heads, #853's word after a title, modifiers at the head | 2b |
 | 2j onward | titles that are names, one batch per word or group, in the agreed order | 2i |
 | 2k | abbreviated given names over the leading-abbreviation title (#789) | 2b |
-| 2l | the bracket escape reads the derived clash (#810) | 2a |
+| 2l | the bracket escape reads the derived clash (#810) | 2a, 2b |
 | 2m | surfacing, `Ambiguity.alternative` | the rest |
 
-2a and 2b are independent of each other. Measured changes that belonged outside phase 2 shipped as 2.x PRs: bare `wm` (#873), the `;` between credentials (#871), two dotted single letters as a surname (#872) and `sa` out of the vocabulary (#879).
+2a and 2b are independent of each other. The sub-phase that gives a reserved name its meaning updates nameparser/vocab/README.md's reserved-names table with it: 2h for `default`, 2i for `attaches`. Measured changes that belonged outside phase 2 shipped as 2.x PRs: bare `wm` (#873), the `;` between credentials (#871), two dotted single letters as a surname (#872) and `sa` out of the vocabulary (#879).
 
 ## Phase 3: packs that prefer or restrict
 
@@ -174,9 +174,9 @@ Consequences that follow from the definitions:
 - **Non-Latin vocabulary stays on under any choice**, because it selects itself by script (`씨`, `さん`, Cyrillic titles). Almost every clash between languages is within one script: `do`, `e`, `van` are all Latin.
 - **Whether a word needs a pack depends on where its clash is.** `do` clashes between languages (a Portuguese particle, an English credential, a Vietnamese surname), so a pack settles it. `fils` clashes within French, a generation word and a French surname, so no pack settles it and the phase 2 gate does the work. This reverses the premise of #684, which proposes a French pack to read `fils` as a suffix: under decisions 6 and 15, a French pack keeps both of French's readings, and `Marie Fils` would still need the gate to keep her family name.
 
-**A pack can outrank a shape rule, not only a vocabulary reading** (decision 20). `Ma. Cristina Santos Reyes` reads title `Ma.` today because the leading period-abbreviation rule claims the word before any vocabulary is consulted; in Filipino names `Ma.` abbreviates María. So shape rules (period abbreviation, initials, capitals) must emit readings into the same pool as vocabulary, where a pack's preference can act on them, rather than final answers.
+**A pack can outrank a shape rule, not only a vocabulary reading** (decision 20). Shape rules (period abbreviation, initials, capitals) emit readings into the same pool as vocabulary from phase 2 on, rather than final answers, so a pack's preference can act on them. Phase 2 already settles one such clash in the default, since every language loads there: Filipino `Ma.`, which abbreviates María, gets a `given` reading in `fil.toml` that outranks the leading period-abbreviation rule (`Ma. Cristina Santos Reyes`, title `Ma.` today); a pack's part is to prefer such readings where the default leaves both standing.
 
-**What moves in phase 3:** the locale packs' vocabulary, still in Python today, becomes language files; `default = false` marks a reading for pack-only words too risky even gated; and the reserved names `prefer`, `strict` and `default` gain their meaning. How a tag filters (does `pt` match `pt-BR`?) and how a third-party language file joins the pool and the snapshot are open under #753.
+**What moves in phase 3:** the locale packs' vocabulary, still in Python today, becomes language files; `default = false`, given its meaning in phase 2, marks the readings a pack turns on, for words too risky even gated; and the reserved names `prefer` and `strict` gain their meaning. How a tag filters (does `pt` match `pt-BR`?) and how a third-party language file joins the pool and the snapshot are open under #753.
 
 ## Phase 4: order, shape and the output model
 
