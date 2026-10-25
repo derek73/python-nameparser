@@ -48,7 +48,10 @@ name in forms 1 and 3 and at the end of the given name in form 2;
 written bare there (``Prof``), it is a name word, because many title
 words are also surnames — unless a credential stands before it, which
 starts a run of post-nominals and titles (``John Smith PhD Prof`` reads
-title ``Prof``; see :ref:`trailing-titles`).
+title ``Prof``; see :ref:`trailing-titles`), or, at the end of the
+given name in form 2, it is a listed salutation such as ``Mrs``
+(``Doe, Jane Mrs`` reads title ``Mrs`` since 2.6;
+``Lexicon.after_given_titles`` lists them).
 
 The last two differ in what the comma is doing. In form 2 it separates
 the family name from the rest, so the family name comes first; in form

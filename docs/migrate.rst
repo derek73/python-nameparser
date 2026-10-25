@@ -59,6 +59,9 @@ about either:
   holding whitespace no word carries, in a vocabulary set or as a
   ``capitalization_exceptions`` key — is dropped with a ``UserWarning``
   naming it, since 2.4
+* a ``Lexicon``, ``Policy`` or ``Parser`` pickled by 2.5 or earlier
+  raises ``ValueError`` on load since 2.6, each having gained a field;
+  re-pickle after upgrading
 
 A silent change: comparing with ``==``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -289,7 +292,8 @@ through the 2.0 API only.
 Renamed word lists (2.2)
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-The vocabulary that feeds both columns lives in ``nameparser.config``,
+The vocabulary that feeds both columns is exposed by ``nameparser.config``
+(compiled since 2.6 from ``nameparser/vocab/*.toml``),
 and in 2.2 its module and constant names moved to the vocabulary the
 ``Lexicon`` column speaks — particles, bound given names, given-name
 titles, suffix words. Terminology only; one of the four kept 1.x's
