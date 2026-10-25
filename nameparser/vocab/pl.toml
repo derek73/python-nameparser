@@ -10,7 +10,8 @@ nobility = { gender = "m", expands = "count", issue = 606, note = "borne: ~750 s
 
 [[word]]
 text = "vel"
-alias = { may_be_given = true, expands = "or, between two surnames: \"Kowalski vel Nowak\"" }
+given = { us_ssa = 24, wikidata = 6, as_of = 2026-10-25, note = "US SSA births summed over both sexes; Wikidata is a lower bound" }
+alias = { expands = "or, between two surnames: \"Kowalski vel Nowak\"" }
 
 [[word]]
 text = "i"

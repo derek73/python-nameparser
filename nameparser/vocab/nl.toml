@@ -47,12 +47,13 @@ occupation = {}
 
 [[word]]
 text = "aan"
-preposition = { may_be_given = true, issue = 18, expands = "on, at: \"aan den Toorn\"" }
+given = { wikidata = 1, as_of = 2026-10-25, note = "Wikidata is a lower bound" }
+preposition = { issue = 18, expands = "on, at: \"aan den Toorn\"" }
 
 [[word]]
 text = "aen"
+given = { note = "declared on the conservative default (decisions/vocabulary-collisions C-i): not examined, and no source counts it as a given name (2026-10-25)" }
 [word.preposition]
-may_be_given = true
 issue = 18
 expands = "aan, archaic spelling: \"aen de Landerwer\""
 
@@ -62,8 +63,8 @@ preposition = { may_be_given = false, issue = 18, expands = "at, on: \"op den Be
 
 [[word]]
 text = "te"
+given = { us_ssa = 10, wikidata = 7, as_of = 2026-10-25, note = "female births only; Wikidata is a lower bound; nam_dict band 3 in Korea" }
 [word.preposition]
-may_be_given = true
 issue = 18
 expands = "at: \"te Riele\""
 note = "Te Awanui-a-Rangi: a Māori given-name element, and in the corpus. Looks like the Dutch preposition 'te', which is why attestation rather than etymology decides"
@@ -75,28 +76,30 @@ preposition = { may_be_given = false, expands = "at the, te der contracted: \"te
 [[word]]
 text = "tho"
 [word.preposition]
-may_be_given = true
 issue = 18
 expands = "to, Low German zu: \"tho Wopenreijss\""
 
 [[word]]
 text = "thoe"
-preposition = { may_be_given = true, issue = 18, expands = "to, archaic: \"thoe Holthues\"" }
+given = { note = "declared on the conservative default (decisions/vocabulary-collisions C-i): not examined, and no source counts it as a given name (2026-10-25)" }
+preposition = { issue = 18, expands = "to, archaic: \"thoe Holthues\"" }
 
 [[word]]
 text = "van"
+given = { us_ssa = 31194, wikidata = 282, as_of = 2026-10-25, note = "US SSA births summed over both sexes; Wikidata is a lower bound; nam_dict band 13 in Vietnam, 2 in U.S.A." }
 [word.preposition]
-may_be_given = true
 expands = "of, from"
-note = "Vietnamese Văn, and Van Johnson -- the canonical particle-or-given ambiguity this whole flag exists for"
+note = "Vietnamese Văn, and Van Johnson -- the canonical particle-or-given ambiguity this whole marker exists for"
 
 [[word]]
 text = "vande"
-preposition = { may_be_given = true, issue = 18, expands = "van de contracted: \"Vande Casteele\"" }
+given = { note = "declared on the conservative default (decisions/vocabulary-collisions C-i): not examined, and no source counts it as a given name (2026-10-25)" }
+preposition = { issue = 18, expands = "van de contracted: \"Vande Casteele\"" }
 
 [[word]]
 text = "vander"
-preposition = { may_be_given = true, expands = "van der contracted" }
+given = { us_ssa = 1828, wikidata = 18, as_of = 2026-10-25, note = "male births only; Wikidata is a lower bound" }
+preposition = { expands = "van der contracted" }
 
 [[word]]
 text = "vd"
@@ -124,7 +127,7 @@ article = { may_be_given = false, expands = "the: \"de Vries\"" }
 
 [[word]]
 text = "den"
-article = { may_be_given = true, expands = "the: \"van den Berg\"" }
+article = { expands = "the: \"van den Berg\"" }
 
 [[word]]
 text = "der"
@@ -136,11 +139,11 @@ article = { may_be_given = false, issue = 18, expands = "the" }
 
 [[word]]
 text = "heer"
+given = { us_ssa = 272, as_of = 2026-10-25, note = "female births only" }
 [word.rank]
-may_be_given = true
 issue = 18
 expands = "lord, the nobiliary 'heer van'"
-note = "added from #18's test \"Johan de heer Van Kampen\" (family 'de heer Van Kampen'), which appears to be two real names run together (Johannes de Heer, a Dutch Protestant figure, and the surname Van Kampen): the string occurs elsewhere only in another name parser's test data (hex.pm full_name_splitter 1.0.3). No real name supports the rank reading, and its may_be_given = true is the unexamined default: nobody has checked Heer as a given name. Removing it moves PARTICLES, so it is left to #766"
+note = "added from #18's test \"Johan de heer Van Kampen\" (family 'de heer Van Kampen'), which appears to be two real names run together (Johannes de Heer, a Dutch Protestant figure, and the surname Van Kampen): the string occurs elsewhere only in another name parser's test data (hex.pm full_name_splitter 1.0.3). No real name supports the rank reading, and its may-be-given reading was the unexamined default: nobody had checked Heer as a given name before the counts on its given reading, taken for the derivation (2026-10-25) and not read by item. Removing it moves PARTICLES, so it is left to #766"
 
 [[word]]
 text = "geboren"

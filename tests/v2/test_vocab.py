@@ -113,12 +113,21 @@ def _edit(shipped: dict[str, str], file: str, old: str, new: str) -> dict[str, s
     return files
 
 
-def test_dropping_a_flag_changes_the_compiled_module(shipped: dict[str, str]) -> None:
-    files = _edit(shipped, "en.toml", 'text = "jd"\ncredential = { may_be_name = true, ',
-                  'text = "jd"\ncredential = { ')
-    c = _compile(files)
+def test_dropping_a_name_reading_changes_the_compiled_module(shipped: dict[str, str]) -> None:
+    # the markers are derived from the name readings (check 11), so the
+    # reading is what the compiled module answers to
+    jd = re.search(r'text = "jd"\n(given = \{[^\n]*\}\n)', shipped["en.toml"])
+    assert jd
+    c = _compile(_edit(shipped, "en.toml", jd.group(1), ""))
     assert "jd" not in c["SUFFIX_ACRONYMS_AMBIGUOUS"]
     assert build.render(c) != build.OUTPUT.read_text(encoding="utf-8")
+    van = re.search(r'text = "van"\n(given = \{[^\n]*\}\n)\[word.preposition\]\n',
+                    shipped["nl.toml"])
+    assert van
+    files = _edit(shipped, "nl.toml", van.group(0),
+                  'text = "van"\n[word.preposition]\nmay_be_given = false\n')
+    assert "van" in _compile(files)["NON_GIVEN_NAME_PARTICLES"]
+
 
 
 def test_moving_a_word_between_files_changes_nothing(shipped: dict[str, str]) -> None:
@@ -188,7 +197,7 @@ MUTATIONS = [
     ("excluded-defaulted-property-overridden", {"und.toml": _w('[[word]]\ntext = "mba"\ncredential = { acronym = false, excluded = { acronym = "x" } }')}, "acronym = false is excluded"),
     ("excluded-property-set-in-another-file", {"ja.toml": _w('[[word]]\ntext = "名"\nhonorific = { excluded = { attached = "x" } }'), "zh.toml": _w('[[word]]\ntext = "名"\nhonorific = { attached = { side = "after" } }')}, "attached = .* is excluded"),
     # `cased` compiles per word, so its exclusion holds over every kind
-    ("excluded-cased-set-by-another-kind", {"und.toml": _w('[[word]]\ntext = "mc"\ntitle = { excluded = { cased = "keep as written" } }'), "en.toml": _w('[[word]]\ntext = "mc"\nparticle = { may_be_given = true, cased = "MC" }')}, "keep as written"),
+    ("excluded-cased-set-by-another-kind", {"und.toml": _w('[[word]]\ntext = "mc"\ntitle = { excluded = { cased = "keep as written" } }'), "en.toml": _w('[[word]]\ntext = "mc"\nparticle = { may_be_given = false, cased = "MC" }')}, "keep as written"),
     # a property exclusion's baseline is the EXCLUDING kind's unwritten
     # value: a credential keeps its acronym unwritten, a generic suffix
     # does not, so the word reading is the refused one, and says so
@@ -202,7 +211,6 @@ MUTATIONS = [
     ("addresses-reserved-value-on-a-title-kind", {"en.toml": _w('[[word]]\ntext = "sir"\nnobility = { addresses = "full" }')}, "reserved for a later phase"),
     ("attached-on-an-acronym", {"und.toml": _w('[[word]]\ntext = "mba"\ncredential = { attached = { side = "after" } }')}, "needs a word reading"),
     ("attached-before", {"ja.toml": _w('[[word]]\ntext = "さん"\nhonorific = { attached = { side = "before" } }')}, "side = 'after'"),
-    ("may-be-name-on-a-word", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = { may_be_name = true }')}, "may_be_name marks an acronym"),
     ("may-be-initial-on-a-word", {"und.toml": _w('[[word]]\ntext = "and"\nconjunction = { may_be_initial = true }')}, "CASED single letter"),
     ("may-be-initial-caseless", {"ar.toml": _w('[[word]]\ntext = "و"\nconjunction = { may_be_initial = true }')}, "CASED single letter"),
     ("after-given-on-an-office", {"en.toml": _w('[[word]]\ntext = "king"\nnobility = { after_given = true }')}, "after_given is allowed on a salutation reading only"),
@@ -210,7 +218,21 @@ MUTATIONS = [
     # herr's shape: refused in de.toml, flagged in da.toml
     ("excluded-after-given-in-another-file", {"de.toml": _w('[[word]]\ntext = "herr"\nsalutation = { excluded = { after_given = "a surname" } }'), "da.toml": _w('[[word]]\ntext = "herr"\nsalutation = { after_given = true }')}, "after_given = true is excluded.*a surname"),
     ("after-given-not-a-flag", {"en.toml": _w('[[word]]\ntext = "mr"\nsalutation = { after_given = "yes" }')}, "after_given must be true or false"),
+    # 11: a clash with a name is a name reading; the two markers that
+    # were flags are refused, naming the reading to write
+    ("may-be-name-refused", {"en.toml": _w('[[word]]\ntext = "ma"\ncredential = { may_be_name = true }')}, "may_be_name = true is derived.*`given` or `family` reading"),
+    ("may-be-name-false-refused", {"en.toml": _w('[[word]]\ntext = "ma"\ncredential = { may_be_name = false }')}, "may_be_name = false is derived"),
+    ("may-be-name-on-a-word", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = { may_be_name = true }')}, "may_be_name = true is derived"),
+    ("may-be-given-true-refused", {"und.toml": _w('[[word]]\ntext = "van"\nparticle = { may_be_given = true }')}, "may_be_given = true is derived.*a `given` reading"),
+    ("may-be-given-true-refused-on-a-particle-kind", {"nl.toml": _w('[[word]]\ntext = "van"\npreposition = { may_be_given = true }')}, "may_be_given = true is derived"),
+    ("may-be-given-on-a-title", {"en.toml": _w('[[word]]\ntext = "dr"\ntitle = { may_be_given = false }')}, "may_be_given = false is derived"),
+    ("may-be-given-false-beside-a-given-reading", {"nl.toml": _w('[[word]]\ntext = "van"\ngiven = { note = "x" }\npreposition = { may_be_given = false }')}, "contradicts the word's given reading"),
+    ("may-be-given-false-beside-a-given-reading-in-another-file", {"nl.toml": _w('[[word]]\ntext = "van"\npreposition = { may_be_given = false }'), "en.toml": _w('[[word]]\ntext = "van"\ngiven = { note = "x" }\nexcluded = { title = "x" }')}, "contradicts the word's given reading"),
     ("particle-without-may-be-given", {"und.toml": _w('[[word]]\ntext = "van"\nparticle = {}')}, "states may_be_given"),
+    # a family reading is not a given reading: the particle still states
+    ("particle-beside-a-family-reading-without-may-be-given", {"nl.toml": _w('[[word]]\ntext = "van"\nfamily = { note = "x" }\npreposition = {}')}, "states may_be_given"),
+    # a name reading may stand without a count, never without a reason
+    ("name-reading-without-a-count-or-a-note", {"nl.toml": _w('[[word]]\ntext = "van"\ngiven = {}\npreposition = {}')}, "with no count needs a `note`"),
     # every particle kind, not only the generic one (#749): unwritten,
     # the flag would read false and put the word in the never-given half
     ("particle-kind-without-may-be-given", {"nl.toml": _w('[[word]]\ntext = "van"\npreposition = {}')}, "states may_be_given"),
@@ -231,21 +253,21 @@ MUTATIONS = [
     ("two-suffix-kinds", {"en.toml": OK, "und.toml": _w('[[word]]\ntext = "jr"\nstatus = {}')}, "one suffix kind per word"),
     # 5: one word reads one way in every file
     ("acronym-disagrees-across-files", {"ja.toml": _w('[[word]]\ntext = "博士"\ncredential = {}'), "zh.toml": _w('[[word]]\ntext = "博士"\ncredential = { acronym = false }')}, "acronym is"),
-    ("may-be-given-disagrees-across-files", {"und.toml": _w('[[word]]\ntext = "van"\nparticle = { may_be_given = true }'), "nl.toml": _w('[[word]]\ntext = "van"\nparticle = { may_be_given = false }')}, "may_be_given is"),
-    # keyed on the category: a word may take another particle kind in
-    # each language, and the kinds must still agree (#749 widened this
-    # from the kind; the narrower test let both may_be_given rows through)
-    ("may-be-given-disagrees-across-particle-kinds", {"fr.toml": _w('[[word]]\ntext = "de"\npreposition = { may_be_given = false }'), "nl.toml": _w('[[word]]\ntext = "de"\narticle = { may_be_given = true }')}, "may_be_given is"),
+    # may_be_given is stated per reading, so each file's reading states
+    # it (check 11): one file stating false does not cover another's,
+    # across files and across particle kinds (#749's rows, rewritten when
+    # the marker was derived)
+    ("may-be-given-disagrees-across-files", {"und.toml": _w('[[word]]\ntext = "van"\nparticle = {}'), "nl.toml": _w('[[word]]\ntext = "van"\nparticle = { may_be_given = false }')}, "und.toml: 'van' particle: a particle states may_be_given"),
+    ("may-be-given-disagrees-across-particle-kinds", {"fr.toml": _w('[[word]]\ntext = "de"\npreposition = { may_be_given = false }'), "nl.toml": _w('[[word]]\ntext = "de"\narticle = {}')}, "nl.toml: 'de' article: a particle states may_be_given"),
     # `cased` too: the narrower check let two kinds through to the
     # per-word mask check, which refused them with its own message
     ("cased-disagrees-across-particle-kinds", {"und.toml": _w('[[word]]\ntext = "ó"\nparticle = { may_be_given = false, cased = "Ó" }'), "ga.toml": _w('[[word]]\ntext = "ó"\nclan = { may_be_given = false, cased = "ó" }')}, "cased is"),
-    ("may-be-given-disagrees-with-the-generic-kind", {"und.toml": _w('[[word]]\ntext = "van"\nparticle = { may_be_given = true }'), "nl.toml": _w('[[word]]\ntext = "van"\npreposition = { may_be_given = false }')}, "may_be_given is"),
+    ("may-be-given-disagrees-with-the-generic-kind", {"und.toml": _w('[[word]]\ntext = "van"\nparticle = {}'), "nl.toml": _w('[[word]]\ntext = "van"\npreposition = { may_be_given = false }')}, "und.toml: 'van' particle: a particle states may_be_given"),
     ("addresses-disagrees-across-files", {"und.toml": _w('[[word]]\ntext = "sir"\ntitle = { addresses = "given" }'), "en.toml": _w('[[word]]\ntext = "sir"\ntitle = {}')}, "addresses is"),
     # keyed on the category: a title may take another kind in each file
     # (#750), and the kinds must still agree on which name they address
     ("addresses-disagrees-across-title-kinds", {"en.toml": _w('[[word]]\ntext = "sir"\nnobility = { addresses = "given" }'), "fr.toml": _w('[[word]]\ntext = "sir"\nsalutation = {}')}, "addresses is"),
     ("addresses-disagrees-with-the-generic-title", {"und.toml": _w('[[word]]\ntext = "sir"\ntitle = {}'), "en.toml": _w('[[word]]\ntext = "sir"\nnobility = { addresses = "given" }')}, "addresses is"),
-    ("may-be-name-disagrees-across-files", {"en.toml": _w('[[word]]\ntext = "ma"\ncredential = {}'), "und.toml": _w('[[word]]\ntext = "ma"\ncredential = { may_be_name = true }')}, "may_be_name is"),
     # 6: an exclusion holds across files
     ("excluded-kind-in-another-file", {"fr.toml": _w('[[word]]\ntext = "fils"\nexcluded = { generation = "Marie Fils" }'), "en.toml": _w('[[word]]\ntext = "fils"\ngeneration = {}')}, "Marie Fils"),
     # the excluded kind ITSELF, with a property moving it to the other
@@ -259,7 +281,7 @@ MUTATIONS = [
     # a particle kind's exclusion refuses every other particle kind:
     # one particle kind per file made this impossible before #749
     ("excluded-particle-kind-sidestepped-by-a-sibling-kind", {"ar.toml": _w('[[word]]\ntext = "ben"\nexcluded = { patronymic = "Ben is a given name" }'), "pl.toml": _w('[[word]]\ntext = "ben"\npreposition = { may_be_given = false }')}, "Ben is a given name"),
-    ("excluded-particle-kind-sidestepped-by-the-generic-kind", {"ar.toml": _w('[[word]]\ntext = "ben"\nexcluded = { patronymic = "Ben is a given name" }'), "und.toml": _w('[[word]]\ntext = "ben"\nparticle = { may_be_given = true }')}, "Ben is a given name"),
+    ("excluded-particle-kind-sidestepped-by-the-generic-kind", {"ar.toml": _w('[[word]]\ntext = "ben"\nexcluded = { patronymic = "Ben is a given name" }'), "und.toml": _w('[[word]]\ntext = "ben"\nparticle = { may_be_given = false }')}, "Ben is a given name"),
     ("excluded-particle-category-refuses-a-kind", {"ga.toml": _w('[[word]]\ntext = "o"\nexcluded = { particle = "a periodless initial" }\nclan = { may_be_given = false }')}, "a periodless initial"),
     # a title kind's exclusion refuses every other title kind, and the
     # title category every kind: one title kind made both impossible
@@ -287,9 +309,11 @@ MUTATIONS = [
     ("phrase-title-kind-addressing-the-family", {"en.toml": _w('[[word]]\ntext = "deputy secretary"\noffice = {}')}, "phrase can never match"),
     ("phrase-with-cased", {"und.toml": _w('[[word]]\ntext = "sir and dame"\ntitle = { addresses = "given", cased = "Sir and Dame" }')}, "looked up per word"),
     ("phrase-particle", {"und.toml": _w('[[word]]\ntext = "de la"\nparticle = { may_be_given = false }')}, "phrase can never match"),
-    # 9: a bound given name that is a particle may be given
-    ("bound-given-particle-never-given", {"und.toml": _w('[[word]]\ntext = "abu"\nparticle = { may_be_given = false }\nbound_given = {}')}, "may_be_given = true"),
-    ("bound-given-particle-kind-never-given", {"und.toml": _w('[[word]]\ntext = "abu"\nbound_given = {}'), "ar.toml": _w('[[word]]\ntext = "abu"\nteknonymic = { may_be_given = false }')}, "may_be_given = true"),
+    # 9: a bound given name that is a particle has a given reading
+    ("bound-given-particle-never-given", {"und.toml": _w('[[word]]\ntext = "abu"\nparticle = { may_be_given = false }\nbound_given = {}')}, "needs a given reading"),
+    ("bound-given-particle-kind-never-given", {"und.toml": _w('[[word]]\ntext = "abu"\nbound_given = {}'), "ar.toml": _w('[[word]]\ntext = "abu"\nteknonymic = { may_be_given = false }')}, "needs a given reading"),
+    # a family reading does not answer it
+    ("bound-given-particle-with-a-family-reading", {"und.toml": _w('[[word]]\ntext = "abu"\nfamily = { note = "x" }\nparticle = { may_be_given = false }\nbound_given = {}')}, "needs a given reading"),
     # the data invariants that were import-time asserts
     ("elided-particle-without-its-twin", {"und.toml": _w('[[word]]\ntext = "d\'"\nparticle = { may_be_given = false }')}, "U\\+2019 spelling"),
     ("elided-particle-kind-without-its-twin", {"fr.toml": _w('[[word]]\ntext = "l\'"\narticle = { may_be_given = false }')}, "U\\+2019 spelling"),
@@ -332,7 +356,7 @@ MUTATIONS = [
     # second kind of a category
     ("same-as-cycle-across-files", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = {}\n\n[[word]]\ntext = "jnr"\ngeneration = { same_as = "jr" }'), "fr.toml": _w('[[word]]\ntext = "jr"\ngeneration = { same_as = "jnr" }')}, "same_as loops"),
     ("same-as-cycle-behind-another-files-head", {"de.toml": _w('[[word]]\ntext = "x"\ngeneration = {}\n\n[[word]]\ntext = "jr"\ngeneration = { same_as = "x" }'), "en.toml": _w('[[word]]\ntext = "jnr"\ngeneration = { same_as = "jr" }\n\n[[word]]\ntext = "jr"\ngeneration = { same_as = "jnr" }')}, "same_as loops, jnr -> jr -> jnr;"),
-    ("same-as-cycle-through-a-second-kind", {"nl.toml": _w('[[word]]\ntext = "c"\npreposition = { may_be_given = true }\n\n[[word]]\ntext = "a"\npreposition = { may_be_given = true, same_as = "c" }\narticle = { may_be_given = true, same_as = "b" }\n\n[[word]]\ntext = "b"\narticle = { may_be_given = true, same_as = "a" }')}, "same_as loops, a -> b -> a;"),
+    ("same-as-cycle-through-a-second-kind", {"nl.toml": _w('[[word]]\ntext = "c"\npreposition = { may_be_given = false }\n\n[[word]]\ntext = "a"\npreposition = { may_be_given = false, same_as = "c" }\narticle = { may_be_given = false, same_as = "b" }\n\n[[word]]\ntext = "b"\narticle = { may_be_given = false, same_as = "a" }')}, "same_as loops, a -> b -> a;"),
     # a chain running INTO a loop: the loop is named, not the chain
     ("same-as-chain-into-a-loop", {"en.toml": _w('[[word]]\ntext = "xa"\ngeneration = { same_as = "xb" }\n\n[[word]]\ntext = "xb"\ngeneration = { same_as = "xc" }\n\n[[word]]\ntext = "xc"\ngeneration = { same_as = "xb" }')}, "same_as loops, xb -> xc -> xb;"),
 ]
@@ -354,7 +378,11 @@ def test_every_mutation_starts_from_a_pool_the_checks_accept() -> None:
          "zh.toml": _w('[[word]]\ntext = "博士"\ncredential = { acronym = false }')},
         {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = {}\n\n'
                        '[[word]]\ntext = "jnr"\ngeneration = { same_as = "jr" }')},
-        {"und.toml": _w('[[word]]\ntext = "abu"\nparticle = { may_be_given = true }\nbound_given = {}')},
+        {"und.toml": _w('[[word]]\ntext = "abu"\ngiven = { note = "x" }\nparticle = {}\nbound_given = {}')},
+        # check 11 met: a particle beside a given reading states nothing,
+        # in its own file or another, and a count-less one carries a note
+        {"nl.toml": _w('[[word]]\ntext = "van"\ngiven = { note = "x" }\npreposition = {}'),
+         "de.toml": _w('[[word]]\ntext = "van"\npreposition = {}')},
         {"und.toml": _w('[[word]]\ntext = "d\'"\nparticle = { may_be_given = false }\n\n'
                         '[[word]]\ntext = "d’"\nparticle = { may_be_given = false }')},
         {"und.toml": _w('[[word]]\ntext = "sir and dame"\ntitle = { addresses = "given" }')},
@@ -366,7 +394,7 @@ def test_every_mutation_starts_from_a_pool_the_checks_accept() -> None:
         # a title kind's exclusion refuses the title set, not the word:
         # its particle reading stays free
         {"cs.toml": _w('[[word]]\ntext = "pan"\nexcluded = { salutation = "the Chinese surname Pan" }'),
-         "und.toml": _w('[[word]]\ntext = "pan"\nparticle = { may_be_given = true }')},
+         "und.toml": _w('[[word]]\ntext = "pan"\nparticle = { may_be_given = false }')},
         # one title in a different kind per file, agreeing on addresses
         {"en.toml": _w('[[word]]\ntext = "sir"\nnobility = { addresses = "given" }'),
          "fr.toml": _w('[[word]]\ntext = "sir"\nsalutation = { addresses = "given" }')},
@@ -386,9 +414,8 @@ def test_every_mutation_starts_from_a_pool_the_checks_accept() -> None:
         {"fr.toml": _w('[[word]]\ntext = "fils"\nfamily = { us_census_2010 = 767, as_of = 2026-10-16 }\n'
                        'excluded = { given = "x", generation = "Marie Fils" }')},
         # a property exclusion refuses a value other than the default:
-        # writing the default, as a particle must for may_be_given, passes
-        {"und.toml": _w('[[word]]\ntext = "zz"\nparticle = { may_be_given = false, excluded = { may_be_given = "x" } }\n\n'
-                        '[[word]]\ntext = "yy"\ncredential = { may_be_name = false, excluded = { may_be_name = "x" } }\n\n'
+        # writing the default passes
+        {"und.toml": _w('[[word]]\ntext = "zz"\nsalutation = { after_given = false, excluded = { after_given = "x" } }\n\n'
                         '[[word]]\ntext = "xx"\ncredential = { excluded = { acronym = "x" } }')},
         # the defaults agree with the written value across files
         {"und.toml": _w('[[word]]\ntext = "dr"\ntitle = {}'),
@@ -439,6 +466,44 @@ def test_every_mutation_starts_from_a_pool_the_checks_accept() -> None:
                        '[[word]]\ntext = "млађи"\ngeneration = {}')},
     ):
         _compile(files)
+
+
+def _derived(files: dict[str, str]) -> tuple[bool, bool]:
+    """Whether zzq compiles as an ambiguous acronym and as a particle
+    that may be given."""
+    c = _compile(files)
+    return ("zzq" in c["SUFFIX_ACRONYMS_AMBIGUOUS"],
+            "zzq" in c["PARTICLES"] and "zzq" not in c["NON_GIVEN_NAME_PARTICLES"])
+
+
+@pytest.mark.parametrize(("files", "expected"), [
+    # an acronym and a name reading of either kind, in one file or two
+    ({"en.toml": _w('[[word]]\ntext = "zzq"\ngiven = { note = "x" }\ncredential = {}')}, (True, False)),
+    ({"en.toml": _w('[[word]]\ntext = "zzq"\nfamily = { note = "x" }\ncredential = {}')}, (True, False)),
+    ({"en.toml": _w('[[word]]\ntext = "zzq"\ncredential = {}'),
+      "fr.toml": _w('[[word]]\ntext = "zzq"\nfamily = { note = "x" }\nexcluded = { title = "x" }')}, (True, False)),
+    # an acronym reading of another suffix kind is marked too: the set is
+    # the acronyms', not the credential kind's
+    ({"en.toml": _w('[[word]]\ntext = "zzq"\ngiven = { note = "x" }\ncourtesy = { acronym = true }')}, (True, False)),
+    # a word reading beside a name is no acronym, and is not marked
+    ({"en.toml": _w('[[word]]\ntext = "zzq"\ngiven = { note = "x" }\ngeneration = {}')}, (False, False)),
+    ({"en.toml": _w('[[word]]\ntext = "zzq"\ncredential = {}')}, (False, False)),
+    # a particle and a given reading, in one file or two, any kind
+    ({"nl.toml": _w('[[word]]\ntext = "zzq"\ngiven = { note = "x" }\npreposition = {}')}, (False, True)),
+    ({"nl.toml": _w('[[word]]\ntext = "zzq"\narticle = {}'),
+      "en.toml": _w('[[word]]\ntext = "zzq"\ngiven = { note = "x" }\nexcluded = { title = "x" }')}, (False, True)),
+    # a family reading does not make a particle given: it states false
+    ({"nl.toml": _w('[[word]]\ntext = "zzq"\nfamily = { note = "x" }\npreposition = { may_be_given = false }')}, (False, False)),
+    # one word holding both clashes derives both markers, as do does
+    ({"en.toml": _w('[[word]]\ntext = "zzq"\ngiven = { note = "x" }\ncredential = {}'),
+      "pt.toml": _w('[[word]]\ntext = "zzq"\npreposition = {}')}, (True, True)),
+], ids=["acronym-given", "acronym-family", "acronym-name-in-another-file",
+        "acronym-of-another-kind", "word-reading-given", "acronym-alone",
+        "particle-given", "particle-given-in-another-file",
+        "particle-family-only", "both-clashes"])
+def test_the_markers_derive_from_a_name_reading(files: dict[str, str],
+                                                expected: tuple[bool, bool]) -> None:
+    assert _derived(files) == expected
 
 
 def _apply_order_messages(texts: list[str]) -> int:
@@ -774,10 +839,16 @@ def _code(cell: str) -> list[str]:
 
 def _sets_fed(kind: str, props: str = "{}", text: str = "zzq") -> set[str]:
     """The compiled constants a one-word file holding a `kind` reading
-    with `props` puts the word into (a particle states may_be_given)."""
+    with `props` puts the word into. A particle that does not state
+    may_be_given gets a given reading, as check 11 requires, so the bare
+    kind feeds only the sets its category does, and a bare name reading
+    gets the note a count-less one carries."""
+    if build.CATEGORY.get(kind) == "name" and props == "{}":
+        props = '{ note = "probe" }'
+    entry = f'{kind} = {props}'
     if build.CATEGORY.get(kind) == "particle" and "may_be_given" not in props:
-        props = "{ may_be_given = true }"
-    files = {"en.toml": _w(f'[[word]]\ntext = "{text}"\n{kind} = {props}')}
+        entry = 'given = { note = "probe" }\n' + entry
+    files = {"en.toml": _w(f'[[word]]\ntext = "{text}"\n{entry}')}
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", build.VocabWarning)  # a name reading is inert
         compiled = build.compile_files(files)
@@ -790,15 +861,11 @@ def _sets_fed(kind: str, props: str = "{}", text: str = "zzq") -> set[str]:
 _PROPERTY_PROBES = {
     "addresses": ("title", '{ addresses = "given" }', "zzq"),
     "acronym": ("generation", "{ acronym = true }", "zzq"),
-    "may_be_name": ("credential", "{ may_be_name = true }", "zzq"),
     "attached": ("honorific", '{ attached = { side = "after" } }', "zzq"),
-    "may_be_given": ("particle", "{ may_be_given = false }", "zzq"),
     "may_be_initial": ("conjunction", "{ may_be_initial = true }", "q"),
     "cased": ("title", '{ cased = "ZzQ" }', "zzq"),
     "after_given": ("salutation", "{ after_given = true }", "zzq"),
 }
-#: The behavioral properties the build refuses to leave unwritten.
-_REQUIRED = {"may_be_given"}
 
 
 @pytest.mark.parametrize("kind", [k for k, c in build.CATEGORY.items() if c == "title"])
@@ -823,14 +890,17 @@ def test_the_readme_lists_every_kind_with_its_category_and_set() -> None:
 def test_the_readme_lists_every_property_with_its_type_and_categories() -> None:
     rows = _readme_table("## Properties")
     behavioral = {p for ps in build.BEHAVIORAL.values() for p in ps}
+    stated = {p for ps in build.STATED.values() for p in ps}
     assert {_code(r[0])[0]: r[1] for r in rows} == (
-        {p: "behavioral" for p in behavioral} | {p: "descriptive" for p in build.DESCRIPTIVE})
-    assert len(rows) == len(behavioral | build.DESCRIPTIVE)
+        {p: "behavioral" for p in behavioral} | {p: "stated" for p in stated}
+        | {p: "descriptive" for p in build.DESCRIPTIVE})
+    assert len(rows) == len(behavioral | stated | build.DESCRIPTIVE)
     for prop, kind_of, applies, *_ in rows:
         name = _code(prop)[0]
-        if kind_of == "behavioral":
+        if kind_of in ("behavioral", "stated"):
+            table = build.BEHAVIORAL if kind_of == "behavioral" else build.STATED
             assert set(_code(applies)) == {
-                c for c, ps in build.BEHAVIORAL.items() if name in ps}, name
+                c for c, ps in table.items() if name in ps}, name
         else:
             # a name reading takes only the descriptive keys in NAME_KEYS
             assert ("but `name`" in applies) == (name not in build.NAME_KEYS), name
@@ -840,8 +910,7 @@ def test_the_readme_states_each_behavioral_propertys_effect() -> None:
     rows = {_code(r[0])[0]: r[4] for r in _readme_table("## Properties") if r[1] == "behavioral"}
     assert set(_PROPERTY_PROBES) == set(rows)
     for prop, (kind, props, text) in _PROPERTY_PROBES.items():
-        bare = "{ may_be_given = true }" if kind == "particle" else "{}"
-        moved = _sets_fed(kind, props, text) ^ _sets_fed(kind, bare, text)
+        moved = _sets_fed(kind, props, text) ^ _sets_fed(kind, "{}", text)
         assert moved, prop  # a probe that moves nothing tests nothing
         assert set(_code(rows[prop])) & {n for n, _ in build.CONSTANTS} == moved, prop
 
@@ -849,10 +918,10 @@ def test_the_readme_states_each_behavioral_propertys_effect() -> None:
 def test_the_readme_states_each_behavioral_propertys_unwritten_value() -> None:
     for row in _readme_table("## Properties"):
         prop, kind_of, _, unwritten = _code(row[0])[0], row[1], row[2], row[3]
-        if kind_of != "behavioral":
-            continue
-        if prop in _REQUIRED:
+        if kind_of == "stated":
+            # check 11 requires each stated property somewhere
             assert "required" in unwritten, prop
+        if kind_of != "behavioral":
             continue
         defaults = {build._behavior(build.Reading("en.toml", "zzq", kind, {}), prop)
                     for kind, cat in build.CATEGORY.items()
@@ -866,9 +935,30 @@ def test_the_readme_states_each_behavioral_propertys_unwritten_value() -> None:
                 assert value is None and not {"true", "false"} & set(unwritten.split()), prop
 
 
+#: Each derived marker's probe: a reading of the clashing category
+#: (kind, props without the name reading, props with it), compiled with
+#: and without a given reading -- what moves is the marker's effect.
+_MARKER_PROBES = {
+    "possibly a name": ("credential", "{}", "{}"),
+    "possibly given": ("preposition", "{ may_be_given = false }", "{}"),
+}
+
+
+def test_the_readme_states_each_derived_markers_effect() -> None:
+    rows = {r[0]: r[2] for r in _readme_table("### Derived markers")}
+    assert set(rows) == set(_MARKER_PROBES)
+    for marker, (kind, without, with_) in _MARKER_PROBES.items():
+        files = {"en.toml": _w(f'[[word]]\ntext = "zzq"\n{kind} = {without}')}
+        named = {"en.toml": _w(f'[[word]]\ntext = "zzq"\ngiven = {{ note = "x" }}\n{kind} = {with_}')}
+        a, b = build.compile_files(files), build.compile_files(named)
+        moved = {n for n, _ in build.CONSTANTS if ("zzq" in a[n]) != ("zzq" in b[n])}
+        assert moved, marker
+        assert set(_code(rows[marker])) & {n for n, _ in build.CONSTANTS} == moved, marker
+
+
 def test_the_readme_names_every_compiled_constant() -> None:
-    # each constant is reached by a kind or by a behavioral property
-    named = {name for heading in ("## Kinds", "## Properties")
+    # each constant is reached by a kind, a property or a derived marker
+    named = {name for heading in ("## Kinds", "## Properties", "### Derived markers")
              for row in _readme_table(heading) for cell in row[1:] for name in _code(cell)}
     assert {name for name, _ in build.CONSTANTS} <= named
 

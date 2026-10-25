@@ -1,10 +1,11 @@
 # The words, and the vetting notes that stood beside them here, live in
-# nameparser/vocab/*.toml: every particle reading states may_be_given,
-# true for the ambiguous half and false for the never-given half, so the two
-# partition PARTICLES by construction. tools/vocab/build.py compiles them
-# into _compiled.py and runs the checks that were import-time asserts
-# here -- a bound given name that is also a particle must be one that may
-# be given, and an elided particle ships in both apostrophes (#700)
+# nameparser/vocab/*.toml: a particle whose word carries a given reading
+# is the ambiguous half, and every other particle reading states
+# may_be_given = false, the never-given half, so the two partition
+# PARTICLES by construction. tools/vocab/build.py compiles them into
+# _compiled.py and runs the checks that were import-time asserts here --
+# a bound given name that is also a particle must be one that may be
+# given, and an elided particle ships in both apostrophes (#700)
 # (decisions/vocabulary-model).
 from nameparser.config import _compiled
 
@@ -84,7 +85,7 @@ NON_GIVEN_NAME_PARTICLES = _compiled.NON_GIVEN_NAME_PARTICLES
 #: ambiguity for the reading not taken, and one inside it records none.
 #:
 #: Both sets are compiled from the same particle readings, the never-given
-#: ones being those with ``may_be_given = false``, which is what guarantees every
+#: ones being those whose word has no given reading, which is what guarantees every
 #: :py:data:`NON_GIVEN_NAME_PARTICLES` member is also a particle (and
 #: still joins forward), with no drift.
 PARTICLES = _compiled.PARTICLES

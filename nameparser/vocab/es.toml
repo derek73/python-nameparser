@@ -55,15 +55,15 @@ preposition = { may_be_given = false, expands = "of" }
 
 [[word]]
 text = "del"
+given = { us_ssa = 4970, wikidata = 150, as_of = 2026-10-25, note = "US SSA births summed over both sexes; Wikidata is a lower bound; nam_dict band 1 in Great Britain, 1 in U.S.A." }
 [word.preposition]
-may_be_given = true
 expands = "of the"
 note = "BOTH readings attested: Del Shannon (given name) and del Toro (particle). The ambiguity flag is the answer"
 
 [[word]]
 text = "la"
+given = { us_ssa = 1756, wikidata = 37, as_of = 2026-10-25, note = "US SSA births summed over both sexes; Wikidata is a lower bound" }
 [word.article]
-may_be_given = true
 expands = "the, fem. sg."
 note = "La Shawn, La Toya: a given-name element. The Romance article is the particle reading; its PLURALS ('las', 'los') are never-given, being no one's name"
 
@@ -85,14 +85,15 @@ note = "Same as 'las' -- and the pair is why the #390 fold narrowing regressed \
 
 [[word]]
 text = "san"
+given = { us_ssa = 2502, wikidata = 54, as_of = 2026-10-25, note = "US SSA births summed over both sexes; Wikidata is a lower bound; nam_dict band 5 in Korea" }
 [word.saint]
-may_be_given = true
 expands = "Saint: \"San Martín\""
 note = "San San Chiou: a given-name element in Burmese and Chinese naming"
 
 [[word]]
 text = "santa"
-saint = { may_be_given = true, expands = "Saint, fem." }
+given = { us_ssa = 4410, wikidata = 38, as_of = 2026-10-25, note = "US SSA births summed over both sexes; Wikidata is a lower bound; nam_dict band 5 in Italy, 5 in Latvia, 1 in Swiss, 1 in Bulgaria" }
+saint = { expands = "Saint, fem." }
 
 [[word]]
 text = "y"

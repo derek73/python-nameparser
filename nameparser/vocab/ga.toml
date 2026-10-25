@@ -14,7 +14,7 @@ issue = 661
 
 [[word]]
 text = "mac"
-clan = { may_be_given = true, expands = "son of" }
+clan = { expands = "son of" }
 
 [[word]]
 text = "mc"
@@ -54,8 +54,8 @@ note = "Never a given name (#604). The one ONE-LETTER particle, so the letter wr
 
 [[word]]
 text = "ua"
+given = { note = "C-i's default under uncertainty, as the particle's note says; no source counts it as a given name (2026-10-25)" }
 [word.clan]
-may_be_given = true
 issue = 604
 expands = "descendant of, the older spelling: \"Seán Ua Buachalla\""
 same_as = "ó"

@@ -2,7 +2,7 @@
 
 ## Standing
 
-- `ma` and `do` are members of the ambiguous acronym set (`suffix_acronyms_ambiguous`: credential readings with `may_be_name`, `uv run python tools/vocab/query.py --word ma`), kept there because both are common surnames; the set has grown past these two since (decisions/suffix-acronym-collisions), and the marking is still what lets `Jack Ma` read family 'Ma' with `suffix-or-name` reported, while `John Smith MA` reads suffix — 2026-07-17.
+- `ma` and `do` are members of the ambiguous acronym set (`suffix_acronyms_ambiguous`: acronym readings on a word with a `given` or `family` reading, decisions/vocabulary-model 2026-10-25, `uv run python tools/vocab/query.py --word ma`), kept there because both are common surnames; the set has grown past these two since (decisions/suffix-acronym-collisions), and the marking is still what lets `Jack Ma` read family 'Ma' with `suffix-or-name` reported, while `John Smith MA` reads suffix — 2026-07-17.
 - In a name written in more than one case, a member in capitals leans credential and is taken with nothing to spare (`Jack MA`, `Jack DO` → given 'Jack', suffix 'MA'/'DO'), where `Jack Ma` keeps family 'Ma'; a deliberate break from v1, which read `Jack MA` as family 'MA' — 2026-09-15 #289.
 - A member written with its periods, one after each letter, counts unambiguously (`Jack M.A.`, `Jack D.O.` → suffix, `given-or-family` reported when only the given name remains), and one trailing period is no such spelling (`Jack Ma.` → family 'Ma.') — 2026-07-17.
 - A parenthesized bare `(MA)` or `(DO)` reads as a nickname, no longer escaping to suffix as in 1.x, and reports `suffix-or-nickname` — 2026-07-17.

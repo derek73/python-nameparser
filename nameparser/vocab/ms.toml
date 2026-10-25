@@ -18,12 +18,12 @@ nobility = {}
 
 [[word]]
 text = "bin"
-patronymic = { may_be_given = true, expands = "son of: \"Ahmad bin Ismail\"", gender = "m" }
+patronymic = { expands = "son of: \"Ahmad bin Ismail\"", gender = "m" }
 
 [[word]]
 text = "binti"
+given = { us_ssa = 54, as_of = 2026-10-25, note = "female births only" }
 [word.patronymic]
-may_be_given = true
 issue = 604
 expands = "daughter of: \"Ina binti Navalamar\""
 gender = "f"
@@ -31,8 +31,8 @@ note = "The female partner of 'bin'. Binti is also a given name (Swahili, \"daug
 
 [[word]]
 text = "binte"
+given = { note = "declared beside binti, as the particle reading is kept beside binti's (#604); no source counts it as a given name (2026-10-25)" }
 [word.patronymic]
-may_be_given = true
 issue = 604
 expands = "daughter of, Singapore spelling"
 same_as = "binti"
