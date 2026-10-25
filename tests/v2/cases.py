@@ -1681,6 +1681,13 @@ CASES: tuple[Case, ...] = (
          notes="a member a suffix word in front carries is what the "
                "trailing run takes, so it spares no word for the agnomen "
                "behind it (rules/S11, #890)"),
+    Case("an_agnomen_behind_a_joined_surname", "Maria Gomes e Silva Filho",
+         {"given": "Maria", "family": "Gomes e Silva", "suffix": "Filho"},
+         classification="fix(#843)",
+         ambiguities=("suffix-or-name",),
+         notes="a connective join in front is one name word, the "
+               "agnomen's word to spare (rules/S11, #890). 1.4.0 and "
+               "2.6.0 read family 'Filho'"),
     Case("fils_after_a_name", "Alexandre Dumas fils",
          {"given": "Alexandre", "family": "Dumas", "suffix": "fils"},
          classification="fix(#752)",
