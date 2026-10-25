@@ -10,7 +10,7 @@
 
 Elsewhere: paired initials after a generation, dotted the given name and undotted the credential (`John Smith Jr., M.J.` → given 'M.J.'; `John Smith Jr., MJ` → suffix 'Jr., MJ') — decisions/C1's 2026-10-19 (Derek), #761 entry; `mbchb`, whose addition #656 declined, is listed (`Smith, MBChB` → suffix 'MBChB') — decisions/suffix-acronym-collisions' 2026-10-21 (#797) entry.
 
-Open: #774 — a roman numeral S10 reads is lost into the family before dotted paired initials (`John Smith V, M.J.`), decisions/C1's Open line.
+Open: none in this file.
 
 ## Log
 

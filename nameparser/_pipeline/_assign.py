@@ -60,7 +60,9 @@ particle out of that position) -- whatever role name_order assigns --
 and, since #613, at P6's attachment after a family comma where the run
 holds an ambiguous particle ("Beethoven, Ludwig van").
 Emits SUFFIX_OR_NAME at these sites: the trailing roman numeral, taken
-or (since #718) declined for want of words to spare, each
+or declined (since #718 for want of words to spare, since #752 for its
+Title case), a numeral ending the family part before a family comma,
+one of two or more letters ending a given part's walk, each
 ambiguous acronym the trailing peel had to resolve, the bare-suffix
 carve-out where an input that is nothing but post-nominal vocabulary
 gets its first word made into the name (H4's suffix half, #491),
@@ -89,8 +91,10 @@ from typing import NamedTuple
 
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline._vocab import (
-    _ROMAN, effective_script, is_suffix_lenient,
-    reads_as_a_reported_numeral, resolve_script_set,
+    _ROMAN, effective_script, is_initial_shaped, is_listed_numeral,
+    is_suffix_lenient,
+    numeral_leans_to_the_name, numeral_settled_by_case,
+    reads_as_a_reported_numeral, reads_as_generation, resolve_script_set,
 )
 from nameparser._pipeline._pieces import (
     anchor_in_reach, credential_at_the_given_slot, given_slot_anchors,
@@ -303,7 +307,7 @@ def _placed(read: TailRead, rest: list[int],
     names.extend(suffixes)
     # built, not `_replace`d: that is two frames on every read
     return names, tuple(titled), Peel(
-        count, peel.numeral, peel.picks, peel.anchors, tuple(run_titles),
+        count, peel.numerals, peel.picks, peel.anchors, tuple(run_titles),
         peel.absorbed)
 
 
@@ -407,16 +411,20 @@ def _assign_main(seg_idx: int, state: ParseState,
         _set_roles(tokens, pieces[piece_idx], Role.TITLE)
     for piece in peeled.absorbed:
         ambiguities.append(_absorbed(piece, tokens))
-    if peeled.numeral is not None:
-        # a trailing single letter is a name part unless it happens
-        # to be a roman numeral -- and V/X/I are ordinary middle
-        # initials, so taking it as a suffix is a call, not a fact
+    for numeral in peeled.numerals:
+        # a single letter is a name part unless it happens to be a
+        # roman numeral -- and V/X/I are ordinary middle initials, so
+        # taking it as a suffix is a call, not a fact; a numeral read
+        # by its shape alone is in no wordlist, and may be a name word
+        text = tokens[numeral[0]].text
         ambiguities.append(PendingAmbiguity(
             AmbiguityKind.SUFFIX_OR_NAME,
-            f"{tokens[peeled.numeral[0]].text!r} is a roman numeral, so "
-            f"it reads as a generational suffix; any other single "
-            f"letter there would be a middle initial",
-            peeled.numeral))
+            f"{text!r} is a roman numeral, so it reads as a "
+            f"generational suffix; "
+            + ("any other single letter there would be a middle initial"
+               if len(text.rstrip(".")) == 1
+               else "it may be a name word"),
+            numeral))
     name_pieces, suffix_pieces = rest[:peeled.names], rest[peeled.names:]
     if peeled.run_titles:
         suffix_pieces = [q for q in suffix_pieces
@@ -537,11 +545,12 @@ def _assign_main(seg_idx: int, state: ParseState,
     # `_ROMAN` first, C-level, so an ordinary name word pays no frame
     if (len(name_pieces) >= 2 and (suffix_pieces or titled_tail)
             and len(last := pieces[name_pieces[-1]]) == 1
-            and _ROMAN.match(word := tokens[last[0]].text) is not None
+            and _ROMAN.match((word := tokens[last[0]].text).rstrip("."))
+            is not None
             and tuple(last) not in peeled.picks
             and reads_as_a_reported_numeral(
-                word, tokens[pieces[name_pieces[-2]][0]].text,
-                state.one_case)):
+                word, tokens[last[0]].tags,
+                tokens[pieces[name_pieces[-2]][0]].text, state.one_case)):
         ambiguities.append(PendingAmbiguity(
             AmbiguityKind.SUFFIX_OR_NAME,
             f"{word!r} is a roman numeral, but a post-nominal or title "
@@ -557,10 +566,20 @@ def _assign_main(seg_idx: int, state: ParseState,
         # declined pick (#718), which carries neither credential tag
         # (the acronym fork's picks carry one) and is never a suffix
         if token.tags.isdisjoint(_AMBIGUOUS_CREDENTIAL_TAGS):
+            # a pick a credential run in front then took is the run's
+            # absorbed name word (rules/S8); otherwise it is declined
+            # for want of words to spare (one letter) or for its Title
+            # case (two or more, rules/S10's lean)
+            if token.role is Role.SUFFIX:
+                ambiguities.append(_absorbed(piece, tokens))
+                continue
+            why = ("is a roman numeral, but the name has no other word "
+                   "to spare for it" if len(token.text.rstrip(".")) == 1
+                   else "is a roman numeral written in Title case, which "
+                        "leans to the name")
             ambiguities.append(PendingAmbiguity(
                 AmbiguityKind.SUFFIX_OR_NAME,
-                f"{token.text!r} is a roman numeral, but the name has "
-                f"no other word to spare for it; read as ", piece,
+                f"{token.text!r} {why}; read as ", piece,
                 field_tail=" rather than a generational suffix"))
             continue
         declined = ("a name part" if token.role is Role.SUFFIX
@@ -596,11 +615,32 @@ def _assign_main(seg_idx: int, state: ParseState,
     return order
 
 
+def _family_part_numeral(word: WorkToken, preceding: str, names: int,
+                         one_case: bool | None) -> Role | None:
+    """The role of a roman numeral ending the family part before a
+    family comma, behind `names` pieces of that part, as the comma-less
+    name reads one ending it (rules/S10), or None where the numeral's
+    predicate reads no numeral there (an initial in front, a letter with
+    its period): the suffix where it reads as the generation, a
+    one-letter numeral needing two name words in front of it, and the
+    family name where that count fails or its Title case leans to the
+    name."""
+    if reads_as_generation(word.text, word.tags, preceding, one_case):
+        if (names < 2 and len(word.text) == 1
+                and not numeral_settled_by_case(word.text, one_case)):
+            return Role.FAMILY
+        return Role.SUFFIX
+    if numeral_leans_to_the_name(word.text, word.tags, preceding, one_case):
+        return Role.FAMILY
+    return None
+
+
 def _reads_as_a_trailing_suffix(piece: Sequence[int],
                                prev_piece: Sequence[int],
                                prev_ptags: Set[str],
                                tokens: Sequence[WorkToken],
-                               lexicon: Lexicon) -> bool:
+                               lexicon: Lexicon,
+                               one_case: bool | None) -> bool:
     """The lenient tail test for a trailing one-token piece after a
     family comma, and #432's carve-out from it.
 
@@ -615,21 +655,27 @@ def _reads_as_a_trailing_suffix(piece: Sequence[int],
     is_suffix_piece said no, and a lenient single token it refuses is
     one carrying the `initial` tag, so the shape is already implied.
 
-    NOT reads_as_generation, though it answers the period half:
-    it also refuses a numeral behind an initial-shaped piece, which is
-    a no-comma rule and the opposite of this path's v1 parity --
-    'Chang, Andy C I' is first Andy, middle C, suffix I, and asking
-    that predicate here made the numeral a middle. The #401/#421 entry
+    reads_as_generation is asked with no word in front (`preceding`
+    None): its initial-in-front refusal is a no-comma rule and the
+    opposite of this path's v1 parity -- 'Chang, Andy C I' is first
+    Andy, middle C, suffix I, and asking it with the word in front
+    made the numeral a middle. The #401/#421 entry
     under decisions/P5 records the same fork declining to transfer
     to this walk under LENIENT.
     """
     # rules/C9: "behind a name word it is the generation only when
     # written bare, a period marking it the abbreviation of a name and
     # so a middle initial"
-    text = tokens[piece[0]].text
+    tok = tokens[piece[0]]
+    text = tok.text
     if text.endswith(".") and not is_suffix_piece(
             prev_piece, prev_ptags, tokens):
         return False
+    # the numeral's predicate, which in this slot reads a bare
+    # one-letter numeral by the vocabulary ('Smith, John X' keeps
+    # middle 'X'); `_ROMAN` first, C-level
+    if len(text) == 1 and _ROMAN.match(text) is not None:
+        return reads_as_generation(text, tok.tags, None, one_case)
     return is_suffix_lenient(text, lexicon)
 
 
@@ -1115,6 +1161,16 @@ def assign(state: ParseState) -> ParseState:
                 """
                 if is_suffix_piece(pieces[m], ptags[m], tokens):
                     return True
+                # rules/S10: "A numeral of two or more letters reads as
+                # the generation" in the given part, which asks no
+                # initial in front -- 'Smith, John VI' as 'Smith, John
+                # III' (#752); `_ROMAN` first, C-level
+                if (len(pieces[m]) == 1
+                        and len(stem := (tok := tokens[pieces[m][0]]).text
+                                .rstrip(".")) >= 2
+                        and _ROMAN.match(stem) is not None):
+                    return reads_as_generation(tok.text, tok.tags, None,
+                                               state.one_case)
                 # rules/S5: "a word that ENDS that part reads as the credential
                 # unless its WRITING says otherwise" -- the given part's
                 # trailing slot (#531).
@@ -1209,7 +1265,7 @@ def assign(state: ParseState) -> ParseState:
                         and len(pieces[m]) == 1
                         and _reads_as_a_trailing_suffix(
                             pieces[m], pieces[prev], ptags[prev],
-                            tokens, state.lexicon))
+                            tokens, state.lexicon, state.one_case))
 
             # rules/C1: "anything else after the comma means the
             # listing form" -- and this walk reads it. A segment of no
@@ -1302,10 +1358,13 @@ def assign(state: ParseState) -> ParseState:
                 tags = tokens[pieces[m][0]].tags
                 if (m not in titled_idx
                         and ("suffix" in ptags[m]
-                             or ("vocab:suffix" in tags
+                             or (("vocab:suffix" in tags
+                                  or _ROMAN.match(tokens[pieces[m][0]].text
+                                                  .rstrip(".")) is not None)
                                  and tags.isdisjoint(_NOT_A_RUN_START)))
                         and starts_a_credential_run(pieces[m], ptags[m],
-                                                    tokens)):
+                                                    tokens, None,
+                                                    state.one_case)):
                     sticky_from = m
                     break
             # rules/P6: "a particle ending the name attaches to that
@@ -1337,6 +1396,34 @@ def assign(state: ParseState) -> ParseState:
                     continue
                 suffix_here = (reads_as_a_suffix(m, titled_idx)
                                if titled_idx else m not in walkable)
+                # rules/S10: "A numeral read by its shape alone reports
+                # too" -- one of two or more letters the walk reads as
+                # the generation; `_ROMAN` first, C-level
+                if (suffix_here and len(pieces[m]) == 1
+                        and len(stem := (tok := tokens[pieces[m][0]]).text
+                                .rstrip(".")) >= 2
+                        and _ROMAN.match(stem) is not None
+                        and not is_listed_numeral(tok.text, tok.tags)
+                        and not numeral_settled_by_case(tok.text,
+                                                        state.one_case)):
+                    ambiguities.append(PendingAmbiguity(
+                        AmbiguityKind.SUFFIX_OR_NAME,
+                        f"{tok.text!r} is a roman numeral, so it reads as "
+                        f"a generational suffix; it may be a name word",
+                        (pieces[m][0],)))
+                # rules/C9: "a lone letter ending the given part ahead of
+                # a further comma is the middle initial, whatever stands
+                # before it" -- the further comma has named the suffix,
+                # so the credential run in front stops short of it
+                # (#819); `len` first, C-level
+                if (m > sticky_from and len(state.segments) > 2
+                        and len(pieces[m]) == 1
+                        and len(tokens[pieces[m][0]].text.rstrip(".")) == 1
+                        and m == previous_kept(len(pieces), titled_idx)
+                        and is_initial_shaped(
+                            tokens[pieces[m][0]].text.upper())):
+                    _set_roles(tokens, pieces[m], Role.MIDDLE)
+                    continue
                 if m >= sticky_from and not k6 <= m < end6:
                     # inside the run: a title word reads as a title,
                     # every other word as a suffix, and a word the walk
@@ -1512,6 +1599,34 @@ def assign(state: ParseState) -> ParseState:
             piece = fam_pieces[k]
             if k >= floor:
                 _set_roles(tokens, piece, Role.SUFFIX)
+            # rules/C1: "a numeral ending the family part is read as the
+            # comma-less name reads it" -- the numeral's predicate, a
+            # one-letter numeral with two name words in front of it
+            # (rules/S10), so 'John Smith V, M.J.' keeps suffix 'V' as
+            # 'John Smith III, M.J.' keeps 'III' (#774). `_ROMAN`
+            # first, C-level, so a family word pays no frame
+            elif (k > lead and len(piece) == 1
+                    and _ROMAN.match(
+                        (word := tokens[piece[0]]).text.rstrip("."))
+                    is not None
+                    and all(is_suffix_piece(fam_pieces[j], fam_tags[j],
+                                            tokens)
+                            for j in range(k + 1, len(fam_pieces)))
+                    and (numeral := _family_part_numeral(
+                        word, tokens[fam_pieces[k - 1][0]].text,
+                        k - lead, state.one_case)) is not None):
+                _set_roles(tokens, piece, numeral)
+                # reported where taken: a name word here is the family
+                # name the comma has just named, which nobody misreads
+                if (numeral is Role.SUFFIX
+                        and not is_listed_numeral(word.text, word.tags)
+                        and not numeral_settled_by_case(word.text,
+                                                        state.one_case)):
+                    ambiguities.append(PendingAmbiguity(
+                        AmbiguityKind.SUFFIX_OR_NAME,
+                        f"{word.text!r} ending the family part is a roman "
+                        f"numeral, so it reads as a generational suffix; "
+                        f"it may be a name word", tuple(piece)))
             elif (k > lead and is_suffix_piece(piece, fam_tags[k], tokens)
                     and not (k + 1 < len(fam_pieces)
                              and "particle" in tokens[piece[0]].tags
