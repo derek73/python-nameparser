@@ -4,7 +4,15 @@
 
 **Then:** an unlisted word joins the ambiguous class (S4) by SHAPE, in the positions each shape is admitted: the dotted shape by default, the caps shape by default in one position and elsewhere where the caller asks for it.
 
-- **The two shapes.** Two or more period-separated chunks is one such shape, admitted by default (S3); an unlisted all-caps alphabetic word of two or more letters, standing in a suffix position of a mixed-case name and belonging to no wordlist, is the other.
+- **The two shapes.** Two or more period-separated chunks is one such shape, admitted by default (S3); an unlisted all-caps alphabetic word of two or more letters, standing in a suffix position of a mixed-case name and belonging to no wordlist, is the other, and an unlisted word of capitals whose letter chunks are joined by a hyphen or a slash, one of them of two or more letters, is that shape too, admitted where it is.
+  ```
+  "John Smith, PU-PH"         →  suffix="PU-PH"
+  "John Smith, MS-OMPT"       →  suffix="MS-OMPT"
+  "John Smith, PU/PH, Jr."    →  suffix="PU/PH, Jr."
+  "John Smith, A-B"           →  given="A-B"  · boundary
+  "John Smith, Pu-Ph"         →  given="Pu-Ph"  · boundary
+  "Jean Pierre DUPONT-MORETTI"  unlisted_caps_suffixes-everywhere  →  suffix="DUPONT-MORETTI"
+  ```
 - **Where the caps shape is admitted by default.** By default that second shape is admitted in one position only, the part after a comma with two or more name words before it (C4, C6): French and Korean records write the SURNAME in capitals, and that convention puts the capitals at the end of a name or before a comma, never after a comma behind a full name.
   ```
   "John Smith XYZ"            →  family="XYZ"  · boundary
@@ -27,4 +35,4 @@
 
 ---
 **Signal:** shape: an unlisted word written in capitals or in dotted chunks, standing in a suffix position
-**history:** decisions/S9 · **implemented:** nameparser/_pipeline/_assign.py, nameparser/_pipeline/_classify.py
+**history:** decisions/S9 · **implemented:** nameparser/_pipeline/_assign.py, nameparser/_pipeline/_classify.py, nameparser/_pipeline/_vocab.py

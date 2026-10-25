@@ -845,9 +845,11 @@ def ambiguous_class_member(text: str, lexicon: Lexicon) -> bool:
 def caps_shape_candidate(text: str, lexicon: Lexicon, policy: Policy,
                          one_case: bool | None) -> bool:
     """Whether TEXT is an UNLISTED all-caps credential candidate: two
-    or more alphabetic characters, no period (a period fails
-    `isalpha()` outright, which is what excludes the dotted spelling
-    here for free -- no separate '.' test needed), written in a name
+    or more alphabetic characters, or letter chunks joined by '-' or
+    '/' (`_joined_capitals`, #752), no period (a period fails
+    `isalpha()` and the joined pattern outright, which is what excludes
+    the dotted spelling here for free -- no separate '.' test needed),
+    written in a name
     `one_case` says is mixed (`one_case is False`; `None`, "not
     established", declines exactly as if the name were one case).
 
@@ -886,9 +888,31 @@ def caps_shape_candidate(text: str, lexicon: Lexicon, policy: Policy,
         return False
     if not text.isascii():
         text = unicodedata.normalize("NFC", text)
-    if not (len(text) >= 2 and text.isalpha() and text.isupper()):
+    if not (len(text) >= 2 and text.isalpha() and text.isupper()
+            or _joined_capitals(text)):
         return False
     return not in_any_wordlist(_normalize(text), lexicon)
+
+
+#: A word of letter chunks joined by '-' or '/' ('PU-PH', 'MD/MBA').
+_JOINED_LETTERS = re.compile(
+    r'(?:' + _LETTER + r')+(?:[-/](?:' + _LETTER + r')+)+')
+
+
+# rules/S9: "an unlisted word of capitals whose letter chunks are joined
+# by a hyphen or a slash, one of them of two or more letters, is that
+# shape too" -- the caps shape's joined spelling (decisions/S9 (#752))
+def _joined_capitals(text: str) -> bool:
+    """Whether TEXT is capitals in letter chunks joined by '-' or '/',
+    one chunk of two or more letters ('PU-PH', 'MS-OMPT', not 'A-B',
+    'MD/' or 'PU-PH2'). Its callers test `isupper()` and a joiner in C
+    first, so a word holding neither pays no frame."""
+    if not (text.isupper() and _JOINED_LETTERS.fullmatch(text)):
+        return False
+    for chunk in _JOINERS.split(text):
+        if composed_len(chunk) >= 2:
+            return True
+    return False
 
 
 def is_caps_word(text: str) -> bool:

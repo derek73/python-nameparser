@@ -141,6 +141,10 @@ _SOURCES: dict[tuple[str, str], str | None] = {
     # the joiners of a joined credential ('MD/PhD', rules/S3, #752); no
     # config key to mirror
     ("_vocab", "_JOINERS"): None,
+    # the caps shape's joined spelling ('PU-PH', rules/S9, #752), built
+    # from _LETTER, whose _MARKS the test above holds to config's; no
+    # config key to mirror
+    ("_vocab", "_JOINED_LETTERS"): None,
     # #563: paired initials ('M.J.'), C5's exception to C4's name-word
     # count after a comma; no config key to mirror
     ("_vocab", "_PAIRED_INITIALS"): None,

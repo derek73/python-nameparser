@@ -71,13 +71,17 @@
 
 **Precedence:**
 
+- **A joined word in capitals with a chunk the stricter test refuses** ("John Smith, MA/PHD"): S9's caps shape reads it, as it reads any unlisted word written in capitals, so after a comma where the name carries C6's case contrast it joins the ambiguous class, where the same word with a lowercase letter stays the name word this rule leaves it.
+  ```
+  "John Smith, MA/PHD"        →  suffix="MA/PHD"
+  ```
 - **An ambiguous credential between an unambiguous one and paired initials** ("Jane Doe PhD MA R.T."): the unambiguous word starts the run and the run takes both, the pair included (S8).
 - **Paired initials at the first slot after a comma** ("García Márquez, G.J."): they read as the given name unless something in the part speaks for them (C5).
 - **A flip to the credential run at the first slot after a comma** ("John Smith, X.Y.Z."): where no listed member of the class takes part it is not reported, unless paired initials speak only for each other (C11).
 
 **Accepted:**
 
-- A joined credential with a chunk that is a bare member of the ambiguous class keeps the reading it had before joined chunks were read, where a name in front of a comma is reversed: the hyphen joins names too, and a name word joined to a listed credential is not one the stricter test may take.
+- A joined credential with a chunk that is a bare member of the ambiguous class, written with a lowercase letter, keeps the reading it had before joined chunks were read, where a name in front of a comma is reversed: the hyphen joins names too, and a name word joined to a listed credential is not one the stricter test may take.
   ```
   "John Smith, MA/PhD"        →  given="MA/PhD"
   "John Smith, MA/PhD"        →  family="John Smith"

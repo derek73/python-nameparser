@@ -6,7 +6,7 @@ Release Log
 
     **Behavior Changes**
 
-    - **Read a credential joined by a hyphen or a slash as a suffix.** ``John Smith, MD/PhD`` gives first ``John``, last ``Smith``, suffix ``MD/PhD``, where 1.4.0 through 2.6.0 gave first ``MD/PhD``, last ``John Smith``; ``MD-PhD`` and ``PhD/MD`` read the same. Every part has to be a listed credential that is not also a name, so ``Smith-Jones`` is untouched and ``John Smith, MA/PhD`` still reverses. :issue:`752`
+    - **Read a credential joined by a hyphen or a slash as a suffix.** ``John Smith, MD/PhD`` gives first ``John``, last ``Smith``, suffix ``MD/PhD``, where 1.4.0 through 2.6.0 gave first ``MD/PhD``, last ``John Smith``; ``MD-PhD`` and ``PhD/MD`` read the same. An unlisted one written in capitals after a comma reads as a credential too where the name before the comma is in mixed case: ``John Smith, PU-PH`` gives suffix ``PU-PH``, where 1.4.0 through 2.6.0 gave first ``PU-PH``. Otherwise every part has to be a listed credential that is not also a name, so ``Smith-Jones`` is untouched and ``John Smith, MA/PhD`` still reverses. :issue:`752`, :issue:`797`
 
 * 2.6.0 - October 25, 2026
 

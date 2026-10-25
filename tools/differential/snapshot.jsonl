@@ -1340,6 +1340,7 @@
 {"name": "JOHN SMITH PH.D.", "given": "JOHN", "family": "SMITH", "suffix": "PH.D.", "initials": "J. S.", "capitalized": "John Smith Ph.D."}
 {"name": "JOHN SMITH, FNP-BC", "given": "JOHN", "family": "SMITH", "suffix": "FNP-BC", "initials": "J. S.", "capitalized": "John Smith FNP-BC"}
 {"name": "JOHN SMITH, MA", "given": "JOHN", "family": "SMITH", "suffix": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S.", "capitalized": "John Smith MA"}
+{"name": "JOHN SMITH, PU-PH", "given": "PU-PH", "family": "JOHN SMITH", "initials": "P. J. S.", "capitalized": "Pu-Ph John Smith"}
 {"name": "JOHN SMITH, VD MA", "given": "JOHN", "family": "SMITH", "suffix": "VD MA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S.", "capitalized": "John Smith VD MA"}
 {"name": "JOHN V", "given": "JOHN", "family": "V", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. V.", "capitalized": "John V"}
 {"name": "JOSE E MARIA SANTOS", "given": "JOSE", "middle": "E MARIA", "family": "SANTOS", "ambiguities": ["CONJUNCTION_OR_INITIAL"], "initials": "J. E. M. S.", "capitalized": "Jose E Maria Santos"}
@@ -1481,6 +1482,7 @@
 {"name": "Jean Joseph Antoine Marie de Witte", "given": "Jean", "middle": "Joseph Antoine Marie", "family": "de Witte", "initials": "J. J. A. M. W."}
 {"name": "Jean Louis Charles d'Orléans-Longueville", "given": "Jean", "middle": "Louis Charles", "family": "d'Orléans-Longueville", "initials": "J. L. C. d.", "capitalized_force": "Jean Louis Charles D'Orléans-Longueville"}
 {"name": "Jean Pierre DUPONT", "given": "Jean", "middle": "Pierre", "family": "DUPONT", "initials": "J. P. D.", "capitalized_force": "Jean Pierre Dupont"}
+{"name": "Jean Pierre DUPONT-MORETTI", "given": "Jean", "middle": "Pierre", "family": "DUPONT-MORETTI", "initials": "J. P. D.", "capitalized_force": "Jean Pierre Dupont-Moretti"}
 {"name": "Jean St Clair", "given": "Jean", "family": "St Clair", "initials": "J. C.", "capitalized_force": "Jean st Clair"}
 {"name": "Jean de Beaumanoir de Lavardin", "given": "Jean", "middle": "de Beaumanoir", "family": "de Lavardin", "initials": "J. B. L."}
 {"name": "Jean de Mesnil", "given": "Jean", "family": "de Mesnil", "initials": "J. M."}
@@ -1667,6 +1669,7 @@
 {"name": "John Smith vi", "given": "John", "family": "Smith", "suffix": "vi", "initials": "J. S.", "capitalized_force": "John Smith VI"}
 {"name": "John Smith 田.中.", "given": "John", "middle": "Smith", "family": "田.中.", "initials": "J. S. 田."}
 {"name": "John Smith, 1.4", "given": "1.4", "family": "John Smith", "initials": "1. J. S."}
+{"name": "John Smith, A-B", "given": "A-B", "family": "John Smith", "initials": "A. J. S."}
 {"name": "John Smith, A.B.", "given": "A.B.", "family": "John Smith", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "A. J. S."}
 {"name": "John Smith, A.B. Ph.D.", "given": "A.B.", "family": "John Smith", "suffix": "Ph.D.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "A. J. S."}
 {"name": "John Smith, AD", "given": "AD", "family": "John Smith", "initials": "A. J. S.", "capitalized_force": "Ad John Smith"}
@@ -1688,6 +1691,7 @@
 {"name": "John Smith, M.D./Ph.D.", "given": "John", "family": "Smith", "suffix": "M.D./Ph.D.", "initials": "J. S."}
 {"name": "John Smith, M.D.; Ph.D.", "given": "John", "family": "Smith", "suffix": "M.D.; Ph.D.", "initials": "J. S."}
 {"name": "John Smith, MA", "given": "John", "family": "Smith", "suffix": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
+{"name": "John Smith, MA/PHD", "given": "John", "family": "Smith", "suffix": "MA/PHD", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S.", "capitalized_force": "John Smith MA/PhD"}
 {"name": "John Smith, MA/PhD", "given": "MA/PhD", "family": "John Smith", "initials": "M. J. S.", "capitalized_force": "Ma/PhD John Smith"}
 {"name": "John Smith, MA; PhD", "given": "John", "family": "Smith", "suffix": "MA; PhD", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "John Smith, MD ; PhD", "given": "John", "family": "Smith", "suffix": "MD, PhD", "initials": "J. S."}
@@ -1702,11 +1706,14 @@
 {"name": "John Smith, MD; PhD", "given": "John", "family": "Smith", "suffix": "MD; PhD", "initials": "J. S."}
 {"name": "John Smith, MD;PhD", "given": "John", "family": "Smith", "suffix": "MD;PhD", "initials": "J. S."}
 {"name": "John Smith, MEng PhD", "given": "John", "family": "Smith", "suffix": "MEng PhD", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S.", "capitalized_force": "John Smith MENG PhD"}
+{"name": "John Smith, MS-OMPT", "given": "John", "family": "Smith", "suffix": "MS-OMPT", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "John Smith, Ma", "given": "John", "family": "Smith", "suffix": "Ma", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S.", "capitalized_force": "John Smith MA"}
 {"name": "John Smith, Mr.", "title": "Mr.", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "John Smith, Mr. Jr.", "title": "Mr.", "given": "John", "family": "Smith", "suffix": "Jr.", "initials": "J. S."}
 {"name": "John Smith, Mr. and Mrs.", "title": "Mr. and Mrs.", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "John Smith, Ms Ma", "given": "John", "family": "Smith", "suffix": "Ms Ma", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S.", "capitalized_force": "John Smith MS MA"}
+{"name": "John Smith, PU-PH", "given": "John", "family": "Smith", "suffix": "PU-PH", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
+{"name": "John Smith, PU/PH, Jr.", "given": "John", "family": "Smith", "suffix": "PU/PH, Jr.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "John Smith, Ph. D.", "given": "John", "family": "Smith", "suffix": "Ph. D.", "initials": "J. S."}
 {"name": "John Smith, Ph. D. Jones", "given": "John", "family": "Smith", "suffix": "Ph. D. Jones", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "John Smith, Ph. D.; MD", "title": "Ph.", "given": "D.;", "family": "John Smith", "suffix": "MD", "initials": "D. J. S."}
@@ -1719,6 +1726,7 @@
 {"name": "John Smith, PhD X.Y.", "given": "John", "family": "Smith", "suffix": "PhD X.Y.", "initials": "J. S."}
 {"name": "John Smith, PhD XYZ", "given": "John", "family": "Smith", "suffix": "PhD XYZ", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "John Smith, PhD vd DO", "given": "John", "family": "Smith", "suffix": "PhD vd DO", "initials": "J. S.", "capitalized_force": "John Smith PhD VD DO"}
+{"name": "John Smith, Pu-Ph", "given": "Pu-Ph", "family": "John Smith", "initials": "P. J. S."}
 {"name": "John Smith, RA Jones", "title": "RA", "given": "Jones", "family": "John Smith", "initials": "J. J. S.", "capitalized_force": "Ra Jones John Smith"}
 {"name": "John Smith, RAI", "given": "John", "family": "Smith", "suffix": "RAI", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "John Smith, V Jr.", "given": "John", "family": "Smith", "suffix": "V Jr.", "initials": "J. S."}
@@ -3042,6 +3050,7 @@
 {"name": "Smith, Ms. Jane", "title": "Ms.", "given": "Jane", "family": "Smith", "initials": "J. S."}
 {"name": "Smith, PSM I", "family": "Smith", "suffix": "PSM I", "initials": "S."}
 {"name": "Smith, PSM I.", "family": "Smith", "suffix": "PSM I.", "initials": "S."}
+{"name": "Smith, PU-PH", "given": "PU-PH", "family": "Smith", "initials": "P. S.", "capitalized_force": "Pu-Ph Smith"}
 {"name": "Smith, Ph. D.", "family": "Smith", "suffix": "Ph. D.", "initials": "S."}
 {"name": "Smith, Ph. D. III", "family": "Smith", "suffix": "Ph. D. III", "initials": "S."}
 {"name": "Smith, Ph. D. Jr.", "family": "Smith", "suffix": "Ph. D. Jr.", "initials": "S."}

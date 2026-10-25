@@ -353,8 +353,12 @@ def decide(state: ParseState) -> ParseState:
     maybe = [p[0] for p in p1 if len(p) == 1
              and (AMBIGUOUS_ACRONYM_TAG in (tags := tokens[p[0]].tags)
                   or ("vocab:suffix" not in tags
-                      and (texts[p[0]].isalpha()
-                           and texts[p[0]].isupper()
+                      and (texts[p[0]].isupper()
+                           and (texts[p[0]].isalpha()
+                                # the joined spelling ('PU-PH'), the
+                                # predicate's other half (rules/S9)
+                                or "-" in texts[p[0]]
+                                or "/" in texts[p[0]])
                            or not unicodedata.is_normalized(
                                "NFC", texts[p[0]])
                            and is_caps_word(texts[p[0]]))))]
@@ -518,7 +522,9 @@ def decide(state: ParseState) -> ParseState:
                     # caps shape writes them, so case repair keeps 'AD'
                     # (rules/R4); the C-level filter `maybe` uses first
                     if ("vocab:suffix" not in tokens[i].tags
-                            and (text.isalpha() and text.isupper()
+                            and (text.isupper()
+                                 and (text.isalpha() or "-" in text
+                                      or "/" in text)
                                  or not unicodedata.is_normalized(
                                      "NFC", text) and is_caps_word(text))):
                         caps.add(i)

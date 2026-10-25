@@ -3541,6 +3541,39 @@ CASES: tuple[Case, ...] = (
          {"given": "MA/PhD", "family": "John Smith"},
          notes="rules/S3's Accepted cost: a bare member of the ambiguous "
                "class is no chunk the stricter test counts"),
+    # #752 (phase 2d): an unlisted word of capitals joined by a hyphen
+    # or a slash is the caps shape (rules/S9), gated by the name's case
+    # contrast after a comma (rules/C6) as the unjoined word is. 1.4.0
+    # through 2.6.0 read each moved row's word as the given name, the
+    # name reversed around it (wheels, 2026-10-25).
+    Case("joined_capitals_after_a_comma_join_the_class",
+         "John Smith, PU-PH",
+         {"given": "John", "family": "Smith", "suffix": "PU-PH"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#752)",
+         notes="the French hospital-university rank; 1.4.0 through "
+               "2.6.0 read given 'PU-PH', family 'John Smith'"),
+    Case("slash_joined_capitals_before_a_third_part",
+         "John Smith, PU/PH, Jr.",
+         {"given": "John", "family": "Smith", "suffix": "PU/PH, Jr."},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#752)",
+         notes="1.4.0 through 2.6.0 read given 'PU/PH', suffix 'Jr.'"),
+    Case("joined_capitals_in_a_one_case_name_stay_the_given_name",
+         "JOHN SMITH, PU-PH",
+         {"given": "PU-PH", "family": "JOHN SMITH"},
+         notes="the boundary: no case contrast, so the capitals say "
+               "nothing (rules/C6)"),
+    Case("joined_capitals_behind_one_name_word_stay_the_given_name",
+         "Smith, PU-PH",
+         {"given": "PU-PH", "family": "Smith"},
+         notes="the boundary: one name word before the comma leaves "
+               "the part the given name (rules/C4)"),
+    Case("joined_single_letters_are_no_caps_shape",
+         "John Smith, A-B",
+         {"given": "A-B", "family": "John Smith"},
+         notes="the boundary: a chunk of two or more letters is needed, "
+               "single letters joined being how initials are written"),
     Case("paired_initials_in_a_caseless_script_keep_the_position_reading",
          "สมชาย ใจดี พ.บ.",
          {"given": "สมชาย", "family": "ใจดี", "suffix": "พ.บ."},

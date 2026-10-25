@@ -420,6 +420,41 @@ def test_suffix_as_written_reads_a_joined_credential(
     assert suffix_as_written(_normalize(text), text, lex) is expected
 
 
+@pytest.mark.parametrize("text, expected", [
+    ("PU-PH", True),
+    ("PU/PH", True),
+    ("MS-OMPT", True),
+    ("MD/PU-PH", True),     # either joiner, more than two chunks
+    ("A-BC", True),         # one chunk of two letters is enough
+    ("A-B", False),         # single letters alone are how initials join
+    ("Pu-Ph", False),       # capitals, not Title case
+    ("PU-PH2", False),      # a digit is no letter chunk
+    ("PU-", False),         # an empty chunk is no chunk
+    ("PU--PH", False),
+    ("P.U.-PH", False),     # a period is the dotted shape's, not this
+    ("XYZ", True),          # the unjoined word, as before
+])
+def test_caps_shape_candidate_reads_joined_capitals(
+        text: str, expected: bool) -> None:
+    # the caps shape's joined spelling (#752): an unlisted word of
+    # capitals in letter chunks joined by a hyphen or a slash
+    lex = Lexicon.default()
+    pol = Policy()
+    assert caps_shape_candidate(text, lex, pol, one_case=False) is expected
+    # gated as the unjoined word is: a name in one case says nothing
+    assert caps_shape_candidate(text, lex, pol, one_case=True) is False
+
+
+def test_caps_shape_candidate_refuses_a_listed_joined_word() -> None:
+    # unlisted means the whole word in no wordlist, as for the unjoined
+    # word
+    lex = Lexicon.default().add(surnames={"dupont-moretti"})
+    assert not caps_shape_candidate("DUPONT-MORETTI", lex, Policy(),
+                                    one_case=False)
+    assert caps_shape_candidate("DUPONT-MORETTI", Lexicon.default(),
+                                Policy(), one_case=False)
+
+
 def test_ambiguous_class_candidate_admits_a_by_shape_member() -> None:
     # #516: the comma form's own candidate test reaches a by-shape
     # member too, once Policy admits it -- case-free either way, the
