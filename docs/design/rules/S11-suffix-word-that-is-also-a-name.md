@@ -27,9 +27,10 @@
 
 **Except:**
 
-- **Glued behind an initial** with a period between, the word is part of that one word and is weighed only by the shape the joined word wears (S3), the agnomen beside an abbreviated surname.
+- **Glued behind an initial** with a period between, the word is part of that one word and is weighed only by the shape the joined word wears (S3), as it was before the word was listed: the name word it is with no word to spare, the dotted credential shape with words to spare.
   ```
   "Pedro M.Filho"             →  family="M.Filho"
+  "Pedro Alves M.Filho"       →  suffix="M.Filho"
   ```
 
 **Precedence:**
@@ -43,10 +44,15 @@
 
 **Accepted:**
 
-- A word standing straight before it counts as a name word whatever it is, so an initial there is left as the family name and a particle there as a family name of its own, as with an ambiguous acronym. An initial before an agnomen most often abbreviates the surname it follows.
+- A name word standing straight before it counts as a name word whatever it is, so an initial there is left as the family name and a particle there as a family name of its own, as with an ambiguous acronym. An initial before an agnomen most often abbreviates the surname it follows.
   ```
   "Pedro J. Neto"             →  family="J."
   "Pedro de Neto"             →  family="de"
+  ```
+- A suffix word straight before it, a generation or a listed credential, joins it in the trailing run instead, and the name is left with no family name.
+  ```
+  "PEDRO JUNIOR FILHO"        →  family=""
+  "PEDRO JUNIOR FILHO"        →  suffix="JUNIOR FILHO"
   ```
 - A three-word name whose last word is a surname that is also an agnomen loses that surname to the suffix, reported, as `Ruth Ann Neta` does. A register whose filer typed the agnomen alone in the surname box disagrees with the reading, and one whose filer typed it after the surname before it agrees.
   ```

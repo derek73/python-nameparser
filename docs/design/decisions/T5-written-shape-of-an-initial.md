@@ -4,6 +4,8 @@
 
 - The written shape of an initial is its own rule, split from T4, which keeps the case contrast; the shape itself was decided in v1, narrowed to scripts that write initials by #320 (decisions/initials-repertoire) and asked of the composed spelling since #665 (decisions/nfd-shapes) — 2026-10-19.
 
+Elsewhere: the one-letter generations recorded off by default (rules/T5's Accepted bullet on them) is decisions/S11's 2026-10-25 #752 entry.
+
 Open: none in this file.
 
 ## Log

@@ -358,11 +358,11 @@ Generation words that are also surnames
 
 ``suffix_words_ambiguous`` does the same for a suffix word: French
 ``fils`` and the Brazilian agnomens ``Filho``, ``Neto`` and
-``Sobrinho`` mark a generation, and each is a surname too. Each is a
-suffix only where the name keeps a word for its family, and the
-writing of ``fils`` speaks too, where an agnomen, written in the case
-of the name around it and listed in ``agnomens``, is read by the count
-alone:
+``Sobrinho`` mark a generation, and each is a surname too. An agnomen,
+written in the case of the name around it and listed in ``agnomens``,
+is a suffix only where the name keeps a word for its family. The
+writing of ``fils`` speaks as well: in a mixed-case name a lower-case
+``fils`` is the suffix and a Title-case ``Fils`` the family name:
 
 .. doctest::
 
@@ -373,9 +373,10 @@ alone:
     >>> parse("Marie Fils").family
     'Fils'
 
-A caller whose data writes an agnomen as part of the surname takes the
-gate off by removing the word from ``suffix_words``, which removes it
-from the markers with it:
+A caller whose data writes an agnomen as part of the surname takes it
+out by removing the word from ``suffix_words`` and from the two
+markers over it, which must be emptied of it first or together, since
+an orphan raises ``ValueError``:
 
 .. doctest::
 

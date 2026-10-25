@@ -144,6 +144,7 @@
 {"name": "Alonso de Cardenas", "given": "Alonso", "family": "de Cardenas", "initials": "A. C."}
 {"name": "Alquen, Gunter d'", "given": "Gunter", "family": "d' Alquen", "initials": "G. A."}
 {"name": "Alvensleben, Albrecht von", "given": "Albrecht", "family": "von Alvensleben", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "A. A."}
+{"name": "Alves, Pedro Fils", "given": "Pedro", "middle": "Fils", "family": "Alves", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. F. A."}
 {"name": "Alves, Pedro Neto", "given": "Pedro", "family": "Alves", "suffix": "Neto", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. A."}
 {"name": "Alzon, Emmanuel d'", "given": "Emmanuel", "family": "d' Alzon", "initials": "E. A."}
 {"name": "Amadi John Chinedu", "order": "FAMILY_FIRST", "given": "John", "middle": "Chinedu", "family": "Amadi", "initials": "J. C. A."}
@@ -2607,6 +2608,7 @@
 {"name": "P. V.", "given": "P.", "family": "V.", "initials": "P. V."}
 {"name": "PEDRO DA SILVA FILHO", "given": "PEDRO", "family": "DA SILVA", "suffix": "FILHO", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. S.", "capitalized": "Pedro da Silva Filho"}
 {"name": "PEDRO FILHO", "given": "PEDRO", "family": "FILHO", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. F.", "capitalized": "Pedro Filho"}
+{"name": "PEDRO JUNIOR FILHO", "given": "PEDRO", "suffix": "JUNIOR FILHO", "ambiguities": ["GIVEN_OR_FAMILY", "SUFFIX_OR_NAME"], "initials": "P.", "capitalized": "Pedro Junior Filho"}
 {"name": "Pablo Emilio Riveros Reina", "given": "Pablo", "middle": "Emilio Riveros", "family": "Reina", "initials": "P. E. R. R."}
 {"name": "Pablo Pérez Miguel Ángel Juan Antonio II", "order": "FAMILY_FIRST", "given": "Pérez", "middle": "Miguel Ángel Juan Antonio", "family": "Pablo", "suffix": "II", "initials": "P. M. Á. J. A. P."}
 {"name": "Pablo Pérez, Sr. Miguel Ángel Juan Antonio", "title": "Sr.", "given": "Miguel", "middle": "Ángel Juan Antonio", "family": "Pablo Pérez", "initials": "M. Á. J. A. P. P."}
@@ -2625,10 +2627,13 @@
 {"name": "Pedro", "given": "Pedro", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "P."}
 {"name": "Pedro", "order": "FAMILY_FIRST", "family": "Pedro", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "P."}
 {"name": "Pedro Alves Filho", "given": "Pedro", "family": "Alves", "suffix": "Filho", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. A."}
+{"name": "Pedro Alves M.Filho", "given": "Pedro", "family": "Alves", "suffix": "M.Filho", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. A.", "capitalized_force": "Pedro Alves M.FILHO"}
 {"name": "Pedro Alves NETO", "given": "Pedro", "family": "Alves", "suffix": "NETO", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. A.", "capitalized_force": "Pedro Alves Neto"}
 {"name": "Pedro Alves Neto", "given": "Pedro", "family": "Alves", "suffix": "Neto", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. A."}
 {"name": "Pedro Alves Neto Júnior", "given": "Pedro", "family": "Alves", "suffix": "Neto Júnior", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. A."}
+{"name": "Pedro Alves Neto, AD", "given": "AD", "family": "Pedro Alves Neto", "initials": "A. P. A. N.", "capitalized_force": "Ad Pedro Alves Neto"}
 {"name": "Pedro Alves Neto, PhD", "given": "Pedro", "family": "Alves", "suffix": "Neto, PhD", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. A."}
+{"name": "Pedro Alves, Neto", "given": "Pedro", "family": "Alves", "suffix": "Neto", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. A."}
 {"name": "Pedro Cañas Serrano", "given": "Pedro", "middle": "Cañas", "family": "Serrano", "initials": "P. C. S."}
 {"name": "Pedro Filho", "given": "Pedro", "family": "Filho", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. F."}
 {"name": "Pedro Galindo Galarza", "given": "Pedro", "middle": "Galindo", "family": "Galarza", "initials": "P. G. G."}
@@ -2963,6 +2968,7 @@
 {"name": "Sigurður Ólafsson", "given": "Sigurður", "family": "Ólafsson", "initials": "S. Ó."}
 {"name": "Silva João Pedro", "order": "FAMILY_FIRST", "given": "João", "middle": "Pedro", "family": "Silva", "initials": "J. P. S."}
 {"name": "Silva Maria", "order": "FAMILY_FIRST", "given": "Maria", "family": "Silva", "initials": "M. S."}
+{"name": "Silva Neto, Pedro", "given": "Pedro", "family": "Silva Neto", "initials": "P. S. N."}
 {"name": "Silva, José Pedro Eduardo da", "given": "José", "middle": "Pedro Eduardo", "family": "da Silva", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "J. P. E. S."}
 {"name": "Silva, João Pedro", "given": "João", "middle": "Pedro", "family": "Silva", "initials": "J. P. S."}
 {"name": "Silva, Maria", "given": "Maria", "family": "Silva", "initials": "M. S."}

@@ -50,7 +50,7 @@ Phase 1 re-encoded the vocabulary and changed no parse. One TOML file per BCP 47
 Two choices in phase 1 set up phase 2 and are worth knowing before reading it:
 
 - **The marker sets were explicit flags** (`may_be_given`, `may_be_name`, `may_be_initial`), not derived from name readings, recording past curation rather than evidence. Phase 2a (2026-10-25) derived the two that record a clash with a name, `may_be_name` and `may_be_given`, from name readings, each with dated counts or a `note` where no source counts the word (`te`, `tho` and `du`, once thought to have none, have SSA counts), keeping `may_be_initial` as a property (decisions/vocabulary-model).
-- **Names a later phase will use are build errors now** (`default`, `prefer`, `strict`, `bare_only`, `leading_only`, `trailing_only`, `attaches`, `separators`, and the values `addresses = "full"` or `"any"`), so nothing reads as working before it does.
+- **Names a later phase will use are build errors now** (`default`, `prefer`, `strict`, `bare_only`, `leading_only`, `trailing_only`, `attaches`, `separators`, and the values `addresses = "full"` or `"any"`), so nothing reads as working before it does. Phase 2h (2026-10-25) gave `default = false` its meaning, a reading recorded that compiles to nothing, and named the phase each of the others waits for.
 
 The reference for the format is nameparser/vocab/README.md; the decisions behind it, with what was declined and measured, are decisions/vocabulary-model's 2026-10-18 entry.
 
