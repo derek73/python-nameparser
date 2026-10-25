@@ -415,6 +415,16 @@ def test_period_joined_vocab_retires_the_single_character_chunk() -> None:
     ("I.-V.", False),       # its periods are not the chunk's
     ("I-V.", False),
     ("MS-V", True),         # one chunk is not
+    ("Ae-Ra", False),       # every chunk Title case: a hyphenated name
+    ("Md-Rn", False),
+    ("Ae-ra", False),       # the standard romanization's lower-case tail
+    ("ae-Ra", True),        # a name opens in Title case
+    ("Md-phd", False),
+    ("PhD-Md", True),       # one chunk is not Title case
+    ("Ph.D.-Md", True),
+    ("AE-RA", True),        # capitals: the cue cannot read a name in them
+    ("ae-ra", True),
+    ("Ae/Ra", True),        # a slash joins no name, so it takes no cue
 ])
 def test_suffix_as_written_reads_a_joined_credential(
         text: str, expected: bool) -> None:

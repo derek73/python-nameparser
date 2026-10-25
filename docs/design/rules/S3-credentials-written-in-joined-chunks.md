@@ -30,6 +30,8 @@
   ", MD/PhD"                  →  suffix="MD/PhD"
   "John Smith, M.D./Ph.D."    →  suffix="M.D./Ph.D."
   "john smith, ms-pt"         →  suffix="ms-pt"
+  "John Smith, PhD-Md"        →  suffix="PhD-Md"
+  "John Smith, md-phd"        →  suffix="md-phd"
   "John Smith-Jones, MD-PhD"  →  family="Smith-Jones"
   "John Smith-Jones"          →  family="Smith-Jones"  · boundary
   "Smith, Mary-Jane"          →  given="Mary-Jane"  · boundary
@@ -50,6 +52,12 @@
 
 **Except:**
 
+- **A word joined by a hyphen and written the way a hyphenated name is, its first chunk in Title case and every other in Title case or lower case, is a name word**, whatever its chunks are listed as: that is how a hyphenated given name is written (`Ae-Ra`, `Ae-ra`, the Korean syllables `ae` and `ra` both being listed credentials), and a credential's chunks are written otherwise. A chunk with a capital past its first letter (`PhD`), a chunk in capitals, a word opening in lower case and a slash, which joins no name, leave the word to the joined reading's every-chunk test.
+  ```
+  "Kim, Ae-Ra"                →  given="Ae-Ra"
+  "Shin Ae-ra"                →  family="Ae-ra"
+  "John Smith, Md-Rn"         →  given="Md-Rn"
+  ```
 - **Every chunk the vocabulary matches is a single ASCII character**, the roman numerals and the lone digit the vocabulary lists, which are about generations rather than credentials: those chunks do not make the word a suffix.
   ```
   "Jack X.Y.I."               →  family="X.Y.I."  · boundary
@@ -89,12 +97,11 @@
   "John Smith, MA/PhD"        →  given="MA/PhD"
   "John Smith, MA/PhD"        →  family="John Smith"
   ```
-- A Korean given name romanized with a hyphen between two syllables the vocabulary lists as unambiguous credentials reads as the credential, unreported after a comma and leaving no family without one, as its spaced spelling already did: `ae` and `ra` are such credentials, and the hyphen no longer keeps the name a name word.
+- A Korean given name romanized with a hyphen between two syllables the vocabulary lists as unambiguous credentials, written in capitals or opening in lower case, reads as the credential, unreported after a comma: a name in capitals has no Title case for the writing to show, and `ae` and `ra` are such credentials.
   ```
-  "Kim, Ae-Ra"                →  suffix="Ae-Ra"
-  "Kim, Ae Ra"                →  suffix="Ae Ra"
-  "Shin Ae-ra"                →  suffix="Ae-ra"
-  "Shin Ae Ra"                →  suffix="Ae Ra"
+  "KIM, AE-RA"                →  suffix="AE-RA"
+  "Kim, AE-RA"                →  suffix="AE-RA"
+  "kim, ae-ra"                →  suffix="ae-ra"
   ```
 - An unlisted credential of two letters written with its periods behind a full name reads as the family name, and the reading is reported: King's Counsel, which no vocabulary lists, is the case.
   ```
@@ -108,5 +115,5 @@
 - The initialless-script clause carries no example line of its own. Every input that exercises it composes a script that writes no abbreviations with a period that only a Latin convention writes — `John Smith 田.中.` is the shape — and a composed form no writing system produces is tolerated input rather than contract, which an example of a normative rule would promise. So the witnesses are the tolerated row tests/v2/cases.py's an_initialless_script_glued_into_periods_is_not_this_shape and the CJK assertions in tests/v2/pipeline/test_vocab.py's test_period_joined_vocab_retires_the_single_character_chunk. W3 states the same precedence for the same reason.
 
 ---
-**Signal:** shape: a word in chunks joined by interior periods, a hyphen or a slash, read by its chunks or as the acronym its letters spell, and for paired initials whether its script writes capitals
+**Signal:** shape: a word in chunks joined by interior periods, a hyphen or a slash, read by its chunks or as the acronym its letters spell, for paired initials whether its script writes capitals, and for a hyphen-joined word whether it is written as a hyphenated name is
 **history:** decisions/S3 · **implemented:** nameparser/_pipeline/_classify.py, nameparser/_pipeline/_comma.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py

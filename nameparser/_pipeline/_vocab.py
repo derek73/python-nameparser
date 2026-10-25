@@ -581,25 +581,37 @@ def _joined_credential(text: str, lexicon: Lexicon) -> bool:
     """Whether TEXT is two or more chunks joined by '-' or '/', each
     non-empty and each counting as a suffix as written: listed, and
     not a bare member of the ambiguous class, and not every one a
-    single ASCII character ('MD/PhD', 'M.A.-Ph.D.', but not 'MA/PhD',
-    'Smith-Jones', 'I-V' or 'MD/'). A chunk holds no joiner,
+    single ASCII character, and -- joined by a hyphen -- not
+    written as a hyphenated name is ('MD/PhD', 'M.A.-Ph.D.', 'PhD-Md',
+    'md-phd', but not 'MA/PhD', 'Smith-Jones', 'I-V', 'Ae-Ra', 'Ae-ra'
+    or 'MD/'). A chunk holds no joiner,
     so the recursion is one level deep. A loop rather than `all()` over
     a generator, which would cost a frame per chunk: a hyphenated name
     ('Smith-Jones') stops at its first chunk."""
     # the caller found a joiner, so there are two chunks at least
     chunks = _JOINERS.split(text)
     whole = False  # a chunk that is not a single ASCII character
-    for c in chunks:
+    named = "-" in text  # every chunk so far in Title case
+    for k, c in enumerate(chunks):
         if not (c and suffix_as_written(_normalize(c), c, lexicon)):
             return False
         # its periods are not the chunk's ('I.' is 'i'), as in a word
         # split at its periods
         bare = c.replace(".", "")
         whole = whole or len(bare) > 1 or not bare.isascii()
+        # the first chunk in Title case, a later one in Title case or
+        # lower case ('Ae-Ra', 'Ae-ra')
+        named = named and len(bare) > 1 and (
+            bare[0].isupper() and bare[1:].islower()
+            or k > 0 and bare.islower())
     # rules/S3: "Every chunk the vocabulary matches is a single ASCII
     # character" -- the numerals and the digit, which are about
-    # generations, make no joined word a suffix either ('Jack I-V')
-    return whole
+    # generations, make no joined word a suffix either ('Jack I-V');
+    # rules/S3: "a word joined by a hyphen and written the way a
+    # hyphenated name is, its first chunk in Title case and every other
+    # in Title case or lower case, is a name word" -- where a
+    # credential's chunks are not (decisions/S3 (#752))
+    return whole and not named
 
 
 def _is_suffix_strict_n(n: str, text: str, lexicon: Lexicon,

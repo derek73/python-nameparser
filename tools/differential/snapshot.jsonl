@@ -1711,6 +1711,7 @@
 {"name": "John Smith, MS-OMPT", "given": "John", "family": "Smith", "suffix": "MS-OMPT", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "John Smith, MS-V", "given": "John", "family": "Smith", "suffix": "MS-V", "initials": "J. S."}
 {"name": "John Smith, Ma", "given": "John", "family": "Smith", "suffix": "Ma", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S.", "capitalized_force": "John Smith MA"}
+{"name": "John Smith, Md-Rn", "given": "Md-Rn", "family": "John Smith", "initials": "M. J. S."}
 {"name": "John Smith, Mr.", "title": "Mr.", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "John Smith, Mr. Jr.", "title": "Mr.", "given": "John", "family": "Smith", "suffix": "Jr.", "initials": "J. S."}
 {"name": "John Smith, Mr. and Mrs.", "title": "Mr. and Mrs.", "given": "John", "family": "Smith", "initials": "J. S."}
@@ -1729,6 +1730,7 @@
 {"name": "John Smith, PhD X.Y.", "given": "John", "family": "Smith", "suffix": "PhD X.Y.", "initials": "J. S."}
 {"name": "John Smith, PhD XYZ", "given": "John", "family": "Smith", "suffix": "PhD XYZ", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "John Smith, PhD vd DO", "given": "John", "family": "Smith", "suffix": "PhD vd DO", "initials": "J. S.", "capitalized_force": "John Smith PhD VD DO"}
+{"name": "John Smith, PhD-Md", "given": "John", "family": "Smith", "suffix": "PhD-Md", "initials": "J. S.", "capitalized_force": "John Smith PhD-MD"}
 {"name": "John Smith, Pu-Ph", "given": "Pu-Ph", "family": "John Smith", "initials": "P. J. S."}
 {"name": "John Smith, RA Jones", "title": "RA", "given": "Jones", "family": "John Smith", "initials": "J. J. S.", "capitalized_force": "Ra Jones John Smith"}
 {"name": "John Smith, RAI", "given": "John", "family": "Smith", "suffix": "RAI", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
@@ -1740,6 +1742,7 @@
 {"name": "John Smith, X.Y.Z.", "given": "John", "family": "Smith", "suffix": "X.Y.Z.", "initials": "J. S."}
 {"name": "John Smith, X.Y.Z. MA", "given": "John", "family": "Smith", "suffix": "X.Y.Z. MA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "John Smith, XYZ", "given": "John", "family": "Smith", "suffix": "XYZ", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
+{"name": "John Smith, md-phd", "given": "John", "family": "Smith", "suffix": "md-phd", "initials": "J. S.", "capitalized_force": "John Smith MD-PhD"}
 {"name": "John Smith, otr/l", "given": "John", "family": "Smith", "suffix": "otr/l", "initials": "J. S.", "capitalized_force": "John Smith OTR/L"}
 {"name": "John Smith, vd Ma", "given": "John", "family": "Smith", "suffix": "vd Ma", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S.", "capitalized_force": "John Smith VD MA"}
 {"name": "John Smith-Jones", "given": "John", "family": "Smith-Jones", "initials": "J. S."}
@@ -1971,6 +1974,7 @@
 {"name": "K. Sivakumar", "given": "K.", "family": "Sivakumar", "initials": "K. S."}
 {"name": "KALAM Alɛ Mustafa", "order": "FAMILY_FIRST", "given": "Alɛ", "middle": "Mustafa", "family": "KALAM", "initials": "A. M. K.", "capitalized_force": "Alɛ Mustafa Kalam"}
 {"name": "KANSULO Iiɖa", "order": "FAMILY_FIRST", "given": "Iiɖa", "family": "KANSULO", "initials": "I. K.", "capitalized_force": "Iiɖa Kansulo"}
+{"name": "KIM, AE-RA", "family": "KIM", "suffix": "AE-RA", "initials": "K.", "capitalized": "Kim AE-RA"}
 {"name": "Kajal Patel Hiring Globally", "given": "Kajal", "middle": "Patel Hiring", "family": "Globally", "initials": "K. P. H. G."}
 {"name": "Kalniņa Aina", "order": "FAMILY_FIRST", "given": "Aina", "family": "Kalniņa", "initials": "A. K."}
 {"name": "Kamāl Yūsuf al-Ḥāǧǧ", "given": "Kamāl", "middle": "Yūsuf", "family": "al-Ḥāǧǧ", "initials": "K. Y. a."}
@@ -2023,8 +2027,8 @@
 {"name": "Khun Sa", "given": "Khun", "family": "Sa", "initials": "K. S."}
 {"name": "Ki, Tomonori", "given": "Tomonori", "family": "Ki", "initials": "T. K."}
 {"name": "Kim Min Ho", "order": "FAMILY_FIRST", "given": "Min", "middle": "Ho", "family": "Kim", "initials": "M. H. K."}
-{"name": "Kim, Ae Ra", "family": "Kim", "suffix": "Ae Ra", "initials": "K.", "capitalized_force": "Kim AE RA"}
-{"name": "Kim, Ae-Ra", "family": "Kim", "suffix": "Ae-Ra", "initials": "K.", "capitalized_force": "Kim AE-RA"}
+{"name": "Kim, AE-RA", "family": "Kim", "suffix": "AE-RA", "initials": "K."}
+{"name": "Kim, Ae-Ra", "given": "Ae-Ra", "family": "Kim", "initials": "A. K."}
 {"name": "Kim, Jr.", "family": "Kim", "suffix": "Jr.", "initials": "K."}
 {"name": "Kim김민준씨, MA", "family": "Kim김민준", "suffix": "씨, MA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "K."}
 {"name": "King Curtis", "title": "King", "given": "Curtis", "initials": "C."}
@@ -2903,8 +2907,7 @@
 {"name": "Sheik abdul salam", "title": "Sheik", "given": "abdul salam", "initials": "a. s.", "capitalized_force": "Sheik Abdul Salam"}
 {"name": "Sheik abdul salam Jr", "title": "Sheik", "given": "abdul salam", "suffix": "Jr", "initials": "a. s.", "capitalized_force": "Sheik Abdul Salam Jr"}
 {"name": "Shemuʾel ben Ḥofni", "given": "Shemuʾel", "middle": "ben", "family": "Ḥofni", "initials": "S. b. Ḥ.", "capitalized_force": "Shemuʾel Ben Ḥofni"}
-{"name": "Shin Ae Ra", "given": "Shin", "suffix": "Ae Ra", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "S.", "capitalized_force": "Shin AE RA"}
-{"name": "Shin Ae-ra", "given": "Shin", "suffix": "Ae-ra", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "S.", "capitalized_force": "Shin AE-RA"}
+{"name": "Shin Ae-ra", "given": "Shin", "family": "Ae-ra", "initials": "S. A.", "capitalized_force": "Shin Ae-Ra"}
 {"name": "Shirley Maclaine", "given": "Shirley", "family": "Maclaine", "initials": "S. M.", "capitalized_force": "Shirley MacLaine"}
 {"name": "Shree Lalit Kumaar Bharati Jr, MP", "given": "Shree", "middle": "Lalit Kumaar", "family": "Bharati", "suffix": "Jr, MP", "initials": "S. L. K. B."}
 {"name": "Shtober Zaziliya Hemish", "order": "FAMILY_FIRST", "given": "Zaziliya", "middle": "Hemish", "family": "Shtober", "initials": "Z. H. S."}
@@ -3650,6 +3653,7 @@
 {"name": "juan y garcia", "given": "juan", "middle": "y", "family": "garcia", "initials": "j. y. g.", "capitalized": "Juan y Garcia"}
 {"name": "juan y-garcia", "given": "juan", "family": "y-garcia", "initials": "j. y.", "capitalized": "Juan Y-Garcia"}
 {"name": "juan y-garcia-lopez", "given": "juan", "family": "y-garcia-lopez", "initials": "j. y.", "capitalized": "Juan Y-Garcia-Lopez"}
+{"name": "kim, ae-ra", "family": "kim", "suffix": "ae-ra", "initials": "k.", "capitalized": "Kim AE-RA"}
 {"name": "larry james edward johnson v", "given": "larry", "middle": "james edward", "family": "johnson", "suffix": "v", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "l. j. e. j.", "capitalized": "Larry James Edward Johnson V"}
 {"name": "lt. gen. john a. kenneth doe iv", "title": "lt. gen.", "given": "john", "middle": "a. kenneth", "family": "doe", "suffix": "iv", "initials": "j. a. k. d.", "capitalized": "Lt. Gen. John A. Kenneth Doe IV"}
 {"name": "lt.gov john doe", "title": "lt.gov", "given": "john", "family": "doe", "initials": "j. d.", "capitalized": "Lt.Gov John Doe"}

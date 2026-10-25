@@ -3531,6 +3531,18 @@ CASES: tuple[Case, ...] = (
          notes="the two hyphens side by side: the surname's chunks are "
                "not listed, the credential's are; 1.4.0 through 2.6.0 "
                "read given 'MD-PhD', family 'John Smith-Jones'"),
+    Case("a_hyphenated_given_name_in_title_case_stays_the_given_name",
+         "Kim, Ae-Ra",
+         {"given": "Ae-Ra", "family": "Kim"},
+         notes="pins rules/S3's name-writing cue: 'ae' and 'ra' are both "
+               "listed credentials, so without the cue the joined "
+               "reading takes the given name (as the spaced 'Kim, Ae "
+               "Ra' already loses it to the two credentials)"),
+    Case("a_hyphenated_given_name_with_a_lower_case_tail_stays_the_name",
+         "Shin Ae-ra",
+         {"given": "Shin", "family": "Ae-ra"},
+         notes="the standard romanization writes the second syllable in "
+               "lower case, which the cue reads as a name too"),
     Case("a_joined_word_with_one_unlisted_chunk_is_a_name_word",
          "John Smith MD-Jones",
          {"given": "John", "middle": "Smith", "family": "MD-Jones"},
