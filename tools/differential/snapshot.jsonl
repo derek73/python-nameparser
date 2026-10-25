@@ -1358,6 +1358,7 @@
 {"name": "Jack", "given": "Jack", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "J."}
 {"name": "Jack", "order": "FAMILY_FIRST", "family": "Jack", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "J."}
 {"name": "Jack I-V", "given": "Jack", "family": "I-V", "initials": "J. I."}
+{"name": "Jack I.-V.", "given": "Jack", "family": "I.-V.", "initials": "J. I."}
 {"name": "Jack M.A.", "given": "Jack", "suffix": "M.A.", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "J."}
 {"name": "Jack MA", "given": "Jack", "suffix": "MA", "ambiguities": ["GIVEN_OR_FAMILY", "SUFFIX_OR_NAME"], "initials": "J."}
 {"name": "Jack MA.", "given": "Jack", "suffix": "MA.", "ambiguities": ["GIVEN_OR_FAMILY", "SUFFIX_OR_NAME"], "initials": "J."}
@@ -2902,6 +2903,7 @@
 {"name": "Sheik abdul salam", "title": "Sheik", "given": "abdul salam", "initials": "a. s.", "capitalized_force": "Sheik Abdul Salam"}
 {"name": "Sheik abdul salam Jr", "title": "Sheik", "given": "abdul salam", "suffix": "Jr", "initials": "a. s.", "capitalized_force": "Sheik Abdul Salam Jr"}
 {"name": "Shemuʾel ben Ḥofni", "given": "Shemuʾel", "middle": "ben", "family": "Ḥofni", "initials": "S. b. Ḥ.", "capitalized_force": "Shemuʾel Ben Ḥofni"}
+{"name": "Shin Ae Ra", "given": "Shin", "suffix": "Ae Ra", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "S.", "capitalized_force": "Shin AE RA"}
 {"name": "Shin Ae-ra", "given": "Shin", "suffix": "Ae-ra", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "S.", "capitalized_force": "Shin AE-RA"}
 {"name": "Shirley Maclaine", "given": "Shirley", "family": "Maclaine", "initials": "S. M.", "capitalized_force": "Shirley MacLaine"}
 {"name": "Shree Lalit Kumaar Bharati Jr, MP", "given": "Shree", "middle": "Lalit Kumaar", "family": "Bharati", "suffix": "Jr, MP", "initials": "S. L. K. B."}

@@ -54,6 +54,7 @@
   ```
   "Jack X.Y.I."               →  family="X.Y.I."  · boundary
   "Jack I-V"                  →  family="I-V"  · boundary
+  "Jack I.-V."                →  family="I.-V."  · boundary
   "John Smith, MS-V"          →  suffix="MS-V"
   ```
 - **Paired initials are the exception**, as C5 defines them, in a script that writes capitals: where S4 would count words to spare for them they are the name word they are written as, as the switch off reads every such word, and the fork is still reported. Two dotted single letters is how initials are written in such a script, and how some surnames are (Nepali B.K., K.C.), while a script without capitals writes its abbreviations that way, degrees among them; behind an unambiguous suffix word the pair joins the credential run that word starts (S8).
@@ -88,11 +89,12 @@
   "John Smith, MA/PhD"        →  given="MA/PhD"
   "John Smith, MA/PhD"        →  family="John Smith"
   ```
-- A Korean given name romanized with a hyphen between two syllables the vocabulary lists as unambiguous credentials reads as the credential, unreported after a comma, as its spaced spelling already did: `ae` and `ra` are such credentials, and the hyphen no longer keeps the name a name word.
+- A Korean given name romanized with a hyphen between two syllables the vocabulary lists as unambiguous credentials reads as the credential, unreported after a comma and leaving no family without one, as its spaced spelling already did: `ae` and `ra` are such credentials, and the hyphen no longer keeps the name a name word.
   ```
   "Kim, Ae-Ra"                →  suffix="Ae-Ra"
   "Kim, Ae Ra"                →  suffix="Ae Ra"
   "Shin Ae-ra"                →  suffix="Ae-ra"
+  "Shin Ae Ra"                →  suffix="Ae Ra"
   ```
 - An unlisted credential of two letters written with its periods behind a full name reads as the family name, and the reading is reported: King's Counsel, which no vocabulary lists, is the case.
   ```

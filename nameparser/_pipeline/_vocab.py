@@ -593,7 +593,10 @@ def _joined_credential(text: str, lexicon: Lexicon) -> bool:
     for c in chunks:
         if not (c and suffix_as_written(_normalize(c), c, lexicon)):
             return False
-        whole = whole or len(c) > 1 or not c.isascii()
+        # its periods are not the chunk's ('I.' is 'i'), as in a word
+        # split at its periods
+        bare = c.replace(".", "")
+        whole = whole or len(bare) > 1 or not bare.isascii()
     # rules/S3: "Every chunk the vocabulary matches is a single ASCII
     # character" -- the numerals and the digit, which are about
     # generations, make no joined word a suffix either ('Jack I-V')
