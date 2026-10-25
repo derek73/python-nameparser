@@ -3,6 +3,7 @@ schema = 1
 [[word]]
 text = "gospodin"
 salutation = { issue = 606, gender = "m", after_given = true }
+given = { note = "nam_dict ranks Gospodin a Bulgarian given name, band 5 (2026-10-24); kept for after_given (decisions/H8): a Bulgarian middle name is a patronymic, Gospodinov" }
 
 [[word]]
 text = "gospođa"

@@ -1,6 +1,6 @@
 # H8 — a salutation ending the given part
 
-**When:** a family comma divides the name, and the given part after it ends in a word whose title reading is a salutation, written bare or in any spelling but H5's abbreviation shape (a doubled stop, as in "Mr.."), with a name word in front of it, as in "Doe, Jane Mrs".
+**When:** a family comma divides the name, and the given part after it ends in a word whose title reading is a salutation, written bare or with a stop at its edge that H5's abbreviation shape does not take (a doubled stop, as in "Mr.."), with a name word in front of it, as in "Doe, Jane Mrs".
 
 **Then:** the word joins the title field, and the given part reads as it would without it.
 
@@ -65,7 +65,7 @@
   ```
   "Doe, Jane Miss"            →  title="Miss"
   ```
-- With nothing before the comma, the one given word the salutation leaves reads as a title's lone name word reads (H1), the family, as the period-marked spelling has always read it; written alone, that word is the given name.
+- With nothing before the comma, the one given word the salutation leaves reads as a title's lone name word reads (H1), the family, as the period-marked spelling has read it since H5 (2.3.0, #316); written alone, that word is the given name.
   ```
   ", Jane Mrs"                →  family="Jane"
   ", Jane"                    →  given="Jane"
@@ -76,5 +76,5 @@
   ```
 
 ---
-**Signal:** comma: a family comma fixing the family, with listed salutation vocabulary ending the given part
+**Signal:** comma: a family comma dividing the name, with listed salutation vocabulary ending the given part
 **history:** decisions/H8 · **implemented:** nameparser/_pipeline/_assign.py, nameparser/_pipeline/_classify.py, nameparser/_pipeline/_pieces.py
