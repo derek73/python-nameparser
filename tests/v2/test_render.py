@@ -1872,7 +1872,7 @@ def test_a_marked_particle_lowercases_only_where_the_particle_arm_would(
     "john smith, PHARM D", "john smith PHARM D", "smith, john PHARM D",
     "JOHN SMITH, PHARM D", "JOHN SMITH PHARM D", "john smith pharm d"])
 def test_a_split_credential_repairs_as_its_one_word_twin(text: str) -> None:
-    # rules/S11's pair is repaired by its fold's mask ('pharmd' ->
+    # rules/S12's pair is repaired by its fold's mask ('pharmd' ->
     # 'PharmD') whatever the comma shape, as 'PHARMD' is; the first
     # version marked its capitals only where the comma's decision bound
     # it, so the same words repaired two ways (#752's review)
@@ -1891,3 +1891,17 @@ def test_a_split_credential_repair_reads_the_pair_group_merged() -> None:
     assert parse("john smith pharmD").capitalized().suffix == "pharmD"
     assert (parse("john smith pharm D").capitalized(force=True).suffix
             == "Pharm D")
+
+
+@pytest.mark.parametrize("text", [
+    "JEAN DUPONT FILS", "jean dupont fils", "DUMAS, ALEXANDRE FILS",
+    "MARIE FILS", "pedro alves filho", "PEDRO ALVES NETO"])
+def test_repairing_a_generation_word_that_is_also_a_name_keeps_its_reading(
+        text: str) -> None:
+    # rules/S6 reads a generation word's case: Title case leans `fils`
+    # to the name, so a suffix `fils` repairs to lower case, the one
+    # writing that keeps the reading, and a family `Fils` to Title case;
+    # an agnomen's case says nothing and it title-cases as any word does
+    name = parse(text)
+    repaired = name.capitalized()
+    assert parse(str(repaired)).as_dict() == repaired.as_dict()

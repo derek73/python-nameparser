@@ -239,18 +239,20 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # 'Dr. Smith VI, John' row, which reports since, each claim under
     # the three orders; 1445 -> 1451 the same day: #752's two
     # joined-capitals rows that report (phase 2d), one suffix-or-name
-    # claim under each order; 1451 -> 1457 the same day: #752's two
-    # split-credential run rows (phase 2e), 'Smith, John Pharm D Jones'
-    # and 'John Smith Pharm D Jones', one suffix-or-name claim under
-    # each order; 1457 -> 1460 the same day: the second review's
-    # 'Smith, John van Pharm D' row, one particle-or-given claim under
-    # each order; 1460 -> 1487 the same day: the split credential's own
-    # report where the count takes it (Derek, on #891's review), nine
-    # rows claiming one suffix-or-name report under each order; 1487 ->
-    # 1490 the same day: the review's 'Smith, MD Pharm D' row, one claim
-    # under each order.
-    assert claims == 1490, (
-        f"the field sweep checks {claims} claims, recorded as 1490 on "
+    # claim under each order; 1451 -> 1493 the same day: #752's
+    # generation-word rows (phase 2h, fils and the agnomens), the claims
+    # their reports make under the three orders; 1493 -> 1508 the same
+    # day: #890's five rows with a suffix word in front of an agnomen;
+    # 1508 -> 1514 the same day: its numeral and capitals rows; 1514
+    # -> 1517 the same day: its carried-member rows; 1517 -> 1520 the
+    # same day: its joined-surname row; 1520 -> 1523 the same day: the
+    # floor's fils rows; 1523 -> 1529 the same day: its comma rows;
+    # 1529 -> 1568 the same day, #891 (phase 2e) merged over it: the
+    # split-credential rows, two run rows and the particle-chain row
+    # (9), the split credential's own report on nine rows (27) and the
+    # opening-credential row (3), each claim under the three orders.
+    assert claims == 1568, (
+        f"the field sweep checks {claims} claims, recorded as 1568 on "
         f"2026-10-25")
 
 

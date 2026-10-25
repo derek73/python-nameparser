@@ -1,4 +1,4 @@
-# S11 — a credential split across a space
+# S12 — a credential split across a space
 
 **When:** a credential stands written as two words, as in "John Smith Pharm. D.".
 
@@ -99,4 +99,4 @@
 
 ---
 **Signal:** shape: two short words whose letters together spell a listed credential, decided by the count
-**history:** decisions/S11 · **implemented:** nameparser/_pipeline/_assign.py, nameparser/_pipeline/_classify.py, nameparser/_pipeline/_comma.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
+**history:** decisions/S12 · **implemented:** nameparser/_pipeline/_assign.py, nameparser/_pipeline/_classify.py, nameparser/_pipeline/_comma.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py

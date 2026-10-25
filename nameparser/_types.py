@@ -175,7 +175,7 @@ SHAPE_ACRONYM_TAG = "shape:acronym"
 #: split across a space (`_pipeline._vocab.split_pair`), naming the
 #: piece tag the pair merges with: SPLIT_CREDENTIAL_TAG the Ph./D. pair,
 #: merged as an unambiguous suffix ("suffix"), and SPLIT_MEMBER_TAG any
-#: other, merged as a member of the ambiguous class ("split", rules/S11).
+#: other, merged as a member of the ambiguous class ("split", rules/S12).
 #: Written by classify because it is the one stage that sees every
 #: adjacent pair with the lexicon in hand, so group's merge and
 #: `_comma._pieces` read the decision off a tag, C-level, rather than

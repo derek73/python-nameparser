@@ -51,7 +51,7 @@
 
 **Precedence:**
 
-- **A credential split across a space** ("John Smith Pharm D Jones"): it is a member of the ambiguous class and starts the run all the same, behind the two name words its own count asks for (S11).
+- **A credential split across a space** ("John Smith Pharm D Jones"): it is a member of the ambiguous class and starts the run all the same, behind the two name words its own count asks for (S12).
   ```
   "John Smith Pharm D Jones"  →  suffix="Pharm D Jones"
   ```

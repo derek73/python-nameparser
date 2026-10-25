@@ -1514,7 +1514,7 @@ CASES: tuple[Case, ...] = (
                "'Ph. D. MEng', and 1.4.0 'Ph. D., MEng'"),
     # #752, phase 2e: every other credential written split across a
     # space merges as a member of the ambiguous class, the count
-    # deciding it (rules/S11); the controls are the spellings it
+    # deciding it (rules/S12); the controls are the spellings it
     # leaves split
     Case("a_split_credential_with_words_to_spare_is_the_suffix",
          "John Smith Pharm. D.",
@@ -1617,7 +1617,7 @@ CASES: tuple[Case, ...] = (
     Case("a_split_credential_beside_a_connective_stays_two_words",
          "John Smith Pharm D and Mary",
          {"given": "John", "middle": "Smith Pharm", "family": "D and Mary"},
-         notes="S11: a connective joins the words beside it, so a pair "
+         notes="S12: a connective joins the words beside it, so a pair "
                "it borders is no credential; merged, the join took the "
                "pair into a wider piece the count then read whole (the "
                "first version's 'Pharm D and Mary' suffix, found by "
@@ -1626,7 +1626,7 @@ CASES: tuple[Case, ...] = (
          "MB ChB, PhD",
          {"family": "MB ChB", "suffix": "PhD"},
          classification="fix(#752)",
-         notes="S11: the part before a family comma merges no member "
+         notes="S12: the part before a family comma merges no member "
                "pair, so C3's count of it reads the two words as "
                "written, the tree's reading before #752 (the first "
                "version read given 'MB', family 'ChB'). 1.4.0 read "
@@ -1635,7 +1635,7 @@ CASES: tuple[Case, ...] = (
          "Jane Doe nee Ed. D.",
          {"given": "Jane", "family": "Doe", "maiden": "Ed. D."},
          classification="fix(#752)",
-         notes="S11: the clause keeps the pair, a pair the count "
+         notes="S12: the clause keeps the pair, a pair the count "
                "declined, which reports nothing; its "
                "first word is a listed member, and the first version "
                "reported 'Ed.' as the word ending the clause, which "
@@ -1645,7 +1645,7 @@ CASES: tuple[Case, ...] = (
          {"given": "John", "family": "van Smith", "suffix": "Pharm D"},
          classification="fix(#752)",
          ambiguities=("particle-or-given", "suffix-or-name"),
-         notes="S11: merged ahead of group's joins, the pair stops the "
+         notes="S12: merged ahead of group's joins, the pair stops the "
                "chain as 'PharmD' does, and P6 attaches the particle; "
                "merged after them (the design-docs review's first fix), "
                "the chain took 'Pharm' into the particle's run. 1.4.0 "
@@ -1664,7 +1664,7 @@ CASES: tuple[Case, ...] = (
          {"family": "Smith", "suffix": "MD Pharm D"},
          ambiguities=("suffix-or-name",),
          classification="fix(#752)",
-         notes="S11: the pair the opening credential's run takes (C13) "
+         notes="S12: the pair the opening credential's run takes (C13) "
                "reports itself, once, as 'John Smith MD Pharm D' does; "
                "the review found it reported twice, as a word the run "
                "absorbed and as the pair. Master reported 'Pharm' and "
@@ -1723,12 +1723,195 @@ CASES: tuple[Case, ...] = (
          notes="the Portuguese spelling reads as 'José Silva Junior' "
                "does. 1.4.0 and 2.5.0 read middle 'Silva', family "
                "'Júnior'"),
-    Case("an_agnomen_stays_the_family_name", "Pedro Alves Filho",
-         {"given": "Pedro", "middle": "Alves", "family": "Filho"},
+    Case("an_agnomen_is_a_generational_suffix", "Pedro Alves Filho",
+         {"given": "Pedro", "family": "Alves", "suffix": "Filho"},
+         classification="fix(#843)",
+         ambiguities=("suffix-or-name",),
+         notes="an agnomen marks its bearer against a relative of the same "
+               "name, as Junior does (rules/S11). 1.4.0 and 2.6.0 read "
+               "middle 'Alves', family 'Filho'"),
+    Case("an_agnomen_with_no_word_to_spare", "Ana Neto",
+         {"given": "Ana", "family": "Neto"},
          classification="parity",
-         notes="Filho, Neto and Sobrinho are not suffix vocabulary: "
-               "whether they read as suffixes is open on #843. The "
-               "contrast row for the one above"),
+         ambiguities=("suffix-or-name",),
+         notes="Neto is a surname too, and a name of two words has none to "
+               "spare for the generation (rules/S11); the fork is reported"),
+    Case("an_agnomen_in_capitals_with_no_word_to_spare", "PEDRO FILHO",
+         {"given": "PEDRO", "family": "FILHO"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="a name written in one case says nothing, and an agnomen's "
+               "writing never does, so the count keeps the family"),
+    Case("an_agnomen_after_a_particle_surname", "PEDRO DA SILVA FILHO",
+         {"given": "PEDRO", "family": "DA SILVA", "suffix": "FILHO"},
+         classification="fix(#843)",
+         ambiguities=("suffix-or-name",),
+         notes="the particle surname is the family the agnomen follows. "
+               "1.4.0 and 2.6.0 read family 'DA SILVA FILHO'"),
+    Case("an_agnomen_before_a_suffix_comma", "Pedro Alves Neto, PhD",
+         {"given": "Pedro", "family": "Alves", "suffix": "Neto, PhD"},
+         classification="fix(#843)",
+         ambiguities=("suffix-or-name",),
+         notes="the agnomen joins the credentials after it, as 'José Silva "
+               "Júnior, PhD' does. 1.4.0 and 2.6.0 read middle 'Alves', "
+               "family 'Neto'"),
+    Case("an_agnomen_ending_the_given_part", "Alves, Pedro Neto",
+         {"given": "Pedro", "family": "Alves", "suffix": "Neto"},
+         classification="fix(#843)",
+         ambiguities=("suffix-or-name",),
+         notes="the given part's last word is read by its writing alone "
+               "(rules/S5), and an agnomen's never keeps it a name. 1.4.0 "
+               "and 2.6.0 read middle 'Neto'"),
+    Case("an_agnomen_alone_after_a_family_comma", "Silva, Neto",
+         {"given": "Neto", "family": "Silva"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="the first word after the comma is the given name, the count "
+               "deciding first (rules/C4); FEC holds NETO as a given name"),
+    Case("an_agnomen_in_capitals_in_a_mixed_case_name", "Pedro Alves NETO",
+         {"given": "Pedro", "family": "Alves", "suffix": "NETO"},
+         classification="fix(#843)",
+         ambiguities=("suffix-or-name",),
+         notes="an agnomen's capitals say nothing, where an acronym's would "
+               "be the credential, so the count decides. 1.4.0 and 2.6.0 "
+               "read middle 'Alves', family 'NETO'"),
+    Case("an_agnomen_glued_behind_an_initial", "Pedro M.Filho",
+         {"given": "Pedro", "family": "M.Filho"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="no chunk claim for a suffix word that is also a name "
+               "(rules/S11): the joined word is weighed by its dotted shape, "
+               "as it was"),
+    Case("a_generation_word_in_front_of_an_agnomen_is_no_word_to_spare", "Pedro Junior Filho",
+         {"given": "Pedro", "middle": "Junior", "family": "Filho"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="only name words in front of an agnomen count toward its "
+               "words to spare, so the suffix word there spares nothing "
+               "and keeps no company (rules/S11, #890)"),
+    Case("an_accented_junior_in_front_of_an_agnomen", "Pedro Júnior Neto",
+         {"given": "Pedro", "middle": "Júnior", "family": "Neto"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="only name words in front of an agnomen count toward its "
+               "words to spare, so the suffix word there spares nothing "
+               "and keeps no company (rules/S11, #890)"),
+    Case("an_abbreviated_junior_in_front_of_an_agnomen", "Pedro Jr. Filho",
+         {"given": "Pedro", "middle": "Jr.", "family": "Filho"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="only name words in front of an agnomen count toward its "
+               "words to spare, so the suffix word there spares nothing "
+               "and keeps no company (rules/S11, #890)"),
+    Case("a_generation_word_in_front_of_an_agnomen_before_a_comma", "Pedro Junior Filho, MD",
+         {"given": "Pedro", "middle": "Junior", "family": "Filho", "suffix": "MD"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="only name words in front of an agnomen count toward its "
+               "words to spare, so the suffix word there spares nothing "
+               "and keeps no company (rules/S11, #890)"),
+    Case("a_generation_word_in_front_of_an_agnomen_in_capitals", "PEDRO JUNIOR FILHO",
+         {"given": "PEDRO", "middle": "JUNIOR", "family": "FILHO"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="only name words in front of an agnomen count toward its "
+               "words to spare, so the suffix word there spares nothing "
+               "and keeps no company (rules/S11, #890)"),
+    Case("a_numeral_in_front_of_an_agnomen_is_no_word_to_spare", "Pedro VI Filho",
+         {"given": "Pedro", "middle": "VI", "family": "Filho"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="what the trailing run would take in front of an agnomen "
+               "is no word to spare for it, a numeral the fork reads or "
+               "a member its writing makes a suffix (rules/S11, #890)"),
+    Case("a_credential_in_capitals_in_front_of_an_agnomen_is_no_word_to_spare", "Pedro MA Filho",
+         {"given": "Pedro", "middle": "MA", "family": "Filho"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="what the trailing run would take in front of an agnomen "
+               "is no word to spare for it, a numeral the fork reads or "
+               "a member its writing makes a suffix (rules/S11, #890)"),
+    Case("a_member_carried_in_front_of_an_agnomen_is_no_word_to_spare", "Pedro Junior Ma Filho",
+         {"given": "Pedro", "middle": "Junior Ma", "family": "Filho"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="a member a suffix word in front carries is what the "
+               "trailing run takes, so it spares no word for the agnomen "
+               "behind it (rules/S11, #890)"),
+    Case("a_particle_carried_in_front_of_an_agnomen", "Pedro Junior do Filho",
+         {"given": "Pedro", "middle": "Junior", "family": "do Filho"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="a member a suffix word in front carries is what the "
+               "trailing run takes, so it spares no word for the agnomen "
+               "behind it (rules/S11, #890)"),
+    Case("an_agnomen_behind_a_joined_surname", "Maria Gomes e Silva Filho",
+         {"given": "Maria", "family": "Gomes e Silva", "suffix": "Filho"},
+         classification="fix(#843)",
+         ambiguities=("suffix-or-name",),
+         notes="a connective join in front is one name word, the "
+               "agnomen's word to spare (rules/S11, #890). 1.4.0 and "
+               "2.6.0 read family 'Filho'"),
+    Case("fils_after_a_name", "Alexandre Dumas fils",
+         {"given": "Alexandre", "family": "Dumas", "suffix": "fils"},
+         classification="fix(#752)",
+         ambiguities=("suffix-or-name",),
+         notes="fils is a generation word with a family reading, gated "
+               "(rules/S11). 1.4.0 and 2.6.0 read middle 'Dumas', family "
+               "'fils'"),
+    Case("fils_in_title_case_is_a_name", "Marie Fils",
+         {"given": "Marie", "family": "Fils"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="Title case leans a generation word to the name (rules/S6); "
+               "the fork is reported"),
+    Case("fils_in_title_case_with_words_to_spare", "Jean Marie Fils",
+         {"given": "Jean", "middle": "Marie", "family": "Fils"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="the lean holds with words to spare too"),
+    Case("fils_in_lower_case_with_no_word_to_spare", "Dumas fils",
+         {"given": "Dumas", "family": "fils"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="the floor holds before the case cue: two name words keep "
+               "the family, lower case or not (rules/S11, Derek, #890)"),
+    Case("fils_in_lower_case_behind_a_suffix_word", "Pedro Junior fils",
+         {"given": "Pedro", "middle": "Junior", "family": "fils"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="the suffix word in front is no word to spare, and the "
+               "floor holds before the case cue (rules/S11, #890)"),
+    Case("fils_in_lower_case_after_a_family_comma", "Dumas, Alexandre fils",
+         {"given": "Alexandre", "family": "Dumas", "suffix": "fils"},
+         classification="fix(#752)",
+         ambiguities=("suffix-or-name",),
+         notes="the comma has named the family, so lower case settles the "
+               "generation (rules/S5, S6). 1.4.0 and 2.6.0 read middle "
+               "'fils'"),
+    Case("fils_in_lower_case_after_an_empty_head", ", Dr. fils",
+         {"title": "Dr.", "family": "fils"},
+         classification="parity",
+         notes="no name before the comma, so no family is named and the "
+               "floor holds before the case cue (rules/S11, #890)"),
+    Case("fils_in_lower_case_after_one_name_word_and_a_comma", "Dumas, fils",
+         {"given": "fils", "family": "Dumas"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="at the first slot after a comma the count decides alone, "
+               "lower case adding nothing to it (rules/S11, C4, #890)"),
+    Case("fils_in_lower_case_after_a_joined_salutation", "Mr. and Mrs., fils",
+         {"given": "fils", "family": "Mr. and Mrs."},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="the joined salutation is no family word for the case cue "
+               "to rely on (rules/S11, #890)"),
+    Case("a_one_letter_generation_is_off_by_default", "Juan Pérez H.",
+         {"given": "Juan", "middle": "Pérez", "family": "H."},
+         classification="parity",
+         notes="Spanish H. (hijo) is written as an initial is (rules/T5), so "
+               "its generation reading is recorded off by default, for a "
+               "pack"),
     Case("a_feminine_generational_word_in_cyrillic", "Агриппина Младшая",
          {"given": "Агриппина", "suffix": "Младшая"},
          classification="fix(#661)",

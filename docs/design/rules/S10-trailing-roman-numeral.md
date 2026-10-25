@@ -113,7 +113,7 @@
 
 **Accepted:**
 
-- A numeral of one letter with another suffix word behind it is not the last word of the name and is read as any word there is, so a one-letter numeral before a credential is the family name, and the reading is reported, as either reading of the fork is, whether the credential is written as one word or split across two (S11). A lone letter there abbreviates a surname as often as it numbers a generation.
+- A numeral of one letter with another suffix word behind it is not the last word of the name and is read as any word there is, so a one-letter numeral before a credential is the family name, and the reading is reported, as either reading of the fork is, whether the credential is written as one word or split across two (S12). A lone letter there abbreviates a surname as often as it numbers a generation.
   ```
   "John Smith V PhD"          →  family="V"
   "John Smith V PhD"          →  ambiguities=("suffix-or-name",)

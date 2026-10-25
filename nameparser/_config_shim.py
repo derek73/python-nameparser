@@ -1046,7 +1046,8 @@ class Constants:
         """
         from nameparser.config.conjunctions import CONJUNCTIONS_AMBIGUOUS
         from nameparser.config.maiden_markers import MAIDEN_MARKERS
-        from nameparser.config.suffixes import GLUED_HONORIFICS
+        from nameparser.config.suffixes import (
+            AGNOMENS, GLUED_HONORIFICS, SUFFIX_WORDS_AMBIGUOUS)
         from nameparser.config.surnames import KOREAN_SURNAMES
         from nameparser.config.titles import AFTER_GIVEN_TITLES
         # Every set field and every capitalization_exceptions key passes
@@ -1216,6 +1217,23 @@ class Constants:
                 # so the intersection is kept for `_snapshot() ==
                 # Lexicon.default()` legibility, as conjunctions_ambiguous'.
                 after_given_titles=AFTER_GIVEN_TITLES & titles,
+                # likewise no v1 manager: a suffix word that is also a
+                # name is 2.7 behavior (#752), so it rides in the
+                # snapshot only. Intersect with the word set, as the
+                # tails are: Lexicon enforces the subset, and deleting
+                # the suffix word is the one v1 knob, which turns the
+                # reading off. agnomens is consulted only inside it, so
+                # its intersection is kept for legibility alone.
+                # A v1 caller who added such a word to suffix_acronyms
+                # had it read as a suffix through the acronym branch,
+                # so the word leaves the gate rather than raising at
+                # Lexicon's word-gate check (folded, as the two
+                # cross-set computations above are).
+                suffix_words_ambiguous=frozenset(
+                    w for w in SUFFIX_WORDS_AMBIGUOUS & suffix_words
+                    if _normalize(w) not in {
+                        _normalize(a) for a in acronyms - ambiguous_acronyms}),
+                agnomens=AGNOMENS & SUFFIX_WORDS_AMBIGUOUS & suffix_words,
                 # TupleManager is dict[str, object] (v1 parity: values were
                 # never statically str-typed); every real entry is a str,
                 # same assumption _DelimiterManager's sentinel lookup makes.

@@ -88,6 +88,8 @@ def test_the_compiled_sets_are_the_default_lexicon(shipped: dict[str, str]) -> N
         maiden_markers=c["MAIDEN_MARKERS"], surnames=lex.surnames,
         honorific_tails=c["GLUED_HONORIFICS"],
         after_given_titles=c["AFTER_GIVEN_TITLES"],
+        suffix_words_ambiguous=c["SUFFIX_WORDS_AMBIGUOUS"],
+        agnomens=c["AGNOMENS"],
         capitalization_exceptions=tuple(c["CAPITALIZATION_EXCEPTIONS"].items()),
     )
     assert rebuilt == lex
@@ -142,9 +144,42 @@ def test_an_exclusion_in_one_file_refuses_the_reading_in_another(
     files = dict(shipped)
     # appended to an ordered file, out of place: the reason still comes
     # first, check 10 running last
-    files["en.toml"] += '\n[[word]]\ntext = "fils"\ngeneration = {}\n'
-    with pytest.raises(build.VocabError, match="767 US Census"):
+    files["en.toml"] += '\n[[word]]\ntext = "père"\ngeneration = {}\n'
+    with pytest.raises(build.VocabError, match="collides outside French"):
         _compile(files)
+
+
+def test_a_reading_off_by_default_compiles_to_nothing() -> None:
+    # recorded and checked, for a pack to turn on (phase 3): it feeds no
+    # set, marks nothing beside a name reading, and so cannot clash with
+    # the word's live readings in another file (checks 4 and 5) or be
+    # refused by an exclusion, which keeps a reading out of the default
+    # where this one already is (check 6)
+    off = build.compile_files({"es.toml": _w('[[word]]\ntext = "zzq"\ngeneration = { default = false }\nfamily = { note = "x" }')})
+    assert not any("zzq" in v for v in off.values())
+    both = build.compile_files({
+        "mul.toml": _w('[[word]]\ntext = "zzq"\ngeneration = {}'),
+        "de.toml": _w('[[word]]\ntext = "zzq"\ncredential = { default = false }'),
+        "hr.toml": _w('[[word]]\ntext = "zzr"\nexcluded = { generation = "x" }'),
+        "cs.toml": _w('[[word]]\ntext = "zzr"\ngeneration = { default = false }'),
+    })
+    assert "zzq" in both["SUFFIX_WORDS"] and "zzq" not in both["SUFFIX_ACRONYMS"]
+    assert not any("zzr" in v for v in both.values())
+
+
+def test_a_suffix_word_beside_a_name_reading_is_gated_and_an_agnomen_by_the_count() -> None:
+    # the derived marker for a suffix word (rules/S11): a generation
+    # beside a name reading is gated with the case cue, an agnomen with
+    # none; a word with no name reading marks nothing
+    c = build.compile_files({"fr.toml": _w(
+        '[[word]]\ntext = "zzq"\ngeneration = {}\nfamily = { note = "x" }\n\n'
+        '[[word]]\ntext = "zzr"\ngeneration = {}'),
+        "pt.toml": _w('[[word]]\ntext = "zzs"\nagnomen = {}\ngiven = { note = "x" }')})
+    assert {"zzq", "zzr", "zzs"} <= c["SUFFIX_WORDS"]
+    assert c["SUFFIX_WORDS_AMBIGUOUS"] == {"zzq", "zzs"}
+    assert c["AGNOMENS"] == {"zzs"}
+    # only the kinds a gate reads; another word kind beside a name
+    # reading is refused (check 11), never left ungated
 
 
 # ------------------------------------------------- one mutation per check
@@ -160,11 +195,11 @@ MUTATIONS = [
     ("no-schema", {"und.toml": '[[word]]\ntext = "jr"\ngeneration = {}\n'}, "needs `schema = 1`"),
     ("newer-schema", {"und.toml": OK.replace("schema = 1", "schema = 2")}, "newer than this compiler"),
     ("unknown-top-level-key", {"und.toml": "language = 'en'\n" + OK}, "unknown key 'language'"),
-    ("reserved-top-level-key", {"und.toml": "default = false\n" + OK}, "reserved for phase 3"),
+    ("reserved-top-level-key", {"und.toml": "prefer = ['pt']\n" + OK}, "reserved for phase 3"),
     ("file-name-not-a-tag", {"english.toml": OK}, "BCP 47 tag"),
     ("file-name-not-canonical-case", {"pt-br.toml": OK}, "BCP 47 tag"),
     ("file-with-no-entries", {"en.toml": OK, "und.toml": "schema = 1\n"}, "no \\[\\[word\\]\\] entries"),
-    ("reserved-reading-property", {"und.toml": _w('[[word]]\ntext = "mba"\ncredential = { bare_only = true }')}, "reserved for phase 2"),
+    ("reserved-reading-property", {"und.toml": _w('[[word]]\ntext = "mba"\ncredential = { bare_only = true }')}, "reserved for phase 4"),
     ("unknown-reading-property", {"und.toml": _w('[[word]]\ntext = "mba"\ncredential = { acronymm = true }')}, "unknown key 'acronymm'"),
     ("unknown-word-key", {"und.toml": _w('[[word]]\ntext = "jr"\ngeneration = {}\nlang = "en"')}, "unknown key 'lang'"),
     ("descriptive-key-on-the-word", {"und.toml": _w('[[word]]\ntext = "jr"\ngeneration = {}\nnote = "x"')}, "belongs on a reading"),
@@ -238,6 +273,19 @@ MUTATIONS = [
     ("particle-kind-without-may-be-given", {"nl.toml": _w('[[word]]\ntext = "van"\npreposition = {}')}, "states may_be_given"),
     ("flag-not-a-bool", {"und.toml": _w('[[word]]\ntext = "van"\nparticle = { may_be_given = "yes" }')}, "true or false"),
     ("issue-not-a-number", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = { issue = "661" }')}, "issue number"),
+    # `default`: a reading is on unwritten, so only false is worth
+    # writing; and the four names phase 2 left reserved say which phase
+    ("default-true", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = { default = true }')}, "write default = false"),
+    ("default-not-a-bool", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = { default = "no" }')}, "write default = false"),
+    ("reserved-attaches", {"en.toml": _w('[[word]]\ntext = "chief"\noffice = { attaches = ["military"] }')}, "reserved for phase 2"),
+    ("reserved-separators", {"th.toml": _w('[[word]]\ntext = "นาย"\nsalutation = { separators = [] }')}, "reserved for phase 4"),
+    # 11, the agnomen's half: an agnomen is gated by its name reading,
+    # so one without would take the family name from two-word names
+    ("name-reading-beside-an-honorific", {"ja.toml": _w('[[word]]\ntext = "zzt"\nhonorific = {}\nfamily = { note = "x" }')}, "gates nothing"),
+    ("name-reading-beside-a-generic-suffix-word", {"en.toml": _w('[[word]]\ntext = "zzt"\nsuffix = {}\ngiven = { note = "x" }')}, "gates nothing"),
+    ("agnomen-as-an-acronym", {"pt.toml": _w('[[word]]\ntext = "filho"\nagnomen = { acronym = true }\nfamily = { note = "x" }')}, "an agnomen is a word"),
+    ("agnomen-without-a-name-reading", {"pt.toml": _w('[[word]]\ntext = "filho"\nagnomen = {}')}, "an agnomen needs a `given` or `family` reading"),
+    ("agnomen-whose-name-reading-is-elsewhere-only-as-an-exclusion", {"pt.toml": _w('[[word]]\ntext = "filho"\nagnomen = {}\nexcluded = { family = "x" }')}, "an agnomen needs a `given` or `family` reading"),
     ("decided-not-a-date", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = { decided = "2026-10-18" }')}, "TOML date"),
     # tomllib reads a date-time as a datetime, which isinstance calls a date
     ("decided-a-date-time", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = { decided = 2026-10-18T09:00:00 }')}, "not a string or a date-time"),
@@ -841,13 +889,16 @@ def _sets_fed(kind: str, props: str = "{}", text: str = "zzq") -> set[str]:
     """The compiled constants a one-word file holding a `kind` reading
     with `props` puts the word into. A particle that does not state
     may_be_given gets a given reading, as check 11 requires, so the bare
-    kind feeds only the sets its category does, and a bare name reading
-    gets the note a count-less one carries."""
+    kind feeds only the sets its category does; an agnomen gets the
+    family reading check 11 requires of it, which gates it; and a bare
+    name reading gets the note a count-less one carries."""
     if build.CATEGORY.get(kind) == "name" and props == "{}":
         props = '{ note = "probe" }'
     entry = f'{kind} = {props}'
     if build.CATEGORY.get(kind) == "particle" and "may_be_given" not in props:
         entry = 'given = { note = "probe" }\n' + entry
+    if kind == "agnomen":
+        entry = 'family = { note = "probe" }\n' + entry
     files = {"en.toml": _w(f'[[word]]\ntext = "{text}"\n{entry}')}
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", build.VocabWarning)  # a name reading is inert
@@ -865,6 +916,7 @@ _PROPERTY_PROBES = {
     "may_be_initial": ("conjunction", "{ may_be_initial = true }", "q"),
     "cased": ("title", '{ cased = "ZzQ" }', "zzq"),
     "after_given": ("salutation", "{ after_given = true }", "zzq"),
+    "default": ("generation", "{ default = false }", "zzq"),
 }
 
 
@@ -940,6 +992,7 @@ def test_the_readme_states_each_behavioral_propertys_unwritten_value() -> None:
 #: and without a given reading -- what moves is the marker's effect.
 _MARKER_PROBES = {
     "possibly a name": ("credential", "{}", "{}"),
+    "possibly a name, a word": ("generation", "{}", "{}"),
     "possibly given": ("preposition", "{ may_be_given = false }", "{}"),
 }
 

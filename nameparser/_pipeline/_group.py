@@ -329,7 +329,7 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
         end = c + (e - m)
         released = [(j, Role.TITLE if m + (j - c) in titles
                      else Role.SUFFIX) for j in range(end, len(pieces))]
-        # rules/S11: "where the count takes the pair, the reading is reported" --
+        # rules/S12: "where the count takes the pair, the reading is reported" --
         # the clause-free reading took it, and the take binds it here
         for j, role in released:
             if "split" in ptags[j] and role is Role.SUFFIX:
@@ -352,7 +352,7 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     last = pieces[end - 1]
     word = tokens[last[0]]
     # a one-word member: a split credential the clause keeps is one the
-    # count declined, which reports nothing (rules/S11), and its first
+    # count declined, which reports nothing (rules/S12), and its first
     # word is not the clause's last
     if len(last) == 1 and not word.tags.isdisjoint(_AMBIGUOUS_CREDENTIAL_TAGS):
         ambiguities.append(PendingAmbiguity(
@@ -587,7 +587,7 @@ def _between_name_words(k: int, lo: int, hi: int,
             and not is_title_piece(pieces[right], ptags[right], tokens))
 
 
-# rules/S11: "where the count declines it, the pair is the two words
+# rules/S12: "where the count declines it, the pair is the two words
 # it is written as" -- after the trailing read, which is where the
 # count is asked in a main segment
 def _settle_splits(pieces: list[Piece], ptags: list[set[str]]) -> None:
@@ -1158,7 +1158,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             # Smith, Jr., abdul Dr. Smith', #640). A title word standing
             # in the name is a name word and joins ('abdul Sir Smith
             # Berg', 'Berg, abdul Prof. Ali').
-            # A credential split across a space (rules/S11) is declined
+            # A credential split across a space (rules/S12) is declined
             # as its one-word spelling is: merged in the given part
             # before this join, so the particle chain stops in front of
             # it too ('Rahman, Abdul MB ChB', 'Smith, John van Pharm D')

@@ -28,6 +28,11 @@
 
 **Except:**
 
+- **A generation word that is also a name (S11) keeps no company**: a suffix word in front of it is no evidence, and its own count, which looks past that word, decides.
+  ```
+  "Pedro PhD Neto"            →  family="Neto"  · boundary
+  "Pedro Junior Filho"        →  family="Filho"  · boundary
+  ```
 - **A word of both the title and the suffix vocabulary standing in the given part's leading title run** is a title there and speaks for nothing, and no credential behind it speaks for a word of this class in that part: the title reading makes the next word the given name, and from there the part reads as any given part does, the given part's own company included. A part holding no such word, or only words whose capitals decide them, reads as it did. Anywhere else such a word speaks like any suffix word.
   ```
   "Smith, Ms Ma"              →  given="Ma"  · boundary

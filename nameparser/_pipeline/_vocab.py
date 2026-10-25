@@ -469,12 +469,18 @@ def is_one_case(texts: Sequence[str]) -> bool:
 #: reason; it has one caller shape and no wrapper to keep in step.
 Lean = Literal["credential", "name"]
 
+#: How a member's writing leans, by what the member is (rules/S11):
+#: an acronym's capitals are the credential, a suffix word's lower
+#: case is the suffix, and an agnomen's writing says nothing.
+Cue = Literal["acronym", "word", "none"]
+
 
 # #289's credential lean, rules/S6: "Written case is evidence beside
 # the count (S4), and it speaks only in a name written in more than
 # one case" -- the WRITING evidence that decides ahead of the
 # words-to-spare count (history: decisions/S6).
-def ambiguous_lean(text: str, one_case: bool) -> Lean | None:
+def ambiguous_lean(text: str, one_case: bool,
+                   cue: Cue = "acronym") -> Lean | None:
     """Which way the WRITING leans for a member of the ambiguous
     credential set: "credential", "name", or None for no lean at all.
 
@@ -498,16 +504,33 @@ def ambiguous_lean(text: str, one_case: bool) -> Lean | None:
     so 'MA.' leans as 'MA' does -- the lean reads CASE, not periods,
     and the dotted spelling is the vocabulary's own question
     (suffix_as_written).
+
+    `cue` is what the member is (rules/S11). A suffix WORD that is
+    also a name ("word", 'fils') leans the other way at one end: its
+    lower case in a mixed-case name is the suffix ("credential", the
+    suffix reading), its capitals say nothing (a surname is often
+    written so), and Title case leans to the name as an acronym's
+    does. An agnomen ("none", 'Neto') is written in the case of the
+    name around it, so its writing never leans.
     """
-    if one_case:
+    if one_case or cue == "none":
         return None
     if text.upper() == text.lower():     # caseless: no contrast to read
         return None
     if text.isupper():
-        return "credential"
+        return "credential" if cue == "acronym" else None
     if text.islower():
-        return None
+        return "credential" if cue == "word" else None
     return "name"
+
+
+def lexicon_cue(n: str, lexicon: Lexicon) -> Cue:
+    """The `ambiguous_lean` cue of the folded member `n`, read off the
+    lexicon by a caller that has no tags to read (`is_wholly_suffix`);
+    `_pieces.listed_lean` reads the same answer off classify's tags."""
+    if n in lexicon.suffix_words_ambiguous:
+        return "none" if n in lexicon.agnomens else "word"
+    return "acronym"
 
 
 _DOTTED = re.compile(r"(?:" + _LETTER + r"\.)+")
@@ -567,7 +590,7 @@ def is_cased_paired_initials(text: str) -> bool:
             and text.upper() != text.lower())
 
 
-# rules/S11: "a credential written split across a space reads as one
+# rules/S12: "a credential written split across a space reads as one
 # word" -- one chunk of up to five letters, with or without its period
 # ('Pharm.', 'D', 'Sc.'), the shape both words of a split credential
 # take. The C-level half classify asks of every adjacent pair before
@@ -666,7 +689,8 @@ def suffix_as_written(n: str, text: str, lexicon: Lexicon) -> bool:
         return True
     if ((a in lexicon.suffix_acronyms
             and a not in lexicon.suffix_acronyms_ambiguous)
-            or n in lexicon.suffix_words):
+            or (n in lexicon.suffix_words
+                and n not in lexicon.suffix_words_ambiguous)):
         return True
     # the joiners asked in C first, so a word holding neither pays no
     # frame
@@ -754,7 +778,8 @@ def is_suffix_lenient(text: str, lexicon: Lexicon) -> bool:
     bypassing the initial veto -- only safe in unambiguous positions
     (after a comma)."""
     n = _normalize(text)
-    return n in lexicon.suffix_words \
+    return (n in lexicon.suffix_words
+            and n not in lexicon.suffix_words_ambiguous) \
         or _is_suffix_strict_n(n, text, lexicon)
 
 
@@ -843,7 +868,8 @@ def period_joined_vocab(
     ANY suffix chunk makes it a suffix. Chunk-level suffix membership
     is v1's is_suffix: bare ambiguous acronyms COUNT ('Msc.Ed.'
     derives via 'ed') -- the ambiguous period-gate applies to whole
-    tokens only. Returns "title", "suffix", "shape", or None.
+    tokens only -- while a suffix word that is also a name does not
+    ('M.Filho', rules/S11). Returns "title", "suffix", "shape", or None.
 
     "shape" is the third verdict and it is the absence of a claim
     worth acting on (#516): two or more chunks, EVERY one of them
@@ -898,8 +924,13 @@ def period_joined_vocab(
     chunks = [_normalize(c) for c in text.split(".") if c]
     if any(c in lexicon.titles for c in chunks):
         return "title"
+    # rules/S11: "the word is part of that one word and is weighed only
+    # by the shape the joined word wears" -- no chunk claim for a
+    # suffix word that is also a name ('M.Filho')
     matched = [c for c in chunks
-               if c in lexicon.suffix_acronyms or c in lexicon.suffix_words]
+               if c in lexicon.suffix_acronyms
+               or (c in lexicon.suffix_words
+                   and c not in lexicon.suffix_words_ambiguous)]
     if matched and not all(len(c) == 1 and c.isascii() for c in matched):
         return "suffix"
     if (len(chunks) >= 2 and all(c.isalpha() for c in chunks)
@@ -953,7 +984,9 @@ def ambiguous_class_member(text: str, lexicon: Lexicon) -> bool:
     """
     if "." in text:
         return False
-    return _normalize(text) in lexicon.suffix_acronyms_ambiguous
+    n = _normalize(text)
+    return (n in lexicon.suffix_acronyms_ambiguous
+            or n in lexicon.suffix_words_ambiguous)
 
 
 # #516's all-caps half, ONE PREDICATE for the shape test and its
@@ -1474,7 +1507,8 @@ def is_wholly_suffix(texts: Sequence[str], lexicon: Lexicon,
     def counts_as_suffix(text: str) -> bool:
         if (one_case is not None
                 and ambiguous_class_member(text, lexicon)
-                and ambiguous_lean(text, one_case) == "credential"):
+                and ambiguous_lean(text, one_case, lexicon_cue(
+                    _normalize(text), lexicon)) == "credential"):
             return True
         if ((is_suffix_lenient(text, lexicon) if lenient
              else is_suffix_strict(text, lexicon, letters_one_case))

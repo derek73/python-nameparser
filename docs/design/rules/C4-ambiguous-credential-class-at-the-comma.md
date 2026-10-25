@@ -1,9 +1,14 @@
 # C4 — the ambiguous credential class at the comma
 
-**When:** a word of the ambiguous credential class — a bare acronym the vocabulary marks as also an ordinary name, a word admitted to the class by shape, which S3 defines and bounds, and a credential split across a space, which S11 defines — stands in the part after the comma the decision (C1) reads, as in "John Smith, Ma".
+**When:** a word of the ambiguous credential class — a bare acronym the vocabulary marks as also an ordinary name, a word admitted to the class by shape, which S3 defines and bounds, and a credential split across a space, which S12 defines — stands in the part after the comma the decision (C1) reads, as in "John Smith, Ma".
 
 **Then:** the count before the comma is of NAME words rather than of words, and two or more of them read the part after the comma as the credential run, whatever case the name is written in.
 
+- **A generation word that is also a name (S11) is a word of this class here**, its count read the same way.
+  ```
+  "Pedro Alves, Neto"         →  suffix="Neto"
+  "Silva, Neto"               →  given="Neto"  · boundary
+  ```
 - **The count goes FIRST and written case is asked only after it**: where two name words stand before the comma the part after it is the credential run however that part is written, and only where the count leaves the word a name — one name word before the comma — is the case read, capitals in a mixed-case name making it the credential there too (S6).
   ```
   "John Smith, MA"            →  suffix="MA"

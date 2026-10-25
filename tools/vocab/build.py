@@ -57,17 +57,21 @@ at fault:
 10. no same_as chain loops, in any file, and the words of every file
     but und.toml in canonical order (_order_key): by kind, then by the
     word a spelling is the same_as of, then by text;
-11. a clash with a name is stated as a name reading, from which the two
+11. a clash with a name is stated as a name reading, from which the
     markers are derived (decisions/vocabulary-model, 2026-10-25):
     `may_be_name` and `may_be_given = true` are refused, each naming
-    the reading to write, and a particle reading states
+    the reading to write, a particle reading states
     `may_be_given = false` exactly where its word has no `given`
-    reading in any file;
+    reading in any file, an agnomen reading has a name reading on
+    its word, which gates it (rules/S11), and no other suffix word
+    kind has one, since the gate reads only those two;
 
 numbered by subject, not by when they run: 1-3, 8, 7's case mask and
 11's refusals run per entry as each file loads, and 4-7, 9, 11's
-particle statement and 10 over the whole pool in check_pool, 6 first
-and 10 last;
+particle statement and agnomen and 10 over the whole pool in
+check_pool, 6 first and 10 last. A reading written `default = false`
+is held to 1-3, 7, 8 and 11 like any other and compiles to nothing, so
+4, 5, 6 and 9 do not weigh it;
 
 plus the data invariants that were asserts: may_be_initial only on a
 cased single letter, an elided particle in both apostrophes (#700), and
@@ -182,6 +186,7 @@ CATEGORY: dict[str, str] = {
     "modifier": "title",
     "suffix": "suffix",
     "generation": "suffix",
+    "agnomen": "suffix",
     "credential": "suffix",
     "honorific": "suffix",
     "professional_honorific": "suffix",
@@ -219,12 +224,12 @@ UNORDERED = "und.toml"
 #: Behavioral properties per category: each compiles into a field, and
 #: its allowed values are exactly what today's pipeline does.
 BEHAVIORAL: dict[str, frozenset[str]] = {
-    "title": frozenset({"addresses", "after_given", "cased"}),
-    "suffix": frozenset({"acronym", "attached", "cased"}),
-    "particle": frozenset({"cased"}),
-    "conjunction": frozenset({"may_be_initial", "cased"}),
-    "bound_given": frozenset({"cased"}),
-    "relation": frozenset({"cased"}),
+    "title": frozenset({"addresses", "after_given", "cased", "default"}),
+    "suffix": frozenset({"acronym", "attached", "cased", "default"}),
+    "particle": frozenset({"cased", "default"}),
+    "conjunction": frozenset({"may_be_initial", "cased", "default"}),
+    "bound_given": frozenset({"cased", "default"}),
+    "relation": frozenset({"cased", "default"}),
 }
 #: Stated properties per category: compiled to nothing, but held to the
 #: word's readings (check 11). A particle states `may_be_given = false`
@@ -239,6 +244,10 @@ DERIVED = {
     "may_be_name": "a `given` or `family` reading on the word",
     "may_be_given": "a `given` reading on the word",
 }
+#: The suffix word kinds a name reading gates (rules/S11): the third
+#: derived marker reads these, and a name reading beside another word
+#: kind marks nothing, no gate reading that clash yet.
+GATED_WORDS = frozenset({"generation", "agnomen"})
 #: Descriptive properties: recorded, validated, compiled to nothing.
 DESCRIPTIVE = frozenset({"note", "issue", "decided", "expands", "same_as",
                          "native", "gender"})
@@ -250,10 +259,13 @@ EXCLUSION_KEYS = frozenset({"reason", "issue", "decided", "note"})
 ATTACHED_KEYS = frozenset({"side", "issue", "decided", "note"})
 #: Names a later phase will give meaning to. Writing one now is an error
 #: that says so, rather than "unknown", so nothing reads as working.
+#: Phase 2 gives `default` its meaning and leaves `attaches` to its
+#: front-of-the-name work; the gate's slots carry position, and shape
+#: settles a bare letter (rules/P7), so the position and bare-letter
+#: names wait with `separators` for phase 4's shapes and glued words.
 RESERVED = {
-    "default": 3, "prefer": 3, "strict": 3,
-    "bare_only": 2, "leading_only": 2, "trailing_only": 2,
-    "attaches": 2, "separators": 2,
+    "attaches": 2, "prefer": 3, "strict": 3,
+    "bare_only": 4, "leading_only": 4, "trailing_only": 4, "separators": 4,
 }
 _TAG = re.compile(r"[a-z]{2,3}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?")
 
@@ -285,6 +297,14 @@ class Reading:
         """Matched with its periods removed: unwritten, true only for a
         credential."""
         return bool(self.props.get("acronym", self.kind == "credential"))
+
+    @property
+    def on_by_default(self) -> bool:
+        """Compiled into the default vocabulary: unwritten, true. A
+        reading written `default = false` is recorded and checked as a
+        reading but compiles to nothing, for a pack to turn on in
+        phase 3 (decisions/vocabulary-model)."""
+        return self.props.get("default", True) is not False
 
     def flag(self, prop: str) -> bool:
         """A `may_be_*` flag or `after_given`: unwritten, false."""
@@ -347,7 +367,7 @@ class Pool:
 def _reserved_or_unknown(where: str, key: str, allowed: Iterable[str]) -> VocabError:
     if key in RESERVED:
         return VocabError(f"{where}: {key!r} is reserved for phase {RESERVED[key]}; "
-                          f"phase 1 gives it no behavior")
+                          f"it has no behavior yet")
     return VocabError(f"{where}: unknown key {key!r}; allowed: {sorted(allowed)}")
 
 
@@ -765,6 +785,12 @@ def _check_reading(r: Reading, pool: Pool) -> None:
     for flag in ("acronym", "may_be_initial", "after_given"):
         if flag in p and not isinstance(p[flag], bool):
             raise VocabError(f"{where}: {flag} must be true or false")
+    if "default" in p and p["default"] is not False:
+        # every reading is on by default unwritten, so the one value
+        # worth writing is the one that turns it off
+        raise VocabError(f"{where}: default = {_shown(p['default'])}; write "
+                         f"default = false for a reading a pack turns on, "
+                         f"or leave it out")
     if r.category == "title":
         addresses = r.addresses
         if addresses in ("full", "any"):
@@ -781,6 +807,12 @@ def _check_reading(r: Reading, pool: Pool) -> None:
                              f"(rules/H8)")
     if r.category == "suffix":
         acronym = r.acronym
+        if r.kind == "agnomen" and acronym:
+            # an agnomen is a word whose writing never speaks (rules/S11);
+            # as an acronym it would compile into the credential class,
+            # its capitals leaning to the credential
+            raise VocabError(f"{where}: an agnomen is a word; acronym = "
+                             f"true is refused")
         if acronym and "." in r.text:
             # suffix_as_written looks an acronym up with EVERY period
             # removed, so a dotted entry is never matched -- and it slips
@@ -894,6 +926,14 @@ def check_pool(pool: Pool) -> None:
     by_text: dict[str, list[Reading]] = {}
     for r in pool.readings:
         by_text.setdefault(r.text, []).append(r)
+    # a reading written `default = false` compiles to nothing, so it
+    # cannot read two ways beside the word's other readings, and no
+    # exclusion refuses it: an exclusion keeps a reading out of the
+    # default, which is where this one already is (checks 4, 5, 6, 9).
+    # It is still a reading: check 3 has held its properties, and 7 and
+    # 11 read it with the rest
+    live: dict[str, list[Reading]] = {
+        t: [r for r in rs if r.on_by_default] for t, rs in by_text.items()}
 
     # 6: an excluded kind is absent from the whole pool, and an excluded
     # property never takes a value other than the one it has unwritten on
@@ -905,7 +945,7 @@ def check_pool(pool: Pool) -> None:
     # by check 4 anyway, but without the reason), and `cased`, compiled
     # once per word whatever the reading, over every reading of the word
     for x in pool.exclusions:
-        for r in by_text.get(x.text, ()):
+        for r in live.get(x.text, ()):
             if x.prop is None and _refused_by(r, x.kind):
                 raise VocabError(f"{r.where()}: {x.kind} is excluded for "
                                  f"{x.text!r} in {x.file}: {x.reason}")
@@ -919,7 +959,7 @@ def check_pool(pool: Pool) -> None:
                     f"{x.text!r} in {x.file}: {x.reason}")
 
     # 4: one suffix kind per word, across files
-    for text, rs in by_text.items():
+    for text, rs in live.items():
         kinds = sorted({r.kind for r in rs if r.category == "suffix"})
         if len(kinds) > 1:
             raise VocabError(f"{text!r}: one suffix kind per word, got {kinds} "
@@ -932,7 +972,7 @@ def check_pool(pool: Pool) -> None:
     # particle may take a different kind in each language (`de`, a
     # preposition in French and an article in Dutch), and two kinds
     # disagreeing on a property would compile silently to one of them
-    for text, rs in by_text.items():
+    for text, rs in live.items():
         first: dict[str, Reading] = {}
         for r in rs:
             if r.category == "name":
@@ -982,10 +1022,36 @@ def check_pool(pool: Pool) -> None:
                              f"under uncertainty, the given reading "
                              f"(vocabulary-collisions C-i)")
 
+    # 11, the agnomen's half: an agnomen is gated by the count alone, and
+    # the gate is derived from a name reading, so one without a name
+    # reading would read as the suffix wherever it ends a name, taking
+    # the family name from every two-word name ('Maria Filha')
+    named = {t for t, rs in by_text.items() if any(r.category == "name" for r in rs)}
+    for r in pool.readings:
+        if r.kind == "agnomen" and r.text not in named:
+            raise VocabError(f"{r.where()}: an agnomen needs a `given` or "
+                             f"`family` reading on its word, which gates it "
+                             f"by the count (rules/S11); with dated counts "
+                             f"from tools/name_usage.py or a `note` saying why")
+
+    # 11, the other suffix words: the third marker reads only a
+    # generation's and an agnomen's clash with a name (GATED_WORDS), so a
+    # name reading beside another word kind would mark nothing and leave
+    # the word an ungated suffix, taking the family name from every
+    # two-word name it ends; refused rather than compiled to nothing
+    for r in pool.readings:
+        if (r.category == "suffix" and not r.acronym and r.on_by_default
+                and r.kind not in GATED_WORDS and r.text in named):
+            raise VocabError(f"{r.where()}: a name reading beside this "
+                             f"reading gates nothing, the gate reading only "
+                             f"{' and '.join(sorted(GATED_WORDS))} readings "
+                             f"(rules/S11); classify the word as one, or "
+                             f"keep the counts in this reading's `note`")
+
     # 9: a bound given name that is also a particle must be one that may
     # be given -- the bound join reads it as a given name. Lexicon raises
     # on the same contradiction; this says which file and word
-    for text, rs in by_text.items():
+    for text, rs in live.items():
         if any(r.kind == "bound_given" for r in rs) and text not in given:
             for r in rs:
                 if r.category == "particle":
@@ -1026,6 +1092,8 @@ def _behavior(r: Reading, prop: str) -> object:
         return None if att is None else att.get("side")
     if prop == "may_be_initial" or prop == "after_given":
         return r.flag(prop)
+    if prop == "default":
+        return r.on_by_default
     return r.props.get(prop)
 
 
@@ -1043,6 +1111,8 @@ CONSTANTS = (
     ("MAIDEN_MARKERS", "maiden_markers"),
     ("SUFFIX_WORDS", "suffixes"),
     ("GLUED_HONORIFICS", "suffixes"),
+    ("SUFFIX_WORDS_AMBIGUOUS", "suffixes"),
+    ("AGNOMENS", "suffixes"),
     ("SUFFIX_ACRONYMS_AMBIGUOUS", "suffixes"),
     ("SUFFIX_ACRONYMS", "suffixes"),
     ("CAPITALIZATION_EXCEPTIONS", "capitalization"),
@@ -1063,6 +1133,8 @@ class Compiled(TypedDict):
     MAIDEN_MARKERS: frozenset[str]
     SUFFIX_WORDS: frozenset[str]
     GLUED_HONORIFICS: frozenset[str]
+    SUFFIX_WORDS_AMBIGUOUS: frozenset[str]
+    AGNOMENS: frozenset[str]
     SUFFIX_ACRONYMS_AMBIGUOUS: frozenset[str]
     SUFFIX_ACRONYMS: frozenset[str]
     CAPITALIZATION_EXCEPTIONS: dict[str, str]
@@ -1092,11 +1164,15 @@ def compile_pool(pool: Pool) -> Compiled:
     markers: set[str] = set()
     words: set[str] = set()
     glued: set[str] = set()
+    ambiguous_words: set[str] = set()
+    agnomens: set[str] = set()
     ambiguous: set[str] = set()
     acronyms: set[str] = set()
     cased: dict[str, str] = {}
     for r in pool.readings:
         t, p = r.text, r.props
+        if not r.on_by_default:
+            continue
         if "cased" in p:
             cased[t] = p["cased"]
         if r.category == "title":
@@ -1114,6 +1190,10 @@ def compile_pool(pool: Pool) -> Compiled:
                 words.add(t)
                 if "attached" in p:
                     glued.add(t)
+                if t in named and r.kind in GATED_WORDS:
+                    ambiguous_words.add(t)
+                if r.kind == "agnomen":
+                    agnomens.add(t)
         elif r.category == "particle":
             particles.add(t)
             if t not in given:
@@ -1138,6 +1218,8 @@ def compile_pool(pool: Pool) -> Compiled:
         MAIDEN_MARKERS=frozenset(markers),
         SUFFIX_WORDS=frozenset(words),
         GLUED_HONORIFICS=frozenset(glued),
+        SUFFIX_WORDS_AMBIGUOUS=frozenset(ambiguous_words),
+        AGNOMENS=frozenset(agnomens),
         SUFFIX_ACRONYMS_AMBIGUOUS=frozenset(ambiguous),
         SUFFIX_ACRONYMS=frozenset(acronyms),
         CAPITALIZATION_EXCEPTIONS=dict(sorted(cased.items())),

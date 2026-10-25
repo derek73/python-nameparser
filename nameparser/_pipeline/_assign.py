@@ -1215,7 +1215,7 @@ def assign(state: ParseState) -> ParseState:
                 # credential list behind it makes the credential
                 # reading likelier rather than less.
                 piece = pieces[m]
-                # rules/S11: a split credential reads "as a member of the
+                # rules/S12: a split credential reads "as a member of the
                 # ambiguous class", here read as the class is with no
                 # writing to lean on and in silence, as group merges it
                 # only behind the given word
@@ -1678,7 +1678,7 @@ def assign(state: ParseState) -> ParseState:
                            and not any("vocab:suffix" in tokens[i].tags
                                        for i in piece))
                        else Role.SUFFIX)
-    # rules/S11: "where the count takes the pair, the reading is reported" -- at
+    # rules/S12: "where the count takes the pair, the reading is reported" -- at
     # the end of a name, at the end of the given part, as a run start,
     # here where its roles are final (the part a comma's decision binds reports in `_comma`, a
     # pair a maiden clause releases in group). A loop over the piece

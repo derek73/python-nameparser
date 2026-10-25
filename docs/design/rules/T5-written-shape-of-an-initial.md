@@ -25,6 +25,11 @@
   ```
   "1. née Smith"              →  given="1."
   ```
+- A generation written as one letter and its period, the Spanish H. for hijo or a German regnal I., is that initial too, since nothing in its writing tells the two apart: the vocabulary records both readings off by default, for a language pack to turn on.
+  ```
+  "Juan Pérez H."             →  family="H."
+  "Wilhelm I."                →  family="I."
+  ```
 
 ---
 **Signal:** shape: a one-letter word's period, or a bare unaccented Latin capital

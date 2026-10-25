@@ -95,10 +95,8 @@ modifier = { expands = "the second word of chargé d'affaires" }
 
 [[word]]
 text = "fils"
+generation = { issue = [679, 752], expands = "son, the Younger: Alexandre Dumas fils", note = "gated by the family reading (rules/S11): Title case leans to the name, so Marie Fils keeps her family name, and lower case is the generation wherever the name keeps a family word" }
 family = { us_census_2010 = 767, wikidata = 5, as_of = 2026-10-16 }
-[word.excluded.generation]
-reason = "pack-shaped: Marie Fils, 767 US Census bearers of Fils"
-issue = [679, 684]
 
 [[word]]
 text = "père"

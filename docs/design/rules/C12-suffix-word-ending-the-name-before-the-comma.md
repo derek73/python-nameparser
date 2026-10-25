@@ -41,6 +41,11 @@
 
 **Except:**
 
+- **A generation word that is also a name** (S11) is no evidence here, since it may be the surname the family comma names: the part before the comma ends in a name word.
+  ```
+  "Silva Neto, Pedro"         →  family="Silva Neto"
+  "Pedro Alves Neto, AD"      →  given="AD"  · boundary
+  ```
 - **A word of it written as a name, or an initial, keeps the listing form.**
   ```
   "Lloret Palol II, Josep Antoni"  →  given="Josep"  · boundary

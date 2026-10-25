@@ -88,6 +88,15 @@ _NEVER_FLIPPED = frozenset({"vocab:bound-given", "initial"})
 #: reader ever finds.
 AMBIGUOUS_ACRONYM_TAG = "vocab:suffix-ambiguous"
 
+#: Beside `AMBIGUOUS_ACRONYM_TAG` on a suffix WORD that is also a name
+#: (`Lexicon.suffix_words_ambiguous`, rules/S11): the class is the
+#: same, and so is every site that weighs it, but the writing leans the
+#: other way -- lower case in a mixed-case name is the suffix, where an
+#: acronym's capitals are (`_vocab.ambiguous_lean`). `AGNOMEN_TAG`
+#: rides beside both on an agnomen, whose writing leans nowhere.
+AMBIGUOUS_WORD_TAG = "vocab:suffix-word-ambiguous"
+AGNOMEN_TAG = "vocab:agnomen"
+
 #: EITHER way a token joins the ambiguous credential class -- the
 #: vocabulary's claim and the writing's. The two emitters that report
 #: a fork the peel called and declined ask exactly this: `_group`'s

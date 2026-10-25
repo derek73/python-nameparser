@@ -54,14 +54,12 @@ note = "Vietnamese Đỗ leads a great many surnames"
 
 ```toml
 [[word]]
-text = "fils"
-family = { us_census_2010 = 767, wikidata = 5, as_of = 2026-10-16 }
-[word.excluded.generation]
-reason = "pack-shaped: Marie Fils, 767 US Census bearers of Fils"
-issue = [679, 684]
+text = "père"
+[word.excluded]
+generation = { reason = "pack-shaped: collides outside French", issue = [679, 684] }
 ```
 
-`fils` ("son", the French generational word) is deliberately not a suffix. It has no vocabulary reading at all: a `family` reading recording the counts that kept it out, and an exclusion refusing the `generation` reading with the reason. Anyone who adds `generation = {}` to `fils` in any file gets a build error that quotes that reason.
+`père` ("father", the French word for the Elder) is deliberately not a suffix. It has no vocabulary reading at all, only an exclusion refusing the `generation` reading with the reason. Anyone who adds `generation = {}` to `père` in any file gets a build error that quotes that reason. Its son, `fils`, was refused the same way until 2026-10-25; it now has the `generation` reading beside its `family` reading, which gates it by the name around it ([derived markers](#derived-markers)), so `Marie Fils` keeps her family name.
 
 ```toml
 [[word]]
@@ -84,7 +82,7 @@ Two rules about the `text`:
 
 Every file but `und.toml` lists its words in one order, and the build refuses a file that does not (check 10), naming the entry to move and where it belongs:
 
-1. **By kind**, in the order of the table under [Kinds](#kinds), which lists the categories in turn and each category's kinds together. A word with several readings sorts under its first kind in that order. A word whose only vocabulary reading is a refusal (`fils`, `duke`) sorts under the kind it refuses, a refused category counting as its first kind, and a name reading places a word only when it has nothing else.
+1. **By kind**, in the order of the table under [Kinds](#kinds), which lists the categories in turn and each category's kinds together. A word with several readings sorts under its first kind in that order. A word whose only vocabulary reading is a refusal (`père`, `duke`) sorts under the kind it refuses, a refused category counting as its first kind, and a name reading places a word only when it has nothing else.
 2. **Then by the word it is a spelling of**: a reading's `same_as`, or the word's own text when it has none. A head comes first and its spellings follow it, so `jr` is followed by `jnr` and `junior`, and `sr` by `snr`. A spelling that has spellings of its own heads a group inside its head's: in `ar.toml`, `el-` follows the `a…-` spellings of `al-` with its own assimilated forms after it, and `ul-` comes last. Only the file's own entries are followed, so a word that is a head in one file and a spelling in another is placed in each file by that file alone.
 3. **Then by the word's text.**
 
@@ -113,6 +111,7 @@ A reading's key is its **kind**. The table lists the kinds in their canonical or
 | `modifier` | `title` | `TITLES` |
 | `suffix` | `suffix` | `SUFFIX_WORDS` |
 | `generation` | `suffix` | `SUFFIX_WORDS` |
+| `agnomen` | `suffix` | `SUFFIX_WORDS`, `SUFFIX_WORDS_AMBIGUOUS`, `AGNOMENS` |
 | `credential` | `suffix` | `SUFFIX_ACRONYMS` |
 | `honorific` | `suffix` | `SUFFIX_WORDS` |
 | `professional_honorific` | `suffix` | `SUFFIX_WORDS` |
@@ -134,6 +133,8 @@ A reading's key is its **kind**. The table lists the kinds in their canonical or
 | `family` | `name` | nothing |
 
 A suffix reading goes to `SUFFIX_ACRONYMS` when its `acronym` property is true and to `SUFFIX_WORDS` otherwise; the column shows where each kind goes with `acronym` unwritten. A word has at most one suffix kind (check 4).
+
+`generation` is a word that numbers or ranks its bearer among relatives of the same name, written after the name: junior and senior and their translations, `fils`, the roman numerals the vocabulary lists. `agnomen` is the Brazilian and Portuguese kind of it (`filho`, `neto`, `sobrinho` and their feminines): it is written in the case of the name around it, so its writing settles nothing, and an agnomen reading needs a name reading on its word (check 11), which gates it by the count alone ([rules/S11](../../docs/design/rules/S11-suffix-word-that-is-also-a-name.md), a suffix word that is also a name). The column shows an agnomen with that name reading.
 
 The title kinds say what the title is:
 
@@ -179,6 +180,7 @@ A property is **behavioral** when it compiles into a set and so changes how name
 | `attached` | behavioral | `suffix` | absent | `GLUED_HONORIFICS`, on a word reading only: `{ side = "after" }` splits the word off the end of a name token, as in `田中さん` ([rules/W2](../../docs/design/rules/W2-glued-honorific-peel.md), the glued-honorific peel) |
 | `may_be_given` | stated | `particle` | none: required where the word has no `given` reading | `false` is required where the word has no `given` reading in any file, and that absence, not the property, is what puts the word in `NON_GIVEN_NAME_PARTICLES`: a particle opening the name starts the family name ([rules/P1](../../docs/design/rules/P1-lone-particle-fold.md), the lone particle fold). `true` is refused, naming the `given` reading to write instead (check 11) |
 | `may_be_initial` | behavioral | `conjunction` | false | `CONJUNCTIONS_AMBIGUOUS`, on a cased single letter only: read as an initial in a name written in one case, as in `JOHN E SMITH` ([rules/P8](../../docs/design/rules/P8-single-letter-connective-against-the-initial-it-spells.md), a single-letter connective against the initial it spells) |
+| `default` | behavioral | `title`, `suffix`, `particle`, `conjunction`, `bound_given`, `relation` | true | `false` keeps the reading out of every compiled set, `SUFFIX_WORDS` included for a generation: recorded and checked as a reading, for a pack to turn on in phase 3, where its writing offers the default no cue (`h`, Spanish *hijo*, written `H.`, exactly as an initial is). An exclusion does not refuse it, and it cannot read two ways beside the word's live readings (checks 4 to 6); a name reading beside it marks nothing. `true` is refused: it is what every reading is unwritten |
 | `cased` | behavioral | `title`, `suffix`, `particle`, `conjunction`, `bound_given`, `relation` | the word as written | `CAPITALIZATION_EXCEPTIONS`: the case `capitalized()` gives the word (`PhD`), a mask over its letters and digits, never a replacement (#459) |
 | `note` | descriptive | every category, a `name` reading included | | free text: why the reading is as it is |
 | `issue` | descriptive | every category but `name` | | an issue number, or a list of them |
@@ -195,14 +197,15 @@ Two of these need more than their row:
 
 ### Derived markers
 
-Two sets mark a clash with a name, and both are derived: a word is in one when it carries the clashing reading and a name reading, in any of its files (check 11, since 2026-10-25, [decisions/vocabulary-model](../../docs/design/decisions/vocabulary-model.md)). Phase 1 wrote them as flags, `may_be_name` and `may_be_given = true`, which the build now refuses, naming the reading to write.
+Three sets mark a clash with a name, and all three are derived: a word is in one when it carries the clashing reading and a name reading, in any of its files (check 11, since 2026-10-25, [decisions/vocabulary-model](../../docs/design/decisions/vocabulary-model.md)). Phase 1 wrote two of them as flags, `may_be_name` and `may_be_given = true`, which the build now refuses, naming the reading to write; the third, a suffix word that is also a name, arrived with phase 2h.
 
 | Marker | Readings | Compiled into | Effect |
 |---|---|---|---|
+| possibly a name, a word | a `generation` or `agnomen` reading and a `given` or `family` reading; a name reading beside any other suffix word kind is refused (check 11), no gate reading that clash | `SUFFIX_WORDS_AMBIGUOUS` | a suffix word that is also a name (`fils`, `neto`) is read as a suffix only where the name has words to spare, as an ambiguous acronym is: `Alexandre Dumas fils` and `Pedro Alves Neto` end in a suffix, `Marie Fils` and `Ana Neto` in a family name, either way reported ([rules/S11](../../docs/design/rules/S11-suffix-word-that-is-also-a-name.md)). A generation's Title case in a name of mixed case leans it to the name, and its lower case settles it as the suffix wherever the name keeps a family word; an agnomen's writing settles nothing |
 | possibly a name | an acronym `suffix` reading and a `given` or `family` reading | `SUFFIX_ACRONYMS_AMBIGUOUS` | an acronym that is also a name (`ma`) is read as a suffix only where its spelling or the name around it says so: `John Smith MA` and `John Smith M.A.` end in a suffix, `John Smith Ma` in a family name ([rules/S4](../../docs/design/rules/S4-ambiguous-acronym-needs-words-to-spare.md), the ambiguous acronym needs words to spare; [rules/S6](../../docs/design/rules/S6-case-signal-at-the-suffix-slot.md), the case signal at the suffix slot) |
 | possibly given | a `particle` reading and a `given` reading | kept out of `NON_GIVEN_NAME_PARTICLES` | a particle opening the name stays a given name there (`van Gogh`, given `van`) and the fork is reported, rather than starting the family name ([rules/P1](../../docs/design/rules/P1-lone-particle-fold.md), the lone particle fold) |
 
-A word reading of the suffix category (`jr`, `generation`) beside a name reading is no clash the parser weighs and marks nothing. The marker is the clash, not the counts: a count recorded for a word that should stay unmarked goes in the clashing reading's `note`, as `ld`'s does, since a name reading would mark it. `may_be_initial` is not derived: its clash is with the initial, a shape every cased single letter has, and which letters a tradition writes both ways is a judgment about the letter, not a name anyone bears.
+Before phase 2h (2026-10-25) a word reading of the suffix category beside a name reading marked nothing, and no shipped word had one. The marker is the clash, not the counts: a count recorded for a word that should stay unmarked goes in the clashing reading's `note`, as `ld`'s does, since a name reading would mark it. `may_be_initial` is not derived: its clash is with the initial, a shape every cased single letter has, and which letters a tradition writes both ways is a judgment about the letter, not a name anyone bears.
 
 ### Name readings
 
@@ -227,7 +230,7 @@ An exclusion records that a reading was considered and refused, with the reason,
 - **A refused reading** is a word-level table: `[word.excluded.generation]` with a `reason`, or `excluded = { generation = "the reason" }`. It refuses that kind in every file, and also every other kind that compiles into the same set, so a generic `suffix = {}` cannot put back a refused `generation`. A category name refuses the whole category (`excluded = { suffix = "..." }`). A `name` kind refuses only itself.
 - **A refused property** sits on a reading the word keeps: `[word.honorific.excluded]` with `attached = "the reason"`. It refuses any value of that property other than the one it takes unwritten, on any reading of the category; a refused `cased`, which belongs to the word, on any reading of the word.
 
-The value is a reason string, or a table with `reason` and optionally `issue`, `decided` and `note`. The exclusion goes in the file of the language whose reading it refuses. An entry may hold exclusions and no vocabulary reading, as `fils` does. An entry with no reading and no exclusion is refused as inert, and one holding only a name reading is a warning, which the test suite makes an error.
+The value is a reason string, or a table with `reason` and optionally `issue`, `decided` and `note`. The exclusion goes in the file of the language whose reading it refuses. An entry may hold exclusions and no vocabulary reading, as `père` does. An entry with no reading and no exclusion is refused as inert, and one holding only a name reading is a warning, which the test suite makes an error.
 
 To see what has been refused, and why: `uv run python tools/vocab/query.py --excluded generation`.
 
@@ -254,14 +257,15 @@ These names will mean something in a later phase. Writing one now as a key, in a
 
 | Name | Phase |
 |---|---|
-| `bare_only` | 2 |
-| `leading_only` | 2 |
-| `trailing_only` | 2 |
 | `attaches` | 2 |
-| `separators` | 2 |
-| `default` | 3 |
 | `prefer` | 3 |
 | `strict` | 3 |
+| `bare_only` | 4 |
+| `leading_only` | 4 |
+| `trailing_only` | 4 |
+| `separators` | 4 |
+
+Phase 2 gave `default` its meaning (2026-10-25, see [Properties](#properties)) and keeps `attaches` for its front-of-the-name work. The gate's slots carry position and shape already settles a bare letter ([rules/P7](../../docs/design/rules/P7-one-letter-particle-against-the-initial-it-spells.md), a one-letter particle against the initial it spells), so `leading_only`, `trailing_only` and `bare_only` wait for phase 4's shapes, as `separators` waits for its glued words.
 
 Two property values are refused for the same reason, with a message saying a later phase: `addresses = "full"` and `"any"`, and `attached` with a `side` other than `"after"`.
 

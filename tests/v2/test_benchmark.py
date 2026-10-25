@@ -292,6 +292,8 @@ _SHAPES = {
     "maiden_clause": "nee MA ",     # group: M2's view over the segment
     "link_run": "i Und ",           # group: P3's both-sides walk (#397)
     "credential_run": "PhD Ma ",    # pieces: S7's anchor pass (#544)
+    "agnomens": "Neto ",            # pieces: a gated word scans its front (#890)
+    "carried_agnomens": "MA ma Neto ",  # pieces: the scan through carried members
 }
 
 _BASE = 800
@@ -1003,6 +1005,15 @@ _REREAD_SHAPES: dict[str, tuple[Callable[[int], str], str,
         lambda k: "SMITH, VD " + "DE " * k + "MA " * k, "<genexpr>",
         lambda n, k: (n.family == "SMITH VD " + "DE " * k + "MA"
                       and n.suffix.split() == ["MA"] * (k - 1)),
+    ),
+    # #890: a gated generation word looks past what the walk takes in
+    # front of it, here a run of members a credential carries; a rescan
+    # per member was 15.6x in `is_suffix_piece` calls for 4x the input
+    # (3e035c5b, measured by the PR review, py3.11)
+    "agnomen_front": (
+        lambda k: "Pedro PhD " + "Ma " * k + "Filho", "is_suffix_piece",
+        lambda n, k: (n.middle.split() == ["PhD"] + ["Ma"] * k
+                      and n.family == "Filho"),
     ),
 }
 

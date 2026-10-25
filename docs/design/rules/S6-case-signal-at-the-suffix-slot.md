@@ -9,6 +9,15 @@
   "JACK MA"                   →  family="MA"  · boundary
   ```
 - **At the trailing slot of the given part** after a family comma, the comma has already settled the count, so the writing is the only evidence there is (S5).
+- **A generation word that is also a name (S11) is written the other way at one end**: its lower case in a name of mixed case is the generation wherever the name keeps a family word, never with none to spare (S11), its capitals say nothing, a surname being often written in them, and its Title case leans to the name as an acronym's does. An agnomen's writing says nothing at all, since it takes the case of the name around it.
+  ```
+  "Dumas, Alexandre fils"     →  suffix="fils"
+  "Dumas fils"                →  family="fils"  · boundary
+  "Marie FILS"                →  family="FILS"
+  "Jean Marie Fils"           →  family="Fils"
+  "Dumas, Alexandre Fils"     →  middle="Fils"
+  "Pedro Alves Neto"          →  suffix="Neto"
+  ```
 
 **Because:** in a name written in more than one case, the writer's capitals are evidence the count does not have: credentials are written in capitals and names are not. A name written in one case carries no such evidence.
 
@@ -30,4 +39,4 @@
 
 ---
 **Signal:** case contrast: capitals on a word of the ambiguous class in a name written in more than one case
-**history:** decisions/S6 · **implemented:** nameparser/_pipeline/_vocab.py
+**history:** decisions/S6 · **implemented:** nameparser/_pipeline/_vocab.py, nameparser/_render.py

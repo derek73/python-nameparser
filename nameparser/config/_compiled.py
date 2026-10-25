@@ -1217,6 +1217,9 @@ SUFFIX_WORDS: frozenset[str] = frozenset({
     'eldri',
     'esq',
     'esquire',
+    'filha',
+    'filho',
+    'fils',
     'i',
     'ii',
     'iii',
@@ -1235,10 +1238,15 @@ SUFFIX_WORDS: frozenset[str] = frozenset({
     'mlajši',
     'mlađa',
     'mlađi',
+    'neta',
+    'neto',
+    'netto',
     'nuorempi',
     'ret',
     'rinpoche',
     'snr',
+    'sobrinha',
+    'sobrinho',
     'sr',
     'starejša',
     'starejši',
@@ -1415,6 +1423,27 @@ GLUED_HONORIFICS: frozenset[str] = frozenset({
     '박사님',
     '선생님',
     '씨',
+})
+
+SUFFIX_WORDS_AMBIGUOUS: frozenset[str] = frozenset({
+    'filha',
+    'filho',
+    'fils',
+    'neta',
+    'neto',
+    'netto',
+    'sobrinha',
+    'sobrinho',
+})
+
+AGNOMENS: frozenset[str] = frozenset({
+    'filha',
+    'filho',
+    'neta',
+    'neto',
+    'netto',
+    'sobrinha',
+    'sobrinho',
 })
 
 SUFFIX_ACRONYMS_AMBIGUOUS: frozenset[str] = frozenset({

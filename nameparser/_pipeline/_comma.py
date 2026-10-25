@@ -37,9 +37,9 @@ from nameparser._pipeline._pieces import (
     listed_lean, own_words, segment_suffix_reading,
 )
 from nameparser._pipeline._state import (
-    AMBIGUOUS_ACRONYM_TAG, SHAPE_ACRONYM_TAG, SPLIT_CREDENTIAL_TAG,
-    SPLIT_MEMBER_TAG, ParseState, PendingAmbiguity, Structure, WorkToken,
-    copy_with,
+    AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, SHAPE_ACRONYM_TAG,
+    SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, ParseState, PendingAmbiguity,
+    Structure, WorkToken, copy_with,
 )
 from nameparser._pipeline._vocab import (
     ROMAN, caps_shape_candidate, claimed_as_non_name,
@@ -180,7 +180,7 @@ def _whole_name(seg0: Sequence[int], tokens: Sequence[WorkToken]) -> bool:
     word to the count an unambiguous credential takes."""
     # rules/C3: "a particle run and the one name word it attaches to are
     # one word"
-    # the part before a family comma merges no member pair (rules/S11)
+    # the part before a family comma merges no member pair (rules/S12)
     pieces, ptags = _pieces(seg0, tokens, False)
     named: set[int] = set()
     for piece, tags in zip(pieces, ptags):
@@ -287,7 +287,7 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
     if (state.structure is not Structure.FAMILY_COMMA
             or len(state.segments) < 2):
         return state
-    # rules/S11: "where the count declines it, the pair is the two words
+    # rules/S12: "where the count declines it, the pair is the two words
     # it is written as" -- the part read with each split credential
     # merged, and read again as written where the reading did not take
     # one as a credential, so a declined pair reads as it reads unmerged
@@ -523,7 +523,7 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
     if maybe:
         reading = segment_suffix_reading(
             p1, pt1, tokens, pol.lenient_comma_suffixes, state.one_case,
-            anchored, absorbed, licensed)
+            anchored, absorbed, licensed, head_named=names >= 2)
     if not listing:
         if whole is None:
             whole = _whole_name(seg0, tokens)
@@ -607,7 +607,10 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
         settled = (len(p1) > 1 and bool(members)
                    and len(listed) == len(members)
                    and all(listed_lean(tokens[i], state.one_case)
-                           == "credential" for i in listed))
+                           == "credential"
+                           and (names >= 2
+                                or AMBIGUOUS_WORD_TAG not in tokens[i].tags)
+                           for i in listed))
         member_set = frozenset(members)
         pairs = [k for k, p in enumerate(p1) if p[0] in member_set
                  and (is_paired_initials(texts[p[0]])
@@ -672,7 +675,7 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
                 AmbiguityKind.SUFFIX_OR_NAME,
                 f"{text!r} follows a credential, so it reads as part of the "
                 f"suffix run; it may be a name word", tuple(p1[k])))
-    # rules/S11: "where the count takes the pair, the reading is reported"
+    # rules/S12: "where the count takes the pair, the reading is reported"
     # -- C4's count took it, unless the flip it took part in reported
     # the part
     if not part_reported:
