@@ -9,11 +9,13 @@ pytest's sense, and several modules want them by name.
 """
 import importlib.util
 import json
+import shutil
 import sys
 import time
 import urllib.request
 from pathlib import Path
 from types import ModuleType
+from typing import Any
 
 import pytest
 
@@ -97,13 +99,16 @@ def own_cache(monkeypatch: pytest.MonkeyPatch,
 
 
 def plant_corpus(monkeypatch: pytest.MonkeyPatch, corpora: ModuleType, source: str,
-                 records: list[dict[str, str]], date: str, unit: str) -> None:
+                 records: list[dict[str, str]], date: str, unit: str,
+                 detail: dict[str, Any] | None = None) -> None:
     """`records` fetched as `source`'s local corpus into the cache, with no
     network: through a Source carrying the real one's credit and nothing
-    else, so that none of the real source's renew or check applies."""
+    else, so that none of the real source's renew or check applies in
+    this process. A child process loads the corpus under the real
+    Source, whose check reads `detail`, the meta.json detail it pins."""
     monkeypatch.setitem(corpora.SOURCES, source, corpora.Source(
         corpora.SOURCES[source].credit, unit,
-        lambda: corpora.Fetched(list(records), date, {})))
+        lambda: corpora.Fetched(list(records), date, dict(detail or {}))))
     corpora.fetch(source)
 
 
@@ -125,3 +130,25 @@ def serve(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, body: bytes, *,
         return _Response(body)
     monkeypatch.setattr(urllib.request, "urlopen", urlopen)
     return fetched
+
+
+#: Appended to a copied package's __init__.py, a change every reading
+#: shows: each name is parsed with its words reversed.
+_PLANTED = """
+
+_planted_parse = Parser.parse
+Parser.parse = lambda self, text: _planted_parse(self, " ".join(reversed(text.split())))
+"""
+
+
+def checkout_copy(at: Path, *, planted: bool = False) -> Path:
+    """A checkout at `at` holding a copy of this one's nameparser/
+    package, and `planted`, a change every reading shows: a base tree
+    for --base, which a child process reads, so that a check across a
+    planted copy proves the base was read from its own tree."""
+    shutil.copytree(_TOOLS.parents[1] / "nameparser", at / "nameparser",
+                    ignore=shutil.ignore_patterns("__pycache__"))
+    if planted:
+        with open(at / "nameparser" / "__init__.py", "a", encoding="utf-8") as f:
+            f.write(_PLANTED)
+    return at

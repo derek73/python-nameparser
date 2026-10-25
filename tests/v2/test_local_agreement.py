@@ -8,6 +8,7 @@ off, and the record's refusals: no record, a record that is not one, a record of
 another fetch or another scorer, and a corpus damaged under the stream. The names are invented.
 """
 import hashlib
+import importlib
 import json
 import sys
 import unicodedata
@@ -17,7 +18,7 @@ import pytest
 
 from nameparser import Parser
 
-from ._differential_fixtures import load_tool, own_cache, plant_corpus
+from ._differential_fixtures import checkout_copy, load_tool, own_cache, plant_corpus
 
 agreement = load_tool("local_agreement")
 corpora = agreement.local_corpora
@@ -96,7 +97,10 @@ def test_a_title_box_holding_an_unlisted_word_the_parse_reads_otherwise_is_set_a
 
 def _corpus(monkeypatch: pytest.MonkeyPatch, *records: dict[str, str]) -> None:
     """A PSC corpus of `records` fetched into the cache, no network behind it."""
-    plant_corpus(monkeypatch, corpora, _PSC, list(records), "2026-10-22", "filed names")
+    # The sample pinned as the real source pins it: a --base child
+    # loads the corpus under the real Source and its check.
+    plant_corpus(monkeypatch, corpora, _PSC, list(records), "2026-10-22", "filed names",
+                 {"sample": f"1 in {importlib.import_module('local_psc').PSC_SAMPLE}"})
 
 
 _ALL = (_AGREES, _DOUBLE_SURNAME, _SUFFIX, _JOB_TITLE, _SHAPE_TITLE)
@@ -298,3 +302,106 @@ def test_a_tree_that_is_not_the_imported_package_is_refused(
     # The control: this checkout itself is the tree it imported.
     root = agreement.HERE.parents[1]
     assert agreement.main([_PSC, "--record", "--tree", str(root)]) == 0
+
+
+# -- --base ----------------------------------------------------------------------
+
+def _kept(cache: Path) -> list[Path]:
+    return sorted((cache / "local" / _PSC / agreement.KEPT).glob("*.jsonl"))
+
+
+def test_a_base_check_reports_a_change_planted_in_the_base_and_none_across_a_copy(
+        monkeypatch: pytest.MonkeyPatch, _own_cache: Path, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    # The harness must be able to report a difference: a base scored with
+    # the head's tree by mistake would show no move across a planted one.
+    _corpus(monkeypatch, *_ALL)
+    planted = checkout_copy(tmp_path / "planted", planted=True)
+    assert agreement.main([_PSC, "--base", str(planted)]) == 1
+    out = capsys.readouterr().out
+    assert f"base: {planted.resolve()}, nameparser/ " in out and "scored it now" in out
+    assert "progress: 3 records (" in out and "regression" not in out
+    # The control: an unplanted copy is the head's package byte for byte.
+    copy = checkout_copy(tmp_path / "copy")
+    assert agreement.main([_PSC, "--base", str(copy)]) == 0
+    out = capsys.readouterr().out
+    assert "matches the base" in out and "byte-identical" in out
+    assert len(_kept(_own_cache)) == 2
+
+
+def test_a_base_check_never_touches_the_shared_record(
+        monkeypatch: pytest.MonkeyPatch, _own_cache: Path, tmp_path: Path) -> None:
+    _corpus(monkeypatch, *_ALL)
+    shared = _own_cache / "local" / _PSC / agreement.RECORD
+    base = checkout_copy(tmp_path / "base", planted=True)
+    assert agreement.main([_PSC, "--base", str(base)]) == 1
+    assert not shared.exists()
+    assert agreement.main([_PSC, "--record"]) == 0
+    shared.write_text(shared.read_text().splitlines()[0] + "\n")  # would read as moves
+    before = (shared.stat().st_mtime_ns, shared.read_bytes())
+    assert agreement.main([_PSC, "--base", str(checkout_copy(tmp_path / "copy"))]) == 0
+    assert (shared.stat().st_mtime_ns, shared.read_bytes()) == before
+
+
+def test_a_kept_base_record_is_reused_and_a_damaged_one_scored_again(
+        monkeypatch: pytest.MonkeyPatch, _own_cache: Path, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    _corpus(monkeypatch, *_ALL)
+    base = checkout_copy(tmp_path / "base", planted=True)
+    assert agreement.main([_PSC, "--base", str(base)]) == 1
+    [kept] = _kept(_own_cache)
+    recorded = kept.read_bytes()
+    capsys.readouterr()
+    real = agreement._score_base
+
+    def unscored(*args: object) -> None:
+        raise AssertionError("scored the base again")
+    monkeypatch.setattr(agreement, "_score_base", unscored)
+    assert agreement.main([_PSC, "--base", str(base)]) == 1
+    assert "reused the kept record" in capsys.readouterr().out
+    kept.write_text("not a record\n")
+    with pytest.raises(AssertionError, match="scored the base again"):
+        agreement.main([_PSC, "--base", str(base)])
+    assert "deleted the kept record" in capsys.readouterr().out
+    monkeypatch.setattr(agreement, "_score_base", real)
+    assert agreement.main([_PSC, "--base", str(base)]) == 1
+    assert kept.read_bytes() == recorded
+
+
+def test_a_base_that_is_the_tree_read_or_no_checkout_is_refused(
+        monkeypatch: pytest.MonkeyPatch, _own_cache: Path, tmp_path: Path) -> None:
+    _corpus(monkeypatch, *_ALL)
+    with pytest.raises(SystemExit, match="is the tree being read"):
+        agreement.main([_PSC, "--base", str(agreement.HERE.parents[1])])
+    with pytest.raises(SystemExit, match="no nameparser package"):
+        agreement.main([_PSC, "--base", str(tmp_path)])
+    assert not _kept(_own_cache)
+
+
+def test_a_base_whose_import_fails_is_refused_with_the_childs_output(
+        monkeypatch: pytest.MonkeyPatch, _own_cache: Path, tmp_path: Path) -> None:
+    _corpus(monkeypatch, *_ALL)
+    base = checkout_copy(tmp_path / "base")
+    with open(base / "nameparser" / "__init__.py", "a", encoding="utf-8") as f:
+        f.write("\nraise ImportError('planted')\n")
+    with pytest.raises(SystemExit, match="(?s)scoring the base .* failed.*planted"):
+        agreement.main([_PSC, "--base", str(base)])
+    assert not _kept(_own_cache)
+
+
+def test_a_base_check_refuses_to_record(
+        monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    _corpus(monkeypatch, *_ALL)
+    for extra in (["--record"], ["--out", "x.jsonl"]):
+        with pytest.raises(SystemExit) as raised:
+            agreement.main([_PSC, "--base", ".", *extra])
+        assert raised.value.code == 2 and "--base compares" in capsys.readouterr().err
+
+
+def test_record_writes_where_out_says_and_leaves_the_shared_record(
+        monkeypatch: pytest.MonkeyPatch, _own_cache: Path, tmp_path: Path) -> None:
+    _corpus(monkeypatch, *_ALL)
+    out = tmp_path / "elsewhere.jsonl"
+    assert agreement.main([_PSC, "--record", "--out", str(out)]) == 0
+    assert agreement.read_record(out, corpora.load(_PSC))
+    assert not (_own_cache / "local" / _PSC / agreement.RECORD).exists()
