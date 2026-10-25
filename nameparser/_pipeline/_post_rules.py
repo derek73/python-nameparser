@@ -12,7 +12,8 @@ family-first (#467) and after a comma with nothing before it -- after a
 family comma that names a family, that attachment is assign's since
 #613.
 Reads: Policy.patronymic_rules, Policy.two_family_names,
-Policy.middle_as_family,
+Policy.name_order (O6 stands down where the script's order differs
+from the declared one), Policy.middle_as_family,
 Policy.extra_suffix_delimiters (R1's entry pass, for the delimiter
 cores group drops); Lexicon.given_name_titles.
 

@@ -1,8 +1,17 @@
 Release Log
 ===========
-* 2.6.0 - Unreleased
+* 2.7.0 - Unreleased
 
-    nameparser 2.6 is under development.
+    nameparser 2.7 is under development.
+
+* 2.6.0 - October 25, 2026
+
+    nameparser 2.6 ships the default vocabulary as per-word data files, adds an opt-in reading for names with two family names, and fixes words read as a credential or a title that are part of the name. Highlights:
+
+    - **An opt-in reading for names with two family names.** ``Policy(two_family_names=True)`` reads ``Gabriel García Márquez`` with family ``García Márquez``.
+    - **Surnames that are also credentials read as surnames.** ``Luo Si`` and ``Maria de Sa`` give family ``Si`` and ``de Sa``, where 2.5 read ``Si`` and ``Sa`` as credentials.
+    - **Wm and Md read as the given names they abbreviate.** ``Wm Smith`` and ``Mr Md Karim Uddin`` give first ``Wm`` and ``Md``, where 2.5 read both as titles.
+    - **More credentials after a comma read as suffixes.** ``John Smith, MBChB`` gives suffix ``MBChB``, where 2.5 gave first ``MBChB``, last ``John Smith``.
 
     **Additions**
 
@@ -17,13 +26,14 @@ Release Log
     - **Fix case repair writing a joined credential like a hyphenated name.** ``john smith, kchs/dchs`` repairs to ``John Smith KCHS/DCHS``, where 2.0.0 through 2.5.0 gave ``Kchs/Dchs``; a listed acronym joined by a hyphen or slash is written in capitals as one word, and a casing the caller records for it wins. Hyphenated names such as ``Smith-Jones`` keep their per-part casing. :issue:`808`
     - **Add Cllr as a title.** ``Cllr John Smith`` gives title ``Cllr``, first ``John``, last ``Smith``, where 1.4.0 through 2.5.0 gave first ``Cllr``, middle ``John``. A bare ``Cllr`` after the name is still a name word. :issue:`847`
     - **Fix case repair lowering a capital after a full stop or an ayn.** ``j.r.r. tolkien`` repairs to ``J.R.R. Tolkien`` and ``AHMAD IBN-ʿALĪ`` to ``Ahmad ibn-ʿAlī``, where 1.4.0 through 2.5.0 gave ``J.r.r.`` and ``ʿalī``. A joined word is written the same way (``st.john`` gives ``St.John``), so an unlisted abbreviation's ending is capitalized too: ``dr.philol.`` gives ``Dr.Philol.``. :issue:`838`
-    - **Add the Italian abbreviated salutations such as Sig.ra and Dott.ssa as titles.** ``Dott.ssa Anna Bianchi`` gives title ``Dott.ssa``, first ``Anna``, where 1.4.0 through 2.5.0 gave first ``Dott.ssa``, middle ``Anna``, and ``SIG.RA MARIA ROSSI`` repairs to ``Sig.ra Maria Rossi``. A bare ``Sig`` or ``Ing`` before a name is still read as a first name. :issue:`840`
+    - **Add the Italian abbreviated salutations such as Dott.ssa and Sig.na as titles.** ``Dott.ssa Anna Bianchi`` gives title ``Dott.ssa``, first ``Anna``, where 1.4.0 through 2.5.0 gave first ``Dott.ssa``, middle ``Anna``. A bare ``Sig`` or ``Ing`` before a name is still read as a first name. :issue:`840`
     - **Add Júnior as a suffix.** ``José Silva Júnior`` gives last ``Silva``, suffix ``Júnior``, as ``José Silva Junior`` does, where 1.4.0 through 2.5.0 gave middle ``Silva``, last ``Júnior``. ``Filho``, ``Neto`` and ``Sobrinho`` still read as the last name. :issue:`843`
     - **Read a semicolon between post-nominals as a comma.** ``John Smith, MD; PhD`` gives first ``John``, last ``Smith``, suffix ``MD; PhD``, where 1.4.0 through 2.5.0 gave first ``MD;``, last ``John Smith``. A delimiter set in ``extra_suffix_delimiters`` counts the same way when glued to a suffix word or written between two (``MD/PhD``), and a semicolon before the first comma (``John Smith MD; PhD``) is still read as part of a word. :issue:`871`
     - **Read a leading Md as the given name it abbreviates, Muhammad, rather than a title.** ``Mr Md Karim Uddin`` gives title ``Mr``, first ``Md``, middle ``Karim``, where 1.4.0 through 2.5.0 gave title ``Mr Md``, first ``Karim``; ``John Smith, MD Jones`` gives last ``Smith``, suffix ``MD Jones`` where it gave title ``MD``, last ``John Smith``. ``MD`` after a name is still the degree, and ``Md.`` with a full stop is still a title. One limit: ``Md`` opening the part after a family comma reads as a credential, so ``Uddin, Md Karim`` gives suffix ``Md Karim`` where it gave title ``Md``, first ``Karim``. :issue:`853`
     - **Read Wm as the given name it abbreviates, William, rather than a title.** ``Wm Smith`` gives first ``Wm``, last ``Smith``, where 1.4.0 through 2.5.0 gave title ``Wm`` with no first name. ``Wm.`` with a full stop opening the name is still a title. :issue:`789`
     - **Fix a surname written as two dotted initials reading as a credential.** ``Ram Bahadur B.K.`` gives middle ``Bahadur``, last ``B.K.``, where 2.4.0 through 2.5.0 gave last ``Bahadur``, suffix ``B.K.``, restoring 2.3.0's reading, and ``Hari G.C.`` gives last ``G.C.``, where 2.0.0 through 2.5.0 gave suffix ``G.C.`` with no last name. Three or more dotted letters after a full name are still a credential (``John Smith X.Y.Z.``), and so is a listed one (``John Smith M.A.``). :issue:`864`
-    - **Read a salutation ending the first name after a family comma as the title.** ``Doe, Jane Mrs`` gives title ``Mrs``, first ``Jane``, last ``Doe``, where 1.4.0 through 2.5.0 gave middle ``Mrs``; ``Doe, Jane Mrs.`` has read as the title since 2.3.0. A salutation also borne as a name, such as ``Goodman`` or ``Herr``, is still read as a middle name, and so is any other title, such as ``King`` or ``Dr``; ``Lexicon.after_given_titles`` lists the salutations. A ``Lexicon`` or ``Parser`` pickled by an earlier release no longer loads; re-pickle after upgrading. :issue:`835`
+    - **Read a salutation ending the first name after a family comma as the title.** ``Doe, Jane Mrs`` gives title ``Mrs``, first ``Jane``, last ``Doe``, where 1.4.0 through 2.5.0 gave middle ``Mrs``; ``Doe, Jane Mrs.`` has read as the title since 2.3.0. A salutation also borne as a name, such as ``Goodman`` or ``Herr``, is still read as a middle name, and so is any other title, such as ``King`` or ``Dr``; ``Lexicon.after_given_titles`` lists the salutations. :issue:`835`
+    - **A Lexicon, Policy or Parser pickled by an earlier release no longer loads.** Loading one raises ``ValueError`` naming the new field (``after_given_titles`` or ``two_family_names``); re-pickle after upgrading. ``ParsedName`` and ``HumanName`` pickles still load. :issue:`754`, :issue:`835`
     - **Fix a zero-width space or byte-order mark sticking to the word beside it.** ``Dr. John Smith`` with an invisible zero-width space in front gives title ``Dr.``, first ``John``, where 1.4.0 through 2.5.0 gave first ``Dr.`` (the character kept), middle ``John``. The two now divide the words of a name as a space does, with no setting to turn that off, though not inside quotes or a ``(née ...)`` clause; the zero-width joiner and non-joiner still stay inside the word. :issue:`851`
 
 * 2.5.0 - October 19, 2026

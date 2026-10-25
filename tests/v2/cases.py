@@ -1328,7 +1328,7 @@ CASES: tuple[Case, ...] = (
          "John Smith, MD MEng",
          {"given": "John", "family": "Smith", "suffix": "MD MEng"},
          ambiguities=("suffix-or-name",),
-         notes="the same dual after a full name, before the other "
+         notes="the same credential after a full name, before the other "
                "chunked member. 1.4.0 and 2.3.0 read the same suffix; "
                "#540 had read title 'MD', given 'MEng'",
          shape=3),
@@ -10821,10 +10821,10 @@ CASES: tuple[Case, ...] = (
          notes="segment 0 is the family segment even when it is wholly "
                "credential-shaped, so 'MD' is the FAMILY and not the "
                "head of a credential run, and that is what this row "
-               "still guards. Since #701 it guards rules/H6's stop "
-               "too: 'MD' is title vocabulary, and a title before the "
-               "comma peels only in front of a family word, which 'PhD' "
-               "is not. The SEPARATOR is no longer the row's "
+               "still guards. From #701 until #853 took 'md' out of "
+               "the titles it guarded rules/H6's stop too, a title "
+               "before the comma peeling only in front of a family "
+               "word. The SEPARATOR is no longer the row's "
                "subject. Until #436 it was: the join was asked of "
                "segment 1 alone, and dropping that conjunct left the "
                "whole suite green while this shape's suffix silently "
@@ -10856,8 +10856,8 @@ CASES: tuple[Case, ...] = (
          {"family": "Smith", "suffix": "MD I"},
          classification="fix(#430)",
          notes="the same shape reached through the leading-title peel "
-               "instead: md is TITLES vocabulary too (the #296 "
-               "deviation), so this read title 'MD' + given 'I' where "
+               "instead: md was TITLES vocabulary too until #853 (the "
+               "#296 deviation), so this read title 'MD' + given 'I' where "
                "'Smith, PSM I' read given 'PSM' + suffix 'I'. Two "
                "wrong answers, one cause -- a fix verified on PSM "
                "alone would leave this one broken and look green. "

@@ -364,7 +364,9 @@ by ``tests/v2/test_locales.py``:
    any. Vocabulary that is *self-selecting* — able to match only text of
    the tradition it came from, the way a hangul surname can only ever
    match hangul — is default-safe, and belongs in the default lexicon
-   (``nameparser/config/``) rather than in a pack: a pack nobody knows
+   (``nameparser/vocab/*.toml``; a segmentation surname list such as
+   ``config/surnames.py`` stays in ``nameparser/config/``) rather than in
+   a pack: a pack nobody knows
    to ask for is vocabulary nobody gets. Vocabulary that *declares a
    language its script does not* — a Chinese surname list, which
    silently mangles the Japanese names written in the same characters
