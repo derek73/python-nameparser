@@ -73,12 +73,33 @@ _INITIAL = re.compile(r"^(\w\.|[A-Z])$")
 # sync by hand.
 _PERIOD_NOT_AT_END = re.compile(r".*\..+$", re.I)
 
-# The fix_phd credential pair ('Ph.' + 'D.' as adjacent tokens), shared
-# by is_wholly_suffix below and group's merge (v1 extracted the
-# credential pre-parse; the predicate and the stage must agree on the
-# pattern).
-PH = re.compile(r"^ph\.?$", re.IGNORECASE)
-D = re.compile(r"^d\.?$", re.IGNORECASE)
+# The fix_phd credential pair ('Ph.' + 'D.' as adjacent tokens), the
+# two halves of `split_pair` below.
+_PH = re.compile(r"^ph\.?$", re.IGNORECASE)
+_D = re.compile(r"^d\.?$", re.IGNORECASE)
+#: `split_pair`'s necessary half on its FIRST word, asked C-level by
+#: each caller ahead of the call, since the split test runs per
+#: adjacent pair and an ordinary name word must pay no frame for it.
+#: The same compiled object the predicate asks, so the two cannot
+#: drift; a widening of the predicate widens this with it.
+SPLIT_PAIR_OPENS = _PH
+
+
+# mechanisms.md#ONE-PREDICATE-PER-QUESTION ("exactly one predicate answers it and every other site calls that one")
+# -- the split credential's one test, asked by group's merge,
+# `_comma._pieces` and `is_wholly_suffix`, three sites that each kept a
+# copy of the pattern pair until #752. decisions/phd-merge,
+# decisions/vocabulary-model (#752)
+def split_pair(first: str, second: str) -> bool:
+    """Whether two adjacent words are one credential written split
+    across a space, and so read as one unit: 'Ph.' then 'D.', with or
+    without their periods, in any case -- v1's fix_phd, the one split
+    spelling the parser merges (decisions/phd-merge). Where the merge
+    may happen (never at the head of the string, rules/S2) is the
+    caller's question, not this one's. Callers ask
+    `SPLIT_PAIR_OPENS` of `first` before the call."""
+    return (_PH.fullmatch(first) is not None
+            and _D.fullmatch(second) is not None)
 
 # The codepoint table lives in _policy beside Script -- one copy
 # importable from the pipeline and the locale packs alike; everything
@@ -252,7 +273,7 @@ def is_initial_shaped(text: str) -> bool:
 # v1 regexes.py "roman_numeral", pinned by tests/v2/test_regex_sync.py.
 _ROMAN = re.compile(r'^(X|IX|IV|V?I{0,3})$', re.I)
 #: The same pattern, shared rather than copied: `_comma` filters on
-#: it before asking `is_trailing_numeral_suffix` (rules/C12).
+#: it before asking `reads_as_generation` (rules/C12).
 ROMAN = _ROMAN
 
 
@@ -263,16 +284,32 @@ ROMAN = _ROMAN
 # is_initial_shaped tests on `preceding`. The words-to-spare count,
 # rules/S10's Except bullet "A numeral of one letter needs words to
 # spare", is the callers'. decisions/S10 (#718, #721)
-def is_trailing_numeral_suffix(text: str, preceding: str,
-                               one_case: bool | None) -> bool:
-    """The trailing walk's roman-numeral fork: a FINAL single-token
-    piece that is a roman numeral
-    reads as the suffix when the piece before it does not look like
+# mechanisms.md#ONE-PREDICATE-PER-QUESTION ("exactly one predicate answers it and every other site calls that one")
+# -- the numeral's one recognizer, the fork's shape test and the
+# vocabulary's answer in one predicate (decisions/vocabulary-model,
+# #752)
+def reads_as_generation(text: str, preceding: str, one_case: bool | None,
+                        *, listed: bool = False) -> bool:
+    """Whether a word ending a name reads as the generation: the
+    trailing walk's roman-numeral fork, a FINAL single-token piece
+    that is a roman numeral
+    reading as the suffix when the piece before it does not look like
     part of an initial run -- for a one-letter numeral a necessary
     condition only, the caller's words-to-spare count deciding
     (rules/S10, #718). `preceding` is that piece's first token;
     the callers establish that `text` is last and that a name piece
     precedes it.
+
+    `listed` is the vocabulary path, the second of the two ways a
+    numeral is recognized today: the caller's own answer from the
+    word's tags, which a caller asking it passes in and which answers
+    yes whatever the shape ('III' and 'Jr.' alike, rules/C12's suffix
+    word). Only C12's evidence passes it: the peel takes a listed
+    numeral through `is_suffix_piece` before its fork asks this
+    predicate, and S8's run start asks the vocabulary alone, so the
+    two recognizers still answer apart at those sites, each caller
+    keeping the answer it had before #752. Giving every numeral rule
+    this one reading is #784, #774 and #819's change.
 
     is_initial_shaped, not is_initial: this asks whether the preceding
     piece looks like part of an initial run, which is a question
@@ -287,9 +324,10 @@ def is_trailing_numeral_suffix(text: str, preceding: str,
     capitals are not, stay as they were. None (the maiden take's
     superset view passes it) gets the shape test alone, which admits
     more and so stays a superset."""
-    return (_ROMAN.match(text) is not None
-            and not is_initial_shaped(preceding)
-            and not (one_case and is_initial_shaped(preceding.upper())))
+    return listed or (
+        _ROMAN.match(text) is not None
+        and not is_initial_shaped(preceding)
+        and not (one_case and is_initial_shaped(preceding.upper())))
 
 
 # rules/S10: "a numeral written in lower case in a name of mixed case is
@@ -313,7 +351,7 @@ def reads_as_a_reported_numeral(text: str, preceding: str,
                                 one_case: bool | None) -> bool:
     """Whether a numeral the walk left a name word, with `preceding`
     in front of it, is one the fork would weigh and so reports."""
-    return (is_trailing_numeral_suffix(text, preceding, one_case)
+    return (reads_as_generation(text, preceding, one_case)
             and not numeral_settled_by_case(text, one_case))
 
 
@@ -481,6 +519,23 @@ def is_paired_initials(text: str) -> bool:
     Three or more letters ('X.Y.Z.') and any longer chunk ('B.Tech.')
     are outside it."""
     return _PAIRED_INITIALS.fullmatch(text) is not None
+
+
+# rules/S3: "Paired initials are the exception, as C5 defines them, in a
+# script that writes capitals" -- the script half of that clause, which
+# classify asked inline until #752 (decisions/S3 (#864),
+# decisions/vocabulary-model (#752)). C5's comma reading asks the bare
+# `is_paired_initials`: after a comma a caseless pair reads as a name
+# too ('John Smith, พ.บ.' given 'พ.บ.'), and moving it here would change
+# that reading.
+def is_cased_paired_initials(text: str) -> bool:
+    """Paired initials (`is_paired_initials`) in a script that writes
+    capitals: a text with a case mapping, so 'M.J.' and 'm.j.' but not
+    Thai 'พ.บ.', which is how that script writes an abbreviation.
+    The same compiled pattern as `is_paired_initials`, asked here
+    rather than through it so the predicate costs one frame."""
+    return (_PAIRED_INITIALS.fullmatch(text) is not None
+            and text.upper() != text.lower())
 
 
 def suffix_as_written(n: str, text: str, lexicon: Lexicon) -> bool:
@@ -1178,8 +1233,8 @@ def is_wholly_suffix(texts: Sequence[str], lexicon: Lexicon,
     the opposite.
 
     An adjacent Ph./D. pair counts as ONE unit (v1's fix_phd extracted
-    the credential pre-parse, so 'Smith, Ph. D.' read as suffix-comma);
-    keep in sync with group's _PH/_D merge and `_comma._pieces`.
+    the credential pre-parse, so 'Smith, Ph. D.' read as suffix-comma):
+    `split_pair`, which group's merge and `_comma._pieces` ask too.
 
     `one_case` is ParseState.one_case, and it admits the LEAN: a bare
     ambiguous acronym written in capitals inside a mixed-case name is
@@ -1253,7 +1308,8 @@ def is_wholly_suffix(texts: Sequence[str], lexicon: Lexicon,
     merged = list(texts)
     k = 0
     while k < len(merged) - 1:
-        if PH.fullmatch(merged[k]) and D.fullmatch(merged[k + 1]):
+        if (SPLIT_PAIR_OPENS.fullmatch(merged[k])
+                and split_pair(merged[k], merged[k + 1])):
             merged[k:k + 2] = ["phd"]
         else:
             k += 1

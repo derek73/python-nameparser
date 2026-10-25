@@ -615,7 +615,7 @@ def _reads_as_a_trailing_suffix(piece: Sequence[int],
     is_suffix_piece said no, and a lenient single token it refuses is
     one carrying the `initial` tag, so the shape is already implied.
 
-    NOT is_trailing_numeral_suffix, though it answers the period half:
+    NOT reads_as_generation, though it answers the period half:
     it also refuses a numeral behind an initial-shaped piece, which is
     a no-comma rule and the opposite of this path's v1 parity --
     'Chang, Andy C I' is first Andy, middle C, suffix I, and asking

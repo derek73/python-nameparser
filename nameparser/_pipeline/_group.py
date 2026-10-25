@@ -79,15 +79,15 @@ from nameparser._pipeline._state import (
     WorkToken, _AMBIGUOUS_CREDENTIAL_TAGS, copy_with,
 )
 import nameparser._pipeline._comma as _comma
-from nameparser._pipeline._vocab import D, PH
 from nameparser._pipeline._vocab import (
-    comma_follows_marker, delimiter_cores, reads_as_a_reported_numeral,
+    SPLIT_PAIR_OPENS, comma_follows_marker, delimiter_cores,
+    reads_as_a_reported_numeral, split_pair,
 )
 from nameparser._types import AmbiguityKind, Role
 
-# the credential-pair regexes live in _vocab, whose own
-# is_wholly_suffix merges the same pair, as `_comma._pieces` does --
-# and that predicate's callers stay in sync with it: `_comma.decide`'s
+# the split credential is `_vocab.split_pair`, which is_wholly_suffix
+# asks to merge the same pair, as `_comma._pieces` does -- so that
+# predicate's callers read what this stage merges: `_comma.decide`'s
 # reading of the part after the comma, segment's C2 flag on a tail
 # part, and script_segment's decline of a wholly-suffix post-comma
 # run, all of which see the merged reading
@@ -641,8 +641,8 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         a, b = pieces[k], pieces[k + 1]
         if (not (opens_the_name and k == 0 and a[0] == 0)
                 and len(a) == 1 and len(b) == 1
-                and PH.fullmatch(tokens[a[0]].text)
-                and D.fullmatch(tokens[b[0]].text)):
+                and SPLIT_PAIR_OPENS.fullmatch(tokens[a[0]].text)
+                and split_pair(tokens[a[0]].text, tokens[b[0]].text)):
             merge_pieces(pieces, ptags, k, k + 2, add={"suffix"})
         else:
             k += 1
