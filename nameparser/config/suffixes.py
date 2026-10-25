@@ -2,8 +2,8 @@
 # nameparser/vocab/*.toml, classified by kind (generation, credential,
 # honorific, ...) and by language. A suffix reading is an acronym or a
 # word (`acronym`, true by default for a credential), so the two sets
-# below are disjoint by construction; `may_be_name` on an acronym reading
-# and `attached` on a word reading make the two marker subsets.
+# below are disjoint by construction; a name reading beside an acronym
+# reading and `attached` on a word reading make the two marker subsets.
 # tools/vocab/build.py compiles them into _compiled.py and runs the
 # checks that were import-time asserts here (decisions/vocabulary-model).
 from nameparser.config import _compiled

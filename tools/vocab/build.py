@@ -38,7 +38,8 @@ at fault:
 3. every kind registered, every property allowed on its kind with an
    allowed value (a date, never a date-time; `as_of` only beside a
    count), an acronym's text free of periods (it is matched with them
-   removed), and no entry without a reading or an exclusion;
+   removed), a `note` on a name reading with no count, saying why it
+   is declared, and no entry without a reading or an exclusion;
 4. one suffix kind per word, across files;
 5. the same category of the same word agrees on every behavioral
    property in every file, whatever kind each file gives it;
@@ -52,14 +53,21 @@ at fault:
    its word's letters (#459), at most one `cased` per word;
 8. a phrase only as a birth_marker or an addresses = "given" title, and
    never with a `cased`, which is looked up per word;
-9. a bound given name that is also a particle has may_be_given;
+9. a bound given name that is also a particle has a given reading;
 10. no same_as chain loops, in any file, and the words of every file
     but und.toml in canonical order (_order_key): by kind, then by the
     word a spelling is the same_as of, then by text;
+11. a clash with a name is stated as a name reading, from which the two
+    markers are derived (decisions/vocabulary-model, 2026-10-25):
+    `may_be_name` and `may_be_given = true` are refused, each naming
+    the reading to write, and a particle reading states
+    `may_be_given = false` exactly where its word has no `given`
+    reading in any file;
 
-numbered by subject, not by when they run: 1-3, 8 and 7's case mask
-run per entry as each file loads, and 4-7, 9 and 10 over the whole pool
-in check_pool, 6 first and 10 last;
+numbered by subject, not by when they run: 1-3, 8, 7's case mask and
+11's refusals run per entry as each file loads, and 4-7, 9, 11's
+particle statement and 10 over the whole pool in check_pool, 6 first
+and 10 last;
 
 plus the data invariants that were asserts: may_be_initial only on a
 cased single letter, an elided particle in both apostrophes (#700), and
@@ -68,7 +76,8 @@ No post-nominal is both an acronym and a word, by checks 4 and 5; a
 final check in compile_pool is the backstop. The subset relations
 (GIVEN_NAME_TITLES and AFTER_GIVEN_TITLES in TITLES, each marker set in
 its base) need no
-check: a flag cannot exist without its reading. The one soft finding, a
+check: a flag cannot exist without its reading, and a derived marker is
+read off the reading it marks. The one soft finding, a
 name reading on a word with no vocabulary reading and no exclusion, is
 a VocabWarning, which the shipped-data test turns into an error.
 """
@@ -211,11 +220,24 @@ UNORDERED = "und.toml"
 #: its allowed values are exactly what today's pipeline does.
 BEHAVIORAL: dict[str, frozenset[str]] = {
     "title": frozenset({"addresses", "after_given", "cased"}),
-    "suffix": frozenset({"acronym", "may_be_name", "attached", "cased"}),
-    "particle": frozenset({"may_be_given", "cased"}),
+    "suffix": frozenset({"acronym", "attached", "cased"}),
+    "particle": frozenset({"cased"}),
     "conjunction": frozenset({"may_be_initial", "cased"}),
     "bound_given": frozenset({"cased"}),
     "relation": frozenset({"cased"}),
+}
+#: Stated properties per category: compiled to nothing, but held to the
+#: word's readings (check 11). A particle states `may_be_given = false`
+#: where its word has no given reading, so a new particle never falls to
+#: the never-given side unremarked (decisions/vocabulary-collisions C-i).
+STATED: dict[str, frozenset[str]] = {
+    "particle": frozenset({"may_be_given"}),
+}
+#: The two markers phase 1 wrote as flags and phase 2 derives from a
+#: name reading (check 11), each with the reading that now states it.
+DERIVED = {
+    "may_be_name": "a `given` or `family` reading on the word",
+    "may_be_given": "a `given` reading on the word",
 }
 #: Descriptive properties: recorded, validated, compiled to nothing.
 DESCRIPTIVE = frozenset({"note", "issue", "decided", "expands", "same_as",
@@ -717,16 +739,30 @@ def _check_reading(r: Reading, pool: Pool) -> None:
         if "as_of" in p and not COUNT_SOURCES & p.keys():
             raise VocabError(f"{where}: as_of dates a count, and this reading "
                              f"has none ({', '.join(sorted(COUNT_SOURCES))})")
+        if not COUNT_SOURCES & p.keys() and "note" not in p:
+            # a name reading may stand without a count -- a particle kept
+            # possibly given under C-i's default, with no source counting
+            # it -- but says why, so an unexamined word stays findable
+            raise VocabError(f"{where}: a name reading with no count needs a "
+                             f"`note` saying why it is declared")
         _check_descriptive(where, p)
         pool.readings.append(r)
         return
-    allowed = BEHAVIORAL[r.category] | DESCRIPTIVE | {"excluded"}
+    stated = STATED.get(r.category, frozenset())
+    allowed = BEHAVIORAL[r.category] | stated | DESCRIPTIVE | {"excluded"}
     for k in p:
+        if k in stated and not isinstance(p[k], bool):
+            raise VocabError(f"{where}: {k} must be true or false")
+        if k in DERIVED and not (k in stated and p[k] is False):
+            # build check 11: the marker is derived from a name reading
+            raise VocabError(f"{where}: {k} = {_shown(p[k])} is derived since "
+                             f"phase 2; write {DERIVED[k]} instead, with dated "
+                             f"counts from tools/name_usage.py or a `note` "
+                             f"saying why")
         if k not in allowed:
             raise _reserved_or_unknown(where, k, allowed)
     _check_descriptive(where, p)
-    for flag in ("acronym", "may_be_name", "may_be_given", "may_be_initial",
-                 "after_given"):
+    for flag in ("acronym", "may_be_initial", "after_given"):
         if flag in p and not isinstance(p[flag], bool):
             raise VocabError(f"{where}: {flag} must be true or false")
     if r.category == "title":
@@ -753,9 +789,6 @@ def _check_reading(r: Reading, pool: Pool) -> None:
                 f"{where}: an acronym is matched with every period removed, "
                 f"so {r.text!r} can never match; write "
                 f"{r.text.replace('.', '')!r} (it reads the dotted spelling too)")
-        if "may_be_name" in p and not acronym:
-            raise VocabError(f"{where}: may_be_name marks an acronym reading; "
-                             f"this reading has acronym = false")
         if "attached" in p:
             att = p["attached"]
             if not isinstance(att, dict):
@@ -770,13 +803,6 @@ def _check_reading(r: Reading, pool: Pool) -> None:
                 raise VocabError(f"{where}: attached needs a word reading "
                                  f"(acronym = false); the peel splits word tails")
             _check_descriptive(f"{where} attached", att)
-    if r.category == "particle" and "may_be_given" not in p:
-        # stated, never defaulted: the old encoding listed the never-given
-        # particles, so a new one was ambiguous unless argued otherwise
-        # (decisions/vocabulary-collisions C-i), and a default here would
-        # silently pick one side of that
-        raise VocabError(f"{where}: a particle states may_be_given = true or "
-                         f"false; under uncertainty, true (vocabulary-collisions C-i)")
     if r.category == "conjunction" and r.flag("may_be_initial"):
         if len(r.text) != 1 or r.text.upper() == r.text.lower():
             raise VocabError(
@@ -855,9 +881,8 @@ def _overrides(r: Reading, x: Exclusion) -> bool:
     unwritten-false for every other kind, so an exclusion of a
     credential's `acronym` refuses a generic `suffix = {}` (a word, where
     the exclusion keeps the acronym) and lets `suffix = { acronym = true }`
-    through. Writing the baseline (`may_be_name = false`) is the same as
-    omitting it, so a particle, which must state may_be_given, can still
-    state it false beside an exclusion of it."""
+    through. Writing the baseline (`after_given = false`) is the same as
+    omitting it."""
     assert x.prop is not None
     baseline = Reading(x.file, x.text, x.kind, {})
     return _behavior(r, x.prop) != _behavior(baseline, x.prop)
@@ -906,7 +931,7 @@ def check_pool(pool: Pool) -> None:
     # on the CATEGORY, not the kind: the sets are sets of words, and a
     # particle may take a different kind in each language (`de`, a
     # preposition in French and an article in Dutch), and two kinds
-    # disagreeing on may_be_given would compile silently to the false
+    # disagreeing on a property would compile silently to one of them
     for text, rs in by_text.items():
         first: dict[str, Reading] = {}
         for r in rs:
@@ -936,15 +961,36 @@ def check_pool(pool: Pool) -> None:
         if len(masks) > 1:
             raise VocabError(f"{text!r}: one cased mask per word, got {sorted(masks)}")
 
+    # 11, the pool's half: a particle reading states may_be_given = false
+    # exactly where its word has no given reading in any file. Stated,
+    # never defaulted: the old encoding listed the never-given particles,
+    # so a new one was ambiguous unless argued otherwise
+    # (decisions/vocabulary-collisions C-i), and a default here would
+    # silently pick one side of that; a false beside a given reading
+    # would say the opposite of the marker it derives
+    given = {t for t, rs in by_text.items() if any(r.kind == "given" for r in rs)}
+    for r in pool.readings:
+        if r.category != "particle":
+            continue
+        if r.text in given and "may_be_given" in r.props:
+            raise VocabError(f"{r.where()}: may_be_given = false contradicts "
+                             f"the word's given reading, which derives it; "
+                             f"drop the property")
+        if r.text not in given and "may_be_given" not in r.props:
+            raise VocabError(f"{r.where()}: a particle states may_be_given = "
+                             f"false, or its word carries a given reading; "
+                             f"under uncertainty, the given reading "
+                             f"(vocabulary-collisions C-i)")
+
     # 9: a bound given name that is also a particle must be one that may
     # be given -- the bound join reads it as a given name. Lexicon raises
     # on the same contradiction; this says which file and word
     for text, rs in by_text.items():
-        if any(r.kind == "bound_given" for r in rs):
+        if any(r.kind == "bound_given" for r in rs) and text not in given:
             for r in rs:
-                if r.category == "particle" and not r.flag("may_be_given"):
+                if r.category == "particle":
                     raise VocabError(f"{r.where()}: also a bound given name, so "
-                                     f"the particle needs may_be_given = true")
+                                     f"the word needs a given reading")
 
     # an elided particle reads only the apostrophe it is spelled with,
     # nothing folding U+2019 to U+0027, so both spellings ship (#700)
@@ -978,7 +1024,7 @@ def _behavior(r: Reading, prop: str) -> object:
     if prop == "attached":
         att = r.props.get("attached")
         return None if att is None else att.get("side")
-    if prop.startswith("may_be") or prop == "after_given":
+    if prop == "may_be_initial" or prop == "after_given":
         return r.flag(prop)
     return r.props.get(prop)
 
@@ -1031,6 +1077,10 @@ assert tuple(Compiled.__annotations__) == tuple(name for name, _ in CONSTANTS), 
 def compile_pool(pool: Pool) -> Compiled:
     """Fold the readings into today's constants."""
     check_pool(pool)
+    # the two derived markers (check 11): a clash with a name is a word's
+    # name reading beside the reading it clashes with
+    named = {r.text for r in pool.readings if r.category == "name"}
+    given = {r.text for r in pool.readings if r.kind == "given"}
     titles: set[str] = set()
     given_titles: set[str] = set()
     after_given: set[str] = set()
@@ -1058,7 +1108,7 @@ def compile_pool(pool: Pool) -> Compiled:
         elif r.category == "suffix":
             if r.acronym:
                 acronyms.add(t)
-                if r.flag("may_be_name"):
+                if t in named:
                     ambiguous.add(t)
             else:
                 words.add(t)
@@ -1066,10 +1116,7 @@ def compile_pool(pool: Pool) -> Compiled:
                     glued.add(t)
         elif r.category == "particle":
             particles.add(t)
-            # never-given where any reading has may_be_given = false;
-            # check 5 makes every reading of one word agree, so "any"
-            # is "all"
-            if not r.flag("may_be_given"):
+            if t not in given:
                 never_given.add(t)
         elif r.category == "conjunction":
             conjunctions.add(t)

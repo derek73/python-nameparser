@@ -2,7 +2,7 @@ schema = 1
 
 [[word]]
 text = "mac"
-clan = { may_be_given = true, expands = "son of" }
+clan = { expands = "son of" }
 
 [[word]]
 text = "mc"

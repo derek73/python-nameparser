@@ -14,7 +14,7 @@ salutation = { issue = 606, gender = "m", note = "borne: ~500 surnames, in Phili
 
 [[word]]
 text = "dela"
+given = { us_ssa = 565, as_of = 2026-10-25, note = "US SSA births summed over both sexes; nam_dict band 1 in Germany, 1 in Bulgaria" }
 [word.preposition]
-may_be_given = true
 expands = "of the, de la contracted: \"Dela Cruz\""
 note = "Dela is a short form of Adela, and an African name meaning saviour/redeemer -- so the Filipino surname particle is not the only reading"

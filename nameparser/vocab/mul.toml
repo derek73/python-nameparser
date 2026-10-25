@@ -50,7 +50,7 @@ generation = {}
 text = "ing"
 family = { us_census_2010 = 1814, wikidata = 13, as_of = 2026-10-23 }
 given = { wikidata = 10, as_of = 2026-10-23, note = "nam_dict band 5 in Sweden; Wikidata is a lower bound" }
-credential = { may_be_name = true, cased = "Ing", expands = "Ingenieur, inženýr: the engineering degree of Czech, Slovak, Austrian and Romanian names", note = "52 of 536,981 ClinicalTrials.gov study officials write it, 43 after a comma (data 2026-10-21); NPPES 0, a credential outside US healthcare. Marked on C-i: the surname reading is substantial (Census 2010 bearers 1,814, over the 200 threshold)", issue = 848 }
+credential = { cased = "Ing", expands = "Ingenieur, inženýr: the engineering degree of Czech, Slovak, Austrian and Romanian names", note = "52 of 536,981 ClinicalTrials.gov study officials write it, 43 after a comma (data 2026-10-21); NPPES 0, a credential outside US healthcare. Marked on C-i: the surname reading is substantial (Census 2010 bearers 1,814, over the 200 threshold)", issue = 848 }
 excluded = { academic = { reason = "Ing is borne as a given name (nam_dict band 5 in Sweden, Wikidata 10+ given) and as a surname (US Census 1,814), measured 2026-10-22 with tools/name_usage.py, and a title claims the word in front of a name ('Ing Smith'); with its period, 'Ing.' (Ingegnere, Ingenieur) already reads as a title by its shape (rules/H2). After a full name and a comma it reads as the ambiguous credential instead, #848", issue = 840 } }
 
 [[word]]
