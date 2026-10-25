@@ -1138,6 +1138,22 @@ Through 2.3 the undeclared reading was given ``RN``, family ``Jane
 Smith`` and suffix ``CRNA``, so the delimiter was the only way to get
 the name right.
 
+A hyphen or a slash written between two credentials with no space needs
+no declaring when every part is a listed credential that is not also a
+name, because the word then reads as one credential (since 2.7). A part
+that may be a name, such as ``MA``, keeps the word a name word, since a
+hyphen also joins surnames, unless the word is written in capitals,
+which :ref:`all-caps-credentials` reads on its own terms:
+
+.. doctest::
+
+    >>> joined = parse("Jane Smith, RN/CRNA")
+    >>> joined.given, joined.family, joined.suffix
+    ('Jane', 'Smith', 'RN/CRNA')
+    >>> joined = parse("Jane Smith, MA/PhD")
+    >>> joined.given, joined.family
+    ('MA/PhD', 'Jane Smith')
+
 .. _unlisted-credentials:
 
 Credentials the vocabulary doesn't list
@@ -1253,7 +1269,9 @@ All-caps words
 ^^^^^^^^^^^^^^
 
 ``unlisted_caps_suffixes`` reads an unlisted word of two or more
-capital letters, with no period in it. Its value is a
+capital letters, with no period in it, and since 2.7 one of capitals
+joined by a hyphen or a slash (``PU-PH``, ``MS-OMPT``) with a part of
+two or more letters. Its value is a
 :class:`~nameparser.CapsSuffixes`, because where capitals mean a
 credential depends on a second convention: many records write the
 SURNAME in capitals (``"Jean DUPONT"``, ``"DUPONT, Jean"``).
@@ -1282,6 +1300,9 @@ all-caps surname convention never writes capitals there:
     'XYZ'
     >>> parse("JOHN SMITH, XYZ").given
     'XYZ'
+    >>> cred = parse("John Smith, PU-PH")
+    >>> cred.family, cred.suffix
+    ('Smith', 'PU-PH')
 
 ``EVERYWHERE``
 """"""""""""""

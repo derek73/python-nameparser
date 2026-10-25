@@ -238,7 +238,8 @@ def _behind_a_generation(state: ParseState, seg0: Sequence[int],
     # any suffix word ('Jr.', 'Esq.') counts, by its tag
     if ("vocab:suffix-word" not in tokens[seg0[-1]].tags
             and not reads_as_generation(
-                last, tokens[seg0[-2]].text, state.one_case)):
+                last, tokens[seg0[-1]].tags, tokens[seg0[-2]].text,
+                state.one_case)):
         return None
     # the generation set aside, the name's own words in front of it are
     # a whole name: 'Smith VI' is one word and a numeral, as 'Smith III'
@@ -353,8 +354,12 @@ def decide(state: ParseState) -> ParseState:
     maybe = [p[0] for p in p1 if len(p) == 1
              and (AMBIGUOUS_ACRONYM_TAG in (tags := tokens[p[0]].tags)
                   or ("vocab:suffix" not in tags
-                      and (texts[p[0]].isalpha()
-                           and texts[p[0]].isupper()
+                      and (texts[p[0]].isupper()
+                           and (texts[p[0]].isalpha()
+                                # the joined spelling ('PU-PH'), the
+                                # predicate's other half (rules/S9)
+                                or "-" in texts[p[0]]
+                                or "/" in texts[p[0]])
                            or not unicodedata.is_normalized(
                                "NFC", texts[p[0]])
                            and is_caps_word(texts[p[0]]))))]
@@ -373,7 +378,7 @@ def decide(state: ParseState) -> ParseState:
     # the helper)
     generation = bool(seg0) and (
         "vocab:suffix-word" in tokens[seg0[-1]].tags
-        or ROMAN.match(tokens[seg0[-1]].text) is not None)
+        or ROMAN.match(tokens[seg0[-1]].text.rstrip(".")) is not None)
     behind_generation = listing = False
     contrast: bool | None = None
     if not maybe:
@@ -518,7 +523,9 @@ def decide(state: ParseState) -> ParseState:
                     # caps shape writes them, so case repair keeps 'AD'
                     # (rules/R4); the C-level filter `maybe` uses first
                     if ("vocab:suffix" not in tokens[i].tags
-                            and (text.isalpha() and text.isupper()
+                            and (text.isupper()
+                                 and (text.isalpha() or "-" in text
+                                      or "/" in text)
                                  or not unicodedata.is_normalized(
                                      "NFC", text) and is_caps_word(text))):
                         caps.add(i)

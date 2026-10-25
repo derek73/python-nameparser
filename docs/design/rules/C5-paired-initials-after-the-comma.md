@@ -38,7 +38,7 @@
 
 **Precedence:**
 
-- **A generation ending the name before the comma** ("John Smith Jr., M.J."): dotted, the paired initials keep this rule's reading and are the given name, the generation staying the suffix; undotted as two capitals, they are the credential C12 reads (C1, where #774 tracks the roman numerals S10 reads, which do not yet stay the suffix).
+- **A generation ending the name before the comma** ("John Smith Jr., M.J."): dotted, the paired initials keep this rule's reading and are the given name, the generation staying the suffix; undotted as two capitals, they are the credential C12 reads (C1, where a roman numeral S10 reads stays the suffix as a listed generation does).
 
 **Accepted:**
 

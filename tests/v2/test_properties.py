@@ -3517,8 +3517,8 @@ def test_the_one_case_grid_sees_the_letter_in_front(
     from nameparser._pipeline import _vocab
     monkeypatch.setattr(
         "nameparser._pipeline._pieces.reads_as_generation",
-        lambda text, preceding, one_case=None:
-            _vocab.reads_as_generation(text, preceding, None))
+        lambda text, tags, preceding, one_case=None:
+            _vocab.reads_as_generation(text, tags, preceding, None))
     assert (len(_one_case_disagreements())
             == _ONE_CASE_LETTER_IN_FRONT_UNGUARDED)
 

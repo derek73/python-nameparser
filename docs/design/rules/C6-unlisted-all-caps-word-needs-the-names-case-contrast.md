@@ -18,6 +18,9 @@
 "John Smith, LEED AP"       →  suffix="LEED AP"
 "Smith, XYZ"                →  given="XYZ"  · boundary
 "John Smith, PhD XYZ"       →  suffix="PhD XYZ"
+"John Smith, PU-PH"         →  suffix="PU-PH"
+"JOHN SMITH, PU-PH"         →  given="PU-PH"  · boundary
+"Smith, PU-PH"              →  given="PU-PH"  · boundary
 ```
 
 ---

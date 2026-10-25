@@ -287,32 +287,37 @@ ROMAN = _ROMAN
 # rules/S10's Except bullet "A numeral of one letter needs words to
 # spare", is the callers'. decisions/S10 (#718, #721)
 # mechanisms.md#ONE-PREDICATE-PER-QUESTION ("exactly one predicate answers it and every other site calls that one")
-# -- the numeral's predicate, which every numeral rule is to ask;
-# today its shape half, and the sites still recognizing a numeral on
-# their own are named in the decisions entry (decisions/vocabulary-
-# model, #752)
-def reads_as_generation(text: str, preceding: str,
+# -- the numeral's predicate, which every numeral rule asks
+# (decisions/vocabulary-model, #752; #784, #774, #819)
+def reads_as_generation(text: str, tags: Set[str], preceding: str | None,
                         one_case: bool | None) -> bool:
-    """Whether a word ending a name reads as the generation: the
-    trailing walk's roman-numeral fork, a FINAL single-token piece
-    that is a roman numeral reading as the suffix when the piece
-    before it does not look like part of an initial run -- for a
-    one-letter numeral a necessary condition only, the caller's words-to-spare count deciding
-    (rules/S10, #718). `preceding` is that piece's first token;
-    the callers establish that `text` is last and that a name piece
-    precedes it.
+    """Whether a word reads as the generation: S10's roman-numeral
+    fork, asked by every rule that weighs a numeral (#752). For a
+    one-letter numeral a necessary condition only: the words-to-spare
+    count is the caller's, which alone knows where the name's words
+    are (rules/S10, #718).
 
-    It answers by SHAPE alone. That covers the listed 'ii' to 'iv',
-    which the shape test takes as it takes 'VI'; of the listed
-    numerals only the one-letter 'i' and 'v' would be new here, and
-    the vocabulary half is the change that has every numeral rule ask
-    this predicate (#784, #774, #819). It cannot read them yet without
-    moving readings: answering yes for 'i' and 'v' moves the peel's
-    fork ('John J. V' family 'V' → suffix 'V') and the report on a
-    numeral before a credential ('John J. V MD' gains one), since the
-    ones those sites meet carry the `initial` tag. Other sites still recognize a
-    numeral without this predicate, each keeping the answer it had
-    before #752; decisions/vocabulary-model lists those found.
+    A numeral is I to X by shape, written with its periods or without
+    ('VI.', the German ordinal), save that a single letter written
+    with its period is an initial (rules/T5). The vocabulary's own
+    numerals of two or more letters ('ii' to 'iv', `tags` carrying
+    `vocab:suffix`) are the generation whatever stands around them,
+    the vocabulary settling them; the rest ('vi' to 'x', and the
+    one-letter 'i' and 'v') are weighed:
+
+    - an initial in front makes the numeral a name word: `preceding`
+      is the first token of the piece in front, read for layout, and
+      None where the slot never asks (the given part after a family
+      comma, where 'Chang, Andy C I' reads suffix 'I', v1's reading);
+    - a Title-case numeral in a name of mixed case leans to the name,
+      as a Title-case member of the ambiguous class does
+      (`numeral_leans_to_the_name`).
+
+    In the given part after a family comma (`preceding` None) a
+    one-letter numeral is the generation only where the vocabulary
+    lists it, rules/C9's "one-character suffix word": no count is
+    asked there (S5), and an unlisted letter is the middle initial
+    ('SMITH, JOHN X').
 
     is_initial_shaped, not is_initial: this asks whether the preceding
     piece looks like part of an initial run, which is a question
@@ -325,11 +330,47 @@ def reads_as_generation(text: str, preceding: str,
     is initial-shaped as 'J' is (rules/S10, #721's review: 'john j v'
     reads as 'JOHN J V'), while 'é', 'ж' or an uncased word, whose
     capitals are not, stay as they were. None (the maiden take's
-    superset view passes it) gets the shape test alone, which admits
+    superset view passes it) asks neither case question, which admits
     more and so stays a superset."""
-    return (_ROMAN.match(text) is not None
-            and not is_initial_shaped(preceding)
-            and not (one_case and is_initial_shaped(preceding.upper())))
+    stem = text.rstrip(".")
+    if not stem or _ROMAN.match(stem) is None:
+        return False
+    if len(stem) == 1:
+        # rules/T5: "A one-letter word written with its period is an
+        # initial"
+        if len(text) > 1:
+            return False
+        if preceding is None:
+            return "vocab:suffix" in tags
+    elif "vocab:suffix" in tags:
+        return True
+    elif one_case is False and stem.istitle():
+        return False
+    return (preceding is None
+            or not (is_initial_shaped(preceding)
+                    or one_case and is_initial_shaped(preceding.upper())))
+
+
+# rules/S10: "a Title-case numeral in a name of mixed case leans to the
+# name" -- the fork weighed it and the writing declined it, so it is
+# reported as a declined member of the ambiguous class is (#752)
+def numeral_leans_to_the_name(text: str, tags: Set[str],
+                              preceding: str | None,
+                              one_case: bool | None) -> bool:
+    """Whether `reads_as_generation` declined a numeral for its Title
+    case alone: two or more letters, unlisted, in a name of mixed case,
+    and no initial in front (which makes it a name word unweighed)."""
+    return (one_case is False and text.rstrip(".").istitle()
+            and len(text.rstrip(".")) >= 2 and "vocab:suffix" not in tags
+            and reads_as_generation(text, tags, preceding, None))
+
+
+def is_listed_numeral(text: str, tags: Set[str]) -> bool:
+    """A numeral the vocabulary lists in two or more letters ('III'):
+    not in question, so its reading is never reported (rules/S10)."""
+    stem = text.rstrip(".")
+    return (len(stem) >= 2 and "vocab:suffix" in tags
+            and _ROMAN.match(stem) is not None)
 
 
 # rules/S10: "a numeral written in lower case in a name of mixed case is
@@ -349,11 +390,14 @@ def numeral_settled_by_case(text: str, one_case: bool | None) -> bool:
 # reports on a numeral a post-nominal follows ask (assign's, and the
 # maiden take's for a numeral its clause keeps): the fork would read
 # this numeral, and its writing does not settle it (#721)
-def reads_as_a_reported_numeral(text: str, preceding: str,
+def reads_as_a_reported_numeral(text: str, tags: Set[str],
+                                preceding: str,
                                 one_case: bool | None) -> bool:
     """Whether a numeral the walk left a name word, with `preceding`
-    in front of it, is one the fork would weigh and so reports."""
-    return (reads_as_generation(text, preceding, one_case)
+    in front of it, is one the fork would weigh and so reports: one it
+    reads as the generation, or declines for its Title case."""
+    return ((reads_as_generation(text, tags, preceding, one_case)
+             or numeral_leans_to_the_name(text, tags, preceding, one_case))
             and not numeral_settled_by_case(text, one_case))
 
 
@@ -560,9 +604,60 @@ def suffix_as_written(n: str, text: str, lexicon: Lexicon) -> bool:
     a = n.replace(".", "")
     if a in lexicon.suffix_acronyms_ambiguous and _dotted(text):
         return True
-    return (a in lexicon.suffix_acronyms
-            and a not in lexicon.suffix_acronyms_ambiguous) \
-        or n in lexicon.suffix_words
+    if ((a in lexicon.suffix_acronyms
+            and a not in lexicon.suffix_acronyms_ambiguous)
+            or n in lexicon.suffix_words):
+        return True
+    # the joiners asked in C first, so a word holding neither pays no
+    # frame
+    return ("-" in n or "/" in n) and _joined_credential(text, lexicon)
+
+
+#: What joins the chunks of a joined credential ('MD/PhD', 'MD-PhD').
+_JOINERS = re.compile(r"[-/]")
+
+
+# rules/S3: "a word whose chunks are joined by a hyphen or a slash
+# reads as a suffix when every chunk counts as a suffix as written" --
+# the stricter test, every chunk rather than any, because a hyphen also
+# joins names (decisions/S3 (#752))
+def _joined_credential(text: str, lexicon: Lexicon) -> bool:
+    """Whether TEXT is two or more chunks joined by '-' or '/', each
+    non-empty and each counting as a suffix as written: listed, and
+    not a bare member of the ambiguous class, and not every one a
+    single ASCII character, and -- joined by a hyphen -- not
+    written as a hyphenated name is ('MD/PhD', 'M.A.-Ph.D.', 'PhD-Md',
+    'md-phd', but not 'MA/PhD', 'Smith-Jones', 'I-V', 'Ae-Ra', 'Ae-ra'
+    or 'MD/'). A chunk holds no joiner,
+    so the recursion is one level deep. A loop rather than `all()` over
+    a generator, which would cost a frame per chunk: a hyphenated name
+    ('Smith-Jones') stops at its first chunk."""
+    # the caller found a joiner, so there are two chunks at least
+    chunks = _JOINERS.split(text)
+    whole = False  # a chunk that is not a single ASCII character
+    # every chunk so far written as a name's; a slash joins no name, so
+    # a word holding one takes no cue
+    named = "/" not in text
+    for k, c in enumerate(chunks):
+        if not (c and suffix_as_written(_normalize(c), c, lexicon)):
+            return False
+        # its periods are not the chunk's ('I.' is 'i'), as in a word
+        # split at its periods
+        bare = c.replace(".", "")
+        whole = whole or len(bare) > 1 or not bare.isascii()
+        # the first chunk in Title case, a later one in Title case or
+        # lower case ('Ae-Ra', 'Ae-ra')
+        named = named and (
+            len(bare) > 1 and bare[0].isupper() and bare[1:].islower()
+            or k > 0 and bare.islower())
+    # rules/S3: "Every chunk the vocabulary matches is a single ASCII
+    # character" -- the numerals and the digit, which are about
+    # generations, make no joined word a suffix either ('Jack I-V');
+    # rules/S3: "a word joined by a hyphen and written the way a
+    # hyphenated name is, its first chunk in Title case and every other
+    # in Title case or lower case, is a name word" -- where a
+    # credential's chunks are not (decisions/S3 (#752))
+    return whole and not named
 
 
 def _is_suffix_strict_n(n: str, text: str, lexicon: Lexicon,
@@ -816,9 +911,11 @@ def ambiguous_class_member(text: str, lexicon: Lexicon) -> bool:
 def caps_shape_candidate(text: str, lexicon: Lexicon, policy: Policy,
                          one_case: bool | None) -> bool:
     """Whether TEXT is an UNLISTED all-caps credential candidate: two
-    or more alphabetic characters, no period (a period fails
-    `isalpha()` outright, which is what excludes the dotted spelling
-    here for free -- no separate '.' test needed), written in a name
+    or more alphabetic characters, or letter chunks joined by '-' or
+    '/' (`_joined_capitals`, #752), no period (a period fails
+    `isalpha()` and the joined pattern outright, which is what excludes
+    the dotted spelling here for free -- no separate '.' test needed),
+    written in a name
     `one_case` says is mixed (`one_case is False`; `None`, "not
     established", declines exactly as if the name were one case).
 
@@ -857,9 +954,31 @@ def caps_shape_candidate(text: str, lexicon: Lexicon, policy: Policy,
         return False
     if not text.isascii():
         text = unicodedata.normalize("NFC", text)
-    if not (len(text) >= 2 and text.isalpha() and text.isupper()):
+    if not (len(text) >= 2 and text.isalpha() and text.isupper()
+            or _joined_capitals(text)):
         return False
     return not in_any_wordlist(_normalize(text), lexicon)
+
+
+#: A word of letter chunks joined by '-' or '/' ('PU-PH', 'MD/MBA').
+_JOINED_LETTERS = re.compile(
+    r'(?:' + _LETTER + r')+(?:[-/](?:' + _LETTER + r')+)+')
+
+
+# rules/S9: "an unlisted word of capitals whose letter chunks are joined
+# by a hyphen or a slash, one of them of two or more letters, is that
+# shape too" -- the caps shape's joined spelling (decisions/S9 (#752))
+def _joined_capitals(text: str) -> bool:
+    """Whether TEXT is capitals in letter chunks joined by '-' or '/',
+    one chunk of two or more letters ('PU-PH', 'MS-OMPT', not 'A-B',
+    'MD/' or 'PU-PH2'). Its callers test `isupper()` and a joiner in C
+    first, so a word holding neither pays no frame."""
+    if not (text.isupper() and _JOINED_LETTERS.fullmatch(text)):
+        return False
+    for chunk in _JOINERS.split(text):
+        if composed_len(chunk) >= 2:
+            return True
+    return False
 
 
 def is_caps_word(text: str) -> bool:

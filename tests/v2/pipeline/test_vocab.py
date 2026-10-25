@@ -15,7 +15,7 @@ from nameparser._pipeline._vocab import (
     is_single_letter_numeral, split_pair,
     is_suffix_lenient, is_suffix_strict, is_title_shaped, is_wholly_suffix,
     maiden_marker_run, name_word_count, period_joined_vocab, written_as_a_name,
-    resolve_script_set, single_script,
+    resolve_script_set, single_script, suffix_as_written,
 )
 from nameparser._policy import (Policy, Script, _NO_INITIALS,
                                 _SCRIPT_RANGES)
@@ -270,9 +270,10 @@ def test_is_wholly_suffix() -> None:
     # diagnosed a long way from its cause.
     assert is_wholly_suffix(["Lt.Jr."], lex, pol)        # period-joined
     assert not is_wholly_suffix(["Lt.Smith"], lex, pol)  # no suffix chunk
-    delim = Policy(extra_suffix_delimiters=frozenset({"/"}))
-    assert is_wholly_suffix(["PhD/MD"], lex, delim)      # delimiter split
-    assert not is_wholly_suffix(["PhD/MD"], lex, pol)
+    delim = Policy(extra_suffix_delimiters=frozenset({"+"}))
+    assert is_wholly_suffix(["PhD+MD"], lex, delim)      # delimiter split
+    assert not is_wholly_suffix(["PhD+MD"], lex, pol)
+    assert is_wholly_suffix(["PhD/MD"], lex, pol)        # joined (S3)
 
 
 def test_is_wholly_suffix_empty_run_is_false() -> None:
@@ -393,6 +394,82 @@ def test_period_joined_vocab_retires_the_single_character_chunk() -> None:
     assert period_joined_vocab("田.中.", lex) is None
     assert period_joined_vocab("이.박.", lex) is None
     assert period_joined_vocab("たな.か.", lex) is None
+
+
+@pytest.mark.parametrize("text, expected", [
+    ("MD/PhD", True),
+    ("MD-PhD", True),
+    ("MD/PhD/MPH", True),
+    ("md-phd", True),
+    ("M.D./Ph.D.", True),   # a chunk counts as written, periods and all
+    ("M.A./Ph.D.", True),   # an ambiguous acronym written with its periods
+    ("MA/PhD", False),      # a bare member of the ambiguous class
+    ("PhD/Ed", False),
+    ("Smith-Jones", False),  # a hyphen also joins names
+    ("MD-Jones", False),    # every chunk, not any
+    ("MD/", False),         # an empty chunk is no chunk
+    ("/MD", False),
+    ("MD//PhD", False),
+    ("MD+PhD", False),      # '+' is no joiner
+    ("I-V", False),         # every chunk a single ASCII character
+    ("I.-V.", False),       # its periods are not the chunk's
+    ("I-V.", False),
+    ("MS-V", True),         # one chunk is not
+    ("Ae-Ra", False),       # every chunk Title case: a hyphenated name
+    ("Md-Rn", False),
+    ("Ae-ra", False),       # the standard romanization's lower-case tail
+    ("ae-Ra", True),        # a name opens in Title case
+    ("Md-phd", False),
+    ("PhD-Md", True),       # one chunk is not Title case
+    ("Ph.D.-Md", True),
+    ("AE-RA", True),        # capitals: the cue cannot read a name in them
+    ("ae-ra", True),
+    ("Ae/Ra", True),        # a slash joins no name, so it takes no cue
+    ("Ae-Ra/Md", True),     # nor does a word holding a slash anywhere
+    ("Md-v", False),        # a one-letter tail in lower case is a name's
+    ("Phd-Md", False),      # a credential typed in Title case: S3 Accepted
+])
+def test_suffix_as_written_reads_a_joined_credential(
+        text: str, expected: bool) -> None:
+    # a word joined by a hyphen or a slash is a suffix only
+    # where EVERY chunk counts as a suffix as written (#752)
+    lex = Lexicon.default()
+    assert suffix_as_written(_normalize(text), text, lex) is expected
+
+
+@pytest.mark.parametrize("text, expected", [
+    ("PU-PH", True),
+    ("PU/PH", True),
+    ("MS-OMPT", True),
+    ("MD/PU-PH", True),     # either joiner, more than two chunks
+    ("A-BC", True),         # one chunk of two letters is enough
+    ("A-B", False),         # single letters alone are how initials join
+    ("Pu-Ph", False),       # capitals, not Title case
+    ("PU-PH2", False),      # a digit is no letter chunk
+    ("PU-", False),         # an empty chunk is no chunk
+    ("PU--PH", False),
+    ("P.U.-PH", False),     # a period is the dotted shape's, not this
+    ("XYZ", True),          # the unjoined word, as before
+])
+def test_caps_shape_candidate_reads_joined_capitals(
+        text: str, expected: bool) -> None:
+    # the caps shape's joined spelling (#752): an unlisted word of
+    # capitals in letter chunks joined by a hyphen or a slash
+    lex = Lexicon.default()
+    pol = Policy()
+    assert caps_shape_candidate(text, lex, pol, one_case=False) is expected
+    # gated as the unjoined word is: a name in one case says nothing
+    assert caps_shape_candidate(text, lex, pol, one_case=True) is False
+
+
+def test_caps_shape_candidate_refuses_a_listed_joined_word() -> None:
+    # unlisted means the whole word in no wordlist, as for the unjoined
+    # word
+    lex = Lexicon.default().add(surnames={"dupont-moretti"})
+    assert not caps_shape_candidate("DUPONT-MORETTI", lex, Policy(),
+                                    one_case=False)
+    assert caps_shape_candidate("DUPONT-MORETTI", Lexicon.default(),
+                                Policy(), one_case=False)
 
 
 def test_ambiguous_class_candidate_admits_a_by_shape_member() -> None:

@@ -3491,6 +3491,101 @@ CASES: tuple[Case, ...] = (
          notes="the boundary on the vocabulary side: Doctor of "
                "Chiropractic is listed, so the shape question is never "
                "asked (99,172 NPPES providers write it, decisions/S3)"),
+    # #752 (phase 2c): a word joined by a hyphen or a slash is a
+    # credential where every chunk counts as a suffix as written
+    # (rules/S3). Each moved row's reading is 1.4.0's through 2.6.0's
+    # otherwise (wheels, 2026-10-25), stated per row.
+    Case("a_joined_credential_after_a_comma_keeps_the_name_in_order",
+         "John Smith, MD/PhD",
+         {"given": "John", "family": "Smith", "suffix": "MD/PhD"},
+         classification="fix(#752)",
+         notes="1.4.0 through 2.6.0 read given 'MD/PhD', family 'John "
+               "Smith', the name reversed around the credential"),
+    Case("a_hyphen_joined_credential_ending_a_name",
+         "John Smith MD-PhD",
+         {"given": "John", "family": "Smith", "suffix": "MD-PhD"},
+         classification="fix(#752)",
+         notes="1.4.0 through 2.6.0 read middle 'Smith', family "
+               "'MD-PhD'"),
+    Case("a_joined_credential_ending_the_given_part",
+         "Smith, John MD/PhD",
+         {"given": "John", "family": "Smith", "suffix": "MD/PhD"},
+         classification="fix(#752)",
+         notes="1.4.0 through 2.6.0 read middle 'MD/PhD'"),
+    Case("a_joined_credential_with_nothing_before_the_comma",
+         ", MD/PhD",
+         {"suffix": "MD/PhD"},
+         classification="fix(#752)",
+         notes="the empty-head comma shape; 1.4.0 through 2.6.0 read "
+               "given 'MD/PhD'"),
+    Case("a_joined_credential_of_dotted_chunks",
+         "John Smith, M.D./Ph.D.",
+         {"given": "John", "family": "Smith", "suffix": "M.D./Ph.D."},
+         classification="fix(#752)",
+         notes="a chunk counts as it does as a word of its own, periods "
+               "and all; 1.4.0 through 2.6.0 read the name reversed"),
+    Case("a_joined_credential_behind_a_hyphenated_surname",
+         "John Smith-Jones, MD-PhD",
+         {"given": "John", "family": "Smith-Jones", "suffix": "MD-PhD"},
+         classification="fix(#752)",
+         notes="the two hyphens side by side: the surname's chunks are "
+               "not listed, the credential's are; 1.4.0 through 2.6.0 "
+               "read given 'MD-PhD', family 'John Smith-Jones'"),
+    Case("a_hyphenated_given_name_in_title_case_stays_the_given_name",
+         "Kim, Ae-Ra",
+         {"given": "Ae-Ra", "family": "Kim"},
+         notes="pins rules/S3's name-writing cue: 'ae' and 'ra' are both "
+               "listed credentials, so without the cue the joined "
+               "reading takes the given name (as the spaced 'Kim, Ae "
+               "Ra' already loses it to the two credentials)"),
+    Case("a_hyphenated_given_name_with_a_lower_case_tail_stays_the_name",
+         "Shin Ae-ra",
+         {"given": "Shin", "family": "Ae-ra"},
+         notes="the standard romanization writes the second syllable in "
+               "lower case, which the cue reads as a name too"),
+    Case("a_joined_word_with_one_unlisted_chunk_is_a_name_word",
+         "John Smith MD-Jones",
+         {"given": "John", "middle": "Smith", "family": "MD-Jones"},
+         notes="the boundary: every chunk, not any, because a hyphen "
+               "also joins names"),
+    Case("a_joined_credential_with_a_bare_ambiguous_chunk_keeps_its_reading",
+         "John Smith, MA/PhD",
+         {"given": "MA/PhD", "family": "John Smith"},
+         notes="rules/S3's Accepted cost: a bare member of the ambiguous "
+               "class is no chunk the stricter test counts"),
+    # #752 (phase 2d): an unlisted word of capitals joined by a hyphen
+    # or a slash is the caps shape (rules/S9), gated by the name's case
+    # contrast after a comma (rules/C6) as the unjoined word is. 1.4.0
+    # through 2.6.0 read each moved row's word as the given name, the
+    # name reversed around it (wheels, 2026-10-25).
+    Case("joined_capitals_after_a_comma_join_the_class",
+         "John Smith, PU-PH",
+         {"given": "John", "family": "Smith", "suffix": "PU-PH"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#752)",
+         notes="the French hospital-university rank; 1.4.0 through "
+               "2.6.0 read given 'PU-PH', family 'John Smith'"),
+    Case("slash_joined_capitals_before_a_third_part",
+         "John Smith, PU/PH, Jr.",
+         {"given": "John", "family": "Smith", "suffix": "PU/PH, Jr."},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#752)",
+         notes="1.4.0 through 2.6.0 read given 'PU/PH', suffix 'Jr.'"),
+    Case("joined_capitals_in_a_one_case_name_stay_the_given_name",
+         "JOHN SMITH, PU-PH",
+         {"given": "PU-PH", "family": "JOHN SMITH"},
+         notes="the boundary: no case contrast, so the capitals say "
+               "nothing (rules/C6)"),
+    Case("joined_capitals_behind_one_name_word_stay_the_given_name",
+         "Smith, PU-PH",
+         {"given": "PU-PH", "family": "Smith"},
+         notes="the boundary: one name word before the comma leaves "
+               "the part the given name (rules/C4)"),
+    Case("joined_single_letters_are_no_caps_shape",
+         "John Smith, A-B",
+         {"given": "A-B", "family": "John Smith"},
+         notes="the boundary: a chunk of two or more letters is needed, "
+               "single letters joined being how initials are written"),
     Case("paired_initials_in_a_caseless_script_keep_the_position_reading",
          "สมชาย ใจดี พ.บ.",
          {"given": "สมชาย", "family": "ใจดี", "suffix": "พ.บ."},
@@ -4513,10 +4608,14 @@ CASES: tuple[Case, ...] = (
          classification="fix(#701)"),
     Case("a_title_before_a_family_comma_peels_ahead_of_a_shape_numeral",
          "Dr. Smith VI, John",
-         {"title": "Dr.", "given": "John", "family": "Smith VI"},
-         classification="fix(#701)",
-         notes="VI is read by shape alone, and the part before a "
-               "family comma keeps it as it does without the title"),
+         {"title": "Dr.", "given": "John", "family": "Smith",
+          "suffix": "VI"},
+         ambiguities=("suffix-or-name",), classification="fix(#774)",
+         notes="VI is read by shape alone, and since #752 the part "
+               "before a family comma reads a numeral ending it as the "
+               "comma-less name does (C1), as it reads 'III'; reported, "
+               "being in no wordlist. #701 to 2.6.0 kept family "
+               "'Smith VI'"),
     Case("a_title_before_a_family_comma_stops_at_a_period_marked_dual",
          "Dr. Freiherr. von Berg, Ed",
          {"title": "Dr.", "given": "Ed", "family": "Freiherr. von Berg"},
@@ -6316,7 +6415,7 @@ CASES: tuple[Case, ...] = (
          ambiguities=("suffix-or-name",),
          notes="#424's own fork, pinned beside the acronym one "
                "because the two now share a single peel: the numeral "
-               "half answers off Peel.numeral exactly as it did, and "
+               "half answers off Peel.numerals exactly as it did, and "
                "this row is what says the shared call did not move "
                "it. Unchanged since #424",
          shape=1),
@@ -8552,6 +8651,96 @@ CASES: tuple[Case, ...] = (
                "about case: written wholly in lower case the letter "
                "could be an initial, and the fork reports (Derek, "
                "#718)"),
+    Case("a_shape_numeral_before_a_credential_joins_the_run",
+         "John Smith VI MD",
+         {"given": "John", "family": "Smith", "suffix": "VI MD"},
+         ambiguities=("suffix-or-name",), classification="fix(#784)",
+         notes="S10: a numeral of two or more letters is read anywhere "
+               "in the trailing run, so 'VI' joins it in front of a "
+               "credential as the listed 'III' does, and reports, being "
+               "read by its shape alone. 1.4.0 through 2.6.0 read family "
+               "'VI', suffix 'MD'"),
+    Case("a_shape_numeral_starts_the_credential_run",
+         "John Smith VI Jones",
+         {"given": "John", "family": "Smith", "suffix": "VI Jones"},
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         classification="fix(#784)",
+         notes="S8: a numeral of two or more letters that reads as the "
+               "generation starts the run as 'III' does; both the "
+               "numeral and the absorbed name word report"),
+    Case("a_numeral_behind_an_initial_stays_a_name_before_a_credential",
+         "John J. VI MD",
+         {"given": "John", "middle": "J.", "family": "VI", "suffix": "MD"},
+         notes="S10's Except: an initial in front makes an unlisted "
+               "numeral a name word, before a credential as at the end; "
+               "no fork is weighed, so nothing reports"),
+    Case("a_shape_numeral_before_dotted_initials_stays_the_suffix",
+         "John Smith V, M.J.",
+         {"given": "M.J.", "family": "John Smith", "suffix": "V"},
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         classification="fix(#774)",
+         notes="C1: a numeral ending the family part is read as the "
+               "comma-less name reads it, the two name words in front "
+               "sparing the one-letter one, so 'V' stays the suffix as "
+               "'Jr.' and 'III' do. 1.4.0 through 2.6.0 read family "
+               "'John Smith V'"),
+    Case("a_one_letter_numeral_behind_a_connective_surname_stays_family",
+         "Vega y Lopez V, Mary",
+         {"given": "Mary", "family": "Vega y Lopez V"},
+         notes="C1's count of the family part goes by pieces, and the "
+               "part joins 'Vega y Lopez' into one, so the 'V' has no "
+               "word to spare and stays the family name, silent. The "
+               "comma-less twin leaves the connective unjoined and reads "
+               "suffix 'V' (decisions/C1's 2026-10-25 #774 entry, "
+               "ACCEPTED); counting the join's words was declined for "
+               "the row below"),
+    Case("a_one_letter_numeral_behind_a_joined_surname_matches_its_twin",
+         "Smith and Jones V, Mary",
+         {"given": "Mary", "family": "Smith and Jones V"},
+         notes="both spellings join 'Smith and Jones', so the 'V' has "
+               "no word to spare with the comma or without it; counting "
+               "a join's words (the first fix for the row above) read "
+               "suffix 'V' here and broke the match"),
+    Case("a_lone_letter_ahead_of_a_further_comma_is_the_initial",
+         "Smith, John PhD I, Jr.",
+         {"given": "John", "middle": "I", "family": "Smith",
+          "suffix": "PhD, Jr."},
+         notes="C9 (#819): the further comma has named the suffix, so "
+               "the credential run stops short of the letter, which is "
+               "the middle initial, as 1.4.0 through 2.3.0 read it; "
+               "2.4.0 through 2.6.0 read suffix 'PhD I, Jr.'"),
+    Case("a_title_case_numeral_leans_to_the_name",
+         "Nguyen Van Vi",
+         {"given": "Nguyen", "family": "Van Vi"},
+         ambiguities=("suffix-or-name",),
+         notes="S10: a Title-case numeral in a name of mixed case leans "
+               "to the name, as a Title-case member of the ambiguous "
+               "class does, and reports. 1.4.0 read the same fields; "
+               "2.2.0 through 2.6.0 read suffix 'Vi'"),
+    Case("a_numeral_written_with_its_period_is_the_generation",
+         "Georg VI.",
+         {"given": "Georg", "suffix": "VI."},
+         ambiguities=("suffix-or-name", "given-or-family"),
+         classification="fix(#752)",
+         notes="S10: a numeral of two or more letters keeps its reading "
+               "written with a period, the German ordinal, as 'III.' "
+               "does. 1.4.0 through 2.6.0 read family 'VI.'"),
+    Case("a_shape_numeral_ending_the_given_part_is_the_generation",
+         "Smith, John VI",
+         {"given": "John", "family": "Smith", "suffix": "VI"},
+         ambiguities=("suffix-or-name",), classification="fix(#784)",
+         notes="S10's Precedence: in the given part after a family comma "
+               "a numeral of two or more letters reads as the "
+               "generation, as 'III' does, and reports by its shape. "
+               "1.4.0 through 2.6.0 read middle 'VI'"),
+    Case("an_unlisted_letter_ending_the_given_part_is_the_initial",
+         "SMITH, JOHN X",
+         {"given": "JOHN", "middle": "X", "family": "SMITH"},
+         notes="S10's Precedence and C9: in the given part after a "
+               "family comma a one-letter numeral is the generation only "
+               "where the vocabulary lists it, so 'X' stays the middle "
+               "initial it nearly always is in donor lists (the "
+               "predicate's FEC constraint), where 'V' reads the suffix"),
     Case("initial_not_suffix", "John V. Smith",
          {"given": "John", "middle": "V.", "family": "Smith"},
          notes="shape 1's Middle slot filled by an initial-shaped "

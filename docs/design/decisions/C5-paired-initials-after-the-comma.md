@@ -6,7 +6,7 @@
 
 Elsewhere: paired initials are the exception to the ambiguous class's count, read as the given name after the comma (`García Márquez, G.J.` → given 'G.J.', family 'García Márquez'), and what in front of them makes them the credential — decisions/S9's 2026-09-30 (Derek), #563 entry; behind a one-word particle surname (`De La Cruz, M.J. K.L.` → given 'M.J.', middle 'K.L.', the second pair ending the given part as decisions/S3's 2026-10-24 #864 entry reads it) — decisions/C3's 2026-10-01 (Derek), #575 entry; a generation ending the name before the comma keeps dotted paired initials the given name and makes two undotted capitals the credential (`John Smith Jr., M.J.` → given 'M.J.', suffix 'Jr.'; `John Smith Jr., MJ` → suffix 'Jr., MJ') — decisions/C1's 2026-10-19 (Derek), #761 entry.
 
-Open: #774 — a roman numeral S10 reads is lost into the family before dotted paired initials (`John Smith V, M.J.` → family 'John Smith V'), decisions/C1's Open line.
+Open: none in this file.
 
 ## Log
 

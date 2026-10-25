@@ -281,7 +281,9 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
                 # C: a listed member ('John Smith, MA'), and a word that
                 # is not alphabetic capitals ('John Smith, Ph. D.')
                 and n not in lex.suffix_acronyms_ambiguous
-                and (token.text.isalpha() and token.text.isupper()
+                and (token.text.isupper()
+                     and (token.text.isalpha() or "-" in token.text
+                          or "/" in token.text)
                      or not unicodedata.is_normalized("NFC", token.text))
                 and caps_shape_candidate(token.text, lex, state.policy,
                                          one_case)):
