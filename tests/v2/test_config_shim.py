@@ -570,6 +570,35 @@ def test_snapshot_removing_a_title_turns_its_after_given_reading_off() -> None:
         "", "Jane", "Mrs", "Doe")
 
 
+def test_snapshot_removing_a_suffix_word_turns_its_gate_off() -> None:
+    # The deciding case for suffix_words_ambiguous (#752, rules/S11),
+    # which has no v1 manager of its own: the snapshot intersects it with
+    # the v1 word set, and Lexicon holds the subset, so deleting the word
+    # turns the reading off rather than leaving an orphan that gates a
+    # word the caller removed; agnomens rides inside it
+    c = Constants()
+    name = HumanName("Pedro Alves Neto", constants=c)
+    assert (name.last, name.suffix) == ("Alves", "Neto")     # baseline
+    c.suffix_not_acronyms.remove("neto")
+    lexicon, _, _ = c._snapshot()
+    assert "neto" not in lexicon.suffix_words_ambiguous
+    assert "neto" not in lexicon.agnomens
+    name = HumanName("Pedro Alves Neto", constants=c)
+    assert (name.middle, name.last, name.suffix) == ("Alves", "Neto", "")
+
+
+def test_snapshot_lets_a_gated_word_v1_reads_as_an_acronym_out_of_the_gate() -> None:
+    # v1 read a word added to suffix_acronyms as a suffix through the
+    # acronym branch; the snapshot takes it out of suffix_words_ambiguous
+    # rather than raising at Lexicon's word-gate check, which a config
+    # v1 accepted must never do
+    c = Constants()
+    c.suffix_acronyms.add("neto")
+    lexicon, _, _ = c._snapshot()
+    assert "neto" not in lexicon.suffix_words_ambiguous
+    assert HumanName("Pedro Alves Neto", constants=c).suffix == "Neto"
+
+
 def test_snapshot_field_translation() -> None:
     c = Constants()
     lexicon, policy, defaults = c._snapshot()

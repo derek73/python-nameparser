@@ -10,6 +10,8 @@
 - `Freiherr von Berg MA` reads family 'von Berg', suffix 'MA', the lean ending P2's chain with no words to spare — 2026-09-15 (Derek).
 - The whole-PR review's five readings stand: an acronym the particle chain absorbs reports `suffix-or-name` (`John van der Berg Ma`); the CJK stage asks the post-comma run with the one-case fact; a by-shape credential in a tail segment raises no `comma-structure`; a word a caller lists as a surname is never caps-shaped; and a dotted listed member takes the lean — 2026-09-18, WHOLE-PR REVIEW ROUND.
 
+Elsewhere: the case a generation word that is also a name reads (rules/S6's bullet on it) is decisions/S11's 2026-10-25 #752 entry.
+
 Open: none in this file.
 
 ## Log

@@ -2,8 +2,9 @@
 # nameparser/vocab/*.toml, classified by kind (generation, credential,
 # honorific, ...) and by language. A suffix reading is an acronym or a
 # word (`acronym`, true by default for a credential), so the two sets
-# below are disjoint by construction; a name reading beside an acronym
-# reading and `attached` on a word reading make the two marker subsets.
+# below are disjoint by construction; a name reading beside a suffix
+# reading, `attached` on a word reading and the agnomen kind make the
+# marker subsets.
 # tools/vocab/build.py compiles them into _compiled.py and runs the
 # checks that were import-time asserts here (decisions/vocabulary-model).
 from nameparser.config import _compiled
@@ -75,6 +76,24 @@ ships glued, above. Bare 선생 and 교수: they read as common nouns as readily
 as address terms, and only their -님 forms ship.
 
 """
+SUFFIX_WORDS_AMBIGUOUS = _compiled.SUFFIX_WORDS_AMBIGUOUS
+"""
+
+The subset of :data:`SUFFIX_WORDS` also borne as a name: a generation
+word with a ``given`` or ``family`` reading, such as French ``fils`` and
+the Brazilian agnomens (``filho``, ``neto``). Each is read as a suffix
+only where the name keeps a word for its family (rules/S11): ``Alexandre
+Dumas fils`` ends in a suffix and ``Marie Fils`` keeps her family name.
+
+"""
+AGNOMENS = _compiled.AGNOMENS
+"""
+
+The subset of :data:`SUFFIX_WORDS_AMBIGUOUS` whose writing says nothing
+about the reading: an agnomen is written in the case of the name around
+it, so only the words to spare decide (rules/S11).
+
+"""
 SUFFIX_ACRONYMS_AMBIGUOUS = _compiled.SUFFIX_ACRONYMS_AMBIGUOUS
 """
 
@@ -138,6 +157,8 @@ else:
 __all__ = [
     "SUFFIX_WORDS",
     "GLUED_HONORIFICS",
+    "SUFFIX_WORDS_AMBIGUOUS",
+    "AGNOMENS",
     "SUFFIX_ACRONYMS_AMBIGUOUS",
     "SUFFIX_ACRONYMS",
     "SUFFIX_NOT_ACRONYMS",

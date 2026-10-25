@@ -29,9 +29,7 @@ generation = { issue = 661 }
 
 [[word]]
 text = "st"
-[word.excluded.generation]
-reason = "pack-shaped: real and standard, but St. is Saint in other languages written in Latin script"
-issue = [661, 679, 684]
+generation = { default = false, expands = "starší, the Elder: Jiří Dienstbier st.", issue = [661, 679, 684, 752], note = "real and standard, but St. is Saint in other languages written in Latin script, and nothing in its writing tells the two apart, so no default reads it; a Czech pack turns it on" }
 
 [[word]]
 text = "starší"

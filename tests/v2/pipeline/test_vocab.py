@@ -14,6 +14,7 @@ from nameparser._pipeline._vocab import (
     SPLIT_PAIR_OPENS, is_cased_paired_initials, is_paired_initials,
     is_single_letter_numeral, split_pair,
     is_suffix_lenient, is_suffix_strict, is_title_shaped, is_wholly_suffix,
+    lexicon_cue,
     maiden_marker_run, name_word_count, period_joined_vocab, written_as_a_name,
     resolve_script_set, single_script, suffix_as_written,
 )
@@ -542,12 +543,12 @@ def test_the_caps_exclusion_covers_every_vocabulary_field() -> None:
     assert caps_shape_candidate("ZZQX", base, on, False)
     for field in _VOCAB_FIELDS:
         extra: dict[str, set[str]] = {field: {"zzqx"}}
-        if field == "honorific_tails":
+        if field in ("honorific_tails", "suffix_words_ambiguous"):
             # honorific_tails ⊆ suffix_words is a Lexicon invariant,
             # so this entry cannot be added alone -- which is also why
             # the field was already excluded transitively, and why it
             # joins the roster for completeness rather than for a
-            # behavior change
+            # behavior change (suffix_words_ambiguous the same)
             extra["suffix_words"] = {"zzqx"}
         elif field == "given_name_titles":
             extra["titles"] = {"zzqx"}       # ⊆ titles in practice
@@ -1026,3 +1027,27 @@ def test_comma_follows_marker_reads_past_what_tokenize_drops(
         word: str, expected: bool) -> None:
     assert comma_follows_marker(word) is expected
 
+
+
+def test_the_lean_reads_the_cue_of_what_the_member_is() -> None:
+    # an acronym's capitals are the credential, a generation
+    # word's lower case is the suffix and its capitals say nothing, and
+    # an agnomen's writing never leans; Title case leans to the name
+    # for both that lean at all
+    lex = Lexicon.default()
+    assert [lexicon_cue(w, lex) for w in ("ma", "fils", "neto")] == [
+        "acronym", "word", "none"]
+    assert [ambiguous_lean(t, False, "word") for t in ("fils", "FILS", "Fils")] == [
+        "credential", None, "name"]
+    assert [ambiguous_lean(t, False, "none") for t in ("neto", "NETO", "Neto")] == [
+        None, None, None]
+
+
+def test_a_comma_part_reads_a_gated_word_by_its_cue() -> None:
+    # is_wholly_suffix has no tags to read, so it asks lexicon_cue: a
+    # lower-case fils in a mixed-case name counts as a suffix, a
+    # Title-case one and an agnomen in any case do not
+    lex, pol = Lexicon.default(), Policy()
+    assert is_wholly_suffix(["fils"], lex, pol, one_case=False)
+    assert not is_wholly_suffix(["Fils"], lex, pol, one_case=False)
+    assert not is_wholly_suffix(["Neto"], lex, pol, one_case=False)

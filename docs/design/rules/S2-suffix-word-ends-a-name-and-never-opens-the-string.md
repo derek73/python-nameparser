@@ -9,6 +9,7 @@
 - **A word joining that class by its shape** is read by S9.
 - **A credential with more name text behind it** is read by S8.
 - **A roman numeral** is read by S10.
+- **A generation word that is also a name** (`fils`, the agnomen `Neto`) is read by S11.
 
 **Because:** generational suffixes and credentials are recognized by vocabulary, and are written after the name they belong to.
 
@@ -17,13 +18,15 @@
 "Antonio Pavlović mlađi"    →  family="Pavlović"
 "Antonio Pavlović mlađi"    →  suffix="mlađi"
 "José Silva Júnior"         →  suffix="Júnior"
-"Pedro Alves Filho"         →  family="Filho"  · boundary
+"Pedro Alves Filho"         →  suffix="Filho"
+"Pedro Filho"               →  family="Filho"  · boundary
 "Агриппина Младшая"         →  suffix="Младшая"
 "جورج بوش الابن"            →  suffix="الابن"
 "ロバート・ダウニー・ジュニア"  →  suffix="ジュニア"
 "佐藤恵子 国会議員"         →  suffix="国会議員"
 "陳子媚 二世"               →  suffix="二世"
 "Питер Брейгель мл."        →  suffix="мл."
+"Alexandre Dumas fils"      →  suffix="fils"
 "Marie Fils"                →  family="Fils"  · boundary
 "Jiří Dienstbier ml."       →  family="ml."  · boundary
 "Pavlović, Antonio mlađi"   →  suffix="mlađi"
@@ -64,5 +67,5 @@
   ```
 
 ---
-**Signal:** position: a suffix word ending the name, never opening the string; hub of S3, S4, S5, S6, S7, S8, S9, S10
+**Signal:** position: a suffix word ending the name, never opening the string; hub of S3, S4, S5, S6, S7, S8, S9, S10, S11
 **history:** decisions/S2 · **implemented:** nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py

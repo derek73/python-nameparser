@@ -32,6 +32,38 @@ issue = 843
 note = "the standard Portuguese spelling of Junior: tse-donors (2026-10-22) has 991 distinct filed names ending in it, 983 records ending in it where the tax registry's name ends JUNIOR. Its collisions are junior's: a given name (Wikidata 37+ as Júnior, 2026-10-23) where the suffix claim does not act, and 49+ Wikidata family bearers"
 
 [[word]]
+text = "filha"
+agnomen = { gender = "f", issue = [843, 752], expands = "the daughter", note = "the feminine of filho; tse-donors (2026-10-22) has 66 distinct filed names ending in it" }
+family = { note = "no source counts it as a name; declared as filho's is, so that two words ending in it keep it as the family name" }
+
+[[word]]
+text = "filho"
+agnomen = { gender = "m", issue = [843, 752], expands = "the son", note = "an agnomen marks its bearer against a relative of the same name, as Júnior does, and is written in the case of the name around it, so only the count gates it (rules/S11); tse-donors (2026-10-22) has 10,973 distinct filed names ending in it" }
+family = { us_census_2010 = 513, wikidata = 136, as_of = 2026-10-25 }
+
+[[word]]
+text = "neta"
+agnomen = { gender = "f", issue = [843, 752], expands = "the granddaughter", note = "the feminine of neto; tse-donors (2026-10-22) has 152 distinct filed names ending in it" }
+given = { us_ssa = 3226, wikidata = 31, as_of = 2026-10-25, note = "female births only; mostly the Hebrew given name Neta" }
+family = { us_census_2010 = 115, wikidata = 2, as_of = 2026-10-25 }
+
+[[word]]
+text = "neto"
+agnomen = { gender = "m", issue = [843, 752], expands = "the grandson", note = "an agnomen marks its bearer against a relative of the same name, as Júnior does, and is written in the case of the name around it, so only the count gates it (rules/S11); tse-donors (2026-10-22) has 8,434 distinct filed names ending in it" }
+given = { wikidata = 12, as_of = 2026-10-25 }
+family = { us_census_2010 = 1645, wikidata = 276, as_of = 2026-10-25 }
+
+[[word]]
+text = "sobrinha"
+agnomen = { gender = "f", issue = [843, 752], expands = "the niece", note = "the feminine of sobrinho; tse-donors (2026-10-22) has 5 distinct filed names ending in it" }
+family = { note = "no source counts it as a name; declared as sobrinho's is, so that two words ending in it keep it as the family name" }
+
+[[word]]
+text = "sobrinho"
+agnomen = { gender = "m", issue = [843, 752], expands = "the nephew", note = "an agnomen marks its bearer against a relative of the same name, as Júnior does, and is written in the case of the name around it, so only the count gates it (rules/S11); tse-donors (2026-10-22) has 955 distinct filed names ending in it" }
+family = { us_census_2010 = 166, wikidata = 18, as_of = 2026-10-25 }
+
+[[word]]
 text = "da"
 preposition = { expands = "of the, fem. sg." }
 

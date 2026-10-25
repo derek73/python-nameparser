@@ -4,6 +4,11 @@
 
 **Then:** after a family comma, a member of the ambiguous class (S4) ending the GIVEN part is read as the comma-less spelling reads a word ending the name, and the count is not what decides it there.
 
+- **A generation word that is also a name (S11) is a member here too**: an agnomen's writing never keeps it a name, and a generation word's Title case does, as S6 reads it.
+  ```
+  "Alves, Pedro Neto"         →  suffix="Neto"
+  "Alves, Pedro Fils"         →  middle="Fils"  · boundary
+  ```
 - **In the given part, the writing decides**: the comma has already named the family and the first name word after it is the given name, so the words to spare are there by construction and the count says nothing; a word that ENDS that part reads as the credential unless its WRITING says otherwise, and a word that does not end it is never asked.
   ```
   "Doe, John MA"              →  suffix="MA"

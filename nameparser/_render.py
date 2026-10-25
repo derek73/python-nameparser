@@ -458,6 +458,15 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
     # whose tags it keeps on purpose, and keying this on `span is None`
     # overrode them -- `revise(middle='e-f')` repaired to 'e-F' where
     # the same words parsed gave 'E-F' (#463 review).
+    # rules/S6: "its lower case in a name of mixed case is the generation
+    # wherever the name keeps a family word" -- a generation word that is also a
+    # name, in the suffix role, repairs to the one writing that keeps
+    # that reading; Title case would lean it back to the name. An
+    # agnomen takes no case cue and title-cases as any word does.
+    if (role is Role.SUFFIX and normalized in lex.suffix_words_ambiguous
+            and normalized not in lex.agnomens
+            and normalized not in lex.capitalization_exceptions_map):
+        return word.lower()
     generation = role is Role.SUFFIX and "vocab:suffix" in tags
     if not generation and (
             _lowers_as_particle(normalized, word, role, tags, lex)
