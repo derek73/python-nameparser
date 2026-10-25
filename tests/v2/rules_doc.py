@@ -121,6 +121,16 @@ POLICIES: dict[str, Policy] = {
     "middle_as_family": Policy(middle_as_family=True),
     "family-first+middle_as_family": Policy(
         name_order=FAMILY_FIRST, middle_as_family=True),
+    #: rules/O6's switch (#754), named after its Policy FIELD for the
+    #: reason the by-shape switches below give, and with each order and
+    #: with middle_as_family, which the rule states its reading under.
+    "two_family_names": Policy(two_family_names=True),
+    "family-first+two_family_names": Policy(
+        name_order=FAMILY_FIRST, two_family_names=True),
+    "family-first-given-last+two_family_names": Policy(
+        name_order=FAMILY_FIRST_GIVEN_LAST, two_family_names=True),
+    "two_family_names+middle_as_family": Policy(
+        two_family_names=True, middle_as_family=True),
     "maiden-parens": Policy(maiden_delimiters=frozenset({("(", ")")})),
     "keep-emoji": Policy(strip_emoji=False),
     "strict-comma-suffixes": Policy(lenient_comma_suffixes=False),

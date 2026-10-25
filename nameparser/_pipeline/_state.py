@@ -134,7 +134,8 @@ class PendingAmbiguity:
     ``field_tail`` is for a report that names the field its word was
     read into. post_rules may still move the word (H1's move behind a
     title, P1's family-first fold, P6's attachment, and under opt-in
-    policies the patronymic rotations and `middle_as_family`'s fold),
+    policies the patronymic rotations, O6's two family names and
+    `middle_as_family`'s fold),
     so the emitter
     writes ``detail`` up to the field and the rest of its sentence
     here -- ``""`` where the field ends the sentence, which is why

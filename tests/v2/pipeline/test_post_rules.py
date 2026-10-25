@@ -1247,3 +1247,22 @@ def test_a_word_that_is_both_particle_and_connective_is_marked_too(
     # rather than "nothing else here"
     assert UNJOINED_CONJUNCTION_TAG not in tags["de"]
     assert UNJOINED_TAG not in tags["de"]
+
+
+def test_two_family_names_declines_a_family_first_name_whose_family_is_not_first() -> None:
+    # rules/O6's family-first arm takes the unit after a family standing
+    # FIRST; no shipped rule leaves a family-first name otherwise
+    # (searched over a 19-word grid to four words under both
+    # family-first orders, #754), so the guard is pinned on a state built
+    # by hand: the family moved to the end, where taking "the unit
+    # after it" would take the first word of the name.
+    from nameparser._pipeline._post_rules import _take_second_family_name
+    from nameparser._pipeline._state import copy_with
+    policy = Policy(name_order=FAMILY_FIRST, two_family_names=True)
+    state = run(ParseState(original="García Ana María", lexicon=_LEX,
+                           policy=Policy(name_order=FAMILY_FIRST)))
+    roles = (Role.GIVEN, Role.MIDDLE, Role.FAMILY)
+    tokens = [copy_with(t, role=r) for t, r in zip(state.tokens, roles)]
+    moved = copy_with(state, policy=policy, tokens=tuple(tokens))
+    _take_second_family_name(moved, tokens)
+    assert [t.role for t in tokens] == list(roles)

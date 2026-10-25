@@ -95,7 +95,7 @@ The marker's unit is the whole rule, so a clause that reaches past the tolerated
 
 Terms the rules use without defining them each time, each with the rule that defines or counts it.
 
-- **name word** — a word of the person's name itself: titles, suffixes, nicknames and particles acting as particles are not name words (R3). How name words are COUNTED is each rule's own, and there is no single count: C3, counting the words before a comma, takes a particle run and the one name word it attaches to as one word (P1's reach, not P2's whole chain) and counts a connective join and a bound given-name pair as their words; S8 counts P2's whole chain as one name word; P1's family-first fold takes one unit, a particle chain (P2), a conjunction join (P3) or a bound given-name pair (P5) whole.
+- **name word** — a word of the person's name itself: titles, suffixes, nicknames and particles acting as particles are not name words (R3). How name words are COUNTED is each rule's own, and there is no single count: C3, counting the words before a comma, takes a particle run and the one name word it attaches to as one word (P1's reach, not P2's whole chain) and counts a connective join and a bound given-name pair as their words; S8 counts P2's whole chain as one name word; P1's family-first fold takes one unit, a particle chain (P2), a conjunction join (P3) or a bound given-name pair (P5) whole; O6 counts a family's words by P1's reach, a connective join and a hyphenated word counting as their words.
 - **words to spare** — enough name words that reading one as a suffix still leaves the name its family word. As the second of two name words a bare ambiguous acronym has none to spare and stays the family name (S4); S10's one-letter numeral needs the same.
 - **credential run** — a run of words read as post-nominals: a comma part made wholly of suffix words (C1, C8), or the run an unambiguous credential starts after the name core, taking every later word of its part (S8).
 - **listing form** — the family name, a comma, then the given name, as in "Smith, John" (C1).
@@ -186,6 +186,7 @@ Terms the rules use without defining them each time, each with the rule that def
 - [O3 — compound family names written unmarked](O3-compound-family-names-written-unmarked.md)
 - [O4 — positional assignment and declared order](O4-positional-assignment-and-declared-order.md)
 - [O5 — the lone name word's convention, and reporting it](O5-lone-name-words-convention-and-reporting-it.md)
+- [O6 — two family names](O6-two-family-names.md)
 
 ## [Scripts & writing systems (W)](W-scripts-and-writing-systems.md)
 
