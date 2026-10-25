@@ -7768,15 +7768,21 @@ CASES: tuple[Case, ...] = (
                "Maria'. RECORDED NEGATIVE CONTROL: with the joining tags "
                "kept this reads given 'Juan y; Maria'"),
     Case("semicolon_glued_to_a_trailing_particle", "Berg, Jan van; MD",
-         {"given": "Jan", "family": "van; Berg", "suffix": "MD"},
-         classification="fix(semicolon-suffix-delimiter)",
-         ambiguities=("particle-or-given",),
-         notes="a glued particle keeps its tags, so P6 attaches it to "
-               "the family as in 'Berg, Jan van MD', on the side away "
-               "from the semicolon (rules/C10). 1.4.0 through 2.5.0 read "
-               "middle 'van;'. RECORDED NEGATIVE CONTROL: with the "
-               "particle tags dropped this reads middle 'van;' (the "
-               "design-docs review of this change)"),
+         {"given": "Jan", "middle": "van;", "family": "Berg",
+          "suffix": "MD"},
+         notes="rules/C10's Accepted bullet: a glued particle joins "
+               "nothing, so P6 does not attach it, where 'Berg, Jan van "
+               "MD' reads family 'van Berg' (decisions/C10). RECORDED "
+               "NEGATIVE CONTROL: with the particle tags kept this "
+               "reads family 'van; Berg'"),
+    Case("semicolon_glued_to_a_particle_joins_nothing_across_it",
+         "Berg, de; Smith",
+         {"given": "de;", "middle": "Smith", "family": "Berg"},
+         notes="no join reaches across the delimiter (rules/C10's Then), so the "
+               "particle neither chains forward to 'Smith' nor folds it "
+               "into the family. RECORDED NEGATIVE CONTROL: with the "
+               "particle tags kept this reads family 'Berg de; Smith' "
+               "(#871's second review)"),
     Case("glued_semicolon_beside_a_declared_core_inside_the_word",
          "Jane Smith, MD/PhD; MBA",
          {"given": "Jane", "family": "Smith", "suffix": "MD/PhD; MBA"},

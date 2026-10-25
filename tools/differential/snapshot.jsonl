@@ -323,6 +323,7 @@
 {"name": "Berg, Cornelia Margarita Sofia Aletta van den", "given": "Cornelia", "middle": "Margarita Sofia Aletta", "family": "van den Berg", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "C. M. S. A. B."}
 {"name": "Berg, Jan mc", "given": "Jan", "family": "mc Berg", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. B."}
 {"name": "Berg, Jan van der", "given": "Jan", "family": "van der Berg", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "J. B."}
+{"name": "Berg, Jan van; MD", "given": "Jan", "middle": "van;", "family": "Berg", "suffix": "MD", "initials": "J. v. B."}
 {"name": "Berg, Jan vd", "given": "Jan", "family": "vd Berg", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. B."}
 {"name": "Berg, Jane van der nee Smith DO", "given": "Jane", "middle": "van der nee Smith", "family": "Berg", "suffix": "DO", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. n. S. B.", "capitalized_force": "Jane van der Nee Smith Berg DO"}
 {"name": "Berg, abd née Jones", "given": "abd", "middle": "née Jones", "family": "Berg", "initials": "a. n. J. B.", "capitalized_force": "Abd Née Jones Berg"}
@@ -333,6 +334,7 @@
 {"name": "Berg, abdul nee Jones MA", "given": "abdul", "middle": "nee Jones", "family": "Berg", "suffix": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "a. n. J. B.", "capitalized_force": "Abdul Nee Jones Berg MA"}
 {"name": "Berg, abdul van", "given": "abdul van", "family": "Berg", "initials": "a. v. B.", "capitalized_force": "Abdul Van Berg"}
 {"name": "Berg, abdul vd", "given": "abdul", "family": "vd Berg", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "a. B.", "capitalized_force": "Abdul vd Berg"}
+{"name": "Berg, de; Smith", "given": "de;", "middle": "Smith", "family": "Berg", "initials": "d. S. B.", "capitalized_force": "De; Smith Berg"}
 {"name": "Bernard große Broermann", "given": "Bernard", "middle": "große", "family": "Broermann", "initials": "B. g. B.", "capitalized_force": "Bernard Große Broermann"}
 {"name": "Bernardino de Sahagún", "given": "Bernardino", "family": "de Sahagún", "initials": "B. S."}
 {"name": "Bernardo Hernández Villaseñor", "given": "Bernardo", "middle": "Hernández", "family": "Villaseñor", "initials": "B. H. V."}

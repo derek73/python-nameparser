@@ -3259,15 +3259,15 @@ def test_a_semicolon_standing_alone_in_a_tail_reads_as_its_comma_twin() -> None:
 # of each kind a glued word can be: a listed credential, a generation, a
 # word of the ambiguous class, an unlisted all-caps credential, a title,
 # a numeral written like an initial, a semicolon glued to the front. Left
-# out by C10's Accepted bullet: a split 'Ph. D.', a credential only as a
-# pair the glued half cannot join.
+# out by C10's Accepted bullets: a split 'Ph. D.', a credential only as a
+# pair the glued half cannot join, and a glued particle, which joins
+# nothing where its space twin joins a neighbour.
 _GLUED_HEADS = ("John Smith", "Smith", "", "(Bob)", "John Smith Jr.",
                 "Juan de la Vega", "Ortega y Gasset", "Freiherr von Berg",
                 "St. John", "Dr. John Smith", "Rev. Sr. Smith")
 _GLUED_TAILS = ("MD; PhD", "MD;PhD", "MD;", "PhD; MD; MPH", "Jr.; PhD",
                 "III; MD", "M.D.; Ph.D.", "md; phd", "V; MD", "Esq.;",
-                "MA; PhD", "MBBS; FCPS", "Dr; MD", "MD ;PhD",
-                "van; MD")
+                "MA; PhD", "MBBS; FCPS", "Dr; MD", "MD ;PhD")
 
 
 def _glued_twin_findings() -> tuple[list[str], int]:
@@ -3300,9 +3300,9 @@ def test_a_glued_semicolon_reads_as_its_space_twin() -> None:
     place.
 
     RECORDED NEGATIVE CONTROL: at 638685b4, before a glued semicolon
-    parted anything, 726 of these 990 texts disagreed."""
+    parted anything, 726 of these 924 texts disagreed."""
     failures, total = _glued_twin_findings()
-    assert total == 990
+    assert total == 924
     assert not failures, "\n".join(failures)
 
 

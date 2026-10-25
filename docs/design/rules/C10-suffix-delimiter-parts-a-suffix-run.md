@@ -38,6 +38,11 @@
 
 **Accepted:**
 
+- A particle with a delimiter glued after it joins nothing, backward included: the particle reads as no particle, so a trailing one is no tussenvoegsel of the family the comma names, as every release from 1.4.0 read it, where its space twin attaches it (P6).
+  ```
+  "Berg, Jan van; MD"         →  middle="van;"
+  "Berg, de; Smith"           →  given="de;"
+  ```
 - A maiden marker in a part a declared delimiter separates takes no clause. The delimiter costs nothing here: a marker in a part after a suffix comma is an ordinary word with or without a core (M2), so 'Smith, John, MD née Jones Smith' takes none either. Releases 2.0 through 2.3 read past the delimiter and took the clause.
   ```
   "Smith, John, MD - née Jones Smith" extra_suffix_delimiters-dash →  suffix="MD, née Jones Smith"

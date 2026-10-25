@@ -294,13 +294,14 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
     return frozenset(tags)
 
 
-#: The tags of a word that joins the word AFTER it, which a delimiter
-#: glued to the word stands between (rules/C10). A particle keeps its
-#: tags: it also attaches BACKWARD to the family (rules/P6), on the side
-#: away from the delimiter ('Berg, Jan van; MD' reads family 'van; Berg'
-#: as 'Berg, Jan van MD' does), and its forward chain moves no field
-#: across one (measured, decisions/C10).
-_JOINING_TAGS = frozenset({"conjunction", "vocab:bound-given"})
+#: The tags of a word that joins the word after it, which a delimiter
+#: glued to the word stands between (rules/C10). A particle's are among
+#: them though it also attaches backward (rules/P6): kept, it chained
+#: forward across the delimiter ('Berg, de; Smith' read family 'Berg de;
+#: Smith'), and blocking the forward joins alone would guard every site
+#: that reads the tag (decisions/C10).
+_JOINING_TAGS = frozenset({"particle", "conjunction",
+                           "vocab:particle-ambiguous", "vocab:bound-given"})
 
 
 def classify(state: ParseState) -> ParseState:

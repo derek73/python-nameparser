@@ -221,10 +221,9 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # orders; 1362 -> 1365 the same day: the review's 'Uddin, Mr Md
     # Karim' row, the same claim behind a title; 1365 -> 1368 on
     # 2026-10-24: the glued-semicolon row 'John Smith, MA; PhD', one
-    # suffix-or-name claim under the three orders; 1368 -> 1371 the same
-    # day: 'Berg, Jan van; MD', one particle-or-given claim under each.
-    assert claims == 1371, (
-        f"the field sweep checks {claims} claims, recorded as 1371 on "
+    # suffix-or-name claim under the three orders.
+    assert claims == 1368, (
+        f"the field sweep checks {claims} claims, recorded as 1368 on "
         f"2026-10-24")
 
 
