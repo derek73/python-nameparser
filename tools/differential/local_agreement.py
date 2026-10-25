@@ -60,6 +60,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shutil
 import subprocess
 import sys
 import types
@@ -248,7 +249,8 @@ def record_path(source: str) -> Path:
 def write_record(path: Path, local: local_corpora.Local, entries: dict[str, dict[str, Any]],
                  tree: str) -> None:
     header = {"raw_sha256": local.meta["sha256"], "scorer": scorer_fingerprint(),
-              "data_date": local.meta["data_date"], "tree": tree}
+              "data_date": local.meta["data_date"], "tree": tree,
+              "entries": len(entries)}
     lines = [corpus_build.jsonl_line(header)]
     lines += [corpus_build.jsonl_line({"key": k, **v}) for k, v in sorted(entries.items())]
     corpus_build.write_atomic(path, ("\n".join(lines) + "\n").encode())
@@ -280,6 +282,11 @@ def read_record(path: Path, local: local_corpora.Local) -> dict[str, dict[str, A
             f"{path} was recorded from another fetch of {local.source} (data as "
             f"of {recorded.get('data_date', 'unknown')}; the corpus now is "
             f"{local.meta['data_date']}). {again}")
+    # A record written before the header counted its entries passes; a
+    # count that disagrees is a write cut short on a line boundary.
+    if recorded.get("entries", len(entries)) != len(entries):
+        raise SystemExit(f"{path} holds {len(entries):,} of the "
+                         f"{recorded['entries']:,} entries its header counts. {again}")
     if recorded.get("scorer") != scorer_fingerprint():
         raise SystemExit(f"{path} was recorded by another version of this scorer, "
                          f"so its moves would be the scorer's. {again}")
@@ -355,13 +362,19 @@ def base_entries(root: Path, local: local_corpora.Local) -> dict[str, dict[str, 
                 pass
             print(f"base: {root}, nameparser/ {digest[:16]}; {how}\n")
             return entries
-    path.parent.mkdir(exist_ok=True)
-    _score_base(root, local.source, path)
-    if snapshot._source_digest(root) != digest:
-        path.unlink(missing_ok=True)
-        raise SystemExit(f"{root / 'nameparser'} changed while it was scored, so "
-                         f"its record may be half old and half new; run again")
-    entries = read_record(path, local)
+    # Scored into a folder of this run's own and renamed into place only
+    # once the digest, taken again, says the base did not change under
+    # the child: a record published under the key it was scored for.
+    at = snapshot.scratch(path.parent)
+    try:
+        _score_base(root, local.source, at / path.name)
+        entries = read_record(at / path.name, local)
+        if snapshot._source_digest(root) != digest:
+            raise SystemExit(f"{root / 'nameparser'} changed while it was scored, "
+                             f"so its record may be half old and half new; run again")
+        os.replace(at / path.name, path)
+    finally:
+        shutil.rmtree(at, ignore_errors=True)
     snapshot._prune(path.parent, "*.jsonl")
     print(f"base: {root}, nameparser/ {digest[:16]}; scored it now\n")
     return entries

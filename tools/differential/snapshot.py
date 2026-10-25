@@ -474,11 +474,11 @@ def _reused(baseline: Path, entries: int) -> str | None:
     damaged one -- unreadable, or holding another number of rows than
     the corpus has entries, as a write cut short would -- is deleted
     with a note, and the names are read instead."""
-    if not baseline.exists():
-        return None
     try:
         with gzip.open(baseline, "rt", encoding="utf-8") as f:
             text = f.read()
+    except FileNotFoundError:  # none kept, or another run pruned it
+        return None
     except (OSError, EOFError, zlib.error, UnicodeDecodeError) as e:
         why = f"unreadable ({e})"
     else:
@@ -486,7 +486,7 @@ def _reused(baseline: Path, entries: int) -> str | None:
             return text
         why = f"{rows} rows for {entries} entries"
     print(f"deleted the kept baseline {baseline.name}: {why}; reading the names\n")
-    baseline.unlink()
+    baseline.unlink(missing_ok=True)  # another run may have found it too
     return None
 
 
@@ -522,8 +522,9 @@ def _mtime(path: Path) -> float | None:
 
 def _prune(folder: Path, pattern: str = "*.jsonl.gz") -> None:
     """Drop all but the BASELINES_KEPT most recently used `pattern`
-    files, and partial writes old enough to be a crashed run's. A file
-    another run removed first is skipped, not reported."""
+    files, and partial writes old enough to be a crashed run's, a base's
+    scratch folder (scratch()) among them. A file another run removed
+    first is skipped, not reported."""
     stale = time.time() - _PARTIAL_STALE_SECONDS
     kept = sorted((m, p) for p in folder.glob(pattern)
                   if (m := _mtime(p)) is not None)
@@ -531,7 +532,19 @@ def _prune(folder: Path, pattern: str = "*.jsonl.gz") -> None:
     old += [p for glob in ("*.partial", "*.part") for p in folder.glob(glob)
             if (m := _mtime(p)) is not None and m < stale]
     for p in old:
-        p.unlink(missing_ok=True)
+        if p.is_dir():
+            shutil.rmtree(p, ignore_errors=True)
+        else:
+            p.unlink(missing_ok=True)
+
+
+def scratch(folder: Path) -> Path:
+    """A folder of this run's own for a child's recording, inside the
+    kept records' `folder`: unique, so two sessions recording the same
+    base at once never share a file, and named as a partial write, so
+    _prune sweeps one a killed run left behind."""
+    folder.mkdir(parents=True, exist_ok=True)
+    return Path(tempfile.mkdtemp(prefix=".base-", suffix=".partial", dir=folder))
 
 
 def _fetch_record(snapshot: Path) -> Path:
@@ -639,12 +652,12 @@ def _base_text(root: Path, snapshot: Path, fetch: dict[str, Any], source: str,
             pass
         how = f"reused the kept baseline {baseline.name}"
     else:
-        scratch = Path(tempfile.mkdtemp(prefix=".base-", dir=snapshot.parent))
+        at = scratch(baseline.parent)
         try:
-            _record_base(root, source, sample, jobs, scratch / "base.jsonl")
-            text = (scratch / "base.jsonl").read_text(encoding="utf-8")
+            _record_base(root, source, sample, jobs, at / "base.jsonl")
+            text = (at / "base.jsonl").read_text(encoding="utf-8")
         finally:
-            shutil.rmtree(scratch, ignore_errors=True)
+            shutil.rmtree(at, ignore_errors=True)
         if _source_digest(root) != digest:
             raise SystemExit(f"{root / 'nameparser'} changed while it was read, "
                              f"so its readings may be half old and half new; "

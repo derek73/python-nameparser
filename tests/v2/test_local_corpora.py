@@ -4141,7 +4141,7 @@ def test_a_base_check_never_touches_the_shared_snapshot(
     assert snapshot.main(["--local", _SOURCE, "--base", str(copy)]) == 0
     assert snapshot.main(["--local", _SOURCE, "--base", str(copy), "--sample", "2"]) == 0
     assert _shared(folder) == before
-    assert not list(folder.glob(".base-*"))  # the child's scratch is gone
+    assert not list((folder / "baselines").glob(".base-*"))  # the child's scratch is gone
 
 
 def test_a_kept_base_is_reused_without_reading_it_again(
@@ -4201,15 +4201,30 @@ def test_a_base_whose_import_fails_is_refused_with_the_childs_output(
     assert not _baselines(_folder(tmp_path))
 
 
-def test_a_base_child_imports_the_base_and_not_a_pythonpath_entry(
+def test_a_base_child_is_started_without_the_import_path_overrides(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # A unit check, not an end-to-end one: --tree's sys.path entry already
+    # outranks a PYTHONPATH entry in the child, so no decoy can show the
+    # strip; it is kept as compare.py's worker keeps it, against an
+    # import made before the insert.
+    monkeypatch.setenv("PYTHONPATH", "/decoy")
+    monkeypatch.setenv("PYTHONHOME", "/decoy")
+    env = snapshot.child_env()
+    assert "PYTHONPATH" not in env and "PYTHONHOME" not in env and env
+
+
+def test_a_kept_baseline_another_run_pruned_is_read_as_none_kept(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    # A PYTHONPATH entry outranks --tree's sys.path entry in the child
-    # only if it reaches it; check_source would then abort the child.
-    _fetched(monkeypatch, tmp_path)
-    monkeypatch.setenv("PYTHONPATH", str(checkout_copy(tmp_path / "decoy")))
-    assert "PYTHONPATH" not in snapshot.child_env()
-    base = checkout_copy(tmp_path / "base", planted=True)
-    assert snapshot.main(["--local", _SOURCE, "--base", str(base)]) == 1
+    # Pruned between a lookup and the open, it is not damage to delete.
+    assert snapshot._reused(tmp_path / "gone.jsonl.gz", 2) is None
+
+
+def test_a_scratch_folder_a_killed_run_left_is_swept_once_stale(tmp_path: Path) -> None:
+    stale, fresh = snapshot.scratch(tmp_path), snapshot.scratch(tmp_path)
+    (stale / "base.jsonl").write_text("x\n")
+    os.utime(stale, (1_000_000, 1_000_000))
+    snapshot._prune(tmp_path)
+    assert not stale.exists() and fresh.exists()
 
 
 @pytest.mark.parametrize("extra", [["--record"], ["--out", "x.jsonl"]])

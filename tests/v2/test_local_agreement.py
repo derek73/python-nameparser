@@ -164,7 +164,7 @@ def test_a_record_of_another_fetch_is_refused(
         agreement.main([_PSC])
     path = _own_cache / "local" / _PSC / agreement.RECORD
     header = json.loads(path.read_text().splitlines()[0])
-    assert set(header) == {"raw_sha256", "scorer", "data_date", "tree"}
+    assert set(header) == {"raw_sha256", "scorer", "data_date", "tree", "entries"}
 
 
 def test_a_run_with_no_record_names_the_command_that_writes_one(
@@ -359,13 +359,34 @@ def test_a_kept_base_record_is_reused_and_a_damaged_one_scored_again(
     monkeypatch.setattr(agreement, "_score_base", unscored)
     assert agreement.main([_PSC, "--base", str(base)]) == 1
     assert "reused the kept record" in capsys.readouterr().out
-    kept.write_text("not a record\n")
-    with pytest.raises(AssertionError, match="scored the base again"):
+    # A record cut short on a line boundary still parses line by line;
+    # its header's count is what refuses it.
+    for damage in ("not a record\n", "".join(recorded.decode().splitlines(keepends=True)[:-1])):
+        kept.write_text(damage)
+        with pytest.raises(AssertionError, match="scored the base again"):
+            agreement.main([_PSC, "--base", str(base)])
+        assert "deleted the kept record" in capsys.readouterr().out
+        monkeypatch.setattr(agreement, "_score_base", real)
+        assert agreement.main([_PSC, "--base", str(base)]) == 1
+        assert kept.read_bytes() == recorded
+        assert not list(kept.parent.glob(".base-*"))  # the child's scratch is gone
+        monkeypatch.setattr(agreement, "_score_base", unscored)
+
+
+def test_a_base_that_changed_while_it_was_scored_keeps_no_record(
+        monkeypatch: pytest.MonkeyPatch, _own_cache: Path, tmp_path: Path) -> None:
+    _corpus(monkeypatch, *_ALL)
+    base = checkout_copy(tmp_path / "base", planted=True)
+    # The module base_entries imports by its bare name (local_agreement
+    # put its folder on sys.path), not a second load by path.
+    snapshot = importlib.import_module("snapshot")
+    answers = ["a" * 64, "b" * 64]
+    monkeypatch.setattr(snapshot, "_source_digest",
+                        lambda root: answers.pop(0) if answers else "c" * 64)
+    with pytest.raises(SystemExit, match="changed while it was scored"):
         agreement.main([_PSC, "--base", str(base)])
-    assert "deleted the kept record" in capsys.readouterr().out
-    monkeypatch.setattr(agreement, "_score_base", real)
-    assert agreement.main([_PSC, "--base", str(base)]) == 1
-    assert kept.read_bytes() == recorded
+    assert not _kept(_own_cache)
+    assert not list((_own_cache / "local" / _PSC / agreement.KEPT).glob(".base-*"))
 
 
 def test_a_base_that_is_the_tree_read_or_no_checkout_is_refused(
