@@ -3282,7 +3282,6 @@
 {"name": "Varano, Costanza da", "given": "Costanza", "family": "da Varano", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "C. V."}
 {"name": "Vatson Con Hamiş", "order": "FAMILY_FIRST", "given": "Con", "middle": "Hamiş", "family": "Vatson", "initials": "C. H. V."}
 {"name": "Vega Smith", "given": "Vega", "family": "Smith", "initials": "V. S."}
-{"name": "Vega y Lopez V, Mary", "given": "Mary", "family": "Vega y Lopez", "suffix": "V", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "M. V. L."}
 {"name": "Vega, Juan de la", "given": "Juan", "family": "de la Vega", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "J. V."}
 {"name": "Velasquez y Garcia, Dr. Juan", "title": "Dr.", "given": "Juan", "family": "Velasquez y Garcia", "initials": "J. V. G."}
 {"name": "Velasquez y Garcia, Dr. Juan III", "title": "Dr.", "given": "Juan", "family": "Velasquez y Garcia", "suffix": "III", "initials": "J. V. G."}

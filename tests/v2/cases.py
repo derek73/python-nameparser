@@ -8589,6 +8589,23 @@ CASES: tuple[Case, ...] = (
                "sparing the one-letter one, so 'V' stays the suffix as "
                "'Jr.' and 'III' do. 1.4.0 through 2.6.0 read family "
                "'John Smith V'"),
+    Case("a_one_letter_numeral_behind_a_connective_surname_stays_family",
+         "Vega y Lopez V, Mary",
+         {"given": "Mary", "family": "Vega y Lopez V"},
+         notes="C1's count of the family part goes by pieces, and the "
+               "part joins 'Vega y Lopez' into one, so the 'V' has no "
+               "word to spare and stays the family name, silent. The "
+               "comma-less twin leaves the connective unjoined and reads "
+               "suffix 'V' (decisions/C1's 2026-10-25 #774 entry, "
+               "ACCEPTED); counting the join's words was declined for "
+               "the row below"),
+    Case("a_one_letter_numeral_behind_a_joined_surname_matches_its_twin",
+         "Smith and Jones V, Mary",
+         {"given": "Mary", "family": "Smith and Jones V"},
+         notes="both spellings join 'Smith and Jones', so the 'V' has "
+               "no word to spare with the comma or without it; counting "
+               "a join's words (the first fix for the row above) read "
+               "suffix 'V' here and broke the match"),
     Case("a_lone_letter_ahead_of_a_further_comma_is_the_initial",
          "Smith, John PhD I, Jr.",
          {"given": "John", "middle": "I", "family": "Smith",

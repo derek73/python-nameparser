@@ -98,7 +98,6 @@
   "Smith VI, John"            →  ambiguities=("suffix-or-name",)
   "Smith V, John"             →  family="Smith V"
   "Smith V, John"             →  ambiguities=()
-  "Vega y Lopez V, Mary"      →  suffix="V"
   "Smith Vi, John"            →  ambiguities=()
   ```
 - **In the given part after a family comma** ("Smith, John VI"): the given part is not counted, the comma having settled the count there (S5), and no initial in front is asked. A numeral of two or more letters reads as the generation, reporting where its shape alone reads it, save a Title-case one in a mixed-case name, which stays a name word in silence; a one-letter numeral is the generation only where the vocabulary lists it and it ends the part (C9), so an unlisted one stays the middle initial.

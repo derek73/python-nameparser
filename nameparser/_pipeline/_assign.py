@@ -615,23 +615,10 @@ def _assign_main(seg_idx: int, state: ParseState,
     return order
 
 
-def _family_words(pieces: Sequence[Sequence[int]],
-                  tokens: Sequence[WorkToken]) -> int:
-    """The name words of the family part in front of a numeral, counted
-    as rules/C3 counts them: a particle run and the word it attaches to
-    are one word, a connective join counts as its words ('Vega y Lopez'
-    is two). Asked only of a numeral piece, so a family part pays no
-    frame for it."""
-    return sum(max(1, sum("conjunction" not in tokens[i].tags
-                          and "particle" not in tokens[i].tags
-                          for i in piece))
-               for piece in pieces)
-
-
 def _family_part_numeral(word: WorkToken, preceding: str, names: int,
                          one_case: bool | None) -> Role | None:
     """The role of a roman numeral ending the family part before a
-    family comma, behind `names` name words of that part, as the comma-less
+    family comma, behind `names` pieces of that part, as the comma-less
     name reads one ending it (rules/S10), or None where the numeral's
     predicate reads no numeral there (an initial in front, a letter with
     its period): the suffix where it reads as the generation, a
@@ -1627,8 +1614,7 @@ def assign(state: ParseState) -> ParseState:
                             for j in range(k + 1, len(fam_pieces)))
                     and (numeral := _family_part_numeral(
                         word, tokens[fam_pieces[k - 1][0]].text,
-                        _family_words(fam_pieces[lead:k], tokens),
-                        state.one_case)) is not None):
+                        k - lead, state.one_case)) is not None):
                 _set_roles(tokens, piece, numeral)
                 # reported where taken: a name word here is the family
                 # name the comma has just named, which nobody misreads
