@@ -11,19 +11,21 @@ nameparser recognizes words by vocabulary: titles, suffixes, particles, conjunct
 ```toml
 [[word]]
 text = "do"
-credential = { may_be_name = true, expands = "Doctor of Osteopathic Medicine" }
-[word.particle]
-may_be_given = true
+family = { us_census_2010 = 30301, wikidata = 100, as_of = 2026-10-25 }
+given = { us_ssa = 11, wikidata = 9, as_of = 2026-10-25, note = "male births only; Wikidata is a lower bound" }
+credential = { expands = "Doctor of Osteopathic Medicine" }
+[word.preposition]
+expands = "of the, masc. sg."
 ```
 
-`do` is a credential and a particle, and Vietnamese Đỗ makes it a surname too. Under the sets that clash was visible only as an overlap between two of them; as readings it is written on the word. Once every word says which language's names it occurs in, choosing a language can settle the clashes that exist only because the default serves every language.
+`do` is a credential and a particle, and Vietnamese Đỗ makes it a surname too: its name readings, with the counts they rest on, are what mark both clashes (an entry spread over two files in the shipped data, `en.toml` and `pt.toml`). Under the sets that clash was visible only as an overlap between two of them; as readings it is written on the word. Once every word says which language's names it occurs in, choosing a language can settle the clashes that exist only because the default serves every language.
 
 Four phases, in a fixed order:
 
 | Phase | What | Changes parsing? | State |
 |---|---|---|---|
 | 1 | The per-word TOML format, compiled to today's sets | no | shipped in 2.6 (#737, #744); #749–#751 gave the words in `und.toml` their languages, leaving two particles of unrecorded origin |
-| 2 | Ambiguity derived from clashing readings; the ambiguity gate extended to every reading kind | yes, the first phase that does | #752 |
+| 2 | Ambiguity derived from clashing readings; the ambiguity gate extended to every reading kind | yes, the first phase that does | #752; 2a, the two name-clash markers derived, landed without moving a parse (decisions/vocabulary-model, 2026-10-25) |
 | 3 | Language packs that prefer or restrict their language | yes, for callers who choose one | #753, needs 1 and 2 |
 | 4 | Order and shape; the rules a pack can choose; the output model | yes | #754, mostly independent of 2 and 3 |
 
@@ -47,7 +49,7 @@ Phase 1 re-encoded the vocabulary and changed no parse. One TOML file per BCP 47
 
 Two choices in phase 1 set up phase 2 and are worth knowing before reading it:
 
-- **The marker sets are explicit flags** (`may_be_given`, `may_be_name`, `may_be_initial`), not derived from name readings. Deriving them in phase 1 would have meant declaring a given reading for particles like `te`, `tho` and `du` that no bearer count supports. The flags record past curation, not evidence.
+- **The marker sets were explicit flags** (`may_be_given`, `may_be_name`, `may_be_initial`), not derived from name readings, recording past curation rather than evidence. Phase 2a (2026-10-25) derived the two that record a clash with a name, `may_be_name` and `may_be_given`, from name readings with counts (`te`, `tho` and `du`, once thought to have none, have SSA counts), keeping `may_be_initial` as a property (decisions/vocabulary-model).
 - **Names a later phase will use are build errors now** (`default`, `prefer`, `strict`, `bare_only`, `leading_only`, `trailing_only`, `attaches`, `separators`, and the values `addresses = "full"` or `"any"`), so nothing reads as working before it does.
 
 The reference for the format is nameparser/vocab/README.md; the decisions behind it, with what was declined and measured, are decisions/vocabulary-model's 2026-10-18 entry.
