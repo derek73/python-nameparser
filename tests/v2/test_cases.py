@@ -242,9 +242,11 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # claim under each order; 1451 -> 1457 the same day: #752's two
     # split-credential run rows (phase 2e), 'Smith, John Pharm D Jones'
     # and 'John Smith Pharm D Jones', one suffix-or-name claim under
+    # each order; 1457 -> 1460 the same day: the second review's
+    # 'Smith, John van Pharm D' row, one particle-or-given claim under
     # each order.
-    assert claims == 1457, (
-        f"the field sweep checks {claims} claims, recorded as 1457 on "
+    assert claims == 1460, (
+        f"the field sweep checks {claims} claims, recorded as 1460 on "
         f"2026-10-25")
 
 

@@ -13,7 +13,7 @@
   "Jane Doe de D Junior"      →  family="de D"  · boundary
   "John Smith Pharm D and Mary"  →  family="D and Mary"  · boundary
   ```
-- **Case repair** writes the pair as it writes the one-word spelling, the letters of the two words cased as their fold is.
+- **Case repair** writes the pair as it writes the one-word spelling, the letters of the two words cased as their fold is, and a pair written in two cases is the writer's spelling as the one-word spelling would be (R5).
   ```
   "john smith pharm d"        →  capitalized="John Smith Pharm D"
   "john smith, PHARM D"       →  capitalized="John Smith Pharm D"
@@ -92,6 +92,7 @@
   ```
   "JOHN SMITH SAM E."         →  suffix="SAM E."
   "Smith, John Sam E."        →  suffix="Sam E."
+  "JOHN SMITH SAM E."         →  capitalized="John Smith SAM E."
   ```
 
 ---

@@ -1879,3 +1879,15 @@ def test_a_split_credential_repairs_as_its_one_word_twin(text: str) -> None:
     assert parse(text).capitalized().suffix == "Pharm D"
     twin = text.replace("PHARM D", "PHARMD").replace("pharm d", "pharmd")
     assert parse(twin).capitalized().suffix == "PharmD"
+
+
+def test_a_split_credential_repair_reads_the_pair_group_merged() -> None:
+    # #752's second review: overlapping pairs ('MB CHB' and 'CHB A',
+    # 'chba' being listed) were both repaired, the second writing over
+    # the first; and a pair in two cases is kept as written unforced,
+    # as its one-word spelling is
+    assert parse("JOHN SMITH MB CHB A").capitalized().suffix == "MB ChB A"
+    assert parse("john smith pharm D").capitalized().suffix == "pharm D"
+    assert parse("john smith pharmD").capitalized().suffix == "pharmD"
+    assert (parse("john smith pharm D").capitalized(force=True).suffix
+            == "Pharm D")

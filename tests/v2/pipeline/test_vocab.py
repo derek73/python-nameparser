@@ -1074,3 +1074,12 @@ def test_comma_follows_marker_reads_past_what_tokenize_drops(
         word: str, expected: bool) -> None:
     assert comma_follows_marker(word) is expected
 
+
+
+def test_the_ph_d_pair_merges_when_both_its_words_are_listed() -> None:
+    # #752's second review: classify's two-suffix-words refusal stood in
+    # front of the Ph./D. answer, which merges whatever the vocabulary
+    # lists
+    parser = Parser(lexicon=Lexicon.default().add(suffix_words={"ph", "d"}))
+    assert parser.parse("John Ph. D. Smith").suffix == "Ph. D."
+    assert parser.parse("John Smith Ph. D. Jones").suffix == "Ph. D. Jones"

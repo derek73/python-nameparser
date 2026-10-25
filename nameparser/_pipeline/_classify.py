@@ -423,18 +423,20 @@ def classify(state: ParseState) -> ParseState:
                     and (len(a.text.rstrip(".")) >= 2
                          or a.text.endswith(".") and b.text.endswith(".")
                          and (len(b.text) == 2 or not b.text.isascii()))
-                    # two suffix words are two credentials already
-                    and not ("vocab:suffix" in a.tags
-                             and "vocab:suffix" in b.tags)
                     # the Ph./D. pair whatever the vocabulary, as v1's
-                    # fix_phd merged it; any other only where its fold
-                    # is listed, composed in C where it is not ASCII
+                    # fix_phd merged it; any other only where its words
+                    # are not two suffix words, two credentials already,
+                    # and its fold is listed, composed in C where it is
+                    # not ASCII
                     and (SPLIT_PAIR_OPENS.fullmatch(a.text) is not None
-                         or (fold := (a.text + b.text).replace(".", "")
-                             .lower()) in acronyms or fold in words
-                         or not fold.isascii()
-                         and ((nfc := unicodedata.normalize("NFC", fold))
-                              in acronyms or nfc in words))
+                         or not ("vocab:suffix" in a.tags
+                                 and "vocab:suffix" in b.tags)
+                         and ((fold := (a.text + b.text).replace(".", "")
+                               .lower()) in acronyms or fold in words
+                              or not fold.isascii()
+                              and ((nfc := unicodedata.normalize(
+                                  "NFC", fold)) in acronyms
+                                   or nfc in words)))
                     and (kind := split_pair(a.text, b.text,
                                             state.lexicon)) is not None
                     # a member pair a connective borders is no credential:

@@ -1632,6 +1632,24 @@ CASES: tuple[Case, ...] = (
                "first word is a listed member, and the first version "
                "reported 'Ed.' as the word ending the clause, which "
                "'D.' is. 1.4.0 read middle 'Doe nee Ed.', last 'D.'"),
+    Case("a_split_credential_stops_the_particle_chain_in_the_given_part",
+         "Smith, John van Pharm D",
+         {"given": "John", "family": "van Smith", "suffix": "Pharm D"},
+         classification="fix(#752)",
+         ambiguities=("particle-or-given",),
+         notes="S11: merged ahead of group's joins, the pair stops the "
+               "chain as 'PharmD' does, and P6 attaches the particle; "
+               "merged after them (the design-docs review's first fix), "
+               "the chain took 'Pharm' into the particle's run. 1.4.0 "
+               "read middle 'van Pharm D'"),
+    Case("a_bound_given_name_declines_a_split_credential",
+         "Rahman, Abdul MB ChB",
+         {"given": "Abdul", "family": "Rahman", "suffix": "MB ChB"},
+         classification="fix(#752)",
+         notes="P5: the join declines the pair as it declines a suffix "
+               "word; the first version joined it, given 'Abdul MB ChB', "
+               "where master read suffix 'MB ChB'. 1.4.0 read first "
+               "'Abdul MB', middle 'ChB'"),
     Case("the_split_degree_outranks_a_pair_overlapping_it",
          "Jane Doe Dr. Ph. D.",
          {"title": "Dr.", "given": "Jane", "family": "Doe",

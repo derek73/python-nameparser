@@ -2765,6 +2765,7 @@
 {"name": "Rafael Sousa dos Anjos", "given": "Rafael", "middle": "Sousa", "family": "dos Anjos", "initials": "R. S. A."}
 {"name": "Rafael Viciana Aráez", "given": "Rafael", "middle": "Viciana", "family": "Aráez", "initials": "R. V. A."}
 {"name": "Ragnar Bjarnason", "given": "Ragnar", "family": "Bjarnason", "initials": "R. B."}
+{"name": "Rahman, Abdul MB ChB", "given": "Abdul", "family": "Rahman", "suffix": "MB ChB", "initials": "A. R."}
 {"name": "Ram Bahadur B.K.", "given": "Ram", "middle": "Bahadur", "family": "B.K.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "R. B. B."}
 {"name": "Ram Bahadur B.K., PhD", "given": "Ram", "middle": "Bahadur", "family": "B.K.", "suffix": "PhD", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "R. B. B."}
 {"name": "Ram Bahadur PhD B.K.", "given": "Ram", "family": "Bahadur", "suffix": "PhD B.K.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "R. B."}

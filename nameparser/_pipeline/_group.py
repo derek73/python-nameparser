@@ -602,25 +602,6 @@ def _settle_splits(pieces: list[Piece], ptags: list[set[str]]) -> None:
         k += 1
 
 
-def _merge_given_pairs(seg: Sequence[int], pieces: list[Piece],
-                       ptags: list[set[str]],
-                       tokens: Sequence[WorkToken]) -> None:
-    """Merge each split credential still standing as its two words in
-    the given part after a family comma, behind the given word, in
-    place: run after group's joins, so a pair one of them took into a
-    piece of its own stays as the join left it."""
-    given_from = leading_titles(pieces, ptags, tokens)
-    following = dict(zip(seg, seg[1:]))
-    k = given_from + 1
-    while k < len(pieces) - 1:
-        a, b = pieces[k], pieces[k + 1]
-        if (len(a) == 1 and len(b) == 1 and not ptags[k] and not ptags[k + 1]
-                and SPLIT_MEMBER_TAG in tokens[a[0]].tags
-                and following.get(a[0]) == b[0]):
-            merge_pieces(pieces, ptags, k, k + 2, add={"split"})
-        k += 1
-
-
 def _group_segment(seg: tuple[int, ...], additional: int,
                    tokens: Sequence[WorkToken],
                    bound_join: BoundJoin = BoundJoin.STRICT,
@@ -691,15 +672,17 @@ def _group_segment(seg: tuple[int, ...], additional: int,
     # whole where the read takes it and split back into its two words
     # where it does not (`_settle_splits`), so a declined pair reads
     # exactly as the two words read; and in the given part after a
-    # family comma behind the given word, where S5's walk reads it --
-    # merged there only once the joins below have run, so no bound
-    # given name or connective joins it as it joins no credential
-    # ('Rahman, Abdul MB ChB', #752's review), and a pair declined
-    # there is middle-name text whole or split.
+    # family comma behind the given word, where S5's walk reads it,
+    # merged ahead of the joins so the particle chain stops in front of
+    # it and P5's bound join declines it as it declines a suffix word,
+    # and a pair declined there is middle-name text whole or split.
+    # (A connective beside a pair keeps it from merging at all, in
+    # classify.)
     # Not in the part before a family comma, which reads no member as
     # a suffix ('Smith MA, John'). Classify tagged each pair's first
     # word, so the test here is a tag.
-    splits = given_pairs = False
+    splits = False
+    given_from: int | None = None
     k = 0
     while k < len(pieces) - 1:
         a, b = pieces[k], pieces[k + 1]
@@ -715,7 +698,11 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                     splits = True
                     continue
                 if site is ClauseSite.GIVEN_SLOT:
-                    given_pairs = True
+                    if given_from is None:
+                        given_from = leading_titles(pieces, ptags, tokens)
+                    if k > given_from:
+                        merge_pieces(pieces, ptags, k, k + 2, add={"split"})
+                        continue
         k += 1
 
     # rules/M2: "A marker that counts takes the words after it as
@@ -1164,9 +1151,14 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             # Smith, Jr., abdul Dr. Smith', #640). A title word standing
             # in the name is a name word and joins ('abdul Sir Smith
             # Berg', 'Berg, abdul Prof. Ali').
+            # A credential split across a space (rules/S11) is declined
+            # as its one-word spelling is: merged in the given part
+            # before this join, so the particle chain stops in front of
+            # it too ('Rahman, Abdul MB ChB', 'Smith, John van Pharm D')
             nxt, nxt_tags = pieces[fk + 1], ptags[fk + 1]
             if (_is_maiden_marker_piece(nxt, tokens)
                     or is_suffix_piece(nxt, nxt_tags, tokens)
+                    or "split" in nxt_tags
                     or ((site is ClauseSite.TAIL
                          or bound_join is BoundJoin.LENIENT)
                         and is_title_piece(nxt, nxt_tags, tokens)
@@ -1278,8 +1270,6 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                     # carried (rules/P5); joined_tags says why the
                     # title tag is dropped. Pinned in test_group.py.
                     merge_pieces(pieces, ptags, fk, fk + 2, drop={"title"})
-    if given_pairs:
-        _merge_given_pairs(seg, pieces, ptags, tokens)
     if reads is not None:
         reads.append(read)
     pieces.extend(tail_pieces)
