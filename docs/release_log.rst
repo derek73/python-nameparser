@@ -1,6 +1,6 @@
 Release Log
 ===========
-* 2.6.0 - Unreleased
+* 2.6.0 - October 25, 2026
 
     nameparser 2.6 ships the default vocabulary as per-word data files, adds an opt-in reading for names with two family names, and fixes words read as a credential or a title that are part of the name. Highlights:
 
