@@ -603,7 +603,9 @@ def split_pair(first: str, second: str, lexicon: Lexicon) -> str | None:
     #872's predicate rather than a copy: in a script with capitals
     they are paired initials (`is_cased_paired_initials`), the reading
     rules/S3 gives them joined, so only a caseless script's pair can
-    merge, and the default vocabulary lists no such fold.
+    merge, and not one in a script that writes no abbreviations (Han,
+    hangul, kana: '博. 士.' is no dotted '博士'), which leaves no
+    default entry such a fold.
 
     Where the merge may happen (never at the head of the string,
     rules/S2; a member pair only in a main segment and in the part
@@ -617,7 +619,10 @@ def split_pair(first: str, second: str, lexicon: Lexicon) -> str | None:
     if composed_len(a) < 2 and (
             composed_len(b) != 1 or not first.endswith(".")
             or not second.endswith(".")
-            or is_cased_paired_initials(first + second)):
+            or is_cased_paired_initials(first + second)
+            # a script that writes no abbreviations is not wearing an
+            # abbreviation's periods, as rules/S3 reads it joined
+            or in_initialless_script(first + second)):
         return None
     fold = _normalize(a + b)
     if (fold in lexicon.suffix_acronyms_ambiguous

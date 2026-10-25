@@ -1218,7 +1218,7 @@ def assign(state: ParseState) -> ParseState:
                 # ambiguous class", here read as the class is with no
                 # writing to lean on and in silence, as group merges it
                 # only behind the given word
-                if "split" in ptags[m]:
+                if len(piece) == 2 and "split" in ptags[m]:
                     return (m >= trailing_floor(m, titled)
                             and not attaches_the_lead(m, titled))
                 if len(piece) == 1:

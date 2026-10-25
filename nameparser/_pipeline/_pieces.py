@@ -1243,7 +1243,7 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
         # ambiguous class" -- read by the count alone, its writing carrying no
         # case to lean on, and in silence: its other reading is two
         # name words, which the count already refuses it behind one
-        if "split" in ptags[rest[k - 1]]:
+        if len(piece) == 2 and "split" in ptags[rest[k - 1]]:
             if k >= 2 and k - 2 >= second:
                 k -= 1
                 continue

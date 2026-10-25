@@ -1607,6 +1607,31 @@ CASES: tuple[Case, ...] = (
          notes="'MB ChB' is one listed credential, 'mbchb', where 'mb' "
                "started the run and reported 'ChB' as a name word it "
                "absorbed. 1.4.0 read middle 'Smith MB', last 'ChB'"),
+    Case("a_split_credential_beside_a_connective_stays_two_words",
+         "John Smith Pharm D and Mary",
+         {"given": "John", "middle": "Smith Pharm", "family": "D and Mary"},
+         notes="S11: a connective joins the words beside it, so a pair "
+               "it borders is no credential; merged, the join took the "
+               "pair into a wider piece the count then read whole (the "
+               "first version's 'Pharm D and Mary' suffix, found by "
+               "review)"),
+    Case("no_split_credential_merges_before_a_family_comma",
+         "MB ChB, PhD",
+         {"family": "MB ChB", "suffix": "PhD"},
+         classification="fix(#752)",
+         notes="S11: the part before a family comma merges no member "
+               "pair, so C3's count of it reads the two words as "
+               "written, the tree's reading before #752 (the first "
+               "version read given 'MB', family 'ChB'). 1.4.0 read "
+               "first 'MB', last 'ChB'"),
+    Case("a_split_credential_ending_a_maiden_clause_reports_nothing",
+         "Jane Doe nee Ed. D.",
+         {"given": "Jane", "family": "Doe", "maiden": "Ed. D."},
+         classification="fix(#752)",
+         notes="S11: the clause keeps the pair, read in silence; its "
+               "first word is a listed member, and the first version "
+               "reported 'Ed.' as the word ending the clause, which "
+               "'D.' is. 1.4.0 read middle 'Doe nee Ed.', last 'D.'"),
     Case("the_split_degree_outranks_a_pair_overlapping_it",
          "Jane Doe Dr. Ph. D.",
          {"title": "Dr.", "given": "Jane", "family": "Doe",

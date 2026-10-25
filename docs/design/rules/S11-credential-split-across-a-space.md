@@ -4,13 +4,19 @@
 
 **Then:** a credential written split across a space reads as one word where its two words are short chunks whose letters together spell unambiguous suffix vocabulary and the two are not both suffix vocabulary on their own, as a member of the ambiguous class (S4) that the count decides as it decides a bare acronym, so that where the count declines it, the pair is the two words it is written as.
 
-- **Which pairs.** Each word is one to five letters, with or without its period, and the first has two or more: a single letter opening the pair is a middle initial far more often than the start of a credential. A particle or a connective written without a period is no chunk of one either, since it joins name words, which is what it is doing beside one.
+- **Which pairs.** Each word is one to five letters, with or without its period, and the first has two or more: a single letter opening the pair is a middle initial far more often than the start of a credential. A particle or a connective written without a period is no chunk of one either, since it joins name words, which is what it is doing beside one, and for the same reason a pair a connective borders is no credential.
   ```
   "John Smith Pharm. D."      →  suffix="Pharm. D."
   "John Smith Pharm D"        →  suffix="Pharm D"
   "John Smith Psy. D."        →  suffix="Psy. D."
   "John Smith M. D."          →  family="D."  · boundary
   "Jane Doe de A Junior"      →  family="de A"  · boundary
+  "John Smith Pharm D and Mary"  →  family="D and Mary"  · boundary
+  ```
+- **Case repair** writes the pair as it writes the one-word spelling, the letters of the two words cased as their fold is.
+  ```
+  "john smith pharm d"        →  capitalized="John Smith Pharm D"
+  "john smith, PHARM D"       →  capitalized="John Smith Pharm D"
   ```
 - **The count decides.** At the end of a name it needs the words to spare S4 asks of a bare member; after a comma, the name words C4 counts before the comma; ending the given part after a family comma, it reads as S5 reads a member there, its writing saying nothing else.
   ```
@@ -73,9 +79,10 @@
   "John Smith, M. D."         →  given="M."
   "John Smith, M. D."         →  family="John Smith"
   ```
-- A given name and its initial behind two name words, where no comma divides the name, whose letters spell a listed credential read as the credential, in silence: the count reads them as it reads the credential they spell.
+- A given name and its initial whose letters spell a listed credential read as the credential, in silence, behind two name words where no comma divides the name, and ending the given part after a family comma: the count, or the given part's reading, takes them as it takes the credential they spell.
   ```
   "JOHN SMITH SAM E."         →  suffix="SAM E."
+  "Smith, John Sam E."        →  suffix="Sam E."
   ```
 
 ---

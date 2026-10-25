@@ -71,7 +71,7 @@ from nameparser._pipeline._state import (
 )
 from nameparser._types import AmbiguityKind, Role
 from nameparser._pipeline._vocab import (
-    BUILTIN_SUFFIX_DELIMITERS, SPLIT_CHUNK, _INITIAL, caps_shape_candidate,
+    BUILTIN_SUFFIX_DELIMITERS, SPLIT_CHUNK, SPLIT_PAIR_OPENS, _INITIAL, caps_shape_candidate,
     composed_len, delimiter_cores, glued_stem, is_cased_paired_initials,
     is_initial, is_one_case, period_joined_vocab, split_pair,
     suffix_as_written, tag_marker_runs,
@@ -421,12 +421,29 @@ def classify(state: ParseState) -> ParseState:
                     # predicate's count of composed letters ('i i' folds
                     # to the listed 'ii' and opens with one)
                     and (len(a.text.rstrip(".")) >= 2
-                         or a.text.endswith(".") and b.text.endswith("."))
-                    and ((fold := (a.text + b.text).replace(".", "")
-                          .lower()) in acronyms or fold in words
-                         or not fold.isascii())
+                         or a.text.endswith(".") and b.text.endswith(".")
+                         and (len(b.text) == 2 or not b.text.isascii()))
+                    # two suffix words are two credentials already
+                    and not ("vocab:suffix" in a.tags
+                             and "vocab:suffix" in b.tags)
+                    # the Ph./D. pair whatever the vocabulary, as v1's
+                    # fix_phd merged it; any other only where its fold
+                    # is listed, composed in C where it is not ASCII
+                    and (SPLIT_PAIR_OPENS.fullmatch(a.text) is not None
+                         or (fold := (a.text + b.text).replace(".", "")
+                             .lower()) in acronyms or fold in words
+                         or not fold.isascii()
+                         and ((nfc := unicodedata.normalize("NFC", fold))
+                              in acronyms or nfc in words))
                     and (kind := split_pair(a.text, b.text,
                                             state.lexicon)) is not None
+                    # a member pair a connective borders is no credential:
+                    # the connective joins the words beside it
+                    and (kind == "suffix" or (
+                        j == 0
+                        or "conjunction" not in tokens[seg[j - 1]].tags)
+                        and (j + 2 >= len(seg)
+                             or "conjunction" not in tokens[seg[j + 2]].tags))
                     # the Ph./D. pair outranks a pair overlapping it:
                     # 'Dr. Ph. D.' is no 'Dr. Ph.' ('drph') and a 'D.'
                     and not (kind == "split" and j + 2 < len(seg)

@@ -992,6 +992,8 @@ def test_the_c_level_pre_tests_are_necessary_conditions_of_split_pair(
     # either would never be reached for the new spelling (#752)
     lex = Lexicon.default()
     words = ["Ph.", "Ph", "PH.", "ph", "pH", "D.", "D", "d", "Pharm.",
+             unicodedata.normalize("NFD", "Éd"), "É.", unicodedata.normalize(
+                 "NFD", "É."), "Ж.", "Ш.",
              "Pharm", "M.", "MD", "Phd", "Ph..", "", "Smith", "MB", "ChB",
              "SAM", "E.", "Pharma", "Ed", "J.", "R."]
     for first in words:
@@ -999,14 +1001,19 @@ def test_the_c_level_pre_tests_are_necessary_conditions_of_split_pair(
             kind = split_pair(first, second, lex)
             if kind is None:
                 continue
-            fold = (first + second).replace(".", "").lower()
+            fold = unicodedata.normalize(
+                "NFC", (first + second).replace(".", "").lower())
             assert SPLIT_CHUNK.fullmatch(first) and SPLIT_CHUNK.fullmatch(
                 second), (first, second)
             assert (len(first.rstrip(".")) >= 2
-                    or first.endswith(".") and second.endswith("."))
-            assert fold in lex.suffix_acronyms or fold in lex.suffix_words
+                    or first.endswith(".") and second.endswith(".")
+                    and (len(second) == 2 or not second.isascii()))
             if kind == "suffix":
+                # merged whatever the vocabulary, as v1's fix_phd did
                 assert SPLIT_PAIR_OPENS.fullmatch(first), (first, second)
+            else:
+                assert (fold in lex.suffix_acronyms
+                        or fold in lex.suffix_words), (first, second)
 
 
 def test_cased_paired_initials_is_the_bare_shape_in_a_cased_script() -> None:

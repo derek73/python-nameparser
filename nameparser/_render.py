@@ -19,6 +19,7 @@ from collections.abc import Callable
 from nameparser._lexicon import (FULL_STOPS, Lexicon, _normalize,
                                  _spells_an_initial)
 from nameparser._types import (FOLDED_TAG, SHAPE_ACRONYM_TAG,
+                               SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG,
                                UNCLASSIFIED_TAG, UNJOINED_CONJUNCTION_TAG,
                                UNJOINED_TAG, Ambiguity, ParsedName, Role,
                                Token)
@@ -674,6 +675,42 @@ def _cap_text(text: str, role: Role, tags: frozenset[str],
         for at, part in enumerate(parts))
 
 
+def _split_pairs(tokens: tuple[Token, ...], repaired: tuple[Token, ...],
+                 lex: Lexicon) -> tuple[Token, ...]:
+    """`repaired` with each split credential read as a suffix (classify
+    tags its first word) recased by its fold, as the one-word spelling
+    is: the exceptions map's mask laid over the two words as written
+    ('PHARM D' under 'PharmD' is 'Pharm D'), else capitals for a listed
+    acronym ('MB CHB' is 'MB CHB' under 'MBChB'). A pair one of whose
+    words the gate kept as written is left as the gate left it. A loop
+    over the tags, so a name with no such pair pays no frame for it."""
+    out: list[Token] | None = None
+    for i in range(len(tokens) - 1):
+        a, b = tokens[i], tokens[i + 1]
+        if (SPLIT_MEMBER_TAG not in a.tags
+                and SPLIT_CREDENTIAL_TAG not in a.tags):
+            continue
+        if (a.role is not Role.SUFFIX or b.role is not Role.SUFFIX
+                or repaired[i] is a or repaired[i + 1] is b):
+            continue
+        joined = a.text + b.text
+        fold = _normalize(joined.replace(".", ""))
+        mask = lex.capitalization_exceptions_map.get(fold)
+        cased = _apply_mask(joined, mask) if mask is not None else None
+        if cased is None and fold in lex.suffix_acronyms:
+            cased = joined.upper()
+        # a case mapping that changes the length ('ß') has no place to
+        # cut the pair back into its two words
+        if cased is None or len(cased) != len(joined):
+            continue
+        if out is None:
+            out = list(repaired)
+        cut = len(a.text)
+        out[i] = Token(cased[:cut], a.span, a.role, a.tags)
+        out[i + 1] = Token(cased[cut:], b.span, b.role, b.tags)
+    return repaired if out is None else tuple(out)
+
+
 def _in_one_case(text: str) -> bool:
     """R5's test: `text` is written all upper or all lower (a caseless
     text is both, and so passes)."""
@@ -765,6 +802,10 @@ def capitalized(name: ParsedName, lexicon: Lexicon | None, *,
         else Token(_cap_text(t.text, t.role, t.tags, lex),
                    t.span, t.role, t.tags)
         for t in name.tokens)
+    # rules/R4: "Repair changes case and nothing else" -- and a
+    # credential split across a space (rules/S11) is repaired as its
+    # one-word twin is, the pair's fold asked once
+    new_tokens = _split_pairs(name.tokens, new_tokens, lex)
     # equal tokens (possible only for synthetic span=None duplicates)
     # collapse to one mapping entry -- benign: the rebuilt ambiguity
     # references an equal token, so the subset invariant still holds

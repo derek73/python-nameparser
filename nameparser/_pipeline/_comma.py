@@ -179,7 +179,8 @@ def _whole_name(seg0: Sequence[int], tokens: Sequence[WorkToken]) -> bool:
     word to the count an unambiguous credential takes."""
     # rules/C3: "a particle run and the one name word it attaches to are
     # one word"
-    pieces, ptags = _pieces(seg0, tokens)
+    # the part before a family comma merges no member pair (rules/S11)
+    pieces, ptags = _pieces(seg0, tokens, False)
     named: set[int] = set()
     for piece, tags in zip(pieces, ptags):
         if not is_suffix_piece(piece, tags, tokens):
@@ -574,11 +575,7 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
         role = Role.SUFFIX if reading[k] else Role.TITLE
         for i in piece:
             tags = tokens[i].tags
-            if (i in caps or "split" in pt1[k] and reading[k]
-                    and texts[i].isupper() and texts[i].isalpha()
-                    and "vocab:suffix" not in tags):
-                # a split credential's capitals are a credential's too
-                # (rules/S11), marked as a caps word bound here is
+            if i in caps:
                 # #564: the caps shape's marks, as classify writes them
                 # EVERYWHERE, so case repair keeps 'XYZ' (rules/R4)
                 tags = tags | {SHAPE_ACRONYM_TAG, AMBIGUOUS_ACRONYM_TAG}

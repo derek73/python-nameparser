@@ -1081,3 +1081,15 @@ def test_the_v1_off_switch_unjoins_the_link_only() -> None:
     unjoined = HumanName("Josep Carod i Rovira", constants)
     assert unjoined.middle == "Carod i"
     assert unjoined.last == "Rovira"
+
+
+def test_the_ph_d_pair_merges_whatever_the_vocabulary_says() -> None:
+    # v1's fix_phd merged 'Ph. D.' by its spelling alone, so a config
+    # without 'phd' still read the pair as one suffix; the split
+    # credential's vocabulary pre-test must not stand in front of that
+    # answer (#752's review)
+    c = Constants()
+    c.suffix_acronyms.remove("phd")
+    assert HumanName("John Smith Ph. D.", constants=c).suffix == "Ph. D."
+    h = HumanName("John Smith, Ph. D.", constants=c)
+    assert (h.first, h.last, h.suffix) == ("John", "Smith", "Ph. D.")

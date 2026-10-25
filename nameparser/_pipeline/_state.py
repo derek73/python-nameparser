@@ -22,6 +22,8 @@ from nameparser._lexicon import Lexicon
 from nameparser._policy import Policy
 from nameparser._types import (SHAPE_ACRONYM_TAG, AmbiguityKind,
                                Role, Segmenter, Span)
+from nameparser._types import SPLIT_CREDENTIAL_TAG as SPLIT_CREDENTIAL_TAG
+from nameparser._types import SPLIT_MEMBER_TAG as SPLIT_MEMBER_TAG
 
 if TYPE_CHECKING:
     from nameparser._pipeline._pieces import TailRead
@@ -99,17 +101,8 @@ AMBIGUOUS_ACRONYM_TAG = "vocab:suffix-ambiguous"
 _AMBIGUOUS_CREDENTIAL_TAGS = frozenset(
     {AMBIGUOUS_ACRONYM_TAG, SHAPE_ACRONYM_TAG})
 
-#: The tags classify writes on the FIRST word of a credential written
-#: split across a space (`_vocab.split_pair`), naming the piece tag the
-#: pair merges with: SPLIT_CREDENTIAL_TAG the Ph./D. pair, merged as an
-#: unambiguous suffix ("suffix"), and SPLIT_MEMBER_TAG any other, merged
-#: as a member of the ambiguous class ("split", rules/S4, rules/C4).
-#: Written by classify because it is the one stage that sees every
-#: adjacent pair with the lexicon in hand, so group's merge and
-#: `_comma._pieces` read the decision off a tag, C-level, rather than
-#: each asking the vocabulary of every pair.
-SPLIT_CREDENTIAL_TAG = "split:credential"
-SPLIT_MEMBER_TAG = "split:member"
+# SPLIT_CREDENTIAL_TAG and SPLIT_MEMBER_TAG are defined and explained in
+# _types beside SHAPE_ACRONYM_TAG, case repair reading them too.
 
 #: The roles that make a piece a name word (rules/P6's walk), and
 #: the roles of a word not yet read as one: a suffix, or nothing yet

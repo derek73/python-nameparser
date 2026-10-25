@@ -1866,3 +1866,16 @@ def test_a_marked_particle_lowercases_only_where_the_particle_arm_would(
     hyphened = Parser(lexicon=Lexicon.default().add(particles={"van-der"}))
     assert str(hyphened.capitalized(hyphened.parse("jan van-der"))) == \
         "Jan Van-Der"
+
+
+@pytest.mark.parametrize("text", [
+    "john smith, PHARM D", "john smith PHARM D", "smith, john PHARM D",
+    "JOHN SMITH, PHARM D", "JOHN SMITH PHARM D", "john smith pharm d"])
+def test_a_split_credential_repairs_as_its_one_word_twin(text: str) -> None:
+    # rules/S11's pair is repaired by its fold's mask ('pharmd' ->
+    # 'PharmD') whatever the comma shape, as 'PHARMD' is; the first
+    # version marked its capitals only where the comma's decision bound
+    # it, so the same words repaired two ways (#752's review)
+    assert parse(text).capitalized().suffix == "Pharm D"
+    twin = text.replace("PHARM D", "PHARMD").replace("pharm d", "pharmd")
+    assert parse(twin).capitalized().suffix == "PharmD"

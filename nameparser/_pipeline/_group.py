@@ -345,7 +345,9 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     # left it a name word, which is a fork too
     last = pieces[end - 1]
     word = tokens[last[0]]
-    if not word.tags.isdisjoint(_AMBIGUOUS_CREDENTIAL_TAGS):
+    # a one-word member: a split credential the clause keeps is read in
+    # silence (rules/S11), and its first word is not the clause's last
+    if len(last) == 1 and not word.tags.isdisjoint(_AMBIGUOUS_CREDENTIAL_TAGS):
         ambiguities.append(PendingAmbiguity(
             AmbiguityKind.SUFFIX_OR_NAME,
             f"{word.text!r} ending the maiden name is also a "
@@ -600,6 +602,25 @@ def _settle_splits(pieces: list[Piece], ptags: list[set[str]]) -> None:
         k += 1
 
 
+def _merge_given_pairs(seg: Sequence[int], pieces: list[Piece],
+                       ptags: list[set[str]],
+                       tokens: Sequence[WorkToken]) -> None:
+    """Merge each split credential still standing as its two words in
+    the given part after a family comma, behind the given word, in
+    place: run after group's joins, so a pair one of them took into a
+    piece of its own stays as the join left it."""
+    given_from = leading_titles(pieces, ptags, tokens)
+    following = dict(zip(seg, seg[1:]))
+    k = given_from + 1
+    while k < len(pieces) - 1:
+        a, b = pieces[k], pieces[k + 1]
+        if (len(a) == 1 and len(b) == 1 and not ptags[k] and not ptags[k + 1]
+                and SPLIT_MEMBER_TAG in tokens[a[0]].tags
+                and following.get(a[0]) == b[0]):
+            merge_pieces(pieces, ptags, k, k + 2, add={"split"})
+        k += 1
+
+
 def _group_segment(seg: tuple[int, ...], additional: int,
                    tokens: Sequence[WorkToken],
                    bound_join: BoundJoin = BoundJoin.STRICT,
@@ -670,13 +691,15 @@ def _group_segment(seg: tuple[int, ...], additional: int,
     # whole where the read takes it and split back into its two words
     # where it does not (`_settle_splits`), so a declined pair reads
     # exactly as the two words read; and in the given part after a
-    # family comma behind the given word, where S5's walk reads it,
-    # and a pair declined there is middle-name text whole or split.
+    # family comma behind the given word, where S5's walk reads it --
+    # merged there only once the joins below have run, so no bound
+    # given name or connective joins it as it joins no credential
+    # ('Rahman, Abdul MB ChB', #752's review), and a pair declined
+    # there is middle-name text whole or split.
     # Not in the part before a family comma, which reads no member as
     # a suffix ('Smith MA, John'). Classify tagged each pair's first
     # word, so the test here is a tag.
-    splits = False
-    given_from: int | None = None
+    splits = given_pairs = False
     k = 0
     while k < len(pieces) - 1:
         a, b = pieces[k], pieces[k + 1]
@@ -692,11 +715,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                     splits = True
                     continue
                 if site is ClauseSite.GIVEN_SLOT:
-                    if given_from is None:
-                        given_from = leading_titles(pieces, ptags, tokens)
-                    if k > given_from:
-                        merge_pieces(pieces, ptags, k, k + 2, add={"split"})
-                        continue
+                    given_pairs = True
         k += 1
 
     # rules/M2: "A marker that counts takes the words after it as
@@ -1259,6 +1278,8 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                     # carried (rules/P5); joined_tags says why the
                     # title tag is dropped. Pinned in test_group.py.
                     merge_pieces(pieces, ptags, fk, fk + 2, drop={"title"})
+    if given_pairs:
+        _merge_given_pairs(seg, pieces, ptags, tokens)
     if reads is not None:
         reads.append(read)
     pieces.extend(tail_pieces)
