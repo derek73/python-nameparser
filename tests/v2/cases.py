@@ -3491,6 +3491,56 @@ CASES: tuple[Case, ...] = (
          notes="the boundary on the vocabulary side: Doctor of "
                "Chiropractic is listed, so the shape question is never "
                "asked (99,172 NPPES providers write it, decisions/S3)"),
+    # #752 (phase 2c): a word joined by a hyphen or a slash is a
+    # credential where every chunk counts as a suffix as written
+    # (rules/S3). Each moved row's reading is 1.4.0's through 2.6.0's
+    # otherwise (wheels, 2026-10-25), stated per row.
+    Case("a_joined_credential_after_a_comma_keeps_the_name_in_order",
+         "John Smith, MD/PhD",
+         {"given": "John", "family": "Smith", "suffix": "MD/PhD"},
+         classification="fix(#752)",
+         notes="1.4.0 through 2.6.0 read given 'MD/PhD', family 'John "
+               "Smith', the name reversed around the credential"),
+    Case("a_hyphen_joined_credential_ending_a_name",
+         "John Smith MD-PhD",
+         {"given": "John", "family": "Smith", "suffix": "MD-PhD"},
+         classification="fix(#752)",
+         notes="1.4.0 through 2.6.0 read middle 'Smith', family "
+               "'MD-PhD'"),
+    Case("a_joined_credential_ending_the_given_part",
+         "Smith, John MD/PhD",
+         {"given": "John", "family": "Smith", "suffix": "MD/PhD"},
+         classification="fix(#752)",
+         notes="1.4.0 through 2.6.0 read middle 'MD/PhD'"),
+    Case("a_joined_credential_with_nothing_before_the_comma",
+         ", MD/PhD",
+         {"suffix": "MD/PhD"},
+         classification="fix(#752)",
+         notes="the empty-head comma shape; 1.4.0 through 2.6.0 read "
+               "given 'MD/PhD'"),
+    Case("a_joined_credential_of_dotted_chunks",
+         "John Smith, M.D./Ph.D.",
+         {"given": "John", "family": "Smith", "suffix": "M.D./Ph.D."},
+         classification="fix(#752)",
+         notes="a chunk counts as it does as a word of its own, periods "
+               "and all; 1.4.0 through 2.6.0 read the name reversed"),
+    Case("a_joined_credential_behind_a_hyphenated_surname",
+         "John Smith-Jones, MD-PhD",
+         {"given": "John", "family": "Smith-Jones", "suffix": "MD-PhD"},
+         classification="fix(#752)",
+         notes="the two hyphens side by side: the surname's chunks are "
+               "not listed, the credential's are; 1.4.0 through 2.6.0 "
+               "read given 'MD-PhD', family 'John Smith-Jones'"),
+    Case("a_joined_word_with_one_unlisted_chunk_is_a_name_word",
+         "John Smith MD-Jones",
+         {"given": "John", "middle": "Smith", "family": "MD-Jones"},
+         notes="the boundary: every chunk, not any, because a hyphen "
+               "also joins names"),
+    Case("a_joined_credential_with_a_bare_ambiguous_chunk_keeps_its_reading",
+         "John Smith, MA/PhD",
+         {"given": "MA/PhD", "family": "John Smith"},
+         notes="rules/S3's Accepted cost: a bare member of the ambiguous "
+               "class is no chunk the stricter test counts"),
     Case("paired_initials_in_a_caseless_script_keep_the_position_reading",
          "สมชาย ใจดี พ.บ.",
          {"given": "สมชาย", "family": "ใจดี", "suffix": "พ.บ."},

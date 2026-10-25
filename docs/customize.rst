@@ -1138,6 +1138,21 @@ Through 2.3 the undeclared reading was given ``RN``, family ``Jane
 Smith`` and suffix ``CRNA``, so the delimiter was the only way to get
 the name right.
 
+A hyphen or a slash written between two credentials with no space needs
+no declaring when every part is a listed credential that is not also a
+name, because the word then reads as one credential (since 2.7). A part
+that may be a name, such as ``MA``, keeps the word a name word, since a
+hyphen also joins surnames:
+
+.. doctest::
+
+    >>> joined = parse("Jane Smith, RN/CRNA")
+    >>> joined.given, joined.family, joined.suffix
+    ('Jane', 'Smith', 'RN/CRNA')
+    >>> joined = parse("Jane Smith, MA/CRNA")
+    >>> joined.given, joined.family
+    ('MA/CRNA', 'Jane Smith')
+
 .. _unlisted-credentials:
 
 Credentials the vocabulary doesn't list

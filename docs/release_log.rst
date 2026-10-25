@@ -4,6 +4,10 @@ Release Log
 
     nameparser 2.7 is under development.
 
+    **Behavior Changes**
+
+    - **Read a credential joined by a hyphen or a slash as a suffix.** ``John Smith, MD/PhD`` gives first ``John``, last ``Smith``, suffix ``MD/PhD``, where 1.4.0 through 2.6.0 gave first ``MD/PhD``, last ``John Smith``; ``MD-PhD`` and ``PhD/MD`` read the same. Every part has to be a listed credential that is not also a name, so ``Smith-Jones`` is untouched and ``John Smith, MA/PhD`` still reverses. :issue:`752`
+
 * 2.6.0 - October 25, 2026
 
     nameparser 2.6 ships the default vocabulary as per-word data files, adds an opt-in reading for names with two family names, and fixes words read as a credential or a title that are part of the name. Highlights:

@@ -15,7 +15,7 @@ from nameparser._pipeline._vocab import (
     is_single_letter_numeral, split_pair,
     is_suffix_lenient, is_suffix_strict, is_title_shaped, is_wholly_suffix,
     maiden_marker_run, name_word_count, period_joined_vocab, written_as_a_name,
-    resolve_script_set, single_script,
+    resolve_script_set, single_script, suffix_as_written,
 )
 from nameparser._policy import (Policy, Script, _NO_INITIALS,
                                 _SCRIPT_RANGES)
@@ -270,9 +270,10 @@ def test_is_wholly_suffix() -> None:
     # diagnosed a long way from its cause.
     assert is_wholly_suffix(["Lt.Jr."], lex, pol)        # period-joined
     assert not is_wholly_suffix(["Lt.Smith"], lex, pol)  # no suffix chunk
-    delim = Policy(extra_suffix_delimiters=frozenset({"/"}))
-    assert is_wholly_suffix(["PhD/MD"], lex, delim)      # delimiter split
-    assert not is_wholly_suffix(["PhD/MD"], lex, pol)
+    delim = Policy(extra_suffix_delimiters=frozenset({"+"}))
+    assert is_wholly_suffix(["PhD+MD"], lex, delim)      # delimiter split
+    assert not is_wholly_suffix(["PhD+MD"], lex, pol)
+    assert is_wholly_suffix(["PhD/MD"], lex, pol)        # joined (S3)
 
 
 def test_is_wholly_suffix_empty_run_is_false() -> None:
@@ -393,6 +394,30 @@ def test_period_joined_vocab_retires_the_single_character_chunk() -> None:
     assert period_joined_vocab("田.中.", lex) is None
     assert period_joined_vocab("이.박.", lex) is None
     assert period_joined_vocab("たな.か.", lex) is None
+
+
+@pytest.mark.parametrize("text, expected", [
+    ("MD/PhD", True),
+    ("MD-PhD", True),
+    ("MD/PhD/MPH", True),
+    ("md-phd", True),
+    ("M.D./Ph.D.", True),   # a chunk counts as written, periods and all
+    ("M.A./Ph.D.", True),   # an ambiguous acronym written with its periods
+    ("MA/PhD", False),      # a bare member of the ambiguous class
+    ("PhD/Ed", False),
+    ("Smith-Jones", False),  # a hyphen also joins names
+    ("MD-Jones", False),    # every chunk, not any
+    ("MD/", False),         # an empty chunk is no chunk
+    ("/MD", False),
+    ("MD//PhD", False),
+    ("MD+PhD", False),      # '+' is no joiner
+])
+def test_suffix_as_written_reads_a_joined_credential(
+        text: str, expected: bool) -> None:
+    # a word joined by a hyphen or a slash is a suffix only
+    # where EVERY chunk counts as a suffix as written (#752)
+    lex = Lexicon.default()
+    assert suffix_as_written(_normalize(text), text, lex) is expected
 
 
 def test_ambiguous_class_candidate_admits_a_by_shape_member() -> None:

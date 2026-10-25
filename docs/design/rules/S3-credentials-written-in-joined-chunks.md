@@ -1,6 +1,6 @@
-# S3 — credentials written with interior periods
+# S3 — credentials written in joined chunks
 
-**When:** a word written with interior periods stands in a name, as in "John Smith Msc.Ed.".
+**When:** a word written in chunks, joined by interior periods or by a hyphen or a slash, stands in a name, as in "John Smith Msc.Ed.".
 
 **Then:** a word with interior periods reads as a suffix when any of its period-separated chunks is suffix vocabulary, and a word of two or more period-separated chunks that no vocabulary claims is read by POSITION instead, as a bare ambiguous acronym is (S4).
 
@@ -22,8 +22,21 @@
   "john smith x.y.z."         →  suffix="x.y.z."
   "John Smith 1.4"            →  family="1.4"  · boundary
   ```
+- **A word joined by a hyphen or a slash** is read by a stricter test than the periods' any: a word whose chunks are joined by a hyphen or a slash reads as a suffix when every chunk counts as a suffix as written, which is to say listed and not a bare member of the ambiguous class (S4), a chunk's own periods counting as they do in a word of its own. One chunk that does not count leaves the word as it would be without this bullet, and a joiner standing alone or glued to one side joins nothing.
+  ```
+  "John Smith, MD/PhD"        →  suffix="MD/PhD"
+  "John Smith MD-PhD"         →  suffix="MD-PhD"
+  "Smith, John MD/PhD"        →  suffix="MD/PhD"
+  ", MD/PhD"                  →  suffix="MD/PhD"
+  "John Smith, M.D./Ph.D."    →  suffix="M.D./Ph.D."
+  "john smith, ms-pt"         →  suffix="ms-pt"
+  "John Smith-Jones, MD-PhD"  →  family="Smith-Jones"
+  "John Smith-Jones"          →  family="Smith-Jones"  · boundary
+  "Smith, Mary-Jane"          →  given="Mary-Jane"  · boundary
+  "John Smith MD-Jones"       →  family="MD-Jones"  · boundary
+  ```
 
-**Because:** credentials are often written run together with periods, and the chunks between the periods are what carry the vocabulary. A word of several chunks that no vocabulary knows is still written the way a credential is written. An acronym that is also an ordinary name is unmistakably a credential when its periods are written.
+**Because:** credentials are often written run together, with periods between their parts or a hyphen or a slash between two of them, and the chunks are what carry the vocabulary. A word of several chunks that no vocabulary knows is still written the way a credential is written. An acronym that is also an ordinary name is unmistakably a credential when its periods are written.
 
 ```
 "John Smith Msc.Ed."        →  suffix="Msc.Ed."
@@ -64,6 +77,11 @@
 
 **Accepted:**
 
+- A joined credential with a chunk that is a bare member of the ambiguous class keeps the reading it had before joined chunks were read, where a name in front of a comma is reversed: the hyphen joins names too, and a name word joined to a listed credential is not one the stricter test may take.
+  ```
+  "John Smith, MA/PhD"        →  given="MA/PhD"
+  "John Smith, MA/PhD"        →  family="John Smith"
+  ```
 - An unlisted credential of two letters written with its periods behind a full name reads as the family name, and the reading is reported: King's Counsel, which no vocabulary lists, is the case.
   ```
   "John Smith K.C."           →  family="K.C."
@@ -76,5 +94,5 @@
 - The initialless-script clause carries no example line of its own. Every input that exercises it composes a script that writes no abbreviations with a period that only a Latin convention writes — `John Smith 田.中.` is the shape — and a composed form no writing system produces is tolerated input rather than contract, which an example of a normative rule would promise. So the witnesses are the tolerated row tests/v2/cases.py's an_initialless_script_glued_into_periods_is_not_this_shape and the CJK assertions in tests/v2/pipeline/test_vocab.py's test_period_joined_vocab_retires_the_single_character_chunk. W3 states the same precedence for the same reason.
 
 ---
-**Signal:** shape: a word with interior periods, read by its chunks or as the acronym its letters spell, and for paired initials whether its script writes capitals
+**Signal:** shape: a word in chunks joined by interior periods, a hyphen or a slash, read by its chunks or as the acronym its letters spell, and for paired initials whether its script writes capitals
 **history:** decisions/S3 · **implemented:** nameparser/_pipeline/_classify.py, nameparser/_pipeline/_comma.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py

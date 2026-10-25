@@ -560,9 +560,38 @@ def suffix_as_written(n: str, text: str, lexicon: Lexicon) -> bool:
     a = n.replace(".", "")
     if a in lexicon.suffix_acronyms_ambiguous and _dotted(text):
         return True
-    return (a in lexicon.suffix_acronyms
-            and a not in lexicon.suffix_acronyms_ambiguous) \
-        or n in lexicon.suffix_words
+    if ((a in lexicon.suffix_acronyms
+            and a not in lexicon.suffix_acronyms_ambiguous)
+            or n in lexicon.suffix_words):
+        return True
+    # the joiners asked in C first, so a word holding neither pays no
+    # frame
+    return ("-" in n or "/" in n) and _joined_credential(text, lexicon)
+
+
+#: What joins the chunks of a joined credential ('MD/PhD', 'MD-PhD').
+_JOINERS = re.compile(r"[-/]")
+
+
+# rules/S3: "a word whose chunks are joined by a hyphen or a slash
+# reads as a suffix when every chunk counts as a suffix as written" --
+# the stricter test, every chunk rather than any, because a hyphen also
+# joins names (decisions/S3 (#752))
+def _joined_credential(text: str, lexicon: Lexicon) -> bool:
+    """Whether TEXT is two or more chunks joined by '-' or '/', each
+    non-empty and each counting as a suffix as written: listed, and
+    not a bare member of the ambiguous class ('MD/PhD', 'M.A.-Ph.D.',
+    but not 'MA/PhD', 'Smith-Jones' or 'MD/'). A chunk holds no joiner,
+    so the recursion is one level deep. A loop rather than `all()` over
+    a generator, which would cost a frame per chunk: a hyphenated name
+    ('Smith-Jones') stops at its first chunk."""
+    chunks = _JOINERS.split(text)
+    if len(chunks) < 2:
+        return False
+    for c in chunks:
+        if not (c and suffix_as_written(_normalize(c), c, lexicon)):
+            return False
+    return True
 
 
 def _is_suffix_strict_n(n: str, text: str, lexicon: Lexicon,
