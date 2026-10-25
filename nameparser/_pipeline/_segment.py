@@ -162,7 +162,10 @@ def segment(state: ParseState) -> ParseState:
                       and ("." not in t
                            or period_joined_vocab(t, state.lexicon)
                            != "title")
-                      and not ((g := glued_stem(t, cores))
+                      # the pre-check keeps glued_stem's frame off a
+                      # word that holds no core (its docstring's terms)
+                      and not ((";" in t or len(cores) > 1)
+                               and (g := glued_stem(t, cores))
                                and _normalize(g) in titles)])
         return len(rest) < len(seg) and (not rest or suffixy(rest))
 

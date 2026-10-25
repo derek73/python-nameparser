@@ -569,17 +569,21 @@ def delimiter_cores(policy_delimiters: frozenset[str]) -> frozenset[str]:
 # and the run test below (decisions/C10).
 def glued_stem(text: str, cores: frozenset[str]) -> str | None:
     """The word a delimiter core glued to ONE end of `text` leaves
-    ('MD;' -> 'MD', ';PhD' -> 'PhD'), or None: no core in the text, a
-    core standing alone, one inside a word ('MD;PhD', which
-    splits_into_suffixes reads), more than one, or a core that is
-    itself a word (see glues). Callers test `core in text` inline
-    first, so a word with no core pays no frame."""
-    for core in cores:
-        if core in text and glues(core):
-            stems = text.split(core)
-            if len(stems) == 2 and (not stems[0]) != (not stems[1]):
-                return stems[0] or stems[1]
-            return None
+    ('MD;' -> 'MD', ';PhD' -> 'PhD', 'MD-PhD;' -> 'MD-PhD' under '-'),
+    or None: no core at an end of the text, a core standing alone, one
+    inside a word only ('MD;PhD', which splits_into_suffixes reads), or
+    a core that is itself a word (see glues). Every core is tried, in
+    sorted order, so the answer never depends on a set's iteration
+    order (the second review of #871: 'MD/PhD; MBA' under '/' read two
+    ways by hash seed). Callers test `core in text` inline first, so a
+    word with no core pays no frame."""
+    for core in sorted(cores):
+        if (core in text and glues(core) and text.count(core) == 1
+                and len(text) > len(core)):
+            if text.endswith(core):
+                return text[:-len(core)]
+            if text.startswith(core):
+                return text[len(core):]
     return None
 
 

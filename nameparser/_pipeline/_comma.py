@@ -320,15 +320,16 @@ def decide(state: ParseState) -> ParseState:
     texts: dict[int, str] = {}
     for i in part:
         text = texts[i] = tokens[i].text
+        here = False
         for core in cores:
             if core in text:
                 cored = True
                 if text not in cores and glues(core):
-                    glued = True
-                    stem = glued_stem(text, cores)
-                    if stem is not None:
-                        texts[i] = stem
-                break
+                    here = glued = True
+        if here:
+            stem = glued_stem(text, cores)
+            if stem is not None:
+                texts[i] = stem
     # The words of the class in the part, and the unlisted all-caps
     # words the caps shape could admit: only a part holding one asks
     # the count, so 'Smith, John' and 'John Smith, PhD' never build it.

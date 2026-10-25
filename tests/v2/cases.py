@@ -7777,6 +7777,17 @@ CASES: tuple[Case, ...] = (
                "middle 'van;'. RECORDED NEGATIVE CONTROL: with the "
                "particle tags dropped this reads middle 'van;' (the "
                "design-docs review of this change)"),
+    Case("glued_semicolon_beside_a_declared_core_inside_the_word",
+         "Jane Smith, MD/PhD; MBA",
+         {"given": "Jane", "family": "Smith", "suffix": "MD/PhD; MBA"},
+         policy=Policy(extra_suffix_delimiters=frozenset({"/"})),
+         classification="fix(semicolon-suffix-delimiter)",
+         notes="'MD/PhD;' holds '/' inside and ';' glued at its end: "
+               "the glued one is found whatever order the cores are "
+               "tried in, and the stem 'MD/PhD' splits under '/' "
+               "(rules/C10). Before #871's second review the first core "
+               "found decided, and the reading changed with the hash "
+               "seed (given 'MD/PhD;' on 3 of 8 seeds)"),
     Case("declared_word_delimiter_is_not_glued", "John Smith, Stand",
          {"given": "Stand", "family": "John Smith"},
          policy=Policy(extra_suffix_delimiters=frozenset({" and "})),
