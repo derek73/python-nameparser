@@ -2,7 +2,12 @@ Release Log
 ===========
 * 2.6.0 - Unreleased
 
-    nameparser 2.6 is under development.
+    nameparser 2.6 ships the default vocabulary as per-word data files, adds an opt-in reading for names with two family names, and fixes words read as a credential or a title that are part of the name. Highlights:
+
+    - **Credentials that are also surnames.** ``Luo Si`` and ``Maria de Sa`` give family ``Si`` and ``de Sa``, where 2.5 read ``Si`` and ``Sa`` as credentials.
+    - **Abbreviated given names.** ``Wm Smith`` and ``Mr Md Karim Uddin`` give first ``Wm`` and ``Md``, where 2.5 read both as titles.
+    - **More credentials after a comma.** ``John Smith, MBChB`` gives suffix ``MBChB``, where 2.5 gave first ``MBChB``, last ``John Smith``.
+    - **Names with two family names, on request.** ``Policy(two_family_names=True)`` reads ``Gabriel García Márquez`` with family ``García Márquez``.
 
     **Additions**
 
@@ -17,7 +22,7 @@ Release Log
     - **Fix case repair writing a joined credential like a hyphenated name.** ``john smith, kchs/dchs`` repairs to ``John Smith KCHS/DCHS``, where 2.0.0 through 2.5.0 gave ``Kchs/Dchs``; a listed acronym joined by a hyphen or slash is written in capitals as one word, and a casing the caller records for it wins. Hyphenated names such as ``Smith-Jones`` keep their per-part casing. :issue:`808`
     - **Add Cllr as a title.** ``Cllr John Smith`` gives title ``Cllr``, first ``John``, last ``Smith``, where 1.4.0 through 2.5.0 gave first ``Cllr``, middle ``John``. A bare ``Cllr`` after the name is still a name word. :issue:`847`
     - **Fix case repair lowering a capital after a full stop or an ayn.** ``j.r.r. tolkien`` repairs to ``J.R.R. Tolkien`` and ``AHMAD IBN-ʿALĪ`` to ``Ahmad ibn-ʿAlī``, where 1.4.0 through 2.5.0 gave ``J.r.r.`` and ``ʿalī``. A joined word is written the same way (``st.john`` gives ``St.John``), so an unlisted abbreviation's ending is capitalized too: ``dr.philol.`` gives ``Dr.Philol.``. :issue:`838`
-    - **Add the Italian abbreviated salutations such as Sig.ra and Dott.ssa as titles.** ``Dott.ssa Anna Bianchi`` gives title ``Dott.ssa``, first ``Anna``, where 1.4.0 through 2.5.0 gave first ``Dott.ssa``, middle ``Anna``, and ``SIG.RA MARIA ROSSI`` repairs to ``Sig.ra Maria Rossi``. A bare ``Sig`` or ``Ing`` before a name is still read as a first name. :issue:`840`
+    - **Add the Italian abbreviated salutations such as Dott.ssa and Sig.na as titles.** ``Dott.ssa Anna Bianchi`` gives title ``Dott.ssa``, first ``Anna``, where 1.4.0 through 2.5.0 gave first ``Dott.ssa``, middle ``Anna``. A bare ``Sig`` or ``Ing`` before a name is still read as a first name. :issue:`840`
     - **Add Júnior as a suffix.** ``José Silva Júnior`` gives last ``Silva``, suffix ``Júnior``, as ``José Silva Junior`` does, where 1.4.0 through 2.5.0 gave middle ``Silva``, last ``Júnior``. ``Filho``, ``Neto`` and ``Sobrinho`` still read as the last name. :issue:`843`
     - **Read a semicolon between post-nominals as a comma.** ``John Smith, MD; PhD`` gives first ``John``, last ``Smith``, suffix ``MD; PhD``, where 1.4.0 through 2.5.0 gave first ``MD;``, last ``John Smith``. A delimiter set in ``extra_suffix_delimiters`` counts the same way when glued to a suffix word or written between two (``MD/PhD``), and a semicolon before the first comma (``John Smith MD; PhD``) is still read as part of a word. :issue:`871`
     - **Read a leading Md as the given name it abbreviates, Muhammad, rather than a title.** ``Mr Md Karim Uddin`` gives title ``Mr``, first ``Md``, middle ``Karim``, where 1.4.0 through 2.5.0 gave title ``Mr Md``, first ``Karim``; ``John Smith, MD Jones`` gives last ``Smith``, suffix ``MD Jones`` where it gave title ``MD``, last ``John Smith``. ``MD`` after a name is still the degree, and ``Md.`` with a full stop is still a title. One limit: ``Md`` opening the part after a family comma reads as a credential, so ``Uddin, Md Karim`` gives suffix ``Md Karim`` where it gave title ``Md``, first ``Karim``. :issue:`853`

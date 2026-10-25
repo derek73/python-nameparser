@@ -7,12 +7,12 @@ nameparser parses human names into seven fields — title, given, middle,
 family, suffix, nickname, maiden. Results are immutable, configuration is
 composable, and locale packs are opt-in.
 
-📣 **nameparser 2.5 is out.** It reads junior and senior written in 45
-languages (``Antonio Pavlović mlađi``), keeps a title written before a
-family comma out of the surname (``Dr. Smith, John``), reads Chinese and
-Japanese credential and office words (``田中社長``), and gives a lone first
-name followed by V, I or X its last name back (``Malcolm X``). The `release
-log <https://nameparser.readthedocs.io/en/latest/release_log.html>`__ has
+📣 **nameparser 2.6 is out.** It keeps surnames that earlier releases
+read as credentials (``Luo Si``, ``Maria de Sa``, ``Ram Bahadur B.K.``),
+reads ``Wm`` and ``Md`` as the given names they abbreviate, recognizes more credentials after a comma
+(``John Smith, MBChB``), and adds an opt-in reading for names with two
+family names (``Gabriel García Márquez``). The `release log
+<https://nameparser.readthedocs.io/en/latest/release_log.html>`__ has
 the details.
 
 Chinese, Japanese and Korean names written in their own scripts are read
