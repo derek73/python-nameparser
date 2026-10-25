@@ -4,10 +4,10 @@ Release Log
 
     nameparser 2.6 ships the default vocabulary as per-word data files, adds an opt-in reading for names with two family names, and fixes words read as a credential or a title that are part of the name. Highlights:
 
-    - **Credentials that are also surnames.** ``Luo Si`` and ``Maria de Sa`` give family ``Si`` and ``de Sa``, where 2.5 read ``Si`` and ``Sa`` as credentials.
-    - **Abbreviated given names.** ``Wm Smith`` and ``Mr Md Karim Uddin`` give first ``Wm`` and ``Md``, where 2.5 read both as titles.
-    - **More credentials after a comma.** ``John Smith, MBChB`` gives suffix ``MBChB``, where 2.5 gave first ``MBChB``, last ``John Smith``.
-    - **Names with two family names, on request.** ``Policy(two_family_names=True)`` reads ``Gabriel García Márquez`` with family ``García Márquez``.
+    - **An opt-in reading for names with two family names.** ``Policy(two_family_names=True)`` reads ``Gabriel García Márquez`` with family ``García Márquez``.
+    - **Surnames that are also credentials read as surnames.** ``Luo Si`` and ``Maria de Sa`` give family ``Si`` and ``de Sa``, where 2.5 read ``Si`` and ``Sa`` as credentials.
+    - **Wm and Md read as the given names they abbreviate.** ``Wm Smith`` and ``Mr Md Karim Uddin`` give first ``Wm`` and ``Md``, where 2.5 read both as titles.
+    - **More credentials after a comma read as suffixes.** ``John Smith, MBChB`` gives suffix ``MBChB``, where 2.5 gave first ``MBChB``, last ``John Smith``.
 
     **Additions**
 
