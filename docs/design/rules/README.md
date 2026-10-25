@@ -140,7 +140,7 @@ Terms the rules use without defining them each time, each with the rule that def
 
 - [S1 — a bracketed credential is not a nickname](S1-bracketed-credential-is-not-a-nickname.md)
 - [S2 — a suffix word ends a name and never opens the string](S2-suffix-word-ends-a-name-and-never-opens-the-string.md)
-- [S3 — credentials written with interior periods](S3-credentials-written-with-interior-periods.md)
+- [S3 — credentials written in joined chunks](S3-credentials-written-in-joined-chunks.md)
 - [S4 — the ambiguous acronym needs words to spare](S4-ambiguous-acronym-needs-words-to-spare.md)
 - [S5 — the given part's trailing slot after a family comma](S5-given-parts-trailing-slot-after-a-family-comma.md)
 - [S6 — the case signal at the suffix slot](S6-case-signal-at-the-suffix-slot.md)

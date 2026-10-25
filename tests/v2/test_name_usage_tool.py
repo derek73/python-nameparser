@@ -1985,14 +1985,16 @@ def test_main_exits_2_on_an_unusable_tally_without_losing_the_other_sources(
 def test_main_rank_lists_credentials_with_vocabulary_and_readings(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
         capsys: pytest.CaptureFixture[str]) -> None:
-    _cache_tally(monkeypatch, tmp_path, _tally(RA=50, **{"QRS-C": 40}, ESQ=3))
+    # Q-R-S still reverses after a comma: joined single letters are no
+    # caps shape (rules/S9), so the given-name readout stays exercised
+    _cache_tally(monkeypatch, tmp_path, _tally(RA=50, **{"Q-R-S": 40}, ESQ=3))
     assert tool.main(["--no-wikidata", "--json", "--rank", "5"]) == 0
     rows = {r["credential"]: r for r in json.loads(capsys.readouterr().out)["rows"]}
     assert [r["rank"] for r in rows.values()] == [1, 2, 3]
     assert rows["RA"]["vocabulary"] == "acronym, title"
     assert (rows["RA"]["after_comma"], rows["RA"]["bare"]) == ("suffix", "suffix")
-    assert rows["QRS-C"]["vocabulary"] == "-"
-    assert (rows["QRS-C"]["after_comma"], rows["QRS-C"]["bare"]) == ("given", "family")
+    assert rows["Q-R-S"]["vocabulary"] == "-"
+    assert (rows["Q-R-S"]["after_comma"], rows["Q-R-S"]["bare"]) == ("given", "family")
     assert rows["ESQ"]["vocabulary"] == "suffix word"
     assert rows["RA"]["census"] == "not downloaded"
 
@@ -2152,12 +2154,12 @@ def test_main_rank_prints_a_table(
         capsys: pytest.CaptureFixture[str]) -> None:
     # Every other rank test reads --json, so a bad format spec in the
     # table would have crashed the default output unseen.
-    _cache_tally(monkeypatch, tmp_path, _tally(MD=5000, **{"QRS-C": 40}))
+    _cache_tally(monkeypatch, tmp_path, _tally(MD=5000, **{"Q-R-S": 40}))
     assert tool.main(["--no-wikidata", "--rank", "2"]) == 0
     lines = capsys.readouterr().out.splitlines()
     assert lines[0].startswith("5,040 of 5,040 individual providers")
     assert lines[1].split()[:3] == ["rank", "credential", "providers"]
-    assert lines[3].split()[:4] == ["2", "QRS-C", "40", "0.79%"]
+    assert lines[3].split()[:4] == ["2", "Q-R-S", "40", "0.79%"]
     assert lines[3].split()[4:7] == ["-", "given", "family"]
 
 

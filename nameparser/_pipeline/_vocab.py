@@ -604,9 +604,60 @@ def suffix_as_written(n: str, text: str, lexicon: Lexicon) -> bool:
     a = n.replace(".", "")
     if a in lexicon.suffix_acronyms_ambiguous and _dotted(text):
         return True
-    return (a in lexicon.suffix_acronyms
-            and a not in lexicon.suffix_acronyms_ambiguous) \
-        or n in lexicon.suffix_words
+    if ((a in lexicon.suffix_acronyms
+            and a not in lexicon.suffix_acronyms_ambiguous)
+            or n in lexicon.suffix_words):
+        return True
+    # the joiners asked in C first, so a word holding neither pays no
+    # frame
+    return ("-" in n or "/" in n) and _joined_credential(text, lexicon)
+
+
+#: What joins the chunks of a joined credential ('MD/PhD', 'MD-PhD').
+_JOINERS = re.compile(r"[-/]")
+
+
+# rules/S3: "a word whose chunks are joined by a hyphen or a slash
+# reads as a suffix when every chunk counts as a suffix as written" --
+# the stricter test, every chunk rather than any, because a hyphen also
+# joins names (decisions/S3 (#752))
+def _joined_credential(text: str, lexicon: Lexicon) -> bool:
+    """Whether TEXT is two or more chunks joined by '-' or '/', each
+    non-empty and each counting as a suffix as written: listed, and
+    not a bare member of the ambiguous class, and not every one a
+    single ASCII character, and -- joined by a hyphen -- not
+    written as a hyphenated name is ('MD/PhD', 'M.A.-Ph.D.', 'PhD-Md',
+    'md-phd', but not 'MA/PhD', 'Smith-Jones', 'I-V', 'Ae-Ra', 'Ae-ra'
+    or 'MD/'). A chunk holds no joiner,
+    so the recursion is one level deep. A loop rather than `all()` over
+    a generator, which would cost a frame per chunk: a hyphenated name
+    ('Smith-Jones') stops at its first chunk."""
+    # the caller found a joiner, so there are two chunks at least
+    chunks = _JOINERS.split(text)
+    whole = False  # a chunk that is not a single ASCII character
+    # every chunk so far written as a name's; a slash joins no name, so
+    # a word holding one takes no cue
+    named = "/" not in text
+    for k, c in enumerate(chunks):
+        if not (c and suffix_as_written(_normalize(c), c, lexicon)):
+            return False
+        # its periods are not the chunk's ('I.' is 'i'), as in a word
+        # split at its periods
+        bare = c.replace(".", "")
+        whole = whole or len(bare) > 1 or not bare.isascii()
+        # the first chunk in Title case, a later one in Title case or
+        # lower case ('Ae-Ra', 'Ae-ra')
+        named = named and (
+            len(bare) > 1 and bare[0].isupper() and bare[1:].islower()
+            or k > 0 and bare.islower())
+    # rules/S3: "Every chunk the vocabulary matches is a single ASCII
+    # character" -- the numerals and the digit, which are about
+    # generations, make no joined word a suffix either ('Jack I-V');
+    # rules/S3: "a word joined by a hyphen and written the way a
+    # hyphenated name is, its first chunk in Title case and every other
+    # in Title case or lower case, is a name word" -- where a
+    # credential's chunks are not (decisions/S3 (#752))
+    return whole and not named
 
 
 def _is_suffix_strict_n(n: str, text: str, lexicon: Lexicon,
@@ -860,9 +911,11 @@ def ambiguous_class_member(text: str, lexicon: Lexicon) -> bool:
 def caps_shape_candidate(text: str, lexicon: Lexicon, policy: Policy,
                          one_case: bool | None) -> bool:
     """Whether TEXT is an UNLISTED all-caps credential candidate: two
-    or more alphabetic characters, no period (a period fails
-    `isalpha()` outright, which is what excludes the dotted spelling
-    here for free -- no separate '.' test needed), written in a name
+    or more alphabetic characters, or letter chunks joined by '-' or
+    '/' (`_joined_capitals`, #752), no period (a period fails
+    `isalpha()` and the joined pattern outright, which is what excludes
+    the dotted spelling here for free -- no separate '.' test needed),
+    written in a name
     `one_case` says is mixed (`one_case is False`; `None`, "not
     established", declines exactly as if the name were one case).
 
@@ -901,9 +954,31 @@ def caps_shape_candidate(text: str, lexicon: Lexicon, policy: Policy,
         return False
     if not text.isascii():
         text = unicodedata.normalize("NFC", text)
-    if not (len(text) >= 2 and text.isalpha() and text.isupper()):
+    if not (len(text) >= 2 and text.isalpha() and text.isupper()
+            or _joined_capitals(text)):
         return False
     return not in_any_wordlist(_normalize(text), lexicon)
+
+
+#: A word of letter chunks joined by '-' or '/' ('PU-PH', 'MD/MBA').
+_JOINED_LETTERS = re.compile(
+    r'(?:' + _LETTER + r')+(?:[-/](?:' + _LETTER + r')+)+')
+
+
+# rules/S9: "an unlisted word of capitals whose letter chunks are joined
+# by a hyphen or a slash, one of them of two or more letters, is that
+# shape too" -- the caps shape's joined spelling (decisions/S9 (#752))
+def _joined_capitals(text: str) -> bool:
+    """Whether TEXT is capitals in letter chunks joined by '-' or '/',
+    one chunk of two or more letters ('PU-PH', 'MS-OMPT', not 'A-B',
+    'MD/' or 'PU-PH2'). Its callers test `isupper()` and a joiner in C
+    first, so a word holding neither pays no frame."""
+    if not (text.isupper() and _JOINED_LETTERS.fullmatch(text)):
+        return False
+    for chunk in _JOINERS.split(text):
+        if composed_len(chunk) >= 2:
+            return True
+    return False
 
 
 def is_caps_word(text: str) -> bool:

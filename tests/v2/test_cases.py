@@ -237,9 +237,11 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # sa and the listed `ma` twins, three of them reporting; 1415 ->
     # 1445 the same day: #752's numeral rows (phase 2f) and the
     # 'Dr. Smith VI, John' row, which reports since, each claim under
-    # the three orders.
-    assert claims == 1445, (
-        f"the field sweep checks {claims} claims, recorded as 1445 on "
+    # the three orders; 1445 -> 1451 the same day: #752's two
+    # joined-capitals rows that report (phase 2d), one suffix-or-name
+    # claim under each order.
+    assert claims == 1451, (
+        f"the field sweep checks {claims} claims, recorded as 1451 on "
         f"2026-10-25")
 
 
