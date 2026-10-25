@@ -219,10 +219,12 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # review's 'Novak, ING.' row; 1359 -> 1362 the same day: #853's
     # 'Uddin, Md Karim' row, one suffix-or-name claim under the three
     # orders; 1362 -> 1365 the same day: the review's 'Uddin, Mr Md
-    # Karim' row, the same claim behind a title.
-    assert claims == 1365, (
-        f"the field sweep checks {claims} claims, recorded as 1365 on "
-        f"2026-10-23")
+    # Karim' row, the same claim behind a title; 1365 -> 1368 on
+    # 2026-10-24: the glued-semicolon row 'John Smith, MA; PhD', one
+    # suffix-or-name claim under the three orders.
+    assert claims == 1368, (
+        f"the field sweep checks {claims} claims, recorded as 1368 on "
+        f"2026-10-24")
 
 
 def test_every_case_name_is_unique() -> None:

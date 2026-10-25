@@ -7692,6 +7692,135 @@ CASES: tuple[Case, ...] = (
                "rather than only what was dropped. The bare-policy "
                "spelling of this string is a corpus name and reads "
                "the same, the dash being no delimiter there either"),
+    Case("semicolon_glued_after_a_whole_name", "John Smith, MD; PhD",
+         {"given": "John", "family": "Smith", "suffix": "MD; PhD"},
+         classification="fix(semicolon-suffix-delimiter)",
+         notes="the semicolon is a suffix delimiter by default, and one "
+               "glued to a suffix word reads the word as it would read "
+               "without it, so the part is the credential run "
+               "(rules/C10). The word keeps its semicolon, one entry "
+               "'MD; PhD' as written. 1.4.0 through 2.5.0 read given "
+               "'MD;', family 'John Smith', suffix 'PhD'"),
+    Case("semicolon_inside_a_word", "John Smith, MD;PhD",
+         {"given": "John", "family": "Smith", "suffix": "MD;PhD"},
+         classification="fix(semicolon-suffix-delimiter)",
+         notes="the in-word split a declared delimiter always had "
+               "('RN/CRNA' under '/'), the token kept whole (rules/C10). "
+               "1.4.0 through 2.5.0 read given 'MD;PhD'"),
+    Case("semicolon_standing_alone_is_dropped", "John Smith, MD ; PhD",
+         {"given": "John", "family": "Smith", "suffix": "MD, PhD"},
+         classification="fix(semicolon-suffix-delimiter)",
+         notes="a delimiter standing alone in a trailing part is "
+               "dropped and its entries render with the comma it "
+               "stands for (rules/C10's Accepted bullet). 1.4.0 and "
+               "2.5.0 read title 'MD', given ';'; the 2.6 cycle "
+               "before this read suffix 'MD ; PhD'"),
+    Case("semicolon_glued_after_one_word", "Smith, MD; PhD",
+         {"family": "Smith", "suffix": "MD; PhD"},
+         classification="fix(semicolon-suffix-delimiter)",
+         notes="behind one name word the part is the credential run "
+               "as 'Smith, MD PhD' is (rules/C10, behind any head). "
+               "1.4.0 through 2.5.0 read given 'MD;'"),
+    Case("semicolon_glued_after_an_empty_head", ", MD; PhD",
+         {"suffix": "MD; PhD"},
+         classification="fix(semicolon-suffix-delimiter)",
+         notes="the empty head AGENTS.md's comma sweep names, read as "
+               "', MD PhD' is. 1.4.0 through 2.5.0 read given 'MD;'"),
+    Case("semicolon_glued_after_a_nickname_head", "(Bob), MD;",
+         {"nickname": "Bob", "suffix": "MD;"},
+         classification="fix(semicolon-suffix-delimiter)",
+         notes="a nickname-only head, read as '(Bob), MD' is. 1.4.0 "
+               "through 2.5.0 read given 'MD;'"),
+    Case("semicolon_glued_to_a_name_word_is_the_listing_form",
+         "Smith, John; MD",
+         {"given": "John;", "family": "Smith", "suffix": "MD"},
+         notes="rules/C10's boundary: the semicolon parts suffix words, "
+               "and a name word glued to one is still a name word, so "
+               "the listing form stands, the semicolon kept in the word"),
+    Case("semicolon_glued_initial_behind_one_word", "Smith, V; MD",
+         {"given": "V;", "family": "Smith", "suffix": "MD"},
+         notes="rules/C10's Except bullet: behind a head that is not a "
+               "whole name the glued word is read by the strict test, "
+               "as 'Smith, V MD' reads 'V' as the given name"),
+    Case("semicolon_glued_ambiguous_credential", "John Smith, MA; PhD",
+         {"given": "John", "family": "Smith", "suffix": "MA; PhD"},
+         classification="fix(semicolon-suffix-delimiter)",
+         ambiguities=("suffix-or-name",),
+         notes="a word of the ambiguous class with a semicolon glued "
+               "carries the class's tags, so C4's count reads it as "
+               "'John Smith, MA PhD' does, and reports it the same way "
+               "(rules/C10). 1.4.0 through 2.5.0 read given 'MA;'"),
+    Case("semicolon_glued_to_a_split_credential_keeps_the_listing_form",
+         "John Smith, Ph. D.; MD",
+         {"title": "Ph.", "given": "D.;", "family": "John Smith",
+          "suffix": "MD"},
+         notes="rules/C10's Accepted bullet: 'Ph.' and 'D.' are one "
+               "credential only as a pair written exactly so, and 'D.;' "
+               "is not the second half of one; 'John Smith, Ph. D. MD' "
+               "reads suffix 'Ph. D. MD'"),
+    Case("semicolon_glued_to_a_connective_joins_nothing_across_it",
+         "Smith, Juan y; Maria",
+         {"given": "Juan", "middle": "y; Maria", "family": "Smith"},
+         notes="a glued word is tagged as its stem, less the tags of a "
+               "word that joins the next: the semicolon stands between "
+               "'y' and 'Maria', so P3 joins nothing across it (rules/"
+               "C10), where 'Smith, Juan y Maria' reads given 'Juan y "
+               "Maria'. RECORDED NEGATIVE CONTROL: with the joining tags "
+               "kept this reads given 'Juan y; Maria'"),
+    Case("semicolon_glued_to_a_trailing_particle", "Berg, Jan van; MD",
+         {"given": "Jan", "middle": "van;", "family": "Berg",
+          "suffix": "MD"},
+         notes="rules/C10's Accepted bullet: a glued particle joins "
+               "nothing, so P6 does not attach it, where 'Berg, Jan van "
+               "MD' reads family 'van Berg' (decisions/C10). RECORDED "
+               "NEGATIVE CONTROL: with the particle tags kept this "
+               "reads family 'van; Berg'"),
+    Case("semicolon_glued_to_a_particle_joins_nothing_across_it",
+         "Berg, de; Smith",
+         {"given": "de;", "middle": "Smith", "family": "Berg"},
+         notes="no join reaches across the delimiter (rules/C10's Then), so the "
+               "particle neither chains forward to 'Smith' nor folds it "
+               "into the family. RECORDED NEGATIVE CONTROL: with the "
+               "particle tags kept this reads family 'Berg de; Smith' "
+               "(#871's second review)"),
+    Case("glued_semicolon_beside_a_declared_core_inside_the_word",
+         "Jane Smith, MD/PhD; MBA",
+         {"given": "Jane", "family": "Smith", "suffix": "MD/PhD; MBA"},
+         policy=Policy(extra_suffix_delimiters=frozenset({"/"})),
+         classification="fix(semicolon-suffix-delimiter)",
+         notes="'MD/PhD;' holds '/' inside and ';' glued at its end: "
+               "the glued one is found whatever order the cores are "
+               "tried in, and the stem 'MD/PhD' splits under '/' "
+               "(rules/C10). Before #871's second review the first core "
+               "found decided, and the reading changed with the hash "
+               "seed (given 'MD/PhD;' on 3 of 8 seeds)"),
+    Case("declared_word_delimiter_is_not_glued", "John Smith, Stand",
+         {"given": "Stand", "family": "John Smith"},
+         policy=Policy(extra_suffix_delimiters=frozenset({" and "})),
+         notes="a declared core that is a word parts only standing "
+               "alone: 'Stand' holds 'and' and is no 'St' with it glued "
+               "(rules/C10). RECORDED NEGATIVE CONTROL: with every core "
+               "gluing, this reads title 'Stand', given 'John'"),
+    Case("semicolon_glued_to_a_numeral_ending_the_given_part",
+         "Smith, John V;",
+         {"given": "John", "middle": "V;", "family": "Smith"},
+         notes="rules/C10's Accepted bullet: the trailing numeral is told "
+               "by its letters, which 'V;' does not spell, so it stays a "
+               "name word where 'Smith, John V' reads suffix 'V'"),
+    Case("semicolon_before_the_first_comma_is_a_word",
+         "John Smith MD; PhD",
+         {"given": "John", "middle": "Smith", "family": "MD;",
+          "suffix": "PhD"},
+         notes="a semicolon where a comma would go BEFORE the first "
+               "comma is rules/T1's separator question, left open by "
+               "the change that made the semicolon a suffix delimiter "
+               "(decisions/C10): pinned so a change to it shows here"),
+    Case("semicolon_beside_a_declared_delimiter", "John Smith, MD ; PhD - FACS",
+         {"given": "John", "family": "Smith", "suffix": "MD, PhD, FACS"},
+         policy=_SD,
+         classification="fix(semicolon-suffix-delimiter)",
+         notes="a declared delimiter adds to the semicolon and does not "
+               "replace it (rules/C10)"),
     Case("family_comma_transparent_then_core",
          'John Doe, MD "Doc" PhD - FACS',
          {"given": "John", "family": "Doe", "nickname": "Doc",
