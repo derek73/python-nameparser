@@ -9,6 +9,16 @@ are never committed -- so no CI run and no reviewer sees this score,
 and its record lives in the cache beside the corpus, where a re-run
 reports what moved since it was recorded:
 
+    uv run python tools/differential/local_agreement.py psc-individuals --base ../master-checkout
+
+--base PATH scores the base checkout from a record kept under
+agreements/ beside the corpus, keyed like snapshot.py's baselines by
+the fetch, a hash of the base's nameparser/ files, the interpreter's
+minor version and the scorer's fingerprint, and scored in a child
+process where none is kept; it never reads or writes the shared record,
+which whoever last recorded decides. Without --base a check compares
+against that shared record:
+
     uv run python tools/differential/local_agreement.py psc-individuals --record --tree ../master-checkout
     uv run python tools/differential/local_agreement.py psc-individuals
 
@@ -49,6 +59,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import shutil
+import subprocess
 import sys
 import types
 from collections import Counter
@@ -236,7 +249,8 @@ def record_path(source: str) -> Path:
 def write_record(path: Path, local: local_corpora.Local, entries: dict[str, dict[str, Any]],
                  tree: str) -> None:
     header = {"raw_sha256": local.meta["sha256"], "scorer": scorer_fingerprint(),
-              "data_date": local.meta["data_date"], "tree": tree}
+              "data_date": local.meta["data_date"], "tree": tree,
+              "entries": len(entries)}
     lines = [corpus_build.jsonl_line(header)]
     lines += [corpus_build.jsonl_line({"key": k, **v}) for k, v in sorted(entries.items())]
     corpus_build.write_atomic(path, ("\n".join(lines) + "\n").encode())
@@ -268,6 +282,11 @@ def read_record(path: Path, local: local_corpora.Local) -> dict[str, dict[str, A
             f"{path} was recorded from another fetch of {local.source} (data as "
             f"of {recorded.get('data_date', 'unknown')}; the corpus now is "
             f"{local.meta['data_date']}). {again}")
+    # A record written before the header counted its entries passes; a
+    # count that disagrees is a write cut short on a line boundary.
+    if (count := recorded.get("entries", len(entries))) != len(entries):
+        raise SystemExit(f"{path} holds {len(entries):,} entries where its header "
+                         f"counts {count!r}. {again}")
     if recorded.get("scorer") != scorer_fingerprint():
         raise SystemExit(f"{path} was recorded by another version of this scorer, "
                          f"so its moves would be the scorer's. {again}")
@@ -296,8 +315,75 @@ def scorer_fingerprint() -> str:
         [repr(sorted((k, repr(v)) for k, v in FIELDED.items()))])
 
 
+#: Where --base's kept records live, beside the shared one.
+KEPT = "agreements"
+
+
+def kept_path(source: str, local: local_corpora.Local, digest: str) -> Path:
+    """Where a record of `local`'s fetch scored by a package of `digest`
+    is kept: keyed by everything a record depends on besides the parser
+    (the fetch, the interpreter's minor version, the scorer), so a key
+    that matches is a record of this base."""
+    py = f"py{sys.version_info[0]}{sys.version_info[1]}"
+    return (record_path(source).parent / KEPT
+            / f"{local.meta['sha256'][:12]}-{digest[:16]}-{py}-{scorer_fingerprint()[:12]}.jsonl")
+
+
+def _score_base(root: Path, source: str, out: Path) -> None:
+    """`root` scored into `out` in a child process (one process imports
+    one nameparser), which refuses a package other than `root`'s."""
+    import snapshot
+    command = [sys.executable, str(HERE / "local_agreement.py"), source,
+               "--record", "--tree", str(root), "--out", str(out)]
+    done = subprocess.run(command, env=snapshot.child_env(), capture_output=True,
+                          text=True)
+    if done.returncode:
+        raise SystemExit(f"scoring the base {root} failed:\n{done.stdout}{done.stderr}")
+
+
+def base_entries(root: Path, local: local_corpora.Local) -> dict[str, dict[str, Any]]:
+    """The base checkout's record, kept for its package's digest or
+    scored into one now, and a line saying which base was read. Never
+    the shared record: a sibling session's would pass for this base."""
+    import snapshot
+    digest = snapshot._source_digest(root)
+    path = kept_path(local.source, local, digest)
+    how = f"reused the kept record {path.name}"
+    if path.exists():
+        try:
+            entries = read_record(path, local)
+        except SystemExit as exc:
+            print(f"deleted the kept record {path.name}: {exc}; scoring the base\n")
+            path.unlink(missing_ok=True)
+        else:
+            try:
+                os.utime(path)
+            except FileNotFoundError:  # another run pruned it meanwhile
+                pass
+            print(f"base: {root}, nameparser/ {digest[:16]}; {how}\n")
+            return entries
+    # Scored into a folder of this run's own and renamed into place only
+    # once the digest, taken again, says the base did not change under
+    # the child: a record published under the key it was scored for.
+    at = snapshot.scratch(path.parent)
+    try:
+        _score_base(root, local.source, at / path.name)
+        entries = read_record(at / path.name, local)
+        if snapshot._source_digest(root) != digest:
+            raise SystemExit(f"{root / 'nameparser'} changed while it was scored, "
+                             f"so its record may be half old and half new; run again")
+        os.replace(at / path.name, path)
+    finally:
+        shutil.rmtree(at, ignore_errors=True)
+    snapshot._prune(path.parent, "*.jsonl")
+    print(f"base: {root}, nameparser/ {digest[:16]}; scored it now\n")
+    return entries
+
+
 def _record_command(source: str) -> str:
-    return (f"local_agreement.py {source} --record --tree <base checkout>")
+    return (f"local_agreement.py {source} --record --tree <base checkout>; or, "
+            f"where another session may be measuring, check against a base you "
+            f"name instead: local_agreement.py {source} --base <base checkout>")
 
 
 def moves(old: dict[str, dict[str, Any]], new: dict[str, dict[str, Any]],
@@ -339,14 +425,27 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--record", action="store_true",
                     help="rewrite the record kept beside the corpus")
     ap.add_argument("--tree", metavar="PATH", help="read with another checkout")
+    ap.add_argument("--base", metavar="PATH",
+                    help="compare against this checkout's score, kept by its "
+                         "package's digest, instead of the shared record")
+    ap.add_argument("--out", type=Path, metavar="PATH",
+                    help="where --record writes (default: the shared record)")
     ap.add_argument("--top", type=int, default=15, metavar="N")
     ap.add_argument("--list", type=int, default=0, metavar="N",
                     help="print up to N moved records of each kind, names and all")
     args = ap.parse_args(argv)
+    if args.base and (args.record or args.out):
+        ap.error("--base compares and records nothing but its kept record; "
+                 "drop --record and --out")
+    if args.out and not args.record:
+        ap.error("--out names where --record writes")
     local = local_corpora.require(args.source)
-    if not args.record:
-        old = read_record(record_path(args.source), local)
     root = Path(args.tree).resolve() if args.tree else HERE.parents[1]
+    if args.base:
+        from snapshot import base_root
+        old = base_entries(base_root(args.base, root), local)
+    elif not args.record:
+        old = read_record(record_path(args.source), local)
     if args.tree:
         sys.path.insert(0, str(root))
     import nameparser
@@ -360,13 +459,18 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit(str(exc)) from None
     print("\n".join(report(result, fielded, args.top)))
     if args.record:
-        write_record(record_path(args.source), local, result.entries, str(at.parent))
+        out = args.out or record_path(args.source)
+        write_record(out, local, result.entries, str(at.parent))
         print(f"\nrecorded {len(result.entries):,} records that did not wholly "
-              f"agree to {record_path(args.source)}")
+              f"agree to {out}")
         return 0
     found = moves(old, result.entries)
     print()
-    print("\n".join(summarize(found, old, result.entries)) or "matches the record")
+    if args.base:
+        from snapshot import head_line
+        print(head_line(root, Path(args.base).resolve()))
+    print("\n".join(summarize(found, old, result.entries))
+          or ("matches the base" if args.base else "matches the record"))
     for kind, keys in found.items():
         for k in keys[:args.list]:
             print(f"  {kind}: {k}  recorded {old.get(k)}  now {result.entries.get(k)}")
