@@ -11,12 +11,13 @@ ambiguity P6's attachment reports at the end of a name read
 family-first (#467) and after a comma with nothing before it -- after a
 family comma that names a family, that attachment is assign's since
 #613.
-Reads: Policy.patronymic_rules, Policy.middle_as_family,
+Reads: Policy.patronymic_rules, Policy.two_family_names,
+Policy.middle_as_family,
 Policy.extra_suffix_delimiters (R1's entry pass, for the delimiter
 cores group drops); Lexicon.given_name_titles.
 
 Implements rules H1, M4, P1, P6 (its no-comma site, and after a comma
-naming no family), O1, O2, O3 and R1 of docs/design/rules/;
+naming no family), O1, O2, O6, O3 and R1 of docs/design/rules/;
 each is cited at its code below, and H1/P1/O1/O2's history lives in
 docs/design/decisions/. `suffix_entries` is the R1 entry pass as a
 state-in/state-out function, for Parser.revise to run over a
@@ -235,6 +236,68 @@ def _fold_reach(tokens: list[WorkToken], name_idx: list[int]) -> int:
     if i == len(name_idx):
         return i
     return i + len(_units(tokens, name_idx[i:])[0])
+
+
+def _family_word_count(tokens: list[WorkToken], family: list[int]) -> int:
+    """The family's name words as rules/O6 counts them: a particle run
+    counts with the word it attaches to, a connective counts as
+    nothing and a hyphen joins words without making them one, so "de
+    la Vega" is one word and "Ortega y Gasset" and "García-López" two.
+    A family of nothing but particles counts each of them, R2 reading
+    them as ordinary name words."""
+    words = sum(len([part for part in tokens[i].text.split("-") if part])
+                for i in family
+                if "particle" not in tokens[i].tags
+                and "conjunction" not in tokens[i].tags)
+    return words or len(family)
+
+
+def _take_second_family_name(state: ParseState,
+                             tokens: list[WorkToken]) -> None:
+    # rules/O6: "the family name takes the name word beside it, so
+    # the last two name words are the family" -- the first two under
+    # a family-first order. In place, as every post rule writes.
+    if state.structure is Structure.FAMILY_COMMA or state.order is None:
+        return
+    family: list[int] = []
+    others: list[int] = []
+    for i, t in enumerate(tokens):
+        if t.role is Role.FAMILY:
+            family.append(i)
+        elif t.role is Role.GIVEN or t.role is Role.MIDDLE:
+            others.append(i)
+    if not family or _family_word_count(tokens, family) != 1:
+        return
+    # The rest in the units assign read them as, so a particle chain
+    # (P2) or a bound given-name pair (P5) moves whole or not at all.
+    units = _units(tokens, others)
+    if len(units) < 2:
+        return
+    if state.order[0] is Role.GIVEN:
+        # given, middles..., family: the middle unit standing right
+        # before the family joins it, and text order already renders
+        # it first, so no role around it moves. A rotation that left
+        # the name in another shape fails this test.
+        take = units[-1]
+        if take[-1] > family[0] or any(
+                tokens[i].role is not Role.MIDDLE for i in take):
+            return
+        for i in take:
+            _retag(tokens, i, Role.FAMILY)
+        return
+    # family first: the unit after the family joins it, and what is
+    # left is a shorter name of the same order, laid out as the P1
+    # fold above lays its remainder -- one family already placed. A
+    # particle P6 attached at the far end is family already and keeps
+    # its place.
+    if family[0] > units[0][0]:
+        return
+    for i in units[0]:
+        _retag(tokens, i, Role.FAMILY)
+    for unit, role in zip(units[1:], _name_positions(
+            state.order, len(units))[1:]):
+        for i in unit:
+            _retag(tokens, i, role)
 
 
 def _addressing_run(titles: list[int], name_word: int) -> list[int]:
@@ -618,6 +681,9 @@ def post_rules(state: ParseState) -> ParseState:
         if given_at is not None:
             _attach_particle_tail(seg, tokens, given_at, k, end,
                                   ambiguities)
+
+    if state.policy.two_family_names:
+        _take_second_family_name(state, tokens)
 
     # rules/O3: "every middle word joins the family name and is
     # rendered before it" (v1 handle_middle_name_as_last). v1

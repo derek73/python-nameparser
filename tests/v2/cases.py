@@ -44,6 +44,9 @@ from nameparser import (FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, GIVEN_FIRST,
 from nameparser._policy import (PatronymicRule, Script, _SCRIPT_RANGES,
                                _order_repr, _script_matcher)
 
+#: rules/O6's switch, which every row of its own carries (#754).
+_TWO = Policy(two_family_names=True)
+
 #: mirrors tools/differential/shapes.py's SHAPES keys;
 #: test_case_shape_ids_exist_in_the_inventory (test_corpora.py)
 #: holds the two equal, since this file cannot import tools/.
@@ -441,6 +444,122 @@ CASES: tuple[Case, ...] = (
                "initials() too, for names whose roles are identical -- "
                "but only under the policies it runs, and middle_as_family "
                "is not one, so this row stays pinned here"),
+    # rules/O6, the two_family_names switch (#754): off by default, so
+    # every row carries the policy, and none is v1-expressible.
+    Case("two_family_names_takes_the_word_before_the_family",
+         "Gabriel García Márquez",
+         {"given": "Gabriel", "family": "García Márquez"},
+         policy=_TWO, classification="feat(#754)",
+         notes="the default reads middle 'García', family 'Márquez'"),
+    Case("two_family_names_leaves_the_middles_before_it",
+         "Ana María García López",
+         {"given": "Ana", "middle": "María", "family": "García López"},
+         policy=_TWO, classification="feat(#754)"),
+    Case("two_family_names_counts_a_particle_with_its_word",
+         "Juan Pérez de la Vega",
+         {"given": "Juan", "family": "Pérez de la Vega"},
+         policy=_TWO, classification="feat(#754)"),
+    Case("two_family_names_keeps_a_family_already_two_words_after_a_particle",
+         "Ana María de la Vega Rodríguez",
+         {"given": "Ana", "middle": "María",
+          "family": "de la Vega Rodríguez"},
+         policy=_TWO, classification="feat(#754)",
+         notes="P2's chain made 'de la Vega Rodríguez' one piece, and "
+               "O6 counts its words, not its pieces"),
+    Case("two_family_names_counts_a_connective_join_as_its_words",
+         "José María Ortega y Gasset",
+         {"given": "José", "middle": "María", "family": "Ortega y Gasset"},
+         policy=_TWO, classification="feat(#754)"),
+    Case("two_family_names_counts_a_hyphenated_family_as_its_words",
+         "Ana María García-López",
+         {"given": "Ana", "middle": "María", "family": "García-López"},
+         policy=_TWO, classification="feat(#754)"),
+    Case("two_family_names_counts_a_trailing_suffix_as_no_name_word",
+         "Gabriel García Márquez Jr.",
+         {"given": "Gabriel", "family": "García Márquez", "suffix": "Jr."},
+         policy=_TWO, classification="feat(#754)"),
+    Case("two_family_names_counts_a_title_as_no_name_word",
+         "Dr. Ana García López",
+         {"title": "Dr.", "given": "Ana", "family": "García López"},
+         policy=_TWO, classification="feat(#754)"),
+    Case("two_family_names_reads_the_name_before_a_suffix_comma",
+         "Gabriel García Márquez, PhD",
+         {"given": "Gabriel", "family": "García Márquez", "suffix": "PhD"},
+         policy=_TWO, classification="feat(#754)"),
+    Case("two_family_names_leaves_a_family_comma_alone",
+         "López, Ana García",
+         {"given": "Ana", "middle": "García", "family": "López"},
+         policy=_TWO, classification="parity"),
+    Case("two_family_names_leaves_a_two_word_name_alone",
+         "Ana García", {"given": "Ana", "family": "García"},
+         policy=_TWO, classification="parity"),
+    Case("two_family_names_takes_the_first_two_words_family_first",
+         "García Márquez Gabriel",
+         {"given": "Gabriel", "family": "García Márquez"},
+         policy=Policy(name_order=FAMILY_FIRST, two_family_names=True),
+         classification="feat(#754)",
+         notes="the remainder is laid out as P1's family-first fold "
+               "lays its own: the positions after a family"),
+    Case("two_family_names_takes_the_first_two_words_family_first_given_last",
+         "García Márquez Ana María",
+         {"given": "María", "middle": "Ana", "family": "García Márquez"},
+         policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST,
+                       two_family_names=True),
+         classification="feat(#754)"),
+    Case("two_family_names_runs_before_middle_as_family",
+         "Ana María García López",
+         {"given": "Ana", "family": "María García López"},
+         policy=Policy(two_family_names=True, middle_as_family=True),
+         classification="feat(#754)",
+         notes="given-first, the two switches together read as "
+               "middle_as_family alone"),
+    Case("two_family_names_counts_a_nickname_as_no_name_word",
+         "Ana García (Anita) López",
+         {"given": "Ana", "family": "García López", "nickname": "Anita"},
+         policy=_TWO, classification="feat(#754)"),
+    Case("two_family_names_takes_a_word_before_a_particle_family",
+         "Ana María van der Berg",
+         {"given": "Ana", "family": "María van der Berg"},
+         policy=_TWO, classification="feat(#754)",
+         notes="O6 counts words, not languages: 'van der Berg' is one "
+               "family word, so the word before it joins"),
+    Case("two_family_names_takes_the_word_after_a_family_first_fold",
+         "de Mesnil Jean Paul",
+         {"given": "Paul", "family": "de Mesnil Jean"},
+         policy=Policy(name_order=FAMILY_FIRST, two_family_names=True),
+         classification="feat(#754)",
+         notes="P1's family-first fold leaves family 'de Mesnil', given "
+               "'Jean', middle 'Paul'; O6 then takes one unit more"),
+    Case("two_family_names_moves_a_particle_chain_whole_or_not_at_all",
+         "Juan de la Vega Rodríguez",
+         {"given": "de la Vega Rodríguez", "family": "Juan"},
+         policy=Policy(name_order=FAMILY_FIRST, two_family_names=True),
+         classification="parity",
+         notes="the given name is one P2 chain; taking it whole would "
+               "leave no given name, so O6 declines"),
+    Case("two_family_names_keeps_the_particle_p6_attached",
+         "Beethoven Ludwig Maria van",
+         {"given": "Maria", "family": "van Beethoven Ludwig"},
+         ambiguities=("particle-or-given",),
+         policy=Policy(name_order=FAMILY_FIRST, two_family_names=True),
+         classification="feat(#754)",
+         notes="P6 attached 'van' to the family at the far end; O6 takes "
+               "the unit after the family and leaves the particle where "
+               "P6 put it, rendered first"),
+    Case("two_family_names_stands_down_where_a_rotation_reordered_the_name",
+         "Ivanov Ivan Ivanovich",
+         {"given": "Ivan", "middle": "Ivanovich", "family": "Ivanov"},
+         policy=Policy(patronymic_rules=frozenset(
+             {PatronymicRule.EAST_SLAVIC}), two_family_names=True),
+         classification="parity",
+         notes="O1 made the first word the family; O6 asks for a middle "
+               "right before the family and finds none"),
+    Case("two_family_names_reads_a_compound_given_name_as_a_family",
+         "Juan Carlos Pérez",
+         {"given": "Juan", "family": "Carlos Pérez"},
+         policy=_TWO, classification="feat(#754)",
+         notes="rules/O6's accepted cost: one family name behind a "
+               "two-word given name is the shape the switch breaks"),
     # MOVED by #289, not deleted: 'MA' is written in capitals inside a
     # mixed-case name, so it now leans CREDENTIAL and is taken with no
     # words to spare -- the reserve/count this row used to pin no

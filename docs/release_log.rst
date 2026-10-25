@@ -7,6 +7,7 @@ Release Log
     **Additions**
 
     - **Ship the default vocabulary as per-word data files.** The word lists in ``nameparser.config`` are now compiled from ``nameparser/vocab/*.toml``, one file per language, which record what each word can be read as and why a word was left out; the re-encoding itself changes no word list and no parse. :issue:`737`
+    - **Add a switch for names with two family names.** ``Parser(policy=Policy(two_family_names=True))`` reads ``Gabriel García Márquez`` as given ``Gabriel``, family ``García Márquez``, where the default reads middle ``García``, family ``Márquez``. Off by default: under it a name with one family name behind two given names loses one to the family (``Juan Carlos Pérez`` gives family ``Carlos Pérez``). :issue:`754`
 
     **Behavior Changes**
 

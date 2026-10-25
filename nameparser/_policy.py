@@ -778,6 +778,25 @@ class Policy:
     #: ``isupper()`` is script-agnostic, so the same holds in any script
     #: with a case contrast ("Иван ИВАНОВ", "Jean ÉCOLE").
     unlisted_caps_suffixes: CapsSuffixes = CapsSuffixes.AFTER_COMMA
+    #: Reads the last two name words of a name as the family, for data
+    #: where a person carries two family names and writes both
+    #: (rules/O6): "Gabriel García Márquez" gives given ``Gabriel``,
+    #: family ``García Márquez``, and "Ana María García López" gives
+    #: middle ``María``, family ``García López``. A particle counts with
+    #: the word it attaches to ("Juan Pérez de la Vega" gives family
+    #: ``Pérez de la Vega``), a family already holding two words keeps
+    #: what it has ("José María Ortega y Gasset", "Ana María de la Vega
+    #: Rodríguez"), titles and suffixes count as no name word, and a
+    #: name of two name words is unchanged. Under a family-first
+    #: name_order the FIRST two name words are the family. A family
+    #: comma decides by itself, so "García López, Ana" is unaffected.
+    #: The convention is not every Spanish-speaking country's (Argentina
+    #: writes one family name) and is not Portugal's or Brazil's, which
+    #: put the mother's name first: switched on for a mixed population it
+    #: costs more names than it mends, so it is off by default and
+    #: reports nothing. Runs before middle_as_family, which then folds
+    #: whatever middles are left.
+    two_family_names: bool = False
 
     # in the class body so @dataclass(slots=True) keeps them
     __getstate__ = _guarded_getstate
@@ -988,6 +1007,7 @@ class PolicyPatch:
     # inserted on the other and both would re-bind together.
     unlisted_dotted_suffixes: bool | _Unset = UNSET
     unlisted_caps_suffixes: CapsSuffixes | _Unset = UNSET
+    two_family_names: bool | _Unset = UNSET
 
     # in the class body so @dataclass(slots=True) keeps them
     __getstate__ = _guarded_getstate
@@ -1039,7 +1059,7 @@ class PolicyPatch:
             object.__setattr__(self, f.name, frozenset(value))
         # middle_as_family, lenient_comma_suffixes,
         # unlisted_dotted_suffixes, unlisted_caps_suffixes, strip_emoji,
-        # and strip_bidi are scalar (compose="override") fields and
+        # strip_bidi and two_family_names are scalar (compose="override") fields and
         # DELIBERATELY get no
         # type check here, unlike name_order and
         # the union fields above: a PolicyPatch(strip_emoji="off") is
