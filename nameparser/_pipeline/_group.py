@@ -333,8 +333,7 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
         # on it are reported here, where assign will never see them
         consumed = {i for j in range(end, len(pieces)) for i in pieces[j]}
         for piece in (*vpeel.picks, *vpeel.absorbed,
-                      *(() if vpeel.numeral is None
-                        else (vpeel.numeral,))):
+                      *vpeel.numerals):
             if piece[0] in consumed:
                 ambiguities.append(PendingAmbiguity(
                     AmbiguityKind.SUFFIX_OR_NAME,
@@ -362,7 +361,8 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
             f"a generational suffix", tuple(last)))
     elif (released and len(last) == 1 and end - 2 >= lo
           and reads_as_a_reported_numeral(
-              word.text, tokens[pieces[end - 2][0]].text, one_case)):
+              word.text, word.tags, tokens[pieces[end - 2][0]].text,
+              one_case)):
         # rules/S10: "a one-letter numeral before a credential is the
         # family name, and the reading is reported" -- the clause's
         # twin of assign's report (#721's review): the clause keeps the
@@ -1041,7 +1041,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 # built, not `_replace`d: two frames a call
                 peel = read.peel
                 read = TailRead(read.tail, read.titles, read.run_titles, Peel(
-                    peel.names, peel.numeral,
+                    peel.names, peel.numerals,
                     tuple([p for p in peel.picks if p not in took]),
                     peel.anchors, peel.run_titles, peel.absorbed))
         # rules/P5: "a recognized bound given-name word joins the

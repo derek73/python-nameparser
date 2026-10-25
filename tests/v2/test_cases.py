@@ -234,9 +234,12 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # the same day: #857's sa rows, after the word left every set (the
     # one reporting row, 'Smith, S.A.', claims under the orders it
     # reaches); 1406 -> 1415 the same day: the review's comma rows for
-    # sa and the listed `ma` twins, three of them reporting.
-    assert claims == 1415, (
-        f"the field sweep checks {claims} claims, recorded as 1415 on "
+    # sa and the listed `ma` twins, three of them reporting; 1415 ->
+    # 1445 the same day: #752's numeral rows (phase 2f) and the
+    # 'Dr. Smith VI, John' row, which reports since, each claim under
+    # the three orders.
+    assert claims == 1445, (
+        f"the field sweep checks {claims} claims, recorded as 1445 on "
         f"2026-10-25")
 
 

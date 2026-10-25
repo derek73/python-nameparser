@@ -4,6 +4,11 @@ Release Log
 
     nameparser 2.7 is under development.
 
+    **Behavior Changes**
+
+    - **Fix roman numerals VI to X reading as names where III reads as a suffix.** ``John Smith VI MD`` gives suffix ``VI MD`` and ``Smith, John VI`` suffix ``VI``, as ``III`` does, where 1.4.0 through 2.6.0 gave last ``VI``, suffix ``MD`` and middle ``VI``. ``John Smith V, M.J.`` keeps suffix ``V`` and ``Georg VI.`` gives suffix ``VI.``, where 1.4.0 through 2.6.0 gave last ``John Smith V`` and ``VI.``. A one-letter numeral before a credential is still a name (``John Smith V PhD`` keeps last ``V``), and a Title-case ``Vi`` in a mixed-case name reads as a name (``Nguyen Van Vi`` gives last ``Van Vi``, where 2.2.0 through 2.6.0 gave suffix ``Vi``). :issue:`784`, :issue:`774`
+    - **Fix a lone letter before a further comma reading as part of a credential.** ``Smith, John PhD I, Jr.`` gives middle ``I``, suffix ``PhD, Jr.``, as 1.4.0 through 2.3.0 did, where 2.4.0 through 2.6.0 gave suffix ``PhD I, Jr.``. :issue:`819`
+
 * 2.6.0 - October 25, 2026
 
     nameparser 2.6 ships the default vocabulary as per-word data files, adds an opt-in reading for names with two family names, and fixes words read as a credential or a title that are part of the name. Highlights:

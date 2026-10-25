@@ -51,7 +51,7 @@
 
 **Precedence:**
 
-- **Paired initials after a generation** ("John Smith Jr., M.J."): written dotted, they keep C5's reading and are the given name, the generation staying the suffix; undotted as two capitals, they are this rule's credential (C1, where #774 tracks the roman numerals S10 reads, which do not yet stay the suffix).
+- **Paired initials after a generation** ("John Smith Jr., M.J."): written dotted, they keep C5's reading and are the given name, the generation staying the suffix; undotted as two capitals, they are this rule's credential (C1, where the roman numerals S10 reads stay the suffix as the listed ones do).
 
 **Accepted:**
 
