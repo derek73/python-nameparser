@@ -3119,21 +3119,9 @@
   "text": "Asmar"
  },
  "fr/nativeFull/givenFirst": {
-  "family": {
-   "expected": "de Bouchart",
-   "got": "de Bouchart fils"
-  },
-  "family_base": {
-   "expected": "Bouchart",
-   "got": "Bouchart fils"
-  },
   "given_names": {
    "expected": "Jean-Nicolas Louis Marcel",
    "got": "M. Jean-Nicolas Louis Marcel"
-  },
-  "suffix": {
-   "expected": "fils",
-   "got": ""
   },
   "text": "M. Jean-Nicolas Louis Marcel de Bouchart fils",
   "title": {
@@ -3156,11 +3144,7 @@
   },
   "given_names": {
    "expected": "Jean-Nicolas Louis Marcel",
-   "got": "de Bouchart Jean-Nicolas Louis Marcel fils"
-  },
-  "suffix": {
-   "expected": "fils",
-   "got": ""
+   "got": "de Bouchart Jean-Nicolas Louis Marcel"
   },
   "text": "M. de Bouchart Jean-Nicolas Louis Marcel fils",
   "title": {

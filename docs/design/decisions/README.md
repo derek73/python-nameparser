@@ -55,6 +55,7 @@ Entry conventions:
 - [S8 — the credential's trailing run](S8-credentials-trailing-run.md)
 - [S9 — unlisted words that join the ambiguous class by shape](S9-unlisted-words-that-join-the-ambiguous-class-by-shape.md)
 - [S10 — the trailing roman numeral](S10-trailing-roman-numeral.md)
+- [S11 — a suffix word that is also a name](S11-suffix-word-that-is-also-a-name.md)
 
 ## Nicknames & quoted names (N)
 

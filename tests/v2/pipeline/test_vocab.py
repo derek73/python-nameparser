@@ -542,12 +542,12 @@ def test_the_caps_exclusion_covers_every_vocabulary_field() -> None:
     assert caps_shape_candidate("ZZQX", base, on, False)
     for field in _VOCAB_FIELDS:
         extra: dict[str, set[str]] = {field: {"zzqx"}}
-        if field == "honorific_tails":
+        if field in ("honorific_tails", "suffix_words_ambiguous"):
             # honorific_tails ⊆ suffix_words is a Lexicon invariant,
             # so this entry cannot be added alone -- which is also why
             # the field was already excluded transitively, and why it
             # joins the roster for completeness rather than for a
-            # behavior change
+            # behavior change (suffix_words_ambiguous the same)
             extra["suffix_words"] = {"zzqx"}
         elif field == "given_name_titles":
             extra["titles"] = {"zzqx"}       # ⊆ titles in practice

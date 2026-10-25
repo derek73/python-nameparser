@@ -105,13 +105,17 @@ Removing works the same way, and drops the word from recognition:
 A few fields mark a subset of another — ``given_name_titles`` and
 ``after_given_titles`` over ``titles``, ``particles_ambiguous`` over ``particles``,
 ``suffix_acronyms_ambiguous`` over ``suffix_acronyms``,
-``conjunctions_ambiguous`` over ``conjunctions``, and
-``honorific_tails`` over ``suffix_words``. Entries belong in the base
-field too, so add to both and remove from the marker first. Three of
-them enforce that — ``particles_ambiguous``, ``suffix_acronyms_ambiguous``
-and ``honorific_tails`` raise ``ValueError`` naming the orphans, because
-an orphan in each of those does real harm rather than nothing. The
-other three are deliberately unchecked because an orphan there is inert:
+``conjunctions_ambiguous`` over ``conjunctions``,
+``honorific_tails`` and ``suffix_words_ambiguous`` over
+``suffix_words``, and ``agnomens`` over ``suffix_words_ambiguous``.
+Entries belong in the base field too, so add to both and remove from
+the marker first. Four of them enforce that — ``particles_ambiguous``,
+``suffix_acronyms_ambiguous``, ``honorific_tails`` and
+``suffix_words_ambiguous`` raise ``ValueError`` naming the orphans,
+because an orphan in each of those does real harm rather than nothing.
+The other four are deliberately unchecked because an orphan there is
+inert, an ``agnomens`` entry being read only for a word
+``suffix_words_ambiguous`` marks:
 ``given_name_titles`` matches a title run as one space-joined string, or
 by that run's last word, so a legitimate entry like ``"sir and dame"``
 is no single word in ``titles``; and a ``conjunctions_ambiguous`` or
@@ -303,12 +307,13 @@ Words that are also ordinary names
 
 Some vocabulary words are also ordinary name words: an acronym suffix
 that is also borne as a surname, a particle that doubles as a given
-name, a connective letter that doubles as an initial. Three fields mark
-them — ``suffix_acronyms_ambiguous``, ``particles_ambiguous`` and
-``conjunctions_ambiguous``, one each for ``suffix_acronyms``,
-``particles`` and ``conjunctions``. They add no vocabulary by
-themselves; they narrow how an existing entry is read when it appears
-alone, and the parse reports the fork as an ambiguity.
+name, a connective letter that doubles as an initial. Four fields mark
+them — ``suffix_acronyms_ambiguous``, ``suffix_words_ambiguous``,
+``particles_ambiguous`` and ``conjunctions_ambiguous``, one each for
+``suffix_acronyms``, ``suffix_words``, ``particles`` and
+``conjunctions``. They add no vocabulary by themselves; they narrow how
+an existing entry is read when it appears alone, and the parse reports
+the fork as an ambiguity.
 
 Credentials that are also surnames
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -347,6 +352,38 @@ The full reading of a bare marked acronym, in order:
   lean at all).
 - **In brackets**, ``"John Smith (BA)"`` falls through to nickname
   parsing.
+
+Generation words that are also surnames
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``suffix_words_ambiguous`` does the same for a suffix word: French
+``fils`` and the Brazilian agnomens ``Filho``, ``Neto`` and
+``Sobrinho`` mark a generation, and each is a surname too. Each is a
+suffix only where the name keeps a word for its family, and the
+writing of ``fils`` speaks too, where an agnomen, written in the case
+of the name around it and listed in ``agnomens``, is read by the count
+alone:
+
+.. doctest::
+
+    >>> parse("Pedro Alves Neto").suffix
+    'Neto'
+    >>> parse("Ana Neto").family
+    'Neto'
+    >>> parse("Marie Fils").family
+    'Fils'
+
+A caller whose data writes an agnomen as part of the surname takes the
+gate off by removing the word from ``suffix_words``, which removes it
+from the markers with it:
+
+.. doctest::
+
+    >>> agnomen = {"neto"}
+    >>> kept = Lexicon.default().remove(
+    ...     agnomens=agnomen, suffix_words_ambiguous=agnomen, suffix_words=agnomen)
+    >>> Parser(lexicon=kept).parse("Pedro Alves Neto").family
+    'Neto'
 
 Mark a word, or leave it out
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^

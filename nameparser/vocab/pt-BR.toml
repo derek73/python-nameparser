@@ -1,0 +1,6 @@
+schema = 1
+
+[[word]]
+text = "netto"
+agnomen = { same_as = "neto", gender = "m", issue = [843, 752], expands = "the grandson, in the spelling of Brazil's older orthography" }
+family = { us_census_2010 = 1243, wikidata = 30, as_of = 2026-10-25 }

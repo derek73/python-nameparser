@@ -32,6 +32,7 @@ Tags emitted -- stable (API): "particle", "conjunction", "initial";
 namespaced (unstable): "vocab:title", "vocab:given-title",
 "vocab:after-given-title",
 "vocab:suffix", "vocab:suffix-word", "vocab:suffix-ambiguous",
+"vocab:suffix-word-ambiguous", "vocab:agnomen",
 "vocab:particle-ambiguous", "vocab:bound-given", "vocab:maiden-marker",
 "vocab:maiden-marker-cont"; and, in a namespace of its own,
 "shape:acronym".
@@ -62,8 +63,8 @@ import unicodedata
 from nameparser._lexicon import _normalize, _spells_an_initial
 from nameparser._policy import CapsSuffixes
 from nameparser._pipeline._state import (
-    AMBIGUOUS_ACRONYM_TAG, SHAPE_ACRONYM_TAG, ParseState, PendingAmbiguity,
-    WorkToken, copy_with,
+    AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, SHAPE_ACRONYM_TAG,
+    ParseState, PendingAmbiguity, WorkToken, copy_with,
 )
 from nameparser._types import AmbiguityKind, Role
 from nameparser._pipeline._vocab import (
@@ -135,7 +136,16 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
         tags.add("vocab:after-given-title")
     if suffix_as_written(n, token.text, lex):
         tags.add("vocab:suffix")
-    if n in lex.suffix_words:
+    if n in lex.suffix_words_ambiguous:
+        # rules/S11: "it reads as the generation only where the name has
+        # words to spare" -- the ambiguous class's tag, so every site
+        # that weighs a member weighs this one, and the cue tags that
+        # tell `_pieces.listed_lean` how its writing leans
+        tags.add(AMBIGUOUS_ACRONYM_TAG)
+        tags.add(AMBIGUOUS_WORD_TAG)
+        if n in lex.agnomens:
+            tags.add(AGNOMEN_TAG)
+    elif n in lex.suffix_words:
         tags.add("vocab:suffix-word")
     if n in lex.suffix_acronyms_ambiguous:
         tags.add(AMBIGUOUS_ACRONYM_TAG)

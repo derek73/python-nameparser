@@ -50,6 +50,10 @@ text = "dra"
 academic = { gender = "f", expands = "Doctora, Doutora" }
 
 [[word]]
+text = "h"
+generation = { default = false, expands = "hijo, the son: Juan Pérez H.", issue = 752, note = "written with its period, it is exactly how an initial is written (rules/T5), so no default reads it; a Spanish pack turns it on" }
+
+[[word]]
 text = "de"
 preposition = { may_be_given = false, expands = "of" }
 

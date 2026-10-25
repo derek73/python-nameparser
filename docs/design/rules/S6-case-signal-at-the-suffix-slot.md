@@ -9,6 +9,14 @@
   "JACK MA"                   →  family="MA"  · boundary
   ```
 - **At the trailing slot of the given part** after a family comma, the comma has already settled the count, so the writing is the only evidence there is (S5).
+- **A generation word that is also a name (S11) is written the other way at one end**: its lower case in a name of mixed case is the generation even with no word to spare, its capitals say nothing, a surname being often written in them, and its Title case leans to the name as an acronym's does. An agnomen's writing says nothing at all, since it takes the case of the name around it.
+  ```
+  "Dumas fils"                →  suffix="fils"
+  "Marie FILS"                →  family="FILS"
+  "Jean Marie Fils"           →  family="Fils"
+  "Dumas, Alexandre Fils"     →  middle="Fils"
+  "Pedro Alves Neto"          →  suffix="Neto"
+  ```
 
 **Because:** in a name written in more than one case, the writer's capitals are evidence the count does not have: credentials are written in capitals and names are not. A name written in one case carries no such evidence.
 

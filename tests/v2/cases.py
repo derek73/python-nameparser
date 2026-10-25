@@ -1559,12 +1559,96 @@ CASES: tuple[Case, ...] = (
          notes="the Portuguese spelling reads as 'José Silva Junior' "
                "does. 1.4.0 and 2.5.0 read middle 'Silva', family "
                "'Júnior'"),
-    Case("an_agnomen_stays_the_family_name", "Pedro Alves Filho",
-         {"given": "Pedro", "middle": "Alves", "family": "Filho"},
+    Case("an_agnomen_is_a_generational_suffix", "Pedro Alves Filho",
+         {"given": "Pedro", "family": "Alves", "suffix": "Filho"},
+         classification="fix(#843)",
+         ambiguities=("suffix-or-name",),
+         notes="an agnomen marks its bearer against a relative of the same "
+               "name, as Junior does (rules/S11). 1.4.0 and 2.6.0 read "
+               "middle 'Alves', family 'Filho'"),
+    Case("an_agnomen_with_no_word_to_spare", "Ana Neto",
+         {"given": "Ana", "family": "Neto"},
          classification="parity",
-         notes="Filho, Neto and Sobrinho are not suffix vocabulary: "
-               "whether they read as suffixes is open on #843. The "
-               "contrast row for the one above"),
+         ambiguities=("suffix-or-name",),
+         notes="Neto is a surname too, and a name of two words has none to "
+               "spare for the generation (rules/S11); the fork is reported"),
+    Case("an_agnomen_in_capitals_with_no_word_to_spare", "PEDRO FILHO",
+         {"given": "PEDRO", "family": "FILHO"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="a name written in one case says nothing, and an agnomen's "
+               "writing never does, so the count keeps the family"),
+    Case("an_agnomen_after_a_particle_surname", "PEDRO DA SILVA FILHO",
+         {"given": "PEDRO", "family": "DA SILVA", "suffix": "FILHO"},
+         classification="fix(#843)",
+         ambiguities=("suffix-or-name",),
+         notes="the particle surname is the family the agnomen follows. "
+               "1.4.0 and 2.6.0 read family 'DA SILVA FILHO'"),
+    Case("an_agnomen_before_a_suffix_comma", "Pedro Alves Neto, PhD",
+         {"given": "Pedro", "family": "Alves", "suffix": "Neto, PhD"},
+         classification="fix(#843)",
+         ambiguities=("suffix-or-name",),
+         notes="the agnomen joins the credentials after it, as 'José Silva "
+               "Júnior, PhD' does. 1.4.0 and 2.6.0 read middle 'Alves', "
+               "family 'Neto'"),
+    Case("an_agnomen_ending_the_given_part", "Alves, Pedro Neto",
+         {"given": "Pedro", "family": "Alves", "suffix": "Neto"},
+         classification="fix(#843)",
+         ambiguities=("suffix-or-name",),
+         notes="the given part's last word is read by its writing alone "
+               "(rules/S5), and an agnomen's never keeps it a name. 1.4.0 "
+               "and 2.6.0 read middle 'Neto'"),
+    Case("an_agnomen_alone_after_a_family_comma", "Silva, Neto",
+         {"given": "Neto", "family": "Silva"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="the first word after the comma is the given name, the count "
+               "deciding first (rules/C4); FEC holds NETO as a given name"),
+    Case("an_agnomen_in_capitals_in_a_mixed_case_name", "Pedro Alves NETO",
+         {"given": "Pedro", "family": "Alves", "suffix": "NETO"},
+         classification="fix(#843)",
+         ambiguities=("suffix-or-name",),
+         notes="an agnomen's capitals say nothing, where an acronym's would "
+               "be the credential, so the count decides. 1.4.0 and 2.6.0 "
+               "read middle 'Alves', family 'NETO'"),
+    Case("an_agnomen_glued_behind_an_initial", "Pedro M.Filho",
+         {"given": "Pedro", "family": "M.Filho"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="no chunk claim for a suffix word that is also a name "
+               "(rules/S11): the joined word is weighed by its dotted shape, "
+               "as it was"),
+    Case("fils_after_a_name", "Alexandre Dumas fils",
+         {"given": "Alexandre", "family": "Dumas", "suffix": "fils"},
+         classification="fix(#752)",
+         ambiguities=("suffix-or-name",),
+         notes="fils is a generation word with a family reading, gated "
+               "(rules/S11). 1.4.0 and 2.6.0 read middle 'Dumas', family "
+               "'fils'"),
+    Case("fils_in_title_case_is_a_name", "Marie Fils",
+         {"given": "Marie", "family": "Fils"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="Title case leans a generation word to the name (rules/S6); "
+               "the fork is reported"),
+    Case("fils_in_title_case_with_words_to_spare", "Jean Marie Fils",
+         {"given": "Jean", "middle": "Marie", "family": "Fils"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="the lean holds with words to spare too"),
+    Case("fils_in_lower_case_with_no_word_to_spare", "Dumas fils",
+         {"given": "Dumas", "suffix": "fils"},
+         classification="fix(#752)",
+         ambiguities=("given-or-family", "suffix-or-name"),
+         notes="lower case in a name of mixed case settles the generation "
+               "(rules/S6), leaving one name word, which reads as a given "
+               "name as 'Dumas Jr.' does. 1.4.0 and 2.6.0 read family 'fils'"),
+    Case("a_one_letter_generation_is_off_by_default", "Juan Pérez H.",
+         {"given": "Juan", "middle": "Pérez", "family": "H."},
+         classification="parity",
+         notes="Spanish H. (hijo) is written as an initial is (rules/T5), so "
+               "its generation reading is recorded off by default, for a "
+               "pack"),
     Case("a_feminine_generational_word_in_cyrillic", "Агриппина Младшая",
          {"given": "Агриппина", "suffix": "Младшая"},
          classification="fix(#661)",

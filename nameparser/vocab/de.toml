@@ -123,6 +123,10 @@ text = "ritter"
 nobility = { gender = "m", expands = "knight" }
 
 [[word]]
+text = "i"
+generation = { default = false, expands = "the regnal ordinal written with its period: Wilhelm I.", issue = 752, note = "the default reads I as a numeral only bare (mul.toml); written with its period it is exactly how an initial is written (rules/T5), so no default reads the ordinal; a German pack turns it on" }
+
+[[word]]
 text = "mda"
 credential = { issue = 18, expands = "Mitglied des Abgeordnetenhauses" }
 

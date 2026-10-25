@@ -239,9 +239,11 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # 'Dr. Smith VI, John' row, which reports since, each claim under
     # the three orders; 1445 -> 1451 the same day: #752's two
     # joined-capitals rows that report (phase 2d), one suffix-or-name
-    # claim under each order.
-    assert claims == 1451, (
-        f"the field sweep checks {claims} claims, recorded as 1451 on "
+    # claim under each order; 1451 -> 1493 the same day: #752's
+    # generation-word rows (phase 2h, fils and the agnomens), the claims
+    # their reports make under the three orders.
+    assert claims == 1493, (
+        f"the field sweep checks {claims} claims, recorded as 1493 on "
         f"2026-10-25")
 
 

@@ -309,12 +309,12 @@ The ``policy`` half is a patch, but the ``lexicon`` half is not. A
 pack's :class:`~nameparser.Lexicon` is a complete value in its own
 right and is validated on its own, before it is unioned onto the base
 — so a fragment listing a word in ``particles_ambiguous``,
-``suffix_acronyms_ambiguous`` or ``honorific_tails`` must also list it
-in the set that field marks (``particles``, ``suffix_acronyms``,
-``suffix_words``). A fragment holding ``particles_ambiguous={"van"}``
+``suffix_acronyms_ambiguous``, ``honorific_tails`` or
+``suffix_words_ambiguous`` must also list it in the set that field marks
+(``particles``, ``suffix_acronyms``, ``suffix_words``). A fragment holding ``particles_ambiguous={"van"}``
 without ``particles={"van"}`` raises ``ValueError`` before any union
-happens. ``given_name_titles``, ``conjunctions_ambiguous`` and
-``after_given_titles`` are not checked this way, and can mark a word only the base holds. ``zh`` is the
+happens. ``given_name_titles``, ``conjunctions_ambiguous``,
+``after_given_titles`` and ``agnomens`` are not checked this way, and can mark a word only the base holds. ``zh`` is the
 shipped worked example: its ``Lexicon(surnames=...)`` has to satisfy
 every ``Lexicon`` rule standing alone, before anything unions it onto
 the base.

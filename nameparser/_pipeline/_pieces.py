@@ -58,8 +58,8 @@ from collections.abc import (
 from typing import NamedTuple
 
 from nameparser._pipeline._state import (
-    AMBIGUOUS_ACRONYM_TAG, NAME_ROLES, SHAPE_ACRONYM_TAG, SUFFIX_OR_UNREAD,
-    WorkToken,
+    AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, NAME_ROLES,
+    SHAPE_ACRONYM_TAG, SUFFIX_OR_UNREAD, WorkToken,
 )
 from nameparser._pipeline._vocab import (
     _PERIOD_ABBREV, _ROMAN, Lean, ambiguous_lean, in_initialless_script,
@@ -1051,6 +1051,12 @@ def listed_lean(token: WorkToken, one_case: bool | None) -> Lean | None:
     if (one_case is None or AMBIGUOUS_ACRONYM_TAG not in token.tags
             or SHAPE_ACRONYM_TAG in token.tags):
         return None
+    # rules/S11: "An agnomen, the Portuguese `Filho`, `Neto`, `Sobrinho`
+    # and their feminines, is written in the case of the name around it,
+    # so its writing never speaks" -- the cue is what the member is
+    if AMBIGUOUS_WORD_TAG in token.tags:
+        return ambiguous_lean(token.text, one_case,
+                              "none" if AGNOMEN_TAG in token.tags else "word")
     return ambiguous_lean(token.text, one_case)
 
 

@@ -550,7 +550,10 @@ def test_given_name_titles_is_not_constrained_against_titles() -> None:
      "suffix_acronyms_ambiguous", "suffix_acronyms"),
     (lambda w: Lexicon(honorific_tails=w),
      "honorific_tails", "suffix_words"),
-], ids=["particles_ambiguous", "suffix_acronyms_ambiguous", "honorific_tails"])
+    (lambda w: Lexicon(suffix_words_ambiguous=w),
+     "suffix_words_ambiguous", "suffix_words"),
+], ids=["particles_ambiguous", "suffix_acronyms_ambiguous", "honorific_tails",
+        "suffix_words_ambiguous"])
 def test_subset_error_names_the_fix(
     make: Callable[[frozenset[str]], Lexicon], marker: str, base: str
 ) -> None:
@@ -804,11 +807,12 @@ def test_multiword_entry_warns_per_field(field: str) -> None:
     # Guard the whole family: every per-word field warns, not one.
     with pytest.warns(UserWarning, match="matched one word at a time"):
         if field in ("particles_ambiguous", "suffix_acronyms_ambiguous",
-                     "honorific_tails"):
+                     "honorific_tails", "suffix_words_ambiguous"):
             # subset fields need their base populated to construct
             base = {"particles_ambiguous": "particles",
                     "suffix_acronyms_ambiguous": "suffix_acronyms",
-                    "honorific_tails": "suffix_words"}[field]
+                    "honorific_tails": "suffix_words",
+                    "suffix_words_ambiguous": "suffix_words"}[field]
             Lexicon.empty().add(**{base: ["zqx zqy"], field: ["zqx zqy"]})
         else:
             Lexicon.empty().add(**{field: ["zqx zqy"]})

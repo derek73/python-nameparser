@@ -26,6 +26,7 @@ _VOCAB_FIELDS = (
     "suffix_acronyms_ambiguous", "particles", "particles_ambiguous",
     "conjunctions", "conjunctions_ambiguous", "bound_given_names",
     "maiden_markers", "surnames", "honorific_tails", "after_given_titles",
+    "suffix_words_ambiguous", "agnomens",
 )
 
 #: (marker, base, why) triples. Each marker QUALIFIES how entries of
@@ -68,6 +69,8 @@ _VOCAB_FIELDS = (
 #: decides nothing, and AGENTS.md's invariants rule guards harm, not
 #: no-ops. after_given_titles -- the same: classify tags a word from it
 #: only where the word is in titles too, so an orphan is never read.
+#: agnomens -- the same: classify reads it only for a word already in
+#: suffix_words_ambiguous, so an orphan decides nothing.
 _SUBSET_FIELDS = (
     ("particles_ambiguous", "particles",
      "an orphan emits a spurious particle-or-given ambiguity"),
@@ -75,6 +78,8 @@ _SUBSET_FIELDS = (
      "an orphan silently becomes a period-gated suffix"),
     ("honorific_tails", "suffix_words",
      "an orphan splits the name and leaves the tail inside it"),
+    ("suffix_words_ambiguous", "suffix_words",
+     "an orphan silently becomes a suffix gated by the count"),
 )
 
 
@@ -699,6 +704,21 @@ class Lexicon:
     #: Full default list:
     #: :data:`~nameparser.config.titles.AFTER_GIVEN_TITLES`.
     after_given_titles: frozenset[str] = frozenset()
+    #: Subset of suffix_words that are also borne as names ("fils",
+    #: "neto"). Read as a suffix only where the name has words to
+    #: spare, as an ambiguous acronym is: "Pedro Alves Neto" ends in a
+    #: suffix, "Ana Neto" keeps her family name, and either reading is
+    #: reported (rules/S11). Written in lower case in a name of mixed
+    #: case the word is the suffix, and in Title case it leans to the
+    #: name, unless it is also in ``agnomens``. Full default list:
+    #: :data:`~nameparser.config.suffixes.SUFFIX_WORDS_AMBIGUOUS`.
+    suffix_words_ambiguous: frozenset[str] = frozenset()
+    #: Subset of suffix_words_ambiguous whose writing says nothing:
+    #: an agnomen ("filho", "neto") is written in the case of the name
+    #: around it, so only the words to spare decide (rules/S11). An
+    #: entry outside suffix_words_ambiguous is never consulted. Full
+    #: default list: :data:`~nameparser.config.suffixes.AGNOMENS`.
+    agnomens: frozenset[str] = frozenset()
     #: Lowercase word -> case mask used by capitalized(): the word's
     #: own letters and digits, each in the case it takes ("phd" ->
     #: "PhD"), laid over the word as written, so the one entry
@@ -951,8 +971,8 @@ def _default_lexicon() -> Lexicon:
     from nameparser.config.maiden_markers import MAIDEN_MARKERS
     from nameparser.config.particles import NON_GIVEN_NAME_PARTICLES, PARTICLES
     from nameparser.config.suffixes import (
-        GLUED_HONORIFICS, SUFFIX_ACRONYMS, SUFFIX_ACRONYMS_AMBIGUOUS,
-        SUFFIX_WORDS,
+        AGNOMENS, GLUED_HONORIFICS, SUFFIX_ACRONYMS, SUFFIX_ACRONYMS_AMBIGUOUS,
+        SUFFIX_WORDS, SUFFIX_WORDS_AMBIGUOUS,
     )
     from nameparser.config.surnames import KOREAN_SURNAMES
     from nameparser.config.titles import (
@@ -985,6 +1005,8 @@ def _default_lexicon() -> Lexicon:
         surnames=KOREAN_SURNAMES,
         honorific_tails=GLUED_HONORIFICS,
         after_given_titles=AFTER_GIVEN_TITLES,
+        suffix_words_ambiguous=SUFFIX_WORDS_AMBIGUOUS,
+        agnomens=AGNOMENS,
         # pass canonical pair-tuples so this strictly-typed call site never
         # feeds a Mapping to the tuple-annotated field; __post_init__
         # still tolerates a Mapping at runtime for interactive use
