@@ -761,6 +761,28 @@ def test_the_numeral_fork_fires_on_the_last_piece_only() -> None:
         assert (n.family, n.suffix) == (family, "Jr")
 
 
+@pytest.mark.parametrize("text, fragment", [
+    # rules/S10's Title-case lean, worded for what declined the numeral
+    ("John Smith Vi", "written in Title case, which leans to the name"),
+    ("Jane Doe nee Smith Vi", "written in Title case it leans to the name"),
+    # one-letter, declined for want of words to spare, as #718 words it
+    ("John V", "the name has no other word to spare"),
+    # a declined numeral a credential run in front then takes is the
+    # run's absorbed name word (rules/S8), not a numeral read as a name
+    ("John Smith III Vi", "follows a credential"),
+    ("John Smith PhD Vi", "follows a credential"),
+])
+def test_a_declined_numeral_is_reported_for_what_declined_it(
+        text: str, fragment: str) -> None:
+    # #752's review: the Title-case pick first took #718's "no other
+    # word to spare" wording, and one a run took read "as a suffix
+    # rather than a generational suffix"
+    details = [a.detail for a in parse(text).ambiguities]
+    assert any(fragment in d for d in details), (text, details)
+    assert not any("rather than a generational suffix" in d
+                   and "suffix rather" in d for d in details), details
+
+
 @pytest.mark.parametrize("bound", ["abd", "abu"])
 @pytest.mark.parametrize("numeral", ["I", "X"])
 def test_every_bound_word_spares_the_family_before_every_numeral(
