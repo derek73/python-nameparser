@@ -219,13 +219,15 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # review's 'Novak, ING.' row; 1359 -> 1362 the same day: #853's
     # 'Uddin, Md Karim' row, one suffix-or-name claim under the three
     # orders; 1362 -> 1365 the same day: the review's 'Uddin, Mr Md
-    # Karim' row, the same claim behind a title; 1365 -> 1393 on
-    # 2026-10-24: #864's paired-initials and gc rows, nine claiming one
+    # Karim' row, the same claim behind a title; 1365 -> 1368 on
+    # 2026-10-24: the glued-semicolon row 'John Smith, MA; PhD', one
+    # suffix-or-name claim under the three orders; 1368 -> 1396 the
+    # same day: #864's paired-initials and gc rows, nine claiming one
     # suffix-or-name report under each order and the switch-off row,
-    # which carries its own policy, under one; 1393 -> 1396 the same
+    # which carries its own policy, under one; 1396 -> 1399 the same
     # day: the review's 'Jane Doe MA R.T.' row, one claim under each.
-    assert claims == 1396, (
-        f"the field sweep checks {claims} claims, recorded as 1396 on "
+    assert claims == 1399, (
+        f"the field sweep checks {claims} claims, recorded as 1399 on "
         f"2026-10-24")
 
 

@@ -19,8 +19,10 @@ transparent), with the credential lean the lazy case gate supplies
 _pieces.own_words takes); Policy.unlisted_dotted_suffixes through
 _vocab.ambiguous_class_candidate and _vocab.ambiguous_class_member,
 for a part of by-shape credentials; and Lexicon.titles DIRECTLY, with
-_vocab.period_joined_vocab for a period-joined title, for a part of
-titles and suffixes (#603).
+_vocab.period_joined_vocab for a period-joined title, and
+Policy.extra_suffix_delimiters through _vocab.delimiter_cores for a
+title with a delimiter glued to it (rules/C10), for a part of titles
+and suffixes (#603).
 
 Implements rule C2 of docs/design/rules/, and C1's segmentation;
 C1's decision is `_comma.decide`'s. History in decisions/C1.
@@ -33,8 +35,8 @@ from nameparser._pipeline._state import (
     ParseState, PendingAmbiguity, Structure, comma_bucket, copy_with,
 )
 from nameparser._pipeline._vocab import (
-    ambiguous_class_candidate, ambiguous_class_member, period_joined_vocab,
-    is_one_case, is_wholly_suffix,
+    ambiguous_class_candidate, ambiguous_class_member, delimiter_cores,
+    glued_stem, period_joined_vocab, is_one_case, is_wholly_suffix,
 )
 from nameparser._types import AmbiguityKind
 
@@ -150,12 +152,21 @@ def segment(state: ParseState) -> ParseState:
         # period_joined_vocab for 'Lt.Gov.', one token that classify
         # (not yet run) tags a title by this same call, and that assign
         # then reads as one; a word without a period cannot be one
+        # rules/C10: "the word keeps the delimiter in its text and reads
+        # as it would without it" -- a title with one glued ('Dr;')
+        # reads as the title, as classify tags it (decisions/C10)
         titles = state.lexicon.titles
+        cores = delimiter_cores(state.policy.extra_suffix_delimiters)
         rest = tuple([i for i in seg
                       if _normalize(t := state.tokens[i].text) not in titles
                       and ("." not in t
                            or period_joined_vocab(t, state.lexicon)
-                           != "title")])
+                           != "title")
+                      # the pre-check keeps glued_stem's frame off a
+                      # word that holds no core (its docstring's terms)
+                      and not ((";" in t or len(cores) > 1)
+                               and (g := glued_stem(t, cores))
+                               and _normalize(g) in titles)])
         return len(rest) < len(seg) and (not rest or suffixy(rest))
 
     # rules/C1's decision is not this stage's since #613: every comma

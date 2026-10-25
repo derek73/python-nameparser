@@ -17,7 +17,11 @@ honorific_tails, which script_segment consumes upstream; and, since
 which decide whether an UNLISTED dotted or all-caps token joins the
 ambiguous credential class by SHAPE (#516) -- the all-caps half here
 only under CapsSuffixes.EVERYWHERE, the default's part after a comma
-being tagged by `_comma.decide` when group binds it (#613). is_initial also consults
+being tagged by `_comma.decide` when group binds it (#613); and
+Policy.extra_suffix_delimiters, with the built-in semicolon
+(_vocab.delimiter_cores), so a word after the first comma with a
+delimiter glued to it is tagged as the word without it (rules/C10).
+is_initial also consults
 the _policy module's _NO_INITIALS constant. It is named apart from the
 fields above because it is not CONFIGURATION -- no Lexicon or Policy
 carries it and no caller can change it -- and not because it decides
@@ -62,8 +66,8 @@ from nameparser._pipeline._state import (
 )
 from nameparser._types import AmbiguityKind, Role
 from nameparser._pipeline._vocab import (
-    _INITIAL, caps_shape_candidate, composed_len, is_initial, is_one_case,
-    is_paired_initials,
+    BUILTIN_SUFFIX_DELIMITERS, _INITIAL, caps_shape_candidate, composed_len,
+    delimiter_cores, glued_stem, is_initial, is_one_case, is_paired_initials,
     period_joined_vocab, suffix_as_written, tag_marker_runs,
 )
 from nameparser._pipeline._pieces import own_words
@@ -299,6 +303,16 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
     return frozenset(tags)
 
 
+#: The tags of a word that joins the word after it, which a delimiter
+#: glued to the word stands between (rules/C10). A particle's are among
+#: them though it also attaches backward (rules/P6): kept, it chained
+#: forward across the delimiter ('Berg, de; Smith' read family 'Berg de;
+#: Smith'), and blocking the forward joins alone would guard every site
+#: that reads the tag (decisions/C10).
+_JOINING_TAGS = frozenset({"particle", "conjunction",
+                           "vocab:particle-ambiguous", "vocab:bound-given"})
+
+
 def classify(state: ParseState) -> ParseState:
     # One fold per token, shared by the marker pass and the vocabulary
     # tags -- the shape suffix_as_written already asks for ("n is
@@ -335,15 +349,47 @@ def classify(state: ParseState) -> ParseState:
     whole_one_case = one_case and (
         len(own) == len(state.tokens)
         or is_one_case([t.text for t in state.tokens]))
+    # rules/C10: "the word keeps the delimiter in its text and reads as
+    # it would without it" -- tagged as the word without it ('MD;' as
+    # 'MD'), so every reading that asks a word's vocabulary asks the
+    # stem's; only where the delimiter "stands after the first comma",
+    # a semicolon before it being a word (decisions/C10, D15)
+    readers = list(state.tokens)
+    stemmed: set[int] = set()
+    if state.comma_offsets:
+        policy_cores = state.policy.extra_suffix_delimiters
+        cores = (BUILTIN_SUFFIX_DELIMITERS if not policy_cores
+                 else delimiter_cores(policy_cores))
+        first = state.comma_offsets[0]
+        for i, t in enumerate(state.tokens):
+            text = t.text
+            if t.span.start < first:
+                continue
+            for core in cores:
+                if core in text:
+                    stem = glued_stem(text, cores)
+                    if stem is not None:
+                        readers[i] = copy_with(t, text=stem)
+                        folded[i] = _normalize(stem)
+                        stemmed.add(i)
+                    break
     tokens = tuple(
         copy_with(
-            t, tags=_tags_for(t, folded[i], state, marker_tags.get(i),
+            t, tags=_tags_for(readers[i], folded[i], state, marker_tags.get(i),
                               one_case_own=one_case and i < clause_at
                               and t.role is None, one_case=one_case,
                               letter_one_case=whole_one_case or (
                                   one_case and i < clause_at
                                   and t.role is None)))
         for i, t in enumerate(state.tokens))
+    # A word with a delimiter glued to it joins no neighbour across the
+    # delimiter, so the stem's joining tags stay off it: 'y;' is no
+    # connective to the word after it (rules/C10: "no join, maiden
+    # clause or connective reaches across it")
+    if stemmed:
+        tokens = tuple(
+            copy_with(t, tags=t.tags - _JOINING_TAGS) if i in stemmed else t
+            for i, t in enumerate(tokens))
     # Delimited content whose vocabulary cannot settle it: extract's
     # escape sends an UNambiguous suffix straight through ("(MBA)" ->
     # suffix) and keeps everything else as a nickname, so an AMBIGUOUS

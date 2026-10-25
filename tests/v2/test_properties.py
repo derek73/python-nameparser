@@ -3191,8 +3191,9 @@ def _twin_record(name: ParsedName) -> tuple[object, ...]:
     return (name.as_dict(), kinds)
 
 
-def _comma_twin_findings(parser: Parser) -> tuple[list[str], int]:
-    """Each body with a ' - ' core in one interior gap, against the same
+def _comma_twin_findings(parser: Parser,
+                         core: str = " - ") -> tuple[list[str], int]:
+    """Each body with `core` in one interior gap, against the same
     text with a typed comma there, all seven fields."""
     failures = []
     total = 0
@@ -3202,17 +3203,18 @@ def _comma_twin_findings(parser: Parser) -> tuple[list[str], int]:
             for gap in range(1, len(parts)):
                 left, right = " ".join(parts[:gap]), " ".join(parts[gap:])
                 total += 1
-                got = _twin_record(parser.parse(f"{head} {left} - {right}"))
+                got = _twin_record(
+                    parser.parse(f"{head} {left}{core}{right}"))
                 want = _twin_record(parser.parse(f"{head} {left}, {right}"))
                 if got != want:
-                    failures.append(f"{head} {left} - {right}: "
+                    failures.append(f"{head} {left}{core}{right}: "
                                     f"{got} != {want}")
     return failures, total
 
 
 def test_a_delimiter_core_in_a_tail_reads_as_its_comma_twin() -> None:
-    """rules/C10's statement: "a delimiter the policy declares parts a trailing
-    suffix part as a comma would" (#549). Every role field of a name
+    """rules/C10's statement: "a suffix delimiter parts the suffix words on
+    each side of it as a comma would" (#549). Every role field of a name
     with a declared core standing in a part after the suffix comma, and
     every kind it reports but `comma-structure` (`_twin_record`),
     equals that of the same text written with a comma in the core's
@@ -3231,6 +3233,76 @@ def test_a_delimiter_core_in_a_tail_reads_as_its_comma_twin() -> None:
     dash = Parser(policy=Policy(extra_suffix_delimiters=frozenset({" - "})))
     failures, total = _comma_twin_findings(dash)
     assert total == 129
+    assert not failures, "\n".join(failures)
+
+
+def test_a_semicolon_standing_alone_in_a_tail_reads_as_its_comma_twin() -> None:
+    """rules/C10's "The semicolon is a delimiter by default" -- the
+    same walk with no policy at all, the semicolon standing alone.
+
+    RECORDED NEGATIVE CONTROL: at 638685b4, before the semicolon was a
+    delimiter, all 129 texts disagreed, the semicolon a word of the
+    suffix run where the comma parts it."""
+    failures, total = _comma_twin_findings(Parser(), " ; ")
+    assert total == 129
+    assert not failures, "\n".join(failures)
+
+
+# rules/C10's "A delimiter glued to a suffix word parts it from the next
+# as a comma glued there would" -- so a semicolon glued to a word after
+# the first comma reads as the same text with a space in its place, the
+# glued word kept in its field with its semicolon. Two inputs (docs/
+# design/AGENTS.md axis 11), over every comma shape AGENTS.md's sweep
+# names (a whole name, one word, an empty head, a nickname head, a
+# suffix before the comma, a particle, a connective and a title-particle
+# head), a second comma part or none, and all three orders, with a word
+# of each kind a glued word can be: a listed credential, a generation, a
+# word of the ambiguous class, an unlisted all-caps credential, a title,
+# a numeral written like an initial, a semicolon glued to the front. Left
+# out by C10's Accepted bullets: a split 'Ph. D.', a credential only as a
+# pair the glued half cannot join, and a glued particle, which joins
+# nothing where its space twin joins a neighbour.
+_GLUED_HEADS = ("John Smith", "Smith", "", "(Bob)", "John Smith Jr.",
+                "Juan de la Vega", "Ortega y Gasset", "Freiherr von Berg",
+                "St. John", "Dr. John Smith", "Rev. Sr. Smith")
+_GLUED_TAILS = ("MD; PhD", "MD;PhD", "MD;", "PhD; MD; MPH", "Jr.; PhD",
+                "III; MD", "M.D.; Ph.D.", "md; phd", "V; MD", "Esq.;",
+                "MA; PhD", "MBBS; FCPS", "Dr; MD", "MD ;PhD")
+
+
+def _glued_twin_findings() -> tuple[list[str], int]:
+    failures = []
+    total = 0
+    for order in (GIVEN_FIRST, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST):
+        parser = Parser(policy=Policy(name_order=order))
+        for head in _GLUED_HEADS:
+            for second in ("", " John,"):
+                for tail in _GLUED_TAILS:
+                    text = f"{head},{second} {tail}"
+                    twin = f"{head},{second} {tail.replace(';', ' ')}"
+                    got, want = parser.parse(text), parser.parse(twin)
+                    total += 1
+                    records = [
+                        ({k: " ".join(v.replace(";", " ").split())
+                          for k, v in name.as_dict().items()},
+                         [a.kind for a in name.ambiguities])
+                        for name in (got, want)]
+                    if records[0] != records[1]:
+                        failures.append(f"{order} {text!r}: {records[0]} "
+                                        f"!= {records[1]}")
+    return failures, total
+
+
+def test_a_glued_semicolon_reads_as_its_space_twin() -> None:
+    """Every field of a name with a semicolon glued to a word after the
+    first comma, read with its semicolons as spaces, and every kind it
+    reports, equals that of the twin with a space in the semicolon's
+    place.
+
+    RECORDED NEGATIVE CONTROL: at 638685b4, before a glued semicolon
+    parted anything, 726 of these 924 texts disagreed."""
+    failures, total = _glued_twin_findings()
+    assert total == 924
     assert not failures, "\n".join(failures)
 
 

@@ -690,10 +690,13 @@ class Policy:
     #: marker (#329).
     maiden_delimiters: frozenset[tuple[str, str]] = frozenset()
     #: Additional separators that split suffix groups (e.g. " - " for
-    #: "Jane Smith, RN - CRNA"). Additive only: the comma always
-    #: splits suffix groups and cannot be replaced -- comma handling
-    #: is structural (the same comma reading that parses
-    #: "Family, Given" input), not a configurable delimiter.
+    #: "Jane Smith, RN - CRNA"). Additive only: the comma and the
+    #: semicolon always split suffix groups and cannot be replaced --
+    #: comma handling is structural (the same comma reading that parses
+    #: "Family, Given" input), not a configurable delimiter, and the
+    #: semicolon is built in since 2.6 (rules/C10). A separator glued
+    #: to a suffix word after the first comma counts too: "John Smith,
+    #: MD; PhD" reads suffix "MD; PhD", the word keeping its separator.
     extra_suffix_delimiters: frozenset[str] = frozenset()
     #: Governs "Family, Suffix"-shaped input where the suffix word is
     #: also initial-shaped (a single letter, bare or period-written --
