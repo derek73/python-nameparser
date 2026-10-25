@@ -2608,7 +2608,7 @@
 {"name": "P. V.", "given": "P.", "family": "V.", "initials": "P. V."}
 {"name": "PEDRO DA SILVA FILHO", "given": "PEDRO", "family": "DA SILVA", "suffix": "FILHO", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. S.", "capitalized": "Pedro da Silva Filho"}
 {"name": "PEDRO FILHO", "given": "PEDRO", "family": "FILHO", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. F.", "capitalized": "Pedro Filho"}
-{"name": "PEDRO JUNIOR FILHO", "given": "PEDRO", "suffix": "JUNIOR FILHO", "ambiguities": ["GIVEN_OR_FAMILY", "SUFFIX_OR_NAME"], "initials": "P.", "capitalized": "Pedro Junior Filho"}
+{"name": "PEDRO JUNIOR FILHO", "given": "PEDRO", "middle": "JUNIOR", "family": "FILHO", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. J. F.", "capitalized": "Pedro Junior Filho"}
 {"name": "Pablo Emilio Riveros Reina", "given": "Pablo", "middle": "Emilio Riveros", "family": "Reina", "initials": "P. E. R. R."}
 {"name": "Pablo Pérez Miguel Ángel Juan Antonio II", "order": "FAMILY_FIRST", "given": "Pérez", "middle": "Miguel Ángel Juan Antonio", "family": "Pablo", "suffix": "II", "initials": "P. M. Á. J. A. P."}
 {"name": "Pablo Pérez, Sr. Miguel Ángel Juan Antonio", "title": "Sr.", "given": "Miguel", "middle": "Ángel Juan Antonio", "family": "Pablo Pérez", "initials": "M. Á. J. A. P. P."}
@@ -2627,6 +2627,7 @@
 {"name": "Pedro", "given": "Pedro", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "P."}
 {"name": "Pedro", "order": "FAMILY_FIRST", "family": "Pedro", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "P."}
 {"name": "Pedro Alves Filho", "given": "Pedro", "family": "Alves", "suffix": "Filho", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. A."}
+{"name": "Pedro Alves Junior Filho", "given": "Pedro", "family": "Alves", "suffix": "Junior Filho", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. A."}
 {"name": "Pedro Alves M.Filho", "given": "Pedro", "family": "Alves", "suffix": "M.Filho", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. A.", "capitalized_force": "Pedro Alves M.FILHO"}
 {"name": "Pedro Alves NETO", "given": "Pedro", "family": "Alves", "suffix": "NETO", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. A.", "capitalized_force": "Pedro Alves Neto"}
 {"name": "Pedro Alves Neto", "given": "Pedro", "family": "Alves", "suffix": "Neto", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. A."}
@@ -2640,9 +2641,12 @@
 {"name": "Pedro Infante Torrentera", "given": "Pedro", "middle": "Infante", "family": "Torrentera", "initials": "P. I. T."}
 {"name": "Pedro J. Neto", "given": "Pedro", "family": "J.", "suffix": "Neto", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. J."}
 {"name": "Pedro Jorba y Gassó", "given": "Pedro", "family": "Jorba y Gassó", "initials": "P. J. G."}
+{"name": "Pedro Junior Filho", "given": "Pedro", "middle": "Junior", "family": "Filho", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. J. F."}
+{"name": "Pedro Junior fils", "given": "Pedro", "suffix": "Junior fils", "ambiguities": ["GIVEN_OR_FAMILY", "SUFFIX_OR_NAME"], "initials": "P."}
 {"name": "Pedro López Ruiz H.", "given": "Pedro", "middle": "López Ruiz", "family": "H.", "initials": "P. L. R. H."}
 {"name": "Pedro M.Filho", "given": "Pedro", "family": "M.Filho", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. M."}
 {"name": "Pedro Morales Pino", "given": "Pedro", "middle": "Morales", "family": "Pino", "initials": "P. M. P."}
+{"name": "Pedro PhD Neto", "given": "Pedro", "middle": "PhD", "family": "Neto", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. P. N."}
 {"name": "Pedro de Neto", "given": "Pedro", "family": "de", "suffix": "Neto", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. d.", "capitalized_force": "Pedro De Neto"}
 {"name": "Pendeta Zaba", "given": "Pendeta", "family": "Zaba", "initials": "P. Z."}
 {"name": "Penkauskienė Sofija Rita", "order": "FAMILY_FIRST", "given": "Sofija", "middle": "Rita", "family": "Penkauskienė", "initials": "S. R. P."}

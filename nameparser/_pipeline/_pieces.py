@@ -1275,7 +1275,16 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
             lean = listed_lean(tokens[piece[0]], one_case)
             # peeling still leaves given + family, or the writing says
             # to peel anyway
-            if lean == "credential" or (lean is None and k - 2 >= second):
+            # rules/S11: "only where the name has words to spare" -- a
+            # generation word counts the NAME words in front of it, so
+            # a suffix word there ('Pedro Junior Filho') is not counted
+            # as the word it spares and then peeled as well
+            front = k - 2
+            if AMBIGUOUS_WORD_TAG in tokens[piece[0]].tags:
+                while front >= 0 and is_suffix_piece(
+                        pieces[rest[front]], ptags[rest[front]], tokens):
+                    front -= 1
+            if lean == "credential" or (lean is None and front >= second):
                 k -= 1
                 continue
             # #544: or an unambiguous credential stands IN FRONT of it
@@ -1297,6 +1306,11 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
             # The pass, once built, answers first: asked of every
             # member, the reach test would walk back through the run
             # each time, one look-behind per member.
+            # A generation word that is also a name has no company to
+            # keep (rules/S7's credentials): a suffix word in front of
+            # it is no evidence, its count above having looked past it
+            if AMBIGUOUS_WORD_TAG in tokens[piece[0]].tags:
+                break
             if anchors is None and anchor_in_reach(
                     rest[k - 2:0:-1], pieces, ptags, tokens):
                 anchors = credential_anchors(rest, pieces, ptags, tokens)

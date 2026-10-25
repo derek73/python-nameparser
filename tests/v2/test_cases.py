@@ -241,9 +241,10 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # joined-capitals rows that report (phase 2d), one suffix-or-name
     # claim under each order; 1451 -> 1493 the same day: #752's
     # generation-word rows (phase 2h, fils and the agnomens), the claims
-    # their reports make under the three orders.
-    assert claims == 1493, (
-        f"the field sweep checks {claims} claims, recorded as 1493 on "
+    # their reports make under the three orders; 1493 -> 1508 the same
+    # day: #890's five rows with a suffix word in front of an agnomen.
+    assert claims == 1508, (
+        f"the field sweep checks {claims} claims, recorded as 1508 on "
         f"2026-10-25")
 
 

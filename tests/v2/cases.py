@@ -1618,6 +1618,41 @@ CASES: tuple[Case, ...] = (
          notes="no chunk claim for a suffix word that is also a name "
                "(rules/S11): the joined word is weighed by its dotted shape, "
                "as it was"),
+    Case("a_generation_word_in_front_of_an_agnomen_is_no_word_to_spare", "Pedro Junior Filho",
+         {"given": "Pedro", "middle": "Junior", "family": "Filho"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="only name words in front of an agnomen count toward its "
+               "words to spare, so the suffix word there spares nothing "
+               "and keeps no company (rules/S11, #890)"),
+    Case("an_accented_junior_in_front_of_an_agnomen", "Pedro Júnior Neto",
+         {"given": "Pedro", "middle": "Júnior", "family": "Neto"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="only name words in front of an agnomen count toward its "
+               "words to spare, so the suffix word there spares nothing "
+               "and keeps no company (rules/S11, #890)"),
+    Case("an_abbreviated_junior_in_front_of_an_agnomen", "Pedro Jr. Filho",
+         {"given": "Pedro", "middle": "Jr.", "family": "Filho"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="only name words in front of an agnomen count toward its "
+               "words to spare, so the suffix word there spares nothing "
+               "and keeps no company (rules/S11, #890)"),
+    Case("a_generation_word_in_front_of_an_agnomen_before_a_comma", "Pedro Junior Filho, MD",
+         {"given": "Pedro", "middle": "Junior", "family": "Filho", "suffix": "MD"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="only name words in front of an agnomen count toward its "
+               "words to spare, so the suffix word there spares nothing "
+               "and keeps no company (rules/S11, #890)"),
+    Case("a_generation_word_in_front_of_an_agnomen_in_capitals", "PEDRO JUNIOR FILHO",
+         {"given": "PEDRO", "middle": "JUNIOR", "family": "FILHO"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="only name words in front of an agnomen count toward its "
+               "words to spare, so the suffix word there spares nothing "
+               "and keeps no company (rules/S11, #890)"),
     Case("fils_after_a_name", "Alexandre Dumas fils",
          {"given": "Alexandre", "family": "Dumas", "suffix": "fils"},
          classification="fix(#752)",
