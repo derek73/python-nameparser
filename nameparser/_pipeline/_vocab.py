@@ -285,8 +285,9 @@ ROMAN = _ROMAN
 # rules/S10's Except bullet "A numeral of one letter needs words to
 # spare", is the callers'. decisions/S10 (#718, #721)
 # mechanisms.md#ONE-PREDICATE-PER-QUESTION ("exactly one predicate answers it and every other site calls that one")
-# -- the numeral's one recognizer, the fork's shape test and the
-# vocabulary's answer in one predicate (decisions/vocabulary-model,
+# -- the trailing fork's numeral test, which C12 asks with its
+# suffix-word tag as `listed`; other numeral sites still answer on
+# their own, named in the decisions entry (decisions/vocabulary-model,
 # #752)
 def reads_as_generation(text: str, preceding: str, one_case: bool | None,
                         *, listed: bool = False) -> bool:
@@ -305,11 +306,13 @@ def reads_as_generation(text: str, preceding: str, one_case: bool | None,
     passes the suffix-word tag, which every suffix word carries, so
     'Jr.' and 'Esq.' answer yes there as 'III' does: C12 asks whether
     the part ends in a suffix word or a numeral the fork reads.
-    S8's run start (#784), C1's listing form (#774) and the peel's
+    S8's run start (#784), C1's listing form (#774), the peel's
     `is_suffix_piece`, which takes 'ii' to 'iv' and vetoes 'i' and
-    'v' as initial-shaped, still recognize a numeral without this
-    predicate, each keeping the answer it had before #752; passing
-    `listed` at the peel's fork would move 'John J. V'. Giving every
+    'v' as initial-shaped, and C9's family-comma walk (#819) are among
+    the sites still recognizing a numeral without this predicate, each
+    keeping the answer it had before #752 (decisions/vocabulary-model
+    lists those found); passing `listed` at the peel's fork would move
+    'John J. V'. Giving every
     numeral rule this one reading is #784, #774 and #819's change.
 
     is_initial_shaped, not is_initial: this asks whether the preceding
