@@ -30,6 +30,7 @@ Entry conventions:
 - [H5 — the trailing title run](H5-trailing-title-run.md)
 - [H6 — a title before a family comma](H6-title-before-a-family-comma.md)
 - [H7 — a joined name unit carrying title vocabulary](H7-joined-name-unit-carrying-title-vocabulary.md)
+- [H8 — a salutation ending the given part](H8-salutation-ending-the-given-part.md)
 
 ## Particles & surname prefixes (P)
 

@@ -2,31 +2,31 @@ schema = 1
 
 [[word]]
 text = "dhr"
-salutation = { gender = "m", expands = "de heer, Mr." }
+salutation = { gender = "m", expands = "de heer, Mr.", after_given = true }
 
 [[word]]
 text = "heren"
-salutation = { gender = "m", expands = "the plural of heer, 'de heren'" }
+salutation = { gender = "m", expands = "the plural of heer, 'de heren'", after_given = true }
 
 [[word]]
 text = "juffrouw"
-salutation = { issue = 606, gender = "f" }
+salutation = { issue = 606, gender = "f", after_given = true }
 
 [[word]]
 text = "meneer"
-salutation = { issue = 606, gender = "m" }
+salutation = { issue = 606, gender = "m", after_given = true }
 
 [[word]]
 text = "mevrouw"
-salutation = { gender = "f" }
+salutation = { gender = "f", after_given = true }
 
 [[word]]
 text = "mevr"
-salutation = { gender = "f", same_as = "mevrouw" }
+salutation = { gender = "f", same_as = "mevrouw", after_given = true }
 
 [[word]]
 text = "mevrouwe"
-salutation = { gender = "f", same_as = "mevrouw", expands = "the archaic spelling of mevrouw" }
+salutation = { gender = "f", same_as = "mevrouw", expands = "the archaic spelling of mevrouw", after_given = true }
 
 [[word]]
 text = "baron"

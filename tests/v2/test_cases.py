@@ -225,9 +225,11 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # same day: #864's paired-initials and gc rows, nine claiming one
     # suffix-or-name report under each order and the switch-off row,
     # which carries its own policy, under one; 1396 -> 1399 the same
-    # day: the review's 'Jane Doe MA R.T.' row, one claim under each.
-    assert claims == 1399, (
-        f"the field sweep checks {claims} claims, recorded as 1399 on "
+    # day: the review's 'Jane Doe MA R.T.' row, one claim under each;
+    # 1399 -> 1402 the same day: #835's particle row 'Doe, Jane van
+    # Mrs', one particle-or-given claim under each order.
+    assert claims == 1402, (
+        f"the field sweep checks {claims} claims, recorded as 1402 on "
         f"2026-10-24")
 
 

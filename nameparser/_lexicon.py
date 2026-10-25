@@ -25,7 +25,7 @@ _VOCAB_FIELDS = (
     "titles", "given_name_titles", "suffix_acronyms", "suffix_words",
     "suffix_acronyms_ambiguous", "particles", "particles_ambiguous",
     "conjunctions", "conjunctions_ambiguous", "bound_given_names",
-    "maiden_markers", "surnames", "honorific_tails",
+    "maiden_markers", "surnames", "honorific_tails", "after_given_titles",
 )
 
 #: (marker, base, why) triples. Each marker QUALIFIES how entries of
@@ -60,13 +60,14 @@ _VOCAB_FIELDS = (
 #:   property on a word reading (tools/vocab/build.py). The check here
 #:   is the only thing that holds a caller's own.
 #:
-#: Two fields are deliberately NOT here and have no check of their own.
+#: Three fields are deliberately NOT here and have no check of their own.
 #: given_name_titles -- see the note in __post_init__ for why every
 #: attempt at one rejected working configurations. conjunctions_ambiguous
 #: -- an orphan is never consulted because both the classify fork and
 #: its ambiguity emitter require the base entry as well, so an orphan
 #: decides nothing, and AGENTS.md's invariants rule guards harm, not
-#: no-ops.
+#: no-ops. after_given_titles -- the same: classify tags a word from it
+#: only where the word is in titles too, so an orphan is never read.
 _SUBSET_FIELDS = (
     ("particles_ambiguous", "particles",
      "an orphan emits a spurious particle-or-given ambiguity"),
@@ -704,6 +705,15 @@ class Lexicon:
     # constructor tolerates any Mapping (or pair iterable) at runtime and
     # canonicalizes here; this closes the caller-aliasing hole and keeps
     # Lexicon hashable. Read via capitalization_exceptions_map.
+    #: Salutations that read as a title where one ENDS the given part
+    #: after a family comma, written bare: "Doe, Jane Mrs" reads title
+    #: "Mrs" where an office or rank word there stays a middle name
+    #: ("Doe, John King"), rules/H8. A period-marked title word reads as
+    #: a title there whether listed here or not (rules/H5). Entries need
+    #: not also be in ``titles``; one that is not is never consulted.
+    #: Full default list:
+    #: :data:`~nameparser.config.titles.AFTER_GIVEN_TITLES`.
+    after_given_titles: frozenset[str] = frozenset()
     capitalization_exceptions: tuple[tuple[str, str], ...] = ()
     _cap_map: Mapping[str, str] = field(
         init=False, repr=False, compare=False, hash=False,
@@ -945,7 +955,8 @@ def _default_lexicon() -> Lexicon:
         SUFFIX_WORDS,
     )
     from nameparser.config.surnames import KOREAN_SURNAMES
-    from nameparser.config.titles import GIVEN_NAME_TITLES, TITLES
+    from nameparser.config.titles import (
+        AFTER_GIVEN_TITLES, GIVEN_NAME_TITLES, TITLES)
 
     # every vocabulary constant is a frozenset since #293, so each one
     # feeds its strictly-typed frozenset[str] field as it stands -- and
@@ -973,6 +984,7 @@ def _default_lexicon() -> Lexicon:
         maiden_markers=MAIDEN_MARKERS,
         surnames=KOREAN_SURNAMES,
         honorific_tails=GLUED_HONORIFICS,
+        after_given_titles=AFTER_GIVEN_TITLES,
         # pass canonical pair-tuples so this strictly-typed call site never
         # feeds a Mapping to the tuple-annotated field; __post_init__
         # still tolerates a Mapping at runtime for interactive use

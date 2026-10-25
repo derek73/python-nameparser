@@ -87,6 +87,7 @@ def test_the_compiled_sets_are_the_default_lexicon(shipped: dict[str, str]) -> N
         bound_given_names=c["BOUND_GIVEN_NAMES"],
         maiden_markers=c["MAIDEN_MARKERS"], surnames=lex.surnames,
         honorific_tails=c["GLUED_HONORIFICS"],
+        after_given_titles=c["AFTER_GIVEN_TITLES"],
         capitalization_exceptions=tuple(c["CAPITALIZATION_EXCEPTIONS"].items()),
     )
     assert rebuilt == lex
@@ -204,6 +205,11 @@ MUTATIONS = [
     ("may-be-name-on-a-word", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = { may_be_name = true }')}, "may_be_name marks an acronym"),
     ("may-be-initial-on-a-word", {"und.toml": _w('[[word]]\ntext = "and"\nconjunction = { may_be_initial = true }')}, "CASED single letter"),
     ("may-be-initial-caseless", {"ar.toml": _w('[[word]]\ntext = "و"\nconjunction = { may_be_initial = true }')}, "CASED single letter"),
+    ("after-given-on-an-office", {"en.toml": _w('[[word]]\ntext = "king"\nnobility = { after_given = true }')}, "after_given marks a salutation"),
+    ("after-given-on-a-generic-title", {"und.toml": _w('[[word]]\ntext = "zzq"\ntitle = { after_given = true }')}, "after_given marks a salutation"),
+    # herr's shape: refused in de.toml, flagged in da.toml
+    ("excluded-after-given-in-another-file", {"de.toml": _w('[[word]]\ntext = "herr"\nsalutation = { excluded = { after_given = "a surname" } }'), "da.toml": _w('[[word]]\ntext = "herr"\nsalutation = { after_given = true }')}, "after_given = true is excluded.*a surname"),
+    ("after-given-not-a-flag", {"en.toml": _w('[[word]]\ntext = "mr"\nsalutation = { after_given = "yes" }')}, "after_given must be true or false"),
     ("particle-without-may-be-given", {"und.toml": _w('[[word]]\ntext = "van"\nparticle = {}')}, "states may_be_given"),
     # every particle kind, not only the generic one (#749): unwritten,
     # the flag would read false and put the word in the never-given half
@@ -789,6 +795,7 @@ _PROPERTY_PROBES = {
     "may_be_given": ("particle", "{ may_be_given = false }", "zzq"),
     "may_be_initial": ("conjunction", "{ may_be_initial = true }", "q"),
     "cased": ("title", '{ cased = "ZzQ" }', "zzq"),
+    "after_given": ("salutation", "{ after_given = true }", "zzq"),
 }
 #: The behavioral properties the build refuses to leave unwritten.
 _REQUIRED = {"may_be_given"}

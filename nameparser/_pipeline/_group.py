@@ -1092,7 +1092,8 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                         and (site is ClauseSite.TAIL
                              or fk + 1 in tail_reading(
                                  peel_walk(fk, ptags), pieces, ptags,
-                                 tokens, one_case)[1]))):
+                                 tokens, one_case,
+                                 salutations=True)[1]))):
                 pass
             elif bound_join is BoundJoin.LENIENT:
                 # post-comma the family is fixed and the pair is the

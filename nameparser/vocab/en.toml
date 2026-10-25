@@ -6,43 +6,49 @@ excluded = { title = { reason = "William, abbreviated, and no title of any kind:
 
 [[word]]
 text = "goodman"
-salutation = { gender = "m", expands = "the archaic Mr., 'Goodman Brown'" }
+salutation = { gender = "m", expands = "the archaic Mr., 'Goodman Brown'", excluded = { after_given = "a common surname (Benny Goodman), and middle names are drawn from surnames" } }
+given = { us_ssa = 22, wikidata = 11, as_of = 2026-10-24 }
+family = { us_census_2010 = 73136, wikidata = 743, as_of = 2026-10-24 }
 
 [[word]]
 text = "goodwife"
-salutation = { gender = "f", expands = "the archaic Mrs., 'Goodwife Proctor'" }
+salutation = { gender = "f", expands = "the archaic Mrs., 'Goodwife Proctor'", after_given = true }
 
 [[word]]
 text = "madam"
-salutation = { gender = "f" }
+salutation = { gender = "f", after_given = true }
 
 [[word]]
 text = "madame"
-salutation = { gender = "f" }
+salutation = { gender = "f", after_given = true }
 
 [[word]]
 text = "master"
-salutation = { addresses = "given", gender = "m", expands = "the style for a boy, 'Master Harry'" }
+salutation = { addresses = "given", gender = "m", expands = "the style for a boy, 'Master Harry'", excluded = { after_given = "a surname and a given name, borne as a middle name either way" } }
+given = { us_ssa = 476, wikidata = 2, as_of = 2026-10-24 }
+family = { us_census_2010 = 2735, wikidata = 61, as_of = 2026-10-24 }
 
 [[word]]
 text = "miss"
-salutation = { gender = "f" }
+salutation = { gender = "f", after_given = true }
 
 [[word]]
 text = "misses"
-salutation = { gender = "f", expands = "the plural of miss, 'the Misses Smith'" }
+salutation = { gender = "f", expands = "the plural of miss, 'the Misses Smith'", after_given = true }
 
 [[word]]
 text = "mr"
-salutation = { gender = "m" }
+salutation = { gender = "m", after_given = true }
 
 [[word]]
 text = "mister"
-salutation = { gender = "m", same_as = "mr" }
+salutation = { gender = "m", same_as = "mr", excluded = { after_given = "a given name and a surname, borne as a middle name either way" } }
+given = { us_ssa = 746, as_of = 2026-10-24 }
+family = { us_census_2010 = 1211, wikidata = 2, as_of = 2026-10-24 }
 
 [[word]]
 text = "mrs"
-salutation = { gender = "f" }
+salutation = { gender = "f", after_given = true }
 
 [[word]]
 text = "ms"
@@ -52,7 +58,7 @@ note = "NOT may_be_name, though #296's audit table put it there for the leading-
 
 [[word]]
 text = "mx"
-salutation = { gender = "n" }
+salutation = { gender = "n", after_given = true }
 
 [[word]]
 text = "doyen"

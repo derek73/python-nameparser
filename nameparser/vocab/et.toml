@@ -2,15 +2,16 @@ schema = 1
 
 [[word]]
 text = "härra"
-salutation = { issue = 606, gender = "m", note = "keeps its accent, so the surname Harra (~1,100) is untouched; the lexicon folds no accent (decisions/salutation-titles)" }
+salutation = { issue = 606, gender = "m", note = "keeps its accent, so the surname Harra (~1,100) is untouched; the lexicon folds no accent (decisions/salutation-titles)", excluded = { after_given = "spelled HARRA, a surname (Census 2010), and middle names are drawn from surnames" } }
+family = { us_census_2010 = 237, as_of = 2026-10-24, note = "counted as HARRA, the Census writing no diacritics" }
 
 [[word]]
 text = "preili"
-salutation = { issue = 606, gender = "f" }
+salutation = { issue = 606, gender = "f", after_given = true }
 
 [[word]]
 text = "proua"
-salutation = { issue = 606, gender = "f" }
+salutation = { issue = 606, gender = "f", after_given = true }
 
 [[word]]
 text = "krahv"

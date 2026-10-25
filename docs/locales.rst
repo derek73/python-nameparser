@@ -313,8 +313,8 @@ right and is validated on its own, before it is unioned onto the base
 in the set that field marks (``particles``, ``suffix_acronyms``,
 ``suffix_words``). A fragment holding ``particles_ambiguous={"van"}``
 without ``particles={"van"}`` raises ``ValueError`` before any union
-happens. ``given_name_titles`` and ``conjunctions_ambiguous`` are not
-checked this way, and can mark a word only the base holds. ``zh`` is the
+happens. ``given_name_titles``, ``conjunctions_ambiguous`` and
+``after_given_titles`` are not checked this way, and can mark a word only the base holds. ``zh`` is the
 shipped worked example: its ``Lexicon(surnames=...)`` has to satisfy
 every ``Lexicon`` rule standing alone, before anything unions it onto
 the base.

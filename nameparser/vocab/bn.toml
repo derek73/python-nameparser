@@ -10,7 +10,7 @@ excluded = { salutation = { reason = "Kumari is a given name and a family name i
 
 [[word]]
 text = "জনাব"
-salutation = { gender = "m", issue = 343, expands = "Janab, Mr." }
+salutation = { gender = "m", issue = 343, expands = "Janab, Mr.", after_given = true }
 
 [[word]]
 text = "বেগম"
@@ -18,47 +18,48 @@ excluded = { salutation = { reason = "Begum is a trailing name element far more 
 
 [[word]]
 text = "মিঃ"
-salutation = { gender = "m", issue = 343, expands = "Mr., borrowed" }
+salutation = { gender = "m", issue = 343, expands = "Mr., borrowed", after_given = true }
 
 [[word]]
 text = "মি"
-salutation = { gender = "m", issue = 343, same_as = "মিঃ", expands = "the period spelling মি." }
+salutation = { gender = "m", issue = 343, same_as = "মিঃ", expands = "the period spelling মি.", after_given = true }
 
 [[word]]
 text = "মিসেস"
-salutation = { gender = "f", issue = 343, expands = "Mrs., borrowed" }
+salutation = { gender = "f", issue = 343, expands = "Mrs., borrowed", after_given = true }
 
 [[word]]
 text = "মোঃ"
-salutation = { gender = "m", issue = 343, expands = "Md., Mohammad", note = "a name PREFIX, not a title semantically; TITLES is the functional home because `given` must stay the name the person is addressed by (decisions/indic-honorifics)" }
+salutation = { gender = "m", issue = 343, expands = "Md., Mohammad", note = "a name PREFIX, not a title semantically; TITLES is the functional home because `given` must stay the name the person is addressed by (decisions/indic-honorifics)", excluded = { after_given = "abbreviates Mohammad, a given name, and is read as one where it leads (#853)" } }
+given = { wikidata = 37, as_of = 2026-10-24 }
 
 [[word]]
 text = "মো"
-salutation = { gender = "m", issue = 343, same_as = "মোঃ", expands = "the period spelling মো." }
+salutation = { gender = "m", issue = 343, same_as = "মোঃ", expands = "the period spelling মো.", excluded = { after_given = "abbreviates Mohammad, a given name, as মোঃ does (#853)" } }
 
 [[word]]
 text = "মোসাঃ"
-salutation = { gender = "f", issue = 343, expands = "Mst., Mosammat, the women's counterpart of মোঃ" }
+salutation = { gender = "f", issue = 343, expands = "Mst., Mosammat, the women's counterpart of মোঃ", after_given = true }
 
 [[word]]
 text = "মোছাঃ"
-salutation = { gender = "f", issue = 343, same_as = "মোসাঃ", expands = "the ছ spelling" }
+salutation = { gender = "f", issue = 343, same_as = "মোসাঃ", expands = "the ছ spelling", after_given = true }
 
 [[word]]
 text = "মোছা"
-salutation = { gender = "f", issue = 343, same_as = "মোছাঃ", expands = "the period spelling মোছা." }
+salutation = { gender = "f", issue = 343, same_as = "মোছাঃ", expands = "the period spelling মোছা.", after_given = true }
 
 [[word]]
 text = "মোসা"
-salutation = { gender = "f", issue = 343, same_as = "মোসাঃ", expands = "the period spelling মোসা." }
+salutation = { gender = "f", issue = 343, same_as = "মোসাঃ", expands = "the period spelling মোসা.", after_given = true }
 
 [[word]]
 text = "শ্রী"
-salutation = { gender = "m", issue = 343, expands = "Shri, Mr." }
+salutation = { gender = "m", issue = 343, expands = "Shri, Mr.", excluded = { after_given = "also an element of given names (Sri, Shri), so where it ends the given part it may be one" } }
 
 [[word]]
 text = "শ্রীমতী"
-salutation = { gender = "f", issue = 343, expands = "Shrimati, Mrs." }
+salutation = { gender = "f", issue = 343, expands = "Shrimati, Mrs.", after_given = true }
 
 [[word]]
 text = "আলহাজ্ব"

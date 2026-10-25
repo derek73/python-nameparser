@@ -11041,6 +11041,59 @@ CASES: tuple[Case, ...] = (
          notes="the boundary of the row above, kept: #432 reads the "
                "period as the abbreviation mark it is, so 'V.' is a "
                "middle initial -- 'Smith, John V.' plus a title"),
+    Case("bare_salutation_ending_a_family_comma_given_part",
+         "Doe, Jane Mrs",
+         {"title": "Mrs", "given": "Jane", "family": "Doe"},
+         classification="fix(#835)",
+         notes="H8's reading (#835): the family comma has fixed the surname, so "
+               "the one reading a bare salutation there competes with "
+               "is a middle name, and H5's chain takes it as it takes "
+               "'Doe, Jane Mrs.'"),
+    Case("bare_salutation_ending_a_one_case_given_part",
+         "DOE, JOHN Q MR",
+         {"title": "MR", "given": "JOHN", "middle": "Q", "family": "DOE"},
+         classification="fix(#835)",
+         notes="the FEC's spelling of the shape (#834), the period "
+               "left off"),
+    Case("bare_salutation_ahead_of_a_suffix_after_a_family_comma",
+         "Doe, John Mr Jr",
+         {"title": "Mr", "given": "John", "family": "Doe",
+          "suffix": "Jr"}, classification="fix(#835)",
+         notes="the walk's candidates leave the suffix out, so the "
+               "salutation is the last of them, as 'Smith, John Prof. "
+               "Jr.' reaches 'Prof.'"),
+    Case("bare_salutation_before_a_bound_given_name_join",
+         "Doe, abdul Mrs",
+         {"title": "Mrs", "given": "abdul", "family": "Doe"},
+         classification="fix(#835)",
+         notes="rules/P5's join declines a word H8 reads as the title, "
+               "as it declines 'Berg, abdul Prof.': the group-side "
+               "predictor admits the same bare salutations the walk "
+               "does, or the join read given 'abdul Mrs'"),
+    Case("bare_salutation_behind_a_trailing_particle",
+         "Doe, Jane van Mrs",
+         {"title": "Mrs", "given": "Jane", "family": "van Doe"},
+         ambiguities=("particle-or-given",),
+         classification="fix(#835)",
+         notes="P6 attaches the particle as though the salutation were "
+               "absent ('Doe, Jane van' reads the same), and reports "
+               "the fork it decides, as 'Doe, Jane van Mrs.' does"),
+    Case("bare_salutation_borne_as_a_name_stays_a_middle_name",
+         "Doe, John Goodman",
+         {"given": "John", "middle": "Goodman", "family": "Doe"},
+         notes="rules/H8's Except: goodman is a salutation the "
+               "vocabulary refuses after_given, a surname of 73,136 "
+               "US bearers, since a middle name may be a surname"),
+    Case("bare_office_word_ending_a_family_comma_given_part",
+         "Doe, John King",
+         {"given": "John", "middle": "King", "family": "Doe"},
+         notes="rules/H8's Except: only a salutation qualifies, and an "
+               "office or rank word is borne as a middle name"),
+    Case("bare_salutation_without_a_comma_is_a_name_word",
+         "Jane Doe Mrs",
+         {"given": "Jane", "middle": "Doe", "family": "Mrs"},
+         notes="rules/H5's bare title word: without the comma the "
+               "surname is not fixed, so the word stays a name word"),
     Case("title_word_trailing_ahead_of_a_reserved_acronym",
          "John Smith Prof. MA",
          {"title": "Prof.", "given": "John", "family": "Smith",

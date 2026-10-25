@@ -2,15 +2,15 @@ schema = 1
 
 [[word]]
 text = "gospodin"
-salutation = { issue = 606, gender = "m" }
+salutation = { issue = 606, gender = "m", after_given = true }
 
 [[word]]
 text = "gospođa"
-salutation = { issue = 606, gender = "f" }
+salutation = { issue = 606, gender = "f", after_given = true }
 
 [[word]]
 text = "gospođica"
-salutation = { issue = 606, gender = "f" }
+salutation = { issue = 606, gender = "f", after_given = true }
 
 [[word]]
 text = "mlađa"

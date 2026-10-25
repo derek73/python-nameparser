@@ -2,11 +2,11 @@ schema = 1
 
 [[word]]
 text = "ponas"
-salutation = { issue = 606, gender = "m", note = "borne: ~4,000 surnames (Iran), forebears.io, worldwide, rounded, 2026-10-04; shipped under the graf class (decisions/salutation-titles)" }
+salutation = { issue = 606, gender = "m", note = "borne: ~4,000 surnames (Iran), forebears.io, worldwide, rounded, 2026-10-04; shipped under the graf class (decisions/salutation-titles)", after_given = true }
 
 [[word]]
 text = "ponia"
-salutation = { issue = 606, gender = "f", note = "borne: ~560 surnames, forebears.io, worldwide, rounded, 2026-10-04; shipped under the graf class (decisions/salutation-titles)" }
+salutation = { issue = 606, gender = "f", note = "borne: ~560 surnames, forebears.io, worldwide, rounded, 2026-10-04; shipped under the graf class (decisions/salutation-titles)", after_given = true }
 
 [[word]]
 text = "grafas"

@@ -2,4 +2,4 @@ schema = 1
 
 [[word]]
 text = "bapak"
-salutation = { issue = 662, gender = "m", note = "under 100 US Census bearers and none found on Wikidata (tools/name_usage.py, 2026-10-17)" }
+salutation = { issue = 662, gender = "m", note = "under 100 US Census bearers and none found on Wikidata (tools/name_usage.py, 2026-10-17)", after_given = true }

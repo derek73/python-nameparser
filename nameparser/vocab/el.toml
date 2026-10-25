@@ -6,11 +6,11 @@ excluded = { salutation = { reason = "κ. (Mr.) has the initial-and-surname shap
 
 [[word]]
 text = "κα"
-salutation = { gender = "f", issue = 269, expands = "κυρία, Mrs." }
+salutation = { gender = "f", issue = 269, expands = "κυρία, Mrs.", after_given = true }
 
 [[word]]
 text = "κος"
-salutation = { gender = "m", issue = 269, expands = "κύριος, Mr." }
+salutation = { gender = "m", issue = 269, expands = "κύριος, Mr.", after_given = true }
 
 [[word]]
 text = "δρ"

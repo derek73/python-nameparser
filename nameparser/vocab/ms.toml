@@ -6,7 +6,7 @@ excluded = { salutation = { reason = "Malay Miss: unverified, so not shipped", i
 
 [[word]]
 text = "encik"
-salutation = { issue = 606, gender = "m" }
+salutation = { issue = 606, gender = "m", after_given = true }
 
 [[word]]
 text = "puan"

@@ -14,11 +14,11 @@ excluded = { salutation = { reason = "Kumari is a given name and a family name i
 
 [[word]]
 text = "जनाब"
-salutation = { gender = "m", issue = 344, expands = "Janab, Mr." }
+salutation = { gender = "m", issue = 344, expands = "Janab, Mr.", after_given = true }
 
 [[word]]
 text = "बाबू"
-salutation = { gender = "m", issue = 344, expands = "Babu", note = "leading in Hindi; the Bengali বাবু is trailing, a suffix word in bn.toml, a different codepoint sequence" }
+salutation = { gender = "m", issue = 344, expands = "Babu", note = "leading in Hindi; the Bengali বাবু is trailing, a suffix word in bn.toml, a different codepoint sequence", after_given = true }
 
 [[word]]
 text = "बेगम"
@@ -26,23 +26,24 @@ excluded = { salutation = { reason = "Begum is a trailing name element far more 
 
 [[word]]
 text = "श्री"
-salutation = { gender = "m", issue = 269, expands = "Shri, Mr.", note = "no Latin twin: Latin sri and shri are given names (their exclusions in hi.toml)" }
+salutation = { gender = "m", issue = 269, expands = "Shri, Mr.", note = "no Latin twin: Latin sri and shri are given names (their exclusions in hi.toml)", excluded = { after_given = "also an element of given names (Sri, Shri), so where it ends the given part it may be one" } }
+given = { wikidata = 1, as_of = 2026-10-24 }
 
 [[word]]
 text = "श्रीमती"
-salutation = { gender = "f", issue = 269, expands = "Shrimati, Mrs." }
+salutation = { gender = "f", issue = 269, expands = "Shrimati, Mrs.", after_given = true }
 
 [[word]]
 text = "श्रीमान"
-salutation = { gender = "m", issue = 344, expands = "Shriman, Mr." }
+salutation = { gender = "m", issue = 344, expands = "Shriman, Mr.", after_given = true }
 
 [[word]]
 text = "श्रीयुत"
-salutation = { gender = "m", issue = 344, expands = "Shriyut, Mr." }
+salutation = { gender = "m", issue = 344, expands = "Shriyut, Mr.", after_given = true }
 
 [[word]]
 text = "सुश्री"
-salutation = { gender = "f", issue = 344, expands = "Sushri, Ms." }
+salutation = { gender = "f", issue = 344, expands = "Sushri, Ms.", after_given = true }
 
 [[word]]
 text = "ठाकुर"

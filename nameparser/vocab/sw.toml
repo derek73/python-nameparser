@@ -2,4 +2,4 @@ schema = 1
 
 [[word]]
 text = "bwana"
-salutation = { gender = "m", expands = "Mr., sir" }
+salutation = { gender = "m", expands = "Mr., sir", after_given = true }

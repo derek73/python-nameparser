@@ -1259,7 +1259,11 @@ def assign(state: ParseState) -> ParseState:
             candidates = [k for k in range(n, len(pieces))
                           if k == n
                           or not reads_as_a_suffix(k, frozenset())]
-            kept = trailing_titles(candidates, pieces, ptags, tokens)
+            # rules/H8: "the word joins the title field, and the given
+            # part reads as it would without it" -- a bare salutation
+            # chains here as a period-marked title does
+            kept = trailing_titles(candidates, pieces, ptags, tokens,
+                                   salutations=True)
             walkable = frozenset(candidates)
             titled_idx = frozenset(candidates[kept:])
             for k in titled_idx:

@@ -26,6 +26,7 @@ from nameparser._types import (FOLDED_TAG, STABLE_TAGS,
 _LEX = Lexicon(
     titles=frozenset({"mr", "sir", "dr"}),
     given_name_titles=frozenset({"sir"}),
+    after_given_titles=frozenset({"mr"}),
     particles=frozenset({"de", "der", "ibn", "la", "van", "vd"}),
     particles_ambiguous=frozenset({"la", "van"}),
     # `씨` is a ONE-LETTER suffix word, which starts no credential run

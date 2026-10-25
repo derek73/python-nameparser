@@ -2,7 +2,7 @@ schema = 1
 
 [[word]]
 text = "senhor"
-salutation = { gender = "m" }
+salutation = { gender = "m", after_given = true }
 
 [[word]]
 text = "sr"
@@ -10,15 +10,15 @@ salutation = { gender = "m", same_as = "senhor" }
 
 [[word]]
 text = "senhora"
-salutation = { gender = "f" }
+salutation = { gender = "f", after_given = true }
 
 [[word]]
 text = "sra"
-salutation = { gender = "f", same_as = "senhora" }
+salutation = { gender = "f", same_as = "senhora", after_given = true }
 
 [[word]]
 text = "senhorita"
-salutation = { gender = "f" }
+salutation = { gender = "f", after_given = true }
 
 [[word]]
 text = "dra"

@@ -263,8 +263,9 @@ fields:
        ``md`` to ``MD``
 
 Some ``Lexicon`` fields have no ``CONSTANTS`` attribute at all —
-``conjunctions_ambiguous``, ``maiden_markers``, ``surnames`` and
-``honorific_tails`` — so they are reached through the 2.0 API only.
+``conjunctions_ambiguous``, ``maiden_markers``, ``surnames``,
+``honorific_tails`` and ``after_given_titles`` — so they are reached
+through the 2.0 API only.
 
 .. warning::
 

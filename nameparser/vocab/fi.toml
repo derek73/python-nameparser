@@ -2,15 +2,16 @@ schema = 1
 
 [[word]]
 text = "herra"
-salutation = { issue = 606, gender = "m", note = "borne: ~3,000 surnames (Costa Rica, Dominican Republic) and ~670 given-name uses (Indonesia, Philippines), forebears.io, worldwide, rounded, 2026-10-04; shipped under the graf class (decisions/salutation-titles), so 'Herra Wijaya' reads title Herra" }
+salutation = { issue = 606, gender = "m", note = "borne: ~3,000 surnames (Costa Rica, Dominican Republic) and ~670 given-name uses (Indonesia, Philippines), forebears.io, worldwide, rounded, 2026-10-04; shipped under the graf class (decisions/salutation-titles), so 'Herra Wijaya' reads title Herra", excluded = { after_given = "a surname (Census 2010 HERRA), and middle names are drawn from surnames" } }
+family = { us_census_2010 = 638, as_of = 2026-10-24 }
 
 [[word]]
 text = "neiti"
-salutation = { issue = 606, gender = "f" }
+salutation = { issue = 606, gender = "f", after_given = true }
 
 [[word]]
 text = "rouva"
-salutation = { issue = 606, gender = "f" }
+salutation = { issue = 606, gender = "f", after_given = true }
 
 [[word]]
 text = "kreivi"

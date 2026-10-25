@@ -2,31 +2,34 @@ schema = 1
 
 [[word]]
 text = "familie"
-salutation = { issue = 606, expands = "the family addressed, 'Familie Hansen'" }
+salutation = { issue = 606, expands = "the family addressed, 'Familie Hansen'", after_given = true }
 
 [[word]]
 text = "frau"
-salutation = { gender = "f" }
+salutation = { gender = "f", after_given = true }
 
 [[word]]
 text = "fräulein"
-salutation = { gender = "f" }
+salutation = { gender = "f", after_given = true }
 
 [[word]]
 text = "herr"
-salutation = { gender = "m" }
+salutation = { gender = "m", excluded = { after_given = "a surname (Census 2010 HERR), and middle names are drawn from surnames" } }
+given = { wikidata = 3, as_of = 2026-10-24 }
+family = { us_census_2010 = 11980, wikidata = 135, as_of = 2026-10-24 }
 
 [[word]]
 text = "herrn"
-salutation = { gender = "m", same_as = "herr", expands = "Herr, inflected (an Herrn Müller)" }
+salutation = { gender = "m", same_as = "herr", expands = "Herr, inflected (an Herrn Müller)", after_given = true }
 
 [[word]]
 text = "hr"
-salutation = { gender = "m", same_as = "herr" }
+salutation = { gender = "m", same_as = "herr", excluded = { after_given = "ending a given part in US data, more likely two initials run together than the abbreviation of Herr: one of three such fec-individuals names has a woman's given name (2026-10-24)" } }
 
 [[word]]
 text = "herren"
-salutation = { gender = "m", expands = "the plural of Herr" }
+salutation = { gender = "m", expands = "the plural of Herr", excluded = { after_given = "a surname (Census 2010 HERREN), and middle names are drawn from surnames" } }
+family = { us_census_2010 = 4466, wikidata = 37, as_of = 2026-10-24 }
 
 [[word]]
 text = "dipl.-ing"
