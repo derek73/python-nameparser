@@ -385,13 +385,13 @@ could hold two disagreeing defaults with nothing to say so.
 
 ``CAPITALIZATION_EXCEPTIONS`` is the constant the freeze left out. It
 is a mapping rather than a set, and it is still a plain mutable
-``dict`` — ``CAPITALIZATION_EXCEPTIONS["dphil"] = "DPhil"`` runs on 2.2 and
+``dict`` — ``CAPITALIZATION_EXCEPTIONS["dclinpsy"] = "DClinPsy"`` runs on 2.2 and
 raises nothing. Everything just said about split defaults still applies
-to it, unchanged and measured on 2.2: an edit after the first parse
+to it, unchanged and measured on 2.2 and again on 2.6: an edit after the first parse
 reaches a freshly built ``Constants``, and neither
 ``Lexicon.default()`` nor the shared ``CONSTANTS``. The advice below is
 the same advice — configure the object, with
-``constants.capitalization_exceptions["dphil"] = "DPhil"`` on a private
+``constants.capitalization_exceptions["dclinpsy"] = "DClinPsy"`` on a private
 ``Constants``, or for the 2.0 API a ``dataclasses.replace()`` that
 extends the default pairs rather than replacing them
 (:ref:`case-exceptions`).
