@@ -587,6 +587,17 @@ CASES: tuple[Case, ...] = (
          policy=_TWO, classification="parity",
          notes="#754 review: W4's order is not the caller's declaration, "
                "and the first draft read family '王 小'"),
+    Case("two_family_names_takes_run_together_initials",
+         "Ana J.R. García",
+         {"given": "Ana", "family": "J.R. García"},
+         policy=_TWO, classification="feat(#754)",
+         notes="#754 second review: only an initial written alone is "
+               "refused (rules/O6 Accepted)"),
+    Case("two_family_names_takes_no_number",
+         "Ana María 3 López",
+         {"given": "Ana", "middle": "María 3", "family": "López"},
+         policy=_TWO, classification="parity",
+         notes="#754 second review: the mark test asks for a letter"),
     Case("two_family_names_leaves_an_empty_head_comma_alone",
          ", Ana García López",
          {"given": "Ana", "middle": "García López"},

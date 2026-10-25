@@ -815,7 +815,7 @@ middle name:
 ``two_family_names=True`` reads the last two name words as the family.
 Given names before them stay given and middle names, a particle counts
 with the word it attaches to, titles and suffixes are not counted, and
-an initial never joins the family:
+an initial written alone never joins the family:
 
 .. doctest::
 

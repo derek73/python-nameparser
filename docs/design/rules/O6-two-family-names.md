@@ -51,17 +51,19 @@
   ```
   ", Ana García López"  two_family_names  →  family=""
   ```
-- **What is taken must be one name word a family name could be**: a part counting as two words (a hyphenated given name, a bound given-name pair, P5) stays where it is, and so do an initial, which writes a given name, and a mark with no letter in it. A particle chain (P2) is never split, so where taking it would leave no given name the rule declines.
+- **What is taken must be one name word a family name could be**: a part counting as two words (a hyphenated given name, a bound given-name pair, P5) stays where it is, and so do an initial written alone, which writes a given name, and a mark or number with no letter in it. A particle chain (P2) is never split, so where taking it would leave no given name the rule declines.
   ```
   "Ana María-José López"  two_family_names  →  family="López"
   "Ana abdul Rahman López"  two_family_names  →  family="López"
   "Ana M. García"  two_family_names  →  family="García"
   "Ana María García - López"  two_family_names  →  family="López"
+  "Ana María 3 López"  two_family_names  →  family="López"
   "Juan de la Vega Rodríguez"  family-first+two_family_names  →  family="Juan"
   ```
-- **An order a name's script set is not a declared one** (W4), and no script it keys writes two family names as separate words, so a name read family-first by its script is left alone; under a declared family-first order the rule reads it as it reads any other.
+- **An order a name's script set is not a declared one** (W4), and no script it keys writes two family names as separate words, so a name its script reads in an order other than the declared `name_order` is left alone.
   ```
   "王 小 明"  two_family_names  →  family="王"
+  "王 小 明"  family-first-given-last+two_family_names  →  family="王"
   ```
 
 **Precedence:**
@@ -94,6 +96,14 @@
   ```
   "van Gogh Ana María"  family-first+two_family_names  →  family="van Gogh"
   ```
+- Where a name's script order and the declared one agree, nothing tells the two apart, so under a declared family-first order a spaced Han or Hangul name is read like any other.
+  ```
+  "王 小 明"  family-first+two_family_names  →  family="王 小"
+  ```
+- Initials written run together carry no initial's shape, and neither does an abbreviated given name, so either is taken.
+  ```
+  "Ana J.R. García"  two_family_names  →  family="J.R. García"
+  ```
 - The rule counts words, not languages, so a particle surname of any origin takes the word before it.
   ```
   "Ana María van der Berg"  two_family_names  →  family="María van der Berg"
@@ -101,5 +111,5 @@
 - The rule reports nothing: the caller declared the convention, as a declared order is followed without a report, and a report on most names of three words or more would teach the caller to ignore the field.
 
 ---
-**Signal:** none in the name: a caller switch, the family's words counted as written to see whether it already holds two
+**Signal:** none in the name: a caller switch, the family's words and the taken word's shape read as written to see whether the family already holds two
 **history:** decisions/O6 · **implemented:** nameparser/_pipeline/_post_rules.py

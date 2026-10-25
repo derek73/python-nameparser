@@ -263,9 +263,10 @@ def _take_second_family_name(state: ParseState,
     # rules/O6: "the family name takes the name word beside it, so
     # the last two name words are the family" -- the first two under
     # a family-first order. In place, as every post rule writes.
-    # An order a name's script set (W4) is not the caller's
-    # declaration, and no script it keys writes two family names as
-    # separate words.
+    # An order a name's script set (W4) other than the declared one is
+    # not the caller's declaration, and no script it keys writes two
+    # family names as separate words. Where the two agree nothing here
+    # tells them apart, and the rule reads the name (rules/O6 Accepted).
     if (state.structure is Structure.FAMILY_COMMA or state.order is None
             or state.order != state.policy.name_order):
         return
@@ -287,12 +288,13 @@ def _take_second_family_name(state: ParseState,
     # What is taken must be ONE name word, counted as the family is, so
     # a hyphenated given name or a bound given-name pair (P5) stays put;
     # and a word a family name could be: not an initial, which writes a
-    # given name, nor a lone dash or other mark with no letter in it.
+    # given name (one written alone; "J.R." is taken), nor a lone dash
+    # or other mark with no letter in it.
     if _family_word_count(tokens, take) != 1:
         return
     if len(take) == 1 and "initial" in tokens[take[0]].tags:
         return
-    if not any(ch.isalnum() for i in take for ch in tokens[i].text):
+    if not any(ch.isalpha() for i in take for ch in tokens[i].text):
         return
     if state.order[0] is Role.GIVEN:
         # given, middles..., family: the middle unit standing right

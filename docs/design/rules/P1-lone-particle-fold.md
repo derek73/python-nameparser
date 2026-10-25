@@ -17,7 +17,7 @@
   ```
   "de Mesnil Jean"            →  family="de Mesnil Jean"
   ```
-- **Under a family-first order the run takes exactly ONE name word**: declaring that order asserts that what follows the family is not more surname. One name word means one UNIT — a particle chain (P2), a conjunction join (P3) or a bound given-name pair (P5) is taken whole or not at all. Two-family-name handling (O6), switched on, takes one name word more. What is left over is not read by O4's rule for a whole name, which would make the first leftover a second family name; it is laid out as the positions AFTER the family in the declared order, the family slot being already filled.
+- **Under a family-first order the run takes exactly ONE name word**: declaring that order asserts that what follows the family is not more surname. One name word means one UNIT — a particle chain (P2), a conjunction join (P3) or a bound given-name pair (P5) is taken whole or not at all. Two-family-name handling (O6), switched on, takes one name word more where the unit taken is one word. What is left over is not read by O4's rule for a whole name, which would make the first leftover a second family name; it is laid out as the positions AFTER the family in the declared order, the family slot being already filled.
   ```
   "de Mesnil Jean"  family-first  →  family="de Mesnil"
   "de Mesnil Jean"  family-first  →  given="Jean"
