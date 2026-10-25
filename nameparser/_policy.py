@@ -794,12 +794,15 @@ class Policy:
     #: given-name pair stay where they are. Under a family-first
     #: name_order the FIRST two name words are the family; a name its
     #: script reads in an order other than name_order (a spaced Han or
-    #: Hangul name under the default) is left alone. A family comma
-    #: decides by itself, so "García López, Ana" is unaffected. A name
-    #: with one family name behind two given names loses one to the
-    #: family ("Juan Carlos Pérez" gives family ``Carlos Pérez``), which
-    #: is most Argentine names and many Portuguese and Brazilian ones as
-    #: filed, so the switch is off by default and reports nothing. Runs
+    #: Hangul name under the default) is left alone, though under a
+    #: declared FAMILY_FIRST, which the script agrees with, it moves. A
+    #: family comma decides by itself, so "García López, Ana" is
+    #: unaffected. A name with one family name behind two given names
+    #: loses one to the family ("Juan Carlos Pérez" gives family
+    #: ``Carlos Pérez``), which is most English and Argentine names of
+    #: three words or more and many Portuguese and Brazilian ones as
+    #: filed: switched on for a mixed population it costs more names
+    #: than it mends, so it is off by default and reports nothing. Runs
     #: before middle_as_family, which then folds whatever middles are
     #: left.
     two_family_names: bool = False

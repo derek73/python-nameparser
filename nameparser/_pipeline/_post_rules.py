@@ -240,8 +240,10 @@ def _fold_reach(tokens: list[WorkToken], name_idx: list[int]) -> int:
 
 #: The hyphens and the dashes that join two family names in one written
 #: word (rules/O6): hyphen-minus, hyphen, non-breaking hyphen, figure
-#: dash, en dash, and the small and fullwidth hyphen-minus.
-_HYPHENS = re.compile("[-\u2010\u2011\u2012\u2013\ufe63\uff0d]")
+#: dash, en dash, minus sign (a word processor's substitute), and the
+#: small and fullwidth hyphen-minus. The em dashes are punctuation
+#: between words, not joiners, and are left out.
+_HYPHENS = re.compile("[-\u2010\u2011\u2012\u2013\u2212\ufe63\uff0d]")
 
 
 def _family_word_count(tokens: list[WorkToken], family: list[int]) -> int:

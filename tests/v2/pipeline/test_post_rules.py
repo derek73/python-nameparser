@@ -6,6 +6,7 @@ import pytest
 from nameparser import Parser, parse
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline import run
+from nameparser._pipeline import _post_rules
 from nameparser._pipeline._post_rules import suffix_entries
 from nameparser._pipeline._state import ParseState
 from nameparser._policy import (FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST,
@@ -1265,3 +1266,25 @@ def test_two_family_names_declines_a_family_first_name_whose_family_is_not_first
     moved = copy_with(state, policy=policy, tokens=tuple(tokens))
     _take_second_family_name(moved, tokens)
     assert [t.role for t in tokens] == list(roles)
+
+
+#: rules/O6's hyphen class, written out: a member dropped from the
+#: regex fails its row below, and one added there fails the roster
+#: test until it is listed here (#878 review).
+_O6_HYPHENS = ("-", "\u2010", "\u2011", "\u2012", "\u2013", "\u2212",
+               "\ufe63", "\uff0d")
+
+
+def test_two_family_names_hyphen_class_is_the_listed_one() -> None:
+    assert set(_post_rules._HYPHENS.pattern[1:-1]) == set(_O6_HYPHENS)
+
+
+@pytest.mark.parametrize("hyphen", _O6_HYPHENS,
+                         ids=lambda h: f"U+{ord(h):04X}")
+def test_two_family_names_counts_every_listed_hyphen_as_two_words(
+        hyphen: str) -> None:
+    # O6's hyphen clause, for each member of the class
+    out = _parsed(f"Ana María García{hyphen}López",
+                  Policy(two_family_names=True))
+    assert _by_role(out, Role.MIDDLE) == "María"
+    assert _by_role(out, Role.FAMILY) == f"García{hyphen}López"
