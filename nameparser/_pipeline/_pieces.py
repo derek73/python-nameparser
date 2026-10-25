@@ -1125,44 +1125,52 @@ def second_unit(rest: Sequence[int], units: Sequence[int]) -> int:
     return len(rest)
 
 
-def _taken_in_front(rest: Sequence[int], front: int,
-                    pieces: Sequence[Sequence[int]],
-                    ptags: Sequence[Set[str]],
-                    tokens: Sequence[WorkToken],
-                    one_case: bool | None) -> bool:
-    """Whether the trailing walk takes `rest[front]`, standing in front
-    of a generation word that is also a name, so that word's count looks
-    past it (rules/S11, #890). By itself: a suffix piece, a numeral of
-    two or more letters read as the generation ('Pedro VI Filho'), a
-    member of the ambiguous class its writing makes a suffix ('Pedro MA
-    Filho'). Carried: a bare member of the class standing behind any of
-    those, the members between passing the run on, as rules/S7's company
-    reads it ('Pedro Junior Ma Filho')."""
+def _kept_in_front(rest: Sequence[int], front: int,
+                   pieces: Sequence[Sequence[int]],
+                   ptags: Sequence[Set[str]],
+                   tokens: Sequence[WorkToken],
+                   one_case: bool | None) -> int:
+    """The position in `rest` of the last word the trailing walk keeps
+    at or before `front`, which stands in front of a generation word
+    that is also a name, so that word's count looks past what the walk
+    takes there (rules/S11, #890); -1 where it keeps none. Taken by
+    itself: a suffix piece, a numeral of two or more letters read as the
+    generation ('Pedro VI Filho'), a member of the ambiguous class its
+    writing makes a suffix ('Pedro MA Filho'). Taken when carried: a
+    bare member of the class behind any of those, the members between
+    passing the run on, as rules/S7's company reads it ('Pedro Junior
+    Ma Filho'). One pass, so a carried run costs a step a member."""
+    members: int | None = None    # where an uncarried run of members began
     j = front
     while j >= 0:
         piece = pieces[rest[j]]
         if is_suffix_piece(piece, ptags[rest[j]], tokens):
-            return True
+            members = None        # a carrier: the run behind it is taken
+            j -= 1
+            continue
         if len(piece) != 1:
-            return False
+            break
         tok = tokens[piece[0]]
         stem = tok.text.rstrip(".")
-        if (len(stem) > 1 and _ROMAN.match(stem) is not None
+        if ((len(stem) > 1 and _ROMAN.match(stem) is not None
                 and reads_as_generation(
                     tok.text, tok.tags,
                     tokens[pieces[rest[j - 1]][0]].text if j >= 1 else None,
-                    one_case)):
-            return True
-        if AMBIGUOUS_ACRONYM_TAG not in tok.tags:
-            return False
-        if listed_lean(tok, one_case) == "credential":
-            return True
-        # a bare member that leans nowhere is taken only if something
-        # in front of it carries the run; an agnomen carries nothing
-        if AMBIGUOUS_WORD_TAG in tok.tags:
-            return False
+                    one_case))
+                or (AMBIGUOUS_ACRONYM_TAG in tok.tags
+                    and listed_lean(tok, one_case) == "credential")):
+            members = None
+            j -= 1
+            continue
+        # a bare member that leans nowhere is taken only if something in
+        # front carries the run; an agnomen carries nothing and is kept
+        if (AMBIGUOUS_ACRONYM_TAG not in tok.tags
+                or AMBIGUOUS_WORD_TAG in tok.tags):
+            break
+        if members is None:
+            members = j
         j -= 1
-    return False
+    return j if members is None else members
 
 
 def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
@@ -1319,14 +1327,12 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
             # generation word counts the NAME words in front of it, so
             # what the walk takes there ('Pedro Junior Filho', 'Pedro VI
             # Filho', 'Pedro Junior Ma Filho') is not counted as the word
-            # spared and then peeled as well (#890). A scan that stops at
-            # the first word the walk keeps, so a run of agnomens costs
-            # a step each, not a walk each
+            # spared and then peeled as well (#890). One scan to the
+            # last word the walk keeps, so a run costs a step a word
             front = k - 2
             if AMBIGUOUS_WORD_TAG in tokens[piece[0]].tags:
-                while front >= 0 and _taken_in_front(
-                        rest, front, pieces, ptags, tokens, one_case):
-                    front -= 1
+                front = _kept_in_front(rest, front, pieces, ptags, tokens,
+                                       one_case)
             if lean == "credential" or (lean is None and front >= second):
                 k -= 1
                 continue

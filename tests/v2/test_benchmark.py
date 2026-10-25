@@ -1006,6 +1006,15 @@ _REREAD_SHAPES: dict[str, tuple[Callable[[int], str], str,
         lambda n, k: (n.family == "SMITH VD " + "DE " * k + "MA"
                       and n.suffix.split() == ["MA"] * (k - 1)),
     ),
+    # #890: a gated generation word looks past what the walk takes in
+    # front of it, here a run of members a credential carries; a rescan
+    # per member was 15.6x in `is_suffix_piece` calls for 4x the input
+    # (3e035c5b, measured by the PR review, py3.11)
+    "agnomen_front": (
+        lambda k: "Pedro PhD " + "Ma " * k + "Filho", "is_suffix_piece",
+        lambda n, k: (n.middle.split() == ["PhD"] + ["Ma"] * k
+                      and n.family == "Filho"),
+    ),
 }
 
 
