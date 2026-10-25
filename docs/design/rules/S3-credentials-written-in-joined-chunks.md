@@ -2,7 +2,7 @@
 
 **When:** a word written in chunks, joined by interior periods or by a hyphen or a slash, stands in a name, as in "John Smith Msc.Ed.".
 
-**Then:** a word with interior periods reads as a suffix when any of its period-separated chunks is suffix vocabulary, and a word of two or more period-separated chunks that no vocabulary claims is read by POSITION instead, as a bare ambiguous acronym is (S4).
+**Then:** a word with interior periods reads as a suffix when any of its period-separated chunks is suffix vocabulary, a word joined by a hyphen or a slash when every one of its chunks is, and a word of two or more period-separated chunks that no vocabulary claims is read by POSITION instead, as a bare ambiguous acronym is (S4).
 
 - **An ambiguous acronym written with its periods**, one after each letter or one after each of two or more letter chunks, counts unambiguously; a single trailing period is the abbreviation shape any word can wear and does not. Written so, it is not the bare acronym S4 counts words to spare for: the periods are how a credential is written and a name is not.
   ```
@@ -22,7 +22,7 @@
   "john smith x.y.z."         →  suffix="x.y.z."
   "John Smith 1.4"            →  family="1.4"  · boundary
   ```
-- **A word joined by a hyphen or a slash** is read by a stricter test than the periods' any: a word whose chunks are joined by a hyphen or a slash reads as a suffix when every chunk counts as a suffix as written, which is to say listed and not a bare member of the ambiguous class (S4), a chunk's own periods counting as they do in a word of its own. One chunk that does not count leaves the word as it would be without this bullet, and a joiner standing alone or glued to one side joins nothing.
+- **A word joined by a hyphen or a slash** is read by a stricter test than the periods' any: a word whose chunks are joined by a hyphen or a slash reads as a suffix when every chunk counts as a suffix as written, which is to say listed and not a bare member of the ambiguous class (S4), a chunk's own periods counting as they do in a word of its own. One chunk that does not count leaves the word as it would be without this bullet, and a joiner standing alone or glued to one side joins nothing, as do the dash characters other than the hyphen-minus and a split credential's halves (`MD/Ph. D.`).
   ```
   "John Smith, MD/PhD"        →  suffix="MD/PhD"
   "John Smith MD-PhD"         →  suffix="MD-PhD"
@@ -53,6 +53,8 @@
 - **Every chunk the vocabulary matches is a single ASCII character**, the roman numerals and the lone digit the vocabulary lists, which are about generations rather than credentials: those chunks do not make the word a suffix.
   ```
   "Jack X.Y.I."               →  family="X.Y.I."  · boundary
+  "Jack I-V"                  →  family="I-V"  · boundary
+  "John Smith, MS-V"          →  suffix="MS-V"
   ```
 - **Paired initials are the exception**, as C5 defines them, in a script that writes capitals: where S4 would count words to spare for them they are the name word they are written as, as the switch off reads every such word, and the fork is still reported. Two dotted single letters is how initials are written in such a script, and how some surnames are (Nepali B.K., K.C.), while a script without capitals writes its abbreviations that way, degrees among them; behind an unambiguous suffix word the pair joins the credential run that word starts (S8).
   ```
@@ -85,6 +87,12 @@
   ```
   "John Smith, MA/PhD"        →  given="MA/PhD"
   "John Smith, MA/PhD"        →  family="John Smith"
+  ```
+- A Korean given name romanized with a hyphen between two syllables the vocabulary lists as unambiguous credentials reads as the credential, unreported after a comma, as its spaced spelling already did: `ae` and `ra` are such credentials, and the hyphen no longer keeps the name a name word.
+  ```
+  "Kim, Ae-Ra"                →  suffix="Ae-Ra"
+  "Kim, Ae Ra"                →  suffix="Ae Ra"
+  "Shin Ae-ra"                →  suffix="Ae-ra"
   ```
 - An unlisted credential of two letters written with its periods behind a full name reads as the family name, and the reading is reported: King's Counsel, which no vocabulary lists, is the case.
   ```

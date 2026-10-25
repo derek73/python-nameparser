@@ -411,6 +411,8 @@ def test_period_joined_vocab_retires_the_single_character_chunk() -> None:
     ("/MD", False),
     ("MD//PhD", False),
     ("MD+PhD", False),      # '+' is no joiner
+    ("I-V", False),         # every chunk a single ASCII character
+    ("MS-V", True),         # one chunk is not
 ])
 def test_suffix_as_written_reads_a_joined_credential(
         text: str, expected: bool) -> None:

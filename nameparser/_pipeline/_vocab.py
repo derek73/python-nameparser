@@ -580,18 +580,24 @@ _JOINERS = re.compile(r"[-/]")
 def _joined_credential(text: str, lexicon: Lexicon) -> bool:
     """Whether TEXT is two or more chunks joined by '-' or '/', each
     non-empty and each counting as a suffix as written: listed, and
-    not a bare member of the ambiguous class ('MD/PhD', 'M.A.-Ph.D.',
-    but not 'MA/PhD', 'Smith-Jones' or 'MD/'). A chunk holds no joiner,
+    not a bare member of the ambiguous class, and not every one a
+    single ASCII character ('MD/PhD', 'M.A.-Ph.D.', but not 'MA/PhD',
+    'Smith-Jones', 'I-V' or 'MD/'). A chunk holds no joiner,
     so the recursion is one level deep. A loop rather than `all()` over
     a generator, which would cost a frame per chunk: a hyphenated name
     ('Smith-Jones') stops at its first chunk."""
     chunks = _JOINERS.split(text)
     if len(chunks) < 2:
         return False
+    whole = False  # a chunk that is not a single ASCII character
     for c in chunks:
         if not (c and suffix_as_written(_normalize(c), c, lexicon)):
             return False
-    return True
+        whole = whole or len(c) > 1 or not c.isascii()
+    # rules/S3: "Every chunk the vocabulary matches is a single ASCII
+    # character" -- the numerals and the digit, which are about
+    # generations, make no joined word a suffix either ('Jack I-V')
+    return whole
 
 
 def _is_suffix_strict_n(n: str, text: str, lexicon: Lexicon,
