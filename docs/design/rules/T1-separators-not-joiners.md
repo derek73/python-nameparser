@@ -19,6 +19,13 @@
   "John😀Smith"  keep-emoji    →  given="John😀Smith"  · boundary
   ```
 
+**Accepted:**
+
+- A zero-width joiner or non-joiner stays inside the word even at its edge, where it joins nothing, since between letters it decides how they join.
+  ```
+  "Antonio ‌Negri"  →  family="‌Negri"
+  ```
+
 ---
 **Signal:** character: whitespace, and characters that carry no name content
 **history:** decisions/T1 · **implemented:** nameparser/_pipeline/_tokenize.py

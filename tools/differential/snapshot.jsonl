@@ -229,6 +229,7 @@
 {"name": "Antonio Pavlović mlađi Jones", "given": "Antonio", "family": "Pavlović", "suffix": "mlađi Jones", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "A. P.", "capitalized_force": "Antonio Pavlović Mlađi Jones"}
 {"name": "Antonio da Sangallo", "given": "Antonio", "family": "da Sangallo", "initials": "A. S."}
 {"name": "Antonio dos Santos Cabral", "given": "Antonio", "family": "dos Santos Cabral", "initials": "A. S. C."}
+{"name": "Antonio ‌Negri", "given": "Antonio", "family": "‌Negri", "initials": "A. ‌."}
 {"name": "Antonius van Dale", "given": "Antonius", "family": "van Dale", "initials": "A. D."}
 {"name": "Anuar bin Malek", "given": "Anuar", "family": "bin Malek", "initials": "A. M."}
 {"name": "Anwar Ibrahim", "given": "Anwar", "family": "Ibrahim", "initials": "A. I."}
