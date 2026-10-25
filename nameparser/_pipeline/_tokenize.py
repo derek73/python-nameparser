@@ -42,6 +42,14 @@ _BIDI = re.compile('[\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069]+')
 # transcription marker; only the Chinese 间隔号 is (#298).
 _NAME_DOT_SEPARATORS = frozenset({"\u30FB", "\uFF65"})
 
+# rules/T1: "a zero-width space and a byte-order mark have no such
+# opt-out" -- the Except clause: they separate under every policy,
+# carrying nothing a caller would keep. Not here: U+200C and U+200D,
+# which decide how the letters around them join, the word joiner
+# U+2060, which means no break, and the soft hyphen U+00AD, which
+# marks a break inside one word (decisions/T1, #851).
+_INVISIBLE_SEPARATORS = frozenset({"\u200B", "\uFEFF"})
+
 _INTERPUNCT = "\u00B7"
 # rules/T3: "the interpunct divides a name only between two
 # characters of a classified East Asian script; anywhere else it is
@@ -62,9 +70,11 @@ def _is_emoji(ch: str) -> bool:
 def _stripped(ch: str, policy: Policy) -> bool:
     """True when the strip policy removes `ch` from the token stream.
     The ONE definition of that set, shared by _ignorable and _flank: a
-    character that vanishes from tokens must not occupy a flank
+    character the strip policy removes must not occupy a flank
     position either, so a new strip class added here stays transparent
-    to the interpunct guard by construction."""
+    to the interpunct guard by construction. The separators (whitespace,
+    the name dots, the zero-width space and the byte-order mark) are
+    not in this set and do occupy one."""
     if policy.strip_bidi and _BIDI.match(ch):
         return True
     return bool(policy.strip_emoji and _is_emoji(ch))
@@ -88,17 +98,18 @@ def _ignorable(ch: str, state: ParseState) -> bool:
     if ch.isspace():
         return True
     if ch.isascii():
-        # both strip classes and the name-dot separators are entirely
-        # non-ASCII (bidi >= U+061C, emoji >= U+2600, dots >= U+30FB):
-        # skip the checks below for every ASCII letter
+        # both strip classes and the unconditional separators are
+        # entirely non-ASCII (bidi >= U+061C, emoji >= U+2600, the
+        # invisibles >= U+200B, dots >= U+30FB): skip the checks below
+        # for every ASCII letter
         return False
     # unconditional, like whitespace -- not policy-gated, so this sits
     # ahead of the policy check rather than in _tokenize_region beside
-    # COMMA_CHARS (commas RECORD an offset; these dots must not --
-    # only the 间隔号 marks a transcription and records, #298, see
+    # COMMA_CHARS (commas RECORD an offset; these must not -- only the
+    # 间隔号 marks a transcription and records, #298, see
     # _NAME_DOT_SEPARATORS above). The only load-bearing constraint is
-    # "after the isascii fast path" (both dots are non-ASCII).
-    if ch in _NAME_DOT_SEPARATORS:
+    # "after the isascii fast path" (all four are non-ASCII).
+    if ch in _NAME_DOT_SEPARATORS or ch in _INVISIBLE_SEPARATORS:
         return True
     return _stripped(ch, state.policy)
 

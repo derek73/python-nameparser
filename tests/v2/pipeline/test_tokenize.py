@@ -1,5 +1,7 @@
 import dataclasses
 
+import pytest
+
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline._extract import extract_delimited
 from nameparser._pipeline._state import ParseState
@@ -86,6 +88,47 @@ def test_emoji_and_bidi_are_ignorable_by_policy() -> None:
     keep = dataclasses.replace(Policy(), strip_emoji=False, strip_bidi=False)
     out2 = _tokenized("John \U0001f600Smith", keep)
     assert [t.text for t in out2.tokens] == ["John", "\U0001f600Smith"]
+
+
+_KEEP_ALL = Policy(strip_emoji=False, strip_bidi=False)
+
+
+@pytest.mark.parametrize("policy", [Policy(), _KEEP_ALL],
+                         ids=["default", "keep-emoji-and-bidi"])
+@pytest.mark.parametrize("ch", ["​", "﻿"],
+                         ids=["zero-width-space", "byte-order-mark"])
+def test_zero_width_space_and_bom_separate_under_every_policy(
+        ch: str, policy: Policy) -> None:
+    # #851: no opt-out reaches them -- neither strip switch covers
+    # them, since neither is an emoji or a direction control
+    for text, words in [(f"John{ch}Smith", ["John", "Smith"]),
+                        (f"{ch}Dr. John", ["Dr.", "John"]),
+                        (f"John {ch}Smith{ch}", ["John", "Smith"])]:
+        state = _tokenized(text, policy)
+        assert [t.text for t in state.tokens] == words
+        assert all(state.original[t.span.start:t.span.end] == t.text
+                   for t in state.tokens)
+        assert state.comma_offsets == ()
+
+
+@pytest.mark.parametrize("ch", ["‌", "‍", "⁠", "­"],
+                         ids=["zwnj", "zwj", "word-joiner", "soft-hyphen"])
+def test_joiners_and_soft_hyphen_stay_inside_the_word(ch: str) -> None:
+    # #851's exclusions: ZWNJ and ZWJ decide how the letters beside
+    # them join, the word joiner means no break, and the soft hyphen
+    # marks a break inside one word, so splitting at any of them would
+    # cut a real word in two
+    assert [t.text for t in _tokenized(f"ab{ch}cd ef").tokens] == [
+        f"ab{ch}cd", "ef"]
+
+
+def test_zero_width_space_defeats_the_flank_guard_like_a_space() -> None:
+    # #851: a separator, not a stripped mark, so beside the interpunct
+    # it reads as whitespace does, not as U+200F does
+    spaced = _tokenized("威廉· 莎士比亚")
+    zwsp = _tokenized("威廉·​莎士比亚")
+    assert [t.text for t in zwsp.tokens] == [t.text for t in spaced.tokens]
+    assert zwsp.interpunct_offsets == spaced.interpunct_offsets == ()
 
 
 def test_empty_and_whitespace_yield_no_tokens() -> None:
