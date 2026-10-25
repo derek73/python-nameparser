@@ -82,9 +82,9 @@ nobility = { gender = "f", expands = "baroness" }
 
 [[word]]
 text = "freiherr"
+given = { note = "carries the particle's may-be-given reading, the C-i default (the particle's note argues the chain, not a given name); no source counts it as a given name (2026-10-25)" }
 nobility = { gender = "m", expands = "baron" }
 [word.rank]
-may_be_given = true
 issue = 18
 expands = "baron"
 gender = "m"
@@ -156,7 +156,8 @@ preposition = { may_be_given = false, issue = 18, expands = "upon: \"auf der Hei
 
 [[word]]
 text = "tho"
-preposition = { may_be_given = true, issue = 18, expands = "to, Low German zu" }
+given = { us_ssa = 52, as_of = 2026-10-25, note = "US SSA births summed over both sexes; nam_dict band 8 in Vietnam" }
+preposition = { issue = 18, expands = "to, Low German zu" }
 
 [[word]]
 text = "vom"
@@ -164,8 +165,8 @@ preposition = { may_be_given = false, expands = "from the, von dem contracted" }
 
 [[word]]
 text = "von"
+given = { us_ssa = 6011, wikidata = 46, as_of = 2026-10-25, note = "US SSA births summed over both sexes; Wikidata is a lower bound" }
 [word.preposition]
-may_be_given = true
 expands = "of, from"
 note = "Von Miller: a real given name, so this stays ambiguous even though \"von Braun\" is misparsed today. The case that shows a word can look like a pure particle, BE misparsed as one, and still have a bearer"
 
@@ -179,7 +180,8 @@ article = { may_be_given = false, issue = 18, expands = "the, dative" }
 
 [[word]]
 text = "den"
-article = { may_be_given = true, expands = "the: \"von den Steinen\"" }
+given = { us_ssa = 17, wikidata = 5, as_of = 2026-10-25, note = "male births only; Wikidata is a lower bound" }
+article = { expands = "the: \"von den Steinen\"" }
 
 [[word]]
 text = "der"
@@ -187,8 +189,8 @@ article = { may_be_given = false, expands = "the: \"von der Leyen\"" }
 
 [[word]]
 text = "freiherrin"
+given = { note = "carries the particle's may-be-given reading, as freiherr does; no source counts it as a given name (2026-10-25)" }
 [word.rank]
-may_be_given = true
 issue = 18
 expands = "baroness"
 gender = "f"

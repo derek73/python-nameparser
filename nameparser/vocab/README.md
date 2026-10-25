@@ -26,30 +26,31 @@ Each file has `schema = 1` at the top, then one `[[word]]` table per word. An en
 ```toml
 [[word]]
 text = "van"
+given = { us_ssa = 31194, wikidata = 282, as_of = 2026-10-25, note = "US SSA births summed over both sexes; Wikidata is a lower bound; nam_dict band 13 in Vietnam, 2 in U.S.A." }
 [word.preposition]
-may_be_given = true
 expands = "of, from"
-note = "Vietnamese Văn, and Van Johnson -- the canonical particle-or-given ambiguity this whole flag exists for"
+note = "Vietnamese Văn, and Van Johnson -- the canonical particle-or-given ambiguity this whole marker exists for"
 ```
 
-`van`, in `nl.toml`, has one reading, a particle of the kind `preposition`, with one behavioral property (`may_be_given`: the word is also a given name, so `van Gogh` keeps `van` as the given name and reports the fork) and two descriptive ones (`expands` and `note`, compiled to nothing).
+`van`, in `nl.toml`, has two readings: a particle of the kind `preposition`, with two descriptive properties (`expands` and `note`, compiled to nothing), and a `given` name reading with the counts it was declared on. The two together make `van` a particle that may be a given name, a [derived marker](#derived-markers): `van Gogh` keeps `van` as the given name and reports the fork.
 
 ```toml
 [[word]]
 text = "do"
-credential = { may_be_name = true, expands = "Doctor of Osteopathic Medicine" }
+family = { us_census_2010 = 30301, wikidata = 100, as_of = 2026-10-25 }
+given = { us_ssa = 11, wikidata = 9, as_of = 2026-10-25, note = "male births only; Wikidata is a lower bound; nam_dict band 8 in Korea, 6 in Vietnam, 1 in the Netherlands" }
+credential = { expands = "Doctor of Osteopathic Medicine" }
 ```
 
 ```toml
 [[word]]
 text = "do"
 [word.preposition]
-may_be_given = true
 expands = "of the, masc. sg."
 note = "Vietnamese Đỗ leads a great many surnames"
 ```
 
-`do` has two readings in two categories, a credential (an American degree, in `en.toml`) and a particle (a Portuguese preposition, in `pt.toml`), so it is in both `SUFFIX_ACRONYMS` and `PARTICLES`; which one applies is decided by where the word stands. A word's readings are where clashes between categories are recorded: before this format, such a clash was visible only as two sets that happened to overlap.
+`do` has readings in three categories: a credential (an American degree, in `en.toml`), a particle (a Portuguese preposition, in `pt.toml`) and two name readings, so it is in both `SUFFIX_ACRONYMS` and `PARTICLES`; which one applies is decided by where the word stands. A word's readings are where clashes between categories are recorded: before this format, such a clash was visible only as two sets that happened to overlap. Its name readings make both clashes with a name: the credential may be a name and the particle may be given, each a [derived marker](#derived-markers), though the name readings sit in only one of its files.
 
 ```toml
 [[word]]
@@ -160,7 +161,7 @@ The particle kinds say what the word does in the names of the file's language:
 - `saint`: "Saint" opening a surname (`san`, `santa`, `st`, `ste`);
 - `alias`: a word joining two surnames of one person (`vel`).
 
-Unlike the suffix kinds, one word may take a different particle kind in each language: `de` is a preposition in `fr.toml` and an article in `nl.toml`. Check 5 holds every particle reading of a word to the same `may_be_given` whatever its kind. On a particle reading, `expands` is the word's meaning in that language, and `note` is reserved for vetting. A never-given particle may rest on its kind and `expands` alone: one attested bearer settles the may-be-given side, but no amount of searching settles absence, so what is recorded is what the word IS (an article, a preposition) rather than a failed search. And a word with `may_be_given = true` whose particle readings carry no `note` in any file sits on the conservative default and nobody has examined it, and so does one whose note says so, as `heer`'s does. The test is per word, because a word's note sits in one of its files, not in each: `mac` is examined though only `en.toml` holds its note.
+Unlike the suffix kinds, one word may take a different particle kind in each language: `de` is a preposition in `fr.toml` and an article in `nl.toml`. Whether a particle may be given is the word's, not the reading's: its `given` reading, in any file, decides it for every particle reading (check 11). On a particle reading, `expands` is the word's meaning in that language, and `note` is reserved for vetting. A never-given particle may rest on its kind and `expands` alone: one attested bearer settles the may-be-given side, but no amount of searching settles absence, so what is recorded is what the word IS (an article, a preposition) rather than a failed search. And a word with a `given` reading whose particle readings carry no `note` in any file sits on the conservative default and nobody has examined it, and so does one whose note says so, as `heer`'s does: counts on the given reading were taken for phase 2's derivation (2026-10-25), not read against the particle position. The test is per word, because a word's note sits in one of its files, not in each: `mac` is examined though only `en.toml` holds its note.
 
 **Classifying a category adds kinds to every check that tests it.** While a category has only its generic kind, a check that asks for the category and one that asks for the generic kind give the same answer, so a test row written in the generic kind cannot tell them apart. When a category gets its first fine kinds, give every check on that category a row in `tests/v2/test_vocab.py` written in a fine kind, and run each row against the check keyed on the kind to see it fail. #749's review found four particle checks pinned only on the generic `particle` kind once the shipped data used it for two words: the required `may_be_given`, an exclusion refusing a sibling kind, the bound given name that is a never-given particle, and the elided particle's two spellings. Each passed every test when keyed on the kind, which would have let a `preposition = {}` with no `may_be_given` compile silently into the never-given set.
 
@@ -168,16 +169,15 @@ The `name` kinds compile to nothing. They record that a word is borne as a given
 
 ## Properties
 
-A property is **behavioral** when it compiles into a set and so changes how names are parsed, and **descriptive** when it is checked and recorded but compiled to nothing. Each is allowed only on the categories listed; a `name` reading takes its own keys (see [Name readings](#name-readings)).
+A property is **behavioral** when it compiles into a set and so changes how names are parsed, **stated** when it compiles to nothing but the build holds it to the word's readings, and **descriptive** when it is checked and recorded but compiled to nothing. Each is allowed only on the categories listed; a `name` reading takes its own keys (see [Name readings](#name-readings)). Two of the sets are not properties at all but [derived markers](#derived-markers), read off a word's name readings.
 
 | Property | Type | Applies to | Unwritten | Effect |
 |---|---|---|---|---|
 | `addresses` | behavioral | `title` | `"family"` | `"given"` adds the word to `GIVEN_NAME_TITLES`: `Sir John` reads `John` as the given name ([rules/H1](../../docs/design/rules/H1-title-and-one-name-word.md), a title and one name word) |
 | `after_given` | behavioral | `title` | false | `AFTER_GIVEN_TITLES`, on a `salutation` reading only: written bare at the end of the given part after a family comma, the word is the title, as in `Doe, Jane Mrs` ([rules/H8](../../docs/design/rules/H8-salutation-ending-the-given-part.md), a salutation ending the given part). A salutation borne as a given name or a surname is left out with an exclusion of the property, its counts beside it (`goodman`, `herr`), since a middle name may be either |
 | `acronym` | behavioral | `suffix` | true for `credential`, false for every other kind | true: `SUFFIX_ACRONYMS`, matched with every period removed (`M.D.` is `md`); false: `SUFFIX_WORDS` |
-| `may_be_name` | behavioral | `suffix` | false | `SUFFIX_ACRONYMS_AMBIGUOUS`, on an acronym reading only: an acronym that is also a name (`ma`) is read as a suffix only where its spelling or the name around it says so: `John Smith MA` and `John Smith M.A.` end in a suffix, `John Smith Ma` in a family name ([rules/S4](../../docs/design/rules/S4-ambiguous-acronym-needs-words-to-spare.md), the ambiguous acronym needs words to spare; [rules/S6](../../docs/design/rules/S6-case-signal-at-the-suffix-slot.md), the case signal at the suffix slot) |
 | `attached` | behavioral | `suffix` | absent | `GLUED_HONORIFICS`, on a word reading only: `{ side = "after" }` splits the word off the end of a name token, as in `田中さん` ([rules/W2](../../docs/design/rules/W2-glued-honorific-peel.md), the glued-honorific peel) |
-| `may_be_given` | behavioral | `particle` | none: required | `NON_GIVEN_NAME_PARTICLES` when false: a particle opening the name starts the family name ([rules/P1](../../docs/design/rules/P1-lone-particle-fold.md), the lone particle fold) |
+| `may_be_given` | stated | `particle` | none: required where the word has no `given` reading | `false` states that the word is not a given name, which is what puts it in `NON_GIVEN_NAME_PARTICLES`: a particle opening the name starts the family name ([rules/P1](../../docs/design/rules/P1-lone-particle-fold.md), the lone particle fold). It is written exactly where the word has no `given` reading in any file; `true` is refused, naming the `given` reading to write instead (check 11) |
 | `may_be_initial` | behavioral | `conjunction` | false | `CONJUNCTIONS_AMBIGUOUS`, on a cased single letter only: read as an initial in a name written in one case, as in `JOHN E SMITH` ([rules/P8](../../docs/design/rules/P8-single-letter-connective-against-the-initial-it-spells.md), a single-letter connective against the initial it spells) |
 | `cased` | behavioral | `title`, `suffix`, `particle`, `conjunction`, `bound_given`, `relation` | the word as written | `CAPITALIZATION_EXCEPTIONS`: the case `capitalized()` gives the word (`PhD`), a mask over its letters and digits, never a replacement (#459) |
 | `note` | descriptive | every category, a `name` reading included | | free text: why the reading is as it is |
@@ -190,8 +190,19 @@ A property is **behavioral** when it compiles into a set and so changes how name
 
 Two of these need more than their row:
 
-- **`may_be_given` has no default.** The format before this one listed the never-given particles and treated every other particle as possibly a given name, so a new particle was ambiguous unless argued otherwise ([decisions/vocabulary-collisions](../../docs/design/decisions/vocabulary-collisions.md), C-i). A default here would pick one side of that silently, so the build refuses a particle reading that does not state it. When unsure, write `true`.
+- **`may_be_given` has no default.** The format before this one listed the never-given particles and treated every other particle as possibly a given name, so a new particle was ambiguous unless argued otherwise ([decisions/vocabulary-collisions](../../docs/design/decisions/vocabulary-collisions.md), C-i). A default here would pick one side of that silently, so the build refuses a particle reading that neither states `may_be_given = false` nor has a `given` reading on its word. When unsure, write the `given` reading, with a `note` if no source counts it.
 - **`cased` belongs to the word**, not the reading: one mask per word, whichever reading carries it.
+
+### Derived markers
+
+Two sets mark a clash with a name, and both are derived: a word is in one when it carries the clashing reading and a name reading, in any of its files (check 11, since 2026-10-25, [decisions/vocabulary-model](../../docs/design/decisions/vocabulary-model.md)). Phase 1 wrote them as flags, `may_be_name` and `may_be_given = true`, which the build now refuses, naming the reading to write.
+
+| Marker | Readings | Compiled into | Effect |
+|---|---|---|---|
+| possibly a name | an acronym `suffix` reading and a `given` or `family` reading | `SUFFIX_ACRONYMS_AMBIGUOUS` | an acronym that is also a name (`ma`) is read as a suffix only where its spelling or the name around it says so: `John Smith MA` and `John Smith M.A.` end in a suffix, `John Smith Ma` in a family name ([rules/S4](../../docs/design/rules/S4-ambiguous-acronym-needs-words-to-spare.md), the ambiguous acronym needs words to spare; [rules/S6](../../docs/design/rules/S6-case-signal-at-the-suffix-slot.md), the case signal at the suffix slot) |
+| possibly given | a `particle` reading and a `given` reading | kept out of `NON_GIVEN_NAME_PARTICLES` | a particle opening the name stays a given name there (`van Gogh`, given `van`) and the fork is reported, rather than starting the family name ([rules/P1](../../docs/design/rules/P1-lone-particle-fold.md), the lone particle fold) |
+
+A word reading of the suffix category (`jr`, `generation`) beside a name reading is no clash the parser weighs and marks nothing. The marker is the clash, not the counts: a count recorded for a word that should stay unmarked goes in the clashing reading's `note`, as `ld`'s does, since a name reading would mark it. `may_be_initial` is not derived: its clash is with the initial, a shape every cased single letter has, and which letters a tradition writes both ways is a judgment about the letter, not a name anyone bears.
 
 ### Name readings
 
@@ -206,6 +217,8 @@ A `given` or `family` reading takes its own keys:
 | `native` | a native-script spelling |
 | `note` | free text |
 | `gender` | `"f"`, `"m"` or `"n"` |
+
+A name reading may stand without a count, as a particle kept possibly given under C-i's default with no source counting it does, but it then needs a `note` saying why it is declared (check 3).
 
 ## Exclusions
 
@@ -227,7 +240,7 @@ Record a count on the word as a `given` or `family` reading, with the date you t
 ## Adding a word
 
 1. **Look up the word's other readings.** `uv run python tools/vocab/query.py --word <word>` lists every reading and exclusion of it in every file. An exclusion there is a decision already made; a reading in another category is a clash you are about to create, which is fine when position settles it (`do`) and needs an argument when it does not.
-2. **Check it against real names, not memory.** `uv run python tools/name_usage.py <word>` gives the counts (add `--fetch-nppes` for a suffix, to see how often it is written as a credential), and [decisions/vocabulary-collisions](../../docs/design/decisions/vocabulary-collisions.md) is the criterion they are read against: a word that is a real name in the position the reading acts on needs the matching flag (`may_be_given`, `may_be_name`) or should stay out. The root `AGENTS.md`'s "Adding a word to the vocabulary" lists the traps that have bitten before.
+2. **Check it against real names, not memory.** `uv run python tools/name_usage.py <word>` gives the counts (add `--fetch-nppes` for a suffix, to see how often it is written as a credential), and [decisions/vocabulary-collisions](../../docs/design/decisions/vocabulary-collisions.md) is the criterion they are read against: a word that is a real name in the position the reading acts on needs a name reading with those counts, which marks the clash (see [Derived markers](#derived-markers)), or should stay out. The root `AGENTS.md`'s "Adding a word to the vocabulary" lists the traps that have bitten before.
 3. **Check how it is written.** The entry's `text` is the folded spelling (`mbchb`), and `capitalized()` writes an acronym credential in capitals unless the word has a `cased` mask, so one that people write in mixed case (`MBChB`, `DPhil`, `ScD`) needs the mask: `cased = "MBChB"`. Nothing in the build can see this, since no source it reads records case. The ClinicalTrials.gov row of `name_usage.py` lists the spellings as typed ("written MBChB 1,442, MBCHB 72, MbChB 28"), once that local corpus is fetched (`uv run python tools/differential/local_corpora.py fetch ctgov-officials`). Where a mask would cost a name its rendering, refuse it instead, with the reason, as `edd` does (`'edd smith'` would render `'EdD Smith'`). #806 added twelve mixed-case credentials without their masks, and review caught it.
 4. **Write the entry** in the file of the language whose names it occurs in (`und.toml` when that is not known), in its place in the [word order](#word-order), with what the checks found on it: `note`, `issue`, a dated name reading, a `cased` mask, or an `excluded` entry if you decided against it.
 5. **Rebuild**: `uv run python tools/vocab/build.py`. It refuses what it can detect, naming the word and, where one file is at fault, the file, and rewrites `nameparser/config/_compiled.py`. Commit both.

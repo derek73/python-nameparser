@@ -93,11 +93,13 @@ same_as = "d'"
 
 [[word]]
 text = "da"
-preposition = { may_be_given = true, expands = "from, of" }
+given = { us_ssa = 302, wikidata = 331, as_of = 2026-10-25, note = "US SSA births summed over both sexes; Wikidata is a lower bound; nam_dict band 5 in Korea, 3 in China" }
+preposition = { expands = "from, of" }
 
 [[word]]
 text = "dal"
-preposition = { may_be_given = true, expands = "from the" }
+given = { us_ssa = 628, wikidata = 2, as_of = 2026-10-25, note = "male births only; Wikidata is a lower bound; nam_dict band 4 in Korea" }
+preposition = { expands = "from the" }
 
 [[word]]
 text = "de"
@@ -125,7 +127,7 @@ preposition = { may_be_given = false, expands = "of the, masc. pl." }
 
 [[word]]
 text = "del"
-preposition = { may_be_given = true, expands = "of the" }
+preposition = { expands = "of the" }
 
 [[word]]
 text = "dell'"
@@ -141,8 +143,8 @@ same_as = "dell'"
 
 [[word]]
 text = "della"
+given = { us_ssa = 70949, wikidata = 91, as_of = 2026-10-25, note = "US SSA births summed over both sexes; Wikidata is a lower bound; nam_dict band 3 in U.S.A., 1 in Great Britain" }
 [word.preposition]
-may_be_given = true
 expands = "of the, fem. sg."
 note = "Della Reese: an ordinary given name"
 
@@ -160,8 +162,8 @@ preposition = { may_be_given = false, expands = "of the, masc. sg." }
 
 [[word]]
 text = "di"
+given = { us_ssa = 70, wikidata = 177, as_of = 2026-10-25, note = "US SSA births summed over both sexes; Wikidata is a lower bound; nam_dict band 5 in China, 1 in Great Britain, 1 in U.S.A." }
 [word.preposition]
-may_be_given = true
 expands = "of"
 note = "BOTH: Di as a short form of Diana, and the Italian particle (DiCaprio)"
 
@@ -179,15 +181,15 @@ same_as = "l'"
 
 [[word]]
 text = "la"
-article = { may_be_given = true, expands = "the, fem. sg." }
+article = { expands = "the, fem. sg." }
 
 [[word]]
 text = "san"
-saint = { may_be_given = true, expands = "Saint" }
+saint = { expands = "Saint" }
 
 [[word]]
 text = "santa"
-saint = { may_be_given = true, expands = "Saint, fem." }
+saint = { expands = "Saint, fem." }
 
 [[word]]
 text = "e"

@@ -33,7 +33,7 @@ note = "the standard Portuguese spelling of Junior: tse-donors (2026-10-22) has 
 
 [[word]]
 text = "da"
-preposition = { may_be_given = true, expands = "of the, fem. sg." }
+preposition = { expands = "of the, fem. sg." }
 
 [[word]]
 text = "das"
@@ -50,7 +50,6 @@ preposition = { may_be_given = false, expands = "of" }
 [[word]]
 text = "do"
 [word.preposition]
-may_be_given = true
 expands = "of the, masc. sg."
 note = "Vietnamese Đỗ leads a great many surnames"
 
@@ -60,7 +59,7 @@ preposition = { may_be_given = false, expands = "of the, masc. pl." }
 
 [[word]]
 text = "santa"
-saint = { may_be_given = true, expands = "Saint, fem." }
+saint = { expands = "Saint, fem." }
 
 [[word]]
 text = "e"

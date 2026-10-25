@@ -158,8 +158,8 @@ generation = { issue = 679 }
 
 [[word]]
 text = "al"
+given = { us_ssa = 17334, wikidata = 1602, as_of = 2026-10-25, note = "US SSA births summed over both sexes; Wikidata is a lower bound; nam_dict band 2 in Great Britain, 2 in U.S.A., 2 in Arabia/Persia, 1 in the Netherlands" }
 [word.article]
-may_be_given = true
 expands = "the"
 note = "Al Gore: 'Al' is an ordinary English given name. Also the Arabic definite article, which is the particle reading"
 
@@ -396,8 +396,8 @@ reason = "Ben is a common given name standing exactly where a forward-joining pa
 
 [[word]]
 text = "bin"
+given = { us_ssa = 11, wikidata = 541, as_of = 2026-10-25, note = "male births only; Wikidata is a lower bound; nam_dict band 8 in China, 6 in Korea, 1 in Japan" }
 [word.patronymic]
-may_be_given = true
 expands = "son of"
 gender = "m"
 note = "Kept ambiguous deliberately: #269 judged the Latin transliteration separately from the native-script بن, which IS never-given"
@@ -439,8 +439,8 @@ note = "never a bare given name, like بن; mirrors Latin 'bint'"
 
 [[word]]
 text = "abu"
+given = { us_ssa = 468, wikidata = 51, as_of = 2026-10-25, note = "male births only; Wikidata is a lower bound; nam_dict band 3 in Arabia/Persia" }
 [word.teknonymic]
-may_be_given = true
 issue = 269
 expands = "father of"
 gender = "m"
@@ -449,8 +449,8 @@ note = "\"Abu Bakr\" -- Abu reads as the given name; also a bound given-name wor
 
 [[word]]
 text = "أبو"
+given = { wikidata = 48, as_of = 2026-10-25, note = "Wikidata is a lower bound" }
 [word.teknonymic]
-may_be_given = true
 issue = 269
 expands = "father of: abu, hamza spelling"
 gender = "m"
@@ -460,8 +460,8 @@ issue = 269
 
 [[word]]
 text = "ابو"
+given = { wikidata = 33, as_of = 2026-10-25, note = "Wikidata is a lower bound" }
 [word.teknonymic]
-may_be_given = true
 issue = 269
 expands = "father of: abu, hamza-less spelling"
 same_as = "أبو"

@@ -98,15 +98,16 @@ courtesy = { issue = 269, note = "the same, U+05F4 gershayim", same_as = "שלי
 
 [[word]]
 text = "bar"
+given = { us_ssa = 50, wikidata = 8, as_of = 2026-10-25, note = "US SSA births summed over both sexes; Wikidata is a lower bound" }
 [word.patronymic]
-may_be_given = true
 expands = "son of, Aramaic: \"Bar-Lev\""
 gender = "m"
 note = "Bar Refaeli; a common modern Israeli given name. The native-script בר is excluded, in this file"
 
 [[word]]
 text = "bat"
-patronymic = { may_be_given = true, expands = "daughter of; native-script בת", gender = "f" }
+given = { note = "declared on the conservative default (decisions/vocabulary-collisions C-i): not examined, and no source counts it as a given name (2026-10-25)" }
+patronymic = { expands = "daughter of; native-script בת", gender = "f" }
 
 [[word]]
 text = "בן"

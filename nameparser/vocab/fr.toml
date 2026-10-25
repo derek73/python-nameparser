@@ -47,7 +47,7 @@ religious = { gender = "f" }
 [[word]]
 text = "st"
 religious = { expands = "Saint, abbreviated" }
-saint = { may_be_given = true, expands = "Saint, abbreviated" }
+saint = { expands = "Saint, abbreviated" }
 
 [[word]]
 text = "baron"
@@ -130,8 +130,8 @@ note = "\"De\" IS a borne Bengali and Odia surname -- trailing, so it never reac
 
 [[word]]
 text = "du"
+given = { us_ssa = 27, wikidata = 12, as_of = 2026-10-25, note = "male births only; Wikidata is a lower bound; nam_dict band 5 in Vietnam, 4 in Korea, 1 in China" }
 [word.preposition]
-may_be_given = true
 expands = "of the, de le contracted"
 note = "Du is a Chinese surname (Du Fu), leading under a family-first reading"
 
@@ -149,12 +149,12 @@ same_as = "l'"
 
 [[word]]
 text = "la"
-article = { may_be_given = true, expands = "the, fem. sg." }
+article = { expands = "the, fem. sg." }
 
 [[word]]
 text = "le"
+given = { us_ssa = 1653, wikidata = 72, as_of = 2026-10-25, note = "US SSA births summed over both sexes; Wikidata is a lower bound; nam_dict band 9 in Vietnam, 4 in China" }
 [word.article]
-may_be_given = true
 expands = "the, masc. sg."
 note = "Lê is among the most common Vietnamese surnames and leads under a family-first reading"
 
