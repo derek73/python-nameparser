@@ -3671,9 +3671,10 @@ def test_the_pairs_view_counts_the_pairs_whose_spellings_share_a_surname() -> No
 
 
 def test_the_pairs_view_lists_the_accents_only_pairs_read_with_two_surnames() -> None:
-    # SA is a credential after two other words and SÁ is not, so the
-    # readings part (a capitals name with words to spare, S6; #857 took
-    # the two-word ANA SA out of this); JÚNIOR and
+    # SA is a credential after two other words (a capitals name with
+    # words to spare, S6) and SÁ is not, so the readings part; the
+    # two-word ANA SA reads the same either way, which is why the pair
+    # has a third word. JÚNIOR and
     # JUNIOR are both suffixes (#843), and the accent on JOSÉ moves
     # nothing. Fewer than ten: not listed.
     found = local.pair_counts(_paired(*[("ANA SILVA SÁ", "ANA SILVA SA")] * 10,

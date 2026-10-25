@@ -10596,9 +10596,28 @@ CASES: tuple[Case, ...] = (
     Case("capitals_sa_with_words_to_spare_stays_the_suffix", "ANA SILVA SA",
          {"given": "ANA", "family": "SILVA", "suffix": "SA"},
          ambiguities=("suffix-or-name",),
-         notes="the accepted cost: S6 reads a capitals word with words "
-               "to spare as a credential, so most of tse-donors' SÁ / SA "
-               "pairs still part (#857)"),
+         notes="the accepted cost: S6 reads a one-case word with words "
+               "to spare as a credential, so tse-donors' SÁ / SA pairs "
+               "of this shape still part (#857)"),
+    Case("capitals_sa_after_a_particle_stays_the_suffix", "MARIA DE SA",
+         {"given": "MARIA", "family": "DE", "suffix": "SA"},
+         ambiguities=("suffix-or-name",)),
+    Case("lowercase_sa_after_a_particle_stays_the_suffix", "maria de sa",
+         {"given": "maria", "family": "de", "suffix": "sa"},
+         ambiguities=("suffix-or-name",)),
+    Case("capitals_sa_with_no_word_to_spare_is_the_surname", "ANA SA",
+         {"given": "ANA", "family": "SA"},
+         ambiguities=("suffix-or-name",)),
+    Case("sa_in_front_is_the_title", "SA Smith",
+         {"title": "SA", "family": "Smith"}),
+    Case("sa_before_a_family_comma_is_the_surname", "Sa, Maria",
+         {"given": "Maria", "family": "Sa"}),
+    Case("sa_after_a_family_comma_in_title_position_reports", "Smith, SA John",
+         {"title": "SA", "given": "John", "family": "Smith"},
+         ambiguities=("suffix-or-name",)),
+    Case("sa_after_a_middle_name_is_the_surname", "Maria Silva Sa",
+         {"given": "Maria", "middle": "Silva", "family": "Sa"},
+         ambiguities=("suffix-or-name",)),
     Case("audit_perioded_sa_is_the_postnominal", "Smith, S.A.",
          {"family": "Smith", "suffix": "S.A."}),
     # MOVED by #289, not deleted: 'DO' is written in capitals inside a
