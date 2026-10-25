@@ -30,9 +30,11 @@
   "John Smith Pharm D Jones"  →  suffix="Pharm D Jones"
   "Smith, John Pharm D Jones"  →  suffix="Pharm D Jones"
   ```
-- **What reports.** The reading itself reports nothing either way: where the count takes the pair its letters spell a listed credential, and where it declines the pair the two words are a given name and an initial, which no reader hesitates over.
+- **What reports.** Where the count takes the pair, the reading is reported, as either reading of a member is (S4), its words being a given name and an initial as often as a credential's chunks; where the count declines it, the two words read as they read unmerged and report what they reported.
   ```
-  "John Smith Pharm D"        →  ambiguities=()
+  "John Smith Pharm D"        →  ambiguities=("suffix-or-name",)
+  "John Smith, Pharm D"       →  ambiguities=("suffix-or-name",)
+  "JOHN SMITH SAM E."         →  ambiguities=("suffix-or-name",)
   "SMITH, SAM E."             →  ambiguities=()  · boundary
   ```
 
@@ -76,9 +78,9 @@
   ```
   "Jack PHARM D"              →  family="D"
   ```
-- **The given part's report** ("Smith, John Pharm D"): S5 reads the pair as it reads a member ending the given part, and the pair reports nothing there either, which is this rule's silence.
+- **The given part's report** ("Smith, John Pharm D"): S5 reads the pair as it reads a member ending the given part, and the pair reports there as this rule says it does.
   ```
-  "Smith, John Pharm D"       →  ambiguities=()
+  "Smith, John Pharm D"       →  ambiguities=("suffix-or-name",)
   ```
 
 **Accepted:**
@@ -88,7 +90,7 @@
   "John Smith, M. D."         →  given="M."
   "John Smith, M. D."         →  family="John Smith"
   ```
-- A given name and its initial whose letters spell a listed credential read as the credential, in silence, behind two name words where no comma divides the name, and ending the given part after a family comma: the count, or the given part's reading, takes them as it takes the credential they spell.
+- A given name and its initial whose letters spell a listed credential read as the credential, reported, behind two name words where no comma divides the name, and ending the given part after a family comma: the count, or the given part's reading, takes them as it takes the credential they spell.
   ```
   "JOHN SMITH SAM E."         →  suffix="SAM E."
   "Smith, John Sam E."        →  suffix="Sam E."

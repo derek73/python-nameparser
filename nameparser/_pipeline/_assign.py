@@ -97,6 +97,7 @@ from nameparser._pipeline._vocab import (
     reads_as_a_reported_numeral, reads_as_generation, resolve_script_set,
 )
 from nameparser._pipeline._pieces import (
+    split_credential_report,
     anchor_in_reach, credential_at_the_given_slot, given_slot_anchors,
     _NOT_A_RUN_START, has_name_content, is_lone_never_given_particle,
     Peel, TailRead, is_suffix_piece, is_title_piece, leading_titles,
@@ -1677,6 +1678,19 @@ def assign(state: ParseState) -> ParseState:
                            and not any("vocab:suffix" in tokens[i].tags
                                        for i in piece))
                        else Role.SUFFIX)
+    # rules/S11: "where the count takes the pair, the reading is reported" -- at
+    # the end of a name, at the end of the given part, as a run start,
+    # here where its roles are final (the part a comma's decision binds reports in `_comma`, a
+    # pair a maiden clause releases in group). A loop over the piece
+    # tags, so a name with no pair pays no frame for it.
+    for seg_idx in range(min(tail, len(state.segments))):
+        for piece, ptags_ in zip(state.pieces[seg_idx],
+                                 state.piece_tags[seg_idx]):
+            if ("split" in ptags_ and len(piece) == 2
+                    and tokens[piece[0]].role is Role.SUFFIX
+                    and tokens[piece[1]].role is Role.SUFFIX):
+                ambiguities.append(split_credential_report(piece, tokens))
     return copy_with(state, tokens=tuple(tokens),
                      order=order,
                      ambiguities=tuple(ambiguities))
+

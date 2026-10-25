@@ -1520,10 +1520,12 @@ CASES: tuple[Case, ...] = (
          "John Smith Pharm. D.",
          {"given": "John", "family": "Smith", "suffix": "Pharm. D."},
          classification="fix(#752)",
+         ambiguities=("suffix-or-name",),
          notes="S3: 'Pharm. D.' folds to the listed 'pharmd', "
                "and neither half is suffix vocabulary on its own, so "
                "the two words are one credential, read with the words "
-               "to spare a bare member needs (S4) and in silence. "
+               "to spare a bare member needs (S4) and reported as a "
+               "member is. "
                "1.4.0 read middle 'Smith Pharm.', last 'D.'"),
     Case("a_split_credential_with_no_words_to_spare_is_two_words",
          "John Pharm D",
@@ -1536,6 +1538,7 @@ CASES: tuple[Case, ...] = (
          "John Smith, Pharm D",
          {"given": "John", "family": "Smith", "suffix": "Pharm D"},
          classification="fix(#752)",
+         ambiguities=("suffix-or-name",),
          notes="C4's count: two name words before the comma make "
                "the part the credential run. 1.4.0 read first 'Pharm', "
                "middle 'D', last 'John Smith'"),
@@ -1563,6 +1566,7 @@ CASES: tuple[Case, ...] = (
          "Smith, John Pharm D",
          {"given": "John", "family": "Smith", "suffix": "Pharm D"},
          classification="fix(#752)",
+         ambiguities=("suffix-or-name",),
          notes="S5: a member ending the given part after a "
                "family comma reads as the credential where its writing "
                "says nothing else, and a split one says nothing. 1.4.0 "
@@ -1571,7 +1575,7 @@ CASES: tuple[Case, ...] = (
          "Smith, John Pharm D Jones",
          {"given": "John", "family": "Smith", "suffix": "Pharm D Jones"},
          classification="fix(#752)",
-         ambiguities=("suffix-or-name",),
+         ambiguities=("suffix-or-name", "suffix-or-name"),
          notes="S8: the merged pair starts the run after the "
                "given word, as 'PharmD' does, and the name word it "
                "absorbs is reported. 1.4.0 read middle 'Pharm D Jones'"),
@@ -1579,7 +1583,7 @@ CASES: tuple[Case, ...] = (
          "John Smith Pharm D Jones",
          {"given": "John", "family": "Smith", "suffix": "Pharm D Jones"},
          classification="fix(#752)",
-         ambiguities=("suffix-or-name",),
+         ambiguities=("suffix-or-name", "suffix-or-name"),
          notes="S8: two name words in front, the words to spare "
                "S4 asks of the pair, start the run there. 1.4.0 read "
                "middle 'Smith Pharm D', last 'Jones'"),
@@ -1596,17 +1600,20 @@ CASES: tuple[Case, ...] = (
          {"given": "Jane", "family": "Doe", "maiden": "Smith",
           "suffix": "Pharm D"},
          classification="fix(#752)",
+         ambiguities=("suffix-or-name",),
          notes="M2: the clause ends at the trailing run the "
                "clause-free name reads, which takes the pair as "
                "'Jane Doe Pharm D' does. 1.4.0 read middle 'Doe nee "
                "Smith Pharm', last 'D'"),
-    Case("a_split_credential_reports_no_absorbed_word",
+    Case("a_split_credential_reports_itself_not_an_absorbed_word",
          "John Smith MB ChB",
          {"given": "John", "family": "Smith", "suffix": "MB ChB"},
          classification="fix(#752)",
+         ambiguities=("suffix-or-name",),
          notes="'MB ChB' is one listed credential, 'mbchb', where 'mb' "
                "started the run and reported 'ChB' as a name word it "
-               "absorbed. 1.4.0 read middle 'Smith MB', last 'ChB'"),
+               "absorbed; the pair reports itself instead, as a member "
+               "the count took. 1.4.0 read middle 'Smith MB', last 'ChB'"),
     Case("a_split_credential_beside_a_connective_stays_two_words",
          "John Smith Pharm D and Mary",
          {"given": "John", "middle": "Smith Pharm", "family": "D and Mary"},
@@ -1628,7 +1635,8 @@ CASES: tuple[Case, ...] = (
          "Jane Doe nee Ed. D.",
          {"given": "Jane", "family": "Doe", "maiden": "Ed. D."},
          classification="fix(#752)",
-         notes="S11: the clause keeps the pair, read in silence; its "
+         notes="S11: the clause keeps the pair, which a declined pair "
+               "reports nothing for; its "
                "first word is a listed member, and the first version "
                "reported 'Ed.' as the word ending the clause, which "
                "'D.' is. 1.4.0 read middle 'Doe nee Ed.', last 'D.'"),
@@ -1636,7 +1644,7 @@ CASES: tuple[Case, ...] = (
          "Smith, John van Pharm D",
          {"given": "John", "family": "van Smith", "suffix": "Pharm D"},
          classification="fix(#752)",
-         ambiguities=("particle-or-given",),
+         ambiguities=("particle-or-given", "suffix-or-name"),
          notes="S11: merged ahead of group's joins, the pair stops the "
                "chain as 'PharmD' does, and P6 attaches the particle; "
                "merged after them (the design-docs review's first fix), "
@@ -1646,6 +1654,7 @@ CASES: tuple[Case, ...] = (
          "Rahman, Abdul MB ChB",
          {"given": "Abdul", "family": "Rahman", "suffix": "MB ChB"},
          classification="fix(#752)",
+         ambiguities=("suffix-or-name",),
          notes="P5: the join declines the pair as it declines a suffix "
                "word; the first version joined it, given 'Abdul MB ChB', "
                "where master read suffix 'MB ChB'. 1.4.0 read first "

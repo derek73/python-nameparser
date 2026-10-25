@@ -32,6 +32,7 @@ from collections.abc import Sequence
 
 from nameparser._lexicon import Lexicon, _normalize
 from nameparser._pipeline._pieces import (
+    split_credential_report,
     has_name_content, is_suffix_piece, is_title_piece, join_connectives,
     listed_lean, own_words, segment_suffix_reading,
 )
@@ -618,6 +619,7 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
                      and all(p[0] in member_set
                              or is_title_piece(p, pt, tokens)
                              for p, pt in zip(p1[:pairs[0]], pt1)))
+    part_reported = behind_generation
     if behind_generation:
         # rules/C11: "A decision either way at the comma C1 reads is
         # reported" -- here the suffix word before the comma decided it,
@@ -628,6 +630,7 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
             f"follows {tokens[seg0[-1]].text!r}, so it is read as a "
             f"credential run; it may be a name", tuple(taken)))
     elif whole and run and ((listed and not settled) or caps or pair_only):
+        part_reported = True
         if len(part) == 1:
             what = (f"{tokens[part[0]].text!r} after the comma is also an "
                     f"ordinary name word")
@@ -668,6 +671,13 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
                 AmbiguityKind.SUFFIX_OR_NAME,
                 f"{text!r} follows a credential, so it reads as part of the "
                 f"suffix run; it may be a name word", tuple(p1[k])))
+    # rules/S11: "where the count takes the pair, the reading is reported"
+    # -- C4's count took it, unless the flip it took part in reported
+    # the part
+    if not part_reported:
+        for k, piece in enumerate(p1):
+            if "split" in pt1[k] and reading[k]:
+                ambiguities.append(split_credential_report(piece, tokens))
     # Every word of the part is bound above or dropped as a core, so the
     # segment hands group nothing to join -- emptied here, where the
     # binding is, as #601's take removes what it binds, rather than

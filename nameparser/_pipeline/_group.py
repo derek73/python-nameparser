@@ -67,6 +67,7 @@ from typing import assert_never
 
 from nameparser._lexicon import _run_addresses_by_given
 from nameparser._pipeline._pieces import (
+    split_credential_report,
     Peel, TailRead, chain_lead, chain_run_end, is_conj_piece, is_leading_title, is_prefix_piece,
     is_suffix_piece, is_title_piece, join_connectives, joined_tags,
     leading_titles, merge_particle_runs, merge_pieces, peel_walk,
@@ -328,6 +329,11 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
         end = c + (e - m)
         released = [(j, Role.TITLE if m + (j - c) in titles
                      else Role.SUFFIX) for j in range(end, len(pieces))]
+        # rules/S11: "where the count takes the pair, the reading is reported" --
+        # the clause-free reading took it, and the take binds it here
+        for j, role in released:
+            if "split" in ptags[j] and role is Role.SUFFIX:
+                ambiguities.append(split_credential_report(pieces[j], tokens))
         # mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE: "Emit at the
         # site that takes the branch, not where an ambiguous tag sits"
         # -- the take consumed the run, so the forks the reading called

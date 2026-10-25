@@ -244,9 +244,11 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # and 'John Smith Pharm D Jones', one suffix-or-name claim under
     # each order; 1457 -> 1460 the same day: the second review's
     # 'Smith, John van Pharm D' row, one particle-or-given claim under
-    # each order.
-    assert claims == 1460, (
-        f"the field sweep checks {claims} claims, recorded as 1460 on "
+    # each order; 1460 -> 1487 the same day: the split credential's own
+    # report where the count takes it (Derek, on #891's review), nine
+    # rows claiming one suffix-or-name report under each order.
+    assert claims == 1487, (
+        f"the field sweep checks {claims} claims, recorded as 1487 on "
         f"2026-10-25")
 
 

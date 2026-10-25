@@ -59,7 +59,7 @@ from typing import NamedTuple
 
 from nameparser._pipeline._state import (
     AMBIGUOUS_ACRONYM_TAG, NAME_ROLES, SHAPE_ACRONYM_TAG, SUFFIX_OR_UNREAD,
-    WorkToken,
+    AmbiguityKind, PendingAmbiguity, WorkToken,
 )
 from nameparser._pipeline._vocab import (
     _PERIOD_ABBREV, _ROMAN, Lean, ambiguous_lean, in_initialless_script,
@@ -527,6 +527,18 @@ def starts_a_credential_run(piece: Sequence[int], ptags: Set[str],
 #: joiner, which therefore never start #602's run
 _NOT_A_RUN_START = frozenset({"conjunction", "particle",
                               "vocab:bound-given"})
+
+
+def split_credential_report(piece: Sequence[int],
+                            tokens: Sequence[WorkToken]) -> PendingAmbiguity:
+    """rules/S11's report on a split credential the count took, one
+    spelling for the three sites that take one (assign's placement, the
+    comma's binding, the maiden clause's release)."""
+    text = " ".join(tokens[i].text for i in piece)
+    return PendingAmbiguity(
+        AmbiguityKind.SUFFIX_OR_NAME,
+        f"{text!r} is two words whose letters spell a credential, so it "
+        f"reads as a credential; they may be name words", tuple(piece))
 
 
 def is_lone_never_given_particle(piece: Sequence[int],
