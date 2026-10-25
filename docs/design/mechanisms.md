@@ -418,6 +418,16 @@ A second axis cuts across the jobs: whether the names are real or invented, labe
 
 **Reach for it when.** A source is proposed, before choosing between a builder and a tool column; and when a corpus would hold real people's names nobody vetted for publication, which is the case for a local corpus rather than a committed one.
 
+### PAIRED-SPELLINGS-PER-CHANGE — count both directions, and compare whole fields
+
+**Problem shape.** A change is measured over a source that holds two or more spellings of one person (tse-donors' filed and registry names, nepal-candidates' romanization and Devanagari, a JRC-Names group), and the question is whether it makes the parser read one person one way.
+
+**Contract statement.** Per change, count the persons whose spellings go from reading differently to reading alike AND the persons who go the other way, never a net figure; compare the readings on what the two spellings can share (whole given and family fields with accents folded and an initial matching the word it begins, or, across scripts, the structure alone); and read the "now apart" moves by shape before calling any a regression.
+
+**How it works.** Agreement is not correctness, so this is a second measure beside a SCORE (mechanisms.md#NAME-DATA-JOBS), never in place of one. Its trap is a comparison that agreed for the wrong reason. #752's first version compared the family's LAST WORD as written, and gating the Brazilian agnomens counted 1,043 tse pairs "now apart" (2026-10-24): on master both spellings had agreed on `FILHO` as the family, and once the agnomen read as a suffix the comparison reached the real surname, which the two spellings write differently. Comparing whole fields after folding cut the agnomen gate's apart count to 304, and reading those by shape showed what was left: a word differing between the spellings, an initial, a length difference, and 47 differing only by accent or case, which point at the one real defect: the spike asked a case cue the design does not. Across scripts the same measure found what no single-script corpus could: taking `Guru` out of the titles pushed 44 Nepali pairs apart because its Devanagari twin stayed a title.
+
+**Reach for it when.** A change moves a word between fields in a population that holds the same names spelled twice; and when a vocabulary word has a twin in another script, which a pair source shows and a single-script snapshot cannot.
+
 ### Field notes — the traps themselves
 
 - Test a function INSIDE a stage on the inputs its caller hands it, not on the stage's finished output. #610's first sweep test built pieces by running `group` whole and handed them to the maiden take's candidate function, but the take runs before any join, so the test read `de VI Prof.` as one piece where production hands it three: a guard checking a structure production never passes in, green for the wrong reason. Review moved the oracle to the take itself by wrapping it (tests/v2/pipeline/test_pieces.py), and recorded the old loop's misses there as the negative control (432), which is what shows the moved harness can still see a difference.
