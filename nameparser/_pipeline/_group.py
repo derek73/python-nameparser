@@ -578,10 +578,9 @@ def _between_name_words(k: int, lo: int, hi: int,
             and not is_title_piece(pieces[right], ptags[right], tokens))
 
 
-# rules/S4: "a BARE ambiguous acronym is consumed only when the name
-# has words to spare" -- and a split credential is a member of that
-# class (rules/S3), so where the trailing read did not take one, it is
-# the two words it is written as
+# rules/S11: "where the count declines it, the pair is the two words
+# it is written as" -- after the trailing read, which is where the
+# count is asked in a main segment
 def _settle_splits(pieces: list[Piece], ptags: list[set[str]]) -> None:
     """Split every merged split credential left in `pieces` back into
     its two words, in place: a pair the trailing read declined reads

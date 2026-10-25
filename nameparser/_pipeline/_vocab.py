@@ -567,7 +567,7 @@ def is_cased_paired_initials(text: str) -> bool:
             and text.upper() != text.lower())
 
 
-# rules/S3: "A credential written split across a space reads as one
+# rules/S11: "a credential written split across a space reads as one
 # word" -- one chunk of up to five letters, with or without its period
 # ('Pharm.', 'D', 'Sc.'), the shape both words of a split credential
 # take. The C-level half classify asks of every adjacent pair before
@@ -592,7 +592,8 @@ def split_pair(first: str, second: str, lexicon: Lexicon) -> str | None:
     "split": any other pair of short chunks (`SPLIT_CHUNK`) whose
     period-free concatenation is unambiguous suffix vocabulary while
     the two are not both suffix vocabulary on their own ('Pharm. D.',
-    'Pharm D', 'MB ChB' where 'chb' is unlisted). The merged piece is
+    'Pharm D', 'MB ChB' where 'chb' is unlisted) and neither is a
+    particle or a connective, which join name words. The merged piece is
     a member of the ambiguous class, which the count decides (rules/S4,
     rules/C4). Its first chunk has two or more letters: a single
     letter opening the pair is a middle initial far more often (FEC
@@ -628,6 +629,14 @@ def split_pair(first: str, second: str, lexicon: Lexicon) -> str | None:
             and (nb in lexicon.suffix_acronyms
                  or nb in lexicon.suffix_words)):
         return None
+    # a particle or a connective joins name words, which is what it is
+    # doing beside one ('DE A JUNIOR', the A a surname written short);
+    # written with its period a letter is an initial, not the connective
+    # it spells ('SAM E.', rules/T5)
+    for written, n in ((first, na), (second, nb)):
+        if not written.endswith(".") and (n in lexicon.particles
+                                          or n in lexicon.conjunctions):
+            return None
     return "split"
 
 

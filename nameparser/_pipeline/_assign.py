@@ -1214,7 +1214,7 @@ def assign(state: ParseState) -> ParseState:
                 # credential list behind it makes the credential
                 # reading likelier rather than less.
                 piece = pieces[m]
-                # rules/S3: a split credential is "a member of the
+                # rules/S11: a split credential reads "as a member of the
                 # ambiguous class", here read as the class is with no
                 # writing to lean on and in silence, as group merges it
                 # only behind the given word

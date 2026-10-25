@@ -33,8 +33,12 @@ namespaced (unstable): "vocab:title", "vocab:given-title",
 "vocab:after-given-title",
 "vocab:suffix", "vocab:suffix-word", "vocab:suffix-ambiguous",
 "vocab:particle-ambiguous", "vocab:bound-given", "vocab:maiden-marker",
-"vocab:maiden-marker-cont"; and, in a namespace of its own,
-"shape:acronym".
+"vocab:maiden-marker-cont"; in a namespace of its own,
+"shape:acronym"; and in another, "split:credential" and
+"split:member", written on the first word of a credential split across
+a space (`_vocab.split_pair`) to name the piece the pair merges into:
+the Ph./D. pair's unambiguous suffix, or any other pair's member of the
+ambiguous class (rules/S11).
 "vocab:maiden-marker" tags the HEAD of a maiden marker, which is a
 whole marker whenever the marker is one word; the continuation tag
 carries the rest of a PHRASE marker ("z domu"), so a site asking
@@ -397,7 +401,7 @@ def classify(state: ParseState) -> ParseState:
         tokens = tuple(
             copy_with(t, tags=t.tags - _JOINING_TAGS) if i in stemmed else t
             for i, t in enumerate(tokens))
-    # rules/S3: "A credential written split across a space reads as one
+    # rules/S11: "a credential written split across a space reads as one
     # word" -- each adjacent pair of a segment asked once, here, and
     # the answer written on its first word for group's merge and the
     # comma's reading of its part (`_vocab.split_pair`). The shape and
@@ -413,6 +417,11 @@ def classify(state: ParseState) -> ParseState:
             if (SPLIT_CHUNK.fullmatch(a.text) is not None
                     and SPLIT_CHUNK.fullmatch(b.text) is not None
                     and a.role is None and b.role is None
+                    # the opening letter, the length a superset of the
+                    # predicate's count of composed letters ('i i' folds
+                    # to the listed 'ii' and opens with one)
+                    and (len(a.text.rstrip(".")) >= 2
+                         or a.text.endswith(".") and b.text.endswith("."))
                     and ((fold := (a.text + b.text).replace(".", "")
                           .lower()) in acronyms or fold in words
                          or not fold.isascii())
@@ -428,9 +437,11 @@ def classify(state: ParseState) -> ParseState:
                 split[seg[j]] = (SPLIT_CREDENTIAL_TAG if kind == "suffix"
                                  else SPLIT_MEMBER_TAG)
     if split is not None:
-        tokens = tuple(
-            copy_with(t, tags=t.tags | {split[i]}) if i in split else t
-            for i, t in enumerate(tokens))
+        # a loop, not a generator, which is a frame per token resumed
+        written = list(tokens)
+        for i, tag in split.items():
+            written[i] = copy_with(written[i], tags=written[i].tags | {tag})
+        tokens = tuple(written)
     # Delimited content whose vocabulary cannot settle it: extract's
     # escape sends an UNambiguous suffix straight through ("(MBA)" ->
     # suffix) and keeps everything else as a nickname, so an AMBIGUOUS

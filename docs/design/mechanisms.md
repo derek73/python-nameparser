@@ -116,6 +116,18 @@ This catalog converts discovery into a one-time cost — it does not remove disc
 
 **Reach for it when.** A rule is growing stops, exceptions or a release check whose job is to keep one construct from disturbing the rest of the name, and above all when that check has started to model another stage. Ask what the name reads as without the construct, and make that the rule.
 
+## MERGE-THEN-SETTLE — merge what a count decides, and split back what it declines
+
+**Problem shape.** Two words may be one unit, and whether they are is a question only a later reading answers: a count of the words around them, made by a rule that reads pieces. Merged too early, a pair the reading declines is read as one piece where it should be two, and the merge hides a word that would have answered something by itself; left unmerged, the reading never sees the unit at all.
+
+**Contract statement.** Merge the candidate into one piece, tagged as a candidate, and let the rule that decides read it. Where the rule takes it, keep the piece; where it declines, split it back into the words it is written as before anything else reads them, so a declined candidate reads exactly as the words read with no merge. Where the deciding reading is one pass over a whole part, read the part again unmerged rather than unpicking the merged reading.
+
+**How it works.** rules/S11's split credential (#752, phase 2e): classify tags each pair `_vocab.split_pair` admits, group merges it as a member of the ambiguous class, S2's trailing read decides it by S4's count, and `_group._settle_splits` splits back every merged pair the read left in front of the run before the particle chain or the bound join can see it. After a comma `_comma.decide` reads the part with the pairs merged and, where that reading does not take one as a credential, reads the part again with none merged: the first version kept the merged reading there, and the pair hid an `MB` that had opened the part as a credential (C13), reversing 15 ClinicalTrials.gov names (`Aa Aa, MB ChB BAO` read given 'MB'). The settled outcome is either the merge's reading or the as-written one, never a third, which is what lets a measurement read every move as a pair the count took.
+
+**Lives in.** nameparser/_pipeline/_classify.py (the pair tag); nameparser/_pipeline/_group.py (the merge and `_settle_splits`); nameparser/_pipeline/_comma.py (`decide`'s retry, `_pieces(splits=...)`).
+
+**Reach for it when.** A unit of several words is decided by a count or a position the merge itself changes, and the safe reading of a declined unit is the reading its words already had.
+
 ## LICENSED-BY-NEIGHBOR — a structural word is structural only beside the right neighbor
 
 **Problem shape.** A word in a structural vocabulary — a marker announcing a maiden name, a connective joining surnames — turns up where what it would announce makes no sense: behind a title alone, behind a credential, at the end of a name. Designing a reading for each such shape is endless, and the shapes are mostly junk.

@@ -41,7 +41,7 @@
 
 **Accepted:**
 
-- A name-leaning member with nothing in front of it to speak for it ends the name, words to spare or not, and whatever stands in front of it is name text. Where a credential does stand in front, the company decides instead, except in one shape that keeps it out of reach and reads the member as the name: a credential written split across two words with no comma after the name. That reading is older than the company clause, so it is witnessed by tests/v2/cases.py's a_split_degree_in_front_is_out_of_the_walk rather than by a line here, which would promise a reading this clause did not make. A title standing between the credential and the member, and a member a particle chain (P2) had taken, were two more such shapes until the credential's run (S8) took both in: the rows a_title_between_degree_and_member_keeps_it_a_name and a_member_the_particle_chain_took_is_out_of_reach keep their ids and now pin the run.
+- A name-leaning member with nothing in front of it to speak for it ends the name, words to spare or not, and whatever stands in front of it is name text. Where a credential does stand in front, the company decides instead. A title standing between the credential and the member, a member a particle chain (P2) had taken, and a credential written split across two words with no comma after the name kept it out of reach until the credential's run (S8) took all three in: the rows a_title_between_degree_and_member_keeps_it_a_name and a_member_the_particle_chain_took_is_out_of_reach keep their ids and now pin the run, and a_split_degree_in_front_starts_the_run pins the third.
   ```
   "Jack Wei Ma"               →  family="Ma"
   "Jack Wei Ma"               →  ambiguities=("suffix-or-name",)

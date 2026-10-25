@@ -11,7 +11,7 @@ from nameparser._pipeline._vocab import (
     ambiguous_class_candidate, ambiguous_class_member, ambiguous_lean,
     caps_shape_candidate, comma_follows_marker, delimiter_cores, glued_stem,
     effective_script, is_initial, is_initial_shaped, is_one_case,
-    SPLIT_PAIR_OPENS, is_cased_paired_initials, is_paired_initials,
+    SPLIT_CHUNK, SPLIT_PAIR_OPENS, is_cased_paired_initials, is_paired_initials,
     is_single_letter_numeral, split_pair,
     is_suffix_lenient, is_suffix_strict, is_title_shaped, is_wholly_suffix,
     maiden_marker_run, name_word_count, period_joined_vocab, written_as_a_name,
@@ -953,19 +953,60 @@ def test_a_listed_member_written_in_period_closed_chunks_is_dotted(
         assert not is_suffix_strict(text, lex), text
 
 
-def test_split_pair_opens_is_a_necessary_condition_of_split_pair() -> None:
-    # every caller asks SPLIT_PAIR_OPENS C-level before split_pair, so a
-    # split_pair widened past it would never be reached for the new
-    # opener (#752); the periods are optional and the case free
+def test_split_pair_answers_with_the_piece_tag_the_pair_merges_with() -> None:
+    lex = Lexicon.default()
+    # the Ph./D. pair, its periods optional and its case free
+    assert all(split_pair(a, b, lex) == "suffix"
+               for a in ("Ph.", "Ph", "PH", "ph.") for b in ("D.", "D", "d"))
+    # any other pair whose fold is unambiguous suffix vocabulary, its
+    # halves not both listed: a member of the ambiguous class (#752)
+    for a, b in (("Pharm.", "D."), ("Pharm", "D"), ("MB", "ChB"),
+                 ("SAM", "E.")):
+        assert split_pair(a, b, lex) == "split", (a, b)
+    # an opening single letter ('A. MS.' folds to 'ams'), both halves
+    # listed, an ambiguous or unlisted fold, a chunk of six letters, and
+    # the Ph./D. halves in the other order
+    for a, b in (("M.", "Sc."), ("A.", "MS."), ("M", "D"), ("MD", "PhD"),
+                 ("Smith", "Jones"), ("Pharma", "D"), ("D.", "Ph."),
+                 ("Ph.", "D..")):
+        assert split_pair(a, b, lex) is None, (a, b)
+
+
+def test_two_dotted_letters_merge_only_outside_a_cased_script() -> None:
+    # S11: two dotted single letters are paired initials where the
+    # script has capitals (#872's predicate), so they merge only in a
+    # caseless one, and only where the fold is listed, as no default
+    # entry is
+    lex = Lexicon.default().add(suffix_acronyms={"jr", "พบ"})
+    assert split_pair("J.", "R.", lex) is None
+    assert split_pair("พ.", "บ.", lex) == "split"
+    assert split_pair("พ.", "บ.", Lexicon.default()) is None
+    assert split_pair("พ", "บ", lex) is None
+
+
+def test_the_c_level_pre_tests_are_necessary_conditions_of_split_pair(
+        ) -> None:
+    # classify asks SPLIT_CHUNK of both words, the opening letter's
+    # length and the fold's membership C-level before the call, and is_wholly_suffix SPLIT_PAIR_OPENS
+    # before asking for the Ph./D. answer, so a split_pair widened past
+    # either would never be reached for the new spelling (#752)
+    lex = Lexicon.default()
     words = ["Ph.", "Ph", "PH.", "ph", "pH", "D.", "D", "d", "Pharm.",
-             "M.", "MD", "Phd", "Ph..", "", "Smith"]
+             "Pharm", "M.", "MD", "Phd", "Ph..", "", "Smith", "MB", "ChB",
+             "SAM", "E.", "Pharma", "Ed", "J.", "R."]
     for first in words:
         for second in words:
-            if split_pair(first, second):
+            kind = split_pair(first, second, lex)
+            if kind is None:
+                continue
+            fold = (first + second).replace(".", "").lower()
+            assert SPLIT_CHUNK.fullmatch(first) and SPLIT_CHUNK.fullmatch(
+                second), (first, second)
+            assert (len(first.rstrip(".")) >= 2
+                    or first.endswith(".") and second.endswith("."))
+            assert fold in lex.suffix_acronyms or fold in lex.suffix_words
+            if kind == "suffix":
                 assert SPLIT_PAIR_OPENS.fullmatch(first), (first, second)
-    assert all(split_pair(a, b) for a in ("Ph.", "Ph", "PH", "ph.")
-               for b in ("D.", "D", "d"))
-    assert not split_pair("Ph.", "D..") and not split_pair("Phd", "D.")
 
 
 def test_cased_paired_initials_is_the_bare_shape_in_a_cased_script() -> None:

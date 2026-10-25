@@ -11,15 +11,16 @@
   "Smith, John PhD Jones"     →  suffix="PhD Jones"
   "John Smith PhD Prof. Ma"   →  suffix="PhD Ma"
   "Eric H. Holder Jr. Attorney General"  →  title="Attorney General"
-  "John Smith Ph. D. Jones"   →  suffix="Ph. D. Jones"  deviates: #827 (today: suffix="Ph. D.")
+  "John Smith Ph. D. Jones"   →  suffix="Ph. D. Jones"
   ```
 - **How the name words are counted.** A lone particle is not a name word for the count, 'de Mesnil' being one surname, unless the credential stands right behind it, leaving it nothing to join: then it counts as a name word of its own ('John von PhD Jones'). A particle run with the words the chain joins to it is one name word, 'der la' and 'la Smith Secretary' each counting once (P2).
   ```
   "John von PhD Jones"        →  family="von"
   "John von PhD Jones"        →  suffix="PhD Jones"
   ```
-- **What is a credential here.** A title word never starts the run, and neither does a member of the ambiguous class, a single letter, a connective, a word that is also particle or bound given-name vocabulary: a credential is the writer's mark that the post-nominals have begun, and those carry no such mark. An honorific or a generational word carries it as a credential does, whatever its script.
+- **What is a credential here.** A title word never starts the run, and neither does a member of the ambiguous class, a single letter, a connective, a word that is also particle or bound given-name vocabulary: a credential is the writer's mark that the post-nominals have begun, and those carry no such mark. An honorific or a generational word carries it as a credential does, whatever its script. A credential split across a space (S11) is the one member of the class that carries it, its other reading being two words of the name, which the two name words standing in front of it already leave the name without.
   ```
+  "John Smith Pharm D Jones"  →  suffix="Pharm D Jones"
   "Mary Jane King Smith"      →  family="Smith"
   "Josep Carod i Rovira"      →  family="Carod i Rovira"
   "Mohamed Ali Abd Allah"     →  family="Allah"

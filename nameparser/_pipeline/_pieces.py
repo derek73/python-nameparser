@@ -1239,8 +1239,8 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
         # the vocabulary is not in doubt.
         bare_ambiguous = (len(piece) == 1
                           and AMBIGUOUS_ACRONYM_TAG in tokens[piece[0]].tags)
-        # rules/S3: a split credential "is a member of the ambiguous
-        # class" -- read by the count alone, its writing carrying no
+        # rules/S11: a split credential reads "as a member of the
+        # ambiguous class" -- read by the count alone, its writing carrying no
         # case to lean on, and in silence: its other reading is two
         # name words, which the count already refuses it behind one
         if "split" in ptags[rest[k - 1]]:
@@ -1981,7 +1981,7 @@ def _chain_units(pieces: Sequence[Sequence[int]],
             j = chain_run_end(k, pieces, ptags, tokens, count)
             q = k + 1
             # a split credential is weighed as the class it is a
-            # member of (rules/S3)
+            # member of (rules/S11)
             while (q < j and "split" not in ptags[q]
                    and not _weighed(pieces[q], tokens)):
                 units[q] = JOINED
