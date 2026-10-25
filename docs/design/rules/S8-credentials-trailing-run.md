@@ -9,6 +9,7 @@
   "Smith, John PhD Jones"     →  suffix="PhD Jones"
   "John Smith PhD Prof. Ma"   →  suffix="PhD Ma"
   "Eric H. Holder Jr. Attorney General"  →  title="Attorney General"
+  "John Smith Ph. D. Jones"   →  suffix="Ph. D. Jones"  deviates: #827 (today: suffix="Ph. D.")
   ```
 - **How the name words are counted.** A lone particle is not a name word for the count, 'de Mesnil' being one surname, unless the credential stands right behind it, leaving it nothing to join: then it counts as a name word of its own ('John von PhD Jones'). A particle run with the words the chain joins to it is one name word, 'der la' and 'la Smith Secretary' each counting once (P2).
   ```
