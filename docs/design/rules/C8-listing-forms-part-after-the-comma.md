@@ -35,11 +35,6 @@
   "Smith, Ms."                →  suffix="Ms."
   "Smith, Ms. Jane"           →  title="Ms."
   ```
-- The ambiguous acronym `sa` (#857) is no longer an unambiguous suffix word, so a bare `Sa` after a family comma falls out of the credential run and reads as the title.
-  ```
-  "Smith, Sa"                 →  title="Sa"
-  "Smith, John PhD Sa"        →  title="Sa"
-  ```
 
 ---
 **Signal:** neighbor: whether the part after a family comma holds a name word

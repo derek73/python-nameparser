@@ -646,7 +646,6 @@ TITLES: frozenset[str] = frozenset({
     'rouva',
     'royal',
     'rt',
-    'sa',
     'sailor',
     'saint',
     'sainte',
@@ -1461,7 +1460,6 @@ SUFFIX_ACRONYMS_AMBIGUOUS: frozenset[str] = frozenset({
     'om',
     'pa',
     'pe',
-    'sa',
     'se',
     'si',
 })
@@ -2069,7 +2067,6 @@ SUFFIX_ACRONYMS: frozenset[str] = frozenset({
     'rtrp',
     'rvm',
     'rvt',
-    'sa',
     'same',
     'sasm',
     'sccp',
