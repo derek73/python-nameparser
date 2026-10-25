@@ -22,8 +22,8 @@ _vocab.is_wholly_suffix; every Lexicon wordlist through
 _vocab.caps_shape_candidate (to know an all-caps word is unlisted) and
 _vocab.claimed_as_non_name (the name's contrast); Lexicon
 .maiden_markers through _pieces.own_words, for the name's contrast;
-Policy.lenient_comma_suffixes, Policy.extra_suffix_delimiters and
-Policy.unlisted_caps_suffixes.
+Policy.lenient_comma_suffixes, Policy.extra_suffix_delimiters,
+Policy.unlisted_caps_suffixes and Policy.unlisted_dotted_suffixes.
 """
 from __future__ import annotations
 
