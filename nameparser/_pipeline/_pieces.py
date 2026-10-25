@@ -63,8 +63,8 @@ from nameparser._pipeline._state import (
 )
 from nameparser._pipeline._vocab import (
     _PERIOD_ABBREV, _ROMAN, Lean, ambiguous_lean, in_initialless_script,
-    is_single_letter_numeral, reads_as_generation,
-    numeral_settled_by_case, tag_marker_runs,
+    is_single_letter_numeral, numeral_settled_by_case,
+    reads_as_generation, tag_marker_runs,
 )
 
 

@@ -4332,7 +4332,7 @@ CASES: tuple[Case, ...] = (
     # #516 review round, F5: the spec's stated mechanism for why
     # 'Jack VI' does not move was wrong -- 'VI' DOES reach the caps
     # predicate and carries both tags with the switch on. It stays
-    # unchanged because `_pieces.reads_as_generation` (the
+    # unchanged because `_vocab.reads_as_generation` (the
     # roman-numeral fork) claims it downstream, before the lean/count
     # this switch adds is ever consulted -- unrelated to this switch,
     # and the reason these controls read identically on or off.

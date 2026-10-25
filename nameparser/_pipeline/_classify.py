@@ -270,7 +270,8 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
             # tag alone, as with the switch off, so the trailing slots
             # read them as a name word and report the fork; the comma
             # restores the class tag where C5 reads them
-            # (decisions/S3 (#864)); the cased half is the predicate's
+            # (decisions/S3 (#864)); `is_cased_paired_initials` asks the
+            # script half ('พ.บ.' is no initial)
             if (state.policy.unlisted_dotted_suffixes
                     and not is_cased_paired_initials(token.text)):
                 tags.add(AMBIGUOUS_ACRONYM_TAG)

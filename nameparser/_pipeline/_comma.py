@@ -41,7 +41,7 @@ from nameparser._pipeline._state import (
 )
 from nameparser._pipeline._vocab import (
     ROMAN, SPLIT_PAIR_OPENS, caps_shape_candidate, claimed_as_non_name,
-    delimiter_cores, composed_len, glued_stem, glues, is_caps_word,
+    composed_len, delimiter_cores, glued_stem, glues, is_caps_word,
     is_paired_initials, is_single_letter_numeral, is_wholly_suffix,
     name_word_count, reads_as_generation, split_pair, surname_unit_facts,
     unit_ends, written_as_a_name,
@@ -53,7 +53,8 @@ from nameparser._types import AmbiguityKind, Role
 def _pieces(seg: Sequence[int], tokens: Sequence[WorkToken],
             ) -> tuple[list[list[int]], list[set[str]]]:
     """One piece per token but a split credential (`split_pair`),
-    which group's first merge builds -- the part as it stands before
+    which group's first merge builds (group alone declines a pair at
+    the head of the string, rules/S2) -- the part as it stands before
     any join. Every piece a fresh list, as `merge_pieces` requires."""
     pieces: list[list[int]] = []
     ptags: list[set[str]] = []

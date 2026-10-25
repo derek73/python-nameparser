@@ -81,7 +81,9 @@ _D = re.compile(r"^d\.?$", re.IGNORECASE)
 #: each caller ahead of the call, since the split test runs per
 #: adjacent pair and an ordinary name word must pay no frame for it.
 #: The same compiled object the predicate asks, so the two cannot
-#: drift; a widening of the predicate widens this with it.
+#: drift while the predicate's first-word test is `_PH`; a change to
+#: that test must change this with it, or the callers' pre-test hides
+#: the new spellings from the predicate.
 SPLIT_PAIR_OPENS = _PH
 
 
@@ -291,11 +293,12 @@ ROMAN = _ROMAN
 # #752)
 def reads_as_generation(text: str, preceding: str, one_case: bool | None,
                         *, listed: bool = False) -> bool:
-    """Whether a word ending a name reads as the generation: the
+    """Whether a word ending a name reads as the generation (or, with
+    `listed`, as the suffix word the caller's tags say it is): the
     trailing walk's roman-numeral fork, a FINAL single-token piece
-    that is a roman numeral
-    reading as the suffix when the piece before it does not look like
-    part of an initial run -- for a one-letter numeral a necessary
+    that is a roman numeral reading as the suffix when the piece
+    before it does not look like part of an initial run -- for a
+    one-letter numeral a necessary
     condition only, the caller's words-to-spare count deciding
     (rules/S10, #718). `preceding` is that piece's first token;
     the callers establish that `text` is last and that a name piece
@@ -306,12 +309,11 @@ def reads_as_generation(text: str, preceding: str, one_case: bool | None,
     passes the suffix-word tag, which every suffix word carries, so
     'Jr.' and 'Esq.' answer yes there as 'III' does: C12 asks whether
     the part ends in a suffix word or a numeral the fork reads.
-    S8's run start (#784), C1's listing form (#774), the peel's
-    `is_suffix_piece`, which takes 'ii' to 'iv' and vetoes 'i' and
-    'v' as initial-shaped, and C9's family-comma walk (#819) are among
-    the sites still recognizing a numeral without this predicate, each
-    keeping the answer it had before #752 (decisions/vocabulary-model
-    lists those found); passing `listed` at the peel's fork would move
+    Other sites still recognize a numeral without this predicate,
+    each keeping the answer it had before #752; decisions/vocabulary-
+    model lists those found. Among them is the peel's `is_suffix_piece`,
+    which takes a listed numeral but vetoes one carrying the `initial`
+    tag ('V', 'I'), so passing `listed` at the peel's fork would move
     'John J. V'. Giving every
     numeral rule this one reading is #784, #774 and #819's change.
 
@@ -537,7 +539,8 @@ def is_cased_paired_initials(text: str) -> bool:
     capitals: a text with a case mapping, so 'M.J.' and 'm.j.' but not
     Thai 'พ.บ.', which is how that script writes an abbreviation.
     The same compiled pattern as `is_paired_initials`, asked here
-    rather than through it so the predicate costs one frame."""
+    rather than through it so a dotted token pays one frame, not
+    two."""
     return (_PAIRED_INITIALS.fullmatch(text) is not None
             and text.upper() != text.lower())
 
