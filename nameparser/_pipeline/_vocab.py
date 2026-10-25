@@ -302,14 +302,15 @@ def reads_as_generation(text: str, preceding: str,
     the callers establish that `text` is last and that a name piece
     precedes it.
 
-    It answers by SHAPE alone: the listed numerals 'ii' to 'iv' are
-    still recognized by the vocabulary at each site that takes them,
-    and reading them here is the change that has every numeral rule
-    ask this predicate (#784, #774, #819). It cannot read them yet
-    without moving a reading: the peel reaches its fork only after
-    `is_suffix_piece` has declined, so the listed numerals the fork
-    meets are those carrying the `initial` tag ('V', 'I'), and a yes
-    for them would move 'John J. V'. Other sites still recognize a
+    It answers by SHAPE alone. That covers the listed 'ii' to 'iv',
+    which the shape test takes as it takes 'VI'; of the listed
+    numerals only the one-letter 'i' and 'v' would be new here, and
+    the vocabulary half is the change that has every numeral rule ask
+    this predicate (#784, #774, #819). It cannot read them yet without
+    moving readings: answering yes for 'i' and 'v' moves the peel's
+    fork ('John J. V' family 'V' → suffix 'V') and the report on a
+    numeral before a credential ('John J. V MD' gains one), since the
+    ones those sites meet carry the `initial` tag. Other sites still recognize a
     numeral without this predicate, each keeping the answer it had
     before #752; decisions/vocabulary-model lists those found.
 
