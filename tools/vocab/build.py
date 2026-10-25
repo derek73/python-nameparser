@@ -740,8 +740,9 @@ def _check_reading(r: Reading, pool: Pool) -> None:
             # a salutation is a form of address, where an office or a
             # rank is borne as a middle name: the reason the given
             # part's end may read one as a title (decisions/H8, #835)
-            raise VocabError(f"{where}: after_given marks a salutation "
-                             f"reading only, not a {r.kind!r} one (rules/H8)")
+            raise VocabError(f"{where}: after_given is allowed on a "
+                             f"salutation reading only, not on {r.kind!r} "
+                             f"(rules/H8)")
     if r.category == "suffix":
         acronym = r.acronym
         if acronym and "." in r.text:

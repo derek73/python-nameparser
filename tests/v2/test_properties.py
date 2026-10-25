@@ -3526,7 +3526,7 @@ def test_the_one_case_grid_sees_the_letter_in_front(
 #: H8's grid (#835): family-comma heads, given parts and tails
 #: holding a bare salutation, each paired with its period-marked twin.
 #: 704 texts, each parsed with its twin under each of the three
-#: orders: 2,112 pairs, about 0.5s on py3.11 (measured 2026-10-25).
+#: orders: 2,112 pairs, about 0.5s on py3.11 (measured 2026-10-24).
 _SALUTATION_HEADS = ("Doe, ", "van Doe, ", ", ", "Doe Jr., ")
 _SALUTATION_GIVENS = ("Jane", "abdul", "Jane van", "Jane van der",
                       "abdul van", "J.", "Jane Q", "St", "Freiherr",
@@ -3539,24 +3539,25 @@ _SALUTATION_TAILS = ("Mrs", "Mr Mrs", "Mrs Jr", "Mr Jr Mrs", "Mrs Jr Mr",
 
 def test_a_bare_salutation_reads_as_its_period_marked_twin() -> None:
     """H8's first Then bullet (#835), the bare spelling reading as the
-    period-marked one reads. After a family comma a listed salutation written bare chains into H5's
-    trailing title run as the period-marked spelling does, so the two
-    spellings read alike, fields (stops aside) and ambiguity kinds, in
+    period-marked one reads. After a family comma a listed salutation
+    written bare chains into H5's trailing title run as the
+    period-marked spelling does, so the two spellings read alike, fields (stops aside) and ambiguity kinds, in
     every comma shape here and under every order. The grid crosses a
     bound given name and a trailing particle, whose group-side
     predictors read the part through `tail_reading`, with title,
     suffix, title tails, which reach that function's second chain pass.
 
-    Mutation-checked 2026-10-25: dropping the `salutations` hand-off on
+    Mutation-checked 2026-10-24: dropping the `salutations` hand-off on
     `tail_reading`'s second chain call fails this on 192 of its 2,112
     pairs, and the suite had no other test of that call."""
     def dotted(text: str) -> str:
         return re.sub(r"\b(Mrs|Mr)\b", r"\1.", text)
 
-    def fields(name: object) -> tuple[object, ...]:
-        d = name.as_dict()  # type: ignore[attr-defined]
-        return (tuple(sorted((k, v.replace(".", "")) for k, v in d.items())),
-                tuple(sorted(a.kind for a in name.ambiguities)))  # type: ignore[attr-defined]
+    def fields(name: ParsedName) -> tuple[object, ...]:
+        stops_aside = sorted((k, v.replace(".", ""))
+                             for k, v in name.as_dict().items())
+        return (tuple(stops_aside),
+                tuple(sorted(a.kind for a in name.ambiguities)))
 
     failures = []
     for order in (GIVEN_FIRST, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST):

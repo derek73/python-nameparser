@@ -983,6 +983,9 @@ def test_after_given_titles_is_a_vocab_field() -> None:
     # other field, so the period-marked entry matches the bare word
     lex = Lexicon.empty().add(after_given_titles={"Mrs.", "mr"})
     assert lex.after_given_titles == frozenset({"mrs", "mr"})
+    respelled = (Lexicon.default().remove(after_given_titles={"mrs"})
+                 .add(after_given_titles={"Mrs."}))
+    assert Parser(lexicon=respelled).parse("Doe, Jane Mrs").title == "Mrs"
     assert lex.remove(after_given_titles={"mr"}).after_given_titles == \
         frozenset({"mrs"})
     merged = (Lexicon(after_given_titles=frozenset({"mrs"}))
