@@ -1348,6 +1348,7 @@
 {"name": "Jane (née , Jones) Smith", "given": "Jane", "family": "Smith", "nickname": "née , Jones", "initials": "J. S.", "capitalized_force": "Jane \"Née, Jones\" Smith"}
 {"name": "Jane (née ,Jones) Smith", "given": "Jane", "family": "Smith", "nickname": "née ,Jones", "initials": "J. S.", "capitalized_force": "Jane \"Née,Jones\" Smith"}
 {"name": "Jane (née Jones) Smith", "given": "Jane", "family": "Smith", "maiden": "Jones", "initials": "J. S."}
+{"name": "Jane (née​Jones) Smith", "given": "Jane", "family": "Smith", "nickname": "née Jones", "initials": "J. S.", "capitalized_force": "Jane \"Née Jones\" Smith"}
 {"name": "Jane Doctor", "given": "Jane", "family": "Doctor", "initials": "J. D."}
 {"name": "Jane Doe", "given": "Jane", "family": "Doe", "initials": "J. D."}
 {"name": "Jane Doe (nee Smith MA)", "given": "Jane", "family": "Doe", "maiden": "Smith MA", "initials": "J. D.", "capitalized_force": "Jane Doe (Smith Ma)"}
@@ -2256,6 +2257,7 @@
 {"name": "Mary Nicet", "given": "Mary", "family": "Nicet", "initials": "M. N."}
 {"name": "Mary Smith née Jones Prof.", "title": "Prof.", "given": "Mary", "family": "Smith", "maiden": "Jones", "initials": "M. S."}
 {"name": "Mary Sue Hamish Watson", "given": "Mary", "middle": "Sue Hamish", "family": "Watson", "initials": "M. S. H. W."}
+{"name": "Mary-​Jane Smith", "given": "Mary-", "middle": "Jane", "family": "Smith", "initials": "M. J. S."}
 {"name": "María Dolores de Pablos", "given": "María", "middle": "Dolores", "family": "de Pablos", "initials": "M. D. P."}
 {"name": "María Losada Estévez", "given": "María", "middle": "Losada", "family": "Estévez", "initials": "M. L. E."}
 {"name": "María Paz Alonso Romero", "given": "María", "middle": "Paz Alonso", "family": "Romero", "initials": "M. P. A. R."}

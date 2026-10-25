@@ -25,6 +25,14 @@
   ```
   "Antonio ‌Negri"  →  family="‌Negri"
   ```
+- A zero-width space or byte-order mark does not count as a space where a quote or a maiden marker is recognized, as the katakana middle dot does not (rules/T2): a marker glued to its name by one leaves the clause a nickname.
+  ```
+  "Jane (née​Jones) Smith"  →  nickname="née Jones"
+  ```
+- A zero-width space after a hyphen, a line-break hint in typeset text, divides the hyphenated name.
+  ```
+  "Mary-​Jane Smith"  →  given="Mary-"
+  ```
 
 ---
 **Signal:** character: whitespace, and characters that carry no name content
