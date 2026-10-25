@@ -18,7 +18,8 @@ salutation = { gender = "m", issue = 344, expands = "Janab, Mr.", after_given = 
 
 [[word]]
 text = "बाबू"
-salutation = { gender = "m", issue = 344, expands = "Babu", note = "leading in Hindi; the Bengali বাবু is trailing, a suffix word in bn.toml, a different codepoint sequence", after_given = true }
+salutation = { gender = "m", issue = 344, expands = "Babu", note = "leading in Hindi; the Bengali বাবু is trailing, a suffix word in bn.toml, a different codepoint sequence", excluded = { after_given = "romanized Babu, an element of compound given names in India (Ram Babu) and a surname" } }
+family = { us_census_2010 = 1496, wikidata = 37, as_of = 2026-10-24, note = "counted as BABU, the romanization; nam_dict ranks Babu a given name in India and Sri Lanka, band 3" }
 
 [[word]]
 text = "बेगम"

@@ -9,6 +9,7 @@
 {"name": "()"}
 {"name": "(김민준.) John Smith", "given": "김", "middle": "민준. John", "family": "Smith", "initials": "김. 민. J. S."}
 {"name": ","}
+{"name": ", Jane", "given": "Jane", "initials": "J."}
 {"name": ", Jane Mrs", "title": "Mrs", "family": "Jane", "initials": "J."}
 {"name": ", John", "given": "John", "initials": "J."}
 {"name": ".,"}
@@ -593,6 +594,7 @@
 {"name": "Dl Dr. Daniel Ionescu Dragoș Ioan Ardelean Jr.", "given": "Dl", "middle": "Dr. Daniel Ionescu Dragoș Ioan", "family": "Ardelean", "suffix": "Jr.", "initials": "D. D. D. I. D. I. A."}
 {"name": "Do Quang Minh", "given": "Do", "middle": "Quang", "family": "Minh", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "D. Q. M."}
 {"name": "Doctor, Jane E.", "given": "Jane", "middle": "E.", "family": "Doctor", "initials": "J. E. D."}
+{"name": "Doe Jane Mrs", "given": "Doe", "middle": "Jane", "family": "Mrs", "initials": "D. J. M."}
 {"name": "Doe nee Smith Jr. Prof., Jane", "given": "Jane", "family": "Doe Prof.", "suffix": "Jr.", "maiden": "Smith", "initials": "J. D. P."}
 {"name": "Doe nee Smith, Jane", "given": "Jane", "family": "Doe", "maiden": "Smith", "initials": "J. D."}
 {"name": "Doe, Dr. John", "title": "Dr.", "given": "John", "family": "Doe", "initials": "J. D."}
@@ -613,8 +615,10 @@
 {"name": "Doe, J. ba", "given": "J.", "family": "Doe", "suffix": "ba", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. D.", "capitalized_force": "J. Doe BA"}
 {"name": "Doe, J. nee MA ba", "given": "J.", "middle": "nee", "family": "Doe", "suffix": "MA ba", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. n. D.", "capitalized_force": "J. Nee Doe MA BA"}
 {"name": "Doe, Jane Dr", "given": "Jane", "middle": "Dr", "family": "Doe", "initials": "J. D. D."}
+{"name": "Doe, Jane Fru", "given": "Jane", "middle": "Fru", "family": "Doe", "initials": "J. F. D."}
 {"name": "Doe, Jane Miss", "title": "Miss", "given": "Jane", "family": "Doe", "initials": "J. D."}
 {"name": "Doe, Jane Mr Mrs", "title": "Mr Mrs", "given": "Jane", "family": "Doe", "initials": "J. D."}
+{"name": "Doe, Jane Mr..", "title": "Mr..", "given": "Jane", "family": "Doe", "initials": "J. D."}
 {"name": "Doe, Jane Mrs", "title": "Mrs", "given": "Jane", "family": "Doe", "initials": "J. D."}
 {"name": "Doe, Jane Mrs, PhD", "title": "Mrs", "given": "Jane", "family": "Doe", "suffix": "PhD", "initials": "J. D."}
 {"name": "Doe, Jane Ms", "given": "Jane", "family": "Doe", "suffix": "Ms", "initials": "J. D.", "capitalized_force": "Jane Doe MS"}
@@ -5122,6 +5126,7 @@
 {"name": "शरद मल्होत्रा", "given": "शरद", "family": "मल्होत्रा", "initials": "श. म."}
 {"name": "शर्मा ललित", "order": "FAMILY_FIRST", "given": "ललित", "family": "शर्मा", "initials": "ल. श."}
 {"name": "शर्मा ललित मोहन", "order": "FAMILY_FIRST", "given": "ललित", "middle": "मोहन", "family": "शर्मा", "initials": "ल. म. श."}
+{"name": "शर्मा, राम बाबू", "given": "राम", "middle": "बाबू", "family": "शर्मा", "initials": "र. ब. श."}
 {"name": "शर्मा, ललित", "given": "ललित", "family": "शर्मा", "initials": "ल. श."}
 {"name": "शर्मा, ललित कुमार एम॰डी॰", "given": "ललित", "middle": "कुमार एम॰डी॰", "family": "शर्मा", "initials": "ल. क. ए. श."}
 {"name": "शर्मा, ललित मोहन", "given": "ललित", "middle": "मोहन", "family": "शर्मा", "initials": "ल. म. श."}

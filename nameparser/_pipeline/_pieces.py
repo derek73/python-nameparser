@@ -1480,9 +1480,9 @@ def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
         if len(piece) == 1 and (
                 (_PERIOD_ABBREV.match(tokens[piece[0]].text)
                  and is_title_piece(piece, ptags[idx], tokens))
-                # rules/H8: "a family comma has fixed the family name, and
-                # the given part ends in a bare word whose title reading is
-                # a salutation" -- a tag test, so a name word pays no frame
+                # rules/H8: "the given part after it ends in a word whose
+                # title reading is a salutation" -- a tag test, so a name
+                # word pays no frame
                 or (salutations and "vocab:after-given-title"
                     in tokens[piece[0]].tags)):
             k -= 1

@@ -7,6 +7,7 @@ salutation = { gender = "m", expands = "de heer, Mr.", after_given = true }
 [[word]]
 text = "heren"
 salutation = { gender = "m", expands = "the plural of heer, 'de heren'", after_given = true }
+family = { us_census_2010 = 123, wikidata = 1, as_of = 2026-10-24, note = "kept for after_given (decisions/H8)" }
 
 [[word]]
 text = "juffrouw"

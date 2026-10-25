@@ -17,6 +17,8 @@ given = { us_ssa = 1065, as_of = 2026-10-24, note = "counted as SENORA, the SSA 
 [[word]]
 text = "sra"
 salutation = { gender = "f", same_as = "señora", after_given = true }
+given = { us_ssa = 27, as_of = 2026-10-24 }
+family = { us_census_2010 = 149, as_of = 2026-10-24, note = "kept for after_given (decisions/H8)" }
 
 [[word]]
 text = "señores"
@@ -29,6 +31,7 @@ salutation = { same_as = "señores", after_given = true }
 [[word]]
 text = "señorita"
 salutation = { gender = "f", after_given = true }
+given = { us_ssa = 6, as_of = 2026-10-24, note = "counted as SENORITA; kept for after_given (decisions/H8)" }
 
 [[word]]
 text = "srta"

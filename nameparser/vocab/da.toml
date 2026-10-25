@@ -6,7 +6,7 @@ salutation = { issue = 606, expands = "the family addressed, 'Familie Hansen'", 
 
 [[word]]
 text = "fru"
-salutation = { gender = "f", after_given = true }
+salutation = { gender = "f" }
 
 [[word]]
 text = "frøken"

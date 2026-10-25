@@ -2,7 +2,8 @@ schema = 1
 
 [[word]]
 text = "fru"
-salutation = { gender = "f", note = "Fru is also a Cameroonian surname (~10,800, often written surname-first), so 'Fru Anna' reads title Fru; a collision older than #606, recorded in decisions/salutation-titles rather than argued", after_given = true }
+salutation = { gender = "f", note = "Fru is also a Cameroonian surname (~10,800, often written surname-first), so 'Fru Anna' reads title Fru; a collision older than #606, recorded in decisions/salutation-titles rather than argued", excluded = { after_given = "a Cameroonian surname (~10,800, the note above), and middle names are drawn from surnames" } }
+family = { us_census_2010 = 132, as_of = 2026-10-24 }
 
 [[word]]
 text = "fröken"

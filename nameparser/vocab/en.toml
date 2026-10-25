@@ -31,6 +31,7 @@ family = { us_census_2010 = 2735, wikidata = 61, as_of = 2026-10-24 }
 [[word]]
 text = "miss"
 salutation = { gender = "f", after_given = true }
+family = { us_census_2010 = 164, wikidata = 4, as_of = 2026-10-24, note = "kept for after_given (decisions/H8): a middle name of this spelling is the accepted cost" }
 
 [[word]]
 text = "misses"
@@ -39,6 +40,7 @@ salutation = { gender = "f", expands = "the plural of miss, 'the Misses Smith'",
 [[word]]
 text = "mr"
 salutation = { gender = "m", after_given = true }
+given = { us_ssa = 5, as_of = 2026-10-24, note = "kept for after_given (decisions/H8)" }
 
 [[word]]
 text = "mister"

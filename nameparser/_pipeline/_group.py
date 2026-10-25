@@ -1073,7 +1073,8 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             # union from making the joined piece a suffix piece.
             # rules/P5: "nor a title word a trailing rule reads as a
             # title" -- after a family comma one H5's trailing run takes
-            # from the given part, read as the comma-less name reads it,
+            # from the given part, read as the comma-less name reads it
+            # with the bare salutations H8 adds (`salutations=True`),
             # which the LENIENT join reads no peel for and so asks here,
             # only where a title word follows ('Berg, abdul Prof.',
             # #637; where the given part's own walk then reads the words

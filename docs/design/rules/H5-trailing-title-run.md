@@ -42,7 +42,7 @@
   "John van der Berg Prof."   →  title="Prof."
   "John van der Berg Prof."   →  family="van der Berg"
   ```
-- **After a family comma** ("Smith, John van der Berg Prof."): the given part's particle chain stops in front of the trailing run of suffixes and titles, read as the comma-less name reads it, so there too a trailing title is the title and P6's attachment reads the particle in front of it as though the title were absent.
+- **After a family comma** ("Smith, John van der Berg Prof."): the given part's particle chain stops in front of the trailing run of suffixes and titles, read as the comma-less name reads it with the bare salutations H8 adds, so there too a trailing title is the title and P6's attachment reads the particle in front of it as though the title were absent.
   ```
   "Smith, John van der Berg Prof." →  title="Prof."
   "Smith, John van der Berg Prof." →  middle="van der Berg"
