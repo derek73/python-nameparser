@@ -38,4 +38,4 @@
 
 ---
 **Signal:** case contrast: capitals on a word of the ambiguous class in a name written in more than one case
-**history:** decisions/S6 · **implemented:** nameparser/_pipeline/_vocab.py
+**history:** decisions/S6 · **implemented:** nameparser/_pipeline/_vocab.py, nameparser/_render.py

@@ -1866,3 +1866,17 @@ def test_a_marked_particle_lowercases_only_where_the_particle_arm_would(
     hyphened = Parser(lexicon=Lexicon.default().add(particles={"van-der"}))
     assert str(hyphened.capitalized(hyphened.parse("jan van-der"))) == \
         "Jan Van-Der"
+
+
+@pytest.mark.parametrize("text", [
+    "JEAN DUPONT FILS", "jean dupont fils", "DUMAS, ALEXANDRE FILS",
+    "MARIE FILS", "pedro alves filho", "PEDRO ALVES NETO"])
+def test_repairing_a_generation_word_that_is_also_a_name_keeps_its_reading(
+        text: str) -> None:
+    # rules/S6 reads a generation word's case: Title case leans `fils`
+    # to the name, so a suffix `fils` repairs to lower case, the one
+    # writing that keeps the reading, and a family `Fils` to Title case;
+    # an agnomen's case says nothing and it title-cases as any word does
+    name = parse(text)
+    repaired = name.capitalized()
+    assert parse(str(repaired)).as_dict() == repaired.as_dict()

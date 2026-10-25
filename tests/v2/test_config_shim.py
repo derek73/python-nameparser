@@ -587,6 +587,18 @@ def test_snapshot_removing_a_suffix_word_turns_its_gate_off() -> None:
     assert (name.middle, name.last, name.suffix) == ("Alves", "Neto", "")
 
 
+def test_snapshot_lets_a_gated_word_v1_reads_as_an_acronym_out_of_the_gate() -> None:
+    # v1 read a word added to suffix_acronyms as a suffix through the
+    # acronym branch; the snapshot takes it out of suffix_words_ambiguous
+    # rather than raising at Lexicon's word-gate check, which a config
+    # v1 accepted must never do
+    c = Constants()
+    c.suffix_acronyms.add("neto")
+    lexicon, _, _ = c._snapshot()
+    assert "neto" not in lexicon.suffix_words_ambiguous
+    assert HumanName("Pedro Alves Neto", constants=c).suffix == "Neto"
+
+
 def test_snapshot_field_translation() -> None:
     c = Constants()
     lexicon, policy, defaults = c._snapshot()

@@ -243,6 +243,10 @@ DERIVED = {
     "may_be_name": "a `given` or `family` reading on the word",
     "may_be_given": "a `given` reading on the word",
 }
+#: The suffix word kinds a name reading gates (rules/S11): the third
+#: derived marker reads these, and a name reading beside another word
+#: kind marks nothing, no gate reading that clash yet.
+GATED_WORDS = frozenset({"generation", "agnomen"})
 #: Descriptive properties: recorded, validated, compiled to nothing.
 DESCRIPTIVE = frozenset({"note", "issue", "decided", "expands", "same_as",
                          "native", "gender"})
@@ -802,6 +806,12 @@ def _check_reading(r: Reading, pool: Pool) -> None:
                              f"(rules/H8)")
     if r.category == "suffix":
         acronym = r.acronym
+        if r.kind == "agnomen" and acronym:
+            # an agnomen is a word whose writing never speaks (rules/S11);
+            # as an acronym it would compile into the credential class,
+            # its capitals leaning to the credential
+            raise VocabError(f"{where}: an agnomen is a word; acronym = "
+                             f"true is refused")
         if acronym and "." in r.text:
             # suffix_as_written looks an acronym up with EVERY period
             # removed, so a dotted entry is never matched -- and it slips
@@ -1165,7 +1175,7 @@ def compile_pool(pool: Pool) -> Compiled:
                 words.add(t)
                 if "attached" in p:
                     glued.add(t)
-                if t in named:
+                if t in named and r.kind in GATED_WORDS:
                     ambiguous_words.add(t)
                 if r.kind == "agnomen":
                     agnomens.add(t)

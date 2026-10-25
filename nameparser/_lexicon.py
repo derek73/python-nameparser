@@ -793,6 +793,22 @@ class Lexicon:
                 f"period gate suffix_acronyms_ambiguous exists to impose"
             )
 
+        # the mirror of the check above: suffix_as_written ORs the
+        # unambiguous acronym branch too, so a gated suffix word listed
+        # there is claimed as a suffix with no count ('Ana Neto' would
+        # lose her family name, rules/S11)
+        word_gate_bypassed = self.suffix_words_ambiguous & (
+            self.suffix_acronyms - self.suffix_acronyms_ambiguous)
+        if word_gate_bypassed:
+            raise ValueError(
+                f"an ambiguous suffix word must not also be an unambiguous "
+                f"suffix acronym; in both: "
+                f"{', '.join(sorted(word_gate_bypassed))}. The acronym "
+                f"branch matches it outright, which bypasses the count "
+                f"suffix_words_ambiguous exists to impose; drop it from "
+                f"suffix_acronyms or from suffix_words_ambiguous"
+            )
+
     # -- constructors ----------------------------------------------------
 
     @classmethod

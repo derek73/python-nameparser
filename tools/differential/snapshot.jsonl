@@ -119,7 +119,7 @@
 {"name": "Alex Ben Johnson", "given": "Alex", "middle": "Ben", "family": "Johnson", "initials": "A. B. J."}
 {"name": "Alex van Johnson", "given": "Alex", "family": "van Johnson", "initials": "A. J."}
 {"name": "Alexander Parra Uribe", "given": "Alexander", "middle": "Parra", "family": "Uribe", "initials": "A. P. U."}
-{"name": "Alexandre Dumas fils", "given": "Alexandre", "family": "Dumas", "suffix": "fils", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "A. D.", "capitalized_force": "Alexandre Dumas Fils"}
+{"name": "Alexandre Dumas fils", "given": "Alexandre", "family": "Dumas", "suffix": "fils", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "A. D."}
 {"name": "Alexandru Ioan Popa", "given": "Alexandru", "middle": "Ioan", "family": "Popa", "initials": "A. I. P."}
 {"name": "Alexis", "given": "Alexis", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "A."}
 {"name": "Alfonso Reyes Echandía", "given": "Alfonso", "middle": "Reyes", "family": "Echandía", "initials": "A. R. E."}
@@ -818,7 +818,7 @@
 {"name": "Duke Snider", "given": "Duke", "family": "Snider", "initials": "D. S."}
 {"name": "Duke of Edinburgh", "given": "Duke of Edinburgh", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "D. E."}
 {"name": "Duke of Wellington", "given": "Duke of Wellington", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "D. W."}
-{"name": "Dumas fils", "given": "Dumas", "suffix": "fils", "ambiguities": ["GIVEN_OR_FAMILY", "SUFFIX_OR_NAME"], "initials": "D.", "capitalized_force": "Dumas Fils"}
+{"name": "Dumas fils", "given": "Dumas", "suffix": "fils", "ambiguities": ["GIVEN_OR_FAMILY", "SUFFIX_OR_NAME"], "initials": "D."}
 {"name": "Dumas, Alexandre Fils", "given": "Alexandre", "middle": "Fils", "family": "Dumas", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "A. F. D."}
 {"name": "Dumreicher, Johann von", "given": "Johann", "family": "von Dumreicher", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "J. D."}
 {"name": "Dut.ra Prof.ra Maria Giusepa Juana Teresa von Brühl González Domingo", "title": "Dut.ra Prof.ra", "given": "Maria", "middle": "Giusepa Juana Teresa", "family": "von Brühl González Domingo", "initials": "M. G. J. T. B. G. D.", "capitalized_force": "Dut.Ra Prof.Ra Maria Giusepa Juana Teresa von Brühl González Domingo"}
@@ -2212,8 +2212,8 @@
 {"name": "Løseth, Kjetil Bjørn", "order": "FAMILY_FIRST", "given": "Kjetil", "middle": "Bjørn", "family": "Løseth", "initials": "K. B. L."}
 {"name": "Lúcio de Mendonça", "given": "Lúcio", "family": "de Mendonça", "initials": "L. M."}
 {"name": "Lžedmitrij II.", "given": "Lžedmitrij", "suffix": "II.", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "L."}
-{"name": "M. Jean-Nicolas Louis Marcel de Bouchart fils", "given": "M.", "middle": "Jean-Nicolas Louis Marcel", "family": "de Bouchart", "suffix": "fils", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "M. J. L. M. B.", "capitalized_force": "M. Jean-Nicolas Louis Marcel de Bouchart Fils"}
-{"name": "M. de Bouchart Jean-Nicolas Louis Marcel fils", "order": "FAMILY_FIRST", "given": "de Bouchart Jean-Nicolas Louis Marcel", "family": "M.", "suffix": "fils", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "d. B. J. L. M. M.", "capitalized_force": "De Bouchart Jean-Nicolas Louis Marcel M. Fils"}
+{"name": "M. Jean-Nicolas Louis Marcel de Bouchart fils", "given": "M.", "middle": "Jean-Nicolas Louis Marcel", "family": "de Bouchart", "suffix": "fils", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "M. J. L. M. B."}
+{"name": "M. de Bouchart Jean-Nicolas Louis Marcel fils", "order": "FAMILY_FIRST", "given": "de Bouchart Jean-Nicolas Louis Marcel", "family": "M.", "suffix": "fils", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "d. B. J. L. M. M.", "capitalized_force": "De Bouchart Jean-Nicolas Louis Marcel M. fils"}
 {"name": "MANƉELA Rolanɖ Alfɔns", "order": "FAMILY_FIRST", "given": "Rolanɖ", "middle": "Alfɔns", "family": "MANƉELA", "initials": "R. A. M.", "capitalized_force": "Rolanɖ Alfɔns Manɖela"}
 {"name": "MD - DO - DDS", "given": "MD", "middle": "-", "family": "DO -", "suffix": "DDS", "initials": "M. -. -.", "capitalized": "Md - do - DDS"}
 {"name": "MD Chirurgie dentară von der Ruhr Prof. dr. Eva-Eleonora Karl Hans Jr.", "order": "FAMILY_FIRST", "given": "Chirurgie", "middle": "dentară von der Ruhr Prof. dr. Eva-Eleonora Karl Hans", "family": "MD", "suffix": "Jr.", "initials": "C. d. R. P. d. E. K. H. M.", "capitalized_force": "Chirurgie Dentară von der Ruhr Prof. Dr. Eva-Eleonora Karl Hans Md Jr."}

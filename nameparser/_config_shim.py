@@ -1224,7 +1224,15 @@ class Constants:
                 # the suffix word is the one v1 knob, which turns the
                 # reading off. agnomens is consulted only inside it, so
                 # its intersection is kept for legibility alone.
-                suffix_words_ambiguous=SUFFIX_WORDS_AMBIGUOUS & suffix_words,
+                # A v1 caller who added such a word to suffix_acronyms
+                # had it read as a suffix through the acronym branch,
+                # so the word leaves the gate rather than raising at
+                # Lexicon's word-gate check (folded, as the two
+                # cross-set computations above are).
+                suffix_words_ambiguous=frozenset(
+                    w for w in SUFFIX_WORDS_AMBIGUOUS & suffix_words
+                    if _normalize(w) not in {
+                        _normalize(a) for a in acronyms - ambiguous_acronyms}),
                 agnomens=AGNOMENS & SUFFIX_WORDS_AMBIGUOUS & suffix_words,
                 # TupleManager is dict[str, object] (v1 parity: values were
                 # never statically str-typed); every real entry is a str,

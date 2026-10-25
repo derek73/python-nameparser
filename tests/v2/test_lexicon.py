@@ -418,6 +418,14 @@ def test_suffix_ambiguous_must_be_subset_of_acronyms() -> None:
         Lexicon(suffix_acronyms_ambiguous=frozenset({"ma"}))
 
 
+def test_an_ambiguous_suffix_word_may_not_be_an_unambiguous_acronym() -> None:
+    # the mirror of the gate-bypass raise: the unambiguous acronym
+    # branch claims a word outright, so a gated suffix word listed there
+    # loses its count ('Ana Neto' would read suffix 'Neto', rules/S11)
+    with pytest.raises(ValueError, match="bypasses the count"):
+        Lexicon.default().add(suffix_acronyms={"neto"})
+
+
 def test_the_shipped_suffix_sets_are_disjoint() -> None:
     # the vocabulary build refuses the overlap (tools/vocab/build.py,
     # run over the shipped files by tests/v2/test_vocab.py), but over the
