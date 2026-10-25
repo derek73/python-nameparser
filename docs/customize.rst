@@ -551,6 +551,11 @@ listed below.
      - Folds ``middle`` into ``family`` instead of splitting them —
        for naming systems with no middle-name concept. Defaults to
        ``False``.
+   * - ``two_family_names``
+     - ``bool``
+     - Reads the last two name words as the family name, for data
+       where people carry two family names (Spain, most of Latin
+       America). Defaults to ``False``. See :ref:`two-family-names`.
    * - ``nickname_delimiters``
      - ``frozenset[tuple[str, str]]``
      - Routes content enclosed by these delimiter pairs to
@@ -788,6 +793,59 @@ consulted at all:
 
 `Words that are also ordinary names`_ covers dropping a word from a
 vocabulary, or moving one between those two sets.
+
+.. _two-family-names:
+
+Names with two family names
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In Spain and most of Latin America a person carries two family names,
+the father's first and then the mother's, and writes both after the
+given names: Gabriel García Márquez's family name is ``García
+Márquez``. Written given-first, that name has the same shape as a name
+with a middle name, so the default reads the first family name as a
+middle name:
+
+.. doctest::
+
+    >>> gabo = parse("Gabriel García Márquez")
+    >>> gabo.middle, gabo.family
+    ('García', 'Márquez')
+
+``two_family_names=True`` reads the last two name words as the family.
+Given names before them stay given and middle names, a particle counts
+with the word it attaches to, titles and suffixes are not counted, and
+an initial written alone never joins the family:
+
+.. doctest::
+
+    >>> two_names = Parser(policy=Policy(two_family_names=True))
+    >>> two_names.parse("Gabriel García Márquez").family
+    'García Márquez'
+    >>> ana = two_names.parse("Ana María García López")
+    >>> ana.given, ana.middle, ana.family
+    ('Ana', 'María', 'García López')
+    >>> two_names.parse("Dr. Juan Pérez de la Vega Jr.").family
+    'Pérez de la Vega'
+
+A family that already holds two names keeps what it has, whether a
+hyphen or ``y`` joins them (``"Ana María García-López"``, ``"José
+Ortega y Gasset"``) or a particle chain took them both: a compound
+given name opening with a particle, such as ``"María del Carmen García
+López"``, reads family ``del Carmen García López`` with the switch on
+or off. A name of two words is unchanged, and a comma naming the family
+decides by itself, so ``"García López, Ana"`` needs no switch at all. Under a family-first ``name_order`` the *first* two
+name words are the family.
+
+Turn it on only for data written this way. A name with one family name
+behind two given names, ``"Juan Carlos Pérez"``, loses ``Carlos`` to
+the family under the switch, and Argentine names, which carry one
+family name, are mostly that shape. Portuguese and Brazilian names
+carry two family names too, the mother's first, but the people who
+write them often give the last one alone as their family name: among
+the UK company register's Portuguese filers the switch reads more
+names wrong than it mends. The parser reports nothing for the names the switch
+moves: the shape it reads is the same either way.
 
 .. _east-asian-defaults:
 

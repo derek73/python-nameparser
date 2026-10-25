@@ -48,6 +48,7 @@ _UNTRANSLATED = frozenset({
     "unlisted_caps_suffixes",
     "strip_emoji",
     "strip_bidi",
+    "two_family_names",
 })
 
 #: Expressible in exactly one shape, the parenthesis bucket move.
@@ -73,6 +74,38 @@ _TRANSLATED = frozenset({
 #: to the unsubtracted default pushes every parenthesis-maiden row
 #: into this set and turns nothing red.
 _CORE_ONLY_IDS = frozenset({
+    # #754: rules/O6's switch, which v1 has no Constants spelling for
+    "two_family_names_takes_run_together_initials",
+    "two_family_names_takes_no_number",
+    "two_family_names_leaves_a_hyphenated_given_name_before_the_family",
+    "two_family_names_leaves_an_initial_before_the_family",
+    "two_family_names_leaves_a_bound_given_pair_before_the_family",
+    "two_family_names_counts_an_en_dash_as_a_hyphen",
+    "two_family_names_takes_no_spaced_dash",
+    "two_family_names_leaves_a_name_its_script_ordered",
+    "two_family_names_leaves_an_empty_head_comma_alone",
+    "two_family_names_reads_a_patronymic_family_first",
+    "two_family_names_takes_the_word_before_the_family",
+    "two_family_names_leaves_the_middles_before_it",
+    "two_family_names_counts_a_particle_with_its_word",
+    "two_family_names_keeps_a_family_already_two_words_after_a_particle",
+    "two_family_names_counts_a_connective_join_as_its_words",
+    "two_family_names_counts_a_hyphenated_family_as_its_words",
+    "two_family_names_counts_a_trailing_suffix_as_no_name_word",
+    "two_family_names_counts_a_title_as_no_name_word",
+    "two_family_names_reads_the_name_before_a_suffix_comma",
+    "two_family_names_leaves_a_family_comma_alone",
+    "two_family_names_leaves_a_two_word_name_alone",
+    "two_family_names_takes_the_first_two_words_family_first",
+    "two_family_names_takes_the_first_two_words_family_first_given_last",
+    "two_family_names_runs_before_middle_as_family",
+    "two_family_names_counts_a_nickname_as_no_name_word",
+    "two_family_names_takes_a_word_before_a_particle_family",
+    "two_family_names_takes_the_word_after_a_family_first_fold",
+    "two_family_names_moves_a_particle_chain_whole_or_not_at_all",
+    "two_family_names_keeps_the_particle_p6_attached",
+    "two_family_names_stands_down_where_a_rotation_reordered_the_name",
+    "two_family_names_reads_a_compound_given_name_as_a_family",
     # #864: the dotted switch turned off, which the v1 shim does not
     # translate (decisions/S9)
     "paired_initials_under_the_switch_off_read_the_same",

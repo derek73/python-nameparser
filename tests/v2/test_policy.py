@@ -327,8 +327,11 @@ def test_the_2_3_positional_fields_did_not_move() -> None:
     for cls in (Policy, PolicyPatch):
         names = tuple(f.name for f in dataclasses.fields(cls))
         assert names[:len(_FIELDS_AT_2_3)] == _FIELDS_AT_2_3, cls.__name__
+        # each later cycle's fields appended behind the last: 2.4's two,
+        # then 2.6's two_family_names
         assert names[len(_FIELDS_AT_2_3):] == (
-            "unlisted_dotted_suffixes", "unlisted_caps_suffixes"), cls.__name__
+            "unlisted_dotted_suffixes", "unlisted_caps_suffixes",
+            "two_family_names"), cls.__name__
     # the positional binding itself, not just the names
     assert Policy(GIVEN_FIRST, (), frozenset(), frozenset(), False,
                   frozenset(), frozenset(), frozenset(), True,

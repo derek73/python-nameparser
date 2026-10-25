@@ -129,7 +129,8 @@ def test_a_report_names_the_field_its_word_lands_in(
     into names the field the word holds in the RESULT. Rules in
     post_rules move a word after assign reports it -- H1's move behind
     a title, P1's family-first fold, P6's attachment, and under opt-in
-    policies the patronymic rotations and `middle_as_family`'s fold,
+    policies the patronymic rotations, O6's two family names and
+    `middle_as_family`'s fold,
     which rows carrying those policies reach as declared -- and six of
     assign's reports were worded from the role at assign, so
     'Kim Min Do' under FAMILY_FIRST was told 'Do' was a middle name
@@ -225,9 +226,11 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # same day: #864's paired-initials and gc rows, nine claiming one
     # suffix-or-name report under each order and the switch-off row,
     # which carries its own policy, under one; 1396 -> 1399 the same
-    # day: the review's 'Jane Doe MA R.T.' row, one claim under each.
-    assert claims == 1399, (
-        f"the field sweep checks {claims} claims, recorded as 1399 on "
+    # day: the review's 'Jane Doe MA R.T.' row, one claim under each;
+    # 1399 -> 1400 the same day: #754's 'Beethoven Ludwig Maria van'
+    # row, which carries its own policy, one particle-or-given claim.
+    assert claims == 1400, (
+        f"the field sweep checks {claims} claims, recorded as 1400 on "
         f"2026-10-24")
 
 
