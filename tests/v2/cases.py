@@ -10576,48 +10576,86 @@ CASES: tuple[Case, ...] = (
          "Smith, Ms. Jane",
          {"title": "Ms.", "given": "Jane", "family": "Smith"}),
     # #857: sa is in NO vocabulary set -- not a credential, not a title
-    # (its military reading, Seaman Apprentice, and its credential
-    # reading are both excluded on the word). It is the Portuguese
-    # surname Sá written without its accent, so it reads as any name
-    # word does, whatever the case. The unlisted all-caps tail after a
-    # mixed-case name is still a credential by SHAPE (S6), and the
-    # period spellings go through the unlisted-dotted-suffix rule (S3).
+    # (its military and credential readings are both excluded on the
+    # word). It is the Portuguese surname Sa written without its accent,
+    # so it reads as any unlisted word does, whatever the case. These
+    # rows pin that decision against the listed twin `ma`, which stays a
+    # credential in the same shapes: an unlisted all-caps word is a
+    # credential by SHAPE only behind a comma (S9), and the period
+    # spellings go through the unlisted-dotted-suffix rule (S3).
     Case("sa_after_a_particle_is_the_surname", "Maria de Sa",
-         {"given": "Maria", "family": "de Sa"}),
+         {"given": "Maria", "family": "de Sa"},
+         classification="fix(#857)"),
     Case("bare_sa_is_a_surname", "Joao Sa",
          {"given": "Joao", "family": "Sa"}),
     Case("capitals_sa_after_a_particle_is_the_surname", "MARIA DE SA",
          {"given": "MARIA", "family": "DE SA"},
-         notes="the 255 SA / SÁ pairs of tse-donors (#843) read alike"),
+         classification="fix(#857)",
+         notes="the 255 SA / SA pairs of tse-donors (#843) read alike"),
+    Case("capitals_ma_after_a_particle_is_the_credential", "MARIA DE MA",
+         {"given": "MARIA", "family": "DE", "suffix": "MA"},
+         ambiguities=("suffix-or-name",),
+         notes="the listed twin of the row above"),
     Case("lowercase_sa_after_a_particle_is_the_surname", "maria de sa",
-         {"given": "maria", "family": "de sa"}),
+         {"given": "maria", "family": "de sa"},
+         classification="fix(#857)"),
     Case("capitals_sa_with_words_to_spare_is_the_surname", "ANA SILVA SA",
-         {"given": "ANA", "middle": "SILVA", "family": "SA"}),
+         {"given": "ANA", "middle": "SILVA", "family": "SA"},
+         classification="fix(#857)"),
     Case("capitals_sa_with_no_word_to_spare_is_the_surname", "ANA SA",
          {"given": "ANA", "family": "SA"}),
     Case("sa_after_a_middle_name_is_the_surname", "Maria Silva Sa",
-         {"given": "Maria", "middle": "Silva", "family": "Sa"}),
+         {"given": "Maria", "middle": "Silva", "family": "Sa"},
+         classification="fix(#857)"),
     Case("sa_before_a_family_comma_is_the_surname", "Sa, Maria",
          {"given": "Maria", "family": "Sa"}),
     Case("sa_in_front_is_a_name_word", "SA Smith",
          {"given": "SA", "family": "Smith"},
+         classification="fix(#857)",
          notes="not a title: Seaman Apprentice has no bearer in any "
                "corpus (decisions/C8, #857)"),
+    Case("mrs_then_sa_is_one_title", "Mrs Sa Li",
+         {"title": "Mrs", "given": "Sa", "family": "Li"},
+         classification="fix(#857)",
+         notes="`sa` was a second title word and took the given name"),
     Case("sa_after_a_family_comma_is_the_given_name", "Smith, SA",
          {"given": "SA", "family": "Smith"},
+         classification="fix(#857)",
          notes="2.5.0 read suffix 'SA' (#296's audit row); no person "
                "writes it as a credential in any corpus (#857)"),
     Case("sa_after_a_family_comma_and_a_name_is_a_middle_name",
          "Smith, SA John",
-         {"given": "SA", "middle": "John", "family": "Smith"}),
-    Case("mixed_case_sa_after_a_full_name_reads_by_shape",
+         {"given": "SA", "middle": "John", "family": "Smith"},
+         classification="fix(#857)"),
+    Case("mixed_case_sa_after_a_full_name_is_the_family_name",
          "John Smith SA",
          {"given": "John", "middle": "Smith", "family": "SA"},
-         notes="an unlisted all-caps tail is a credential only where "
-               "the name has a word to spare AND reads as a credential "
-               "by shape; measured here it is the family name, the "
-               "accepted cost of leaving sa out of the vocabulary "
-               "(#857)"),
+         classification="fix(#857)",
+         notes="accepted cost (#857): no shape reads an unlisted "
+               "all-caps tail as a credential at this slot (S9), so "
+               "with no vocabulary behind it SA is the family name"),
+    Case("sa_after_a_full_name_and_a_comma_merges_the_name",
+         "John Smith, SA",
+         {"given": "SA", "family": "John Smith"},
+         classification="fix(#857)",
+         notes="accepted cost (#857): the reading an unlisted two-letter "
+               "caps word gets after a full name; 1.4.0 through 2.5.0 "
+               "read suffix 'SA'. The listed twin `John Smith, MA` "
+               "keeps the suffix"),
+    Case("ma_after_a_full_name_and_a_comma_is_the_credential",
+         "John Smith, MA",
+         {"given": "John", "family": "Smith", "suffix": "MA"},
+         ambiguities=("suffix-or-name",)),
+    Case("sa_after_a_comma_with_no_head_is_the_given_name", ", SA",
+         {"given": "SA"},
+         classification="fix(#857)",
+         notes="1.4.0 read title 'SA'; 2.5.0 suffix 'SA'"),
+    Case("sa_ending_the_given_part_is_a_middle_name", "Smith, John SA",
+         {"given": "John", "middle": "SA", "family": "Smith"},
+         classification="fix(#857)"),
+    Case("sa_after_a_credential_joins_it", "Smith, John PhD Sa",
+         {"given": "John", "family": "Smith", "suffix": "PhD Sa"},
+         ambiguities=("suffix-or-name",)),
     Case("perioded_sa_after_a_family_comma_is_unlisted",
          "Smith, S.A.",
          {"given": "S.A.", "family": "Smith"},
