@@ -10577,9 +10577,28 @@ CASES: tuple[Case, ...] = (
          {"title": "Ms.", "given": "Jane", "family": "Smith"}),
     Case("audit_sa_after_comma_is_the_postnominal", "Smith, SA",
          {"family": "Smith", "suffix": "SA"},
+         ambiguities=("suffix-or-name",),
          classification="fix(#296)",
          notes="the same dual: Special Agent leading, the business "
                "form trailing"),
+    # #857: sa is marked as a possible name for the Portuguese surname
+    # Sá written without its accent. Mixed case keeps the family name; a
+    # capitals name with words to spare still reads a credential (S6).
+    Case("sa_after_a_particle_is_the_surname", "Maria de Sa",
+         {"given": "Maria", "family": "de Sa"},
+         ambiguities=("suffix-or-name",)),
+    Case("bare_sa_is_a_surname", "Joao Sa",
+         {"given": "Joao", "family": "Sa"},
+         ambiguities=("suffix-or-name",)),
+    Case("sa_after_a_full_name_stays_the_suffix", "John Smith SA",
+         {"given": "John", "family": "Smith", "suffix": "SA"},
+         ambiguities=("suffix-or-name",)),
+    Case("capitals_sa_with_words_to_spare_stays_the_suffix", "ANA SILVA SA",
+         {"given": "ANA", "family": "SILVA", "suffix": "SA"},
+         ambiguities=("suffix-or-name",),
+         notes="the accepted cost: S6 reads a capitals word with words "
+               "to spare as a credential, so most of tse-donors' SÁ / SA "
+               "pairs still part (#857)"),
     Case("audit_perioded_sa_is_the_postnominal", "Smith, S.A.",
          {"family": "Smith", "suffix": "S.A."}),
     # MOVED by #289, not deleted: 'DO' is written in capitals inside a

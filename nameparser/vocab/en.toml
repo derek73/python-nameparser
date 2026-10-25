@@ -760,7 +760,8 @@ military = { same_as = "radm" }
 [[word]]
 text = "sa"
 military = { expands = "Seaman Apprentice" }
-credential = { note = "NOT may_be_name, for the reason recorded on ms (decisions/C8)" }
+family = { us_census_2010 = 1600, wikidata = 110, as_of = 2026-10-23, note = "Census counts Sa and Sá together (folded); Wikidata is a lower bound, matched as Sá" }
+credential = { may_be_name = true, issue = 857, note = "NPPES 167 US healthcare providers write it (healthcare only, August 2026 file). Marked for the Portuguese surname Sá written without its accent (Maria de Sa). Unlike ms it is safe: John Smith, SA keeps suffix SA (decisions/C8)" }
 
 [[word]]
 text = "scpo"

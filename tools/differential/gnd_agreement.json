@@ -1846,13 +1846,13 @@
   "text": "Ísleifur Gizursson"
  },
  "136135064/direct-et-mm/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Sa"
+  },
   "given_names": {
    "expected": "Khun Sa",
    "got": "Khun"
-  },
-  "suffix": {
-   "expected": "",
-   "got": "Sa"
   },
   "text": "Khun Sa"
  },

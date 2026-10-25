@@ -1461,6 +1461,7 @@ SUFFIX_ACRONYMS_AMBIGUOUS: frozenset[str] = frozenset({
     'om',
     'pa',
     'pe',
+    'sa',
     'se',
     'si',
 })

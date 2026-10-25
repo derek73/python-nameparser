@@ -230,9 +230,11 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # 1399 -> 1400 the same day: #754's 'Beethoven Ludwig Maria van'
     # row, which carries its own policy, one particle-or-given claim;
     # 1400 -> 1403 the same day: #835's particle row 'Doe, Jane van
-    # Mrs', one particle-or-given claim under each order.
-    assert claims == 1403, (
-        f"the field sweep checks {claims} claims, recorded as 1403 on "
+    # Mrs', one particle-or-given claim under each order; 1403 -> 1415
+    # the same day: #857's four sa rows and the reported 'Smith, SA',
+    # each a suffix-or-name claim under the orders it reaches.
+    assert claims == 1415, (
+        f"the field sweep checks {claims} claims, recorded as 1415 on "
         f"2026-10-24")
 
 
