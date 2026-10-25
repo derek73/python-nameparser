@@ -554,6 +554,55 @@ CASES: tuple[Case, ...] = (
          classification="parity",
          notes="O1 made the first word the family; O6 asks for a middle "
                "right before the family and finds none"),
+    Case("two_family_names_leaves_an_initial_before_the_family",
+         "Ana M. García",
+         {"given": "Ana", "middle": "M.", "family": "García"},
+         policy=_TWO, classification="parity",
+         notes="#754 review: an initial writes a given name"),
+    Case("two_family_names_leaves_a_hyphenated_given_name_before_the_family",
+         "Ana María-José López",
+         {"given": "Ana", "middle": "María-José", "family": "López"},
+         policy=_TWO, classification="parity",
+         notes="#754 review: the hyphen's two words count against the "
+               "taken word as they count in the family; the first draft "
+               "read family 'María-José López'"),
+    Case("two_family_names_leaves_a_bound_given_pair_before_the_family",
+         "Ana abdul Rahman López",
+         {"given": "Ana", "middle": "abdul Rahman", "family": "López"},
+         policy=_TWO, classification="parity",
+         notes="#754 review: a P5 pair is one GIVEN name"),
+    Case("two_family_names_counts_an_en_dash_as_a_hyphen",
+         "Ana María García–López",
+         {"given": "Ana", "middle": "María", "family": "García–López"},
+         policy=_TWO, classification="parity",
+         notes="#754 review: the spelling twin of the hyphen row"),
+    Case("two_family_names_takes_no_spaced_dash",
+         "Ana María García - López",
+         {"given": "Ana", "middle": "María García -", "family": "López"},
+         policy=_TWO, classification="parity",
+         notes="#754 review: the dash is no family name; the first "
+               "draft read family '- López'"),
+    Case("two_family_names_leaves_a_name_its_script_ordered",
+         "王 小 明", {"given": "小", "middle": "明", "family": "王"},
+         policy=_TWO, classification="parity",
+         notes="#754 review: W4's order is not the caller's declaration, "
+               "and the first draft read family '王 小'"),
+    Case("two_family_names_leaves_an_empty_head_comma_alone",
+         ", Ana García López",
+         {"given": "Ana", "middle": "García López"},
+         policy=_TWO, classification="parity",
+         notes="#754 review: a family comma with nothing before it is "
+               "still a family comma, and the switch reads it as the "
+               "default does"),
+    Case("two_family_names_reads_a_patronymic_family_first",
+         "Petrov Ivan Sergeevich",
+         {"given": "Sergeevich", "family": "Petrov Ivan"},
+         policy=Policy(name_order=FAMILY_FIRST, patronymic_rules=frozenset(
+             {PatronymicRule.EAST_SLAVIC}), two_family_names=True),
+         classification="feat(#754)",
+         notes="#754 review: the rotation stands down under a declared "
+               "family-first order, so nothing has decided the family "
+               "and O6 reads the name as any other (rules/O6 Accepted)"),
     Case("two_family_names_reads_a_compound_given_name_as_a_family",
          "Juan Carlos Pérez",
          {"given": "Juan", "family": "Carlos Pérez"},

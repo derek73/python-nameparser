@@ -814,7 +814,8 @@ middle name:
 
 ``two_family_names=True`` reads the last two name words as the family.
 Given names before them stay given and middle names, a particle counts
-with the word it attaches to, and titles and suffixes are not counted:
+with the word it attaches to, titles and suffixes are not counted, and
+an initial never joins the family:
 
 .. doctest::
 
@@ -829,9 +830,11 @@ with the word it attaches to, and titles and suffixes are not counted:
 
 A family that already holds two names keeps what it has, whether a
 hyphen or ``y`` joins them (``"Ana María García-López"``, ``"José
-Ortega y Gasset"``); a name of two words is unchanged; and a comma
-naming the family decides by itself, so ``"García López, Ana"`` needs
-no switch at all. Under a family-first ``name_order`` the *first* two
+Ortega y Gasset"``) or a particle chain took them both: a compound
+given name opening with a particle, such as ``"María del Carmen García
+López"``, reads family ``del Carmen García López`` with the switch on
+or off. A name of two words is unchanged, and a comma naming the family
+decides by itself, so ``"García López, Ana"`` needs no switch at all. Under a family-first ``name_order`` the *first* two
 name words are the family.
 
 Turn it on only for data written this way. A name with one family name

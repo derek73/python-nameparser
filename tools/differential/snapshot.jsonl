@@ -9,6 +9,7 @@
 {"name": "()"}
 {"name": "(김민준.) John Smith", "given": "김", "middle": "민준. John", "family": "Smith", "initials": "김. 민. J. S."}
 {"name": ","}
+{"name": ", Ana García López", "given": "Ana", "middle": "García López", "initials": "A. G. L."}
 {"name": ", John", "given": "John", "initials": "J."}
 {"name": ".,"}
 {"name": "1 & 2, 3 4 5, Mr.", "title": "Mr.", "given": "3", "middle": "4 5", "family": "1 & 2", "initials": "3. 4. 5. 1. 2."}
@@ -157,12 +158,17 @@
 {"name": "An tOll. An Dr. Brigid Aoibhe Sophia de Bhulbh", "given": "An", "middle": "tOll. An Dr. Brigid Aoibhe Sophia", "family": "de Bhulbh", "initials": "A. t. A. D. B. A. S. B.", "capitalized_force": "An Toll. An Dr. Brigid Aoibhe Sophia de Bhulbh"}
 {"name": "Ana García", "given": "Ana", "family": "García", "initials": "A. G."}
 {"name": "Ana García (Anita) López", "given": "Ana", "middle": "García", "family": "López", "nickname": "Anita", "initials": "A. G. L."}
+{"name": "Ana M. García", "given": "Ana", "middle": "M.", "family": "García", "initials": "A. M. G."}
 {"name": "Ana Marija Vera Kovač", "given": "Ana", "middle": "Marija Vera", "family": "Kovač", "initials": "A. M. V. K."}
+{"name": "Ana María García - López", "given": "Ana", "middle": "María García -", "family": "López", "initials": "A. M. G. -. L."}
 {"name": "Ana María García López", "given": "Ana", "middle": "María García", "family": "López", "initials": "A. M. G. L."}
 {"name": "Ana María García-López", "given": "Ana", "middle": "María", "family": "García-López", "initials": "A. M. G."}
+{"name": "Ana María García–López", "given": "Ana", "middle": "María", "family": "García–López", "initials": "A. M. G."}
 {"name": "Ana María de la Vega Rodríguez", "given": "Ana", "middle": "María", "family": "de la Vega Rodríguez", "initials": "A. M. V. R."}
 {"name": "Ana María van der Berg", "given": "Ana", "middle": "María", "family": "van der Berg", "initials": "A. M. B."}
+{"name": "Ana María-José López", "given": "Ana", "middle": "María-José", "family": "López", "initials": "A. M. L."}
 {"name": "Ana Torres", "given": "Ana", "family": "Torres", "initials": "A. T."}
+{"name": "Ana abdul Rahman López", "given": "Ana", "middle": "abdul Rahman", "family": "López", "initials": "A. a. R. L.", "capitalized_force": "Ana Abdul Rahman López"}
 {"name": "Anan ben David", "given": "Anan", "middle": "ben", "family": "David", "initials": "A. b. D.", "capitalized_force": "Anan Ben David"}
 {"name": "Andersen Irene", "order": "FAMILY_FIRST", "given": "Irene", "family": "Andersen", "initials": "I. A."}
 {"name": "Andersen, Irene", "given": "Irene", "family": "Andersen", "initials": "I. A."}
@@ -2563,6 +2569,7 @@
 {"name": "Petraitytė, Gabrielė Aldona", "given": "Gabrielė", "middle": "Aldona", "family": "Petraitytė", "initials": "G. A. P."}
 {"name": "Petrauskas Jonas Lukas", "order": "FAMILY_FIRST", "given": "Jonas", "middle": "Lukas", "family": "Petrauskas", "initials": "J. L. P."}
 {"name": "Petrauskas, Jonas Lukas", "given": "Jonas", "middle": "Lukas", "family": "Petrauskas", "initials": "J. L. P."}
+{"name": "Petrov Ivan Sergeevich", "given": "Petrov", "middle": "Ivan", "family": "Sergeevich", "initials": "P. I. S."}
 {"name": "Pfeffer-Wildenbruch, Karl", "given": "Karl", "family": "Pfeffer-Wildenbruch", "initials": "K. P."}
 {"name": "Ph. D.", "title": "Ph.", "family": "D.", "initials": "D."}
 {"name": "Ph. D. John Smith", "title": "Ph.", "given": "D.", "middle": "John", "family": "Smith", "initials": "D. J. S."}
@@ -3434,6 +3441,7 @@
 {"name": "de Mesnil", "family": "de Mesnil", "initials": "M."}
 {"name": "de Mesnil Garcia", "family": "de Mesnil Garcia", "initials": "M. G."}
 {"name": "de Mesnil Jean", "family": "de Mesnil Jean", "initials": "M. J."}
+{"name": "de Mesnil Jean Paul", "family": "de Mesnil Jean Paul", "initials": "M. J. P."}
 {"name": "de Mesnil Jean, Dr.", "order": "FAMILY_FIRST", "title": "Dr.", "given": "Jean", "family": "de Mesnil", "initials": "J. M."}
 {"name": "de Mesnil Jr.", "family": "de Mesnil", "suffix": "Jr.", "initials": "M."}
 {"name": "de Planta, dr. Margaritta Marionna Maria jr. CF", "order": "FAMILY_FIRST", "title": "dr.", "given": "Margaritta", "middle": "Marionna Maria", "family": "de Planta", "suffix": "jr. CF", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "M. M. M. P.", "capitalized_force": "Dr. Margaritta Marionna Maria de Planta Jr. Cf"}
@@ -3664,6 +3672,7 @@
 {"name": "vai la", "given": "vai", "family": "la", "initials": "v. l.", "capitalized": "Vai La"}
 {"name": "van Berg Jan de", "given": "van", "middle": "Berg Jan", "family": "de", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "v. B. J. d.", "capitalized_force": "Van Berg Jan De"}
 {"name": "van Gogh", "given": "van", "family": "Gogh", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "v. G.", "capitalized_force": "Van Gogh"}
+{"name": "van Gogh Ana María", "given": "van", "middle": "Gogh Ana", "family": "María", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "v. G. A. M.", "capitalized_force": "Van Gogh Ana María"}
 {"name": "van Gogh, Sir", "title": "Sir", "family": "van Gogh", "initials": "G."}
 {"name": "van den Berg Cornelia Margarita Sofia Aletta MBChB PhD", "order": "FAMILY_FIRST", "given": "den Berg Cornelia Margarita Sofia Aletta", "family": "van", "suffix": "MBChB PhD", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "d. B. C. M. S. A. v.", "capitalized_force": "Den Berg Cornelia Margarita Sofia Aletta Van MBChB PhD"}
 {"name": "van den Volf Ada Kornelia Sezar Martin M.D. Ph.D.", "order": "FAMILY_FIRST", "given": "den Volf Ada Kornelia Sezar Martin", "family": "van", "suffix": "M.D. Ph.D.", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "d. V. A. K. S. M. v.", "capitalized_force": "Den Volf Ada Kornelia Sezar Martin Van M.D. Ph.D."}
@@ -5867,6 +5876,7 @@
 {"name": "渋谷健一", "family": "渋谷健一", "initials": "渋."}
 {"name": "湯浅浩", "family": "湯浅浩", "initials": "湯."}
 {"name": "牧野虎雄", "family": "牧野虎雄", "initials": "牧."}
+{"name": "王 小 明", "given": "小", "middle": "明", "family": "王", "initials": "小. 明. 王."}
 {"name": "王·Smith", "given": "王·Smith", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "王."}
 {"name": "王·雅婷", "order": "FAMILY_FIRST", "given": "雅婷", "family": "王", "initials": "雅. 王."}
 {"name": "王·雅婷·婷婷", "order": "FAMILY_FIRST", "given": "雅婷", "middle": "婷婷", "family": "王", "initials": "雅. 婷. 王."}

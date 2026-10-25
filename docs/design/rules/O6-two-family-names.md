@@ -39,6 +39,7 @@
   ```
   "José María Ortega y Gasset"  two_family_names  →  family="Ortega y Gasset"
   "Ana María García-López"  two_family_names  →  family="García-López"
+  "Ana María García–López"  two_family_names  →  family="García–López"
   "Ana María de la Vega Rodríguez"  two_family_names  →  family="de la Vega Rodríguez"
   ```
 - **A family comma decides by itself**, so the part before it is the whole family.
@@ -46,9 +47,21 @@
   "López, Ana García"  two_family_names  →  family="López"
   "García López, Ana"  two_family_names  →  family="García López"
   ```
-- **A name part that is one unit moves whole or not at all**: a particle chain (P2) or a bound given-name pair (P5) is never split, and the rule declines where taking it would leave no given name.
+- **A family comma with nothing before it still names no family**, and the name after it reads as the default reads it.
   ```
+  ", Ana García López"  two_family_names  →  family=""
+  ```
+- **What is taken must be one name word a family name could be**: a part counting as two words (a hyphenated given name, a bound given-name pair, P5) stays where it is, and so do an initial, which writes a given name, and a mark with no letter in it. A particle chain (P2) is never split, so where taking it would leave no given name the rule declines.
+  ```
+  "Ana María-José López"  two_family_names  →  family="López"
+  "Ana abdul Rahman López"  two_family_names  →  family="López"
+  "Ana M. García"  two_family_names  →  family="García"
+  "Ana María García - López"  two_family_names  →  family="López"
   "Juan de la Vega Rodríguez"  family-first+two_family_names  →  family="Juan"
+  ```
+- **An order a name's script set is not a declared one** (W4), and no script it keys writes two family names as separate words, so a name read family-first by its script is left alone; under a declared family-first order the rule reads it as it reads any other.
+  ```
+  "王 小 明"  two_family_names  →  family="王"
   ```
 
 **Precedence:**
@@ -57,7 +70,11 @@
   ```
   "Ana María García López"  two_family_names+middle_as_family  →  family="María García López"
   ```
-- **Against a patronymic rotation** ("Ivanov Ivan Ivanovich" with the East Slavic rotation on): the rotation wins, because it already decided which word is the family, and this rule finds no middle standing before that family to take.
+- **Against a patronymic rotation** ("Ivanov Ivan Ivanovich" with the East Slavic rotation on): where the rotation fires it wins, because it already decided which word is the family, and this rule finds no middle standing before that family to take. Where it does not fire, this rule reads the name as any other (Accepted).
+- **Against P1's family-first reach** ("de Mesnil Jean Paul" under a family-first order): this rule wins and the family takes one name word past P1's one, because the switch is the caller saying the family holds two.
+  ```
+  "de Mesnil Jean Paul"  family-first+two_family_names  →  family="de Mesnil Jean"
+  ```
 - **Against a particle attached at the end of a family-first name** ("Beethoven Ludwig Maria van"): P6 attaches the particle first and this rule then takes the word after the family, leaving the particle where P6 put it.
   ```
   "Beethoven Ludwig Maria van"  family-first+two_family_names  →  family="van Beethoven Ludwig"
@@ -65,9 +82,17 @@
 
 **Accepted:**
 
-- A name with one family name behind two given names loses its second given name to the family, which is the shape the switch cannot tell from the one it is for: an Argentine name, most English ones and every Portuguese or Brazilian name, whose mother's family name comes first, read wrong under it. That is why it is off by default and a caller turns it on only for data written this way.
+- A name with one family name behind two given names loses its second given name to the family, which is the shape the switch cannot tell from the one it is for: most Argentine and English names of three words or more read wrong under it, and so do Portuguese and Brazilian names whose writer gave the last family name alone as the family. That is why it is off by default and a caller turns it on only for data written this way.
   ```
   "Juan Carlos Pérez"  two_family_names  →  family="Carlos Pérez"
+  ```
+- A patronymic is a name word like any other here, a patronymic rule on or off, so where no rotation fired it can join the family.
+  ```
+  "Petrov Ivan Sergeevich"  family-first+two_family_names  →  family="Petrov Ivan"
+  ```
+- A lone particle the declared order left as the family counts as one word, R2 reading it as an ordinary name word, so the word after it joins.
+  ```
+  "van Gogh Ana María"  family-first+two_family_names  →  family="van Gogh"
   ```
 - The rule counts words, not languages, so a particle surname of any origin takes the word before it.
   ```
@@ -76,5 +101,5 @@
 - The rule reports nothing: the caller declared the convention, as a declared order is followed without a report, and a report on most names of three words or more would teach the caller to ignore the field.
 
 ---
-**Signal:** none in the name: a caller switch, which joins the name word beside the family to it
+**Signal:** none in the name: a caller switch, the family's words counted as written to see whether it already holds two
 **history:** decisions/O6 · **implemented:** nameparser/_pipeline/_post_rules.py

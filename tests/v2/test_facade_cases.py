@@ -75,6 +75,14 @@ _TRANSLATED = frozenset({
 #: into this set and turns nothing red.
 _CORE_ONLY_IDS = frozenset({
     # #754: rules/O6's switch, which v1 has no Constants spelling for
+    "two_family_names_leaves_a_hyphenated_given_name_before_the_family",
+    "two_family_names_leaves_an_initial_before_the_family",
+    "two_family_names_leaves_a_bound_given_pair_before_the_family",
+    "two_family_names_counts_an_en_dash_as_a_hyphen",
+    "two_family_names_takes_no_spaced_dash",
+    "two_family_names_leaves_a_name_its_script_ordered",
+    "two_family_names_leaves_an_empty_head_comma_alone",
+    "two_family_names_reads_a_patronymic_family_first",
     "two_family_names_takes_the_word_before_the_family",
     "two_family_names_leaves_the_middles_before_it",
     "two_family_names_counts_a_particle_with_its_word",

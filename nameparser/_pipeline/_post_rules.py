@@ -238,6 +238,11 @@ def _fold_reach(tokens: list[WorkToken], name_idx: list[int]) -> int:
     return i + len(_units(tokens, name_idx[i:])[0])
 
 
+#: The hyphens and the en dash, each joining two family names in one
+#: written word (rules/O6).
+_HYPHENS = re.compile("[-\u2010\u2011\u2013]")
+
+
 def _family_word_count(tokens: list[WorkToken], family: list[int]) -> int:
     """The family's name words as rules/O6 counts them: a particle run
     counts with the word it attaches to, a connective counts as
@@ -245,7 +250,8 @@ def _family_word_count(tokens: list[WorkToken], family: list[int]) -> int:
     la Vega" is one word and "Ortega y Gasset" and "García-López" two.
     A family of nothing but particles counts each of them, R2 reading
     them as ordinary name words."""
-    words = sum(len([part for part in tokens[i].text.split("-") if part])
+    words = sum(len([part for part in _HYPHENS.split(tokens[i].text)
+                     if part])
                 for i in family
                 if "particle" not in tokens[i].tags
                 and "conjunction" not in tokens[i].tags)
@@ -257,7 +263,11 @@ def _take_second_family_name(state: ParseState,
     # rules/O6: "the family name takes the name word beside it, so
     # the last two name words are the family" -- the first two under
     # a family-first order. In place, as every post rule writes.
-    if state.structure is Structure.FAMILY_COMMA or state.order is None:
+    # An order a name's script set (W4) is not the caller's
+    # declaration, and no script it keys writes two family names as
+    # separate words.
+    if (state.structure is Structure.FAMILY_COMMA or state.order is None
+            or state.order != state.policy.name_order):
         return
     family: list[int] = []
     others: list[int] = []
@@ -273,12 +283,22 @@ def _take_second_family_name(state: ParseState,
     units = _units(tokens, others)
     if len(units) < 2:
         return
+    take = units[-1] if state.order[0] is Role.GIVEN else units[0]
+    # What is taken must be ONE name word, counted as the family is, so
+    # a hyphenated given name or a bound given-name pair (P5) stays put;
+    # and a word a family name could be: not an initial, which writes a
+    # given name, nor a lone dash or other mark with no letter in it.
+    if _family_word_count(tokens, take) != 1:
+        return
+    if len(take) == 1 and "initial" in tokens[take[0]].tags:
+        return
+    if not any(ch.isalnum() for i in take for ch in tokens[i].text):
+        return
     if state.order[0] is Role.GIVEN:
         # given, middles..., family: the middle unit standing right
         # before the family joins it, and text order already renders
         # it first, so no role around it moves. A rotation that left
         # the name in another shape fails this test.
-        take = units[-1]
         if take[-1] > family[0] or any(
                 tokens[i].role is not Role.MIDDLE for i in take):
             return
