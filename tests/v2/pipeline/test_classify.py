@@ -17,7 +17,7 @@ from nameparser._pipeline._state import (
 from nameparser._pipeline._tokenize import tokenize
 from nameparser._pipeline._vocab import (
     ambiguous_class_candidate, ambiguous_class_member,
-    caps_shape_candidate, is_paired_initials, surname_unit_facts,
+    caps_shape_candidate, is_cased_paired_initials, surname_unit_facts,
     surname_unit_tags,
 )
 from nameparser._policy import Policy
@@ -680,7 +680,7 @@ def test_ambiguous_class_candidate_agrees_with_the_tag(
     # on by design: the candidate (segment's, before the comma has
     # been read) admits them, and classify holds the class tag back,
     # which `_comma.decide` restores at the comma C5 reads (#864)
-    paired = (is_paired_initials(word) and word.upper() != word.lower()
+    paired = (is_cased_paired_initials(word)
               and not ambiguous_class_member(word, lex))
     assert (candidate and not paired) == ("vocab:suffix-ambiguous" in tags)
     shape_member = candidate and not ambiguous_class_member(word, lex)

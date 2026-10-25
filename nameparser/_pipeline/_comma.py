@@ -40,11 +40,11 @@ from nameparser._pipeline._state import (
     Structure, WorkToken, copy_with,
 )
 from nameparser._pipeline._vocab import (
-    D, PH, ROMAN, caps_shape_candidate, claimed_as_non_name, delimiter_cores,
-    composed_len, glued_stem, glues, is_caps_word, is_paired_initials,
-    is_single_letter_numeral,
-    is_trailing_numeral_suffix, is_wholly_suffix, name_word_count,
-    surname_unit_facts, unit_ends, written_as_a_name,
+    ROMAN, SPLIT_PAIR_OPENS, caps_shape_candidate, claimed_as_non_name,
+    composed_len, delimiter_cores, glued_stem, glues, is_caps_word,
+    is_paired_initials, is_single_letter_numeral, is_wholly_suffix,
+    name_word_count, reads_as_generation, split_pair, surname_unit_facts,
+    unit_ends, written_as_a_name,
 )
 from nameparser._policy import CapsSuffixes
 from nameparser._types import AmbiguityKind, Role
@@ -52,16 +52,17 @@ from nameparser._types import AmbiguityKind, Role
 
 def _pieces(seg: Sequence[int], tokens: Sequence[WorkToken],
             ) -> tuple[list[list[int]], list[set[str]]]:
-    """One piece per token but the Ph./D. pair, which group's first
-    merge builds -- the part as it stands before any join. Every piece
-    a fresh list, as `merge_pieces` requires."""
+    """One piece per token but a split credential (`split_pair`),
+    which group's first merge builds (group alone declines a pair at
+    the head of the string, rules/S2) -- the part as it stands before
+    any join. Every piece a fresh list, as `merge_pieces` requires."""
     pieces: list[list[int]] = []
     ptags: list[set[str]] = []
     k = 0
     while k < len(seg):
         a = seg[k]
-        if (k + 1 < len(seg) and PH.fullmatch(tokens[a].text)
-                and D.fullmatch(tokens[seg[k + 1]].text)):
+        if (k + 1 < len(seg) and SPLIT_PAIR_OPENS.fullmatch(tokens[a].text)
+                and split_pair(tokens[a].text, tokens[seg[k + 1]].text)):
             pieces.append([a, seg[k + 1]])
             ptags.append({"suffix"})
             k += 2
@@ -233,9 +234,10 @@ def _behind_a_generation(state: ParseState, seg0: Sequence[int],
     # a numeral by shape alone (VI to X) is the generation the trailing
     # fork reads, as the listed ones are (#610's class: 'VI' beside 'V'
     # and 'III'), and not one it reads as an initial's neighbour
-    # ('John J VI, AD')
+    # ('John J VI, AD'). C12's evidence is broader than a generation:
+    # any suffix word ('Jr.', 'Esq.') counts, by its tag
     if ("vocab:suffix-word" not in tokens[seg0[-1]].tags
-            and not is_trailing_numeral_suffix(
+            and not reads_as_generation(
                 last, tokens[seg0[-2]].text, state.one_case)):
         return None
     # the generation set aside, the name's own words in front of it are

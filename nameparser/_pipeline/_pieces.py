@@ -63,8 +63,8 @@ from nameparser._pipeline._state import (
 )
 from nameparser._pipeline._vocab import (
     _PERIOD_ABBREV, _ROMAN, Lean, ambiguous_lean, in_initialless_script,
-    is_single_letter_numeral, is_trailing_numeral_suffix,
-    numeral_settled_by_case, tag_marker_runs,
+    is_single_letter_numeral, numeral_settled_by_case,
+    reads_as_generation, tag_marker_runs,
 )
 
 
@@ -1165,7 +1165,7 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
         # pick, since "either reading is reported", and no branch below
         # can take a numeral
         if (k == len(rest) and k >= 2 and len(piece) == 1
-                and is_trailing_numeral_suffix(
+                and reads_as_generation(
                     text := tokens[piece[0]].text,
                     tokens[pieces[rest[k - 2]][0]].text, one_case)):
             # rules/S10: "a numeral written in lower case in a name of
@@ -1558,7 +1558,7 @@ def trailing_candidates(lo: int, pieces: Sequence[Sequence[int]],
                 or is_suffix_piece(piece, ptags[k], tokens)
                 or (len(piece) == 1 and (
                     not tokens[piece[0]].tags.isdisjoint(_TRAILING_WORD_TAGS)
-                    or (titles_behind and is_trailing_numeral_suffix(
+                    or (titles_behind and reads_as_generation(
                         tokens[piece[0]].text,
                         tokens[pieces[k - 1][0]].text, None))))):
             break

@@ -68,8 +68,8 @@ from nameparser._pipeline._state import (
 from nameparser._types import AmbiguityKind, Role
 from nameparser._pipeline._vocab import (
     BUILTIN_SUFFIX_DELIMITERS, _INITIAL, caps_shape_candidate, composed_len,
-    delimiter_cores, glued_stem, is_initial, is_one_case, is_paired_initials,
-    period_joined_vocab, suffix_as_written, tag_marker_runs,
+    delimiter_cores, glued_stem, is_cased_paired_initials, is_initial,
+    is_one_case, period_joined_vocab, suffix_as_written, tag_marker_runs,
 )
 from nameparser._pipeline._pieces import own_words
 
@@ -270,11 +270,10 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
             # tag alone, as with the switch off, so the trailing slots
             # read them as a name word and report the fork; the comma
             # restores the class tag where C5 reads them
-            # (decisions/S3 (#864)). Cased: a text with no case mapping
-            # is in a script without capitals ('พ.บ.').
+            # (decisions/S3 (#864)); `is_cased_paired_initials` asks the
+            # script half ('พ.บ.' is no initial)
             if (state.policy.unlisted_dotted_suffixes
-                    and not (is_paired_initials(token.text)
-                             and token.text.upper() != token.text.lower())):
+                    and not is_cased_paired_initials(token.text)):
                 tags.add(AMBIGUOUS_ACRONYM_TAG)
         elif (state.policy.unlisted_caps_suffixes is CapsSuffixes.EVERYWHERE
                 and token.role is None

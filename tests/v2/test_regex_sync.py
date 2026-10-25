@@ -129,7 +129,11 @@ _SOURCES: dict[tuple[str, str], str | None] = {
     # is_leading_title's H2 shape test), so it is visible under both
     # module names and the completeness scan below sees it twice.
     ("_vocab", "_PERIOD_ABBREV"): "period_abbreviation",
-    ("_group", "_D"): None,
+    # `split_pair`'s two halves, the Ph./D. split credential (#752;
+    # declared under _group until then, which had stopped holding them);
+    # no config key to mirror
+    ("_vocab", "_PH"): None,
+    ("_vocab", "_D"): None,
     ("_vocab", "_DOTTED"): None,
     # #544: the chunked sibling of _DOTTED ('M.Eng.'), S3's period gate
     # for a member with a lower-case tail; no config key to mirror
@@ -137,7 +141,6 @@ _SOURCES: dict[tuple[str, str], str | None] = {
     # #563: paired initials ('M.J.'), C5's exception to C4's name-word
     # count after a comma; no config key to mirror
     ("_vocab", "_PAIRED_INITIALS"): None,
-    ("_group", "_PH"): None,
     ("_vocab", "_ROMAN"): "roman_numeral",
     # SAME object, imported for the trailing read's weighed-word test
     # (#620), as _PERIOD_ABBREV is above
@@ -251,3 +254,15 @@ def test_comma_char_matches_the_pipeline_comma_set() -> None:
     from nameparser._pipeline._state import COMMA_CHARS
 
     assert set(_render._COMMA_CHAR.pattern.strip("[]")) == set(COMMA_CHARS)
+
+
+def test_every_declared_pattern_still_exists() -> None:
+    """The converse of the completeness check: an entry naming a
+    pattern its module no longer holds pins nothing. `_group._PH` and
+    `_group._D` stood here after both moved to `_vocab`, found when
+    #752 renamed them there; an entry with no config key was never read
+    by the parametrized test above, so nothing failed."""
+    stale = sorted(where for where in _SOURCES
+                   if not isinstance(getattr(_MODULES[where[0]], where[1],
+                                             None), re.Pattern))
+    assert not stale, f"_SOURCES entries naming no compiled pattern: {stale}"

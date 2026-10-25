@@ -402,8 +402,8 @@ CASES: tuple[Case, ...] = (
                "visible. The fragment let the merged 'Ph. D.' token pass "
                "the acronym test on its first piece, and #459's all-caps "
                "repair would have read 'john smith ph. d.' as "
-               "'John Smith PH. D.'; the merge itself keys on the PH/D "
-               "regexes of _pipeline/_vocab.py and never needed the "
+               "'John Smith PH. D.'; the merge itself keys on "
+               "_pipeline/_vocab.py's split_pair and never needed the "
                "entry. What the entry uniquely carried was a bare "
                "trailing 'Ph.' -- no 'D.' behind it -- as a credential, "
                "a spelling nobody writes; out of the set it falls to the "
@@ -1481,6 +1481,26 @@ CASES: tuple[Case, ...] = (
                "family 'Ma'), which #602 retires; 2.3.0 read this same "
                "way, and 1.4.0 middle 'Smith PhD', last 'Prof.', suffix "
                "'Ma'"),
+    # the split credential's periods are optional, each half on its own
+    # (v1's fix_phd, `_vocab.split_pair`): every spelling is one suffix
+    # piece, at the end of a name, behind a family comma and after a
+    # suffix comma (#752's test review: no row held a periodless pair)
+    Case("a_split_degree_without_its_periods_merges",
+         "John Smith Ph D",
+         {"given": "John", "family": "Smith", "suffix": "Ph D"},
+         classification="parity"),
+    Case("a_split_degree_with_one_period_merges",
+         "John Smith Ph. D",
+         {"given": "John", "family": "Smith", "suffix": "Ph. D"},
+         classification="parity"),
+    Case("a_split_degree_without_its_periods_merges_in_the_given_part",
+         "Smith, John Ph D",
+         {"given": "John", "family": "Smith", "suffix": "Ph D"},
+         classification="parity"),
+    Case("a_split_degree_in_capitals_merges_after_a_suffix_comma",
+         "John Smith, PH D",
+         {"given": "John", "family": "Smith", "suffix": "PH D"},
+         classification="parity"),
     Case("a_split_degree_in_front_is_out_of_the_walk",
          "John Smith Ph. D. MEng",
          {"given": "John", "middle": "Smith", "family": "MEng",
@@ -4332,7 +4352,7 @@ CASES: tuple[Case, ...] = (
     # #516 review round, F5: the spec's stated mechanism for why
     # 'Jack VI' does not move was wrong -- 'VI' DOES reach the caps
     # predicate and carries both tags with the switch on. It stays
-    # unchanged because `_pieces.is_trailing_numeral_suffix` (the
+    # unchanged because `_vocab.reads_as_generation` (the
     # roman-numeral fork) claims it downstream, before the lean/count
     # this switch adds is ever consulted -- unrelated to this switch,
     # and the reason these controls read identically on or off.
