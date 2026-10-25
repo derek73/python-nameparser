@@ -114,9 +114,10 @@ def test_zero_width_space_and_bom_separate_under_every_policy(
 @pytest.mark.parametrize("ch", ["‌", "‍", "⁠", "­"],
                          ids=["zwnj", "zwj", "word-joiner", "soft-hyphen"])
 def test_joiners_and_soft_hyphen_stay_inside_the_word(ch: str) -> None:
-    # #851's exclusions: these decide how the letters beside them join
-    # (or, the soft hyphen, mark a break inside one word), so splitting
-    # there would cut a real word in two
+    # #851's exclusions: ZWNJ and ZWJ decide how the letters beside
+    # them join, the word joiner means no break, and the soft hyphen
+    # marks a break inside one word, so splitting at any of them would
+    # cut a real word in two
     assert [t.text for t in _tokenized(f"ab{ch}cd ef").tokens] == [
         f"ab{ch}cd", "ef"]
 
