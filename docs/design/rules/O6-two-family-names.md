@@ -40,6 +40,7 @@
   "José María Ortega y Gasset"  two_family_names  →  family="Ortega y Gasset"
   "Ana María García-López"  two_family_names  →  family="García-López"
   "Ana María García–López"  two_family_names  →  family="García–López"
+  "Ana María García－López"  two_family_names  →  family="García－López"
   "Ana María de la Vega Rodríguez"  two_family_names  →  family="de la Vega Rodríguez"
   ```
 - **A family comma decides by itself**, so the part before it is the whole family.

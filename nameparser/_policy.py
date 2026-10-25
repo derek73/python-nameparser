@@ -785,17 +785,23 @@ class Policy:
     #: middle ``María``, family ``García López``. A particle counts with
     #: the word it attaches to ("Juan Pérez de la Vega" gives family
     #: ``Pérez de la Vega``), a family already holding two words keeps
-    #: what it has ("José María Ortega y Gasset", "Ana María de la Vega
-    #: Rodríguez"), titles and suffixes count as no name word, and a
-    #: name of two name words is unchanged. Under a family-first
-    #: name_order the FIRST two name words are the family. A family
-    #: comma decides by itself, so "García López, Ana" is unaffected.
-    #: The convention is not every Spanish-speaking country's (Argentina
-    #: writes one family name) and is not Portugal's or Brazil's, which
-    #: put the mother's name first: switched on for a mixed population it
-    #: costs more names than it mends, so it is off by default and
-    #: reports nothing. Runs before middle_as_family, which then folds
-    #: whatever middles are left.
+    #: what it has ("José María Ortega y Gasset", "Ana María
+    #: García-López", "Ana María de la Vega Rodríguez"), titles and
+    #: suffixes count as no name word, and a name of two name words is
+    #: unchanged. The word taken must be one name word a family name
+    #: could be, so an initial written alone ("Ana M. García"), a
+    #: hyphenated given name ("Ana María-José López") and a bound
+    #: given-name pair stay where they are. Under a family-first
+    #: name_order the FIRST two name words are the family; a name its
+    #: script reads in an order other than name_order (a spaced Han or
+    #: Hangul name under the default) is left alone. A family comma
+    #: decides by itself, so "García López, Ana" is unaffected. A name
+    #: with one family name behind two given names loses one to the
+    #: family ("Juan Carlos Pérez" gives family ``Carlos Pérez``), which
+    #: is most Argentine names and many Portuguese and Brazilian ones as
+    #: filed, so the switch is off by default and reports nothing. Runs
+    #: before middle_as_family, which then folds whatever middles are
+    #: left.
     two_family_names: bool = False
 
     # in the class body so @dataclass(slots=True) keeps them
@@ -1059,15 +1065,14 @@ class PolicyPatch:
             object.__setattr__(self, f.name, frozenset(value))
         # middle_as_family, lenient_comma_suffixes,
         # unlisted_dotted_suffixes, unlisted_caps_suffixes, strip_emoji,
-        # strip_bidi and two_family_names are scalar (compose="override") fields and
-        # DELIBERATELY get no
-        # type check here, unlike name_order and
-        # the union fields above: a PolicyPatch(strip_emoji="off") is
-        # constructible, and only raises once apply_patch runs
-        # Policy.__post_init__'s bool check. This is the one place the
-        # module's eager-validation ethos doesn't apply -- see the
-        # class docstring ("Values are validated when the patch is
-        # applied... not at patch construction").
+        # strip_bidi and two_family_names are scalar (compose="override")
+        # fields and DELIBERATELY get no type check here, unlike
+        # name_order and the union fields above: a
+        # PolicyPatch(strip_emoji="off") is constructible, and only raises
+        # once apply_patch runs Policy.__post_init__'s bool check. This is
+        # the one place the module's eager-validation ethos doesn't apply
+        # -- see the class docstring ("Values are validated when the patch
+        # is applied... not at patch construction").
 
     def __repr__(self) -> str:
         # Bounded: only fields the patch actually sets are shown; UNSET

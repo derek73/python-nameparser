@@ -238,9 +238,10 @@ def _fold_reach(tokens: list[WorkToken], name_idx: list[int]) -> int:
     return i + len(_units(tokens, name_idx[i:])[0])
 
 
-#: The hyphens and the en dash, each joining two family names in one
-#: written word (rules/O6).
-_HYPHENS = re.compile("[-\u2010\u2011\u2013]")
+#: The hyphens and the dashes that join two family names in one written
+#: word (rules/O6): hyphen-minus, hyphen, non-breaking hyphen, figure
+#: dash, en dash, and the small and fullwidth hyphen-minus.
+_HYPHENS = re.compile("[-\u2010\u2011\u2012\u2013\ufe63\uff0d]")
 
 
 def _family_word_count(tokens: list[WorkToken], family: list[int]) -> int:
@@ -263,6 +264,7 @@ def _take_second_family_name(state: ParseState,
     # rules/O6: "the family name takes the name word beside it, so
     # the last two name words are the family" -- the first two under
     # a family-first order. In place, as every post rule writes.
+    # History: decisions/O6 (#754).
     # An order a name's script set (W4) other than the declared one is
     # not the caller's declaration, and no script it keys writes two
     # family names as separate words. Where the two agree nothing here
@@ -270,13 +272,8 @@ def _take_second_family_name(state: ParseState,
     if (state.structure is Structure.FAMILY_COMMA or state.order is None
             or state.order != state.policy.name_order):
         return
-    family: list[int] = []
-    others: list[int] = []
-    for i, t in enumerate(tokens):
-        if t.role is Role.FAMILY:
-            family.append(i)
-        elif t.role is Role.GIVEN or t.role is Role.MIDDLE:
-            others.append(i)
+    family = _idx(tokens, Role.FAMILY)
+    others = sorted(_idx(tokens, Role.GIVEN) + _idx(tokens, Role.MIDDLE))
     if not family or _family_word_count(tokens, family) != 1:
         return
     # The rest in the units assign read them as, so a particle chain
