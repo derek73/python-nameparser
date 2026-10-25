@@ -1333,7 +1333,13 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
             if AMBIGUOUS_WORD_TAG in tokens[piece[0]].tags:
                 front = _kept_in_front(rest, front, pieces, ptags, tokens,
                                        one_case)
-            if lean == "credential" or (lean is None and front >= second):
+            # rules/S11: "the floor holds first" -- a generation word's
+            # case may settle it as the suffix only where the name keeps
+            # a family word ('Pedro Junior fils' keeps family 'fils',
+            # Derek, #890); an acronym's capitals take it with none
+            gated = AMBIGUOUS_WORD_TAG in tokens[piece[0]].tags
+            if (lean == "credential" and (not gated or front >= second)
+                    or (lean is None and front >= second)):
                 k -= 1
                 continue
             # #544: or an unambiguous credential stands IN FRONT of it

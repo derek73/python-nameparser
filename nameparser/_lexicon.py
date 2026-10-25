@@ -708,9 +708,10 @@ class Lexicon:
     #: "neto"). Read as a suffix only where the name has words to
     #: spare, as an ambiguous acronym is: "Pedro Alves Neto" ends in a
     #: suffix, "Ana Neto" keeps her family name, and either reading is
-    #: reported (rules/S11). Written in lower case in a name of mixed
-    #: case the word is the suffix, and in Title case it leans to the
-    #: name, unless it is also in ``agnomens``. Full default list:
+    #: reported (rules/S11). Written in Title case in a name of mixed
+    #: case it leans to the name even with words to spare, and in lower
+    #: case it is the suffix after a comma that names the family,
+    #: unless it is also in ``agnomens``. Full default list:
     #: :data:`~nameparser.config.suffixes.SUFFIX_WORDS_AMBIGUOUS`.
     suffix_words_ambiguous: frozenset[str] = frozenset()
     #: Subset of suffix_words_ambiguous whose writing says nothing:

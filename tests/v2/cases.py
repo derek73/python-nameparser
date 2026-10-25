@@ -1707,12 +1707,24 @@ CASES: tuple[Case, ...] = (
          ambiguities=("suffix-or-name",),
          notes="the lean holds with words to spare too"),
     Case("fils_in_lower_case_with_no_word_to_spare", "Dumas fils",
-         {"given": "Dumas", "suffix": "fils"},
+         {"given": "Dumas", "family": "fils"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="the floor holds before the case cue: two name words keep "
+               "the family, lower case or not (rules/S11, Derek, #890)"),
+    Case("fils_in_lower_case_behind_a_suffix_word", "Pedro Junior fils",
+         {"given": "Pedro", "middle": "Junior", "family": "fils"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="the suffix word in front is no word to spare, and the "
+               "floor holds before the case cue (rules/S11, #890)"),
+    Case("fils_in_lower_case_after_a_family_comma", "Dumas, Alexandre fils",
+         {"given": "Alexandre", "family": "Dumas", "suffix": "fils"},
          classification="fix(#752)",
-         ambiguities=("given-or-family", "suffix-or-name"),
-         notes="lower case in a name of mixed case settles the generation "
-               "(rules/S6), leaving one name word, which reads as a given "
-               "name as 'Dumas Jr.' does. 1.4.0 and 2.6.0 read family 'fils'"),
+         ambiguities=("suffix-or-name",),
+         notes="the comma has named the family, so lower case settles the "
+               "generation (rules/S5, S6). 1.4.0 and 2.6.0 read middle "
+               "'fils'"),
     Case("a_one_letter_generation_is_off_by_default", "Juan Pérez H.",
          {"given": "Juan", "middle": "Pérez", "family": "H."},
          classification="parity",

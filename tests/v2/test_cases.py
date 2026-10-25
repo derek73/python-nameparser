@@ -245,9 +245,10 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # day: #890's five rows with a suffix word in front of an agnomen;
     # 1508 -> 1514 the same day: its numeral and capitals rows; 1514
     # -> 1517 the same day: its carried-member rows; 1517 -> 1520 the
-    # same day: its joined-surname row.
-    assert claims == 1520, (
-        f"the field sweep checks {claims} claims, recorded as 1520 on "
+    # same day: its joined-surname row; 1520 -> 1523 the same day: the
+    # floor's fils rows.
+    assert claims == 1523, (
+        f"the field sweep checks {claims} claims, recorded as 1523 on "
         f"2026-10-25")
 
 

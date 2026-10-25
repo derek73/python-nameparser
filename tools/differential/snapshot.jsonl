@@ -819,8 +819,9 @@
 {"name": "Duke Snider", "given": "Duke", "family": "Snider", "initials": "D. S."}
 {"name": "Duke of Edinburgh", "given": "Duke of Edinburgh", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "D. E."}
 {"name": "Duke of Wellington", "given": "Duke of Wellington", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "D. W."}
-{"name": "Dumas fils", "given": "Dumas", "suffix": "fils", "ambiguities": ["GIVEN_OR_FAMILY", "SUFFIX_OR_NAME"], "initials": "D."}
+{"name": "Dumas fils", "given": "Dumas", "family": "fils", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "D. f.", "capitalized_force": "Dumas Fils"}
 {"name": "Dumas, Alexandre Fils", "given": "Alexandre", "middle": "Fils", "family": "Dumas", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "A. F. D."}
+{"name": "Dumas, Alexandre fils", "given": "Alexandre", "family": "Dumas", "suffix": "fils", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "A. D."}
 {"name": "Dumreicher, Johann von", "given": "Johann", "family": "von Dumreicher", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "J. D."}
 {"name": "Dut.ra Prof.ra Maria Giusepa Juana Teresa von Brühl González Domingo", "title": "Dut.ra Prof.ra", "given": "Maria", "middle": "Giusepa Juana Teresa", "family": "von Brühl González Domingo", "initials": "M. G. J. T. B. G. D.", "capitalized_force": "Dut.Ra Prof.Ra Maria Giusepa Juana Teresa von Brühl González Domingo"}
 {"name": "Dòmhnall Iain Tormod Caimbeul", "given": "Dòmhnall", "middle": "Iain Tormod", "family": "Caimbeul", "initials": "D. I. T. C."}
@@ -2643,7 +2644,7 @@
 {"name": "Pedro Jorba y Gassó", "given": "Pedro", "family": "Jorba y Gassó", "initials": "P. J. G."}
 {"name": "Pedro Junior Filho", "given": "Pedro", "middle": "Junior", "family": "Filho", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. J. F."}
 {"name": "Pedro Junior Ma Filho", "given": "Pedro", "middle": "Junior Ma", "family": "Filho", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. J. M. F."}
-{"name": "Pedro Junior fils", "given": "Pedro", "suffix": "Junior fils", "ambiguities": ["GIVEN_OR_FAMILY", "SUFFIX_OR_NAME"], "initials": "P."}
+{"name": "Pedro Junior fils", "given": "Pedro", "middle": "Junior", "family": "fils", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. J. f.", "capitalized_force": "Pedro Junior Fils"}
 {"name": "Pedro López Ruiz H.", "given": "Pedro", "middle": "López Ruiz", "family": "H.", "initials": "P. L. R. H."}
 {"name": "Pedro M.Filho", "given": "Pedro", "family": "M.Filho", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. M."}
 {"name": "Pedro MA Filho", "given": "Pedro", "middle": "MA", "family": "Filho", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. M. F.", "capitalized_force": "Pedro Ma Filho"}

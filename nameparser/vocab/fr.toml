@@ -95,7 +95,7 @@ modifier = { expands = "the second word of chargé d'affaires" }
 
 [[word]]
 text = "fils"
-generation = { issue = [679, 752], expands = "son, the Younger: Alexandre Dumas fils", note = "gated by the family reading (rules/S11): written in lower case in a name of mixed case it is the generation, and Title case leans to the name, so Marie Fils keeps her family name" }
+generation = { issue = [679, 752], expands = "son, the Younger: Alexandre Dumas fils", note = "gated by the family reading (rules/S11): Title case leans to the name, so Marie Fils keeps her family name, and lower case is the generation wherever the name keeps a family word" }
 family = { us_census_2010 = 767, wikidata = 5, as_of = 2026-10-16 }
 
 [[word]]

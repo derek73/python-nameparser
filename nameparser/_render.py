@@ -459,7 +459,7 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
     # overrode them -- `revise(middle='e-f')` repaired to 'e-F' where
     # the same words parsed gave 'E-F' (#463 review).
     # rules/S6: "its lower case in a name of mixed case is the generation
-    # even with no word to spare" -- a generation word that is also a
+    # wherever the name keeps a family word" -- a generation word that is also a
     # name, in the suffix role, repairs to the one writing that keeps
     # that reading; Title case would lean it back to the name. An
     # agnomen takes no case cue and title-cases as any word does.

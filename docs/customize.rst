@@ -361,8 +361,8 @@ Generation words that are also surnames
 ``Sobrinho`` mark a generation, and each is a surname too. An agnomen,
 written in the case of the name around it and listed in ``agnomens``,
 is a suffix only where the name keeps a word for its family. The
-writing of ``fils`` speaks as well: in a mixed-case name a lower-case
-``fils`` is the suffix and a Title-case ``Fils`` the family name:
+writing of ``fils`` speaks as well: in a mixed-case name a Title-case
+``Fils`` is the family name even with a word to spare:
 
 .. doctest::
 
