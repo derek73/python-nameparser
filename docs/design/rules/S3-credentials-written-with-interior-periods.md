@@ -41,7 +41,7 @@
   ```
   "Jack X.Y.I."               →  family="X.Y.I."  · boundary
   ```
-- **Paired initials are the exception**, as C5 defines them, in a script that writes capitals: where S4 would count words to spare for them they are the name word they are written as, as the switch off reads every such word, and the fork is still reported. Two dotted single letters is how initials are written in such a script, and how some surnames are (Nepali B.K., K.C.), while a script without capitals writes its abbreviations that way, degrees among them; behind an unambiguous suffix word the pair joins the credential run.
+- **Paired initials are the exception**, as C5 defines them, in a script that writes capitals: where S4 would count words to spare for them they are the name word they are written as, as the switch off reads every such word, and the fork is still reported. Two dotted single letters is how initials are written in such a script, and how some surnames are (Nepali B.K., K.C.), while a script without capitals writes its abbreviations that way, degrees among them; behind an unambiguous suffix word the pair joins the credential run that word starts (S8).
   ```
   "Ram Bahadur B.K."          →  family="B.K."
   "Ram Bahadur B.K."          →  middle="Bahadur"
@@ -58,6 +58,7 @@
 
 **Precedence:**
 
+- **An ambiguous credential between an unambiguous one and paired initials** ("Jane Doe PhD MA R.T."): the unambiguous word starts the run and the run takes both, the pair included (S8).
 - **Paired initials at the first slot after a comma** ("García Márquez, G.J."): they read as the given name unless something in the part speaks for them (C5).
 - **A flip to the credential run at the first slot after a comma** ("John Smith, X.Y.Z."): where no listed member of the class takes part it is not reported, unless paired initials speak only for each other (C11).
 
@@ -67,7 +68,7 @@
   ```
   "John Smith K.C."           →  family="K.C."
   ```
-- Paired initials behind a credential that is itself ambiguous, a listed one or one this rule reads by position, end the name and take the credential into it: the reading 1.4.0 through 2.3.0 gave, where a run of credentials is the likelier writing.
+- Paired initials behind an ambiguous credential that no unambiguous suffix word stands in front of, a listed one or one admitted by its shape (this rule's dotted words, S9's capitals where the caller admits them), end the name and take the credential into it: the reading 1.4.0 through 2.3.0 gave, where a run of credentials is the likelier writing.
   ```
   "Jane Doe MA R.T."          →  family="R.T."
   "Jane Doe MA R.T."          →  middle="Doe MA"
