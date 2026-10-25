@@ -591,7 +591,9 @@ def _joined_credential(text: str, lexicon: Lexicon) -> bool:
     # the caller found a joiner, so there are two chunks at least
     chunks = _JOINERS.split(text)
     whole = False  # a chunk that is not a single ASCII character
-    named = "-" in text  # every chunk so far in Title case
+    # every chunk so far written as a name's; a slash joins no name, so
+    # a word holding one takes no cue
+    named = "/" not in text
     for k, c in enumerate(chunks):
         if not (c and suffix_as_written(_normalize(c), c, lexicon)):
             return False
@@ -601,8 +603,8 @@ def _joined_credential(text: str, lexicon: Lexicon) -> bool:
         whole = whole or len(bare) > 1 or not bare.isascii()
         # the first chunk in Title case, a later one in Title case or
         # lower case ('Ae-Ra', 'Ae-ra')
-        named = named and len(bare) > 1 and (
-            bare[0].isupper() and bare[1:].islower()
+        named = named and (
+            len(bare) > 1 and bare[0].isupper() and bare[1:].islower()
             or k > 0 and bare.islower())
     # rules/S3: "Every chunk the vocabulary matches is a single ASCII
     # character" -- the numerals and the digit, which are about

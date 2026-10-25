@@ -52,7 +52,7 @@
 
 **Except:**
 
-- **A word joined by a hyphen and written the way a hyphenated name is, its first chunk in Title case and every other in Title case or lower case, is a name word**, whatever its chunks are listed as: that is how a hyphenated given name is written (`Ae-Ra`, `Ae-ra`, the Korean syllables `ae` and `ra` both being listed credentials), and a credential's chunks are written otherwise. A chunk with a capital past its first letter (`PhD`), a chunk in capitals, a word opening in lower case and a slash, which joins no name, leave the word to the joined reading's every-chunk test.
+- **A word joined by a hyphen and written the way a hyphenated name is, its first chunk in Title case and every other in Title case or lower case, is a name word**, whatever its chunks are listed as: that is how a hyphenated given name is written (`Ae-Ra`, `Ae-ra`, the Korean syllables `ae` and `ra` both being listed credentials), and a credential's chunks are written otherwise. A chunk with a capital past its first letter (`PhD`), a chunk in capitals, a word opening in lower case and a slash anywhere in the word, a slash joining no name, leave the word to the joined reading's every-chunk test, and a word holding an interior period is read by its periods first.
   ```
   "Kim, Ae-Ra"                →  given="Ae-Ra"
   "Shin Ae-ra"                →  family="Ae-ra"
@@ -102,6 +102,10 @@
   "KIM, AE-RA"                →  suffix="AE-RA"
   "Kim, AE-RA"                →  suffix="AE-RA"
   "kim, ae-ra"                →  suffix="ae-ra"
+  ```
+- A credential whose chunks are all typed in Title case reads as the name word its writing shows, since the writing is the cue and it cannot tell the two apart; after a comma the name is reversed around it.
+  ```
+  "John Smith, Phd-Md"        →  given="Phd-Md"
   ```
 - An unlisted credential of two letters written with its periods behind a full name reads as the family name, and the reading is reported: King's Counsel, which no vocabulary lists, is the case.
   ```

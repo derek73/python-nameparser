@@ -425,6 +425,9 @@ def test_period_joined_vocab_retires_the_single_character_chunk() -> None:
     ("AE-RA", True),        # capitals: the cue cannot read a name in them
     ("ae-ra", True),
     ("Ae/Ra", True),        # a slash joins no name, so it takes no cue
+    ("Ae-Ra/Md", True),     # nor does a word holding a slash anywhere
+    ("Md-v", False),        # a one-letter tail in lower case is a name's
+    ("Phd-Md", False),      # a credential typed in Title case: S3 Accepted
 ])
 def test_suffix_as_written_reads_a_joined_credential(
         text: str, expected: bool) -> None:
