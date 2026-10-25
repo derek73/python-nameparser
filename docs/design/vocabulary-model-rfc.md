@@ -23,7 +23,7 @@ Four phases, in a fixed order:
 | Phase | What | Changes parsing? | State |
 |---|---|---|---|
 | 1 | The per-word TOML format, compiled to today's sets | no | shipped in 2.6 (#737, #744); #749–#751 gave the words in `und.toml` their languages, leaving two particles of unrecorded origin |
-| 2 | Ambiguity derived from clashing readings; the ambiguity gate extended to every reading kind | yes, the first phase that does | #752 |
+| 2 | Ambiguity derived from clashing readings; the ambiguity gate extended to every reading kind | yes, the first phase that does | #752, design agreed 2026-10-23 |
 | 3 | Language packs that prefer or restrict their language | yes, for callers who choose one | #753, needs 1 and 2 |
 | 4 | Order and shape; the rules a pack can choose; the output model | yes | #754, mostly independent of 2 and 3 |
 
@@ -54,55 +54,109 @@ The reference for the format is nameparser/vocab/README.md; the decisions behind
 
 ## Phase 2: derived ambiguity and a general gate
 
-Phase 2 is the first phase that changes how names are parsed, and it gets its own design (#752). What follows is the shape that design starts from.
+Phase 2 is the first phase that changes how names are parsed. Its design was agreed on 2026-10-23 (#752); the decisions, the evidence for each and the options declined are decisions/vocabulary-model's entry of that date. What follows is the design as agreed.
+
+### Three sources of readings
+
+Every clash the parser decides is between readings of one token, and phase 2 puts them in one pool:
+
+- **Vocabulary readings**, the TOML kinds: titles, suffixes, particles, conjunctions, bound given names, birth markers.
+- **Declared name readings**, `given` and `family`, written by hand on a word some file claims or refuses (decision 11), with dated counts as provenance that never compute a reading (decision 12). Nobody maintains surname lists.
+- **Shape readings**, which today are rules standing around the vocabulary: the initial ([rules/T4](rules/T4-bare-letter-as-an-initial.md), a bare letter as an initial; [rules/T5](rules/T5-written-shape-of-an-initial.md), the written shape of an initial), the leading abbreviation title ([rules/H2](rules/H2-leading-abbreviation-title.md)), the dotted acronym ([rules/S3](rules/S3-credentials-written-with-interior-periods.md)), the capitals acronym ([rules/S9](rules/S9-unlisted-words-that-join-the-ambiguous-class-by-shape.md), unlisted words that join the ambiguous class by shape), the roman numeral past the listed ones ([rules/S10](rules/S10-trailing-roman-numeral.md)), paired initials ([rules/C5](rules/C5-paired-initials-after-the-comma.md), paired initials after the comma), and the joined and split spellings of a credential that phase 2 adds.
+
+Shape readings join the pool because of decision 20: a vocabulary reading can outrank a shape-derived one only if the shape's answer is a reading the gate weighs, not a verdict already written into a tag. Settling a clash by rewriting a tag also erases the word's other readings: retagging a capitals `DO` as an unambiguous credential let its particle reading take it into the family (`Doe, John DO`), which is why the case cue for credentials (#785) waits for the pool.
 
 ### Ambiguity from readings
 
-A word whose readings clash is ambiguous, so the markers can be derived instead of curated:
+A **clash** is a token whose readings would put it in different fields. The two markers that are clashes with a NAME become derived:
 
-- a particle that may be a given name is a word with a particle reading and a `given` reading;
-- an acronym that may be a name is a word with a credential reading and a `given` or `family` reading.
+- an acronym that may be a name is a word with a credential reading and a `given` or `family` reading;
+- a particle that may be a given name is a word with a particle reading and a `given` reading.
 
-Name readings are declared by hand, and only for words some file claims as vocabulary or refuses (decision 11, widened 2026-10-19): `fils`'s `family` reading is the evidence for its refused generation reading. Nobody maintains surname lists. Each carries its bearer counts as dated provenance (source, count, date), and **counts never compute a reading** (decision 12): two data sets deciding one reading would make the decision unreadable. Counts are evidence for the person who declares a reading, can be cited in an ambiguity report, and flag a word for review when a new census changes its count.
+The swap is snapshot-neutral by construction once the missing name readings are written, because no word sits in one marker set while needing to stay out of the other (decisions/vocabulary-model, 2026-10-18, with the recompute). The missing readings are declared on the flagged words, a few of them without a count, which a required `note` then explains. After the swap the build refuses the flags themselves, naming the reading to write instead, and a particle with no given reading still states `may_be_given = false`, so a new particle cannot fall to the unsafe side silently.
 
-The swap is measured to be safe as a starting point: deriving both markers from name readings reproduces today's sets exactly if the readings are declared on exactly the flagged words, because no word sits in one marker set while needing to stay out of the other (decisions/vocabulary-model, 2026-10-18, with the recompute). After the swap, the counts are what expose the weak flags.
+`may_be_initial` is not derived. Its clash is with the initial, a shape reading every cased single letter has, and which letters a tradition writes both ways is a judgment about the letter, not a name anyone bears: `e` and `i` may be read as an initial in a name written in one case, `y` may not.
 
-Not every marker derives. `e` and `i` may be read as an initial in a name written in one case, and `y` may not, though all three are single-letter conjunctions; `may_be_initial` stays an explicit property.
+### One gate, four steps
 
-### The gate, for every reading kind
+Every clash is decided by one ordered question, asked at each site that reaches it today:
 
-Today the gates are separate rules, each written for one class of word and each reading its own evidence:
+1. **Floor.** The name keeps a word to address: a title run gives its last word back ([rules/H3](rules/H3-title-runs-floor.md), the title run's floor), the second of two name words stays the family ([rules/S4](rules/S4-ambiguous-acronym-needs-words-to-spare.md), [rules/S10](rules/S10-trailing-roman-numeral.md)), and a bound given name keeps a family word in reserve ([rules/P5](rules/P5-bound-given-names.md)).
+2. **Form.** A cue the reading's kind declares, read off the word's writing, settles the clash, and a clash settled by form is not reported.
+3. **Structure.** The slot's own rule, in the order each slot reads it today: the ambiguous class at the comma ([rules/C4](rules/C4-ambiguous-credential-class-at-the-comma.md), the ambiguous credential class at the comma), the company of an unambiguous credential ([rules/S7](rules/S7-company-of-an-unambiguous-credential.md)), the credential's trailing run ([rules/S8](rules/S8-credentials-trailing-run.md)), a particle's leading position ([rules/P4](rules/P4-particle-at-the-front-of-the-name.md)), and the title phrase at the front of the name.
+4. **Count.** Words to spare (S4, S10).
 
-- an acronym that is also a name (`ma`, `do`): its periods, its capitals and the words left beside it ([rules/S3](rules/S3-credentials-written-with-interior-periods.md), credentials written with interior periods; [rules/S4](rules/S4-ambiguous-acronym-needs-words-to-spare.md), the ambiguous acronym needs words to spare; [rules/S6](rules/S6-case-signal-at-the-suffix-slot.md), the case signal at the suffix slot);
-- a one-letter roman numeral ending a name: a word to spare, so `John V` reads family `V` and `John Smith V` suffix `V`, both reported ([rules/S10](rules/S10-trailing-roman-numeral.md), the trailing roman numeral);
-- a title that may be the name: a title run with nothing but post-nominals behind it gives its last word back, so `Dr King Jr` reads family `King` and reports `title-or-name` ([rules/H3](rules/H3-title-runs-floor.md), the title run's floor);
-- a particle that may be a given name: its position, so `Van Johnson` keeps `Van` as the given name and reports the fork ([rules/P4](rules/P4-particle-at-the-front-of-the-name.md), a particle at the front of the name);
-- a bound given name: a name word to spare, so `abdul rahman` stays two names and `abdul rahman khan` joins them ([rules/P5](rules/P5-bound-given-names.md), bound given names);
-- a single-letter conjunction that may be an initial: the name's case, so `JOHN E SMITH` reads `E` as a middle initial and reports it ([rules/P8](rules/P8-single-letter-connective-against-the-initial-it-spells.md), a single-letter connective against the initial it spells).
+A clash not settled at step 2 is reported at the decision site (mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE), in the kind the slot reports today.
 
-A listed word that none of these reaches is read wherever its position allows, and a word too risky for that is kept out. That is why `fils`, a whole-word generation word that S10's count does not reach, is excluded rather than marked. Phase 2 makes the gate a property of a reading, so that any reading that can clash with a name is gated by the evidence its form offers, rather than a rule written for each class of word; the rules above are the evidence it starts from.
+**Where one gate does not reproduce the six rules.** H3 and P5 weigh no second reading: they reach every member of their category and read only a count, so they stay floors, step 1, and "one gate for six" means four clashes and two floors. The ambiguous acronym is reached at nine sites, each reading its cues in its own order, and that order is behavior, so the nine sites stay; what becomes one is the predicate each asks (mechanisms.md#ONE-PREDICATE-PER-QUESTION). Everything else reproduces once the name readings are declared, except `ld`, whose name reading is moved into its credential reading's `note` so that it stays ungated.
 
-`fils` shows what that buys. Emulated by adding it as an ambiguous acronym (measured 2026-10-19, master `e9855df0`):
+### What each kind reads
 
-| Input | Today (`fils` excluded) | Gated |
-|---|---|---|
-| `Alexandre Dumas fils` | middle `Dumas`, family `fils` | family `Dumas`, suffix `fils`, reported |
-| `ALEXANDRE DUMAS FILS` | middle `DUMAS`, family `FILS` | family `DUMAS`, suffix `FILS`, reported |
-| `Marie Fils` | family `Fils` | family `Fils`, reported |
-| `Jean Pierre Fils` | family `Fils` | family `Fils`, reported |
-| `Dumas, Alexandre, fils` | suffix `fils` | suffix `fils` |
+| Reading kind | Clashes with | Form cues (step 2) | Then |
+|---|---|---|---|
+| credential, acronym | a name reading | its periods; capitals in a name of mixed case, asked of the whole name; Title case leans to the name; the joined (`MD/PhD`) and split (`Pharm. D.`) spellings | the comma count, the company, the run, the count |
+| generation, whole word (`fils`) | a family reading | lower case in a name of mixed case settles the generation; Title case leans to the name | the count |
+| generation, agnomen (`Filho`, `Neto`) | a family or given reading | none: an agnomen is written in the case of the name around it | the count |
+| generation, roman numeral | the initial, for one letter; a name word | a period makes it an initial; lower case in a name of mixed case settles the generation; Title case leans to the name; an initial before it makes it a name word | the count |
+| generation, initial-shaped (`H.` for *hijo*, regnal `I.`) | the initial | none: written with its period it is exactly an initial | no cue: `default = false`, for a pack |
+| particle | a given reading | none: `Van` and `van` are both written | the leading position, the lone particle's fold |
+| conjunction, one letter | the initial | the name's case ([rules/P8](rules/P8-single-letter-connective-against-the-initial-it-spells.md)); in one case, `may_be_initial` | — |
+| title at the front | a given or family reading | none | the phrase partner, the title before it |
+| bound given name | none (a floor) | — | — |
 
-Every row is right or unchanged, and the forks are reported. But the emulation borrows the acronym gate's cues, and capitals are an acronym's cue, not a generation word's: it suits `fils` because French writes the word in lowercase. What evidence each kind's gate reads is phase 2's central question:
+A reading whose writing offers no cue is one the gate could only guess, so it is `default = false`: recorded in the TOML, compiled to nothing by default, turned on by a pack in phase 3. Spanish `H.`, German regnal `I.` and Czech `st.` are the first.
 
-- a lowercase word after the name (`fils`) has its case;
-- an initial-shaped one (Spanish `H.` for *hijo*, German regnal `I.`) has the count S10 already gives a bare one-letter numeral, against a period, which marks a one-letter word as an initial ([rules/T5](rules/T5-written-shape-of-an-initial.md), the written shape of an initial);
-- a reading with no reliable cue at all may need to be pack-only (`default = false`, phase 3).
+**The numerals ask one predicate.** `i` to `v` are vocabulary and `vi` to `x` are shape, and today some rules ask only the vocabulary, so `John Smith III MD` and `John Smith VI MD` read differently (#784, #774). One predicate answers for every spelling the way the trailing numeral rule does (shape, the count for one letter, an initial in front, the period, the case), and every rule that asks either recognizer asks it. Listing `vi` to `x` instead was measured and declined: a middle initial `X` would read as a generation.
 
-**A gate at the front of the name** is the same question for titles. `dean`, `justice` and `major` are title words borne as given names, left out of `titles` today. The candidate rule is that such a word is a title only inside a title phrase: after a modifier or another title (`Chief Justice`), before a phrase link (`Dean of Students`), or with a head title after it (`Major General`). Today all three of those read the word as a given name (measured 2026-10-19), while `Dean Martin` correctly does. Two decisions bound it: `Dean Smith` keeps reading given `Dean` (decision 13), and the rule covers only words outside `titles` today, so a title that is also a given name (`prince`, `sir`) is decided one word at a time and never re-decided silently by recording a given reading (decision 16). Title-phrase modifiers (`vice`, `rear`, `grand`) are the same rule from the other side: a title only next to a head title (decision 10, parked).
+**`fils` and the agnomens show what kind-specific cues buy.** `fils` is gated by its case and the count, so `Alexandre Dumas fils` is to read suffix `fils` while `Marie Fils` keeps her family name, reported. The Brazilian agnomens are gated by the count alone: case would say nothing, and the plain generation reading breaks real surnames (`Ana Neto`) and given names.
+
+**A credential's spelling is a form cue.** A credential joined by `-` or `/` reads as one when every chunk is listed and none is ambiguous, since a hyphen also joins names (`Smith-Jones`); an unlisted word of capitals joined that way joins the ambiguous class after a comma, gated by the name's case contrast. A credential split across a space (`Pharm. D.`, generalizing the `Ph. D.` merge) merges only where its first chunk has two or more letters, and the merged piece is a member of the ambiguous class, decided by the comma count and words to spare: an opening single letter is a middle initial (`SMITH, JOHN A. MS.` holds an initial and a salutation, not a credential `AMS`), which is also why #872 stopped reading two dotted single letters as a credential. The merged piece starts the credential's run (#827), once the numeral predicate answers the numeral before a credential.
+
+### The front of the name
+
+The front of a name has no words-to-spare cue: a title addresses the name after it. What it has is the contested-head rule. **A title word that also has a name reading is a title only inside a title phrase:**
+
+- **The title before it is not a partner.** A contested word after another title is the given name (`Mr Sultan Khan`, `Ms Princess Ada Obi`, #853), unless that title is its partner; today `Mr Sultan Khan` reads title `Mr Sultan`.
+- **Its partner** is a modifier or a style before it (`Her Royal Highness Princess Anne`), `of` after it (`Dean of Students`), or a head title after it that the word `attaches` to (`Major General`). A salutation is never a partner (`SMITH, DEAN MR.` is a given name and a salutation).
+- **Modifiers** (decision 10, unparked) are titles only beside a head title, at the head of the name only, never in a comma part, where a lone title word is the person's role.
+
+Which title words get a given reading is decided one word at a time (decision 16), in measured batches, and `Dean Smith` keeps reading given `Dean` (decision 13). A title that only ever stands in front stays a title (`lord`, `sir`, `lady`), and a word that opens names in one tradition but is a title class in another (`guru`, with its Devanagari twin) waits for a language pack. Where the rule reads a contested title as a name, the parse reports `title-or-name`.
+
+**Abbreviated given names** use the same pool from the other side (#789): a `given` reading with `same_as` the full name (`chas` → Charles, Filipino `ma` → María) is to outrank the leading-abbreviation title rule's shape, so that `Ma. Cristina Santos Reyes` reads given `Ma.` where today it reads title `Ma.`.
+
+### Brackets
+
+A bracketed or quoted credential escapes the nickname reading where its writing settles it ([rules/S1](rules/S1-bracketed-credential-is-not-a-nickname.md), #810): with interior periods, or in capitals in a name of mixed case, the case asked of the whole name. `(Ed)` stays a nickname, and so does content standing inside the name rather than after it (`Jean 'JD' Smith`).
 
 ### Readings on the parse
 
-A caller should be able to see the reading behind a parse: its language, kind, native spelling (`do` → `Đỗ`) and counts. The intended split is that **an `Ambiguity` carries the reading the parse did not take**, and **a token carries the reading it did**, so `Nguyen Van Do`, which forks nothing, still exposes `Đỗ` without a report nobody would act on. The API shape is open (#752).
+A caller should be able to see the reading behind a parse. **An `Ambiguity` carries the reading the parse did not take** (`Ambiguity.alternative`: its kind, the field it would have put the token in, and whether it came from the vocabulary, a declared name or a shape), and **a token carries the reading it did** (`Token.reading`), so `Nguyen Van Do`, which forks nothing, can still expose `Đỗ` without a report nobody would act on. A word the credential's run takes by position alone is told from a word with a declared name reading by that source, so it needs no new ambiguity kind. `Ambiguity.alternative` is planned for a 2.x minor, with the pickle guard widened to accept a field added later; `Token.reading` waits for 3.0, since it needs a per-word reading index compiled for parse time.
+
+### The phase 1 reserved names
+
+Phase 2 gives two of them meaning: `attaches`, the phrase partner above, a property of a title reading naming the title kinds it qualifies; and `default = false`, for readings with no cue. `leading_only` and `trailing_only` are not needed, the gate's slots carrying position; `bare_only` is settled by shape already ([rules/P7](rules/P7-one-letter-particle-against-the-initial-it-spells.md), a one-letter particle against the initial it spells); `separators` belongs with `attached` and its other side, phase 4's glued words. Those four stay reserved, their messages naming the phase that needs them.
+
+### The order of work
+
+Each sub-phase is one PR, measured on its own base: the committed snapshot read by shape, the PSC register's fielded names scored for fixed, broken and changed records (`local_agreement.py psc-individuals`, the main measure, since its filers separated the fields), the local snapshots it reaches, and the rules it moves amended in the same diff.
+
+| Sub-phase | What | Needs |
+|---|---|---|
+| 2a | the derived markers: the name readings declared, the flags refused | — (neutral) |
+| 2b | one predicate per question: the split-credential merge, the numeral, paired initials in a script with capitals | — (neutral) |
+| 2c | joined credentials, every chunk listed | 2b |
+| 2d | joined unlisted capitals after a comma | 2b |
+| 2e | split credentials, and the merged piece starting the run (#827) | 2b, 2f |
+| 2f | every numeral rule asks one predicate (#784, #774, #819) | 2b |
+| 2g | capitals settle a listed credential (#785), through the pool | 2a |
+| 2h | generation readings gated by kind: `fils`, the agnomens, `default = false` | 2b |
+| 2i | the front of the name: the phrase partner, the contested heads, #853's word after a title, modifiers at the head | 2b |
+| 2j onward | titles that are names, one batch per word or group, in the agreed order | 2i |
+| 2k | abbreviated given names over the leading-abbreviation title (#789) | 2b |
+| 2l | the bracket escape reads the derived clash (#810) | 2a |
+| 2m | surfacing, `Ambiguity.alternative` | the rest |
+
+2a and 2b are independent of each other. Measured changes that belonged outside phase 2 shipped as 2.x PRs: bare `wm` (#873), the `;` between credentials (#871), two dotted single letters as a surname (#872) and `sa` out of the vocabulary (#879).
 
 ## Phase 3: packs that prefer or restrict
 
@@ -148,10 +202,12 @@ A language file will hold a `[rules]` table that turns on rules implemented in t
 
 | Rule | Input | Today |
 |---|---|---|
-| surname span (es, pt) | `Gabriel García Márquez` | middle `García`, family `Márquez` |
+| surname span | `Gabriel García Márquez` | middle `García`, family `Márquez` by default; family `García Márquez` under the opt-in `Policy(two_family_names=True)` |
 | compound given name (pt) | `Maria do Carmo Silva` | given `Maria`, family `do Carmo Silva` |
 | married-name ending (hu) | `Kovács Jánosné` | given `Kovács`, family `Jánosné` |
 | digraph initials (cs) | `Petr Chmelař` | initials `P. C.` |
+
+The surname span has shipped ahead of the packs, as an opt-in `Policy` field rather than a pack, since the convention is not one language's ([rules/O6](rules/O6-two-family-names.md), two family names, #875 and #878; decisions/O6 has why it is not `locales.ES`). A pack can later switch it on in its `[rules]`, as it will a default order.
 
 The real-name corpora agree on the priority. In the GND and Wikidata corpora, Spanish and Latin American double surnames written given-first disagreed with the source on 315 of 390 names, while the same kind of names in index form, where the comma settles it, disagreed on 0 of 60 (counted 2026-10-16 on master `4375b01b`, from `gnd_agreement.json` and `wikidata_agreement.json`): the gap is order and span, not vocabulary.
 
