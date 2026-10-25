@@ -42,6 +42,13 @@ _BIDI = re.compile('[\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069]+')
 # transcription marker; only the Chinese 间隔号 is (#298).
 _NAME_DOT_SEPARATORS = frozenset({"\u30FB", "\uFF65"})
 
+# rules/T1: "an ignorable character separates its neighbors and never
+# joins them" -- the two with no opt-out: the zero-width space and the
+# byte-order mark carry nothing a caller would keep. The joiners U+200C,
+# U+200D and U+2060 are not here: they decide how the letters around
+# them join (decisions/T1, #851).
+_INVISIBLE_SEPARATORS = frozenset({"\u200B", "\uFEFF"})
+
 _INTERPUNCT = "\u00B7"
 # rules/T3: "the interpunct divides a name only between two
 # characters of a classified East Asian script; anywhere else it is
@@ -88,17 +95,18 @@ def _ignorable(ch: str, state: ParseState) -> bool:
     if ch.isspace():
         return True
     if ch.isascii():
-        # both strip classes and the name-dot separators are entirely
-        # non-ASCII (bidi >= U+061C, emoji >= U+2600, dots >= U+30FB):
-        # skip the checks below for every ASCII letter
+        # both strip classes and the unconditional separators are
+        # entirely non-ASCII (bidi >= U+061C, emoji >= U+2600, the
+        # invisibles >= U+200B, dots >= U+30FB): skip the checks below
+        # for every ASCII letter
         return False
     # unconditional, like whitespace -- not policy-gated, so this sits
     # ahead of the policy check rather than in _tokenize_region beside
-    # COMMA_CHARS (commas RECORD an offset; these dots must not --
-    # only the 间隔号 marks a transcription and records, #298, see
+    # COMMA_CHARS (commas RECORD an offset; these must not -- only the
+    # 间隔号 marks a transcription and records, #298, see
     # _NAME_DOT_SEPARATORS above). The only load-bearing constraint is
-    # "after the isascii fast path" (both dots are non-ASCII).
-    if ch in _NAME_DOT_SEPARATORS:
+    # "after the isascii fast path" (all four are non-ASCII).
+    if ch in _NAME_DOT_SEPARATORS or ch in _INVISIBLE_SEPARATORS:
         return True
     return _stripped(ch, state.policy)
 
