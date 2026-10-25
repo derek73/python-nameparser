@@ -690,6 +690,15 @@ class Lexicon:
     #: vocabulary is. Full default list:
     #: :data:`~nameparser.config.suffixes.GLUED_HONORIFICS`.
     honorific_tails: frozenset[str] = frozenset()
+    #: Salutations that read as a title where one ENDS the given part
+    #: after a family comma, written bare: "Doe, Jane Mrs" reads title
+    #: "Mrs" where an office or rank word there stays a middle name
+    #: ("Doe, John King"), rules/H8. A period-marked title word reads as
+    #: a title there whether listed here or not (rules/H5). Entries need
+    #: not also be in ``titles``; one that is not is never consulted.
+    #: Full default list:
+    #: :data:`~nameparser.config.titles.AFTER_GIVEN_TITLES`.
+    after_given_titles: frozenset[str] = frozenset()
     #: Lowercase word -> case mask used by capitalized(): the word's
     #: own letters and digits, each in the case it takes ("phd" ->
     #: "PhD"), laid over the word as written, so the one entry
@@ -705,15 +714,6 @@ class Lexicon:
     # constructor tolerates any Mapping (or pair iterable) at runtime and
     # canonicalizes here; this closes the caller-aliasing hole and keeps
     # Lexicon hashable. Read via capitalization_exceptions_map.
-    #: Salutations that read as a title where one ENDS the given part
-    #: after a family comma, written bare: "Doe, Jane Mrs" reads title
-    #: "Mrs" where an office or rank word there stays a middle name
-    #: ("Doe, John King"), rules/H8. A period-marked title word reads as
-    #: a title there whether listed here or not (rules/H5). Entries need
-    #: not also be in ``titles``; one that is not is never consulted.
-    #: Full default list:
-    #: :data:`~nameparser.config.titles.AFTER_GIVEN_TITLES`.
-    after_given_titles: frozenset[str] = frozenset()
     capitalization_exceptions: tuple[tuple[str, str], ...] = ()
     _cap_map: Mapping[str, str] = field(
         init=False, repr=False, compare=False, hash=False,

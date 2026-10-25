@@ -62,7 +62,8 @@ run per entry as each file loads, and 4-7, 9 and 10 over the whole pool
 in check_pool, 6 first and 10 last;
 
 plus the data invariants that were asserts: may_be_initial only on a
-cased single letter, and an elided particle in both apostrophes (#700).
+cased single letter, an elided particle in both apostrophes (#700), and
+after_given only on a salutation reading (#835).
 No post-nominal is both an acronym and a word, by checks 4 and 5; a
 final check in compile_pool is the backstop. The subset relations
 (GIVEN_NAME_TITLES and AFTER_GIVEN_TITLES in TITLES, each marker set in
@@ -740,7 +741,7 @@ def _check_reading(r: Reading, pool: Pool) -> None:
             # rank is borne as a middle name: the reason the given
             # part's end may read one as a title (decisions/H8, #835)
             raise VocabError(f"{where}: after_given marks a salutation "
-                             f"reading; a {r.kind} is borne as a middle name")
+                             f"reading only, not a {r.kind!r} one (rules/H8)")
     if r.category == "suffix":
         acronym = r.acronym
         if acronym and "." in r.text:

@@ -1435,7 +1435,8 @@ def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
                      salutations: bool = False) -> int:
     """How many pieces of `rest` the trailing title chain LEAVES
     standing: `rest[:kept]` are the name pieces and `rest[kept:]` the
-    period-marked title words the chain took, in piece order. Counted
+    title words the chain took (period-marked, or under `salutations`
+    a bare salutation), in piece order. Counted
     the way `peel_trailing` counts, so the two answers compose without
     arithmetic at the call site. `rest` is the caller's NAME pieces:
     on the no-comma path what the S2 peel left, after a family comma
@@ -1481,7 +1482,9 @@ def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
                 (_PERIOD_ABBREV.match(tokens[piece[0]].text)
                  and is_title_piece(piece, ptags[idx], tokens))
                 # rules/H8: "the given part after it ends in a word whose
-                # title reading is a salutation" -- a tag test, so a name
+                # title reading is a salutation" -- the salutation chains
+                # as a period-marked title does ("It reads as the
+                # period-marked spelling reads"); a tag test, so a name
                 # word pays no frame
                 or (salutations and "vocab:after-given-title"
                     in tokens[piece[0]].tags)):

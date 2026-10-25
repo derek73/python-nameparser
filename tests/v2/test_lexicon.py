@@ -978,6 +978,63 @@ def test_removing_a_honorific_tail_is_the_peels_off_switch() -> None:
     assert (on.family, on.suffix) == ("田中", "さん")
 
 
+def test_after_given_titles_is_a_vocab_field() -> None:
+    # #835: add, remove and | reach it, and it is normalized like every
+    # other field, so the period-marked entry matches the bare word
+    lex = Lexicon.empty().add(after_given_titles={"Mrs.", "mr"})
+    assert lex.after_given_titles == frozenset({"mrs", "mr"})
+    assert lex.remove(after_given_titles={"mr"}).after_given_titles == \
+        frozenset({"mrs"})
+    merged = (Lexicon(after_given_titles=frozenset({"mrs"}))
+              | Lexicon(after_given_titles=frozenset({"miss"})))
+    assert merged.after_given_titles == frozenset({"mrs", "miss"})
+    with pytest.raises(TypeError):
+        Lexicon(after_given_titles="mrs")  # type: ignore[arg-type]
+    edited = Lexicon.default().add(after_given_titles={"zzq"})
+    assert pickle.loads(pickle.dumps(edited)) == edited
+    assert "after_given_titles: +1" in repr(edited)
+
+
+def test_removing_an_after_given_title_is_rule_h8s_off_switch() -> None:
+    # Dropping the marker leaves the bare salutation a middle name after
+    # a family comma, while the period-marked spelling still reads as
+    # the title by H5's shape, which never consults the marker
+    lex = Lexicon.default().remove(after_given_titles={"mrs"})
+    p = Parser(lexicon=lex)
+    assert (p.parse("Doe, Jane Mrs").title,
+            p.parse("Doe, Jane Mrs").middle) == ("", "Mrs")
+    assert p.parse("Doe, Jane Mrs.").title == "Mrs."
+    # the baseline the removal is against
+    assert Parser().parse("Doe, Jane Mrs").title == "Mrs"
+
+
+def test_every_shipped_after_given_title_is_reachable() -> None:
+    # a property of the set, not its contents: each entry must reach
+    # rules/H8 at the slot it is listed for, so a member that another
+    # reading claims first (a suffix dual, a particle, a bound given
+    # name) shows up here as silently inert
+    p = Parser()
+    unreached = [w for w in sorted(p.lexicon.after_given_titles)
+                 if p.parse(f"Doe, Jane {w.title()}").title != w.title()]
+    assert not unreached, unreached
+
+
+@pytest.mark.parametrize(("lexicon", "text", "word"), [
+    # in the marker, removed from the titles
+    (Lexicon.default().remove(titles={"mrs"}), "Doe, Jane Mrs", "Mrs"),
+    # added to the marker only
+    (Lexicon.default().add(after_given_titles={"zzq"}), "Doe, Jane Zzq",
+     "Zzq"),
+], ids=["removed-from-titles", "marker-only"])
+def test_an_after_given_title_that_is_no_title_is_never_read(
+        lexicon: Lexicon, text: str, word: str) -> None:
+    # the orphan contract docs/customize.rst states: an entry is read
+    # only for a word that is a title, so an orphan is inert rather than
+    # an error (classify tags the marker only where the word is a title)
+    name = Parser(lexicon=lexicon).parse(text)
+    assert (name.title, name.middle) == ("", word)
+
+
 @pytest.mark.parametrize("field", _PHRASE_FIELDS)
 def test_a_shipped_phrase_entry_is_stored_as_written(field: str) -> None:
     """The half of a phrase entry's storage rule config's own

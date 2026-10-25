@@ -11249,6 +11249,15 @@ CASES: tuple[Case, ...] = (
                "as it declines 'Berg, abdul Prof.': the group-side "
                "predictor admits the same bare salutations the walk "
                "does, or the join read given 'abdul Mrs'"),
+    Case("bare_salutations_around_a_suffix_before_a_bound_given_join",
+         "Doe, abdul Mr Jr Mrs",
+         {"title": "Mr Mrs", "given": "abdul", "family": "Doe",
+          "suffix": "Jr"}, classification="fix(#835)",
+         notes="title, suffix, title behind a bound given name: the "
+               "join's decline reads the part through tail_reading, "
+               "whose second chain pass takes 'Mr' only if the "
+               "salutation flag reaches it, as 'Doe, abdul Mr. Jr Mrs.' "
+               "reads"),
     Case("bare_salutation_behind_a_trailing_particle",
          "Doe, Jane van Mrs",
          {"title": "Mrs", "given": "Jane", "family": "van Doe"},
@@ -11261,8 +11270,9 @@ CASES: tuple[Case, ...] = (
          "Doe, John Goodman",
          {"given": "John", "middle": "Goodman", "family": "Doe"},
          notes="rules/H8's Except: goodman is a salutation the "
-               "vocabulary refuses after_given, a surname of 73,136 "
-               "US bearers, since a middle name may be a surname"),
+               "vocabulary refuses after_given, a surname (the counts "
+               "are on en.toml's entry), since a middle name may be a "
+               "surname"),
     Case("bare_office_word_ending_a_family_comma_given_part",
          "Doe, John King",
          {"given": "John", "middle": "King", "family": "Doe"},
