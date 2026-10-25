@@ -62,8 +62,9 @@ at fault:
     `may_be_name` and `may_be_given = true` are refused, each naming
     the reading to write, a particle reading states
     `may_be_given = false` exactly where its word has no `given`
-    reading in any file, and an agnomen reading has a name reading on
-    its word, which gates it (rules/S11);
+    reading in any file, an agnomen reading has a name reading on
+    its word, which gates it (rules/S11), and no other suffix word
+    kind has one, since the gate reads only those two;
 
 numbered by subject, not by when they run: 1-3, 8, 7's case mask and
 11's refusals run per entry as each file loads, and 4-7, 9, 11's
@@ -1032,6 +1033,20 @@ def check_pool(pool: Pool) -> None:
                              f"`family` reading on its word, which gates it "
                              f"by the count (rules/S11); with dated counts "
                              f"from tools/name_usage.py or a `note` saying why")
+
+    # 11, the other suffix words: the third marker reads only a
+    # generation's and an agnomen's clash with a name (GATED_WORDS), so a
+    # name reading beside another word kind would mark nothing and leave
+    # the word an ungated suffix, taking the family name from every
+    # two-word name it ends; refused rather than compiled to nothing
+    for r in pool.readings:
+        if (r.category == "suffix" and not r.acronym and r.on_by_default
+                and r.kind not in GATED_WORDS and r.text in named):
+            raise VocabError(f"{r.where()}: a name reading beside this "
+                             f"reading gates nothing, the gate reading only "
+                             f"{' and '.join(sorted(GATED_WORDS))} readings "
+                             f"(rules/S11); classify the word as one, or "
+                             f"keep the counts in this reading's `note`")
 
     # 9: a bound given name that is also a particle must be one that may
     # be given -- the bound join reads it as a given name. Lexicon raises

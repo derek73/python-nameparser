@@ -178,10 +178,8 @@ def test_a_suffix_word_beside_a_name_reading_is_gated_and_an_agnomen_by_the_coun
     assert {"zzq", "zzr", "zzs"} <= c["SUFFIX_WORDS"]
     assert c["SUFFIX_WORDS_AMBIGUOUS"] == {"zzq", "zzs"}
     assert c["AGNOMENS"] == {"zzs"}
-    # only the kinds a gate reads: another word kind beside a name
-    # reading marks nothing (build.GATED_WORDS)
-    h = build.compile_files({"ja.toml": _w('[[word]]\ntext = "zzt"\nhonorific = {}\nfamily = { note = "x" }')})
-    assert "zzt" in h["SUFFIX_WORDS"] and not h["SUFFIX_WORDS_AMBIGUOUS"]
+    # only the kinds a gate reads; another word kind beside a name
+    # reading is refused (check 11), never left ungated
 
 
 # ------------------------------------------------- one mutation per check
@@ -283,6 +281,8 @@ MUTATIONS = [
     ("reserved-separators", {"th.toml": _w('[[word]]\ntext = "นาย"\nsalutation = { separators = [] }')}, "reserved for phase 4"),
     # 11, the agnomen's half: an agnomen is gated by its name reading,
     # so one without would take the family name from two-word names
+    ("name-reading-beside-an-honorific", {"ja.toml": _w('[[word]]\ntext = "zzt"\nhonorific = {}\nfamily = { note = "x" }')}, "gates nothing"),
+    ("name-reading-beside-a-generic-suffix-word", {"en.toml": _w('[[word]]\ntext = "zzt"\nsuffix = {}\ngiven = { note = "x" }')}, "gates nothing"),
     ("agnomen-as-an-acronym", {"pt.toml": _w('[[word]]\ntext = "filho"\nagnomen = { acronym = true }\nfamily = { note = "x" }')}, "an agnomen is a word"),
     ("agnomen-without-a-name-reading", {"pt.toml": _w('[[word]]\ntext = "filho"\nagnomen = {}')}, "an agnomen needs a `given` or `family` reading"),
     ("agnomen-whose-name-reading-is-elsewhere-only-as-an-exclusion", {"pt.toml": _w('[[word]]\ntext = "filho"\nagnomen = {}\nexcluded = { family = "x" }')}, "an agnomen needs a `given` or `family` reading"),

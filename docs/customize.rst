@@ -375,8 +375,8 @@ writing of ``fils`` speaks as well: in a mixed-case name a lower-case
 
 A caller whose data writes an agnomen as part of the surname takes it
 out by removing the word from ``suffix_words`` and from the two
-markers over it, which must be emptied of it first or together, since
-an orphan raises ``ValueError``:
+markers over it, together: an orphan in ``suffix_words_ambiguous``
+raises ``ValueError``, and one left in ``agnomens`` is simply never read:
 
 .. doctest::
 
