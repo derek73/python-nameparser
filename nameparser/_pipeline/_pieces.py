@@ -1125,25 +1125,44 @@ def second_unit(rest: Sequence[int], units: Sequence[int]) -> int:
     return len(rest)
 
 
-def _peeled_in_front(piece: Sequence[int], ptags: Set[str],
-                     tokens: Sequence[WorkToken], preceding: str | None,
-                     one_case: bool | None) -> bool:
-    """Whether the walk would peel `piece` standing in front of a
-    generation word that is also a name, so that its count looks past
-    it (rules/S11, #890): a suffix piece; a numeral of two or more
-    letters the trailing fork reads as the generation ('Pedro VI
-    Filho'); and a member of the ambiguous class whose writing makes it
-    the suffix ('Pedro MA Filho', 'Pedro fils Netto')."""
-    if is_suffix_piece(piece, ptags, tokens):
-        return True
-    if len(piece) != 1:
-        return False
-    tok = tokens[piece[0]]
-    stem = tok.text.rstrip(".")
-    if (len(stem) > 1 and _ROMAN.match(stem) is not None
-            and reads_as_generation(tok.text, tok.tags, preceding, one_case)):
-        return True
-    return listed_lean(tok, one_case) == "credential"
+def _taken_in_front(rest: Sequence[int], front: int,
+                    pieces: Sequence[Sequence[int]],
+                    ptags: Sequence[Set[str]],
+                    tokens: Sequence[WorkToken],
+                    one_case: bool | None) -> bool:
+    """Whether the trailing walk takes `rest[front]`, standing in front
+    of a generation word that is also a name, so that word's count looks
+    past it (rules/S11, #890). By itself: a suffix piece, a numeral of
+    two or more letters read as the generation ('Pedro VI Filho'), a
+    member of the ambiguous class its writing makes a suffix ('Pedro MA
+    Filho'). Carried: a bare member of the class standing behind any of
+    those, the members between passing the run on, as rules/S7's company
+    reads it ('Pedro Junior Ma Filho')."""
+    j = front
+    while j >= 0:
+        piece = pieces[rest[j]]
+        if is_suffix_piece(piece, ptags[rest[j]], tokens):
+            return True
+        if len(piece) != 1:
+            return False
+        tok = tokens[piece[0]]
+        stem = tok.text.rstrip(".")
+        if (len(stem) > 1 and _ROMAN.match(stem) is not None
+                and reads_as_generation(
+                    tok.text, tok.tags,
+                    tokens[pieces[rest[j - 1]][0]].text if j >= 1 else None,
+                    one_case)):
+            return True
+        if AMBIGUOUS_ACRONYM_TAG not in tok.tags:
+            return False
+        if listed_lean(tok, one_case) == "credential":
+            return True
+        # a bare member that leans nowhere is taken only if something
+        # in front of it carries the run; an agnomen carries nothing
+        if AMBIGUOUS_WORD_TAG in tok.tags:
+            return False
+        j -= 1
+    return False
 
 
 def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
@@ -1298,14 +1317,15 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
             # to peel anyway
             # rules/S11: "only where the name has words to spare" -- a
             # generation word counts the NAME words in front of it, so
-            # a suffix word there ('Pedro Junior Filho') is not counted
-            # as the word it spares and then peeled as well
+            # what the walk takes there ('Pedro Junior Filho', 'Pedro VI
+            # Filho', 'Pedro Junior Ma Filho') is not counted as the word
+            # spared and then peeled as well (#890). A scan that stops at
+            # the first word the walk keeps, so a run of agnomens costs
+            # a step each, not a walk each
             front = k - 2
             if AMBIGUOUS_WORD_TAG in tokens[piece[0]].tags:
-                while front >= 0 and _peeled_in_front(
-                        pieces[rest[front]], ptags[rest[front]], tokens,
-                        tokens[pieces[rest[front - 1]][0]].text
-                        if front >= 1 else None, one_case):
+                while front >= 0 and _taken_in_front(
+                        rest, front, pieces, ptags, tokens, one_case):
                     front -= 1
             if lean == "credential" or (lean is None and front >= second):
                 k -= 1

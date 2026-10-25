@@ -2642,6 +2642,7 @@
 {"name": "Pedro J. Neto", "given": "Pedro", "family": "J.", "suffix": "Neto", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. J."}
 {"name": "Pedro Jorba y Gassó", "given": "Pedro", "family": "Jorba y Gassó", "initials": "P. J. G."}
 {"name": "Pedro Junior Filho", "given": "Pedro", "middle": "Junior", "family": "Filho", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. J. F."}
+{"name": "Pedro Junior Ma Filho", "given": "Pedro", "middle": "Junior Ma", "family": "Filho", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. J. M. F."}
 {"name": "Pedro Junior fils", "given": "Pedro", "suffix": "Junior fils", "ambiguities": ["GIVEN_OR_FAMILY", "SUFFIX_OR_NAME"], "initials": "P."}
 {"name": "Pedro López Ruiz H.", "given": "Pedro", "middle": "López Ruiz", "family": "H.", "initials": "P. L. R. H."}
 {"name": "Pedro M.Filho", "given": "Pedro", "family": "M.Filho", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. M."}

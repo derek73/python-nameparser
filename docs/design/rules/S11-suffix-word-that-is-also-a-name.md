@@ -5,7 +5,7 @@
 **Then:** it reads as the generation only where the name has words to spare, as a bare ambiguous acronym does (S4), and at the slots that report, either reading carries the ambiguity flag.
 
 - **The writing is read by S6**, and for a generation word such as French `fils` it speaks at the other end of the case: lower case in a name of mixed case is the generation, Title case leans to the name, capitals say nothing. An agnomen, the Portuguese `Filho`, `Neto`, `Sobrinho` and their feminines, is written in the case of the name around it, so its writing never speaks and the count decides alone.
-- **Only name words in front of it count**: a word there that the trailing run takes, a suffix word, a roman numeral read as the generation (S10) or a member of the ambiguous class its writing makes a suffix (S6), is no word to spare, and a suffix word there is no company either, as it is for an acronym (S7).
+- **Only name words in front of it count**: a word there that the trailing run takes, a suffix word, a roman numeral read as the generation (S10), a member of the ambiguous class its writing makes a suffix (S6) or one such a word carries in front of it (S7), is no word to spare, and a suffix word there is no company either, as it is for an acronym (S7).
 - **After a comma** the word is read as a member of the ambiguous class is: by the count of the name words before the comma at the first slot after it (C4), and by its writing alone where it ends the given part after a family comma (S5).
 
 **Because:** an agnomen marks its bearer against a relative of the same name, as Junior does, so it ends the name the way a generation does and is not part of the surname the family shares. But `Neto`, `Fils` and `Neta` are borne as names too, and a name of two words has no word to spare for a generation. Case tells a French surname from its generation word, and it cannot tell an agnomen, which takes the case of whatever it is written beside.
@@ -28,6 +28,7 @@
 "PEDRO JUNIOR FILHO"        →  family="FILHO"  · boundary
 "Pedro VI Filho"            →  family="Filho"  · boundary
 "Pedro MA Filho"            →  family="Filho"  · boundary
+"Pedro Junior Ma Filho"     →  family="Filho"  · boundary
 "Pedro Alves Junior Filho"  →  suffix="Junior Filho"
 ```
 

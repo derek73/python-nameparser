@@ -1667,6 +1667,20 @@ CASES: tuple[Case, ...] = (
          notes="what the trailing run would take in front of an agnomen "
                "is no word to spare for it, a numeral the fork reads or "
                "a member its writing makes a suffix (rules/S11, #890)"),
+    Case("a_member_carried_in_front_of_an_agnomen_is_no_word_to_spare", "Pedro Junior Ma Filho",
+         {"given": "Pedro", "middle": "Junior Ma", "family": "Filho"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="a member a suffix word in front carries is what the "
+               "trailing run takes, so it spares no word for the agnomen "
+               "behind it (rules/S11, #890)"),
+    Case("a_particle_carried_in_front_of_an_agnomen", "Pedro Junior do Filho",
+         {"given": "Pedro", "middle": "Junior", "family": "do Filho"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="a member a suffix word in front carries is what the "
+               "trailing run takes, so it spares no word for the agnomen "
+               "behind it (rules/S11, #890)"),
     Case("fils_after_a_name", "Alexandre Dumas fils",
          {"given": "Alexandre", "family": "Dumas", "suffix": "fils"},
          classification="fix(#752)",

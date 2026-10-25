@@ -292,6 +292,8 @@ _SHAPES = {
     "maiden_clause": "nee MA ",     # group: M2's view over the segment
     "link_run": "i Und ",           # group: P3's both-sides walk (#397)
     "credential_run": "PhD Ma ",    # pieces: S7's anchor pass (#544)
+    "agnomens": "Neto ",            # pieces: a gated word scans its front (#890)
+    "carried_agnomens": "MA ma Neto ",  # pieces: the scan through carried members
 }
 
 _BASE = 800
