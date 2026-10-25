@@ -293,7 +293,8 @@ Renamed word lists (2.2)
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 The vocabulary that feeds both columns is exposed by ``nameparser.config``
-(compiled since 2.6 from ``nameparser/vocab/*.toml``),
+(compiled since 2.6 from ``nameparser/vocab/*.toml``, all but the Korean
+surname list),
 and in 2.2 its module and constant names moved to the vocabulary the
 ``Lexicon`` column speaks — particles, bound given names, given-name
 titles, suffix words. Terminology only; one of the four kept 1.x's
@@ -744,7 +745,7 @@ grep your fixtures for, with what 1.4 read:
   does: 1.4 kept it in the word beside it, so ``"\u200bDr. John Smith"``
   read first ``Dr.``.
 - ``capitalize()`` on ``"j.r.r. tolkien"`` (2.6) — 1.4 wrote ``J.r.r.``;
-  a capital after a full stop or an ayn is kept.
+  repair now capitalizes after a full stop or an ayn.
 
 .. doctest::
 
