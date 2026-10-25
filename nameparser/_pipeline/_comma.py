@@ -36,14 +36,15 @@ from nameparser._pipeline._pieces import (
     listed_lean, own_words, segment_suffix_reading,
 )
 from nameparser._pipeline._state import (
-    AMBIGUOUS_ACRONYM_TAG, SHAPE_ACRONYM_TAG, ParseState, PendingAmbiguity,
-    Structure, WorkToken, copy_with,
+    AMBIGUOUS_ACRONYM_TAG, SHAPE_ACRONYM_TAG, SPLIT_CREDENTIAL_TAG,
+    SPLIT_MEMBER_TAG, ParseState, PendingAmbiguity, Structure, WorkToken,
+    copy_with,
 )
 from nameparser._pipeline._vocab import (
-    ROMAN, SPLIT_PAIR_OPENS, caps_shape_candidate, claimed_as_non_name,
+    ROMAN, caps_shape_candidate, claimed_as_non_name,
     composed_len, delimiter_cores, glued_stem, glues, is_caps_word,
     is_paired_initials, is_single_letter_numeral, is_wholly_suffix,
-    name_word_count, reads_as_generation, split_pair, surname_unit_facts,
+    name_word_count, reads_as_generation, surname_unit_facts,
     unit_ends, written_as_a_name,
 )
 from nameparser._policy import CapsSuffixes
@@ -52,19 +53,24 @@ from nameparser._types import AmbiguityKind, Role
 
 def _pieces(seg: Sequence[int], tokens: Sequence[WorkToken],
             ) -> tuple[list[list[int]], list[set[str]]]:
-    """One piece per token but a split credential (`split_pair`),
-    which group's first merge builds (group alone declines a pair at
-    the head of the string, rules/S2) -- the part as it stands before
-    any join. Every piece a fresh list, as `merge_pieces` requires."""
+    """One piece per token but a split credential (`split_pair`, read
+    off the tag classify wrote on its first word), which group's first
+    merge builds (group alone declines a pair at the head of the
+    string, rules/S2) -- the part as it stands before any join: the
+    Ph./D. pair tagged "suffix", any other "split", a member of the
+    ambiguous class for rules/C4's count. Every piece a fresh list, as
+    `merge_pieces` requires."""
     pieces: list[list[int]] = []
     ptags: list[set[str]] = []
     k = 0
     while k < len(seg):
         a = seg[k]
-        if (k + 1 < len(seg) and SPLIT_PAIR_OPENS.fullmatch(tokens[a].text)
-                and split_pair(tokens[a].text, tokens[seg[k + 1]].text)):
+        tags = tokens[a].tags
+        if k + 1 < len(seg) and (SPLIT_CREDENTIAL_TAG in tags
+                                 or SPLIT_MEMBER_TAG in tags):
             pieces.append([a, seg[k + 1]])
-            ptags.append({"suffix"})
+            ptags.append({"suffix" if SPLIT_CREDENTIAL_TAG in tags
+                          else "split"})
             k += 2
         else:
             pieces.append([a])
@@ -351,7 +357,10 @@ def decide(state: ParseState) -> ParseState:
     # The words of the class in the part, and the unlisted all-caps
     # words the caps shape could admit: only a part holding one asks
     # the count, so 'Smith, John' and 'John Smith, PhD' never build it.
-    maybe = [p[0] for p in p1 if len(p) == 1
+    # A split credential is a word of the class too (rules/S3), its
+    # piece tag the test.
+    maybe = [p[0] for p, pt in zip(p1, pt1) if "split" in pt
+             or len(p) == 1
              and (AMBIGUOUS_ACRONYM_TAG in (tags := tokens[p[0]].tags)
                   or ("vocab:suffix" not in tags
                       and (texts[p[0]].isupper()
@@ -431,9 +440,11 @@ def decide(state: ParseState) -> ParseState:
         # the words not of the class are asked as C1's suffix test asks
         # them, the lenient word test by default ('Ma B.')
         others: list[str] = []
-        for p in p1:
-            if len(p) == 1 and (AMBIGUOUS_ACRONYM_TAG in tokens[p[0]].tags
-                                or p[0] in caps):
+        for p, pt in zip(p1, pt1):
+            if ("split" in pt
+                    or len(p) == 1
+                    and (AMBIGUOUS_ACRONYM_TAG in tokens[p[0]].tags
+                         or p[0] in caps)):
                 licensed.add(p[0])
             else:
                 # a loop, not a comprehension: a listcomp is a frame

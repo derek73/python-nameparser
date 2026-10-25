@@ -99,6 +99,18 @@ AMBIGUOUS_ACRONYM_TAG = "vocab:suffix-ambiguous"
 _AMBIGUOUS_CREDENTIAL_TAGS = frozenset(
     {AMBIGUOUS_ACRONYM_TAG, SHAPE_ACRONYM_TAG})
 
+#: The tags classify writes on the FIRST word of a credential written
+#: split across a space (`_vocab.split_pair`), naming the piece tag the
+#: pair merges with: SPLIT_CREDENTIAL_TAG the Ph./D. pair, merged as an
+#: unambiguous suffix ("suffix"), and SPLIT_MEMBER_TAG any other, merged
+#: as a member of the ambiguous class ("split", rules/S4, rules/C4).
+#: Written by classify because it is the one stage that sees every
+#: adjacent pair with the lexicon in hand, so group's merge and
+#: `_comma._pieces` read the decision off a tag, C-level, rather than
+#: each asking the vocabulary of every pair.
+SPLIT_CREDENTIAL_TAG = "split:credential"
+SPLIT_MEMBER_TAG = "split:member"
+
 #: The roles that make a piece a name word (rules/P6's walk), and
 #: the roles of a word not yet read as one: a suffix, or nothing yet
 #: -- what `_pieces.particle_tail` reads, asked by assign's given-part

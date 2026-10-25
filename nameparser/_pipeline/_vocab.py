@@ -73,35 +73,17 @@ _INITIAL = re.compile(r"^(\w\.|[A-Z])$")
 # sync by hand.
 _PERIOD_NOT_AT_END = re.compile(r".*\..+$", re.I)
 
-# The fix_phd credential pair ('Ph.' + 'D.' as adjacent tokens), the
-# two halves of `split_pair` below.
+# The fix_phd credential pair ('Ph.' + 'D.' as adjacent tokens),
+# `split_pair`'s first answer, below.
 _PH = re.compile(r"^ph\.?$", re.IGNORECASE)
 _D = re.compile(r"^d\.?$", re.IGNORECASE)
-#: `split_pair`'s necessary half on its FIRST word, asked C-level by
-#: each caller ahead of the call, since the split test runs per
-#: adjacent pair and an ordinary name word must pay no frame for it.
-#: The same compiled object the predicate asks, so the two cannot
-#: drift while the predicate's first-word test is `_PH`; a change to
-#: that test must change this with it, or the callers' pre-test hides
-#: the new spellings from the predicate.
+#: `split_pair`'s necessary half on its FIRST word for the Ph./D.
+#: answer alone, asked C-level by `is_wholly_suffix` ahead of the
+#: call, the one caller that asks only that answer and has no tags to
+#: read. The same compiled object the predicate asks, so the two
+#: cannot drift.
 SPLIT_PAIR_OPENS = _PH
 
-
-# mechanisms.md#ONE-PREDICATE-PER-QUESTION ("exactly one predicate answers it and every other site calls that one")
-# -- the split credential's one test, asked by group's merge,
-# `_comma._pieces` and `is_wholly_suffix`, three sites that each kept a
-# copy of the pattern pair until #752. decisions/phd-merge,
-# decisions/vocabulary-model (#752)
-def split_pair(first: str, second: str) -> bool:
-    """Whether two adjacent words are one credential written split
-    across a space, and so read as one unit: 'Ph.' then 'D.', with or
-    without their periods, in any case -- v1's fix_phd, the one split
-    spelling the parser merges (decisions/phd-merge). Where the merge
-    may happen (never at the head of the string, rules/S2) is the
-    caller's question, not this one's. Callers ask
-    `SPLIT_PAIR_OPENS` of `first` before the call."""
-    return (_PH.fullmatch(first) is not None
-            and _D.fullmatch(second) is not None)
 
 # The codepoint table lives in _policy beside Script -- one copy
 # importable from the pipeline and the locale packs alike; everything
@@ -583,6 +565,70 @@ def is_cased_paired_initials(text: str) -> bool:
     two."""
     return (_PAIRED_INITIALS.fullmatch(text) is not None
             and text.upper() != text.lower())
+
+
+# rules/S3: "A credential written split across a space reads as one
+# word" -- one chunk of up to five letters, with or without its period
+# ('Pharm.', 'D', 'Sc.'), the shape both words of a split credential
+# take. The C-level half classify asks of every adjacent pair before
+# the fold is looked up.
+SPLIT_CHUNK = re.compile(r"(?:" + _LETTER + r"){1,5}\.?")
+
+
+# mechanisms.md#ONE-PREDICATE-PER-QUESTION ("exactly one predicate answers it and every other site calls that one")
+# -- the split credential's one test, asked by classify, which tags
+# the pair for group's merge and `_comma._pieces`, and by
+# `is_wholly_suffix` for the Ph./D. answer. decisions/phd-merge,
+# decisions/vocabulary-model (#752)
+def split_pair(first: str, second: str, lexicon: Lexicon) -> str | None:
+    """Whether two adjacent words are one credential written split
+    across a space, and so read as one unit -- answered with the PIECE
+    TAG the merged pair carries, or None.
+
+    "suffix": 'Ph.' then 'D.', with or without their periods, in any
+    case -- v1's fix_phd, merged as an unambiguous suffix wherever it
+    stands but the head of the string (decisions/phd-merge).
+
+    "split": any other pair of short chunks (`SPLIT_CHUNK`) whose
+    period-free concatenation is unambiguous suffix vocabulary while
+    the two are not both suffix vocabulary on their own ('Pharm. D.',
+    'Pharm D', 'MB ChB' where 'chb' is unlisted). The merged piece is
+    a member of the ambiguous class, which the count decides (rules/S4,
+    rules/C4). Its first chunk has two or more letters: a single
+    letter opening the pair is a middle initial far more often (FEC
+    writes 'SMITH, JOHN A. MS.', and 'A. MS.' folds to the listed
+    'ams'), so 'M. Sc.' and 'M. D.' stay two words. Two dotted single
+    letters are the one opening letter asked further, and asked of
+    #872's predicate rather than a copy: in a script with capitals
+    they are paired initials (`is_cased_paired_initials`), the reading
+    rules/S3 gives them joined, so only a caseless script's pair can
+    merge, and the default vocabulary lists no such fold.
+
+    Where the merge may happen (never at the head of the string,
+    rules/S2; a member pair only in a main segment and in the part
+    after a comma) is the caller's question, not this one's."""
+    if _PH.fullmatch(first) is not None and _D.fullmatch(second) is not None:
+        return "suffix"
+    if (SPLIT_CHUNK.fullmatch(first) is None
+            or SPLIT_CHUNK.fullmatch(second) is None):
+        return None
+    a, b = first.rstrip("."), second.rstrip(".")
+    if composed_len(a) < 2 and (
+            composed_len(b) != 1 or not first.endswith(".")
+            or not second.endswith(".")
+            or is_cased_paired_initials(first + second)):
+        return None
+    fold = _normalize(a + b)
+    if (fold in lexicon.suffix_acronyms_ambiguous
+            or not (fold in lexicon.suffix_acronyms
+                    or fold in lexicon.suffix_words)):
+        return None
+    na, nb = _normalize(a), _normalize(b)
+    if ((na in lexicon.suffix_acronyms or na in lexicon.suffix_words)
+            and (nb in lexicon.suffix_acronyms
+                 or nb in lexicon.suffix_words)):
+        return None
+    return "split"
 
 
 def suffix_as_written(n: str, text: str, lexicon: Lexicon) -> bool:
@@ -1356,7 +1402,11 @@ def is_wholly_suffix(texts: Sequence[str], lexicon: Lexicon,
 
     An adjacent Ph./D. pair counts as ONE unit (v1's fix_phd extracted
     the credential pre-parse, so 'Smith, Ph. D.' read as suffix-comma):
-    `split_pair`, which group's merge and `_comma._pieces` ask too.
+    `split_pair`'s "suffix" answer, which group's merge and
+    `_comma._pieces` read too. Its "split" answer ('Pharm D') does not
+    count here: that pair is a member of the ambiguous class, which no
+    run test takes by itself, as it takes no bare 'Ma' (rules/C4's
+    count reads it instead).
 
     `one_case` is ParseState.one_case, and it admits the LEAN: a bare
     ambiguous acronym written in capitals inside a mixed-case name is
@@ -1431,7 +1481,8 @@ def is_wholly_suffix(texts: Sequence[str], lexicon: Lexicon,
     k = 0
     while k < len(merged) - 1:
         if (SPLIT_PAIR_OPENS.fullmatch(merged[k])
-                and split_pair(merged[k], merged[k + 1])):
+                and split_pair(merged[k], merged[k + 1], lexicon)
+                == "suffix"):
             merged[k:k + 2] = ["phd"]
         else:
             k += 1

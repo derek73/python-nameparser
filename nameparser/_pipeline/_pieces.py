@@ -500,9 +500,9 @@ def starts_a_credential_run(piece: Sequence[int], ptags: Set[str],
     `preceding` and `one_case` that predicate's (#784): 'John Smith VI
     Jones' as 'John Smith III Jones'.
     """
-    if "suffix" in ptags:
-        # the Ph./D. pair alone: a connective join keeps the tag on the
-        # wider piece ('Ph. D. and Mary'), which starts nothing, as
+    if "suffix" in ptags or "split" in ptags:
+        # a split credential alone: a connective join keeps the tag on
+        # the wider piece ('Ph. D. and Mary'), which starts nothing, as
         # 'PhD and Mary' does not
         return len(piece) == 2
     if len(piece) != 1:
@@ -897,7 +897,7 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
         # caller (`_comma.decide`) counted two name words before the
         # comma and found the part a credential run, which settles the
         # ambiguous word here before S7's anchors are asked (#613)
-        if len(piece) == 1 and piece[0] in licensed:
+        if piece[0] in licensed and (len(piece) == 1 or "split" in tags):
             leading = False
             out.append(True)
             continue
@@ -1196,7 +1196,12 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
         if (k >= 2 and len(piece) == 1
                 and _ROMAN.match(text := tokens[piece[0]].text.rstrip("."))
                 is not None and text
-                and (k == len(rest) or len(text) > 1)):
+                and (len(text) > 1
+                     or k == len(rest)
+                     # the walk leaves out the Ph./D. pair, which is the
+                     # credential behind the numeral all the same
+                     and not (rest[k - 1] + 1 < len(ptags)
+                              and "suffix" in ptags[rest[k - 1] + 1]))):
             tok = tokens[piece[0]]
             if reads_as_generation(tok.text, tok.tags,
                                    tokens[pieces[rest[k - 2]][0]].text,
@@ -1234,6 +1239,15 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
         # the vocabulary is not in doubt.
         bare_ambiguous = (len(piece) == 1
                           and AMBIGUOUS_ACRONYM_TAG in tokens[piece[0]].tags)
+        # rules/S3: a split credential "is a member of the ambiguous
+        # class" -- read by the count alone, its writing carrying no
+        # case to lean on, and in silence: its other reading is two
+        # name words, which the count already refuses it behind one
+        if "split" in ptags[rest[k - 1]]:
+            if k >= 2 and k - 2 >= second:
+                k -= 1
+                continue
+            break
         # #516, switch off: the writing still makes this token
         # credential-SHAPED, and the parser is choosing the name
         # reading over that one -- the fork the caller asked to be
@@ -1301,6 +1315,16 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
     return Peel(k, tuple(numerals), tuple(picks), anchors)
 
 
+def behind_the_merged_credential(rest: Sequence[int], p: int,
+                                 ptags: Sequence[Set[str]]) -> bool:
+    """Whether the Ph./D. pair stands right in front of `rest[p]`,
+    left out of the walk (`peel_walk`) though it is a credential there
+    all the same -- the test `run_start` asks inline, its hot loop
+    paying no frame for it (#827)."""
+    return (p > 0 and rest[p] - rest[p - 1] == 2
+            and "suffix" in ptags[rest[p] - 1])
+
+
 # rules/S8: "A credential after the name core starts a run to the
 # end of its part" -- applied to a finished peel (#602), so every
 # reader of the trailing run (assign, P5's reserve, P2's chain stop,
@@ -1341,16 +1365,24 @@ def run_start(rest: Sequence[int], names: int,
     for p in range(names):
         q = rest[p]
         tags = tokens[pieces[q][0]].tags
-        if (core + lone >= 2
-                and ("vocab:suffix" in tags
-                     or _ROMAN.match(tokens[pieces[q][0]].text.rstrip("."))
-                     is not None)
-                and tags.isdisjoint(_NOT_A_RUN_START)
-                # p >= 2 here: two name words stand in front
-                and starts_a_credential_run(
-                    pieces[q], ptags[q], tokens,
-                    tokens[pieces[rest[p - 1]][0]].text, one_case)):
-            return p
+        if core + lone >= 2:
+            # the Ph./D. pair standing in front of this piece starts the
+            # run there, though the walk leaves it out (#827): 'John
+            # Smith Ph. D. Jones' as 'John Smith PhD Jones'
+            # (`behind_the_merged_credential`, inline)
+            if (q - rest[p - 1] == 2 and "suffix" in ptags[q - 1]
+                    and starts_a_credential_run(pieces[q - 1], ptags[q - 1],
+                                                tokens)):
+                return p
+            if (("vocab:suffix" in tags or "split" in ptags[q]
+                 or _ROMAN.match(tokens[pieces[q][0]].text.rstrip("."))
+                 is not None)
+                    and tags.isdisjoint(_NOT_A_RUN_START)
+                    # p >= 2 here: two name words stand in front
+                    and starts_a_credential_run(
+                        pieces[q], ptags[q], tokens,
+                        tokens[pieces[rest[p - 1]][0]].text, one_case)):
+                return p
         # a lone particle is not yet a name: 'de Mesnil' is one surname
         # -- unless it opens a chain run, which is then the surname
         # (with no `units` every piece opens its own), or the run
@@ -1458,13 +1490,17 @@ def credential_run(rest: Sequence[int], peel: Peel, p: int,
     # a numeral starting the run is read as the generation, which a
     # shape alone makes a call, reported as the peel's are (rules/S10)
     numerals = peel.numerals
+    # where the Ph./D. pair the walk leaves out starts the run
+    # (`run_start`), rest[p] is the first word behind it, read like the
+    # rest; else rest[p] is the credential
+    first = p if behind_the_merged_credential(rest, p, ptags) else p + 1
     start = pieces[rest[p]]
-    if (len(start) == 1 and _ROMAN.match(
+    if (first > p and len(start) == 1 and _ROMAN.match(
             (tok := tokens[start[0]]).text.rstrip(".")) is not None
             and not is_listed_numeral(tok.text, tok.tags)
             and not numeral_settled_by_case(tok.text, one_case)):
         numerals = (tuple(start), *numerals)
-    for q in rest[p + 1:peel.names]:
+    for q in rest[first:peel.names]:
         if is_suffix_piece(pieces[q], ptags[q], tokens):
             continue
         if is_title_piece(pieces[q], ptags[q], tokens):
@@ -1614,7 +1650,7 @@ def trailing_candidates(lo: int, pieces: Sequence[Sequence[int]],
         k = c - 1
         piece = pieces[k]
         title = is_trailing_title_word(piece, ptags[k], tokens)
-        if not (title or "suffix" in ptags[k]
+        if not (title or "suffix" in ptags[k] or "split" in ptags[k]
                 or is_suffix_piece(piece, ptags[k], tokens)
                 or (len(piece) == 1 and (
                     not tokens[piece[0]].tags.isdisjoint(_TRAILING_WORD_TAGS)
@@ -1632,7 +1668,7 @@ def trailing_candidates(lo: int, pieces: Sequence[Sequence[int]],
     # the tag test is the predicate's own necessary half, inline so a
     # name word pays no frame
     return next((j for j in range(lo + 1, c)
-                 if ("suffix" in ptags[j]
+                 if ("suffix" in ptags[j] or "split" in ptags[j]
                      or "vocab:suffix" in tokens[pieces[j][0]].tags
                      or _ROMAN.match(tokens[pieces[j][0]].text.rstrip("."))
                      is not None)
@@ -1944,7 +1980,10 @@ def _chain_units(pieces: Sequence[Sequence[int]],
         if prefix[k]:
             j = chain_run_end(k, pieces, ptags, tokens, count)
             q = k + 1
-            while q < j and not _weighed(pieces[q], tokens):
+            # a split credential is weighed as the class it is a
+            # member of (rules/S3)
+            while (q < j and "split" not in ptags[q]
+                   and not _weighed(pieces[q], tokens)):
                 units[q] = JOINED
                 q += 1
             k = j

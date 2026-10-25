@@ -75,22 +75,23 @@ from nameparser._pipeline._pieces import (
     trailing_start_past_titles,
 )
 from nameparser._pipeline._state import (
-    ParseState, PendingAmbiguity, Structure,
-    WorkToken, _AMBIGUOUS_CREDENTIAL_TAGS, copy_with,
+    SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, ParseState, PendingAmbiguity,
+    Structure, WorkToken, _AMBIGUOUS_CREDENTIAL_TAGS, copy_with,
 )
 import nameparser._pipeline._comma as _comma
 from nameparser._pipeline._vocab import (
-    SPLIT_PAIR_OPENS, comma_follows_marker, delimiter_cores,
-    reads_as_a_reported_numeral, split_pair,
+    comma_follows_marker, delimiter_cores, reads_as_a_reported_numeral,
 )
 from nameparser._types import AmbiguityKind, Role
 
-# the split credential is `_vocab.split_pair`, which is_wholly_suffix
-# asks to merge the same pair, as `_comma._pieces` does -- so that
-# predicate's callers read what this stage merges: `_comma.decide`'s
-# reading of the part after the comma, segment's C2 flag on a tail
-# part, and script_segment's decline of a wholly-suffix post-comma
-# run, all of which see the merged reading
+# the split credential is `_vocab.split_pair`, which classify asks of
+# every adjacent pair and writes on the pair's first word, and which
+# is_wholly_suffix asks to merge the same Ph./D. pair, as
+# `_comma._pieces` reads the tag -- so that predicate's callers read
+# what this stage merges: `_comma.decide`'s reading of the part after
+# the comma, segment's C2 flag on a tail part, and script_segment's
+# decline of a wholly-suffix post-comma run, all of which see the
+# merged reading
 
 Piece = list[int]
 #: What the marker pass took out of a segment: the marker's TOKEN
@@ -577,6 +578,29 @@ def _between_name_words(k: int, lo: int, hi: int,
             and not is_title_piece(pieces[right], ptags[right], tokens))
 
 
+# rules/S4: "a BARE ambiguous acronym is consumed only when the name
+# has words to spare" -- and a split credential is a member of that
+# class (rules/S3), so where the trailing read did not take one, it is
+# the two words it is written as
+def _settle_splits(pieces: list[Piece], ptags: list[set[str]]) -> None:
+    """Split every merged split credential left in `pieces` back into
+    its two words, in place: a pair the trailing read declined reads
+    as it reads unmerged. One a connective join took into a wider piece
+    keeps the join and loses the tag (the only shape that reaches it
+    is a pair beside a connective, 'Pharm D and')."""
+    k = 0
+    while k < len(pieces):
+        if "split" in ptags[k]:
+            if len(pieces[k]) == 2 and ptags[k] == {"split"}:
+                a, b = pieces[k]
+                pieces[k:k + 1] = [[a], [b]]
+                ptags[k:k + 1] = [set(), set()]
+                k += 2
+                continue
+            ptags[k] = ptags[k] - {"split"}
+        k += 1
+
+
 def _group_segment(seg: tuple[int, ...], additional: int,
                    tokens: Sequence[WorkToken],
                    bound_join: BoundJoin = BoundJoin.STRICT,
@@ -639,16 +663,42 @@ def _group_segment(seg: tuple[int, ...], additional: int,
     # here, because "the first piece of the name" cannot be computed
     # before this merge: `is_leading_title` is true of `Ph.` itself,
     # so the scan would step over the very piece being judged.
+    #
+    # Every other split credential ('Pharm. D.', `_vocab.split_pair`'s
+    # "split" answer) merges under the same head test as a member of
+    # the ambiguous class, where a rule reads such a member: in a main
+    # segment, where S2's read below decides it by the count, kept
+    # whole where the read takes it and split back into its two words
+    # where it does not (`_settle_splits`), so a declined pair reads
+    # exactly as the two words read; and in the given part after a
+    # family comma behind the given word, where S5's walk reads it,
+    # and a pair declined there is middle-name text whole or split.
+    # Not in the part before a family comma, which reads no member as
+    # a suffix ('Smith MA, John'). Classify tagged each pair's first
+    # word, so the test here is a tag.
+    splits = False
+    given_from: int | None = None
     k = 0
     while k < len(pieces) - 1:
         a, b = pieces[k], pieces[k + 1]
-        if (not (opens_the_name and k == 0 and a[0] == 0)
-                and len(a) == 1 and len(b) == 1
-                and SPLIT_PAIR_OPENS.fullmatch(tokens[a[0]].text)
-                and split_pair(tokens[a[0]].text, tokens[b[0]].text)):
-            merge_pieces(pieces, ptags, k, k + 2, add={"suffix"})
-        else:
-            k += 1
+        tags = tokens[a[0]].tags
+        if (len(a) == 1 and len(b) == 1
+                and not (opens_the_name and k == 0 and a[0] == 0)):
+            if SPLIT_CREDENTIAL_TAG in tags:
+                merge_pieces(pieces, ptags, k, k + 2, add={"suffix"})
+                continue
+            if SPLIT_MEMBER_TAG in tags:
+                if site is ClauseSite.TRAILING:
+                    merge_pieces(pieces, ptags, k, k + 2, add={"split"})
+                    splits = True
+                    continue
+                if site is ClauseSite.GIVEN_SLOT:
+                    if given_from is None:
+                        given_from = leading_titles(pieces, ptags, tokens)
+                    if k > given_from:
+                        merge_pieces(pieces, ptags, k, k + 2, add={"split"})
+                        continue
+        k += 1
 
     # rules/M2: "A marker that counts takes the words after it as
     # the maiden name, and is itself dropped" (history:
@@ -684,6 +734,10 @@ def _group_segment(seg: tuple[int, ...], additional: int,
     read: TailRead | None = None
     tail_pieces: list[Piece] = []
     tail_ptags: list[set[str]] = []
+    # too few pieces for the read: a split credential has no words to
+    # spare (rules/S4)
+    if splits and len(pieces) + additional < 3:
+        _settle_splits(pieces, ptags)
     if len(pieces) + additional >= 3:
         # rules/P3: "A connective that is also generational
         # vocabulary joins only where a name word stands on each side
@@ -795,6 +849,10 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 tail_pieces, tail_ptags = pieces[start:], ptags[start:]
                 del pieces[start:]
                 del ptags[start:]
+            # the read has decided every split credential: one it took
+            # left with the run, and one still here is two name words
+            if splits:
+                _settle_splits(pieces, ptags)
         # rules/S2: "a trailing word of the suffix vocabulary reads as a
         # suffix" -- on a main segment the run read above decides it
         # and is split off already; elsewhere the chain stops where
