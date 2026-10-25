@@ -1030,7 +1030,7 @@ def test_comma_follows_marker_reads_past_what_tokenize_drops(
 
 
 def test_the_lean_reads_the_cue_of_what_the_member_is() -> None:
-    # rules/S11: an acronym's capitals are the credential, a generation
+    # an acronym's capitals are the credential, a generation
     # word's lower case is the suffix and its capitals say nothing, and
     # an agnomen's writing never leans; Title case leans to the name
     # for both that lean at all
