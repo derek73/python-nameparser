@@ -2228,7 +2228,9 @@ def _twin_reading(name: ParsedName, twin: str | None, word: str) -> tuple[
 #: takes it; a part past a second comma reports what is left without
 #: the member; a name written in one case settles no capitals; a name
 #: with no word of its own (a title, a nickname, nothing) settles no
-#: clause, where the twin is read as the name; and a clause another
+#: clause, where the twin escapes, read as the name ('(MBA)' given
+#: 'MBA', 'Dr. (MBA)' given 'Dr.') or as the suffix behind a comma
+#: (', (MBA)'); and a clause another
 #: settled one would make settle, on a second reading, is left the
 #: nickname.
 _TWIN_CENSUS = {
