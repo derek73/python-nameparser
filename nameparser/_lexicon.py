@@ -732,7 +732,10 @@ class Lexicon:
     #: modifier, a style, or a title it stands in ``title_phrases``
     #: behind; or before "of" or a title it stands in ``title_phrases``
     #: in front of. Elsewhere it is a name word, and where it opens the
-    #: name the parse reports ``title-or-name`` (rules/H9): "Dean Smith"
+    #: name the parse reports ``title-or-name`` if a phrase of
+    #: ``title_phrases`` holds it (rules/H9), so "Grace Smith", which no
+    #: phrase holds, reports nothing, and emptying ``title_phrases``
+    #: silences the report: "Dean Smith"
     #: and "Mr Major Smith" read given "Dean" and "Major", "Dean of
     #: Students Smith" and "Major General Smith" a title. An entry also
     #: in ``titles`` is a title wherever it stands, which is what listing

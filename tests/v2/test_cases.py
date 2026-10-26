@@ -257,9 +257,10 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # that report ('Sgt Marshal', 'Marshal Yanda', 'Grace Dean'), the
     # one that stopped ('SMITH, DEAN MR.') offset by 'Grace Smith';
     # 1592 -> 1586 the same day: 'Grace Smith' and 'Grace Dean Smith'
-    # stopped reporting, no listed phrase holding 'grace'.
-    assert claims == 1586, (
-        f"the field sweep checks {claims} claims, recorded as 1586 on "
+    # stopped reporting, no listed phrase holding 'grace'; 1586 -> 1592
+    # the same day: 'Justice Smith' and 'Major Smith', which report.
+    assert claims == 1592, (
+        f"the field sweep checks {claims} claims, recorded as 1592 on "
         f"2026-10-26")
 
 

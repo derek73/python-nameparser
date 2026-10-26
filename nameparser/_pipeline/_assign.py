@@ -164,8 +164,8 @@ def _peel_leading_titles(pieces: tuple[tuple[int, ...], ...],
     # after any titles" -- the peel stops at it because classify read it
     # out of the title, so it is the first piece the peel leaves
     # ('Dean Smith', 'Mr Dean Smith'); and rules/H9: "a word no listed
-    # phrase holds is a title only behind a style or a modifier", so
-    # standing alone it reports nothing ('Grace Smith')
+    # phrase holds is a title only behind a style or a modifier, or
+    # before `of`", so standing alone it reports nothing ('Grace Smith')
     if (ambiguities is not None and n < len(pieces) and len(pieces[n]) == 1
             and TITLE_AMBIGUOUS_TAG in tokens[pieces[n][0]].tags
             and "vocab:title" not in tokens[pieces[n][0]].tags

@@ -590,6 +590,11 @@ class AmbiguityKind(StrEnum):
     #: and whether the title word inside it is a title is the fork.
     #: Not the title-vs-given-name collision on a word like "Baron",
     #: which is a question about the VOCABULARY and is not this kind.
+    #: A title that may also be a given name ("Dean", rules/H9) reports
+    #: it too, where it opens the name outside a title phrase and no
+    #: comma has marked the given name: "Dean Smith" gives given "Dean".
+    #: Only a word some phrase of ``Lexicon.title_phrases`` holds
+    #: reports, so "Grace Smith" does not.
     TITLE_OR_NAME = "title-or-name"
     #: An ambiguous particle is either a particle or a name in its own
     #: right -- "Van Johnson" is the actor's given name, a bare

@@ -30,7 +30,7 @@
   "Jane Smith Vice."          →  title="Vice."
   "John Smith, Vice"          →  title="Vice"
   ```
-- **A title that may be a given name, read as a name word where it is the first name word after any titles and no comma has marked the given name,** is reported as `title-or-name` where a phrase the vocabulary lists holds it; inside a phrase, later in the name, or in the given part after a family comma, it is not. A word no listed phrase holds is a title only behind a style or a modifier, so standing alone it is no title a reader would hesitate over.
+- **A title that may be a given name, read as a name word where it is the first name word after any titles and no comma has marked the given name,** is reported as `title-or-name` where a phrase the vocabulary lists holds it; inside a phrase, later in the name, or in the given part after a family comma, it is not. A word no listed phrase holds is a title only behind a style or a modifier, or before `of`, the partners every such word shares, so standing alone it is no title a reader would hesitate over.
   ```
   "Dean Smith"                →  ambiguities=("title-or-name",)
   "Marshal Yanda"             →  ambiguities=("title-or-name",)

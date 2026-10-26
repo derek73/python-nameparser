@@ -1,3 +1,4 @@
+import dataclasses
 import unicodedata
 
 import pytest
@@ -1173,3 +1174,22 @@ def test_a_contested_title_in_a_phrase_addresses_as_its_vocabulary_says() -> Non
     assert "vocab:given-title" in phrase.tokens[1].tags
     alone = Parser(lexicon=lex).parse("Zed John")
     assert (alone.title, alone.given, alone.family) == ("", "Zed", "John")
+
+
+@pytest.mark.parametrize("phrases, reports", [
+    (frozenset(), False),
+    # a title before the word: classify reads the pair, so the word may
+    # head a title of itself and opening a name it reports
+    (frozenset({"chief grace"}), True),
+    # 'your' is no title, so classify never reads the pair, and a phrase
+    # it never reads makes no word report
+    (frozenset({"your grace"}), False),
+    # classify reads two-word phrases only
+    (frozenset({"chief of grace"}), False),
+])
+def test_only_a_phrase_classify_can_read_makes_a_contested_word_report(
+        phrases: frozenset[str], reports: bool) -> None:
+    lex = dataclasses.replace(Lexicon.default(), title_phrases=phrases)
+    kinds = [a.kind.value for a in Parser(lexicon=lex).parse(
+        "Grace Smith").ambiguities]
+    assert kinds == (["title-or-name"] if reports else [])

@@ -11940,6 +11940,18 @@ CASES: tuple[Case, ...] = (
          {"title": "Sergeant Major", "given": "John", "family": "Smith"},
          classification="fix(#752)",
          notes="H9: sergeant attaches to a military title after it"),
+    Case("contested_office_alone_held_by_chief", "Justice Smith",
+         {"given": "Justice", "family": "Smith"},
+         ambiguities=("title-or-name",), classification="feat(#752)",
+         notes="H9: no partner, so the given name, reported: 'chief "
+               "justice' holds the word, through chief's attaching to "
+               "the office kind"),
+    Case("contested_rank_alone_held_by_its_own_phrase", "Major Smith",
+         {"given": "Major", "family": "Smith"},
+         ambiguities=("title-or-name",), classification="feat(#752)",
+         notes="H9: no partner, so the given name, reported: 'major "
+               "general' and 'sergeant major' hold the word, phrases "
+               "naming it rather than its kind"),
     Case("contested_rank_after_a_rank_that_attaches_elsewhere",
          "Sgt Marshal Smith",
          {"title": "Sgt", "given": "Marshal", "family": "Smith"},

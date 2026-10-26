@@ -1391,12 +1391,27 @@ _OBJECT_LINKS = frozenset({"of", "the"})
 
 
 # rules/H9: "a word no listed phrase holds is a title only behind a
-# style or a modifier" -- whether the word heads a title of itself, asked
-# of the phrases `attaches` compiled rather than of a property of its own
+# style or a modifier, or before `of`" -- whether the word heads a title
+# of itself, asked of the phrases `attaches` compiled rather than of a
+# property of its own
 def in_a_title_phrase(text: str, lexicon: Lexicon) -> bool:
-    """Whether some phrase in `lexicon.title_phrases` holds `text`."""
-    n = _normalize(text)
-    return any(n in phrase.split(" ") for phrase in lexicon.title_phrases)
+    """Whether a phrase of `lexicon.title_phrases` that classify can
+    read holds `text`."""
+    return _normalize(text) in _phrase_words(
+        lexicon.title_phrases, lexicon.titles, lexicon.titles_ambiguous)
+
+
+@functools.lru_cache(maxsize=16)
+def _phrase_words(phrases: frozenset[str], titles: frozenset[str],
+                  contested: frozenset[str]) -> frozenset[str]:
+    """The words of the phrases classify can read: two words, each a
+    title or a title that may be a given name, as its pair test asks.
+    A phrase it never consults makes no word report."""
+    listed = titles | contested
+    pairs = (p.split(" ") for p in phrases)
+    return frozenset(w for ws in pairs
+                     if len(ws) == 2 and all(w in listed for w in ws)
+                     for w in ws)
 
 
 # rules/H9: "the word is a title only inside a title phrase, and
