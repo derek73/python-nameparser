@@ -541,7 +541,15 @@ def test_the_caps_exclusion_covers_every_vocabulary_field() -> None:
     on = Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE)
     base = Lexicon.default()
     assert caps_shape_candidate("ZZQX", base, on, False)
+    # H9: two fields are left out on purpose -- a title that may
+    # be a given name reads, outside a phrase, as the unlisted word it
+    # is there, and a phrase is two words
+    for field in ("titles_ambiguous", "title_phrases"):
+        assert caps_shape_candidate(
+            "ZZQX", base.add(**{field: {"zzqx"}}), on, False), field
     for field in _VOCAB_FIELDS:
+        if field in ("titles_ambiguous", "title_phrases"):
+            continue
         extra: dict[str, set[str]] = {field: {"zzqx"}}
         if field in ("honorific_tails", "suffix_words_ambiguous"):
             # honorific_tails ⊆ suffix_words is a Lexicon invariant,
@@ -1108,3 +1116,44 @@ def test_a_comma_part_reads_a_gated_word_by_its_cue() -> None:
     assert is_wholly_suffix(["fils"], lex, pol, one_case=False)
     assert not is_wholly_suffix(["Fils"], lex, pol, one_case=False)
     assert not is_wholly_suffix(["Neto"], lex, pol, one_case=False)
+
+
+# H9: "the word is a title only inside a title phrase" -- each
+# partner, and each non-partner, alone
+@pytest.mark.parametrize("words, head, expected", [
+    (["dean", "smith"], True, [False, False]),
+    (["mr", "dean", "smith"], True, [True, False, False]),
+    (["associate", "dean", "smith"], True, [True, True, False]),
+    (["hon", "justice", "smith"], True, [True, True, False]),
+    (["chief", "justice", "smith"], True, [True, True, False]),
+    (["major", "general", "smith"], True, [True, True, False]),
+    (["dean", "of", "students"], True, [True, False, False]),
+    (["dean", "and", "mary"], True, [False, False, False]),
+    # a title after the word it does not attach to is no partner
+    (["dean", "mr"], False, [False, True]),
+    (["dean", "general", "smith"], True, [False, True, False]),
+    # decision 10: a modifier with a head title after it, or in a
+    # connective's object; at the head only
+    (["wing", "lau"], True, [False, False]),
+    (["wing", "lau"], False, [True, False]),
+    (["wing", "commander", "lau"], True, [True, True, False]),
+    (["mr", "wing", "lau"], True, [True, False, False]),
+    (["vice", "dean", "smith"], True, [True, True, False]),
+    (["president", "of", "the", "united", "states", "barack"], True,
+     [True, False, False, True, True, False]),
+    (["wing", "insp.", "lau"], True, [True, False, False]),
+])
+def test_title_readings(words: list[str], head: bool,
+                        expected: list[bool]) -> None:
+    from nameparser._pipeline._vocab import title_readings
+    folded = [_normalize(w) for w in words]
+    assert title_readings(words, folded, Lexicon.default(),
+                          head=head) == expected
+
+
+def test_a_word_a_caller_lists_as_a_title_is_one_everywhere() -> None:
+    # the 1.4-era recipe for a title the default leaves out: listing it
+    # makes it a title wherever it stands, phrase or none
+    lex = Lexicon.default().add(titles={"dean"})
+    name = Parser(lexicon=lex).parse("Dean Smith")
+    assert (name.title, name.family, name.ambiguities) == ("Dean", "Smith", ())

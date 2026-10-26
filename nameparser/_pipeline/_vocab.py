@@ -1095,19 +1095,31 @@ def composed_len(text: str) -> int:
 
 def in_any_wordlist(n: str, lexicon: Lexicon) -> bool:
     """Whether the folded word `n` is in ANY of the lexicon's wordlists
-    (`_lexicon._VOCAB_FIELDS`, the whole roster): the caps shape's
-    "unlisted" (`caps_shape_candidate`), where a word a caller listed
-    even as a SURNAME must never become a credential."""
-    for field in _VOCAB_FIELDS:
+    (`_lexicon._VOCAB_FIELDS`, the whole roster but two): the caps
+    shape's "unlisted" (`caps_shape_candidate`), where a word a caller
+    listed even as a SURNAME must never become a credential.
+
+    The two left out: `title_phrases`, whose entries are two words and
+    so never one, and `titles_ambiguous`, a title that may be a given
+    name, which outside a title phrase is read as the unlisted word it
+    is there (rules/H9: "and elsewhere a name word") -- a phrase is two
+    words and a comma part read by this shape is one."""
+    for field in _LISTED_FIELDS:
         if n in getattr(lexicon, field):
             return True
     return False
 
 
+_LISTED_FIELDS = tuple(f for f in _VOCAB_FIELDS
+                       if f not in ("title_phrases", "titles_ambiguous"))
+
+
 #: The wordlists that claim a word as something OTHER than name text.
 #: `surnames` and `bound_given_names` are left out: they say a word IS
-#: a name word ('Kim', 'Abdul'), the opposite claim.
-_NON_NAME_FIELDS = tuple(f for f in _VOCAB_FIELDS
+#: a name word ('Kim', 'Abdul'), the opposite claim; and so is
+#: `titles_ambiguous`, a title that may be a given name (rules/H9), with
+#: `title_phrases`, whose two-word entries never match one word.
+_NON_NAME_FIELDS = tuple(f for f in _LISTED_FIELDS
                          if f not in ("surnames", "bound_given_names"))
 
 
@@ -1369,6 +1381,117 @@ def surname_unit_tags(text: str, lexicon: Lexicon,
     return _PARTICLE_ONLY if particle else _NO_TAGS
 
 
+#: The connective after a title that may be a given name which makes
+#: the two a title phrase, 'Dean of Students' (rules/H9). Coordinating
+#: connectives are not: 'Dean and Mary Smith' is two people.
+_PHRASE_LINKS = frozenset({"of"})
+#: The connectives whose object a modifier after them is in, 'of the
+#: United States', 'The Grand Master'; 'and' joins two titles instead.
+_OBJECT_LINKS = frozenset({"of", "the"})
+
+
+# rules/H9: "the word is a title only inside a title phrase, and
+# elsewhere a name word" -- both halves, the partners of a title that may
+# be a given name and of a modifier at the head of the name, each its
+# bullet's (decisions/H9 #752)
+def title_readings(texts: Sequence[str], folded: Sequence[str],
+                   lexicon: Lexicon, *, head: bool,
+                   titled: Sequence[bool] | None = None) -> list[bool]:
+    """Which of these words, one part of the name in order, read as
+    title words. Where none of them is a title that may be a given name
+    or a modifier, the listed titles answer alone, which every caller
+    asks first, in C, so that a name with neither pays no frame.
+
+    A word of `titles_ambiguous` that is not also in `titles` (where a
+    caller listing it makes it a title everywhere) is a title only
+    beside a partner: a
+    modifier, a style, or a title it stands behind in `title_phrases`,
+    before it; or 'of', or a title it stands in front of in
+    `title_phrases`, after it. A salutation is never one, nor any other
+    title before it ('Mr Dean Smith'), nor a title after it that it
+    does not attach to ('SMITH, DEAN MR.', a given name and the
+    salutation a donor list writes after it). Its neighbours are asked
+    as LISTED, so 'Vice Dean' reads 'Vice' as the partner of 'Dean'
+    whatever the modifier test below makes of 'Vice'.
+
+    Where `head` is true -- the part before the first comma -- a word
+    of `title_modifiers` is a title only with a head title behind it in
+    its run of titles: any title that is not a modifier, or a word H2's
+    shape reads as one, before 'of' ('Mother Superior of the Convent'),
+    or in the object of 'of' or 'the' there (decision 10 of
+    decisions/vocabulary-model). Only the leading run is the head: a
+    modifier outside it is read as listed, one ending the name being
+    H5's. A
+    word in both sets takes the modifier test in every part, that run
+    being its phrase. After a comma a modifier is read as listed: a
+    part there that is a lone title word is the person's role
+    ('John Smith, Resident'), and reading it as a name would reverse the
+    name (decisions/H9).
+
+    `texts` are the words as written, for the shape test; `folded`
+    their `_normalize`d forms; `titled` which of them a caller already
+    reads as titles, where that is more than `titles` lists (classify's
+    period-joined `Lt.Gov.`), else membership in `titles`. Only a word
+    of the two sets is ever read out of the title."""
+    contested = lexicon.titles_ambiguous
+    modifiers = lexicon.title_modifiers
+    titles = lexicon.titles
+    # a word in titles is a title wherever it stands, whatever else it
+    # is listed as; one of titles_ambiguous alone is listed as a title
+    # to its neighbours and read by its phrase
+    reading = [n in titles or n in contested for n in folded]
+    if titled is not None:
+        reading = [r or t for r, t in zip(reading, titled)]
+    listed = list(reading)
+    phrases = lexicon.title_phrases
+    last = len(folded) - 1
+    for i, n in enumerate(folded):
+        if n in titles or n not in contested or n in modifiers:
+            continue
+        prev = folded[i - 1] if i else None
+        nxt = folded[i + 1] if i < last else None
+        reading[i] = bool(
+            (prev is not None and listed[i - 1]
+             and (prev in modifiers or prev in lexicon.title_styles
+                  or f"{prev} {n}" in phrases))
+            or (nxt is not None
+                and ((nxt in _PHRASE_LINKS and nxt in lexicon.conjunctions)
+                     or (listed[i + 1] and f"{n} {nxt}" in phrases))))
+    # left to right, whether the run so far has passed 'of' or 'the': a
+    # modifier after it is in the object of a phrase ('President of the
+    # United States', 'the Queen's Bench'), which no head need follow. A
+    # coordinating connective opens no object: 'Mr. and Mrs. Wing Lau'
+    # is two salutations and a given name
+    linked = [False] * len(folded)
+    conjunctions = lexicon.conjunctions
+    for i in range(1, len(folded)):
+        if reading[i - 1] or folded[i - 1] in conjunctions:
+            linked[i] = linked[i - 1] or folded[i - 1] in _OBJECT_LINKS
+    # the head of the name is its LEADING run of titles and connectives:
+    # a modifier ending the name is H5's trailing run, read as listed
+    lead = 0
+    if head:
+        while lead < len(folded) and (reading[lead] or folded[lead] in conjunctions
+                                      or is_title_shaped(texts[lead])):
+            lead += 1
+    # right to left, so each modifier knows whether a head title stands
+    # behind it before the run is broken; a connective carries the run
+    behind = False
+    for i in range(last, -1, -1):
+        n = folded[i]
+        if (n in modifiers and reading[i]
+                and ((head and i < lead) or (n in contested and n not in titles))):
+            reading[i] = behind or linked[i] or (
+                i < last and folded[i + 1] in _PHRASE_LINKS
+                and folded[i + 1] in conjunctions)
+            behind = reading[i]
+        elif reading[i] or (head and is_title_shaped(texts[i])):
+            behind = True
+        elif n not in conjunctions:
+            behind = False
+    return reading
+
+
 def name_word_count(texts: Sequence[str], lexicon: Lexicon,
                     policy: Policy, letters_one_case: bool | None = None,
                     ) -> int:
@@ -1404,14 +1527,22 @@ def name_word_count(texts: Sequence[str], lexicon: Lexicon,
     # units -- and pay no frame the token loop did not already pay.
     names: list[bool] = []
     has_particle = False
-    for text in texts:
-        n = _normalize(text)
+    # map, not a comprehension, which is a frame of its own on 3.11
+    folded = list(map(_normalize, texts))
+    # rules/H9: "the word is a title only inside a title phrase" -- the
+    # part before the comma is the head of the name, read as classify
+    # reads it
+    titled = (None if lexicon.titles_ambiguous.isdisjoint(folded)
+              and lexicon.title_modifiers.isdisjoint(folded)
+              else title_readings(texts, folded, lexicon, head=True))
+    for i, n in enumerate(folded):
+        text = texts[i]
+        title = n in lexicon.titles if titled is None else titled[i]
         if n in lexicon.particles:
             has_particle = True
         suffix = (is_suffix_lenient(text, lexicon) if lenient
                   else is_suffix_strict(text, lexicon, letters_one_case))
-        names.append(not (suffix or n in lexicon.titles
-                          or is_title_shaped(text)))
+        names.append(not (suffix or title or is_title_shaped(text)))
     if not has_particle:
         return sum(names)
     count = 0

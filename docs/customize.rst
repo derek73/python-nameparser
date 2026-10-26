@@ -102,8 +102,9 @@ Removing works the same way, and drops the word from recognition:
     >>> Parser(lexicon=lean).parse("Professor Robert Johns").title
     ''
 
-A few fields mark a subset of another — ``given_name_titles`` and
-``after_given_titles`` over ``titles``, ``particles_ambiguous`` over ``particles``,
+A few fields mark a subset of another — ``given_name_titles``,
+``after_given_titles``, ``title_modifiers`` and ``title_styles`` over
+``titles``, ``particles_ambiguous`` over ``particles``,
 ``suffix_acronyms_ambiguous`` over ``suffix_acronyms``,
 ``conjunctions_ambiguous`` over ``conjunctions``,
 ``honorific_tails`` and ``suffix_words_ambiguous`` over
@@ -113,15 +114,29 @@ the marker first. Four of them enforce that — ``particles_ambiguous``,
 ``suffix_acronyms_ambiguous``, ``honorific_tails`` and
 ``suffix_words_ambiguous`` raise ``ValueError`` naming the orphans,
 because an orphan in each of those does real harm rather than nothing.
-The other four are deliberately unchecked because an orphan there is
+The others are deliberately unchecked because an orphan there is
 inert, an ``agnomens`` entry being read only for a word
-``suffix_words_ambiguous`` marks:
+``suffix_words_ambiguous`` marks, and a ``title_modifiers`` or
+``title_styles`` entry only for a title:
 ``given_name_titles`` matches a title run as one space-joined string, or
 by that run's last word, so a legitimate entry like ``"sir and dame"``
 is no single word in ``titles``; and a ``conjunctions_ambiguous`` or
 ``after_given_titles`` entry is only ever read for a word that is a
 conjunction or a title, so ``remove(conjunctions={"e"})`` simply works
 and the stale marker entry is never consulted.
+
+``titles_ambiguous`` is the one title field that is no subset of
+``titles``: a word in it is a title only inside a title phrase, and a
+word in both is a title wherever it stands, which is what listing it in
+``titles`` asks. ``title_phrases`` holds the two-word phrases a
+``titles_ambiguous`` word may stand in (``"chief justice"``,
+``"major general"``), each read only where both words are titles:
+
+.. doctest::
+
+    >>> chief = Lexicon.default().remove(title_phrases={"chief justice"})
+    >>> Parser(lexicon=chief).parse("Chief Justice John Roberts").title
+    'Chief'
 
 .. _title-detection-off:
 
@@ -130,13 +145,17 @@ Turning title detection off
 
 The subset rule matters most when clearing a field wholesale. Emptying
 ``titles`` alone orphans every ``given_name_titles`` entry, so the two
-go together:
+go together, with ``titles_ambiguous``, whose words are titles inside a
+phrase ("Dean of Students") without being in ``titles``:
 
 .. doctest::
 
     >>> d = Lexicon.default()
     >>> lean = d.remove(titles=set(d.titles),
-    ...                 given_name_titles=set(d.given_name_titles))
+    ...                 given_name_titles=set(d.given_name_titles),
+    ...                 titles_ambiguous=set(d.titles_ambiguous))
+    >>> Parser(lexicon=lean).parse("Dean of Students Jane Smith").title
+    ''
     >>> Parser(lexicon=lean).parse("Hon Solo").given
     'Hon'
 
@@ -405,10 +424,12 @@ free:
   needs one adds it back with
   ``Lexicon.default().add(suffix_acronyms={"cha"})``.
 
-The same conservatism is why ``dean`` above isn't in the default
-vocabulary in the first place: "Dean" is also a common given name, and
-a default that swallowed it as a title would misparse "Dean Martin" for
-everyone.
+The same conservatism is why ``dean`` above is a title by default only
+inside a title phrase ("Dean of Students", "Associate Dean"): "Dean" is
+also a common given name, and a default that swallowed it as a title
+would misparse "Dean Martin" for everyone. Listing it in ``titles``
+makes it a title wherever it stands. The phrase-only titles are
+``Lexicon.titles_ambiguous``.
 
 Particles that are also given names
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

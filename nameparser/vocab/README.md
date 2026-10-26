@@ -100,7 +100,7 @@ A reading's key is its **kind**. The table lists the kinds in their canonical or
 |---|---|---|
 | `title` | `title` | `TITLES` |
 | `salutation` | `title` | `TITLES` |
-| `style` | `title` | `TITLES` |
+| `style` | `title` | `TITLES`, `TITLE_STYLES` |
 | `academic` | `title` | `TITLES` |
 | `religious` | `title` | `TITLES` |
 | `nobility` | `title` | `TITLES` |
@@ -108,7 +108,7 @@ A reading's key is its **kind**. The table lists the kinds in their canonical or
 | `office` | `title` | `TITLES` |
 | `occupation` | `title` | `TITLES` |
 | `kinship` | `title` | `TITLES` |
-| `modifier` | `title` | `TITLES` |
+| `modifier` | `title` | `TITLES`, `TITLE_MODIFIERS` |
 | `suffix` | `suffix` | `SUFFIX_WORDS` |
 | `generation` | `suffix` | `SUFFIX_WORDS` |
 | `agnomen` | `suffix` | `SUFFIX_WORDS`, `SUFFIX_WORDS_AMBIGUOUS`, `AGNOMENS` |
@@ -147,7 +147,7 @@ The title kinds say what the title is:
 - `office`: a public, judicial, civic, corporate or court office held (`president`, `judge`, `mayor`, `ceo`);
 - `occupation`: a job DESCRIBED before a name, as bylines and captions write it, household service included (`actor`, `novelist`, `guitarist`, `maid`);
 - `kinship`: a family word written as a title (`aunt`, `uncle`);
-- `modifier`: a word that is a title only inside a phrase with a head title (`vice`, `grand`, `assistant`, `his`, `1st`), the class decision 10 of [decisions/vocabulary-model](../../docs/design/decisions/vocabulary-model.md) parks. Today it is a title wherever it stands, like every other kind.
+- `modifier`: a word that is a title only inside a phrase with a head title (`vice`, `grand`, `assistant`, `his`, `1st`), decision 10 of [decisions/vocabulary-model](../../docs/design/decisions/vocabulary-model.md). A word whose every title reading is a modifier compiles into `TITLE_MODIFIERS` too, and in the leading run of titles before the first comma it is a title only with a head title after it in that run, before `of` (`Mother Superior of the Convent`), or inside the object of `of` or `the` there (`President of the United States`); ending the name, or after a comma, it is read as any title is ([rules/H9](../../docs/design/rules/H9-title-phrase.md), the title phrase). A word that qualifies the head it stands behind is no modifier in this sense: `d'affaires`, after `chargé`, is an `office`. A word written in a part after a comma as the person's role is not one either: `resident`, `rt` and `pro` were reclassified for that (2026-10-25). A `style` compiles into `TITLE_STYLES`, the one other kind with a set of its own: a style or a modifier before a title that may be a given name puts it in a title phrase (`The Hon. Justice Smith`).
 
 `academic` and `occupation` are told apart by what the word does, not its subject: `Dr` addresses the person, `chemist` describes them. A title is written with one kind per file, as a particle is (a convention, not a check), and check 5 holds every title reading of a word to the same `addresses` whatever its kind. `gender` is recorded, as each title is classified, on one marked for one sex (a feminine form, `actress`, `señora`, or one half of a fixed pair, `mr` and `mrs`, `king` and `queen`), and on `mx` as `"n"`; an unmarked noun (`actor`, `doctor`) records none.
 
@@ -175,6 +175,7 @@ A property is **behavioral** when it compiles into a set and so changes how name
 | Property | Type | Applies to | Unwritten | Effect |
 |---|---|---|---|---|
 | `addresses` | behavioral | `title` | `"family"` | `"given"` adds the word to `GIVEN_NAME_TITLES`: `Sir John` reads `John` as the given name ([rules/H1](../../docs/design/rules/H1-title-and-one-name-word.md), a title and one name word) |
+| `attaches` | behavioral | `title` | none | `TITLE_PHRASES`: the title kinds this word stands before in a title phrase, a list (`chief = { attaches = ["office", "military"] }`), compiled into the two-word phrases it makes with each title word of those kinds (`chief justice`); a title that may be a given name on either side of one is a title there ([rules/H9](../../docs/design/rules/H9-title-phrase.md), the title phrase) |
 | `after_given` | behavioral | `title` | false | `AFTER_GIVEN_TITLES`, on a `salutation` reading only: written bare at the end of the given part after a family comma, the word is the title, as in `Doe, Jane Mrs` ([rules/H8](../../docs/design/rules/H8-salutation-ending-the-given-part.md), a salutation ending the given part). A salutation borne as a given name or a surname is left out with an exclusion of the property, its counts beside it (`goodman`, `herr`), since a middle name may be either |
 | `acronym` | behavioral | `suffix` | true for `credential`, false for every other kind | true: `SUFFIX_ACRONYMS`, matched with every period removed (`M.D.` is `md`); false: `SUFFIX_WORDS` |
 | `attached` | behavioral | `suffix` | absent | `GLUED_HONORIFICS`, on a word reading only: `{ side = "after" }` splits the word off the end of a name token, as in `田中さん` ([rules/W2](../../docs/design/rules/W2-glued-honorific-peel.md), the glued-honorific peel) |
@@ -197,12 +198,13 @@ Two of these need more than their row:
 
 ### Derived markers
 
-Three sets mark a clash with a name, and all three are derived: a word is in one when it carries the clashing reading and a name reading, in any of its files (check 11, since 2026-10-25, [decisions/vocabulary-model](../../docs/design/decisions/vocabulary-model.md)). Phase 1 wrote two of them as flags, `may_be_name` and `may_be_given = true`, which the build now refuses, naming the reading to write; the third, a suffix word that is also a name, arrived with phase 2h.
+Four sets mark a clash with a name, and all four are derived: a word is in one when it carries the clashing reading and a name reading, in any of its files (check 11, since 2026-10-25, [decisions/vocabulary-model](../../docs/design/decisions/vocabulary-model.md)). Phase 1 wrote two of them as flags, `may_be_name` and `may_be_given = true`, which the build now refuses, naming the reading to write; the third, a suffix word that is also a name, arrived with phase 2h, and the fourth, a title that may be a given name, with phase 2i.
 
 | Marker | Readings | Compiled into | Effect |
 |---|---|---|---|
 | possibly a name, a word | a `generation` or `agnomen` reading and a `given` or `family` reading; a name reading beside any other suffix word kind is refused (check 11), no gate reading that clash | `SUFFIX_WORDS_AMBIGUOUS` | a suffix word that is also a name (`fils`, `neto`) is read as a suffix only where the name has words to spare, as an ambiguous acronym is: `Alexandre Dumas fils` and `Pedro Alves Neto` end in a suffix, `Marie Fils` and `Ana Neto` in a family name, either way reported ([rules/S11](../../docs/design/rules/S11-suffix-word-that-is-also-a-name.md)). A generation's Title case in a name of mixed case leans it to the name, and its lower case settles it as the suffix wherever the name keeps a family word; an agnomen's writing settles nothing |
 | possibly a name | an acronym `suffix` reading and a `given` or `family` reading | `SUFFIX_ACRONYMS_AMBIGUOUS` | an acronym that is also a name (`ma`) is read as a suffix only where its spelling or the name around it says so: `John Smith MA` and `John Smith M.A.` end in a suffix, `John Smith Ma` in a family name ([rules/S4](../../docs/design/rules/S4-ambiguous-acronym-needs-words-to-spare.md), the ambiguous acronym needs words to spare; [rules/S6](../../docs/design/rules/S6-case-signal-at-the-suffix-slot.md), the case signal at the suffix slot) |
+| possibly a name, a title | a title reading and a `given` reading, on a word with no particle reading | `TITLES_AMBIGUOUS`, and kept out of `TITLES` | a title that may be a given name (`dean`, `justice`, `major`) is a title only inside a title phrase: after a modifier, a style or a title it stands behind in a phrase `attaches` makes, or before `of` or a title it attaches to. Elsewhere it is a name word, reported where it opens the name: `Dean of Students` and `Major General Smith` read the title, `Dean Smith` and `Mr Major Smith` the given name ([rules/H9](../../docs/design/rules/H9-title-phrase.md), the title phrase). A title that is also a particle (`st`, `freiherr`) is left to the particle rules, its `given` reading deriving the particle's marker alone. A salutation's given-name counts kept as evidence for `after_given` sit in the salutation reading's `note` (`mr`, `herr`), so they mark nothing |
 | possibly given | a `particle` reading and a `given` reading | kept out of `NON_GIVEN_NAME_PARTICLES` | a particle opening the name stays a given name there (`van Gogh`, given `van`) and the fork is reported, rather than starting the family name ([rules/P1](../../docs/design/rules/P1-lone-particle-fold.md), the lone particle fold) |
 
 Before phase 2h (2026-10-25) a word reading of the suffix category beside a name reading marked nothing, and no shipped word had one. The marker is the clash, not the counts: a count recorded for a word that should stay unmarked goes in the clashing reading's `note`, as `ld`'s does, since a name reading would mark it. `may_be_initial` is not derived: its clash is with the initial, a shape every cased single letter has, and which letters a tradition writes both ways is a judgment about the letter, not a name anyone bears.
@@ -257,7 +259,6 @@ These names will mean something in a later phase. Writing one now as a key, in a
 
 | Name | Phase |
 |---|---|
-| `attaches` | 2 |
 | `prefer` | 3 |
 | `strict` | 3 |
 | `bare_only` | 4 |
@@ -265,7 +266,7 @@ These names will mean something in a later phase. Writing one now as a key, in a
 | `trailing_only` | 4 |
 | `separators` | 4 |
 
-Phase 2 gave `default` its meaning (2026-10-25, see [Properties](#properties)) and keeps `attaches` for its front-of-the-name work. The gate's slots carry position and shape already settles a bare letter ([rules/P7](../../docs/design/rules/P7-one-letter-particle-against-the-initial-it-spells.md), a one-letter particle against the initial it spells), so `leading_only`, `trailing_only` and `bare_only` wait for phase 4's shapes, as `separators` waits for its glued words.
+Phase 2 gave `default` and `attaches` their meaning (2026-10-25, see [Properties](#properties)). The gate's slots carry position and shape already settles a bare letter ([rules/P7](../../docs/design/rules/P7-one-letter-particle-against-the-initial-it-spells.md), a one-letter particle against the initial it spells), so `leading_only`, `trailing_only` and `bare_only` wait for phase 4's shapes, as `separators` waits for its glued words.
 
 Two property values are refused for the same reason, with a message saying a later phase: `addresses = "full"` and `"any"`, and `attached` with a `side` other than `"after"`.
 

@@ -409,7 +409,7 @@ a private ``Constants`` and pass it:
 
     >>> from nameparser import HumanName
     >>> from nameparser.config import Constants
-    >>> HumanName("Dean Smith").first                # not a default title
+    >>> HumanName("Dean Smith").first      # a title only in a phrase
     'Dean'
     >>> dean_constants = Constants()
     >>> _ = dean_constants.titles.add("dean")    # returns the set

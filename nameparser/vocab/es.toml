@@ -11,13 +11,11 @@ salutation = { gender = "m", same_as = "señor" }
 
 [[word]]
 text = "señora"
-salutation = { gender = "f", excluded = { after_given = "a given name (US SSA, as Senora), borne as a middle name" } }
-given = { us_ssa = 1065, as_of = 2026-10-24, note = "counted as SENORA, the SSA writing no diacritics" }
+salutation = { gender = "f", excluded = { after_given = "a given name (US SSA, as Senora), borne as a middle name" }, note = "borne as a given name: US SSA 1,065 births (2026-10-24); counted as SENORA, the SSA writing no diacritics; kept here, not as a `given` reading, which would make the title one only inside a title phrase (rules/H9)" }
 
 [[word]]
 text = "sra"
-salutation = { gender = "f", same_as = "señora", after_given = true }
-given = { us_ssa = 27, as_of = 2026-10-24 }
+salutation = { gender = "f", same_as = "señora", after_given = true, note = "borne as a given name: US SSA 27 births (2026-10-24); kept here, not as a `given` reading, which would make the title one only inside a title phrase (rules/H9)" }
 family = { us_census_2010 = 149, as_of = 2026-10-24, note = "kept for after_given (decisions/H8)" }
 
 [[word]]
@@ -30,8 +28,7 @@ salutation = { same_as = "señores", after_given = true }
 
 [[word]]
 text = "señorita"
-salutation = { gender = "f", after_given = true }
-given = { us_ssa = 6, as_of = 2026-10-24, note = "counted as SENORITA; kept for after_given (decisions/H8)" }
+salutation = { gender = "f", after_given = true, note = "borne as a given name: US SSA 6 births (2026-10-24); counted as SENORITA; kept for after_given (decisions/H8); kept here, not as a `given` reading, which would make the title one only inside a title phrase (rules/H9)" }
 
 [[word]]
 text = "srta"

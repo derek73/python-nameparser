@@ -15,8 +15,7 @@ salutation = { gender = "f", after_given = true }
 
 [[word]]
 text = "herr"
-salutation = { gender = "m", excluded = { after_given = "a surname (Census 2010 HERR), and middle names are drawn from surnames" } }
-given = { wikidata = 3, as_of = 2026-10-24 }
+salutation = { gender = "m", excluded = { after_given = "a surname (Census 2010 HERR), and middle names are drawn from surnames" }, note = "borne as a given name: Wikidata 3 people (2026-10-24); kept here, not as a `given` reading, which would make the title one only inside a title phrase (rules/H9)" }
 family = { us_census_2010 = 11980, wikidata = 135, as_of = 2026-10-24 }
 
 [[word]]

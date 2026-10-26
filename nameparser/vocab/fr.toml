@@ -82,16 +82,16 @@ text = "chargé"
 office = { expands = "chargé d'affaires, the head of a mission below an ambassador" }
 
 [[word]]
+text = "d'affaires"
+office = { expands = "the second word of chargé d'affaires", issue = 752, note = "office rather than modifier since 2026-10-25: it stands behind its head, where decision 10's modifier rule asks for a head title after a modifier (rules/H9)" }
+
+[[word]]
 text = "compositeur"
 occupation = {}
 
 [[word]]
 text = "historien"
 occupation = {}
-
-[[word]]
-text = "d'affaires"
-modifier = { expands = "the second word of chargé d'affaires" }
 
 [[word]]
 text = "fils"
