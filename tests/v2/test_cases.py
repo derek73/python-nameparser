@@ -256,9 +256,10 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # takes the claims of the rows that reported one (each under
     # the orders it reaches); its new rows add their run reports, and
     # the rows rewritten in one case or lower case to keep reaching
-    # their emitter add theirs back.
-    assert claims == 1310, (
-        f"the field sweep checks {claims} claims, recorded as 1310 on "
+    # their emitter add theirs back; 1310 -> 1316 the same day, the
+    # review's rows for the comma's opening word and the chain's stop.
+    assert claims == 1316, (
+        f"the field sweep checks {claims} claims, recorded as 1316 on "
         f"2026-10-25")
 
 

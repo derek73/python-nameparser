@@ -64,10 +64,12 @@
 
 **Accepted:**
 
-- A writer's own initials, written in capitals between the given names and the family name, that spell a listed member of the ambiguous class start the run as that credential does, and the family name behind them reads as a suffix, reported: the capitals are the credential's writing and the initials' alike, and the periods' spelling already read this way.
+- A word of capitals between two name words that spells a listed member of the ambiguous class starts the run as that credential does, whether it is the writer's own initials or a family name written in capitals by the convention that writes it so, and the name word behind it reads as a suffix, reported, or as a title where it is title vocabulary, in silence: the capitals are the credential's writing and these alike, and the periods' spelling already read this way.
   ```
   "Maria Ana MA Silva"        →  suffix="MA Silva"
   "Maria Ana M.A. Silva"      →  suffix="M.A. Silva"
+  "Jean Pierre MA DUPONT"     →  suffix="MA DUPONT"
+  "Mary Jane MA King"         →  title="King"
   ```
 
 ---

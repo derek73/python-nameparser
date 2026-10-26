@@ -8,8 +8,9 @@
   ```
   "Dr. John van der Berg"     →  family="van der Berg"
   ```
-- **Where a trailing suffix begins** is the trailing run S2 reads, once, before the chain is made and counting the chain's own run as the one name word it will be, so the chain cannot change what it counts: a trailing roman numeral S10 reads as the generation, or a bare acronym with words to spare, ends the chain as a suffix word does, and so does a bare ambiguous acronym written in capitals in a mixed-case name (S6), which needs no words to spare.
+- **Where a trailing suffix begins** is the trailing run S2 reads, once, before the chain is made and counting the chain's own run as the one name word it will be, so the chain cannot change what it counts: a trailing roman numeral S10 reads as the generation, or a bare acronym with words to spare, ends the chain as a suffix word does, and so does a bare ambiguous acronym written in capitals in a mixed-case name (S6), which needs no words to spare, wherever it stands in the name: settled by its writing, it is a suffix word to the chain, and the run it starts is S8's.
   ```
+  "Smith, Freiherr von Berg MA Jones"  →  given="von Berg"
   "John van der Berg PhD"     →  family="van der Berg"
   "John van der Berg V"       →  family="van der Berg"
   "John van der Berg V"       →  suffix="V"

@@ -7091,14 +7091,63 @@ CASES: tuple[Case, ...] = (
                "An earlier round of #533 released it and read given 'abdul MA' "
                "in silence"),
     Case("the_bound_given_joins_control_without_the_clause",
-         "Berg, abdul MA",
-         {"given": "abdul MA", "family": "Berg"},
+         "Berg, abdul ma",
+         {"given": "abdul ma", "family": "Berg"},
          classification="parity",
          ambiguities=(),
          notes="the recorded control for the row above -- what the "
                "released member WOULD have read as, and why releasing "
-               "it buys nothing. 1.4.0 read it identically (first "
-               "'abdul MA', last 'Berg'). Unchanged by this rule",
+               "it buys nothing. Written in lower case since #785: in "
+               "capitals in a name of mixed case the member is settled "
+               "and P5 declines it (the row below). 1.4.0 read it "
+               "identically (first 'abdul ma', last 'Berg')",
+         shape=2),
+    Case("a_capitals_member_opening_the_part_reports_nothing_beside_one_that_does",
+         "Smith, MA PhD Ma",
+         {"family": "Smith", "suffix": "MA PhD Ma"},
+         classification="fix(#785)",
+         ambiguities=("suffix-or-name",),
+         notes="C11: the opening 'MA' is settled by its own "
+               "capitals (S6) and reports nothing, though the "
+               "Title-case 'Ma' behind PhD is read by S7's company and "
+               "reports; the review of #785 found the first version "
+               "still reporting 'MA' wherever another member in the "
+               "part was not settled. 2.6.0 reported both, and 1.4.0 "
+               "read first 'MA', suffix 'PhD, Ma'"),
+    Case("a_capitals_member_ends_the_chain_after_a_title_particle_head",
+         "Smith, Freiherr von Berg MA Jones",
+         {"title": "Freiherr", "given": "von Berg", "family": "Smith",
+          "suffix": "MA Jones"},
+         classification="fix(#785)",
+         ambiguities=("suffix-or-name",),
+         notes="rules/P2's chain stops at a member its capitals settle, "
+               "as it stops at a suffix word, so the member starts the "
+               "credential's run (S8) and the given part reads as "
+               "'Smith, Freiherr von Berg M.A. Jones' does; the first "
+               "version of #785 widened the run start but not the "
+               "chain's stop, and the chain took 'MA Jones' into the "
+               "given name in silence. 2.6.0 read given 'von Berg MA "
+               "Jones', and 1.4.0 first 'von Berg', middle 'Jones', "
+               "suffix 'MA'"),
+    Case("a_capitals_member_behind_a_lone_bound_given_name",
+         "Abdul MA",
+         {"given": "Abdul", "suffix": "MA"},
+         classification="fix(#785)",
+         notes="S6: the capitals settle 'MA' with no words to spare, as "
+               "in 'Jack MA', and nothing reports it; the bound given "
+               "name is claimed by its vocabulary, so O5 has no "
+               "convention to report either, and the name carries no "
+               "report though it has no family. 2.6.0 read the same "
+               "fields and reported suffix-or-name"),
+    Case("the_bound_given_join_declines_a_capitals_member",
+         "Berg, abdul MA",
+         {"given": "abdul", "family": "Berg", "suffix": "MA"},
+         classification="fix(#785)",
+         notes="rules/P5's join declines a member its capitals settle "
+               "as it declines a suffix word (S6), so 'MA' is the "
+               "credential, as 'Berg, abdul M.A.' reads, and nothing "
+               "reports it. 1.4.0, 2.0.0 and 2.6.0 read given "
+               "'abdul MA'",
          shape=2),
     Case("a_particle_chain_would_take_the_released_member",
          "Berg, Jane van der nee Smith DO",

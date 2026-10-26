@@ -14,7 +14,7 @@
 {"name": ", Jane", "given": "Jane", "initials": "J."}
 {"name": ", Jane Mrs", "title": "Mrs", "family": "Jane", "initials": "J."}
 {"name": ", John", "given": "John", "initials": "J."}
-{"name": ", MA", "given": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "M.", "capitalized": "Ma"}
+{"name": ", MA Smith", "given": "MA", "middle": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "M. S.", "capitalized_force": "Ma Smith"}
 {"name": ", MD/PhD", "suffix": "MD/PhD"}
 {"name": ".,"}
 {"name": "1 & 2, 3 4 5, Mr.", "title": "Mr.", "given": "3", "middle": "4 5", "family": "1 & 2", "initials": "3. 4. 5. 1. 2."}
@@ -354,10 +354,11 @@
 {"name": "Berg, Jan vd", "given": "Jan", "family": "vd Berg", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. B."}
 {"name": "Berg, Jane van der nee Smith DO", "given": "Jane", "middle": "van der nee Smith", "family": "Berg", "suffix": "DO", "initials": "J. n. S. B.", "capitalized_force": "Jane van der Nee Smith Berg DO"}
 {"name": "Berg, abd née Jones", "given": "abd", "middle": "née Jones", "family": "Berg", "initials": "a. n. J. B.", "capitalized_force": "Abd Née Jones Berg"}
-{"name": "Berg, abdul MA", "given": "abdul MA", "family": "Berg", "initials": "a. M. B.", "capitalized_force": "Abdul Ma Berg"}
+{"name": "Berg, abdul MA", "given": "abdul", "family": "Berg", "suffix": "MA", "initials": "a. B.", "capitalized_force": "Abdul Berg MA"}
 {"name": "Berg, abdul Prof.", "title": "Prof.", "given": "abdul", "family": "Berg", "initials": "a. B.", "capitalized_force": "Prof. Abdul Berg"}
 {"name": "Berg, abdul Prof. Ali", "given": "abdul Prof.", "middle": "Ali", "family": "Berg", "initials": "a. P. A. B.", "capitalized_force": "Abdul Prof. Ali Berg"}
 {"name": "Berg, abdul V", "given": "abdul V", "family": "Berg", "initials": "a. V. B.", "capitalized_force": "Abdul V Berg"}
+{"name": "Berg, abdul ma", "given": "abdul ma", "family": "Berg", "initials": "a. m. B.", "capitalized_force": "Abdul Ma Berg"}
 {"name": "Berg, abdul nee Jones MA", "given": "abdul", "middle": "nee Jones", "family": "Berg", "suffix": "MA", "initials": "a. n. J. B.", "capitalized_force": "Abdul Nee Jones Berg MA"}
 {"name": "Berg, abdul van", "given": "abdul van", "family": "Berg", "initials": "a. v. B.", "capitalized_force": "Abdul Van Berg"}
 {"name": "Berg, abdul vd", "given": "abdul", "family": "vd Berg", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "a. B.", "capitalized_force": "Abdul vd Berg"}
@@ -1514,6 +1515,7 @@
 {"name": "Jean Marie Fils", "given": "Jean", "middle": "Marie", "family": "Fils", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. M. F."}
 {"name": "Jean Pierre DUPONT", "given": "Jean", "middle": "Pierre", "family": "DUPONT", "initials": "J. P. D.", "capitalized_force": "Jean Pierre Dupont"}
 {"name": "Jean Pierre DUPONT-MORETTI", "given": "Jean", "middle": "Pierre", "family": "DUPONT-MORETTI", "initials": "J. P. D.", "capitalized_force": "Jean Pierre Dupont-Moretti"}
+{"name": "Jean Pierre MA DUPONT", "given": "Jean", "family": "Pierre", "suffix": "MA DUPONT", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. P.", "capitalized_force": "Jean Pierre MA Dupont"}
 {"name": "Jean St Clair", "given": "Jean", "family": "St Clair", "initials": "J. C.", "capitalized_force": "Jean st Clair"}
 {"name": "Jean de Beaumanoir de Lavardin", "given": "Jean", "middle": "de Beaumanoir", "family": "de Lavardin", "initials": "J. B. L."}
 {"name": "Jean de Mesnil", "given": "Jean", "family": "de Mesnil", "initials": "J. M."}
@@ -2388,6 +2390,7 @@
 {"name": "Mary Jane King", "given": "Mary", "middle": "Jane", "family": "King", "initials": "M. J. K."}
 {"name": "Mary Jane King Smith", "given": "Mary", "middle": "Jane King", "family": "Smith", "initials": "M. J. K. S."}
 {"name": "Mary Jane King.", "title": "King.", "given": "Mary", "family": "Jane", "initials": "M. J."}
+{"name": "Mary Jane MA King", "title": "King", "given": "Mary", "family": "Jane", "suffix": "MA", "initials": "M. J."}
 {"name": "Mary Johnson", "given": "Mary", "family": "Johnson", "initials": "M. J."}
 {"name": "Mary Nicet", "given": "Mary", "family": "Nicet", "initials": "M. N."}
 {"name": "Mary Smith née Jones Prof.", "title": "Prof.", "given": "Mary", "family": "Smith", "maiden": "Jones", "initials": "M. S."}
@@ -3100,6 +3103,7 @@
 {"name": "Smith, E.T., Jr.", "given": "E.T.", "family": "Smith", "suffix": "Jr.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "E. S."}
 {"name": "Smith, Esq.", "family": "Smith", "suffix": "Esq.", "initials": "S."}
 {"name": "Smith, Esq. John", "family": "Smith", "suffix": "Esq. John", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "S."}
+{"name": "Smith, Freiherr von Berg MA Jones", "title": "Freiherr", "given": "von Berg", "family": "Smith", "suffix": "MA Jones", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "v. B. S.", "capitalized_force": "Freiherr Von Berg Smith MA Jones"}
 {"name": "Smith, I.", "given": "I.", "family": "Smith", "initials": "I. S."}
 {"name": "Smith, Insp. John", "title": "Insp.", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Smith, J. R.", "given": "J.", "middle": "R.", "family": "Smith", "initials": "J. R. S."}

@@ -49,7 +49,7 @@
 
 **Precedence:**
 
-- **The member of the class that is particle vocabulary as well, standing alone at this slot** ("Doe, John Do"): P6 decides it: the capitals take it as the credential, as does an unambiguous credential in front of it (S7), and every other spelling attaches to the family, reported there as P6's fork rather than as this one. Behind another particle it does not stand alone — the two are one particle run by then — and the run attaches whatever the capitals say (P6).
+- **The member of the class that is particle vocabulary as well, standing alone at this slot** ("Doe, John Do"): P6 decides it: the capitals take it as the credential, as does an unambiguous credential in front of it (S7) or a member its capitals settle, which starts the credential's run (S8), and every other spelling attaches to the family, reported there as P6's fork rather than as this one. Behind another particle it does not stand alone — the two are one particle run by then — and the run attaches whatever the capitals say (P6).
   ```
   "SMITH, JOHN DO"            →  family="DO SMITH"  · boundary
   ```

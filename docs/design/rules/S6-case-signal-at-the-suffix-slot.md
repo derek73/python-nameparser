@@ -42,8 +42,8 @@
 
 - **Where something before the writing keeps the word a name, it reports as before**: with nothing in front of a comma C4's count leaves the word after it the given name, the case being read only behind one name word (C4), and the first word after a maiden marker is the maiden name the marker announced (M2), whatever case either is written in.
   ```
-  ", MA"                      →  given="MA"  · boundary
-  ", MA"                      →  ambiguities=("suffix-or-name",)  · boundary
+  ", MA Smith"                →  given="MA"  · boundary
+  ", MA Smith"                →  ambiguities=("suffix-or-name",)  · boundary
   "Jane Doe nee MA"           →  ambiguities=("suffix-or-name",)  · boundary
   ```
 

@@ -651,7 +651,7 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
             f"{what}; the part before the comma holds {names} name words, "
             f"so it is read as a credential run", tuple(part)))
     elif (len(p1[0]) == 1 and p1[0][0] in listed
-          and not (settled and reading[0]
+          and not (reading[0]
                    and settled_by_case(tokens[p1[0][0]], state.one_case))):
         # the first word after the comma reports as it always does,
         # naming the role bound above: the listing form binds a word

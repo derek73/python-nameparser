@@ -3,7 +3,7 @@
 ## Standing
 
 - At a comma the words-to-spare count reaches the listed ambiguous set as well as the shape class: two name words before the comma make the member the credential whatever its case (`John Smith, Ed`, `john smith, ma` → suffix), one leaves it the given name (`Royce, Ed`) — 2026-09-15.
-- The comma path reports `suffix-or-name` whenever a member of the class is the first word after the comma, lean or none (`Smith, ma`, `毛泽东, MA`) — 2026-09-17.
+- The comma path reports `suffix-or-name` whenever a member of the class is the first word after the comma, lean or none (`Smith, ma`, `毛泽东, MA`), save a listed member its capitals settle in a mixed-case name, which reports nothing (`Smith, MA`, `John Smith, MA`; 2026-10-25 #785, decisions/S6) — 2026-09-17.
 - Every decision at these slots reports the existing `suffix-or-name`; no new ambiguity kind was added — 2026-09-14.
 - Under strict mode, `Smith V., Ma` reads family 'V.', the vetoed word counting as a name word before the comma; left as it is and pinned, and recorded as the reach of the switch rules/C14 does not state — 2026-09-18.
 - A member ending a maiden marker's clause is read by the same count (`Jane Doe nee Smith MA` → maiden 'Smith', suffix 'MA'); a one-case name before the clause is the accepted exception, the clause hiding the member's case (`JANE DOE nee Smith Ma` → suffix 'Ma', where `JANE DOE Ma` keeps family 'Ma') — 2026-09-19 #533.
