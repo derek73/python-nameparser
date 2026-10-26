@@ -2195,7 +2195,7 @@ def test_a_declined_cjk_credential_word_does_not_peel_off_a_glued_name(
 # rules/S13 (#810): a settled bracketed member reads as its twin, a
 # bracketed unambiguous credential in the same place, fields and reports
 # alike. The twin is MBA, a word no head holds, so the twin's reading
-# maps back by replacing its text. 972 texts, about 2s.
+# maps back by replacing its text. 1,044 texts, about 2s.
 _TWIN_HEADS = (
     "John Smith {c}", "Jack {c}", "{c}", "John {c}", "JOHN SMITH {c}",
     "Smith, John {c}", "Smith, {c}", ", {c}", "(Bob), {c}",
@@ -2208,7 +2208,8 @@ _TWIN_HEADS = (
     # a third comma part, and a clause whose settling another makes
     # possible, the first settled word making the name mixed case
     "Smith, John, Jr. {c}", "JOHN SMITH (m.a) {c}",
-    "john smith (M.A) {c}",
+    "john smith (M.A) {c}", "Smith, John, X.Y.Z. {c}",
+    "Smith, John, Bob {c}",
 )
 _TWIN_MEMBERS = ("MA", "M.A", "JD", "DO", "D.O", "MENG")
 _TWIN_PAIRS = (("(", ")"), ('"', '"'))
@@ -2226,12 +2227,13 @@ def _twin_reading(name: ParsedName, twin: str | None, word: str) -> tuple[
 def test_a_settled_bracketed_member_reads_as_its_unambiguous_twin() -> None:
     """Negative control, measured 2026-10-26 with `run` patched to a
     single fold that makes the member the suffix in place (the first
-    draft's reading): 300 of 828 settled readings differ from the
+    draft's reading): 372 of 900 settled readings differ from the
     twin's, 36 each behind 'Jack', 'John', 'John Smith PhD',
-    'John Smith, PhD', 'Smith, John, Jr.', before 'née Jones', 'VI' and
-    'Ph. D.', and 12 for a clause standing alone ('Jack (MA)' read
-    family 'Jack', where the twin reads given 'Jack'). Folded to the
-    fixed point: 864 settled, 0 differ. A member the folds leave a
+    'John Smith, PhD', 'Smith, John, Jr.', 'Smith, John, X.Y.Z.',
+    'Smith, John, Bob', before 'née Jones', 'VI' and 'Ph. D.', and 12
+    for a clause standing alone ('Jack (MA)' read family 'Jack', where
+    the twin reads given 'Jack'). Folded to the fixed point: 936
+    settled, 0 differ. A member the folds leave a
     nickname is skipped here, so the clause a second fold settles is
     pinned by case rows instead (bracket_member_settled_by_another_*)."""
     settled = 0

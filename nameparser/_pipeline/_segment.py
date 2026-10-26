@@ -1,6 +1,6 @@
 """Stage: segment.
 
-Consumes: tokens (role-None main stream), comma_offsets, one_case
+Consumes: settled_clauses (rules/S13, on `run`'s later folds), and tokens (role-None main stream), comma_offsets, one_case
 (where an earlier stage recorded it).
 Produces: segments (runs of main-token indices; interior segments may
 be EMPTY -- doubled commas keep their structural position), structure
@@ -105,6 +105,16 @@ def segment(state: ParseState) -> ParseState:
     # (rules/T4, #727): asked only under that opt-in policy, so the
     # default pays nothing for it.
     def suffixy(seg: tuple[int, ...], case: bool | None = None) -> bool:
+        # rules/S13: "it reads as a bracketed unambiguous credential does
+        # in the same place" -- Then, on a later fold: a settled word
+        # passes as such a credential does, its tag coming only in
+        # classify, and `class_run` refuses it as it refuses that
+        # credential (decisions/S13 (#810))
+        if state.settled_clauses:
+            seg = tuple([i for i in seg if state.tokens[i].span
+                         not in state.settled_clauses])
+            if not seg:
+                return True
         return is_wholly_suffix(
             [state.tokens[i].text for i in seg], state.lexicon,
             state.policy, one_case=case,
@@ -139,10 +149,13 @@ def segment(state: ParseState) -> ParseState:
         # Policy-sensitive by construction: with
         # `unlisted_dotted_suffixes` off the token is name material, is
         # no candidate, and the flag stands.
+        # a settled word is no candidate, as the listed credential it
+        # reads as is not (rules/S13)
         return all(ambiguous_class_candidate(state.tokens[i].text,
                                              state.lexicon, state.policy)
                    and not ambiguous_class_member(state.tokens[i].text,
                                                   state.lexicon)
+                   and state.tokens[i].span not in state.settled_clauses
                    for i in seg)
 
     def titles_and_suffixes(seg: tuple[int, ...]) -> bool:
@@ -209,13 +222,6 @@ def segment(state: ParseState) -> ParseState:
         # model of group, the shape mechanisms.md's
         # READ-WITHOUT-THEN-BIND exists to remove. Last, as the
         # rarest reading.
-        # rules/S13: "it reads as a bracketed unambiguous credential does
-        # in the same place" -- Then, on a later fold: a settled word is
-        # such a credential, which this test would recognize, though its
-        # tag comes only in classify (decisions/S13 (#810))
-        if state.settled_clauses:
-            seg = tuple(i for i in seg
-                        if state.tokens[i].span not in state.settled_clauses)
         if (seg and not suffixy(seg) and not suffixy(seg, case_class())
                 and not class_run(seg) and not titles_and_suffixes(seg)):
             texts_joined = " ".join([state.tokens[i].text for i in seg])

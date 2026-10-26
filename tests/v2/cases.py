@@ -8900,6 +8900,14 @@ CASES: tuple[Case, ...] = (
          notes="no comma-structure report, as its twin '(MBA)' draws "
                "none: the part's tail test runs before the settled "
                "word is tagged, so it leaves the word out"),
+    Case("bracket_member_past_the_second_comma_after_a_dotted_shape",
+         "Smith, John, X.Y.Z. (MA)",
+         {"given": "John", "family": "Smith", "suffix": "X.Y.Z. MA"},
+         classification="fix(#810)",
+         ambiguities=("comma-structure",),
+         notes="reported as its twin '(MBA)' is: the settled word is a "
+               "listed credential, no shape candidate, so the part is no "
+               "run of shape-admitted words"),
     Case("bracket_member_beside_a_dropped_character",
          "John Smith (MA \N{GRINNING FACE})",
          {"given": "John", "family": "Smith", "nickname": "MA"},

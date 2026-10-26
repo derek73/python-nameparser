@@ -7,8 +7,8 @@ rotation gate. Also comma_offsets and dropped, which R1's entry pass
 below reads to find the separators the writer typed (#436/#437), and
 extracted and one_case, which S13's pass reads (#810).
 Produces: tokens with roles adjusted by the post rules; settled_clauses,
-the delimited members rules/S13 settles after the name, for the second
-fold `run` makes (#810), and the SUFFIX_OR_NICKNAME report on any other
+the delimited members rules/S13 settles after the name, for the later
+folds `run` makes (#810), and the SUFFIX_OR_NICKNAME report on any other
 member left a nickname; the stable
 "joined" tag on a post-nominal continuing the entry before it, and the
 ambiguity P6's attachment reports at the end of a name read

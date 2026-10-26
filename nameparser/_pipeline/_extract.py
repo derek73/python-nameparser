@@ -1,7 +1,7 @@
 """Stage: extract_delimited.
 
-Consumes: ParseState.original, and settled_clauses on `run`'s second
-fold (rules/S13, #810), each settled clause escaping as a bracketed
+Consumes: ParseState.original, and settled_clauses on `run`'s later
+folds (rules/S13, #810), each settled clause escaping as a bracketed
 unambiguous credential does.
 Produces: extracted (role + inner span per delimited region), masked
 (full regions incl. delimiter chars, skipped by tokenize),

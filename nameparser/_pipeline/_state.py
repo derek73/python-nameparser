@@ -205,7 +205,7 @@ class ParseState:
     order it read them under, AND the folded-middle tag on the
     particles P6's attachment joins after a family comma (#613);
     post_rules -> roles again, settled_clauses (S13's, #810, which
-    extract and classify read on the second fold `run` makes), and the
+    extract, segment and classify read on `run`'s later folds), and the
     ambiguity P6's no-comma attachment reports (#467) and
     SUFFIX_OR_NICKNAME on a member S13 leaves a nickname.
     Ambiguities are recorded by every stage that DECIDES one --
@@ -289,8 +289,8 @@ class ParseState:
     one_case: bool | None = None
     ambiguities: tuple[PendingAmbiguity, ...] = ()
     #: rules/S13's settled clauses, by the span of the one word each
-    #: holds: post_rules records them on the first fold, and `run`
-    #: folds the stages once more with them set, extract escaping each
+    #: holds: post_rules records them, and `run` folds the stages again
+    #: with them set until no new one settles, extract escaping each
     #: as it escapes a bracketed unambiguous credential and classify
     #: tagging its word as that credential's twin, so the whole name
     #: reads as the twin's does (#810).
