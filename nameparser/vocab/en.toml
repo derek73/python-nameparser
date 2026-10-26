@@ -1225,7 +1225,9 @@ occupation = {}
 
 [[word]]
 text = "bard"
-occupation = {}
+occupation = { issue = 867, decided = 2026-10-26, note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'Bard Larsen' reads the given name, unreported, since no listed phrase holds it" }
+given = { us_ssa = 218, wikidata = 10, as_of = 2026-10-26, note = "mostly the Norwegian Bård with its accent dropped: US SSA folds it to BARD (male births); Wikidata is a lower bound, and holds 107 more spelled 'Bård' (Norway 87); nam_dict band 5 in Norway as 'Bård'" }
+family = { us_census_2010 = 5953, wikidata = 100, as_of = 2026-10-26 }
 
 [[word]]
 text = "barrister"

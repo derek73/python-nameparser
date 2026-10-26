@@ -138,7 +138,6 @@ TITLES: frozenset[str] = frozenset({
     'banker',
     'banner',
     'bapak',
-    'bard',
     'baron',
     'baroness',
     'barrister',
@@ -469,7 +468,6 @@ TITLES: frozenset[str] = frozenset({
     'magnate',
     'maharajah',
     'maharani',
-    'mahdi',
     'maid',
     'maj',
     'majesty',
@@ -966,9 +964,11 @@ AFTER_GIVEN_TITLES: frozenset[str] = frozenset({
 })
 
 TITLES_AMBIGUOUS: frozenset[str] = frozenset({
+    'bard',
     'dean',
     'grace',
     'justice',
+    'mahdi',
     'major',
     'marshal',
     'wing',

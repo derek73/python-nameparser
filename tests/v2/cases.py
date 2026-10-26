@@ -12223,9 +12223,9 @@ CASES: tuple[Case, ...] = (
          notes="C2, as 'Smith, John, Dean' reads; title 'Wing' before"),
     Case("given_name_modifier_ending_the_name", "John Smith Wing.",
          {"given": "John", "middle": "Smith", "family": "Wing."},
-         classification="fix(#752)",
          notes="H9 over H5: a modifier that may be a given name needs its "
-               "head at the end too; read title 'Wing.' before"),
+               "head at the end too; 1.4.0's reading, which 2.3.0 "
+               "through 2.6.0 read as title 'Wing.'"),
     Case("given_name_modifier_before_a_dotted_suffix", "John Smith Wing. Jr.",
          {"title": "Wing.", "given": "John", "family": "Smith",
           "suffix": "Jr."},
@@ -12236,6 +12236,53 @@ CASES: tuple[Case, ...] = (
          {"title": "The Hon. Wing", "family": "Lau"},
          notes="H9's Accepted clause: the object of 'the' keeps the "
                "title, as master read it (#752 phase 2j)"),
+    Case("given_name_title_mahdi_at_the_head", "Mahdi Karimi",
+         {"given": "Mahdi", "family": "Karimi"}, classification="fix(#867)",
+         notes="H9: no listed phrase holds 'mahdi', so no report; read "
+               "title 'Mahdi', no given name, 1.4.0 through 2.6.0 "
+               "(#752 phase 2j)"),
+    Case("given_name_title_mahdi_after_a_salutation", "Mr Mahdi Karimi",
+         {"title": "Mr", "given": "Mahdi", "family": "Karimi"},
+         classification="fix(#867)",
+         notes="H9: a salutation is no partner (#853); read title "
+               "'Mr Mahdi' before"),
+    Case("given_name_title_mahdi_after_a_family_comma", "Karimi, Mahdi",
+         {"given": "Mahdi", "family": "Karimi"}, classification="fix(#867)",
+         notes="H9; read title 'Mahdi' before"),
+    Case("given_name_title_mahdi_after_an_empty_head", ", Mahdi",
+         {"given": "Mahdi"}, classification="fix(#867)",
+         notes="H9; read title 'Mahdi' before"),
+    Case("given_name_title_mahdi_after_a_title", "Imam Mahdi Karimi",
+         {"title": "Imam", "given": "Mahdi", "family": "Karimi"},
+         classification="fix(#867)",
+         notes="H9: a title that is no style, modifier or attaching "
+               "partner leaves the word a given name; read title "
+               "'Imam Mahdi' before"),
+    Case("given_name_title_mahdi_as_an_epithet", "Muhammad Ahmad al-Mahdi",
+         {"given": "Muhammad", "middle": "Ahmad", "family": "al-Mahdi"},
+         notes="the epithet the title reading names reads as the family "
+               "in 1.4.0, 2.6.0 and now: the reading never served it"),
+    Case("given_name_title_mahdi_as_an_epithet_after_a_comma",
+         "Muhammad Ahmad, the Mahdi",
+         {"given": "the Mahdi", "family": "Muhammad Ahmad"},
+         classification="fix(#867)",
+         notes="H9's Accepted clause: the epithet with its article reads "
+               "as the given name; read title 'the Mahdi' in every "
+               "release before (#752 phase 2j)"),
+    Case("given_name_title_mahdi_ending_the_name", "John Karimi Mahdi.",
+         {"given": "John", "middle": "Karimi", "family": "Mahdi."},
+         notes="H9; 1.4.0's reading, which 2.3.0 through 2.6.0 read as "
+               "title 'Mahdi.' (H5)"),
+    Case("given_name_title_bard_at_the_head", "Bard Larsen",
+         {"given": "Bard", "family": "Larsen"}, classification="fix(#867)",
+         notes="H9: 'Bard' is mostly Norwegian 'Bård' written without "
+               "its accent; read title 'Bard' before (#752 phase 2j)"),
+    Case("given_name_title_bard_in_capitals_after_a_comma", "LARSEN, BARD",
+         {"given": "BARD", "family": "LARSEN"}, classification="fix(#867)",
+         notes="H9, the FEC listing form; read title 'BARD' before"),
+    Case("given_name_title_bard_as_a_surname", "Ola Bard",
+         {"given": "Ola", "family": "Bard"},
+         notes="a trailing bare title word was already a name word"),
     Case("given_name_modifier_after_a_style", "Hon. Wing Lau",
          {"title": "Hon.", "given": "Wing", "family": "Lau"},
          notes="H9: the modifier's test, not a contested word's style "

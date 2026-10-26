@@ -321,6 +321,7 @@
 {"name": "Barbara Brukalska", "given": "Barbara", "family": "Brukalska", "initials": "B. B."}
 {"name": "Barbara Scharf", "given": "Barbara", "family": "Scharf", "initials": "B. S."}
 {"name": "Barbara Scharf, CPPM", "given": "Barbara", "family": "Scharf", "suffix": "CPPM", "initials": "B. S."}
+{"name": "Bard Larsen", "given": "Bard", "family": "Larsen", "initials": "B. L."}
 {"name": "Baron Davis", "title": "Baron", "family": "Davis", "initials": "D."}
 {"name": "Barrera y Leirado, Cayetano Alberto de la", "given": "Cayetano", "middle": "Alberto", "family": "de la Barrera y Leirado", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "C. A. B. L."}
 {"name": "Baʿal-Maḥshoves̀", "given": "Baʿal-Maḥshoves̀", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "B."}
@@ -2542,6 +2543,7 @@
 {"name": "Mr Dean Smith", "title": "Mr", "given": "Dean", "family": "Smith", "ambiguities": ["TITLE_OR_NAME"], "initials": "D. S."}
 {"name": "Mr Justice Smith", "title": "Mr", "given": "Justice", "family": "Smith", "ambiguities": ["TITLE_OR_NAME"], "initials": "J. S."}
 {"name": "Mr MA", "title": "Mr", "family": "MA", "initials": "M.", "capitalized_force": "Mr Ma"}
+{"name": "Mr Mahdi Karimi", "title": "Mr", "given": "Mahdi", "family": "Karimi", "initials": "M. K."}
 {"name": "Mr Md Karim Uddin", "title": "Mr", "given": "Md", "middle": "Karim", "family": "Uddin", "initials": "M. K. U."}
 {"name": "Mr Smith", "title": "Mr", "family": "Smith", "initials": "S."}
 {"name": "Mr Wing Lau", "title": "Mr", "given": "Wing", "family": "Lau", "initials": "W. L."}
@@ -3362,6 +3364,7 @@
 {"name": "The Hon. Justice Mary Smith", "title": "The Hon. Justice", "given": "Mary", "family": "Smith", "initials": "M. S.", "capitalized_force": "the Hon. Justice Mary Smith"}
 {"name": "The Hon. Wing Lau", "title": "The Hon. Wing", "family": "Lau", "initials": "L.", "capitalized_force": "the Hon. Wing Lau"}
 {"name": "The Lord of the Universe", "title": "The Lord of the Universe", "capitalized_force": "the Lord of the Universe"}
+{"name": "The Mahdi Muhammad Ahmad", "given": "The Mahdi", "middle": "Muhammad", "family": "Ahmad", "initials": "M. M. A.", "capitalized_force": "the Mahdi Muhammad Ahmad"}
 {"name": "The Right Hon. the President of the Queen's Bench Division", "title": "The Right Hon. the President of the Queen's Bench", "family": "Division", "ambiguities": ["TITLE_OR_NAME"], "initials": "D.", "capitalized_force": "the Right Hon. the President of the Queen'S Bench Division"}
 {"name": "The Rt Hon", "title": "The Rt", "family": "Hon", "ambiguities": ["TITLE_OR_NAME"], "initials": "H.", "capitalized_force": "the Rt Hon"}
 {"name": "The Rt Hon John Jones", "title": "The Rt Hon", "given": "John", "family": "Jones", "initials": "J. J.", "capitalized_force": "the Rt Hon John Jones"}
@@ -3527,6 +3530,7 @@
 {"name": "Willemse Heidi Johannes", "order": "FAMILY_FIRST", "given": "Heidi", "middle": "Johannes", "family": "Willemse", "initials": "H. J. W."}
 {"name": "Willemse, Bertus Wilbers Henri Retief", "given": "Bertus", "middle": "Wilbers Henri Retief", "family": "Willemse", "initials": "B. W. H. R. W."}
 {"name": "Willemse, Heidi Johannes", "given": "Heidi", "middle": "Johannes", "family": "Willemse", "initials": "H. J. W."}
+{"name": "William Shakespeare, the Bard", "given": "the Bard", "family": "William Shakespeare", "initials": "B. W. S."}
 {"name": "Willington Baena Ortiz", "given": "Willington", "middle": "Baena", "family": "Ortiz", "initials": "W. B. O."}
 {"name": "Wing Commander Lau", "title": "Wing Commander", "family": "Lau", "initials": "L."}
 {"name": "Wing Lau", "given": "Wing", "family": "Lau", "initials": "W. L."}

@@ -19,6 +19,7 @@
   "General Major John Smith"  →  given="Major"
   "Grace Dean Smith"          →  given="Grace"
   "Sgt Marshal Smith"         →  given="Marshal"
+  "Mr Mahdi Karimi"           →  given="Mahdi"
   ```
 - **A modifier in the leading run of titles before the first comma** has its phrase in a head title after it in that run, in `of` after it, or in the object of `of` or `the` there. A modifier outside that run, ending the name or after a comma, is read as any title is, save one that may be a given name, which is read everywhere as it is in that run.
   ```
@@ -40,6 +41,7 @@
   "Mr Dean Smith"             →  ambiguities=("title-or-name",)
   "Dean Smith, MD"            →  ambiguities=("title-or-name",)
   "Grace Smith"               →  ambiguities=()
+  "Bard Larsen"               →  ambiguities=()
   "GRACE SMITH"               →  ambiguities=()
   "SMITH, DEAN MR."           →  ambiguities=()
   ", Dean"                    →  ambiguities=()
@@ -47,7 +49,7 @@
   "John Dean Smith"           →  ambiguities=()
   ```
 
-**Because:** a title addresses the name after it, so the front of a name has no count to read, and what tells the person "Dean Smith" from the office in "Dean of Students" is the phrase the word stands in. A word that only qualifies a head title, as wing qualifies commander, says nothing about the person on its own. After a comma the part is read as written there, as decision 10 measured: a lone title word in a part after the name is the person's role, and reading it as a name reversed the name, save a modifier also borne as a given name, which without its head is far more often the listing form's given name, or at the end a surname, than a role.
+**Because:** a title addresses the name after it, so the front of a name has no count to read, and what tells the person "Dean Smith" from the office in "Dean of Students" is the phrase the word stands in. A word that only qualifies a head title, as wing qualifies commander, says nothing about the person on its own. After a comma the part is read as written there, as decision 10 measured: a lone title word in a part after the name is the person's role, and reading it as a name reversed the name, save a word also borne as a given name, which the name data measured so far writes there as the listing form's given name, or at the end as a surname, rather than a role.
 
 ```
 "Dean Smith"                →  given="Dean"
@@ -102,6 +104,11 @@
   ```
   "The Hon. Wing Lau"         →  title="The Hon. Wing"
   "John Smith Wing. Jr."      →  title="Wing."
+  ```
+- An epithet that is also a given name, written with its article before the name or after a comma, reads as a name word, the article joining it; no name data at hand writes either shape.
+  ```
+  "The Mahdi Muhammad Ahmad"  →  given="The Mahdi"
+  "William Shakespeare, the Bard"  →  given="the Bard"
   ```
 - Once a partner has made the word a title, a coordinating join behind it takes the next word into the title too.
   ```
