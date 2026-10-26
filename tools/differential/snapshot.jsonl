@@ -33,6 +33,7 @@
 {"name": "Abd van der Berg", "given": "Abd", "family": "van der Berg", "initials": "A. B."}
 {"name": "Abd van der Berg née Jones", "given": "Abd", "family": "van der Berg", "maiden": "Jones", "initials": "A. B."}
 {"name": "Abdul Aziz Yassin", "given": "Abdul Aziz", "family": "Yassin", "initials": "A. A. Y."}
+{"name": "Abdul MA Smith", "given": "Abdul MA", "family": "Smith", "initials": "A. M. S.", "capitalized_force": "Abdul Ma Smith"}
 {"name": "Abdul Razak Hussein", "given": "Abdul Razak", "family": "Hussein", "initials": "A. R. H."}
 {"name": "Abdul Salam Ahmed Salem, MD", "given": "Abdul Salam", "middle": "Ahmed", "family": "Salem", "suffix": "MD", "initials": "A. S. A. S."}
 {"name": "Abdul Salam Hassan, MD", "given": "Abdul Salam", "family": "Hassan", "suffix": "MD", "initials": "A. S. H."}
@@ -1008,6 +1009,7 @@
 {"name": "Frederic Viñals i Iscla", "given": "Frederic", "family": "Viñals i Iscla", "initials": "F. V. I."}
 {"name": "Freiherr St John Smith", "title": "Freiherr St", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Freiherr von Berg MA", "title": "Freiherr", "family": "von Berg", "suffix": "MA", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "B."}
+{"name": "Freiherr von Berg MA Ma", "title": "Freiherr", "family": "von Berg MA Ma", "ambiguities": ["PARTICLE_OR_GIVEN", "SUFFIX_OR_NAME"], "initials": "B. M. M.", "capitalized_force": "Freiherr von Berg Ma Ma"}
 {"name": "Freiherr von Berg, Ed", "given": "Ed", "family": "Freiherr von Berg", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "E. B.", "capitalized_force": "Ed freiherr von Berg"}
 {"name": "Freiherr von Richthofen", "title": "Freiherr", "family": "von Richthofen", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "R."}
 {"name": "Freiherr von Richthofen V", "title": "Freiherr", "family": "von Richthofen V", "ambiguities": ["PARTICLE_OR_GIVEN", "SUFFIX_OR_NAME"], "initials": "R. V."}

@@ -2003,9 +2003,16 @@ def chain_run_end(k: int, pieces: Sequence[Sequence[int]],
     """Where the chain run opened by the particle `pieces[k]` ends: past
     the particles straight behind it, then past the name words up to
     `end`, a suffix piece, a member its capitals settle as the
-    credential (`settled_by_case`, with `one_case` ParseState's), or
+    credential where the caller passes `one_case` (ParseState's), or
     the next particle. `pieces[k:j]` is the one name unit P2 makes of
     them; `j == k + 1` where it makes none.
+
+    Only the given part after a family comma passes `one_case`: there
+    the member starts S8's run behind the given word whatever stands
+    in front, so the chain leaves it to the run. Elsewhere the trailing
+    read's `end` stops the chain at a member the read takes, and a
+    stop at one it declines would strand it as a name word between the
+    particle run and the words behind it (#785's review).
 
     The particle test is `is_prefix_piece`'s definition written inline:
     the walk runs per piece of every chained name (AGENTS.md's frame
@@ -2085,8 +2092,7 @@ def merge_particle_runs(pieces: list[list[int]], ptags: list[set[str]],
 def _chain_units(pieces: Sequence[Sequence[int]],
                  ptags: Sequence[Set[str]],
                  tokens: Sequence[WorkToken],
-                 n: int, lead: int | None = None,
-                 one_case: bool | None = None) -> list[int] | None:
+                 n: int, lead: int | None = None) -> list[int] | None:
     """The name units P2's chain will make of `pieces`, as a mark per
     piece -- OPENS where a piece opens a unit, and JOINED where the
     chain will join a name word to the run in front of it and the
@@ -2119,7 +2125,7 @@ def _chain_units(pieces: Sequence[Sequence[int]],
          else lead) + 1
     while k < count:
         if prefix[k]:
-            j = chain_run_end(k, pieces, ptags, tokens, count, one_case)
+            j = chain_run_end(k, pieces, ptags, tokens, count)
             q = k + 1
             # a split credential is weighed as the class it is a
             # member of (rules/S12)
@@ -2187,7 +2193,7 @@ def read_trailing_run(pieces: Sequence[Sequence[int]],
     mc mc' in the family."""
     if n == len(pieces):
         return None
-    units = _chain_units(pieces, ptags, tokens, n, lead, one_case)
+    units = _chain_units(pieces, ptags, tokens, n, lead)
     rest, titled, peel = tail_reading(peel_walk(n, ptags), pieces, ptags,
                                       tokens, one_case, units)
     tail: set[int] = set()

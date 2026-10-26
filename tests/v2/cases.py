@@ -7129,6 +7129,29 @@ CASES: tuple[Case, ...] = (
                "given name in silence. 2.6.0 read given 'von Berg MA "
                "Jones', and 1.4.0 first 'von Berg', middle 'Jones', "
                "suffix 'MA'"),
+    Case("a_capitals_member_mid_name_stays_in_the_chain",
+         "Freiherr von Berg MA Ma",
+         {"title": "Freiherr", "family": "von Berg MA Ma"},
+         classification="fix(#785)",
+         ambiguities=("particle-or-given", "suffix-or-name"),
+         notes="P2: outside the given part after a family comma the "
+               "chain is bounded by the trailing read alone, which "
+               "declines 'Ma' and so takes nothing, and the chain keeps "
+               "'MA Ma' as 2.6.0 did. The review of #785's fix found a "
+               "stop at the settled 'MA' here stranding it as a middle "
+               "name (given 'von Berg', middle 'MA', family 'Ma'); the "
+               "dotted 'Freiherr von Berg M.A. Ma' reads suffix 'M.A. "
+               "Ma', and 1.4.0 read first 'von Berg', last 'MA', suffix "
+               "'Ma'"),
+    Case("a_capitals_member_mid_name_keeps_the_bound_join",
+         "Abdul MA Smith",
+         {"given": "Abdul MA", "family": "Smith"},
+         classification="fix(#785)",
+         notes="P5: with no comma the join stands, since declined here "
+               "the member would be read as a middle name in silence, "
+               "nothing behind it taking it (the review of #785's fix). "
+               "2.6.0 read the same; 1.4.0 read first 'Abdul', middle "
+               "'MA', last 'Smith'"),
     Case("a_capitals_member_behind_a_lone_bound_given_name",
          "Abdul MA",
          {"given": "Abdul", "suffix": "MA"},

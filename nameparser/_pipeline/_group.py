@@ -961,7 +961,8 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                     k += 1
                     continue
                 j = chain_run_end(k, pieces, ptags, tokens,
-                                  len(pieces) - tail, one_case)
+                                  len(pieces) - tail,
+                                  one_case if given_slot else None)
                 # The other half of PARTICLE_OR_GIVEN. _assign reports the
                 # fork when an ambiguous particle stays a lone leading piece
                 # ("Van Johnson" -> given under the default order, family
@@ -1163,14 +1164,17 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             # as its one-word spelling is: merged in the given part
             # before this join, so the particle chain stops in front of
             # it too ('Rahman, Abdul MB ChB', 'Smith, John van Pharm D')
-            # A member its capitals settle as the credential (rules/S6)
-            # is declined as a suffix word is: the join would read it as
-            # the given name's second word ('Smith, Abdul MA')
+            # After a family comma a member its capitals settle as the
+            # credential (rules/S6) is declined as a suffix word is: the
+            # join would read it as the given name's second word, where
+            # the given part's trailing slot or the run S8 starts takes
+            # it ('Smith, Abdul MA'); with no comma nothing would, and
+            # the join stands ('Abdul MA Smith')
             nxt, nxt_tags = pieces[fk + 1], ptags[fk + 1]
             if (_is_maiden_marker_piece(nxt, tokens)
                     or is_suffix_piece(nxt, nxt_tags, tokens)
                     or "split" in nxt_tags
-                    or (len(nxt) == 1
+                    or (bound_join is BoundJoin.LENIENT and len(nxt) == 1
                         and AMBIGUOUS_ACRONYM_TAG in tokens[nxt[0]].tags
                         and settled_by_case(tokens[nxt[0]], one_case))
                     or ((site is ClauseSite.TAIL
