@@ -11874,7 +11874,7 @@ CASES: tuple[Case, ...] = (
     Case("contested_title_before_a_trailing_salutation",
          "SMITH, DEAN MR.",
          {"title": "MR.", "given": "DEAN", "family": "SMITH"},
-         ambiguities=("title-or-name",), classification="feat(#752)",
+         classification="feat(#752)",
          notes="H9: no title AFTER the word is a partner unless "
                "the word attaches to it -- FEC writes the salutation "
                "after the given name, and 'DEAN MR.' read as a phrase "
@@ -11914,6 +11914,26 @@ CASES: tuple[Case, ...] = (
          notes="H9: outside a phrase the word reads as the "
                "unlisted word it was, which rules/C6 reads as a "
                "capitals credential here"),
+    Case("contested_style_after_a_modifier", "His Grace John Smith",
+         {"title": "His Grace", "given": "John", "family": "Smith"},
+         classification="fix(#752)",
+         notes="H9: grace is a style that may be a given name, and 'his' "
+               "is its partner; master read title 'His', given 'Grace' "
+               "(Derek, 2026-10-26)"),
+    Case("contested_style_alone", "Grace Smith",
+         {"given": "Grace", "family": "Smith"},
+         ambiguities=("title-or-name",), classification="feat(#752)",
+         notes="H9: no partner, so the given name, reported"),
+    Case("contested_rank_after_a_modifier", "Field Marshal Bernard Montgomery",
+         {"title": "Field Marshal", "given": "Bernard",
+          "family": "Montgomery"}, classification="fix(#752)",
+         notes="H9: marshal is a rank that may be a given name, 'field' "
+               "its partner; 1.4.0 through 2.6.0 read title 'Field', "
+               "given 'Marshal' (#606's accepted cost)"),
+    Case("contested_rank_attached_to", "Sergeant Major John Smith",
+         {"title": "Sergeant Major", "given": "John", "family": "Smith"},
+         classification="feat(#752)",
+         notes="H9: sergeant attaches to a military title after it"),
     Case("lone_modifier_at_the_head", "Wing Lau",
          {"given": "Wing", "family": "Lau"}, classification="fix(#752)",
          notes="H9, decision 10: a modifier is a title only with a "

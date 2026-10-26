@@ -447,11 +447,9 @@ def classify(state: ParseState) -> ParseState:
                 if n in lex.titles_ambiguous and n not in lex.titles:
                     tags = tags | {TITLE_AMBIGUOUS_TAG}
                     if title:
-                        # in a title phrase: a title, and one addressing
-                        # whichever name its vocabulary says
+                        # in a title phrase: a title (its given-name title
+                        # tag, if any, `_tags_for` wrote already)
                         tags = tags | {"vocab:title"}
-                        if n in lex.given_name_titles:
-                            tags = tags | {"vocab:given-title"}
                 if not title:
                     tags = tags - _TITLE_TAGS
                 if tags != written[i].tags:

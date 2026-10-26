@@ -1255,8 +1255,8 @@ class Constants:
                 # knob for these words, and what a replaced list means
                 # for words it never held is not something it says
                 titles_ambiguous=TITLES_AMBIGUOUS if titles else frozenset(),
-                title_modifiers=TITLE_MODIFIERS & titles,
-                title_styles=TITLE_STYLES & titles,
+                title_modifiers=TITLE_MODIFIERS & (titles | TITLES_AMBIGUOUS),
+                title_styles=TITLE_STYLES & (titles | TITLES_AMBIGUOUS),
                 title_phrases=frozenset(
                     p for p in TITLE_PHRASES
                     if all(w in titles or w in TITLES_AMBIGUOUS

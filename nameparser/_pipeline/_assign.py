@@ -1304,8 +1304,8 @@ def assign(state: ParseState) -> ParseState:
             # before the title reading of the same word (#296, #325).
             # A name word in the segment makes it v1's walk ('Smith,
             # John Jr.').
-            # rules/H9: "where no comma has marked the given name" -- this
-            # part is the given name, the family comma said so
+            # rules/H9: "no comma has marked the given name" -- here the
+            # family comma has, so the peel reports nothing
             n = _peel_leading_titles(pieces, ptags, tokens, None)
             # rules/H5: "the title is TRANSPARENT to the suffix
             # reading: where two or more name words stand, what

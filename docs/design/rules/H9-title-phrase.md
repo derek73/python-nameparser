@@ -11,6 +11,9 @@
   "Major General John Smith"  →  title="Major General"
   "Chief Justice John Roberts"  →  title="Chief Justice"
   "The Hon. Justice Mary Smith"  →  title="The Hon. Justice"
+  "His Grace John Smith"      →  title="His Grace"
+  "Field Marshal Bernard Montgomery"  →  title="Field Marshal"
+  "Sergeant Major John Smith"  →  title="Sergeant Major"
   "Mr Dean Smith"             →  given="Dean"
   "SMITH, DEAN MR."           →  given="DEAN"
   "General Major John Smith"  →  given="Major"
@@ -25,10 +28,12 @@
   "Jane Smith Vice."          →  title="Vice."
   "John Smith, Vice"          →  title="Vice"
   ```
-- **A title that may be a given name, read as a name word where it is the first name word after any titles,** is reported as `title-or-name`; inside a phrase, or later in the name, it is not.
+- **A title that may be a given name, read as a name word where it is the first name word after any titles and no comma has marked the given name,** is reported as `title-or-name`; inside a phrase, later in the name, or in the given part after a family comma, it is not.
   ```
   "Dean Smith"                →  ambiguities=("title-or-name",)
   "Mr Dean Smith"             →  ambiguities=("title-or-name",)
+  "Dean Smith, MD"            →  ambiguities=("title-or-name",)
+  "SMITH, DEAN MR."           →  ambiguities=()
   "Major General John Smith"  →  ambiguities=()
   "John Dean Smith"           →  ambiguities=()
   ```
@@ -63,15 +68,13 @@
 
 **Accepted:**
 
-- A judge styled with a salutation reads the salutation as the title and the word as the given name, since a salutation is never a partner.
+- A judge styled with a salutation reads the salutation as the title and the word as the given name, since a salutation is never a partner; the people who write a salutation before the word file it as their forename.
   ```
   "Mr Justice Smith"          →  given="Justice"
   ```
-- A modifier whose head is not a listed title loses the title, as with duke, marshal and grace, which the vocabulary does not list as titles, and so does a modifier written after its head with no `of` behind it.
+- A modifier whose head is not a listed title loses the title, as with duke, which the vocabulary refuses, and so does a modifier written after its head with no `of` behind it.
   ```
-  "His Grace John Smith"      →  given="His"
   "Grand Duke of Tuscany"     →  given="Grand"
-  "Field Marshal Bernard Montgomery"  →  given="Field"
   "Princess Royal Anne"       →  given="Royal"
   ```
 - In the given part after a family comma a modifier is read as listed, so the listing form and the written order of one name read it differently, the cost decision 10 took for the parts where a lone title word is a role.

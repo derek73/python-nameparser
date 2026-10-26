@@ -1157,3 +1157,19 @@ def test_a_word_a_caller_lists_as_a_title_is_one_everywhere() -> None:
     lex = Lexicon.default().add(titles={"dean"})
     name = Parser(lexicon=lex).parse("Dean Smith")
     assert (name.title, name.family, name.ambiguities) == ("Dean", "Smith", ())
+
+
+def test_a_contested_title_in_a_phrase_addresses_as_its_vocabulary_says() -> None:
+    # a title that may be a given name and addresses by the given name
+    # (no shipped word is both yet) takes the given-name title tag once a
+    # partner makes it a title, so H1 reads the one name word after it as
+    # the given name, as 'Sir John' reads
+    lex = Lexicon.default().add(titles_ambiguous={"zed"},
+                                given_name_titles={"zed"})
+    phrase = Parser(lexicon=lex).parse("Hon Zed John")
+    assert (phrase.title, phrase.given, phrase.family) == ("Hon Zed", "John", "")
+    # the tag classify documents for a given-name title, which a word
+    # read into the title by its phrase carries as one listed there does
+    assert "vocab:given-title" in phrase.tokens[1].tags
+    alone = Parser(lexicon=lex).parse("Zed John")
+    assert (alone.title, alone.given, alone.family) == ("", "Zed", "John")
