@@ -576,7 +576,7 @@ def test_delimited_content_never_joins_the_shape_class() -> None:
     # control that actually load-bears it: without the guard, the
     # nickname 'A.B' would gain SHAPE_ACRONYM_TAG and (with the switch
     # on) `vocab:suffix-ambiguous`, and classify's own nickname check
-    # would then misreport SUFFIX_OR_NICKNAME (group's report, since
+    # would then misreport SUFFIX_OR_NICKNAME (post_rules' report, since
     # #810) on a token the escape already decided (measured regression, #516 review round).
     for text, word in (("Bridge (1.4)", "1.4"), ("Bridge (A.B)", "A.B")):
         tags = _tags_by_text(text)[word]

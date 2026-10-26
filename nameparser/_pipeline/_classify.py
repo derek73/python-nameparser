@@ -249,7 +249,7 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
     # role is delimited content, decided by extract's escape and never
     # at the trailing slot -- 'Bridge (A.B)' is the control that
     # proves the guard load-bearing (without it the nickname reading
-    # of 'A.B' gains a spurious SUFFIX_OR_NICKNAME report in group), and
+    # of 'A.B' gains a spurious SUFFIX_OR_NICKNAME report in post_rules), and
     # 'Bridge (1.4)' cannot exercise it, a digit chunk never reaching
     # the shape verdict at all (period_joined_vocab's alphabetic
     # gate).

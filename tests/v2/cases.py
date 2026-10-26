@@ -8858,8 +8858,9 @@ CASES: tuple[Case, ...] = (
          "Jean (M.A) Smith",
          {"given": "Jean", "family": "Smith", "nickname": "M.A"},
          classification="fix(#810)",
-         notes="inside the name however it is written; 1.4.0 read "
-               "middle 'M.A'"),
+         ambiguities=("suffix-or-nickname",),
+         notes="inside the name however it is written, and reported as "
+               "a capitals member is; 1.4.0 read middle 'M.A'"),
     Case("bracket_member_before_a_family_comma_stays_the_nickname",
          "Smith (MA), John",
          {"given": "John", "family": "Smith", "nickname": "MA"},
@@ -8883,12 +8884,29 @@ CASES: tuple[Case, ...] = (
          {"given": "John", "family": "Smith", "suffix": "MA"},
          notes="every default nickname pair escapes alike (rules/S1)"),
     Case("bracket_member_after_a_lone_name_word", "Jack (MA)",
-         {"given": "Jack", "suffix": "MA"},
+         {"family": "Jack", "suffix": "MA"},
          classification="fix(#810)",
-         ambiguities=("given-or-family",),
-         notes="reads as bare 'Jack MA' does (rules/S13's Accepted); "
-               "1.4.0 read last 'MA', 2.0.0 through 2.6.0 family "
-               "'Jack', nickname 'MA'"),
+         notes="the word stays N3's family name, where bare 'Jack MA' "
+               "reads given (rules/S13's Accepted); 1.4.0 read last "
+               "'MA', 2.0.0 through 2.6.0 family 'Jack', nickname 'MA'"),
+    Case("bracket_member_before_a_shape_read_suffix",
+         "John Smith (MA) Ph. D.",
+         {"given": "John", "family": "Smith", "suffix": "MA Ph. D."},
+         classification="fix(#810)",
+         notes="a suffix after the clause is no name word whatever "
+               "spelling made it one; the first draft asked the "
+               "suffix tag, which the split Ph. D. does not carry"),
+    Case("bracket_member_before_a_numeral", "John Smith (MA) VI",
+         {"given": "John", "family": "Smith", "suffix": "MA VI"},
+         classification="fix(#810)",
+         ambiguities=("suffix-or-name",),
+         notes="VI is read by shape, not listed (rules/S10)"),
+    Case("bracket_member_before_a_trailing_title",
+         "John Smith (MA) Dr.",
+         {"title": "Dr.", "given": "John", "family": "Smith",
+          "suffix": "MA"},
+         classification="fix(#810)",
+         notes="a title after the clause is no name word (rules/H5)"),
     Case("nickname_quotes", 'John "Jack" Kennedy',
          {"given": "John", "family": "Kennedy", "nickname": "Jack"},
          notes="shape 1's double-quoted Nickname slot, which is the "

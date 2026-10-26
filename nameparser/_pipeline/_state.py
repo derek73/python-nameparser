@@ -195,9 +195,7 @@ class ParseState:
     changes the token COUNT: an unspaced CJK token splits into n+1
     pieces, still as sub-slices of the original, and every later index
     in the segment runs shifts by n); classify -> token tags AND
-    one_case; group -> structure (its head decides a comma form, #613),
-    the SUFFIX role of a delimited member its writing settles (rules/S13,
-    #810)
+    one_case; group -> structure (its head decides a comma form, #613)
     AND the SUFFIX/TITLE roles of a postnominal part after the comma,
     whose segment it empties so no join reaches it,
     then pieces/piece_tags/dropped AND maiden token roles, plus the
@@ -206,8 +204,10 @@ class ParseState:
     assign -> the remaining token roles AND `order`, the effective
     order it read them under, AND the folded-middle tag on the
     particles P6's attachment joins after a family comma (#613);
-    post_rules -> roles again, and the ambiguity P6's no-comma
-    attachment reports (#467).
+    post_rules -> roles again (a delimited member S13 settles becomes
+    the suffix, #810), and the ambiguity P6's no-comma attachment
+    reports (#467) and SUFFIX_OR_NICKNAME on a member it leaves a
+    nickname.
     Ambiguities are recorded by every stage that DECIDES one --
     extract (resolved to a token index by tokenize), segment,
     script_segment, classify, group, assign, and post_rules -- since a

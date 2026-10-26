@@ -273,9 +273,12 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # changes moving disjoint claims.
     # 1345 -> 1366 on 2026-10-26, #810 (phase 2l): seven rows whose
     # bracketed member stays the nickname, one suffix-or-nickname or
-    # given-or-family claim each under each order.
-    assert claims == 1366, (
-        f"the field sweep checks {claims} claims, recorded as 1366 on "
+    # given-or-family claim each under each order; 1366 -> 1369 the same
+    # day, its review round: 'Jack (MA)' keeps N3's family and loses its
+    # given-or-family claims (-3), 'John Smith (MA) VI' (+3) and the
+    # dotted 'Jean (M.A) Smith', reported now (+3).
+    assert claims == 1369, (
+        f"the field sweep checks {claims} claims, recorded as 1369 on "
         f"2026-10-26")
 
 

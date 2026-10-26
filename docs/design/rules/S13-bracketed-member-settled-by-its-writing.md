@@ -5,7 +5,7 @@
 **Then:** where the member's writing settles it, written with a period inside it or in capitals in a name written in more than one case (S6), it is the suffix rather than the nickname, and nothing is reported.
 
 - **The case is the name's**: it is asked of the name's own words and never of the clause's, so capitals settle nothing in a name written wholly in one case, and Title case leans to the name (S6).
-- **After the name** means that no name word follows the clause, though a suffix or a maiden clause may.
+- **After the name** means that no name word follows the clause, though a suffix, a title or a maiden clause may, however each is written.
 - **It is the suffix, not read as if written bare** (S1): the brackets have already set it apart from the name's words, and bare, two letters each followed by a period but the last read as initials (S3).
 
 **Because:** after the name, brackets hold either a credential or the name the person goes by, and the writing tells the two apart where the count of words cannot: credentials are written in capitals and with their periods, and names are not. Inside the name the same word let out of the brackets would read as a middle name, where the brackets more likely hold the name the person goes by. So only the clause after the name is settled.
@@ -19,6 +19,9 @@
 "John Smith PhD (MA)"       →  suffix="PhD MA"
 "John Smith (MA), PhD"      →  suffix="MA, PhD"
 "John Smith (MA) née Jones" →  suffix="MA"
+"John Smith (MA) Ph. D."    →  suffix="MA Ph. D."
+"John Smith (MA) Dr."       →  title="Dr."
+"John Smith (MA) Dr."       →  suffix="MA"
 "John Smith «MA»"           →  suffix="MA"
 "John Smith 「MA」"          →  suffix="MA"
 "John Smith (Ed)"           →  nickname="Ed"  · boundary
@@ -39,17 +42,23 @@
   "JEFFREY (JD) BRICKEN"      →  nickname="JD"
   "Jean 'JD' Smith"           →  nickname="JD"
   "Jean (M.A) Smith"          →  nickname="M.A"
+  "Jean (M.A) Smith"          →  ambiguities=("suffix-or-nickname",)
   "Smith (MA), John"          →  nickname="MA"
   "(MA) John Smith"           →  nickname="MA"
   ```
 
+**Precedence:**
+
+- **Two letters each followed by a period but the last** ("John Smith (J.D)"): this rule reads the credential where S3 reads the same word bare as paired initials ("John Smith J.D" gives family 'J.D'), the brackets having already set it apart from the name's words.
+
 **Accepted:**
 
-- A member after a lone name word is the suffix where its writing settles it, and the word reads as a one-word name reads, given rather than the family name it was beside a nickname.
+- A member after a lone name word is the suffix where its writing settles it, and the word stays the family name it is beside a nickname (N3), where the same member written bare leaves it the given name.
   ```
-  "Jack (MA)"                 →  given="Jack"
+  "Jack (MA)"                 →  family="Jack"
+  "Jack (MA)"                 →  suffix="MA"
   ```
 
 ---
-**Signal:** position: a member of the ambiguous class alone in brackets or quotes after the name, its writing read as S6 reads capitals
-**history:** decisions/S13 · **implemented:** nameparser/_pipeline/_group.py
+**Signal:** position + shape: a member of the ambiguous class alone in brackets or quotes after the name, written with a period inside it; its capitals read as S6 reads them
+**history:** decisions/S13 · **implemented:** nameparser/_pipeline/_post_rules.py
