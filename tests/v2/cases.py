@@ -12197,6 +12197,56 @@ CASES: tuple[Case, ...] = (
                "does, the part being the person's role (decision 10 "
                "measured 247 of 367 ctgov comma-part moves reversing the "
                "name)"),
+    Case("given_name_modifier_in_a_comma_part", "Lau, Wing Kai",
+         {"given": "Wing", "middle": "Kai", "family": "Lau"},
+         classification="fix(#752)",
+         notes="H9: a modifier that may be a given name is a title after "
+               "a comma only with a head title after it; read title "
+               "'Wing', given 'Kai' before (#752 phase 2j)"),
+    Case("given_name_modifier_alone_after_a_comma", "Lau, Wing",
+         {"given": "Wing", "family": "Lau"}, classification="fix(#752)",
+         notes="H9: read title 'Wing', no given name, before"),
+    Case("given_name_modifier_after_an_empty_head", ", Wing",
+         {"given": "Wing"}, classification="fix(#752)",
+         notes="H9: read title 'Wing' before"),
+    Case("given_name_modifier_before_its_head_in_a_comma_part",
+         "Lau, Wing Commander",
+         {"title": "Wing Commander", "family": "Lau"},
+         notes="H9's boundary: the head title follows, after a comma too"),
+    Case("given_name_modifier_after_a_full_name_and_comma", "John Smith, Wing",
+         {"given": "Wing", "family": "John Smith"}, classification="fix(#752)",
+         notes="H9: reverses as 'John Smith, Dean' does since phase 2i; "
+               "read title 'Wing', given 'John' before (#752 phase 2j)"),
+    Case("given_name_modifier_past_a_second_comma", "Smith, John, Wing",
+         {"given": "John", "family": "Smith", "suffix": "Wing"},
+         ambiguities=("comma-structure",), classification="fix(#752)",
+         notes="C2, as 'Smith, John, Dean' reads; title 'Wing' before"),
+    Case("given_name_modifier_ending_the_name", "John Smith Wing.",
+         {"given": "John", "middle": "Smith", "family": "Wing."},
+         classification="fix(#752)",
+         notes="H9 over H5: a modifier that may be a given name needs its "
+               "head at the end too; read title 'Wing.' before"),
+    Case("given_name_modifier_before_a_dotted_suffix", "John Smith Wing. Jr.",
+         {"title": "Wing.", "given": "John", "family": "Smith",
+          "suffix": "Jr."},
+         notes="H9's Accepted clause: H2's shape reads the period-marked "
+               "suffix as a head in the run, as master read it; an "
+               "unmarked 'MD' behind gives family 'Wing.' (#752 phase 2j)"),
+    Case("given_name_modifier_after_the_and_a_style", "The Hon. Wing Lau",
+         {"title": "The Hon. Wing", "family": "Lau"},
+         notes="H9's Accepted clause: the object of 'the' keeps the "
+               "title, as master read it (#752 phase 2j)"),
+    Case("given_name_modifier_after_a_style", "Hon. Wing Lau",
+         {"title": "Hon.", "given": "Wing", "family": "Lau"},
+         notes="H9: the modifier's test, not a contested word's style "
+               "partner, decides 'wing'; 'Hon. Dean Smith' reads the title"),
+    Case("given_name_modifier_before_a_salutation_in_a_comma_part",
+         "LAU, WING MR",
+         {"title": "WING MR", "family": "LAU"},
+         notes="H9: the modifier test takes any title after it as its "
+               "head, a salutation too, so 'WING MR' stays a title where "
+               "'DEAN MR' gives given 'DEAN'; no FEC donor writes it "
+               "(#752 phase 2j, 2026-10-26)"),
     Case("contested_title_after_a_period_joined_title", "Lt.Gov. Dean Smith",
          {"title": "Lt.Gov.", "given": "Dean", "family": "Smith"},
          ambiguities=("title-or-name",), classification="feat(#752)",

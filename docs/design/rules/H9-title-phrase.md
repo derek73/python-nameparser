@@ -20,7 +20,7 @@
   "Grace Dean Smith"          →  given="Grace"
   "Sgt Marshal Smith"         →  given="Marshal"
   ```
-- **A modifier in the leading run of titles before the first comma** has its phrase in a head title after it in that run, in `of` after it, or in the object of `of` or `the` there. A modifier outside that run, ending the name or after a comma, is read as any title is.
+- **A modifier in the leading run of titles before the first comma** has its phrase in a head title after it in that run, in `of` after it, or in the object of `of` or `the` there. A modifier outside that run, ending the name or after a comma, is read as any title is, save one that may be a given name, which is read everywhere as it is in that run.
   ```
   "Wing Commander Lau"        →  title="Wing Commander"
   "Mr Wing Lau"               →  given="Wing"
@@ -29,6 +29,9 @@
   "Mother Superior of the Convent Mary Smith"  →  title="Mother Superior of the Convent"
   "Jane Smith Vice."          →  title="Vice."
   "John Smith, Vice"          →  title="Vice"
+  "Lau, Wing"                 →  given="Wing"
+  "Lau, Wing Commander"       →  title="Wing Commander"
+  "John Smith Wing."          →  family="Wing."
   ```
 - **A title that may be a given name, read as a name word where it is the first name word after any titles and no comma has marked the given name,** is reported as `title-or-name` where a phrase the vocabulary lists holds it; inside a phrase, later in the name, or in the given part after a family comma, it is not. A word no listed phrase holds is a title only behind a style or a modifier, or before `of`, the partners every such word shares, so standing alone it is no title a reader would hesitate over.
   ```
@@ -44,7 +47,7 @@
   "John Dean Smith"           →  ambiguities=()
   ```
 
-**Because:** a title addresses the name after it, so the front of a name has no count to read, and what tells the person "Dean Smith" from the office in "Dean of Students" is the phrase the word stands in. A word that only qualifies a head title, as wing qualifies commander, says nothing about the person on its own. After a comma the part is read as written there, as decision 10 measured: a lone title word in a part after the name is the person's role, and reading it as a name reversed the name.
+**Because:** a title addresses the name after it, so the front of a name has no count to read, and what tells the person "Dean Smith" from the office in "Dean of Students" is the phrase the word stands in. A word that only qualifies a head title, as wing qualifies commander, says nothing about the person on its own. After a comma the part is read as written there, as decision 10 measured: a lone title word in a part after the name is the person's role, and reading it as a name reversed the name, save a modifier also borne as a given name, which without its head is far more often the listing form's given name, or at the end a surname, than a role.
 
 ```
 "Dean Smith"                →  given="Dean"
@@ -56,6 +59,10 @@
 
 **Precedence:**
 
+- **A modifier that may be a given name** is read by the modifier's test in every part, its run being its phrase, not by the partners of a title that may be a given name: a style before it is no partner of itself.
+  ```
+  "Hon. Wing Lau"             →  given="Wing"
+  ```
 - **A period-marked word at the front of the name** (H2): the abbreviation shape makes it a title whatever the vocabulary says, so the phrase test never reaches it and nothing is reported.
   ```
   "Dean. Smith"               →  title="Dean."
@@ -83,13 +90,18 @@
   "Grand Duke of Tuscany"     →  given="Grand"
   "Princess Royal Anne"       →  given="Royal"
   ```
-- In the given part after a family comma a modifier is read as listed, so the listing form and the written order of one name read it differently, the cost decision 10 took for the parts where a lone title word is a role.
+- In the given part after a family comma a modifier that is not also a given name is read as listed, so the listing form and the written order of one name read it differently, the cost decision 10 took for the parts where a lone title word is a role.
   ```
-  "Lau, Wing"                 →  title="Wing"
+  "Hudson, Rock"              →  title="Rock"
   ```
 - A phrase that is the whole given part after a family comma leaves the given name empty, as a lone title there does.
   ```
   "Smith, Sgt Major"          →  title="Sgt Major"
+  ```
+- A modifier that may be a given name keeps the title wherever its run's test finds a phrase it does not form, in the object of `the` behind a style, and before a suffix whose period H2's shape reads as a head.
+  ```
+  "The Hon. Wing Lau"         →  title="The Hon. Wing"
+  "John Smith Wing. Jr."      →  title="Wing."
   ```
 - Once a partner has made the word a title, a coordinating join behind it takes the next word into the title too.
   ```
@@ -97,5 +109,5 @@
   ```
 
 ---
-**Signal:** neighbor: the titles and connectives beside a listed title word in the leading run of titles
+**Signal:** neighbor: the titles and connectives beside a listed title word in its run of titles
 **history:** decisions/H9 · **implemented:** nameparser/_pipeline/_classify.py, nameparser/_pipeline/_vocab.py, nameparser/_pipeline/_assign.py
