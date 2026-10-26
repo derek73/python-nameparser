@@ -1401,7 +1401,8 @@
 {"name": "Jacinto López Moreno", "given": "Jacinto", "middle": "López", "family": "Moreno", "initials": "J. L. M."}
 {"name": "Jack", "given": "Jack", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "J."}
 {"name": "Jack", "order": "FAMILY_FIRST", "family": "Jack", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "J."}
-{"name": "Jack (MA)", "family": "Jack", "suffix": "MA", "initials": "J."}
+{"name": "Jack (M.A)", "given": "Jack", "suffix": "M.A", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "J."}
+{"name": "Jack (MA)", "given": "Jack", "suffix": "MA", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "J."}
 {"name": "Jack I-V", "given": "Jack", "family": "I-V", "initials": "J. I."}
 {"name": "Jack I.-V.", "given": "Jack", "family": "I.-V.", "initials": "J. I."}
 {"name": "Jack M.A.", "given": "Jack", "suffix": "M.A.", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "J."}
@@ -1662,7 +1663,7 @@
 {"name": "John Smith (MA)", "given": "John", "family": "Smith", "suffix": "MA", "initials": "J. S."}
 {"name": "John Smith (MA) Dr.", "title": "Dr.", "given": "John", "family": "Smith", "suffix": "MA", "initials": "J. S."}
 {"name": "John Smith (MA) Ph. D.", "given": "John", "family": "Smith", "suffix": "MA Ph. D.", "initials": "J. S."}
-{"name": "John Smith (MA) née Jones", "given": "John", "family": "Smith", "suffix": "MA", "maiden": "Jones", "initials": "J. S."}
+{"name": "John Smith (MA) née Jones", "given": "John", "family": "Smith", "suffix": "MA née Jones", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S.", "capitalized_force": "John Smith MA Née Jones"}
 {"name": "John Smith (MA), PhD", "given": "John", "family": "Smith", "suffix": "MA, PhD", "initials": "J. S."}
 {"name": "John Smith (MA.)", "given": "John", "family": "Smith", "suffix": "MA.", "initials": "J. S."}
 {"name": "John Smith (MBA PhD.)", "given": "John", "family": "Smith", "suffix": "MBA PhD.", "initials": "J. S."}

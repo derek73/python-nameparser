@@ -305,8 +305,9 @@ def test_stage_field_ownership() -> None:
         # attachment (#467) takes the family branch of a fork whose
         # other branches assign and group take, so each stage reports
         # the side it decides; the comma site is assign's since #613;
-        # and SUFFIX_OR_NICKNAME, with S13's decision (#810)
-        "post_rules": {"tokens", "ambiguities"},
+        # and SUFFIX_OR_NICKNAME, with S13's decision (#810), whose
+        # settled clauses it records for `run`'s second fold
+        "post_rules": {"tokens", "ambiguities", "settled_clauses"},
     }
     assert {s.__name__ for s in STAGES} == set(ownership)
     # Within the tokens themselves the contract is finer: texts and

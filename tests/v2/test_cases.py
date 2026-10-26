@@ -276,9 +276,12 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # given-or-family claim each under each order; 1366 -> 1369 the same
     # day, its review round: 'Jack (MA)' keeps N3's family and loses its
     # given-or-family claims (-3), 'John Smith (MA) VI' (+3) and the
-    # dotted 'Jean (M.A) Smith', reported now (+3).
-    assert claims == 1369, (
-        f"the field sweep checks {claims} claims, recorded as 1369 on "
+    # dotted 'Jean (M.A) Smith', reported now (+3); 1369 -> 1381 the same
+    # day, the twin reading (Derek): 'Jack (MA)' and 'Jack (M.A)' read
+    # as 'Jack (PhD)' does, a given-or-family claim each (+6), and
+    # 'John Smith (MA) née Jones' its two suffix-or-name claims (+6).
+    assert claims == 1381, (
+        f"the field sweep checks {claims} claims, recorded as 1381 on "
         f"2026-10-26")
 
 

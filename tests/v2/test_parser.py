@@ -1,4 +1,5 @@
 import dataclasses
+import itertools
 import pickle
 import re
 import unicodedata
@@ -9,10 +10,11 @@ from nameparser import (
     Lexicon, Locale, Parser, Policy, PolicyPatch, locales, parse, parser_for,
 )
 from nameparser._policy import (
-    CapsSuffixes, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, PatronymicRule,
+    CapsSuffixes, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, GIVEN_FIRST,
+    PatronymicRule,
 )
 from nameparser._types import (UNJOINED_CONJUNCTION_TAG, UNJOINED_TAG,
-                               AmbiguityKind, Role, Segmentation)
+                               AmbiguityKind, ParsedName, Role, Segmentation)
 
 
 def test_parser_defaults_and_properties() -> None:
@@ -1280,9 +1282,13 @@ _HONORIFIC_PEEL = frozenset({"김민준씨, J.씨", "김민준씨., J.씨",
 #: a maiden marker the whole name left a word -- in a tail part, or
 #: taken into #602's credential run behind a credential -- and that
 #: the value's own sub-parse consumes mid-value, as revise() documents.
+#: 'John Smith (MA) née Jones' joined 2026-10-26 (#810): a member
+#: rules/S13 settles reads as its twin '(PhD)' does, inside the
+#: credential's run, which takes the marker.
 _MARKER_IN_SUFFIX = frozenset({"Jane Doe PhD nee Smith",
                                "Smith, John, MD - née Jones Smith",
-                               "Smith, John, PhD née Jones"})
+                               "Smith, John, PhD née Jones",
+                               "John Smith (MA) née Jones"})
 
 
 def _suffix_bearing_corpus_names() -> list[str]:
@@ -2184,3 +2190,57 @@ def test_a_declined_cjk_credential_word_does_not_peel_off_a_glued_name(
     # 長 alone is a borne given name, so 阿部長 can be 阿部 + 長 (#707).
     assert word not in Parser().lexicon.honorific_tails
     assert Parser().parse(f"田中{word}").suffix == ""
+
+
+# rules/S13 (#810): a settled bracketed member reads as its twin, a
+# bracketed unambiguous credential in the same place, fields and reports
+# alike. The twin is MBA, a word no head holds, so the twin's reading
+# maps back by replacing its text. 864 texts, about 2s.
+_TWIN_HEADS = (
+    "John Smith {c}", "Jack {c}", "{c}", "John {c}", "JOHN SMITH {c}",
+    "Smith, John {c}", "Smith, {c}", ", {c}", "(Bob), {c}",
+    "John Smith {c}, PhD", "John Smith, PhD {c}", "John Smith PhD {c}",
+    "Dr. Jack {c}", "Freiherr von Berg {c}", "Juan de la Vega {c}",
+    "Jane Doe nee Smith {c}", "John Smith {c} née Jones",
+    "John Smith {c} Dr.", "John Smith {c} VI", "John Smith {c} Ph. D.",
+    "Smith, Jane {c} Mrs", "Ortega y Gasset, José {c}",
+    "Smith, Freiherr von Berg {c}", "Doe, John van {c}",
+)
+_TWIN_MEMBERS = ("MA", "M.A", "JD", "DO", "D.O", "MENG")
+_TWIN_PAIRS = (("(", ")"), ('"', '"'))
+_TWIN_ORDERS = (GIVEN_FIRST, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST)
+
+
+def _twin_reading(name: ParsedName, twin: str | None, word: str) -> tuple[
+        dict[str, str], list[tuple[str, str]]]:
+    def back(text: str) -> str:
+        return text.replace(twin, word) if twin else text
+    return ({k: back(v) for k, v in name.as_dict().items() if v},
+            [(a.kind.value, back(a.detail)) for a in name.ambiguities])
+
+
+def test_a_settled_bracketed_member_reads_as_its_unambiguous_twin() -> None:
+    """Negative control, measured 2026-10-26 with `run` patched to a
+    single fold that makes the member the suffix in place (the first
+    draft's reading): 264 of 768 settled readings differ from the
+    twin's, 36 each behind 'Jack', 'John', 'John Smith PhD',
+    'John Smith, PhD', before 'née Jones', 'VI' and 'Ph. D.', and 12
+    for a clause standing alone ('Jack (MA)' read family 'Jack', where
+    the twin reads given 'Jack'). With the second fold: 756 settled, 0
+    differ."""
+    settled = 0
+    differ = []
+    for (open_, close), word, head, order in itertools.product(
+            _TWIN_PAIRS, _TWIN_MEMBERS, _TWIN_HEADS, _TWIN_ORDERS):
+        parser = Parser(policy=Policy(name_order=order))
+        name = parser.parse(head.format(c=f"{open_}{word}{close}"))
+        if (word in name.nickname.split()
+                or word not in name.suffix.replace(",", " ").split()):
+            continue
+        settled += 1
+        twin = parser.parse(head.format(c=f"{open_}MBA{close}"))
+        if _twin_reading(name, None, word) != _twin_reading(
+                twin, "MBA", word):
+            differ.append((name.original, order))
+    assert settled > 700, settled
+    assert not differ, differ

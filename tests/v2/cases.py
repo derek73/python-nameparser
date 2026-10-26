@@ -8875,20 +8875,30 @@ CASES: tuple[Case, ...] = (
          notes="a suffix after the clause is no name word"),
     Case("bracket_member_before_a_maiden_clause",
          "John Smith (MA) née Jones",
-         {"given": "John", "family": "Smith", "suffix": "MA",
-          "maiden": "Jones"},
+         {"given": "John", "family": "Smith", "suffix": "MA née Jones"},
          classification="fix(#810)",
-         notes="a maiden clause after it is no name of its own; 1.4.0 "
-               "read middle 'Smith MA née', last 'Jones'"),
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="the clause settles the member and is then read as its "
+               "twin 'John Smith (PhD) née Jones' reads it, inside the "
+               "credential's run (rules/S8, S13's Accepted); 1.4.0 read "
+               "middle 'Smith MA née', last 'Jones'"),
     Case("bracket_member_in_quotes", 'John Smith "MA"',
          {"given": "John", "family": "Smith", "suffix": "MA"},
          notes="every default nickname pair escapes alike (rules/S1)"),
     Case("bracket_member_after_a_lone_name_word", "Jack (MA)",
-         {"family": "Jack", "suffix": "MA"},
+         {"given": "Jack", "suffix": "MA"},
          classification="fix(#810)",
-         notes="the word stays N3's family name, where bare 'Jack MA' "
-               "reads given (rules/S13's Accepted); 1.4.0 read last "
+         ambiguities=("given-or-family",),
+         notes="reads as its twin 'Jack (PhD)' does; 1.4.0 read last "
                "'MA', 2.0.0 through 2.6.0 family 'Jack', nickname 'MA'"),
+    Case("bracket_member_with_a_period_after_a_lone_name_word",
+         "Jack (M.A)",
+         {"given": "Jack", "suffix": "M.A"},
+         classification="fix(#810)",
+         ambiguities=("given-or-family",),
+         notes="reads as its twin 'Jack (PhD)' does, where bare "
+               "'Jack M.A' reads family 'M.A'; 2.0.0 through 2.6.0 "
+               "read family 'Jack', nickname 'M.A'"),
     Case("bracket_member_before_a_shape_read_suffix",
          "John Smith (MA) Ph. D.",
          {"given": "John", "family": "Smith", "suffix": "MA Ph. D."},
