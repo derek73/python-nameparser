@@ -4,7 +4,7 @@
 
 **Then:** written case is evidence beside the count (S4), and it speaks only in a name written in more than one case: there a member of the ambiguous set written in capitals reads as the credential even with no words to spare, and one written in any other cased form that is not wholly lower reads as the name even with words to spare.
 
-- **A clash settled by the writing is not reported**: a listed member its capitals read as the credential is no longer a word that might be either, as one written with its periods is not (S3), so no `suffix-or-name` report names it at any slot S4, S5 or C4 reads it. Only the clash with the name reading is settled: the word keeps its other readings, so a particle reading (`DO`) answers P6 as before, and a member's capitals start the credential's trailing run as a credential's do (S8).
+- **A clash settled by the writing is not reported**: a listed member its capitals read as the credential is no longer a word that might be either, as one written with its periods is not (S3), so no `suffix-or-name` report names it at any slot S4, S5 or C4 reads it. Only the clash with the name reading is settled: the word keeps its other readings, so a particle reading (`DO`) answers P6 as before, and a member's capitals start the credential's trailing run as a credential's do, where S8 says they do (S8).
   ```
   "John Smith MA"             →  ambiguities=()
   "Jack MA"                   →  ambiguities=("given-or-family",)

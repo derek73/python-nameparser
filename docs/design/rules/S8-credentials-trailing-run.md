@@ -4,11 +4,14 @@
 
 **Then:** a credential after the name core starts a run to the end of its part (#602): every later word of that part reads as a suffix, except a title word, which reads as a title.
 
-- **Where the run starts.** An unambiguous suffix word of two or more letters, in any script, standing after two name words where no comma divides the name or before a suffix comma, or after the given word in the part after a family comma, makes every later word of that part a suffix. So does a roman numeral of two or more letters that reads as the generation (S10), whether the vocabulary lists it or its shape alone reads it, and so does a listed member of the ambiguous class its writing settles as the credential, written in capitals in a name of mixed case (S6).
+- **Where the run starts.** An unambiguous suffix word of two or more letters, in any script, standing after two name words where no comma divides the name or before a suffix comma, or after the given word in the part after a family comma, makes every later word of that part a suffix. So does a roman numeral of two or more letters that reads as the generation (S10), whether the vocabulary lists it or its shape alone reads it, and so does a listed member of the ambiguous class its writing settles as the credential, written in capitals in a name of mixed case (S6) — after the given word in the part after a family comma wherever it stands, and elsewhere not where a name word stands behind it: a particle, or a word in Title case or in capitals that is no credential, which makes the capitals as likely the writer's own initials (`Maria Ana MA Silva`), or a family name written in capitals, as a credential.
   ```
   "John Smith VI Jones"       →  suffix="VI Jones"
-  "John Smith MA Jones"       →  suffix="MA Jones"
   "Smith, John MA Jones"      →  suffix="MA Jones"
+  "John Smith MA JD Jones"    →  suffix="MA JD Jones"
+  "Maria Ana MA Silva"        →  family="Silva"
+  "Jean Pierre MA DUPONT"     →  family="DUPONT"
+  "Mary Jane MA King"         →  family="King"
   "Smith, John VI Jones"      →  suffix="VI Jones"
   "Smith, John PhD Jones"     →  suffix="PhD Jones"
   "John Smith PhD Prof. Ma"   →  suffix="PhD Ma"
@@ -64,12 +67,11 @@
 
 **Accepted:**
 
-- A word of capitals between two name words that spells a listed member of the ambiguous class starts the run as that credential does, whether it is the writer's own initials or a family name written in capitals by the convention that writes it so, and the name word behind it reads as a suffix, reported, or as a title where it is title vocabulary, in silence: the capitals are the credential's writing and these alike, and the periods' spelling already read this way.
+- With no family comma, a credential written in capitals with a name word behind it is read as a name word, where the same credential written with its periods starts the run: a name with its credential between its given names and its family name keeps the family name behind the credential, the capitals being read as initials as likely as a credential.
   ```
-  "Maria Ana MA Silva"        →  suffix="MA Silva"
-  "Maria Ana M.A. Silva"      →  suffix="M.A. Silva"
-  "Jean Pierre MA DUPONT"     →  suffix="MA DUPONT"
-  "Mary Jane MA King"         →  title="King"
+  "John Smith MA Jones"       →  family="Jones"
+  "John Smith MA Jones"       →  middle="Smith MA"
+  "John Smith M.A. Jones"     →  suffix="M.A. Jones"
   ```
 
 ---

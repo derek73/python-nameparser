@@ -895,10 +895,19 @@ def test_a_member_its_capitals_settle_starts_the_run() -> None:
     # its particle reading still refuses 'DO', the clash settled being
     # the one with the name reading alone
     for written in ("MA", "M.A."):
-        name = parse(f"John Smith {written} Jones")
-        assert (name.family, name.suffix) == ("Smith", f"{written} Jones")
+        name = parse(f"Smith, John {written} Jones")
+        assert name.suffix == f"{written} Jones"
         assert [a.kind.value for a in name.ambiguities] == [
             "suffix-or-name"]
+    assert parse("John Smith MA JD Jones").suffix == "MA JD Jones"
+    assert parse("John Smith M.A. Jones").suffix == "M.A. Jones"
+    # with no comma a name word behind the capitals keeps them a name
+    # word, as initials may be (Derek, 2026-10-26)
+    for text, family in (("John Smith MA Jones", "Jones"),
+                         ("Maria Ana MA Silva", "Silva"),
+                         ("Jean Pierre MA DUPONT", "DUPONT"),
+                         ("Mary Jane MA King", "King")):
+        assert parse(text).family == family, text
     assert parse("John Smith DO Jones").family == "DO Jones"
 
 

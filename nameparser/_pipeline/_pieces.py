@@ -1454,12 +1454,34 @@ def behind_the_merged_credential(rest: Sequence[int], p: int,
 # end of its part" -- applied to a finished peel (#602), so every
 # reader of the trailing run (assign, P5's reserve, P2's chain stop,
 # the maiden take) sees one answer.
+def _name_word_behind(piece: Sequence[int], tokens: Sequence[WorkToken],
+                      one_case: bool | None) -> bool:
+    """Whether the piece behind a member its capitals settle reads as a
+    word of the name rather than a further credential: a particle, or a
+    cased word not written in lower case (Title case or capitals, title
+    vocabulary included) that is no suffix word and no member its own
+    capitals settle. Only `run_start` asks it, of a settled member."""
+    if len(piece) != 1:
+        return False
+    tok = tokens[piece[0]]
+    if "particle" in tok.tags:
+        return True
+    text = tok.text
+    if text.upper() == text.lower() or text.islower():
+        return False
+    return ("vocab:suffix" not in tok.tags
+            and SHAPE_ACRONYM_TAG not in tok.tags
+            and not (AMBIGUOUS_ACRONYM_TAG in tok.tags
+                     and settled_by_case(tok, one_case)))
+
+
 def run_start(rest: Sequence[int], names: int,
               pieces: Sequence[Sequence[int]],
               ptags: Sequence[Set[str]],
               tokens: Sequence[WorkToken],
               units: Sequence[int] | None = None,
-              one_case: bool | None = None) -> int:
+              one_case: bool | None = None,
+              initials_cue: bool = True) -> int:
     """Where #602's run starts in `rest[:names]`: the position of the
     first credential that starts one (`starts_a_credential_run`) with
     two name pieces in front of it, or `names` where none does -- with
@@ -1507,7 +1529,16 @@ def run_start(rest: Sequence[int], names: int,
                     # p >= 2 here: two name words stand in front
                     and starts_a_credential_run(
                         pieces[q], ptags[q], tokens,
-                        tokens[pieces[rest[p - 1]][0]].text, one_case)):
+                        tokens[pieces[rest[p - 1]][0]].text, one_case)
+                    # rules/S8: "not where a name word stands behind it"
+                    # -- a settled member followed by one is the
+                    # writer's initials as likely as a credential
+                    and not (initials_cue and p + 1 < len(rest)
+                             and AMBIGUOUS_ACRONYM_TAG in tags
+                             and settled_by_case(tokens[pieces[q][0]],
+                                                 one_case)
+                             and _name_word_behind(pieces[rest[p + 1]],
+                                                   tokens, one_case))):
                 return p
         # a lone particle is not yet a name: 'de Mesnil' is one surname
         # -- unless it opens a chain run, which is then the surname
@@ -1820,6 +1851,7 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
                   units: Sequence[int] | None = None,
                   count_numeral: bool = True,
                   salutations: bool = False,
+                  initials_cue: bool = True,
                   ) -> tuple[list[int], tuple[int, ...], Peel]:
     """The S2 peel and the H5 chain read together to a FIXED POINT:
     peel, chain, splice the chained pieces out, peel again over what
@@ -1912,7 +1944,7 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
                            end=peeled.names, salutations=salutations)
     if kept == peeled.names:
         p = run_start(rest, peeled.names, pieces, ptags, tokens, units,
-                      one_case)
+                      one_case, initials_cue)
         return rest, (), (peeled if p == peeled.names else credential_run(
             rest, peeled, p, pieces, ptags, tokens, one_case))
     # `rest[:hi]` stands as written; `behind` holds the peeled runs
@@ -1966,7 +1998,7 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
         rest = rest[:hi] + [j for run in reversed(behind) for j in run]
     final = Peel(peeled.names, tuple(numerals), tuple(picks), None)
     p = run_start(rest, final.names, pieces, ptags, tokens, units,
-                  one_case)
+                  one_case, initials_cue)
     return (rest, tuple(j for run in reversed(titled) for j in run),
             final if p == final.names else credential_run(
                 rest, final, p, pieces, ptags, tokens, one_case))
@@ -2237,7 +2269,8 @@ def trailing_run_start(start: int, pieces: Sequence[Sequence[int]],
     # acronym half is still counted here, as before #718
     rest, titled, peel = tail_reading(peel_walk(start, ptags), pieces,
                                       ptags, tokens, one_case,
-                                      count_numeral=False, salutations=True)
+                                      count_numeral=False, salutations=True,
+                                      initials_cue=False)
     first = len(pieces)
     for k in rest[peel.names:]:
         first = min(first, k)

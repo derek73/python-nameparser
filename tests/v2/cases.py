@@ -5973,6 +5973,47 @@ CASES: tuple[Case, ...] = (
                "credential's run (the row below). 1.4.0 read suffix "
                "'ma, Ma'",
          shape=2),
+    Case("capitals_initials_before_the_family_name_stay_a_name",
+         "Maria Ana MA Silva",
+         {"given": "Maria", "middle": "Ana MA", "family": "Silva"},
+         notes="S8 (Derek, 2026-10-26, #785): with no family comma a "
+               "name word behind a member its capitals settle keeps it "
+               "from starting the credential's run -- here the writer's own initials in capitals between the given names and the family name. "
+               "1.4.0 through 2.6.0 read the same"),
+    Case("capitals_before_a_capitals_family_name_stay_a_name",
+         "Jean Pierre MA DUPONT",
+         {"given": "Jean", "middle": "Pierre MA", "family": "DUPONT"},
+         notes="S8 (Derek, 2026-10-26, #785): with no family comma a "
+               "name word behind a member its capitals settle keeps it "
+               "from starting the credential's run -- here a family name written in capitals by convention, which counts as the name word behind. "
+               "1.4.0 through 2.6.0 read the same"),
+    Case("capitals_before_a_title_word_surname_stay_a_name",
+         "Mary Jane MA King",
+         {"given": "Mary", "middle": "Jane MA", "family": "King"},
+         notes="S8 (Derek, 2026-10-26, #785): with no family comma a "
+               "name word behind a member its capitals settle keeps it "
+               "from starting the credential's run -- here a surname that is also title vocabulary, which inside the run would read as a title. "
+               "1.4.0 through 2.6.0 read the same"),
+    Case("capitals_credential_before_a_family_name_is_the_accepted_cost",
+         "John Smith MA Jones",
+         {"given": "John", "middle": "Smith MA", "family": "Jones"},
+         notes="S8 (Derek, 2026-10-26, #785): with no family comma a "
+               "name word behind a member its capitals settle keeps it "
+               "from starting the credential's run -- here the cost Accepted in S8, a credential written between the given names and the family name, where 'John Smith M.A. Jones' reads suffix 'M.A. Jones'. "
+               "1.4.0 through 2.6.0 read the same"),
+    Case("a_shape_admitted_numeral_keeps_its_run_under_the_caps_switch",
+         "John Smith VI Ma",
+         {"given": "John", "family": "Smith", "suffix": "VI Ma"},
+         policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
+         classification="fix(#785)",
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="S8: the caps switch writes the class tags on 'VI', "
+               "which its numeral reading still starts the run with; "
+               "the name word behind a member keeps only a member its "
+               "capitals settle from starting it, and the first draft of "
+               "#785's narrowing asked the tag instead, reading middle "
+               "'Smith VI', family 'Ma' here. 2.6.0 read the same as "
+               "this row"),
     Case("a_capitals_member_in_the_given_part_starts_the_run",
          "Doe, John MA Ma",
          {"given": "John", "family": "Doe", "suffix": "MA Ma"},
