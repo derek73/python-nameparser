@@ -103,6 +103,12 @@ AGNOMEN_TAG = "vocab:agnomen"
 #: the fork to report where the word opens the name.
 TITLE_AMBIGUOUS_TAG = "vocab:title-ambiguous"
 
+#: On a word of `Lexicon.given_name_abbreviations`, a given name written
+#: short ('Chas.', 'Ma.'): rules/H2's shape test declines a word
+#: carrying it, so the given reading outranks the shape-derived title
+#: (`_pieces.is_leading_title`, `_vocab.is_title_shaped`).
+GIVEN_ABBREVIATION_TAG = "vocab:given-abbreviation"
+
 #: EITHER way a token joins the ambiguous credential class -- the
 #: vocabulary's claim and the writing's. The two emitters that report
 #: a fork the peel called and declined ask exactly this: `_group`'s

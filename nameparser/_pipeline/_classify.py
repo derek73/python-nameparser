@@ -33,7 +33,8 @@ namespaced (unstable): "vocab:title", "vocab:given-title",
 "vocab:after-given-title", "vocab:title-ambiguous",
 "vocab:suffix", "vocab:suffix-word", "vocab:suffix-ambiguous",
 "vocab:suffix-word-ambiguous", "vocab:agnomen",
-"vocab:particle-ambiguous", "vocab:bound-given", "vocab:maiden-marker",
+"vocab:particle-ambiguous", "vocab:bound-given",
+"vocab:given-abbreviation", "vocab:maiden-marker",
 "vocab:maiden-marker-cont"; in a namespace of its own,
 "shape:acronym"; and in another, "split:credential" and
 "split:member", written on the first word of a credential split across
@@ -67,7 +68,8 @@ import unicodedata
 from nameparser._lexicon import _normalize, _spells_an_initial
 from nameparser._policy import CapsSuffixes
 from nameparser._pipeline._state import (
-    AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, SHAPE_ACRONYM_TAG,
+    AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG,
+    GIVEN_ABBREVIATION_TAG, SHAPE_ACRONYM_TAG,
     SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, TITLE_AMBIGUOUS_TAG, ParseState,
     PendingAmbiguity,
     WorkToken, copy_with,
@@ -219,6 +221,12 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
             tags.add("initial")
     if n in lex.bound_given_names:
         tags.add("vocab:bound-given")
+    # rules/H2: "an abbreviation the vocabulary reads as a given name
+    # written short is that given name" -- the reading H2's shape test
+    # weighs (`_pieces.is_leading_title`); a membership, so any spelling
+    # carries it and only that test acts on it
+    if n in lex.given_name_abbreviations:
+        tags.add(GIVEN_ABBREVIATION_TAG)
     # maiden markers are NOT tagged here: an entry may be a phrase whose
     # words are not markers on their own, and this function sees one
     # token with no neighbours. `_vocab.tag_marker_runs` does the whole

@@ -267,8 +267,9 @@ fields:
 
 Some ``Lexicon`` fields have no ``CONSTANTS`` attribute at all —
 ``conjunctions_ambiguous``, ``maiden_markers``, ``surnames``,
-``honorific_tails``, ``after_given_titles``, ``suffix_words_ambiguous``
-and ``agnomens`` — so they are reached through the 2.0 API only.
+``honorific_tails``, ``after_given_titles``, ``suffix_words_ambiguous``,
+``agnomens`` and ``given_name_abbreviations`` — so they are reached
+through the 2.0 API only.
 
 .. warning::
 

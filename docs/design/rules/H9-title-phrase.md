@@ -63,7 +63,7 @@
   ```
   "Hon. Wing Lau"             →  given="Wing"
   ```
-- **A period-marked word at the front of the name** (H2): the abbreviation shape makes it a title whatever the vocabulary says, so the phrase test never reaches it and nothing is reported.
+- **A period-marked word at the front of the name** (H2): the abbreviation shape makes it a title whatever the vocabulary says, save a given name written short, so the phrase test never reaches it and nothing is reported.
   ```
   "Dean. Smith"               →  title="Dean."
   "Wing. Lau"                 →  title="Wing."

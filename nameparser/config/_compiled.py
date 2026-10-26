@@ -1546,6 +1546,22 @@ BOUND_GIVEN_NAMES: frozenset[str] = frozenset({
     'عبد',
 })
 
+GIVEN_NAME_ABBREVIATIONS: frozenset[str] = frozenset({
+    'benj',
+    'chas',
+    'edw',
+    'geo',
+    'jas',
+    'jno',
+    'jo',
+    'ma',
+    'richd',
+    'robt',
+    'saml',
+    'thos',
+    'wm',
+})
+
 MAIDEN_MARKERS: frozenset[str] = frozenset({
     'född',
     'fødd',

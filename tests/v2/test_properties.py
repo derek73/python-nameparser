@@ -3605,3 +3605,94 @@ def test_a_bare_salutation_reads_as_its_period_marked_twin() -> None:
                 failures.append(f"{order!r}: {text!r}")
     assert not failures, (f"{len(failures)} bare salutation(s) read unlike "
                           f"the period-marked twin:\n" + "\n".join(failures[:10]))
+
+
+#: rules/H2's precedence grid (#789): each slot an abbreviation's shape
+#: reads (the head of the given part, behind a title, after a family
+#: comma with and without a word before it, before a nickname, a
+#: particle, a title-particle, a connective, a maiden marker or a
+#: trailing credential), and before a comma ahead of a word of the
+#: ambiguous credential class, where the comma's own count asks the
+#: shape, a modifier's title phrase among it (`Smith, Ed`), each paired
+#: with the same text holding a plain given name in the abbreviation's
+#: place; and the bare spellings, which must read as with the set
+#: emptied, in two slots of their own (`{} SMITH, XYZ`, `John Smith, {}`,
+#: where a wordlist roster once made a bare one a name, #789's review).
+#: The 13 shipped abbreviations in six spellings, 21 slots, three
+#: orders: 4,914 parses with their control, about 1.5s on py3.11
+#: (measured 2026-10-26). Mutation-checked the same day, on the 19
+#: slots before the review added two: with the peel's half of the
+#: precedence off (`_pieces.is_leading_title`) 2,103 of the dotted pairs
+#: fail, with the comma count's (`_vocab.is_title_shaped`) 234, and with
+#: `_vocab.title_readings`' two calls alone 117; with the field back in
+#: `_vocab._LISTED_FIELDS`, 66 of the 21-slot grid.
+_ABBREVIATION_SLOTS = (
+    "{} Smith", "{} H. Smith", "Smith, {}", "Smith, {} John", ", {} Smith",
+    "Mr. {} Smith", "Mrs {} Liza Cruz", "Dr. {} Smith, PhD",
+    "(Bob) {} Smith", "{} Smith Jr.", "{} de la Vega",
+    "{} Freiherr von Berg", "Rev. Sr. {} Smith", "{} y Gasset",
+    "{} nee Smith", "Smith Jr., {} John", "{} Smith, Ed", "{} Vice Smith, Ed", "Vice {} Smith, Ed",
+    "{} SMITH, XYZ", "John Smith, {}")
+
+
+def test_a_given_name_written_short_reads_as_a_given_name() -> None:
+    """rules/H2's precedence bullet (#789): "an abbreviation the
+    vocabulary reads as a given name written short is that given name".
+    Two-sided, against the same lexicon with the set emptied: where the
+    shape reads the abbreviation as a title there, or the comma's count
+    reads it as one, it reads, field for
+    field, as the plain given name `Jack` reads in its place; and where
+    the shape reads no title (`Smith, MA.`, the credential its capitals
+    settle), the reading is the one the emptied set gives. Ambiguity
+    kinds are not compared: `ma` keeps its credential reading, and the
+    report that reading draws after a comma. The bare spellings, which
+    the shape never reads, must read exactly as with the set emptied in
+    every slot, the capitals behind a comma included ('John Smith, JAS'
+    keeps suffix 'JAS', #789's review). Every slot must see the
+    shape fire somewhere, so a pass is not a grid the shape never
+    reaches."""
+    lexicon = Lexicon.default()
+    off = lexicon.remove(
+        given_name_abbreviations=set(lexicon.given_name_abbreviations))
+
+    def fields(name: ParsedName, plain: str = "", head: str = "") -> dict[str, str]:
+        return {k: v.replace(plain, head) if plain else v
+                for k, v in name.as_dict().items() if v}
+
+    failures, fired = [], set()
+    for order in (GIVEN_FIRST, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST):
+        policy = Policy(name_order=order)
+        parser, control = Parser(policy=policy), Parser(lexicon=off, policy=policy)
+        # the stand-in in capitals behind a mixed-case name would be an
+        # unlisted capitals credential itself ('John Smith, JACK'), which
+        # no given name written short is: read it with that shape off.
+        # OFF reaches every word of the text, so a slot compared through
+        # the stand-in must hold no other capitals word ('{} SMITH, XYZ'
+        # is compared only with the set emptied)
+        stand_in = Parser(policy=dataclasses.replace(
+            policy, unlisted_caps_suffixes=CapsSuffixes.OFF))
+        for word in sorted(lexicon.given_name_abbreviations):
+            # the bare spellings too, which the set must never move
+            for head, plain in ((word.title() + ".", "Jack"),
+                                (word.upper() + ".", "JACK"),
+                                (word + ".", "jack"),
+                                (word.title(), ""), (word.upper(), ""),
+                                (word, "")):
+                for slot in _ABBREVIATION_SLOTS:
+                    text = slot.format(head)
+                    got = fields(parser.parse(text))
+                    unlisted = control.parse(text)
+                    if plain and (head in unlisted.title.split()
+                                  or slot.endswith(", Ed")):
+                        fired.add(slot)
+                        want = fields(stand_in.parse(slot.format(plain)), plain, head)
+                    else:
+                        want = fields(unlisted)
+                    if got != want:
+                        failures.append(f"{order!r}: {text!r} {got} != {want}")
+    assert not failures, (f"{len(failures)} abbreviation(s) misread:\n"
+                          + "\n".join(failures[:10]))
+    # '{} SMITH, XYZ' is there for the bare spellings: before a family
+    # comma the shape never fires (rules/H6)
+    assert fired == set(_ABBREVIATION_SLOTS) - {"{} SMITH, XYZ"}, (
+        set(_ABBREVIATION_SLOTS) - fired)
