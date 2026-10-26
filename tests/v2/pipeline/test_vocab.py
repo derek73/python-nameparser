@@ -1147,7 +1147,12 @@ def test_a_comma_part_reads_a_gated_word_by_its_cue() -> None:
     # decision 10: a modifier with a head title after it, or in a
     # connective's object; at the head only
     (["wing", "lau"], True, [False, False]),
-    (["wing", "lau"], False, [True, False]),
+    (["vice", "lau"], False, [True, False]),
+    # a modifier that may be a given name needs its head after a comma
+    # too (#752 phase 2j, `wing`), and takes any title as one
+    (["wing", "lau"], False, [False, False]),
+    (["wing", "commander", "lau"], False, [True, True, False]),
+    (["wing", "mr"], False, [True, True]),
     (["wing", "commander", "lau"], True, [True, True, False]),
     (["mr", "wing", "lau"], True, [True, False, False]),
     (["vice", "dean", "smith"], True, [True, True, False]),

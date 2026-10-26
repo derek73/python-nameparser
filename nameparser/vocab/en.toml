@@ -2280,7 +2280,9 @@ modifier = {}
 
 [[word]]
 text = "wing"
-modifier = {}
+modifier = { issue = 752, decided = 2026-10-26, note = "a title only beside a head title (rules/H9), its given reading the clash: 'Wing Commander Lau' reads the title, 'Wing Lau' and 'Lau, Wing Kai' the given name, unreported, since no listed phrase holds it" }
+given = { us_ssa = 188, wikidata = 17, as_of = 2026-10-26, note = "US SSA: female and male births added; Wikidata is a lower bound; nam_dict band 1 in China" }
+family = { us_census_2010 = 12614, wikidata = 218, as_of = 2026-10-26 }
 
 [[word]]
 text = "jr"

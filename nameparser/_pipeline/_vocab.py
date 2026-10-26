@@ -1459,10 +1459,11 @@ def title_readings(texts: Sequence[str], folded: Sequence[str],
     modifier outside it is read as listed, one ending the name being
     H5's. A
     word in both sets takes the modifier test in every part, that run
-    being its phrase. After a comma a modifier is read as listed: a
-    part there that is a lone title word is the person's role
-    ('John Smith, Resident'), and reading it as a name would reverse the
-    name (decisions/H9).
+    being its phrase ('Lau, Wing Kai' reads 'Wing' as the given name).
+    After a comma any other modifier is read as listed: a part there
+    that is a lone title word is the person's role ('John Smith,
+    Resident'), and reading it as a name would reverse the name
+    (decisions/H9).
 
     `texts` are the words as written, for the shape test; `folded`
     their `_normalize`d forms; `titled` which of them a caller already
@@ -1507,7 +1508,9 @@ def title_readings(texts: Sequence[str], folded: Sequence[str],
         if reading[i - 1] or folded[i - 1] in conjunctions:
             linked[i] = linked[i - 1] or folded[i - 1] in _OBJECT_LINKS
     # the head of the name is its LEADING run of titles and connectives:
-    # a modifier ending the name is H5's trailing run, read as listed
+    # a modifier ending the name is H5's trailing run, read as listed,
+    # save one that may be a given name, which the loop below reads
+    # wherever it stands
     lead = 0
     if head:
         while lead < len(folded) and (reading[lead] or folded[lead] in conjunctions
