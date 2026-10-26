@@ -4,7 +4,8 @@ Consumes: tokens (roles assigned), plus pieces and structure -- the
 particle fold reads the opening piece of segment 0, or of segment 1
 under a family comma (#359). structure was always read here, for the
 rotation gate. Also comma_offsets and dropped, which R1's entry pass
-below reads to find the separators the writer typed (#436/#437).
+below reads to find the separators the writer typed (#436/#437), and
+extracted and one_case, which S13's pass reads (#810).
 Produces: tokens with roles adjusted by the post rules (among them the
 SUFFIX role of a delimited member its writing settles after the name,
 rules/S13, with the SUFFIX_OR_NICKNAME report on any other member left
@@ -20,7 +21,7 @@ from the declared one), Policy.middle_as_family,
 Policy.extra_suffix_delimiters (R1's entry pass, for the delimiter
 cores group drops); Lexicon.given_name_titles, and
 Lexicon.suffix_acronyms_ambiguous (a dotted member in a clause, which
-carries no tag there, S13). Also extracted and one_case, for S13.
+carries no tag there, S13).
 
 Implements rules S13, H1, M4, P1, P6 (its no-comma site, and after a
 comma naming no family), O1, O2, O6, O3 and R1 of docs/design/rules/;
@@ -113,8 +114,9 @@ def _mark_suffix_entries(tokens: list[WorkToken], state: ParseState) -> None:
     # (mechanisms.md#ONE-PREDICATE-PER-QUESTION). decisions/R1
     # (#436/#437).
     #
-    # After assign, because it keys on Role.SUFFIX; last in post_rules
-    # by convention only, since no rule here writes SUFFIX or a
+    # After assign, because it keys on Role.SUFFIX; last in post_rules,
+    # after S13's pass, the one rule here that writes SUFFIX (#810), and
+    # by convention otherwise, since no other writes SUFFIX or a
     # _RENDERS_ELSEWHERE role. Recorded as a tag because a span-less
     # token (unpickled, or built by replace()) leaves the render
     # nothing to scan (mechanisms.md#MARK-DONT-STRIP). Every WorkToken
@@ -418,7 +420,7 @@ def _settle_delimited_members(state: ParseState, tokens: list[WorkToken],
             continue
         # a period inside the word ('M.A'); one ending it is extract's
         # escape
-        dotted = ("." in token.text.rstrip(".")
+        dotted = ("." in token.text.strip(".")
                   and _normalize(token.text).replace(".", "")
                   in lex.suffix_acronyms_ambiguous)
         if i > last_name and i in alone and (
