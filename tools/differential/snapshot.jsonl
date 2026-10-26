@@ -1253,6 +1253,7 @@
 {"name": "Hon. Barrington P. Doe-Ray, Jr.", "title": "Hon.", "given": "Barrington", "middle": "P.", "family": "Doe-Ray", "suffix": "Jr.", "initials": "B. P. D."}
 {"name": "Hon. Charles J. Siragusa", "title": "Hon.", "given": "Charles", "middle": "J.", "family": "Siragusa", "initials": "C. J. S."}
 {"name": "Hon. Marian W. Payson", "title": "Hon.", "given": "Marian", "middle": "W.", "family": "Payson", "initials": "M. W. P."}
+{"name": "Hon. Wing Lau", "title": "Hon.", "given": "Wing", "family": "Lau", "initials": "W. L."}
 {"name": "Honorable Judge Susan Russ Walker", "title": "Honorable Judge", "given": "Susan", "middle": "Russ", "family": "Walker", "initials": "S. R. W."}
 {"name": "Honorable Judge Terry F. Moorer", "title": "Honorable Judge", "given": "Terry", "middle": "F.", "family": "Moorer", "initials": "T. F. M."}
 {"name": "Honorable Judge W. Harold Albritton, III", "title": "Honorable Judge", "given": "W.", "middle": "Harold", "family": "Albritton", "suffix": "III", "initials": "W. H. A."}
@@ -1266,6 +1267,7 @@
 {"name": "Howard G. Buffett", "given": "Howard", "middle": "G.", "family": "Buffett", "initials": "H. G. B."}
 {"name": "Hozier", "given": "Hozier", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "H."}
 {"name": "Hozier", "order": "FAMILY_FIRST", "family": "Hozier", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "H."}
+{"name": "Hudson, Rock", "title": "Rock", "family": "Hudson", "initials": "H."}
 {"name": "Hudā aš-Šaʿrāwī", "given": "Hudā", "family": "aš-Šaʿrāwī", "initials": "H. a.", "capitalized_force": "Hudā Aš-Šaʿrāwī"}
 {"name": "Humbelina", "given": "Humbelina", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "H."}
 {"name": "Hussein Kamil", "given": "Hussein", "family": "Kamil", "initials": "H. K."}
@@ -1739,6 +1741,8 @@
 {"name": "John Smith VI, M.J.", "given": "M.J.", "family": "John Smith", "suffix": "VI", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "M. J. S."}
 {"name": "John Smith Vi", "given": "John", "middle": "Smith", "family": "Vi", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S. V."}
 {"name": "John Smith Viii", "given": "John", "middle": "Smith", "family": "Viii", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S. V."}
+{"name": "John Smith Wing.", "given": "John", "middle": "Smith", "family": "Wing.", "initials": "J. S. W."}
+{"name": "John Smith Wing. Jr.", "title": "Wing.", "given": "John", "family": "Smith", "suffix": "Jr.", "initials": "J. S."}
 {"name": "John Smith X.Y.Z.", "given": "John", "family": "Smith", "suffix": "X.Y.Z.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "John Smith XI", "given": "John", "middle": "Smith", "family": "XI", "initials": "J. S. X.", "capitalized_force": "John Smith Xi"}
 {"name": "John Smith XI MD", "given": "John", "middle": "Smith", "family": "XI", "suffix": "MD", "initials": "J. S. X.", "capitalized_force": "John Smith Xi MD"}
@@ -2180,7 +2184,8 @@
 {"name": "Larry James Johnson I", "given": "Larry", "middle": "James", "family": "Johnson", "suffix": "I", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "L. J. J."}
 {"name": "Larry V I", "given": "Larry", "middle": "V", "family": "I", "initials": "L. V. I."}
 {"name": "Lastname, Firstname", "given": "Firstname", "family": "Lastname", "initials": "F. L."}
-{"name": "Lau, Wing", "title": "Wing", "family": "Lau", "initials": "L."}
+{"name": "Lau, Wing", "given": "Wing", "family": "Lau", "initials": "W. L."}
+{"name": "Lau, Wing Commander", "title": "Wing Commander", "family": "Lau", "initials": "L."}
 {"name": "Laura Ángeles Lastra Santos", "given": "Laura", "middle": "Ángeles Lastra", "family": "Santos", "initials": "L. Á. L. S."}
 {"name": "Laureano Veres Acevedo", "given": "Laureano", "middle": "Veres", "family": "Acevedo", "initials": "L. V. A."}
 {"name": "Lavardin, Jean de Beaumanoir de", "given": "Jean", "middle": "de Beaumanoir", "family": "de Lavardin", "initials": "J. B. L."}
@@ -3355,6 +3360,7 @@
 {"name": "Tham Junhoe", "given": "Tham", "family": "Junhoe", "initials": "T. J."}
 {"name": "The Hon", "given": "The", "family": "Hon", "initials": "T. H.", "capitalized_force": "the Hon"}
 {"name": "The Hon. Justice Mary Smith", "title": "The Hon. Justice", "given": "Mary", "family": "Smith", "initials": "M. S.", "capitalized_force": "the Hon. Justice Mary Smith"}
+{"name": "The Hon. Wing Lau", "title": "The Hon. Wing", "family": "Lau", "initials": "L.", "capitalized_force": "the Hon. Wing Lau"}
 {"name": "The Lord of the Universe", "title": "The Lord of the Universe", "capitalized_force": "the Lord of the Universe"}
 {"name": "The Right Hon. the President of the Queen's Bench Division", "title": "The Right Hon. the President of the Queen's Bench", "family": "Division", "ambiguities": ["TITLE_OR_NAME"], "initials": "D.", "capitalized_force": "the Right Hon. the President of the Queen'S Bench Division"}
 {"name": "The Rt Hon", "title": "The Rt", "family": "Hon", "ambiguities": ["TITLE_OR_NAME"], "initials": "H.", "capitalized_force": "the Rt Hon"}

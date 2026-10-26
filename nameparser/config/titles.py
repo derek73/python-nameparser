@@ -43,7 +43,9 @@ TITLE_MODIFIERS = _compiled.TITLE_MODIFIERS
 Titles that only qualify a head title ("vice", "wing", "grand"): at the
 head of a name each is a title only with a head title behind it in its
 run, so "Wing Commander Lau" keeps the title where "Wing Lau" reads
-"Wing" as the given name. A subset of TITLES.
+"Wing" as the given name. Each is in TITLES, or in TITLES_AMBIGUOUS
+where it may be a given name too ("wing"), and is then read everywhere
+as at the head of a name.
 """
 
 TITLE_STYLES = _compiled.TITLE_STYLES
