@@ -1032,6 +1032,7 @@
 {"name": "G. V. M.", "given": "G.", "middle": "V.", "family": "M.", "initials": "G. V. M."}
 {"name": "GEORGE SHANAHAN IV", "given": "GEORGE", "family": "SHANAHAN", "suffix": "IV", "initials": "G. S.", "capitalized": "George Shanahan IV"}
 {"name": "GOMINA MUSA Abɖu-Tɔyib", "order": "FAMILY_FIRST", "given": "MUSA", "middle": "Abɖu-Tɔyib", "family": "GOMINA", "initials": "M. A. G.", "capitalized_force": "Musa Abɖu-Tɔyib Gomina"}
+{"name": "GRACE SMITH", "given": "GRACE", "family": "SMITH", "initials": "G. S.", "capitalized": "Grace Smith"}
 {"name": "GREGORY HOUSE M.D.", "given": "GREGORY", "family": "HOUSE", "suffix": "M.D.", "initials": "G. H.", "capitalized": "Gregory House M.D."}
 {"name": "Gabriel García Márquez", "given": "Gabriel", "middle": "García", "family": "Márquez", "initials": "G. G. M."}
 {"name": "Gabriel García Márquez Jr.", "given": "Gabriel", "middle": "García", "family": "Márquez", "suffix": "Jr.", "initials": "G. G. M."}
@@ -1108,7 +1109,8 @@
 {"name": "Gottfried Huyn von Geleen und Amsterad", "given": "Gottfried", "middle": "Huyn", "family": "von Geleen und Amsterad", "initials": "G. H. G. A."}
 {"name": "Gottfried IV.", "given": "Gottfried", "suffix": "IV.", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "G."}
 {"name": "Goëß, Johann von", "given": "Johann", "family": "von Goëß", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "J. G."}
-{"name": "Grace Dean Smith", "given": "Grace", "middle": "Dean", "family": "Smith", "ambiguities": ["TITLE_OR_NAME"], "initials": "G. D. S."}
+{"name": "Grace Dean Smith", "given": "Grace", "middle": "Dean", "family": "Smith", "initials": "G. D. S."}
+{"name": "Grace Smith", "given": "Grace", "family": "Smith", "initials": "G. S."}
 {"name": "Graf Lambsdorff, Otto", "title": "Graf", "given": "Otto", "family": "Lambsdorff", "initials": "O. L."}
 {"name": "Gragger, Robert", "given": "Robert", "family": "Gragger", "initials": "R. G."}
 {"name": "Gramont, Antoine de", "given": "Antoine", "family": "de Gramont", "initials": "A. G."}
@@ -2375,6 +2377,7 @@
 {"name": "Marković, Irena", "given": "Irena", "family": "Marković", "initials": "I. M."}
 {"name": "Markus von Wickenburg", "given": "Markus", "family": "von Wickenburg", "initials": "M. W."}
 {"name": "Marquess of Bath", "title": "Marquess of Bath"}
+{"name": "Marshal Yanda", "given": "Marshal", "family": "Yanda", "ambiguities": ["TITLE_OR_NAME"], "initials": "M. Y."}
 {"name": "Marsick, Martin Pierre", "given": "Martin", "middle": "Pierre", "family": "Marsick", "initials": "M. P. M."}
 {"name": "Martha Nava García", "given": "Martha", "middle": "Nava", "family": "García", "initials": "M. N. G."}
 {"name": "Martin Pierre Marsick", "given": "Martin", "middle": "Pierre", "family": "Marsick", "initials": "M. P. M."}

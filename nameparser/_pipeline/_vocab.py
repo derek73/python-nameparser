@@ -1390,6 +1390,15 @@ _PHRASE_LINKS = frozenset({"of"})
 _OBJECT_LINKS = frozenset({"of", "the"})
 
 
+# rules/H9: "a word no listed phrase holds is a title only behind a
+# style or a modifier" -- whether the word heads a title of itself, asked
+# of the phrases `attaches` compiled rather than of a property of its own
+def in_a_title_phrase(text: str, lexicon: Lexicon) -> bool:
+    """Whether some phrase in `lexicon.title_phrases` holds `text`."""
+    n = _normalize(text)
+    return any(n in phrase.split(" ") for phrase in lexicon.title_phrases)
+
+
 # rules/H9: "the word is a title only inside a title phrase, and
 # elsewhere a name word" -- both halves, the partners of a title that may
 # be a given name and of a modifier at the head of the name, each its

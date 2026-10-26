@@ -11922,8 +11922,14 @@ CASES: tuple[Case, ...] = (
                "(Derek, 2026-10-26)"),
     Case("contested_style_alone", "Grace Smith",
          {"given": "Grace", "family": "Smith"},
-         ambiguities=("title-or-name",), classification="feat(#752)",
-         notes="H9: no partner, so the given name, reported"),
+         classification="feat(#752)",
+         notes="H9: no partner, so the given name; and no listed phrase "
+               "holds 'grace', a title only behind a style or a "
+               "modifier, so nothing is reported (Derek, 2026-10-26)"),
+    Case("contested_style_alone_in_capitals", "GRACE SMITH",
+         {"given": "GRACE", "family": "SMITH"},
+         classification="feat(#752)",
+         notes="H9: the row above in capitals, as TSE writes it"),
     Case("contested_rank_after_a_modifier", "Field Marshal Bernard Montgomery",
          {"title": "Field Marshal", "given": "Bernard",
           "family": "Montgomery"}, classification="fix(#752)",
@@ -11945,7 +11951,9 @@ CASES: tuple[Case, ...] = (
     Case("contested_rank_alone", "Marshal Yanda",
          {"given": "Marshal", "family": "Yanda"},
          ambiguities=("title-or-name",), classification="feat(#752)",
-         notes="H9: no partner, so the given name, reported"),
+         notes="H9: no partner, so the given name, reported: a listed "
+               "phrase holds 'marshal' ('chief marshal'), so it may head "
+               "a title"),
     Case("contested_rank_after_a_modifier_air", "Air Marshal John Smith",
          {"title": "Air Marshal", "given": "John", "family": "Smith"},
          classification="fix(#752)",
@@ -11953,9 +11961,11 @@ CASES: tuple[Case, ...] = (
     Case("contested_style_with_no_partner_before_a_contested_word",
          "Grace Dean Smith",
          {"given": "Grace", "middle": "Dean", "family": "Smith"},
-         ambiguities=("title-or-name",), classification="feat(#752)",
+         classification="feat(#752)",
          notes="H9: a style is a partner only where it is a title there; "
-               "'Grace' stands in no phrase, so neither does 'Dean'"),
+               "'Grace' stands in no phrase, so neither does 'Dean', and "
+               "neither reports: 'Grace' is in no listed phrase and "
+               "'Dean' is not the first name word"),
     Case("contested_title_after_an_empty_head", ", Dean",
          {"given": "Dean"},
          notes="H9: the comma has marked the given name, so no report"),
