@@ -196,8 +196,10 @@ def test_phd_split_mid_name_is_a_suffix() -> None:
 def test_ambiguous_acronym_reports_the_reading_it_took() -> None:
     # 'ma' is both a post-nominal and a surname, so whichever way the
     # peel resolves it is a guess -- the same shape as the leading
-    # ambiguous particle that already reports PARTICLE_OR_GIVEN
-    took_suffix = parse("John Smith MA")
+    # ambiguous particle that already reports PARTICLE_OR_GIVEN. In a
+    # name written in one case: in a name of mixed case the capitals
+    # settle the word and nothing reports it (rules/S6, #785)
+    took_suffix = parse("JOHN SMITH MA")
     assert took_suffix.suffix == "MA"
     assert [a.kind for a in took_suffix.ambiguities] == \
         [AmbiguityKind.SUFFIX_OR_NAME]
@@ -206,12 +208,18 @@ def test_ambiguous_acronym_reports_the_reading_it_took() -> None:
     # MOVED by #289, not deleted: 'MA' is written in capitals inside a
     # mixed-case name, so it now leans CREDENTIAL and is taken with no
     # words to spare -- 'Jack' is the only name word left, which is
-    # what also turns on the GIVEN_OR_FAMILY fork (decisions/S6).
+    # what also turns on the GIVEN_OR_FAMILY fork (decisions/S6). The
+    # capitals settled 'MA', so that fork is the only one (#785).
     took_family = parse("Jack MA")
     assert took_family.suffix == "MA"
     assert not took_family.family
     assert set(a.kind for a in took_family.ambiguities) == \
-        {AmbiguityKind.SUFFIX_OR_NAME, AmbiguityKind.GIVEN_OR_FAMILY}
+        {AmbiguityKind.GIVEN_OR_FAMILY}
+    # and in one case the count decides, and reports the family it kept
+    took_family = parse("JACK MA")
+    assert took_family.family == "MA"
+    assert [a.kind for a in took_family.ambiguities] == \
+        [AmbiguityKind.SUFFIX_OR_NAME]
 
 
 @pytest.mark.parametrize("text", [
@@ -219,6 +227,7 @@ def test_ambiguous_acronym_reports_the_reading_it_took() -> None:
     "Ma, Jack",                          # a comma fixes the family
     "Joao da Silva do Amaral de Souza",  # 'do' mid-name, never at the peel
     "John Smith PhD",                    # unambiguous vocabulary
+    "John Smith MA",                     # capitals settle it (#785)
 ])
 def test_no_suffix_ambiguity_when_nothing_was_guessed(text: str) -> None:
     assert [a for a in parse(text).ambiguities
@@ -242,7 +251,8 @@ def test_delimited_ambiguous_acronym_reports_suffix_or_nickname() -> None:
 def test_every_ambiguous_acronym_in_a_name_is_reported() -> None:
     # one coin-flip per acronym: a single-slot record dropped all but
     # the last, which defeats the point of reporting at all
-    n = parse("John Smith MA JD")
+    # (in one case, where no writing settles either word, rules/S6)
+    n = parse("JOHN SMITH MA JD")
     # the scenery the record is read off; only its separator moved (#436)
     assert n.suffix == "MA JD"
     assert [a.kind for a in n.ambiguities] == \
@@ -946,7 +956,7 @@ def test_each_suffix_or_name_branch_describes_itself() -> None:
     # roman-numeral branch turns on the letter being a numeral. Sharing
     # one template made "V written without periods" -- a distinction
     # that does not exist for V -- and hid which branch fired.
-    acronym = parse("John Smith MA").ambiguities[0].detail
+    acronym = parse("JOHN SMITH MA").ambiguities[0].detail
     assert "periods" in acronym and "post-nominal" in acronym
 
     numeral = parse("John Smith V").ambiguities[0].detail

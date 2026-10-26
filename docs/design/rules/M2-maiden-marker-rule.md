@@ -42,7 +42,12 @@
   "Jane Doe nee Smith PhD Smith"  →  suffix="PhD Smith"
   "Jane van der Berg née y Jones"  →  maiden="y Jones"
   ```
-- **What reports.** Where a trailing rule reads the part, a member of the ambiguous class (S4) that ends the maiden name is reported where the clause keeps it, and one in the run is reported where the run is read, so no word is reported twice and none goes unreported.
+- **What reports.** Where a trailing rule reads the part, a member of the ambiguous class (S4) that ends the maiden name is reported where the clause keeps it, whatever its case, and one in the run is reported where the run is read unless its capitals settled it (S6), so no word is reported twice and none the writing left open goes unreported.
+  ```
+  "Jane Doe nee MA"           →  ambiguities=("suffix-or-name",)  · boundary
+  "Jane Doe nee Smith MA"     →  ambiguities=()
+  "Jane Doe nee Smith Ma JD"  →  ambiguities=("suffix-or-name",)
+  ```
 - **A marker may be more than one word**, and is then recognized only whole and only where its words stand together: its own first word standing without the rest is not that marker, and neither is one the writer divided from the rest by a bracketed clause or by a comma. Whether the first word takes anything on its own is a separate question with a separate answer — it does exactly when it is a recognized marker in its own right, and the longer entry wins wherever both could match.
   ```
   "Maria Kowalska z domu Nowak"  →  maiden="Nowak"

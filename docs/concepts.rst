@@ -214,8 +214,10 @@ ambiguous post-nominal vocabulary, but in ``"Joao da Silva do Amaral
 de Souza"`` it sits mid-name, where nothing has to choose between
 readings — so nothing is recorded. A comma can settle the question
 before it arises, too: ``"Ma, Jack"`` fixes the family name, so the
-credential reading never comes up, while ``"John Smith MA"`` has to
-call it and says so. Some decisions are conventions rather than
+credential reading never comes up, and so can the writing:
+``"John Smith M.A."`` and, in a mixed-case name, ``"John Smith MA"`` are
+written as credentials, while ``"John Smith Ma"`` has to call it and
+says so. Some decisions are conventions rather than
 readings — a name whose one name word nothing else decides (such as
 a title, a family comma, a nickname or maiden name beside it, a
 script that settles its own order, or the word's own vocabulary or

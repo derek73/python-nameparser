@@ -102,7 +102,8 @@ from nameparser._pipeline._pieces import (
     anchor_in_reach, credential_at_the_given_slot, given_slot_anchors,
     _NOT_A_RUN_START, has_name_content, is_lone_never_given_particle,
     Peel, TailRead, is_suffix_piece, is_title_piece, leading_titles,
-    particle_tail, listed_lean, peel_walk, starts_a_credential_run,
+    particle_tail, listed_lean, peel_walk, settled_by_case,
+    starts_a_credential_run,
     tail_reading, trailing_titles,
 )
 from nameparser._pipeline._state import (
@@ -1398,6 +1399,7 @@ def assign(state: ParseState) -> ParseState:
                 if (m not in titled_idx
                         and ("suffix" in ptags[m] or "split" in ptags[m]
                              or (("vocab:suffix" in tags
+                                  or AMBIGUOUS_ACRONYM_TAG in tags
                                   or _ROMAN.match(tokens[pieces[m][0]].text
                                                   .rstrip(".")) is not None)
                                  and tags.isdisjoint(_NOT_A_RUN_START)))
@@ -1481,12 +1483,15 @@ def assign(state: ParseState) -> ParseState:
                                 _AMBIGUOUS_CREDENTIAL_TAGS)):
                         # a class member inside the run is still the
                         # fork #531's report names, now read as the
-                        # credential, as #544's anchor reads one
-                        ambiguities.append(PendingAmbiguity(
-                            AmbiguityKind.SUFFIX_OR_NAME,
-                            f"{tokens[piece[0]].text!r} ending the given "
-                            f"part is also an ordinary name word; read "
-                            f"as a credential", (piece[0],)))
+                        # credential, as #544's anchor reads one --
+                        # unless its capitals settled it (rules/S6)
+                        if not settled_by_case(tokens[piece[0]],
+                                               state.one_case):
+                            ambiguities.append(PendingAmbiguity(
+                                AmbiguityKind.SUFFIX_OR_NAME,
+                                f"{tokens[piece[0]].text!r} ending the given "
+                                f"part is also an ordinary name word; read "
+                                f"as a credential", (piece[0],)))
                     # the run's own first word is the credential that
                     # starts it, a split one ('Pharm D') included
                     elif (not suffix_here and m != sticky_from
@@ -1526,7 +1531,11 @@ def assign(state: ParseState) -> ParseState:
                         and not tokens[piece[0]].tags.isdisjoint(
                             _AMBIGUOUS_CREDENTIAL_TAGS)
                         and (suffix_here
-                             or "particle" not in tokens[piece[0]].tags)):
+                             or "particle" not in tokens[piece[0]].tags)
+                        # rules/S6: "a clash settled by the writing is
+                        # not reported"
+                        and not (suffix_here and settled_by_case(
+                            tokens[piece[0]], state.one_case))):
                     # The SAME floor the predicate measures members
                     # against, so this report has no walk of its own to
                     # regress: it had one, and on a run the predicate's

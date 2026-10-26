@@ -71,13 +71,14 @@ from nameparser._pipeline._pieces import (
     Peel, TailRead, chain_lead, chain_run_end, is_conj_piece, is_leading_title, is_prefix_piece,
     is_suffix_piece, is_title_piece, join_connectives, joined_tags,
     leading_titles, merge_particle_runs, merge_pieces, peel_walk,
-    read_trailing_run, tail_reading, trailing_candidates,
+    read_trailing_run, settled_by_case, tail_reading, trailing_candidates,
     trailing_run_start, trailing_start,
     trailing_start_past_titles,
 )
 from nameparser._pipeline._state import (
-    SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, ParseState, PendingAmbiguity,
-    Structure, WorkToken, _AMBIGUOUS_CREDENTIAL_TAGS, copy_with,
+    AMBIGUOUS_ACRONYM_TAG, SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, ParseState,
+    PendingAmbiguity, Structure, WorkToken, _AMBIGUOUS_CREDENTIAL_TAGS,
+    copy_with,
 )
 import nameparser._pipeline._comma as _comma
 from nameparser._pipeline._vocab import (
@@ -960,7 +961,8 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                     k += 1
                     continue
                 j = chain_run_end(k, pieces, ptags, tokens,
-                                  len(pieces) - tail)
+                                  len(pieces) - tail,
+                                  one_case if given_slot else None)
                 # The other half of PARTICLE_OR_GIVEN. _assign reports the
                 # fork when an ambiguous particle stays a lone leading piece
                 # ("Van Johnson" -> given under the default order, family
@@ -1162,10 +1164,19 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             # as its one-word spelling is: merged in the given part
             # before this join, so the particle chain stops in front of
             # it too ('Rahman, Abdul MB ChB', 'Smith, John van Pharm D')
+            # After a family comma a member its capitals settle as the
+            # credential (rules/S6) is declined as a suffix word is: the
+            # join would read it as the given name's second word, where
+            # the given part's trailing slot or the run S8 starts takes
+            # it ('Smith, Abdul MA'); with no comma nothing would, and
+            # the join stands ('Abdul MA Smith')
             nxt, nxt_tags = pieces[fk + 1], ptags[fk + 1]
             if (_is_maiden_marker_piece(nxt, tokens)
                     or is_suffix_piece(nxt, nxt_tags, tokens)
                     or "split" in nxt_tags
+                    or (bound_join is BoundJoin.LENIENT and len(nxt) == 1
+                        and AMBIGUOUS_ACRONYM_TAG in tokens[nxt[0]].tags
+                        and settled_by_case(tokens[nxt[0]], one_case))
                     or ((site is ClauseSite.TAIL
                          or bound_join is BoundJoin.LENIENT)
                         and is_title_piece(nxt, nxt_tags, tokens)

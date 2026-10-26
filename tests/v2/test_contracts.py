@@ -15,7 +15,9 @@ _AMBIGUITY_TRIGGERS: dict[AmbiguityKind, str | None] = {
     AmbiguityKind.UNBALANCED_DELIMITER: 'Jon "Nick Smith',
     AmbiguityKind.COMMA_STRUCTURE: "Smith, John, Extra, Jr.",
     AmbiguityKind.SUFFIX_OR_NICKNAME: "JEFFREY (JD) BRICKEN",
-    AmbiguityKind.SUFFIX_OR_NAME: "John Smith MA",
+    # Title case: capitals in a name of mixed case settle the word and
+    # report nothing (rules/S6, #785)
+    AmbiguityKind.SUFFIX_OR_NAME: "John Smith Ma",
     AmbiguityKind.GIVEN_OR_FAMILY: "Andrew",
     AmbiguityKind.TITLE_OR_NAME: "Lord Chancellor",
     # no emitter yet -- arrives with locale-pack order detection (2.x)

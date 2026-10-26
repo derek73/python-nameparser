@@ -120,12 +120,19 @@ def test_the_comma_path_reports_its_ambiguous_reading_once() -> None:
     # fork IS consulted at this comma and reports exactly once --
     # which is also true with the switch OFF, the shape tag going on
     # either way (its own case rows pin both).
-    for text in ("Smith, MA", "Smith, Ma", "Smith, ma", "John Smith, MA",
-                 "John Smith, Ed", "毛泽东, MA", "Smith, MA PhD",
+    # Capitals in a name of mixed case settle the word, so those
+    # spellings report nothing (rules/S6, #785); the name written in
+    # one case reaches the same fork with no writing to settle it.
+    for text in ("SMITH, MA", "Smith, Ma", "Smith, ma", "JOHN SMITH, MA",
+                 "John Smith, Ed", "毛泽东, MA", "SMITH, MA PHD",
                  "Smith, A.B."):
         kinds = [a.kind.value for a in _assigned(
             text, lexicon=Lexicon.default()).ambiguities]
         assert kinds.count("suffix-or-name") == 1, (text, kinds)
+    for text in ("Smith, MA", "John Smith, MA", "Smith, MA PhD"):
+        kinds = [a.kind.value for a in _assigned(
+            text, lexicon=Lexicon.default()).ambiguities]
+        assert "suffix-or-name" not in kinds, (text, kinds)
     # a name outside the class reports nothing at its comma, as every
     # release before this one
     for text in ("Smith, John", "John Smith, PhD", "Smith, Dr."):
@@ -139,12 +146,15 @@ def test_the_family_comma_report_detail_is_verbatim() -> None:
     # `_comma.decide` emits where it binds the part at group's head
     # (#613; assign's family-comma emitter keeps the given-name half,
     # and the structure flip's report is pinned in test_comma.py).
-    # Pinned verbatim for the same reason.
-    out = _assigned("Smith, MA", lexicon=Lexicon.default())
+    # Pinned verbatim for the same reason. Capitals settle 'Smith, MA'
+    # (rules/S6, #785), so the half is reached by a generation word its
+    # lower case leans to the suffix, opening a part the whole name in
+    # front reads as a credential run of words it settled.
+    out = _assigned("Alexandre Dumas, fils MA", lexicon=Lexicon.default())
     (amb,) = [a for a in out.ambiguities
              if a.kind is AmbiguityKind.SUFFIX_OR_NAME]
     assert amb.detail == (
-        "'MA' after the comma is also an ordinary name word; read as "
+        "'fils' after the comma is also an ordinary name word; read as "
         "a credential")
 
 
@@ -172,7 +182,10 @@ def test_jack_ma_s_two_detail_strings_are_verbatim() -> None:
     # which way 'Jack MA' flips, not that it reports. Pinning both
     # strings verbatim: the credential lean also turns 'Jack' into the
     # only name word left, which is a SECOND fork (GIVEN_OR_FAMILY)
-    # this one row now calls.
+    # this one row now calls. Since #785 the capitals settle 'MA', so
+    # only that second fork reports (rules/S6); the trailing slot's
+    # string is pinned on the name written in one case, which the
+    # count decides.
     details = {a.kind.value: a.detail
                for a in _reported("Jack MA", lexicon=Lexicon.default())}
     assert details == {
@@ -180,6 +193,11 @@ def test_jack_ma_s_two_detail_strings_are_verbatim() -> None:
             "'Jack' is the only name word and nothing else decides "
             "it; read as a given name by convention, which follows "
             "the read order"),
+    }
+    details = {a.kind.value: a.detail
+               for a in _reported("JOHN SMITH MA",
+                                  lexicon=Lexicon.default())}
+    assert details == {
         "suffix-or-name": (
             "'MA' written without periods is both a post-nominal and "
             "an ordinary name; read as a suffix rather than a name "
@@ -876,16 +894,24 @@ def test_the_shared_given_slot_predicate_reads_the_lean_three_ways(
 
 
 def test_a_name_word_behind_the_member_ends_the_run() -> None:
-    out = _assigned("Doe, John MA Smith", lexicon=Lexicon.default())
-    assert _by_role(out, Role.MIDDLE) == "MA Smith"
+    # in one case: in a name of mixed case the capitals settle 'MA',
+    # which then starts the credential's run instead (rules/S8, #785)
+    out = _assigned("DOE, JOHN MA SMITH", lexicon=Lexicon.default())
+    assert _by_role(out, Role.MIDDLE) == "MA SMITH"
     assert not [a for a in out.ambiguities
                 if a.kind is AmbiguityKind.SUFFIX_OR_NAME]
+    out = _assigned("Doe, John MA Smith", lexicon=Lexicon.default())
+    assert _by_role(out, Role.SUFFIX) == "MA Smith"
 
 
 def test_two_members_in_the_trailing_run_report_once_each() -> None:
-    out = _assigned("Doe, John MA JD", lexicon=Lexicon.default())
+    out = _assigned("DOE, JOHN MA JD", lexicon=Lexicon.default())
     assert len([a for a in out.ambiguities
                 if a.kind is AmbiguityKind.SUFFIX_OR_NAME]) == 2
+    # and none at all where the capitals settled both (rules/S6)
+    out = _assigned("Doe, John MA JD", lexicon=Lexicon.default())
+    assert not [a for a in out.ambiguities
+                if a.kind is AmbiguityKind.SUFFIX_OR_NAME]
 
 
 def test_the_no_name_gate_path_still_reports_exactly_once() -> None:
@@ -894,23 +920,31 @@ def test_the_no_name_gate_path_still_reports_exactly_once() -> None:
     word, so `_comma.decide` binds it at group's head and reports the
     member there (#613), and assign's placement loop is handed no
     piece of it -- so the new emitter is unreachable on exactly the
-    path the first-piece report owns."""
-    for text in ("Doe, MA", "Doe, MA PhD", "Doe, MA JD"):
+    path the first-piece report owns. A member its capitals settle
+    reports nothing on that path (rules/S6, #785), so the path is
+    reached by one a credential in front speaks for (rules/S7)."""
+    for text in ("Doe, PhD Ma", "Doe, PhD Ma JD", "Doe, PhD ma"):
         out = _assigned(text, lexicon=Lexicon.default())
         assert len([a for a in out.ambiguities
                     if a.kind is AmbiguityKind.SUFFIX_OR_NAME]) == 1, text
+    for text in ("Doe, MA", "Doe, MA PhD", "Doe, MA JD"):
+        out = _assigned(text, lexicon=Lexicon.default())
+        assert not [a for a in out.ambiguities
+                    if a.kind is AmbiguityKind.SUFFIX_OR_NAME], text
 
 
 def test_the_trailing_given_slot_detail_is_verbatim() -> None:
     """Both branches, verbatim -- only the string distinguishes them,
-    the kind being the same either way."""
+    the kind being the same either way. The credential branch is read
+    in one case: in a name of mixed case its capitals settle 'MA' and
+    it reports nothing (rules/S6, #785)."""
     detail = {
         text: [a.detail for a in
                _assigned(text, lexicon=Lexicon.default()).ambiguities
                if a.kind is AmbiguityKind.SUFFIX_OR_NAME]
-        for text in ("Doe, John MA", "Doe, John Ma")
+        for text in ("DOE, JOHN MA", "Doe, John Ma")
     }
-    assert detail["Doe, John MA"] == [
+    assert detail["DOE, JOHN MA"] == [
         "'MA' ending the given part is also an ordinary name word; "
         "read as a credential"]
     assert detail["Doe, John Ma"] == [

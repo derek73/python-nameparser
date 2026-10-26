@@ -219,6 +219,7 @@ _CORE_ONLY_IDS = frozenset({
     "strict_comma_reports_a_one_case_numeral_in_a_third_part",
     "the_comma_flip_is_read_under_the_declared_order",
     "two_caps_credentials_peel_as_a_run",
+    "a_shape_admitted_numeral_keeps_its_run_under_the_caps_switch",
     "the_caps_shape_is_script_agnostic_cyrillic",
     "the_caps_shape_is_script_agnostic_accented",
     "the_dotted_switch_off_still_reports_the_post_comma_fork",

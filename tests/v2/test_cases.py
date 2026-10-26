@@ -259,8 +259,20 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # 1592 -> 1586 the same day: 'Grace Smith' and 'Grace Dean Smith'
     # stopped reporting, no listed phrase holding 'grace'; 1586 -> 1592
     # the same day: 'Justice Smith' and 'Major Smith', which report.
-    assert claims == 1592, (
-        f"the field sweep checks {claims} claims, recorded as 1592 on "
+    # 1568 -> 1310 the same day, #785 (phase 2g): a listed member its
+    # capitals settle in a name of mixed case reports nothing, which
+    # takes the claims of the rows that reported one (each under
+    # the orders it reaches); its new rows add their run reports, and
+    # the rows rewritten in one case or lower case to keep reaching
+    # their emitter add theirs back; 1310 -> 1316 the same day, the
+    # review's rows for the comma's opening word and the chain's stop;
+    # 1316 -> 1318 on 2026-10-26, the narrowing's caps-switch numeral row;
+    # 1318 -> 1321 the same day, its Ph./D. row.
+    # 1321 + 24 = 1345 on 2026-10-26, #894 (phase 2i) merged over #895
+    # (phase 2g): 2i's net change from 1568 (1592 - 1568), the two
+    # changes moving disjoint claims.
+    assert claims == 1345, (
+        f"the field sweep checks {claims} claims, recorded as 1345 on "
         f"2026-10-26")
 
 

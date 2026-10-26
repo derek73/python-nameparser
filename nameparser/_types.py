@@ -448,7 +448,7 @@ class AmbiguityKind(StrEnum):
     SUFFIX_OR_NICKNAME = "suffix-or-nickname"
     #: A trailing word reads plausibly as either a post-nominal or an
     #: ordinary name part. Covers an ambiguous acronym written without
-    #: periods ("John Smith MA" takes MA as a credential because a
+    #: periods ("JOHN SMITH MA" takes MA as a credential because a
     #: family name remains; "JACK MA", written wholly in one case, keeps
     #: it as the name because none would, while in a mixed-case name
     #: the capitals decide outright -- "Jack MA" is the credential and
@@ -461,6 +461,11 @@ class AmbiguityKind(StrEnum):
     #: vd" takes ``vd`` for *van der* and declines the decoration.
     #: Which name part was declined depends on position and
     #: ``name_order``, so ``detail`` names it rather than the kind.
+    #: Since 2.7 a listed member its capitals settle in a mixed-case
+    #: name is not reported at any slot below, as one written with its
+    #: periods is not ("John Smith MA", "Doe, John DO", "John Smith,
+    #: MA" are silent, rules/S6, #785), so the examples below that
+    #: report are written in one case, in lower case or in Title case.
     #: The same doubt covers an input that is nothing BUT post-nominal
     #: vocabulary ("Rinpoche", "QC MP"): with no name word beside it
     #: the first post-nominal is read as the name, because something
@@ -474,7 +479,7 @@ class AmbiguityKind(StrEnum):
     #: comma is not among them, so "Smith, John, MA" is silent; what
     #: such a part does report is rules/C2's to say.
     #: Since 2.4 the given part's trailing slot reports whichever way
-    #: it read the word: "Doe, John MA" reads suffix ``MA`` and says
+    #: it read the word: "DOE, JOHN MA" reads suffix ``MA`` and says
     #: so, "Doe, John Ma" keeps middle ``Ma`` and says so too. Not in
     #: EVERY direction, though: where the member is also a particle
     #: and the particle rule keeps it, that rule reports at its own
@@ -490,11 +495,11 @@ class AmbiguityKind(StrEnum):
     #: that the company leaves holding no name word ("John Smith PhD
     #: MEng", "Doe, Jane PhD MEng" and "Smith, PhD MEng" each report
     #: ``MEng``). A member its own capitals already made the
-    #: credential reports nothing new, so "Smith, PhD MA" and "John
+    #: credential reports nothing, so "Smith, PhD MA" and "John
     #: Smith, PhD MA" read suffix ``PhD MA`` in silence.
     #: Since 2.4 a maiden marker's clause reports at ITS trailing slot
-    #: too, in both directions: "Jane Doe nee Smith MA" gives maiden
-    #: ``Smith`` with suffix ``MA`` and says so, "Jane Doe nee Smith
+    #: too, in both directions: "Jane Doe nee Smith ma" gives maiden
+    #: ``Smith`` with suffix ``ma`` and says so, "Jane Doe nee Smith
     #: Ma" keeps maiden ``Smith Ma`` and says so too, and a member the
     #: clause keeps because it is the only word after the marker
     #: ("Jane Doe nee MA") reports as well. Where no trailing rule
@@ -508,13 +513,15 @@ class AmbiguityKind(StrEnum):
     #: them, and the three that follow are about the member's own
     #: surroundings. Second: a member with something BEHIND it that
     #: the trailing reading does not take was never a fork -- "Doe,
-    #: John MA Smith" reads middle ``MA Smith``, the ordinary reading,
+    #: John ma Smith" reads middle ``ma Smith``, the ordinary reading,
     #: and nothing consulted the class, and inside a clause the same
     #: holds of a name word ("Jane Doe nee MA Smith" keeps maiden
     #: ``MA Smith``), a bare trailing title among them ("Jane Doe nee
-    #: Smith MA Prof" keeps maiden ``Smith MA Prof``, where the
-    #: period-marked "Jane Doe nee Smith MA Prof." reads title
-    #: ``Prof.`` and suffix ``MA`` and reports).
+    #: Smith ma Prof" keeps maiden ``Smith ma Prof``, where the
+    #: period-marked "Jane Doe nee Smith ma Prof." reads title
+    #: ``Prof.`` and suffix ``ma`` and reports). A member its capitals
+    #: settle is no such member: it starts the credential's run
+    #: (rules/S8), so "Doe, John MA Smith" reads suffix ``MA Smith``.
     #: Third -- pre-existing, and untouched by 2.4 -- a member with no
     #: name word IN FRONT of it is not at this
     #: slot either, because the slot is the end of a given part and
@@ -531,8 +538,8 @@ class AmbiguityKind(StrEnum):
     #: the same member, one title in front of it -- reads given ``MA``
     #: in silence. A maiden marker cannot reach this position: after
     #: a family comma it is an ordinary word (rules/M2), so "Doe,
-    #: Dr. nee Smith MA" reads given ``nee``, middle ``Smith`` and
-    #: suffix ``MA`` -- and reports, the ``MA`` ending a given part
+    #: Dr. nee Smith ma" reads given ``nee``, middle ``Smith`` and
+    #: suffix ``ma`` -- and reports, the ``ma`` ending a given part
     #: like any other.
     #: And fourth -- pre-existing and untouched by 2.4 as well --
     #: a JOIN beside the member can
@@ -542,20 +549,21 @@ class AmbiguityKind(StrEnum):
     #: it: "Doe, John van Ma" reads middle ``van Ma`` in silence, and
     #: so does "Doe, John DO Ed", where the member is itself the
     #: particle the chain runs on and the name word behind it joins
-    #: the piece -- though "Doe, John DO" alone reads the credential
-    #: and reports. The particle chain is the commonest joiner but not
-    #: the only one: the bound-given join takes a member into its pair
-    #: the same way, so "Berg, abdul MA" reads given ``abdul MA`` in
-    #: silence. Where a particle the suffix vocabulary does not
+    #: the piece -- though "Doe, John DO" alone reads the credential,
+    #: its capitals settling it. The particle chain is the commonest
+    #: joiner but not the only one: the bound-given join takes a member
+    #: into its pair the same way, so "Berg, abdul ma" reads given
+    #: ``abdul ma`` in silence; neither joins a member its capitals
+    #: settle ("Berg, abdul MA" reads suffix ``MA``). Where a particle the suffix vocabulary does not
     #: also claim as an unambiguous word stands BEHIND it, the given part ends at
     #: that particle as this walk reads it, and the attachment that
     #: moves the particle to the family runs a stage too late to
-    #: re-open the question -- so "Doe, John MA do" keeps middle
-    #: ``MA``, capitals and all, beside family ``do Doe``, reporting
-    #: only the attachment's own ``PARTICLE_OR_GIVEN``. Neither half
-    #: is a rule about particles as such, and the caps spellings show
-    #: it: "Doe, John van MA" reads family ``van Doe``, suffix ``MA``
-    #: and reports both forks, and "Doe, John MA vd" reads suffix
+    #: re-open the question -- so "Doe, John ma do" keeps middle
+    #: ``ma`` beside family ``do Doe``, reporting only the
+    #: attachment's own ``PARTICLE_OR_GIVEN``. Neither half is a rule
+    #: about particles as such, and the caps spellings show it: "Doe,
+    #: John van MA" reads family ``van Doe``, suffix ``MA``, reporting
+    #: the particle's fork alone, and "Doe, John MA vd" reads suffix
     #: ``MA`` past a ``vd`` the suffix vocabulary claims outright.
     #: All four POSITIONS above are silent -- those last two names
     #: are the boundary each one stops at, not instances of it.
@@ -568,7 +576,7 @@ class AmbiguityKind(StrEnum):
     #: ``Smith Ma`` and report nothing. The writer drew the boundary,
     #: so no fork was available to decline -- a settled position
     #: rather than a fork left un-asked. The boundary cuts both ways:
-    #: "Jane Doe (nee Smith) MA" gives suffix ``MA`` and reports, the
+    #: "Jane Doe (nee Smith) ma" gives suffix ``ma`` and reports, the
     #: member standing outside the span.
     SUFFIX_OR_NAME = "suffix-or-name"
     #: An input the title peel eats down to one last word which is
