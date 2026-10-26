@@ -544,12 +544,15 @@ def test_the_caps_exclusion_covers_every_vocabulary_field() -> None:
     assert caps_shape_candidate("ZZQX", base, on, False)
     # H9: two fields are left out on purpose -- a title that may
     # be a given name reads, outside a phrase, as the unlisted word it
-    # is there, and a phrase is two words
-    for field in ("titles_ambiguous", "title_phrases"):
+    # is there, and a phrase is two words -- and #789's third: a given
+    # name written short is read only by H2's shape
+    for field in ("titles_ambiguous", "title_phrases",
+                  "given_name_abbreviations"):
         assert caps_shape_candidate(
             "ZZQX", base.add(**{field: {"zzqx"}}), on, False), field
     for field in _VOCAB_FIELDS:
-        if field in ("titles_ambiguous", "title_phrases"):
+        if field in ("titles_ambiguous", "title_phrases",
+                     "given_name_abbreviations"):
             continue
         extra: dict[str, set[str]] = {field: {"zzqx"}}
         if field in ("honorific_tails", "suffix_words_ambiguous"):
@@ -574,16 +577,24 @@ def test_is_title_shaped_is_h2_s_shape_alone() -> None:
     # (#289/#516, quality-review finding): both must answer alike for
     # name_word_count's comma-form count not to disagree with the
     # leading peel about what a title is.
-    assert is_title_shaped("Xyz.")       # unlisted, H2-shaped
+    lex = Lexicon.default()
+    assert is_title_shaped("Xyz.", lex)       # unlisted, H2-shaped
     # LISTED or not is a vocabulary question this predicate never
     # asks -- 'Dr.' wears the same shape 'Xyz.' does, and answers the
     # same way; the caller's own listed lookup is what tells them
     # apart (is_title_piece/lexicon.titles, at each call site)
-    assert is_title_shaped("Dr.")
-    assert not is_title_shaped("Xyz")    # no trailing period
-    assert not is_title_shaped("X.")     # one letter: an initial,
-                                        # not an abbreviation
-    assert not is_title_shaped("田中.")   # initialless script (#323)
+    assert is_title_shaped("Dr.", lex)
+    assert not is_title_shaped("Xyz", lex)    # no trailing period
+    assert not is_title_shaped("X.", lex)     # one letter: an initial,
+                                             # not an abbreviation
+    assert not is_title_shaped("田中.", lex)   # initialless script (#323)
+    # rules/H2's precedence: a given name written short outranks the
+    # shape (#789) -- the one vocabulary the predicate reads, and only
+    # that: the same word unlisted wears the shape again
+    assert not is_title_shaped("Chas.", lex)
+    assert not is_title_shaped("MA.", lex)
+    assert is_title_shaped("Chas.", lex.remove(
+        given_name_abbreviations={"chas"}))
 
 
 def test_name_word_count_counts_names_not_tokens() -> None:

@@ -1050,12 +1050,15 @@ CASES: tuple[Case, ...] = (
                "Dr.' is; 1.4.0 read title 'Si.' with first 'John'. The "
                "report says 'read as a title' (test_cases.py's field "
                "sweep holds it), where it had said 'read as a credential'"),
-    Case("comma_period_ma_is_a_title", "John, Ma.",
-         {"title": "Ma.", "family": "John"},
+    Case("comma_period_ma_is_a_given_name", "John, Ma.",
+         {"given": "Ma.", "family": "John"},
          ambiguities=("suffix-or-name",),
-         classification="fix(comma-family)",
-         notes="the same shape for the oldest marked member: 1.4.0 read "
-               "title 'Ma.' with first 'John'"),
+         classification="fix(#789)",
+         notes="the same shape for the oldest marked member, which is "
+               "also Filipino María written short: a given name written "
+               "short outranks rules/H2's shape (#789), so 'Ma.' is the "
+               "given name where 2.0.0 through 2.6.0 read it as H2's "
+               "title, and 1.4.0 read title 'Ma.' with first 'John'"),
     # -- #793's comment (the #794 review): the #791 members in a suffix
     # run, behind a title, written all-lower, and where no report
     # belongs. These pin today's readings; none moved in #793.
@@ -11808,11 +11811,55 @@ CASES: tuple[Case, ...] = (
     Case("wm_bare_behind_a_title_is_the_given_name", "Dr. Wm Smith",
          {"title": "Dr.", "given": "Wm", "family": "Smith"},
          classification="fix(#789)"),
-    Case("wm_dotted_opening_the_name_is_h2s_title", "Wm. Smith",
-         {"title": "Wm.", "family": "Smith"},
-         notes="rules/H2's shape reads an unlisted abbreviation here, "
-               "listed or not; a given reading that outranks it is "
-               "phase 2's (#752), and this row should move with it"),
+    Case("wm_dotted_opening_the_name_is_the_given_name", "Wm. Smith",
+         {"given": "Wm.", "family": "Smith"},
+         classification="fix(#789)",
+         notes="a given name written short outranks rules/H2's shape "
+               "(#752, phase 2k): 1.4.0 through 2.6.0 read title 'Wm.'"),
+    # -- #789, #752 phase 2k: a given name written short outranks rules/H2's
+    # shape. The reading moves only where the shape fired; the bare word
+    # and the dotted word anywhere else read as they did.
+    Case("chas_dotted_opening_the_name_is_the_given_name", "Chas. Smith",
+         {"given": "Chas.", "family": "Smith"},
+         classification="fix(#789)",
+         notes="1.4.0 through 2.6.0 read title 'Chas.'"),
+    Case("chas_dotted_behind_a_title_is_the_given_name", "Dr. Chas. Smith",
+         {"title": "Dr.", "given": "Chas.", "family": "Smith"},
+         classification="fix(#789)",
+         notes="the shape chained it into the title run: 1.4.0 through "
+               "2.6.0 read title 'Dr. Chas.' with no given name"),
+    Case("ma_dotted_behind_a_salutation_is_the_given_name",
+         "Mrs Ma. Liza Cruz",
+         {"title": "Mrs", "given": "Ma.", "middle": "Liza",
+          "family": "Cruz"},
+         classification="fix(#789)",
+         notes="#853's PSC shape, Filipino María written short behind a "
+               "salutation: 1.4.0 through 2.6.0 read title 'Mrs Ma.', "
+               "given 'Liza'"),
+    Case("jo_dotted_opening_the_name_is_the_given_name", "Jo. Rizal Cruz",
+         {"given": "Jo.", "middle": "Rizal", "family": "Cruz"},
+         classification="fix(#789)",
+         notes="Filipino José written short: 1.4.0 through 2.6.0 read "
+               "title 'Jo.', given 'Rizal'"),
+    Case("wm_dotted_after_a_family_comma_in_capitals", "SMITH, WM. DAVID",
+         {"given": "WM.", "middle": "DAVID", "family": "SMITH"},
+         classification="fix(#789)",
+         notes="the FEC donor list's shape (20 names): 1.4.0 through "
+               "2.6.0 read title 'WM.', given 'DAVID'"),
+    Case("chas_dotted_under_family_first_is_placed_by_the_order",
+         "Chas. Smith",
+         {"given": "Smith", "family": "Chas."},
+         policy=Policy(name_order=FAMILY_FIRST),
+         classification="fix(#789)",
+         notes="out of the title, the word is a name word the declared "
+               "order places, as 'Jack Smith' reads under it"),
+    Case("ma_bare_opening_the_name_is_unchanged", "Ma Smith",
+         {"given": "Ma", "family": "Smith"},
+         notes="the shape never read a bare word, so the reading has "
+               "nothing to outrank"),
+    Case("ma_dotted_inside_the_name_is_unchanged", "John Ma. Smith",
+         {"given": "John", "middle": "Ma.", "family": "Smith"},
+         notes="the shape reads only the head of the given part"),
     Case("wm_dotted_trailing_is_a_name_word", "John Smith Wm.",
          {"given": "John", "middle": "Smith", "family": "Wm."},
          notes="H5 read a listed `wm` as a title here from 2.3.0 "
