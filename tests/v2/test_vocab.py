@@ -90,6 +90,9 @@ def test_the_compiled_sets_are_the_default_lexicon(shipped: dict[str, str]) -> N
         after_given_titles=c["AFTER_GIVEN_TITLES"],
         suffix_words_ambiguous=c["SUFFIX_WORDS_AMBIGUOUS"],
         agnomens=c["AGNOMENS"],
+        titles_ambiguous=c["TITLES_AMBIGUOUS"],
+        title_modifiers=c["TITLE_MODIFIERS"], title_styles=c["TITLE_STYLES"],
+        title_phrases=c["TITLE_PHRASES"],
         capitalization_exceptions=tuple(c["CAPITALIZATION_EXCEPTIONS"].items()),
     )
     assert rebuilt == lex
@@ -277,7 +280,14 @@ MUTATIONS = [
     # writing; and the four names phase 2 left reserved say which phase
     ("default-true", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = { default = true }')}, "write default = false"),
     ("default-not-a-bool", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = { default = "no" }')}, "write default = false"),
-    ("reserved-attaches", {"en.toml": _w('[[word]]\ntext = "chief"\noffice = { attaches = ["military"] }')}, "reserved for phase 2"),
+    ("attaches-not-a-list", {"en.toml": _w('[[word]]\ntext = "chief"\noffice = { attaches = "military" }')}, "attaches must be a non-empty list of title kinds"),
+    ("attaches-empty", {"en.toml": _w('[[word]]\ntext = "chief"\noffice = { attaches = [] }')}, "attaches must be a non-empty list of title kinds"),
+    ("attaches-twice", {"en.toml": _w('[[word]]\ntext = "chief"\noffice = { attaches = ["military", "military"] }')}, "attaches must be a non-empty list of title kinds"),
+    ("attaches-a-suffix-kind", {"en.toml": _w('[[word]]\ntext = "chief"\noffice = { attaches = ["credential"] }')}, "attaches names 'credential', which is not a title kind"),
+    ("attaches-the-generic-kind", {"en.toml": _w('[[word]]\ntext = "chief"\noffice = { attaches = ["title"] }')}, "attaches names 'title', which is not a title kind"),
+    ("attaches-a-word-with-no-title-reading", {"en.toml": _w('[[word]]\ntext = "chief"\noffice = { attaches = ["zzq"] }')}, "attaches names 'zzq', which is no title kind and no title word"),
+    ("attaches-on-a-suffix", {"en.toml": _w('[[word]]\ntext = "phd"\ncredential = { attaches = ["office"] }')}, "unknown key 'attaches'"),
+    ("attaches-differs-between-files", {"en.toml": _w('[[word]]\ntext = "chief"\noffice = { attaches = ["military"] }'), "fr.toml": _w('[[word]]\ntext = "chief"\noffice = {}')}, "attaches"),
     ("reserved-separators", {"th.toml": _w('[[word]]\ntext = "นาย"\nsalutation = { separators = [] }')}, "reserved for phase 4"),
     # 11, the agnomen's half: an agnomen is gated by its name reading,
     # so one without would take the family name from two-word names
@@ -885,7 +895,8 @@ def _code(cell: str) -> list[str]:
     return re.findall(r"`([^`]+)`", cell)
 
 
-def _sets_fed(kind: str, props: str = "{}", text: str = "zzq") -> set[str]:
+def _sets_fed(kind: str, props: str = "{}", text: str = "zzq",
+              extra: str = "") -> set[str]:
     """The compiled constants a one-word file holding a `kind` reading
     with `props` puts the word into. A particle that does not state
     may_be_given gets a given reading, as check 11 requires, so the bare
@@ -899,11 +910,14 @@ def _sets_fed(kind: str, props: str = "{}", text: str = "zzq") -> set[str]:
         entry = 'given = { note = "probe" }\n' + entry
     if kind == "agnomen":
         entry = 'family = { note = "probe" }\n' + entry
-    files = {"en.toml": _w(f'[[word]]\ntext = "{text}"\n{entry}')}
+    files = {"en.toml": _w(f'[[word]]\ntext = "{text}"\n{entry}{extra}')}
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", build.VocabWarning)  # a name reading is inert
         compiled = build.compile_files(files)
-    return {name for name, value in compiled.items() if text in value}
+    # a word is in a set of phrases where it opens one (TITLE_PHRASES)
+    return {name for name, value in compiled.items()
+            if text in value or any(isinstance(v, str) and v.startswith(text + " ")
+                                    for v in value)}
 
 
 #: For each behavioral property, a reading that sets it away from its
@@ -917,7 +931,14 @@ _PROPERTY_PROBES = {
     "cased": ("title", '{ cased = "ZzQ" }', "zzq"),
     "after_given": ("salutation", "{ after_given = true }", "zzq"),
     "default": ("generation", "{ default = false }", "zzq"),
+    # a phrase needs the head it attaches to: a second title word
+    "attaches": ("office", '{ attaches = ["occupation"] }', "zzq",
+                 '\n\n[[word]]\ntext = "zzr"\noccupation = {}'),
 }
+
+
+#: The title kinds that feed a set of their own besides TITLES (H9).
+_TITLE_KIND_SETS = {"modifier": ("TITLE_MODIFIERS",), "style": ("TITLE_STYLES",)}
 
 
 @pytest.mark.parametrize("kind", [k for k, c in build.CATEGORY.items() if c == "title"])
@@ -926,7 +947,8 @@ def test_every_title_kind_compiles_its_behavioral_properties(kind: str) -> None:
     # keeps addresses (#750): keyed on the generic kind, a nobility sir
     # would lose it; and every title kind is allowed `cased`, which the
     # compiler reads from any reading
-    assert _sets_fed(kind, '{ addresses = "given" }') == {"TITLES", "GIVEN_NAME_TITLES"}
+    assert _sets_fed(kind, '{ addresses = "given" }') == {
+        "TITLES", "GIVEN_NAME_TITLES", *_TITLE_KIND_SETS.get(kind, ())}
     files = {"en.toml": _w(f'[[word]]\ntext = "zzq"\n{kind} = {{ cased = "ZzQ" }}')}
     assert build.compile_files(files)["CAPITALIZATION_EXCEPTIONS"] == {"zzq": "ZzQ"}
 
@@ -961,8 +983,9 @@ def test_the_readme_lists_every_property_with_its_type_and_categories() -> None:
 def test_the_readme_states_each_behavioral_propertys_effect() -> None:
     rows = {_code(r[0])[0]: r[4] for r in _readme_table("## Properties") if r[1] == "behavioral"}
     assert set(_PROPERTY_PROBES) == set(rows)
-    for prop, (kind, props, text) in _PROPERTY_PROBES.items():
-        moved = _sets_fed(kind, props, text) ^ _sets_fed(kind, "{}", text)
+    for prop, (kind, props, text, *extra) in _PROPERTY_PROBES.items():
+        moved = (_sets_fed(kind, props, text, *extra)
+                 ^ _sets_fed(kind, "{}", text, *extra))
         assert moved, prop  # a probe that moves nothing tests nothing
         assert set(_code(rows[prop])) & {n for n, _ in build.CONSTANTS} == moved, prop
 
@@ -994,6 +1017,7 @@ _MARKER_PROBES = {
     "possibly a name": ("credential", "{}", "{}"),
     "possibly a name, a word": ("generation", "{}", "{}"),
     "possibly given": ("preposition", "{ may_be_given = false }", "{}"),
+    "possibly a name, a title": ("office", "{}", "{}"),
 }
 
 
@@ -1026,3 +1050,69 @@ def test_the_readme_lists_the_reserved_names_with_their_phases() -> None:
     rows = _readme_table("## Names reserved for later phases")
     assert {_code(r[0])[0]: int(r[1]) for r in rows} == build.RESERVED
     assert len(rows) == len(build.RESERVED)
+
+
+# H9: "the word is a title only inside a title phrase" -- the
+# fourth derived marker and the three sets
+# the phrase test reads, compiled from the readings
+def test_a_title_with_a_given_reading_compiles_out_of_titles() -> None:
+    c = _compile({"und.toml": _w(
+        '[[word]]\ntext = "zzq"\noffice = {}\ngiven = { note = "probe" }')})
+    assert "zzq" in c["TITLES_AMBIGUOUS"]
+    # a word in TITLES is a title wherever it stands, so the marked word
+    # is not there: a caller listing it there asks for that
+    assert "zzq" not in c["TITLES"]
+
+
+def test_a_title_particle_with_a_given_reading_stays_a_title() -> None:
+    # 'st' and 'freiherr': the given reading derives the particle's
+    # marker, and the particle rules read the word at the front (P4)
+    c = _compile({"und.toml": _w(
+        '[[word]]\ntext = "zzq"\ngiven = { note = "probe" }\nreligious = {}\n'
+        'saint = {}')})
+    assert "zzq" in c["TITLES"] and "zzq" not in c["TITLES_AMBIGUOUS"]
+
+
+def test_a_family_reading_beside_a_title_marks_nothing() -> None:
+    c = _compile({"und.toml": _w(
+        '[[word]]\ntext = "zzq"\nsalutation = {}\nfamily = { note = "probe" }')})
+    assert "zzq" in c["TITLES"] and "zzq" not in c["TITLES_AMBIGUOUS"]
+
+
+def test_a_modifier_is_one_only_where_every_title_reading_is() -> None:
+    one = _compile({"en.toml": _w('[[word]]\ntext = "zzq"\nmodifier = {}')})
+    both = _compile({
+        "en.toml": _w('[[word]]\ntext = "zzq"\nmodifier = {}'),
+        "fr.toml": _w('[[word]]\ntext = "zzq"\noffice = {}')})
+    assert "zzq" in one["TITLE_MODIFIERS"]
+    # an office in another language heads a phrase of its own
+    assert "zzq" not in both["TITLE_MODIFIERS"] and "zzq" in both["TITLES"]
+
+
+def test_attaches_compiles_to_a_phrase_with_each_title_of_its_kinds() -> None:
+    c = _compile({"en.toml": _w(
+        '[[word]]\ntext = "zzq"\nnobility = { attaches = ["military"] }\n\n'
+        '[[word]]\ntext = "zzr"\nmilitary = {}\n\n'
+        '[[word]]\ntext = "zzs"\noffice = {}')})
+    assert c["TITLE_PHRASES"] == frozenset({"zzq zzr"})
+
+
+def test_a_shipped_phrase_names_two_titles() -> None:
+    # every phrase the build writes is two words, each a title or a
+    # title that may be a given name, so the phrase test can reach it
+    lex = Lexicon.default()
+    for phrase in lex.title_phrases:
+        words = phrase.split(" ")
+        assert len(words) == 2, phrase
+        assert all(w in lex.titles or w in lex.titles_ambiguous
+                   for w in words), phrase
+
+
+def test_attaches_may_name_one_title_word() -> None:
+    # a word where a kind would reach too far: 'sergeant' before 'major'
+    # only, not before every military title (rules/H9)
+    c = _compile({"en.toml": _w(
+        '[[word]]\ntext = "zzq"\nmilitary = { attaches = ["zzr"] }\n\n'
+        '[[word]]\ntext = "zzr"\nmilitary = {}\n\n'
+        '[[word]]\ntext = "zzs"\nmilitary = {}')})
+    assert c["TITLE_PHRASES"] == frozenset({"zzq zzr"})

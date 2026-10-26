@@ -251,6 +251,14 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # split-credential rows, two run rows and the particle-chain row
     # (9), the split credential's own report on nine rows (27) and the
     # opening-credential row (3), each claim under the three orders;
+    # 1568 -> 1583 the same day: #752's title phrase rows (phase 2i), the
+    # five that report a title read as a name, under the three orders;
+    # 1583 -> 1592 on 2026-10-26: Derek's answers on #894, three rows
+    # that report ('Sgt Marshal', 'Marshal Yanda', 'Grace Dean'), the
+    # one that stopped ('SMITH, DEAN MR.') offset by 'Grace Smith';
+    # 1592 -> 1586 the same day: 'Grace Smith' and 'Grace Dean Smith'
+    # stopped reporting, no listed phrase holding 'grace'; 1586 -> 1592
+    # the same day: 'Justice Smith' and 'Major Smith', which report.
     # 1568 -> 1310 the same day, #785 (phase 2g): a listed member its
     # capitals settle in a name of mixed case reports nothing, which
     # takes the claims of the rows that reported one (each under
@@ -260,9 +268,12 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # review's rows for the comma's opening word and the chain's stop;
     # 1316 -> 1318 on 2026-10-26, the narrowing's caps-switch numeral row;
     # 1318 -> 1321 the same day, its Ph./D. row.
-    assert claims == 1321, (
-        f"the field sweep checks {claims} claims, recorded as 1321 on "
-        f"2026-10-25")
+    # 1321 + 24 = 1345 on 2026-10-26, #894 (phase 2i) merged over #895
+    # (phase 2g): 2i's net change from 1568 (1592 - 1568), the two
+    # changes moving disjoint claims.
+    assert claims == 1345, (
+        f"the field sweep checks {claims} claims, recorded as 1345 on "
+        f"2026-10-26")
 
 
 def test_every_case_name_is_unique() -> None:

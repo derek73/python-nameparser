@@ -12033,6 +12033,186 @@ CASES: tuple[Case, ...] = (
          notes="the boundary of the row above, kept: #432 reads the "
                "period as the abbreviation mark it is, so 'V.' is a "
                "middle initial -- 'Smith, John V.' plus a title"),
+    Case("contested_title_alone_at_the_head", "Dean Smith",
+         {"given": "Dean", "family": "Smith"},
+         ambiguities=("title-or-name",), classification="feat(#752)",
+         notes="H9: a title that may be a given name stands in no "
+               "title phrase, so it is the given name (decision 13 of "
+               "decisions/vocabulary-model), and the fork is reported"),
+    Case("contested_title_after_a_salutation", "Mr Dean Smith",
+         {"title": "Mr", "given": "Dean", "family": "Smith"},
+         ambiguities=("title-or-name",), classification="feat(#853)",
+         notes="H9 and #853's rule: a salutation is never a phrase "
+               "partner, so the word after it is the given name"),
+    Case("contested_title_before_a_trailing_salutation",
+         "SMITH, DEAN MR.",
+         {"title": "MR.", "given": "DEAN", "family": "SMITH"},
+         classification="feat(#752)",
+         notes="H9: no title AFTER the word is a partner unless "
+               "the word attaches to it -- FEC writes the salutation "
+               "after the given name, and 'DEAN MR.' read as a phrase "
+               "moved 99 FEC names in the design's spike"),
+    Case("contested_title_before_of", "Dean of Students Jane Smith",
+         {"title": "Dean of Students", "given": "Jane", "family": "Smith"},
+         classification="feat(#752)",
+         notes="H9: 'of' after the word is its partner, the join "
+               "making the phrase one title"),
+    Case("contested_title_before_a_coordinating_connective",
+         "Dean and Mary Smith",
+         {"given": "Dean and Mary", "family": "Smith"},
+         notes="H9: 'and' is no partner, so the word is a name "
+               "word and the join reads two given names, as before"),
+    Case("contested_title_after_a_modifier", "Associate Dean Smith",
+         {"title": "Associate Dean", "family": "Smith"},
+         classification="feat(#752)",
+         notes="H9: a modifier before the word is its partner"),
+    Case("contested_title_attached_to_after", "Major General John Smith",
+         {"title": "Major General", "given": "John", "family": "Smith"},
+         classification="feat(#752)",
+         notes="H9: major attaches to a military title after it"),
+    Case("contested_title_attached_to_before",
+         "Chief Justice John Roberts",
+         {"title": "Chief Justice", "given": "John", "family": "Roberts"},
+         classification="feat(#752)",
+         notes="H9: chief attaches to an office, justice's kind; "
+               "until 2026-10-25 justice was excluded from the titles "
+               "and this read title 'Chief', given 'Justice'"),
+    Case("contested_title_after_a_style", "The Hon. Justice Mary Smith",
+         {"title": "The Hon. Justice", "given": "Mary", "family": "Smith"},
+         classification="feat(#752)",
+         notes="H9: a style before the word is its partner"),
+    Case("contested_title_after_a_comma_in_capitals", "John Smith, DEAN",
+         {"given": "John", "family": "Smith", "suffix": "DEAN"},
+         ambiguities=("suffix-or-name",),
+         notes="H9: outside a phrase the word reads as the "
+               "unlisted word it was, which rules/C6 reads as a "
+               "capitals credential here"),
+    Case("contested_style_after_a_modifier", "His Grace John Smith",
+         {"title": "His Grace", "given": "John", "family": "Smith"},
+         classification="fix(#752)",
+         notes="H9: grace is a style that may be a given name, and 'his' "
+               "is its partner; master read title 'His', given 'Grace' "
+               "(Derek, 2026-10-26)"),
+    Case("contested_style_alone", "Grace Smith",
+         {"given": "Grace", "family": "Smith"},
+         classification="feat(#752)",
+         notes="H9: no partner, so the given name; and no listed phrase "
+               "holds 'grace', a title only behind a style or a "
+               "modifier, so nothing is reported (Derek, 2026-10-26)"),
+    Case("contested_style_alone_in_capitals", "GRACE SMITH",
+         {"given": "GRACE", "family": "SMITH"},
+         classification="feat(#752)",
+         notes="H9: the row above in capitals, as TSE writes it"),
+    Case("contested_rank_after_a_modifier", "Field Marshal Bernard Montgomery",
+         {"title": "Field Marshal", "given": "Bernard",
+          "family": "Montgomery"}, classification="fix(#752)",
+         notes="H9: marshal is a rank that may be a given name, 'field' "
+               "its partner; 1.4.0 through 2.6.0 read title 'Field', "
+               "given 'Marshal' (#606's accepted cost)"),
+    Case("contested_rank_attached_to", "Sergeant Major John Smith",
+         {"title": "Sergeant Major", "given": "John", "family": "Smith"},
+         classification="fix(#752)",
+         notes="H9: sergeant attaches to a military title after it"),
+    Case("contested_office_alone_held_by_chief", "Justice Smith",
+         {"given": "Justice", "family": "Smith"},
+         ambiguities=("title-or-name",), classification="feat(#752)",
+         notes="H9: no partner, so the given name, reported: 'chief "
+               "justice' holds the word, through chief's attaching to "
+               "the office kind"),
+    Case("contested_rank_alone_held_by_its_own_phrase", "Major Smith",
+         {"given": "Major", "family": "Smith"},
+         ambiguities=("title-or-name",), classification="feat(#752)",
+         notes="H9: no partner, so the given name, reported: 'major "
+               "general' and 'sergeant major' hold the word, phrases "
+               "naming it rather than its kind"),
+    Case("contested_rank_after_a_rank_that_attaches_elsewhere",
+         "Sgt Marshal Smith",
+         {"title": "Sgt", "given": "Marshal", "family": "Smith"},
+         ambiguities=("title-or-name",), classification="feat(#752)",
+         notes="H9: sergeant attaches to the word 'major', not to every "
+               "military title; attaching it to the kind made 'Sgt "
+               "Marshal' a phrase and lost the given name (the review of "
+               "the fix commits)"),
+    Case("contested_rank_alone", "Marshal Yanda",
+         {"given": "Marshal", "family": "Yanda"},
+         ambiguities=("title-or-name",), classification="feat(#752)",
+         notes="H9: no partner, so the given name, reported: a listed "
+               "phrase holds 'marshal' ('chief marshal'), so it may head "
+               "a title"),
+    Case("contested_rank_after_a_modifier_air", "Air Marshal John Smith",
+         {"title": "Air Marshal", "given": "John", "family": "Smith"},
+         classification="fix(#752)",
+         notes="H9: 'air' is a modifier and marshal's partner"),
+    Case("contested_style_with_no_partner_before_a_contested_word",
+         "Grace Dean Smith",
+         {"given": "Grace", "middle": "Dean", "family": "Smith"},
+         classification="feat(#752)",
+         notes="H9: a style is a partner only where it is a title there; "
+               "'Grace' stands in no phrase, so neither does 'Dean', and "
+               "neither reports: 'Grace' is in no listed phrase and "
+               "'Dean' is not the first name word"),
+    Case("contested_title_after_an_empty_head", ", Dean",
+         {"given": "Dean"},
+         notes="H9: the comma has marked the given name, so no report"),
+    Case("contested_title_after_a_nickname_head", "(Bob), Dean",
+         {"given": "Dean", "nickname": "Bob"},
+         notes="H9: the comma has marked the given name, so no report"),
+    Case("lone_modifier_at_the_head", "Wing Lau",
+         {"given": "Wing", "family": "Lau"}, classification="fix(#752)",
+         notes="H9, decision 10: a modifier is a title only with a "
+               "head title after it in its run; read title 'Wing', "
+               "family 'Lau' before (CLDR's conventions row reads given)"),
+    Case("modifier_before_its_head", "Wing Commander Lau",
+         {"title": "Wing Commander", "family": "Lau"},
+         notes="H9's boundary: the head title follows"),
+    Case("modifier_after_a_salutation", "Mr Wing Lau",
+         {"title": "Mr", "given": "Wing", "family": "Lau"},
+         classification="fix(#752)",
+         notes="H9: a head title before a modifier is not its "
+               "phrase; read title 'Mr Wing', family 'Lau' before"),
+    Case("modifier_in_a_connectives_object",
+         "President of the United States Barack Obama",
+         {"title": "President of the United States", "given": "Barack",
+          "family": "Obama"},
+         notes="H9: 'united' and 'states' are modifiers with no "
+               "head after them, standing in the object of 'of the'"),
+    Case("modifier_before_of", "Mother Superior of the Convent Mary Smith",
+         {"title": "Mother Superior of the Convent", "given": "Mary",
+          "family": "Smith"},
+         notes="H9: 'of' after a modifier is its phrase, as master read "
+               "it; dropping that partner in the first review round "
+               "broke this (the second review)"),
+    Case("modifier_in_the_object_of_the", "The Grand Lau",
+         {"title": "The Grand", "family": "Lau"},
+         notes="H9: 'the' carries the object as 'of' does, as master "
+               "read it (the second review of #752 phase 2i)"),
+    Case("modifier_before_a_family_comma", "Wing Smith, John",
+         {"given": "John", "family": "Wing Smith"},
+         classification="fix(#752)",
+         notes="H9 at the head of the name before a family comma: "
+               "H6's peel read title 'Wing', family 'Smith'"),
+    Case("modifier_in_a_comma_part", "John Smith, Vice",
+         {"title": "Vice", "given": "John", "family": "Smith"},
+         notes="H9: after a comma a modifier reads as any title "
+               "does, the part being the person's role (decision 10 "
+               "measured 247 of 367 ctgov comma-part moves reversing the "
+               "name)"),
+    Case("contested_title_after_a_period_joined_title", "Lt.Gov. Dean Smith",
+         {"title": "Lt.Gov.", "given": "Dean", "family": "Smith"},
+         ambiguities=("title-or-name",), classification="feat(#752)",
+         notes="H9 reads only the contested and modifier words out of the "
+               "title: a period-joined title, which no wordlist holds "
+               "whole, keeps its tag (the code review of #752 phase 2i)"),
+    Case("modifier_after_a_salutation_pair", "Mr. and Mrs. Wing Lau",
+         {"title": "Mr. and Mrs.", "given": "Wing", "family": "Lau"},
+         classification="fix(#752)",
+         notes="H9: only 'of' opens a phrase's object; a coordinating "
+               "connective between two salutations does not, so the "
+               "modifier after them has no head (the code review)"),
+    Case("role_word_in_a_comma_part", "John Smith, Resident",
+         {"title": "Resident", "given": "John", "family": "Smith"},
+         notes="resident is an occupation since 2026-10-25, not a "
+               "modifier: a part written 'Resident' is the role"),
     Case("bare_salutation_ending_a_family_comma_given_part",
          "Doe, Jane Mrs",
          {"title": "Mrs", "given": "Jane", "family": "Doe"},

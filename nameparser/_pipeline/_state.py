@@ -97,6 +97,12 @@ AMBIGUOUS_ACRONYM_TAG = "vocab:suffix-ambiguous"
 AMBIGUOUS_WORD_TAG = "vocab:suffix-word-ambiguous"
 AGNOMEN_TAG = "vocab:agnomen"
 
+#: On a word of `Lexicon.titles_ambiguous` whichever way classify read
+#: it (rules/H9): read as a title it carries "vocab:title" too, read
+#: out of the title it carries this alone, which is how assign finds
+#: the fork to report where the word opens the name.
+TITLE_AMBIGUOUS_TAG = "vocab:title-ambiguous"
+
 #: EITHER way a token joins the ambiguous credential class -- the
 #: vocabulary's claim and the writing's. The two emitters that report
 #: a fork the peel called and declined ask exactly this: `_group`'s

@@ -30,6 +30,11 @@
   "Freiherr von Berg, Ed"     →  family="Freiherr von Berg"
   "Dr. Freiherr von Berg, Ed" →  title="Dr."
   ```
+- **The run stops at a word H9 reads out of the title**: a modifier with no head title behind it, and a title that may be a given name outside a title phrase, open the surname.
+  ```
+  "Wing Smith, John"          →  family="Wing Smith"  · boundary
+  "Dean Smith, John"          →  family="Dean Smith"
+  ```
 - **The run stops where nothing but post-nominals stands behind it** (H3).
   ```
   "RA PhD Jr., John"          →  family="RA"  · boundary

@@ -805,9 +805,10 @@ _PER_WORD_FIELDS = [f for f in _VOCAB_FIELDS if f not in _PHRASE_FIELDS]
 def test_only_the_phrase_fields_are_exempt_from_the_warning() -> None:
     # The exemption is exactly the kind of edit that silently widens:
     # one more field in _PHRASE_FIELDS costs nothing at construction and
-    # turns a dead entry back into a silent no-op. Two fields, named.
-    assert _PHRASE_FIELDS == ("given_name_titles", "maiden_markers")
-    assert len(_PER_WORD_FIELDS) == len(_VOCAB_FIELDS) - 2
+    # turns a dead entry back into a silent no-op. Three fields, named.
+    assert _PHRASE_FIELDS == ("given_name_titles", "maiden_markers",
+                              "title_phrases")
+    assert len(_PER_WORD_FIELDS) == len(_VOCAB_FIELDS) - 3
 
 
 @pytest.mark.parametrize("field", _PER_WORD_FIELDS)
@@ -1063,9 +1064,10 @@ def test_a_shipped_phrase_entry_is_stored_as_written(field: str) -> None:
     Over _PHRASE_FIELDS rather than over maiden_markers, so a third
     phrase field arrives already pinned."""
     from nameparser.config.maiden_markers import MAIDEN_MARKERS
-    from nameparser.config.titles import GIVEN_NAME_TITLES
+    from nameparser.config.titles import GIVEN_NAME_TITLES, TITLE_PHRASES
     shipped = {"maiden_markers": MAIDEN_MARKERS,
-               "given_name_titles": GIVEN_NAME_TITLES}[field]
+               "given_name_titles": GIVEN_NAME_TITLES,
+               "title_phrases": TITLE_PHRASES}[field]
     assert getattr(Lexicon.default(), field) == frozenset(shipped), (
         f"{field}: Lexicon rewrote the shipped constant, so the entries "
         f"it stores are not the ones the data module wrote -- "

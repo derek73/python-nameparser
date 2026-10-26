@@ -30,7 +30,7 @@ nothing: the tags this stage writes do vary by it ('씨.' is not tagged
 
 Tags emitted -- stable (API): "particle", "conjunction", "initial";
 namespaced (unstable): "vocab:title", "vocab:given-title",
-"vocab:after-given-title",
+"vocab:after-given-title", "vocab:title-ambiguous",
 "vocab:suffix", "vocab:suffix-word", "vocab:suffix-ambiguous",
 "vocab:suffix-word-ambiguous", "vocab:agnomen",
 "vocab:particle-ambiguous", "vocab:bound-given", "vocab:maiden-marker",
@@ -68,7 +68,8 @@ from nameparser._lexicon import _normalize, _spells_an_initial
 from nameparser._policy import CapsSuffixes
 from nameparser._pipeline._state import (
     AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, SHAPE_ACRONYM_TAG,
-    SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, ParseState, PendingAmbiguity,
+    SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, TITLE_AMBIGUOUS_TAG, ParseState,
+    PendingAmbiguity,
     WorkToken, copy_with,
 )
 from nameparser._types import AmbiguityKind, Role
@@ -76,7 +77,7 @@ from nameparser._pipeline._vocab import (
     BUILTIN_SUFFIX_DELIMITERS, SPLIT_CHUNK, SPLIT_PAIR_OPENS, _INITIAL, caps_shape_candidate,
     composed_len, delimiter_cores, glued_stem, is_cased_paired_initials,
     is_initial, is_one_case, period_joined_vocab, split_pair,
-    suffix_as_written, tag_marker_runs,
+    suffix_as_written, tag_marker_runs, title_readings,
 )
 from nameparser._pipeline._pieces import own_words
 
@@ -334,6 +335,11 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
 _JOINING_TAGS = frozenset({"particle", "conjunction",
                            "vocab:particle-ambiguous", "vocab:bound-given"})
 
+#: What a word read out of the title gives up (rules/H9): the title tag
+#: and the two that qualify one, which are read only beside it.
+_TITLE_TAGS = frozenset({"vocab:title", "vocab:given-title",
+                         "vocab:after-given-title"})
+
 
 def classify(state: ParseState) -> ParseState:
     # One fold per token, shared by the marker pass and the vocabulary
@@ -412,6 +418,43 @@ def classify(state: ParseState) -> ParseState:
         tokens = tuple(
             copy_with(t, tags=t.tags - _JOINING_TAGS) if i in stemmed else t
             for i, t in enumerate(tokens))
+    # rules/H9: "the word is a title only inside a title phrase, and
+    # elsewhere a name word" -- the phrase test (_vocab.title_readings)
+    # asked per part, of the words carrying no role, and only of a part
+    # holding one, so that a name with neither pays no frame. A word read out of the title keeps no
+    # title tag, and every later stage reads it as the name word it is;
+    # a contested word keeps TITLE_AMBIGUOUS_TAG either way, for the
+    # report where it opens the name (assign)
+    lex = state.lexicon
+    if not (lex.titles_ambiguous.isdisjoint(folded)
+            and lex.title_modifiers.isdisjoint(folded)):
+        written = list(tokens)
+        for at, seg in enumerate(state.segments):
+            own_part = [i for i in seg if written[i].role is None]
+            norms = [folded[i] for i in own_part]
+            if (lex.titles_ambiguous.isdisjoint(norms)
+                    and lex.title_modifiers.isdisjoint(norms)):
+                continue
+            readings = title_readings(
+                [readers[i].text for i in own_part], norms, lex,
+                head=at == 0,
+                titled=["vocab:title" in written[i].tags for i in own_part])
+            for i, title in zip(own_part, readings):
+                tags = written[i].tags
+                n = folded[i]
+                if n not in lex.titles_ambiguous and n not in lex.title_modifiers:
+                    continue
+                if n in lex.titles_ambiguous and n not in lex.titles:
+                    tags = tags | {TITLE_AMBIGUOUS_TAG}
+                    if title:
+                        # in a title phrase: a title (its given-name title
+                        # tag, if any, `_tags_for` wrote already)
+                        tags = tags | {"vocab:title"}
+                if not title:
+                    tags = tags - _TITLE_TAGS
+                if tags != written[i].tags:
+                    written[i] = copy_with(written[i], tags=tags)
+        tokens = tuple(written)
     # rules/S12: "a credential written split across a space reads as one
     # word" -- each adjacent pair of a segment asked once, here, and
     # the answer written on its first word for group's merge and the

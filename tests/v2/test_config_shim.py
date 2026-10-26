@@ -1311,3 +1311,17 @@ def test_a_first_name_title_lexicon_folds_to_nothing_is_dropped_with_the_warning
         lexicon, _, _ = c._snapshot()
     assert "" not in lexicon.given_name_titles
     assert HumanName("john smith", constants=c).last == "smith"
+
+
+def test_snapshot_cleared_titles_turn_the_title_phrase_off() -> None:
+    # rules/H9's titles_ambiguous holds words no v1 set holds, so the
+    # one v1 way to turn title detection off -- emptying `titles` -- has
+    # to drop them too, or 'Dean of Students' stays a title where 1.4
+    # read none (the design-docs review of #752 phase 2i)
+    c = Constants()
+    assert HumanName("Dean of Students Jane Smith", constants=c).title == (
+        "Dean of Students")                                   # baseline
+    c.titles.clear()
+    lexicon, _, _ = c._snapshot()
+    assert lexicon.titles_ambiguous == frozenset()
+    assert HumanName("Dean of Students Jane Smith", constants=c).title == ""

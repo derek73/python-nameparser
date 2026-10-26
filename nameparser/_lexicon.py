@@ -26,7 +26,8 @@ _VOCAB_FIELDS = (
     "suffix_acronyms_ambiguous", "particles", "particles_ambiguous",
     "conjunctions", "conjunctions_ambiguous", "bound_given_names",
     "maiden_markers", "surnames", "honorific_tails", "after_given_titles",
-    "suffix_words_ambiguous", "agnomens",
+    "suffix_words_ambiguous", "agnomens", "titles_ambiguous",
+    "title_modifiers", "title_styles", "title_phrases",
 )
 
 #: (marker, base, why) triples. Each marker QUALIFIES how entries of
@@ -71,6 +72,12 @@ _VOCAB_FIELDS = (
 #: only where the word is in titles too, so an orphan is never read.
 #: agnomens -- the same: classify reads it only for a word already in
 #: suffix_words_ambiguous, so an orphan decides nothing.
+#: title_modifiers, title_styles and title_phrases -- the same: the
+#: title phrase test (rules/H9) reads them only for words that are
+#: titles, so an orphan decides nothing. titles_ambiguous is no subset
+#: at all: its words are titles only inside a phrase, so a caller lists
+#: one there without listing it in titles, and one in both is a title
+#: everywhere.
 _SUBSET_FIELDS = (
     ("particles_ambiguous", "particles",
      "an orphan emits a spurious particle-or-given ambiguity"),
@@ -103,7 +110,7 @@ _SUBSET_FIELDS = (
 #: by a genuine multi-token lookahead instead --
 #: _pipeline._vocab.maiden_marker_run, longest first -- and only the
 #: STORAGE rule is shared with titles.
-_PHRASE_FIELDS = ("given_name_titles", "maiden_markers")
+_PHRASE_FIELDS = ("given_name_titles", "maiden_markers", "title_phrases")
 
 
 #: Every character the parser reads as a full stop at a WORD'S EDGE
@@ -720,6 +727,45 @@ class Lexicon:
     #: entry outside suffix_words_ambiguous is never consulted. Full
     #: default list: :data:`~nameparser.config.suffixes.AGNOMENS`.
     agnomens: frozenset[str] = frozenset()
+    #: Titles that may also be a given name ("dean", "justice",
+    #: "major"), each read as a title only inside a title phrase: after a
+    #: modifier, a style, or a title it stands in ``title_phrases``
+    #: behind; or before "of" or a title it stands in ``title_phrases``
+    #: in front of. Elsewhere it is a name word, and where it opens the
+    #: name the parse reports ``title-or-name`` if a phrase of
+    #: ``title_phrases`` the parse can read holds it (rules/H9), so "Grace Smith", which no
+    #: phrase holds, reports nothing, and emptying ``title_phrases``
+    #: silences the report: "Dean Smith"
+    #: and "Mr Major Smith" read given "Dean" and "Major", "Dean of
+    #: Students Smith" and "Major General Smith" a title. An entry also
+    #: in ``titles`` is a title wherever it stands, which is what listing
+    #: it there asks, so the default lists these words here alone. Full
+    #: default list:
+    #: :data:`~nameparser.config.titles.TITLES_AMBIGUOUS`.
+    titles_ambiguous: frozenset[str] = frozenset()
+    #: Titles that only qualify a head title ("vice", "wing", "grand").
+    #: At the head of the name one is a title only with a head title
+    #: behind it in its run of titles, so "Wing Commander Lau" keeps the
+    #: title where "Wing Lau" reads "Wing" as the given name; after a
+    #: comma it is read as any title is (rules/H9). One standing before
+    #: a word of ``titles_ambiguous`` puts that word in a title phrase.
+    #: Entries not also in ``titles`` are never consulted. Full default
+    #: list: :data:`~nameparser.config.titles.TITLE_MODIFIERS`.
+    title_modifiers: frozenset[str] = frozenset()
+    #: Honorific styles ("hon", "excellency", "highness"): one standing
+    #: before a word of ``titles_ambiguous`` puts that word in a title
+    #: phrase, as in "The Hon. Justice Smith" (rules/H9). Entries not
+    #: also in ``titles`` are never consulted. Full default list:
+    #: :data:`~nameparser.config.titles.TITLE_STYLES`.
+    title_styles: frozenset[str] = frozenset()
+    #: Two-word title phrases, a title and the title it qualifies
+    #: ("chief justice", "major general"), stored space-joined: a word
+    #: of ``titles_ambiguous`` on either side of one is in a title
+    #: phrase (rules/H9). A phrase is consulted only if it is two
+    #: words, each in ``titles`` or ``titles_ambiguous``. Full default
+    #: list:
+    #: :data:`~nameparser.config.titles.TITLE_PHRASES`.
+    title_phrases: frozenset[str] = frozenset()
     #: Lowercase word -> case mask used by capitalized(): the word's
     #: own letters and digits, each in the case it takes ("phd" ->
     #: "PhD"), laid over the word as written, so the one entry
@@ -993,7 +1039,8 @@ def _default_lexicon() -> Lexicon:
     )
     from nameparser.config.surnames import KOREAN_SURNAMES
     from nameparser.config.titles import (
-        AFTER_GIVEN_TITLES, GIVEN_NAME_TITLES, TITLES)
+        AFTER_GIVEN_TITLES, GIVEN_NAME_TITLES, TITLE_MODIFIERS, TITLE_PHRASES,
+        TITLE_STYLES, TITLES, TITLES_AMBIGUOUS)
 
     # every vocabulary constant is a frozenset since #293, so each one
     # feeds its strictly-typed frozenset[str] field as it stands -- and
@@ -1024,6 +1071,10 @@ def _default_lexicon() -> Lexicon:
         after_given_titles=AFTER_GIVEN_TITLES,
         suffix_words_ambiguous=SUFFIX_WORDS_AMBIGUOUS,
         agnomens=AGNOMENS,
+        titles_ambiguous=TITLES_AMBIGUOUS,
+        title_modifiers=TITLE_MODIFIERS,
+        title_styles=TITLE_STYLES,
+        title_phrases=TITLE_PHRASES,
         # pass canonical pair-tuples so this strictly-typed call site never
         # feeds a Mapping to the tuple-annotated field; __post_init__
         # still tolerates a Mapping at runtime for interactive use

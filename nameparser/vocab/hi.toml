@@ -27,8 +27,7 @@ excluded = { salutation = { reason = "Begum is a trailing name element far more 
 
 [[word]]
 text = "श्री"
-salutation = { gender = "m", issue = 269, expands = "Shri, Mr.", note = "no Latin twin: Latin sri and shri are given names (their exclusions in hi.toml)", excluded = { after_given = "also an element of given names (Sri, Shri), so where it ends the given part it may be one" } }
-given = { wikidata = 1, as_of = 2026-10-24 }
+salutation = { gender = "m", issue = 269, expands = "Shri, Mr.", note = "no Latin twin: Latin sri and shri are given names (their exclusions in hi.toml); borne as a given name: Wikidata 1 people (2026-10-24); kept here, not as a `given` reading, which would make the title one only inside a title phrase (rules/H9)", excluded = { after_given = "also an element of given names (Sri, Shri), so where it ends the given part it may be one" } }
 
 [[word]]
 text = "श्रीमती"

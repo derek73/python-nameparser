@@ -268,16 +268,5 @@
    "got": "Van"
   },
   "text": "Van der Walt"
- },
- "conventions/Wing Lau/default": {
-  "given_names": {
-   "expected": "Wing",
-   "got": ""
-  },
-  "text": "Wing Lau",
-  "title": {
-   "expected": "",
-   "got": "Wing"
-  }
  }
 }

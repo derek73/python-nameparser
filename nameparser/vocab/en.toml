@@ -6,8 +6,7 @@ excluded = { title = { reason = "William, abbreviated, and no title of any kind:
 
 [[word]]
 text = "goodman"
-salutation = { gender = "m", expands = "the archaic Mr., 'Goodman Brown'", excluded = { after_given = "a common surname (Benny Goodman), and middle names are drawn from surnames" } }
-given = { us_ssa = 22, wikidata = 11, as_of = 2026-10-24 }
+salutation = { gender = "m", expands = "the archaic Mr., 'Goodman Brown'", excluded = { after_given = "a common surname (Benny Goodman), and middle names are drawn from surnames" }, note = "borne as a given name: US SSA 22 births, Wikidata 11 people (2026-10-24); kept here, not as a `given` reading, which would make the title one only inside a title phrase (rules/H9)" }
 family = { us_census_2010 = 73136, wikidata = 743, as_of = 2026-10-24 }
 
 [[word]]
@@ -24,8 +23,7 @@ salutation = { gender = "f", after_given = true }
 
 [[word]]
 text = "master"
-salutation = { addresses = "given", gender = "m", expands = "the style for a boy, 'Master Harry'", excluded = { after_given = "a surname and a given name, borne as a middle name either way" } }
-given = { us_ssa = 476, wikidata = 2, as_of = 2026-10-24 }
+salutation = { addresses = "given", gender = "m", expands = "the style for a boy, 'Master Harry'", excluded = { after_given = "a surname and a given name, borne as a middle name either way" }, note = "borne as a given name: US SSA 476 births, Wikidata 2 people (2026-10-24); kept here, not as a `given` reading, which would make the title one only inside a title phrase (rules/H9)" }
 family = { us_census_2010 = 2735, wikidata = 61, as_of = 2026-10-24 }
 
 [[word]]
@@ -39,13 +37,11 @@ salutation = { gender = "f", expands = "the plural of miss, 'the Misses Smith'",
 
 [[word]]
 text = "mr"
-salutation = { gender = "m", after_given = true }
-given = { us_ssa = 5, as_of = 2026-10-24, note = "kept for after_given (decisions/H8)" }
+salutation = { gender = "m", after_given = true, note = "borne as a given name: US SSA 5 births (2026-10-24); kept for after_given (decisions/H8); kept here, not as a `given` reading, which would make the title one only inside a title phrase (rules/H9)" }
 
 [[word]]
 text = "mister"
-salutation = { gender = "m", same_as = "mr", excluded = { after_given = "a given name and a surname, borne as a middle name either way" } }
-given = { us_ssa = 746, as_of = 2026-10-24 }
+salutation = { gender = "m", same_as = "mr", excluded = { after_given = "a given name and a surname, borne as a middle name either way" }, note = "borne as a given name: US SSA 746 births (2026-10-24); kept here, not as a `given` reading, which would make the title one only inside a title phrase (rules/H9)" }
 family = { us_census_2010 = 1211, wikidata = 2, as_of = 2026-10-24 }
 
 [[word]]
@@ -73,6 +69,12 @@ style = {}
 [[word]]
 text = "excellency"
 style = {}
+
+[[word]]
+text = "grace"
+style = { issue = 752, decided = 2026-10-26, expands = "'His Grace', a duke's or an archbishop's style", note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'His Grace John Smith' reads the title, 'Grace Smith' the given name, unreported, since no listed phrase holds it" }
+given = { us_ssa = 536340, wikidata = 3908, as_of = 2026-10-26, note = "US SSA: female and male births added" }
+family = { us_census_2010 = 28098, wikidata = 311, as_of = 2026-10-26 }
 
 [[word]]
 text = "highness"
@@ -113,6 +115,10 @@ academic = { expands = "the address of an engineer, 'Engr. Cruz' in the Philippi
 [[word]]
 text = "nurse"
 academic = { expands = "the address of a nurse, 'Nurse Smith'" }
+
+[[word]]
+text = "pro"
+academic = { issue = 9, expands = "Pro Se Law Clerk", note = "academic rather than modifier since 2026-10-25 (#752): a part after a comma written 'Pro' is the person's role, which decision 10's modifier rule would read out of the title (decisions/vocabulary-model)" }
 
 [[word]]
 text = "abbess"
@@ -336,7 +342,7 @@ nobility = { gender = "f" }
 
 [[word]]
 text = "chief"
-nobility = { expands = "a chief of a people or clan, 'Chief Obafemi Awolowo'" }
+nobility = { expands = "a chief of a people or clan, 'Chief Obafemi Awolowo'", attaches = ["office", "military"], issue = 752, note = "attaches: Chief Justice, Chief Clerk (rules/H9)" }
 
 [[word]]
 text = "chieftain"
@@ -678,8 +684,16 @@ text = "maj"
 military = { expands = "Major" }
 
 [[word]]
+text = "major"
+military = { issue = 752, decided = 2026-10-25, attaches = ["general"], note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'Major General Smith' reads the title, 'Major Smith' and 'Mr Major Smith' the given name; attaches: Major General" }
+given = { us_ssa = 21749, wikidata = 65, as_of = 2026-10-25, note = "US SSA: female and male births added" }
+family = { us_census_2010 = 20977, wikidata = 400, as_of = 2026-10-25 }
+
+[[word]]
 text = "marshal"
-excluded = { military = { reason = "a given name (Marshal Yanda); the accepted cost is that 'Field Marshal Bernard Montgomery' reads title Field, given Marshal", issue = 606, decided = 2026-10-04 } }
+military = { issue = 752, decided = 2026-10-26, note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'Field Marshal Bernard Montgomery' reads the title, 'Marshal Yanda' the given name; until 2026-10-26 excluded as a given name (#606)" }
+given = { us_ssa = 5559, wikidata = 28, as_of = 2026-10-26, note = "US SSA: female and male births added" }
+family = { wikidata = 34, as_of = 2026-10-26 }
 
 [[word]]
 text = "mcpo"
@@ -769,11 +783,11 @@ military = { expands = "Senior Chief Petty Officer" }
 
 [[word]]
 text = "sergeant"
-military = {}
+military = { attaches = ["major"], issue = 752, decided = 2026-10-26, note = "attaches: Sergeant Major (rules/H9); a word, not the military kind, which made Sgt Marshal Smith a title" }
 
 [[word]]
 text = "sgt"
-military = { same_as = "sergeant" }
+military = { attaches = ["major"], issue = 752, decided = 2026-10-26, note = "attaches: Sergeant Major (rules/H9); a word, not the military kind, which made Sgt Marshal Smith a title", same_as = "sergeant" }
 
 [[word]]
 text = "sfc"
@@ -957,6 +971,16 @@ text = "courtier"
 office = {}
 
 [[word]]
+text = "d'affaires"
+office = { expands = "the second word of chargé d'affaires", issue = 752, note = "office rather than modifier since 2026-10-25: it stands behind its head, where decision 10's modifier rule asks for a head title after a modifier (rules/H9)" }
+
+[[word]]
+text = "dean"
+office = { issue = 752, decided = 2026-10-25, note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'Dean of Students' and 'Associate Dean Smith' read the title, 'Dean Smith' the given name (decision 13 of decisions/vocabulary-model)" }
+given = { us_ssa = 195844, wikidata = 2246, as_of = 2026-10-25, note = "US SSA: female and male births added" }
+family = { us_census_2010 = 114030, wikidata = 1128, as_of = 2026-10-25 }
+
+[[word]]
 text = "delegate"
 office = {}
 
@@ -1002,7 +1026,9 @@ office = {}
 
 [[word]]
 text = "justice"
-excluded = { office = { reason = "a given name (Justice Smith); the accepted cost is that 'Chief Justice John Roberts' reads title Chief, given Justice", issue = 606, decided = 2026-10-04 } }
+office = { issue = 752, decided = 2026-10-25, note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'Chief Justice John Roberts' and 'The Hon. Justice Smith' read the title, 'Justice Smith' the given name; until 2026-10-25 excluded as a given name (#606), the cost being 'Chief Justice' read as title Chief, given Justice" }
+given = { us_ssa = 38674, wikidata = 85, as_of = 2026-10-25, note = "US SSA: female and male births added" }
+family = { us_census_2010 = 32480, wikidata = 100, as_of = 2026-10-25 }
 
 [[word]]
 text = "leader"
@@ -1031,6 +1057,10 @@ office = { same_as = "magistrate-judge" }
 [[word]]
 text = "mayor"
 office = {}
+
+[[word]]
+text = "member"
+office = { issue = 752, note = "office rather than modifier since 2026-10-25: the head noun of the phrases it stands in, 'Designated Member' and 'Member of Parliament', which decision 10's modifier rule would read out of the title (rules/H9)" }
 
 [[word]]
 text = "minister"
@@ -1642,6 +1672,14 @@ text = "researcher"
 occupation = {}
 
 [[word]]
+text = "resident"
+occupation = { issue = 752, note = "occupation rather than modifier since 2026-10-25: a part after a comma written 'Resident' is the person's role, which decision 10's modifier rule would read out of the title (decisions/vocabulary-model)" }
+
+[[word]]
+text = "rt"
+occupation = { issue = 752, expands = "Right, abbreviated ('Rt Hon'); also a respiratory therapist", note = "occupation rather than modifier since 2026-10-25: a part after a comma written 'RT' is the person's role, which decision 10's modifier rule would read out of the title (decisions/vocabulary-model)" }
+
+[[word]]
 text = "sailor"
 occupation = {}
 
@@ -1910,10 +1948,6 @@ text = "customs"
 modifier = {}
 
 [[word]]
-text = "d'affaires"
-modifier = { expands = "the second word of chargé d'affaires" }
-
-[[word]]
 text = "designated"
 modifier = { issue = 9, expands = "Designated Judge" }
 
@@ -2062,10 +2096,6 @@ text = "mathematics"
 modifier = {}
 
 [[word]]
-text = "member"
-modifier = {}
-
-[[word]]
 text = "military"
 modifier = {}
 
@@ -2118,10 +2148,6 @@ text = "prime"
 modifier = {}
 
 [[word]]
-text = "pro"
-modifier = { issue = 9, expands = "Pro Se Law Clerk" }
-
-[[word]]
 text = "queen's"
 modifier = { expands = "Queen's Counsel" }
 
@@ -2134,20 +2160,12 @@ text = "rear"
 modifier = {}
 
 [[word]]
-text = "resident"
-modifier = {}
-
-[[word]]
 text = "revenue"
 modifier = {}
 
 [[word]]
 text = "right"
 modifier = { expands = "'Right Honourable', 'Right Reverend'" }
-
-[[word]]
-text = "rt"
-modifier = { same_as = "right" }
 
 [[word]]
 text = "risk"

@@ -136,8 +136,9 @@ this setting vary with?
   that varies by **output destination**: the ``spec`` you pass to
   ``render(spec)``, or a keyword to ``initials()``/``capitalized()``.
 
-"Dean" is a common given name, so it is not in the default titles
-vocabulary. But in some data it is more common as a title. The right
+"Dean" is a common given name, so the default reads it as a title only
+inside a title phrase ("Dean of Students"), and "Dean Martin" keeps
+given "Dean". But in some data it is more common as a title. The right
 reading is a fact about the domain the names come from: that makes it a
 :class:`~nameparser.Lexicon` entry. A CRM that wraps nicknames in
 square brackets — ``John [Johnny] Smith`` — instead of quotes is a

@@ -1049,7 +1049,9 @@ class Constants:
         from nameparser.config.suffixes import (
             AGNOMENS, GLUED_HONORIFICS, SUFFIX_WORDS_AMBIGUOUS)
         from nameparser.config.surnames import KOREAN_SURNAMES
-        from nameparser.config.titles import AFTER_GIVEN_TITLES
+        from nameparser.config.titles import (
+            AFTER_GIVEN_TITLES, TITLE_MODIFIERS, TITLE_PHRASES, TITLE_STYLES,
+            TITLES_AMBIGUOUS)
         # Every set field and every capitalization_exceptions key passes
         # _v1_matchable BEFORE any set algebra below: an entry v1 could
         # never match, or one Lexicon folds to empty (#582), is dropped
@@ -1234,6 +1236,33 @@ class Constants:
                     if _normalize(w) not in {
                         _normalize(a) for a in acronyms - ambiguous_acronyms}),
                 agnomens=AGNOMENS & SUFFIX_WORDS_AMBIGUOUS & suffix_words,
+                # likewise no v1 manager: the title phrase (rules/H9) is
+                # 2.7 behavior (#752), so its sets ride in the snapshot
+                # only. A title that may be a given name is not in
+                # TITLES, so v1's `titles` never held it, and one a v1
+                # caller ADDS to `titles` is a title wherever it stands,
+                # as it was in 1.4 (`c.titles.add("dean")`, the
+                # documented recipe): the phrase test reads a word of
+                # titles_ambiguous only where it is not in titles. The
+                # knob that reaches the other three is deleting a title,
+                # which turns its modifier, style or phrase reading off
+                # with it; Lexicon checks none of them, so the
+                # intersections are kept for legibility, as
+                # after_given_titles' is.
+                # ...save where the caller emptied `titles`, v1's way to
+                # turn title detection off (customize.rst). A caller who
+                # REPLACES the list keeps the phrase reading: v1 has no
+                # knob for these words, and what a replaced list means
+                # for words it never held is not something it says
+                titles_ambiguous=TITLES_AMBIGUOUS if titles else frozenset(),
+                title_modifiers=TITLE_MODIFIERS & (
+                    titles | (TITLES_AMBIGUOUS if titles else frozenset())),
+                title_styles=TITLE_STYLES & (
+                    titles | (TITLES_AMBIGUOUS if titles else frozenset())),
+                title_phrases=frozenset(
+                    p for p in TITLE_PHRASES
+                    if all(w in titles or w in TITLES_AMBIGUOUS
+                           for w in p.split(" "))),
                 # TupleManager is dict[str, object] (v1 parity: values were
                 # never statically str-typed); every real entry is a str,
                 # same assumption _DelimiterManager's sentinel lookup makes.

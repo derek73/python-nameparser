@@ -91,7 +91,8 @@ from typing import NamedTuple
 
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline._vocab import (
-    _ROMAN, effective_script, is_initial_shaped, is_listed_numeral,
+    _ROMAN, effective_script, in_a_title_phrase, is_initial_shaped,
+    is_listed_numeral,
     is_suffix_lenient,
     numeral_leans_to_the_name, numeral_settled_by_case,
     reads_as_a_reported_numeral, reads_as_generation, resolve_script_set,
@@ -106,7 +107,8 @@ from nameparser._pipeline._pieces import (
     tail_reading, trailing_titles,
 )
 from nameparser._pipeline._state import (
-    AMBIGUOUS_ACRONYM_TAG, ParseState, PendingAmbiguity, Structure,
+    AMBIGUOUS_ACRONYM_TAG, TITLE_AMBIGUOUS_TAG, ParseState, PendingAmbiguity,
+    Structure,
     WorkToken, _AMBIGUOUS_CREDENTIAL_TAGS, _NEVER_FLIPPED, copy_with,
 )
 from nameparser._policy import Policy, Script
@@ -149,12 +151,32 @@ _WORD_ALREADY_CLAIMED = _NEVER_FLIPPED | frozenset({"particle"})
 # here.
 def _peel_leading_titles(pieces: tuple[tuple[int, ...], ...],
                          ptags: tuple[frozenset[str], ...],
-                         tokens: list[WorkToken]) -> int:
+                         tokens: list[WorkToken],
+                         ambiguities: list[PendingAmbiguity] | None,
+                         lexicon: Lexicon) -> int:
     """Assign TITLE to the leading title pieces and return the first
-    non-title index."""
+    non-title index. `ambiguities` is None where a family comma has
+    already marked the part as the given name, so no fork is left to
+    report."""
     n = leading_titles(pieces, ptags, tokens)
     for k in range(n):
         _set_roles(tokens, pieces[k], Role.TITLE)
+    # rules/H9: "read as a name word where it is the first name word
+    # after any titles" -- the peel stops at it because classify read it
+    # out of the title, so it is the first piece the peel leaves
+    # ('Dean Smith', 'Mr Dean Smith'); and rules/H9: "a word no listed
+    # phrase holds is a title only behind a style or a modifier, or
+    # before `of`", so standing alone it reports nothing ('Grace Smith')
+    if (ambiguities is not None and n < len(pieces) and len(pieces[n]) == 1
+            and TITLE_AMBIGUOUS_TAG in tokens[pieces[n][0]].tags
+            and "vocab:title" not in tokens[pieces[n][0]].tags
+            and in_a_title_phrase(tokens[pieces[n][0]].text, lexicon)):
+        i = pieces[n][0]
+        ambiguities.append(PendingAmbiguity(
+            AmbiguityKind.TITLE_OR_NAME,
+            f"{tokens[i].text!r} is a title that may also be a given name, "
+            f"and stands in no title phrase; read as ", (i,),
+            field_tail=" rather than a title"))
     return n
 
 
@@ -321,7 +343,8 @@ def _assign_main(seg_idx: int, state: ParseState,
     -- None on every path that returns before resolving one."""
     pieces = state.pieces[seg_idx]
     ptags = state.piece_tags[seg_idx]
-    n = _peel_leading_titles(pieces, ptags, tokens)
+    n = _peel_leading_titles(pieces, ptags, tokens, ambiguities,
+                             state.lexicon)
     if n == len(pieces):
         return None
     # group-flagged suffix pieces (the ph-d merge) are suffixes at ANY
@@ -1288,7 +1311,10 @@ def assign(state: ParseState) -> ParseState:
             # before the title reading of the same word (#296, #325).
             # A name word in the segment makes it v1's walk ('Smith,
             # John Jr.').
-            n = _peel_leading_titles(pieces, ptags, tokens)
+            # rules/H9: "no comma has marked the given name" -- here the
+            # family comma has, so the peel reports nothing
+            n = _peel_leading_titles(pieces, ptags, tokens, None,
+                                     state.lexicon)
             # rules/H5: "the title is TRANSPARENT to the suffix
             # reading: where two or more name words stand, what
             # stands once the chain is taken reads exactly as it

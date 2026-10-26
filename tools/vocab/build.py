@@ -78,8 +78,8 @@ cased single letter, an elided particle in both apostrophes (#700), and
 after_given only on a salutation reading (#835).
 No post-nominal is both an acronym and a word, by checks 4 and 5; a
 final check in compile_pool is the backstop. The subset relations
-(GIVEN_NAME_TITLES and AFTER_GIVEN_TITLES in TITLES, each marker set in
-its base) need no
+(GIVEN_NAME_TITLES and AFTER_GIVEN_TITLES in TITLES and TITLES_AMBIGUOUS
+together, each marker set in its base) need no
 check: a flag cannot exist without its reading, and a derived marker is
 read off the reading it marks. The one soft finding, a
 name reading on a word with no vocabulary reading and no exclusion, is
@@ -224,7 +224,8 @@ UNORDERED = "und.toml"
 #: Behavioral properties per category: each compiles into a field, and
 #: its allowed values are exactly what today's pipeline does.
 BEHAVIORAL: dict[str, frozenset[str]] = {
-    "title": frozenset({"addresses", "after_given", "cased", "default"}),
+    "title": frozenset({"addresses", "after_given", "attaches", "cased",
+                        "default"}),
     "suffix": frozenset({"acronym", "attached", "cased", "default"}),
     "particle": frozenset({"cased", "default"}),
     "conjunction": frozenset({"may_be_initial", "cased", "default"}),
@@ -259,12 +260,12 @@ EXCLUSION_KEYS = frozenset({"reason", "issue", "decided", "note"})
 ATTACHED_KEYS = frozenset({"side", "issue", "decided", "note"})
 #: Names a later phase will give meaning to. Writing one now is an error
 #: that says so, rather than "unknown", so nothing reads as working.
-#: Phase 2 gives `default` its meaning and leaves `attaches` to its
-#: front-of-the-name work; the gate's slots carry position, and shape
-#: settles a bare letter (rules/P7), so the position and bare-letter
-#: names wait with `separators` for phase 4's shapes and glued words.
+#: Phase 2 gave `default` and `attaches` their meaning; the gate's slots
+#: carry position, and shape settles a bare letter (rules/P7), so the
+#: position and bare-letter names wait with `separators` for phase 4's
+#: shapes and glued words.
 RESERVED = {
-    "attaches": 2, "prefer": 3, "strict": 3,
+    "prefer": 3, "strict": 3,
     "bare_only": 4, "leading_only": 4, "trailing_only": 4, "separators": 4,
 }
 _TAG = re.compile(r"[a-z]{2,3}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?")
@@ -798,6 +799,25 @@ def _check_reading(r: Reading, pool: Pool) -> None:
                              f"for a later phase; phase 1 has 'family' and 'given'")
         if addresses not in ("family", "given"):
             raise VocabError(f"{where}: addresses must be 'family' or 'given'")
+        if "attaches" in p:
+            # the phrase partner: the title kinds whose words this one
+            # stands before in a title phrase (rules/H9)
+            att = p["attaches"]
+            if (not isinstance(att, list) or not att
+                    or not all(isinstance(k, str) for k in att)
+                    or len(set(att)) != len(att)):
+                raise VocabError(f"{where}: attaches must be a non-empty "
+                                 f"list of title kinds, each once")
+            # a title kind, or one title word where a kind would reach
+            # too far ('sergeant' attaching to 'major', not to every
+            # military title); a word is checked against the pool in
+            # check_pool
+            for k in att:
+                if k in CATEGORY and (CATEGORY[k] != "title" or k == "title"):
+                    raise VocabError(
+                        f"{where}: attaches names {k!r}, which is not a "
+                        f"title kind or a title word; the kinds: "
+                        f"{sorted(t for t, c in CATEGORY.items() if c == 'title' and t != 'title')}")
         if r.flag("after_given") and r.kind != "salutation":
             # a salutation is a form of address, where an office or a
             # rank is borne as a middle name: the reason the given
@@ -1048,6 +1068,16 @@ def check_pool(pool: Pool) -> None:
                              f"(rules/S11); classify the word as one, or "
                              f"keep the counts in this reading's `note`")
 
+    # the words `attaches` names: each a word with a live title reading,
+    # else the phrase it asks for can never be made
+    title_words = {t for t, rs in live.items()
+                   if any(r.category == "title" for r in rs)}
+    for r in pool.readings:
+        for k in r.props.get("attaches", ()) if r.category == "title" else ():
+            if k not in CATEGORY and k not in title_words:
+                raise VocabError(f"{r.where()}: attaches names {k!r}, which "
+                                 f"is no title kind and no title word")
+
     # 9: a bound given name that is also a particle must be one that may
     # be given -- the bound join reads it as a given name. Lexicon raises
     # on the same contradiction; this says which file and word
@@ -1092,6 +1122,9 @@ def _behavior(r: Reading, prop: str) -> object:
         return None if att is None else att.get("side")
     if prop == "may_be_initial" or prop == "after_given":
         return r.flag(prop)
+    if prop == "attaches":
+        att = r.props.get("attaches")
+        return None if att is None else frozenset(att)
     if prop == "default":
         return r.on_by_default
     return r.props.get(prop)
@@ -1103,6 +1136,10 @@ CONSTANTS = (
     ("GIVEN_NAME_TITLES", "titles"),
     ("TITLES", "titles"),
     ("AFTER_GIVEN_TITLES", "titles"),
+    ("TITLES_AMBIGUOUS", "titles"),
+    ("TITLE_MODIFIERS", "titles"),
+    ("TITLE_STYLES", "titles"),
+    ("TITLE_PHRASES", "titles"),
     ("NON_GIVEN_NAME_PARTICLES", "particles"),
     ("PARTICLES", "particles"),
     ("CONJUNCTIONS", "conjunctions"),
@@ -1125,6 +1162,10 @@ class Compiled(TypedDict):
     GIVEN_NAME_TITLES: frozenset[str]
     TITLES: frozenset[str]
     AFTER_GIVEN_TITLES: frozenset[str]
+    TITLES_AMBIGUOUS: frozenset[str]
+    TITLE_MODIFIERS: frozenset[str]
+    TITLE_STYLES: frozenset[str]
+    TITLE_PHRASES: frozenset[str]
     NON_GIVEN_NAME_PARTICLES: frozenset[str]
     PARTICLES: frozenset[str]
     CONJUNCTIONS: frozenset[str]
@@ -1156,6 +1197,8 @@ def compile_pool(pool: Pool) -> Compiled:
     titles: set[str] = set()
     given_titles: set[str] = set()
     after_given: set[str] = set()
+    title_kinds: dict[str, set[str]] = {}
+    attaches: dict[str, set[str]] = {}
     particles: set[str] = set()
     never_given: set[str] = set()
     conjunctions: set[str] = set()
@@ -1181,6 +1224,8 @@ def compile_pool(pool: Pool) -> Compiled:
                 given_titles.add(t)
             if r.flag("after_given"):
                 after_given.add(t)
+            title_kinds.setdefault(t, set()).add(r.kind)
+            attaches.setdefault(t, set()).update(p.get("attaches", ()))
         elif r.category == "suffix":
             if r.acronym:
                 acronyms.add(t)
@@ -1206,10 +1251,33 @@ def compile_pool(pool: Pool) -> Compiled:
             bound.add(t)
         elif r.category == "relation":
             markers.add(t)
+    contested = titles & given - particles
     out = Compiled(
         GIVEN_NAME_TITLES=frozenset(given_titles),
-        TITLES=frozenset(titles),
+        # a title that may be a given name compiles into TITLES_AMBIGUOUS
+        # INSTEAD: a word in TITLES is a title wherever it stands, which
+        # is what a caller listing one there has always asked for
+        TITLES=frozenset(titles - contested),
         AFTER_GIVEN_TITLES=frozenset(after_given),
+        # the fourth derived marker (check 11): a title that may be a
+        # given name, a title only inside a title phrase (rules/H9), and
+        # so not in TITLES above. A
+        # title that is also a particle ('st', 'freiherr') is left to the
+        # particle rules, which weigh its given reading at the front
+        # already (rules/P4)
+        TITLES_AMBIGUOUS=frozenset(contested),
+        # a word every title reading of which is a modifier: a title only
+        # with a head title behind it in its run (decision 10, rules/H9)
+        TITLE_MODIFIERS=frozenset(
+            t for t, ks in title_kinds.items() if ks == {"modifier"}),
+        TITLE_STYLES=frozenset(
+            t for t, ks in title_kinds.items() if "style" in ks),
+        # `attaches` resolved to the two-word phrases it licenses, the
+        # word before and each title word of a kind it names
+        TITLE_PHRASES=frozenset(
+            f"{t} {h}" for t, kinds in attaches.items() if kinds
+            for h, hk in title_kinds.items()
+            if h != t and (hk & kinds or h in kinds)),
         NON_GIVEN_NAME_PARTICLES=frozenset(never_given),
         PARTICLES=frozenset(particles),
         CONJUNCTIONS=frozenset(conjunctions),
