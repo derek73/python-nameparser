@@ -8882,6 +8882,40 @@ CASES: tuple[Case, ...] = (
                "twin 'John Smith (PhD) née Jones' reads it, inside the "
                "credential's run (rules/S8, S13's Accepted); 1.4.0 read "
                "middle 'Smith MA née', last 'Jones'"),
+    Case("bracket_member_settled_by_another_in_a_one_case_name",
+         "JOHN SMITH (m.a) (MA)",
+         {"given": "JOHN", "family": "SMITH", "suffix": "m.a MA"},
+         classification="fix(#810)",
+         notes="the settled 'm.a' joins the name's own words, which are "
+               "then mixed, as its twin 'JOHN SMITH (mba) (MA)' makes "
+               "them; a fold too few left 'MA' a nickname, unreported"),
+    Case("bracket_member_settled_by_another_in_a_lower_case_name",
+         "john smith (M.A) (MA)",
+         {"given": "john", "family": "smith", "suffix": "M.A MA"},
+         classification="fix(#810)",
+         notes="as its twin 'john smith (MBA) (MA)' reads"),
+    Case("bracket_member_past_the_second_comma", "Smith, John, Jr. (M.A)",
+         {"given": "John", "family": "Smith", "suffix": "Jr. M.A"},
+         classification="fix(#810)",
+         notes="no comma-structure report, as its twin '(MBA)' draws "
+               "none: the part's tail test runs before the settled "
+               "word is tagged, so it leaves the word out"),
+    Case("bracket_member_beside_a_dropped_character",
+         "John Smith (MA \N{GRINNING FACE})",
+         {"given": "John", "family": "Smith", "nickname": "MA"},
+         classification="fix(#810)",
+         ambiguities=("suffix-or-nickname",),
+         notes="not the member alone, as its twin, the same clause "
+               "with PhD, is no suffix-shaped clause"),
+    Case("bracket_member_before_a_title_case_member",
+         "John Smith (MA) Ma",
+         {"given": "John", "middle": "Smith", "family": "Ma",
+          "nickname": "MA"},
+         classification="fix(#810)",
+         ambiguities=("suffix-or-name", "suffix-or-nickname"),
+         notes="read on the nickname reading, 'Ma' is a name word after "
+               "the clause, where the twin's credential run would take "
+               "it (rules/S13's Except)"),
     Case("bracket_member_in_quotes", 'John Smith "MA"',
          {"given": "John", "family": "Smith", "suffix": "MA"},
          notes="every default nickname pair escapes alike (rules/S1)"),

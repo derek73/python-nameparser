@@ -416,7 +416,10 @@ def _settle_delimited_members(state: ParseState, tokens: list[WorkToken],
     starts = [t.span.start for t in tokens]
     for _, clause in state.extracted:
         lo = bisect.bisect_left(starts, clause.start)
-        if bisect.bisect_left(starts, clause.end) == lo + 1:
+        # the whole clause, as extract's escape asks it of its twin
+        if (bisect.bisect_left(starts, clause.end) == lo + 1
+                and state.original[clause.start:clause.end].strip()
+                == tokens[lo].text):
             alone.add(lo)
     lex = state.lexicon
     settled: set[Span] = set()
@@ -848,4 +851,4 @@ def post_rules(state: ParseState) -> ParseState:
     _mark_suffix_entries(tokens, state)
     return copy_with(state, tokens=tuple(tokens),
                      ambiguities=tuple(ambiguities),
-                     settled_clauses=settled or state.settled_clauses)
+                     settled_clauses=settled | state.settled_clauses)

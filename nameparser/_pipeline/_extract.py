@@ -253,9 +253,10 @@ def extract_delimited(state: ParseState) -> ParseState:
         inner = Span(i + len(open_), j)
         if inner.start < inner.end and (_suffix_shaped(
                 text[inner.start:inner.end], state.lexicon)
-                # rules/S13's second fold: a clause the first settled
-                # escapes as its twin, a bracketed unambiguous
-                # credential, does (decisions/S13 (#810))
+                # rules/S13: "it reads as a bracketed unambiguous
+                # credential does in the same place" -- Then, on a later
+                # fold: the clause escapes as that credential's does
+                # (decisions/S13 (#810))
                 or (settled and _settled_within(settled, inner))):
             # v1 parse_nicknames: suffix-shaped delimited content is
             # left IN PLACE (undelimited) for normal downstream parsing

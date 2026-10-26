@@ -279,9 +279,11 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # dotted 'Jean (M.A) Smith', reported now (+3); 1369 -> 1381 the same
     # day, the twin reading (Derek): 'Jack (MA)' and 'Jack (M.A)' read
     # as 'Jack (PhD)' does, a given-or-family claim each (+6), and
-    # 'John Smith (MA) née Jones' its two suffix-or-name claims (+6).
-    assert claims == 1381, (
-        f"the field sweep checks {claims} claims, recorded as 1381 on "
+    # 'John Smith (MA) née Jones' its two suffix-or-name claims (+6);
+    # 1381 -> 1390 the same day, its review round's rows: a member
+    # beside a dropped character (+3) and before 'Ma' (+6).
+    assert claims == 1390, (
+        f"the field sweep checks {claims} claims, recorded as 1390 on "
         f"2026-10-26")
 
 

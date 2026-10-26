@@ -209,6 +209,13 @@ def segment(state: ParseState) -> ParseState:
         # model of group, the shape mechanisms.md's
         # READ-WITHOUT-THEN-BIND exists to remove. Last, as the
         # rarest reading.
+        # rules/S13: "it reads as a bracketed unambiguous credential does
+        # in the same place" -- Then, on a later fold: a settled word is
+        # such a credential, which this test would recognize, though its
+        # tag comes only in classify (decisions/S13 (#810))
+        if state.settled_clauses:
+            seg = tuple(i for i in seg
+                        if state.tokens[i].span not in state.settled_clauses)
         if (seg and not suffixy(seg) and not suffixy(seg, case_class())
                 and not class_run(seg) and not titles_and_suffixes(seg)):
             texts_joined = " ".join([state.tokens[i].text for i in seg])

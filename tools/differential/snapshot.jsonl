@@ -1662,6 +1662,7 @@
 {"name": "John Smith (MA PhD)", "given": "John", "family": "Smith", "nickname": "MA PhD", "ambiguities": ["SUFFIX_OR_NICKNAME"], "initials": "J. S.", "capitalized_force": "John \"Ma PhD\" Smith"}
 {"name": "John Smith (MA)", "given": "John", "family": "Smith", "suffix": "MA", "initials": "J. S."}
 {"name": "John Smith (MA) Dr.", "title": "Dr.", "given": "John", "family": "Smith", "suffix": "MA", "initials": "J. S."}
+{"name": "John Smith (MA) Ma", "given": "John", "middle": "Smith", "family": "Ma", "nickname": "MA", "ambiguities": ["SUFFIX_OR_NAME", "SUFFIX_OR_NICKNAME"], "initials": "J. S. M.", "capitalized_force": "John \"Ma\" Smith Ma"}
 {"name": "John Smith (MA) Ph. D.", "given": "John", "family": "Smith", "suffix": "MA Ph. D.", "initials": "J. S."}
 {"name": "John Smith (MA) née Jones", "given": "John", "family": "Smith", "suffix": "MA née Jones", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S.", "capitalized_force": "John Smith MA Née Jones"}
 {"name": "John Smith (MA), PhD", "given": "John", "family": "Smith", "suffix": "MA, PhD", "initials": "J. S."}

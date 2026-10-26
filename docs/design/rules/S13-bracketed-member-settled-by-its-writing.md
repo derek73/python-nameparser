@@ -46,6 +46,7 @@
   "Jean (M.A) Smith"          →  ambiguities=("suffix-or-nickname",)
   "Smith (MA), John"          →  nickname="MA"
   "(MA) John Smith"           →  nickname="MA"
+  "John Smith (MA) Ma"        →  nickname="MA"
   ```
 
 **Precedence:**
@@ -65,4 +66,4 @@
 
 ---
 **Signal:** position: a member of the ambiguous class alone in brackets or quotes after the name; hub of S1, S3, S6
-**history:** decisions/S13 · **implemented:** nameparser/_pipeline/_classify.py, nameparser/_pipeline/_post_rules.py
+**history:** decisions/S13 · **implemented:** nameparser/_pipeline/__init__.py, nameparser/_pipeline/_classify.py, nameparser/_pipeline/_extract.py, nameparser/_pipeline/_post_rules.py, nameparser/_pipeline/_segment.py
