@@ -313,6 +313,16 @@ _MAIDEN_ANCHORED_HEAD_EXCEPTIONS = 0
 _MAIDEN_ANCHORED_HEAD_DIGEST = (
     "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
 _MAIDEN_AGREEMENT_EXCEPTIONS = 1026
+#: #785: pairs whose 'MA' body is no name word, its capitals settling
+#: it as the credential in a name of mixed case (rules/S6). Where the
+#: marker is an ordinary word -- after a family comma (rules/M2) --
+#: such a body is a credential written before the member, and starts
+#: the credential's run (rules/S8), so removing the "clause" removes a
+#: credential and changes the question, which the docstring's
+#: name-words-only premise rules out. Recorded 2026-10-25: 288 pairs,
+#: every one on a family-comma head ('Doe, Jane', 'Smith, Jane',
+#: 'Doe, J.', 'Doe, Dr. Jane').
+_MAIDEN_SETTLED_BODY_PAIRS = 288
 _MAIDEN_AGREEMENT_DIGEST = (
     "4b70727a2633fea1a9c219173d48b223cc0866a5d340b69a9eb4f14fc386ae6a")
 
@@ -622,6 +632,7 @@ def test_a_maiden_clause_does_not_change_how_a_trailing_word_reads(
                         for bad in _credential_without_suffix_role(name))
 
     failures = []
+    settled_body = 0
     for label, policy in policies:
         parser = Parser(policy=policy)
         for head in heads:
@@ -653,6 +664,11 @@ def test_a_maiden_clause_does_not_change_how_a_trailing_word_reads(
                                 anchored_head.append(
                                     f"{label}|{marker}|{clause}")
                                 continue
+                            if body == "MA" and next(
+                                    t for t in clause_name.tokens
+                                    if t.text == body).role is Role.SUFFIX:
+                                settled_body += 1
+                                continue
                             failures.append(
                                 f"[{label}] {clause!r} reads "
                                 f"{clause_side} but {plain!r} reads "
@@ -671,6 +687,9 @@ def test_a_maiden_clause_does_not_change_how_a_trailing_word_reads(
     assert not failures, (
         f"{len(failures)} of {pairs} pair(s) disagree outside the "
         f"one-case-head class:\n" + "\n".join(failures[:15]))
+    assert settled_body == _MAIDEN_SETTLED_BODY_PAIRS, (
+        f"{settled_body} pairs disagree on a body its capitals settled, "
+        f"recorded as {_MAIDEN_SETTLED_BODY_PAIRS} on 2026-10-25")
     anchored_digest = hashlib.sha256(
         "\n".join(sorted(anchored_head)).encode()).hexdigest()
     assert (len(anchored_head), anchored_digest) == (
@@ -703,7 +722,10 @@ _CLASS_TAGS = frozenset({"vocab:suffix-ambiguous", "shape:acronym"})
 #: report and an assign-peel report on the same parse, each naming a
 #: different token. Written out rather than generated, because what
 #: makes them work is the CONTRAST between the two members' writing.
-_TAILS = ("Ma JD", "MA JD", "MA Ma")
+#: The lower-case pair joined them in #785: capitals in a name of mixed
+#: case settle a member and report nothing (rules/S6), and 'Ma jd'
+#: keeps the shape with two members no writing settles.
+_TAILS = ("Ma JD", "MA JD", "MA Ma", "Ma jd")
 
 
 def _maiden_clause_grid() -> list[tuple[str, Parser, str]]:
@@ -986,7 +1008,10 @@ def test_no_two_ambiguities_name_the_same_token_span() -> None:
     either kept by the clause or peeled by assign and no grid row had
     TWO. The `_TAILS` below are that shape: 'Ma JD' keeps 'Ma' and
     peels 'JD', 'MA JD' releases 'MA' and peels 'JD' behind it, and
-    'MA Ma' keeps the Title-case one with the caps one in front. The
+    'MA Ma' keeps the Title-case one with the caps one in front. Since
+    #785 a capitals member in a name of mixed case is settled and
+    reports nothing (rules/S6), so 'Ma jd' carries the two-report
+    shape where the capitals tails no longer do. The
     count is re-pinned on the widened grid, and the pairing is
     asserted directly beside it so a later edit that drops the tails
     fails here rather than silently turning this back into a test of
@@ -1064,10 +1089,14 @@ def test_no_two_ambiguities_name_the_same_token_span() -> None:
     # P6's -- and 1,965 arrived, 1,134 on 'Jane Doe Jr.', whose
     # credential now starts a run that takes the clause in and reports
     # what it absorbs, the rest on heads whose marker is an ordinary
-    # word now; the tails loop below adds 6.
-    assert multi == 4239, (
+    # word now; the tails loop below adds 6. 4,239 -> 3,744 on
+    # 2026-10-25 (#785): a listed member its capitals settle in a name
+    # of mixed case reports nothing (rules/S6), so the grid's capitals
+    # spellings carry one report fewer (2,988 on the old grid), and the
+    # 'Ma jd' tail added beside them restores the two-report shape.
+    assert multi == 3744, (
         f"{multi} of these parses carry more than one report, recorded "
-        f"as 4239 on 2026-10-04. A parse with one report cannot fail "
+        f"as 3744 on 2026-10-25. A parse with one report cannot fail "
         f"the check above, so this is what keeps the grid honest: move "
         f"the number deliberately, and never to 0")
     # 2,052 since 2026-10-04 (#601/#602), from 1,944: 216 parses left,
@@ -1078,10 +1107,14 @@ def test_no_two_ambiguities_name_the_same_token_span() -> None:
     # clause-free view -- and on 'Jane Doe Jr.', whose credential run
     # reports what it absorbs. The run's reports moved from assign's
     # peel to the take that consumes the run (#601), so the pair is
-    # the maiden take's member report against the run's.
-    assert both == 2052, (
+    # the maiden take's member report against the run's. 2,052 ->
+    # 1,728 on 2026-10-25 (#785): the capitals 'JD' and 'MA' of the
+    # first three tails are settled and report nothing (rules/S6), and
+    # the 'Ma jd' tail, whose members no writing settles, brings the
+    # pair back.
+    assert both == 1728, (
         f"{both} parse(s) carry TWO suffix-or-name reports, recorded "
-        f"as 2052 on 2026-10-04. This is the pair the test is named "
+        f"as 1728 on 2026-10-25. This is the pair the test is named "
         f"for -- the clause's kept member against the trailing run's "
         f"reading -- and it was 0 for the whole grid until the "
         f"two-member tails were added. Never re-record it as 0")

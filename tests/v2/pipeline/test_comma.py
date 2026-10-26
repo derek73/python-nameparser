@@ -164,8 +164,9 @@ def test_the_structure_flip_reports_a_verbatim_detail() -> None:
     # family-comma path since 2.3 ("Berg, Jan vd"). Pinned verbatim so
     # a wording edit is a deliberate one,
     # not a silent drift the case table's looser `ambiguities=` tuple
-    # check would never catch.
-    state = _decided("John Smith, MA")
+    # check would never catch. In one case: capitals in a name of mixed
+    # case settle the word and the flip reports nothing (rules/S6, #785).
+    state = _decided("JOHN SMITH, MA")
     (amb,) = [a for a in state.ambiguities
              if a.kind is AmbiguityKind.SUFFIX_OR_NAME]
     assert amb.detail == (
@@ -177,7 +178,7 @@ def test_the_structure_flip_reports_a_verbatim_detail() -> None:
 def test_the_structure_flip_report_counts_the_real_pre_comma_words() -> None:
     # The count is INTERPOLATED, not a hardcoded "two": a three-word
     # pre-comma part reports its own count.
-    state = _decided("John Q. Public, MA")
+    state = _decided("JOHN Q. PUBLIC, MA")
     (amb,) = [a for a in state.ambiguities
              if a.kind is AmbiguityKind.SUFFIX_OR_NAME]
     assert "holds 3 name words" in amb.detail

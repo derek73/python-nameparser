@@ -2,7 +2,7 @@
 
 **When:** a bare acronym that is also an ordinary name (MA, Ma) stands at a slot where a suffix may stand, as in "John Ma".
 
-**Then:** a BARE ambiguous acronym is consumed only when the name has words to spare — as the second of two words it stays the family name — and at the slots that report, either reading carries the ambiguity flag.
+**Then:** a BARE ambiguous acronym is consumed only when the name has words to spare — as the second of two words it stays the family name — and at the slots that report, either reading carries the ambiguity flag, unless the word's writing has settled it (S6).
 
 - **The slots that report** are the trailing slot of a name, the first slot after a family comma, the trailing slot of the GIVEN part after that comma, and the trailing slot of a maiden marker's clause (M2). A part beyond the second comma is not one of them; what such a part does report is C2's to say.
 - **A word this document says is READ at one of those slots is not always a word one of them reports**: where a reading moves a word out of the slot that asked about it, what reports is the slot it lands in, and that may be none — M2 states the case where a clause does it.

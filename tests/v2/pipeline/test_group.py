@@ -1848,7 +1848,9 @@ def test_a_trailing_title_does_not_hide_the_suffix_run_from_the_join(
         "title": "Prof.", "given": "John", "middle": "Quincy",
         "family": "Adams", "suffix": "i MA", "nickname": "", "maiden": ""}
     assert name.initials() == "J. Q. A."
-    assert [a.kind.value for a in name.ambiguities] == ["suffix-or-name"]
+    # 'MA' in capitals in a name of mixed case is settled by its
+    # writing, so nothing reports it (rules/S6, #785)
+    assert name.ambiguities == ()
     # a LOWER-CASE title is the same shape and reaches the same
     # bound: the vocabulary lookup is folded, so 'prof.' peels like
     # 'Prof.'

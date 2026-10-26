@@ -34,7 +34,7 @@ from nameparser._lexicon import Lexicon, _normalize
 from nameparser._pipeline._pieces import (
     split_credential_report,
     has_name_content, is_suffix_piece, is_title_piece, join_connectives,
-    listed_lean, own_words, segment_suffix_reading,
+    listed_lean, own_words, segment_suffix_reading, settled_by_case,
 )
 from nameparser._pipeline._state import (
     AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, SHAPE_ACRONYM_TAG,
@@ -604,13 +604,19 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
                    and AMBIGUOUS_ACRONYM_TAG in tokens[p[0]].tags]
         listed = [i for i in members
                   if SHAPE_ACRONYM_TAG not in tokens[i].tags]
-        settled = (len(p1) > 1 and bool(members)
+        settled = (bool(members)
                    and len(listed) == len(members)
                    and all(listed_lean(tokens[i], state.one_case)
                            == "credential"
                            and (names >= 2
                                 or AMBIGUOUS_WORD_TAG not in tokens[i].tags)
-                           for i in listed))
+                           for i in listed)
+                   # rules/S6: "a clash settled by the writing is not
+                   # reported" -- a lone word only where it is an
+                   # acronym its capitals settle
+                   and (len(p1) > 1
+                        or settled_by_case(tokens[listed[0]],
+                                           state.one_case)))
         member_set = frozenset(members)
         pairs = [k for k, p in enumerate(p1) if p[0] in member_set
                  and (is_paired_initials(texts[p[0]])
@@ -644,11 +650,14 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
             AmbiguityKind.SUFFIX_OR_NAME,
             f"{what}; the part before the comma holds {names} name words, "
             f"so it is read as a credential run", tuple(part)))
-    elif len(p1[0]) == 1 and p1[0][0] in listed:
+    elif (len(p1[0]) == 1 and p1[0][0] in listed
+          and not (reading[0]
+                   and settled_by_case(tokens[p1[0][0]], state.one_case))):
         # the first word after the comma reports as it always does,
         # naming the role bound above: the listing form binds a word
         # the reading declines as a title ('John, Si.', #793), and no
-        # later rule moves a word of the emptied part
+        # later rule moves a word of the emptied part; one its capitals
+        # settled as the credential does not
         i = p1[0][0]
         field = "a credential" if reading[0] else "a title"
         ambiguities.append(PendingAmbiguity(

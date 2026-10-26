@@ -335,7 +335,10 @@ capitalization decides:
 The full reading of a bare marked acronym, in order:
 
 - **ALL CAPITALS** in a mixed-case name leans to the credential: it is
-  a suffix even with no words to spare (``"Jack MA"``).
+  a suffix even with no words to spare (``"Jack MA"``). The capitals
+  settle it as the periods do, so no ambiguity is reported, and a word
+  after it in the given part after a family comma reads as part of
+  the suffix (``"Smith, John MA Jones"`` gives suffix ``MA Jones``).
 - **Title-case** in a mixed-case name leans to the surname: it stays
   the family name even WITH words to spare (``"John Smith Ma"``).
 - **No signal** — all lowercase in a mixed-case name, or any spelling

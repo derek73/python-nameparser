@@ -250,9 +250,18 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # 1529 -> 1568 the same day, #891 (phase 2e) merged over it: the
     # split-credential rows, two run rows and the particle-chain row
     # (9), the split credential's own report on nine rows (27) and the
-    # opening-credential row (3), each claim under the three orders.
-    assert claims == 1568, (
-        f"the field sweep checks {claims} claims, recorded as 1568 on "
+    # opening-credential row (3), each claim under the three orders;
+    # 1568 -> 1310 the same day, #785 (phase 2g): a listed member its
+    # capitals settle in a name of mixed case reports nothing, which
+    # takes the claims of the rows that reported one (each under
+    # the orders it reaches); its new rows add their run reports, and
+    # the rows rewritten in one case or lower case to keep reaching
+    # their emitter add theirs back; 1310 -> 1316 the same day, the
+    # review's rows for the comma's opening word and the chain's stop;
+    # 1316 -> 1318 on 2026-10-26, the narrowing's caps-switch numeral row;
+    # 1318 -> 1321 the same day, its Ph./D. row.
+    assert claims == 1321, (
+        f"the field sweep checks {claims} claims, recorded as 1321 on "
         f"2026-10-25")
 
 

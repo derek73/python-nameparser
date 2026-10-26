@@ -27,7 +27,7 @@
   ```
 - **Nothing is asked about the WORD**, and that is what lets one rule read both traditions: the same vocabulary that spells the Dutch tussenvoegsel spells the Vietnamese given name, and the declared order separates them where a comma cannot — one order, not both, as an Accepted bullet below records.
 - **Where nothing has named the family, the particle is read where it stands**, and a particle CAN be a given name there: the never-given vocabulary supplies the reading position leaves open, and forbids nothing (parse("de") reports given "de", and so does every other word in that set).
-- **What reports.** After a family comma, a particle that is also of the AMBIGUOUS credential class (`do`), where neither S6's capitals nor S7's company below reaches it, attaches, and the report gives it this rule's particle fork rather than S4's credential one. The fork is reported, in the kind naming the reading this attachment OVERRODE — what the run was read as before it fired, not what its words are. Where the run was read as a post-nominal, which is the S2 reading this rule outranks, the report is suffix-or-name. Otherwise, where the run holds an ambiguous particle, the reading overridden is that word as a name word, and the report is particle-or-given. Where the attachment overrode neither — a never-given particle read as a name word, which it could never have been — nothing was decided and nothing is reported. So after a family comma `do`, which sits in the AMBIGUOUS acronym half and was already read as a name word, reports particle-or-given while vd and mc report suffix-or-name, and a run of several words read as name words reports on its ambiguous member if it has one and otherwise reports nothing, whatever its words could have been read as standing alone. Both are pinned in tests/v2/cases.py.
+- **What reports.** After a family comma, a particle that is also of the AMBIGUOUS credential class (`do`), where neither S6's capitals nor S7's company nor a run a settled member starts reaches it (below), attaches, and the report gives it this rule's particle fork rather than S4's credential one. The fork is reported, in the kind naming the reading this attachment OVERRODE — what the run was read as before it fired, not what its words are. Where the run was read as a post-nominal, which is the S2 reading this rule outranks, the report is suffix-or-name. Otherwise, where the run holds an ambiguous particle, the reading overridden is that word as a name word, and the report is particle-or-given. Where the attachment overrode neither — a never-given particle read as a name word, which it could never have been — nothing was decided and nothing is reported. So after a family comma `do`, which sits in the AMBIGUOUS acronym half and was already read as a name word, reports particle-or-given while vd and mc report suffix-or-name, and a run of several words read as name words reports on its ambiguous member if it has one and otherwise reports nothing, whatever its words could have been read as standing alone. Both are pinned in tests/v2/cases.py.
   ```
   "Nguyen, Thi Van"           →  ambiguities=("particle-or-given",)
   "Berg, Jan vd"              →  ambiguities=("suffix-or-name",)
@@ -72,7 +72,12 @@
   "Doe, John Do"              →  family="Do Doe"
   "Doe, John van DO"          →  family="van DO Doe"
   ```
-- **S7's company** (an ambiguous credential behind an unambiguous one): such a word standing behind an unambiguous credential in one run of suffix words reads as the credential in any spelling and any case, reported as S4's credential fork.
+- **S7's company** (an ambiguous credential behind an unambiguous one): such a word standing behind an unambiguous credential in one run of suffix words reads as the credential in any spelling and any case, reported as S4's credential fork unless its own capitals settled it (S6).
+- **A run a settled member starts** ("Doe, John MA do"): a member of the ambiguous class its capitals settle starts the credential's run (S8), and a lone member of the class behind it is the run's, as behind an unambiguous credential, so this attachment stands down.
+  ```
+  "Doe, John MA do"           →  family="Doe"
+  "Doe, John ma do"           →  family="do Doe"
+  ```
 - **P9's run** (a lone word of both vocabularies inside a run of post-nominals): a lone word of both the particle and the UNAMBIGUOUS suffix vocabulary standing inside a run read as post-nominals keeps that reading, and this attachment stands down.
 
 **Accepted:**

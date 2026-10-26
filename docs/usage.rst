@@ -1017,21 +1017,25 @@ the same way.
 Which reading a bare one gets depends on what the writing says:
 
 - **Capitals** in a name written in more than one case lean to the
-  credential, even with no words to spare (``Jack MA``).
+  credential, even with no words to spare (``Jack MA``). They settle it,
+  as periods do, so nothing is reported.
 - **Any other cased spelling** that is not wholly lowercase leans to
   the surname, even with words to spare (``Jack Ma``, ``John Smith Ma``).
 - **No signal** — all lowercase, or a name written wholly in one
   case — leaves it to the count: the credential with two or more words
   before it, not counting a title or a nickname, the surname otherwise.
 
-Either way the choice is recorded:
+Where the writing leaves the choice to the parser, the choice is
+recorded:
 
 .. doctest::
 
-    >>> parse("John Smith MA").suffix
+    >>> parse("JOHN SMITH MA").suffix
     'MA'
-    >>> [a.kind.value for a in parse("John Smith MA").ambiguities]
+    >>> [a.kind.value for a in parse("JOHN SMITH MA").ambiguities]
     ['suffix-or-name']
+    >>> parse("John Smith MA").ambiguities
+    ()
     >>> parse("Jack MA").suffix
     'MA'
     >>> parse("Jack Ma").family
