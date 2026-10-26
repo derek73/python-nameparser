@@ -4,7 +4,7 @@
 
 **Then:** the word is a title only inside a title phrase, and elsewhere a name word.
 
-- **A title that may be a given name** has its phrase partner in a modifier or a style before it, in a title before it that attaches to it, in a title after it that it attaches to, or in `of` after it. No other title before it is one, a salutation least of all, and no other title after it: a donor list writes the salutation after the given name.
+- **A title that may be a given name** has its phrase partner in a modifier or a style before it that is a title there, in a title before it that attaches to it, in a title after it that it attaches to, or in `of` after it. No other title before it is one, a salutation least of all, and no other title after it: a donor list writes the salutation after the given name.
   ```
   "Dean of Students Jane Smith"  →  title="Dean of Students"
   "Associate Dean Smith"      →  title="Associate Dean"
@@ -17,6 +17,8 @@
   "Mr Dean Smith"             →  given="Dean"
   "SMITH, DEAN MR."           →  given="DEAN"
   "General Major John Smith"  →  given="Major"
+  "Grace Dean Smith"          →  given="Grace"
+  "Sgt Marshal Smith"         →  given="Marshal"
   ```
 - **A modifier in the leading run of titles before the first comma** has its phrase in a head title after it in that run, in `of` after it, or in the object of `of` or `the` there. A modifier outside that run, ending the name or after a comma, is read as any title is.
   ```
@@ -34,6 +36,7 @@
   "Mr Dean Smith"             →  ambiguities=("title-or-name",)
   "Dean Smith, MD"            →  ambiguities=("title-or-name",)
   "SMITH, DEAN MR."           →  ambiguities=()
+  ", Dean"                    →  ambiguities=()
   "Major General John Smith"  →  ambiguities=()
   "John Dean Smith"           →  ambiguities=()
   ```
@@ -80,6 +83,10 @@
 - In the given part after a family comma a modifier is read as listed, so the listing form and the written order of one name read it differently, the cost decision 10 took for the parts where a lone title word is a role.
   ```
   "Lau, Wing"                 →  title="Wing"
+  ```
+- A phrase that is the whole given part after a family comma leaves the given name empty, as a lone title there does.
+  ```
+  "Smith, Sgt Major"          →  title="Sgt Major"
   ```
 - Once a partner has made the word a title, a coordinating join behind it takes the next word into the title too.
   ```

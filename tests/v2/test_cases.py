@@ -252,10 +252,13 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # (9), the split credential's own report on nine rows (27) and the
     # opening-credential row (3), each claim under the three orders;
     # 1568 -> 1583 the same day: #752's title phrase rows (phase 2i), the
-    # five that report a title read as a name, under the three orders.
-    assert claims == 1583, (
-        f"the field sweep checks {claims} claims, recorded as 1583 on "
-        f"2026-10-25")
+    # five that report a title read as a name, under the three orders;
+    # 1583 -> 1592 on 2026-10-26: Derek's answers on #894, three rows
+    # that report ('Sgt Marshal', 'Marshal Yanda', 'Grace Dean'), the
+    # one that stopped ('SMITH, DEAN MR.') offset by 'Grace Smith'.
+    assert claims == 1592, (
+        f"the field sweep checks {claims} claims, recorded as 1592 on "
+        f"2026-10-26")
 
 
 def test_every_case_name_is_unique() -> None:

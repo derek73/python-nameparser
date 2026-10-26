@@ -1412,7 +1412,10 @@ def title_readings(texts: Sequence[str], folded: Sequence[str],
     does not attach to ('SMITH, DEAN MR.', a given name and the
     salutation a donor list writes after it). Its neighbours are asked
     as LISTED, so 'Vice Dean' reads 'Vice' as the partner of 'Dean'
-    whatever the modifier test below makes of 'Vice'.
+    whatever the modifier test below makes of 'Vice', save a word before
+    it that is itself a title that may be a given name, which is a
+    partner only where its own phrase made it a title ('Grace Dean
+    Smith' reads 'Grace' as the given name, and 'Dean' with it).
 
     Where `head` is true -- the part before the first comma -- a word
     of `title_modifiers` is a title only with a head title behind it in
@@ -1451,7 +1454,10 @@ def title_readings(texts: Sequence[str], folded: Sequence[str],
         prev = folded[i - 1] if i else None
         nxt = folded[i + 1] if i < last else None
         reading[i] = bool(
-            (prev is not None and listed[i - 1]
+            # the word before as it was READ, left to right: a title that
+            # may be a given name and stands in no phrase is no partner
+            # ('Grace Dean Smith')
+            (prev is not None and reading[i - 1]
              and (prev in modifiers or prev in lexicon.title_styles
                   or f"{prev} {n}" in phrases))
             or (nxt is not None

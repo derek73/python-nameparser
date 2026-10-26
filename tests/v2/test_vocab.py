@@ -285,6 +285,7 @@ MUTATIONS = [
     ("attaches-twice", {"en.toml": _w('[[word]]\ntext = "chief"\noffice = { attaches = ["military", "military"] }')}, "attaches must be a non-empty list of title kinds"),
     ("attaches-a-suffix-kind", {"en.toml": _w('[[word]]\ntext = "chief"\noffice = { attaches = ["credential"] }')}, "attaches names 'credential', which is not a title kind"),
     ("attaches-the-generic-kind", {"en.toml": _w('[[word]]\ntext = "chief"\noffice = { attaches = ["title"] }')}, "attaches names 'title', which is not a title kind"),
+    ("attaches-a-word-with-no-title-reading", {"en.toml": _w('[[word]]\ntext = "chief"\noffice = { attaches = ["zzq"] }')}, "attaches names 'zzq', which is no title kind and no title word"),
     ("attaches-on-a-suffix", {"en.toml": _w('[[word]]\ntext = "phd"\ncredential = { attaches = ["office"] }')}, "unknown key 'attaches'"),
     ("attaches-differs-between-files", {"en.toml": _w('[[word]]\ntext = "chief"\noffice = { attaches = ["military"] }'), "fr.toml": _w('[[word]]\ntext = "chief"\noffice = {}')}, "attaches"),
     ("reserved-separators", {"th.toml": _w('[[word]]\ntext = "นาย"\nsalutation = { separators = [] }')}, "reserved for phase 4"),
@@ -1105,3 +1106,13 @@ def test_a_shipped_phrase_names_two_titles() -> None:
         assert len(words) == 2, phrase
         assert all(w in lex.titles or w in lex.titles_ambiguous
                    for w in words), phrase
+
+
+def test_attaches_may_name_one_title_word() -> None:
+    # a word where a kind would reach too far: 'sergeant' before 'major'
+    # only, not before every military title (rules/H9)
+    c = _compile({"en.toml": _w(
+        '[[word]]\ntext = "zzq"\nmilitary = { attaches = ["zzr"] }\n\n'
+        '[[word]]\ntext = "zzr"\nmilitary = {}\n\n'
+        '[[word]]\ntext = "zzs"\nmilitary = {}')})
+    assert c["TITLE_PHRASES"] == frozenset({"zzq zzr"})

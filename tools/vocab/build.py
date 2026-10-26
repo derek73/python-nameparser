@@ -808,11 +808,15 @@ def _check_reading(r: Reading, pool: Pool) -> None:
                     or len(set(att)) != len(att)):
                 raise VocabError(f"{where}: attaches must be a non-empty "
                                  f"list of title kinds, each once")
+            # a title kind, or one title word where a kind would reach
+            # too far ('sergeant' attaching to 'major', not to every
+            # military title); a word is checked against the pool in
+            # check_pool
             for k in att:
-                if CATEGORY.get(k) != "title" or k == "title":
+                if k in CATEGORY and (CATEGORY[k] != "title" or k == "title"):
                     raise VocabError(
                         f"{where}: attaches names {k!r}, which is not a "
-                        f"title kind; allowed: "
+                        f"title kind or a title word; the kinds: "
                         f"{sorted(t for t, c in CATEGORY.items() if c == 'title' and t != 'title')}")
         if r.flag("after_given") and r.kind != "salutation":
             # a salutation is a form of address, where an office or a
@@ -1064,6 +1068,16 @@ def check_pool(pool: Pool) -> None:
                              f"(rules/S11); classify the word as one, or "
                              f"keep the counts in this reading's `note`")
 
+    # the words `attaches` names: each a word with a live title reading,
+    # else the phrase it asks for can never be made
+    title_words = {t for t, rs in live.items()
+                   if any(r.category == "title" for r in rs)}
+    for r in pool.readings:
+        for k in r.props.get("attaches", ()) if r.category == "title" else ():
+            if k not in CATEGORY and k not in title_words:
+                raise VocabError(f"{r.where()}: attaches names {k!r}, which "
+                                 f"is no title kind and no title word")
+
     # 9: a bound given name that is also a particle must be one that may
     # be given -- the bound join reads it as a given name. Lexicon raises
     # on the same contradiction; this says which file and word
@@ -1262,7 +1276,8 @@ def compile_pool(pool: Pool) -> Compiled:
         # word before and each title word of a kind it names
         TITLE_PHRASES=frozenset(
             f"{t} {h}" for t, kinds in attaches.items() if kinds
-            for h, hk in title_kinds.items() if h != t and hk & kinds),
+            for h, hk in title_kinds.items()
+            if h != t and (hk & kinds or h in kinds)),
         NON_GIVEN_NAME_PARTICLES=frozenset(never_given),
         PARTICLES=frozenset(particles),
         CONJUNCTIONS=frozenset(conjunctions),

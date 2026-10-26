@@ -685,7 +685,7 @@ military = { expands = "Major" }
 
 [[word]]
 text = "major"
-military = { issue = 752, decided = 2026-10-25, attaches = ["military"], note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'Major General Smith' reads the title, 'Major Smith' and 'Mr Major Smith' the given name; attaches: Major General" }
+military = { issue = 752, decided = 2026-10-25, attaches = ["general"], note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'Major General Smith' reads the title, 'Major Smith' and 'Mr Major Smith' the given name; attaches: Major General" }
 given = { us_ssa = 21749, wikidata = 65, as_of = 2026-10-25, note = "US SSA: female and male births added" }
 family = { us_census_2010 = 20977, wikidata = 400, as_of = 2026-10-25 }
 
@@ -783,11 +783,11 @@ military = { expands = "Senior Chief Petty Officer" }
 
 [[word]]
 text = "sergeant"
-military = { attaches = ["military"] }
+military = { attaches = ["major"], issue = 752, decided = 2026-10-26, note = "attaches: Sergeant Major (rules/H9); a word, not the military kind, which made Sgt Marshal Smith a title" }
 
 [[word]]
 text = "sgt"
-military = { attaches = ["military"], same_as = "sergeant" }
+military = { attaches = ["major"], issue = 752, decided = 2026-10-26, note = "attaches: Sergeant Major (rules/H9); a word, not the military kind, which made Sgt Marshal Smith a title", same_as = "sergeant" }
 
 [[word]]
 text = "sfc"

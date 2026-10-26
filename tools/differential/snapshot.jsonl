@@ -10,6 +10,7 @@
 {"name": "(김민준.) John Smith", "given": "김", "middle": "민준. John", "family": "Smith", "initials": "김. 민. J. S."}
 {"name": ","}
 {"name": ", Ana García López", "given": "Ana", "middle": "García López", "initials": "A. G. L."}
+{"name": ", Dean", "given": "Dean", "initials": "D."}
 {"name": ", Dr. fils", "title": "Dr.", "family": "fils", "initials": "f.", "capitalized_force": "Dr. Fils"}
 {"name": ", Jane", "given": "Jane", "initials": "J."}
 {"name": ", Jane Mrs", "title": "Mrs", "family": "Jane", "initials": "J."}
@@ -1107,6 +1108,7 @@
 {"name": "Gottfried Huyn von Geleen und Amsterad", "given": "Gottfried", "middle": "Huyn", "family": "von Geleen und Amsterad", "initials": "G. H. G. A."}
 {"name": "Gottfried IV.", "given": "Gottfried", "suffix": "IV.", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "G."}
 {"name": "Goëß, Johann von", "given": "Johann", "family": "von Goëß", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "J. G."}
+{"name": "Grace Dean Smith", "given": "Grace", "middle": "Dean", "family": "Smith", "ambiguities": ["TITLE_OR_NAME"], "initials": "G. D. S."}
 {"name": "Graf Lambsdorff, Otto", "title": "Graf", "given": "Otto", "family": "Lambsdorff", "initials": "O. L."}
 {"name": "Gragger, Robert", "given": "Robert", "family": "Gragger", "initials": "R. G."}
 {"name": "Gramont, Antoine de", "given": "Antoine", "family": "de Gramont", "initials": "A. G."}
@@ -2996,6 +2998,7 @@
 {"name": "Señ Baba Wagué Amdy Raas Sañsé MP", "given": "Señ", "middle": "Baba Wagué Amdy Raas", "family": "Sañsé", "suffix": "MP", "initials": "S. B. W. A. R. S."}
 {"name": "Señor Carlos García", "title": "Señor", "given": "Carlos", "family": "García", "initials": "C. G."}
 {"name": "Señora María García", "title": "Señora", "given": "María", "family": "García", "initials": "M. G."}
+{"name": "Sgt Marshal Smith", "title": "Sgt", "given": "Marshal", "family": "Smith", "ambiguities": ["TITLE_OR_NAME"], "initials": "M. S."}
 {"name": "Shahnon Ahmad", "given": "Shahnon", "family": "Ahmad", "initials": "S. A."}
 {"name": "Shanti Gaonkar", "given": "Shanti", "family": "Gaonkar", "initials": "S. G."}
 {"name": "Shehu Muhammed", "given": "Shehu", "family": "Muhammed", "initials": "S. M."}
@@ -3191,6 +3194,7 @@
 {"name": "Smith, Prof.", "title": "Prof.", "family": "Smith", "initials": "S."}
 {"name": "Smith, RA PhD Ma", "title": "RA", "given": "PhD", "middle": "Ma", "family": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. M. S.", "capitalized_force": "Ra PhD Ma Smith"}
 {"name": "Smith, RN - CRNA", "family": "Smith", "suffix": "RN - CRNA", "initials": "S."}
+{"name": "Smith, Sgt Major", "title": "Sgt Major", "family": "Smith", "initials": "S."}
 {"name": "Smith, Sir", "title": "Sir", "given": "Smith", "initials": "S."}
 {"name": "Smith, Sr.", "family": "Smith", "suffix": "Sr.", "initials": "S."}
 {"name": "Smith, V; MD", "given": "V;", "family": "Smith", "suffix": "MD", "initials": "V. S."}
