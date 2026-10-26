@@ -71,6 +71,12 @@ text = "excellency"
 style = {}
 
 [[word]]
+text = "grace"
+style = { issue = 752, decided = 2026-10-26, expands = "'His Grace', a duke's or an archbishop's style", note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'His Grace John Smith' reads the title, 'Grace Smith' the given name" }
+given = { us_ssa = 536340, wikidata = 3908, as_of = 2026-10-26, note = "US SSA: female and male births added" }
+family = { us_census_2010 = 28098, wikidata = 311, as_of = 2026-10-26 }
+
+[[word]]
 text = "highness"
 style = {}
 
@@ -685,7 +691,9 @@ family = { us_census_2010 = 20977, wikidata = 400, as_of = 2026-10-25 }
 
 [[word]]
 text = "marshal"
-excluded = { military = { reason = "a given name (Marshal Yanda); the accepted cost is that 'Field Marshal Bernard Montgomery' reads given Field, middle Marshal Bernard (title Field, given Marshal until rules/H9, 2026-10-25, read a modifier with no head after it as a name)", issue = 606, decided = 2026-10-04 } }
+military = { issue = 752, decided = 2026-10-26, note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'Field Marshal Bernard Montgomery' reads the title, 'Marshal Yanda' the given name; until 2026-10-26 excluded as a given name (#606)" }
+given = { us_ssa = 5559, wikidata = 28, as_of = 2026-10-26, note = "US SSA: female and male births added" }
+family = { wikidata = 34, as_of = 2026-10-26 }
 
 [[word]]
 text = "mcpo"
@@ -775,11 +783,11 @@ military = { expands = "Senior Chief Petty Officer" }
 
 [[word]]
 text = "sergeant"
-military = {}
+military = { attaches = ["military"] }
 
 [[word]]
 text = "sgt"
-military = { same_as = "sergeant" }
+military = { attaches = ["military"], same_as = "sergeant" }
 
 [[word]]
 text = "sfc"

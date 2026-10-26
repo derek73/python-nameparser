@@ -150,9 +150,11 @@ _WORD_ALREADY_CLAIMED = _NEVER_FLIPPED | frozenset({"particle"})
 def _peel_leading_titles(pieces: tuple[tuple[int, ...], ...],
                          ptags: tuple[frozenset[str], ...],
                          tokens: list[WorkToken],
-                         ambiguities: list[PendingAmbiguity]) -> int:
+                         ambiguities: list[PendingAmbiguity] | None) -> int:
     """Assign TITLE to the leading title pieces and return the first
-    non-title index."""
+    non-title index. `ambiguities` is None where a family comma has
+    already marked the part as the given name, so no fork is left to
+    report."""
     n = leading_titles(pieces, ptags, tokens)
     for k in range(n):
         _set_roles(tokens, pieces[k], Role.TITLE)
@@ -160,7 +162,7 @@ def _peel_leading_titles(pieces: tuple[tuple[int, ...], ...],
     # after any titles" -- the peel stops at it because classify read it
     # out of the title, so it is the first piece the peel leaves
     # ('Dean Smith', 'Mr Dean Smith')
-    if (n < len(pieces) and len(pieces[n]) == 1
+    if (ambiguities is not None and n < len(pieces) and len(pieces[n]) == 1
             and TITLE_AMBIGUOUS_TAG in tokens[pieces[n][0]].tags
             and "vocab:title" not in tokens[pieces[n][0]].tags):
         i = pieces[n][0]
@@ -1302,7 +1304,9 @@ def assign(state: ParseState) -> ParseState:
             # before the title reading of the same word (#296, #325).
             # A name word in the segment makes it v1's walk ('Smith,
             # John Jr.').
-            n = _peel_leading_titles(pieces, ptags, tokens, ambiguities)
+            # rules/H9: "where no comma has marked the given name" -- this
+            # part is the given name, the family comma said so
+            n = _peel_leading_titles(pieces, ptags, tokens, None)
             # rules/H5: "the title is TRANSPARENT to the suffix
             # reading: where two or more name words stand, what
             # stands once the chain is taken reads exactly as it
