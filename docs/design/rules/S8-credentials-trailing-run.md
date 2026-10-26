@@ -4,7 +4,7 @@
 
 **Then:** a credential after the name core starts a run to the end of its part (#602): every later word of that part reads as a suffix, except a title word, which reads as a title.
 
-- **Where the run starts.** An unambiguous suffix word of two or more letters, in any script, standing after two name words where no comma divides the name or before a suffix comma, or after the given word in the part after a family comma, makes every later word of that part a suffix. So does a roman numeral of two or more letters that reads as the generation (S10), whether the vocabulary lists it or its shape alone reads it, and so does a listed member of the ambiguous class its writing settles as the credential, written in capitals in a name of mixed case (S6) — after the given word in the part after a family comma wherever it stands, and elsewhere not where a name word stands behind it: a particle, or a word in Title case or in capitals that is no credential, which makes the capitals as likely the writer's own initials (`Maria Ana MA Silva`), or a family name written in capitals, as a credential.
+- **Where the run starts.** An unambiguous suffix word of two or more letters, in any script, standing after two name words where no comma divides the name or before a suffix comma, or after the given word in the part after a family comma, makes every later word of that part a suffix. So does a roman numeral of two or more letters that reads as the generation (S10), whether the vocabulary lists it or its shape alone reads it, and so does a listed member of the ambiguous class its writing settles as the credential, written in capitals in a name of mixed case (S6) — after the given word in the part after a family comma wherever it stands, and elsewhere not where a name word stands behind it: a particle (a particle run or a joined surname counting by its first word), a word in a script with no case, or a word in Title case or in capitals that is no credential, which makes the capitals as likely the writer's own initials (`Maria Ana MA Silva`), or a family name written in capitals, as a credential.
   ```
   "John Smith VI Jones"       →  suffix="VI Jones"
   "Smith, John MA Jones"      →  suffix="MA Jones"
@@ -12,6 +12,8 @@
   "Maria Ana MA Silva"        →  family="Silva"
   "Jean Pierre MA DUPONT"     →  family="DUPONT"
   "Mary Jane MA King"         →  family="King"
+  "Maria Ana MA de la Vega"   →  family="de la Vega"
+  "Maria Ana MA Ortega y Gasset"  →  family="Ortega y Gasset"
   "Smith, John VI Jones"      →  suffix="VI Jones"
   "Smith, John PhD Jones"     →  suffix="PhD Jones"
   "John Smith PhD Prof. Ma"   →  suffix="PhD Ma"

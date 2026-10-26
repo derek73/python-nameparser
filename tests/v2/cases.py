@@ -5994,6 +5994,20 @@ CASES: tuple[Case, ...] = (
                "name word behind a member its capitals settle keeps it "
                "from starting the credential's run -- here a surname that is also title vocabulary, which inside the run would read as a title. "
                "1.4.0 through 2.6.0 read the same"),
+    Case("capitals_before_a_particle_surname_stay_a_name",
+         "Maria Ana MA de la Vega",
+         {"given": "Maria", "middle": "Ana MA", "family": "de la Vega"},
+         notes="S8 (Derek, 2026-10-26, #785): a particle run the chain "
+               "has merged counts as the name word behind by its first "
+               "word; a first draft asked only one-word pieces and read "
+               "suffix 'MA de la Vega'. 1.4.0 through 2.6.0 read the "
+               "same as this row"),
+    Case("capitals_before_a_joined_surname_stay_a_name",
+         "Maria Ana MA Ortega y Gasset",
+         {"given": "Maria", "middle": "Ana MA", "family": "Ortega y Gasset"},
+         notes="S8 (Derek, 2026-10-26, #785): a connective join counts "
+               "by its first word, as the particle run above. 2.6.0 "
+               "read the same as this row"),
     Case("capitals_credential_before_a_family_name_is_the_accepted_cost",
          "John Smith MA Jones",
          {"given": "John", "middle": "Smith MA", "family": "Jones"},

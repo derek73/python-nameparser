@@ -59,7 +59,7 @@
   "S5": {"words": 731, "then_words": 400, "because_sentences": 1, "except": 2, "precedence": 1, "accepted": 0, "accepted_words": 0},
   "S6": {"words": 585, "then_words": 330, "because_sentences": 2, "except": 1, "precedence": 2, "accepted": 0, "accepted_words": 0},
   "S7": {"words": 602, "then_words": 388, "because_sentences": 1, "except": 2, "precedence": 2, "accepted": 1, "accepted_words": 105},
-  "S8": {"words": 531, "then_words": 366, "because_sentences": 1, "except": 1, "precedence": 2, "accepted": 1, "accepted_words": 63},
+  "S8": {"words": 551, "then_words": 386, "because_sentences": 1, "except": 1, "precedence": 2, "accepted": 1, "accepted_words": 63},
   "S9": {"words": 463, "then_words": 262, "because_sentences": 2, "except": 0, "precedence": 3, "accepted": 0, "accepted_words": 0},
   "S10": {"words": 665, "then_words": 246, "because_sentences": 3, "except": 4, "precedence": 3, "accepted": 3, "accepted_words": 163},
   "S11": {"words": 474, "then_words": 266, "because_sentences": 3, "except": 1, "precedence": 1, "accepted": 2, "accepted_words": 107},

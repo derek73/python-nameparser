@@ -2337,7 +2337,9 @@
 {"name": "Mari-Ann Henri Roobert Tammik, parlamendiliige", "given": "parlamendiliige", "family": "Mari-Ann Henri Roobert Tammik", "initials": "p. M. H. R. T.", "capitalized_force": "Parlamendiliige Mari-Ann Henri Roobert Tammik"}
 {"name": "Maria", "given": "Maria", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "M."}
 {"name": "Maria", "order": "FAMILY_FIRST", "family": "Maria", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "M."}
+{"name": "Maria Ana MA Ortega y Gasset", "given": "Maria", "middle": "Ana MA", "family": "Ortega y Gasset", "initials": "M. A. M. O. G.", "capitalized_force": "Maria Ana Ma Ortega y Gasset"}
 {"name": "Maria Ana MA Silva", "given": "Maria", "middle": "Ana MA", "family": "Silva", "initials": "M. A. M. S.", "capitalized_force": "Maria Ana Ma Silva"}
+{"name": "Maria Ana MA de la Vega", "given": "Maria", "middle": "Ana MA", "family": "de la Vega", "initials": "M. A. M. V.", "capitalized_force": "Maria Ana Ma de la Vega"}
 {"name": "Maria Firmina dos Reis", "given": "Maria", "middle": "Firmina", "family": "dos Reis", "initials": "M. F. R."}
 {"name": "Maria Hasani", "given": "Maria", "family": "Hasani", "initials": "M. H."}
 {"name": "Maria Helena Fernandes", "given": "Maria", "middle": "Helena", "family": "Fernandes", "initials": "M. H. F."}

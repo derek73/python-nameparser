@@ -1454,20 +1454,25 @@ def behind_the_merged_credential(rest: Sequence[int], p: int,
 # end of its part" -- applied to a finished peel (#602), so every
 # reader of the trailing run (assign, P5's reserve, P2's chain stop,
 # the maiden take) sees one answer.
-def _name_word_behind(piece: Sequence[int], tokens: Sequence[WorkToken],
+def _name_word_behind(piece: Sequence[int], ptags: Set[str],
+                      tokens: Sequence[WorkToken],
                       one_case: bool | None) -> bool:
     """Whether the piece behind a member its capitals settle reads as a
-    word of the name rather than a further credential: a particle, or a
-    cased word not written in lower case (Title case or capitals, title
-    vocabulary included) that is no suffix word and no member its own
-    capitals settle. Only `run_start` asks it, of a settled member."""
-    if len(piece) != 1:
+    word of the name rather than a further credential, asked of its
+    first word, since group has merged particle runs and connective
+    joins by then ('de la Vega', 'Ortega y Gasset'): a particle, a word
+    of a script with no case, or a cased word not written in lower case
+    (Title case or capitals, title vocabulary included), that is no
+    suffix word and no member its own capitals settle. A credential
+    merged across a space ('Pharm D', 'Ph. D.') is no name word. Only
+    `run_start` asks it, of a settled member."""
+    if "suffix" in ptags or "split" in ptags:
         return False
     tok = tokens[piece[0]]
     if "particle" in tok.tags:
         return True
     text = tok.text
-    if text.upper() == text.lower() or text.islower():
+    if text.islower():
         return False
     return ("vocab:suffix" not in tok.tags
             and SHAPE_ACRONYM_TAG not in tok.tags
@@ -1538,6 +1543,7 @@ def run_start(rest: Sequence[int], names: int,
                              and settled_by_case(tokens[pieces[q][0]],
                                                  one_case)
                              and _name_word_behind(pieces[rest[p + 1]],
+                                                   ptags[rest[p + 1]],
                                                    tokens, one_case))):
                 return p
         # a lone particle is not yet a name: 'de Mesnil' is one surname
