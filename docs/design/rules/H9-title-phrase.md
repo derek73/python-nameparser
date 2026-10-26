@@ -20,6 +20,7 @@
   "Grace Dean Smith"          →  given="Grace"
   "Sgt Marshal Smith"         →  given="Marshal"
   "Mr Mahdi Karimi"           →  given="Mahdi"
+  "Buddha Bahadur Tamang"     →  given="Buddha"
   ```
 - **A modifier in the leading run of titles before the first comma** has its phrase in a head title after it in that run, in `of` after it, or in the object of `of` or `the` there. A modifier outside that run, ending the name or after a comma, is read as any title is, save one that may be a given name, which is read everywhere as it is in that run.
   ```
@@ -65,19 +66,21 @@
   ```
   "Hon. Wing Lau"             →  given="Wing"
   ```
-- **A period-marked word at the front of the name** (H2): the abbreviation shape makes it a title whatever the vocabulary says, save a given name written short, so the phrase test never reaches it and nothing is reported.
+- **A period-marked word in the leading run of titles** (H2): the abbreviation shape makes it a title whatever the vocabulary says, save a given name written short or a word a connective joins (below), so the phrase test never reaches it and nothing is reported, at the front of the name or behind another title.
   ```
   "Dean. Smith"               →  title="Dean."
   "Wing. Lau"                 →  title="Wing."
+  "Mr Buddha. Tamang"         →  title="Mr Buddha."
   ```
 - **A title run** (H3, H4): a word this rule reads as a name word is no title word to the run, so the run stops before it and does not count it.
   ```
   "Mr Dean Smith"             →  title="Mr"
   "Dean"                      →  given="Dean"
   ```
-- **A connective after the word** (P3): only `of` makes a phrase of the join, so a word read as a name word before `and` joins the next word as two names join.
+- **A connective after the word** (P3): only `of` makes a phrase of the join, so a word read as a name word before `and` joins the next word as two names join, and so does one written with its period, the join taking it before H2's shape is asked.
   ```
   "Dean and Mary Smith"       →  given="Dean and Mary"
+  "Dean. and Mary Smith"      →  given="Dean. and Mary"
   ```
 - **A title that may be a given name which a caller lists in `titles`** is a title wherever it stands, since that is what listing it asks; a modifier is read by this rule however it is listed, and leaving its word out of the modifiers turns the rule off for it.
 
@@ -109,6 +112,11 @@
   ```
   "The Mahdi Muhammad Ahmad"  →  given="The Mahdi"
   "William Shakespeare, the Bard"  →  given="the Bard"
+  ```
+- A religious title that opens given names in another tradition, written bare, reads as a name word before a name in every tradition, behind any title but a style, a modifier or one that attaches to it; no name data at hand writes the title there.
+  ```
+  "Gyani Zail Singh"          →  given="Gyani"
+  "Lord Buddha Tamang"        →  given="Buddha"
   ```
 - Once a partner has made the word a title, a coordinating join behind it takes the next word into the title too.
   ```

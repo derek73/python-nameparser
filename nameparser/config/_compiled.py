@@ -167,7 +167,6 @@ TITLES: frozenset[str] = frozenset({
     'british',
     'broadcaster',
     'brother',
-    'buddha',
     'burgess',
     'burlesque',
     'business',
@@ -380,7 +379,6 @@ TITLES: frozenset[str] = frozenset({
     'gräfin',
     'guitarist',
     'guru',
-    'gyani',
     'gysgt',
     'hajji',
     'headman',
@@ -683,7 +681,6 @@ TITLES: frozenset[str] = frozenset({
     'sheikh',
     'shekh',
     'sheriff',
-    'siddha',
     'sig.na',
     'sig.ra',
     'signor',
@@ -965,12 +962,15 @@ AFTER_GIVEN_TITLES: frozenset[str] = frozenset({
 
 TITLES_AMBIGUOUS: frozenset[str] = frozenset({
     'bard',
+    'buddha',
     'dean',
     'grace',
+    'gyani',
     'justice',
     'mahdi',
     'major',
     'marshal',
+    'siddha',
     'wing',
 })
 

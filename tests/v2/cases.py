@@ -12330,6 +12330,49 @@ CASES: tuple[Case, ...] = (
     Case("given_name_title_bard_as_a_surname", "Ola Bard",
          {"given": "Ola", "family": "Bard"},
          notes="a trailing bare title word was already a name word"),
+    Case("given_name_title_buddha_opening_a_compound", "Buddha Bahadur Tamang",
+         {"given": "Buddha", "middle": "Bahadur", "family": "Tamang"},
+         classification="fix(#869)",
+         notes="H9: the first half of a Nepali compound given name; read "
+               "title 'Buddha', given 'Bahadur' 1.4.0 through 2.6.0 "
+               "(#752 phase 2j)"),
+    Case("given_name_title_gyani_opening_a_compound", "Gyani Maya Gurung",
+         {"given": "Gyani", "middle": "Maya", "family": "Gurung"},
+         classification="fix(#869)",
+         notes="H9; read title 'Gyani', given 'Maya' before"),
+    Case("given_name_title_siddha_after_a_family_comma", "Joshi, Siddha Raj",
+         {"given": "Siddha", "middle": "Raj", "family": "Joshi"},
+         classification="fix(#869)",
+         notes="H9; read title 'Siddha', given 'Raj' before"),
+    Case("given_name_title_buddha_after_a_salutation", "Mr Buddha Tamang",
+         {"title": "Mr", "given": "Buddha", "family": "Tamang"},
+         classification="fix(#869)",
+         notes="H9: a salutation is no partner (#853); read title "
+               "'Mr Buddha' before"),
+    Case("given_name_title_buddha_behind_a_style", "His Holiness Buddha Ram",
+         {"title": "His Holiness Buddha", "family": "Ram"},
+         notes="H9: a style before it is its partner, as master read it"),
+    Case("given_name_title_gyani_as_the_sikh_title", "Gyani Zail Singh",
+         {"given": "Gyani", "middle": "Zail", "family": "Singh"},
+         classification="fix(#869)",
+         notes="H9's Accepted clause: the Sikh title spelled 'Gyani' reads "
+               "as the given name; 'Giani' is still the title"),
+    Case("sikh_title_in_its_usual_spelling", "Giani Zail Singh",
+         {"title": "Giani", "given": "Zail", "family": "Singh"},
+         notes="'giani' has no given reading; the title phrase's boundary"),
+    Case("given_name_title_buddha_before_a_family_comma", "Buddha Tamang, Ram",
+         {"given": "Ram", "family": "Buddha Tamang"},
+         notes="H6 no longer peels a contested word from the family part; "
+               "1.4.0's reading, which 2.5.0 through 2.6.0 read as title "
+               "'Buddha', family 'Tamang'"),
+    Case("period_marked_word_before_and", "Dean. and Mary Smith",
+         {"given": "Dean. and Mary", "family": "Smith"},
+         notes="H9's connective precedence: the join takes a period-marked "
+               "word before H2's shape is asked, as 2.6.0 read it"),
+    Case("buddha_alone_after_a_title", "Lord Buddha",
+         {"title": "Lord", "family": "Buddha"},
+         notes="1.4.0's fields; H4 had reported title-or-name on an input that was all "
+               "vocabulary; 'Buddha' is a name word now, as 'Mahdi' is"),
     Case("given_name_modifier_after_a_style", "Hon. Wing Lau",
          {"title": "Hon.", "given": "Wing", "family": "Lau"},
          notes="H9: the modifier's test, not a contested word's style "

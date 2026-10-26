@@ -6,7 +6,8 @@ religious = { expands = "a learned Sikh", native = "ਗਿਆਨੀ" }
 
 [[word]]
 text = "gyani"
-religious = { same_as = "giani" }
+religious = { same_as = "giani", issue = 869, decided = 2026-10-26, note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'Gyani Maya Gurung' reads the given name, unreported, since no listed phrase holds it; the Sikh title keeps its usual spelling giani" }
+given = { note = "no US SSA year reaches 5 births and Wikidata counts no one; declared as the first half of Nepali compound given names (Gyani Maya): 38 of nepal-candidates' 126,981 pairs write it, opening the name in 37 (2026-10-26)" }
 
 [[word]]
 text = "guru"
