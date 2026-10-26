@@ -98,7 +98,9 @@ religious = { note = "addresses by the TITLE, not the given name, and the tradit
 
 [[word]]
 text = "mahdi"
-religious = {}
+religious = { issue = 867, decided = 2026-10-26, note = "a messianic title, written as an epithet with the article or after a name ('the Mahdi', 'al-Mahdi'), not as an honorific before a person's own name; a title only inside a title phrase, so the epithet with its article before a name or after a comma reads as the given name (rules/H9's Accepted clause), its given reading the clash (rules/H9): 'Mahdi Karimi' and 'Mr Mahdi Karimi' read the given name, unreported, since no listed phrase holds it" }
+given = { us_ssa = 2398, wikidata = 141, as_of = 2026-10-26, note = "US SSA: male births; Wikidata is a lower bound (Iran 43, Iraq 9); nam_dict band 5 in Arabia/Persia" }
+family = { us_census_2010 = 1241, wikidata = 13, as_of = 2026-10-26 }
 
 [[word]]
 text = "mufti"
