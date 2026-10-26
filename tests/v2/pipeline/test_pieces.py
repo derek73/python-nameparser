@@ -661,6 +661,7 @@ def test_leading_title_shape_refuses_an_initialless_script(
 
 @pytest.mark.parametrize("text", [
     "Xyz.", "Dr.", "Xyz", "X.", "田中.", "김민준.", "たなか.", "Kim김.", "J.",
+    "Chas.", "MA.",
 ])
 def test_is_title_shaped_and_is_leading_title_agree(text: str) -> None:
     # The two spellings of H2's shape test -- `is_title_shaped`'s own
@@ -676,8 +677,11 @@ def test_is_title_shaped_and_is_leading_title_agree(text: str) -> None:
     # answers True the same way, for the same reason: listed or not
     # is a question neither predicate asks), not because it exercises
     # the shape branch on either side.
+    # 'Chas.' and 'MA.' are given names written short, which outrank the
+    # shape (#789): the inline copy reads classify's tag, this one the
+    # lexicon, and the two must agree.
     state = _through_group(text + " Smith")
-    assert is_title_shaped(text) == is_leading_title(
+    assert is_title_shaped(text, state.lexicon) == is_leading_title(
         state.pieces[0][0], state.piece_tags[0][0], state.tokens)
 
 

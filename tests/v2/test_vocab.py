@@ -85,6 +85,7 @@ def test_the_compiled_sets_are_the_default_lexicon(shipped: dict[str, str]) -> N
         conjunctions=c["CONJUNCTIONS"],
         conjunctions_ambiguous=c["CONJUNCTIONS_AMBIGUOUS"],
         bound_given_names=c["BOUND_GIVEN_NAMES"],
+        given_name_abbreviations=c["GIVEN_NAME_ABBREVIATIONS"],
         maiden_markers=c["MAIDEN_MARKERS"], surnames=lex.surnames,
         honorific_tails=c["GLUED_HONORIFICS"],
         after_given_titles=c["AFTER_GIVEN_TITLES"],
@@ -417,6 +418,12 @@ MUTATIONS = [
     ("same-as-cycle-through-a-second-kind", {"nl.toml": _w('[[word]]\ntext = "c"\npreposition = { may_be_given = false }\n\n[[word]]\ntext = "a"\npreposition = { may_be_given = false, same_as = "c" }\narticle = { may_be_given = false, same_as = "b" }\n\n[[word]]\ntext = "b"\narticle = { may_be_given = false, same_as = "a" }')}, "same_as loops, a -> b -> a;"),
     # a chain running INTO a loop: the loop is named, not the chain
     ("same-as-chain-into-a-loop", {"en.toml": _w('[[word]]\ntext = "xa"\ngeneration = { same_as = "xb" }\n\n[[word]]\ntext = "xb"\ngeneration = { same_as = "xc" }\n\n[[word]]\ntext = "xc"\ngeneration = { same_as = "xb" }')}, "same_as loops, xb -> xc -> xb;"),
+    # 7, a name reading's half (#789): a given reading's same_as is the
+    # full name it abbreviates, normalized and never the word itself, and
+    # a family reading takes none
+    ("same-as-on-a-family-reading", {"en.toml": _w('[[word]]\ntext = "smyth"\nfamily = { note = "x", same_as = "smith" }')}, "only a `given` reading takes one"),
+    ("same-as-on-a-given-reading-unnormalized", {"en.toml": _w('[[word]]\ntext = "chas"\ngiven = { note = "x", same_as = "Charles" }')}, "not in normalized form; write 'charles'"),
+    ("same-as-on-a-given-reading-names-itself", {"en.toml": _w('[[word]]\ntext = "chas"\ngiven = { note = "x", same_as = "chas" }')}, "names the word itself"),
 ]
 
 
@@ -646,6 +653,17 @@ def test_a_name_reading_on_nothing_warns() -> None:
     files = {"en.toml": _w('[[word]]\ntext = "smith"\nfamily = { us_census_2010 = 2442977, as_of = 2026-10-16 }')}
     with pytest.warns(build.VocabWarning, match="inert"):
         build.compile_files(files)
+
+
+def test_a_given_name_written_short_compiles_and_is_not_inert() -> None:
+    # #789: the same_as of a given reading names a name, which no entry
+    # holds, and puts the word in GIVEN_NAME_ABBREVIATIONS -- so the entry,
+    # holding only that reading, is no inert name reading (`_compile`
+    # turns the warning into an error), and a plain given reading beside
+    # it on another word still marks nothing
+    c = _compile({"en.toml": _w('[[word]]\ntext = "chas"\ngiven = { note = "x", same_as = "charles" }')})
+    assert c["GIVEN_NAME_ABBREVIATIONS"] == frozenset({"chas"})
+    assert _sets_fed("given") == set()
 
 
 def test_a_check_failure_names_the_refresh_command_in_main(

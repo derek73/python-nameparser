@@ -18,3 +18,11 @@ given = { us_ssa = 565, as_of = 2026-10-25, note = "US SSA births summed over bo
 [word.preposition]
 expands = "of the, de la contracted: \"Dela Cruz\""
 note = "Dela is a short form of Adela, and an African name meaning saviour/redeemer -- so the Filipino surname particle is not the only reading"
+
+[[word]]
+text = "jo"
+given = { us_ssa = 180911, wikidata = 974, as_of = 2026-10-26, same_as = "josé", note = "José written short, in Philippine usage; the counts are of Jo, a given name of its own (US SSA births summed over both sexes, F 179,057, M 1,854; Wikidata a lower bound) and a Korean surname, so a period-marked Jo. opening the given part is a given name on every reading (#789)" }
+
+[[word]]
+text = "ma"
+given = { same_as = "maría", note = "María written short, in Philippine usage; no source counts the abbreviation apart from Ma, whose given, family and credential readings are en.toml's; it acts only where the leading period-abbreviation shape rule would have read a title, a period-marked word opening the given part (#789)" }

@@ -2,7 +2,8 @@ schema = 1
 
 [[word]]
 text = "wm"
-excluded = { title = { reason = "William, abbreviated, and no title of any kind: #68 asked that 'Wm. Scott Magargee III' not read given name 'Wm.', a request judged mistaken, since Wm is the given name; a bare 'WM' opened the given part 69 times in the FEC donor list (re-measured 2026-10-24 on 08d130ed), every one read as a title. The dotted 'Wm.' opening the given part is still taken by the leading period-abbreviation shape rule whether listed or not", issue = [68, 789], decided = 2026-10-22 } }
+excluded = { title = { reason = "William, abbreviated, and no title of any kind: #68 asked that 'Wm. Scott Magargee III' not read given name 'Wm.', a request judged mistaken, since Wm is the given name; a bare 'WM' opened the given part 69 times in the FEC donor list (re-measured 2026-10-24 on 08d130ed), every one then read as a title. The dotted 'Wm.' opening the given part reads given too, by the given reading below, which outranks the leading period-abbreviation shape rule (#789, phase 2k of #752)", issue = [68, 789], decided = 2026-10-22 } }
+given = { us_ssa = 2736, as_of = 2026-10-26, same_as = "william", note = "William written short; US SSA births summed over both sexes (F 86, M 2,650); Wikidata labels no one Wm" }
 
 [[word]]
 text = "goodman"
@@ -4981,3 +4982,43 @@ birth_marker = { gender = "f" }
 [[word]]
 text = "nee"
 birth_marker = { issue = 274, same_as = "née", gender = "f", note = "née typed without its accent" }
+
+[[word]]
+text = "benj"
+given = { wikidata = 2, as_of = 2026-10-26, same_as = "benjamin", note = "Benjamin written short; no US SSA year reaches 5 births; Wikidata is a lower bound" }
+
+[[word]]
+text = "chas"
+given = { us_ssa = 3223, wikidata = 43, as_of = 2026-10-26, same_as = "charles", note = "Charles written short; US SSA births summed over both sexes (F 10, M 3,213); nam_dict band 1 in the U.S.A.; Wikidata is a lower bound" }
+
+[[word]]
+text = "edw"
+given = { us_ssa = 6, as_of = 2026-10-26, same_as = "edward", note = "Edward written short; US SSA male births only" }
+
+[[word]]
+text = "geo"
+given = { us_ssa = 1324, wikidata = 47, as_of = 2026-10-26, same_as = "george", note = "George written short; US SSA births summed over both sexes (F 16, M 1,308); also a given name of its own (Wikidata: Romania 8, Belgium 6, Italy 5; nam_dict band 1 in Italy, the Netherlands and Switzerland), a given name on either reading; Wikidata is a lower bound" }
+
+[[word]]
+text = "jas"
+given = { us_ssa = 124, wikidata = 1, as_of = 2026-10-26, same_as = "james", note = "James written short; US SSA births summed over both sexes (F 13, M 111); also a Punjabi given name (nam_dict band 2 in India/Sri Lanka), and a surname (US Census 2010 117 bearers, Wikidata 25), which a period-marked word opening the given part is not; Wikidata is a lower bound" }
+
+[[word]]
+text = "jno"
+given = { us_ssa = 11, as_of = 2026-10-26, same_as = "john", note = "John written short; US SSA male births only" }
+
+[[word]]
+text = "richd"
+given = { same_as = "richard", note = "Richard written short; no US SSA year reaches 5 births and Wikidata labels no one Richd: declared as the traditional English abbreviation, beside its set (#789)" }
+
+[[word]]
+text = "robt"
+given = { us_ssa = 468, as_of = 2026-10-26, same_as = "robert", note = "Robert written short; US SSA male births only" }
+
+[[word]]
+text = "saml"
+given = { same_as = "samuel", note = "Samuel written short; no US SSA year reaches 5 births and Wikidata labels no one Saml: declared as the traditional English abbreviation, beside its set (#789)" }
+
+[[word]]
+text = "thos"
+given = { us_ssa = 166, as_of = 2026-10-26, same_as = "thomas", note = "Thomas written short; US SSA male births only; Wikidata labels no one Thos as a given name" }

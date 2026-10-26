@@ -128,13 +128,9 @@
   },
   "given_names": {
    "expected": "Ma. Teresa",
-   "got": "Teresa Cruz"
+   "got": "Ma. Teresa Cruz"
   },
-  "text": "Ma. Teresa Cruz Bautista",
-  "title": {
-   "expected": "",
-   "got": "Ma."
-  }
+  "text": "Ma. Teresa Cruz Bautista"
  },
  "conventions/Michael Wong Kar Ming/default": {
   "family": {

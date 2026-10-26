@@ -2,7 +2,7 @@
 
 **When:** a period-marked word opens the part of the name that carries the given name, as in "Rev. John Smith".
 
-**Then:** an abbreviation opening the part of the name that carries the given name — the whole name, or the part after a family comma — reads as a title even when unlisted, provided it is an unbroken run of two or more letters ending in its one period, the shape outranking vocabulary where it fires, so that a period-marked opening word is a title even when the word is suffix vocabulary, save a credential opening the part after a family comma (C13).
+**Then:** an abbreviation opening the part of the name that carries the given name — the whole name, or the part after a family comma — reads as a title even when unlisted, provided it is an unbroken run of two or more letters ending in its one period, the shape outranking vocabulary where it fires, so that a period-marked opening word is a title even when the word is suffix vocabulary, save a credential opening the part after a family comma (C13) and a given name written short.
 
 - **A single-letter initial does not** (T5), and neither does anything with interior periods, hyphens or digits.
   ```
@@ -36,7 +36,18 @@
   ```
   "Smith, Esq. John"          →  suffix="Esq. John"
   "Smith, Insp. John"         →  title="Insp."
-  "Smith, Ma. John"           →  title="Ma."
+  "Smith, Do. John"           →  title="Do."
+  ```
+- **A given name written short** ("Chas. Smith", "Ma. Cristina Reyes"): an abbreviation the vocabulary reads as a given name written short is that given name, outranking the shape — traditional English abbreviations such as Chas. and Wm., and the Filipino Ma. (María) and Jo. (José) — so the name reads as it would with the full given name in that place, behind a title too ("Mrs Ma. Liza Cruz"), and C4's count of the name words before a comma, which asks this shape, counts it as one; its period still keeps it out of the case contrast C6 reads, as an initial's does ("Chas. SMITH, XYZ" reads as "J. SMITH, XYZ"). Only the shape yields: a word listed as a title is still one, and written bare, or anywhere but the head of the part that carries the given name, the word reads as it would unlisted, so "Ma" keeps its surname and credential readings.
+  ```
+  "Chas. Smith"               →  given="Chas."
+  "Smith, Chas."              →  given="Chas."
+  "Smith, Ma. John"           →  given="Ma."
+  "Mrs Ma. Liza Cruz"         →  given="Ma."
+  "Wm. H. Smith III"          →  given="Wm."
+  "Chas. Smith, Ed"           →  suffix="Ed"
+  "John Smith Ma."            →  family="Ma."
+  "Smith, John Ma"            →  middle="Ma"
   ```
 
 **Accepted:**
@@ -56,5 +67,5 @@
   ```
 
 ---
-**Signal:** shape: an unlisted word of two or more letters ending in its one period, opening the given-name part
-**history:** decisions/H2 · **implemented:** nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
+**Signal:** shape: an unlisted word of two or more letters ending in its one period, opening the given-name part, which a given name written short declines
+**history:** decisions/H2 · **implemented:** nameparser/_pipeline/_assign.py, nameparser/_pipeline/_classify.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py

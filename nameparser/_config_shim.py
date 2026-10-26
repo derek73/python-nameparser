@@ -1045,6 +1045,7 @@ class Constants:
         removal path.
         """
         from nameparser.config.conjunctions import CONJUNCTIONS_AMBIGUOUS
+        from nameparser.config.given_names import GIVEN_NAME_ABBREVIATIONS
         from nameparser.config.maiden_markers import MAIDEN_MARKERS
         from nameparser.config.suffixes import (
             AGNOMENS, GLUED_HONORIFICS, SUFFIX_WORDS_AMBIGUOUS)
@@ -1196,6 +1197,15 @@ class Constants:
                 # through this intersection.
                 conjunctions_ambiguous=CONJUNCTIONS_AMBIGUOUS & conjunctions,
                 bound_given_names=bound,
+                # likewise no v1 manager: an abbreviated given name
+                # reading over rules/H2's shape is 2.7 behavior (#789),
+                # so the set rides in the snapshot only, passed whole.
+                # No v1 knob reaches it, and none needs to: a word a v1
+                # caller ADDS to `titles` is a title wherever it stands,
+                # since the leading peel asks the title vocabulary before
+                # it weighs the shape, as it did in 1.4
+                # (`c.titles.add("chas")`)
+                given_name_abbreviations=GIVEN_NAME_ABBREVIATIONS,
                 # v1 Constants has no manager for these (#274 is 2.0
                 # behavior); the data module is the only source
                 maiden_markers=MAIDEN_MARKERS,
