@@ -41,6 +41,9 @@ _LEX = Lexicon(
     # no run either.
     suffix_acronyms=frozenset({"md", "vd", "ma"}),
     suffix_acronyms_ambiguous=frozenset({"ma"}),
+    # and `ma` is a given name written short too (Filipino María, #789),
+    # read so only period-marked at the head of the given part
+    given_name_abbreviations=frozenset({"ma"}),
     conjunctions=frozenset({"y"}),
     bound_given_names=frozenset({"abdul"}),
 )

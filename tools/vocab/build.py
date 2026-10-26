@@ -50,7 +50,10 @@ at fault:
    its category (`cased`: of the word);
    run before 4 and 5, so the recorded reason is what a contributor sees;
 7. `same_as` names another word of the same category, `cased` spells
-   its word's letters (#459), at most one `cased` per word;
+   its word's letters (#459), at most one `cased` per word; on a
+   `given` reading `same_as` is the full given name the word
+   abbreviates, a name rather than a word of the vocabulary, written
+   normalized, and a `family` reading takes none;
 8. a phrase only as a birth_marker or an addresses = "given" title, and
    never with a `cased`, which is looked up per word;
 9. a bound given name that is also a particle has a given reading;
@@ -82,7 +85,8 @@ final check in compile_pool is the backstop. The subset relations
 together, each marker set in its base) need no
 check: a flag cannot exist without its reading, and a derived marker is
 read off the reading it marks. The one soft finding, a
-name reading on a word with no vocabulary reading and no exclusion, is
+name reading on a word with no vocabulary reading and no exclusion
+(save an abbreviated given name, which compiles), is
 a VocabWarning, which the shipped-data test turns into an error.
 """
 from __future__ import annotations
@@ -249,12 +253,18 @@ DERIVED = {
 #: derived marker reads these, and a name reading beside another word
 #: kind marks nothing, no gate reading that clash yet.
 GATED_WORDS = frozenset({"generation", "agnomen"})
-#: Descriptive properties: recorded, validated, compiled to nothing.
+#: Descriptive properties: recorded, validated, compiled to nothing --
+#: save `same_as` on a `given` reading, which is a NAME_KEYS entry, not
+#: this set's, and compiles the word into GIVEN_NAME_ABBREVIATIONS.
 DESCRIPTIVE = frozenset({"note", "issue", "decided", "expands", "same_as",
                          "native", "gender"})
 #: What a name reading (`given`, `family`) may carry.
 COUNT_SOURCES = frozenset({"us_census_2010", "us_ssa", "wikidata"})
-NAME_KEYS = COUNT_SOURCES | {"as_of", "native", "note", "gender"}
+#: `same_as` on a `given` reading is the full name the word abbreviates
+#: (`chas` -> charles), which compiles it into GIVEN_NAME_ABBREVIATIONS:
+#: a period-marked abbreviation opening the given part is that given
+#: name, not rules/H2's title (#789)
+NAME_KEYS = COUNT_SOURCES | {"as_of", "native", "note", "gender", "same_as"}
 #: The keys of an `excluded` value's table, and of an `attached` table.
 EXCLUSION_KEYS = frozenset({"reason", "issue", "decided", "note"})
 ATTACHED_KEYS = frozenset({"side", "issue", "decided", "note"})
@@ -767,6 +777,15 @@ def _check_reading(r: Reading, pool: Pool) -> None:
             raise VocabError(f"{where}: a name reading with no count needs a "
                              f"`note` saying why it is declared")
         _check_descriptive(where, p)
+        if "same_as" in p:
+            if r.kind != "given":
+                raise VocabError(f"{where}: same_as on a name reading names the "
+                                 f"given name a word abbreviates, so only a "
+                                 f"`given` reading takes one")
+            if _normalize(p["same_as"]) != p["same_as"]:
+                raise VocabError(f"{where}: same_as {p['same_as']!r} is not in "
+                                 f"normalized form; write "
+                                 f"{_normalize(p['same_as'])!r}")
         pool.readings.append(r)
         return
     stated = STATED.get(r.category, frozenset())
@@ -1012,7 +1031,9 @@ def check_pool(pool: Pool) -> None:
         if target == r.text:
             raise VocabError(f"{r.where()}: same_as names the word itself; it "
                              f"names the word this one is a spelling of")
-        if target is not None and not any(
+        # a given reading's same_as is the full name it abbreviates, and
+        # a name is no word of the vocabulary
+        if target is not None and r.category != "name" and not any(
                 t.category == r.category for t in by_text.get(target, ())):
             raise VocabError(f"{r.where()}: same_as {target!r} has no "
                              f"{r.category} reading")
@@ -1107,7 +1128,9 @@ def check_pool(pool: Pool) -> None:
     # evidence is what a name reading usually is -- informs nothing
     excluded_texts = {x.text for x in pool.exclusions if x.prop is None}
     for text, rs in by_text.items():
-        if all(r.category == "name" for r in rs) and text not in excluded_texts:
+        # an abbreviated given name compiles (GIVEN_NAME_ABBREVIATIONS)
+        if (all(r.category == "name" and "same_as" not in r.props for r in rs)
+                and text not in excluded_texts):
             warnings.warn(f"{rs[0].where()}: a name reading on a word with no "
                           f"vocabulary reading is inert", VocabWarning, stacklevel=2)
 
@@ -1145,6 +1168,7 @@ CONSTANTS = (
     ("CONJUNCTIONS", "conjunctions"),
     ("CONJUNCTIONS_AMBIGUOUS", "conjunctions"),
     ("BOUND_GIVEN_NAMES", "bound_given_names"),
+    ("GIVEN_NAME_ABBREVIATIONS", "given_names"),
     ("MAIDEN_MARKERS", "maiden_markers"),
     ("SUFFIX_WORDS", "suffixes"),
     ("GLUED_HONORIFICS", "suffixes"),
@@ -1171,6 +1195,7 @@ class Compiled(TypedDict):
     CONJUNCTIONS: frozenset[str]
     CONJUNCTIONS_AMBIGUOUS: frozenset[str]
     BOUND_GIVEN_NAMES: frozenset[str]
+    GIVEN_NAME_ABBREVIATIONS: frozenset[str]
     MAIDEN_MARKERS: frozenset[str]
     SUFFIX_WORDS: frozenset[str]
     GLUED_HONORIFICS: frozenset[str]
@@ -1204,6 +1229,7 @@ def compile_pool(pool: Pool) -> Compiled:
     conjunctions: set[str] = set()
     initial_conjunctions: set[str] = set()
     bound: set[str] = set()
+    abbreviations: set[str] = set()
     markers: set[str] = set()
     words: set[str] = set()
     glued: set[str] = set()
@@ -1251,6 +1277,8 @@ def compile_pool(pool: Pool) -> Compiled:
             bound.add(t)
         elif r.category == "relation":
             markers.add(t)
+        elif r.kind == "given" and "same_as" in p:
+            abbreviations.add(t)
     contested = titles & given - particles
     out = Compiled(
         GIVEN_NAME_TITLES=frozenset(given_titles),
@@ -1283,6 +1311,10 @@ def compile_pool(pool: Pool) -> Compiled:
         CONJUNCTIONS=frozenset(conjunctions),
         CONJUNCTIONS_AMBIGUOUS=frozenset(initial_conjunctions),
         BOUND_GIVEN_NAMES=frozenset(bound),
+        # a given name written short (`chas`, Filipino `ma`): opening the
+        # given part period-marked, it is the given name, which outranks
+        # rules/H2's shape (#789)
+        GIVEN_NAME_ABBREVIATIONS=frozenset(abbreviations),
         MAIDEN_MARKERS=frozenset(markers),
         SUFFIX_WORDS=frozenset(words),
         GLUED_HONORIFICS=frozenset(glued),

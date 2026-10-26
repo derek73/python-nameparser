@@ -25,6 +25,7 @@ _VOCAB_FIELDS = (
     "titles", "given_name_titles", "suffix_acronyms", "suffix_words",
     "suffix_acronyms_ambiguous", "particles", "particles_ambiguous",
     "conjunctions", "conjunctions_ambiguous", "bound_given_names",
+    "given_name_abbreviations",
     "maiden_markers", "surnames", "honorific_tails", "after_given_titles",
     "suffix_words_ambiguous", "agnomens", "titles_ambiguous",
     "title_modifiers", "title_styles", "title_phrases",
@@ -668,6 +669,17 @@ class Lexicon:
     #: Full default list:
     #: :data:`~nameparser.config.bound_given_names.BOUND_GIVEN_NAMES`.
     bound_given_names: frozenset[str] = frozenset()
+    #: Given names written short ("chas" for Charles, "wm" for William,
+    #: Filipino "ma" for María). Period-marked and opening the part of
+    #: the name that carries the given name, an entry reads as that
+    #: given name, where an unlisted abbreviation there reads as a
+    #: title by its shape (rules/H2): "Chas. Smith" reads given
+    #: "Chas.", "Xyz. Smith" title "Xyz.". An entry also in ``titles``
+    #: is a title there, which is what listing it as one asks; anywhere
+    #: else an entry is read as it would be unlisted. Full default
+    #: list:
+    #: :data:`~nameparser.config.given_names.GIVEN_NAME_ABBREVIATIONS`.
+    given_name_abbreviations: frozenset[str] = frozenset()
     #: Marker words introducing a birth surname, routed to the maiden
     #: field ("née", "geb.", "rozená", ...). An entry may be a PHRASE
     #: ("z domu"): entries are matched by lookahead, longest first, so
@@ -1030,6 +1042,7 @@ class Lexicon:
 def _default_lexicon() -> Lexicon:
     # v1 data modules are the single source of vocabulary through 2.x.
     from nameparser.config.bound_given_names import BOUND_GIVEN_NAMES
+    from nameparser.config.given_names import GIVEN_NAME_ABBREVIATIONS
     from nameparser.config.capitalization import CAPITALIZATION_EXCEPTIONS
     from nameparser.config.conjunctions import (
         CONJUNCTIONS, CONJUNCTIONS_AMBIGUOUS)
@@ -1067,6 +1080,7 @@ def _default_lexicon() -> Lexicon:
         conjunctions=CONJUNCTIONS,
         conjunctions_ambiguous=CONJUNCTIONS_AMBIGUOUS,
         bound_given_names=BOUND_GIVEN_NAMES,
+        given_name_abbreviations=GIVEN_NAME_ABBREVIATIONS,
         maiden_markers=MAIDEN_MARKERS,
         surnames=KOREAN_SURNAMES,
         honorific_tails=GLUED_HONORIFICS,

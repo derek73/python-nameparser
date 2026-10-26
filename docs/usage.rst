@@ -861,8 +861,8 @@ Titles you didn't configure
 -----------------------------
 
 A trailing period marks an abbreviation, and the parts of a name that
-get abbreviated are the ones standing outside it — titles and
-post-nominals. So a word ending in a period, in no vocabulary list at
+get abbreviated are mostly the ones standing outside it — titles and
+post-nominals; the exception, a given name written short, is below. So a word ending in a period, in no vocabulary list at
 all, is read as a title when it stands where a title stands: at the
 front of the part that carries the given name. That is what lets
 unfamiliar ranks, honorifics and abbreviations work without configuring
@@ -890,8 +890,7 @@ rule applies there in exactly the same way:
 Where the inference stops
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The rule is bounded in five ways, so it doesn't swallow ordinary
-names:
+The rule is bounded so it doesn't swallow ordinary names:
 
 - **Single initials** are left alone (``J.``).
 - **Abbreviations with interior periods** are left alone (``E.T.``).
@@ -905,9 +904,18 @@ names:
   slot holds a surname too: ``Xyz. Smith, John`` keeps family
   ``Xyz. Smith``. A listed title is still read there, so
   ``Dr. Smith, John`` gives title ``Dr.``.
+- **A given name written short** is that given name (since 2.7): the
+  traditional English abbreviations such as ``Chas.``, ``Geo.`` and
+  ``Wm.``, and the Filipino ``Ma.`` (María) and ``Jo.`` (José).
+  ``Lexicon.given_name_abbreviations`` lists them; written bare, or
+  anywhere else in the name, each word reads as it would unlisted.
 
 .. doctest::
 
+    >>> parse("Chas. Smith").given
+    'Chas.'
+    >>> parse("Mrs Ma. Liza Cruz").given
+    'Ma.'
     >>> parse("J. Smith").given
     'J.'
     >>> parse("E.T. Jones").given

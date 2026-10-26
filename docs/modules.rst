@@ -227,6 +227,8 @@ HumanName.config Defaults
    :members:
 .. automodule:: nameparser.config.bound_given_names
    :members:
+.. automodule:: nameparser.config.given_names
+   :members:
 .. automodule:: nameparser.config.conjunctions
    :members:
 .. automodule:: nameparser.config.maiden_markers

@@ -5,7 +5,7 @@
 - A report whose fork the rest of the parse resolved to neither branch is withdrawn in assemble, the one place that sees final roles: a connective-or-initial letter roled suffix or title loses that report and keeps its own, so `JOHN QUINCY SMITH I` reports `suffix-or-name` alone — 2026-09-20 #397.
 - The decision stays at its emitter and assemble words the field from the word's final role (`PendingAmbiguity.field_tail`), so a report names the field its word lands in whatever rule moved it: `, Ma Dr.` reports 'Ma' "read as a family name", and `Kim Min Do` under FAMILY_FIRST reports 'Do' read as a family name; a placeholder in the detail was declined — 2026-10-08 #626.
 - A report on a part past the second comma names no field: `John Smith, Jr., Dr. Bart` reports "segment 'Dr. Bart' beyond the recognized comma structures; read best-effort"; naming every field the part's words land in was declined — 2026-10-10 #629.
-- The listed-member report after a family comma names the role the comma binds, worded at the emitter: `John, Ma.` reads title 'Ma.' and reports "read as a title" — 2026-10-21 #793.
+- The listed-member report after a family comma names the role the comma binds, worded at the emitter: `John, Si.` reads title 'Si.' and reports "read as a title" (its example was `John, Ma.` until decisions/H2 made `Ma.` there a given name written short) — 2026-10-21 #793.
 
 Elsewhere: P8's "connects nothing", withdrawn once over final roles in assemble, is decisions/S10's 2026-10-18 #722's /simplify pass entry.
 

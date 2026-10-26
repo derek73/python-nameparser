@@ -202,11 +202,13 @@ _PERIOD_ABBREV = re.compile(r'^(?:' + _LETTER + r'){2,}\.$')
 # carries the given name — the whole name, or the part after a
 # family comma — reads as a title even when unlisted"
 # (history: decisions/H2)
-def is_title_shaped(text: str) -> bool:
-    """Whether TEXT wears H2's shape alone -- vocabulary-free, the
-    LISTED half being a separate lookup at each caller's own site
-    (is_title_piece/lexicon.titles). `name_word_count` below is the
-    only CALLER; `_pieces.is_leading_title` asks the same question
+def is_title_shaped(text: str, lexicon: Lexicon) -> bool:
+    """Whether TEXT reads as a title by H2's shape -- the LISTED half
+    being a separate lookup at each caller's own site
+    (is_title_piece/lexicon.titles), and the one vocabulary read here
+    the given name written short, which outranks the shape (rules/H2,
+    #789: 'Chas.' is no title). `name_word_count` and `title_readings`
+    below are its callers; `_pieces.is_leading_title` asks the same question
     but keeps this body inline, its path being hot (every leading
     piece of every parse) where this one is cold (comma names only)
     -- the measured figure lives at that inline copy and is not
@@ -230,7 +232,8 @@ def is_title_shaped(text: str) -> bool:
     parse, this running four times per piece.
     """
     return (bool(_PERIOD_ABBREV.match(text))
-            and (text.isascii() or not in_initialless_script(text)))
+            and (text.isascii() or not in_initialless_script(text))
+            and _normalize(text) not in lexicon.given_name_abbreviations)
 
 
 def is_initial_shaped(text: str) -> bool:
@@ -1099,11 +1102,14 @@ def in_any_wordlist(n: str, lexicon: Lexicon) -> bool:
     shape's "unlisted" (`caps_shape_candidate`), where a word a caller
     listed even as a SURNAME must never become a credential.
 
-    The two left out: `title_phrases`, whose entries are two words and
-    so never one, and `titles_ambiguous`, a title that may be a given
+    The three left out: `title_phrases`, whose entries are two words and
+    so never one; `titles_ambiguous`, a title that may be a given
     name, which outside a title phrase is read as the unlisted word it
     is there (rules/H9: "and elsewhere a name word") -- a phrase is two
-    words and a comma part read by this shape is one."""
+    words and a comma part read by this shape is one; and
+    `given_name_abbreviations`, a given name written short (#789),
+    whose one reader is H2's shape, so anywhere else its word reads as
+    the unlisted word it is ('John Smith, JAS' keeps suffix 'JAS')."""
     for field in _LISTED_FIELDS:
         if n in getattr(lexicon, field):
             return True
@@ -1111,14 +1117,17 @@ def in_any_wordlist(n: str, lexicon: Lexicon) -> bool:
 
 
 _LISTED_FIELDS = tuple(f for f in _VOCAB_FIELDS
-                       if f not in ("title_phrases", "titles_ambiguous"))
+                       if f not in ("title_phrases", "titles_ambiguous",
+                                    "given_name_abbreviations"))
 
 
 #: The wordlists that claim a word as something OTHER than name text.
 #: `surnames` and `bound_given_names` are left out: they say a word IS
 #: a name word ('Kim', 'Abdul'), the opposite claim; and so is
 #: `titles_ambiguous`, a title that may be a given name (rules/H9), with
-#: `title_phrases`, whose two-word entries never match one word.
+#: `title_phrases`, whose two-word entries never match one word; and so
+#: is `given_name_abbreviations`, a given name written short (#789), left
+#: out of `_LISTED_FIELDS` above.
 _NON_NAME_FIELDS = tuple(f for f in _LISTED_FIELDS
                          if f not in ("surnames", "bound_given_names"))
 
@@ -1505,7 +1514,7 @@ def title_readings(texts: Sequence[str], folded: Sequence[str],
     lead = 0
     if head:
         while lead < len(folded) and (reading[lead] or folded[lead] in conjunctions
-                                      or is_title_shaped(texts[lead])):
+                                      or is_title_shaped(texts[lead], lexicon)):
             lead += 1
     # right to left, so each modifier knows whether a head title stands
     # behind it before the run is broken; a connective carries the run
@@ -1518,7 +1527,7 @@ def title_readings(texts: Sequence[str], folded: Sequence[str],
                 i < last and folded[i + 1] in _PHRASE_LINKS
                 and folded[i + 1] in conjunctions)
             behind = reading[i]
-        elif reading[i] or (head and is_title_shaped(texts[i])):
+        elif reading[i] or (head and is_title_shaped(texts[i], lexicon)):
             behind = True
         elif n not in conjunctions:
             behind = False
@@ -1575,7 +1584,7 @@ def name_word_count(texts: Sequence[str], lexicon: Lexicon,
             has_particle = True
         suffix = (is_suffix_lenient(text, lexicon) if lenient
                   else is_suffix_strict(text, lexicon, letters_one_case))
-        names.append(not (suffix or title or is_title_shaped(text)))
+        names.append(not (suffix or title or is_title_shaped(text, lexicon)))
     if not has_particle:
         return sum(names)
     count = 0

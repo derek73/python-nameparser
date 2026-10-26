@@ -58,8 +58,8 @@ from collections.abc import (
 from typing import NamedTuple
 
 from nameparser._pipeline._state import (
-    AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, NAME_ROLES,
-    SHAPE_ACRONYM_TAG, SUFFIX_OR_UNREAD, AmbiguityKind, PendingAmbiguity,
+    AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG,
+    GIVEN_ABBREVIATION_TAG, NAME_ROLES, SHAPE_ACRONYM_TAG, SUFFIX_OR_UNREAD, AmbiguityKind, PendingAmbiguity,
     WorkToken,
 )
 from nameparser._pipeline._vocab import (
@@ -383,7 +383,10 @@ def is_leading_title(piece: Sequence[int], ptags: Set[str],
     # own test file) checks it over the union of both predicates'
     # example tables rather than leaving it to a sentence.
     return (bool(_PERIOD_ABBREV.match(text))
-            and (text.isascii() or not in_initialless_script(text)))
+            and (text.isascii() or not in_initialless_script(text))
+            # rules/H2's precedence: a given name written short outranks
+            # the shape ('Chas.', #789) -- classify's tag, a C-level test
+            and GIVEN_ABBREVIATION_TAG not in tokens[piece[0]].tags)
 
 
 def leading_titles(pieces: Sequence[Sequence[int]],

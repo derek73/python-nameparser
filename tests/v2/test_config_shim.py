@@ -1325,3 +1325,15 @@ def test_snapshot_cleared_titles_turn_the_title_phrase_off() -> None:
     lexicon, _, _ = c._snapshot()
     assert lexicon.titles_ambiguous == frozenset()
     assert HumanName("Dean of Students Jane Smith", constants=c).title == ""
+
+
+def test_snapshot_a_given_name_written_short_listed_as_a_title_is_a_title() -> None:
+    # #789: given_name_abbreviations rides in the snapshot whole, no v1
+    # manager reaching it; the v1 recipe that lists the word as a title
+    # (`c.titles.add("chas")`) gets 1.4's reading back, the leading peel
+    # asking the titles before the shape the set outranks
+    c = Constants()
+    assert HumanName("Chas. Smith", constants=c).first == "Chas."   # baseline
+    c.titles.add("chas")
+    assert "chas" in c._snapshot()[0].given_name_abbreviations
+    assert HumanName("Chas. Smith", constants=c).title == "Chas."

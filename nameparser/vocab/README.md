@@ -132,7 +132,7 @@ A reading's key is its **kind**. The table lists the kinds in their canonical or
 | `given` | `name` | nothing |
 | `family` | `name` | nothing |
 
-A suffix reading goes to `SUFFIX_ACRONYMS` when its `acronym` property is true and to `SUFFIX_WORDS` otherwise; the column shows where each kind goes with `acronym` unwritten. A word has at most one suffix kind (check 4).
+A suffix reading goes to `SUFFIX_ACRONYMS` when its `acronym` property is true and to `SUFFIX_WORDS` otherwise; the column shows where each kind goes with `acronym` unwritten. A word has at most one suffix kind (check 4). A `given` reading carrying `same_as` goes to `GIVEN_NAME_ABBREVIATIONS`, a given name written short (see [Name readings](#name-readings)).
 
 `generation` is a word that numbers or ranks its bearer among relatives of the same name, written after the name: junior and senior and their translations, `fils`, the roman numerals the vocabulary lists. `agnomen` is the Brazilian and Portuguese kind of it (`filho`, `neto`, `sobrinho` and their feminines): it is written in the case of the name around it, so its writing settles nothing, and an agnomen reading needs a name reading on its word (check 11), which gates it by the count alone ([rules/S11](../../docs/design/rules/S11-suffix-word-that-is-also-a-name.md), a suffix word that is also a name). The column shows an agnomen with that name reading.
 
@@ -170,7 +170,7 @@ The `name` kinds compile to nothing on their own. They record that a word is bor
 
 ## Properties
 
-A property is **behavioral** when it compiles into a set and so changes how names are parsed, **stated** when it compiles to nothing but the build holds it to the word's readings, and **descriptive** when it is checked and recorded but compiled to nothing. Each is allowed only on the categories listed; a `name` reading takes its own keys (see [Name readings](#name-readings)). Two of the sets are not properties at all but [derived markers](#derived-markers), read off a word's name readings.
+A property is **behavioral** when it compiles into a set and so changes how names are parsed, **stated** when it compiles to nothing but the build holds it to the word's readings, and **descriptive** when it is checked and recorded but compiled to nothing, save `same_as` on a `given` reading, which compiles the word into `GIVEN_NAME_ABBREVIATIONS` (see [Name readings](#name-readings)). Each is allowed only on the categories listed; a `name` reading takes its own keys (see [Name readings](#name-readings)). Two of the sets are not properties at all but [derived markers](#derived-markers), read off a word's name readings.
 
 | Property | Type | Applies to | Unwritten | Effect |
 |---|---|---|---|---|
@@ -187,7 +187,7 @@ A property is **behavioral** when it compiles into a set and so changes how name
 | `issue` | descriptive | every category but `name` | | an issue number, or a list of them |
 | `decided` | descriptive | every category but `name` | | a TOML date |
 | `expands` | descriptive | every category but `name` | | the meaning the entry was added for, not every meaning |
-| `same_as` | descriptive | every category but `name` | | another word of the same category that this one is a spelling of (`jnr` is `jr`) |
+| `same_as` | descriptive | every category | | another word of the same category that this one is a spelling of (`jnr` is `jr`); on a `given` reading, the full given name the word abbreviates, which compiles the word into `GIVEN_NAME_ABBREVIATIONS` (see [Name readings](#name-readings)) |
 | `native` | descriptive | every category, a `name` reading included | | a native-script spelling |
 | `gender` | descriptive | every category, a `name` reading included | | `"f"`, `"m"` or `"n"`, only where the word gives a definitive clue |
 
@@ -222,6 +222,7 @@ A `given` or `family` reading takes its own keys:
 | `native` | a native-script spelling |
 | `note` | free text |
 | `gender` | `"f"`, `"m"` or `"n"` |
+| `same_as` | on a `given` reading only: the full given name the word abbreviates, normalized (`chas` is `charles`), which puts the word in `GIVEN_NAME_ABBREVIATIONS`: written with its period at the head of the part of the name that carries the given name, the word is that given name, where an unlisted abbreviation there is a title by its shape ([rules/H2](../../docs/design/rules/H2-leading-abbreviation-title.md), the leading-abbreviation title), so `Chas. Smith` reads given `Chas.`. Anywhere else the reading acts on nothing. A name is no word of the vocabulary, so this `same_as`, unlike a reading's, names no entry, and an entry holding only such a reading is not inert |
 
 A name reading may stand without a count, as a particle kept possibly given under C-i's default with no source counting it does, but it then needs a `note` saying why it is declared (check 3).
 
@@ -232,7 +233,7 @@ An exclusion records that a reading was considered and refused, with the reason,
 - **A refused reading** is a word-level table: `[word.excluded.generation]` with a `reason`, or `excluded = { generation = "the reason" }`. It refuses that kind in every file, and also every other kind that compiles into the same set, so a generic `suffix = {}` cannot put back a refused `generation`. A category name refuses the whole category (`excluded = { suffix = "..." }`). A `name` kind refuses only itself.
 - **A refused property** sits on a reading the word keeps: `[word.honorific.excluded]` with `attached = "the reason"`. It refuses any value of that property other than the one it takes unwritten, on any reading of the category; a refused `cased`, which belongs to the word, on any reading of the word.
 
-The value is a reason string, or a table with `reason` and optionally `issue`, `decided` and `note`. The exclusion goes in the file of the language whose reading it refuses. An entry may hold exclusions and no vocabulary reading, as `père` does. An entry with no reading and no exclusion is refused as inert, and one holding only a name reading is a warning, which the test suite makes an error.
+The value is a reason string, or a table with `reason` and optionally `issue`, `decided` and `note`. The exclusion goes in the file of the language whose reading it refuses. An entry may hold exclusions and no vocabulary reading, as `père` does. An entry with no reading and no exclusion is refused as inert, and one holding only a name reading is a warning, which the test suite makes an error, unless that reading is a `given` reading carrying `same_as`, which compiles.
 
 To see what has been refused, and why: `uv run python tools/vocab/query.py --excluded generation`.
 
