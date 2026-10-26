@@ -175,7 +175,8 @@ religious = { addresses = "given", gender = "m", expands = "a member of a religi
 
 [[word]]
 text = "buddha"
-religious = {}
+religious = { issue = 869, decided = 2026-10-26, note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'Buddha Bahadur Tamang' reads the given name, unreported, since no listed phrase holds it" }
+given = { us_ssa = 6, wikidata = 4, as_of = 2026-10-26, note = "US SSA: male births; Wikidata is a lower bound; the first half of Nepali compound given names (Buddha Bahadur, Buddha Maya): 83 of nepal-candidates' 126,981 pairs write it, opening the name in 79" }
 
 [[word]]
 text = "canon"
@@ -299,7 +300,8 @@ religious = {}
 
 [[word]]
 text = "siddha"
-religious = {}
+religious = { issue = 869, decided = 2026-10-26, note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'Siddha Raj Joshi' reads the given name, unreported, since no listed phrase holds it" }
+given = { note = "no US SSA year reaches 5 births and Wikidata counts no one; declared as the first half of Nepali compound given names (Siddha Raj): 12 of nepal-candidates' 126,981 pairs write it, each opening the name (2026-10-26)" }
 
 [[word]]
 text = "sister"

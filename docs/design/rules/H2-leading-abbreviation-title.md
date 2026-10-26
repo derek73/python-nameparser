@@ -49,6 +49,10 @@
   "John Smith Ma."            →  family="Ma."
   "Smith, John Ma"            →  middle="Ma"
   ```
+- **A connective after the abbreviation** (P3): the join takes it with the word after the connective before the shape is asked of it, so the two read as two names joined.
+  ```
+  "Xyz. and Mary Smith"       →  given="Xyz. and Mary"
+  ```
 
 **Accepted:**
 

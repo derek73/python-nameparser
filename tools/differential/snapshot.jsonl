@@ -433,6 +433,7 @@
 {"name": "Brül Cabral de Melo, Erika Cornelia Anna Isabelle von", "given": "Erika", "middle": "Cornelia Anna Isabelle", "family": "von Brül Cabral de Melo", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "E. C. A. I. B. C. M."}
 {"name": "Brül, Ada Kornelia Sezar Martin fon", "given": "Ada", "middle": "Kornelia Sezar Martin fon", "family": "Brül", "initials": "A. K. S. M. f. B.", "capitalized_force": "Ada Kornelia Sezar Martin Fon Brül"}
 {"name": "Buca di Beppo", "given": "Buca", "family": "di Beppo", "initials": "B. B."}
+{"name": "Buddha Bahadur Tamang", "given": "Buddha", "middle": "Bahadur", "family": "Tamang", "initials": "B. B. T."}
 {"name": "Budi", "given": "Budi", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "B."}
 {"name": "Budi", "order": "FAMILY_FIRST", "family": "Budi", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "B."}
 {"name": "Bukenya Zamara Imani", "order": "FAMILY_FIRST", "given": "Zamara", "middle": "Imani", "family": "Bukenya", "initials": "Z. I. B."}
@@ -606,6 +607,7 @@
 {"name": "Dean of Students Jane Smith", "title": "Dean of Students", "given": "Jane", "family": "Smith", "initials": "J. S."}
 {"name": "Dean. Robert Johns", "title": "Dean.", "given": "Robert", "family": "Johns", "initials": "R. J."}
 {"name": "Dean. Smith", "title": "Dean.", "family": "Smith", "initials": "S."}
+{"name": "Dean. and Mary Smith", "given": "Dean. and Mary", "family": "Smith", "initials": "D. M. S."}
 {"name": "Del Toro", "given": "Del", "family": "Toro", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "D. T."}
 {"name": "Del toro", "given": "Del", "family": "toro", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "D. t.", "capitalized_force": "Del Toro"}
 {"name": "Della Reese", "given": "Della", "family": "Reese", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "D. R."}
@@ -1171,6 +1173,7 @@
 {"name": "Guðrún Eva Mínervudóttir", "given": "Guðrún", "middle": "Eva", "family": "Mínervudóttir", "initials": "G. E. M."}
 {"name": "Guðrún Helgadóttir", "given": "Guðrún", "family": "Helgadóttir", "initials": "G. H."}
 {"name": "Guðrún Lárusdóttir", "given": "Guðrún", "family": "Lárusdóttir", "initials": "G. L."}
+{"name": "Gyani Zail Singh", "given": "Gyani", "middle": "Zail", "family": "Singh", "initials": "G. Z. S."}
 {"name": "Gylfi Sigurðsson", "given": "Gylfi", "family": "Sigurðsson", "initials": "G. S."}
 {"name": "Gábor, Andor", "given": "Andor", "family": "Gábor", "initials": "A. G."}
 {"name": "Gössmann, Elisabeth", "given": "Elisabeth", "family": "Gössmann", "initials": "E. G."}
@@ -2258,6 +2261,7 @@
 {"name": "Lombardi, Amarildo", "given": "Amarildo", "family": "Lombardi", "initials": "A. L."}
 {"name": "Lombardi, Amarildo A.", "order": "FAMILY_FIRST", "given": "Amarildo", "middle": "A.", "family": "Lombardi", "initials": "A. A. L."}
 {"name": "Lon (Jr.) Williams", "given": "Lon", "middle": "Jr.", "family": "Williams", "initials": "L. J. W."}
+{"name": "Lord Buddha Tamang", "title": "Lord", "given": "Buddha", "family": "Tamang", "initials": "B. T."}
 {"name": "Lord Chancellor", "title": "Lord", "family": "Chancellor", "ambiguities": ["TITLE_OR_NAME"], "initials": "C."}
 {"name": "Lord God Almighty", "title": "Lord", "given": "God", "family": "Almighty", "initials": "G. A."}
 {"name": "Lord and of the Universe", "title": "Lord and of the Universe"}
@@ -2566,6 +2570,7 @@
 {"name": "Mother Superior of the Convent Mary Smith", "title": "Mother Superior of the Convent", "given": "Mary", "family": "Smith", "initials": "M. S."}
 {"name": "Mozart Wolfgang Amadeus", "order": "FAMILY_FIRST", "given": "Wolfgang", "middle": "Amadeus", "family": "Mozart", "initials": "W. A. M."}
 {"name": "Mozart, Wolfgang Amadeus", "given": "Wolfgang", "middle": "Amadeus", "family": "Mozart", "initials": "W. A. M."}
+{"name": "Mr Buddha. Tamang", "title": "Mr Buddha.", "family": "Tamang", "initials": "T."}
 {"name": "Mr Dean Smith", "title": "Mr", "given": "Dean", "family": "Smith", "ambiguities": ["TITLE_OR_NAME"], "initials": "D. S."}
 {"name": "Mr Justice Smith", "title": "Mr", "given": "Justice", "family": "Smith", "ambiguities": ["TITLE_OR_NAME"], "initials": "J. S."}
 {"name": "Mr MA", "title": "Mr", "family": "MA", "initials": "M.", "capitalized_force": "Mr Ma"}
@@ -3597,6 +3602,7 @@
 {"name": "Xyz. (Bud) Smith", "title": "Xyz.", "family": "Smith", "nickname": "Bud", "initials": "S."}
 {"name": "Xyz. John Smith", "title": "Xyz.", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Xyz. Smith, John", "given": "John", "family": "Xyz. Smith", "initials": "J. X. S."}
+{"name": "Xyz. and Mary Smith", "given": "Xyz. and Mary", "family": "Smith", "initials": "X. M. S."}
 {"name": "Xyz. van Johnson", "title": "Xyz.", "given": "van", "family": "Johnson", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "v. J.", "capitalized_force": "Xyz. Van Johnson"}
 {"name": "Y. L.", "given": "Y.", "family": "L.", "initials": "Y. L."}
 {"name": "Yamamoto, Baiitsu", "given": "Baiitsu", "family": "Yamamoto", "initials": "B. Y."}
