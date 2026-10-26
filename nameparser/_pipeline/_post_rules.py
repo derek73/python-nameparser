@@ -428,7 +428,10 @@ def _settle_delimited_members(state: ParseState, tokens: list[WorkToken],
         dotted = ("." in token.text.strip(".")
                   and _normalize(token.text).replace(".", "")
                   in lex.suffix_acronyms_ambiguous)
-        if i > last_name and i in alone and (
+        # after the name: behind its last name word, and a name word
+        # there is, so a clause in a name of no word of its own
+        # ('Dr. (MA)') is not settled
+        if 0 <= last_name < i and i in alone and (
                 dotted or settled_by_case(token, state.one_case)):
             tokens[i] = copy_with(token, role=Role.SUFFIX)
         elif dotted or AMBIGUOUS_ACRONYM_TAG in token.tags:

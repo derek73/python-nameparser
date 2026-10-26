@@ -2191,12 +2191,12 @@ def test_a_declined_cjk_credential_word_does_not_peel_off_a_glued_name(
 # rules/S13 (#810): where a bracketed member reads differently from its
 # twin, a bracketed unambiguous credential in the same place. The twin
 # is MBA, a word no head holds, so the twin's reading maps back by
-# replacing its text. 1,044 texts, about 2s.
+# replacing its text. 1,080 texts, about 2s.
 _TWIN_HEADS = (
     "John Smith {c}", "Jack {c}", "{c}", "John {c}", "JOHN SMITH {c}",
     "Smith, John {c}", "Smith, {c}", ", {c}", "(Bob), {c}",
     "John Smith {c}, PhD", "John Smith, PhD {c}", "John Smith PhD {c}",
-    "Dr. Jack {c}", "Freiherr von Berg {c}", "Juan de la Vega {c}",
+    "Dr. Jack {c}", "Dr. {c}", "Freiherr von Berg {c}", "Juan de la Vega {c}",
     "Jane Doe nee Smith {c}", "John Smith {c} née Jones",
     "John Smith {c} Dr.", "John Smith {c} VI", "John Smith {c} Ph. D.",
     "Smith, Jane {c} Mrs", "Ortega y Gasset, José {c}",
@@ -2226,12 +2226,15 @@ def _twin_reading(name: ParsedName, twin: str | None, word: str) -> tuple[
 #: family name beside a settled member where its twin's is given; the
 #: maiden clause stays the maiden name where the twin's credential run
 #: takes it; a part past a second comma reports what is left without
-#: the member; a name with no word of its own, or written in one case,
-#: settles no capitals; and a clause another settled one would make
-#: settle, on a second reading, is left the nickname.
+#: the member; a name written in one case settles no capitals; a name
+#: with no word of its own (a title, a nickname, nothing) settles no
+#: clause, where the twin is read as the name; and a clause another
+#: settled one would make settle, on a second reading, is left the
+#: nickname.
 _TWIN_CENSUS = {
-    ("(Bob), {c}", "nickname"): 24,
-    (", {c}", "nickname"): 24,
+    ("(Bob), {c}", "nickname"): 36,
+    (", {c}", "nickname"): 36,
+    ("Dr. {c}", "nickname"): 36,
     ("JOHN SMITH (m.a) {c}", "nickname"): 24,
     ("JOHN SMITH {c}", "nickname"): 24,
     ("Jack {c}", "settled"): 36,
@@ -2240,8 +2243,7 @@ _TWIN_CENSUS = {
     ("Smith, John, Bob {c}", "settled"): 36,
     ("Smith, John, X.Y.Z. {c}", "settled"): 36,
     ("john smith (M.A) {c}", "nickname"): 24,
-    ("{c}", "nickname"): 24,
-    ("{c}", "settled"): 12,
+    ("{c}", "nickname"): 36,
 }
 
 

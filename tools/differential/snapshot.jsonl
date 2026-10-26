@@ -7,6 +7,7 @@
 {"name": "'Smitty' Sir John", "title": "Sir", "given": "John", "nickname": "Smitty", "initials": "J."}
 {"name": "(", "ambiguities": ["UNBALANCED_DELIMITER"]}
 {"name": "()"}
+{"name": "(M.A)", "nickname": "M.A", "ambiguities": ["SUFFIX_OR_NICKNAME"]}
 {"name": "(MA) John Smith", "given": "John", "family": "Smith", "nickname": "MA", "ambiguities": ["SUFFIX_OR_NICKNAME"], "initials": "J. S.", "capitalized_force": "John \"Ma\" Smith"}
 {"name": "(김민준.) John Smith", "given": "김", "middle": "민준. John", "family": "Smith", "initials": "김. 민. J. S."}
 {"name": ","}
@@ -759,6 +760,7 @@
 {"name": "Dr 김민준씨, Jr.", "title": "Dr", "given": "민준", "family": "김", "suffix": "씨, Jr.", "initials": "민. 김."}
 {"name": "Dr 김민준씨, V.", "title": "Dr", "given": "민준", "family": "김", "suffix": "씨, V.", "initials": "민. 김."}
 {"name": "Dr.", "title": "Dr."}
+{"name": "Dr. (MA)", "title": "Dr.", "nickname": "MA", "ambiguities": ["SUFFIX_OR_NICKNAME"], "capitalized_force": "Dr. \"Ma\""}
 {"name": "Dr. Abdul Salam Hassan, MD", "title": "Dr.", "given": "Abdul Salam", "family": "Hassan", "suffix": "MD", "initials": "A. S. H."}
 {"name": "Dr. Ana García López", "title": "Dr.", "given": "Ana", "middle": "García", "family": "López", "initials": "A. G. L."}
 {"name": "Dr. Ardelean Dl Daniel Ionescu Dragoș Ioan Jr.", "order": "FAMILY_FIRST", "title": "Dr.", "given": "Dl", "middle": "Daniel Ionescu Dragoș Ioan", "family": "Ardelean", "suffix": "Jr.", "initials": "D. D. I. D. I. A."}
@@ -1669,6 +1671,7 @@
 {"name": "John Smith (MA) Ph. D.", "given": "John", "family": "Smith", "suffix": "MA Ph. D.", "initials": "J. S."}
 {"name": "John Smith (MA) née Jones", "given": "John", "family": "Smith", "suffix": "MA", "maiden": "Jones", "initials": "J. S."}
 {"name": "John Smith (MA), PhD", "given": "John", "family": "Smith", "suffix": "MA, PhD", "initials": "J. S."}
+{"name": "John Smith (MA).", "given": "John", "middle": "Smith", "family": ".", "nickname": "MA", "ambiguities": ["SUFFIX_OR_NICKNAME"], "initials": "J. S. ..", "capitalized_force": "John \"Ma\" Smith ."}
 {"name": "John Smith (MA.)", "given": "John", "family": "Smith", "suffix": "MA.", "initials": "J. S."}
 {"name": "John Smith (MBA PhD.)", "given": "John", "family": "Smith", "suffix": "MBA PhD.", "initials": "J. S."}
 {"name": "John Smith (Ma)", "given": "John", "family": "Smith", "nickname": "Ma", "ambiguities": ["SUFFIX_OR_NICKNAME"], "initials": "J. S."}

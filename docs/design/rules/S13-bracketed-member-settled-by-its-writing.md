@@ -36,7 +36,7 @@
   "john smith (MA)"           →  nickname="MA"
   "John Smith (Ma)"           →  nickname="Ma"
   ```
-- **A member standing inside the name or before it** stays the nickname, however it is written.
+- **A member standing inside the name or before it** stays the nickname, however it is written, and so does one in a name with no name word of its own, or one with a word after it the parse reads as a name word, a stray full stop included.
   ```
   "Jeffrey (JD) Bricken"      →  nickname="JD"
   "JEFFREY (JD) BRICKEN"      →  nickname="JD"
@@ -45,6 +45,9 @@
   "Jean (M.A) Smith"          →  ambiguities=("suffix-or-nickname",)
   "Smith (MA), John"          →  nickname="MA"
   "(MA) John Smith"           →  nickname="MA"
+  "Dr. (MA)"                  →  nickname="MA"
+  "(M.A)"                     →  nickname="M.A"
+  "John Smith (MA)."          →  nickname="MA"
   "John Smith (MA) Ma"        →  nickname="MA"
   ```
 

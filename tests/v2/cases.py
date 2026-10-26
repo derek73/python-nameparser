@@ -8930,6 +8930,17 @@ CASES: tuple[Case, ...] = (
          notes="read on the nickname reading, 'Ma' is a name word after "
                "the clause, where the twin's credential run would take "
                "it (rules/S13's Except)"),
+    Case("bracket_member_with_a_leading_period", "John Smith (.ma)",
+         {"given": "John", "family": "Smith", "nickname": ".ma"},
+         classification="fix(#810)",
+         ambiguities=("suffix-or-nickname",),
+         notes="a period opening the word is no period inside it"),
+    Case("bracket_member_in_a_name_of_no_word", "Dr. (MA)",
+         {"title": "Dr.", "nickname": "MA"},
+         classification="fix(#810)",
+         ambiguities=("suffix-or-nickname",),
+         notes="no name word, so no clause after the name; the twin "
+               "'Dr. (MBA)' reads given 'Dr.'"),
     Case("bracket_member_in_quotes", 'John Smith "MA"',
          {"given": "John", "family": "Smith", "suffix": "MA"},
          notes="every default nickname pair escapes alike (rules/S1)"),

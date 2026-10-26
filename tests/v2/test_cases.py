@@ -286,9 +286,10 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # 'Jack (MA)' and 'Jack (M.A)' lose their given-or-family claims and
     # 'John Smith (MA) née Jones' its two suffix-or-name claims (-12),
     # and the two clauses a second pass would settle keep the nickname,
-    # reported (+6).
-    assert claims == 1384, (
-        f"the field sweep checks {claims} claims, recorded as 1384 on "
+    # reported (+6); 1384 -> 1390 the same day, its review round's rows
+    # for a leading period and a name of no word (+6).
+    assert claims == 1390, (
+        f"the field sweep checks {claims} claims, recorded as 1390 on "
         f"2026-10-26")
 
 
