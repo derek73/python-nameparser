@@ -10,7 +10,7 @@
   "doe, jane v phd do"        →  suffix="phd do"
   ```
 - **A maiden marker's clause.** The company does not reach across a maiden marker's clause (M2), whose name words stand between.
-- **What reports.** A member the company decides reports the fork as a counted pick does, wherever it stands: at the trailing slots S4 names, and in a part after a family comma that the company leaves holding no name word, which reads wholly as the credential run. A member its own capitals already made the credential reports nothing new.
+- **What reports.** A member the company decides reports the fork as a counted pick does, wherever it stands: at the trailing slots S4 names, and in a part after a family comma that the company leaves holding no name word, which reads wholly as the credential run. A member its own capitals already made the credential reports nothing (S6).
   ```
   "Smith, PhD Ma"             →  ambiguities=("suffix-or-name",)
   ```

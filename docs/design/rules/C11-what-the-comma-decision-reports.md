@@ -8,9 +8,10 @@
   ```
   "John Smith, A.B."          →  ambiguities=("suffix-or-name",)
   ```
-- **A run the count leaves in the listing form reports as S7 reads the words in it**: a word of the class read as the credential because a credential in front speaks for it reports, and one its own capitals made the credential does not unless it opens the part, where it is the first word after the comma and reports as that word always does ('Doe, MA PhD', 'John Smith, MA MA'). So a run whose every such word is written in capitals reads whole in silence only behind another credential ('John Smith, PhD MA', 'Smith, PhD MA'), as does a part read as titles before a lone given name ('Smith, Ms RA Ma').
+- **A run the count leaves in the listing form reports as S7 reads the words in it**: a word of the class read as the credential because a credential in front speaks for it reports, and one its own capitals made the credential does not, wherever it stands in the part (S6). So a run whose every such word is written in capitals reads whole in silence ('Doe, MA PhD', 'John Smith, MA MA', 'John Smith, PhD MA'), as does a part read as titles before a lone given name ('Smith, Ms RA Ma').
   ```
-  "Doe, MA PhD"               →  ambiguities=("suffix-or-name",)
+  "Doe, MA PhD"               →  ambiguities=()
+  "Doe, Ma PhD"               →  ambiguities=("suffix-or-name",)
   "John Smith, PhD DO DO"     →  ambiguities=()  · boundary
   ```
 - **It is one of TWO places the comma's own decision is reported**, the other being the word trailing the given part after it (S5), which is a second decision about a second word and never the same fork twice; an attachment decided after a family comma (P6) reports on its own.
@@ -26,6 +27,11 @@
 
 **Except:**
 
+- **A decision that the capitals of every listed word of the class in the part settled is not reported**, since the writing left the reader nothing to weigh (S6); in a name written in one case the same part reports.
+  ```
+  "John Smith, MA"            →  ambiguities=()
+  "JOHN SMITH, MA"            →  ambiguities=("suffix-or-name",)
+  ```
 - **A flip in which no listed word of the ambiguous credential class (C4) takes part is the exception and is made in silence**, since only paired initials among such words are ever taken for a name, and the flip reaches them only where something else in the part has said otherwise — unless what said so is nothing but other paired initials: each of those is a word a reader takes for a name, and that flip is reported.
   ```
   "John Smith, Jr vd"         →  ambiguities=()

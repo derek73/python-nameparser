@@ -4,9 +4,11 @@
 
 **Then:** a credential after the name core starts a run to the end of its part (#602): every later word of that part reads as a suffix, except a title word, which reads as a title.
 
-- **Where the run starts.** An unambiguous suffix word of two or more letters, in any script, standing after two name words where no comma divides the name or before a suffix comma, or after the given word in the part after a family comma, makes every later word of that part a suffix. So does a roman numeral of two or more letters that reads as the generation (S10), whether the vocabulary lists it or its shape alone reads it.
+- **Where the run starts.** An unambiguous suffix word of two or more letters, in any script, standing after two name words where no comma divides the name or before a suffix comma, or after the given word in the part after a family comma, makes every later word of that part a suffix. So does a roman numeral of two or more letters that reads as the generation (S10), whether the vocabulary lists it or its shape alone reads it, and so does a listed member of the ambiguous class its writing settles as the credential, written in capitals in a name of mixed case (S6).
   ```
   "John Smith VI Jones"       →  suffix="VI Jones"
+  "John Smith MA Jones"       →  suffix="MA Jones"
+  "Smith, John MA Jones"      →  suffix="MA Jones"
   "Smith, John VI Jones"      →  suffix="VI Jones"
   "Smith, John PhD Jones"     →  suffix="PhD Jones"
   "John Smith PhD Prof. Ma"   →  suffix="PhD Ma"
@@ -18,11 +20,14 @@
   "John von PhD Jones"        →  family="von"
   "John von PhD Jones"        →  suffix="PhD Jones"
   ```
-- **What is a credential here.** A title word never starts the run, and neither does a member of the ambiguous class, a single letter, a connective, a word that is also particle or bound given-name vocabulary: a credential is the writer's mark that the post-nominals have begun, and those carry no such mark. An honorific or a generational word carries it as a credential does, whatever its script.
+- **What is a credential here.** A title word never starts the run, and neither does a member of the ambiguous class its writing leaves unsettled, a single letter, a connective, a word that is also particle or bound given-name vocabulary, the capitals of `DO` included: a credential is the writer's mark that the post-nominals have begun, and those carry no such mark. An honorific or a generational word carries it as a credential does, whatever its script.
   ```
   "Mary Jane King Smith"      →  family="Smith"
   "Josep Carod i Rovira"      →  family="Carod i Rovira"
   "Mohamed Ali Abd Allah"     →  family="Allah"
+  "John Smith Ma Jones"       →  family="Jones"
+  "JOHN SMITH MA JONES"       →  family="JONES"
+  "John Smith DO Jones"       →  family="DO Jones"
   "Antonio Pavlović mlađi Jones"  →  suffix="mlađi Jones"
   "Pieter Bruegel stariji Jones"  →  suffix="stariji Jones"
   "Ана Хорват старији Џонс"   →  suffix="старији Џонс"
@@ -55,7 +60,15 @@
   ```
   "John Smith Pharm D Jones"  →  suffix="Pharm D Jones"
   ```
-- **An ambiguous acronym written with its periods** ("John Smith M.A. Jones"): writing the periods makes it unambiguously a credential (S3), so it is no member of the ambiguous class here and starts the run.
+- **An ambiguous acronym written with its periods** ("John Smith M.A. Jones"): writing the periods makes it unambiguously a credential (S3), so it is no member of the ambiguous class here and starts the run, as its capitals in a name of mixed case make it start it (S6).
+
+**Accepted:**
+
+- A writer's own initials, written in capitals between the given names and the family name, that spell a listed member of the ambiguous class start the run as that credential does, and the family name behind them reads as a suffix, reported: the capitals are the credential's writing and the initials' alike, and the periods' spelling already read this way.
+  ```
+  "Maria Ana MA Silva"        →  suffix="MA Silva"
+  "Maria Ana M.A. Silva"      →  suffix="M.A. Silva"
+  ```
 
 ---
 **Signal:** neighbor: an unambiguous credential after the name core, and the rest of its part

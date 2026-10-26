@@ -1159,11 +1159,15 @@ def test_p6_declines_a_credential_lean_class_member() -> None:
     """P6 keys on VOCABULARY, not role, so assign's suffix role would
     otherwise be silently overridden -- verified by running the
     change's assign half alone, which left 'Doe, John DO' family
-    'DO Doe'."""
+    'DO Doe'. Its capitals settle the credential (rules/S6, #785), which
+    silences the report and must not touch the particle reading P6
+    asks about: a retag did, giving family 'DO Doe' again."""
     name = parse("Doe, John DO")
     assert name.suffix == "DO"
     assert name.family == "Doe"
-    assert [a.kind.value for a in name.ambiguities] == ["suffix-or-name"]
+    assert name.ambiguities == ()
+    # the Title-case twin, which no writing settles: P6 attaches it
+    assert parse("Doe, John Do").family == "Do Doe"
 
 
 def test_p6_still_claims_an_unambiguous_suffix_particle() -> None:

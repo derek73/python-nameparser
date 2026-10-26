@@ -464,7 +464,8 @@ def is_suffix_piece(piece: Sequence[int], ptags: Set[str],
 
 
 # rules/S8: "A title word never starts the run, and neither does a
-# member of the ambiguous class, a single letter, a connective" -- what
+# member of the ambiguous class its writing leaves unsettled, a single
+# letter, a connective" -- what
 # starts #602's credential run, one predicate for the trailing peel and
 # the given-part walk (mechanisms.md#ONE-PREDICATE-PER-QUESTION)
 def starts_a_credential_run(piece: Sequence[int], ptags: Set[str],
@@ -517,6 +518,13 @@ def starts_a_credential_run(piece: Sequence[int], ptags: Set[str],
     stem = tok.text.rstrip(".")
     if len(stem) >= 2 and _ROMAN.match(stem) is not None:
         return reads_as_generation(tok.text, tok.tags, preceding, one_case)
+    # rules/S8: "and so does a listed member of the ambiguous class its
+    # writing settles as the credential" -- the capitals mark the
+    # post-nominals as periods do; the particle test above still
+    # refuses 'DO'
+    if AMBIGUOUS_ACRONYM_TAG in tok.tags:
+        return (settled_by_case(tok, one_case)
+                and sum(map(str.isalpha, tok.text)) >= 2)
     if not is_suffix_piece(piece, ptags, tokens):
         return False
     # C-level, no generator frame per character
@@ -1081,6 +1089,22 @@ def listed_lean(token: WorkToken, one_case: bool | None) -> Lean | None:
     return ambiguous_lean(token.text, one_case)
 
 
+# rules/S6: "a clash settled by the writing is not reported" -- the
+# gate's form step for a listed acronym, asked where a reading is
+# chosen, so the word keeps its tags and with them its other readings
+# (history: decisions/S6 (#785))
+def settled_by_case(token: WorkToken, one_case: bool | None) -> bool:
+    """Whether the writing settles a LISTED ambiguous acronym as the
+    credential: written in capitals in a name of mixed case
+    (`listed_lean`). Only the clash between the credential and the
+    name reading is settled; the word stays a member of the class, so
+    a particle reading ('DO') or the place a maiden clause gives its
+    first word still answers as before. A suffix word that is also a
+    name ('fils') is S11's and is not asked here."""
+    return (AMBIGUOUS_WORD_TAG not in token.tags
+            and listed_lean(token, one_case) == "credential")
+
+
 def credential_at_the_given_slot(
         token: WorkToken, one_case: bool | None,
         anchored: Callable[[], bool] | None = None) -> bool:
@@ -1354,6 +1378,11 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
         # then the floor, then the count-or-lean, in that order, with
         # nothing computed a step earlier could discard.
         if bare_ambiguous and k >= 2:
+            # rules/S6: "a clash settled by the writing is not
+            # reported" -- taken as any suffix word is, and no pick
+            if settled_by_case(tokens[piece[0]], one_case):
+                k -= 1
+                continue
             picks.append(tuple(piece))
             lean = listed_lean(tokens[piece[0]], one_case)
             # peeling still leaves given + family, or the writing says
@@ -1471,6 +1500,7 @@ def run_start(rest: Sequence[int], names: int,
                                                 tokens)):
                 return p
             if (("vocab:suffix" in tags or "split" in ptags[q]
+                 or AMBIGUOUS_ACRONYM_TAG in tags
                  or _ROMAN.match(tokens[pieces[q][0]].text.rstrip("."))
                  is not None)
                     and tags.isdisjoint(_NOT_A_RUN_START)
@@ -1770,7 +1800,12 @@ def trailing_candidates(lo: int, pieces: Sequence[Sequence[int]],
                      is not None)
                  and starts_a_credential_run(
                      pieces[j], ptags[j], tokens,
-                     tokens[pieces[j - 1][0]].text)),
+                     tokens[pieces[j - 1][0]].text)
+                 # a member its capitals settle, asked with the case as
+                 # mixed so the superset holds whatever the name's case
+                 or AMBIGUOUS_ACRONYM_TAG in tokens[pieces[j][0]].tags
+                 and starts_a_credential_run(pieces[j], ptags[j], tokens,
+                                             None, False)),
                 c)
 
 

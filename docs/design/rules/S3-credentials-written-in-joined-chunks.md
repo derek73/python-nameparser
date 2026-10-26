@@ -87,6 +87,10 @@
   "John Smith, MA/PHD"        →  suffix="MA/PHD"
   ```
 - **An ambiguous credential between an unambiguous one and paired initials** ("Jane Doe PhD MA R.T."): the unambiguous word starts the run and the run takes both, the pair included (S8).
+- **An ambiguous credential its capitals settle, in front of paired initials** ("Jane Doe MA R.T."): it starts the run as an unambiguous one does, and the run takes the pair (S6, S8).
+  ```
+  "Jane Doe MA R.T."          →  suffix="MA R.T."
+  ```
 - **Paired initials at the first slot after a comma** ("García Márquez, G.J."): they read as the given name unless something in the part speaks for them (C5).
 - **A flip to the credential run at the first slot after a comma** ("John Smith, X.Y.Z."): where no listed member of the class takes part it is not reported, unless paired initials speak only for each other (C11).
 
@@ -111,10 +115,11 @@
   ```
   "John Smith K.C."           →  family="K.C."
   ```
-- Paired initials behind an ambiguous credential that no unambiguous suffix word stands in front of, a listed one or one admitted by its shape (this rule's dotted words, S9's capitals where the caller admits them), end the name and take the credential into it: the reading 1.4.0 through 2.3.0 gave, where a run of credentials is the likelier writing.
+- Paired initials behind an ambiguous credential that no unambiguous suffix word stands in front of, a listed one or one admitted by its shape (this rule's dotted words, S9's capitals where the caller admits them), and whose own writing does not settle it (S6), end the name and take the credential into it: the reading 1.4.0 through 2.3.0 gave, where a run of credentials is the likelier writing.
   ```
-  "Jane Doe MA R.T."          →  family="R.T."
-  "Jane Doe MA R.T."          →  middle="Doe MA"
+  "Jane Doe Ma R.T."          →  family="R.T."
+  "Jane Doe Ma R.T."          →  middle="Doe Ma"
+  "JANE DOE MA R.T."          →  family="R.T."
   ```
 - The initialless-script clause carries no example line of its own. Every input that exercises it composes a script that writes no abbreviations with a period that only a Latin convention writes — `John Smith 田.中.` is the shape — and a composed form no writing system produces is tolerated input rather than contract, which an example of a normative rule would promise. So the witnesses are the tolerated row tests/v2/cases.py's an_initialless_script_glued_into_periods_is_not_this_shape and the CJK assertions in tests/v2/pipeline/test_vocab.py's test_period_joined_vocab_retires_the_single_character_chunk. W3 states the same precedence for the same reason.
 

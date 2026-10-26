@@ -15,15 +15,18 @@
   "Doe, John DO"              →  suffix="DO"
   "Doe, John Ma"              →  middle="Ma"  · boundary
   ```
-- **How far "ending the given part" reaches.** It reaches past the credentials behind it and past a trailing title, which is transparent to this reading as it is to the rest of the trailing reading (H5); a name word behind the word ends the reach, and so does a PARTICLE the suffix vocabulary does not also claim as an unambiguous suffix word (`do` is in its ambiguous half): it belongs to the family the comma already named and is taken there by a rule that runs after this reading is made (P6), so `Doe, John MA do` keeps its middle name though the capitals would otherwise have taken the word. A particle the suffix vocabulary DOES claim is looked past like any other credential, so `Doe, John MA vd` reads suffix `MA`, with `vd` attaching behind it. Where the reach ends, the word is an ordinary middle name, read in silence.
+- **How far "ending the given part" reaches.** It reaches past the credentials behind it and past a trailing title, which is transparent to this reading as it is to the rest of the trailing reading (H5); a name word behind the word ends the reach, and so does a PARTICLE the suffix vocabulary does not also claim as an unambiguous suffix word (`do` is in its ambiguous half): it belongs to the family the comma already named and is taken there by a rule that runs after this reading is made (P6), so `Doe, John Ed do` keeps its middle name. A word its capitals settle in a name of mixed case is not reached that way: it starts the credential's run, which reads every word behind it as a suffix (S8), so `Doe, John MA Smith` and `Doe, John MA do` read as `Doe, John PhD Smith` and `Doe, John PhD do` do. A particle the suffix vocabulary DOES claim is looked past like any other credential, so `Doe, John MA vd` reads suffix `MA`, with `vd` attaching behind it. Where the reach ends, the word is an ordinary middle name, read in silence.
   ```
-  "Doe, John MA Smith"        →  middle="MA Smith"  · boundary
+  "Doe, John Ma Smith"        →  middle="Ma Smith"  · boundary
+  "Doe, John MA Smith"        →  suffix="MA Smith"
+  "Doe, John MA do"           →  suffix="MA do"
   ```
-- **What reports.** Every word this slot does read reports the fork whichever way it went, so a run of members all read as credentials reports once for each, as the same words do without the comma — while a member the writing keeps as a name stops the reading there, and whatever stands in front of it is name text, asked nothing and reporting nothing.
+- **What reports.** Every word this slot does read reports the fork whichever way it went, unless its capitals settled it (S6), so a run of members all read as credentials reports once for each, as the same words do without the comma — while a member the writing keeps as a name stops the reading there, and whatever stands in front of it is name text, asked nothing and reporting nothing.
   ```
-  "Doe, John MA JD"           →  ambiguities=("suffix-or-name", "suffix-or-name")
-  "Doe, John MA Ma"           →  middle="MA Ma"  · boundary
-  "Doe, John MA Ma"           →  ambiguities=("suffix-or-name",)  · boundary
+  "DOE, JOHN MA JD"           →  ambiguities=("suffix-or-name", "suffix-or-name")
+  "Doe, John MA JD"           →  ambiguities=()
+  "Doe, John ma Ma"           →  middle="ma Ma"  · boundary
+  "Doe, John ma Ma"           →  ambiguities=("suffix-or-name",)  · boundary
   ```
 
 **Because:** a family comma has already named the family and the given name, so at the end of the given part the words-to-spare count has nothing to say, and only the writing can.
@@ -36,7 +39,7 @@
   "smith, de ma"              →  family="smith de ma"
   "SMITH, VD DE LA MA"        →  family="SMITH VD DE LA MA"
   ```
-- **A particle in FRONT of the word** takes it out of this slot as well, and takes the word behind it too: where what follows the particle reads as a name rather than a credential the two are one name, so neither word is asked and neither reports — `Doe, John van Ma` reads middle `van Ma` and `Doe, John DO Ed` middle `DO Ed`, where `Doe, John van MA` reads suffix `MA` and `Doe, John DO` alone reads the credential, both reporting.
+- **A particle in FRONT of the word** takes it out of this slot as well, and takes the word behind it too: where what follows the particle reads as a name rather than a credential the two are one name, so neither word is asked and neither reports — `Doe, John van Ma` reads middle `van Ma` and `Doe, John DO Ed` middle `DO Ed`, where `Doe, John van MA` reads suffix `MA` and `Doe, John DO` alone reads the credential, both settled by their capitals (S6).
   ```
   "Doe, John van Ma"          →  middle="van Ma"  · boundary
   "Doe, John van Ma"          →  ambiguities=()  · boundary
