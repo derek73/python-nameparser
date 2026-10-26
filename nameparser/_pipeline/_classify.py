@@ -5,9 +5,7 @@ the structural-boundary test the marker pass applies -- see
 _vocab.tag_marker_runs), and one_case where an earlier stage recorded
 it -- segment writes it lazily where C2's flag on a part past the
 second comma asks for it (#289/#516, #613), so this read is the
-fallback for every other name; and settled_clauses on `run`'s later
-folds (rules/S13, #810), whose words take an unambiguous credential's
-tag.
+fallback for every other name.
 Produces: tokens with vocabulary tags added (text/span/role unchanged),
 plus ambiguities (CONJUNCTION_OR_INITIAL) and
 one_case -- whether the name's own words are written in one case,
@@ -412,14 +410,6 @@ def classify(state: ParseState) -> ParseState:
                                   one_case and i < clause_at
                                   and t.role is None)))
         for i, t in enumerate(state.tokens))
-    # rules/S13: "it reads as a bracketed unambiguous credential does in
-    # the same place" -- Then, on a later fold, the settled word
-    # taking the tag such a credential's word carries (decisions/S13
-    # (#810))
-    if state.settled_clauses:
-        tokens = tuple(
-            copy_with(t, tags=frozenset({"vocab:suffix"}))
-            if t.span in state.settled_clauses else t for t in tokens)
     # A word with a delimiter glued to it joins no neighbour across the
     # delimiter, so the stem's joining tags stay off it: 'y;' is no
     # connective to the word after it (rules/C10: "no join, maiden

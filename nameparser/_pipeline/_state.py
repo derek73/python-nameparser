@@ -204,10 +204,10 @@ class ParseState:
     assign -> the remaining token roles AND `order`, the effective
     order it read them under, AND the folded-middle tag on the
     particles P6's attachment joins after a family comma (#613);
-    post_rules -> roles again, settled_clauses (S13's, #810, which
-    extract, segment and classify read on `run`'s later folds), and the
-    ambiguity P6's no-comma attachment reports (#467) and
-    SUFFIX_OR_NICKNAME on a member S13 leaves a nickname.
+    post_rules -> roles again (a delimited member S13 settles becomes
+    the suffix, #810), and the ambiguity P6's no-comma attachment
+    reports (#467) and SUFFIX_OR_NICKNAME on a member it leaves a
+    nickname.
     Ambiguities are recorded by every stage that DECIDES one --
     extract (resolved to a token index by tokenize), segment,
     script_segment, classify, group, assign, and post_rules -- since a
@@ -288,13 +288,6 @@ class ParseState:
     #: did not, without recording the answer (`_one_case`).
     one_case: bool | None = None
     ambiguities: tuple[PendingAmbiguity, ...] = ()
-    #: rules/S13's settled clauses, by the span of the one word each
-    #: holds: post_rules records them, and `run` folds the stages again
-    #: with them set until no new one settles, extract escaping each
-    #: as it escapes a bracketed unambiguous credential and classify
-    #: tagging its word as that credential's twin, so the whole name
-    #: reads as the twin's does (#810).
-    settled_clauses: frozenset[Span] = frozenset()
 
 
 def _copy_refusals(cls: type) -> list[str]:

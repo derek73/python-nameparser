@@ -6,10 +6,10 @@ under a family comma (#359). structure was always read here, for the
 rotation gate. Also comma_offsets and dropped, which R1's entry pass
 below reads to find the separators the writer typed (#436/#437), and
 extracted and one_case, which S13's pass reads (#810).
-Produces: tokens with roles adjusted by the post rules; settled_clauses,
-the delimited members rules/S13 settles after the name, for the later
-folds `run` makes (#810), and the SUFFIX_OR_NICKNAME report on any other
-member left a nickname; the stable
+Produces: tokens with roles adjusted by the post rules (among them the
+SUFFIX role of a delimited member its writing settles after the name,
+rules/S13, with the SUFFIX_OR_NICKNAME report on any other member left
+a nickname), the stable
 "joined" tag on a post-nominal continuing the entry before it, and the
 ambiguity P6's attachment reports at the end of a name read
 family-first (#467) and after a comma with nothing before it -- after a
@@ -51,7 +51,6 @@ from nameparser._pipeline._vocab import delimiter_cores, unit_ends
 from nameparser._policy import PatronymicRule
 from nameparser._types import (
     FOLDED_TAG, UNJOINED_CONJUNCTION_TAG, UNJOINED_TAG, AmbiguityKind, Role,
-    Span,
 )
 
 # Ported verbatim from v1 (nameparser/config/regexes.py) -- layering
@@ -387,18 +386,15 @@ def _family_settled(state: ParseState, tokens: list[WorkToken],
 
 # rules/S13: "where the member's writing settles it as the credential,
 # the way the rules that read the writing say a credential is written,
-# it is no nickname" -- Then and its first two bullets, with the When's
-# "no name word after it"; extract's S1 escape has already sent every
-# suffix-shaped clause through, and the twin reading is `run`'s second
-# fold (decisions/S13 (#810))
+# it is no nickname but the suffix" -- Then and its first two bullets,
+# with the When's "no name word after it";
+# extract's S1 escape has already sent every suffix-shaped clause
+# through (decisions/S13 (#810))
 def _settle_delimited_members(state: ParseState, tokens: list[WorkToken],
-                              ambiguities: list[PendingAmbiguity],
-                              ) -> frozenset[Span]:
-    """The words of the clauses S13 settles: a nickname that is the whole
-    of its clause and a member of the ambiguous class, where its writing
-    settles it and it stands after the last name word, `run` then
-    folding the stages again so it reads as its twin, a bracketed
-    unambiguous credential, does. Any other tagged member stays
+                              ambiguities: list[PendingAmbiguity]) -> None:
+    """A nickname that is the whole of its clause and a member of the
+    ambiguous class becomes the suffix where its writing settles it and
+    it stands after the last name word; any other tagged member stays
     the nickname and the fork is reported, a dotted member left a
     nickname inside the name included. Asked here, first in this
     stage, because only once roles are read is it known whether a name
@@ -416,13 +412,14 @@ def _settle_delimited_members(state: ParseState, tokens: list[WorkToken],
     starts = [t.span.start for t in tokens]
     for _, clause in state.extracted:
         lo = bisect.bisect_left(starts, clause.start)
-        # the whole clause, as extract's escape asks it of its twin
+        # the whole clause's text, as extract's escape reads a clause:
+        # a character tokenize drops beside the member (an emoji, a
+        # zero-width space) leaves it no member alone
         if (bisect.bisect_left(starts, clause.end) == lo + 1
                 and state.original[clause.start:clause.end].strip()
                 == tokens[lo].text):
             alone.add(lo)
     lex = state.lexicon
-    settled: set[Span] = set()
     for i, token in enumerate(tokens):
         if token.role is not Role.NICKNAME:
             continue
@@ -433,22 +430,20 @@ def _settle_delimited_members(state: ParseState, tokens: list[WorkToken],
                   in lex.suffix_acronyms_ambiguous)
         if i > last_name and i in alone and (
                 dotted or settled_by_case(token, state.one_case)):
-            settled.add(token.span)
+            tokens[i] = copy_with(token, role=Role.SUFFIX)
         elif dotted or AMBIGUOUS_ACRONYM_TAG in token.tags:
             ambiguities.append(PendingAmbiguity(
                 AmbiguityKind.SUFFIX_OR_NICKNAME,
                 f"delimited {token.text!r} is also a post-nominal; read "
                 f"as a nickname rather than a suffix",
                 (i,)))
-    return frozenset(settled)
 
 
 def post_rules(state: ParseState) -> ParseState:
     tokens = list(state.tokens)
     ambiguities = list(state.ambiguities)
-    settled: frozenset[Span] = frozenset()
     if state.extracted:
-        settled = _settle_delimited_members(state, tokens, ambiguities)
+        _settle_delimited_members(state, tokens, ambiguities)
     titles = _idx(tokens, Role.TITLE)
     givens = _idx(tokens, Role.GIVEN)
     middles = _idx(tokens, Role.MIDDLE)
@@ -850,5 +845,4 @@ def post_rules(state: ParseState) -> ParseState:
                     tags=tokens[i].tags | {UNJOINED_CONJUNCTION_TAG})
     _mark_suffix_entries(tokens, state)
     return copy_with(state, tokens=tuple(tokens),
-                     ambiguities=tuple(ambiguities),
-                     settled_clauses=settled | state.settled_clauses)
+                     ambiguities=tuple(ambiguities))

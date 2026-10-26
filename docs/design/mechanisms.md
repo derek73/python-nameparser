@@ -196,9 +196,9 @@ This catalog converts discovery into a one-time cost — it does not remove disc
 
 **How it works.** "Andrew Perkins (MBA)" is not a nickname (rule S1): the parens are masked away and MBA is classified by the normal machinery — reusing the downstream path, so the delimited and bare forms cannot drift.
 
-**Lives in.** nameparser/_pipeline/_extract.py (_suffix_shaped and the inner-span branch); and nameparser/_pipeline/_post_rules.py (`_settle_delimited_members`), which decides once the parse's roles are read that a member of the ambiguous class after the name is settled by its writing (rules/S13); `run` then folds the stages again, extract escaping the clause here and classify tagging its word as an unambiguous credential's, so it rejoins the bare path as its twin, a bracketed unambiguous credential, would, not as its own bare word, which reads differently (`M.A` reads as initials bare; decisions/S13).
+**Lives in.** nameparser/_pipeline/_extract.py (_suffix_shaped and the inner-span branch); and nameparser/_pipeline/_post_rules.py (`_settle_delimited_members`), the one site where content overrules the delimiter WITHOUT rejoining the bare path: a member of the ambiguous class settled by its writing after the name (rules/S13) is the suffix directly, because its bare reading would differ (`M.A` reads as initials bare), so it is decided once the parse's roles are read rather than unmasked here (decisions/S13).
 
-**Reach for it when.** About to add a second code path that duplicates what the bare form already does — #335's fix is this shape (a _maiden_marked sibling predicate). Where the bare word itself would read wrongly, rejoin it as the twin it is, as S13 does.
+**Reach for it when.** About to add a second code path that duplicates what the bare form already does — #335's fix is this shape (a _maiden_marked sibling predicate). Not when the bare reading is the wrong answer for the clause: that is S13's shape.
 
 ## CURATED-VOCABULARY-ALTERNATION — the config already splits them
 

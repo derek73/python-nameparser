@@ -1,8 +1,6 @@
 """Stage: extract_delimited.
 
-Consumes: ParseState.original, and settled_clauses on `run`'s later
-folds (rules/S13, #810), each settled clause escaping as a bracketed
-unambiguous credential does.
+Consumes: ParseState.original.
 Produces: extracted (role + inner span per delimited region), masked
 (full regions incl. delimiter chars, skipped by tokenize),
 UNBALANCED_DELIMITER ambiguities for opens with no close.
@@ -101,14 +99,6 @@ def _maiden_marked(content: str, lexicon: Lexicon) -> bool:
             and not comma_follows_marker(words[run]))
 
 
-def _settled_within(starts: list[int], inner: Span) -> bool:
-    """Whether a word rules/S13 settled starts inside the clause:
-    `starts` is the settled words' start offsets, sorted, so the test
-    is one bisect and the scan stays linear in the clauses."""
-    k = bisect.bisect_left(starts, inner.start)
-    return k < len(starts) and starts[k] < inner.end
-
-
 # rules/N2: "a quote whose open and close are the same character
 # opens only at a word start and closes only at a word end, so an
 # apostrophe inside or at the end of a word is literal"
@@ -204,7 +194,6 @@ def extract_delimited(state: ParseState) -> ParseState:
     )
     extracted: list[tuple[Role, Span]] = []
     masked: list[Span] = []
-    settled = sorted(s.start for s in state.settled_clauses)
     # candidates, not final: each carries the offset of the unmatched
     # open so ones consumed by a later match can be filtered at the end
     unbalanced: list[tuple[int, PendingAmbiguity]] = []
@@ -251,13 +240,8 @@ def extract_delimited(state: ParseState) -> ParseState:
             exhausted.add((role, open_, close))
             continue
         inner = Span(i + len(open_), j)
-        if inner.start < inner.end and (_suffix_shaped(
-                text[inner.start:inner.end], state.lexicon)
-                # rules/S13: "it reads as a bracketed unambiguous
-                # credential does in the same place" -- Then, on a later
-                # fold: the clause escapes as that credential's does
-                # (decisions/S13 (#810))
-                or (settled and _settled_within(settled, inner))):
+        if inner.start < inner.end and _suffix_shaped(
+                text[inner.start:inner.end], state.lexicon):
             # v1 parse_nicknames: suffix-shaped delimited content is
             # left IN PLACE (undelimited) for normal downstream parsing
             # -- 'Andrew Perkins (MBA)' keeps MBA a suffix, not a

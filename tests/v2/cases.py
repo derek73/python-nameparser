@@ -8875,39 +8875,45 @@ CASES: tuple[Case, ...] = (
          notes="a suffix after the clause is no name word"),
     Case("bracket_member_before_a_maiden_clause",
          "John Smith (MA) née Jones",
-         {"given": "John", "family": "Smith", "suffix": "MA née Jones"},
+         {"given": "John", "family": "Smith", "suffix": "MA",
+          "maiden": "Jones"},
          classification="fix(#810)",
-         ambiguities=("suffix-or-name", "suffix-or-name"),
-         notes="the clause settles the member and is then read as its "
-               "twin 'John Smith (PhD) née Jones' reads it, inside the "
-               "credential's run (rules/S8, S13's Accepted); 1.4.0 read "
-               "middle 'Smith MA née', last 'Jones'"),
+         notes="a maiden clause after it is no name word, and stays the "
+               "maiden name, where its twin's credential run takes it "
+               "(rules/S13's Accepted); 1.4.0 read middle 'Smith MA "
+               "née', last 'Jones'"),
     Case("bracket_member_settled_by_another_in_a_one_case_name",
          "JOHN SMITH (m.a) (MA)",
-         {"given": "JOHN", "family": "SMITH", "suffix": "m.a MA"},
+         {"given": "JOHN", "family": "SMITH", "suffix": "m.a",
+          "nickname": "MA"},
          classification="fix(#810)",
-         notes="the settled 'm.a' joins the name's own words, which are "
-               "then mixed, as its twin 'JOHN SMITH (mba) (MA)' makes "
-               "them; a fold too few left 'MA' a nickname, unreported"),
+         ambiguities=("suffix-or-nickname",),
+         notes="the case is asked once, of the name's own words without "
+               "either clause, so 'MA' stays the nickname where its twin "
+               "'JOHN SMITH (mba) (MA)' makes the name mixed "
+               "(rules/S13's Accepted)"),
     Case("bracket_member_settled_by_another_in_a_lower_case_name",
          "john smith (M.A) (MA)",
-         {"given": "john", "family": "smith", "suffix": "M.A MA"},
+         {"given": "john", "family": "smith", "suffix": "M.A",
+          "nickname": "MA"},
          classification="fix(#810)",
-         notes="as its twin 'john smith (MBA) (MA)' reads"),
+         ambiguities=("suffix-or-nickname",),
+         notes="as the row above; the twin 'john smith (MBA) (MA)' "
+               "reads suffix 'MBA MA'"),
     Case("bracket_member_past_the_second_comma", "Smith, John, Jr. (M.A)",
          {"given": "John", "family": "Smith", "suffix": "Jr. M.A"},
          classification="fix(#810)",
          notes="no comma-structure report, as its twin '(MBA)' draws "
-               "none: the part's tail test runs before the settled "
-               "word is tagged, so it leaves the word out"),
+               "none: the part is tested while the clause is still a "
+               "nickname, and 'Jr.' alone is a suffix"),
     Case("bracket_member_past_the_second_comma_after_a_dotted_shape",
          "Smith, John, X.Y.Z. (MA)",
          {"given": "John", "family": "Smith", "suffix": "X.Y.Z. MA"},
          classification="fix(#810)",
-         ambiguities=("comma-structure",),
-         notes="reported as its twin '(MBA)' is: the settled word is a "
-               "listed credential, no shape candidate, so the part is no "
-               "run of shape-admitted words"),
+         notes="no report, where its twin '(MBA)' draws comma-structure: "
+               "the part is tested while the clause is a nickname, and "
+               "'X.Y.Z.' alone is a run of shape-admitted words "
+               "(rules/S13's Accepted)"),
     Case("bracket_member_beside_a_dropped_character",
          "John Smith (MA \N{GRINNING FACE})",
          {"given": "John", "family": "Smith", "nickname": "MA"},
@@ -8928,19 +8934,18 @@ CASES: tuple[Case, ...] = (
          {"given": "John", "family": "Smith", "suffix": "MA"},
          notes="every default nickname pair escapes alike (rules/S1)"),
     Case("bracket_member_after_a_lone_name_word", "Jack (MA)",
-         {"given": "Jack", "suffix": "MA"},
+         {"family": "Jack", "suffix": "MA"},
          classification="fix(#810)",
-         ambiguities=("given-or-family",),
-         notes="reads as its twin 'Jack (PhD)' does; 1.4.0 read last "
-               "'MA', 2.0.0 through 2.6.0 family 'Jack', nickname 'MA'"),
+         notes="the word stays N3's family name, read beside the clause "
+               "as a nickname, where its twin 'Jack (PhD)' reads given "
+               "'Jack' (rules/S13's Accepted); 1.4.0 read last 'MA', "
+               "2.0.0 through 2.6.0 family 'Jack', nickname 'MA'"),
     Case("bracket_member_with_a_period_after_a_lone_name_word",
          "Jack (M.A)",
-         {"given": "Jack", "suffix": "M.A"},
+         {"family": "Jack", "suffix": "M.A"},
          classification="fix(#810)",
-         ambiguities=("given-or-family",),
-         notes="reads as its twin 'Jack (PhD)' does, where bare "
-               "'Jack M.A' reads family 'M.A'; 2.0.0 through 2.6.0 "
-               "read family 'Jack', nickname 'M.A'"),
+         notes="as the row above; bare 'Jack M.A' reads family 'M.A'; "
+               "2.0.0 through 2.6.0 read family 'Jack', nickname 'M.A'"),
     Case("bracket_member_before_a_shape_read_suffix",
          "John Smith (MA) Ph. D.",
          {"given": "John", "family": "Smith", "suffix": "MA Ph. D."},

@@ -281,9 +281,14 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # as 'Jack (PhD)' does, a given-or-family claim each (+6), and
     # 'John Smith (MA) née Jones' its two suffix-or-name claims (+6);
     # 1381 -> 1390 the same day, its review round's rows: a member
-    # beside a dropped character (+3) and before 'Ma' (+6).
-    assert claims == 1390, (
-        f"the field sweep checks {claims} claims, recorded as 1390 on "
+    # beside a dropped character (+3) and before 'Ma' (+6); 1390 -> 1384
+    # the same day, one pass in place of the twin reading (Derek):
+    # 'Jack (MA)' and 'Jack (M.A)' lose their given-or-family claims and
+    # 'John Smith (MA) née Jones' its two suffix-or-name claims (-12),
+    # and the two clauses a second pass would settle keep the nickname,
+    # reported (+6).
+    assert claims == 1384, (
+        f"the field sweep checks {claims} claims, recorded as 1384 on "
         f"2026-10-26")
 
 

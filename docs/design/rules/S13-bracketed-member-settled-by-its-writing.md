@@ -2,11 +2,11 @@
 
 **When:** a clause that is one member of the ambiguous class (S4) stands in brackets or quotes after the name, with no name word after it, though a suffix, a title or a maiden clause may follow however each is written, as in "John Smith (MA)".
 
-**Then:** where the member's writing settles it as the credential, the way the rules that read the writing say a credential is written, it is no nickname: it reads as a bracketed unambiguous credential does in the same place, and the clash is not reported.
+**Then:** where the member's writing settles it as the credential, the way the rules that read the writing say a credential is written, it is no nickname but the suffix, and the clash is not reported.
 
 - **Written with a period inside it**, whatever case the name is in: the periods are how a credential is written and a name is not (S3).
 - **Written in capitals in a name written in more than one case**: the case is asked of the name's own words and never of the clause's, so capitals settle nothing in a name written wholly in one case, and Title case leans to the name (S6).
-- **It reads as its twin**, a bracketed unambiguous credential in the same place, fields and reports alike (S1): a lone name word beside it is the given name as beside "(PhD)", and the member is not read as if written bare, where two letters each followed by a period but the last read as initials (S3).
+- **It is the suffix, not the word read as if written bare** (S1): the brackets have already set it apart from the name's words, and bare, two letters each followed by a period but the last read as initials (S3). The rest of the name is read as beside a nickname, which is where it can differ from a bracketed unambiguous credential in the same place, its twin, as the Accepted bullets record.
 
 **Because:** after the name, brackets hold either a credential or the name the person goes by, and the writing tells the two apart where the count of words cannot: credentials are written in capitals and with their periods, and names are not. Inside the name the same word let out of the brackets would read as a middle name, where the brackets more likely hold the name the person goes by. So only the clause after the name is settled.
 
@@ -22,7 +22,6 @@
 "John Smith (MA) Dr."       →  title="Dr."
 "John Smith (MA) Dr."       →  suffix="MA"
 "John Smith «MA»"           →  suffix="MA"
-"Jack (MA)"                 →  given="Jack"
 "Jack (M.A)"                →  suffix="M.A"
 "John Smith 「MA」"          →  suffix="MA"
 "John Smith (Ed)"           →  nickname="Ed"  · boundary
@@ -55,15 +54,26 @@
 
 **Accepted:**
 
-- A lone name word beside a settled member is the given name, as beside its twin, where beside the nickname it was the family name (N3), and the fork is reported as for any lone name word.
+- A lone name word beside a settled member stays the family name it is beside a nickname (N3), where beside its twin, "(PhD)", it is the given name, reported.
   ```
-  "Jack (MA)"                 →  ambiguities=("given-or-family",)
+  "Jack (MA)"                 →  family="Jack"
+  "Jack (MA)"                 →  ambiguities=()
   ```
-- A maiden clause after a settled member is read as one after its twin is, inside the credential's trailing run (S8), so the clause settles the member and is then taken into the suffix.
+- A maiden clause after a settled member stays the maiden name, where after its twin the credential's trailing run takes it (S8).
   ```
-  "John Smith (MA) née Jones" →  suffix="MA née Jones"
+  "John Smith (MA) née Jones" →  maiden="Jones"
+  ```
+- The case is asked once, of the name's own words without any clause, so a member in capitals beside a settled one in a name otherwise written in one case stays the nickname, where its twin, joining the name's words, makes the name mixed and settles the other too.
+  ```
+  "JOHN SMITH (m.a) (MA)"     →  nickname="MA"
+  "JOHN SMITH (m.a) (MA)"     →  suffix="m.a"
+  ```
+- A part past the second comma is weighed without the member, so what stands beside it decides whether the part reports, and the report names that alone, where its twin is weighed as a credential of the part.
+  ```
+  "Smith, John, X.Y.Z. (MA)"  →  ambiguities=()
+  "Smith, John, Bob (MA)"     →  ambiguities=("comma-structure",)
   ```
 
 ---
 **Signal:** position: a member of the ambiguous class alone in brackets or quotes after the name; hub of S1, S3, S6
-**history:** decisions/S13 · **implemented:** nameparser/_pipeline/__init__.py, nameparser/_pipeline/_classify.py, nameparser/_pipeline/_extract.py, nameparser/_pipeline/_post_rules.py, nameparser/_pipeline/_segment.py
+**history:** decisions/S13 · **implemented:** nameparser/_pipeline/_post_rules.py
