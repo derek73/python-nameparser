@@ -281,9 +281,8 @@ def test_stage_field_ownership() -> None:
         # FAMILY_COMMA opt-out, asked again for itself since #613, and
         # the hook it consults on a vocabulary decline).
         "script_segment": {"tokens", "segments", "ambiguities"},
-        # classify also emits SUFFIX_OR_NICKNAME: the delimiter escape
-        # that decides it lives in extract_delimited, which has no token
-        # index to point at, so the report is raised here instead
+        # classify emits CONJUNCTION_OR_INITIAL; SUFFIX_OR_NICKNAME
+        # moved to group with the decision it reports (rules/S13, #810)
         "classify": {"tokens", "ambiguities", "one_case"},
         # group also emits PARTICLE_OR_GIVEN: the prefix chain takes
         # the particle branch of a fork whose given branch _assign
@@ -295,7 +294,9 @@ def test_stage_field_ownership() -> None:
         # and empties the segment of a part it bound, so no join can
         # reach it (#613's /simplify)
         # and since #614 the trailing run it reads once at its head,
-        # handed to assign (`tail_reads`)
+        # handed to assign (`tail_reads`); and since #810 the SUFFIX
+        # role of a delimited member its writing settles (rules/S13),
+        # reporting SUFFIX_OR_NICKNAME on any other
         "group": {"tokens", "pieces", "piece_tags", "dropped",
                   "ambiguities", "structure", "segments", "tail_reads"},
         # assign also records `order`: the effective order it read the

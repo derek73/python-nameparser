@@ -7,7 +7,7 @@ it -- segment writes it lazily where C2's flag on a part past the
 second comma asks for it (#289/#516, #613), so this read is the
 fallback for every other name.
 Produces: tokens with vocabulary tags added (text/span/role unchanged),
-plus ambiguities (SUFFIX_OR_NICKNAME, CONJUNCTION_OR_INITIAL) and
+plus ambiguities (CONJUNCTION_OR_INITIAL) and
 one_case -- whether the name's own words are written in one case,
 recorded for the later stages that read it (#289/#516) and left alone
 where an earlier stage already asked.
@@ -72,7 +72,7 @@ from nameparser._pipeline._state import (
     PendingAmbiguity,
     WorkToken, copy_with,
 )
-from nameparser._types import AmbiguityKind, Role
+from nameparser._types import AmbiguityKind
 from nameparser._pipeline._vocab import (
     BUILTIN_SUFFIX_DELIMITERS, SPLIT_CHUNK, SPLIT_PAIR_OPENS, _INITIAL, caps_shape_candidate,
     composed_len, delimiter_cores, glued_stem, is_cased_paired_initials,
@@ -249,7 +249,7 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
     # role is delimited content, decided by extract's escape and never
     # at the trailing slot -- 'Bridge (A.B)' is the control that
     # proves the guard load-bearing (without it the nickname reading
-    # of 'A.B' gains a spurious SUFFIX_OR_NICKNAME report below), and
+    # of 'A.B' gains a spurious SUFFIX_OR_NICKNAME report in group), and
     # 'Bridge (1.4)' cannot exercise it, a digit chunk never reaching
     # the shape verdict at all (period_joined_vocab's alphabetic
     # gate).
@@ -515,21 +515,8 @@ def classify(state: ParseState) -> ParseState:
         for i, tag in split.items():
             written[i] = copy_with(written[i], tags=written[i].tags | {tag})
         tokens = tuple(written)
-    # Delimited content whose vocabulary cannot settle it: extract's
-    # escape sends an UNambiguous suffix straight through ("(MBA)" ->
-    # suffix) and keeps everything else as a nickname, so an AMBIGUOUS
-    # acronym in there was a coin the parser had to call. Reported here
-    # rather than at the escape itself, which runs before tokenize and
-    # so has no token index to point at.
     ambiguities = list(state.ambiguities)
     for i, token in enumerate(tokens):
-        if (token.role is Role.NICKNAME
-                and AMBIGUOUS_ACRONYM_TAG in token.tags):
-            ambiguities.append(PendingAmbiguity(
-                AmbiguityKind.SUFFIX_OR_NICKNAME,
-                f"delimited {token.text!r} is also a post-nominal; read "
-                f"as a nickname rather than a suffix",
-                (i,)))
         # #383/#479: narrows the fork's own "initial" tag with the same
         # inputs the fork used, rather than re-deciding from scratch.
         # Only the casedness test is inherited from the tag --

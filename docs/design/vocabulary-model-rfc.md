@@ -128,7 +128,9 @@ Phase 2i carried this out as [rules/H9](rules/H9-title-phrase.md) (the title phr
 
 ### Brackets
 
-A bracketed or quoted credential is to escape the nickname reading where its writing settles it (#810): with interior periods, or in capitals in a name of mixed case, the case asked of the whole name. Today [rules/S1](rules/S1-bracketed-credential-is-not-a-nickname.md) keeps every member of the ambiguous class written without periods a nickname (`John Smith (MA)` → nickname `MA`), and S1 is amended when the escape lands. `(Ed)` stays a nickname, and so does content standing inside the name rather than after it (`Jean 'JD' Smith`).
+A bracketed or quoted credential is to escape the nickname reading where its writing settles it (#810): with interior periods, or in capitals in a name of mixed case, the case asked of the whole name. `(Ed)` stays a nickname, and so does content standing inside the name rather than after it (`Jean 'JD' Smith`).
+
+Phase 2l carried this out as [rules/S13](rules/S13-bracketed-member-settled-by-its-writing.md) (a bracketed member settled by its writing) rather than as an amendment to [rules/S1](rules/S1-bracketed-credential-is-not-a-nickname.md), since the position it reads is a signal S1 does not: `John Smith (MA)` and `John Smith (M.A)` read suffix, and `JOHN SMITH (MA)` and `Jeffrey (JD) Bricken` keep the nickname. The case is that of the name's own words, as S6 asks it, and a settled member is the suffix rather than the word read bare, since bare, `M.A` reads as initials.
 
 ### Readings on the parse
 

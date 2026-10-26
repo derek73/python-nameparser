@@ -151,6 +151,7 @@ Terms the rules use without defining them each time, each with the rule that def
 - [S10 — the trailing roman numeral](S10-trailing-roman-numeral.md)
 - [S12 — a credential split across a space](S12-credential-split-across-a-space.md)
 - [S11 — a suffix word that is also a name](S11-suffix-word-that-is-also-a-name.md)
+- [S13 — a bracketed member settled by its writing](S13-bracketed-member-settled-by-its-writing.md)
 
 ## [Nicknames & quoted names (N)](N-nicknames-and-quoted-names.md)
 

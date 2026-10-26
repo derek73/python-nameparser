@@ -372,8 +372,13 @@ The full reading of a bare marked acronym, in order:
   reads as the given name is ``"Smith, Ba"`` (one word, and Title-case
   has no credential lean) and ``"smith, ba"`` (one word, one case, no
   lean at all).
-- **In brackets**, ``"John Smith (BA)"`` falls through to nickname
-  parsing.
+- **In brackets after the name**, the capitals in a mixed-case name
+  settle it as the credential too, and so does a period inside the word:
+  ``"John Smith (BA)"`` and ``"John Smith (B.A)"`` give suffix ``BA`` and
+  ``B.A``. Any other spelling there, and any spelling inside the name,
+  falls through to nickname parsing (``"John Smith (Ba)"``,
+  ``"Jeffrey (JD) Bricken"``), reported as a ``suffix-or-nickname``
+  ambiguity.
 
 Generation words that are also surnames
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

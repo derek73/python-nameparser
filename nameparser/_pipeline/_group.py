@@ -1,8 +1,9 @@
 """Stage: group.
 
 Consumes: tokens (classified), segments, structure, one_case, extracted
-(the role + inner span per delimited region, for the #329 pass below --
-the only stage after tokenize that reads it); and, through
+(the role + inner span per delimited region, for the #329 pass below and
+S13's one-word clause test -- the only stage after tokenize that reads
+it), and original (the clause's text); and, through
 `_comma.decide`, comma_offsets (the own-words span of the name's case
 contrast) and dropped, which decide extends.
 Produces: structure -- its head decides a comma form once the words
@@ -21,9 +22,14 @@ here (#601), so no join can reach it; marker tokens land in dropped;
 and tail_reads, rules/S2's trailing run of each main segment read
 ONCE, after P3's connective joins and before the particle chain and
 the bound-given join, and split off so neither reaches it (#614),
-which assign places and reports rather than peeling again.
+which assign places and reports rather than peeling again; and the
+SUFFIX role of a one-word nickname that is a member of the ambiguous
+class settled by its writing after the name (rules/S13, #810), with the
+SUFFIX_OR_NICKNAME report on any other member left a nickname.
 Reads: token tags (from classify), Lexicon.given_name_titles (the
-P5 licence, #369) and Policy.extra_suffix_delimiters, whose
+P5 licence, #369), Lexicon.suffix_acronyms_ambiguous (a dotted member in
+a clause, which carries no tag there, rules/S13) and
+Policy.extra_suffix_delimiters, whose
 delimiter-core tokens part a tail segment as a comma would and are
 dropped (v1 suffix_delimiter parity, #549); and, through
 `_comma.decide`, what that module's own header lists
@@ -33,7 +39,7 @@ them). The v1
 per-parse state that dissolves with the state (v1 kept per-parse sets
 for the same reason).
 
-Implements rules P2, P3, P4 and M2, S2's trailing read (#614), C1's
+Implements rules P2, P3, P4, M2 and S13, S2's trailing read (#614), C1's
 decision through _comma, and
 the
 group half of M1 (#329: the marker dropped inside EXTRACTED maiden
@@ -65,7 +71,7 @@ from collections.abc import Iterable, Sequence, Set
 from enum import IntEnum
 from typing import assert_never
 
-from nameparser._lexicon import _run_addresses_by_given
+from nameparser._lexicon import _normalize, _run_addresses_by_given
 from nameparser._pipeline._pieces import (
     split_credential_report,
     Peel, TailRead, chain_lead, chain_run_end, is_conj_piece, is_leading_title, is_prefix_piece,
@@ -1295,6 +1301,74 @@ def _group_segment(seg: tuple[int, ...], additional: int,
     return pieces, ptags, taken
 
 
+def _alone_in_its_clause(token: WorkToken, state: ParseState) -> bool:
+    """Whether a delimited token is the whole of its clause."""
+    for _, clause in state.extracted:
+        if clause.start <= token.span.start and token.span.end <= clause.end:
+            return (state.original[clause.start:clause.end].strip()
+                    == token.text)
+    return False
+
+
+def _name_word_after(tokens: Sequence[WorkToken], i: int,
+                     dropped: Sequence[int]) -> bool:
+    """Whether a word of the name proper follows token i: a word with
+    no role that is not a suffix as written, up to a maiden marker,
+    the clause from there on being no name of its own (`own_words`)."""
+    for j in range(i + 1, len(tokens)):
+        t = tokens[j]
+        if t.role is not None or j in dropped:
+            continue
+        if "vocab:maiden-marker" in t.tags:
+            return False
+        if "vocab:suffix" not in t.tags:
+            return True
+    return False
+
+
+# rules/S13: "where the member's writing settles it, written with a
+# period inside it or in capitals in a name written in more than one
+# case (S6), it is the suffix rather than the nickname" -- Then, with
+# the Except bullet keeping a member inside the name the nickname;
+# extract's S1 escape has already sent every suffix-shaped clause
+# through (decisions/S13 (#810))
+def _settle_delimited_members(state: ParseState, tokens: list[WorkToken],
+                              ambiguities: list[PendingAmbiguity]) -> None:
+    """A one-word nickname that is a member of the ambiguous class
+    becomes the suffix where its writing settles it and no name word
+    follows it; any other tagged member stays the nickname and the
+    fork is reported. Asked here rather than in extract, which runs
+    before there are words to ask about: the case is the name's
+    recorded fact (`settled_by_case`, rules/S6), and whether a name
+    word follows is read off the tags. A dotted member carries no tag
+    in a clause (classify tags a shape only outside one), so it is
+    found by its text."""
+    lex = state.lexicon
+    for i, token in enumerate(tokens):
+        if token.role is not Role.NICKNAME:
+            continue
+        tagged = AMBIGUOUS_ACRONYM_TAG in token.tags
+        # a period inside the word ('M.A'); one ending it is extract's
+        # escape
+        dotted = ("." in token.text.rstrip(".")
+                  and _normalize(token.text).replace(".", "")
+                  in lex.suffix_acronyms_ambiguous)
+        if not (tagged or dotted):
+            continue
+        if ((dotted or settled_by_case(token, state.one_case))
+                and _alone_in_its_clause(token, state)
+                and not _name_word_after(tokens, i, state.dropped)):
+            tokens[i] = copy_with(token, role=Role.SUFFIX)
+        elif tagged:
+            # Reported here, where the escape is decided, rather than
+            # in extract, which has no token index to point at.
+            ambiguities.append(PendingAmbiguity(
+                AmbiguityKind.SUFFIX_OR_NICKNAME,
+                f"delimited {token.text!r} is also a post-nominal; read "
+                f"as a nickname rather than a suffix",
+                (i,)))
+
+
 def group(state: ParseState) -> ParseState:
     # rules/C1's decision, read once now that classify has tagged
     # the words and before any join below can reach the part after the
@@ -1305,6 +1379,8 @@ def group(state: ParseState) -> ParseState:
     tokens = list(state.tokens)
     dropped = list(state.dropped)
     ambiguities = list(state.ambiguities)
+    if state.extracted:
+        _settle_delimited_members(state, tokens, ambiguities)
     all_pieces: list[tuple[tuple[int, ...], ...]] = []
     all_ptags: list[tuple[frozenset[str], ...]] = []
     all_reads: list[TailRead | None] = []

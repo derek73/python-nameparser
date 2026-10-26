@@ -271,8 +271,11 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # 1321 + 24 = 1345 on 2026-10-26, #894 (phase 2i) merged over #895
     # (phase 2g): 2i's net change from 1568 (1592 - 1568), the two
     # changes moving disjoint claims.
-    assert claims == 1345, (
-        f"the field sweep checks {claims} claims, recorded as 1345 on "
+    # 1345 -> 1366 on 2026-10-26, #810 (phase 2l): seven rows whose
+    # bracketed member stays the nickname, one suffix-or-nickname or
+    # given-or-family claim each under each order.
+    assert claims == 1366, (
+        f"the field sweep checks {claims} claims, recorded as 1366 on "
         f"2026-10-26")
 
 

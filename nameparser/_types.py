@@ -444,7 +444,8 @@ class AmbiguityKind(StrEnum):
     #: Delimited content is an ambiguous suffix acronym, so it reads
     #: plausibly as either a post-nominal or a nickname -- "JEFFREY
     #: (JD) BRICKEN" keeps the nickname reading, where the
-    #: unambiguous "(MBA)" escapes to suffix on vocabulary alone.
+    #: unambiguous "(MBA)" escapes to suffix on vocabulary alone, and
+    #: "Andrew Perkins (JD)" on its capitals, which settle it.
     SUFFIX_OR_NICKNAME = "suffix-or-nickname"
     #: A trailing word reads plausibly as either a post-nominal or an
     #: ordinary name part. Covers an ambiguous acronym written without

@@ -195,7 +195,9 @@ class ParseState:
     changes the token COUNT: an unspaced CJK token splits into n+1
     pieces, still as sub-slices of the original, and every later index
     in the segment runs shifts by n); classify -> token tags AND
-    one_case; group -> structure (its head decides a comma form, #613)
+    one_case; group -> structure (its head decides a comma form, #613),
+    the SUFFIX role of a delimited member its writing settles (rules/S13,
+    #810)
     AND the SUFFIX/TITLE roles of a postnominal part after the comma,
     whose segment it empties so no join reaches it,
     then pieces/piece_tags/dropped AND maiden token roles, plus the
