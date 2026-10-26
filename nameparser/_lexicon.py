@@ -733,7 +733,7 @@ class Lexicon:
     #: behind; or before "of" or a title it stands in ``title_phrases``
     #: in front of. Elsewhere it is a name word, and where it opens the
     #: name the parse reports ``title-or-name`` if a phrase of
-    #: ``title_phrases`` holds it (rules/H9), so "Grace Smith", which no
+    #: ``title_phrases`` the parse can read holds it (rules/H9), so "Grace Smith", which no
     #: phrase holds, reports nothing, and emptying ``title_phrases``
     #: silences the report: "Dean Smith"
     #: and "Mr Major Smith" read given "Dean" and "Major", "Dean of
@@ -761,8 +761,9 @@ class Lexicon:
     #: Two-word title phrases, a title and the title it qualifies
     #: ("chief justice", "major general"), stored space-joined: a word
     #: of ``titles_ambiguous`` on either side of one is in a title
-    #: phrase (rules/H9). A phrase whose words are not both in
-    #: ``titles`` is never consulted. Full default list:
+    #: phrase (rules/H9). A phrase is consulted only if it is two
+    #: words, each in ``titles`` or ``titles_ambiguous``. Full default
+    #: list:
     #: :data:`~nameparser.config.titles.TITLE_PHRASES`.
     title_phrases: frozenset[str] = frozenset()
     #: Lowercase word -> case mask used by capitalized(): the word's
