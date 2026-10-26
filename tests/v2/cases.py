@@ -6008,6 +6008,18 @@ CASES: tuple[Case, ...] = (
          notes="S8 (Derek, 2026-10-26, #785): a connective join counts "
                "by its first word, as the particle run above. 2.6.0 "
                "read the same as this row"),
+    Case("capitals_before_a_split_phd_start_the_run",
+         "John Smith MA Ph. D. Jones",
+         {"given": "John", "family": "Smith", "suffix": "MA Ph. D. Jones"},
+         classification="fix(#785)",
+         ambiguities=("suffix-or-name",),
+         notes="S8: the Ph./D. pair behind the settled MA is a "
+               "credential the walk leaves out, not the name word that "
+               "would keep MA a name, so MA starts the run as 'John "
+               "Smith M.A. Ph. D. Jones' reads; the first draft of the "
+               "narrowing asked the next word the walk holds, 'Jones'. "
+               "2.6.0 read middle 'Smith', family 'MA', suffix 'Ph. D. "
+               "Jones'"),
     Case("capitals_credential_before_a_family_name_is_the_accepted_cost",
          "John Smith MA Jones",
          {"given": "John", "middle": "Smith MA", "family": "Jones"},

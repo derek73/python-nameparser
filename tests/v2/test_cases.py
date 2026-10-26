@@ -258,9 +258,10 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # the rows rewritten in one case or lower case to keep reaching
     # their emitter add theirs back; 1310 -> 1316 the same day, the
     # review's rows for the comma's opening word and the chain's stop;
-    # 1316 -> 1318 on 2026-10-26, the narrowing's caps-switch numeral row.
-    assert claims == 1318, (
-        f"the field sweep checks {claims} claims, recorded as 1318 on "
+    # 1316 -> 1318 on 2026-10-26, the narrowing's caps-switch numeral row;
+    # 1318 -> 1321 the same day, its Ph./D. row.
+    assert claims == 1321, (
+        f"the field sweep checks {claims} claims, recorded as 1321 on "
         f"2026-10-25")
 
 

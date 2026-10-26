@@ -900,6 +900,10 @@ def test_a_member_its_capitals_settle_starts_the_run() -> None:
         assert [a.kind.value for a in name.ambiguities] == [
             "suffix-or-name"]
     assert parse("John Smith MA JD Jones").suffix == "MA JD Jones"
+    # a credential split across a space behind it is no name word,
+    # merged into one piece ('Pharm D') or left out of the walk (Ph. D.)
+    assert parse("John Smith MA Pharm D Jones").suffix == "MA Pharm D Jones"
+    assert parse("John Smith MA Ph. D. Jones").suffix == "MA Ph. D. Jones"
     assert parse("John Smith M.A. Jones").suffix == "M.A. Jones"
     # with no comma a name word behind the capitals keeps them a name
     # word, as initials may be (Derek, 2026-10-26)

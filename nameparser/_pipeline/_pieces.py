@@ -1450,10 +1450,6 @@ def behind_the_merged_credential(rest: Sequence[int], p: int,
             and "suffix" in ptags[rest[p] - 1])
 
 
-# rules/S8: "A credential after the name core starts a run to the
-# end of its part" -- applied to a finished peel (#602), so every
-# reader of the trailing run (assign, P5's reserve, P2's chain stop,
-# the maiden take) sees one answer.
 def _name_word_behind(piece: Sequence[int], ptags: Set[str],
                       tokens: Sequence[WorkToken],
                       one_case: bool | None) -> bool:
@@ -1480,6 +1476,10 @@ def _name_word_behind(piece: Sequence[int], ptags: Set[str],
                      and settled_by_case(tok, one_case)))
 
 
+# rules/S8: "A credential after the name core starts a run to the
+# end of its part" -- applied to a finished peel (#602), so every
+# reader of the trailing run (assign, P5's reserve, P2's chain stop,
+# the maiden take) sees one answer.
 def run_start(rest: Sequence[int], names: int,
               pieces: Sequence[Sequence[int]],
               ptags: Sequence[Set[str]],
@@ -1539,6 +1539,10 @@ def run_start(rest: Sequence[int], names: int,
                     # -- a settled member followed by one is the
                     # writer's initials as likely as a credential
                     and not (initials_cue and p + 1 < len(rest)
+                             # the Ph./D. pair behind it is a credential
+                             # the walk leaves out (#827)
+                             and not behind_the_merged_credential(
+                                 rest, p + 1, ptags)
                              and AMBIGUOUS_ACRONYM_TAG in tags
                              and settled_by_case(tokens[pieces[q][0]],
                                                  one_case)
