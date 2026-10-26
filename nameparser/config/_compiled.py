@@ -771,7 +771,6 @@ TITLES: frozenset[str] = frozenset({
     'vrouwe',
     'warden',
     'warrant',
-    'wing',
     'wo-1',
     'wo1',
     'wo2',
@@ -972,6 +971,7 @@ TITLES_AMBIGUOUS: frozenset[str] = frozenset({
     'justice',
     'major',
     'marshal',
+    'wing',
 })
 
 TITLE_MODIFIERS: frozenset[str] = frozenset({

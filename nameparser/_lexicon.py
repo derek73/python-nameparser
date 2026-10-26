@@ -747,9 +747,11 @@ class Lexicon:
     #: At the head of the name one is a title only with a head title
     #: behind it in its run of titles, so "Wing Commander Lau" keeps the
     #: title where "Wing Lau" reads "Wing" as the given name; after a
-    #: comma it is read as any title is (rules/H9). One standing before
-    #: a word of ``titles_ambiguous`` puts that word in a title phrase.
-    #: Entries not also in ``titles`` are never consulted. Full default
+    #: comma it is read as any title is (rules/H9), save one also in
+    #: ``titles_ambiguous``, which is read everywhere as at the head. One
+    #: standing before a word of ``titles_ambiguous`` puts that word in
+    #: a title phrase. Entries in neither ``titles`` nor
+    #: ``titles_ambiguous`` are never consulted. Full default
     #: list: :data:`~nameparser.config.titles.TITLE_MODIFIERS`.
     title_modifiers: frozenset[str] = frozenset()
     #: Honorific styles ("hon", "excellency", "highness"): one standing
