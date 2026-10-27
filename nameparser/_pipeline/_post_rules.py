@@ -23,11 +23,12 @@ cores group drops); Lexicon.given_name_titles, and
 Lexicon.suffix_acronyms_ambiguous (a dotted member in a clause, which
 carries no tag there, S13).
 
-Implements rules S13, H1, M4, P1, P6 (its no-comma site), O1, O2, O6, O3 and R1 of docs/design/rules/;
-each is cited at its code below, and H1/P1/O1/O2's history lives in
-docs/design/decisions/. `suffix_entries` is the R1 entry pass as a
-state-in/state-out function, for Parser.revise to run over a
-forced-role sub-parse (#511); `post_rules` runs the same worker last.
+Implements rules S13, H1, M4, P1, P6 (its no-comma site), O1, O2, O6,
+O3 and R1 of docs/design/rules/; each is cited at its code below, and
+H1/P1/O1/O2's history lives in docs/design/decisions/.
+`suffix_entries` is the R1 entry pass as a state-in/state-out
+function, for Parser.revise to run over a forced-role sub-parse
+(#511); `post_rules` runs the same worker last.
 """
 from __future__ import annotations
 

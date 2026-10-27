@@ -131,6 +131,9 @@ _CORE_ONLY_IDS = frozenset({
     # #700: P6's family-first site for the elided particle, under a
     # declared order v1 has no spelling for
     "an_elided_particle_ending_a_family_first_name",
+    # #892: P6's attachment behind an empty head under a declared
+    # family-first order, which v1 cannot express
+    "empty_head_attaches_the_particle_family_first",
     "family_comma_no_name_word_family_first_given_last",
     "family_comma_no_name_word_family_first_plain",
     "leading_never_given_particle_two_leftovers_family_first",

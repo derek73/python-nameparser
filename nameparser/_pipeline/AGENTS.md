@@ -45,3 +45,5 @@ And work a report does must not walk the name: the given-name title test, asked 
 ### Testing an emitter
 
 Every kind needs a trigger in `tests/v2/test_contracts.py::_AMBIGUITY_TRIGGERS` (an explicit `None`, strict-xfail, while reserved), and case-table rows pin expected kinds exactly, so a new emitter shows up in both immediately. **Pin the decision, not the vocabulary**: the only titled-particle test used an UNAMBIGUOUS particle, so it walked the right code path and proved nothing about the branch under test -- two criticals passed 1539 tests. A row contrasting the two readings ("John Smith V" against "John Smith B") is what makes an emitter's absence meaningful.
+
+**Folding one site of a rule into another moves every input the two sites' GUARDS disagree on, not only the shape the fold was for.** Compare the guards line by line before measuring: #916 removed P6's empty-head site in post_rules for assign's comma site and measured its moves on C15's grid, which held a title-and-`vd` class only; the review found a second class off the grid (`, de PhD vd`), the comma site's P1 guard (`is_lone_never_given_particle`) being one the removed site never had.

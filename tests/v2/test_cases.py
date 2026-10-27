@@ -293,9 +293,12 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # same day, #752 phase 2j's 'Nasreen Sultana, MBBS', the credential
     # behind two name words reported suffix-or-name under three orders;
     # 1393 -> 1396 on 2026-10-27, #892's ', Mr. Jones vd' reporting the
-    # suffix-or-name P6's attachment decides, under three orders.
-    assert claims == 1396, (
-        f"the field sweep checks {claims} claims, recorded as 1396 on "
+    # suffix-or-name P6's attachment decides, under three orders; 1396
+    # -> 1403 the same day, the #916 review's rows (', Dr. Jones vd
+    # Jr.' and ', Dr. Jones vd, PhD' under three orders, and ', Jane
+    # van Jr.' under FAMILY_FIRST).
+    assert claims == 1403, (
+        f"the field sweep checks {claims} claims, recorded as 1403 on "
         f"2026-10-27")
 
 
@@ -626,8 +629,10 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # connective whose stand-in is an initial too, so its field is
     # pinned in _EXPECTED_ALTERNATIVES instead; 299 -> 302 the same day,
     # master's 'Nasreen Sultana, MBBS' row (#903) under each order, a
-    # comma credential run's report, whose stand-in the run reads too
-    assert (checked, skipped) == (436, 302), (checked, skipped)
+    # comma credential run's report, whose stand-in the run reads too;
+    # 436 -> 437 on 2026-10-27, #892's ', Jane van Jr.' row under
+    # FAMILY_FIRST, a particle-or-given report P6's attachment decides
+    assert (checked, skipped) == (437, 302), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:

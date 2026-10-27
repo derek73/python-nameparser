@@ -8097,6 +8097,45 @@ CASES: tuple[Case, ...] = (
                "'Jones', family 'vd Smith'. #613 had kept the "
                "comma-less reading, family 'Jones', suffix 'vd', with "
                "a second P6 site in post_rules (decisions/P6)"),
+    Case("empty_head_attaches_the_particle_before_a_suffix",
+         ", Dr. Jones vd Jr.",
+         {"title": "Dr.", "given": "Jones", "family": "vd",
+          "suffix": "Jr."},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#892)",
+         notes="the walk looks past the trailing suffix to the particle "
+               "(rules/P6), behind an empty head as behind its twin "
+               "'Smith, Dr. Jones vd Jr.'; #613's post_rules site read "
+               "family 'Jones', suffix 'vd Jr.'"),
+    Case("empty_head_attaches_the_particle_before_a_suffix_part",
+         ", Dr. Jones vd, PhD",
+         {"title": "Dr.", "given": "Jones", "family": "vd",
+          "suffix": "PhD"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#892)",
+         notes="a third comma part, which C15's invariant grid does not "
+               "write; #613's post_rules site read family 'Jones', "
+               "suffix \"vd, PhD\""),
+    Case("empty_head_attaches_the_particle_family_first",
+         ", Jane van Jr.",
+         {"given": "Jane", "family": "van", "suffix": "Jr."},
+         ambiguities=("particle-or-given",),
+         policy=Policy(name_order=FAMILY_FIRST),
+         classification="fix(#892)",
+         notes="pinned field by field because C15's invariant compares "
+               "the empty head with its twin, and the two now share "
+               "assign's one attachment site, so a defect there would "
+               "move both; master read the same"),
+    Case("empty_head_never_given_particle_keeps_the_suffix_tail",
+         ", de PhD vd",
+         {"given": "de", "suffix": "PhD vd"},
+         ambiguities=(),
+         classification="fix(#892)",
+         notes="a never-given particle opening the part declines the "
+               "attachment (P1's guard at assign's site), as in the twin "
+               "'Smith, de PhD vd' and in ', de vd'; #613's post_rules "
+               "site, which had no such guard, read family 'vd', suffix "
+               "'PhD', reported (#916 review)"),
     Case("particles_side_by_side_in_a_credential_part_stay_credentials",
          "De La Cruz, DO DO DO",
          {"family": "De La Cruz", "suffix": "DO DO DO"},
@@ -8199,7 +8238,7 @@ CASES: tuple[Case, ...] = (
                "and a name word and reads a suffix comma, so the name "
                "divides as it would with no comma. b547c247 kept "
                "'김민준' whole, H1 then making it the family"),
-    Case("an_empty_family_part_declines_no_empty_particle_run",
+    Case("an_empty_head_credential_run_reports_once",
          ", Jane PhD do MA",
          {"given": "Jane", "suffix": "PhD do MA"},
          ambiguities=("suffix-or-name",),

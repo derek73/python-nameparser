@@ -829,7 +829,10 @@ def _inside_a_credential_run(seg: Sequence[Sequence[int]],
     and 'Doe, Jane PhD vd' keeps family 'vd Doe'. A title between it
     and the post-nominal in front is transparent, as it is to every
     trailing reading (H5): 'DOE, JANE PHD PROF. VD MA' reads as 'DOE,
-    JANE PHD VD MA' does. (Behind it no title is skipped: a title
+    JANE PHD VD MA' does. The run is never empty: the caller asks
+    only where `k < end`, and over an empty range the test below would
+    pass vacuously and report a fork on the word behind (#613's
+    review, ', Jane PhD do MA'). (Behind it no title is skipped: a title
     there leaves the word a name in assign, so nothing reaches here.)
 
     The test is the ROLES assign gave, not S7's company query: the
@@ -1794,15 +1797,17 @@ def assign(state: ParseState) -> ParseState:
             # Behind every family comma, one with nothing before it
             # too, which then makes the particle the whole family
             # (', Dr. Jones vd'; decisions/C15, #892). GIVEN ahead of
-            # the tail, which is what P6 says ("provided at least one
-            # given word remains"): the given is piece `n`, so a tail
-            # starting there leaves none ('Nguyen, Van').
-            # And not where P1's fold will take the part: a never-given
-            # particle opening it folds every given and middle word
-            # into the family in post_rules, so no given word remains
-            # for this one either ('Smith, de Mesnil van' keeps
-            # 'van' where the fold puts it, not hoisted in front of
-            # 'Smith', the 2026-08-18 defect).
+            # the tail -- rules/P6: "at least one given word must
+            # remain" -- the given is piece `n`, so a tail starting
+            # there leaves none ('Nguyen, Van').
+            # And not where a never-given particle opens the part: P1's
+            # fold takes every given and middle word into the family in
+            # post_rules, so no given word remains for this one either
+            # ('Smith, de Mesnil van' keeps 'van' where the fold puts
+            # it, not hoisted in front of 'Smith', the 2026-08-18
+            # defect); with no name word behind it to fold, the tail
+            # stays the suffix, behind an empty head as behind its twin
+            # (', de PhD vd' as 'Smith, de PhD vd', #892).
             if (n < k6 < end6
                     and not is_lone_never_given_particle(pieces[n],
                                                          tokens)):
