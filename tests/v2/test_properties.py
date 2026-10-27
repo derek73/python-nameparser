@@ -3288,7 +3288,7 @@ def test_a_semicolon_standing_alone_in_a_tail_reads_as_its_comma_twin() -> None:
 # as a comma glued there would" -- so a semicolon glued to a word after
 # the first comma reads as the same text with a space in its place, the
 # glued word kept in its field with its semicolon. Two inputs (docs/
-# design/AGENTS.md axis 11), over every comma shape AGENTS.md's sweep
+# design/AGENTS.md axis 11), over every comma shape nameparser/AGENTS.md's sweep
 # names (a whole name, one word, an empty head, a nickname head, a
 # suffix before the comma, a particle, a connective and a title-particle
 # head), a second comma part or none, and all three orders, with a word

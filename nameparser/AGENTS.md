@@ -1,6 +1,36 @@
 # Working in nameparser/
 
-Loaded when a session reads or edits anything under `nameparser/`: the pipeline, the vocabulary TOML, the config shim. The root AGENTS.md carries the sweeps every behavior change runs (comma shapes, then `name_order`, under Architecture) and the 2.0 conventions; `nameparser/_pipeline/AGENTS.md` carries the ambiguity-report rules. This file holds the third sweep, which a vocabulary-only change needs as much as a code change does.
+Loaded when a session reads or edits anything under `nameparser/`: the pipeline, the vocabulary TOML, the config shim. It holds the sweeps every behavior change runs before it ships — comma shapes, then `name_order`, then spellings, then the encoding — here rather than in the root AGENTS.md because they bind every change to parsing behavior, and the spelling sweep binds a vocabulary-only change as much as a code change. The encoding sweep is the exception there: the vocabulary path NFC-folds, so a TOML-only change does not need it. The root AGENTS.md carries the 2.0 conventions; `nameparser/_pipeline/AGENTS.md` carries the ambiguity-report rules.
+
+## Sweep the forms a change can reach: comma shapes, then `name_order`
+
+### Four comma shapes
+
+No comma, a FULL name before the comma, a ONE-WORD name before the comma and NOTHING before the comma are four paths, and the last two are the misses — #429, #430 and #432 are all the one-word path disagreeing with the full-name path on inputs the full-name path reads correctly, and #613's PR review found `, PhD` and `, Jr.` (an empty surname field, as CSV data writes it) read as given and title by a decision that returned early on an empty head, after two review rounds whose every grid had a name before the comma. Put an empty head and a nickname-only head (`(Bob), PhD`) in every comma grid.
+
+### Counting the one-word path
+
+Count the one-word path the way C3 counts, which is neither tokens nor pieces: a particle run and the one word it attaches to are one word (#575), a connective join and a bound given-name pair count as their words (#613, so `Ortega y Gasset, Dr.` is a whole name), and a suffix beside the surname counts as no name word at all. #603's review found the suffix half (`Vega y Lopez Jr., PhD Jones` lost its family where `Vega y Lopez, PhD Jones` kept it); #613 then reversed the connective half, and both now read given 'Vega', middle 'y', family 'Lopez' — so test a particle surname, a connective surname and a surname with a suffix, each before a comma.
+
+### Orders
+
+For orders the sweep already exists (`tests/v2/test_cases.py` runs every row under all three) but carries one assertion, R2's family partition, so it checks nothing a new change moves; coverage there has been vacuous before (PR #394's review found the suite passed with `name_order` discarded from grouping). Parse your change's names in each comma shape and each order, and read the ones you did not predict.
+
+### Reading a grid's moves
+
+Read a generated grid's moves by SHAPE, not by corpus membership: #614's first design passed the suite, the five gates and a fingerprint of every corpus name, because its grid moves were sorted into 'corpus name moved' and 'garbage', and the review found the moves that mattered among the 'garbage' -- a bare salutation (`Mr. and Mrs.` lost its connective to the family name) and a name with one trailing word (`Freiherr von Berg X.Y.Z.`). Pull out the head-plus-one-word slice of the grid and a salutation with nothing after it, and read every move there.
+
+### Heads and title runs
+
+#614's second review found two gaps. The first was a shape: no grid put TWO words that are both a title and a particle at the head (`Freiherr St van Berg MA`, where an index into the pieces was applied to a merged view of them -- `TITLES ∩ particles_ambiguous` is `{freiherr, st}`, so put both in every head list, each in its bare and its period-marked spelling -- #637's grid had `St` and `Freiherr` alone and missed that `St.` and `Freiherr.` are declined by the bound join and then attached by P6). #701's review added one: put a title/suffix dual (`Ms`, `Sr.`, `Cpl`) SECOND in a title run, behind an ordinary title. A stop that asks only "is this word suffix vocabulary" passes every row that opens with the dual and fails `Rev. Sr. Smith, Mary`; it was found by comparing `T Smith, John` against `T John Smith` over every title word, and a comma-versus-comma-less comparison is the cheap check for any rule that moves a word between the two slots.
+
+### A report's field
+
+The second was in what the grids compared: they compared ambiguity KINDS, so a report telling the caller the wrong field (`Freiherr von Berg Ma`, 'read as a given name' of a word in the family) passed every pin (#614). So compare each report's `detail` against the field its tokens land in -- since #626 `test_a_report_names_the_field_its_word_lands_in` (tests/v2/test_cases.py) does it over every non-locale case row under all three orders (a row carrying its own policy only as declared), for the phrasings its `_FIELD_CLAIMS` lists -- so a row with the shape is the test only where the report's wording is listed: a new emitter's wording goes in that list, and segment's report on a part past the second comma names no field (#629). #626's own first grid then missed an emitter for want of one comma shape (`, Ma Dr.`: an empty head, an ambiguous word, a trailing title, which H1 moves to the family): a trailing title belongs in every empty-head comma grid too.
+
+### Exclusion lists and shared predicates
+
+#620 found that an exclusion list in code being replaced is a set of rules, not noise -- #614's merged copy excluded every word the trailing read weighs from its units, the first #620 prototype dropped the list as a symptom of the copy, and its review found the list had been keeping positional counting's rule that a member in front counts as a word (`Freiherr von Berg MA X.Y.Z.` lost its suffix). Before deleting one, mutate each entry out and read what moves. The converse holds for replacing a hand copy WITH the shared predicate: it is a behavior change wherever the two disagreed, and #735's /simplify shipped one as "no reading moves" because the suite and the snapshot were its only check (`St Sir de Mesnil` family-first, a token test replaced by P1's piece test); diff the two predicates' answers over a grid before calling the swap a refactor.
 
 ## Sweep the spellings: a class reached by vocabulary is also reached by SHAPE
 
@@ -41,3 +71,27 @@ Capitals between two name words have the same second reading: some writers put t
 ### Adjacent pairs of words
 
 A predicate over ADJACENT PAIRS of words meets two shapes no grid of one word holds: an overlapping pair and a joining word beside an initial. #752's split-credential test (phase 2e) read `Dr. Ph.` in `Jane Doe Dr. Ph. D.` as the listed `drph`, leaving `D.` a word of its own (found by the maiden take's candidate grid), and a particle beside a surname written short as the listed `ded` (`DE D JUNIOR`, found only in tse-donors' readings), so put a title, a particle and a connective beside each pair spelling, and a pair overlapping another, in the grid.
+
+## Sweep the encoding: a letter class written `[^\W\d_]` or tested with `isalpha()` is blind to a combining mark
+
+Python's `\w` and `isalpha()` do not match Mn, so a letter written as base plus accent (NFD) ends a word early; the vocabulary path is immune because `_normalize` NFC-folds, the shape path is not.
+
+### The two families #652 found
+
+#652: `Dr. inž. Janez Novak` read `inž.` as the given name when the ž was decomposed, and `Janez Novak, ŽŠČ` reversed, in two families that share the blind spot — the letter-shape regexes (`period_abbreviation`, `_DOTTED`, `_CHUNKED`, `_PAIRED_INITIALS`), now spelled with `_vocab._LETTER` (a letter plus the general combining blocks; `test_regex_sync` compares the two `_MARKS` strings and pins `period_abbreviation` against config's copy), and the caps predicates, which NFC-compose a non-ASCII word before `isalpha()` (`is_caps_word`, behind C-level `isalpha()`/`is_normalized` tests, so already-composed text pays no frame — measured 2026-10-12, `Smith, José` was 193 frames before and after; the first version called it for every non-ASCII word and cost one frame each, and no guard saw it because the reference name is ASCII).
+
+### Widths and the initial shape
+
+A width test must count letters, not code points (`composed_len`): admitting a decomposed word to the caps set put `John Smith, MÁ` on the pair exception's wrong side, and the review's grid found it where the rows (all three letters long) did not — put a two-letter word in every caps grid. The initial shape (`_INITIAL`, `\w\.`, v1-verbatim and public) is not widened but asked of the COMPOSED word, in `is_initial_shaped` and in `_render`'s two copies; and the single-letter connective tests count composed letters, since a decomposed `й` is two code points (#665, where `É. y É. Smith` and `John й Smith` read differently decomposed).
+
+### Compose the WHOLE predicate
+
+Compose the WHOLE predicate, not one half: `is_initial` is a shape ANDed with the #320 script veto, and composing the shape alone made a decomposed `씨.` an initial, since decomposed hangul is conjoining jamo outside every script range (#665's first version; `in_initialless_script` composes too now).
+
+### What is deliberately not covered
+
+Not covered, deliberately: the marks only some scripts write (Indic vowel signs, Arabic and Hebrew points), declined in decisions/nfd-shapes because widening the class would move readings nobody had measured; rules/H2's Accepted clause records the one consequence it names, that a period-marked abbreviation in Bengali or Devanagari never reads as a title by shape.
+
+### The guards
+
+The guard is `test_a_decomposed_name_renders_as_its_composed_twin` over the CLDR corpus plus `test_a_decomposed_abbreviation_reads_as_its_composed_twin` (rows × three orders × EVERYWHERE); the corpus guard reaches a shape only if some corpus name does, which is how the caps shape was missed until review, so when adding a shape rule add a row there. Four of #652's rows and two of #665's pass with every fix reverted (measured) and are parity pins, and the test compares ambiguity kinds and `initials()` too, since #665's `John й Smith` differed in its report; `_DOTTED` has no observable input and is pinned by a direct call.

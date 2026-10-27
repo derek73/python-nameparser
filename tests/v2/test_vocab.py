@@ -108,7 +108,7 @@ def test_the_toml_ships_as_package_data() -> None:
     globs = pyproject["tool"]["setuptools"]["package-data"]["nameparser"]
     assert "vocab/*.toml" in globs
     assert not [p for p in build.VOCAB.rglob("*")
-                if p.is_file() and p.suffix != ".toml" and p.name != build.README]
+                if p.is_file() and p.suffix != ".toml" and p.name not in build.SKIPPED]
 
 
 # --------------------------------------------- controls on the shipped data
@@ -789,8 +789,10 @@ def test_an_empty_word_is_a_usage_error() -> None:
     ({}, "no vocabulary files"),
     ({"EN.TOML": OK}, "BCP 47 tag"),          # misnamed files are read, then refused
     ({"en.toml.orig": OK}, "BCP 47 tag"),
-    ({"readme.md": OK}, "BCP 47 tag"),        # only README.md, by its exact name, is skipped
+    ({"readme.md": OK}, "BCP 47 tag"),        # only README.md and AGENTS.md, by exact name, are skipped
     ({"README.md": OK}, "no vocabulary files"),
+    ({"agents.md": OK}, "BCP 47 tag"),
+    ({"AGENTS.md": OK}, "no vocabulary files"),
     ({"sub/en.toml": OK}, "no subfolders"),
     ({"en.toml": "->nowhere.toml"}, "a link to nothing"),
 ])
