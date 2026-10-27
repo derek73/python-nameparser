@@ -61,7 +61,8 @@ about either:
   naming it, since 2.4
 * a ``Lexicon``, ``Policy`` or ``Parser`` pickled by 2.5 or earlier
   raises ``ValueError`` on load since 2.6, each having gained a field;
-  re-pickle after upgrading
+  re-pickle after upgrading. A ``Lexicon``, ``Parser`` or locale pack
+  pickled by 2.6 raises the same way since 2.7
 
 A silent change: comparing with ``==``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -757,6 +758,9 @@ grep your fixtures for, with what 1.4 read:
   holds for ``Princess``, ``Sultana``, ``Shaikh``, ``Sheik``, ``Shekh``,
   ``Shaik``, ``Cheikh``, ``Mahdi``, ``Bard``, ``Buddha``, ``Siddha``,
   ``Gyani`` and ``Wing``, and for a lone qualifier such as ``Grand``.
+  ``Constants().titles`` still lists these words, so adding one there
+  changes nothing; the 2.0 API's ``Lexicon.default().add(titles={"king"})``
+  makes one a title everywhere.
 - ``"Chief Justice John Roberts"`` and ``"Major General John Smith"``
   (2.7) — a title phrase is one title: 1.4 read title ``Chief``, first
   ``Justice``, and first ``Major``, middle ``General John``.
