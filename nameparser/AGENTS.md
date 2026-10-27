@@ -1,6 +1,6 @@
 # Working in nameparser/
 
-Loaded when a session reads or edits anything under `nameparser/`: the pipeline, the vocabulary TOML, the config shim. It holds the sweeps every behavior change runs before it ships — comma shapes, then `name_order`, then spellings — here rather than in the root AGENTS.md because a vocabulary-only change needs them as much as a code change does. The root AGENTS.md carries the 2.0 conventions; `nameparser/_pipeline/AGENTS.md` carries the ambiguity-report rules.
+Loaded when a session reads or edits anything under `nameparser/`: the pipeline, the vocabulary TOML, the config shim. It holds the sweeps every behavior change runs before it ships — comma shapes, then `name_order`, then spellings, then the encoding — here rather than in the root AGENTS.md because a vocabulary-only change needs them as much as a code change does. The root AGENTS.md carries the 2.0 conventions; `nameparser/_pipeline/AGENTS.md` carries the ambiguity-report rules.
 
 ## Sweep the forms a change can reach: comma shapes, then `name_order`
 
@@ -71,3 +71,27 @@ Capitals between two name words have the same second reading: some writers put t
 ### Adjacent pairs of words
 
 A predicate over ADJACENT PAIRS of words meets two shapes no grid of one word holds: an overlapping pair and a joining word beside an initial. #752's split-credential test (phase 2e) read `Dr. Ph.` in `Jane Doe Dr. Ph. D.` as the listed `drph`, leaving `D.` a word of its own (found by the maiden take's candidate grid), and a particle beside a surname written short as the listed `ded` (`DE D JUNIOR`, found only in tse-donors' readings), so put a title, a particle and a connective beside each pair spelling, and a pair overlapping another, in the grid.
+
+## Sweep the encoding: a letter class written `[^\W\d_]` or tested with `isalpha()` is blind to a combining mark
+
+Python's `\w` and `isalpha()` do not match Mn, so a letter written as base plus accent (NFD) ends a word early; the vocabulary path is immune because `_normalize` NFC-folds, the shape path is not.
+
+### The two families #652 found
+
+#652: `Dr. inž. Janez Novak` read `inž.` as the given name when the ž was decomposed, and `Janez Novak, ŽŠČ` reversed, in two families that share the blind spot — the letter-shape regexes (`period_abbreviation`, `_DOTTED`, `_CHUNKED`, `_PAIRED_INITIALS`), now spelled with `_vocab._LETTER` (a letter plus the general combining blocks; `test_regex_sync` compares the two `_MARKS` strings and pins `period_abbreviation` against config's copy), and the caps predicates, which NFC-compose a non-ASCII word before `isalpha()` (`is_caps_word`, behind C-level `isalpha()`/`is_normalized` tests, so already-composed text pays no frame — measured 2026-10-12, `Smith, José` was 193 frames before and after; the first version called it for every non-ASCII word and cost one frame each, and no guard saw it because the reference name is ASCII).
+
+### Widths and the initial shape
+
+A width test must count letters, not code points (`composed_len`): admitting a decomposed word to the caps set put `John Smith, MÁ` on the pair exception's wrong side, and the review's grid found it where the rows (all three letters long) did not — put a two-letter word in every caps grid. The initial shape (`_INITIAL`, `\w\.`, v1-verbatim and public) is not widened but asked of the COMPOSED word, in `is_initial_shaped` and in `_render`'s two copies; and the single-letter connective tests count composed letters, since a decomposed `й` is two code points (#665, where `É. y É. Smith` and `John й Smith` read differently decomposed).
+
+### Compose the WHOLE predicate
+
+Compose the WHOLE predicate, not one half: `is_initial` is a shape ANDed with the #320 script veto, and composing the shape alone made a decomposed `씨.` an initial, since decomposed hangul is conjoining jamo outside every script range (#665's first version; `in_initialless_script` composes too now).
+
+### What is deliberately not covered
+
+Not covered, deliberately: the marks only some scripts write (Indic vowel signs, Arabic and Hebrew points), declined in decisions/nfd-shapes because widening the class would move readings nobody had measured; rules/H2's Accepted clause records the one consequence it names, that a period-marked abbreviation in Bengali or Devanagari never reads as a title by shape.
+
+### The guards
+
+The guard is `test_a_decomposed_name_renders_as_its_composed_twin` over the CLDR corpus plus `test_a_decomposed_abbreviation_reads_as_its_composed_twin` (rows × three orders × EVERYWHERE); the corpus guard reaches a shape only if some corpus name does, which is how the caps shape was missed until review, so when adding a shape rule add a row there. Four of #652's rows and two of #665's pass with every fix reverted (measured) and are parity pins, and the test compares ambiguity kinds and `initials()` too, since #665's `John й Smith` differed in its report; `_DOTTED` has no observable input and is pinned by a direct call.
