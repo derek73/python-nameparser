@@ -9,8 +9,7 @@
 - Under a family-first order the first two name words are the family, the remainder laid out as the positions after a family — 2026-10-24 #754.
 - The switch runs before `middle_as_family` and is not refused beside it: given-first, the two together read as `middle_as_family` alone — 2026-10-24 #754.
 - The switch reports nothing — 2026-10-24 #754.
-
-Open: whether the reading the switch did not take is reported, once ambiguity is derived from clashing readings, #752.
+- The switch reports no alternative either, so the reading it did not take is not surfaced: the caller declared the convention — 2026-10-27 #752 (Derek).
 
 ## Log
 
@@ -38,3 +37,4 @@ Open: whether the reading the switch did not take is reported, once ambiguity is
   | Everyone, as if it were the default | 1,039,171 | 96.7% → 47.2% | 22,959 | 537,743 |
 
   Among Spanish filers it fixes names of four name words 1,480 to 162 and of three 2,325 to 732, counted by the default reading's given, middle and family words. Of the records it breaks, 889 of 902 Spanish and 1,331 of 1,481 Portuguese filed a one-word surname. In the GND and Wikidata fielded corpora, the given-first renderings of the Spanish and Latin American double-surname strata (GND `compound-iberia` and `compound-latam`, Wikidata `surname2-es`, `-mx` and `-co`) disagree with the source on 315 of 390 by default, the RFC's count, and on 17 with the switch: 298 fixed, none broken; their index-form renderings disagree on none either way. The same switch over every other given-first rendering breaks 43 of GND's 408 and 141 of Wikidata's 250, and in the native-script Wikidata corpus moves 31 three- and four-word Arabic, Cyrillic, Bengali and Devanagari names, 11 to agreeing and 20 away. Recompute: for PSC, `local_agreement.read` per record under `Parser()` and under `Parser(policy=Policy(two_family_names=True))`, grouped by `group_of`, skipping records set aside on either side; for the fielded corpora, `cldr_agreement.disagreements` over the renderings with `shape` None, once with `_PARSERS[None]` as shipped and once set to the switched parser (clearing `_parser`'s cache), split by `label` and `order`. The comparator is the default parser on the same tree.
+- 2026-10-27 #752 (Derek) — THE SWITCH SURFACES NO ALTERNATIVE: the reading it did not take is not reported, as the 2026-10-24 #754 entry's No report bullet left for #752 to answer. Phase 2m surfaces the reading not taken as `Ambiguity.alternative`, which rides on a report, so a switch that reports nothing carries none. The caller turned the convention on, which is the declaration that settles the fork, as a declared order settles field order without a report; a report on most names of three words or more would still teach the caller to ignore the field.

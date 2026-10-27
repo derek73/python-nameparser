@@ -27,7 +27,7 @@ Elsewhere: the case lean that decides the capitals forms above is decisions/S6's
 
 Not standing: the #454 bullet's note that the `fix(suffix-routing)` ledger rule stays, the ledgers having been retired for the snapshot (decisions/differential-ledger, #664), and the repair of rules/P6's Accepted clause recorded in the "What #454 got right" bullet, carried out in the same change — 2026-09-07 #342.
 
-Open: #752 (phase 2 derives the ambiguous marking from clashing readings, which rewrites how the memberships above are recorded).
+Elsewhere: since phase 2a the ambiguous marking above is derived from a word's name reading rather than written as a flag, and no membership above moved — decisions/vocabulary-model's 2026-10-25 #752 — A CLASH WITH A NAME IS A NAME READING entry (phase 2a).
 
 ## Log
 

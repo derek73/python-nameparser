@@ -12,7 +12,7 @@
 
 Elsewhere: the graf class, a title word borne as a name but rarely as its first word shipping as a title (`Greve Anna` → title 'Greve', family 'Anna'), is decisions/salutation-titles' 2026-10-04 #606 bundle; the renunciate class, the given-name titles of traditions that drop the surname (`Swami Vivekananda` → given 'Vivekananda'), is decisions/indic-honorifics' 2026-09-06 #346/#344/#343 bundle.
 
-Open: [#348](https://github.com/derek73/python-nameparser/issues/348) (whether a word that is both a title and a given name reports an ambiguity; `Baron Davis` reads title 'Baron'; `Prince Fielder` reads given 'Prince' in the default order since 2026-10-27, decisions/H9); [#815](https://github.com/derek73/python-nameparser/issues/815) (whether N3 sets a suffix aside as this rule does, the nickname-led question the 2026-08-25 #410 entry left open: `'Smitty' Jones Jr.` reads given 'Jones', family '').
+Open: [#913](https://github.com/derek73/python-nameparser/issues/913) (the title words still read as titles though borne as names, #348's question answered by rules/H9: `Baron Davis` reads title 'Baron'; `Prince Fielder` reads given 'Prince' in the default order since 2026-10-27, decisions/H9); [#815](https://github.com/derek73/python-nameparser/issues/815) (whether N3 sets a suffix aside as this rule does, the nickname-led question the 2026-08-25 #410 entry left open: `'Smitty' Jones Jr.` reads given 'Jones', family '').
 
 ## Log
 
