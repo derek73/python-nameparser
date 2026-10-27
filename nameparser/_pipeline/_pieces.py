@@ -493,8 +493,8 @@ def starts_a_credential_run(piece: Sequence[int], ptags: Set[str],
     The split credential group merges ('Ph. D.', the one piece carrying
     the "suffix" piece tag) starts it as its one-token spelling 'PhD'
     does: a run that started for one spelling of a word and not the
-    other is the vocabulary-against-shape split AGENTS.md's spelling
-    sweep names (#603 found it, 'Smith, John Ph. D. Jones' keeping
+    other is the vocabulary-against-shape split nameparser/AGENTS.md's
+    spelling sweep names (#603 found it, 'Smith, John Ph. D. Jones' keeping
     middle 'Jones' where 'Smith, John PhD Jones' reads suffix
     'PhD Jones'). The no-comma spelling is not reached: `run_start`
     asks only of the pieces `peel_walk` keeps, and the walk drops the

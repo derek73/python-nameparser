@@ -20,7 +20,7 @@ The same split runs through the credentials (`MA` listed, `X.Y.Z.` by the dotted
 
 ### A word a rule only asks ABOUT
 
-That holds for a word a rule only asks ABOUT, too: #810's first draft asked whether any word after a bracketed credential lacked the suffix TAG, and kept `John Smith (MA) VI`, `(MA) Ph. D.` and `(MA) Dr.` nicknames while `(MA) III` and `(MA) PhD` escaped; asking the role the parse read for the following word answers for every spelling.
+Testing one spelling from each path holds for a word a rule only asks ABOUT, too: #810's first draft asked whether any word after a bracketed credential lacked the suffix TAG, and kept `John Smith (MA) VI`, `(MA) Ph. D.` and `(MA) Dr.` nicknames while `(MA) III` and `(MA) PhD` escaped; asking the role the parse read for the following word answers for every spelling.
 
 ### A separator's spacing
 

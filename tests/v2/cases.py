@@ -2856,7 +2856,8 @@ CASES: tuple[Case, ...] = (
          "Ivoi, Paul d',Jr.",
          {"given": "Paul", "family": "d' Ivoi", "suffix": "Jr."},
          classification="fix(#700)",
-         notes="AGENTS.md's separator spacing: the comma glued to the "
+         notes="nameparser/AGENTS.md's separator spacing: the comma "
+               "glued to the "
                "apostrophe still ends the particle's token. 1.4.0 "
                "through 2.4.2 middle \"d'\""),
     Case("an_elided_particle_after_a_particle_surname",
