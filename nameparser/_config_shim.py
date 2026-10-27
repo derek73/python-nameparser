@@ -731,13 +731,19 @@ def _default_vocab() -> dict[str, frozenset[str]]:
     from nameparser.config.suffixes import (
         SUFFIX_ACRONYMS, SUFFIX_ACRONYMS_AMBIGUOUS, SUFFIX_WORDS,
     )
-    from nameparser.config.titles import GIVEN_NAME_TITLES, TITLES
+    from nameparser.config._titles_2_6_0 import TITLES_2_6_0
+    from nameparser.config.titles import (
+        GIVEN_NAME_TITLES, TITLES, TITLES_AMBIGUOUS)
     return {
         "prefixes": PARTICLES,
         "suffix_acronyms": SUFFIX_ACRONYMS,
         "suffix_not_acronyms": SUFFIX_WORDS,
         "suffix_acronyms_ambiguous": SUFFIX_ACRONYMS_AMBIGUOUS,
-        "titles": TITLES,
+        # 2.6.0's titles, less any word that is no title now: one a
+        # later release made a title only inside a title phrase
+        # (rules/H9) stays a v1 title, so remove() and `in` answer as
+        # they did; _build_snapshot reads it by the phrase
+        "titles": TITLES | (TITLES_2_6_0 & TITLES_AMBIGUOUS),
         "first_name_titles": GIVEN_NAME_TITLES,
         "conjunctions": CONJUNCTIONS,
         "bound_first_names": BOUND_GIVEN_NAMES,
@@ -1050,6 +1056,7 @@ class Constants:
         from nameparser.config.suffixes import (
             AGNOMENS, GLUED_HONORIFICS, SUFFIX_WORDS_AMBIGUOUS)
         from nameparser.config.surnames import KOREAN_SURNAMES
+        from nameparser.config._titles_2_6_0 import TITLES_2_6_0
         from nameparser.config.titles import (
             AFTER_GIVEN_TITLES, TITLE_MODIFIERS, TITLE_PHRASES, TITLE_STYLES,
             TITLES_AMBIGUOUS)
@@ -1075,6 +1082,27 @@ class Constants:
         conjunctions = matchable("conjunctions")
         bound = matchable("bound_first_names")
         titles = matchable("titles")
+        # A title 2.6.0 listed that a later release made a title only
+        # inside a title phrase (rules/H9) is in v1's default `titles`,
+        # where 2.6.0 had it, so remove(), discard() and `in` answer as
+        # they did (decisions/H9, 2026-10-26). Kept, it is read as the
+        # default reads it, by the phrase; removed, it is no title at
+        # all, as removing it made it in 2.6.0. The one 2.6.0 reading
+        # with no v1 spelling left is the word as a title everywhere:
+        # v1 can say "a title" or "not a title", and "a title" now means
+        # the phrase reading. A word 2.6.0 never listed (`dean`) is not
+        # in `moved`, so adding it is still a title everywhere, the 1.4
+        # recipe the phrase test honours below. Compared folded, as the
+        # two cross-set computations below are (#582), so a spelling
+        # Lexicon folds onto a moved word (`king。`) is read as it is.
+        moved = TITLES_2_6_0 & TITLES_AMBIGUOUS
+        kept_moved = frozenset(w for w in titles if _normalize(w) in moved)
+        phrase_only = ((TITLES_AMBIGUOUS - moved) | kept_moved
+                       if titles else frozenset())
+        # ...and the three intersections with the phrase vocabulary read
+        # the same folded spellings, or a folded moved word kept its
+        # phrase reading but lost its modifier one (`wing。`)
+        any_title = frozenset(_normalize(w) for w in titles | phrase_only)
         first_name_titles = matchable("first_name_titles")
         non_given = matchable("non_first_name_prefixes")
         ambiguous_acronyms = matchable("suffix_acronyms_ambiguous") & acronyms
@@ -1140,7 +1168,7 @@ class Constants:
         # v1 also had, later, at capitalize().
         try:
             lexicon = Lexicon(
-                titles=titles,
+                titles=titles - kept_moved,
                 # TRANSLATE, do not filter. The two versions build the same
                 # lookup key differently: v1 joins the raw title run and
                 # then applies lc(), which strips only the whole string's
@@ -1249,11 +1277,13 @@ class Constants:
                 # likewise no v1 manager: the title phrase (rules/H9) is
                 # 2.7 behavior (#752), so its sets ride in the snapshot
                 # only. A title that may be a given name is not in
-                # TITLES, so v1's `titles` never held it, and one a v1
-                # caller ADDS to `titles` is a title wherever it stands,
-                # as it was in 1.4 (`c.titles.add("dean")`, the
-                # documented recipe): the phrase test reads a word of
-                # titles_ambiguous only where it is not in titles. The
+                # TITLES, so v1's `titles` holds one only where 2.6.0
+                # listed it (`moved`, above, read by the phrase), and one
+                # 2.6.0 never listed that a v1 caller ADDS to `titles` is
+                # a title wherever it stands, as it was in 1.4
+                # (`c.titles.add("dean")`, the documented recipe): the
+                # phrase test reads a word of titles_ambiguous only where
+                # it is not in titles. The
                 # knob that reaches the other three is deleting a title,
                 # which turns its modifier, style or phrase reading off
                 # with it; Lexicon checks none of them, so the
@@ -1261,18 +1291,17 @@ class Constants:
                 # after_given_titles' is.
                 # ...save where the caller emptied `titles`, v1's way to
                 # turn title detection off (customize.rst). A caller who
-                # REPLACES the list keeps the phrase reading: v1 has no
-                # knob for these words, and what a replaced list means
-                # for words it never held is not something it says
-                titles_ambiguous=TITLES_AMBIGUOUS if titles else frozenset(),
-                title_modifiers=TITLE_MODIFIERS & (
-                    titles | (TITLES_AMBIGUOUS if titles else frozenset())),
-                title_styles=TITLE_STYLES & (
-                    titles | (TITLES_AMBIGUOUS if titles else frozenset())),
+                # REPLACES the list keeps the phrase reading of the words
+                # 2.6.0 never listed: v1 has no knob for them, and what a
+                # replaced list means for words it never held is not
+                # something it says. A moved word reads by whether the
+                # replaced list holds it, as any v1 title does
+                titles_ambiguous=phrase_only,
+                title_modifiers=TITLE_MODIFIERS & any_title,
+                title_styles=TITLE_STYLES & any_title,
                 title_phrases=frozenset(
                     p for p in TITLE_PHRASES
-                    if all(w in titles or w in TITLES_AMBIGUOUS
-                           for w in p.split(" "))),
+                    if all(w in any_title for w in p.split(" "))),
                 # TupleManager is dict[str, object] (v1 parity: values were
                 # never statically str-typed); every real entry is a str,
                 # same assumption _DelimiterManager's sentinel lookup makes.
