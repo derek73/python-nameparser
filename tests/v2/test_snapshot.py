@@ -214,3 +214,11 @@ def test_a_sample_is_chosen_by_name_and_keeps_every_order_of_one() -> None:
     names = {n for n, _ in kept}
     assert {e for e in entries if e[0] in names} == set(kept)
     assert any(o for _, o in kept), "pick another N: no order-bearing entry kept"
+
+
+def test_a_moved_name_holding_a_line_break_stays_on_its_indented_line() -> None:
+    old = {("Ann\nZyx", ""): {"name": "Ann\nZyx", "family": "Zyx"}}
+    new = {("Ann\nZyx", ""): {"name": "Ann\nZyx", "family": "Ann"}}
+    lines = "\n".join(snapshot.grouped(old, new)).split("\n")
+    assert lines[0] == "family: 1"
+    assert all(line.startswith(" ") for line in lines[1:])

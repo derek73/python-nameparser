@@ -441,7 +441,10 @@ def grouped(old: dict[tuple[str, str], dict[str, Any]],
     as a few kinds of change rather than a wall of names."""
     groups: dict[tuple[str, ...], list[str]] = defaultdict(list)
     for k in sorted(set(old) | set(new)):
-        label = k[0] + (f"  [{k[1]}]" if k[1] else "")
+        # A line break inside a name would put the rest of it flush left,
+        # where measure.py's summary keeps lines; escaped, it stays here.
+        label = (k[0].replace("\n", "\\n").replace("\r", "\\r")
+                 + (f"  [{k[1]}]" if k[1] else ""))
         if k not in new:
             groups[("(removed from corpus)",)].append(label)
             continue
