@@ -6,7 +6,9 @@ style = { expands = "one who has made the Hajj" }
 
 [[word]]
 text = "sheikh"
-style = { addresses = "given", gender = "m" }
+style = { addresses = "given", gender = "m", issue = 752, decided = 2026-10-27, note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'His Highness Sheikh Mohammed' and 'Sheikh of Kuwait' read the title, 'Sheikh Ahmed Khan' and 'Mr Sheikh Ahmed' the given name, unreported, since no listed phrase holds it" }
+given = { us_ssa = 436, wikidata = 21, as_of = 2026-10-27, note = "US SSA: male and female births added; Wikidata is a lower bound (Bangladesh 3, India 2); UK PSC filers put it first in the forename box 174 times and in the title box 19 (2026-10-27)" }
+family = { us_census_2010 = 6462, wikidata = 60, as_of = 2026-10-27, note = "US Census rank 5,384, asian/PI 71.62%" }
 
 [[word]]
 text = "cheikh"
@@ -14,7 +16,9 @@ style = { addresses = "given", gender = "m", same_as = "sheikh", expands = "the 
 
 [[word]]
 text = "shaik"
-style = { addresses = "given", gender = "m", same_as = "sheikh" }
+style = { addresses = "given", gender = "m", same_as = "sheikh", issue = 752, decided = 2026-10-27, note = "a title only inside a title phrase, its given reading the clash (rules/H9): read as 'sheikh' is" }
+given = { us_ssa = 10, as_of = 2026-10-27, note = "US SSA births; UK PSC filers put it first in the forename box 14 times and never in the title box (2026-10-27)" }
+family = { us_census_2010 = 1053, wikidata = 14, as_of = 2026-10-27, note = "US Census asian/PI 93.73%; mostly a South Indian surname" }
 
 [[word]]
 text = "shaikh"
@@ -32,11 +36,14 @@ style = { addresses = "given", gender = "m", same_as = "sheikh" }
 
 [[word]]
 text = "sheik"
-style = { addresses = "given", gender = "m", same_as = "sheikh" }
+style = { addresses = "given", gender = "m", same_as = "sheikh", issue = 752, decided = 2026-10-27, note = "a title only inside a title phrase, its given reading the clash (rules/H9): read as 'sheikh' is" }
+given = { us_ssa = 39, as_of = 2026-10-27, note = "US SSA births; UK PSC filers put it first in the forename box 23 times and in the title box once (2026-10-27)" }
+family = { us_census_2010 = 401, wikidata = 4, as_of = 2026-10-27 }
 
 [[word]]
 text = "shekh"
-style = { addresses = "given", gender = "m", same_as = "sheikh" }
+style = { addresses = "given", gender = "m", same_as = "sheikh", issue = 752, decided = 2026-10-27, note = "a title only inside a title phrase, its given reading the clash (rules/H9): read as 'sheikh' is" }
+given = { note = "no US or Wikidata count; UK PSC filers put it first in the forename box 6 times and in the title box once, and 378 of Nepal's 2022 local candidates write it, its own romanization of the Devanagari (2026-10-27)" }
 
 [[word]]
 text = "الشيخ"

@@ -10521,12 +10521,14 @@ CASES: tuple[Case, ...] = (
                "never match as a last-word key either -- `sir` is "
                "what this run is read by"),
     Case("title_run_licences_the_bound_join_by_its_last_title",
-         "Sir Sheikh abdul rahman",
-         {"title": "Sir Sheikh", "given": "abdul rahman"},
+         "Dr. Sir abdul rahman",
+         {"title": "Dr. Sir", "given": "abdul rahman"},
          classification="fix(#489)",
          notes="rules/P5's licence keys the same way H1 does, the "
                "invariant the #369 entry set: behind a given-name "
-               "title there is no family to spare"),
+               "title there is no family to spare. 1.4.0 read last "
+               "'rahman'. Written 'Sir Sheikh' until #752 phase 2j "
+               "made `sheikh` a title only inside a title phrase"),
     Case("title_run_does_not_address_by_a_non_given_name_title",
          "His Excellency Lord Duncan",
          {"title": "His Excellency Lord", "family": "Duncan"},
@@ -12623,10 +12625,63 @@ CASES: tuple[Case, ...] = (
          classification="fix(#752)",
          notes="H9's Accepted clause, the class accepted for 'king' "
                "(Derek, 2026-10-26); read title 'Sultan' before"),
-    Case("sultan_behind_sheikh_keeps_the_title", "Sheikh Sultan Khan",
-         {"title": "Sheikh Sultan", "family": "Khan"},
-         notes="'sheikh' is a style, so it partners the word: master's "
-               "reading, left for sheikh's own batch"),
+    Case("sultan_behind_a_bare_leading_sheikh", "Sheikh Sultan Khan",
+         {"given": "Sheikh", "middle": "Sultan", "family": "Khan"},
+         classification="fix(#752)",
+         notes="H9: a style read as a name word is no title there, so it "
+               "partners nothing, as for 'shaikh'; read title "
+               "'Sheikh Sultan' 1.4.0 through 2.6.0"),
+    Case("sultan_behind_a_styled_sheikh_keeps_the_title",
+         "His Highness Sheikh Sultan Khan",
+         {"title": "His Highness Sheikh Sultan", "family": "Khan"},
+         notes="H9: behind a style 'sheikh' is a title, and a style "
+               "partners the contested word behind it"),
+    Case("given_name_title_sheikh_at_the_head", "Sheikh Ahmed Khan",
+         {"given": "Sheikh", "middle": "Ahmed", "family": "Khan"},
+         classification="fix(#752)",
+         notes="H9; read title 'Sheikh', given 'Ahmed' 1.4.0 through "
+               "2.6.0 (#752 phase 2j)"),
+    Case("given_name_title_sheikh_after_a_salutation", "Mr Sheikh Ahmed",
+         {"title": "Mr", "given": "Sheikh", "family": "Ahmed"},
+         classification="fix(#853)",
+         notes="#853's table: a salutation is no partner; read title "
+               "'Mr Sheikh' before"),
+    Case("given_name_title_sheikh_after_a_family_comma", "Khan, Sheikh",
+         {"given": "Sheikh", "family": "Khan"}, classification="fix(#752)",
+         notes="H9; read title 'Sheikh' before"),
+    Case("given_name_title_sheikh_before_a_family_comma",
+         "Sheikh Smith, Ahmed",
+         {"given": "Ahmed", "family": "Sheikh Smith"},
+         notes="H6 peels only a title, so the surname keeps the word, as "
+               "1.4.0 read it; master read title 'Sheikh'"),
+    Case("sheikh_behind_a_style_keeps_the_title",
+         "His Highness Sheikh Ahmed Khan",
+         {"title": "His Highness Sheikh", "given": "Ahmed", "family": "Khan"},
+         notes="H9: a style is a partner, as master and 1.4.0 read it"),
+    Case("ruler_with_a_bare_leading_sheikh",
+         "Sheikh Mohammed bin Rashid Al Maktoum",
+         {"given": "Sheikh", "middle": "Mohammed bin Rashid",
+          "family": "Al Maktoum"},
+         classification="fix(#752)",
+         notes="H9's Accepted clause, the class 'king', 'sultan', "
+               "'shaikh' and 'prince' took; read title 'Sheikh' before"),
+    Case("given_name_title_cheikh_at_the_head", "Cheikh Anta Diop",
+         {"given": "Cheikh", "middle": "Anta", "family": "Diop"},
+         classification="fix(#752)",
+         notes="H9: the French spelling, a common Senegalese given "
+               "name; read title 'Cheikh', given 'Anta' before"),
+    Case("given_name_title_shekh_at_the_head", "Shekh Abdul Rahim",
+         {"given": "Shekh", "middle": "Abdul", "family": "Rahim"},
+         classification="fix(#752)",
+         notes="H9: the spelling Nepal's romanization writes. Read "
+               "title 'Shekh', given 'Abdul Rahim' (P5's licensed join) "
+               "2.2.0 through 2.6.0, and given 'Abdul', last 'Rahim' in "
+               "1.4.0; as a name word it licenses no join, so the bound "
+               "word is a middle name"),
+    Case("shaykh_stays_a_title", "Shaykh Hamza Yusuf",
+         {"title": "Shaykh", "given": "Hamza", "family": "Yusuf"},
+         notes="'shaykh' has no given reading: no filed data writes it "
+               "as a given name, so it is still a title everywhere"),
     Case("given_name_title_shaikh_at_the_head", "Shaikh Ahmed Khan",
          {"given": "Shaikh", "middle": "Ahmed", "family": "Khan"},
          classification="fix(#752)",

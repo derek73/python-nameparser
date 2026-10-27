@@ -54,7 +54,7 @@
 - A listing record whose given field holds only a given-name title reads that title's reading, so `Smith, Sir` (a row with the given name missing) reads given `Smith` with the family empty, as `Sir Smith` does: the input names one word and one title, and the title is the only evidence there is. 1.4.0 read the word before the comma as the last name in these rows (`Elizabeth II, Queen`, `John III, Sir`, `Smith, Sir`) but for `Anne, Swami`, which it read as first `Anne`. An ambiguous particle no comma settled, or a bare one, is a word the order placed, and reads given.
   ```
   "Smith, Sir"                →  family=""
-  "Sheik Abu Bakar"  family-first  →  given="Abu Bakar"
+  "Sir Abu Bakar"  family-first  →  given="Abu Bakar"
   "Sir de"  family-first      →  given="de"
   "St Sir de Mesnil"  family-first  →  given="de Mesnil"
   ```

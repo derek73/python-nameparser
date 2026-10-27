@@ -594,7 +594,7 @@ class Lexicon:
     #: list: :data:`~nameparser.config.titles.TITLES`.
     titles: frozenset[str] = frozenset()
     #: Titles whose single name word, before or after them, reads as a
-    #: GIVEN name ("sheikh", "sister", ...) rather than a family name. Full
+    #: GIVEN name ("sir", "sister", ...) rather than a family name. Full
     #: default list: :data:`~nameparser.config.titles.GIVEN_NAME_TITLES`.
     given_name_titles: frozenset[str] = frozenset()
     #: Post-nominal acronym suffixes, matched with or without periods

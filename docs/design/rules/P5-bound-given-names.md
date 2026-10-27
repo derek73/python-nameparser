@@ -10,10 +10,10 @@
   "Abu Bakar"                 →  given="Abu"  · boundary
   "Dr. abdul salam"           →  family="salam"  · boundary
   "Salam, abd Allah"          →  given="abd Allah"
-  "Sheik abdul salam"         →  given="abdul salam"
-  "Sheik abdul salam Jr"      →  given="abdul salam"
+  "Sir abdul salam"           →  given="abdul salam"
+  "Sir abdul salam Jr"        →  given="abdul salam"
   "Sir abdul van der Berg"    →  family="van der Berg"  · boundary
-  "Sheik abdul Jr Smith"      →  given="abdul"  · boundary
+  "Sir abdul Jr Smith"        →  given="abdul"  · boundary
   ```
 - **What there is to spare is what the name's trailing reading leaves**: the trailing suffix run (S2) and the trailing title run (H5), each read over what the other leaves until neither takes anything more, are read once, before the join is tried, and the name words they leave are the words to spare. A trailing roman numeral the run takes (S10), or a bare acronym it takes, or a trailing title word the run takes, is no word to spare; a bare ambiguous acronym is a name word wherever the peel does not take it. The join joins two name words into one and, read after the trailing run, changes no suffix reading: a word the run left as a name word stays one, whatever the join makes of the word in front of it.
   ```
@@ -73,7 +73,7 @@
 
 - **A bound word that is also a particle** ("Abu Bakar Salim"): where the join fires, it is read as the bound word: the join outranks the leading-position reading (P4) and no fork is reported; where the reserve blocks the join, P4's reading and its fork stand.
   ```
-  "Sheik Abu Bakar"           →  given="Abu Bakar"
+  "Sir Abu Bakar"             →  given="Abu Bakar"
   "Abu Bakar Salim"           →  given="Abu Bakar"
   ```
 - **A word that is BOTH bound-given and suffix vocabulary** ("abd Allah Smith", "Smith, Abd"): position decides and both readings survive: leading, it is the bound word; trailing, it is the suffix (S2). In the given slot after a family comma the suffix reading wins.
@@ -92,10 +92,10 @@
   ```
 - A given-name title plus a bound pair leaves the family empty, as H1 accepts for "Sir John" — the input names no family — under a family-first order too: the join is order-blind, and H1 moves the pair that order placed in the family back to the given name, as it does "Sir John" there.
   ```
-  "Sheik abdul salam"         →  family=""
-  "Sheik abdul salam"  family-first  →  given="abdul salam"
-  "Sheik abdul salam"  family-first  →  family=""
-  "Sheik abdul salam"  family-first-given-last  →  given="abdul salam"
+  "Sir abdul salam"           →  family=""
+  "Sir abdul salam"    family-first  →  given="abdul salam"
+  "Sir abdul salam"    family-first  →  family=""
+  "Sir abdul salam"    family-first-given-last  →  given="abdul salam"
   ```
 - The given part after a family comma reads the words behind a title by its own walk, and where that walk reads them otherwise than the comma-less name does, the join is declined and no title is read — a shape-only numeral (VI to X), or V before a third comma part, stays a name word there, and a title word that is also a particle is attached by P6 (`Berg, abdul Prof. VI` reads middle 'Prof. VI'; `Berg, abdul St.` reads family 'St. Berg'), each as the same name with an ordinary given word reads.
 

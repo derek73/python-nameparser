@@ -676,8 +676,8 @@ class GroupCounts:
     differ: Counter[tuple[str, str]]
     #: The words of the titles, and of the suffixes, of a person some of
     #: whose spellings read one and others none, folded by word_key,
-    #: counted once a person: two spellings reading two titles (Sheikh,
-    #: Shekh) with no untitled spelling beside them add nothing.
+    #: counted once a person: two spellings reading two titles (Dr.,
+    #: Doctor) with no untitled spelling beside them add nothing.
     titles: Counter[str]
     suffixes: Counter[str]
 

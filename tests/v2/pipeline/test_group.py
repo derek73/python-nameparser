@@ -852,9 +852,9 @@ def test_the_joined_pair_is_a_given_name_whatever_tag_the_word_carried() -> None
     # join takes it as v1 did -- but the conjunction merge derives a
     # `title` piece tag for "mr and mrs", and merge_pieces' tag union
     # would hand that tag to the joined pair, which assign then peels
-    # as a leading title: 'abdul Sheikh and Ahmad Bakar Smith' read
-    # title 'abdul Sheikh and Ahmad' on 2.0 and 2.1, and the shorter
-    # 'abdul Sheikh and Ahmad Bakar' would have too once the count's
+    # as a leading title: 'abdul Sir and Ahmad Bakar Smith' read
+    # title 'abdul Sir and Ahmad' on 2.0 and 2.1 (written with `Sheikh`,
+    # a title then), and the shorter 'abdul Sir and Ahmad Bakar' would have too once the count's
     # title exclusion went. The bound join drops the tag: the pair is
     # a given name. Found by the code review.
     out = _grouped("abdul mr and mrs Smith Berg")
