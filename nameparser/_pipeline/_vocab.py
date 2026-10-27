@@ -827,7 +827,9 @@ def delimiter_cores(policy_delimiters: frozenset[str]) -> frozenset[str]:
 def glued_cores(policy_delimiters: frozenset[str]) -> frozenset[str]:
     """The cores read glued to one end of a word or inside one: the
     semicolon and every configured core, never a built-in hyphen or
-    slash that the caller did not declare (BUILTIN_GLUED_DELIMITERS)."""
+    slash that the caller did not declare (BUILTIN_GLUED_DELIMITERS).
+    A configured core that is itself a word (' and ') is in the set but
+    still parts only standing alone: the callers ask `glues` first."""
     if not policy_delimiters:
         return BUILTIN_GLUED_DELIMITERS
     return BUILTIN_GLUED_DELIMITERS | frozenset(
@@ -1704,7 +1706,8 @@ def is_wholly_suffix(texts: Sequence[str], lexicon: Lexicon,
     lenient = policy.lenient_comma_suffixes and not strict
     # v1 expand_suffix_delimiter parity (#206): a configured delimiter
     # is TRANSPARENT in the all-suffix tests -- v1 split the part string
-    # on the delimiter before checking, so the delimiter never counted
+    # on the delimiter before checking, so the delimiter never counted;
+    # the built-in cores are transparent the same way (rules/C10)
     cores = delimiter_cores(policy.extra_suffix_delimiters)
     inner = glued_cores(policy.extra_suffix_delimiters)
 
@@ -1719,7 +1722,7 @@ def is_wholly_suffix(texts: Sequence[str], lexicon: Lexicon,
                 or period_joined_vocab(text, lexicon) == "suffix"):
             return True
         # the split only where a core stands in the word: the built-in
-        # ';' makes `cores` non-empty for every policy, and a call per
+        # ';' makes `inner` non-empty for every policy, and a call per
         # word would be a frame on every name word a run test asks
         for core in inner:
             if core in text:

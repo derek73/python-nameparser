@@ -1057,13 +1057,13 @@ def test_a_marker_the_policy_names_as_a_delimiter_parts_the_run() -> None:
 
 def test_a_dropped_core_parts_two_entries() -> None:
     """The `parted` conjunct, dropped-core half (#206). Drop it and
-    'John Doe, MD - PhD - FACS' renders 'MD PhD FACS' under this
+    'John Doe, MD | PhD | FACS' renders 'MD PhD FACS' under this
     policy. Moved here from test_group.py's
     test_extra_suffix_delimiter_splits_tail_entries with #436: the
     core is dropped in group and the entry it separates is decided
     here."""
-    dash = Policy(extra_suffix_delimiters=frozenset({" - "}))
-    assert _entry_tags("John Doe, MD - PhD - FACS", dash) == [
+    dash = Policy(extra_suffix_delimiters=frozenset({" | "}))
+    assert _entry_tags("John Doe, MD | PhD | FACS", dash) == [
         ("MD", False), ("PhD", False), ("FACS", False)]
 
 
@@ -1079,7 +1079,7 @@ def test_a_surviving_name_word_parts_two_entries() -> None:
     stood as name words between the post-nominals; a credential now
     starts a run to the end of the part, taking them in."""
     for policy in (Policy(),
-                   Policy(extra_suffix_delimiters=frozenset({" - "}))):
+                   Policy(extra_suffix_delimiters=frozenset({" | "}))):
         assert _entry_tags("Smith, Jane abd Jones PhD", policy) == [
             ("abd", False), ("PhD", False)]
 

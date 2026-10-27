@@ -691,8 +691,8 @@ class Policy:
     maiden_delimiters: frozenset[tuple[str, str]] = frozenset()
     #: Additional separators that split suffix groups (e.g. " | " for
     #: "Jane Smith, RN | CRNA"). Additive only: the comma, the
-    #: semicolon, and a hyphen or slash standing alone always split
-    #: suffix groups and cannot be replaced -- comma handling is
+    #: semicolon, and a hyphen or slash standing alone split suffix
+    #: groups after a whole name and cannot be replaced -- comma handling is
     #: structural (the same comma reading that parses "Family, Given"
     #: input), not a configurable delimiter, the semicolon is built in
     #: since 2.6 and the spaced hyphen and slash since 2.7 (rules/C10).

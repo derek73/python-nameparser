@@ -60,8 +60,9 @@ def test_capitalize_name_flag_capitalizes_on_parse() -> None:
 
 
 def test_constructor_suffix_delimiter_layers_onto_policy() -> None:
-    n = HumanName("Doe, John, RN - CRNA", constants=Constants(),
-                  suffix_delimiter=" - ")
+    # ' | ', not ' - ': a hyphen standing alone is built in (#889)
+    n = HumanName("Doe, John, RN | CRNA", constants=Constants(),
+                  suffix_delimiter=" | ")
     assert n.suffix == "RN, CRNA"
 
 
@@ -559,7 +560,7 @@ def test_suffix_delimiter_reassignment_after_construction() -> None:
 def test_c_swap_keeps_instance_suffix_delimiter() -> None:
     # both invalidation paths together: swapping C must not lose the
     # instance-level delimiter layered onto the new snapshot's Policy
-    n = HumanName("Doe, John, RN - CRNA", suffix_delimiter=" - ")
+    n = HumanName("Doe, John, RN | CRNA", suffix_delimiter=" | ")
     assert n.suffix == "RN, CRNA"
     n.C = Constants()
     n.parse_full_name()

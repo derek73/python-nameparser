@@ -1236,16 +1236,16 @@ def test_revise_leaves_a_policy_delimiter_unparted_without_a_tail_segment() -> N
     # core is dropped -- and so parts entries -- only on a TAIL
     # segment, which a value gets only where its own words read as a
     # name. A run of post-nominals has none, with or without a comma
-    # of its own, so the dash stays a word; a value that reads as a
+    # of its own, so the core stays a word; a value that reads as a
     # name does part. The round-trip is unaffected because the
     # whole-name view already rendered that boundary as a comma.
-    p = Parser(policy=Policy(extra_suffix_delimiters=frozenset({" - "})))
-    n = p.parse("Doe, John, MD PhD - FACS")
+    p = Parser(policy=Policy(extra_suffix_delimiters=frozenset({" | "})))
+    n = p.parse("Doe, John, MD PhD | FACS")
     assert n.suffix == "MD PhD, FACS"
-    assert p.revise(n, suffix="MD PhD - FACS").suffix == "MD PhD - FACS"
-    assert p.revise(n, suffix="MD, PhD - FACS").suffix == "MD, PhD - FACS"
+    assert p.revise(n, suffix="MD PhD | FACS").suffix == "MD PhD | FACS"
+    assert p.revise(n, suffix="MD, PhD | FACS").suffix == "MD, PhD | FACS"
     assert p.revise(n, suffix=n.suffix).suffix == "MD PhD, FACS"
-    assert (p.revise(n, suffix="John Doe, MD - FACS").suffix
+    assert (p.revise(n, suffix="John Doe, MD | FACS").suffix
             == "John Doe, MD, FACS")
 
 

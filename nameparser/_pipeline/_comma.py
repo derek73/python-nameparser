@@ -334,7 +334,8 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
     whole: bool | None = None
     core_idx: list[int] = []
     # a loop, and the head counted only where a core stands alone: the
-    # built-in ';' leaves `cores` non-empty for every policy (D15)
+    # built-in ';', '-' and '/' leave `cores` non-empty for every
+    # policy (D15, #889)
     if len(seg1) > 1:
         for i in seg1:
             if tokens[i].text in cores:

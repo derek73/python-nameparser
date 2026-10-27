@@ -3264,10 +3264,13 @@ def test_a_delimiter_core_in_a_tail_reads_as_its_comma_twin() -> None:
     maiden walk stepped over a core instead (#538), 102 of these 129
     texts disagreed -- 'Puig - i Soler' read suffix 'Puig - i Soler'
     against 'Puig, i Soler', and 'PhD née Puig - i Soler' maiden
-    'Puig i Soler' against 'Puig'.
+    'Puig i Soler' against 'Puig'. The core is ' | ' since #889 made a
+    hyphen standing alone built in, so that ' - ' no longer shows the
+    declared path; re-taken with ' | ' at 061f02da on 2026-10-27, 102
+    of 129 again.
     """
-    dash = Parser(policy=Policy(extra_suffix_delimiters=frozenset({" - "})))
-    failures, total = _comma_twin_findings(dash)
+    pipe = Parser(policy=Policy(extra_suffix_delimiters=frozenset({" | "})))
+    failures, total = _comma_twin_findings(pipe, " | ")
     assert total == 129
     assert not failures, "\n".join(failures)
 

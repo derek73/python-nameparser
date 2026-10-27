@@ -14,7 +14,7 @@ Reads: for C2's flag on a part past the second comma only: Lexicon
 suffix vocabulary and Policy through _vocab.is_wholly_suffix
 (Policy.lenient_comma_suffixes picks the lenient or strict token test;
 Policy.extra_suffix_delimiters makes a delimiter-core token
-transparent), with the credential lean the lazy case gate supplies
+transparent, as the built-in cores are), with the credential lean the lazy case gate supplies
 (Lexicon.maiden_markers DIRECTLY, for the own-words span
 _pieces.own_words takes); Policy.unlisted_dotted_suffixes through
 _vocab.ambiguous_class_candidate and _vocab.ambiguous_class_member,

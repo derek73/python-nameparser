@@ -640,8 +640,8 @@ listed below.
      - ``frozenset[str]``
      - Adds separators that split suffix groups, e.g. ``" | "`` for
        ``"Jane Smith, RN | CRNA"``. Additions only — the comma, the
-       semicolon, and a hyphen or slash standing alone always split
-       suffix groups and cannot be replaced. See
+       semicolon, and a hyphen or slash standing alone split suffix
+       groups after a whole name and cannot be replaced. See
        :ref:`suffix-delimiters`.
    * - ``lenient_comma_suffixes``
      - ``bool``
@@ -1196,8 +1196,11 @@ which is dropped as a comma between suffixes would be:
     >>> parse("Jane Smith, Dr. / MD").given
     'Jane'
 
-Glued to a word, a hyphen or slash is the word's own, so ``RN- CRNA``
-is not split. Before the comma it is a word too, so it never reaches a
+Glued to a word, a hyphen or slash is the word's own, so
+``Jane Smith, RN- CRNA`` reads as it always has, with ``RN-`` as the given
+name and ``Jane Smith`` as the family; declare ``" - "`` to read a glued
+hyphen as a separator too. Behind a single word (``Smith, RN - CRNA``)
+nothing is split, and before the comma it is a word too, so it never reaches a
 hyphenated surname written with spaces (``Smith - Jones``).
 
 ``extra_suffix_delimiters`` handles sources that separate post-nominals

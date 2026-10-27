@@ -26,6 +26,7 @@
 "Smith, John, MD - PhD"               →  suffix="MD, PhD"
 "John Smith - Jones"                  →  family="Jones"  · boundary
 "Smith, John - Paul"                  →  middle="- Paul"  · boundary
+"John Smith, MD – PhD"                →  suffix="MD – PhD"  · boundary
 "Smith, John, PhD - and MD"           →  suffix="PhD, and MD"
 "Smith, John, Puig - i Soler"         →  suffix="Puig, i Soler"
 "Smith, John; MD"                     →  given="John;"  · boundary
@@ -64,9 +65,11 @@
   "John Smith, MD ; PhD"      →  suffix="MD, PhD"
   "Smith, MD ; PhD"           →  suffix="MD ; PhD"
   ```
-- A built-in hyphen or slash glued to the end of a credential leaves the word read as written, so the name reads as every release from 1.4.0 read it, where its space twin parts the suffix: the hyphen is the particle's own in "al-", and a rule that read a glued hyphen as a delimiter would read that particle as none.
+- A built-in hyphen or slash glued to the end of a credential, or of a word read by its capitals, leaves the word read as written, so the name reads as every release from 1.4.0 read it, where its space twin parts the suffix: the hyphen is the particle's own in "al-", and a rule that read a glued hyphen as a delimiter would read that particle as none.
   ```
   "John Smith, MD- PhD"       →  given="MD-"
+  "John Smith, MD/ PhD"       →  given="MD/"
+  "John Smith, XYZ- QRST"     →  given="XYZ-"
   ```
 - A glued word read by its letters rather than its vocabulary is not read as the word without it: a credential written as two period-marked pieces with the delimiter glued to the second, and a one-letter numeral ending the given part, keep the readings 2.0 through 2.5 gave them where their space twins read a suffix.
   ```

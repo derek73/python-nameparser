@@ -367,8 +367,9 @@ class SuffixesTestCase(HumanNameTestBase):
         # When the comma format isn't recognized as suffix-comma (here the
         # last-name part is a single word), the delimiter must not affect
         # parsing at all: output should match the no-delimiter baseline.
-        with_delim = HumanName("Smith, MD - PhD - FACS", suffix_delimiter=" - ")
-        without_delim = HumanName("Smith, MD - PhD - FACS")
+        # ' | ', not ' - ': a hyphen standing alone is built in (#889)
+        with_delim = HumanName("Smith, MD | PhD | FACS", suffix_delimiter=" | ")
+        without_delim = HumanName("Smith, MD | PhD | FACS")
         self.assertEqual(
             (with_delim.first, with_delim.middle, with_delim.last, with_delim.suffix),
             (without_delim.first, without_delim.middle, without_delim.last, without_delim.suffix),

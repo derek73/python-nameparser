@@ -312,7 +312,9 @@ class Case:
 
 _ES = Policy(patronymic_rules=frozenset({PatronymicRule.EAST_SLAVIC}))
 _TK = Policy(patronymic_rules=frozenset({PatronymicRule.TURKIC}))
-_SD = Policy(extra_suffix_delimiters=frozenset({" - "}))
+# " | ", not " - ": a hyphen standing alone is a built-in delimiter (#889),
+# so only an undeclared core shows the declared path.
+_SD = Policy(extra_suffix_delimiters=frozenset({" | "}))
 
 CASES: tuple[Case, ...] = (
     Case("plain", "John Smith", {"given": "John", "family": "Smith"},
@@ -7830,7 +7832,7 @@ CASES: tuple[Case, ...] = (
                "takes the lenient suffix test"),
     Case("family_comma_first_piece_is_given", "Steven Hardman, RN - CRNA",
          {"given": "Steven", "family": "Hardman", "suffix": "RN, CRNA"},
-         classification="fix(#603)",
+         classification="fix(#603/#889)",
          notes="a credential opening the part after the comma makes it "
                "the postnominal part (rules/C13, #603), so the "
                "pre-comma name keeps its positional read, and since "
@@ -8546,24 +8548,24 @@ CASES: tuple[Case, ...] = (
          {"family": "John Smith", "suffix": "MD"},
          notes="an empty segment 1 fails the suffix-comma detection "
                "(v1 parity)"),
-    Case("suffix_delimiter_tail_segment", "Doe, John, RN - CRNA",
+    Case("suffix_delimiter_tail_segment", "Doe, John, RN | CRNA",
          {"given": "John", "family": "Doe", "suffix": "RN, CRNA"},
          policy=_SD,
          notes="v1 suffix_delimiter parity (#206): the delimiter token "
                "is dropped from consumed tail segments (pinned live "
                "2026-07-16)"),
-    Case("suffix_delimiter_detection", "Doe, John RN - CRNA",
-         {"given": "John", "family": "Doe", "suffix": "RN - CRNA"},
+    Case("suffix_delimiter_detection", "Doe, John RN | CRNA",
+         {"given": "John", "family": "Doe", "suffix": "RN | CRNA"},
          policy=_SD,
          classification="fix(#602)",
          notes="the delimiter fires only at suffix sites, so in the "
                "given part the dash stays a word -- and since #602 a "
                "word after the credential is in the run: one entry "
-               "'RN - CRNA', the dash unreported, holding no letter or "
+               "'RN | CRNA', the core unreported, holding no letter or "
                "digit (rules/A2). Before #602 the stray token kept "
                "its per-piece walk role, middle '-', suffix 'RN, CRNA' "
                "(v1 parity, pinned live 2026-07-16)"),
-    Case("suffix_delimiter_suffix_comma", "John Smith, RN - CRNA",
+    Case("suffix_delimiter_suffix_comma", "John Smith, RN | CRNA",
          {"given": "John", "family": "Smith", "suffix": "RN, CRNA"},
          policy=_SD,
          notes="delimiter transparency in the SUFFIX_COMMA "
@@ -8577,14 +8579,14 @@ CASES: tuple[Case, ...] = (
                "the token whole (anti-#100) with Role.SUFFIX -- role "
                "assignment matches, rendering differs (migration plan "
                "deviation 5, release-log classified)"),
-    Case("suffix_delimiter_name_segment_untouched", "Doe, Mary - Kate, RN",
-         {"given": "Mary", "middle": "- Kate", "family": "Doe",
+    Case("suffix_delimiter_name_segment_untouched", "Doe, Mary | Kate, RN",
+         {"given": "Mary", "middle": "| Kate", "family": "Doe",
           "suffix": "RN"},
          policy=_SD,
          notes="a delimiter token in a NAME segment is kept (v1 parity, "
                "pinned live 2026-07-16)"),
     Case("suffix_delimiter_core_between_entries_is_a_boundary",
-         "John Doe, MD - PhD - FACS",
+         "John Doe, MD | PhD | FACS",
          {"given": "John", "family": "Doe", "suffix": "MD, PhD, FACS"},
          policy=_SD,
          classification="fix(#436/#437)",
@@ -8595,7 +8597,7 @@ CASES: tuple[Case, ...] = (
                "boundary is read off the dropped indices rather than "
                "off a surviving token. Parity at every baseline"),
     Case("suffix_delimiter_core_parts_a_connective_join",
-         "Doe, John, PhD - and MD",
+         "Doe, John, PhD | and MD",
          {"given": "John", "family": "Doe", "suffix": "PhD, and MD"},
          policy=_SD,
          ambiguities=("comma-structure",),
@@ -8604,10 +8606,10 @@ CASES: tuple[Case, ...] = (
                "core is dropped (rules/C10, #549) -- 1.4.0's "
                "expand_suffix_delimiter reading, where 2.0.0 through "
                "2.3.0 merged the core into the joined piece and "
-               "rendered 'PhD - and MD'"),
+               "rendered 'PhD - and MD' under a declared ' - '"),
     Case("suffix_delimiter_lone_core_part_is_kept",
-         "Smith, John, PhD, -",
-         {"given": "John", "family": "Smith", "suffix": "PhD, -"},
+         "Smith, John, PhD, |",
+         {"given": "John", "family": "Smith", "suffix": "PhD, |"},
          policy=_SD,
          notes="a tail part that is nothing but its one core keeps it "
                "(v1 expand() split within a part and never erased a "
@@ -8619,7 +8621,7 @@ CASES: tuple[Case, ...] = (
                "which found no test pinned the guard before or after "
                "the change)"),
     Case("suffix_delimiter_core_after_a_marker_takes_no_clause",
-         "Smith, John, PhD née - Jones",
+         "Smith, John, PhD née | Jones",
          {"given": "John", "family": "Smith", "suffix": "PhD née, Jones"},
          policy=_SD,
          ambiguities=("comma-structure",),
@@ -8628,27 +8630,28 @@ CASES: tuple[Case, ...] = (
                "#601; rules/C10's maiden-marker Accepted entry). 2.0.0 "
                "through 2.3.0 read maiden 'Jones', stepping past the core"),
     Case("suffix_delimiter_core_that_survives_is_a_boundary_too",
-         "Smith, RA - PhD - FACS",
-         {"title": "RA", "given": "-", "family": "Smith",
-          "suffix": "PhD - FACS"},
+         "Smith, RA | PhD | FACS",
+         {"title": "RA", "given": "|", "family": "Smith",
+          "suffix": "PhD | FACS"},
          policy=_SD,
          classification="fix(#602)",
-         notes="#602 moved this row: the dash after 'PhD' is in the "
-               "credential run now, one entry 'PhD - FACS'. The parting "
+         notes="#602 moved this row: the core after 'PhD' is in the "
+               "credential run now, one entry 'PhD | FACS'. The parting "
                "half it pinned is held by test_post_rules' "
                "test_a_surviving_name_word_parts_two_entries on a name "
                "word that survives ('Smith, Jane abd Jones PhD'). As "
                "pinned under #436/#437: "
                "the other half, and the one a dropped-core test alone "
                "would miss. After a FAMILY comma segment 1 is not a "
-               "tail, so nothing drops the cores and the dashes stand "
+               "tail, so nothing drops the cores and they stand "
                "as ordinary name words between the two post-nominals. "
                "A run does not span a name word: the separator holds "
                "whether the core was dropped or kept, which is why "
                "#436's predicate asks what stands between the two "
                "rather than only what was dropped. The bare-policy "
-               "spelling of this string is a corpus name and reads "
-               "the same, the dash being no delimiter there either"),
+               "spelling of this string with ' - ' is a corpus name "
+               "and reads the same, the built-in hyphen being no "
+               "delimiter there either (#889)"),
     Case("semicolon_glued_after_a_whole_name", "John Smith, MD; PhD",
          {"given": "John", "family": "Smith", "suffix": "MD; PhD"},
          classification="fix(semicolon-suffix-delimiter)",
@@ -8772,14 +8775,42 @@ CASES: tuple[Case, ...] = (
                "comma is rules/T1's separator question, left open by "
                "the change that made the semicolon a suffix delimiter "
                "(decisions/C10): pinned so a change to it shows here"),
-    Case("semicolon_beside_a_declared_delimiter", "John Smith, MD ; PhD - FACS",
+    Case("semicolon_beside_a_declared_delimiter", "John Smith, MD ; PhD | FACS",
          {"given": "John", "family": "Smith", "suffix": "MD, PhD, FACS"},
          policy=_SD,
          classification="fix(semicolon-suffix-delimiter)",
          notes="a declared delimiter adds to the semicolon and does not "
                "replace it (rules/C10)"),
+    Case("declared_hyphen_reads_glued", "John Smith, MD- PhD",
+         {"given": "John", "family": "Smith", "suffix": "MD- PhD"},
+         policy=Policy(extra_suffix_delimiters=frozenset({" - "})),
+         classification="fix(semicolon-suffix-delimiter)",
+         notes="a declared core is read glued, as the semicolon is, where "
+               "the built-in hyphen is the word's own and reads given "
+               "'MD-' (rules/C10, #889); 1.4.0 read given 'MD-' with the "
+               "delimiter declared too"),
+    Case("declared_hyphen_glued_beside_a_semicolon", "Jane Smith, MD-; PhD",
+         {"given": "Jane", "family": "Smith", "suffix": "MD-; PhD"},
+         policy=Policy(extra_suffix_delimiters=frozenset({" - "})),
+         classification="fix(semicolon-suffix-delimiter)",
+         notes="a declared hyphen and the semicolon glued to one word "
+               "(rules/C10, #889); 1.4.0 read given 'MD-;'"),
+    Case("declared_slash_reads_glued", "John Smith, MD/ PhD",
+         {"given": "John", "family": "Smith", "suffix": "MD/ PhD"},
+         policy=Policy(extra_suffix_delimiters=frozenset({" / "})),
+         classification="fix(semicolon-suffix-delimiter)",
+         notes="the slash half of declared_hyphen_reads_glued: the "
+               "built-in slash reads given 'MD/' (rules/C10, #889)"),
+    Case("glued_hyphen_after_the_comma_keeps_the_report",
+         "Smith, John, MD -Dr",
+         {"given": "John", "family": "Smith", "suffix": "MD -Dr"},
+         ambiguities=("comma-structure",),
+         notes="segment reads only the glued cores, so the built-in "
+               "hyphen glued to 'Dr' strips nothing and the part is no "
+               "title; reading the standing-alone set there drops the "
+               "report (#889's review)"),
     Case("family_comma_transparent_then_core",
-         'John Doe, MD "Doc" PhD - FACS',
+         'John Doe, MD "Doc" PhD | FACS',
          {"given": "John", "family": "Doe", "nickname": "Doc",
           "suffix": "MD PhD, FACS"},
          policy=_SD,
