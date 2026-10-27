@@ -314,11 +314,10 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
             return decide(state, False)
     seg0, seg1 = state.segments[0], state.segments[1]
     # Nothing after the comma: nothing to read. An EMPTY part BEFORE it
-    # is read on, being no whole name (`_whole_name` answers no), so
-    # ', PhD' binds its credential under the family comma as 2.3.0 read
-    # it; returning here on an empty head left the part to the listing
-    # walk, which made 'PhD' the given name and ', Jr.' a title (#613's
-    # PR review; empty surname fields in CSV data write exactly this)
+    # is read on, being no whole name (`_whole_name` answers no):
+    # rules/C15: "the part after it reads as the given part after a
+    # family comma reads" -- so ', PhD' binds its credential as
+    # 'Smith, PhD' does; decisions/C15 (#892), decisions/C1 (#613)
     if not seg1:
         return state
     tokens = list(state.tokens)
