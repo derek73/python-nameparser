@@ -3,7 +3,8 @@
 # `cased` property of the word's reading, one per word, and
 # tools/vocab/build.py refuses one that does not spell its word's letters
 # and digits (#459) before Lexicon ever sees it. Still a plain dict, the
-# one vocabulary constant not frozen (AGENTS.md, "Configuration layer").
+# one vocabulary constant not frozen (AGENTS.md's vocabulary and
+# configuration-layer section, "Neither dict was frozen").
 from nameparser.config import _compiled
 
 CAPITALIZATION_EXCEPTIONS = _compiled.CAPITALIZATION_EXCEPTIONS

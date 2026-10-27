@@ -2,6 +2,10 @@
 
 Loaded when a session reads or edits a pipeline stage. The root AGENTS.md carries the 2.0 conventions every stage follows (one stage per module, the `Consumes:`/`Produces:`/`Reads:` header, the frame budget, checkable stage-attribution claims); this file carries what only work inside the stages needs. The contract behind the ambiguity rules below is mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE, and rules/A1 is its observable side.
 
+## A new inner loop needs a scaling guard
+
+A loop that grows with the input -- per token, per member, per pair -- needs a row in `tests/v2/test_benchmark.py`, whose module docstring says which table; the absolute-time tests there use constant-size input and are blind to a complexity regression.
+
 ## Ambiguity reports
 
 ### Emit at the decision site
