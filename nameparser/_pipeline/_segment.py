@@ -20,7 +20,7 @@ _pieces.own_words takes); Policy.unlisted_dotted_suffixes through
 _vocab.ambiguous_class_candidate and _vocab.ambiguous_class_member,
 for a part of by-shape credentials; and Lexicon.titles DIRECTLY, with
 _vocab.period_joined_vocab for a period-joined title, and
-Policy.extra_suffix_delimiters through _vocab.delimiter_cores for a
+Policy.extra_suffix_delimiters through _vocab.glued_cores for a
 title with a delimiter glued to it (rules/C10), for a part of titles
 and suffixes (#603).
 
@@ -35,7 +35,7 @@ from nameparser._pipeline._state import (
     ParseState, PendingAmbiguity, Structure, comma_bucket, copy_with,
 )
 from nameparser._pipeline._vocab import (
-    ambiguous_class_candidate, ambiguous_class_member, delimiter_cores,
+    ambiguous_class_candidate, ambiguous_class_member, glued_cores,
     glued_stem, period_joined_vocab, is_one_case, is_wholly_suffix,
 )
 from nameparser._types import AmbiguityKind
@@ -156,7 +156,7 @@ def segment(state: ParseState) -> ParseState:
         # as it would without it" -- a title with one glued ('Dr;')
         # reads as the title, as classify tags it (decisions/C10)
         titles = state.lexicon.titles
-        cores = delimiter_cores(state.policy.extra_suffix_delimiters)
+        cores = glued_cores(state.policy.extra_suffix_delimiters)
         rest = tuple([i for i in seg
                       if _normalize(t := state.tokens[i].text) not in titles
                       and ("." not in t

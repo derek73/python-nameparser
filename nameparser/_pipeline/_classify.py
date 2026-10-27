@@ -19,7 +19,7 @@ ambiguous credential class by SHAPE (#516) -- the all-caps half here
 only under CapsSuffixes.EVERYWHERE, the default's part after a comma
 being tagged by `_comma.decide` when group binds it (#613); and
 Policy.extra_suffix_delimiters, with the built-in semicolon
-(_vocab.delimiter_cores), so a word after the first comma with a
+(_vocab.glued_cores), so a word after the first comma with a
 delimiter glued to it is tagged as the word without it (rules/C10).
 is_initial also consults
 the _policy module's _NO_INITIALS constant. It is named apart from the
@@ -76,8 +76,8 @@ from nameparser._pipeline._state import (
 )
 from nameparser._types import AmbiguityKind, ReadingKind, ReadingSource
 from nameparser._pipeline._vocab import (
-    BUILTIN_SUFFIX_DELIMITERS, SPLIT_CHUNK, SPLIT_PAIR_OPENS, _INITIAL, caps_shape_candidate,
-    composed_len, delimiter_cores, glued_stem, is_cased_paired_initials,
+    BUILTIN_GLUED_DELIMITERS, SPLIT_CHUNK, SPLIT_PAIR_OPENS, _INITIAL, caps_shape_candidate,
+    composed_len, glued_cores, glued_stem, is_cased_paired_initials,
     is_initial, is_one_case, period_joined_vocab, split_pair,
     suffix_as_written, tag_marker_runs, title_readings,
 )
@@ -394,8 +394,8 @@ def classify(state: ParseState) -> ParseState:
     stemmed: set[int] = set()
     if state.comma_offsets:
         policy_cores = state.policy.extra_suffix_delimiters
-        cores = (BUILTIN_SUFFIX_DELIMITERS if not policy_cores
-                 else delimiter_cores(policy_cores))
+        cores = (BUILTIN_GLUED_DELIMITERS if not policy_cores
+                 else glued_cores(policy_cores))
         first = state.comma_offsets[0]
         for i, t in enumerate(state.tokens):
             text = t.text

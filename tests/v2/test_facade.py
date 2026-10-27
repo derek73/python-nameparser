@@ -545,14 +545,15 @@ def test_v14_humanname_blob_unpickles() -> None:
 
 
 def test_suffix_delimiter_reassignment_after_construction() -> None:
-    n = HumanName("Doe, John, RN - CRNA")
-    assert n.suffix == "RN - CRNA"          # no delimiter: one entry
-    n.suffix_delimiter = " - "
+    # ' | ', not ' - ': a hyphen standing alone is built in (#889)
+    n = HumanName("Doe, John, RN | CRNA")
+    assert n.suffix == "RN | CRNA"          # no delimiter: one entry
+    n.suffix_delimiter = " | "
     n.parse_full_name()
     assert n.suffix == "RN, CRNA"           # setter invalidated the Policy
     n.suffix_delimiter = None
     n.parse_full_name()
-    assert n.suffix == "RN - CRNA"          # and back
+    assert n.suffix == "RN | CRNA"          # and back
 
 
 def test_c_swap_keeps_instance_suffix_delimiter() -> None:

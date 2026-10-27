@@ -3273,13 +3273,29 @@ def test_a_delimiter_core_in_a_tail_reads_as_its_comma_twin() -> None:
 
 
 def test_a_semicolon_standing_alone_in_a_tail_reads_as_its_comma_twin() -> None:
-    """rules/C10's "The semicolon is a delimiter by default" -- the
-    same walk with no policy at all, the semicolon standing alone.
+    """rules/C10's "The semicolon, the hyphen and the slash are delimiters
+    by default" -- the same walk with no policy at all, the semicolon
+    standing alone.
 
     RECORDED NEGATIVE CONTROL: at 638685b4, before the semicolon was a
     delimiter, all 129 texts disagreed, the semicolon a word of the
     suffix run where the comma parts it."""
     failures, total = _comma_twin_findings(Parser(), " ; ")
+    assert total == 129
+    assert not failures, "\n".join(failures)
+
+
+@pytest.mark.parametrize("core", [" - ", " / "])
+def test_a_hyphen_or_slash_standing_alone_in_a_tail_reads_as_its_comma_twin(
+        core: str) -> None:
+    """rules/C10's "The semicolon, the hyphen and the slash are delimiters
+    by default" -- #549's walk again with no policy, the hyphen or the
+    slash standing alone (#889).
+
+    RECORDED NEGATIVE CONTROL: at 8a65ee18, before either was a
+    delimiter, all 129 texts disagreed for each core, the core a word
+    of the suffix run where the comma parts it."""
+    failures, total = _comma_twin_findings(Parser(), core)
     assert total == 129
     assert not failures, "\n".join(failures)
 

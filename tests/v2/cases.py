@@ -7829,12 +7829,13 @@ CASES: tuple[Case, ...] = (
          notes="v1 #144: the trailing piece of a two-part comma name "
                "takes the lenient suffix test"),
     Case("family_comma_first_piece_is_given", "Steven Hardman, RN - CRNA",
-         {"given": "Steven", "family": "Hardman", "suffix": "RN - CRNA"},
+         {"given": "Steven", "family": "Hardman", "suffix": "RN, CRNA"},
          classification="fix(#603)",
          notes="a credential opening the part after the comma makes it "
                "the postnominal part (rules/C13, #603), so the "
-               "pre-comma name keeps its positional read and the "
-               "undeclared delimiter is one more word of the run. v1 and "
+               "pre-comma name keeps its positional read, and since "
+               "#889 the hyphen standing alone parts the run as a "
+               "built-in delimiter (rules/C10). v1 and "
                "2.0 through 2.3 read v1's walk order here, the first "
                "post-comma piece the given before any suffix check -- "
                "given 'RN', middle '-', family 'Steven Hardman', the "

@@ -1282,8 +1282,10 @@ _HONORIFIC_PEEL = frozenset({"김민준씨, J.씨", "김민준씨., J.씨",
 #: a maiden marker the whole name left a word -- in a tail part, or
 #: taken into #602's credential run behind a credential -- and that
 #: the value's own sub-parse consumes mid-value, as revise() documents.
+#: 'Smith, John, MD - née Jones Smith' left it in #889: the built-in
+#: hyphen parts its suffix ('MD, née Jones Smith'), whose sub-parse
+#: reads the marker as a word too.
 _MARKER_IN_SUFFIX = frozenset({"Jane Doe PhD nee Smith",
-                               "Smith, John, MD - née Jones Smith",
                                "Smith, John, PhD née Jones"})
 
 

@@ -307,13 +307,14 @@ class SuffixesTestCase(HumanNameTestBase):
         # Through 2.3 (and in v1) that broke parsing -- first 'RN', last
         # 'Steven Hardman', suffix 'CRNA' -- and this test pinned the
         # limitation. Since #603 a credential opening the part after the
-        # comma makes it the suffix part (rules/C13), so the undeclared
-        # delimiter is one more word of that part and the name parses;
-        # the name of the test keeps the history.
+        # comma makes it the suffix part (rules/C13), and since #889 a
+        # hyphen standing alone after the first comma is a delimiter
+        # every policy has (rules/C10), so the suffix parts at it as
+        # #156 asked; the name of the test keeps the history.
         hn = HumanName("Steven Hardman, RN - CRNA")
         self.m(hn.first, "Steven", hn)
         self.m(hn.last, "Hardman", hn)
-        self.m(hn.suffix, "RN - CRNA", hn)
+        self.m(hn.suffix, "RN, CRNA", hn)
 
     def test_suffix_delimiter_trailing_delimiter_ignored(self) -> None:
         # Trailing delimiter must not defeat suffix detection. Using a

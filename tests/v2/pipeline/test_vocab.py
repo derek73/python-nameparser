@@ -10,7 +10,8 @@ from nameparser._lexicon import (
 )
 from nameparser._pipeline._vocab import (
     ambiguous_class_candidate, ambiguous_class_member, ambiguous_lean,
-    caps_shape_candidate, comma_follows_marker, delimiter_cores, glued_stem,
+    caps_shape_candidate, comma_follows_marker, delimiter_cores, glued_cores,
+    glued_stem,
     effective_script, is_initial, is_initial_shaped, is_one_case,
     SPLIT_CHUNK, SPLIT_PAIR_OPENS, is_cased_paired_initials, is_paired_initials,
     is_single_letter_numeral, split_pair,
@@ -210,11 +211,14 @@ _SUFFIX_LEX = Lexicon(
 )
 
 
-def test_the_semicolon_is_a_core_every_policy_has() -> None:
-    # a declared delimiter adds to the semicolon, and none removes it
-    # (decisions/C10)
-    assert delimiter_cores(frozenset()) == {";"}
-    assert delimiter_cores(frozenset({" - ", "/"})) == {";", "-", "/"}
+def test_the_built_in_cores_are_cores_every_policy_has() -> None:
+    # a declared delimiter adds to the semicolon, hyphen and slash, and
+    # none removes them; only the semicolon and a declared core are
+    # read glued to a word (decisions/C10, #889)
+    assert delimiter_cores(frozenset()) == {";", "-", "/"}
+    assert delimiter_cores(frozenset({" | "})) == {";", "-", "/", "|"}
+    assert glued_cores(frozenset()) == {";"}
+    assert glued_cores(frozenset({" - ", "/"})) == {";", "-", "/"}
 
 
 def test_a_core_glued_to_an_end_is_found_beside_one_inside() -> None:

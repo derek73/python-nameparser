@@ -223,16 +223,19 @@ def test_a_run_the_writing_settles_raises_no_flip_report() -> None:
 
 
 def test_the_run_test_reads_a_delimiter_core_transparently() -> None:
-    # without a delimiter policy the bare '-' is a word, which ends the
+    # without a delimiter policy the bare '|' is a word, which ends the
     # run; with the core configured behind a whole name it is no word
     # of the reading (#549, #613), so the two members either side of
-    # it complete the run.
-    text = "John Smith, Ma - Ed"
+    # it complete the run. Not '-': a hyphen standing alone is a
+    # built-in core (#889), as the next line shows.
+    assert _decided("John Smith, Ma - Ed").structure \
+        is Structure.SUFFIX_COMMA
+    text = "John Smith, Ma | Ed"
     assert _decided(text).structure is Structure.FAMILY_COMMA
     state = ParseState(
         original=text, lexicon=_LEX,
         policy=dataclasses.replace(
-            Policy(), extra_suffix_delimiters=frozenset({" - "})))
+            Policy(), extra_suffix_delimiters=frozenset({" | "})))
     out = _comma.decide(classify(segment(tokenize(extract_delimited(state)))))
     assert out.structure is Structure.SUFFIX_COMMA
 
