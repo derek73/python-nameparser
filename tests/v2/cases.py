@@ -915,7 +915,7 @@ CASES: tuple[Case, ...] = (
     Case("one_word_head_two_capital_credential", "Smith, DM",
          {"family": "Smith", "suffix": "DM"},
          classification="fix(#797)",
-         notes="the one-word-head comma path (AGENTS.md's comma sweep): "
+         notes="the one-word-head comma path (nameparser/AGENTS.md's comma sweep): "
                "a listed two-capital credential no longer reads as "
                "paired initials (given 'DM'), as MS and MA do not"),
     Case("empty_head_joined_credential", ", FNP-C",
@@ -994,7 +994,7 @@ CASES: tuple[Case, ...] = (
     Case("empty_head_si_is_a_given_name", ", Si",
          {"given": "Si"},
          ambiguities=("suffix-or-name",),
-         notes="AGENTS.md's empty-head comma grid: with no name before "
+         notes="nameparser/AGENTS.md's empty-head comma grid: with no name before "
                "the comma the part is the given name, as 1.4.0 read it "
                "('first Si')"),
     Case("empty_head_caps_si_is_a_given_name", ", SI",
@@ -2850,7 +2850,7 @@ CASES: tuple[Case, ...] = (
     Case("an_elided_particle_beside_a_suffix", "Ivoi, Paul d', Jr.",
          {"given": "Paul", "family": "d' Ivoi", "suffix": "Jr."},
          classification="fix(#700)",
-         notes="AGENTS.md's comma sweep: a suffix in its own part leaves "
+         notes="nameparser/AGENTS.md's comma sweep: a suffix in its own part leaves "
                "the given part's attachment alone. 1.4.0 middle \"d'\""),
     Case("an_elided_particle_beside_a_glued_comma",
          "Ivoi, Paul d',Jr.",
@@ -4321,7 +4321,7 @@ CASES: tuple[Case, ...] = (
          {"title": "Prof.", "suffix": "van der Berg"},
          ambiguities=("comma-structure",),
          classification="fix(#636)",
-         notes="the empty head (AGENTS.md's comma sweep): the part past "
+         notes="the empty head (nameparser/AGENTS.md's comma sweep): the part past "
                "the second comma makes no chain, so the title word is a "
                "title (rules/C2, #636); 1.4.0 and 2.3.0 read suffix "
                "'van der Berg Prof.'"),
@@ -6534,7 +6534,7 @@ CASES: tuple[Case, ...] = (
          {"title": "Prof.", "given": "Jan", "family": "van"},
          ambiguities=("particle-or-given",),
          classification="fix(#623)",
-         notes="the empty head (AGENTS.md's comma sweep): the bound "
+         notes="the empty head (nameparser/AGENTS.md's comma sweep): the bound "
                "holds there too, and P6's attachment, read in post_rules "
                "behind an empty family part, takes 'van' as the family; "
                "1.4.0 and 2.3.0 read middle 'van Prof.'"),
@@ -8680,7 +8680,7 @@ CASES: tuple[Case, ...] = (
     Case("semicolon_glued_after_an_empty_head", ", MD; PhD",
          {"suffix": "MD; PhD"},
          classification="fix(semicolon-suffix-delimiter)",
-         notes="the empty head AGENTS.md's comma sweep names, read as "
+         notes="the empty head nameparser/AGENTS.md's comma sweep names, read as "
                "', MD PhD' is. 1.4.0 through 2.5.0 read given 'MD;'"),
     Case("semicolon_glued_after_a_nickname_head", "(Bob), MD;",
          {"nickname": "Bob", "suffix": "MD;"},
@@ -10662,7 +10662,7 @@ CASES: tuple[Case, ...] = (
          notes="#626's review: with nothing before the comma, the comma "
                "report on 'Ma' was worded 'the given name' at assign, "
                "and H1 then moved it to the family behind the trailing "
-               "title. The empty-head comma shape AGENTS.md's sweep "
+               "title. The empty-head comma shape nameparser/AGENTS.md's sweep "
                "paragraph asks for; 1.4.0 read first 'Ma', suffix 'Dr.'"),
     Case("lone_joined_unit_carrying_collision_set_title_vocabulary",
          "Smith and Pope", {"given": "Smith and Pope"},
