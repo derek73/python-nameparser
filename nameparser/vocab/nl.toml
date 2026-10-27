@@ -6,8 +6,8 @@ salutation = { gender = "m", expands = "de heer, Mr.", after_given = true }
 
 [[word]]
 text = "heren"
-salutation = { gender = "m", expands = "the plural of heer, 'de heren'", after_given = true }
-family = { us_census_2010 = 123, wikidata = 1, as_of = 2026-10-24, note = "kept for after_given (decisions/H8)" }
+family = { us_census_2010 = 123, wikidata = 1, as_of = 2026-10-27 }
+excluded = { salutation = { reason = "the plural of heer ('de heren'): a plural addresses several people and never stands before one person's name, so as a title it only took the first word of a surname-first name (Heren Jan read title 'Heren', family 'Jan'); borne as a surname (the counts on its family reading)", issue = 766 } }
 
 [[word]]
 text = "juffrouw"
@@ -44,6 +44,14 @@ nobility = { gender = "f", expands = "lady, the style of a noblewoman" }
 [[word]]
 text = "historicus"
 occupation = {}
+
+[[word]]
+text = "heer"
+given = { us_ssa = 272, as_of = 2026-10-25, note = "female births only" }
+family = { us_census_2010 = 2007, wikidata = 113, as_of = 2026-10-27, note = "Wikidata bearers mostly Swiss and German" }
+[word.excluded.particle]
+reason = "a rank particle ('lord', the nobiliary 'heer van') added from #18's test \"Johan de heer Van Kampen\" (family 'de heer Van Kampen'), which appears to be two real names run together (Johannes de Heer, a Dutch Protestant figure, and the surname Van Kampen): the string occurs elsewhere only in another name parser's test data (hex.pm full_name_splitter 1.0.3). No real name supports the particle reading, and Heer is borne as a given name and as a surname (the counts on its name readings)"
+issue = 766
 
 [[word]]
 text = "aan"
@@ -136,14 +144,6 @@ article = { may_be_given = false, expands = "the: \"van der Berg\"" }
 [[word]]
 text = "het"
 article = { may_be_given = false, issue = 18, expands = "the" }
-
-[[word]]
-text = "heer"
-given = { us_ssa = 272, as_of = 2026-10-25, note = "female births only" }
-[word.rank]
-issue = 18
-expands = "lord, the nobiliary 'heer van'"
-note = "added from #18's test \"Johan de heer Van Kampen\" (family 'de heer Van Kampen'), which appears to be two real names run together (Johannes de Heer, a Dutch Protestant figure, and the surname Van Kampen): the string occurs elsewhere only in another name parser's test data (hex.pm full_name_splitter 1.0.3). No real name supports the rank reading, and its may-be-given reading was the unexamined default: nobody had checked Heer as a given name before the counts on its given reading, taken for the derivation (2026-10-25) and not read by item. Removing it moves PARTICLES, so it is left to #766"
 
 [[word]]
 text = "geboren"
