@@ -512,6 +512,7 @@
 {"name": "Chas. Smith", "given": "Chas.", "family": "Smith", "initials": "C. S."}
 {"name": "Chas. Smith, Ed", "given": "Chas.", "family": "Smith", "suffix": "Ed", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (declared)"], "initials": "C. S.", "capitalized_force": "Chas. Smith ED"}
 {"name": "Chattel, Frederik Jacobus van Rossum", "given": "Frederik", "middle": "Jacobus van Rossum", "family": "Chattel", "initials": "F. J. R. C."}
+{"name": "Cheikh Anta Diop", "given": "Cheikh", "middle": "Anta", "family": "Diop", "initials": "C. A. D."}
 {"name": "Chemistry Jane Smith", "given": "Chemistry", "middle": "Jane", "family": "Smith", "initials": "C. J. S."}
 {"name": "Cherice J. (Johnson) Williams", "given": "Cherice", "middle": "J.", "family": "Williams", "nickname": "Johnson", "initials": "C. J. W."}
 {"name": "Chief Dean and Mary Smith", "title": "Chief Dean and Mary", "family": "Smith", "initials": "S."}
@@ -3082,10 +3083,9 @@
 {"name": "Shaikh. Sultan Khan", "title": "Shaikh.", "given": "Sultan", "family": "Khan", "initials": "S. K."}
 {"name": "Shanti Gaonkar", "given": "Shanti", "family": "Gaonkar", "initials": "S. G."}
 {"name": "Shehu Muhammed", "given": "Shehu", "family": "Muhammed", "initials": "S. M."}
-{"name": "Sheik Abu Bakar", "title": "Sheik", "given": "Abu Bakar", "initials": "A. B."}
-{"name": "Sheik abdul Jr Smith", "title": "Sheik", "given": "abdul", "middle": "Jr", "family": "Smith", "initials": "a. J. S.", "capitalized_force": "Sheik Abdul Jr Smith"}
-{"name": "Sheik abdul salam", "title": "Sheik", "given": "abdul salam", "initials": "a. s.", "capitalized_force": "Sheik Abdul Salam"}
-{"name": "Sheik abdul salam Jr", "title": "Sheik", "given": "abdul salam", "suffix": "Jr", "initials": "a. s.", "capitalized_force": "Sheik Abdul Salam Jr"}
+{"name": "Sheik Abu Bakar", "given": "Sheik", "family": "Abu Bakar", "initials": "S. B.", "capitalized_force": "Sheik abu Bakar"}
+{"name": "Sheik abdul salam", "given": "Sheik", "middle": "abdul", "family": "salam", "initials": "S. a. s.", "capitalized_force": "Sheik Abdul Salam"}
+{"name": "Sheikh Mohammed bin Rashid", "given": "Sheikh", "middle": "Mohammed", "family": "bin Rashid", "initials": "S. M. R."}
 {"name": "Shemuʾel ben Ḥofni", "given": "Shemuʾel", "middle": "ben", "family": "Ḥofni", "initials": "S. b. Ḥ.", "capitalized_force": "Shemuʾel Ben Ḥofni"}
 {"name": "Shin Ae-ra", "given": "Shin", "family": "Ae-ra", "initials": "S. A.", "capitalized_force": "Shin Ae-Ra"}
 {"name": "Shirley Maclaine", "given": "Shirley", "family": "Maclaine", "initials": "S. M.", "capitalized_force": "Shirley MacLaine"}
@@ -3130,6 +3130,7 @@
 {"name": "Sindbad", "given": "Sindbad", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "S."}
 {"name": "Sindbad", "order": "FAMILY_FIRST", "family": "Sindbad", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "S."}
 {"name": "Sinibaldo Gutiérrez Mas", "given": "Sinibaldo", "middle": "Gutiérrez", "family": "Mas", "initials": "S. G. M."}
+{"name": "Sir Abu Bakar", "title": "Sir", "given": "Abu Bakar", "initials": "A. B."}
 {"name": "Sir Bob Andrew Dole", "title": "Sir", "given": "Bob", "middle": "Andrew", "family": "Dole", "initials": "B. A. D."}
 {"name": "Sir Gerald", "title": "Sir", "given": "Gerald", "initials": "G."}
 {"name": "Sir John", "title": "Sir", "given": "John", "initials": "J."}
@@ -3137,6 +3138,9 @@
 {"name": "Sir Ph. D. Van Johnson", "title": "Sir", "given": "Van Johnson", "suffix": "Ph. D.", "initials": "V. J."}
 {"name": "Sir Smith, John", "title": "Sir", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Sir Van Johnson", "title": "Sir", "given": "Van", "family": "Johnson", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "V. J."}
+{"name": "Sir abdul Jr Smith", "title": "Sir", "given": "abdul", "middle": "Jr", "family": "Smith", "initials": "a. J. S.", "capitalized_force": "Sir Abdul Jr Smith"}
+{"name": "Sir abdul salam", "title": "Sir", "given": "abdul salam", "initials": "a. s.", "capitalized_force": "Sir Abdul Salam"}
+{"name": "Sir abdul salam Jr", "title": "Sir", "given": "abdul salam", "suffix": "Jr", "initials": "a. s.", "capitalized_force": "Sir Abdul Salam Jr"}
 {"name": "Sir abdul van der Berg", "title": "Sir", "given": "abdul", "family": "van der Berg", "initials": "a. B.", "capitalized_force": "Sir Abdul van der Berg"}
 {"name": "Sir de", "title": "Sir", "given": "de", "initials": "d.", "capitalized_force": "Sir De"}
 {"name": "Sir de Mesnil", "title": "Sir", "family": "de Mesnil", "initials": "M."}

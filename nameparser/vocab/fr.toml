@@ -22,7 +22,9 @@ salutation = { gender = "m", after_given = true }
 
 [[word]]
 text = "cheikh"
-style = { addresses = "given", gender = "m", same_as = "sheikh", expands = "the French transliteration, 'Cheikh Anta Diop'" }
+style = { addresses = "given", gender = "m", same_as = "sheikh", expands = "the French transliteration, 'Cheikh Anta Diop'", issue = 752, decided = 2026-10-27, note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'Cheikh Anta Diop' reads the given name" }
+given = { us_ssa = 512, wikidata = 51, as_of = 2026-10-27, note = "Wikidata is a lower bound (Senegal 34, France 9); a common Senegalese given name; UK PSC filers put it first in the forename box 14 times and never in the title box (2026-10-27)" }
+family = { us_census_2010 = 112, wikidata = 14, as_of = 2026-10-27 }
 
 [[word]]
 text = "me"

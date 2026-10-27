@@ -377,7 +377,7 @@ def _family_settled(state: ParseState, tokens: list[WorkToken],
     particle opening the name with a word behind it ('Sir de Mesnil'),
     asked by the fold's own predicate on the same piece. An ambiguous
     particle nothing settled, or a bare one with nothing to fold, is a
-    word the order placed ('Sir Van', 'Sheik Abu Bakar' and 'Sir de'
+    word the order placed ('Sir Van', 'Sir Abu Bakar' and 'Sir de'
     under FAMILY_FIRST; 'Sir von und zu', whose never-given 'zu' does
     not open it)."""
     if state.structure is Structure.FAMILY_COMMA:

@@ -7,7 +7,8 @@ rural municipality), each candidate's name written twice, in Devanagari
 as filed and in the Commission's own romanization. It is the
 repository's first large population of South Asian names: romanized
 names with surnames written as initials (B.K., K.C., G.C.), honorific
-words that are titles in front and names elsewhere (Shekh, Guru), Md.,
+words that are titles in front and names elsewhere (Guru; Shekh until
+#752's phase 2j made it a title only in a title phrase), Md.,
 Muhammad's abbreviation, which its period makes a title by shape, and
 Devanagari written with vowel signs and the virama, combining marks the
 letter-shape tests do not count as letters (decisions/nfd-shapes), and

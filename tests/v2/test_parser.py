@@ -524,14 +524,14 @@ def test_bound_given_name_that_is_also_a_particle() -> None:
     # reason. Through 2.1 it read correctly only because the title
     # displaced 'abu' out of the leading position and the prefix chain
     # claimed 'Bakar' -- a side effect of the #367 bug, not a rule. Now
-    # the bound given-name join reads it: "Sheik" is a given-name
+    # the bound given-name join reads it: "Sir" is a given-name
     # title, which licenses the join with one word to spare
     # (rules/P5), so the particle never enters into it -- and a
     # bound word read as the bound word is not a fork, so the
     # PARTICLE_OR_GIVEN report the chain used to emit is gone. The
     # same precedence, untitled, is what "Abu Bakar Salim" has always
     # had; where the reserve blocks the join, P4 and its report stand.
-    titled = parse("Sheik Abu Bakar")
+    titled = parse("Sir Abu Bakar")
     assert (titled.given, titled.ambiguities) == ("Abu Bakar", ())
     assert parse("Abu Bakar Salim").ambiguities == ()
     assert [a.kind for a in parse("Abu Bakar").ambiguities] == \
@@ -544,23 +544,25 @@ def test_a_given_name_title_licenses_the_bound_given_join() -> None:
     # particle -- now joins the same way, and for the same reason. A
     # plain title does not license it: "Dr." addresses by family, so
     # the second word stays the family name.
-    licensed = parse("Sheik abdul salam")
+    # `sheik` has been a title only inside a title phrase since #752
+    # phase 2j, so `Sir` stands in for it here, reading as it did.
+    licensed = parse("Sir abdul salam")
     assert (licensed.title, licensed.given, licensed.family) == \
-        ("Sheik", "abdul salam", "")
+        ("Sir", "abdul salam", "")
     plain = parse("Dr. abdul salam")
     assert (plain.title, plain.given, plain.family) == \
         ("Dr.", "abdul", "salam")
     # and the pair's report. Until #614 a bound word read as the bound
-    # word was no fork, so 'Sheik abdul Ma' reported nothing where
-    # 'Sheik John Ma' reports its pick (the #369 precedent). S2's run is
+    # word was no fork, so 'Sir abdul Ma' reported nothing where
+    # 'Sir John Ma' reports its pick (the #369 precedent). S2's run is
     # read once now, before the join, and the read weighs 'Ma' as a
     # credential and declines it before the join makes it part of the
     # given pair -- so the pick reports in both (decisions/P5,
     # 2026-10-07)
-    for text in ("Sheik abdul Ma", "Sheik John Ma"):
+    for text in ("Sir abdul Ma", "Sir John Ma"):
         assert [a.kind for a in parse(text).ambiguities] == \
             [AmbiguityKind.SUFFIX_OR_NAME], text
-    assert parse("Sheik abdul Ma").given == "abdul Ma"
+    assert parse("Sir abdul Ma").given == "abdul Ma"
 
 
 def test_the_bound_given_reserve_spares_the_family_assign_will_keep() -> None:
@@ -666,13 +668,13 @@ def test_the_leading_piece_never_anchors_under_any_name_order() -> None:
 
 
 def test_a_joined_pair_is_never_peeled_as_a_title() -> None:
-    # The conjunction merge derives a title tag for 'Sheikh and Ahmad';
+    # The conjunction merge derives a title tag for 'Sir and Ahmad';
     # the bound join takes the piece (a mid-name title word is a name
     # word, as 1.4.0 read it) and the pair must stay the given name,
     # not inherit the tag and be peeled as a leading title.
-    n = parse("abdul Sheikh and Ahmad Bakar")
+    n = parse("abdul Sir and Ahmad Bakar")
     assert (n.title, n.given, n.family) == \
-        ("", "abdul Sheikh and Ahmad", "Bakar")
+        ("", "abdul Sir and Ahmad", "Bakar")
     # the title-word class: name words to P5, as v1 read them --
     # parity restored for the post-comma shape, never lost for the
     # main-walk one
@@ -808,8 +810,8 @@ def test_every_bound_word_spares_the_family_before_every_numeral(
 
 
 @pytest.mark.parametrize("title", [
-    "Sir", "Sheikh", "Pope", "الشيخ", "Dr.", "Mr.", "Mr. Sir", "Sir Dr.",
-    "Sir and Dame", "Mr. and Mrs.", "Sheik and Mrs"])
+    "Sir", "Swami", "Pope", "الشيخ", "Dr.", "Mr.", "Mr. Sir", "Sir Dr.",
+    "Sir and Dame", "Mr. and Mrs.", "Swami and Mrs"])
 def test_the_p5_licence_and_h1_read_a_title_run_the_same_way(
         title: str) -> None:
     # The licence's one invariant, as a contract: P5 lifts the reserve
