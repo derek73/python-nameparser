@@ -1,5 +1,7 @@
 import dataclasses
-from collections.abc import Iterable, Iterator
+import itertools
+from collections.abc import Callable, Iterable, Iterator
+from pathlib import Path
 
 import pytest
 
@@ -442,6 +444,10 @@ def test_types_pickle_round_trip() -> None:
     # guarded __getstate__/__setstate__ pair as its three siblings
     seg = Segmentation((2,), confidence=0.42)
     assert pickle.loads(pickle.dumps(seg)) == seg
+    # Reading (#752 phase 2m) carries the same guarded pair
+    from nameparser import Reading
+    reading = Reading("name", "family", "declared")  # type: ignore[arg-type]
+    assert pickle.loads(pickle.dumps(reading)) == reading
 
 
 def test_span_add_is_blocked() -> None:
@@ -475,6 +481,131 @@ def test_setstate_rejects_layout_skew_on_frozen_types() -> None:
     bad_pn["zq_future"] = ()
     with pytest.raises(ValueError, match="zq_future"):
         ParsedName.__new__(ParsedName).__setstate__(bad_pn)
+
+
+def test_reading_coerces_its_strings_and_refuses_unknown_values() -> None:
+    from nameparser import Reading, ReadingKind, ReadingSource
+    r = Reading("name", "family", "declared")  # type: ignore[arg-type]
+    assert (r.kind, r.role, r.source) == (
+        ReadingKind.NAME, Role.FAMILY, ReadingSource.DECLARED)
+    assert r == Reading(ReadingKind.NAME, Role.FAMILY, ReadingSource.DECLARED)
+    with pytest.raises(ValueError, match="unknown ReadingKind 'surname'.*"
+                                         "valid kinds: credential"):
+        Reading("surname", "family", "declared")  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="unknown Role 'last'"):
+        Reading("name", "last", "declared")  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="unknown ReadingSource 'guess'.*"
+                                         "valid sources: vocabulary"):
+        Reading("name", "family", "guess")  # type: ignore[arg-type]
+
+
+def test_ambiguity_alternative_is_a_reading_and_is_not_compared() -> None:
+    from nameparser import Reading
+    tok = Token("MA", Span(11, 13), Role.SUFFIX)
+    alt = Reading("name", "family", "declared")  # type: ignore[arg-type]
+    with_alt = Ambiguity(AmbiguityKind.SUFFIX_OR_NAME, "d", (tok,), alt)
+    assert with_alt == Ambiguity(AmbiguityKind.SUFFIX_OR_NAME, "d", (tok,))
+    with pytest.raises(TypeError, match="must be a Reading or None"):
+        Ambiguity(AmbiguityKind.SUFFIX_OR_NAME, "d", (tok,),
+                  ("name", "family"))  # type: ignore[arg-type]
+
+
+def _ambiguity_state() -> dict[str, object]:
+    tok = Token("MA", Span(11, 13), Role.SUFFIX)
+    return dict(Ambiguity(AmbiguityKind.SUFFIX_OR_NAME, "d", (tok,)).__getstate__())
+
+
+def _without(state: dict[str, object], *names: str) -> dict[str, object]:
+    return {k: v for k, v in state.items() if k not in names}
+
+
+def _renamed(state: dict[str, object], old: str,
+             new: str) -> dict[str, object]:
+    out = _without(state, old)
+    out[new] = state[old]
+    return out
+
+
+#: Every layout skew the guard refused before 2.7, which it still
+#: refuses: the widening (#752 phase 2m) admits only a field marked
+#: `ADDED_IN` and missing from an older pickle. Measured 2026-10-26:
+#: each row raises ValueError under the pre-2.7 guard as under this one
+#: (the row with two fields missing added after, by the first review),
+#: though where `alternative` is missing the old guard names it among
+#: the missing fields too, so its message is not the one matched here;
+#: and the one admitted row below raises under the pre-2.7 guard, which
+#: is the widening.
+_REFUSED_SKEWS = [
+    pytest.param(Ambiguity, lambda: _without(_ambiguity_state(), "detail"),
+                 "missing fields: detail", id="missing-field-without-default"),
+    pytest.param(Token, lambda: _without(dict(Token(
+        "Juan", Span(0, 4), Role.GIVEN).__getstate__()), "tags"),
+                 "missing fields: tags", id="missing-shipped-field-with-default"),
+    pytest.param(ParsedName, lambda: _without(dict(
+        _pn("Juan", [Token("Juan", Span(0, 4), Role.GIVEN)]).__getstate__()),
+        "ambiguities"),
+                 "missing fields: ambiguities",
+                 id="missing-shipped-field-with-default-on-parsedname"),
+    pytest.param(Ambiguity, lambda: {**_ambiguity_state(), "zq_future": 1},
+                 "unexpected fields: zq_future", id="unexpected-field"),
+    pytest.param(Ambiguity, lambda: {**_without(_ambiguity_state(),
+                                                "alternative"),
+                                     "zq_future": 1},
+                 "unexpected fields: zq_future",
+                 id="unexpected-field-beside-a-missing-added-one"),
+    pytest.param(Ambiguity, lambda: _without(_ambiguity_state(),
+                                             "alternative", "detail"),
+                 "missing fields: detail;",
+                 id="missing-field-without-default-beside-a-missing-added-one"),
+    pytest.param(Ambiguity, lambda: _renamed(_ambiguity_state(), "detail",
+                                             "details"),
+                 "missing fields: detail; unexpected fields: details",
+                 id="renamed-field"),
+    pytest.param(Ambiguity, lambda: _renamed(_ambiguity_state(),
+                                             "alternative", "alt"),
+                 "unexpected fields: alt",
+                 id="renamed-added-field"),
+]
+
+
+@pytest.mark.parametrize("cls,state,match", _REFUSED_SKEWS)
+def test_setstate_still_refuses_every_skew_it_refused(
+        cls: type, state: Callable[[], dict[str, object]], match: str) -> None:
+    with pytest.raises(ValueError, match=match):
+        object.__new__(cls).__setstate__(state())
+
+
+def test_setstate_admits_a_field_added_later_missing_from_an_older_pickle(
+        ) -> None:
+    state = _without(_ambiguity_state(), "alternative")
+    loaded = Ambiguity.__new__(Ambiguity)
+    loaded.__setstate__(state)
+    assert loaded.alternative is None
+    assert loaded == Ambiguity(**state)  # type: ignore[arg-type]
+
+
+def test_a_parsedname_pickled_by_2_6_0_loads() -> None:
+    """tests/v2/data/parsedname_v26.pickle is `parse("JOHN SMITH MA")`
+    pickled (protocol 4) by the released 2.6.0 wheel, its Ambiguity
+    written before `alternative` existed. Made 2026-10-26 with
+    `PYTHONSAFEPATH=1 uv run --isolated --no-project --with
+    'nameparser==2.6.0'` from a directory outside the checkout, the
+    version and the module path asserted (AGENTS.md's v1 comparison
+    trap). pickle.load is safe here: a repo-controlled fixture."""
+    import pickle
+    with open(Path(__file__).parent / "data" / "parsedname_v26.pickle",
+              "rb") as f:
+        loaded = pickle.load(f)
+    now = parse("JOHN SMITH MA")
+    # the fields and the report as 2.6.0 read them (the tags are
+    # unstable provenance, and `ma` has gained one since)
+    assert loaded.as_dict() == now.as_dict()
+    assert [(a.kind, a.detail) for a in loaded.ambiguities] == [
+        (a.kind, a.detail) for a in now.ambiguities]
+    assert loaded.ambiguities[0].alternative is None
+    assert now.ambiguities[0].alternative is not None
+    assert pickle.loads(pickle.dumps(now)).ambiguities[0].alternative == (
+        now.ambiguities[0].alternative)
 
 
 def test_tokens_for_accepts_role_string() -> None:
@@ -517,10 +648,14 @@ def test_str_enum_value_sets_are_pairwise_disjoint() -> None:
     # three StrEnums cross-compare by value; a future collision would
     # make unrelated members equal
     from nameparser import AmbiguityKind, PatronymicRule
-    role = {m.value for m in Role}
-    kind = {m.value for m in AmbiguityKind}
-    rule = {m.value for m in PatronymicRule}
-    assert not (role & kind) and not (role & rule) and not (kind & rule)
+    from nameparser import ReadingKind, ReadingSource
+    values = {enum: {m.value for m in enum}
+              for enum in (Role, AmbiguityKind, PatronymicRule,
+                           ReadingKind, ReadingSource)}
+    # the one deliberate overlap: a title reading names the title field
+    allowed = {frozenset({Role, ReadingKind}): {"title"}}
+    for a, b in itertools.combinations(values, 2):
+        assert values[a] & values[b] == allowed.get(frozenset({a, b}), set())
 
 
 def test_with_field_tokens_rejects_mismatched_roles() -> None:

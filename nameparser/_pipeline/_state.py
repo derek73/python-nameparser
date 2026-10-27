@@ -20,8 +20,12 @@ from typing import TYPE_CHECKING, TypeVar
 
 from nameparser._lexicon import Lexicon
 from nameparser._policy import Policy
-from nameparser._types import (SHAPE_ACRONYM_TAG, AmbiguityKind,
-                               Role, Segmenter, Span)
+from nameparser._types import AmbiguityKind, Segmenter, Span
+# re-exported for _vocab, which layering keeps off _types
+from nameparser._types import ReadingKind as ReadingKind
+from nameparser._types import ReadingSource as ReadingSource
+from nameparser._types import Role as Role
+from nameparser._types import SHAPE_ACRONYM_TAG as SHAPE_ACRONYM_TAG
 from nameparser._types import SPLIT_CREDENTIAL_TAG as SPLIT_CREDENTIAL_TAG
 from nameparser._types import SPLIT_MEMBER_TAG as SPLIT_MEMBER_TAG
 
@@ -175,6 +179,56 @@ class PendingAmbiguity:
     indices: tuple[int, ...] = ()
     origin: int | None = None
     field_tail: str | None = None
+    alternative: PendingReading | None = None
+
+
+class Deferred(Enum):
+    """A PendingReading field its emitter cannot name yet."""
+
+    #: O5's: a lone name word read as one of the two primary fields
+    #: would be read as the other, named from its FINAL role by
+    #: assemble, since H1 or a rotation may still move it after the
+    #: emitter (#626's reason for ``field_tail``).
+    OTHER_PRIMARY = auto()
+    #: classify's connective: the letter read as a connective would
+    #: join the name words on either side into one, whose field assign
+    #: names once it has positions -- the positional read's, where the
+    #: join would merge two pieces, and the letter's own piece's
+    #: (BESIDE), where both words are already in it.
+    JOINED = auto()
+    #: group's particle chain: the particle it chained would stand as a
+    #: name word of its own in front of the piece, named by assign.
+    UNCHAINED = auto()
+    #: lands where the token at ``PendingReading.beside`` lands, named
+    #: from that token's final role: a word the name piece in front
+    #: would take in (a particle chain, which runs to the end of the
+    #: name words, or a bound given name), or a connective whose join
+    #: stays inside its own piece. Where P6 then attached the front
+    #: token to the family (`FOLDED_TAG`), which it would not have
+    #: done with a word behind it, the field the word held when the
+    #: report was made stands instead, given as ``unfolded``.
+    BESIDE = auto()
+
+
+@dataclass(frozen=True, slots=True)
+class PendingReading:
+    """The reading a report's decision did not take, as its emitter
+    knows it; assemble turns it into the public Reading.
+
+    ``role`` is the field the first referent would hold under that
+    reading, with every other word of the name read as the parse read
+    it, or a `Deferred` form for a stage that runs before the field is
+    known. A JOINED or UNCHAINED form assign leaves unresolved -- a
+    referent that ends outside every name position -- surfaces as no
+    alternative rather than a guess. Assemble also folds a MIDDLE into
+    the family under ``middle_as_family``, the one later rule that
+    moves a field whatever word stands in it."""
+
+    kind: ReadingKind
+    source: ReadingSource
+    role: Role | Deferred
+    beside: int | None = None
+    unfolded: Role | None = None
 
 
 #: How a report names the field a word was read into, by final role.
@@ -358,7 +412,7 @@ def _copyable_fields(cls: type) -> tuple[str, ...]:
 #: here rather than in a parse, and `copy_with` copies nothing else.
 _COPY_FIELDS: Mapping[type, tuple[str, ...]] = MappingProxyType({
     cls: _copyable_fields(cls)
-    for cls in (WorkToken, PendingAmbiguity, ParseState)})
+    for cls in (WorkToken, PendingAmbiguity, PendingReading, ParseState)})
 
 _T = TypeVar("_T")
 

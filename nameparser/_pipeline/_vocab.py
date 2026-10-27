@@ -35,8 +35,15 @@ could (measured: 'ANNA z Nowak, MD' flips the one-case verdict when
 the approximation and the real run-completion test disagree on
 whether 'z' opens a run that completes).
 
+suffix_reading, name_reading and the two reading constants are the
+fourth: they answer no question about a word but BUILD the reading a
+report did not take (#752 phase 2m), from a token's text and tags,
+which is why they import _state's PendingReading and the public enums
+it re-exports. They sit here because every stage that reports a fork
+builds one, and the tags they read are this module's vocabulary.
+
 Layering: imports _lexicon, _policy, and _pipeline._state (WorkToken,
-comma_bucket -- read-only, never a whole ParseState).
+comma_bucket, PendingReading -- read-only, never a whole ParseState).
 """
 from __future__ import annotations
 
@@ -51,7 +58,13 @@ from nameparser._lexicon import (
 )
 from nameparser._policy import (CapsSuffixes, Policy, Script, _JA_SCRIPTS, _NO_INITIALS,
                                 _SCRIPT_RANGES, _script_matcher)
-from nameparser._pipeline._state import COMMA_CHARS, WorkToken, comma_bucket
+from nameparser._pipeline._state import (
+    AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, COMMA_CHARS,
+    Deferred,
+    GIVEN_ABBREVIATION_TAG, SHAPE_ACRONYM_TAG, TITLE_AMBIGUOUS_TAG,
+    PendingReading, ReadingKind, ReadingSource, Role, WorkToken,
+    comma_bucket,
+)
 
 # Ported verbatim from v1 (nameparser/config/regexes.py "initial") minus
 # its empty-string alternative -- WorkToken text is never empty. Kept in
@@ -2106,3 +2119,78 @@ def resolve_script_set(scripts: Iterable[Script]) -> Script | None:
     if found.issubset(_JA_SCRIPTS):
         return Script.HIRAGANA
     return None
+
+
+# -- the reading a decision did not take (Ambiguity.alternative, #752
+# phase 2m). Each report names it from what its own site knows: the
+# word's tags say which reading the vocabulary or a shape gave it, and
+# the emitter says which field (decisions/vocabulary-model, 2026-10-26)
+
+#: Tags that say the vocabulary declares the word a name as well as a
+#: word of another category: the derived markers (decisions/
+#: vocabulary-model, 2026-10-25), and a given name written short. The
+#: ambiguous class's tag is also written by SHAPE (rules/S9), which
+#: `name_reading` reads off the shape tag beside it.
+_DECLARED_NAME_TAGS = frozenset({
+    AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, "vocab:particle-ambiguous",
+    TITLE_AMBIGUOUS_TAG, GIVEN_ABBREVIATION_TAG})
+
+
+def suffix_reading(token: WorkToken) -> PendingReading:
+    """The suffix reading of a word a decision read as a name: a
+    generation or agnomen by its listed word, a numeral by its shape
+    unless listed, another listed post-nominal word as a suffix, and
+    otherwise a credential, listed or shaped."""
+    tags = token.tags
+    if AGNOMEN_TAG in tags:
+        return PendingReading(ReadingKind.AGNOMEN, ReadingSource.VOCABULARY,
+                              Role.SUFFIX)
+    if AMBIGUOUS_WORD_TAG in tags:
+        return PendingReading(ReadingKind.GENERATION,
+                              ReadingSource.VOCABULARY, Role.SUFFIX)
+    if _ROMAN.match(token.text.rstrip(".")) is not None:
+        listed = "vocab:suffix" in tags or "vocab:suffix-word" in tags
+        return PendingReading(
+            ReadingKind.GENERATION,
+            ReadingSource.VOCABULARY if listed else ReadingSource.SHAPE,
+            Role.SUFFIX)
+    if "vocab:suffix-word" in tags:
+        return PendingReading(ReadingKind.POST_NOMINAL, ReadingSource.VOCABULARY,
+                              Role.SUFFIX)
+    return PendingReading(
+        ReadingKind.CREDENTIAL,
+        ReadingSource.SHAPE if SHAPE_ACRONYM_TAG in tags
+        else ReadingSource.VOCABULARY,
+        Role.SUFFIX)
+
+
+def name_reading(token: WorkToken, role: Role | Deferred) -> PendingReading:
+    """The name reading of a word a decision read as something else,
+    landing in `role`: an initial where the word is one letter or
+    initial-shaped, otherwise a name word, declared by the vocabulary
+    where a derived marker says so and standing by position where
+    nothing does."""
+    text = token.text
+    # C-level for an ASCII word, so a report pays no frame for the test
+    if (len(text.rstrip(".")) == 1 or _INITIAL.fullmatch(text)
+            if text.isascii()
+            else composed_len(text.rstrip(".")) == 1
+            or is_initial_shaped(text)):
+        return PendingReading(ReadingKind.INITIAL, ReadingSource.SHAPE, role)
+    # classify writes the ambiguous class's tag on a word admitted by
+    # its shape too, so the shape tag says no list declared it
+    declared = (not token.tags.isdisjoint(_DECLARED_NAME_TAGS)
+                and SHAPE_ACRONYM_TAG not in token.tags)
+    return PendingReading(
+        ReadingKind.NAME,
+        ReadingSource.DECLARED if declared else ReadingSource.POSITION,
+        role)
+
+
+#: The particle reading of a word read as a name: a particle joins the
+#: words after it, the last group reading as the family (rules/P2).
+PARTICLE_READING = PendingReading(ReadingKind.PARTICLE,
+                                  ReadingSource.VOCABULARY, Role.FAMILY)
+#: The title reading of a word read as a name.
+TITLE_READING = PendingReading(ReadingKind.TITLE, ReadingSource.VOCABULARY,
+                               Role.TITLE)

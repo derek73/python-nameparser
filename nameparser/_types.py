@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import dataclasses
 from collections.abc import Callable, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum, StrEnum
 from typing import TYPE_CHECKING, NamedTuple, NoReturn, TypeVar
 
@@ -225,16 +225,32 @@ def _guarded_getstate(self: object) -> dict[str, object]:
     return {f.name: getattr(self, f.name) for f in fields}
 
 
+#: The metadata key a field added after a type first shipped carries,
+#: naming the release that added it. Such a field must have a default,
+#: and it is the ONE skew `_guarded_setstate` accepts: a pickle written
+#: before the release lacks it, and loads with the default (2.7, #752).
+#: A field without the key -- every field a type shipped with -- is
+#: still required, default or not, so a pickle missing `Token.tags` is
+#: refused as it always was.
+ADDED_IN = "nameparser.added_in"
+
+
 def _guarded_setstate(self: object, state: dict[str, object]) -> None:
     fields = dataclasses.fields(self)  # type: ignore[arg-type]
     expected = {f.name for f in fields}
-    if set(state) != expected:
-        missing = ", ".join(sorted(expected - set(state))) or "none"
+    added = {f.name: f for f in fields
+             if ADDED_IN in f.metadata and f.default is not dataclasses.MISSING}
+    missing_set = expected - set(state) - set(added)
+    if missing_set or not set(state) <= expected:
+        missing = ", ".join(sorted(missing_set)) or "none"
         unexpected = ", ".join(sorted(set(state) - expected)) or "none"
         raise ValueError(
             f"incompatible {type(self).__name__} pickle: missing "
             f"fields: {missing}; unexpected fields: {unexpected}"
         )
+    for name, f in added.items():
+        if name not in state:
+            object.__setattr__(self, name, f.default)
     for name, value in state.items():
         object.__setattr__(self, name, value)
 
@@ -716,6 +732,100 @@ class AmbiguityKind(StrEnum):
     SEGMENTATION = "segmentation"
 
 
+class ReadingKind(StrEnum):
+    """What a :class:`Reading` reads a word as. A StrEnum, like
+    :class:`AmbiguityKind`: members ARE their string values. New kinds
+    may be added in minor releases; existing values never change
+    meaning. The kinds are the parse's, not the vocabulary's: a reading
+    a decision weighed is named by the category the decision asked
+    about, so ``"credential"`` covers a word listed as one and a word
+    only shaped like one, which :attr:`Reading.source` tells apart."""
+
+    #: A post-nominal credential or other acronym suffix ("MA", "X.Y.Z.").
+    CREDENTIAL = "credential"
+    #: A generational suffix: a roman numeral, or a word such as "fils".
+    GENERATION = "generation"
+    #: An agnomen, a family word that is also a suffix ("Filho", "Neto").
+    AGNOMEN = "agnomen"
+    #: A listed post-nominal word of another kind ("Rinpoche", "Esq.").
+    POST_NOMINAL = "post-nominal"
+    #: A title ("Dean", "Prince"). The one value shared with a
+    #: :class:`Role`, on purpose: a title reading is the title field's,
+    #: so ``ReadingKind.TITLE == Role.TITLE`` says something true.
+    TITLE = "title"
+    #: A family-name particle ("van", "do").
+    PARTICLE = "particle"
+    #: A connective joining the words beside it ("e", "i").
+    CONJUNCTION = "conjunction"
+    #: An initial standing for a name word ("V" in "John V Smith").
+    INITIAL = "initial"
+    #: An ordinary name word, given or family.
+    NAME = "name"
+
+
+class ReadingSource(StrEnum):
+    """Where a :class:`Reading` comes from. A StrEnum; new sources may
+    be added in minor releases."""
+
+    #: The vocabulary lists the word in this reading's category ("MA"
+    #: as a credential, "van" as a particle).
+    VOCABULARY = "vocabulary"
+    #: The vocabulary declares the word a name as well as listing it in
+    #: another category: "Ma" as a surname, "Dean" as a given name.
+    DECLARED = "declared"
+    #: The word's shape, not a list: a roman numeral, letters run
+    #: together with periods ("X.Y.Z."), a word in capitals.
+    SHAPE = "shape"
+    #: Nothing lists or shapes the word into this reading; it is the
+    #: reading any word has where it stands, an ordinary name word. A
+    #: word a credential run took by position alone ("Jones" in "John
+    #: Smith PhD Jones") has this as its alternative, where "Ma" in
+    #: "JOHN SMITH MA" has :attr:`DECLARED`.
+    POSITION = "position"
+
+
+@dataclass(frozen=True, slots=True)
+class Reading:
+    """One way of reading a word, as a decision of the parse weighed
+    it. :attr:`Ambiguity.alternative` holds the reading the parse did
+    NOT take, so a caller who would have read the name the other way
+    knows which field the word would have gone to and why the reading
+    was available at all."""
+
+    #: What the word is read as.
+    kind: ReadingKind
+    #: The field the word would land in under this reading, with every
+    #: other word of the name read as the parse read it.
+    role: Role
+    #: Where the reading comes from: a listed word, a declared name, a
+    #: shape, or position alone.
+    source: ReadingSource
+
+    # in the class body so @dataclass(slots=True) keeps them
+    __getstate__ = _guarded_getstate
+    __setstate__ = _guarded_setstate
+
+    def __post_init__(self) -> None:
+        # the members the parser passes need no coercion, and a report
+        # pays no frame for it (decisions/parse-cost)
+        if not isinstance(self.kind, ReadingKind):
+            object.__setattr__(
+                self, "kind",
+                _coerce_enum(self.kind, ReadingKind, "ReadingKind", "kinds"))
+        if not isinstance(self.role, Role):
+            object.__setattr__(
+                self, "role", _coerce_enum(self.role, Role, "Role", "roles"))
+        if not isinstance(self.source, ReadingSource):
+            object.__setattr__(
+                self, "source",
+                _coerce_enum(self.source, ReadingSource, "ReadingSource",
+                             "sources"))
+
+    def __repr__(self) -> str:
+        return (f"Reading({self.kind.value!r} as {self.role.value!r}, "
+                f"{self.source.value!r})")
+
+
 @dataclass(frozen=True, slots=True)
 class Ambiguity:
     """A call the parser made that could legitimately have gone the
@@ -732,6 +842,21 @@ class Ambiguity:
     #: Token instances with identical text/span/role/tags satisfy this);
     #: may be empty (e.g. unbalanced-delimiter).
     tokens: tuple[Token, ...]
+    #: The reading the parse did not take: what the tokens would have
+    #: been read as, and the field they would have landed in, had the
+    #: call gone the other way (the first token's field, for a report on
+    #: more than one). None where the kind reports no fork between two
+    #: readings of a word (comma-structure, unbalanced-delimiter,
+    #: segmentation; ``order`` is reserved), and where the parse cannot
+    #: place the other reading in any field: a connective letter
+    #: opening its part ("E JOHN SMITH"), with no word before it to
+    #: join, or a chained particle whose piece ends in a title a
+    #: connective's join made ("Freiherr von Berg Dr. and Ed. Prof.").
+    #: Not compared: two
+    #: ambiguities equal without it, as before 2.7, and
+    #: :meth:`ParsedName.comparison_key` ignores it.
+    alternative: Reading | None = field(
+        default=None, compare=False, metadata={ADDED_IN: "2.7"})
 
     # in the class body so @dataclass(slots=True) keeps them
     __getstate__ = _guarded_getstate
@@ -741,6 +866,12 @@ class Ambiguity:
         object.__setattr__(
             self, "kind",
             _coerce_enum(self.kind, AmbiguityKind, "AmbiguityKind", "kinds"))
+        if (self.alternative is not None
+                and not isinstance(self.alternative, Reading)):
+            raise TypeError(
+                f"Ambiguity.alternative must be a Reading or None, got "
+                f"{self.alternative!r}"
+            )
         if not isinstance(self.detail, str):
             raise TypeError(
                 f"Ambiguity.detail must be a str, got {self.detail!r}"

@@ -77,12 +77,13 @@ from nameparser._pipeline._pieces import (
 )
 from nameparser._pipeline._state import (
     AMBIGUOUS_ACRONYM_TAG, SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, ParseState,
-    PendingAmbiguity, Structure, WorkToken, _AMBIGUOUS_CREDENTIAL_TAGS,
-    copy_with,
+    Deferred, PendingAmbiguity, Structure, WorkToken,
+    _AMBIGUOUS_CREDENTIAL_TAGS, copy_with,
 )
 import nameparser._pipeline._comma as _comma
 from nameparser._pipeline._vocab import (
-    comma_follows_marker, delimiter_cores, reads_as_a_reported_numeral,
+    comma_follows_marker, delimiter_cores, name_reading,
+    reads_as_a_reported_numeral, suffix_reading,
 )
 from nameparser._types import AmbiguityKind, Role
 
@@ -334,7 +335,10 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
         # the clause-free reading took it, and the take binds it here
         for j, role in released:
             if "split" in ptags[j] and role is Role.SUFFIX:
-                ambiguities.append(split_credential_report(pieces[j], tokens))
+                ambiguities.append(
+                    split_credential_report(
+                        pieces[j], tokens,
+                        name_reading(tokens[pieces[j][0]], Role.MAIDEN)))
         # mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE: "Emit at the
         # site that takes the branch, not where an ambiguous tag sits"
         # -- the take consumed the run, so the forks the reading called
@@ -347,7 +351,10 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
                     AmbiguityKind.SUFFIX_OR_NAME,
                     f"{tokens[piece[0]].text!r} after the maiden name "
                     f"reads as a suffix; it may be a name word",
-                    tuple(piece)))
+                    tuple(piece),
+                    # a name word there ends the clause's maiden name
+                    alternative=name_reading(tokens[piece[0]],
+                                             Role.MAIDEN)))
     # ...and the member the clause KEEPS as its last word: the reading
     # left it a name word, which is a fork too
     last = pieces[end - 1]
@@ -360,7 +367,8 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
             AmbiguityKind.SUFFIX_OR_NAME,
             f"{word.text!r} ending the maiden name is also a "
             f"post-nominal; the maiden marker's clause keeps it rather "
-            f"than reading it as one", tuple(last)))
+            f"than reading it as one", tuple(last),
+            alternative=suffix_reading(word)))
     elif tuple(last) in picked:
         # rules/S10: "either reading is reported" -- a numeral the read
         # declined, for want of words to spare or for its Title case,
@@ -372,7 +380,8 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
             AmbiguityKind.SUFFIX_OR_NAME,
             f"{word.text!r} ending the maiden name is a roman numeral, "
             f"{why}; the maiden marker's clause keeps it rather than "
-            f"reading it as a generational suffix", tuple(last)))
+            f"reading it as a generational suffix", tuple(last),
+            alternative=suffix_reading(word)))
     elif (released and len(last) == 1 and end - 2 >= lo
           and reads_as_a_reported_numeral(
               word.text, word.tags, tokens[pieces[end - 2][0]].text,
@@ -386,7 +395,7 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
             f"{word.text!r} ending the maiden name is a roman numeral, "
             f"but a post-nominal follows it; the maiden marker's clause "
             f"keeps it rather than reading it as a generational suffix",
-            tuple(last)))
+            tuple(last), alternative=suffix_reading(word)))
     return (list(range(m, lo)),
             [(j, Role.MAIDEN) for j in range(lo, end)] + released)
 
@@ -1028,7 +1037,11 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                             f"{tokens[i].text!r} was chained onto the "
                             f"following name piece; it is also a given "
                             f"name in other names",
-                            (i,)))
+                            (i,),
+                            # where it would stand unchained is
+                            # assign's to name
+                            alternative=name_reading(tokens[i],
+                                                     Deferred.UNCHAINED)))
                 # rules/S4: "A BARE ambiguous acronym is consumed
                 # only when the name has words to spare — as the second
                 # of two words it stays the family name — and at the
@@ -1066,7 +1079,8 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                         f"and an ordinary name; the particle chain took "
                         f"it into the name rather than reading it as a "
                         f"post-nominal",
-                        tuple(last)))
+                        tuple(last),
+                        alternative=suffix_reading(tokens[last[0]])))
                     took.add(tuple(last))
                 merge_pieces(pieces, ptags, k, j, drop={"prefix"})
                 k += 1

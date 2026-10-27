@@ -37,17 +37,19 @@ import re
 
 from nameparser._lexicon import _normalize, _run_addresses_by_given
 from nameparser._pipeline._assign import (
-    _attach_particle_tail, _name_positions,
+    _attach_particle_tail, _name_alt, _name_positions,
 )
 from nameparser._pipeline._pieces import (
     is_lone_never_given_particle, particle_tail, settled_by_case,
 )
 from nameparser._pipeline._state import (
     AMBIGUOUS_ACRONYM_TAG, NAME_ROLES,
-    ParseState, PendingAmbiguity, Structure,
+    ParseState, PendingAmbiguity, PendingReading, Structure,
     WorkToken, _NEVER_FLIPPED, comma_bucket, copy_with,
 )
-from nameparser._pipeline._vocab import delimiter_cores, unit_ends
+from nameparser._pipeline._vocab import (
+    delimiter_cores, suffix_reading, unit_ends,
+)
 from nameparser._policy import PatronymicRule
 from nameparser._types import (
     FOLDED_TAG, UNJOINED_CONJUNCTION_TAG, UNJOINED_TAG, AmbiguityKind, Role,
@@ -439,7 +441,25 @@ def _settle_delimited_members(state: ParseState, tokens: list[WorkToken],
                 AmbiguityKind.SUFFIX_OR_NICKNAME,
                 f"delimited {token.text!r} is also a post-nominal; read "
                 f"as a nickname rather than a suffix",
-                (i,)))
+                (i,), alternative=suffix_reading(token)))
+
+
+def _unattached(state: ParseState, tokens: list[WorkToken],
+                word: WorkToken, start: int) -> PendingReading:
+    """The name reading of the particle run P6 attaches at the end of
+    a name read family-first, which starts at token `start`: the field
+    the positional read gave it, or the field of the name piece in
+    front where that piece would take a name word in (`_name_alt`)."""
+    role = tokens[start].role
+    assert role is not None  # assign roled every name word
+    # the run ends a name read family-first, so a name word stands in
+    # front of it
+    front, first = next(
+        ((piece, k == 0) for seg in state.pieces
+         for k, piece in enumerate(
+             [p for p in seg if tokens[p[0]].role in NAME_ROLES])
+         if start - 1 in piece), (None, False))
+    return _name_alt(word, role, front, tokens, first, False)
 
 
 def post_rules(state: ParseState) -> ParseState:
@@ -741,7 +761,13 @@ def post_rules(state: ParseState) -> ParseState:
                     f"family-first, {text!r} joins the family that "
                     f"order named rather than standing as a name word "
                     f"of its own",
-                    tuple(sorted(run))))
+                    tuple(sorted(run)),
+                    # the field the positional read gave it, which this
+                    # attachment moves, unless the piece in front would
+                    # take a name word in
+                    alternative=_unattached(state, tokens,
+                                            tokens[ambiguous[0]],
+                                            min(run))))
             for j in run:
                 tokens[j] = copy_with(
                     tokens[j], role=Role.FAMILY,

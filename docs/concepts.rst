@@ -206,7 +206,8 @@ the parse records a ``particle-or-given`` ambiguity alongside its
 answer. (Which name that piece then becomes is a separate question,
 and ``name_order``'s: the given name under the default.) You can
 inspect ``ambiguities`` to decide, case by case, whether your data
-needs a second look.
+needs a second look; each report also names the reading it did not
+take (:ref:`reading-not-taken`).
 
 An ambiguity records a *decision*, not a word. The same token in a
 different position may present no fork at all: ``do`` is in the

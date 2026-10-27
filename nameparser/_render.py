@@ -830,7 +830,7 @@ def capitalized(name: ParsedName, lexicon: Lexicon | None, *,
     replacement = dict(zip(name.tokens, new_tokens))
     new_ambiguities = tuple(
         Ambiguity(a.kind, a.detail,
-                  tuple(replacement[t] for t in a.tokens))
+                  tuple(replacement[t] for t in a.tokens), a.alternative)
         for a in name.ambiguities)
     return ParsedName(original=name.original, tokens=new_tokens,
                       ambiguities=new_ambiguities)

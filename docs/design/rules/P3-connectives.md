@@ -44,4 +44,4 @@
 
 ---
 **Signal:** neighbor: a connective between name words, a single-letter one in a three-word name staying a name word
-**history:** decisions/P3 · **implemented:** nameparser/_pipeline/_comma.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
+**history:** decisions/P3 · **implemented:** nameparser/_pipeline/_assign.py, nameparser/_pipeline/_comma.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
