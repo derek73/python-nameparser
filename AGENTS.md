@@ -129,6 +129,11 @@ uv run sphinx-build -b html docs dist/docs
 #      but statement and Background prose can still be wrong about behavior
 #      that changed
 #    - AGENTS.md itself, for stale commands, architecture notes, or gotchas
+#    - the pickle-break bullet: pickle every public type (Lexicon, Policy,
+#      Parser, ParsedName, Ambiguity, HumanName, a locale pack) under the
+#      last release's wheel and load each in the tree; don't derive it
+#      from a dataclass diff. 2.7's bullet named Lexicon and Parser and
+#      missed the locale packs, which carry a Lexicon
 #    And check for open Dependabot PRs on uv.lock (namedivider-python) and merge them
 #    first — pyproject floats >=0.4 so fresh installs get the newest namedivider, but
 #    CI's ja-extra job installs from uv.lock and only tests what the lock pins
