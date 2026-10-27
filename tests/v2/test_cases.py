@@ -296,9 +296,11 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # suffix-or-name P6's attachment decides, under three orders; 1396
     # -> 1403 the same day, the #916 review's rows (', Dr. Jones vd
     # Jr.' and ', Dr. Jones vd, PhD' under three orders, and ', Jane
-    # van Jr.' under FAMILY_FIRST).
-    assert claims == 1403, (
-        f"the field sweep checks {claims} claims, recorded as 1403 on "
+    # van Jr.' under FAMILY_FIRST); 1403 -> 1412 the same day, #843's
+    # three abbreviated-agnomen rows, one suffix-or-name claim each under
+    # the three orders.
+    assert claims == 1412, (
+        f"the field sweep checks {claims} claims, recorded as 1412 on "
         f"2026-10-27")
 
 
@@ -631,8 +633,10 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # master's 'Nasreen Sultana, MBBS' row (#903) under each order, a
     # comma credential run's report, whose stand-in the run reads too;
     # 436 -> 437 on 2026-10-27, #892's ', Jane van Jr.' row under
-    # FAMILY_FIRST, a particle-or-given report P6's attachment decides
-    assert (checked, skipped) == (437, 302), (checked, skipped)
+    # FAMILY_FIRST, a particle-or-given report P6's attachment decides;
+    # 437 -> 443 the same day, #843's two abbreviated-agnomen rows read
+    # as the suffix, each under the three orders
+    assert (checked, skipped) == (443, 302), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:

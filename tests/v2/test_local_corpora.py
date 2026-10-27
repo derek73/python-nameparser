@@ -3668,9 +3668,10 @@ def test_the_pairs_view_counts_the_pairs_whose_spellings_share_a_surname() -> No
         ("PEDRO ALVES FH", "PEDRO ALVES FILHO"), ("ANA SOUZA", "ANA SOUZA"),
         ("ANA", "ANNA"), ("BO WU", "")),
         agreement=True)
-    # FH is too unlike FILHO to be its misspelling.
+    # FH is too unlike FILHO to be its misspelling, and both read as the
+    # agnomen since #843 listed the abbreviation, so the pair shares ALVES.
     assert found.agreement == {"words left out": (1, 1), "words shortened": (1, 1),
-                               "mostly the same words": (0, 1),
+                               "mostly the same words": (1, 1),
                                "words misspelled": (0, 1)}
     report = local.format_pairs(found, top=15)
     assert "(one surname in 0%)" in report
