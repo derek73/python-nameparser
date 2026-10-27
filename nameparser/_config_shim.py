@@ -1092,9 +1092,12 @@ class Constants:
         # v1 can say "a title" or "not a title", and "a title" now means
         # the phrase reading. A word 2.6.0 never listed (`dean`) is not
         # in `moved`, so adding it is still a title everywhere, the 1.4
-        # recipe the phrase test honours below.
+        # recipe the phrase test honours below. Compared folded, as the
+        # two cross-set computations below are (#582), so a spelling
+        # Lexicon folds onto a moved word (`king。`) is read as it is.
         moved = TITLES_2_6_0 & TITLES_AMBIGUOUS
-        phrase_only = ((TITLES_AMBIGUOUS - moved) | (moved & titles)
+        kept_moved = frozenset(w for w in titles if _normalize(w) in moved)
+        phrase_only = ((TITLES_AMBIGUOUS - moved) | kept_moved
                        if titles else frozenset())
         first_name_titles = matchable("first_name_titles")
         non_given = matchable("non_first_name_prefixes")
@@ -1161,7 +1164,7 @@ class Constants:
         # v1 also had, later, at capitalize().
         try:
             lexicon = Lexicon(
-                titles=titles - moved,
+                titles=titles - kept_moved,
                 # TRANSLATE, do not filter. The two versions build the same
                 # lookup key differently: v1 joins the raw title run and
                 # then applies lc(), which strips only the whole string's

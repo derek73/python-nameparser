@@ -1427,6 +1427,27 @@ def test_a_replaced_titles_list_holding_a_moved_title_reads_it_by_phrase() -> No
     assert word in lexicon.titles_ambiguous
 
 
+def test_a_moved_title_spelled_with_a_full_stop_reads_by_its_phrase() -> None:
+    # compared folded (#582): Lexicon folds 'king。' onto 'king', so it
+    # is read as the listed spelling is, by the phrase
+    c = Constants()
+    c.titles.remove("king")
+    c.titles.add("king。")
+    assert HumanName("King Curtis", constants=c).first == "King"
+    assert HumanName("Hon. King Smith", constants=c).title == "Hon. King"
+
+
+def test_a_replaced_titles_list_keeps_the_phrase_reading_of_unlisted_words(
+) -> None:
+    # decisions/H9's Standing line: a replaced list keeps the phrase
+    # reading of the words 2.6.0 never listed
+    c = Constants()
+    c.titles.clear()
+    c.titles.add("dr")
+    assert HumanName("Dean of Students Jane Smith", constants=c).title == (
+        "Dean of Students")
+
+
 def test_a_v1_title_never_listed_by_2_6_0_is_a_title_everywhere() -> None:
     # the 1.4 recipe for the phrase-only words 2.6.0 never listed
     c = Constants()
