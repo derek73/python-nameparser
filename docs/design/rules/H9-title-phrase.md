@@ -123,7 +123,7 @@
   "Gyani Zail Singh"          →  given="Gyani"
   "Lord Buddha Tamang"        →  given="Buddha"
   ```
-- A ruler or a royal written with the bare title in front reads it as the given name, a style before it or `of` after it keeping the title; the record data at hand writes the word there almost only as a given name, and rulers and royals that way mostly in news text.
+- A ruler or a royal written with the bare title in front reads it as a name word, the given name in the default order, a style before it or `of` after it keeping the title; the record data at hand writes the word there almost only as a given name, and rulers and royals that way mostly in news text.
   ```
   "King Henry"                →  given="King"
   "Sultan Hassanal Bolkiah"   →  given="Sultan"
