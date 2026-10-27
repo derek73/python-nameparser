@@ -21,6 +21,7 @@
   "Sgt Marshal Smith"         →  given="Marshal"
   "Mr Mahdi Karimi"           →  given="Mahdi"
   "Buddha Bahadur Tamang"     →  given="Buddha"
+  "King Curtis"               →  given="King"
   ```
 - **A modifier in the leading run of titles before the first comma** has its phrase in a head title after it in that run, in `of` after it, or in the object of `of` or `the` there. A modifier outside that run, ending the name or after a comma, is read as any title is, save one that may be a given name, which is read everywhere as it is in that run.
   ```
@@ -117,6 +118,11 @@
   ```
   "Gyani Zail Singh"          →  given="Gyani"
   "Lord Buddha Tamang"        →  given="Buddha"
+  ```
+- A monarch written with the bare title in front reads it as the given name, a style before it or `of` after it keeping the title; the record data at hand writes the word there as a given name, and only news text writes monarchs that way.
+  ```
+  "King Henry"                →  given="King"
+  "His Majesty King Charles"  →  title="His Majesty King"
   ```
 - Once a partner has made the word a title, a coordinating join behind it takes the next word into the title too.
   ```

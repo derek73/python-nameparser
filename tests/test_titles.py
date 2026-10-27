@@ -36,9 +36,9 @@ class TitleTestCase(HumanNameTestBase):
         self.m(hn.last, "Smith", hn)
 
     def test_last_name_is_also_title3(self) -> None:
-        hn = HumanName("John King")
+        hn = HumanName("John Pope")
         self.m(hn.first, "John", hn)
-        self.m(hn.last, "King", hn)
+        self.m(hn.last, "Pope", hn)
 
     def test_title_with_conjunction(self) -> None:
         hn = HumanName("Secretary of State Hillary Clinton")
@@ -137,8 +137,8 @@ class TitleTestCase(HumanNameTestBase):
         self.m(hn.last, "Simpson", hn)
 
     def test_title_with_last_initial_is_suffix(self) -> None:
-        hn = HumanName("King John V.")
-        self.m(hn.title, "King", hn)
+        hn = HumanName("Pope John V.")
+        self.m(hn.title, "Pope", hn)
         self.m(hn.first, "John", hn)
         self.m(hn.last, "V.", hn)
 

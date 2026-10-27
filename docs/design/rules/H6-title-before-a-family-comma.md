@@ -42,14 +42,14 @@
 - **The run always leaves the family at least one word.**
   ```
   "Dr., John"                 →  family="Dr."  · boundary
-  "Dr. King, John"            →  family="King"  · boundary
+  "Dr. Pope, John"            →  family="Pope"  · boundary
   ```
 
 **Accepted:**
 
-- A title word that is also an ordinary surname (king, judge, bishop, greve) opening a surname of two words is read as the title, as it is in front of a name with no comma (H1). A double-barrelled surname that begins with such a word loses it.
+- A title word that is also an ordinary surname (pope, judge, bishop, greve) opening a surname of two words is read as the title, as it is in front of a name with no comma (H1). A double-barrelled surname that begins with such a word loses it.
   ```
-  "King Smith, John"          →  title="King"
+  "Pope Smith, John"          →  title="Pope"
   ```
 - What keeps a word in the family is the particle stop and nothing else. German ranks the title vocabulary lists, other than 'Freiherr', are titles only, so they peel, though since 1919 a rank is part of the legal surname for all of them alike; that is the vocabulary's distinction, not this rule's.
   ```

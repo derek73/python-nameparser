@@ -19,8 +19,8 @@
 "Lord Chancellor"           →  ambiguities=("title-or-name",)
 "The Right Hon. the President of the Queen's Bench Division"  →  family="Division"
 "The Right Hon. the President of the Queen's Bench Division"  →  ambiguities=("title-or-name",)
-"Dr. King"                  →  ambiguities=("title-or-name",)
-"Dr. King MD"               →  ambiguities=("title-or-name",)
+"Dr. Pope"                  →  ambiguities=("title-or-name",)
+"Dr. Pope MD"               →  ambiguities=("title-or-name",)
 "Rinpoche"                  →  ambiguities=("suffix-or-name",)
 "QC MP"                     →  given="QC"
 "Dr. Smith"                 →  ambiguities=()
@@ -28,7 +28,7 @@
 
 **Except:**
 
-- **A title in front takes the input out of the suffix half**, which is reached only where no title was peeled first. What it does NOT do is take the input out of the rule: the title run leaves a name word standing (H3), and where that word is title vocabulary the TITLE half claims it — `Dr. King MD` reports `title-or-name` on `King`, while `RA DDS` reports nothing, `DDS` being no title.
+- **A title in front takes the input out of the suffix half**, which is reached only where no title was peeled first. What it does NOT do is take the input out of the rule: the title run leaves a name word standing (H3), and where that word is title vocabulary the TITLE half claims it — `Dr. Pope MD` reports `title-or-name` on `Pope`, while `RA DDS` reports nothing, `DDS` being no title.
   ```
   "RA DDS"                    →  ambiguities=()
   ```

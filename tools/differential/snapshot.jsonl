@@ -698,7 +698,6 @@
 {"name": "Doe, John Goodman", "given": "John", "middle": "Goodman", "family": "Doe", "initials": "J. G. D."}
 {"name": "Doe, John III", "given": "John", "family": "Doe", "suffix": "III", "initials": "J. D."}
 {"name": "Doe, John Jr Mr", "title": "Mr", "given": "John", "family": "Doe", "suffix": "Jr", "initials": "J. D."}
-{"name": "Doe, John King", "given": "John", "middle": "King", "family": "Doe", "initials": "J. K. D."}
 {"name": "Doe, John MA", "given": "John", "family": "Doe", "suffix": "MA", "initials": "J. D."}
 {"name": "Doe, John MA JD", "given": "John", "family": "Doe", "suffix": "MA JD", "initials": "J. D."}
 {"name": "Doe, John MA Jr", "given": "John", "family": "Doe", "suffix": "MA Jr", "initials": "J. D."}
@@ -713,6 +712,7 @@
 {"name": "Doe, John Mr Jr", "title": "Mr", "given": "John", "family": "Doe", "suffix": "Jr", "initials": "J. D."}
 {"name": "Doe, John Msc.Ed.", "given": "John", "family": "Doe", "suffix": "Msc.Ed.", "initials": "J. D."}
 {"name": "Doe, John PhD MA", "given": "John", "family": "Doe", "suffix": "PhD MA", "initials": "J. D."}
+{"name": "Doe, John Pope", "given": "John", "middle": "Pope", "family": "Doe", "initials": "J. P. D."}
 {"name": "Doe, John Q. MA", "given": "John", "middle": "Q.", "family": "Doe", "suffix": "MA", "initials": "J. Q. D."}
 {"name": "Doe, John X.Y.Z.", "given": "John", "family": "Doe", "suffix": "X.Y.Z.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. D."}
 {"name": "Doe, John jr., MD", "given": "John", "family": "Doe", "suffix": "jr., MD", "initials": "J. D.", "capitalized_force": "John Doe Jr., MD"}
@@ -756,8 +756,9 @@
 {"name": "Donovan McNabb-Smith", "given": "Donovan", "family": "McNabb-Smith", "initials": "D. M."}
 {"name": "Dr John Smith", "title": "Dr", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Dr Jr", "given": "Dr", "suffix": "Jr", "ambiguities": ["TITLE_OR_NAME"], "initials": "D."}
-{"name": "Dr King Jr", "title": "Dr", "family": "King", "suffix": "Jr", "ambiguities": ["TITLE_OR_NAME"], "initials": "K."}
+{"name": "Dr King Jr", "title": "Dr", "family": "King", "suffix": "Jr", "initials": "K."}
 {"name": "Dr Martin Luther King, Jr.", "title": "Dr", "given": "Martin", "middle": "Luther", "family": "King", "suffix": "Jr.", "initials": "M. L. K."}
+{"name": "Dr Pope Jr", "title": "Dr", "family": "Pope", "suffix": "Jr", "ambiguities": ["TITLE_OR_NAME"], "initials": "P."}
 {"name": "Dr Smith V", "title": "Dr", "given": "Smith", "family": "V", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "S. V."}
 {"name": "Dr 田中さん, V.", "title": "Dr", "family": "田中", "suffix": "さん, V.", "initials": "田."}
 {"name": "Dr 김민준, Jr.", "title": "Dr", "given": "민준", "family": "김", "suffix": "Jr.", "initials": "민. 김."}
@@ -809,13 +810,14 @@
 {"name": "Dr. Juan de la Vega", "title": "Dr.", "given": "Juan", "family": "de la Vega", "initials": "J. V."}
 {"name": "Dr. Juan de la Vega III", "title": "Dr.", "given": "Juan", "family": "de la Vega", "suffix": "III", "initials": "J. V."}
 {"name": "Dr. Juan de la Vega, Jr.", "title": "Dr.", "given": "Juan", "family": "de la Vega", "suffix": "Jr.", "initials": "J. V."}
-{"name": "Dr. King", "title": "Dr.", "family": "King", "ambiguities": ["TITLE_OR_NAME"], "initials": "K."}
-{"name": "Dr. King MD", "title": "Dr.", "family": "King", "suffix": "MD", "ambiguities": ["TITLE_OR_NAME"], "initials": "K."}
-{"name": "Dr. King, John", "title": "Dr.", "given": "John", "family": "King", "initials": "J. K."}
+{"name": "Dr. King", "title": "Dr.", "family": "King", "initials": "K."}
 {"name": "Dr. Martin Luther King Jr.", "title": "Dr.", "given": "Martin", "middle": "Luther", "family": "King", "suffix": "Jr.", "initials": "M. L. K."}
 {"name": "Dr. Mazen Elrouqi", "title": "Dr.", "given": "Mazen", "family": "Elrouqi", "initials": "M. E."}
 {"name": "Dr. Mc Donald, John", "title": "Dr.", "given": "John", "family": "Mc Donald", "initials": "J. D.", "capitalized_force": "Dr. John mc Donald"}
 {"name": "Dr. Paul Vinzent von Fischer jr. MdB", "title": "Dr.", "given": "Paul", "middle": "Vinzent", "family": "von Fischer", "suffix": "jr. MdB", "initials": "P. V. F.", "capitalized_force": "Dr. Paul Vinzent von Fischer Jr. MDB"}
+{"name": "Dr. Pope", "title": "Dr.", "family": "Pope", "ambiguities": ["TITLE_OR_NAME"], "initials": "P."}
+{"name": "Dr. Pope MD", "title": "Dr.", "family": "Pope", "suffix": "MD", "ambiguities": ["TITLE_OR_NAME"], "initials": "P."}
+{"name": "Dr. Pope, John", "title": "Dr.", "given": "John", "family": "Pope", "initials": "J. P."}
 {"name": "Dr. Sir John", "title": "Dr. Sir", "given": "John", "initials": "J."}
 {"name": "Dr. Smith", "title": "Dr.", "family": "Smith", "initials": "S."}
 {"name": "Dr. Smith II, Sir", "title": "Dr. Sir", "family": "Smith", "suffix": "II", "initials": "S."}
@@ -1256,6 +1258,7 @@
 {"name": "His Grace John Smith", "title": "His Grace", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "His Holiness", "title": "His", "family": "Holiness", "ambiguities": ["TITLE_OR_NAME"], "initials": "H."}
 {"name": "His Holiness the Dalai Lama", "title": "His Holiness the Dalai", "family": "Lama", "ambiguities": ["TITLE_OR_NAME"], "initials": "L."}
+{"name": "His Majesty King Charles", "title": "His Majesty King", "given": "Charles", "initials": "C."}
 {"name": "Hisham Ibrahim, CPA, CFA", "given": "Hisham", "family": "Ibrahim", "suffix": "CPA, CFA", "initials": "H. I."}
 {"name": "Hodan Farah Warsame", "given": "Hodan", "middle": "Farah", "family": "Warsame", "initials": "H. F. W."}
 {"name": "Hon Solo", "title": "Hon", "family": "Solo", "initials": "S."}
@@ -1469,10 +1472,10 @@
 {"name": "Jane Doe PhD nee Smith", "given": "Jane", "family": "Doe", "suffix": "PhD nee Smith", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. D.", "capitalized_force": "Jane Doe PhD Nee Smith"}
 {"name": "Jane Doe de D Junior", "given": "Jane", "middle": "Doe", "family": "de D", "suffix": "Junior", "initials": "J. D. D."}
 {"name": "Jane Doe geb. Smith MA", "given": "Jane", "family": "Doe", "suffix": "MA", "maiden": "Smith", "initials": "J. D."}
-{"name": "Jane Doe nee King.", "given": "Jane", "family": "Doe", "maiden": "King.", "initials": "J. D."}
 {"name": "Jane Doe nee MA", "given": "Jane", "family": "Doe", "maiden": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. D.", "capitalized_force": "Jane Doe (Ma)"}
 {"name": "Jane Doe nee MA PhD", "given": "Jane", "family": "Doe", "suffix": "PhD", "maiden": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. D.", "capitalized_force": "Jane Doe (Ma) PhD"}
 {"name": "Jane Doe nee MA Smith", "given": "Jane", "family": "Doe", "maiden": "MA Smith", "initials": "J. D.", "capitalized_force": "Jane Doe (Ma Smith)"}
+{"name": "Jane Doe nee Pope.", "given": "Jane", "family": "Doe", "maiden": "Pope.", "initials": "J. D."}
 {"name": "Jane Doe nee Prof. Dr.", "title": "Dr.", "given": "Jane", "family": "Doe", "maiden": "Prof.", "initials": "J. D."}
 {"name": "Jane Doe nee Puig i", "given": "Jane", "family": "Doe", "suffix": "i", "maiden": "Puig", "initials": "J. D.", "capitalized_force": "Jane Doe (Puig) I"}
 {"name": "Jane Doe nee Puig i III", "given": "Jane", "family": "Doe", "suffix": "i III", "maiden": "Puig", "initials": "J. D.", "capitalized_force": "Jane Doe (Puig) I III"}
@@ -1530,7 +1533,7 @@
 {"name": "Jane née Jones Smith", "family": "Jane", "maiden": "Jones Smith", "initials": "J."}
 {"name": "Jane née Jr y Jones", "given": "Jane", "middle": "née", "family": "Jr y Jones", "initials": "J. n. J. J.", "capitalized_force": "Jane Née Jr y Jones"}
 {"name": "Jane née and Jones Smith", "family": "Jane", "maiden": "and Jones Smith", "initials": "J."}
-{"name": "Jane van der Berg nee Prof. King. MA", "title": "King.", "given": "Jane", "family": "van der Berg", "suffix": "MA", "maiden": "Prof.", "initials": "J. B."}
+{"name": "Jane van der Berg nee Prof. Pope. MA", "title": "Pope.", "given": "Jane", "family": "van der Berg", "suffix": "MA", "maiden": "Prof.", "initials": "J. B."}
 {"name": "Jane van der Berg nee Smith Prof.", "title": "Prof.", "given": "Jane", "family": "van der Berg", "maiden": "Smith", "initials": "J. B."}
 {"name": "Jane van der Berg née", "given": "Jane", "family": "van der Berg née", "initials": "J. B. n.", "capitalized_force": "Jane van der Berg Née"}
 {"name": "Jane van der Berg née Jones", "given": "Jane", "family": "van der Berg", "maiden": "Jones", "initials": "J. B."}
@@ -2147,11 +2150,10 @@
 {"name": "Kim, Ae-Ra", "given": "Ae-Ra", "family": "Kim", "initials": "A. K."}
 {"name": "Kim, Jr.", "family": "Kim", "suffix": "Jr.", "initials": "K."}
 {"name": "Kim김민준씨, MA", "family": "Kim김민준", "suffix": "씨, MA", "initials": "K."}
-{"name": "King Curtis", "title": "King", "given": "Curtis", "initials": "C."}
-{"name": "King Henry", "title": "King", "given": "Henry", "initials": "H."}
-{"name": "King John Alexander V", "title": "King", "given": "John", "family": "Alexander", "suffix": "V", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. A."}
-{"name": "King John V.", "title": "King", "given": "John", "family": "V.", "initials": "J. V."}
-{"name": "King Smith, John", "title": "King", "given": "John", "family": "Smith", "initials": "J. S."}
+{"name": "King Curtis", "given": "King", "family": "Curtis", "initials": "K. C."}
+{"name": "King Henry", "given": "King", "family": "Henry", "initials": "K. H."}
+{"name": "King John Alexander V", "given": "King", "middle": "John", "family": "Alexander", "suffix": "V", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "K. J. A."}
+{"name": "King John V.", "given": "King", "middle": "John", "family": "V.", "initials": "K. J. V."}
 {"name": "Kishi, Kōichi", "given": "Kōichi", "family": "Kishi", "initials": "K. K."}
 {"name": "Kjetil Bjørn Løseth", "given": "Kjetil", "middle": "Bjørn", "family": "Løseth", "initials": "K. B. L."}
 {"name": "Klaus Poeck", "given": "Klaus", "family": "Poeck", "initials": "K. P."}
@@ -2453,9 +2455,10 @@
 {"name": "Mary Ann H,Luther", "given": "Luther", "family": "Mary Ann H", "initials": "L. M. A. H."}
 {"name": "Mary Beth Smith", "given": "Mary", "middle": "Beth", "family": "Smith", "initials": "M. B. S."}
 {"name": "Mary Jane King", "given": "Mary", "middle": "Jane", "family": "King", "initials": "M. J. K."}
-{"name": "Mary Jane King Smith", "given": "Mary", "middle": "Jane King", "family": "Smith", "initials": "M. J. K. S."}
-{"name": "Mary Jane King.", "title": "King.", "given": "Mary", "family": "Jane", "initials": "M. J."}
-{"name": "Mary Jane MA King", "given": "Mary", "middle": "Jane MA", "family": "King", "initials": "M. J. M. K.", "capitalized_force": "Mary Jane Ma King"}
+{"name": "Mary Jane MA Pope", "given": "Mary", "middle": "Jane MA", "family": "Pope", "initials": "M. J. M. P.", "capitalized_force": "Mary Jane Ma Pope"}
+{"name": "Mary Jane Pope", "given": "Mary", "middle": "Jane", "family": "Pope", "initials": "M. J. P."}
+{"name": "Mary Jane Pope Smith", "given": "Mary", "middle": "Jane Pope", "family": "Smith", "initials": "M. J. P. S."}
+{"name": "Mary Jane Pope.", "title": "Pope.", "given": "Mary", "family": "Jane", "initials": "M. J."}
 {"name": "Mary Johnson", "given": "Mary", "family": "Johnson", "initials": "M. J."}
 {"name": "Mary Nicet", "given": "Mary", "family": "Nicet", "initials": "M. N."}
 {"name": "Mary Smith née Jones Prof.", "title": "Prof.", "given": "Mary", "family": "Smith", "maiden": "Jones", "initials": "M. S."}
@@ -2813,6 +2816,7 @@
 {"name": "Popa Alexandru Ioan", "order": "FAMILY_FIRST", "given": "Alexandru", "middle": "Ioan", "family": "Popa", "initials": "A. I. P."}
 {"name": "Popa, Alexandru Ioan", "given": "Alexandru", "middle": "Ioan", "family": "Popa", "initials": "A. I. P."}
 {"name": "Pope Francis", "title": "Pope", "given": "Francis", "initials": "F."}
+{"name": "Pope Smith, John", "title": "Pope", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Popert, Hermann Martin", "given": "Hermann", "middle": "Martin", "family": "Popert", "initials": "H. M. P."}
 {"name": "Popescu Maria", "order": "FAMILY_FIRST", "given": "Maria", "family": "Popescu", "initials": "M. P."}
 {"name": "Popescu, Maria", "given": "Maria", "family": "Popescu", "initials": "M. P."}
@@ -3161,7 +3165,7 @@
 {"name": "Smith VI, AD", "given": "AD", "family": "Smith", "suffix": "VI", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "A. S.", "capitalized_force": "Ad Smith VI"}
 {"name": "Smith VI, John", "given": "John", "family": "Smith", "suffix": "VI", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "Smith Vi, John", "given": "John", "family": "Smith Vi", "initials": "J. S. V."}
-{"name": "Smith and King", "given": "Smith and King", "ambiguities": ["TITLE_OR_NAME"], "initials": "S. K."}
+{"name": "Smith and Pope", "given": "Smith and Pope", "ambiguities": ["TITLE_OR_NAME"], "initials": "S. P."}
 {"name": "Smith born", "given": "Smith", "family": "born", "initials": "S. b.", "capitalized_force": "Smith Born"}
 {"name": "Smith nee Jones, Jane MA", "given": "Jane", "family": "Smith", "suffix": "MA", "maiden": "Jones", "initials": "J. S."}
 {"name": "Smith née", "given": "Smith", "family": "née", "initials": "S. n.", "capitalized_force": "Smith Née"}

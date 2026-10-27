@@ -6,8 +6,8 @@
 
 - **The run leaves one NAME word standing**, and a word of the suffix vocabulary is not that word: where everything behind the run is post-nominal, the run gives its last word back to the name, provided that word stands alone and is not itself suffix vocabulary.
   ```
-  "Dr King Jr"                →  family="King"
-  "Dr King Jr"                →  suffix="Jr"
+  "Dr Pope Jr"                →  family="Pope"
+  "Dr Pope Jr"                →  suffix="Jr"
   "RA DDS"                    →  family="DDS"
   ```
 

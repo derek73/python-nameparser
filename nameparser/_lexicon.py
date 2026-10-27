@@ -717,7 +717,7 @@ class Lexicon:
     #: Salutations that read as a title where one ENDS the given part
     #: after a family comma, written bare: "Doe, Jane Mrs" reads title
     #: "Mrs" where an office or rank word there stays a middle name
-    #: ("Doe, John King"), rules/H8. A period-marked title word reads as
+    #: ("Doe, John Pope"), rules/H8. A period-marked title word reads as
     #: a title there whether listed here or not (rules/H5). Entries need
     #: not also be in ``titles``; one that is not is never consulted.
     #: Full default list:

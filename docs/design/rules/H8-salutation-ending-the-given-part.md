@@ -36,7 +36,7 @@
   ```
 - **A title of any other kind stays a name word.** Office, rank and religious words are borne as middle names, and an academic title is not a salutation, so Dr written bare there stays one too.
   ```
-  "Doe, John King"            →  middle="King"
+  "Doe, John Pope"            →  middle="Pope"
   "Doe, Jane Dr"              →  middle="Dr"
   ```
 - **A title/suffix dual stays with the suffix run** (S2): Ms and Sr are post-nominals as well, and the suffix reading takes them before any title reading is asked.

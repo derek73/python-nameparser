@@ -10,9 +10,9 @@
   "St van Bishop"             →  family="van Bishop"
   "St van Bishop"             →  ambiguities=("particle-or-given", "title-or-name")
   ```
-- **The reach is every such join.** The clause reaches EVERY join whose non-leading member is TITLES vocabulary, not the one word that prompted it: `Smith and King`, `John and King`, `Smith and Bishop` and `John of Judge` all report it, as `John of Prince` and `Smith and Prince` do.
+- **The reach is every such join.** The clause reaches EVERY join whose non-leading member is TITLES vocabulary, not the one word that prompted it: `Smith and Pope`, `John and Pope`, `Smith and Bishop` and `John of Judge` all report it, as `John of Prince` and `Smith and Prince` do.
   ```
-  "Smith and King"            →  ambiguities=("title-or-name",)
+  "Smith and Pope"            →  ambiguities=("title-or-name",)
   "John of Judge"             →  ambiguities=("title-or-name",)
   ```
 - **Behind a peeled title.** A join OPENING the name with a title word is a title run (H3) instead. Behind a peeled title the join is not: a title needs a following piece and the join is the last one, so `Attorney General of Minnesota` and `Deputy Secretary of State` keep `Attorney` and `Deputy` as the title and report the rest — the two corpus names the clause reached on 2026-09-08, and `General` or `Secretary` being a title is exactly the fork.
@@ -35,7 +35,7 @@
 
 **Accepted:**
 
-- That reach is the king/judge/bishop collision set met inside a join, and the report is the honest answer there rather than a misfire — a second surname that is also title vocabulary is exactly the doubt the kind names, and those words stay in the vocabulary for the addressing forms, which is decisions/vocabulary-collisions' call.
+- That reach is the pope/judge/bishop collision set met inside a join, and the report is the honest answer there rather than a misfire — a second surname that is also title vocabulary is exactly the doubt the kind names, and those words stay in the vocabulary for the addressing forms, which is decisions/vocabulary-collisions' call.
 
 ---
 **Signal:** count: one name unit left standing, more than one word, holding title vocabulary

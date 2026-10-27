@@ -11,7 +11,7 @@
   "John Smith MA JD Jones"    →  suffix="MA JD Jones"
   "Maria Ana MA Silva"        →  family="Silva"
   "Jean Pierre MA DUPONT"     →  family="DUPONT"
-  "Mary Jane MA King"         →  family="King"
+  "Mary Jane MA Pope"         →  family="Pope"
   "Maria Ana MA de la Vega"   →  family="de la Vega"
   "Maria Ana MA Ortega y Gasset"  →  family="Ortega y Gasset"
   "Smith, John VI Jones"      →  suffix="VI Jones"
@@ -27,7 +27,7 @@
   ```
 - **What is a credential here.** A title word never starts the run, and neither does a member of the ambiguous class its writing leaves unsettled, a single letter, a connective, a word that is also particle or bound given-name vocabulary, the capitals of `DO` included: a credential is the writer's mark that the post-nominals have begun, and those carry no such mark. An honorific or a generational word carries it as a credential does, whatever its script.
   ```
-  "Mary Jane King Smith"      →  family="Smith"
+  "Mary Jane Pope Smith"      →  family="Smith"
   "Josep Carod i Rovira"      →  family="Carod i Rovira"
   "Mohamed Ali Abd Allah"     →  family="Allah"
   "John Smith Ma Jones"       →  family="Jones"
