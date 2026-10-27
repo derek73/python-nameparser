@@ -1427,14 +1427,20 @@ def test_a_replaced_titles_list_holding_a_moved_title_reads_it_by_phrase() -> No
     assert word in lexicon.titles_ambiguous
 
 
-def test_a_moved_title_spelled_with_a_full_stop_reads_by_its_phrase() -> None:
+@pytest.mark.parametrize("word", _MOVED_TITLES)
+def test_a_moved_title_spelled_with_a_full_stop_reads_as_the_default(
+        word: str) -> None:
     # compared folded (#582): Lexicon folds 'king。' onto 'king', so it
-    # is read as the listed spelling is, by the phrase
+    # reads as the listed spelling does, by the phrase, a modifier's
+    # reading included (`Wing Commander Smith`)
     c = Constants()
-    c.titles.remove("king")
-    c.titles.add("king。")
-    assert HumanName("King Curtis", constants=c).first == "King"
-    assert HumanName("Hon. King Smith", constants=c).title == "Hon. King"
+    c.titles.remove(word)
+    c.titles.add(f"{word}。")
+    assert c._snapshot()[0] == Lexicon.default()
+    assert HumanName(f"{word.title()} Smith", constants=c).first == (
+        word.title())
+    assert word.title() in HumanName(
+        _phrase_probe(word), constants=c).title
 
 
 def test_a_replaced_titles_list_keeps_the_phrase_reading_of_unlisted_words(

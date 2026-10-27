@@ -1099,6 +1099,10 @@ class Constants:
         kept_moved = frozenset(w for w in titles if _normalize(w) in moved)
         phrase_only = ((TITLES_AMBIGUOUS - moved) | kept_moved
                        if titles else frozenset())
+        # ...and the three intersections with the phrase vocabulary read
+        # the same folded spellings, or a folded moved word kept its
+        # phrase reading but lost its modifier one (`wing。`)
+        any_title = frozenset(_normalize(w) for w in titles | phrase_only)
         first_name_titles = matchable("first_name_titles")
         non_given = matchable("non_first_name_prefixes")
         ambiguous_acronyms = matchable("suffix_acronyms_ambiguous") & acronyms
@@ -1293,12 +1297,11 @@ class Constants:
                 # something it says. A moved word reads by whether the
                 # replaced list holds it, as any v1 title does
                 titles_ambiguous=phrase_only,
-                title_modifiers=TITLE_MODIFIERS & (titles | phrase_only),
-                title_styles=TITLE_STYLES & (titles | phrase_only),
+                title_modifiers=TITLE_MODIFIERS & any_title,
+                title_styles=TITLE_STYLES & any_title,
                 title_phrases=frozenset(
                     p for p in TITLE_PHRASES
-                    if all(w in titles or w in phrase_only
-                           for w in p.split(" "))),
+                    if all(w in any_title for w in p.split(" "))),
                 # TupleManager is dict[str, object] (v1 parity: values were
                 # never statically str-typed); every real entry is a str,
                 # same assumption _DelimiterManager's sentinel lookup makes.
