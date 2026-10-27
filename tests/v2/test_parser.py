@@ -1978,7 +1978,7 @@ _NFD_ROWS = [
     "Janez Novak, univ. dipl. inž.",
     "Novak, inž. Janez",
     "Smith, inž. Ž.Š.",
-    # the comma shapes AGENTS.md asks of every comma grid
+    # the comma shapes nameparser/AGENTS.md asks of every comma grid
     ", inž.",
     "(Bob), inž.",
     # paired initials (rules/C5)

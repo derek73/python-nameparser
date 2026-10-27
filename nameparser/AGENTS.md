@@ -1,6 +1,36 @@
 # Working in nameparser/
 
-Loaded when a session reads or edits anything under `nameparser/`: the pipeline, the vocabulary TOML, the config shim. The root AGENTS.md carries the sweeps every behavior change runs (comma shapes, then `name_order`, under Architecture) and the 2.0 conventions; `nameparser/_pipeline/AGENTS.md` carries the ambiguity-report rules. This file holds the third sweep, which a vocabulary-only change needs as much as a code change does.
+Loaded when a session reads or edits anything under `nameparser/`: the pipeline, the vocabulary TOML, the config shim. It holds the sweeps every behavior change runs before it ships — comma shapes, then `name_order`, then spellings — here rather than in the root AGENTS.md because a vocabulary-only change needs them as much as a code change does. The root AGENTS.md carries the 2.0 conventions; `nameparser/_pipeline/AGENTS.md` carries the ambiguity-report rules.
+
+## Sweep the forms a change can reach: comma shapes, then `name_order`
+
+### Four comma shapes
+
+No comma, a FULL name before the comma, a ONE-WORD name before the comma and NOTHING before the comma are four paths, and the last two are the misses — #429, #430 and #432 are all the one-word path disagreeing with the full-name path on inputs the full-name path reads correctly, and #613's PR review found `, PhD` and `, Jr.` (an empty surname field, as CSV data writes it) read as given and title by a decision that returned early on an empty head, after two review rounds whose every grid had a name before the comma. Put an empty head and a nickname-only head (`(Bob), PhD`) in every comma grid.
+
+### Counting the one-word path
+
+Count the one-word path the way C3 counts, which is neither tokens nor pieces: a particle run and the one word it attaches to are one word (#575), a connective join and a bound given-name pair count as their words (#613, so `Ortega y Gasset, Dr.` is a whole name), and a suffix beside the surname counts as no name word at all. #603's review found the suffix half (`Vega y Lopez Jr., PhD Jones` lost its family where `Vega y Lopez, PhD Jones` kept it); #613 then reversed the connective half, and both now read given 'Vega', middle 'y', family 'Lopez' — so test a particle surname, a connective surname and a surname with a suffix, each before a comma.
+
+### Orders
+
+For orders the sweep already exists (`tests/v2/test_cases.py` runs every row under all three) but carries one assertion, R2's family partition, so it checks nothing a new change moves; coverage there has been vacuous before (PR #394's review found the suite passed with `name_order` discarded from grouping). Parse your change's names in each comma shape and each order, and read the ones you did not predict.
+
+### Reading a grid's moves
+
+Read a generated grid's moves by SHAPE, not by corpus membership: #614's first design passed the suite, the five gates and a fingerprint of every corpus name, because its grid moves were sorted into 'corpus name moved' and 'garbage', and the review found the moves that mattered among the 'garbage' -- a bare salutation (`Mr. and Mrs.` lost its connective to the family name) and a name with one trailing word (`Freiherr von Berg X.Y.Z.`). Pull out the head-plus-one-word slice of the grid and a salutation with nothing after it, and read every move there.
+
+### Heads and title runs
+
+#614's second review found two gaps no grid covered. No grid put TWO words that are both a title and a particle at the head (`Freiherr St van Berg MA`, where an index into the pieces was applied to a merged view of them -- `TITLES ∩ particles_ambiguous` is `{freiherr, st}`, so put both in every head list, each in its bare and its period-marked spelling -- #637's grid had `St` and `Freiherr` alone and missed that `St.` and `Freiherr.` are declined by the bound join and then attached by P6), and the grids compared ambiguity KINDS, so a report telling the caller the wrong field (`Freiherr von Berg Ma`, 'read as a given name' of a word in the family) passed every pin. #701's review added one: put a title/suffix dual (`Ms`, `Sr.`, `Cpl`) SECOND in a title run, behind an ordinary title. A stop that asks only "is this word suffix vocabulary" passes every row that opens with the dual and fails `Rev. Sr. Smith, Mary`; it was found by comparing `T Smith, John` against `T John Smith` over every title word, and a comma-versus-comma-less comparison is the cheap check for any rule that moves a word between the two slots.
+
+### A report's field
+
+Compare each report's `detail` against the field its tokens land in -- since #626 `test_a_report_names_the_field_its_word_lands_in` (tests/v2/test_cases.py) does it over every non-locale case row under all three orders (a row carrying its own policy only as declared), for the phrasings its `_FIELD_CLAIMS` lists -- so a row with the shape is the test only where the report's wording is listed: a new emitter's wording goes in that list, and segment's report on a part past the second comma names no field (#629). #626's own first grid then missed an emitter for want of one comma shape (`, Ma Dr.`: an empty head, an ambiguous word, a trailing title, which H1 moves to the family): a trailing title belongs in every empty-head comma grid too.
+
+### Exclusion lists and shared predicates
+
+#620 found that an exclusion list in code being replaced is a set of rules, not noise -- #614's merged copy excluded every word the trailing read weighs from its units, the first #620 prototype dropped the list as a symptom of the copy, and its review found the list had been keeping positional counting's rule that a member in front counts as a word (`Freiherr von Berg MA X.Y.Z.` lost its suffix). Before deleting one, mutate each entry out and read what moves. The converse holds for replacing a hand copy WITH the shared predicate: it is a behavior change wherever the two disagreed, and #735's /simplify shipped one as "no reading moves" because the suite and the snapshot were its only check (`St Sir de Mesnil` family-first, a token test replaced by P1's piece test); diff the two predicates' answers over a grid before calling the swap a refactor.
 
 ## Sweep the spellings: a class reached by vocabulary is also reached by SHAPE
 

@@ -198,7 +198,7 @@ CLDR's person-name data shows why. Its surname-first renderings put the title be
 | `Brühl Dr. Ada` | family `Brühl`, given `Dr.` |
 | `Brühl Prof. Dr. Ada Cornelia` | family `Brühl`, given `Prof.`, middle `Dr. Ada Cornelia` |
 
-The plan is to keep order a few permutations and make shapes first-class, each order accepting a listed set of them. The shape inventory (#469) is the start, and it doubles as the test grid that AGENTS.md's comma-shape and `name_order` sweeps describe. The related comma bug, a title before a family comma, was fixed in 2.x ([rules/H6](rules/H6-title-before-a-family-comma.md), a title before a family comma).
+The plan is to keep order a few permutations and make shapes first-class, each order accepting a listed set of them. The shape inventory (#469) is the start, and it doubles as the test grid that nameparser/AGENTS.md's comma-shape and `name_order` sweeps describe. The related comma bug, a title before a family comma, was fixed in 2.x ([rules/H6](rules/H6-title-before-a-family-comma.md), a title before a family comma).
 
 ### The rules a pack can choose
 
