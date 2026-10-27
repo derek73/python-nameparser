@@ -622,8 +622,10 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # FAMILY_FIRST, a reread no longer); 296 -> 299 the same day, the
     # PR review's MARIA DA SILVA E SOUZA row under each order, a
     # connective whose stand-in is an initial too, so its field is
-    # pinned in _EXPECTED_ALTERNATIVES instead
-    assert (checked, skipped) == (436, 299), (checked, skipped)
+    # pinned in _EXPECTED_ALTERNATIVES instead; 299 -> 302 the same day,
+    # master's 'Nasreen Sultana, MBBS' row (#903) under each order, a
+    # comma credential run's report, whose stand-in the run reads too
+    assert (checked, skipped) == (436, 302), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:
