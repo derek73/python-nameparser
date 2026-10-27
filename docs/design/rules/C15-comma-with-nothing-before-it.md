@@ -19,20 +19,21 @@
 
 **Except:**
 
-- **A title and one name word** (H1): the comma names no surname, so it does not decide the field of that word, or of a bound pair standing for it, and the title's lone name word reads as the family. A particle that is also a suffix word, ending the name behind a title that addresses by surname, then has no family to attach to (P6) and reads as the suffix.
+- **A title and one name word** (H1): the comma names no surname, so it does not decide the field of that word, or of a bound pair standing for it, and the title's lone name word reads as the family.
   ```
   ", Dr. John"                →  family="John"  · boundary
   ", Jane Mrs"                →  family="Jane"
   ", Dr. abdul Rahman"        →  family="abdul Rahman"
-  ", Dr. Jones vd"            →  suffix="vd"
   ```
 
 **Precedence:**
 
-- **A particle ending the name** (P6) attaches to the family after this comma as after any family comma, and with no surname written the family is that particle alone: `, Jane van` reads family `van`. P6 wins because the particle is in the part after the comma, which this rule reads as any given part is read.
+- **A particle ending the name** (P6) attaches to the family after this comma as after any family comma, and with no surname written the family is that particle alone: `, Jane van` reads family `van`. P6 wins because the particle is in the part after the comma, which this rule reads as any given part is read, and it wins over H1's exception too, leaving H1 a given word and a family rather than one name word.
   ```
   ", Jane van"                →  family="van"
   ", Sir Jones vd"            →  family="vd"
+  ", Dr. Jones vd"            →  given="Jones"
+  ", Dr. Jones vd"            →  family="vd"
   ```
 
 **Accepted:**

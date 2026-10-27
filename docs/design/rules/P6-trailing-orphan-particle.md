@@ -26,6 +26,12 @@
   "Ménil de"  family-first  →  given="de"  · boundary
   ```
 - **Nothing is asked about the WORD**, and that is what lets one rule read both traditions: the same vocabulary that spells the Dutch tussenvoegsel spells the Vietnamese given name, and the declared order separates them where a comma cannot — one order, not both, as an Accepted bullet below records.
+- **A family comma with nothing before it** (C15) names no surname but marks where one goes, so the attachment fires there as after any family comma and the particle is the family alone. It fires ahead of H1, which then finds a given word beside a family rather than one name word.
+  ```
+  ", Jane van"                →  family="van"
+  ", Dr. Jones vd"            →  given="Jones"
+  ", Dr. Jones vd"            →  family="vd"
+  ```
 - **Where nothing has named the family, the particle is read where it stands**, and a particle CAN be a given name there: the never-given vocabulary supplies the reading position leaves open, and forbids nothing (parse("de") reports given "de", and so does every other word in that set).
 - **What reports.** After a family comma, a particle that is also of the AMBIGUOUS credential class (`do`), where neither S6's capitals nor S7's company nor a run a settled member starts reaches it (below), attaches, and the report gives it this rule's particle fork rather than S4's credential one. The fork is reported, in the kind naming the reading this attachment OVERRODE — what the run was read as before it fired, not what its words are. Where the run was read as a post-nominal, which is the S2 reading this rule outranks, the report is suffix-or-name. Otherwise, where the run holds an ambiguous particle, the reading overridden is that word as a name word, and the report is particle-or-given. Where the attachment overrode neither — a never-given particle read as a name word, which it could never have been — nothing was decided and nothing is reported. So after a family comma `do`, which sits in the AMBIGUOUS acronym half and was already read as a name word, reports particle-or-given while vd and mc report suffix-or-name, and a run of several words read as name words reports on its ambiguous member if it has one and otherwise reports nothing, whatever its words could have been read as standing alone. Both are pinned in tests/v2/cases.py.
   ```
@@ -108,5 +114,5 @@
   ```
 
 ---
-**Signal:** position: a particle ending the name where a family comma or a family-first reading named the family
+**Signal:** position: a particle ending the name where a family comma or a family-first reading marked the family's place
 **history:** decisions/P6 · **implemented:** nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py

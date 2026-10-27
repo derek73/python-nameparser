@@ -850,12 +850,7 @@ def _inside_a_credential_run(seg: Sequence[Sequence[int]],
     def is_title(q: int) -> bool:
         return all(tokens[i].role is Role.TITLE for i in seg[q])
 
-    # an empty run is no run: the walk stops short of a member already
-    # read as the credential ('Doe, Jane PhD do MA'), and there is
-    # nothing to decline. assign's caller never passes one, but
-    # post_rules' site behind an empty family part can (', Jane PhD do
-    # MA' reported a bogus third fork without this, #613's PR review)
-    if k == end or not all(suffix_read(q) for q in range(k, end)):
+    if not all(suffix_read(q) for q in range(k, end)):
         return False
     front = k - 1
     while front > given_at and is_title(front):
@@ -1796,19 +1791,19 @@ def assign(state: ParseState) -> ParseState:
                                 else suffix_reading(tokens[i2]))))
             if sticky_from == len(pieces):
                 k6, end6 = particle_tail(pieces, tokens)
-            # Only where the comma named a family: with nothing before
-            # it, H1 and M4 decide first and post_rules attaches after
-            # them. GIVEN ahead of the tail, which is what P6 says
-            # ("provided at least one given word remains"): the given is
-            # piece
-            # `n`, so a tail starting there leaves none ('Nguyen, Van').
+            # Behind every family comma, one with nothing before it
+            # too, which then makes the particle the whole family
+            # (', Dr. Jones vd'; decisions/C15, #892). GIVEN ahead of
+            # the tail, which is what P6 says ("provided at least one
+            # given word remains"): the given is piece `n`, so a tail
+            # starting there leaves none ('Nguyen, Van').
             # And not where P1's fold will take the part: a never-given
             # particle opening it folds every given and middle word
             # into the family in post_rules, so no given word remains
             # for this one either ('Smith, de Mesnil van' keeps
             # 'van' where the fold puts it, not hoisted in front of
             # 'Smith', the 2026-08-18 defect).
-            if (n < k6 < end6 and fam_pieces
+            if (n < k6 < end6
                     and not is_lone_never_given_particle(pieces[n],
                                                          tokens)):
                 _attach_particle_tail(pieces, tokens, n, k6, end6,

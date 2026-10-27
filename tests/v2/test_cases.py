@@ -291,10 +291,12 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # reported (+6); 1384 -> 1390 the same day, its review round's rows
     # for a leading period and a name of no word (+6); 1390 -> 1393 the
     # same day, #752 phase 2j's 'Nasreen Sultana, MBBS', the credential
-    # behind two name words reported suffix-or-name under three orders.
-    assert claims == 1393, (
-        f"the field sweep checks {claims} claims, recorded as 1393 on "
-        f"2026-10-26")
+    # behind two name words reported suffix-or-name under three orders;
+    # 1393 -> 1396 on 2026-10-27, #892's ', Mr. Jones vd' reporting the
+    # suffix-or-name P6's attachment decides, under three orders.
+    assert claims == 1396, (
+        f"the field sweep checks {claims} claims, recorded as 1396 on "
+        f"2026-10-27")
 
 
 #: The kinds that report a fork between two readings of a word, so carry
