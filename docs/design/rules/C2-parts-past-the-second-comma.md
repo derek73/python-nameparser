@@ -2,7 +2,7 @@
 
 **When:** a name holds a part past the second comma, as in "John Smith, MD, Bart".
 
-**Then:** parts beyond the second are consumed as suffixes either way, except that a word of the title vocabulary there that is not also suffix vocabulary is a title.
+**Then:** parts beyond the second are consumed as suffixes either way, except that a word of the title vocabulary there that is not also suffix vocabulary is a title — a word that may also be a given name (rules/H9's `titles_ambiguous`) is not title vocabulary here, so it stays a suffix.
 
 - **A part past the second comma holds no name word**, so the surnames H5 keeps a bare trailing title word from misreading are not there to protect, and a piece holding a suffix word, a title/suffix dual among them, stays the postnominal the slot makes it (#603).
   ```
