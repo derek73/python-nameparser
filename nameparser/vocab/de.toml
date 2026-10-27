@@ -28,8 +28,8 @@ salutation = { gender = "m", same_as = "herr", excluded = { after_given = "endin
 
 [[word]]
 text = "herren"
-salutation = { gender = "m", expands = "the plural of Herr", excluded = { after_given = "a surname (Census 2010 HERREN), and middle names are drawn from surnames" } }
-family = { us_census_2010 = 4466, wikidata = 37, as_of = 2026-10-24 }
+family = { us_census_2010 = 4466, wikidata = 37, as_of = 2026-10-27, note = "Wikidata bearers by citizenship: Switzerland 9, the United States 5, Germany 4" }
+excluded = { salutation = { reason = "the plural of Herr: a plural addresses several people (Herren Müller und Schmidt) and never stands before one person's name, so as a title it only took the first word of a surname-first name (Herren Hans read title 'Herren', family 'Hans'); borne as a surname by more than any word shipped under the graf class, decisions/salutation-titles (the counts on its family reading)", issue = 766 } }
 
 [[word]]
 text = "dipl.-ing"

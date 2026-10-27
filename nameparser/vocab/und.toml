@@ -1,21 +1,21 @@
 # Words no language file fits. Every other word of the vocabulary is in
 # the file of a language whose names it occurs in (#749, #750, #751).
 #
-# bon and dí have been particles since the earliest history (bon in the
-# 2011 svn import, 45a15394; dí since fc2ea899, 2012), with no record of
-# which language's names they come from and no particle use found, so
-# #749 could give them neither a file nor a kind. Removing them moves a
-# compiled set, which is #766's question.
+# bon and dí were particles from the earliest history (bon in the 2011
+# svn import, 45a15394; dí since fc2ea899, 2012), with no record of which
+# language's names they come from and no particle use found, so #749
+# could give them neither a file nor a kind. #766 removed the particle
+# reading; each keeps its name readings and the exclusion that says why.
 
 schema = 1
 
 [[word]]
 text = "bon"
-particle = { note = "no particle use found; borne as a given name and as a surname (the counts below), so removal is proposed" }
 given = { us_ssa = 274, wikidata = 9, as_of = 2026-10-19, note = "male births only" }
 family = { us_census_2010 = 1123, wikidata = 102, as_of = 2026-10-19, note = "Wikidata bearers mostly French and Italian" }
+excluded = { particle = { reason = "no particle use found in any name, and it is borne as a given name and as a surname (the counts on its name readings), which the particle reading joined to the next word (Marie Bon Durand read family 'Bon Durand')", issue = 766 } }
 
 [[word]]
 text = "dí"
-particle = { note = "no particle use found; the Wikidata bearers are Chinese given names (romanized Dí), so removal is proposed" }
 given = { wikidata = 7, as_of = 2026-10-19, note = "5 of 7 PRC citizens; the US sources fold the accent to Di, so their counts are not this spelling's" }
+excluded = { particle = { reason = "no particle use found in any name; its Wikidata bearers are Chinese given names romanized Dí, which the particle reading joined to the next word", issue = 766 } }
