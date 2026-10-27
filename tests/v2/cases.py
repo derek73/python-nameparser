@@ -7869,7 +7869,7 @@ CASES: tuple[Case, ...] = (
                "one token, so 'Ph. D.' started no run where 'PhD' did, "
                "and this read middle 'Jones', suffix 'Ph. D.' (2.3.0 "
                "too). Found by #603, whose opened part asks the same "
-               "predicate (AGENTS.md's spelling sweep)"),
+               "predicate (nameparser/AGENTS.md's spelling sweep)"),
     Case("a_split_credential_opens_the_part_as_the_joined_one_does",
          "John Smith, Ph. D. and Mary Jones",
          {"given": "John", "family": "Smith",
@@ -12995,8 +12995,8 @@ CASES: tuple[Case, ...] = (
                "shape, so S2's count keeps it out of the particle "
                "chain's unit; folded in with the plain words it was "
                "family 'de la Vega VI' (#614's review, the #610 class "
-               "AGENTS.md's spelling sweep records) (1.4.0 family 'de la Vega"
-               " VI', bisected to the #424 chain stop)"),
+               "nameparser/AGENTS.md's spelling sweep records) (1.4.0 family "
+               "'de la Vega VI', bisected to the #424 chain stop)"),
     Case("a_particle_takes_the_dual_behind_it_at_the_head",
          "Freiherr von vd",
          {"title": "Freiherr", "family": "von vd"},
