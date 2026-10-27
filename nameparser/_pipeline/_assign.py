@@ -124,7 +124,8 @@ def _set_roles(tokens: list[WorkToken], piece: tuple[int, ...],
 def _name_pieces(state: ParseState, tokens: Sequence[WorkToken],
                  seg_idx: int) -> list[tuple[int, ...]]:
     """The pieces of segment `seg_idx` the parse read as name words."""
-    return [q for q in state.pieces[seg_idx] if tokens[q[0]].role in NAME_ROLES]
+    return [q for q in state.pieces[seg_idx]
+            if tokens[q[0]].role in NAME_ROLES]
 
 
 def _slot_field(state: ParseState, seg_idx: int, pos: int, count: int,

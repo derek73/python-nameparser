@@ -225,8 +225,9 @@ class PendingReading:
     ``role`` is the field the first referent would hold under that
     reading, with every other word of the name read as the parse read
     it, a `Deferred` form for a stage that runs before the field is
-    known, or `Beside` for a field another token's final role names. A JOINED or UNCHAINED form assign leaves unresolved -- a
-    referent that ends outside every name position -- surfaces as no
+    known, or `Beside` for a field another token's final role names.
+    A JOINED or UNCHAINED form assign leaves unresolved -- a referent
+    that ends outside every name position -- surfaces as no
     alternative rather than a guess. Assemble also folds a MIDDLE into
     the family under ``middle_as_family``, the one later rule that
     moves a field whatever word stands in it."""
