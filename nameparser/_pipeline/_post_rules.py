@@ -451,12 +451,14 @@ def _unattached(state: ParseState, tokens: list[WorkToken],
     the positional read gave it, or the field of the name piece in
     front where that piece would take a name word in (`_name_alt`)."""
     role = tokens[start].role or Role.MIDDLE
-    for seg in state.pieces:
-        names = [p for p in seg if tokens[p[0]].role in NAME_ROLES]
-        for k, piece in enumerate(names):
-            if start - 1 in piece:
-                return _name_alt(word, role, piece, tokens, k == 0, False)
-    return _name_alt(word, role, None, tokens, False, False)
+    # the run ends a name read family-first, so a name word stands in
+    # front of it
+    front, first = next(
+        ((piece, k == 0) for seg in state.pieces
+         for k, piece in enumerate(
+             [p for p in seg if tokens[p[0]].role in NAME_ROLES])
+         if start - 1 in piece), (None, False))
+    return _name_alt(word, role, front, tokens, first, False)
 
 
 def post_rules(state: ParseState) -> ParseState:

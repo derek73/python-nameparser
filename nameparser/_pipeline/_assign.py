@@ -1015,23 +1015,22 @@ def _resolve_deferred(state: ParseState, tokens: Sequence[WorkToken],
                 break
         else:
             continue
-        if alt.role is Deferred.JOINED:
-            if not (names[at] == (i,) and 0 < at < len(names) - 1):
-                continue
-            pos, count = at - 1, len(names) - 2
-        else:
-            if not (names[at][0] == i and len(names[at]) > 1):
-                continue
-            pos, count = at, len(names) + 1
+        # a chained particle heads the piece the chain made, so only the
+        # connective can stand where no join is possible
+        joined = alt.role is Deferred.JOINED
+        if joined and not (names[at] == (i,) and 0 < at < len(names) - 1):
+            continue
+        pos, count = ((at - 1, len(names) - 2) if joined
+                      else (at, len(names) + 1))
+        # name words stand only in the parts a structure names: the two
+        # of a family comma, and otherwise the main one, whose read set
+        # the order
         if state.structure is Structure.FAMILY_COMMA:
-            if seg_idx > 1:
-                continue
             role = (Role.FAMILY if seg_idx == 0
                     else Role.GIVEN if pos == 0 else Role.MIDDLE)
-        elif seg_idx == 0 and order is not None:
-            role = _name_positions(order, count)[pos]
         else:
-            continue
+            assert order is not None
+            role = _name_positions(order, count)[pos]
         ambiguities[r] = copy_with(report,
                                    alternative=copy_with(alt, role=role))
 
