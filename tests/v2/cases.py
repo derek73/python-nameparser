@@ -12673,8 +12673,11 @@ CASES: tuple[Case, ...] = (
     Case("given_name_title_shekh_at_the_head", "Shekh Abdul Rahim",
          {"given": "Shekh", "middle": "Abdul", "family": "Rahim"},
          classification="fix(#752)",
-         notes="H9: the spelling Nepal's romanization writes; read "
-               "title 'Shekh', given 'Abdul' before"),
+         notes="H9: the spelling Nepal's romanization writes. Read "
+               "title 'Shekh', given 'Abdul Rahim' (P5's licensed join) "
+               "2.2.0 through 2.6.0, and given 'Abdul', last 'Rahim' in "
+               "1.4.0; as a name word it licenses no join, so the bound "
+               "word is a middle name"),
     Case("shaykh_stays_a_title", "Shaykh Hamza Yusuf",
          {"title": "Shaykh", "given": "Hamza", "family": "Yusuf"},
          notes="'shaykh' has no given reading: no filed data writes it "

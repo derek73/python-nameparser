@@ -1156,9 +1156,10 @@ def test_non_interference_all_packs_combined() -> None:
     ("أبو مازن", "given", "أبو"),
     ("أحمد أبو خليل", "family", "أبو خليل"),
     ("علي ابو خالد", "family", "ابو خالد"),
-    # "الشيخ" carries the GIVEN_NAME_TITLES semantics of its
-    # transliterated cousin 'sheikh': a single following name reads as
-    # given, not family.
+    # "الشيخ" is a given-name title: a single following name reads as
+    # given, not family. Its transliteration 'sheikh' is a title only
+    # inside a title phrase since #752 phase 2j, so 'Sheikh Mohammed'
+    # reads given 'Sheikh'; the article form is no given name.
     ("الشيخ محمد", "given", "محمد"),
     # Arabic honorifics precede the GIVEN name, so all ship in
     # given_name_titles like الشيخ: article forms (never given names)
