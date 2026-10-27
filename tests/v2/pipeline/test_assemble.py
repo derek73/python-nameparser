@@ -185,7 +185,8 @@ def test_the_withdrawal_reads_the_role_and_not_the_word() -> None:
     Nothing shipped builds this state -- a marked letter roled TITLE
     -- which is exactly why it is built here: an implementation
     keyed on the suffix role alone would pass every row above and
-    fail this one (AGENTS.md: "Pin the decision, not the vocabulary").
+    fail this one (_pipeline/AGENTS.md: "Pin the decision, not the
+    vocabulary").
     """
     import dataclasses
     from nameparser._pipeline._state import PendingAmbiguity

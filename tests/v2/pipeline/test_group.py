@@ -1397,8 +1397,8 @@ def test_the_marker_placements_reach_both_answers() -> None:
 # vocabulary, so each test below builds the overlap it is about. That
 # is the point of the rule -- it is keyed on the CLASS, never on the
 # letter -- and a test using the shipped sets would walk the right
-# branch while proving nothing about it (AGENTS.md: "Pin the decision,
-# not the vocabulary").
+# branch while proving nothing about it (_pipeline/AGENTS.md: "Pin the
+# decision, not the vocabulary").
 _LINK_LEX = _LEX.add(conjunctions={"i"}, suffix_words={"i"})
 #: the same letter as a connective that is NOT generational vocabulary
 _PLAIN_LEX = _LEX.add(conjunctions={"i"})
