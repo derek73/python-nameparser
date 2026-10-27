@@ -271,8 +271,25 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # 1321 + 24 = 1345 on 2026-10-26, #894 (phase 2i) merged over #895
     # (phase 2g): 2i's net change from 1568 (1592 - 1568), the two
     # changes moving disjoint claims.
-    assert claims == 1345, (
-        f"the field sweep checks {claims} claims, recorded as 1345 on "
+    # 1345 -> 1366 on 2026-10-26, #810 (phase 2l): seven rows whose
+    # bracketed member stays the nickname, one suffix-or-nickname or
+    # given-or-family claim each under each order; 1366 -> 1369 the same
+    # day, its review round: 'Jack (MA)' keeps N3's family and loses its
+    # given-or-family claims (-3), 'John Smith (MA) VI' (+3) and the
+    # dotted 'Jean (M.A) Smith', reported now (+3); 1369 -> 1381 the same
+    # day, the twin reading (Derek): 'Jack (MA)' and 'Jack (M.A)' read
+    # as 'Jack (PhD)' does, a given-or-family claim each (+6), and
+    # 'John Smith (MA) née Jones' its two suffix-or-name claims (+6);
+    # 1381 -> 1390 the same day, its review round's rows: a member
+    # beside a dropped character (+3) and before 'Ma' (+6); 1390 -> 1384
+    # the same day, one pass in place of the twin reading (Derek):
+    # 'Jack (MA)' and 'Jack (M.A)' lose their given-or-family claims and
+    # 'John Smith (MA) née Jones' its two suffix-or-name claims (-12),
+    # and the two clauses a second pass would settle keep the nickname,
+    # reported (+6); 1384 -> 1390 the same day, its review round's rows
+    # for a leading period and a name of no word (+6).
+    assert claims == 1390, (
+        f"the field sweep checks {claims} claims, recorded as 1390 on "
         f"2026-10-26")
 
 

@@ -294,6 +294,7 @@ _SHAPES = {
     "credential_run": "PhD Ma ",    # pieces: S7's anchor pass (#544)
     "agnomens": "Neto ",            # pieces: a gated word scans its front (#890)
     "carried_agnomens": "MA ma Neto ",  # pieces: the scan through carried members
+    "bracket_members": "(M.A) ",    # post_rules: S13's clause pass (#810)
 }
 
 _BASE = 800

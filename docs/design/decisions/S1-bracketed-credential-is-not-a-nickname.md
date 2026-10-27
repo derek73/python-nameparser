@@ -4,7 +4,7 @@
 
 - The rule says what the escape does: quotes escape as brackets do, and a clause of two or more words is not suffix-shaped unless an ASCII period ends it, so `(PhD MBA)` keeps its nickname reading with nothing reported, as 1.4.0 read it — 2026-10-21 #807.
 
-Elsewhere: an ambiguous member alone in the brackets staying a nickname, reported, is decided under decisions/suffix-acronym-collisions (its Standing line ending 2026-09-25 #540; 2026-10-21) and decisions/ma-do's 2026-07-17 entry.
+Elsewhere: an ambiguous member alone in the brackets staying a nickname, reported, is decided under decisions/suffix-acronym-collisions (its Standing line ending 2026-09-25 #540; 2026-10-21) and decisions/ma-do's 2026-07-17 entry; a member after the name whose writing settles it reading as the suffix is decisions/S13 (2026-10-26 #810).
 
 ## Log
 

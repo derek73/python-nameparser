@@ -843,10 +843,18 @@ parenthesized nicknames that happen to be credentials:
 
 The exception to that exception is an *ambiguous* acronym — one that is
 also a plausible name or set of initials. Standing alone inside
-delimiters, it keeps the nickname reading:
+delimiters, it keeps the nickname reading unless the way it is written
+settles it after the name: in capitals in a name written in mixed case,
+or with a period inside it. A name written all in capitals says
+nothing about the word, and inside the name the delimiters are read as
+a nickname however it is written:
 
 .. doctest::
 
+    >>> parse("Andrew Perkins (JD)").suffix
+    'JD'
+    >>> parse("Andrew Perkins (Jd)").nickname
+    'Jd'
     >>> parse("JEFFREY (JD) BRICKEN").nickname
     'JD'
 

@@ -22,16 +22,18 @@
   "John Smith (MBA PhD.)"     →  suffix="MBA PhD."  · boundary
   ```
 
-- **A clause that is one member of the ambiguous class (S4) written without periods** is not suffix-shaped, so in a nickname pair it stays a nickname, and the fork is reported, as it is for such a member anywhere in a nickname: the word is also a name, so the brackets may hold the name the person goes by, an accepted cost (decisions/suffix-acronym-collisions). A credential standing in front of the brackets does not speak for it (S7), and a final period makes the clause suffix-shaped, a member's included.
+- **A clause that is one member of the ambiguous class (S4)** is not suffix-shaped, so in a nickname pair it stays a nickname, and the fork is reported, as it is for such a member anywhere in a nickname: the word is also a name, so the brackets may hold the name the person goes by, an accepted cost (decisions/suffix-acronym-collisions). A credential standing in front of the brackets does not speak for it (S7), and a final period makes the clause suffix-shaped, a member's included.
   ```
-  "John Smith (MA)"           →  nickname="MA"
-  "John Smith (MA)"           →  ambiguities=("suffix-or-nickname",)
-  "John Smith PhD (MA)"       →  nickname="MA"
+  "John Smith (Ma)"           →  nickname="Ma"
+  "John Smith (Ma)"           →  ambiguities=("suffix-or-nickname",)
+  "John Smith PhD (Ma)"       →  nickname="Ma"
   "John Smith (M.A.)"         →  suffix="M.A."  · boundary
   "John Smith (MA.)"          →  suffix="MA."  · boundary
   ```
 
 **Precedence:**
+
+- **A member after the name whose writing settles it** ("John Smith (MA)", "John Smith (M.A)"): S13 reads it as the suffix, and the nickname reading above is left to a member it does not settle.
 
 - **A bracketed clause led by a maiden marker** ("Jane Smith (née Jr.)"): suffix-shaped content is taken here first, and the clause is no maiden name (M3), so M2's delimiter precedence never reaches it.
 - **A clause M3 reads as a maiden name** ("Jane Smith (née Jones)"): its content is not suffix-shaped, so this rule leaves it to M3; the marker-led clause that is suffix-shaped is the bullet above.

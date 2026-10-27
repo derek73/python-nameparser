@@ -1,8 +1,8 @@
 """Stage: group.
 
 Consumes: tokens (classified), segments, structure, one_case, extracted
-(the role + inner span per delimited region, for the #329 pass below --
-the only stage after tokenize that reads it); and, through
+(the role + inner span per delimited region, for the #329 pass below;
+post_rules reads it too, for S13); and, through
 `_comma.decide`, comma_offsets (the own-words span of the name's case
 contrast) and dropped, which decide extends.
 Produces: structure -- its head decides a comma form once the words

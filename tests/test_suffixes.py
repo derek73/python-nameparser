@@ -464,26 +464,31 @@ class SuffixesTestCase(HumanNameTestBase):
         # A custom suffix_acronyms_ambiguous entry keeps a suffix_acronyms
         # member classified as a nickname instead of a suffix, confirming
         # the exception list -- not a hardcoded check -- drives the behavior.
+        # Title case: capitals in a mixed-case name settle the member as
+        # the credential (rules/S1, #810).
         from nameparser.config import Constants
         C = Constants(
             suffix_acronyms=['xyz'],
             suffix_acronyms_ambiguous=['xyz'],
         )
-        hn = HumanName("Andrew Perkins (XYZ)", constants=C)
-        self.m(hn.nickname, "XYZ", hn)
+        hn = HumanName("Andrew Perkins (Xyz)", constants=C)
+        self.m(hn.nickname, "Xyz", hn)
         self.m(hn.suffix, "", hn)
 
     def test_suffix_acronyms_ambiguous_removal_routes_to_suffix(self) -> None:
-        # Removing 'jd' from a custom suffix_acronyms_ambiguous flips JD
+        # Removing 'jd' from a custom suffix_acronyms_ambiguous flips Jd
         # from nickname to suffix. Uses a trailing-position name (unlike the
         # JEFFREY (JD) BRICKEN regression guard in test_nicknames.py) so
         # parse_full_name's trailing-run suffix detection actually picks it
         # up -- see the known mid-name limitation noted on the tests above.
+        # Title case, which leaves the member a nickname while it is listed
+        # (rules/S1, #810).
         from nameparser.config import Constants
+        assert HumanName("Andrew Perkins (Jd)").nickname == "Jd"
         C = Constants(suffix_acronyms_ambiguous=[])
-        hn = HumanName("Andrew Perkins (JD)", constants=C)
+        hn = HumanName("Andrew Perkins (Jd)", constants=C)
         self.m(hn.nickname, "", hn)
-        self.m(hn.suffix, "JD", hn)
+        self.m(hn.suffix, "Jd", hn)
 
     def test_empty_comma_segment_does_not_drop_following_suffix(self) -> None:
         # Regression: "Doe, John,, Jr." produced an empty third segment, and

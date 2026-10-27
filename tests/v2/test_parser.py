@@ -1,4 +1,5 @@
 import dataclasses
+import itertools
 import pickle
 import re
 import unicodedata
@@ -9,10 +10,11 @@ from nameparser import (
     Lexicon, Locale, Parser, Policy, PolicyPatch, locales, parse, parser_for,
 )
 from nameparser._policy import (
-    CapsSuffixes, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, PatronymicRule,
+    CapsSuffixes, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, GIVEN_FIRST,
+    PatronymicRule,
 )
 from nameparser._types import (UNJOINED_CONJUNCTION_TAG, UNJOINED_TAG,
-                               AmbiguityKind, Role, Segmentation)
+                               AmbiguityKind, ParsedName, Role, Segmentation)
 
 
 def test_parser_defaults_and_properties() -> None:
@@ -2184,3 +2186,87 @@ def test_a_declined_cjk_credential_word_does_not_peel_off_a_glued_name(
     # 長 alone is a borne given name, so 阿部長 can be 阿部 + 長 (#707).
     assert word not in Parser().lexicon.honorific_tails
     assert Parser().parse(f"田中{word}").suffix == ""
+
+
+# rules/S13 (#810): where a bracketed member reads differently from its
+# twin, a bracketed unambiguous credential in the same place. The twin
+# is MBA, a word no head holds, so the twin's reading maps back by
+# replacing its text. 1,080 texts, about 2s.
+_TWIN_HEADS = (
+    "John Smith {c}", "Jack {c}", "{c}", "John {c}", "JOHN SMITH {c}",
+    "Smith, John {c}", "Smith, {c}", ", {c}", "(Bob), {c}",
+    "John Smith {c}, PhD", "John Smith, PhD {c}", "John Smith PhD {c}",
+    "Dr. Jack {c}", "Dr. {c}", "Freiherr von Berg {c}", "Juan de la Vega {c}",
+    "Jane Doe nee Smith {c}", "John Smith {c} née Jones",
+    "John Smith {c} Dr.", "John Smith {c} VI", "John Smith {c} Ph. D.",
+    "Smith, Jane {c} Mrs", "Ortega y Gasset, José {c}",
+    "Smith, Freiherr von Berg {c}", "Doe, John van {c}",
+    # a third comma part, and a clause whose settling another makes
+    # possible, the first settled word making the name mixed case
+    "Smith, John, Jr. {c}", "JOHN SMITH (m.a) {c}",
+    "john smith (M.A) {c}", "Smith, John, X.Y.Z. {c}",
+    "Smith, John, Bob {c}",
+)
+_TWIN_MEMBERS = ("MA", "M.A", "JD", "DO", "D.O", "MENG")
+_TWIN_PAIRS = (("(", ")"), ('"', '"'))
+_TWIN_ORDERS = (GIVEN_FIRST, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST)
+
+
+def _twin_reading(name: ParsedName, twin: str | None, word: str) -> tuple[
+        dict[str, str], list[tuple[str, str]]]:
+    def back(text: str) -> str:
+        return text.replace(twin, word) if twin else text
+    return ({k: back(v) for k, v in name.as_dict().items() if v},
+            [(a.kind.value, back(a.detail)) for a in name.ambiguities])
+
+
+#: The census, by head and by whether the member was settled or left
+#: the nickname, recorded 2026-10-26 (#810). rules/S13's Accepted bullets
+#: and its Except bullets name each shape: a lone name word stays N3's
+#: family name beside a settled member where its twin's is given; the
+#: maiden clause stays the maiden name where the twin's credential run
+#: takes it; a part past a second comma reports what is left without
+#: the member; a name written in one case settles no capitals; a name
+#: with no word of its own (a title, a nickname, nothing) settles no
+#: clause, where the twin escapes, read as the name ('(MBA)' given
+#: 'MBA', 'Dr. (MBA)' given 'Dr.') or as the suffix behind a comma
+#: (', (MBA)'); and a clause another
+#: settled one would make settle, on a second reading, is left the
+#: nickname.
+_TWIN_CENSUS = {
+    ("(Bob), {c}", "nickname"): 36,
+    (", {c}", "nickname"): 36,
+    ("Dr. {c}", "nickname"): 36,
+    ("JOHN SMITH (m.a) {c}", "nickname"): 24,
+    ("JOHN SMITH {c}", "nickname"): 24,
+    ("Jack {c}", "settled"): 36,
+    ("John Smith {c} née Jones", "settled"): 36,
+    ("John {c}", "settled"): 36,
+    ("Smith, John, Bob {c}", "settled"): 36,
+    ("Smith, John, X.Y.Z. {c}", "settled"): 36,
+    ("john smith (M.A) {c}", "nickname"): 24,
+    ("{c}", "nickname"): 36,
+}
+
+
+def test_where_a_bracketed_member_reads_otherwise_than_its_twin() -> None:
+    """A census, not a guarantee: one pass decides S13 once the roles are
+    read, so the rest of the name is read around the clause as a
+    nickname, and that differs from the twin's reading in the shapes
+    _TWIN_CENSUS names. A change that moves a count, or adds a head, is
+    a change to what rules/S13 accepts: re-record it there and here.
+    The twin reading folded to a fixed point (the PR's fourth draft,
+    declined by Derek for one pass) differed in none of the settled
+    rows."""
+    census: dict[tuple[str, str], int] = {}
+    for (open_, close), word, head, order in itertools.product(
+            _TWIN_PAIRS, _TWIN_MEMBERS, _TWIN_HEADS, _TWIN_ORDERS):
+        parser = Parser(policy=Policy(name_order=order))
+        name = parser.parse(head.format(c=f"{open_}{word}{close}"))
+        twin = parser.parse(head.format(c=f"{open_}MBA{close}"))
+        if _twin_reading(name, None, word) != _twin_reading(
+                twin, "MBA", word):
+            key = (head, "nickname" if word in name.nickname.split()
+                   else "settled")
+            census[key] = census.get(key, 0) + 1
+    assert census == _TWIN_CENSUS

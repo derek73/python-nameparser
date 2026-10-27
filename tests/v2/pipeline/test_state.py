@@ -281,9 +281,9 @@ def test_stage_field_ownership() -> None:
         # FAMILY_COMMA opt-out, asked again for itself since #613, and
         # the hook it consults on a vocabulary decline).
         "script_segment": {"tokens", "segments", "ambiguities"},
-        # classify also emits SUFFIX_OR_NICKNAME: the delimiter escape
-        # that decides it lives in extract_delimited, which has no token
-        # index to point at, so the report is raised here instead
+        # classify emits CONJUNCTION_OR_INITIAL; SUFFIX_OR_NICKNAME
+        # moved to post_rules with the decision it reports (rules/S13,
+        # #810)
         "classify": {"tokens", "ambiguities", "one_case"},
         # group also emits PARTICLE_OR_GIVEN: the prefix chain takes
         # the particle branch of a fork whose given branch _assign
@@ -304,7 +304,8 @@ def test_stage_field_ownership() -> None:
         # post_rules also emits PARTICLE_OR_GIVEN: P6's no-comma
         # attachment (#467) takes the family branch of a fork whose
         # other branches assign and group take, so each stage reports
-        # the side it decides; the comma site is assign's since #613
+        # the side it decides; the comma site is assign's since #613;
+        # and SUFFIX_OR_NICKNAME, with S13's decision (#810)
         "post_rules": {"tokens", "ambiguities"},
     }
     assert {s.__name__ for s in STAGES} == set(ownership)
