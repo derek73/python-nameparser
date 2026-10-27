@@ -16,10 +16,16 @@ Adding and removing words
 
 .. doctest::
 
-    >>> from nameparser import Lexicon, Parser
+    >>> from nameparser import Lexicon, Parser, parse
+    >>> parse("Dean Robert Johns").given
+    'Dean'
     >>> lex = Lexicon.default().add(titles={"dean"})
     >>> Parser(lexicon=lex).parse("Dean Robert Johns").title
     'Dean'
+
+By default ``Dean`` is a title only inside a title phrase such as
+``Dean of Students`` (:ref:`titles-also-given-names`); listing it in
+``titles`` makes it a title wherever it stands.
 
 :meth:`~nameparser.Lexicon.add` and :meth:`~nameparser.Lexicon.remove`
 both return a new :class:`~nameparser.Lexicon` — the one you started
@@ -102,41 +108,55 @@ Removing works the same way, and drops the word from recognition:
     >>> Parser(lexicon=lean).parse("Professor Robert Johns").title
     ''
 
-A few fields mark a subset of another — ``given_name_titles``,
-``after_given_titles``, ``title_modifiers`` and ``title_styles`` over
-``titles``, ``particles_ambiguous`` over ``particles``,
-``suffix_acronyms_ambiguous`` over ``suffix_acronyms``,
-``conjunctions_ambiguous`` over ``conjunctions``,
-``honorific_tails`` and ``suffix_words_ambiguous`` over
-``suffix_words``, and ``agnomens`` over ``suffix_words_ambiguous``.
-Entries belong in the base field too, so add to both and remove from
-the marker first. Four of them enforce that — ``particles_ambiguous``,
-``suffix_acronyms_ambiguous``, ``honorific_tails`` and
-``suffix_words_ambiguous`` raise ``ValueError`` naming the orphans,
-because an orphan in each of those does real harm rather than nothing.
-The others are deliberately unchecked because an orphan there is
-inert, an ``agnomens`` entry being read only for a word
-``suffix_words_ambiguous`` marks, and a ``title_modifiers`` or
-``title_styles`` entry only for a title:
-``given_name_titles`` matches a title run as one space-joined string, or
-by that run's last word, so a legitimate entry like ``"sir and dame"``
-is no single word in ``titles``; and a ``conjunctions_ambiguous`` or
-``after_given_titles`` entry is only ever read for a word that is a
-conjunction or a title, so ``remove(conjunctions={"e"})`` simply works
-and the stale marker entry is never consulted.
+Marking a subset of another field
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``titles_ambiguous`` is the one title field that is no subset of
-``titles``: a word in it is a title only inside a title phrase, and a
-word in both is a title wherever it stands, which is what listing it in
-``titles`` asks. ``title_phrases`` holds the two-word phrases a
-``titles_ambiguous`` word may stand in (``"chief justice"``,
-``"major general"``), each read only where both words are titles:
+Several fields mark a subset of another, qualifying how the base
+field's words are read. Their entries belong in the base field too, so
+add a word to both, and remove it from the marker first. An entry
+outside its base is an *orphan*: four markers refuse one with a
+``ValueError`` naming it, because there it would change the parse; the
+rest leave it unchecked, because there it is never read.
 
-.. doctest::
+.. list-table::
+   :header-rows: 1
+   :widths: 30 34 36
 
-    >>> chief = Lexicon.default().remove(title_phrases={"chief justice"})
-    >>> Parser(lexicon=chief).parse("Chief Justice John Roberts").title
-    'Chief'
+   * - Marker
+     - Base
+     - An orphan
+   * - ``particles_ambiguous``
+     - ``particles``
+     - raises ``ValueError``
+   * - ``suffix_acronyms_ambiguous``
+     - ``suffix_acronyms``
+     - raises ``ValueError``
+   * - ``honorific_tails``
+     - ``suffix_words``
+     - raises ``ValueError``
+   * - ``suffix_words_ambiguous``
+     - ``suffix_words``
+     - raises ``ValueError``
+   * - ``agnomens``
+     - ``suffix_words_ambiguous``
+     - is never read
+   * - ``conjunctions_ambiguous``
+     - ``conjunctions``
+     - is never read
+   * - ``after_given_titles``
+     - ``titles``
+     - is never read
+   * - ``given_name_titles``, ``title_modifiers``, ``title_styles``
+     - ``titles`` or ``titles_ambiguous``
+     - is never read
+
+So ``remove(conjunctions={"e"})`` simply works, and the stale
+``conjunctions_ambiguous`` entry is never consulted.
+``given_name_titles`` is unchecked for a second reason: it matches a
+run of titles as one space-joined string, or by the run's last word, so
+a legitimate entry like ``"sir and dame"`` is no single word of
+``titles``. ``titles_ambiguous`` is no subset of ``titles`` at all; see
+:ref:`titles-also-given-names`.
 
 .. _title-detection-off:
 
@@ -332,7 +352,9 @@ them — ``suffix_acronyms_ambiguous``, ``suffix_words_ambiguous``,
 ``suffix_acronyms``, ``suffix_words``, ``particles`` and
 ``conjunctions``. They add no vocabulary by themselves; they narrow how
 an existing entry is read when it appears alone, and the parse reports
-the fork as an ambiguity.
+the fork as an ambiguity. Titles that are also given names work
+differently, with a word list of their own, ``titles_ambiguous``
+(:ref:`titles-also-given-names`).
 
 Credentials that are also surnames
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -432,12 +454,67 @@ free:
   needs one adds it back with
   ``Lexicon.default().add(suffix_acronyms={"cha"})``.
 
-The same conservatism is why ``dean`` above is a title by default only
-inside a title phrase ("Dean of Students", "Associate Dean"): "Dean" is
-also a common given name, and a default that swallowed it as a title
-would misparse "Dean Martin" for everyone. Listing it in ``titles``
-makes it a title wherever it stands. The phrase-only titles are
-``Lexicon.titles_ambiguous``.
+.. _titles-also-given-names:
+
+Titles that are also given names
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Many titles are borne as given names too: ``Dean``, ``King``,
+``Prince``, ``Grace``, ``Major``, ``Sheikh``. A title addresses the
+name after it, so at the front of a name there is no count of words to
+read, and what tells the person ``Dean Smith`` from the office in
+``Dean of Students`` is the phrase the word stands in. Since 2.7 these
+words are listed in ``titles_ambiguous`` rather than ``titles``, and
+each is a title only inside a title phrase: behind a style
+(``His Majesty King``) or a modifier (``Associate Dean``), before
+``of`` (``Dean of Students``), or in a listed two-word phrase
+(``Major General``). Anywhere else it is a name word:
+
+.. doctest::
+
+    >>> parse("Dean Smith").given
+    'Dean'
+    >>> parse("Associate Dean Smith").title
+    'Associate Dean'
+    >>> parse("Dean of Students Jane Smith").title
+    'Dean of Students'
+    >>> parse("Major General John Smith").title
+    'Major General'
+
+Where such a word opens the name and a listed phrase could have held
+it, the parse reports a ``title-or-name`` ambiguity, its alternative
+the title reading (:ref:`reading-not-taken`). A word no listed phrase
+holds, such as ``Grace`` (a title in ``His Grace``), reports nothing
+standing alone:
+
+.. doctest::
+
+    >>> dean_alt = parse("Dean Smith").ambiguities[0]
+    >>> dean_alt.kind.value, dean_alt.alternative.kind.value
+    ('title-or-name', 'title')
+    >>> parse("Grace Smith").ambiguities
+    ()
+
+Four fields hold this vocabulary:
+
+- ``titles_ambiguous`` — the titles read only inside a phrase. A
+  word listed in ``titles`` as well is a title wherever it stands, so
+  ``add(titles={"dean"})`` (the first example on this page) is how to
+  read one as a title everywhere.
+- ``title_modifiers`` — the words that qualify a head title
+  (``associate``, ``vice``).
+- ``title_styles`` — the forms of address a title may stand behind
+  (``majesty``, ``highness``, ``excellency``).
+- ``title_phrases`` — the two-word phrases, each read only where
+  both words are titles. Removing one reads its words apart:
+
+.. doctest::
+
+    >>> parse("Chief Justice John Roberts").title
+    'Chief Justice'
+    >>> chief = Lexicon.default().remove(title_phrases={"chief justice"})
+    >>> Parser(lexicon=chief).parse("Chief Justice John Roberts").title
+    'Chief'
 
 Particles that are also given names
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -588,13 +665,10 @@ listed below.
      - Effect
    * - ``name_order``
      - one of the three exported order constants
-     - Assigns positional (no-comma) input to given/middle/family in
-       this order. Use the exported ``GIVEN_FIRST`` (default),
-       ``FAMILY_FIRST``, or ``FAMILY_FIRST_GIVEN_LAST`` constants.
-       Ignored when a comma separates family from given ("Thomas,
-       John" puts the family name first); a comma that only sets off
-       suffixes ("John Smith, Jr.") leaves it governing the name part.
-       See :ref:`name-order`.
+     - Assigns positional input to given/middle/family in this order:
+       ``GIVEN_FIRST`` (default), ``FAMILY_FIRST`` or
+       ``FAMILY_FIRST_GIVEN_LAST``. A family comma overrides it. See
+       :ref:`name-order`.
    * - ``script_orders``
      - pairs of ``Script`` and an order
      - Assigns a name in one of these scripts in the paired order,
@@ -712,6 +786,14 @@ family-then-given regardless of the configured order:
 
     >>> family_first.parse("Thomas, John").family
     'Thomas'
+
+A comma that only sets off suffixes leaves the order governing the
+name before it:
+
+.. doctest::
+
+    >>> family_first.parse("Smith John, Jr.").given
+    'John'
 
 A Vietnamese full name needs a third order. It is written family, then
 middle, then given — the name a person is actually called by is the
@@ -1175,9 +1257,16 @@ instead of extending them, the same trap as ``capitalization_exceptions``:
 Suffixes not separated by commas
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A semicolon separates post-nominals as a comma does, with no
-configuration. Glued to the word before it, it stays in the suffix as
-written:
+A comma is the usual separator between post-nominals, but sources write
+others. A few are read with no configuration, any other can be
+declared, and a credential joined to another, or split by a space,
+needs neither.
+
+Separators read without configuration
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A semicolon separates post-nominals as a comma does. Glued to the word
+before it, it stays in the suffix as written:
 
 .. doctest::
 
@@ -1185,8 +1274,9 @@ written:
     >>> name.given, name.family, name.suffix
     ('Jane', 'Smith', 'RN; CRNA')
 
-So does a hyphen or a slash standing alone after the comma (since 2.7),
-which is dropped as a comma between suffixes would be:
+So does a hyphen or a slash standing alone, with a space on each side,
+after a whole name and its comma or after a further comma (since 2.7).
+It is dropped, as a comma between suffixes would be:
 
 .. doctest::
 
@@ -1197,19 +1287,21 @@ which is dropped as a comma between suffixes would be:
     'Jane'
 
 Glued to a word, a hyphen or slash is the word's own, so
-``Jane Smith, RN- CRNA`` reads as it always has, with ``RN-`` as the given
-name and ``Jane Smith`` as the family; declare ``" - "`` to read the word
-without its glued hyphen, as the semicolon is read. Behind a single word (``Smith, RN - CRNA``)
-nothing is split, and before the comma it is a word too, so it never reaches a
-hyphenated surname written with spaces (``Smith - Jones``).
+``Jane Smith, RN- CRNA`` reads as it always has, with ``RN-`` as the
+given name and ``Jane Smith`` as the family. Behind a single word
+(``Smith, RN - CRNA``) nothing is split, and before the comma the
+hyphen is a word too, so it never reaches a hyphenated surname written
+with spaces (``Smith - Jones``).
+
+Declaring another separator
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ``extra_suffix_delimiters`` handles sources that separate post-nominals
-with something else. Undeclared, the separator is a word.
-Since 2.4 such a name still parses when a credential opens the part
-after the comma, because that makes the whole part the suffix, but the
-separator stays in the suffix as written. Declared, it splits the
-suffix into groups the way a comma does, and it counts glued to a word
-as the semicolon does:
+with something else. Undeclared, the separator is a word. Since 2.4
+such a name still parses when a credential opens the part after the
+comma, because that makes the whole part the suffix, but the separator
+stays in the suffix as written. Declared, it splits the suffix into
+groups the way a comma does:
 
 .. doctest::
 
@@ -1221,10 +1313,17 @@ as the semicolon does:
     >>> name.given, name.family, name.suffix
     ('Jane', 'Smith', 'RN, CRNA')
 
+A declared separator also counts glued to a word, as the semicolon
+does, and stays in the suffix as written there: declaring ``" - "``
+reads ``Jane Smith, RN- CRNA`` as given ``Jane``, family ``Smith``.
+
 Through 2.3 the undeclared reading of ``Jane Smith, RN - CRNA`` was
 given ``RN``, family ``Jane Smith`` and suffix ``CRNA``, so the
 delimiter was the only way to get the name right, and through 2.6 it
 was the only way to split the suffix.
+
+Credentials written joined or split
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A hyphen or a slash written between two credentials with no space needs
 no declaring when every part is a listed credential that is not also a
@@ -1241,6 +1340,15 @@ which :ref:`all-caps-credentials` reads on its own terms:
     >>> joined = parse("Jane Smith, MA/PhD")
     >>> joined.given, joined.family
     ('MA/PhD', 'Jane Smith')
+
+A credential written with a space inside it, such as ``Pharm D``, is
+read as one credential too (since 2.7), where the name has words to
+spare in front of it:
+
+.. doctest::
+
+    >>> parse("John Smith, Pharm D").suffix
+    'Pharm D'
 
 .. _unlisted-credentials:
 
