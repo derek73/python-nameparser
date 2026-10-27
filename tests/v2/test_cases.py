@@ -287,9 +287,11 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # 'John Smith (MA) née Jones' its two suffix-or-name claims (-12),
     # and the two clauses a second pass would settle keep the nickname,
     # reported (+6); 1384 -> 1390 the same day, its review round's rows
-    # for a leading period and a name of no word (+6).
-    assert claims == 1390, (
-        f"the field sweep checks {claims} claims, recorded as 1390 on "
+    # for a leading period and a name of no word (+6); 1390 -> 1393 the
+    # same day, #752 phase 2j's 'Nasreen Sultana, MBBS', the credential
+    # behind two name words reported suffix-or-name under three orders.
+    assert claims == 1393, (
+        f"the field sweep checks {claims} claims, recorded as 1393 on "
         f"2026-10-26")
 
 

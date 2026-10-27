@@ -124,7 +124,9 @@ nobility = {}
 
 [[word]]
 text = "sultana"
-nobility = { gender = "f" }
+nobility = { gender = "f", issue = 752, decided = 2026-10-26, note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'Sultana Begum' reads the given name, unreported, since no listed phrase holds it" }
+given = { us_ssa = 275, wikidata = 19, as_of = 2026-10-26, note = "US SSA: female births; Wikidata is a lower bound (Bangladesh 5); nam_dict band 3 in Romania and Arabia/Persia" }
+family = { us_census_2010 = 3471, wikidata = 34, as_of = 2026-10-26 }
 
 [[word]]
 text = "أمير"

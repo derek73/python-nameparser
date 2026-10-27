@@ -719,8 +719,6 @@ TITLES: frozenset[str] = frozenset({
     'subaltern',
     'subedar',
     'suffragist',
-    'sultan',
-    'sultana',
     'superior',
     'supreme',
     'surgeon',
@@ -971,6 +969,8 @@ TITLES_AMBIGUOUS: frozenset[str] = frozenset({
     'major',
     'marshal',
     'siddha',
+    'sultan',
+    'sultana',
     'wing',
 })
 

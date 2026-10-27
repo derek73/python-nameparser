@@ -11,7 +11,9 @@ style = { expands = "the Ottoman efendi, in its conventional Latin spelling" }
 
 [[word]]
 text = "sultan"
-nobility = { note = "no gender: Ottoman usage gave it to imperial women too, written after the name (Hürrem Sultan)" }
+nobility = { note = "no gender: Ottoman usage gave it to imperial women too, written after the name (Hürrem Sultan)", issue = 752, decided = 2026-10-26 }
+given = { us_ssa = 2396, wikidata = 151, as_of = 2026-10-26, note = "US SSA: male births; Wikidata is a lower bound (Turkey 28, Saudi Arabia 13); nam_dict band 7 in Turkey, 5 in Central Asia; a title only inside a title phrase (rules/H9): 'Sultan Khan' and 'Mr Sultan Khan' read the given name, unreported" }
+family = { us_census_2010 = 3363, wikidata = 106, as_of = 2026-10-26, note = "Wikidata: Ottoman Empire 26, the title written after the name, which reads as a name word" }
 
 [[word]]
 text = "baba"
