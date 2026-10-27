@@ -63,14 +63,15 @@ def test_a_case_view_is_recorded_only_where_it_moves_something() -> None:
 
 def test_a_snapshot_predating_the_case_views_is_not_compared_on_them() -> None:
     # --since v2.5.0 reported 961 entries on 2026-10-22, 910 of them the
-    # keys appearing; against a snapshot that records a view anywhere,
-    # the views stay compared.
+    # keys appearing; against a headerless snapshot that records a view
+    # anywhere, the views stay compared.
+    keys = frozenset(snapshot.recorded_keys())
     rows = snapshot.read([("john smith", None), ("John Smith EdD", None)])
     new = {snapshot.key(r): dict(r) for r in rows}
     old = {k: {f: v for f, v in r.items() if f not in snapshot.CASE_VIEWS}
            for k, r in new.items()}
-    # neither name reports, so no alternative is recorded either
-    assert snapshot.unrecorded_views(old, new) == (
+    # a headerless snapshot records no alternative either
+    assert snapshot.unrecorded_views(None, keys, old, new) == (
         *snapshot.CASE_VIEWS, "alternatives")
     assert not snapshot.grouped(old, new)
     # A snapshot that records a view on one row, or only the plain
@@ -78,8 +79,8 @@ def test_a_snapshot_predating_the_case_views_is_not_compared_on_them() -> None:
     rows = snapshot.read([("john smith", None), ("John Smith", None)])
     new = {snapshot.key(r): dict(r) for r in rows}
     current = {k: dict(r) for k, r in new.items()}
-    # (neither name reports, so the alternatives are left out)
-    assert snapshot.unrecorded_views(current, new) == ("alternatives",)
+    assert snapshot.unrecorded_views(None, keys, current, new) == (
+        "alternatives",)
     assert new == current
     assert not any("capitalized_force" in r for r in current.values())
 
@@ -88,23 +89,62 @@ def test_a_snapshot_predating_the_alternatives_is_not_compared_on_them(
         ) -> None:
     # every name with a fork report gained the key on 2026-10-26 (#752
     # phase 2m), 969 of the committed snapshot's rows that day; against
-    # a snapshot that
-    # records one anywhere, the alternatives stay compared, and the
-    # case views are a group of their own
+    # a snapshot recorded before the header, whose rows cannot hold
+    # one, they are left out, and the case views are a group of their
+    # own
+    keys = frozenset(snapshot.recorded_keys())
     rows = snapshot.read([("JOHN SMITH MA", None), ("john smith", None)])
     new = {snapshot.key(r): dict(r) for r in rows}
     assert any("alternatives" in r for r in new.values())
     old = {k: {f: v for f, v in r.items() if f != "alternatives"}
            for k, r in new.items()}
-    assert snapshot.unrecorded_views(old, new) == ("alternatives",)
+    assert snapshot.unrecorded_views(None, keys, old, new) == (
+        "alternatives",)
     assert not snapshot.grouped(old, new)
     rows = snapshot.read([("JOHN SMITH MA", None), ("Jack MA", None)])
     new = {snapshot.key(r): dict(r) for r in rows}
     moved = {k: dict(r) for k, r in new.items()}
     first = next(iter(moved))
     moved[first]["alternatives"] = ["SUFFIX_OR_NAME: name as given (declared)"]
-    assert snapshot.unrecorded_views(moved, new) == ()
+    assert snapshot.unrecorded_views(keys, keys, moved, new) == ()
     assert snapshot.grouped(moved, new)[0] == "alternatives: 1"
+
+
+def test_a_snapshot_whose_names_report_nothing_still_records_alternatives(
+        ) -> None:
+    # The header, not the rows, says what a snapshot records: one taken
+    # by a 2.7 tree over names with no fork holds no alternative, and a
+    # report gaining one against it is a move (#902's review).
+    keys = snapshot.recorded_keys()
+    assert "alternatives" in keys
+    text = snapshot.dump(snapshot.read([("john smith", None)]), keys)
+    assert snapshot.recorded(text) == frozenset(keys)
+    assert snapshot.row_count(text) == 1
+    old = snapshot.load(text)
+    assert not any("alternatives" in r for r in old.values())
+    new = {k: {**r, "alternatives": ["GIVEN_OR_FAMILY: name as family "
+                                     "(position)"]} for k, r in old.items()}
+    assert snapshot.unrecorded_views(snapshot.recorded(text),
+                                     frozenset(keys), old, new) == ()
+    assert snapshot.grouped(old, new)[0] == "alternatives: 1"
+    # and a tree that cannot record them, read against it, drops them
+    # from both sides rather than reporting each as lost
+    case_only = frozenset(snapshot.CASE_VIEWS)
+    assert snapshot.unrecorded_views(snapshot.recorded(text), case_only,
+                                     old, new) == ("alternatives",)
+    assert not snapshot.grouped(old, new)
+
+
+def test_a_lost_alternative_shows_beside_an_identical_one() -> None:
+    # Each report's alternative is recorded in report order, so losing
+    # one of two identical ones moves the row (#902's review); a set of
+    # strings recorded the two as one.
+    row = snapshot.read([("DOE, JOHN MA JD", None)])[0]
+    assert row["alternatives"] == [
+        "SUFFIX_OR_NAME: name as middle (declared)"] * 2
+    lost = {**row, "alternatives": row["alternatives"][:1]}
+    key = snapshot.key(row)
+    assert snapshot.grouped({key: row}, {key: lost})
 
 
 def test_a_name_leaving_the_corpus_is_reported() -> None:

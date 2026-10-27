@@ -237,15 +237,16 @@ def case_views(rendered: str, plain: str, forced: str) -> dict[str, str]:
 
 def alternatives(p: ParsedName) -> list[str]:
     """The reading each of a parse's reports did not take (#752 phase
-    2m, `Ambiguity.alternative`), one string per distinct reading, as
-    the ambiguity kinds are recorded: its kind, the reading's kind, the
-    field it names and its source, and none from a tree before 2.7,
-    which `--base` reads through this too. compare.py's worker holds a
-    copy."""
-    return sorted({f"{a.kind.name}: {alt.kind.value} as {alt.role.value} "
-                   f"({alt.source.value})"
-                   for a in p.ambiguities
-                   if (alt := getattr(a, "alternative", None)) is not None})
+    2m, `Ambiguity.alternative`): its kind, the reading's kind, the
+    field it names and its source, one string per report that carries
+    one, in report order, so a report losing its alternative beside an
+    identical one still moves the row (`DOE, JOHN MA JD` holds two);
+    none from a tree before 2.7, which `--base` reads through this too.
+    compare.py's worker holds a copy."""
+    return [f"{a.kind.name}: {alt.kind.value} as {alt.role.value} "
+            f"({alt.source.value})"
+            for a in p.ambiguities
+            if (alt := getattr(a, "alternative", None)) is not None]
 
 
 #: The keys a row came to record after the snapshot existed, each with
@@ -253,24 +254,68 @@ def alternatives(p: ParsedName) -> list[str]:
 #: of them, so a comparison against it leaves them out.
 RECORDED_LATER = ((CASE_VIEWS, "#826"), (("alternatives",), "#752 phase 2m"))
 
+#: The key of a snapshot's first line since #752 phase 2m, naming the
+#: `RECORDED_LATER` keys the tree that recorded it could record, so a
+#: comparison asks the snapshot what it recorded rather than inferring
+#: it from whether a row happens to hold one: a 2.7 snapshot of names
+#: no report reaches holds no alternative and still records them.
+HEADER = "recorded"
 
-def unrecorded_views(old: dict[tuple[str, str], dict[str, Any]],
+
+def recorded_keys() -> tuple[str, ...]:
+    """The `RECORDED_LATER` keys the imported nameparser records: the
+    case views, which every 2.x tree renders, and the alternatives where
+    its Ambiguity has the field (2.7)."""
+    import dataclasses
+
+    import nameparser
+    fields = {f.name for f in dataclasses.fields(nameparser.Ambiguity)}
+    return CASE_VIEWS + (("alternatives",) if "alternative" in fields
+                         else ())
+
+
+def recorded(text: str) -> frozenset[str] | None:
+    """The keys a snapshot's header says it records, or None for a
+    snapshot recorded before the header existed."""
+    first = text.split("\n", 1)[0]
+    if not first.strip():
+        return None
+    r = json.loads(first)
+    return frozenset(r[HEADER]) if HEADER in r and "name" not in r else None
+
+
+def unrecorded_views(old_recorded: frozenset[str] | None,
+                     new_recorded: frozenset[str],
+                     old: dict[tuple[str, str], dict[str, Any]],
                      new: dict[tuple[str, str], dict[str, Any]]
                      ) -> tuple[str, ...]:
-    """The keys `old` predates -- none of its rows carries one of a
-    `RECORDED_LATER` group -- dropped from `new`'s rows in place, so a
-    snapshot recorded before the change that added them (v2.5.0's for
-    the case views, v2.6.0's for the alternatives, or a local snapshot)
-    does not report every name they reach as moved: 910 of the 961
-    entries `--since v2.5.0` reported on 2026-10-22 were the case views'
-    keys appearing, not moves."""
+    """The `RECORDED_LATER` keys one side did not record, dropped from
+    both sides' rows in place, so a snapshot recorded before the change
+    that added them (v2.5.0's for the case views, v2.6.0's for the
+    alternatives, or a local snapshot) does not report every name they
+    reach as moved: 910 of the 961 entries `--since v2.5.0` reported on
+    2026-10-22 were the case views' keys appearing, not moves.
+
+    `old_recorded` is the old snapshot's header (`recorded`). A
+    snapshot with none predates the header, so it records no
+    alternatives, and its case views are read off its rows: exact for
+    those frozen files, v2.5.0's and earlier recording none, and
+    v2.6.0's and every local snapshot since #826 recording each where
+    it moves something, which some corpus name does."""
     dropped: tuple[str, ...] = ()
     for keys, _ in RECORDED_LATER:
-        if any(v in r for r in old.values() for v in keys):
+        if old_recorded is not None:
+            had = set(keys) <= old_recorded
+        elif keys == CASE_VIEWS:
+            had = any(v in r for r in old.values() for v in keys)
+        else:
+            had = False
+        if had and set(keys) <= new_recorded:
             continue
-        for r in new.values():
-            for v in keys:
-                r.pop(v, None)
+        for rows in (old, new):
+            for r in rows.values():
+                for v in keys:
+                    r.pop(v, None)
         dropped += keys
     return dropped
 
@@ -354,12 +399,21 @@ def key(r: dict[str, Any]) -> tuple[str, str]:
     return r["name"], r.get("order", "")
 
 
-def dump(rows: list[dict[str, Any]]) -> str:
-    return "".join(jsonl_line(r) + "\n" for r in rows)
+def dump(rows: list[dict[str, Any]], keys: tuple[str, ...]) -> str:
+    """The snapshot of `rows`, headed by the `RECORDED_LATER` keys the
+    tree that read them records (`recorded_keys`)."""
+    return jsonl_line({HEADER: list(keys)}) + "\n" + "".join(
+        jsonl_line(r) + "\n" for r in rows)
 
 
 def load(text: str) -> dict[tuple[str, str], dict[str, Any]]:
-    return {key(r): r for r in map(json.loads, jsonl_lines(text)) if r}
+    return {key(r): r for r in map(json.loads, jsonl_lines(text))
+            if r and "name" in r}
+
+
+def row_count(text: str) -> int:
+    """How many rows a snapshot's text holds, its header not one."""
+    return text.count("\n") - (recorded(text) is not None)
 
 
 def _flat(r: dict[str, Any]) -> dict[str, str]:
@@ -512,7 +566,7 @@ def _reused(baseline: Path, entries: int) -> str | None:
     except (OSError, EOFError, zlib.error, UnicodeDecodeError) as e:
         why = f"unreadable ({e})"
     else:
-        if (rows := text.count("\n")) == entries:
+        if (rows := row_count(text)) == entries:
             return text
         why = f"{rows} rows for {entries} entries"
     print(f"deleted the kept baseline {baseline.name}: {why}; reading the names\n")
@@ -774,7 +828,7 @@ def main(argv: list[str] | None = None) -> int:
     if base is not None:
         print(head_line(root, base))
     if args.record:
-        text = dump(rows)
+        text = dump(rows, recorded_keys())
         out.write_text(text, encoding="utf-8")
         if fetch is not None:
             _fetch_record(out).write_text(json.dumps(fetch), encoding="utf-8")
@@ -808,11 +862,16 @@ def main(argv: list[str] | None = None) -> int:
             r.pop("facade", None)
         print("not compared: facade -- the snapshot read against was "
               "recorded when a local reading still read the facade\n")
-    if dropped := unrecorded_views(old, new):
-        print(f"not compared: {', '.join(dropped)} -- the snapshot read "
-              f"against predates "
-              f"{' and '.join(c for k, c in RECORDED_LATER if k[0] in dropped)}; "
-              f"compare.py --baseline compares them\n")
+    if dropped := unrecorded_views(recorded(text),
+                                   frozenset(recorded_keys()), old, new):
+        print(f"not compared: {', '.join(dropped)} -- one side of the "
+              f"comparison predates "
+              f"{' and '.join(c for k, c in RECORDED_LATER if k[0] in dropped)}"
+              # a release records the case views from 2.6.0, so compare.py
+              # can read them for an older tag; none records the
+              # alternatives until 2.7 ships
+              + ("; compare.py --baseline compares the case views"
+                 if CASE_VIEWS[0] in dropped else "") + "\n")
     moves = grouped(old, new)
     print("\n".join(moves) or ("matches the base" if base else "matches the snapshot"))
     if not moves:

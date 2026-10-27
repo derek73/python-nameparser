@@ -2118,7 +2118,7 @@ def test_a_nepal_corpus_holds_both_scripts_names_for_the_snapshot(
     assert local.load(_NEPAL).meta["names"] == 6
     assert snapshot.main(["--local", _NEPAL, "--record"]) == 0
     recorded = _own_cache / "local" / _NEPAL / "snapshot.jsonl"
-    assert len(recorded.read_text().splitlines()) == 6
+    assert snapshot.row_count(recorded.read_text()) == 6
 
 
 def test_a_nepal_name_keeps_its_vowel_signs_virama_and_joiners(
@@ -3733,15 +3733,15 @@ def test_snapshot_reads_a_local_corpus_against_its_own_snapshot(
         snapshot.main(["--local", _SOURCE])
     assert snapshot.main(["--local", _SOURCE, "--record"]) == 0
     recorded = _folder(tmp_path) / "snapshot.jsonl"
-    assert len(recorded.read_text().splitlines()) == 2
+    assert snapshot.row_count(recorded.read_text()) == 2
     assert snapshot.main(["--local", _SOURCE]) == 0
     assert "matches the snapshot" in capsys.readouterr().out
 
     # A reading that moved, as a change to the parser would move it.
-    rows = recorded.read_text().splitlines()
+    header, *rows = recorded.read_text().splitlines()
     row = json.loads(rows[0])
     row["family"] = "Moved"
-    recorded.write_text("\n".join([json.dumps(row)] + rows[1:]) + "\n")
+    recorded.write_text("\n".join([header, json.dumps(row)] + rows[1:]) + "\n")
     assert snapshot.main(["--local", _SOURCE]) == 1
     out = capsys.readouterr().out
     assert out.startswith("ClinicalTrials.gov (NLM) study officials, data as of")
@@ -3771,7 +3771,7 @@ def test_snapshot_records_a_local_snapshot_where_out_says(
     _fetched(monkeypatch, tmp_path)
     out = tmp_path / "elsewhere.jsonl"
     assert snapshot.main(["--local", _SOURCE, "--record", "--out", str(out)]) == 0
-    assert len(out.read_text().splitlines()) == 2
+    assert snapshot.row_count(out.read_text()) == 2
     assert json.loads((tmp_path / "elsewhere.jsonl.source.json").read_text())[
         "data_date"] == _DATE
     assert not (_folder(tmp_path) / "snapshot.jsonl").exists()
@@ -3849,7 +3849,8 @@ def test_a_local_snapshot_does_not_read_the_facade(
     folder = _fetched(monkeypatch, tmp_path, "Ph. D., John")
     assert "facade" in snapshot.read([("Ph. D., John", None)])[0]
     assert snapshot.main(["--local", _SOURCE, "--record"]) == 0
-    assert "facade" not in json.loads((folder / "snapshot.jsonl").read_text())
+    assert not any("facade" in r for r in snapshot.load(
+        (folder / "snapshot.jsonl").read_text()).values())
 
 
 def test_a_local_snapshot_recorded_with_the_facade_compares_without_it(
@@ -3859,7 +3860,7 @@ def test_a_local_snapshot_recorded_with_the_facade_compares_without_it(
     assert snapshot.main(["--local", _SOURCE, "--record"]) == 0
     recorded = folder / "snapshot.jsonl"
     rows = [json.loads(r) for r in recorded.read_text().splitlines()]
-    rows[0]["facade"] = {"last": "Elsewhere"}
+    rows[1]["facade"] = {"last": "Elsewhere"}  # rows[0] is the header
     recorded.write_text("".join(json.dumps(r) + "\n" for r in rows))
     capsys.readouterr()
     assert snapshot.main(["--local", _SOURCE]) == 0
@@ -3874,7 +3875,7 @@ def test_a_sample_reads_against_a_snapshot_of_its_own(
         capsys: pytest.CaptureFixture[str]) -> None:
     folder = _fetched(monkeypatch, tmp_path, *_MANY)
     assert snapshot.main(["--local", _SOURCE, "--record", "--sample", "3"]) == 0
-    kept = (folder / "snapshot.sample-3.jsonl").read_text().splitlines()
+    kept = snapshot.load((folder / "snapshot.sample-3.jsonl").read_text())
     assert 0 < len(kept) < len(_MANY)
     assert not (folder / "snapshot.jsonl").exists()
     capsys.readouterr()
@@ -3911,7 +3912,7 @@ def test_a_local_recording_and_check_run_in_workers(
     folder = _fetched(monkeypatch, tmp_path, *_MANY)
     monkeypatch.setattr(snapshot, "PARALLEL_FLOOR", 1)
     assert snapshot.main(["--local", _SOURCE, "--record", "--jobs", "2"]) == 0
-    serial = [json.loads(r) for r in (folder / "snapshot.jsonl").read_text().splitlines()]
+    serial = list(snapshot.load((folder / "snapshot.jsonl").read_text()).values())
     assert serial == snapshot.read([(n, None) for n in sorted(_MANY)], facade=False)
     capsys.readouterr()
     assert snapshot.main(["--local", _SOURCE, "--jobs", "2"]) == 0

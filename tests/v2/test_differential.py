@@ -178,6 +178,18 @@ def test_the_worker_reads_a_line_as_the_tree_does(
             "GIVEN_OR_FAMILY: name as family (position)"]
 
 
+def test_a_baseline_without_alternatives_is_not_compared_on_them() -> None:
+    # A wheel before 2.7 reports no alternative, so every name the tree
+    # reports one for would read as moved: 867 of the 1,088 entries
+    # --baseline 2.6.0 reported on 2026-10-26 (#902's review).
+    tell, _ = _run_template({"name": "Jack", "order": None})
+    assert tell["alternatives"] is True
+    assert compare.unrecorded(tell) == ()
+    assert compare.unrecorded({**tell, "alternatives": False}) == (
+        "alternatives",)
+    assert compare.unrecorded({"__version__": "2.6.0"}) == ("alternatives",)
+
+
 _WHEEL = "/Users/x/.cache/uv/environments-v2/w/lib/python3.11/" \
          "site-packages/nameparser/__init__.py"
 
