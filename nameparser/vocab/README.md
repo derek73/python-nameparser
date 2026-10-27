@@ -252,6 +252,8 @@ Record a count on the word as a `given` or `family` reading, with the date you t
 5. **Rebuild**: `uv run python tools/vocab/build.py`. It refuses what it can detect, naming the word and, where one file is at fault, the file, and rewrites `nameparser/config/_compiled.py`. Commit both.
 6. **Run the tests**: `uv run pytest tests/v2/test_vocab.py` for the build, then the full suite, and read what `tests/v2/test_snapshot.py` reports as moved (the root `AGENTS.md`, "Validating a new parsing rule").
 
+For a word whose reading acts on a name position, such as a title that is also a given name, `uv run python tools/vocab/word_report.py <word>... --base <checkout>` reads it both ways in one run: the word in a grid of shapes (a head, behind a title, after a family comma, after a full name and a comma, past a second comma, trailing with a period, inside a title phrase), each in three cases and under the three name orders, printing the rows the base reads differently; how the names in every fetched local corpus that open with the word, or open the part after a comma with it, read it (title, given or other, counts only); and `name_usage.py`'s row. Without `--base` it prints every row. `--rank` takes a list of words and orders them by how many corpus names open with the word and read it as the title: the triage for a batch of such words, which needs no change to the tree.
+
 `uv run python tools/vocab/build.py --check` exits 1 when the committed module is stale and 2 when a file fails a check. The checks themselves are numbered in `build.py`'s docstring.
 
 ## Names reserved for later phases
