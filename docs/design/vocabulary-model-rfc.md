@@ -56,7 +56,7 @@ The reference for the format is nameparser/vocab/README.md; the decisions behind
 
 ## Phase 2: derived ambiguity and a general gate
 
-Phase 2 is the first phase that changes how names are parsed. Its design was agreed on 2026-10-23 (#752); the decisions, the evidence for each and the options declined are decisions/vocabulary-model's entry of that date. What follows is the design as agreed.
+Phase 2 is the first phase that changes how names are parsed. Its design was agreed on 2026-10-23 (#752); the decisions, the evidence for each and the options declined are decisions/vocabulary-model's entry of that date. What follows is the design as agreed. Every sub-phase below had landed by 2026-10-27, when #752 closed; the title words 2j did not reach are #913's.
 
 ### Three sources of readings
 
@@ -155,7 +155,7 @@ Each sub-phase is one PR, measured on its own base: the committed snapshot read 
 | 2g | capitals settle a listed credential (#785), through the pool | 2a, 2b |
 | 2h | generation readings gated by kind: `fils`, the agnomens, `default = false` | 2b |
 | 2i | the front of the name: the phrase partner, the contested heads, #853's word after a title, modifiers at the head | 2b |
-| 2j onward | titles that are names, one batch per word or group, in the agreed order | 2i |
+| 2j onward | titles that are names, one batch per word or group, in the agreed order; the words left are #913's | 2i |
 | 2k | abbreviated given names over the leading-abbreviation title (#789) | 2b |
 | 2l | the bracket escape reads the derived clash (#810) | 2a, 2b |
 | 2m | surfacing, `Ambiguity.alternative` | the rest |

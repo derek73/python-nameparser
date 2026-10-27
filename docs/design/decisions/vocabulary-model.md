@@ -41,7 +41,7 @@ The vocabulary was a set of base sets plus marker subsets (`particles` and `part
 
 Not standing: the plans the classifications carried out, phase 1's mechanical conversion of the unclassified categories into `und.toml` (2026-10-18 #737) and the shared readings left in place until their categories were classified (2026-10-19 #749), both done by 2026-10-20 #751, the conjunctions; and #747's reason for exempting `und.toml`, its entries keeping the Python lists' order for its vetting comments to point along (2026-10-19 #747), overtaken once it held two entries and no such comment.
 
-Open: #752 (phase 2, derived ambiguity; its sub-phases 2a to 2m, each its own PR, are the 2026-10-23 #752 entry's and the RFC's), #753 (phase 3, language packs), #754 (phase 4, order, shapes and the output model), #766 (whether `bon`, `dí` and three other words stay in the vocabulary).
+Open: #913 (the title words phase 2j left, read as titles though borne as names), #753 (phase 3, language packs), #754 (phase 4, order, shapes and the output model), #766 (whether `bon`, `dí` and three other words stay in the vocabulary).
 
 ## Log
 

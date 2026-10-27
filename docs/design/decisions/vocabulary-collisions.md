@@ -19,7 +19,9 @@ Elsewhere: #454's acceptance of `mc`'s inherited answer is decisions/suffix-acro
 
 Not standing: the C-i correction's call to re-judge `lo` and `el` as candidate particles, which #360 took up, judging `lo` ambiguous and leaving `el` needing judgement; neither was added to the particles — 2026-08-17.
 
-Open: [#348](https://github.com/derek73/python-nameparser/issues/348) applying C-i to the titles, then a titles ambiguous subset and an ambiguity kind for it; #752 (phase 2 derives the ambiguous marking from clashing readings).
+Elsewhere: C-i reaches the titles through a `given` reading, which makes a title word a title only inside a title phrase (rules/H9; the vocabulary is decisions/vocabulary-model's 2026-10-25 #752, phase 2i entry); where the word reads as a name, which forks are reported, #348's question, is decisions/H9's 2026-10-26 #752, phase 2i (Derek) and phase 2i, the report's reach (Derek) entries, a word no listed phrase holds and one after a comma reporting nothing; since phase 2a the particles' and suffix acronyms' ambiguous markings are derived from name readings too (decisions/vocabulary-model's 2026-10-25 #752 — A CLASH WITH A NAME IS A NAME READING entry).
+
+Open: #913 (the title words still read as titles that are also borne as names).
 
 ## Log
 
