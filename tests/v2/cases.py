@@ -1777,6 +1777,26 @@ CASES: tuple[Case, ...] = (
          notes="an agnomen's capitals say nothing, where an acronym's would "
                "be the credential, so the count decides. 1.4.0 and 2.6.0 "
                "read middle 'Alves', family 'NETO'"),
+    Case("an_abbreviated_agnomen_after_a_particle_surname", "JOSE DA SILVA FH",
+         {"given": "JOSE", "family": "DA SILVA", "suffix": "FH"},
+         classification="fix(#843)",
+         ambiguities=("suffix-or-name",),
+         notes="Brazilian filings abbreviate FILHO as FH, and the "
+               "abbreviation is gated as the word it spells (rules/S11). "
+               "1.4.0 and 2.6.0 read family 'DA SILVA FH'"),
+    Case("an_abbreviated_agnomen_with_its_period", "Pedro Alves Sobr.",
+         {"given": "Pedro", "family": "Alves", "suffix": "Sobr."},
+         classification="fix(#843)",
+         ambiguities=("suffix-or-name",),
+         notes="Sobr. abbreviates Sobrinho, and its period is edge "
+               "punctuation a suffix word is matched without. 1.4.0 and "
+               "2.6.0 read middle 'Alves', family 'Sobr.'"),
+    Case("an_abbreviated_agnomen_with_no_word_to_spare", "Ana Fo",
+         {"given": "Ana", "family": "Fo"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="Fo is a surname too (Dario Fo), and a name of two words "
+               "has none to spare for the agnomen (rules/S11)"),
     Case("an_agnomen_glued_behind_an_initial", "Pedro M.Filho",
          {"given": "Pedro", "family": "M.Filho"},
          classification="parity",

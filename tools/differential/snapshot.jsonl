@@ -181,6 +181,7 @@
 {"name": "Amélie Beaury-Saurel", "given": "Amélie", "family": "Beaury-Saurel", "initials": "A. B."}
 {"name": "Amīn as-Sulṭān ʿAlī Aṣġar Ḫān", "given": "Amīn", "middle": "as-Sulṭān ʿAlī Aṣġar", "family": "Ḫān", "initials": "A. a. ʿ. A. Ḫ.", "capitalized_force": "Amīn As-Sulṭān ʿAlī Aṣġar Ḫān"}
 {"name": "An tOll. An Dr. Brigid Aoibhe Sophia de Bhulbh", "given": "An", "middle": "tOll. An Dr. Brigid Aoibhe Sophia", "family": "de Bhulbh", "initials": "A. t. A. D. B. A. S. B.", "capitalized_force": "An Toll. An Dr. Brigid Aoibhe Sophia de Bhulbh"}
+{"name": "Ana Fo", "given": "Ana", "family": "Fo", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: agnomen as suffix (vocabulary)"], "initials": "A. F."}
 {"name": "Ana García", "given": "Ana", "family": "García", "initials": "A. G."}
 {"name": "Ana García (Anita) López", "given": "Ana", "middle": "García", "family": "López", "nickname": "Anita", "initials": "A. G. L."}
 {"name": "Ana J.R. García", "given": "Ana", "middle": "J.R.", "family": "García", "initials": "A. J. G."}
@@ -1417,6 +1418,7 @@
 {"name": "JOHN SMITH, PU-PH", "given": "PU-PH", "family": "JOHN SMITH", "initials": "P. J. S.", "capitalized": "Pu-Ph John Smith"}
 {"name": "JOHN SMITH, VD MA", "given": "JOHN", "family": "SMITH", "suffix": "VD MA", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "J. S.", "capitalized": "John Smith VD MA"}
 {"name": "JOHN V", "given": "JOHN", "family": "V", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: generation as suffix (vocabulary)"], "initials": "J. V.", "capitalized": "John V"}
+{"name": "JOSE DA SILVA FH", "given": "JOSE", "family": "DA SILVA", "suffix": "FH", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)"], "initials": "J. S.", "capitalized": "Jose da Silva Fh"}
 {"name": "JOSE E MARIA SANTOS", "given": "JOSE", "middle": "E MARIA", "family": "SANTOS", "ambiguities": ["CONJUNCTION_OR_INITIAL"], "alternatives": ["CONJUNCTION_OR_INITIAL: conjunction as given (vocabulary)"], "initials": "J. E. M. S.", "capitalized": "Jose E Maria Santos"}
 {"name": "JOSE ORTEGA-Y-GASSET", "given": "JOSE", "family": "ORTEGA-Y-GASSET", "initials": "J. O.", "capitalized": "Jose Ortega-y-Gasset"}
 {"name": "JOSEP CAROD I ROVIRA", "given": "JOSEP", "middle": "CAROD I", "family": "ROVIRA", "ambiguities": ["CONJUNCTION_OR_INITIAL"], "alternatives": ["CONJUNCTION_OR_INITIAL: conjunction as family (vocabulary)"], "initials": "J. C. I. R.", "capitalized": "Josep Carod I Rovira"}
@@ -2783,6 +2785,7 @@
 {"name": "Pedro Alves Neto Júnior", "given": "Pedro", "family": "Alves", "suffix": "Neto Júnior", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)"], "initials": "P. A."}
 {"name": "Pedro Alves Neto, AD", "given": "AD", "family": "Pedro Alves Neto", "initials": "A. P. A. N.", "capitalized_force": "Ad Pedro Alves Neto"}
 {"name": "Pedro Alves Neto, PhD", "given": "Pedro", "family": "Alves", "suffix": "Neto, PhD", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)"], "initials": "P. A."}
+{"name": "Pedro Alves Sobr.", "given": "Pedro", "family": "Alves", "suffix": "Sobr.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)"], "initials": "P. A."}
 {"name": "Pedro Alves, Neto", "given": "Pedro", "family": "Alves", "suffix": "Neto", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (declared)"], "initials": "P. A."}
 {"name": "Pedro Cañas Serrano", "given": "Pedro", "middle": "Cañas", "family": "Serrano", "initials": "P. C. S."}
 {"name": "Pedro Filho", "given": "Pedro", "family": "Filho", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: agnomen as suffix (vocabulary)"], "initials": "P. F."}
