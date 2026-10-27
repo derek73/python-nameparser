@@ -1,16 +1,16 @@
 # H7 — a joined name unit carrying title vocabulary
 
-**When:** the one name unit a name leaves standing is more than one word and carries title vocabulary, as in "John of Prince".
+**When:** the one name unit a name leaves standing is more than one word and carries title vocabulary, as in "John of Bishop".
 
 **Then:** one name UNIT of more than one word carrying title vocabulary reports `title-or-name`, the fork there being whether the title word inside the unit is a title at all.
 
 - **A join or a particle chain.** Usually a join (P3), and a particle chain (P4) is the same shape and reports too — `St van Bishop` reads family "van Bishop" with `bishop` title vocabulary inside it.
   ```
-  "John of Prince"            →  ambiguities=("title-or-name",)
+  "John of Bishop"            →  ambiguities=("title-or-name",)
   "St van Bishop"             →  family="van Bishop"
   "St van Bishop"             →  ambiguities=("particle-or-given", "title-or-name")
   ```
-- **The reach is every such join.** The clause reaches EVERY join whose non-leading member is TITLES vocabulary, not the one word that prompted it: `Smith and Pope`, `John and Pope`, `Smith and Bishop` and `John of Judge` all report it, as `John of Prince` and `Smith and Prince` do.
+- **The reach is every such join.** The clause reaches EVERY join whose non-leading member is TITLES vocabulary, not the one word that prompted it: `Smith and Pope`, `John and Pope`, `Smith and Bishop` and `John of Judge` all report it, as `John of Bishop` does.
   ```
   "Smith and Pope"            →  ambiguities=("title-or-name",)
   "John of Judge"             →  ambiguities=("title-or-name",)
@@ -22,7 +22,7 @@
   ```
 - **Nothing in front of the join silences the clause**, a title, a maiden name or a claimed word each deciding which FIELD the unit takes and none of them whether the word inside it is a title. The other measured inputs are pinned in the case table rather than here.
   ```
-  "Dr. Smith and Prince"      →  ambiguities=("title-or-name",)
+  "Dr. Smith and Bishop"      →  ambiguities=("title-or-name",)
   ```
 - **A unit of one word is H4's**: where the title peel leaves one word standing and that word is title vocabulary, H4's title half reports the same kind.
 

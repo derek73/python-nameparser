@@ -433,11 +433,15 @@ nobility = {}
 
 [[word]]
 text = "prince"
-nobility = { addresses = "given", gender = "m", issue = 519, note = "addresses by the GIVEN name ('Prince Harry', 'Princess Anne'); membership decides only which field the one word behind it takes, and 'Prince Fielder' is #348's collision either way" }
+nobility = { addresses = "given", gender = "m", issue = 752, decided = 2026-10-27, note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'His Royal Highness Prince Harry' and 'Prince of Wales' read the title, 'Prince Fielder' and 'Mr Prince Smith' the given name, unreported, since no listed phrase holds it; inside a phrase it addresses by the GIVEN name (#519)" }
+given = { us_ssa = 24151, wikidata = 204, as_of = 2026-10-27, note = "US SSA: male and female births added; Wikidata is a lower bound (United States 53, Ghana 19, Nigeria 10); nam_dict band 1 in the U.S.A. and India/Sri Lanka" }
+family = { us_census_2010 = 47168, wikidata = 525, as_of = 2026-10-27, note = "US Census rank 743" }
 
 [[word]]
 text = "princess"
-nobility = { addresses = "given", gender = "f", issue = 519, note = "addresses by the GIVEN name ('Prince Harry', 'Princess Anne'); membership decides only which field the one word behind it takes, and 'Prince Fielder' is #348's collision either way" }
+nobility = { addresses = "given", gender = "f", issue = 752, decided = 2026-10-27, note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'Her Royal Highness Princess Anne' reads the title, 'Princess Smith' and 'Ms Princess Smith' the given name, unreported, since no listed phrase holds it; inside a phrase it addresses by the GIVEN name (#519)" }
+given = { us_ssa = 15982, wikidata = 29, as_of = 2026-10-27, note = "US SSA: female and male births added; Wikidata is a lower bound (Nigeria 6, Ghana 3); nam_dict band 1 in the U.S.A." }
+family = { wikidata = 1, as_of = 2026-10-27, note = "US Census: under 100 bearers, not listed" }
 
 [[word]]
 text = "queen"

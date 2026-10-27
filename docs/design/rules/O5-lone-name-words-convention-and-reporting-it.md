@@ -33,7 +33,7 @@
   ```
 - **Where the one name unit carries title vocabulary** in a word beside the one it places, or is itself title vocabulary left standing by the title peel, the doubt reported is `title-or-name` instead, which H4 and H7 state — so a title silences THIS kind, not every report at the site.
   ```
-  "John of Prince"            →  ambiguities=("title-or-name",)
+  "John of Bishop"            →  ambiguities=("title-or-name",)
   ```
 - **A script whose own convention settles the order (W4)** decides the word's field, and the report is silenced.
   ```

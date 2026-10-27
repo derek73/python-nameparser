@@ -24,6 +24,7 @@
   "King Curtis"               →  given="King"
   "Sultana Begum"             →  given="Sultana"
   "Mr Shaikh Ahmed"           →  given="Shaikh"
+  "Ms Princess Smith"         →  given="Princess"
   ```
 - **A modifier in the leading run of titles before the first comma** has its phrase in a head title after it in that run, in `of` after it, or in the object of `of` or `the` there. A modifier outside that run, ending the name or after a comma, is read as any title is, save one that may be a given name, which is read everywhere as it is in that run.
   ```
@@ -97,7 +98,7 @@
 - A modifier whose head is not a listed title loses the title, as with duke, which the vocabulary refuses, and so does a modifier written after its head with no `of` behind it.
   ```
   "Grand Duke of Tuscany"     →  given="Grand"
-  "Princess Royal Anne"       →  given="Royal"
+  "Her Royal Highness Princess Royal Anne"  →  given="Royal"
   ```
 - In the given part after a family comma a modifier that is not also a given name is read as listed, so the listing form and the written order of one name read it differently, the cost decision 10 took for the parts where a lone title word is a role.
   ```
@@ -122,12 +123,14 @@
   "Gyani Zail Singh"          →  given="Gyani"
   "Lord Buddha Tamang"        →  given="Buddha"
   ```
-- A ruler written with the bare title in front reads it as the given name, a style before it or `of` after it keeping the title; the record data at hand writes the word there almost only as a given name, and rulers that way mostly in news text.
+- A ruler or a royal written with the bare title in front reads it as a name word, the given name in the default order, a style before it or `of` after it keeping the title; the record data at hand writes the word there almost only as a given name, and rulers and royals that way mostly in news text.
   ```
   "King Henry"                →  given="King"
   "Sultan Hassanal Bolkiah"   →  given="Sultan"
   "Shaikh Hamad bin Isa"      →  given="Shaikh"
+  "Prince Harry"              →  given="Prince"
   "His Majesty King Charles"  →  title="His Majesty King"
+  "Prince of Wales"           →  title="Prince of Wales"
   ```
 - Once a partner has made the word a title, a coordinating join behind it takes the next word into the title too.
   ```
