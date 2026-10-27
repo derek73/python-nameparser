@@ -1421,7 +1421,6 @@
 {"name": "JOSE DA SILVA FH", "given": "JOSE", "family": "DA SILVA", "suffix": "FH", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)"], "initials": "J. S.", "capitalized": "Jose da Silva Fh"}
 {"name": "JOSE E MARIA SANTOS", "given": "JOSE", "middle": "E MARIA", "family": "SANTOS", "ambiguities": ["CONJUNCTION_OR_INITIAL"], "alternatives": ["CONJUNCTION_OR_INITIAL: conjunction as given (vocabulary)"], "initials": "J. E. M. S.", "capitalized": "Jose E Maria Santos"}
 {"name": "JOSE ORTEGA-Y-GASSET", "given": "JOSE", "family": "ORTEGA-Y-GASSET", "initials": "J. O.", "capitalized": "Jose Ortega-y-Gasset"}
-{"name": "JOSE SILVA F", "given": "JOSE", "middle": "SILVA", "family": "F", "initials": "J. S. F.", "capitalized": "Jose Silva F"}
 {"name": "JOSEP CAROD I ROVIRA", "given": "JOSEP", "middle": "CAROD I", "family": "ROVIRA", "ambiguities": ["CONJUNCTION_OR_INITIAL"], "alternatives": ["CONJUNCTION_OR_INITIAL: conjunction as family (vocabulary)"], "initials": "J. C. I. R.", "capitalized": "Josep Carod I Rovira"}
 {"name": "JOSEP LLUIS CAROD I ROVIRA", "given": "JOSEP", "middle": "LLUIS CAROD I", "family": "ROVIRA", "ambiguities": ["CONJUNCTION_OR_INITIAL"], "alternatives": ["CONJUNCTION_OR_INITIAL: conjunction as family (vocabulary)"], "initials": "J. L. C. I. R.", "capitalized": "Josep Lluis Carod I Rovira"}
 {"name": "JOSÉ GARCÍA", "given": "JOSÉ", "family": "GARCÍA", "initials": "J. G.", "capitalized": "José García"}

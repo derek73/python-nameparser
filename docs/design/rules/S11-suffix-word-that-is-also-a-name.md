@@ -1,10 +1,10 @@
 # S11 — a suffix word that is also a name
 
-**When:** a generation word that is also borne as a name stands where a suffix may stand, as in "Pedro Alves Neto" or "Alexandre Dumas fils".
+**When:** a generation word that is also borne as a name, or a spelling of one, stands where a suffix may stand, as in "Pedro Alves Neto" or "Alexandre Dumas fils".
 
 **Then:** it reads as the generation only where the name has words to spare, as a bare ambiguous acronym does (S4), and at the slots that report, either reading carries the ambiguity flag.
 
-- **The writing is read by S6**, and for a generation word such as French `fils` it speaks at the other end of the case: lower case in a name of mixed case is the generation, Title case leans to the name, capitals say nothing. The floor holds first: lower case settles it only where the name keeps a family word, so two name words keep the family, and at the first slot after a comma the count of name words before it decides alone (C4). An agnomen, the Portuguese `Filho`, `Neto`, `Sobrinho` and their feminines, is written in the case of the name around it, so its writing never speaks and the count decides alone; so is each abbreviation of one that Brazilian filings write (`FH`, `Fo`, `Nt`, `Sobr`), a spelling of the word it shortens.
+- **The writing is read by S6**, and for a generation word such as French `fils` it speaks at the other end of the case: lower case in a name of mixed case is the generation, Title case leans to the name, capitals say nothing. The floor holds first: lower case settles it only where the name keeps a family word, so two name words keep the family, and at the first slot after a comma the count of name words before it decides alone (C4). An agnomen, the Portuguese `Filho`, `Neto`, `Sobrinho` and their feminines, is written in the case of the name around it, so its writing never speaks and the count decides alone; so is each abbreviation of one that Brazilian filings write (`FH`, `Fo`, `Nt`, `Sobr`), a spelling of the word it shortens that takes the word's name reading with it, borne or not.
 - **Only name words in front of it count**: a word there that the trailing run takes, a suffix word, a roman numeral read as the generation (S10), a member of the ambiguous class its writing makes a suffix (S6) or one such a word carries in front of it (S7), is no word to spare, and a suffix word there is no company either, as it is for an acronym (S7).
 - **After a comma** the word is read as a member of the ambiguous class is: by the count of the name words before the comma at the first slot after it (C4), and by its writing alone where it ends the given part after a family comma (S5).
 
@@ -65,10 +65,6 @@
 - A three-word name whose last word is a surname that is also an agnomen loses that surname to the suffix, reported, as `Ruth Ann Neta` does. A register whose filer typed the agnomen alone in the surname box disagrees with the reading, and one whose filer typed it after the surname before it agrees.
   ```
   "Ruth Ann Neta"             →  suffix="Neta"
-  ```
-- The single letters `F` and `N`, which filings write for `Filho` and `Neto` too, are not listed: written exactly as an initial is, nothing in the writing tells the agnomen from the initial of a surname, so they stay name words.
-  ```
-  "JOSE SILVA F"              →  family="F"
   ```
 
 ---
