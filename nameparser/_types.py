@@ -611,7 +611,7 @@ class AmbiguityKind(StrEnum):
     #: standing by itself, the peel left no word to be read as a
     #: name, and no fork was taken.
     #: One name word that is a JOIN carrying title vocabulary reports
-    #: this kind too ("John of Prince"): the unit is read as a name,
+    #: this kind too ("John of Bishop"): the unit is read as a name,
     #: and whether the title word inside it is a title is the fork.
     #: Not the title-vs-given-name collision on a word like "Baron",
     #: which is a question about the VOCABULARY and is not this kind.

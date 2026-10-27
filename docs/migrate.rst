@@ -663,7 +663,7 @@ as well; 2.1 and 2.2 read every one of them as 1.4 did. The release
 log's 2.3, 2.4, 2.5 and 2.6 sections carry the reasoning; these are the shapes to
 grep your fixtures for, with what 1.4 read:
 
-- ``"Her Majesty Queen Elizabeth"``, ``"Prince Harry"`` (2.3) — a lone
+- ``"Her Majesty Queen Elizabeth"``, ``"His Royal Highness Prince Harry"`` (2.3) — a lone
   name after a title that addresses by given name is the given name:
   1.4 read last ``Elizabeth`` and ``Harry``. 2.3 matched a run of titles
   by its last one (``Her Majesty Queen``, ``Rev Sir``) and added titles
@@ -754,7 +754,7 @@ grep your fixtures for, with what 1.4 read:
     'MA'
     >>> HumanName("Her Majesty Queen Elizabeth").first
     'Elizabeth'
-    >>> HumanName("Prince Harry").first
+    >>> HumanName("His Royal Highness Prince Harry").first
     'Harry'
     >>> king = HumanName("Dr King Jr")
     >>> king.title, king.last, king.suffix

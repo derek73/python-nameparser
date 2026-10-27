@@ -145,7 +145,7 @@ def test_a_report_names_the_field_its_word_lands_in(
     over master's parser (26cdb891) fails 14 parses, every one a report
     worded at assign -- nine title-or-name join reports saying 'given'
     of a unit H1 moved to the family behind a title (`Attorney General
-    of Minnesota`, `John of Prince Prof.`, `Freiherr St MA`, `Freiherr
+    of Minnesota`, `John of Bishop Prof.`, `Freiherr St MA`, `Freiherr
     von Bishop X.Y.Z.` and five more rows, as declared; on 2026-10-08
     `St St née` stood where `Freiherr St John Smith MA` does), `Kim Min Do`
     under FAMILY_FIRST ('middle', family, P6), `de Kim Ma` under

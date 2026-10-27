@@ -10541,7 +10541,8 @@ CASES: tuple[Case, ...] = (
     # ranks (Lord Peter, Lady Diana) and title or surname for every
     # peer and every wife (Lord Byron, Lady Thatcher), and the set
     # has no way to say "sometimes" -- the reason `venerable` stayed
-    # out.
+    # out. Since #752 phase 2j both are titles only inside a title
+    # phrase (rules/H9), so the prince rows write the style in front.
     Case("title_run_princess_addresses_by_given_name",
          "Her Royal Highness Princess Anne",
          {"title": "Her Royal Highness Princess", "given": "Anne"},
@@ -10550,27 +10551,22 @@ CASES: tuple[Case, ...] = (
                "vocabulary question it filed as #519; `princess` now "
                "IS a given-name title, so the run's last word "
                "addresses by given name and the family is empty"),
-    Case("prince_and_one_name_word_is_a_given_name", "Prince Harry",
-         {"title": "Prince", "given": "Harry"},
+    Case("prince_and_one_name_word_is_a_given_name",
+         "His Royal Highness Prince Harry",
+         {"title": "His Royal Highness Prince", "given": "Harry"},
          classification="fix(#519)",
-         notes="the name the release note advertises: 1.4.0 through "
-               "2.2.0 read family 'Harry'. H1's fold is pinned by the "
-               "Sir John rows; this pins the membership"),
-    Case("prince_licences_the_bound_given_join", "Prince abdul Rahman",
-         {"title": "Prince", "given": "abdul Rahman"},
+         notes="1.4.0 read last 'Harry'. H1's fold is pinned by the Sir "
+               "John rows; this pins the membership. The style keeps "
+               "'prince' a title (rules/H9): the bare 'Prince Harry' "
+               "this row held until #752 phase 2j reads given 'Prince'"),
+    Case("prince_licences_the_bound_given_join",
+         "His Royal Highness Prince abdul Rahman",
+         {"title": "His Royal Highness Prince", "given": "abdul Rahman"},
          classification="fix(#519)",
          notes="the second site that reads the set, rules/P5's "
                "licence: behind a given-name title there is no family "
                "to spare, so the bound word joins forward as it does "
-               "behind Sir. Read family 'Rahman' before #519"),
-    Case("prince_as_a_given_name_is_still_the_collision", "Prince Fielder",
-         {"title": "Prince", "given": "Fielder"},
-         classification="fix(#519)",
-         notes="wrong either way -- Prince is his given name (#348). "
-               "Membership only decides which field the one word "
-               "behind the title takes; it does not decide whether "
-               "the word IS a title, and that is #348's question, "
-               "not this one's"),
+               "behind Sir. 1.4.0 read last 'Rahman'"),
     Case("lord_stays_a_surname_title", "Lord Byron",
          {"title": "Lord", "family": "Byron"},
          notes="negative control for #519: `lord` addresses a duke's "
@@ -10599,14 +10595,15 @@ CASES: tuple[Case, ...] = (
          classification="feat(#491)",
          notes="the first word is the name and the rest the run; only "
                "the word made into a name reports"),
-    Case("lone_joined_unit_carrying_title_vocabulary", "John of Prince",
-         {"given": "John of Prince"}, ambiguities=("title-or-name",),
+    Case("lone_joined_unit_carrying_title_vocabulary", "John of Bishop",
+         {"given": "John of Bishop"}, ambiguities=("title-or-name",),
          classification="feat(#491)",
          notes="rules/O5's exception: the one name unit is a join "
                "(P3) carrying title vocabulary, so the doubt is "
-               "whether `Prince` is a title rather than which field "
-               "the unit takes -- one of the inputs measured to reach "
-               "that branch, `prince` being in TITLES"),
+               "whether `Bishop` is a title rather than which field "
+               "the unit takes, `bishop` being in TITLES. The row held "
+               "`John of Prince` until #752 phase 2j gave `prince` a "
+               "given reading, which reports given-or-family"),
     Case("a_joined_unit_h1_moves_is_reported_in_the_field_it_lands_in",
          "Attorney General of Minnesota",
          {"title": "Attorney", "family": "General of Minnesota"},
@@ -10671,7 +10668,7 @@ CASES: tuple[Case, ...] = (
          ambiguities=("title-or-name",),
          classification="feat(#491)",
          notes="the clause reaches every join whose non-leading member "
-               "is TITLES vocabulary, not just `prince`: `John and "
+               "is TITLES vocabulary, not just `bishop`: `John and "
                "Pope`, `Smith and Bishop` and `John of Judge` report "
                "it too. That is the pope/judge/bishop collision set "
                "(decisions/vocabulary-collisions) met inside a "
@@ -10685,8 +10682,8 @@ CASES: tuple[Case, ...] = (
                "chains into a title run (H3) and never reaches the "
                "assignment site at all, so it reports nothing -- the "
                "same silence as a lone `Dr.`"),
-    Case("lone_joined_unit_behind_a_peeled_title", "Dr. Smith and Prince",
-         {"title": "Dr.", "family": "Smith and Prince"},
+    Case("lone_joined_unit_behind_a_peeled_title", "Dr. Smith and Bishop",
+         {"title": "Dr.", "family": "Smith and Bishop"},
          ambiguities=("title-or-name",), classification="parity",
          notes="the join clause (rules/H7, split from H4) asks whether "
                "a WORD is a title, so a title peeled in FRONT of the unit "
@@ -12211,12 +12208,12 @@ CASES: tuple[Case, ...] = (
                "title vocabulary, so the word arrives in the trailing "
                "slot as any other piece would"),
     Case("title_word_trailing_leaves_a_joined_title_unit_standing",
-         "John of Prince Prof.",
-         {"title": "Prof.", "family": "John of Prince"},
+         "John of Bishop Prof.",
+         {"title": "Prof.", "family": "John of Bishop"},
          ambiguities=("title-or-name",), classification="fix(#316)",
          notes="H7's join clause, reached through the trailing walk: "
                "the unit left standing is the one H7 already reports "
-               "for on its own ('John of Prince'), and the walk is "
+               "for on its own ('John of Bishop'), and the walk is "
                "what makes it the only one. The single-word half of "
                "H4 cannot be reached this way -- a lone title-"
                "vocabulary word in front of a trailing title is taken "
@@ -12663,6 +12660,44 @@ CASES: tuple[Case, ...] = (
          classification="fix(#752)",
          notes="H9: a style read as a name word is no title there, so it "
                "partners nothing; read title 'Shaikh Sultan' before"),
+    Case("given_name_title_prince_at_the_head", "Prince Fielder",
+         {"given": "Prince", "family": "Fielder"},
+         classification="fix(#348)",
+         notes="H9; read title 'Prince', given 'Fielder' 2.3.0 through "
+               "2.6.0 and last 'Fielder' in 1.4.0 (#752 phase 2j)"),
+    Case("given_name_title_prince_after_a_salutation", "Mr Prince Smith",
+         {"title": "Mr", "given": "Prince", "family": "Smith"},
+         classification="fix(#853)",
+         notes="H9: a salutation is no partner; read title 'Mr Prince' "
+               "before"),
+    Case("given_name_title_princess_after_a_salutation",
+         "Ms Princess Smith",
+         {"title": "Ms", "given": "Princess", "family": "Smith"},
+         classification="fix(#853)",
+         notes="H9: a salutation is no partner; read title "
+               "'Ms Princess' before"),
+    Case("given_name_title_princess_after_a_family_comma",
+         "Smith, Princess",
+         {"given": "Princess", "family": "Smith"}, classification="fix(#752)",
+         notes="H9; read title 'Princess', given 'Smith' before"),
+    Case("given_name_title_prince_before_a_family_comma",
+         "Prince Smith, John",
+         {"given": "John", "family": "Prince Smith"},
+         notes="H6 peels only a title, so the surname keeps the word, as "
+               "1.4.0 read it; master read title 'Prince'"),
+    Case("royal_with_a_bare_leading_prince", "Prince Harry",
+         {"given": "Prince", "family": "Harry"},
+         classification="fix(#752)",
+         notes="H9's Accepted clause, the class 'king' and 'sultan' "
+               "took; read title 'Prince', given 'Harry' 2.3.0 through "
+               "2.6.0 and last 'Harry' in 1.4.0"),
+    Case("princess_behind_a_style_and_a_trailing_modifier",
+         "Her Royal Highness Princess Royal Anne",
+         {"title": "Her Royal Highness Princess", "given": "Royal",
+          "family": "Anne"},
+         notes="H9's Accepted clause: the style keeps 'princess' a title, "
+               "and 'royal' written after its head loses its own, as "
+               "master read it"),
     Case("given_name_modifier_after_a_style", "Hon. Wing Lau",
          {"title": "Hon.", "given": "Wing", "family": "Lau"},
          notes="H9: the modifier's test, not a contested word's style "

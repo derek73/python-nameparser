@@ -615,7 +615,7 @@ def _assign_main(seg_idx: int, state: ParseState,
             # rules/H7: "one name UNIT of more than one word carrying
             # title vocabulary reports `title-or-name`" (history:
             # decisions/H7, decisions/H4 #518) -- one branch, its detail
-            # naming a field only in H7's shape ('John of Prince',
+            # naming a field only in H7's shape ('John of Bishop',
             # 'Attorney General of Minnesota'), where the unit is more
             # than the title word.
             # A LONE title word never reaches here ('Dr.', 'Prince of

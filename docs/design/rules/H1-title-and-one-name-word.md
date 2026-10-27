@@ -16,7 +16,7 @@
   ```
   "Elizabeth II, Queen"       →  given="Elizabeth"
   "John III, Sir"             →  given="John"
-  "Anne, Princess"            →  given="Anne"
+  "Anne, Swami"               →  given="Anne"
   "Sir John"  family-first    →  given="John"
   "John III, Dr."             →  family="John"  · boundary
   ```

@@ -236,7 +236,7 @@
 {"name": "Anne Berit Bernhard Nilsen", "given": "Anne", "middle": "Berit Bernhard", "family": "Nilsen", "initials": "A. B. B. N."}
 {"name": "Anne Sepp", "given": "Anne", "family": "Sepp", "initials": "A. S."}
 {"name": "Anne Sofie Holm Hansen", "given": "Anne", "middle": "Sofie Holm", "family": "Hansen", "initials": "A. S. H. H."}
-{"name": "Anne, Princess", "title": "Princess", "given": "Anne", "initials": "A."}
+{"name": "Anne, Swami", "title": "Swami", "given": "Anne", "initials": "A."}
 {"name": "Anne-Pierre de Montesquiou-Fézensac", "given": "Anne-Pierre", "family": "de Montesquiou-Fézensac", "initials": "A. M."}
 {"name": "Annebault, Claude d'", "given": "Claude", "family": "d' Annebault", "initials": "C. A."}
 {"name": "Annelise Weber", "given": "Annelise", "family": "Weber", "initials": "A. W."}
@@ -825,7 +825,7 @@
 {"name": "Dr. Smith Jr., AD", "title": "Dr.", "family": "Smith", "suffix": "Jr., AD", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "S."}
 {"name": "Dr. Smith Sir.", "title": "Dr. Sir.", "family": "Smith", "initials": "S."}
 {"name": "Dr. Smith V, AD", "title": "Dr.", "given": "AD", "family": "Smith V", "initials": "A. S. V.", "capitalized_force": "Dr. Ad Smith V"}
-{"name": "Dr. Smith and Prince", "title": "Dr.", "family": "Smith and Prince", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "S. P."}
+{"name": "Dr. Smith and Bishop", "title": "Dr.", "family": "Smith and Bishop", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "S. B."}
 {"name": "Dr. Smith née Jones", "title": "Dr.", "family": "Smith", "maiden": "Jones", "initials": "S."}
 {"name": "Dr. Smith, John", "title": "Dr.", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Dr. St. Pierre, Ed", "title": "Dr.", "given": "Ed", "family": "St. Pierre", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "E. P.", "capitalized_force": "Dr. Ed st. Pierre"}
@@ -1238,6 +1238,7 @@
 {"name": "Hempel, Ludwig", "given": "Ludwig", "family": "Hempel", "initials": "L. H."}
 {"name": "Her Majesty Queen Elizabeth", "title": "Her Majesty Queen", "given": "Elizabeth", "initials": "E."}
 {"name": "Her Royal Highness Princess Anne", "title": "Her Royal Highness Princess", "given": "Anne", "initials": "A."}
+{"name": "Her Royal Highness Princess Royal Anne", "title": "Her Royal Highness Princess", "given": "Royal", "family": "Anne", "initials": "R. A."}
 {"name": "Hera Hilmarsdóttir", "given": "Hera", "family": "Hilmarsdóttir", "initials": "H. H."}
 {"name": "Hera Hjartardóttir", "given": "Hera", "family": "Hjartardóttir", "initials": "H. H."}
 {"name": "Herma Studeny", "given": "Herma", "family": "Studeny", "initials": "H. S."}
@@ -1885,8 +1886,8 @@
 {"name": "John nee Prof. ba MA", "family": "John", "suffix": "MA", "maiden": "Prof. ba", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "J.", "capitalized_force": "John (Prof. Ba) MA"}
 {"name": "John née Jones Smith Ma", "family": "John", "maiden": "Jones Smith Ma", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "J."}
 {"name": "John née Jones Smith V", "family": "John", "maiden": "Jones Smith V", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: generation as suffix (vocabulary)"], "initials": "J."}
+{"name": "John of Bishop", "given": "John of Bishop", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "J. B."}
 {"name": "John of Judge", "given": "John of Judge", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "J. J."}
-{"name": "John of Prince", "given": "John of Prince", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "J. P."}
 {"name": "John of the Doe", "given": "John of the Doe", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "J. D."}
 {"name": "John van Buren, Ed", "given": "John", "family": "van Buren", "suffix": "Ed", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (declared)"], "initials": "J. B.", "capitalized_force": "John van Buren ED"}
 {"name": "John van Mc", "given": "John", "family": "van Mc", "initials": "J. v. M.", "capitalized_force": "John Van Mc"}
@@ -2601,6 +2602,7 @@
 {"name": "Mrs. Garcia", "title": "Mrs.", "family": "Garcia", "initials": "G."}
 {"name": "Ms A.J. Smith", "title": "Ms", "given": "A.J.", "family": "Smith", "initials": "A. S."}
 {"name": "Ms Hon Solo", "title": "Ms Hon", "family": "Solo", "initials": "S."}
+{"name": "Ms Princess Smith", "title": "Ms", "given": "Princess", "family": "Smith", "initials": "P. S."}
 {"name": "Ms. Rebecca Teichman", "title": "Ms.", "given": "Rebecca", "family": "Teichman", "initials": "R. T."}
 {"name": "Mudane Bertram Wilberforce Henry Robert Wooster MP", "given": "Mudane", "middle": "Bertram Wilberforce Henry Robert", "family": "Wooster", "suffix": "MP", "initials": "M. B. W. H. R. W."}
 {"name": "Mueller Kathy", "order": "FAMILY_FIRST", "given": "Kathy", "family": "Mueller", "initials": "K. M."}
@@ -2832,11 +2834,11 @@
 {"name": "Prema", "given": "Prema", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "P."}
 {"name": "Prema", "order": "FAMILY_FIRST", "family": "Prema", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "P."}
 {"name": "President of the United States Barack Obama", "title": "President of the United States", "given": "Barack", "family": "Obama", "initials": "B. O."}
-{"name": "Prince Charles", "title": "Prince", "given": "Charles", "initials": "C."}
-{"name": "Prince Fielder", "title": "Prince", "given": "Fielder", "initials": "F."}
+{"name": "Prince Charles", "given": "Prince", "family": "Charles", "initials": "P. C."}
+{"name": "Prince Fielder", "given": "Prince", "family": "Fielder", "initials": "P. F."}
+{"name": "Prince Harry", "given": "Prince", "family": "Harry", "initials": "P. H."}
 {"name": "Prince of Wales", "title": "Prince of Wales"}
 {"name": "Prince of Wales Jr", "title": "Prince of Wales", "family": "Jr", "initials": "J."}
-{"name": "Princess Royal Anne", "title": "Princess", "given": "Royal", "family": "Anne", "initials": "R. A."}
 {"name": "Prof. Dk. Salima Farida mwana Hamisi Musa M.D. Ph.D.", "title": "Prof. Dk.", "given": "Salima", "middle": "Farida mwana Hamisi", "family": "Musa", "suffix": "M.D. Ph.D.", "initials": "S. F. m. H. M.", "capitalized_force": "Prof. Dk. Salima Farida Mwana Hamisi Musa M.D. Ph.D."}
 {"name": "Prof. Dr. Ada Cornelia Cesar Martin von Bruhl Jr, MD DDS", "title": "Prof. Dr.", "given": "Ada", "middle": "Cornelia Cesar Martin", "family": "von Bruhl", "suffix": "Jr, MD DDS", "initials": "A. C. C. M. B."}
 {"name": "Prof. Dr. Ada Cornelia Cesar Martín von Bruhl Jr, M.D., Ph.D.", "title": "Prof. Dr.", "given": "Ada", "middle": "Cornelia Cesar Martín", "family": "von Bruhl", "suffix": "Jr, M.D., Ph.D.", "initials": "A. C. C. M. B."}

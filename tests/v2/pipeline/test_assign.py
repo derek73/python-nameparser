@@ -276,8 +276,8 @@ def test_leading_particle_detail_names_the_field_the_word_lands_in(
      "'Rinpoche' is post-nominal vocabulary with no name word beside "
      "it; read as a {role} name rather than a post-nominal, nothing "
      "else being left to be the name"),
-    ("John of Prince", AmbiguityKind.TITLE_OR_NAME,
-     "'John of Prince' is the only name unit and joins title "
+    ("John of Bishop", AmbiguityKind.TITLE_OR_NAME,
+     "'John of Bishop' is the only name unit and joins title "
      "vocabulary to a name word; read as a {role} name by convention"),
 ])
 def test_convention_details_name_the_field_the_word_lands_in(
@@ -292,7 +292,7 @@ def test_convention_details_name_the_field_the_word_lands_in(
     # shape ("Lord Chancellor") deliberately names none, because H1
     # retags that word after assign under the default order.
     lex = _LEX.add(suffix_words={"rinpoche"}, conjunctions={"of"},
-                   titles={"prince"})
+                   titles={"bishop"})
     (amb,) = _reported(text, policy, lexicon=lex)
     assert amb.kind is kind
     assert amb.detail == detail.format(role=role)
