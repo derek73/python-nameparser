@@ -21,10 +21,40 @@ tests/v2/pipeline/test_assemble.py.
 """
 from __future__ import annotations
 
-from nameparser._pipeline._state import FIELD_READING, NAME_ROLES, ParseState
-from nameparser._types import (
-    Ambiguity, AmbiguityKind, ParsedName, Role, Token,
+from nameparser._pipeline._state import (
+    FIELD_READING, NAME_ROLES, Beside, Deferred, ParseState,
+    PendingAmbiguity,
 )
+from nameparser._types import (
+    FOLDED_TAG, Ambiguity, AmbiguityKind, ParsedName, Reading, Role, Token,
+)
+
+
+def _alternative(pending: PendingAmbiguity, materialized: tuple[Token, ...],
+                 final: dict[int, Token],
+                 middle_as_family: bool) -> Reading | None:
+    """The public Reading of a report's PendingReading, its field named
+    from the final roles where the emitter deferred it (O5's other
+    primary field) and folded as `middle_as_family` folds every middle
+    (rules/O6's neighbour, the policy's own fold)."""
+    alt = pending.alternative
+    if alt is None or not materialized:
+        return None
+    role = alt.role
+    if role is Deferred.OTHER_PRIMARY:
+        role = (Role.FAMILY if materialized[0].role is Role.GIVEN
+                else Role.GIVEN)
+    elif isinstance(role, Beside) and role.index in final:
+        front = final[role.index]
+        role = (role.unfolded
+                if FOLDED_TAG in front.tags and role.unfolded is not None
+                else front.role)
+    elif isinstance(role, (Deferred, Beside)):
+        # assign found no name position to name it from
+        return None
+    if middle_as_family and role is Role.MIDDLE:
+        role = Role.FAMILY
+    return Reading(alt.kind, role, alt.source)
 
 
 # rules/A2: "a name with no name content parses to the empty
@@ -143,7 +173,10 @@ def assemble(state: ParseState) -> ParsedName:
                 continue
             detail = (f"{detail}{FIELD_READING[materialized[0].role]}"
                       f"{pending.field_tail}")
-        ambiguities.append(Ambiguity(pending.kind, detail, materialized))
+        ambiguities.append(Ambiguity(
+            pending.kind, detail, materialized,
+            _alternative(pending, materialized, final,
+                         state.policy.middle_as_family)))
     return ParsedName(original=state.original,
                       tokens=tuple(final.values()),
                       ambiguities=tuple(ambiguities))

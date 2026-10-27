@@ -9,6 +9,7 @@
   "JOHN QUINCY SMITH I"       →  ambiguities=("suffix-or-name",)
   ```
 - **A report that names the field its word was read into names the field the word holds in the result**, whatever rule moved it after the report was made.
+- **A report of a fork carries the reading the parse did not take**: its kind, its source, and the field the word would land in with every other word read as the parse read it, save a reading no field could hold, a connective with no word before it to join.
 
 **Because:** a caller can only act on doubt that is reported.
 

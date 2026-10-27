@@ -925,7 +925,10 @@ class Lexicon:
         # Lexicon field layout (version skew) -- silently loading it
         # would defer the failure to some distant attribute read.
         # Message kept in sync with _types._guarded_setstate by design
-        # (layering keeps this module import-free of _types).
+        # (layering keeps this module import-free of _types). Unlike
+        # that guard it admits no field added later (`ADDED_IN`, 2.7):
+        # every Lexicon field is still required, so a release adding one
+        # breaks older Lexicon pickles until this learns the marker.
         expected = {f.name for f in dataclasses.fields(Lexicon)} - {"_cap_map"}
         if set(state) != expected:
             missing = ", ".join(sorted(expected - set(state))) or "none"

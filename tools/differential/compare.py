@@ -29,6 +29,7 @@ import subprocess
 import tempfile
 from pathlib import Path
 from types import ModuleType
+from collections.abc import Mapping
 from typing import NamedTuple
 
 HERE = Path(__file__).resolve().parent
@@ -118,8 +119,13 @@ V2_FIELDS = ("title", "given", "middle", "family", "suffix", "nickname",
              "maiden")
 WANT_V2 = @@WANT_V2@@
 
+# whether this release reports the reading a fork did not take (2.7,
+# #752 phase 2m): compare() compares the alternatives only where it does
+_AMBIGUITY = getattr(nameparser, "Ambiguity", None)
 print(json.dumps({"__version__": nameparser.__version__,
-                  "__file__": nameparser.__file__}), flush=True)
+                  "__file__": nameparser.__file__,
+                  "alternatives": "alternative" in getattr(
+                      _AMBIGUITY, "__dataclass_fields__", {})}), flush=True)
 
 if WANT_V2:
     from nameparser import Parser, Policy, parse
@@ -138,6 +144,14 @@ def _v2_row(p):
     row = {f: (getattr(p, f, "") or "") for f in V2_FIELDS}
     row["_ambiguities"] = sorted(
         {a.kind.name for a in getattr(p, "ambiguities", ())})
+    # #752 phase 2m: the reading each report did not take, as
+    # snapshot.alternatives() records it, in report order; none before
+    # 2.7, where compare() leaves the key out of both sides
+    row["_alternatives"] = [
+        f"{a.kind.name}: {alt.kind.value} as {alt.role.value} "
+        f"({alt.source.value})"
+        for a in getattr(p, "ambiguities", ())
+        if (alt := getattr(a, "alternative", None)) is not None]
     # #484: the derived initials() view
     row["_initials"] = p.initials() or ""
     # #826: the case-repair views, as snapshot.case_views() records them
@@ -308,6 +322,14 @@ class Result(NamedTuple):
     cldr: int           # ... names of them held only by corpus_cldr.jsonl
     compared: int       # entries compared
     skipped: int        # order-bearing entries the baseline predates
+    unrecorded: tuple[str, ...] = ()  # keys the baseline cannot read
+
+
+def unrecorded(tell: Mapping[str, object]) -> tuple[str, ...]:
+    """The row keys the baseline worker's release cannot record, which
+    compare() leaves out of both sides: the alternatives before 2.7,
+    since a tree reporting one is not a name that moved."""
+    return () if tell.get("alternatives") else ("alternatives",)
 
 
 def compare(baseline: str, corpora: list[Path] | None = None) -> Result:
@@ -323,7 +345,7 @@ def compare(baseline: str, corpora: list[Path] | None = None) -> Result:
                if order is None
                or _parse_version(baseline) >= _parse_version(min_for[order])]
     want_v2 = "v2" in _surfaces_for(baseline)
-    _, results = _run_worker(
+    tell, results = _run_worker(
         baseline, want_v2, [{"name": n, "order": o} for n, o in entries])
     old = [snapshot.row(n, o, r.get("v2"), r.get("facade"))
            for (n, o), r in zip(entries, results)]
@@ -332,6 +354,10 @@ def compare(baseline: str, corpora: list[Path] | None = None) -> Result:
     _check_tree(nameparser.__file__)
     if not want_v2:
         new = [snapshot.facade_view(r) for r in new]
+    dropped = unrecorded(tell)
+    for r in (*old, *new):
+        for k in dropped:
+            r.pop(k, None)
     before = {snapshot.key(r): r for r in old}
     after = {snapshot.key(r): r for r in new}
     moved = [k for k in after if before[k] != after[k]]
@@ -339,7 +365,8 @@ def compare(baseline: str, corpora: list[Path] | None = None) -> Result:
     cldr = len(snapshot.only_in(snapshot.CLDR_CORPUS,
                                 {name for name, _ in moved}))
     return Result(snapshot.grouped(before, after), len(moved), latin, cldr,
-                  len(entries), len(every) - len(entries))
+                  len(entries), len(every) - len(entries),
+                  dropped if want_v2 else ())
 
 
 def main() -> int:
@@ -353,6 +380,9 @@ def main() -> int:
                          "per line is a name.")
     args = ap.parse_args()
     r = compare(args.baseline, args.corpus)
+    if r.unrecorded:
+        print(f"not compared: {', '.join(r.unrecorded)} -- "
+              f"{args.baseline} does not report them\n")
     print("\n".join(r.moves) or "no differences")
     print(f"\n{r.moved} of {r.compared} entries read differently from "
           f"{args.baseline}, {r.latin} of them Latin-only; {r.cldr} of "

@@ -27,6 +27,9 @@ from nameparser._types import (
     Ambiguity,
     AmbiguityKind,
     ParsedName,
+    Reading,
+    ReadingKind,
+    ReadingSource,
     Role,
     Segmentation,
     Segmenter,
@@ -38,7 +41,8 @@ __all__ = [
     # v1 (compatibility layer)
     "HumanName",
     # v2 core
-    "Span", "Role", "Token", "Ambiguity", "AmbiguityKind", "ParsedName",
+    "Span", "Role", "Token", "Ambiguity", "AmbiguityKind", "Reading",
+    "ReadingKind", "ReadingSource", "ParsedName",
     "STABLE_TAGS", "Segmentation", "Segmenter",
     "Lexicon", "Policy", "PolicyPatch", "PatronymicRule", "Script", "UNSET",
     "CapsSuffixes",

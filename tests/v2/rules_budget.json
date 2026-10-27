@@ -1,5 +1,5 @@
 {
-  "A1": {"words": 144, "then_words": 120, "because_sentences": 1, "except": 0, "precedence": 0, "accepted": 1, "accepted_words": 32},
+  "A1": {"words": 195, "then_words": 171, "because_sentences": 1, "except": 0, "precedence": 0, "accepted": 1, "accepted_words": 32},
   "A2": {"words": 60, "then_words": 31, "because_sentences": 1, "except": 0, "precedence": 0, "accepted": 0, "accepted_words": 0},
   "C1": {"words": 448, "then_words": 196, "because_sentences": 1, "except": 0, "precedence": 5, "accepted": 1, "accepted_words": 116},
   "C2": {"words": 492, "then_words": 399, "because_sentences": 1, "except": 2, "precedence": 0, "accepted": 1, "accepted_words": 81},

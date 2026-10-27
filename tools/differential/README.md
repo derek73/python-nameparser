@@ -33,8 +33,16 @@ records neither, but a view is the whole repaired name, so in a name
 repair does change, a role move that changes the rendering moves the
 view too, whether or not a word's case changed -- and, under
 `facade`, whatever `HumanName` reads differently from the 2.0 surface
-(3 names on 2026-10-13). Empty values are left out, so a reading that
-gains a field shows as one added key.
+(3 names on 2026-10-13). Since 2.7 a line also holds `alternatives`,
+the reading each ambiguity report did not take, one per report in
+report order, so a report losing its alternative beside an identical
+one still moves the line (#752 phase 2m). Empty values are left out,
+so a reading that gains a field shows as one added key. The file's
+first line is a header, `{"recorded": [...]}`, naming the keys added
+after the snapshot existed that the recording tree could record: a
+comparison leaves out a key either side did not record, decided by
+that header and not by whether a row holds one, since a tree with
+the field can read a set of names no report reaches.
 
 **When the test fails.** Read the grouped moves it prints. If every
 move is one the change intends, re-record and commit `snapshot.jsonl`
@@ -53,7 +61,12 @@ only `corpus_cldr.jsonl` holds. A snapshot committed before #826
 records no case view, so against one (`--since v2.5.0`) the views are
 not compared and the report says so; a case claim for that release is
 read from `compare.py --baseline 2.5.0`, which computes the views on
-both sides.
+both sides. A snapshot without the header records no alternatives, so
+`--since v2.6.0` leaves them out the same way, and so does
+`compare.py --baseline` against a release before 2.7, whose worker
+says it has no `Ambiguity.alternative`: a name the tree reports one
+for is not a name that moved (867 of the 1,088 entries `--baseline
+2.6.0` reported on 2026-10-26 were only that).
 
 `--tree PATH` reads with another checkout's `nameparser` (the corpus is
 always this checkout's), and checks that the import really came from
