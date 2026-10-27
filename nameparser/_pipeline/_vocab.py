@@ -799,21 +799,41 @@ def is_suffix_lenient(text: str, lexicon: Lexicon) -> bool:
         or _is_suffix_strict_n(n, text, lexicon)
 
 
-#: The suffix delimiter every policy has, beside the comma. rules/C10:
-#: "The semicolon is a delimiter by default" -- "no policy removes the
-#: semicolon, as none removes the comma", so a policy's
-#: extra_suffix_delimiters add to it. decisions/C10 (D15).
-BUILTIN_SUFFIX_DELIMITERS = frozenset({";"})
+#: The suffix delimiters every policy has, beside the comma. rules/C10:
+#: "The semicolon, the hyphen and the slash are delimiters by default"
+#: -- "no policy removes them, as none removes the comma", so a
+#: policy's extra_suffix_delimiters add to them. decisions/C10 (D15,
+#: #889).
+BUILTIN_SUFFIX_DELIMITERS = frozenset({";", "-", "/"})
+
+#: The built-in delimiters read glued to a word or inside one. rules/C10:
+#: "a built-in hyphen or slash parts only standing alone" -- glued, it
+#: is the word's own ('al-', 'MD/PhD'). decisions/C10 (#889).
+BUILTIN_GLUED_DELIMITERS = frozenset({";"})
 
 
 def delimiter_cores(policy_delimiters: frozenset[str]) -> frozenset[str]:
     """The built-in suffix delimiters with the configured ones,
-    surrounding whitespace stripped: ' - ' -> '-'. Whitespace-padded
+    surrounding whitespace stripped: ' - ' -> '-', the cores that part
+    a trailing suffix part STANDING ALONE. Whitespace-padded
     delimiters surface as standalone tokens; the stripped core is what
     tokenize produced."""
     if not policy_delimiters:
         return BUILTIN_SUFFIX_DELIMITERS
     return BUILTIN_SUFFIX_DELIMITERS | frozenset(
+        d.strip() for d in policy_delimiters if d.strip())
+
+
+def glued_cores(policy_delimiters: frozenset[str]) -> frozenset[str]:
+    """The cores read glued to one end of a word or inside one: the
+    semicolon and every configured core, never a built-in hyphen or
+    slash that the caller did not declare (BUILTIN_GLUED_DELIMITERS).
+    A configured core that is itself a word (' and ') is in the set:
+    `glued_stem`'s callers ask `glues` before reading it glued, while
+    `is_wholly_suffix`'s in-word split does not ('MDandPhD')."""
+    if not policy_delimiters:
+        return BUILTIN_GLUED_DELIMITERS
+    return BUILTIN_GLUED_DELIMITERS | frozenset(
         d.strip() for d in policy_delimiters if d.strip())
 
 
@@ -1687,8 +1707,10 @@ def is_wholly_suffix(texts: Sequence[str], lexicon: Lexicon,
     lenient = policy.lenient_comma_suffixes and not strict
     # v1 expand_suffix_delimiter parity (#206): a configured delimiter
     # is TRANSPARENT in the all-suffix tests -- v1 split the part string
-    # on the delimiter before checking, so the delimiter never counted
+    # on the delimiter before checking, so the delimiter never counted;
+    # the built-in cores are transparent the same way (rules/C10)
     cores = delimiter_cores(policy.extra_suffix_delimiters)
+    inner = glued_cores(policy.extra_suffix_delimiters)
 
     def counts_as_suffix(text: str) -> bool:
         if (one_case is not None
@@ -1701,14 +1723,14 @@ def is_wholly_suffix(texts: Sequence[str], lexicon: Lexicon,
                 or period_joined_vocab(text, lexicon) == "suffix"):
             return True
         # the split only where a core stands in the word: the built-in
-        # ';' makes `cores` non-empty for every policy, and a call per
+        # ';' makes `inner` non-empty for every policy, and a call per
         # word would be a frame on every name word a run test asks
-        for core in cores:
+        for core in inner:
             if core in text:
-                stem = glued_stem(text, cores)
+                stem = glued_stem(text, inner)
                 if stem is not None:
                     return counts_as_suffix(stem)
-                return splits_into_suffixes(text, cores, lexicon)
+                return splits_into_suffixes(text, inner, lexicon)
         return False
 
     merged = list(texts)

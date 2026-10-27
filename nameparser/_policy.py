@@ -689,14 +689,18 @@ class Policy:
     #: its words, since a lone "(Nee)" is a maiden NAME and not a
     #: marker (#329).
     maiden_delimiters: frozenset[tuple[str, str]] = frozenset()
-    #: Additional separators that split suffix groups (e.g. " - " for
-    #: "Jane Smith, RN - CRNA"). Additive only: the comma and the
-    #: semicolon always split suffix groups and cannot be replaced --
-    #: comma handling is structural (the same comma reading that parses
-    #: "Family, Given" input), not a configurable delimiter, and the
-    #: semicolon is built in since 2.6 (rules/C10). A separator glued
-    #: to a suffix word after the first comma counts too: "John Smith,
-    #: MD; PhD" reads suffix "MD; PhD", the word keeping its separator.
+    #: Additional separators that split suffix groups (e.g. " | " for
+    #: "Jane Smith, RN | CRNA"). Additive only: the comma, the
+    #: semicolon, and a hyphen or slash standing alone split suffix
+    #: groups after a whole name and cannot be replaced -- comma handling is
+    #: structural (the same comma reading that parses "Family, Given"
+    #: input), not a configurable delimiter, the semicolon is built in
+    #: since 2.6 and the spaced hyphen and slash since 2.7 (rules/C10).
+    #: A declared separator glued to a suffix word after the first comma
+    #: counts too, as the semicolon does: "John Smith, MD; PhD" reads
+    #: suffix "MD; PhD", the word keeping its separator. The built-in
+    #: hyphen and slash do not count glued, being a word's own there
+    #: ("al-", "MD/PhD"); declaring " - " makes the hyphen count glued.
     extra_suffix_delimiters: frozenset[str] = frozenset()
     #: Governs "Family, Suffix"-shaped input where the suffix word is
     #: also initial-shaped (a single letter, bare or period-written --

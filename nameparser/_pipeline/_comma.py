@@ -43,7 +43,7 @@ from nameparser._pipeline._state import (
 )
 from nameparser._pipeline._vocab import (
     ROMAN, caps_shape_candidate, claimed_as_non_name,
-    composed_len, delimiter_cores, glued_stem, glues, is_caps_word,
+    composed_len, delimiter_cores, glued_cores, glued_stem, glues, is_caps_word,
     is_paired_initials, is_single_letter_numeral, is_wholly_suffix,
     name_reading, name_word_count, reads_as_generation, suffix_reading,
     surname_unit_facts, unit_ends, written_as_a_name,
@@ -329,10 +329,12 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
     # delimiter to the suffix-comma form alone (C10's core-is-a-word
     # Accepted entry)
     cores = delimiter_cores(pol.extra_suffix_delimiters)
+    inner = glued_cores(pol.extra_suffix_delimiters)
     whole: bool | None = None
     core_idx: list[int] = []
     # a loop, and the head counted only where a core stands alone: the
-    # built-in ';' leaves `cores` non-empty for every policy (D15)
+    # built-in ';', '-' and '/' leave `cores` non-empty for every
+    # policy (D15, #889)
     if len(seg1) > 1:
         for i in seg1:
             if tokens[i].text in cores:
@@ -377,13 +379,16 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
     for i in part:
         text = texts[i] = tokens[i].text
         here = False
-        for core in cores:
-            if core in text:
-                cored = True
-                if text not in cores and glues(core):
-                    here = glued = True
+        if text in cores:
+            cored = True
+        else:
+            for core in inner:
+                if core in text:
+                    cored = True
+                    if glues(core):
+                        here = glued = True
         if here:
-            stem = glued_stem(text, cores)
+            stem = glued_stem(text, inner)
             if stem is not None:
                 texts[i] = stem
     # The words of the class in the part, and the unlisted all-caps

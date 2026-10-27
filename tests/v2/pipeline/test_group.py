@@ -495,17 +495,18 @@ def test_the_connective_carveout_counts_the_surviving_name() -> None:
         ["Jane and Zee", "Jones"]]
 
 
-_DASH = Policy(extra_suffix_delimiters=frozenset({" - "}))
+# " | ", not " - ": a hyphen standing alone is built in (#889)
+_DASH = Policy(extra_suffix_delimiters=frozenset({" | "}))
 
 
 def test_a_delimiter_core_in_a_suffix_tail_is_not_maiden_text() -> None:
     """A tail segment is cut at its delimiter cores before the marker
     pass, and the cores are dropped (#206, #549). A core is not a word
     the marker can take, and the marker cannot take across one: 'PhD
-    née - Jones' reads as 'PhD née, Jones' does, the marker ending its
+    née | Jones' reads as 'PhD née, Jones' does, the marker ending its
     part with nothing behind it, so there is no clause."""
-    out = _grouped("Smith, John, PhD née - Jones", policy=_DASH)
-    core = next(i for i, t in enumerate(out.tokens) if t.text == "-")
+    out = _grouped("Smith, John, PhD née | Jones", policy=_DASH)
+    core = next(i for i, t in enumerate(out.tokens) if t.text == "|")
     assert core in out.dropped
     assert not any(t.role is Role.MAIDEN for t in out.tokens)
     twin = _grouped("Smith, John, PhD née, Jones")
@@ -517,7 +518,7 @@ def test_a_marker_in_a_suffix_part_is_a_word() -> None:
     # (rules/M2, #601), so in a tail part it takes nothing, core or
     # no core. This was the #549 test that a trailing core is cut
     # before the walk, and the walk no longer runs in a tail part.
-    out = _grouped("Smith, John, PhD née Jones V -", policy=_DASH)
+    out = _grouped("Smith, John, PhD née Jones V |", policy=_DASH)
     assert not any(t.role is Role.MAIDEN for t in out.tokens)
 
 
@@ -526,9 +527,9 @@ def test_a_core_is_screened_before_the_marker_looks_for_a_word_ahead() -> None:
     marker standing behind nothing but a core is a leading marker and
     is not taken -- the core, which is not the segment's only token,
     parts the segment there and is dropped (#549)."""
-    out = _grouped("Smith, John, - née Jones", policy=_DASH)
+    out = _grouped("Smith, John, | née Jones", policy=_DASH)
     assert not any(t.role is Role.MAIDEN for t in out.tokens)
-    core = next(i for i, t in enumerate(out.tokens) if t.text == "-")
+    core = next(i for i, t in enumerate(out.tokens) if t.text == "|")
     assert core in out.dropped
     assert _piece_texts(out)[2] == ["née", "Jones"]
 
@@ -1787,15 +1788,16 @@ def test_a_core_beside_a_connective_in_a_credential_tail_is_dropped(
     Soler' and 'PhD - and MD' -- the core kept inside the piece a
     connective joined across it.
     """
-    dash = Parser(policy=Policy(extra_suffix_delimiters=frozenset({" - "})))
-    assert str(dash.parse("Smith, John, PhD - i Soler").suffix) == \
+    # ' | ', not ' - ': a hyphen standing alone is built in (#889)
+    dash = Parser(policy=Policy(extra_suffix_delimiters=frozenset({" | "})))
+    assert str(dash.parse("Smith, John, PhD | i Soler").suffix) == \
         "PhD, i Soler"
-    assert str(dash.parse("Smith, John, - i Puig").suffix) == "i Puig"
-    assert str(dash.parse("Smith, John, Puig - i Soler").suffix) == \
+    assert str(dash.parse("Smith, John, | i Puig").suffix) == "i Puig"
+    assert str(dash.parse("Smith, John, Puig | i Soler").suffix) == \
         "Puig, i Soler"
-    assert str(dash.parse("Smith, John, Puig i - Soler").suffix) == \
+    assert str(dash.parse("Smith, John, Puig i | Soler").suffix) == \
         "Puig i, Soler"
-    assert str(dash.parse("Smith, John, PhD - and MD").suffix) == \
+    assert str(dash.parse("Smith, John, PhD | and MD").suffix) == \
         "PhD, and MD"
 
 

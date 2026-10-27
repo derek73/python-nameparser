@@ -694,8 +694,9 @@ grep your fixtures for, with what 1.4 read:
   1.4 read middle ``H. Holder Jr. Attorney``, last ``General``, and
   suffix ``Jr., Attorney General``.
 - ``"Steven Hardman, RN - CRNA"`` (2.4) — a credential after a comma
-  starts a run of credentials: 1.4 read first ``RN``, middle ``-``,
-  last ``Steven Hardman``, suffix ``CRNA``.
+  starts a run of credentials, and since 2.7 the hyphen standing alone
+  parts it as a comma (suffix ``RN, CRNA``): 1.4 read first ``RN``,
+  middle ``-``, last ``Steven Hardman``, suffix ``CRNA``.
 - ``"John van der Berg Prof."`` (2.4) — 1.4 read last ``van der Berg
   Prof.``.
 - ``"Liam Ó Murchú"`` (2.4) — the Irish particles ``Ó``, ``Ní`` and
@@ -737,6 +738,9 @@ grep your fixtures for, with what 1.4 read:
   ``Júnior``.
 - ``"John Smith, MD; PhD"`` (2.6) — a semicolon between post-nominals
   reads as a comma: 1.4 read first ``MD;``, last ``John Smith``.
+- ``"Jane Smith, Dr. / MD"`` (2.7) — a hyphen or slash standing alone
+  between post-nominals reads as a comma: 1.4 read first ``/``, last
+  ``Jane Smith``.
 - ``"Mr Md Karim Uddin"`` and ``"Wm Smith"`` (2.6) — ``Md`` and ``Wm``
   are the given names they abbreviate: 1.4 read title ``Mr Md`` and
   ``Wm``.
@@ -777,7 +781,7 @@ grep your fixtures for, with what 1.4 read:
     >>> HumanName("Eric H. Holder, Jr., Attorney General").title
     'Attorney General'
     >>> HumanName("Steven Hardman, RN - CRNA").suffix
-    'RN - CRNA'
+    'RN, CRNA'
     >>> HumanName("John van der Berg Prof.").last
     'van der Berg'
     >>> HumanName("Liam Ó Murchú").last
@@ -835,6 +839,8 @@ grep your fixtures for, with what 1.4 read:
     'Júnior'
     >>> HumanName("John Smith, MD; PhD").suffix
     'MD; PhD'
+    >>> HumanName("Jane Smith, Dr. / MD").first
+    'Jane'
     >>> md_karim = HumanName("Mr Md Karim Uddin")
     >>> md_karim.title, md_karim.first
     ('Mr', 'Md')

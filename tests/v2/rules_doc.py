@@ -151,10 +151,11 @@ POLICIES: dict[str, Policy] = {
     #: the reason above and carrying the DELIMITER in the suffix,
     #: because this field's value is a set rather than a flag: a rule
     #: reached only under a configured separator has to say which one,
-    #: and " - " is the spelling docs/customize.rst teaches and the
-    #: one the group tests configure.
-    "extra_suffix_delimiters-dash": Policy(
-        extra_suffix_delimiters=frozenset({" - "})),
+    #: and " | " is the spelling docs/customize.rst teaches and the
+    #: one the group tests configure (" - " until #889 made a hyphen
+    #: standing alone built in).
+    "extra_suffix_delimiters-pipe": Policy(
+        extra_suffix_delimiters=frozenset({" | "})),
 }
 #: D-section subjects: zero-arg constructions whose diagnostics the
 #: warns=/raises= assertion forms exercise.

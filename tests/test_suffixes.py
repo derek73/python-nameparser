@@ -268,13 +268,15 @@ class SuffixesTestCase(HumanNameTestBase):
         self.assertEqual(hn.suffix_delimiter, " - ")
 
     def test_suffix_delimiter_basic(self) -> None:
-        hn = HumanName("Steven Hardman, RN - CRNA", suffix_delimiter=" - ")
+        # ' | ', not ' - ': a hyphen standing alone is built in (#889)
+        hn = HumanName("Steven Hardman, RN | CRNA", suffix_delimiter=" | ")
         self.m(hn.first, "Steven", hn)
         self.m(hn.last, "Hardman", hn)
         self.m(hn.suffix, "RN, CRNA", hn)
 
     def test_suffix_delimiter_multiple(self) -> None:
-        hn = HumanName("John Doe, MD - PhD - FACS", suffix_delimiter=" - ")
+        # ' | ', not ' - ': a hyphen standing alone is built in (#889)
+        hn = HumanName("John Doe, MD | PhD | FACS", suffix_delimiter=" | ")
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
         self.m(hn.suffix, "MD, PhD, FACS", hn)
@@ -291,13 +293,14 @@ class SuffixesTestCase(HumanNameTestBase):
         self.m(hn.suffix, "MD PhD", hn)
 
     def test_suffix_delimiter_constants_level(self) -> None:
+        # ' | ', not ' - ': a hyphen standing alone is built in (#889)
         # ran on the shared CONSTANTS in v1; 2.0 deprecates shared mutation,
         # so the config-level (non-kwarg) path is exercised on a private
         # Constants passed as constants=
         from nameparser.config import Constants
         c = Constants()
-        c.suffix_delimiter = " - "
-        hn = HumanName("Steven Hardman, RN - CRNA", constants=c)
+        c.suffix_delimiter = " | "
+        hn = HumanName("Steven Hardman, RN | CRNA", constants=c)
         self.m(hn.first, "Steven", hn)
         self.m(hn.last, "Hardman", hn)
         self.m(hn.suffix, "RN, CRNA", hn)
@@ -307,13 +310,14 @@ class SuffixesTestCase(HumanNameTestBase):
         # Through 2.3 (and in v1) that broke parsing -- first 'RN', last
         # 'Steven Hardman', suffix 'CRNA' -- and this test pinned the
         # limitation. Since #603 a credential opening the part after the
-        # comma makes it the suffix part (rules/C13), so the undeclared
-        # delimiter is one more word of that part and the name parses;
-        # the name of the test keeps the history.
+        # comma makes it the suffix part (rules/C13), and since #889 a
+        # hyphen standing alone after the first comma is a delimiter
+        # every policy has (rules/C10), so the suffix parts at it as
+        # #156 asked; the name of the test keeps the history.
         hn = HumanName("Steven Hardman, RN - CRNA")
         self.m(hn.first, "Steven", hn)
         self.m(hn.last, "Hardman", hn)
-        self.m(hn.suffix, "RN - CRNA", hn)
+        self.m(hn.suffix, "RN, CRNA", hn)
 
     def test_suffix_delimiter_trailing_delimiter_ignored(self) -> None:
         # Trailing delimiter must not defeat suffix detection. Using a
@@ -331,33 +335,36 @@ class SuffixesTestCase(HumanNameTestBase):
         self.m(hn.suffix, "MD, PhD", hn)
 
     def test_suffix_delimiter_inverted_format_not_misparsed(self) -> None:
+        # ' | ', not ' - ': a hyphen standing alone is built in (#889)
         # The delimiter only expands parts once they're identified as a
         # suffix group, so a hyphenated given name in inverted format isn't
         # mistaken for a suffix split.
-        hn = HumanName("Doe, Mary - Kate, RN", suffix_delimiter=" - ")
+        hn = HumanName("Doe, Mary | Kate, RN", suffix_delimiter=" | ")
         self.m(hn.first, "Mary", hn)
         self.m(hn.last, "Doe", hn)
         self.m(hn.suffix, "RN", hn)
         # "Kate" stays in the given-name segment rather than being pulled
         # into the suffix, since it's separated from "RN" by its own comma.
-        # The bare "-" landing in middle is a pre-existing, delimiter-
-        # independent quirk of tokenizing a lone hyphen (reproducible with
+        # The bare "|" landing in middle is a pre-existing, delimiter-
+        # independent quirk of tokenizing a lone core (reproducible with
         # suffix_delimiter unset), not something this fix is responsible for.
-        self.m(hn.middle, "- Kate", hn)
+        self.m(hn.middle, "| Kate", hn)
 
     def test_suffix_delimiter_expands_each_comma_segment(self) -> None:
-        # parts[1:] holds two separate comma segments here ("MD - PhD" and
+        # ' | ', not ' - ': a hyphen standing alone is built in (#889)
+        # parts[1:] holds two separate comma segments here ("MD | PhD" and
         # "FACS"); each must be expanded on its own, not just the first.
-        hn = HumanName("John Doe, MD - PhD, FACS", suffix_delimiter=" - ")
+        hn = HumanName("John Doe, MD | PhD, FACS", suffix_delimiter=" | ")
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
         self.m(hn.suffix, "MD, PhD, FACS", hn)
 
     def test_suffix_delimiter_detection_with_multi_word_side(self) -> None:
+        # ' | ', not ' - ': a hyphen standing alone is built in (#889)
         # The suffix-comma detection check flattens on spaces after
         # expanding on the delimiter, so a multi-word token on one side of
         # the delimiter is still tokenized correctly.
-        hn = HumanName("Doe, John, MD PhD - FACS Fellow", suffix_delimiter=" - ")
+        hn = HumanName("Doe, John, MD PhD | FACS Fellow", suffix_delimiter=" | ")
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Doe", hn)
         self.m(hn.suffix, "MD PhD, FACS Fellow", hn)
@@ -366,8 +373,9 @@ class SuffixesTestCase(HumanNameTestBase):
         # When the comma format isn't recognized as suffix-comma (here the
         # last-name part is a single word), the delimiter must not affect
         # parsing at all: output should match the no-delimiter baseline.
-        with_delim = HumanName("Smith, MD - PhD - FACS", suffix_delimiter=" - ")
-        without_delim = HumanName("Smith, MD - PhD - FACS")
+        # ' | ', not ' - ': a hyphen standing alone is built in (#889)
+        with_delim = HumanName("Smith, MD | PhD | FACS", suffix_delimiter=" | ")
+        without_delim = HumanName("Smith, MD | PhD | FACS")
         self.assertEqual(
             (with_delim.first, with_delim.middle, with_delim.last, with_delim.suffix),
             (without_delim.first, without_delim.middle, without_delim.last, without_delim.suffix),

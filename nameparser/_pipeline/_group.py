@@ -25,7 +25,8 @@ which assign places and reports rather than peeling again.
 Reads: token tags (from classify), Lexicon.given_name_titles (the
 P5 licence, #369) and Policy.extra_suffix_delimiters, whose
 delimiter-core tokens part a tail segment as a comma would and are
-dropped (v1 suffix_delimiter parity, #549); and, through
+dropped (v1 suffix_delimiter parity, #549), as the built-in cores'
+are (rules/C10, #889); and, through
 `_comma.decide`, what that module's own header lists
 (Policy.lenient_comma_suffixes and Policy.unlisted_caps_suffixes among
 them). The v1
@@ -1327,7 +1328,8 @@ def group(state: ParseState) -> ParseState:
     additional = 1 if state.structure is Structure.FAMILY_COMMA else 0
     # v1 expand_suffix_delimiter parity (#206): tail segments (wholly
     # consumed as suffixes by assign) are cut at their delimiter-core
-    # tokens, which land in `dropped` as the maiden marker does
+    # tokens, which land in `dropped` as the maiden marker does; the
+    # built-in cores, which no v1 release read, cut them too (#889)
     cores = delimiter_cores(state.policy.extra_suffix_delimiters)
     tail_start = {Structure.SUFFIX_COMMA: 1,
                   Structure.FAMILY_COMMA: 2}.get(state.structure)

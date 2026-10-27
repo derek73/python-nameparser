@@ -638,9 +638,10 @@ listed below.
        Defaults to empty. See :ref:`brackets`.
    * - ``extra_suffix_delimiters``
      - ``frozenset[str]``
-     - Adds separators that split suffix groups, e.g. ``" - "`` for
-       ``"Jane Smith, RN - CRNA"``. Additions only — the comma and the
-       semicolon always split suffix groups and cannot be replaced. See
+     - Adds separators that split suffix groups, e.g. ``" | "`` for
+       ``"Jane Smith, RN | CRNA"``. Additions only — the comma, the
+       semicolon, and a hyphen or slash standing alone split suffix
+       groups after a whole name and cannot be replaced. See
        :ref:`suffix-delimiters`.
    * - ``lenient_comma_suffixes``
      - ``bool``
@@ -1184,26 +1185,46 @@ written:
     >>> name.given, name.family, name.suffix
     ('Jane', 'Smith', 'RN; CRNA')
 
-``extra_suffix_delimiters`` handles sources that separate post-nominals
-with something else. Undeclared, the separator is a word.
-Since 2.4 such a name still parses when a credential opens the part
-after the comma, because that makes the whole part the suffix, but the
-separator stays in the suffix as written. Declared, it splits the
-suffix into groups the way a comma does:
+So does a hyphen or a slash standing alone after the comma (since 2.7),
+which is dropped as a comma between suffixes would be:
 
 .. doctest::
 
     >>> name = parse("Jane Smith, RN - CRNA")
     >>> name.given, name.family, name.suffix
-    ('Jane', 'Smith', 'RN - CRNA')
-    >>> policy = Policy(extra_suffix_delimiters=frozenset({" - "}))
-    >>> name = Parser(policy=policy).parse("Jane Smith, RN - CRNA")
+    ('Jane', 'Smith', 'RN, CRNA')
+    >>> parse("Jane Smith, Dr. / MD").given
+    'Jane'
+
+Glued to a word, a hyphen or slash is the word's own, so
+``Jane Smith, RN- CRNA`` reads as it always has, with ``RN-`` as the given
+name and ``Jane Smith`` as the family; declare ``" - "`` to read the word
+without its glued hyphen, as the semicolon is read. Behind a single word (``Smith, RN - CRNA``)
+nothing is split, and before the comma it is a word too, so it never reaches a
+hyphenated surname written with spaces (``Smith - Jones``).
+
+``extra_suffix_delimiters`` handles sources that separate post-nominals
+with something else. Undeclared, the separator is a word.
+Since 2.4 such a name still parses when a credential opens the part
+after the comma, because that makes the whole part the suffix, but the
+separator stays in the suffix as written. Declared, it splits the
+suffix into groups the way a comma does, and it counts glued to a word
+as the semicolon does:
+
+.. doctest::
+
+    >>> name = parse("Jane Smith, RN | CRNA")
+    >>> name.given, name.family, name.suffix
+    ('Jane', 'Smith', 'RN | CRNA')
+    >>> policy = Policy(extra_suffix_delimiters=frozenset({" | "}))
+    >>> name = Parser(policy=policy).parse("Jane Smith, RN | CRNA")
     >>> name.given, name.family, name.suffix
     ('Jane', 'Smith', 'RN, CRNA')
 
-Through 2.3 the undeclared reading was given ``RN``, family ``Jane
-Smith`` and suffix ``CRNA``, so the delimiter was the only way to get
-the name right.
+Through 2.3 the undeclared reading of ``Jane Smith, RN - CRNA`` was
+given ``RN``, family ``Jane Smith`` and suffix ``CRNA``, so the
+delimiter was the only way to get the name right, and through 2.6 it
+was the only way to split the suffix.
 
 A hyphen or a slash written between two credentials with no space needs
 no declaring when every part is a listed credential that is not also a

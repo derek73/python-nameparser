@@ -1238,16 +1238,16 @@ def test_revise_leaves_a_policy_delimiter_unparted_without_a_tail_segment() -> N
     # core is dropped -- and so parts entries -- only on a TAIL
     # segment, which a value gets only where its own words read as a
     # name. A run of post-nominals has none, with or without a comma
-    # of its own, so the dash stays a word; a value that reads as a
+    # of its own, so the core stays a word; a value that reads as a
     # name does part. The round-trip is unaffected because the
     # whole-name view already rendered that boundary as a comma.
-    p = Parser(policy=Policy(extra_suffix_delimiters=frozenset({" - "})))
-    n = p.parse("Doe, John, MD PhD - FACS")
+    p = Parser(policy=Policy(extra_suffix_delimiters=frozenset({" | "})))
+    n = p.parse("Doe, John, MD PhD | FACS")
     assert n.suffix == "MD PhD, FACS"
-    assert p.revise(n, suffix="MD PhD - FACS").suffix == "MD PhD - FACS"
-    assert p.revise(n, suffix="MD, PhD - FACS").suffix == "MD, PhD - FACS"
+    assert p.revise(n, suffix="MD PhD | FACS").suffix == "MD PhD | FACS"
+    assert p.revise(n, suffix="MD, PhD | FACS").suffix == "MD, PhD | FACS"
     assert p.revise(n, suffix=n.suffix).suffix == "MD PhD, FACS"
-    assert (p.revise(n, suffix="John Doe, MD - FACS").suffix
+    assert (p.revise(n, suffix="John Doe, MD | FACS").suffix
             == "John Doe, MD, FACS")
 
 
@@ -1284,8 +1284,10 @@ _HONORIFIC_PEEL = frozenset({"김민준씨, J.씨", "김민준씨., J.씨",
 #: a maiden marker the whole name left a word -- in a tail part, or
 #: taken into #602's credential run behind a credential -- and that
 #: the value's own sub-parse consumes mid-value, as revise() documents.
+#: 'Smith, John, MD - née Jones Smith' left it in #889: the built-in
+#: hyphen parts its suffix ('MD, née Jones Smith'), whose sub-parse
+#: reads the marker as a word too.
 _MARKER_IN_SUFFIX = frozenset({"Jane Doe PhD nee Smith",
-                               "Smith, John, MD - née Jones Smith",
                                "Smith, John, PhD née Jones"})
 
 

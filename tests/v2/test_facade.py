@@ -60,8 +60,9 @@ def test_capitalize_name_flag_capitalizes_on_parse() -> None:
 
 
 def test_constructor_suffix_delimiter_layers_onto_policy() -> None:
-    n = HumanName("Doe, John, RN - CRNA", constants=Constants(),
-                  suffix_delimiter=" - ")
+    # ' | ', not ' - ': a hyphen standing alone is built in (#889)
+    n = HumanName("Doe, John, RN | CRNA", constants=Constants(),
+                  suffix_delimiter=" | ")
     assert n.suffix == "RN, CRNA"
 
 
@@ -545,20 +546,21 @@ def test_v14_humanname_blob_unpickles() -> None:
 
 
 def test_suffix_delimiter_reassignment_after_construction() -> None:
-    n = HumanName("Doe, John, RN - CRNA")
-    assert n.suffix == "RN - CRNA"          # no delimiter: one entry
-    n.suffix_delimiter = " - "
+    # ' | ', not ' - ': a hyphen standing alone is built in (#889)
+    n = HumanName("Doe, John, RN | CRNA")
+    assert n.suffix == "RN | CRNA"          # no delimiter: one entry
+    n.suffix_delimiter = " | "
     n.parse_full_name()
     assert n.suffix == "RN, CRNA"           # setter invalidated the Policy
     n.suffix_delimiter = None
     n.parse_full_name()
-    assert n.suffix == "RN - CRNA"          # and back
+    assert n.suffix == "RN | CRNA"          # and back
 
 
 def test_c_swap_keeps_instance_suffix_delimiter() -> None:
     # both invalidation paths together: swapping C must not lose the
     # instance-level delimiter layered onto the new snapshot's Policy
-    n = HumanName("Doe, John, RN - CRNA", suffix_delimiter=" - ")
+    n = HumanName("Doe, John, RN | CRNA", suffix_delimiter=" | ")
     assert n.suffix == "RN, CRNA"
     n.C = Constants()
     n.parse_full_name()

@@ -10,7 +10,7 @@
 - **A part read as postnominal** is read before any join (C7).
 - **The listing form's part after the comma** is still read for what it is (C8), and a credential opening it makes it the postnominal part (C13).
 - **A one-character suffix word inside a comma part** is read by what stands before it (C9).
-- **A suffix delimiter**, the semicolon or one the policy declares, parts the suffix words on each side of it as a comma would (C10).
+- **A suffix delimiter**, the semicolon, a hyphen or slash standing alone, or one the policy declares, parts the suffix words on each side of it as a comma would (C10).
 - **What the decision reports** is C11's.
 
 **Because:** a credential run after the comma means the name is in natural order with suffixes appended; anything else after the comma means the listing form.

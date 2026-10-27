@@ -223,16 +223,19 @@ def test_a_run_the_writing_settles_raises_no_flip_report() -> None:
 
 
 def test_the_run_test_reads_a_delimiter_core_transparently() -> None:
-    # without a delimiter policy the bare '-' is a word, which ends the
+    # without a delimiter policy the bare '|' is a word, which ends the
     # run; with the core configured behind a whole name it is no word
     # of the reading (#549, #613), so the two members either side of
-    # it complete the run.
-    text = "John Smith, Ma - Ed"
+    # it complete the run. Not '-': a hyphen standing alone is a
+    # built-in core (#889), as the next line shows.
+    assert _decided("John Smith, Ma - Ed").structure \
+        is Structure.SUFFIX_COMMA
+    text = "John Smith, Ma | Ed"
     assert _decided(text).structure is Structure.FAMILY_COMMA
     state = ParseState(
         original=text, lexicon=_LEX,
         policy=dataclasses.replace(
-            Policy(), extra_suffix_delimiters=frozenset({" - "})))
+            Policy(), extra_suffix_delimiters=frozenset({" | "})))
     out = _comma.decide(classify(segment(tokenize(extract_delimited(state)))))
     assert out.structure is Structure.SUFFIX_COMMA
 
@@ -334,9 +337,9 @@ def test_a_part_of_delimiter_cores_alone_decides_nothing() -> None:
     # behind a whole name a declared core is no word of the reading, so
     # a part holding nothing else has no reading to bind and keeps the
     # listing form (garbage in; pinned so the empty-part exit is held)
-    policy = Policy(extra_suffix_delimiters=frozenset({" - "}))
+    policy = Policy(extra_suffix_delimiters=frozenset({" | "}))
     state = classify(segment(tokenize(extract_delimited(ParseState(
-        original="John Smith, - -", lexicon=_LEX, policy=policy)))))
+        original="John Smith, | |", lexicon=_LEX, policy=policy)))))
     decided = _comma.decide(state)
     assert decided is state
     assert decided.structure is Structure.FAMILY_COMMA
@@ -372,9 +375,9 @@ def test_a_lone_core_after_the_comma_is_a_word_of_the_part() -> None:
     # the cores guard needs two tokens: a core alone is no delimiter
     # between suffixes, so it stays in the part (garbage in, pinned
     # because the guard reads so)
-    policy = Policy(extra_suffix_delimiters=frozenset({" - "}))
-    name = Parser(policy=policy).parse("John Smith, -")
-    assert (name.given, name.family, name.suffix) == ("John", "Smith", "-")
+    policy = Policy(extra_suffix_delimiters=frozenset({" | "}))
+    name = Parser(policy=policy).parse("John Smith, |")
+    assert (name.given, name.family, name.suffix) == ("John", "Smith", "|")
 
 
 def test_a_generational_connective_joins_no_title_after_the_comma() -> None:
