@@ -12,7 +12,7 @@ A file is named for a BCP 47 language tag in canonical case: `fr.toml`, `pt-BR.t
 
 Two tags are not languages:
 
-- **`und`** (undetermined) holds the words no language file fits: two particles of unrecorded origin, `bon` and `dí` (since 2026-10-20, when #751 finished what #749 and #750 began, giving every other word its languages). The comment at the top of the file says why they are there; a word whose language is found moves to that language's file.
+- **`und`** (undetermined) holds the words no language file fits: `bon` and `dí`, particles of unrecorded origin until #766 refused their particle readings, now name readings and those exclusions (since 2026-10-20, when #751 finished what #749 and #750 began, giving every other word its languages). The comment at the top of the file says why they are there; a word whose language is found moves to that language's file.
 - **`mul`** (multiple) holds words shared on purpose, such as the Roman numerals.
 
 The script is read from the word, not from the file: `sr.toml` holds `mlađi` and `млађи` side by side. A script subtag (`zh-Hant`) is for a difference the text cannot show.
@@ -158,7 +158,7 @@ The particle kinds say what the word does in the names of the file's language:
 - `patronymic`: "son of" or "daughter of", where the word after it is a parent's name (`bin`, `binti`, `ibn`, `بن`, `בן`);
 - `teknonymic`: "father of", naming the bearer by a child (`abu`, `أبو`);
 - `clan`: a lineage prefix, where the word after it is a family name shared by the lineage rather than a parent's name (`mac`, `mc`, `ó`, `ní`, `آل`);
-- `rank`: a former rank written inside the surname (`freiherr`, `heer`);
+- `rank`: a former rank written inside the surname (`freiherr`, `freiherrin`);
 - `saint`: "Saint" opening a surname (`san`, `santa`, `st`, `ste`);
 - `alias`: a word joining two surnames of one person (`vel`).
 

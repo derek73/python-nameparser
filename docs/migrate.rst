@@ -655,12 +655,12 @@ in tokenization rather than by policy, so a name written with either
 still divides at the dot, and still renders with a space, whatever
 those two fields are set to.
 
-Changed in 2.3, 2.4, 2.5 and 2.6
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Changed in 2.3 through 2.7
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Later releases moved more 1.4 readings, and these reach ``HumanName``
 as well; 2.1 and 2.2 read every one of them as 1.4 did. The release
-log's 2.3, 2.4, 2.5 and 2.6 sections carry the reasoning; these are the shapes to
+log's 2.3 to 2.7 sections carry the reasoning; these are the shapes to
 grep your fixtures for, with what 1.4 read:
 
 - ``"Her Majesty Queen Elizabeth"``, ``"His Royal Highness Prince Harry"`` (2.3) — a lone
@@ -741,6 +741,9 @@ grep your fixtures for, with what 1.4 read:
 - ``"Jane Smith, Dr. / MD"`` (2.7) — a hyphen or slash standing alone
   between post-nominals reads as a comma: 1.4 read first ``/``, last
   ``Jane Smith``.
+- ``"Marie Bon Durand"`` and ``"Herren Hans"`` (2.7) — ``Bon``, ``Dí``
+  and ``Heer`` are no longer particles, nor ``Herren`` and ``Heren``
+  titles: 1.4 read last ``Bon Durand`` and title ``Herren``.
 - ``"Mr Md Karim Uddin"`` and ``"Wm Smith"`` (2.6) — ``Md`` and ``Wm``
   are the given names they abbreviate: 1.4 read title ``Mr Md`` and
   ``Wm``.
