@@ -208,8 +208,8 @@ def test_the_leading_run_gives_back_the_name_word_a_suffix_cannot_be() -> None:
     word back -- and only where the rest really is all suffix pieces,
     which is what separates the first two readings below.
     """
-    assert _leading("Dr King Jr") == 1     # the floor fired: 2 -> 1
-    assert _leading("Dr King") == 1        # no all-suffix rest to see
+    assert _leading("Dr Pope Jr") == 1     # the floor fired: 2 -> 1
+    assert _leading("Dr Pope") == 1        # no all-suffix rest to see
     assert _leading("Lord Chancellor Jr") == 1
     assert _leading("Lord Chancellor") == 1
 
@@ -884,7 +884,7 @@ def test_a_title_word_inside_the_run_reads_as_a_title() -> None:
 
 def test_a_title_word_never_starts_the_run() -> None:
     # 746 title words are in no suffix set, many of them surnames
-    assert parse("Mary Jane King Smith").family == "Smith"
+    assert parse("Mary Jane Pope Smith").family == "Smith"
 
 
 def test_the_ambiguous_class_and_initials_do_not_start_the_run() -> None:
@@ -914,7 +914,7 @@ def test_a_member_its_capitals_settle_starts_the_run() -> None:
     for text, family in (("John Smith MA Jones", "Jones"),
                          ("Maria Ana MA Silva", "Silva"),
                          ("Jean Pierre MA DUPONT", "DUPONT"),
-                         ("Mary Jane MA King", "King")):
+                         ("Mary Jane MA Pope", "Pope")):
         assert parse(text).family == family, text
     assert parse("John Smith DO Jones").family == "DO Jones"
 
@@ -949,7 +949,7 @@ def test_a_title_inside_the_given_parts_run_is_a_title() -> None:
 _CANDIDATE_HEADS = ("Jane Doe", "J.", "Jane van der Berg", "Mai Le",
                     "abdul Berg", "John")
 _CANDIDATE_WORDS = ("Smith", "VI", "V", "III", "MA", "Ma", "PhD", "Jr.",
-                    "Prof.", "Dr.", "King.", "do", "DO", "de", "X.Y.Z.",
+                    "Prof.", "Dr.", "Pope.", "do", "DO", "de", "X.Y.Z.",
                     "Ph. D.", "i", "Jones")
 
 

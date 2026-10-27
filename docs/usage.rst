@@ -958,11 +958,11 @@ chunks is the exception, read as a credential by its shape (see
     'N.C.C.'
 
 That asymmetry is deliberate. The title vocabulary holds hundreds of
-words that are ordinary surnames — ``king``, ``judge``, ``bishop`` —
+words that are ordinary surnames — ``pope``, ``judge``, ``bishop`` —
 so inferring a trailing title from the shape alone would cost real
 names their family field. The period is what separates the two: a
 trailing title word written *without* one is a name word, so
-``parse("Mary Jane King").family`` is ``'King'``.
+``parse("Mary Jane Pope").family`` is ``'Pope'``.
 
 A credential in front changes that. It starts a run of post-nominals
 and titles that lasts to the end of the name, so a bare title word

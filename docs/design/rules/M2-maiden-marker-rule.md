@@ -34,10 +34,10 @@
   "Jane Doe nee Smith Prof. MA"  →  maiden="Smith"
   "Jane Doe nee Smith V Prof."  →  suffix="V"
   "Jane Doe nee Smith VI Prof." →  suffix="VI"
-  "Jane Doe nee King."          →  maiden="King."  · boundary
+  "Jane Doe nee Pope."          →  maiden="Pope."  · boundary
   "Jane Doe nee Prof. Dr."      →  maiden="Prof."  · boundary
   "Jane van der Berg nee Smith Prof."  →  title="Prof."
-  "Jane van der Berg nee Prof. King. MA"  →  maiden="Prof."  · boundary
+  "Jane van der Berg nee Prof. Pope. MA"  →  maiden="Prof."  · boundary
   "Jane Doe nee Smith PhD Smith"  →  maiden="Smith"
   "Jane Doe nee Smith PhD Smith"  →  suffix="PhD Smith"
   "Jane van der Berg née y Jones"  →  maiden="y Jones"

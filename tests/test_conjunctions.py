@@ -134,8 +134,8 @@ class HumanNameConjunctionTestCase(HumanNameTestBase):
         self.m(hn.last, "Jane", hn)
 
     def test_title_with_three_part_name_last_initial_is_suffix_uppercase_no_period(self) -> None:
-        hn = HumanName("King John Alexander V")
-        self.m(hn.title, "King", hn)
+        hn = HumanName("Pope John Alexander V")
+        self.m(hn.title, "Pope", hn)
         self.m(hn.first, "John", hn)
         self.m(hn.last, "Alexander", hn)
         self.m(hn.suffix, "V", hn)

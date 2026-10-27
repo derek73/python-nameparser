@@ -422,11 +422,11 @@ def leading_titles(pieces: Sequence[Sequence[int]],
     # with no title at all.
     #
     # Two residuals. A run whose last word IS suffix vocabulary is not
-    # given back, so 'Dr King RA PhD' still reads title 'Dr King RA',
+    # given back, so 'Dr Pope RA PhD' still reads title 'Dr Pope RA',
     # family 'PhD'. And the floor asks is_suffix_piece, which vetoes a
-    # bare initial-shaped numeral, so 'Dr King V' keeps the whole run
+    # bare initial-shaped numeral, so 'Dr Pope V' keeps the whole run
     # as the title and reads the numeral as the name -- given 'V',
-    # 'king' being a given-name title and the run's last word, where
+    # 'pope' being a given-name title and the run's last word, where
     # 'Dr Smith V' reads family 'V' (a title being no word to spare
     # for a one-letter numeral, #718). That numeral fork is outside
     # this floor (decisions/H3).

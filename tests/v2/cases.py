@@ -1958,8 +1958,8 @@ CASES: tuple[Case, ...] = (
          {"title": "Attorney General", "given": "Eric", "family": "Holder",
           "suffix": "Jr."},
          classification="fix(#602)"),
-    Case("a_title_word_does_not_start_the_run", "Mary Jane King Smith",
-         {"given": "Mary", "middle": "Jane King", "family": "Smith"},
+    Case("a_title_word_does_not_start_the_run", "Mary Jane Pope Smith",
+         {"given": "Mary", "middle": "Jane Pope", "family": "Smith"},
          notes="746 title words are in no suffix set, many of them "
                "surnames (measured 2026-10-04), so a title word never "
                "starts the run: a title is read from the end of a name "
@@ -2685,8 +2685,8 @@ CASES: tuple[Case, ...] = (
                "The fix classification is #274's marker consumption, "
                "which is what makes this differ from 1.4.0 (first "
                "'John', middle 'née', last 'Jones')"),
-    Case("title_plus_one_word_comma_suffix", "Dr. King, Jr.",
-         {"title": "Dr.", "family": "King", "suffix": "Jr."},
+    Case("title_plus_one_word_comma_suffix", "Dr. Pope, Jr.",
+         {"title": "Dr.", "family": "Pope", "suffix": "Jr."},
          ambiguities=("title-or-name",), classification="fix(#410)",
          notes="the most ordinary shape H1's widening touches, and "
                "the one the suite could least afford to leave "
@@ -2697,9 +2697,9 @@ CASES: tuple[Case, ...] = (
                "(_clause_free_latin_corpus_names), and "
                "'Smith, Dr.' takes its family from the comma rule "
                "(C1), not from H1. 1.4.0 had the same empty family "
-               "here (title 'Dr.', first 'King', last ''), so this "
+               "here (title 'Dr.', first 'Pope', last ''), so this "
                "row records a v1 bug fixed, not a v2 divergence. The "
-               "`title-or-name` flag is H4's and not #410's: `king` is "
+               "`title-or-name` flag is H4's and not #410's: `pope` is "
                "title vocabulary and a suffix beside the word is not a "
                "shape that silences the convention"),
     Case("title_plus_one_word_multi_word_maiden",
@@ -5991,8 +5991,8 @@ CASES: tuple[Case, ...] = (
                "from starting the credential's run -- here a family name written in capitals by convention, which counts as the name word behind. "
                "1.4.0 through 2.6.0 read the same"),
     Case("capitals_before_a_title_word_surname_stay_a_name",
-         "Mary Jane MA King",
-         {"given": "Mary", "middle": "Jane MA", "family": "King"},
+         "Mary Jane MA Pope",
+         {"given": "Mary", "middle": "Jane MA", "family": "Pope"},
          notes="S8 (Derek, 2026-10-26, #785): with no family comma a "
                "name word behind a member its capitals settle keeps it "
                "from starting the credential's run -- here a surname that is also title vocabulary, which inside the run would read as a title. "
@@ -6541,10 +6541,11 @@ CASES: tuple[Case, ...] = (
                "a name is a name word (rules/H5), so the chain takes "
                "it (#623 moves only the period-marked spelling)"),
     Case("the_first_word_after_the_marker_stays_even_as_a_title",
-         "Jane Doe nee King.",
-         {"given": "Jane", "family": "Doe", "maiden": "King."},
+         "Jane Doe nee Pope.",
+         {"given": "Jane", "family": "Doe", "maiden": "Pope."},
+         classification="fix(#274)",
          notes="rules/M2's first-word floor covers the title stop: "
-               "the marker announced a name, and 'King.' is a borne "
+               "the marker announced a name, and 'Pope.' is a borne "
                "surname the title vocabulary also lists. Unchanged "
                "from 2.3.0"),
     Case("the_first_word_floor_holds_for_titles_too",
@@ -6607,12 +6608,12 @@ CASES: tuple[Case, ...] = (
                "the title up. 2.3.0 read maiden 'Smith Prof.' for the "
                "same reason the bare form did"),
     Case("the_floor_keeps_the_first_word_out_of_the_chains_count",
-         "Jane Doe nee King. ba",
+         "Jane Doe nee Pope. ba",
          {"given": "Jane", "family": "Doe", "suffix": "ba",
-          "maiden": "King."},
+          "maiden": "Pope."},
          classification="fix(#533)",
          ambiguities=("suffix-or-name",),
-         notes="2.3.0 read maiden 'King. ba' as it read 'Smith ba' -- "
+         notes="2.3.0 read maiden 'Pope. ba' as it read 'Smith ba' -- "
                "no credential stop before #533; the floor keeps the "
                "first word in the chain-and-peel count, so the "
                "reading #533 gave stands"),
@@ -10380,10 +10381,10 @@ CASES: tuple[Case, ...] = (
          ambiguities=("title-or-name",), classification="feat(#491)",
          notes="decisions/v1-xfail-triage's fourth NOT FIXED entry: "
                "the reading stands, and the guess stops being silent"),
-    Case("all_titles_input_a_title_vocabulary_surname", "Dr. King",
-         {"title": "Dr.", "family": "King"},
+    Case("all_titles_input_a_title_vocabulary_surname", "Dr. Pope",
+         {"title": "Dr.", "family": "Pope"},
          ambiguities=("title-or-name",), classification="feat(#491)",
-         notes="`king` is title vocabulary for the addressing forms, so "
+         notes="`pope` is title vocabulary for the addressing forms, so "
                "the peel leaves one title-vocabulary word and the rule "
                "claims it"),
     Case("all_titles_input_family_first", "Lord Chancellor",
@@ -10397,17 +10398,17 @@ CASES: tuple[Case, ...] = (
                "H1's retag until the family-first orders were measured "
                "silent there"),
     Case("title_run_then_a_credential_reports_the_name_word",
-         "Dr. King MD",
-         {"title": "Dr.", "family": "King", "suffix": "MD"},
+         "Dr. Pope MD",
+         {"title": "Dr.", "family": "Pope", "suffix": "MD"},
          ambiguities=("title-or-name",), classification="fix(#489)",
          notes="rules/H3's floor: everything behind the run is a "
-               "suffix piece and `King` is not one, so the run gives "
-               "it back and the credential is a credential. `king` "
+               "suffix piece and `Pope` is not one, so the run gives "
+               "it back and the credential is a credential. `pope` "
                "being title vocabulary, the word left standing is "
-               "H4's title half -- the same reading `Dr. King, Jr.` "
+               "H4's title half -- the same reading `Dr. Pope, Jr.` "
                "has always had"),
     Case("title_run_then_a_bare_generational_reports_the_name_word",
-         "Dr King Jr", {"title": "Dr", "family": "King", "suffix": "Jr"},
+         "Dr Pope Jr", {"title": "Dr", "family": "Pope", "suffix": "Jr"},
          ambiguities=("title-or-name",), classification="fix(#489)",
          notes="v1 wanted exactly this reading and the 2026-09-01 "
                "triage pinned the old one as NOT FIXED; the "
@@ -10648,13 +10649,13 @@ CASES: tuple[Case, ...] = (
                "title. The empty-head comma shape AGENTS.md's sweep "
                "paragraph asks for; 1.4.0 read first 'Ma', suffix 'Dr.'"),
     Case("lone_joined_unit_carrying_collision_set_title_vocabulary",
-         "Smith and King", {"given": "Smith and King"},
+         "Smith and Pope", {"given": "Smith and Pope"},
          ambiguities=("title-or-name",),
          classification="feat(#491)",
          notes="the clause reaches every join whose non-leading member "
                "is TITLES vocabulary, not just `prince`: `John and "
-               "King`, `Smith and Bishop` and `John of Judge` report "
-               "it too. That is the king/judge/bishop collision set "
+               "Pope`, `Smith and Bishop` and `John of Judge` report "
+               "it too. That is the pope/judge/bishop collision set "
                "(decisions/vocabulary-collisions) met inside a "
                "join, and the report is deliberate -- a second surname "
                "that is also title vocabulary is the doubt the kind "
@@ -12165,8 +12166,8 @@ CASES: tuple[Case, ...] = (
                "holds ordinary surnames and a bare trailing title word "
                "is a name word (#316(b), deliberately out)"),
     Case("title_word_trailing_ordinary_surname_is_a_name_word",
-         "Mary Jane King", {"given": "Mary", "middle": "Jane",
-                            "family": "King"},
+         "Mary Jane Pope", {"given": "Mary", "middle": "Jane",
+                            "family": "Pope"},
          classification="parity",
          notes="negative control: the decisions' trailing-position "
                "rule that must NOT be adopted, still not adopted"),
@@ -12201,8 +12202,8 @@ CASES: tuple[Case, ...] = (
                "what makes it the only one. The single-word half of "
                "H4 cannot be reached this way -- a lone title-"
                "vocabulary word in front of a trailing title is taken "
-               "by the LEADING run first ('King Prof.' reads title "
-               "'King')"),
+               "by the LEADING run first ('Pope Prof.' reads title "
+               "'Pope')"),
     Case("title_word_trailing_after_a_family_comma",
          "Smith, John Prof.",
          {"title": "Prof.", "given": "John", "family": "Smith"},
@@ -12549,6 +12550,35 @@ CASES: tuple[Case, ...] = (
          {"title": "Lord", "family": "Buddha"},
          notes="1.4.0's fields; H4 had reported title-or-name on an input that was all "
                "vocabulary; 'Buddha' is a name word now, as 'Mahdi' is"),
+    Case("given_name_title_king_at_the_head", "King Curtis",
+         {"given": "King", "family": "Curtis"}, classification="fix(#348)",
+         notes="H9: 'king' is a title only inside a title phrase; read "
+               "title 'King', given 'Curtis' 1.4.0 through 2.6.0 "
+               "(#752 phase 2j)"),
+    Case("given_name_title_king_after_a_salutation", "Mr King Smith",
+         {"title": "Mr", "given": "King", "family": "Smith"},
+         classification="fix(#853)",
+         notes="H9: a salutation is no partner; read title 'Mr King' "
+               "before"),
+    Case("given_name_title_king_in_the_listing_form", "SMITH, KING MR",
+         {"title": "MR", "given": "KING", "family": "SMITH"},
+         classification="fix(#752)",
+         notes="H9, FEC's listing form; read title 'KING MR' before"),
+    Case("king_behind_a_style_keeps_the_title", "His Majesty King Charles",
+         {"title": "His Majesty King", "given": "Charles"},
+         classification="fix(#489)",
+         notes="H9: a style is a partner, and the title addresses by the "
+               "given name, as master read it; 1.4.0 read last 'Charles'"),
+    Case("monarch_with_a_bare_leading_king", "King Henry",
+         {"given": "King", "family": "Henry"},
+         classification="fix(#752)",
+         notes="H9's Accepted clause: a monarch written with the bare "
+               "title reads it as the given name (Derek, 2026-10-26); "
+               "read title 'King', given 'Henry' 1.4.0 through 2.6.0"),
+    Case("pope_still_addresses_by_the_given_name", "Pope Francis",
+         {"title": "Pope", "given": "Francis"},
+         notes="'pope' has no given reading: still the title that "
+               "addresses by the given name, H1"),
     Case("given_name_modifier_after_a_style", "Hon. Wing Lau",
          {"title": "Hon.", "given": "Wing", "family": "Lau"},
          notes="H9: the modifier's test, not a contested word's style "
@@ -12630,8 +12660,8 @@ CASES: tuple[Case, ...] = (
                "are on en.toml's entry), since a middle name may be a "
                "surname"),
     Case("bare_office_word_ending_a_family_comma_given_part",
-         "Doe, John King",
-         {"given": "John", "middle": "King", "family": "Doe"},
+         "Doe, John Pope",
+         {"given": "John", "middle": "Pope", "family": "Doe"},
          notes="rules/H8's Except: only a salutation qualifies, and an "
                "office or rank word is borne as a middle name"),
     Case("bare_salutation_without_a_comma_is_a_name_word",

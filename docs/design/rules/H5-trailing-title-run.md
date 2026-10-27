@@ -30,7 +30,7 @@
 "John Smith Prof. Dr."      →  title="Prof. Dr."
 "Smith, John Prof."         →  title="Prof."
 "John Smith Sir"            →  family="Sir"
-"Mary Jane King"            →  family="King"
+"Mary Jane Pope"            →  family="Pope"
 "John Smith Esq."           →  suffix="Esq."
 "John Smith Xyz."           →  family="Xyz."  · boundary
 ```
@@ -63,10 +63,10 @@
 
 **Accepted:**
 
-- The reach is the whole title vocabulary, the ordinary surnames in it included. TITLES holds king, judge and bishop, and a period written behind one of them is enough to make it the title and take it out of the name: `Mary Jane King.` reads title `King.` with family `Jane`, where the bare spelling keeps family `King`. That is a cost accepted under the premise that the input is a name (H Background), not a case this rule prevents — the period is a writing convention rather than evidence about the word, so every title whose spelling wears the abbreviation shape is reachable this way, and the BARE spelling is what the trailing slot is protected from.
+- The reach is the whole title vocabulary, the ordinary surnames in it included. TITLES holds pope, judge and bishop, and a period written behind one of them is enough to make it the title and take it out of the name: `Mary Jane Pope.` reads title `Pope.` with family `Jane`, where the bare spelling keeps family `Pope`. That is a cost accepted under the premise that the input is a name (H Background), not a case this rule prevents — the period is a writing convention rather than evidence about the word, so every title whose spelling wears the abbreviation shape is reachable this way, and the BARE spelling is what the trailing slot is protected from.
   ```
-  "Mary Jane King."           →  title="King."
-  "Mary Jane King."           →  family="Jane"
+  "Mary Jane Pope."           →  title="Pope."
+  "Mary Jane Pope."           →  family="Jane"
   ```
 
 ---

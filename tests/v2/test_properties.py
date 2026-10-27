@@ -914,7 +914,7 @@ def test_a_title_the_clause_gives_up_lands_in_title() -> None:
     heads = ("Jane Doe", "J.", "Jane van der Berg", "abdul Berg")
     bodies = ("Smith Prof.", "Smith MA Prof.", "Smith Prof. MA",
               "Smith V Prof.", "Smith Ma Prof.", "Smith Prof. Dr.",
-              "Prof.", "Prof. Dr.", "Smith King.", "Smith MA do Prof.",
+              "Prof.", "Prof. Dr.", "Smith Pope.", "Smith MA do Prof.",
               "Smith i DO Prof.", "Smith i MA Prof.", "Smith St.",
               "Smith MA St.", "Smith V St.")
     failures = []
@@ -937,7 +937,7 @@ def test_a_title_the_clause_gives_up_lands_in_title() -> None:
 def test_a_title_first_word_counts_as_a_word() -> None:
     """rules/M2's first-word floor, over two INPUTS: the floor is
     the title chain's own (`trailing_titles` takes it), so whether the
-    first word after the marker IS title vocabulary ('King.') or not
+    first word after the marker IS title vocabulary ('Pope.') or not
     ('Smith') must not change what a trailing credential behind it
     reads as -- the floor holds either word out of the chain's count,
     so the credential is read the same way in both. Both sides must
@@ -957,7 +957,7 @@ def test_a_title_first_word_counts_as_a_word() -> None:
     """
     forms = ("Jane Doe nee {} {}", "Jane Doe nee {} {}, MD")
     runs = ("ba", "MA", "V", "PhD", "MA JD")
-    heads = ("King.", "Smith")
+    heads = ("Pope.", "Smith")
     failures = []
     for form in forms:
         for tail in runs:

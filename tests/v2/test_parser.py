@@ -808,7 +808,7 @@ def test_every_bound_word_spares_the_family_before_every_numeral(
 
 
 @pytest.mark.parametrize("title", [
-    "Sir", "Sheikh", "King", "الشيخ", "Dr.", "Mr.", "Mr. Sir", "Sir Dr.",
+    "Sir", "Sheikh", "Pope", "الشيخ", "Dr.", "Mr.", "Mr. Sir", "Sir Dr.",
     "Sir and Dame", "Mr. and Mrs.", "Sheik and Mrs"])
 def test_the_p5_licence_and_h1_read_a_title_run_the_same_way(
         title: str) -> None:

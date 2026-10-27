@@ -1926,7 +1926,7 @@ def test_the_first_word_floor_holds_a_title_out_of_the_chain() -> None:
     """A title straight after the marker stays the maiden name: the
     floor is the title chain's own, so the chain never takes that word
     and stops at it, taking only the titles behind it."""
-    assert _maiden_texts(_grouped("Jane Doe nee King.", lexicon=Lexicon.default())) == ["King."]
+    assert _maiden_texts(_grouped("Jane Doe nee Pope.", lexicon=Lexicon.default())) == ["Pope."]
     assert _maiden_texts(_grouped("Jane Doe nee Prof. Dr.", lexicon=Lexicon.default())) == ["Prof."]
 
 
@@ -1936,8 +1936,8 @@ def test_the_floor_keeps_the_first_word_in_the_chains_count() -> None:
     first word after the marker, so the re-peel's count still holds
     it and a trailing suffix behind a chained title reads as
     'Jane Doe nee Smith ba' reads it."""
-    out = _grouped("Jane Doe nee King. ba", lexicon=Lexicon.default())
-    assert _maiden_texts(out) == ["King."]
+    out = _grouped("Jane Doe nee Pope. ba", lexicon=Lexicon.default())
+    assert _maiden_texts(out) == ["Pope."]
     # the control: an unlisted first word gives the same count
     ok = _grouped("Jane Doe nee Smith ba", lexicon=Lexicon.default())
     assert _maiden_texts(ok) == ["Smith"]

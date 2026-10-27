@@ -149,23 +149,25 @@ class SuffixesTestCase(HumanNameTestBase):
         # suffix 'Jr', and shipped this as an xfail.
         # Two halves, and this pin means different things about each.
         # DECIDED 2026-09-01 (v1-xfail triage, decisions/v1-xfail-triage):
-        # 'king' stays in the titles vocabulary, because removing it breaks
-        # the addressing forms it is there for ("King Charles").
-        # decisions/vocabulary-collisions cuts toward keeping it, so the
-        # title chain reaches 'King' at all. The comma format reads the
-        # surname without any of that, and is pinned below as the contrast.
+        # 'king' stays in the titles vocabulary for the addressing forms.
+        # SUPERSEDED 2026-10-26 (#752 phase 2j): 'king' is a given name
+        # outside a title phrase ("His Majesty King Charles" keeps the
+        # title), so the title chain no longer reaches 'King' here and
+        # this row reads as 'Dr Smith Jr' does; 'Dr Pope Jr' is the floor's
+        # row now (tests/v2/cases.py). The comma format is pinned below as
+        # the contrast.
         # WHAT BECOMES OF THE LEFTOVER 'Jr': the improvement this pin
         # anticipated, taken 2026-09-08 (#489, decisions/H3). The title
         # chain used to eat two words and leave 'Jr' to be the name, against
         # rules/S2, which reads a trailing suffix-vocabulary word as a
         # suffix -- and against 'Dr Smith Jr', which reads family 'Smith',
-        # suffix 'Jr' exactly as S2 states. The leading peel now leaves a
-        # name word a suffix cannot be: everything behind the run is a
-        # suffix piece and 'King' is not one, so the run gives it back.
-        # Every field below is now what 'Dr Smith Jr' reads, so what
-        # 'king' being title vocabulary still buys this row is the
-        # 'title-or-name' report on the word left standing -- which is a
-        # 2.0 surface this v1 facade test does not assert.
+        # suffix 'Jr' exactly as S2 states. The leading peel then left a
+        # name word a suffix cannot be: everything behind the run was a
+        # suffix piece and 'King' was not one, so the run gave it back.
+        # Every field below is what 'Dr Smith Jr' reads, as it was while
+        # 'king' was title vocabulary; then the floor's 'title-or-name'
+        # report on the word left standing was the difference, a 2.0
+        # surface this v1 facade test does not assert.
         hn = HumanName("Dr King Jr")
         self.m(hn.title, "Dr", hn)
         self.m(hn.first, "", hn)

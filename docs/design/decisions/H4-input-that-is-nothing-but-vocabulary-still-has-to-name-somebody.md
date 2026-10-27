@@ -2,7 +2,7 @@
 
 ## Standing
 
-- An input the title peel eats down to one last word that is itself title vocabulary reads that word as the name and reports `title-or-name`, the `detail` naming the word: `Lord Chancellor` → family 'Chancellor', `Dr. King` reports — 2026-09-07 #491.
+- An input the title peel eats down to one last word that is itself title vocabulary reads that word as the name and reports `title-or-name`, the `detail` naming the word: `Lord Chancellor` → family 'Chancellor', `Dr. Pope` reports — 2026-09-07 #491.
 - `title-or-name` is emitted at assign's lone-name-word site, not at H1's retag, so it is reported under every name order, and so is the suffix half's `suffix-or-name`; the peel half's `detail` names no field — 2026-09-07 #491.
 - Nothing is reported where no word was chosen or where the word left standing is no title word: a title alone or a title run with nothing behind it (`Dr.`, `Prince of Wales`), and a title before an ordinary word (`Dr. Smith`) — 2026-09-07 #491.
 - An input whose every word is post-nominal vocabulary reads its first word as the name and reports `suffix-or-name` (`Rinpoche`, `QC MP` → given 'QC', `PhD`), reached only where no title was peeled (`RA DDS` reports nothing) and not with a maiden name beside it (`abd née Jones`) or for a lone CJK honorific a script order placed (`さん`); `Jr.` alone is H2's title — 2026-09-07 #491.
@@ -10,7 +10,7 @@
 - A lone name unit that is a join carrying title vocabulary reports `title-or-name` too (`John of Prince`, `Smith and Prince`), stated since 2026-10-20 as rules/H7 — 2026-09-07 #491.
 - The join clause (rules/H7's, recorded here) stands beside the peel clause, so a peeled title, a maiden name or a claimed word does not silence it (`Dr. Smith and Prince`, `van and Prince`, `Attorney General of Minnesota` report) — 2026-09-08 #518.
 
-Elsewhere: the title run's floor that leaves `King` standing in `Dr King Jr` and `Dr. King MD`, both reporting here, is decisions/H3's 2026-09-08 entry; the suffix and join halves' `detail` naming the field the word lands in, which moves with the order (`Rinpoche` 'a given name' by default, 'a family name' family-first), is decisions/A1's 2026-10-08 #626 entry; the join clause's move into a rule of its own is decisions/H7's 2026-10-20 #761 entry.
+Elsewhere: the title run's floor that leaves `Pope` standing in `Dr Pope Jr` and `Dr. Pope MD`, both reporting here, is decisions/H3's 2026-09-08 entry; the suffix and join halves' `detail` naming the field the word lands in, which moves with the order (`Rinpoche` 'a given name' by default, 'a family name' family-first), is decisions/A1's 2026-10-08 #626 entry; the join clause's move into a rule of its own is decisions/H7's 2026-10-20 #761 entry.
 
 Open: none in this file.
 

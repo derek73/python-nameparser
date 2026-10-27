@@ -33,9 +33,18 @@ class FirstNameHandlingTests(HumanNameTestBase):
         self.m(hn.title, "Sir", hn)
         self.m(hn.first, "Gerald", hn)
 
-    def test_king_exception_to_first_name_rule(self) -> None:
+    def test_pope_exception_to_first_name_rule(self) -> None:
+        hn = HumanName("Pope Francis")
+        self.m(hn.title, "Pope", hn)
+        self.m(hn.first, "Francis", hn)
+
+    def test_king_is_a_first_name_outside_a_title_phrase(self) -> None:
+        # #752 phase 2j: 'king' is a title only inside a title phrase
         hn = HumanName("King Henry")
-        self.m(hn.title, "King", hn)
+        self.m(hn.first, "King", hn)
+        self.m(hn.last, "Henry", hn)
+        hn = HumanName("His Majesty King Henry")
+        self.m(hn.title, "His Majesty King", hn)
         self.m(hn.first, "Henry", hn)
 
     def test_queen_exception_to_first_name_rule(self) -> None:

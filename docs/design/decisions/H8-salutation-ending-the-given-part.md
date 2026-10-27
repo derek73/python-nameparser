@@ -4,7 +4,7 @@
 
 - A salutation ending the given part after a family comma, written bare or with a stop at its edge that H5's abbreviation shape does not take (`Mr..`), is the title, read as its period-marked spelling reads in every comma shape and under every name order: `Doe, Jane Mrs` → title 'Mrs', given 'Jane'; `DOE, JOHN Q MR` → title 'MR', middle 'Q' — 2026-10-24 #835.
 - Only the salutations marked `after_given` in the vocabulary qualify, and a salutation borne as a given name or a surname is left out by an exclusion carrying its counts, since a middle name may be either (`Doe, John Goodman` keeps middle 'Goodman') — 2026-10-24 #835.
-- No other title kind qualifies (`Doe, John King` and `Doe, Jane Dr` keep their middle names), a title/suffix dual stays a suffix (`Doe, Jane Ms`), and the comma-less writing is H5's (`Jane Doe Mrs` keeps family 'Mrs') — 2026-10-24 #835.
+- No other title kind qualifies (`Doe, John Pope` and `Doe, Jane Dr` keep their middle names), a title/suffix dual stays a suffix (`Doe, Jane Ms`), and the comma-less writing is H5's (`Jane Doe Mrs` keeps family 'Mrs') — 2026-10-24 #835.
 - A salutation that is someone's middle name reads as the title after a family comma, an accepted cost (`Doe, Jane Miss`); so does the empty head's one given word moving to the family as the period-marked spelling moves it (`, Jane Mrs` → family 'Jane') — 2026-10-24 #835.
 - The rule reads the comma, not a declared order: `Doe Jane Mrs` under FAMILY_FIRST keeps middle 'Mrs', so the family-comma invariant of decisions/two-input-invariants does not hold for a trailing salutation — 2026-10-24 #835.
 
