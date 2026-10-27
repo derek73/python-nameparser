@@ -48,7 +48,7 @@
   "López, Ana García"  two_family_names  →  family="López"
   "García López, Ana"  two_family_names  →  family="García López"
   ```
-- **A family comma with nothing before it still names no family**, and the name after it reads as the default reads it.
+- **A family comma with nothing before it still names no family** (C15), and the name after it reads as the default reads it.
   ```
   ", Ana García López"  two_family_names  →  family=""
   ```

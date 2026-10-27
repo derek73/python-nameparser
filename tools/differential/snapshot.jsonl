@@ -14,12 +14,24 @@
 {"name": ","}
 {"name": ", Ana García López", "given": "Ana", "middle": "García López", "initials": "A. G. L."}
 {"name": ", Dean", "given": "Dean", "initials": "D."}
+{"name": ", Dr. John", "title": "Dr.", "family": "John", "initials": "J."}
+{"name": ", Dr. Jones vd", "title": "Dr.", "family": "Jones", "suffix": "vd", "initials": "J.", "capitalized_force": "Dr. Jones VD"}
+{"name": ", Dr. abdul Rahman", "title": "Dr.", "family": "abdul Rahman", "initials": "a. R.", "capitalized_force": "Dr. Abdul Rahman"}
 {"name": ", Dr. fils", "title": "Dr.", "family": "fils", "initials": "f.", "capitalized_force": "Dr. Fils"}
 {"name": ", Jane", "given": "Jane", "initials": "J."}
 {"name": ", Jane Mrs", "title": "Mrs", "family": "Jane", "initials": "J."}
+{"name": ", Jane van", "given": "Jane", "family": "van", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "J. v.", "capitalized_force": "Jane Van"}
 {"name": ", John", "given": "John", "initials": "J."}
+{"name": ", John (Bob) Smith", "given": "John", "middle": "Smith", "nickname": "Bob", "initials": "J. S."}
+{"name": ", John Smith", "given": "John", "middle": "Smith", "initials": "J. S."}
+{"name": ", John Smith Jr.", "given": "John", "middle": "Smith", "suffix": "Jr.", "initials": "J. S."}
+{"name": ", Jr.", "suffix": "Jr."}
+{"name": ", MA", "given": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "M.", "capitalized": "Ma"}
 {"name": ", MA Smith", "given": "MA", "middle": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "M. S.", "capitalized_force": "Ma Smith"}
 {"name": ", MD/PhD", "suffix": "MD/PhD"}
+{"name": ", PhD", "suffix": "PhD"}
+{"name": ", Sir John", "title": "Sir", "given": "John", "initials": "J."}
+{"name": ", Sir Jones vd", "title": "Sir", "given": "Jones", "family": "vd", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "J. v.", "capitalized_force": "Sir Jones Vd"}
 {"name": ".,"}
 {"name": "1 & 2, 3 4 5, Mr.", "title": "Mr.", "given": "3", "middle": "4 5", "family": "1 & 2", "initials": "3. 4. 5. 1. 2."}
 {"name": "1. née Smith", "given": "1.", "maiden": "Smith", "initials": "1."}
@@ -2994,6 +3006,7 @@
 {"name": "SMITH VD, JOHN", "given": "JOHN", "family": "SMITH", "suffix": "VD", "initials": "J. S.", "capitalized": "John Smith VD"}
 {"name": "SMITH, DEAN MR.", "title": "MR.", "given": "DEAN", "family": "SMITH", "initials": "D. S.", "capitalized": "Mr. Dean Smith"}
 {"name": "SMITH, JOHN DO", "given": "JOHN", "family": "DO SMITH", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "J. S.", "capitalized": "John do Smith"}
+{"name": "SMITH, MA", "given": "MA", "family": "SMITH", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "M. S.", "capitalized": "Ma Smith"}
 {"name": "SMITH, SAM E.", "given": "SAM", "middle": "E.", "family": "SMITH", "initials": "S. E. S.", "capitalized": "Sam E. Smith"}
 {"name": "SMITH, VD DE LA MA", "family": "SMITH VD DE LA MA", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "S. M.", "capitalized": "Smith vd de la Ma"}
 {"name": "SMITH, VD MA", "family": "SMITH VD MA", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "S. M.", "capitalized": "Smith vd Ma"}

@@ -20,6 +20,11 @@
   "Sir John"  family-first    →  given="John"
   "John III, Dr."             →  family="John"  · boundary
   ```
+- **Nor does a comma with nothing before it**, which names no surname (C15): the title run decides the field of the one name word after the comma, the family unless the run addresses by given name.
+  ```
+  ", Dr. John"                →  family="John"
+  ", Sir John"                →  given="John"
+  ```
 
 **Because:** a title normally addresses by surname, so a title followed by a single name word usually names the family; but a given-name title addresses by given name. Several titles written together are one form of address, and the one that does the addressing is the last — the words in front of it rank the person rather than name them. What stands beside the name word — a suffix, a nickname, a maiden name — does not make the name any longer, so it does not decide this reading.
 

@@ -266,6 +266,141 @@ def test_the_comma_agreement_exceptions_are_all_still_exceptions(
         assert not parser.parse(comma_form).suffix, comma_form
 
 
+# rules/C15's grid: the given parts behind the empty head, as title
+# runs before, bodies, and trailing words, crossed. Each list holds a
+# shape a comma rule has met: a title-particle and a dual second in a
+# run (nameparser/AGENTS.md's head lists), a given-name title, one
+# only inside a phrase, a particle run and a particle tail, a bound
+# given name, a nickname alone and inside, a maiden clause, a word of
+# the ambiguous credential class in each case, a generation word and
+# an agnomen that are names too, a given name written short, and the
+# trailing title, salutation and numerals the trailing peel reads.
+_EMPTY_HEAD_TITLES = ("", "Dr.", "Mr", "Sir", "Freiherr", "St.",
+                      "Rev. Sr.", "Dean", "Queen", "dr.")
+_EMPTY_HEAD_BODIES = (
+    "", "John", "John Smith", "Ma", "MA", "abdul Rahman", "de Mesnil",
+    "Jane van", "Jones vd", "Jones mc", "John (Bob) Smith", "(Bob)",
+    "Jane née Jones", "John Q.", "J.", "JOHN SMITH", "john smith",
+    "JOHN", "Jane Mrs", "John Smith Jr.", "John V", "Jane fils", "fils",
+    "Neto", "PhD", "Jr.", "Jane PhD", "Ana García López", "Ed",
+    "von Berg", "Chas.", "Van")
+_EMPTY_HEAD_TAILS = ("", "Jr.", "PhD", "Dr.", "Mrs", "III", "V", "MA",
+                     "Ma", "fils", "X.Y.Z.")
+#: Rows rules/C15's one exception takes, H1 reading the title's lone
+#: name word as the family (', Dr. John'): 1,075 under each of the
+#: three orders. A count, so the exception cannot grow unseen
+#: (measured 2026-10-27).
+_EMPTY_HEAD_H1_ROWS = 3225
+
+
+def _empty_head_view(name: ParsedName, drop_first: bool = False
+                     ) -> tuple[dict[str, str], list[str]]:
+    words: dict[str, list[str]] = {role.value: [] for role in Role}
+    for tok in name.tokens:
+        words[tok.role.value].append(tok.text)
+    if drop_first:
+        # the twin's surname, from whichever field it reached: a
+        # given-name title addresses it as the given name ('Smith, Sir
+        # PhD', rules/H1)
+        first = name.tokens[0]
+        words[first.role.value].remove(first.text)
+    return ({role: " ".join(w) for role, w in words.items()},
+            sorted(a.kind.name for a in name.ambiguities))
+
+
+def _surname_in_the_case_of(given_part: str) -> str:
+    """The twin's surname, written in the case the given part's own
+    words are written in: a surname in another case would bring the
+    case contrast the empty head lacks ('Smith, MA' reads suffix 'MA'
+    by its capitals, rules/S6, where ', MA' and 'SMITH, MA' read given
+    'MA'). Delimited words are not the name's own (rules/S6)."""
+    letters = [c for c in re.sub(r"\(.*?\)", "", given_part)
+               if c.isalpha()]
+    if letters and all(c.isupper() for c in letters):
+        return "SMITH"
+    if letters and all(c.islower() for c in letters):
+        return "smith"
+    return "Smith"
+
+
+def test_an_empty_head_reads_as_its_family_comma_twin() -> None:
+    """rules/C15's invariant: ', X' reads as 'Smith, X' reads, less the
+    surname, its fields and ambiguity kinds alike, under every order.
+    Less the surname only: a particle the twin attaches to it
+    (rules/P6) is the family alone here (', Jane van' -> family 'van').
+    Kinds, not details: a report's wording is not compared.
+
+    The one exception is H1's, asserted rather than skipped: where the
+    twin reads a title and name words in the given field alone, the
+    empty head reads them as the family (', Dr. John' -> family
+    'John'), the comma naming no surname to decide by. A particle that
+    is also a suffix word, which the twin attached to its surname
+    (rules/P6), then has no family to attach to and is the suffix
+    (', Dr. Jones vd': family 'Jones', suffix 'vd').
+
+    This replaces the empty head as a shape every comma sweep must hold
+    (nameparser/AGENTS.md): a change that breaks it gets a generic fix
+    or an entry in decisions/C15, never code of its own. 10,557 rows
+    (3,519 per order), about 2 s serially (measured 2026-10-27).
+
+    RECORDED NEGATIVE CONTROL, measured 2026-10-27: restoring the
+    defect #613's review found, the comma decision returning early on
+    an empty head (`if not seg1 or not seg0` in `_comma.decide`), fails
+    1,098 rows, ', PhD' reading given 'PhD' among them.
+    """
+    failures: list[str] = []
+    h1_rows = 0
+    rows = 0
+    for label, order in (("given-first", GIVEN_FIRST),
+                         ("family-first", FAMILY_FIRST),
+                         ("family-first-given-last",
+                          FAMILY_FIRST_GIVEN_LAST)):
+        parser = Parser(policy=Policy(name_order=order))
+        for parts in itertools.product(_EMPTY_HEAD_TITLES,
+                                       _EMPTY_HEAD_BODIES,
+                                       _EMPTY_HEAD_TAILS):
+            given_part = " ".join(p for p in parts if p)
+            if not given_part:
+                continue
+            rows += 1
+            empty = _empty_head_view(parser.parse(", " + given_part))
+            twin_text = _surname_in_the_case_of(given_part) + ", " \
+                + given_part
+            twin = _empty_head_view(parser.parse(twin_text),
+                                    drop_first=True)
+            if empty == twin:
+                continue
+            fields, kinds = twin
+            if (fields["title"] and fields["given"]
+                    and not fields["middle"]):
+                moved = dict(fields, given="", family=fields["given"])
+                if fields["family"]:
+                    # the tail P6 attached to the twin's surname, a
+                    # particle that is also a suffix word: with no
+                    # family to attach to it is the suffix, and the
+                    # twin's report on the attachment goes with it
+                    moved["suffix"] = " ".join(
+                        w for w in (fields["family"], fields["suffix"])
+                        if w)
+                    kinds = list(kinds)
+                    if "SUFFIX_OR_NAME" in kinds:
+                        kinds.remove("SUFFIX_OR_NAME")
+                if empty == (moved, kinds):
+                    h1_rows += 1
+                    continue
+            failures.append(
+                f"{label}: {', ' + given_part!r} reads {empty} but "
+                f"{twin_text!r} less its surname reads {twin}")
+    assert rows == 3 * 3519, rows
+    assert not failures, (
+        f"{len(failures)} given part(s) disagree:\n"
+        + "\n".join(failures[:15]))
+    assert h1_rows == _EMPTY_HEAD_H1_ROWS, (
+        f"H1's exception took {h1_rows} rows, recorded "
+        f"{_EMPTY_HEAD_H1_ROWS}: read the rows it gained or lost "
+        f"before re-recording")
+
+
 #: The one-case-head exception class, and the recorded size of it.
 #: Structural rather than a name list: a name whose OWN words are
 #: written in one case, where the member's own writing is the only

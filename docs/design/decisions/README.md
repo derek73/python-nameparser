@@ -88,6 +88,7 @@ Entry conventions:
 - [C12 — a suffix word ending the name before the comma](C12-suffix-word-ending-the-name-before-the-comma.md)
 - [C13 — a credential opening the part after the comma](C13-credential-opening-the-part-after-the-comma.md)
 - [C14 — strict mode: a suffix word written as an initial](C14-strict-mode-a-suffix-word-written-as-an-initial.md)
+- [C15 — a comma with nothing before it](C15-comma-with-nothing-before-it.md)
 
 ## Name order (O)
 

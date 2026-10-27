@@ -65,7 +65,7 @@
   ```
   "Doe, Jane Miss"            →  title="Miss"
   ```
-- With nothing before the comma, the one given word the salutation leaves reads as a title's lone name word reads (H1), the family, as the period-marked spelling has read it since H5 (2.3.0, #316); written alone, that word is the given name.
+- With nothing before the comma, the one given word the salutation leaves reads as a title's lone name word reads (H1, C15's one exception), the family, as the period-marked spelling has read it since H5 (2.3.0, #316); written alone, that word is the given name.
   ```
   ", Jane Mrs"                →  family="Jane"
   ", Jane"                    →  given="Jane"
