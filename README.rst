@@ -7,11 +7,13 @@ nameparser parses human names into seven fields — title, given, middle,
 family, suffix, nickname, maiden. Results are immutable, configuration is
 composable, and locale packs are opt-in.
 
-📣 **nameparser 2.6 is out.** It keeps surnames that earlier releases
-read as credentials (``Luo Si``, ``Maria de Sa``, ``Ram Bahadur B.K.``),
-reads ``Wm`` and ``Md`` as the given names they abbreviate, recognizes more credentials after a comma
-(``John Smith, MBChB``), and adds an opt-in reading for names with two
-family names (``Gabriel García Márquez``). The `release log
+📣 **nameparser 2.7 is out.** It reads a title that is also a given name
+as a title only inside a title phrase (``Chief Justice John Roberts``,
+while ``King Curtis`` and ``Sheikh Ahmed Khan`` keep their first names),
+reads credentials written joined, split or in brackets as suffixes
+(``John Smith, MD/PhD``), reads given names written short as given names
+(``Chas. Smith``), and reports the reading an ambiguous parse did not
+take (``Ambiguity.alternative``). The `release log
 <https://nameparser.readthedocs.io/en/latest/release_log.html>`__ has
 the details.
 
