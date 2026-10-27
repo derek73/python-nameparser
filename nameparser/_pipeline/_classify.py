@@ -71,10 +71,10 @@ from nameparser._pipeline._state import (
     AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG,
     GIVEN_ABBREVIATION_TAG, SHAPE_ACRONYM_TAG,
     SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, TITLE_AMBIGUOUS_TAG, ParseState,
-    PendingAmbiguity,
+    Deferred, PendingAmbiguity, PendingReading,
     WorkToken, copy_with,
 )
-from nameparser._types import AmbiguityKind
+from nameparser._types import AmbiguityKind, ReadingKind, ReadingSource
 from nameparser._pipeline._vocab import (
     BUILTIN_SUFFIX_DELIMITERS, SPLIT_CHUNK, SPLIT_PAIR_OPENS, _INITIAL, caps_shape_candidate,
     composed_len, delimiter_cores, glued_stem, is_cased_paired_initials,
@@ -568,7 +568,12 @@ def classify(state: ParseState) -> ParseState:
                 f"{token.text!r} is both a connective and an initial; "
                 f"the name is written in one case, so nothing marks "
                 f"which, and it is read as an initial",
-                (i,)))
+                (i,),
+                # the field of the join it would make is assign's to
+                # name, once the name has positions
+                alternative=PendingReading(ReadingKind.CONJUNCTION,
+                                           ReadingSource.VOCABULARY,
+                                           Deferred.JOINED)))
     # The write rides the replace this stage already makes, so
     # recording the fact costs no frame of its own.
     return copy_with(state, tokens=tokens,

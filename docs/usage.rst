@@ -1084,6 +1084,50 @@ nothing — periods make ``M.A.`` unambiguously a credential:
 Most names report none. A non-empty ``ambiguities`` is a useful signal
 for routing a record to human review instead of trusting it silently.
 
+.. _reading-not-taken:
+
+The reading it did not take
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Since 2.7 a report of a fork also says what the other reading was.
+``Ambiguity.alternative`` is a :class:`~nameparser.Reading` with three
+parts:
+
+- **kind** — what the word would have been read as: a ``name``, an
+  ``initial``, a ``credential``, a ``generation``, a ``particle``, a
+  ``title`` and so on (:class:`~nameparser.ReadingKind`).
+- **role** — the field the word would have landed in, with every other
+  word of the name read as the parse read it.
+- **source** — why that reading was there at all
+  (:class:`~nameparser.ReadingSource`): ``vocabulary`` for a listed word,
+  ``declared`` for a word the vocabulary also lists as a name, ``shape``
+  for a roman numeral, dotted letters or a one-letter initial, and
+  ``position`` for an ordinary
+  word nothing lists, which is a name only by where it stands.
+
+The source is what tells two reports of the same kind apart. ``MA`` is
+listed as a surname as well as a credential, so its name reading is
+declared; ``Jones`` behind a credential is taken into the credential run
+by position alone:
+
+.. doctest::
+
+    >>> for text in ("JOHN SMITH MA", "John Smith PhD Jones", "Van Buren"):
+    ...     alt = parse(text).ambiguities[0].alternative
+    ...     print(f"{text}: {alt.kind.value} as {alt.role.value} ({alt.source.value})")
+    JOHN SMITH MA: name as family (declared)
+    John Smith PhD Jones: name as family (position)
+    Van Buren: particle as family (vocabulary)
+
+A report of a shape rather than a fork — ``comma-structure``,
+``unbalanced-delimiter``, ``segmentation`` — carries no alternative,
+and neither does one whose other reading no field could hold: a
+connective letter opening the name (``E SMITH JONES``) has no word
+before it to join. Check for ``None`` before reading one.
+The alternative is not compared: two names that differ only in it are
+equal, as before 2.7, and a ``ParsedName`` pickled by an earlier
+release loads with no alternative on its reports.
+
 Tokens and spans
 ------------------
 

@@ -138,6 +138,13 @@ def _v2_row(p):
     row = {f: (getattr(p, f, "") or "") for f in V2_FIELDS}
     row["_ambiguities"] = sorted(
         {a.kind.name for a in getattr(p, "ambiguities", ())})
+    # #752 phase 2m: the reading each report did not take, as
+    # snapshot.alternatives() records it; none before 2.7
+    row["_alternatives"] = sorted(
+        {f"{a.kind.name}: {alt.kind.value} as {alt.role.value} "
+         f"({alt.source.value})"
+         for a in getattr(p, "ambiguities", ())
+         if (alt := getattr(a, "alternative", None)) is not None})
     # #484: the derived initials() view
     row["_initials"] = p.initials() or ""
     # #826: the case-repair views, as snapshot.case_views() records them

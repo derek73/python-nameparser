@@ -6,7 +6,8 @@ from typing import Any
 
 import pytest
 
-from nameparser import ParsedName, Parser, Policy, Role, locales, parser_for
+from nameparser import (Ambiguity, AmbiguityKind, ParsedName, Parser, Policy, ReadingKind,
+                        Role, Token, locales, parser_for)
 from nameparser._pipeline._state import FIELD_READING, NAME_ROLES
 from nameparser._policy import FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST
 
@@ -291,6 +292,217 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     assert claims == 1390, (
         f"the field sweep checks {claims} claims, recorded as 1390 on "
         f"2026-10-26")
+
+
+#: The kinds that report a fork between two readings of a word, so carry
+#: the reading not taken; the other three report a shape (#752 phase 2m).
+_FORK_KINDS = frozenset(AmbiguityKind) - {
+    AmbiguityKind.COMMA_STRUCTURE, AmbiguityKind.UNBALANCED_DELIMITER,
+    AmbiguityKind.SEGMENTATION, AmbiguityKind.ORDER}
+
+#: The field a non-name reading names by what it is.
+_FIELD_OF_KIND = {
+    **dict.fromkeys((ReadingKind.CREDENTIAL, ReadingKind.GENERATION,
+                     ReadingKind.AGNOMEN, ReadingKind.POST_NOMINAL), Role.SUFFIX),
+    ReadingKind.TITLE: Role.TITLE, ReadingKind.PARTICLE: Role.FAMILY,
+}
+
+#: A plain word of each kind the oracle below writes in place of the
+#: referent, in the referent's case: a name word, an initial and a
+#: connective no rule reads as anything else.
+_STAND_INS = {ReadingKind.NAME: "Zork", ReadingKind.INITIAL: "Q",
+              ReadingKind.CONJUNCTION: "y"}
+
+#: (row, order) pairs whose stand-in reads differently from the
+#: alternative because the stand-in changes a reading OTHER than the
+#: referent's, which the alternative holds fixed: a word behind it
+#: that the run or the numeral fork had read as a suffix becomes a name
+#: word ('John Smith VI Jones'), a word in a given part's credential
+#: run is absorbed as a particle never is ('Smith, John PhD de PhD
+#: van'), and a
+#: bracketed shape read as if written bare (rules/S1) has a stand-in
+#: that stays bracketed ('Andrew Perkins (X.Y.Z.)'). Measured
+#: 2026-10-26.
+_STAND_IN_REREADS = {
+    ("John Smith Pharm D Jones", None), ("John Smith Pharm D Jones", 2),
+    ("Smith, John PhD de PhD van", None), ("Smith, John PhD de PhD van", 1),
+    ("Smith, John PhD de PhD van", 2),
+    ("Smith, John PhD Jr. de la", None), ("Smith, John PhD Jr. de la", 1),
+    ("Smith, John PhD Jr. de la", 2),
+    ("Andrew Perkins (X.Y.Z.)", None), ("Andrew Perkins (X.Y.Z.)", 1),
+    ("Andrew Perkins (X.Y.Z.)", 2),
+    ("John Smith VI Ma", None), ("John Smith VI Jones", None),
+    ("John Smith VI Jones", 2),
+}
+
+#: Reports whose deferred field assign could not name: the particle the
+#: chain took ends in a title a connective's join made ('Freiherr von
+#: Berg Dr. and Ed. Prof.', where group's joins left no name piece), so
+#: the alternative is withheld rather than guessed.
+_NO_ALTERNATIVE = {("Freiherr von Berg Dr. and Ed. Prof.", o)
+                   for o in (None, 1, 2)}
+
+
+def _order_key(order: tuple[Role, Role, Role] | None) -> int | None:
+    return None if order is None else _INVARIANT_ORDERS.index(order)
+
+
+def _parser_for(case: Case | None,
+                order: tuple[Role, Role, Role] | None) -> Parser:
+    if case is not None and order is None:
+        return _parser_for_case(case)
+    return Parser(policy=Policy(name_order=order)) if order else Parser()
+
+
+def _stand_in(parser: Parser, pn: ParsedName, a: Ambiguity,
+              kind: ReadingKind) -> tuple[str, Role]:
+    """The name with the report's referents replaced by `kind`'s plain
+    word, written in their case, and the field that word lands in."""
+    first, last = a.tokens[0].span, a.tokens[-1].span
+    assert first is not None and last is not None
+    written = pn.original[first.start:last.end]
+    letters = [c for c in written if c.isalpha()]
+    word = _STAND_INS[kind]
+    if len(letters) > 1 and all(c.isupper() for c in letters):
+        word = word.upper()
+    elif letters and all(c.islower() for c in letters):
+        word = word.lower()
+    text = pn.original[:first.start] + word + pn.original[last.end:]
+    landed = next(t.role for t in parser.parse(text).tokens
+                  if t.span is not None and t.span.start == first.start)
+    return text, landed
+
+
+def _opens_its_part(pn: ParsedName, token: Token) -> bool:
+    """No name word before `token` in its comma part."""
+    assert token.span is not None
+    for t in pn.tokens:
+        if t.span is None or t.span.start >= token.span.start:
+            break
+        if "," in pn.original[t.span.end:token.span.start]:
+            continue
+        if t.role in _NAME_FIELDS:
+            return False
+    return True
+
+
+def _check_alternatives(key: tuple[str, int | None], pn: ParsedName,
+                        parser: Parser) -> None:
+    for a in pn.ambiguities:
+        alt = a.alternative
+        if a.kind not in _FORK_KINDS:
+            assert alt is None, (key, a)
+            continue
+        if key in _NO_ALTERNATIVE and alt is None:
+            continue
+        if (alt is None and a.kind is AmbiguityKind.CONJUNCTION_OR_INITIAL
+                and _opens_its_part(pn, a.tokens[0])):
+            # a connective with no word before it to join: no field
+            continue
+        assert alt is not None, f"{key[0]!r}: {a.kind.value} has none"
+        if alt.kind in _FIELD_OF_KIND:
+            assert alt.role is _FIELD_OF_KIND[alt.kind], (key, a, alt)
+            continue
+        if a.kind is AmbiguityKind.GIVEN_OR_FAMILY:
+            # rules/O5's other convention, which no stand-in can reach
+            assert {a.tokens[0].role, alt.role} == {Role.GIVEN,
+                                                    Role.FAMILY}, (
+                key, a, alt)
+            continue
+        if key in _STAND_IN_REREADS:
+            continue
+        text, landed = _stand_in(parser, pn, a, alt.kind)
+        if landed is a.tokens[0].role:
+            continue
+        assert landed is alt.role, (
+            f"{key[0]!r}: {a.kind.value} says its {alt.kind.value} "
+            f"reading lands in {alt.role.value}, but {text!r} puts the "
+            f"stand-in in {landed.value}")
+
+
+@pytest.mark.parametrize("case,order", _SWEPT_ROWS, ids=_SWEPT_IDS)
+def test_an_alternative_names_the_field_the_other_reading_gives(
+        case: Case, order: tuple[Role, Role, Role] | None) -> None:
+    """#752 phase 2m: every report of a fork carries the reading the
+    parse did not take, and its role is the field the token would have
+    had under it. A non-name reading names its field by what it is (a
+    credential the suffix, a particle the family). A name reading is
+    checked by an ORACLE: the referent is replaced by a plain word of
+    the alternative's kind in its case ('Zork', 'Q', 'y') and the name
+    parsed again under the same parser, where the stand-in must land in
+    the alternative's field. The stand-in removes the word's own
+    reading, not the position: where it still lands in the taken field
+    the decision was the position's, which the oracle cannot undo, and
+    the pair is not checked; the count test below records how many are.
+    `_STAND_IN_REREADS` lists the pairs where the stand-in moves a
+    NEIGHBOUR's reading too.
+
+    Negative control, measured 2026-10-26: with the trailing peel's
+    name alternative pinned to the family (`as_a_name`'s field in
+    `_assign_main`), this test fails 63 parses, the family-first rows
+    whose taken suffix would be the given or middle name; with
+    `_name_alt` never deferring to the piece in front, 16 (15 before
+    the first review's fixes, re-taken after them)."""
+    _check_alternatives((case.text, _order_key(order)),
+                        _swept(case.id, order), _parser_for(case, order))
+
+
+#: Shapes no case row holds, each found by the first review of #752
+#: phase 2m with a field named wrong: a numeral or credential with no
+#: name word before it (the carve-out's name word uncounted), a numeral
+#: behind a particle P6 then attached (read as a live chain), a bound
+#: given name before a numeral with no family word left for its join,
+#: and a particle P6 attached behind a particle chain (named from its
+#: own field, not the chain's). The second review's six follow.
+_REVIEW_SHAPES = ("PhD VI", "Jr VI", "III VI", "Smith, John van VI",
+                  "John Smith van VI", "abdul VI", "Abu VI", "Dr. abdul VI",
+                  "Smith, Freiherr von Berg van", "Juan de la Vega van",
+                  # the second review's: a bound join that is no chain
+                  # though `abu` is a particle, a given-name title that
+                  # licenses the bound join, and a never-given particle
+                  # opening the part, which P1 folds with the word
+                  "Smith, Abu Mary van", "Smith, Abu Mary VI",
+                  "Sir abdul VI", "Dr. mc VI", "de VI", "Smith, Dr. de VI")
+
+
+@pytest.mark.parametrize("order", _INVARIANT_ORDERS)
+@pytest.mark.parametrize("text", _REVIEW_SHAPES)
+def test_an_alternative_names_the_field_in_the_reviews_shapes(
+        text: str, order: tuple[Role, Role, Role] | None) -> None:
+    """The oracle above over `_REVIEW_SHAPES`. Negative controls,
+    measured 2026-10-26: on the commit before the first review's fixes
+    (e69e4372) this fails 34 of its 48 parses, and on the commit before
+    the second review's (9e1a2113), 14."""
+    parser = _parser_for(None, order)
+    pn = parser.parse(text)
+    _check_alternatives((text, _order_key(order)), pn, parser)
+
+
+def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
+    """The oracle above skips a pair whose stand-in keeps the taken
+    field, so a change that made every decision positional would pass
+    it vacuously: the counts it checks and skips are recorded here."""
+    checked = skipped = 0
+    for case, order in _SWEPT_ROWS:
+        if (case.text, _order_key(order)) in _STAND_IN_REREADS:
+            continue
+        pn = _swept(case.id, order)
+        parser = _parser_for(case, order)
+        for a in pn.ambiguities:
+            alt = a.alternative
+            if (alt is None or alt.kind not in _STAND_INS
+                    or a.kind is AmbiguityKind.GIVEN_OR_FAMILY):
+                continue
+            _, landed = _stand_in(parser, pn, a, alt.kind)
+            if landed is a.tokens[0].role:
+                skipped += 1
+            else:
+                checked += 1
+    # measured 2026-10-26: 435 stand-ins land in the alternative's
+    # field, 296 keep the taken one; 435 -> 436 the same day, the first
+    # review's fix to P6's report ('Anna van der Berg van mc' under
+    # FAMILY_FIRST, a reread no longer)
+    assert (checked, skipped) == (436, 296), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:

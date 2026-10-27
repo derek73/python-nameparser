@@ -39,14 +39,14 @@ from nameparser._pipeline._pieces import (
 from nameparser._pipeline._state import (
     AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, SHAPE_ACRONYM_TAG,
     SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, ParseState, PendingAmbiguity,
-    Structure, WorkToken, copy_with,
+    PendingReading, Structure, WorkToken, copy_with,
 )
 from nameparser._pipeline._vocab import (
     ROMAN, caps_shape_candidate, claimed_as_non_name,
     composed_len, delimiter_cores, glued_stem, glues, is_caps_word,
     is_paired_initials, is_single_letter_numeral, is_wholly_suffix,
-    name_word_count, reads_as_generation, surname_unit_facts,
-    unit_ends, written_as_a_name,
+    name_reading, name_word_count, reads_as_generation, suffix_reading,
+    surname_unit_facts, unit_ends, written_as_a_name,
 )
 from nameparser._policy import CapsSuffixes
 from nameparser._types import AmbiguityKind, Role
@@ -275,6 +275,14 @@ def _behind_a_generation(state: ParseState, seg0: Sequence[int],
     if not contrast:
         return None
     return tuple(reading)
+
+
+def _given_part(token: WorkToken) -> PendingReading:
+    """The name reading of a word this decision bound as a credential:
+    the comma's other branch makes the part the given part, and with
+    every other word of it read as the decision read it, the word is
+    its given name (rules/C1's listing form)."""
+    return name_reading(token, Role.GIVEN)
 
 
 def decide(state: ParseState, splits: bool | None = True) -> ParseState:
@@ -637,7 +645,8 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
             AmbiguityKind.SUFFIX_OR_NAME,
             f"{' '.join(tokens[i].text for i in taken)!r} after the comma "
             f"follows {tokens[seg0[-1]].text!r}, so it is read as a "
-            f"credential run; it may be a name", tuple(taken)))
+            f"credential run; it may be a name", tuple(taken),
+            alternative=_given_part(tokens[taken[0]])))
     elif whole and run and ((listed and not settled) or caps or pair_only):
         part_reported = True
         if len(part) == 1:
@@ -649,7 +658,8 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
         ambiguities.append(PendingAmbiguity(
             AmbiguityKind.SUFFIX_OR_NAME,
             f"{what}; the part before the comma holds {names} name words, "
-            f"so it is read as a credential run", tuple(part)))
+            f"so it is read as a credential run", tuple(part),
+            alternative=_given_part(tokens[part[0]])))
     elif (len(p1[0]) == 1 and p1[0][0] in listed
           and not (reading[0]
                    and settled_by_case(tokens[p1[0][0]], state.one_case))):
@@ -663,7 +673,12 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
         ambiguities.append(PendingAmbiguity(
             AmbiguityKind.SUFFIX_OR_NAME,
             f"{tokens[i].text!r} after the comma is also an ordinary name "
-            f"word; read as {field}", (i,)))
+            f"word; read as {field}", (i,),
+            # the fork is credential or name: a word the reading
+            # declined is bound as a title, and its other branch is the
+            # credential
+            alternative=(_given_part(tokens[i]) if reading[0]
+                         else suffix_reading(tokens[i]))))
     # rules/S7: "A member the company decides reports the fork as a
     # counted pick does" -- reported where it decided: a member the
     # anchor read as a credential after its own writing declined (#544)
@@ -672,7 +687,8 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
         ambiguities.append(PendingAmbiguity(
             AmbiguityKind.SUFFIX_OR_NAME,
             f"{tokens[i].text!r} behind a credential after the comma is "
-            f"also an ordinary name word; read as a credential", (i,)))
+            f"also an ordinary name word; read as a credential", (i,),
+            alternative=_given_part(tokens[i])))
     # rules/C13: "A credential opening the part after a family comma
     # makes it the postnominal part however it goes on" -- each word it takes that
     # would have made it the given part, as #602's run reports them
@@ -683,14 +699,17 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
             ambiguities.append(PendingAmbiguity(
                 AmbiguityKind.SUFFIX_OR_NAME,
                 f"{text!r} follows a credential, so it reads as part of the "
-                f"suffix run; it may be a name word", tuple(p1[k])))
+                f"suffix run; it may be a name word", tuple(p1[k]),
+                alternative=_given_part(tokens[p1[k][0]])))
     # rules/S12: "where the count takes the pair, the reading is reported"
     # -- C4's count took it, unless the flip it took part in reported
     # the part
     if not part_reported:
         for k, piece in enumerate(p1):
             if "split" in pt1[k] and reading[k]:
-                ambiguities.append(split_credential_report(piece, tokens))
+                ambiguities.append(
+                    split_credential_report(piece, tokens,
+                                            _given_part(tokens[piece[0]])))
     # Every word of the part is bound above or dropped as a core, so the
     # segment hands group nothing to join -- emptied here, where the
     # binding is, as #601's take removes what it binds, rather than

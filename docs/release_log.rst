@@ -4,6 +4,10 @@ Release Log
 
     nameparser 2.7 is under development.
 
+    **Additions**
+
+    - **Add Ambiguity.alternative, the reading a report's parse did not take.** ``parse("JOHN SMITH MA").ambiguities[0].alternative`` is ``Reading('name' as 'family', 'declared')``: read as a name, ``MA`` would be the family name, a surname the vocabulary lists; ``John Smith PhD Jones`` gives source ``position`` for ``Jones``, a name only by where it stands. The new ``Reading``, ``ReadingKind`` and ``ReadingSource`` are exported from ``nameparser``. The field is not compared, so names and their reports compare as before, and a ``ParsedName`` pickled by 2.6 or earlier still loads, its reports with no alternative. :issue:`752`
+
     **Behavior Changes**
 
     - **Fix roman numerals VI to X reading as names where III reads as a suffix.** ``John Smith VI MD`` gives suffix ``VI MD`` and ``Smith, John VI`` suffix ``VI``, as ``III`` does, where 1.4.0 through 2.6.0 gave last ``VI``, suffix ``MD`` and middle ``VI``. ``John Smith V, M.J.`` keeps suffix ``V`` and ``Georg VI.`` gives suffix ``VI.``, where 1.4.0 through 2.6.0 gave last ``John Smith V`` and ``VI.``. A one-letter numeral before a credential is still a name (``John Smith V PhD`` keeps last ``V``), and a Title-case ``Vi`` in a mixed-case name reads as a name (``Nguyen Van Vi`` gives last ``Van Vi``, where 2.2.0 through 2.6.0 gave suffix ``Vi``). :issue:`784`, :issue:`774`

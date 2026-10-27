@@ -6,7 +6,7 @@ import pytest
 
 from nameparser._lexicon import Lexicon
 from nameparser._locale import Locale
-from nameparser._parser import Parser
+from nameparser._parser import Parser, parse
 from nameparser._policy import FAMILY_FIRST, PatronymicRule, Policy, PolicyPatch
 from nameparser._types import (
     Ambiguity, AmbiguityKind, ParsedName, Role, Segmentation, Span, Token,
@@ -27,6 +27,11 @@ def test_ambiguity_repr_shows_kind_and_token_texts() -> None:
     van = Token("Van", Span(0, 3), Role.GIVEN)
     a = Ambiguity(AmbiguityKind.PARTICLE_OR_GIVEN, "detail", (van,))
     assert repr(a) == "Ambiguity('particle-or-given': 'Van')"
+
+
+def test_reading_repr_shows_kind_field_and_source() -> None:
+    alt = parse("JOHN SMITH MA").ambiguities[0].alternative
+    assert repr(alt) == "Reading('name' as 'family', 'declared')"
 
 
 def test_parsedname_repr_lists_nonempty_fields_in_canonical_order() -> None:

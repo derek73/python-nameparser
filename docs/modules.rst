@@ -77,6 +77,15 @@ Results
 .. autoclass:: nameparser.AmbiguityKind
    :members:
 
+.. autoclass:: nameparser.Reading
+   :members:
+
+.. autoclass:: nameparser.ReadingKind
+   :members:
+
+.. autoclass:: nameparser.ReadingSource
+   :members:
+
 Configuration
 ~~~~~~~~~~~~~
 

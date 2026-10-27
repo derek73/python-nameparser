@@ -78,7 +78,10 @@ import zlib
 from collections import defaultdict
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from nameparser import ParsedName
 
 HERE = Path(__file__).resolve().parent
 # The shared corpus helpers, found as the corpus builders find them (see
@@ -198,6 +201,8 @@ def row(name: str, order: str | None, v2: dict[str, Any] | None,
     out.update({f: v for f in V2_FIELDS if (v := v2[f])})
     if v2["_ambiguities"]:
         out["ambiguities"] = list(v2["_ambiguities"])
+    if v2.get("_alternatives"):
+        out["alternatives"] = list(v2["_alternatives"])
     if v2["_initials"]:
         out["initials"] = v2["_initials"]
     for view in CASE_VIEWS:
@@ -230,20 +235,44 @@ def case_views(rendered: str, plain: str, forced: str) -> dict[str, str]:
             "_capitalized_force": forced if forced != plain else ""}
 
 
+def alternatives(p: ParsedName) -> list[str]:
+    """The reading each of a parse's reports did not take (#752 phase
+    2m, `Ambiguity.alternative`), one string per distinct reading, as
+    the ambiguity kinds are recorded: its kind, the reading's kind, the
+    field it names and its source, and none from a tree before 2.7,
+    which `--base` reads through this too. compare.py's worker holds a
+    copy."""
+    return sorted({f"{a.kind.name}: {alt.kind.value} as {alt.role.value} "
+                   f"({alt.source.value})"
+                   for a in p.ambiguities
+                   if (alt := getattr(a, "alternative", None)) is not None})
+
+
+#: The keys a row came to record after the snapshot existed, each with
+#: the change that added it: a snapshot recorded before it carries none
+#: of them, so a comparison against it leaves them out.
+RECORDED_LATER = ((CASE_VIEWS, "#826"), (("alternatives",), "#752 phase 2m"))
+
+
 def unrecorded_views(old: dict[tuple[str, str], dict[str, Any]],
                      new: dict[tuple[str, str], dict[str, Any]]
                      ) -> tuple[str, ...]:
-    """The case views `old` predates -- none of its rows carries one --
-    dropped from `new`'s rows in place, so a snapshot recorded before
-    #826 (v2.5.0's, or a local snapshot) does not report every name
-    the views reach as moved: 910 of the 961 entries `--since v2.5.0`
-    reported on 2026-10-22 were the keys appearing, not moves."""
-    if any(v in r for r in old.values() for v in CASE_VIEWS):
-        return ()
-    for r in new.values():
-        for v in CASE_VIEWS:
-            r.pop(v, None)
-    return CASE_VIEWS
+    """The keys `old` predates -- none of its rows carries one of a
+    `RECORDED_LATER` group -- dropped from `new`'s rows in place, so a
+    snapshot recorded before the change that added them (v2.5.0's for
+    the case views, v2.6.0's for the alternatives, or a local snapshot)
+    does not report every name they reach as moved: 910 of the 961
+    entries `--since v2.5.0` reported on 2026-10-22 were the case views'
+    keys appearing, not moves."""
+    dropped: tuple[str, ...] = ()
+    for keys, _ in RECORDED_LATER:
+        if any(v in r for r in old.values() for v in keys):
+            continue
+        for r in new.values():
+            for v in keys:
+                r.pop(v, None)
+        dropped += keys
+    return dropped
 
 
 def facade_view(r: dict[str, Any]) -> dict[str, Any]:
@@ -308,6 +337,7 @@ def _read_chunk(entries: list[Entry], facade: bool) -> tuple[str, list[dict[str,
         p = parsers[order].parse(name)
         v2 = {f: getattr(p, f) or "" for f in V2_FIELDS}
         v2["_ambiguities"] = sorted({a.kind.name for a in p.ambiguities})
+        v2["_alternatives"] = alternatives(p)
         v2["_initials"] = p.initials() or ""
         v2.update(case_views(str(p), str(parsers[order].capitalized(p)),
                              str(parsers[order].capitalized(p, force=True))))
@@ -780,7 +810,8 @@ def main(argv: list[str] | None = None) -> int:
               "recorded when a local reading still read the facade\n")
     if dropped := unrecorded_views(old, new):
         print(f"not compared: {', '.join(dropped)} -- the snapshot read "
-              f"against records no case view (it predates #826); "
+              f"against predates "
+              f"{' and '.join(c for k, c in RECORDED_LATER if k[0] in dropped)}; "
               f"compare.py --baseline compares them\n")
     moves = grouped(old, new)
     print("\n".join(moves) or ("matches the base" if base else "matches the snapshot"))

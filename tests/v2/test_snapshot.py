@@ -69,16 +69,41 @@ def test_a_snapshot_predating_the_case_views_is_not_compared_on_them() -> None:
     new = {snapshot.key(r): dict(r) for r in rows}
     old = {k: {f: v for f, v in r.items() if f not in snapshot.CASE_VIEWS}
            for k, r in new.items()}
-    assert snapshot.unrecorded_views(old, new) == snapshot.CASE_VIEWS
+    # neither name reports, so no alternative is recorded either
+    assert snapshot.unrecorded_views(old, new) == (
+        *snapshot.CASE_VIEWS, "alternatives")
     assert not snapshot.grouped(old, new)
     # A snapshot that records a view on one row, or only the plain
     # view, still compares both: a name repair leaves alone records none.
     rows = snapshot.read([("john smith", None), ("John Smith", None)])
     new = {snapshot.key(r): dict(r) for r in rows}
     current = {k: dict(r) for k, r in new.items()}
-    assert snapshot.unrecorded_views(current, new) == ()
+    # (neither name reports, so the alternatives are left out)
+    assert snapshot.unrecorded_views(current, new) == ("alternatives",)
     assert new == current
     assert not any("capitalized_force" in r for r in current.values())
+
+
+def test_a_snapshot_predating_the_alternatives_is_not_compared_on_them(
+        ) -> None:
+    # every reporting name gained the key on 2026-10-26 (#752 phase 2m),
+    # 969 of the committed snapshot's 6,476; against a snapshot that
+    # records one anywhere, the alternatives stay compared, and the
+    # case views are a group of their own
+    rows = snapshot.read([("JOHN SMITH MA", None), ("john smith", None)])
+    new = {snapshot.key(r): dict(r) for r in rows}
+    assert any("alternatives" in r for r in new.values())
+    old = {k: {f: v for f, v in r.items() if f != "alternatives"}
+           for k, r in new.items()}
+    assert snapshot.unrecorded_views(old, new) == ("alternatives",)
+    assert not snapshot.grouped(old, new)
+    rows = snapshot.read([("JOHN SMITH MA", None), ("Jack MA", None)])
+    new = {snapshot.key(r): dict(r) for r in rows}
+    moved = {k: dict(r) for k, r in new.items()}
+    first = next(iter(moved))
+    moved[first]["alternatives"] = ["SUFFIX_OR_NAME: name as given (declared)"]
+    assert snapshot.unrecorded_views(moved, new) == ()
+    assert snapshot.grouped(moved, new)[0] == "alternatives: 1"
 
 
 def test_a_name_leaving_the_corpus_is_reported() -> None:
