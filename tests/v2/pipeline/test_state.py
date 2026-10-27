@@ -324,8 +324,8 @@ def test_stage_field_ownership() -> None:
         # comma marks the particles it joins to the family
         # vocab:folded-middle, for the family view's prepend order
         "assign": {"role", "tags"},
-        # post_rules also tags: P6's attachments it still makes (the
-        # no-comma site, and after a comma with nothing before it) and
+        # post_rules also tags: P6's attachment it still makes (the
+        # no-comma site; behind an empty head it is assign's since #892) and
         # the middle_as_family fold mark folded tokens
         # vocab:folded-middle for the family view's prepend order, R2
         # and R3 write their unjoined marks, and R1's entry pass marks

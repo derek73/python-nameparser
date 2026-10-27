@@ -287,10 +287,11 @@ _EMPTY_HEAD_BODIES = (
 _EMPTY_HEAD_TAILS = ("", "Jr.", "PhD", "Dr.", "Mrs", "III", "V", "MA",
                      "Ma", "fils", "X.Y.Z.")
 #: Rows rules/C15's one exception takes, H1 reading the title's lone
-#: name word as the family (', Dr. John'): 1,075 under each of the
-#: three orders. A count, so the exception cannot grow unseen
-#: (measured 2026-10-27).
-_EMPTY_HEAD_H1_ROWS = 3225
+#: name word as the family (', Dr. John'), under each of the three
+#: orders. A count per order, so the exception cannot grow unseen in
+#: one of them (measured 2026-10-27; 1,075 each before #892's
+#: empty-head P6 site went).
+_EMPTY_HEAD_H1_ROWS = 963
 
 
 def _empty_head_view(name: ParsedName, drop_first: bool = False
@@ -333,10 +334,10 @@ def test_an_empty_head_reads_as_its_family_comma_twin() -> None:
     The one exception is H1's, asserted rather than skipped: where the
     twin reads a title and name words in the given field alone, the
     empty head reads them as the family (', Dr. John' -> family
-    'John'), the comma naming no surname to decide by. A particle that
-    is also a suffix word, which the twin attached to its surname
-    (rules/P6), then has no family to attach to and is the suffix
-    (', Dr. Jones vd': family 'Jones', suffix 'vd').
+    'John'), the comma naming no surname to decide by. Only where the
+    twin, less its surname, reads no family: a particle P6 attaches
+    gives H1 a family, so it stands down (', Dr. Jones vd' -> given
+    'Jones', family 'vd').
 
     This replaces the empty head as a shape every comma sweep must hold
     (nameparser/AGENTS.md): a change that breaks it gets a generic fix
@@ -349,13 +350,14 @@ def test_an_empty_head_reads_as_its_family_comma_twin() -> None:
     1,098 rows, ', PhD' reading given 'PhD' among them.
     """
     failures: list[str] = []
-    h1_rows = 0
+    h1_rows: dict[str, int] = {}
     rows = 0
     for label, order in (("given-first", GIVEN_FIRST),
                          ("family-first", FAMILY_FIRST),
                          ("family-first-given-last",
                           FAMILY_FIRST_GIVEN_LAST)):
         parser = Parser(policy=Policy(name_order=order))
+        h1_rows[label] = 0
         for parts in itertools.product(_EMPTY_HEAD_TITLES,
                                        _EMPTY_HEAD_BODIES,
                                        _EMPTY_HEAD_TAILS):
@@ -372,21 +374,10 @@ def test_an_empty_head_reads_as_its_family_comma_twin() -> None:
                 continue
             fields, kinds = twin
             if (fields["title"] and fields["given"]
-                    and not fields["middle"]):
+                    and not fields["middle"] and not fields["family"]):
                 moved = dict(fields, given="", family=fields["given"])
-                if fields["family"]:
-                    # the tail P6 attached to the twin's surname, a
-                    # particle that is also a suffix word: with no
-                    # family to attach to it is the suffix, and the
-                    # twin's report on the attachment goes with it
-                    moved["suffix"] = " ".join(
-                        w for w in (fields["family"], fields["suffix"])
-                        if w)
-                    kinds = list(kinds)
-                    if "SUFFIX_OR_NAME" in kinds:
-                        kinds.remove("SUFFIX_OR_NAME")
                 if empty == (moved, kinds):
-                    h1_rows += 1
+                    h1_rows[label] += 1
                     continue
             failures.append(
                 f"{label}: {', ' + given_part!r} reads {empty} but "
@@ -395,7 +386,7 @@ def test_an_empty_head_reads_as_its_family_comma_twin() -> None:
     assert not failures, (
         f"{len(failures)} given part(s) disagree:\n"
         + "\n".join(failures[:15]))
-    assert h1_rows == _EMPTY_HEAD_H1_ROWS, (
+    assert set(h1_rows.values()) == {_EMPTY_HEAD_H1_ROWS}, (
         f"H1's exception took {h1_rows} rows, recorded "
         f"{_EMPTY_HEAD_H1_ROWS}: read the rows it gained or lost "
         f"before re-recording")

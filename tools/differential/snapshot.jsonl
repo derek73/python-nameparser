@@ -15,7 +15,7 @@
 {"name": ", Ana García López", "given": "Ana", "middle": "García López", "initials": "A. G. L."}
 {"name": ", Dean", "given": "Dean", "initials": "D."}
 {"name": ", Dr. John", "title": "Dr.", "family": "John", "initials": "J."}
-{"name": ", Dr. Jones vd", "title": "Dr.", "family": "Jones", "suffix": "vd", "initials": "J.", "capitalized_force": "Dr. Jones VD"}
+{"name": ", Dr. Jones vd", "title": "Dr.", "given": "Jones", "family": "vd", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "J. v.", "capitalized_force": "Dr. Jones Vd"}
 {"name": ", Dr. abdul Rahman", "title": "Dr.", "family": "abdul Rahman", "initials": "a. R.", "capitalized_force": "Dr. Abdul Rahman"}
 {"name": ", Dr. fils", "title": "Dr.", "family": "fils", "initials": "f.", "capitalized_force": "Dr. Fils"}
 {"name": ", Jane", "given": "Jane", "initials": "J."}

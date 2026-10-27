@@ -1596,13 +1596,13 @@ def particle_tail(seg: Sequence[Sequence[int]],
     past, since `vd` arrives suffix-roled and is the run.
 
     Read off ROLES, asked at the moment assign's walk reaches #602's
-    run (or, with no run, once the walk has placed every piece; and by
-    post_rules' attachment behind an empty family part): every word in front of the run holds the role the walk gave
-    it, and the run's words hold none yet -- no name role, and a class
-    member not yet read as anything, the run being what will read it
-    as the credential. That is why the answer equals the one this
-    would give over the finished roles, which is what the attachment
-    needs. `lo == hi` where there is no such run.
+    run (or, with no run, once the walk has placed every piece): every
+    word in front of the run holds the role the walk gave it, and the
+    run's words hold none yet -- no name role, and a class member not
+    yet read as anything, the run being what will read it as the
+    credential. That is why the answer equals the one this would give
+    over the finished roles, which is what the attachment needs.
+    `lo == hi` where there is no such run.
 
     The single-token tests are inline (the common piece is one token),
     so the walk pays no frame per piece; it runs on every family-comma

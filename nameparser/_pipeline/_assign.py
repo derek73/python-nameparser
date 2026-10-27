@@ -829,7 +829,10 @@ def _inside_a_credential_run(seg: Sequence[Sequence[int]],
     and 'Doe, Jane PhD vd' keeps family 'vd Doe'. A title between it
     and the post-nominal in front is transparent, as it is to every
     trailing reading (H5): 'DOE, JANE PHD PROF. VD MA' reads as 'DOE,
-    JANE PHD VD MA' does. (Behind it no title is skipped: a title
+    JANE PHD VD MA' does. The run is never empty: the caller asks
+    only where `k < end`, and over an empty range the test below would
+    pass vacuously and report a fork on the word behind (#613's
+    review, ', Jane PhD do MA'). (Behind it no title is skipped: a title
     there leaves the word a name in assign, so nothing reaches here.)
 
     The test is the ROLES assign gave, not S7's company query: the
@@ -850,12 +853,7 @@ def _inside_a_credential_run(seg: Sequence[Sequence[int]],
     def is_title(q: int) -> bool:
         return all(tokens[i].role is Role.TITLE for i in seg[q])
 
-    # an empty run is no run: the walk stops short of a member already
-    # read as the credential ('Doe, Jane PhD do MA'), and there is
-    # nothing to decline. assign's caller never passes one, but
-    # post_rules' site behind an empty family part can (', Jane PhD do
-    # MA' reported a bogus third fork without this, #613's PR review)
-    if k == end or not all(suffix_read(q) for q in range(k, end)):
+    if not all(suffix_read(q) for q in range(k, end)):
         return False
     front = k - 1
     while front > given_at and is_title(front):
@@ -1796,19 +1794,21 @@ def assign(state: ParseState) -> ParseState:
                                 else suffix_reading(tokens[i2]))))
             if sticky_from == len(pieces):
                 k6, end6 = particle_tail(pieces, tokens)
-            # Only where the comma named a family: with nothing before
-            # it, H1 and M4 decide first and post_rules attaches after
-            # them. GIVEN ahead of the tail, which is what P6 says
-            # ("provided at least one given word remains"): the given is
-            # piece
-            # `n`, so a tail starting there leaves none ('Nguyen, Van').
-            # And not where P1's fold will take the part: a never-given
-            # particle opening it folds every given and middle word
-            # into the family in post_rules, so no given word remains
-            # for this one either ('Smith, de Mesnil van' keeps
-            # 'van' where the fold puts it, not hoisted in front of
-            # 'Smith', the 2026-08-18 defect).
-            if (n < k6 < end6 and fam_pieces
+            # Behind every family comma, one with nothing before it
+            # too, which then makes the particle the whole family
+            # (', Dr. Jones vd'; decisions/C15, #892). GIVEN ahead of
+            # the tail -- rules/P6: "at least one given word must
+            # remain" -- the given is piece `n`, so a tail starting
+            # there leaves none ('Nguyen, Van').
+            # And not where a never-given particle opens the part: P1's
+            # fold takes every given and middle word into the family in
+            # post_rules, so no given word remains for this one either
+            # ('Smith, de Mesnil van' keeps 'van' where the fold puts
+            # it, not hoisted in front of 'Smith', the 2026-08-18
+            # defect); with no name word behind it to fold, the tail
+            # stays the suffix, behind an empty head as behind its twin
+            # (', de PhD vd' as 'Smith, de PhD vd', #892).
+            if (n < k6 < end6
                     and not is_lone_never_given_particle(pieces[n],
                                                          tokens)):
                 _attach_particle_tail(pieces, tokens, n, k6, end6,

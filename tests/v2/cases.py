@@ -2870,9 +2870,9 @@ CASES: tuple[Case, ...] = (
     Case("an_elided_particle_after_an_empty_head", ", Paul d'",
          {"given": "Paul", "family": "d'"},
          classification="fix(#700)",
-         notes="nothing before the comma names a family, so P6's "
-               "attachment has nothing to join and the particle is the "
-               "family by position, as ', Paul de' reads. 1.4.0 through "
+         notes="a family comma naming no surname (rules/C15): P6 "
+               "attaches the particle as behind any family comma, and it "
+               "is the family alone, as ', Paul de' reads. 1.4.0 through "
                "2.4.2 middle \"d'\" with no family"),
     Case("an_elided_particle_in_its_typographic_spelling_t",
          "Hooft, Gerard ’t",
@@ -6535,8 +6535,8 @@ CASES: tuple[Case, ...] = (
          ambiguities=("particle-or-given",),
          classification="fix(#623)",
          notes="the empty head (nameparser/AGENTS.md's comma sweep): the bound "
-               "holds there too, and P6's attachment, read in post_rules "
-               "behind an empty family part, takes 'van' as the family; "
+               "holds there too, and P6's attachment takes 'van' as the "
+               "family, as behind any family comma (rules/C15); "
                "1.4.0 and 2.3.0 read middle 'van Prof.'"),
     Case("the_chain_runs_again_where_its_merges_free_the_acronym",
          "Smith, Freiherr van Berg X.Y.Z.",
@@ -8085,16 +8085,57 @@ CASES: tuple[Case, ...] = (
          ambiguities=(),
          classification="fix(#613)",
          notes="the same exit read ', Jr.' title 'Jr.' (PR review)"),
-    Case("no_family_named_lets_the_title_rule_decide_before_p6",
+    Case("empty_head_attaches_the_particle_before_the_title_rule",
          ", Mr. Jones vd",
-         {"title": "Mr.", "family": "Jones", "suffix": "vd"},
+         {"title": "Mr.", "given": "Jones", "family": "vd"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#892)",
+         notes="a comma with nothing before it is a family comma naming "
+               "no surname (rules/C15), so P6 attaches the particle as "
+               "behind any family comma, ahead of H1, which then finds "
+               "a family: the twin 'Smith, Mr. Jones vd' reads given "
+               "'Jones', family 'vd Smith'. #613 had kept the "
+               "comma-less reading, family 'Jones', suffix 'vd', with "
+               "a second P6 site in post_rules (decisions/P6)"),
+    Case("empty_head_attaches_the_particle_before_a_suffix",
+         ", Dr. Jones vd Jr.",
+         {"title": "Dr.", "given": "Jones", "family": "vd",
+          "suffix": "Jr."},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#892)",
+         notes="the walk looks past the trailing suffix to the particle "
+               "(rules/P6), behind an empty head as behind its twin "
+               "'Smith, Dr. Jones vd Jr.'; #613's post_rules site read "
+               "family 'Jones', suffix 'vd Jr.'"),
+    Case("empty_head_attaches_the_particle_before_a_suffix_part",
+         ", Dr. Jones vd, PhD",
+         {"title": "Dr.", "given": "Jones", "family": "vd",
+          "suffix": "PhD"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#892)",
+         notes="a third comma part, which C15's invariant grid does not "
+               "write; #613's post_rules site read family 'Jones', "
+               "suffix \"vd, PhD\""),
+    Case("empty_head_attaches_the_particle_family_first",
+         ", Jane van Jr.",
+         {"given": "Jane", "family": "van", "suffix": "Jr."},
+         ambiguities=("particle-or-given",),
+         policy=Policy(name_order=FAMILY_FIRST),
+         classification="fix(#892)",
+         notes="pinned field by field because C15's invariant compares "
+               "the empty head with its twin, and the two now share "
+               "assign's one attachment site, so a defect there would "
+               "move both; master read the same"),
+    Case("empty_head_never_given_particle_keeps_the_suffix_tail",
+         ", de PhD vd",
+         {"given": "de", "suffix": "PhD vd"},
          ambiguities=(),
-         classification="fix(#613)",
-         notes="a comma with nothing before it names no family, so H1 "
-               "reads a title and one name word first and P6 attaches "
-               "after it, in post_rules; assign attaching ahead of H1 "
-               "read given 'Jones', family 'vd' (PR review, 177 texts "
-               "of that shape on the empty-head grid)"),
+         classification="fix(#892)",
+         notes="a never-given particle opening the part declines the "
+               "attachment (P1's guard at assign's site), as in the twin "
+               "'Smith, de PhD vd' and in ', de vd'; #613's post_rules "
+               "site, which had no such guard, read family 'vd', suffix "
+               "'PhD', reported (#916 review)"),
     Case("particles_side_by_side_in_a_credential_part_stay_credentials",
          "De La Cruz, DO DO DO",
          {"family": "De La Cruz", "suffix": "DO DO DO"},
@@ -8197,16 +8238,15 @@ CASES: tuple[Case, ...] = (
                "and a name word and reads a suffix comma, so the name "
                "divides as it would with no comma. b547c247 kept "
                "'김민준' whole, H1 then making it the family"),
-    Case("an_empty_family_part_declines_no_empty_particle_run",
+    Case("an_empty_head_credential_run_reports_once",
          ", Jane PhD do MA",
          {"given": "Jane", "suffix": "PhD do MA"},
          ambiguities=("suffix-or-name",),
          classification="fix(#613)",
-         notes="post_rules' P6 site behind an empty family part can find "
-               "an EMPTY particle run (the walk stops short of 'do', read "
-               "as the credential), and the third exception must decline "
-               "nothing there; without its empty-run guard it reported a "
-               "third fork on 'MA' (#613's PR simplification pass). One "
+         notes="the walk stops short of 'do', read as the credential, so "
+               "P6 finds no particle run to attach (#613's PR "
+               "simplification pass found a bogus third fork on 'MA' from "
+               "post_rules' empty-head site, removed in #892). One "
                "report since #785, the capitals settling 'MA' (rules/S6); "
                "b547c247 gave two"),
     Case("a_glued_honorific_in_a_postnominal_part_stays_glued",
