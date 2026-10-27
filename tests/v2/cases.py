@@ -3250,8 +3250,17 @@ CASES: tuple[Case, ...] = (
          notes="read as 1.4.0 reads it. The letter OPENS the name, so the "
                "connective reading has no word before it to join and no "
                "field to land in: the report carries no alternative "
-               "(#752 phase 2m, rules/A1), the one fork shape that "
-               "withholds it",
+               "(#752 phase 2m, rules/A1)",
+         shape=1),
+    Case("one_case_e_inside_a_joined_piece_lands_with_it",
+         "MARIA DA SILVA E SOUZA",
+         {"given": "MARIA", "family": "DA SILVA E SOUZA"},
+         ambiguities=("conjunction-or-initial",),
+         notes="read as 1.4.0 reads it. The letter stands inside the "
+               "piece the particle chain "
+               "made, so the connective reading would join two words "
+               "the piece already holds: its alternative is the "
+               "piece's field, the family (#752 phase 2m, rules/A1)",
          shape=1),
     Case("mixed_case_lower_e_is_the_connective", "Jose e Maria Santos",
          {"given": "Jose e Maria", "family": "Santos"},

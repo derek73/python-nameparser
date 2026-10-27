@@ -450,7 +450,8 @@ def _unattached(state: ParseState, tokens: list[WorkToken],
     a name read family-first, which starts at token `start`: the field
     the positional read gave it, or the field of the name piece in
     front where that piece would take a name word in (`_name_alt`)."""
-    role = tokens[start].role or Role.MIDDLE
+    role = tokens[start].role
+    assert role is not None  # assign roled every name word
     # the run ends a name read family-first, so a name word stands in
     # front of it
     front, first = next(

@@ -557,6 +557,20 @@ def test_capitalized_preserves_mixed_case_unless_forced() -> None:
     assert pn.capitalized(force=True).family == "MacLaine"
 
 
+@pytest.mark.parametrize("text", ["JOHN SMITH MA", "john smith ma",
+                                  "Van Buren", "MARIA DA SILVA E SOUZA"])
+def test_capitalized_keeps_each_reports_alternative(text: str) -> None:
+    """A rebuilt report keeps the reading not taken (#752 phase 2m).
+    `Ambiguity.alternative` is compare=False, so equal names say
+    nothing about it and the alternatives are compared themselves."""
+    pn = parse(text)
+    want = [a.alternative for a in pn.ambiguities]
+    assert want and None not in want
+    for out in (pn.capitalized(), pn.capitalized(force=True),
+                Parser().capitalized(pn)):
+        assert [a.alternative for a in out.ambiguities] == want
+
+
 def test_the_gate_leaves_the_suffixes_out() -> None:
     """rules/R5 (#492): a credential or a generation written the
     way one is written ('III', 'PhD', 'Jr.') is no evidence about how

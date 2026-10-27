@@ -89,7 +89,7 @@ from __future__ import annotations
 from collections.abc import Sequence, Set
 from typing import NamedTuple
 
-from nameparser._lexicon import Lexicon
+from nameparser._lexicon import Lexicon, _run_addresses_by_given
 from nameparser._pipeline._vocab import (
     _ROMAN, effective_script, in_a_title_phrase, is_initial_shaped,
     PARTICLE_READING, TITLE_READING, is_listed_numeral,
@@ -521,14 +521,17 @@ def _assign_main(seg_idx: int, state: ParseState,
         # name that makes no report here pays nothing
         front = (pieces[name_pieces[-1]] if name_pieces
                  and i not in pieces[name_pieces[-1]] else None)
-        # rules/P5's other licence, a given-name title ahead: asked only
-        # where the bound branch could take it, so a report per word of
-        # a long run never walks the name per report (the scaling test)
+        # rules/P5's other licence, a given-name title ahead, asked of
+        # the leading run through the predicate group's join asks, so
+        # the two cannot disagree about what one run asserts; asked
+        # only where the bound branch could take it, so a report per
+        # word of a long run never walks the name (the scaling test)
         licensed = (front is not None and len(name_pieces) == 1
                     and "vocab:bound-given" in tokens[front[0]].tags
-                    and any(t.role is Role.TITLE
-                            and "vocab:given-title" in t.tags
-                            for t in tokens))
+                    and _run_addresses_by_given(
+                        (tokens[j].text for k in range(name_pieces[0])
+                         for j in pieces[k]),
+                        state.lexicon.given_name_titles))
         return _name_alt(tokens[i],
                          _name_positions(order, len(name_pieces) + 1)[-1],
                          front, tokens, len(name_pieces) == 1, licensed)
@@ -943,6 +946,8 @@ def _attach_particle_tail(pieces: Sequence[Sequence[int]],
             tuple(run), alternative=suffix_reading(tokens[run[0]])))
     elif ambiguous:
         word = tokens[ambiguous[0]].text
+        walked = tokens[run[0]].role
+        assert walked is not None  # the given part's walk roled the run
         ambiguities.append(PendingAmbiguity(
             AmbiguityKind.PARTICLE_OR_GIVEN,
             f"{word!r} is both a family-name particle and an "
@@ -957,7 +962,7 @@ def _attach_particle_tail(pieces: Sequence[Sequence[int]],
             alternative=(TITLE_READING if tokens[run[0]].role is Role.TITLE
                          else _name_alt(
                              tokens[ambiguous[0]],
-                             tokens[run[0]].role or Role.MIDDLE,
+                             walked,
                              pieces[k - 1] if k - 1 >= given_at
                              and tokens[pieces[k - 1][0]].role in NAME_ROLES
                              else None,
@@ -993,10 +998,13 @@ def _resolve_deferred(state: ParseState, tokens: Sequence[WorkToken],
                       ambiguities: list[PendingAmbiguity],
                       order: tuple[Role, Role, Role] | None) -> None:
     """Name the field of each alternative classify or group deferred,
-    from the positions just read: a connective's join takes the place
-    of the name word before it, one unit for three, and a chained
-    particle stands as a name word of its own in front of its piece,
-    one more unit. Every other word keeps its reading, so the field is
+    from the positions just read: a connective's join takes in the name
+    word on each side, so where those stand in two pieces the joined
+    unit takes the place of the first, and where both are inside the
+    letter's own piece, or the join would leave the name one word, the
+    letter keeps its own field (named at assemble); a chained particle
+    stands as a name word of its own in front of its piece, one more
+    unit. Every other word keeps its reading, so the field is
     the one the positional read gives that place: the family before a
     family comma, the given part's given or middle name after one, and
     the declared order's otherwise. A referent outside every name
@@ -1015,13 +1023,32 @@ def _resolve_deferred(state: ParseState, tokens: Sequence[WorkToken],
                 break
         else:
             continue
-        # a chained particle heads the piece the chain made, so only the
-        # connective can stand where no join is possible
-        joined = alt.role is Deferred.JOINED
-        if joined and not (names[at] == (i,) and 0 < at < len(names) - 1):
-            continue
-        pos, count = ((at - 1, len(names) - 2) if joined
-                      else (at, len(names) + 1))
+        if alt.role is Deferred.UNCHAINED:
+            pos, count = at, len(names) + 1
+        else:
+            # the join takes in the name word on each side: a word of
+            # the connective's own piece, or the piece beside it. One
+            # inside its piece joins nothing the piece did not hold, so
+            # it lands where its piece lands; one opening or ending the
+            # name has no word to join on that side, and no field
+            piece = names[at]
+            k = piece.index(i)
+            first = at - 1 if k == 0 else at
+            last = at + 1 if k == len(piece) - 1 else at
+            if first < 0 or last >= len(names):
+                continue
+            pos, count = first, len(names) - (last - first)
+            # rules/P3: "a single-letter connective in a three-word name"
+            # stays a name word, so a join that would leave the name one
+            # word is no join, and the letter keeps its own field; a
+            # family comma's surname is a word of the name the given
+            # part's count does not see
+            if first == last or (
+                    count == 1
+                    and state.structure is not Structure.FAMILY_COMMA):
+                ambiguities[r] = copy_with(report, alternative=copy_with(
+                    alt, role=Deferred.BESIDE, beside=i))
+                continue
         # name words stand only in the parts a structure names: the two
         # of a family comma, and otherwise the main one, whose read set
         # the order

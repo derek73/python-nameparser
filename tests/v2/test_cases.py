@@ -7,6 +7,7 @@ from typing import Any
 import pytest
 
 from nameparser import (Ambiguity, AmbiguityKind, ParsedName, Parser, Policy, ReadingKind,
+                        ReadingSource,
                         Role, Token, locales, parser_for)
 from nameparser._pipeline._state import FIELD_READING, NAME_ROLES
 from nameparser._policy import FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST
@@ -295,7 +296,8 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
 
 
 #: The kinds that report a fork between two readings of a word, so carry
-#: the reading not taken; the other three report a shape (#752 phase 2m).
+#: the reading not taken: three of the rest report a shape, and `order`
+#: is reserved (#752 phase 2m).
 _FORK_KINDS = frozenset(AmbiguityKind) - {
     AmbiguityKind.COMMA_STRUCTURE, AmbiguityKind.UNBALANCED_DELIMITER,
     AmbiguityKind.SEGMENTATION, AmbiguityKind.ORDER}
@@ -462,7 +464,10 @@ _REVIEW_SHAPES = ("PhD VI", "Jr VI", "III VI", "Smith, John van VI",
                   # licenses the bound join, and a never-given particle
                   # opening the part, which P1 folds with the word
                   "Smith, Abu Mary van", "Smith, Abu Mary VI",
-                  "Sir abdul VI", "Dr. mc VI", "de VI", "Smith, Dr. de VI")
+                  "Sir abdul VI", "Dr. mc VI", "de VI", "Smith, Dr. de VI",
+                  # the PR review's: a given-name title licenses the
+                  # bound join only from the leading run, as group asks
+                  "abdul VI Sir.", "Sir Dr. abdul VI", "Dr. Sir abdul VI")
 
 
 @pytest.mark.parametrize("order", _INVARIANT_ORDERS)
@@ -470,12 +475,123 @@ _REVIEW_SHAPES = ("PhD VI", "Jr VI", "III VI", "Smith, John van VI",
 def test_an_alternative_names_the_field_in_the_reviews_shapes(
         text: str, order: tuple[Role, Role, Role] | None) -> None:
     """The oracle above over `_REVIEW_SHAPES`. Negative controls,
-    measured 2026-10-26: on the commit before the first review's fixes
-    (e69e4372) this fails 34 of its 48 parses, and on the commit before
-    the second review's (9e1a2113), 14."""
+    measured 2026-10-26: with the first review's fixes reverted this
+    failed 34 of its then 48 parses, and with the second review's, 14;
+    with `as_a_name`'s given-name-title licence asked of every title
+    token rather than the leading run, as the PR review found it, 3 of
+    its 57."""
     parser = _parser_for(None, order)
     pn = parser.parse(text)
     _check_alternatives((text, _order_key(order)), pn, parser)
+
+
+_FF = FAMILY_FIRST
+#: (text, policy fields) -> each report's (kind, alternative), the
+#: alternative as (reading kind, role, source) or None. One row per
+#: branch of `_vocab.suffix_reading` and `name_reading`, per emitter the
+#: oracle above cannot check (a credential run's, whose stand-in is
+#: read by the same run; a one-case connective's, whose stand-in is an
+#: initial too), per `_resolve_deferred` branch, and per fold
+#: `middle_as_family` makes in assemble.
+_EXPECTED_ALTERNATIVES: dict[tuple[str, tuple[tuple[str, Any], ...]],
+                             tuple[tuple[AmbiguityKind,
+                                         tuple[ReadingKind, Role,
+                                               ReadingSource] | None], ...]] = {
+    # suffix_reading: agnomen, generation word, listed and shaped
+    # numeral, other post-nominal word, listed and shaped credential
+    ("Joao Neto", ()): ((AmbiguityKind.SUFFIX_OR_NAME, (
+        ReadingKind.AGNOMEN, Role.SUFFIX, ReadingSource.VOCABULARY)),),
+    ("Jean Fils", ()): ((AmbiguityKind.SUFFIX_OR_NAME, (
+        ReadingKind.GENERATION, Role.SUFFIX, ReadingSource.VOCABULARY)),),
+    ("John V", ()): ((AmbiguityKind.SUFFIX_OR_NAME, (
+        ReadingKind.GENERATION, Role.SUFFIX, ReadingSource.VOCABULARY)),),
+    ("John Smith Vi", ()): ((AmbiguityKind.SUFFIX_OR_NAME, (
+        ReadingKind.GENERATION, Role.SUFFIX, ReadingSource.SHAPE)),),
+    ("Esq Jr", ()): ((AmbiguityKind.SUFFIX_OR_NAME, (
+        ReadingKind.POST_NOMINAL, Role.SUFFIX, ReadingSource.VOCABULARY)),),
+    ("Jack Ma", ()): ((AmbiguityKind.SUFFIX_OR_NAME, (
+        ReadingKind.CREDENTIAL, Role.SUFFIX, ReadingSource.VOCABULARY)),),
+    ("Jack X.Y.Z.", ()): ((AmbiguityKind.SUFFIX_OR_NAME, (
+        ReadingKind.CREDENTIAL, Role.SUFFIX, ReadingSource.SHAPE)),),
+    ("(MA) John Smith", ()): ((AmbiguityKind.SUFFIX_OR_NICKNAME, (
+        ReadingKind.CREDENTIAL, Role.SUFFIX, ReadingSource.VOCABULARY)),),
+    # name_reading: an initial, a declared name, a word by position
+    ("John Smith V", ()): ((AmbiguityKind.SUFFIX_OR_NAME, (
+        ReadingKind.INITIAL, Role.FAMILY, ReadingSource.SHAPE)),),
+    ("JOHN SMITH MA", ()): ((AmbiguityKind.SUFFIX_OR_NAME, (
+        ReadingKind.NAME, Role.FAMILY, ReadingSource.DECLARED)),),
+    ("John Smith PhD Jones", ()): ((AmbiguityKind.SUFFIX_OR_NAME, (
+        ReadingKind.NAME, Role.FAMILY, ReadingSource.POSITION)),),
+    ("Smith", ()): ((AmbiguityKind.GIVEN_OR_FAMILY, (
+        ReadingKind.NAME, Role.FAMILY, ReadingSource.POSITION)),),
+    ("Van Buren", ()): ((AmbiguityKind.PARTICLE_OR_GIVEN, (
+        ReadingKind.PARTICLE, Role.FAMILY, ReadingSource.VOCABULARY)),),
+    ("Freiherr von Berg MA", ()): ((AmbiguityKind.PARTICLE_OR_GIVEN, (
+        ReadingKind.NAME, Role.GIVEN, ReadingSource.DECLARED)),),
+    ("Dean Koontz", ()): ((AmbiguityKind.TITLE_OR_NAME, (
+        ReadingKind.TITLE, Role.TITLE, ReadingSource.VOCABULARY)),),
+    # the credential runs' emitters, behind a credential and after a
+    # comma, the maiden clause's, and the split credential's (S12)
+    ("Doe, John MA Smith", ()): ((AmbiguityKind.SUFFIX_OR_NAME, (
+        ReadingKind.NAME, Role.MIDDLE, ReadingSource.POSITION)),),
+    ("Dr. Smith Jr., AD", ()): ((AmbiguityKind.SUFFIX_OR_NAME, (
+        ReadingKind.NAME, Role.GIVEN, ReadingSource.POSITION)),),
+    ("JOHN SMITH, VD MA", ()): ((AmbiguityKind.SUFFIX_OR_NAME, (
+        ReadingKind.NAME, Role.GIVEN, ReadingSource.POSITION)),),
+    ("Smith, PhD Ma", ()): ((AmbiguityKind.SUFFIX_OR_NAME, (
+        ReadingKind.NAME, Role.GIVEN, ReadingSource.DECLARED)),),
+    ("JANE DOE NEE SMITH MA", ()): ((AmbiguityKind.SUFFIX_OR_NAME, (
+        ReadingKind.NAME, Role.MAIDEN, ReadingSource.DECLARED)),),
+    ("JOHN SMITH SAM E.", ()): ((AmbiguityKind.SUFFIX_OR_NAME, (
+        ReadingKind.NAME, Role.FAMILY, ReadingSource.POSITION)),),
+    # a one-case connective, lone and inside a joined piece, with and
+    # without a family comma on either side, and opening the name; in a
+    # three-word name P3 joins nothing, and the letter keeps its field,
+    # where a family comma's surname is the third word that lets it join
+    ("JOSE E MARIA SANTOS", ()): ((AmbiguityKind.CONJUNCTION_OR_INITIAL, (
+        ReadingKind.CONJUNCTION, Role.GIVEN, ReadingSource.VOCABULARY)),),
+    ("JOHN E SMITH", ()): ((AmbiguityKind.CONJUNCTION_OR_INITIAL, (
+        ReadingKind.CONJUNCTION, Role.MIDDLE, ReadingSource.VOCABULARY)),),
+    ("JOHN E SMITH", (("name_order", _FF),)): (
+        (AmbiguityKind.CONJUNCTION_OR_INITIAL, (
+            ReadingKind.CONJUNCTION, Role.GIVEN, ReadingSource.VOCABULARY)),),
+    ("SMITH, JOHN E MARY", ()): ((AmbiguityKind.CONJUNCTION_OR_INITIAL, (
+        ReadingKind.CONJUNCTION, Role.GIVEN, ReadingSource.VOCABULARY)),),
+    ("MARIA DA SILVA E SOUZA", ()): ((AmbiguityKind.CONJUNCTION_OR_INITIAL, (
+        ReadingKind.CONJUNCTION, Role.FAMILY, ReadingSource.VOCABULARY)),),
+    ("SMITH, JOHN E MARY ANN", ()): ((AmbiguityKind.CONJUNCTION_OR_INITIAL, (
+        ReadingKind.CONJUNCTION, Role.GIVEN, ReadingSource.VOCABULARY)),),
+    ("SMITH E JONES, JOHN", ()): ((AmbiguityKind.CONJUNCTION_OR_INITIAL, (
+        ReadingKind.CONJUNCTION, Role.FAMILY, ReadingSource.VOCABULARY)),),
+    ("E SMITH JONES", ()): ((AmbiguityKind.CONJUNCTION_OR_INITIAL, None),),
+    # middle_as_family folds a middle alternative as it folds the middle
+    ("Doe, John MA Smith", (("middle_as_family", True),)): (
+        (AmbiguityKind.SUFFIX_OR_NAME, (
+            ReadingKind.NAME, Role.FAMILY, ReadingSource.POSITION)),),
+    ("John Smith PhD Jones", (("name_order", _FF),)): (
+        (AmbiguityKind.SUFFIX_OR_NAME, (
+            ReadingKind.NAME, Role.MIDDLE, ReadingSource.POSITION)),),
+    ("John Smith PhD Jones", (("name_order", _FF),
+                              ("middle_as_family", True))): (
+        (AmbiguityKind.SUFFIX_OR_NAME, (
+            ReadingKind.NAME, Role.FAMILY, ReadingSource.POSITION)),),
+}
+
+
+@pytest.mark.parametrize("key", _EXPECTED_ALTERNATIVES,
+                         ids=[f"{t}{dict(p)}" for t, p in
+                              _EXPECTED_ALTERNATIVES])
+def test_an_alternative_has_its_recorded_kind_role_and_source(
+        key: tuple[str, tuple[tuple[str, Any], ...]]) -> None:
+    """The reading kind and source are pinned only here and by the
+    snapshot, so every branch that chooses them has a row."""
+    text, fields = key
+    pn = Parser(policy=Policy(**dict(fields))).parse(text)
+    got = tuple(
+        (a.kind, None if a.alternative is None else (
+            a.alternative.kind, a.alternative.role, a.alternative.source))
+        for a in pn.ambiguities)
+    assert got == _EXPECTED_ALTERNATIVES[key]
 
 
 def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
@@ -501,8 +617,11 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # measured 2026-10-26: 435 stand-ins land in the alternative's
     # field, 296 keep the taken one; 435 -> 436 the same day, the first
     # review's fix to P6's report ('Anna van der Berg van mc' under
-    # FAMILY_FIRST, a reread no longer)
-    assert (checked, skipped) == (436, 296), (checked, skipped)
+    # FAMILY_FIRST, a reread no longer); 296 -> 299 the same day, the
+    # PR review's MARIA DA SILVA E SOUZA row under each order, a
+    # connective whose stand-in is an initial too, so its field is
+    # pinned in _EXPECTED_ALTERNATIVES instead
+    assert (checked, skipped) == (436, 299), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:

@@ -190,20 +190,23 @@ class Deferred(Enum):
     #: assemble, since H1 or a rotation may still move it after the
     #: emitter (#626's reason for ``field_tail``).
     OTHER_PRIMARY = auto()
-    #: classify's connective: the letter read as an initial would join
-    #: the name words on either side into one, whose field assign's
-    #: positional read names once it has positions.
+    #: classify's connective: the letter read as a connective would
+    #: join the name words on either side into one, whose field assign
+    #: names once it has positions -- the positional read's, where the
+    #: join would merge two pieces, and the letter's own piece's
+    #: (BESIDE), where both words are already in it.
     JOINED = auto()
     #: group's particle chain: the particle it chained would stand as a
     #: name word of its own in front of the piece, named by assign.
     UNCHAINED = auto()
-    #: a word one joins: the name word in front of it would take it in
-    #: (a particle chain, which runs to the end of the name words, or a
-    #: bound given name), so it lands where that word's token
-    #: ``PendingReading.beside`` lands, named from the final role --
-    #: unless P6 then attached that token to the family (`FOLDED_TAG`),
-    #: which it would not have done with a word behind it, and the
-    #: field it held when the report was made (``unfolded``) stands.
+    #: lands where the token at ``PendingReading.beside`` lands, named
+    #: from that token's final role: a word the name piece in front
+    #: would take in (a particle chain, which runs to the end of the
+    #: name words, or a bound given name), or a connective whose join
+    #: stays inside its own piece. Where P6 then attached the front
+    #: token to the family (`FOLDED_TAG`), which it would not have
+    #: done with a word behind it, the field the word held when the
+    #: report was made stands instead, given as ``unfolded``.
     BESIDE = auto()
 
 

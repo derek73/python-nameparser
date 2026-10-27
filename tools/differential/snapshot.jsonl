@@ -1381,7 +1381,7 @@
 {"name": "JOHN DOE", "given": "JOHN", "family": "DOE", "initials": "J. D.", "capitalized": "John Doe"}
 {"name": "JOHN DOE PHD", "given": "JOHN", "family": "DOE", "suffix": "PHD", "initials": "J. D.", "capitalized": "John Doe PhD"}
 {"name": "JOHN DOE PHD MD", "given": "JOHN", "family": "DOE", "suffix": "PHD MD", "initials": "J. D.", "capitalized": "John Doe PhD MD"}
-{"name": "JOHN E SMITH", "given": "JOHN", "middle": "E", "family": "SMITH", "ambiguities": ["CONJUNCTION_OR_INITIAL"], "alternatives": ["CONJUNCTION_OR_INITIAL: conjunction as given (vocabulary)"], "initials": "J. E. S.", "capitalized": "John E Smith"}
+{"name": "JOHN E SMITH", "given": "JOHN", "middle": "E", "family": "SMITH", "ambiguities": ["CONJUNCTION_OR_INITIAL"], "alternatives": ["CONJUNCTION_OR_INITIAL: conjunction as middle (vocabulary)"], "initials": "J. E. S.", "capitalized": "John E Smith"}
 {"name": "JOHN MA PHD", "given": "JOHN", "family": "MA", "suffix": "PHD", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "J. M.", "capitalized": "John Ma PhD"}
 {"name": "JOHN NEE JONES SMITH MA PHD", "family": "JOHN", "suffix": "PHD", "maiden": "JONES SMITH MA", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "J.", "capitalized": "John (Jones Smith Ma) PhD"}
 {"name": "JOHN PROF. MA", "title": "PROF.", "given": "JOHN", "family": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "J. M.", "capitalized": "Prof. John Ma"}
@@ -2318,6 +2318,7 @@
 {"name": "M. Jean-Nicolas Louis Marcel de Bouchart fils", "given": "M.", "middle": "Jean-Nicolas Louis Marcel", "family": "de Bouchart", "suffix": "fils", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)"], "initials": "M. J. L. M. B."}
 {"name": "M. de Bouchart Jean-Nicolas Louis Marcel fils", "order": "FAMILY_FIRST", "given": "de Bouchart Jean-Nicolas Louis Marcel", "family": "M.", "suffix": "fils", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (declared)"], "initials": "d. B. J. L. M. M.", "capitalized_force": "De Bouchart Jean-Nicolas Louis Marcel M. fils"}
 {"name": "MANƉELA Rolanɖ Alfɔns", "order": "FAMILY_FIRST", "given": "Rolanɖ", "middle": "Alfɔns", "family": "MANƉELA", "initials": "R. A. M.", "capitalized_force": "Rolanɖ Alfɔns Manɖela"}
+{"name": "MARIA DA SILVA E SOUZA", "given": "MARIA", "family": "DA SILVA E SOUZA", "ambiguities": ["CONJUNCTION_OR_INITIAL"], "alternatives": ["CONJUNCTION_OR_INITIAL: conjunction as family (vocabulary)"], "initials": "M. S. E. S.", "capitalized": "Maria da Silva E Souza"}
 {"name": "MD - DO - DDS", "given": "MD", "middle": "-", "family": "DO -", "suffix": "DDS", "initials": "M. -. -.", "capitalized": "Md - do - DDS"}
 {"name": "MD Chirurgie dentară von der Ruhr Prof. dr. Eva-Eleonora Karl Hans Jr.", "order": "FAMILY_FIRST", "given": "Chirurgie", "middle": "dentară von der Ruhr Prof. dr. Eva-Eleonora Karl Hans", "family": "MD", "suffix": "Jr.", "initials": "C. d. R. P. d. E. K. H. M.", "capitalized_force": "Chirurgie Dentară von der Ruhr Prof. Dr. Eva-Eleonora Karl Hans Md Jr."}
 {"name": "MD DDS", "given": "MD", "suffix": "DDS", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "M.", "capitalized": "Md DDS"}
@@ -3797,9 +3798,9 @@
 {"name": "john 3rd smith", "given": "john", "middle": "3rd", "family": "smith", "initials": "j. 3. s.", "capitalized": "John 3rd Smith"}
 {"name": "john doe", "given": "john", "family": "doe", "initials": "j. d.", "capitalized": "John Doe"}
 {"name": "john doe q.c.", "given": "john", "family": "doe", "suffix": "q.c.", "initials": "j. d.", "capitalized": "John Doe Q.C."}
-{"name": "john e jones", "given": "john", "middle": "e", "family": "jones", "ambiguities": ["CONJUNCTION_OR_INITIAL"], "alternatives": ["CONJUNCTION_OR_INITIAL: conjunction as given (vocabulary)"], "initials": "j. e. j.", "capitalized": "John E Jones"}
+{"name": "john e jones", "given": "john", "middle": "e", "family": "jones", "ambiguities": ["CONJUNCTION_OR_INITIAL"], "alternatives": ["CONJUNCTION_OR_INITIAL: conjunction as middle (vocabulary)"], "initials": "j. e. j.", "capitalized": "John E Jones"}
 {"name": "john e jones, III", "given": "john", "middle": "e", "family": "jones", "suffix": "III", "initials": "j. e. j.", "capitalized": "John e Jones III"}
-{"name": "john e smith", "given": "john", "middle": "e", "family": "smith", "ambiguities": ["CONJUNCTION_OR_INITIAL"], "alternatives": ["CONJUNCTION_OR_INITIAL: conjunction as given (vocabulary)"], "initials": "j. e. s.", "capitalized": "John E Smith"}
+{"name": "john e smith", "given": "john", "middle": "e", "family": "smith", "ambiguities": ["CONJUNCTION_OR_INITIAL"], "alternatives": ["CONJUNCTION_OR_INITIAL: conjunction as middle (vocabulary)"], "initials": "j. e. s.", "capitalized": "John E Smith"}
 {"name": "john e. smith", "given": "john", "middle": "e.", "family": "smith", "initials": "j. e. s.", "capitalized": "John E. Smith"}
 {"name": "john i", "given": "john", "family": "i", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: generation as suffix (vocabulary)"], "initials": "j. i.", "capitalized": "John I"}
 {"name": "john i dr.", "title": "dr.", "given": "john", "family": "i", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: generation as suffix (vocabulary)"], "initials": "j. i.", "capitalized": "Dr. John I"}
@@ -3850,7 +3851,7 @@
 {"name": "john van e phd", "given": "john", "family": "van e", "suffix": "phd", "initials": "j. e.", "capitalized": "John van E PhD"}
 {"name": "johnny y", "given": "johnny", "family": "y", "initials": "j. y.", "capitalized": "Johnny y"}
 {"name": "jones, john e", "given": "john", "middle": "e", "family": "jones", "initials": "j. e. j.", "capitalized": "John E Jones"}
-{"name": "jose e lopez", "given": "jose", "middle": "e", "family": "lopez", "ambiguities": ["CONJUNCTION_OR_INITIAL"], "alternatives": ["CONJUNCTION_OR_INITIAL: conjunction as given (vocabulary)"], "initials": "j. e. l.", "capitalized": "Jose E Lopez"}
+{"name": "jose e lopez", "given": "jose", "middle": "e", "family": "lopez", "ambiguities": ["CONJUNCTION_OR_INITIAL"], "alternatives": ["CONJUNCTION_OR_INITIAL: conjunction as middle (vocabulary)"], "initials": "j. e. l.", "capitalized": "Jose E Lopez"}
 {"name": "jose e maria santos", "given": "jose", "middle": "e maria", "family": "santos", "ambiguities": ["CONJUNCTION_OR_INITIAL"], "alternatives": ["CONJUNCTION_OR_INITIAL: conjunction as given (vocabulary)"], "initials": "j. e. m. s.", "capitalized": "Jose E Maria Santos"}
 {"name": "jose e phd", "given": "jose", "family": "e", "suffix": "phd", "initials": "j. e.", "capitalized": "Jose E PhD"}
 {"name": "jose j y lopez", "given": "jose", "middle": "j y", "family": "lopez", "initials": "j. j. l.", "capitalized": "Jose J y Lopez"}

@@ -35,8 +35,15 @@ could (measured: 'ANNA z Nowak, MD' flips the one-case verdict when
 the approximation and the real run-completion test disagree on
 whether 'z' opens a run that completes).
 
+suffix_reading, name_reading and the two reading constants are the
+fourth: they answer no question about a word but BUILD the reading a
+report did not take (#752 phase 2m), from a token's text and tags,
+which is why they import _state's PendingReading and the public enums
+it re-exports. They sit here because every stage that reports a fork
+builds one, and the tags they read are this module's vocabulary.
+
 Layering: imports _lexicon, _policy, and _pipeline._state (WorkToken,
-comma_bucket -- read-only, never a whole ParseState).
+comma_bucket, PendingReading -- read-only, never a whole ParseState).
 """
 from __future__ import annotations
 
@@ -2181,7 +2188,7 @@ def name_reading(token: WorkToken, role: Role | Deferred) -> PendingReading:
 
 
 #: The particle reading of a word read as a name: a particle joins the
-#: family name (rules/P4).
+#: words after it, the last group reading as the family (rules/P2).
 PARTICLE_READING = PendingReading(ReadingKind.PARTICLE,
                                   ReadingSource.VOCABULARY, Role.FAMILY)
 #: The title reading of a word read as a name.

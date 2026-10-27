@@ -529,10 +529,12 @@ def _renamed(state: dict[str, object], old: str,
 #: Every layout skew the guard refused before 2.7, which it still
 #: refuses: the widening (#752 phase 2m) admits only a field marked
 #: `ADDED_IN` and missing from an older pickle. Measured 2026-10-26:
-#: each row raises under the pre-2.7 guard as under this one (the row
-#: with two fields missing added after, by the first review), and the
-#: one admitted row below raises under the pre-2.7 guard, which is the
-#: widening.
+#: each row raises ValueError under the pre-2.7 guard as under this one
+#: (the row with two fields missing added after, by the first review),
+#: though where `alternative` is missing the old guard names it among
+#: the missing fields too, so its message is not the one matched here;
+#: and the one admitted row below raises under the pre-2.7 guard, which
+#: is the widening.
 _REFUSED_SKEWS = [
     pytest.param(Ambiguity, lambda: _without(_ambiguity_state(), "detail"),
                  "missing fields: detail", id="missing-field-without-default"),

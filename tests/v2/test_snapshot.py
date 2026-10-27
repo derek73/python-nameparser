@@ -86,8 +86,9 @@ def test_a_snapshot_predating_the_case_views_is_not_compared_on_them() -> None:
 
 def test_a_snapshot_predating_the_alternatives_is_not_compared_on_them(
         ) -> None:
-    # every reporting name gained the key on 2026-10-26 (#752 phase 2m),
-    # 969 of the committed snapshot's 6,476; against a snapshot that
+    # every name with a fork report gained the key on 2026-10-26 (#752
+    # phase 2m), 969 of the committed snapshot's rows that day; against
+    # a snapshot that
     # records one anywhere, the alternatives stay compared, and the
     # case views are a group of their own
     rows = snapshot.read([("JOHN SMITH MA", None), ("john smith", None)])
