@@ -69,11 +69,12 @@
   ```
   "Hon. Wing Lau"             →  given="Wing"
   ```
-- **A period-marked word in the leading run of titles** (H2): the abbreviation shape makes it a title whatever the vocabulary says, save a given name written short or a word a connective joins (below), so the phrase test never reaches it and nothing is reported, at the front of the name or behind another title.
+- **A period-marked word in the leading run of titles** (H2): the abbreviation shape makes it a title whatever the vocabulary says, save a given name written short or a word a connective joins (below), so the phrase test never reaches it and nothing is reported, at the front of the name or behind another title; a style that may be a given name, made a title by the shape alone, is no partner of the word behind it, where a modifier is (`Wing. Dean Smith` → title 'Wing. Dean').
   ```
   "Dean. Smith"               →  title="Dean."
   "Wing. Lau"                 →  title="Wing."
   "Mr Buddha. Tamang"         →  title="Mr Buddha."
+  "Shaikh. Sultan Khan"       →  given="Sultan"
   ```
 - **A title run** (H3, H4): a word this rule reads as a name word is no title word to the run, so the run stops before it and does not count it.
   ```
