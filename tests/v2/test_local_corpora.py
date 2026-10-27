@@ -21,6 +21,7 @@ import json
 import os
 import re
 import shutil
+import sys
 import time
 import types
 import unicodedata
@@ -4269,3 +4270,228 @@ def test_a_baseline_another_run_pruned_is_not_reported_as_unkept(
     monkeypatch.setattr(snapshot, "_mtime", vanished)
     assert snapshot.main(["--local", _SOURCE, "--record"]) == 0
     assert "not kept" not in capsys.readouterr().out
+
+
+# -- the views in workers, and alike against a base ----------------------------------
+
+#: Two pairs that read alike and one that does not (a title on one side).
+_NEPAL_RECORDS = [{"name": "Ram Thapa", "devanagari": "राम थापा"},
+                  {"name": "Sita Kumari Rai", "devanagari": "सीता कुमारी राई"},
+                  {"name": "Dr Hari Shrestha", "devanagari": "हरि श्रेष्ठ"}]
+
+
+def _spelled(*spellings: tuple[str, str]) -> object:
+    """A jrc-names corpus holding each (entity, name) of `spellings`."""
+    return local.Local(local.JRC, {}, [{"entity": e, "name": n, "script": "Latin"}
+                                       for e, n in spellings])
+
+
+def _by_name_snapshot() -> types.ModuleType:
+    """The snapshot module local_corpora imports by its bare name, whose
+    PARALLEL_FLOOR decides whether a view reads in workers."""
+    return importlib.import_module("snapshot")
+
+
+def _nepal(monkeypatch: pytest.MonkeyPatch, records: list[dict[str, str]] = _NEPAL_RECORDS
+           ) -> None:
+    # The election pinned as the real source pins it: a --base child
+    # loads the corpus under the real Source and its check.
+    plant_corpus(monkeypatch, local, _NEPAL, records, "2026-10-24", "name pairs",
+                 {"election": importlib.import_module("local_nepal").NEPAL_ELECTION})
+
+
+def test_each_source_that_pairs_spellings_has_an_alike_kind() -> None:
+    entity = _spelled(("1", "Ann Lee"), ("1", "Анна Ли"))
+    assert local.alike_kind(entity) == "entity"
+    assert local.alike_kind(local.Local(_NEPAL, {}, _NEPAL_RECORDS)) == "devanagari"
+    assert local.alike_kind(_paired(("ANA SILVA", "ANA DA SILVA"))) == "registry"
+    with pytest.raises(local.Ungroupable, match="pair no two spellings"):
+        local.alike_kind(local.Local(_SOURCE, {}, [{"name": "Ann Lee"}]))
+
+
+def test_alike_reads_each_kind_of_pair() -> None:
+    # A person read alike and one read apart, of each kind; a person
+    # spelled once and a pair spelled the same are no one's to count.
+    entity = local.alike_flags(_spelled(("1", "Ann Lee"), ("1", "Анна Ли"),
+                                        ("2", "Dr. Bo Wu"), ("2", "Bo Wu"), ("3", "Cy Fox")))
+    assert entity == {"1": True, "2": False}
+    assert local.alike_flags(local.Local(_NEPAL, {}, _NEPAL_RECORDS)) == {
+        "0": True, "1": True, "2": False}
+    registry = local.alike_flags(_paired(("ANA SILVA", "ANA DA SILVA"),
+                                         ("ANA SILVA", "ANA SOUZA"), ("BO WU", "BO WU"),
+                                         ("CY FOX", "")))
+    assert registry == {"0": True, "1": False}
+    # A pair with no second spelling is no one's to count, either way.
+    blank = local.alike_flags(local.Local(_NEPAL, {}, [*_NEPAL_RECORDS,
+                                                       {"name": "Ram Rai", "devanagari": " "}]))
+    assert set(blank) == {"0", "1", "2"}
+
+
+def test_the_views_read_in_workers_as_they_read_in_process(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    grouped = _spelled(("1", "Ann Lee"), ("1", "Анна Ли"), ("2", "Dr. Bo Wu"), ("2", "Bo Wu"))
+    paired = _paired(("ANA SILVA", "ANA DA SILVA"), ("ANA SILVA", "ANA SOUZA"),
+                     ("JOSÉ SILVA RÁ", "JOSE SILVA RA"))
+    nepal = local.Local(_NEPAL, {}, _NEPAL_RECORDS)
+    serial = (local.group_counts(grouped), local.pair_counts(paired, agreement=True),
+              local.alike_flags(grouped), local.alike_flags(paired), local.alike_flags(nepal))
+    monkeypatch.setattr(_by_name_snapshot(), "PARALLEL_FLOOR", 1)
+    assert (local.group_counts(grouped, jobs=2), local.pair_counts(paired, agreement=True, jobs=2),
+            local.alike_flags(grouped, jobs=2), local.alike_flags(paired, jobs=2),
+            local.alike_flags(nepal, jobs=2)) == serial
+
+
+def test_a_view_whose_worker_read_another_nameparser_aborts(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # The negative control for snapshot.parallel's check, through a view:
+    # the workers import the real package, so a parent that believes it
+    # imported another sees every chunk come back from elsewhere.
+    import nameparser
+    monkeypatch.setattr(_by_name_snapshot(), "PARALLEL_FLOOR", 1)
+    monkeypatch.setattr(nameparser, "__file__", "/elsewhere/nameparser/__init__.py")
+    with pytest.raises(SystemExit, match="a worker imported nameparser from"):
+        local.alike_flags(local.Local(_NEPAL, {}, _NEPAL_RECORDS), jobs=2)
+
+
+def _alike_kept(cache: Path) -> list[Path]:
+    return sorted((cache / "local" / _NEPAL / local.ALIKE_KEPT).glob("*.json"))
+
+
+def test_alike_against_a_planted_base_reports_moves_and_none_across_a_copy(
+        monkeypatch: pytest.MonkeyPatch, _own_cache: Path, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    # The harness must be able to report a difference: a base read with
+    # the head's tree by mistake would show no move across a planted one.
+    _nepal(monkeypatch)
+    planted = checkout_copy(tmp_path / "planted", planted=True)
+    assert local.main(["alike", _NEPAL, "--base", str(planted)]) == 1
+    out = capsys.readouterr().out
+    assert f"base: {planted.resolve()}, nameparser/ " in out and "read it now" in out
+    assert "2 of 3 pairs read alike" in out
+    assert "0 pairs now alike, 0 now apart" not in out
+    for record in _NEPAL_RECORDS:  # counts only
+        assert record["name"] not in out and record["devanagari"] not in out
+    copy = checkout_copy(tmp_path / "copy")
+    assert local.main(["alike", _NEPAL, "--base", str(copy)]) == 0
+    out = capsys.readouterr().out
+    assert "0 pairs now alike, 0 now apart" in out and "byte-identical" in out
+    assert len(_alike_kept(_own_cache)) == 2
+
+
+def test_a_kept_base_is_reused_and_a_damaged_one_read_again(
+        monkeypatch: pytest.MonkeyPatch, _own_cache: Path, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    _nepal(monkeypatch)
+    base = checkout_copy(tmp_path / "base", planted=True)
+    assert local.main(["alike", _NEPAL, "--base", str(base)]) == 1
+    [kept] = _alike_kept(_own_cache)
+    recorded = kept.read_bytes()
+    capsys.readouterr()
+    real = local._alike_base
+
+    def unread(*args: object) -> None:
+        raise AssertionError("read the base again")
+    monkeypatch.setattr(local, "_alike_base", unread)
+    assert local.main(["alike", _NEPAL, "--base", str(base)]) == 1
+    assert "reused the kept flags" in capsys.readouterr().out
+    body = json.loads(recorded)
+    for damage in ("not json", json.dumps({**body, "count": body["count"] + 1}),
+                   json.dumps({**body, "flags": {k: 1 for k in body["flags"]}}),
+                   json.dumps({**body, "flags": list(body["flags"])}),
+                   json.dumps({**body, "raw_sha256": "0" * 64}),
+                   json.dumps({**body, "code": "another"})):
+        kept.write_text(damage)
+        with pytest.raises(AssertionError, match="read the base again"):
+            local.main(["alike", _NEPAL, "--base", str(base)])
+        assert "deleted the kept flags" in capsys.readouterr().out
+        monkeypatch.setattr(local, "_alike_base", real)
+        assert local.main(["alike", _NEPAL, "--base", str(base)]) == 1
+        assert kept.read_bytes() == recorded
+        assert not list(kept.parent.glob(".base-*"))  # the child's scratch is gone
+        monkeypatch.setattr(local, "_alike_base", unread)
+
+
+def test_a_base_that_changed_while_it_was_read_keeps_no_flags(
+        monkeypatch: pytest.MonkeyPatch, _own_cache: Path, tmp_path: Path) -> None:
+    _nepal(monkeypatch)
+    base = checkout_copy(tmp_path / "base", planted=True)
+    answers = ["a" * 64, "b" * 64]
+    published: list[bool] = []
+
+    def digest(root: Path) -> str:
+        if not answers:
+            return "c" * 64
+        if len(answers) == 1:  # the check after the read: nothing kept yet
+            published.append(bool(_alike_kept(_own_cache)))
+        return answers.pop(0)
+    monkeypatch.setattr(_by_name_snapshot(), "_source_digest", digest)
+    with pytest.raises(SystemExit, match="changed while it was read"):
+        local.main(["alike", _NEPAL, "--base", str(base)])
+    assert published == [False]
+    assert not _alike_kept(_own_cache)
+    assert not list((_own_cache / "local" / _NEPAL / local.ALIKE_KEPT).glob(".base-*"))
+
+
+def test_alike_refuses_a_tree_it_did_not_import_and_a_base_with_no_package(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    _nepal(monkeypatch)
+    monkeypatch.setattr(sys, "path", list(sys.path))  # --tree puts the tree on it
+    with pytest.raises(SystemExit, match="not from the source package"):
+        local.main(["alike", _NEPAL, "--tree", str(tmp_path)])
+    with pytest.raises(SystemExit, match="no nameparser package"):
+        local.main(["alike", _NEPAL, "--base", str(tmp_path)])
+
+
+def test_an_alike_base_whose_import_fails_is_refused_with_the_childs_output(
+        monkeypatch: pytest.MonkeyPatch, _own_cache: Path, tmp_path: Path) -> None:
+    _nepal(monkeypatch)
+    base = checkout_copy(tmp_path / "base")
+    with open(base / "nameparser" / "__init__.py", "a", encoding="utf-8") as f:
+        f.write("\nraise ImportError('planted')\n")
+    with pytest.raises(SystemExit, match="(?s)reading the base .* failed.*planted"):
+        local.main(["alike", _NEPAL, "--base", str(base)])
+    assert not _alike_kept(_own_cache)
+
+
+
+
+def test_the_alike_key_lists_everything_its_functions_call_and_read() -> None:
+    # _ALIKE_CODE is kept by hand, as _FOLD_CODE is: a helper the view
+    # starts calling left off it leaves a kept base's key unmoved by a
+    # change to that helper, and the base reads as the old code read it.
+    import inspect
+    module = vars(local)
+    read = set().union(*(_globals_read(inspect.unwrap(module[name]).__code__)
+                         for name in local._ALIKE_CODE))
+    unlisted = set()
+    for name in read & module.keys():
+        value = module[name]
+        if isinstance(value, types.ModuleType) or name.startswith("__"):
+            continue
+        if getattr(value, "__module__", None) != local.__name__ and not name.isupper() \
+                and not name.startswith("_"):
+            continue  # imported: Counter
+        if name in (*local._ALIKE_CODE, *local._ALIKE_CONSTANTS, "Reading", "_Read",
+                    "Ungroupable"):
+            continue
+        unlisted.add(name)
+    assert unlisted == set()
+
+
+@pytest.mark.parametrize("change", [*local._ALIKE_CODE, *local._ALIKE_CONSTANTS])
+def test_each_thing_the_alike_key_lists_moves_it(monkeypatch: pytest.MonkeyPatch,
+                                                 change: str) -> None:
+    before = local.alike_fingerprint()
+    monkeypatch.setattr(local, change, _another(change))
+    assert local.alike_fingerprint() != before
+
+
+def test_alike_against_a_base_counts_each_direction_apart() -> None:
+    nepal = local.Local(_NEPAL, {}, _NEPAL_RECORDS)
+    assert local.format_alike(nepal, {"0": True, "1": True}, {"0": False, "1": True}) == [
+        "2 of 2 pairs read alike (1 in the base)", "1 pairs now alike, 0 now apart"]
+    assert local.format_alike(nepal, {"0": False, "1": True}, {"0": True, "1": True}) == [
+        "1 of 2 pairs read alike (2 in the base)", "0 pairs now alike, 1 now apart"]
+    assert local.format_alike(nepal, {"0": True}) == ["1 of 1 pairs read alike"]
+    with pytest.raises(SystemExit, match="other persons"):
+        local.format_alike(nepal, {"0": True, "1": True}, {"0": True})

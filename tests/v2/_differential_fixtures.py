@@ -102,13 +102,16 @@ def plant_corpus(monkeypatch: pytest.MonkeyPatch, corpora: ModuleType, source: s
                  records: list[dict[str, str]], date: str, unit: str,
                  detail: dict[str, Any] | None = None) -> None:
     """`records` fetched as `source`'s local corpus into the cache, with no
-    network: through a Source carrying the real one's credit and nothing
-    else, so that none of the real source's renew or check applies in
-    this process. A child process loads the corpus under the real
-    Source, whose check reads `detail`, the meta.json detail it pins."""
+    network: through a Source carrying the real one's credit and corpus
+    keys and nothing else, so that none of the real source's renew or
+    check applies in this process. A child process loads the corpus
+    under the real Source, whose check reads `detail`, the meta.json
+    detail it pins, and which refuses a corpus of other keys."""
+    real = corpora.SOURCES[source]
     monkeypatch.setitem(corpora.SOURCES, source, corpora.Source(
-        corpora.SOURCES[source].credit, unit,
-        lambda: corpora.Fetched(list(records), date, dict(detail or {}))))
+        real.credit, unit,
+        lambda: corpora.Fetched(list(records), date, dict(detail or {})),
+        corpus_keys=real.corpus_keys))
     corpora.fetch(source)
 
 

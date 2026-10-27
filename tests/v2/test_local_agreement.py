@@ -440,3 +440,31 @@ def test_record_writes_where_out_says_and_leaves_the_shared_record(
     assert agreement.main([_PSC, "--record", "--out", str(out)]) == 0
     assert agreement.read_record(out, corpora.load(_PSC))
     assert not (_own_cache / "local" / _PSC / agreement.RECORD).exists()
+
+
+# -- --jobs ----------------------------------------------------------------------
+
+def test_a_score_read_in_workers_is_the_score_read_in_process(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # Every decision's record, so a worker dropping one reads differently.
+    serial = agreement.score(list(_ALL), _PSC_FIELDS, Parser())
+    monkeypatch.setattr(importlib.import_module("snapshot"), "PARALLEL_FLOOR", 1)
+    assert agreement.score(list(_ALL), _PSC_FIELDS, Parser(), jobs=2) == serial
+    assert serial.entries and serial.set_aside and serial.by_suffix
+
+
+def test_a_score_in_workers_refuses_a_parser_it_cannot_send_them() -> None:
+    from nameparser import Lexicon
+    configured = Parser(lexicon=Lexicon.default().add(titles={"partner"}))
+    with pytest.raises(ValueError, match="default Parser"):
+        agreement.score(list(_ALL), _PSC_FIELDS, configured, jobs=2)
+    agreement.score(list(_ALL), _PSC_FIELDS, configured)  # the control: in process
+
+
+def test_a_score_whose_worker_read_another_nameparser_aborts(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    import nameparser
+    monkeypatch.setattr(importlib.import_module("snapshot"), "PARALLEL_FLOOR", 1)
+    monkeypatch.setattr(nameparser, "__file__", "/elsewhere/nameparser/__init__.py")
+    with pytest.raises(SystemExit, match="a worker imported nameparser from"):
+        agreement.score(list(_ALL), _PSC_FIELDS, Parser(), jobs=2)

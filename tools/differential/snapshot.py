@@ -78,7 +78,8 @@ import zlib
 from collections import defaultdict
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from collections.abc import Callable, Sequence
+from typing import TYPE_CHECKING, Any, TypeVar
 
 if TYPE_CHECKING:
     from nameparser import ParsedName
@@ -90,6 +91,7 @@ if str(HERE) not in sys.path:
     sys.path.append(str(HERE))
 from corpus_build import jsonl_line, jsonl_lines  # noqa: E402
 REPO_ROOT = HERE.parents[1]
+T = TypeVar("T")
 SNAPSHOT = HERE / "snapshot.jsonl"
 RECORD_COMMAND = "uv run python tools/differential/snapshot.py --record"
 V2_FIELDS = ("title", "given", "middle", "family", "suffix", "nickname",
@@ -331,44 +333,54 @@ def facade_view(r: dict[str, Any]) -> dict[str, Any]:
     return out
 
 
-#: Below this many entries read() parses in-process even when given
+#: Below this many items parallel() reads in-process even when given
 #: jobs: a worker costs an interpreter start and a nameparser import.
 PARALLEL_FLOOR = 5000
 
 
 def read(entries: list[Entry], *, facade: bool = True,
          jobs: int = 1) -> list[dict[str, Any]]:
-    """The tree's row for every entry, in the entries' order.
+    """The tree's row for every entry, in the entries' order, read in
+    `jobs` worker processes where there are enough (parallel). With
+    `facade` false the v1 facade is not read and no row carries a
+    `facade` key."""
+    return parallel(_read_chunk, entries, jobs, facade, module="snapshot")
 
-    With `facade` false the v1 facade is not read and no row carries a
-    `facade` key. With `jobs` above 1 and at least PARALLEL_FLOOR
-    entries, contiguous chunks are read in that many spawned worker
-    processes, which inherit this process's sys.path (so --tree's
-    checkout comes first there too); a worker that imported nameparser
-    from anywhere but where this process did aborts the run, the
-    check_source trap in a place check_source cannot see."""
-    if jobs <= 1 or len(entries) < PARALLEL_FLOOR:
-        return _read_chunk(entries, facade)[1]
+
+def parallel(chunk: Callable[..., tuple[str, list[T]]], items: Sequence[Any],
+             jobs: int, *args: object, module: str) -> list[T]:
+    """chunk(part, *args)'s results for every item, in the items' order.
+
+    `chunk` is a module-level function returning the nameparser file its
+    process imported beside its results. With `jobs` above 1 and at
+    least PARALLEL_FLOOR items, contiguous chunks are handed to that many
+    spawned worker processes, which inherit this process's sys.path (so
+    a --tree checkout comes first there too), and a worker that imported
+    nameparser from anywhere but where this process did aborts the run:
+    the check_source trap in a place check_source cannot see. A worker
+    unpickles `chunk` by the bare name of its `module`, which resolves
+    there because HERE is on the inherited sys.path, as it does for a
+    test that loaded the module by path under another name."""
+    if jobs <= 1 or len(items) < PARALLEL_FLOOR:
+        return chunk(items, *args)[1]
     import nameparser
     here = Path(nameparser.__file__).resolve()
-    # A worker unpickles the chunk function by its module's name, and
-    # a test loads this file by path under another; the bare name
-    # resolves in the worker because HERE is on the inherited sys.path.
-    by_name = importlib.import_module("snapshot")
-    size = -(-len(entries) // (jobs * 4))
-    chunks = [entries[i:i + size] for i in range(0, len(entries), size)]
-    rows: list[dict[str, Any]] = []
+    by_name = getattr(importlib.import_module(module), chunk.__name__)
+    size = -(-len(items) // (jobs * 4))
+    chunks = [items[i:i + size] for i in range(0, len(items), size)]
+    results: list[T] = []
     with ProcessPoolExecutor(jobs, mp_context=multiprocessing.get_context("spawn")) as pool:
-        for at, part in pool.map(by_name._read_chunk, chunks, [facade] * len(chunks)):
+        for at, part in pool.map(by_name, chunks, *([a] * len(chunks) for a in args)):
             if Path(at).resolve() != here:
                 raise SystemExit(
                     f"a worker imported nameparser from {at}, not {here}, "
-                    f"so its rows would be another tree's readings. Aborted.")
-            rows.extend(part)
-    return rows
+                    f"so its results would be another tree's readings. Aborted.")
+            results.extend(part)
+    return results
 
 
-def _read_chunk(entries: list[Entry], facade: bool) -> tuple[str, list[dict[str, Any]]]:
+def _read_chunk(entries: Sequence[Entry], facade: bool
+                ) -> tuple[str, list[dict[str, Any]]]:
     """The nameparser this process imported, and its row for every
     entry; read()'s unit of work in a worker and out of one."""
     import nameparser
@@ -429,7 +441,10 @@ def grouped(old: dict[tuple[str, str], dict[str, Any]],
     as a few kinds of change rather than a wall of names."""
     groups: dict[tuple[str, ...], list[str]] = defaultdict(list)
     for k in sorted(set(old) | set(new)):
-        label = k[0] + (f"  [{k[1]}]" if k[1] else "")
+        # A line break inside a name would put the rest of it flush left,
+        # where measure.py's summary keeps lines; escaped, it stays here.
+        label = (k[0].replace("\n", "\\n").replace("\r", "\\r")
+                 + (f"  [{k[1]}]" if k[1] else ""))
         if k not in new:
             groups[("(removed from corpus)",)].append(label)
             continue

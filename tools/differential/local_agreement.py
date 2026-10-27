@@ -16,7 +16,8 @@ agreements/ beside the corpus, keyed like snapshot.py's baselines by
 the fetch, a hash of the base's nameparser/ files, the interpreter's
 minor version and the scorer's fingerprint, and scored in a child
 process where none is kept; it never reads or writes the shared record,
-which whoever last recorded decides. Without --base a check compares
+which whoever last recorded decides. The records are scored in a worker
+process per CPU (--jobs N), the base's child too. Without --base a check compares
 against that shared record:
 
     uv run python tools/differential/local_agreement.py psc-individuals --record --tree ../master-checkout
@@ -191,11 +192,24 @@ class Score:
 
 
 def score(rows: Iterator[dict[str, str]] | list[dict[str, str]], fielded: Fielded,
-          parser: Parser) -> Score:
-    listed = _title_words(parser.lexicon)
+          parser: Parser, *, jobs: int = 1) -> Score:
+    """Every record read (read) and counted. With `jobs` above 1 the
+    records are read in that many worker processes (snapshot.parallel),
+    each with a Parser() of its own, so `parser` must be the default
+    one: a configured parser cannot be sent to a worker by its name."""
+    rows = list(rows)
+    if jobs > 1 and parser != type(parser)():
+        raise ValueError("score() reads in workers with the default Parser(); "
+                         "pass jobs=1 to score with another parser")
+    if jobs > 1:
+        from snapshot import parallel
+        source = next(s for s, f in FIELDED.items() if f == fielded)
+        readings = parallel(_read_chunk, rows, jobs, source, module="local_agreement")
+    else:
+        listed = _title_words(parser.lexicon)
+        readings = [read(record, fielded, parser, listed) for record in rows]
     result = Score(Counter(), Counter(), {}, Counter(), Counter(), 0, {})
-    for record in rows:
-        reading = read(record, fielded, parser, listed)
+    for record, reading in zip(rows, readings, strict=True):
         if reading.got:
             result.entries[key(record)] = reading.entry()
         if reading.set_aside:
@@ -210,6 +224,15 @@ def score(rows: Iterator[dict[str, str]] | list[dict[str, str]], fielded: Fielde
         result.misses.setdefault(group, Counter()).update(reading.got.keys())
         result.shapes[shape(record, fielded, reading.got)] += 1
     return result
+
+
+def _read_chunk(rows: list[dict[str, str]], source: str) -> tuple[str, list[Reading]]:
+    """The nameparser this process imported, and its reading of every
+    record of `source`: score()'s unit of work in a worker."""
+    import nameparser
+    parser = nameparser.Parser()
+    listed = _title_words(parser.lexicon)
+    return nameparser.__file__, [read(r, FIELDED[source], parser, listed) for r in rows]
 
 
 def _pct(n: int, of: int) -> str:
@@ -296,7 +319,7 @@ def read_record(path: Path, local: local_corpora.Local) -> dict[str, dict[str, A
 #: What decides a record's reading, besides the parser: scorer_fingerprint
 #: hashes them, as local_corpora.fold_fingerprint hashes the word fold.
 _SCORER_CODE = ("fold", "_title_words", "unlisted", "read", "_box", "Reading",
-                "key", "score")
+                "key", "score", "_read_chunk")
 
 
 def scorer_fingerprint() -> str:
@@ -329,19 +352,21 @@ def kept_path(source: str, local: local_corpora.Local, digest: str) -> Path:
             / f"{local.meta['sha256'][:12]}-{digest[:16]}-{py}-{scorer_fingerprint()[:12]}.jsonl")
 
 
-def _score_base(root: Path, source: str, out: Path) -> None:
+def _score_base(root: Path, source: str, out: Path, jobs: int = 1) -> None:
     """`root` scored into `out` in a child process (one process imports
     one nameparser), which refuses a package other than `root`'s."""
     import snapshot
     command = [sys.executable, str(HERE / "local_agreement.py"), source,
-               "--record", "--tree", str(root), "--out", str(out)]
+               "--record", "--tree", str(root), "--out", str(out),
+               "--jobs", str(jobs)]
     done = subprocess.run(command, env=snapshot.child_env(), capture_output=True,
                           text=True)
     if done.returncode:
         raise SystemExit(f"scoring the base {root} failed:\n{done.stdout}{done.stderr}")
 
 
-def base_entries(root: Path, local: local_corpora.Local) -> dict[str, dict[str, Any]]:
+def base_entries(root: Path, local: local_corpora.Local, jobs: int = 1
+                 ) -> dict[str, dict[str, Any]]:
     """The base checkout's record, kept for its package's digest or
     scored into one now, and a line saying which base was read. Never
     the shared record: a sibling session's would pass for this base."""
@@ -367,7 +392,7 @@ def base_entries(root: Path, local: local_corpora.Local) -> dict[str, dict[str, 
     # the child: a record published under the key it was scored for.
     at = snapshot.scratch(path.parent)
     try:
-        _score_base(root, local.source, at / path.name)
+        _score_base(root, local.source, at / path.name, jobs)
         entries = read_record(at / path.name, local)
         if snapshot._source_digest(root) != digest:
             raise SystemExit(f"{root / 'nameparser'} changed while it was scored, "
@@ -433,6 +458,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--top", type=int, default=15, metavar="N")
     ap.add_argument("--list", type=int, default=0, metavar="N",
                     help="print up to N moved records of each kind, names and all")
+    ap.add_argument("--jobs", type=int, metavar="N", default=os.cpu_count() or 1,
+                    help="score in N worker processes (default: every CPU)")
     args = ap.parse_args(argv)
     if args.base and (args.record or args.out):
         ap.error("--base compares and records nothing but its kept record; "
@@ -443,7 +470,7 @@ def main(argv: list[str] | None = None) -> int:
     root = Path(args.tree).resolve() if args.tree else HERE.parents[1]
     if args.base:
         from snapshot import base_root
-        old = base_entries(base_root(args.base, root), local)
+        old = base_entries(base_root(args.base, root), local, args.jobs)
     elif not args.record:
         old = read_record(record_path(args.source), local)
     if args.tree:
@@ -454,7 +481,7 @@ def main(argv: list[str] | None = None) -> int:
     fielded = FIELDED[args.source]
     print(local.header())
     try:
-        result = score(records(local), fielded, nameparser.Parser())
+        result = score(records(local), fielded, nameparser.Parser(), jobs=args.jobs)
     except local_corpora.CorpusDamaged as exc:
         raise SystemExit(str(exc)) from None
     print("\n".join(report(result, fielded, args.top)))

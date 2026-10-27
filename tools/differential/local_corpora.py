@@ -14,7 +14,17 @@ and shapes written with made-up names.
     uv run python tools/differential/local_corpora.py tally ctgov-officials
     uv run python tools/differential/local_corpora.py pairs tse-donors
     uv run python tools/differential/local_corpora.py groups jrc-names
+    uv run python tools/differential/local_corpora.py alike jrc-names --base ../master-checkout
     uv run python tools/differential/snapshot.py --local ctgov-officials
+
+`pairs --agreement`, `groups` and `alike` parse each distinct name once,
+in a worker process per CPU (`--jobs N`). `alike` counts the persons
+(or the pairs, for a source of pairs) whose spellings read alike in a source that pairs them (ALIKE_SOURCES),
+and with `--base` the ones that now read alike and now apart: the base's
+flags are kept under alike/ beside the corpus, keyed like snapshot.py's
+baselines by the fetch, a hash of the base's nameparser/ files, the
+interpreter's minor version and the view's code (alike_fingerprint),
+and read in a child process where none is kept.
 
 `fetch` writes three files into local/<source>/ under
 $NAMEPARSER_TOOLS_CACHE (default ~/.cache/nameparser-tools), and
@@ -69,6 +79,7 @@ import difflib
 import hashlib
 import inspect
 import json
+import os
 import re
 import sys
 import time
@@ -517,12 +528,30 @@ def surname(name: str) -> str:
     return family[-1] if family else ""
 
 
-def pair_counts(local: Local, *, agreement: bool = False) -> PairCounts:
+def _surnames(names: list[str]) -> tuple[str, list[str]]:
+    """The nameparser this process imported, and surname() of each name:
+    a unit of work for _parsed."""
+    import nameparser
+    return nameparser.__file__, [surname(n) for n in names]
+
+
+def _parsed(chunk: Callable[[list[str]], tuple[str, list[Any]]], names: Iterable[str],
+            jobs: int) -> dict[str, Any]:
+    """chunk's answer for each distinct name, read in `jobs` worker
+    processes where there are enough (snapshot.parallel)."""
+    from snapshot import parallel
+    distinct = list(dict.fromkeys(names))
+    return dict(zip(distinct, parallel(chunk, distinct, jobs, module="local_corpora"),
+                    strict=True))
+
+
+def pair_counts(local: Local, *, agreement: bool = False, jobs: int = 1) -> PairCounts:
     """Each record's pair_shape. A source whose records carry no
     reference name raises ValueError. With `agreement`, every pair with a
     reference name that differs is parsed both ways and its two surnames
     compared, agreeing only where both read one, which
-    parses each distinct name once (39s for tse-donors on 2026-10-22)."""
+    parses each distinct name once, in `jobs` worker processes
+    (snapshot.parallel)."""
     if not local.records:
         raise ValueError(f"{local.source} holds no records")
     if any("registry" not in r for r in local.records):
@@ -534,6 +563,11 @@ def pair_counts(local: Local, *, agreement: bool = False) -> PairCounts:
     tally_agree: dict[str, list[int]] = {}
     accent_splits: Counter[str] = Counter()
     seen: dict[str, str] = {}
+    if agreement:
+        seen = _parsed(_surnames, [n for r in local.records
+                                   if pair_shape(r["name"], r["registry"])
+                                   not in ("the same", "no reference name")
+                                   for n in (r["name"], r["registry"])], jobs)
     for record in local.records:
         filed, reference = record["name"], record["registry"]
         shape = pair_shape(filed, reference)
@@ -545,9 +579,6 @@ def pair_counts(local: Local, *, agreement: bool = False) -> PairCounts:
             else:
                 added.update((a - b).keys())
         if agreement and shape not in ("the same", "no reference name"):
-            for name in (filed, reference):
-                if name not in seen:
-                    seen[name] = surname(name)
             counts = tally_agree.setdefault(shape, [0, 0])
             one = seen[filed] == seen[reference] != ""
             counts[0] += one
@@ -682,13 +713,9 @@ class GroupCounts:
     suffixes: Counter[str]
 
 
-def group_counts(local: Local) -> GroupCounts:
-    """Each person with two or more spellings, from a source whose
-    records carry an "entity" and a "script": every spelling's reading
-    compared by the pair of scripts the spellings are written in, as
-    _differing says. A distinct name is parsed once, in this process (a
-    minute for jrc-names). A source without entities raises
-    Ungroupable."""
+def _by_entity(local: Local) -> dict[str, list[tuple[str, str]]]:
+    """Each entity's (script, spelling) pairs, from a source whose
+    records carry an "entity" and a "script"; Ungroupable otherwise."""
     if not local.records:
         raise Ungroupable(f"{local.source} holds no records")
     if any("entity" not in r or "script" not in r for r in local.records):
@@ -697,7 +724,27 @@ def group_counts(local: Local) -> GroupCounts:
     by_entity: dict[str, list[tuple[str, str]]] = {}
     for record in local.records:
         by_entity.setdefault(record["entity"], []).append((record["script"], record["name"]))
-    read: dict[str, _Read] = {}
+    return by_entity
+
+
+def _reads(names: list[str]) -> tuple[str, list[_Read]]:
+    """The nameparser this process imported, and _read of each name: a
+    unit of work for _parsed."""
+    import nameparser
+    return nameparser.__file__, [_read(n) for n in names]
+
+
+def group_counts(local: Local, *, jobs: int = 1) -> GroupCounts:
+    """Each person with two or more spellings, from a source whose
+    records carry an "entity" and a "script": every spelling's reading
+    compared by the pair of scripts the spellings are written in, as
+    _differing says. A distinct name is parsed once, in `jobs` worker
+    processes (snapshot.parallel). A source without entities raises
+    Ungroupable."""
+    by_entity = _by_entity(local)
+    read: dict[str, _Read] = _parsed(
+        _reads, (name for variants in by_entity.values() if len(variants) > 1
+                 for _, name in variants), jobs)
     groups: Counter[str] = Counter()
     agree: Counter[str] = Counter()
     differ: Counter[tuple[str, str]] = Counter()
@@ -712,8 +759,6 @@ def group_counts(local: Local) -> GroupCounts:
         by_script: dict[str, set[Reading]] = {}
         written: Counter[str] = Counter()
         for script, name in variants:
-            if name not in read:
-                read[name] = _read(name)
             by_script.setdefault(script, set()).add(read[name].reading)
             written[script] += 1
         everything = set().union(*by_script.values())
@@ -772,6 +817,182 @@ def format_groups(found: GroupCounts, top: int) -> str:
             lines.append(f"{what} ({PAIR_WORD_FLOOR} persons or more): "
                          + ", ".join(f"{w} {n:,}" for w, n in listed))
     return "\n".join(lines)
+
+
+# -- alike: the spelling views against a base ----------------------------------
+
+#: What the alike view counts in each source whose records hold two
+#: spellings of one person, and the noun for one of them.
+ALIKE_UNITS = {"entity": "persons", "devanagari": "pairs", "registry": "pairs"}
+#: The sources whose records pair spellings: the ones the alike view
+#: reads, and measure.py runs it for.
+ALIKE_SOURCES = (JRC, "nepal-candidates", "tse-donors")
+
+
+def alike_kind(local: Local) -> str:
+    """Which spellings `local`'s records pair: "entity" (a person's
+    spellings, grouped as group_counts groups them), "devanagari" (a
+    romanized name and the Devanagari one) or "registry" (a filed name
+    and the reference name); Ungroupable for a source that pairs none."""
+    if not local.records:
+        raise Ungroupable(f"{local.source} holds no records")
+    for kind in ALIKE_UNITS:
+        if all(kind in r for r in local.records):
+            return kind
+    raise Ungroupable(f"{local.source}'s records pair no two spellings of one person")
+
+
+def alike_flags(local: Local, *, jobs: int = 1) -> dict[str, bool]:
+    """Whether each person's spellings read alike, keyed by the entity or
+    by the record's place in raw.jsonl, so that a key names no one. A
+    person spelled two or more ways (alike_kind "entity") reads alike
+    where every spelling's reading() is one; a romanized and Devanagari
+    pair where the two readings are one; a filed and reference pair whose
+    spellings differ where both read one surname, the same (surname(), as
+    pair_counts' agreement counts it). Each distinct name is parsed once,
+    in `jobs` worker processes."""
+    kind = alike_kind(local)
+    if kind == "entity":
+        groups = {e: [n for _, n in v] for e, v in _by_entity(local).items() if len(v) > 1}
+        read = _parsed(_reads, (n for names in groups.values() for n in names), jobs)
+        return {e: len({read[n].reading for n in names}) == 1 for e, names in groups.items()}
+    if kind == "devanagari":
+        pairs = {str(i): (r["name"], r["devanagari"]) for i, r in enumerate(local.records)
+                 if r["devanagari"].strip()}
+        read = _parsed(_reads, (n for pair in pairs.values() for n in pair), jobs)
+        return {i: read[a].reading == read[b].reading for i, (a, b) in pairs.items()}
+    pairs = {str(i): (r["name"], r["registry"]) for i, r in enumerate(local.records)
+             if pair_shape(r["name"], r["registry"]) not in ("the same", "no reference name")}
+    family = _parsed(_surnames, (n for pair in pairs.values() for n in pair), jobs)
+    return {i: family[a] == family[b] != "" for i, (a, b) in pairs.items()}
+
+
+#: What decides a flag besides the parser: alike_fingerprint hashes them,
+#: with _ALIKE_CONSTANTS, the record cut (read_records and
+#: corpus_build.jsonl_lines, which place a record at its index) and the
+#: fields of the readings compared.
+_ALIKE_CODE = ("alike_kind", "alike_flags", "_by_entity", "_reads", "_read", "reading",
+               "_surnames", "_parsed", "surname", "_pair_words", "_bare", "_unmarked",
+               "pair_shape", "_in_order")
+_ALIKE_CONSTANTS = ("ALIKE_UNITS", "PAIR_MISSPELLED", "_PAIR_WORD", "_NAME_ROLES")
+#: Where the alike view keeps a base's flags, beside the corpus.
+ALIKE_KEPT = "alike"
+
+
+def alike_fingerprint() -> str:
+    """code_fingerprint of what turns the records into flags (_ALIKE_CODE)."""
+    module = globals()
+    return code_fingerprint(
+        [*(module[name] for name in _ALIKE_CODE), read_records, corpus_build.jsonl_lines],
+        [*(_stable(module[name]) for name in _ALIKE_CONSTANTS),
+         repr(Reading._fields), repr(_Read._fields)])
+
+
+def alike_path(local: Local, digest: str) -> Path:
+    """Where `local`'s flags read by a package of `digest` are kept: keyed
+    by everything they depend on besides the parser (the fetch, the
+    interpreter's minor version, the code), so a key that matches is a
+    reading of this base."""
+    py = f"py{sys.version_info[0]}{sys.version_info[1]}"
+    return (directory(local.source, create=False) / ALIKE_KEPT
+            / f"{local.meta['sha256'][:12]}-{digest[:16]}-{py}-{alike_fingerprint()[:12]}.json")
+
+
+def write_flags(path: Path, local: Local, flags: dict[str, bool]) -> None:
+    body = {"raw_sha256": local.meta["sha256"], "code": alike_fingerprint(),
+            "count": len(flags), "flags": flags}
+    corpus_build.write_atomic(path, json.dumps(body, sort_keys=True).encode())
+
+
+def read_flags(path: Path, local: Local) -> dict[str, bool]:
+    """Flags write_flags wrote for this fetch and this code; ValueError
+    for anything else (a file cut short, another fetch's, another
+    version's)."""
+    try:
+        body = json.loads(path.read_text(encoding="utf-8"))
+        flags = body["flags"]
+        ok = (isinstance(flags, dict) and body["count"] == len(flags)
+              and all(isinstance(v, bool) for v in flags.values()))
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        raise ValueError(f"{path} is not a reading this tool kept ({exc})") from None
+    if not ok:
+        raise ValueError(f"{path} holds another number of flags than it counts")
+    if body.get("raw_sha256") != local.meta["sha256"] or body.get("code") != alike_fingerprint():
+        raise ValueError(f"{path} was read from another fetch or by another version "
+                         f"of this view")
+    return flags
+
+
+def _alike_base(root: Path, local: Local, out: Path, jobs: int) -> None:
+    """`root`'s flags written to `out` in a child process (one process
+    imports one nameparser), which refuses a package other than
+    `root`'s."""
+    import subprocess
+
+    import snapshot
+    command = [sys.executable, str(Path(_HERE) / "local_corpora.py"), "alike",
+               local.source, "--tree", str(root), "--out", str(out), "--jobs", str(jobs)]
+    done = subprocess.run(command, env=snapshot.child_env(), capture_output=True, text=True)
+    if done.returncode:
+        raise SystemExit(f"reading the base {root} failed:\n{done.stdout}{done.stderr}")
+
+
+def base_flags(root: Path, local: Local, jobs: int) -> dict[str, bool]:
+    """The base checkout's flags, kept for its package's digest or read
+    into a kept file now, and a line saying which. Read into a folder of
+    this run's own and renamed into place only once the digest, taken
+    again, says the base did not change under the child (AGENTS.md's
+    cache-key gotcha: publish a kept reading only once it is whole)."""
+    import shutil
+
+    import snapshot
+    digest = snapshot._source_digest(root)
+    path = alike_path(local, digest)
+    if path.exists():
+        try:
+            flags = read_flags(path, local)
+        except ValueError as exc:
+            print(f"deleted the kept flags {path.name}: {exc}; reading the base\n")
+            path.unlink(missing_ok=True)
+        else:
+            try:
+                os.utime(path)
+            except FileNotFoundError:  # another run pruned it meanwhile
+                pass
+            print(f"base: {root}, nameparser/ {digest[:16]}; reused the kept "
+                  f"flags {path.name}\n")
+            return flags
+    at = snapshot.scratch(path.parent)
+    try:
+        _alike_base(root, local, at / path.name, jobs)
+        flags = read_flags(at / path.name, local)
+        if snapshot._source_digest(root) != digest:
+            raise SystemExit(f"{root / 'nameparser'} changed while it was read, "
+                             f"so its flags may be half old and half new; run again")
+        os.replace(at / path.name, path)
+    finally:
+        shutil.rmtree(at, ignore_errors=True)
+    snapshot._prune(path.parent, "*.json")
+    print(f"base: {root}, nameparser/ {digest[:16]}; read it now\n")
+    return flags
+
+
+def format_alike(local: Local, flags: dict[str, bool],
+                 base: dict[str, bool] | None = None) -> list[str]:
+    """The lines `alike` prints: how many read alike, and against a base
+    how many now read alike and how many now apart. Counts only."""
+    unit = ALIKE_UNITS[alike_kind(local)]
+    alike = sum(flags.values())
+    line = f"{alike:,} of {len(flags):,} {unit} read alike"
+    if base is None:
+        return [line]
+    if base.keys() != flags.keys():
+        raise SystemExit("the base's flags and the tree's name other persons, "
+                         "though both read the same fetch")
+    now_alike = sum(flags[k] and not base[k] for k in flags)
+    now_apart = sum(base[k] and not flags[k] for k in flags)
+    return [f"{line} ({sum(base.values()):,} in the base)",
+            f"{now_alike:,} {unit} now alike, {now_apart:,} now apart"]
 
 
 #: Where a name is cut into words: spaces, commas, semicolons, slashes.
@@ -1032,6 +1253,34 @@ def _positive(text: str) -> int:
     return value
 
 
+def _alike_command(local: Local, args: argparse.Namespace) -> int:
+    """`alike`: the tree's flags (this checkout's, or --tree's, checked
+    to be the package imported), against --base's where one is named;
+    exits 1 where a person moved, as the other base checks do."""
+    import snapshot
+    root = Path(args.tree).resolve() if args.tree else snapshot.REPO_ROOT
+    base = snapshot.base_root(args.base, root) if args.base else None
+    try:
+        alike_kind(local)
+        old = base_flags(base, local, args.jobs) if base is not None else None
+    except (CorpusDamaged, Ungroupable) as exc:
+        raise SystemExit(str(exc)) from None
+    if args.tree:
+        sys.path.insert(0, str(root))
+    import nameparser
+    snapshot.check_source(nameparser.__file__, root)
+    flags = alike_flags(local, jobs=args.jobs)
+    snapshot.check_source(nameparser.__file__, root)
+    if args.out:
+        write_flags(args.out, local, flags)
+        return 0
+    print(local.header())
+    if base is not None:
+        print(snapshot.head_line(root, base))
+    print("\n".join(format_alike(local, flags, old)))
+    return int(old is not None and any(flags[k] != old[k] for k in flags))
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = ap.add_subparsers(dest="command", required=True)
@@ -1056,7 +1305,23 @@ def main(argv: list[str] | None = None) -> int:
     group.add_argument("--top", type=_positive, default=20, metavar="N",
                        help="pairs of scripts, and titles and suffixes, to list "
                             "(default 20)")
+    alike = sub.add_parser("alike", help="count the persons whose spellings read "
+                                         "alike, and against --base the ones that "
+                                         "moved")
+    alike.add_argument("source", choices=sorted(ALIKE_SOURCES))
+    alike.add_argument("--base", metavar="PATH",
+                       help="compare with this checkout's flags, kept by its "
+                            "package's digest")
+    alike.add_argument("--tree", metavar="PATH", help="read with another checkout")
+    alike.add_argument("--out", type=Path, metavar="PATH",
+                       help="write the tree's flags here (what --base's child does)")
+    for command in (pair, group, alike):
+        command.add_argument("--jobs", type=_positive, metavar="N",
+                             default=os.cpu_count() or 1,
+                             help="parse in N worker processes (default: every CPU)")
     args = ap.parse_args(argv)
+    if args.command == "alike" and args.base and args.out:
+        ap.error("--base compares; --out writes the tree's flags, for a child")
     if args.command == "fetch":
         local = None
         if not args.refresh:
@@ -1080,9 +1345,11 @@ def main(argv: list[str] | None = None) -> int:
                             for k, v in sorted(local.meta["detail"].items())))
         return 0
     local = require(args.source)
+    if args.command == "alike":
+        return _alike_command(local, args)
     if args.command == "pairs":
         try:
-            found = pair_counts(local, agreement=args.agreement)
+            found = pair_counts(local, agreement=args.agreement, jobs=args.jobs)
         except ValueError as exc:  # CorpusDamaged included: the records, read here first
             raise SystemExit(str(exc)) from None
         print(local.header())
@@ -1090,7 +1357,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     if args.command == "groups":
         try:
-            grouped = group_counts(local)
+            grouped = group_counts(local, jobs=args.jobs)
         except (CorpusDamaged, Ungroupable) as exc:  # the records, read here first
             raise SystemExit(str(exc)) from None
         print(local.header())
