@@ -31,7 +31,9 @@ jobs:
       # stops reporting a line once it is recorded: a line tracer
       # (sys.settrace, its core below 3.14) is called on every line
       # every time, and cost CI's 3.12 job most of its ~12 minutes on
-      # the property grids in tests/v2/test_properties.py. The package
+      # the property grids in tests/v2/test_properties.py (measured
+      # 2026-09-29: the three #397 grids took 139s under the settrace core
+      # on 3.12, 24s under sys.monitoring, 17s with no coverage). The package
       # has no version-conditional code, so one interpreter's report
       # stands for all of them.
       COVERAGE_ON: ${{ matrix.python-version == '3.14' }}

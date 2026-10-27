@@ -21,6 +21,39 @@ reach the code under it.
 
 _PREFIXED_SHAPES exists for a shape that needs a prefix before its
 repeated run, which _SHAPES cannot express (#553).
+
+Which guard a new shape needs (the comment beside each table carries
+the measurements behind its rule):
+
+- A unit repeated at n and 4n that a bare parse() reaches: a _SHAPES
+  row, timed on the clock. The rows cover different dimensions, and
+  the comments at the table say which dimension each row alone covers
+  and what its unit must hold to reach the code -- measure before
+  pruning one. Calibrate _MAX_RATIO against the WEAKEST quadratic's
+  signal, and confirm a planted regression fails across REPEATED runs.
+- A stage gated on an opt-in Policy field: a _POLICY_SHAPES row, with
+  the reachability probe every row carries.
+- A shape that needs a PREFIX before its run, whose cost is
+  Python-level: a _REREAD_SHAPES row, counted in the frames of the one
+  function the defect re-runs, or a frame test of its own
+  (test_a_clause_link_run_does_not_cost_quadratically).
+- A prefixed shape whose cost is C-level work (a list scanned by `in`,
+  a tuple re-hashed as a key), which emits no frame: a _PREFIXED_SHAPES
+  row, on the clock at its own base. That table skips under a line
+  tracer, and NAMEPARSER_REQUIRE_CLOCK_GUARDS turns the skip into a
+  failure (the comment at the table says why CI still runs it).
+- An exponential, whose separating input length never finishes on the
+  clock: a frame-count pair, cheap pair first, then a longer pair that
+  can see a quadratic
+  (test_a_trailing_credential_run_does_not_cost_exponentially).
+
+Every frame guard counts ONE function, so when the code under it moves,
+move its `only=` and re-take its negative control (#563, where #613's
+move left the guard reading 3.6x on a returned quadratic); and it needs
+the same reachability assertion a _POLICY_SHAPES row carries. Frame
+counts do not move under load, so they need no repeated-run
+calibration. The module is marked `serial` (tests/conftest.py says
+why), and a new clock-timed test elsewhere takes the mark too.
 """
 import gc
 import os
