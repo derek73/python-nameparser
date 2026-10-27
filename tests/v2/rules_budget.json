@@ -44,7 +44,7 @@
   "P2": {"words": 315, "then_words": 279, "because_sentences": 1, "except": 0, "precedence": 0, "accepted": 3, "accepted_words": 167},
   "P3": {"words": 639, "then_words": 598, "because_sentences": 1, "except": 0, "precedence": 0, "accepted": 0, "accepted_words": 0},
   "P4": {"words": 190, "then_words": 82, "because_sentences": 1, "except": 1, "precedence": 0, "accepted": 0, "accepted_words": 0},
-  "P5": {"words": 717, "then_words": 399, "because_sentences": 1, "except": 2, "precedence": 3, "accepted": 3, "accepted_words": 198},
+  "P5": {"words": 717, "then_words": 399, "because_sentences": 1, "except": 2, "precedence": 3, "accepted": 3, "accepted_words": 192},
   "P6": {"words": 1086, "then_words": 703, "because_sentences": 2, "except": 2, "precedence": 5, "accepted": 6, "accepted_words": 459},
   "P7": {"words": 138, "then_words": 64, "because_sentences": 3, "except": 0, "precedence": 0, "accepted": 1, "accepted_words": 28},
   "P8": {"words": 515, "then_words": 450, "because_sentences": 2, "except": 0, "precedence": 0, "accepted": 2, "accepted_words": 309},
