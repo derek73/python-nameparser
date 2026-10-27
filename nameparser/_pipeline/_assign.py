@@ -108,7 +108,7 @@ from nameparser._pipeline._pieces import (
 )
 from nameparser._pipeline._state import (
     AMBIGUOUS_ACRONYM_TAG, NAME_ROLES, TITLE_AMBIGUOUS_TAG, ParseState,
-    Deferred, PendingAmbiguity, PendingReading, Structure,
+    Beside, Deferred, PendingAmbiguity, PendingReading, Structure,
     WorkToken, _AMBIGUOUS_CREDENTIAL_TAGS, _NEVER_FLIPPED, copy_with,
 )
 from nameparser._policy import Policy, Script
@@ -121,22 +121,43 @@ def _set_roles(tokens: list[WorkToken], piece: tuple[int, ...],
         tokens[i] = copy_with(tokens[i], role=role)
 
 
+def _name_pieces(state: ParseState, tokens: Sequence[WorkToken],
+                 seg_idx: int) -> list[tuple[int, ...]]:
+    """The pieces of segment `seg_idx` the parse read as name words."""
+    return [q for q in state.pieces[seg_idx]
+            if tokens[q[0]].role in NAME_ROLES]
+
+
+def _slot_field(state: ParseState, seg_idx: int, pos: int, count: int,
+                order: tuple[Role, Role, Role] | None) -> Role:
+    """The field position `pos` of `count` name words takes in segment
+    `seg_idx`, every other word read as the parse read it: the family
+    before a family comma, the given part's given or middle name after
+    one, and otherwise the order the main segment's read set."""
+    if state.structure is Structure.FAMILY_COMMA:
+        return (Role.FAMILY if seg_idx == 0
+                else Role.GIVEN if pos == 0 else Role.MIDDLE)
+    assert order is not None  # the main segment's read sets it
+    return _name_positions(order, count)[pos]
+
+
 def _name_alt(token: WorkToken, role: Role,
               front: Sequence[int] | None, tokens: Sequence[WorkToken],
-              first: bool, family_fixed: bool) -> PendingReading:
+              first: bool, licensed: bool) -> PendingReading:
     """The name reading of a word read as something else, landing in
     `role` unless the name piece `front` it stands behind would take it
     in, so that it lands where that piece lands: a particle chain runs
     to the end of the part's name words (rules/P2), and a lone particle
     stands unchained only for want of a word behind it, unless it opens
     the part, where it never chains (rules/P4); and a bound given name
-    opening the part joins the word after it where a family comma has
-    fixed the family or a given-name title stands ahead (rules/P5),
+    opening the part joins the word after it where it is `licensed`, a
+    family comma having fixed the family or a given-name title standing
+    ahead (rules/P5),
     since the word would otherwise be the family word the join
     reserves; and a never-given particle opening the part folds it into
     the family (rules/P1). The front's field is named at
     assemble, where P6 may since have attached it to the family, which
-    it would not have done with a word behind it (`Deferred.BESIDE`)."""
+    it would not have done with a word behind it (`Beside`)."""
     alt = name_reading(token, role)
     if front is None:
         return alt
@@ -149,11 +170,10 @@ def _name_alt(token: WorkToken, role: Role,
     # not a chain, though `abu` is a particle too: the word stands apart
     bound = first and "vocab:bound-given" in tags
     if ("particle" in tags and (len(front) > 1 or not first) and not bound
-            or family_fixed and bound and len(front) == 1):
+            or licensed and bound and len(front) == 1):
         # a front P6 has already attached held `role`'s field before it
-        return copy_with(alt, role=Deferred.BESIDE, beside=front[0],
-                         unfolded=(role if FOLDED_TAG in tags
-                                   else tokens[front[0]].role))
+        return copy_with(alt, role=Beside(
+            front[0], role if FOLDED_TAG in tags else tokens[front[0]].role))
     return alt
 
 
@@ -533,7 +553,8 @@ def _assign_main(seg_idx: int, state: ParseState,
                          for j in pieces[k]),
                         state.lexicon.given_name_titles))
         return _name_alt(tokens[i],
-                         _name_positions(order, len(name_pieces) + 1)[-1],
+                         _slot_field(state, seg_idx, len(name_pieces),
+                                     len(name_pieces) + 1, order),
                          front, tokens, len(name_pieces) == 1, licensed)
 
     for r in range(trailing_alts, len(ambiguities)):
@@ -981,14 +1002,9 @@ def _split_name_alt(state: ParseState, tokens: Sequence[WorkToken],
     comma, the given part's given or middle name after one, and
     otherwise the last of the part's name words -- or wherever the name
     piece in front of it would take it in (`_name_alt`)."""
-    names = [q for q in state.pieces[seg_idx]
-             if q[0] < piece[0] and tokens[q[0]].role in NAME_ROLES]
-    if state.structure is Structure.FAMILY_COMMA:
-        role = (Role.FAMILY if seg_idx == 0
-                else Role.MIDDLE if names else Role.GIVEN)
-    else:
-        assert order is not None  # the main segment's read sets it
-        role = _name_positions(order, len(names) + 1)[-1]
+    names = [q for q in _name_pieces(state, tokens, seg_idx)
+             if q[0] < piece[0]]
+    role = _slot_field(state, seg_idx, len(names), len(names) + 1, order)
     return _name_alt(tokens[piece[0]], role, names[-1] if names else None,
                      tokens, len(names) == 1,
                      state.structure is Structure.FAMILY_COMMA)
@@ -1016,8 +1032,8 @@ def _resolve_deferred(state: ParseState, tokens: Sequence[WorkToken],
                 or not report.indices):
             continue
         i = report.indices[0]
-        for seg_idx, seg_pieces in enumerate(state.pieces):
-            names = [q for q in seg_pieces if tokens[q[0]].role in NAME_ROLES]
+        for seg_idx in range(len(state.pieces)):
+            names = _name_pieces(state, tokens, seg_idx)
             at = next((k for k, q in enumerate(names) if i in q), None)
             if at is not None:
                 break
@@ -1047,19 +1063,10 @@ def _resolve_deferred(state: ParseState, tokens: Sequence[WorkToken],
                     count == 1
                     and state.structure is not Structure.FAMILY_COMMA):
                 ambiguities[r] = copy_with(report, alternative=copy_with(
-                    alt, role=Deferred.BESIDE, beside=i))
+                    alt, role=Beside(i)))
                 continue
-        # name words stand only in the parts a structure names: the two
-        # of a family comma, and otherwise the main one, whose read set
-        # the order
-        if state.structure is Structure.FAMILY_COMMA:
-            role = (Role.FAMILY if seg_idx == 0
-                    else Role.GIVEN if pos == 0 else Role.MIDDLE)
-        else:
-            assert order is not None
-            role = _name_positions(order, count)[pos]
-        ambiguities[r] = copy_with(report,
-                                   alternative=copy_with(alt, role=role))
+        ambiguities[r] = copy_with(report, alternative=copy_with(
+            alt, role=_slot_field(state, seg_idx, pos, count, order)))
 
 
 def assign(state: ParseState) -> ParseState:
