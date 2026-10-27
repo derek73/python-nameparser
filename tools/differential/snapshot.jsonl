@@ -2582,6 +2582,7 @@
 {"name": "Mr MA", "title": "Mr", "family": "MA", "initials": "M.", "capitalized_force": "Mr Ma"}
 {"name": "Mr Mahdi Karimi", "title": "Mr", "given": "Mahdi", "family": "Karimi", "initials": "M. K."}
 {"name": "Mr Md Karim Uddin", "title": "Mr", "given": "Md", "middle": "Karim", "family": "Uddin", "initials": "M. K. U."}
+{"name": "Mr Shaikh Ahmed", "title": "Mr", "given": "Shaikh", "family": "Ahmed", "initials": "S. A."}
 {"name": "Mr Smith", "title": "Mr", "family": "Smith", "initials": "S."}
 {"name": "Mr Wing Lau", "title": "Mr", "given": "Wing", "family": "Lau", "initials": "W. L."}
 {"name": "Mr XXX", "title": "Mr", "family": "XXX", "initials": "X.", "capitalized_force": "Mr Xxx"}
@@ -3075,6 +3076,8 @@
 {"name": "Señora María García", "title": "Señora", "given": "María", "family": "García", "initials": "M. G."}
 {"name": "Sgt Marshal Smith", "title": "Sgt", "given": "Marshal", "family": "Smith", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "M. S."}
 {"name": "Shahnon Ahmad", "given": "Shahnon", "family": "Ahmad", "initials": "S. A."}
+{"name": "Shaikh Hamad bin Isa", "given": "Shaikh", "middle": "Hamad", "family": "bin Isa", "initials": "S. H. I."}
+{"name": "Shaikh. Sultan Khan", "title": "Shaikh.", "given": "Sultan", "family": "Khan", "initials": "S. K."}
 {"name": "Shanti Gaonkar", "given": "Shanti", "family": "Gaonkar", "initials": "S. G."}
 {"name": "Shehu Muhammed", "given": "Shehu", "family": "Muhammed", "initials": "S. M."}
 {"name": "Sheik Abu Bakar", "title": "Sheik", "given": "Abu Bakar", "initials": "A. B."}

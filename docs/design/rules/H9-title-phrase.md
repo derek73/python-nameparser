@@ -23,6 +23,7 @@
   "Buddha Bahadur Tamang"     →  given="Buddha"
   "King Curtis"               →  given="King"
   "Sultana Begum"             →  given="Sultana"
+  "Mr Shaikh Ahmed"           →  given="Shaikh"
   ```
 - **A modifier in the leading run of titles before the first comma** has its phrase in a head title after it in that run, in `of` after it, or in the object of `of` or `the` there. A modifier outside that run, ending the name or after a comma, is read as any title is, save one that may be a given name, which is read everywhere as it is in that run.
   ```
@@ -68,11 +69,12 @@
   ```
   "Hon. Wing Lau"             →  given="Wing"
   ```
-- **A period-marked word in the leading run of titles** (H2): the abbreviation shape makes it a title whatever the vocabulary says, save a given name written short or a word a connective joins (below), so the phrase test never reaches it and nothing is reported, at the front of the name or behind another title.
+- **A period-marked word in the leading run of titles** (H2): the abbreviation shape makes it a title whatever the vocabulary says, save a given name written short or a word a connective joins (below), so the phrase test never reaches it and nothing is reported, at the front of the name or behind another title; a style that may be a given name, made a title by the shape alone, is no partner of the word behind it, which is then read and reported as at the front, where a modifier is (`Wing. Dean Smith` → title 'Wing. Dean').
   ```
   "Dean. Smith"               →  title="Dean."
   "Wing. Lau"                 →  title="Wing."
   "Mr Buddha. Tamang"         →  title="Mr Buddha."
+  "Shaikh. Sultan Khan"       →  given="Sultan"
   ```
 - **A title run** (H3, H4): a word this rule reads as a name word is no title word to the run, so the run stops before it and does not count it.
   ```
@@ -120,10 +122,11 @@
   "Gyani Zail Singh"          →  given="Gyani"
   "Lord Buddha Tamang"        →  given="Buddha"
   ```
-- A monarch written with the bare title in front reads it as the given name, a style before it or `of` after it keeping the title; the record data at hand writes the word there almost only as a given name, and monarchs that way mostly in news text.
+- A ruler written with the bare title in front reads it as the given name, a style before it or `of` after it keeping the title; the record data at hand writes the word there almost only as a given name, and rulers that way mostly in news text.
   ```
   "King Henry"                →  given="King"
   "Sultan Hassanal Bolkiah"   →  given="Sultan"
+  "Shaikh Hamad bin Isa"      →  given="Shaikh"
   "His Majesty King Charles"  →  title="His Majesty King"
   ```
 - Once a partner has made the word a title, a coordinating join behind it takes the next word into the title too.

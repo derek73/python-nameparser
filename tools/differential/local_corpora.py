@@ -677,7 +677,7 @@ class GroupCounts:
     #: The words of the titles, and of the suffixes, of a person some of
     #: whose spellings read one and others none, folded by word_key,
     #: counted once a person: two spellings reading two titles (Sheikh,
-    #: Shaikh) with no untitled spelling beside them add nothing.
+    #: Shekh) with no untitled spelling beside them add nothing.
     titles: Counter[str]
     suffixes: Counter[str]
 
