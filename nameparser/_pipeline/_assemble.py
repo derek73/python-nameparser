@@ -22,7 +22,8 @@ tests/v2/pipeline/test_assemble.py.
 from __future__ import annotations
 
 from nameparser._pipeline._state import (
-    FIELD_READING, NAME_ROLES, Deferred, ParseState, PendingAmbiguity,
+    FIELD_READING, NAME_ROLES, Beside, Deferred, ParseState,
+    PendingAmbiguity,
 )
 from nameparser._types import (
     FOLDED_TAG, Ambiguity, AmbiguityKind, ParsedName, Reading, Role, Token,
@@ -43,12 +44,12 @@ def _alternative(pending: PendingAmbiguity, materialized: tuple[Token, ...],
     if role is Deferred.OTHER_PRIMARY:
         role = (Role.FAMILY if materialized[0].role is Role.GIVEN
                 else Role.GIVEN)
-    elif role is Deferred.BESIDE and alt.beside in final:
-        front = final[alt.beside]
-        role = (alt.unfolded
-                if FOLDED_TAG in front.tags and alt.unfolded is not None
+    elif isinstance(role, Beside) and role.index in final:
+        front = final[role.index]
+        role = (role.unfolded
+                if FOLDED_TAG in front.tags and role.unfolded is not None
                 else front.role)
-    elif isinstance(role, Deferred):
+    elif isinstance(role, (Deferred, Beside)):
         # assign found no name position to name it from
         return None
     if middle_as_family and role is Role.MIDDLE:

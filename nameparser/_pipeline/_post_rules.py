@@ -37,7 +37,7 @@ import re
 
 from nameparser._lexicon import _normalize, _run_addresses_by_given
 from nameparser._pipeline._assign import (
-    _attach_particle_tail, _name_alt, _name_positions,
+    _attach_particle_tail, _name_alt, _name_pieces, _name_positions,
 )
 from nameparser._pipeline._pieces import (
     is_lone_never_given_particle, particle_tail, settled_by_case,
@@ -455,9 +455,8 @@ def _unattached(state: ParseState, tokens: list[WorkToken],
     # the run ends a name read family-first, so a name word stands in
     # front of it
     front, first = next(
-        ((piece, k == 0) for seg in state.pieces
-         for k, piece in enumerate(
-             [p for p in seg if tokens[p[0]].role in NAME_ROLES])
+        ((piece, k == 0) for seg_idx in range(len(state.pieces))
+         for k, piece in enumerate(_name_pieces(state, tokens, seg_idx))
          if start - 1 in piece), (None, False))
     return _name_alt(word, role, front, tokens, first, False)
 

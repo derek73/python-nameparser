@@ -194,20 +194,27 @@ class Deferred(Enum):
     #: join the name words on either side into one, whose field assign
     #: names once it has positions -- the positional read's, where the
     #: join would merge two pieces, and the letter's own piece's
-    #: (BESIDE), where both words are already in it.
+    #: (`Beside`), where both words are already in it.
     JOINED = auto()
     #: group's particle chain: the particle it chained would stand as a
     #: name word of its own in front of the piece, named by assign.
     UNCHAINED = auto()
-    #: lands where the token at ``PendingReading.beside`` lands, named
-    #: from that token's final role: a word the name piece in front
-    #: would take in (a particle chain, which runs to the end of the
-    #: name words, or a bound given name), or a connective whose join
-    #: stays inside its own piece. Where P6 then attached the front
-    #: token to the family (`FOLDED_TAG`), which it would not have
-    #: done with a word behind it, the field the word held when the
-    #: report was made stands instead, given as ``unfolded``.
-    BESIDE = auto()
+
+
+@dataclass(frozen=True, slots=True)
+class Beside:
+    """A PendingReading field named from another token's: the reading
+    lands where the token at `index` lands, named by assemble from that
+    token's final role -- a word the name piece in front would take in
+    (a particle chain, which runs to the end of the name words, or a
+    bound given name), or a connective whose join stays inside its own
+    piece. Where P6 then attached that token to the family
+    (`FOLDED_TAG`), which it would not have done with a word behind
+    it, `unfolded`, the field the word held when the report was made,
+    stands instead."""
+
+    index: int
+    unfolded: Role | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -217,8 +224,8 @@ class PendingReading:
 
     ``role`` is the field the first referent would hold under that
     reading, with every other word of the name read as the parse read
-    it, or a `Deferred` form for a stage that runs before the field is
-    known. A JOINED or UNCHAINED form assign leaves unresolved -- a
+    it, a `Deferred` form for a stage that runs before the field is
+    known, or `Beside` for a field another token's final role names. A JOINED or UNCHAINED form assign leaves unresolved -- a
     referent that ends outside every name position -- surfaces as no
     alternative rather than a guess. Assemble also folds a MIDDLE into
     the family under ``middle_as_family``, the one later rule that
@@ -226,9 +233,7 @@ class PendingReading:
 
     kind: ReadingKind
     source: ReadingSource
-    role: Role | Deferred
-    beside: int | None = None
-    unfolded: Role | None = None
+    role: Role | Deferred | Beside
 
 
 #: How a report names the field a word was read into, by final role.
