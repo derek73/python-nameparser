@@ -12597,6 +12597,38 @@ CASES: tuple[Case, ...] = (
          {"title": "Pope", "given": "Francis"},
          notes="'pope' has no given reading: still the title that "
                "addresses by the given name, H1"),
+    Case("given_name_title_sultana_at_the_head", "Sultana Begum",
+         {"given": "Sultana", "family": "Begum"}, classification="fix(#752)",
+         notes="H9; read title 'Sultana', no given name, 1.4.0 through "
+               "2.6.0 (#752 phase 2j)"),
+    Case("given_name_title_sultana_before_a_credential_comma",
+         "Nasreen Sultana, MBBS",
+         {"given": "Nasreen", "family": "Sultana", "suffix": "MBBS"},
+         ambiguities=("suffix-or-name",), classification="fix(#752)",
+         notes="two name words now stand before the comma, so the "
+               "credential is the suffix; read given 'MBBS', family "
+               "'Nasreen Sultana' before"),
+    Case("given_name_title_sultan_after_a_salutation", "Mr Sultan Khan",
+         {"title": "Mr", "given": "Sultan", "family": "Khan"},
+         classification="fix(#853)",
+         notes="#853's own example; read title 'Mr Sultan' before"),
+    Case("given_name_title_sultan_after_a_family_comma", "Khan, Sultan",
+         {"given": "Sultan", "family": "Khan"}, classification="fix(#752)",
+         notes="H9; read title 'Sultan' before"),
+    Case("sultan_behind_a_style_keeps_the_title",
+         "His Majesty Sultan Hassanal Bolkiah",
+         {"title": "His Majesty Sultan", "given": "Hassanal",
+          "family": "Bolkiah"},
+         notes="H9: a style is a partner, as master and 1.4.0 read it"),
+    Case("ruler_with_a_bare_leading_sultan", "Sultan Hassanal Bolkiah",
+         {"given": "Sultan", "middle": "Hassanal", "family": "Bolkiah"},
+         classification="fix(#752)",
+         notes="H9's Accepted clause, the class accepted for 'king' "
+               "(Derek, 2026-10-26); read title 'Sultan' before"),
+    Case("sultan_behind_sheikh_keeps_the_title", "Sheikh Sultan Khan",
+         {"title": "Sheikh Sultan", "family": "Khan"},
+         notes="'sheikh' is a style, so it partners the word: master's "
+               "reading, left for sheikh's own batch"),
     Case("given_name_modifier_after_a_style", "Hon. Wing Lau",
          {"title": "Hon.", "given": "Wing", "family": "Lau"},
          notes="H9: the modifier's test, not a contested word's style "

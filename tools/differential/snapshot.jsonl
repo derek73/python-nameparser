@@ -3358,6 +3358,8 @@
 {"name": "Sulaiman, Salimah", "given": "Salimah", "family": "Sulaiman", "initials": "S. S."}
 {"name": "Sule", "given": "Sule", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "S."}
 {"name": "Sule", "order": "FAMILY_FIRST", "family": "Sule", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "S."}
+{"name": "Sultan Hassanal Bolkiah", "given": "Sultan", "middle": "Hassanal", "family": "Bolkiah", "initials": "S. H. B."}
+{"name": "Sultana Begum", "given": "Sultana", "family": "Begum", "initials": "S. B."}
 {"name": "Suresh a/l Muthu", "given": "Suresh", "middle": "a/l", "family": "Muthu", "initials": "S. a. M.", "capitalized_force": "Suresh A/L Muthu"}
 {"name": "Surāqa Ibn-Mirdās al-Aṣġar", "given": "Surāqa", "middle": "Ibn-Mirdās", "family": "al-Aṣġar", "initials": "S. I. a.", "capitalized_force": "Surāqa ibn-Mirdās al-Aṣġar"}
 {"name": "Suzuki san", "order": "FAMILY_FIRST", "given": "san", "family": "Suzuki", "initials": "s. S.", "capitalized_force": "San Suzuki"}

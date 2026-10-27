@@ -118,7 +118,7 @@ A reading whose writing offers no cue is one the gate could only guess, so it is
 
 The front of a name has no words-to-spare cue: a title addresses the name after it. What it has is the contested-head rule. **A title word that also has a name reading is a title only inside a title phrase:**
 
-- **The title before it is not a partner.** A contested word after another title is the given name (`Mr Sultan Khan`, `Ms Princess Ada Obi`, #853), unless that title is its partner; today `Mr Sultan Khan` reads title `Mr Sultan`.
+- **The title before it is not a partner.** A contested word after another title is the given name (`Mr Sultan Khan`, `Ms Princess Ada Obi`, #853), unless that title is its partner; `Mr Sultan Khan` read title `Mr Sultan` until phase 2j gave `sultan` its given reading.
 - **Its partner** is a modifier or a style before it (`Her Royal Highness Princess Anne`), `of` after it (`Dean of Students`), or a head title after it that the word `attaches` to (`Major General`). A salutation is never a partner (`SMITH, DEAN MR.` is a given name and a salutation).
 - **Modifiers** (decision 10, unparked) are titles only beside a head title, at the head of the name only, never in a comma part, where a lone title word is the person's role; a modifier that is also a given name (`wing`, phase 2j) is read by that test in every part.
 
