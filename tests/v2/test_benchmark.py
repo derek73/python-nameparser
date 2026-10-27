@@ -47,10 +47,15 @@ the measurements behind its rule):
   can see a quadratic
   (test_a_trailing_credential_run_does_not_cost_exponentially).
 
-Every frame guard counts ONE function, so when the code under it moves,
-move its `only=` and re-take its negative control (#563, where #613's
-move left the guard reading 3.6x on a returned quadratic); and it needs
-the same reachability assertion a _POLICY_SHAPES row carries. Frame
+A frame guard either counts the whole parse (the exponential pair, the
+clause-link test, _REREAD_SHAPES' `lead` row) or isolates ONE function
+with `only=`. An isolated guard goes blind when the code under it stops
+calling that function, so when that code moves, move `only=` with it
+and re-take its negative control (#563, where #613's move left the
+guard reading 3.6x on a returned quadratic). A whole-parse guard's
+ratio includes the parse's linear work, which its calibration accounts
+for. Either kind needs the same reachability assertion a _POLICY_SHAPES
+row carries. Frame
 counts do not move under load, so they need no repeated-run
 calibration. The module is marked `serial` (tests/conftest.py says
 why), and a new clock-timed test elsewhere takes the mark too.
@@ -258,7 +263,7 @@ def test_a_thousand_names_still_parse_in_reasonable_time(
 # before pruning one that looks redundant:
 #
 #   dimension                 covered by
-#   token count               all ten
+#   token count               every row
 #   piece count               unmatched_*, plain_tokens, commas, titles
 #   SEGMENT count             commas ONLY -- deleting it leaves every
 #                             segment-keyed regression unguarded
@@ -310,6 +315,16 @@ def test_a_thousand_names_still_parse_in_reasonable_time(
 #                             family. 'PhD MA ' reads the
 #                             same and never asks the pass at all, the
 #                             capitals deciding each member first
+#   gated-word front scan     agnomens (#890), carried_agnomens (the
+#                             scan through carried members)
+#   S13 clause pass           bracket_members (#810)
+#
+# The last three rows were added after the census above was taken; on
+# 2026-10-27 none of them reached S7's anchor pass or the honorific
+# peel (counted in calls to credential_anchors and
+# _peel_honorific_tail at 20 units), and none holds a comma, a
+# non-ASCII character, a bound given name, a maiden marker or a
+# connective, so the ONLY claims above still hold.
 _SHAPES = {
     "delimiter_pairs": "(a) ",      # extract: matched pairs -> masked spans
     "quote_pairs": '"a" ',          # extract: the open==close path
@@ -584,7 +599,7 @@ def test_prefixed_cost_grows_no_worse_than_linearly(
 # Every _SHAPES entry runs bare parse(), and a stage gated on an opt-in
 # Policy field is dead there -- #329's clause loop exits on its first
 # line when maiden_delimiters is empty, so the quadratic it shipped
-# with was invisible to all ten shapes above even though "(a) " was
+# with was invisible to every shape above even though "(a) " was
 # already one of them. The unit is the SAME string as delimiter_pairs;
 # only the policy differs, which is the whole point.
 #
