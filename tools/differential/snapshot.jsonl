@@ -1796,6 +1796,7 @@
 {"name": "John Smith, Dr.", "title": "Dr.", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "John Smith, Dr.", "order": "FAMILY_FIRST", "title": "Dr.", "given": "Smith", "family": "John", "initials": "S. J."}
 {"name": "John Smith, Dr. / MD", "title": "Dr.", "given": "John", "family": "Smith", "suffix": "MD", "initials": "J. S."}
+{"name": "John Smith, Dr. / and MD", "title": "Dr. and MD", "given": "John", "family": "Smith", "initials": "J. S.", "capitalized_force": "Dr. and Md John Smith"}
 {"name": "John Smith, Dr. J.씨", "title": "Dr.", "given": "John", "family": "Smith", "suffix": "J.씨", "initials": "J. S."}
 {"name": "John Smith, Dr; MD", "title": "Dr;", "given": "John", "family": "Smith", "suffix": "MD", "initials": "J. S."}
 {"name": "John Smith, Ed", "given": "John", "family": "Smith", "suffix": "Ed", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (declared)"], "initials": "J. S.", "capitalized_force": "John Smith ED"}
@@ -1857,6 +1858,7 @@
 {"name": "John Smith, PhD-Md", "given": "John", "family": "Smith", "suffix": "PhD-Md", "initials": "J. S.", "capitalized_force": "John Smith PhD-MD"}
 {"name": "John Smith, Pharm D", "given": "John", "family": "Smith", "suffix": "Pharm D", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "J. S."}
 {"name": "John Smith, Phd-Md", "given": "Phd-Md", "family": "John Smith", "initials": "P. J. S.", "capitalized_force": "PhD-Md John Smith"}
+{"name": "John Smith, Prof. - of Surgery", "title": "Prof. of Surgery", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "John Smith, Pu-Ph", "given": "Pu-Ph", "family": "John Smith", "initials": "P. J. S."}
 {"name": "John Smith, RA Jones", "title": "RA", "given": "Jones", "family": "John Smith", "initials": "J. J. S.", "capitalized_force": "Ra Jones John Smith"}
 {"name": "John Smith, RAI", "given": "John", "family": "Smith", "suffix": "RAI", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "J. S."}
