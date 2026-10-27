@@ -1198,8 +1198,8 @@ which is dropped as a comma between suffixes would be:
 
 Glued to a word, a hyphen or slash is the word's own, so
 ``Jane Smith, RN- CRNA`` reads as it always has, with ``RN-`` as the given
-name and ``Jane Smith`` as the family; declare ``" - "`` to read a glued
-hyphen as a separator too. Behind a single word (``Smith, RN - CRNA``)
+name and ``Jane Smith`` as the family; declare ``" - "`` to read the word
+without its glued hyphen, as the semicolon is read. Behind a single word (``Smith, RN - CRNA``)
 nothing is split, and before the comma it is a word too, so it never reaches a
 hyphenated surname written with spaces (``Smith - Jones``).
 

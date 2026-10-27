@@ -8559,12 +8559,12 @@ CASES: tuple[Case, ...] = (
          policy=_SD,
          classification="fix(#602)",
          notes="the delimiter fires only at suffix sites, so in the "
-               "given part the dash stays a word -- and since #602 a "
+               "given part the core stays a word -- and since #602 a "
                "word after the credential is in the run: one entry "
                "'RN | CRNA', the core unreported, holding no letter or "
                "digit (rules/A2). Before #602 the stray token kept "
-               "its per-piece walk role, middle '-', suffix 'RN, CRNA' "
-               "(v1 parity, pinned live 2026-07-16)"),
+               "its per-piece walk role, middle '|', suffix 'RN, CRNA' "
+               "(v1 parity, pinned live 2026-07-16 with ' - ')"),
     Case("suffix_delimiter_suffix_comma", "John Smith, RN | CRNA",
          {"given": "John", "family": "Smith", "suffix": "RN, CRNA"},
          policy=_SD,
@@ -8648,10 +8648,9 @@ CASES: tuple[Case, ...] = (
                "A run does not span a name word: the separator holds "
                "whether the core was dropped or kept, which is why "
                "#436's predicate asks what stands between the two "
-               "rather than only what was dropped. The bare-policy "
-               "spelling of this string with ' - ' is a corpus name "
-               "and reads the same, the built-in hyphen being no "
-               "delimiter there either (#889)"),
+               "rather than only what was dropped. With ' - ' and no "
+               "policy the string reads the same, the built-in hyphen "
+               "being no delimiter after a family comma either (#889)"),
     Case("semicolon_glued_after_a_whole_name", "John Smith, MD; PhD",
          {"given": "John", "family": "Smith", "suffix": "MD; PhD"},
          classification="fix(semicolon-suffix-delimiter)",

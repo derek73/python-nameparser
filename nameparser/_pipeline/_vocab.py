@@ -828,8 +828,9 @@ def glued_cores(policy_delimiters: frozenset[str]) -> frozenset[str]:
     """The cores read glued to one end of a word or inside one: the
     semicolon and every configured core, never a built-in hyphen or
     slash that the caller did not declare (BUILTIN_GLUED_DELIMITERS).
-    A configured core that is itself a word (' and ') is in the set but
-    still parts only standing alone: the callers ask `glues` first."""
+    A configured core that is itself a word (' and ') is in the set:
+    `glued_stem`'s callers ask `glues` before reading it glued, while
+    `is_wholly_suffix`'s in-word split does not ('MDandPhD')."""
     if not policy_delimiters:
         return BUILTIN_GLUED_DELIMITERS
     return BUILTIN_GLUED_DELIMITERS | frozenset(
