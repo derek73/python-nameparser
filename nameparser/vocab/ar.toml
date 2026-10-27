@@ -18,7 +18,9 @@ style = { addresses = "given", gender = "m", same_as = "sheikh" }
 
 [[word]]
 text = "shaikh"
-style = { addresses = "given", gender = "m", same_as = "sheikh" }
+style = { addresses = "given", gender = "m", same_as = "sheikh", issue = 752, decided = 2026-10-26, note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'Shaikh Ahmed' and 'Mr Shaikh Ahmed' read the given name, unreported, since no listed phrase holds it" }
+given = { us_ssa = 41, as_of = 2026-10-26, note = "US SSA: male births; Wikidata holds no given-name statement for it, a lower bound" }
+family = { us_census_2010 = 6063, wikidata = 49, as_of = 2026-10-26, note = "Census: asian/PI 89.61%; Wikidata: India 7, Pakistan 5" }
 
 [[word]]
 text = "shayk"

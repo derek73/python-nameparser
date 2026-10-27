@@ -12611,6 +12611,40 @@ CASES: tuple[Case, ...] = (
          {"title": "Sheikh Sultan", "family": "Khan"},
          notes="'sheikh' is a style, so it partners the word: master's "
                "reading, left for sheikh's own batch"),
+    Case("given_name_title_shaikh_at_the_head", "Shaikh Ahmed Khan",
+         {"given": "Shaikh", "middle": "Ahmed", "family": "Khan"},
+         classification="fix(#752)",
+         notes="H9; read title 'Shaikh', given 'Ahmed' 1.4.0 through "
+               "2.6.0 (#752 phase 2j)"),
+    Case("given_name_title_shaikh_after_a_salutation", "Mr Shaikh Ahmed",
+         {"title": "Mr", "given": "Shaikh", "family": "Ahmed"},
+         classification="fix(#853)",
+         notes="H9: a salutation is no partner; read title 'Mr Shaikh' "
+               "before"),
+    Case("given_name_title_shaikh_after_a_family_comma", "Khan, Shaikh",
+         {"given": "Shaikh", "family": "Khan"}, classification="fix(#752)",
+         notes="H9; read title 'Shaikh' before"),
+    Case("given_name_title_shaikh_before_a_family_comma",
+         "Shaikh Smith, Ahmed",
+         {"given": "Ahmed", "family": "Shaikh Smith"},
+         notes="H6 peels only a title, so the surname keeps the word, as "
+               "1.4.0 read it; master read title 'Shaikh'"),
+    Case("shaikh_behind_a_style_keeps_the_title",
+         "His Highness Shaikh Ahmed Khan",
+         {"title": "His Highness Shaikh", "given": "Ahmed", "family": "Khan"},
+         notes="H9: a style is a partner, as master and 1.4.0 read it"),
+    Case("ruler_with_a_bare_leading_shaikh",
+         "Shaikh Hamad bin Isa Al Khalifa",
+         {"given": "Shaikh", "middle": "Hamad bin Isa",
+          "family": "Al Khalifa"},
+         classification="fix(#752)",
+         notes="H9's Accepted clause, the class accepted for 'king' and "
+               "'sultan'; read title 'Shaikh' before"),
+    Case("sultan_behind_a_bare_leading_shaikh", "Shaikh Sultan Khan",
+         {"given": "Shaikh", "middle": "Sultan", "family": "Khan"},
+         classification="fix(#752)",
+         notes="H9: a style read as a name word is no title there, so it "
+               "partners nothing; read title 'Shaikh Sultan' before"),
     Case("given_name_modifier_after_a_style", "Hon. Wing Lau",
          {"title": "Hon.", "given": "Wing", "family": "Lau"},
          notes="H9: the modifier's test, not a contested word's style "
