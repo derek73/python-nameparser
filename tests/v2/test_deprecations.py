@@ -161,16 +161,52 @@ def test_loading_a_constants_pickle_warns_at_the_load() -> None:
         "Dean John Smith").title == "Dean"
 
 
-def test_mutating_the_shared_constants_names_a_runnable_parser() -> None:
-    # the scalar path is the one attributed to the caller; the manager
-    # path lands in the shim (the _bump comment says why)
+def _pop_parenthesis() -> None:
+    # the documented recipe for routing a built-in delimiter between
+    # buckets: a pop() and a __setitem__, two mutations on one line
+    CONSTANTS.maiden_delimiters["parenthesis"] = (
+        CONSTANTS.nickname_delimiters.pop("parenthesis"))
+
+
+# Every way to mutate the shared singleton, each written in this file so
+# the caller's line is here. They reach the warning at different depths
+# (a scalar through Constants.__setattr__, a set through add() and
+# _changed(), a dict's update() and |= through __setitem__ per key), and
+# a fixed stacklevel served only the scalar one until 2.8.0's release
+# review: CONSTANTS.titles.add() was attributed inside the shim, so
+# Python's default filters hid it. With that fixed stacklevel=3 back,
+# 10 of these 11 shapes fail, every one but the scalar (2026-10-28).
+_SHARED_MUTATIONS: dict[str, Callable[[], object]] = {
+    "scalar": lambda: setattr(CONSTANTS, "string_format", "{last}, {first}"),
+    "set add": lambda: CONSTANTS.titles.add("xyzzy"),
+    "set remove": lambda: CONSTANTS.titles.remove("dr"),
+    "set discard": lambda: CONSTANTS.titles.discard("dr"),
+    "set clear": lambda: CONSTANTS.conjunctions.clear(),
+    "dict setitem": lambda: CONSTANTS.capitalization_exceptions.__setitem__(
+        "xyzzy", "XyZzy"),
+    "dict update": lambda: CONSTANTS.capitalization_exceptions.update(
+        {"xyzzy": "XyZzy"}),
+    "dict |=": lambda: CONSTANTS.capitalization_exceptions.__ior__(
+        {"xyzzy": "XyZzy"}),
+    "dict setdefault": lambda: CONSTANTS.capitalization_exceptions.setdefault(
+        "xyzzy", "XyZzy"),
+    "dict pop": lambda: CONSTANTS.capitalization_exceptions.pop("phd"),
+    "delimiter recipe": _pop_parenthesis,
+}
+
+
+@pytest.mark.parametrize("shape", sorted(_SHARED_MUTATIONS))
+def test_mutating_the_shared_constants_warns_at_the_caller(shape: str) -> None:
     with _record() as caught:
         warnings.simplefilter("always")
         # tests/conftest.py restores the singleton after every test
-        CONSTANTS.string_format = "{last}, {first}"
-    w = _one(caught, "mutating the shared CONSTANTS singleton")
-    _assert_removal(w, _offered_parser)
-    assert "private Constants" not in str(w.message)
+        _SHARED_MUTATIONS[shape]()
+    hits = [w for w in caught if str(w.message).startswith(
+        "mutating the shared CONSTANTS singleton")]
+    assert hits, [str(w.message) for w in caught]
+    for w in hits:
+        _assert_removal(w, _offered_parser)
+        assert "private Constants" not in str(w.message)
 
 
 @pytest.mark.parametrize("name", ["SetManager", "TupleManager",
