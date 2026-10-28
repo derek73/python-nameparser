@@ -2,7 +2,7 @@
 
 **When:** a credential stands after the name core with more words behind it in its part, as in "John Smith PhD Jones".
 
-**Then:** a credential after the name core starts a run to the end of its part (#602): every later word of that part reads as a suffix, except a title word, which reads as a title; a word that may also be a given name (rules/H9) is not a title word here.
+**Then:** a credential after the name core starts a run to the end of its part (#602): every later word of that part reads as a suffix, except a title word, which reads as a title; a word that may also be a given name (rules/H9) is a title word here only inside a title phrase.
 
 - **Where the run starts.** An unambiguous suffix word of two or more letters, in any script, standing after two name words where no comma divides the name or before a suffix comma, or after the given word in the part after a family comma, makes every later word of that part a suffix. So does a roman numeral of two or more letters that reads as the generation (S10), whether the vocabulary lists it or its shape alone reads it, and so does a listed member of the ambiguous class its writing settles as the credential, written in capitals in a name of mixed case (S6) — after the given word in the part after a family comma wherever it stands, and elsewhere not where a name word stands behind it: a particle (a particle run or a joined surname counting by its first word), a word in a script with no case, or a word in Title case or in capitals that is no credential, which makes the capitals as likely the writer's own initials (`Maria Ana MA Silva`), or a family name written in capitals, as a credential.
   ```
