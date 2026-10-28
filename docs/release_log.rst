@@ -1,5 +1,9 @@
 Release Log
 ===========
+* 3.0.0 - Unreleased
+
+    nameparser 3.0 is under development. It removes ``HumanName`` and the rest of the 1.x compatibility layer, which 2.8 deprecates, and changes the output model. 2.8 is the last 2.x feature release.
+
 * 2.8.0 - October 28, 2026
 
     **nameparser 2.8** is the last 2.x feature release. It warns about everything 3.0 removes, chiefly ``HumanName`` and the rest of the 1.x compatibility layer, so that code can move to ``parse()`` while 2.x still runs it. It also carries on 2.7's reading of titles that are also given names: a title only inside a title phrase. After 2.8 the 2.x line takes fixes only, and new work goes into 3.0. Highlights:
