@@ -29,10 +29,13 @@
   "Mr Deacon Smith"           →  given="Deacon"
   "Ms Queen Smith"            →  given="Queen"
   "Cheikh Anta Diop"          →  given="Cheikh"
+  "Queen Mother Elizabeth"    →  title="Queen Mother"
   ```
-- **A modifier in the leading run of titles before the first comma** has its phrase in a head title after it in that run, in `of` after it, or in the object of `of` or `the` there. A modifier outside that run, ending the name or after a comma, is read as any title is, save one that may be a given name, which is read everywhere as it is in that run.
+- **A modifier in the leading run of titles before the first comma** has its phrase in a head title after it in that run, in a title before it that attaches to it, in `of` after it, or in the object of `of` or `the` there. A modifier outside that run, ending the name or after a comma, is read as any title is, save one that may be a given name, which is read everywhere as it is in that run.
   ```
   "Wing Commander Lau"        →  title="Wing Commander"
+  "Princess Royal Anne"       →  title="Princess Royal"
+  "Prince Consort Albert"     →  title="Prince Consort"
   "Mr Wing Lau"               →  given="Wing"
   "Mr. and Mrs. Wing Lau"     →  given="Wing"
   "President of the United States Barack Obama"  →  title="President of the United States"
@@ -49,6 +52,8 @@
   "Marshal Yanda"             →  ambiguities=("title-or-name",)
   "Mr Dean Smith"             →  ambiguities=("title-or-name",)
   "Dean Smith, MD"            →  ambiguities=("title-or-name",)
+  "Prince Fielder"            →  ambiguities=("title-or-name",)
+  "Dr. King"                  →  ambiguities=("title-or-name",)
   "Grace Smith"               →  ambiguities=()
   "Bard Larsen"               →  ambiguities=()
   "GRACE SMITH"               →  ambiguities=()
@@ -99,10 +104,10 @@
   ```
   "Mr Justice Smith"          →  given="Justice"
   ```
-- A modifier whose head is not a listed title loses the title, as with duke, which the vocabulary refuses, and so does a modifier written after its head with no `of` behind it.
+- A modifier whose head is not a listed title loses the title, as with duke, which the vocabulary refuses, and so does a modifier written after a head that does not attach to it, with no `of` behind it.
   ```
   "Grand Duke of Tuscany"     →  given="Grand"
-  "Her Royal Highness Princess Royal Anne"  →  given="Royal"
+  "Her Royal Highness Princess Grand Anne"  →  given="Grand"
   ```
 - In the given part after a family comma a modifier that is not also a given name is read as listed, so the listing form and the written order of one name read it differently, the cost decision 10 took for the parts where a lone title word is a role.
   ```

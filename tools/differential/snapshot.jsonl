@@ -771,7 +771,7 @@
 {"name": "Donovan McNabb-Smith", "given": "Donovan", "family": "McNabb-Smith", "initials": "D. M."}
 {"name": "Dr John Smith", "title": "Dr", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Dr Jr", "given": "Dr", "suffix": "Jr", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "D."}
-{"name": "Dr King Jr", "title": "Dr", "family": "King", "suffix": "Jr", "initials": "K."}
+{"name": "Dr King Jr", "title": "Dr", "family": "King", "suffix": "Jr", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "K."}
 {"name": "Dr Martin Luther King, Jr.", "title": "Dr", "given": "Martin", "middle": "Luther", "family": "King", "suffix": "Jr.", "initials": "M. L. K."}
 {"name": "Dr Pope Jr", "title": "Dr", "family": "Pope", "suffix": "Jr", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "P."}
 {"name": "Dr Smith V", "title": "Dr", "given": "Smith", "family": "V", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: generation as suffix (vocabulary)"], "initials": "S. V."}
@@ -825,7 +825,7 @@
 {"name": "Dr. Juan de la Vega", "title": "Dr.", "given": "Juan", "family": "de la Vega", "initials": "J. V."}
 {"name": "Dr. Juan de la Vega III", "title": "Dr.", "given": "Juan", "family": "de la Vega", "suffix": "III", "initials": "J. V."}
 {"name": "Dr. Juan de la Vega, Jr.", "title": "Dr.", "given": "Juan", "family": "de la Vega", "suffix": "Jr.", "initials": "J. V."}
-{"name": "Dr. King", "title": "Dr.", "family": "King", "initials": "K."}
+{"name": "Dr. King", "title": "Dr.", "family": "King", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "K."}
 {"name": "Dr. Martin Luther King Jr.", "title": "Dr.", "given": "Martin", "middle": "Luther", "family": "King", "suffix": "Jr.", "initials": "M. L. K."}
 {"name": "Dr. Mazen Elrouqi", "title": "Dr.", "given": "Mazen", "family": "Elrouqi", "initials": "M. E."}
 {"name": "Dr. Mc Donald, John", "title": "Dr.", "given": "John", "family": "Mc Donald", "initials": "J. D.", "capitalized_force": "Dr. John mc Donald"}
@@ -1251,7 +1251,7 @@
 {"name": "Hempel, Ludwig", "given": "Ludwig", "family": "Hempel", "initials": "L. H."}
 {"name": "Her Majesty Queen Elizabeth", "title": "Her Majesty Queen", "given": "Elizabeth", "initials": "E."}
 {"name": "Her Royal Highness Princess Anne", "title": "Her Royal Highness Princess", "given": "Anne", "initials": "A."}
-{"name": "Her Royal Highness Princess Royal Anne", "title": "Her Royal Highness Princess", "given": "Royal", "family": "Anne", "initials": "R. A."}
+{"name": "Her Royal Highness Princess Grand Anne", "title": "Her Royal Highness Princess", "given": "Grand", "family": "Anne", "initials": "G. A."}
 {"name": "Hera Hilmarsdóttir", "given": "Hera", "family": "Hilmarsdóttir", "initials": "H. H."}
 {"name": "Hera Hjartardóttir", "given": "Hera", "family": "Hjartardóttir", "initials": "H. H."}
 {"name": "Herma Studeny", "given": "Herma", "family": "Studeny", "initials": "H. S."}
@@ -2178,10 +2178,10 @@
 {"name": "Kim, Ae-Ra", "given": "Ae-Ra", "family": "Kim", "initials": "A. K."}
 {"name": "Kim, Jr.", "family": "Kim", "suffix": "Jr.", "initials": "K."}
 {"name": "Kim김민준씨, MA", "family": "Kim김민준", "suffix": "씨, MA", "initials": "K."}
-{"name": "King Curtis", "given": "King", "family": "Curtis", "initials": "K. C."}
-{"name": "King Henry", "given": "King", "family": "Henry", "initials": "K. H."}
-{"name": "King John Alexander V", "given": "King", "middle": "John", "family": "Alexander", "suffix": "V", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: initial as family (shape)"], "initials": "K. J. A."}
-{"name": "King John V.", "given": "King", "middle": "John", "family": "V.", "initials": "K. J. V."}
+{"name": "King Curtis", "given": "King", "family": "Curtis", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "K. C."}
+{"name": "King Henry", "given": "King", "family": "Henry", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "K. H."}
+{"name": "King John Alexander V", "given": "King", "middle": "John", "family": "Alexander", "suffix": "V", "ambiguities": ["SUFFIX_OR_NAME", "TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)", "SUFFIX_OR_NAME: initial as family (shape)"], "initials": "K. J. A."}
+{"name": "King John V.", "given": "King", "middle": "John", "family": "V.", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "K. J. V."}
 {"name": "Kishi, Kōichi", "given": "Kōichi", "family": "Kishi", "initials": "K. K."}
 {"name": "Kjetil Bjørn Løseth", "given": "Kjetil", "middle": "Bjørn", "family": "Løseth", "initials": "K. B. L."}
 {"name": "Klaus Poeck", "given": "Klaus", "family": "Poeck", "initials": "K. P."}
@@ -2631,8 +2631,8 @@
 {"name": "Mrs. Garcia", "title": "Mrs.", "family": "Garcia", "initials": "G."}
 {"name": "Ms A.J. Smith", "title": "Ms", "given": "A.J.", "family": "Smith", "initials": "A. S."}
 {"name": "Ms Hon Solo", "title": "Ms Hon", "family": "Solo", "initials": "S."}
-{"name": "Ms Princess Smith", "title": "Ms", "given": "Princess", "family": "Smith", "initials": "P. S."}
-{"name": "Ms Queen Smith", "title": "Ms", "given": "Queen", "family": "Smith", "initials": "Q. S."}
+{"name": "Ms Princess Smith", "title": "Ms", "given": "Princess", "family": "Smith", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "P. S."}
+{"name": "Ms Queen Smith", "title": "Ms", "given": "Queen", "family": "Smith", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "Q. S."}
 {"name": "Ms. Rebecca Teichman", "title": "Ms.", "given": "Rebecca", "family": "Teichman", "initials": "R. T."}
 {"name": "Mudane Bertram Wilberforce Henry Robert Wooster MP", "given": "Mudane", "middle": "Bertram Wilberforce Henry Robert", "family": "Wooster", "suffix": "MP", "initials": "M. B. W. H. R. W."}
 {"name": "Mueller Kathy", "order": "FAMILY_FIRST", "given": "Kathy", "family": "Mueller", "initials": "K. M."}
@@ -2865,11 +2865,13 @@
 {"name": "Prema", "given": "Prema", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "P."}
 {"name": "Prema", "order": "FAMILY_FIRST", "family": "Prema", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "P."}
 {"name": "President of the United States Barack Obama", "title": "President of the United States", "given": "Barack", "family": "Obama", "initials": "B. O."}
-{"name": "Prince Charles", "given": "Prince", "family": "Charles", "initials": "P. C."}
-{"name": "Prince Fielder", "given": "Prince", "family": "Fielder", "initials": "P. F."}
-{"name": "Prince Harry", "given": "Prince", "family": "Harry", "initials": "P. H."}
+{"name": "Prince Charles", "given": "Prince", "family": "Charles", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "P. C."}
+{"name": "Prince Consort Albert", "title": "Prince Consort", "given": "Albert", "initials": "A."}
+{"name": "Prince Fielder", "given": "Prince", "family": "Fielder", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "P. F."}
+{"name": "Prince Harry", "given": "Prince", "family": "Harry", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "P. H."}
 {"name": "Prince of Wales", "title": "Prince of Wales"}
 {"name": "Prince of Wales Jr", "title": "Prince of Wales", "family": "Jr", "initials": "J."}
+{"name": "Princess Royal Anne", "title": "Princess Royal", "given": "Anne", "initials": "A."}
 {"name": "Prof. Dk. Salima Farida mwana Hamisi Musa M.D. Ph.D.", "title": "Prof. Dk.", "given": "Salima", "middle": "Farida mwana Hamisi", "family": "Musa", "suffix": "M.D. Ph.D.", "initials": "S. F. m. H. M.", "capitalized_force": "Prof. Dk. Salima Farida Mwana Hamisi Musa M.D. Ph.D."}
 {"name": "Prof. Dr. Ada Cornelia Cesar Martin von Bruhl Jr, MD DDS", "title": "Prof. Dr.", "given": "Ada", "middle": "Cornelia Cesar Martin", "family": "von Bruhl", "suffix": "Jr, MD DDS", "initials": "A. C. C. M. B."}
 {"name": "Prof. Dr. Ada Cornelia Cesar Martín von Bruhl Jr, M.D., Ph.D.", "title": "Prof. Dr.", "given": "Ada", "middle": "Cornelia Cesar Martín", "family": "von Bruhl", "suffix": "Jr, M.D., Ph.D.", "initials": "A. C. C. M. B."}
@@ -2916,8 +2918,9 @@
 {"name": "Qodirov Muhammad Yusuf", "order": "FAMILY_FIRST", "given": "Muhammad", "middle": "Yusuf", "family": "Qodirov", "initials": "M. Y. Q."}
 {"name": "Qodirov, Alisher Salimovich", "given": "Alisher", "middle": "Salimovich", "family": "Qodirov", "initials": "A. S. Q."}
 {"name": "Qodirov, Muhammad Yusuf", "given": "Muhammad", "middle": "Yusuf", "family": "Qodirov", "initials": "M. Y. Q."}
-{"name": "Queen Elizabeth", "given": "Queen", "family": "Elizabeth", "initials": "Q. E."}
-{"name": "Queen Elizabeth II", "given": "Queen", "family": "Elizabeth", "suffix": "II", "initials": "Q. E."}
+{"name": "Queen Elizabeth", "given": "Queen", "family": "Elizabeth", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "Q. E."}
+{"name": "Queen Elizabeth II", "given": "Queen", "family": "Elizabeth", "suffix": "II", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "Q. E."}
+{"name": "Queen Mother Elizabeth", "title": "Queen Mother", "given": "Elizabeth", "initials": "E."}
 {"name": "Quertenmont, Andreas Bernardus de", "given": "Andreas", "middle": "Bernardus", "family": "de Quertenmont", "initials": "A. B. Q."}
 {"name": "Quincy Adams", "given": "Quincy", "family": "Adams", "initials": "Q. A."}
 {"name": "Quinquela Martín, Benito", "given": "Benito", "family": "Quinquela Martín", "initials": "B. Q. M."}
