@@ -896,6 +896,11 @@ grep your fixtures for, with what 1.4 read:
   a title only inside a title phrase or behind a style (``"Her Majesty
   Queen Elizabeth"``), as ``King`` is since 2.7: 1.4 read title
   ``Queen``, first ``Latifah``, and last ``Elizabeth``.
+- ``"Prince Consort Albert"``, ``"Princess Royal Anne"`` and ``"Bales,
+  Royal"`` (2.8) — the royal title phrases are one title, and ``Royal``
+  after a family comma is the first name: 1.4 read title ``Prince``,
+  first ``Consort``; title ``Princess Royal``, last ``Anne``; and title
+  ``Royal``, first ``Bales``.
 
 .. doctest::
 
@@ -1048,3 +1053,8 @@ grep your fixtures for, with what 1.4 read:
     'Deacon of the Church'
     >>> HumanName("Queen Latifah").first, HumanName("Elizabeth II, Queen").first
     ('Queen', 'Queen')
+    >>> consort = HumanName("Prince Consort Albert")
+    >>> consort.title, consort.first
+    ('Prince Consort', 'Albert')
+    >>> HumanName("Princess Royal Anne").first, HumanName("Bales, Royal").first
+    ('Anne', 'Royal')

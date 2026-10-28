@@ -1487,7 +1487,8 @@ def title_readings(texts: Sequence[str], folded: Sequence[str],
     of `title_modifiers` is a title only with a head title behind it in
     its run of titles: any title that is not a modifier, or a word H2's
     shape reads as one, before 'of' ('Mother Superior of the Convent'),
-    or in the object of 'of' or 'the' there (decision 10 of
+    behind a title that attaches to it in `title_phrases` ('Princess
+    Royal', #913), or in the object of 'of' or 'the' there (decision 10 of
     decisions/vocabulary-model). Only the leading run is the head: a
     modifier outside it is read as listed, one ending the name being
     H5's. A
@@ -1558,7 +1559,10 @@ def title_readings(texts: Sequence[str], folded: Sequence[str],
                 and ((head and i < lead) or (n in contested and n not in titles))):
             reading[i] = behind or linked[i] or (
                 i < last and folded[i + 1] in _PHRASE_LINKS
-                and folded[i + 1] in conjunctions)
+                and folded[i + 1] in conjunctions) or (
+                # a title before it that attaches to it ('Princess Royal')
+                i > 0 and reading[i - 1]
+                and f"{folded[i - 1]} {n}" in phrases)
             behind = reading[i]
         elif reading[i] or (head and is_title_shaped(texts[i], lexicon)):
             behind = True

@@ -12661,12 +12661,14 @@ CASES: tuple[Case, ...] = (
          notes="1.4.0's fields; H4 had reported title-or-name on an input that was all "
                "vocabulary; 'Buddha' is a name word now, as 'Mahdi' is"),
     Case("given_name_title_king_at_the_head", "King Curtis",
-         {"given": "King", "family": "Curtis"}, classification="fix(#348)",
+         {"given": "King", "family": "Curtis"},
+         ambiguities=("title-or-name",), classification="fix(#348)",
          notes="H9: 'king' is a title only inside a title phrase; read "
                "title 'King', given 'Curtis' 1.4.0 through 2.6.0 "
                "(#752 phase 2j)"),
     Case("given_name_title_king_after_a_salutation", "Mr King Smith",
          {"title": "Mr", "given": "King", "family": "Smith"},
+         ambiguities=("title-or-name",),
          classification="fix(#853)",
          notes="H9: a salutation is no partner; read title 'Mr King' "
                "before"),
@@ -12681,6 +12683,7 @@ CASES: tuple[Case, ...] = (
                "given name, as master read it; 1.4.0 read last 'Charles'"),
     Case("monarch_with_a_bare_leading_king", "King Henry",
          {"given": "King", "family": "Henry"},
+         ambiguities=("title-or-name",),
          classification="fix(#752)",
          notes="H9's Accepted clause: a monarch written with the bare "
                "title reads it as the given name (Derek, 2026-10-26); "
@@ -12810,17 +12813,20 @@ CASES: tuple[Case, ...] = (
                "partners nothing; read title 'Shaikh Sultan' before"),
     Case("given_name_title_prince_at_the_head", "Prince Fielder",
          {"given": "Prince", "family": "Fielder"},
+         ambiguities=("title-or-name",),
          classification="fix(#348)",
          notes="H9; read title 'Prince', given 'Fielder' 2.3.0 through "
                "2.6.0 and last 'Fielder' in 1.4.0 (#752 phase 2j)"),
     Case("given_name_title_prince_after_a_salutation", "Mr Prince Smith",
          {"title": "Mr", "given": "Prince", "family": "Smith"},
+         ambiguities=("title-or-name",),
          classification="fix(#853)",
          notes="H9: a salutation is no partner; read title 'Mr Prince' "
                "before"),
     Case("given_name_title_princess_after_a_salutation",
          "Ms Princess Smith",
          {"title": "Ms", "given": "Princess", "family": "Smith"},
+         ambiguities=("title-or-name",),
          classification="fix(#853)",
          notes="H9: a salutation is no partner; read title "
                "'Ms Princess' before"),
@@ -12835,17 +12841,44 @@ CASES: tuple[Case, ...] = (
                "1.4.0 read it; master read title 'Prince'"),
     Case("royal_with_a_bare_leading_prince", "Prince Harry",
          {"given": "Prince", "family": "Harry"},
+         ambiguities=("title-or-name",),
          classification="fix(#752)",
          notes="H9's Accepted clause, the class 'king' and 'sultan' "
                "took; read title 'Prince', given 'Harry' 2.3.0 through "
                "2.6.0 and last 'Harry' in 1.4.0"),
-    Case("princess_behind_a_style_and_a_trailing_modifier",
+    Case("princess_royal_behind_a_style",
          "Her Royal Highness Princess Royal Anne",
-         {"title": "Her Royal Highness Princess", "given": "Royal",
-          "family": "Anne"},
-         notes="H9's Accepted clause: the style keeps 'princess' a title, "
-               "and 'royal' written after its head loses its own, as "
-               "master read it"),
+         {"title": "Her Royal Highness Princess Royal", "given": "Anne"},
+         notes="H9: 'princess' attaches to 'royal', so the modifier behind "
+               "its head is in its phrase (#913); read given 'Royal', "
+               "family 'Anne' 2.7.0"),
+    Case("royal_title_phrase_queen_mother", "Queen Mother Elizabeth",
+         {"title": "Queen Mother", "given": "Elizabeth"},
+         notes="H9: 'queen' attaches to 'mother'; 2.7.0 read it so, #926 "
+               "given 'Queen', middle 'Mother', and 1.4.0 last "
+               "'Elizabeth'"),
+    Case("royal_title_phrase_consort", "Prince Consort Albert",
+         {"title": "Prince Consort", "given": "Albert"},
+         classification="fix(#913)",
+         notes="H9: 'prince' attaches to 'consort', a modifier read in "
+               "its phrase behind its head; 'consort' addresses by the "
+               "given name. Read given 'Prince', middle 'Consort' 2.7.0"),
+    Case("royal_title_phrase_princess_royal", "Princess Royal Anne",
+         {"title": "Princess Royal", "given": "Anne"},
+         classification="fix(#913)",
+         notes="H9: 'princess' attaches to 'royal'; read given "
+               "'Princess', middle 'Royal' 2.7.0 and last 'Anne' in 1.4.0"),
+    Case("royal_alone_is_a_given_name", "Royal Smith",
+         {"given": "Royal", "family": "Smith"},
+         ambiguities=("title-or-name",), classification="fix(#913)",
+         notes="H9: 'royal' may be a given name, so it is a title only "
+               "in its phrase; 'Princess Royal' holds it, so it reports. "
+               "Read title 'Royal' 1.4.0"),
+    Case("royal_after_a_family_comma_is_the_given_name", "BALES, ROYAL",
+         {"given": "ROYAL", "family": "BALES"},
+         classification="fix(#913)",
+         notes="H9: a modifier that may be a given name is read everywhere "
+               "as in its run; read title 'ROYAL' 1.4.0 through 2.7.0"),
     Case("given_name_title_marquis_at_the_head", "Marquis Johnson",
          {"given": "Marquis", "family": "Johnson"},
          classification="fix(#913)",
@@ -12878,11 +12911,13 @@ CASES: tuple[Case, ...] = (
                "through 2.7.0"),
     Case("given_name_title_queen_at_the_head", "Queen Latifah",
          {"given": "Queen", "family": "Latifah"},
+         ambiguities=("title-or-name",),
          classification="fix(#913)",
          notes="H9; read title 'Queen', given 'Latifah' 1.4.0 through "
                "2.7.0, 'queen' addressing by the given name"),
     Case("given_name_title_queen_after_a_salutation", "Ms Queen Smith",
          {"title": "Ms", "given": "Queen", "family": "Smith"},
+         ambiguities=("title-or-name",),
          classification="fix(#913)",
          notes="H9: a salutation is no partner; read title 'Ms Queen', "
                "given 'Smith' 2.3.0 through 2.7.0, last 'Smith' in 1.4.0"),
@@ -12901,6 +12936,7 @@ CASES: tuple[Case, ...] = (
          notes="H9: 'of' after the word is its phrase"),
     Case("monarch_with_a_bare_leading_queen", "Queen Elizabeth II",
          {"given": "Queen", "family": "Elizabeth", "suffix": "II"},
+         ambiguities=("title-or-name",),
          classification="fix(#913)",
          notes="H9's Accepted clause, the class 'king' took; read title "
                "'Queen', given 'Elizabeth', suffix 'II' through 2.7.0, "
