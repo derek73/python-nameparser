@@ -11,7 +11,7 @@ composable, and locale packs are opt-in.
 
 ⚠️ **HumanName is deprecated, and 3.0 removes it.** From 2.8 the 1.x
 compatibility layer — ``HumanName``, ``Constants`` and the shared
-``CONSTANTS`` — emits a ``DeprecationWarning`` where your code
+``CONSTANTS`` — emits a ``DeprecationWarning`` when your code
 constructs it, loads it from a pickle, or changes the shared
 ``CONSTANTS``. It keeps working through 2.x; ``parse()`` is the
 replacement, and `Coming from 1.x`_ below says where to start. After

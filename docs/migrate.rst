@@ -25,7 +25,8 @@ Deprecated in 2.8
 
 nameparser 2.8 is the last 2.x feature release. From 2.8 on, the uses
 3.0 removes emit a ``DeprecationWarning`` at the line in your code that
-makes them, on every call rather than once per process:
+makes them (with the one exception the table names), on every call
+rather than once per process:
 
 .. list-table::
    :header-rows: 1
@@ -43,7 +44,10 @@ makes them, on every call rather than once per process:
        the `Config map`_ for each setting
    * - Mutating the shared ``CONSTANTS`` (warned since 2.0)
      - The same ``Parser``; a private ``Constants`` is no longer a
-       way out, since it goes in 3.0 too
+       way out, since it goes in 3.0 too. A set's ``add()`` or
+       ``remove()`` (``CONSTANTS.titles.add("dean")``) is reported at a
+       line inside ``nameparser``, so Python's default filters hide it;
+       ``-W error::DeprecationWarning`` still finds it
    * - Loading a pickled ``HumanName``
      - Store ``parse(text).as_dict()`` or the original string
    * - Loading a pickled ``Constants``
