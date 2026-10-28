@@ -14,6 +14,7 @@
   "His Grace John Smith"      →  title="His Grace"
   "Field Marshal Bernard Montgomery"  →  title="Field Marshal"
   "Sergeant Major John Smith"  →  title="Sergeant Major"
+  "Lord Chancellor John Smith"  →  title="Lord Chancellor"
   "Mr Dean Smith"             →  given="Dean"
   "SMITH, DEAN MR."           →  given="DEAN"
   "General Major John Smith"  →  given="Major"
@@ -28,6 +29,7 @@
   "Marquis Johnson"           →  given="Marquis"
   "Mr Deacon Smith"           →  given="Deacon"
   "Ms Queen Smith"            →  given="Queen"
+  "Chancellor Smith"          →  given="Chancellor"
   "Cheikh Anta Diop"          →  given="Cheikh"
   "Queen Mother Elizabeth"    →  title="Queen Mother"
   ```
@@ -54,6 +56,7 @@
   "Dean Smith, MD"            →  ambiguities=("title-or-name",)
   "Prince Fielder"            →  ambiguities=("title-or-name",)
   "Dr. King"                  →  ambiguities=("title-or-name",)
+  "Chancellor Smith"          →  ambiguities=("title-or-name",)
   "Grace Smith"               →  ambiguities=()
   "Bard Larsen"               →  ambiguities=()
   "GRACE SMITH"               →  ambiguities=()

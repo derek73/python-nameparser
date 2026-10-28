@@ -901,6 +901,11 @@ grep your fixtures for, with what 1.4 read:
   after a family comma is the first name: 1.4 read title ``Prince``,
   first ``Consort``; title ``Princess Royal``, last ``Anne``; and title
   ``Royal``, first ``Bales``.
+- ``"Chancellor Smith"`` and ``"Lord Justice Leveson"`` (2.8) —
+  ``Chancellor`` is a title only inside a title phrase (``"Lord
+  Chancellor John Smith"``), and ``Lord Justice`` and ``Lady Justice`` are
+  one title: 1.4 read title ``Chancellor``, and title ``Lord``, first
+  ``Justice``.
 
 .. doctest::
 
@@ -1058,3 +1063,9 @@ grep your fixtures for, with what 1.4 read:
     ('Prince Consort', 'Albert')
     >>> HumanName("Princess Royal Anne").first, HumanName("Bales, Royal").first
     ('Anne', 'Royal')
+    >>> HumanName("Chancellor Smith").first
+    'Chancellor'
+    >>> HumanName("Lord Chancellor John Smith").title
+    'Lord Chancellor'
+    >>> HumanName("Lord Justice Leveson").title
+    'Lord Justice'

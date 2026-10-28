@@ -32,10 +32,10 @@ class ConstantsCustomizationTests(HumanNameTestBase):
             pass
 
         c = CustomConstants()
-        c.titles.add('chancellor')
-        hn = HumanName("Chancellor Jane Smith", constants=c)
+        c.titles.add('bursar')
+        hn = HumanName("Bursar Jane Smith", constants=c)
         self.assertIs(hn.C, c)
-        self.m(hn.title, "Chancellor", hn)
+        self.m(hn.title, "Bursar", hn)
         self.m(hn.first, "Jane", hn)
         self.m(hn.last, "Smith", hn)
 

@@ -517,7 +517,8 @@
 {"name": "Cecilija Hemiš Šteber", "given": "Cecilija", "middle": "Hemiš", "family": "Šteber", "initials": "C. H. Š."}
 {"name": "Cerda y Aragón, Tomás Antonio de la", "given": "Tomás", "middle": "Antonio", "family": "de la Cerda y Aragón", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "T. A. C. A."}
 {"name": "Cetto, August von", "given": "August", "family": "von Cetto", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "A. C."}
-{"name": "Chancellor Jane Smith", "title": "Chancellor", "given": "Jane", "family": "Smith", "initials": "J. S."}
+{"name": "Chancellor Jane Smith", "given": "Chancellor", "middle": "Jane", "family": "Smith", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "C. J. S."}
+{"name": "Chancellor Smith", "given": "Chancellor", "family": "Smith", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "C. S."}
 {"name": "Chang, Andy C I", "given": "Andy", "middle": "C", "family": "Chang", "suffix": "I", "initials": "A. C. C."}
 {"name": "Charles Claude de La Billarderie d'Angiviller", "given": "Charles", "middle": "Claude", "family": "de La Billarderie d'Angiviller", "initials": "C. C. B. d.", "capitalized_force": "Charles Claude de la Billarderie D'Angiviller"}
 {"name": "Charles Wilkins", "given": "Charles", "family": "Wilkins", "initials": "C. W."}
@@ -2293,6 +2294,7 @@
 {"name": "Lon (Jr.) Williams", "given": "Lon", "middle": "Jr.", "family": "Williams", "initials": "L. J. W."}
 {"name": "Lord Buddha Tamang", "title": "Lord", "given": "Buddha", "family": "Tamang", "initials": "B. T."}
 {"name": "Lord Chancellor", "title": "Lord", "family": "Chancellor", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "C."}
+{"name": "Lord Chancellor John Smith", "title": "Lord Chancellor", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Lord God Almighty", "title": "Lord", "given": "God", "family": "Almighty", "initials": "G. A."}
 {"name": "Lord and of the Universe", "title": "Lord and of the Universe"}
 {"name": "Lord of the Universe", "title": "Lord of the Universe"}

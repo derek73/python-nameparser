@@ -302,10 +302,12 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # Meredith', reporting title-or-name under three orders; 1415 ->
     # 1448 the same day, #913's royal title phrases: ten rows of bare
     # King, Queen, Prince and Princess now reporting title-or-name, and
-    # 'Royal Smith', each under three orders.
-    assert claims == 1448, (
-        f"the field sweep checks {claims} claims, recorded as 1448 on "
-        f"2026-10-27")
+    # 'Royal Smith', each under three orders; 1448 -> 1451 on 2026-10-28,
+    # #913's 'Chancellor Smith', reporting title-or-name under three
+    # orders.
+    assert claims == 1451, (
+        f"the field sweep checks {claims} claims, recorded as 1451 on "
+        f"2026-10-28")
 
 
 #: The kinds that report a fork between two readings of a word, so carry
