@@ -19,6 +19,7 @@ This answers the question with counts instead.
     uv run python tools/name_usage.py In Bay Bin   # non-US given names
     uv run python tools/name_usage.py --fetch-nppes ma do   # credentials too
     uv run python tools/name_usage.py --rank 50 --unlisted  # top credentials
+    uv run python tools/name_usage.py --boxes del --country PH  # by box, country
 
 A suffix that collides with a name is the same question from the other
 side: `ma`, `do` and `ba` are credentials and surnames both, and
@@ -111,6 +112,18 @@ What a number means depends on its source, and the report says so:
   family, comma, given in capitals by a filer's form, so a count there is
   a word typed into a field rather than into a whole name.
   Not a census of anyone: it counts what each source holds.
+  Asked for with --boxes (or --country), a fielded source whose
+  extract keeps every record's boxes and country (orcid-researchers,
+  patentsview-inventors) adds a row "boxes by country": the people whose given box and whose family box write the
+  word, counted over the whole extract rather than the capped corpus,
+  and the --countries N countries with the most of them in each box,
+  each as a share of that country's people, the records stating no
+  country last; --country CC lists a country there too. PatentsView
+  counts the inventors filing under a name, ORCID one holder a record,
+  and a country is where they work or live, of researchers and US-patent
+  inventors, not of a country's population. A spaced word is not
+  looked up there. The first lookup builds each index (2 min 19 s for
+  ORCID's 25M records on 2026-10-28) and caches it beside the corpus.
 
 Both US sources spell names in ASCII letters only, without spaces or
 punctuation (O'Brien is OBRIEN), so a word is folded the same way
@@ -153,7 +166,7 @@ from types import ModuleType
 from typing import TYPE_CHECKING, Any, Literal, TypeVar
 
 if TYPE_CHECKING:  # loaded by path at run time, _local_corpora
-    from local_corpora import Local
+    from local_corpora import BoxIndex, Local
 
 CENSUS_URL = "https://www2.census.gov/topics/genealogy/2010surnames/names.zip"
 CENSUS_FILE = "census2010_surnames.zip"
@@ -264,6 +277,11 @@ class Usage:
     #: (rare) to 13 (extremely common), highest first. Not a count, so
     #: `given` stays None beside it.
     given_bands: list[tuple[str, int]] = field(default_factory=list)
+    #: Per country, the people whose given or family box writes the word
+    #: and the people of that country, a fielded local corpus's box index
+    #: only: (country, people writing it, people in all).
+    given_shares: list[tuple[str, int, int]] = field(default_factory=list)
+    family_shares: list[tuple[str, int, int]] = field(default_factory=list)
     note: str = ""
     #: Where the word can end a name across the family/given boundary,
     #: the ends-with row only.
@@ -1111,6 +1129,71 @@ def local_rows(word: str, locals_: list[tuple[str, Local | None, str]]) -> list[
             for source, local, error in locals_]
 
 
+def load_box_indexes(locals_: list[tuple[str, Local | None, str]]
+                     ) -> list[tuple[str, BoxIndex | None, str]]:
+    """The box index of every fetched local corpus whose extract holds its
+    names' boxes and a country (local_corpora.cached_box_index): (source,
+    the index or None, the error that stopped it), built or read once a
+    run however many words are looked up. A corpus not fetched gets None
+    and no error; one that did not load, its load's error."""
+    module = _local_corpora()
+    found: list[tuple[str, BoxIndex | None, str]] = []
+    for source, local, error in locals_:
+        if module.SOURCES[source].boxes is None:
+            continue
+        if error or local is None:
+            found.append((source, None, error))
+            continue
+        index, failed = _attempt(lambda source=source: module.cached_box_index(source))
+        found.append((source, index, failed))
+    return found
+
+
+def box_usage(word: str, source: str, index: BoxIndex | None, error: str, top: int,
+              wanted: list[str]) -> Usage:
+    """One fielded local corpus's answer by box and country: the people
+    whose given box and whose family box write the word, over the whole
+    extract, and the `top` countries by people writing it in each box,
+    with `wanted` countries always among them and the records stating no
+    country last, each with the people of that country it is a share of."""
+    module = _local_corpora()
+    usage = Usage(f"{source} (boxes by country)")
+    if error:
+        usage.status, usage.note = "failed", error
+        return usage
+    if index is None:
+        usage.status = "not downloaded"
+        usage.note = f"not fetched; {module.fetch_command(source)}"
+        return usage
+    keys = module.words(word)
+    if len(keys) != 1:
+        usage.status = "unrepresentable"
+        usage.note = ("nothing in it is left once periods and punctuation go" if not keys
+                      else "a box index holds single words; a spaced word is not looked up")
+        return usage
+    total = sum(index.totals.values())
+
+    def shares(box: dict[str, dict[str, int]]) -> list[tuple[str, int, int]]:
+        found = box.get(keys[0], {})
+        # Records with no country stated (most of ORCID's) would lead
+        # every list and say nothing of where a name is borne: they go
+        # last, after the countries ranked and those asked for.
+        ranked = sorted((c for c in found if c), key=lambda c: (-found[c], c))[:top]
+        ranked += [c for c in wanted if c not in ranked]
+        ranked += [""] if found.get("") else []
+        return [(c or "--", found.get(c, 0), index.totals.get(c, 0)) for c in ranked]
+
+    usage.given = sum(index.given.get(keys[0], {}).values())
+    usage.family = sum(index.family.get(keys[0], {}).values())
+    usage.given_shares = shares(index.given)
+    usage.family_shares = shares(index.family)
+    usage.note = _join(module.SOURCES[source].credit,
+                       f"counted over the whole extract, {total:,} people in "
+                       f"{sum(1 for c in index.totals if c):,} countries; "
+                       "-- is no country stated")
+    return usage
+
+
 def _guarded_local_usage(word: str, source: str, local: Local | None) -> Usage:
     """local_usage, a corpus failing its own row: the records are read
     first here (building an uncached index, or scanning the names for a
@@ -1810,6 +1893,11 @@ def render(word: str, usages: list[Usage]) -> str:
         if u.given_bands:
             lines.append(f"  {'':<{width}}    given band by country: "
                          + ", ".join(f"{c} {b:X}" for c, b in u.given_bands))
+        for role, shares in (("given", u.given_shares), ("family", u.family_shares)):
+            if shares:
+                lines.append(f"  {'':<{width}}    {role} box by country: " + ", ".join(
+                    f"{c} {n:,} ({_share(n / of) if of else '-'} of {of:,})"
+                    for c, n, of in shares))
         for split in u.splits:
             example = "; ".join(
                 split.family_examples
@@ -1974,6 +2062,15 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--countries", type=_positive, default=5, metavar="N",
                         help="countries to list per role (citizenship, "
                              "or nam_dict's bands)")
+    parser.add_argument("--boxes", action="store_true",
+                        help="add the fielded local corpora's rows by box and "
+                             "country (orcid-researchers, patentsview-inventors), "
+                             "read from an index each builds on first use "
+                             "(minutes) and caches")
+    parser.add_argument("--country", action="append", default=[], metavar="CC",
+                        help="a country to list in every by-country row even "
+                             "outside the top N (an ISO code, repeatable; "
+                             "implies --boxes)")
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--refresh-index", action="store_true",
                         help="fetch the CJK name index again")
@@ -2007,6 +2104,8 @@ def main(argv: list[str] | None = None) -> int:
             lambda: load_index(download=True, refresh=args.refresh_index))
 
     locals_ = load_locals()
+    wanted = list(dict.fromkeys(c.strip().upper() for c in args.country if c.strip()))
+    boxed = load_box_indexes(locals_) if args.boxes or wanted else []
     report = {}
     for word in words:
         census_row, ssa_row = census_usage(word, census), ssa_usage(word, ssa)
@@ -2018,7 +2117,9 @@ def main(argv: list[str] | None = None) -> int:
             if error:
                 row.status, row.note = "failed", error
         usages = [census_row, ssa_row, namdict_row, nppes_row,
-                  *local_rows(word, locals_)]
+                  *local_rows(word, locals_),
+                  *(box_usage(word, source, index, error, args.countries, wanted)
+                    for source, index, error in boxed)]
         if not args.no_wikidata:
             usages.append(wikidata_usage(word, args.countries))
             if is_cjk(word):

@@ -2295,3 +2295,103 @@ def test_a_damaged_local_corpus_fails_its_row_not_the_run(
     out = capsys.readouterr().out
     assert "ctgov-officials (local corpus)" in out and "failed; CorpusDamaged" in out
     assert "US Census 2010 surnames" in out
+
+
+# -- box indexes -----------------------------------------------------------------
+
+def _boxes() -> object:
+    corpora = tool._local_corpora()
+    return corpora.BoxIndex(
+        totals={"ES": 400, "MX": 100, "US": 5000, "": 9000},
+        given={"del": {"MX": 30, "ES": 20, "": 50}},
+        family={"del": {"ES": 60, "MX": 10, "US": 5, "": 80}})
+
+
+def test_a_box_row_counts_each_box_and_gives_each_country_its_share() -> None:
+    row = tool.box_usage("del", "patentsview-inventors", _boxes(), "", 2, [])
+    assert (row.given, row.family) == (100, 155)
+    # Ranked by people writing it, the records stating no country last:
+    # they would lead every list and say nothing of where a name is borne.
+    assert row.given_shares == [("MX", 30, 100), ("ES", 20, 400), ("--", 50, 9000)]
+    assert row.family_shares == [("ES", 60, 400), ("MX", 10, 100), ("--", 80, 9000)]
+    assert "14,500 people in 3 countries" in row.note
+
+
+def test_a_country_asked_for_is_listed_outside_the_top() -> None:
+    row = tool.box_usage("del", "patentsview-inventors", _boxes(), "", 1, ["US", "PH"])
+    assert row.family_shares == [("ES", 60, 400), ("US", 5, 5000), ("PH", 0, 0),
+                                 ("--", 80, 9000)]
+    rendered = tool.render("del", [row])
+    assert "family box by country: ES 60 (15.00% of 400), US 5 (0.10% of 5,000), " \
+           "PH 0 (- of 0), -- 80 (0.89% of 9,000)" in rendered
+
+
+@pytest.mark.parametrize(("word", "says"), [
+    ("de la", "a spaced word is not looked up"),
+    ("..", "nothing in it is left")])
+def test_a_box_row_answers_single_words_only(word: str, says: str) -> None:
+    row = tool.box_usage(word, "patentsview-inventors", _boxes(), "", 5, [])
+    assert row.status == "unrepresentable" and says in row.note
+
+
+def test_a_box_row_not_fetched_or_failed_says_so() -> None:
+    missing = tool.box_usage("del", "patentsview-inventors", None, "", 5, [])
+    assert missing.status == "not downloaded"
+    assert "local_corpora.py fetch patentsview-inventors" in missing.note
+    failed = tool.box_usage("del", "patentsview-inventors", None, "ValueError: gone", 5, [])
+    assert (failed.status, failed.note) == ("failed", "ValueError: gone")
+
+
+def test_only_the_sources_with_boxes_get_a_box_row(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    built: list[str] = []
+    module = tool._local_corpora()
+    def built_for(source: str) -> object:
+        built.append(source)
+        return _boxes()
+
+    monkeypatch.setattr(module, "cached_box_index", built_for)
+    locals_ = [(source, object(), "") for source in sorted(module.SOURCES)]
+    found = tool.load_box_indexes(locals_)  # type: ignore[arg-type]
+    assert [s for s, _, _ in found] == built == sorted(
+        s for s, src in module.SOURCES.items() if src.boxes is not None)
+    assert {"orcid-researchers", "patentsview-inventors"} <= set(built)
+
+
+def test_the_country_option_reaches_the_box_rows(
+        monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    monkeypatch.setattr(tool, "load_locals", lambda: [])
+    monkeypatch.setattr(tool, "load_box_indexes", lambda locals_: [
+        ("patentsview-inventors", _boxes(), "")])
+    assert tool.main(["--no-wikidata", "--countries", "1", "--country", "us", "del"]) == 0
+    out = capsys.readouterr().out
+    assert "patentsview-inventors (boxes by country)" in out
+    assert "family box by country: ES 60 (15.00% of 400), US 5 (0.10% of 5,000)" in out
+
+
+def test_the_box_rows_are_built_only_when_asked_for(
+        monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    # Building one takes minutes and reading one seconds: a plain lookup
+    # must not pay for rows nobody asked for.
+    asked: list[object] = []
+    monkeypatch.setattr(tool, "load_locals", lambda: [])
+    def loaded(locals_: object) -> list[tuple[str, object, str]]:
+        asked.append(1)
+        return [("patentsview-inventors", _boxes(), "")]
+
+    monkeypatch.setattr(tool, "load_box_indexes", loaded)
+    assert tool.main(["--no-wikidata", "del"]) == 0
+    assert asked == [] and "boxes by country" not in capsys.readouterr().out
+    assert tool.main(["--no-wikidata", "--boxes", "del"]) == 0
+    assert asked == [1] and "boxes by country" in capsys.readouterr().out
+
+
+def test_a_country_asked_for_twice_or_blank_is_listed_once(
+        monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    monkeypatch.setattr(tool, "load_locals", lambda: [])
+    monkeypatch.setattr(tool, "load_box_indexes", lambda locals_: [
+        ("patentsview-inventors", _boxes(), "")])
+    assert tool.main(["--no-wikidata", "--countries", "1", "--country", "us",
+                      "--country", "US", "--country", " ", "del"]) == 0
+    line = next(l for l in capsys.readouterr().out.splitlines() if "family box" in l)
+    assert line.count("US 5") == 1 and line.count("--") == 1
