@@ -37,11 +37,13 @@ $NAMEPARSER_TOOLS_CACHE (default ~/.cache/nameparser-tools), and
   name for the same donor; one distinct PSC filed name, with its four
   boxes and nationality; one distinct spelling of a JRC-Names person,
   with its entity and script; one distinct pair of a Nepali
-  candidate's romanized name and the Devanagari one. The counts are
-  counted from here.
+  candidate's romanized name and the Devanagari one; one distinct ORCID
+  record's two boxes joined, with the boxes, the credit name and the
+  country with where it came from. The counts are counted from here.
 - corpus.jsonl -- the distinct names, in the corpus line format
   snapshot.py and compare.py --corpus read: each record's "name", and
-  for nepal-candidates its Devanagari name too (Source.corpus_keys).
+  for nepal-candidates its Devanagari name too, and for
+  orcid-researchers the credit name (Source.corpus_keys).
 - meta.json -- the source's own date for the data, what was fetched, and
   the sha256 of both files, checked on every load: a truncated file
   would otherwise read as a run of false zeros.
@@ -67,8 +69,9 @@ the listing gives). What each source is, what it is the population for
 and what its terms allow is its module's docstring: local_ctgov.py
 (ctgov-officials), local_fec.py (fec-individuals), local_tse.py
 (tse-donors), local_tw.py (tw-donors), local_ukec.py (ukec-individuals),
-local_psc.py (psc-individuals), local_jrc.py (jrc-names) and
-local_nepal.py (nepal-candidates).
+local_psc.py (psc-individuals), local_jrc.py (jrc-names),
+local_nepal.py (nepal-candidates) and local_orcid.py
+(orcid-researchers).
 """
 from __future__ import annotations
 
@@ -108,6 +111,7 @@ import local_tse  # noqa: E402
 from local_fec import check_fec, fetch_fec, renew_fec  # noqa: E402
 from local_jrc import JRC, check_jrc, fetch_jrc, renew_jrc  # noqa: E402
 from local_nepal import check_nepal, fetch_nepal  # noqa: E402
+from local_orcid import ORCID, check_orcid, fetch_orcid, renew_orcid  # noqa: E402
 from local_psc import PSC, check_psc, fetch_psc, renew_psc  # noqa: E402
 from local_tse import check_tse, fetch_tse  # noqa: E402
 from local_tw import fetch_tw  # noqa: E402
@@ -218,6 +222,12 @@ SOURCES: dict[str, Source] = {
                "entities (licensed under the JRC-Names EULA: personal use, no "
                "redistribution or derivative works)",
         unit="spellings", fetch=fetch_jrc, renew=renew_jrc, check=check_jrc),
+    ORCID: Source(
+        credit="ORCID Public Data File 2025, public names and countries "
+               "(CC0 1.0; ORCID asks for credit and respect for the privacy "
+               "of the people in it)",
+        unit="records", fetch=fetch_orcid, renew=renew_orcid, check=check_orcid,
+        corpus_keys=("name", "credit")),
 }
 
 

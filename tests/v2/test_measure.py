@@ -33,12 +33,14 @@ def _fetch(cache: Path, *sources: str) -> None:
 
 def test_the_plan_runs_each_check_for_the_corpora_fetched(_own_cache: Path,
                                                           tmp_path: Path) -> None:
-    _fetch(_own_cache, "ctgov-officials", corpora.PSC, corpora.JRC, "tse-donors")
+    _fetch(_own_cache, "ctgov-officials", corpora.PSC, corpora.JRC, corpora.ORCID,
+           "tse-donors")
     steps = measure.plan(tmp_path, 3)
     assert [s.label for s in steps] == [
         "committed snapshot", "CLDR and GND agreement",
         "local snapshot ctgov-officials", f"local snapshot {corpora.JRC}",
-        f"local snapshot {corpora.PSC}", "local snapshot tse-donors",
+        f"local snapshot {corpora.ORCID}", f"local snapshot {corpora.PSC}",
+        "local snapshot tse-donors", f"agreement {corpora.ORCID}",
         f"agreement {corpora.PSC}", f"alike {corpora.JRC}", "alike tse-donors"]
     for step in steps:
         # Every step through the wrapper: unwrapped, a refusal reads as moves.
@@ -50,7 +52,7 @@ def test_the_plan_runs_each_check_for_the_corpora_fetched(_own_cache: Path,
             assert step.against == measure.AGAINST_RECORD
     assert steps[0].command[-2:] == ["--jobs", "3"]
     assert measure.unmeasured() == sorted(set(corpora.SOURCES) - {
-        "ctgov-officials", corpora.PSC, corpora.JRC, "tse-donors"})
+        "ctgov-officials", corpora.PSC, corpora.JRC, corpora.ORCID, "tse-donors"})
 
 
 def test_the_plan_with_nothing_fetched_runs_the_committed_checks(tmp_path: Path) -> None:

@@ -15,7 +15,8 @@ processes):
    moved, grouped by field;
 2. cldr_agreement.py, the CLDR and GND agreement records;
 3. snapshot.py --local SOURCE --base, for every fetched local corpus;
-4. local_agreement.py psc-individuals --base, where it is fetched;
+4. local_agreement.py SOURCE --base, for every fetched corpus whose
+   records carry their fields (local_agreement.FIELDED);
 5. local_corpora.py alike SOURCE --base, for every fetched corpus
    whose records pair two spellings of one person (ALIKE_SOURCES).
 
@@ -60,6 +61,7 @@ HERE = Path(__file__).resolve().parent
 if str(HERE) not in sys.path:
     sys.path.append(str(HERE))
 import corpus_build  # noqa: E402
+import local_agreement  # noqa: E402
 import local_corpora  # noqa: E402
 
 #: How many of a step's unindented lines the summary keeps: the first
@@ -114,7 +116,7 @@ def plan(base: Path, jobs: int) -> list[Step]:
                    [*py, tool["snapshot"], "--local", s, "--base", str(base), *j])
               for s in sources]
     steps += [Step(f"agreement {s}", [*py, tool["local_agreement"], s, "--base", str(base), *j])
-              for s in sources if s == local_corpora.PSC]
+              for s in sources if s in local_agreement.FIELDED]
     steps += [Step(f"alike {s}", [*py, tool["local_corpora"], "alike", s, "--base",
                                   str(base), *j])
               for s in sources if s in local_corpora.ALIKE_SOURCES]

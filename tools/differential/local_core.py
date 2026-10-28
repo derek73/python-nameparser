@@ -118,17 +118,18 @@ def _refuse_past(rows: Iterable[tuple[int, int, float, str]], why: str) -> None:
             raise ValueError(f"{count:,} of {of:,} {what}: {why}")
 
 
-def _backed_off(exc: Exception, attempt: int, url: str) -> bool:
+def _backed_off(exc: Exception, attempt: int, url: str, retries: int | None = None) -> bool:
     """The retry policy every source shares, after `exc` on try `attempt`
     of `url`: False where the caller should raise it (a 4xx other than
-    429 is the request's fault, and the last attempt's error is the
-    fetch's), else True once a backoff of 2**attempt seconds, or the
-    Retry-After a server asks for up to a minute, has been slept, with a
-    line on stderr."""
+    429 is the request's fault, and the last of `retries` attempts'
+    error is the fetch's; RETRIES unless a caller whose attempt is cheap
+    beside what giving up loses asks for more), else True once a backoff
+    of 2**attempt seconds up to a minute, or the Retry-After a server
+    asks for up to a minute, has been slept, with a line on stderr."""
     if (isinstance(exc, urllib.error.HTTPError) and exc.code < 500
-            and exc.code != 429 or attempt == RETRIES - 1):
+            and exc.code != 429 or attempt == (RETRIES if retries is None else retries) - 1):
         return False
-    wait = 2 ** attempt
+    wait = min(2 ** attempt, 60)
     if isinstance(exc, urllib.error.HTTPError):
         after = exc.headers.get("Retry-After", "") if exc.headers else ""
         if after.isdigit():
