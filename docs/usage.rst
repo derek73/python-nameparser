@@ -1237,10 +1237,7 @@ honor, so each view falls back on what it can answer without one:
   field.
 
 Of the parsed name's own views, ``capitalized()`` is the only one
-handed a vocabulary. (The v1 :class:`~nameparser.parser.HumanName`
-facade's ``initials()`` is handed one too, and asks it whether a
-spliced word is a conjunction or a particle, so a spliced ``de la`` gives
-no initials there; it is not a method of the parsed name.)
+handed a vocabulary.
 
 .. doctest::
 
@@ -1327,4 +1324,4 @@ Where next
 * :doc:`concepts` — how the parser works
 * :doc:`customize` — your own vocabulary and behavior
 * :doc:`locales` — locale packs
-* :doc:`migrate` — coming from 1.x ``HumanName``
+* :doc:`migrate` — coming from 1.x or 2.x ``HumanName``, which 3.0 removes

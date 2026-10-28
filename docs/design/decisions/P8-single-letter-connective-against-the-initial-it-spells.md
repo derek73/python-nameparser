@@ -6,10 +6,11 @@
 - In a name written wholly in one case, a member of `conjunctions_ambiguous` reads as an initial and reports `conjunction-or-initial`, and any other single-letter connective joins where P3's count lets it; the default members are `e`, decided here, and `i`, added with the conjunction itself by decisions/P3's #397 entry as this log foresaw — 2026-09-13 #383 + #479.
 - Both questions are asked over the name's own words, those before a maiden marker's run and outside a delimited clause; the one-case member's `initial` tag is given per token at every name length, three words included, though no role moves there: `john e smith` capitalizes to `John E Smith` and reports `conjunction-or-initial`, where with `e` removed from the subset it gives `John e Smith` and no report — 2026-09-13 #383 + #479.
 - The subset is the knob, with no switch beside it; that a locale pack cannot remove a member is accepted — 2026-09-13 #383 + #479.
-- The facade's `initials()` follows the parse's tags as the core does (the #528 amendment inside the entry) — 2026-09-13 #383 + #479.
 - An orphan `conjunctions_ambiguous` entry is inert and nothing checks it — 2026-09-13 #383/#479, `conjunctions_ambiguous` is deliberately.
 - The `initial` tag is not purely a shape claim: a marked connective in a one-case name carries it (amends decisions/M4) — 2026-09-13 #383/#479, AMENDS.
 - Inside a hyphenated word the connective keeps its lowercase in case repair, decided in decisions/R4 — 2026-09-24 #478.
+
+Not standing: the facade's `initials()` following the parse's tags, gone with the facade — 2026-10-28 #357.
 
 Open: none in this file.
 
@@ -40,3 +41,4 @@ Open: none in this file.
 
 - 2026-09-24 #478 — CROSS-REFERENCE, no change to this rule: case repair's hyphen clause is the one place a marked letter in a name written wholly in one case is read as the connective rather than an initial — `maria silva-e-sousa` repairs to `Maria Silva-e-Sousa` beside the spaced `Maria Silva E Sousa`, and `conjunctions_ambiguous` does not reach the hyphenated form. Decided there, with its cost (`J-E-P DUPONT` → `J-e-P Dupont`): decisions/R4's 2026-09-24 #478 bullet.
 - 2026-10-19 — SPLIT FROM decisions/P3 with the rule. The entries above were written under decisions/P3 while this rule was part of rules/P3, and moved here unchanged but for the pointers the move broke; where one says rules/P3 or P3, it means the rule as it then stood, which held this one, except where it names the three-word carve-out or the own-words span, which rules/P3 still states. What moved and why: decisions/P3's entry of this date.
+- 2026-10-28 #357 — THE FACADE'S `initials()` GOES WITH THE FACADE (decisions/3-0-reevaluations' 2026-10-28 #357, REMOVAL entry): the #528 amendment inside the 2026-09-13 #383 + #479 entry, which made it follow the parse's tags, has no view left to bind; `parse("john e smith").initials()` is 'j. e. s.' as before, and rules/P8 stops naming the facade.

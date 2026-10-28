@@ -198,38 +198,14 @@ Locales
 
 .. autofunction:: nameparser.locales.ja_segmenter
 
-1.x compatibility layer
-------------------------
+Default vocabulary
+------------------
 
-.. note::
-
-   ``HumanName`` and ``nameparser.config``'s ``Constants``,
-   ``CONSTANTS`` and managers are the 1.x API, kept working through
-   2.x and removed in 3.0; since 2.8 constructing them, loading
-   them from a pickle or changing the shared ``CONSTANTS`` emits a
-   ``DeprecationWarning``. New code should use the 2.0 API above; see
-   :doc:`migrate`.
-
-HumanName.parser
-~~~~~~~~~~~~~~~~
-
-.. py:module:: nameparser.parser
-
-.. py:class:: HumanName
-   :noindex:
-
-.. autoclass:: HumanName
-   :members:
-   :special-members: __eq__, __init__
-
-HumanName.config
-~~~~~~~~~~~~~~~~
-
-.. automodule:: nameparser.config
-   :members:
-
-HumanName.config Defaults
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+The data modules in ``nameparser.config``: the word lists
+:meth:`Lexicon.default() <nameparser.Lexicon.default>` is built from,
+and the compiled patterns in ``regexes``. To change a default for your
+parses, configure a :class:`~nameparser.Lexicon` rather than the
+module (:doc:`customize`). Coming from 1.x? See :doc:`migrate`.
 
 .. automodule:: nameparser.config.titles
    :members:
