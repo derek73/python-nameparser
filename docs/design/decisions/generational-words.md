@@ -18,7 +18,7 @@ Elsewhere: the run start that lets any unambiguous suffix word of two or more le
 - pt `júnior`, the accented spelling of `junior`, ships beside it with `same_as = "jr"` and inherits its vetting and its accepted collisions rather than being re-vetted under the two tests above (Junior is a borne surname, 2,146 US Census bearers, where `senior` was refused for 3,864): `José Silva Júnior` reads family 'Silva', suffix 'Júnior', as `José Silva Junior` does — 2026-10-23 (Derek), #843.
 - The Brazilian agnomens `Filho`, `Neto`, `Netto`, `Sobrinho` and their feminines are generation readings of the `agnomen` kind, gated by the count alone (rules/S11): `Pedro Alves Filho` reads family 'Alves', suffix 'Filho', and `Ana Neto` keeps family 'Neto', both reported — 2026-10-25 #752.
 
-Open: #684 (locale packs for `Jiří Dienstbier ml.` and `st.`, the generational words that collide outside their language); #843 (the agnomens' abbreviations FH, FO, NT and SB).
+Open: #684 (locale packs for `Jiří Dienstbier ml.` and `st.`, the generational words that collide outside their language). The agnomens' abbreviations (#843) are decided in decisions/S11 (2026-10-27).
 
 ## Log
 

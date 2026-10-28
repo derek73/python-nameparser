@@ -97,7 +97,7 @@
   "Sir abdul salam"    family-first  →  family=""
   "Sir abdul salam"    family-first-given-last  →  given="abdul salam"
   ```
-- The given part after a family comma reads the words behind a title by its own walk, and where that walk reads them otherwise than the comma-less name does, the join is declined and no title is read — a shape-only numeral (VI to X), or V before a third comma part, stays a name word there, and a title word that is also a particle is attached by P6 (`Berg, abdul Prof. VI` reads middle 'Prof. VI'; `Berg, abdul St.` reads family 'St. Berg'), each as the same name with an ordinary given word reads.
+- The given part after a family comma reads the words behind a title by its own walk, and where that walk reads them otherwise than the comma-less name does, the join is declined and no title is read — V before a third comma part stays a name word there, and a title word that is also a particle is attached by P6 (`Berg, abdul Prof. V, Jr.` reads middle 'Prof. V'; `Berg, abdul St.` reads family 'St. Berg'), each as the same name with an ordinary given word reads.
 
 ---
 **Signal:** neighbor: a bound given-name word and the name word after it, with a word to spare

@@ -613,8 +613,8 @@ class AmbiguityKind(StrEnum):
     #: One name word that is a JOIN carrying title vocabulary reports
     #: this kind too ("John of Bishop"): the unit is read as a name,
     #: and whether the title word inside it is a title is the fork.
-    #: Not the title-vs-given-name collision on a word like "Baron",
-    #: which is a question about the VOCABULARY and is not this kind.
+    #: Not a word listed only as a title ("Baron"), whose collision
+    #: with a name is a question about the VOCABULARY and not this kind.
     #: A title that may also be a given name ("Dean", rules/H9) reports
     #: it too, where it opens the name outside a title phrase and no
     #: comma has marked the given name: "Dean Smith" gives given "Dean".

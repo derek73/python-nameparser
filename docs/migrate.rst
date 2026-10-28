@@ -61,7 +61,8 @@ about either:
   naming it, since 2.4
 * a ``Lexicon``, ``Policy`` or ``Parser`` pickled by 2.5 or earlier
   raises ``ValueError`` on load since 2.6, each having gained a field;
-  re-pickle after upgrading
+  re-pickle after upgrading. A ``Lexicon``, ``Parser`` or locale pack
+  pickled by 2.6 raises the same way since 2.7
 
 A silent change: comparing with ``==``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -669,7 +670,8 @@ grep your fixtures for, with what 1.4 read:
   by its last one (``Her Majesty Queen``, ``Rev Sir``) and added titles
   that address that way (``Prince``, ``Princess``, ``Swami``, ``Guru``
   and others). Other titles still leave the name the family name
-  (``"Dr Harry"``).
+  (``"Dr Harry"``). Since 2.7 a bare ``Prince`` or ``Princess`` is a
+  given name (below); behind a style, as here, it is still a title.
 - ``"Dr King Jr"`` (2.3) — 1.4 read title ``Dr King``, last ``Jr``.
 - ``"John Smith Prof."`` (2.3) — a trailing period-marked title: 1.4
   read last ``Prof.``, middle ``Smith``.
@@ -738,12 +740,6 @@ grep your fixtures for, with what 1.4 read:
   ``Júnior``.
 - ``"John Smith, MD; PhD"`` (2.6) — a semicolon between post-nominals
   reads as a comma: 1.4 read first ``MD;``, last ``John Smith``.
-- ``"Jane Smith, Dr. / MD"`` (2.7) — a hyphen or slash standing alone
-  between post-nominals reads as a comma: 1.4 read first ``/``, last
-  ``Jane Smith``.
-- ``"Marie Bon Durand"`` and ``"Herren Hans"`` (2.7) — ``Bon``, ``Dí``
-  and ``Heer`` are no longer particles, nor ``Herren`` and ``Heren``
-  titles: 1.4 read last ``Bon Durand`` and title ``Herren``.
 - ``"Mr Md Karim Uddin"`` and ``"Wm Smith"`` (2.6) — ``Md`` and ``Wm``
   are the given names they abbreviate: 1.4 read title ``Mr Md`` and
   ``Wm``.
@@ -754,6 +750,46 @@ grep your fixtures for, with what 1.4 read:
   read first ``Dr.``.
 - ``capitalize()`` on ``"j.r.r. tolkien"`` (2.6) — 1.4 wrote ``J.r.r.``;
   repair now capitalizes after a full stop or an ayn.
+- ``"King Curtis"``, ``"Prince Fielder"``, ``"Sultan Khan"`` and
+  ``"Sheikh Ahmed Khan"`` (2.7) — a title that is also a given name is a
+  title only inside a title phrase or behind a style (``"His Majesty
+  King Henry"``), so a bare one opening the name is the first name: 1.4
+  read title ``King``, ``Prince``, ``Sultan`` and ``Sheikh``. The same
+  holds for ``Princess``, ``Sultana``, ``Shaikh``, ``Sheik``, ``Shekh``,
+  ``Shaik``, ``Cheikh``, ``Mahdi``, ``Bard``, ``Buddha``, ``Siddha``,
+  ``Gyani`` and ``Wing``, and for a lone qualifier such as ``Grand``.
+  ``Constants().titles`` still lists these words, so adding one there
+  changes nothing; the 2.0 API's ``Lexicon.default().add(titles={"king"})``
+  makes one a title everywhere.
+- ``"Chief Justice John Roberts"`` and ``"Major General John Smith"``
+  (2.7) — a title phrase is one title: 1.4 read title ``Chief``, first
+  ``Justice``, and first ``Major``, middle ``General John``.
+- ``"Chas. Smith"`` and ``"Ma. Cristina Reyes"`` (2.7) — a given name
+  written short is the first name: 1.4 read title ``Chas.`` and ``Ma.``.
+- ``"John Smith VI MD"`` and ``"Smith, John VI"`` (2.7) — the numerals
+  ``VI`` to ``X`` are suffixes as ``III`` is: 1.4 read last ``VI``,
+  suffix ``MD``, and middle ``VI``.
+- ``"John Smith, MD/PhD"`` and ``"John Smith, Pharm D"`` (2.7) — a
+  credential joined by a hyphen or slash, or split by a space, after a
+  comma is a suffix: 1.4 read first ``MD/PhD``, and first ``Pharm``,
+  middle ``D``, each with last ``John Smith``.
+- ``"John Smith Ph. D. Jones"`` (2.7) — 1.4 read last ``Jones``, suffix
+  ``Ph. D.``.
+- ``"Smith, John MA Jones"`` (2.7) — a listed credential in capitals in
+  a mixed-case name starts the suffix: 1.4 read middle ``Jones``, suffix
+  ``MA``.
+- ``"Pedro Alves Filho"`` and ``"Alexandre Dumas fils"`` (2.7) — the
+  Brazilian agnomens and ``fils`` are suffixes where the name has a word
+  to spare: 1.4 read middle ``Alves`` and ``Dumas``, last ``Filho`` and
+  ``fils``.
+- ``"Andrew Perkins (JD)"`` (2.7) — a bracketed credential its writing
+  settles is a suffix: 1.4 read nickname ``JD``.
+- ``"Jane Smith, Dr. / MD"`` (2.7) — a hyphen or slash standing alone
+  between post-nominals reads as a comma: 1.4 read first ``/``, last
+  ``Jane Smith``.
+- ``"Marie Bon Durand"`` and ``"Herren Hans"`` (2.7) — ``Bon``, ``Dí``
+  and ``Heer`` are no longer particles, nor ``Herren`` and ``Heren``
+  titles: 1.4 read last ``Bon Durand`` and title ``Herren``.
 
 .. doctest::
 
@@ -842,8 +878,6 @@ grep your fixtures for, with what 1.4 read:
     'Júnior'
     >>> HumanName("John Smith, MD; PhD").suffix
     'MD; PhD'
-    >>> HumanName("Jane Smith, Dr. / MD").first
-    'Jane'
     >>> md_karim = HumanName("Mr Md Karim Uddin")
     >>> md_karim.title, md_karim.first
     ('Mr', 'Md')
@@ -857,3 +891,43 @@ grep your fixtures for, with what 1.4 read:
     >>> tolkien.capitalize()
     >>> str(tolkien)
     'J.R.R. Tolkien'
+    >>> [HumanName(n).first for n in ("King Curtis", "Prince Fielder",
+    ...     "Princess Diana", "Sultan Khan", "Sultana Begum",
+    ...     "Sheikh Ahmed Khan", "Shaikh Ahmed Khan", "Sheik Ahmed",
+    ...     "Shekh Ahmed", "Shaik Ahmed", "Cheikh Anta Diop",
+    ...     "Mahdi Karimi", "Bard Larsen", "Buddha Bahadur Tamang",
+    ...     "Siddha Raj Joshi", "Gyani Maya Gurung", "Wing Lau")]
+    ... # doctest: +NORMALIZE_WHITESPACE
+    ['King', 'Prince', 'Princess', 'Sultan', 'Sultana', 'Sheikh', 'Shaikh',
+     'Sheik', 'Shekh', 'Shaik', 'Cheikh', 'Mahdi', 'Bard', 'Buddha',
+     'Siddha', 'Gyani', 'Wing']
+    >>> HumanName("His Majesty King Henry").title
+    'His Majesty King'
+    >>> HumanName("Chief Justice John Roberts").title
+    'Chief Justice'
+    >>> HumanName("Major General John Smith").title
+    'Major General'
+    >>> HumanName("Chas. Smith").first, HumanName("Ma. Cristina Reyes").first
+    ('Chas.', 'Ma.')
+    >>> HumanName("John Smith VI MD").suffix, HumanName("Smith, John VI").suffix
+    ('VI MD', 'VI')
+    >>> HumanName("John Smith, MD/PhD").suffix
+    'MD/PhD'
+    >>> HumanName("John Smith, Pharm D").suffix
+    'Pharm D'
+    >>> HumanName("John Smith Ph. D. Jones").suffix
+    'Ph. D. Jones'
+    >>> HumanName("Smith, John MA Jones").suffix
+    'MA Jones'
+    >>> HumanName("Pedro Alves Filho").suffix
+    'Filho'
+    >>> HumanName("Alexandre Dumas fils").last
+    'Dumas'
+    >>> HumanName("Andrew Perkins (JD)").suffix
+    'JD'
+    >>> HumanName("Jane Smith, Dr. / MD").first
+    'Jane'
+    >>> HumanName("Marie Bon Durand").last
+    'Durand'
+    >>> HumanName("Herren Hans").first
+    'Herren'

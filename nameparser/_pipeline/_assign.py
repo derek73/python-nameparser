@@ -13,7 +13,9 @@ piece of a two-part comma name, and Policy.script_orders (#271, which
 overrides it when every name piece is written wholly in one script, or
 in the Han/Hiragana/Katakana repertoire the #272 kana license shares
 across pieces); token/piece tags; Lexicon only through tags already
-applied by classify (plus the leading-title period rule).
+applied by classify (plus the leading-title period rule), and
+Lexicon.given_name_titles, which an ambiguity's alternative asks for
+rules/P5's given-name-title licence.
 
 Implements rules H2, H4, H5, H6, H7, H8, N3, O4, O5, S10, W4, and P6 after a family comma,
 of docs/design/rules/,

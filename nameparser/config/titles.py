@@ -3,7 +3,9 @@
 # kind. tools/vocab/build.py compiles them into _compiled.py and runs the
 # checks that were import-time asserts here: a title reading with
 # addresses = "given" is what puts a word in GIVEN_NAME_TITLES, so the
-# subset relation holds by construction (decisions/vocabulary-model), as
+# subset relation with the title readings holds by construction -- the
+# readings, not the TITLES constant, since a word that may also be a
+# given name compiles to TITLES_AMBIGUOUS instead (decisions/vocabulary-model), as
 # a salutation reading with after_given = true does for AFTER_GIVEN_TITLES.
 from nameparser.config import _compiled
 
@@ -52,7 +54,8 @@ TITLE_STYLES = _compiled.TITLE_STYLES
 """
 Honorific styles ("hon", "excellency", "highness"): one standing before
 a title that may be a given name makes it part of a title phrase, as in
-"The Hon. Justice Smith". A subset of TITLES.
+"The Hon. Justice Smith". Each is in TITLES, or in TITLES_AMBIGUOUS
+where it may be a given name too ("grace", "sheikh").
 """
 
 TITLE_PHRASES = _compiled.TITLE_PHRASES

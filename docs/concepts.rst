@@ -65,7 +65,9 @@ work. A vocabulary layer runs first and
 claims words for what they *are*, wherever they sit: titles, particles,
 conjunctions, recognized suffixes, and anything set off by nickname or
 maiden delimiters. Titles chain, so ``"Asst. Vice Chancellor"`` is one
-title; particles join forward, so ``de la`` attaches to ``Vega``.
+title, and a title that is also a given name, such as ``Dean``, is
+claimed only inside such a phrase (``"Dean of Students"``); particles
+join forward, so ``de la`` attaches to ``Vega``.
 
 Whatever the vocabulary layer has not claimed is left to a positional
 layer, which assigns purely by where a word sits: the first unclaimed

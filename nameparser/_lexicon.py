@@ -580,12 +580,14 @@ class Lexicon:
     Entries are normalized at construction -- lowercased, NFC-composed,
     edge full stops stripped -- so matching is case-insensitive.
     Vocabulary entries are single words -- a multi-word entry warns at
-    construction and can never match. Two fields are exempt, and they
+    construction and can never match. Three fields are exempt, and they
     differ in HOW they match: ``given_name_titles`` is looked up
     against the run of words the parse has ALREADY read as titles --
-    the whole run space-joined, or that run's last word -- while
+    the whole run space-joined, or that run's last word --
     ``maiden_markers`` is matched by lookahead, longest first, over
-    words that need not be markers on their own (``"z domu"``).
+    words that need not be markers on their own (``"z domu"``), and
+    ``title_phrases`` holds two-word phrases, stored space-joined and
+    matched against two adjacent title words (``"chief justice"``).
     Field docs below show examples, not full
     contents; inspect any field's shipped vocabulary directly, e.g.
     ``Lexicon.default().conjunctions``."""
@@ -768,8 +770,9 @@ class Lexicon:
     title_modifiers: frozenset[str] = frozenset()
     #: Honorific styles ("hon", "excellency", "highness"): one standing
     #: before a word of ``titles_ambiguous`` puts that word in a title
-    #: phrase, as in "The Hon. Justice Smith" (rules/H9). Entries not
-    #: also in ``titles`` are never consulted. Full default list:
+    #: phrase, as in "The Hon. Justice Smith" (rules/H9). Entries in
+    #: neither ``titles`` nor ``titles_ambiguous`` are never consulted.
+    #: Full default list:
     #: :data:`~nameparser.config.titles.TITLE_STYLES`.
     title_styles: frozenset[str] = frozenset()
     #: Two-word title phrases, a title and the title it qualifies

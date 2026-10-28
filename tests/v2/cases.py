@@ -10635,8 +10635,9 @@ CASES: tuple[Case, ...] = (
     # ranks (Lord Peter, Lady Diana) and title or surname for every
     # peer and every wife (Lord Byron, Lady Thatcher), and the set
     # has no way to say "sometimes" -- the reason `venerable` stayed
-    # out. Since #752 phase 2j both are titles only inside a title
-    # phrase (rules/H9), so the prince rows write the style in front.
+    # out. Since #752 phase 2j prince and princess are titles only
+    # inside a title phrase (rules/H9), so these rows write the style
+    # in front.
     Case("title_run_princess_addresses_by_given_name",
          "Her Royal Highness Princess Anne",
          {"title": "Her Royal Highness Princess", "given": "Anne"},

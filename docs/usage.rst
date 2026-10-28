@@ -1023,6 +1023,9 @@ so branching on a kind needs no import:
     >>> [t.text for t in name.ambiguities[0].tokens]
     ['Van']
 
+Most names report none. A non-empty ``ambiguities`` is a useful signal
+for routing a record to human review instead of trusting it silently.
+
 .. _credentials-also-surnames:
 
 Credentials that are also surnames
@@ -1081,8 +1084,24 @@ nothing — periods make ``M.A.`` unambiguously a credential:
     >>> parse("John Smith M.A.").ambiguities
     ()
 
-Most names report none. A non-empty ``ambiguities`` is a useful signal
-for routing a record to human review instead of trusting it silently.
+Titles that are also given names
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A title that is also borne as a given name, such as ``Dean``, ``King``
+or ``Major``, is a title only inside a title phrase (since 2.7), and
+otherwise a name word. Where it opens the name and a phrase could have
+held it, the choice is recorded as ``title-or-name``:
+
+.. doctest::
+
+    >>> parse("Dean of Students Jane Smith").title
+    'Dean of Students'
+    >>> dean_smith = parse("Dean Smith")
+    >>> dean_smith.given, [a.kind.value for a in dean_smith.ambiguities]
+    ('Dean', ['title-or-name'])
+
+:ref:`titles-also-given-names` covers the phrases and how to read such
+a word as a title everywhere.
 
 .. _reading-not-taken:
 
