@@ -36,13 +36,13 @@ compatibility failure.
 # lists the managers, or autodoc's member scan drops them.
 import sys as _sys
 import warnings as _warnings
-import typing as _typing
+from typing import TYPE_CHECKING
 
 import nameparser._config_shim as _config_shim
 from nameparser._config_shim import CONSTANTS as CONSTANTS
 from nameparser._config_shim import Constants as Constants
 
-if _typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from nameparser._config_shim import RegexTupleManager as RegexTupleManager
     from nameparser._config_shim import SetManager as SetManager
     from nameparser._config_shim import TupleManager as TupleManager

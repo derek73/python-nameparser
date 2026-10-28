@@ -7,7 +7,7 @@ and strips edge full stops to a fixed point where ``lc()`` strips ASCII
 periods once.
 """
 import warnings as _warnings
-import typing as _typing
+from typing import TYPE_CHECKING
 
 #: the message ``lc`` warns with; tests and pyproject's filterwarnings
 #: match it
@@ -27,7 +27,7 @@ def _lc(value: str) -> str:
 # config/_deprecated.py's alias_getattr shape: the hooks hidden from the
 # type checker, which would otherwise answer every missing attribute of
 # this module from __getattr__'s return type
-if _typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     lc = _lc
 else:
     def __getattr__(name: str) -> object:

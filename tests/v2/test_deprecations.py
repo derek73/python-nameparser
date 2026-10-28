@@ -281,6 +281,9 @@ def test_dir_lists_the_names_getattr_serves() -> None:
     assert {"SetManager", "TupleManager", "RegexTupleManager",
             "Constants", "CONSTANTS", "titles"} <= set(dir(nameparser.config))
     assert "lc" in dir(nameparser.util)
+    for module in (nameparser.config, nameparser.util):
+        with pytest.raises(AttributeError, match="no attribute 'nope'"):
+            getattr(module, "nope")
 
 
 @pytest.mark.parametrize("module,names", [
