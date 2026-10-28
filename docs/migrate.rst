@@ -58,7 +58,7 @@ that uses it, every time it runs:
 Importing ``nameparser``, ``nameparser.parser`` or ``HumanName`` stays
 quiet, and so does ``from nameparser import *``; the warning comes when
 the code runs. ``from nameparser.config import *`` does warn, once for
-each manager it imports. A ``DeprecationWarning`` is hidden by default outside
+each manager it imports, and so does ``from nameparser.util import *``. A ``DeprecationWarning`` is hidden by default outside
 ``__main__``, so run your tests to see them, or turn them into errors
 to find every site:
 
