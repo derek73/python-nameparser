@@ -247,13 +247,13 @@ What decides a view is the reading each token took, so `Token.reading` comes fir
 
 ORCID's and PatentsView's given box holds the middle names too, so a two-word given box there cannot tell a compound given name from a middle name; PSC's middle box can, though its form steers what goes in it. The last row is a separate question from the patronymic: a name of given names only, written by people who have no family name, which no output field fixes and only a rule could read (an open question below).
 
-**Render defaults** (decisions/3-0-reevaluations' clean slate, proposed). The default `str()` reads every name given-first and joins its words with spaces, so a name read family-first is turned round and a written separator is lost: `str(parse("김민준"))` is `'민준 김'`, `str(parse("王 小明"))` is `'小明 王'` and `str(parse("威廉·莎士比亚"))` is `'威廉 莎士比亚'`. In the committed corpora (2026-10-28, `c8357e74`), 264 names without a comma read family-first, `str()` renders every one differently from the text, and 159 of them are written unspaced; of 43 names holding the U+00B7 interpunct, `str()` drops it from 38. Proposed:
+**Render defaults** (decisions/3-0-reevaluations' clean slate, decided 2026-10-28). The default `str()` reads every name given-first and joins its words with spaces, so a name read family-first is turned round and a written separator is lost: `str(parse("김민준"))` is `'민준 김'`, `str(parse("王 小明"))` is `'小明 王'` and `str(parse("威廉·莎士比亚"))` is `'威廉 莎士比亚'`. In the committed corpora (2026-10-28, `c8357e74`), 264 names without a comma read family-first, `str()` renders every one differently from the text, and 159 of them are written unspaced; of 43 names holding the U+00B7 interpunct, `str()` drops it from 38. Decided:
 
 - `ParsedName` gains `order`, the order the name was read under (its script's or the declared `name_order`, a comma aside), an addition with `ADDED_IN` metadata whose missing value, in a 2.x pickle, renders as today.
 - `str()` and `render()`'s default spec put the family first where `order` does, and two words that stand side by side in the original and in the rendering are joined by what separated them there, nothing, a space, an interpunct or a nakaguro, so `str(parse("김민준"))` is `'김민준'` and `str(parse("威廉·莎士比亚"))` keeps the dot. A name with a comma or written given-first renders as today (`Smith, John` → `'John Smith'`).
 - `initials()` gives nothing for a word in a script with no initials (Han, Hangul, kana, `_policy._NO_INITIALS`), where today it gives the first character with a period (`'王.'`).
 
-These change no signature but change `str()`'s output for every name read family-first, so whether they count as a break of the frozen `ParsedName` is Derek's to decide (item 6 of the entry): no 2.x release can warn about a `str()` result.
+These change no signature but change `str()`'s output for every name read family-first, which no 2.x release can warn about; Derek took them as an improvement for 3.0's release notes rather than a break (item 6 of the entry).
 
 **What changes in the API**, by the 3.0 freeze:
 
@@ -265,7 +265,7 @@ These change no signature but change `str()`'s output for every name read family
 | `ParsedName.order` | addition; old pickles load |
 | new `Policy` fields for rules, and `Locale.languages` (phase 3) | additions |
 | `Role`, `as_dict()`, `comparison_key()`, the seven role properties | unchanged |
-| the default `str()`, `render()` spec and `initials()` output | behavior change, decision needed |
+| the default `str()`, `render()` spec and `initials()` output | behavior change, decided |
 | a `Role` member for any of the four | a break, not proposed |
 
 **Phase 3's Q1 confirmed** (proposed): `Locale.languages` stands as phase 3's draft proposes. Its open dependency was what `Locale` and `Policy` look like once the facade is gone; the 2026-10-28 freeze answers it, both keeping their 2.x shape with additions. With the `[rules]` proposal above, a shipped language pack is a `Locale` whose `languages` choose its vocabulary and whose `policy` carries its rules, so `Locale` needs no third field.
@@ -282,12 +282,12 @@ Each sub-phase is one PR, measured on its own base as phase 2's and phase 3's ar
 | 4b | `generation` and `credentials` (#326) | 4a (neutral) |
 | 4c | `patronymic`: the vocabulary's patronymic particles, and the RU and TR_AZ rules writing the reading | 4a (neutral) |
 | 4d | `surname2`: O6's stable tag | — (neutral) |
-| 4e | the render defaults and `ParsedName.order` | the decision on item 6 |
+| 4e | the render defaults and `ParsedName.order` | — |
 | 4f | `[rules]` compiled into a `Locale`'s policy patch; RU and TR_AZ rebuilt from their files | 3b |
 | 4g | the compound given name, a rule kind (#704) | 4f |
 | 4h | the shape inventory per order (#469), starting with the title between a family and a given name under `FAMILY_FIRST` | — |
 
-**Interleaved with phase 3**: 4a can start beside 3a, its `languages` waiting for 3a's index; 4b to 4d need nothing of phase 3 and unblock its packs, `cs`'s generations (3f) and `pt-BR`'s agnomens (3h) on 4b, `es` and `pt` (3g) on 4d and 4g; 4f lands with or after 3b, since both decide what a shipped `Locale` holds; an `is` pack, which no phase 3 sub-phase lists, needs 3b, 4c and 4f. 4e and 4h stand apart from both. So the order proposed is 3a and 4a, then 4b to 4d with 3b and 3c, then 4f, then the packs with 4g, with 4e as soon as item 6 is decided.
+**Interleaved with phase 3**: 4a can start beside 3a, its `languages` waiting for 3a's index; 4b to 4d need nothing of phase 3 and unblock its packs, `cs`'s generations (3f) and `pt-BR`'s agnomens (3h) on 4b, `es` and `pt` (3g) on 4d and 4g; 4f lands with or after 3b, since both decide what a shipped `Locale` holds; an `is` pack, which no phase 3 sub-phase lists, needs 3b, 4c and 4f. 4e and 4h stand apart from both. So the order proposed is 3a and 4a, then 4b to 4d with 3b and 3c, then 4f, then the packs with 4g, with 4e at any point.
 
 **Left open**, value questions inside the shapes above: the first surname's view and its name; whether `credentials` should leave the honorifics out, CLDR having no third bucket; which ending rules beside Icelandic a pack may name (Hungarian `-né` is a married name, not a patronymic); and the names of given names only (the last table row), whose reading needs a rule that tells a mononym from a given name and a family name, not an output field.
 
