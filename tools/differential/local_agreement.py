@@ -122,6 +122,9 @@ FIELDED = {local_corpora.PSC: Fielded(
      "surname": "family"}, group="nationality"),
            local_corpora.ORCID: Fielded(
     {"given": "given+middle", "family": "family"}, group="country",
+    group_cased=True),
+           local_corpora.PV: Fielded(
+    {"given": "given+middle", "family": "family"}, group="country",
     group_cased=True)}
 #: The fewest records sharing a set-aside title for the report to print
 #: it: a word typed into the title box by this many filers is no one
@@ -300,7 +303,7 @@ def record_path(source: str) -> Path:
 
 def write_record(path: Path, local: local_corpora.Local, entries: dict[str, dict[str, Any]],
                  tree: str) -> None:
-    header = {"raw_sha256": local.meta["sha256"], "scorer": scorer_fingerprint(),
+    header = {"raw_sha256": local.meta["sha256"], "scorer": scorer_fingerprint(local.source),
               "data_date": local.meta["data_date"], "tree": tree,
               "entries": len(entries)}
     lines = [corpus_build.jsonl_line(header)]
@@ -339,7 +342,7 @@ def read_record(path: Path, local: local_corpora.Local) -> dict[str, dict[str, A
     if (count := recorded.get("entries", len(entries))) != len(entries):
         raise SystemExit(f"{path} holds {len(entries):,} entries where its header "
                          f"counts {count!r}. {again}")
-    if recorded.get("scorer") != scorer_fingerprint():
+    if recorded.get("scorer") != scorer_fingerprint(local.source):
         raise SystemExit(f"{path} was recorded by another version of this scorer, "
                          f"so its moves would be the scorer's. {again}")
     return entries
@@ -351,11 +354,12 @@ _SCORER_CODE = ("fold", "_title_words", "unlisted", "read", "_box", "Reading",
                 "key", "score", "_read_chunk")
 
 
-def scorer_fingerprint() -> str:
+def scorer_fingerprint(source: str) -> str:
     """local_corpora.code_fingerprint of the code that turns a parse into
     a record's entry and decides which records get one (_SCORER_CODE, a
     class by its methods), of corpus_build.jsonl_line, which writes an
-    entry's key, and of FIELDED."""
+    entry's key, and of `source`'s own FIELDED entry, so a source added or
+    changed leaves the others' records standing."""
     module = globals()
     functions: list[Callable[..., object]] = []
     for name in _SCORER_CODE:
@@ -364,7 +368,7 @@ def scorer_fingerprint() -> str:
                       if isinstance(target, type) else [target])
     return local_corpora.code_fingerprint(
         [*functions, corpus_build.jsonl_line],
-        [repr(sorted((k, repr(v)) for k, v in FIELDED.items()))])
+        [repr((source, FIELDED[source]))])
 
 
 #: Where --base's kept records live, beside the shared one.
@@ -378,7 +382,8 @@ def kept_path(source: str, local: local_corpora.Local, digest: str) -> Path:
     that matches is a record of this base."""
     py = f"py{sys.version_info[0]}{sys.version_info[1]}"
     return (record_path(source).parent / KEPT
-            / f"{local.meta['sha256'][:12]}-{digest[:16]}-{py}-{scorer_fingerprint()[:12]}.jsonl")
+            / f"{local.meta['sha256'][:12]}-{digest[:16]}-{py}"
+            f"-{scorer_fingerprint(source)[:12]}.jsonl")
 
 
 def _score_base(root: Path, source: str, out: Path, jobs: int = 1) -> None:

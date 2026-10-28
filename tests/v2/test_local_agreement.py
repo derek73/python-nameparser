@@ -266,26 +266,35 @@ def test_a_record_written_by_another_scorer_is_refused(
         monkeypatch: pytest.MonkeyPatch) -> None:
     _corpus(monkeypatch, *_ALL)
     assert agreement.main([_PSC, "--record"]) == 0
-    before = agreement.scorer_fingerprint()
+    before = agreement.scorer_fingerprint(_PSC)
     # Each part of the code that decides a record's entry moves the
     # fingerprint: how a field is compared, which records get an entry,
-    # and how an entry is keyed.
+    # how an entry is keyed, and the source's own boxes; another source's
+    # boxes do not, so adding a source leaves this one's record standing.
+    other = next(s for s in agreement.FIELDED if s != _PSC)
+    with monkeypatch.context() as patch:
+        patch.setitem(agreement.FIELDED, other,
+                      agreement.Fielded({"forename": "given", "surname": "family"}, group="x"))
+        assert agreement.scorer_fingerprint(_PSC) == before, other
+        patch.setitem(agreement.FIELDED, _PSC,
+                      agreement.Fielded({"forename": "given", "surname": "family"}, group="x"))
+        assert agreement.scorer_fingerprint(_PSC) != before, "its own boxes"
     for name, changed in (("fold", lambda text: text.casefold()),
                           ("score", lambda rows, fielded, parser: None),
                           ("key", lambda record: str(record))):
         with monkeypatch.context() as patch:
             patch.setattr(agreement, name, changed)
-            assert agreement.scorer_fingerprint() != before, name
+            assert agreement.scorer_fingerprint(_PSC) != before, name
     with monkeypatch.context() as patch:
         patch.setattr(agreement.corpus_build, "jsonl_line",
                       lambda obj, sort_keys=False: str(obj))
-        assert agreement.scorer_fingerprint() != before, "jsonl_line"
+        assert agreement.scorer_fingerprint(_PSC) != before, "jsonl_line"
     # fold() casefolds, so a Python whose Unicode database moves it reads
     # names differently; its moves would be the database's, not the parser's.
     with monkeypatch.context() as patch:
         patch.setattr(unicodedata, "unidata_version", "0.0.0")
-        assert agreement.scorer_fingerprint() != before, "unidata_version"
-    assert agreement.scorer_fingerprint() == before
+        assert agreement.scorer_fingerprint(_PSC) != before, "unidata_version"
+    assert agreement.scorer_fingerprint(_PSC) == before
     monkeypatch.setattr(agreement, "fold", lambda text: text.casefold())
     with pytest.raises(SystemExit, match="another version of this scorer"):
         agreement.main([_PSC])

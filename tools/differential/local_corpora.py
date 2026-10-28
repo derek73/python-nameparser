@@ -39,7 +39,9 @@ $NAMEPARSER_TOOLS_CACHE (default ~/.cache/nameparser-tools), and
   with its entity and script; one distinct pair of a Nepali
   candidate's romanized name and the Devanagari one; one distinct ORCID
   record's two boxes joined, with the boxes, the credit name and the
-  country with where it came from. The counts are counted from here.
+  country with where it came from; one distinct PatentsView inventor
+  name in a country, its two boxes joined, with the boxes, the country
+  and how many people filed under it. The counts are counted from here.
 - corpus.jsonl -- the distinct names, in the corpus line format
   snapshot.py and compare.py --corpus read: each record's "name", and
   for nepal-candidates its Devanagari name too, and for
@@ -70,8 +72,8 @@ and what its terms allow is its module's docstring: local_ctgov.py
 (ctgov-officials), local_fec.py (fec-individuals), local_tse.py
 (tse-donors), local_tw.py (tw-donors), local_ukec.py (ukec-individuals),
 local_psc.py (psc-individuals), local_jrc.py (jrc-names),
-local_nepal.py (nepal-candidates) and local_orcid.py
-(orcid-researchers).
+local_nepal.py (nepal-candidates), local_orcid.py
+(orcid-researchers) and local_patentsview.py (patentsview-inventors).
 """
 from __future__ import annotations
 
@@ -112,6 +114,7 @@ from local_fec import check_fec, fetch_fec, renew_fec  # noqa: E402
 from local_jrc import JRC, check_jrc, fetch_jrc, renew_jrc  # noqa: E402
 from local_nepal import check_nepal, fetch_nepal  # noqa: E402
 from local_orcid import ORCID, check_orcid, fetch_orcid, renew_orcid  # noqa: E402
+from local_patentsview import PV, check_pv, fetch_pv, renew_pv  # noqa: E402
 from local_psc import PSC, check_psc, fetch_psc, renew_psc  # noqa: E402
 from local_tse import check_tse, fetch_tse  # noqa: E402
 from local_tw import fetch_tw  # noqa: E402
@@ -228,6 +231,10 @@ SOURCES: dict[str, Source] = {
                "of the people in it)",
         unit="records", fetch=fetch_orcid, renew=renew_orcid, check=check_orcid,
         corpus_keys=("name", "credit")),
+    PV: Source(
+        credit="PatentsView granted-patent inventors, 1976-2025, from the USPTO "
+               "Open Data Portal (CC BY 4.0; credit PatentsView)",
+        unit="names", fetch=fetch_pv, renew=renew_pv, check=check_pv),
 }
 
 
