@@ -751,18 +751,23 @@ MANAGER_DEPRECATIONS = {
 }
 
 
-def _quiet_setstate(new: object, state: dict[str, object],
+def _quiet_setstate(new: object, state: dict[str, object], base: type,
                     message: str) -> None:
     """Restore a copy through its class's own ``__setstate__``.
 
     ``copy.copy``/``copy.deepcopy`` reconstruct through ``__setstate__``,
     which since 2.8 warns that a pickle was loaded, and a copy is no
-    load. Calling the class's own hook rather than a private restore
-    keeps a subclass's ``__setstate__`` in the path, as it was before
-    2.8; only the load warning is filtered, by message. A copy of the
-    shared ``CONSTANTS`` stays quiet with it, as before: a ``HumanName``
-    built on the copy still warns.
+    load. ``base``'s own hook restores privately; a subclass's override
+    is called, as it was before 2.8, with only the load warning
+    filtered, by message. The filter is taken only then: entering
+    ``catch_warnings`` clears every module's warnings registry, so on
+    every copy it would re-show warnings the caller's filters show once
+    per line. A copy of the shared ``CONSTANTS`` stays quiet, as before:
+    a ``HumanName`` built on the copy still warns.
     """
+    if type(new).__setstate__ is base.__setstate__:  # type: ignore[attr-defined]
+        new._restore(state)  # type: ignore[attr-defined]
+        return
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", message=re.escape(message),
                                 category=DeprecationWarning)
@@ -1082,14 +1087,15 @@ class Constants:
 
     def __copy__(self) -> Constants:
         new = object.__new__(type(self))
-        _quiet_setstate(new, self.__getstate__(), CONSTANTS_PICKLE_DEPRECATION)
+        _quiet_setstate(new, self.__getstate__(), Constants,
+                        CONSTANTS_PICKLE_DEPRECATION)
         return new
 
     def __deepcopy__(self, memo: dict[int, object]) -> Constants:
         new = object.__new__(type(self))
         memo[id(self)] = new
         _quiet_setstate(new, copy.deepcopy(self.__getstate__(), memo),
-                        CONSTANTS_PICKLE_DEPRECATION)
+                        Constants, CONSTANTS_PICKLE_DEPRECATION)
         return new
 
     def _copy(self) -> Constants:

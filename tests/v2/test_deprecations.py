@@ -298,31 +298,94 @@ def test_a_star_import_warns_for_each_removed_name_it_binds(
     assert all(w.category is DeprecationWarning for w in caught)
 
 
+_REMOVED = {"nameparser.config": {"SetManager", "TupleManager",
+                                  "RegexTupleManager"},
+            "nameparser.util": {"lc"}}
+
+
+def _removed_reads(path: Path, package: Path) -> list[str]:
+    """Each read of a removed name in one module: ``from`` imports
+    (relative ones resolved, star imports included), and attribute or
+    ``getattr`` reads through a name bound to either module."""
+    tree = ast.parse(path.read_text(encoding="utf-8"))
+    parts = ["nameparser", *path.relative_to(package).with_suffix("").parts]
+    here = parts[:-1]                        # the package a module sits in
+    aliases: dict[str, str] = {}             # local name -> module
+    hits: list[str] = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for a in node.names:
+                if a.name in _REMOVED:
+                    aliases[a.asname or a.name] = a.name
+        elif isinstance(node, ast.ImportFrom):
+            base = node.module or ""
+            if node.level:
+                anchor = here[:len(here) - node.level + 1]
+                base = ".".join([*anchor, *([base] if base else [])])
+            for a in node.names:
+                full = f"{base}.{a.name}"
+                if full in _REMOVED:         # from nameparser import util
+                    aliases[a.asname or a.name] = full
+                elif base in _REMOVED and (a.name == "*"
+                                           or a.name in _REMOVED[base]):
+                    hits.append(f"{node.lineno} from {base} import {a.name}")
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Attribute):
+            owner, name = ast.unparse(node.value), node.attr
+        elif (isinstance(node, ast.Call) and ast.unparse(node.func) == "getattr"
+              and len(node.args) >= 2 and isinstance(node.args[1], ast.Constant)):
+            owner, name = ast.unparse(node.args[0]), str(node.args[1].value)
+        else:
+            continue
+        module = aliases.get(owner, owner)
+        if name in _REMOVED.get(module, ()):
+            hits.append(f"{node.lineno} {module}.{name}")
+    return hits
+
+
 def test_no_internal_code_reads_a_removed_name() -> None:
     # an internal read would warn on the library's behalf, at a line
     # inside nameparser the caller cannot edit; the library reads _lc
     # and _config_shim directly. Read from the AST, so a docstring
     # naming one is not a read
-    removed = {"nameparser.config": {"SetManager", "TupleManager",
-                                     "RegexTupleManager"},
-               "nameparser.util": {"lc"}}
     package = Path(nameparser.__file__).parent
-    offenders, scanned = [], 0
-    for path in package.rglob("*.py"):
-        scanned += 1
-        for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
-            if isinstance(node, ast.ImportFrom) and node.module in removed:
-                hits = {a.name for a in node.names} & removed[node.module]
-            elif isinstance(node, ast.Attribute):
-                hits = {node.attr} & set().union(*removed.values())
-                hits = {h for h in hits
-                        if ast.unparse(node.value).endswith(("config", "util"))}
-            else:
-                continue
-            offenders += [f"{path.relative_to(package)}:{node.lineno} {h}"
-                          for h in hits]
-    assert scanned > 20                      # the scan saw the package
+    modules = sorted(package.rglob("*.py"))
+    assert len(modules) > 20                 # the scan saw the package
+    offenders = [f"{m.relative_to(package)}:{hit}" for m in modules
+                 for hit in _removed_reads(m, package)]
     assert offenders == []
+
+
+@pytest.mark.parametrize("source", [
+    "from nameparser.util import lc",
+    "from .util import lc",
+    "from nameparser.config import *",
+    "import nameparser.util as u\nu.lc",
+    "from nameparser import config as c\nc.SetManager",
+    "import nameparser.config\ngetattr(nameparser.config, 'TupleManager')",
+])
+def test_the_internal_read_guard_sees_each_shape(source: str,
+                                                 tmp_path: Path) -> None:
+    package = tmp_path / "nameparser"
+    package.mkdir()
+    module = package / "probe.py"
+    module.write_text(source + "\n", encoding="utf-8")
+    assert _removed_reads(module, package)
+    module.write_text("self.config.SetManager\n", encoding="utf-8")
+    assert not _removed_reads(module, package)
+
+
+def test_a_copy_leaves_the_once_per_line_registry_alone() -> None:
+    # catch_warnings clears every module's registry, so a copy that
+    # entered it would re-show the caller's once-per-line warnings
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        hn = HumanName("John Smith", constants=Constants())
+    with _record() as caught:
+        warnings.simplefilter("default")
+        for _ in range(3):
+            HumanName("Jane Doe"); copy.copy(hn); copy.deepcopy(hn)  # noqa: E702
+    assert len(caught) == 1
 
 
 @pytest.mark.parametrize("code", [

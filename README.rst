@@ -26,7 +26,8 @@ list, and CJK honorifics are recognized. See `East Asian names
 ⚠️ **HumanName is deprecated, and 3.0 removes it.** From 2.8, the last
 2.x feature release, the 1.x compatibility layer — ``HumanName``,
 ``Constants`` and the shared ``CONSTANTS`` — emits a
-``DeprecationWarning`` where your code builds or changes it. It keeps working
+``DeprecationWarning`` where your code constructs it, loads it from a
+pickle, or changes the shared ``CONSTANTS``. It keeps working
 through 2.x; ``parse()`` is the replacement, and `Coming from 1.x`_
 below says where to start. Please `open an
 issue <https://github.com/derek73/python-nameparser/issues>`__ for anything

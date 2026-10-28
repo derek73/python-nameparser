@@ -25,7 +25,7 @@ Deprecated in 2.8
 
 nameparser 2.8 is the last 2.x feature release. From 2.8 on, the uses
 3.0 removes emit a ``DeprecationWarning`` at the line in your code that
-makes them, every time it runs:
+makes them, on every call rather than once per process:
 
 .. list-table::
    :header-rows: 1
@@ -59,8 +59,8 @@ Importing ``nameparser``, ``nameparser.parser`` or ``HumanName`` stays
 quiet, and so does ``from nameparser import *``; the warning comes when
 the code runs. ``from nameparser.config import *`` does warn, once for
 each manager it imports, and so does ``from nameparser.util import *``. One use does not warn: *reading* the shared ``CONSTANTS``
-(``"dr" in CONSTANTS.titles``), which stays quiet so that importing
-``nameparser`` does. Search your code for ``CONSTANTS`` as well. A
+(``"dr" in CONSTANTS.titles``, or ``copy.copy(CONSTANTS)``), which
+stays quiet so that importing ``nameparser`` does. Search your code for ``CONSTANTS`` as well. A
 ``DeprecationWarning`` is hidden by default outside ``__main__``, so
 run your tests to see the rest, or turn them into errors to find each
 site:

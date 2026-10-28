@@ -921,14 +921,15 @@ class HumanName:
         # copy.copy/deepcopy go through the state hooks, a subclass's
         # included, and a copy is no pickle load (_quiet_setstate)
         new = object.__new__(type(self))
-        _quiet_setstate(new, self.__getstate__(), HUMANNAME_PICKLE_DEPRECATION)
+        _quiet_setstate(new, self.__getstate__(), HumanName,
+                        HUMANNAME_PICKLE_DEPRECATION)
         return new
 
     def __deepcopy__(self, memo: dict[int, object]) -> HumanName:
         new = object.__new__(type(self))
         memo[id(self)] = new
         _quiet_setstate(new, copy.deepcopy(self.__getstate__(), memo),
-                        HUMANNAME_PICKLE_DEPRECATION)
+                        HumanName, HUMANNAME_PICKLE_DEPRECATION)
         return new
 
     def _restore(self, state: dict[str, Any]) -> None:
