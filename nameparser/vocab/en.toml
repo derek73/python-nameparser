@@ -119,7 +119,7 @@ academic = { expands = "the address of a nurse, 'Nurse Smith'" }
 
 [[word]]
 text = "pro"
-academic = { issue = 9, expands = "Pro Se Law Clerk", note = "academic rather than modifier since 2026-10-25 (#752): a part after a comma written 'Pro' is the person's role, which decision 10's modifier rule would read out of the title (decisions/vocabulary-model)" }
+academic = { issue = 9, attaches = ["chancellor"], expands = "Pro Se Law Clerk", note = "attaches: Pro Chancellor (rules/H9, #913); academic rather than modifier since 2026-10-25 (#752): a part after a comma written 'Pro' is the person's role, which decision 10's modifier rule would read out of the title (decisions/vocabulary-model)" }
 
 [[word]]
 text = "abbess"
@@ -403,11 +403,11 @@ nobility = { gender = "m", expands = "the rank the post-nominal knt names", issu
 
 [[word]]
 text = "lady"
-nobility = { gender = "f", note = "stays out of GIVEN_NAME_TITLES, decided: the given-name form ('Lady Diana') is a courtesy style for the daughters of the senior ranks alone, while every wife takes the title or surname ('Lady Thatcher'), and the text does not carry the rank (#519)" }
+nobility = { gender = "f", attaches = ["justice"], note = "attaches: Lady Justice (rules/H9, #913); stays out of GIVEN_NAME_TITLES, decided: the given-name form ('Lady Diana') is a courtesy style for the daughters of the senior ranks alone, while every wife takes the title or surname ('Lady Thatcher'), and the text does not carry the rank (#519)" }
 
 [[word]]
 text = "lord"
-nobility = { gender = "m", note = "stays out of GIVEN_NAME_TITLES, decided: the given-name form ('Lord Peter') is a courtesy style for the children of the senior ranks alone, while every peer takes the title or surname ('Lord Byron'), and the text does not carry the rank (#519)" }
+nobility = { gender = "m", attaches = ["chancellor", "justice"], note = "attaches: Lord Chancellor, Lord Justice (rules/H9, #913); stays out of GIVEN_NAME_TITLES, decided: the given-name form ('Lord Peter') is a courtesy style for the children of the senior ranks alone, while every peer takes the title or surname ('Lord Byron'), and the text does not carry the rank (#519)" }
 
 [[word]]
 text = "marchess"
@@ -939,7 +939,9 @@ office = { same_as = "chair" }
 
 [[word]]
 text = "chancellor"
-office = {}
+office = { issue = 913, decided = 2026-10-28, note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'Lord Chancellor Smith' and 'Vice Chancellor Jones' read the title, 'Chancellor Smith' the given name" }
+given = { us_ssa = 2648, wikidata = 13, as_of = 2026-10-28, note = "US SSA: male births 2,643, female 5; Wikidata is a lower bound (United States 3)" }
+family = { us_census_2010 = 4147, wikidata = 77, as_of = 2026-10-28, note = "US Census rank 7,974; Wikidata United Kingdom 11, United States 8" }
 
 [[word]]
 text = "chargé"
@@ -1005,7 +1007,7 @@ office = {}
 
 [[word]]
 text = "deputy"
-office = {}
+office = { attaches = ["office"], issue = 913, note = "attaches: Deputy Chancellor, Deputy Judge (rules/H9), as chief does" }
 
 [[word]]
 text = "dpty"
@@ -1041,7 +1043,7 @@ office = {}
 
 [[word]]
 text = "judge"
-office = {}
+office = { issue = 913, note = "kept a title, decided 2026-10-28 (decisions/H9): US SSA 3,826 births (all male), Census 10,453 (rank 3,414), Wikidata 7 given and 133 family, but in PSC 0 filers put it in the forename box and 0 in the title box, and in FEC 13 judges file it before their given name (FAMILY, JUDGE GIVEN, or alone after the comma) and would lose the title, against 2 fixes in all the local corpora (one ORCID, one PSC forename). The given count stands here rather than as a given reading, which would make it a title only inside a title phrase (rules/H9)" }
 
 [[word]]
 text = "justice"
@@ -1055,7 +1057,7 @@ office = {}
 
 [[word]]
 text = "magistrate"
-office = {}
+office = { attaches = ["judge"], issue = 913, note = "attaches: Magistrate Judge, the US federal office (rules/H9)" }
 
 [[word]]
 text = "mag"

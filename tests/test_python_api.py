@@ -126,15 +126,15 @@ class HumanNamePythonTests(HumanNameTestBase):
         """
         # Passing None as the second argument gives this name its own Constants.
         hn = HumanName("Smith, Dr. John", Constants())
-        hn.C.titles.add('chancellor')
+        hn.C.titles.add('bursar')
         hn.parse_full_name()
 
         # Safe: round-tripping a HumanName the test just built, not untrusted data.
         restored = pickle.loads(pickle.dumps(hn))
 
-        self.assertIn('chancellor', restored.C.titles)
-        restored.full_name = "Chancellor Jane Smith"
-        self.assertEqual(restored.title, "Chancellor")
+        self.assertIn('bursar', restored.C.titles)
+        restored.full_name = "Bursar Jane Smith"
+        self.assertEqual(restored.title, "Bursar")
 
     def test_name_instance_deepcopy(self) -> None:
         """copy.deepcopy of a HumanName must round-trip.
@@ -153,12 +153,12 @@ class HumanNamePythonTests(HumanNameTestBase):
     def test_name_instance_deepcopy_isolates_instance_config(self) -> None:
         """A deep-copied HumanName with its own config must be independent."""
         hn = HumanName("Smith, Dr. John", Constants())
-        hn.C.titles.add('chancellor')
+        hn.C.titles.add('bursar')
 
         dup = copy.deepcopy(hn)
         dup.C.titles.add('marker')
 
-        self.assertIn('chancellor', dup.C.titles)
+        self.assertIn('bursar', dup.C.titles)
         self.assertNotIn('marker', hn.C.titles)
 
     def test_pickle_default_name_preserves_singleton_identity(self) -> None:
@@ -184,7 +184,7 @@ class HumanNamePythonTests(HumanNameTestBase):
     def test_pickle_instance_config_name_preserves_own_config(self) -> None:
         """A HumanName with its own Constants must not be collapsed onto CONSTANTS after pickle."""
         hn = HumanName("Smith, Dr. John", Constants())
-        hn.C.titles.add('chancellor')
+        hn.C.titles.add('bursar')
         hn.parse_full_name()
         self.assertTrue(hn.has_own_config)
         self.assertIsNot(hn.C, CONSTANTS)
@@ -194,7 +194,7 @@ class HumanNamePythonTests(HumanNameTestBase):
 
         self.assertTrue(restored.has_own_config)
         self.assertIsNot(restored.C, CONSTANTS)
-        self.assertIn('chancellor', restored.C.titles)
+        self.assertIn('bursar', restored.C.titles)
 
     def test_shallow_copy_default_name_preserves_singleton_identity(self) -> None:
         """copy.copy of a default HumanName shares the CONSTANTS reference without hooks."""
