@@ -4,7 +4,7 @@ Release Log
 
     **nameparser 2.7** is the first release working towards the new language and vocabulary model described in the `vocabulary model RFC <https://github.com/derek73/python-nameparser/blob/master/docs/design/vocabulary-model-rfc.md>`__. It introduces more nuanced handling of titles and particles, adjusts the default vocabulary to better align with example name corpora, and surfaces alternative name readings in the published API. Highlights:
 
-    - **Titles that are also given names read as titles only inside a title phrase.** ``Chief Justice John Roberts`` gives title ``Chief Justice``, given ``John``, where 2.6 gave title ``Chief``, given ``Justice``; outside a phrase the word is a name, so ``Dean Smith`` gives given ``Dean``.
+    - **Titles that are also given names read as titles only inside a title phrase.** ``Chief Justice John Roberts`` gives title ``Chief Justice``, given ``John``, where 2.6 gave title ``Chief``, given ``Justice``; outside a phrase the word is a name, so ``Justice Smith`` gives given ``Justice``.
     - **Credentials joined by a hyphen or a slash, or split by a space, read as one credential.** ``John Smith, MD/PhD`` gives suffix ``MD/PhD``, where 2.6 gave given ``MD/PhD``, family ``John Smith``.
     - **Given names written short read as given names.** ``Chas. Smith`` and ``Ma. Cristina Reyes`` give the given name ``Chas.`` and ``Ma.``, where 2.6 read both as titles.
     - **An ambiguity report names the reading the parse did not take.** ``Ambiguity.alternative`` says what the word would have been and why.

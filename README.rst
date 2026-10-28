@@ -12,7 +12,7 @@ the new language and vocabulary model described in the `vocabulary
 model RFC <https://github.com/derek73/python-nameparser/blob/master/docs/design/vocabulary-model-rfc.md>`__.
 It introduces more nuanced handling of titles and particles
 (``Chief Justice John Roberts`` reads the title ``Chief Justice``,
-while ``Dean Smith`` keeps the given name ``Dean``), adjusts the
+while ``Justice Smith`` keeps the given name ``Justice``), adjusts the
 default vocabulary to better align with example name corpora, and
 surfaces alternative name readings in the published API. The `release log
 <https://nameparser.readthedocs.io/en/latest/release_log.html>`__ has
