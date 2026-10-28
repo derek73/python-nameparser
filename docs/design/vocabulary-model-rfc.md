@@ -26,7 +26,7 @@ Four phases, in a fixed order:
 |---|---|---|---|
 | 1 | The per-word TOML format, compiled to today's sets | no | shipped in 2.6 (#737, #744); #749–#751 gave the words in `und.toml` their languages, leaving two particles of unrecorded origin |
 | 2 | Ambiguity derived from clashing readings; the ambiguity gate extended to every reading kind | yes, the first phase that does | #752, design agreed 2026-10-23; 2a, the two name-clash markers derived, landed without moving a parse (decisions/vocabulary-model, 2026-10-25) |
-| 3 | Language packs that prefer or restrict their language | yes, for callers who choose one | #753, needs 1 and 2 |
+| 3 | Language packs that prefer or restrict their language | yes, for callers who choose one | #753, design proposed 2026-10-27, not agreed |
 | 4 | Order and shape; the rules a pack can choose; the output model | yes | #754, mostly independent of 2 and 3 |
 
 Two commitments hold through all four. **The default loads every language and keeps working for names of any language, as today**; choosing a language narrows it (decision 5 in decisions/vocabulary-model). And **languages own vocabulary and defaults, the core owns structure**: a pack configures rules the core implements, and never ships code (mechanisms.md#LOCALE-PACKS-PURE-DATA).
@@ -164,7 +164,9 @@ Each sub-phase is one PR, measured on its own base: the committed snapshot read 
 
 ## Phase 3: packs that prefer or restrict
 
-A pack is a choice of languages. Two strengths (decision 6):
+Status: **proposed, not agreed** (2026-10-27, #753). The record is decisions/vocabulary-model's 2026-10-27 #753 entry, whose items are each marked proposed until Derek decides them; this section is the proposal those items describe. Phase 3 ships in 2.x, opt-in: a caller who chooses no language parses exactly as before, and nothing in this phase moves the default's parses.
+
+The semantics were fixed in 2026-10-15/16, and phase 3 keeps them. A pack is a choice of languages, in two strengths (decision 6):
 
 - **prefer** settles a clash where the chosen language has a vocabulary reading: the word keeps that language's readings and loses other languages' vocabulary readings. Under Portuguese, `do` is a particle only.
 - **strict** also drops other languages' name readings. It is for single-origin data.
@@ -176,11 +178,92 @@ Consequences that follow from the definitions:
 - **Order does not matter.** Prefer and strict are sets of languages, so combining packs is commutative.
 - **Two chosen languages that each hold a vocabulary reading both keep it**, and the word stays gated, as in the default.
 - **Non-Latin vocabulary stays on under any choice**, because it selects itself by script (`씨`, `さん`, Cyrillic titles). Almost every clash between languages is within one script: `do`, `e`, `van` are all Latin.
-- **Whether a word needs a pack depends on where its clash is.** `do` clashes between languages (a Portuguese particle, an English credential, a Vietnamese surname), so a pack settles it. `fils` clashes within French, a generation word and a French surname, so no pack settles it and the phase 2 gate does the work. This reverses the premise of #684, which proposes a French pack to read `fils` as a suffix: under decisions 6 and 15, a French pack keeps both of French's readings, and `Marie Fils` would still need the gate to keep her family name.
+- **Whether a word needs a pack depends on where its clash is.** `do` clashes between languages, so a pack settles it. `fils` clashes within French, a generation word and a French surname, so no pack settles it and the phase 2 gate does the work, reversing the premise of #684.
+- **A pack can outrank a shape rule, not only a vocabulary reading** (decision 20). Shape rules emit readings into the pool rather than final answers, so a pack's preference can act on them; phase 2k applied this in the default, a declared `given` reading of `Ma.` outranking the leading-abbreviation title.
 
-**A pack can outrank a shape rule, not only a vocabulary reading** (decision 20). Shape rules (period abbreviation, initials, capitals) emit readings into the same pool as vocabulary from phase 2 on, rather than final answers, so a pack's preference can act on them. Phase 2 is to settle one such clash in the default, since every language loads there: Filipino `Ma.`, which abbreviates María, is to get a `given` reading in `fil.toml` that outranks the leading period-abbreviation rule (`Ma. Cristina Santos Reyes`, title `Ma.` until phase 2k gave it that reading on 2026-10-26); a pack's part is to prefer such readings where the default leaves both standing.
+What the inventory of the kept-out words found (#753's comments of 2026-10-27, 411 candidate readings) changes the emphasis rather than the semantics. Only 9 words clash between languages (`de`, `do`, `i`, `st`, `sr`, `ra`, `mc`, `vd`, `abd`), so prefer alone settles little; most pack candidates are readings the default leaves out entirely, which a pack turns ON. Phase 3's main work is therefore turning readings on, with prefer and strict settling what turning them on collides with.
 
-**What moves in phase 3:** the locale packs' vocabulary, still in Python today, becomes language files; `default = false`, given its meaning in phase 2, marks the readings a pack turns on, for words too risky even gated; and the reserved names `prefer` and `strict` gain their meaning. How a tag filters (does `pt` match `pt-BR`?) and how a third-party language file joins the pool and the snapshot are open under #753.
+### One mechanism: a choice selects the pool
+
+Everything a pack does is one operation: **the chosen languages select which readings of the pool are compiled**, by the same compiler that builds the default. The default is that compiler run with every language and no choice. Nothing is written per pack beyond the readings in its language's file, and every effect below is derived from the file a reading sits in:
+
+| Effect | Which readings | Example |
+|---|---|---|
+| turn on | a chosen language's `default = false` readings join the pool | cs `ml` (*mladší*, once 3c makes it a reading): `Jan Novák ml.` reads family `ml.` today; under `cs`, suffix `ml.` |
+| prefer | on a word where a chosen language holds a vocabulary reading, other languages' vocabulary readings leave; `mul.toml`'s readings never do, being every language's | `Haddad, Abd` reads suffix `Abd` and no given name today; under `ar` the bound given reading stays and the en credential leaves; cs `st`: `Jiří Dienstbier st.` reads title `st.` today (rules/H5), and under `cs` its generation reading joins and the Saint readings leave, suffix `st.` |
+| prefer, against a shape | a clash a property records with a SHAPE reading is settled for the chosen language's own reading, by decision 20: `may_be_initial` does not hold on it | `ANA SILVA E SOUZA` reads middle `SILVA E` with a conjunction-or-initial report today; under `pt` the conjunction holds, family `SILVA E SOUZA` |
+| strict | other languages' name readings leave, and with them the markers they derive | an `nl` `in` turned on, with Korean In declared as a `given` reading, is a particle that may be given under `nl` and never-given under strict `nl` |
+
+The third row answers decisions/3-0-reevaluations' "a pack cannot remove `e`": `may_be_initial` records a clash between a conjunction and the initial a letter spells, and the initial is a shape reading, so a pack that prefers Portuguese settles it as decision 20 says a pack may. No property is toggled per pack, and no reading is written twice.
+
+Properties ride on their readings, so a choice that keeps a reading keeps its properties. The one shape this cannot express is a property a language's own reading should take only under its pack: Swedish `fru` and Icelandic `frú` as after-given salutations (rules/H8), refused in the default because Fru is also a Cameroonian surname. Two readings need it, so the proposal builds nothing for them and leaves them open.
+
+### Name readings in a pack
+
+`default = false` is allowed on `given` and `family` readings. A name reading turned on by a pack derives the markers any name reading derives, so it turns the gate on and never settles anything: decision 15 holds unchanged inside a pack. Measured on nepal-candidates (2026-10-27, `cfe8bf92`), comparing each candidate's Devanagari and romanized spellings by the role of every word:
+
+| Reading turned on | Effect | Pairs reading alike, of 126,981 |
+|---|---|---|
+| none (the default) | | 123,440 |
+| `given` on `श्री`, `guru` and `गुरु` | each becomes a title only inside a title phrase (rules/H9), so it reads given at the head: `श्री कृष्ण श्रेष्ठ` → given `श्री` | 123,636 (198 fixed, 2 broken) |
+| and `family` on `dc` | the family reading only makes the credential ambiguous: `Ram Bahadur DC` still reads suffix `DC`, the count leaving it one | 123,639 (3 more fixed) |
+| `dc`'s credential dropped, as settling would do | `Ram Bahadur DC` → family `DC` | 123,658 (19 more fixed) |
+
+The 2 broken are pairs whose romanization opens with a listed title, which reads the `श्री` as a salutation (#870 counted `Mr` written for it twice). So the gate route delivers the `श्री` and `guru` fix without amending decision 15, and the 19 `dc` pairs it leaves are the price of keeping it. `bk`, `kc`, `gc` and `bc` need nothing: they read as the family in every shape tried (`Ram Bahadur BK`, `Ram Bahadur Kc`, `BK, Ram Bahadur`, `KC Sita` under `FAMILY_FIRST`), and decision 11 refuses a name reading on a word no file claims as vocabulary.
+
+A strict pack drops only the name readings that are recorded. The build already makes the author record them: a particle reading, `default = false` included, needs a `given` reading on its word or states `may_be_given = false` (check 11). So the pack PR that turns on `nl` `in` and `to` declares the Korean and Vietnamese given readings they collide with, with their counts, and no separate sweep comes first. In the default those readings derive nothing, since the word has no live vocabulary reading there.
+
+### Where the provenance lives at runtime
+
+The compiled module holds sets, and a set has forgotten which file each word came from. The proposal compiles a second module beside it: a **reading index**, one row per reading (its text, its file's tag, its kind and its behavioral properties), loaded only when a caller chooses a language. The compiler moves from tools/vocab/build.py into the package so that the build and a pack share one implementation, and a test holds the invariant that compiling the index with no choice reproduces `nameparser/config/_compiled.py` exactly. The same index is what decision 13 says `Token.reading` needs in 3.0.
+
+Measured 2026-10-27 on `cfe8bf92`: the pool holds 2,140 readings over 1,797 words, 106 of them in more than one file. An index of their behavioral properties is about 93 KB of generated source, executing in about 11 ms with no bytecode cache, and compiling the pool takes about 9 ms, both paid once per choice and only by a caller who makes one. Reading the TOML instead costs about 39 ms. Recompute: the build's `read_dir`, `load` and `compile_pool`, timed.
+
+Two cheaper-looking forms do not work. Per-language deltas compiled at build time do not compose: under prefer `{pt, en}`, `do` keeps both its particle and its credential, but Portuguese's delta removes the credential and English's removes the particle. And precompiling every combination of languages is combinatorial.
+
+A choice is applied as a delta against the default's compile, so it composes with a caller's own `Lexicon`: `parser_for(locales.NE, base=Parser(lexicon=custom))` keeps a title the caller added, and a `Locale`'s own `lexicon` fragment is still unioned on after the choice.
+
+### The API and tags
+
+A choice is carried by `Locale`, which gains a `languages` field, a set of BCP 47 tags. `parser_for` unions the `languages` of the packs it is given, so the choice is order-independent while their policy patches still fold in order. Strict is a property of the whole choice, not of one pack, and is an argument: `parser_for(locales.NE, locales.HI, strict=True)`. The shipped language packs are `Locale` constants like the four today (`locales.NE`, `locales.get("ne")`), each with an empty lexicon fragment; a code keeps `Locale`'s `[a-z0-9_]+`, so `pt-BR` is `locales.PT_BR`.
+
+A chosen tag selects its own file and its ancestors', never its descendants': `pt-BR` selects `pt-BR.toml` and `pt.toml`, and `pt` selects only `pt.toml`, so a caller in Portugal does not turn on the Brazilian agnomens (#843 left the single-letter `F` and `N` to a `pt-BR` pack). No macrolanguage table is read: Malay and Indonesian share `puan`, `putra` and `putri`, and a caller with both chooses both. The Czech, Slovak, Slovenian and Croatian files each hold the words they share, so each language is a pack of its own. Script subtags need no matching rule yet, since no file carries one.
+
+The TOML names `prefer` and `strict`, reserved for phase 3 since phase 1, stay refused, with a message saying that a strength is the caller's choice and never data.
+
+### Measuring a pack
+
+The snapshot and `compare.py` parse under the default, so neither can see a pack (decisions/3-0-reevaluations). Three measures, the first two in CI:
+
+- **The default does not move.** The committed snapshot holds it, as for any change, and so does the index invariant above.
+- **A pack moves only names holding a word it changes.** The words whose compiled readings a choice changes are computable from the index, so a vocabulary pack's deviation surface is derived rather than hand-copied, and the non-interference gate in tests/v2/test_locales.py runs every corpus name without such a word under the pack and requires the default's reading. The packs whose behavior is policy (RU, TR_AZ) keep their hand-written `DEVIATES`.
+- **What a pack does, read by shape.** `snapshot.py` and `snapshot.py --local … --base <checkout>` take a choice of languages and print the names it moves, grouped by changed field, as they do for the default; each pack PR reads its own ground truth beside that: nepal-candidates' script pairs for `ne` (mechanisms.md#PAIRED-SPELLINGS-PER-CHANGE), the CLDR agreement per pack where CLDR has the language, the PSC register's nationality slice where filers of that language are many.
+
+### What stays out of phase 3
+
+- **Third-party language files.** A file joining the pool at run time would skip the checks that run across files, an exclusion in one file refusing a reading in any other (check 6) and check 11's particle statement. A third-party `nl` file adding the preposition `in` without a `given` reading or `may_be_given = false` is refused by the build and would ship on the unsafe side at run time. `Locale(lexicon=…)` stays the 2.x way to add vocabulary; a public file format is 3.0's question.
+- **The Python packs' rule data.** ZH's 556 surnames are a segmentation list, outside the per-word model, and the RU and TR_AZ markers are endings inside rules (`-ovich`, `oğlu`); both wait for phase 4's `[rules]`. A pack gets a `languages` field only where measuring it shows what it moves.
+- **Candidates that wait on a rule, not a word:** Turkish `Bey` and `Hanım` after the given name, Hungarian `úr` after the name, Thai `นาย` glued at the head, French `M.` against the initial it spells. Each is a position rule, phase 4's.
+- **Same-language clashes.** No pack settles one (the `fils` argument): the Indic and Arabic titles that are names in their own language (`kumari`, `sayyid`) take phase 2j's route, a given reading and the title phrase, as default work.
+
+### The order of work
+
+Shape first, then the packs, each one PR measured on its own base, as phase 2's were. The first three move no default parse and no pack exists until 3c.
+
+| Sub-phase | What | Needs |
+|---|---|---|
+| 3a | the reading index and the shared compiler; `default = false` allowed on name readings; the no-choice invariant | — (neutral) |
+| 3b | the choice: `Locale.languages`, `parser_for(strict=)`, tag selection, prefer and strict, decision 20 against the initial shape; the derived deviation surface; `snapshot.py` taking a choice | 3a (neutral) |
+| 3c | the pack-shaped exclusions become `default = false` readings: cs `ml`, hr/sk/sl `st` and `ml`, fr `père` (seven exclusions whose reason opens "pack-shaped"), so an exclusion again means wrong everywhere | 3a (neutral) |
+| 3d | `ne`: `given` on `श्री`, `guru` and `गुरु`, measured on nepal-candidates' script pairs | 3b |
+| 3e | `hi` and `bn`, the Latin forms (`smt`, `shrimati`, `sushri`, `shriyut`, `shri`, `adhyapak`), with the names they collide with declared for strict (#345) | 3b |
+| 3f | `cs`, `sk`, `sl`, `hr`: the generations of 3c, `pan`, `roz` and the academic abbreviations #848 left | 3b, 3c |
+| 3g | `es` and `pt`: the occupational titles and `Don`/`Doña`/`Dona`, with a connective that counts only inside a title run, its own rule; `pt` also settles the one-case `e` | 3b |
+| 3h | `ga` and `gd` (`nic`, `mhic`, `mic`, `uí`), `nl` (`an`, `in`, `ten`, `to`, `v`, with Korean and Vietnamese name readings declared), `pt-BR` (`F`, `N`, `sb`) | 3b |
+
+3g's connective needs a design of its own, because the pair that separates it is a count: `Profesora de Historia Ana López` should read title `Profesora de Historia`, while `Doctora de la Vega`, the same title, preposition and following word, has no name behind it and must keep family `de la Vega`. With `profesora` added and no rule, the first reads family `de Historia Ana López` (the rules/P1 fold), and `Ministro da Fazenda Carlos Souza` reads given `da`. The rule must reach only readings a pack turns on, so the default's parses stay where they are.
+
+Languages with one to three candidates (`tr` `bay`, `it` `sig`, `lt` `jaun`, `ms` `bt`, `cy` `ab`/`ap`, `ber` `aït`) are a file each once 3b exists and need no sub-phase; `nb` and `sv`'s farm-name words wait for a measurement nobody has taken.
 
 ## Phase 4: order, shape and the output model
 
@@ -227,7 +310,7 @@ Phase 4 also decides what a parse returns, aligned with CLDR's person-name field
 
 ## The first packs
 
-Which packs come first once phase 3 exists is tracked in #747, not here. The surname-span measurement above is one input, but it was taken over corpora built to hold second surnames, so it shows that the gap exists, not how it ranks against the others.
+The proposed order is phase 3's work order above (3d onward), led by `ne`, where the evidence is strongest; #747 tracks it. The surname-span measurement above is one input, but it was taken over corpora built to hold second surnames, so it shows that the gap exists, not how it ranks against the others.
 
 ## Where each fact lives
 
