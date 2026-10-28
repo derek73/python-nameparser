@@ -74,16 +74,23 @@ it:
 
     python -W error::DeprecationWarning -m pytest
 
-One use slips through: *reading* the shared ``CONSTANTS``
-(``"dr" in CONSTANTS.titles``, or ``copy.copy(CONSTANTS)``), which 2.8
-did not warn on so that importing ``nameparser`` stays quiet. Search
-your code for ``CONSTANTS`` as well. Importing ``nameparser.parser`` or
-``HumanName`` did not warn either, but constructing a ``HumanName`` did,
-so a suite that exercises the code finds it. Three more imports are
-quiet on 2.8 and fail on 3.0, with nothing after them to warn:
-``import nameparser.util``, and importing the two 1.x word-list modules
-``nameparser.config.prefixes`` and ``nameparser.config.bound_first_names``.
-Search for those three names too.
+2.8 warns where code *uses* a removed name, not where it imports one,
+so some code passes that check and still fails on 3.0:
+
+* *reading* the shared ``CONSTANTS`` (``"dr" in CONSTANTS.titles``, or
+  ``copy.copy(CONSTANTS)``), which 2.8 left quiet so that importing
+  ``nameparser`` stays quiet
+* an import whose name the code never uses, or uses without
+  constructing it — ``from nameparser import HumanName`` or ``from
+  nameparser.config import Constants`` behind a subclass, an
+  ``isinstance`` check or an annotation; ``import nameparser.util``;
+  importing ``nameparser.parser`` or the two 1.x word-list modules,
+  ``nameparser.config.prefixes`` and
+  ``nameparser.config.bound_first_names``
+
+So search your code for ``CONSTANTS``, ``HumanName``, ``Constants``,
+``nameparser.parser``, ``nameparser.util``, ``config.prefixes`` and
+``config.bound_first_names`` as well.
 
 Coming from 1.x
 ~~~~~~~~~~~~~~~
