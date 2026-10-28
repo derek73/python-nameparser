@@ -38,7 +38,7 @@ from what it would cost. For each word it counts the corpus names that
 read it as the title where it stands in a given name's place, opening
 the name or opening the part after the name's first comma (a
 register's LAU, BARON, though any comma counts): `Baron Davis` reads
-title 'Baron' and no given name, `Queen Lau` title 'Queen', given 'Lau'.
+title 'Baron' and no given name, `Sir Lau` title 'Sir', given 'Lau'.
 That count holds real titles too (Sir, Lady), so beside it stand the
 names opening with the word in a corpus that keeps the filer's boxes
 (psc-individuals), by the box the word was typed into: the title box,

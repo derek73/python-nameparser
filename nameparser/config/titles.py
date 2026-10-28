@@ -12,7 +12,7 @@ from nameparser.config import _compiled
 GIVEN_NAME_TITLES = _compiled.GIVEN_NAME_TITLES
 """
 When these titles appear with a single other name, that name is a given name, e.g.
-"Sir John", "Sister Mary", "Queen Elizabeth".
+"Sir John", "Sister Mary", "Dame Mary".
 """
 
 #: **Cannot include things that could also be given names**: a title that

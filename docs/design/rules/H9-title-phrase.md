@@ -27,6 +27,7 @@
   "Ms Princess Smith"         →  given="Princess"
   "Marquis Johnson"           →  given="Marquis"
   "Mr Deacon Smith"           →  given="Deacon"
+  "Ms Queen Smith"            →  given="Queen"
   "Cheikh Anta Diop"          →  given="Cheikh"
   ```
 - **A modifier in the leading run of titles before the first comma** has its phrase in a head title after it in that run, in `of` after it, or in the object of `of` or `the` there. A modifier outside that run, ending the name or after a comma, is read as any title is, save one that may be a given name, which is read everywhere as it is in that run.
@@ -135,6 +136,7 @@
   "Prince Harry"              →  given="Prince"
   "Sheikh Mohammed bin Rashid"  →  given="Sheikh"
   "Marquis de Lafayette"      →  given="Marquis"
+  "Queen Elizabeth II"        →  given="Queen"
   "His Majesty King Charles"  →  title="His Majesty King"
   "Prince of Wales"           →  title="Prince of Wales"
   ```
