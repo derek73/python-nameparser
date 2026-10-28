@@ -4,6 +4,10 @@ Release Log
 
     nameparser 2.8 is under development.
 
+    **Behavior Changes**
+
+    - **Fix the given names Deacon, Burgess and Ranger reading as titles.** ``Deacon Jones``, ``Burgess Meredith`` and ``Ranger Smith`` give first ``Deacon``, ``Burgess`` and ``Ranger``, where 1.4.0 through 2.7.0 gave title ``Deacon``, ``Burgess`` and ``Ranger``; ``Smith, Deacon`` reads the same. A cleric written with the bare title, or behind a salutation or ``Rev.``, reads it as a first name too (``The Rev. Deacon John Smith`` gives first ``Deacon``), where ``of`` keeps it (``Deacon of the Church Jane Smith``). ``Burgess Meredith`` reports a ``title-or-name`` ambiguity, since ``Chief Burgess`` is a title phrase. :issue:`913`
+
 * 2.7.0 - October 27, 2026
 
     **nameparser 2.7** is the first release working towards the new language and vocabulary model described in the `vocabulary model RFC <https://github.com/derek73/python-nameparser/blob/master/docs/design/vocabulary-model-rfc.md>`__. It introduces more nuanced handling of titles and particles, adjusts the default vocabulary to better align with example name corpora, and surfaces alternative name readings in the published API. Highlights:

@@ -656,12 +656,12 @@ in tokenization rather than by policy, so a name written with either
 still divides at the dot, and still renders with a space, whatever
 those two fields are set to.
 
-Changed in 2.3 through 2.7
+Changed in 2.3 through 2.8
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Later releases moved more 1.4 readings, and these reach ``HumanName``
 as well; 2.1 and 2.2 read every one of them as 1.4 did. The release
-log's 2.3 to 2.7 sections carry the reasoning; these are the shapes to
+log's 2.3 to 2.8 sections carry the reasoning; these are the shapes to
 grep your fixtures for, with what 1.4 read:
 
 - ``"Her Majesty Queen Elizabeth"``, ``"His Royal Highness Prince Harry"`` (2.3) — a lone
@@ -790,6 +790,11 @@ grep your fixtures for, with what 1.4 read:
 - ``"Marie Bon Durand"`` and ``"Herren Hans"`` (2.7) — ``Bon``, ``Dí``
   and ``Heer`` are no longer particles, nor ``Herren`` and ``Heren``
   titles: 1.4 read last ``Bon Durand`` and title ``Herren``.
+- ``"Deacon Jones"``, ``"Burgess Meredith"`` and ``"Ranger Smith"``
+  (2.8) — ``Deacon``, ``Burgess`` and ``Ranger`` are titles only inside a
+  title phrase, as ``King`` is since 2.7 (``"Deacon of the Church Jane
+  Smith"`` keeps the title): 1.4 read title ``Deacon``, ``Burgess`` and
+  ``Ranger``.
 
 .. doctest::
 
@@ -931,3 +936,8 @@ grep your fixtures for, with what 1.4 read:
     'Durand'
     >>> HumanName("Herren Hans").first
     'Herren'
+    >>> [HumanName(n).first for n in ("Deacon Jones", "Burgess Meredith",
+    ...     "Ranger Smith")]
+    ['Deacon', 'Burgess', 'Ranger']
+    >>> HumanName("Deacon of the Church Jane Smith").title
+    'Deacon of the Church'

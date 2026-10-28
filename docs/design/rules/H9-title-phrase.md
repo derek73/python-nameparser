@@ -25,6 +25,7 @@
   "Sultana Begum"             →  given="Sultana"
   "Mr Shaikh Ahmed"           →  given="Shaikh"
   "Ms Princess Smith"         →  given="Princess"
+  "Mr Deacon Smith"           →  given="Deacon"
   "Cheikh Anta Diop"          →  given="Cheikh"
   ```
 - **A modifier in the leading run of titles before the first comma** has its phrase in a head title after it in that run, in `of` after it, or in the object of `of` or `the` there. A modifier outside that run, ending the name or after a comma, is read as any title is, save one that may be a given name, which is read everywhere as it is in that run.
@@ -119,10 +120,11 @@
   "The Mahdi Muhammad Ahmad"  →  given="The Mahdi"
   "William Shakespeare, the Bard"  →  given="the Bard"
   ```
-- A religious title that opens given names in another tradition, written bare, reads as a name word before a name in every tradition, behind any title but a style, a modifier or one that attaches to it; no name data at hand writes the title there.
+- A religious title that also opens given names, in its own tradition or another, written bare, reads as a name word before a name in every tradition, behind any title but a style, a modifier or one that attaches to it; the name data at hand writes the title there almost never.
   ```
   "Gyani Zail Singh"          →  given="Gyani"
   "Lord Buddha Tamang"        →  given="Buddha"
+  "The Rev. Deacon John Smith"  →  given="Deacon"
   ```
 - A ruler or a royal written with the bare title in front reads it as a name word, the given name in the default order, a style before it or `of` after it keeping the title; the record data at hand writes the word there almost only as a given name, and rulers and royals that way mostly in news text.
   ```
