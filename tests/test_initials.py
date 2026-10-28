@@ -1,31 +1,26 @@
-from nameparser import HumanName
-from nameparser.config import Constants
+from nameparser import parse
 
-from tests.base import HumanNameTestBase
+from tests.base import ParsedNameTestBase
 
 
-class InitialsTestCase(HumanNameTestBase):
+class InitialsTestCase(ParsedNameTestBase):
     def test_initials(self) -> None:
-        hn = HumanName("Andrew Boris Petersen")
+        hn = parse("Andrew Boris Petersen")
         self.m(hn.initials(), "A. B. P.", hn)
 
     def test_initials_simple_name(self) -> None:
-        hn = HumanName("John Doe")
+        hn = parse("John Doe")
         self.m(hn.initials(), "J. D.", hn)
-        hn = HumanName("John Doe", initials_format="{first} {last}")
-        self.m(hn.initials(), "J. D.", hn)
-        hn = HumanName("John Doe", initials_format="{last}")
-        self.m(hn.initials(), "D.", hn)
-        hn = HumanName("John Doe", initials_format="{first}")
-        self.m(hn.initials(), "J.", hn)
-        hn = HumanName("John Doe", initials_format="{middle}")
-        self.m(hn.initials(), "", hn)
+        self.m(hn.initials("{given} {family}"), "J. D.", hn)
+        self.m(hn.initials("{family}"), "D.", hn)
+        self.m(hn.initials("{given}"), "J.", hn)
+        self.m(hn.initials("{middle}"), "", hn)
 
     def test_initials_all_empty_renders_empty_string(self) -> None:
         # The v1 None display mode (and its literal-"None" interpolation
         # regressions) died with #255: a fully-empty result is now always
-        # '', matching the first/last accessors.
-        hn = HumanName("", constants=Constants())
+        # '', matching the given/family accessors.
+        hn = parse("")
         self.assertEqual(hn.initials(), "")
 
     def test_initials_with_an_attached_tussenvoegsel(self) -> None:
@@ -34,10 +29,9 @@ class InitialsTestCase(HumanNameTestBase):
         # 'Juan' and the family BASE. The all-prefix MIDDLE this test
         # was written for now comes from "Nguyen, Van Le" below --
         # whether such a middle should exist at all is #402.
-        hn = HumanName("Vega, Juan de la")
+        hn = parse("Vega, Juan de la")
         self.m(hn.middle, "", hn)
-        self.m(hn.last, "de la Vega", hn)
-        self.assertEqual(hn.initials_list(), ["J", "V"])
+        self.m(hn.family, "de la Vega", hn)
         self.assertEqual(hn.initials(), "J. V.")
 
     def test_initials_middle_name_all_prefixes(self) -> None:
@@ -47,196 +41,71 @@ class InitialsTestCase(HumanNameTestBase):
         # initials as an ordinary name word (rules/R2/#R3) rather
         # than being dropped -- this read "V. N." until #404, losing
         # the middle name entirely.
-        hn = HumanName("Nguyen, Van Le")
+        hn = parse("Nguyen, Van Le")
         self.m(hn.middle, "Le", hn)
-        self.assertEqual(hn.initials_list(), ["V", "L", "N"])
         self.assertEqual(hn.initials(), "V. L. N.")
 
     def test_initials_still_drop_a_particle_beside_a_name(self) -> None:
         # The other half: where the part HAS a name word, the particle
         # is doing particle work and contributes nothing.
-        hn = HumanName("Juan de la Vega")
-        self.m(hn.last, "de la Vega", hn)
+        hn = parse("Juan de la Vega")
+        self.m(hn.family, "de la Vega", hn)
         self.assertEqual(hn.initials(), "J. V.")
 
     def test_initials_complex_name(self) -> None:
-        hn = HumanName("Doe, John A. Kenneth, Jr.")
+        hn = parse("Doe, John A. Kenneth, Jr.")
         self.m(hn.initials(), "J. A. K. D.", hn)
 
     def test_initials_format(self) -> None:
-        hn = HumanName("Doe, John A. Kenneth, Jr.", initials_format="{first} {middle}")
-        self.m(hn.initials(), "J. A. K.", hn)
-        hn = HumanName("Doe, John A. Kenneth, Jr.", initials_format="{first} {last}")
-        self.m(hn.initials(), "J. D.", hn)
-        hn = HumanName("Doe, John A. Kenneth, Jr.", initials_format="{middle} {last}")
-        self.m(hn.initials(), "A. K. D.", hn)
-        hn = HumanName("Doe, John A. Kenneth, Jr.", initials_format="{first}, {last}")
-        self.m(hn.initials(), "J., D.", hn)
-
-    # The *_constants tests below ran on the shared CONSTANTS singleton in
-    # v1; 2.0 deprecates shared mutation, so they use a private Constants
-    # passed as constants= (the migration-guide idiom) -- the config
-    # attribute under test is the same either way.
-
-    def test_initials_format_constants(self) -> None:
-        c = Constants()
-        c.initials_format = "{first} {last}"
-        hn = HumanName("Doe, John A. Kenneth, Jr.", constants=c)
-        self.m(hn.initials(), "J. D.", hn)
-        c.initials_format = "{first}  {last}"
-        hn = HumanName("Doe, John A. Kenneth, Jr.", constants=c)
-        self.m(hn.initials(), "J. D.", hn)
+        hn = parse("Doe, John A. Kenneth, Jr.")
+        self.m(hn.initials("{given} {middle}"), "J. A. K.", hn)
+        self.m(hn.initials("{given} {family}"), "J. D.", hn)
+        self.m(hn.initials("{middle} {family}"), "A. K. D.", hn)
+        self.m(hn.initials("{given}, {family}"), "J., D.", hn)
+        self.m(hn.initials("{given}  {family}"), "J. D.", hn)
 
     def test_initials_delimiter(self) -> None:
-        hn = HumanName("Doe, John A. Kenneth, Jr.", initials_delimiter=";")
-        self.m(hn.initials(), "J; A; K; D;", hn)
-
-    def test_initials_delimiter_constants(self) -> None:
-        c = Constants()
-        c.initials_delimiter = ";"
-        hn = HumanName("Doe, John A. Kenneth, Jr.", constants=c)
-        self.m(hn.initials(), "J; A; K; D;", hn)
-
-    def test_initials_list(self) -> None:
-        hn = HumanName("Andrew Boris Petersen")
-        self.m(hn.initials_list(), ["A", "B", "P"], hn)
-
-    def test_initials_list_complex_name(self) -> None:
-        hn = HumanName("Doe, John A. Kenneth, Jr.")
-        self.m(hn.initials_list(), ["J", "A", "K", "D"], hn)
+        hn = parse("Doe, John A. Kenneth, Jr.")
+        self.m(hn.initials(delimiter=";"), "J; A; K; D;", hn)
 
     def test_initials_with_prefix_firstname(self) -> None:
-        hn = HumanName("Van Jeremy Johnson")
-        self.m(hn.initials_list(), ["V", "J", "J"], hn)
+        hn = parse("Van Jeremy Johnson")
+        self.m(hn.initials(), "V. J. J.", hn)
 
     def test_initials_with_prefix(self) -> None:
-        hn = HumanName("Alex van Johnson")
-        self.m(hn.initials_list(), ["A", "J"], hn)
+        hn = parse("Alex van Johnson")
+        self.m(hn.initials(), "A. J.", hn)
 
     def test_initials_delimiter_empty_string_kwarg(self) -> None:
-        # Regression: initials_delimiter='' was silently ignored due to `or` defaulting
-        hn = HumanName("Doe, John A.", initials_delimiter="")
-        self.m(hn.initials(), "J A D", hn)
+        # Regression: an empty delimiter was silently ignored due to `or` defaulting
+        hn = parse("Doe, John A.")
+        self.m(hn.initials(delimiter=""), "J A D", hn)
 
     def test_initials_format_empty_string_kwarg(self) -> None:
-        # Regression: initials_format='' was silently ignored due to `or` defaulting
-        hn = HumanName("Doe, John A.")
-        hn2 = HumanName("Doe, John A.", initials_format="")
-        self.assertNotEqual(hn.initials(), hn2.initials())
-        # "".format(...) returns ""; collapse_whitespace returns "" which falls through
-        # to empty_attribute_default (may be "" or None depending on config variant).
-        self.assertFalse(hn2.initials())
+        # Regression: an empty spec was silently ignored due to `or` defaulting
+        hn = parse("Doe, John A.")
+        self.assertNotEqual(hn.initials(), hn.initials(""))
+        self.assertFalse(hn.initials(""))
 
     def test_initials_separator_kwarg(self) -> None:
-        # initials_separator="" with initials_format="{first}{middle}{last}" gives
+        # separator="" with spec "{given}{middle}{family}" gives
         # period-separated initials with no spaces — a common academic citation style
-        hn = HumanName(
-            "Doe, John A. Kenneth",
-            initials_separator="",
-            initials_format="{first}{middle}{last}",
-        )
-        self.m(hn.initials(), "J.A.K.D.", hn)
-
-    def test_initials_separator_custom_value(self) -> None:
-        # Non-empty custom separator exercising _process_initial on a multi-word
-        # token. "Van Berg" is a single name part whose two words produce two initials
-        # joined by initials_separator.
-        # This calls _process_initial directly with a bare string (tokens=None),
-        # which is the v1 string path -- HumanName.initials() itself no longer
-        # takes it (#528). See test_initials_separator_is_honored_on_the_live_
-        # token_path in tests/v2/test_render.py for the live token path's pin.
-        hn = HumanName("", initials_separator="-", initials_delimiter=".")
-        result = hn._process_initial("Van Berg", firstname=True)
-        self.assertEqual(result, "V-B")
-
-    def test_str_default_behavior_unchanged(self) -> None:
-        # Regression guard for the `or` → `is not None` change in __str__:
-        # the default path (no string_format kwarg) must still produce the expected string.
-        hn = HumanName("John Doe")
-        self.assertEqual(str(hn), "John Doe")
-
-    def test_initials_with_doubled_space_in_list_element(self) -> None:
-        # v1's #232 hole -- direct *_list assignment injecting unnormalized
-        # elements that made initials raise IndexError -- is unreachable in
-        # 2.0: *_list attributes are read-only snapshots (spec section 2
-        # exc. 1) and the field setter normalizes whitespace, splitting a
-        # doubled-space element into clean members.
-        hn = HumanName(first="John")
-        hn.middle = ["Q  R"]
-        self.assertEqual(hn.middle_list, ["Q", "R"])
-        self.assertEqual(hn.initials_list(), ["J", "Q", "R"])
-        self.assertEqual(hn.initials(), "J. Q. R.")
-
-    def test_constructor_first(self) -> None:
-        hn = HumanName(first="TheName")
-        self.m(hn.first, "TheName", hn)
-
-    def test_constructor_middle(self) -> None:
-        hn = HumanName(middle="TheName")
-        self.m(hn.middle, "TheName", hn)
-
-    def test_constructor_last(self) -> None:
-        hn = HumanName(last="TheName")
-        self.m(hn.last, "TheName", hn)
-
-    def test_constructor_title(self) -> None:
-        hn = HumanName(title="TheName")
-        self.m(hn.title, "TheName", hn)
-
-    def test_constructor_suffix(self) -> None:
-        hn = HumanName(suffix="TheName")
-        self.m(hn.suffix, "TheName", hn)
-
-    def test_constructor_nickname(self) -> None:
-        hn = HumanName(nickname="TheName")
-        self.m(hn.nickname, "TheName", hn)
-
-    def test_constructor_multiple(self) -> None:
-        hn = HumanName(first="TheName", last="lastname", title="mytitle", full_name="donotparse")
-        self.m(hn.first, "TheName", hn)
-        self.m(hn.last, "lastname", hn)
-        self.m(hn.title, "mytitle", hn)
-
-    def test_initials_separator_kwarg_multiword_part(self) -> None:
-        # Regression: initials_separator kwarg must flow into _process_initial
-        # for multi-word name parts, not just into the initials() join calls.
-        # Direct string call (tokens=None), the v1 path -- see the comment on
-        # test_initials_separator_custom_value above.
-        hn = HumanName("", initials_separator="")
-        result = hn._process_initial("Van Berg", firstname=True)
-        self.assertEqual(result, "VB")
+        hn = parse("Doe, John A. Kenneth")
+        self.m(hn.initials("{given}{middle}{family}", separator=""),
+               "J.A.K.D.", hn)
 
     def test_string_format_empty_string_kwarg(self) -> None:
-        # Regression: string_format='' was silently ignored due to `or` defaulting
-        hn = HumanName("John Doe", string_format="")
-        self.assertEqual(str(hn), "")
+        # Regression: an empty format was silently ignored due to `or` defaulting
+        hn = parse("John Doe")
+        self.assertEqual(hn.render(""), "")
 
     def test_initials_separator_empty_multi_part_middle(self) -> None:
         # Full workflow from issue #152: empty delimiter + separator + compact format
         # gives fully concatenated initials with no spaces or punctuation.
-        # Spaces between groups come from initials_format, so that must also be set.
-        hn = HumanName(
-            "Doe, John A. Kenneth",
-            initials_delimiter="",
-            initials_separator="",
-            initials_format="{first}{middle}{last}",
-        )
-        self.m(hn.initials(), "JAKD", hn)
-
-    def test_initials_separator_constants_multi_part_middle(self) -> None:
-        c = Constants()
-        c.initials_delimiter = ""
-        c.initials_separator = ""
-        c.initials_format = "{first}{middle}{last}"
-        hn = HumanName("Doe, John A. Kenneth", constants=c)
-        self.m(hn.initials(), "JAKD", hn)
-
-    def test_initials_separator_default_on_constants(self) -> None:
-        # The shared singleton's default must be untouched by the private-
-        # Constants tests above (and, in file order, by anything the autouse
-        # fixture restores).
-        from nameparser.config import CONSTANTS
-        self.assertEqual(CONSTANTS.initials_separator, " ")
+        # Spaces between groups come from the spec, so that must also be set.
+        hn = parse("Doe, John A. Kenneth")
+        self.m(hn.initials("{given}{middle}{family}", delimiter="",
+                           separator=""), "JAKD", hn)
 
     def test_initials_keep_an_initial_shaped_conjunction_letter(self) -> None:
         # #462: v1's is_conjunction was "in the set AND NOT
@@ -253,7 +122,7 @@ class InitialsTestCase(HumanNameTestBase):
                            # short of its middle rather than a letter
                            ("Vega, Santa de Y", "S. Y. V."),
                            ("Хосе И. Мария Сантос", "Х. И. М. С.")):
-            hn = HumanName(name)
+            hn = parse(name)
             self.m(hn.initials(), want, hn)
 
     def test_initials_drop_a_bare_non_ascii_conjunction_letter(self) -> None:
@@ -263,39 +132,32 @@ class InitialsTestCase(HumanNameTestBase):
         # is therefore not initial-shaped, stays the connective, and
         # drops -- 'Х. М. С.' for a four-word name. #462 restored v1's
         # exclusion; it did not widen the shape v1 excluded on.
-        hn = HumanName("Хосе Мария И Сантос")
+        hn = parse("Хосе Мария И Сантос")
         self.m(hn.initials(), "Х. М. С.", hn)
 
     def test_initials_follow_the_one_case_fork_on_both_letters(self) -> None:
-        # Renamed from test_initials_still_drop_a_lowercase_conjunction
-        # (#528): that name described only 'y''s half, which is the one
-        # half this change does NOT move -- keeping it would have hidden
-        # that 'e''s half now moves. The two halves of the fork, on the
-        # facade. 'y' is not marked
+        # The two halves of the fork. 'y' is not marked
         # as reading both ways, so in a name written wholly in one case
         # it is the connective and drops -- 1.4.0's answer, unmoved.
         # 'e' IS marked, so the same name shape reads it as an initial
-        # and it contributes: 'j. s.' through 2.3.0, 'j. e. s.' since
-        # #528 made this view read the parse's tags instead of
-        # re-deriving from vocabulary and shape. The core's
-        # parse(...).initials() has given 'j. e. s.' since #383/#479
-        # and the two agree now; decisions/P8 and decisions/R3
+        # and it contributes: parse(...).initials() has given
+        # 'j. e. s.' since #383/#479; decisions/P8 and decisions/R3
         # carry the split and its closing.
-        hn = HumanName("john e smith")
+        hn = parse("john e smith")
         self.m(hn.initials(), "j. e. s.", hn)
         # 'maria y lopez' moved with #461, not with the one-case fork:
         # its 'y' holds the middle part alone, so there is nothing
         # there for it to join and it initials like any other name
-        # word, agreeing with the parse's own view. rules/R3 states
-        # the rule for all three groups and decisions/R3 records
-        # what it costs. The letter's TAG is unchanged -- a lowercase
-        # 'y' outside the marked set is still the connective.
-        hn = HumanName("maria y lopez")
+        # word. rules/R3 states the rule for all three groups and
+        # decisions/R3 records what it costs. The letter's TAG is
+        # unchanged -- a lowercase 'y' outside the marked set is still
+        # the connective.
+        hn = parse("maria y lopez")
         self.m(hn.initials(), "m. y. l.", hn)
         # These two are among #528's four movers, written once with
         # the letter mid-name and once at the end after a comma: both
         # give the same initials() answer by different routes.
-        hn = HumanName("john e jones")
+        hn = parse("john e jones")
         self.m(hn.initials(), "j. e. j.", hn)
-        hn = HumanName("jones, john e")
+        hn = parse("jones, john e")
         self.m(hn.initials(), "j. e. j.", hn)

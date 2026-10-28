@@ -20,10 +20,9 @@ from hypothesis import strategies as st
 from nameparser._policy import CapsSuffixes
 from nameparser import (
     DEFAULT_SCRIPT_ORDERS, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST,
-    GIVEN_FIRST, HumanName, Lexicon, Parser, PatronymicRule, Policy,
+    GIVEN_FIRST, Lexicon, Parser, PatronymicRule, Policy,
     Script, parse,
 )
-from nameparser.config import Constants
 from nameparser._lexicon import _VOCAB_FIELDS
 from nameparser._pipeline import run
 from nameparser._pipeline._state import (AMBIGUOUS_ACRONYM_TAG,
@@ -2462,7 +2461,6 @@ def _off_switch_findings() -> dict[str, list[str]]:
     out: dict[str, list[str]] = {k: [] for k in
                                  ("INV6", "INV1-strengthened", "INV7",
                                   "INV6b")}
-    v1_off: dict[frozenset[str], Constants] = {}
     #: (label, text) -> the roles the configured parse gave, in token
     #: order, for INV6b's casing comparison below.
     roles_by: dict[tuple[str, str],
@@ -2559,16 +2557,6 @@ def _off_switch_findings() -> dict[str, list[str]]:
                 out["INV7"].append(
                     f"[{label}] {text!r} force={force}: {here!r} != "
                     f"off-switch {there!r}")
-            if label != "default/default":
-                continue
-            if letters not in v1_off:
-                v1_off[letters] = _v1_off_switch(letters)
-            v1_here = _v1_capitalized(text, None, force)
-            v1_there = _v1_capitalized(text, v1_off[letters], force)
-            if v1_here != v1_there:
-                out["INV7"].append(
-                    f"[v1] {text!r} force={force}: {v1_here!r} != "
-                    f"off-switch {v1_there!r}")
     # INV6b, over what the walk above already read. A text that is
     # its own lower-casing and is not its own upper-casing is the
     # all-lower spelling of a one-case name, and the grid wrote its
@@ -2731,28 +2719,13 @@ def _placed_as_a_connective(on: ParsedName,
     return False
 
 
-def _v1_off_switch(letters: frozenset[str]) -> Constants:
-    constants = Constants()
-    for letter in letters:
-        constants.conjunctions.remove(letter)
-    return constants
-
-
-def _v1_capitalized(text: str, constants: Constants | None,
-                    force: bool) -> str:
-    name = HumanName(text) if constants is None else HumanName(text,
-                                                               constants)
-    name.capitalize(force=force)
-    return str(name)
-
-
 def test_a_letter_that_did_not_join_repairs_as_the_off_switch_does() -> None:
     """INV7 (#397 review). Case repair is the third view, and the one
     the differential cannot see at all, so it gets the same treatment
     INV6 gives the fields: turning the class letter OFF is the
     parent's reading, so a letter that became no connective of this
     name must leave every repair where the parent left it, plain and
-    forced, on both surfaces.
+    forced.
 
     Three exemptions. The first two are INV6's -- a name whose FIELDS
     moved is a name the join changed, and a letter the two parses
@@ -2770,9 +2743,9 @@ def test_a_letter_that_did_not_join_repairs_as_the_off_switch_does() -> None:
     at dc3bdf9c -- dc3bdf9c PASSES it, which is the point of INV7b
     below: the guard there was the suffix ROLE alone, which is too
     wide, and too wide in a direction this invariant's subject
-    cannot reach. The v1 arm runs on the default-lexicon,
-    default-policy rows, the only ones a `Constants` can express,
-    and 1,017 of the e540d4c5 failures are its.
+    cannot reach. Those counts include a v1-facade arm deleted in
+    3.0, which ran on the default-lexicon, default-policy rows and
+    held 1,017 of the e540d4c5 failures.
     """
     failures = _off_switch_findings()["INV7"]
     assert not failures, (
@@ -2859,7 +2832,7 @@ def test_a_connective_the_suffix_field_holds_keeps_its_lowercase() -> None:
     GENERATION and not on the field: a connective the suffix field
     merely holds, which the suffix vocabulary does not know, was read
     as no generation, so case repair leaves it lowercase -- plain and
-    forced, on both surfaces.
+    forced.
 
     INV7 cannot see this. Its oracle is the off switch and its
     subject is the class letter, and no name here carries one: `and`,
@@ -2885,12 +2858,10 @@ def test_a_connective_the_suffix_field_holds_keeps_its_lowercase() -> None:
             continue
         for force in (False, True):
             repaired = str(parser.capitalized(name, force=force))
-            v1 = _v1_capitalized(text, None, force)
-            for label, got in (("core", repaired), ("v1", v1)):
-                if word not in got.split():
-                    failures.append(
-                        f"[{label}] {text!r} force={force}: {got!r} does "
-                        f"not keep {word!r} lowercase")
+            if word not in repaired.split():
+                failures.append(
+                    f"{text!r} force={force}: {repaired!r} does "
+                    f"not keep {word!r} lowercase")
     assert not failures, (
         f"{len(failures)} repair(s) capitalized a connective the "
         f"suffix field merely holds:\n" + "\n".join(failures[:10]))
@@ -3125,28 +3096,23 @@ def test_no_birth_name_word_reads_as_a_word_of_the_current_name() -> None:
 # and one with the map emptied. The fuzzed half rides the existing
 # hypothesis walk instead (test_any_valid_config_still_parses_totally),
 # which already draws masks. Measured 2026-09-23 on py3.11: 1606 texts,
-# and the whole walk -- two lexicons, both surfaces, plain and forced
+# and the whole walk -- two lexicons, plain and forced
 # -- under a second (`--durations`).
 
 _CASE_ONLY_TEXTS = list(dict.fromkeys(
     [*_FORK_CORPUS, *(case.text for case in CASES)]))
-_FACADE_LISTS = ("title_list", "first_list", "middle_list", "last_list",
-                 "suffix_list", "nickname_list", "maiden_list")
 
 
 def _case_only_violations() -> list[str]:
-    """Every repaired token, and every repaired facade list element,
-    that differs from what it repaired by more than case. Compared
-    token by token on the core and list by list on the facade, never
-    through a rendered string, so render spacing cannot hide or fake
-    a difference."""
+    """Every repaired token that differs from what it repaired by
+    more than case. Compared token by token, never through a rendered
+    string, so render spacing cannot hide or fake a difference."""
     emptied = dataclasses.replace(Lexicon.default(),
                                   capitalization_exceptions=())
-    configs = (("default", Parser(), Constants()),
-               ("map emptied", Parser(lexicon=emptied),
-                Constants(capitalization_exceptions={})))
+    configs = (("default", Parser()),
+               ("map emptied", Parser(lexicon=emptied)))
     out: list[str] = []
-    for label, parser, constants in configs:
+    for label, parser in configs:
         for text in _CASE_ONLY_TEXTS:
             name = parser.parse(text)
             for force in (False, True):
@@ -3157,26 +3123,12 @@ def _case_only_violations() -> list[str]:
                         out.append(
                             f"[core, {label}, force={force}] {text!r}: "
                             f"{was.text!r} -> {now.text!r}")
-            human = HumanName(text, constants=constants)
-            before = {attr: getattr(human, attr) for attr in _FACADE_LISTS}
-            # capitalize() mutates in place, so the forced call repairs
-            # the plain call's output -- still compared against the
-            # lists as parsed, which casefold equality makes transitive
-            for force in (False, True):
-                human.capitalize(force=force)
-                for attr in _FACADE_LISTS:
-                    after = getattr(human, attr)
-                    if ([s.casefold() for s in after]
-                            != [s.casefold() for s in before[attr]]):
-                        out.append(
-                            f"[facade, {label}, force={force}] {text!r} "
-                            f"{attr}: {before[attr]!r} -> {after!r}")
     return out
 
 
 def test_case_repair_changes_case_and_nothing_else() -> None:
     """rules/R4 read as an invariant: a repaired token equals its
-    input under str.casefold(), on both surfaces, plain and forced,
+    input under str.casefold(), plain and forced,
     under the shipped lexicon and under one whose exceptions map is
     empty. casefold(), not a character-for-character check, is the
     comparator because the rule was never stated against Python's own
@@ -3192,8 +3144,8 @@ def test_case_repair_changes_case_and_nothing_else() -> None:
     Recorded negative control, measured 2026-09-23 over this walk: at
     the parent 4d0680e6, where the exceptions map SUBSTITUTED its
     value ('md' -> 'M.D.', 'iii.' -> 'III'), this fails on 257
-    repairs, every one under the shipped lexicon and none with the map
-    emptied. The live control is the test below.
+    repairs, counted with a v1-facade half deleted in 3.0, every one
+    under the shipped lexicon and none with the map emptied. The live control is the test below.
     """
     failures = _case_only_violations()
     assert not failures, (
@@ -3207,7 +3159,8 @@ def test_the_case_only_walk_can_fail(
     silence proves nothing. Putting the pre-#459 substitution back --
     the mask applier returning the map's value verbatim -- has to be
     seen. Measured 2026-09-23, it fails on 16 repairs: 8 token repairs
-    counted on both surfaces (core and facade), the same way the
+    counted on both surfaces (core and a v1 facade deleted in
+    3.0), the same way the
     parent's 257 is counted -- the five texts that write Ph.D. with
     its periods, in either case, including the all-initials spelling
     p.h.d., which the mask 'PhD' would strip of them. Far fewer than
@@ -3256,14 +3209,12 @@ def _nfd_twin_findings() -> tuple[list[str], list[str], int]:
             set_aside.append(text)
             continue
         compared += 1
-        human, twin = HumanName(decomposed), HumanName(nfc(text))
-        for surface, decomposed_initials, composed_initials in (
-                ("core", name.initials(), composed.initials()),
-                ("facade", human.initials(), twin.initials())):
-            if nfc(decomposed_initials) != composed_initials:
-                out.append(f"[initials, {surface}] {text!r}: "
-                           f"{nfc(decomposed_initials)!r} != "
-                           f"{composed_initials!r}")
+        decomposed_initials = name.initials()
+        composed_initials = composed.initials()
+        if nfc(decomposed_initials) != composed_initials:
+            out.append(f"[initials, core] {text!r}: "
+                       f"{nfc(decomposed_initials)!r} != "
+                       f"{composed_initials!r}")
         for force in (False, True):
             got = [nfc(t.text) for t in
                    parser.capitalized(name, force=force).tokens]
@@ -3272,25 +3223,18 @@ def _nfd_twin_findings() -> tuple[list[str], list[str], int]:
             if got != want:
                 out.append(f"[core, force={force}] {text!r}: "
                            f"{got!r} != {want!r}")
-        for force in (False, True):
-            human.capitalize(force=force)
-            twin.capitalize(force=force)
-            for attr in _FACADE_LISTS:
-                got = [nfc(s) for s in getattr(human, attr)]
-                if got != getattr(twin, attr):
-                    out.append(f"[facade, force={force}] {text!r} {attr}: "
-                               f"{got!r} != {getattr(twin, attr)!r}")
     return out, set_aside, compared
 
 
 def test_a_decomposed_name_renders_as_its_composed_twin() -> None:
     """rules/R3 and #R4 read as an invariant over encodings: a
     letter written as a base letter and its combining accent initials
-    (#585) and repairs (#542) as the letter written whole does. Core
-    and facade; repair plain and forced. The output is compared
+    (#585) and repairs (#542) as the letter written whole does;
+    repair plain and forced. The output is compared
     composed because both views keep the form they were given.
 
-    Recorded negative controls, measured 2026-10-02. Repair, with
+    Recorded negative controls, measured 2026-10-02 with a v1-facade
+    half deleted in 3.0. Repair, with
     97af1f02's _render.py, before a word ran on through its marks, over
     #542's corpus (its own two R4 rows included): 144 disagreements over
     the 137 texts compared, 47 more set aside, every one hangul
@@ -3325,14 +3269,13 @@ def test_the_decomposed_walk_can_fail(
 def test_the_decomposed_initials_walk_can_fail(
         monkeypatch: pytest.MonkeyPatch) -> None:
     """Taking a token's first code point again -- #585's defect -- has
-    to be seen by the walk above, on both surfaces."""
+    to be seen by the walk above."""
     import nameparser._render as render_module
     monkeypatch.setattr(render_module, "_first_letter",
                         lambda text: text[0])
     failures, _, _ = _nfd_twin_findings()
-    for surface in ("core", "facade"):
-        assert any(line.startswith(f"[initials, {surface}]")
-                   for line in failures), failures
+    assert any(line.startswith("[initials, core]")
+               for line in failures), failures
 
 
 _TWIN_HEADS = ("Smith, John,", "Smith, John, Jr.,", "Doe, Jane, PhD")
@@ -3497,8 +3440,7 @@ def test_a_glued_semicolon_reads_as_its_space_twin() -> None:
 #
 # Every particle reader in the package is a site, and each is checked
 # by every view the comparison takes: the parse's own fields, reports,
-# initials and case repair, and the v1 facade's initials and its
-# last-name split. The grid is the eight words below, two and three at
+# initials and case repair. The grid is the eight words below, two and three at
 # a time, every comma position, each name holding 'Ó.' and run as
 # written, upper-cased and lower-cased: 537 texts. One walk of both
 # sides is about 0.75s; the 'Q.' side is walked once per lexicon and
@@ -3524,11 +3466,8 @@ def _p7_views(text: str, lexicon: Lexicon) -> str:
     out = []
     for written in (text, text.upper(), text.lower()):
         name = parser.parse(written)
-        legacy = HumanName(written)
         out.append((name.as_dict(), [a.kind for a in name.ambiguities],
-                    name.initials(), str(name.capitalized(lexicon)),
-                    legacy.initials(), legacy.last_prefixes,
-                    legacy.last_base))
+                    name.initials(), str(name.capitalized(lexicon))))
     return str(out)
 
 
@@ -3571,7 +3510,6 @@ _P7_SITE_EFFECT = {
     "nameparser._pipeline._classify": 404,
     "nameparser._pipeline._vocab": 21,
     "nameparser._render": 339,
-    "nameparser._facade": 121,
 }
 
 

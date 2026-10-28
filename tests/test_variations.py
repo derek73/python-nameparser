@@ -1,6 +1,6 @@
-from nameparser import HumanName
+from nameparser import Role, parse
 
-from tests.base import HumanNameTestBase
+from tests.base import ParsedNameTestBase
 
 from types import SimpleNamespace
 
@@ -191,7 +191,8 @@ TEST_NAMES = (
 )
 
 
-class HumanNameVariationTests(HumanNameTestBase):
+
+class VariationTests(ParsedNameTestBase):
     # test automated variations of names in TEST_NAMES.
     # Helps test that the 3 code trees work the same
 
@@ -199,25 +200,20 @@ class HumanNameVariationTests(HumanNameTestBase):
 
     def test_variations_of_TEST_NAMES(self) -> None:
         for name in self.TEST_NAMES:
-            hn = HumanName(name)
-            if len(hn.suffix_list) > 1:
+            hn = parse(name)
+            if len(hn.tokens_for(Role.SUFFIX)) > 1:
                 d = SimpleNamespace(**hn.as_dict())
-                hn = HumanName(f"{d.title} {d.first} {d.middle} {d.last} {d.suffix}".split(',')[0])
-            # v1 forced empty_attribute_default='' here so the format
-            # strings below got '' for empty parts; 2.0 removed the setting
-            # (#255) and empty attributes are always '' -- nothing to force.
+                hn = parse(f"{d.title} {d.given} {d.middle} {d.family} {d.suffix}".split(',')[0])
             d = SimpleNamespace(**hn.as_dict())
-            nocomma = HumanName(f"{d.title} {d.first} {d.middle} {d.last} {d.suffix}")
-            lastnamecomma = HumanName(f"{d.last}, {d.title} {d.first} {d.middle} {d.suffix}")
+            nocomma = parse(f"{d.title} {d.given} {d.middle} {d.family} {d.suffix}")
+            lastnamecomma = parse(f"{d.family}, {d.title} {d.given} {d.middle} {d.suffix}")
             if d.suffix:
-                suffixcomma = HumanName(f"{d.title} {d.first} {d.middle} {d.last}, {d.suffix}")
+                suffixcomma = parse(f"{d.title} {d.given} {d.middle} {d.family}, {d.suffix}")
             if d.nickname:
-                nocomma = HumanName(f"{d.title} {d.first} {d.middle} {d.last} {d.suffix} ({d.nickname})")
-                lastnamecomma = HumanName(f"{d.last}, {d.title} {d.first} {d.middle} {d.suffix} ({d.nickname})")
+                nocomma = parse(f"{d.title} {d.given} {d.middle} {d.family} {d.suffix} ({d.nickname})")
+                lastnamecomma = parse(f"{d.family}, {d.title} {d.given} {d.middle} {d.suffix} ({d.nickname})")
                 if d.suffix:
-                    suffixcomma = HumanName(f"{d.title} {d.first} {d.middle} {d.last}, {d.suffix} ({d.nickname})")
-            # v1 iterated the private hn._members; 2.0's public equivalent
-            # is the as_dict() key set (same seven fields)
+                    suffixcomma = parse(f"{d.title} {d.given} {d.middle} {d.family}, {d.suffix} ({d.nickname})")
             for attr in hn.as_dict():
                 self.m(getattr(hn, attr), getattr(nocomma, attr), hn)
                 self.m(getattr(hn, attr), getattr(lastnamecomma, attr), hn)

@@ -1,35 +1,42 @@
-from nameparser import HumanName
+import dataclasses
 
-from tests.base import HumanNameTestBase
+from nameparser import Lexicon, ParsedName, Parser, Policy, parse
+
+from tests.base import ParsedNameTestBase
 
 
-class SuffixesTestCase(HumanNameTestBase):
+def _delimited(text: str, delimiter: str) -> ParsedName:
+    policy = Policy(extra_suffix_delimiters=frozenset({delimiter}))
+    return Parser(policy=policy).parse(text)
+
+
+class SuffixesTestCase(ParsedNameTestBase):
 
     def test_suffix(self) -> None:
-        hn = HumanName("Joe Franklin Jr")
-        self.m(hn.first, "Joe", hn)
-        self.m(hn.last, "Franklin", hn)
+        hn = parse("Joe Franklin Jr")
+        self.m(hn.given, "Joe", hn)
+        self.m(hn.family, "Franklin", hn)
         self.m(hn.suffix, "Jr", hn)
 
     def test_suffix_with_periods(self) -> None:
-        hn = HumanName("Joe Dentist D.D.S.")
-        self.m(hn.first, "Joe", hn)
-        self.m(hn.last, "Dentist", hn)
+        hn = parse("Joe Dentist D.D.S.")
+        self.m(hn.given, "Joe", hn)
+        self.m(hn.family, "Dentist", hn)
         self.m(hn.suffix, "D.D.S.", hn)
 
     def test_two_suffixes(self) -> None:
-        hn = HumanName("Kenneth Clarke QC MP")
-        self.m(hn.first, "Kenneth", hn)
-        self.m(hn.last, "Clarke", hn)
+        hn = parse("Kenneth Clarke QC MP")
+        self.m(hn.given, "Kenneth", hn)
+        self.m(hn.family, "Clarke", hn)
         # The writer spaced "QC MP", so #436 renders it as written
         # (rules/R1). A deliberate deviation from 1.4.0, which added a
         # comma the original format did not have.
         self.m(hn.suffix, "QC MP", hn)
 
     def test_two_suffixes_lastname_comma_format(self) -> None:
-        hn = HumanName("Washington Jr. MD, Franklin")
-        self.m(hn.first, "Franklin", hn)
-        self.m(hn.last, "Washington", hn)
+        hn = parse("Washington Jr. MD, Franklin")
+        self.m(hn.given, "Franklin", hn)
+        self.m(hn.family, "Washington", hn)
         # The writer spaced "Jr. MD", so #436 renders it as written
         # (rules/R1). This name HAS a writer's comma, but it stands
         # between MD and Franklin -- it parts the family from the run, not
@@ -39,108 +46,108 @@ class SuffixesTestCase(HumanNameTestBase):
 
     def test_roman_numeral_v_suffix_comma_format(self) -> None:
         # suffix-comma position is unambiguous: 'V' must be a suffix, not a single-letter initial
-        hn = HumanName("John W. Ingram, V")
-        self.m(hn.first, "John", hn)
+        hn = parse("John W. Ingram, V")
+        self.m(hn.given, "John", hn)
         self.m(hn.middle, "W.", hn)
-        self.m(hn.last, "Ingram", hn)
+        self.m(hn.family, "Ingram", hn)
         self.m(hn.suffix, "V", hn)
 
     def test_roman_numeral_i_suffix_comma_format(self) -> None:
         # 'I' has the same single-letter ambiguity as 'V'
-        hn = HumanName("John W. Smith, I")
-        self.m(hn.first, "John", hn)
+        hn = parse("John W. Smith, I")
+        self.m(hn.given, "John", hn)
         self.m(hn.middle, "W.", hn)
-        self.m(hn.last, "Smith", hn)
+        self.m(hn.family, "Smith", hn)
         self.m(hn.suffix, "I", hn)
 
     def test_suffix_not_acronym_then_acronym_suffix_comma_format(self) -> None:
         # single-letter suffix_not_acronyms entry followed by an acronym suffix
-        hn = HumanName("John Smith, V MD")
-        self.m(hn.first, "John", hn)
-        self.m(hn.last, "Smith", hn)
+        hn = parse("John Smith, V MD")
+        self.m(hn.given, "John", hn)
+        self.m(hn.family, "Smith", hn)
         self.m(hn.suffix, "V MD", hn)
 
     def test_two_suffix_not_acronyms_suffix_comma_format(self) -> None:
-        hn = HumanName("John Smith, V Jr.")
-        self.m(hn.first, "John", hn)
-        self.m(hn.last, "Smith", hn)
+        hn = parse("John Smith, V Jr.")
+        self.m(hn.given, "John", hn)
+        self.m(hn.family, "Smith", hn)
         self.m(hn.suffix, "V Jr.", hn)
 
     def test_two_suffixes_suffix_comma_format(self) -> None:
-        hn = HumanName("Franklin Washington, Jr. MD")
-        self.m(hn.first, "Franklin", hn)
-        self.m(hn.last, "Washington", hn)
+        hn = parse("Franklin Washington, Jr. MD")
+        self.m(hn.given, "Franklin", hn)
+        self.m(hn.family, "Washington", hn)
         self.m(hn.suffix, "Jr. MD", hn)
 
     def test_suffix_containing_periods(self) -> None:
-        hn = HumanName("Kenneth Clarke Q.C.")
-        self.m(hn.first, "Kenneth", hn)
-        self.m(hn.last, "Clarke", hn)
+        hn = parse("Kenneth Clarke Q.C.")
+        self.m(hn.given, "Kenneth", hn)
+        self.m(hn.family, "Clarke", hn)
         self.m(hn.suffix, "Q.C.", hn)
 
     def test_suffix_containing_periods_lastname_comma_format(self) -> None:
-        hn = HumanName("Clarke, Kenneth, Q.C. M.P.")
-        self.m(hn.first, "Kenneth", hn)
-        self.m(hn.last, "Clarke", hn)
+        hn = parse("Clarke, Kenneth, Q.C. M.P.")
+        self.m(hn.given, "Kenneth", hn)
+        self.m(hn.family, "Clarke", hn)
         self.m(hn.suffix, "Q.C. M.P.", hn)
 
     def test_suffix_containing_periods_suffix_comma_format(self) -> None:
-        hn = HumanName("Kenneth Clarke Q.C., M.P.")
-        self.m(hn.first, "Kenneth", hn)
-        self.m(hn.last, "Clarke", hn)
+        hn = parse("Kenneth Clarke Q.C., M.P.")
+        self.m(hn.given, "Kenneth", hn)
+        self.m(hn.family, "Clarke", hn)
         self.m(hn.suffix, "Q.C., M.P.", hn)
 
     def test_suffix_with_single_comma_format(self) -> None:
-        hn = HumanName("John Doe jr., MD")
-        self.m(hn.first, "John", hn)
-        self.m(hn.last, "Doe", hn)
+        hn = parse("John Doe jr., MD")
+        self.m(hn.given, "John", hn)
+        self.m(hn.family, "Doe", hn)
         self.m(hn.suffix, "jr., MD", hn)
 
     def test_suffix_with_double_comma_format(self) -> None:
-        hn = HumanName("Doe, John jr., MD")
-        self.m(hn.first, "John", hn)
-        self.m(hn.last, "Doe", hn)
+        hn = parse("Doe, John jr., MD")
+        self.m(hn.given, "John", hn)
+        self.m(hn.family, "Doe", hn)
         self.m(hn.suffix, "jr., MD", hn)
 
     def test_phd_with_erroneous_space(self) -> None:
-        hn = HumanName("John Smith, Ph. D.")
-        self.m(hn.first, "John", hn)
-        self.m(hn.last, "Smith", hn)
+        hn = parse("John Smith, Ph. D.")
+        self.m(hn.given, "John", hn)
+        self.m(hn.family, "Smith", hn)
         self.m(hn.suffix, "Ph. D.", hn)
 
     def test_phd_extracted_without_comma(self) -> None:
-        hn = HumanName("John Smith Ph. D.")
-        self.m(hn.first, "John", hn)
-        self.m(hn.last, "Smith", hn)
+        hn = parse("John Smith Ph. D.")
+        self.m(hn.given, "John", hn)
+        self.m(hn.family, "Smith", hn)
         self.m(hn.suffix, "Ph. D.", hn)
 
     def test_phd_conflict(self) -> None:
-        hn = HumanName("Adolph D")
-        self.m(hn.first, "Adolph", hn)
-        self.m(hn.last, "D", hn)
+        hn = parse("Adolph D")
+        self.m(hn.given, "Adolph", hn)
+        self.m(hn.family, "D", hn)
 
     # http://en.wikipedia.org/wiki/Ma_(surname)
 
     def test_potential_suffix_that_is_also_last_name(self) -> None:
-        hn = HumanName("Jack Ma")
-        self.m(hn.first, "Jack", hn)
-        self.m(hn.last, "Ma", hn)
+        hn = parse("Jack Ma")
+        self.m(hn.given, "Jack", hn)
+        self.m(hn.family, "Ma", hn)
 
     def test_potential_suffix_that_is_also_last_name_comma(self) -> None:
-        hn = HumanName("Ma, Jack")
-        self.m(hn.first, "Jack", hn)
-        self.m(hn.last, "Ma", hn)
+        hn = parse("Ma, Jack")
+        self.m(hn.given, "Jack", hn)
+        self.m(hn.family, "Ma", hn)
 
     def test_potential_suffix_that_is_also_last_name_with_suffix(self) -> None:
-        hn = HumanName("Jack Ma Jr")
-        self.m(hn.first, "Jack", hn)
-        self.m(hn.last, "Ma", hn)
+        hn = parse("Jack Ma Jr")
+        self.m(hn.given, "Jack", hn)
+        self.m(hn.family, "Ma", hn)
         self.m(hn.suffix, "Jr", hn)
 
     def test_potential_suffix_that_is_also_last_name_with_suffix_comma(self) -> None:
-        hn = HumanName("Ma III, Jack Jr")
-        self.m(hn.first, "Jack", hn)
-        self.m(hn.last, "Ma", hn)
+        hn = parse("Ma III, Jack Jr")
+        self.m(hn.given, "Jack", hn)
+        self.m(hn.family, "Ma", hn)
         self.m(hn.suffix, "III, Jr", hn)
 
     # https://github.com/derek73/python-nameparser/issues/27
@@ -168,72 +175,72 @@ class SuffixesTestCase(HumanNameTestBase):
         # 'king' was title vocabulary; then the floor's 'title-or-name'
         # report on the word left standing was the difference, a 2.0
         # surface this v1 facade test does not assert.
-        hn = HumanName("Dr King Jr")
+        hn = parse("Dr King Jr")
         self.m(hn.title, "Dr", hn)
-        self.m(hn.first, "", hn)
+        self.m(hn.given, "", hn)
         self.m(hn.middle, "", hn)
-        self.m(hn.last, "King", hn)
+        self.m(hn.family, "King", hn)
         self.m(hn.suffix, "Jr", hn)
 
     def test_king_as_a_family_name_via_the_comma_format(self) -> None:
         # The contrast: writing the family first defeats the title chain
         # outright, and reads 'King' as the family without needing the peel
         # floor above. Unchanged by #489 -- both roads now arrive together.
-        hn = HumanName("King, Dr Jr")
+        hn = parse("King, Dr Jr")
         self.m(hn.title, "Dr", hn)
-        self.m(hn.last, "King", hn)
+        self.m(hn.family, "King", hn)
         self.m(hn.suffix, "Jr", hn)
 
     def test_multiple_letter_suffix_with_periods(self) -> None:
-        hn = HumanName("John Doe Msc.Ed.")
-        self.m(hn.first, "John", hn)
-        self.m(hn.last, "Doe", hn)
+        hn = parse("John Doe Msc.Ed.")
+        self.m(hn.given, "John", hn)
+        self.m(hn.family, "Doe", hn)
         self.m(hn.suffix, "Msc.Ed.", hn)
 
     def test_suffix_with_periods_with_comma(self) -> None:
-        hn = HumanName("John Doe, Msc.Ed.")
-        self.m(hn.first, "John", hn)
-        self.m(hn.last, "Doe", hn)
+        hn = parse("John Doe, Msc.Ed.")
+        self.m(hn.given, "John", hn)
+        self.m(hn.family, "Doe", hn)
         self.m(hn.suffix, "Msc.Ed.", hn)
 
     def test_suffix_with_periods_with_lastname_comma(self) -> None:
-        hn = HumanName("Doe, John Msc.Ed.")
-        self.m(hn.first, "John", hn)
-        self.m(hn.last, "Doe", hn)
+        hn = parse("Doe, John Msc.Ed.")
+        self.m(hn.given, "John", hn)
+        self.m(hn.family, "Doe", hn)
         self.m(hn.suffix, "Msc.Ed.", hn)
 
     def test_roman_numeral_i_lastname_comma_format(self) -> None:
         # 'I' is in suffix_not_acronyms; trailing suffix_not_acronyms members in
         # "Lastname, First Middle Suffix" format (no comma-suffix segment) must
         # parse as suffix, not middle initial (issue #144)
-        hn = HumanName("Maier, Amy Lauren I")
-        self.m(hn.first, "Amy", hn)
+        hn = parse("Maier, Amy Lauren I")
+        self.m(hn.given, "Amy", hn)
         self.m(hn.middle, "Lauren", hn)
-        self.m(hn.last, "Maier", hn)
+        self.m(hn.family, "Maier", hn)
         self.m(hn.suffix, "I", hn)
 
     def test_roman_numeral_v_lastname_comma_format(self) -> None:
         # 'V' shares the same suffix_not_acronyms ambiguity as 'I' (issue #144)
-        hn = HumanName("Smith, John V")
-        self.m(hn.first, "John", hn)
+        hn = parse("Smith, John V")
+        self.m(hn.given, "John", hn)
         self.m(hn.middle, "", hn)
-        self.m(hn.last, "Smith", hn)
+        self.m(hn.family, "Smith", hn)
         self.m(hn.suffix, "V", hn)
 
     def test_roman_numeral_i_no_middle_lastname_comma_format(self) -> None:
         # no middle name: trailing 'I' must still be a suffix (issue #144)
-        hn = HumanName("Smith, John I")
-        self.m(hn.first, "John", hn)
+        hn = parse("Smith, John I")
+        self.m(hn.given, "John", hn)
         self.m(hn.middle, "", hn)
-        self.m(hn.last, "Smith", hn)
+        self.m(hn.family, "Smith", hn)
         self.m(hn.suffix, "I", hn)
 
     def test_roman_numeral_i_after_single_initial_lastname_comma_format(self) -> None:
         # single-letter middle initial followed by trailing 'I' (reporter pattern, issue #144)
-        hn = HumanName("Chang, Andy C I")
-        self.m(hn.first, "Andy", hn)
+        hn = parse("Chang, Andy C I")
+        self.m(hn.given, "Andy", hn)
         self.m(hn.middle, "C", hn)
-        self.m(hn.last, "Chang", hn)
+        self.m(hn.family, "Chang", hn)
         self.m(hn.suffix, "I", hn)
 
     def test_roman_numeral_i_with_explicit_suffix_comma_stays_a_middle_initial(self) -> None:
@@ -253,32 +260,24 @@ class SuffixesTestCase(HumanNameTestBase):
         # comma has already named the suffix, the trailing single letter has
         # no generation left to be. C9 carries no example line for it (see the
         # Accepted note there), so this pair of tests is its witness.
-        hn = HumanName("Maier, Amy I, Jr.")
-        self.m(hn.first, "Amy", hn)
+        hn = parse("Maier, Amy I, Jr.")
+        self.m(hn.given, "Amy", hn)
         self.m(hn.middle, "I", hn)
-        self.m(hn.last, "Maier", hn)
+        self.m(hn.family, "Maier", hn)
         self.m(hn.suffix, "Jr.", hn)
-
-    def test_suffix_delimiter_default_on_constants(self) -> None:
-        from nameparser.config import CONSTANTS
-        self.assertIs(CONSTANTS.suffix_delimiter, None)
-
-    def test_suffix_delimiter_kwarg_accepted(self) -> None:
-        hn = HumanName("Steven Hardman, RN - CRNA", suffix_delimiter=" - ")
-        self.assertEqual(hn.suffix_delimiter, " - ")
 
     def test_suffix_delimiter_basic(self) -> None:
         # ' | ', not ' - ': a hyphen standing alone is built in (#889)
-        hn = HumanName("Steven Hardman, RN | CRNA", suffix_delimiter=" | ")
-        self.m(hn.first, "Steven", hn)
-        self.m(hn.last, "Hardman", hn)
+        hn = _delimited("Steven Hardman, RN | CRNA", " | ")
+        self.m(hn.given, "Steven", hn)
+        self.m(hn.family, "Hardman", hn)
         self.m(hn.suffix, "RN, CRNA", hn)
 
     def test_suffix_delimiter_multiple(self) -> None:
         # ' | ', not ' - ': a hyphen standing alone is built in (#889)
-        hn = HumanName("John Doe, MD | PhD | FACS", suffix_delimiter=" | ")
-        self.m(hn.first, "John", hn)
-        self.m(hn.last, "Doe", hn)
+        hn = _delimited("John Doe, MD | PhD | FACS", " | ")
+        self.m(hn.given, "John", hn)
+        self.m(hn.family, "Doe", hn)
         self.m(hn.suffix, "MD, PhD, FACS", hn)
 
     def test_suffix_delimiter_no_effect_without_comma(self) -> None:
@@ -287,23 +286,10 @@ class SuffixesTestCase(HumanNameTestBase):
         # run renders with the space the writer typed, so the row shows the
         # knob is inert rather than showing a comma nobody asked for -- a
         # deliberate deviation from 1.4.0, which added that comma.
-        hn = HumanName("John Doe MD PhD", suffix_delimiter=" - ")
-        self.m(hn.first, "John", hn)
-        self.m(hn.last, "Doe", hn)
+        hn = _delimited("John Doe MD PhD", " - ")
+        self.m(hn.given, "John", hn)
+        self.m(hn.family, "Doe", hn)
         self.m(hn.suffix, "MD PhD", hn)
-
-    def test_suffix_delimiter_constants_level(self) -> None:
-        # ' | ', not ' - ': a hyphen standing alone is built in (#889)
-        # ran on the shared CONSTANTS in v1; 2.0 deprecates shared mutation,
-        # so the config-level (non-kwarg) path is exercised on a private
-        # Constants passed as constants=
-        from nameparser.config import Constants
-        c = Constants()
-        c.suffix_delimiter = " | "
-        hn = HumanName("Steven Hardman, RN | CRNA", constants=c)
-        self.m(hn.first, "Steven", hn)
-        self.m(hn.last, "Hardman", hn)
-        self.m(hn.suffix, "RN, CRNA", hn)
 
     def test_suffix_delimiter_none_by_default_known_limitation(self) -> None:
         # Without suffix_delimiter set, " - " is a word, not a separator.
@@ -314,24 +300,24 @@ class SuffixesTestCase(HumanNameTestBase):
         # hyphen standing alone after the first comma is a delimiter
         # every policy has (rules/C10), so the suffix parts at it as
         # #156 asked; the name of the test keeps the history.
-        hn = HumanName("Steven Hardman, RN - CRNA")
-        self.m(hn.first, "Steven", hn)
-        self.m(hn.last, "Hardman", hn)
+        hn = parse("Steven Hardman, RN - CRNA")
+        self.m(hn.given, "Steven", hn)
+        self.m(hn.family, "Hardman", hn)
         self.m(hn.suffix, "RN, CRNA", hn)
 
     def test_suffix_delimiter_trailing_delimiter_ignored(self) -> None:
         # Trailing delimiter must not defeat suffix detection. Using a
         # non-whitespace-terminated delimiter so stripping doesn't consume it.
-        hn = HumanName("John Doe, MD-PhD-", suffix_delimiter="-")
-        self.m(hn.first, "John", hn)
-        self.m(hn.last, "Doe", hn)
+        hn = _delimited("John Doe, MD-PhD-", "-")
+        self.m(hn.given, "John", hn)
+        self.m(hn.family, "Doe", hn)
         # 2.0: fix(suffix-delimiter-rendering) -- v1 split the token and
         # rendered 'MD, PhD'; v2 keeps a no-space delimiter-core token whole
         # (anti-#100), same rule as the pinned 'RN/CRNA' case row.
         self.m(hn.suffix, "MD-PhD-", hn)
 
     def test_suffix_delimiter_comma_space_is_noop(self) -> None:
-        hn = HumanName("John Doe, MD, PhD", suffix_delimiter=", ")
+        hn = _delimited("John Doe, MD, PhD", ", ")
         self.m(hn.suffix, "MD, PhD", hn)
 
     def test_suffix_delimiter_inverted_format_not_misparsed(self) -> None:
@@ -339,9 +325,9 @@ class SuffixesTestCase(HumanNameTestBase):
         # The delimiter only expands parts once they're identified as a
         # suffix group, so a hyphenated given name in inverted format isn't
         # mistaken for a suffix split.
-        hn = HumanName("Doe, Mary | Kate, RN", suffix_delimiter=" | ")
-        self.m(hn.first, "Mary", hn)
-        self.m(hn.last, "Doe", hn)
+        hn = _delimited("Doe, Mary | Kate, RN", " | ")
+        self.m(hn.given, "Mary", hn)
+        self.m(hn.family, "Doe", hn)
         self.m(hn.suffix, "RN", hn)
         # "Kate" stays in the given-name segment rather than being pulled
         # into the suffix, since it's separated from "RN" by its own comma.
@@ -354,9 +340,9 @@ class SuffixesTestCase(HumanNameTestBase):
         # ' | ', not ' - ': a hyphen standing alone is built in (#889)
         # parts[1:] holds two separate comma segments here ("MD | PhD" and
         # "FACS"); each must be expanded on its own, not just the first.
-        hn = HumanName("John Doe, MD | PhD, FACS", suffix_delimiter=" | ")
-        self.m(hn.first, "John", hn)
-        self.m(hn.last, "Doe", hn)
+        hn = _delimited("John Doe, MD | PhD, FACS", " | ")
+        self.m(hn.given, "John", hn)
+        self.m(hn.family, "Doe", hn)
         self.m(hn.suffix, "MD, PhD, FACS", hn)
 
     def test_suffix_delimiter_detection_with_multi_word_side(self) -> None:
@@ -364,9 +350,9 @@ class SuffixesTestCase(HumanNameTestBase):
         # The suffix-comma detection check flattens on spaces after
         # expanding on the delimiter, so a multi-word token on one side of
         # the delimiter is still tokenized correctly.
-        hn = HumanName("Doe, John, MD PhD | FACS Fellow", suffix_delimiter=" | ")
-        self.m(hn.first, "John", hn)
-        self.m(hn.last, "Doe", hn)
+        hn = _delimited("Doe, John, MD PhD | FACS Fellow", " | ")
+        self.m(hn.given, "John", hn)
+        self.m(hn.family, "Doe", hn)
         self.m(hn.suffix, "MD PhD, FACS Fellow", hn)
 
     def test_suffix_delimiter_no_effect_when_not_suffix_comma(self) -> None:
@@ -374,25 +360,17 @@ class SuffixesTestCase(HumanNameTestBase):
         # last-name part is a single word), the delimiter must not affect
         # parsing at all: output should match the no-delimiter baseline.
         # ' | ', not ' - ': a hyphen standing alone is built in (#889)
-        with_delim = HumanName("Smith, MD | PhD | FACS", suffix_delimiter=" | ")
-        without_delim = HumanName("Smith, MD | PhD | FACS")
+        with_delim = _delimited("Smith, MD | PhD | FACS", " | ")
+        without_delim = parse("Smith, MD | PhD | FACS")
         self.assertEqual(
-            (with_delim.first, with_delim.middle, with_delim.last, with_delim.suffix),
-            (without_delim.first, without_delim.middle, without_delim.last, without_delim.suffix),
+            (with_delim.given, with_delim.middle, with_delim.family, with_delim.suffix),
+            (without_delim.given, without_delim.middle, without_delim.family, without_delim.suffix),
         )
 
-    def test_suffix_acronyms_ambiguous_is_customizable(self) -> None:
-        from nameparser.config import Constants
-        custom = Constants(suffix_acronyms_ambiguous=['xyz'])
-        self.assertEqual(set(custom.suffix_acronyms_ambiguous), {'xyz'})
-        # Constructing without the kwarg still works and uses the module default.
-        default = Constants()
-        self.assertIn('jd', default.suffix_acronyms_ambiguous)
-
     def test_suffix_in_parenthesis_with_other_suffixes(self) -> None:
-        hn = HumanName("Andrew Perkins, Jr., Col. (Ret)")
-        self.m(hn.first, "Andrew", hn)
-        self.m(hn.last, "Perkins", hn)
+        hn = parse("Andrew Perkins, Jr., Col. (Ret)")
+        self.m(hn.given, "Andrew", hn)
+        self.m(hn.family, "Perkins", hn)
         self.assertIn("Ret", hn.suffix)
         self.m(hn.nickname, "", hn)
 
@@ -402,14 +380,14 @@ class SuffixesTestCase(HumanNameTestBase):
         # suffix detection only recognizes a trailing run of suffix-shaped
         # pieces -- so it lands wherever normal parsing would put a bare
         # mid-name "Jr." token, exactly as if the parens were never there
-        # (verified: HumanName("Lon Jr. Williams") parses identically).
+        # (verified: parse("Lon Jr. Williams") parses identically).
         # Known limitation: making this land in `suffix` would require
         # changing parse_full_name's suffix detection, out of scope here --
         # issue #111 is specifically about the nickname misclassification.
-        hn = HumanName("Lon (Jr.) Williams")
-        self.m(hn.first, "Lon", hn)
+        hn = parse("Lon (Jr.) Williams")
+        self.m(hn.given, "Lon", hn)
         self.m(hn.middle, "Jr.", hn)
-        self.m(hn.last, "Williams", hn)
+        self.m(hn.family, "Williams", hn)
         self.m(hn.suffix, "", hn)
         self.m(hn.nickname, "", hn)
 
@@ -420,17 +398,17 @@ class SuffixesTestCase(HumanNameTestBase):
         # "Ret." is an unrecognized period-abbreviation appearing before the
         # first name is set, is_leading_title() treats it as a second title
         # token (see #109), joining "Col." into a single title string.
-        hn = HumanName("Col. (Ret.) Smith")
+        hn = parse("Col. (Ret.) Smith")
         self.m(hn.title, "Col. Ret.", hn)
-        self.m(hn.first, "", hn)
-        self.m(hn.last, "Smith", hn)
+        self.m(hn.given, "", hn)
+        self.m(hn.family, "Smith", hn)
         self.m(hn.suffix, "", hn)
         self.m(hn.nickname, "", hn)
 
     def test_acronym_suffix_in_parenthesis(self) -> None:
-        hn = HumanName("Andrew Perkins (MBA)")
-        self.m(hn.first, "Andrew", hn)
-        self.m(hn.last, "Perkins", hn)
+        hn = parse("Andrew Perkins (MBA)")
+        self.m(hn.given, "Andrew", hn)
+        self.m(hn.family, "Perkins", hn)
         self.m(hn.suffix, "MBA", hn)
         self.m(hn.nickname, "", hn)
 
@@ -439,9 +417,9 @@ class SuffixesTestCase(HumanNameTestBase):
         # is_suffix(), handle_match()'s suffix_acronyms check must also strip
         # internal periods (not just rely on the trailing content.endswith('.')
         # heuristic, which doesn't fire here since "M.D" has no trailing period).
-        hn = HumanName("Andrew Perkins (M.D)")
-        self.m(hn.first, "Andrew", hn)
-        self.m(hn.last, "Perkins", hn)
+        hn = parse("Andrew Perkins (M.D)")
+        self.m(hn.given, "Andrew", hn)
+        self.m(hn.family, "Perkins", hn)
         self.m(hn.suffix, "M.D", hn)
         self.m(hn.nickname, "", hn)
 
@@ -449,7 +427,7 @@ class SuffixesTestCase(HumanNameTestBase):
         # "Mgr." isn't in any suffix list, but it ends in a period, so the
         # period heuristic (rule 2) excludes it from nickname_list. It flows
         # into normal parsing instead of being force-classified as a suffix.
-        hn = HumanName("Andrew Perkins (Mgr.)")
+        hn = parse("Andrew Perkins (Mgr.)")
         self.m(hn.nickname, "", hn)
         self.m(hn.suffix, "", hn)
 
@@ -457,16 +435,16 @@ class SuffixesTestCase(HumanNameTestBase):
         # handle_match() is shared across all three delimiter regexes, not
         # just parenthesis -- confirm suffix-shaped single-quoted content
         # routes the same way.
-        hn = HumanName("Andrew Perkins 'MBA'")
-        self.m(hn.first, "Andrew", hn)
-        self.m(hn.last, "Perkins", hn)
+        hn = parse("Andrew Perkins 'MBA'")
+        self.m(hn.given, "Andrew", hn)
+        self.m(hn.family, "Perkins", hn)
         self.m(hn.suffix, "MBA", hn)
         self.m(hn.nickname, "", hn)
 
     def test_suffix_in_double_quotes(self) -> None:
-        hn = HumanName('Andrew Perkins "MBA"')
-        self.m(hn.first, "Andrew", hn)
-        self.m(hn.last, "Perkins", hn)
+        hn = parse('Andrew Perkins "MBA"')
+        self.m(hn.given, "Andrew", hn)
+        self.m(hn.family, "Perkins", hn)
         self.m(hn.suffix, "MBA", hn)
         self.m(hn.nickname, "", hn)
 
@@ -476,12 +454,11 @@ class SuffixesTestCase(HumanNameTestBase):
         # the exception list -- not a hardcoded check -- drives the behavior.
         # Title case: capitals in a mixed-case name settle the member as
         # the credential (rules/S1, #810).
-        from nameparser.config import Constants
-        C = Constants(
-            suffix_acronyms=['xyz'],
-            suffix_acronyms_ambiguous=['xyz'],
+        lexicon = Lexicon.default().add(
+            suffix_acronyms={'xyz'},
+            suffix_acronyms_ambiguous={'xyz'},
         )
-        hn = HumanName("Andrew Perkins (Xyz)", constants=C)
+        hn = Parser(lexicon=lexicon).parse("Andrew Perkins (Xyz)")
         self.m(hn.nickname, "Xyz", hn)
         self.m(hn.suffix, "", hn)
 
@@ -493,10 +470,10 @@ class SuffixesTestCase(HumanNameTestBase):
         # up -- see the known mid-name limitation noted on the tests above.
         # Title case, which leaves the member a nickname while it is listed
         # (rules/S1, #810).
-        from nameparser.config import Constants
-        assert HumanName("Andrew Perkins (Jd)").nickname == "Jd"
-        C = Constants(suffix_acronyms_ambiguous=[])
-        hn = HumanName("Andrew Perkins (Jd)", constants=C)
+        assert parse("Andrew Perkins (Jd)").nickname == "Jd"
+        lexicon = dataclasses.replace(
+            Lexicon.default(), suffix_acronyms_ambiguous=frozenset())
+        hn = Parser(lexicon=lexicon).parse("Andrew Perkins (Jd)")
         self.m(hn.nickname, "", hn)
         self.m(hn.suffix, "Jd", hn)
 
@@ -505,14 +482,14 @@ class SuffixesTestCase(HumanNameTestBase):
         # the old `if parts[2]:` guard skipped every remaining segment --
         # silently dropping the trailing suffix. Empty segments should be
         # skipped individually.
-        hn = HumanName("Doe, John,, Jr.")
-        self.m(hn.first, "John", hn)
-        self.m(hn.last, "Doe", hn)
+        hn = parse("Doe, John,, Jr.")
+        self.m(hn.given, "John", hn)
+        self.m(hn.family, "Doe", hn)
         self.m(hn.suffix, "Jr.", hn)
         # each empty segment is skipped individually; segments after a later
         # empty must survive too (guards against a break-instead-of-continue
         # regression that the single-empty case above would not catch)
-        hn = HumanName("Doe, John,, Jr.,, III")
+        hn = parse("Doe, John,, Jr.,, III")
         self.m(hn.suffix, "Jr., III", hn)
 
     def test_suffix_comma_empty_segment_not_added_to_suffix_list(self) -> None:
@@ -520,7 +497,7 @@ class SuffixesTestCase(HumanNameTestBase):
         # trailing comma survives collapse_whitespace), the unguarded
         # parts[1:] loop leaked '' into suffix_list via
         # expand_suffix_delimiter('') returning [''].
-        hn = HumanName("John Doe, Jr.,,")
-        self.assertEqual(hn.suffix_list, ["Jr."])
-        self.m(hn.first, "John", hn)
-        self.m(hn.last, "Doe", hn)
+        hn = parse("John Doe, Jr.,,")
+        self.m(hn.suffix, "Jr.", hn)
+        self.m(hn.given, "John", hn)
+        self.m(hn.family, "Doe", hn)
