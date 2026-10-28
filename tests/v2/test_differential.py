@@ -50,14 +50,14 @@ def test_parse_version_rejects_a_string_with_no_release_in_it() -> None:
 
 
 @pytest.mark.parametrize("version,expected", [
-    ("1.4.0", {"facade"}),
-    ("1.4", {"facade"}),
-    ("1.9.9", {"facade"}),
-    ("2.0.0", {"facade", "v2"}),
-    ("2.0", {"facade", "v2"}),
-    ("2.1.0", {"facade", "v2"}),
+    ("1.4.0", {"v1"}),
+    ("1.4", {"v1"}),
+    ("1.9.9", {"v1"}),
+    ("2.0.0", {"v2"}),
+    ("2.0", {"v2"}),
+    ("2.1.0", {"v2"}),
     # the row string comparison gets wrong: '10.0.0' < '2.0.0' as text
-    ("10.0.0", {"facade", "v2"}),
+    ("10.0.0", {"v2"}),
 ])
 def test_surfaces_are_derived_from_the_baseline(
         version: str, expected: set[str]) -> None:
@@ -142,9 +142,6 @@ _BOTH = frozenset({"capitalized", "capitalized_force"})
 
 
 @pytest.mark.parametrize("name,order,views", [
-    # The one corpus name whose facade and core initials differ
-    # ('J. P D.' against 'J. P. D.'), so a row that read the core's
-    # value into the facade's slot cannot pass.
     ("Ph. D., John", None, frozenset()),
     ("Ménil Christophe du", "FAMILY_FIRST", frozenset()),
     # The case views (#826), one row per arm of the worker's copy of
@@ -166,13 +163,11 @@ def test_the_worker_reads_a_line_as_the_tree_does(
     sides of a process boundary; a comparison means a behavior change
     only while both turn the same parse into the same snapshot row."""
     _, raw = _run_template({"name": name, "order": order})
-    if order is not None:
-        # the facade is never consulted for an order-bearing entry
-        assert "facade" not in raw
+    assert set(raw) == {"v2"}
     tree = snapshot.read([(name, order)])[0]
     # the row still reaches the arm it is here for
     assert set(snapshot.CASE_VIEWS) & set(tree) == views
-    assert snapshot.row(name, order, raw.get("v2"), raw.get("facade")) == tree
+    assert snapshot.row(name, order, raw["v2"]) == tree
     if name == "Jack":
         assert tree["alternatives"] == [
             "GIVEN_OR_FAMILY: name as family (position)"]
@@ -290,7 +285,7 @@ def _fake_popen(monkeypatch: pytest.MonkeyPatch, out: str, rc: int = 0) -> None:
 
 _TELL = ('{"__version__": "1.4.0", '
          '"__file__": "/wheel/nameparser/__init__.py"}')
-_ROW = '{"facade": {"first": "John"}}'
+_ROW = '{"v1": {"first": "John"}}'
 
 
 def test_run_worker_strips_the_import_path_overrides_from_the_child(
@@ -356,12 +351,17 @@ _ENTRIES = [("John Smith", None), ("Ménil Christophe du", "FAMILY_FIRST")]
 def _tree_results(entries: list[tuple[str, str | None]], want_v2: bool
                   ) -> list[dict[str, Any]]:
     """What a worker would emit if the baseline read every entry as
-    the tree does -- built by running the template on each line."""
+    the tree does -- built by running the template on each line, and
+    for a baseline with no 2.0 surface by laying the tree's fields out
+    as that release's HumanName names them (the tree has no HumanName
+    since 3.0, so the worker's v1 arm cannot run here)."""
     out = []
     for name, order in entries:
         _, raw = _run_template({"name": name, "order": order})
         if not want_v2:
-            raw.pop("v2", None)
+            v2 = raw.pop("v2")
+            raw["v1"] = {snapshot.V1_FOR[f]: v2[f] for f in snapshot.V2_FIELDS}
+            raw["v1"]["_initials"] = v2["_initials"]
         out.append(raw)
     return out
 
@@ -403,7 +403,6 @@ def test_compare_reports_a_move(monkeypatch: pytest.MonkeyPatch) -> None:
     is the control that the comparison can see a difference."""
     def alter(results: list[dict[str, Any]]) -> None:
         results[0]["v2"]["family"] = "Smyth"
-        results[0]["facade"]["last"] = "Smyth"
     r, _ = _fake_compare(monkeypatch, "2.4.0", alter)
     moves, moved, latin = r.moves, r.moved, r.latin
     assert (moved, latin, r.cldr) == (1, 1, 0)
@@ -418,19 +417,18 @@ def test_compare_counts_a_moved_name_only_cldr_holds(
     cldr_name = "Macáková, Alexandra Zuzana (pani, PhD)"
     def alter(results: list[dict[str, Any]]) -> None:
         results[0]["v2"]["nickname"] = "pani PhD"
-        results[0]["facade"]["nickname"] = "pani PhD"
     r, _ = _fake_compare(monkeypatch, "2.4.0", alter,
                          entries=[(cldr_name, None)])
     assert (r.moved, r.cldr) == (1, 1)
 
 
-def test_compare_reads_the_facade_alone_below_2_0(
+def test_compare_reads_humanname_below_2_0(
         monkeypatch: pytest.MonkeyPatch) -> None:
-    """1.4 has no 2.0 surface, so the tree's facade reading is what it
-    is compared with: a facade move shows, and nothing order-bearing is
-    sent, since no order existed before 2.0."""
+    """1.4 has no 2.0 surface, so its HumanName reading is compared
+    with the tree's fields and initials: a move shows, and nothing
+    order-bearing is sent, since no order existed before 2.0."""
     def alter(results: list[dict[str, Any]]) -> None:
-        results[0]["facade"]["last"] = "Smyth"
+        results[0]["v1"]["last"] = "Smyth"
     r, sent = _fake_compare(monkeypatch, "1.4.0", alter)
     assert r.moved == 1 and r.moves[0] == "family: 1"
     # The order-bearing entry is skipped, and COUNTED as skipped: a

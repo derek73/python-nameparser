@@ -171,17 +171,15 @@ def test_a_name_only_cldr_holds_is_counted_out() -> None:
     assert cldr == {cldr_name}
 
 
-@pytest.mark.parametrize("facade", [True, False])
 def test_a_parallel_read_matches_the_serial_one(
-        monkeypatch: pytest.MonkeyPatch, facade: bool) -> None:
-    # A row the facade reads otherwise and one under another order, so
-    # a worker dropping either half reads differently.
-    entries = [*snapshot.corpus_entries()[:60], ("Ph. D., John", None)]
-    serial = snapshot.read(entries, facade=facade)
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # A row under another order, so a worker dropping it reads
+    # differently.
+    entries = snapshot.corpus_entries()[:60]
+    serial = snapshot.read(entries)
     assert any("order" in r for r in serial)
-    assert any("facade" in r for r in serial) is facade
     monkeypatch.setattr(snapshot, "PARALLEL_FLOOR", 1)
-    assert snapshot.read(entries, facade=facade, jobs=2) == serial
+    assert snapshot.read(entries, jobs=2) == serial
 
 
 def test_a_worker_that_read_another_nameparser_aborts_the_read(
@@ -195,12 +193,16 @@ def test_a_worker_that_read_another_nameparser_aborts_the_read(
         snapshot.read([("John Smith", None), ("Jane Doe", None)], jobs=2)
 
 
-def test_a_read_without_the_facade_drops_only_the_facade() -> None:
-    # A name the facade reads otherwise, so the row has a facade to drop.
-    with_facade, without = (snapshot.read([("Ph. D., John", None)], facade=f)[0]
-                            for f in (True, False))
-    assert "facade" in with_facade
-    assert without == {k: v for k, v in with_facade.items() if k != "facade"}
+def test_a_snapshot_recorded_with_the_facade_loads_without_it() -> None:
+    # A snapshot recorded before 3.0 (v2.8.0's included) carries the
+    # removed HumanName's reading as a `facade` key where it differed;
+    # load() sets it aside, so --since v2.8.0 compares the rest.
+    line = {"name": "Ph. D., John", "given": "John", "family": "Ph. D.",
+            "initials": "J. P. D.", "facade": {"initials": "J. P D."}}
+    loaded = snapshot.load(snapshot.jsonl_line(line) + "\n")
+    assert loaded == {("Ph. D., John", ""): {
+        k: v for k, v in line.items() if k != "facade"}}
+    assert loaded[("Ph. D., John", "")] == snapshot.read([("Ph. D., John", None)])[0]
 
 
 def test_a_sample_is_chosen_by_name_and_keeps_every_order_of_one() -> None:

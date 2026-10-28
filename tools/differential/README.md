@@ -31,9 +31,11 @@ the name as parsed, `capitalized_force` where `capitalized(force=True)`
 renders other than `capitalized()` does. A name repair leaves alone
 records neither, but a view is the whole repaired name, so in a name
 repair does change, a role move that changes the rendering moves the
-view too, whether or not a word's case changed -- and, under
-`facade`, whatever `HumanName` reads differently from the 2.0 surface
-(3 names on 2026-10-13). Since 2.7 a line also holds `alternatives`,
+view too, whether or not a word's case changed. A snapshot recorded
+before 3.0 also holds, under `facade`, whatever the removed `HumanName`
+read differently from the 2.0 surface (3 names on 2026-10-13);
+`load()` sets that key aside, so `--since v2.8.0` compares the rest.
+Since 2.7 a line also holds `alternatives`,
 the reading each ambiguity report did not take, one per report in
 report order, so a report losing its alternative beside an identical
 one still moves the line (#752 phase 2m). Empty values are left out,
@@ -88,8 +90,14 @@ corpora here, one JSON string per line.
 PEP 723 inline metadata, writes it to a temp directory outside the
 worktree, and runs it with `uv run --no-project`. The worker parses
 every corpus name with the pinned release; `compare.py` parses the same
-names with the tree and prints the moves. From 2.0.0 on both surfaces
-are compared; at 1.4.0 the facade alone, since 1.4 has no 2.0 API.
+names with the tree and prints the moves. From 2.0.0 on the 2.0
+surface is compared; at 1.4.0, which has no 2.0 API, the release's
+`HumanName` fields and initials against the tree's. Through 2.x the
+tree side of a 1.4.0 run read the tree's own `HumanName`; since 3.0
+removed it, the tree is read on `parse()`, and on 2026-10-28 that moved
+the run's count from 1,751 to 1,749: the two `Ph. D.` names whose
+initials the facade wrote `J. P D.`, where 1.4.0 and `parse()` both
+write `J. P. D.`.
 A name tagged with a family-first shape is skipped below 2.0.0, which
 introduced `name_order`. The closing lines count the moved entries
 against the entries compared, how many of the moved are Latin-only,
@@ -271,7 +279,7 @@ uv run python tools/differential/snapshot.py --local ctgov-officials --record --
 uv run python tools/differential/snapshot.py --local ctgov-officials
 ```
 
-Any snapshot reading of 5,000 entries or more, committed or local, parses in a worker process per CPU, as do, past the same floor, `local_agreement.py`'s score and the `pairs --agreement`, `groups` and `alike` views (`--jobs N` to change that; all of them share `snapshot.parallel`, whose workers abort the run where one imported another `nameparser`), and a local reading does not read the facade, whose v1 compatibility is the committed corpora's question. Measured 2026-10-23 on a 12-CPU machine: a 20,000-name sample cost about 120 µs a name for the 2.0 parse and its renders, and the facade about as much again; a check of `fec-individuals` (1,893,964 names) took 49s, and of `ctgov-officials` (352,104) 9.6s, where one process reading the facade too would take about 7.5 minutes and 85s, estimated from that sample's per-name cost. A local recording is kept gzipped in `baselines/` beside the snapshot (41 MB for `fec-individuals` against 249 MB plain, 2026-10-23), under a key of the fetch, a hash of every file in the read tree's `nameparser/` as it is on disk (`__pycache__` aside), the interpreter's minor version and the code that writes a row (`snapshot.py`, `corpus_build.py`, `shapes.py`); recording that base again copies it rather than parsing. The hash is taken again after the read, and a package that changed meanwhile keeps no baseline; a kept baseline that cannot be read, or holds another number of rows than the corpus has entries, is deleted and the names are read. The ten most recently recorded or reused baselines are kept per source, whole and sampled alike, so a few `--sample` recordings can push out a whole one: room for four sessions measuring at once with a base and a head each (four were kept until 2026-10-25, and parallel sessions evicted each other's bases), about 420 MB for `fec-individuals`, whose baseline is the largest (41.7 MB). A snapshot recorded before 2026-10-23 may carry facade rows; a check against one sets them aside and says so. `--sample N` reads a fixed 1-in-N sample, chosen by a hash of the name, into `snapshot.sample-N.jsonl`, for iterating on a change; a sample is never compared with a snapshot of the whole corpus or of another sample, and a count quoted from one says it is a sample.
+Any snapshot reading of 5,000 entries or more, committed or local, parses in a worker process per CPU, as do, past the same floor, `local_agreement.py`'s score and the `pairs --agreement`, `groups` and `alike` views (`--jobs N` to change that; all of them share `snapshot.parallel`, whose workers abort the run where one imported another `nameparser`),. Measured 2026-10-23 on a 12-CPU machine: a 20,000-name sample cost about 120 µs a name for the 2.0 parse and its renders; a check of `fec-individuals` (1,893,964 names) took 49s, and of `ctgov-officials` (352,104) 9.6s. A local recording is kept gzipped in `baselines/` beside the snapshot (41 MB for `fec-individuals` against 249 MB plain, 2026-10-23), under a key of the fetch, a hash of every file in the read tree's `nameparser/` as it is on disk (`__pycache__` aside), the interpreter's minor version and the code that writes a row (`snapshot.py`, `corpus_build.py`, `shapes.py`); recording that base again copies it rather than parsing. The hash is taken again after the read, and a package that changed meanwhile keeps no baseline; a kept baseline that cannot be read, or holds another number of rows than the corpus has entries, is deleted and the names are read. The ten most recently recorded or reused baselines are kept per source, whole and sampled alike, so a few `--sample` recordings can push out a whole one: room for four sessions measuring at once with a base and a head each (four were kept until 2026-10-25, and parallel sessions evicted each other's bases), about 420 MB for `fec-individuals`, whose baseline is the largest (41.7 MB). A snapshot recorded before 2026-10-23 may carry facade rows; a check against one sets them aside. `--sample N` reads a fixed 1-in-N sample, chosen by a hash of the name, into `snapshot.sample-N.jsonl`, for iterating on a change; a sample is never compared with a snapshot of the whole corpus or of another sample, and a count quoted from one says it is a sample.
 
 `compare.py --corpus` takes the cached `corpus.jsonl` too, against a release.
 

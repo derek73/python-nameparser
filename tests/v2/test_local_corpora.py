@@ -3848,20 +3848,11 @@ def test_snapshot_refuses_a_check_with_no_snapshot_before_reading_names(
         snapshot.main(["--local", _SOURCE])
 
 
-def test_a_local_snapshot_does_not_read_the_facade(
-        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    # A name the facade reads otherwise: the committed snapshot records
-    # its facade, a local one does not.
-    folder = _fetched(monkeypatch, tmp_path, "Ph. D., John")
-    assert "facade" in snapshot.read([("Ph. D., John", None)])[0]
-    assert snapshot.main(["--local", _SOURCE, "--record"]) == 0
-    assert not any("facade" in r for r in snapshot.load(
-        (folder / "snapshot.jsonl").read_text()).values())
-
-
 def test_a_local_snapshot_recorded_with_the_facade_compares_without_it(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
         capsys: pytest.CaptureFixture[str]) -> None:
+    # A local snapshot recorded before 2026-10-23 carries a `facade` key
+    # on some rows; load() sets it aside, so the check matches.
     folder = _fetched(monkeypatch, tmp_path)
     assert snapshot.main(["--local", _SOURCE, "--record"]) == 0
     recorded = folder / "snapshot.jsonl"
@@ -3870,7 +3861,7 @@ def test_a_local_snapshot_recorded_with_the_facade_compares_without_it(
     recorded.write_text("".join(json.dumps(r) + "\n" for r in rows))
     capsys.readouterr()
     assert snapshot.main(["--local", _SOURCE]) == 0
-    assert "not compared: facade" in capsys.readouterr().out
+    assert "matches the snapshot" in capsys.readouterr().out
 
 
 _MANY = tuple(f"Ann Lee{i}, MD" for i in range(40))
@@ -3919,7 +3910,7 @@ def test_a_local_recording_and_check_run_in_workers(
     monkeypatch.setattr(snapshot, "PARALLEL_FLOOR", 1)
     assert snapshot.main(["--local", _SOURCE, "--record", "--jobs", "2"]) == 0
     serial = list(snapshot.load((folder / "snapshot.jsonl").read_text()).values())
-    assert serial == snapshot.read([(n, None) for n in sorted(_MANY)], facade=False)
+    assert serial == snapshot.read([(n, None) for n in sorted(_MANY)])
     capsys.readouterr()
     assert snapshot.main(["--local", _SOURCE, "--jobs", "2"]) == 0
     assert "matches the snapshot" in capsys.readouterr().out
