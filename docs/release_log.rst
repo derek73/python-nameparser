@@ -4,6 +4,10 @@ Release Log
 
     nameparser 2.8 is under development.
 
+    **Behavior Changes**
+
+    - **Fix the given names Marquis and Marquise reading as titles.** ``Marquis Johnson`` and ``Mr Marquis Smith`` give first ``Marquis``, where 1.4.0 through 2.7.0 gave title ``Marquis`` and ``Mr Marquis``; ``Johnson, Marquise`` reads the same. A noble written with the bare title reads it as a first name too (``Marquis de Lafayette`` gives first ``Marquis``), where ``of`` keeps it (``Marquis of Queensberry``). :issue:`913`
+
 * 2.7.0 - October 27, 2026
 
     **nameparser 2.7** is the first release working towards the new language and vocabulary model described in the `vocabulary model RFC <https://github.com/derek73/python-nameparser/blob/master/docs/design/vocabulary-model-rfc.md>`__. It introduces more nuanced handling of titles and particles, adjusts the default vocabulary to better align with example name corpora, and surfaces alternative name readings in the published API. Highlights:

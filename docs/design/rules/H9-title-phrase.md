@@ -25,6 +25,7 @@
   "Sultana Begum"             →  given="Sultana"
   "Mr Shaikh Ahmed"           →  given="Shaikh"
   "Ms Princess Smith"         →  given="Princess"
+  "Marquis Johnson"           →  given="Marquis"
   "Cheikh Anta Diop"          →  given="Cheikh"
   ```
 - **A modifier in the leading run of titles before the first comma** has its phrase in a head title after it in that run, in `of` after it, or in the object of `of` or `the` there. A modifier outside that run, ending the name or after a comma, is read as any title is, save one that may be a given name, which is read everywhere as it is in that run.
@@ -124,13 +125,14 @@
   "Gyani Zail Singh"          →  given="Gyani"
   "Lord Buddha Tamang"        →  given="Buddha"
   ```
-- A ruler or a royal written with the bare title in front reads it as a name word, the given name in the default order, a style before it or `of` after it keeping the title; the record data at hand writes the word there almost only as a given name, and rulers and royals that way mostly in news text.
+- A ruler, a royal or a noble written with the bare title in front reads it as a name word, the given name in the default order, a style before it or `of` after it keeping the title; the record data at hand writes the word there almost only as a given name, and rulers, royals and nobles that way mostly in news text.
   ```
   "King Henry"                →  given="King"
   "Sultan Hassanal Bolkiah"   →  given="Sultan"
   "Shaikh Hamad bin Isa"      →  given="Shaikh"
   "Prince Harry"              →  given="Prince"
   "Sheikh Mohammed bin Rashid"  →  given="Sheikh"
+  "Marquis de Lafayette"      →  given="Marquis"
   "His Majesty King Charles"  →  title="His Majesty King"
   "Prince of Wales"           →  title="Prince of Wales"
   ```

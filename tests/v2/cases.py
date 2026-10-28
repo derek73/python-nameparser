@@ -12846,6 +12846,36 @@ CASES: tuple[Case, ...] = (
          notes="H9's Accepted clause: the style keeps 'princess' a title, "
                "and 'royal' written after its head loses its own, as "
                "master read it"),
+    Case("given_name_title_marquis_at_the_head", "Marquis Johnson",
+         {"given": "Marquis", "family": "Johnson"},
+         classification="fix(#913)",
+         notes="H9; read title 'Marquis' 1.4.0 through 2.7.0"),
+    Case("given_name_title_marquise_after_a_salutation",
+         "Ms Marquise Smith",
+         {"title": "Ms", "given": "Marquise", "family": "Smith"},
+         classification="fix(#913)",
+         notes="H9: a salutation is no partner; read title "
+               "'Ms Marquise' before"),
+    Case("given_name_title_marquise_after_a_family_comma",
+         "Johnson, Marquise",
+         {"given": "Marquise", "family": "Johnson"},
+         classification="fix(#913)",
+         notes="H9; read title 'Marquise', given 'Johnson' before"),
+    Case("given_name_title_marquis_before_a_family_comma",
+         "Marquis Smith, John",
+         {"given": "John", "family": "Marquis Smith"},
+         classification="parity",
+         notes="H6 peels only a title, so the surname keeps the word, as "
+               "1.4.0 read it; 2.7.0 read title 'Marquis'"),
+    Case("marquis_keeps_the_title_before_of", "Marquis of Queensberry",
+         {"title": "Marquis of Queensberry"}, classification="parity",
+         notes="H9: 'of' after the word is its phrase"),
+    Case("noble_with_a_bare_leading_marquis", "Marquis de Lafayette",
+         {"given": "Marquis", "family": "de Lafayette"},
+         classification="fix(#913)",
+         notes="H9's Accepted clause, the class 'king' and 'prince' "
+               "took: 'de' is no partner; read title 'Marquis' 1.4.0 "
+               "through 2.7.0"),
     Case("given_name_modifier_after_a_style", "Hon. Wing Lau",
          {"title": "Hon.", "given": "Wing", "family": "Lau"},
          notes="H9: the modifier's test, not a contested word's style "
