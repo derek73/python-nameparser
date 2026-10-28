@@ -1141,8 +1141,8 @@ class ParsedName:
 
     @property
     # rules/R2: "the family name splits into further views: the
-    # base (the family without its leading particles) and the
-    # particles themselves"
+    # base (the family without its particles) and the particles
+    # themselves"
     def family_particles(self) -> str:
         return self._text_for(Role.FAMILY, tag="particle",
                               unless_tag=UNJOINED_TAG)
