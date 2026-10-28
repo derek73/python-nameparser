@@ -1,5 +1,9 @@
 Release Log
 ===========
+* 2.8.0 - Unreleased
+
+    nameparser 2.8 is under development.
+
 * 2.7.0 - October 27, 2026
 
     **nameparser 2.7** is the first release working towards the new language and vocabulary model described in the `vocabulary model RFC <https://github.com/derek73/python-nameparser/blob/master/docs/design/vocabulary-model-rfc.md>`__. It introduces more nuanced handling of titles and particles, adjusts the default vocabulary to better align with example name corpora, and surfaces alternative name readings in the published API. Highlights:
