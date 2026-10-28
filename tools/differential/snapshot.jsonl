@@ -2606,6 +2606,7 @@
 {"name": "Mozart Wolfgang Amadeus", "order": "FAMILY_FIRST", "given": "Wolfgang", "middle": "Amadeus", "family": "Mozart", "initials": "W. A. M."}
 {"name": "Mozart, Wolfgang Amadeus", "given": "Wolfgang", "middle": "Amadeus", "family": "Mozart", "initials": "W. A. M."}
 {"name": "Mr Buddha. Tamang", "title": "Mr Buddha.", "family": "Tamang", "initials": "T."}
+{"name": "Mr Deacon Smith", "title": "Mr", "given": "Deacon", "family": "Smith", "initials": "D. S."}
 {"name": "Mr Dean Smith", "title": "Mr", "given": "Dean", "family": "Smith", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "D. S."}
 {"name": "Mr Justice Smith", "title": "Mr", "given": "Justice", "family": "Smith", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "J. S."}
 {"name": "Mr MA", "title": "Mr", "family": "MA", "initials": "M.", "capitalized_force": "Mr Ma"}
@@ -3453,6 +3454,7 @@
 {"name": "The Hon. Wing Lau", "title": "The Hon. Wing", "family": "Lau", "initials": "L.", "capitalized_force": "the Hon. Wing Lau"}
 {"name": "The Lord of the Universe", "title": "The Lord of the Universe", "capitalized_force": "the Lord of the Universe"}
 {"name": "The Mahdi Muhammad Ahmad", "given": "The Mahdi", "middle": "Muhammad", "family": "Ahmad", "initials": "M. M. A.", "capitalized_force": "the Mahdi Muhammad Ahmad"}
+{"name": "The Rev. Deacon John Smith", "title": "The Rev.", "given": "Deacon", "middle": "John", "family": "Smith", "initials": "D. J. S.", "capitalized_force": "the Rev. Deacon John Smith"}
 {"name": "The Right Hon. the President of the Queen's Bench Division", "title": "The Right Hon. the President of the Queen's Bench", "family": "Division", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "D.", "capitalized_force": "the Right Hon. the President of the Queen'S Bench Division"}
 {"name": "The Rt Hon", "title": "The Rt", "family": "Hon", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "H.", "capitalized_force": "the Rt Hon"}
 {"name": "The Rt Hon John Jones", "title": "The Rt Hon", "given": "John", "family": "Jones", "initials": "J. J.", "capitalized_force": "the Rt Hon John Jones"}

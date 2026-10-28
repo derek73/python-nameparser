@@ -794,6 +794,11 @@ grep your fixtures for, with what 1.4 read:
   and ``Marquise`` are titles only inside a title phrase, as ``King`` is
   since 2.7 (``"Marquis of Queensberry"`` keeps the title): 1.4 read
   title ``Marquis`` and ``Marquise``.
+- ``"Deacon Jones"``, ``"Burgess Meredith"`` and ``"Ranger Smith"``
+  (2.8) — ``Deacon``, ``Burgess`` and ``Ranger`` are titles only inside a
+  title phrase, as ``King`` is since 2.7 (``"Deacon of the Church Jane
+  Smith"`` keeps the title): 1.4 read title ``Deacon``, ``Burgess`` and
+  ``Ranger``.
 
 .. doctest::
 
@@ -939,3 +944,8 @@ grep your fixtures for, with what 1.4 read:
     ('Marquis', 'Marquise')
     >>> HumanName("Marquis of Queensberry").title
     'Marquis of Queensberry'
+    >>> [HumanName(n).first for n in ("Deacon Jones", "Burgess Meredith",
+    ...     "Ranger Smith")]
+    ['Deacon', 'Burgess', 'Ranger']
+    >>> HumanName("Deacon of the Church Jane Smith").title
+    'Deacon of the Church'

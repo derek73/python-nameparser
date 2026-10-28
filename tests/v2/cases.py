@@ -12876,6 +12876,48 @@ CASES: tuple[Case, ...] = (
          notes="H9's Accepted clause, the class 'king' and 'prince' "
                "took: 'de' is no partner; read title 'Marquis' 1.4.0 "
                "through 2.7.0"),
+    Case("given_name_title_deacon_at_the_head", "Deacon Jones",
+         {"given": "Deacon", "family": "Jones"},
+         classification="fix(#913)",
+         notes="H9; read title 'Deacon' 1.4.0 through 2.7.0"),
+    Case("given_name_title_deacon_after_a_salutation", "Mr Deacon Smith",
+         {"title": "Mr", "given": "Deacon", "family": "Smith"},
+         classification="fix(#913)",
+         notes="H9: a salutation is no partner; read title 'Mr Deacon' "
+               "before"),
+    Case("given_name_title_deacon_after_a_family_comma", "Smith, Deacon",
+         {"given": "Deacon", "family": "Smith"},
+         classification="fix(#913)",
+         notes="H9; read title 'Deacon', given 'Smith' before"),
+    Case("deacon_keeps_the_title_before_of",
+         "Deacon of the Church Jane Smith",
+         {"title": "Deacon of the Church", "given": "Jane",
+          "family": "Smith"},
+         classification="parity",
+         notes="H9: 'of' after the word is its phrase"),
+    Case("cleric_with_deacon_behind_rev", "The Rev. Deacon John Smith",
+         {"title": "The Rev.", "given": "Deacon", "middle": "John",
+          "family": "Smith"},
+         classification="fix(#913)",
+         notes="H9's Accepted clause: 'rev' is no partner, so the cleric's "
+               "title reads as the given name; 1.4.0 through 2.7.0 read "
+               "title 'The Rev. Deacon'"),
+    Case("given_name_title_burgess_reports_title_or_name",
+         "Burgess Meredith",
+         {"given": "Burgess", "family": "Meredith"},
+         ambiguities=("title-or-name",), classification="fix(#913)",
+         notes="H9: 'Chief Burgess' is a listed phrase, so the bare word "
+               "reports; read title 'Burgess' 1.4.0 through 2.7.0"),
+    Case("given_name_title_burgess_before_a_family_comma",
+         "Burgess Smith, John",
+         {"given": "John", "family": "Burgess Smith"},
+         classification="parity",
+         notes="H6 peels only a title, so the surname keeps the word, as "
+               "1.4.0 read it"),
+    Case("given_name_title_ranger_at_the_head", "Ranger Smith",
+         {"given": "Ranger", "family": "Smith"},
+         classification="fix(#913)",
+         notes="H9; read title 'Ranger' 1.4.0 through 2.7.0"),
     Case("given_name_modifier_after_a_style", "Hon. Wing Lau",
          {"title": "Hon.", "given": "Wing", "family": "Lau"},
          notes="H9: the modifier's test, not a contested word's style "

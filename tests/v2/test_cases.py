@@ -298,9 +298,10 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # Jr.' and ', Dr. Jones vd, PhD' under three orders, and ', Jane
     # van Jr.' under FAMILY_FIRST); 1403 -> 1412 the same day, #843's
     # three abbreviated-agnomen rows, one suffix-or-name claim each under
-    # the three orders.
-    assert claims == 1412, (
-        f"the field sweep checks {claims} claims, recorded as 1412 on "
+    # the three orders; 1412 -> 1415 the same day, #913's 'Burgess
+    # Meredith', reporting title-or-name under three orders.
+    assert claims == 1415, (
+        f"the field sweep checks {claims} claims, recorded as 1415 on "
         f"2026-10-27")
 
 

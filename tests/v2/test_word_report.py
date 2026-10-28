@@ -50,7 +50,7 @@ def _no_usage(monkeypatch: pytest.MonkeyPatch) -> None:
 
 #: Invented names: Zyx and Qwv are in no grid shape.
 _NAMES = ["Queen Zyx", "Queen Zyx", "Mr Queen Qwv", "Zyx, Queen", "QUEEN, ANN",
-          "Ann Queen", "Queenie Zyx", "Deacon Zyx"]
+          "Ann Queen", "Queenie Zyx", "Bishop Zyx"]
 
 
 def _plant(monkeypatch: pytest.MonkeyPatch, names: list[str] = _NAMES) -> None:
@@ -141,7 +141,7 @@ def test_the_ranking_puts_the_words_filed_most_as_forenames_first() -> None:
 def test_the_report_counts_the_corpora_and_quotes_no_name(
         monkeypatch: pytest.MonkeyPatch) -> None:
     _plant(monkeypatch)
-    out = "\n".join(report.report(["queen", "deacon"], _ROOT, None, rank_only=False, jobs=1))
+    out = "\n".join(report.report(["queen", "bishop"], _ROOT, None, rank_only=False, jobs=1))
     assert "Zyx" not in out and "Qwv" not in out
     # Queen Zyx, twice, reads the title; QUEEN, ANN opens with the word
     # as a surname; Zyx, Queen holds it after the comma; Mr Queen Qwv
@@ -154,7 +154,7 @@ def test_the_report_counts_the_corpora_and_quotes_no_name(
     assert ranked[1].strip() == f"(read 1 of {len(corpora.SOURCES)} local corpora; not fetched: " \
         + ", ".join(s for s in sorted(corpora.SOURCES) if s != "ctgov-officials") + ")"
     assert ranked[3].split() == ["queen", "3", "2", "1", "1", "3", "0", "0", "-"]
-    assert ranked[4].split() == ["deacon", "1", "1", "0", "0", "1", "0", "0", "-"]
+    assert ranked[4].split() == ["bishop", "1", "1", "0", "0", "1", "0", "0", "-"]
 
 
 def test_the_ranking_alone_reads_no_grid(monkeypatch: pytest.MonkeyPatch) -> None:

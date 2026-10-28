@@ -196,7 +196,9 @@ religious = {}
 
 [[word]]
 text = "deacon"
-religious = {}
+religious = { issue = 913, decided = 2026-10-27, note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'Deacon Jones' and 'Mr Deacon Smith' read the given name, unreported, since no listed phrase holds it" }
+given = { us_ssa = 11570, wikidata = 37, as_of = 2026-10-27, note = "US SSA: male births; Wikidata is a lower bound (United States 16); UK PSC filers put it first in the title box once and never in the forename box (2026-10-27)" }
+family = { us_census_2010 = 3322, wikidata = 287, as_of = 2026-10-27, note = "US Census rank 9,756; Wikidata United Kingdom 31" }
 
 [[word]]
 text = "dcn"
@@ -913,7 +915,9 @@ office = {}
 
 [[word]]
 text = "burgess"
-office = {}
+office = { issue = 913, decided = 2026-10-27, note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'Burgess Meredith' reads the given name, reported title-or-name since 'chief' attaches to an office ('Chief Burgess'); 'Burgess, John' keeps the surname" }
+given = { us_ssa = 1089, wikidata = 34, as_of = 2026-10-27, note = "US SSA: male births; Wikidata is a lower bound (United States 14)" }
+family = { us_census_2010 = 73931, wikidata = 882, as_of = 2026-10-27, note = "US Census rank 444" }
 
 [[word]]
 text = "ceo"
@@ -1680,7 +1684,9 @@ occupation = {}
 
 [[word]]
 text = "ranger"
-occupation = {}
+occupation = { issue = 913, decided = 2026-10-27, note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'Ranger Smith' reads the given name, unreported, since no listed phrase holds it" }
+given = { us_ssa = 1518, as_of = 2026-10-27, note = "US SSA: male births; Wikidata lists no bearer, a lower bound" }
+family = { us_census_2010 = 2504, wikidata = 48, as_of = 2026-10-27, note = "US Census rank 12,417" }
 
 [[word]]
 text = "researcher"
