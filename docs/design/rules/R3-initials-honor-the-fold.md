@@ -50,4 +50,4 @@
 
 ---
 **Signal:** none in the name: the parsed given, middle and base family words, and the connectives joining them
-**history:** decisions/R3 · **implemented:** nameparser/_render.py, nameparser/_facade.py, nameparser/_pipeline/_post_rules.py
+**history:** decisions/R3 · **implemented:** nameparser/_render.py, nameparser/_pipeline/_post_rules.py

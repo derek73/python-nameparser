@@ -61,36 +61,21 @@ _UNJOINED_MARKS = frozenset({UNJOINED_TAG, UNJOINED_CONJUNCTION_TAG})
 # the empty alternative) -- layering forbids importing the pipeline here;
 # keep in sync with _pipeline/_vocab.py by hand.
 # Its one reader is _reads_as_conjunction below, and that reader only
-# ever sees a bare string with no token attached to it -- a spliced
-# field (replace()), restored state (__setstate__: a pickle load,
-# copy.copy, or copy.deepcopy), a direct string call, or -- since
-# 84d9000 -- a widen-only _process_initial override that drops the
-# token it was handed on its way to the string path. The first two
-# never had a token to begin with: for anything the parser classified
-# AND the caller passed the token along, the tag is the answer and
-# this pattern is not asked. The last two might have been classified
-# and the reader cannot tell -- it only knows no token was passed.
-# So the two copies no longer decide the same question about the same
-# token -- _vocab's says what the parse decided, this one says what it
-# WOULD have decided about text handed over with no token -- which is
-# why they must keep answering alike, and why test_regex_sync pins the
-# patterns against each other and against config.
+# ever sees a bare string with no decision attached to it -- a field
+# spliced in by replace(), carrying UNCLASSIFIED_TAG -- or a direct
+# string call. For anything the parser classified, the tag is the
+# answer and this pattern is not asked. So the two copies do not decide
+# the same question about the same token -- _vocab's says what the
+# parse decided, this one says what it WOULD have decided about text
+# handed over unread -- which is why they must keep answering alike,
+# and why test_regex_sync pins the patterns against each other and
+# against config.
 # Deliberately NOT composed with _vocab's repertoire test (#320):
 # layering forbids the import. The divergence is reachable only for a
 # caller-added CJK conjunction spliced into a field, since no shipped
 # vocabulary carries one, and it costs nothing there: CJK is caseless,
 # so the carve-out's lower() and the fall-through's title case return
-# the same string. Since #528 this pattern is read by more than case
-# repair: through _reads_as_conjunction below, whose callers are case
-# repair's spliced field and the v1 facade's initials view, the latter
-# in three shapes -- a token carrying UNCLASSIFIED_TAG
-# (_facade._token_is_conjunction), a direct _process_initial call with
-# no tokens at all, and, since 84d9000, a widen-only _process_initial
-# override that drops a token the parse DID classify. For initials the
-# CJK divergence would decide whether such a spliced, dropped or
-# never-parsed connective contributes a letter rather than which case
-# it renders in -- still unreachable from any shipped vocabulary, and
-# still not worth the import layering forbids.
+# the same string.
 _INITIAL = re.compile(r"^(\w\.|[A-Z])$")
 
 #: The hyphen clause's initial test (_cap_text, #478): _INITIAL's
@@ -114,17 +99,11 @@ def _reads_as_conjunction(word: str, lex: Lexicon) -> bool:
     token.
 
     A token the parse classified carries its reading in its tags, and
-    the library's own token path -- _facade._token_is_conjunction --
-    consults that tag first and never reaches here for a token it
-    holds. This function is reached only where there is no token to
-    consult: a field spliced in as raw text (replace()) or restored
-    state (__setstate__: a pickle load, copy.copy, or copy.deepcopy),
-    both carrying UNCLASSIFIED_TAG; a direct call with no parse behind
-    it; or, since 84d9000, a widen-only _process_initial override that
-    drops the token it was handed on its way to the string path --
-    text the parse DID classify, whose reading the override chose not
-    to forward. This function cannot tell any of those apart from one
-    another; it can only give the answer the parser would have given
+    case repair consults that tag first and never reaches here for a
+    token it holds. This function is reached only where there is no
+    decision to consult: a field spliced in as raw text (replace()),
+    carrying UNCLASSIFIED_TAG, or a direct call with no parse behind
+    it. It can only give the answer the parser would have given
     from the word alone, the initial carve-out included ('E.' assigned
     to middle is an initial, not the Italian conjunction). What it
     cannot give is an answer the parse reached by looking at the whole
@@ -752,8 +731,8 @@ def capitalized(name: ParsedName, lexicon: Lexicon | None, *,
     word is particle vocabulary is repaired as ordinary name words,
     and the mark saying so comes from the pipeline, as does the
     reading that a word is a conjunction rather than an initial. A
-    token carrying UNCLASSIFIED_TAG -- replace() splices those in, and
-    so does the facade's v1 pickle load -- was never read: the
+    token carrying UNCLASSIFIED_TAG -- replace() splices those in --
+    was never read: the
     vocabulary answers the per-word conjunction question for it, and
     the per-part particle question is left to plain particle treatment,
     since re-deriving the part answer needs a tag on every word of the

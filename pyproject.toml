@@ -118,23 +118,14 @@ python_classes = ["*Tests", "*TestCase"]
 # Fail if an xfail-marked test unexpectedly passes, so a fixed/regressed
 # expectation surfaces instead of silently turning into an xpass.
 xfail_strict = true
-# Unexpected warnings are failures: warnings are load-bearing API in 2.0
-# (the multi-word-entry UserWarning, the facade deprecation warnings), and
-# without this a warning regression is invisible to the suite -- a real
-# bug (eight spurious warnings on restoring a 1.4 Constants pickle)
-# shipped to review this way. Tests that EXPECT a warning assert it with
+# Unexpected warnings are failures: warnings are load-bearing API (the
+# multi-word-entry UserWarning, the construction warnings), and without
+# this a warning regression is invisible to the suite -- a real bug
+# (eight spurious warnings on restoring a 1.4 Constants pickle) shipped
+# to review this way. Tests that EXPECT a warning assert it with
 # pytest.warns; targeted ignores below need a comment justifying each.
 filterwarnings = [
     "error",
-    # 2.8's 3.0-removal warnings, ignored BY MESSAGE so any other
-    # DeprecationWarning still fails the suite; tests/v2/test_deprecations.py
-    # asserts each one, and the v1 suite exercises the facade on purpose
-    "ignore:HumanName is deprecated and will be removed in 3.0:DeprecationWarning",
-    "ignore:HumanName pickles stop loading in 3.0:DeprecationWarning",
-    "ignore:Constants is deprecated and will be removed in 3.0:DeprecationWarning",
-    "ignore:Constants pickles stop loading in 3.0:DeprecationWarning",
-    "ignore:nameparser.config.(Set|Tuple|RegexTuple)Manager is deprecated:DeprecationWarning",
-    "ignore:nameparser.util.lc is deprecated:DeprecationWarning",
 ]
 
 [tool.ruff.lint]

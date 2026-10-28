@@ -132,15 +132,13 @@ UNJOINED_CONJUNCTION_TAG = "vocab:unjoined-conjunction"
 #: The one sanctioned view-reorder marker (namespaced = unstable API).
 #: Tokens cannot reorder (span order is validated), so a role fold that
 #: must render BEFORE the role's original tokens tags them with this;
-#: _text_for, _render.initials and the facade lists all prepend the
-#: carriers. Single-sourced here so the emitter (_pipeline/_post_rules)
+#: _text_for and _render.initials both prepend the carriers. Single-sourced here so the emitter (_pipeline/_post_rules)
 #: and the consumers cannot drift -- initials() was the consumer that
 #: did drift, walking written order until #408.
 FOLDED_TAG = "vocab:folded-middle"
 
 #: Raw text spliced into a field after the parse, which no parse ever
-#: read: `ParsedName.replace()` stamps it, and so does the facade's
-#: v1 pickle load, which rebuilds a name from `*_list` strings alone.
+#: read: `ParsedName.replace()` stamps it.
 #: A view that is HANDED a vocabulary falls back to it for a token
 #: carrying this -- there is no decision to honor -- and reads every
 #: other token by its tags (mechanisms.md#RENDER-HONORS-THE-PARSE).
@@ -1054,7 +1052,7 @@ class ParsedName:
         return self.render()
 
     def __repr__(self) -> str:
-        # 4-space indent, matching HumanName's repr (v1 style)
+        # 4-space indent, v1's repr style
         lines = []
         for role in Role:
             text = self._text_for(role)

@@ -1,14 +1,4 @@
-"""Shared helpers for the tests/v2 package.
-
-The parent suite's autouse `_isolate_constants` fixture
-(tests/conftest.py) applies here ON PURPOSE: the v2 facade/shim tests
-mutate the shared CONSTANTS singleton (tests/v2/test_config_shim.py),
-so the snapshot/restore is wanted protection, not overhead. This
-conftest once overrode the parent's dual-run fixture by name to skip
-it -- that override went dead when the parent was renamed for #255,
-and it was deleted rather than reconnected because its premise ("v2
-code never reads shared CONSTANTS") had stopped being true.
-"""
+"""Shared helpers for the tests/v2 package."""
 import json
 from pathlib import Path
 

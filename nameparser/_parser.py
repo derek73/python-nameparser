@@ -1,7 +1,7 @@
 """Parser and the module-level parse() for the 2.0 API.
 
 Layering: sits on _types/_lexicon/_policy/_locale/_pipeline; never
-imports _render or the v1 facade (enforced by tests/v2/test_layering.py).
+imports _render (enforced by tests/v2/test_layering.py).
 
 _default_parser is THE one sanctioned module-level global: a
 functools.cache'd frozen Parser over default config.

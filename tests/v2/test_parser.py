@@ -1363,8 +1363,7 @@ def test_revise_keeps_the_sub_parses_within_piece_mark() -> None:
     # nothing there depends on the sub-parse's own. The between-piece
     # mark a sub-parse leaves on a token forced to another role
     # predates #511; on a ParsedName only the suffix string view reads
-    # the tag, and no path puts a revised name into a HumanName, whose
-    # list views would heal it.
+    # the tag.
     p = Parser()
     r = p.revise(p.parse("John Smith"), family="John Ph. D. Smith")
     family = r.tokens_for(Role.FAMILY)

@@ -3311,10 +3311,11 @@ CASES: tuple[Case, ...] = (
                "facade's HumanName.initials() did not follow this fork "
                "that morning and still gave 'j. s.'; #528 closed the "
                "split the same day by making that view read the "
-               "parse's tags, so both surfaces give 'j. e. s.' now and "
-               "test_facade_initials_follow_the_one_case_fork in "
-               "tests/v2/test_render.py pins the agreement where a "
-               "test pinned the split. This table asserts roles",
+               "parse's tags, so both surfaces gave 'j. e. s.' until "
+               "3.0 removed the facade, and "
+               "test_initials_follow_the_one_case_fork in "
+               "tests/v2/test_render.py pins the reading. This table "
+               "asserts roles",
          shape=1),
     Case("one_case_upper_three_word_e_is_an_initial", "JOHN E SMITH",
          {"given": "JOHN", "middle": "E", "family": "SMITH"},
@@ -3363,7 +3364,7 @@ CASES: tuple[Case, ...] = (
                "it read the same tags on 2026-09-13. That is the "
                "split the 'john e smith' row records, closed on the "
                "same day and by the same change "
-               "(test_facade_initials_follow_the_one_case_fork in "
+               "(test_initials_follow_the_one_case_fork in "
                "tests/v2/test_render.py). It runs the other way here: "
                "there the facade GAINED a letter it had been "
                "dropping, and here it loses one it had been keeping. "
@@ -7771,8 +7772,8 @@ CASES: tuple[Case, ...] = (
                "the only one, the capitals settling 'MA' (rules/S6). Today "
                "middle 'MA', family 'vd Doe', one report ('Berg, Jan vd' "
                "is that reading with nothing in front of the particle)"),
-    # ---- policy rows. Every one is _CORE_ONLY (see
-    # tests/v2/test_facade_cases.py) --------------------------------
+    # ---- policy rows. Through 2.x every one was _CORE_ONLY, a row the
+    # facade runner could not express ---------------------------------
     Case("the_dotted_slot_reports_with_the_switch_off",
          "Doe, John X.Y.Z.",
          {"given": "John", "middle": "X.Y.Z.", "family": "Doe"},
@@ -8413,8 +8414,8 @@ CASES: tuple[Case, ...] = (
                "runner reaches this row by making that same move, so "
                "it agrees. What v1 does NOT agree on is a pair left in "
                "BOTH buckets, which it gives to nickname; that spelling "
-               "is a different config, not this row, and is pinned in "
-               "test_config_shim"),
+               "is a different config, not this row, and was pinned in "
+               "test_config_shim until 3.0 removed the facade"),
     # #269 follow-up: Arabic-script bound given names, mirroring the
     # Latin transliterations' behavior (probed live 2026-07-19: bound
     # join fires only with 3+ tokens, eats the NEXT token into given;

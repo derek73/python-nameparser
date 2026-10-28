@@ -2,8 +2,8 @@
 
 Layering: may import nameparser.config DATA modules (the imports in
 _default_lexicon() are the authoritative list) as the single source of
-vocabulary during 2.x -- never nameparser.config itself, never
-nameparser.parser. Enforced by tests/v2/test_layering.py.
+vocabulary -- never the nameparser.config package itself. Enforced by
+tests/v2/test_layering.py.
 """
 from __future__ import annotations
 
@@ -195,10 +195,10 @@ def _spells_an_initial(n: str, text: str) -> bool:
 
     Every particle test asks this AFTER its membership hit, so a word
     no particle set holds never pays the frame. It lives here rather
-    than in _pipeline._vocab because the two views that re-read the
-    particle vocabulary over a parsed name -- _render's case repair and
-    the facade's initials and last-name split -- must ask it too, and
-    neither may import the pipeline.
+    than in _pipeline._vocab because _render's case repair, which
+    re-reads the particle vocabulary over a parsed name, must ask it
+    too and may not import the pipeline (the 2.x facade's initials and
+    last-name split were a second such reader).
 
     The ASCII period only, as `_vocab.is_initial` takes it: a CJK full
     stop marks no initial ('Ó。' is the particle). The other half of
@@ -246,8 +246,8 @@ def _title_key(words: Iterable[str]) -> str:
 
     Defined once because it is built at match time
     (_run_addresses_by_given, which is how post_rules' H1 and group's
-    P5 licence both reach it) and at translation time (_config_shim's
-    first_name_titles), and a divergence between them fails silently:
+    P5 licence both reach it) and at construction (_normset's
+    given_name_titles), and a divergence between them fails silently:
     the entry simply stops matching."""
     return " ".join(_fold_words(words))
 
@@ -308,8 +308,8 @@ def _reject_buffer(value: object, label: str, plural: str) -> None:
     """Binary sequences iterate to INTS, so every downstream entry check
     reports a byte value -- "must be strings, got 100" for b'dr', where
     100 is 'd'. That names neither the cause nor the fix. v1 shipped a
-    decode hint for this (#238), and parse() and the facade both carry
-    one, so no config entry point should be the odd one out.
+    decode hint for this (#238), and parse() carries one, so no config
+    entry point should be the odd one out.
     """
     if isinstance(value, (bytes, bytearray, memoryview)):
         raise TypeError(
@@ -322,17 +322,12 @@ def _reject_buffer(value: object, label: str, plural: str) -> None:
 def _warn_dead_entry(message: str) -> None:
     # A fixed stacklevel always lands on library internals: the call
     # depth differs per entry point (Lexicon(), add(), unpickle,
-    # dataclasses.replace, and the v1 shim's lazy snapshot -- built on
-    # the first parse after a Constants mutation, several facade frames
-    # below the user's own add()). Walk out of this module (and
-    # dataclasses' replace frames, and the facade layer that builds
-    # lexicons on the caller's behalf) so the warning points at the
-    # caller's own line.
+    # dataclasses.replace). Walk out of this module (and dataclasses'
+    # replace frames) so the warning points at the caller's own line.
     level = 2
     frame: FrameType | None = sys._getframe(1)
     while frame is not None and frame.f_globals.get("__name__") in (
-            __name__, "dataclasses",
-            "nameparser._config_shim", "nameparser._facade"):
+            __name__, "dataclasses"):
         frame, level = frame.f_back, level + 1
     warnings.warn(message, UserWarning, stacklevel=level)
 
@@ -1066,13 +1061,10 @@ def _default_lexicon() -> Lexicon:
     # every vocabulary constant is a frozenset since #293, so each one
     # feeds its strictly-typed frozenset[str] field as it stands -- and
     # this cache reading them ONCE is the reason they are frozen. A
-    # mutated module set always reached a freshly built Constants, and
-    # reached this Lexicon only when the edit landed before the first
-    # call; after it, the cache was already built and the same edit was
-    # invisible here. Which of the two a program got was not something
-    # the code doing the mutating could see.
-    # keep in sync with _config_shim.Constants._snapshot() (pinned by the
-    # default-Constants equality test in tests/v2/test_config_shim.py)
+    # mutated module set reached this Lexicon only when the edit landed
+    # before the first call; after it, the cache was already built and
+    # the same edit was invisible here, which the code doing the
+    # mutating could not see.
     return Lexicon(
         titles=TITLES,
         given_name_titles=GIVEN_NAME_TITLES,

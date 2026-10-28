@@ -264,7 +264,6 @@ def test_star_import_binds_the_module_s_live_constants(module_name: str) -> None
     own object, so an ``__all__`` entry routed elsewhere fails too.
     """
     import importlib
-    import warnings
 
     module = importlib.import_module(module_name)
     # `TYPE_CHECKING` has the name shape of a constant and is not
@@ -274,10 +273,8 @@ def test_star_import_binds_the_module_s_live_constants(module_name: str) -> None
             and isinstance(v, frozenset)}
     assert live
     namespace: dict[str, object] = {}
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", DeprecationWarning)
-        exec(f"from {module_name} import *", namespace)  # noqa: S102
+    exec(f"from {module_name} import *", namespace)  # noqa: S102
     bound = {n for n in namespace if not n.startswith("__")}
-    assert live <= bound
+    assert bound == live
     for name in live:
         assert namespace[name] is vars(module)[name], name
