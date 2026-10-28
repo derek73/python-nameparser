@@ -412,8 +412,7 @@ def _alnum(text: str) -> str:
 
 
 def _offered_mask(normalized_key: str) -> str:
-    """The working value a mismatched-mask error offers (carried to the
-    v1 shim's re-raise on _MaskValueError, so both name one fix): the
+    """The working value a mismatched-mask error offers: the
     key upper-cased, or the key unchanged -- an identity mask, always
     legal -- where .upper() changes the letter count ('straße' ->
     'STRASSE') and would fail the check if pasted back in."""
@@ -426,8 +425,8 @@ class _MaskValueError(ValueError):
     """_normpairs' error for a value that does not spell its key.
     Built in the UnicodeDecodeError idiom -- structure in, message
     out: `key`, `normalized_key` and `value` are the offending inputs;
-    `offered` (the v1 shim's re-spelled fix, and the v2 one quoted in
-    the message below) is computed from them, not carried separately.
+    `offered` (the fix quoted in the message below) is computed from
+    them, not carried separately.
 
     __reduce__ is explicit because the inherited one re-calls
     __init__ with self.args, which holds the message alone, not the
@@ -552,14 +551,9 @@ def _normpairs(
         # changes case and nothing else", so there is no reading of
         # one that repair can honor.
         if _alnum(_normalize(v)) != _alnum(normalized_key):
-            # key is the RAW key, not normalized_key: the v1 shim's
-            # hint must overwrite the offending dict entry, which is
-            # stored under the raw spelling -- writing the normalized
-            # spelling would add a second entry and still raise
-            # (measured with {"PHD": "Junior"}: the shim's suggested
-            # constants.capitalization_exceptions['PHD'] = ... has to
-            # match the key already there, not 'phd'). `written`, not
-            # `v`: the caller's own spelling, not the NFC-composed one.
+            # key is the RAW key, not normalized_key, and `written`,
+            # not `v`: the message names the entry as the caller wrote
+            # it, not as the fold or NFC composed it.
             raise _MaskValueError(k, normalized_key, written)
         deduped[normalized_key] = v
     return tuple(sorted(deduped.items()))
@@ -1041,7 +1035,8 @@ class Lexicon:
 
 @functools.cache
 def _default_lexicon() -> Lexicon:
-    # v1 data modules are the single source of vocabulary through 2.x.
+    # the config data modules, compiled from nameparser/vocab/, are the
+    # single source of the default vocabulary.
     from nameparser.config.bound_given_names import BOUND_GIVEN_NAMES
     from nameparser.config.given_names import GIVEN_NAME_ABBREVIATIONS
     from nameparser.config.capitalization import CAPITALIZATION_EXCEPTIONS

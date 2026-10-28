@@ -81,9 +81,10 @@ class FirstNameHandlingTests(ParsedNameTestBase):
         the prefix chain fired, giving last='Van Nguyen'. It is keyed on
         the first piece that is not a title OR is a particle -- not the
         naive "first piece that is not a title", which collapses
-        'St John Smith' into one given name and breaks
-        tests/test_constants.py::ConstantsCustomizationTests
-        ::test_add_title, 15 failures in all. The Mr/Mrs conclusion
+        'St John Smith' into one given name and broke the title-
+        customization tests (now tests/test_constants.py's
+        LexiconCustomizationTests), 15 failures in all on the 2.x
+        suite. The Mr/Mrs conclusion
         holds under either rule, which is why the Mr/Mrs shapes are
         asserted here rather than only asserted about: a bare 'Mr./Mrs. Surname'
         has no particle to displace, so nothing about it reaches the

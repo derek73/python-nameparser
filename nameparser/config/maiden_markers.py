@@ -75,9 +75,6 @@ deliberately not the same test -- see decisions/M3. The wholly
 unspaced "山田花子（旧姓佐藤）" reads as one token for the same reason.
 Peeling a marker off the head of a token is #317's job.
 
-Consumed by the 2.0 parser's default lexicon. The 1.x parser does not
-read this module.
-
 Deliberately absent: the Scandinavian
 abbreviation "f." (collides with the initial "F." — only the full
 participles are safe), and the Czech/Slovak abbreviation "roz."

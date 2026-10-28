@@ -428,11 +428,12 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
     # predicate applied over TODAY's vocabulary rather than 1.4.0's.
     # That is the honest claim and it is narrower than parity: the two
     # vocabularies differ, so an assigned field can repair differently
-    # from 1.4.0 without this predicate differing at all. Measured on
-    # the released wheel: `h.last = "хосе и мария сантос"` gives
-    # 'Хосе И Мария Сантос' on 1.4.0 and 'Хосе и Мария Сантос' here,
-    # the Cyrillic `и` being a 2.x conjunction and not a 1.4.0 one;
-    # `h.last = "de la vega"` gives 'de la Vega' there and here.
+    # from 1.4.0 without this predicate differing at all. Measured in
+    # 2.x on the released wheel and the facade: `h.last = "хосе и
+    # мария сантос"` gave 'Хосе И Мария Сантос' on 1.4.0 and 'Хосе и
+    # Мария Сантос' in 2.x, the Cyrillic `и` being a 2.x conjunction
+    # and not a 1.4.0 one; `h.last = "de la vega"` gave 'de la Vega' on
+    # both.
     # The mark, not the SPAN, is what says the text was never read:
     # Parser.revise() also builds span-less tokens, from a sub-parse
     # whose tags it keeps on purpose, and keying this on `span is None`

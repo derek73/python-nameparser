@@ -93,8 +93,8 @@ class Span(NamedTuple):
 #: capital would be one ("j" as "J", never "é", rules/T4);
 #: "joined" a continuation of the token before it -- within one
 #: merged piece the tag is role-blind and every view joins the pair
-#: with a space ("Ph." + "D."; 'Ph. D., Jr.' gives last_list
-#: ['Ph. D.']), and since #436 it also spans the pieces of one SUFFIX
+#: with a space ("Ph." + "D."; 'Ph. D., Jr.' gives family
+#: 'Ph. D.'), and since #436 it also spans the pieces of one SUFFIX
 #: entry, the run of post-nominals the writer wrote without a comma
 #: ("MD PhD"), which is the half the suffix view alone reads and
 #: joins with a space instead of ", ". Every other tag is namespaced

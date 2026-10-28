@@ -1168,8 +1168,8 @@ def test_revise_keeps_r2s_precedence_over_the_connective_mark(
     # all-particle part, so R2's mark readmits every word of it --
     # the connective included -- and #461's is not written there. The
     # rendered answer is the same either way, which is why this
-    # asserts the TAGS: the facade's own connective predicate reads
-    # the second mark, so writing it here would move that view alone.
+    # asserts the TAGS: the contract is that one mark is written, and
+    # no rendered view tells the two apart.
     p = Parser(lexicon=Lexicon.default().add(particles={"y"}))
     revised = p.revise(p.parse("John Smith"), family="de y")
     assert revised.initials() == "J. d. y."

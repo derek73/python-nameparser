@@ -13,7 +13,11 @@ were off by 2x, none of it visible without the harness.
 docs/design/AGENTS.md already asks for this: "Where an entry quotes
 something that drifts, give the one-liner that recomputes it." This is
 that one-liner. Every number in decisions/parse-cost comes from a
-mode of this script, named beside it.
+mode of this script, named beside it. Until 3.0 (#357) the script also
+measured the 2.x `HumanName` facade: the entry's `facade=` figures,
+and its `--modules` tables, which profiled `HumanName` rather than
+`parse()`, so a `--modules --against` a ref from before 3.0 profiles a
+different entry point on each side.
 
     uv run python tools/perf/call_count.py                 # calls per parse()
     uv run python tools/perf/call_count.py --modules       # calls by module

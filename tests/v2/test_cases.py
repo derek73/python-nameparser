@@ -1,5 +1,4 @@
-"""Core runner over the shared case table. The facade
-runner (migration plan) consumes the same CASES."""
+"""The runner over the shared case table, tests/v2/cases.py."""
 import functools
 import re
 from typing import Any

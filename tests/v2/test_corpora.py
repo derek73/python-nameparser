@@ -42,6 +42,22 @@ def test_shapes_corpus_matches_the_case_table() -> None:
         "`uv run python tools/differential/build_shapes_corpus.py`")
 
 
+def test_the_test_bank_walk_reads_every_spelling_of_a_parse_call() -> None:
+    """build_corpus.py reads the name a test hands the parser, whether
+    the test is a 1.x HumanName(...) call at an old ref or the ported
+    suite's parse(...) and the helpers wrapping it (#357): a walk that
+    knew only the first returned 183 of the working tree's names, with
+    no warning."""
+    import ast
+    module = load_tool("build_corpus")
+    calls = ["HumanName", "parse", "Parser().parse", "self.hn", "_cap",
+             "_delimited"]
+    source = "\n".join(f"{call}('Jane Doe {i}')"
+                        for i, call in enumerate(calls))
+    found = module._labelled_strings_from(ast.parse(source), "t.py")
+    assert sorted(found) == [f"Jane Doe {i}" for i in range(len(calls))]
+
+
 def test_conventions_corpus_matches_its_table() -> None:
     """corpus_conventions.jsonl and conventions_fields.jsonl are
     generated from conventions.py's hand-written table (#686)."""

@@ -79,7 +79,7 @@ def test_worker_source_always_emits_a_version_tell() -> None:
 
 def test_worker_source_gates_the_v2_import_on_the_baseline() -> None:
     """1.4 has no nameparser.parse to import; asking for it would make
-    the worker die on import rather than report a clean facade diff."""
+    the worker die on import rather than report a clean v1 diff."""
     assert "WANT_V2 = False" in compare._worker_source("1.4.0", want_v2=False)
     assert "WANT_V2 = True" in compare._worker_source("2.0.0", want_v2=True)
 

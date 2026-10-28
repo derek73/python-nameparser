@@ -174,7 +174,7 @@ class SuffixesTestCase(ParsedNameTestBase):
         # Every field below is what 'Dr Smith Jr' reads, as it was while
         # 'king' was title vocabulary; then the floor's 'title-or-name'
         # report on the word left standing was the difference, a 2.0
-        # surface this v1 facade test does not assert.
+        # surface this test does not assert.
         hn = parse("Dr King Jr")
         self.m(hn.title, "Dr", hn)
         self.m(hn.given, "", hn)

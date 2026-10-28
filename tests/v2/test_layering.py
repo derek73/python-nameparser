@@ -188,8 +188,7 @@ def test_every_pipeline_module_is_keyed_in_allowed() -> None:
 
     Scoped to _pipeline/ because that is what this contract governs.
     Unkeyed by choice: the config/ DATA modules (config/__init__.py is
-    keyed, being code), util.py (no internal imports, and it dies with
-    the 1.x layer) and _version.py. nameparser/__init__.py is unkeyed
+    keyed, being code) and _version.py. nameparser/__init__.py is unkeyed
     too and is none of those -- it is the export surface, held by
     test_public_exports instead.
 

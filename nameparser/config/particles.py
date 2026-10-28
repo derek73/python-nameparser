@@ -90,11 +90,7 @@ NON_GIVEN_NAME_PARTICLES = _compiled.NON_GIVEN_NAME_PARTICLES
 #: still joins forward), with no drift.
 PARTICLES = _compiled.PARTICLES
 
-# Star imports read __all__ and never the module __getattr__ -- see the
-# note in prefixes.py. This module has no retired name of its own to
-# serve; what __all__ buys here is the other half of that note's point,
-# which the shim modules got in #354 and the destinations did not:
-# without it a star import binds every module-level name, so a helper
+# Without __all__ a star import binds every module-level name, so a helper
 # imported here lands in the caller's namespace as though it were
 # vocabulary (#356) -- `_compiled` now, as `assert_normalized` and
 # BOUND_GIVEN_NAMES did before the vocabulary moved to TOML.

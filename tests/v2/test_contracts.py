@@ -254,20 +254,24 @@ def test_imports_and_the_core_stay_quiet(code: str) -> None:
 
 
 @pytest.mark.parametrize("module_name", [
-    "nameparser.config.titles", "nameparser.config.suffixes"])
+    "nameparser.config.titles", "nameparser.config.suffixes",
+    "nameparser.config.particles", "nameparser.config.given_names",
+    "nameparser.config.bound_given_names"])
 def test_star_import_binds_the_module_s_live_constants(module_name: str) -> None:
     """``from x import *`` consults ``__all__`` and nothing else.
 
     The expected set is DERIVED from the module rather than listed, so a
-    constant added to ``suffixes``/``titles`` without a matching
+    constant added to one of these modules without a matching
     ``__all__`` entry fails here, and each is checked to be the module's
-    own object, so an ``__all__`` entry routed elsewhere fails too.
+    own object, so an ``__all__`` entry routed elsewhere fails too; a
+    helper the module imports (``_compiled``, #356) left bound by the
+    star import fails it as well.
     """
     import importlib
 
     module = importlib.import_module(module_name)
-    # `TYPE_CHECKING` has the name shape of a constant and is not
-    # vocabulary; every live constant is a frozenset (the 2.2 freeze)
+    # every live constant is a frozenset (the 2.2 freeze), so the
+    # filter keeps any other upper-case module name out of the set
     live = {n for n, v in vars(module).items()
             if n.isupper() and not n.startswith("_")
             and isinstance(v, frozenset)}

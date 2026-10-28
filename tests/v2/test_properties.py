@@ -3158,13 +3158,13 @@ def test_the_case_only_walk_can_fail(
     """The walk above must be able to report a violation, or its
     silence proves nothing. Putting the pre-#459 substitution back --
     the mask applier returning the map's value verbatim -- has to be
-    seen. Measured 2026-09-23, it fails on 16 repairs: 8 token repairs
-    counted on both surfaces (core and a v1 facade deleted in
-    3.0), the same way the
-    parent's 257 is counted -- the five texts that write Ph.D. with
-    its periods, in either case, including the all-initials spelling
-    p.h.d., which the mask 'PhD' would strip of them. Far fewer than
-    the parent's 257 because the shipped map no longer holds a value
+    seen. Measured 2026-10-28 on the core alone, it fails on 64
+    repairs: every period-marked spelling of a masked word, which the
+    mask would strip of its periods -- Ph.D. in each case and the
+    all-initials p.h.d. (47), PhD. (5), Ing. and its spellings (7),
+    Ó. (4) and Knt. (1). (On 2026-09-23 it was 16, counted on the core and
+    the 2.x facade, over a smaller corpus.) Far fewer than the
+    parent's 257 because the shipped map no longer holds a value
     spelled unlike its key's common spellings; the count is a floor on
     the walk's reach, not a target.
     """
@@ -3444,7 +3444,7 @@ def test_a_glued_semicolon_reads_as_its_space_twin() -> None:
 # a time, every comma position, each name holding 'Ó.' and run as
 # written, upper-cased and lower-cased: 537 texts. One walk of both
 # sides is about 0.75s; the 'Q.' side is walked once per lexicon and
-# shared, so the invariant and its four-site control together cost
+# shared, so the invariant and its site control together cost
 # about 3s (measured 2026-10-04, py3.11).
 _P7_WORDS = ('Ó.', 'de', 'Pérez', 'Juan', 'MA', 'Ed', 'DO', 'Jr.')
 

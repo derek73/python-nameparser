@@ -38,6 +38,14 @@ TESTS = ROOT / "tests"
 _NOISE_CHARS = ("{", "@", "\\")
 
 
+# The calls whose first string argument is a name under test: the 1.x
+# suite called HumanName(...) until 3.0 ported it to parse(...) and to
+# the helpers that wrap parse() -- tests/base.py's hn(),
+# test_capitalization's _cap(), test_suffixes' _delimited() (#357) --
+# and a ref from before the port is still read by the first spelling.
+_PARSE_CALLS = frozenset({"HumanName", "parse", "hn", "_cap", "_delimited"})
+
+
 def _is_name_like(value: str) -> bool:
     return not any(ch in value for ch in _NOISE_CHARS)
 
@@ -69,7 +77,7 @@ def _labelled_strings_from(
     def _walk(node: ast.AST, label: str) -> None:
         if (isinstance(node, ast.Call)
                 and getattr(node.func, "id", getattr(
-                    node.func, "attr", "")) == "HumanName"
+                    node.func, "attr", "")) in _PARSE_CALLS
                 and node.args
                 and isinstance(node.args[0], ast.Constant)
                 and isinstance(node.args[0].value, str)):

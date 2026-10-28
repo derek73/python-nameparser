@@ -20,8 +20,7 @@ from nameparser.config import _compiled
 #: chains onto the piece that follows it.
 BOUND_GIVEN_NAMES: frozenset[str] = _compiled.BOUND_GIVEN_NAMES
 
-# Star imports read __all__ and never the module __getattr__ -- see the
-# note in prefixes.py. Without it `_compiled`, imported only to re-export
+# Without __all__ a star import binds `_compiled`, imported only to re-export
 # the constant, is bound by a star import as though it were vocabulary
 # (#356).
 __all__ = ["BOUND_GIVEN_NAMES"]

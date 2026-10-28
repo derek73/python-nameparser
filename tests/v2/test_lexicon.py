@@ -135,7 +135,7 @@ def _unpickled_with(value: object) -> Lexicon:
 
 # Every entry point that builds the pair field, because a check on one
 # member of a family belongs on all of it (AGENTS.md): construction,
-# replace(), the right-biased union, unpickling, and the v1 shim.
+# replace(), the right-biased union, and unpickling.
 _MASK_ENTRY_POINTS: list[Callable[[object], object]] = [
     lambda v: Lexicon(capitalization_exceptions=v),  # type: ignore[arg-type]
     lambda v: dataclasses.replace(Lexicon.default(),

@@ -344,6 +344,19 @@ def test_replace_with_empty_string_clears_field() -> None:
     assert pn.replace(title="").title == ""
 
 
+def test_replace_splits_on_any_whitespace_run() -> None:
+    # The value is split on whitespace runs, never on single spaces: a
+    # blank value clears the field, and a doubled space makes no empty
+    # token (a Token("") raises), which the 2.x facade's setters and
+    # #232's initials IndexError reached through this split.
+    blank = parse("John Doe").replace(given="  ")
+    assert blank.given == ""
+    assert not blank.tokens_for(Role.GIVEN)
+    doubled = parse("John Doe").replace(middle="Q  R")
+    assert [t.text for t in doubled.tokens_for(Role.MIDDLE)] == ["Q", "R"]
+    assert doubled.initials() == "J. Q. R. D."
+
+
 def test_replace_rejects_unknown_field() -> None:
     with pytest.raises(TypeError, match="given"):
         _delavega().replace(firstname="X")
