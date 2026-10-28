@@ -367,7 +367,8 @@ operation on this worktree's own log; it does not check out, stash, or
 otherwise mutate anything.
 
 The AST extraction over-collects on purpose (string literals passed as
-`HumanName(...)`'s first argument, plus string members of list/dict/
+`HumanName(...)`'s first argument at a `--ref`, or in the working tree
+as `parse(...)`'s and its test helpers' since 3.0 ported the suite, plus string members of list/dict/
 tuple banks that contain a space) -- more candidate strings is more
 coverage, and the corpus is deduplicated. Obvious non-names (strings
 containing `{`, `@`, or a backslash -- format placeholders, decorator/

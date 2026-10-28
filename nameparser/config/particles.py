@@ -90,9 +90,11 @@ NON_GIVEN_NAME_PARTICLES = _compiled.NON_GIVEN_NAME_PARTICLES
 #: still joins forward), with no drift.
 PARTICLES = _compiled.PARTICLES
 
-# Without __all__ a star import binds every module-level name, so a helper
-# imported here lands in the caller's namespace as though it were
-# vocabulary (#356) -- `_compiled` now, as `assert_normalized` and
-# BOUND_GIVEN_NAMES did before the vocabulary moved to TOML.
+# Without __all__ a star import binds every module-level name not
+# written with a leading underscore, so a helper imported here lands in
+# the caller's namespace as though it were vocabulary (#356), as
+# `assert_normalized` and BOUND_GIVEN_NAMES did before the vocabulary
+# moved to TOML; `_compiled`, the one import now, is skipped by its
+# underscore, and __all__ guards the next one.
 # Source order, not alphabetical -- see the note in suffixes.py.
 __all__ = ["NON_GIVEN_NAME_PARTICLES", "PARTICLES"]

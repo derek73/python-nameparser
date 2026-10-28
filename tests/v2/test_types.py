@@ -349,10 +349,10 @@ def test_replace_splits_on_any_whitespace_run() -> None:
     # blank value clears the field, and a doubled space makes no empty
     # token (a Token("") raises), which the 2.x facade's setters and
     # #232's initials IndexError reached through this split.
-    blank = parse("John Doe").replace(given="  ")
+    blank = parse("John Doe").replace(given=" \n ")
     assert blank.given == ""
     assert not blank.tokens_for(Role.GIVEN)
-    doubled = parse("John Doe").replace(middle="Q  R")
+    doubled = parse("John Doe").replace(middle="Q \t R")
     assert [t.text for t in doubled.tokens_for(Role.MIDDLE)] == ["Q", "R"]
     assert doubled.initials() == "J. Q. R. D."
 

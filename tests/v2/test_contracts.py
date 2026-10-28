@@ -263,9 +263,9 @@ def test_star_import_binds_the_module_s_live_constants(module_name: str) -> None
     The expected set is DERIVED from the module rather than listed, so a
     constant added to one of these modules without a matching
     ``__all__`` entry fails here, and each is checked to be the module's
-    own object, so an ``__all__`` entry routed elsewhere fails too; a
-    helper the module imports (``_compiled``, #356) left bound by the
-    star import fails it as well.
+    own object, so an ``__all__`` entry routed elsewhere fails too, as
+    does a public name the module imports that a star import binds
+    (#356).
     """
     import importlib
 

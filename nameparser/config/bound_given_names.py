@@ -20,7 +20,7 @@ from nameparser.config import _compiled
 #: chains onto the piece that follows it.
 BOUND_GIVEN_NAMES: frozenset[str] = _compiled.BOUND_GIVEN_NAMES
 
-# Without __all__ a star import binds `_compiled`, imported only to re-export
-# the constant, is bound by a star import as though it were vocabulary
-# (#356).
+# Without __all__ a star import binds any import here not written with
+# a leading underscore, as though it were vocabulary (#356); the note in
+# particles.py says more.
 __all__ = ["BOUND_GIVEN_NAMES"]

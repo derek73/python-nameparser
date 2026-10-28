@@ -89,7 +89,8 @@ strict_equality = true
 # strict_equality for the WHOLE package rather than the core modules
 # above. A comparison between non-overlapping types is always False and
 # is always a bug, wherever it is written, and the block above does not
-# name the package's __init__, config.*, locales.* or __main__.
+# name the package's __init__, _version, config.*, locales.* or
+# __main__.
 # Measured 2026-09-18: clean over nameparser/ as it then stood (the
 # 2.x facade layer included), so it cost nothing and catches the next
 # one. tests/ keep the default,
