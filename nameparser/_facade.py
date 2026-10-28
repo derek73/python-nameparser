@@ -31,7 +31,7 @@ import nameparser.config  # noqa: F401
 
 import nameparser._render as _render
 from nameparser._config_shim import (CONSTANTS, MIGRATION_GUIDE, Constants,
-                                     _cached_parser)
+                                     _cached_parser, _quiet_setstate)
 from nameparser._lexicon import _normalize, _spells_an_initial
 from nameparser._parser import Parser
 from nameparser._types import (FOLDED_TAG, UNCLASSIFIED_TAG,
@@ -918,16 +918,17 @@ class HumanName:
         self._restore(state)
 
     def __copy__(self) -> HumanName:
-        # copy.copy/deepcopy go through the state hooks too, and copying
-        # an instance the caller already holds is no pickle load
+        # copy.copy/deepcopy go through the state hooks, a subclass's
+        # included, and a copy is no pickle load (_quiet_setstate)
         new = object.__new__(type(self))
-        new._restore(self.__getstate__())
+        _quiet_setstate(new, self.__getstate__(), HUMANNAME_PICKLE_DEPRECATION)
         return new
 
     def __deepcopy__(self, memo: dict[int, object]) -> HumanName:
         new = object.__new__(type(self))
         memo[id(self)] = new
-        new._restore(copy.deepcopy(self.__getstate__(), memo))
+        _quiet_setstate(new, copy.deepcopy(self.__getstate__(), memo),
+                        HUMANNAME_PICKLE_DEPRECATION)
         return new
 
     def _restore(self, state: dict[str, Any]) -> None:

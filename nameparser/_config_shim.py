@@ -20,7 +20,9 @@ that cycle.
 """
 from __future__ import annotations
 
+import copy
 import functools
+import re
 import warnings
 from collections.abc import (
     Callable, ItemsView, Iterable, Iterator, KeysView, Mapping, Set,
@@ -749,6 +751,24 @@ MANAGER_DEPRECATIONS = {
 }
 
 
+def _quiet_setstate(new: object, state: dict[str, object],
+                    message: str) -> None:
+    """Restore a copy through its class's own ``__setstate__``.
+
+    ``copy.copy``/``copy.deepcopy`` reconstruct through ``__setstate__``,
+    which since 2.8 warns that a pickle was loaded, and a copy is no
+    load. Calling the class's own hook rather than a private restore
+    keeps a subclass's ``__setstate__`` in the path, as it was before
+    2.8; only the load warning is filtered, by message. A copy of the
+    shared ``CONSTANTS`` stays quiet with it, as before: a ``HumanName``
+    built on the copy still warns.
+    """
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", message=re.escape(message),
+                                category=DeprecationWarning)
+        new.__setstate__(state)  # type: ignore[attr-defined]
+
+
 def _default_vocab() -> dict[str, frozenset[str]]:
     # v1 data modules stay the single vocabulary source through 2.x
     # (same rule as Lexicon.default()).
@@ -1061,13 +1081,16 @@ class Constants:
         return self._copy()
 
     def __copy__(self) -> Constants:
-        # copy.copy/deepcopy would otherwise go through __setstate__ and
-        # warn that a pickle was loaded; copying an instance the caller
-        # already holds (and was warned for) is quiet
-        return self._copy()
+        new = object.__new__(type(self))
+        _quiet_setstate(new, self.__getstate__(), CONSTANTS_PICKLE_DEPRECATION)
+        return new
 
     def __deepcopy__(self, memo: dict[int, object]) -> Constants:
-        return self._copy()
+        new = object.__new__(type(self))
+        memo[id(self)] = new
+        _quiet_setstate(new, copy.deepcopy(self.__getstate__(), memo),
+                        CONSTANTS_PICKLE_DEPRECATION)
+        return new
 
     def _copy(self) -> Constants:
         # An independent instance with its own generation counter and
@@ -1463,7 +1486,17 @@ class Constants:
         self._restore(state)
 
     def _restore(self, state: dict[str, object]) -> None:
-        self._init()  # defaults, then overlay
+        # defaults, then overlay. A subclass's own __init__ runs here as
+        # it did before 2.8; its super().__init__() would warn that a
+        # Constants was constructed, which a restore is not
+        if type(self).__init__ is Constants.__init__:
+            self._init()
+        else:
+            with warnings.catch_warnings():
+                warnings.filterwarnings(
+                    "ignore", message=re.escape(CONSTANTS_DEPRECATION),
+                    category=DeprecationWarning)
+                self.__init__()  # type: ignore[misc]
         # (managers re-wrapped below so _on_change points at THIS
         # instance, not whatever produced the incoming state)
         managers: dict[str, SetManager] = {}

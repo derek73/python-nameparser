@@ -10,6 +10,7 @@ the reader has to survive a type checker, and then run).
 """
 from __future__ import annotations
 
+import ast
 import copy
 import inspect
 import pickle
@@ -231,6 +232,97 @@ def test_copying_an_instance_is_not_a_pickle_load() -> None:
     # deepcopy copies the config, copy shares it, as before 2.8
     assert copy.copy(hn).C is hn.C
     assert copy.deepcopy(hn).C is not hn.C
+
+
+class _TaggedName(HumanName):
+    # a subclass carrying state of its own through the pickle hooks
+    def __getstate__(self) -> dict[str, object]:
+        return {**super().__getstate__(), "tag": getattr(self, "tag", None)}
+
+    def __setstate__(self, state: dict[str, object]) -> None:
+        super().__setstate__(state)
+        self.tag = state["tag"]
+
+
+class _ExtraConstants(Constants):
+    # a subclass whose own __init__ sets state, which a restore ran
+    # before 2.8 and runs still
+    def __init__(self, extra: str = "default") -> None:
+        super().__init__()
+        self.extra = extra
+
+
+def test_a_subclass_copies_and_loads_through_its_own_hooks() -> None:
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        tagged = _TaggedName("John Smith")
+        tagged.tag = "T"
+        extra = _ExtraConstants("set")
+    with _record() as caught:
+        warnings.simplefilter("always")
+        for fn in (copy.copy, copy.deepcopy):
+            assert fn(tagged).tag == "T"
+            assert fn(extra).extra == "default"   # its __init__ ran
+    assert caught == []
+    with _record() as caught:
+        warnings.simplefilter("always")
+        assert pickle.loads(pickle.dumps(tagged)).tag == "T"
+        assert pickle.loads(pickle.dumps(extra)).extra == "default"
+    # the load warns, a restore is no construction
+    assert sorted(str(w.message).split(" ")[0] for w in caught) == [
+        "Constants", "HumanName"]
+
+
+def test_dir_lists_the_names_getattr_serves() -> None:
+    # autodoc collects members from dir(), so a name missing there
+    # drops out of the rendered API reference
+    import nameparser.config
+    import nameparser.util
+    assert {"SetManager", "TupleManager", "RegexTupleManager",
+            "Constants", "CONSTANTS", "titles"} <= set(dir(nameparser.config))
+    assert "lc" in dir(nameparser.util)
+
+
+@pytest.mark.parametrize("module,names", [
+    ("nameparser.config", {"SetManager", "TupleManager", "RegexTupleManager"}),
+    ("nameparser.util", {"lc"}),
+])
+def test_a_star_import_warns_for_each_removed_name_it_binds(
+        module: str, names: set[str]) -> None:
+    namespace: dict[str, object] = {}
+    with _record() as caught:
+        warnings.simplefilter("always")
+        exec(f"from {module} import *", namespace)
+    assert names <= set(namespace)
+    assert len(caught) == len(names)
+    assert all(w.category is DeprecationWarning for w in caught)
+
+
+def test_no_internal_code_reads_a_removed_name() -> None:
+    # an internal read would warn on the library's behalf, at a line
+    # inside nameparser the caller cannot edit; the library reads _lc
+    # and _config_shim directly. Read from the AST, so a docstring
+    # naming one is not a read
+    removed = {"nameparser.config": {"SetManager", "TupleManager",
+                                     "RegexTupleManager"},
+               "nameparser.util": {"lc"}}
+    package = Path(nameparser.__file__).parent
+    offenders, scanned = [], 0
+    for path in package.rglob("*.py"):
+        scanned += 1
+        for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+            if isinstance(node, ast.ImportFrom) and node.module in removed:
+                hits = {a.name for a in node.names} & removed[node.module]
+            elif isinstance(node, ast.Attribute):
+                hits = {node.attr} & set().union(*removed.values())
+                hits = {h for h in hits
+                        if ast.unparse(node.value).endswith(("config", "util"))}
+            else:
+                continue
+            offenders += [f"{path.relative_to(package)}:{node.lineno} {h}"
+                          for h in hits]
+    assert scanned > 20                      # the scan saw the package
+    assert offenders == []
 
 
 @pytest.mark.parametrize("code", [

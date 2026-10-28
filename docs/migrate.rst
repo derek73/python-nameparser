@@ -23,9 +23,9 @@ old name.
 Deprecated in 2.8
 -----------------
 
-nameparser 2.8 is the last 2.x feature release. Everything 3.0 removes
-emits a ``DeprecationWarning`` from 2.8 on, at the line in your code
-that uses it, every time it runs:
+nameparser 2.8 is the last 2.x feature release. From 2.8 on, the uses
+3.0 removes emit a ``DeprecationWarning`` at the line in your code that
+makes them, every time it runs:
 
 .. list-table::
    :header-rows: 1
@@ -58,19 +58,21 @@ that uses it, every time it runs:
 Importing ``nameparser``, ``nameparser.parser`` or ``HumanName`` stays
 quiet, and so does ``from nameparser import *``; the warning comes when
 the code runs. ``from nameparser.config import *`` does warn, once for
-each manager it imports, and so does ``from nameparser.util import *``. A ``DeprecationWarning`` is hidden by default outside
-``__main__``, so run your tests to see them, or turn them into errors
-to find every site:
+each manager it imports, and so does ``from nameparser.util import *``. One use does not warn: *reading* the shared ``CONSTANTS``
+(``"dr" in CONSTANTS.titles``), which stays quiet so that importing
+``nameparser`` does. Search your code for ``CONSTANTS`` as well. A
+``DeprecationWarning`` is hidden by default outside ``__main__``, so
+run your tests to see the rest, or turn them into errors to find each
+site:
 
 .. code-block:: bash
 
     python -W error::DeprecationWarning -m pytest
 
-The 2.0 API carries into 3.0 unchanged except for additions:
-``parse``, ``Parser``, ``Lexicon``, ``Policy``, ``Locale`` and
-``ParsedName``. Code written against it today is the
-migration. The output model changes in 3.0; details with the 3.0
-alphas.
+The 2.0 API's names and signatures carry into 3.0, gaining additions
+only: ``parse``, ``Parser``, ``Lexicon``, ``Policy``, ``Locale`` and
+``ParsedName``. Separately, the output model changes in 3.0; details
+with the 3.0 alphas.
 
 Before you upgrade
 ------------------
@@ -159,7 +161,8 @@ warned removals:
        ``KeyError`` like ``set.remove``
    * - ``HumanName(..., constants=None)``
      - ``Constants()`` for library defaults, or ``CONSTANTS.copy()``
-       for a private snapshot of the current shared config
+       for a private snapshot of the current shared config (both
+       deprecated since 2.8: see `Deprecated in 2.8`_)
    * - ``name['first'] = value``
      - ``name.first = value``
    * - ``CONSTANTS.regexes.typo`` (returned ``EMPTY_REGEX``)
