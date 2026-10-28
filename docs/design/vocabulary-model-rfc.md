@@ -27,7 +27,7 @@ Four phases, in a fixed order:
 | 1 | The per-word TOML format, compiled to today's sets | no | shipped in 2.6 (#737, #744); #749–#751 gave the words in `und.toml` their languages, leaving two particles of unrecorded origin |
 | 2 | Ambiguity derived from clashing readings; the ambiguity gate extended to every reading kind | yes, the first phase that does | #752, design agreed 2026-10-23; 2a, the two name-clash markers derived, landed without moving a parse (decisions/vocabulary-model, 2026-10-25) |
 | 3 | Language packs that prefer or restrict their language | yes, for callers who choose one | #753, needs 1 and 2 |
-| 4 | Order and shape; the rules a pack can choose; the output model | yes | #754, mostly independent of 2 and 3 |
+| 4 | Order and shape; the rules a pack can choose; the output model | yes | #754, 3.0 work; its output model proposed 2026-10-28, ahead of or alongside phase 3's mechanism |
 
 Two commitments hold through all four. **The default loads every language and keeps working for names of any language, as today**; choosing a language narrows it (decision 5 in decisions/vocabulary-model). And **languages own vocabulary and defaults, the core owns structure**: a pack configures rules the core implements, and never ships code (mechanisms.md#LOCALE-PACKS-PURE-DATA).
 
@@ -184,6 +184,8 @@ Consequences that follow from the definitions:
 
 ## Phase 4: order, shape and the output model
 
+Status: **the output model is proposed, not agreed** (2026-10-28, #754). The record is decisions/vocabulary-model's 2026-10-28 #754 entry, whose items are each marked proposed until Derek decides them; the output-model and work-order subsections below are the proposal those items describe. The first two subsections, order and shape and the rules a pack can choose, are as written before and are amended only where the proposal reaches them. Phase 4 is 3.0 work: 3.0 ships it with phase 3 and the facade's removal, with alphas along the way, and it ships when phase 4 is done. The core API (`parse`, `Parser`, `Lexicon`, `Policy`, `Locale`, `ParsedName`) is frozen for 3.0 except for additions (decisions/3-0-reevaluations, 2026-10-28 #925, THE CORE API), so every proposal below says whether it is an addition.
+
 ### Order is not shape
 
 Decision 14 separates two things a "language" was going to carry:
@@ -213,17 +215,81 @@ A language file will hold a `[rules]` table that turns on rules implemented in t
 
 The surname span has shipped ahead of the packs, as an opt-in `Policy` field rather than a pack, since the convention is not one language's ([rules/O6](rules/O6-two-family-names.md), two family names, #875 and #878; decisions/O6 has why it is not `locales.ES`). A pack can later switch it on in its `[rules]`, as it will a default order.
 
-The real-name corpora agree on the priority. In the GND and Wikidata corpora, Spanish and Latin American double surnames written given-first disagreed with the source on 315 of 390 names, while the same kind of names in index form, where the comma settles it, disagreed on 0 of 60 (counted 2026-10-16 on master `4375b01b`, from `gnd_agreement.json` and `wikidata_agreement.json`): the gap is order and span, not vocabulary.
+**Proposed: a language file's `[rules]` compiles into its shipped `Locale`'s `policy` patch**, at build time as the vocabulary does, so a rule a pack turns on is a `Policy` field (`two_family_names`, `patronymic_rules`, and the new rule kinds as new fields) and `Locale` gains no field for rules. RU and TR_AZ become that: their `PolicyPatch` written by the build from `ru.toml`'s and `tr.toml`'s `[rules]` instead of by hand. The compound given name is measured in the fielded corpora: in ORCID and PatentsView records from Brazil, Portugal, Spain, Mexico, Argentina, Colombia, Chile and Italy whose given-names box holds three or more words with a particle inside (the `Maria do Carmo` shape) and whose family box is filled, 1,812 of 1,923 ORCID records and 1,165 of 1,219 PatentsView records read with the given box's words pulled into the family (2026-10-28, master `c8357e74`). Like the surname span, it is a rule a caller or a pack turns on, since `Juan de la Vega` is the same string shape with the opposite answer.
+
+The real-name corpora agree on the priority. In the GND and Wikidata corpora, Spanish and Latin American double surnames written given-first disagreed with the source on 315 of 390 names, while the same kind of names in index form, where the comma settles it, disagreed on 0 of 60 (counted 2026-10-16 on master `4375b01b`, from `gnd_agreement.json` and `wikidata_agreement.json`): the gap is order and span, not vocabulary. The PSC register ranks it (#754's comment of 2026-10-23): 22,168 of its 1,040,708 filed names read a two-word surname's first word as a middle name, the largest disagreement shape in its score.
 
 ### The output model
 
-Phase 4 also decides what a parse returns, aligned with CLDR's person-name fields, which gives ground truth for free:
+Phase 4 also decides what a parse returns, aligned with CLDR's person-name fields, which gives ground truth for free. Five fields were asked for: a second surname (`surname2`), a patronymic (decision 8), credentials apart from generations (#326), a meaning for `middle` when a given name is several words (#704), and the reading each token took (`Token.reading`, phase 2's item 13). The proposal answers all five with one shape.
 
-- **A second surname** (`surname2`) for Spanish, Catalan and Galician names, which CLDR's samples carry and nameparser has no field for.
-- **A patronymic field** (decision 8), holding only a living patronymic. Its main value to callers is that `family` can be empty for the cultures that have no family name: `Soffía Karlsdóttir` reads family `Karlsdóttir` and `Mahathir bin Mohamad` family `bin Mohamad` today, where a letter addressed to "Mr. {family}" is wrong. Whether the field is `patronymic` or a neutral list of parent names, which a matronymic also fits, is open under #754.
-- **Credentials separate from generation suffixes** (#326), and a decision on whether honorifics after a name get a field or stay a reading kind inside `suffix`.
-- **What `middle` means** when a given name is several words (#704).
-- **Gender**, recorded only where a word gives a definitive clue (decision 9): reported with its evidence, never inferred from given names.
+**Proposed: the seven roles stay, and every new field is a view.** A `Role` partitions the tokens: each word is in exactly one of title, given, middle, family, suffix, nickname and maiden. Each of the five asks to subdivide a role that exists, not to add a part a name has outside them: a second surname is part of the family, generation and credentials are parts of the suffix, a second given name is the middle, and a patronymic is a word the parse already puts in the family (Icelandic, Arabic and Malay names) or in the middle (East Slavic names). So each is a view computed from the tokens, as `family_base`, `family_particles`, `surnames` and `given_names` are today (rules/R1, rules/R2): a property and a render key, with `as_dict()`, `comparison_key()` and the seven role properties unchanged. Every view is an addition under the 3.0 freeze. A new `Role` member would not be: `as_dict()` would gain a key, `comparison_key()` a component (a stored key would stop matching), `for role in Role` a member, and the role a token moves out of would return less text than it does in 2.x, a change in what `family` or `suffix` means that no 2.x warning has announced.
+
+What decides a view is the reading each token took, so `Token.reading` comes first:
+
+- **`Token.reading`** (proposed): a `Token` field holding the `Reading` the parse took, the same type `Ambiguity.alternative` holds the reading not taken in (decisions/A1), `None` for a token `replace()` builds. Its `kind` says what the word was read as, its `source` why, and a `languages` field, added to `Reading`, names the language files holding that reading, filled from phase 3's reading index (3a) and left empty for a reading no file holds (a caller's own vocabulary, a shape, position alone). The field takes `ADDED_IN` metadata, so a 2.x pickle loads with `None` (the pickle guard as widened in 2.7), and is left out of comparison (`compare=False`), so `==` between two `ParsedName`s means what it means in 2.x. `ReadingKind` gains `PATRONYMIC`, its docstring already allowing new kinds.
+- **Generation and credentials** (#326, proposed): `generation`, the suffix tokens whose reading is a generation or an agnomen (`Jr.`, `III`, `Filho`), and `credentials`, the rest of the suffix (`PhD`, `Esq.`, the honorifics after a name), so the two partition `suffix` and `suffix` is unchanged. CLDR has only these two buckets; the post-nominals that are neither (`Esq.`, the CJK and Hebrew honorifics, `Rinpoche`) fall in `credentials`, CLDR's catch-all, and a caller who wants them apart reads `Token.reading.kind`, which says `post-nominal`. Measured 2026-10-28 on `c8357e74`: of the 1,170 committed corpus names with a suffix, 88 hold a generation and a credential together, and 87 hold only a listed post-nominal of another kind. Of the 615 CLDR renderings with a generation or credentials field, 75 parse with exactly CLDR's suffix words, and in all 75 a split by the vocabulary's reading kind gives CLDR's `generation` and `credentials` both; the other 540 differ in which words the suffix holds, a parse question the split cannot fix. Recompute: classify each suffix token by the kind of its reading in nameparser/vocab/ (a roman numeral the generation), over `cldr_fields.jsonl`.
+- **A patronymic** (decision 8, proposed): `patronymic`, the tokens whose reading is `PATRONYMIC`, in whichever role the parse put them, with `family` and `middle` unchanged. What fills it is a word or a rule that says patronymic, never a guess from position: the vocabulary's `patronymic` particles (`bin`, `binti`, `ibn`, `bint`, Hebrew `bar` and `bat` and the native-script forms) with the name after them, in the default, so `Mahathir bin Mohamad` reads family `bin Mohamad` as today and patronymic `bin Mohamad` beside it; the East Slavic and Turkic rules where RU or TR_AZ turns them on, so `Ivan Ivanovich Ivanov` under RU keeps middle `Ivanovich` and adds patronymic `Ivanovich`; and an Icelandic ending rule an `is` pack would turn on, the default unable to tell `Karlsdóttir` from the Swedish surname `Johansson`. The name `patronymic` is kept for a matronymic too, which is written the same way and cannot be told from one. **`family` is not emptied** by recognizing a patronymic, against what this section said before: the people filling in the fielded corpora put the patronymic in the family box (below), as CLDR's samples put an Icelandic patronymic in `surname` (9 of 9) and a Russian one in `given2` (6 of 6), our `middle`, while Wikidata records an Icelandic name as a patronymic with no family name; a `family` that keeps it and a `patronymic` that names it satisfy both. A caller writing "Mr. {family}" reads `patronymic` to see that the family is one.
+- **A second surname** (proposed): `surname2`, the family's second name unit where a rule has read the family as two (rules/O6, which a caller or an `es` pack turns on), and empty otherwise, `family` keeping both units as O6 makes it today. O6 already knows which unit it took, so it marks where the second one starts with a new stable tag; a family comma alone marks nothing, since `Lloyd Webber, Andrew` is not two surnames, and a hyphenated family is one token and stays whole. Whether the first unit gets a view of its own, and its name (`surname` sits close to the `surnames` that exists), is a value question below.
+- **`middle`** (#704, proposed): keeps its meaning, every word of the given part after the given name, and the given name is one name unit unless a rule joins words into it, as rules/P5 already does (`Abdul Aziz Tariq` → given `Abdul Aziz`). A compound given name (`Maria do Carmo`, `María José`) is the `[rules]` rule above, turned on by a caller or a pack, moving its words into `given` only under that rule. CLDR's `given2` is `middle`, so no view is added. A Sikh `Kaur` and an English name beside a Chinese one (`Lim Mei Ling Jessica`) stay in `middle`, an accepted cost.
+
+**Measured in the fielded corpora** (2026-10-28, master `c8357e74`, counts only; recompute by counting each record's boxes by word count and word ending with `local_corpora.read_records`, grouped by the record's country or nationality, and the parse's role for the counted word with `parse()`):
+
+| Question | Where | Count |
+|---|---|---|
+| patronymic in the family box | Icelandic records whose family box ends in `-son` or `-dóttir` | ORCID 1,647 of 2,583 (63.8%), PatentsView 535 of 722, PSC 101 of 125; the parse reads every one checked as the family (ORCID 1,509 of 1,509 ending `-sson` or `-dóttir`) |
+| patronymic with no family | Wikidata's `patronymic-is` and `patronymic-my` strata, a patronymic and no surname stated | 108 rows, of which the parse puts the patronymic in `family` 107 times |
+| patronymic in the given part | PatentsView records from Russia whose given box ends in an East Slavic patronymic | 8,423 of 20,000 (42.1%); across PatentsView the parse reads such a word as the middle 10,902 times of 10,962; in PSC, 90 of the 112 Russian nationals who filled the middle-name box wrote a patronymic there |
+| nasab, filer's box | Malaysian records holding `bin`, `binti` and their spellings | ORCID: 319 in the family box, 335 in the given box; PatentsView: 106 and 269 |
+| a second surname | family box of two words | ORCID Spain 48.0%, Mexico 64.7%, Colombia 72.8%, Chile 50.5%, Argentina 16.7%, United States 3.9% |
+| a second given name | PSC, which has a middle-name box | 2,499 of 1,040,708 forename boxes hold two or more words; of 6,101 Spanish nationals, 25 do and 2,621 (43.0%) fill the middle box |
+| no family name | ORCID records with an empty family box | 68,006 of 1,831,533 (3.7%); India 17.5%, Pakistan 16.4%, Bangladesh 18.7%, Indonesia 15.9%; of those with two or more given-box words, the parse fills `family` in 51,367 of 51,415 |
+
+ORCID's and PatentsView's given box holds the middle names too, so a two-word given box there cannot tell a compound given name from a middle name; PSC's middle box can, though its form steers what goes in it. The last row is a separate question from the patronymic: a name of given names only, written by people who have no family name, which no output field fixes and only a rule could read (an open question below).
+
+**Render defaults** (decisions/3-0-reevaluations' clean slate, proposed). The default `str()` reads every name given-first and joins its words with spaces, so a name read family-first is turned round and a written separator is lost: `str(parse("김민준"))` is `'민준 김'`, `str(parse("王 小明"))` is `'小明 王'` and `str(parse("威廉·莎士比亚"))` is `'威廉 莎士比亚'`. In the committed corpora (2026-10-28, `c8357e74`), 264 names without a comma read family-first, `str()` renders every one differently from the text, and 159 of them are written unspaced; of 43 names holding the U+00B7 interpunct, `str()` drops it from 38. Proposed:
+
+- `ParsedName` gains `order`, the order the name was read under (its script's or the declared `name_order`, a comma aside), an addition with `ADDED_IN` metadata whose missing value, in a 2.x pickle, renders as today.
+- `str()` and `render()`'s default spec put the family first where `order` does, and two words that stand side by side in the original and in the rendering are joined by what separated them there, nothing, a space, an interpunct or a nakaguro, so `str(parse("김민준"))` is `'김민준'` and `str(parse("威廉·莎士比亚"))` keeps the dot. A name with a comma or written given-first renders as today (`Smith, John` → `'John Smith'`).
+- `initials()` gives nothing for a word in a script with no initials (Han, Hangul, kana, `_policy._NO_INITIALS`), where today it gives the first character with a period (`'王.'`).
+
+These change no signature but change `str()`'s output for every name read family-first, so whether they count as a break of the frozen `ParsedName` is Derek's to decide (item 6 of the entry): no 2.x release can warn about a `str()` result.
+
+**What changes in the API**, by the 3.0 freeze:
+
+| Change | Kind |
+|---|---|
+| `Token.reading`, `Reading.languages`, `ReadingKind.PATRONYMIC` | additions; old pickles load |
+| `generation`, `credentials`, `patronymic`, `surname2` properties and render keys | additions |
+| a stable tag marking the second surname's start, joining `STABLE_TAGS` | addition |
+| `ParsedName.order` | addition; old pickles load |
+| new `Policy` fields for rules, and `Locale.languages` (phase 3) | additions |
+| `Role`, `as_dict()`, `comparison_key()`, the seven role properties | unchanged |
+| the default `str()`, `render()` spec and `initials()` output | behavior change, decision needed |
+| a `Role` member for any of the four | a break, not proposed |
+
+**Phase 3's Q1 confirmed** (proposed): `Locale.languages` stands as phase 3's draft proposes. Its open dependency was what `Locale` and `Policy` look like once the facade is gone; the 2026-10-28 freeze answers it, both keeping their 2.x shape with additions. With the `[rules]` proposal above, a shipped language pack is a `Locale` whose `languages` choose its vocabulary and whose `policy` carries its rules, so `Locale` needs no third field.
+
+**Gender**, recorded only where a word gives a definitive clue (decision 9), is not part of this proposal: the vocabulary records it on readings (`bint`'s `gender = "f"`), and `Token.reading` could carry it later as one more addition.
+
+### The order of work
+
+Each sub-phase is one PR, measured on its own base as phase 2's and phase 3's are. The views and the reading move no field of any parse, so the committed snapshot holds still through 4a to 4d; the snapshot records the new views where they are non-empty, as it records the case views, so a reviewer sees what each fills.
+
+| Sub-phase | What | Needs |
+|---|---|---|
+| 4a | `Token.reading` and `ReadingKind.PATRONYMIC`, kind and source filled at the sites that decide today; `Reading.languages` once 3a's index exists | — (neutral); 3a for `languages` |
+| 4b | `generation` and `credentials` (#326) | 4a (neutral) |
+| 4c | `patronymic`: the vocabulary's patronymic particles, and the RU and TR_AZ rules writing the reading | 4a (neutral) |
+| 4d | `surname2`: O6's stable tag | — (neutral) |
+| 4e | the render defaults and `ParsedName.order` | the decision on item 6 |
+| 4f | `[rules]` compiled into a `Locale`'s policy patch; RU and TR_AZ rebuilt from their files | 3b |
+| 4g | the compound given name, a rule kind (#704) | 4f |
+| 4h | the shape inventory per order (#469), starting with the title between a family and a given name under `FAMILY_FIRST` | — |
+
+**Interleaved with phase 3**: 4a can start beside 3a, its `languages` waiting for 3a's index; 4b to 4d need nothing of phase 3 and unblock its packs, `cs`'s generations (3f) and `pt-BR`'s agnomens (3h) on 4b, `es` and `pt` (3g) on 4d and 4g; 4f lands with or after 3b, since both decide what a shipped `Locale` holds; an `is` pack, which no phase 3 sub-phase lists, needs 3b, 4c and 4f. 4e and 4h stand apart from both. So the order proposed is 3a and 4a, then 4b to 4d with 3b and 3c, then 4f, then the packs with 4g, with 4e as soon as item 6 is decided.
+
+**Left open**, value questions inside the shapes above: the first surname's view and its name; whether `credentials` should leave the honorifics out, CLDR having no third bucket; which ending rules beside Icelandic a pack may name (Hungarian `-né` is a married name, not a patronymic); and the names of given names only (the last table row), whose reading needs a rule that tells a mononym from a given name and a family name, not an output field.
 
 ## The first packs
 
