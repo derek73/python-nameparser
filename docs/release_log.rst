@@ -4,7 +4,7 @@ Release Log
 
     nameparser 2.7 reads a title that is also a given name as a title only inside a title phrase, reads credentials written joined, split or in brackets as suffixes, and reports the reading an ambiguous parse did not take. Highlights:
 
-    - **Titles that are also given names read as titles only inside a title phrase.** ``Chief Justice John Roberts`` gives title ``Chief Justice``, first ``John``,, where 2.6 gave title ``Chief``, first ``Justice``.
+    - **Titles that are also given names read as titles only inside a title phrase.** ``Chief Justice John Roberts`` gives title ``Chief Justice``, first ``John``, where 2.6 gave title ``Chief``, first ``Justice``.
     - **Credentials joined by a hyphen or a slash, or split by a space, read as one credential.** ``John Smith, MD/PhD`` gives suffix ``MD/PhD``, where 2.6 gave first ``MD/PhD``, last ``John Smith``.
     - **Given names written short read as given names.** ``Chas. Smith`` and ``Ma. Cristina Reyes`` give first ``Chas.`` and ``Ma.``, where 2.6 read both as titles.
     - **An ambiguity report names the reading the parse did not take.** ``Ambiguity.alternative`` says what the word would have been and why.
