@@ -3,7 +3,10 @@
 The SCORE job (mechanisms.md#NAME-DATA-JOBS ("the job decides where its data lives"))
 for a local corpus whose records carry the name's fields beside it:
 each record's display name is parsed with the tree,
-and each field is compared with the box the filer typed it into. What
+and each field is compared with the box the filer typed it into
+(`psc-individuals`' title, forename, middle name and surname boxes;
+`orcid-researchers`' given-names box, holding the middle names too, and
+family-name box, typed by the holder). What
 cldr_agreement.py does for the committed fields files, over names that
 are never committed -- so no CI run and no reviewer sees this score,
 and its record lives in the cache beside the corpus, where a re-run
@@ -24,7 +27,7 @@ against that shared record:
     uv run python tools/differential/local_agreement.py psc-individuals
 
 The report prints counts and shapes, never a record: agreement overall
-and by the group a source states (a nationality), the misses per field,
+and by the group a source states (a nationality, a country), the misses per field,
 the commonest disagreement shapes, a shape being each disagreeing
 field's word count as filed and as parsed (`middle 0->1, family 2->1` is
 a two-word surname whose first word was read as a middle name), and the
@@ -43,7 +46,7 @@ What counts:
   last in the display name, so it was typed into the last filled box,
   normally the surname: the parser's family is compared with its suffix appended,
   and the report counts the agreements that needed it.
-- A filed title the parser does not read as the title, holding a word
+- Where a source has a title box, a filed title the parser does not read as the title, holding a word
   the vocabulary lists in neither its titles nor its connectives, is
   set aside rather than scored: a job (`Managing Partner`) or a name
   typed into the title box is the filer's error, and it can move the
@@ -84,20 +87,40 @@ if TYPE_CHECKING:
     from nameparser import Lexicon, Parser
 
 RECORD = "agreement.jsonl"
+#: The parser's roles a Fielded box may name, held to nameparser's Role
+#: by test_local_agreement (nameparser is imported only once --tree runs).
+ROLES = frozenset({"title", "given", "middle", "family", "suffix", "nickname", "maiden"})
 
 
 @dataclass(frozen=True)
 class Fielded:
     """How a local corpus states its fields: record key -> the parser's
     role it is compared with, in the order the display name joins them,
-    and the record key the report groups by."""
+    and the record key the report groups by. A box holding more than one
+    role names them joined by "+", and is compared with those roles'
+    values joined by a space in that order: ORCID's given-names box holds
+    the middle names too. A source with no title box sets nothing aside.
+    The group is title-cased for the report unless `group_cased` says
+    it is written as it should print (a country code)."""
     fields: dict[str, str]
     group: str
+    group_cased: bool = False
+
+    def __post_init__(self) -> None:
+        # A misspelled role would find no box (_box), and a misspelled
+        # title would quietly turn the set-aside off.
+        unknown = {r for role in self.fields.values() for r in role.split("+")} - ROLES
+        if unknown or "family" not in "+".join(self.fields.values()).split("+"):
+            raise ValueError(f"Fielded({self.fields}) names {sorted(unknown) or 'no family'}:"
+                             f" each box names roles of {sorted(ROLES)}, a family among them")
 
 
 FIELDED = {local_corpora.PSC: Fielded(
     {"title": "title", "forename": "given", "middle_name": "middle",
-     "surname": "family"}, group="nationality")}
+     "surname": "family"}, group="nationality"),
+           local_corpora.ORCID: Fielded(
+    {"given": "given+middle", "family": "family"}, group="country",
+    group_cased=True)}
 #: The fewest records sharing a set-aside title for the report to print
 #: it: a word typed into the title box by this many filers is no one
 #: person's name.
@@ -137,22 +160,25 @@ def read(record: dict[str, str], fielded: Fielded, parser: Parser,
          listed: frozenset[str]) -> Reading:
     """`record` parsed and compared box by box (see the module docstring)."""
     name = parser.parse(record["name"])
-    got = {role: getattr(name, role) for role in fielded.fields.values()}
+    got = {role: " ".join(v for r in role.split("+") if (v := getattr(name, r)))
+           for role in fielded.fields.values()}
     by_suffix = False
     if name.suffix:
-        with_suffix = f"{got['family']} {name.suffix}".strip()
+        family = fielded.fields[_box(fielded, "family")]
+        with_suffix = f"{got[family]} {name.suffix}".strip()
         by_suffix = fold(with_suffix) == fold(record.get(_box(fielded, "family"), ""))
-        got["family"] = with_suffix
+        got[family] = with_suffix
     wrong = {role: got[role] for box, role in fielded.fields.items()
              if fold(record.get(box, "")) != fold(got[role])}
     title = record.get(_box(fielded, "title"), "")
-    if "title" in wrong and title and unlisted(title, listed):
+    if title and "title" in wrong and unlisted(title, listed):
         return Reading(wrong, set_aside=True)
     return Reading(wrong, by_suffix=by_suffix and not wrong)
 
 
 def _box(fielded: Fielded, role: str) -> str:
-    return next(box for box, r in fielded.fields.items() if r == role)
+    """The box `role` is compared with, or "" where none holds it."""
+    return next((box for box, r in fielded.fields.items() if role in r.split("+")), "")
 
 
 def shape(record: dict[str, str], fielded: Fielded, got: dict[str, str]) -> str:
@@ -166,7 +192,8 @@ def key(record: dict[str, str]) -> str:
 
 
 def group_of(record: dict[str, str], fielded: Fielded) -> str:
-    return " ".join(record.get(fielded.group, "").split()).title() or "(none)"
+    group = " ".join(record.get(fielded.group, "").split())
+    return (group if fielded.group_cased else group.title()) or "(none)"
 
 
 def records(local: local_corpora.Local) -> Iterator[dict[str, str]]:
