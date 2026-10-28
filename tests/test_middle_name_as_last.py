@@ -57,6 +57,16 @@ class MiddleNameAsLastFoldTests(FlaggedPolicyTestBase):
         self.m(n.given_names, n.given, n)
         self.m(n.surnames, n.family, n)
 
+    def test_particle_views_after_fold(self) -> None:
+        # The folded family's particle and base views, as the core reads
+        # them: every particle of the folded family is set apart, not
+        # only the leading run. The 2.x facade's last_prefixes read
+        # 'da' here; this pins the core's own reading.
+        n = self.hn("Miguel da Silva do Amaral de Souza")
+        self.m(n.family, "da Silva do Amaral de Souza", n)
+        self.m(n.family_particles, "da do de", n)
+        self.m(n.family_base, "Silva Amaral Souza", n)
+
 
 class MiddleNameAsLastFlagOffTests(ParsedNameTestBase):
 

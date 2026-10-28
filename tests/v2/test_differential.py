@@ -354,7 +354,11 @@ def _tree_results(entries: list[tuple[str, str | None]], want_v2: bool
     the tree does -- built by running the template on each line, and
     for a baseline with no 2.0 surface by laying the tree's fields out
     as that release's HumanName names them (the tree has no HumanName
-    since 3.0, so the worker's v1 arm cannot run here)."""
+    since 3.0, so the worker's v1 arm cannot run here). That arm --
+    the template's `else: from nameparser import HumanName` and its
+    "v1" row -- runs only against a released wheel, so no test reaches
+    it; `compare.py --baseline 1.4.0` is its check (1,749 of 5,719
+    entries moved, 2026-10-28)."""
     out = []
     for name, order in entries:
         _, raw = _run_template({"name": name, "order": order})

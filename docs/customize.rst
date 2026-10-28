@@ -40,7 +40,7 @@ addition belongs on a :class:`~nameparser.Lexicon` as above.
 ``REGEXES`` and ``CAPITALIZATION_EXCEPTIONS`` are the two members the
 freeze does not cover — they are still plain dicts. Editing one at
 runtime is not a supported override. The parser does not read
-``REGEXES`` at all, and :meth:`~nameparser.Lexicon.default` is cached,
+``REGEXES`` at all, and ``Lexicon.default()`` is cached,
 so an edit to ``CAPITALIZATION_EXCEPTIONS`` after the first parse never
 reaches it; extend a :class:`~nameparser.Lexicon`'s pairs instead
 (:ref:`case-exceptions`).

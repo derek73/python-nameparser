@@ -79,7 +79,11 @@ One use slips through: *reading* the shared ``CONSTANTS``
 did not warn on so that importing ``nameparser`` stays quiet. Search
 your code for ``CONSTANTS`` as well. Importing ``nameparser.parser`` or
 ``HumanName`` did not warn either, but constructing a ``HumanName`` did,
-so a suite that exercises the code finds it.
+so a suite that exercises the code finds it. Three more imports are
+quiet on 2.8 and fail on 3.0, with nothing after them to warn:
+``import nameparser.util``, and importing the two 1.x word-list modules
+``nameparser.config.prefixes`` and ``nameparser.config.bound_first_names``.
+Search for those three names too.
 
 Coming from 1.x
 ~~~~~~~~~~~~~~~
@@ -177,6 +181,15 @@ returns, like this:
      - ``render(spec)``
      - A per-call argument now, not stored config — see
        :ref:`rendering-arguments`
+   * - ``initials()``
+     - ``initials()``
+     - The same reading, except that ``HumanName`` initialed a joined
+       element such as ``Ph. D.`` as one: ``"Ph. D., John"`` gave
+       ``J. P D.`` there and gives ``J. P. D.`` here, as on 1.4
+   * - ``initials_list()``
+     - none
+     - ``ParsedName`` has no list view of the initials;
+       ``initials(spec)`` renders the ones you need
    * - ``initials_format``, ``initials_delimiter``, ``initials_separator``
      - ``initials(spec, delimiter, separator)``
      - Same three knobs, now call-site arguments to
@@ -337,7 +350,7 @@ Every vocabulary *set* in ``nameparser.config`` is a ``frozenset``
 as of 2.2. The freeze retires one 1.x
 idiom outright: ``TITLES.add("dean")`` — editing a default word list
 in place — raises ``AttributeError`` at the line that writes it.
-:meth:`Lexicon.default() <nameparser.Lexicon.default>` is cached and
+``Lexicon.default()`` is cached and
 reads the module constants once, at its first call, so an edit there
 was never a dependable way to change a default: an edit made after the
 first parse never reached it.

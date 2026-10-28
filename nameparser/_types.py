@@ -132,9 +132,10 @@ UNJOINED_CONJUNCTION_TAG = "vocab:unjoined-conjunction"
 #: The one sanctioned view-reorder marker (namespaced = unstable API).
 #: Tokens cannot reorder (span order is validated), so a role fold that
 #: must render BEFORE the role's original tokens tags them with this;
-#: _text_for and _render.initials both prepend the carriers. Single-sourced here so the emitter (_pipeline/_post_rules)
-#: and the consumers cannot drift -- initials() was the consumer that
-#: did drift, walking written order until #408.
+#: _text_for and _render.initials both prepend the carriers.
+#: Single-sourced here so the emitter (_pipeline/_post_rules) and the
+#: consumers cannot drift -- initials() was the consumer that did
+#: drift, walking written order until #408.
 FOLDED_TAG = "vocab:folded-middle"
 
 #: Raw text spliced into a field after the parse, which no parse ever

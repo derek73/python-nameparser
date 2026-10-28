@@ -94,6 +94,14 @@ class InitialsTestCase(ParsedNameTestBase):
         self.m(hn.initials("{given}{middle}{family}", separator=""),
                "J.A.K.D.", hn)
 
+    def test_initials_separator_inside_a_multi_word_group(self) -> None:
+        # the separator joins the initials of one group's words: here the
+        # two words of the family 'Ph. D.' (ported from the 2.x facade's
+        # live-token-path test, whose list view merged them into one)
+        hn = parse("Ph. D., John")
+        self.m(hn.initials(separator="-"), "J. P.-D.", hn)
+        self.m(hn.initials(separator=""), "J. P.D.", hn)
+
     def test_string_format_empty_string_kwarg(self) -> None:
         # Regression: an empty format was silently ignored due to `or` defaulting
         hn = parse("John Doe")

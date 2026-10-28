@@ -6,7 +6,7 @@ Release Log
 
     **Breaking Changes**
 
-    - **Remove HumanName, Constants and the rest of the 1.x compatibility layer.** ``from nameparser import HumanName`` raises ``ImportError``, where 1.4.0 through 2.8.0 imported it (2.8.0 warning at each use); ``parse("Dr. Juan de la Vega")`` reads the same name, with given ``Juan`` and family ``de la Vega``. ``nameparser.parser``, ``nameparser.util``, ``nameparser.config``'s ``Constants``, ``CONSTANTS`` and managers, and the five word-list names 2.2 renamed go too, and a pickled ``HumanName`` or ``Constants`` no longer loads; the word lists in ``nameparser.config`` stay. See :doc:`migrate`. :issue:`357`
+    - **Remove HumanName, Constants and the rest of the 1.x compatibility layer.** ``from nameparser import HumanName`` raises ``ImportError``, where 1.4.0 through 2.8.0 imported it (2.8.0 warning where it was constructed); ``parse("Dr. Juan de la Vega")`` reads the same name, with given ``Juan`` and family ``de la Vega``. ``nameparser.parser``, ``nameparser.util``, ``nameparser.config``'s ``Constants``, ``CONSTANTS`` and managers, and the five word-list names and two module paths 2.2 renamed go too, and a pickled ``HumanName`` or ``Constants`` no longer loads; the word lists in ``nameparser.config`` stay. See :doc:`migrate`. :issue:`357`
 
 * 2.8.0 - October 28, 2026
 

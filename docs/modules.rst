@@ -202,7 +202,7 @@ Default vocabulary
 ------------------
 
 The data modules in ``nameparser.config``: the word lists
-:meth:`Lexicon.default() <nameparser.Lexicon.default>` is built from,
+``Lexicon.default()`` is built from,
 and the compiled patterns in ``regexes``. To change a default for your
 parses, configure a :class:`~nameparser.Lexicon` rather than the
 module (:doc:`customize`). Coming from 1.x? See :doc:`migrate`.
