@@ -126,6 +126,15 @@ xfail_strict = true
 # pytest.warns; targeted ignores below need a comment justifying each.
 filterwarnings = [
     "error",
+    # 2.8's 3.0-removal warnings, ignored BY MESSAGE so any other
+    # DeprecationWarning still fails the suite; tests/v2/test_deprecations.py
+    # asserts each one, and the v1 suite exercises the facade on purpose
+    "ignore:HumanName is deprecated and will be removed in 3.0:DeprecationWarning",
+    "ignore:HumanName pickles stop loading in 3.0:DeprecationWarning",
+    "ignore:Constants is deprecated and will be removed in 3.0:DeprecationWarning",
+    "ignore:Constants pickles stop loading in 3.0:DeprecationWarning",
+    "ignore:nameparser.config.(Set|Tuple|RegexTuple)Manager is deprecated:DeprecationWarning",
+    "ignore:nameparser.util.lc is deprecated:DeprecationWarning",
 ]
 
 [tool.ruff.lint]

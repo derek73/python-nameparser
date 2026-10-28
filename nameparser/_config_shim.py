@@ -4,7 +4,7 @@ re-exports these names from the swap
 commit onward; the whole module is deleted in 3.0 with the facade.
 
 Layering: facade layer -- may import anything public; here that's
-``nameparser.util`` for ``lc()``, ``nameparser.config.regexes`` for
+``nameparser.util`` for ``lc()`` (as ``_lc``, the name that does not warn), ``nameparser.config.regexes`` for
 the read-only regexes proxy's underlying compiled patterns, and
 ``nameparser._lexicon``/``_policy``/``_parser`` for the ``_snapshot()``
 translation and the shared parser cache.
@@ -20,7 +20,9 @@ that cycle.
 """
 from __future__ import annotations
 
+import copy
 import functools
+import re
 import warnings
 from collections.abc import (
     Callable, ItemsView, Iterable, Iterator, KeysView, Mapping, Set,
@@ -33,7 +35,7 @@ from nameparser._lexicon import (
 )
 from nameparser._parser import Parser
 from nameparser._policy import PatronymicRule, Policy
-from nameparser.util import lc
+from nameparser.util import _lc as lc
 
 
 #: The eight multi-word entries the pre-2.0 DEFAULT vocabulary shipped.
@@ -712,12 +714,64 @@ _UNSET = object()
 _UNSET_KWARG = object()
 
 
+#: The migration guide every 2.8 removal message points at.
+MIGRATION_GUIDE = "https://nameparser.readthedocs.io/en/latest/migrate.html"
+
+# The 2.8 removal messages (decisions/3-0-reevaluations, 2026-10-28).
+# Each names code that type-checks and runs, pinned by
+# tests/v2/test_deprecations.py, and each opens with a fixed phrase
+# pyproject's filterwarnings ignores by message.
 _SHARED_MUTATION_MESSAGE = (
     "mutating the shared CONSTANTS singleton is deprecated and will be "
-    "removed in 3.0; build a Lexicon/Policy (or a private Constants "
-    "passed as HumanName(constants=...)) instead. See the migration "
-    "guide."
+    "removed in 3.0 with HumanName and Constants; configure a Parser "
+    "instead, e.g. Parser(lexicon=Lexicon.default().add(titles={'dean'})). "
+    f"See {MIGRATION_GUIDE}"
 )
+CONSTANTS_DEPRECATION = (
+    "Constants is deprecated and will be removed in 3.0 with HumanName; "
+    "configure a Parser instead, e.g. "
+    "Parser(lexicon=Lexicon.default().add(titles={'dean'})). "
+    f"See {MIGRATION_GUIDE}"
+)
+CONSTANTS_PICKLE_DEPRECATION = (
+    "Constants pickles stop loading in 3.0, when Constants is removed; "
+    "pickle a Parser instead, e.g. "
+    "Parser(lexicon=Lexicon.default().add(titles={'dean'})). "
+    f"See {MIGRATION_GUIDE}"
+)
+#: one message per manager class, keyed by name, for
+#: nameparser.config.__getattr__
+MANAGER_DEPRECATIONS = {
+    name: (
+        f"nameparser.config.{name} is deprecated and will be removed in "
+        f"3.0 with Constants; Lexicon fields take plain sets, e.g. "
+        f"Lexicon.default().add(titles={{'dean'}}). See {MIGRATION_GUIDE}"
+    )
+    for name in ("SetManager", "TupleManager", "RegexTupleManager")
+}
+
+
+def _quiet_setstate(new: object, state: dict[str, object], base: type,
+                    message: str) -> None:
+    """Restore a copy through its class's own ``__setstate__``.
+
+    ``copy.copy``/``copy.deepcopy`` reconstruct through ``__setstate__``,
+    which since 2.8 warns that a pickle was loaded, and a copy is no
+    load. ``base``'s own hook restores privately; a subclass's override
+    is called, as it was before 2.8, with only the load warning
+    filtered, by message. The filter is taken only then: entering
+    ``catch_warnings`` clears every module's warnings registry, so on
+    every copy it would re-show warnings the caller's filters show once
+    per line. A copy of the shared ``CONSTANTS`` stays quiet, as before:
+    a ``HumanName`` built on the copy still warns.
+    """
+    if type(new).__setstate__ is base.__setstate__:  # type: ignore[attr-defined]
+        new._restore(state)  # type: ignore[attr-defined]
+        return
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", message=re.escape(message),
+                                category=DeprecationWarning)
+        new.__setstate__(state)  # type: ignore[attr-defined]
 
 
 def _default_vocab() -> dict[str, frozenset[str]]:
@@ -786,9 +840,11 @@ class Constants:
 
     The module-level ``CONSTANTS`` singleton (below) has ``_shared``
     flipped to ``True``: any mutation reached through it emits
-    ``DeprecationWarning`` pointing at ``Lexicon``/``Policy`` and
-    ``HumanName(constants=...)``. A private ``Constants()`` never
-    warns -- only the shared instance is on the 3.0 removal path.
+    ``DeprecationWarning`` pointing at ``Lexicon``/``Policy``. Since 2.8
+    constructing a ``Constants``, copying one with ``copy()`` and
+    loading one from a pickle warn too, since the whole class goes in
+    3.0; the singleton is built without the warning, so importing
+    ``nameparser`` stays quiet.
     """
 
     _shared = False  # the CONSTANTS singleton flips this to True
@@ -819,6 +875,41 @@ class Constants:
     suffix_delimiter: str | None
 
     def __init__(
+        self,
+        *,
+        prefixes: Iterable[str] | object = _UNSET_KWARG,
+        suffix_acronyms: Iterable[str] | object = _UNSET_KWARG,
+        suffix_not_acronyms: Iterable[str] | object = _UNSET_KWARG,
+        suffix_acronyms_ambiguous: Iterable[str] | object = _UNSET_KWARG,
+        titles: Iterable[str] | object = _UNSET_KWARG,
+        first_name_titles: Iterable[str] | object = _UNSET_KWARG,
+        conjunctions: Iterable[str] | object = _UNSET_KWARG,
+        bound_first_names: Iterable[str] | object = _UNSET_KWARG,
+        non_first_name_prefixes: Iterable[str] | object = _UNSET_KWARG,
+        capitalization_exceptions:
+            Mapping[str, str] | Iterable[tuple[str, str]] | object
+            = _UNSET_KWARG,
+        regexes: object = _UNSET_KWARG,
+        patronymic_name_order: bool = False,
+        middle_name_as_last: bool = False,
+    ) -> None:
+        # every construction warns, at the caller's line; the warnings
+        # registry, not a flag here, dedups repeats from one line
+        # (decisions/3-0-reevaluations, 2026-10-28)
+        warnings.warn(CONSTANTS_DEPRECATION, DeprecationWarning,
+                      stacklevel=2)
+        self._init(
+            prefixes=prefixes, suffix_acronyms=suffix_acronyms,
+            suffix_not_acronyms=suffix_not_acronyms,
+            suffix_acronyms_ambiguous=suffix_acronyms_ambiguous,
+            titles=titles, first_name_titles=first_name_titles,
+            conjunctions=conjunctions, bound_first_names=bound_first_names,
+            non_first_name_prefixes=non_first_name_prefixes,
+            capitalization_exceptions=capitalization_exceptions,
+            regexes=regexes, patronymic_name_order=patronymic_name_order,
+            middle_name_as_last=middle_name_as_last)
+
+    def _init(
         self,
         *,
         prefixes: Iterable[str] | object = _UNSET_KWARG,
@@ -987,7 +1078,27 @@ class Constants:
         v1 (which deepcopied __dict__): attributes OUTSIDE the known
         field surface -- e.g. ad-hoc names stashed on the instance --
         are not carried by copy() or pickling; only the enumerated
-        fields survive."""                          # #260
+        fields survive. Warns since 2.8, as construction does: a copy
+        is a new private ``Constants``, and ``CONSTANTS.copy()`` builds
+        one without calling the constructor."""      # #260
+        warnings.warn(CONSTANTS_DEPRECATION, DeprecationWarning,
+                      stacklevel=2)
+        return self._copy()
+
+    def __copy__(self) -> Constants:
+        new = object.__new__(type(self))
+        _quiet_setstate(new, self.__getstate__(), Constants,
+                        CONSTANTS_PICKLE_DEPRECATION)
+        return new
+
+    def __deepcopy__(self, memo: dict[int, object]) -> Constants:
+        new = object.__new__(type(self))
+        memo[id(self)] = new
+        _quiet_setstate(new, copy.deepcopy(self.__getstate__(), memo),
+                        Constants, CONSTANTS_PICKLE_DEPRECATION)
+        return new
+
+    def _copy(self) -> Constants:
         # An independent instance with its own generation counter and
         # its own manager callbacks -- not a shared-state alias like a
         # naive attribute-for-attribute copy would produce. v1's copy()
@@ -1376,7 +1487,22 @@ class Constants:
         # DROPPED (#255: empty is always '' in 2.0).
         state = {k: v for k, v in state.items()
                  if k != "empty_attribute_default"}
-        self.__init__()  # type: ignore[misc]  # defaults, then overlay
+        warnings.warn(CONSTANTS_PICKLE_DEPRECATION, DeprecationWarning,
+                      stacklevel=2)
+        self._restore(state)
+
+    def _restore(self, state: dict[str, object]) -> None:
+        # defaults, then overlay. A subclass's own __init__ runs here as
+        # it did before 2.8; its super().__init__() would warn that a
+        # Constants was constructed, which a restore is not
+        if type(self).__init__ is Constants.__init__:
+            self._init()
+        else:
+            with warnings.catch_warnings():
+                warnings.filterwarnings(
+                    "ignore", message=re.escape(CONSTANTS_DEPRECATION),
+                    category=DeprecationWarning)
+                self.__init__()  # type: ignore[misc]
         # (managers re-wrapped below so _on_change points at THIS
         # instance, not whatever produced the incoming state)
         managers: dict[str, SetManager] = {}
@@ -1417,5 +1543,7 @@ class Constants:
                 object.__setattr__(self, name, state[name])
 
 
-CONSTANTS = Constants()
+# built past __init__, so importing nameparser never warns
+CONSTANTS = object.__new__(Constants)
+CONSTANTS._init()
 object.__setattr__(CONSTANTS, "_shared", True)

@@ -9,6 +9,7 @@ import pytest
 from nameparser._config_shim import CONSTANTS, Constants
 from nameparser._facade import HumanName
 from nameparser._types import UNCLASSIFIED_TAG, Role, Token
+from tests.removals import ignore_removals
 
 _DATA_DIR = Path(__file__).parent / "data"
 
@@ -72,6 +73,7 @@ def test_subclass_overriding_no_hooks_never_warns() -> None:
 
     with warnings.catch_warnings():
         warnings.simplefilter("error")
+        ignore_removals()
         Plain("John Smith")
 
 
@@ -84,6 +86,7 @@ def test_subclass_hook_override_warns_once_per_class() -> None:   # #280
         Custom("John Smith")
     with warnings.catch_warnings():
         warnings.simplefilter("error")
+        ignore_removals()
         Custom("Jane Doe")                   # second instance: silent
 
 

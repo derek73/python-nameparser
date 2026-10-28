@@ -203,9 +203,12 @@ Locales
 
 .. note::
 
-   ``HumanName`` and ``nameparser.config`` are the 1.x API, kept
-   working through 2.x and removed in 3.0. New code should use the
-   2.0 API above; see :doc:`migrate`.
+   ``HumanName`` and ``nameparser.config``'s ``Constants``,
+   ``CONSTANTS`` and managers are the 1.x API, kept working through
+   2.x and removed in 3.0; since 2.8 constructing them, loading
+   them from a pickle or changing the shared ``CONSTANTS`` emits a
+   ``DeprecationWarning``. New code should use the 2.0 API above; see
+   :doc:`migrate`.
 
 HumanName.parser
 ~~~~~~~~~~~~~~~~

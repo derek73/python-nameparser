@@ -136,7 +136,7 @@ A locale pack is pure data: a vocabulary fragment plus a partial policy patch, f
 2. Subclasses overriding parsing hooks (`parse_pieces`, `is_title`, …) are detected and warned at construction: the facade delegates to the new core, so such overrides are no longer called (#280). If you do this, we want to hear what your override does — that is a feature request we would rather absorb than break.
 3. Assigning to `CONSTANTS.regexes` raises with a pointer to the named `Policy` flag that replaces it. Custom regex injection has no equivalent in the new model; nothing is silently ignored.
 
-**Timeline:** 2.0.0's only *new* warning is on shared-`CONSTANTS` mutation. A warning on `HumanName` construction itself comes in a later 2.x minor, once the new API has proven out — and 3.0 (which removes the facade) does not ship before that warning has been out in a release.
+**Timeline:** 2.0.0's only *new* warning is on shared-`CONSTANTS` mutation. A warning on `HumanName` construction itself comes in a later 2.x minor, once the new API has proven out — and 3.0 (which removes the facade) does not ship before that warning has been out in a release. (It ships in 2.8, the last 2.x feature release: decisions/3-0-reevaluations, 2026-10-28.)
 
 ## Alternatives considered and rejected
 

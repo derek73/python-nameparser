@@ -7,6 +7,7 @@ Layering: facade layer -- may import anything public plus _render.
 """
 from __future__ import annotations
 
+import copy
 import dataclasses
 import warnings
 from collections.abc import Iterator, Mapping
@@ -29,7 +30,8 @@ from typing import Any
 import nameparser.config  # noqa: F401
 
 import nameparser._render as _render
-from nameparser._config_shim import CONSTANTS, Constants, _cached_parser
+from nameparser._config_shim import (CONSTANTS, MIGRATION_GUIDE, Constants,
+                                     _cached_parser, _quiet_setstate)
 from nameparser._lexicon import _normalize, _spells_an_initial
 from nameparser._parser import Parser
 from nameparser._types import (FOLDED_TAG, UNCLASSIFIED_TAG,
@@ -60,6 +62,19 @@ _V1_HOOKS = (
 # whole module is deleted with the facade layer in 3.0.
 _WARNED_SUBCLASSES: set[type] = set()
 
+# The 2.8 removal messages (decisions/3-0-reevaluations, 2026-10-28);
+# the code each offers is pinned by tests/v2/test_deprecations.py.
+HUMANNAME_DEPRECATION = (
+    "HumanName is deprecated and will be removed in 3.0; use "
+    "nameparser.parse(text), whose fields are given and family where "
+    f"HumanName has first and last. See {MIGRATION_GUIDE}"
+)
+HUMANNAME_PICKLE_DEPRECATION = (
+    "HumanName pickles stop loading in 3.0, when HumanName is removed; "
+    "store parse(text).as_dict() or the original string instead. "
+    f"See {MIGRATION_GUIDE}"
+)
+
 
 def _empty_parsed() -> ParsedName:
     return ParsedName(original="", tokens=(), ambiguities=())
@@ -71,7 +86,8 @@ class HumanName:
     resolved from the bound ``Constants`` shim (dirty-tracked via its
     ``_generation``). Keeps every v1 spelling (``first``/``last`` over
     the core ``given``/``family``); the v1 parsing hooks are never
-    called (#280). Deleted with the facade layer in 3.0.
+    called (#280). Deprecated since 2.8, warning at every construction,
+    and deleted with the facade layer in 3.0.
     """
 
     def __init__(
@@ -101,6 +117,12 @@ class HumanName:
             raise TypeError(
                 f"constants must be a Constants instance, got {constants!r}"
             )
+        # every construction warns, at the caller's line (a subclass's
+        # super().__init__() is its author's line); never once per
+        # process, so a dependency's first HumanName cannot consume the
+        # warning meant for the caller's own
+        warnings.warn(HUMANNAME_DEPRECATION, DeprecationWarning,
+                      stacklevel=2)
         self._warn_overridden_hooks()
         self._C = constants
         self._snapshot_gen = -1  # forces first resolve
@@ -151,7 +173,8 @@ class HumanName:
                 f"{cls.__name__} overrides v1 parsing hooks "
                 f"({', '.join(overridden)}) that the 2.0 facade never "
                 f"calls; parsing is delegated to the core Parser. "
-                f"Migrate to the Lexicon/Policy API. See "
+                f"Migrate to the Lexicon/Policy API; HumanName is "
+                f"removed in 3.0. See "
                 f"https://github.com/derek73/python-nameparser/issues/280",
                 DeprecationWarning, stacklevel=3)
 
@@ -888,6 +911,28 @@ class HumanName:
         return state
 
     def __setstate__(self, state: dict[str, Any]) -> None:
+        # unpickling skips __init__, so the construction warning never
+        # reaches a pickle; this one does, at the pickle.loads line
+        warnings.warn(HUMANNAME_PICKLE_DEPRECATION, DeprecationWarning,
+                      stacklevel=2)
+        self._restore(state)
+
+    def __copy__(self) -> HumanName:
+        # copy.copy/deepcopy go through the state hooks, a subclass's
+        # included, and a copy is no pickle load (_quiet_setstate)
+        new = object.__new__(type(self))
+        _quiet_setstate(new, self.__getstate__(), HumanName,
+                        HUMANNAME_PICKLE_DEPRECATION)
+        return new
+
+    def __deepcopy__(self, memo: dict[int, object]) -> HumanName:
+        new = object.__new__(type(self))
+        memo[id(self)] = new
+        _quiet_setstate(new, copy.deepcopy(self.__getstate__(), memo),
+                        HumanName, HUMANNAME_PICKLE_DEPRECATION)
+        return new
+
+    def _restore(self, state: dict[str, Any]) -> None:
         c = state.get("C")
         self._C = CONSTANTS if c is None else c
         self._snapshot_gen = -1

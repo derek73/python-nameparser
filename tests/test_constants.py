@@ -11,6 +11,7 @@ from nameparser.config import CONSTANTS, Constants, SetManager, TupleManager
 from nameparser.config.titles import TITLES
 
 from tests.base import HumanNameTestBase
+from tests.removals import ignore_removals
 
 
 class ConstantsCustomizationTests(HumanNameTestBase):
@@ -440,6 +441,7 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         # Safe: round-tripping a Constants the test just built, not untrusted data.
         with warnings.catch_warnings():
             warnings.simplefilter("error")
+            ignore_removals()
             restored = pickle.loads(pickle.dumps(c))
 
         self.assertEqual(restored.string_format, "{last}")
@@ -470,6 +472,7 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         restored = Constants.__new__(Constants)
         with warnings.catch_warnings():
             warnings.simplefilter("error")
+            ignore_removals()
             restored.__setstate__(state)
         self.assertIn('legacytitle', restored.titles)
 
@@ -981,6 +984,7 @@ class ConstantsCopyTests(HumanNameTestBase):
         c.string_format = "{last}"
         with warnings.catch_warnings():
             warnings.simplefilter("error")
+            ignore_removals()
             dup = c.copy()
         self.assertEqual(dup.string_format, "{last}")
 
@@ -1033,9 +1037,11 @@ class ConstantsNoneRemovalTests(HumanNameTestBase):
     def test_omitted_constants_argument_does_not_warn(self) -> None:
         with warnings.catch_warnings():
             warnings.simplefilter("error")
+            ignore_removals()
             HumanName("John Doe")
 
     def test_explicit_own_constants_instance_does_not_warn(self) -> None:
         with warnings.catch_warnings():
             warnings.simplefilter("error")
+            ignore_removals()
             HumanName("John Doe", constants=Constants())

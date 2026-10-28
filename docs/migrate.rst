@@ -7,8 +7,10 @@ same attributes, same mutation API (``name.C.titles.add(...)``,
 code to the new :class:`~nameparser.Parser`/:class:`~nameparser.Lexicon`/
 :class:`~nameparser.Policy` API are two separate decisions — you can do
 the former today and the latter whenever it's convenient. The
-compatibility layer (``HumanName`` and ``nameparser.config``) is
-removed in 3.0; that release is not scheduled.
+compatibility layer (``HumanName``, ``Constants`` and the shared
+``CONSTANTS``) is removed in 3.0, and 2.8 warns wherever your code
+touches it: see `Deprecated in 2.8`_. The vocabulary data modules in
+``nameparser.config`` (``titles``, ``particles`` and the rest) stay.
 
 The full 1.x documentation remains the canonical reference for
 ``HumanName`` and stays online as the 1.4.0 build on readthedocs:
@@ -17,6 +19,60 @@ https://nameparser.readthedocs.io/en/v1.4.0/
 This page exists for the other direction: translating a v1
 customization or a v1-shaped comparison into the 2.0 API, one row per
 old name.
+
+Deprecated in 2.8
+-----------------
+
+nameparser 2.8 is the last 2.x feature release. From 2.8 on, the uses
+3.0 removes emit a ``DeprecationWarning`` at the line in your code that
+makes them, on every call rather than once per process:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 40 60
+
+   * - What warns
+     - Replacement
+   * - ``HumanName(...)``, including a subclass's construction
+     - ``nameparser.parse(text)``, or ``Parser(lexicon=...,
+       policy=...).parse(text)``; the fields are ``given`` and
+       ``family`` where ``HumanName`` has ``first`` and ``last``. See
+       the `Attribute map`_
+   * - ``Constants(...)`` and ``constants.copy()``
+     - ``Parser(lexicon=Lexicon.default().add(titles={"dean"}))``, and
+       the `Config map`_ for each setting
+   * - Mutating the shared ``CONSTANTS`` (warned since 2.0)
+     - The same ``Parser``; a private ``Constants`` is no longer a
+       way out, since it goes in 3.0 too
+   * - Loading a pickled ``HumanName``
+     - Store ``parse(text).as_dict()`` or the original string
+   * - Loading a pickled ``Constants``
+     - Pickle the ``Parser`` instead
+   * - Reading ``SetManager``, ``TupleManager`` or ``RegexTupleManager``
+       from ``nameparser.config``
+     - ``Lexicon`` fields take plain sets:
+       ``Lexicon.default().add(titles={"dean"})``
+   * - Reading ``lc`` from ``nameparser.util``
+     - ``value.lower().strip(".")``
+
+Importing ``nameparser``, ``nameparser.parser`` or ``HumanName`` stays
+quiet, and so does ``from nameparser import *``; the warning comes when
+the code runs. ``from nameparser.config import *`` does warn, once for
+each manager it imports, and so does ``from nameparser.util import *``. One use does not warn: *reading* the shared ``CONSTANTS``
+(``"dr" in CONSTANTS.titles``, or ``copy.copy(CONSTANTS)``), which
+stays quiet so that importing ``nameparser`` does. Search your code for ``CONSTANTS`` as well. A
+``DeprecationWarning`` is hidden by default outside ``__main__``, so
+run your tests to see the rest, or turn them into errors to find each
+site:
+
+.. code-block:: bash
+
+    python -W error::DeprecationWarning -m pytest
+
+The 2.0 API's names and signatures carry into 3.0, gaining additions
+only: ``parse``, ``Parser``, ``Lexicon``, ``Policy``, ``Locale`` and
+``ParsedName``. Separately, the output model changes in 3.0; details
+with the 3.0 alphas.
 
 Before you upgrade
 ------------------
@@ -105,7 +161,8 @@ warned removals:
        ``KeyError`` like ``set.remove``
    * - ``HumanName(..., constants=None)``
      - ``Constants()`` for library defaults, or ``CONSTANTS.copy()``
-       for a private snapshot of the current shared config
+       for a private snapshot of the current shared config (both
+       deprecated since 2.8: see `Deprecated in 2.8`_)
    * - ``name['first'] = value``
      - ``name.first = value``
    * - ``CONSTANTS.regexes.typo`` (returned ``EMPTY_REGEX``)
@@ -194,6 +251,30 @@ Attribute map
        rather than mutating in place. Its optional first argument takes
        a :class:`~nameparser.Lexicon`, if you need custom
        capitalization exceptions
+   * - ``full_name``, ``original``
+     - ``original``
+     - The text as passed in
+   * - ``name["first"]``, ``as_dict()``
+     - ``as_dict()["given"]``
+     - The keys are the 2.0 field names
+   * - ``iter(name)``, ``len(name)``
+     - ``[v for v in name.as_dict().values() if v]``
+     - The non-empty fields, in field order
+   * - ``name.first = "Jane"``
+     - ``Parser().revise(name, given="Jane")``
+     - Returns a new value, the replacement read by the parser;
+       ``name.replace(given="Jane")`` splices the text in unread
+   * - ``HumanName(first="Juan", last="de la Vega")``
+     - ``Parser().revise(parse(""), given="Juan", family="de la Vega")``
+     - Builds a name from its fields
+   * - ``C``, ``has_own_config``, ``parse_full_name()``
+     - none
+     - A ``ParsedName`` holds no config. The ``Parser`` that read it
+       does; to read the name again with other config, call
+       ``parser.parse(name.original)``
+   * - ``collapse_whitespace()``
+     - none
+     - ``parse()`` collapses whitespace itself
 
 ``suffix_delimiter`` moved as a *set*, not just under a new name:
 passing the old scalar through (``extra_suffix_delimiters=" - "``)
@@ -215,6 +296,17 @@ Side by side:
     (True, True)
     >>> hn.last_base == n.family_base, hn.last_prefixes == n.family_particles
     (True, True)
+
+Editing a field, and building a name from fields:
+
+.. doctest::
+
+    >>> from nameparser import Parser
+    >>> Parser().revise(n, given="Jane").given
+    'Jane'
+    >>> built = Parser().revise(parse(""), given="Juan", family="de la Vega")
+    >>> built.family, built.family_particles
+    ('de la Vega', 'de la')
 
 Config map
 ----------
@@ -430,8 +522,9 @@ For the 2.0 API, extend the default lexicon and hand it to a parser:
 Mutating the shared ``CONSTANTS`` singleton still works and still
 reaches every ``HumanName`` that reads it, but it warns: it is
 deprecated along with the rest of the v1 facade and goes away in 3.0.
-Prefer a private ``Constants`` in new code. See :doc:`customize` for
-the full set of knobs on each.
+Since 2.8 a private ``Constants`` warns at construction too, so new
+code should build the ``Parser``. See :doc:`customize` for the full
+set of knobs on each.
 
 Behavior and render settings → Policy
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

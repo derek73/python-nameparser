@@ -14,6 +14,7 @@ from nameparser import HumanName
 from nameparser.config import CONSTANTS, Constants, TupleManager
 
 from tests.base import HumanNameTestBase
+from tests.removals import ignore_removals
 
 
 class HumanNamePythonTests(HumanNameTestBase):
@@ -49,6 +50,7 @@ class HumanNamePythonTests(HumanNameTestBase):
     def test_str_full_name_does_not_warn(self) -> None:
         with warnings.catch_warnings():
             warnings.simplefilter("error")
+            ignore_removals()
             hn = HumanName("John Smith")
             hn.full_name = "Jane Doe"
         self.m(hn.first, "Jane", hn)
@@ -412,6 +414,7 @@ class HumanNamePythonTests(HumanNameTestBase):
         hn = HumanName("John Smith")
         with warnings.catch_warnings():
             warnings.simplefilter("error")
+            ignore_removals()
             hn.comparison_key()
             hn.matches("Smith, John")
             hn.matches(HumanName("John Smith"))
