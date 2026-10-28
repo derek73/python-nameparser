@@ -16,7 +16,8 @@ from nameparser._config_shim import (
 from nameparser.config.regexes import EMPTY_REGEX, REGEXES
 from nameparser.config._titles_2_6_0 import TITLES_2_6_0
 from nameparser.config.titles import TITLE_MODIFIERS, TITLES, TITLES_AMBIGUOUS
-from nameparser.util import lc
+from nameparser.util import _lc as lc
+from tests.removals import ignore_removals
 
 _DATA_DIR = Path(__file__).parent / "data"
 
@@ -373,6 +374,7 @@ def test_v14_pickle_restores_and_parses_warning_free() -> None:
         c = pickle.load(f)
     with warnings.catch_warnings():
         warnings.simplefilter("error")
+        ignore_removals()
         HumanName("John Smith", constants=c)
     c.titles.add("grand moff")
     with pytest.warns(UserWarning, match="matched one word at a time"):
@@ -1068,6 +1070,7 @@ def test_an_entry_v1_could_not_match_is_dropped_with_one_warning(
     c = _with_entry(field, entry, value)
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
+        ignore_removals()
         got = _reading(c, text)
     assert got == baseline
     messages = [str(w.message) for w in caught]
@@ -1226,6 +1229,7 @@ def test_the_offered_remedy_runs_and_silences_the_warning() -> None:
     c.capitalization_exceptions["'q "] = "Q"
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
+        ignore_removals()
         HumanName("x", constants=c)
     assert len(caught) == 1                       # one warning for them all
     message = str(caught[0].message)
@@ -1263,6 +1267,7 @@ def test_the_warning_fires_once_per_config_change() -> None:
     c.titles.add(" dean ")
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
+        ignore_removals()
         HumanName("dean john smith", constants=c)
         HumanName("dean john smith", constants=c)   # cached snapshot
         assert len(caught) == 1

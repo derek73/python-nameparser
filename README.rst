@@ -23,8 +23,12 @@ family-first, unspaced Korean names are split against the census surname
 list, and CJK honorifics are recognized. See `East Asian names
 <https://nameparser.readthedocs.io/en/latest/usage.html#east-asian-names>`__.
 
-Existing ``HumanName`` code from 1.x keeps working through 2.x, and most
-of it needs no changes; see `Coming from 1.x`_ below. Please `open an
+⚠️ **HumanName is deprecated, and 3.0 removes it.** From 2.8, the last
+2.x feature release, the 1.x compatibility layer — ``HumanName``,
+``Constants`` and the shared ``CONSTANTS`` — emits a
+``DeprecationWarning`` wherever your code uses it. It keeps working
+through 2.x; ``parse()`` is the replacement, and `Coming from 1.x`_
+below says where to start. Please `open an
 issue <https://github.com/derek73/python-nameparser/issues>`__ for anything
 that parses wrong.
 
@@ -99,8 +103,10 @@ Learn more
 Coming from 1.x
 ----------------
 
-``HumanName`` and ``CONSTANTS`` keep working in 2.0 — same imports, same
-attributes, same mutation API. What 2.0 removes is the batch of
+``HumanName`` and ``CONSTANTS`` keep working through 2.x — same imports,
+same attributes, same mutation API — and warn from 2.8 on, since 3.0
+removes them. Run your tests under ``python -W error::DeprecationWarning``
+to find every site. What 2.0 removes is the batch of
 deprecations 1.3 and 1.4 announced, so if your test suite runs clean on
 1.4 under ``python -W error::DeprecationWarning``, you are nearly done.
 Two things that check will not catch: four removals 1.4 never warned

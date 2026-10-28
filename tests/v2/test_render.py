@@ -13,6 +13,7 @@ from nameparser._render import _apply_mask, _collapse, render
 from nameparser._types import (FOLDED_TAG, UNCLASSIFIED_TAG, UNJOINED_TAG,
                                Ambiguity, AmbiguityKind, ParsedName, Role,
                                Span, Token)
+from tests.removals import ignore_removals
 
 
 def test_collapse_is_the_254_algorithm() -> None:
@@ -1219,6 +1220,7 @@ def test_a_masks_punctuation_marks_its_joins_and_is_never_written() -> None:
     repair the writer's 'h.c.' differently."""
     with warnings.catch_warnings():
         warnings.simplefilter("error")
+        ignore_removals()
         lex = dataclasses.replace(
             Lexicon.default(),
             capitalization_exceptions=(("md", "M.D."),))
@@ -1232,11 +1234,13 @@ def test_a_masks_punctuation_marks_its_joins_and_is_never_written() -> None:
     c = Constants(capitalization_exceptions={'md': 'M.D.'})
     with warnings.catch_warnings():
         warnings.simplefilter("error")
+        ignore_removals()
         hn = HumanName("john smith md", constants=c)
     hn.capitalize()
     assert str(hn) == "John Smith MD"
     with warnings.catch_warnings():
         warnings.simplefilter("error")
+        ignore_removals()
         joined = dataclasses.replace(
             Lexicon.default(), capitalization_exceptions=(("hc", "h.c"),))
         split = dataclasses.replace(

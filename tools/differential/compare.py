@@ -109,6 +109,7 @@ family-first name is not a v1 contract.
 """
 import json
 import sys
+import warnings
 
 import nameparser
 from nameparser import HumanName
@@ -175,7 +176,12 @@ for line in sys.stdin:
             {"v2": _v2_row(_parser_for(order).parse(name))},
             ensure_ascii=False), flush=True)
         continue
-    hn = HumanName(name)
+    with warnings.catch_warnings():
+        # the facade is read on purpose; 2.8's removal warning, by
+        # message (a baseline wheel before 2.8 never emits it)
+        warnings.filterwarnings("ignore", message="HumanName is deprecated",
+                                category=DeprecationWarning)
+        hn = HumanName(name)
     row = {"facade": {k: v or ""
                       for k, v in hn.as_dict().items()
                       if k in V1_FIELDS}}

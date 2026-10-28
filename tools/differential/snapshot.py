@@ -74,6 +74,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import warnings
 import zlib
 from collections import defaultdict
 from concurrent.futures import ProcessPoolExecutor
@@ -400,7 +401,13 @@ def _read_chunk(entries: Sequence[Entry], facade: bool
                              str(parsers[order].capitalized(p, force=True))))
         v1 = None
         if facade and order is None:
-            hn = HumanName(name)
+            with warnings.catch_warnings():
+                # the facade is read on purpose; 2.8's removal warning
+                # (by message, so any other warning still surfaces)
+                warnings.filterwarnings(
+                    "ignore", message="HumanName is deprecated",
+                    category=DeprecationWarning)
+                hn = HumanName(name)
             v1 = {k: v or "" for k, v in hn.as_dict().items() if k in V1_FIELDS}
             v1["_initials"] = hn.initials() or ""
         rows.append(row(name, order, v2, v1))
