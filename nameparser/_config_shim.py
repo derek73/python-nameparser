@@ -23,11 +23,13 @@ from __future__ import annotations
 import copy
 import functools
 import re
+import sys
 import warnings
 from collections.abc import (
     Callable, ItemsView, Iterable, Iterator, KeysView, Mapping, Set,
     ValuesView,
 )
+from types import FrameType
 from typing import NamedTuple, Self
 
 from nameparser._lexicon import (
@@ -1012,19 +1014,20 @@ class Constants:
         """
 
     def _bump(self) -> None:
-        # stacklevel=3 is exact for the direct scalar-assignment path
-        # (user code -> Constants.__setattr__ -> here) and lands one
-        # frame short -- inside the manager's own add()/remove()/
-        # __setitem__ -- for the indirect manager-mutation path (user
-        # code -> manager method -> _changed() -> here), since a
-        # single warn() call can't be exact for both call depths at
-        # once. Either way the warning still fires from this module,
-        # not the manager's true caller, which is enough: only the
-        # DeprecationWarning's presence/category/message are load-
-        # bearing (see the specified test), not the reported line.
+        # A fixed stacklevel lands on the caller only for one call depth:
+        # a scalar arrives through __setattr__, a set's add() through
+        # _changed(), a dict's update() and |= through __setitem__ per
+        # key. Walk out of this module instead, as _lexicon's
+        # _warn_dead_entry does, so the warning names the caller's line;
+        # attributed here, Python's default filters hid it.
         if self._shared:
+            level = 2
+            frame: FrameType | None = sys._getframe(1)
+            while (frame is not None
+                   and frame.f_globals.get("__name__") == __name__):
+                frame, level = frame.f_back, level + 1
             warnings.warn(_SHARED_MUTATION_MESSAGE, DeprecationWarning,
-                          stacklevel=3)
+                          stacklevel=level)
         object.__setattr__(self, "_generation", self._generation + 1)
 
     def __setattr__(self, name: str, value: object) -> None:
