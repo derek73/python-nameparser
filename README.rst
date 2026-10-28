@@ -7,31 +7,29 @@ nameparser parses human names into seven fields — title, given, middle,
 family, suffix, nickname, maiden. Results are immutable, configuration is
 composable, and locale packs are opt-in.
 
-📣 **nameparser 2.7 is out.** It is the first release working towards
-the new language and vocabulary model described in the `vocabulary
-model RFC <https://github.com/derek73/python-nameparser/blob/master/docs/design/vocabulary-model-rfc.md>`__.
-It introduces more nuanced handling of titles and particles
-(``Chief Justice John Roberts`` reads the title ``Chief Justice``,
-while ``Justice Smith`` keeps the given name ``Justice``), adjusts the
-default vocabulary to better align with example name corpora, and
-surfaces alternative name readings in the published API. The `release log
+📣 **nameparser 2.8 is out, the last 2.x feature release.**
+
+⚠️ **HumanName is deprecated, and 3.0 removes it.** From 2.8 the 1.x
+compatibility layer — ``HumanName``, ``Constants`` and the shared
+``CONSTANTS`` — emits a ``DeprecationWarning`` where your code
+constructs it, loads it from a pickle, or changes the shared
+``CONSTANTS``. It keeps working through 2.x; ``parse()`` is the
+replacement, and `Coming from 1.x`_ below says where to start. After
+2.8 the 2.x line takes fixes only, and new work goes into 3.0.
+
+2.8 also carries on 2.7's reading of titles that are also given names:
+a title only inside a title phrase, so ``Queen Latifah`` keeps the
+given name ``Queen`` while ``Her Majesty Queen Elizabeth`` reads the
+title. The `release log
 <https://nameparser.readthedocs.io/en/latest/release_log.html>`__ has
-the details.
+the details. Please `open an
+issue <https://github.com/derek73/python-nameparser/issues>`__ for anything
+that parses wrong.
 
 Chinese, Japanese and Korean names written in their own scripts are read
 family-first, unspaced Korean names are split against the census surname
 list, and CJK honorifics are recognized. See `East Asian names
 <https://nameparser.readthedocs.io/en/latest/usage.html#east-asian-names>`__.
-
-⚠️ **HumanName is deprecated, and 3.0 removes it.** From 2.8, the last
-2.x feature release, the 1.x compatibility layer — ``HumanName``,
-``Constants`` and the shared ``CONSTANTS`` — emits a
-``DeprecationWarning`` where your code constructs it, loads it from a
-pickle, or changes the shared ``CONSTANTS``. It keeps working
-through 2.x; ``parse()`` is the replacement, and `Coming from 1.x`_
-below says where to start. Please `open an
-issue <https://github.com/derek73/python-nameparser/issues>`__ for anything
-that parses wrong.
 
 Installation
 ------------
