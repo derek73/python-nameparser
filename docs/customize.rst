@@ -996,8 +996,18 @@ family name, are mostly that shape. Portuguese and Brazilian names
 carry two family names too, the mother's first, but the people who
 write them often give the last one alone as their family name: among
 the UK company register's 5,333 Portuguese filers the switch breaks
-1,481 names and mends 1,221 (measured 2026-10-24). The parser reports nothing for the names the switch
-moves: the shape it reads is the same either way.
+1,481 names and mends 1,221 (measured 2026-10-24), while among ORCID's
+researchers working or living in Portugal, who split their own names
+into its boxes, it mends 4,295 and breaks 2,034 of 20,000 (measured
+2026-10-27): the two populations disagree, so measure the data you have
+before switching it on. Filipino names often carry a middle name
+between the given name and the family name, traditionally the mother's
+maiden surname, and their bearers count it with their given names:
+``"Maria Santos Reyes"`` has family ``Reyes``, which the switch reads
+as ``Santos Reyes``. Among ORCID's researchers in the Philippines it
+breaks 8,234 names of 20,000 and mends 265. The parser
+reports nothing for the names the switch moves: the shape it reads is
+the same either way.
 
 .. _east-asian-defaults:
 
