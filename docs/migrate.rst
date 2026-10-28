@@ -180,7 +180,7 @@ returns, like this:
      - Unchanged name; ``middle`` folded into ``family``
    * - ``last_base`` / ``last_base_list``
      - ``family_base``
-     - The surname with leading particles split off
+     - The surname without its particles
    * - ``last_prefixes`` / ``last_prefixes_list``
      - ``family_particles``
      - The particles ``family_base`` was split from (e.g. ``"de la"``)
