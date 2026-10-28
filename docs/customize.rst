@@ -37,7 +37,9 @@ way) — see :doc:`modules` for the full field list.
 The default word lists themselves — ``TITLES``, ``PARTICLES`` and the
 other frozensets in ``nameparser.config`` — are frozen, so a runtime
 addition belongs on a :class:`~nameparser.Lexicon` as above, or on a
-private ``Constants`` if you are still parsing through ``HumanName``.
+private ``Constants`` if you are still parsing through ``HumanName``
+(``Constants`` and ``HumanName`` are deprecated since 2.8, and removed
+in 3.0).
 ``REGEXES`` and ``CAPITALIZATION_EXCEPTIONS`` are the two members the
 freeze does not cover — they are still plain dicts. Editing one at
 runtime is not a supported override, and it is not a clean no-op

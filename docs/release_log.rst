@@ -2,7 +2,11 @@ Release Log
 ===========
 * 2.8.0 - Unreleased
 
-    nameparser 2.8 is under development.
+    nameparser 2.8 is under development. It is the last 2.x feature release, and it warns about everything 3.0 removes.
+
+    **Deprecations**
+
+    - **Deprecate HumanName, Constants and the rest of the 1.x compatibility layer, which 3.0 removes.** ``HumanName("Dr. Juan de la Vega")`` now emits a ``DeprecationWarning``; ``parse("Dr. Juan de la Vega")`` reads the same name, with given ``Juan`` and family ``de la Vega`` where ``HumanName`` has first and last. Constructing a ``Constants``, loading a pickled ``HumanName`` or ``Constants``, and reading ``nameparser.config.SetManager`` or ``nameparser.util.lc`` warn too, each naming its replacement; ``python -W error::DeprecationWarning`` finds every site except a read of the shared ``CONSTANTS``. :issue:`925`
 
     **Behavior Changes**
 
