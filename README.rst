@@ -7,14 +7,14 @@ nameparser parses human names into seven fields — title, given, middle,
 family, suffix, nickname, maiden. Results are immutable, configuration is
 composable, and locale packs are opt-in.
 
-📣 **nameparser 2.7 is out.** It reads a title that is also a given name
-as a title only inside a title phrase (``Chief Justice John Roberts``,
-while ``King Curtis`` and ``Sheikh Ahmed Khan`` now read ``King`` and
-``Sheikh`` as first names),
-reads credentials written joined, split or in brackets as suffixes
-(``John Smith, MD/PhD``), reads given names written short as given names
-(``Chas. Smith``), and reports the reading an ambiguous parse did not
-take (``Ambiguity.alternative``). The `release log
+📣 **nameparser 2.7 is out.** It is the first release working towards
+the new language and vocabulary model described in the `vocabulary
+model RFC <https://github.com/derek73/python-nameparser/blob/master/docs/design/vocabulary-model-rfc.md>`__.
+It introduces more nuanced handling of titles and particles
+(``Chief Justice John Roberts`` reads the title ``Chief Justice``,
+while ``Dean Smith`` keeps the given name ``Dean``), adjusts the
+default vocabulary to better align with example name corpora, and
+surfaces alternative name readings in the published API. The `release log
 <https://nameparser.readthedocs.io/en/latest/release_log.html>`__ has
 the details.
 
