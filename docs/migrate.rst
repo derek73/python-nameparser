@@ -180,10 +180,14 @@ returns, like this:
      - Unchanged name; ``middle`` folded into ``family``
    * - ``last_base`` / ``last_base_list``
      - ``family_base``
-     - The surname without its particles
+     - The surname without its particles, every one of them: for
+       ``da Silva do Amaral``, ``"Silva Amaral"``, where ``HumanName``
+       split off only the leading ones (``"Silva do Amaral"``)
    * - ``last_prefixes`` / ``last_prefixes_list``
      - ``family_particles``
-     - The particles ``family_base`` was split from (e.g. ``"de la"``)
+     - The particles ``family_base`` was split from (e.g. ``"de la"``),
+       a particle inside the surname included: ``"da do"`` for
+       ``da Silva do Amaral``, where ``HumanName`` gave ``"da"``
    * - ``string_format``
      - ``render(spec)``
      - A per-call argument now, not stored config — see
