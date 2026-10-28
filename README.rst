@@ -9,7 +9,8 @@ composable, and locale packs are opt-in.
 
 📣 **nameparser 2.7 is out.** It reads a title that is also a given name
 as a title only inside a title phrase (``Chief Justice John Roberts``,
-while ``King Curtis`` and ``Sheikh Ahmed Khan`` keep their first names),
+while ``King Curtis`` and ``Sheikh Ahmed Khan`` now read ``King`` and
+``Sheikh`` as first names),
 reads credentials written joined, split or in brackets as suffixes
 (``John Smith, MD/PhD``), reads given names written short as given names
 (``Chas. Smith``), and reports the reading an ambiguous parse did not

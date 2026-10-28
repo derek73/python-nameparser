@@ -94,7 +94,10 @@ uv run sphinx-build -b html docs dist/docs
 #   number works too). The mechanism, boundary cases and measurements live
 #   in the issue and docs/design/decisions/, never in the bullet --
 #   2.4.0's entry was cut from 10,765 words to 1,491 on 2026-10-11
-# - Merge bullets a user would see as one change, with several links
+# - Merge bullets a user would see as one change, with several links,
+#   and carry every merged bullet's limits over: 2.7's merge of eight
+#   phase-2j bullets read 'a bare one reverses after a comma' over Vice
+#   and Grand, which stay titles there, until review ran them
 # - Version is decided at release time (patch/minor/major per semver)
 # - Format matches existing entries — see the 2.4.0 block for a current example
 
