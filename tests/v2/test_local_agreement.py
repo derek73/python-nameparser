@@ -65,6 +65,19 @@ def test_a_box_agrees_whatever_its_case_periods_and_spacing(
     assert _read(upper)[0] == {"given": "ANN"}
 
 
+@pytest.mark.parametrize("surname", ["Roe, Jr.", "Roe,Jr.", "Roe, III", "Roe, Jr., PhD"])
+def test_a_suffix_after_a_comma_in_the_surname_box_agrees(
+        monkeypatch: pytest.MonkeyPatch, surname: str) -> None:
+    # The parser reads "Bob Roe, Jr." as family Roe and suffix Jr., and
+    # the surname box holds the two with the filer's comma between them.
+    filed = _filed("", "Bob", surname=surname)
+    assert _read(filed)[0] == {}
+    # The control: the fold before commas were read as spaces misses it.
+    monkeypatch.setattr(agreement, "fold",
+                        lambda text: " ".join(text.replace(".", "").casefold().split()))
+    assert list(_read(filed)[0]) == ["family"]
+
+
 def test_a_two_word_surname_read_with_a_middle_name_is_two_misses() -> None:
     got = _read(_DOUBLE_SURNAME)[0]
     assert got == {"middle": "García", "family": "López"}

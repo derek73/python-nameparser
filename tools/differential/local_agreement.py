@@ -38,10 +38,12 @@ reading at one's own terminal.
 
 What counts:
 
-- Each field is compared case-folded, with periods dropped and runs of
-  spaces read as one. The display name is the boxes joined, so the
-  parser sees the filer's own spelling, and the fold only keeps a box's
-  case, periods or spacing from reading as a miss.
+- Each field is compared case-folded, with periods dropped, commas read
+  as spaces and runs of spaces read as one. The display name is the
+  boxes joined, so the parser sees the filer's own spelling, and the
+  fold only keeps a box's case, periods, commas or spacing from reading
+  as a miss: a suffix typed into the surname box after a comma
+  (`Smith, Jr.`) is the parser's family and suffix rejoined.
 - There is no suffix box. A suffix the parser peels (`Jr`, `OBE`) stood
   last in the display name, so it was typed into the last filled box,
   normally the surname: the parser's family is compared with its suffix appended,
@@ -130,7 +132,7 @@ GROUP_FLOOR = 1_000
 
 
 def fold(text: str) -> str:
-    return " ".join(text.replace(".", "").casefold().split())
+    return " ".join(text.replace(".", "").replace(",", " ").casefold().split())
 
 
 def _title_words(lexicon: Lexicon) -> frozenset[str]:
