@@ -58,6 +58,12 @@ $NAMEPARSER_TOOLS_CACHE (default ~/.cache/nameparser-tools), and
   record keys it reads (cached_index), so a single-word lookup parses neither raw.jsonl's
   records nor the names (load() still reads both files for their
   sha256).
+- boxindex.json.gz -- for a source whose extract holds every record's
+  boxes and country (orcid-researchers, patentsview-inventors), its
+  words counted by box and country over the whole extract, uncapped,
+  for tools/name_usage.py's per-country rows; written on first use and
+  keyed to the extract's bytes and the code that counts them
+  (cached_box_index).
 
 A live source has no fixed snapshot to pin, so the cached copy IS the
 pin: a count quoted from it names the data date the header prints, and
@@ -81,6 +87,7 @@ import argparse
 import functools
 import dataclasses
 import difflib
+import gzip
 import hashlib
 import inspect
 import json
@@ -90,6 +97,7 @@ import sys
 import time
 import types
 import unicodedata
+import zlib
 from collections import Counter
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
@@ -113,8 +121,10 @@ import local_tse  # noqa: E402
 from local_fec import check_fec, fetch_fec, renew_fec  # noqa: E402
 from local_jrc import JRC, check_jrc, fetch_jrc, renew_jrc  # noqa: E402
 from local_nepal import check_nepal, fetch_nepal  # noqa: E402
-from local_orcid import ORCID, check_orcid, fetch_orcid, renew_orcid  # noqa: E402
-from local_patentsview import PV, check_pv, fetch_pv, renew_pv  # noqa: E402
+from local_orcid import (ORCID, check_orcid, extract_path as orcid_extract,  # noqa: E402
+                         fetch_orcid, orcid_boxes, renew_orcid)
+from local_patentsview import (PV, check_pv, extract_path as pv_extract,  # noqa: E402
+                               fetch_pv, pv_boxes, renew_pv)
 from local_psc import PSC, check_psc, fetch_psc, renew_psc  # noqa: E402
 from local_tse import check_tse, fetch_tse  # noqa: E402
 from local_tw import fetch_tw  # noqa: E402
@@ -122,6 +132,7 @@ from local_ukec import fetch_ukec  # noqa: E402
 
 RAW, CORPUS, META, SNAPSHOT = "raw.jsonl", "corpus.jsonl", "meta.json", "snapshot.jsonl"
 INDEX = "wordindex.json"
+BOX_INDEX = "boxindex.json.gz"
 META_VERSION = 2  # 2: corpus.jsonl's sha256, and the source's detail nested
 #: The keys load() needs in meta.json, with their types.
 _META_KEYS = {"version": int, "source": str, "data_date": str, "records": int,
@@ -230,11 +241,12 @@ SOURCES: dict[str, Source] = {
                "(CC0 1.0; ORCID asks for credit and respect for the privacy "
                "of the people in it)",
         unit="records", fetch=fetch_orcid, renew=renew_orcid, check=check_orcid,
-        corpus_keys=("name", "credit")),
+        corpus_keys=("name", "credit"), extract=orcid_extract, boxes=orcid_boxes),
     PV: Source(
         credit="PatentsView granted-patent inventors, 1976-2025, from the USPTO "
                "Open Data Portal (CC BY 4.0; credit PatentsView)",
-        unit="names", fetch=fetch_pv, renew=renew_pv, check=check_pv),
+        unit="names", fetch=fetch_pv, renew=renew_pv, check=check_pv,
+        extract=pv_extract, boxes=pv_boxes),
 }
 
 
@@ -1207,6 +1219,111 @@ def cached_index(local: Local) -> WordIndex:
         corpus_build.write_atomic(path, body.encode())
     except OSError as exc:
         print(f"could not cache the word index at {path}: {exc}", file=sys.stderr)
+    return index
+
+
+@dataclass(frozen=True)
+class BoxIndex:
+    """A fielded source's words by box and country, counted over its
+    whole extract rather than the capped corpus: per country the weight
+    of every record ("" for none), and per word key and country the
+    weight of the records whose given box, or family box, writes it (once
+    a record, however often the box repeats it). The weight is the people
+    a record stands for (Source.boxes): one ORCID holder, or the inventors
+    PatentsView counts under a name."""
+    totals: dict[str, int]
+    given: dict[str, dict[str, int]]
+    family: dict[str, dict[str, int]]
+
+
+def box_index(rows: Iterable[tuple[str, str, str, int]]) -> BoxIndex:
+    """The BoxIndex of `rows`, (given, family, country, weight) as a
+    Source.boxes reader yields them, each box cut and folded into words
+    as the word index cuts and folds a name (words)."""
+    totals: Counter[str] = Counter()
+    boxes: tuple[dict[str, Counter[str]], dict[str, Counter[str]]] = ({}, {})
+    for given, family, country, weight in rows:
+        totals[country] += weight
+        for box, text in zip(boxes, (given, family)):
+            for key in set(words(text)):
+                box.setdefault(key, Counter())[country] += weight
+    return BoxIndex(totals=dict(totals),
+                    given={k: dict(v) for k, v in boxes[0].items()},
+                    family={k: dict(v) for k, v in boxes[1].items()})
+
+
+def box_fingerprint(source: str) -> str:
+    """code_fingerprint of what turns `source`'s extract into its
+    BoxIndex: its Source.boxes reader, box_index and the fold the word
+    index shares (words, word_key, _strippable, _keyed, _FOLD_CONSTANTS),
+    and BoxIndex's fields."""
+    reader = SOURCES[source].boxes
+    assert reader is not None
+    module = globals()
+    return code_fingerprint(
+        [reader, box_index, words, word_key, _strippable, _keyed],
+        [*(_stable(module[name]) for name in _FOLD_CONSTANTS),
+         repr([f.name for f in dataclasses.fields(BoxIndex)])])
+
+
+def _file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as held:
+        while chunk := held.read(local_core.CHUNK):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def cached_box_index(source: str) -> BoxIndex:
+    """`source`'s BoxIndex, read from boxindex.json.gz beside the corpus
+    where its key matches, else built from the cached extract and written
+    there. The key is the extract's sha256, taken from the bytes on disk
+    as they are read, and box_fingerprint(source), so a refetch or a
+    change to how a word is cut, folded or counted rebuilds it. A file
+    that is not an index, or not this one, is built over, with a line on
+    stderr: it is derived from the extract, never the extract itself.
+    ValueError naming the refresh where the extract is missing or cannot
+    be read."""
+    found = SOURCES[source]
+    if found.extract is None or found.boxes is None:
+        raise ValueError(f"{source} keeps no extract with its names' boxes")
+    extract = found.extract()
+    if not extract.exists():
+        raise ValueError(f"{extract} is missing{_again(source)}")
+    path = directory(source, create=False) / BOX_INDEX
+    key = f"{_file_sha256(extract)}:{box_fingerprint(source)}"
+    if path.exists():
+        try:
+            data = json.loads(gzip.decompress(path.read_bytes()))
+            if (isinstance(data, dict) and data.get("key") == key
+                    and _is_counts(data.get("totals"))
+                    and all(isinstance(data.get(box), dict)
+                            and all(_is_counts(v) for v in data[box].values())
+                            for box in ("given", "family"))):
+                return BoxIndex(totals=data["totals"], given=data["given"],
+                                family=data["family"])
+            why = "built from another extract or by another fold, or not an index"
+        except (OSError, ValueError, EOFError, zlib.error) as exc:
+            why = str(exc)
+        print(f"rebuilding the box index at {path}: {why}", file=sys.stderr)
+    else:
+        print(f"building the box index of {source} from {extract.name} ...", file=sys.stderr)
+    try:
+        index = box_index(found.boxes(extract))
+    except (EOFError, zlib.error, KeyError, AttributeError, TypeError, RuntimeError,
+            ValueError) as exc:
+        # A truncated or damaged extract raises any of these from gzip,
+        # json or the reader (an empty one, StopIteration from inside a
+        # generator, as RuntimeError); one row fails, not the run.
+        raise ValueError(f"{extract} could not be read ({type(exc).__name__}: {exc})"
+                         f"{_again(source)}") from None
+    if _file_sha256(extract) != key.split(":", 1)[0]:
+        raise ValueError(f"{extract} changed while it was read{_again(source)}")
+    body = json.dumps({"key": key, **dataclasses.asdict(index)}, ensure_ascii=False)
+    try:
+        corpus_build.write_atomic(path, gzip.compress(body.encode(), 6, mtime=0))
+    except OSError as exc:
+        print(f"could not cache the box index at {path}: {exc}", file=sys.stderr)
     return index
 
 

@@ -17,7 +17,7 @@ import time
 import urllib.error
 import urllib.request
 import zipfile
-from collections.abc import Callable, Iterable, Mapping
+from collections.abc import Callable, Iterable, Iterator, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, TypeVar
@@ -59,6 +59,15 @@ class Source:
     #: (nepal-candidates' "devanagari"). meta.json records them, and a
     #: corpus written under other keys is refused on load.
     corpus_keys: tuple[str, ...] = ("name",)
+    #: For a source whose cached extract holds every record uncapped, its
+    #: name in two boxes and a country (orcid-researchers,
+    #: patentsview-inventors): the extract's path, and a reader yielding
+    #: each record as (given box, family box, country, weight), the
+    #: weight being the people the record stands for.
+    #: local_corpora.box_index counts words by box and country from them,
+    #: for tools/name_usage.py's per-country rows.
+    extract: Callable[[], Path] | None = None
+    boxes: Callable[[Path], Iterator[tuple[str, str, str, int]]] | None = None
 
 
 #: Attempts per request, for every source that retries.

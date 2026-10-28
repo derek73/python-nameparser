@@ -4500,3 +4500,139 @@ def test_alike_against_a_base_counts_each_direction_apart() -> None:
     assert local.format_alike(nepal, {"0": True}) == ["1 of 1 pairs read alike"]
     with pytest.raises(SystemExit, match="other persons"):
         local.format_alike(nepal, {"0": True, "1": True}, {"0": True})
+
+
+# -- the box index ------------------------------------------------------------------
+
+def _extract(path: Path, header: dict[str, object], lines: list[dict[str, object]]) -> Path:
+    """An extract written as the fetch writes one: a header line, then a
+    record a line, gzipped."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    text = "".join(json.dumps(x) + "\n" for x in (header, *lines))
+    path.write_bytes(gzip.compress(text.encode(), mtime=0))
+    return path
+
+
+def _pv_extract(*lines: dict[str, object]) -> Path:
+    return _extract(patentsview.extract_path(), {"release": patentsview.PV_RELEASE},
+                    list(lines))
+
+
+_PV_LINES = (
+    {"given": "Ana María", "family": "del Río", "country": "ES", "people": 3},
+    {"given": "Juan del", "family": "del Castillo del Río", "country": "MX", "people": 2},
+    {"given": "Ann", "family": "Lee", "country": "US", "people": 10},
+    {"given": "Bo", "family": "DEL.", "people": 1})
+
+
+def test_the_box_index_counts_people_by_box_and_country_once_a_record() -> None:
+    index = local.box_index(patentsview.pv_boxes(_pv_extract(*_PV_LINES)))
+    assert index.totals == {"ES": 3, "MX": 2, "US": 10, "": 1}
+    # 'del Castillo del Río' counts del once; 'DEL.' folds to it as the word
+    # index folds it; the country it is a share of is every record's.
+    assert index.family["del"] == {"ES": 3, "MX": 2, "": 1}
+    assert index.given["del"] == {"MX": 2}
+    assert index.given["maría"] == {"ES": 3} and "lee" not in index.given
+
+
+def test_an_orcid_holder_weighs_one(_own_cache: Path) -> None:
+    path = _extract(orcid.extract_path(), {"file": orcid.ORCID_FILE}, [
+        {"given": "Ann", "family": "Lee", "country": "NZ"}, {"given": "Ann"}])
+    index = local.box_index(orcid.orcid_boxes(path))
+    assert index.totals == {"NZ": 1, "": 1} and index.given["ann"] == {"NZ": 1, "": 1}
+
+
+@pytest.mark.parametrize(("reader", "path", "header"), [
+    ("orcid", "orcid", {"file": "ORCID_2024_10_summaries.tar.gz"}),
+    ("patentsview", "patentsview", {"release": "2024-12-31"})])
+def test_an_extract_of_another_release_is_refused_by_its_reader(
+        reader: str, path: str, header: dict[str, object]) -> None:
+    module = {"orcid": orcid, "patentsview": patentsview}[reader]
+    boxes = module.orcid_boxes if reader == "orcid" else module.pv_boxes
+    written = _extract(module.extract_path(), header, [])
+    with pytest.raises(ValueError, match="is not an extract of"):
+        list(boxes(written))
+
+
+def test_the_cached_box_index_is_read_back_under_its_key_and_rebuilt_off_it(
+        capsys: pytest.CaptureFixture[str]) -> None:
+    _pv_extract(*_PV_LINES)
+    built = local.cached_box_index(local.PV)
+    cache = local.directory(local.PV) / local.BOX_INDEX
+    assert "building the box index" in capsys.readouterr().err
+    assert local.cached_box_index(local.PV) == built
+    assert capsys.readouterr().err == ""  # read back, not built again
+    # A refetched extract is other bytes: the index is built from them.
+    _pv_extract(*_PV_LINES[:2])
+    assert local.cached_box_index(local.PV).totals == {"ES": 3, "MX": 2}
+    assert "rebuilding the box index" in capsys.readouterr().err
+    assert json.loads(gzip.decompress(cache.read_bytes()))["totals"] == {"ES": 3, "MX": 2}
+
+
+@pytest.mark.parametrize("damage", [b"not gzip", gzip.compress(b"{", mtime=0),
+                                    gzip.compress(b'{"key": 1}', mtime=0)],
+                         ids=["not gzip", "not JSON", "no counts"])
+def test_a_cached_box_index_that_cannot_be_read_is_built_over(
+        capsys: pytest.CaptureFixture[str], damage: bytes) -> None:
+    _pv_extract(*_PV_LINES)
+    cache = local.directory(local.PV) / local.BOX_INDEX
+    cache.write_bytes(damage)
+    assert local.cached_box_index(local.PV).totals["US"] == 10
+    assert "rebuilding the box index" in capsys.readouterr().err
+
+
+def test_a_box_index_without_its_extract_names_the_refresh() -> None:
+    local.directory(local.PV)
+    with pytest.raises(ValueError, match="is missing.*fetch patentsview-inventors --refresh"):
+        local.cached_box_index(local.PV)
+
+
+def test_a_change_to_the_box_reader_moves_the_key(monkeypatch: pytest.MonkeyPatch) -> None:
+    before = local.box_fingerprint(local.PV)
+    monkeypatch.setitem(local.SOURCES, local.PV, dataclasses.replace(
+        local.SOURCES[local.PV], boxes=lambda path: iter(())))
+    assert local.box_fingerprint(local.PV) != before
+
+
+def test_the_box_fingerprint_lists_everything_box_index_calls() -> None:
+    # box_fingerprint's list is kept by hand, as _FOLD_CODE is: a helper
+    # box_index starts calling, left off it, leaves the key unmoved.
+    import inspect
+    module = vars(local)
+    listed = {"box_index", "words", "word_key", "_strippable", "_keyed",
+              *local._FOLD_CONSTANTS, "BoxIndex", "Counter"}
+    read: set[str] = set()
+    for name in ("box_index", "words", "word_key", "_keyed"):
+        read |= _globals_read(inspect.unwrap(module[name]).__code__)
+    called = {n for n in read & module.keys()
+              if not isinstance(module[n], types.ModuleType)}
+    assert called - listed == set()
+
+
+@pytest.mark.parametrize("damage", ["truncated", "corrupt", "empty", "no people"])
+def test_an_extract_that_cannot_be_read_fails_as_a_value_error(damage: str) -> None:
+    # _attempt in name_usage catches ValueError and OSError: anything else
+    # gzip, json or the reader raised took every row of the run down.
+    path = _pv_extract(*_PV_LINES)
+    body = path.read_bytes()
+    if damage == "truncated":
+        path.write_bytes(body[: len(body) // 2])
+    elif damage == "corrupt":
+        path.write_bytes(body[:12] + bytes(b ^ 0xFF for b in body[12:40]) + body[40:])
+    elif damage == "empty":
+        path.write_bytes(gzip.compress(b"", mtime=0))
+    else:
+        _pv_extract({"given": "Ann", "family": "Lee", "country": "US"})
+    with pytest.raises(ValueError, match="could not be read.*--refresh"):
+        local.cached_box_index(local.PV)
+
+
+def test_a_cached_box_index_whose_deflate_is_damaged_is_built_over(
+        capsys: pytest.CaptureFixture[str]) -> None:
+    _pv_extract(*_PV_LINES)
+    local.cached_box_index(local.PV)
+    cache = local.directory(local.PV) / local.BOX_INDEX
+    body = cache.read_bytes()
+    cache.write_bytes(body[:12] + bytes(b ^ 0xFF for b in body[12:40]) + body[40:])
+    assert local.cached_box_index(local.PV).totals["US"] == 10
+    assert "rebuilding the box index" in capsys.readouterr().err

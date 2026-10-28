@@ -421,6 +421,20 @@ def _pv_read(path: Path) -> Fetched:
         "countries_at_the_cap": sum(n == PV_CAP for n in by_country.values())})
 
 
+def pv_boxes(path: Path) -> Iterator[tuple[str, str, str, int]]:
+    """Every name of the extract at `path` as (given, family, country,
+    people), uncapped, for local_corpora.box_index. The extract was
+    checked when it was fetched (_pv_read); a file whose header names
+    another release is refused."""
+    with gzip.open(path, "rt", encoding="utf-8", newline="\n") as lines:
+        if json.loads(next(lines)).get("release") != PV_RELEASE:
+            raise ValueError(f"{path} is not an extract of the {PV_RELEASE} release{_again(PV)}")
+        for line in lines:
+            record = json.loads(line)
+            yield (record.get("given", ""), record.get("family", ""),
+                   record.get("country", ""), record["people"])
+
+
 def _kept() -> str:
     return f"release {PV_RELEASE}, at most {PV_CAP:,} names a country"
 

@@ -492,6 +492,20 @@ def _orcid_read(path: Path) -> Fetched:
         "countries_at_the_cap": sum(n == ORCID_CAP for n in by_country.values())})
 
 
+def orcid_boxes(path: Path) -> Iterator[tuple[str, str, str, int]]:
+    """Every record of the extract at `path` as (given, family, country,
+    1): one holder each, uncapped, for local_corpora.box_index. The
+    extract was checked when it was fetched (_orcid_read); a file whose
+    header names another release is refused."""
+    with gzip.open(path, "rt", encoding="utf-8", newline="\n") as lines:
+        if json.loads(next(lines)).get("file") != ORCID_FILE:
+            raise ValueError(f"{path} is not an extract of {ORCID_FILE}{_again(ORCID)}")
+        for line in lines:
+            record = json.loads(line)
+            yield (record.get("given", ""), record.get("family", ""),
+                   record.get("country", ""), 1)
+
+
 def _kept() -> str:
     return f"{ORCID_FILE}, at most {ORCID_CAP:,} records a country"
 
