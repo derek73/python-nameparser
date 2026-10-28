@@ -276,7 +276,7 @@ def test_the_comma_agreement_exceptions_are_all_still_exceptions(
 # an agnomen that are names too, a given name written short, and the
 # trailing title, salutation and numerals the trailing peel reads.
 _EMPTY_HEAD_TITLES = ("", "Dr.", "Mr", "Sir", "Freiherr", "St.",
-                      "Rev. Sr.", "Dean", "Queen", "dr.")
+                      "Rev. Sr.", "Dean", "Dame", "dr.")
 _EMPTY_HEAD_BODIES = (
     "", "John", "John Smith", "Ma", "MA", "abdul Rahman", "de Mesnil",
     "Jane van", "Jones vd", "Jones mc", "John (Bob) Smith", "(Bob)",

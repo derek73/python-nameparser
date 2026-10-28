@@ -720,9 +720,9 @@ grep your fixtures for, with what 1.4 read:
   languages are suffixes: 1.4 read middle ``Pavlović``, last ``mlađi``.
 - ``"John Smith II, AD"`` (2.5) — a credential after a generational
   suffix and a comma: 1.4 read first ``AD``, last ``John Smith``.
-- ``"Elizabeth II, Queen"`` and ``"Smith, Sir"`` (2.5) — the name before
+- ``"John III, Sir"`` and ``"Smith, Sir"`` (2.5) — the name before
   a comma and a given-name title is the given name: 1.4 read last
-  ``Elizabeth`` and ``Smith``.
+  ``John`` and ``Smith``.
 - ``"Ivoi, Paul d'"`` (2.5) — a particle after the given name joins the
   surname: 1.4 read middle ``d'``.
 - ``"jose j y lopez"`` (2.5) — a lone letter in a one-case name reads as
@@ -799,6 +799,10 @@ grep your fixtures for, with what 1.4 read:
   title phrase, as ``King`` is since 2.7 (``"Deacon of the Church Jane
   Smith"`` keeps the title): 1.4 read title ``Deacon``, ``Burgess`` and
   ``Ranger``.
+- ``"Queen Latifah"`` and ``"Elizabeth II, Queen"`` (2.8) — ``Queen`` is
+  a title only inside a title phrase or behind a style (``"Her Majesty
+  Queen Elizabeth"``), as ``King`` is since 2.7: 1.4 read title
+  ``Queen``, first ``Latifah``, and last ``Elizabeth``.
 
 .. doctest::
 
@@ -861,8 +865,8 @@ grep your fixtures for, with what 1.4 read:
     'mlađi'
     >>> HumanName("John Smith II, AD").suffix
     'II, AD'
-    >>> HumanName("Elizabeth II, Queen").first
-    'Elizabeth'
+    >>> HumanName("John III, Sir").first
+    'John'
     >>> HumanName("Smith, Sir").first
     'Smith'
     >>> HumanName("Ivoi, Paul d'").last
@@ -949,3 +953,5 @@ grep your fixtures for, with what 1.4 read:
     ['Deacon', 'Burgess', 'Ranger']
     >>> HumanName("Deacon of the Church Jane Smith").title
     'Deacon of the Church'
+    >>> HumanName("Queen Latifah").first, HumanName("Elizabeth II, Queen").first
+    ('Queen', 'Queen')

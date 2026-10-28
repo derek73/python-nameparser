@@ -12876,6 +12876,42 @@ CASES: tuple[Case, ...] = (
          notes="H9's Accepted clause, the class 'king' and 'prince' "
                "took: 'de' is no partner; read title 'Marquis' 1.4.0 "
                "through 2.7.0"),
+    Case("given_name_title_queen_at_the_head", "Queen Latifah",
+         {"given": "Queen", "family": "Latifah"},
+         classification="fix(#913)",
+         notes="H9; read title 'Queen', given 'Latifah' 1.4.0 through "
+               "2.7.0, 'queen' addressing by the given name"),
+    Case("given_name_title_queen_after_a_salutation", "Ms Queen Smith",
+         {"title": "Ms", "given": "Queen", "family": "Smith"},
+         classification="fix(#913)",
+         notes="H9: a salutation is no partner; read title 'Ms Queen', "
+               "given 'Smith' 2.3.0 through 2.7.0, last 'Smith' in 1.4.0"),
+    Case("given_name_title_queen_after_a_family_comma", "Smith, Queen",
+         {"given": "Queen", "family": "Smith"},
+         classification="fix(#913)",
+         notes="H9; read title 'Queen', given 'Smith' before"),
+    Case("given_name_title_queen_before_a_family_comma",
+         "Queen Smith, Mary",
+         {"given": "Mary", "family": "Queen Smith"},
+         classification="parity",
+         notes="H6 peels only a title, so the surname keeps the word, as "
+               "1.4.0 read it; 2.7.0 read title 'Queen'"),
+    Case("queen_keeps_the_title_before_of", "Queen of England",
+         {"title": "Queen of England"}, classification="parity",
+         notes="H9: 'of' after the word is its phrase"),
+    Case("monarch_with_a_bare_leading_queen", "Queen Elizabeth II",
+         {"given": "Queen", "family": "Elizabeth", "suffix": "II"},
+         classification="fix(#913)",
+         notes="H9's Accepted clause, the class 'king' took; read title "
+               "'Queen', given 'Elizabeth', suffix 'II' through 2.7.0, "
+               "and first 'Elizabeth', last 'II' in 1.4.0"),
+    Case("monarch_with_queen_alone_after_a_comma", "Elizabeth II, Queen",
+         {"given": "Queen", "family": "Elizabeth", "suffix": "II"},
+         classification="fix(#913)",
+         notes="H9: a lone word that may be a given name after a comma is "
+               "the listing form's given name; read given 'Elizabeth' "
+               "2.5.0 through 2.7.0 (rules/H1's example until #913), "
+               "last 'Elizabeth' in 1.4.0"),
     Case("given_name_title_deacon_at_the_head", "Deacon Jones",
          {"given": "Deacon", "family": "Jones"},
          classification="fix(#913)",

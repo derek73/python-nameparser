@@ -912,7 +912,6 @@
 {"name": "Elder Soares", "given": "Elder", "family": "Soares", "initials": "E. S."}
 {"name": "Elisa Ruiz Romero", "given": "Elisa", "middle": "Ruiz", "family": "Romero", "initials": "E. R. R."}
 {"name": "Eliseo Jiménez Ruiz", "given": "Eliseo", "middle": "Jiménez", "family": "Ruiz", "initials": "E. J. R."}
-{"name": "Elizabeth II, Queen", "title": "Queen", "given": "Elizabeth", "suffix": "II", "initials": "E."}
 {"name": "Elizabeth Margot Schreiber Castañón", "given": "Elizabeth", "middle": "Margot Schreiber", "family": "Castañón", "initials": "E. M. S. C."}
 {"name": "Elizabeth Windsor Maria Teresa bin Stromae MP", "given": "Elizabeth", "middle": "Windsor Maria Teresa", "family": "bin Stromae", "suffix": "MP", "initials": "E. W. M. T. S."}
 {"name": "Elslande, Renaat van", "given": "Renaat", "family": "van Elslande", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "R. E."}
@@ -2486,6 +2485,7 @@
 {"name": "Mary Ann H Luther", "given": "Mary", "middle": "Ann H", "family": "Luther", "initials": "M. A. H. L."}
 {"name": "Mary Ann H,Luther", "given": "Luther", "family": "Mary Ann H", "initials": "L. M. A. H."}
 {"name": "Mary Beth Smith", "given": "Mary", "middle": "Beth", "family": "Smith", "initials": "M. B. S."}
+{"name": "Mary II, Dame", "title": "Dame", "given": "Mary", "suffix": "II", "initials": "M."}
 {"name": "Mary Jane King", "given": "Mary", "middle": "Jane", "family": "King", "initials": "M. J. K."}
 {"name": "Mary Jane MA Pope", "given": "Mary", "middle": "Jane MA", "family": "Pope", "initials": "M. J. M. P.", "capitalized_force": "Mary Jane Ma Pope"}
 {"name": "Mary Jane Pope", "given": "Mary", "middle": "Jane", "family": "Pope", "initials": "M. J. P."}
@@ -2632,6 +2632,7 @@
 {"name": "Ms A.J. Smith", "title": "Ms", "given": "A.J.", "family": "Smith", "initials": "A. S."}
 {"name": "Ms Hon Solo", "title": "Ms Hon", "family": "Solo", "initials": "S."}
 {"name": "Ms Princess Smith", "title": "Ms", "given": "Princess", "family": "Smith", "initials": "P. S."}
+{"name": "Ms Queen Smith", "title": "Ms", "given": "Queen", "family": "Smith", "initials": "Q. S."}
 {"name": "Ms. Rebecca Teichman", "title": "Ms.", "given": "Rebecca", "family": "Teichman", "initials": "R. T."}
 {"name": "Mudane Bertram Wilberforce Henry Robert Wooster MP", "given": "Mudane", "middle": "Bertram Wilberforce Henry Robert", "family": "Wooster", "suffix": "MP", "initials": "M. B. W. H. R. W."}
 {"name": "Mueller Kathy", "order": "FAMILY_FIRST", "given": "Kathy", "family": "Mueller", "initials": "K. M."}
@@ -2915,7 +2916,8 @@
 {"name": "Qodirov Muhammad Yusuf", "order": "FAMILY_FIRST", "given": "Muhammad", "middle": "Yusuf", "family": "Qodirov", "initials": "M. Y. Q."}
 {"name": "Qodirov, Alisher Salimovich", "given": "Alisher", "middle": "Salimovich", "family": "Qodirov", "initials": "A. S. Q."}
 {"name": "Qodirov, Muhammad Yusuf", "given": "Muhammad", "middle": "Yusuf", "family": "Qodirov", "initials": "M. Y. Q."}
-{"name": "Queen Elizabeth", "title": "Queen", "given": "Elizabeth", "initials": "E."}
+{"name": "Queen Elizabeth", "given": "Queen", "family": "Elizabeth", "initials": "Q. E."}
+{"name": "Queen Elizabeth II", "given": "Queen", "family": "Elizabeth", "suffix": "II", "initials": "Q. E."}
 {"name": "Quertenmont, Andreas Bernardus de", "given": "Andreas", "middle": "Bernardus", "family": "de Quertenmont", "initials": "A. B. Q."}
 {"name": "Quincy Adams", "given": "Quincy", "family": "Adams", "initials": "Q. A."}
 {"name": "Quinquela Martín, Benito", "given": "Benito", "family": "Quinquela Martín", "initials": "B. Q. M."}

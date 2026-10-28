@@ -14,7 +14,7 @@
 - **Which side a title is on is decided by the name word** and by nothing else standing beside it, so a run written around a nickname is one run: the name Dr. 'Smitty' Sir John reads as Dr. Sir John does.
 - **Neither a comma with nothing but titles after it nor a declared order decides the field.** A comma with nothing but titles after it names no given part, so it says nothing about which field the word before it fills: a comma with no given name after it does not decide the field, nor does a declared order, which places only a word nothing else decided (O5), and the title decides there as it does with no comma.
   ```
-  "Elizabeth II, Queen"       →  given="Elizabeth"
+  "Mary II, Dame"             →  given="Mary"
   "John III, Sir"             →  given="John"
   "Anne, Swami"               →  given="Anne"
   "Sir John"  family-first    →  given="John"
@@ -56,7 +56,7 @@
   "Her Majesty Queen Elizabeth"  →  family=""
   "Smith Sir."                →  family=""
   ```
-- A listing record whose given field holds only a given-name title reads that title's reading, so `Smith, Sir` (a row with the given name missing) reads given `Smith` with the family empty, as `Sir Smith` does: the input names one word and one title, and the title is the only evidence there is. 1.4.0 read the word before the comma as the last name in these rows (`Elizabeth II, Queen`, `John III, Sir`, `Smith, Sir`) but for `Anne, Swami`, which it read as first `Anne`. An ambiguous particle no comma settled, or a bare one, is a word the order placed, and reads given.
+- A listing record whose given field holds only a given-name title reads that title's reading, so `Smith, Sir` (a row with the given name missing) reads given `Smith` with the family empty, as `Sir Smith` does: the input names one word and one title, and the title is the only evidence there is. 1.4.0 read the word before the comma as the last name in these rows (`Mary II, Dame`, `John III, Sir`, `Smith, Sir`) but for `Anne, Swami`, which it read as first `Anne`. An ambiguous particle no comma settled, or a bare one, is a word the order placed, and reads given.
   ```
   "Smith, Sir"                →  family=""
   "Sir Abu Bakar"  family-first  →  given="Abu Bakar"

@@ -47,9 +47,13 @@ class FirstNameHandlingTests(HumanNameTestBase):
         self.m(hn.title, "His Majesty King", hn)
         self.m(hn.first, "Henry", hn)
 
-    def test_queen_exception_to_first_name_rule(self) -> None:
-        hn = HumanName("Queen Elizabeth")
-        self.m(hn.title, "Queen", hn)
+    def test_queen_is_a_first_name_outside_a_title_phrase(self) -> None:
+        # #913: 'queen' is a title only inside a title phrase
+        hn = HumanName("Queen Latifah")
+        self.m(hn.first, "Queen", hn)
+        self.m(hn.last, "Latifah", hn)
+        hn = HumanName("Her Majesty Queen Elizabeth")
+        self.m(hn.title, "Her Majesty Queen", hn)
         self.m(hn.first, "Elizabeth", hn)
 
     def test_dame_exception_to_first_name_rule(self) -> None:

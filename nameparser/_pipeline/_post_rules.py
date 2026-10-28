@@ -506,7 +506,7 @@ def post_rules(state: ParseState) -> ParseState:
     # it, and the one name word of a name read family-first. The comma
     # named no given part, and the order places a word nothing else
     # decided (O5), so the title decides as it does in 'Sir John'
-    # ('Elizabeth II, Queen' reads as 'Queen Elizabeth II'), unless
+    # ('John III, Sir' reads as 'Sir John III'), unless
     # something else settled the word (_family_settled).
     elif (titles and families and not givens and not middles
             and not _family_settled(state, tokens, families)
