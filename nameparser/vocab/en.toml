@@ -393,7 +393,7 @@ nobility = { gender = "f" }
 
 [[word]]
 text = "king"
-nobility = { addresses = "given", gender = "m", issue = 752, decided = 2026-10-26, note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'His Majesty King Charles' reads the title, 'King Curtis' and 'Mr King Smith' the given name, unreported, since no listed phrase holds it" }
+nobility = { attaches = ["consort"], addresses = "given", gender = "m", issue = 752, decided = 2026-10-26, note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'His Majesty King Charles' reads the title, 'King Curtis' and 'Mr King Smith' the given name, unreported, since no listed phrase holds it" }
 given = { us_ssa = 37890, wikidata = 178, as_of = 2026-10-26, note = "US SSA: male and female births added; Wikidata is a lower bound (United States 92); nam_dict band 1 in the U.S.A. and China" }
 family = { us_census_2010 = 465422, wikidata = 4554, as_of = 2026-10-26, note = "US Census rank 34" }
 
@@ -439,19 +439,19 @@ nobility = {}
 
 [[word]]
 text = "prince"
-nobility = { addresses = "given", gender = "m", issue = 752, decided = 2026-10-27, note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'His Royal Highness Prince Harry' and 'Prince of Wales' read the title, 'Prince Fielder' and 'Mr Prince Smith' the given name, unreported, since no listed phrase holds it; inside a phrase it addresses by the GIVEN name (#519)" }
+nobility = { attaches = ["consort"], addresses = "given", gender = "m", issue = 752, decided = 2026-10-27, note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'His Royal Highness Prince Harry' and 'Prince of Wales' read the title, 'Prince Fielder' and 'Mr Prince Smith' the given name, unreported, since no listed phrase holds it; inside a phrase it addresses by the GIVEN name (#519)" }
 given = { us_ssa = 24151, wikidata = 204, as_of = 2026-10-27, note = "US SSA: male and female births added; Wikidata is a lower bound (United States 53, Ghana 19, Nigeria 10); nam_dict band 1 in the U.S.A. and India/Sri Lanka" }
 family = { us_census_2010 = 47168, wikidata = 525, as_of = 2026-10-27, note = "US Census rank 743" }
 
 [[word]]
 text = "princess"
-nobility = { addresses = "given", gender = "f", issue = 752, decided = 2026-10-27, note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'Her Royal Highness Princess Anne' reads the title, 'Princess Smith' and 'Ms Princess Smith' the given name, unreported, since no listed phrase holds it; inside a phrase it addresses by the GIVEN name (#519)" }
+nobility = { attaches = ["consort", "royal"], addresses = "given", gender = "f", issue = 752, decided = 2026-10-27, note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'Her Royal Highness Princess Anne' reads the title, 'Princess Smith' and 'Ms Princess Smith' the given name, unreported, since no listed phrase holds it; inside a phrase it addresses by the GIVEN name (#519)" }
 given = { us_ssa = 15982, wikidata = 29, as_of = 2026-10-27, note = "US SSA: female and male births added; Wikidata is a lower bound (Nigeria 6, Ghana 3); nam_dict band 1 in the U.S.A." }
 family = { wikidata = 1, as_of = 2026-10-27, note = "US Census: under 100 bearers, not listed" }
 
 [[word]]
 text = "queen"
-nobility = { addresses = "given", gender = "f", issue = 913, decided = 2026-10-27, note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'Her Majesty Queen Elizabeth' reads the title, 'Queen Latifah' and 'Ms Queen Smith' the given name, unreported, since no listed phrase holds it; inside a phrase it addresses by the GIVEN name" }
+nobility = { attaches = ["consort", "mother"], addresses = "given", gender = "f", issue = 913, decided = 2026-10-27, note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'Her Majesty Queen Elizabeth' reads the title, 'Queen Latifah' and 'Ms Queen Smith' the given name, unreported, since no listed phrase holds it; inside a phrase it addresses by the GIVEN name" }
 given = { us_ssa = 16123, wikidata = 25, as_of = 2026-10-27, note = "US SSA: female and male births added (F 16,092); Wikidata is a lower bound (United States 8, Nigeria 5); nam_dict band 1 in the U.S.A.; UK PSC filers put it first in the forename box 3 times and never in the title box (2026-10-27)" }
 family = { us_census_2010 = 18557, wikidata = 66, as_of = 2026-10-27, note = "US Census rank 1,945" }
 
@@ -1955,6 +1955,10 @@ text = "computer"
 modifier = {}
 
 [[word]]
+text = "consort"
+modifier = { addresses = "given", issue = 913, decided = 2026-10-27, note = "the spouse of a monarch, read only in a title phrase after the royal title it qualifies (King Consort, Queen Consort, Prince Consort, Princess Consort; rules/H9); no US Census or SSA bearers, and Wikidata lists none" }
+
+[[word]]
 text = "corporate"
 modifier = {}
 
@@ -2200,7 +2204,9 @@ modifier = {}
 
 [[word]]
 text = "royal"
-modifier = {}
+modifier = { addresses = "given", issue = 913, decided = 2026-10-27, note = "a title only beside a head title (rules/H9), its given reading the clash: 'His Royal Highness' and 'Princess Royal Anne' read the title, addressing by the given name, 'Royal Smith' and 'Smith, Royal' the given name" }
+given = { us_ssa = 24394, wikidata = 136, as_of = 2026-10-27, note = "US SSA: male and female births added (M 20,072); Wikidata is a lower bound (United States 79); nam_dict band 1 in Great Britain and the U.S.A." }
+family = { us_census_2010 = 15755, wikidata = 65, as_of = 2026-10-27, note = "US Census rank 2,319" }
 
 [[word]]
 text = "security"

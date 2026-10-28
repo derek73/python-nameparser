@@ -1558,7 +1558,10 @@ def title_readings(texts: Sequence[str], folded: Sequence[str],
                 and ((head and i < lead) or (n in contested and n not in titles))):
             reading[i] = behind or linked[i] or (
                 i < last and folded[i + 1] in _PHRASE_LINKS
-                and folded[i + 1] in conjunctions)
+                and folded[i + 1] in conjunctions) or (
+                # a title before it that attaches to it ('Princess Royal')
+                i > 0 and reading[i - 1]
+                and f"{folded[i - 1]} {n}" in phrases)
             behind = reading[i]
         elif reading[i] or (head and is_title_shaped(texts[i], lexicon)):
             behind = True
