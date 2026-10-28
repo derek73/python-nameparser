@@ -423,11 +423,15 @@ nobility = { gender = "m" }
 
 [[word]]
 text = "marquis"
-nobility = { gender = "m" }
+nobility = { gender = "m", issue = 913, decided = 2026-10-27, note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'Marquis Johnson' and 'Mr Marquis Smith' read the given name, unreported, since no listed phrase holds it; 'Marquis of Queensberry' keeps the title" }
+given = { us_ssa = 25041, wikidata = 81, as_of = 2026-10-27, note = "US SSA: male and female births added (M 24,567); Wikidata is a lower bound (United States 48); nam_dict band 1 in the U.S.A.; UK PSC filers never put it first in the title box (2026-10-27)" }
+family = { us_census_2010 = 8737, wikidata = 171, as_of = 2026-10-27, note = "US Census rank 4,065; Wikidata Canada 41, France 27" }
 
 [[word]]
 text = "marquise"
-nobility = { gender = "f" }
+nobility = { gender = "f", issue = 913, decided = 2026-10-27, note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'Marquise Johnson' reads the given name, unreported, since no listed phrase holds it; 'Marquise de Pompadour' reads it too, 'of' being English only" }
+given = { us_ssa = 10995, wikidata = 30, as_of = 2026-10-27, note = "US SSA: male and female births added (M 10,603, F 392); Wikidata is a lower bound (United States 13, France 7); nam_dict band 1 in the U.S.A.; UK PSC filers put it first in the forename box once and never in the title box (2026-10-27)" }
+family = { us_census_2010 = 106, wikidata = 1, as_of = 2026-10-27, note = "US Census rank 153,769" }
 
 [[word]]
 text = "pharaoh"

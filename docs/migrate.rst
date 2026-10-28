@@ -790,6 +790,10 @@ grep your fixtures for, with what 1.4 read:
 - ``"Marie Bon Durand"`` and ``"Herren Hans"`` (2.7) — ``Bon``, ``Dí``
   and ``Heer`` are no longer particles, nor ``Herren`` and ``Heren``
   titles: 1.4 read last ``Bon Durand`` and title ``Herren``.
+- ``"Marquis Johnson"`` and ``"Johnson, Marquise"`` (2.8) — ``Marquis``
+  and ``Marquise`` are titles only inside a title phrase, as ``King`` is
+  since 2.7 (``"Marquis of Queensberry"`` keeps the title): 1.4 read
+  title ``Marquis`` and ``Marquise``.
 - ``"Deacon Jones"``, ``"Burgess Meredith"`` and ``"Ranger Smith"``
   (2.8) — ``Deacon``, ``Burgess`` and ``Ranger`` are titles only inside a
   title phrase, as ``King`` is since 2.7 (``"Deacon of the Church Jane
@@ -936,6 +940,10 @@ grep your fixtures for, with what 1.4 read:
     'Durand'
     >>> HumanName("Herren Hans").first
     'Herren'
+    >>> HumanName("Marquis Johnson").first, HumanName("Johnson, Marquise").first
+    ('Marquis', 'Marquise')
+    >>> HumanName("Marquis of Queensberry").title
+    'Marquis of Queensberry'
     >>> [HumanName(n).first for n in ("Deacon Jones", "Burgess Meredith",
     ...     "Ranger Smith")]
     ['Deacon', 'Burgess', 'Ranger']

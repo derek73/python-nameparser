@@ -2470,6 +2470,8 @@
 {"name": "Marković, Irena", "given": "Irena", "family": "Marković", "initials": "I. M."}
 {"name": "Markus von Wickenburg", "given": "Markus", "family": "von Wickenburg", "initials": "M. W."}
 {"name": "Marquess of Bath", "title": "Marquess of Bath"}
+{"name": "Marquis Johnson", "given": "Marquis", "family": "Johnson", "initials": "M. J."}
+{"name": "Marquis de Lafayette", "given": "Marquis", "family": "de Lafayette", "initials": "M. L."}
 {"name": "Marshal Yanda", "given": "Marshal", "family": "Yanda", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "M. Y."}
 {"name": "Marsick, Martin Pierre", "given": "Martin", "middle": "Pierre", "family": "Marsick", "initials": "M. P. M."}
 {"name": "Martha Nava García", "given": "Martha", "middle": "Nava", "family": "García", "initials": "M. N. G."}

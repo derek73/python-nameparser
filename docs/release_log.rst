@@ -7,6 +7,7 @@ Release Log
     **Behavior Changes**
 
     - **Fix the given names Deacon, Burgess and Ranger reading as titles.** ``Deacon Jones``, ``Burgess Meredith`` and ``Ranger Smith`` give first ``Deacon``, ``Burgess`` and ``Ranger``, where 1.4.0 through 2.7.0 gave title ``Deacon``, ``Burgess`` and ``Ranger``; ``Smith, Deacon`` reads the same. A cleric written with the bare title, or behind a salutation or ``Rev.``, reads it as a first name too (``The Rev. Deacon John Smith`` gives first ``Deacon``), where ``of`` keeps it (``Deacon of the Church Jane Smith``). ``Burgess Meredith`` reports a ``title-or-name`` ambiguity, since ``Chief Burgess`` is a title phrase. :issue:`913`
+    - **Fix the given names Marquis and Marquise reading as titles.** ``Marquis Johnson`` and ``Mr Marquis Smith`` give first ``Marquis``, where 1.4.0 through 2.7.0 gave title ``Marquis`` and ``Mr Marquis``; ``Johnson, Marquise`` reads the same. A noble written with the bare title reads it as a first name too (``Marquis de Lafayette`` gives first ``Marquis``), where ``of`` keeps it (``Marquis of Queensberry``). :issue:`913`
 
 * 2.7.0 - October 27, 2026
 
