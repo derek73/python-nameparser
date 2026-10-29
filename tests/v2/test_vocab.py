@@ -11,9 +11,12 @@ refuse more keeps a row for every case its narrower form refused:
 #737's review widened check 6 from "the same kind" to "the same set"
 and the new check quietly stopped refusing the excluded kind itself
 with `acronym` flipped, a case nothing listed because the old check had
-made it impossible. compile_pool's final
-acronym-and-word check is a backstop check 5 always reaches first, so
-its mutation is refused by check 5.
+made it impossible. The compiler's final
+acronym-and-word check (nameparser/_reading_index.py) is a backstop
+check 5 always reaches first, so its mutation is refused by check 5.
+The reading index the build writes beside _compiled.py, and the
+invariant that _compiled.py is that index compiled, are
+tests/v2/test_reading_index.py's.
 """
 from __future__ import annotations
 

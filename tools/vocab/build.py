@@ -1,23 +1,30 @@
-"""Compile nameparser/vocab/*.toml into nameparser/config/_compiled.py.
+"""Compile nameparser/vocab/*.toml into nameparser/config/_compiled.py,
+by way of the reading index, nameparser/config/_index.py.
 
 Usage::
 
-    uv run python tools/vocab/build.py           # rewrite _compiled.py
-    uv run python tools/vocab/build.py --check   # exit 1 if it is stale
+    uv run python tools/vocab/build.py           # rewrite both modules
+    uv run python tools/vocab/build.py --check   # exit 1 if either is stale
 
 Either exits 2, printing the failed check, when the vocabulary fails one
 or a vocabulary file cannot be read, and 3 on an internal error or a
 module it cannot write, so neither is ever mistaken for exit 1's
-"stale". An unreadable _compiled.py IS stale, rebuilding replacing it,
-and --check reports it so.
+"stale". An unreadable generated module IS stale, rebuilding replacing
+it, and --check reports it so.
 
 The vocabulary is written per word, in one TOML file per BCP 47 language
 tag (`und` for words not yet assigned one, `mul` for words shared on
 purpose). Each word lists its READINGS -- what it can be read as, keyed by
 kind -- and the compiler folds them into the sets the parser reads
 (decisions/vocabulary-model). The parser never parses TOML: the build
-writes a module of frozenset literals, committed beside the data, and
-tests/v2/test_vocab.py fails when the two disagree.
+checks the files, writes every reading with its file's tag to the
+reading index, and compiles the index into a module of frozenset
+literals, both committed beside the data; tests/v2/test_vocab.py and
+tests/v2/test_reading_index.py fail when either disagrees with the
+files. The compiler, and the kinds and properties it reads (CATEGORY,
+BEHAVIORAL, GATED_WORDS), live in nameparser/_reading_index.py, which
+a choice of languages will run too (#753, phase 3); this file holds the
+checks.
 
 The build checks replace the import-time asserts the data modules used
 to carry. Lexicon.__post_init__ still runs on the result, and three
@@ -65,22 +72,26 @@ at fault:
     `may_be_name` and `may_be_given = true` are refused, each naming
     the reading to write, a particle reading states
     `may_be_given = false` exactly where its word has no `given`
-    reading in any file, an agnomen reading has a name reading on
-    its word, which gates it (rules/S11), and no other suffix word
-    kind has one, since the gate reads only those two;
+    reading in any file, and has no `given` reading only where some
+    other is on by default, an agnomen reading has a name reading on
+    its word, which gates it (rules/S11), one on by default where the
+    agnomen is, and no other suffix word kind has one, since the gate
+    reads only those two;
 
 numbered by subject, not by when they run: 1-3, 8, 7's case mask and
 11's refusals run per entry as each file loads, and 4-7, 9, 11's
 particle statement and agnomen and 10 over the whole pool in
 check_pool, 6 first and 10 last. A reading written `default = false`
 is held to 1-3, 7, 8 and 11 like any other and compiles to nothing, so
-4, 5, 6 and 9 do not weigh it;
+4, 5, 6 and 9 do not weigh it, a name reading included (3a): it derives
+no marker in the default, and 9 and 11's agnomen half count only the
+name readings on by default;
 
 plus the data invariants that were asserts: may_be_initial only on a
 cased single letter, an elided particle in both apostrophes (#700), and
 after_given only on a salutation reading (#835).
 No post-nominal is both an acronym and a word, by checks 4 and 5; a
-final check in compile_pool is the backstop. The subset relations
+final check in the compiler is the backstop. The subset relations
 (GIVEN_NAME_TITLES and AFTER_GIVEN_TITLES in TITLES and TITLES_AMBIGUOUS
 together, each marker set in its base) need no
 check: a flag cannot exist without its reading, and a derived marker is
