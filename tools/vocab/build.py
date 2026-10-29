@@ -1,23 +1,31 @@
-"""Compile nameparser/vocab/*.toml into nameparser/config/_compiled.py.
+"""Compile nameparser/vocab/*.toml into nameparser/config/_compiled.py,
+and write the reading index, nameparser/config/_index.py, beside it.
 
 Usage::
 
-    uv run python tools/vocab/build.py           # rewrite _compiled.py
-    uv run python tools/vocab/build.py --check   # exit 1 if it is stale
+    uv run python tools/vocab/build.py           # rewrite both modules
+    uv run python tools/vocab/build.py --check   # exit 1 if either is stale
 
 Either exits 2, printing the failed check, when the vocabulary fails one
 or a vocabulary file cannot be read, and 3 on an internal error or a
 module it cannot write, so neither is ever mistaken for exit 1's
-"stale". An unreadable _compiled.py IS stale, rebuilding replacing it,
-and --check reports it so.
+"stale". An unreadable generated module IS stale, rebuilding replacing
+it, and --check reports it so.
 
 The vocabulary is written per word, in one TOML file per BCP 47 language
 tag (`und` for words not yet assigned one, `mul` for words shared on
 purpose). Each word lists its READINGS -- what it can be read as, keyed by
 kind -- and the compiler folds them into the sets the parser reads
 (decisions/vocabulary-model). The parser never parses TOML: the build
-writes a module of frozenset literals, committed beside the data, and
-tests/v2/test_vocab.py fails when the two disagree.
+checks the files, turns every reading into an index row with its
+file's tag, and writes the rows twice from memory, as the reading index
+and, compiled, as a module of frozenset literals, both committed beside
+the data (it never reads the index back); tests/v2/test_vocab.py and
+tests/v2/test_reading_index.py fail when either disagrees with the
+files. The compiler, and the kinds and properties it reads (CATEGORY,
+BEHAVIORAL, GATED_WORDS), live in nameparser/_reading_index.py, which
+a choice of languages will run too (#753, phase 3); this file holds the
+checks.
 
 The build checks replace the import-time asserts the data modules used
 to carry. Lexicon.__post_init__ still runs on the result, and three
@@ -65,22 +73,27 @@ at fault:
     `may_be_name` and `may_be_given = true` are refused, each naming
     the reading to write, a particle reading states
     `may_be_given = false` exactly where its word has no `given`
-    reading in any file, an agnomen reading has a name reading on
-    its word, which gates it (rules/S11), and no other suffix word
-    kind has one, since the gate reads only those two;
+    reading in any file, and has no `given` reading only where some
+    other is on by default, an agnomen reading has a name reading on
+    its word, which gates it (rules/S11), one on by default where the
+    agnomen is, and no other suffix word kind has one, since the gate
+    reads only those two;
 
 numbered by subject, not by when they run: 1-3, 8, 7's case mask and
 11's refusals run per entry as each file loads, and 4-7, 9, 11's
 particle statement and agnomen and 10 over the whole pool in
 check_pool, 6 first and 10 last. A reading written `default = false`
 is held to 1-3, 7, 8 and 11 like any other and compiles to nothing, so
-4, 5, 6 and 9 do not weigh it;
+4, 5, 6 and 9 do not weigh it, a name reading included (3a): it derives
+no marker in the default, 11's agnomen half counts only the name
+readings on by default, and 11's particle half refuses a particle whose
+word's only given readings are off, before 9 would read one;
 
 plus the data invariants that were asserts: may_be_initial only on a
 cased single letter, an elided particle in both apostrophes (#700), and
 after_given only on a salutation reading (#835).
 No post-nominal is both an acronym and a word, by checks 4 and 5; a
-final check in compile_pool is the backstop. The subset relations
+final check in the compiler is the backstop. The subset relations
 (GIVEN_NAME_TITLES and AFTER_GIVEN_TITLES in TITLES and TITLES_AMBIGUOUS
 together, each marker set in its base) need no
 check: a flag cannot exist without its reading, and a derived marker is
@@ -103,13 +116,17 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
 from types import ModuleType
-from typing import Any, TypedDict
+from typing import Any
 
 ROOT = Path(__file__).resolve().parents[2]
 # bound at import like VOCAB and OUTPUT below, so a test repointing ROOT
 # at a fixture tree does not move the parser's own module out from under
 # a cold _LEXICON cache
 _LEXICON_PATH = ROOT / "nameparser" / "_lexicon.py"
+#: The compiler and the reading index's types (phase 3a, #753), shared
+#: with the package so that the build and a choice of languages compile
+#: alike; loaded by path, like _lexicon.py, and for the same reason.
+_READING_INDEX_PATH = ROOT / "nameparser" / "_reading_index.py"
 
 
 def _load_lexicon_module() -> ModuleType:
@@ -123,8 +140,12 @@ def _load_lexicon_module() -> ModuleType:
     (its config imports sit inside _default_lexicon), so it loads on its
     own; tests/v2/test_vocab.py's
     test_the_build_does_not_import_the_package_it_writes holds that."""
+    return _load_by_path("_vocab_build_lexicon", _LEXICON_PATH)
+
+
+def _load_by_path(name: str, path: Path) -> ModuleType:
     import importlib.util
-    spec = importlib.util.spec_from_file_location("_vocab_build_lexicon", _LEXICON_PATH)
+    spec = importlib.util.spec_from_file_location(name, path)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     # registered before it runs: its dataclasses look their module up
@@ -136,6 +157,18 @@ def _load_lexicon_module() -> ModuleType:
         raise
     return module
 
+
+# Loaded at import, unlike _lexicon.py below: CATEGORY and BEHAVIORAL
+# are module constants here, which tools/vocab/query.py and the tests read
+# from this module. It is hand-written, never generated, so the stale
+# module the build exists to replace cannot break it; a bug in it still
+# exits 3, never 1's "stale" -- and so does anything importing this file
+# (tools/vocab/query.py, the tests), with SystemExit at import.
+try:
+    _ri = _load_by_path("_vocab_build_reading_index", _READING_INDEX_PATH)
+except Exception:
+    traceback.print_exc()
+    raise SystemExit(3) from None
 
 _LEXICON: list[ModuleType] = []
 
@@ -173,49 +206,9 @@ SKIPPED = frozenset({README, AGENTS})
 #: does.
 SCHEMA = 1
 
-#: kind -> category. The category decides which compiled field a reading
-#: feeds. For title, suffix, particle and conjunction, the category's own
-#: name is also a kind (`title = {}`: a title not yet classified), so
-#: classifying a word later moves no set. bound_given's one kind shares
-#: its category's name; the relation (birth_marker) and name (given,
-#: family) categories have no generic kind. Kind
-#: names are unique across categories; a fine kind arrives with its
-#: category's classification, in a core PR, as one row here.
-CATEGORY: dict[str, str] = {
-    "title": "title",
-    "salutation": "title",
-    "style": "title",
-    "academic": "title",
-    "religious": "title",
-    "nobility": "title",
-    "military": "title",
-    "office": "title",
-    "occupation": "title",
-    "kinship": "title",
-    "modifier": "title",
-    "suffix": "suffix",
-    "generation": "suffix",
-    "agnomen": "suffix",
-    "credential": "suffix",
-    "honorific": "suffix",
-    "professional_honorific": "suffix",
-    "status": "suffix",
-    "courtesy": "suffix",
-    "particle": "particle",
-    "preposition": "particle",
-    "article": "particle",
-    "patronymic": "particle",
-    "teknonymic": "particle",
-    "clan": "particle",
-    "rank": "particle",
-    "saint": "particle",
-    "alias": "particle",
-    "conjunction": "conjunction",
-    "bound_given": "bound_given",
-    "birth_marker": "relation",
-    "given": "name",
-    "family": "name",
-}
+#: kind -> category, and the canonical order of the kinds: the
+#: compiler's, defined in nameparser/_reading_index.py.
+CATEGORY = _ri.CATEGORY
 #: The categories a word-level `excluded` may name besides the kinds.
 CATEGORIES = frozenset(CATEGORY.values())
 #: CATEGORY's order is the canonical order of the kinds, and of the
@@ -230,17 +223,10 @@ assert len(_RUNS) == len(set(_RUNS)), "a category's kinds are listed apart in CA
 #: those no language file fits yet (nameparser/vocab/README.md).
 UNORDERED = "und.toml"
 
-#: Behavioral properties per category: each compiles into a field, and
-#: its allowed values are exactly what today's pipeline does.
-BEHAVIORAL: dict[str, frozenset[str]] = {
-    "title": frozenset({"addresses", "after_given", "attaches", "cased",
-                        "default"}),
-    "suffix": frozenset({"acronym", "attached", "cased", "default"}),
-    "particle": frozenset({"cased", "default"}),
-    "conjunction": frozenset({"may_be_initial", "cased", "default"}),
-    "bound_given": frozenset({"cased", "default"}),
-    "relation": frozenset({"cased", "default"}),
-}
+#: Behavioral properties per category, each compiling into a field:
+#: the compiler's, in nameparser/_reading_index.py. A name reading's one
+#: is `default` (3a); its other keys are NAME_KEYS.
+BEHAVIORAL = _ri.BEHAVIORAL
 #: Stated properties per category: compiled to nothing, but held to the
 #: word's readings (check 11). A particle states `may_be_given = false`
 #: where its word has no given reading, so a new particle never falls to
@@ -254,10 +240,9 @@ DERIVED = {
     "may_be_name": "a `given` or `family` reading on the word",
     "may_be_given": "a `given` reading on the word",
 }
-#: The suffix word kinds a name reading gates (rules/S11): the third
-#: derived marker reads these, and a name reading beside another word
-#: kind marks nothing, no gate reading that clash yet.
-GATED_WORDS = frozenset({"generation", "agnomen"})
+#: The suffix word kinds a name reading gates (rules/S11): the
+#: compiler's, in nameparser/_reading_index.py.
+GATED_WORDS = _ri.GATED_WORDS
 #: Descriptive properties: recorded, validated, compiled to nothing --
 #: save `same_as` on a `given` reading, which is a NAME_KEYS entry, not
 #: this set's, and compiles the word into GIVEN_NAME_ABBREVIATIONS.
@@ -295,43 +280,19 @@ class VocabWarning(UserWarning):
 
 
 @dataclass(frozen=True)
-class Reading:
+class Reading(_ri.ReadingProperties):
+    """A reading as its file wrote it. Its accessors for the unwritten
+    values (category, acronym, on_by_default, flag, addresses) are the
+    compiler's, so the checks and the compile read one default."""
     file: str
     text: str
     kind: str
     props: dict[str, Any]
 
     @property
-    def category(self) -> str:
-        return CATEGORY[self.kind]
-
-    # the defaults of the two behavioral properties whose unwritten value
-    # is not false, each defined once: checks, compile_pool and
-    # _behavior all read them here
-    @property
-    def acronym(self) -> bool:
-        """Matched with its periods removed: unwritten, true only for a
-        credential."""
-        return bool(self.props.get("acronym", self.kind == "credential"))
-
-    @property
-    def on_by_default(self) -> bool:
-        """Compiled into the default vocabulary: unwritten, true. A
-        reading written `default = false` is recorded and checked as a
-        reading but compiles to nothing, for a pack to turn on in
-        phase 3 (decisions/vocabulary-model)."""
-        return self.props.get("default", True) is not False
-
-    def flag(self, prop: str) -> bool:
-        """A `may_be_*` flag or `after_given`: unwritten, false."""
-        return bool(self.props.get(prop, False))
-
-    @property
-    def addresses(self) -> object:
-        """Which name a title addresses: unwritten, the family name. An
-        object, not a str, because it is read before check 3 has
-        refused a value that is not one of the allowed strings."""
-        return self.props.get("addresses", "family")
+    def tag(self) -> str:
+        """The BCP 47 tag of its file, the reading index's `tag`."""
+        return self.file.removesuffix(".toml")
 
     def where(self) -> str:
         return f"{self.file}: {self.text!r} {self.kind}"
@@ -760,9 +721,11 @@ def _check_reading(r: Reading, pool: Pool) -> None:
     where = r.where()
     p = r.props
     if r.category == "name":
+        allowed_here = NAME_KEYS | BEHAVIORAL["name"]
         for k in p:
-            if k not in NAME_KEYS:
-                raise _reserved_or_unknown(where, k, NAME_KEYS)
+            if k not in allowed_here:
+                raise _reserved_or_unknown(where, k, allowed_here)
+        _check_default(where, p)
         for src in COUNT_SOURCES & p.keys():
             if not isinstance(p[src], int) or isinstance(p[src], bool) or p[src] < 1:
                 raise VocabError(f"{where}: {src} must be a positive count "
@@ -810,12 +773,7 @@ def _check_reading(r: Reading, pool: Pool) -> None:
     for flag in ("acronym", "may_be_initial", "after_given"):
         if flag in p and not isinstance(p[flag], bool):
             raise VocabError(f"{where}: {flag} must be true or false")
-    if "default" in p and p["default"] is not False:
-        # every reading is on by default unwritten, so the one value
-        # worth writing is the one that turns it off
-        raise VocabError(f"{where}: default = {_shown(p['default'])}; write "
-                         f"default = false for a reading a pack turns on, "
-                         f"or leave it out")
+    _check_default(where, p)
     if r.category == "title":
         addresses = r.addresses
         if addresses in ("full", "any"):
@@ -912,6 +870,15 @@ def _check_reading(r: Reading, pool: Pool) -> None:
                          f"only birth_marker and addresses = 'given' titles are "
                          f"matched as a whole run")
     pool.readings.append(r)
+
+
+def _check_default(where: str, p: Mapping[str, Any]) -> None:
+    if "default" in p and p["default"] is not False:
+        # every reading is on by default unwritten, so the one value
+        # worth writing is the one that turns it off
+        raise VocabError(f"{where}: default = {_shown(p['default'])}; write "
+                         f"default = false for a reading a pack turns on, "
+                         f"or leave it out")
 
 
 def _refused_by(r: Reading, excluded: str) -> bool:
@@ -1055,9 +1022,24 @@ def check_pool(pool: Pool) -> None:
     # silently pick one side of that; a false beside a given reading
     # would say the opposite of the marker it derives
     given = {t for t, rs in by_text.items() if any(r.kind == "given" for r in rs)}
+    # the words with a given reading the default compiles: what the
+    # derived markers and the default's Lexicon read (checks 9 and 11)
+    live_given = {t for t, rs in live.items() if any(r.kind == "given" for r in rs)}
     for r in pool.readings:
         if r.category != "particle":
             continue
+        if r.text in given and r.text not in live_given:
+            # the default compiles the particle never-given, the given
+            # reading being off; a pack turning the given reading on
+            # compiles it possibly given. Which of the two the stated
+            # property describes is the first such pack's to decide,
+            # with its measurement (decisions/vocabulary-model,
+            # 2026-10-29 3a), so nothing reads as decided before then
+            raise VocabError(f"{r.where()}: the word's only given readings "
+                             f"are written default = false, and whether "
+                             f"this particle then states may_be_given is "
+                             f"undecided; turn the given reading on, or "
+                             f"leave it out until a pack needs it")
         if r.text in given and "may_be_given" in r.props:
             raise VocabError(f"{r.where()}: may_be_given = false contradicts "
                              f"the word's given reading, which derives it; "
@@ -1073,8 +1055,12 @@ def check_pool(pool: Pool) -> None:
     # reading would read as the suffix wherever it ends a name, taking
     # the family name from every two-word name ('Maria Filha')
     named = {t for t, rs in by_text.items() if any(r.category == "name" for r in rs)}
+    # a name reading written default = false gates nothing in the
+    # default, so it leaves an agnomen the default compiles ungated
+    live_named = {t for t, rs in live.items() if any(r.category == "name" for r in rs)}
     for r in pool.readings:
-        if r.kind == "agnomen" and r.text not in named:
+        if r.kind == "agnomen" and r.text not in (
+                live_named if r.on_by_default else named):
             raise VocabError(f"{r.where()}: an agnomen needs a `given` or "
                              f"`family` reading on its word, which gates it "
                              f"by the count (rules/S11); with dated counts "
@@ -1108,6 +1094,8 @@ def check_pool(pool: Pool) -> None:
     # be given -- the bound join reads it as a given name. Lexicon raises
     # on the same contradiction; this says which file and word
     for text, rs in live.items():
+        # a word whose only given readings are off never reaches here:
+        # check 11's particle half has refused it above
         if any(r.kind == "bound_given" for r in rs) and text not in given:
             for r in rs:
                 if r.category == "particle":
@@ -1185,30 +1173,8 @@ CONSTANTS = (
 )
 
 
-class Compiled(TypedDict):
-    """What compile_pool returns: one key per constant, in CONSTANTS
-    order, typed as _compiled.py declares it."""
-    GIVEN_NAME_TITLES: frozenset[str]
-    TITLES: frozenset[str]
-    AFTER_GIVEN_TITLES: frozenset[str]
-    TITLES_AMBIGUOUS: frozenset[str]
-    TITLE_MODIFIERS: frozenset[str]
-    TITLE_STYLES: frozenset[str]
-    TITLE_PHRASES: frozenset[str]
-    NON_GIVEN_NAME_PARTICLES: frozenset[str]
-    PARTICLES: frozenset[str]
-    CONJUNCTIONS: frozenset[str]
-    CONJUNCTIONS_AMBIGUOUS: frozenset[str]
-    BOUND_GIVEN_NAMES: frozenset[str]
-    GIVEN_NAME_ABBREVIATIONS: frozenset[str]
-    MAIDEN_MARKERS: frozenset[str]
-    SUFFIX_WORDS: frozenset[str]
-    GLUED_HONORIFICS: frozenset[str]
-    SUFFIX_WORDS_AMBIGUOUS: frozenset[str]
-    AGNOMENS: frozenset[str]
-    SUFFIX_ACRONYMS_AMBIGUOUS: frozenset[str]
-    SUFFIX_ACRONYMS: frozenset[str]
-    CAPITALIZATION_EXCEPTIONS: dict[str, str]
+#: What compile_pool returns: the compiler's, one key per constant.
+Compiled = _ri.Compiled
 
 
 # the one tie between the two: mypy holds compile_pool to Compiled's
@@ -1218,136 +1184,32 @@ assert tuple(Compiled.__annotations__) == tuple(name for name, _ in CONSTANTS), 
 
 
 def compile_pool(pool: Pool) -> Compiled:
-    """Fold the readings into today's constants."""
+    """Run the cross-file checks, then fold the readings into today's
+    constants -- through the reading index, the same rows
+    nameparser/config/_index.py writes, so the module the parser reads
+    is the index compiled, and a choice of languages (phase 3b) compiles
+    what the build did."""
     check_pool(pool)
-    # the two derived markers (check 11): a clash with a name is a word's
-    # name reading beside the reading it clashes with
-    named = {r.text for r in pool.readings if r.category == "name"}
-    given = {r.text for r in pool.readings if r.kind == "given"}
-    titles: set[str] = set()
-    given_titles: set[str] = set()
-    after_given: set[str] = set()
-    title_kinds: dict[str, set[str]] = {}
-    attaches: dict[str, set[str]] = {}
-    particles: set[str] = set()
-    never_given: set[str] = set()
-    conjunctions: set[str] = set()
-    initial_conjunctions: set[str] = set()
-    bound: set[str] = set()
-    abbreviations: set[str] = set()
-    markers: set[str] = set()
-    words: set[str] = set()
-    glued: set[str] = set()
-    ambiguous_words: set[str] = set()
-    agnomens: set[str] = set()
-    ambiguous: set[str] = set()
-    acronyms: set[str] = set()
-    cased: dict[str, str] = {}
-    for r in pool.readings:
-        t, p = r.text, r.props
-        if not r.on_by_default:
-            continue
-        if "cased" in p:
-            cased[t] = p["cased"]
-        if r.category == "title":
-            titles.add(t)
-            if r.addresses == "given":
-                given_titles.add(t)
-            if r.flag("after_given"):
-                after_given.add(t)
-            title_kinds.setdefault(t, set()).add(r.kind)
-            attaches.setdefault(t, set()).update(p.get("attaches", ()))
-        elif r.category == "suffix":
-            if r.acronym:
-                acronyms.add(t)
-                if t in named:
-                    ambiguous.add(t)
-            else:
-                words.add(t)
-                if "attached" in p:
-                    glued.add(t)
-                if t in named and r.kind in GATED_WORDS:
-                    ambiguous_words.add(t)
-                if r.kind == "agnomen":
-                    agnomens.add(t)
-        elif r.category == "particle":
-            particles.add(t)
-            if t not in given:
-                never_given.add(t)
-        elif r.category == "conjunction":
-            conjunctions.add(t)
-            if r.flag("may_be_initial"):
-                initial_conjunctions.add(t)
-        elif r.category == "bound_given":
-            bound.add(t)
-        elif r.category == "relation":
-            markers.add(t)
-        elif r.kind == "given" and "same_as" in p:
-            abbreviations.add(t)
-    contested = titles & given - particles
-    out = Compiled(
-        GIVEN_NAME_TITLES=frozenset(given_titles),
-        # a title that may be a given name compiles into TITLES_AMBIGUOUS
-        # INSTEAD: a word in TITLES is a title wherever it stands, which
-        # is what a caller listing one there has always asked for
-        TITLES=frozenset(titles - contested),
-        AFTER_GIVEN_TITLES=frozenset(after_given),
-        # the fourth derived marker (check 11): a title that may be a
-        # given name, a title only inside a title phrase (rules/H9), and
-        # so not in TITLES above. A
-        # title that is also a particle ('st', 'freiherr') is left to the
-        # particle rules, which weigh its given reading at the front
-        # already (rules/P4)
-        TITLES_AMBIGUOUS=frozenset(contested),
-        # a word every title reading of which is a modifier: a title only
-        # with a head title behind it in its run (decision 10, rules/H9)
-        TITLE_MODIFIERS=frozenset(
-            t for t, ks in title_kinds.items() if ks == {"modifier"}),
-        TITLE_STYLES=frozenset(
-            t for t, ks in title_kinds.items() if "style" in ks),
-        # `attaches` resolved to the two-word phrases it licenses, the
-        # word before and each title word of a kind it names
-        TITLE_PHRASES=frozenset(
-            f"{t} {h}" for t, kinds in attaches.items() if kinds
-            for h, hk in title_kinds.items()
-            if h != t and (hk & kinds or h in kinds)),
-        NON_GIVEN_NAME_PARTICLES=frozenset(never_given),
-        PARTICLES=frozenset(particles),
-        CONJUNCTIONS=frozenset(conjunctions),
-        CONJUNCTIONS_AMBIGUOUS=frozenset(initial_conjunctions),
-        BOUND_GIVEN_NAMES=frozenset(bound),
-        # a given name written short (`chas`, Filipino `ma`): opening the
-        # given part period-marked, it is the given name, which outranks
-        # rules/H2's shape (#789)
-        GIVEN_NAME_ABBREVIATIONS=frozenset(abbreviations),
-        MAIDEN_MARKERS=frozenset(markers),
-        SUFFIX_WORDS=frozenset(words),
-        GLUED_HONORIFICS=frozenset(glued),
-        SUFFIX_WORDS_AMBIGUOUS=frozenset(ambiguous_words),
-        AGNOMENS=frozenset(agnomens),
-        SUFFIX_ACRONYMS_AMBIGUOUS=frozenset(ambiguous),
-        SUFFIX_ACRONYMS=frozenset(acronyms),
-        CAPITALIZATION_EXCEPTIONS=dict(sorted(cased.items())),
-    )
-    # One form per post-nominal: the word test strips only edge periods
-    # and the acronym test strips all of them, so a word in both is
-    # matched twice by two rules, and which one fired is unreadable from
-    # outside. The sharper stake is the ambiguous set's: suffix_as_written
-    # ORs the two branches, so an ambiguous acronym that were also a word
-    # would be claimed through the word and bypass the period gate the
-    # marking exists to impose. The single overlap was 'esq', dropped
-    # 2026-09-08 (decisions/suffix-acronym-collisions). Lexicon guards
-    # only that ambiguous half (its gate-bypass raise), so a caller may
-    # still put an unambiguous word in both. In the TOML the overlap is
-    # unreachable -- check 4 refuses two suffix kinds on one word, check 5
-    # one kind with `acronym` differing between files, and check 2 a word
-    # twice in one file -- so this is a backstop kept because it costs one
-    # set intersection, not a check any input reaches today.
-    both = out["SUFFIX_ACRONYMS"] & out["SUFFIX_WORDS"]
-    if both:
-        raise VocabError(f"{sorted(both)}: a post-nominal is an acronym or a "
-                         f"word, never both (check `acronym` in every file)")
-    return out
+    try:
+        compiled: Compiled = _ri.compile_readings(index_rows(pool))
+    except _ri.CompileError as e:
+        # only the data's own failure: a bug in the compiler stays an
+        # exception main reports as internal, exit 3
+        raise VocabError(str(e)) from None
+    return compiled
+
+
+def index_rows(pool: Pool) -> list[Any]:
+    """The reading index: each reading as an IndexReading holding only
+    the properties the compiler reads, in index order (text, tag, then
+    kind in canonical order). Exclusions are left out: they keep a
+    reading from compiling and are checked here, at build time."""
+    rows = [_ri.IndexReading(r.text, r.tag, r.kind,
+                             {k: v for k, v in r.props.items()
+                              if k in _ri.indexed(r.kind)})
+            for r in pool.readings]
+    rows.sort(key=lambda x: (x.text, x.tag, KIND_ORDER[x.kind]))
+    return rows
 
 
 def read_dir(path: Path = VOCAB) -> dict[str, str]:
@@ -1415,6 +1277,45 @@ def render(compiled: Compiled) -> str:
     return "\n".join(out) + "\n"
 
 
+INDEX_HEADER = f'''"""The reading index. GENERATED from nameparser/vocab/*.toml by
+tools/vocab/build.py -- do not edit; edit the TOML and run
+
+    {REFRESH}
+
+One line per word in the vocabulary files, holding a row per reading,
+on by default or not: (tag, kind, properties), the tag being the file's
+BCP 47 tag and the properties the ones the compiler reads, as sorted
+(key, value) pairs.
+Read it through nameparser._reading_index (index, readings_of), which
+documents the row; _compiled.py is this index compiled.
+"""
+'''
+
+
+def index_output() -> Path:
+    """Where the index is written: beside OUTPUT, read when the build
+    runs rather than bound at import, so a test repointing OUTPUT at a
+    fixture tree moves both generated modules and never writes the
+    package's own index."""
+    return OUTPUT.with_name("_index.py")
+
+
+def render_index(rows: Iterable[Any]) -> str:
+    """One word per line, its rows in index order, so a change to a
+    word's readings is a one-line diff; the whole tuple is one constant,
+    which a cached import loads without building anything, and grouped
+    by word, so a lookup table is one dict() call."""
+    out = [INDEX_HEADER, "",
+           "READINGS: tuple[tuple[str, tuple[tuple[str, str, "
+           "tuple[tuple[str, object], ...]], ...]], ...] = ("]
+    words: dict[str, list[Any]] = {}
+    for r in rows:
+        words.setdefault(r.text, []).append(_ri.to_row(r))
+    out += [f"    ({text!r}, {tuple(rs)!r})," for text, rs in words.items()]
+    out.append(")")
+    return "\n".join(out) + "\n"
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--check", action="store_true",
@@ -1437,14 +1338,25 @@ def main(argv: list[str] | None = None) -> int:
 
 
 def _run(*, check: bool) -> int:
-    text = render(compile_files(read_dir()))
+    pool = load(read_dir())
+    compiled = compile_pool(pool)
+    stale = 0
+    for path, text in ((OUTPUT, render(compiled)),
+                       (index_output(), render_index(index_rows(pool)))):
+        stale += _refresh(path, text, check=check)
+    return 1 if stale else 0
+
+
+def _refresh(path: Path, text: str, *, check: bool) -> int:
+    """Compare one generated module with `text`, writing it unless
+    `check`; 1 where --check finds it stale."""
     try:
-        current: str | None = OUTPUT.read_text(encoding="utf-8") if OUTPUT.exists() else ""
+        current: str | None = path.read_text(encoding="utf-8") if path.exists() else ""
     except (OSError, UnicodeDecodeError):
         # an unreadable module is stale in the one sense that matters:
         # rebuilding replaces it
         current = None
-    name = OUTPUT.relative_to(ROOT)
+    name = path.relative_to(ROOT)
     if check:
         if current != text:
             state = "stale" if current is not None else "unreadable"
@@ -1455,7 +1367,7 @@ def _run(*, check: bool) -> int:
     if current == text:
         print(f"{name} is current")
     else:
-        OUTPUT.write_text(text, encoding="utf-8")
+        path.write_text(text, encoding="utf-8")
         print(f"wrote {name}")
     return 0
 
