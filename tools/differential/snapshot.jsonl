@@ -961,6 +961,7 @@
 {"name": "Eyck, Jan van", "given": "Jan", "family": "van Eyck", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "J. E."}
 {"name": "É. y É. Smith", "given": "É.", "middle": "y É.", "family": "Smith", "initials": "É. É. S."}
 {"name": "F. de Lange", "given": "F.", "family": "de Lange", "initials": "F. L."}
+{"name": "FRITZ FREIHERR UND VON BAR", "given": "FRITZ", "family": "FREIHERR UND VON BAR", "initials": "F. U.", "capitalized": "Fritz freiherr und von bar"}
 {"name": "Fabbri Irene", "order": "FAMILY_FIRST", "given": "Irene", "family": "Fabbri", "initials": "I. F."}
 {"name": "Fabbri, Irene", "given": "Irene", "family": "Fabbri", "initials": "I. F."}
 {"name": "Fabián Pérez Ximeno", "given": "Fabián", "middle": "Pérez", "family": "Ximeno", "initials": "F. P. X."}
@@ -3752,6 +3753,7 @@
 {"name": "bob v. de la macdole-eisenhower phd", "given": "bob", "middle": "v.", "family": "de la macdole-eisenhower", "suffix": "phd", "initials": "b. v. m.", "capitalized": "Bob V. de la MacDole-Eisenhower PhD"}
 {"name": "carod i", "given": "carod", "family": "i", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: generation as suffix (vocabulary)"], "initials": "c. i.", "capitalized": "Carod I"}
 {"name": "da Silva Sr. José Pedro Eduardo Jr., MP", "order": "FAMILY_FIRST", "given": "Silva", "middle": "Sr. José Pedro Eduardo", "family": "da", "suffix": "Jr., MP", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "S. S. J. P. E. d.", "capitalized_force": "Silva Sr. José Pedro Eduardo Da Jr., MP"}
+{"name": "da Silva do Amaral de Souza, Miguel", "given": "Miguel", "family": "da Silva do Amaral de Souza", "initials": "M. S. A. S."}
 {"name": "de", "given": "de", "initials": "d.", "capitalized": "De"}
 {"name": "de Anke van y", "family": "de Anke van y", "initials": "A."}
 {"name": "de Bhulbh An tOll. An Dr. Brigid Aoibhe Sophia", "order": "FAMILY_FIRST", "given": "An", "middle": "tOll. An Dr. Brigid Aoibhe Sophia", "family": "de Bhulbh", "initials": "A. t. A. D. B. A. S. B.", "capitalized_force": "An Toll. An Dr. Brigid Aoibhe Sophia de Bhulbh"}

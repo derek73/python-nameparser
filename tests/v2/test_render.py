@@ -241,6 +241,25 @@ def test_initials_readmits_a_conjunction_in_a_particle_part() -> None:
     assert parse("Juan y").initials() == "J. y."
 
 
+def test_initials_readmits_a_shared_word_between_particles() -> None:
+    """rules/R2's scoping of its connective set-aside (#939).
+
+    R2 sets aside a connective standing between the words of a part
+    when it asks whether every word is particle vocabulary, but only a
+    connective that is not also particle vocabulary: a word listed as
+    both is asked the question as a particle WHEREVER it stands, so it
+    keeps the readmission the test above pins at the end of a part and
+    at its start. These are the interior rows, which nothing else
+    reaches -- INV2's connective grid never puts the shared word
+    between particles.
+    """
+    p = Parser(lexicon=Lexicon.default().add(particles={"y"}))
+    de_y_la = p.parse("Juan de y la")
+    assert de_y_la.family_base == "de y la"
+    assert de_y_la.initials() == "J. d. y. l."
+    assert p.parse("Fritz Freiherr y von Bar").initials() == "F. F. y. v. B."
+
+
 def test_repair_keeps_a_lone_connective_lowercase_where_it_initials(
 ) -> None:
     """rules/R4's own reading, and the view split it accepts.

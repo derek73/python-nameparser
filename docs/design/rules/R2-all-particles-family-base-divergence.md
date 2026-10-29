@@ -2,9 +2,9 @@
 
 **When:** the family name of a parsed name is read with its particles set apart, as in "Dr. Juan Q. Xavier de la Vega III".
 
-**Then:** the family name splits into further views: the base (the family without its leading particles) and the particles themselves.
+**Then:** the family name splits into further views: the base (the family without its particles) and the particles themselves.
 
-**Because:** callers need the surname with and without its particles — sorting wants "Vega", display wants "de la Vega".
+**Because:** callers need the family name with and without its particles, and the base is that view under every naming convention, not one culture's collation or catalogue key.
 
 ```
 "Dr. Juan Q. Xavier de la Vega III"  →  family_base="Vega"
@@ -12,6 +12,9 @@
 "Juan de la Vega"           →  family_base="Vega"  · boundary
 "Juan de la Vega"           →  family_particles="de la"
 "Sean O'Connor"             →  family_base="O'Connor"
+"da Silva do Amaral de Souza, Miguel"  →  family_base="Silva Amaral Souza"
+"da Silva do Amaral de Souza, Miguel"  →  family_particles="da do de"
+"Smith, de Mesnil Jean"     →  family_base="Smith Mesnil Jean"
 ```
 
 **Except:**
@@ -21,6 +24,11 @@
   "Anh Do"                    →  family_base="Do"
   "Juan van der"              →  family_base="van der"
   "Juan van der"              →  family_particles=""
+  ```
+- **A connective that is not also particle vocabulary, standing between two words of the part, is set aside when the part is asked whether every word is particle vocabulary** (P3): it joins the words around it and anchors no base on its own, so it stays in the base view with them but does not stop the part from being all particles, and particles joined by a connective anchor the base. A word listed as both a connective and a particle is asked the question as a particle, wherever it stands. A connective ending the part joins nothing and is a name word (R3), so the particle before it still works as one.
+  ```
+  "Fritz Freiherr und von Bar"  →  family_base="Freiherr und von Bar"  deviates: #939 (today: family_base="und")
+  "Juan de y"                 →  family_base="y"  · boundary
   ```
 
 **Accepted:**

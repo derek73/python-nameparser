@@ -37,9 +37,10 @@
 
 **Except:**
 
-- **A part whose every word is a particle initials those particles**: they are not acting as particles there but are the part's base (R2), and initial like any other name word, so a family that is all particles contributes its words rather than nothing.
+- **A part whose every word is a particle initials those particles**: they are not acting as particles there but are the part's base (R2), and initial like any other name word, so a family that is all particles contributes its words rather than nothing. A connective that is not also particle vocabulary, standing between them, is set aside in asking it, as R2 sets it aside, and joins them, so it contributes nothing; a word listed as both is one of the part's particles and initials with them.
   ```
   "Juan van der"              →  initials="J. v. d."
+  "Fritz Freiherr und von Bar"  →  initials="F. F. v. B."  deviates: #939 (today: initials="F. u.")
   ```
 
 **Accepted:**
