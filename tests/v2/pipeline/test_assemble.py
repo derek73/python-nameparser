@@ -283,6 +283,12 @@ _EXPECTED_READINGS = [
     ("van Gogh", None, "van", "name", "declared"),
     ("de", None, "de", "name", "position"),
     ("Abdul Aziz Tariq", None, "Abdul", "name", "vocabulary"),
+    ("John Abdul Smith", None, "Abdul", "name", "vocabulary"),
+    # a bound given name that is also a particle is a particle where the
+    # chain took it into the family, and P5's given name where P5 did
+    ("Abu Bakar Salim", None, "Abu", "name", "vocabulary"),
+    ("John Abu Smith", None, "Abu", "particle", "vocabulary"),
+    ("Smith, John Abu", None, "Abu", "particle", "vocabulary"),
     ("김민준", None, "김", "name", "vocabulary"),
     # spaced, the order places the family and the list decides nothing
     ("김 민준", None, "김", "name", "position"),
@@ -303,6 +309,7 @@ _EXPECTED_READINGS = [
     ("John Smith Jr Jones", None, "Jones", "credential", "position"),
     ("John Smith Ph. D.", None, "D.", "credential", "vocabulary"),
     ("John Smith, Jr., Foo", None, "Foo", "credential", "position"),
+    ("John Smith, PhD and MD", None, "and", "conjunction", "vocabulary"),
     ("John Smith (M.A)", None, "M.A", "credential", "vocabulary"),
     ("John (Jack) Smith", None, "Jack", "name", "position"),
     ("Jane Smith née Jones", None, "Jones", "name", "position"),
@@ -338,6 +345,15 @@ def test_every_parsed_token_has_a_reading_of_its_own_field(case: Case) -> None:
     repaired = parser.capitalized(pn, force=True)
     assert ([t.reading for t in repaired.tokens]
             == [t.reading for t in pn.tokens])
+
+
+def test_a_caller_surname_reads_from_the_vocabulary_only_where_split_off(
+        ) -> None:
+    # spaced, a caller's own Latin surname is placed by position; the
+    # list decides only a division of one written word
+    lex = Lexicon.default().add(surnames={"smith"})
+    pn = Parser(lexicon=lex).parse("John Smith")
+    assert pn.tokens[-1].reading == Reading("name", "family", "position")  # type: ignore[arg-type]
 
 
 def test_a_token_reading_names_its_own_field() -> None:

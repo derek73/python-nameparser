@@ -130,26 +130,36 @@ def assemble(state: ParseState) -> ParsedName:
         # marks) say which reading of it that decision weighed. Read
         # here, where roles are final, so a rule that moves a word
         # later (P1's fold, P6's attachment, the policy folds) needs
-        # no reading of its own to keep in step. Inline and C-level
-        # for an untagged word, a frame for a suffix or a tagged name
-        # word, whose sources `_vocab`'s predicates also name for the
-        # reading NOT taken (Ambiguity.alternative).
+        # no reading of its own to keep in step. Per token, measured
+        # 2026-10-29: no frame for an untagged non-suffix word, the
+        # commonest; one for a listed or shaped suffix (`suffix_kind`)
+        # and for a tagged name word that reaches `name_source` or a
+        # family word glued to the next (`_normalize`); four for a
+        # suffix word nothing tags or lists (`_listed_suffix` and its
+        # `_normalize` beside it). `_vocab`'s two predicates
+        # also name the sources of the reading NOT taken
+        # (Ambiguity.alternative).
         # Reading.languages joins here once phase 3's reading index
         # (3a) can answer which files hold the reading.
         if role is Role.SUFFIX:
             kind, source = suffix_kind(t.text, tags)
             if (source is ReadingSource.VOCABULARY
-                    and tags.isdisjoint(_SUFFIX_EVIDENCE)
-                    and not _listed_suffix(t.text, state.lexicon)):
-                # nothing lists or shapes it: a word read into the
-                # suffix by where it stands
-                source = ReadingSource.POSITION
-                if "joined" in tags and before is not None and prev_split:
-                    # the second word of a credential split across a
-                    # space, which is one credential ('Ph.' 'D.'); any
-                    # other word a run took stays a credential by
-                    # position ('Jones' in 'John Smith III Jones')
-                    kind, source = before.kind, before.source
+                    and tags.isdisjoint(_SUFFIX_EVIDENCE)):
+                if "conjunction" in tags:
+                    # a connective joining two entries ('and' in 'John
+                    # Smith, PhD and MD'), as in a title or name part
+                    kind = ReadingKind.CONJUNCTION
+                elif not _listed_suffix(t.text, state.lexicon):
+                    # nothing lists or shapes it: a word read into the
+                    # suffix by where it stands
+                    source = ReadingSource.POSITION
+                    if ("joined" in tags and before is not None
+                            and prev_split):
+                        # the second word of a credential split across
+                        # a space, which is one credential ('Ph.' 'D.');
+                        # any other word a run took stays a credential
+                        # by position ('Jones' in 'John Smith III Jones')
+                        kind, source = before.kind, before.source
             reading = _READINGS[kind, role, source]
             before = reading
             prev_split = (SPLIT_CREDENTIAL_TAG in tags
@@ -180,9 +190,11 @@ def assemble(state: ParseState) -> ParsedName:
                         and tokens[i + 1].span.start == t.span.end
                         and _normalize(t.text) in surnames):
                     source = ReadingSource.VOCABULARY
-            elif "vocab:bound-given" in tags:
+            elif "vocab:bound-given" in tags and role is Role.GIVEN:
                 # rules/P5's bound given name, which the vocabulary
-                # lists as a given-name word
+                # lists as a given-name word; a word that is also a
+                # particle ('abu') is one in the given name only by
+                # P5, the particle chain taking it into the family
                 kind, source = ReadingKind.NAME, ReadingSource.VOCABULARY
             elif "initial" in tags:
                 kind, source = ReadingKind.INITIAL, ReadingSource.SHAPE
@@ -192,6 +204,11 @@ def assemble(state: ParseState) -> ParsedName:
                                 ReadingSource.VOCABULARY)
             elif "particle" in tags and UNJOINED_TAG not in tags:
                 kind, source = ReadingKind.PARTICLE, ReadingSource.VOCABULARY
+            elif "vocab:bound-given" in tags:
+                # a listed bound given name P5 did not join ('Abdul' as
+                # a middle name in 'John Abdul Smith') is still a word
+                # the vocabulary lists as a given name
+                kind, source = ReadingKind.NAME, ReadingSource.VOCABULARY
             else:
                 # a particle or connective with nothing to join reads
                 # as the name word it stands as ('van' in 'van Gogh')
