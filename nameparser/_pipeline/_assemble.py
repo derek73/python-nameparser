@@ -190,12 +190,6 @@ def assemble(state: ParseState) -> ParsedName:
                         and tokens[i + 1].span.start == t.span.end
                         and _normalize(t.text) in surnames):
                     source = ReadingSource.VOCABULARY
-            elif "vocab:bound-given" in tags and role is Role.GIVEN:
-                # rules/P5's bound given name, which the vocabulary
-                # lists as a given-name word; a word that is also a
-                # particle ('abu') is one in the given name only by
-                # P5, the particle chain taking it into the family
-                kind, source = ReadingKind.NAME, ReadingSource.VOCABULARY
             elif "initial" in tags:
                 kind, source = ReadingKind.INITIAL, ReadingSource.SHAPE
             elif ("conjunction" in tags
@@ -205,9 +199,13 @@ def assemble(state: ParseState) -> ParsedName:
             elif "particle" in tags and UNJOINED_TAG not in tags:
                 kind, source = ReadingKind.PARTICLE, ReadingSource.VOCABULARY
             elif "vocab:bound-given" in tags:
-                # a listed bound given name P5 did not join ('Abdul' as
-                # a middle name in 'John Abdul Smith') is still a word
-                # the vocabulary lists as a given name
+                # rules/P5's bound given name, joined ('Abdul Aziz') or
+                # not ('Abdul' as a middle name in 'John Abdul Smith'),
+                # a word the vocabulary lists as a given name. One that
+                # is also a particle ('abu') read the particle arm above
+                # wherever it joins: no tag tells P5's join from the
+                # chain's, which under FAMILY_FIRST_GIVEN_LAST can leave
+                # it in the given part too ('Salim Ali abu Bakar Hassan')
                 kind, source = ReadingKind.NAME, ReadingSource.VOCABULARY
             else:
                 # a particle or connective with nothing to join reads

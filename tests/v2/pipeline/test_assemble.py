@@ -5,7 +5,7 @@ from nameparser._lexicon import Lexicon
 from nameparser._pipeline import run
 from nameparser._pipeline._assemble import assemble
 from nameparser._pipeline._state import ParseState, PendingAmbiguity, WorkToken
-from nameparser._policy import FAMILY_FIRST, Policy
+from nameparser._policy import FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, Policy
 from nameparser._types import AmbiguityKind, ParsedName, Role, Span, Token
 
 from ..cases import CASES, Case
@@ -284,9 +284,13 @@ _EXPECTED_READINGS = [
     ("de", None, "de", "name", "position"),
     ("Abdul Aziz Tariq", None, "Abdul", "name", "vocabulary"),
     ("John Abdul Smith", None, "Abdul", "name", "vocabulary"),
-    # a bound given name that is also a particle is a particle where the
-    # chain took it into the family, and P5's given name where P5 did
-    ("Abu Bakar Salim", None, "Abu", "name", "vocabulary"),
+    # a bound given name that is also a particle reads as the particle
+    # wherever it joins, P5's join included (no tag tells the two
+    # apart), and as the name word it stands as where it joins nothing
+    ("Abu Bakar Salim", None, "Abu", "particle", "vocabulary"),
+    ("Abu Smith", None, "Abu", "name", "vocabulary"),
+    ("Salim Ali abu Bakar Hassan", Policy(name_order=FAMILY_FIRST_GIVEN_LAST),
+     "abu", "particle", "vocabulary"),
     ("John Abu Smith", None, "Abu", "particle", "vocabulary"),
     ("Smith, John Abu", None, "Abu", "particle", "vocabulary"),
     ("김민준", None, "김", "name", "vocabulary"),
