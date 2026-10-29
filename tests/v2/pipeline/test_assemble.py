@@ -525,6 +525,23 @@ def test_a_reading_from_a_callers_own_vocabulary_names_no_file() -> None:
     assert readings["St"] is not None and readings["St"].languages == ()
 
 
+def test_a_callers_whole_suffix_and_its_alternative_name_no_file_of_its_parts(
+        ) -> None:
+    # 'md' and 'ma' are in en, and the default reads 'MD-ZZ' by its
+    # parts; listed whole, the token and the report's alternative name
+    # none of their files
+    lex = Lexicon.default().add(suffix_acronyms={"md-zz", "ma-zz"},
+                                suffix_acronyms_ambiguous={"ma-zz"})
+    parser = Parser(lexicon=lex)
+    (md,) = [t for t in parser.parse("John Smith MD-ZZ").tokens
+             if t.text == "MD-ZZ"]
+    assert md.reading == Reading("credential", "suffix", "vocabulary")  # type: ignore[arg-type]
+    assert md.reading is not None and md.reading.languages == ()
+    (amb,) = parser.parse("JOHN SMITH MA-ZZ").ambiguities
+    assert amb.alternative == Reading("name", "family", "declared")  # type: ignore[arg-type]
+    assert amb.alternative is not None and amb.alternative.languages == ()
+
+
 def test_the_default_reads_a_joined_word_by_its_parts() -> None:
     (tok,) = parse("Dr.Ma Smith").tokens[:1]
     assert tok.reading is not None and tok.reading.languages == ("mul",)

@@ -101,9 +101,10 @@ _ANY_NAME_KINDS = _kinds_of("name", "bound_given")
 _LISTED = frozenset({ReadingSource.VOCABULARY, ReadingSource.DECLARED})
 
 
-def _kinds(kind: ReadingKind, role: Role) -> frozenset[str] | None:
+def _kinds(kind: ReadingKind, role: Role) -> frozenset[str]:
+    # an initial or a patronymic matches no row
     return (_NAME_KINDS.get(role, _ANY_NAME_KINDS)
-            if kind is ReadingKind.NAME else _KINDS.get(kind))
+            if kind is ReadingKind.NAME else _KINDS.get(kind, frozenset()))
 
 
 # Both lookups are memos, C-level on a hit, so a word read before costs
@@ -118,8 +119,6 @@ def _languages(text: str, kind: ReadingKind, role: Role) -> tuple[str, ...]:
     matched by ('M.A' in 'John Smith (M.A)') and a word listed whole
     without them ('Lt.Gen.' as 'ltgen')."""
     kinds = _kinds(kind, role)
-    if kinds is None:
-        return ()
     n = _normalize(text)
     found = languages_of(n, kinds)
     if not found and "." in n:
@@ -136,8 +135,6 @@ def _part_languages(text: str, kind: ReadingKind,
     then any word's by every mark. Read only for a word the parse's
     own lexicon does not list whole (`_listed_whole`)."""
     kinds = _kinds(kind, role)
-    if kinds is None:
-        return ()
     n = _normalize(text)
     found = _by_parts(n, kinds, ".") if kinds is _SUFFIX_KINDS else ()
     return found or _by_parts(n, kinds, "")
@@ -185,13 +182,14 @@ def _split_partner(tokens: tuple[WorkToken, ...], dropped: set[int],
     between them ('Ph. "Bob" D.'), or nothing where that word is not
     the joined suffix word that completes it. Asked only of a split
     credential's first word, so other names pay nothing."""
-    for j in range(i + 1, len(tokens)):
-        if j in dropped or tokens[j].role is Role.NICKNAME:
-            continue
-        nxt = tokens[j]
-        return (nxt.text if nxt.role is Role.SUFFIX and "joined" in nxt.tags
-                else "")
-    return ""
+    # classify tags a split's words only as a pair, so its second word
+    # always follows; an empty default keeps parse total without a
+    # branch no input reaches
+    nxt = next((tokens[j] for j in range(i + 1, len(tokens))
+                if j not in dropped and tokens[j].role is not Role.NICKNAME),
+               None)
+    return (nxt.text if nxt is not None and nxt.role is Role.SUFFIX
+            and "joined" in nxt.tags else "")
 
 
 _reading = functools.lru_cache(maxsize=1024)(Reading)
