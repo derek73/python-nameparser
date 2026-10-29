@@ -284,10 +284,14 @@ _EXPECTED_READINGS = [
     ("de", None, "de", "name", "position"),
     ("Abdul Aziz Tariq", None, "Abdul", "name", "vocabulary"),
     ("John Abdul Smith", None, "Abdul", "name", "vocabulary"),
-    # a bound given name that is also a particle reads as the particle
-    # wherever it joins, P5's join included (no tag tells the two
-    # apart), and as the name word it stands as where it joins nothing
-    ("Abu Bakar Salim", None, "Abu", "particle", "vocabulary"),
+    # a bound given name that is also a particle is P5's given name
+    # where P5 joins it, the first word of its segment past the titles,
+    # and a particle where the chain took it, in either part
+    ("Abu Bakar Salim", None, "Abu", "name", "vocabulary"),
+    ("Abu Bakar Smith", None, "Abu", "name", "vocabulary"),
+    ("Smith, Abu Bakar", None, "Abu", "name", "vocabulary"),
+    (", Abu Bakar", None, "Abu", "name", "vocabulary"),
+    ("Dr. Abu Bakar Smith", None, "Abu", "name", "vocabulary"),
     ("Abu Smith", None, "Abu", "name", "vocabulary"),
     ("Salim Ali abu Bakar Hassan", Policy(name_order=FAMILY_FIRST_GIVEN_LAST),
      "abu", "particle", "vocabulary"),
@@ -316,6 +320,8 @@ _EXPECTED_READINGS = [
     ("John Smith, PhD and MD", None, "and", "conjunction", "vocabulary"),
     ("John Smith (M.A)", None, "M.A", "credential", "vocabulary"),
     ("John (Jack) Smith", None, "Jack", "name", "position"),
+    ('"Van" Smith', None, "Van", "name", "declared"),
+    ('"Abu" Smith', None, "Abu", "name", "vocabulary"),
     ("Jane Smith née Jones", None, "Jones", "name", "position"),
     # the role the reading names is the final one, after every fold
     ("John Paul Smith", Policy(middle_as_family=True), "Paul", "name",

@@ -94,6 +94,20 @@ def _alternative(pending: PendingAmbiguity, materialized: tuple[Token, ...],
     return Reading(alt.kind, role, alt.source)
 
 
+def _opens_its_segment(state: ParseState, i: int) -> bool:
+    """Whether token `i` is the first word of its segment that is not a
+    title: where rules/P5 joins a bound given name. Asked only of a
+    word that is both a bound given name and a particle, read into the
+    given part, so other names pay nothing."""
+    dropped = state.dropped
+    for seg in state.segments:
+        if i in seg:
+            return next((j for j in seg if j not in dropped
+                         and state.tokens[j].role is not Role.TITLE),
+                        None) == i
+    return False
+
+
 def _listed_suffix(text: str, lexicon: Lexicon) -> bool:
     """Whether the suffix vocabulary lists, its periods removed, an
     acronym no tag marks: a bracketed member written with an interior
@@ -134,9 +148,9 @@ def assemble(state: ParseState) -> ParsedName:
         # 2026-10-29: no frame for an untagged non-suffix word, the
         # commonest; one for a listed or shaped suffix (`suffix_kind`)
         # and for a tagged name word that reaches `name_source` or a
-        # family word glued to the next (`_normalize`); four for a
-        # suffix word nothing tags or lists (`_listed_suffix` and its
-        # `_normalize` beside it). `_vocab`'s two predicates
+        # family word glued to the next (`_normalize`); three for a
+        # suffix word nothing tags or lists (`suffix_kind`, then
+        # `_listed_suffix` and its `_normalize`). `_vocab`'s two predicates
         # also name the sources of the reading NOT taken
         # (Ambiguity.alternative).
         # Reading.languages joins here, in 4a's follow-up: phase 3's
@@ -197,16 +211,26 @@ def assemble(state: ParseState) -> ParsedName:
                     and UNJOINED_CONJUNCTION_TAG not in tags):
                 kind, source = (ReadingKind.CONJUNCTION,
                                 ReadingSource.VOCABULARY)
-            elif "particle" in tags and UNJOINED_TAG not in tags:
+            elif ("particle" in tags and UNJOINED_TAG not in tags
+                    # a nickname has no family for a particle to join,
+                    # and the unjoined marks are written in the name
+                    # parts only ('"Van" Smith' reads a name)
+                    and role is not Role.NICKNAME
+                    and not ("vocab:bound-given" in tags
+                             and role is Role.GIVEN
+                             and _opens_its_segment(state, i))):
                 kind, source = ReadingKind.PARTICLE, ReadingSource.VOCABULARY
             elif "vocab:bound-given" in tags:
-                # rules/P5's bound given name, joined ('Abdul Aziz') or
-                # not ('Abdul' as a middle name in 'John Abdul Smith'),
-                # a word the vocabulary lists as a given name. One that
-                # is also a particle ('abu') read the particle arm above
-                # wherever it joins: no tag tells P5's join from the
-                # chain's, which under FAMILY_FIRST_GIVEN_LAST can leave
-                # it in the given part too ('Salim Ali abu Bakar Hassan')
+                # rules/P5's bound given name, joined ('Abdul Aziz', and
+                # 'Abu Bakar' in 'Abu Bakar Smith') or not ('Abdul' as a
+                # middle name in 'John Abdul Smith'), a word the
+                # vocabulary lists as a given name. One that is also a
+                # particle ('abu') is P5's only in the given part and
+                # only where P5 joins, the first word of its segment
+                # past the titles; elsewhere the particle chain took it
+                # (the family in 'John Abu Smith', the given part in
+                # 'Salim Ali abu Bakar Hassan' under
+                # FAMILY_FIRST_GIVEN_LAST) and it read the arm above
                 kind, source = ReadingKind.NAME, ReadingSource.VOCABULARY
             else:
                 # a particle or connective with nothing to join reads
