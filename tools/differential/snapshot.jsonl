@@ -6363,6 +6363,7 @@
 {"name": "권중동", "given": "중동", "family": "권"}
 {"name": "김 v", "given": "김", "family": "v", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: generation as suffix (vocabulary)"], "initials": "v.", "capitalized": "김 V"}
 {"name": "김 민준", "given": "민준", "family": "김"}
+{"name": "김, 민준", "given": "민준", "family": "김"}
 {"name": "김, 민준 MA", "given": "민준", "family": "김", "suffix": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as middle (declared)"]}
 {"name": "김, 민준씨", "given": "민준", "family": "김", "suffix": "씨"}
 {"name": "김, 민준씨 (Jimmy)", "given": "민준", "family": "김", "suffix": "씨", "nickname": "Jimmy"}

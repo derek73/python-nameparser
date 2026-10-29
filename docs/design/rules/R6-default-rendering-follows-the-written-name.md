@@ -54,6 +54,10 @@
   ```
   "Senator Wang Xiaoming"  family-first  →  str="Senator Wang Xiaoming"
   ```
+- A family comma in a name written in Han, Hangul or kana, a shape nobody writes (W3), renders given-first like any family-comma name, and the rendering, its comma gone, reads back family-first by its script, the given and family names trading places.
+  ```
+  "김, 민준"                     →  str="민준 김"
+  ```
 - Two equal names can render differently. The order a name was read in is not compared, so a name loaded from a 2.x pickle, which recorded none, renders given-first where a fresh parse of the same text renders family-first. (The shape needs a pickle written by an older release, so no example line.)
 
 ---

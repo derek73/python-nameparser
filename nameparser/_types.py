@@ -14,10 +14,10 @@ contents.
 from __future__ import annotations
 
 import dataclasses
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, field
 from enum import Enum, StrEnum
-from typing import TYPE_CHECKING, NamedTuple, NoReturn, TypeVar
+from typing import TYPE_CHECKING, Any, NamedTuple, NoReturn, TypeVar
 
 if TYPE_CHECKING:
     from nameparser._lexicon import Lexicon
@@ -73,6 +73,95 @@ FAMILY_FIRST_GIVEN_LAST = (Role.FAMILY, Role.MIDDLE, Role.GIVEN)
 
 #: The three orders, for ParsedName.order's validation.
 _NAME_ORDERS = (GIVEN_FIRST, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST)
+
+
+# The order validation Policy.name_order, its script_orders values and
+# ParsedName.order share, here beside the constants since _types
+# imports nothing internal; _policy imports it from here.
+
+def _reject_bare_string_order(value: object, field_name: str) -> None:
+    # tuple("gmf") would be ("g", "m", "f") -- catch the bare string
+    # with the same TypeError every other iterable field raises.
+    # Single-sourced: called from Policy AND PolicyPatch __post_init__.
+    # field_name is REQUIRED, with no name_order default: script_orders'
+    # values obey the same rule (via _validated_order), and a defaulted
+    # caller that forgot to pass it would silently name the wrong field.
+    if isinstance(value, str):
+        raise TypeError(
+            f"{field_name} must be an iterable of three Roles, "
+            f"not a bare string: {value!r}"
+        )
+    # A {Role: position} dict iterates to the right three Roles in the
+    # right order, so it would be accepted -- harmlessly today, since
+    # the result is checked against the three exported orders anyway.
+    # Guarded regardless: "iterating this yields something plausible
+    # but not what you wrote" is one bug class, and leaving one field
+    # out of it is how the PolicyPatch hole happened.
+    if isinstance(value, Mapping):
+        raise TypeError(
+            f"{field_name} must be an iterable of three Roles, not a "
+            f"mapping: {value!r}"
+        )
+    if isinstance(value, (bytes, bytearray, memoryview)):
+        raise TypeError(
+            f"{field_name} must be an iterable of three Roles, not "
+            f"{type(value).__name__} -- decode first, e.g. "
+            f"raw.decode('utf-8')"
+        )
+
+
+def _require_iterable(value: Iterable[Any], field_name: str,
+                      expected: str = "an iterable") -> Iterable[Any]:
+    """Probe a value's iterability and return its iterator, raising a
+    TypeError naming the field if it has none. `expected` carries the
+    field's own phrasing ("a mapping of Script to order"); the default
+    suits every plain iterable field.
+
+    Probing with iter() is what makes the message possible: a
+    non-iterable (an int, a bool, ...) is named here, matching the
+    treatment patronymic_rules already gets, instead of a bare "'int'
+    object is not iterable" surfacing from whatever tuple()/frozenset()
+    happens to run first. It is ALSO the reason callers consume the
+    returned iterator OUTSIDE any try of their own: an exception raised
+    inside a caller's generator while it is being consumed is the
+    caller's own error, and must propagate untouched rather than be
+    rewritten as a shape complaint about the field.
+    """
+    try:
+        return iter(value)
+    except TypeError:
+        raise TypeError(
+            f"{field_name} must be {expected}, got {value!r}"
+        ) from None
+
+
+def _validated_order(value: Iterable[Any],
+                     field_name: str) -> tuple[Role, Role, Role]:
+    """name_order's element/permutation check, single-sourced so
+    script_orders values obey the identical rule (only the three
+    exported orders have implemented assignment semantics)."""
+    _reject_bare_string_order(value, field_name)
+    order = tuple(_require_iterable(value, field_name))
+    # Sole rejection point for plain-string tuples: Role is a StrEnum,
+    # so the named-order membership check below compares EQUAL for
+    # ("given", "middle", "family") -- do not remove this loop as
+    # redundant.
+    for element in order:
+        if not isinstance(element, Role):
+            raise TypeError(
+                f"{field_name} elements must be Role members, "
+                f"got {element!r}"
+            )
+    # Only the three exported orders have implemented assignment
+    # semantics; the unnamed permutations would silently misassign.
+    # Pre-2.0 strictness is free -- relaxing later is compatible.
+    if order not in _NAME_ORDERS:
+        raise ValueError(
+            f"{field_name} must be one of the exported orders, got "
+            f"{order!r}; use GIVEN_FIRST, FAMILY_FIRST, or "
+            f"FAMILY_FIRST_GIVEN_LAST"
+        )
+    return order  # type: ignore[return-value]  # length checked above
 
 
 class Span(NamedTuple):
@@ -1030,11 +1119,12 @@ class ParsedName:
             )
         object.__setattr__(self, "tokens", tuple(self.tokens))
         object.__setattr__(self, "ambiguities", tuple(self.ambiguities))
-        if self.order is not None and self.order not in _NAME_ORDERS:
-            raise ValueError(
-                f"ParsedName.order must be None, GIVEN_FIRST, FAMILY_FIRST "
-                f"or FAMILY_FIRST_GIVEN_LAST, got {self.order!r}"
-            )
+        if self.order is not None:
+            # the one validator Policy.name_order goes through, so a
+            # list is stored as the tuple and a plain-string tuple is
+            # refused here as there
+            object.__setattr__(self, "order", _validated_order(
+                self.order, "ParsedName.order"))
         for tok in self.tokens:
             if not isinstance(tok, Token):
                 raise TypeError(

@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from nameparser import FAMILY_FIRST, GIVEN_FIRST, parse
+from nameparser import FAMILY_FIRST, GIVEN_FIRST, Policy, parse
 from nameparser._types import (
     STABLE_TAGS, Ambiguity, AmbiguityKind, ParsedName, Role, Segmentation,
     Span, Token,
@@ -664,13 +664,40 @@ def test_a_parsedname_pickled_by_2_8_0_loads_and_renders_given_first(
     assert pickle.loads(pickle.dumps(now)).order == FAMILY_FIRST
 
 
-def test_parsedname_order_is_validated_and_not_compared() -> None:
+def test_parsedname_order_is_not_compared_and_stores_a_tuple() -> None:
     tok = Token("Juan", Span(0, 4), Role.GIVEN)
     assert ParsedName("Juan", (tok,), order=FAMILY_FIRST) == ParsedName(
         "Juan", (tok,))
-    for bad in ((Role.GIVEN, Role.FAMILY, Role.MIDDLE), ("given",), "x"):
-        with pytest.raises(ValueError, match="ParsedName.order must be"):
-            ParsedName("Juan", (tok,), order=bad)  # type: ignore[arg-type]
+    listed = ParsedName("Juan", (tok,),
+                        order=list(FAMILY_FIRST))  # type: ignore[arg-type]
+    assert listed.order == FAMILY_FIRST and isinstance(listed.order, tuple)
+
+
+def _policy_order(value: object) -> object:
+    return Policy(name_order=value)  # type: ignore[arg-type]
+
+
+def _parsedname_order(value: object) -> object:
+    return ParsedName("x", (), order=value)  # type: ignore[arg-type]
+
+
+# the family: every field holding a name order refuses the same values
+# with the same exception (AGENTS.md, "Guard, hint, and emit for the
+# WHOLE family")
+@pytest.mark.parametrize("build", [_policy_order, _parsedname_order],
+                         ids=["Policy.name_order", "ParsedName.order"])
+@pytest.mark.parametrize("bad, exc, match", [
+    (("given", "middle", "family"), TypeError, "must be Role members"),
+    ("gmf", TypeError, "not a bare string"),
+    ({Role.GIVEN: 0}, TypeError, "not a mapping"),
+    (5, TypeError, "must be an iterable"),
+    ((Role.GIVEN, Role.FAMILY, Role.MIDDLE), ValueError, "exported orders"),
+])
+def test_every_name_order_field_refuses_the_same_values(
+        build: Callable[[object], object], bad: object, exc: type,
+        match: str) -> None:
+    with pytest.raises(exc, match=match):
+        build(bad)
 
 
 def test_replace_and_capitalized_keep_the_order() -> None:
