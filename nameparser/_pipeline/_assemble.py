@@ -115,8 +115,8 @@ def assemble(state: ParseState) -> ParsedName:
     surnames = state.lexicon.surnames
     tokens = state.tokens
     last = len(tokens)
-    # the suffix reading of the token before, which a continuation of
-    # its entry with no reading of its own takes
+    # the suffix reading of the token before, and whether it opens a
+    # credential split across a space, whose second word takes it
     before: Reading | None = None
     prev_split = False
     for i, t in enumerate(state.tokens):
@@ -174,9 +174,8 @@ def assemble(state: ParseState) -> ParsedName:
                 # a surname the segmentation split off an unspaced
                 # name by the surname list ('김' in '김민준'): a family
                 # word touching the next with nothing written between
-                # (C-level; spaced, the family is placed by order, not
-                # by the list, and a family-first name ends its family
-                # word against the given name it was split from)
+                # (C-level). Spaced, the order placed the family and the
+                # list decided nothing ('김' in '김 민준')
                 if (role is Role.FAMILY and i + 1 < last
                         and tokens[i + 1].span.start == t.span.end
                         and _normalize(t.text) in surnames):
