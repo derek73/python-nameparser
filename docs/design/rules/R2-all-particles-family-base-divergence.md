@@ -25,6 +25,11 @@
   "Juan van der"              →  family_base="van der"
   "Juan van der"              →  family_particles=""
   ```
+- **A connective standing between two words of the part is set aside when the part is asked whether every word is particle vocabulary** (P3): it is joining them, and a word doing a connective's work is never the part's base, so particles joined by a connective are all particles and anchor the base. A connective ending the part joins nothing and is a name word (R3), so the particle before it still works as one.
+  ```
+  "Fritz Freiherr und von Bar"  →  family_base="Freiherr und von Bar"  deviates: #939 (today: family_base="und")
+  "Juan de y"                 →  family_base="y"  · boundary
+  ```
 
 **Accepted:**
 
