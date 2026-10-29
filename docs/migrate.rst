@@ -958,7 +958,7 @@ as written, in its order and with its joiners.
     '민준 김'
 
 A :class:`~nameparser.ParsedName` pickled by 2.x has no ``order`` and
-renders given-first as it did, while a fresh parse of the same text
+renders exactly as it did under 2.x, while a fresh parse of the same text
 renders as written; the two still compare equal, since ``order`` is
 left out of ``==`` and :meth:`~nameparser.ParsedName.comparison_key`.
 And :meth:`~nameparser.ParsedName.initials` gives nothing for a word

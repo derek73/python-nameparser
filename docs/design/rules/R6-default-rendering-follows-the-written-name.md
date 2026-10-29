@@ -56,7 +56,7 @@
   "John Smith, Jr., Dr., Prof."  →  str="Dr., Prof. John Smith, Jr."
   "John Smith Dr., Prof."     →  str="Dr., Prof. John Smith"
   ```
-- Two equal names can render differently. The order a name was read in is not compared, so a name loaded from a 2.x pickle, which recorded none, renders given-first where a fresh parse of the same text renders family-first. (The shape needs a pickle written by an older release, so no example line.)
+- Two equal names can render differently. The order a name was read in is not compared, so a name loaded from a 2.x pickle, which recorded none, renders exactly as 2.x rendered it, given-first and space-joined, where a fresh parse of the same text renders as written. (The shape needs a pickle written by an older release, so no example line.)
 
 ---
 **Signal:** separator + none in the name: the order the name was read in

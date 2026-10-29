@@ -1109,7 +1109,8 @@ class ParsedName:
     #: ``name_order`` or the ``script_orders`` entry that overrode it,
     #: and ``GIVEN_FIRST`` for a name with a family comma. ``str()``
     #: and :meth:`render`'s default lay the name out in it. ``None``
-    #: (a name built by hand, or a 2.x pickle) renders given-first.
+    #: (a name built by hand, or a 2.x pickle) renders as 2.x did:
+    #: given-first, its words joined by spaces.
     #: Left out of ``==`` and :meth:`comparison_key`, so two equal
     #: names can render differently.
     order: tuple[Role, Role, Role] | None = field(

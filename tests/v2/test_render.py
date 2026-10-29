@@ -157,6 +157,23 @@ def test_the_default_render_follows_the_written_name(
     assert name.render() == name.render(None) == want
 
 
+def test_a_family_first_maiden_reads_back_as_the_given_first_one_does(
+        ) -> None:
+    """A parenthesized maiden name reads back as a nickname wherever the
+    layout puts it (decisions/render-default's accepted cost), under a
+    family-first layout as under the given-first one; the name words
+    read back in place, where 2.x's given-first rendering of this name
+    read them back swapped ('花子 山田 (佐藤)')."""
+    for text, order in (("Jane Smith née Jones", None),
+                        ("山田 花子 旧姓 佐藤", None),
+                        ("Wang Xiaoming née Li", FAMILY_FIRST)):
+        parser = Parser(policy=Policy(name_order=order)) if order else Parser()
+        name = parser.parse(text)
+        back = parser.parse(str(name))
+        assert (back.given, back.family) == (name.given, name.family), text
+        assert (back.maiden, back.nickname) == ("", name.maiden), text
+
+
 def test_a_spec_renders_as_written_whatever_the_order() -> None:
     # rules/R6's Because: a caller's spec keeps 2.x's meaning
     name = parse("김민준")

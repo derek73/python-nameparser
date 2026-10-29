@@ -20,7 +20,7 @@ from collections.abc import Callable
 from nameparser._lexicon import (FULL_STOPS, Lexicon, _normalize,
                                  _spells_an_initial)
 from nameparser._policy import _NO_INITIALS, _script_matcher
-from nameparser._types import (_NAME_ORDERS, FOLDED_TAG, GIVEN_FIRST,
+from nameparser._types import (_NAME_ORDERS, FOLDED_TAG,
                                SHAPE_ACRONYM_TAG,
                                SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG,
                                UNCLASSIFIED_TAG, UNJOINED_CONJUNCTION_TAG,
@@ -156,7 +156,14 @@ def render(name: ParsedName, spec: str | None) -> str:
     collapse. Unknown keys raise KeyError naming the valid fields.
     None renders the order-aware default (_default_render)."""
     if spec is None:
-        return _default_render(name)
+        if name.order is None:
+            # no order recorded (a 2.x pickle, a name built by hand):
+            # 2.x's default spec, so such a name renders as it did
+            # (decisions/R6, #754)
+            return _format_spec(_V2_DEFAULT_SPEC, {
+                key: getattr(name, key) for key in _RENDER_KEYS},
+                "render", _RENDER_KEYS)
+        return _default_render(name, name.order)
     values = {key: getattr(name, key) for key in _RENDER_KEYS}
     return _format_spec(spec, values, "render", _RENDER_KEYS)
 
@@ -175,9 +182,9 @@ _DECORATION: dict[Role, tuple[str, str]] = {
 _BESIDE = {Role.GIVEN: Role.NICKNAME, Role.FAMILY: Role.MAIDEN}
 
 
-def _layout(order: tuple[Role, Role, Role] | None) -> tuple[_Slot, ...]:
+def _layout(order: tuple[Role, Role, Role]) -> tuple[_Slot, ...]:
     roles = [Role.TITLE]
-    for role in order or GIVEN_FIRST:
+    for role in order:
         roles.append(role)
         if role in _BESIDE:
             roles.append(_BESIDE[role])
@@ -185,7 +192,10 @@ def _layout(order: tuple[Role, Role, Role] | None) -> tuple[_Slot, ...]:
     return tuple((r, *_DECORATION.get(r, ("", ""))) for r in roles)
 
 
-_LAYOUTS = {order: _layout(order) for order in (None, *_NAME_ORDERS)}
+_LAYOUTS = {order: _layout(order) for order in _NAME_ORDERS}
+#: 2.x's default spec, what a name with no recorded order renders by.
+_V2_DEFAULT_SPEC = ('{title} {given} "{nickname}" {middle} {family} '
+                    "({maiden}) {suffix}")
 
 #: rules/T2 and T3's dividers: a nakaguro, or an interpunct the parse
 #: divided at (one written with a space beside it is a name word,
@@ -222,7 +232,8 @@ def _ordered(tokens: list[Token]) -> list[Token]:
             + [t for t in tokens if FOLDED_TAG not in t.tags])
 
 
-def _default_render(name: ParsedName) -> str:
+def _default_render(name: ParsedName,
+                    order: tuple[Role, Role, Role]) -> str:
     """str()'s rendering: the layout `name.order` picks, two words side
     by side both as written and as laid out keeping their written
     separator (_written_separator), every other pair the layout's
@@ -238,7 +249,7 @@ def _default_render(name: ParsedName) -> str:
     out: list[str] = []
     prev: Token | None = None
     prev_close = ""
-    for role, open_, close in _LAYOUTS.get(name.order, _LAYOUTS[None]):
+    for role, open_, close in _LAYOUTS[order]:
         words = by_role.get(role)
         if not words:
             continue

@@ -664,6 +664,28 @@ def test_a_parsedname_pickled_by_2_8_0_loads_and_renders_given_first(
     assert pickle.loads(pickle.dumps(now)).order == FAMILY_FIRST
 
 
+def test_a_2_8_0_pickle_renders_as_2_8_0_did_separators_included(
+        ) -> None:
+    """tests/v2/data/parsednames_v28_separators.pickle holds
+    `parse()` of `John Smith, Jr.`, `威廉·莎士比亚` and `山田　太郎`
+    pickled (protocol 4) by the released 2.8.0 wheel, whose str() gave
+    the three renderings asserted below; made 2026-10-29 as the v28
+    fixture above was. The decision promises a 2.x pickle renders as
+    today (decisions/vocabulary-model's #754 output-model entry, item
+    6), so a name with no order keeps 2.x's spacing too, not only its
+    given-first layout. pickle.load is safe here: a repo-controlled
+    fixture."""
+    import pickle
+    with open(Path(__file__).parent / "data"
+              / "parsednames_v28_separators.pickle", "rb") as f:
+        loaded = pickle.load(f)
+    assert [n.order for n in loaded] == [None, None, None]
+    assert [str(n) for n in loaded] == [
+        "John Smith Jr.", "威廉 莎士比亚", "太郎 山田"]
+    assert [str(parse(n.original)) for n in loaded] == [
+        "John Smith, Jr.", "威廉·莎士比亚", "山田 太郎"]
+
+
 def test_parsedname_order_is_not_compared_and_stores_a_tuple() -> None:
     tok = Token("Juan", Span(0, 4), Role.GIVEN)
     assert ParsedName("Juan", (tok,), order=FAMILY_FIRST) == ParsedName(

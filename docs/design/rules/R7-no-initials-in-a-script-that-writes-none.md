@@ -1,6 +1,6 @@
 # R7 — no initials in a script that writes none
 
-**When:** initials are asked of a parsed name holding a word written in Han, Hangul or kana, as in "김민준".
+**When:** initials are asked of a parsed name holding a word that opens with a Han ideograph, a Hangul syllable or kana, as in "김민준".
 
 **Then:** a word whose first letter is in a script that writes no initials contributes nothing to the initials, and a word in another script beside it still gives its own.
 
@@ -19,6 +19,10 @@
 
 **Accepted:**
 
+- The scripts are read by character, as the parse reads them for its own initials: a Hangul syllable written as conjoining jamo counts, composed, while compatibility jamo and the ideographic zero, which no range the parse reads holds, still initial.
+  ```
+  "ㄱㄴ 김"                      →  initials="ㄱ."
+  ```
 - A name written wholly in those scripts has empty initials, where 2.1 through 2.8 gave its first characters (`김민준` gave '민. 김.'); a caller wanting a character per word takes it from the fields.
 
 ---
