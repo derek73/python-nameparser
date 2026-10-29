@@ -957,9 +957,11 @@ class Reading:
     #: family name names ``en``, which lists it so, and not ``fil``,
     #: which lists it as a given name). Empty for a reading no file
     #: holds: a shape,
-    #: position alone, a word a caller's own ``Lexicon`` adds that no
-    #: file holds in that category, or a shipped list kept outside the
-    #: per-word files (the Korean surnames that divide ``김민준``).
+    #: position alone, a name read into a field no file lists it in
+    #: (``van`` as a family name, ``nl`` listing it as given), a word a
+    #: caller's own ``Lexicon`` adds that no file holds in that
+    #: category, or a shipped list kept outside the per-word files (the
+    #: Korean surnames that divide ``김민준``).
     #: A suffix reading is matched by the word's suffix entry whatever
     #: its finer kind, a word having one. An ``Ambiguity.alternative``
     #: names the files holding it for any word the report names. Not

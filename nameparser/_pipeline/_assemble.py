@@ -134,7 +134,7 @@ def _part_languages(text: str, kind: ReadingKind,
     ('Lt.Gov.', 'MD/PhD', 'MD;'), sorted: a suffix's parts divided by
     any mark but the period first, each an acronym ('M.D./Ph.D.'),
     then any word's by every mark. Read only for a word the parse's
-    own lexicon does not list whole (`_files`)."""
+    own lexicon does not list whole (`_listed_whole`)."""
     kinds = _kinds(kind, role)
     if kinds is None:
         return ()
@@ -157,23 +157,25 @@ def _by_parts(n: str, kinds: frozenset[str], keep: str) -> tuple[str, ...]:
                                 kinds)}))
 
 
-def _files(text: str, kind: ReadingKind, role: Role,
-           lexicon: Lexicon) -> tuple[str, ...]:
-    """Reading.languages for a word whose whole form no file holds
-    (`_languages` empty): the files of the listed words it joins, save
-    where the parse's own lexicon lists it whole, so that the parse
-    read it whole and not by its parts ('zzq-dr' a caller added as a
-    title names no file, though 'dr' is in `mul`). Asked only after
-    `_languages` comes back empty, so a word a file holds pays nothing."""
-    found = _part_languages(text, kind, role)
-    if found:
-        n = _normalize(text)
-        bare = n.replace(".", "")
-        for name in _VOCAB_FIELDS:
-            field = getattr(lexicon, name)
-            if n in field or bare in field:
-                return ()
-    return found
+@functools.lru_cache(maxsize=4096)
+def _forms(text: str) -> tuple[str, str]:
+    """`text` as the vocabulary stores it, and without its periods."""
+    n = _normalize(text)
+    return n, n.replace(".", "")
+
+
+def _listed_whole(text: str, lexicon: Lexicon) -> bool:
+    """Whether the parse's own lexicon lists `text` whole, in either
+    form, so that the parse read it whole and not by its parts: a
+    caller's 'zzq-dr' title names none of the files of 'dr'. Asked
+    only of a word whose whole form no file holds and whose parts some
+    file does (`_part_languages`), so other words pay no frame."""
+    n, bare = _forms(text)
+    for name in _VOCAB_FIELDS:
+        field = getattr(lexicon, name)
+        if n in field or bare in field:
+            return True
+    return False
 
 
 def _split_partner(tokens: tuple[WorkToken, ...], dropped: set[int],
@@ -233,16 +235,21 @@ def _alternative(pending: PendingAmbiguity, materialized: tuple[Token, ...],
     elif isinstance(role, (Deferred, Beside)):
         # assign found no name position to name it from
         return None
-    if middle_as_family and role is Role.MIDDLE:
-        role = Role.FAMILY
     # the files holding the reading for any of its words, as a token's
-    # own reading names them
+    # own reading names them, by the field before the policy's fold of
+    # the middle (a middle word names the files listing it as given)
     found: set[str] = set()
     if alt.source in _LISTED:
         # a loop, not a generator, which would resume a frame per word
         for t in materialized:
-            found.update(_languages(t.text, alt.kind, role)
-                         or _files(t.text, alt.kind, role, lexicon))
+            langs = _languages(t.text, alt.kind, role)
+            if (not langs
+                    and (langs := _part_languages(t.text, alt.kind, role))
+                    and _listed_whole(t.text, lexicon)):
+                langs = ()
+            found.update(langs)
+    if middle_as_family and role is Role.MIDDLE:
+        role = Role.FAMILY
     return Reading(alt.kind, role, alt.source, tuple(sorted(found)))
 
 
@@ -278,6 +285,7 @@ def assemble(state: ParseState) -> ParsedName:
     dropped = set(state.dropped)
     final: dict[int, Token] = {}
     surnames = state.lexicon.surnames
+    folds_middle = state.policy.middle_as_family
     tokens = state.tokens
     last = len(tokens)
     # the suffix reading of the token before, and whether it opens a
@@ -337,11 +345,12 @@ def assemble(state: ParseState) -> ParsedName:
                 # of the two words, which the second then takes
                 written = (t.text + _split_partner(tokens, dropped, i)
                            if prev_split else t.text)
-                reading = (_reading(kind, role, source, langs)
-                           if source in _LISTED
-                           and (langs := _languages(written, kind, role)
-                                or _files(written, kind, role,
-                                          state.lexicon))
+                langs = _languages(written, kind, role) if source in _LISTED else ()
+                if (not langs and source in _LISTED
+                        and (langs := _part_languages(written, kind, role))
+                        and _listed_whole(written, state.lexicon)):
+                    langs = ()
+                reading = (_reading(kind, role, source, langs) if langs
                            else _READINGS[kind, role, source])
             before = reading
         else:
@@ -404,10 +413,16 @@ def assemble(state: ParseState) -> ParsedName:
                 # a particle or connective with nothing to join reads
                 # as the name word it stands as ('van' in 'van Gogh')
                 kind, source = ReadingKind.NAME, name_source(tags)
-            reading = (_reading(kind, role, source, langs)
-                       if source in _LISTED
-                       and (langs := _languages(t.text, kind, role)
-                            or _files(t.text, kind, role, state.lexicon))
+            # a name's files by its field, a middle word the policy
+            # folded into the family by the middle it stands as
+            field = (Role.MIDDLE if role is Role.FAMILY and folds_middle
+                     and FOLDED_TAG in tags else role)
+            langs = _languages(t.text, kind, field) if source in _LISTED else ()
+            if (not langs and source in _LISTED
+                    and (langs := _part_languages(t.text, kind, field))
+                    and _listed_whole(t.text, state.lexicon)):
+                langs = ()
+            reading = (_reading(kind, role, source, langs) if langs
                        else _READINGS[kind, role, source])
         final[i] = Token(t.text, t.span, role, tags, reading)
     # No alphanumeric character among the SURVIVING tokens means no

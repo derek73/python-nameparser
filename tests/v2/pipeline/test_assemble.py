@@ -445,6 +445,12 @@ _EXPECTED_LANGUAGES = [
     # own field: `ma` is family in en, given in en and fil
     ("Long Ma", "Ma", ("en",)),
     ("Ma Long", "Ma", ("en", "fil")),
+    ("Jane Doe (nee Smith Ma)", "Ma", ("en",)),
+    # a declared name in a field no file lists it in names none: fr
+    # lists `fils` only as a family name
+    ("Alves, Pedro Fils", "Fils", ()),
+    # a bound given name names its files in the family field too
+    ("John Abdul", "Abdul", ("ar",)),
     ("Abu Bakar Smith", "Abu", ("ar",)),
     # an acronym by its periods removed, and a credential split across
     # a space, listed whole, each of its words naming the files
@@ -487,18 +493,21 @@ def test_a_reading_names_the_files_holding_it(
     assert tok.reading.languages == languages
 
 
-@pytest.mark.parametrize("field,word,text", [
-    ("titles", "zzq-dr", "Zzq-Dr John Smith"),
-    ("particles", "mac-van", "John mac-van Smith"),
+@pytest.mark.parametrize("field,word,text,written", [
+    ("titles", "zzq-dr", "Zzq-Dr John Smith", "Zzq-Dr"),
+    ("particles", "mac-van", "John mac-van Smith", "mac-van"),
+    # listed without the periods it is written with
+    ("titles", "drma", "Dr.Ma Smith", "Dr.Ma"),
 ])
 def test_a_callers_whole_word_names_no_file_of_its_parts(
-        field: str, word: str, text: str) -> None:
+        field: str, word: str, text: str, written: str) -> None:
     # the parse read it whole, so the files of `dr` or `van` are not
     # its reading's; the default's own joined words still name theirs
-    # (`Lt.Gov.` in _EXPECTED_LANGUAGES)
+    # (`Lt.Gov.` in _EXPECTED_LANGUAGES, and `Dr.Ma` below)
+    assert parse(text).tokens[0].reading is not None
     lex = Lexicon.default().add(**{field: {word}})
     (tok,) = [t for t in Parser(lexicon=lex).parse(text).tokens
-              if t.text.lower() == word]
+              if t.text == written]
     assert tok.reading is not None
     assert tok.reading.source is ReadingSource.VOCABULARY
     assert tok.reading.languages == ()
@@ -514,6 +523,28 @@ def test_a_reading_from_a_callers_own_vocabulary_names_no_file() -> None:
     assert readings["St"] == Reading("post-nominal", "suffix", "vocabulary")  # type: ignore[arg-type]
     assert readings["Zzq"] is not None and readings["Zzq"].languages == ()
     assert readings["St"] is not None and readings["St"].languages == ()
+
+
+def test_the_default_reads_a_joined_word_by_its_parts() -> None:
+    (tok,) = parse("Dr.Ma Smith").tokens[:1]
+    assert tok.reading is not None and tok.reading.languages == ("mul",)
+
+
+@pytest.mark.parametrize("text,word", [
+    ("John Ma Smith", "Ma"), ("Smith, John Ma", "Ma")])
+def test_a_folded_middle_names_the_files_of_the_middle_it_stands_as(
+        text: str, word: str) -> None:
+    # middle_as_family reports the field, and the files stay those
+    # listing the word as the given name it stands as
+    pn = Parser(policy=Policy(middle_as_family=True)).parse(text)
+    (tok,) = [t for t in pn.tokens if t.text == word]
+    assert tok.role is Role.FAMILY and tok.reading is not None
+    assert tok.reading.languages == ("en", "fil")
+    (amb,) = Parser(policy=Policy(middle_as_family=True)).parse(
+        "Doe, John van DO").ambiguities
+    assert amb.alternative is not None
+    assert amb.alternative.role is Role.FAMILY
+    assert amb.alternative.languages == ("en", "nl")
 
 
 def test_an_alternative_names_the_files_holding_it() -> None:
