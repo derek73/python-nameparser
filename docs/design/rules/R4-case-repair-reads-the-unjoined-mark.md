@@ -104,10 +104,11 @@
 
 **Except:**
 
-- **A part whose every word is particle vocabulary** is repaired as ordinary name words, since none of them is doing a particle's work there (R2).
+- **A part whose every word is particle vocabulary** is repaired as ordinary name words, since none of them is doing a particle's work there (R2). A connective standing between two of its words is set aside in asking it, as R2 sets it aside, and is repaired as the connective joining them that it is.
   ```
   "ANH DO"                    →  capitalized="Anh Do"
   "anh van do"                →  capitalized="Anh Van Do"
+  "FRITZ FREIHERR UND VON BAR"  →  capitalized="Fritz Freiherr und Von Bar"  deviates: #939 (today: capitalized="Fritz freiherr und von bar")
   ```
 - **A connective the parse read as the generation it also spells** is not a connective of this name at all, and is repaired as the generation it was read as.
   ```

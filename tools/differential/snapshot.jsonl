@@ -961,6 +961,7 @@
 {"name": "Eyck, Jan van", "given": "Jan", "family": "van Eyck", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "J. E."}
 {"name": "É. y É. Smith", "given": "É.", "middle": "y É.", "family": "Smith", "initials": "É. É. S."}
 {"name": "F. de Lange", "given": "F.", "family": "de Lange", "initials": "F. L."}
+{"name": "FRITZ FREIHERR UND VON BAR", "given": "FRITZ", "family": "FREIHERR UND VON BAR", "initials": "F. U.", "capitalized": "Fritz freiherr und von bar"}
 {"name": "Fabbri Irene", "order": "FAMILY_FIRST", "given": "Irene", "family": "Fabbri", "initials": "I. F."}
 {"name": "Fabbri, Irene", "given": "Irene", "family": "Fabbri", "initials": "I. F."}
 {"name": "Fabián Pérez Ximeno", "given": "Fabián", "middle": "Pérez", "family": "Ximeno", "initials": "F. P. X."}
