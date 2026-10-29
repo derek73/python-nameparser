@@ -16,7 +16,7 @@ not a standing category, and nothing enforces its removal -- a row
 still wearing it is a row whose parity is simply unknown.
 
 The v1 suite's full corpus is extracted into this table by the
-migration plan (facade runner consumes the same rows); this file seeds
+migration plan; this file seeds
 it with the pinned battery.
 
 What earns a row is a FORK: a branch taken for one input and not
@@ -2803,7 +2803,7 @@ CASES: tuple[Case, ...] = (
          {"family": "de la Cruz", "given": "Juan", "middle": "Carlos"},
          policy=Policy(name_order=FAMILY_FIRST),
          classification="feat(#395)",
-         notes="core-only: name_order has no v1 spelling. The run "
+         notes="name_order has no v1 spelling. The run "
                "stops at 'Cruz' because the declared order says what "
                "follows the family is not more surname. It reaches "
                "'Cruz' THROUGH ambiguous 'la', which is the chain a "
@@ -3311,10 +3311,11 @@ CASES: tuple[Case, ...] = (
                "facade's HumanName.initials() did not follow this fork "
                "that morning and still gave 'j. s.'; #528 closed the "
                "split the same day by making that view read the "
-               "parse's tags, so both surfaces give 'j. e. s.' now and "
-               "test_facade_initials_follow_the_one_case_fork in "
-               "tests/v2/test_render.py pins the agreement where a "
-               "test pinned the split. This table asserts roles",
+               "parse's tags, so both surfaces gave 'j. e. s.' until "
+               "3.0 removed the facade, and "
+               "test_initials_follow_the_one_case_fork in "
+               "tests/v2/test_render.py pins the reading. This table "
+               "asserts roles",
          shape=1),
     Case("one_case_upper_three_word_e_is_an_initial", "JOHN E SMITH",
          {"given": "JOHN", "middle": "E", "family": "SMITH"},
@@ -3363,7 +3364,7 @@ CASES: tuple[Case, ...] = (
                "it read the same tags on 2026-09-13. That is the "
                "split the 'john e smith' row records, closed on the "
                "same day and by the same change "
-               "(test_facade_initials_follow_the_one_case_fork in "
+               "(test_initials_follow_the_one_case_fork in "
                "tests/v2/test_render.py). It runs the other way here: "
                "there the facade GAINED a letter it had been "
                "dropping, and here it loses one it had been keeping. "
@@ -7450,7 +7451,7 @@ CASES: tuple[Case, ...] = (
                "trailing rule is consulted, the clause keeps 'MA' -- and "
                "nothing reports, because nothing was decided. Untagged: shape "
                "2 is a TWO-part listing. Unchanged from 2.0.0"),
-    # ---- #533: the policy sweep, all core-only -----------------------
+    # ---- #533: the policy sweep --------------------------------------
     Case("the_clause_reads_the_same_under_the_strict_comma_knob",
          "Doe, Jane nee Smith MA",
          {"given": "Jane", "middle": "nee Smith", "family": "Doe", "suffix": "MA"},
@@ -7771,8 +7772,8 @@ CASES: tuple[Case, ...] = (
                "the only one, the capitals settling 'MA' (rules/S6). Today "
                "middle 'MA', family 'vd Doe', one report ('Berg, Jan vd' "
                "is that reading with nothing in front of the particle)"),
-    # ---- policy rows. Every one is _CORE_ONLY (see
-    # tests/v2/test_facade_cases.py) --------------------------------
+    # ---- policy rows. Through 2.x every one was _CORE_ONLY, a row the
+    # facade runner could not express ---------------------------------
     Case("the_dotted_slot_reports_with_the_switch_off",
          "Doe, John X.Y.Z.",
          {"given": "John", "middle": "X.Y.Z.", "family": "Doe"},
@@ -8409,12 +8410,11 @@ CASES: tuple[Case, ...] = (
          policy=Policy(maiden_delimiters=frozenset({("(", ")")})),
          notes="listing a pair in maiden_delimiters drops it from the "
                "effective nickname set (maiden wins, 2026-07-19) -- the "
-               "one-liner replaces the bucket-move idiom. The facade "
-               "runner reaches this row by making that same move, so "
-               "it agrees. What v1 does NOT agree on is a pair left in "
-               "BOTH buckets, which it gives to nickname; that spelling "
-               "is a different config, not this row, and is pinned in "
-               "test_config_shim"),
+               "one-liner replaces the bucket-move idiom. What v1 did "
+               "NOT agree on was a pair left in "
+               "BOTH buckets, which it gave to nickname; that spelling "
+               "is a different config, not this row, and was pinned in "
+               "test_config_shim until 3.0 removed the facade"),
     # #269 follow-up: Arabic-script bound given names, mirroring the
     # Latin transliterations' behavior (probed live 2026-07-19: bound
     # join fires only with 3+ tokens, eats the NEXT token into given;
@@ -9694,9 +9694,9 @@ CASES: tuple[Case, ...] = (
                "called. Pinned because deleting a vocabulary entry "
                "invites deleting its neighbours, and because nothing "
                "else in the suite reaches this entry: removing "
-               "rozená from MAIDEN_MARKERS fails exactly this row's "
-               "two tests, one per runner, and nothing else (measured "
-               "2026-08-26) -- the position "
+               "rozená from MAIDEN_MARKERS failed exactly this row's "
+               "two tests, one per runner of 2.x, and nothing else "
+               "(measured 2026-08-26) -- the position "
                "maiden_marker_delimited_unaccented holds for 'nee'. "
                "The cost the removal accepts is the "
                "abbreviation: 'Anna Nováková roz. Svobodová' now reads "
@@ -9868,8 +9868,8 @@ CASES: tuple[Case, ...] = (
          {"family": "de la Cruz", "maiden": "Vega"},
          classification="fix(#399)",
          notes="the default-order reading of the family-first row "
-               "below, added because that one is core-only and the "
-               "facade runner would otherwise never see this class. "
+               "below, added in 2.x because the facade runner could "
+               "not express that one. "
                "Before #399: family 'de la Cruz née Vega'"),
     Case("maiden_marker_stops_the_leading_run_family_first_given_last",
          "de la Cruz née Vega",
@@ -10148,9 +10148,7 @@ CASES: tuple[Case, ...] = (
                "tokens at all), tokenize gives the tokens it cuts "
                "there Role.MAIDEN, and group's #274 consuming rule "
                "walks pieces, which hold no role-bearing token; the "
-               "fix drops the marker inside the CLAUSE instead. The "
-               "facade runner reaches this row by performing the "
-               "bucket move itself, so it is exercised twice. 1.4.0 "
+               "fix drops the marker inside the CLAUSE instead. 1.4.0 "
                "expresses the policy the same way: "
                "measured 2026-08-02 through the bucket-move idiom "
                "maiden_delimiters['parenthesis'] = "
@@ -10175,8 +10173,9 @@ CASES: tuple[Case, ...] = (
                "on 'nee' being in the default MAIDEN_MARKERS: "
                "everything else reaches the marker branch through "
                "'née', 'geb' or '旧姓', or through a stage lexicon of "
-               "its own. Removing the entry now fails exactly this "
-               "row's two tests, one per runner (measured 2026-08-03); "
+               "its own. Removing the entry failed exactly this "
+               "row's two tests, one per runner of 2.x (measured "
+               "2026-08-03); "
                "before this row existed it left the whole suite green, "
                "so the shipped spelling English writes most often was "
                "one vocabulary edit from silence. 1.4.0 under the "
@@ -11096,9 +11095,7 @@ CASES: tuple[Case, ...] = (
                "untouched: 1.4.0 under the same bucket move gave first "
                "Jane / last Smith / maiden 'Nee Jones' (2026-08-02), "
                "so the two clauses joined with a space on that side "
-               "too -- the classification the facade runner checks "
-               "against, since it expresses this policy through the "
-               "same bucket move"),
+               "too"),
     Case("maiden_marker_delimited_content_free", "(née —)",
          {},
          policy=Policy(maiden_delimiters=frozenset({("(", ")")})),
@@ -11195,8 +11192,8 @@ CASES: tuple[Case, ...] = (
                "that fences M3 across the delimiter SET rather "
                "than at the parenthesis. Measured 2026-08-26 by "
                "gating the swap to '(' and the double quote: this row "
-               "and its facade twin are the only two failures in the "
-               "suite, and of the gates only 1.4.0 and 2.0.0 redden "
+               "and its 2.x facade twin were the only two failures in "
+               "the suite, and of the gates only 1.4.0 and 2.0.0 redden "
                "-- 2.1.0 stays green with its fix(#335) rule quietly "
                "falling from six names to five, while the 2.0.0 "
                "ledger catches it on the four-field rule it gives "
@@ -12032,7 +12029,7 @@ CASES: tuple[Case, ...] = (
          {"title": "Dr.", "given": "Jean", "family": "de Mesnil"},
          policy=Policy(name_order=FAMILY_FIRST),
          classification="feat(#395)",
-         notes="core-only: name_order has no v1 spelling, so 'parity' "
+         notes="name_order has no v1 spelling, so 'parity' "
                "(this field's default) could never have been true of "
                "this row. The differential compares it at 2.0.0 and "
                "2.1.0 under its own order instead, where it moves: "
@@ -12049,7 +12046,7 @@ CASES: tuple[Case, ...] = (
           "family": "de la Cruz"},
          policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST),
          classification="feat(#395)",
-         notes="core-only: name_order has no v1 spelling. The row "
+         notes="name_order has no v1 spelling. The row "
                "above with two leftovers instead of one, which is the "
                "only shape in which the two family-first orders can "
                "disagree about the distribution -- 'Juan' is the "
@@ -12059,7 +12056,7 @@ CASES: tuple[Case, ...] = (
          {"title": "Dr.", "given": "Smith", "family": "John"},
          policy=Policy(name_order=FAMILY_FIRST),
          classification="fix(#296)",
-         notes="core-only: name_order has no v1 spelling, but the "
+         notes="name_order has no v1 spelling, but the "
                "CHANGE here is the vocabulary half alone -- no "
                "particle, so nothing folds, and the diff against 2.0.0 "
                "is the {title, suffix} move 'dr' leaving the suffix "
@@ -13828,7 +13825,7 @@ CASES: tuple[Case, ...] = (
     Case("han_unspaced_no_script_orders_reports_the_convention", "毛泽东",
          {"given": "毛泽东"}, policy=Policy(script_orders=()),
          ambiguities=("given-or-family",), classification="feat(#449)",
-         notes="core-only: an emptied script table has no v1 spelling, "
+         notes="an emptied script table has no v1 spelling, "
                "so 'parity' could never have been true of this row -- "
                "though the ROLES are 1.4.0's, v1 having no script "
                "orders to empty. The positive control for `by_script`: "
@@ -13839,7 +13836,7 @@ CASES: tuple[Case, ...] = (
     Case("kana_honorific_no_script_orders_reports_the_convention", "さん",
          {"given": "さん"}, policy=Policy(script_orders=()),
          ambiguities=("suffix-or-name",), classification="feat(#491)",
-         notes="core-only for the reason given on the Han row above. "
+         notes="no v1 spelling, for the reason given on the Han row above. "
                "The suffix half's positive control, and what makes "
                "rules/H4's CJK-honorific silence a `by_script` "
                "scope rather than a claim about the word: empty the "
@@ -14400,8 +14397,7 @@ CASES: tuple[Case, ...] = (
                "_script_segment names it as the setting that keeps a "
                "glued honorific inside the name in a neighbouring "
                "shape ('田中さん, V.' gives family '田中さん' under "
-               "it). No v1 spelling exists for the knob "
-               "(the facade runner skips this row), so the "
+               "it). No v1 spelling exists for the knob, so the "
                "classification compares against 1.4.0's single "
                "reading, first '씨.' / last 김민준 -- the same fields "
                "2.0 gave under EITHER setting before this change",
@@ -15131,7 +15127,7 @@ CASES: tuple[Case, ...] = (
                "well -- pinned, not merely stated, by "
                "ja_honorific_glued_family_comma_credential_pair_strict_"
                "knob above. No v1 spelling exists for the knob, so the "
-               "facade runner skips this row and the classification "
+               "classification "
                "compares against 1.4.0's single reading of the same "
                "text, as the other exercise of the knob named above "
                "does: measured, 1.4.0 gave first 'V.' / last "
@@ -15160,9 +15156,8 @@ CASES: tuple[Case, ...] = (
                "classification and the same two deviations as its "
                "default-policy twin (1.4.0: first 田中さん / suffix "
                "'Ph. D.'), which is also why the knob cannot be judged "
-               "against a v1 spelling here -- there is none, so the "
-               "facade runner skips this row as it does the other two "
-               "knob rows",
+               "against a v1 spelling here -- there is none, as for "
+               "the other two knob rows",
          tolerated=True),
     Case("ko_honorific_glued_family_comma_suffixy_second_run",
          "김민준씨, V.",

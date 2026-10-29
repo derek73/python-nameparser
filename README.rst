@@ -7,20 +7,13 @@ nameparser parses human names into seven fields — title, given, middle,
 family, suffix, nickname, maiden. Results are immutable, configuration is
 composable, and locale packs are opt-in.
 
-📣 **nameparser 2.8 is out, the last 2.x feature release.**
-
-⚠️ **HumanName is deprecated, and 3.0 removes it.** From 2.8 the 1.x
-compatibility layer — ``HumanName``, ``Constants`` and the shared
-``CONSTANTS`` — emits a ``DeprecationWarning`` where your code
-constructs it, loads it from a pickle, or changes the shared
-``CONSTANTS``. It keeps working through 2.x; ``parse()`` is the
-replacement, and `Coming from 1.x`_ below says where to start. After
-2.8 the 2.x line takes fixes only, and new work goes into 3.0.
-
-2.8 also carries on 2.7's reading of titles that are also given names:
-a title only inside a title phrase, so ``Queen Latifah`` keeps the
-given name ``Queen`` while ``Her Majesty Queen Elizabeth`` reads the
-title. The `release log
+📣 **nameparser 3.0 removes HumanName and the rest of the 1.x
+compatibility layer.** ``HumanName``, ``Constants``, the shared
+``CONSTANTS`` and ``nameparser.util`` are gone, along with the 1.x
+names of the word lists; ``parse()`` and ``Parser`` are the
+replacement. 2.8 is the last release that has them, and it warns at
+each use 3.0 removes; `Coming from 1.x or 2.x`_ below says where to
+start. The `release log
 <https://nameparser.readthedocs.io/en/latest/release_log.html>`__ has
 the details. Please `open an
 issue <https://github.com/derek73/python-nameparser/issues>`__ for anything
@@ -99,25 +92,23 @@ Learn more
 * `Locale packs <https://nameparser.readthedocs.io/en/latest/locales.html>`__ — opt-in bundles for East Slavic patronymics, Turkic markers, and more
 * There's also a CLI: ``python -m nameparser --json "Doe, John"``
 
-Coming from 1.x
-----------------
+Coming from 1.x or 2.x
+----------------------
 
-``HumanName`` and ``CONSTANTS`` keep working through 2.x — same imports,
-same attributes, same mutation API — and warn from 2.8 on, since 3.0
-removes them. Run your tests under ``python -W error::DeprecationWarning``
-to find the sites; a read of ``CONSTANTS`` does not warn. What 2.0 removes is the batch of
-deprecations 1.3 and 1.4 announced, so if your test suite runs clean on
-1.4 under ``python -W error::DeprecationWarning``, you are nearly done.
-Two things that check will not catch: four removals 1.4 never warned
-about (three raise on contact, the fourth only warns), and one that
-changes results silently — ``name == "John Smith"`` is now ``False``.
-Later 2.x releases add a few breaks of their own.
-`Migrating from HumanName <https://nameparser.readthedocs.io/en/latest/migrate.html>`__
-covers all of them, and translates a v1 customization into the new API whenever
-that's convenient for you.
+3.0 has no ``HumanName``: ``parse(text)`` reads the same seven fields,
+named ``given`` and ``family`` where ``HumanName`` had ``first`` and
+``last``, and a ``Lexicon`` and ``Policy`` handed to a ``Parser``
+replace ``Constants``. Upgrade to 2.8 first and run your tests under
+``python -W error::DeprecationWarning``: it stops at every use 3.0
+removes except a read of the shared ``CONSTANTS`` and the imports
+`Migrating to 3.0`_ lists, which 2.8 does not warn on, so search for
+those too. A pickled ``HumanName`` or
+``Constants`` does not load in 3.0; store ``parse(text).as_dict()`` or
+the original string instead.
+`Migrating to 3.0`_ maps ``HumanName``'s attributes and the
+``Constants`` settings onto the 3.0 API.
 
-See the `release log <https://nameparser.readthedocs.io/en/latest/release_log.html>`__
-for the full list of changes in the 2.0 series.
+.. _Migrating to 3.0: https://nameparser.readthedocs.io/en/latest/migrate.html
 
 License
 -------

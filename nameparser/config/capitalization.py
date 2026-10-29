@@ -37,8 +37,7 @@ name word and repairs as one (``Dclinpsy``). Written DOTTED
 entry needed to read it as one, and repairs in all capitals the same
 as a listed acronym does (``D.CLINPSY.``). Either way, a caller who
 wants a specific spelling needs a ``suffix_acronyms`` entry
-(``Lexicon.add(suffix_acronyms={...})`` in the 2.0 API,
-``constants.suffix_acronyms.add(...)`` in the v1 one) or a mask of
+(``Lexicon.add(suffix_acronyms={...})``) or a mask of
 its own. The map also carries the Irish patronymic particles ``ó``,
 ``ní`` and ``ua`` (#604): case repair writes a particle in lowercase
 (``de la Vega``), Irish writes these capitalized (``Liam Ó Murchú``),

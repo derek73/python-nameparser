@@ -1,33 +1,22 @@
-from typing import Any, ClassVar, Generic, TypeVar
+from typing import Any, ClassVar
 
-from nameparser import HumanName
-from nameparser.config import Constants
-
-T = TypeVar('T')
+from nameparser import ParsedName, Parser, Policy
 
 
-class HumanNameTestBase(Generic[T]):
-    """Shared assert helpers for the parsing tests.
+class ParsedNameTestBase:
+    """Shared assert helpers for the parsing tests ported from the 1.x suite.
 
-    Formerly subclassed unittest.TestCase. It is now a plain class so pytest can
-    apply the parametrized dual-run fixture in conftest.py — parametrized
-    fixtures do not apply to unittest.TestCase subclasses. The assert* methods
-    are thin shims so existing test bodies move over unchanged.
+    These tests asserted through ``HumanName`` until 3.0 removed it; they
+    now assert the same readings through :func:`nameparser.parse`, with
+    ``first``/``last`` read as ``given``/``family``. The assert* methods
+    are thin shims, kept from the suite's unittest days so the test
+    bodies stayed unchanged.
     """
 
-    def m(self, actual: T, expected: T, hn: HumanName) -> None:
-        """assertEqual with a better message.
-
-        ``expected or ''`` used to fall back to ``hn.C.empty_attribute_default``,
-        which could be '' or None depending on which of the (formerly dual-run)
-        settings a test ran under. That setting was removed in 2.0 (#255):
-        empty attributes are always ''.
-        """
+    def m(self, actual: object, expected: object, name: ParsedName) -> None:
+        """assertEqual with a message naming the input; an empty field is ''."""
         expected_ = expected or ''
-        try:
-            assert actual == expected_, f"{actual!r} != {expected!r} for {hn.original!r}\n{hn!r}"
-        except UnicodeDecodeError:
-            assert actual == expected_, f"actual={actual!r} != expected={expected_!r}"
+        assert actual == expected_, f"{actual!r} != {expected!r} for {name.original!r}\n{name!r}"
 
     def assertEqual(self, first: object, second: object, msg: object = None) -> None:
         assert first == second, msg
@@ -60,18 +49,18 @@ class HumanNameTestBase(Generic[T]):
         assert expr is not None, msg or "unexpectedly None"
 
 
-class FlaggedConstantsTestBase(HumanNameTestBase[T]):
-    """Base for test classes that parse with a dedicated, flagged Constants.
+class FlaggedPolicyTestBase(ParsedNameTestBase):
+    """Base for test classes that parse with a dedicated, flagged Policy.
 
-    Subclasses set ``constants_kwargs``; each test method gets a fresh
-    ``Constants(**constants_kwargs)`` via ``setup_method``, and ``hn()``
-    parses with it.
+    Subclasses set ``policy_kwargs``; each test method gets a fresh
+    ``Parser(policy=Policy(**policy_kwargs))`` via ``setup_method``, and
+    ``hn()`` parses with it.
     """
 
-    constants_kwargs: ClassVar[dict[str, Any]] = {}
+    policy_kwargs: ClassVar[dict[str, Any]] = {}
 
     def setup_method(self) -> None:
-        self.C = Constants(**self.constants_kwargs)
+        self.parser = Parser(policy=Policy(**self.policy_kwargs))
 
-    def hn(self, name: str) -> HumanName:
-        return HumanName(name, constants=self.C)
+    def hn(self, name: str) -> ParsedName:
+        return self.parser.parse(name)

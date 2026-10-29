@@ -1168,8 +1168,8 @@ def test_revise_keeps_r2s_precedence_over_the_connective_mark(
     # all-particle part, so R2's mark readmits every word of it --
     # the connective included -- and #461's is not written there. The
     # rendered answer is the same either way, which is why this
-    # asserts the TAGS: the facade's own connective predicate reads
-    # the second mark, so writing it here would move that view alone.
+    # asserts the TAGS: the contract is that one mark is written, and
+    # no rendered view tells the two apart.
     p = Parser(lexicon=Lexicon.default().add(particles={"y"}))
     revised = p.revise(p.parse("John Smith"), family="de y")
     assert revised.initials() == "J. d. y."
@@ -1363,8 +1363,7 @@ def test_revise_keeps_the_sub_parses_within_piece_mark() -> None:
     # nothing there depends on the sub-parse's own. The between-piece
     # mark a sub-parse leaves on a token forced to another role
     # predates #511; on a ParsedName only the suffix string view reads
-    # the tag, and no path puts a revised name into a HumanName, whose
-    # list views would heal it.
+    # the tag.
     p = Parser()
     r = p.revise(p.parse("John Smith"), family="John Ph. D. Smith")
     family = r.tokens_for(Role.FAMILY)
@@ -2274,3 +2273,56 @@ def test_where_a_bracketed_member_reads_otherwise_than_its_twin() -> None:
                    else "settled")
             census[key] = census.get(key, 0) + 1
     assert census == _TWIN_CENSUS
+
+
+def test_the_joined_tag_never_reaches_a_title() -> None:  # #429 regression guard
+    """The "joined" tag is role-blind, so a tag placed for a suffix entry
+    would be read by a title too.
+
+    So the pass that writes it (post_rules' R1 entry pass, #436) walks
+    the SUFFIX tokens alone and reads every other role as transparent
+    to the run rather than as part of it. #429's first draft let any
+    piece open an entry: a title piece doing so tagged the title behind
+    it. Asserted on the tags because the string views cannot see it --
+    titles render space-joined either way.
+    """
+    def joined(text: str) -> list[str]:
+        return [t.text for t in parse(text).tokens if "joined" in t.tags]
+
+    n = parse("Smith, Rev. Dr.")
+    assert n.title == "Rev. Dr."
+    assert joined("Smith, Rev. Dr.") == []
+    # with a suffix already standing from the pre-comma segment, a
+    # title opening the entry glued the next suffix backward across
+    # the writer's own comma
+    assert parse("Smith Jr., Mr. Jr.").suffix == "Jr., Jr."
+    assert joined("Smith Jr., Mr. Jr.") == []
+    # the control: where the pieces really are one entry, they DO join
+    assert joined("Smith, MD PhD") == ["PhD"]
+    # a role that renders elsewhere is stepped OVER by the pass and
+    # never stepped onto: it needs a suffix word FIRST, so a run is
+    # legitimately open, and then TWO titles
+    j = parse("Smith, MD Rev. Dr.")
+    assert (j.suffix, j.title) == ("MD", "Rev. Dr.")
+    assert joined("Smith, MD Rev. Dr.") == []
+
+
+def test_the_ph_d_pair_merges_whatever_the_vocabulary_says() -> None:
+    # v1's fix_phd merged 'Ph. D.' by its spelling alone, so a config
+    # without 'phd' still read the pair as one suffix; the split
+    # credential's vocabulary pre-test must not stand in front of that
+    # answer (#752's review)
+    p = Parser(lexicon=Lexicon.default().remove(suffix_acronyms={"phd"}))
+    assert p.parse("John Smith Ph. D.").suffix == "Ph. D."
+    h = p.parse("John Smith, Ph. D.")
+    assert (h.given, h.family, h.suffix) == ("John", "Smith", "Ph. D.")
+
+
+def test_a_given_name_written_short_listed_as_a_title_is_a_title() -> None:
+    # #789: the caller who lists the word as a title gets 1.4's reading
+    # back, the leading peel asking the titles before the shape the
+    # given_name_abbreviations set outranks
+    assert parse("Chas. Smith").given == "Chas."   # baseline
+    p = Parser(lexicon=Lexicon.default().add(titles={"chas"}))
+    assert "chas" in p.lexicon.given_name_abbreviations
+    assert p.parse("Chas. Smith").title == "Chas."

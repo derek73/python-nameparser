@@ -1,177 +1,129 @@
-Migrating from HumanName
-=========================
+Migrating to 3.0
+================
 
-``HumanName`` and ``CONSTANTS`` keep working in 2.0 — same imports,
-same attributes, same mutation API (``name.C.titles.add(...)``,
-``name.first = "..."``, and so on). Upgrading to 2.0 and migrating your
-code to the new :class:`~nameparser.Parser`/:class:`~nameparser.Lexicon`/
-:class:`~nameparser.Policy` API are two separate decisions — you can do
-the former today and the latter whenever it's convenient. The
-compatibility layer (``HumanName``, ``Constants`` and the shared
-``CONSTANTS``) is removed in 3.0, and 2.8 warns wherever your code
-touches it: see `Deprecated in 2.8`_. The vocabulary data modules in
+nameparser 3.0 removes the 1.x compatibility layer: ``HumanName``,
+``Constants`` and everything around them, which 2.x kept working on top
+of the core parser and 2.8 deprecated. This page is for code written
+against either — 1.x code, and 2.x code that kept using ``HumanName``.
+It says what is gone and what replaces each piece, then translates a
+1.x customization or a 1.x-shaped comparison into the 3.0 API, one row
+per old name.
+
+The 3.0 API is the one 2.0 introduced — ``parse``, ``Parser``,
+``Lexicon``, ``Policy``, ``Locale`` and ``ParsedName``, with
+:mod:`nameparser.locales` — and its names and signatures carry into 3.0
+gaining additions only. The vocabulary data modules in
 ``nameparser.config`` (``titles``, ``particles`` and the rest) stay.
+Separately, the output model changes in 3.0; details with the 3.0
+alphas.
 
-The full 1.x documentation remains the canonical reference for
-``HumanName`` and stays online as the 1.4.0 build on readthedocs:
+The full 1.x documentation remains the reference for ``HumanName`` and
+stays online as the 1.4.0 build on readthedocs:
 https://nameparser.readthedocs.io/en/v1.4.0/
 
-This page exists for the other direction: translating a v1
-customization or a v1-shaped comparison into the 2.0 API, one row per
-old name.
+What 3.0 removes
+----------------
 
-Deprecated in 2.8
------------------
-
-nameparser 2.8 is the last 2.x feature release. From 2.8 on, the uses
-3.0 removes emit a ``DeprecationWarning`` at the line in your code that
-makes them, on every call rather than once per process:
+2.8 warned at the line in your code that used each of these, with the
+exceptions `Finding the sites`_ names:
 
 .. list-table::
    :header-rows: 1
    :widths: 40 60
 
-   * - What warns
+   * - Removed
      - Replacement
-   * - ``HumanName(...)``, including a subclass's construction
+   * - ``HumanName(...)``, and the ``nameparser.parser`` module
      - ``nameparser.parse(text)``, or ``Parser(lexicon=...,
        policy=...).parse(text)``; the fields are ``given`` and
        ``family`` where ``HumanName`` has ``first`` and ``last``. See
        the `Attribute map`_
-   * - ``Constants(...)`` and ``constants.copy()``
+   * - ``Constants(...)``, ``constants.copy()`` and the shared
+       ``CONSTANTS``
      - ``Parser(lexicon=Lexicon.default().add(titles={"dean"}))``, and
        the `Config map`_ for each setting
-   * - Mutating the shared ``CONSTANTS`` (warned since 2.0)
-     - The same ``Parser``; a private ``Constants`` is no longer a
-       way out, since it goes in 3.0 too
+   * - ``SetManager``, ``TupleManager`` and ``RegexTupleManager`` in
+       ``nameparser.config``
+     - ``Lexicon`` fields take plain sets:
+       ``Lexicon.default().add(titles={"dean"})``
+   * - ``nameparser.util`` and its ``lc``
+     - ``value.lower().strip(".")``
    * - Loading a pickled ``HumanName``
      - Store ``parse(text).as_dict()`` or the original string
    * - Loading a pickled ``Constants``
      - Pickle the ``Parser`` instead
-   * - Reading ``SetManager``, ``TupleManager`` or ``RegexTupleManager``
-       from ``nameparser.config``
-     - ``Lexicon`` fields take plain sets:
-       ``Lexicon.default().add(titles={"dean"})``
-   * - Reading ``lc`` from ``nameparser.util``
-     - ``value.lower().strip(".")``
+   * - The 1.x names of five word lists and two of their modules,
+       deprecated since 2.2
+     - Their 2.2 names, which the 2.2.0 entry of :doc:`release_log`
+       maps
 
-Importing ``nameparser``, ``nameparser.parser`` or ``HumanName`` stays
-quiet, and so does ``from nameparser import *``; the warning comes when
-the code runs. ``from nameparser.config import *`` does warn, once for
-each manager it imports, and so does ``from nameparser.util import *``. One use does not warn: *reading* the shared ``CONSTANTS``
-(``"dr" in CONSTANTS.titles``, or ``copy.copy(CONSTANTS)``), which
-stays quiet so that importing ``nameparser`` does. Search your code for ``CONSTANTS`` as well. A
-``DeprecationWarning`` is hidden by default outside ``__main__``, so
-run your tests to see the rest, or turn them into errors to find each
-site:
+The 2.8 deprecation warnings go with the code they warned about. In 3.0
+importing a removed name raises ``ImportError``, reading one as an
+attribute raises ``AttributeError``, and a pickle of a ``HumanName`` or
+a ``Constants`` cannot load, because there is no class to load it into.
+
+Finding the sites
+~~~~~~~~~~~~~~~~~
+
+Upgrade to 2.8 first. A ``DeprecationWarning`` is hidden by default
+outside ``__main__``, so run your tests with warnings turned into
+errors, and each use 3.0 removes stops the run at the line that makes
+it:
 
 .. code-block:: bash
 
     python -W error::DeprecationWarning -m pytest
 
-The 2.0 API's names and signatures carry into 3.0, gaining additions
-only: ``parse``, ``Parser``, ``Lexicon``, ``Policy``, ``Locale`` and
-``ParsedName``. Separately, the output model changes in 3.0; details
-with the 3.0 alphas.
+2.8 warns where code *uses* a removed name, not where it imports one,
+so some code passes that check and still fails on 3.0:
 
-Before you upgrade
-------------------
+* *reading* the shared ``CONSTANTS`` (``"dr" in CONSTANTS.titles``, or
+  ``copy.copy(CONSTANTS)``), which 2.8 left quiet so that importing
+  ``nameparser`` stays quiet
+* an import whose name the code never uses, or uses without
+  constructing it — ``from nameparser import HumanName`` or ``from
+  nameparser.config import Constants`` behind a subclass, an
+  ``isinstance`` check or an annotation; ``import nameparser.util``;
+  importing ``nameparser.parser`` or the two 1.x word-list modules,
+  ``nameparser.config.prefixes`` and
+  ``nameparser.config.bound_first_names``
 
-What breaks without a warning
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+So search your code for ``CONSTANTS``, ``HumanName``, ``Constants``,
+``nameparser.parser``, ``nameparser.util``, ``config.prefixes`` and
+``config.bound_first_names`` as well.
 
-What 2.0 removes is the batch of deprecations 1.3 and 1.4 announced. If
-your test suite runs clean on 1.4 under ``python -W
-error::DeprecationWarning``, it will run on 2.0.0 — with the exceptions
-below, which 1.4 never warned about. The first three raise the first
-time you hit them; the last only warns, so read it carefully:
+Coming from 1.x
+~~~~~~~~~~~~~~~
 
-* ``CONSTANTS.regexes.<name> = ...`` raises ``TypeError``. This includes
-  ``CONSTANTS.regexes.bidi = False``, the opt-out 1.3.1 recommended for
-  keeping bidirectional marks; the 2.0 spellings are
-  ``Policy(strip_bidi=False)`` and ``Policy(strip_emoji=False)``
-* assigning a ``*_list`` attribute (``name.first_list = [...]``) raises
-  ``AttributeError`` — the lists are read-only snapshots in 2.0
-* positional ``Constants(...)`` construction raises ``TypeError``; the
-  constructor is keyword-only
-* a subclass overriding a v1 parsing hook (``pre_process``,
-  ``parse_pieces``, ``is_title``, and the rest) gets a
-  ``DeprecationWarning`` at construction naming the hooks it overrode,
-  because 2.0 delegates parsing to the core parser and never calls them
+Code written against 1.4 meets 2.0's removals too, since 3.0 keeps
+them. Most are moot now that ``HumanName`` and ``Constants`` are gone,
+but three still reach code moving to ``parse()``:
 
-Later 2.x releases add breaks of their own, none of which 1.4 warned
-about either:
+* ``name == "John Smith"`` returned ``True`` on 1.x. ``HumanName``
+  dropped ``__eq__`` in 2.0, silently, and a ``ParsedName`` compared to
+  a string is never equal to it: use ``matches()`` (see `Comparison`_).
+  Grep for ``==`` wherever you compare names
+* bytes are not decoded for you: ``parse(b"...")`` raises
+  ``TypeError``, so decode first (``raw.decode("utf-8")``)
+* ``CONSTANTS.regexes.bidi = False``, 1.3.1's opt-out for keeping
+  bidirectional marks, is ``Policy(strip_bidi=False)``, and the emoji
+  one ``Policy(strip_emoji=False)`` (`Behavior and render settings →
+  Policy`_)
+
+Breaks in the 2.x core API
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Later 2.x releases changed the core API in ways 3.0 keeps:
 
 * editing a default word list in place — ``TITLES.add("dean")`` —
   raises ``AttributeError`` since 2.2, when the vocabulary sets became
   ``frozenset`` (see `Default word lists are frozen`_)
-* reading a renamed config constant (``prefixes.PREFIXES`` and the
-  rest) emits a ``DeprecationWarning`` since 2.2, which fails a suite
-  run under ``-W error::DeprecationWarning``
 * a ``capitalization_exceptions`` value that is not a case mask of its
-  key — ``{"md": "Doc"}`` — raises ``ValueError`` at the first parse
-  since 2.4
-* a ``Constants`` entry no word can match — empty, only full stops, or
-  holding whitespace no word carries, in a vocabulary set or as a
-  ``capitalization_exceptions`` key — is dropped with a ``UserWarning``
-  naming it, since 2.4
+  key — ``{"md": "Doc"}`` — raises ``ValueError`` since 2.4
 * a ``Lexicon``, ``Policy`` or ``Parser`` pickled by 2.5 or earlier
   raises ``ValueError`` on load since 2.6, each having gained a field;
   re-pickle after upgrading. A ``Lexicon``, ``Parser`` or locale pack
   pickled by 2.6 raises the same way since 2.7
-
-A silent change: comparing with ``==``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-One removal changes results without saying anything. ``HumanName`` no
-longer defines ``__eq__``, so ``name == "John Smith"`` is now ``False``
-where 1.x returned ``True``. That one *did* warn on 1.4, but nothing
-will tell you on 2.0. If you compare names anywhere, grep for ``==``
-before upgrading and move to ``matches()`` — see `Comparison`_.
-
-Re-pickle before you upgrade
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-One step has to happen *before* you upgrade, because the fix is only
-available on the version you're leaving: a ``Constants`` pickle written
-by nameparser 1.2.x or earlier must be re-pickled under 1.3 or 1.4.
-2.0 refuses to load one, and by then the code that could rewrite it is
-gone.
-
-Replacements for the warned removals
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-If your suite did *not* run clean, these are the replacements for the
-warned removals:
-
-.. list-table::
-   :header-rows: 1
-   :widths: 45 55
-
-   * - 1.4 spelling
-     - 2.0 replacement
-   * - ``HumanName(b"...")``, ``manager.add(b"...")``
-     - Decode first: ``HumanName(raw.decode("utf-8"))``
-   * - ``SetManager.add_with_encoding(b"...")``
-     - ``add()``, on already-decoded ``str``
-   * - ``manager()`` (calling a set manager)
-     - ``set(manager)``, or iterate it directly
-   * - ``manager.remove(missing)`` (was tolerant)
-     - ``discard()`` to ignore missing; ``remove()`` now raises
-       ``KeyError`` like ``set.remove``
-   * - ``HumanName(..., constants=None)``
-     - ``Constants()`` for library defaults, or ``CONSTANTS.copy()``
-       for a private snapshot of the current shared config (both
-       deprecated since 2.8: see `Deprecated in 2.8`_)
-   * - ``name['first'] = value``
-     - ``name.first = value``
-   * - ``CONSTANTS.regexes.typo`` (returned ``EMPTY_REGEX``)
-     - ``.get("typo")`` for intentional soft access; attribute access
-       now raises ``AttributeError``. The same applies to
-       ``capitalization_exceptions``, whose error also lists the known
-       keys
-   * - ``CONSTANTS.empty_attribute_default``
-     - Gone; empty fields are always ``''``
 
 Finally, if you want to see the difference on your own data rather than
 ours, ``tools/differential/compare.py`` in the source repository diffs
@@ -183,14 +135,15 @@ Attribute map
 -------------
 
 ``HumanName``'s seven fields and their aggregates map onto
-:class:`~nameparser.ParsedName` like this:
+:class:`~nameparser.ParsedName`, which :func:`~nameparser.parse`
+returns, like this:
 
 .. list-table::
    :header-rows: 1
    :widths: 30 40 30
 
-   * - ``HumanName``
-     - ``ParsedName``
+   * - 1.x/2.x ``HumanName``
+     - 3.0 ``ParsedName``
      - Note
    * - ``title``
      - ``title``
@@ -221,20 +174,33 @@ Attribute map
        attribute gave you
    * - ``given_names`` / ``given_names_list``
      - ``given_names``
-     - Unchanged name; ``middle`` folded into ``first``
+     - Unchanged name; ``middle`` folded into ``given``
    * - ``surnames`` / ``surnames_list``
      - ``surnames``
-     - Unchanged name; ``middle`` folded into ``last``
+     - Unchanged name; ``middle`` folded into ``family``
    * - ``last_base`` / ``last_base_list``
      - ``family_base``
-     - The surname with leading particles split off
+     - The surname without its particles, every one of them: for
+       ``da Silva do Amaral``, ``"Silva Amaral"``, where ``HumanName``
+       split off only the leading ones (``"Silva do Amaral"``)
    * - ``last_prefixes`` / ``last_prefixes_list``
      - ``family_particles``
-     - The particles ``family_base`` was split from (e.g. ``"de la"``)
+     - The particles ``family_base`` was split from (e.g. ``"de la"``),
+       a particle inside the surname included: ``"da do"`` for
+       ``da Silva do Amaral``, where ``HumanName`` gave ``"da"``
    * - ``string_format``
      - ``render(spec)``
      - A per-call argument now, not stored config — see
        :ref:`rendering-arguments`
+   * - ``initials()``
+     - ``initials()``
+     - The same reading, except that ``HumanName`` initialed a joined
+       element such as ``Ph. D.`` as one: ``"Ph. D., John"`` gave
+       ``J. P D.`` there and gives ``J. P. D.`` here, as on 1.4
+   * - ``initials_list()``
+     - none
+     - ``ParsedName`` has no list view of the initials;
+       ``initials(spec)`` renders the ones you need
    * - ``initials_format``, ``initials_delimiter``, ``initials_separator``
      - ``initials(spec, delimiter, separator)``
      - Same three knobs, now call-site arguments to
@@ -256,7 +222,7 @@ Attribute map
      - The text as passed in
    * - ``name["first"]``, ``as_dict()``
      - ``as_dict()["given"]``
-     - The keys are the 2.0 field names
+     - The keys are the 3.0 field names
    * - ``iter(name)``, ``len(name)``
      - ``[v for v in name.as_dict().values() if v]``
      - The non-empty fields, in field order
@@ -281,21 +247,29 @@ passing the old scalar through (``extra_suffix_delimiters=" - "``)
 raises, rather than silently registering three one-character
 delimiters.
 
-Side by side:
+Side by side, the 1.x and 2.x spelling:
+
+.. code-block:: python
+
+    hn = HumanName("Dr. Juan Q. Xavier de la Vega III")
+    hn.title, hn.first, hn.last         # ('Dr.', 'Juan', 'de la Vega')
+    hn.first_list                       # ['Juan']
+    hn.last_base, hn.last_prefixes      # ('Vega', 'de la')
+
+and the 3.0 one, reading the same name:
 
 .. doctest::
 
-    >>> from nameparser import HumanName, parse, Role
-    >>> hn = HumanName("Dr. Juan Q. Xavier de la Vega III")
+    >>> from nameparser import parse, Role
     >>> n = parse("Dr. Juan Q. Xavier de la Vega III")
-    >>> hn.title == n.title, hn.first == n.given, hn.last == n.family
-    (True, True, True)
-    >>> hn.first_list == [t.text for t in n.tokens_for(Role.GIVEN)]
-    True
-    >>> hn.given_names == n.given_names, hn.surnames == n.surnames
-    (True, True)
-    >>> hn.last_base == n.family_base, hn.last_prefixes == n.family_particles
-    (True, True)
+    >>> n.title, n.given, n.family
+    ('Dr.', 'Juan', 'de la Vega')
+    >>> [t.text for t in n.tokens_for(Role.GIVEN)]
+    ['Juan']
+    >>> n.given_names, n.surnames
+    ('Juan Q. Xavier', 'Q. Xavier de la Vega')
+    >>> n.family_base, n.family_particles
+    ('Vega', 'de la')
 
 Editing a field, and building a name from fields:
 
@@ -314,15 +288,15 @@ Config map
 Vocabulary sets → Lexicon
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``CONSTANTS``' vocabulary sets map onto :class:`~nameparser.Lexicon`
-fields:
+The vocabulary sets of a 1.x or 2.x ``Constants`` (and so of the shared
+``CONSTANTS``) map onto :class:`~nameparser.Lexicon` fields:
 
 .. list-table::
    :header-rows: 1
    :widths: 30 40 30
 
-   * - ``CONSTANTS``
-     - ``Lexicon``
+   * - 1.x/2.x ``Constants``
+     - 3.0 ``Lexicon``
      - Note
    * - ``titles``
      - ``titles``
@@ -358,11 +332,11 @@ fields:
        Since 2.4 a value is a case mask, so ``{"md": "M.D."}`` repairs
        ``md`` to ``MD``
 
-Some ``Lexicon`` fields have no ``CONSTANTS`` attribute at all —
+Some ``Lexicon`` fields never had a ``Constants`` attribute —
 ``conjunctions_ambiguous``, ``maiden_markers``, ``surnames``,
 ``honorific_tails``, ``after_given_titles``, ``suffix_words_ambiguous``,
-``agnomens`` and ``given_name_abbreviations`` — so they are reached
-through the 2.0 API only.
+``agnomens`` and ``given_name_abbreviations`` — so code coming from
+``Constants`` has nothing to translate for them.
 
 .. warning::
 
@@ -371,173 +345,61 @@ through the 2.0 API only.
    ``non_first_name_prefixes`` lists particles that are *never* read as
    a given name; ``particles_ambiguous`` lists the particles that
    *may* be read as one. The same holds for the config constant behind
-   it (renamed in 2.2; see `Renamed word lists (2.2)`_ below):
-   ``particles.NON_GIVEN_NAME_PARTICLES`` (1.x
-   ``prefixes.NON_FIRST_NAME_PREFIXES``) marks the never-given set, so
-   it is the complement of ``particles_ambiguous`` too, however much
-   the 2.2 names now suggest otherwise. Translating a customization
-   means flipping
-   the set: ``particles_ambiguous = lexicon.particles -
+   it: ``particles.NON_GIVEN_NAME_PARTICLES`` marks the never-given
+   set, so it is the complement of ``particles_ambiguous`` too, however
+   much the two names suggest otherwise. Translating a customization
+   means flipping the set: ``particles_ambiguous = lexicon.particles -
    constants.non_first_name_prefixes``. Copying
    ``non_first_name_prefixes`` straight into ``particles_ambiguous``
    silently inverts which particles are allowed to double as a given
    name.
 
-Renamed word lists (2.2)
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-The vocabulary that feeds both columns is exposed by ``nameparser.config``
-(compiled since 2.6 from ``nameparser/vocab/*.toml``, all but the Korean
-surname list),
-and in 2.2 its module and constant names moved to the vocabulary the
-``Lexicon`` column speaks — particles, bound given names, given-name
-titles, suffix words. Terminology only; one of the four kept 1.x's
-*meaning* while its ``Lexicon`` counterpart marks the opposite set, so
-read the caveat under the table before pairing them up. If you import
-the default word lists directly — to read one, extend one, or copy one
-into your own configuration — four vocabularies moved:
-
-.. list-table::
-   :header-rows: 1
-   :widths: 50 50
-
-   * - 1.x name
-     - 2.2 name
-   * - ``nameparser.config.prefixes``
-     - :mod:`nameparser.config.particles`
-   * - ``prefixes.PREFIXES``
-     - ``particles.PARTICLES``
-   * - ``prefixes.NON_FIRST_NAME_PREFIXES``
-     - ``particles.NON_GIVEN_NAME_PARTICLES``
-   * - ``nameparser.config.bound_first_names``
-     - :mod:`nameparser.config.bound_given_names`
-   * - ``bound_first_names.BOUND_FIRST_NAMES``
-     - ``bound_given_names.BOUND_GIVEN_NAMES``
-   * - ``titles.FIRST_NAME_TITLES``
-     - ``titles.GIVEN_NAME_TITLES``
-   * - ``suffixes.SUFFIX_NOT_ACRONYMS``
-     - ``suffixes.SUFFIX_WORDS``
-
-The caveat is on the third row. ``NON_GIVEN_NAME_PARTICLES`` is
-``NON_FIRST_NAME_PREFIXES`` renamed and nothing else — same members,
-same *never a given name* meaning. It is **not** the constant behind
-``Lexicon.particles_ambiguous``, which is that field's complement, even
-though the two now sound as though they belong together. Pairing this
-table's third row with the field-mapping table above and concluding
-that ``NON_GIVEN_NAME_PARTICLES`` is what ``particles_ambiguous``
-holds is exactly the inversion the flip warning above exists to
-prevent.
-
-Every row still resolves, and the old names are removed in 3.0. The two
-module rows are import paths and nothing more: importing
-``nameparser.config.prefixes`` or ``nameparser.config.bound_first_names``
-still works and says nothing, because the modules are now empty shims.
-It is reading a *constant* that reports — by attribute access, by
-``from ... import``, and by ``from ... import *`` alike. The read emits
-a ``DeprecationWarning`` naming the module and constant to move to,
-then returns the constant from its new home.
-
-The warning fires once per line that reads a retired name, not once per
-process, so a repeated read of the same import stays quiet while a
-second import somewhere else in your code reports for itself. To find
-your own uses, raise ``DeprecationWarning`` — which Python hides by
-default outside ``__main__``, so an untouched run of a library that
-reads these names on import shows nothing::
-
-    python -W error::DeprecationWarning -c "import yourapp"
-
-That stops at the first one, with a traceback whose last frame outside
-nameparser is the line to edit. Swap ``error`` for ``default`` to print
-them all and keep going.
-
-Only the data layer moved: the ``CONSTANTS`` attribute names in the
-field-mapping table above are v1 facade surface and are unaffected,
-so ``constants.prefixes``,
-``constants.non_first_name_prefixes``, ``constants.bound_first_names``,
-``constants.first_name_titles`` and ``constants.suffix_not_acronyms``
-keep their 1.x spelling for as long as the facade exists.
-
 Default word lists are frozen
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Every vocabulary *set* in ``nameparser.config`` is also a ``frozenset``
-as of 2.2 — the renamed ones and the rest. Every set, that is; the one
-mapping constant is untouched, and there is a note on it below. The
-freeze retires one 1.x idiom outright: ``TITLES.add("dean")`` — editing
-a default word list in place — now raises ``AttributeError`` at the
-line that writes it, rather than changing some parses and not others
-some distance away.
-
-It was never a dependable way to change a default, because the two
-config layers read the module constants at different moments.
-``Lexicon.default()`` is cached and reads them exactly once, at its
-first call; a v1 ``Constants`` copies them at every construction; and
-the shared ``CONSTANTS`` singleton is one such copy, taken at import.
-An edit landing *after* the first parse therefore reached only a
-freshly built ``Constants`` — neither ``parse()``, whose lexicon was
-already built, nor the shared ``CONSTANTS``, which predated the edit.
-An edit landing *before* any parse reached ``Lexicon.default()``, and
-so ``parse()``, and a fresh ``Constants`` — but still never the shared
-``CONSTANTS``. Whether an edit reached a given parse thus depended on
-which config objects the program had already built, and one program
-could hold two disagreeing defaults with nothing to say so.
+Every vocabulary *set* in ``nameparser.config`` is a ``frozenset``
+as of 2.2. The freeze retires one 1.x
+idiom outright: ``TITLES.add("dean")`` — editing a default word list
+in place — raises ``AttributeError`` at the line that writes it.
+``Lexicon.default()`` is cached and
+reads the module constants once, at its first call, so an edit there
+was never a dependable way to change a default: an edit made after the
+first parse never reached it.
 
 ``CAPITALIZATION_EXCEPTIONS`` is the constant the freeze left out. It
 is a mapping rather than a set, and it is still a plain mutable
-``dict`` — ``CAPITALIZATION_EXCEPTIONS["dclinpsy"] = "DClinPsy"`` runs on 2.2 and
-raises nothing. Everything just said about split defaults still applies
-to it, unchanged and measured on 2.2 and again on 2.6: an edit after the first parse
-reaches a freshly built ``Constants``, and neither
-``Lexicon.default()`` nor the shared ``CONSTANTS``. The advice below is
-the same advice — configure the object, with
-``constants.capitalization_exceptions["dclinpsy"] = "DClinPsy"`` on a private
-``Constants``, or for the 2.0 API a ``dataclasses.replace()`` that
-extends the default pairs rather than replacing them
-(:ref:`case-exceptions`).
+``dict`` — ``CAPITALIZATION_EXCEPTIONS["dclinpsy"] = "DClinPsy"`` runs
+and raises nothing — but the same caching applies: an edit after the
+first parse is missed by ``Lexicon.default()``. Configure a
+``Lexicon`` instead, with a ``dataclasses.replace()`` that extends the
+default pairs rather than replacing them (:ref:`case-exceptions`).
 
-Configure the objects instead, which both APIs have always supported
-and neither the freeze nor the rename affects. For ``HumanName``, build
-a private ``Constants`` and pass it:
-
-.. doctest::
-
-    >>> from nameparser import HumanName
-    >>> from nameparser.config import Constants
-    >>> HumanName("Dean Smith").first      # a title only in a phrase
-    'Dean'
-    >>> dean_constants = Constants()
-    >>> _ = dean_constants.titles.add("dean")    # returns the set
-    >>> HumanName("Dean Smith", constants=dean_constants).title
-    'Dean'
-
-For the 2.0 API, extend the default lexicon and hand it to a parser:
+To change a default word list, extend the default lexicon and hand it
+to a parser:
 
 .. doctest::
 
     >>> from nameparser import Lexicon, Parser
+    >>> parse("Dean Smith").given          # a title only in a phrase
+    'Dean'
     >>> dean_parser = Parser(lexicon=Lexicon.default().add(titles={"dean"}))
     >>> dean_parser.parse("Dean Smith").title
     'Dean'
 
-Mutating the shared ``CONSTANTS`` singleton still works and still
-reaches every ``HumanName`` that reads it, but it warns: it is
-deprecated along with the rest of the v1 facade and goes away in 3.0.
-Since 2.8 a private ``Constants`` warns at construction too, so new
-code should build the ``Parser``. See :doc:`customize` for the full
-set of knobs on each.
+See :doc:`customize` for the full set of knobs.
 
 Behavior and render settings → Policy
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Behavior and render scalars map onto :class:`~nameparser.Policy` (or a
-rendering argument, where the 2.0 equivalent isn't config at all):
+rendering argument, where the 3.0 equivalent isn't config at all):
 
 .. list-table::
    :header-rows: 1
    :widths: 30 40 30
 
-   * - ``CONSTANTS``
-     - 2.0 equivalent
+   * - 1.x/2.x ``Constants``
+     - 3.0 equivalent
      - Note
    * - ``patronymic_name_order``
      - ``Policy(patronymic_rules=frozenset({PatronymicRule.EAST_SLAVIC,
@@ -551,16 +413,15 @@ rendering argument, where the 2.0 equivalent isn't config at all):
    * - ``nickname_delimiters``
      - ``Policy.nickname_delimiters``
      - Was a dict of named sentinels; now a plain ``frozenset`` of
-       ``(open, close)`` pairs. Both APIs gained the #273 typographic
-       defaults (smart quotes, guillemets, CJK brackets, ...) in 2.0
-       (:ref:`brackets`)
+       ``(open, close)`` pairs. The defaults gained the #273
+       typographic pairs (smart quotes, guillemets, CJK brackets, ...)
+       in 2.0 (:ref:`brackets`)
    * - ``maiden_delimiters``
      - ``Policy.maiden_delimiters``
      - Same shape change as ``nickname_delimiters``. Precedence
-       differs: in the 2.0 API a pair listed here wins over
-       ``nickname_delimiters``; through the 1.x facade a pair in both
-       buckets keeps parsing as ``nickname`` (v1 behavior;
-       :ref:`brackets`)
+       differs: a pair listed here wins over ``nickname_delimiters``,
+       where 1.x and 2.x's ``HumanName`` parsed a pair in both buckets
+       as ``nickname`` (:ref:`brackets`)
    * - ``regexes.bidi``
      - ``Policy.strip_bidi``
      - ``regexes.bidi = False`` becomes ``Policy(strip_bidi=False)``
@@ -576,31 +437,34 @@ rendering argument, where the 2.0 equivalent isn't config at all):
        constant only supplied the default for calls that omitted it
    * - ``capitalize_name``
      - *(no equivalent)*
-     - 2.0 never capitalizes automatically during ``parse()``; call
+     - ``parse()`` never capitalizes automatically; call
        ``.capitalized()`` explicitly on the result instead
 
 Every other ``regexes.*`` entry (``word``, ``spaces``, and the rest of
-the compiled-pattern proxy) has no 2.0 replacement — parsing behavior
+the compiled-pattern proxy) has no 3.0 replacement — parsing behavior
 is configured entirely through named ``Policy`` fields now, not by
 handing the parser a regex.
 
 Comparison
 ----------
 
-``HumanName.__eq__``/``__hash__`` were deprecated in 1.3.0 and are gone
-in 2.0's core API; use ``matches()`` for "is this the same name?" and
-``comparison_key()`` for dedup, dict keys, and sorting — both exist on
-``HumanName`` and on :class:`~nameparser.ParsedName` with the same
-behavior:
+``HumanName.__eq__``/``__hash__`` were deprecated in 1.3.0 and removed
+in 2.0, and 3.0 has no ``HumanName`` at all. A
+:class:`~nameparser.ParsedName` is never equal to a string, so use
+``matches()`` for "is this the same name?" and ``comparison_key()`` for
+dedup, dict keys, and sorting — both work as ``HumanName``'s did:
+
+.. code-block:: python
+
+    hn = HumanName("de la Vega, Juan")
+    hn.matches("Juan de la Vega")       # True
 
 .. doctest::
 
-    >>> from nameparser import HumanName, parse
-    >>> hn = HumanName("de la Vega, Juan")
-    >>> n = parse("de la Vega, Juan")
-    >>> hn.matches("Juan de la Vega"), n.matches("Juan de la Vega")
-    (True, True)
-    >>> hn.comparison_key() == n.comparison_key()
+    >>> vega = parse("de la Vega, Juan")
+    >>> vega == "Juan de la Vega", vega.matches("Juan de la Vega")
+    (False, True)
+    >>> vega.comparison_key() == parse("Juan de la Vega").comparison_key()
     True
 
 One behavior changed underneath both methods: components now fold with
@@ -617,7 +481,7 @@ Behavior changes
 -----------------
 
 Beyond the API surface mapped above, a handful of parse *outputs*
-differ between 1.4 and 2.x for specific input shapes. The full list,
+differ between 1.4 and 3.0 for specific input shapes. The full list,
 with reasoning, is in each 2.x section of :doc:`release_log`.
 
 Changed in 2.0
@@ -625,19 +489,19 @@ Changed in 2.0
 
 These are the shapes worth grepping your own fixtures for, because a
 recognized suffix or title now stays in its own field instead of
-landing in ``first``/``last``:
+landing in the given or family name:
 
 .. doctest::
 
-    >>> HumanName("Andrews, M.D.").last, HumanName("Andrews, M.D.").suffix
+    >>> parse("Andrews, M.D.").family, parse("Andrews, M.D.").suffix
     ('Andrews', 'M.D.')
-    >>> HumanName("Johnson PhD").first, HumanName("Johnson PhD").suffix
+    >>> parse("Johnson PhD").given, parse("Johnson PhD").suffix
     ('Johnson', 'PhD')
 
 Under 1.4 those read ``first="M.D."``/``last="Andrews"`` and
 ``first="Johnson"``/``last="PhD"`` respectively. Two more to check for:
 a maiden marker now fills the ``maiden`` field rather than being folded
-into ``middle``/``last`` (``"Jane Smith née Jones"``), and with a
+into the middle or family name (``"Jane Smith née Jones"``), and with a
 custom suffix delimiter configured, a no-space delimiter group renders
 whole (``"RN/CRNA"``) where 1.x split it (``"RN, CRNA"``) — the role
 assignment is identical, only the rendered string differs.
@@ -645,68 +509,68 @@ assignment is identical, only the rendered string differs.
 East Asian names (2.1)
 ~~~~~~~~~~~~~~~~~~~~~~
 
-2.1 adds three more, and unlike most of the 2.0 API these do reach
-``HumanName``: a name written in East Asian script is read
+2.1 adds three more: a name written in East Asian script is read
 family-first, an unspaced Korean name is split into surname and given
 name, and the katakana middle dot separates tokens the way a space
 does (:ref:`east-asian-names` explains the conventions).
 
 .. doctest::
 
-    >>> HumanName("毛 泽东").last
+    >>> parse("毛 泽东").family
     '毛'
-    >>> HumanName("김민준").last, HumanName("김민준").first
+    >>> parse("김민준").family, parse("김민준").given
     ('김', '민준')
 
 1.4 read the first as ``first="毛"``/``last="泽东"``, and left the
 second whole in ``first``. The Korean one also changes what the name
-*renders* as — ``str(HumanName("김민준"))`` was ``"김민준"`` and is now
-``"민준 김"``, because the split inserts a token boundary that the
-default format then writes given-name-first.
+*renders* as — ``str(parse("김민준"))`` is ``"민준 김"``, where 1.4's
+``str(HumanName("김민준"))`` was ``"김민준"`` — because the split
+inserts a token boundary that the default format then writes
+given-name-first.
 
 A third shape changes even though nothing splits it. 1.4 routed a lone
 token to ``first`` whatever it was, so an unspaced Chinese or Japanese
 name landed there entire; 2.1 reads it as native-script CJK and puts it
-in ``last`` instead. Nothing is segmented — Han splitting is opt-in
-through a locale pack and ``HumanName`` cannot apply one — but the
-field the whole string arrives in is different:
+in the family name instead. Nothing is segmented — Han splitting is
+opt-in through a locale pack (:doc:`locales`) — but the field the whole
+string arrives in is different:
 
 .. doctest::
 
-    >>> HumanName("毛泽东").last, HumanName("毛泽东").first
+    >>> parse("毛泽东").family, parse("毛泽东").given
     ('毛泽东', '')
-    >>> HumanName("山田太郎").last, HumanName("山田太郎").first
+    >>> parse("山田太郎").family, parse("山田太郎").given
     ('山田太郎', '')
 
-Both were ``first`` under 1.4. If you feed unspaced CJK through
-``HumanName`` and read ``first``, that is the change most likely to
-reach you, and it is silent — the string is intact, just in the other
-field.
+Both were ``first`` under 1.4. If you parse unspaced CJK and read the
+given name, that is the change most likely to reach you, and it is
+silent — the string is intact, just in the other field.
 
 Japanese kana carries the same order rule, which widens both shapes
 past the wholly-Han text described above. A name that mixes kanji with
 hiragana or katakana is read family-first, and a lone kana-bearing
-token moves from ``first`` to ``last`` exactly as ``毛泽东`` does:
+token moves from the given name to the family name exactly as
+``毛泽东`` does:
 
 .. doctest::
 
-    >>> HumanName("高橋 みなみ").last, HumanName("高橋 みなみ").first
+    >>> parse("高橋 みなみ").family, parse("高橋 みなみ").given
     ('高橋', 'みなみ')
-    >>> HumanName("山田 エミ").last
+    >>> parse("山田 エミ").family
     '山田'
-    >>> HumanName("高橋みなみ").last, HumanName("高橋みなみ").first
+    >>> parse("高橋みなみ").family, parse("高橋みなみ").given
     ('高橋みなみ', '')
 
 1.4 read the spaced ones as ``first="高橋"``/``last="みなみ"`` and
 ``first="山田"``/``last="エミ"``, and put the unspaced one whole in
 ``first``. The spaced shapes change what the name renders as too:
-``str(HumanName("高橋 みなみ"))`` was ``"高橋 みなみ"`` and is now
-``"みなみ 高橋"``. A name written *wholly* in katakana is deliberately
+``str(parse("高橋 みなみ"))`` is ``"みなみ 高橋"``, where 1.4 wrote
+``"高橋 みなみ"``. A name written *wholly* in katakana is deliberately
 left alone — it may be a transcribed foreign name already in
 given-first order or a Japanese name's reading written family-first,
 and the script cannot tell which (see :ref:`east-asian-names` to opt
-in) — so ``HumanName("マイケル ジャクソン")`` reads
-``first="マイケル"``/``last="ジャクソン"`` on both versions.
+in) — so ``parse("マイケル ジャクソン")`` reads given ``マイケル``,
+family ``ジャクソン``, as 1.4 did.
 
 One more shape changes for a different reason: the katakana middle dot
 ``・``, which divides the parts of such a transcription, is now a token
@@ -715,19 +579,19 @@ it in ``first``; 2.1 sees two:
 
 .. doctest::
 
-    >>> HumanName("マイケル・ジャクソン").first
+    >>> parse("マイケル・ジャクソン").given
     'マイケル'
-    >>> HumanName("マイケル・ジャクソン").last
+    >>> parse("マイケル・ジャクソン").family
     'ジャクソン'
-    >>> HumanName("高橋・一郎").last, HumanName("高橋・一郎").first
+    >>> parse("高橋・一郎").family, parse("高橋・一郎").given
     ('高橋', '一郎')
 
 The two divide the same way and land in opposite fields, because the
 katakana pair keeps its source order while the kanji pair takes the
 family-first rule. Separating also changes the rendered string, the
 same way the Korean split does: the dot comes back as a space, so
-``str(HumanName("マイケル・ジャクソン"))`` was ``"マイケル・ジャクソン"``
-and is now ``"マイケル ジャクソン"``. That reaches delimited content
+``str(parse("マイケル・ジャクソン"))`` is ``"マイケル ジャクソン"``,
+where 1.4 wrote ``"マイケル・ジャクソン"``. That reaches delimited content
 too — the nickname in ``"山田 太郎 (マイケル・ジャクソン)"`` was
 ``"マイケル・ジャクソン"`` under 1.4 and is ``"マイケル ジャクソン"``
 now.
@@ -735,9 +599,7 @@ now.
 Turning the East Asian readings off
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``Constants`` has no switch for any of this — the v1 configuration
-surface is frozen for 2.x — so the way out is the 2.0 API
-(:ref:`east-asian-defaults`):
+The switch is on the ``Policy`` (:ref:`east-asian-defaults`):
 ``Parser(policy=Policy(script_orders=(), segment_scripts=frozenset()))``
 restores 1.4's reading of every shape above that turns on order or
 splitting. The middle dots are the exception: both the katakana dot
@@ -752,8 +614,8 @@ those two fields are set to.
 Changed in 2.3 through 2.8
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Later releases moved more 1.4 readings, and these reach ``HumanName``
-as well; 2.1 and 2.2 read every one of them as 1.4 did. The release
+Later releases moved more 1.4 readings; 2.1 and 2.2 read every one of
+them as 1.4 did. The release
 log's 2.3 to 2.8 sections carry the reasoning; these are the shapes to
 grep your fixtures for, with what 1.4 read:
 
@@ -801,7 +663,7 @@ grep your fixtures for, with what 1.4 read:
   ``Herra``, middle ``Väinö``.
 - ``"山田 ﾀﾛｳ"`` (2.4) — halfwidth katakana reads as katakana: 1.4 read
   first ``山田``, last ``ﾀﾛｳ``.
-- ``capitalize()`` on ``"john smith md"``, ``"john smith phd"`` and
+- capitalizing ``"john smith md"``, ``"john smith phd"`` and
   ``"JANE DOE MBA"`` (2.4) — 1.4 wrote ``M.D.``, ``Ph.D.`` and ``Mba``;
   credentials are now written the usual way (``MD``, ``PhD``, ``MBA``).
 - ``initials()`` on ``"john e smith"`` (2.4) — 1.4 gave ``j. s.``; a
@@ -822,7 +684,7 @@ grep your fixtures for, with what 1.4 read:
   in capitals: 1.4 read last ``j y lopez``.
 - ``"Bapak Dwi Putro"`` (2.5) — the salutations ``bapak`` and ``owura``
   are titles: 1.4 read first ``Bapak``, middle ``Dwi``.
-- ``capitalize()`` on ``"jacobus henricus van 't hoff"`` (2.5) — 1.4
+- capitalizing ``"jacobus henricus van 't hoff"`` (2.5) — 1.4
   wrote ``van 'T Hoff``.
 - ``"Maria de Sa"`` and ``"John Smith SA"`` (2.6) — ``Sa`` is no longer
   a credential: 1.4 read last ``de``, suffix ``Sa``, and suffix ``SA``.
@@ -841,7 +703,7 @@ grep your fixtures for, with what 1.4 read:
 - A zero-width space or byte-order mark (2.6) divides words as a space
   does: 1.4 kept it in the word beside it, so ``"\u200bDr. John Smith"``
   read first ``Dr.``.
-- ``capitalize()`` on ``"j.r.r. tolkien"`` (2.6) — 1.4 wrote ``J.r.r.``;
+- capitalizing ``"j.r.r. tolkien"`` (2.6) — 1.4 wrote ``J.r.r.``;
   repair now capitalizes after a full stop or an ayn.
 - ``"King Curtis"``, ``"Prince Fielder"``, ``"Sultan Khan"`` and
   ``"Sheikh Ahmed Khan"`` (2.7) — a title that is also a given name is a
@@ -851,9 +713,8 @@ grep your fixtures for, with what 1.4 read:
   holds for ``Princess``, ``Sultana``, ``Shaikh``, ``Sheik``, ``Shekh``,
   ``Shaik``, ``Cheikh``, ``Mahdi``, ``Bard``, ``Buddha``, ``Siddha``,
   ``Gyani`` and ``Wing``, and for a lone qualifier such as ``Grand``.
-  ``Constants().titles`` still lists these words, so adding one there
-  changes nothing; the 2.0 API's ``Lexicon.default().add(titles={"king"})``
-  makes one a title everywhere.
+  ``Lexicon.default().add(titles={"king"})`` makes one a title
+  everywhere.
 - ``"Chief Justice John Roberts"`` and ``"Major General John Smith"``
   (2.7) — a title phrase is one title: 1.4 read title ``Chief``, first
   ``Justice``, and first ``Major``, middle ``General John``.
@@ -909,105 +770,95 @@ grep your fixtures for, with what 1.4 read:
 
 .. doctest::
 
-    >>> HumanName("Jack MA").suffix
+    >>> parse("Jack MA").suffix
     'MA'
-    >>> HumanName("Her Majesty Queen Elizabeth").first
+    >>> parse("Her Majesty Queen Elizabeth").given
     'Elizabeth'
-    >>> HumanName("His Royal Highness Prince Harry").first
+    >>> parse("His Royal Highness Prince Harry").given
     'Harry'
-    >>> king = HumanName("Dr King Jr")
-    >>> king.title, king.last, king.suffix
+    >>> king = parse("Dr King Jr")
+    >>> king.title, king.family, king.suffix
     ('Dr', 'King', 'Jr')
-    >>> HumanName("John Smith Prof.").title
+    >>> parse("John Smith Prof.").title
     'Prof.'
-    >>> HumanName("jose e maria santos").middle
+    >>> parse("jose e maria santos").middle
     'e maria'
-    >>> HumanName("van der Berg, PhD").last
+    >>> parse("van der Berg, PhD").family
     'van der Berg'
-    >>> HumanName("Josep Carod i Rovira").last
+    >>> parse("Josep Carod i Rovira").family
     'Carod i Rovira'
-    >>> HumanName("Jane Smith N.C.C.").suffix
+    >>> parse("Jane Smith N.C.C.").suffix
     'N.C.C.'
-    >>> HumanName("Jane Smith, LEED AP").suffix
+    >>> parse("Jane Smith, LEED AP").suffix
     'LEED AP'
-    >>> holder = HumanName("Eric H. Holder Jr. Attorney General")
-    >>> holder.title, holder.last, holder.suffix
+    >>> holder = parse("Eric H. Holder Jr. Attorney General")
+    >>> holder.title, holder.family, holder.suffix
     ('Attorney General', 'Holder', 'Jr.')
-    >>> HumanName("Eric H. Holder, Jr., Attorney General").title
+    >>> parse("Eric H. Holder, Jr., Attorney General").title
     'Attorney General'
-    >>> HumanName("Steven Hardman, RN - CRNA").suffix
+    >>> parse("Steven Hardman, RN - CRNA").suffix
     'RN, CRNA'
-    >>> HumanName("John van der Berg Prof.").last
+    >>> parse("John van der Berg Prof.").family
     'van der Berg'
-    >>> HumanName("Liam Ó Murchú").last
+    >>> parse("Liam Ó Murchú").family
     'Ó Murchú'
-    >>> HumanName("Herra Väinö Johansson").title
+    >>> parse("Herra Väinö Johansson").title
     'Herra'
-    >>> HumanName("山田 ﾀﾛｳ").last
+    >>> parse("山田 ﾀﾛｳ").family
     '山田'
-    >>> md = HumanName("john smith md")
-    >>> md.capitalize(force=True)
-    >>> str(md)
+    >>> str(parse("john smith md").capitalized(force=True))
     'John Smith MD'
-    >>> phd = HumanName("john smith phd")
-    >>> phd.capitalize()
-    >>> str(phd)
+    >>> str(parse("john smith phd").capitalized())
     'John Smith PhD'
-    >>> mba = HumanName("JANE DOE MBA")
-    >>> mba.capitalize()
-    >>> str(mba)
+    >>> str(parse("JANE DOE MBA").capitalized())
     'Jane Doe MBA'
-    >>> HumanName("john e smith").initials()
+    >>> parse("john e smith").initials()
     'j. e. s.'
-    >>> dr = HumanName("Dr. Smith, John")
-    >>> dr.title, dr.first, dr.last
+    >>> dr = parse("Dr. Smith, John")
+    >>> dr.title, dr.given, dr.family
     ('Dr.', 'John', 'Smith')
-    >>> HumanName("Gov Smith").title
+    >>> parse("Gov Smith").title
     'Gov'
-    >>> HumanName("Antonio Pavlović mlađi").suffix
+    >>> parse("Antonio Pavlović mlađi").suffix
     'mlađi'
-    >>> HumanName("John Smith II, AD").suffix
+    >>> parse("John Smith II, AD").suffix
     'II, AD'
-    >>> HumanName("John III, Sir").first
+    >>> parse("John III, Sir").given
     'John'
-    >>> HumanName("Smith, Sir").first
+    >>> parse("Smith, Sir").given
     'Smith'
-    >>> HumanName("Ivoi, Paul d'").last
+    >>> parse("Ivoi, Paul d'").family
     "d' Ivoi"
-    >>> HumanName("jose j y lopez").middle
+    >>> parse("jose j y lopez").middle
     'j y'
-    >>> HumanName("Bapak Dwi Putro").title
+    >>> parse("Bapak Dwi Putro").title
     'Bapak'
-    >>> vant = HumanName("jacobus henricus van 't hoff")
-    >>> vant.capitalize(force=True)
-    >>> str(vant)
+    >>> str(parse("jacobus henricus van 't hoff").capitalized(force=True))
     "Jacobus Henricus van 't Hoff"
-    >>> HumanName("Maria de Sa").last
+    >>> parse("Maria de Sa").family
     'de Sa'
-    >>> HumanName("John Smith SA").last
+    >>> parse("John Smith SA").family
     'SA'
-    >>> HumanName("Cllr John Smith").title
+    >>> parse("Cllr John Smith").title
     'Cllr'
-    >>> HumanName("Dott.ssa Anna Bianchi").title
+    >>> parse("Dott.ssa Anna Bianchi").title
     'Dott.ssa'
-    >>> HumanName("José Silva Júnior").suffix
+    >>> parse("José Silva Júnior").suffix
     'Júnior'
-    >>> HumanName("John Smith, MD; PhD").suffix
+    >>> parse("John Smith, MD; PhD").suffix
     'MD; PhD'
-    >>> md_karim = HumanName("Mr Md Karim Uddin")
-    >>> md_karim.title, md_karim.first
+    >>> md_karim = parse("Mr Md Karim Uddin")
+    >>> md_karim.title, md_karim.given
     ('Mr', 'Md')
-    >>> HumanName("Wm Smith").first
+    >>> parse("Wm Smith").given
     'Wm'
-    >>> HumanName("Doe, Jane Mrs").title
+    >>> parse("Doe, Jane Mrs").title
     'Mrs'
-    >>> HumanName("\u200bDr. John Smith").title
+    >>> parse("\u200bDr. John Smith").title
     'Dr.'
-    >>> tolkien = HumanName("j.r.r. tolkien")
-    >>> tolkien.capitalize()
-    >>> str(tolkien)
+    >>> str(parse("j.r.r. tolkien").capitalized())
     'J.R.R. Tolkien'
-    >>> [HumanName(n).first for n in ("King Curtis", "Prince Fielder",
+    >>> [parse(n).given for n in ("King Curtis", "Prince Fielder",
     ...     "Princess Diana", "Sultan Khan", "Sultana Begum",
     ...     "Sheikh Ahmed Khan", "Shaikh Ahmed Khan", "Sheik Ahmed",
     ...     "Shekh Ahmed", "Shaik Ahmed", "Cheikh Anta Diop",
@@ -1017,55 +868,55 @@ grep your fixtures for, with what 1.4 read:
     ['King', 'Prince', 'Princess', 'Sultan', 'Sultana', 'Sheikh', 'Shaikh',
      'Sheik', 'Shekh', 'Shaik', 'Cheikh', 'Mahdi', 'Bard', 'Buddha',
      'Siddha', 'Gyani', 'Wing']
-    >>> HumanName("His Majesty King Henry").title
+    >>> parse("His Majesty King Henry").title
     'His Majesty King'
-    >>> HumanName("Chief Justice John Roberts").title
+    >>> parse("Chief Justice John Roberts").title
     'Chief Justice'
-    >>> HumanName("Major General John Smith").title
+    >>> parse("Major General John Smith").title
     'Major General'
-    >>> HumanName("Chas. Smith").first, HumanName("Ma. Cristina Reyes").first
+    >>> parse("Chas. Smith").given, parse("Ma. Cristina Reyes").given
     ('Chas.', 'Ma.')
-    >>> HumanName("John Smith VI MD").suffix, HumanName("Smith, John VI").suffix
+    >>> parse("John Smith VI MD").suffix, parse("Smith, John VI").suffix
     ('VI MD', 'VI')
-    >>> HumanName("John Smith, MD/PhD").suffix
+    >>> parse("John Smith, MD/PhD").suffix
     'MD/PhD'
-    >>> HumanName("John Smith, Pharm D").suffix
+    >>> parse("John Smith, Pharm D").suffix
     'Pharm D'
-    >>> HumanName("John Smith Ph. D. Jones").suffix
+    >>> parse("John Smith Ph. D. Jones").suffix
     'Ph. D. Jones'
-    >>> HumanName("Smith, John MA Jones").suffix
+    >>> parse("Smith, John MA Jones").suffix
     'MA Jones'
-    >>> HumanName("Pedro Alves Filho").suffix
+    >>> parse("Pedro Alves Filho").suffix
     'Filho'
-    >>> HumanName("Alexandre Dumas fils").last
+    >>> parse("Alexandre Dumas fils").family
     'Dumas'
-    >>> HumanName("Andrew Perkins (JD)").suffix
+    >>> parse("Andrew Perkins (JD)").suffix
     'JD'
-    >>> HumanName("Jane Smith, Dr. / MD").first
+    >>> parse("Jane Smith, Dr. / MD").given
     'Jane'
-    >>> HumanName("Marie Bon Durand").last
+    >>> parse("Marie Bon Durand").family
     'Durand'
-    >>> HumanName("Herren Hans").first
+    >>> parse("Herren Hans").given
     'Herren'
-    >>> HumanName("Marquis Johnson").first, HumanName("Johnson, Marquise").first
+    >>> parse("Marquis Johnson").given, parse("Johnson, Marquise").given
     ('Marquis', 'Marquise')
-    >>> HumanName("Marquis of Queensberry").title
+    >>> parse("Marquis of Queensberry").title
     'Marquis of Queensberry'
-    >>> [HumanName(n).first for n in ("Deacon Jones", "Burgess Meredith",
+    >>> [parse(n).given for n in ("Deacon Jones", "Burgess Meredith",
     ...     "Ranger Smith")]
     ['Deacon', 'Burgess', 'Ranger']
-    >>> HumanName("Deacon of the Church Jane Smith").title
+    >>> parse("Deacon of the Church Jane Smith").title
     'Deacon of the Church'
-    >>> HumanName("Queen Latifah").first, HumanName("Elizabeth II, Queen").first
+    >>> parse("Queen Latifah").given, parse("Elizabeth II, Queen").given
     ('Queen', 'Queen')
-    >>> consort = HumanName("Prince Consort Albert")
-    >>> consort.title, consort.first
+    >>> consort = parse("Prince Consort Albert")
+    >>> consort.title, consort.given
     ('Prince Consort', 'Albert')
-    >>> HumanName("Princess Royal Anne").first, HumanName("Bales, Royal").first
+    >>> parse("Princess Royal Anne").given, parse("Bales, Royal").given
     ('Anne', 'Royal')
-    >>> HumanName("Chancellor Smith").first
+    >>> parse("Chancellor Smith").given
     'Chancellor'
-    >>> HumanName("Lord Chancellor John Smith").title
+    >>> parse("Lord Chancellor John Smith").title
     'Lord Chancellor'
-    >>> HumanName("Lord Justice Leveson").title
+    >>> parse("Lord Justice Leveson").title
     'Lord Justice'

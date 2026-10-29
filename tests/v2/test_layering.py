@@ -1,7 +1,10 @@
 """Enforce the conventions doc's contracts mechanically: import
 layering, public exports, and the pickle layout guards."""
 import ast
+import importlib
 import pathlib
+
+import pytest
 
 import nameparser
 import nameparser._pipeline
@@ -20,8 +23,8 @@ _MUST_EXIST = {"_types.py", "_lexicon.py", "_policy.py", "_locale.py",
                "_pipeline/_classify.py", "_pipeline/_group.py",
                "_pipeline/_pieces.py",
                "_pipeline/_assign.py", "_pipeline/_post_rules.py",
-               "_pipeline/_assemble.py", "_parser.py", "_facade.py",
-               "_config_shim.py", "locales/__init__.py", "locales/ja.py",
+               "_pipeline/_assemble.py", "_parser.py",
+               "locales/__init__.py", "locales/ja.py",
                "locales/ru.py", "locales/tr_az.py", "locales/zh.py"}
 
 _PIPELINE_STAGE_ALLOWED = (
@@ -50,8 +53,8 @@ ALLOWED = {
     # bodies); module level stays import-free. TYPE_CHECKING imports
     # are skipped by _nameparser_imports and need no entry.
     "_types.py": ("nameparser._render", "nameparser._parser"),
-    # intent: DATA modules only, during 2.x -- mechanically this admits
-    # any config submodule; "data only" holds by convention/review
+    # intent: DATA modules only -- mechanically this admits any config
+    # submodule, and since 3.0 the package holds nothing else
     "_lexicon.py": ("nameparser.config.",),
     "_policy.py": ("nameparser._types",),
     # _types is a downward import (bottom of the graph): Locale shares
@@ -99,25 +102,10 @@ ALLOWED = {
     "_pipeline/_assign.py": _PIPELINE_STAGE_ALLOWED,
     "_pipeline/_post_rules.py": _PIPELINE_STAGE_ALLOWED,
     "_pipeline/_assemble.py": _PIPELINE_STAGE_ALLOWED,
-    # Parser sits on everything except _render and the facade
+    # Parser sits on everything except _render
     "_parser.py": ("nameparser._types", "nameparser._lexicon",
                    "nameparser._policy", "nameparser._locale",
                    "nameparser._pipeline"),
-    # facade layer (mechanisms.md#FACADE-CONTRACT): may import anything
-    # public
-    # plus _render (unused yet) and each other. _facade delegates
-    # parsing to the core Parser resolved from the bound Constants shim.
-    # The bare "nameparser.config" import (not just its submodules) is
-    # deliberate -- it resolves an import cycle, see _facade.py's comment.
-    "_facade.py": ("nameparser._config_shim", "nameparser._lexicon",
-                   "nameparser._parser", "nameparser._types",
-                   "nameparser._render", "nameparser.util",
-                   "nameparser.config"),
-    # the Constants/SetManager/TupleManager shim: config DATA modules
-    # stay the single vocabulary source through 2.x (nameparser.config.*)
-    "_config_shim.py": ("nameparser._lexicon", "nameparser._parser",
-                        "nameparser._policy", "nameparser.util",
-                        "nameparser.config"),
     # PEP 562 lazy loader: the only static import is _locale (for the
     # Locale return type); pack modules load via importlib.import_module
     # (a runtime string, invisible to the AST walker) -- the
@@ -128,9 +116,8 @@ ALLOWED = {
     "locales/ru.py": _LOCALE_PACK_ALLOWED,
     "locales/tr_az.py": _LOCALE_PACK_ALLOWED,
     "locales/zh.py": _LOCALE_PACK_ALLOWED,
-    # v1 import-path preservation: thin re-exports of the facade/shim
-    "parser.py": ("nameparser._facade",),
-    "config/__init__.py": ("nameparser._config_shim",),
+    # the data modules' package: a docstring, no imports
+    "config/__init__.py": (),
     # CLI: imports only the public package, same as
     # any other consumer -- no access to internal modules.
     "__main__.py": ("nameparser",),
@@ -201,8 +188,7 @@ def test_every_pipeline_module_is_keyed_in_allowed() -> None:
 
     Scoped to _pipeline/ because that is what this contract governs.
     Unkeyed by choice: the config/ DATA modules (config/__init__.py is
-    keyed, being code), util.py (no internal imports, and it dies with
-    the 1.x layer) and _version.py. nameparser/__init__.py is unkeyed
+    keyed, being code) and _version.py. nameparser/__init__.py is unkeyed
     too and is none of those -- it is the export surface, held by
     test_public_exports instead.
 
@@ -253,6 +239,46 @@ def test_public_exports() -> None:
     assert expected <= set(nameparser.__all__)
     for name in expected:
         assert getattr(nameparser, name) is not None
+
+
+@pytest.mark.parametrize("module,name", [
+    ("nameparser", "HumanName"),
+    ("nameparser.config", "Constants"),
+    ("nameparser.config", "CONSTANTS"),
+    ("nameparser.config", "SetManager"),
+    ("nameparser.config", "TupleManager"),
+    ("nameparser.config", "RegexTupleManager"),
+    ("nameparser.config.titles", "FIRST_NAME_TITLES"),
+    ("nameparser.config.suffixes", "SUFFIX_NOT_ACRONYMS"),
+])
+def test_the_1x_compatibility_names_are_gone(module: str, name: str) -> None:
+    # 3.0 removed the 1.x layer 2.8 warned about (#357); a name that
+    # came back would be a public surface nothing documents
+    imported = importlib.import_module(module)
+    assert not hasattr(imported, name)
+    assert name not in getattr(imported, "__all__", ())
+
+
+@pytest.mark.parametrize("module", [
+    "nameparser.parser", "nameparser.util", "nameparser.config.prefixes",
+    "nameparser.config.bound_first_names",
+])
+def test_the_1x_compatibility_modules_are_gone(module: str) -> None:
+    with pytest.raises(ModuleNotFoundError):
+        importlib.import_module(module)
+
+
+@pytest.mark.parametrize("statement,error", [
+    ("from nameparser.config.prefixes import PREFIXES", ModuleNotFoundError),
+    ("from nameparser.config.titles import FIRST_NAME_TITLES", ImportError),
+    ("from nameparser.config.suffixes import SUFFIX_NOT_ACRONYMS", ImportError),
+    ("from nameparser import HumanName", ImportError),
+])
+def test_the_1x_imports_fail(statement: str, error: type[Exception]) -> None:
+    # #357's acceptance, as written: the 1.x spellings fail at the
+    # import, with no DeprecationWarning bridge left to serve them
+    with pytest.raises(error):
+        exec(statement, {})  # noqa: S102
 
 
 def test_type_checking_imports_do_not_count(tmp_path: pathlib.Path) -> None:

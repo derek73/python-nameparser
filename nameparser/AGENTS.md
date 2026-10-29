@@ -1,6 +1,6 @@
 # Working in nameparser/
 
-Loaded when a session reads or edits anything under `nameparser/`: the pipeline, the vocabulary TOML, the config shim. It holds the sweeps every behavior change runs before it ships — comma shapes, then `name_order`, then spellings, then the encoding — here rather than in the root AGENTS.md because they bind every change to parsing behavior, and the spelling sweep binds a vocabulary-only change as much as a code change. The encoding sweep is the exception there: the vocabulary path NFC-folds, so a TOML-only change does not need it. The root AGENTS.md carries the 2.0 conventions; `nameparser/_pipeline/AGENTS.md` carries the ambiguity-report rules.
+Loaded when a session reads or edits anything under `nameparser/`: the pipeline, the vocabulary TOML, the config data modules. It holds the sweeps every behavior change runs before it ships — comma shapes, then `name_order`, then spellings, then the encoding — here rather than in the root AGENTS.md because they bind every change to parsing behavior, and the spelling sweep binds a vocabulary-only change as much as a code change. The encoding sweep is the exception there: the vocabulary path NFC-folds, so a TOML-only change does not need it. The root AGENTS.md carries the 2.0 conventions; `nameparser/_pipeline/AGENTS.md` carries the ambiguity-report rules.
 
 ## Sweep the forms a change can reach: comma shapes, then `name_order`
 

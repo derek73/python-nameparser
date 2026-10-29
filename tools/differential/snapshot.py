@@ -2,9 +2,7 @@
 
 snapshot.jsonl holds one line per (name, order) across every
 corpus*.jsonl beside this script: the seven role fields, the reported
-ambiguity kinds, initials() and the two case-repair views on the 2.0
-surface, plus the facade's v1 fields wherever they say something the
-2.0 row does not. The case views are recorded only where they move
+ambiguity kinds, initials() and the two case-repair views. The case views are recorded only where they move
 something: `capitalized` where capitalized() renders other than the
 name as parsed, `capitalized_force` where capitalized(force=True)
 renders other than capitalized() does (#826).
@@ -38,10 +36,10 @@ last recorded decides:
     uv run python tools/differential/snapshot.py --local ctgov-officials --record --tree ../master-checkout
     uv run python tools/differential/snapshot.py --local ctgov-officials
 
-A local snapshot does not read the facade: v1 compatibility is the
-committed corpora's question, and the facade's parse was about half the
-cost of a local reading (measured 2026-10-23, tools/differential/
-README.md's "Local corpora"). --sample N reads a fixed 1-in-N sample of
+A snapshot recorded before 3.0 may carry a `facade` key on a row, the
+v1 HumanName's reading where it differed; load() drops it, so a check
+against one (--since v2.8.0, an old local snapshot) compares the rest.
+--sample N reads a fixed 1-in-N sample of
 a local corpus, chosen by a hash of the name so a sample recorded from
 one tree and checked from another holds the same names, into a
 snapshot of its own (snapshot.sample-N.jsonl). A local recording is
@@ -74,7 +72,6 @@ import subprocess
 import sys
 import tempfile
 import time
-import warnings
 import zlib
 from collections import defaultdict
 from concurrent.futures import ProcessPoolExecutor
@@ -99,7 +96,8 @@ V2_FIELDS = ("title", "given", "middle", "family", "suffix", "nickname",
              "maiden")
 V1_FIELDS = ("title", "first", "middle", "last", "suffix", "nickname",
              "maiden")
-#: The facade's v1 field each 2.0 field corresponds to.
+#: The 1.x HumanName field each 2.0 field corresponds to, for reading a
+#: baseline release that has no 2.0 surface (compare.py --baseline 1.4.0).
 V1_FOR = dict(zip(V2_FIELDS, V1_FIELDS))
 #: The keys a corpus line may carry. A misspelled key is refused rather
 #: than ignored: ignoring it would drop the shape the line declares and
@@ -180,26 +178,24 @@ def only_in(path: Path, names: set[str]) -> set[str]:
 
 
 def row(name: str, order: str | None, v2: dict[str, Any] | None,
-        facade: dict[str, str] | None) -> dict[str, Any]:
+        v1: dict[str, str] | None = None) -> dict[str, Any]:
     """One snapshot line from one name's readings.
 
     `v2` is the 2.0 surface as {role: value, "_ambiguities": [...],
     "_initials": ..., "_capitalized": ..., "_capitalized_force": ...},
-    the case views as case_views() gives them; `facade` is HumanName's as {v1 field: value,
-    "_initials": ...}, or None where it is not read (an order-bearing
-    entry, whose facade is never consulted). Empty values are left
+    the case views as case_views() gives them. Empty values are left
     out, so a reading that gains a field shows as one added key. With
-    no v2 surface (a 1.4 baseline) the facade's reading IS the row,
-    under role names; otherwise the facade is recorded only where it
-    differs."""
+    no v2 surface (a 1.4 baseline) `v1` is that release's HumanName
+    reading as {v1 field: value, "_initials": ...}, and it IS the row,
+    under role names (compare with v1_view)."""
     out: dict[str, Any] = {"name": name}
     if order:
         out["order"] = order
     if v2 is None:
-        assert facade is not None
-        out.update({f: v for f in V2_FIELDS if (v := facade[V1_FOR[f]])})
-        if facade["_initials"]:
-            out["initials"] = facade["_initials"]
+        assert v1 is not None
+        out.update({f: v for f in V2_FIELDS if (v := v1[V1_FOR[f]])})
+        if v1["_initials"]:
+            out["initials"] = v1["_initials"]
         return out
     out.update({f: v for f in V2_FIELDS if (v := v2[f])})
     if v2["_ambiguities"]:
@@ -211,19 +207,11 @@ def row(name: str, order: str | None, v2: dict[str, Any] | None,
     for view in CASE_VIEWS:
         if v2[f"_{view}"]:
             out[view] = v2[f"_{view}"]
-    if facade is not None:
-        differs = {f: facade[V1_FOR[f]] for f in V2_FIELDS
-                   if facade[V1_FOR[f]] != v2[f]}
-        if facade["_initials"] != v2["_initials"]:
-            differs["initials"] = facade["_initials"]
-        if differs:
-            out["facade"] = differs
     return out
 
 
 #: The case-repair views a row records, in the order case_views()
-#: gives them. The facade's capitalize() is not read: it renders
-#: through the same repair, so it differs only where its fields do.
+#: gives them.
 CASE_VIEWS = ("capitalized", "capitalized_force")
 
 
@@ -323,15 +311,11 @@ def unrecorded_views(old_recorded: frozenset[str] | None,
     return dropped
 
 
-def facade_view(r: dict[str, Any]) -> dict[str, Any]:
-    """A row as the facade alone reads it, for comparing against a
-    baseline that has no 2.0 surface."""
-    facade = r.get("facade", {})
-    out = {k: r[k] for k in ("name", "order") if k in r}
-    for f in (*V2_FIELDS, "initials"):
-        if v := facade.get(f, r.get(f, "")):
-            out[f] = v
-    return out
+def v1_view(r: dict[str, Any]) -> dict[str, Any]:
+    """A row cut to what a baseline with no 2.0 surface records -- the
+    fields and initials -- for comparing the tree against one."""
+    return {k: r[k] for k in ("name", "order", *V2_FIELDS, "initials")
+            if k in r}
 
 
 #: Below this many items parallel() reads in-process even when given
@@ -339,13 +323,10 @@ def facade_view(r: dict[str, Any]) -> dict[str, Any]:
 PARALLEL_FLOOR = 5000
 
 
-def read(entries: list[Entry], *, facade: bool = True,
-         jobs: int = 1) -> list[dict[str, Any]]:
+def read(entries: list[Entry], *, jobs: int = 1) -> list[dict[str, Any]]:
     """The tree's row for every entry, in the entries' order, read in
-    `jobs` worker processes where there are enough (parallel). With
-    `facade` false the v1 facade is not read and no row carries a
-    `facade` key."""
-    return parallel(_read_chunk, entries, jobs, facade, module="snapshot")
+    `jobs` worker processes where there are enough (parallel)."""
+    return parallel(_read_chunk, entries, jobs, module="snapshot")
 
 
 def parallel(chunk: Callable[..., tuple[str, list[T]]], items: Sequence[Any],
@@ -380,12 +361,11 @@ def parallel(chunk: Callable[..., tuple[str, list[T]]], items: Sequence[Any],
     return results
 
 
-def _read_chunk(entries: Sequence[Entry], facade: bool
-                ) -> tuple[str, list[dict[str, Any]]]:
+def _read_chunk(entries: Sequence[Entry]) -> tuple[str, list[dict[str, Any]]]:
     """The nameparser this process imported, and its row for every
     entry; read()'s unit of work in a worker and out of one."""
     import nameparser
-    from nameparser import HumanName, Parser, Policy
+    from nameparser import Parser, Policy
 
     parsers: dict[str | None, Any] = {None: Parser()}
     rows = []
@@ -399,18 +379,7 @@ def _read_chunk(entries: Sequence[Entry], facade: bool
         v2["_initials"] = p.initials() or ""
         v2.update(case_views(str(p), str(parsers[order].capitalized(p)),
                              str(parsers[order].capitalized(p, force=True))))
-        v1 = None
-        if facade and order is None:
-            with warnings.catch_warnings():
-                # the facade is read on purpose; 2.8's removal warning
-                # (by message, so any other warning still surfaces)
-                warnings.filterwarnings(
-                    "ignore", message="HumanName is deprecated",
-                    category=DeprecationWarning)
-                hn = HumanName(name)
-            v1 = {k: v or "" for k, v in hn.as_dict().items() if k in V1_FIELDS}
-            v1["_initials"] = hn.initials() or ""
-        rows.append(row(name, order, v2, v1))
+        rows.append(row(name, order, v2))
     return nameparser.__file__, rows
 
 
@@ -426,8 +395,14 @@ def dump(rows: list[dict[str, Any]], keys: tuple[str, ...]) -> str:
 
 
 def load(text: str) -> dict[tuple[str, str], dict[str, Any]]:
-    return {key(r): r for r in map(json.loads, jsonl_lines(text))
+    # A snapshot recorded before 3.0 removed HumanName carries the v1
+    # facade's reading as a `facade` key where it differed; nothing
+    # reads one now, so it is set aside rather than shown as a move.
+    rows = {key(r): r for r in map(json.loads, jsonl_lines(text))
             if r and "name" in r}
+    for r in rows.values():
+        r.pop("facade", None)
+    return rows
 
 
 def row_count(text: str) -> int:
@@ -437,8 +412,7 @@ def row_count(text: str) -> int:
 
 def _flat(r: dict[str, Any]) -> dict[str, str]:
     out = {k: ("|".join(v) if isinstance(v, list) else v)
-           for k, v in r.items() if k not in ("name", "order", "facade")}
-    out.update({f"facade.{k}": v for k, v in r.get("facade", {}).items()})
+           for k, v in r.items() if k not in ("name", "order")}
     return out
 
 
@@ -844,7 +818,7 @@ def main(argv: list[str] | None = None) -> int:
         assert fetch is not None
         based = _base_text(base, snapshot, fetch, args.local, args.sample,
                            len(entries), args.jobs)
-    rows = read(entries, facade=not args.local, jobs=args.jobs)
+    rows = read(entries, jobs=args.jobs)
     import nameparser
     check_source(nameparser.__file__, root)
     if base is not None:
@@ -879,11 +853,6 @@ def main(argv: list[str] | None = None) -> int:
     else:
         text = snapshot.read_text(encoding="utf-8")
     old, new = load(text), {key(r): r for r in rows}
-    if args.local and any("facade" in r for r in old.values()):
-        for r in old.values():
-            r.pop("facade", None)
-        print("not compared: facade -- the snapshot read against was "
-              "recorded when a local reading still read the facade\n")
     if dropped := unrecorded_views(recorded(text),
                                    frozenset(recorded_keys()), old, new):
         print(f"not compared: {', '.join(dropped)} -- one side of the "

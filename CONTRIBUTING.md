@@ -24,25 +24,19 @@ Run a single test file or test:
 You can also pass a name string to see how it will be parsed:
 
     $ python -m nameparser "secretary of state hillary rodham-clinton"
-    <HumanName : [
-    	title: 'secretary of state'
-    	first: 'hillary'
-    	middle: ''
-    	last: 'rodham-clinton'
-    	suffix: ''
-    	nickname: ''
-    	maiden: ''
+    Parsed:
+    <ParsedName: [
+        title: 'secretary of state'
+        given: 'hillary'
+        family: 'rodham-clinton'
     ]>
-    <HumanName : [
-    	title: 'Secretary of State'
-    	first: 'Hillary'
-    	middle: ''
-    	last: 'Rodham-Clinton'
-    	suffix: ''
-    	nickname: ''
-    	maiden: ''
+    Capitalized:
+    <ParsedName: [
+        title: 'Secretary of State'
+        given: 'Hillary'
+        family: 'Rodham-Clinton'
     ]>
-    Initials: H. R.
+    Initials: h. r.
 
 CI runs tests against every supported Python version (see the matrix in `.github/workflows/python-package.yml`) via GitHub Actions on every push and pull request.
 

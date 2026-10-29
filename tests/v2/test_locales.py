@@ -186,7 +186,7 @@ def test_zh_longest_match_prefers_compound_over_single_surname() -> None:
 # parse differs from the default and that DEVIATES declares it -- they
 # never look at a field value -- and the case rows reach the same
 # packed parser only through the shared-table runners
-# (test_cases.py/test_facade_cases.py). These tests are where the zh
+# (test_cases.py). These tests are where the zh
 # readings are pinned at unit level, against the stage directly.
 
 
@@ -1345,22 +1345,17 @@ def test_269_nonlatin_vocabulary_parses(
     assert getattr(parse(name), field) == expected
 
 
-def test_269_vocabulary_reaches_the_v1_facade() -> None:
-    # one row per script through HumanName: the facade resolves its
-    # lexicon from the CONSTANTS shim snapshot, a different path from
-    # parse()'s Lexicon.default() -- proves the #269 data modules feed
-    # both surfaces
-    from nameparser import HumanName
-
-    assert HumanName("г-н Иван Петров").title == "г-н"
-    assert HumanName("κος Γιώργος Παπαδόπουλος").title == "κος"
-    assert HumanName("محمد بن سلمان").last == "بن سلمان"
-    assert HumanName('ד"ר דוד לוי').title == 'ד"ר'
-    # one row per NEW vocabulary category (2026-07-19 batches): bound
-    # given name, Hebrew post-nominal suffix, Devanagari title
-    assert HumanName("عبد الرحمن محمد").first == "عبد الرحمن"
-    assert HumanName('משה כהן ז"ל').suffix == 'ז"ל'
-    assert HumanName("डॉ. राम शर्मा").title == "डॉ."
+def test_269_vocabulary_one_row_per_script_and_category() -> None:
+    # one row per script, then one per vocabulary category the
+    # 2026-07-19 batches added: bound given name, Hebrew post-nominal
+    # suffix, Devanagari title (ported from the 2.x facade's twin)
+    assert parse("г-н Иван Петров").title == "г-н"
+    assert parse("κος Γιώργος Παπαδόπουλος").title == "κος"
+    assert parse("محمد بن سلمان").family == "بن سلمان"
+    assert parse('ד"ר דוד לוי').title == 'ד"ר'
+    assert parse("عبد الرحمن محمد").given == "عبد الرحمن"
+    assert parse('משה כהן ז"ל').suffix == 'ז"ל'
+    assert parse("डॉ. राम शर्मा").title == "डॉ."
 
 
 def test_269_bare_greek_kappa_not_a_title() -> None:

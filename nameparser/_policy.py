@@ -719,7 +719,7 @@ class Policy:
     #: Excludes bidirectional control characters from tokenization:
     #: they appear in no token, field, or rendered view; the original
     #: string keeps them.
-    strip_bidi: bool = True  # =False replaces v1's opt-out CONSTANTS.regexes.bidi = False
+    strip_bidi: bool = True  # =False replaces 1.x's opt-out CONSTANTS.regexes.bidi = False
     # -- fields added after 2.3 ------------------------------------------
     # Policy is not kw_only, so a field's POSITION is API: a caller
     # writing Policy(GIVEN_FIRST, ..., True, False) binds by position.
@@ -874,9 +874,7 @@ class Policy:
         # it in maiden_delimiters is the specific intent, so the effective
         # nickname set drops it. Canonicalization, not validation (the
         # name_order coercion precedent): differently-written but
-        # equivalent Policies converge to equal values. The v1 facade
-        # keeps v1's nickname-wins precedence via a pre-subtraction in
-        # _config_shim's snapshot instead.
+        # equivalent Policies converge to equal values.
         object.__setattr__(
             self, "nickname_delimiters",
             self.nickname_delimiters - self.maiden_delimiters)

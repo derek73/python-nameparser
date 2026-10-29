@@ -36,27 +36,20 @@ way) — see :doc:`modules` for the full field list.
 
 The default word lists themselves — ``TITLES``, ``PARTICLES`` and the
 other frozensets in ``nameparser.config`` — are frozen, so a runtime
-addition belongs on a :class:`~nameparser.Lexicon` as above, or on a
-private ``Constants`` if you are still parsing through ``HumanName``
-(``Constants`` and ``HumanName`` are deprecated since 2.8, and removed
-in 3.0).
+addition belongs on a :class:`~nameparser.Lexicon` as above.
 ``REGEXES`` and ``CAPITALIZATION_EXCEPTIONS`` are the two members the
 freeze does not cover — they are still plain dicts. Editing one at
-runtime is not a supported override, and it is not a clean no-op
-either: the edit reaches a freshly built ``Constants``, while the
-shared ``CONSTANTS`` (copied at import) and the cached
-:meth:`~nameparser.Lexicon.default` never see it. That is the same
-inconsistent reach the freeze removed for the word lists, so these
-overrides belong on a config object too.
+runtime is not a supported override. The parser does not read
+``REGEXES`` at all, and ``Lexicon.default()`` is cached,
+so an edit to ``CAPITALIZATION_EXCEPTIONS`` after the first parse never
+reaches it; extend a :class:`~nameparser.Lexicon`'s pairs instead
+(:ref:`case-exceptions`).
 
-Five of these lists were renamed in 2.2 to match the field names used
-here: ``PREFIXES``, ``NON_FIRST_NAME_PREFIXES``, ``BOUND_FIRST_NAMES``,
-``FIRST_NAME_TITLES`` and ``SUFFIX_NOT_ACRONYMS`` became ``PARTICLES``,
-``NON_GIVEN_NAME_PARTICLES``, ``BOUND_GIVEN_NAMES``,
-``GIVEN_NAME_TITLES`` and ``SUFFIX_WORDS``, and two modules moved with
-them. Names outside that list, ``TITLES`` among them, are unchanged.
-Every 1.x name still imports, with a ``DeprecationWarning``, until 3.0
-— see :doc:`migrate` for the full mapping.
+Five of these lists, ``PARTICLES``, ``NON_GIVEN_NAME_PARTICLES``,
+``BOUND_GIVEN_NAMES``, ``GIVEN_NAME_TITLES`` and ``SUFFIX_WORDS``, were
+renamed in 2.2 to match the field names used here, and two modules
+moved with them; the 1.x names are gone in 3.0, and the 2.2.0 entry of
+:doc:`release_log` maps them.
 
 Vocabulary entries are matched one word at a time, with two
 exceptions, so a multi-word entry like ``titles={"grand moff"}`` can
@@ -1648,4 +1641,4 @@ you parse.
 Because :class:`~nameparser.Parser` and its ``lexicon``/``policy`` are
 immutable and hashable, ``parser`` is safe to import and call from
 multiple threads with no locking — there is no shared mutable state to
-protect, unlike v1's module-level ``CONSTANTS``.
+protect.

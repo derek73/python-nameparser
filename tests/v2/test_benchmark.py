@@ -133,13 +133,14 @@ pytestmark = pytest.mark.serial
 #: (decisions/parse-cost). The 3.12-3.15 rows read 289/326 from
 #: #614's /simplify on and were corrected in #620, which moved no row
 #: (decisions/parse-cost). Then down by 4 on every row in #624 and up
-#: by 3 in #625, to the figures below (decisions/parse-cost).
+#: by 3 in #625, to the figures below (decisions/parse-cost). The
+#: `facade` rows went with HumanName in 3.0 (decisions/parse-cost).
 _CALL_BASELINE = {
-    (3, 11): {"parse": 307, "facade": 344},
-    (3, 12): {"parse": 288, "facade": 325},
-    (3, 13): {"parse": 288, "facade": 325},
-    (3, 14): {"parse": 288, "facade": 325},
-    (3, 15): {"parse": 288, "facade": 325},
+    (3, 11): {"parse": 307},
+    (3, 12): {"parse": 288},
+    (3, 13): {"parse": 288},
+    (3, 14): {"parse": 288},
+    (3, 15): {"parse": 288},
 }
 _BAND = 0.02
 
@@ -214,20 +215,8 @@ def test_parse_cost_stays_within_its_band() -> None:
     _check_budget("parse", parse)
 
 
-def test_facade_cost_stays_within_its_band() -> None:
-    # the legacy-API path (what all existing users call): snapshot
-    # resolution must stay generation-cached, not rebuilt per instance.
-    # Measured: defeating that cache costs 4826 calls against this
-    # band, while taking only 0.93s per 1000 -- which the 1.0s
-    # wall-clock test this replaced would have PASSED.
-    from nameparser import HumanName
-
-    _check_budget("facade", HumanName)
-
-
 @pytest.mark.parametrize("kind,fn", [
     ("parse", parse),
-    ("facade", lambda name: __import__("nameparser").HumanName(name)),
 ])
 def test_a_thousand_names_still_parse_in_reasonable_time(
         kind: str, fn: Callable[[str], object]) -> None:
@@ -237,10 +226,9 @@ def test_a_thousand_names_still_parse_in_reasonable_time(
     frame: a compiled regex that starts backtracking emits no `call`
     event at all, and neither does a C-level structure turning
     quadratic. (A quadratic inside a comprehension or generator IS
-    visible -- `call` fires once per generator resume.) Both entry
-    points are covered, because both failures that motivated #475 were
-    on the facade and the first draft of this replacement guarded only
-    `parse`.
+    visible -- `call` fires once per generator resume.) Both failures
+    that motivated #475 were on the 2.x HumanName facade, which 3.0
+    removed; `parse` is the one entry point left.
 
     The bound is loose enough that runner variance cannot reach it: the
     failures were at 1.01-1.08s against 1.0, and coverage costs about
