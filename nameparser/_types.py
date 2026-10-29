@@ -295,15 +295,23 @@ class Token:
             raise TypeError(
                 f"Token.text must be a str, got {self.text!r}"
             )
-        if self.reading is not None and not isinstance(self.reading, Reading):
-            raise TypeError(
-                f"Token.reading must be a Reading or None, got "
-                f"{self.reading!r}"
-            )
         if not self.text:
             raise ValueError("Token.text must be a non-empty string")
         object.__setattr__(
             self, "role", _coerce_enum(self.role, Role, "Role", "roles"))
+        if self.reading is not None:
+            if not isinstance(self.reading, Reading):
+                raise TypeError(
+                    f"Token.reading must be a Reading or None, got "
+                    f"{self.reading!r}"
+                )
+            if self.reading.role is not self.role:
+                raise ValueError(
+                    f"Token.reading names the field {self.reading.role.value!r} "
+                    f"but the token's role is {self.role.value!r}; a "
+                    f"token's reading is of its own field: pass "
+                    f"Reading(kind, role, source) with the token's role"
+                )
         if self.span is not None:
             if not (
                 isinstance(self.span, tuple)

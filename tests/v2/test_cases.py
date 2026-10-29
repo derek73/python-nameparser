@@ -511,6 +511,13 @@ _EXPECTED_ALTERNATIVES: dict[tuple[str, tuple[tuple[str, Any], ...]],
                              tuple[tuple[AmbiguityKind,
                                          tuple[ReadingKind, Role,
                                                ReadingSource] | None], ...]] = {
+    # a bound given name read as a name keeps the source it had before
+    # Token.reading named the taken one by the same predicate (4a's
+    # review): declared where a marker says so, else position
+    ("Smith, John Abu", ()): ((AmbiguityKind.PARTICLE_OR_GIVEN, (
+        ReadingKind.NAME, Role.MIDDLE, ReadingSource.DECLARED)),),
+    ("Smith, PhD Abdul", ()): ((AmbiguityKind.SUFFIX_OR_NAME, (
+        ReadingKind.NAME, Role.GIVEN, ReadingSource.POSITION)),),
     # suffix_reading: agnomen, generation word, listed and shaped
     # numeral, other post-nominal word, listed and shaped credential
     ("Joao Neto", ()): ((AmbiguityKind.SUFFIX_OR_NAME, (

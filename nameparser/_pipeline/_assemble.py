@@ -113,6 +113,8 @@ def assemble(state: ParseState) -> ParsedName:
     dropped = set(state.dropped)
     final: dict[int, Token] = {}
     surnames = state.lexicon.surnames
+    tokens = state.tokens
+    last = len(tokens)
     # the suffix reading of the token before, which a continuation of
     # its entry with no reading of its own takes
     before: Reading | None = None
@@ -123,14 +125,15 @@ def assemble(state: ParseState) -> ParsedName:
         role = t.role if t.role is not None else Role.GIVEN
         tags = t.tags
         # The reading the parse took (Token.reading): the final role
-        # says which decision placed the word, and the tags classify
-        # wrote say which reading of it that decision weighed. Read
+        # says which decision placed the word, and the tags the
+        # deciding stages left (classify's, the `joined` and unjoined
+        # marks) say which reading of it that decision weighed. Read
         # here, where roles are final, so a rule that moves a word
         # later (P1's fold, P6's attachment, the policy folds) needs
         # no reading of its own to keep in step. Inline and C-level
-        # for an untagged word, a frame for a tagged suffix or name
-        # word, which `_vocab`'s predicates read for the reading NOT
-        # taken too (Ambiguity.alternative), so the two never part.
+        # for an untagged word, a frame for a suffix or a tagged name
+        # word, whose sources `_vocab`'s predicates also name for the
+        # reading NOT taken (Ambiguity.alternative).
         # Reading.languages joins here once phase 3's reading index
         # (3a) can answer which files hold the reading.
         if role is Role.SUFFIX:
@@ -141,14 +144,12 @@ def assemble(state: ParseState) -> ParsedName:
                 # nothing lists or shapes it: a word read into the
                 # suffix by where it stands
                 source = ReadingSource.POSITION
-                if "joined" in tags and before is not None:
-                    # a continuation of the entry before it: a
-                    # credential split across a space is one credential
-                    # ('Ph.' 'D.'), any other word a member of the run
-                    # it stands in ('Jones' in 'John Smith PhD Jones')
-                    kind = before.kind
-                    if prev_split:
-                        source = before.source
+                if "joined" in tags and before is not None and prev_split:
+                    # the second word of a credential split across a
+                    # space, which is one credential ('Ph.' 'D.'); any
+                    # other word a run took stays a credential by
+                    # position ('Jones' in 'John Smith III Jones')
+                    kind, source = before.kind, before.source
             reading = _READINGS[kind, role, source]
             before = reading
             prev_split = (SPLIT_CREDENTIAL_TAG in tags
@@ -169,9 +170,21 @@ def assemble(state: ParseState) -> ParsedName:
                     # Parliament'), a title by where it stands
                     kind, source = ReadingKind.TITLE, ReadingSource.POSITION
             elif not tags:
-                kind = ReadingKind.NAME
-                source = (ReadingSource.VOCABULARY if t.text in surnames
-                          else ReadingSource.POSITION)
+                kind, source = ReadingKind.NAME, ReadingSource.POSITION
+                # a surname the segmentation split off an unspaced
+                # name by the surname list ('김' in '김민준'): a family
+                # word touching the next with nothing written between
+                # (C-level; spaced, the family is placed by order, not
+                # by the list, and a family-first name ends its family
+                # word against the given name it was split from)
+                if (role is Role.FAMILY and i + 1 < last
+                        and tokens[i + 1].span.start == t.span.end
+                        and _normalize(t.text) in surnames):
+                    source = ReadingSource.VOCABULARY
+            elif "vocab:bound-given" in tags:
+                # rules/P5's bound given name, which the vocabulary
+                # lists as a given-name word
+                kind, source = ReadingKind.NAME, ReadingSource.VOCABULARY
             elif "initial" in tags:
                 kind, source = ReadingKind.INITIAL, ReadingSource.SHAPE
             elif ("conjunction" in tags

@@ -6,7 +6,7 @@ from nameparser._pipeline import run
 from nameparser._pipeline._assemble import assemble
 from nameparser._pipeline._state import ParseState, PendingAmbiguity, WorkToken
 from nameparser._policy import FAMILY_FIRST, Policy
-from nameparser._types import AmbiguityKind, ParsedName, Role, Span
+from nameparser._types import AmbiguityKind, ParsedName, Role, Span, Token
 
 from ..cases import CASES, Case
 
@@ -284,6 +284,9 @@ _EXPECTED_READINGS = [
     ("de", None, "de", "name", "position"),
     ("Abdul Aziz Tariq", None, "Abdul", "name", "vocabulary"),
     ("김민준", None, "김", "name", "vocabulary"),
+    # spaced, the order places the family and the list decides nothing
+    ("김 민준", None, "김", "name", "position"),
+    ("김 성", None, "성", "name", "position"),
     ("Chas. Smith", None, "Chas.", "name", "declared"),
     ("Joao Filho Silva Filho", None, "Silva", "name", "position"),
     ("Pedro Alves Filho", None, "Filho", "agnomen", "vocabulary"),
@@ -296,6 +299,8 @@ _EXPECTED_READINGS = [
     # a word the run takes by position, and a credential split across a
     # space, which is one credential
     ("John Smith PhD Jones", None, "Jones", "credential", "position"),
+    ("John Smith III Jones", None, "Jones", "credential", "position"),
+    ("John Smith Jr Jones", None, "Jones", "credential", "position"),
     ("John Smith Ph. D.", None, "D.", "credential", "vocabulary"),
     ("John Smith, Jr., Foo", None, "Foo", "credential", "position"),
     ("John Smith (M.A)", None, "M.A", "credential", "vocabulary"),
@@ -335,6 +340,13 @@ def test_every_parsed_token_has_a_reading_of_its_own_field(case: Case) -> None:
             == [t.reading for t in pn.tokens])
 
 
+def test_a_token_reading_names_its_own_field() -> None:
+    with pytest.raises(ValueError, match="names the field 'family' but the "
+                                         "token's role is 'given'"):
+        Token("x", None, Role.GIVEN,
+              reading=Reading("title", "family", "shape"))  # type: ignore[arg-type]
+
+
 def test_a_token_replace_or_revise_builds_has_no_reading() -> None:
     pn = parse("Dr. Juan de la Vega III")
     for edited in (pn.replace(family="Smith"),
@@ -344,3 +356,32 @@ def test_a_token_replace_or_revise_builds_has_no_reading() -> None:
         # the fields it did not touch keep theirs
         assert [t.reading for t in edited.tokens_for(Role.GIVEN)] == [
             t.reading for t in pn.tokens_for(Role.GIVEN)]
+
+
+#: The suffix words the compiled sets do not split by kind: `jr` and
+#: `esq` both compile into `suffix_words` and carry the same tags, so
+#: `_vocab.suffix_kind` reads both as a post-nominal word, which is
+#: what `Ambiguity.alternative` already says of such a word
+#: (`Rinpoche`). The generation rows are the gap 4b closes by reading a
+#: listed word's kind from phase 3's reading index (3a); they are
+#: strict, so the fix has to remove the marks.
+_SPLIT_BY_KIND_LATER = pytest.mark.xfail(
+    strict=True,
+    reason="4b (#754): a listed suffix word's kind comes from 3a's "
+           "reading index; today Jr and Sr read post-nominal")
+
+
+@pytest.mark.parametrize("text,word,kind", [
+    pytest.param("John Smith Jr.", "Jr.", "generation",
+                 marks=_SPLIT_BY_KIND_LATER),
+    pytest.param("John Smith Sr.", "Sr.", "generation",
+                 marks=_SPLIT_BY_KIND_LATER),
+    ("John Smith III", "III", "generation"),
+    ("John Smith Esq.", "Esq.", "post-nominal"),
+    ("John Smith PhD", "PhD", "credential"),
+])
+def test_a_suffix_word_reads_as_its_vocabulary_kind(
+        text: str, word: str, kind: str) -> None:
+    (tok,) = [t for t in parse(text).tokens if t.text == word]
+    assert tok.reading is not None
+    assert tok.reading.kind.value == kind

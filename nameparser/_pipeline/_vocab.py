@@ -2211,11 +2211,8 @@ def name_reading(token: WorkToken, role: Role | Deferred) -> PendingReading:
 def name_source(tags: Set[str]) -> ReadingSource:
     """Why a word reads as a name word: declared by the vocabulary
     where a derived marker says so, and by position where nothing
-    does, save a bound given name, which the vocabulary lists as a
-    name word (rules/P5). `name_reading`'s source, which assemble also
-    asks of a word the parse read as a name (`Token.reading`)."""
-    if "vocab:bound-given" in tags:
-        return ReadingSource.VOCABULARY
+    does. `name_reading`'s source, which assemble also asks of a word
+    the parse read as a name (`Token.reading`)."""
     # classify writes the ambiguous class's tag on a word admitted by
     # its shape too, so the shape tag says no list declared it
     if (not tags.isdisjoint(_DECLARED_NAME_TAGS)
