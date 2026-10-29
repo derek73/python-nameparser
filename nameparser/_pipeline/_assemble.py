@@ -103,12 +103,11 @@ def _opens_its_segment(state: ParseState, i: int) -> bool:
     word that is both a bound given name and a particle, read into the
     given part, so other names pay nothing."""
     dropped = state.dropped
-    for seg in state.segments:
-        if i in seg:
-            return next((j for j in seg if j not in dropped
-                         and state.tokens[j].role is not Role.TITLE),
-                        None) == i
-    return False
+    # every given-part token stands in a segment; the empty default
+    # keeps parse total all the same
+    seg = next((s for s in state.segments if i in s), ())
+    return next((j for j in seg if j not in dropped
+                 and state.tokens[j].role is not Role.TITLE), None) == i
 
 
 def _listed_suffix(text: str, lexicon: Lexicon) -> bool:
