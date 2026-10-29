@@ -690,6 +690,8 @@ def _parsedname_order(value: object) -> object:
     (("given", "middle", "family"), TypeError, "must be Role members"),
     ("gmf", TypeError, "not a bare string"),
     ({Role.GIVEN: 0}, TypeError, "not a mapping"),
+    (frozenset(FAMILY_FIRST), TypeError, "ordered iterable"),
+    (set(GIVEN_FIRST), TypeError, "ordered iterable"),
     (5, TypeError, "must be an iterable"),
     ((Role.GIVEN, Role.FAMILY, Role.MIDDLE), ValueError, "exported orders"),
 ])

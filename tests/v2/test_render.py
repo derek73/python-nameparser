@@ -140,6 +140,7 @@ def test_default_str_includes_nickname_and_maiden() -> None:
     # Accepted bullet: it reads back as a family comma)
     ("Smith, de Mesnil Jean", None, "Smith de Mesnil Jean"),
     ("John Smith, Jr., Dr., Prof.", None, "Dr., Prof. John Smith, Jr."),
+    ("John Smith Dr., Prof.", None, "Dr., Prof. John Smith"),
     # the joiner: a hyphen word stays one word, two commas, a zero-width
     # space, a delimiter, a dropped marker word
     ("John Smith,, Jr.", None, "John Smith Jr."),

@@ -50,10 +50,11 @@
   ```
   "Senator Wang Xiaoming"  family-first  →  str="Senator Wang Xiaoming"
   ```
-- A rendering need not read back as the name it came from. A family-comma name under a family-first order is laid out given-first, and the same parser reads the result family-first; a family comma in a name written in Han, Hangul or kana, a shape nobody writes (W3), reads back family-first by its script; a family comma dropped after P1's fold leaves a name read given-first; and a comma between two titles that a part past the second comma moves to the front is kept, and reads back as a family comma.
+- A rendering need not read back as the name it came from. A family-comma name under a family-first order is laid out given-first, and the same parser reads the result family-first; a family comma in a name written in Han, Hangul or kana, a shape nobody writes (W3), reads back family-first by its script; a family comma dropped after P1's fold leaves a name read given-first; and a comma between two titles written after a comma, which the layout moves to the front, is kept, and reads back as a family comma, from whichever comma part the titles come.
   ```
   "김, 민준"                     →  str="민준 김"
   "John Smith, Jr., Dr., Prof."  →  str="Dr., Prof. John Smith, Jr."
+  "John Smith Dr., Prof."     →  str="Dr., Prof. John Smith"
   ```
 - Two equal names can render differently. The order a name was read in is not compared, so a name loaded from a 2.x pickle, which recorded none, renders given-first where a fresh parse of the same text renders family-first. (The shape needs a pickle written by an older release, so no example line.)
 

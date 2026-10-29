@@ -102,6 +102,13 @@ def _reject_bare_string_order(value: object, field_name: str) -> None:
             f"{field_name} must be an iterable of three Roles, not a "
             f"mapping: {value!r}"
         )
+    # a set iterates in an order its hash seed decides, so the same
+    # value read as one order, another, or none from run to run
+    if isinstance(value, (set, frozenset)):
+        raise TypeError(
+            f"{field_name} must be an ordered iterable of three Roles, "
+            f"not a {type(value).__name__}: {value!r}"
+        )
     if isinstance(value, (bytes, bytearray, memoryview)):
         raise TypeError(
             f"{field_name} must be an iterable of three Roles, not "

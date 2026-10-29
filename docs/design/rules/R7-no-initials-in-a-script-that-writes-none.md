@@ -13,6 +13,10 @@
 "김민준 John"                 →  initials="J."  · boundary
 ```
 
+**Precedence:**
+
+- **A word R3 would initial** ("김민준", "王 小明"): R7 wins, so the word contributes nothing, since R3's first letter is a letter only in a script that writes initials, and these write none.
+
 **Accepted:**
 
 - A name written wholly in those scripts has empty initials, where 2.1 through 2.8 gave its first characters (`김민준` gave '민. 김.'); a caller wanting a character per word takes it from the fields.
