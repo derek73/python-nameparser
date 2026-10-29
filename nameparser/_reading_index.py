@@ -165,7 +165,8 @@ class IndexReading(ReadingProperties):
 
     A lookup result, not a value to keep: its ``props`` is a read-only
     view, so an IndexReading neither hashes nor pickles. What a parse
-    keeps of it (phase 4a's ``Reading.languages``) is its tag."""
+    would keep of it (``Reading.languages``, filled by a follow-up to
+    phase 4a) is its tag."""
 
     text: str
     tag: str
@@ -230,7 +231,8 @@ def readings_of(text: str) -> tuple[IndexReading, ...]:
     edge periods removed; _lexicon._normalize), and a phrase whole
     (``"z domu"``). A reading the parse took from a caller's own
     vocabulary, from a shape or from position has no row here, which is
-    what phase 4a's ``Reading.languages`` reads as empty."""
+    what ``Reading.languages`` is to read as empty once a follow-up to
+    phase 4a fills it from here; no parse calls this yet."""
     return tuple(from_row(text, row) for row in _by_text().get(text, ()))
 
 
