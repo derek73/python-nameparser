@@ -1,5 +1,5 @@
-"""Locale packs: named (lexicon fragment, PolicyPatch) deltas folded in
-by parser_for (mechanisms.md#LOCALE-PACKS-PURE-DATA). Packs are
+"""Locale packs: named (languages, lexicon fragment, PolicyPatch) deltas
+folded in by parser_for (mechanisms.md#LOCALE-PACKS-PURE-DATA). Packs are
 pure data with no
 privileged capabilities; they dissolve at parser construction.
 

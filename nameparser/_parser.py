@@ -286,11 +286,72 @@ def parse(text: str) -> ParsedName:
     return _default_parser().parse(text)
 
 
+def _reading_index_selected(languages: frozenset[str]) -> frozenset[str]:
+    # the reading index loads on first lookup, so a caller who chooses
+    # no language never imports it (decisions/vocabulary-model, 3a)
+    from nameparser._reading_index import selected
+    return selected(languages)
+
+
+@functools.cache
+def _choice_delta(chosen: frozenset[str]) -> tuple[
+        dict[str, tuple[frozenset[str], frozenset[str]]],
+        tuple[frozenset[str], tuple[tuple[str, str], ...]]]:
+    """What the choice of the file tags `chosen` changes against the
+    default's compile: per Lexicon field, the entries that leave and
+    the ones that join, and the case masks that leave and the ones set.
+    A delta, so it applies to a caller's own Lexicon as well as to the
+    default (the RFC's "Where the provenance lives at runtime")."""
+    from nameparser._lexicon import _vocab_fields
+    from nameparser._reading_index import compile_choice
+    default, choice = compile_choice(frozenset()), compile_choice(chosen)
+    was, now = _vocab_fields(default), _vocab_fields(choice)
+    fields = {name: (was[name] - now[name], now[name] - was[name])
+              for name in was if was[name] != now[name]}
+    old, new = (default["CAPITALIZATION_EXCEPTIONS"],
+                choice["CAPITALIZATION_EXCEPTIONS"])
+    masks = (frozenset(old.keys() - new.keys()),
+             tuple(sorted((k, v) for k, v in new.items() if old.get(k) != v)))
+    return fields, masks
+
+
+def _apply_choice(lexicon: Lexicon, languages: frozenset[str]) -> Lexicon:
+    """`lexicon` under the choice of `languages`, a delta against the
+    default's compile, so a caller's own additions stay."""
+    from nameparser._lexicon import _SUBSET_FIELDS
+    fields, (unmasked, masks) = _choice_delta(
+        _reading_index_selected(languages))
+    updates: dict[str, object] = {
+        name: (getattr(lexicon, name) - gone) | joined
+        for name, (gone, joined) in fields.items()}
+    # a word the choice drops from a base set leaves that set's markers
+    # too, a caller's own mark of it included: marking a word the
+    # vocabulary no longer holds is the orphan Lexicon refuses
+    for marker, base, _ in _SUBSET_FIELDS:
+        if base in fields and fields[base][0]:
+            kept = updates.get(marker, getattr(lexicon, marker))
+            updates[marker] = kept - fields[base][0]  # type: ignore[operator]
+    if unmasked or masks:
+        cap = {k: v for k, v in lexicon.capitalization_exceptions
+               if k not in unmasked}
+        updates["capitalization_exceptions"] = tuple(
+            sorted((cap | dict(masks)).items()))
+    if not updates:
+        return lexicon
+    return dataclasses.replace(lexicon, **updates)  # type: ignore[arg-type]
+
+
 def parser_for(*locales: Locale, base: Parser | None = None,
                segmenter: Segmenter | None | _Unset = UNSET) -> Parser:
-    """Lexicon fragments unioned left-to-right onto base's; policy
-    patches applied left-to-right (later wins; set-valued fields union
-    per the patch metadata). Validation errors raised while applying a
+    """The packs' ``languages`` unioned into one choice, applied to
+    base's lexicon first (so the order of the packs does not change
+    it); then lexicon fragments unioned left-to-right onto the result;
+    policy patches applied left-to-right (later wins; set-valued fields
+    union per the patch metadata). A pack that chooses no language
+    leaves the base vocabulary exactly as it is. The choice is this
+    call's: a base built by an earlier ``parser_for`` records none, so
+    its choice and this one apply one after the other rather than as
+    one union -- pass every pack to one call to choose them together. Validation errors raised while applying a
     pack are wrapped with that pack's identity (rule D2) --
     PolicyPatch validates lazily, so with stacked packs the raw error
     would otherwise point at nothing. Two packs setting the same SCALAR
@@ -323,6 +384,30 @@ def parser_for(*locales: Locale, base: Parser | None = None,
     # segmenter it was asked to drop.
     if segmenter is UNSET:
         segmenter = base.segmenter if base is not None else None
+    # one choice for all the packs, so applying them is order-free; each
+    # pack's tags are checked on their own first, so a tag no file holds
+    # is reported with the pack that named it (rules/D2)
+    languages: frozenset[str] = frozenset()
+    for loc in locales:
+        if loc.languages:
+            try:
+                _reading_index_selected(loc.languages)
+            except ValueError as exc:
+                raise ValueError(
+                    f"while applying locale {loc.code!r}: {exc}") from exc
+            languages |= loc.languages
+    if languages:
+        try:
+            lexicon = _apply_choice(lexicon, languages)
+        except (TypeError, ValueError) as exc:
+            # rules/D2: "applying a locale pack wraps any such error with
+            # the locale's code, so a stacked configuration names which
+            # layer broke" -- the choice is every pack's at once, so it
+            # names the languages (history: decisions/vocabulary-model,
+            # 2026-10-29 3b)
+            raise type(exc)(
+                f"while applying the languages chosen, "
+                f"{', '.join(sorted(languages))}: {exc}") from exc
     scalar_setters: dict[str, str] = {}
     for loc in locales:
         for f in dataclasses.fields(PolicyPatch):

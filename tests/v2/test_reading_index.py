@@ -16,6 +16,8 @@ import sys
 import unicodedata
 from pathlib import Path
 from types import ModuleType
+
+import pytest
 from typing import Any
 
 from nameparser import _reading_index as ri
@@ -159,3 +161,112 @@ def test_the_accessors_give_the_unwritten_values() -> None:
     off = ri.IndexReading("zzq", "en", "family", {"default": False})
     assert off.category == "name" and not off.on_by_default
     assert not ri.IndexReading("zzq", "en", "generation", {}).acronym
+
+
+# -- a choice of languages (phase 3b) --
+
+
+def _r(text: str, tag: str, kind: str, **props: object) -> ri.IndexReading:
+    return ri.IndexReading(text, tag, kind, props)
+
+
+def _kept(readings: list[ri.IndexReading], chosen: set[str]
+          ) -> set[tuple[str, str, str, tuple[tuple[str, Any], ...]]]:
+    return {(r.text, r.tag, r.kind, tuple(sorted(r.props.items())))
+            for r in ri.choose(readings, frozenset(chosen))}
+
+
+def test_a_tag_selects_its_own_file_and_its_ancestors_never_its_descendants() -> None:
+    assert ri.selected(["pt-BR"]) == {"pt-BR", "pt"}
+    assert ri.selected(["pt"]) == {"pt"}
+    # BCP 47 tags are matched without regard to case, so the lowercase
+    # spelling cannot silently select only the parent
+    assert ri.selected(["pt-br"]) == {"pt-BR", "pt"}
+    # a region no file holds selects what its language's file holds
+    assert ri.selected(["pt-PT"]) == {"pt"}
+    # no macrolanguage table: Malay does not select Indonesian
+    assert ri.selected(["ms"]) == {"ms"}
+    assert ri.selected([]) == frozenset()
+
+
+@pytest.mark.parametrize("tag,match", [
+    ("mul", "not a language to choose"),
+    ("UND", "not a language to choose"),
+    ("xx", "no vocabulary file holds the language 'xx'.*: ak, am"),
+    ("xx-PT", "no vocabulary file holds"),
+])
+def test_a_tag_no_file_holds_is_refused_naming_those_that_are(
+        tag: str, match: str) -> None:
+    with pytest.raises(ValueError, match=match):
+        ri.selected([tag])
+
+
+def test_an_empty_choice_compiles_the_default() -> None:
+    compiled = ri.compile_choice(frozenset())
+    for name, _ in build.CONSTANTS:
+        assert compiled[name] == getattr(_compiled, name), name  # type: ignore[literal-required]
+    assert ri.changed_words(frozenset()) == frozenset()
+
+
+def test_a_chosen_language_turns_its_readings_off_by_default_on() -> None:
+    pool = [_r("h", "es", "generation", default=False),
+            _r("h", "en", "given", default=False)]
+    assert _kept(pool, set()) == set()
+    # the chosen file's own reading only, its `default` gone; another
+    # file's reading left off by default stays off
+    assert _kept(pool, {"es"}) == {("h", "es", "generation", ())}
+
+
+def test_prefer_drops_other_languages_vocabulary_readings_of_the_word() -> None:
+    pool = [_r("do", "pt", "preposition"), _r("do", "en", "credential"),
+            _r("do", "en", "given"), _r("do", "mul", "generation"),
+            _r("de", "en", "credential")]
+    kept = _kept(pool, {"pt"})
+    # the name reading stays (decision 15: it keeps the gate on), and
+    # mul's, every language's; a word pt holds nothing of is untouched
+    assert kept == {("do", "pt", "preposition", ()), ("do", "en", "given", ()),
+                    ("do", "mul", "generation", ()),
+                    ("de", "en", "credential", ())}
+    # two chosen languages that each hold one both keep it
+    assert len(_kept(pool, {"pt", "en"})) == len(pool)
+
+
+def test_a_name_reading_never_settles_a_clash() -> None:
+    # vi holds only a name reading of `do`: choosing it settles nothing,
+    # so the credential stays, gated as in the default (the RFC's `do`)
+    pool = [_r("do", "vi", "family"), _r("do", "en", "credential")]
+    assert _kept(pool, {"vi"}) == _kept(pool, set())
+
+
+def test_a_chosen_conjunction_drops_its_shape_clash_with_the_initial() -> None:
+    pool = [_r("e", "pt", "conjunction", may_be_initial=True),
+            _r("y", "es", "conjunction", may_be_initial=True)]
+    assert _kept(pool, {"pt"}) == {
+        ("e", "pt", "conjunction", ()),
+        ("y", "es", "conjunction", (("may_be_initial", True),))}
+    compiled = ri.compile_readings(ri.choose(pool, frozenset({"pt"})))
+    assert compiled["CONJUNCTIONS"] == {"e", "y"}
+    assert compiled["CONJUNCTIONS_AMBIGUOUS"] == {"y"}
+
+
+def test_the_deviation_surface_is_the_words_whose_compile_changes() -> None:
+    pt = frozenset({"pt"})
+    default, choice = ri.compile_choice(frozenset()), ri.compile_choice(pt)
+    moved = {w for k in default
+             if not isinstance(default[k], dict)  # type: ignore[literal-required]
+             for w in default[k] ^ choice[k]}  # type: ignore[literal-required]
+    assert moved and moved <= ri.changed_words(pt)
+    assert "e" in ri.changed_words(pt) and "do" in ri.changed_words(pt)
+
+
+def test_a_choice_moves_only_words_its_own_files_hold() -> None:
+    # every file tag, chosen alone: what a choice changes is a word one
+    # of its selected files holds a reading of (a phrase's word counted
+    # through the phrase), never a word only other files hold
+    for tag in sorted(ri.tags() - ri.UNCHOOSABLE):
+        chosen = ri.selected([tag])
+        held = {r.text for r in ri.index() if r.tag in chosen}
+        held |= {w for t in held for w in t.split()}
+        surface = ri.changed_words(chosen)
+        assert surface <= held | {w for t in ri.compile_choice(chosen)[
+            "TITLE_PHRASES"] for w in t.split()}, (tag, surface - held)

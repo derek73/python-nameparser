@@ -2326,3 +2326,131 @@ def test_a_given_name_written_short_listed_as_a_title_is_a_title() -> None:
     p = Parser(lexicon=Lexicon.default().add(titles={"chas"}))
     assert "chas" in p.lexicon.given_name_abbreviations
     assert p.parse("Chas. Smith").title == "Chas."
+
+
+# -- a choice of languages (Locale.languages, phase 3b) --
+
+
+def _choosing(*tags: str, code: str = "choice",
+              lexicon: Lexicon | None = None) -> Locale:
+    return Locale(code=code, lexicon=lexicon or Lexicon.empty(),
+                  languages=frozenset(tags))
+
+
+def test_the_compiled_fields_are_the_default_lexicons() -> None:
+    from nameparser._lexicon import _VOCAB_FIELDS, _vocab_fields
+    from nameparser._reading_index import compile_choice
+    default = Lexicon.default()
+    fields = _vocab_fields(compile_choice(frozenset()))
+    assert {f for f in fields} | {"surnames"} == set(_VOCAB_FIELDS)
+    for name, words in fields.items():
+        assert getattr(default, name) == words, name
+
+
+def test_a_pack_choosing_no_language_leaves_the_vocabulary_as_it_is() -> None:
+    base = Parser(lexicon=Lexicon.default().add(titles={"zzq"}))
+    assert parser_for(Locale(code="xx", lexicon=Lexicon.empty()),
+                      base=base).lexicon == base.lexicon
+
+
+def test_parsing_with_no_choice_never_loads_the_reading_index() -> None:
+    # the index loads on its first lookup (decisions/vocabulary-model,
+    # 3a); a choice is that lookup, and nothing else in a parse is yet
+    import subprocess
+    import sys
+    code = ("import sys, nameparser; from nameparser import locales; "
+            "nameparser.parser_for(locales.RU).parse('Ivan Petrovich Sidorov'); "
+            "nameparser.parse('Dr. Juan de la Vega III'); "
+            "assert 'nameparser.config._index' not in sys.modules; "
+            "nameparser.parser_for(nameparser.Locale('pt', "
+            "nameparser.Lexicon.empty(), languages={'pt'})); "
+            "assert 'nameparser.config._index' in sys.modules")
+    subprocess.run([sys.executable, "-c", code], check=True)
+
+
+@pytest.mark.parametrize("tags,name,field,before,after", [
+    # prefer, against a shape: the one-case conjunction holds under pt
+    (("pt",), "ANA SILVA E SOUZA", "family", "SOUZA", "SILVA E SOUZA"),
+    # prefer: ar's bound given name stays, en's credential leaves
+    (("ar",), "Haddad, Abd", "given", "", "Abd"),
+    # turning on: cs's generation joins, en's Saint readings leave
+    (("cs",), "Jiří Dienstbier st.", "suffix", "", "st."),
+    # prefer: pt's preposition, en's credential gone
+    (("pt",), "John Smith DO", "family", "Smith", "DO"),
+    # and the other way: en's credential, pt's preposition gone
+    (("en",), "Maria do Carmo", "family", "do Carmo", "Carmo"),
+    # both chosen, both kept, gated as in the default
+    (("pt", "en"), "John Smith DO", "suffix", "DO", "DO"),
+    (("pt", "en"), "Maria do Carmo", "family", "do Carmo", "do Carmo"),
+])
+def test_a_choice_selects_the_readings_of_its_languages(
+        tags: tuple[str, ...], name: str, field: str, before: str,
+        after: str) -> None:
+    assert getattr(parse(name), field) == before
+    assert getattr(parser_for(_choosing(*tags)).parse(name), field) == after
+
+
+def test_a_choice_settled_by_a_name_reading_keeps_the_gate_on() -> None:
+    # en's given reading of `st` still gates the generation cs turns on
+    got = parser_for(_choosing("cs")).parse("Jiří Dienstbier st.")
+    assert [a.kind for a in got.ambiguities] == [AmbiguityKind.SUFFIX_OR_NAME]
+
+
+def test_the_packs_choices_are_one_choice_in_any_order() -> None:
+    pt, en = _choosing("pt", code="aa"), _choosing("en", code="bb")
+    both = parser_for(_choosing("pt", "en")).lexicon
+    assert parser_for(pt, en).lexicon == parser_for(en, pt).lexicon == both
+
+
+def test_a_choice_is_a_delta_that_keeps_a_callers_vocabulary() -> None:
+    base = Parser(lexicon=Lexicon.default().add(titles={"zzq"}))
+    got = parser_for(_choosing("pt"), base=base)
+    assert "zzq" in got.lexicon.titles
+    assert got.parse("ANA SILVA E SOUZA").family == "SILVA E SOUZA"
+
+
+def test_a_packs_own_fragment_is_unioned_on_after_the_choice() -> None:
+    # pt drops en's credential reading of `do`; the pack's fragment puts
+    # it back, as a caller listing a word has always asked for
+    pack = _choosing("pt", lexicon=Lexicon.empty().add(suffix_acronyms={"do"}))
+    assert parser_for(pack).parse("John Smith DO").suffix == "DO"
+
+
+@pytest.mark.parametrize("tag,match", [
+    ("xx", "while applying locale 'choice': no vocabulary file holds"),
+    ("mul", "while applying locale 'choice': 'mul' is not a language"),
+])
+def test_a_choice_no_file_can_serve_is_refused_with_the_pack(
+        tag: str, match: str) -> None:
+    with pytest.raises(ValueError, match=match):
+        parser_for(_choosing(tag))
+
+
+def test_a_lowercase_region_selects_the_regions_file() -> None:
+    assert (parser_for(_choosing("pt-br")).lexicon
+            == parser_for(_choosing("pt-BR")).lexicon)
+
+
+def test_a_word_a_choice_drops_leaves_the_callers_markers_of_it_too() -> None:
+    # a caller marked `vd` possibly given; en's credential drops nl's
+    # preposition, so the word leaves `particles`, and the caller's mark
+    # would be an orphan the Lexicon refuses (found by review, 3b)
+    base = Parser(lexicon=Lexicon.default().add(particles_ambiguous={"vd"}))
+    got = parser_for(_choosing("en"), base=base).lexicon
+    assert "vd" not in got.particles and "vd" not in got.particles_ambiguous
+
+
+def test_an_error_applying_a_choice_names_the_choice(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # an error the Lexicon raises while the choice is applied names the
+    # languages chosen, as a patch error names its pack. No shipped
+    # choice raises, so a delta joining an orphan marker stands in for
+    # one
+    import nameparser._parser as parser_mod
+    orphan: object = ({"particles_ambiguous": (frozenset(), frozenset({"zzq"}))},
+              (frozenset(), ()))
+    monkeypatch.setattr(parser_mod, "_choice_delta", lambda chosen: orphan)
+    with pytest.raises(ValueError,
+                       match="while applying the languages chosen, en, pt: "
+                             "particles_ambiguous marks"):
+        parser_for(_choosing("pt", code="aa"), _choosing("en", code="bb"))

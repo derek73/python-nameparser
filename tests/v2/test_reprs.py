@@ -89,6 +89,10 @@ def test_locale_repr_shows_code_and_patched_fields() -> None:
                     {PatronymicRule.EAST_SLAVIC})))
     assert repr(ru) == "Locale('ru': patronymic_rules)"
     assert repr(Locale("xx", Lexicon.empty())) == "Locale('xx')"
+    # a choice is a few tags, so it is shown, sorted, ahead of the patch
+    both = Locale("pt", Lexicon.empty(), PolicyPatch(middle_as_family=True),
+                  languages=frozenset({"pt-BR", "en"}))
+    assert repr(both) == "Locale('pt': languages en+pt-BR, middle_as_family)"
 
 
 def test_lexicon_repr_diffs_against_nearer_baseline() -> None:

@@ -74,3 +74,43 @@ def test_setstate_rejects_layout_skew() -> None:
     del state["code"]
     with pytest.raises(ValueError, match="code"):
         Locale.__new__(Locale).__setstate__(state)
+
+
+def test_locale_chooses_no_language_unless_given_some() -> None:
+    assert Locale(code="xx", lexicon=Lexicon.empty()).languages == frozenset()
+    pt = Locale(code="pt", lexicon=Lexicon.empty(), languages=["pt", "pt"])  # type: ignore[arg-type]
+    assert pt.languages == frozenset({"pt"})
+    assert Locale(code="pt", lexicon=Lexicon.empty(),
+                  languages=frozenset({"pt-BR"})).languages == {"pt-BR"}
+
+
+@pytest.mark.parametrize("bad,error,match", [
+    ("pt", TypeError, "not a bare string"),
+    (b"pt", TypeError, "decode first"),
+    ({"pt": True}, TypeError, "not a mapping"),
+    (5, TypeError, "iterable of BCP 47 tags"),
+    ([5], TypeError, "str BCP 47 tags"),
+    (["p"], ValueError, "BCP 47 tags such as"),
+    (["pt_BR"], ValueError, "BCP 47 tags such as"),
+    (["pt-"], ValueError, "BCP 47 tags such as"),
+    ([" pt"], ValueError, "BCP 47 tags such as"),
+])
+def test_locale_languages_must_be_bcp47_tags(
+        bad: object, error: type[Exception], match: str) -> None:
+    with pytest.raises(error, match=match):
+        Locale(code="xx", lexicon=Lexicon.empty(), languages=bad)  # type: ignore[arg-type]
+
+
+def test_locales_choosing_different_languages_differ() -> None:
+    pt = Locale(code="xx", lexicon=Lexicon.empty(), languages=frozenset({"pt"}))
+    assert pt != Locale(code="xx", lexicon=Lexicon.empty())
+    assert hash(pt) == hash(Locale(code="xx", lexicon=Lexicon.empty(),
+                                   languages=frozenset({"pt"})))
+
+
+def test_locale_with_languages_pickles_round_trip() -> None:
+    import pickle
+
+    loc = Locale(code="pt", lexicon=Lexicon.empty(),
+                 languages=frozenset({"pt", "pt-BR"}))
+    assert pickle.loads(pickle.dumps(loc)) == loc
