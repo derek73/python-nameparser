@@ -317,7 +317,9 @@ def _choice_delta(chosen: frozenset[str]) -> tuple[
 
 def _apply_choice(lexicon: Lexicon, languages: frozenset[str]) -> Lexicon:
     """`lexicon` under the choice of `languages`, a delta against the
-    default's compile, so a caller's own additions stay."""
+    default's compile: what the choice drops leaves `lexicon` whoever
+    put it there, a caller included, what it turns on joins, and every
+    other entry stays as the caller had it."""
     from nameparser._lexicon import _SUBSET_FIELDS
     fields, (unmasked, masks) = _choice_delta(
         _reading_index_selected(languages))
@@ -348,7 +350,9 @@ def parser_for(*locales: Locale, base: Parser | None = None,
     it); then lexicon fragments unioned left-to-right onto the result;
     policy patches applied left-to-right (later wins; set-valued fields
     union per the patch metadata). A pack that chooses no language
-    leaves the base vocabulary exactly as it is. The choice is this
+    leaves the base vocabulary exactly as it is; a choice removes from
+    base's lexicon every entry it drops, a caller's own listing of the
+    word included, and keeps every entry it does not touch. The choice is this
     call's: a base built by an earlier ``parser_for`` records none, so
     its choice and this one apply one after the other rather than as
     one union -- pass every pack to one call to choose them together. Validation errors raised while applying a

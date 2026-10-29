@@ -270,3 +270,11 @@ def test_a_choice_moves_only_words_its_own_files_hold() -> None:
         surface = ri.changed_words(chosen)
         assert surface <= held | {w for t in ri.compile_choice(chosen)[
             "TITLE_PHRASES"] for w in t.split()}, (tag, surface - held)
+
+
+def test_prefer_never_drops_a_reading_of_unknown_language() -> None:
+    # und.toml holds words whose language is not known, so no choice can
+    # say they are another language's
+    pool = [_r("bon", "fr", "particle"), _r("bon", "und", "particle"),
+            _r("bon", "mul", "generation")]
+    assert len(_kept(pool, {"fr"})) == 3

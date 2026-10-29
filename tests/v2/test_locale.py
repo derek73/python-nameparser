@@ -87,7 +87,7 @@ def test_locale_chooses_no_language_unless_given_some() -> None:
 @pytest.mark.parametrize("bad,error,match", [
     ("pt", TypeError, "not a bare string"),
     (b"pt", TypeError, "decode first"),
-    ({"pt": True}, TypeError, "not a mapping"),
+    ({"pt": True}, TypeError, "not a mapping.*frozenset\\(mapping\\)"),
     (5, TypeError, "iterable of BCP 47 tags"),
     ([5], TypeError, "str BCP 47 tags"),
     (["p"], ValueError, "BCP 47 tags such as"),
@@ -114,3 +114,22 @@ def test_locale_with_languages_pickles_round_trip() -> None:
     loc = Locale(code="pt", lexicon=Lexicon.empty(),
                  languages=frozenset({"pt", "pt-BR"}))
     assert pickle.loads(pickle.dumps(loc)) == loc
+
+
+def test_locale_languages_are_stored_in_canonical_case() -> None:
+    # equal choices compare and hash equal however they were written
+    def choosing(*tags: str) -> Locale:
+        return Locale(code="xx", lexicon=Lexicon.empty(), languages=tags)  # type: ignore[arg-type]
+    assert choosing("PT") == choosing("pt") and hash(choosing("PT")) == hash(choosing("pt"))
+    assert choosing("pt", "PT").languages == {"pt"}
+    assert choosing("pt-br").languages == {"pt-BR"}
+    assert choosing("ZH-HANT-tw", "sr-latn").languages == {"zh-Hant-TW", "sr-Latn"}
+
+
+def test_locale_languages_mapping_message_offers_code_that_works() -> None:
+    mapping = {"pt": True}
+    with pytest.raises(TypeError, match=r"frozenset\(mapping\)"):
+        Locale(code="xx", lexicon=Lexicon.empty(), languages=mapping)  # type: ignore[arg-type]
+    # the fix the message offers
+    assert Locale(code="xx", lexicon=Lexicon.empty(),
+                  languages=frozenset(mapping)).languages == {"pt"}

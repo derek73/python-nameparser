@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import dataclasses
 import re
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 
 from nameparser._lexicon import Lexicon
@@ -99,15 +99,49 @@ class Locale:
         # (design rule, see nameparser._types module docstring).
         patched = [f.name for f in dataclasses.fields(self.policy)
                    if getattr(self.policy, f.name) is not UNSET]
-        if self.languages:
+        # a choice is shown by its tags while it is short, as one is
+        # (a pack chooses one or two), and by its size past that
+        if len(self.languages) > _REPR_TAGS:
+            patched.insert(0, f"languages: {len(self.languages)}")
+        elif self.languages:
             patched.insert(0, "languages " + "+".join(sorted(self.languages)))
         suffix = f": {', '.join(patched)}" if patched else ""
         return f"Locale({self.code!r}{suffix})"
 
 
+#: The most tags Locale's repr lists; a longer choice is shown by its
+#: size, so the repr stays bounded however many languages are chosen.
+_REPR_TAGS = 3
+
+
+def _canonical(tag: str) -> str:
+    """`tag` in BCP 47's canonical case: the language subtag lowercase,
+    a four-letter script subtag title case, a two-letter region
+    uppercase, every other subtag lowercase (RFC 5646, 2.1.1). Equal
+    choices then compare and hash equal, whatever case they were
+    written in."""
+    first, *rest = tag.split("-")
+    out = [first.lower()]
+    for sub in rest:
+        if len(sub) == 4 and sub.isalpha():
+            out.append(sub.title())
+        elif len(sub) == 2 and sub.isalpha():
+            out.append(sub.upper())
+        else:
+            out.append(sub.lower())
+    return "-".join(out)
+
+
 def _tags(value: object) -> frozenset[str]:
-    """`value` as Locale.languages stores it, or the TypeError or
-    ValueError naming what is wrong with it."""
+    """`value` as Locale.languages stores it, each tag in canonical case,
+    or the TypeError or ValueError naming what is wrong with it."""
+    if isinstance(value, Mapping):
+        # not _reject_str_and_mapping's message: its {open: close} hint
+        # is about delimiter pairs, which a choice of languages never is
+        raise TypeError(
+            f"Locale.languages must be a set of BCP 47 tags, not a "
+            f"mapping: {value!r}. Write frozenset({{'pt'}}), or "
+            f"frozenset(mapping) to choose its keys")
     _reject_str_and_mapping(value, "Locale.languages")
     if not isinstance(value, Iterable):
         raise TypeError(
@@ -123,4 +157,4 @@ def _tags(value: object) -> frozenset[str]:
             raise ValueError(
                 f"Locale.languages entries must be BCP 47 tags such as 'pt' "
                 f"or 'pt-BR', got {tag!r}")
-    return tags
+    return frozenset(_canonical(tag) for tag in tags)

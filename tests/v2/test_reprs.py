@@ -93,6 +93,10 @@ def test_locale_repr_shows_code_and_patched_fields() -> None:
     both = Locale("pt", Lexicon.empty(), PolicyPatch(middle_as_family=True),
                   languages=frozenset({"pt-BR", "en"}))
     assert repr(both) == "Locale('pt': languages en+pt-BR, middle_as_family)"
+    # bounded: past three tags a choice is shown by its size
+    many = Locale("xx", Lexicon.empty(),
+                  languages=frozenset({"pt", "es", "ca", "gl"}))
+    assert repr(many) == "Locale('xx': languages: 4)"
 
 
 def test_lexicon_repr_diffs_against_nearer_baseline() -> None:
@@ -118,6 +122,7 @@ def test_policy_patch_repr_shows_only_set_fields() -> None:
     PolicyPatch(strip_emoji=False),
     Locale("xx", Lexicon.empty()),
     Locale("xx", Lexicon.empty(), PolicyPatch(middle_as_family=True)),
+    Locale("xx", Lexicon.empty(), languages=frozenset({"pt", "es", "ca", "gl"})),
     Lexicon.default(),
     Lexicon.empty(),
     Parser(),

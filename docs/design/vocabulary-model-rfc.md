@@ -225,7 +225,7 @@ Measured 2026-10-27 on `cfe8bf92`: the pool holds 2,140 readings over 1,797 word
 
 Two cheaper-looking forms do not work. Per-language deltas compiled at build time do not compose: under prefer `{pt, en}`, `do` keeps both its particle and its credential, but Portuguese's delta removes the credential and English's removes the particle. And precompiling every combination of languages is combinatorial.
 
-A choice is applied as a delta against the default's compile, so it composes with a caller's own `Lexicon`: `parser_for(locales.NE, base=Parser(lexicon=custom))` keeps a title the caller added, and a `Locale`'s own `lexicon` fragment is still unioned on after the choice.
+A choice is applied as a delta against the default's compile, so it composes with a caller's own `Lexicon`: `parser_for(locales.NE, base=Parser(lexicon=custom))` keeps a title the caller added, and a `Locale`'s own `lexicon` fragment is still unioned on after the choice. The delta removes what the choice drops whoever put it in the base: as built in 3b, `parser_for(EN, base=Parser(lexicon=Lexicon.empty().add(particles={'do', 'van'})))` keeps only `van`, since `en` drops `pt`'s particle `do`, the caller's listing of it included. How a choice combines with a base is open (decisions/vocabulary-model's 2026-10-29 phase 3b entry).
 
 ### The API and tags
 

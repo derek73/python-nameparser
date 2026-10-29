@@ -244,6 +244,7 @@ def test_a_reading_under_a_choice_moves_what_the_choice_moves() -> None:
 @pytest.mark.parametrize("argv,match", [
     (["--languages", "pt", "--record"], "records nothing"),
     (["--languages", ","], "at least one tag"),
+    (["--languages", "pt", "--since", "v2.8.0"], "Drop --since"),
 ])
 def test_a_choice_records_nothing(argv: list[str], match: str,
                                   capsys: pytest.CaptureFixture[str]) -> None:

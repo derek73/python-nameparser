@@ -6,7 +6,7 @@ Release Log
 
     **Additions**
 
-    - **Add Locale.languages, a choice of languages for the default vocabulary.** ``parser_for(Locale(code="pt", lexicon=Lexicon.empty(), languages=frozenset({"pt"}))).parse("ANA SILVA E SOUZA")`` gives family ``SILVA E SOUZA``, where the default reads family ``SOUZA``, the ``E`` an initial: a chosen language's reading of a word it has a vocabulary reading of wins, and the other languages' readings of that word leave, so under ``pt`` ``John Smith DO`` reads family ``DO``. A pack choosing no language parses as before. See :doc:`locales`. :issue:`753`
+    - **Add Locale.languages, a choice of languages for the default vocabulary.** ``parser_for(Locale(code="pt", lexicon=Lexicon.empty(), languages=frozenset({"pt"}))).parse("ANA SILVA E SOUZA")`` gives family ``SILVA E SOUZA``, where the default reads family ``SOUZA``, the ``E`` an initial: a chosen language's reading of a word it has a vocabulary reading of wins, and the other languages' vocabulary readings of that word leave, while its readings as a name and the readings shared by every language stay, so under ``pt`` ``John Smith DO`` reads family ``DO``. A pack choosing no language parses as before. See :doc:`locales`. :issue:`753`
     - **Add Token.reading, the reading the parse took for each word.** ``parse("John Smith PhD Jones").tokens[-1].reading`` is ``Reading('credential' as 'suffix', 'position')``, the reading 2.7's ``Ambiguity.alternative`` gave only for the other side of a fork, and ``ReadingKind`` gains ``patronymic``. The field is not compared, and a ``ParsedName`` pickled by 2.x loads with no readings. :issue:`754`
 
     **Breaking Changes**

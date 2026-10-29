@@ -2454,3 +2454,31 @@ def test_an_error_applying_a_choice_names_the_choice(
                        match="while applying the languages chosen, en, pt: "
                              "particles_ambiguous marks"):
         parser_for(_choosing("pt", code="aa"), _choosing("en", code="bb"))
+
+
+def test_a_choice_moves_case_masks_as_it_moves_words(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # no shipped choice changes a mask (no reading off by default or
+    # preferred away carries `cased`), so a stand-in compile does: under
+    # it `phd`'s mask leaves and `zzq`'s joins, and the delta applies the
+    # same to a caller's base, keeping the caller's own masks
+    import nameparser._parser as parser_mod
+    import nameparser._reading_index as ri
+    real = ri.compile_choice
+    default = real(frozenset())
+
+    def stand_in(chosen: frozenset[str]) -> object:
+        if not chosen:
+            return default
+        masks = {k: v for k, v in default["CAPITALIZATION_EXCEPTIONS"].items()
+                 if k != "phd"} | {"zzq": "ZzQ"}
+        return {**default, "CAPITALIZATION_EXCEPTIONS": masks}
+    monkeypatch.setattr(ri, "compile_choice", stand_in)
+    delta = parser_mod._choice_delta.__wrapped__(frozenset({"pt"}))  # type: ignore[attr-defined]
+    assert delta == ({}, (frozenset({"phd"}), (("zzq", "ZzQ"),)))
+    monkeypatch.setattr(parser_mod, "_choice_delta", lambda chosen: delta)
+    base = dataclasses.replace(Lexicon.default(), capitalization_exceptions=(
+        *Lexicon.default().capitalization_exceptions, ("abcq", "AbcQ")))
+    got = parser_mod._apply_choice(base, frozenset({"pt"}))
+    cap = got.capitalization_exceptions_map
+    assert "phd" not in cap and cap["zzq"] == "ZzQ" and cap["abcq"] == "AbcQ"

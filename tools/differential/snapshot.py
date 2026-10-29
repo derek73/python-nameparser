@@ -801,6 +801,10 @@ def main(argv: list[str] | None = None) -> int:
     if languages and (args.record or args.out):
         ap.error("--languages reads a choice against the default's readings "
                  "and records nothing; drop --record and --out")
+    if languages and args.since:
+        ap.error("--languages compares a choice with this tree's default "
+                 "readings; against --since REF the moves of every change "
+                 "since REF would be reported as the choice's. Drop --since")
     if args.local and args.since:
         ap.error("--since reads a committed snapshot; a local corpus has none")
     if args.sample is not None and not args.local:

@@ -237,8 +237,8 @@ def readings_of(text: str) -> tuple[IndexReading, ...]:
 
 
 #: The tags no choice names: mul.toml's readings are every language's
-#: and und.toml's no language's, so neither is a language to choose,
-#: and a choice never removes a mul reading (below).
+#: and und.toml's no known language's, so neither is a language to
+#: choose, and a choice never removes a reading of either (choose).
 UNCHOOSABLE = frozenset({"mul", "und"})
 
 
@@ -263,8 +263,8 @@ def selected(languages: Iterable[str]) -> frozenset[str]:
         if tag.casefold() in UNCHOOSABLE:
             raise ValueError(
                 f"{tag!r} is not a language to choose: mul.toml's readings "
-                f"are every language's and und.toml's no language's, and "
-                f"both are read under every choice; drop it")
+                f"are every language's and und.toml's no known language's, "
+                f"and no choice removes a reading of either; drop it")
         parts = tag.split("-")
         found = {by_fold[a] for a in ("-".join(parts[:i]).casefold()
                                       for i in range(len(parts), 0, -1))
@@ -288,7 +288,8 @@ def choose(readings: Iterable[IndexReading],
       the readings on by default;
     * **prefer**: on a word where a chosen file holds a vocabulary
       reading (any category but a name), the other files' vocabulary
-      readings leave, save mul.toml's, which are every language's. Name
+      readings leave, save mul.toml's, which are every language's, and
+      und.toml's, whose language is not known to be another's. Name
       readings never leave and never settle anything (decision 15):
       they keep the gate on;
     * **the shape clash**: a chosen file's conjunction reading drops
@@ -306,7 +307,7 @@ def choose(readings: Iterable[IndexReading],
     out = []
     for r in live:
         if (r.text in preferred and r.category != "name"
-                and r.tag not in chosen and r.tag != "mul"):
+                and r.tag not in chosen and r.tag not in UNCHOOSABLE):
             continue
         if r.tag in chosen and ("default" in r.props
                                 or (r.category == "conjunction"

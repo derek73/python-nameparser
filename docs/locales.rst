@@ -183,10 +183,24 @@ A tag selects its own file and those of the languages it belongs to,
 never the other way: ``pt-BR`` reads ``pt.toml`` too, and ``pt``
 leaves the Brazilian words alone. No other table of related languages
 is read, so a caller with Malay and Indonesian names chooses ``ms``
-and ``id``. A tag no vocabulary file holds raises ``ValueError`` at
-:func:`~nameparser.parser_for`, naming the tags that do. A pack that
-chooses no language leaves the base parser's vocabulary exactly as it
-was.
+and ``id``. Tags are compared without regard to case, and a tag is
+checked in one of three ways:
+
+- **A malformed tag** (``pt_BR``, ``p``) raises ``ValueError`` when the
+  :class:`~nameparser.Locale` is built.
+- **A tag no vocabulary file holds**, itself or any language it belongs
+  to (``xx``), raises ``ValueError`` at
+  :func:`~nameparser.parser_for`, naming the tags that have a file.
+- **A region or other subtag of a language that has a file** (``pt-PT``)
+  is accepted and reads that language's file, there being none of its
+  own.
+
+A pack that chooses no language leaves the base parser's vocabulary
+exactly as it was. A choice applied to a base parser adds what it turns
+on and removes what it drops, even where you added the word to the
+base yourself: under ``en``, a base listing ``do`` as a particle loses
+it, English holding ``do`` as a credential. Words the choice does not
+touch keep whatever you gave them.
 
 Finding packs by code
 ~~~~~~~~~~~~~~~~~~~~~
