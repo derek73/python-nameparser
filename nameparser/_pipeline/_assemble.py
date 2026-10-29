@@ -1,13 +1,19 @@
 """Not a stage: converts the final ParseState into a public ParsedName.
 
-Consumes: tokens (all roles set), dropped, ambiguities (by index;
+Consumes: tokens (all roles set, and their tags, which name each
+token's reading), dropped, ambiguities (by index;
 one carrying ``field_tail`` is worded from its word's final role,
 #626), and segments, for the part a withdrawn connective report's
 letter ends (rules/P8, #721).
-Produces: a validated ParsedName -- the constructor re-checks every
+Produces: a validated ParsedName, each token carrying the reading the
+parse took (`Token.reading`) -- the constructor re-checks every
 invariant (span order/bounds, ambiguity subset), so a pipeline bug
 that would produce an invalid result dies HERE, not in a renderer
 three layers away.
+Reads: Policy.middle_as_family, folding a report's other field as the
+policy folds a middle; and Lexicon.surnames, suffix_acronyms and
+suffix_acronyms_ambiguous, for the source of a token's reading where
+no tag gives it.
 
 Structural tokens (dropped maiden markers) are omitted, like delimiter
 characters. A main-stream token that somehow reaches here with no role
@@ -21,13 +27,44 @@ tests/v2/pipeline/test_assemble.py.
 """
 from __future__ import annotations
 
+from types import MappingProxyType
+
+from nameparser._lexicon import Lexicon, _normalize
 from nameparser._pipeline._state import (
-    FIELD_READING, NAME_ROLES, Beside, Deferred, ParseState,
-    PendingAmbiguity,
+    AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, FIELD_READING,
+    NAME_ROLES, SHAPE_ACRONYM_TAG, SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG,
+    TITLE_AMBIGUOUS_TAG, Beside, Deferred, ParseState, PendingAmbiguity,
+)
+from nameparser._pipeline._vocab import (
+    _PERIOD_ABBREV, name_source, suffix_kind,
 )
 from nameparser._types import (
-    FOLDED_TAG, Ambiguity, AmbiguityKind, ParsedName, Reading, Role, Token,
+    FOLDED_TAG, UNJOINED_CONJUNCTION_TAG, UNJOINED_TAG, Ambiguity,
+    AmbiguityKind, ParsedName, Reading, ReadingKind, ReadingSource, Role,
+    Token,
 )
+
+#: Every Reading a token can take, built once: a `Reading` is three
+#: enum members, so the parse hands out shared instances rather than
+#: constructing one per token, which would cost two frames a word
+#: (decisions/parse-cost).
+_READINGS = MappingProxyType({
+    (kind, role, source): Reading(kind, role, source)
+    for kind in ReadingKind for role in Role for source in ReadingSource})
+
+#: The tags that say a list or a shape made a word a suffix: without
+#: one, a suffix word stands there by position, unless the vocabulary
+#: lists it (a bracketed member, which classify leaves untagged).
+_SUFFIX_EVIDENCE = frozenset({
+    "vocab:suffix", "vocab:suffix-word", AMBIGUOUS_ACRONYM_TAG,
+    AMBIGUOUS_WORD_TAG, AGNOMEN_TAG, SHAPE_ACRONYM_TAG,
+    SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG})
+
+#: The tags that say the vocabulary lists a word as a title, in any of
+#: the title sets.
+_TITLE_TAGS = frozenset({
+    "vocab:title", TITLE_AMBIGUOUS_TAG, "vocab:given-title",
+    "vocab:after-given-title"})
 
 
 def _alternative(pending: PendingAmbiguity, materialized: tuple[Token, ...],
@@ -57,6 +94,31 @@ def _alternative(pending: PendingAmbiguity, materialized: tuple[Token, ...],
     return Reading(alt.kind, role, alt.source)
 
 
+def _opens_its_segment(state: ParseState, i: int) -> bool:
+    """Whether token `i` is the first word of its segment that is not a
+    title: where rules/P5 joins a bound given name. Asked only of a
+    word that is both a bound given name and a particle, read into the
+    given part, so other names pay nothing."""
+    dropped = state.dropped
+    for seg in state.segments:
+        if i in seg:
+            return next((j for j in seg if j not in dropped
+                         and state.tokens[j].role is not Role.TITLE),
+                        None) == i
+    return False
+
+
+def _listed_suffix(text: str, lexicon: Lexicon) -> bool:
+    """Whether the suffix vocabulary lists, its periods removed, an
+    acronym no tag marks: a bracketed member written with an interior
+    period ('M.A' in 'John Smith (M.A)'), which rules/S13 settles by its
+    writing and classify leaves untagged. A listed suffix WORD is
+    always tagged, bracketed or not. Asked only of a suffix word with
+    no suffix tag, so other names pay nothing."""
+    n = _normalize(text).replace(".", "")
+    return n in lexicon.suffix_acronyms or n in lexicon.suffix_acronyms_ambiguous
+
+
 # rules/A2: "a name with no name content parses to the empty
 # name — every field empty, false as a boolean — while ambiguities
 # born from its punctuation survive on the empty result"
@@ -64,11 +126,118 @@ def _alternative(pending: PendingAmbiguity, materialized: tuple[Token, ...],
 def assemble(state: ParseState) -> ParsedName:
     dropped = set(state.dropped)
     final: dict[int, Token] = {}
+    surnames = state.lexicon.surnames
+    tokens = state.tokens
+    last = len(tokens)
+    # the suffix reading of the token before, and whether it opens a
+    # credential split across a space, whose second word takes it
+    before: Reading | None = None
+    prev_split = False
     for i, t in enumerate(state.tokens):
         if i in dropped:
             continue
         role = t.role if t.role is not None else Role.GIVEN
-        final[i] = Token(t.text, t.span, role, t.tags)
+        tags = t.tags
+        # The reading the parse took (Token.reading): the final role
+        # says which decision placed the word, and the tags the
+        # deciding stages left (classify's, the `joined` and unjoined
+        # marks) say which reading of it that decision weighed. Read
+        # here, where roles are final, so a rule that moves a word
+        # later (P1's fold, P6's attachment, the policy folds) needs
+        # no reading of its own to keep in step. Per token, measured
+        # 2026-10-29: no frame for an untagged non-suffix word, the
+        # commonest; one for a listed or shaped suffix (`suffix_kind`)
+        # and for a tagged name word that reaches `name_source` or a
+        # family word glued to the next (`_normalize`); three for a
+        # suffix word nothing tags or lists (`suffix_kind`, then
+        # `_listed_suffix` and its `_normalize`). `_vocab`'s two predicates
+        # also name the sources of the reading NOT taken
+        # (Ambiguity.alternative).
+        # Reading.languages joins here, in 4a's follow-up: phase 3's
+        # reading index (`_reading_index.readings_of`, 3a) answers
+        # which files hold a reading.
+        if role is Role.SUFFIX:
+            kind, source = suffix_kind(t.text, tags)
+            if (source is ReadingSource.VOCABULARY
+                    and tags.isdisjoint(_SUFFIX_EVIDENCE)):
+                if "conjunction" in tags:
+                    # a connective joining two entries ('and' in 'John
+                    # Smith, PhD and MD'), as in a title or name part
+                    kind = ReadingKind.CONJUNCTION
+                elif not _listed_suffix(t.text, state.lexicon):
+                    # nothing lists or shapes it: a word read into the
+                    # suffix by where it stands
+                    source = ReadingSource.POSITION
+                    if ("joined" in tags and before is not None
+                            and prev_split):
+                        # the second word of a credential split across
+                        # a space, which is one credential ('Ph.' 'D.');
+                        # any other word a run took stays a credential
+                        # by position ('Jones' in 'John Smith III Jones')
+                        kind, source = before.kind, before.source
+            reading = _READINGS[kind, role, source]
+            before = reading
+            prev_split = (SPLIT_CREDENTIAL_TAG in tags
+                          or SPLIT_MEMBER_TAG in tags)
+        else:
+            before = None
+            if role is Role.TITLE:
+                if "conjunction" in tags:
+                    kind, source = (ReadingKind.CONJUNCTION,
+                                    ReadingSource.VOCABULARY)
+                elif not tags.isdisjoint(_TITLE_TAGS):
+                    kind, source = ReadingKind.TITLE, ReadingSource.VOCABULARY
+                elif _PERIOD_ABBREV.match(t.text):
+                    # rules/H2's shape: an unlisted abbreviation
+                    kind, source = ReadingKind.TITLE, ReadingSource.SHAPE
+                else:
+                    # a title phrase's connective object ('of
+                    # Parliament'), a title by where it stands
+                    kind, source = ReadingKind.TITLE, ReadingSource.POSITION
+            elif not tags:
+                kind, source = ReadingKind.NAME, ReadingSource.POSITION
+                # a surname the segmentation split off an unspaced
+                # name by the surname list ('김' in '김민준'): a family
+                # word touching the next with nothing written between
+                # (C-level). Spaced, the order placed the family and the
+                # list decided nothing ('김' in '김 민준')
+                if (role is Role.FAMILY and i + 1 < last
+                        and tokens[i + 1].span.start == t.span.end
+                        and _normalize(t.text) in surnames):
+                    source = ReadingSource.VOCABULARY
+            elif "initial" in tags:
+                kind, source = ReadingKind.INITIAL, ReadingSource.SHAPE
+            elif ("conjunction" in tags
+                    and UNJOINED_CONJUNCTION_TAG not in tags):
+                kind, source = (ReadingKind.CONJUNCTION,
+                                ReadingSource.VOCABULARY)
+            elif ("particle" in tags and UNJOINED_TAG not in tags
+                    # a nickname has no family for a particle to join,
+                    # and the unjoined marks are written in the name
+                    # parts only ('"Van" Smith' reads a name)
+                    and role is not Role.NICKNAME
+                    and not ("vocab:bound-given" in tags
+                             and role is Role.GIVEN
+                             and _opens_its_segment(state, i))):
+                kind, source = ReadingKind.PARTICLE, ReadingSource.VOCABULARY
+            elif "vocab:bound-given" in tags:
+                # rules/P5's bound given name, joined ('Abdul Aziz', and
+                # 'Abu Bakar' in 'Abu Bakar Smith') or not ('Abdul' as a
+                # middle name in 'John Abdul Smith'), a word the
+                # vocabulary lists as a given name. One that is also a
+                # particle ('abu') is P5's only in the given part and
+                # only where P5 joins, the first word of its segment
+                # past the titles; elsewhere the particle chain took it
+                # (the family in 'John Abu Smith', the given part in
+                # 'Salim Ali abu Bakar Hassan' under
+                # FAMILY_FIRST_GIVEN_LAST) and it read the arm above
+                kind, source = ReadingKind.NAME, ReadingSource.VOCABULARY
+            else:
+                # a particle or connective with nothing to join reads
+                # as the name word it stands as ('van' in 'van Gogh')
+                kind, source = ReadingKind.NAME, name_source(tags)
+            reading = _READINGS[kind, role, source]
+        final[i] = Token(t.text, t.span, role, tags, reading)
     # No alphanumeric character among the SURVIVING tokens means no
     # name: a bare '.' or '- -' is not a person. v1 kept such input
     # (parse('.') -> first '.'); 2.0 empties it so bool() stays an

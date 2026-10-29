@@ -274,6 +274,17 @@ class Token:
     #: "initial", "joined") are API; namespaced tags like "vocab:..."
     #: are unstable debugging provenance -- never match against them.
     tags: frozenset[str] = frozenset()
+    #: The reading the parse took for this word: what it was read as,
+    #: the field it landed in (always this token's :attr:`role`), and
+    #: why -- a listed word, a declared name, a shape, or position
+    #: alone. The twin of :attr:`Ambiguity.alternative`, which holds
+    #: the reading NOT taken. None for a token the parse did not read:
+    #: one :meth:`ParsedName.replace` or :meth:`Parser.revise` builds,
+    #: or one loaded from a pickle written before 3.0. Not compared:
+    #: two tokens equal without it, as before 3.0, and
+    #: :meth:`ParsedName.comparison_key` ignores it.
+    reading: Reading | None = field(
+        default=None, compare=False, metadata={ADDED_IN: "3.0.0"})
 
     # in the class body so @dataclass(slots=True) keeps them
     __getstate__ = _guarded_getstate
@@ -288,6 +299,19 @@ class Token:
             raise ValueError("Token.text must be a non-empty string")
         object.__setattr__(
             self, "role", _coerce_enum(self.role, Role, "Role", "roles"))
+        if self.reading is not None:
+            if not isinstance(self.reading, Reading):
+                raise TypeError(
+                    f"Token.reading must be a Reading or None, got "
+                    f"{self.reading!r}"
+                )
+            if self.reading.role is not self.role:
+                raise ValueError(
+                    f"Token.reading names the field {self.reading.role.value!r} "
+                    f"but the token's role is {self.role.value!r}; a "
+                    f"token's reading is of its own field: pass "
+                    f"Reading(kind, role, source) with the token's role"
+                )
         if self.span is not None:
             if not (
                 isinstance(self.span, tuple)
@@ -760,6 +784,11 @@ class ReadingKind(StrEnum):
     INITIAL = "initial"
     #: An ordinary name word, given or family.
     NAME = "name"
+    #: A patronymic or matronymic: a word naming the parent ("bin
+    #: Mohamad", "Ivanovich"), in whichever field the parse put it.
+    #: Added in 3.0 for the patronymic view; no reading of the parse
+    #: takes it yet.
+    PATRONYMIC = "patronymic"
 
 
 class ReadingSource(StrEnum):
@@ -779,17 +808,21 @@ class ReadingSource(StrEnum):
     #: reading any word has where it stands, an ordinary name word. A
     #: word a credential run took by position alone ("Jones" in "John
     #: Smith PhD Jones") has this as its alternative, where "Ma" in
-    #: "JOHN SMITH MA" has :attr:`DECLARED`.
+    #: "JOHN SMITH MA" has :attr:`DECLARED`. As a reading taken, it is
+    #: also the source of a word a run took into its field by where it
+    #: stands rather than by what it is: "Jones" itself, read into the
+    #: suffix behind "PhD", or an unlisted word past a second comma.
     POSITION = "position"
 
 
 @dataclass(frozen=True, slots=True)
 class Reading:
     """One way of reading a word, as a decision of the parse weighed
-    it. :attr:`Ambiguity.alternative` holds the reading the parse did
-    NOT take, so a caller who would have read the name the other way
-    knows which field the word would have gone to and why the reading
-    was available at all."""
+    it. :attr:`Token.reading` holds the reading the parse took, and
+    :attr:`Ambiguity.alternative` the reading it did NOT take, so a
+    caller who would have read the name the other way knows which
+    field the word would have gone to and why the reading was
+    available at all."""
 
     #: What the word is read as.
     kind: ReadingKind
