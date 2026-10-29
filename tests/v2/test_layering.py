@@ -16,6 +16,7 @@ PKG = pathlib.Path(nameparser.__file__).parent
 # a plan, and without this list a renamed existing module would silently
 # drop out of enforcement. Later tasks add each stage file as it lands.
 _MUST_EXIST = {"_types.py", "_lexicon.py", "_policy.py", "_locale.py",
+               "_reading_index.py",
                "_render.py", "_pipeline/_state.py", "_pipeline/__init__.py",
                "_pipeline/_extract.py", "_pipeline/_tokenize.py",
                "_pipeline/_vocab.py", "_pipeline/_script_segment.py",
@@ -57,6 +58,11 @@ ALLOWED = {
     # submodule, and since 3.0 the package holds nothing else
     "_lexicon.py": ("nameparser.config.",),
     "_policy.py": ("nameparser._types",),
+    # the shared compiler and the reading index's reader (#753, 3a): the
+    # index, a config DATA module, at call time only, and nothing
+    # internal at module level, since tools/vocab/build.py loads this
+    # file by path as it loads _lexicon.py
+    "_reading_index.py": ("nameparser.config.",),
     # _types is a downward import (bottom of the graph): Locale shares
     # the _guarded_getstate/_guarded_setstate pickle functions
     "_locale.py": ("nameparser._types", "nameparser._lexicon",

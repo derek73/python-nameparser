@@ -171,6 +171,34 @@ def test_a_reading_off_by_default_compiles_to_nothing() -> None:
     assert not any("zzr" in v for v in both.values())
 
 
+@pytest.mark.parametrize(("clash", "name", "marker"), [
+    ("credential = {}", "family", "SUFFIX_ACRONYMS_AMBIGUOUS"),
+    ("generation = {}", "given", "SUFFIX_WORDS_AMBIGUOUS"),
+    ("office = {}", "given", "TITLES_AMBIGUOUS"),
+])
+def test_a_name_reading_off_by_default_marks_nothing_until_it_is_on(
+        clash: str, name: str, marker: str) -> None:
+    # 3a: a name reading written default = false compiles to nothing, as
+    # any off reading does, so the reading it clashes with compiles as
+    # if it were absent; written on, the same reading derives its
+    # marker -- the turn-on a pack makes (3b), in miniature. A particle
+    # beside an off given reading is refused instead (the mutation table)
+    def compiled(default: str) -> dict[str, Any]:
+        return _compile({"en.toml": _w(f'[[word]]\ntext = "zzq"\n{clash}\n'
+                                       f'{name} = {{ note = "x"{default} }}')})
+
+    assert "zzq" in compiled("")[marker]
+    off = compiled(", default = false")
+    assert "zzq" not in off[marker]
+    assert off == _compile({"en.toml": _w(f'[[word]]\ntext = "zzq"\n{clash}')})
+
+
+def test_a_given_name_written_short_off_by_default_compiles_to_nothing() -> None:
+    c = _compile({"tl.toml": _w('[[word]]\ntext = "zzq"\ngiven = { note = "x", same_as = "maria", default = false }\n'
+                                'excluded = { title = "x" }')})
+    assert not any("zzq" in v for v in c.values())
+
+
 def test_a_suffix_word_beside_a_name_reading_is_gated_and_an_agnomen_by_the_count() -> None:
     # the derived marker for a suffix word (rules/S11): a generation
     # beside a name reading is gated with the case cue, an agnomen with
@@ -297,6 +325,20 @@ MUTATIONS = [
     ("agnomen-as-an-acronym", {"pt.toml": _w('[[word]]\ntext = "filho"\nagnomen = { acronym = true }\nfamily = { note = "x" }')}, "an agnomen is a word"),
     ("agnomen-without-a-name-reading", {"pt.toml": _w('[[word]]\ntext = "filho"\nagnomen = {}')}, "an agnomen needs a `given` or `family` reading"),
     ("agnomen-whose-name-reading-is-elsewhere-only-as-an-exclusion", {"pt.toml": _w('[[word]]\ntext = "filho"\nagnomen = {}\nexcluded = { family = "x" }')}, "an agnomen needs a `given` or `family` reading"),
+    # a name reading written default = false (3a) is held to the same
+    # value check as any reading's `default`, gates nothing in the
+    # default, and so is no name reading for the checks that guard the
+    # default's compile: an agnomen it alone would gate reads ungated,
+    # and a particle whose word's only given reading it is waits for a
+    # pack to decide which side of check 11 it takes
+    ("name-default-true", {"pt.toml": _w('[[word]]\ntext = "zzq"\nfamily = { note = "x", default = true }\ncredential = {}')}, "write default = false"),
+    ("name-default-not-a-bool", {"pt.toml": _w('[[word]]\ntext = "zzq"\ngiven = { note = "x", default = 0 }\ncredential = {}')}, "write default = false"),
+    ("agnomen-whose-only-name-reading-is-off", {"pt.toml": _w('[[word]]\ntext = "filho"\nagnomen = {}\nfamily = { note = "x", default = false }')}, "an agnomen needs a `given` or `family` reading"),
+    ("agnomen-whose-only-name-reading-is-off-elsewhere", {"pt.toml": _w('[[word]]\ntext = "filho"\nagnomen = {}'), "es.toml": _w('[[word]]\ntext = "filho"\nfamily = { note = "x", default = false }\nexcluded = { title = "x" }')}, "an agnomen needs a `given` or `family` reading"),
+    ("off-name-reading-beside-an-honorific", {"ja.toml": _w('[[word]]\ntext = "zzt"\nhonorific = {}\nfamily = { note = "x", default = false }')}, "gates nothing"),
+    ("particle-whose-only-given-reading-is-off", {"nl.toml": _w('[[word]]\ntext = "in"\ngiven = { note = "x", default = false }\npreposition = {}')}, "only given readings are written default = false"),
+    ("particle-stating-never-given-beside-an-off-given-reading", {"nl.toml": _w('[[word]]\ntext = "in"\ngiven = { note = "x", default = false }\npreposition = { may_be_given = false }')}, "only given readings are written default = false"),
+    ("bound-given-particle-whose-only-given-reading-is-off", {"und.toml": _w('[[word]]\ntext = "abu"\ngiven = { note = "x", default = false }\nparticle = {}\nbound_given = {}')}, "only given readings are written default = false"),
     ("decided-not-a-date", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = { decided = "2026-10-18" }')}, "TOML date"),
     # tomllib reads a date-time as a datetime, which isinstance calls a date
     ("decided-a-date-time", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = { decided = 2026-10-18T09:00:00 }')}, "not a string or a date-time"),
@@ -444,6 +486,14 @@ def test_every_mutation_starts_from_a_pool_the_checks_accept() -> None:
         {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = {}\n\n'
                        '[[word]]\ntext = "jnr"\ngeneration = { same_as = "jr" }')},
         {"und.toml": _w('[[word]]\ntext = "abu"\ngiven = { note = "x" }\nparticle = {}\nbound_given = {}')},
+        # an off name reading beside a reading it would gate compiles,
+        # and so does an off agnomen beside an off name reading; an off
+        # given reading beside a particle is fine once another given
+        # reading of the word is on
+        {"en.toml": _w('[[word]]\ntext = "zzq"\ncredential = {}\nfamily = { note = "x", default = false }')},
+        {"pt-BR.toml": _w('[[word]]\ntext = "zzq"\nagnomen = { default = false }\nfamily = { note = "x", default = false }')},
+        {"nl.toml": _w('[[word]]\ntext = "zzq"\ngiven = { note = "x", default = false }\npreposition = {}'),
+         "en.toml": _w('[[word]]\ntext = "zzq"\ngiven = { note = "x" }\nexcluded = { title = "x" }')},
         # check 11 met: a particle beside a given reading states nothing,
         # in its own file or another, and a count-less one carries a note
         {"nl.toml": _w('[[word]]\ntext = "van"\ngiven = { note = "x" }\npreposition = {}'),
