@@ -238,17 +238,16 @@ def readings_of(text: str) -> tuple[IndexReading, ...]:
     return tuple(from_row(text, row) for row in _by_text().get(text, ()))
 
 
-def languages_of(text: str, categories: frozenset[str]) -> tuple[str, ...]:
+def languages_of(text: str, kinds: frozenset[str]) -> tuple[str, ...]:
     """The tags of the files holding a reading of `text`, on by
-    default, whose kind falls in one of `categories` (values of
-    :data:`CATEGORY`), each once, in index order; empty for a word no
-    file holds in them. `text` is normalized as :func:`readings_of`
-    takes it. What assemble fills ``Reading.languages`` with
-    (decisions/vocabulary-model, 2026-10-29); its first call in a
-    process loads the index."""
+    default, of one of `kinds` (keys of :data:`CATEGORY`), each once,
+    in index order; empty for a word no file holds as one of them.
+    `text` is normalized as :func:`readings_of` takes it. What
+    assemble fills ``Reading.languages`` with (decisions/vocabulary-
+    model, 2026-10-29); its first call in a process loads the index."""
     out: list[str] = []
     for tag, kind, pairs in _by_text().get(text, ()):
-        if (CATEGORY[kind] in categories and tag not in out
+        if (kind in kinds and tag not in out
                 and ("default", False) not in pairs):
             out.append(tag)
     return tuple(out)

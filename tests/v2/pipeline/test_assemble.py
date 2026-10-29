@@ -441,6 +441,10 @@ _EXPECTED_LANGUAGES = [
     # a name the vocabulary declares, and a bound given name
     ("van Gogh", "van", ("nl",)),
     ("Chas. Smith", "Chas.", ("en",)),
+    # a name reading names the files listing the word as a name of its
+    # own field: `ma` is family in en, given in en and fil
+    ("Long Ma", "Ma", ("en",)),
+    ("Ma Long", "Ma", ("en", "fil")),
     ("Abu Bakar Smith", "Abu", ("ar",)),
     # an acronym by its periods removed, and a credential split across
     # a space, listed whole, each of its words naming the files
@@ -457,6 +461,9 @@ _EXPECTED_LANGUAGES = [
     # combining mark
     ("John Smith, M.D./Ph.D.", "M.D./Ph.D.", ("en",)),
     ("Lt.Gov. John Smith", "Lt.Gov.", ("en",)),
+    # a word the lexicon lists whole without its periods is read whole,
+    # not by its parts
+    ("Lt.Gen. John Smith", "Lt.Gen.", ("en",)),
     ("प्रोफे.डॉ. अदा शर्मा", "प्रोफे.डॉ.", ("hi", "mr")),
     # a union over parts is sorted, as a word's own files are
     ("John Smith, MS-V", "MS-V", ("en", "mul")),
@@ -480,6 +487,23 @@ def test_a_reading_names_the_files_holding_it(
     assert tok.reading.languages == languages
 
 
+@pytest.mark.parametrize("field,word,text", [
+    ("titles", "zzq-dr", "Zzq-Dr John Smith"),
+    ("particles", "mac-van", "John mac-van Smith"),
+])
+def test_a_callers_whole_word_names_no_file_of_its_parts(
+        field: str, word: str, text: str) -> None:
+    # the parse read it whole, so the files of `dr` or `van` are not
+    # its reading's; the default's own joined words still name theirs
+    # (`Lt.Gov.` in _EXPECTED_LANGUAGES)
+    lex = Lexicon.default().add(**{field: {word}})
+    (tok,) = [t for t in Parser(lexicon=lex).parse(text).tokens
+              if t.text.lower() == word]
+    assert tok.reading is not None
+    assert tok.reading.source is ReadingSource.VOCABULARY
+    assert tok.reading.languages == ()
+
+
 def test_a_reading_from_a_callers_own_vocabulary_names_no_file() -> None:
     # a word no file holds, and one a file holds only off by default
     # (`st`, a Czech generation written `default = false`)
@@ -495,12 +519,13 @@ def test_a_reading_from_a_callers_own_vocabulary_names_no_file() -> None:
 def test_an_alternative_names_the_files_holding_it() -> None:
     (amb,) = parse("JOHN SMITH MA").ambiguities
     assert amb.alternative is not None
-    # `ma` as a name: given and family in en, given in fil
-    assert amb.alternative.languages == ("en", "fil")
+    # `ma` as a family name: en lists it so, fil only as a given name
+    assert amb.alternative.languages == ("en",)
     (amb,) = parse("van Gogh").ambiguities
     assert amb.alternative is not None
     assert amb.alternative.languages == ("nl",)
-    # over the report's words, sorted ('van' nl, 'DO' en)
+    # over the report's words, sorted ('van' and 'DO' as given names,
+    # nl and en)
     (amb,) = parse("Doe, John van DO").ambiguities
     assert amb.alternative is not None
     assert amb.alternative.languages == ("en", "nl")

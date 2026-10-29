@@ -952,7 +952,11 @@ class Reading:
     #: The BCP 47 tags of the shipped vocabulary files that hold this
     #: reading of the word, on by default (``("es", "fr", "it", "nl",
     #: "pt")`` for the particle ``de``, ``("mul",)`` for the title
-    #: ``Dr.``), sorted. Empty for a reading no file holds: a shape,
+    #: ``Dr.``), sorted; a name reading takes the files listing the
+    #: word as a name of its field, given or family (``Ma`` read as a
+    #: family name names ``en``, which lists it so, and not ``fil``,
+    #: which lists it as a given name). Empty for a reading no file
+    #: holds: a shape,
     #: position alone, a word a caller's own ``Lexicon`` adds that no
     #: file holds in that category, or a shipped list kept outside the
     #: per-word files (the Korean surnames that divide ``김민준``).
@@ -971,12 +975,17 @@ class Reading:
         # the members the parser passes need no coercion, and a report
         # pays no frame for it (decisions/parse-cost)
         if type(self.languages) is not tuple:
-            if isinstance(self.languages, str):
+            langs = self.languages
+            if isinstance(langs, str):
                 raise TypeError(
                     f"Reading.languages must be an iterable of BCP 47 "
-                    f"tags, got the str {self.languages!r}; write "
-                    f"({self.languages!r},)")
-            object.__setattr__(self, "languages", tuple(self.languages))
+                    f"tags, got the str {langs!r}; write ({langs!r},)")
+            if isinstance(langs, Mapping) or not isinstance(langs, Iterable):
+                raise TypeError(
+                    f"Reading.languages must be an iterable of BCP 47 "
+                    f"tags as str, got {langs!r}; pass a tuple or list of "
+                    f"tags, such as ('en',)")
+            object.__setattr__(self, "languages", tuple(langs))
         for tag in self.languages:
             if not isinstance(tag, str):
                 raise TypeError(

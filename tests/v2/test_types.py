@@ -528,10 +528,20 @@ def test_reading_languages_are_a_tuple_of_tags_and_are_not_compared() -> None:
     assert bare.languages == ()
     assert held.languages == ("es", "fr")
     assert held == bare and hash(held) == hash(bare)
-    with pytest.raises(TypeError, match=r"got the str 'es'; write \('es',\)"):
-        Reading("particle", "family", "vocabulary", "es")  # type: ignore[arg-type]
-    with pytest.raises(TypeError, match="as str, got 1"):
-        Reading("particle", "family", "vocabulary", ("es", 1))  # type: ignore[arg-type]
+
+
+
+@pytest.mark.parametrize("bad,match", [
+    ("es", r"got the str 'es'; write \('es',\)"),
+    ({"es": 1}, r"got \{'es': 1\}; pass a tuple or list of tags"),
+    (5, r"got 5; pass a tuple or list of tags, such as \('en',\)"),
+    (("es", 1), r"as str, got 1 in \('es', 1\)"),
+], ids=["bare-str", "mapping", "not-iterable", "non-str-tag"])
+def test_reading_languages_refuses_what_is_not_tags(
+        bad: object, match: str) -> None:
+    from nameparser import Reading
+    with pytest.raises(TypeError, match=match):
+        Reading("particle", "family", "vocabulary", bad)  # type: ignore[arg-type]
 
 
 def test_ambiguity_alternative_is_a_reading_and_is_not_compared() -> None:
@@ -716,7 +726,7 @@ def test_a_reading_pickled_by_2_8_0_loads_without_languages() -> None:
     (old,), (new,) = loaded.ambiguities, now.ambiguities
     assert old.alternative is not None and new.alternative is not None
     assert old.alternative.languages == ()
-    assert new.alternative.languages == ("en", "fil")
+    assert new.alternative.languages == ("en",)
     assert old.alternative == new.alternative
     again = pickle.loads(pickle.dumps(now))
     assert [t.reading.languages for t in again.tokens if t.reading] == [

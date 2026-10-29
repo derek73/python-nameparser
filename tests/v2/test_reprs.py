@@ -32,7 +32,7 @@ def test_ambiguity_repr_shows_kind_and_token_texts() -> None:
 
 def test_reading_repr_shows_kind_field_and_source() -> None:
     alt = parse("JOHN SMITH MA").ambiguities[0].alternative
-    assert repr(alt) == "Reading('name' as 'family', 'declared', in en fil)"
+    assert repr(alt) == "Reading('name' as 'family', 'declared', in en)"
     # the files are left out where none holds the reading
     assert repr(Reading("name", "family", "position")) == (  # type: ignore[arg-type]
         "Reading('name' as 'family', 'position')")
