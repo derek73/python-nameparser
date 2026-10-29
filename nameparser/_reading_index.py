@@ -17,7 +17,9 @@ This module is the compiler both the build and a choice of languages
 (phase 3b, :func:`choose`) run, so there is one implementation of what a reading
 compiles to; tests/v2/test_reading_index.py holds that compiling the
 index reproduces _compiled.py exactly. It is also the one way to read
-the index at run time (:func:`readings_of`, :func:`index`).
+the index at run time (:func:`readings_of`, :func:`index`), and the
+reader every parse calls for ``Reading.languages``
+(:func:`languages_of`), so the first parse in a process loads it.
 
 It imports nothing internal at module level, and the index only inside
 :func:`index`: the build loads this file by path, as it loads
@@ -165,8 +167,8 @@ class IndexReading(ReadingProperties):
 
     A lookup result, not a value to keep: its ``props`` is a read-only
     view, so an IndexReading neither hashes nor pickles. What a parse
-    would keep of it (``Reading.languages``, filled by a follow-up to
-    phase 4a) is its tag."""
+    keeps of it is its tag, in ``Reading.languages``
+    (:func:`languages_of`)."""
 
     text: str
     tag: str
@@ -231,8 +233,8 @@ def readings_of(text: str) -> tuple[IndexReading, ...]:
     edge periods removed; _lexicon._normalize), and a phrase whole
     (``"z domu"``). A reading the parse took from a caller's own
     vocabulary, from a shape or from position has no row here, which is
-    what ``Reading.languages`` is to read as empty once a follow-up to
-    phase 4a fills it from here; no parse calls this yet."""
+    what an empty ``Reading.languages`` says; the parse reads the tags
+    through :func:`languages_of`, which builds no IndexReading."""
     return tuple(from_row(text, row) for row in _by_text().get(text, ()))
 
 
@@ -347,6 +349,21 @@ def changed_words(chosen: frozenset[str]) -> frozenset[str]:
         else:
             words |= a ^ b
     return frozenset(w for entry in words for w in (entry, *entry.split()))
+
+
+def languages_of(text: str, kinds: frozenset[str]) -> tuple[str, ...]:
+    """The tags of the files holding a reading of `text`, on by
+    default, of one of `kinds` (keys of :data:`CATEGORY`), each once,
+    in index order; empty for a word no file holds as one of them.
+    `text` is normalized as :func:`readings_of` takes it. What
+    assemble fills ``Reading.languages`` with (decisions/vocabulary-
+    model, 2026-10-29); its first call in a process loads the index."""
+    out: list[str] = []
+    for tag, kind, pairs in _by_text().get(text, ()):
+        if (kind in kinds and tag not in out
+                and ("default", False) not in pairs):
+            out.append(tag)
+    return tuple(out)
 
 
 class CompileError(ValueError):

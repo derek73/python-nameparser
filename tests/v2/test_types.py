@@ -7,8 +7,8 @@ import pytest
 
 from nameparser import FAMILY_FIRST, GIVEN_FIRST, Lexicon, Locale, Policy, parse
 from nameparser._types import (
-    STABLE_TAGS, Ambiguity, AmbiguityKind, ParsedName, Role, Segmentation,
-    Span, Token,
+    STABLE_TAGS, Ambiguity, AmbiguityKind, ParsedName, Reading, Role,
+    Segmentation, Span, Token,
 )
 
 
@@ -467,8 +467,9 @@ def test_types_pickle_round_trip() -> None:
     assert pickle.loads(pickle.dumps(seg)) == seg
     # Reading (#752 phase 2m) carries the same guarded pair
     from nameparser import Reading
-    reading = Reading("name", "family", "declared")  # type: ignore[arg-type]
+    reading = Reading("name", "family", "declared", ("en",))  # type: ignore[arg-type]
     assert pickle.loads(pickle.dumps(reading)) == reading
+    assert pickle.loads(pickle.dumps(reading)).languages == ("en",)
 
 
 def test_span_add_is_blocked() -> None:
@@ -520,6 +521,29 @@ def test_reading_coerces_its_strings_and_refuses_unknown_values() -> None:
         Reading("name", "family", "guess")  # type: ignore[arg-type]
 
 
+def test_reading_languages_are_a_tuple_of_tags_and_are_not_compared() -> None:
+    from nameparser import Reading
+    bare = Reading("particle", "family", "vocabulary")  # type: ignore[arg-type]
+    held = Reading("particle", "family", "vocabulary", ["es", "fr"])  # type: ignore[arg-type]
+    assert bare.languages == ()
+    assert held.languages == ("es", "fr")
+    assert held == bare and hash(held) == hash(bare)
+
+
+
+@pytest.mark.parametrize("bad,match", [
+    ("es", r"got the str 'es'; write \('es',\)"),
+    ({"es": 1}, r"got \{'es': 1\}; pass a tuple or list of tags"),
+    (5, r"got 5; pass a tuple or list of tags, such as \('en',\)"),
+    (("es", 1), r"as str, got 1 in \('es', 1\)"),
+], ids=["bare-str", "mapping", "not-iterable", "non-str-tag"])
+def test_reading_languages_refuses_what_is_not_tags(
+        bad: object, match: str) -> None:
+    from nameparser import Reading
+    with pytest.raises(TypeError, match=match):
+        Reading("particle", "family", "vocabulary", bad)  # type: ignore[arg-type]
+
+
 def test_ambiguity_alternative_is_a_reading_and_is_not_compared() -> None:
     from nameparser import Reading
     tok = Token("MA", Span(11, 13), Role.SUFFIX)
@@ -541,6 +565,11 @@ def _token_state() -> dict[str, object]:
     return dict(Token("Vega", Span(18, 22), Role.FAMILY, frozenset(),
                       Reading("name", "family", "position")  # type: ignore[arg-type]
                       ).__getstate__())
+
+
+def _reading_state() -> dict[str, object]:
+    return dict(Reading("name", "family", "declared",  # type: ignore[arg-type]
+                        ("en",)).__getstate__())
 
 
 def _without(state: dict[str, object], *names: str) -> dict[str, object]:
@@ -618,9 +647,18 @@ _REFUSED_SKEWS = [
     pytest.param(Locale, lambda: _without(_locale_state(), "languages",
                                           "policy"),
                  "missing fields: policy;",
-                 id="missing-shipped-field-beside-missing-languages"),
+                 id="locale-missing-shipped-field-beside-missing-languages"),
     pytest.param(Locale, lambda: _renamed(_locale_state(), "languages",
                                           "language"),
+                 "unexpected fields: language",
+                 id="locale-renamed-languages"),
+    # Reading.languages (3.0) likewise
+    pytest.param(Reading, lambda: _without(_reading_state(), "languages",
+                                           "source"),
+                 "missing fields: source;",
+                 id="missing-shipped-field-beside-missing-languages"),
+    pytest.param(Reading, lambda: _renamed(_reading_state(), "languages",
+                                           "language"),
                  "unexpected fields: language",
                  id="renamed-languages"),
 ]
@@ -694,6 +732,28 @@ def test_a_parsedname_pickled_by_2_8_0_loads() -> None:
     assert all(t.reading is not None for t in now.tokens)
     again = pickle.loads(pickle.dumps(now))
     assert [t.reading for t in again.tokens] == [t.reading for t in now.tokens]
+
+
+def test_a_reading_pickled_by_2_8_0_loads_without_languages() -> None:
+    """tests/v2/data/parsedname_v28_alternative.pickle is `parse("JOHN
+    SMITH MA")` pickled (protocol 4) by the released 2.8.0 wheel, its
+    Ambiguity's alternative a Reading written before
+    `Reading.languages` existed. Made 2026-10-29 the way the fixture
+    above was, version and module path asserted. pickle.load is safe
+    here: a repo-controlled fixture."""
+    import pickle
+    with open(Path(__file__).parent / "data"
+              / "parsedname_v28_alternative.pickle", "rb") as f:
+        loaded = pickle.load(f)
+    now = parse("JOHN SMITH MA")
+    (old,), (new,) = loaded.ambiguities, now.ambiguities
+    assert old.alternative is not None and new.alternative is not None
+    assert old.alternative.languages == ()
+    assert new.alternative.languages == ("en",)
+    assert old.alternative == new.alternative
+    again = pickle.loads(pickle.dumps(now))
+    assert [t.reading.languages for t in again.tokens if t.reading] == [
+        t.reading.languages for t in now.tokens if t.reading]
 
 
 def test_a_parsedname_pickled_by_2_6_0_loads() -> None:
