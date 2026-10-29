@@ -7,6 +7,7 @@ Release Log
     **Additions**
 
     - **Add Token.reading, the reading the parse took for each word.** ``parse("John Smith PhD Jones").tokens[-1].reading`` is ``Reading('credential' as 'suffix', 'position')``, the reading 2.7's ``Ambiguity.alternative`` gave only for the other side of a fork, and ``ReadingKind`` gains ``patronymic``. The field is not compared, and a ``ParsedName`` pickled by 2.x loads with no readings. :issue:`754`
+    - **Add Reading.languages, the language files that list a word the way it was read.** ``parse("Dr. Juan de la Vega III").tokens[2].reading.languages`` is ``('es', 'fr', 'it', 'nl', 'pt')`` for the particle ``de``, and ``Ambiguity.alternative`` names its files too; a reading by shape or position names none. It is not compared, and a ``Reading`` pickled by 2.7 or 2.8 loads with none. The first parse in a process that meets a listed word loads the reading index once: about 1 ms, or about 16 ms where Python writes no bytecode cache. :issue:`754`, :issue:`753`
 
     **Breaking Changes**
 

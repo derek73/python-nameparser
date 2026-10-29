@@ -15,7 +15,9 @@ Reads: Policy.middle_as_family, folding a report's other field as the
 policy folds a middle; Policy.name_order, for ParsedName.order where
 no positional read happened; and Lexicon.surnames, suffix_acronyms and
 suffix_acronyms_ambiguous, for the source of a token's reading where
-no tag gives it.
+no tag gives it. Not a Lexicon: the shipped reading index
+(_reading_index.languages_of), for Reading.languages, which names the
+files and so is the same under every Lexicon.
 
 Structural tokens (dropped maiden markers) are omitted, like delimiter
 characters. A main-stream token that somehow reaches here with no role
@@ -29,18 +31,21 @@ tests/v2/pipeline/test_assemble.py.
 """
 from __future__ import annotations
 
+import functools
+import unicodedata
 from types import MappingProxyType
 
-from nameparser._lexicon import Lexicon, _normalize
+from nameparser._lexicon import _VOCAB_FIELDS, Lexicon, _normalize
 from nameparser._pipeline._state import (
     AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, FIELD_READING,
     NAME_ROLES, SHAPE_ACRONYM_TAG, SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG,
     TITLE_AMBIGUOUS_TAG, Beside, Deferred, ParseState, PendingAmbiguity,
-    Structure,
+    Structure, WorkToken,
 )
 from nameparser._pipeline._vocab import (
     _PERIOD_ABBREV, name_source, suffix_kind,
 )
+from nameparser._reading_index import CATEGORY, languages_of
 from nameparser._types import (
     FOLDED_TAG, GIVEN_FIRST, UNJOINED_CONJUNCTION_TAG, UNJOINED_TAG,
     Ambiguity, AmbiguityKind, ParsedName, Reading, ReadingKind,
@@ -54,6 +59,141 @@ from nameparser._types import (
 _READINGS = MappingProxyType({
     (kind, role, source): Reading(kind, role, source)
     for kind in ReadingKind for role in Role for source in ReadingSource})
+
+def _kinds_of(*categories: str) -> frozenset[str]:
+    return frozenset(k for k, c in CATEGORY.items() if c in categories)
+
+
+#: The vocabulary kinds (_reading_index.CATEGORY's keys) whose rows
+#: hold a reading of each kind. A suffix reading takes the word's
+#: suffix rows whatever their finer kind, since a word has one suffix
+#: kind (the build's check 4) and the parse does not yet read it (4b).
+#: A name reading's rows depend on its field (`_NAME_KINDS`). An
+#: initial and a patronymic are read by shape or rule, never from a
+#: file.
+_SUFFIX_KINDS = _kinds_of("suffix")
+_KINDS: MappingProxyType[ReadingKind, frozenset[str]] = MappingProxyType({
+    ReadingKind.TITLE: _kinds_of("title"),
+    ReadingKind.PARTICLE: _kinds_of("particle"),
+    ReadingKind.CONJUNCTION: _kinds_of("conjunction"),
+    ReadingKind.CREDENTIAL: _SUFFIX_KINDS,
+    ReadingKind.GENERATION: _SUFFIX_KINDS,
+    ReadingKind.AGNOMEN: _SUFFIX_KINDS,
+    ReadingKind.POST_NOMINAL: _SUFFIX_KINDS,
+})
+
+#: A name reading's rows by the field it lands in: a family word the
+#: files listing it as a family name, a given or middle word those
+#: listing it as a given name ('Ma' as a family name names `en`, not
+#: `fil`, which lists it only as given), and a bound given name
+#: (rules/P5) in any field, its rows being the reason it was read so;
+#: a name in another field (a nickname) any name rows.
+_GIVEN_KINDS = frozenset({"given", "bound_given"})
+_FAMILY_KINDS = frozenset({"family", "bound_given"})
+_NAME_KINDS: MappingProxyType[Role, frozenset[str]] = MappingProxyType({
+    Role.GIVEN: _GIVEN_KINDS, Role.MIDDLE: _GIVEN_KINDS,
+    Role.FAMILY: _FAMILY_KINDS, Role.MAIDEN: _FAMILY_KINDS,
+})
+_ANY_NAME_KINDS = _kinds_of("name", "bound_given")
+
+#: The sources a file can hold: a listed word, and a name the
+#: vocabulary declares beside another reading.
+_LISTED = frozenset({ReadingSource.VOCABULARY, ReadingSource.DECLARED})
+
+
+def _kinds(kind: ReadingKind, role: Role) -> frozenset[str]:
+    # an initial or a patronymic matches no row
+    return (_NAME_KINDS.get(role, _ANY_NAME_KINDS)
+            if kind is ReadingKind.NAME else _KINDS.get(kind, frozenset()))
+
+
+# Both lookups are memos, C-level on a hit, so a word read before costs
+# no frame (decisions/parse-cost), and both are pure functions of the
+# shipped files, bounded since what keys them comes from the caller's
+# text; so is `_reading`, of the readings that name files.
+@functools.lru_cache(maxsize=4096)
+def _languages(text: str, kind: ReadingKind, role: Role) -> tuple[str, ...]:
+    """The files holding the `kind` reading of `text` as written, in
+    `role`, Reading.languages: by the vocabulary's own form of the
+    word, and then with every period removed, the form a credential is
+    matched by ('M.A' in 'John Smith (M.A)') and a word listed whole
+    without them ('Lt.Gen.' as 'ltgen')."""
+    kinds = _kinds(kind, role)
+    n = _normalize(text)
+    found = languages_of(n, kinds)
+    if not found and "." in n:
+        found = languages_of(n.replace(".", ""), kinds)
+    return found
+
+
+@functools.lru_cache(maxsize=4096)
+def _part_languages(text: str, kind: ReadingKind,
+                    role: Role) -> tuple[str, ...]:
+    """The files of the listed words `text` joins with punctuation
+    ('Lt.Gov.', 'MD/PhD', 'MD;'), sorted: a suffix's parts divided by
+    any mark but the period first, each an acronym ('M.D./Ph.D.'),
+    then any word's by every mark. Read only for a word the parse's
+    own lexicon does not list whole (`_listed_whole`)."""
+    kinds = _kinds(kind, role)
+    n = _normalize(text)
+    found = _by_parts(n, kinds, ".") if kinds is _SUFFIX_KINDS else ()
+    return found or _by_parts(n, kinds, "")
+
+
+def _by_parts(n: str, kinds: frozenset[str], keep: str) -> tuple[str, ...]:
+    """The files of the parts of `n`, sorted: divided by punctuation,
+    symbols and spaces, but for the marks in `keep`, which are removed
+    from each part instead; never by a combining mark, which a `[^\\w]`
+    would count ('डॉ' in 'प्रोफे.डॉ.')."""
+    parts = "".join(" " if c not in keep
+                    and unicodedata.category(c)[0] in "PSZ" else c
+                    for c in n).split()
+    return tuple(sorted({
+        tag for part in parts
+        for tag in languages_of(part.replace(keep, "") if keep else part,
+                                kinds)}))
+
+
+@functools.lru_cache(maxsize=4096)
+def _forms(text: str) -> tuple[str, str]:
+    """`text` as the vocabulary stores it, and without its periods."""
+    n = _normalize(text)
+    return n, n.replace(".", "")
+
+
+def _listed_whole(text: str, lexicon: Lexicon) -> bool:
+    """Whether the parse's own lexicon lists `text` whole, in either
+    form, so that the parse read it whole and not by its parts: a
+    caller's 'zzq-dr' title names none of the files of 'dr'. Asked
+    only of a word whose whole form no file holds and whose parts some
+    file does (`_part_languages`), so other words pay no frame."""
+    n, bare = _forms(text)
+    for name in _VOCAB_FIELDS:
+        field = getattr(lexicon, name)
+        if n in field or bare in field:
+            return True
+    return False
+
+
+def _split_partner(tokens: tuple[WorkToken, ...], dropped: set[int],
+                   i: int) -> str:
+    """The text of the second word of the credential split across a
+    space that token `i` opens: the next word past a nickname written
+    between them ('Ph. "Bob" D.'), or nothing where that word is not
+    the joined suffix word that completes it. Asked only of a split
+    credential's first word, so other names pay nothing."""
+    # classify tags a split's words only as a pair, so its second word
+    # always follows; an empty default keeps parse total without a
+    # branch no input reaches
+    nxt = next((tokens[j] for j in range(i + 1, len(tokens))
+                if j not in dropped and tokens[j].role is not Role.NICKNAME),
+               None)
+    return (nxt.text if nxt is not None and nxt.role is Role.SUFFIX
+            and "joined" in nxt.tags else "")
+
+
+_reading = functools.lru_cache(maxsize=1024)(Reading)
+
 
 #: The tags that say a list or a shape made a word a suffix: without
 #: one, a suffix word stands there by position, unless the vocabulary
@@ -71,12 +211,13 @@ _TITLE_TAGS = frozenset({
 
 
 def _alternative(pending: PendingAmbiguity, materialized: tuple[Token, ...],
-                 final: dict[int, Token],
-                 middle_as_family: bool) -> Reading | None:
+                 final: dict[int, Token], middle_as_family: bool,
+                 lexicon: Lexicon) -> Reading | None:
     """The public Reading of a report's PendingReading, its field named
     from the final roles where the emitter deferred it (O5's other
     primary field) and folded as `middle_as_family` folds every middle
-    (rules/O6's neighbour, the policy's own fold)."""
+    (rules/O6's neighbour, the policy's own fold), and its languages
+    the files holding it for any word the report names."""
     alt = pending.alternative
     if alt is None or not materialized:
         return None
@@ -92,9 +233,22 @@ def _alternative(pending: PendingAmbiguity, materialized: tuple[Token, ...],
     elif isinstance(role, (Deferred, Beside)):
         # assign found no name position to name it from
         return None
+    # the files holding the reading for any of its words, as a token's
+    # own reading names them, by the field before the policy's fold of
+    # the middle (a middle word names the files listing it as given)
+    found: set[str] = set()
+    if alt.source in _LISTED:
+        # a loop, not a generator, which would resume a frame per word
+        for t in materialized:
+            langs = _languages(t.text, alt.kind, role)
+            if (not langs
+                    and (langs := _part_languages(t.text, alt.kind, role))
+                    and _listed_whole(t.text, lexicon)):
+                langs = ()
+            found.update(langs)
     if middle_as_family and role is Role.MIDDLE:
         role = Role.FAMILY
-    return Reading(alt.kind, role, alt.source)
+    return Reading(alt.kind, role, alt.source, tuple(sorted(found)))
 
 
 def _opens_its_segment(state: ParseState, i: int) -> bool:
@@ -103,12 +257,11 @@ def _opens_its_segment(state: ParseState, i: int) -> bool:
     word that is both a bound given name and a particle, read into the
     given part, so other names pay nothing."""
     dropped = state.dropped
-    for seg in state.segments:
-        if i in seg:
-            return next((j for j in seg if j not in dropped
-                         and state.tokens[j].role is not Role.TITLE),
-                        None) == i
-    return False
+    # every given-part token stands in a segment; the empty default
+    # keeps parse total all the same
+    seg = next((s for s in state.segments if i in s), ())
+    return next((j for j in seg if j not in dropped
+                 and state.tokens[j].role is not Role.TITLE), None) == i
 
 
 def _listed_suffix(text: str, lexicon: Lexicon) -> bool:
@@ -130,6 +283,7 @@ def assemble(state: ParseState) -> ParsedName:
     dropped = set(state.dropped)
     final: dict[int, Token] = {}
     surnames = state.lexicon.surnames
+    folds_middle = state.policy.middle_as_family
     tokens = state.tokens
     last = len(tokens)
     # the suffix reading of the token before, and whether it opens a
@@ -156,9 +310,11 @@ def assemble(state: ParseState) -> ParsedName:
         # `_listed_suffix` and its `_normalize`). `_vocab`'s two predicates
         # also name the sources of the reading NOT taken
         # (Ambiguity.alternative).
-        # Reading.languages joins here, in 4a's follow-up: phase 3's
-        # reading index (`_reading_index.readings_of`, 3a) answers
-        # which files hold a reading.
+        # Reading.languages, the files holding the reading taken, is
+        # read below from phase 3's reading index for a listed or
+        # declared reading, through `_languages`, whose hit costs no
+        # frame (decisions/vocabulary-model, 2026-10-29).
+        reading: Reading | None = None
         if role is Role.SUFFIX:
             kind, source = suffix_kind(t.text, tags)
             if (source is ReadingSource.VOCABULARY
@@ -176,14 +332,30 @@ def assemble(state: ParseState) -> ParsedName:
                         # the second word of a credential split across
                         # a space, which is one credential ('Ph.' 'D.');
                         # any other word a run took stays a credential
-                        # by position ('Jones' in 'John Smith III Jones')
-                        kind, source = before.kind, before.source
-            reading = _READINGS[kind, role, source]
-            before = reading
+                        # by position ('Jones' in 'John Smith III Jones'),
+                        # files and all
+                        reading = before
             prev_split = (SPLIT_CREDENTIAL_TAG in tags
                           or SPLIT_MEMBER_TAG in tags)
+            if reading is None:
+                # a credential split across a space is listed whole
+                # ('Ph.' 'D.' as 'phd'): its first word reads the files
+                # of the two words, which the second then takes
+                written = (t.text + _split_partner(tokens, dropped, i)
+                           if prev_split else t.text)
+                langs = _languages(written, kind, role) if source in _LISTED else ()
+                if (not langs and source in _LISTED
+                        and (langs := _part_languages(written, kind, role))
+                        and _listed_whole(written, state.lexicon)):
+                    langs = ()
+                reading = (_reading(kind, role, source, langs) if langs
+                           else _READINGS[kind, role, source])
+            before = reading
         else:
-            before = None
+            if role is not Role.NICKNAME:
+                # a nickname written inside a split credential ('Ph.
+                # "Bob" D.') leaves the run to its second word
+                before = None
             if role is Role.TITLE:
                 if "conjunction" in tags:
                     kind, source = (ReadingKind.CONJUNCTION,
@@ -239,7 +411,17 @@ def assemble(state: ParseState) -> ParsedName:
                 # a particle or connective with nothing to join reads
                 # as the name word it stands as ('van' in 'van Gogh')
                 kind, source = ReadingKind.NAME, name_source(tags)
-            reading = _READINGS[kind, role, source]
+            # a name's files by its field, a middle word the policy
+            # folded into the family by the middle it stands as
+            field = (Role.MIDDLE if role is Role.FAMILY and folds_middle
+                     and FOLDED_TAG in tags else role)
+            langs = _languages(t.text, kind, field) if source in _LISTED else ()
+            if (not langs and source in _LISTED
+                    and (langs := _part_languages(t.text, kind, field))
+                    and _listed_whole(t.text, state.lexicon)):
+                langs = ()
+            reading = (_reading(kind, role, source, langs) if langs
+                       else _READINGS[kind, role, source])
         final[i] = Token(t.text, t.span, role, tags, reading)
     # No alphanumeric character among the SURVIVING tokens means no
     # name: a bare '.' or '- -' is not a person. v1 kept such input
@@ -348,7 +530,7 @@ def assemble(state: ParseState) -> ParsedName:
         ambiguities.append(Ambiguity(
             pending.kind, detail, materialized,
             _alternative(pending, materialized, final,
-                         state.policy.middle_as_family)))
+                         state.policy.middle_as_family, state.lexicon)))
     return ParsedName(original=state.original,
                       tokens=tuple(final.values()),
                       ambiguities=tuple(ambiguities),

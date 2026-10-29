@@ -1124,7 +1124,8 @@ The reading it did not take
 
 Since 2.7 a report of a fork also says what the other reading was.
 ``Ambiguity.alternative`` is a :class:`~nameparser.Reading` with three
-parts:
+parts, and since 3.0 a fourth, its ``languages`` (see
+:ref:`reading-taken`):
 
 - **kind** — what the word would have been read as: a ``name``, an
   ``initial``, a ``credential``, a ``generation``, a ``particle``, a
@@ -1193,6 +1194,27 @@ otherwise have been the family name:
     Reading('credential' as 'suffix', 'position')
     >>> jones_run.ambiguities[0].alternative
     Reading('name' as 'family', 'position')
+
+A reading from the vocabulary also names the language files that list
+the word that way, as BCP 47 tags in ``languages``. A reading by shape
+or position names none, and neither does a word from your own
+``Lexicon`` that no shipped file lists:
+
+.. doctest::
+
+    >>> for tok in parse("Dr. Juan de la Vega III").tokens:
+    ...     print(f"{tok.text}: {tok.reading.languages}")
+    Dr.: ('mul',)
+    Juan: ()
+    de: ('es', 'fr', 'it', 'nl', 'pt')
+    la: ('es', 'fr', 'it')
+    Vega: ()
+    III: ('mul',)
+
+``mul`` is the file of words shared across languages on purpose. The
+first parse in a process that meets a listed word loads the index of
+those files once: about a millisecond, or about 16 ms where Python
+writes no bytecode cache (``PYTHONDONTWRITEBYTECODE``).
 
 A token the parse did not read has no reading: one that
 :meth:`~nameparser.ParsedName.replace` or

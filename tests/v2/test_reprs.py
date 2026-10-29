@@ -9,7 +9,8 @@ from nameparser._locale import Locale
 from nameparser._parser import Parser, parse
 from nameparser._policy import FAMILY_FIRST, PatronymicRule, Policy, PolicyPatch
 from nameparser._types import (
-    Ambiguity, AmbiguityKind, ParsedName, Role, Segmentation, Span, Token,
+    Ambiguity, AmbiguityKind, ParsedName, Reading, Role, Segmentation, Span,
+    Token,
 )
 
 
@@ -31,7 +32,10 @@ def test_ambiguity_repr_shows_kind_and_token_texts() -> None:
 
 def test_reading_repr_shows_kind_field_and_source() -> None:
     alt = parse("JOHN SMITH MA").ambiguities[0].alternative
-    assert repr(alt) == "Reading('name' as 'family', 'declared')"
+    assert repr(alt) == "Reading('name' as 'family', 'declared', in en)"
+    # the files are left out where none holds the reading
+    assert repr(Reading("name", "family", "position")) == (  # type: ignore[arg-type]
+        "Reading('name' as 'family', 'position')")
 
 
 def test_parsedname_repr_lists_nonempty_fields_in_canonical_order() -> None:
