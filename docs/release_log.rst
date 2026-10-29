@@ -14,7 +14,7 @@ Release Log
 
     **Behavior Changes**
 
-    - **Render a name in the order it was read in, keeping its written separators.** ``str(parse("김민준"))`` gives ``'김민준'``, where 2.1.0 through 2.8.0 gave ``'민준 김'``; a name read family-first renders family-first, and a comma before a suffix stays (``John Smith, Jr.``), while a family comma never does. A spec you pass to ``render()`` renders as written, so 2.x's default spec keeps given-first output, and a name pickled by 2.x renders as it did. ``initials()`` gives nothing for a word in Han, Hangul or kana. The new ``ParsedName.order`` records the order; ``render()``'s spec now defaults to ``None``. See :doc:`migrate`. :issue:`754`
+    - **Render a name in the order it was read in, keeping its written separators.** ``str(parse("김민준"))`` gives ``'김민준'``, where 2.1.0 through 2.8.0 gave ``'민준 김'``; a name read family-first renders family-first, and a comma before a suffix stays (``John Smith, Jr.``, ``Smith, Jr.``), while a family comma between name words never does (``Smith, John`` gives ``'John Smith'``). A spec you pass to ``render()`` renders as written, so 2.x's default spec keeps given-first output, and a name pickled by 2.x renders as it did. ``initials()`` gives nothing for a word in Han, Hangul or kana. The new ``ParsedName.order`` records the order; ``render()``'s spec now defaults to ``None``. See :doc:`migrate`. :issue:`754`
     - **Fix Policy(name_order=...) accepting a set.** ``Policy(name_order=frozenset(FAMILY_FIRST))`` raises ``TypeError``, where 2.0.0 through 2.8.0 accepted it as an order under some hash seeds and raised ``ValueError`` under others; pass the tuple. :issue:`754`
 
 * 2.8.0 - October 28, 2026

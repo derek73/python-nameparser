@@ -38,7 +38,7 @@
 
 **Except:**
 
-- **A family comma is never kept**, also where its pair stays side by side in the same order: when the part after it went to the family (P1's fold after a family comma), the comma stands between two family words and is dropped there too.
+- **A family comma between name words is never kept**, also where its pair stays side by side in the same order: when the part after it went to the family (P1's fold after a family comma), the comma stands between two family words and is dropped there too.
   ```
   "Smith, de Mesnil Jean"     →  str="Smith de Mesnil Jean"
   ```
@@ -55,6 +55,12 @@
   "김, 민준"                     →  str="민준 김"
   "John Smith, Jr., Dr., Prof."  →  str="Dr., Prof. John Smith, Jr."
   "John Smith Dr., Prof."     →  str="Dr., Prof. John Smith"
+  ```
+- A comma with only a suffix after it stays as a suffix comma, whatever comma the parse read it as: a family name and the suffixes after it keep their comma, as the comma between a family name and its suffix does.
+  ```
+  "Smith, Jr."                →  str="Smith, Jr."
+  "Smith, MD"                 →  str="Smith, MD"
+  "Smith, Jr., John"          →  str="Smith, Jr., John"
   ```
 - Two equal names can render differently. The order a name was read in is not compared, so a name loaded from a 2.x pickle, which recorded none, renders exactly as 2.x rendered it, given-first and space-joined, where a fresh parse of the same text renders as written. (The shape needs a pickle written by an older release, so no example line.)
 

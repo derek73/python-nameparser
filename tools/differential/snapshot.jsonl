@@ -3304,9 +3304,11 @@
 {"name": "Smith, John, and", "given": "John", "family": "Smith", "suffix": "and", "ambiguities": ["COMMA_STRUCTURE"], "initials": "J. S."}
 {"name": "Smith, John; MD", "given": "John;", "family": "Smith", "suffix": "MD", "initials": "J. S."}
 {"name": "Smith, Jr.", "family": "Smith", "suffix": "Jr.", "initials": "S."}
+{"name": "Smith, Jr., John", "family": "Smith", "suffix": "Jr., John", "ambiguities": ["COMMA_STRUCTURE"], "initials": "S."}
 {"name": "Smith, Jr., PhD", "family": "Smith", "suffix": "Jr., PhD", "initials": "S."}
 {"name": "Smith, LEED AP", "given": "LEED", "middle": "AP", "family": "Smith", "initials": "L. A. S.", "capitalized_force": "Leed Ap Smith"}
 {"name": "Smith, MA", "family": "Smith", "suffix": "MA", "initials": "S."}
+{"name": "Smith, MD", "family": "Smith", "suffix": "MD", "initials": "S."}
 {"name": "Smith, MD - PhD - FACS", "family": "Smith", "suffix": "MD - PhD - FACS", "initials": "S."}
 {"name": "Smith, MD ; PhD", "family": "Smith", "suffix": "MD ; PhD", "initials": "S."}
 {"name": "Smith, MD PhD", "family": "Smith", "suffix": "MD PhD", "initials": "S."}
