@@ -949,6 +949,18 @@ class Reading:
     #: Where the reading comes from: a listed word, a declared name, a
     #: shape, or position alone.
     source: ReadingSource
+    #: The BCP 47 tags of the shipped vocabulary files that hold this
+    #: reading of the word, on by default (``("es", "fr", "it", "pt")``
+    #: for the particle ``de``, ``("mul",)`` for the title ``Dr.``), in
+    #: tag order. Empty for a reading no file holds: a shape, position
+    #: alone, a caller's own vocabulary, or a shipped list kept outside
+    #: the per-word files (the Korean surnames that divide ``김민준``).
+    #: A suffix reading is matched by the word's suffix entry whatever
+    #: its finer kind, a word having one. An ``Ambiguity.alternative``
+    #: names the files holding it for any word the report names. Not
+    #: compared: two readings are equal without it, as in 2.x.
+    languages: tuple[str, ...] = field(
+        default=(), compare=False, metadata={ADDED_IN: "3.0.0"})
 
     # in the class body so @dataclass(slots=True) keeps them
     __getstate__ = _guarded_getstate
@@ -957,6 +969,18 @@ class Reading:
     def __post_init__(self) -> None:
         # the members the parser passes need no coercion, and a report
         # pays no frame for it (decisions/parse-cost)
+        if type(self.languages) is not tuple:
+            if isinstance(self.languages, str):
+                raise TypeError(
+                    f"Reading.languages must be an iterable of BCP 47 "
+                    f"tags, got the str {self.languages!r}; write "
+                    f"({self.languages!r},)")
+            object.__setattr__(self, "languages", tuple(self.languages))
+        for tag in self.languages:
+            if not isinstance(tag, str):
+                raise TypeError(
+                    f"Reading.languages must hold BCP 47 tags as str, got "
+                    f"{tag!r} in {self.languages!r}")
         if not isinstance(self.kind, ReadingKind):
             object.__setattr__(
                 self, "kind",
@@ -971,8 +995,10 @@ class Reading:
                              "sources"))
 
     def __repr__(self) -> str:
+        langs = (f", in {' '.join(self.languages)}" if self.languages
+                 else "")
         return (f"Reading({self.kind.value!r} as {self.role.value!r}, "
-                f"{self.source.value!r})")
+                f"{self.source.value!r}{langs})")
 
 
 @dataclass(frozen=True, slots=True)

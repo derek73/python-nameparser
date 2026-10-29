@@ -112,7 +112,11 @@ ALLOWED = {
     "_pipeline/_comma.py": _PIPELINE_STAGE_ALLOWED,
     "_pipeline/_assign.py": _PIPELINE_STAGE_ALLOWED,
     "_pipeline/_post_rules.py": _PIPELINE_STAGE_ALLOWED,
-    "_pipeline/_assemble.py": _PIPELINE_STAGE_ALLOWED,
+    # not a stage: it alone reads the reading index, for
+    # Reading.languages (4a's follow-up); no stage that decides a
+    # role may, since the index is the files' record, not the lexicon
+    "_pipeline/_assemble.py": _PIPELINE_STAGE_ALLOWED + (
+        "nameparser._reading_index",),
     # Parser sits on everything except _render
     "_parser.py": ("nameparser._types", "nameparser._lexicon",
                    "nameparser._policy", "nameparser._locale",
