@@ -40,7 +40,7 @@ from nameparser._pipeline._state import (
     AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, FIELD_READING,
     NAME_ROLES, SHAPE_ACRONYM_TAG, SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG,
     TITLE_AMBIGUOUS_TAG, Beside, Deferred, ParseState, PendingAmbiguity,
-    Structure,
+    Structure, WorkToken,
 )
 from nameparser._pipeline._vocab import (
     _PERIOD_ABBREV, name_source, suffix_kind,
@@ -117,10 +117,26 @@ def _by_parts(n: str, cats: frozenset[str], keep: str) -> tuple[str, ...]:
     parts = "".join(" " if c not in keep
                     and unicodedata.category(c)[0] in "PSZ" else c
                     for c in n).split()
-    return tuple(dict.fromkeys(
+    return tuple(sorted({
         tag for part in parts
         for tag in languages_of(part.replace(keep, "") if keep else part,
-                                cats)))
+                                cats)}))
+
+
+def _split_partner(tokens: tuple[WorkToken, ...], dropped: set[int],
+                   i: int) -> str:
+    """The text of the second word of the credential split across a
+    space that token `i` opens: the next word past a nickname written
+    between them ('Ph. "Bob" D.'), or nothing where that word is not
+    the joined suffix word that completes it. Asked only of a split
+    credential's first word, so other names pay nothing."""
+    for j in range(i + 1, len(tokens)):
+        if j in dropped or tokens[j].role is Role.NICKNAME:
+            continue
+        nxt = tokens[j]
+        return (nxt.text if nxt.role is Role.SUFFIX and "joined" in nxt.tags
+                else "")
+    return ""
 
 
 _reading = functools.lru_cache(maxsize=1024)(Reading)
@@ -168,10 +184,12 @@ def _alternative(pending: PendingAmbiguity, materialized: tuple[Token, ...],
         role = Role.FAMILY
     # the files holding the reading for any of its words, as a token's
     # own reading names them
-    langs = (tuple(dict.fromkeys(
-        tag for t in materialized for tag in _languages(t.text, alt.kind)))
-        if alt.source in _LISTED else ())
-    return Reading(alt.kind, role, alt.source, langs)
+    found: set[str] = set()
+    if alt.source in _LISTED:
+        # a loop, not a generator, which would resume a frame per word
+        for t in materialized:
+            found.update(_languages(t.text, alt.kind))
+    return Reading(alt.kind, role, alt.source, tuple(sorted(found)))
 
 
 def _opens_its_segment(state: ParseState, i: int) -> bool:
@@ -263,15 +281,18 @@ def assemble(state: ParseState) -> ParsedName:
                 # a credential split across a space is listed whole
                 # ('Ph.' 'D.' as 'phd'): its first word reads the files
                 # of the two words, which the second then takes
-                written = (t.text + tokens[i + 1].text
-                           if prev_split and i + 1 < last else t.text)
+                written = (t.text + _split_partner(tokens, dropped, i)
+                           if prev_split else t.text)
                 reading = (_reading(kind, role, source, langs)
                            if source in _LISTED
                            and (langs := _languages(written, kind))
                            else _READINGS[kind, role, source])
             before = reading
         else:
-            before = None
+            if role is not Role.NICKNAME:
+                # a nickname written inside a split credential ('Ph.
+                # "Bob" D.') leaves the run to its second word
+                before = None
             if role is Role.TITLE:
                 if "conjunction" in tags:
                     kind, source = (ReadingKind.CONJUNCTION,

@@ -360,6 +360,9 @@ def test_every_parsed_token_has_a_reading_of_its_own_field(case: Case) -> None:
     repaired = parser.capitalized(pn, force=True)
     assert ([t.reading for t in repaired.tokens]
             == [t.reading for t in pn.tokens])
+    # languages is not compared, so it is checked on its own
+    assert ([t.reading and t.reading.languages for t in repaired.tokens]
+            == [t.reading and t.reading.languages for t in pn.tokens])
 
 
 def test_a_caller_surname_reads_from_the_vocabulary_only_where_split_off(
@@ -446,11 +449,17 @@ _EXPECTED_LANGUAGES = [
     ("John Smith Ph. D.", "D.", ("en",)),
     ("Smith, Ph. D. III", "D.", ("en",)),
     ("John Smith Pharm D", "Pharm", ("en",)),
+    # a nickname written between a split credential's words is passed
+    # over, and the run reaches its second word
+    ('John Smith Ph. "Bob" D.', "Ph.", ("en",)),
+    ('John Smith Ph. "Bob" D.', "D.", ("en",)),
     # a word joining listed words, by its parts; never divided at a
     # combining mark
     ("John Smith, M.D./Ph.D.", "M.D./Ph.D.", ("en",)),
     ("Lt.Gov. John Smith", "Lt.Gov.", ("en",)),
     ("प्रोफे.डॉ. अदा शर्मा", "प्रोफे.डॉ.", ("hi", "mr")),
+    # a union over parts is sorted, as a word's own files are
+    ("John Smith, MS-V", "MS-V", ("en", "mul")),
     # no file: position, shape, and a shipped list outside the per-word
     # files (the Korean surnames)
     ("Dr. Juan de la Vega III", "Juan", ()),
@@ -491,3 +500,7 @@ def test_an_alternative_names_the_files_holding_it() -> None:
     (amb,) = parse("van Gogh").ambiguities
     assert amb.alternative is not None
     assert amb.alternative.languages == ("nl",)
+    # over the report's words, sorted ('van' nl, 'DO' en)
+    (amb,) = parse("Doe, John van DO").ambiguities
+    assert amb.alternative is not None
+    assert amb.alternative.languages == ("en", "nl")

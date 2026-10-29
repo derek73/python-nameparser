@@ -950,11 +950,12 @@ class Reading:
     #: shape, or position alone.
     source: ReadingSource
     #: The BCP 47 tags of the shipped vocabulary files that hold this
-    #: reading of the word, on by default (``("es", "fr", "it", "pt")``
-    #: for the particle ``de``, ``("mul",)`` for the title ``Dr.``), in
-    #: tag order. Empty for a reading no file holds: a shape, position
-    #: alone, a caller's own vocabulary, or a shipped list kept outside
-    #: the per-word files (the Korean surnames that divide ``김민준``).
+    #: reading of the word, on by default (``("es", "fr", "it", "nl",
+    #: "pt")`` for the particle ``de``, ``("mul",)`` for the title
+    #: ``Dr.``), sorted. Empty for a reading no file holds: a shape,
+    #: position alone, a word a caller's own ``Lexicon`` adds that no
+    #: file holds in that category, or a shipped list kept outside the
+    #: per-word files (the Korean surnames that divide ``김민준``).
     #: A suffix reading is matched by the word's suffix entry whatever
     #: its finer kind, a word having one. An ``Ambiguity.alternative``
     #: names the files holding it for any word the report names. Not
