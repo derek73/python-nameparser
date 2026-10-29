@@ -2,7 +2,7 @@
 
 ## Standing
 
-- The default `str()` and `render()` lay a name out in `ParsedName.order`, the order it was read in, and keep the separator written between two words side by side, in the same order, both as written and as laid out, normalized by kind; a family comma is never kept, and a comma between the family and its suffix is (decisions/vocabulary-model's #754 output-model entry, item 6) — 2026-10-28 #754 (Derek).
+- The default `str()` and `render()` lay a name out in `ParsedName.order`, the order it was read in, and keep the separator written between two words side by side, in the same order, both as written and as laid out, normalized by kind; a family comma is never kept, and a comma between the family and its suffix is (decisions/vocabulary-model's #754 output-model entry, item 6; the never-kept family comma narrowed to one between name words by the A SUFFIX COMMA entry below) — 2026-10-28 #754 (Derek).
 - `render(spec: str | None = None)`: `None` is the order-aware default, and a caller's spec renders exactly as written, so passing 2.x's default spec keeps given-first output (decisions/3-0-reevaluations, THE RENDER SIGNATURE) — 2026-10-28 #754 (Derek).
 - A comma with only a suffix after it stays as a suffix comma, whatever comma the parse recorded, so `Smith, Jr.` renders 'Smith, Jr.' — 2026-10-29 #754 (Derek), A SUFFIX COMMA.
 - Two words are side by side as written when they are consecutive in `ParsedName.tokens`; a comma between two name words is the family comma, dropped also where P1's fold leaves its pair side by side; credentials written apart keep the suffix field's comma join — 2026-10-29 #754.
