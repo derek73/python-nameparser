@@ -11,9 +11,9 @@ invariant (span order/bounds, ambiguity subset), so a pipeline bug
 that would produce an invalid result dies HERE, not in a renderer
 three layers away.
 Reads: Policy.middle_as_family, folding a report's other field as the
-policy folds a middle; and Lexicon.surnames, suffix_words,
-suffix_acronyms and suffix_acronyms_ambiguous, for the source of a
-token's reading where no tag gives it.
+policy folds a middle; and Lexicon.surnames, suffix_acronyms and
+suffix_acronyms_ambiguous, for the source of a token's reading where
+no tag gives it.
 
 Structural tokens (dropped maiden markers) are omitted, like delimiter
 characters. A main-stream token that somehow reaches here with no role
@@ -95,13 +95,13 @@ def _alternative(pending: PendingAmbiguity, materialized: tuple[Token, ...],
 
 
 def _listed_suffix(text: str, lexicon: Lexicon) -> bool:
-    """Whether the suffix vocabulary lists a word no tag marks, as a
-    word or, its periods removed, as an acronym. Asked only of a
-    suffix word with no suffix tag, so other names pay nothing."""
-    n = _normalize(text)
-    if n in lexicon.suffix_words:
-        return True
-    n = n.replace(".", "")
+    """Whether the suffix vocabulary lists, its periods removed, an
+    acronym no tag marks: a bracketed member written with an interior
+    period ('M.A' in 'John Smith (M.A)'), which rules/S13 settles by its
+    writing and classify leaves untagged. A listed suffix WORD is
+    always tagged, bracketed or not. Asked only of a suffix word with
+    no suffix tag, so other names pay nothing."""
+    n = _normalize(text).replace(".", "")
     return n in lexicon.suffix_acronyms or n in lexicon.suffix_acronyms_ambiguous
 
 
