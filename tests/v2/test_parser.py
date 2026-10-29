@@ -2353,14 +2353,14 @@ def test_a_pack_choosing_no_language_leaves_the_vocabulary_as_it_is() -> None:
                       base=base).lexicon == base.lexicon
 
 
-def test_parsing_with_no_choice_never_loads_the_reading_index() -> None:
+def test_building_a_parser_with_no_choice_never_loads_the_reading_index() -> None:
     # the index loads on its first lookup (decisions/vocabulary-model,
-    # 3a); a choice is that lookup, and nothing else in a parse is yet
+    # 3a): a parse makes one, for Reading.languages, but building a
+    # parser choosing no language never does, where a choice must
     import subprocess
     import sys
     code = ("import sys, nameparser; from nameparser import locales; "
-            "nameparser.parser_for(locales.RU).parse('Ivan Petrovich Sidorov'); "
-            "nameparser.parse('Dr. Juan de la Vega III'); "
+            "nameparser.parser_for(locales.RU, locales.TR_AZ); "
             "assert 'nameparser.config._index' not in sys.modules; "
             "nameparser.parser_for(nameparser.Locale('pt', "
             "nameparser.Lexicon.empty(), languages={'pt'})); "
@@ -2507,3 +2507,31 @@ def test_a_choice_drops_a_callers_own_entry_it_removes() -> None:
                    surnames=Lexicon.default().surnames)
     got = parser_for(_choosing("en"), base=Parser(lexicon=mine)).lexicon
     assert got.particles == {"van"}
+
+
+def test_reading_languages_name_the_default_files_under_a_choice() -> None:
+    # decisions/vocabulary-model, 2026-10-29 phase 3b: the field names the
+    # files holding the reading on by default whatever choice built the
+    # parser, a Parser recording none. Under pt, `it`'s dropped reading of
+    # `e` is still named; under cs, the generation `st` it turned on names
+    # no file. A Parser.languages (option b) would change both on purpose
+    def languages(parser: Parser, name: str, text: str) -> tuple[str, ...]:
+        token = next(t for t in parser.parse(name).tokens if t.text == text)
+        assert token.reading is not None
+        return token.reading.languages
+    pt, cs = parser_for(_choosing("pt")), parser_for(_choosing("cs"))
+    assert pt.parse("ANA SILVA E SOUZA").family == "SILVA E SOUZA"
+    assert languages(pt, "ANA SILVA E SOUZA", "E") == ("it", "pt")
+    assert cs.parse("Jiří Dienstbier st.").suffix == "st."
+    assert languages(cs, "Jiří Dienstbier st.", "st.") == ()
+    assert languages(pt, "Maria do Carmo", "do") == ("pt",)
+
+
+def test_a_choice_that_changes_nothing_leaves_the_lexicon_itself() -> None:
+    # fr.toml holds no reading the default leaves off or another file's
+    # reading clashes with, so choosing it changes no compiled set
+    import nameparser._parser as parser_mod
+    from nameparser._reading_index import changed_words, selected
+    assert changed_words(selected(["fr"])) == frozenset()
+    mine = Lexicon.default().add(titles={"zzq"})
+    assert parser_mod._apply_choice(mine, frozenset({"fr"})) is mine

@@ -124,6 +124,8 @@ def test_locale_languages_are_stored_in_canonical_case() -> None:
     assert choosing("pt", "PT").languages == {"pt"}
     assert choosing("pt-br").languages == {"pt-BR"}
     assert choosing("ZH-HANT-tw", "sr-latn").languages == {"zh-Hant-TW", "sr-Latn"}
+    # a numeric region and a variant are lowercase in canonical case
+    assert choosing("ES-419", "CA-es-VALENCIA").languages == {"es-419", "ca-ES-valencia"}
 
 
 def test_locale_languages_mapping_message_offers_code_that_works() -> None:
