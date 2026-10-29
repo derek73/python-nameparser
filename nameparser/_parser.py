@@ -352,10 +352,14 @@ def parser_for(*locales: Locale, base: Parser | None = None,
     union per the patch metadata). A pack that chooses no language
     leaves the base vocabulary exactly as it is; a choice removes from
     base's lexicon every entry it drops, a caller's own listing of the
-    word included, and keeps every entry it does not touch. The choice is this
-    call's: a base built by an earlier ``parser_for`` records none, so
-    its choice and this one apply one after the other rather than as
-    one union -- pass every pack to one call to choose them together. Validation errors raised while applying a
+    word included, and keeps every entry it does not touch. The choice
+    is this call's: a base built by an earlier ``parser_for`` records
+    none, so ``parser_for(EN, base=parser_for(PT))`` applies ``en``'s
+    choice after ``pt``'s and keeps neither language's reading of
+    ``do``, where ``parser_for(PT, EN)`` chooses both and keeps both
+    (decisions/vocabulary-model, 2026-10-29, chained choices).
+
+    Validation errors raised while applying a
     pack are wrapped with that pack's identity (rule D2) --
     PolicyPatch validates lazily, so with stacked packs the raw error
     would otherwise point at nothing. Two packs setting the same SCALAR

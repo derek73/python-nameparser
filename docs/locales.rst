@@ -196,11 +196,42 @@ checked in one of three ways:
   own.
 
 A pack that chooses no language leaves the base parser's vocabulary
-exactly as it was. A choice applied to a base parser adds what it turns
-on and removes what it drops, even where you added the word to the
-base yourself: under ``en``, a base listing ``do`` as a particle loses
-it, English holding ``do`` as a credential. Words the choice does not
-touch keep whatever you gave them.
+exactly as it was.
+
+Choosing in one call
+^^^^^^^^^^^^^^^^^^^^
+
+A choice belongs to one :func:`~nameparser.parser_for` call: the
+languages of the packs passed together are one choice. A base parser
+records no choice of its own, so a choice made on top of a base built
+by an earlier call applies after the base's, and settles the base's
+words its own way. To choose two languages, pass both packs in one
+call:
+
+.. doctest::
+
+    >>> chained = parser_for(en, base=parser_for(pt))
+    >>> chained.parse("Maria do Carmo").family
+    'Carmo'
+    >>> chained.parse("John Smith DO").family
+    'DO'
+    >>> together = parser_for(pt, en)
+    >>> together.parse("Maria do Carmo").family, together.parse("John Smith DO").suffix
+    ('do Carmo', 'DO')
+
+A choice applied to a base also removes what it drops from the base's
+vocabulary, even where you added the word yourself, and keeps every
+word it does not touch. Under ``en``, a base listing ``do`` and ``van``
+as particles keeps only ``van``, English holding ``do`` as a
+credential:
+
+.. doctest::
+
+    >>> from nameparser import Parser
+    >>> mine = Lexicon(particles=frozenset({"do", "van"}),
+    ...                surnames=Lexicon.default().surnames)
+    >>> sorted(parser_for(en, base=Parser(lexicon=mine)).lexicon.particles)
+    ['van']
 
 Finding packs by code
 ~~~~~~~~~~~~~~~~~~~~~

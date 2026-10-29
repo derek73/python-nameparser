@@ -2482,3 +2482,28 @@ def test_a_choice_moves_case_masks_as_it_moves_words(
     got = parser_mod._apply_choice(base, frozenset({"pt"}))
     cap = got.capitalization_exceptions_map
     assert "phd" not in cap and cap["zzq"] == "ZzQ" and cap["abcq"] == "AbcQ"
+
+
+def test_a_choice_chained_through_base_applies_after_the_bases() -> None:
+    # decided 2026-10-29 (decisions/vocabulary-model, chained choices):
+    # a choice is one call's, and a Parser records none, so en chained on
+    # pt's parser drops pt's particle after pt dropped en's credential.
+    # A change to Parser recording its choice (option b) changes this
+    # test on purpose
+    pt, en = _choosing("pt", code="pt"), _choosing("en", code="en")
+    chained = parser_for(en, base=parser_for(pt))
+    assert chained.parse("Maria do Carmo").family == "Carmo"
+    assert chained.parse("John Smith DO").family == "DO"
+    together = parser_for(pt, en)
+    assert together.parse("Maria do Carmo").family == "do Carmo"
+    assert together.parse("John Smith DO").suffix == "DO"
+    assert chained.lexicon != together.lexicon
+
+
+def test_a_choice_drops_a_callers_own_entry_it_removes() -> None:
+    # decided with the chained choices: the delta removes what the
+    # choice drops whoever listed it, and keeps every untouched entry
+    mine = Lexicon(particles=frozenset({"do", "van"}),
+                   surnames=Lexicon.default().surnames)
+    got = parser_for(_choosing("en"), base=Parser(lexicon=mine)).lexicon
+    assert got.particles == {"van"}
