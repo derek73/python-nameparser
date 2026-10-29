@@ -2167,27 +2167,29 @@ def suffix_reading(token: WorkToken) -> PendingReading:
     generation or agnomen by its listed word, a numeral by its shape
     unless listed, another listed post-nominal word as a suffix, and
     otherwise a credential, listed or shaped."""
-    tags = token.tags
+    kind, source = suffix_kind(token.text, token.tags)
+    return PendingReading(kind, source, Role.SUFFIX)
+
+
+def suffix_kind(text: str,
+                tags: Set[str]) -> tuple[ReadingKind, ReadingSource]:
+    """`suffix_reading`'s kind and source, which assemble also asks of
+    a word the parse read as a suffix (`Token.reading`), so the
+    reading taken and the reading not taken are named by one
+    predicate."""
     if AGNOMEN_TAG in tags:
-        return PendingReading(ReadingKind.AGNOMEN, ReadingSource.VOCABULARY,
-                              Role.SUFFIX)
+        return ReadingKind.AGNOMEN, ReadingSource.VOCABULARY
     if AMBIGUOUS_WORD_TAG in tags:
-        return PendingReading(ReadingKind.GENERATION,
-                              ReadingSource.VOCABULARY, Role.SUFFIX)
-    if _ROMAN.match(token.text.rstrip(".")) is not None:
+        return ReadingKind.GENERATION, ReadingSource.VOCABULARY
+    if _ROMAN.match(text.rstrip(".")) is not None:
         listed = "vocab:suffix" in tags or "vocab:suffix-word" in tags
-        return PendingReading(
-            ReadingKind.GENERATION,
-            ReadingSource.VOCABULARY if listed else ReadingSource.SHAPE,
-            Role.SUFFIX)
+        return (ReadingKind.GENERATION,
+                ReadingSource.VOCABULARY if listed else ReadingSource.SHAPE)
     if "vocab:suffix-word" in tags:
-        return PendingReading(ReadingKind.POST_NOMINAL, ReadingSource.VOCABULARY,
-                              Role.SUFFIX)
-    return PendingReading(
-        ReadingKind.CREDENTIAL,
-        ReadingSource.SHAPE if SHAPE_ACRONYM_TAG in tags
-        else ReadingSource.VOCABULARY,
-        Role.SUFFIX)
+        return ReadingKind.POST_NOMINAL, ReadingSource.VOCABULARY
+    return (ReadingKind.CREDENTIAL,
+            ReadingSource.SHAPE if SHAPE_ACRONYM_TAG in tags
+            else ReadingSource.VOCABULARY)
 
 
 def name_reading(token: WorkToken, role: Role | Deferred) -> PendingReading:
@@ -2203,14 +2205,23 @@ def name_reading(token: WorkToken, role: Role | Deferred) -> PendingReading:
             else composed_len(text.rstrip(".")) == 1
             or is_initial_shaped(text)):
         return PendingReading(ReadingKind.INITIAL, ReadingSource.SHAPE, role)
+    return PendingReading(ReadingKind.NAME, name_source(token.tags), role)
+
+
+def name_source(tags: Set[str]) -> ReadingSource:
+    """Why a word reads as a name word: declared by the vocabulary
+    where a derived marker says so, and by position where nothing
+    does, save a bound given name, which the vocabulary lists as a
+    name word (rules/P5). `name_reading`'s source, which assemble also
+    asks of a word the parse read as a name (`Token.reading`)."""
+    if "vocab:bound-given" in tags:
+        return ReadingSource.VOCABULARY
     # classify writes the ambiguous class's tag on a word admitted by
     # its shape too, so the shape tag says no list declared it
-    declared = (not token.tags.isdisjoint(_DECLARED_NAME_TAGS)
-                and SHAPE_ACRONYM_TAG not in token.tags)
-    return PendingReading(
-        ReadingKind.NAME,
-        ReadingSource.DECLARED if declared else ReadingSource.POSITION,
-        role)
+    if (not tags.isdisjoint(_DECLARED_NAME_TAGS)
+            and SHAPE_ACRONYM_TAG not in tags):
+        return ReadingSource.DECLARED
+    return ReadingSource.POSITION
 
 
 #: The particle reading of a word read as a name: a particle joins the

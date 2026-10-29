@@ -1,13 +1,19 @@
 """Not a stage: converts the final ParseState into a public ParsedName.
 
-Consumes: tokens (all roles set), dropped, ambiguities (by index;
+Consumes: tokens (all roles set, and their tags, which name each
+token's reading), dropped, ambiguities (by index;
 one carrying ``field_tail`` is worded from its word's final role,
 #626), and segments, for the part a withdrawn connective report's
 letter ends (rules/P8, #721).
-Produces: a validated ParsedName -- the constructor re-checks every
+Produces: a validated ParsedName, each token carrying the reading the
+parse took (`Token.reading`) -- the constructor re-checks every
 invariant (span order/bounds, ambiguity subset), so a pipeline bug
 that would produce an invalid result dies HERE, not in a renderer
 three layers away.
+Reads: Policy.middle_as_family, folding a report's other field as the
+policy folds a middle; and Lexicon.surnames, suffix_words,
+suffix_acronyms and suffix_acronyms_ambiguous, for the source of a
+token's reading where no tag gives it.
 
 Structural tokens (dropped maiden markers) are omitted, like delimiter
 characters. A main-stream token that somehow reaches here with no role
@@ -21,13 +27,44 @@ tests/v2/pipeline/test_assemble.py.
 """
 from __future__ import annotations
 
+from types import MappingProxyType
+
+from nameparser._lexicon import Lexicon, _normalize
 from nameparser._pipeline._state import (
-    FIELD_READING, NAME_ROLES, Beside, Deferred, ParseState,
-    PendingAmbiguity,
+    AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, FIELD_READING,
+    NAME_ROLES, SHAPE_ACRONYM_TAG, SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG,
+    TITLE_AMBIGUOUS_TAG, Beside, Deferred, ParseState, PendingAmbiguity,
+)
+from nameparser._pipeline._vocab import (
+    _PERIOD_ABBREV, name_source, suffix_kind,
 )
 from nameparser._types import (
-    FOLDED_TAG, Ambiguity, AmbiguityKind, ParsedName, Reading, Role, Token,
+    FOLDED_TAG, UNJOINED_CONJUNCTION_TAG, UNJOINED_TAG, Ambiguity,
+    AmbiguityKind, ParsedName, Reading, ReadingKind, ReadingSource, Role,
+    Token,
 )
+
+#: Every Reading a token can take, built once: a `Reading` is three
+#: enum members, so the parse hands out shared instances rather than
+#: constructing one per token, which would cost two frames a word
+#: (decisions/parse-cost).
+_READINGS = MappingProxyType({
+    (kind, role, source): Reading(kind, role, source)
+    for kind in ReadingKind for role in Role for source in ReadingSource})
+
+#: The tags that say a list or a shape made a word a suffix: without
+#: one, a suffix word stands there by position, unless the vocabulary
+#: lists it (a bracketed member, which classify leaves untagged).
+_SUFFIX_EVIDENCE = frozenset({
+    "vocab:suffix", "vocab:suffix-word", AMBIGUOUS_ACRONYM_TAG,
+    AMBIGUOUS_WORD_TAG, AGNOMEN_TAG, SHAPE_ACRONYM_TAG,
+    SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG})
+
+#: The tags that say the vocabulary lists a word as a title, in any of
+#: the title sets.
+_TITLE_TAGS = frozenset({
+    "vocab:title", TITLE_AMBIGUOUS_TAG, "vocab:given-title",
+    "vocab:after-given-title"})
 
 
 def _alternative(pending: PendingAmbiguity, materialized: tuple[Token, ...],
@@ -57,6 +94,17 @@ def _alternative(pending: PendingAmbiguity, materialized: tuple[Token, ...],
     return Reading(alt.kind, role, alt.source)
 
 
+def _listed_suffix(text: str, lexicon: Lexicon) -> bool:
+    """Whether the suffix vocabulary lists a word no tag marks, as a
+    word or, its periods removed, as an acronym. Asked only of a
+    suffix word with no suffix tag, so other names pay nothing."""
+    n = _normalize(text)
+    if n in lexicon.suffix_words:
+        return True
+    n = n.replace(".", "")
+    return n in lexicon.suffix_acronyms or n in lexicon.suffix_acronyms_ambiguous
+
+
 # rules/A2: "a name with no name content parses to the empty
 # name — every field empty, false as a boolean — while ambiguities
 # born from its punctuation survive on the empty result"
@@ -64,11 +112,80 @@ def _alternative(pending: PendingAmbiguity, materialized: tuple[Token, ...],
 def assemble(state: ParseState) -> ParsedName:
     dropped = set(state.dropped)
     final: dict[int, Token] = {}
+    surnames = state.lexicon.surnames
+    # the suffix reading of the token before, which a continuation of
+    # its entry with no reading of its own takes
+    before: Reading | None = None
+    prev_split = False
     for i, t in enumerate(state.tokens):
         if i in dropped:
             continue
         role = t.role if t.role is not None else Role.GIVEN
-        final[i] = Token(t.text, t.span, role, t.tags)
+        tags = t.tags
+        # The reading the parse took (Token.reading): the final role
+        # says which decision placed the word, and the tags classify
+        # wrote say which reading of it that decision weighed. Read
+        # here, where roles are final, so a rule that moves a word
+        # later (P1's fold, P6's attachment, the policy folds) needs
+        # no reading of its own to keep in step. Inline and C-level
+        # for an untagged word, a frame for a tagged suffix or name
+        # word, which `_vocab`'s predicates read for the reading NOT
+        # taken too (Ambiguity.alternative), so the two never part.
+        # Reading.languages joins here once phase 3's reading index
+        # (3a) can answer which files hold the reading.
+        if role is Role.SUFFIX:
+            kind, source = suffix_kind(t.text, tags)
+            if (source is ReadingSource.VOCABULARY
+                    and tags.isdisjoint(_SUFFIX_EVIDENCE)
+                    and not _listed_suffix(t.text, state.lexicon)):
+                # nothing lists or shapes it: a word read into the
+                # suffix by where it stands
+                source = ReadingSource.POSITION
+                if "joined" in tags and before is not None:
+                    # a continuation of the entry before it: a
+                    # credential split across a space is one credential
+                    # ('Ph.' 'D.'), any other word a member of the run
+                    # it stands in ('Jones' in 'John Smith PhD Jones')
+                    kind = before.kind
+                    if prev_split:
+                        source = before.source
+            reading = _READINGS[kind, role, source]
+            before = reading
+            prev_split = (SPLIT_CREDENTIAL_TAG in tags
+                          or SPLIT_MEMBER_TAG in tags)
+        else:
+            before = None
+            if role is Role.TITLE:
+                if "conjunction" in tags:
+                    kind, source = (ReadingKind.CONJUNCTION,
+                                    ReadingSource.VOCABULARY)
+                elif not tags.isdisjoint(_TITLE_TAGS):
+                    kind, source = ReadingKind.TITLE, ReadingSource.VOCABULARY
+                elif _PERIOD_ABBREV.match(t.text):
+                    # rules/H2's shape: an unlisted abbreviation
+                    kind, source = ReadingKind.TITLE, ReadingSource.SHAPE
+                else:
+                    # a title phrase's connective object ('of
+                    # Parliament'), a title by where it stands
+                    kind, source = ReadingKind.TITLE, ReadingSource.POSITION
+            elif not tags:
+                kind = ReadingKind.NAME
+                source = (ReadingSource.VOCABULARY if t.text in surnames
+                          else ReadingSource.POSITION)
+            elif "initial" in tags:
+                kind, source = ReadingKind.INITIAL, ReadingSource.SHAPE
+            elif ("conjunction" in tags
+                    and UNJOINED_CONJUNCTION_TAG not in tags):
+                kind, source = (ReadingKind.CONJUNCTION,
+                                ReadingSource.VOCABULARY)
+            elif "particle" in tags and UNJOINED_TAG not in tags:
+                kind, source = ReadingKind.PARTICLE, ReadingSource.VOCABULARY
+            else:
+                # a particle or connective with nothing to join reads
+                # as the name word it stands as ('van' in 'van Gogh')
+                kind, source = ReadingKind.NAME, name_source(tags)
+            reading = _READINGS[kind, role, source]
+        final[i] = Token(t.text, t.span, role, tags, reading)
     # No alphanumeric character among the SURVIVING tokens means no
     # name: a bare '.' or '- -' is not a person. v1 kept such input
     # (parse('.') -> first '.'); 2.0 empties it so bool() stays an

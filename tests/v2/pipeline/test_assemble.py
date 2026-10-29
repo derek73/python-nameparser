@@ -1,9 +1,14 @@
+import pytest
+
+from nameparser import Parser, Reading, ReadingKind, locales, parse, parser_for
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline import run
 from nameparser._pipeline._assemble import assemble
 from nameparser._pipeline._state import ParseState, PendingAmbiguity, WorkToken
-from nameparser._policy import Policy
+from nameparser._policy import FAMILY_FIRST, Policy
 from nameparser._types import AmbiguityKind, ParsedName, Role, Span
+
+from ..cases import CASES, Case
 
 _LEX = Lexicon(
     titles=frozenset({"dr"}),
@@ -254,3 +259,88 @@ def test_a_field_tail_report_names_its_first_referent_s_field() -> None:
         PendingAmbiguity(AmbiguityKind.TITLE_OR_NAME, "read as ", (0, 1),
                          field_tail=""))
     assert [a.detail for a in pn.ambiguities] == ["read as a family name"]
+
+
+# -- Token.reading (3.0, 4a): the reading the parse took --------------
+
+#: (name, policy, word, kind, source): one row per branch assemble
+#: names a reading by, so a branch that stops being reached, or starts
+#: naming another reading, fails here by name.
+_EXPECTED_READINGS = [
+    ("Dr. Juan de la Vega III", None, "Dr.", "title", "vocabulary"),
+    ("Insp. Jane Morse", None, "Insp.", "title", "shape"),
+    ("Esq. Smith", None, "Esq.", "title", "shape"),
+    ("Member of Parliament John Smith", None, "of", "conjunction",
+     "vocabulary"),
+    ("Member of Parliament John Smith", None, "Parliament", "title",
+     "position"),
+    ("Dr. Juan de la Vega III", None, "Juan", "name", "position"),
+    ("Dr. Juan de la Vega III", None, "de", "particle", "vocabulary"),
+    ("Dr. Juan de la Vega III", None, "III", "generation", "vocabulary"),
+    ("John Q. Smith", None, "Q.", "initial", "shape"),
+    ("Juan e Maria Smith", None, "e", "conjunction", "vocabulary"),
+    # a particle with nothing to join is the name word it stands as
+    ("van Gogh", None, "van", "name", "declared"),
+    ("de", None, "de", "name", "position"),
+    ("Abdul Aziz Tariq", None, "Abdul", "name", "vocabulary"),
+    ("김민준", None, "김", "name", "vocabulary"),
+    ("Chas. Smith", None, "Chas.", "name", "declared"),
+    ("Joao Filho Silva Filho", None, "Silva", "name", "position"),
+    ("Pedro Alves Filho", None, "Filho", "agnomen", "vocabulary"),
+    ("Alexandre Dumas fils", None, "fils", "generation", "vocabulary"),
+    ("John Smith VI", None, "VI", "generation", "shape"),
+    ("John Smith PhD", None, "PhD", "credential", "vocabulary"),
+    ("John Smith X.Y.Z.", None, "X.Y.Z.", "credential", "shape"),
+    ("Jean-Luc Picard Esq.", None, "Esq.", "post-nominal", "vocabulary"),
+    ("王小明先生", None, "先生", "post-nominal", "vocabulary"),
+    # a word the run takes by position, and a credential split across a
+    # space, which is one credential
+    ("John Smith PhD Jones", None, "Jones", "credential", "position"),
+    ("John Smith Ph. D.", None, "D.", "credential", "vocabulary"),
+    ("John Smith, Jr., Foo", None, "Foo", "credential", "position"),
+    ("John Smith (M.A)", None, "M.A", "credential", "vocabulary"),
+    ("John (Jack) Smith", None, "Jack", "name", "position"),
+    ("Jane Smith née Jones", None, "Jones", "name", "position"),
+    # the role the reading names is the final one, after every fold
+    ("John Paul Smith", Policy(middle_as_family=True), "Paul", "name",
+     "position"),
+    ("de Mesnil Jean", Policy(name_order=FAMILY_FIRST), "de", "particle",
+     "vocabulary"),
+]
+
+
+@pytest.mark.parametrize("text,policy,word,kind,source", _EXPECTED_READINGS,
+                         ids=lambda v: v if isinstance(v, str) else None)
+def test_a_token_carries_the_reading_the_parse_took(
+        text: str, policy: Policy | None, word: str, kind: str,
+        source: str) -> None:
+    pn = (Parser(policy=policy) if policy else Parser()).parse(text)
+    (tok,) = [t for t in pn.tokens if t.text == word][:1]
+    assert tok.reading == Reading(kind, tok.role, source)  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize("case", CASES, ids=lambda c: c.id)
+def test_every_parsed_token_has_a_reading_of_its_own_field(case: Case) -> None:
+    parser = (parser_for(locales.get(case.locale)) if case.locale is not None
+              else Parser(policy=case.policy) if case.policy else Parser())
+    pn = parser.parse(case.text)
+    for t in pn.tokens:
+        assert t.reading is not None, t
+        assert t.reading.role is t.role, t
+        # 4c's: no rule of the parse names a patronymic yet
+        assert t.reading.kind is not ReadingKind.PATRONYMIC, t
+    # case repair changes case and nothing else, the readings included
+    repaired = parser.capitalized(pn, force=True)
+    assert ([t.reading for t in repaired.tokens]
+            == [t.reading for t in pn.tokens])
+
+
+def test_a_token_replace_or_revise_builds_has_no_reading() -> None:
+    pn = parse("Dr. Juan de la Vega III")
+    for edited in (pn.replace(family="Smith"),
+                   Parser().revise(pn, family="Smith")):
+        (family,) = edited.tokens_for(Role.FAMILY)
+        assert family.reading is None
+        # the fields it did not touch keep theirs
+        assert [t.reading for t in edited.tokens_for(Role.GIVEN)] == [
+            t.reading for t in pn.tokens_for(Role.GIVEN)]
