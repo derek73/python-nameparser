@@ -55,10 +55,14 @@ def test_a_case_view_is_recorded_only_where_it_moves_something() -> None:
     # ...but the view is the whole repaired name, so in a name it does
     # repair, a role move that changes the rendering moves the view
     # with no word changing case: the echo the initials column has.
+    # Since 3.0 the rendering follows the order a name was read in
+    # (rules/R6), so reading `JOHN SMITH` family-first no longer moves
+    # it; a word the layout moves still does -- here the trailing
+    # particle P6 attaches before the family it joins under FAMILY_FIRST.
     caps, caps_reordered = snapshot.read(
-        [("JOHN SMITH", None), ("JOHN SMITH", "FAMILY_FIRST")])
+        [("JOHN SMITH VAN", None), ("JOHN SMITH VAN", "FAMILY_FIRST")])
     assert (caps["capitalized"], caps_reordered["capitalized"]) \
-        == ("John Smith", "Smith John")
+        == ("John Smith Van", "van John Smith")
 
 
 def test_a_snapshot_predating_the_case_views_is_not_compared_on_them() -> None:

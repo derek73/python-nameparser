@@ -1,6 +1,7 @@
 """Not a stage: converts the final ParseState into a public ParsedName.
 
-Consumes: tokens (all roles set), dropped, ambiguities (by index;
+Consumes: tokens (all roles set), dropped, order and structure (for
+ParsedName.order), ambiguities (by index;
 one carrying ``field_tail`` is worded from its word's final role,
 #626), and segments, for the part a withdrawn connective report's
 letter ends (rules/P8, #721).
@@ -23,10 +24,11 @@ from __future__ import annotations
 
 from nameparser._pipeline._state import (
     FIELD_READING, NAME_ROLES, Beside, Deferred, ParseState,
-    PendingAmbiguity,
+    PendingAmbiguity, Structure,
 )
 from nameparser._types import (
-    FOLDED_TAG, Ambiguity, AmbiguityKind, ParsedName, Reading, Role, Token,
+    FOLDED_TAG, GIVEN_FIRST, Ambiguity, AmbiguityKind, ParsedName, Reading,
+    Role, Token,
 )
 
 
@@ -179,4 +181,20 @@ def assemble(state: ParseState) -> ParsedName:
                          state.policy.middle_as_family)))
     return ParsedName(original=state.original,
                       tokens=tuple(final.values()),
-                      ambiguities=tuple(ambiguities))
+                      ambiguities=tuple(ambiguities),
+                      order=_read_order(state))
+
+
+def _read_order(state: ParseState) -> tuple[Role, Role, Role]:
+    """ParsedName.order: the order assign read the name in, given-first
+    after a family comma (which fixes the family without consulting
+    an order), and the declared name_order where no positional read
+    happened."""
+    # rules/R6: "the name is laid out in the order it was read in" --
+    # this records that order for the rendering to read (decisions/R6,
+    # #754)
+    if state.order is not None:
+        return state.order
+    if state.structure is Structure.FAMILY_COMMA:
+        return GIVEN_FIRST
+    return state.policy.name_order

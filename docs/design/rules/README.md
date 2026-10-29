@@ -220,6 +220,7 @@ Terms the rules use without defining them each time, each with the rule that def
 - [R3 — initials honor the fold](R3-initials-honor-the-fold.md)
 - [R4 — case repair reads the unjoined mark](R4-case-repair-reads-the-unjoined-mark.md)
 - [R5 — the case-repair gate](R5-case-repair-gate.md)
+- [R6 — the default rendering follows the written name](R6-default-rendering-follows-the-written-name.md)
 
 ## [Construction & configuration diagnostics (D)](D-construction-and-configuration-diagnostics.md)
 

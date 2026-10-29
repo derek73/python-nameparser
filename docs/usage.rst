@@ -734,6 +734,20 @@ Dicts and strings
     >>> name.initials()
     'J. Q. X. V.'
 
+``str()``, like ``render()`` with no spec, lays the name out in the
+order it was read in (:attr:`ParsedName.order
+<nameparser.ParsedName.order>`) and keeps the separator written between
+two words that stay side by side, normalized: nothing stays nothing,
+any run of whitespace becomes one space, and a comma before a suffix
+stays. A spec you pass renders exactly as written, in its own order:
+
+.. doctest::
+
+    >>> str(parse("김민준")), str(parse("John Smith, Jr."))
+    ('김민준', 'John Smith, Jr.')
+    >>> parse("김민준").render("{given} {family}")
+    '민준 김'
+
 Fixing case
 -----------
 

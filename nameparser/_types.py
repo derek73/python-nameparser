@@ -54,6 +54,27 @@ class Role(StrEnum):
     MAIDEN = "maiden"
 
 
+# Order-spec constants (#270). Each reads as its contents because roles
+# are named given/family, not first/last. Defined here rather than in
+# _policy because ParsedName.order holds one; _policy re-exports them.
+
+#: Western order (the default): the first word of positional input is
+#: the given name, the last is the family name, everything between is
+#: middle. One of the three valid ``Policy(name_order=...)`` values.
+GIVEN_FIRST = (Role.GIVEN, Role.MIDDLE, Role.FAMILY)
+#: Family name first, given name second, remaining words middle
+#: (e.g. Hungarian, or East Asian order). One of the three valid
+#: ``Policy(name_order=...)`` values.
+FAMILY_FIRST = (Role.FAMILY, Role.GIVEN, Role.MIDDLE)
+#: Family name first, given name LAST, words between middle
+#: (e.g. Vietnamese full-name order). One of the three valid
+#: ``Policy(name_order=...)`` values.
+FAMILY_FIRST_GIVEN_LAST = (Role.FAMILY, Role.MIDDLE, Role.GIVEN)
+
+#: The three orders, for ParsedName.order's validation.
+_NAME_ORDERS = (GIVEN_FIRST, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST)
+
+
 class Span(NamedTuple):
     """Where a :class:`Token` came from: a character range into
     :attr:`ParsedName.original` such that ``original[start:end]`` is
@@ -987,6 +1008,16 @@ class ParsedName:
     #: Judgment calls that could have gone the other way; empty for
     #: most names (see Ambiguity).
     ambiguities: tuple[Ambiguity, ...] = ()
+    #: The order the name was read in: ``GIVEN_FIRST``,
+    #: ``FAMILY_FIRST`` or ``FAMILY_FIRST_GIVEN_LAST``, the declared
+    #: ``name_order`` or the ``script_orders`` entry that overrode it,
+    #: and ``GIVEN_FIRST`` for a name with a family comma. ``str()``
+    #: and :meth:`render`'s default lay the name out in it. ``None``
+    #: (a name built by hand, or a 2.x pickle) renders given-first.
+    #: Left out of ``==`` and :meth:`comparison_key`, so two equal
+    #: names can render differently.
+    order: tuple[Role, Role, Role] | None = field(
+        default=None, compare=False, metadata={ADDED_IN: "3.0"})
 
     # in the class body so @dataclass(slots=True) keeps them
     __getstate__ = _guarded_getstate
@@ -999,6 +1030,11 @@ class ParsedName:
             )
         object.__setattr__(self, "tokens", tuple(self.tokens))
         object.__setattr__(self, "ambiguities", tuple(self.ambiguities))
+        if self.order is not None and self.order not in _NAME_ORDERS:
+            raise ValueError(
+                f"ParsedName.order must be None, GIVEN_FIRST, FAMILY_FIRST "
+                f"or FAMILY_FIRST_GIVEN_LAST, got {self.order!r}"
+            )
         for tok in self.tokens:
             if not isinstance(tok, Token):
                 raise TypeError(
@@ -1234,7 +1270,8 @@ class ParsedName:
             amb for amb in self.ambiguities
             if all(t in new_tokens for t in amb.tokens)
         )
-        return ParsedName(self.original, _remarked(new_tokens), kept)
+        return ParsedName(self.original, _remarked(new_tokens), kept,
+                          self.order)
 
     # -- comparison -------------------------------------------------------
 
@@ -1268,18 +1305,28 @@ class ParsedName:
     # tests/v2/test_layering.py), so these import at call time -- module
     # level stays internal-import-free.
 
-    def render(
-        self,
-        spec: str = ('{title} {given} "{nickname}" {middle} {family} '
-                     "({maiden}) {suffix}"),
-    ) -> str:
+    def render(self, spec: str | None = None) -> str:
         """Fill the str.format spec from the seven role fields and the
         derived views; empty fields collapse (#254), including the
-        default spec's decorations (empty '""' and '()' wrappers).
-        The default shows every non-empty field: the nickname quoted
-        after the given name, the maiden name parenthesized after the
-        family name. Unknown keys raise KeyError naming the valid
-        fields."""
+        spec's decorations (empty '""' and '()' wrappers). A spec
+        renders exactly as written, its order and its joiners. Unknown
+        keys raise KeyError naming the valid fields.
+
+        ``None``, the default and what ``str()`` passes, lays the name
+        out in :attr:`order`: given-first
+        ``'{title} {given} "{nickname}" {middle} {family} ({maiden})
+        {suffix}'``, and for a family-first order the family (with its
+        maiden name) after the title and the given and middle names
+        in the order's sequence, the suffix last. Two words that stand
+        one directly after the other both in the name as written and
+        in that layout keep the separator written between them,
+        normalized: nothing stays nothing, any whitespace becomes one
+        space, an interpunct or nakaguro the parse divided at stands
+        alone, and one comma is written ', ' (ASCII), '، ' (Arabic)
+        or '，' (full-width). Every other pair takes a space, or the
+        layout's quotes and parentheses where those stand between the
+        two fields, and suffixes not written side by side are joined
+        with ', ' as the ``suffix`` field joins them."""
         import nameparser._render as _render
         return _render.render(self, spec)
 

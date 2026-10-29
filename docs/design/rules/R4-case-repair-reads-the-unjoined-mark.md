@@ -35,7 +35,7 @@
   "john smith psyd"           →  capitalized="John Smith PsyD"
   "SIG.RA MARIA ROSSI"        →  capitalized="Sig.ra Maria Rossi"
   "dott.ssa anna bianchi"     →  capitalized="Dott.ssa Anna Bianchi"
-  "Dr. med. univ. Margit Popp, MSc"  →  capitalized_forced="Dr. Med. Univ. Margit Popp MSc"
+  "Dr. med. univ. Margit Popp, MSc"  →  capitalized_forced="Dr. Med. Univ. Margit Popp, MSc"
   "MSc Dr. med. univ."        →  capitalized_forced="MSc Dr. Med. Univ."
   ```
 - **A particle is written in lowercase**, but a particle the vocabulary records a casing for takes that casing, the entry being how the word is written wherever it stands.
@@ -69,15 +69,15 @@
   "john smith vi"             →  capitalized="John Smith VI"
   "john smith ix"             →  capitalized="John Smith IX"
   "john smith iii"            →  capitalized="John Smith III"
-  "john smith, v"             →  capitalized="John Smith V"
+  "john smith, v"             →  capitalized="John Smith, V"
   "john smith mba"            →  capitalized="John Smith MBA"
   "john smith mcse"           →  capitalized="John Smith MCSE"
-  "john smith, otr/l"         →  capitalized="John Smith OTR/L"
-  "JOHN SMITH, FNP-BC"        →  capitalized="John Smith FNP-BC"
+  "john smith, otr/l"         →  capitalized="John Smith, OTR/L"
+  "JOHN SMITH, FNP-BC"        →  capitalized="John Smith, FNP-BC"
   "john smith pa-c"           →  capitalized="John Smith PA-C"
   "john smith jr"             →  capitalized="John Smith Jr"  · boundary
-  "John Smith, otr/l"         →  capitalized="John Smith otr/l"  · boundary
-  "John Smith, otr/l"         →  capitalized_forced="John Smith OTR/L"  · boundary
+  "John Smith, otr/l"         →  capitalized="John Smith, otr/l"  · boundary
+  "John Smith, otr/l"         →  capitalized_forced="John Smith, OTR/L"  · boundary
   "john smith-jones"          →  capitalized="John Smith-Jones"  · boundary
   "jean-luc picard"           →  capitalized="Jean-Luc Picard"  · boundary
   "dipl.-ing john smith"      →  capitalized="Dipl.-Ing John Smith"  · boundary

@@ -364,11 +364,11 @@ def test_a_bound_caps_word_keeps_its_capitals_in_case_repair() -> None:
     # (#613's PR review). A name in one case carries no contrast.
     def repaired(text: str) -> str:
         return str(parse(text).capitalized(force=True))
-    assert repaired("John Smith, XYZ") == "John Smith XYZ"
+    assert repaired("John Smith, XYZ") == "John Smith, XYZ"
     assert repaired("John Smith, PhD Jones XYZ") == \
-        "John Smith PhD Jones XYZ"
+        "John Smith, PhD Jones XYZ"
     assert repaired("JOHN SMITH, PhD JONES XYZ") == \
-        "John Smith PhD Jones Xyz"
+        "John Smith, PhD Jones Xyz"
 
 
 def test_a_lone_core_after_the_comma_is_a_word_of_the_part() -> None:

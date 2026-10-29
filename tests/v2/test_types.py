@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from nameparser import parse
+from nameparser import FAMILY_FIRST, GIVEN_FIRST, parse
 from nameparser._types import (
     STABLE_TAGS, Ambiguity, AmbiguityKind, ParsedName, Role, Segmentation,
     Span, Token,
@@ -586,6 +586,18 @@ _REFUSED_SKEWS = [
                                              "alternative", "alt"),
                  "unexpected fields: alt",
                  id="renamed-added-field"),
+    # ParsedName.order (3.0, #754) is admitted missing, as `alternative`
+    # is, and refused renamed or beside a shipped field missing
+    pytest.param(ParsedName, lambda: _renamed(dict(
+        _pn("Juan", [Token("Juan", Span(0, 4), Role.GIVEN)]).__getstate__()),
+        "order", "ordr"),
+                 "unexpected fields: ordr",
+                 id="renamed-added-field-on-parsedname"),
+    pytest.param(ParsedName, lambda: _without(dict(
+        _pn("Juan", [Token("Juan", Span(0, 4), Role.GIVEN)]).__getstate__()),
+        "order", "ambiguities"),
+                 "missing fields: ambiguities;",
+                 id="missing-shipped-field-beside-a-missing-order"),
 ]
 
 
@@ -627,6 +639,45 @@ def test_a_parsedname_pickled_by_2_6_0_loads() -> None:
     assert now.ambiguities[0].alternative is not None
     assert pickle.loads(pickle.dumps(now)).ambiguities[0].alternative == (
         now.ambiguities[0].alternative)
+
+
+def test_a_parsedname_pickled_by_2_8_0_loads_and_renders_given_first(
+        ) -> None:
+    """tests/v2/data/parsedname_v28.pickle is `parse("김민준")` pickled
+    (protocol 4) by the released 2.8.0 wheel, written before
+    `ParsedName.order` existed. Made 2026-10-29 with `PYTHONSAFEPATH=1
+    uv run --isolated --no-project --with 'nameparser==2.8.0'` from a
+    directory outside the checkout, the version and the module path
+    asserted. It loads with no order and renders given-first, as 2.x
+    did, while a fresh parse renders as written and the two compare
+    equal (rules/R6's Accepted bullet, decisions/R6). pickle.load is
+    safe here: a repo-controlled fixture."""
+    import pickle
+    with open(Path(__file__).parent / "data" / "parsedname_v28.pickle",
+              "rb") as f:
+        loaded = pickle.load(f)
+    now = parse("김민준")
+    assert loaded.order is None
+    assert now.order == FAMILY_FIRST
+    assert loaded == now
+    assert (str(loaded), str(now)) == ("민준 김", "김민준")
+    assert pickle.loads(pickle.dumps(now)).order == FAMILY_FIRST
+
+
+def test_parsedname_order_is_validated_and_not_compared() -> None:
+    tok = Token("Juan", Span(0, 4), Role.GIVEN)
+    assert ParsedName("Juan", (tok,), order=FAMILY_FIRST) == ParsedName(
+        "Juan", (tok,))
+    for bad in ((Role.GIVEN, Role.FAMILY, Role.MIDDLE), ("given",), "x"):
+        with pytest.raises(ValueError, match="ParsedName.order must be"):
+            ParsedName("Juan", (tok,), order=bad)  # type: ignore[arg-type]
+
+
+def test_replace_and_capitalized_keep_the_order() -> None:
+    name = parse("김민준")
+    assert name.replace(given="서연").order == FAMILY_FIRST
+    assert name.capitalized().order == FAMILY_FIRST
+    assert parse("Smith, John").order == GIVEN_FIRST
 
 
 def test_tokens_for_accepts_role_string() -> None:

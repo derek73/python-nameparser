@@ -14,7 +14,9 @@ The 3.0 API is the one 2.0 introduced — ``parse``, ``Parser``,
 :mod:`nameparser.locales` — and its names and signatures carry into 3.0
 gaining additions only. The vocabulary data modules in
 ``nameparser.config`` (``titles``, ``particles`` and the rest) stay.
-Separately, the output model changes in 3.0; details with the 3.0
+Separately, the output model changes in 3.0: ``str()`` now renders a
+name in the order it was read in, with the separators it was written
+with (`Changed in 3.0`_). Further output changes come with the 3.0
 alphas.
 
 The full 1.x documentation remains the reference for ``HumanName`` and
@@ -522,11 +524,11 @@ does (:ref:`east-asian-names` explains the conventions).
     ('김', '민준')
 
 1.4 read the first as ``first="毛"``/``last="泽东"``, and left the
-second whole in ``first``. The Korean one also changes what the name
-*renders* as — ``str(parse("김민준"))`` is ``"민준 김"``, where 1.4's
-``str(HumanName("김민준"))`` was ``"김민준"`` — because the split
-inserts a token boundary that the default format then writes
-given-name-first.
+second whole in ``first``. Through 2.8 the Korean one also changed what
+the name *rendered* as — ``str(parse("김민준"))`` was ``"민준 김"``,
+where 1.4's ``str(HumanName("김민준"))`` was ``"김민준"`` — because the
+split inserted a token boundary that the default format then wrote
+given-name-first. 3.0 renders ``"김민준"`` again (`Changed in 3.0`_).
 
 A third shape changes even though nothing splits it. 1.4 routed a lone
 token to ``first`` whatever it was, so an unspaced Chinese or Japanese
@@ -563,9 +565,9 @@ token moves from the given name to the family name exactly as
 
 1.4 read the spaced ones as ``first="高橋"``/``last="みなみ"`` and
 ``first="山田"``/``last="エミ"``, and put the unspaced one whole in
-``first``. The spaced shapes change what the name renders as too:
-``str(parse("高橋 みなみ"))`` is ``"みなみ 高橋"``, where 1.4 wrote
-``"高橋 みなみ"``. A name written *wholly* in katakana is deliberately
+``first``. Through 2.8 the spaced shapes changed what the name rendered
+as too: ``str(parse("高橋 みなみ"))`` was ``"みなみ 高橋"``, where 1.4
+and 3.0 write ``"高橋 みなみ"``. A name written *wholly* in katakana is deliberately
 left alone — it may be a transcribed foreign name already in
 given-first order or a Japanese name's reading written family-first,
 and the script cannot tell which (see :ref:`east-asian-names` to opt
@@ -588,13 +590,13 @@ it in ``first``; 2.1 sees two:
 
 The two divide the same way and land in opposite fields, because the
 katakana pair keeps its source order while the kanji pair takes the
-family-first rule. Separating also changes the rendered string, the
-same way the Korean split does: the dot comes back as a space, so
-``str(parse("マイケル・ジャクソン"))`` is ``"マイケル ジャクソン"``,
-where 1.4 wrote ``"マイケル・ジャクソン"``. That reaches delimited content
-too — the nickname in ``"山田 太郎 (マイケル・ジャクソン)"`` was
-``"マイケル・ジャクソン"`` under 1.4 and is ``"マイケル ジャクソン"``
-now.
+family-first rule. Separating also changes the ``nickname`` and
+other fields, which join their words with a space: the nickname in
+``"山田 太郎 (マイケル・ジャクソン)"`` was ``"マイケル・ジャクソン"``
+under 1.4 and is ``"マイケル ジャクソン"`` now. Through 2.8 the dot came
+back as a space in the rendered string as well
+(``str(parse("マイケル・ジャクソン"))`` was ``"マイケル ジャクソン"``);
+3.0 renders it with its dot, as 1.4 did (`Changed in 3.0`_).
 
 Turning the East Asian readings off
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -608,8 +610,8 @@ like ``威廉·莎士比亚``, and a separator only between classified-script
 characters — each side judged on its own — where the katakana dot is
 unconditional) are decided
 in tokenization rather than by policy, so a name written with either
-still divides at the dot, and still renders with a space, whatever
-those two fields are set to.
+still divides at the dot whatever those two fields are set to (and
+through 2.8 rendered with a space there).
 
 Changed in 2.3 through 2.8
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -920,3 +922,50 @@ grep your fixtures for, with what 1.4 read:
     'Lord Chancellor'
     >>> parse("Lord Justice Leveson").title
     'Lord Justice'
+
+Changed in 3.0
+~~~~~~~~~~~~~~
+
+``str()`` and :meth:`~nameparser.ParsedName.render` with no argument
+lay a name out in the order it was read in, recorded as
+:attr:`ParsedName.order <nameparser.ParsedName.order>`, and keep the
+separator its writer put between two words that stay side by side,
+normalized: nothing stays nothing, any whitespace (the ideographic
+space included) becomes one space, a dividing middle dot stays, and a
+comma before a suffix stays. Through 2.8 every name rendered
+given-name-first with its words joined by spaces:
+
+.. doctest::
+
+    >>> str(parse("김민준")), str(parse("威廉·莎士比亚"))
+    ('김민준', '威廉·莎士比亚')
+    >>> from nameparser import FAMILY_FIRST, Parser, Policy
+    >>> str(Parser(policy=Policy(name_order=FAMILY_FIRST)).parse("Nagy Laszlo"))
+    'Nagy Laszlo'
+    >>> str(parse("John Smith, Jr.")), str(parse("Smith, John, Jr."))
+    ('John Smith, Jr.', 'John Smith Jr.')
+
+2.8 gave ``'민준 김'``, ``'威廉 莎士比亚'``, ``'Laszlo Nagy'`` and
+``'John Smith Jr.'`` for the first four. A family comma is never kept,
+so ``Smith, John`` still renders ``'John Smith'``. To keep 2.x's
+output, pass 2.x's default as a spec: a spec you write renders exactly
+as written, in its order and with its joiners.
+
+.. doctest::
+
+    >>> v2_spec = '{title} {given} "{nickname}" {middle} {family} ({maiden}) {suffix}'
+    >>> parse("김민준").render(v2_spec)
+    '민준 김'
+
+A :class:`~nameparser.ParsedName` pickled by 2.x has no ``order`` and
+renders given-first as it did, while a fresh parse of the same text
+renders as written; the two still compare equal, since ``order`` is
+left out of ``==`` and :meth:`~nameparser.ParsedName.comparison_key`.
+And :meth:`~nameparser.ParsedName.initials` gives nothing for a word
+in Han, Hangul or kana, scripts with no initials, where 2.8 gave its
+first character:
+
+.. doctest::
+
+    >>> parse("김민준").initials(), parse("Kim Minjun").initials()
+    ('', 'K. M.')

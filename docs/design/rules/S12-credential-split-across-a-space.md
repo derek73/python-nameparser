@@ -16,7 +16,7 @@
 - **Case repair** writes the pair as it writes the one-word spelling, the letters of the two words cased as their fold is, and a pair written in two cases is the writer's spelling as the one-word spelling would be (R5).
   ```
   "john smith pharm d"        →  capitalized="John Smith Pharm D"
-  "john smith, PHARM D"       →  capitalized="John Smith Pharm D"
+  "john smith, PHARM D"       →  capitalized="John Smith, Pharm D"
   ```
 - **The count decides.** At the end of a name it needs the words to spare S4 asks of a bare member; after a comma, the name words C4 counts before the comma; ending the given part after a family comma, it reads as S5 reads a member there, its writing saying nothing else.
   ```

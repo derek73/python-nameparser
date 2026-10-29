@@ -62,8 +62,10 @@ ALLOWED = {
     "_locale.py": ("nameparser._types", "nameparser._lexicon",
                    "nameparser._policy"),
     # _lexicon is needed at runtime: capitalized(lexicon=None) resolves
-    # to Lexicon.default()
-    "_render.py": ("nameparser._types", "nameparser._lexicon"),
+    # to Lexicon.default(); _policy for the scripts that write no
+    # initials (_NO_INITIALS), which initials() skips (#754)
+    "_render.py": ("nameparser._types", "nameparser._lexicon",
+                   "nameparser._policy"),
     # every stage module: state + the three config/type modules
     "_pipeline/_state.py": ("nameparser._types", "nameparser._lexicon",
                             "nameparser._policy"),

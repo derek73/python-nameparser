@@ -13,7 +13,8 @@ from enum import Enum, StrEnum, auto
 from typing import Any
 
 from nameparser._types import (
-    Role, _coerce_enum, _guarded_getstate, _guarded_setstate,
+    FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, GIVEN_FIRST, Role, _coerce_enum,
+    _guarded_getstate, _guarded_setstate,
 )
 
 
@@ -261,21 +262,9 @@ def _script_matcher(*scripts: Script,
     return matcher
 
 
-# Order-spec constants (#270). Each reads as its contents because roles
-# are named given/family, not first/last.
-
-#: Western order (the default): the first word of positional input is
-#: the given name, the last is the family name, everything between is
-#: middle. One of the three valid ``Policy(name_order=...)`` values.
-GIVEN_FIRST = (Role.GIVEN, Role.MIDDLE, Role.FAMILY)
-#: Family name first, given name second, remaining words middle
-#: (e.g. Hungarian, or East Asian order). One of the three valid
-#: ``Policy(name_order=...)`` values.
-FAMILY_FIRST = (Role.FAMILY, Role.GIVEN, Role.MIDDLE)
-#: Family name first, given name LAST, words between middle
-#: (e.g. Vietnamese full-name order). One of the three valid
-#: ``Policy(name_order=...)`` values.
-FAMILY_FIRST_GIVEN_LAST = (Role.FAMILY, Role.MIDDLE, Role.GIVEN)
+# Order-spec constants (#270), defined in _types beside Role since
+# ParsedName.order holds one (3.0, #754) and _types imports nothing
+# internal; re-exported here, where Policy validates name_order.
 
 _ORDER_CONSTANT_NAMES: dict[tuple[Role, ...], str] = {
     GIVEN_FIRST: "GIVEN_FIRST",

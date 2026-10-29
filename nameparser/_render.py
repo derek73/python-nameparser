@@ -1,8 +1,9 @@
 """Rendering for the 2.0 API: ParsedName -> display strings.
 
-Layering: imports nameparser._types, and nameparser._lexicon for
+Layering: imports nameparser._types, nameparser._lexicon for
 Lexicon.default() (capitalized() with lexicon=None), _normalize and
-FULL_STOPS (enforced by tests/v2/test_layering.py). Parsing code
+FULL_STOPS, and nameparser._policy for the scripts that write no
+initials (enforced by tests/v2/test_layering.py). Parsing code
 never imports this module; ParsedName's rendering methods delegate
 here via call-time imports.
 
@@ -18,7 +19,9 @@ from collections.abc import Callable
 
 from nameparser._lexicon import (FULL_STOPS, Lexicon, _normalize,
                                  _spells_an_initial)
-from nameparser._types import (FOLDED_TAG, SHAPE_ACRONYM_TAG,
+from nameparser._policy import _NO_INITIALS, _script_matcher
+from nameparser._types import (_NAME_ORDERS, FOLDED_TAG, GIVEN_FIRST,
+                               SHAPE_ACRONYM_TAG,
                                SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG,
                                UNCLASSIFIED_TAG, UNJOINED_CONJUNCTION_TAG,
                                UNJOINED_TAG, Ambiguity, ParsedName, Role,
@@ -147,12 +150,132 @@ def _format_spec(spec: str, values: dict[str, str], noun: str,
     return _collapse(rendered)
 
 
-def render(name: ParsedName, spec: str) -> str:
+def render(name: ParsedName, spec: str | None) -> str:
     """Fill the str.format spec from the seven role fields and the
     derived views (empty fields substitute ''), then apply the #254
-    collapse. Unknown keys raise KeyError naming the valid fields."""
+    collapse. Unknown keys raise KeyError naming the valid fields.
+    None renders the order-aware default (_default_render)."""
+    if spec is None:
+        return _default_render(name)
     values = {key: getattr(name, key) for key in _RENDER_KEYS}
     return _format_spec(spec, values, "render", _RENDER_KEYS)
+
+
+# rules/R6: "the name is laid out in the order it was read in" -- this
+# is the layout half: each slot a role and the decoration standing
+# around its words, the given-first row being 2.x's default spec, a
+# family-first row keeping the title first and the suffix last.
+# decisions/R6 (#754), decisions/vocabulary-model's #754 entry, item 6.
+_Slot = tuple[Role, str, str]
+_DECORATION: dict[Role, tuple[str, str]] = {
+    Role.NICKNAME: ('"', '"'), Role.MAIDEN: ("(", ")")}
+#: The role whose words follow each name role in the layout, with the
+#: decoration of its own (the nickname after the given name, the maiden
+#: name after the family).
+_BESIDE = {Role.GIVEN: Role.NICKNAME, Role.FAMILY: Role.MAIDEN}
+
+
+def _layout(order: tuple[Role, Role, Role] | None) -> tuple[_Slot, ...]:
+    roles = [Role.TITLE]
+    for role in order or GIVEN_FIRST:
+        roles.append(role)
+        if role in _BESIDE:
+            roles.append(_BESIDE[role])
+    roles.append(Role.SUFFIX)
+    return tuple((r, *_DECORATION.get(r, ("", ""))) for r in roles)
+
+
+_LAYOUTS = {order: _layout(order) for order in (None, *_NAME_ORDERS)}
+
+#: rules/T2 and T3's dividers: a nakaguro, or an interpunct the parse
+#: divided at (one written with a space beside it is a name word,
+#: rules/T3, so it is a token and never stands in a gap).
+_DOT_SEPARATORS = frozenset({"\u00B7", "\u30FB", "\uFF65"})
+#: A comma the parse reads, and how it is written back: no space
+#: before it and one after, a full-width comma carrying its own width.
+_COMMA_WRITTEN = {",": ", ", "\u060C": "\u060C ", "\uFF0C": "\uFF0C"}
+
+
+def _written_separator(gap: str) -> str | None:
+    """The text written between two adjacent words, normalized, or
+    None where it is no separator R6 keeps (a delimiter, a marker word,
+    two commas, a hyphen, a zero-width or directional mark), so the
+    layout's own joiner stands."""
+    # rules/R6: "The separator is normalized by its kind." 
+    if not gap:
+        return ""
+    core = gap.strip()
+    if not core:
+        return " "
+    if core in _DOT_SEPARATORS:
+        return core
+    return _COMMA_WRITTEN.get(core)
+
+
+def _ordered(tokens: list[Token]) -> list[Token]:
+    # a field's words in the order its view joins them: folded words
+    # first (mechanisms.md#FOLDED_TAG: "a rule that needs different
+    # rendering order tags the token, and the rendering views consult
+    # the tag")
+    return ([t for t in tokens if FOLDED_TAG in t.tags]
+            + [t for t in tokens if FOLDED_TAG not in t.tags])
+
+
+def _default_render(name: ParsedName) -> str:
+    """str()'s rendering: the layout `name.order` picks, two words side
+    by side both as written and as laid out keeping their written
+    separator (_written_separator), every other pair the layout's
+    joiner -- a space, the decoration between two fields, or the
+    suffix view's ', ' between credentials written apart."""
+    by_role: dict[Role, list[Token]] = {}
+    for tok in name.tokens:
+        if tok.text:
+            by_role.setdefault(tok.role, []).append(tok)
+    # where each word stands as written: consecutive positions in
+    # `tokens` with spans in ascending order are side by side there
+    position = {id(t): i for i, t in enumerate(name.tokens)}
+    out: list[str] = []
+    prev: Token | None = None
+    prev_close = ""
+    for role, open_, close in _LAYOUTS.get(name.order, _LAYOUTS[None]):
+        words = by_role.get(role)
+        if not words:
+            continue
+        for k, tok in enumerate(_ordered(words)):
+            if prev is not None:
+                if k == 0 and (prev_close or open_):
+                    out.append(f"{prev_close} {open_}")
+                else:
+                    joined = _side_by_side(name, prev, tok, position)
+                    if joined is None:
+                        joined = (", " if role is Role.SUFFIX and k
+                                  and "joined" not in tok.tags else " ")
+                    out.append(joined)
+            elif open_:
+                out.append(open_)
+            out.append(tok.text)
+            prev = tok
+        prev_close = close
+    if prev is not None:
+        out.append(prev_close)
+    # a comma that is a word of its own (a delimited nickname's) keeps
+    # no space before it, as 2.x's collapse wrote it
+    return _SPACE_BEFORE_COMMA.sub(",", "".join(out))
+
+
+def _side_by_side(name: ParsedName, a: Token, b: Token,
+                  position: dict[int, int]) -> str | None:
+    """The written separator between `a` and `b` where `b` is the word
+    written directly after `a`, else None."""
+    if (a.span is None or b.span is None
+            or position[id(b)] != position[id(a)] + 1):
+        return None
+    written = _written_separator(name.original[a.span.end:b.span.start])
+    # rules/R6: "A comma is kept only before a suffix" -- anywhere else
+    # it would read back as a family comma
+    if written and written[0] in _COMMA_WRITTEN and b.role is not Role.SUFFIX:
+        return None
+    return written
 
 
 # rules/R3: "initials take the first letter of each given, middle,
@@ -189,6 +312,13 @@ def _first_letter(text: str) -> str:
     # text composes to `first` alone: write `first` decomposed, the
     # form the writer used for it.
     return unicodedata.normalize("NFD", first)
+
+
+#: rules/R3: "A word in a script that writes no initials contributes
+#: nothing" (decisions/R3, #754),
+#: asked of the composed letter, a decomposed hangul syllable being
+#: conjoining jamo, which no _NO_INITIALS range holds (#665).
+_initialless = _script_matcher(*_NO_INITIALS, whole=True)
 
 
 def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str:
@@ -240,8 +370,11 @@ def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str
         # otherwise reopen #408 there.
         tokens = (tuple(t for t in tokens if FOLDED_TAG in t.tags)
                   + tuple(t for t in tokens if FOLDED_TAG not in t.tags))
+        letters = (_first_letter(t.text) for t in tokens)
         values[key] = separator.join(
-            _first_letter(t.text) + delimiter for t in tokens)
+            letter + delimiter for letter in letters
+            if letter.isascii() or not _initialless(
+                unicodedata.normalize("NFC", letter)))
     return _format_spec(spec, values, "initials", _INITIALS_KEYS)
 
 
@@ -813,4 +946,4 @@ def capitalized(name: ParsedName, lexicon: Lexicon | None, *,
                   tuple(replacement[t] for t in a.tokens), a.alternative)
         for a in name.ambiguities)
     return ParsedName(original=name.original, tokens=new_tokens,
-                      ambiguities=new_ambiguities)
+                      ambiguities=new_ambiguities, order=name.order)
