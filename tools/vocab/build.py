@@ -84,8 +84,9 @@ particle statement and agnomen and 10 over the whole pool in
 check_pool, 6 first and 10 last. A reading written `default = false`
 is held to 1-3, 7, 8 and 11 like any other and compiles to nothing, so
 4, 5, 6 and 9 do not weigh it, a name reading included (3a): it derives
-no marker in the default, and 9 and 11's agnomen half count only the
-name readings on by default;
+no marker in the default, 11's agnomen half counts only the name
+readings on by default, and 11's particle half refuses a particle whose
+word's only given readings are off, before 9 would read one;
 
 plus the data invariants that were asserts: may_be_initial only on a
 cased single letter, an elided particle in both apostrophes (#700), and
@@ -160,7 +161,8 @@ def _load_by_path(name: str, path: Path) -> ModuleType:
 # are module constants here, which tools/vocab/query.py and the tests read
 # from this module. It is hand-written, never generated, so the stale
 # module the build exists to replace cannot break it; a bug in it still
-# exits 3, never 1's "stale".
+# exits 3, never 1's "stale" -- and so does anything importing this file
+# (tools/vocab/query.py, the tests), with SystemExit at import.
 try:
     _ri = _load_by_path("_vocab_build_reading_index", _READING_INDEX_PATH)
 except Exception:
@@ -1091,7 +1093,9 @@ def check_pool(pool: Pool) -> None:
     # be given -- the bound join reads it as a given name. Lexicon raises
     # on the same contradiction; this says which file and word
     for text, rs in live.items():
-        if any(r.kind == "bound_given" for r in rs) and text not in live_given:
+        # a word whose only given readings are off never reaches here:
+        # check 11's particle half has refused it above
+        if any(r.kind == "bound_given" for r in rs) and text not in given:
             for r in rs:
                 if r.category == "particle":
                     raise VocabError(f"{r.where()}: also a bound given name, so "

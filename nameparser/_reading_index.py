@@ -161,7 +161,11 @@ class IndexReading(ReadingProperties):
     through the accessors above for their unwritten values. A word in
     several files has a row per file, and a reading written
     ``default = false`` has its row too, with
-    ``on_by_default`` false."""
+    ``on_by_default`` false.
+
+    A lookup result, not a value to keep: its ``props`` is a read-only
+    view, so an IndexReading neither hashes nor pickles. What a parse
+    keeps of it (phase 4a's ``Reading.languages``) is its tag."""
 
     text: str
     tag: str

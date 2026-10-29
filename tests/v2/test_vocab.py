@@ -882,6 +882,8 @@ def test_no_error_exits_1_the_code_for_stale(tmp_path: Path, monkeypatch: pytest
     assert build.main(["--check"]) == 1
     assert "unreadable" in capsys.readouterr().out
     assert build.main([]) == 0
+    # the index is written beside a repointed OUTPUT, never into the package
+    assert (tmp_path / "_index.py").exists()
     assert build.main(["--check"]) == 0
     # a module that cannot be written is an internal error, exit 3
     build.OUTPUT.unlink()
