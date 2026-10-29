@@ -134,9 +134,12 @@ def test_default_str_includes_nickname_and_maiden() -> None:
     ("Wang Xiaoming, Jr.", FAMILY_FIRST_GIVEN_LAST, "Wang Xiaoming, Jr."),
     ("John Smith, MD, PhD", None, "John Smith, MD, PhD"),
     ("John Smith MD PhD", None, "John Smith MD PhD"),
-    # a comma before anything but a suffix reads back as a family comma
+    # a family comma is never kept, also where its given part went to
+    # the family and the two words stay side by side; a comma between
+    # titles moved up from past a second comma is kept (rules/R6's
+    # Accepted bullet: it reads back as a family comma)
     ("Smith, de Mesnil Jean", None, "Smith de Mesnil Jean"),
-    ("John Smith, Jr., Dr., Prof.", None, "Dr. Prof. John Smith, Jr."),
+    ("John Smith, Jr., Dr., Prof.", None, "Dr., Prof. John Smith, Jr."),
     # the joiner: a hyphen word stays one word, two commas, a zero-width
     # space, a delimiter, a dropped marker word
     ("John Smith,, Jr.", None, "John Smith Jr."),

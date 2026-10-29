@@ -191,6 +191,7 @@ _LAYOUTS = {order: _layout(order) for order in (None, *_NAME_ORDERS)}
 #: divided at (one written with a space beside it is a name word,
 #: rules/T3, so it is a token and never stands in a gap).
 _DOT_SEPARATORS = frozenset({"\u00B7", "\u30FB", "\uFF65"})
+_NAME_WORD_ROLES = frozenset({Role.GIVEN, Role.MIDDLE, Role.FAMILY})
 #: A comma the parse reads, and how it is written back: no space
 #: before it and one after, a full-width comma carrying its own width.
 _COMMA_WRITTEN = {",": ", ", "\u060C": "\u060C ", "\uFF0C": "\uFF0C"}
@@ -271,9 +272,11 @@ def _side_by_side(name: ParsedName, a: Token, b: Token,
             or position[id(b)] != position[id(a)] + 1):
         return None
     written = _written_separator(name.original[a.span.end:b.span.start])
-    # rules/R6: "A comma is kept only before a suffix" -- anywhere else
-    # it would read back as a family comma
-    if written and written[0] in _COMMA_WRITTEN and b.role is not Role.SUFFIX:
+    # rules/R6: "A family comma is never kept" -- the comma-shaped
+    # half: one between two name words is a family comma, side by side
+    # in the layout where its given part went to the family (P1's fold)
+    if (written and written[0] in _COMMA_WRITTEN
+            and a.role in _NAME_WORD_ROLES and b.role in _NAME_WORD_ROLES):
         return None
     return written
 
@@ -314,8 +317,8 @@ def _first_letter(text: str) -> str:
     return unicodedata.normalize("NFD", first)
 
 
-#: rules/R3: "A word in a script that writes no initials contributes
-#: nothing" (decisions/R3, #754),
+#: rules/R7: "a word whose first letter is in a script that writes no
+#: initials contributes nothing to the initials" (decisions/R7, #754),
 #: asked of the composed letter, a decomposed hangul syllable being
 #: conjoining jamo, which no _NO_INITIALS range holds (#665).
 _initialless = _script_matcher(*_NO_INITIALS, whole=True)
