@@ -14,7 +14,6 @@ from nameparser._lexicon import (
     _normalize, _title_key,
 )
 from nameparser._policy import Script, _SCRIPT_RANGES
-from nameparser.config import Constants
 from nameparser.config.suffixes import SUFFIX_ACRONYMS, SUFFIX_WORDS
 
 
@@ -136,14 +135,13 @@ def _unpickled_with(value: object) -> Lexicon:
 
 # Every entry point that builds the pair field, because a check on one
 # member of a family belongs on all of it (AGENTS.md): construction,
-# replace(), the right-biased union, unpickling, and the v1 shim.
+# replace(), the right-biased union, and unpickling.
 _MASK_ENTRY_POINTS: list[Callable[[object], object]] = [
     lambda v: Lexicon(capitalization_exceptions=v),  # type: ignore[arg-type]
     lambda v: dataclasses.replace(Lexicon.default(),
                                   capitalization_exceptions=v),  # type: ignore[arg-type]
     lambda v: Lexicon.default() | Lexicon(capitalization_exceptions=v),  # type: ignore[arg-type]
     _unpickled_with,
-    lambda v: Constants(capitalization_exceptions=v)._snapshot(),
 ]
 
 
@@ -220,9 +218,6 @@ def test_the_mask_error_offers_a_spelling_that_works_and_type_checks(
     assert offered in str(caught.value)
     assert Lexicon(capitalization_exceptions=(('jr', 'JR'),)) \
         .capitalization_exceptions_map == {"jr": "JR"}
-    lexicon, _policy, _render = Constants(
-        capitalization_exceptions=(('jr', 'JR'),))._snapshot()
-    assert lexicon.capitalization_exceptions_map == {"jr": "JR"}
 
 
 def test_the_mask_error_falls_back_when_upper_would_not_itself_validate(

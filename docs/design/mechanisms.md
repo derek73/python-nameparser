@@ -28,7 +28,7 @@ This catalog converts discovery into a one-time cost — it does not remove disc
 
 **How it works.** Reordering the token tuple would break span math and reintroduce the #100 family. Parse state stays in string order; only the view reorders (rule R1, rule R3's order clause, rule O3's render clause). The consumer list is where this mechanism fails, in two opposite directions — and only ONE of them has ever shipped, which is worth keeping straight because a roster is walked differently when it is guarding against a defect than when it is guarding against a possibility. SHIPPED: a consumer that never read the tag (`initials()` walked written order through 2.0, 2.1 and 2.2 — #408, filed as an instance of RENDER-HONORS-THE-PARSE and fixed 2026-08-30). HAZARD, never released: a consumer that reads the tag where it should not (the revise strip below), which arrived with `Parser.revise` in the same commit as the test that pins it, so no version has gone out without it and no issue, decision entry or test names a defect of that shape. Adding a producer is cheap; adding a view is where the roster has to be walked.
 
-**Lives in.** nameparser/_types.py (FOLDED_TAG, `_text_for` — every role it renders, not FAMILY alone), nameparser/_render.py (`initials`, the same partition per role), nameparser/_facade.py (`_list_tokens_for`, which prepends the carriers the same way — it is the ONE walk behind both the v1 `*_list` views and the facade's initials since #528, and `_list_for` is the string view built on it and holds no ordering of its own, so a reader who follows this roster to the string builder lands one level below the partition), nameparser/_pipeline/_post_rules.py and _assign.py (its producers: O3's fold and P6's no-comma attachment in post_rules, P6's attachment after a family comma in assign since #613 -- every one of which re-roles to FAMILY — so FAMILY is the only role a parse can put the tag on today, and the views partitioning every role is uniformity with this contract rather than reachable behavior), and nameparser/_parser.py (`Parser.revise`, the one deliberate CONSUMER-side strip: it removes the tag from the tokens it harvests, a revised value not being allowed to inherit fold ordering) — losing that strip is this mechanism's measured hazard, a family rendering "García Gabriel Márquez". A module path and not a method name, because this roster is what a reader walks when adding a view, and a bare `Parser.revise` sends them looking in the wrong file.
+**Lives in.** nameparser/_types.py (FOLDED_TAG, `_text_for` — every role it renders, not FAMILY alone), nameparser/_render.py (`initials`, the same partition per role), nameparser/_pipeline/_post_rules.py and _assign.py (its producers: O3's fold and P6's no-comma attachment in post_rules, P6's attachment after a family comma in assign since #613 -- every one of which re-roles to FAMILY — so FAMILY is the only role a parse can put the tag on today, and the views partitioning every role is uniformity with this contract rather than reachable behavior), and nameparser/_parser.py (`Parser.revise`, the one deliberate CONSUMER-side strip: it removes the tag from the tokens it harvests, a revised value not being allowed to inherit fold ordering) — losing that strip is this mechanism's measured hazard, a family rendering "García Gabriel Márquez". A module path and not a method name, because this roster is what a reader walks when adding a view, and a bare `Parser.revise` sends them looking in the wrong file.
 
 **Reach for it when.** A new rule needs "X renders before Y" and you are tempted to swap tokens. Don't swap. Tag.
 
@@ -41,7 +41,7 @@ This catalog converts discovery into a one-time cost — it does not remove disc
 **How it works.** One lookup site means one answer: a stage that re-derived vocabulary facts could disagree with the stage before it. Stable tags ("particle", "conjunction", "initial") are API;
 "vocab:"-namespaced ones are not.
 
-**Lives in.** nameparser/_pipeline/_classify.py (producer); consumers throughout _group/_assign/_post_rules, and nameparser/_render.py, which is not a stage but reads the same tags to decide what a view shows (#458 moved case repair's conjunction test onto the tag; initials() had read them since 2.0), and nameparser/_facade.py, whose `_token_is_conjunction` joined them in #528 — the v1 layer is a tag consumer too now, so a sweep that stops at `_render.py` is one module short.
+**Lives in.** nameparser/_pipeline/_classify.py (producer); consumers throughout _group/_assign/_post_rules, and nameparser/_render.py, which is not a stage but reads the same tags to decide what a view shows (#458 moved case repair's conjunction test onto the tag; initials() had read them since 2.0); the v1 facade's `_token_is_conjunction`, a consumer from #528, went with the facade in #357.
 
 **Reach for it when.** A stage is about to import Lexicon to ask about a word classify already saw — or a view is, which is the harder one to notice, since a view legitimately holds a Lexicon for the questions classify never answered; the view side is RENDER-HONORS-THE-PARSE, which owns it and covers the decisions this entry does not produce.
 
@@ -180,11 +180,11 @@ This catalog converts discovery into a one-time cost — it does not remove disc
 
 **Problem shape.** A render view needs a fact the parse already settled — whether a word is the conjunction or an initial, whether a particle is acting as one, which word renders first.
 
-**Contract statement.** The parse decides it; the render views honor those decisions and never re-evaluate them. Two directions break that: a view RE-DERIVES the answer from the text, keeping its own copy of a pipeline predicate, or a view honors the record and then OVERRIDES it, readmitting what the decision excluded. Known limit: a token the parse never saw carries no decision to honor, so a view falls back to the vocabulary — the tell is `UNCLASSIFIED_TAG`, which `ParsedName.replace()` stamps when it splices raw text into a field and the facade's v1 pickle load stamps when it rebuilds a name from `*_list` strings.
+**Contract statement.** The parse decides it; the render views honor those decisions and never re-evaluate them. Two directions break that: a view RE-DERIVES the answer from the text, keeping its own copy of a pipeline predicate, or a view honors the record and then OVERRIDES it, readmitting what the decision excluded. Known limit: a token the parse never saw carries no decision to honor, so a view falls back to the vocabulary — the tell is `UNCLASSIFIED_TAG`, which `ParsedName.replace()` stamps when it splices raw text into a field.
 
-**How it works.** This is the CONSUMER-side rule over the producer-side entries — VOCAB-TAGS records what the vocabulary knew, MARK-DONT-STRIP what a stage decided about it, FOLDED_TAG what order to render in — and a view reads what they recorded. It sits where ONE-PREDICATE-PER-QUESTION's stated limit leaves off: a render view always comes AFTER the decider, so the answer is recorded on the TOKEN, no view being able to see a ParseState. The fallback's tell is the mark and nothing else: not untaggedness, since an ordinary parsed name word carries no tags, and not `span is None`, since `Parser.revise()` builds span-less tokens whose tags it keeps on purpose. A view can fall back only if it is HANDED a vocabulary — `capitalized(lexicon=...)`, and since #528 the facade's `HumanName.initials()` — and the core `ParsedName.initials()`, handed none, never guesses one (decisions/R4). Within a view that can fall back, the fallback is drawn per QUESTION (rules/R4's Accepted clause). Both directions have shipped as defects and both are closed: re-deriving in case repair (#458, decisions/R4) and in `initials()`'s written-order walk (#408, decisions/R3), overriding in `initials()`'s readmission of an all-particle part's connective, closed by settling what rules/R3 says rather than by making the view louder (#461, decisions/R2 and decisions/R3). Two divergences stand by decision: the facade's fallback can initial a spliced field differently from a parse of the same text (decisions/R3, 2026-09-13 #528), and case repair's PARTICLE conjunct keys on the lexicon it is handed rather than the `particle` tag (decisions/R4's NOT DONE bullet). The case history this entry carried until #759 is in git history (`git show fe85bb3d:docs/design/mechanisms.md`).
+**How it works.** This is the CONSUMER-side rule over the producer-side entries — VOCAB-TAGS records what the vocabulary knew, MARK-DONT-STRIP what a stage decided about it, FOLDED_TAG what order to render in — and a view reads what they recorded. It sits where ONE-PREDICATE-PER-QUESTION's stated limit leaves off: a render view always comes AFTER the decider, so the answer is recorded on the TOKEN, no view being able to see a ParseState. The fallback's tell is the mark and nothing else: not untaggedness, since an ordinary parsed name word carries no tags, and not `span is None`, since `Parser.revise()` builds span-less tokens whose tags it keeps on purpose. A view can fall back only if it is HANDED a vocabulary — `capitalized(lexicon=...)` — and `ParsedName.initials()`, handed none, never guesses one (decisions/R4). Within a view that can fall back, the fallback is drawn per QUESTION (rules/R4's Accepted clause). Both directions have shipped as defects and both are closed: re-deriving in case repair (#458, decisions/R4) and in `initials()`'s written-order walk (#408, decisions/R3), overriding in `initials()`'s readmission of an all-particle part's connective, closed by settling what rules/R3 says rather than by making the view louder (#461, decisions/R2 and decisions/R3). One divergence stands by decision: case repair's PARTICLE conjunct keys on the lexicon it is handed rather than the `particle` tag (decisions/R4's NOT DONE bullet); a second, the v1 facade's initials fallback for a spliced field (decisions/R3, 2026-09-13 #528), went with the facade in #357. The case history this entry carried until #759 is in git history (`git show fe85bb3d:docs/design/mechanisms.md`).
 
-**Lives in.** nameparser/_render.py (`capitalized`/`_cap_word`, `_reads_as_conjunction`, and `initials`, the CORE view, which honors tags and never falls back), nameparser/_types.py (`_text_for` and `UNCLASSIFIED_TAG`, with the `ParsedName.replace()` producer beside it), and nameparser/_facade.py, on this list twice and for opposite reasons: the v1 pickle load is the SECOND producer of the mark — a change that follows the list into `_types.py` alone leaves it behind, which is the site test_a_restored_pickle_keeps_v1_conjunction_repair protects — and since #528 `_token_is_conjunction`/`_process_initial` are a CONSUMER, reading the tag and calling `_render._reads_as_conjunction` for the mark's own tokens.
+**Lives in.** nameparser/_render.py (`capitalized`/`_cap_word`, `_reads_as_conjunction`, and `initials`, the CORE view, which honors tags and never falls back), nameparser/_types.py (`_text_for` and `UNCLASSIFIED_TAG`, with the `ParsedName.replace()` producer beside it, the mark's one producer since #357 removed the v1 facade's pickle load, the other).
 
 **Reach for it when.** A view is about to consult a Lexicon, a regex or an exception list about a word the parse already saw — or a view and a field disagree about the same parse, which is the shape #408 was (`parse("der, y van")` gave family `van der` and initials `y. d. v.`; decisions/R3).
 
@@ -220,7 +220,7 @@ This catalog converts discovery into a one-time cost — it does not remove disc
 
 **How it works.** The purest case is a recorded expectation whose only consumer is the check that compares it, re-derived by nothing: tools/differential/snapshot.jsonl records every corpus name's reading, and tests/v2/test_snapshot.py compares the tree against it.
 
-**Lives in.** tools/differential/snapshot.jsonl, tests/v2/test_facade_cases.py (_CORE_ONLY_IDS), tests/v2/test_benchmark.py (_CALL_BASELINE), tests/v2/rules_budget.json (each rule's recorded size).
+**Lives in.** tools/differential/snapshot.jsonl, tests/v2/test_benchmark.py (_CALL_BASELINE), tests/v2/rules_budget.json (each rule's recorded size).
 
 **Reach for it when.** Writing a check whose expected value is computed by the code under test, or a comment that enumerates ids/counts — make it data the suite asserts. And when a roster row carries anything the check CONSUMES rather than compares, ask what measures that half.
 
@@ -242,7 +242,7 @@ This catalog converts discovery into a one-time cost — it does not remove disc
 
 **Contract statement.** Canonicalize at the point of comparison: every compared surface's output is converted to one vocabulary before matching, and the canonical choice is the one the codebase already derives everywhere else.
 
-**How it works.** Teaching the matcher both vocabularies doubles every comparison silently; canonicalizing means a second surface joins without new keys. The snapshot records the facade's v1 fields under Role's names, and compare.py's 1.4.0 rows do the same, so a 1.4 reading and a 2.x one compare field by field.
+**How it works.** Teaching the matcher both vocabularies doubles every comparison silently; canonicalizing means a second surface joins without new keys. compare.py reads a 1.4.0 baseline's v1 fields under Role's names, so a 1.4 reading and the tree's compare field by field; the snapshot did the same for the facade's view until #357 removed the facade.
 
 **Lives in.** tools/differential/snapshot.py (row, V1_FOR).
 
@@ -272,7 +272,7 @@ This catalog converts discovery into a one-time cost — it does not remove disc
 
 ## WARN-AT-THE-CALLER — walk out of the library, don't count frames
 
-**Problem shape.** A warning should point at the caller's code, but the entry depth varies (constructor, add(), unpickle, dataclasses.replace, the shim snapshot), so any fixed stacklevel lands on library internals for most paths.
+**Problem shape.** A warning should point at the caller's code, but the entry depth varies (constructor, add(), unpickle, dataclasses.replace), so any fixed stacklevel lands on library internals for most paths.
 
 **Contract statement.** The warner walks the stack outward until the first frame outside the library's own modules and warns there, instead of counting frames.
 
@@ -286,7 +286,7 @@ This catalog converts discovery into a one-time cost — it does not remove disc
 
 **Contract statement.** Known-dead legacy defaults are subtracted from restored state only when the state carries ALL of them — the complete pre-retirement signature — so real legacy blobs clean up silently while a deliberate single re-add survives round-trips.
 
-**Lives in.** nameparser/_lexicon.py / _config_shim.py (_LEGACY_DEAD_ENTRIES).
+**Lives in.** nothing since #357: its one instance, `_LEGACY_DEAD_ENTRIES` in nameparser/_config_shim.py, went with the v1 `Constants` pickles it cleaned (decisions/3-0-reevaluations, 2026-10-28 #357); the shape stands for any default a pickled core type may carry.
 
 **Reach for it when.** Retiring any default vocabulary entry that existing pickles may carry.
 
@@ -310,7 +310,7 @@ a fork for all ambiguous particles on "Dr. Van Jr.".
 
 **Contract statement.** Convert the consistency problem into a referential-integrity problem: make the wrong state impossible to express, or mechanically checked, rather than merely documented.
 
-**How it works.** Three instances built this documentation system: _CORE_ONLY_IDS replaced an enumerating comment; verbatim-excerpt citations replaced paraphrase; no-boundary: markers replaced silent omission. The executable examples in the rules are the same move at document scale.
+**How it works.** Three instances built this documentation system: _CORE_ONLY_IDS replaced an enumerating comment (in tests/v2/test_facade_cases.py, deleted with the facade in #357); verbatim-excerpt citations replaced paraphrase; no-boundary: markers replaced silent omission. The executable examples in the rules are the same move at document scale.
 
 **Lives in.** tests/v2/test_doc_citations.py, tests/v2/test_rules_doc.py, and every recorded roster.
 
@@ -327,26 +327,6 @@ a fork for all ambiguous particles on "Dr. Van Jr.".
 **Lives in.** nameparser/locales/ (packs), nameparser/_parser.py (parser_for, the one applier).
 
 **Reach for it when.** A language fix wants an if-statement — make it vocabulary or policy in a pack instead.
-
-## FACADE-CONTRACT — HumanName wraps the core; 1.4-warning-free code keeps working
-
-**Problem shape.** Where does v1-compatibility behavior live, and what may it do?
-
-**Contract statement.** HumanName is a mutable facade over the immutable core: code that runs warning-free on 1.4 keeps working through 2.x with identical results EXCEPT release-log-classified fixes, verified for 2.0 by the differential ledger and since #664 visible against 1.4.0 through `tools/differential/compare.py --baseline 1.4.0` (the RFC's compatibility promise carries the same carve-out) — via validating setters, dirty-tracked re-parses, and pickle round-trips — and the facade never calls the v1 parsing hooks it still carries. "Warning-free" describes the code's 1.4 behavior, not a promise it STAYS warning-free: 2.x adds deliberate warnings (the multi-word-vocabulary and field-assignment ones, and from 2.8 a `DeprecationWarning` on every use 3.0 removes, decisions/3-0-reevaluations), each release-log-classified, always with identical results.
-
-**Lives in.** nameparser/_facade.py; v1 import paths preserved by nameparser/parser.py and nameparser/config/.
-
-**Reach for it when.** A core change needs a v1-visible behavior — the facade, not the core, is where parity lives (and cite decisions/3-0-reevaluations when parity is the only reason).
-
-## CONFIG-SHIM-SNAPSHOT — v1 config mutations reach the core by snapshot
-
-**Problem shape.** v1 code mutates CONSTANTS at runtime; the core is immutable.
-
-**Contract statement.** nameparser.config re-exports mutable managers whose contents are converted to immutable core objects through a dirty-tracked snapshot: mutations mark the snapshot stale, and the next parse rebuilds it, so v1 mutation semantics survive over an immutable core.
-
-**Lives in.** nameparser/_config_shim.py, nameparser/config/.
-
-**Reach for it when.** Wiring any new v1 config surface — it must go through the snapshot, never sideways into a Lexicon.
 
 ## Verification shapes
 

@@ -1,8 +1,8 @@
 from nameparser.config._invariants import assert_normalized
 
-# Born a frozenset (#293's convention: a mutable module constant would
-# silently desync the cached ``Lexicon.default()`` from the shim's
-# per-construction copies).
+# Born a frozenset (#293's convention: a mutable module constant edited
+# after the first parse would silently disagree with the cached
+# ``Lexicon.default()``, which read it once).
 #
 # Single-syllable surnames in census rank order, 10 per row; the cut is
 # the top ~94 -- append new entries at the tail, do not alphabetize
@@ -39,9 +39,6 @@ single-syllable surnames (Kim/Lee/Park alone cover ~45% of the
 population) plus the two-syllable surnames in current use. A coverage
 floor, not the complete census roster: extend with
 ``Lexicon.default().add(surnames={...})``.
-
-Consumed by the 2.0 parser's default lexicon. The 1.x parser does not
-read this module.
 """
 
 

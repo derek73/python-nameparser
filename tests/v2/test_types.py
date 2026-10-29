@@ -344,6 +344,19 @@ def test_replace_with_empty_string_clears_field() -> None:
     assert pn.replace(title="").title == ""
 
 
+def test_replace_splits_on_any_whitespace_run() -> None:
+    # The value is split on whitespace runs, never on single spaces: a
+    # blank value clears the field, and a doubled space makes no empty
+    # token (a Token("") raises), which the 2.x facade's setters and
+    # #232's initials IndexError reached through this split.
+    blank = parse("John Doe").replace(given=" \n ")
+    assert blank.given == ""
+    assert not blank.tokens_for(Role.GIVEN)
+    doubled = parse("John Doe").replace(middle="Q \t R")
+    assert [t.text for t in doubled.tokens_for(Role.MIDDLE)] == ["Q", "R"]
+    assert doubled.initials() == "J. Q. R. D."
+
+
 def test_replace_rejects_unknown_field() -> None:
     with pytest.raises(TypeError, match="given"):
         _delavega().replace(firstname="X")
@@ -389,6 +402,16 @@ def test_comparison_key_is_casefolded_canonical_seven_tuple() -> None:
     assert upper.comparison_key() == lower.comparison_key()
 
 
+def test_comparison_key_includes_maiden() -> None:
+    # maiden is in no default render, so str() cannot tell these apart;
+    # the key holds all seven fields (ported from the 1.x suite)
+    from nameparser import parse
+
+    married = parse("Jenny Baker née Johnson")
+    assert married.maiden == "Johnson"
+    assert married.comparison_key() != parse("Jenny Baker").comparison_key()
+
+
 def test_matches_casefolds_unicode_case_pairs() -> None:
     # Deliberate 1.4 deviation (release log): comparison folds with
     # casefold() where 1.4 used lower(). Comparison is the one surface
@@ -397,12 +420,10 @@ def test_matches_casefolds_unicode_case_pairs() -> None:
     # and the key is opaque, so the spelling-mutation bug casefold
     # caused in vocabulary storage (which stays lower(), v1 lc parity
     # -- see _lexicon._normalize) cannot happen here.
-    from nameparser import HumanName, parse
+    from nameparser import parse
 
     assert parse("Hans Straße").matches("HANS STRASSE")   # ß <-> SS
     assert parse("Νίκος Παπαδόπουλος").matches("Νίκοσ Παπαδόπουλοσ")  # ς <-> σ
-    # same fold on the facade path -- both APIs share the deviation
-    assert HumanName("Hans Straße").matches("HANS STRASSE")
     key = parse("Hans Straße").comparison_key()
     assert key == parse("HANS STRASSE").comparison_key()
 

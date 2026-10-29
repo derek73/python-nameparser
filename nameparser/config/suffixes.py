@@ -113,47 +113,9 @@ when matching against these pieces.
 """
 
 
-# 1.x name, deprecated in 2.2 and removed in 3.0 (#293). The constant
-# did not change module, so this aliases a name to one of this module's
-# own globals: a module __getattr__ runs only once the body has finished
-# and the module is in sys.modules, so the lookup resolves rather than
-# recursing.
-from typing import TYPE_CHECKING  # noqa: E402
-
-from nameparser.config._deprecated import alias_getattr  # noqa: E402
-
-# Declared for the type checker, served by __getattr__ at runtime --
-# the split is what keeps mypy checking this module's LIVE names; see
-# the note in titles.py and alias_getattr's docstring.
-if TYPE_CHECKING:
-    SUFFIX_NOT_ACRONYMS: frozenset[str]
-else:
-    __getattr__, __dir__ = alias_getattr(__name__, {
-        "SUFFIX_NOT_ACRONYMS": (
-            "nameparser.config.suffixes", "SUFFIX_WORDS"),
-    })
-
-# Star imports read __all__ and never the module __getattr__ -- see the
-# note in prefixes.py. Live constants listed alongside the retired name
-# for the same reason titles.py lists its own.
-#
 # In SOURCE order, not alphabetical: `automodule :members:` follows
 # __all__ where a module defines one, so an alphabetical list here would
-# silently reorder this module's entries in modules.html. The retired
-# name goes last because autodoc does not document it, and so it has no
-# position to preserve. Not for want of SEEING it: the module member
-# scan walks dir(), which our __dir__ lists the retired name in, and
-# then calls safe_getattr on it -- so an html build resolves this name
-# and titles.py's retired one alike, emitting a real DeprecationWarning
-# for each. (Invisible in a "build succeeded, 0 warnings" line: Sphinx
-# warnings and Python warnings are different channels. Wrap
-# sphinx.cmd.build.build_main in warnings.catch_warnings to see them.)
-# What declines it is the attribute-doc scan: ModuleAnalyzer parses the
-# SOURCE and finds no assignment statement for a name served by
-# __getattr__, so autodoc computes is_attr=False, and at module level a
-# member that is not an attribute and is neither a class nor a callable
-# matches no object type at all -- no documenter is chosen and the
-# member is skipped.
+# silently reorder this module's entries in modules.html.
 __all__ = [
     "SUFFIX_WORDS",
     "GLUED_HONORIFICS",
@@ -161,5 +123,4 @@ __all__ = [
     "AGNOMENS",
     "SUFFIX_ACRONYMS_AMBIGUOUS",
     "SUFFIX_ACRONYMS",
-    "SUFFIX_NOT_ACRONYMS",
 ]

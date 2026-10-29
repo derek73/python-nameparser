@@ -4,7 +4,7 @@
 
 - The default spec is '{title} {given} "{nickname}" {middle} {family} ({maiden}) {suffix}', and a parenthesized maiden re-parsing as a nickname is its accepted cost (`Jane (nee Jones) Smith` renders 'Jane Smith (Jones)', which reads back with nickname 'Jones'); a née template that round-tripped losslessly was declined on presentation grounds — 2026-07-18.
 
-Elsewhere: the v1 facade's own default `string_format`, which omits the maiden name, so `str()` of a `HumanName` cannot show it — decisions/R5's 2026-08-29 WHAT THE OVERRIDE DOES AND DOES NOT PROMISE entry.
+Elsewhere: the v1 facade's own default `string_format`, which omitted the maiden name, so `str()` of a `HumanName` could not show it until #357 removed the facade — decisions/R5's 2026-08-29 WHAT THE OVERRIDE DOES AND DOES NOT PROMISE entry.
 
 Open: none in this file.
 

@@ -154,12 +154,12 @@ of the same parsed data wants "Given Family" is a fact about where the
 string is going next, decided at the moment you render it — that's a
 rendering argument, not something baked into how the name was parsed.
 
-This replaces v1's single ``Constants`` object, which mixed all three
+This replaces 1.x's single configuration object, which mixed all three
 concerns — vocabulary, behavior, and output formatting — into one
 mutable bag plus a ``string_format`` template string. Sorting a
 setting into the right container is largely mechanical once you ask
 the "varies by what?" question above; see :doc:`migrate` for the
-attribute-by-attribute mapping from the old ``Constants`` to the new
+attribute-by-attribute mapping from the old configuration to the new
 containers.
 
 Parsers are values

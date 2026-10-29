@@ -10,8 +10,9 @@ it answers "how did VERSION read these names?" for a release older
 than the committed snapshot, where `snapshot.py --since <tag>` cannot.
 For any release that has a snapshot, that command is the cheaper one.
 
---baseline 1.4.0 compares the facade alone (1.4 has no 2.0 API);
-from 2.0.0 on both surfaces are compared, ambiguity kinds included.
+--baseline 1.4.0 compares 1.4's HumanName with the tree's fields and
+initials, since 1.4 has no 2.0 API; from 2.0.0 on the 2.0 surfaces are
+compared, ambiguity kinds and case views included.
 An order-bearing corpus name is skipped below the release its order
 shipped in.
 
@@ -71,17 +72,19 @@ def _parse_version(text: str) -> tuple[int, int, int]:
 
 
 def _surfaces_for(version: str) -> frozenset[str]:
-    """Which output surfaces a baseline can be compared on.
+    """Which output surface a baseline is read on.
 
-    1.4 has no v2 API, so a pre-2.0 baseline compares the facade
-    alone. From 2.0 on both are compared: the v2 API is the primary
-    surface for 2.x users, and its ambiguity kinds catch a change the
-    field diff cannot see -- a parse that starts or stops reporting
-    SEGMENTATION while every field stays byte-identical.
+    1.4 has no v2 API, so a pre-2.0 baseline is read through its
+    HumanName ("v1") and compared on the fields and initials alone.
+    From 2.0 on the v2 API is read, whose ambiguity kinds catch a
+    change the field diff cannot see -- a parse that starts or stops
+    reporting SEGMENTATION while every field stays byte-identical.
+    The tree is read on the v2 API either way, since 3.0 removed
+    HumanName (tools/differential/README.md says what that moved).
     """
     if _parse_version(version) >= (2, 0, 0):
-        return frozenset({"facade", "v2"})
-    return frozenset({"facade"})
+        return frozenset({"v2"})
+    return frozenset({"v1"})
 
 
 
@@ -103,16 +106,14 @@ precise opposite of the truth.
 Input lines are {"name": ..., "order": null | "<CONSTANT>"}. An order
 names a public nameparser constant; only workers whose baseline
 supports it are ever sent one (compare.py skips below the shape's
-min_baseline), and an order-bearing entry is compared on the v2
-surface alone -- the facade is the v1-compat surface, and a
-family-first name is not a v1 contract.
+min_baseline), and an order-bearing entry is read on the v2 surface,
+which every such baseline has. A release before 2.0 is read through
+its HumanName, the only surface it has.
 """
 import json
 import sys
-import warnings
 
 import nameparser
-from nameparser import HumanName
 
 V1_FIELDS = ("title", "first", "middle", "last", "suffix", "nickname",
              "maiden")
@@ -137,6 +138,8 @@ if WANT_V2:
             _parsers[order] = Parser(policy=Policy(
                 name_order=getattr(nameparser, order)))
         return _parsers[order]
+else:
+    from nameparser import HumanName
 
 
 def _v2_row(p):
@@ -176,19 +179,14 @@ for line in sys.stdin:
             {"v2": _v2_row(_parser_for(order).parse(name))},
             ensure_ascii=False), flush=True)
         continue
-    with warnings.catch_warnings():
-        # the facade is read on purpose; 2.8's removal warning, by
-        # message (a baseline wheel before 2.8 never emits it)
-        warnings.filterwarnings("ignore", message="HumanName is deprecated",
-                                category=DeprecationWarning)
-        hn = HumanName(name)
-    row = {"facade": {k: v or ""
-                      for k, v in hn.as_dict().items()
-                      if k in V1_FIELDS}}
-    # #484: HumanName.initials() exists at every baseline, 1.4.0 included
-    row["facade"]["_initials"] = hn.initials() or ""
     if WANT_V2:
-        row["v2"] = _v2_row(parse(name))
+        row = {"v2": _v2_row(parse(name))}
+    else:
+        hn = HumanName(name)
+        row = {"v1": {k: v or "" for k, v in hn.as_dict().items()
+                      if k in V1_FIELDS}}
+        # #484: HumanName.initials() exists at 1.4.0
+        row["v1"]["_initials"] = hn.initials() or ""
     print(json.dumps(row, ensure_ascii=False), flush=True)
 '''
 
@@ -353,13 +351,13 @@ def compare(baseline: str, corpora: list[Path] | None = None) -> Result:
     want_v2 = "v2" in _surfaces_for(baseline)
     tell, results = _run_worker(
         baseline, want_v2, [{"name": n, "order": o} for n, o in entries])
-    old = [snapshot.row(n, o, r.get("v2"), r.get("facade"))
+    old = [snapshot.row(n, o, r.get("v2"), r.get("v1"))
            for (n, o), r in zip(entries, results)]
     new = snapshot.read(entries)
     import nameparser
     _check_tree(nameparser.__file__)
     if not want_v2:
-        new = [snapshot.facade_view(r) for r in new]
+        new = [snapshot.v1_view(r) for r in new]
     dropped = unrecorded(tell)
     for r in (*old, *new):
         for k in dropped:

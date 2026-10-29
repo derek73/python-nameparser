@@ -4,6 +4,10 @@ Release Log
 
     nameparser 3.0 is under development. It removes ``HumanName`` and the rest of the 1.x compatibility layer, which 2.8 deprecates, and changes the output model. 2.8 is the last 2.x feature release.
 
+    **Breaking Changes**
+
+    - **Remove HumanName, Constants and the rest of the 1.x compatibility layer.** ``from nameparser import HumanName`` raises ``ImportError``, where 1.4.0 through 2.8.0 imported it (2.8.0 warning where it was constructed); ``parse("Dr. Juan de la Vega")`` reads the same name, with given ``Juan`` and family ``de la Vega``. ``nameparser.parser``, ``nameparser.util``, ``nameparser.config``'s ``Constants``, ``CONSTANTS`` and managers, and the five word-list names and two module paths 2.2 renamed go too, and a pickled ``HumanName`` or ``Constants`` no longer loads; the word lists in ``nameparser.config`` stay. See :doc:`migrate`. :issue:`357`
+
 * 2.8.0 - October 28, 2026
 
     **nameparser 2.8** is the last 2.x feature release. It warns about everything 3.0 removes, chiefly ``HumanName`` and the rest of the 1.x compatibility layer, so that code can move to ``parse()`` while 2.x still runs it. It also carries on 2.7's reading of titles that are also given names: a title only inside a title phrase. After 2.8 the 2.x line takes fixes only, and new work goes into 3.0. Highlights:

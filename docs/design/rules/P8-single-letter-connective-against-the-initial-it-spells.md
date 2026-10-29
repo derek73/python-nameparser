@@ -24,7 +24,7 @@
   "Хосе И Мария Сантос"       →  given="Хосе И Мария"
   ```
 - **Which single letters a tradition actually wants joined differs by language**, and the marked set is where that answer lives: "y" is the commonest Hispanic compound and stays out of it, while "e" and Catalan "i" are both common bare initials and are the two entries shipped. A caller with Portuguese data removes "e"; a caller with Catalan or Polish data removes "i"; a caller with Dutch data adds the letter "y" to it.
-- **The initial reading is visible beyond the fields**, on the two derived views: parse("john e smith").initials() gives "j. e. s." and .capitalized() gives "John E Smith", where the connective reading gave "j. s." and "John e Smith" — a connective contributing no initial (R3) and keeping its lowercase (R4), where an initial does neither. The v1 facade's initials() reads the same parse, so HumanName("john e smith").initials() is also "j. e. s." (decisions/P8, #528).
+- **The initial reading is visible beyond the fields**, on the two derived views: parse("john e smith").initials() gives "j. e. s." and .capitalized() gives "John E Smith", where the connective reading gave "j. s." and "John e Smith" — a connective contributing no initial (R3) and keeping its lowercase (R4), where an initial does neither.
 
 **Because:** where a name is written in more than one case, a bare Latin capital standing alone is how an initial is marked and a bare lowercase letter is how it is not. A name written wholly in one case marks nothing, so there the vocabulary says which letters read both ways.
 

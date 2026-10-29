@@ -13,9 +13,13 @@ were off by 2x, none of it visible without the harness.
 docs/design/AGENTS.md already asks for this: "Where an entry quotes
 something that drifts, give the one-liner that recomputes it." This is
 that one-liner. Every number in decisions/parse-cost comes from a
-mode of this script, named beside it.
+mode of this script, named beside it. Until 3.0 (#357) the script also
+measured the 2.x `HumanName` facade: the entry's `facade=` figures,
+and its `--modules` tables, which profiled `HumanName` rather than
+`parse()`, so a `--modules --against` a ref from before 3.0 profiles a
+different entry point on each side.
 
-    uv run python tools/perf/call_count.py                 # both entry points
+    uv run python tools/perf/call_count.py                 # calls per parse()
     uv run python tools/perf/call_count.py --modules       # calls by module
     uv run python tools/perf/call_count.py --stages        # ms per 1000, per stage
     uv run python tools/perf/call_count.py --against REF   # this tree vs a git ref
@@ -134,18 +138,17 @@ def main() -> None:
     version = f"{sys.version_info.major}.{sys.version_info.minor}"
 
     sys.path.insert(0, str(Path.cwd()))
-    from nameparser import HumanName, parse
+    from nameparser import parse
 
     if args.modules:
-        for mod, count in sorted(by_module(HumanName).items(),
+        for mod, count in sorted(by_module(parse).items(),
                                  key=lambda kv: -kv[1]):
             print(f"py{version}  {count:7.1f}  {mod}")
     elif args.stages:
         for stage, ms in sorted(by_stage().items(), key=lambda kv: -kv[1]):
             print(f"py{version}  {ms:7.1f}ms per 1000  {stage}")
     else:
-        print(f"py{version}  parse={calls_for(parse):.2f}  "
-              f"facade={calls_for(HumanName):.2f}")
+        print(f"py{version}  parse={calls_for(parse):.2f}")
     if args.against:
         mode = ("--modules" if args.modules
                 else "--stages" if args.stages else "")

@@ -45,4 +45,4 @@
 
 ---
 **Signal:** neighbor: a family part whose every word is particle vocabulary
-**history:** decisions/R2 · **implemented:** nameparser/_types.py, nameparser/_pipeline/_post_rules.py, nameparser/_facade.py
+**history:** decisions/R2 · **implemented:** nameparser/_types.py, nameparser/_pipeline/_post_rules.py

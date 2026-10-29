@@ -1,6 +1,5 @@
 from nameparser._version import VERSION as VERSION
 from nameparser._version import __version__ as __version__
-from nameparser.parser import HumanName as HumanName
 __author__ = "Derek Gulbranson"
 __author_email__ = 'derek73@gmail.com'
 __license__ = "LGPL"
@@ -38,9 +37,6 @@ from nameparser._types import (
 )
 
 __all__ = [
-    # v1 (compatibility layer)
-    "HumanName",
-    # v2 core
     "Span", "Role", "Token", "Ambiguity", "AmbiguityKind", "Reading",
     "ReadingKind", "ReadingSource", "ParsedName",
     "STABLE_TAGS", "Segmentation", "Segmenter",

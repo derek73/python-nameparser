@@ -2826,9 +2826,9 @@
 {"name": "Ph. D.", "title": "Ph.", "family": "D.", "initials": "D."}
 {"name": "Ph. D. John Smith", "title": "Ph.", "given": "D.", "middle": "John", "family": "Smith", "initials": "D. J. S."}
 {"name": "Ph. D. Van Johnson", "title": "Ph.", "given": "D.", "family": "Van Johnson", "initials": "D. J.", "capitalized_force": "Ph. D. van Johnson"}
-{"name": "Ph. D., John", "given": "John", "family": "Ph. D.", "initials": "J. P. D.", "facade": {"initials": "J. P D."}}
-{"name": "Ph. D., Jr.", "family": "Ph. D.", "suffix": "Jr.", "initials": "P. D.", "facade": {"initials": "P D."}}
-{"name": "Ph. D., Prof. Dr. Alejandro Manuel César Mamani de la Cruz Jr.", "title": "Prof. Dr.", "given": "Alejandro", "middle": "Manuel César Mamani de la Cruz", "family": "Ph. D.", "suffix": "Jr.", "initials": "A. M. C. M. C. P. D.", "facade": {"initials": "A. M. C. M. C. P D."}}
+{"name": "Ph. D., John", "given": "John", "family": "Ph. D.", "initials": "J. P. D."}
+{"name": "Ph. D., Jr.", "family": "Ph. D.", "suffix": "Jr.", "initials": "P. D."}
+{"name": "Ph. D., Prof. Dr. Alejandro Manuel César Mamani de la Cruz Jr.", "title": "Prof. Dr.", "given": "Alejandro", "middle": "Manuel César Mamani de la Cruz", "family": "Ph. D.", "suffix": "Jr.", "initials": "A. M. C. M. C. P. D."}
 {"name": "Ph. D., Prof. Dr. de la Cruz Alejandro Manuel César Mamani Jr.", "order": "FAMILY_FIRST", "title": "Prof. Dr.", "family": "Ph. D. de la Cruz Alejandro Manuel César Mamani", "suffix": "Jr.", "initials": "P. D. C. A. M. C. M."}
 {"name": "Pharm D John Smith", "given": "Pharm", "middle": "D John", "family": "Smith", "initials": "P. D. J. S."}
 {"name": "Philipp von Breuner", "given": "Philipp", "family": "von Breuner", "initials": "P. B."}

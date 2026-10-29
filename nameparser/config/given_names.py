@@ -13,6 +13,7 @@ from nameparser.config import _compiled
 #: read as it would be unlisted.
 GIVEN_NAME_ABBREVIATIONS: frozenset[str] = _compiled.GIVEN_NAME_ABBREVIATIONS
 
-# Star imports read __all__ and never the module __getattr__ -- see the
-# note in prefixes.py.
+# Without __all__ a star import binds any import here not written with
+# a leading underscore, as though it were vocabulary (#356); the note in
+# particles.py says more.
 __all__ = ["GIVEN_NAME_ABBREVIATIONS"]

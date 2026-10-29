@@ -1,6 +1,8 @@
 """Extract every plausible test-name string from the v1 test suite:
-string literals passed as the first argument to HumanName(...) calls,
-plus string elements/keys of list/dict banks. Dev tooling -- over-
+string literals passed as the first argument to HumanName(...) calls
+(at a --ref) or to parse(...) and its test helpers (in the working
+tree, where 3.0 ported the suite, #357), plus string elements/keys of
+list/dict banks. Dev tooling -- over-
 collection is fine, the comparator just parses more names. Output is
 one JSON object per line, `{"name": ..., "tests": [...]}`, where
 `tests` is the sorted v1 test method names (bare) or bank variable
@@ -38,12 +40,25 @@ TESTS = ROOT / "tests"
 _NOISE_CHARS = ("{", "@", "\\")
 
 
+# The calls whose first string argument is a name under test. A --ref
+# is read by HumanName(...) alone, the walk corpus.jsonl was built by:
+# at 2d5d8c2 tests/base.py's hn() already wrapped HumanName, and
+# reading it too adds 55 names to the committed 486. The working tree,
+# whose 1.x suite 3.0 ported to parse(...) and the helpers wrapping it
+# (tests/base.py's hn(), test_capitalization's _cap(), test_suffixes'
+# _delimited(), #357), is read by those; by HumanName alone it gave 183
+# names with no warning.
+_REF_CALLS = frozenset({"HumanName"})
+_PARSE_CALLS = frozenset({"parse", "hn", "_cap", "_delimited"})
+
+
 def _is_name_like(value: str) -> bool:
     return not any(ch in value for ch in _NOISE_CHARS)
 
 
 def _labelled_strings_from(
-        tree: ast.Module, module_label: str) -> dict[str, set[str]]:
+        tree: ast.Module, module_label: str,
+        calls: frozenset[str] = _PARSE_CALLS) -> dict[str, set[str]]:
     """name -> the v1 test methods (or bank variables) it appeared in.
     This is the metadata the original scrape discarded: v1's test
     names say what shape each name exercised
@@ -69,7 +84,7 @@ def _labelled_strings_from(
     def _walk(node: ast.AST, label: str) -> None:
         if (isinstance(node, ast.Call)
                 and getattr(node.func, "id", getattr(
-                    node.func, "attr", "")) == "HumanName"
+                    node.func, "attr", "")) in calls
                 and node.args
                 and isinstance(node.args[0], ast.Constant)
                 and isinstance(node.args[0].value, str)):
@@ -134,7 +149,9 @@ def main() -> None:
         except SyntaxError as e:
             print(f"skipping {filename}: {e}", file=sys.stderr)
             continue
-        for value, labels in _labelled_strings_from(tree, filename).items():
+        calls = _REF_CALLS if args.ref else _PARSE_CALLS
+        for value, labels in _labelled_strings_from(
+                tree, filename, calls).items():
             names.setdefault(value, set()).update(labels)
 
     for name in sorted(names):

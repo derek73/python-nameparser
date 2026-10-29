@@ -1,19 +1,15 @@
-# pickle here round-trips an object this test just built; the library's
-# own pickle support is what is under test, and no foreign data is read.
-import pickle
+from nameparser import ParsedName, parse
 
-import pytest
-
-from nameparser import HumanName
-from nameparser.config import Constants
-
-from tests.base import HumanNameTestBase
+from tests.base import ParsedNameTestBase
 
 
-class HumanNameCapitalizationTestCase(HumanNameTestBase):
+def _cap(text: str, *, force: bool = False) -> ParsedName:
+    return parse(text).capitalized(force=force)
+
+
+class CapitalizationTestCase(ParsedNameTestBase):
     def test_capitalization_exception_for_III(self) -> None:
-        hn = HumanName('juan q. xavier velasquez y garcia iii')
-        hn.capitalize()
+        hn = _cap('juan q. xavier velasquez y garcia iii')
         self.m(str(hn), 'Juan Q. Xavier Velasquez y Garcia III', hn)
 
     # A known failure since 2012 (the Google Code tracker's issue 22)
@@ -26,97 +22,75 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
     def test_capitalization_exception_for_already_capitalized_III(
         self,
     ) -> None:
-        hn = HumanName('juan garcia III')
-        hn.capitalize()
+        hn = _cap('juan garcia III')
         self.m(str(hn), 'Juan Garcia III', hn)
-        mixed = HumanName('Juan garcia III')
-        mixed.capitalize()
+        mixed = _cap('Juan garcia III')
         self.m(str(mixed), 'Juan garcia III', mixed)
-        titled = HumanName('Dr. juan garcia')
-        titled.capitalize()
+        titled = _cap('Dr. juan garcia')
         self.m(str(titled), 'Dr. juan garcia', titled)
 
     def test_capitalize_title(self) -> None:
-        hn = HumanName('lt. gen. john a. kenneth doe iv')
-        hn.capitalize()
+        hn = _cap('lt. gen. john a. kenneth doe iv')
         self.m(str(hn), 'Lt. Gen. John A. Kenneth Doe IV', hn)
 
     def test_capitalize_title_to_lower(self) -> None:
-        hn = HumanName('LT. GEN. JOHN A. KENNETH DOE IV')
-        hn.capitalize()
+        hn = _cap('LT. GEN. JOHN A. KENNETH DOE IV')
         self.m(str(hn), 'Lt. Gen. John A. Kenneth Doe IV', hn)
 
     # Capitalization with M(a)c and hyphenated names
     def test_capitalization_with_Mac_as_hyphenated_names(self) -> None:
-        hn = HumanName('donovan mcnabb-smith')
-        hn.capitalize()
+        hn = _cap('donovan mcnabb-smith')
         self.m(str(hn), 'Donovan McNabb-Smith', hn)
 
     def test_capitization_middle_initial_is_also_a_conjunction(self) -> None:
-        hn = HumanName('scott e. werner')
-        hn.capitalize()
+        hn = _cap('scott e. werner')
         self.m(str(hn), 'Scott E. Werner', hn)
 
     def test_capitalize_empty_middle_produces_no_leading_space_in_surnames(self) -> None:
-        # str.split(' ') on an empty string returns [''] rather than [], so an
-        # absent middle produced a spurious token that leaked into surnames_list
-        # and caused a leading space in the surnames property (' Doe' not 'Doe').
-        hn = HumanName('john doe')
-        hn.capitalize()
+        # An absent middle must not leave a leading space in the surnames
+        # view (' Doe' not 'Doe').
+        hn = _cap('john doe')
         self.m(hn.surnames, 'Doe', hn)
-        self.assertEqual(hn.middle_list, [])
-        self.assertEqual(hn.surnames_list, ['Doe'])
+        self.m(hn.middle, '', hn)
 
     def test_capitalize_force_empty_middle_produces_no_leading_space_in_surnames(self) -> None:
-        # Without force=True, capitalize() exits early for mixed-case names and
-        # never reaches the split lines. Confirm the fix covers that path too.
-        hn = HumanName('Jane Doe')
-        hn.capitalize(force=True)
+        hn = _cap('Jane Doe', force=True)
         self.m(hn.surnames, 'Doe', hn)
-        self.assertEqual(hn.middle_list, [])
+        self.m(hn.middle, '', hn)
 
     def test_capitalize_empty_attributes_produce_no_spurious_tokens(self) -> None:
-        # Confirm the fix extends beyond surnames: empty attribute lists are []
-        # not [''], and non-empty ones contain only real tokens.
-        hn = HumanName('Jane Doe')
-        hn.capitalize(force=True)
-        self.assertEqual(hn.title_list, [])
-        self.assertEqual(hn.first_list, ['Jane'])
-        self.assertEqual(hn.last_list, ['Doe'])
+        hn = _cap('Jane Doe', force=True)
+        self.m(hn.title, '', hn)
+        self.m(hn.given, 'Jane', hn)
+        self.m(hn.family, 'Doe', hn)
 
     def test_capitalize_title_and_last_only_no_spurious_tokens(self) -> None:
-        # title+last with no first or middle leaves first_list and middle_list
-        # both empty. All-caps triggers capitalize() without force=True.
-        hn = HumanName('DR DOE')
-        hn.capitalize()
-        self.assertEqual(hn.first_list, [])
-        self.assertEqual(hn.middle_list, [])
+        # title+last with no first or middle leaves given and middle
+        # both empty. All-caps triggers repair without force=True.
+        hn = _cap('DR DOE')
+        self.m(hn.given, '', hn)
+        self.m(hn.middle, '', hn)
         self.m(str(hn), 'Dr Doe', hn)
 
     def test_capitalize_empty_suffix_produces_no_spurious_tokens(self) -> None:
-        # ''.split(', ') returns [''] just like ''.split(' ') did for the other
-        # attributes — an absent suffix should produce suffix_list == [], not [''].
-        hn = HumanName('JOHN DOE')
-        hn.capitalize()
-        self.assertEqual(hn.suffix_list, [])
+        hn = _cap('JOHN DOE')
+        self.m(hn.suffix, '', hn)
 
     def test_capitalize_single_suffix_still_works(self) -> None:
-        hn = HumanName('JOHN DOE PHD')
-        hn.capitalize()
-        self.assertEqual(hn.suffix_list, ['PhD'])
+        hn = _cap('JOHN DOE PHD')
+        self.m(hn.suffix, 'PhD', hn)
 
     def test_capitalize_multiple_suffixes_still_split_correctly(self) -> None:
-        hn = HumanName('JOHN DOE PHD MD')
-        hn.capitalize()
+        hn = _cap('JOHN DOE PHD MD')
         # The split this guards is capitalize() giving each word its own
         # repair rather than title-casing the run, and that is
         # untouched: PHD by the exceptions map's mask, MD by the acronym
         # clause since #459 took md out of the map. The two words are
         # ONE entry since #436 -- the writer spaced them, so they render
-        # with a space -- and one entry is one suffix_list element. A
-        # deliberate deviation from 1.4.0, which inserted a comma into a
-        # run the writer had spaced, and gave 'Ph.D.', 'M.D.' besides.
-        self.assertEqual(hn.suffix_list, ['PhD MD'])
+        # with a space. A deliberate deviation from 1.4.0, which
+        # inserted a comma into a run the writer had spaced, and gave
+        # 'Ph.D.', 'M.D.' besides.
+        self.m(hn.suffix, 'PhD MD', hn)
 
     def test_capitalize_suffix_acronym_with_dots(self) -> None:
         # Suffixes already written with dots (e.g. "M.D.") keep them and
@@ -124,8 +98,7 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
         # exceptions map gave this string by SUBSTITUTING 'M.D.'; since
         # #459 md is a listed acronym the acronym clause writes in
         # capitals, recasing the word as written.
-        hn = HumanName('GREGORY HOUSE M.D.')
-        hn.capitalize()
+        hn = _cap('GREGORY HOUSE M.D.')
         self.assertEqual(hn.suffix, 'M.D.')
 
     # A credential acronym the exceptions map doesn't carry is an
@@ -138,8 +111,7 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
             ('JOSE LUIS CPA', 'Jose Luis CPA'),
             ('john smith pmp', 'John Smith PMP'),
         ]:
-            hn = HumanName(src)
-            hn.capitalize()
+            hn = _cap(src)
             self.m(str(hn), expect, hn)
 
     # The exceptions map is asked before the all-caps acronym clause,
@@ -160,121 +132,68 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
             ('john smith psyd', 'John Smith PsyD'),
             ('JOHN SMITH PHARMD', 'John Smith PharmD'),
         ]:
-            hn = HumanName(src)
-            hn.capitalize()
+            hn = _cap(src)
             self.m(str(hn), expect, hn)
 
-    # #459: a capitalization_exceptions value is a case MASK -- the
-    # key's own letters recased -- so a v1 Constants carrying any other
-    # value raises at the first parse, where the snapshot builds the
-    # Lexicon. A DECIDED exception to the shim's never-raise rule
-    # (decisions/R4, and #3-0-reevaluations): 1.4.0 substituted
-    # such a value for the word, repair now only recases, and no such
-    # value was found in the tracker, the docs or any test. The raise
-    # carries a v1-spelled hint: the 2.0 message's own offer
-    # ("capitalization_exceptions=(('jr', 'JR'),)") is a Lexicon()
-    # constructor call, and a v1 caller is looking at a TupleManager
-    # assignment through Constants, not that constructor.
-    def test_a_mismatched_exception_value_raises_at_the_first_parse(
-        self,
-    ) -> None:
-        from nameparser._lexicon import _MaskValueError
-        c = Constants(capitalization_exceptions={'jr': 'Junior'})
-        with pytest.raises(ValueError,
-                           match="does not spell the key's letters") \
-                as caught:
-            HumanName('john smith jr', constants=c)
-        assert "constants.capitalization_exceptions['jr'] = 'JR'" \
-            in str(caught.value)
-        # The v1 message is built fresh from the fields, not from the
-        # wrapped 2.0 exception's own text -- so it never carries the
-        # 2.0 constructor spelling a v1 caller cannot paste.
-        assert "Lexicon(" not in str(caught.value)
-        assert "capitalization_exceptions=((" not in str(caught.value)
-        assert isinstance(caught.value.__cause__, _MaskValueError)
-        # pasted onto a fresh Constants, the offered fix works
-        fixed = Constants()
-        fixed.capitalization_exceptions['jr'] = 'JR'
-        hn = HumanName('john smith jr', constants=fixed)
-        hn.capitalize()
-        self.m(str(hn), 'John Smith JR', hn)
-        ok = Constants(capitalization_exceptions={'jr': 'JR'})
-        hn = HumanName('john smith jr', constants=ok)
-        hn.capitalize()
-        self.m(str(hn), 'John Smith JR', hn)
-
-    # rules/R5 (#492): a suffix ASSIGNED to the facade after
-    # construction carries UNCLASSIFIED_TAG (no `vocab:suffix` tag, no
-    # roman-numeral shape read from a parse) and is still excluded from
-    # the one-case gate -- the gate reads the ROLE, not the tag.
+    # rules/R5 (#492): a suffix ASSIGNED after the parse carries
+    # UNCLASSIFIED_TAG (no `vocab:suffix` tag, no roman-numeral shape
+    # read from a parse) and is still excluded from the one-case gate --
+    # the gate reads the ROLE, not the tag.
     def test_capitalize_leaves_an_assigned_suffix_out_of_the_gate(
         self,
     ) -> None:
-        hn = HumanName('juan garcia')
-        hn.suffix = 'III'
-        hn.capitalize()
+        hn = parse('juan garcia').replace(suffix='III').capitalized()
         self.m(str(hn), 'Juan Garcia III', hn)
 
     # A word in the acronym vocabulary that parses as a family name
     # still repairs as an ordinary name word, not an acronym (#459).
     def test_capitalize_family_name_in_acronym_vocab_stays_title_case(self) -> None:
-        hn = HumanName('anh van do')
-        hn.capitalize()
+        hn = _cap('anh van do')
         self.m(str(hn), 'Anh Van Do', hn)
 
     # Leaving already-capitalized names alone
     def test_no_change_to_mixed_chase(self) -> None:
-        hn = HumanName('Shirley Maclaine')
-        hn.capitalize()
+        hn = _cap('Shirley Maclaine')
         self.m(str(hn), 'Shirley Maclaine', hn)
 
     def test_force_capitalization(self) -> None:
-        hn = HumanName('Shirley Maclaine')
-        hn.capitalize(force=True)
+        hn = _cap('Shirley Maclaine', force=True)
         self.m(str(hn), 'Shirley MacLaine', hn)
 
     def test_capitalize_diacritics(self) -> None:
-        hn = HumanName('matthëus schmidt')
-        hn.capitalize()
+        hn = _cap('matthëus schmidt')
         self.m(str(hn), 'Matthëus Schmidt', hn)
 
     # http://code.google.com/p/python-nameparser/issues/detail?id=15
     def test_downcasing_mac(self) -> None:
-        hn = HumanName('RONALD MACDONALD')
-        hn.capitalize()
+        hn = _cap('RONALD MACDONALD')
         self.m(str(hn), 'Ronald MacDonald', hn)
 
     # http://code.google.com/p/python-nameparser/issues/detail?id=23
     def test_downcasing_mc(self) -> None:
-        hn = HumanName('RONALD MCDONALD')
-        hn.capitalize()
+        hn = _cap('RONALD MCDONALD')
         self.m(str(hn), 'Ronald McDonald', hn)
 
     def test_short_names_with_mac(self) -> None:
-        hn = HumanName('mack johnson')
-        hn.capitalize()
+        hn = _cap('mack johnson')
         self.m(str(hn), 'Mack Johnson', hn)
 
     def test_portuguese_prefixes(self) -> None:
-        hn = HumanName("joao da silva do amaral de souza")
-        hn.capitalize()
+        hn = _cap("joao da silva do amaral de souza")
         self.m(str(hn), 'Joao da Silva do Amaral de Souza', hn)
 
     def test_capitalize_prefix_clash_on_first_name(self) -> None:
-        hn = HumanName("van nguyen")
-        hn.capitalize()
+        hn = _cap("van nguyen")
         self.m(str(hn), 'Van Nguyen', hn)
 
     # #407, rules/R4. The family is one word and that word is
     # particle vocabulary, so nothing joins it to a name and it is not
     # doing a particle's work: family_base and initials have read it as
     # an ordinary name word since #404, and case repair now agrees.
-    # Deliberately the v1 facade, and deliberately single-case input --
-    # this MOVES v1-visible behavior (1.4.0 returns 'Anh do'), and the
+    # Deliberately single-case input -- this MOVED v1-visible behavior (1.4.0 returns 'Anh do'), and the
     # mixed-case gate would return the input untouched (rules/R5).
     def test_capitalize_all_particle_family_is_a_name_word(self) -> None:
-        hn = HumanName('ANH DO')
-        hn.capitalize()
+        hn = _cap('ANH DO')
         self.m(str(hn), 'Anh Do', hn)
 
     # The reason the mark is read for the WHOLE PART rather than for a
@@ -283,8 +202,7 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
     # capitalize the name above and leave this one lowercased, reading
     # the same surname two ways.
     def test_capitalize_all_particle_family_of_two_words(self) -> None:
-        hn = HumanName('anh van do')
-        hn.capitalize()
+        hn = _cap('anh van do')
         self.m(str(hn), 'Anh Van Do', hn)
 
     # The recorded negative control for the two above (AGENTS.md's
@@ -294,8 +212,7 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
     # passes both before and after the change, and fails only if the
     # new clause is widened to reach working particle runs.
     def test_capitalize_working_particle_stays_lowercase(self) -> None:
-        hn = HumanName('juan de la vega')
-        hn.capitalize()
+        hn = _cap('juan de la vega')
         self.m(str(hn), 'Juan de la Vega', hn)
 
     # The corpus name that carries both halves of the predicate at
@@ -320,8 +237,7 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
     # rather than a no-op. The `y` here is a GIVEN-part word besides,
     # not a word of the all-particle family.
     def test_capitalize_all_particle_family_beside_a_conjunction(self) -> None:
-        hn = HumanName('der, y van')
-        hn.capitalize()
+        hn = _cap('der, y van')
         self.m(str(hn), 'y Van Der', hn)
 
     # rules/R5's override, stated as a property rather than a
@@ -332,9 +248,9 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
     #
     # Measured 2026-08-29, before the #383/#479 fork, on the
     # 1094-name corpus, because the promise is nearly true and the
-    # exceptions are the whole story. On THIS surface --
-    # `HumanName.capitalize()` and `str()`, which is what the test
-    # below uses -- forcing repair differs from uppercasing the input
+    # exceptions are the whole story. On the 1.x facade's surface --
+    # its `capitalize()` and `str()`, which the test below used
+    # until 3.0 -- forcing repair differs from uppercasing the input
     # and calling `capitalize()` for 62 of the 1094, and from
     # lowercasing it for 16, so UPPERCASE IS THE WORSE DIRECTION, not
     # the clean one. Nor are the misses merely parse-level: of the 62,
@@ -342,11 +258,10 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
     # differ inside the repair itself. Through the v2 core --
     # `parse(n).capitalized(force=True)`, rendering all seven roles
     # -- the counts are 63 and 38, which is what decisions/R5
-    # states. The one name the facade cannot see is
+    # states. The one name the facade could not see is
     # `Jane van der Berg nee y Jones`, whose conjunction sits in the
-    # MAIDEN name: `str(HumanName)` renders the default spec, and
-    # that spec omits the field. Recompute by running both forms over
-    # the corpus files deduped and diffing, on whichever surface
+    # MAIDEN name: the facade's default spec omitted the field.
+    # Recompute by running both forms over the corpus files deduped and diffing, on whichever surface
     # you name. The #383/#479 fork removes the one-letter-conjunction
     # mechanism behind the uppercase direction (below), and a
     # re-measurement on this tree REVERSES the headline: the uppercase
@@ -376,7 +291,7 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
     # name the same way whichever case it is written in. This worked
     # example
     # has no bare `E`, so only the uppercase half is gone for IT --
-    # measured, `HumanName('VELASQUEZ Y GARCIA, DR. JUAN Q.').capitalize()`
+    # measured, `parse('VELASQUEZ Y GARCIA, DR. JUAN Q.').capitalized()`
     # now agrees with the forced and lowercased forms, all three
     # giving `Dr. Juan Q. Velasquez y Garcia`; the lowercase half is
     # shown instead by `john e smith`
@@ -390,12 +305,9 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
         for name in ('shirley maclaine', 'juan de la vega', 'anh van do',
                      'donovan mcnabb-smith', 'jane smith phd',
                      'lt. gen. john a. kenneth doe iv'):
-            forced = HumanName(name)
-            forced.capitalize(force=True)
-            upper = HumanName(name.upper())
-            upper.capitalize()
-            lower = HumanName(name.lower())
-            lower.capitalize()
+            forced = _cap(name, force=True)
+            upper = _cap(name.upper())
+            lower = _cap(name.lower())
             self.m(str(upper), str(forced), upper)
             self.m(str(lower), str(forced), lower)
 
@@ -416,11 +328,9 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
     # whichever case it is itself written in, as long as the name
     # around it is one-case.
     def test_a_one_letter_conjunction_is_case_sensitive_to_repair(self) -> None:
-        lowered = HumanName('juan y garcia')
-        lowered.capitalize(force=True)
+        lowered = _cap('juan y garcia', force=True)
         self.m(str(lowered), 'Juan y Garcia', lowered)
-        uppered = HumanName('JUAN Y GARCIA')
-        uppered.capitalize()
+        uppered = _cap('JUAN Y GARCIA')
         # #383/#479 fork, no longer inherited 1.4.0 behavior: 'JUAN Y
         # GARCIA' is written wholly in one case, so its bare capital
         # 'Y' carries no case evidence -- 'y' is not in
@@ -431,12 +341,11 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
         # mixed-case control: here the capital IS evidence, so 'Y'
         # reads as an initial exactly as it always has and repair
         # declines to touch it
-        mixed = HumanName('Juan Y Garcia')
-        mixed.capitalize()
+        mixed = _cap('Juan Y Garcia')
         self.m(str(mixed), 'Juan Y Garcia', mixed)
 
-    # The v1 parity this rests on, at the surface v1 users have. An
-    # ASSIGNED field is spliced in as raw text and never classified, so
+    # The v1 parity this rests on. An ASSIGNED field (`replace()`)
+    # is spliced in as raw text and never classified, so
     # there is no tag to read and repair asks the vocabulary -- which is
     # what v1 always did, everywhere. Measured on the released 1.4.0
     # wheel and on 2.1.0, all four: 'John Velasquez y Garcia',
@@ -445,8 +354,8 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
     # -- the regression #458's review caught before it shipped.
     def test_an_assigned_field_keeps_v1_conjunction_repair(self) -> None:
         for field, value, want in (
-                ('last', 'velasquez y garcia', 'John Velasquez y Garcia'),
-                ('last', 'smith y jones', 'John Smith y Jones'),
+                ('family', 'velasquez y garcia', 'John Velasquez y Garcia'),
+                ('family', 'smith y jones', 'John Smith y Jones'),
                 # the initial carve-out: an assigned middle initial is
                 # an initial, not the Italian conjunction
                 ('middle', 'e.', 'John E. Smith'),
@@ -456,11 +365,10 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
                 # part is ordinary name text (pinned below), and the
                 # difference is that one carries a reading. An
                 # interior link is lowered on both paths since #478.
-                ('last', 'smith-y', 'John Smith-y'),
-                ('last', 'smith-y-jones', 'John Smith-y-Jones')):
-            hn = HumanName('john smith')
-            setattr(hn, field, value)
-            hn.capitalize(force=True)
+                ('family', 'smith-y', 'John Smith-y'),
+                ('family', 'smith-y-jones', 'John Smith-y-Jones')):
+            hn = parse('john smith').replace(**{field: value}).capitalized(
+                force=True)
             self.m(str(hn), want, hn)
 
     # The other half of #458, and the half that MOVED: the decision is
@@ -472,11 +380,9 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
     # `E` as initial-shaped and capitalized, so the same name repaired
     # to two different strings depending on how it was written.
     def test_a_conjunction_inside_a_longer_token_is_a_name_word(self) -> None:
-        lowered = HumanName('juan e-f smith')
-        lowered.capitalize(force=True)
+        lowered = _cap('juan e-f smith', force=True)
         self.m(str(lowered), 'Juan E-F Smith', lowered)
-        uppered = HumanName('JUAN E-F SMITH')
-        uppered.capitalize()
+        uppered = _cap('JUAN E-F SMITH')
         self.m(str(uppered), 'Juan E-F Smith', uppered)
 
     # #478: Ortega y Gasset is routinely hyphenated in catalogues, and
@@ -496,53 +402,11 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
     def test_a_hyphenated_compound_surname_keeps_its_link_lowercase(
         self,
     ) -> None:
-        lowered = HumanName('jose ortega-y-gasset')
-        lowered.capitalize(force=True)
+        lowered = _cap('jose ortega-y-gasset', force=True)
         self.m(str(lowered), 'Jose Ortega-y-Gasset', lowered)
-        uppered = HumanName('JOSE ORTEGA-Y-GASSET')
-        uppered.capitalize()
+        uppered = _cap('JOSE ORTEGA-Y-GASSET')
         self.m(str(uppered), 'Jose Ortega-y-Gasset', uppered)
-        edge = HumanName('juan y-garcia')
-        edge.capitalize()
+        edge = _cap('juan y-garcia')
         self.m(str(edge), 'Juan Y-Garcia', edge)
-        spaced = HumanName('jose ortega y gasset')
-        spaced.capitalize(force=True)
+        spaced = _cap('jose ortega y gasset', force=True)
         self.m(str(spaced), 'Jose Ortega y Gasset', spaced)
-
-    # The third producer of never-classified text, and the one that is
-    # not an assignment: __getstate__ pickles the *_list STRINGS and
-    # nothing else (mechanisms.md#FACADE-CONTRACT -- components come
-    # back exactly as pickled, never re-parsed), so a load rebuilds
-    # tokens with no tags on them. They are marked UNCLASSIFIED_TAG for
-    # the same reason an assigned field is: reading the absent
-    # conjunction tag as "not a conjunction" would repair a restored
-    # 'juan ortega y gasset' to 'Juan Ortega Y Gasset', which is
-    # neither 1.4.0's answer nor the same object's before pickling.
-    def test_a_restored_pickle_keeps_v1_conjunction_repair(self) -> None:
-        for text, want in (('juan ortega y gasset', 'Juan Ortega y Gasset'),
-                           ('john de la vega', 'John de la Vega'),
-                           ('juan y garcia', 'Juan y Garcia')):
-            restored = pickle.loads(pickle.dumps(HumanName(text)))
-            restored.capitalize(force=True)
-            self.m(str(restored), want, restored)
-
-    # One of a CLASS of names a pickle round trip changes, pinned so it
-    # is not rediscovered as a bug. #458 moved the conjunction-versus-
-    # initial decision into the parse, and a pickle carries no tags, so
-    # the restored name is repaired the way 1.4.0 repaired everything
-    # -- per word of the text, giving the Italian conjunction inside a
-    # hyphenated middle name here. It is the pickle contract (strings
-    # only, never a re-parse) meeting the tag read, not a defect in
-    # either. 1.4.0 gave 'Juan e-F Smith' both ways. Since #383/#479
-    # the one-case fork widened this class: 'JUAN Y GARCIA' and 'john e
-    # smith' also diverge on a round trip now, for the same reason and
-    # through the same fallback, whether the reader is capitalize() or
-    # (since #528) initials() -- pinned at
-    # tests/v2/test_facade.py::test_initials_of_an_unpickled_or_copied_name_ask_the_vocabulary_too.
-    def test_a_pickle_round_trip_loses_the_e_f_reading(self) -> None:
-        direct = HumanName('juan e-f smith')
-        direct.capitalize(force=True)
-        self.m(str(direct), 'Juan E-F Smith', direct)
-        restored = pickle.loads(pickle.dumps(HumanName('juan e-f smith')))
-        restored.capitalize(force=True)
-        self.m(str(restored), 'Juan e-F Smith', restored)
