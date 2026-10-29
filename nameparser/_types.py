@@ -14,10 +14,10 @@ contents.
 from __future__ import annotations
 
 import dataclasses
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, field
 from enum import Enum, StrEnum
-from typing import TYPE_CHECKING, NamedTuple, NoReturn, TypeVar
+from typing import TYPE_CHECKING, Any, NamedTuple, NoReturn, TypeVar
 
 if TYPE_CHECKING:
     from nameparser._lexicon import Lexicon
@@ -52,6 +52,123 @@ class Role(StrEnum):
     #: A birth surname, from a marker word ("Jane Smith née Jones" ->
     #: "Jones") or a delimiter pair routed via Policy.maiden_delimiters.
     MAIDEN = "maiden"
+
+
+# Order-spec constants (#270). Each reads as its contents because roles
+# are named given/family, not first/last. Defined here rather than in
+# _policy because ParsedName.order holds one; _policy re-exports them.
+
+#: Western order (the default): the first word of positional input is
+#: the given name, the last is the family name, everything between is
+#: middle. One of the three valid ``Policy(name_order=...)`` values.
+GIVEN_FIRST = (Role.GIVEN, Role.MIDDLE, Role.FAMILY)
+#: Family name first, given name second, remaining words middle
+#: (e.g. Hungarian, or East Asian order). One of the three valid
+#: ``Policy(name_order=...)`` values.
+FAMILY_FIRST = (Role.FAMILY, Role.GIVEN, Role.MIDDLE)
+#: Family name first, given name LAST, words between middle
+#: (e.g. Vietnamese full-name order). One of the three valid
+#: ``Policy(name_order=...)`` values.
+FAMILY_FIRST_GIVEN_LAST = (Role.FAMILY, Role.MIDDLE, Role.GIVEN)
+
+#: The three orders, for ParsedName.order's validation.
+_NAME_ORDERS = (GIVEN_FIRST, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST)
+
+
+# The order validation Policy.name_order, its script_orders values and
+# ParsedName.order share, here beside the constants since _types
+# imports nothing internal; _policy imports it from here.
+
+def _reject_bare_string_order(value: object, field_name: str) -> None:
+    # tuple("gmf") would be ("g", "m", "f") -- catch the bare string
+    # with the same TypeError every other iterable field raises.
+    # Single-sourced: called from Policy AND PolicyPatch __post_init__.
+    # field_name is REQUIRED, with no name_order default: script_orders'
+    # values obey the same rule (via _validated_order), and a defaulted
+    # caller that forgot to pass it would silently name the wrong field.
+    if isinstance(value, str):
+        raise TypeError(
+            f"{field_name} must be an iterable of three Roles, "
+            f"not a bare string: {value!r}"
+        )
+    # A {Role: position} dict iterates to the right three Roles in the
+    # right order, so it would be accepted -- harmlessly today, since
+    # the result is checked against the three exported orders anyway.
+    # Guarded regardless: "iterating this yields something plausible
+    # but not what you wrote" is one bug class, and leaving one field
+    # out of it is how the PolicyPatch hole happened.
+    if isinstance(value, Mapping):
+        raise TypeError(
+            f"{field_name} must be an iterable of three Roles, not a "
+            f"mapping: {value!r}"
+        )
+    # a set iterates in an order its hash seed decides, so the same
+    # value read as one order, another, or none from run to run
+    if isinstance(value, (set, frozenset)):
+        raise TypeError(
+            f"{field_name} must be an ordered iterable of three Roles, "
+            f"not a {type(value).__name__}: {value!r}"
+        )
+    if isinstance(value, (bytes, bytearray, memoryview)):
+        raise TypeError(
+            f"{field_name} must be an iterable of three Roles, not "
+            f"{type(value).__name__} -- decode first, e.g. "
+            f"raw.decode('utf-8')"
+        )
+
+
+def _require_iterable(value: Iterable[Any], field_name: str,
+                      expected: str = "an iterable") -> Iterable[Any]:
+    """Probe a value's iterability and return its iterator, raising a
+    TypeError naming the field if it has none. `expected` carries the
+    field's own phrasing ("a mapping of Script to order"); the default
+    suits every plain iterable field.
+
+    Probing with iter() is what makes the message possible: a
+    non-iterable (an int, a bool, ...) is named here, matching the
+    treatment patronymic_rules already gets, instead of a bare "'int'
+    object is not iterable" surfacing from whatever tuple()/frozenset()
+    happens to run first. It is ALSO the reason callers consume the
+    returned iterator OUTSIDE any try of their own: an exception raised
+    inside a caller's generator while it is being consumed is the
+    caller's own error, and must propagate untouched rather than be
+    rewritten as a shape complaint about the field.
+    """
+    try:
+        return iter(value)
+    except TypeError:
+        raise TypeError(
+            f"{field_name} must be {expected}, got {value!r}"
+        ) from None
+
+
+def _validated_order(value: Iterable[Any],
+                     field_name: str) -> tuple[Role, Role, Role]:
+    """name_order's element/permutation check, single-sourced so
+    script_orders values obey the identical rule (only the three
+    exported orders have implemented assignment semantics)."""
+    _reject_bare_string_order(value, field_name)
+    order = tuple(_require_iterable(value, field_name))
+    # Sole rejection point for plain-string tuples: Role is a StrEnum,
+    # so the named-order membership check below compares EQUAL for
+    # ("given", "middle", "family") -- do not remove this loop as
+    # redundant.
+    for element in order:
+        if not isinstance(element, Role):
+            raise TypeError(
+                f"{field_name} elements must be Role members, "
+                f"got {element!r}"
+            )
+    # Only the three exported orders have implemented assignment
+    # semantics; the unnamed permutations would silently misassign.
+    # Pre-2.0 strictness is free -- relaxing later is compatible.
+    if order not in _NAME_ORDERS:
+        raise ValueError(
+            f"{field_name} must be one of the exported orders, got "
+            f"{order!r}; use GIVEN_FIRST, FAMILY_FIRST, or "
+            f"FAMILY_FIRST_GIVEN_LAST"
+        )
+    return order  # type: ignore[return-value]  # length checked above
 
 
 class Span(NamedTuple):
@@ -1020,6 +1137,17 @@ class ParsedName:
     #: Judgment calls that could have gone the other way; empty for
     #: most names (see Ambiguity).
     ambiguities: tuple[Ambiguity, ...] = ()
+    #: The order the name was read in: ``GIVEN_FIRST``,
+    #: ``FAMILY_FIRST`` or ``FAMILY_FIRST_GIVEN_LAST``, the declared
+    #: ``name_order`` or the ``script_orders`` entry that overrode it,
+    #: and ``GIVEN_FIRST`` for a name with a family comma. ``str()``
+    #: and :meth:`render`'s default lay the name out in it. ``None``
+    #: (a name built by hand, or a 2.x pickle) renders as 2.x did:
+    #: given-first, its words joined by spaces.
+    #: Left out of ``==`` and :meth:`comparison_key`, so two equal
+    #: names can render differently.
+    order: tuple[Role, Role, Role] | None = field(
+        default=None, compare=False, metadata={ADDED_IN: "3.0.0"})
 
     # in the class body so @dataclass(slots=True) keeps them
     __getstate__ = _guarded_getstate
@@ -1032,6 +1160,12 @@ class ParsedName:
             )
         object.__setattr__(self, "tokens", tuple(self.tokens))
         object.__setattr__(self, "ambiguities", tuple(self.ambiguities))
+        if self.order is not None:
+            # the one validator Policy.name_order goes through, so a
+            # list is stored as the tuple and a plain-string tuple is
+            # refused here as there
+            object.__setattr__(self, "order", _validated_order(
+                self.order, "ParsedName.order"))
         for tok in self.tokens:
             if not isinstance(tok, Token):
                 raise TypeError(
@@ -1267,7 +1401,8 @@ class ParsedName:
             amb for amb in self.ambiguities
             if all(t in new_tokens for t in amb.tokens)
         )
-        return ParsedName(self.original, _remarked(new_tokens), kept)
+        return ParsedName(self.original, _remarked(new_tokens), kept,
+                          self.order)
 
     # -- comparison -------------------------------------------------------
 
@@ -1301,18 +1436,28 @@ class ParsedName:
     # tests/v2/test_layering.py), so these import at call time -- module
     # level stays internal-import-free.
 
-    def render(
-        self,
-        spec: str = ('{title} {given} "{nickname}" {middle} {family} '
-                     "({maiden}) {suffix}"),
-    ) -> str:
+    def render(self, spec: str | None = None) -> str:
         """Fill the str.format spec from the seven role fields and the
         derived views; empty fields collapse (#254), including the
-        default spec's decorations (empty '""' and '()' wrappers).
-        The default shows every non-empty field: the nickname quoted
-        after the given name, the maiden name parenthesized after the
-        family name. Unknown keys raise KeyError naming the valid
-        fields."""
+        spec's decorations (empty '""' and '()' wrappers). A spec
+        renders exactly as written, its order and its joiners. Unknown
+        keys raise KeyError naming the valid fields.
+
+        ``None``, the default and what ``str()`` passes, lays the name
+        out in :attr:`order`: given-first
+        ``'{title} {given} "{nickname}" {middle} {family} ({maiden})
+        {suffix}'``, and for a family-first order the family (with its
+        maiden name) after the title and the given and middle names
+        in the order's sequence, the suffix last. Two words that stand
+        one directly after the other both in the name as written and
+        in that layout keep the separator written between them,
+        normalized: nothing stays nothing, any whitespace becomes one
+        space, an interpunct or nakaguro the parse divided at stands
+        alone, and one comma is written ', ' (ASCII), '، ' (Arabic)
+        or '，' (full-width). Every other pair takes a space, or the
+        layout's quotes and parentheses where those stand between the
+        two fields, and suffixes not written side by side are joined
+        with ', ' as the ``suffix`` field joins them."""
         import nameparser._render as _render
         return _render.render(self, spec)
 

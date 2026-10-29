@@ -1,7 +1,8 @@
 """Not a stage: converts the final ParseState into a public ParsedName.
 
 Consumes: tokens (all roles set, and their tags, which name each
-token's reading), dropped, ambiguities (by index;
+token's reading), dropped, order and structure (for ParsedName.order),
+ambiguities (by index;
 one carrying ``field_tail`` is worded from its word's final role,
 #626), and segments, for the part a withdrawn connective report's
 letter ends (rules/P8, #721).
@@ -11,7 +12,8 @@ invariant (span order/bounds, ambiguity subset), so a pipeline bug
 that would produce an invalid result dies HERE, not in a renderer
 three layers away.
 Reads: Policy.middle_as_family, folding a report's other field as the
-policy folds a middle; and Lexicon.surnames, suffix_acronyms and
+policy folds a middle; Policy.name_order, for ParsedName.order where
+no positional read happened; and Lexicon.surnames, suffix_acronyms and
 suffix_acronyms_ambiguous, for the source of a token's reading where
 no tag gives it.
 
@@ -34,14 +36,15 @@ from nameparser._pipeline._state import (
     AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, FIELD_READING,
     NAME_ROLES, SHAPE_ACRONYM_TAG, SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG,
     TITLE_AMBIGUOUS_TAG, Beside, Deferred, ParseState, PendingAmbiguity,
+    Structure,
 )
 from nameparser._pipeline._vocab import (
     _PERIOD_ABBREV, name_source, suffix_kind,
 )
 from nameparser._types import (
-    FOLDED_TAG, UNJOINED_CONJUNCTION_TAG, UNJOINED_TAG, Ambiguity,
-    AmbiguityKind, ParsedName, Reading, ReadingKind, ReadingSource, Role,
-    Token,
+    FOLDED_TAG, GIVEN_FIRST, UNJOINED_CONJUNCTION_TAG, UNJOINED_TAG,
+    Ambiguity, AmbiguityKind, ParsedName, Reading, ReadingKind,
+    ReadingSource, Role, Token,
 )
 
 #: Every Reading a token can take, built once: a `Reading` is three
@@ -348,4 +351,20 @@ def assemble(state: ParseState) -> ParsedName:
                          state.policy.middle_as_family)))
     return ParsedName(original=state.original,
                       tokens=tuple(final.values()),
-                      ambiguities=tuple(ambiguities))
+                      ambiguities=tuple(ambiguities),
+                      order=_read_order(state))
+
+
+def _read_order(state: ParseState) -> tuple[Role, Role, Role]:
+    """ParsedName.order: the order assign read the name in, given-first
+    after a family comma (which fixes the family without consulting
+    an order), and the declared name_order where no positional read
+    happened."""
+    # rules/R6: "the name is laid out in the order it was read in" --
+    # this records that order for the rendering to read (decisions/R6,
+    # #754)
+    if state.order is not None:
+        return state.order
+    if state.structure is Structure.FAMILY_COMMA:
+        return GIVEN_FIRST
+    return state.policy.name_order

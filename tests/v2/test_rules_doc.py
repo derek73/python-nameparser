@@ -226,6 +226,8 @@ def _run(example: Example) -> object:
         return tuple(a.kind.value for a in parsed.ambiguities)
     if example.field == "initials":
         return parsed.initials()
+    if example.field == "str":
+        return str(parsed)
     if example.field == "capitalized":
         return str(parsed.capitalized())
     # R5: the gate returns mixed-case input untouched, so an example

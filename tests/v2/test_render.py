@@ -97,6 +97,109 @@ def test_default_str_includes_nickname_and_maiden() -> None:
         "Dr. Juan Q. Xavier de la Vega III")
 
 
+# rules/R6, the order-aware default: one row per layout and per
+# separator kind, the comma shapes, and the pairs that take the joiner
+@pytest.mark.parametrize(("text", "order", "want"), [
+    # the three layouts; a family comma lays out given-first under any
+    ("김민준", None, "김민준"),
+    ("Wang Xiaoming", FAMILY_FIRST, "Wang Xiaoming"),
+    ("Nguyen Van Anh", FAMILY_FIRST_GIVEN_LAST, "Nguyen Van Anh"),
+    ("Dr. Wang Xiaoming Jr.", FAMILY_FIRST, "Dr. Wang Xiaoming Jr."),
+    ("Smith, John", FAMILY_FIRST, "John Smith"),
+    ("Smith, John", FAMILY_FIRST_GIVEN_LAST, "John Smith"),
+    ("Wang, Xiaoming", FAMILY_FIRST, "Xiaoming Wang"),
+    # the family-first layout's decorations stand beside their fields
+    ("山田「タロ」太郎", None, '山田 太郎 "タロ"'),
+    ("山田 花子 旧姓 佐藤", None, "山田 (佐藤) 花子"),
+    # separator kinds: nothing, whitespace (U+3000, a tab, a run),
+    # interpunct, nakaguro (spaced and halfwidth), each comma
+    ("王小明先生", None, "王小明先生"),
+    ("山田\u3000太郎", None, "山田 太郎"),
+    ("John\t \tSmith", None, "John Smith"),
+    ("威廉·莎士比亚", None, "威廉·莎士比亚"),
+    ("ジョン ・ スミス", None, "ジョン・スミス"),
+    ("ｼﾞｮﾝ･ｽﾐｽ", None, "ｼﾞｮﾝ･ｽﾐｽ"),
+    ("John Smith ,Jr.", None, "John Smith, Jr."),
+    ("John Smith,Jr.", None, "John Smith, Jr."),
+    ("John Smith， Jr.", None, "John Smith，Jr."),
+    ("محمد علي، الابن", None, "محمد علي، الابن"),
+    # comma shapes: no comma, a full name, one word and nothing before
+    # it, and a third part
+    ("John Smith Jr.", None, "John Smith Jr."),
+    ("John Smith, Jr.", None, "John Smith, Jr."),
+    ("Smith, Jr.", None, "Smith, Jr."),
+    (", Jr.", None, "Jr."),
+    ("Smith, John, Jr.", None, "John Smith Jr."),
+    ("Wang Xiaoming, Jr.", FAMILY_FIRST, "Wang Xiaoming, Jr."),
+    ("Wang Xiaoming, Jr.", FAMILY_FIRST_GIVEN_LAST, "Wang Xiaoming, Jr."),
+    ("John Smith, MD, PhD", None, "John Smith, MD, PhD"),
+    ("John Smith MD PhD", None, "John Smith MD PhD"),
+    # a family comma is never kept, also where its given part went to
+    # the family and the two words stay side by side; a comma between
+    # titles moved up from past a second comma is kept (rules/R6's
+    # Accepted bullet: it reads back as a family comma)
+    ("Smith, de Mesnil Jean", None, "Smith de Mesnil Jean"),
+    # a comma with only a suffix after it stays (decisions/R6's
+    # 2026-10-29 A SUFFIX COMMA entry)
+    ("Smith, MD", None, "Smith, MD"),
+    ("Smith, Jr., John", None, "Smith, Jr., John"),
+    ("John, Jr.", None, "John, Jr."),
+    ("John Smith, Jr., Dr., Prof.", None, "Dr., Prof. John Smith, Jr."),
+    ("John Smith Dr., Prof.", None, "Dr., Prof. John Smith"),
+    # the joiner: a hyphen word stays one word, two commas, a zero-width
+    # space, a delimiter, a dropped marker word
+    ("John Smith,, Jr.", None, "John Smith Jr."),
+    ("John\u200bSmith", None, "John Smith"),
+    ("John (Jack) Smith", None, 'John "Jack" Smith'),
+    ("Jane Smith née Jones, PhD", None, "Jane Smith (Jones) PhD"),
+    ("Jane (née , Jones) Smith", None, 'Jane "née, Jones" Smith'),
+])
+def test_the_default_render_follows_the_written_name(
+        text: str, order: tuple[Role, Role, Role] | None, want: str) -> None:
+    parser = Parser(policy=Policy(name_order=order)) if order else Parser()
+    name = parser.parse(text)
+    assert str(name) == want, text
+    assert name.render() == name.render(None) == want
+
+
+def test_a_family_first_maiden_reads_back_as_the_given_first_one_does(
+        ) -> None:
+    """A parenthesized maiden name reads back as a nickname wherever the
+    layout puts it (decisions/render-default's accepted cost), under a
+    family-first layout as under the given-first one; the name words
+    read back in place, where 2.x's given-first rendering of this name
+    read them back swapped ('花子 山田 (佐藤)')."""
+    for text, order in (("Jane Smith née Jones", None),
+                        ("山田 花子 旧姓 佐藤", None),
+                        ("Wang Xiaoming née Li", FAMILY_FIRST)):
+        parser = Parser(policy=Policy(name_order=order)) if order else Parser()
+        name = parser.parse(text)
+        back = parser.parse(str(name))
+        assert (back.given, back.family) == (name.given, name.family), text
+        assert (back.maiden, back.nickname) == ("", name.maiden), text
+
+
+def test_a_spec_renders_as_written_whatever_the_order() -> None:
+    # rules/R6's Because: a caller's spec keeps 2.x's meaning
+    name = parse("김민준")
+    assert name.render("{given} {family}") == "민준 김"
+    assert name.render('{title} {given} "{nickname}" {middle} {family} '
+                       "({maiden}) {suffix}") == "민준 김"
+    assert parse("John Smith, Jr.").render("{given} {family} {suffix}") == (
+        "John Smith Jr.")
+
+
+def test_a_word_the_parse_did_not_place_takes_the_joiner() -> None:
+    # synthetic tokens (span None) are side by side with nothing as
+    # written; a replaced field renders space-joined in the layout
+    name = parse("김민준").replace(given="서연")
+    assert str(name) == "김 서연"
+    pn = _pn("ab", [Token("a", Span(0, 1), Role.FAMILY),
+                    Token("b", Span(1, 2), Role.GIVEN)])
+    assert str(pn) == "b a"   # no order recorded: given-first
+    assert str(dataclasses.replace(pn, order=FAMILY_FIRST)) == "ab"
+
+
 def test_parsedname_render_and_str_delegate() -> None:
     pn = _delavega()
     assert pn.render() == "Dr. Juan de la Vega III"
@@ -110,13 +213,17 @@ def test_a_suffix_run_survives_a_render_and_a_reparse() -> None:
 
     The instability #429 recorded and left open: its fix made
     'Smith, MD PhD' render suffix 'MD PhD', and str() of that parse
-    is 'Smith MD PhD' -- a NO-COMMA string, which the no-comma path
+    was 'Smith MD PhD' -- a NO-COMMA string, which the no-comma path
     then read back as 'MD, PhD'. One writing round-tripped, the other
     did not, and which was which depended on a comma the render had
     already dropped. Three spellings of one run, each its own path
     into the entry rule: a lone family plus the run, the full name
-    plus a comma, and the full name with no comma at all.
+    plus a comma, and the full name with no comma at all. Since 3.0
+    the render keeps a comma before a suffix (rules/R6), so the first
+    two render with theirs; the third still reads back comma-less.
     """
+    assert [str(parse(t)) for t in ("Smith, MD PhD", "John Smith MD PhD")] \
+        == ["Smith, MD PhD", "John Smith MD PhD"]
     for text in ("Smith, MD PhD", "John Smith, MD PhD",
                  "John Smith MD PhD"):
         once = parse(text)
@@ -585,7 +692,7 @@ def test_the_gate_leaves_the_suffixes_out() -> None:
                            # token: the gate excludes every SUFFIX-roled
                            # token, not only the last one
                            ("juan garcia PhD MD", "Juan Garcia PhD MD"),
-                           ("juan garcia, PhD, MD", "Juan Garcia PhD, MD"),
+                           ("juan garcia, PhD, MD", "Juan Garcia, PhD, MD"),
                            # an untagged suffix: 'VI' reads suffix by
                            # shape (roman numeral) and carries no
                            # vocab:* tag, so a tag-driven gate would
@@ -594,7 +701,7 @@ def test_the_gate_leaves_the_suffixes_out() -> None:
                            # the gate over each comma shape: SUFFIX_COMMA,
                            # FAMILY_COMMA, and a FAMILY_COMMA plus a
                            # trailing suffix segment
-                           ("juan garcia, III", "Juan Garcia III"),
+                           ("juan garcia, III", "Juan Garcia, III"),
                            ("garcia, juan III", "Juan Garcia III"),
                            ("GARCIA, JUAN, Jr.", "Juan Garcia Jr.")):
         assert str(parse(text).capitalized()) == repaired, text
@@ -615,8 +722,8 @@ def test_the_gate_leaves_the_suffixes_out() -> None:
     # no case at all (trivially one-case), so the name is admitted --
     # and then the suffix, written in more than one case, is kept as
     # written (2026-09-24), while one written in one case repairs
-    assert str(parse("김민준 Phd").capitalized()) == "민준 김 Phd"
-    assert str(parse("김민준 PHD").capitalized()) == "민준 김 PhD"
+    assert str(parse("김민준 Phd").capitalized()) == "김민준 Phd"
+    assert str(parse("김민준 PHD").capitalized()) == "김민준 PhD"
     # no non-suffix token at all -- a synthetic name only, since every
     # parse names somebody (rules/H4): the empty text is one-case
     only_suffixes = _pn("phd md", [
@@ -640,12 +747,12 @@ def test_a_suffix_written_in_more_than_one_case_is_kept_as_written(
     here as a boundary."""
     for text, plain, forced in (
             ("john smith EdD", "John Smith EdD", "John Smith EDD"),
-            ("JANE DOE, DSc", "Jane Doe DSc", "Jane Doe DSc"),
+            ("JANE DOE, DSc", "Jane Doe, DSc", "Jane Doe, DSc"),
             ("juan garcia PsyD", "Juan Garcia PsyD", "Juan Garcia PsyD"),
             ("john smith B.Tech.", "John Smith B.Tech.",
              "John Smith B.TECH."),
-            ("john smith, EdD, PhD", "John Smith EdD, PhD",
-             "John Smith EDD, PhD"),
+            ("john smith, EdD, PhD", "John Smith, EdD, PhD",
+             "John Smith, EDD, PhD"),
             # boundary: the garbled spelling is kept too
             ("juan garcia Iii", "Juan Garcia Iii", "Juan Garcia III"),
             ("john smith Mba", "John Smith Mba", "John Smith MBA"),
@@ -678,7 +785,7 @@ def test_the_gate_and_the_parser_read_a_cased_suffix_differently() -> None:
     for name, repaired in ((mixed, "John e Jones III"),
                            (one_case, "John E Jones III"),
                            (parse("jack MA"), "Jack MA"),
-                           (parse("MD, PhD"), "Md PhD")):
+                           (parse("MD, PhD"), "Md, PhD")):
         assert str(name.capitalized()) == repaired, name.original
 
 
@@ -761,7 +868,7 @@ def test_a_mask_recases_the_word_as_the_writer_punctuated_it() -> None:
     assert "bsc" in Lexicon.default().suffix_acronyms
     # forced: a mixed-case corpus name R5 would otherwise hold back
     assert str(parse("Dr. med. univ. Margit Popp, MSc").capitalized(
-        force=True)) == "Dr. Med. Univ. Margit Popp MSc"
+        force=True)) == "Dr. Med. Univ. Margit Popp, MSc"
     # the mask is also asked BEFORE the numeral clause, which would
     # give 'III' -- an identity mask ('iii' stays lowercase) proves
     # the mask decided rather than merely agreeing with it
@@ -827,8 +934,8 @@ def test_a_joined_acronym_is_capitals_only_as_a_listed_suffix() -> None:
     too, and a mixed-case spelling is left alone unless forced."""
     for text, whole in (("otr/l smith", "Otr/L Smith"),
                         ("john otr/l smith", "John Otr/L Smith"),
-                        ("john smith, md, xyz-q", "John Smith MD, Xyz-Q"),
-                        ("john smith, md, xyz/q", "John Smith MD, Xyz/Q")):
+                        ("john smith, md, xyz-q", "John Smith, MD, Xyz-Q"),
+                        ("john smith, md, xyz/q", "John Smith, MD, Xyz/Q")):
         assert str(parse(text).capitalized()) == whole, text
     for text, suffix in ((", otr/l", "OTR/L"),
                          ("smith, otr/l", "OTR/L"),
@@ -1104,9 +1211,10 @@ def test_a_spliced_decomposed_initial_reads_as_its_composed_twin() -> None:
 
 
 @pytest.mark.parametrize(("text", "want"), [
-    # decomposed hangul: jamo are letters, not marks, and the initial
-    # is the whole syllable they spell, as composed
-    ("김 민준", "민. 김."),
+    # decomposed hangul: jamo are letters, not marks, so the initial
+    # would be the whole syllable they spell, as composed -- and hangul
+    # writes no initials, so it gives none (rules/R3, #754)
+    ("김 민준", ""),
     # a composed Bengali vowel sign is a mark that composes with
     # nothing: it stays out of the initial in both forms (#585 does not
     # decide the Indic syllable question)
@@ -1760,9 +1868,9 @@ def test_a_caps_credential_after_a_comma_keeps_its_capitals_in_every_setting(
     # EVERYWHERE. Forced, since R5 leaves a mixed-case name alone.
     for setting in (CapsSuffixes.AFTER_COMMA, CapsSuffixes.EVERYWHERE):
         parser = Parser(policy=Policy(unlisted_caps_suffixes=setting))
-        for text, rendered in (("John Smith, XYZ", "John Smith XYZ"),
-                               ("John Smith, LEED AP", "John Smith LEED AP"),
-                               ("John Smith, PhD XYZ", "John Smith PhD XYZ")):
+        for text, rendered in (("John Smith, XYZ", "John Smith, XYZ"),
+                               ("John Smith, LEED AP", "John Smith, LEED AP"),
+                               ("John Smith, PhD XYZ", "John Smith, PhD XYZ")):
             name = parser.parse(text)
             assert str(name.capitalized(force=True)) == rendered, (setting, text)
 

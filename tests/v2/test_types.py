@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from nameparser import parse
+from nameparser import FAMILY_FIRST, GIVEN_FIRST, Policy, parse
 from nameparser._types import (
     STABLE_TAGS, Ambiguity, AmbiguityKind, ParsedName, Role, Segmentation,
     Span, Token,
@@ -593,6 +593,18 @@ _REFUSED_SKEWS = [
                                              "alternative", "alt"),
                  "unexpected fields: alt",
                  id="renamed-added-field"),
+    # ParsedName.order (3.0, #754) is admitted missing, as `alternative`
+    # is, and refused renamed or beside a shipped field missing
+    pytest.param(ParsedName, lambda: _renamed(dict(
+        _pn("Juan", [Token("Juan", Span(0, 4), Role.GIVEN)]).__getstate__()),
+        "order", "ordr"),
+                 "unexpected fields: ordr",
+                 id="renamed-added-field-on-parsedname"),
+    pytest.param(ParsedName, lambda: _without(dict(
+        _pn("Juan", [Token("Juan", Span(0, 4), Role.GIVEN)]).__getstate__()),
+        "order", "ambiguities"),
+                 "missing fields: ambiguities;",
+                 id="missing-shipped-field-beside-a-missing-order"),
     # Token.reading (3.0) beside the shipped fields it must not excuse
     pytest.param(Token, lambda: _without(_token_state(), "reading", "tags"),
                  "missing fields: tags;",
@@ -683,6 +695,97 @@ def test_a_parsedname_pickled_by_2_6_0_loads() -> None:
     assert now.ambiguities[0].alternative is not None
     assert pickle.loads(pickle.dumps(now)).ambiguities[0].alternative == (
         now.ambiguities[0].alternative)
+
+
+def test_a_parsedname_pickled_by_2_8_0_loads_and_renders_given_first(
+        ) -> None:
+    """tests/v2/data/parsedname_v28_korean.pickle is `parse("김민준")` pickled
+    (protocol 4) by the released 2.8.0 wheel, written before
+    `ParsedName.order` existed. Made 2026-10-29 with `PYTHONSAFEPATH=1
+    uv run --isolated --no-project --with 'nameparser==2.8.0'` from a
+    directory outside the checkout, the version and the module path
+    asserted. It loads with no order and renders given-first, as 2.x
+    did, while a fresh parse renders as written and the two compare
+    equal (rules/R6's Accepted bullet, decisions/R6). pickle.load is
+    safe here: a repo-controlled fixture."""
+    import pickle
+    with open(Path(__file__).parent / "data"
+              / "parsedname_v28_korean.pickle",
+              "rb") as f:
+        loaded = pickle.load(f)
+    now = parse("김민준")
+    assert loaded.order is None
+    assert now.order == FAMILY_FIRST
+    assert loaded == now
+    assert (str(loaded), str(now)) == ("민준 김", "김민준")
+    assert pickle.loads(pickle.dumps(now)).order == FAMILY_FIRST
+
+
+def test_a_2_8_0_pickle_renders_as_2_8_0_did_separators_included(
+        ) -> None:
+    """tests/v2/data/parsednames_v28_separators.pickle holds
+    `parse()` of `John Smith, Jr.`, `威廉·莎士比亚` and `山田　太郎`
+    pickled (protocol 4) by the released 2.8.0 wheel, whose str() gave
+    the three renderings asserted below; made 2026-10-29 as the v28
+    fixture above was. The decision promises a 2.x pickle renders as
+    today (decisions/vocabulary-model's #754 output-model entry, item
+    6), so a name with no order keeps 2.x's spacing too, not only its
+    given-first layout. pickle.load is safe here: a repo-controlled
+    fixture."""
+    import pickle
+    with open(Path(__file__).parent / "data"
+              / "parsednames_v28_separators.pickle", "rb") as f:
+        loaded = pickle.load(f)
+    assert [n.order for n in loaded] == [None, None, None]
+    assert [str(n) for n in loaded] == [
+        "John Smith Jr.", "威廉 莎士比亚", "太郎 山田"]
+    assert [str(parse(n.original)) for n in loaded] == [
+        "John Smith, Jr.", "威廉·莎士比亚", "山田 太郎"]
+
+
+def test_parsedname_order_is_not_compared_and_stores_a_tuple() -> None:
+    tok = Token("Juan", Span(0, 4), Role.GIVEN)
+    assert ParsedName("Juan", (tok,), order=FAMILY_FIRST) == ParsedName(
+        "Juan", (tok,))
+    listed = ParsedName("Juan", (tok,),
+                        order=list(FAMILY_FIRST))  # type: ignore[arg-type]
+    assert listed.order == FAMILY_FIRST and isinstance(listed.order, tuple)
+
+
+def _policy_order(value: object) -> object:
+    return Policy(name_order=value)  # type: ignore[arg-type]
+
+
+def _parsedname_order(value: object) -> object:
+    return ParsedName("x", (), order=value)  # type: ignore[arg-type]
+
+
+# the family: every field holding a name order refuses the same values
+# with the same exception (AGENTS.md, "Guard, hint, and emit for the
+# WHOLE family")
+@pytest.mark.parametrize("build", [_policy_order, _parsedname_order],
+                         ids=["Policy.name_order", "ParsedName.order"])
+@pytest.mark.parametrize("bad, exc, match", [
+    (("given", "middle", "family"), TypeError, "must be Role members"),
+    ("gmf", TypeError, "not a bare string"),
+    ({Role.GIVEN: 0}, TypeError, "not a mapping"),
+    (frozenset(FAMILY_FIRST), TypeError, "ordered iterable"),
+    (set(GIVEN_FIRST), TypeError, "ordered iterable"),
+    (5, TypeError, "must be an iterable"),
+    ((Role.GIVEN, Role.FAMILY, Role.MIDDLE), ValueError, "exported orders"),
+])
+def test_every_name_order_field_refuses_the_same_values(
+        build: Callable[[object], object], bad: object, exc: type,
+        match: str) -> None:
+    with pytest.raises(exc, match=match):
+        build(bad)
+
+
+def test_replace_and_capitalized_keep_the_order() -> None:
+    name = parse("김민준")
+    assert name.replace(given="서연").order == FAMILY_FIRST
+    assert name.capitalized().order == FAMILY_FIRST
+    assert parse("Smith, John").order == GIVEN_FIRST
 
 
 def test_tokens_for_accepts_role_string() -> None:

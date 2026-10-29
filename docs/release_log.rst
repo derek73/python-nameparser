@@ -12,6 +12,11 @@ Release Log
 
     - **Remove HumanName, Constants and the rest of the 1.x compatibility layer.** ``from nameparser import HumanName`` raises ``ImportError``, where 1.4.0 through 2.8.0 imported it (2.8.0 warning where it was constructed); ``parse("Dr. Juan de la Vega")`` reads the same name, with given ``Juan`` and family ``de la Vega``. ``nameparser.parser``, ``nameparser.util``, ``nameparser.config``'s ``Constants``, ``CONSTANTS`` and managers, and the five word-list names and two module paths 2.2 renamed go too, and a pickled ``HumanName`` or ``Constants`` no longer loads; the word lists in ``nameparser.config`` stay. See :doc:`migrate`. :issue:`357`
 
+    **Behavior Changes**
+
+    - **Render a name in the order it was read in, keeping its written separators.** ``str(parse("김민준"))`` gives ``'김민준'``, where 2.1.0 through 2.8.0 gave ``'민준 김'``; a name read family-first renders family-first, and a comma before a suffix stays (``John Smith, Jr.``, ``Smith, Jr.``), while a family comma between name words never does (``Smith, John`` gives ``'John Smith'``). A spec you pass to ``render()`` renders as written, so 2.x's default spec keeps given-first output, and a name pickled by 2.x renders as it did. ``initials()`` gives nothing for a word in Han, Hangul or kana. The new ``ParsedName.order`` records the order; ``render()``'s spec now defaults to ``None``. See :doc:`migrate`. :issue:`754`
+    - **Fix Policy(name_order=...) accepting a set.** ``Policy(name_order=frozenset(FAMILY_FIRST))`` raises ``TypeError``, where 2.0.0 through 2.8.0 accepted it as an order under some hash seeds and raised ``ValueError`` under others; pass the tuple. :issue:`754`
+
 * 2.8.0 - October 28, 2026
 
     **nameparser 2.8** is the last 2.x feature release. It warns about everything 3.0 removes, chiefly ``HumanName`` and the rest of the 1.x compatibility layer, so that code can move to ``parse()`` while 2.x still runs it. It also carries on 2.7's reading of titles that are also given names: a title only inside a title phrase. After 2.8 the 2.x line takes fixes only, and new work goes into 3.0. Highlights:
