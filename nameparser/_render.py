@@ -846,8 +846,9 @@ def _split_pairs(tokens: tuple[Token, ...], repaired: tuple[Token, ...],
         # cut the pair back into its two words
         if cased is not None and len(cased) == len(joined):
             cut = len(a.text)
-            out[i] = Token(cased[:cut], a.span, a.role, a.tags)
-            out[i + 1] = Token(cased[cut:], b.span, b.role, b.tags)
+            out[i] = Token(cased[:cut], a.span, a.role, a.tags, a.reading)
+            out[i + 1] = Token(cased[cut:], b.span, b.role, b.tags,
+                               b.reading)
         i += 2
     return tuple(out)
 
@@ -941,7 +942,7 @@ def capitalized(name: ParsedName, lexicon: Lexicon | None, *,
         t if (not force and t.role is Role.SUFFIX
               and not _in_one_case(t.text))
         else Token(_cap_text(t.text, t.role, t.tags, lex),
-                   t.span, t.role, t.tags)
+                   t.span, t.role, t.tags, t.reading)
         for t in name.tokens)
     # rules/R4: "Repair changes case and nothing else" -- and a
     # credential split across a space (rules/S12) is repaired as its

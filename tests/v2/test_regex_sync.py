@@ -129,6 +129,9 @@ _SOURCES: dict[tuple[str, str], str | None] = {
     # is_leading_title's H2 shape test), so it is visible under both
     # module names and the completeness scan below sees it twice.
     ("_vocab", "_PERIOD_ABBREV"): "period_abbreviation",
+    # the same object again: assemble imports it to name a title read
+    # by rules/H2's shape (`Token.reading`, 3.0)
+    ("_assemble", "_PERIOD_ABBREV"): "period_abbreviation",
     # `split_pair`'s two halves, the Ph./D. split credential (#752;
     # declared under _group until then, which had stopped holding them);
     # no config key to mirror

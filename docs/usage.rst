@@ -1161,6 +1161,45 @@ The alternative is not compared: two names that differ only in it are
 equal, as before 2.7, and a ``ParsedName`` pickled by an earlier
 release loads with no alternative on its reports.
 
+.. _reading-taken:
+
+The reading each word took
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Since 3.0 every token also says how the parse read it, whether or not
+a fork was reported. ``Token.reading`` is a :class:`~nameparser.Reading`
+of the same three parts, its role the token's own field:
+
+.. doctest::
+
+    >>> for tok in parse("Dr. Juan de la Vega III").tokens:
+    ...     print(f"{tok.text}: {tok.reading.kind.value} ({tok.reading.source.value})")
+    Dr.: title (vocabulary)
+    Juan: name (position)
+    de: particle (vocabulary)
+    la: particle (vocabulary)
+    Vega: name (position)
+    III: generation (vocabulary)
+
+Where a fork was reported, the token's reading and the report's
+alternative are the two readings the parse weighed. ``Jones`` behind a
+credential was taken into the suffix by position, where it would
+otherwise have been the family name:
+
+.. doctest::
+
+    >>> jones_run = parse("John Smith PhD Jones")
+    >>> jones_run.tokens[-1].reading
+    Reading('credential' as 'suffix', 'position')
+    >>> jones_run.ambiguities[0].alternative
+    Reading('name' as 'family', 'position')
+
+A token the parse did not read has no reading: one that
+:meth:`~nameparser.ParsedName.replace` or
+:meth:`~nameparser.Parser.revise` builds, and one loaded from a pickle
+written before 3.0. Like the alternative, the reading is not compared,
+so it never makes two names unequal.
+
 Tokens and spans
 ------------------
 

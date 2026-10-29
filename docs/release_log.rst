@@ -4,6 +4,10 @@ Release Log
 
     nameparser 3.0 is under development. It removes ``HumanName`` and the rest of the 1.x compatibility layer, which 2.8 deprecates, and changes the output model. 2.8 is the last 2.x feature release.
 
+    **Additions**
+
+    - **Add Token.reading, the reading the parse took for each word.** ``parse("John Smith PhD Jones").tokens[-1].reading`` is ``Reading('credential' as 'suffix', 'position')``, the reading 2.7's ``Ambiguity.alternative`` gave only for the other side of a fork, and ``ReadingKind`` gains ``patronymic``. The field is not compared, and a ``ParsedName`` pickled by 2.x loads with no readings. :issue:`754`
+
     **Breaking Changes**
 
     - **Remove HumanName, Constants and the rest of the 1.x compatibility layer.** ``from nameparser import HumanName`` raises ``ImportError``, where 1.4.0 through 2.8.0 imported it (2.8.0 warning where it was constructed); ``parse("Dr. Juan de la Vega")`` reads the same name, with given ``Juan`` and family ``de la Vega``. ``nameparser.parser``, ``nameparser.util``, ``nameparser.config``'s ``Constants``, ``CONSTANTS`` and managers, and the five word-list names and two module paths 2.2 renamed go too, and a pickled ``HumanName`` or ``Constants`` no longer loads; the word lists in ``nameparser.config`` stay. See :doc:`migrate`. :issue:`357`

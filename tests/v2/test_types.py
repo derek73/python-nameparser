@@ -536,6 +536,13 @@ def _ambiguity_state() -> dict[str, object]:
     return dict(Ambiguity(AmbiguityKind.SUFFIX_OR_NAME, "d", (tok,)).__getstate__())
 
 
+def _token_state() -> dict[str, object]:
+    from nameparser import Reading
+    return dict(Token("Vega", Span(18, 22), Role.FAMILY, frozenset(),
+                      Reading("name", "family", "position")  # type: ignore[arg-type]
+                      ).__getstate__())
+
+
 def _without(state: dict[str, object], *names: str) -> dict[str, object]:
     return {k: v for k, v in state.items() if k not in names}
 
@@ -598,6 +605,14 @@ _REFUSED_SKEWS = [
         "order", "ambiguities"),
                  "missing fields: ambiguities;",
                  id="missing-shipped-field-beside-a-missing-order"),
+    # Token.reading (3.0) beside the shipped fields it must not excuse
+    pytest.param(Token, lambda: _without(_token_state(), "reading", "tags"),
+                 "missing fields: tags;",
+                 id="missing-shipped-field-beside-a-missing-reading"),
+    pytest.param(Token, lambda: _renamed(_token_state(), "reading",
+                                         "readings"),
+                 "unexpected fields: readings",
+                 id="renamed-reading"),
 ]
 
 
@@ -615,6 +630,47 @@ def test_setstate_admits_a_field_added_later_missing_from_an_older_pickle(
     loaded.__setstate__(state)
     assert loaded.alternative is None
     assert loaded == Ambiguity(**state)  # type: ignore[arg-type]
+
+
+def test_a_token_pickled_before_3_0_loads_without_a_reading() -> None:
+    state = _without(_token_state(), "reading")
+    loaded = Token.__new__(Token)
+    loaded.__setstate__(state)
+    assert loaded.reading is None
+    assert loaded == Token(**_token_state())  # type: ignore[arg-type]
+
+
+def test_token_reading_is_a_reading_and_is_not_compared() -> None:
+    from nameparser import Reading
+    read = Reading("name", "family", "position")  # type: ignore[arg-type]
+    tok = Token("Vega", Span(18, 22), Role.FAMILY, reading=read)
+    bare = Token("Vega", Span(18, 22), Role.FAMILY)
+    assert bare.reading is None
+    assert tok == bare and hash(tok) == hash(bare)
+    assert repr(tok) == repr(bare)
+    with pytest.raises(TypeError, match="Token.reading must be a Reading"):
+        Token("Vega", Span(18, 22), Role.FAMILY,
+              reading=("name", "family"))  # type: ignore[arg-type]
+
+
+def test_a_parsedname_pickled_by_2_8_0_loads() -> None:
+    """tests/v2/data/parsedname_v28.pickle is `parse("Dr. Juan Q. de la
+    Vega III")` pickled (protocol 4) by the released 2.8.0 wheel, the
+    last 2.x release, its tokens written before `Token.reading`
+    existed. Made 2026-10-29 the way the 2.6.0 fixture below was
+    (`PYTHONSAFEPATH=1 uv run --isolated --no-project --with
+    'nameparser==2.8.0'` outside the checkout, version and module path
+    asserted). pickle.load is safe here: a repo-controlled fixture."""
+    import pickle
+    with open(Path(__file__).parent / "data" / "parsedname_v28.pickle",
+              "rb") as f:
+        loaded = pickle.load(f)
+    now = parse("Dr. Juan Q. de la Vega III")
+    assert loaded == now
+    assert all(t.reading is None for t in loaded.tokens)
+    assert all(t.reading is not None for t in now.tokens)
+    again = pickle.loads(pickle.dumps(now))
+    assert [t.reading for t in again.tokens] == [t.reading for t in now.tokens]
 
 
 def test_a_parsedname_pickled_by_2_6_0_loads() -> None:
@@ -643,7 +699,7 @@ def test_a_parsedname_pickled_by_2_6_0_loads() -> None:
 
 def test_a_parsedname_pickled_by_2_8_0_loads_and_renders_given_first(
         ) -> None:
-    """tests/v2/data/parsedname_v28.pickle is `parse("김민준")` pickled
+    """tests/v2/data/parsedname_v28_korean.pickle is `parse("김민준")` pickled
     (protocol 4) by the released 2.8.0 wheel, written before
     `ParsedName.order` existed. Made 2026-10-29 with `PYTHONSAFEPATH=1
     uv run --isolated --no-project --with 'nameparser==2.8.0'` from a
@@ -653,7 +709,8 @@ def test_a_parsedname_pickled_by_2_8_0_loads_and_renders_given_first(
     equal (rules/R6's Accepted bullet, decisions/R6). pickle.load is
     safe here: a repo-controlled fixture."""
     import pickle
-    with open(Path(__file__).parent / "data" / "parsedname_v28.pickle",
+    with open(Path(__file__).parent / "data"
+              / "parsedname_v28_korean.pickle",
               "rb") as f:
         loaded = pickle.load(f)
     now = parse("김민준")
