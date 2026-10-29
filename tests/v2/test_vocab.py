@@ -917,6 +917,21 @@ def test_a_broken_lexicon_module_exits_3(monkeypatch: pytest.MonkeyPatch) -> Non
     assert build.main(["--check"]) == 3
 
 
+@pytest.mark.parametrize(("raised", "code"), [
+    (ValueError("unpacking a bug"), 3),   # a bug in the compiler is internal
+    (KeyError("a bug"), 3),
+    (None, 2),                            # the backstop: the data's fault
+])
+def test_only_the_compilers_backstop_is_a_vocabulary_error(
+        monkeypatch: pytest.MonkeyPatch, raised: Exception | None, code: int) -> None:
+    # compile_pool turns the compiler's CompileError into a VocabError;
+    # catching ValueError instead made any bug a ValueError raises exit 2
+    def broken(readings: object) -> None:
+        raise raised if raised is not None else build._ri.CompileError("['esq']: both")
+    monkeypatch.setattr(build._ri, "compile_readings", broken)
+    assert build.main(["--check"]) == code
+
+
 def test_a_query_error_exits_3_not_1(monkeypatch: pytest.MonkeyPatch) -> None:
     query = _load_query()
     def broken(*args: object, **kwargs: object) -> list[object]:

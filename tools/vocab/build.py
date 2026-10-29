@@ -1,5 +1,5 @@
 """Compile nameparser/vocab/*.toml into nameparser/config/_compiled.py,
-by way of the reading index, nameparser/config/_index.py.
+and write the reading index, nameparser/config/_index.py, beside it.
 
 Usage::
 
@@ -17,9 +17,10 @@ tag (`und` for words not yet assigned one, `mul` for words shared on
 purpose). Each word lists its READINGS -- what it can be read as, keyed by
 kind -- and the compiler folds them into the sets the parser reads
 (decisions/vocabulary-model). The parser never parses TOML: the build
-checks the files, writes every reading with its file's tag to the
-reading index, and compiles the index into a module of frozenset
-literals, both committed beside the data; tests/v2/test_vocab.py and
+checks the files, turns every reading into an index row with its
+file's tag, and writes the rows twice from memory, as the reading index
+and, compiled, as a module of frozenset literals, both committed beside
+the data (it never reads the index back); tests/v2/test_vocab.py and
 tests/v2/test_reading_index.py fail when either disagrees with the
 files. The compiler, and the kinds and properties it reads (CATEGORY,
 BEHAVIORAL, GATED_WORDS), live in nameparser/_reading_index.py, which
@@ -1191,7 +1192,9 @@ def compile_pool(pool: Pool) -> Compiled:
     check_pool(pool)
     try:
         compiled: Compiled = _ri.compile_readings(index_rows(pool))
-    except ValueError as e:
+    except _ri.CompileError as e:
+        # only the data's own failure: a bug in the compiler stays an
+        # exception main reports as internal, exit 3
         raise VocabError(str(e)) from None
     return compiled
 

@@ -10,11 +10,13 @@ implementations.
 """
 from __future__ import annotations
 
+import ast
 import importlib.util
 import sys
 import unicodedata
 from pathlib import Path
 from types import ModuleType
+from typing import Any
 
 from nameparser import _reading_index as ri
 from nameparser.config import _compiled, _index
@@ -34,6 +36,17 @@ def _load_build() -> ModuleType:
 build = _load_build()
 
 
+def test_the_module_imports_nothing_internal_at_module_level() -> None:
+    # tools/vocab/build.py loads this file by path at its own import; a
+    # module-level import of the package would run nameparser/__init__,
+    # and so _compiled.py, which a broken rebuild may have left unusable
+    tree = ast.parse(Path(ri.__file__).read_text(encoding="utf-8"))
+    top = [n for n in tree.body if isinstance(n, (ast.Import, ast.ImportFrom))]
+    names = [a.name for n in top if isinstance(n, ast.Import) for a in n.names]
+    names += [n.module or "" for n in top if isinstance(n, ast.ImportFrom)]
+    assert names and not [m for m in names if m.startswith("nameparser")]
+
+
 def test_the_index_compiled_with_no_choice_is_the_committed_module() -> None:
     # the no-choice invariant: what the parser reads is the index
     # compiled, byte for byte as the build writes it
@@ -41,6 +54,59 @@ def test_the_index_compiled_with_no_choice_is_the_committed_module() -> None:
     assert build.render(compiled) == build.OUTPUT.read_text(encoding="utf-8")
     for name, _ in build.CONSTANTS:
         assert compiled[name] == getattr(_compiled, name), name  # type: ignore[literal-required]
+
+
+#: A value other than the unwritten one for every behavioral property,
+#: so a probe reading carrying it compiles differently from one without.
+_SET = {"addresses": "given", "after_given": True, "attaches": ["office"],
+        "cased": "ZzQ", "acronym": None, "attached": {"side": "after"},
+        "may_be_initial": True}
+
+
+def _probe_readings() -> list[Any]:
+    """A build Reading of every kind, carrying every behavioral
+    property its category takes, set away from its unwritten value
+    (`acronym` flipped), each word apart; plus a given name written
+    short, and a name reading written default = false beside a
+    credential, the two properties a name reading compiles from."""
+    out = []
+    for i, (kind, category) in enumerate(ri.CATEGORY.items()):
+        text = "q" if kind == "conjunction" else f"zz{i}"
+        props: dict[str, object] = {}
+        for prop in ri.BEHAVIORAL[category] - {"default"}:
+            value = _SET[prop]
+            if prop == "acronym":
+                value = kind != "credential"
+            elif prop == "cased":
+                value = text.upper()
+            props[prop] = value
+        out.append(build.Reading("en.toml", text, kind, props))
+    out.append(build.Reading("en.toml", "chas", "given", {"same_as": "charles"}))
+    out.append(build.Reading("en.toml", "zzoff", "credential", {}))
+    out.append(build.Reading("de.toml", "zzoff", "family", {"default": False}))
+    out.append(build.Reading("de.toml", "zzgen", "generation", {"default": False}))
+    return out
+
+
+def test_every_property_the_compiler_reads_survives_the_index() -> None:
+    # an anchor outside the index's own path: compiling the build's
+    # readings as their files wrote them, and compiling them as the
+    # index keeps them (indexed, then written and read back as a row),
+    # give the same sets. A property indexed() drops that the compiler
+    # reads is lost only on the second side; the no-choice test above
+    # cannot see one, both its sides going through the index
+    probes = _probe_readings()
+    for readings in (probes, build.load(build.read_dir()).readings):
+        written = ri.compile_readings(readings)
+        pool_of = build.Pool(readings=list(readings))
+        kept = [ri.from_row(r.text, ri.to_row(r)) for r in build.index_rows(pool_of)]
+        assert ri.compile_readings(kept) == written
+    # the probes reach the compiler: every word carrying a property
+    # lands in a compiled constant
+    probed: dict[str, Any] = dict(ri.compile_readings(probes))
+    for r in probes:
+        if r.props and r.on_by_default:
+            assert any(r.text in v for v in probed.values()), r
 
 
 def test_the_committed_index_is_what_the_toml_writes() -> None:

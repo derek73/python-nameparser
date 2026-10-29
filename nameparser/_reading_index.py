@@ -234,6 +234,12 @@ def readings_of(text: str) -> tuple[IndexReading, ...]:
     return tuple(from_row(text, row) for row in _by_text().get(text, ()))
 
 
+class CompileError(ValueError):
+    """The readings cannot compile: a fact about the data, which the
+    build reports as a vocabulary error (exit 2) where any other
+    exception from the compiler is an internal one (exit 3)."""
+
+
 class Compiled(TypedDict):
     """What :func:`compile_readings` returns: one key per constant, in
     the order nameparser/config/_compiled.py defines them, typed as it
@@ -267,8 +273,9 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
     checks run before it calls this); each needs ``text``, ``kind``
     and ``props``.
 
-    Raises ValueError on a post-nominal that is both an acronym and a
-    word, a backstop the build's checks 4 and 5 always reach first."""
+    Raises :class:`CompileError` on a post-nominal that is both an
+    acronym and a word, a backstop the build's checks 4 and 5 always
+    reach first. Any other exception is a bug in this function."""
     texts = [(r, r.text) for r in readings if r.on_by_default]
     # the derived markers (the build's check 11): a clash with a name is
     # a word's name reading beside the reading it clashes with, and a
@@ -396,6 +403,6 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
     # reaches today.
     both = out["SUFFIX_ACRONYMS"] & out["SUFFIX_WORDS"]
     if both:
-        raise ValueError(f"{sorted(both)}: a post-nominal is an acronym or a "
+        raise CompileError(f"{sorted(both)}: a post-nominal is an acronym or a "
                          f"word, never both (check `acronym` in every file)")
     return out

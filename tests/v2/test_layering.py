@@ -59,9 +59,12 @@ ALLOWED = {
     "_lexicon.py": ("nameparser.config.",),
     "_policy.py": ("nameparser._types",),
     # the shared compiler and the reading index's reader (#753, 3a): the
-    # index, a config DATA module, at call time only, and nothing
-    # internal at module level, since tools/vocab/build.py loads this
-    # file by path as it loads _lexicon.py
+    # index, a config DATA module, and nothing else. That the import is
+    # at call time only, nothing internal at module level, since
+    # tools/vocab/build.py loads this file by path as it loads
+    # _lexicon.py, is held by test_reading_index.py's
+    # test_the_module_imports_nothing_internal_at_module_level, which
+    # this prefix match cannot see
     "_reading_index.py": ("nameparser.config.",),
     # _types is a downward import (bottom of the graph): Locale shares
     # the _guarded_getstate/_guarded_setstate pickle functions
