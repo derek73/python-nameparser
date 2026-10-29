@@ -139,8 +139,9 @@ def assemble(state: ParseState) -> ParsedName:
         # `_normalize` beside it). `_vocab`'s two predicates
         # also name the sources of the reading NOT taken
         # (Ambiguity.alternative).
-        # Reading.languages joins here once phase 3's reading index
-        # (3a) can answer which files hold the reading.
+        # Reading.languages joins here, in 4a's follow-up: phase 3's
+        # reading index (`_reading_index.readings_of`, 3a) answers
+        # which files hold a reading.
         if role is Role.SUFFIX:
             kind, source = suffix_kind(t.text, tags)
             if (source is ReadingSource.VOCABULARY
