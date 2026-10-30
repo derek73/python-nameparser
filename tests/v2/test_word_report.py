@@ -182,12 +182,23 @@ def test_a_base_check_reports_a_planted_change_and_none_across_a_copy(
     assert "->" not in "\n".join(out).split("\ncorpora (")[1].split("usage")[0]
 
 
-def test_a_child_refuses_a_package_from_outside_its_tree(tmp_path: Path) -> None:
-    # tmp_path holds no nameparser, so the child's import falls through
-    # to the installed package, which check_source refuses.
+def test_a_child_refuses_a_package_from_outside_its_tree(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    # The tree holds no nameparser, so the child's import falls through to
+    # a decoy planted on its PYTHONPATH, which check_source refuses. The
+    # decoy is planted rather than left to whatever is installed: a source
+    # tree tested with no nameparser installed fails the import before
+    # check_source is reached (#949).
+    tree, decoy = tmp_path / "tree", tmp_path / "decoy"
+    tree.mkdir()
+    (decoy / "nameparser").mkdir(parents=True)
+    (decoy / "nameparser" / "__init__.py").write_text("")
+    env = report.snapshot.child_env()
+    monkeypatch.setattr(report.snapshot, "child_env", lambda: {**env, "PYTHONPATH": str(decoy)})
     with pytest.raises(SystemExit, match="(?s)reading with .* failed.*not from the source package"):
-        report.read_trees([tmp_path], [("Sir Lau", None)], 1)
-    # The control: this checkout is the package its child imports.
+        report.read_trees([tree], [("Sir Lau", None)], 1)
+    # The control, with the decoy still on the path: this checkout is the
+    # package its child imports.
     [rows] = report.read_trees([_ROOT], [("Sir Lau", None)], 1)
     assert rows[0]["fields"]["title"] == "Sir"
 
