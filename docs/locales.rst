@@ -329,9 +329,11 @@ order already reads ``"Сидоров Иван Петрович"`` as family ``�
 so folding the pack onto a base built with it adds nothing. Under
 ``FAMILY_FIRST_GIVEN_LAST`` the declared order wins, and the last
 word — the patronymic, or a separate ``oglu``/``qizi`` marker — reads
-as the given name. ``patronymic`` does not stand down: it reads a middle
-word with the ending, or a marker and the word before it, under every
-order, wherever the declared order put them.
+as the given name. ``patronymic`` does not stand down, but it reads only
+a middle name with the ending, so it follows the order: under
+``FAMILY_FIRST`` ``Ivan Ivanovich Ivanov`` reads given ``Ivanovich``
+and no patronymic. A marker and the word before it are read under
+every order.
 
 .. _segmenter-contract:
 

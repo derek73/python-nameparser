@@ -89,10 +89,11 @@ def test_the_family_and_the_suffix_partition_into_their_views(
     rules/R8's views partition the suffix the same way, its words
     exactly the generation's plus the credentials', and join this
     walk rather than parsing the grid again; so does rules/R9's
-    patronymic, which names words the name fields keep.
+    patronymic, which names words the name fields and the maiden name
+    keep.
     """
     pn = _swept(case.id, order)
-    named = Counter(f"{pn.given} {pn.middle} {pn.family}".split())
+    named = Counter(f"{pn.given} {pn.middle} {pn.family} {pn.maiden}".split())
     assert not Counter(pn.patronymic.split()) - named, (
         f"{case.text!r}: patronymic={pn.patronymic!r} names a word no "
         f"name field holds")

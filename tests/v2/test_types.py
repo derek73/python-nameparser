@@ -1089,11 +1089,54 @@ def test_the_patronymic_view_reads_a_particle_or_a_rule(
     assert pn.family == field
 
 
+_MAF = Policy(middle_as_family=True)
+
+
+@pytest.mark.parametrize("policy,text,patronymic", [
+    # P6's attachment is told by its shape, not by the field the
+    # middle fold reads its folded mark as, so middle_as_family keeps it
+    (Policy(), "Mohamad, Mahathir bin", "bin Mohamad"),
+    (_MAF, "Mohamad, Mahathir bin", "bin Mohamad"),
+    (Policy(), "Levi, Omer Bar", "Bar Levi"),
+    (_MAF, "Levi, Omer Bar", "Bar Levi"),
+    (Policy(name_order=FAMILY_FIRST, middle_as_family=True),
+     "Mohamad Mahathir bin", "bin Mohamad"),
+    # a folded middle with a word behind it is a run, not an attachment
+    (Policy(name_order=FAMILY_FIRST, middle_as_family=True),
+     "Mohamad Mahathir bin Ali", "bin Ali"),
+    # a particle ending the family before a comma has no word after it
+    # in its field: the given name behind the comma is not its parent's
+    (Policy(), "Ali bin, Ali", ""),
+    (Policy(), "Ahmad bin, Ali", ""),
+    # P6 attaching two particles: the family's own words, not the
+    # other folded particle, are the parent's name
+    (Policy(name_order=FAMILY_FIRST), "Ahmad Ahmad de bin", "bin Ahmad"),
+    # a suffix ends the run, so a family word behind it is not in it
+    (Policy(), "bin Ahmad Jr. Hasan, Ali", "bin Ahmad"),
+])
+def test_the_patronymic_run_and_the_attachment_under_each_policy(
+        policy: Policy, text: str, patronymic: str) -> None:
+    assert Parser(policy=policy).parse(text).patronymic == patronymic
+
+
+def test_a_turkic_marker_a_caller_lists_as_a_connective_names_no_father(
+        ) -> None:
+    # the marker keeps the connective reading the caller's Lexicon gives
+    # it, so neither it nor the word before it is a patronymic
+    parser = Parser(lexicon=Lexicon.default().add(conjunctions={"oglu"}),
+                    policy=Policy(patronymic_rules={"turkic"}))  # type: ignore[arg-type]
+    pn = parser.parse("Ali Ahmad Vali oglu Hasan")
+    assert pn.patronymic == ""
+    assert [t.reading.kind.value for t in pn.tokens if t.reading] == [
+        "name", "name", "name", "conjunction", "name"]
+
+
 def test_a_patronymic_word_with_no_reading_is_not_in_the_view() -> None:
-    # replace() records no reading (4a), so nothing says what the word
-    # was; a field it did not touch keeps its readings
+    # replace() and revise() record no reading (4a), so nothing says
+    # what the word was; a field they did not touch keeps its readings
     pn = parse("Mahathir bin Mohamad")
     assert pn.replace(family="bin Mohamad").patronymic == ""
+    assert Parser().revise(pn, family="bin Ali").patronymic == ""
     assert pn.replace(given="Anwar").patronymic == "bin Mohamad"
 
 

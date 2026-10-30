@@ -113,7 +113,9 @@
 {"name": "Ahmad al-ʿAbbas", "given": "Ahmad", "family": "al-ʿAbbas", "initials": "A. a."}
 {"name": "Ahmad ben Husain", "given": "Ahmad", "middle": "ben", "family": "Husain", "initials": "A. b. H.", "capitalized_force": "Ahmad Ben Husain"}
 {"name": "Ahmad bin Abdul Rahman", "given": "Ahmad", "family": "bin Abdul Rahman", "initials": "A. A. R.", "patronymic": "bin Abdul Rahman"}
+{"name": "Ahmad bin Dr. Ali", "given": "Ahmad", "family": "bin Dr. Ali", "initials": "A. D. A.", "patronymic": "bin Dr. Ali"}
 {"name": "Ahmad bin “Bob” Ali", "given": "Ahmad", "family": "bin Ali", "nickname": "Bob", "initials": "A. A.", "patronymic": "bin Ali"}
+{"name": "Ahmad ibn-Ali", "given": "Ahmad", "family": "ibn-Ali", "initials": "A. i."}
 {"name": "Aina Kalniņa", "given": "Aina", "family": "Kalniņa", "initials": "A. K."}
 {"name": "Aishwarya Rai", "given": "Aishwarya", "family": "Rai", "initials": "A. R."}
 {"name": "Aishwarya Rai Bachchan", "given": "Aishwarya", "middle": "Rai", "family": "Bachchan", "initials": "A. R. B."}
@@ -154,6 +156,8 @@
 {"name": "Ali Juma Hamisi", "given": "Ali", "middle": "Juma", "family": "Hamisi", "initials": "A. J. H."}
 {"name": "Ali Kara Oğlu", "given": "Ali", "middle": "Kara", "family": "Oğlu", "initials": "A. K. O."}
 {"name": "Ali bin Ahmad bin Hasan", "given": "Ali", "middle": "bin Ahmad", "family": "bin Hasan", "initials": "A. A. H.", "patronymic": "bin Ahmad bin Hasan"}
+{"name": "Ali née oglu", "family": "Ali", "maiden": "oglu", "initials": "A.", "capitalized_force": "Ali (Oglu)"}
+{"name": "Ali oglu", "given": "Ali", "family": "oglu", "initials": "A. o.", "capitalized_force": "Ali Oglu"}
 {"name": "Ali, Amina", "given": "Amina", "family": "Ali", "initials": "A. A."}
 {"name": "Alice Rühle-Gerstel", "given": "Alice", "family": "Rühle-Gerstel", "initials": "A. R."}
 {"name": "Alina", "given": "Alina", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "A."}
@@ -2295,6 +2299,8 @@
 {"name": "Leopoldo de'Medici", "given": "Leopoldo", "family": "de'Medici", "initials": "L. d."}
 {"name": "Lerch, Magda von", "given": "Magda", "family": "von Lerch", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "M. L."}
 {"name": "Leschetizky, Walter", "given": "Walter", "family": "Leschetizky", "initials": "W. L."}
+{"name": "Levi, Omer Bar", "given": "Omer", "family": "Bar Levi", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "O. L.", "capitalized_force": "Omer bar Levi", "patronymic": "Bar Levi"}
+{"name": "Leyla née Aliyeva qizi", "family": "Leyla", "maiden": "Aliyeva qizi", "initials": "L.", "capitalized_force": "Leyla (Aliyeva Qizi)"}
 {"name": "Lezo, Blas de", "given": "Blas", "family": "de Lezo", "initials": "B. L."}
 {"name": "Liang, Shuming", "given": "Shuming", "family": "Liang", "initials": "S. L."}
 {"name": "Lianora Sanna", "given": "Lianora", "family": "Sanna", "initials": "L. S."}
@@ -2564,6 +2570,7 @@
 {"name": "Medici, Leopoldo de'", "given": "Leopoldo", "family": "de' Medici", "initials": "L. M."}
 {"name": "Medici, Lorenzo di Pierfranceso de'", "given": "Lorenzo", "middle": "di Pierfranceso", "family": "de' Medici", "initials": "L. P. M."}
 {"name": "Medici, Maddalena de'", "given": "Maddalena", "family": "de' Medici", "initials": "M. M."}
+{"name": "Mehmet Oğlu", "given": "Mehmet", "family": "Oğlu", "initials": "M. O."}
 {"name": "Meister E. S.", "given": "Meister", "middle": "E.", "family": "S.", "initials": "M. E. S."}
 {"name": "Menada Fonda", "given": "Menada", "family": "Fonda", "initials": "M. F."}
 {"name": "Mendes de Almeida, Luciano", "given": "Luciano", "family": "Mendes de Almeida", "initials": "L. M. A."}
@@ -3222,6 +3229,7 @@
 {"name": "Sister Mary", "title": "Sister", "given": "Mary", "initials": "M."}
 {"name": "Sister Souljah", "title": "Sister", "given": "Souljah", "initials": "S."}
 {"name": "Sita Kumari K.C", "given": "Sita", "middle": "Kumari", "family": "K.C", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "S. K. K."}
+{"name": "Siti Hasan née binti Ali", "given": "Siti", "family": "Hasan", "maiden": "binti Ali", "initials": "S. H.", "capitalized_force": "Siti Hasan (Binti Ali)", "patronymic": "binti Ali"}
 {"name": "Siti binti Abu Bakar", "given": "Siti", "family": "binti Abu Bakar", "initials": "S. B.", "capitalized_force": "Siti binti abu Bakar", "patronymic": "binti Abu Bakar"}
 {"name": "Siv Friðleifsdóttir", "given": "Siv", "family": "Friðleifsdóttir", "initials": "S. F."}
 {"name": "Skapti Ólafsson", "given": "Skapti", "family": "Ólafsson", "initials": "S. Ó."}
@@ -5294,6 +5302,7 @@
 {"name": "مولر، کاتیا", "order": "FAMILY_FIRST", "given": "کاتیا", "family": "مولر", "initials": "ک. م."}
 {"name": "ميري سيو ھامش واٽسن", "given": "ميري", "middle": "سيو ھامش", "family": "واٽسن", "initials": "م. س. ھ. و."}
 {"name": "مُحمَّد علي محجوب", "given": "مُحمَّد", "middle": "علي", "family": "محجوب", "initials": "م. ع. م."}
+{"name": "مُحَمَّد بِن سَلمان", "given": "مُحَمَّد", "middle": "بِن", "family": "سَلمان", "initials": "م. ب. س."}
 {"name": "مُوفَّق دعبول", "given": "مُوفَّق", "family": "دعبول", "initials": "م. د."}
 {"name": "مۇرات كارىباي", "given": "مۇرات", "family": "كارىباي", "initials": "م. ك."}
 {"name": "مۇللەر كەيت", "order": "FAMILY_FIRST", "given": "كەيت", "family": "مۇللەر", "initials": "ك. م."}

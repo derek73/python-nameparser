@@ -275,6 +275,10 @@ def is_initial_shaped(text: str) -> bool:
 
 # v1 regexes.py "roman_numeral", pinned by tests/v2/test_regex_sync.py.
 _ROMAN = re.compile(r'^(X|IX|IV|V?I{0,3})$', re.I)
+#: The same pattern, shared rather than copied: `_comma` filters on
+#: it before asking `reads_as_generation` (rules/C12).
+ROMAN = _ROMAN
+
 
 # Ported verbatim from v1 (nameparser/config/regexes.py), pinned by
 # tests/v2/test_regex_sync.py: the East Slavic patronymic endings and
@@ -305,9 +309,6 @@ def is_patronymic_marker(text: str) -> bool:
     "кызы"): rules/O2's test and, under `PatronymicRule.TURKIC`,
     rules/R9's."""
     return bool(_TURKIC.match(text) or _TURKIC_CYR.match(text))
-#: The same pattern, shared rather than copied: `_comma` filters on
-#: it before asking `reads_as_generation` (rules/C12).
-ROMAN = _ROMAN
 
 
 # rules/S10: "the numeral reads as the generation: the numerals the

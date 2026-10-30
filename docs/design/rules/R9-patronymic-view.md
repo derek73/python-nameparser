@@ -6,7 +6,7 @@
 
 - **A patronymic particle**: a particle the shipped vocabulary holds as a patronymic, read as a particle, with the words after it in its field, the parent's name.
 - **The East Slavic rule** (`PatronymicRule.EAST_SLAVIC`, which RU turns on): a middle word carrying O1's patronymic ending.
-- **The Turkic rule** (`PatronymicRule.TURKIC`, which TR_AZ turns on): a standalone patronymic marker, O2's, with the name word before it in its comma part, the father's name.
+- **The Turkic rule** (`PatronymicRule.TURKIC`, which TR_AZ turns on): a standalone patronymic marker, O2's, with the name word before it in its comma part, the father's name, a marker in the maiden name taking the maiden name's word before it.
 
 **Because:** a patronymic names the parent, which a caller addressing the bearer or matching records needs to tell from a family name, and the people filling in fielded records, like CLDR's samples, put it in the family or the given part. Naming it in a view of its own leaves every field where those sources put it. The view reads only a word or a rule that says patronymic, never a position, since nothing in a name's shape says which name word is a parent's.
 
@@ -21,12 +21,14 @@
 "محمد بن سلمان"              →  patronymic="بن سلمان"
 "Mahathir bin Mohamad Jr."  →  patronymic="bin Mohamad"
 "bin Mohamad, Mahathir"     →  patronymic="bin Mohamad"
+"Siti Hasan née binti Ali"  →  patronymic="binti Ali"
 "Ivan Ivanovich Ivanov"  [ru]  →  patronymic="Ivanovich"
 "Ivan Ivanovich Ivanov"  [ru]  →  middle="Ivanovich"
 "Sidorov Ivan Petrovich"  [ru]  →  patronymic="Petrovich"
 "Ivanov, Ivan Ivanovich"  [ru]  →  patronymic="Ivanovich"
 "Aliyev, Heydar Alirza oglu"  [tr_az]  →  patronymic="Alirza oglu"
 "Ali Ahmad Vali oglu"  [tr_az]  →  patronymic="Vali oglu"
+"Leyla née Aliyeva qizi"  [tr_az]  →  patronymic="Aliyeva qizi"
 "Ivan Ivanovich Ivanov"     →  patronymic=""  · boundary
 "Anwar Ibrahim"             →  patronymic=""
 ```
@@ -42,18 +44,20 @@
   ```
   "Fritz Freiherr und von Bar"  →  patronymic=""
   ```
-- **A trailing patronymic particle P6 attaches to the family written before it** takes that family's words as the parent's name, the view writing them in the family's order.
+- **A trailing patronymic particle P6 attaches to the family written before it** takes that family's words as the parent's name, the view writing them in the family's order, under `middle_as_family` too.
   ```
   "Mohamad, Mahathir bin"     →  patronymic="bin Mohamad"
+  "Levi, Omer Bar"            →  patronymic="Bar Levi"
   ```
 - **A nickname inside the parent's name** is skipped, not a word of the view.
   ```
   "Ahmad bin “Bob” Ali"       →  patronymic="bin Ali"
   ```
-- **A Turkic marker with no name word before it in its comma part** names no father and is no patronymic.
+- **A Turkic marker with no name word before it in its comma part** names no father and is no patronymic, and neither does one in the maiden name with no maiden word before it.
   ```
   "oglu Ali"  [tr_az]         →  patronymic=""
   "Aliyev, oglu"  [tr_az]     →  patronymic=""
+  "Ali née oglu"  [tr_az]     →  patronymic=""
   ```
 
 **Accepted:**
@@ -65,10 +69,23 @@
   ```
 - The East Slavic arm reads the middle only, the field the parse puts a patronymic in after a given name: one the parse put in the family (a two-word `Ivan Petrovich`) or in the given name (FAMILY_FIRST_GIVEN_LAST's last word) is not read, and under a declared FAMILY_FIRST a surname the order puts in the middle is, `Иван Петрович Абрамович` reading patronymic `Абрамович`, the declaration O1 honors.
 - The East Slavic endings are O1's, so a Ukrainian `-ївна` (`Оксана Сергіївна Баюл`) is not read.
-- The Turkic father's name may stand in another field than the marker, as O2 leaves a three-word name.
+- The Turkic father's name may stand in another field than the marker, as O2 leaves a three-word name, and a two-word name with a marker is read whole, a family name spelled as a marker included.
   ```
   "Ali Ahmad oglu"  [tr_az]   →  patronymic="Ahmad oglu"
+  "Ali oglu"  [tr_az]         →  patronymic="Ali oglu"
+  "Mehmet Oğlu"  [tr_az]      →  patronymic="Mehmet Oğlu"
   ```
+- A word inside the particle's run is in it whatever it is read as, a title included.
+  ```
+  "Ahmad bin Dr. Ali"         →  patronymic="bin Dr. Ali"
+  ```
+- A particle is read only as a word of its own, so one glued to the name by a hyphen is not, nor one written with its vowel marks, which the vocabulary does not list.
+  ```
+  "Ahmad ibn-Ali"             →  patronymic=""
+  "مُحَمَّد بِن سَلمان"          →  patronymic=""
+  ```
+- Under `two_family_names` O6 takes the middle word into the family as a first family name, leaving the East Slavic arm no middle to read, so `Ivan Ivanovich Ivanov` under RU with it reads family `Ivanovich Ivanov` and no patronymic.
+- A word with no reading, one that `replace()` or `Parser.revise()` wrote or in a name unpickled from 2.x, is not in the view, since nothing records what it was read as.
 - A patronymic particle is the shipped vocabulary's, read whatever the reading's default, as R8 reads a suffix word's kind, so a word only a caller's `Lexicon` lists as a particle (`ben`, which the vocabulary excludes as a patronymic) is a plain particle.
 - A word the particle's run or the Turkic marker takes reads `patronymic` by position, its own reading (a name word, a bound given name, a particle) not kept in `Token.reading`.
 
