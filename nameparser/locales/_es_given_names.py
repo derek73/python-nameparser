@@ -4,10 +4,13 @@ Luis Pérez" keeps family "Pérez". Data for the ``es`` pack to carry as
 a lexicon fragment, ``Lexicon(given_names=GIVEN_NAMES)``, as locales.ZH
 carries its surnames; no pack carries it yet.
 
-Data source: Instituto Nacional de Estadística (INE), "Frecuencias de
-nombres" and "Frecuencias de apellidos", from the annual population
-census of 1 January 2025 (Elaboración propia con datos extraídos del
-sitio web del INE: www.ine.es; Creative Commons Attribution 4.0). The
+Data source: Elaboración propia con datos extraídos del sitio web del
+INE: www.ine.es. Instituto Nacional de Estadística (INE), "Frecuencias
+de nombres" and "Frecuencias de apellidos", from the annual population
+census of 1 January 2025, files last updated 23 April 2026; licensed
+under Creative Commons Attribution 4.0
+(https://creativecommons.org/licenses/by/4.0/), per INE's legal notice
+(https://www.ine.es/aviso_legal). This module is derived from them. The
 words most borne as a given name in Spain among those at least 90% of
 whose uses are given-name uses, in rank order, written as INE writes
 them -- lower-cased here, without accents, with ñ and ç -- which

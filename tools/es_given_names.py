@@ -33,11 +33,13 @@ holding it behind a particle ("de Miguel"), a surname unit O6 takes
 whole and the veto never reads. A word is a
 candidate where at least SHARE of its uses are given-name uses, and the
 candidates are ranked by given uses; the list is the first TOP. Words
-the default vocabulary reads as something other than a name (a
-particle, a conjunction, a title or a suffix) are left out, since O6
-never takes a word as its own unit that any of those readings claim,
-and the disjointness test in tests/v2/test_es_given_names.py holds the
-shipped list to that. The cutoff and SHARE are measured choices
+the default vocabulary lists as a particle, a conjunction, a title or a
+suffix, ambiguous readings included, are left out: a list of given
+names has no use for a word whose own vocabulary reading another rule
+weighs (a title that may be a given name, `prince`, reaches O6 as a
+name word and would be vetoed), so the list stays clear of every such
+reading, and the disjointness test in tests/v2/test_es_given_names.py
+holds the shipped list to that. The cutoff and SHARE are measured choices
 (decisions/O6, 2026-10-30): a change to either is a cutoff change,
 decided against the same per-country measurement.
 

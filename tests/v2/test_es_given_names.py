@@ -2,11 +2,14 @@
 checks on tools/es_given_names.py, which writes it.
 
 The list is generated, not judged word by word, so what a test can hold
-is what no cutoff may change: no word the default vocabulary reads as
-something other than a name (the TOML build's check 11 for a per-word
-reading, which a generated list does not pass through), every entry in
-the fold the parse matches by, and the tool's selection on hand-built
-rows. The tool's sources are two INE downloads, which no test touches.
+is what no cutoff may change: no word the default vocabulary lists as a
+never-given particle, a title (an ambiguous one too), a suffix or a
+conjunction -- stricter than the TOML build's check 11, which a
+generated list does not pass through and which lets a given reading
+stand beside a title or particle reading, deriving a marker from the
+pair -- every entry in the fold the parse matches by, and the tool's
+selection on hand-built rows. The tool's sources are two INE downloads,
+which no test touches.
 """
 from __future__ import annotations
 

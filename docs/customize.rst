@@ -1026,9 +1026,10 @@ the same either way.
 A given name standing before the family is most of what the switch gets
 wrong, as in ``"José Luis Pérez"``. Words that are given names and
 rarely surnames tell the two shapes apart, so the switch leaves a word
-listed in the lexicon's ``given_names`` where it stands. The list is
-empty by default; an entry written without accents matches the word
-with them:
+listed in the lexicon's ``given_names`` where it stands, under any
+``name_order``. The field is empty by default, so you supply the list
+for your data; an entry written without accents matches the word with
+them:
 
 .. doctest::
 
@@ -1040,12 +1041,12 @@ with them:
     >>> luis.middle, luis.family
     ('Luis', 'Pérez')
 
-Among ORCID's researchers, a list of the thousand words most borne as
-given names in Spain and mostly not as surnames (from Spain's 2025
-census) raised the switch's agreement from 93.4% to 95.3% in Spain and
-from 61.2% to 89.3% in Argentina, where the switch alone breaks most
-names (measured 2026-10-30). A listed word that is someone's first
-surname, as given names sometimes are, stays a middle name.
+List words that are given names and rarely surnames in your data: a
+word common in both roles, such as ``Martín``, is better left off. A
+listed word that is someone's surname, as given names sometimes are,
+stays out of the family: written given-first it becomes a middle name,
+and under a family-first ``name_order`` the second surname becomes the
+given name or a middle name.
 
 .. _two-given-names:
 

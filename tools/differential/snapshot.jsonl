@@ -1029,6 +1029,7 @@
 {"name": "Fischer, Paul Vinzent von", "given": "Paul", "middle": "Vinzent", "family": "von Fischer", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "P. V. F."}
 {"name": "Fitzhugh, Louise", "given": "Louise", "family": "Fitzhugh", "initials": "L. F."}
 {"name": "Fleksnes, Gregers Werle Marve Almar von", "given": "Gregers", "middle": "Werle Marve Almar", "family": "von Fleksnes", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "G. W. M. A. F."}
+{"name": "Flores Jorge Ana", "given": "Flores", "middle": "Jorge", "family": "Ana", "initials": "F. J. A."}
 {"name": "Flores Marco Antonio", "order": "FAMILY_FIRST", "given": "Marco", "middle": "Antonio", "family": "Flores", "initials": "M. A. F."}
 {"name": "Flores, Marco Antonio", "given": "Marco", "middle": "Antonio", "family": "Flores", "initials": "M. A. F."}
 {"name": "Flávio Juvenal da Silva Jr", "given": "Flávio", "middle": "Juvenal", "family": "da Silva", "suffix": "Jr", "initials": "F. J. S.", "generation": "Jr"}
