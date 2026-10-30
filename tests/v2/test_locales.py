@@ -1122,6 +1122,7 @@ _ROTATORS["hi"] = [
     "Indira Gandhi Shrimati.",       # shrimati, dotted, ending the name (H5)
     "Shrimati Gandhi, Indira",       # shrimati before a family comma (H6)
     "Smt. Sitharaman, Nirmala",      # smt, dotted, before a family comma
+    ", Nirmala Smt.",                # smt, dotted, after an empty head
 ]
 _ROTATORS["bn"] = [
     "Shrimati Mamata Banerjee",      # shrimati at the head
