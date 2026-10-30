@@ -8,10 +8,12 @@ import sys
 import types
 from collections.abc import Callable, Iterable
 from types import ModuleType
+from pathlib import Path
 
 import pytest
 
 from nameparser import Locale, Parser, locales, parse, parser_for
+from nameparser import _reading_index as _ri
 from nameparser._lexicon import _VOCAB_FIELDS, Lexicon
 from nameparser._policy import (
     FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, UNSET, PatronymicRule, Policy,
@@ -1142,6 +1144,53 @@ def test_the_choice_gate_fails_when_its_surface_misses_a_word() -> None:
         _assert_non_interference(parser_for(choice),
                                  _surface_deviates(surface - {"e"}),
                                  _default_corpus())
+
+
+# -- 3c: the pack-shaped exclusions as readings off by default --
+#
+# A generation word whose collision is with OTHER languages written in
+# the same script (cs/hr/sk/sl `ml` and `st`, fr `père`) is a reading
+# written `default = false` in its own file, read by no default and
+# read once its language is chosen (decisions/vocabulary-model's
+# 2026-10-29 #753, phase 3c entry). The sweep is every such
+# reading in the index, so a later one joins it unlisted; a one-letter
+# word (es `h`, de `i`) is left out, the initial it spells taking a
+# bare letter first (the initial veto, `_vocab.is_suffix_strict`).
+_OFF_GENERATIONS = sorted(
+    (r.text, r.tag) for r in _ri.index()
+    if r.kind == "generation" and not r.on_by_default and len(r.text) > 1)
+
+
+def test_the_off_generation_sweep_reaches_the_converted_words() -> None:
+    # an empty parametrize is a skip, not a failure
+    slavic = {"cs", "hr", "sk", "sl"}
+    assert ({("ml", t) for t in slavic} | {("st", t) for t in slavic}
+            | {("père", "fr")}) <= set(_OFF_GENERATIONS)
+
+
+@pytest.mark.parametrize("text, tag", _OFF_GENERATIONS,
+                         ids=lambda v: str(v))
+@pytest.mark.parametrize("spelling", ["{}.", "{}"])
+def test_a_chosen_language_reads_its_off_generation_and_the_default_does_not(
+        text: str, tag: str, spelling: str) -> None:
+    word = spelling.format(text)
+    name = f"Anna Novak {word}"
+    chosen = parser_for(Locale(code="choice", lexicon=Lexicon.empty(),
+                               languages=frozenset({tag})))
+    assert parse(name).suffix == ""
+    assert (chosen.parse(name).suffix, chosen.parse(name).family) == (
+        word, "Novak")
+
+
+def test_no_exclusion_is_pack_shaped_any_more() -> None:
+    # after 3c an exclusion means wrong everywhere until a pack's PR
+    # converts its own (the RFC's Phase 3 table): a reason opening
+    # "pack-shaped" is a reading a pack turns on, so it is written as
+    # one. The recompute is decisions/vocabulary-model's grep.
+    vocab = Path(__file__).resolve().parents[2] / "nameparser" / "vocab"
+    found = [f.name for f in sorted(vocab.glob("*.toml"))
+             if "pack-shaped" in f.read_text(encoding="utf-8")]
+    assert vocab.is_dir() and found == []
 
 
 # -- #269: non-Latin default vocabulary (Cyrillic, Greek, Arabic,
