@@ -1069,9 +1069,9 @@ Turn it on only for data written this way: under it every name whose
 second given word is a middle name gains it in the given name
 (``"John Quincy Adams"`` gives given ``John Quincy``), and people
 filling a form that has a middle-name box split their names the other
-way. Among the UK company register's 6,101 Spanish filers, 31.7% of
+way. Among the UK company register's 6,089 Spanish filers, 31.8% of
 names agree in every box by default and 15.7% with this switch on;
-with ``two_family_names`` on, 79.8% without this switch and 54.8%
+with ``two_family_names`` on, 80.2% without this switch and 55.0%
 with it (measured 2026-10-30). ``middle`` keeps its meaning either way,
 the given part's words after the given name; the switch moves no word
 anywhere else and reports nothing.

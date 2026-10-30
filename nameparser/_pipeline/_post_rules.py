@@ -47,7 +47,8 @@ from nameparser._pipeline._pieces import (
     is_lone_never_given_particle, settled_by_case,
 )
 from nameparser._pipeline._state import (
-    AMBIGUOUS_ACRONYM_TAG, ATTACHED_TAG, NAME_ROLES, SECOND_SURNAME_TAG,
+    AMBIGUOUS_ACRONYM_TAG, ATTACHED_TAG, NAME_ROLES, PATRONYMIC_TAG,
+    SECOND_SURNAME_TAG,
     ParseState, PendingAmbiguity, PendingReading, Structure,
     WorkToken, _NEVER_FLIPPED, comma_bucket, copy_with,
 )
@@ -346,15 +347,11 @@ def _take_second_given_name(state: ParseState,
     # counts the family
     if not given or not middle or _family_word_count(tokens, given) != 1:
         return
+    # the unit beside the given name: the positions lay a given-first
+    # part out given, middles..., and FAMILY_FIRST_GIVEN_LAST's
+    # middles..., given, so it is the first middle unit or the last
     units = _units(tokens, middle)
-    if given_first:
-        take = units[0]
-        if take[0] < given[-1]:
-            return
-    else:
-        take = units[-1]
-        if take[-1] > given[0]:
-            return
+    take = units[0] if given_first else units[-1]
     # ONE name word, counted as O6 counts one, with a letter in it; an
     # initial is taken, since it writes a given name. A given name with
     # no letter in it is a mark or a number, nothing to complete.
@@ -362,8 +359,12 @@ def _take_second_given_name(state: ParseState,
             or not any(ch.isalpha() for i in take for ch in tokens[i].text)
             or not any(ch.isalpha() for i in given for ch in tokens[i].text)):
         return
-    # a patronymic is no given name: a word an ending rule a policy
-    # turns on reads as one (R9), and a Turkic marker's father
+    # a patronymic is no given name: a patronymic particle's run, its
+    # reading decided at classify (R9's vocabulary arm), a word an
+    # ending rule a policy turns on reads as one, and a Turkic marker's
+    # father
+    if any(PATRONYMIC_TAG in tokens[i].tags for i in take):
+        return
     rules = state.policy.patronymic_rules
     if rules:
         slavic = PatronymicRule.EAST_SLAVIC in rules

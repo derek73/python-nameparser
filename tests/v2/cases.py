@@ -726,6 +726,30 @@ CASES: tuple[Case, ...] = (
          policy=Policy(patronymic_rules=frozenset(
              {PatronymicRule.TURKIC}), two_given_names=True),
          classification="parity"),
+    # #954 review: R9's vocabulary arm, the patronymic particle's run;
+    # each row read given 'Ahmad bin Ali' (and the like) before the
+    # guard, with the patronymic view still claiming the words
+    Case("two_given_names_leaves_a_nasab_in_the_middle",
+         "Ahmad bin Ali bin Hassan",
+         {"given": "Ahmad", "middle": "bin Ali", "family": "bin Hassan"},
+         policy=_GIVEN2, classification="parity"),
+    Case("two_given_names_leaves_a_nasab_before_a_nasab_family",
+         "Mahathir bin Mohamad bin Ali",
+         {"given": "Mahathir", "middle": "bin Mohamad", "family": "bin Ali"},
+         policy=_GIVEN2, classification="parity"),
+    Case("two_given_names_leaves_a_binti_in_the_middle",
+         "Siti binti Ahmad binti Hassan",
+         {"given": "Siti", "middle": "binti Ahmad",
+          "family": "binti Hassan"},
+         policy=_GIVEN2, classification="parity"),
+    Case("two_given_names_leaves_a_turkic_marker_it_would_take",
+         "Ali Vali oglu Mammadov",
+         {"given": "Vali", "middle": "oglu Mammadov", "family": "Ali"},
+         policy=Policy(name_order=FAMILY_FIRST, patronymic_rules=frozenset(
+             {PatronymicRule.TURKIC}), two_given_names=True),
+         classification="parity",
+         notes="#954 review: the marker inside the unit, the guard's other "
+               "arm; without it the given name reads 'Vali oglu'"),
     Case("two_given_names_leaves_a_script_order_alone",
          "王 小 明",
          {"given": "小", "middle": "明", "family": "王"},

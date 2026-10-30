@@ -115,6 +115,7 @@
 {"name": "Ahmad al-ʿAbbas", "given": "Ahmad", "family": "al-ʿAbbas", "initials": "A. a."}
 {"name": "Ahmad ben Husain", "given": "Ahmad", "middle": "ben", "family": "Husain", "initials": "A. b. H.", "capitalized_force": "Ahmad Ben Husain"}
 {"name": "Ahmad bin Abdul Rahman", "given": "Ahmad", "family": "bin Abdul Rahman", "initials": "A. A. R.", "patronymic": "bin Abdul Rahman"}
+{"name": "Ahmad bin Ali bin Hassan", "given": "Ahmad", "middle": "bin Ali", "family": "bin Hassan", "initials": "A. A. H.", "patronymic": "bin Ali bin Hassan"}
 {"name": "Ahmad bin Dr. Ali", "given": "Ahmad", "family": "bin Dr. Ali", "initials": "A. D. A.", "patronymic": "bin Dr. Ali"}
 {"name": "Ahmad bin “Bob” Ali", "given": "Ahmad", "family": "bin Ali", "nickname": "Bob", "initials": "A. A.", "patronymic": "bin Ali"}
 {"name": "Ahmad ibn-Ali", "given": "Ahmad", "family": "ibn-Ali", "initials": "A. i."}

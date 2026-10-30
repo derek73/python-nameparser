@@ -54,8 +54,9 @@
   "Juan 3 Pérez"  two_given_names  →  middle="3"
   "11 Elizabeth Mcguinness"  two_given_names  →  middle="Elizabeth"
   ```
-- **A patronymic is no given name**: a word that an ending rule reads as a patronymic (R9) stays in the middle, and so does the father's name in front of a Turkic marker.
+- **A patronymic is no given name**: a patronymic particle and the word it names (R9) stay in the middle, and so do a word an ending rule reads as a patronymic, a Turkic marker and the father's name in front of one.
   ```
+  "Ahmad bin Ali bin Hassan"  two_given_names  →  middle="bin Ali"
   "Ivan Ivanovich Ivanov"  east-slavic+two_given_names  →  given="Ivan"
   "Ivan Ivanovich Ivanov"  east-slavic+two_given_names  →  middle="Ivanovich"
   ```
@@ -93,7 +94,11 @@
   ```
   "Maria do Carmo Silva"  two_given_names  →  family="do Carmo Silva"
   ```
-- Where no ending rule is on, a patronymic is a name word like any other and joins the given name.
+- Where the declared order and a name's script agree, nothing tells the two apart, so under a declared family-first order a spaced Han or Hangul name is read like any other, as O6 reads it.
+  ```
+  "王 小 明"  family-first+two_given_names  →  given="小 明"
+  ```
+- Where no ending rule is on, a patronymic written without a particle is a name word like any other and joins the given name.
   ```
   "Ivan Ivanovich Ivanov"  two_given_names  →  given="Ivan Ivanovich"
   ```
