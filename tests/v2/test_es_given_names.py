@@ -3,8 +3,7 @@ checks on tools/es_given_names.py, which writes it.
 
 The list is generated, not judged word by word, so what a test can hold
 is what no cutoff may change: no word the default vocabulary lists as a
-never-given particle, a title (an ambiguous one too), a suffix or a
-conjunction -- stricter than the TOML build's check 11, which a
+particle or a title (ambiguous ones too), a suffix or a conjunction -- stricter than the TOML build's check 11, which a
 generated list does not pass through and which lets a given reading
 stand beside a title or particle reading, deriving a marker from the
 pair -- every entry in the fold the parse matches by, and the tool's
@@ -50,11 +49,11 @@ def _no_network(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def _non_name_readings(lexicon: Lexicon) -> dict[str, frozenset[str]]:
     """The default vocabulary's readings of a word as something other
-    than a name, each folded as the list is: a never-given particle, a
+    than a name, each folded as the list is: a particle (ambiguous ones
+    too, `del` and `da` among them, which the tool also leaves out), a
     title (an ambiguous one too), a suffix and a conjunction."""
-    never_given = lexicon.particles - lexicon.particles_ambiguous
     fields = {
-        "never-given particle": never_given,
+        "particle": lexicon.particles,
         "title": lexicon.titles | lexicon.titles_ambiguous,
         "suffix": lexicon.suffix_acronyms | lexicon.suffix_words,
         "conjunction": lexicon.conjunctions,
@@ -74,7 +73,7 @@ def _overlap(names: frozenset[str], lexicon: Lexicon) -> dict[str, set[str]]:
 #: control, recorded so the empty answer cannot be a check reading
 #: nothing.
 _UNGUARDED_EFFECT = {
-    "never-given particle": {"los"},
+    "particle": {"los", "del"},
     "title": {"dr", "dean"},
     "suffix": {"jr"},
     "conjunction": {"y"},
@@ -88,7 +87,8 @@ def test_the_list_holds_no_word_the_default_reads_as_no_name() -> None:
     # and listing it would contradict the reading that claims it.
     default = Lexicon.default()
     assert _overlap(_es_given_names.GIVEN_NAMES, default) == {}
-    planted = _es_given_names.GIVEN_NAMES | {"los", "dr", "dean", "jr", "y"}
+    planted = _es_given_names.GIVEN_NAMES | {"los", "del", "dr", "dean",
+                                             "jr", "y"}
     assert _overlap(planted, default) == _UNGUARDED_EFFECT
 
 
