@@ -1,13 +1,14 @@
 """The Hindi locale pack: vocabulary-only -- it chooses the language
 ``hi``, which turns on the readings nameparser/vocab/hi.toml writes
-``default = false``: the romanized salutations ``shri``, ``shrimati``,
-``smt`` and ``shriyut``, which the default leaves to position because
-each collides with given names where the Devanagari spelling cannot
+``default = false``: the romanized salutations ``shrimati``, ``smt``
+and ``shriyut``, which the default leaves to position, a Latin spelling
+being one a name may have where the Devanagari cannot
 (decisions/vocabulary-model, the 2026-10-30 phase 3e entry). Each is
-then a title at the head of a name: ``Shri Narendra Modi`` gives title
-``Shri`` where the default gives given ``Shri``. ``Shri`` is a
-given-name element too (``Shri Kant Tripathi``), which reads the title
-under the pack; that is the cost the choice takes.
+then a title at the head of a name: ``Smt Nirmala Sitharaman`` gives
+title ``Smt`` where the default gives given ``Smt``. ``shri`` is not
+among them: it opens given names written in two words (``Shri Kant
+Tripathi``) more often than it is the salutation, so it stays a name
+word under the pack.
 
 Data sources: the counts on each reading in hi.toml (tools/name_usage.py,
 ORCID's given and family boxes by country among them). The pack carries

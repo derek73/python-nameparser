@@ -2,7 +2,7 @@ schema = 1
 
 [[word]]
 text = "shri"
-excluded = { salutation = { reason = "the transliteration of श्री collides with real given names where the native script cannot: a given name written in two words opens with it (Shri Kant, Shri Lakshmi), 198 of ORCID's given boxes doing so (its 2025 extract, 2026-10-30); nam_dict band 2 in India; Wikidata 7 given (2026-10-30). Turned on for Hindi and Bengali it broke 20 filed names and fixed none (decisions/vocabulary-model, the 2026-10-30 phase 3e entry)", issue = [345, 753], decided = 2026-10-30 } }
+excluded = { salutation = { reason = "the transliteration of श्री collides with real given names where the native script cannot: it opens given names, alone or written in two words (Shri Kant, Shri Lakshmi), 198 of ORCID's given boxes doing so, 52 of them holding it alone (its 2025 extract, 2026-10-30); nam_dict band 2 in India; Wikidata 7 given (2026-10-30). Turned on for Hindi and Bengali it broke 20 filed names and fixed none (decisions/vocabulary-model, the 2026-10-30 phase 3e entry)", issue = [345, 753], decided = 2026-10-30 } }
 
 [[word]]
 text = "shrimati"

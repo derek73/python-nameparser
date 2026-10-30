@@ -6,11 +6,11 @@ excluded = { salutation = { reason = "the transliteration of মোসাঃ col
 
 [[word]]
 text = "shrimati"
-salutation = { default = false, gender = "f", issue = [345, 753], expands = "Shrimati, Mrs., the romanized শ্রীমতী", after_given = true }
+salutation = { default = false, gender = "f", issue = [345, 753], expands = "Shrimati, Mrs., the romanized শ্রীমতী", after_given = true, note = "its counts are on hi.toml's reading" }
 
 [[word]]
 text = "smt"
-salutation = { default = false, gender = "f", issue = [345, 753], same_as = "shrimati", expands = "Smt., Shrimati abbreviated", after_given = true }
+salutation = { default = false, gender = "f", issue = [345, 753], same_as = "shrimati", expands = "Smt., Shrimati abbreviated", after_given = true, note = "its counts are on hi.toml's reading" }
 
 [[word]]
 text = "কুমারী"
@@ -86,7 +86,7 @@ excluded = { style = { reason = "a clan name and a family name ('শেখ হ�
 
 [[word]]
 text = "adhyapak"
-academic = { default = false, issue = [345, 753], expands = "professor, the romanized অধ্যাপক", note = "a Marathi family name too: ORCID's family box 17 people, alone in it every time (Anoop Adhyapak), its given box 1, after another word (2026-10-30); off by default and turned on by a Bengali choice, where the title claim acts only in front" }
+academic = { default = false, issue = [345, 753], expands = "professor, the romanized অধ্যাপক", note = "a Marathi family name too: ORCID's family box 17 people, alone in it every time (Anoop Adhyapak), its given box 1, after another word (2026-10-30); off by default and turned on by a Bengali choice, under which it is the title at the head, and a family name written with a period behind it (rules/H5) or ahead of a family comma with a name word behind it (rules/H6) reads as the title too, as for graf (rules/H1)" }
 
 [[word]]
 text = "অধ্যাপক"

@@ -1102,9 +1102,10 @@ _ROTATORS["hr"] = [
     "Ivan Horvat st.",               # st
 ]
 # hi and bn: each romanized title at the head, in each case, behind a
-# listed title and after a family comma; a dotted one only where it ends
-# the given part after a family comma (rules/H8), rules/H2's shape
-# already reading it as a title at the head by default.
+# listed title, after a family comma and before one (rules/H6); a dotted
+# one where it ends the given part after a family comma (rules/H8) or
+# ends the name (rules/H5), rules/H2's shape already reading it as a
+# title at the head by default.
 _ROTATORS["hi"] = [
     "Shrimati Indira Gandhi",        # shrimati at the head
     "SHRIMATI INDIRA GANDHI",        # shrimati, in one case
@@ -1118,6 +1119,9 @@ _ROTATORS["hi"] = [
     "Shriyut Ram Prasad",            # shriyut
     "Mr. Shriyut Ram Prasad",        # shriyut behind a listed title
     "Prasad, Ram Shriyut",           # shriyut ending the given part
+    "Indira Gandhi Shrimati.",       # shrimati, dotted, ending the name (H5)
+    "Shrimati Gandhi, Indira",       # shrimati before a family comma (H6)
+    "Smt. Sitharaman, Nirmala",      # smt, dotted, before a family comma
 ]
 _ROTATORS["bn"] = [
     "Shrimati Mamata Banerjee",      # shrimati at the head
@@ -1129,6 +1133,8 @@ _ROTATORS["bn"] = [
     "adhyapak anisuzzaman khan",     # adhyapak, in one case
     "Dr. Adhyapak Anisuzzaman",      # adhyapak behind a listed title
     "Khan, Adhyapak Anisuzzaman",    # adhyapak after a family comma
+    "Anoop Adhyapak.",               # adhyapak, dotted, ending the name (H5)
+    "Adhyapak Kumar, Anoop",         # adhyapak before a family comma (H6)
 ]
 
 

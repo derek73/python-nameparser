@@ -1,13 +1,14 @@
 """The Bengali locale pack: vocabulary-only -- it chooses the language
 ``bn``, which turns on the readings nameparser/vocab/bn.toml writes
-``default = false``: the romanized salutations ``shri``, ``shrimati``
-and ``smt`` and the academic title ``adhyapak`` (professor), which the
-default leaves to position because each collides with a name where the
-Bengali spelling cannot (decisions/vocabulary-model, the 2026-10-30
-phase 3e entry). Each is then a title at the head of a name:
+``default = false``: the romanized salutations ``shrimati`` and ``smt``
+and the academic title ``adhyapak`` (professor), which the default
+leaves to position, a Latin spelling being one a name may have where
+the Bengali cannot (decisions/vocabulary-model, the 2026-10-30 phase 3e
+entry). Each is then a title at the head of a name:
 ``Adhyapak Anisuzzaman`` gives title ``Adhyapak`` where the default
 gives given ``Adhyapak``. ``Adhyapak`` is a Marathi family name too,
-which keeps its place at the end of a name under the pack.
+which keeps its place written bare at the end of a name under the pack,
+and reads as the title written first or with its period.
 
 Data sources: the counts on each reading in bn.toml and hi.toml
 (tools/name_usage.py, ORCID's given and family boxes by country among
