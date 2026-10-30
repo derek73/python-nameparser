@@ -243,7 +243,7 @@ look one up dynamically by its lowercase code with
 .. doctest::
 
     >>> locales.available()
-    ('ja', 'ru', 'tr_az', 'zh')
+    ('ja', 'ne', 'ru', 'tr_az', 'zh')
     >>> locales.get("ru") is locales.RU
     True
 
@@ -268,6 +268,13 @@ Shipped packs
        (``山田太郎`` → family ``山田``, given ``太郎``). The pack ships
        no surname list, because no list divides a kanji name, and no
        order: a Japanese name already reads family-first by default.
+   * - ``ne``
+     - Nepali given names — chooses the language ``ne``, which reads
+       ``श्री``, ``गुरु`` and ``Guru`` as name words, placed by position,
+       where the default reads them as titles (``श्री कृष्ण श्रेष्ठ`` →
+       given ``श्री`` in the default order, where the default gives
+       title ``श्री``). Each stays a title inside a title phrase
+       (``His Holiness Guru Prasad``).
    * - ``ru``
      - East Slavic patronymic order — detects the formal
        family/given/patronymic shape (three name words, the last ending
@@ -295,16 +302,43 @@ Shipped packs
        (``安藤一郎`` → family ``安``), so use ``ja`` for Japanese data.
 
 ``ja``, ``ru`` and ``tr_az`` are policy-only — they carry no vocabulary
-of their own. ``zh`` is both halves at once: a surname list, plus the
+of their own. ``ne`` is a choice of languages and nothing else: the
+readings it turns on are in the default vocabulary's ``ne.toml``, off
+until a caller chooses Nepali. ``zh`` is both halves at once: a surname list, plus the
 one policy field that turns segmentation on for the script it covers. See
 :ref:`config-containers` for how that split (language vocabulary vs. behavior)
 is drawn, and `Contributing a pack to nameparser`_ for which half a
 new naming rule belongs in.
 
+Under ``ne`` a name opening with one of its words reads it as a name
+word, placed by position as any other is, a listed title in front of it
+included: the given name in the default order, the family name under a
+family-first one.
+
+.. doctest::
+
+    >>> ne = parser_for(locales.NE)
+    >>> parse("Guru Prasad Sharma").title
+    'Guru'
+    >>> guru = ne.parse("Guru Prasad Sharma")
+    >>> guru.title, guru.given, guru.family
+    ('', 'Guru', 'Sharma')
+    >>> ne.parse("Mr. Guru Sharma").given
+    'Guru'
+    >>> from nameparser import FAMILY_FIRST, Parser, Policy
+    >>> family_first = Parser(policy=Policy(name_order=FAMILY_FIRST))
+    >>> parser_for(locales.NE, base=family_first).parse("Guru Prasad Sharma").family
+    'Guru'
+
+The choice reads Hindi and Marathi names too, where ``श्री`` is
+usually the salutation (Mr.), so use it for Nepali data.
+
 .. warning::
 
-   A pack declares a name *shape*, not a language, and it cannot tell
-   whose name it is looking at. Any surname that happens to end in a
+   A pack declares a name *shape*, not a language (save one that
+   chooses languages, such as ``ne``, which names a language yet acts
+   on every name holding one of its words, whatever language that name
+   is in). Either way, it cannot tell whose name it is looking at. Any surname that happens to end in a
    patronymic suffix matches the East Slavic rule, including names
    that are not East Slavic at all:
 
@@ -458,7 +492,12 @@ by ``tests/v2/test_locales.py``:
    scope is a *script* builds the predicate with ``_script_matcher``
    from ``nameparser/_policy.py``, the way ``zh`` and ``ja`` do —
    never by compiling its own character ranges: the factory's
-   docstring explains how the pack-contract test enforces this.
+   docstring explains how the pack-contract test enforces this. A
+   pack's choice of languages is never declared: its deviations are
+   derived from the words the choice changes, so a pack that is nothing
+   but a choice (``ne``) declares no ``DEVIATES``, and one with a
+   fragment or a patch beside its choice declares only what those
+   change.
 #. Add a rotator list to ``tests/v2/test_locales.py``. Every pack needs
    one, but what it has to contain follows from how the pack declares
    its scope:
@@ -472,6 +511,9 @@ by ``tests/v2/test_locales.py``:
      the same weight by hand — the unspaced names the pack must split,
      one per shape of the vocabulary it ships: single surname, compound
      surname, and any spelling variant it means to cover.
+   - **By a choice of languages** (``ne``): a name for each word the
+     choice changes, in each script it is written in and each position
+     where the default reads it otherwise.
    - **With no vocabulary at all**: list the shapes its *segmenter* must
      divide instead, and mark the rotator tests to skip when the
      optional dependency is absent, so the contract tests still run

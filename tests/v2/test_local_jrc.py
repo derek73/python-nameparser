@@ -520,7 +520,7 @@ def test_the_groups_command_does_not_hide_a_parser_error_as_damage(
     _lenient(monkeypatch)
     local.fetch(_JRC)
 
-    def broken(name: str) -> None:
+    def broken(name: str, languages: tuple[str, ...] = ()) -> None:
         raise ValueError("a parser bug")
     monkeypatch.setattr(local, "_read", broken)
     with pytest.raises(ValueError, match="a parser bug"):

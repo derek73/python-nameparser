@@ -4353,6 +4353,34 @@ def _alike_kept(cache: Path) -> list[Path]:
     return sorted((cache / "local" / _NEPAL / local.ALIKE_KEPT).glob("*.json"))
 
 
+#: A pair the default reads apart and a Nepali choice alike: the
+#: romanization writes Shree as a name word, the Devanagari श्री a title
+#: until `ne` turns its given reading on (locales.NE, 3.0's phase 3d).
+_SHREE = {"name": "Shree Ram Thapa", "devanagari": "श्री राम थापा"}
+
+
+def test_alike_reads_a_pair_under_a_choice_of_languages() -> None:
+    nepal = local.Local(_NEPAL, {}, [*_NEPAL_RECORDS, _SHREE])
+    assert local.alike_flags(nepal)["3"] is False
+    assert local.alike_flags(nepal, languages=("ne",)) == {
+        "0": True, "1": True, "2": False, "3": True}
+
+
+def test_alike_under_languages_counts_the_moves_against_the_default(
+        monkeypatch: pytest.MonkeyPatch, _own_cache: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    _nepal(monkeypatch, [*_NEPAL_RECORDS, _SHREE])
+    assert local.main(["alike", _NEPAL, "--languages", "ne"]) == 1
+    out = capsys.readouterr().out
+    assert "under the choice ne" in out
+    assert "3 of 4 pairs read alike (2 in the base)" in out
+    assert "1 pairs now alike, 0 now apart" in out
+    with pytest.raises(SystemExit):
+        local.main(["alike", _NEPAL, "--languages", "ne", "--out", "x.json"])
+    with pytest.raises(SystemExit):
+        local.main(["alike", _NEPAL, "--languages", " , "])
+
+
 def test_alike_against_a_planted_base_reports_moves_and_none_across_a_copy(
         monkeypatch: pytest.MonkeyPatch, _own_cache: Path, tmp_path: Path,
         capsys: pytest.CaptureFixture[str]) -> None:

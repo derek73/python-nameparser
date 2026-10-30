@@ -37,7 +37,7 @@ source's regressions in unseen.
 
 A second view does the same with each locale pack (#672): the renderings
 of every CLDR file in LOCALE_FILES, and of every native-script Wikidata
-stratum in NATIVE_LABELS (its Han and kana names), are parsed
+stratum in NATIVE_LABELS (its Han, kana and Nepali names), are parsed
 with parser_for(pack), and their disagreements are recorded in
 cldr_agreement_locales.json and wikidata_native_agreement_locales.json
 and ratcheted the same way, so a pack change shows what it moved on its
@@ -141,12 +141,12 @@ _PARSERS = {None: Parser(),
 #: keyed like the default one. A new pack adds its files here, or its
 #: name to NO_CLDR; test_cldr_agreement.py fails on a pack in neither.
 LOCALE_FILES = {"zh": "ZH", "zh_Hant": "ZH", "yue": "ZH", "yue_Hans": "ZH",
-                "ja": "JA", "ru": "RU", "tr": "TR_AZ", "az": "TR_AZ"}
+                "ja": "JA", "ne": "NE", "ru": "RU", "tr": "TR_AZ", "az": "TR_AZ"}
 #: Packs with no CLDR file to measure them on.
 NO_CLDR: frozenset[str] = frozenset()
 #: The locale view of the native-script Wikidata source: stratum label ->
 #: the pack its renderings are parsed with (its QID file names no language).
-NATIVE_LABELS = {"zh-cn": "ZH", "zh-tw": "ZH", "ja-jp": "JA"}
+NATIVE_LABELS = {"zh-cn": "ZH", "zh-tw": "ZH", "ja-jp": "JA", "ne-np": "NE"}
 #: Packs measured only where an optional extra is installed: pack -> the
 #: module the extra provides.
 _EXTRAS = {"JA": "namedivider"}

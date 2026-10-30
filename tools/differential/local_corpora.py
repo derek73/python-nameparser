@@ -24,7 +24,11 @@ and with `--base` the ones that now read alike and now apart: the base's
 flags are kept under alike/ beside the corpus, keyed like snapshot.py's
 baselines by the fetch, a hash of the base's nameparser/ files, the
 interpreter's minor version and the view's code (alike_fingerprint),
-and read in a child process where none is kept.
+and read in a child process where none is kept. `alike --languages ne`
+reads the tree under a choice of languages (Locale.languages) and counts
+the persons it moves against the default's flags, the tree's own or
+--base's, as snapshot.py --languages does, and like it reads the choice
+alone, not a registered pack's fragment or patch beside it.
 
 `fetch` writes three files into local/<source>/ under
 $NAMEPARSER_TOOLS_CACHE (default ~/.cache/nameparser-tools), and
@@ -544,34 +548,44 @@ class PairCounts:
         return sum(self.shapes.values())
 
 
-def surname(name: str) -> str:
+@functools.cache
+def _parse(languages: tuple[str, ...]) -> Callable[[str], Any]:
+    """The parse a view reads with: parse() itself, or a parser under the
+    choice of `languages` (Locale.languages), built once per process."""
+    from nameparser import Lexicon, Locale, parse, parser_for
+    if not languages:
+        return parse
+    return parser_for(Locale(code="choice", lexicon=Lexicon.empty(),
+                             languages=frozenset(languages))).parse
+
+
+def surname(name: str, languages: tuple[str, ...] = ()) -> str:
     """The last word of the family name parse() reads in `name`, in
     capitals without accents, or "" where it reads none: the word two
     spellings of one person should share unless the last surname itself
     is what one leaves out (a particle or a middle name left out, a
     middle name shortened, accents or case changed). Two readings with no
     surname do not share one."""
-    from nameparser import parse
-
-    family = _pair_words(parse(name).family)
+    family = _pair_words(_parse(languages)(name).family)
     return family[-1] if family else ""
 
 
-def _surnames(names: list[str]) -> tuple[str, list[str]]:
+def _surnames(names: list[str], languages: tuple[str, ...] = ()
+              ) -> tuple[str, list[str]]:
     """The nameparser this process imported, and surname() of each name:
     a unit of work for _parsed."""
     import nameparser
-    return nameparser.__file__, [surname(n) for n in names]
+    return nameparser.__file__, [surname(n, languages) for n in names]
 
 
-def _parsed(chunk: Callable[[list[str]], tuple[str, list[Any]]], names: Iterable[str],
-            jobs: int) -> dict[str, Any]:
-    """chunk's answer for each distinct name, read in `jobs` worker
-    processes where there are enough (snapshot.parallel)."""
+def _parsed(chunk: Callable[..., tuple[str, list[Any]]], names: Iterable[str],
+            jobs: int, *args: object) -> dict[str, Any]:
+    """chunk(part, *args)'s answer for each distinct name, read in `jobs`
+    worker processes where there are enough (snapshot.parallel)."""
     from snapshot import parallel
     distinct = list(dict.fromkeys(names))
-    return dict(zip(distinct, parallel(chunk, distinct, jobs, module="local_corpora"),
-                    strict=True))
+    return dict(zip(distinct, parallel(chunk, distinct, jobs, *args,
+                                       module="local_corpora"), strict=True))
 
 
 def pair_counts(local: Local, *, agreement: bool = False, jobs: int = 1) -> PairCounts:
@@ -655,10 +669,8 @@ class _Read(NamedTuple):
     suffix: str
 
 
-def _read(name: str) -> _Read:
-    from nameparser import parse
-
-    parsed = parse(name)
+def _read(name: str, languages: tuple[str, ...] = ()) -> _Read:
+    parsed = _parse(languages)(name)
     roles = [str(t.role) for t in parsed.tokens if str(t.role) in _NAME_ROLES]
     family = [i for i, role in enumerate(roles) if role == "family"]
     at: FamilyAt
@@ -756,11 +768,12 @@ def _by_entity(local: Local) -> dict[str, list[tuple[str, str]]]:
     return by_entity
 
 
-def _reads(names: list[str]) -> tuple[str, list[_Read]]:
+def _reads(names: list[str], languages: tuple[str, ...] = ()
+           ) -> tuple[str, list[_Read]]:
     """The nameparser this process imported, and _read of each name: a
     unit of work for _parsed."""
     import nameparser
-    return nameparser.__file__, [_read(n) for n in names]
+    return nameparser.__file__, [_read(n, languages) for n in names]
 
 
 def group_counts(local: Local, *, jobs: int = 1) -> GroupCounts:
@@ -871,7 +884,8 @@ def alike_kind(local: Local) -> str:
     raise Ungroupable(f"{local.source}'s records pair no two spellings of one person")
 
 
-def alike_flags(local: Local, *, jobs: int = 1) -> dict[str, bool]:
+def alike_flags(local: Local, *, jobs: int = 1,
+                languages: tuple[str, ...] = ()) -> dict[str, bool]:
     """Whether each person's spellings read alike, keyed by the entity or
     by the record's place in raw.jsonl, so that a key names no one. A
     person spelled two or more ways (alike_kind "entity") reads alike
@@ -879,20 +893,24 @@ def alike_flags(local: Local, *, jobs: int = 1) -> dict[str, bool]:
     pair where the two readings are one; a filed and reference pair whose
     spellings differ where both read one surname, the same (surname(), as
     pair_counts' agreement counts it). Each distinct name is parsed once,
-    in `jobs` worker processes."""
+    in `jobs` worker processes, under the choice of `languages` where
+    one is given."""
     kind = alike_kind(local)
     if kind == "entity":
         groups = {e: [n for _, n in v] for e, v in _by_entity(local).items() if len(v) > 1}
-        read = _parsed(_reads, (n for names in groups.values() for n in names), jobs)
+        read = _parsed(_reads, (n for names in groups.values() for n in names), jobs,
+                       languages)
         return {e: len({read[n].reading for n in names}) == 1 for e, names in groups.items()}
     if kind == "devanagari":
         pairs = {str(i): (r["name"], r["devanagari"]) for i, r in enumerate(local.records)
                  if r["devanagari"].strip()}
-        read = _parsed(_reads, (n for pair in pairs.values() for n in pair), jobs)
+        read = _parsed(_reads, (n for pair in pairs.values() for n in pair), jobs,
+                       languages)
         return {i: read[a].reading == read[b].reading for i, (a, b) in pairs.items()}
     pairs = {str(i): (r["name"], r["registry"]) for i, r in enumerate(local.records)
              if pair_shape(r["name"], r["registry"]) not in ("the same", "no reference name")}
-    family = _parsed(_surnames, (n for pair in pairs.values() for n in pair), jobs)
+    family = _parsed(_surnames, (n for pair in pairs.values() for n in pair), jobs,
+                     languages)
     return {i: family[a] == family[b] != "" for i, (a, b) in pairs.items()}
 
 
@@ -900,7 +918,7 @@ def alike_flags(local: Local, *, jobs: int = 1) -> dict[str, bool]:
 #: with _ALIKE_CONSTANTS, the record cut (read_records and
 #: corpus_build.jsonl_lines, which place a record at its index) and the
 #: fields of the readings compared.
-_ALIKE_CODE = ("alike_kind", "alike_flags", "_by_entity", "_reads", "_read", "reading",
+_ALIKE_CODE = ("alike_kind", "alike_flags", "_by_entity", "_reads", "_read", "_parse", "reading",
                "_surnames", "_parsed", "surname", "_pair_words", "_bare", "_unmarked",
                "pair_shape", "_in_order")
 _ALIKE_CONSTANTS = ("ALIKE_UNITS", "PAIR_MISSPELLED", "_PAIR_WORD", "_NAME_ROLES")
@@ -1390,10 +1408,13 @@ def _positive(text: str) -> int:
 def _alike_command(local: Local, args: argparse.Namespace) -> int:
     """`alike`: the tree's flags (this checkout's, or --tree's, checked
     to be the package imported), against --base's where one is named;
-    exits 1 where a person moved, as the other base checks do."""
+    under --languages, the tree's flags under that choice, against the
+    default's (--base's, or the tree's own); exits 1 where a person
+    moved, as the other base checks do."""
     import snapshot
     root = Path(args.tree).resolve() if args.tree else snapshot.REPO_ROOT
-    base = snapshot.base_root(args.base, root) if args.base else None
+    languages = args.languages
+    base = snapshot.base_root(args.base, root, bool(languages)) if args.base else None
     try:
         alike_kind(local)
         old = base_flags(base, local, args.jobs) if base is not None else None
@@ -1403,16 +1424,29 @@ def _alike_command(local: Local, args: argparse.Namespace) -> int:
         sys.path.insert(0, str(root))
     import nameparser
     snapshot.check_source(nameparser.__file__, root)
-    flags = alike_flags(local, jobs=args.jobs)
+    if languages and old is None:
+        old = alike_flags(local, jobs=args.jobs)
+    flags = alike_flags(local, jobs=args.jobs, languages=languages)
     snapshot.check_source(nameparser.__file__, root)
     if args.out:
         write_flags(args.out, local, flags)
         return 0
     print(local.header())
     if base is not None:
-        print(snapshot.head_line(root, base))
+        print(snapshot.head_line(root, base, languages))
+    if languages:
+        print(f"under the choice {', '.join(languages)}, against the default's "
+              f"flags\n")
     print("\n".join(format_alike(local, flags, old)))
     return int(old is not None and any(flags[k] != old[k] for k in flags))
+
+
+def _tags(value: str) -> tuple[str, ...]:
+    """--languages' comma-separated tags, at least one."""
+    tags = tuple(t.strip() for t in value.split(",") if t.strip())
+    if not tags:
+        raise argparse.ArgumentTypeError("needs at least one tag")
+    return tags
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -1449,6 +1483,10 @@ def main(argv: list[str] | None = None) -> int:
     alike.add_argument("--tree", metavar="PATH", help="read with another checkout")
     alike.add_argument("--out", type=Path, metavar="PATH",
                        help="write the tree's flags here (what --base's child does)")
+    alike.add_argument("--languages", type=_tags, default=(), metavar="TAGS",
+                       help="read under a choice of languages, comma-separated "
+                            "BCP 47 tags (ne,hi), and count the persons it moves "
+                            "against the default's flags")
     for command in (pair, group, alike):
         command.add_argument("--jobs", type=_positive, metavar="N",
                              default=os.cpu_count() or 1,
@@ -1456,6 +1494,9 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
     if args.command == "alike" and args.base and args.out:
         ap.error("--base compares; --out writes the tree's flags, for a child")
+    if args.command == "alike" and args.languages and args.out:
+        ap.error("--languages reads a choice against the default's flags; "
+                 "--out writes the default's, for a child")
     if args.command == "fetch":
         local = None
         if not args.refresh:
