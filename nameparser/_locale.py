@@ -8,18 +8,23 @@ union onto the result, and the PolicyPatch folds via apply_patch. Packs
 are pure data; they have no privileged capabilities
 (mechanisms.md#LOCALE-PACKS-PURE-DATA).
 
-Layering: imports _types, _lexicon and _policy only (enforced by
+Layering: imports _types, _lexicon and _policy only, and the compiled
+[rules] tables, nameparser/config/_rules.py, at call time (enforced by
 tests/v2/test_layering.py).
 """
 from __future__ import annotations
 
 import dataclasses
 import re
-from collections.abc import Iterable, Mapping
+from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, field
+from typing import Any
 
 from nameparser._lexicon import Lexicon
-from nameparser._policy import UNSET, PolicyPatch, _reject_str_and_mapping
+from nameparser._policy import (
+    _ORDER_CONSTANT_NAMES, UNSET, PatronymicRule, PolicyPatch,
+    _reject_str_and_mapping,
+)
 from nameparser._types import ADDED_IN, _guarded_getstate, _guarded_setstate
 
 # a BCP 47 tag's shape: a language subtag and any number of subtags
@@ -158,3 +163,37 @@ def _tags(value: object) -> frozenset[str]:
                 f"Locale.languages entries must be BCP 47 tags such as 'pt' "
                 f"or 'pt-BR', got {tag!r}")
     return frozenset(_canonical(tag) for tag in tags)
+
+
+#: How a compiled [rules] value becomes its PolicyPatch field's value,
+#: by key: an order by its constant's name written in the file's case
+#: ("family-first" is FAMILY_FIRST), a rule set by PatronymicRule's
+#: values. tools/vocab/build.py's RULE_KEYS checks the names at build
+#: time, and tests/v2/test_vocab.py holds the two tables to each other.
+_ORDERS = {name.lower().replace("_", "-"): order
+           for order, name in _ORDER_CONSTANT_NAMES.items()}
+_RULE_VALUES: dict[str, Callable[[Any], object]] = {
+    "name_order": lambda v: _ORDERS[v],
+    "patronymic_rules": lambda v: frozenset(PatronymicRule(r) for r in v),
+    "two_family_names": bool,
+}
+
+
+def rules_patch(tag: str) -> PolicyPatch:
+    """The policy patch compiled from the [rules] table of the
+    vocabulary file `tag` (``"ru"`` for ru.toml), which a shipped pack
+    carries as its ``policy`` (#754, 4f): each key is the Policy field
+    of the same name, so a rule a pack turns on is a Policy field and a
+    Locale holds no rules of its own. Raises KeyError naming the files
+    that hold a table when `tag`'s holds none."""
+    from nameparser.config._rules import RULES
+
+    tables = dict(RULES)
+    if tag not in tables:
+        raise KeyError(
+            f"no vocabulary file {tag!r} holds a [rules] table; the files "
+            f"that do: {', '.join(sorted(tables))}")
+    values = {key: _RULE_VALUES[key](value) for key, value in tables[tag]}
+    # Known mypy limitation with **dict-unpacked construction; see the
+    # full explanation at Lexicon._edit in _lexicon.py.
+    return PolicyPatch(**values)  # type: ignore[arg-type]

@@ -70,6 +70,14 @@ def test_the_committed_module_is_what_the_toml_compiles_to(shipped: dict[str, st
         f"run: {build.REFRESH}")
 
 
+def test_the_committed_rules_are_what_the_toml_compiles_to(shipped: dict[str, str]) -> None:
+    fresh = build.render_rules(build.load(shipped).rules)
+    committed = build.rules_output().read_text(encoding="utf-8")
+    assert committed == fresh, (
+        f"nameparser/config/_rules.py is stale against nameparser/vocab/; "
+        f"run: {build.REFRESH}")
+
+
 def test_the_shipped_files_pass_every_check_with_warnings_as_errors(
         shipped: dict[str, str]) -> None:
     assert shipped, "no vocabulary files found; the roster is empty"
@@ -226,6 +234,24 @@ def _w(body: str) -> str:
 
 
 MUTATIONS = [
+    # 12: [rules], only where a pack reads it, each key a rule with a
+    # value of its shape, never a scalar's default (#754, 4f)
+    ("rules-in-a-file-no-pack-reads", {"en.toml": _w('[rules]\ntwo_family_names = true')}, "en.toml: .* no pack reads this file's"),
+    ("rules-not-a-table", {"ru.toml": "schema = 1\nrules = true\n"}, "`rules` must be a table"),
+    ("rules-empty", {"ru.toml": _w("[rules]")}, "an empty table turns nothing on"),
+    ("rules-unknown-key", {"ru.toml": _w('[rules]\npatronymic = ["east-slavic"]')}, "unknown key 'patronymic'"),
+    ("rules-unknown-rule", {"ru.toml": _w('[rules]\npatronymic_rules = ["east_slavic"]')}, "has no value 'east_slavic'"),
+    ("rules-unknown-order", {"ru.toml": _w('[rules]\nname_order = "family_first"')}, "has no value 'family_first'"),
+    ("rules-set-not-an-array", {"ru.toml": _w('[rules]\npatronymic_rules = "east-slavic"')}, "must be an array of names"),
+    ("rules-set-of-a-non-string", {"ru.toml": _w('[rules]\npatronymic_rules = [1]')}, "must be an array of names"),
+    ("rules-set-empty", {"ru.toml": _w('[rules]\npatronymic_rules = []')}, "an empty patronymic_rules"),
+    ("rules-set-twice", {"tr.toml": _w('[rules]\npatronymic_rules = ["turkic", "turkic"]')}, "lists a value twice"),
+    ("rules-choice-not-a-string", {"ru.toml": _w('[rules]\nname_order = ["family-first"]')}, "must be a name"),
+    ("rules-flag-not-true", {"ru.toml": _w('[rules]\ntwo_family_names = "yes"')}, "must be `true`"),
+    ("rules-flag-an-integer", {"ru.toml": _w('[rules]\ntwo_family_names = 1')}, "must be `true`"),
+    ("rules-flag-default", {"ru.toml": _w('[rules]\ntwo_family_names = false')}, "is the default"),
+    ("rules-order-default", {"ru.toml": _w('[rules]\nname_order = "given-first"')}, "is the default"),
+    ("pack-file-without-rules", {"ru.toml": OK}, "locales.RU reads its policy patch"),
     # 1: schema, unknown keys, file names
     ("no-schema", {"und.toml": '[[word]]\ntext = "jr"\ngeneration = {}\n'}, "needs `schema = 1`"),
     ("newer-schema", {"und.toml": OK.replace("schema = 1", "schema = 2")}, "newer than this compiler"),
@@ -484,6 +510,11 @@ def test_every_mutation_starts_from_a_pool_the_checks_accept() -> None:
     # when written correctly, so each refusal is the mutation's
     for files in (
         {"en.toml": OK},
+        # every [rules] key and shape, in a file a pack reads, alone or
+        # beside words
+        {"ru.toml": _w('[rules]\npatronymic_rules = ["east-slavic", "turkic"]\n'
+                       'name_order = "family-first-given-last"\ntwo_family_names = true')},
+        {"tr.toml": _w('[rules]\nname_order = "family-first"\n\n' + OK.removeprefix("schema = 1\n\n"))},
         {"ja.toml": _w('[[word]]\ntext = "博士"\ncredential = { acronym = false }'),
          "zh.toml": _w('[[word]]\ntext = "博士"\ncredential = { acronym = false }')},
         {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = {}\n\n'
@@ -882,9 +913,17 @@ def test_no_error_exits_1_the_code_for_stale(tmp_path: Path, monkeypatch: pytest
     assert build.main(["--check"]) == 1
     assert "unreadable" in capsys.readouterr().out
     assert build.main([]) == 0
-    # the index is written beside a repointed OUTPUT, never into the package
+    # the index and the rules are written beside a repointed OUTPUT,
+    # never into the package
     assert (tmp_path / "_index.py").exists()
+    assert (tmp_path / "_rules.py").exists()
     assert build.main(["--check"]) == 0
+    # a stale rules module is stale like the other two (#754, 4f)
+    (tmp_path / "_rules.py").write_text("RULES = ()\n", encoding="utf-8")
+    capsys.readouterr()
+    assert build.main(["--check"]) == 1
+    assert "_rules.py is stale" in capsys.readouterr().out
+    assert build.main([]) == 0
     # a module that cannot be written is an internal error, exit 3
     build.OUTPUT.unlink()
     build.OUTPUT.mkdir()
@@ -1206,3 +1245,69 @@ def test_attaches_may_name_one_title_word() -> None:
         '[[word]]\ntext = "zzr"\nmilitary = {}\n\n'
         '[[word]]\ntext = "zzs"\nmilitary = {}')})
     assert c["TITLE_PHRASES"] == frozenset({"zzq zzr"})
+
+
+# ------------------------------------------------- [rules] (#754, 4f)
+def test_a_rules_table_compiles_to_sorted_pairs_a_module_holds() -> None:
+    pool = build.load({"ru.toml": _w('[rules]\ntwo_family_names = true\n'
+                                     'patronymic_rules = ["turkic", "east-slavic"]')})
+    assert pool.rules == {"ru": {"patronymic_rules": ("east-slavic", "turkic"),
+                                 "two_family_names": True}}
+    namespace: dict[str, Any] = {}
+    exec(build.render_rules(pool.rules), namespace)
+    assert namespace["RULES"] == (
+        ("ru", (("patronymic_rules", ("east-slavic", "turkic")),
+                ("two_family_names", True))),)
+
+
+def test_the_rule_tables_agree_with_policy() -> None:
+    # build.py's RULE_KEYS, checked at build time, and _locale's
+    # converters, read at a pack's import, are two halves of one schema
+    # (they cannot share a module: the build never imports the
+    # package); each key is the PolicyPatch field of its name, and its
+    # names are the enum's values and the order constants', the default
+    # a scalar's Policy() value
+    import dataclasses
+
+    from nameparser import _locale
+    from nameparser._policy import PatronymicRule, Policy, PolicyPatch, apply_patch
+
+    assert set(build.RULE_KEYS) == set(_locale._RULE_VALUES)
+    assert set(build.RULE_KEYS) <= {f.name for f in dataclasses.fields(PolicyPatch)}
+    assert build.RULE_KEYS["patronymic_rules"][1] == {r.value for r in PatronymicRule}
+    assert build.RULE_KEYS["name_order"][1] | {build.RULE_DEFAULTS["name_order"]} == set(
+        _locale._ORDERS)
+    default = Policy()
+    # every scalar key names its default, which converts to Policy()'s
+    # value and is refused at build time, so a new choice or flag key
+    # cannot let a pack restate it; a set key has no scalar default
+    scalars = {k for k, (shape, _) in build.RULE_KEYS.items() if shape != "set"}
+    assert set(build.RULE_DEFAULTS) == scalars
+    for key in scalars:
+        restated = _locale._RULE_VALUES[key](build.RULE_DEFAULTS[key])
+        assert restated == getattr(default, key), key
+        assert build.RULE_DEFAULTS[key] not in build.RULE_KEYS[key][1], key
+    for key, (shape, names) in build.RULE_KEYS.items():
+        if shape == "flag":
+            values: list[object] = [True]
+        elif shape == "choice":
+            values = sorted(names)
+        else:
+            values = [(name,) for name in sorted(names)]
+        for value in values:
+            # every name the build accepts converts to a value Policy
+            # takes, and turns the field away from its default
+            patch = PolicyPatch(**{key: _locale._RULE_VALUES[key](value)})  # type: ignore[arg-type]
+            policy = apply_patch(default, patch)
+            assert getattr(policy, key) != getattr(default, key), (key, value)
+
+
+def test_the_pack_roster_names_shipped_packs_their_files_compile_into() -> None:
+    from nameparser import locales
+    from nameparser._locale import rules_patch
+
+    assert set(build.PACK_RULES.values()) <= set(locales._REGISTRY)
+    for tag, attr in build.PACK_RULES.items():
+        assert getattr(locales, attr).policy == rules_patch(tag), attr
+    with pytest.raises(KeyError, match="no vocabulary file 'en' holds a \\[rules\\] table; the files that do: ru, tr"):
+        rules_patch("en")

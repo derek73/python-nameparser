@@ -1,10 +1,11 @@
 """Compile nameparser/vocab/*.toml into nameparser/config/_compiled.py,
-and write the reading index, nameparser/config/_index.py, beside it.
+and write the reading index, nameparser/config/_index.py, and the
+files' compiled [rules] tables, nameparser/config/_rules.py, beside it.
 
 Usage::
 
     uv run python tools/vocab/build.py           # rewrite both modules
-    uv run python tools/vocab/build.py --check   # exit 1 if either is stale
+    uv run python tools/vocab/build.py --check   # exit 1 if any is stale
 
 Either exits 2, printing the failed check, when the vocabulary fails one
 or a vocabulary file cannot be read, and 3 on an internal error or a
@@ -37,7 +38,7 @@ at fault:
 
 1. `schema` present and supported, no unknown key anywhere (a name a
    later phase will use says so), the file name a BCP 47 tag, at least
-   one entry in the file;
+   one entry or a `[rules]` table in the file;
 2. `text` normalized, non-empty, once per file, each word of a phrase
    normalized on its own, and a text some token can equal: no comma or
    nakaguro, no character the tokenizer strips by default (an emoji),
@@ -78,9 +79,14 @@ at fault:
     its word, which gates it (rules/S11), one on by default where the
     agnomen is, and no other suffix word kind has one, since the gate
     reads only those two;
+12. a `[rules]` table only in a file a shipped pack reads (PACK_RULES),
+    non-empty, each key a RULE_KEYS rule with a value of its shape and
+    names, a set's names once each, never a scalar's default (which
+    would turn a caller's rule off), and every file PACK_RULES lists
+    holding one (#754, 4f);
 
-numbered by subject, not by when they run: 1-3, 8, 7's case mask and
-11's refusals run per entry as each file loads, and 4-7, 9, 11's
+numbered by subject, not by when they run: 1-3, 8, 7's case mask,
+11's refusals and 12 run per file as each loads, and 4-7, 9, 11's
 particle statement and agnomen and 10 over the whole pool in
 check_pool, 6 first and 10 last. A reading written `default = false`
 is held to 1-3, 7, 8 and 11 like any other and compiles to nothing, so
@@ -270,6 +276,33 @@ RESERVED = {
 }
 _TAG = re.compile(r"[a-z]{2,3}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?")
 
+#: A file's `[rules]` table (#754, sub-phase 4f): each key a Policy
+#: field a pack turns on, with the values it takes -- "flag" a `true`,
+#: "choice" one of the names, "set" a non-empty array of them. A key's
+#: value is the field's value, the names being the order constants and
+#: PatronymicRule's values as nameparser._locale.rules_patch converts
+#: them; tests/v2/test_vocab.py holds the keys to PolicyPatch's fields,
+#: the names to the enum and constants and RULE_DEFAULTS to Policy's.
+#: A new rule kind is a Policy field and a row here (mechanisms.md's
+#: LOCALE-PACKS-PURE-DATA).
+RULE_KEYS: dict[str, tuple[str, frozenset[str]]] = {
+    "name_order": ("choice", frozenset({"family-first", "family-first-given-last"})),
+    "patronymic_rules": ("set", frozenset({"east-slavic", "turkic"})),
+    "two_family_names": ("flag", frozenset()),
+}
+#: The value a scalar key would restate: a pack's patch overrides the
+#: caller's own scalar, so writing the default would turn a caller's
+#: rule off rather than a rule on.
+RULE_DEFAULTS: dict[str, object] = {"name_order": "given-first", "two_family_names": False}
+#: The files whose `[rules]` a shipped pack reads: the file's tag -> the
+#: nameparser.locales attribute whose policy patch it is. A `[rules]`
+#: table elsewhere would compile into nothing a parser reads, so the
+#: build refuses it, and a tag listed here needs the table
+#: (check_pack_rules); tests/v2/test_locales.py holds the roster to the
+#: packs. TR_AZ reads tr.toml's: no az.toml exists, and the pack's rule
+#: is one rule for both languages.
+PACK_RULES: dict[str, str] = {"ru": "RU", "tr": "TR_AZ"}
+
 
 class VocabError(ValueError):
     """A build check failed; the message names the file and the word."""
@@ -336,6 +369,8 @@ class Pool:
     """Every reading and exclusion in the files, in file order."""
     readings: list[Reading] = field(default_factory=list)
     exclusions: list[Exclusion] = field(default_factory=list)
+    #: each file's `[rules]` table, checked, by the file's tag
+    rules: dict[str, dict[str, Any]] = field(default_factory=dict)
     #: each file's entries as written, for check 10's word order
     entries: dict[str, list[dict[str, Any]]] = field(default_factory=dict)
 
@@ -425,12 +460,14 @@ def load(files: Mapping[str, str]) -> Pool:
         if schema != SCHEMA:
             raise VocabError(f"{name}: schema {schema} is not supported")
         for k in data:
-            if k not in ("schema", "word"):
-                raise _reserved_or_unknown(name, k, ("schema", "word"))
+            if k not in ("schema", "word", "rules"):
+                raise _reserved_or_unknown(name, k, ("schema", "word", "rules"))
         words = data.get("word", [])
         if not isinstance(words, list):
             raise VocabError(f"{name}: `word` must be an array of tables ([[word]])")
-        if not words:
+        if "rules" in data:
+            pool.rules[name.removesuffix(".toml")] = _load_rules(name, data["rules"])
+        elif not words:
             # a file with the header and nothing else -- a botched move,
             # every entry cut and none pasted -- compiles to nothing
             raise VocabError(f"{name}: no [[word]] entries; delete the file "
@@ -441,7 +478,68 @@ def load(files: Mapping[str, str]) -> Pool:
                 raise VocabError(f"{name}: `word` must be an array of tables ([[word]])")
             _load_entry(name, entry, seen, pool)
         pool.entries[name] = words
+    check_pack_rules(files, pool.rules)
     return pool
+
+
+def _load_rules(name: str, table: object) -> dict[str, Any]:
+    """A file's `[rules]` table, checked against RULE_KEYS and
+    PACK_RULES; the value of a "set" key comes back as a sorted tuple."""
+    where = f"{name} [rules]"
+    tag = name.removesuffix(".toml")
+    if tag not in PACK_RULES:
+        raise VocabError(f"{name}: a [rules] table compiles into a shipped pack's "
+                         f"policy patch, and no pack reads this file's; the files "
+                         f"packs read are {sorted(PACK_RULES)} (PACK_RULES)")
+    if not isinstance(table, dict):
+        raise VocabError(f"{name}: `rules` must be a table ([rules])")
+    if not table:
+        raise VocabError(f"{where}: an empty table turns nothing on; delete it")
+    out: dict[str, Any] = {}
+    for key in sorted(table):
+        if key not in RULE_KEYS:
+            raise _reserved_or_unknown(where, key, RULE_KEYS)
+        value = table[key]
+        shape, names = RULE_KEYS[key]
+        if key in RULE_DEFAULTS and value == RULE_DEFAULTS[key] \
+                and type(value) is type(RULE_DEFAULTS[key]):
+            raise VocabError(f"{where}: {key} = {_shown(value)} is the default, and "
+                             f"a pack's value overrides the caller's own; a rule "
+                             f"is written only to turn it on, so delete the key")
+        if shape == "flag":
+            if value is not True:
+                raise VocabError(f"{where}: {key} must be `true`, got {_shown(value)}")
+            out[key] = True
+            continue
+        values = [value] if shape == "choice" else value
+        if shape == "choice" and not isinstance(value, str) or shape == "set" and (
+                not isinstance(value, list) or not all(isinstance(v, str) for v in value)):
+            want = "a name" if shape == "choice" else "an array of names"
+            raise VocabError(f"{where}: {key} must be {want} from {sorted(names)}, "
+                             f"got {_shown(value)}")
+        if not values:
+            raise VocabError(f"{where}: an empty {key} turns nothing on; delete it")
+        for v in values:
+            if v not in names:
+                raise VocabError(f"{where}: {key} has no value {v!r}; "
+                                 f"allowed: {sorted(names)}")
+        if len(set(values)) != len(values):
+            raise VocabError(f"{where}: {key} lists a value twice: {_shown(value)}")
+        out[key] = value if shape == "choice" else tuple(sorted(values))
+    return out
+
+
+def check_pack_rules(names: Iterable[str], rules: Mapping[str, Mapping[str, Any]]) -> None:
+    """Every file a shipped pack reads its rules from holds a `[rules]`
+    table, so a deleted table fails here rather than shipping a pack
+    whose patch is empty. Asked of the files present, so a test's
+    fixture holding none of the packs' files passes; a pack's file
+    deleted whole fails at the pack's import instead (rules_patch's
+    KeyError)."""
+    for tag, attr in sorted(PACK_RULES.items()):
+        if f"{tag}.toml" in names and tag not in rules:
+            raise VocabError(f"{tag}.toml: locales.{attr} reads its policy patch "
+                             f"from this file's [rules] table, and it has none")
 
 
 # ------------------------------------------------------------ word order
@@ -1292,6 +1390,37 @@ documents the row; _compiled.py is this index compiled.
 '''
 
 
+RULES_HEADER = f'''"""The compiled [rules] tables. GENERATED from nameparser/vocab/*.toml by
+tools/vocab/build.py -- do not edit; edit the TOML and run
+
+    {REFRESH}
+
+One line per vocabulary file holding a [rules] table: its BCP 47 tag
+and its keys as sorted (Policy field, value) pairs, a set-valued field's
+value a sorted tuple. nameparser._locale.rules_patch turns a file's
+pairs into the PolicyPatch its shipped pack carries (#754, 4f).
+"""
+'''
+
+
+def rules_output() -> Path:
+    """Where the compiled [rules] are written: beside OUTPUT, read when
+    the build runs, as index_output is."""
+    return OUTPUT.with_name("_rules.py")
+
+
+def render_rules(rules: Mapping[str, Mapping[str, Any]]) -> str:
+    """One file per line, so a change to a file's rules is a one-line
+    diff; a tuple of pairs, as the index is, so the module holds no
+    mutable state."""
+    out = [RULES_HEADER, "",
+           "RULES: tuple[tuple[str, tuple[tuple[str, object], ...]], ...] = ("]
+    out += [f"    ({tag!r}, {tuple(sorted(rules[tag].items()))!r}),"
+            for tag in sorted(rules)]
+    out.append(")")
+    return "\n".join(out) + "\n"
+
+
 def index_output() -> Path:
     """Where the index is written: beside OUTPUT, read when the build
     runs rather than bound at import, so a test repointing OUTPUT at a
@@ -1342,7 +1471,8 @@ def _run(*, check: bool) -> int:
     compiled = compile_pool(pool)
     stale = 0
     for path, text in ((OUTPUT, render(compiled)),
-                       (index_output(), render_index(index_rows(pool)))):
+                       (index_output(), render_index(index_rows(pool))),
+                       (rules_output(), render_rules(pool.rules))):
         stale += _refresh(path, text, check=check)
     return 1 if stale else 0
 

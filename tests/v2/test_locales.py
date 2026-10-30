@@ -646,22 +646,45 @@ def test_pack_vocabulary_entries_are_single_words() -> None:
                     f"whitespace and can never match")
 
 
-def test_pack_marker_regexes_stay_in_sync_with_the_pipeline() -> None:
+def test_rules_packs_equal_their_hand_written_patches() -> None:
+    # 4f (#754): RU's and TR_AZ's patches are compiled from ru.toml's
+    # and tr.toml's [rules]; they must be the Locales written by hand
+    # before, value for value and enum member for enum member, so a
+    # pickle of either loads as the other
+    from nameparser._policy import PolicyPatch
+
+    assert locales.RU == Locale(code="ru", lexicon=Lexicon.empty(), policy=PolicyPatch(
+        patronymic_rules=frozenset({PatronymicRule.EAST_SLAVIC})))
+    assert locales.TR_AZ == Locale(code="tr_az", lexicon=Lexicon.empty(), policy=PolicyPatch(
+        patronymic_rules=frozenset({PatronymicRule.TURKIC})))
+    for pack in (locales.RU, locales.TR_AZ):
+        assert pack.languages == frozenset()
+        rules = pack.policy.patronymic_rules
+        assert rules is not UNSET
+        assert all(type(r) is PatronymicRule for r in rules)
+
+
+def test_a_packs_marker_regexes_are_the_rules_its_patch_turns_on() -> None:
     # ru.py/tr_az.py hand-copy their DEVIATES marker regexes from
     # _pipeline._vocab (layering forbids a pack importing the
-    # pipeline -- see each pack's module docstring). Assert pattern
-    # equality mechanically so drift fails here, not at the L6
-    # non-interference gate.
+    # pipeline -- see each pack's module docstring). Which rules a pack
+    # turns on is its compiled policy patch (4f), so the copies a pack
+    # must hold are derived from it: a rule added to a file's [rules]
+    # fails here until DEVIATES declares its surface, and drift in a
+    # copy fails here, not at the L6 non-interference gate.
     from nameparser._pipeline import _vocab
 
-    for pack_regex, rule_regex in (
-        (_ru._EAST_SLAVIC, _vocab._EAST_SLAVIC),
-        (_ru._EAST_SLAVIC_CYR, _vocab._EAST_SLAVIC_CYR),
-        (_tr_az._TURKIC, _vocab._TURKIC),
-        (_tr_az._TURKIC_CYR, _vocab._TURKIC_CYR),
-    ):
-        assert pack_regex.pattern == rule_regex.pattern
-        assert pack_regex.flags == rule_regex.flags
+    rule_patterns = {
+        PatronymicRule.EAST_SLAVIC: (_vocab._EAST_SLAVIC, _vocab._EAST_SLAVIC_CYR),
+        PatronymicRule.TURKIC: (_vocab._TURKIC, _vocab._TURKIC_CYR),
+    }
+    assert set(rule_patterns) == set(PatronymicRule)
+    for code, module in _PACKS.items():
+        rules = locales.get(code).policy.patronymic_rules
+        want = set() if rules is UNSET else {
+            (p.pattern, p.flags) for r in rules for p in rule_patterns[r]}
+        got = {(p.pattern, p.flags) for p in _marker_regexes(module)}
+        assert got == want, code
 
 
 def test_ru_deviates_scans_per_token() -> None:

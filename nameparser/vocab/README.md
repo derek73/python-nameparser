@@ -2,7 +2,7 @@
 
 This folder holds the parser's default vocabulary: the titles, suffixes, particles, conjunctions, bound given names and maiden markers it recognizes, and the case of the words it capitalizes specially, written one word at a time. It is the place to edit when a word should be recognized, should stop being recognized, or should be recognized differently.
 
-The parser never reads these files. `tools/vocab/build.py` compiles them into `nameparser/config/_compiled.py`, a committed module of sorted `frozenset` literals and one `dict` (`CAPITALIZATION_EXCEPTIONS`), and the `nameparser.config` modules re-export them under their public names (`TITLES`, `PARTICLES`, ...). Beside it the build writes a second committed module from the same readings, the reading index `nameparser/config/_index.py`, which keeps every reading with the tag of the file it is in and the properties the compiler reads, so that a choice of languages can compile from it later (3.0's phase 3). So an edit here does nothing until you rebuild, and the tests fail, naming the command, when either committed module and the files disagree.
+The parser never reads these files. `tools/vocab/build.py` compiles them into `nameparser/config/_compiled.py`, a committed module of sorted `frozenset` literals and one `dict` (`CAPITALIZATION_EXCEPTIONS`), and the `nameparser.config` modules re-export them under their public names (`TITLES`, `PARTICLES`, ...). Beside it the build writes a second committed module from the same readings, the reading index `nameparser/config/_index.py`, which keeps every reading with the tag of the file it is in and the properties the compiler reads, so that a choice of languages can compile from it later (3.0's phase 3), and a third, `nameparser/config/_rules.py`, holds the files' [rules](#rules) tables. So an edit here does nothing until you rebuild, and the tests fail, naming the command, when a committed module and the files disagree.
 
 Why the model looks this way, and what each decision cost, is recorded in [decisions/vocabulary-model](../../docs/design/decisions/vocabulary-model.md). Where it is going (phases 2 to 4) is in [the vocabulary model RFC](../../docs/design/vocabulary-model-rfc.md).
 
@@ -21,7 +21,7 @@ The default vocabulary loads every file, so which file a word is in changes noth
 
 ## How an entry is built
 
-Each file has `schema = 1` at the top, then one `[[word]]` table per word. An entry has a `text` and its **readings**: what the word can be read as, each keyed by its kind and each a table, even when empty.
+Each file has `schema = 1` at the top, then a [`[rules]`](#rules) table if a shipped pack reads one from it, then one `[[word]]` table per word. An entry has a `text` and its **readings**: what the word can be read as, each keyed by its kind and each a table, even when empty.
 
 ```toml
 [[word]]
@@ -250,12 +250,31 @@ Record a count on the word as a `given` or `family` reading, with the date you t
 2. **Check it against real names, not memory.** `uv run python tools/name_usage.py <word>` gives the counts (add `--fetch-nppes` for a suffix, to see how often it is written as a credential), and [decisions/vocabulary-collisions](../../docs/design/decisions/vocabulary-collisions.md) is the criterion they are read against: a word that is a real name in the position the reading acts on needs a name reading with those counts, which marks the clash (see [Derived markers](#derived-markers)), or should stay out. `nameparser/vocab/AGENTS.md` lists the traps that have bitten before, filed under these steps.
 3. **Check how it is written.** The entry's `text` is the folded spelling (`mbchb`), and `capitalized()` writes an acronym credential in capitals unless the word has a `cased` mask, so one that people write in mixed case (`MBChB`, `DPhil`, `ScD`) needs the mask: `cased = "MBChB"`. Nothing in the build can see this, since no source it reads records case. The ClinicalTrials.gov row of `name_usage.py` lists the spellings as typed ("written MBChB 1,442, MBCHB 72, MbChB 28"), once that local corpus is fetched (`uv run python tools/differential/local_corpora.py fetch ctgov-officials`). Where a mask would cost a name its rendering, refuse it instead, with the reason, as `edd` does (`'edd smith'` would render `'EdD Smith'`). #806 added twelve mixed-case credentials without their masks, and review caught it.
 4. **Write the entry** in the file of the language whose names it occurs in (`und.toml` when that is not known), in its place in the [word order](#word-order), with what the checks found on it: `note`, `issue`, a dated name reading, a `cased` mask, or an `excluded` entry if you decided against it.
-5. **Rebuild**: `uv run python tools/vocab/build.py`. It refuses what it can detect, naming the word and, where one file is at fault, the file, and rewrites `nameparser/config/_compiled.py` and `nameparser/config/_index.py`. Commit all three.
+5. **Rebuild**: `uv run python tools/vocab/build.py`. It refuses what it can detect, naming the word and, where one file is at fault, the file, and rewrites `nameparser/config/_compiled.py`, `nameparser/config/_index.py` and `nameparser/config/_rules.py`. Commit the file and whichever modules it moved.
 6. **Run the tests**: `uv run pytest tests/v2/test_vocab.py` for the build, then the full suite, and read what `tests/v2/test_snapshot.py` reports as moved (the root `AGENTS.md`, "Validating a new parsing rule"). `uv run python tools/differential/measure.py --base <checkout>` runs that check and the CLDR one against the branch's committed records, and every local-corpus check against the base checkout, in one command, writing one summary (`tools/differential/README.md`, "Measuring a change").
 
 For a word whose reading acts on a name position, such as a title that is also a given name, `uv run python tools/vocab/word_report.py <word>... --base <checkout>` reads it both ways in one run: the word in a grid of shapes (a head, behind a title, after a family comma, after a full name and a comma, past a second comma, trailing with a period, inside a title phrase), each in three cases and under the three name orders, printing the rows the base reads differently; how the names in every fetched local corpus that open with the word, or open the part after the first comma with it, read it (title, given or other, counts only, with the corpora it could not read named); and `name_usage.py`'s rows. Without `--base` it prints every text, one line where the three orders agree and one block where the three cases read alike once lowercased; with it, what moved, folded the same way. `--rank` takes a list of words, the triage for a batch, which needs no change to the tree. It counts the corpus names that read each word as the title at either position, which holds real titles too, and beside them the `psc-individuals` filings opening with the word by the box the filer typed it into: the title box (a real title, what the move costs) and the forename box (a given name the title takes, what it gives back). The words are ordered by the forename box's count, printed beside its share of the two as a fraction (`164/165`), so a word three filers typed as a forename does not outrank one 164 did. On 2026-10-27 `sir` read as the title in 495 names but was filed 277 times as a title and 8 as a forename, while `sheikh`'s 13 title-box filings were the 13 agreement records #912 moved away from agreeing.
 
-`uv run python tools/vocab/build.py --check` exits 1 when the committed module is stale and 2 when a file fails a check. The checks themselves are numbered in `build.py`'s docstring.
+`uv run python tools/vocab/build.py --check` exits 1 when a committed module is stale and 2 when a file fails a check. The checks themselves are numbered in `build.py`'s docstring.
+
+## Rules
+
+A file a shipped locale pack reads may hold a `[rules]` table: the rules that pack turns on, compiled by the build into `nameparser/config/_rules.py` and read by `nameparser._locale.rules_patch` as the pack's `policy` (3.0's sub-phase 4f, #754). Each key is the `Policy` field of the same name, so the table says in data what `Policy(...)` says in code:
+
+```toml
+[rules]
+patronymic_rules = ["east-slavic"]
+```
+
+| Key | Value | The `Policy` field it sets |
+|---|---|---|
+| `patronymic_rules` | a non-empty array of rule names, each once: `"east-slavic"`, `"turkic"` | `patronymic_rules`, a set of `PatronymicRule` (rules/O1, rules/O2) |
+| `name_order` | `"family-first"` or `"family-first-given-last"` | `name_order`, the order constant of that name |
+| `two_family_names` | `true` | `two_family_names` (rules/O6) |
+
+A rule is written only to turn it on: `name_order = "given-first"` and `two_family_names = false` are the defaults, and a pack's value overrides the caller's own, so the build refuses both rather than let a pack switch a caller's rule off. The files that hold a table are exactly the ones `PACK_RULES` in `tools/vocab/build.py` lists, each beside the pack that reads it (`tr.toml` is `locales.TR_AZ`'s, one file for Turkish and Azerbaijani, since there is no `az.toml`); a table in any other file is a build error, since nothing would read it, and so is a file listed there without one. Writing a `[rules]` table does not choose the file's vocabulary: that is the pack's `languages`, a separate field.
+
+A rule KIND the table does not list (a compound given name, a married-name ending) is a change to the parser, not to a file: a new `Policy` field (with `ADDED_IN`), a row in `build.py`'s `RULE_KEYS` and in `_locale.py`'s `_RULE_VALUES`, and a mechanisms.md entry of its own for the rule kind (mechanisms.md#LOCALE-PACKS-PURE-DATA). `tests/v2/test_vocab.py` holds the two tables to each other and to `Policy`.
 
 ## Names reserved for later phases
 

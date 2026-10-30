@@ -1,5 +1,9 @@
 schema = 1
 
+# locales.TR_AZ's policy patch, compiled by tools/vocab/build.py (README.md, "Rules")
+[rules]
+patronymic_rules = ["turkic"]
+
 [[word]]
 text = "bay"
 family = { us_census_2010 = 6350, wikidata = 120, as_of = 2026-10-17, note = "11 of the Wikidata bearers Hungarian" }
