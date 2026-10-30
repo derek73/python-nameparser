@@ -271,10 +271,11 @@ patronymic_rules = ["east-slavic"]
 | `patronymic_rules` | a non-empty array of rule names, each once: `"east-slavic"`, `"turkic"` | `patronymic_rules`, a set of `PatronymicRule` (rules/O1, rules/O2) |
 | `name_order` | `"family-first"` or `"family-first-given-last"` | `name_order`, the order constant of that name |
 | `two_family_names` | `true` | `two_family_names` (rules/O6) |
+| `two_given_names` | `true` | `two_given_names` (rules/O7) |
 
-A rule is written only to turn it on: `name_order = "given-first"` and `two_family_names = false` are the defaults, and a pack's value overrides the caller's own, so the build refuses both rather than let a pack switch a caller's rule off. The files that hold a table are exactly the ones `PACK_RULES` in `tools/vocab/build.py` lists, each beside the pack that reads it (`tr.toml` is `locales.TR_AZ`'s, one file for Turkish and Azerbaijani, since there is no `az.toml`); a table in any other file is a build error, since nothing would read it, and so is a file listed there without one. Writing a `[rules]` table does not choose the file's vocabulary: that is the pack's `languages`, a separate field.
+A rule is written only to turn it on: `name_order = "given-first"`, `two_family_names = false` and `two_given_names = false` are the defaults, and a pack's value overrides the caller's own, so the build refuses both rather than let a pack switch a caller's rule off. The files that hold a table are exactly the ones `PACK_RULES` in `tools/vocab/build.py` lists, each beside the pack that reads it (`tr.toml` is `locales.TR_AZ`'s, one file for Turkish and Azerbaijani, since there is no `az.toml`); a table in any other file is a build error, since nothing would read it, and so is a file listed there without one. Writing a `[rules]` table does not choose the file's vocabulary: that is the pack's `languages`, a separate field.
 
-A rule KIND the table does not list (a compound given name, a married-name ending) is a change to the parser, not to a file: a new `Policy` field (with `ADDED_IN`), a row in `build.py`'s `RULE_KEYS` and in `_locale.py`'s `_RULE_VALUES`, and a mechanisms.md entry of its own for the rule kind (mechanisms.md#LOCALE-PACKS-PURE-DATA). `tests/v2/test_vocab.py` holds the two tables to each other and to `Policy`.
+A rule KIND the table does not list (a married-name ending) is a change to the parser, not to a file: a new `Policy` field (with `ADDED_IN`), a row in `build.py`'s `RULE_KEYS` and in `_locale.py`'s `_RULE_VALUES`, and a mechanisms.md entry of its own for the rule kind (mechanisms.md#LOCALE-PACKS-PURE-DATA). `tests/v2/test_vocab.py` holds the two tables to each other and to `Policy`.
 
 ## Names reserved for later phases
 

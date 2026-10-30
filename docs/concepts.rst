@@ -75,7 +75,9 @@ word is the given name, the last is the family name, and anything
 between them is the middle name. ``name_order``, an explicit comma
 and ``script_orders`` change what "first" and "last" mean here, as
 does the opt-in ``two_family_names``, which takes the last two name
-words as the family (:ref:`two-family-names`).
+words as the family (:ref:`two-family-names`), and the opt-in
+``two_given_names``, which gives the given name the middle name beside
+it (:ref:`two-given-names`).
 ``script_orders`` covers the East Asian writing that settles its own
 order: a name wholly in Han or hangul, or a Japanese name in kanji and
 kana — any of them, hiragana alone included — unless it is katakana

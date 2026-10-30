@@ -111,7 +111,8 @@ class Rule:
 
 
 from nameparser._policy import (  # noqa: E402
-    FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, CapsSuffixes, Policy)
+    FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, CapsSuffixes, PatronymicRule,
+    Policy)
 
 #: Named policies example annotations may reference. Grown as
 #: extraction demands; each addition is a diff to this dict only.
@@ -131,6 +132,21 @@ POLICIES: dict[str, Policy] = {
         name_order=FAMILY_FIRST_GIVEN_LAST, two_family_names=True),
     "two_family_names+middle_as_family": Policy(
         two_family_names=True, middle_as_family=True),
+    #: rules/O7's switch (#704), named after its field as O6's is,
+    #: with each order, with O6's switch it reads after and with
+    #: middle_as_family, which reads after it.
+    "two_given_names": Policy(two_given_names=True),
+    "family-first+two_given_names": Policy(
+        name_order=FAMILY_FIRST, two_given_names=True),
+    "family-first-given-last+two_given_names": Policy(
+        name_order=FAMILY_FIRST_GIVEN_LAST, two_given_names=True),
+    "two_family_names+two_given_names": Policy(
+        two_family_names=True, two_given_names=True),
+    "two_given_names+middle_as_family": Policy(
+        two_given_names=True, middle_as_family=True),
+    "east-slavic+two_given_names": Policy(
+        patronymic_rules=frozenset({PatronymicRule.EAST_SLAVIC}),
+        two_given_names=True),
     "maiden-parens": Policy(maiden_delimiters=frozenset({("(", ")")})),
     "keep-emoji": Policy(strip_emoji=False),
     "strict-comma-suffixes": Policy(lenient_comma_suffixes=False),

@@ -289,11 +289,14 @@ RULE_KEYS: dict[str, tuple[str, frozenset[str]]] = {
     "name_order": ("choice", frozenset({"family-first", "family-first-given-last"})),
     "patronymic_rules": ("set", frozenset({"east-slavic", "turkic"})),
     "two_family_names": ("flag", frozenset()),
+    "two_given_names": ("flag", frozenset()),
 }
 #: The value a scalar key would restate: a pack's patch overrides the
 #: caller's own scalar, so writing the default would turn a caller's
 #: rule off rather than a rule on.
-RULE_DEFAULTS: dict[str, object] = {"name_order": "given-first", "two_family_names": False}
+RULE_DEFAULTS: dict[str, object] = {
+    "name_order": "given-first", "two_family_names": False,
+    "two_given_names": False}
 #: The files whose `[rules]` a shipped pack reads: the file's tag -> the
 #: nameparser.locales attribute whose policy patch it is. A `[rules]`
 #: table elsewhere would compile into nothing a parser reads, so the

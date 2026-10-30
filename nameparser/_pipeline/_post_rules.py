@@ -19,15 +19,16 @@ family-first (#467) -- after a family comma, that attachment is
 assign's since #613, and behind an empty part before the comma too
 since #892.
 Reads: Policy.patronymic_rules, Policy.two_family_names,
-Policy.name_order (O6 stands down where the script's order differs
-from the declared one), Policy.middle_as_family,
+Policy.two_given_names, Policy.name_order (O6 and O7 stand down where
+the script's order differs from the declared one),
+Policy.middle_as_family,
 Policy.extra_suffix_delimiters (R1's entry pass, for the delimiter
 cores group drops); Lexicon.given_name_titles, and
 Lexicon.suffix_acronyms_ambiguous (a dotted member in a clause, which
 carries no tag there, S13).
 
 Implements rules S13, H1, M4, P1, P6 (its no-comma site), O1, O2, O6,
-O3 and R1 of docs/design/rules/; each is cited at its code below, and
+O7, O3 and R1 of docs/design/rules/; each is cited at its code below, and
 H1/P1/O1/O2's history lives in docs/design/decisions/.
 `suffix_entries` is the R1 entry pass as a state-in/state-out
 function, for Parser.revise to run over a forced-role sub-parse
@@ -321,6 +322,61 @@ def _take_second_family_name(state: ParseState,
             state.order, len(units))[1:]):
         for i in unit:
             _retag(tokens, i, role)
+
+
+def _take_second_given_name(state: ParseState,
+                            tokens: list[WorkToken]) -> None:
+    # rules/O7: "the given name takes the middle unit beside it" --
+    # O6's mirror, read after O6 has taken its word and before O3
+    # folds what is left. In place, as every post rule writes.
+    # History: decisions/O7 (#704).
+    # A family comma leaves the given part laid out given-first; without
+    # one, an order the script set (W4) is not the caller's, as for O6.
+    if state.structure is Structure.FAMILY_COMMA:
+        given_first = True
+    elif state.order is None or state.order != state.policy.name_order:
+        return
+    else:
+        given_first = state.order.index(Role.GIVEN) < state.order.index(
+            Role.MIDDLE)
+    given = _idx(tokens, Role.GIVEN)
+    middle = _idx(tokens, Role.MIDDLE)
+    # a given name already holding two words keeps what it has: a
+    # hyphenated one, or a bound given-name pair (P5), counted as O6
+    # counts the family
+    if not given or not middle or _family_word_count(tokens, given) != 1:
+        return
+    units = _units(tokens, middle)
+    if given_first:
+        take = units[0]
+        if take[0] < given[-1]:
+            return
+    else:
+        take = units[-1]
+        if take[-1] > given[0]:
+            return
+    # ONE name word, counted as O6 counts one, with a letter in it; an
+    # initial is taken, since it writes a given name. A given name with
+    # no letter in it is a mark or a number, nothing to complete.
+    if (_family_word_count(tokens, take) != 1
+            or not any(ch.isalpha() for i in take for ch in tokens[i].text)
+            or not any(ch.isalpha() for i in given for ch in tokens[i].text)):
+        return
+    # a patronymic is no given name: a word an ending rule a policy
+    # turns on reads as one (R9), and a Turkic marker's father
+    rules = state.policy.patronymic_rules
+    if rules:
+        slavic = PatronymicRule.EAST_SLAVIC in rules
+        turkic = PatronymicRule.TURKIC in rules
+        after = take[-1] + 1
+        if any(slavic and has_patronymic_ending(tokens[i].text)
+               or turkic and is_patronymic_marker(tokens[i].text)
+               for i in take) or (
+                turkic and after < len(tokens)
+                and is_patronymic_marker(tokens[after].text)):
+            return
+    for i in take:
+        _retag(tokens, i, Role.GIVEN)
 
 
 # rules/R10: "the family's second name unit, the one written second,
@@ -778,6 +834,8 @@ def post_rules(state: ParseState) -> ParseState:
 
     if state.policy.two_family_names:
         _take_second_family_name(state, tokens)
+    if state.policy.two_given_names:
+        _take_second_given_name(state, tokens)
 
     # rules/O3: "every middle word joins the family name and is
     # rendered before it" (v1 handle_middle_name_as_last). v1

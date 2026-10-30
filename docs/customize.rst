@@ -694,6 +694,12 @@ listed below.
      - Reads the last two name words as the family name, for data
        where people carry two family names (Spain, most of Latin
        America). Defaults to ``False``. See :ref:`two-family-names`.
+   * - ``two_given_names``
+     - ``bool``
+     - Reads the middle name beside the given name as part of it, for
+       data where people carry a compound given name and no middle
+       name (``María José``). Defaults to ``False``. See
+       :ref:`two-given-names`.
    * - ``nickname_delimiters``
      - ``frozenset[tuple[str, str]]``
      - Routes content enclosed by these delimiter pairs to
@@ -1016,6 +1022,59 @@ as ``Santos Reyes``. Among ORCID's researchers in the Philippines it
 breaks 8,234 names of 20,000 and mends 265. The parser
 reports nothing for the names the switch moves: the shape it reads is
 the same either way.
+
+.. _two-given-names:
+
+Names with a compound given name
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A Spanish or Portuguese given name is often two names, such as María
+José or Juan Carlos, and its bearer has no middle name. The default
+reads the second as a middle name, the English convention:
+
+.. doctest::
+
+    >>> carlos = parse("Juan Carlos Pérez")
+    >>> carlos.given, carlos.middle
+    ('Juan', 'Carlos')
+
+``two_given_names=True`` gives the given name the middle name beside
+it. Any middle names past it stay middle names, a family comma leaves
+the part after it to the switch, and with ``two_family_names`` on too
+the family takes its word first, so a name of four words reads two and
+two:
+
+.. doctest::
+
+    >>> two_given = Parser(policy=Policy(two_given_names=True))
+    >>> two_given.parse("Juan Carlos Pérez").given
+    'Juan Carlos'
+    >>> two_given.parse("Pérez, Juan Carlos Antonio").middle
+    'Antonio'
+    >>> both = Parser(policy=Policy(two_family_names=True,
+    ...                             two_given_names=True))
+    >>> mj = both.parse("María José García López")
+    >>> mj.given, mj.middle, mj.family
+    ('María José', '', 'García López')
+    >>> both.parse("Gabriel García Márquez").given
+    'Gabriel'
+
+A given name a particle completes reads whole where a second particle
+starts the family (``"María del Carmen de la Vega"`` gives given
+``María del Carmen``); where the particle's words run to the end of
+the name, as in ``"Maria do Carmo Silva"``, they stay the family with
+the switch on or off, the same shape as ``"João da Silva Santos"``.
+
+Turn it on only for data written this way: under it every name whose
+second given word is a middle name gains it in the given name
+(``"John Quincy Adams"`` gives given ``John Quincy``), and people
+filling a form that has a middle-name box split their names the other
+way. Among the UK company register's 6,101 Spanish filers, 31.7% of
+names agree in every box by default and 15.7% with this switch on;
+with ``two_family_names`` on, 79.8% without this switch and 54.8%
+with it (measured 2026-10-30). ``middle`` keeps its meaning either way,
+the given part's words after the given name; the switch moves no word
+anywhere else and reports nothing.
 
 .. _east-asian-defaults:
 

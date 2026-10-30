@@ -478,7 +478,8 @@ by ``tests/v2/test_locales.py``:
    never imports pack modules).
 #. Write the rules the pack turns on as data, if they are ``Policy``
    fields the vocabulary files' ``[rules]`` table lists
-   (``patronymic_rules``, ``name_order``, ``two_family_names``): put the
+   (``patronymic_rules``, ``name_order``, ``two_family_names``,
+   ``two_given_names``): put the
    table in the pack's language file, list the file in ``PACK_RULES``
    in ``tools/vocab/build.py``, rebuild, and give the pack
    ``policy=rules_patch("<tag>")`` from ``nameparser._locale``, as

@@ -176,6 +176,7 @@ _RULE_VALUES: dict[str, Callable[[Any], object]] = {
     "name_order": lambda v: _ORDERS[v],
     "patronymic_rules": lambda v: frozenset(PatronymicRule(r) for r in v),
     "two_family_names": bool,
+    "two_given_names": bool,
 }
 
 
