@@ -1393,9 +1393,10 @@ class ParsedName:
         # word placed by the reading it took ('D.' after 'Ph.' takes
         # the credential's) and a connective going with the word it
         # follows ('PhD and MD'); two words of one view are separated
-        # as the writer separated them, by a comma where one stands
-        # anywhere between them and by a space where none does
-        # ('MD Jr. PhD' gives 'MD PhD', 'MD, Jr. PhD' gives 'MD, PhD')
+        # by a comma where `suffix` holds one anywhere between them (an
+        # entry boundary, a word not `joined`) and by a space where it
+        # holds none ('MD Jr. PhD' gives 'MD PhD', 'MD, Jr. PhD' and
+        # 'MD / Jr. / PhD' give 'MD, PhD')
         parts: list[str] = []
         before: bool | None = None
         comma = False

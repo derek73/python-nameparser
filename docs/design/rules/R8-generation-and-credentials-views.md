@@ -2,7 +2,7 @@
 
 **When:** the suffix of a parsed name is read by what each of its words is, as in "Smith, John, Jr., MD, Esq.".
 
-**Then:** the suffix splits into two views that partition it, the generation holding its words read as a generation or an agnomen and the credentials holding every other word, each joining its words in written order and separating two of them as the writer did (R1), by a comma where one stands anywhere between them and by a space where none does.
+**Then:** the suffix splits into two views that partition it, the generation holding its words read as a generation or an agnomen and the credentials holding every other word, each joining its words in written order and separating two of them by a comma where the suffix holds one anywhere between them, R1's separator, and by a space where it holds none.
 
 **Because:** a generation numbers the bearer among relatives of the same name while a credential is earned, and CLDR's person-name fields keep the two apart and format them differently. A caller wanting one had to re-read the suffix against vocabulary they would have had to rebuild (#326). Both are views, so the suffix field itself does not change.
 
@@ -19,6 +19,8 @@
 "John Smith Ph. D. Jr."     →  credentials="Ph. D."
 "John Smith, MD Jr. PhD"    →  credentials="MD PhD"
 "John Smith, MD, Jr. PhD"   →  credentials="MD, PhD"
+"John Smith, MD / Jr. / PhD"  →  credentials="MD, PhD"
+"John Smith, PhD and MD Jr."  →  credentials="PhD and MD"
 "John Smith PhD"            →  generation=""
 "John Smith"                →  generation=""  · boundary
 "John Smith"                →  credentials=""
@@ -29,7 +31,6 @@
 - **A connective in the suffix** is in the view of the word before it, being read as neither a generation nor a credential.
   ```
   "John Smith, Jr. and III"   →  generation="Jr. and III"
-  "John Smith, PhD and MD Jr."  →  credentials="PhD and MD"
   ```
 
 **Accepted:**
@@ -40,8 +41,8 @@
   "John Smith, Jr. and MD"    →  generation="Jr. and"
   ```
 - A suffix word with no reading, one that `replace()` or `Parser.revise()` wrote, is in the credentials whatever it is, since nothing records what it was read as.
-- The kind of a word listed as a suffix word is the shipped vocabulary's, read whatever the reading's default, so a word only a caller's own `Lexicon` lists is in the credentials, a generation word included, and so is a generation word a caller lists as an acronym.
+- The kind of a word listed as a suffix word is the shipped vocabulary's, read whatever the reading's default, so a word a caller's own `Lexicon` lists in `suffix_words` alone is in the credentials, a generation word included, and so is a generation word a caller lists as an acronym; one the caller also lists in `suffix_words_ambiguous` or `agnomens` reads as a generation or an agnomen by that marker.
 
 ---
-**Signal:** none in the name: the reading each suffix word took, and the separators the writer typed between them
+**Signal:** none in the name: the reading each suffix word took
 **history:** decisions/R8 · **implemented:** nameparser/_types.py, nameparser/_pipeline/_vocab.py

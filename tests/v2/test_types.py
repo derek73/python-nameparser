@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from nameparser import FAMILY_FIRST, GIVEN_FIRST, Lexicon, Locale, Policy, parse
+from nameparser import FAMILY_FIRST, GIVEN_FIRST, Lexicon, Locale, Parser, Policy, parse
 from nameparser._types import (
     STABLE_TAGS, Ambiguity, AmbiguityKind, ParsedName, Reading, Role,
     Segmentation, Span, Token,
@@ -319,6 +319,8 @@ def test_derived_views_filter_on_stable_particle_tag() -> None:
     ("John Smith Ph. D. Jr.", "Jr.", "Ph. D."),
     ("John Smith, MD Jr. PhD", "Jr.", "MD PhD"),
     ("John Smith, MD, Jr. PhD", "Jr.", "MD, PhD"),
+    # any entry boundary the suffix renders as a comma (rules/R1)
+    ("John Smith, MD / Jr. / PhD", "Jr.", "MD, PhD"),
     # a connective goes with the word before it, dangling where the
     # word after it is in the other view (rules/R8's Accepted)
     ("John Smith, PhD and MD Jr.", "Jr.", "PhD and MD"),
@@ -333,6 +335,24 @@ def test_the_suffix_views_partition_it_by_reading(
         text: str, generation: str, credentials: str) -> None:
     pn = parse(text)
     assert (pn.generation, pn.credentials) == (generation, credentials)
+
+
+@pytest.mark.parametrize("field,kind", [
+    # a caller's word in `suffix_words` alone has no row to read a kind
+    # from; its gate's marker or the agnomen set gives it one by its tag
+    ({"suffix_words": {"zzz"}}, "post-nominal"),
+    ({"suffix_words": {"zzz"}, "suffix_words_ambiguous": {"zzz"}},
+     "generation"),
+    ({"suffix_words": {"zzz"}, "suffix_words_ambiguous": {"zzz"},
+      "agnomens": {"zzz"}}, "agnomen"),
+])
+def test_a_callers_suffix_word_reads_by_its_marker_else_post_nominal(
+        field: dict[str, set[str]], kind: str) -> None:
+    pn = Parser(lexicon=Lexicon.default().add(**field)).parse(
+        "Pedro Alves Silva zzz")
+    (tok,) = pn.tokens_for("suffix")
+    assert tok.reading is not None and tok.reading.kind.value == kind
+    assert pn.generation == ("" if kind == "post-nominal" else "zzz")
 
 
 def test_a_suffix_word_with_no_reading_is_a_credential() -> None:

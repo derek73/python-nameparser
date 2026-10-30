@@ -1846,6 +1846,7 @@
 {"name": "John Smith, MA; PhD", "given": "John", "family": "Smith", "suffix": "MA; PhD", "initials": "J. S."}
 {"name": "John Smith, MD - Chief of Surgery", "title": "Chief of Surgery", "given": "John", "family": "Smith", "suffix": "MD", "initials": "J. S."}
 {"name": "John Smith, MD - PhD", "given": "John", "family": "Smith", "suffix": "MD, PhD", "initials": "J. S."}
+{"name": "John Smith, MD / Jr. / PhD", "given": "John", "family": "Smith", "suffix": "MD, Jr., PhD", "initials": "J. S.", "generation": "Jr.", "credentials": "MD, PhD"}
 {"name": "John Smith, MD / PhD", "given": "John", "family": "Smith", "suffix": "MD, PhD", "initials": "J. S."}
 {"name": "John Smith, MD ; PhD", "given": "John", "family": "Smith", "suffix": "MD, PhD", "initials": "J. S."}
 {"name": "John Smith, MD Jr. PhD", "given": "John", "family": "Smith", "suffix": "MD Jr. PhD", "initials": "J. S.", "generation": "Jr.", "credentials": "MD PhD"}
