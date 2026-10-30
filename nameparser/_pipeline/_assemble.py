@@ -329,10 +329,12 @@ def _patronymic_opening(state: ParseState, dropped: set[int], i: int,
         # an empty head P6 attaches it as the whole family (', Siti
         # Aminah binti'), which O3's fold can give a base, and a
         # particle with no family to name names nobody
-        named = any(tokens[k].role is Role.FAMILY
-                    and FOLDED_TAG not in tokens[k].tags
-                    for k in range(len(tokens)) if k not in dropped)
-        return named, named
+        # (a loop, not a generator, which would resume a frame per word)
+        for k, other in enumerate(tokens):
+            if (other.role is Role.FAMILY and FOLDED_TAG not in other.tags
+                    and k not in dropped):
+                return True, True
+        return False, False
     j = i + 1
     while j < len(tokens) and (j in dropped
                                or tokens[j].role is Role.NICKNAME):

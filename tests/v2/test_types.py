@@ -5,7 +5,10 @@ from pathlib import Path
 
 import pytest
 
-from nameparser import FAMILY_FIRST, GIVEN_FIRST, Lexicon, Locale, Parser, Policy, parse
+from nameparser import (
+    FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, GIVEN_FIRST, Lexicon, Locale, Parser,
+    Policy, parse,
+)
 from nameparser._types import (
     STABLE_TAGS, Ambiguity, AmbiguityKind, ParsedName, Reading, Role,
     UNJOINED_TAG, Segmentation, Span, Token,
@@ -1146,6 +1149,11 @@ _MAF = Policy(middle_as_family=True)
     (_MAF, ", Dr. Ali Ahmad bin", ""),
     (_MAF, ", Dr. Siti Aminah binti Jr.", ""),
     (_MAF, ", Siti Aminah binti (Bob)", ""),
+    (Policy(name_order=FAMILY_FIRST_GIVEN_LAST, middle_as_family=True),
+     ", Siti Aminah binti", ""),
+    # a nickname-only head, and a part past the second comma
+    (_MAF, "(Bob), Siti Aminah binti", ""),
+    (_MAF, ", Siti Aminah binti, Hasan", ""),
 ])
 def test_the_patronymic_run_and_the_attachment_under_each_policy(
         policy: Policy, text: str, patronymic: str) -> None:

@@ -44,11 +44,12 @@
   ```
   "Fritz Freiherr und von Bar"  →  patronymic=""
   ```
-- **A trailing patronymic particle P6 attaches to the family written before it** takes that family's words as the parent's name, with any word P6 attached after it, the view writing them in the family's order, under `middle_as_family` too.
+- **A trailing patronymic particle P6 attaches to the family written before it** takes that family's words as the parent's name, with any word P6 attached after it, the view writing them in the family's order, under `middle_as_family` too; behind an empty head the particle is the whole family and names no one.
   ```
   "Mohamad, Mahathir bin"     →  patronymic="bin Mohamad"
   "Levi, Omer Bar"            →  patronymic="Bar Levi"
   "Bakar, Ali bin Abu"        →  patronymic="bin Abu Bakar"
+  ", Siti Aminah binti"       →  patronymic=""
   ```
 - **A nickname inside the parent's name** is skipped, not a word of the view.
   ```

@@ -32,6 +32,7 @@
 {"name": ", PhD", "suffix": "PhD"}
 {"name": ", Sir John", "title": "Sir", "given": "John", "initials": "J."}
 {"name": ", Sir Jones vd", "title": "Sir", "given": "Jones", "family": "vd", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "J. v.", "capitalized_force": "Sir Jones Vd"}
+{"name": ", Siti Aminah binti", "given": "Siti", "middle": "Aminah", "family": "binti", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "S. A. b.", "capitalized_force": "Siti Aminah Binti"}
 {"name": ".,"}
 {"name": "1 & 2, 3 4 5, Mr.", "title": "Mr.", "given": "3", "middle": "4 5", "family": "1 & 2", "initials": "3. 4. 5. 1. 2."}
 {"name": "1. née Smith", "given": "1.", "maiden": "Smith", "initials": "1."}
