@@ -67,9 +67,11 @@ ALLOWED = {
     # this prefix match cannot see
     "_reading_index.py": ("nameparser.config.",),
     # _types is a downward import (bottom of the graph): Locale shares
-    # the _guarded_getstate/_guarded_setstate pickle functions
+    # the _guarded_getstate/_guarded_setstate pickle functions; the
+    # compiled [rules] tables, a config DATA module, at call time, in
+    # rules_patch (#754, 4f), which the shipped packs call
     "_locale.py": ("nameparser._types", "nameparser._lexicon",
-                   "nameparser._policy"),
+                   "nameparser._policy", "nameparser.config._rules"),
     # _lexicon is needed at runtime: capitalized(lexicon=None) resolves
     # to Lexicon.default(); _policy for the scripts that write no
     # initials (_NO_INITIALS), which initials() skips (#754)

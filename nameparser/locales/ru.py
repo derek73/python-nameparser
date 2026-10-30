@@ -1,5 +1,7 @@
 """The Russian locale pack (rule O1): policy-only -- it turns
-on the EAST_SLAVIC patronymic rule. The morphology data (-ovich/-ovna
+on the EAST_SLAVIC patronymic rule, its policy patch compiled from
+nameparser/vocab/ru.toml's [rules] table by tools/vocab/build.py
+(#754, 4f; mechanisms.md#LOCALE-PACKS-PURE-DATA). The morphology data (-ovich/-ovna
 endings, Cyrillic and transliterated) lives beside the rule
 implementation, in nameparser/_pipeline/_vocab.py's patterns, which
 _post_rules.py's rotation and assemble's patronymic reading (rules/R9)
@@ -24,14 +26,13 @@ from __future__ import annotations
 import re
 
 from nameparser._lexicon import Lexicon
-from nameparser._locale import Locale
-from nameparser._policy import PatronymicRule, PolicyPatch
+from nameparser._locale import Locale, rules_patch
 
 RU = Locale(
     code="ru",
     lexicon=Lexicon.empty(),
-    policy=PolicyPatch(
-        patronymic_rules=frozenset({PatronymicRule.EAST_SLAVIC})),
+    # nameparser/vocab/ru.toml's [rules], compiled by tools/vocab/build.py
+    policy=rules_patch("ru"),
 )
 
 # Ported by hand from nameparser/_pipeline/_vocab.py's

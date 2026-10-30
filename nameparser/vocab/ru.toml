@@ -1,5 +1,9 @@
 schema = 1
 
+# locales.RU's policy patch, compiled by tools/vocab/build.py (README.md, "Rules")
+[rules]
+patronymic_rules = ["east-slavic"]
+
 [[word]]
 text = "г-жа"
 salutation = { gender = "f", issue = 269, expands = "госпожа, Mrs.", after_given = true }

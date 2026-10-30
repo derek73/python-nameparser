@@ -442,6 +442,15 @@ by ``tests/v2/test_locales.py``:
    ``"CODE": ("module.path", "ATTR")`` row in ``_REGISTRY``, so the
    pack loads lazily on first access (importing ``nameparser.locales``
    never imports pack modules).
+#. Write the rules the pack turns on as data, if they are ``Policy``
+   fields the vocabulary files' ``[rules]`` table lists
+   (``patronymic_rules``, ``name_order``, ``two_family_names``): put the
+   table in the pack's language file, list the file in ``PACK_RULES``
+   in ``tools/vocab/build.py``, rebuild, and give the pack
+   ``policy=rules_patch("<tag>")`` from ``nameparser._locale``, as
+   ``ru`` and ``tr_az`` do. ``nameparser/vocab/README.md``'s "Rules"
+   section lists the keys. A rule the table does not list is a change
+   to the parser, not to a pack.
 #. Declare a module-level ``DEVIATES(name)`` predicate: given a name
    string, return whether *this pack alone* might parse it differently
    from the default parser. Over-declaring is safe; under-declaring is
