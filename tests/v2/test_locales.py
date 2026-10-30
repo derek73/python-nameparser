@@ -7,12 +7,14 @@ import re
 import sys
 import types
 from collections.abc import Callable, Iterable
-from types import ModuleType
 from pathlib import Path
+from types import ModuleType
 
 import pytest
 
-from nameparser import Locale, Parser, locales, parse, parser_for
+from nameparser import (
+    Locale, ParsedName, Parser, locales, parse, parser_for,
+)
 from nameparser import _reading_index as _ri
 from nameparser._lexicon import _VOCAB_FIELDS, Lexicon
 from nameparser._policy import (
@@ -1181,6 +1183,56 @@ def test_a_chosen_language_reads_its_off_generation_and_the_default_does_not(
     assert parse(name).suffix == ""
     assert (chosen.parse(name).suffix, chosen.parse(name).family) == (
         word, "Novak")
+
+
+def _fields(name: ParsedName) -> tuple[object, ...]:
+    return (name.given, name.middle, name.family, name.suffix,
+            tuple(a.kind.name for a in name.ambiguities))
+
+
+# Today's readings of the comma and initial-pair shapes, pinned (given,
+# middle, family, suffix, ambiguity kinds), default first. `ml` has no
+# name reading, so under a choice it is an ungated suffix word and its
+# comma readings take it with nothing reported (`Novak, ML` suffix
+# 'ML', where the default reads given 'ML'), a question recorded for
+# 3f in decisions/vocabulary-model's 2026-10-29 #753, phase 3c entry;
+# `père`'s family reading gates it and reports the fork.
+@pytest.mark.parametrize("tag, name, default, chosen", [
+    ("cs", "Novak, ML", ("ML", "", "Novak", "", ()),
+     ("", "", "Novak", "ML", ())),
+    ("cs", "Novak, Anna ml.", ("Anna", "ml.", "Novak", "", ()),
+     ("Anna", "", "Novak", "ml.", ())),
+    ("cs", "Novak ml., Anna", ("Anna", "", "Novak ml.", "", ()),
+     ("Anna", "", "Novak", "ml.", ())),
+    ("cs", "Anna M. L. Novak", ("Anna", "M. L.", "Novak", "", ()),
+     ("Anna", "M. L.", "Novak", "", ())),
+    ("cs", "Anna ML Novak", ("Anna", "ML", "Novak", "", ()),
+     ("Anna", "ML", "Novak", "", ())),
+    ("fr", "Jean Père", ("Jean", "", "Père", "", ()),
+     ("Jean", "", "", "Père", ("GIVEN_OR_FAMILY",))),
+])
+def test_an_off_generations_readings_in_other_shapes_are_pinned(
+        tag: str, name: str, default: tuple[object, ...],
+        chosen: tuple[object, ...]) -> None:
+    choice = parser_for(Locale(code="choice", lexicon=Lexicon.empty(),
+                               languages=frozenset({tag})))
+    assert (_fields(parse(name)), _fields(choice.parse(name))) == (
+        default, chosen)
+
+
+@pytest.mark.xfail(strict=True, reason=(
+    "a one-letter generation turned on stays inert written with its "
+    "period: the initial veto takes it before the suffix set is read, "
+    "so the choice changes nothing for it (3c's one-letter gap)"))
+@pytest.mark.parametrize("tag, name, suffix", [
+    ("es", "Juan Pérez H.", "H."),
+    ("de", "Wilhelm Karl I.", "I."),
+])
+def test_a_chosen_one_letter_generation_reads_with_its_period(
+        tag: str, name: str, suffix: str) -> None:
+    choice = parser_for(Locale(code="choice", lexicon=Lexicon.empty(),
+                               languages=frozenset({tag})))
+    assert choice.parse(name).suffix == suffix
 
 
 def test_no_exclusion_is_pack_shaped_any_more() -> None:
