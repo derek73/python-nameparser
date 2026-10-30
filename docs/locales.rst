@@ -233,6 +233,84 @@ credential:
     >>> sorted(parser_for(en, base=Parser(lexicon=mine)).lexicon.particles)
     ['van']
 
+.. _west-south-slavic-packs:
+
+Czech, Slovak, Slovenian and Croatian names
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+These four languages tell a father from a son of the same name with a
+word written after the name: ``ml.`` for the younger and ``st.`` for
+the elder (Czech *mladší* and *starší*, Croatian *mlađi* and
+*stariji*). Czech and Slovak also write academic degrees as titles
+before the name, run together in their own capitalization (``MUDr.``,
+``JUDr.``, ``PhDr.``, ``Mgr.``), and a few degrees after it
+(``DrSc.``, Slovak ``ArtD.``). The default cannot read most of these
+words: ``ml.`` is also a pair of initials, ``st.`` is Saint in
+English and French, and ``Pan`` and ``Roz`` are names in other
+languages. So they wait for a pack, and each of the
+four languages is a pack of its own, which chooses that one language
+and nothing else:
+
+.. list-table::
+   :header-rows: 1
+
+   * - Pack
+     - Turns on
+   * - ``locales.CS``
+     - ``ml.``, ``st.``; the titles ``MUDr.``, ``MDDr.``, ``MVDr.``,
+       ``JUDr.``, ``PhDr.``, ``RNDr.``, ``PaedDr.``, ``PharmDr.``,
+       ``ThDr.``, ``Mgr.``, ``MgA.``, ``BcA.``; ``DrSc.``
+       after the name; ``Pan`` (Mr.); ``roz.``, which routes a maiden
+       name as ``rozená`` does
+   * - ``locales.SK``
+     - ``ml.``, ``st.``; the same titles but ``MgA.`` and ``BcA.``;
+       ``ArtD.`` and ``DrSc.`` after the name
+   * - ``locales.SL``, ``locales.HR``
+     - ``ml.``, ``st.``
+
+The dotted titles at the head of a name, and after a comma, are titles
+without a pack too, by their shape, and ``Mgr.`` is a title everywhere
+already, the default listing it as Monsignor. For the titles the
+default does not list (``MUDr.``, ``JUDr.``, ``PhDr.`` and the rest),
+what a pack changes is the bare spelling, anywhere, and the dotted one
+at the end of the name, where the default reads each as a name word.
+
+.. doctest::
+
+    >>> czech = parser_for(locales.CS)
+    >>> parse("Jiří Dienstbier ml.").family
+    'ml.'
+    >>> czech.parse("Jiří Dienstbier ml.").suffix
+    'ml.'
+    >>> parse("Jan Novák, MUDr").family
+    'Jan Novák'
+    >>> czech.parse("Jan Novák, MUDr").title
+    'MUDr'
+    >>> czech.parse("Jana Nováková roz. Svobodová").maiden
+    'Svobodová'
+
+A word read through a pack names no language file in its
+:attr:`~nameparser.Reading.languages`, which lists only the files whose
+reading is on by default, whatever the parser chose: ``ml.`` above names
+none, and ``Mgr.`` names ``en`` and ``fr``, whose Monsignor reading the
+Czech choice dropped for its own.
+
+Choosing the language costs the other readings of these words. ``Pan
+Wei`` reads title ``Pan``, ``Rosalind Roz Smith`` takes ``Smith`` for
+a maiden name, and ``st`` loses its Saint readings, so ``St Clair
+Smith`` reads given ``St``. A caller whose names also hold the English
+Saint chooses French too, whose only other word the choice changes is
+``père``:
+
+.. doctest::
+
+    >>> czech.parse("St Clair Smith").given
+    'St'
+    >>> french = Locale(code="fr", lexicon=Lexicon.empty(),
+    ...                 languages=frozenset({"fr"}))
+    >>> parser_for(locales.CS, french).parse("St Clair Smith").title
+    'St'
+
 Finding packs by code
 ~~~~~~~~~~~~~~~~~~~~~
 
@@ -243,7 +321,7 @@ look one up dynamically by its lowercase code with
 .. doctest::
 
     >>> locales.available()
-    ('ja', 'ne', 'ru', 'tr_az', 'zh')
+    ('cs', 'hr', 'ja', 'ne', 'ru', 'sk', 'sl', 'tr_az', 'zh')
     >>> locales.get("ru") is locales.RU
     True
 
@@ -260,6 +338,12 @@ Shipped packs
 
    * - Code
      - Turns on
+   * - ``cs``, ``sk``, ``sl``, ``hr``
+     - Czech, Slovak, Slovenian and Croatian vocabulary — a choice of
+       that one language, which turns on the generations ``ml.`` and
+       ``st.``, and in Czech and Slovak the academic titles written
+       before the name and the degrees written after it (see
+       :ref:`west-south-slavic-packs`).
    * - ``ja``
      - Japanese segmentation — activates division for unspaced
        Japanese names, which needs a segmenter to act: install
@@ -301,10 +385,12 @@ Shipped packs
        Japanese name read with it can split after its first character
        (``安藤一郎`` → family ``安``), so use ``ja`` for Japanese data.
 
-``ja``, ``ru`` and ``tr_az`` are policy-only — they carry no vocabulary
-of their own. ``ne`` is a choice of languages and nothing else: the
-readings it turns on are in the default vocabulary's ``ne.toml``, off
-until a caller chooses Nepali. ``zh`` is both halves at once: a surname list, plus the
+``cs``, ``hr``, ``ne``, ``sk`` and ``sl`` are each a choice of languages
+and nothing else: the readings each turns on are the default
+vocabulary's own, written in its language's file (``ne.toml`` for
+Nepali) and off until a caller chooses the language. ``ja``, ``ru`` and
+``tr_az`` are policy-only — they carry no vocabulary of their own.
+``zh`` is both halves at once: a surname list, plus the
 one policy field that turns segmentation on for the script it covers. See
 :ref:`config-containers` for how that split (language vocabulary vs. behavior)
 is drawn, and `Contributing a pack to nameparser`_ for which half a
@@ -486,9 +572,9 @@ by ``tests/v2/test_locales.py``:
    ``ru`` and ``tr_az`` do. ``nameparser/vocab/README.md``'s "Rules"
    section lists the keys. A rule the table does not list is a change
    to the parser, not to a pack.
-#. Declare a module-level ``DEVIATES(name)`` predicate: given a name
-   string, return whether *this pack alone* might parse it differently
-   from the default parser. Over-declaring is safe; under-declaring is
+#. Declare a module-level ``DEVIATES(name)`` predicate. Given a name
+   string, ``DEVIATES`` returns whether *this pack alone* might parse
+   it differently from the default parser. Over-declaring is safe; under-declaring is
    not — when in doubt, ``DEVIATES`` should say yes. A pack whose
    scope is a *script* builds the predicate with ``_script_matcher``
    from ``nameparser/_policy.py``, the way ``zh`` and ``ja`` do —
@@ -496,9 +582,10 @@ by ``tests/v2/test_locales.py``:
    docstring explains how the pack-contract test enforces this. A
    pack's choice of languages is never declared: its deviations are
    derived from the words the choice changes, so a pack that is nothing
-   but a choice (``ne``) declares no ``DEVIATES``, and one with a
-   fragment or a patch beside its choice declares only what those
-   change.
+   but a choice (``ne``, ``cs``) declares no ``DEVIATES`` — the
+   contract test refuses one, and refuses a choice that changes no
+   word — and one with a fragment or a patch beside its choice
+   declares only what those change.
 #. Add a rotator list to ``tests/v2/test_locales.py``. Every pack needs
    one, but what it has to contain follows from how the pack declares
    its scope:
@@ -512,9 +599,11 @@ by ``tests/v2/test_locales.py``:
      the same weight by hand — the unspaced names the pack must split,
      one per shape of the vocabulary it ships: single surname, compound
      surname, and any spelling variant it means to cover.
-   - **By a choice of languages** (``ne``): a name for each word the
-     choice changes, in each script it is written in and each position
-     where the default reads it otherwise.
+   - **By a choice of languages** (``ne``, ``cs``, ``sk``, ``sl``,
+     ``hr``): a name for each word the choice changes, in each script it
+     is written in and each position where the default reads it
+     otherwise — ``test_choice_rotators_cover_every_changed_word`` fails
+     until every word is held.
    - **With no vocabulary at all**: list the shapes its *segmenter* must
      divide instead, and mark the rotator tests to skip when the
      optional dependency is absent, so the contract tests still run

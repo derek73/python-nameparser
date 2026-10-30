@@ -2,7 +2,7 @@ schema = 1
 
 [[word]]
 text = "pan"
-excluded = { salutation = { reason = "Czech and Polish Mr., and the Chinese surname Pan, which leads; the accented paní ships", issue = 606, decided = 2026-10-04 } }
+salutation = { default = false, issue = [606, 753], gender = "m", note = "Czech and Polish Mr., off by default because Pan is the Chinese surname 潘, which leads (US Census 2010 12,664 bearers; 285 of ClinicalTrials.gov's 536,981 officials write the word and 488 of ORCID's 1,831,533 records, data 2026-10-21 and 2025-10-17, nearly all of them the surname): under a Czech or Polish choice Pan Wei reads title 'Pan'. The accented paní ships" }
 
 [[word]]
 text = "paní"
@@ -16,6 +16,58 @@ excluded = { salutation = { reason = "Czech 'family', and a Russian surname, oft
 [[word]]
 text = "slečna"
 salutation = { issue = 606, gender = "f", after_given = true }
+
+[[word]]
+text = "bc"
+excluded = { academic = { reason = "bakalář, the Czech and Slovak Bachelor, but BC is the US nursing credential Board Certified, written after the name (APRN, BC; ACNP-BC): read as a title under a Czech choice it moved 23 of ClinicalTrials.gov's 536,981 officials, one a Czech Bc (Dagmar Koveslygetyova, Bc) and the rest that credential or initials (Lora L. Beebe, PhD, PMHNP, BC read title 'BC'; ACNP-BC recased 'ACNP-Bc'), measured 2026-10-30; written Bc. at the head of a name it reads as a title by its shape without a reading (rules/H2)", issue = 753, decided = 2026-10-30 } }
+
+[[word]]
+text = "bca"
+academic = { default = false, cased = "BcA", issue = [753, 848], expands = "bakalář umění, Bachelor of Arts" }
+
+[[word]]
+text = "judr"
+academic = { default = false, cased = "JUDr", issue = [753, 848], expands = "doktor práv, Juris utriusque doctor" }
+
+[[word]]
+text = "mddr"
+academic = { default = false, cased = "MDDr", issue = [753, 848], expands = "doktor zubního lékařství, the dentistry doctorate" }
+
+[[word]]
+text = "mga"
+academic = { default = false, cased = "MgA", issue = [753, 848], expands = "magistr umění, Master of Arts" }
+
+[[word]]
+text = "mgr"
+academic = { default = false, issue = [753, 848], expands = "magistr, Master", note = "en and fr read mgr as Monsignor (religious), on by default, so the Czech choice changes only the kind its title reading names; 44 of ClinicalTrials.gov's 536,981 officials write it, all after a comma (data 2026-10-21)" }
+
+[[word]]
+text = "mudr"
+academic = { default = false, cased = "MUDr", issue = [753, 848], expands = "doktor medicíny, Medicinae universae doctor", note = "45 of ClinicalTrials.gov's 536,981 officials write it, 42 after a comma, 3 bare (data 2026-10-21)" }
+
+[[word]]
+text = "mvdr"
+academic = { default = false, cased = "MVDr", issue = [753, 848], expands = "doktor veterinární medicíny, the veterinary doctorate" }
+
+[[word]]
+text = "paeddr"
+academic = { default = false, cased = "PaedDr", issue = [753, 848], expands = "doktor pedagogiky, Paedagogiae doctor" }
+
+[[word]]
+text = "pharmdr"
+academic = { default = false, cased = "PharmDr", issue = [753, 848], expands = "doktor farmacie, the pharmacy doctorate" }
+
+[[word]]
+text = "phdr"
+academic = { default = false, cased = "PhDr", issue = [753, 848], expands = "doktor filozofie, Philosophiae doctor" }
+
+[[word]]
+text = "rndr"
+academic = { default = false, cased = "RNDr", issue = [753, 848], expands = "doktor přírodních věd, Rerum naturalium doctor" }
+
+[[word]]
+text = "thdr"
+academic = { default = false, cased = "ThDr", issue = [753, 848], expands = "doktor teologie, Theologiae doctor" }
 
 [[word]]
 text = "ml"
@@ -34,14 +86,20 @@ text = "starší"
 generation = { issue = 661 }
 
 [[word]]
+text = "drsc"
+credential = { default = false, cased = "DrSc", issue = [753, 848], expands = "doktor věd, Doctor scientiarum, written after the name", note = "16 of ClinicalTrials.gov's 536,981 officials write it, all after a comma (data 2026-10-21)" }
+
+[[word]]
 text = "roz"
-[word.excluded.birth_marker]
-reason = "Roz, the English diminutive of Rosalind, stands exactly where a marker acts: with it listed, 'Rosalind Roz Smith' reads maiden 'Smith' and takes the given name Rosalind for the family (measured 2026-10-20), a marker taking every word after it; the full rozená stays"
-decided = 2026-08-26
+[word.birth_marker]
+default = false
+issue = [274, 753]
+expands = "rozená or rozený, née or né, abbreviated"
+note = "off by default: Roz, the English diminutive of Rosalind (US SSA 64 female births; US Census 2010 154 surnames), stands exactly where a marker acts, so with it read 'Rosalind Roz Smith' reads maiden 'Smith' and takes the given name Rosalind for the family (measured 2026-10-20); the Czech choice accepts that, and the full rozená ships"
 
 [[word]]
 text = "rozená"
 [word.birth_marker]
 issue = 274
 gender = "f"
-note = "the masculine rozený awaits its own vetting; the abbreviation roz., shared by both, is refused beside it"
+note = "the masculine rozený awaits its own vetting; the abbreviation roz., shared by both, is a reading off by default beside it"

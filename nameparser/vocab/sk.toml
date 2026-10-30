@@ -1,6 +1,46 @@
 schema = 1
 
 [[word]]
+text = "judr"
+academic = { default = false, cased = "JUDr", issue = [753, 848], expands = "doktor práv, Juris utriusque doctor" }
+
+[[word]]
+text = "mddr"
+academic = { default = false, cased = "MDDr", issue = [753, 848], expands = "doktor zubného lekárstva, the dentistry doctorate" }
+
+[[word]]
+text = "mgr"
+academic = { default = false, issue = [753, 848], expands = "magister, Master", note = "en and fr read mgr as Monsignor (religious), on by default, so the Slovak choice changes only the kind its title reading names" }
+
+[[word]]
+text = "mudr"
+academic = { default = false, cased = "MUDr", issue = [753, 848], expands = "doktor medicíny, Medicinae universae doctor" }
+
+[[word]]
+text = "mvdr"
+academic = { default = false, cased = "MVDr", issue = [753, 848], expands = "doktor veterinárnej medicíny, the veterinary doctorate" }
+
+[[word]]
+text = "paeddr"
+academic = { default = false, cased = "PaedDr", issue = [753, 848], expands = "doktor pedagogiky, Paedagogiae doctor" }
+
+[[word]]
+text = "pharmdr"
+academic = { default = false, cased = "PharmDr", issue = [753, 848], expands = "doktor farmácie, the pharmacy doctorate" }
+
+[[word]]
+text = "phdr"
+academic = { default = false, cased = "PhDr", issue = [753, 848], expands = "doktor filozofie, Philosophiae doctor" }
+
+[[word]]
+text = "rndr"
+academic = { default = false, cased = "RNDr", issue = [753, 848], expands = "doktor prírodných vied, Rerum naturalium doctor" }
+
+[[word]]
+text = "thdr"
+academic = { default = false, cased = "ThDr", issue = [753, 848], expands = "doktor teológie, Theologiae doctor" }
+
+[[word]]
 text = "ml"
 generation = { default = false, expands = "mladší, the Younger", issue = [661, 679, 684, 753], note = "real and standard, but ML is a pair of initials in other languages written in Latin script, and nothing in its writing tells the two apart, so no default reads it; a Slovak pack turns it on" }
 
@@ -23,3 +63,11 @@ generation = { issue = 679 }
 [[word]]
 text = "starší"
 generation = { issue = 661 }
+
+[[word]]
+text = "artd"
+credential = { default = false, cased = "ArtD", issue = [753, 848], expands = "doktor umenia, artis doctor, written after the name" }
+
+[[word]]
+text = "drsc"
+credential = { default = false, cased = "DrSc", issue = [753, 848], expands = "doktor vied, Doctor scientiarum, written after the name" }

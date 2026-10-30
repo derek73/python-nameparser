@@ -29,6 +29,7 @@
 "Alexandre Dumas fils"      →  suffix="fils"
 "Marie Fils"                →  family="Fils"  · boundary
 "Jiří Dienstbier ml."       →  family="ml."  · boundary
+"Jiří Dienstbier ml."  [cs]  →  suffix="ml."
 "Pavlović, Antonio mlađi"   →  suffix="mlađi"
 "John Smith PhD"            →  suffix="PhD"
 ```

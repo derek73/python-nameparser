@@ -1624,6 +1624,7 @@
 {"name": "Jiří", "given": "Jiří", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "J."}
 {"name": "Jiří", "order": "FAMILY_FIRST", "family": "Jiří", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "J."}
 {"name": "Jiří Dienstbier ml.", "given": "Jiří", "middle": "Dienstbier", "family": "ml.", "initials": "J. D. m.", "capitalized_force": "Jiří Dienstbier Ml."}
+{"name": "Jiří Dienstbier st.", "title": "st.", "given": "Jiří", "family": "Dienstbier", "initials": "J. D.", "capitalized_force": "St. Jiří Dienstbier"}
 {"name": "Jo Ann", "given": "Jo", "family": "Ann", "initials": "J. A."}
 {"name": "Joan Antoni Desvalls i d’Ardena", "given": "Joan", "middle": "Antoni", "family": "Desvalls i d’Ardena", "initials": "J. A. D. d.", "capitalized_force": "Joan Antoni Desvalls i D’Ardena"}
 {"name": "Joan Canals i Pigem", "given": "Joan", "family": "Canals i Pigem", "initials": "J. C. P."}

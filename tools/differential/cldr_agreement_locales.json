@@ -125,6 +125,206 @@
   },
   "text": "Sinbad"
  },
+ "cs/foreignFull/givenFirst": {
+  "surname2": {
+   "expected": "González Domingo",
+   "got": ""
+  },
+  "text": "Prof. Dr. Ada Cornelia César Martín von Brühl González Domingo, M.D. DDS."
+ },
+ "cs/foreignFull/sorting": {
+  "suffix": {
+   "expected": "",
+   "got": "M.D. DDS."
+  },
+  "text": "Brühl, Ada Cornelia César Martín von (Prof. Dr., M.D. DDS.)",
+  "title": {
+   "expected": "",
+   "got": "Prof. Dr."
+  }
+ },
+ "cs/foreignFull/surnameFirst": {
+  "family": {
+   "expected": "von Brühl González Domingo",
+   "got": "von"
+  },
+  "family_base": {
+   "expected": "Brühl González Domingo",
+   "got": "von"
+  },
+  "family_particles": {
+   "expected": "von",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Ada Cornelia César Martín",
+   "got": "Brühl González Domingo Ada Cornelia César Martín"
+  },
+  "surname2": {
+   "expected": "González Domingo",
+   "got": ""
+  },
+  "text": "Prof. Dr. von Brühl González Domingo Ada Cornelia César Martín, M.D. DDS."
+ },
+ "cs/foreignG/sorting": {
+  "family": {
+   "expected": "",
+   "got": "Jack"
+  },
+  "given_names": {
+   "expected": "Jack",
+   "got": ""
+  },
+  "text": "Jack"
+ },
+ "cs/foreignG/surnameFirst": {
+  "family": {
+   "expected": "",
+   "got": "Jack"
+  },
+  "given_names": {
+   "expected": "Jack",
+   "got": ""
+  },
+  "text": "Jack"
+ },
+ "cs/nativeFull/givenFirst": {
+  "family": {
+   "expected": "Machová Ondřejová",
+   "got": "Ondřejová"
+  },
+  "family_base": {
+   "expected": "Machová Ondřejová",
+   "got": "Ondřejová"
+  },
+  "given_names": {
+   "expected": "Alexandra Zuzana",
+   "got": "Alexandra Zuzana Machová"
+  },
+  "surname2": {
+   "expected": "Ondřejová",
+   "got": ""
+  },
+  "text": "paní Alexandra Zuzana Machová Ondřejová, Ph.D."
+ },
+ "cs/nativeFull/sorting": {
+  "given_names": {
+   "expected": "Alexandra Zuzana",
+   "got": "Alexandra Zuzana paní"
+  },
+  "suffix": {
+   "expected": "",
+   "got": "Ph.D."
+  },
+  "text": "Machová, Alexandra Zuzana (paní, Ph.D.)"
+ },
+ "cs/nativeFull/surnameFirst": {
+  "family": {
+   "expected": "Machová Ondřejová",
+   "got": "Machová"
+  },
+  "family_base": {
+   "expected": "Machová Ondřejová",
+   "got": "Machová"
+  },
+  "given_names": {
+   "expected": "Alexandra Zuzana",
+   "got": "Ondřejová Alexandra Zuzana"
+  },
+  "surname2": {
+   "expected": "Ondřejová",
+   "got": ""
+  },
+  "text": "paní Machová Ondřejová Alexandra Zuzana, Ph.D."
+ },
+ "cs/nativeG/sorting": {
+  "family": {
+   "expected": "",
+   "got": "Jiří"
+  },
+  "given_names": {
+   "expected": "Jiří",
+   "got": ""
+  },
+  "text": "Jiří"
+ },
+ "cs/nativeG/surnameFirst": {
+  "family": {
+   "expected": "",
+   "got": "Jiří"
+  },
+  "given_names": {
+   "expected": "Jiří",
+   "got": ""
+  },
+  "text": "Jiří"
+ },
+ "hr/foreignG/sorting": {
+  "family": {
+   "expected": "",
+   "got": "Sinbad"
+  },
+  "given_names": {
+   "expected": "Sinbad",
+   "got": ""
+  },
+  "text": "Sinbad"
+ },
+ "hr/foreignG/surnameFirst": {
+  "family": {
+   "expected": "",
+   "got": "Sinbad"
+  },
+  "given_names": {
+   "expected": "Sinbad",
+   "got": ""
+  },
+  "text": "Sinbad"
+ },
+ "hr/nativeFull/givenFirst": {
+  "suffix": {
+   "expected": "mlađi prof.",
+   "got": "mlađi"
+  },
+  "text": "dr. sc. Branko Hrvoje Marić mlađi, prof.",
+  "title": {
+   "expected": "dr. sc.",
+   "got": "dr. sc. prof."
+  }
+ },
+ "hr/nativeFull/surnameFirst": {
+  "suffix": {
+   "expected": "mlađi prof.",
+   "got": "mlađi"
+  },
+  "text": "Marić, dr. sc. Branko Hrvoje mlađi, prof.",
+  "title": {
+   "expected": "dr. sc.",
+   "got": "dr. sc. prof."
+  }
+ },
+ "hr/nativeG/sorting": {
+  "family": {
+   "expected": "",
+   "got": "Zrinka"
+  },
+  "given_names": {
+   "expected": "Zrinka",
+   "got": ""
+  },
+  "text": "Zrinka"
+ },
+ "hr/nativeG/surnameFirst": {
+  "family": {
+   "expected": "",
+   "got": "Zrinka"
+  },
+  "given_names": {
+   "expected": "Zrinka",
+   "got": ""
+  },
+  "text": "Zrinka"
+ },
  "ja/foreignFull/givenFirst": {
   "family": {
    "expected": "フォン スミス",
@@ -544,6 +744,249 @@
    "got": ""
   },
   "text": "Сергей"
+ },
+ "sk/foreignFull/givenFirst": {
+  "surname2": {
+   "expected": "Nováková Predná",
+   "got": ""
+  },
+  "text": "Mgr. Ing. Anna Karolína Eva Kristína von Kant Nováková Predná, CSc."
+ },
+ "sk/foreignFull/sorting": {
+  "family": {
+   "expected": "Kant von",
+   "got": "Kant"
+  },
+  "family_particles": {
+   "expected": "von",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Anna Karolína Eva Kristína",
+   "got": "Anna Karolína Eva Kristína von Mgr. Ing."
+  },
+  "suffix": {
+   "expected": "",
+   "got": "CSc."
+  },
+  "text": "Kant, Anna Karolína Eva Kristína von (Mgr. Ing., CSc.)"
+ },
+ "sk/foreignFull/surnameFirst": {
+  "family": {
+   "expected": "von Kant Nováková Predná",
+   "got": "von"
+  },
+  "family_base": {
+   "expected": "Kant Nováková Predná",
+   "got": "von"
+  },
+  "family_particles": {
+   "expected": "von",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Anna Karolína Eva Kristína",
+   "got": "Kant Nováková Predná Anna Karolína Eva Kristína"
+  },
+  "surname2": {
+   "expected": "Nováková Predná",
+   "got": ""
+  },
+  "text": "Mgr. Ing. von Kant Nováková Predná Anna Karolína Eva Kristína, CSc."
+ },
+ "sk/foreignG/sorting": {
+  "family": {
+   "expected": "",
+   "got": "Jack"
+  },
+  "given_names": {
+   "expected": "Jack",
+   "got": ""
+  },
+  "text": "Jack"
+ },
+ "sk/foreignG/surnameFirst": {
+  "family": {
+   "expected": "",
+   "got": "Jack"
+  },
+  "given_names": {
+   "expected": "Jack",
+   "got": ""
+  },
+  "text": "Jack"
+ },
+ "sk/nativeFull/givenFirst": {
+  "given_names": {
+   "expected": "Alexandra Zuzana",
+   "got": "pani Alexandra Zuzana"
+  },
+  "text": "pani Alexandra Zuzana Macáková PhD",
+  "title": {
+   "expected": "pani",
+   "got": ""
+  }
+ },
+ "sk/nativeFull/surnameFirst": {
+  "family": {
+   "expected": "Macáková",
+   "got": "pani"
+  },
+  "family_base": {
+   "expected": "Macáková",
+   "got": "pani"
+  },
+  "given_names": {
+   "expected": "Alexandra Zuzana",
+   "got": "Macáková Alexandra Zuzana"
+  },
+  "text": "pani Macáková Alexandra Zuzana, PhD",
+  "title": {
+   "expected": "pani",
+   "got": ""
+  }
+ },
+ "sk/nativeG/sorting": {
+  "family": {
+   "expected": "",
+   "got": "Jozef"
+  },
+  "given_names": {
+   "expected": "Jozef",
+   "got": ""
+  },
+  "text": "Jozef"
+ },
+ "sk/nativeG/surnameFirst": {
+  "family": {
+   "expected": "",
+   "got": "Jozef"
+  },
+  "given_names": {
+   "expected": "Jozef",
+   "got": ""
+  },
+  "text": "Jozef"
+ },
+ "sl/foreignFull/givenFirst": {
+  "suffix": {
+   "expected": "ml. dr. med., dr. dent. med.",
+   "got": "ml., dent. med."
+  },
+  "text": "prof. dr. Ada Cornelia César Martín von Brühl ml., dr. med., dr. dent. med.",
+  "title": {
+   "expected": "prof. dr.",
+   "got": "prof. dr. dr. med. dr."
+  }
+ },
+ "sl/foreignFull/surnameFirst": {
+  "family": {
+   "expected": "von Brühl",
+   "got": "von"
+  },
+  "family_base": {
+   "expected": "Brühl",
+   "got": "von"
+  },
+  "family_particles": {
+   "expected": "von",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Ada Cornelia César Martín",
+   "got": "Brühl Ada Cornelia César Martín"
+  },
+  "suffix": {
+   "expected": "dr. med., dr. dent. med.",
+   "got": "dent. med."
+  },
+  "text": "prof. dr. von Brühl Ada Cornelia César Martín, dr. med., dr. dent. med.",
+  "title": {
+   "expected": "prof. dr.",
+   "got": "prof. dr. dr. med. dr."
+  }
+ },
+ "sl/foreignG/sorting": {
+  "family": {
+   "expected": "",
+   "got": "Sinbad"
+  },
+  "given_names": {
+   "expected": "Sinbad",
+   "got": ""
+  },
+  "text": "Sinbad"
+ },
+ "sl/foreignG/surnameFirst": {
+  "family": {
+   "expected": "",
+   "got": "Sinbad"
+  },
+  "given_names": {
+   "expected": "Sinbad",
+   "got": ""
+  },
+  "text": "Sinbad"
+ },
+ "sl/nativeFull/givenFirst": {
+  "given_names": {
+   "expected": "Janez Peter",
+   "got": "g. Janez Peter"
+  },
+  "suffix": {
+   "expected": "ml. univ. dipl. inž.",
+   "got": "ml."
+  },
+  "text": "g. Janez Peter Novak ml., univ. dipl. inž.",
+  "title": {
+   "expected": "g.",
+   "got": "univ. dipl. inž."
+  }
+ },
+ "sl/nativeFull/surnameFirst": {
+  "family": {
+   "expected": "Novak",
+   "got": "g."
+  },
+  "family_base": {
+   "expected": "Novak",
+   "got": "g."
+  },
+  "given_names": {
+   "expected": "Janez Peter",
+   "got": "Novak Janez Peter"
+  },
+  "suffix": {
+   "expected": "univ. dipl. inž.",
+   "got": ""
+  },
+  "text": "g. Novak Janez Peter, univ. dipl. inž.",
+  "title": {
+   "expected": "g.",
+   "got": "univ. dipl. inž."
+  }
+ },
+ "sl/nativeG/sorting": {
+  "family": {
+   "expected": "",
+   "got": "Svarun"
+  },
+  "given_names": {
+   "expected": "Svarun",
+   "got": ""
+  },
+  "text": "Svarun"
+ },
+ "sl/nativeG/surnameFirst": {
+  "family": {
+   "expected": "",
+   "got": "Svarun"
+  },
+  "given_names": {
+   "expected": "Svarun",
+   "got": ""
+  },
+  "text": "Svarun"
  },
  "tr/foreignFull/givenFirst": {
   "given_names": {

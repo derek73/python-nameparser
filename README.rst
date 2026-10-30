@@ -82,7 +82,7 @@ Quick Start Example
     >>> russian.parse("Сидоров Иван Петрович").family
     'Сидоров'
     >>> locales.available()
-    ('ja', 'ne', 'ru', 'tr_az', 'zh')
+    ('cs', 'hr', 'ja', 'ne', 'ru', 'sk', 'sl', 'tr_az', 'zh')
 
 Learn more
 ----------
