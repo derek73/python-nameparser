@@ -27,7 +27,8 @@ interpreter's minor version and the view's code (alike_fingerprint),
 and read in a child process where none is kept. `alike --languages ne`
 reads the tree under a choice of languages (Locale.languages) and counts
 the persons it moves against the default's flags, the tree's own or
---base's, as snapshot.py --languages does.
+--base's, as snapshot.py --languages does, and like it reads the choice
+alone, not a registered pack's fragment or patch beside it.
 
 `fetch` writes three files into local/<source>/ under
 $NAMEPARSER_TOOLS_CACHE (default ~/.cache/nameparser-tools), and

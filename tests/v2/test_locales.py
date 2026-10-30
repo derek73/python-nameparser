@@ -1037,9 +1037,10 @@ def test_registry_is_the_pack_contract() -> None:
     # than a reviewer remembering to extend the gate by hand.
     assert set(_PACKS) == set(locales.available())
     for code, module in _PACKS.items():
-        # a vocabulary pack's surface is derived, and only a pack that is
-        # nothing but its choice may leave DEVIATES out: a fragment or a
-        # patch beside the choice deviates where no derived word stands
+        # a choice's surface is derived (_deviates ors it in), so a pack
+        # that is nothing but its choice declares nothing, while a
+        # fragment or a patch beside a choice deviates where no derived
+        # word stands and declares that part, and only that part
         pack = locales.get(code)
         if _is_vocabulary_pack(pack):
             assert getattr(module, "DEVIATES", None) is None, (
@@ -1201,14 +1202,41 @@ def _is_vocabulary_pack(pack: Locale) -> bool:
 
 @functools.cache
 def _deviates(code: str) -> Callable[[str], bool]:
-    """The registered pack `code`'s deviation predicate: its DEVIATES, or
-    a vocabulary pack's surface derived from its choice."""
-    pack = locales.get(code)
-    if _is_vocabulary_pack(pack):
-        from nameparser._reading_index import changed_words, selected
-        return _surface_deviates(changed_words(selected(pack.languages)))
-    deviates: Callable[[str], bool] = _PACKS[code].DEVIATES
-    return deviates
+    """The registered pack `code`'s deviation predicate: the surface
+    derived from its choice of languages, where it makes one, or'd with
+    its DEVIATES, which declares only what the rest of the pack (its
+    fragment, its patch) changes, so no pack restates the choice's words
+    by hand."""
+    return _pack_deviates(locales.get(code), _PACKS[code])
+
+
+def _pack_deviates(pack: Locale, module: ModuleType) -> Callable[[str], bool]:
+    """_deviates for `pack`, whose module is `module`."""
+    from nameparser._reading_index import changed_words, selected
+    parts: list[Callable[[str], bool]] = []
+    if pack.languages:
+        parts.append(_surface_deviates(changed_words(selected(pack.languages))))
+    hand = getattr(module, "DEVIATES", None)
+    if hand is not None:
+        parts.append(hand)
+    return lambda name: any(part(name) for part in parts)
+
+
+def test_a_pack_with_a_choice_and_a_patch_declares_only_the_patch() -> None:
+    # the hand DEVIATES of a pack that also chooses languages covers
+    # only what its patch changes: the choice's words are or'd in, so
+    # the hand copy 3b removed never comes back
+    mixed = Locale(code="mixed", lexicon=Lexicon.empty(),
+                   policy=PolicyPatch(patronymic_rules=frozenset(
+                       {PatronymicRule.EAST_SLAVIC})),
+                   languages=frozenset({"ne"}))
+    module = types.SimpleNamespace(DEVIATES=_ru.DEVIATES)
+    deviates = _pack_deviates(mixed, module)  # type: ignore[arg-type]
+    assert deviates("Guru Prasad Sharma")        # the choice's, derived
+    assert deviates("Sidorov Ivan Petrovich")    # the patch's, declared
+    assert not deviates("John Smith")
+    assert not _is_vocabulary_pack(mixed)
+    assert _is_vocabulary_pack(locales.NE)
 
 
 @pytest.mark.parametrize("tags", _CHOICES, ids="+".join)

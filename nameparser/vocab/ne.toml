@@ -12,7 +12,7 @@ issue = 679
 
 [[word]]
 text = "guru"
-given = { default = false, note = "a Nepali given name as well as a title (hi.toml, bn.toml, pa.toml): nepal-candidates holds 45 pairs whose romanization writes it (Guru 44, GURU 1), and under a Nepali choice 42 of those names read it as the given name, the default reading it as the title (tools/name_usage.py and snapshot.py --local nepal-candidates --languages ne, 2026-10-30); off by default, where a title is the commoner reading of the word, and turned on by a Nepali choice, which makes the title one only inside a title phrase (rules/H9)" }
+given = { default = false, note = "a Nepali given name as well as a title (hi.toml, bn.toml, pa.toml): nepal-candidates holds 45 pairs whose romanization writes it (Guru 44, GURU 1), 44 distinct romanized names, 43 of them opening with it, and under a Nepali choice those 43 (Guru 42, GURU 1) read it as a name word, the default reading it as the title (tools/name_usage.py and snapshot.py --local nepal-candidates --languages ne, 2026-10-30); off by default, where a title is the commoner reading of the word, and turned on by a Nepali choice, which makes the title one only inside a title phrase (rules/H9)" }
 
 [[word]]
 text = "गुरु"

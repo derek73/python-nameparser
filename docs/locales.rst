@@ -270,10 +270,11 @@ Shipped packs
        order: a Japanese name already reads family-first by default.
    * - ``ne``
      - Nepali given names — chooses the language ``ne``, which reads
-       ``श्री``, ``गुरु`` and ``Guru`` as given names where the default
-       reads them as titles (``श्री कृष्ण श्रेष्ठ`` → given ``श्री``,
-       where the default gives title ``श्री``). Each stays a title
-       inside a title phrase (``His Holiness Guru Prasad``).
+       ``श्री``, ``गुरु`` and ``Guru`` as name words, placed by position,
+       where the default reads them as titles (``श्री कृष्ण श्रेष्ठ`` →
+       given ``श्री`` in the default order, where the default gives
+       title ``श्री``). Each stays a title inside a title phrase
+       (``His Holiness Guru Prasad``).
    * - ``ru``
      - East Slavic patronymic order — detects the formal
        family/given/patronymic shape (three name words, the last ending
@@ -309,8 +310,10 @@ one policy field that turns segmentation on for the script it covers. See
 is drawn, and `Contributing a pack to nameparser`_ for which half a
 new naming rule belongs in.
 
-Under ``ne`` a name opening with one of its words reads it as the given
-name, a listed title in front of it included:
+Under ``ne`` a name opening with one of its words reads it as a name
+word, placed by position as any other is, a listed title in front of it
+included: the given name in the default order, the family name under a
+family-first one.
 
 .. doctest::
 
@@ -322,14 +325,21 @@ name, a listed title in front of it included:
     ('', 'Guru', 'Sharma')
     >>> ne.parse("Mr. Guru Sharma").given
     'Guru'
+    >>> from nameparser import FAMILY_FIRST, Parser, Policy
+    >>> family_first = Parser(policy=Policy(name_order=FAMILY_FIRST))
+    >>> parser_for(locales.NE, base=family_first).parse("Guru Prasad Sharma").family
+    'Guru'
 
 The choice reads Hindi and Marathi names too, where ``श्री`` is
 usually the salutation (Mr.), so use it for Nepali data.
 
 .. warning::
 
-   A pack declares a name *shape*, not a language, and it cannot tell
-   whose name it is looking at. Any surname that happens to end in a
+   A pack declares a name *shape*, not a language — save one that
+   chooses languages, such as ``ne``, which names a language yet acts
+   on every name holding one of its words, whatever language that name
+   is in — and it cannot tell whose name it is
+   looking at. Any surname that happens to end in a
    patronymic suffix matches the East Slavic rule, including names
    that are not East Slavic at all:
 
@@ -476,17 +486,19 @@ by ``tests/v2/test_locales.py``:
    ``ru`` and ``tr_az`` do. ``nameparser/vocab/README.md``'s "Rules"
    section lists the keys. A rule the table does not list is a change
    to the parser, not to a pack.
-#. Declare a module-level ``DEVIATES(name)`` predicate, unless the pack
-   is nothing but a choice of languages (``ne``), whose deviations are
-   derived from the words its choice changes and which declares none:
-   given a name
+#. Declare a module-level ``DEVIATES(name)`` predicate: given a name
    string, return whether *this pack alone* might parse it differently
    from the default parser. Over-declaring is safe; under-declaring is
    not — when in doubt, ``DEVIATES`` should say yes. A pack whose
    scope is a *script* builds the predicate with ``_script_matcher``
    from ``nameparser/_policy.py``, the way ``zh`` and ``ja`` do —
    never by compiling its own character ranges: the factory's
-   docstring explains how the pack-contract test enforces this.
+   docstring explains how the pack-contract test enforces this. A
+   pack's choice of languages is never declared: its deviations are
+   derived from the words the choice changes, so a pack that is nothing
+   but a choice (``ne``) declares no ``DEVIATES``, and one with a
+   fragment or a patch beside its choice declares only what those
+   change.
 #. Add a rotator list to ``tests/v2/test_locales.py``. Every pack needs
    one, but what it has to contain follows from how the pack declares
    its scope:

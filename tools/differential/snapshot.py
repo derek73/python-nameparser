@@ -50,6 +50,9 @@ against one (--since v2.8.0, an old local snapshot) compares the rest.
 readings, so with no other flag it prints every committed corpus name
 the choice moves, and with --local SOURCE --base PATH every local one,
 grouped by changed field as for the default; a choice records nothing.
+It reads the choice alone: a registered pack's lexicon fragment or
+policy patch beside its choice is not applied, so a pack holding either
+is measured whole only by parsing with parser_for(pack).
 --sample N reads a fixed 1-in-N sample of
 a local corpus, chosen by a hash of the name so a sample recorded from
 one tree and checked from another holds the same names, into a
