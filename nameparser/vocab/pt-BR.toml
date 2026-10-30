@@ -2,7 +2,7 @@ schema = 1
 
 [[word]]
 text = "f"
-excluded = { agnomen = { reason = "Filho written short in 15 tse-donors filed/registry pairs (2026-10-25), but written exactly as an initial is, and in those filings mostly one: turned on by a Brazilian Portuguese choice it moved 152 tse-donors names (measured with 'n' on too) that the choice of Portuguese alone does not, and in 104 of them the registry spells a surname the letter abbreviates (ANA MARIA F, registry ANA MARIA FILGUEIRAS) where in 48 it spells FILHO (2026-10-30). No writing tells the two apart, so no pack reads it", issue = [843, 753], decided = 2026-10-30 } }
+excluded = { agnomen = { reason = "Filho written short in 15 tse-donors filed/registry pairs (2026-10-25), but written exactly as an initial is, and in those filings mostly one: turned on by a Brazilian Portuguese choice it moved 152 tse-donors filed/registry pairs (measured with 'n' on too, a pair holding both counted under the letter its reading took first) that the choice of Portuguese alone does not, and in 104 of them the registry spells a surname the letter abbreviates (ANA MARIA F, registry ANA MARIA FILGUEIRAS) where in 48 it spells FILHO (2026-10-30). No writing tells the two apart, so no pack reads it", issue = [843, 753], decided = 2026-10-30 } }
 
 [[word]]
 text = "fil"
@@ -25,7 +25,7 @@ family = { us_census_2010 = 238, wikidata = 6, as_of = 2026-10-27, note = "Itali
 
 [[word]]
 text = "n"
-excluded = { agnomen = { reason = "Neto written short in 6 tse-donors filed/registry pairs (2026-10-25), but written exactly as an initial is, and in those filings mostly one: turned on by a Brazilian Portuguese choice it moved 77 tse-donors names (measured with 'f' on too) that the choice of Portuguese alone does not, and in 59 of them the registry spells a surname the letter abbreviates (EDINEI VITAL N, registry EDINEI VITAL DO NASCIMENTO) where in 18 it spells NETO (2026-10-30). No writing tells the two apart, so no pack reads it", issue = [843, 753], decided = 2026-10-30 } }
+excluded = { agnomen = { reason = "Neto written short in 6 tse-donors filed/registry pairs (2026-10-25), but written exactly as an initial is, and in those filings mostly one: turned on by a Brazilian Portuguese choice it moved 77 tse-donors filed/registry pairs (measured with 'f' on too) that the choice of Portuguese alone does not, and in 59 of them the registry spells a surname the letter abbreviates (EDINEI VITAL N, registry EDINEI VITAL DO NASCIMENTO) where in 18 it spells NETO (2026-10-30). No writing tells the two apart, so no pack reads it", issue = [843, 753], decided = 2026-10-30 } }
 
 [[word]]
 text = "net"
