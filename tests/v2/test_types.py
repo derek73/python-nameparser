@@ -327,6 +327,13 @@ def test_derived_views_filter_on_stable_particle_tag() -> None:
     ("John Smith, Jr. and III", "Jr. and III", ""),
     ("John Smith, Jr. and MD", "Jr. and", "MD"),
     ("Doe, Jane, and Jr.", "Jr.", "and"),
+    # a delimiter glued on (rules/C10) reads the word as without it,
+    # its text keeping the delimiter as the suffix does
+    ("John Smith, Jr.; MD", "Jr.;", "MD"),
+    ("Smith, John, Jr.; MD", "Jr.;", "MD"),
+    ("John Smith, III; MD", "III;", "MD"),
+    ("John Smith, V; MD", "V;", "MD"),
+    ("John Smith, MD; Jr.", "Jr.", "MD;"),
     # an agnomen is a generation; an honorific, a credential
     ("Pedro Alves Filho", "Filho", ""),
     ("王小明先生", "", "先生"),
@@ -1002,3 +1009,20 @@ def test_with_field_tokens_rejects_mismatched_roles() -> None:
     with pytest.raises(ValueError, match="has role family, not given"):
         name._with_field_tokens(
             {Role.GIVEN: (Token("x", None, Role.FAMILY),)})
+
+
+@pytest.mark.parametrize("delimiter", ["/", "-", "+", "&"])
+@pytest.mark.parametrize("text,generation", [
+    ("John Smith, Jr.{d} MD", "Jr.{d}"),
+    ("John Smith, III{d} MD", "III{d}"),
+    ("John Smith, MD {d}Jr.", "{d}Jr."),
+])
+def test_a_declared_delimiter_glued_to_a_generation_keeps_it_one(
+        delimiter: str, text: str, generation: str) -> None:
+    # the spelling sweep over the delimiter a caller declares, glued to
+    # either end (rules/C10): classify reads the stem's kind
+    pn = Parser(policy=Policy(
+        extra_suffix_delimiters=frozenset({delimiter}))).parse(
+            text.format(d=delimiter))
+    assert (pn.generation, pn.credentials) == (
+        generation.format(d=delimiter), "MD")

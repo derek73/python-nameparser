@@ -37,7 +37,8 @@ from types import MappingProxyType
 
 from nameparser._lexicon import _VOCAB_FIELDS, Lexicon, _normalize
 from nameparser._pipeline._state import (
-    AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, FIELD_READING,
+    AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG,
+    CREDENTIAL_WORD_TAG, FIELD_READING, GENERATION_WORD_TAG,
     NAME_ROLES, SHAPE_ACRONYM_TAG, SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG,
     TITLE_AMBIGUOUS_TAG, Beside, Deferred, ParseState, PendingAmbiguity,
     Structure, WorkToken,
@@ -195,6 +196,10 @@ def _split_partner(tokens: tuple[WorkToken, ...], dropped: set[int],
 
 _reading = functools.lru_cache(maxsize=1024)(Reading)
 
+
+#: classify's kind tags for a listed suffix word (rules/R8), which no
+#: published token carries: `Token.reading` names the kind.
+_KIND_TAGS = frozenset({GENERATION_WORD_TAG, CREDENTIAL_WORD_TAG})
 
 #: The tags that say a list or a shape made a word a suffix: without
 #: one, a suffix word stands there by position, unless the vocabulary
@@ -424,6 +429,12 @@ def assemble(state: ParseState) -> ParsedName:
                 langs = ()
             reading = (_reading(kind, role, source, langs) if langs
                        else _READINGS[kind, role, source])
+        if not tags.isdisjoint(_KIND_TAGS):
+            # the kind tags serve the stages and this one, whatever the
+            # word's field (a lone 'Jr' is a given name); the reading
+            # carries the kind out, and a published tag would make a
+            # name unequal to its own 2.x pickle (Token compares tags)
+            tags = tags - _KIND_TAGS
         final[i] = Token(t.text, t.span, role, tags, reading)
     # No alphanumeric character among the SURVIVING tokens means no
     # name: a bare '.' or '- -' is not a person. v1 kept such input

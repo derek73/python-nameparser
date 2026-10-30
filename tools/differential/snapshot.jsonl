@@ -1898,7 +1898,7 @@
 {"name": "John Smith, V Jr.", "given": "John", "family": "Smith", "suffix": "V Jr.", "initials": "J. S.", "generation": "V Jr."}
 {"name": "John Smith, V MD", "given": "John", "family": "Smith", "suffix": "V MD", "initials": "J. S.", "generation": "V", "credentials": "MD"}
 {"name": "John Smith, V.", "given": "John", "family": "Smith", "suffix": "V.", "initials": "J. S.", "generation": "V."}
-{"name": "John Smith, V; MD", "given": "John", "family": "Smith", "suffix": "V; MD", "initials": "J. S."}
+{"name": "John Smith, V; MD", "given": "John", "family": "Smith", "suffix": "V; MD", "initials": "J. S.", "generation": "V;", "credentials": "MD"}
 {"name": "John Smith, Vice", "title": "Vice", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "John Smith, X.Y. P.Q.", "given": "John", "family": "Smith", "suffix": "X.Y. P.Q.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "J. S."}
 {"name": "John Smith, X.Y.Z.", "given": "John", "family": "Smith", "suffix": "X.Y.Z.", "initials": "J. S."}

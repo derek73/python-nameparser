@@ -414,19 +414,34 @@ def test_a_suffix_word_reads_as_its_vocabulary_kind(
     assert tok.reading.kind.value == kind
 
 
-@pytest.mark.parametrize("word,kind", [
-    ("Jr", "generation"), ("Junior", "generation"), ("Esq", "post-nominal"),
-])
-def test_a_suffix_words_reading_and_alternative_name_one_kind(
-        word: str, kind: str) -> None:
-    # a lone suffix word reads as a name and names the suffix reading
-    # it did not take; behind a name it takes that reading. One
-    # predicate (`_vocab.suffix_kind`) names both
-    (amb,) = parse(word).ambiguities
-    assert amb.alternative is not None
-    assert amb.alternative.kind.value == kind
-    (tok,) = parse(f"John Smith {word}").tokens_for(Role.SUFFIX)
-    assert tok.reading is not None and tok.reading.kind is amb.alternative.kind
+def test_every_suffix_words_reading_alternative_and_index_kind_agree(
+        ) -> None:
+    # One walk over every suffix-set word, not a case per word (826 on
+    # 2026-10-29): behind a name the word takes its suffix reading, a
+    # lone word that reports a fork names that reading as the one not
+    # taken, and both carry the kind the shipped reading index gives
+    # it. One predicate (`_vocab.suffix_kind`) names the two readings
+    # (rules/R8, decisions/R8)
+    from nameparser._reading_index import suffix_kind_of
+    lex = Lexicon.default()
+    kinds = {"generation": "generation", "agnomen": "agnomen",
+             "credential": "credential"}
+    words = sorted(lex.suffix_words | lex.suffix_acronyms
+                   | lex.suffix_words_ambiguous
+                   | lex.suffix_acronyms_ambiguous)
+    assert len(words) > 800
+    mismatched = []
+    for word in words:
+        want = kinds.get(suffix_kind_of(word) or "", "post-nominal")
+        taken = [t.reading.kind.value if t.reading else None
+                 for t in parse(f"John Smith {word}").tokens_for(Role.SUFFIX)]
+        not_taken = [a.alternative.kind.value
+                     for a in parse(word).ambiguities
+                     if a.alternative is not None
+                     and a.alternative.role is Role.SUFFIX]
+        if taken != [want] or any(k != want for k in not_taken):
+            mismatched.append((word, want, taken, not_taken))
+    assert not mismatched, mismatched[:10]
 
 
 # -- Reading.languages (3.0, 4a's follow-up): the files holding it ------

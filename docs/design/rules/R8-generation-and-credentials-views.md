@@ -40,9 +40,13 @@
   ```
   "John Smith, Jr. and MD"    →  generation="Jr. and"
   ```
-- A suffix word with no reading, one that `replace()` or `Parser.revise()` wrote, is in the credentials whatever it is, since nothing records what it was read as.
+- A suffix word with no reading, one that `replace()` or `Parser.revise()` wrote or in a name unpickled from 2.x, is in the credentials whatever it is, since nothing records what it was read as.
+- A name word in the suffix, one a run took in by where it stands, is in the credentials, the catch-all.
+  ```
+  "Smith, Jr., John"          →  credentials="John"
+  ```
 - The kind of a word listed as a suffix word is the shipped vocabulary's, read whatever the reading's default, so a word a caller's own `Lexicon` lists in `suffix_words` alone is in the credentials, a generation word included, and so is a generation word a caller lists as an acronym; one the caller also lists in `suffix_words_ambiguous` or `agnomens` reads as a generation or an agnomen by that marker.
 
 ---
 **Signal:** none in the name: the reading each suffix word took
-**history:** decisions/R8 · **implemented:** nameparser/_types.py, nameparser/_pipeline/_vocab.py
+**history:** decisions/R8 · **implemented:** nameparser/_types.py, nameparser/_pipeline/_vocab.py, nameparser/_pipeline/_classify.py
