@@ -213,6 +213,7 @@
 {"name": "Ana María van der Berg", "given": "Ana", "middle": "María", "family": "van der Berg", "initials": "A. M. B."}
 {"name": "Ana María-José López", "given": "Ana", "middle": "María-José", "family": "López", "initials": "A. M. L."}
 {"name": "Ana Neto", "given": "Ana", "family": "Neto", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: agnomen as suffix (vocabulary)"], "initials": "A. N."}
+{"name": "Ana SB", "given": "Ana", "family": "SB", "initials": "A. S.", "capitalized_force": "Ana Sb"}
 {"name": "Ana Torres", "given": "Ana", "family": "Torres", "initials": "A. T."}
 {"name": "Ana abdul Rahman López", "given": "Ana", "middle": "abdul Rahman", "family": "López", "initials": "A. a. R. L.", "capitalized_force": "Ana Abdul Rahman López"}
 {"name": "Anan ben David", "given": "Anan", "middle": "ben", "family": "David", "initials": "A. b. D.", "capitalized_force": "Anan Ben David"}
@@ -1445,6 +1446,8 @@
 {"name": "JOHN SMITH, PU-PH", "given": "PU-PH", "family": "JOHN SMITH", "initials": "P. J. S.", "capitalized": "Pu-Ph John Smith"}
 {"name": "JOHN SMITH, VD MA", "given": "JOHN", "family": "SMITH", "suffix": "VD MA", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "J. S.", "capitalized": "John Smith, VD MA"}
 {"name": "JOHN V", "given": "JOHN", "family": "V", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: generation as suffix (vocabulary)"], "initials": "J. V.", "capitalized": "John V"}
+{"name": "JOSE CARLOS SILVA F", "given": "JOSE", "middle": "CARLOS SILVA", "family": "F", "initials": "J. C. S. F.", "capitalized": "Jose Carlos Silva F"}
+{"name": "JOSE CARLOS SILVA SB", "given": "JOSE", "middle": "CARLOS SILVA", "family": "SB", "initials": "J. C. S. S.", "capitalized": "Jose Carlos Silva Sb"}
 {"name": "JOSE DA SILVA FH", "given": "JOSE", "family": "DA SILVA", "suffix": "FH", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)"], "initials": "J. S.", "capitalized": "Jose da Silva Fh", "generation": "FH"}
 {"name": "JOSE E MARIA SANTOS", "given": "JOSE", "middle": "E MARIA", "family": "SANTOS", "ambiguities": ["CONJUNCTION_OR_INITIAL"], "alternatives": ["CONJUNCTION_OR_INITIAL: conjunction as given (vocabulary)"], "initials": "J. E. M. S.", "capitalized": "Jose E Maria Santos"}
 {"name": "JOSE ORTEGA-Y-GASSET", "given": "JOSE", "family": "ORTEGA-Y-GASSET", "initials": "J. O.", "capitalized": "Jose Ortega-y-Gasset"}

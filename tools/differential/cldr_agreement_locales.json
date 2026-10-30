@@ -259,6 +259,231 @@
   },
   "text": "Jiří"
  },
+ "ga/foreignFull/givenFirst": {
+  "surname2": {
+   "expected": "González Domingo",
+   "got": ""
+  },
+  "text": "Prof. Dr. Ada Cornelia César Martín von Brühl González Domingo M.D. Ph.D."
+ },
+ "ga/foreignFull/sorting": {
+  "surname2": {
+   "expected": "González Domingo",
+   "got": ""
+  },
+  "text": "von Brühl González Domingo, Prof. Dr. Ada Cornelia César Martín M.D. Ph.D."
+ },
+ "ga/foreignFull/surnameFirst": {
+  "family": {
+   "expected": "von Brühl",
+   "got": "von"
+  },
+  "family_base": {
+   "expected": "Brühl",
+   "got": "von"
+  },
+  "family_particles": {
+   "expected": "von",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Ada Cornelia César Martín",
+   "got": "Brühl Ada Cornelia César Martín"
+  },
+  "text": "von Brühl Ada Cornelia César Martín M.D. Ph.D."
+ },
+ "ga/foreignG/sorting": {
+  "family": {
+   "expected": "",
+   "got": "Sinbad"
+  },
+  "given_names": {
+   "expected": "Sinbad",
+   "got": ""
+  },
+  "text": "Sinbad"
+ },
+ "ga/foreignG/surnameFirst": {
+  "family": {
+   "expected": "",
+   "got": "Sinbad"
+  },
+  "given_names": {
+   "expected": "Sinbad",
+   "got": ""
+  },
+  "text": "Sinbad"
+ },
+ "ga/nativeFull/givenFirst": {
+  "family_base": {
+   "expected": "de Bhulbh",
+   "got": "Bhulbh"
+  },
+  "family_particles": {
+   "expected": "",
+   "got": "de"
+  },
+  "given_names": {
+   "expected": "Brigid Aoibhe Sophia",
+   "got": "An tOll. An Dr. Brigid Aoibhe Sophia"
+  },
+  "text": "An tOll. An Dr. Brigid Aoibhe Sophia de Bhulbh",
+  "title": {
+   "expected": "An tOll. An Dr.",
+   "got": ""
+  }
+ },
+ "ga/nativeFull/sorting": {
+  "family_base": {
+   "expected": "de Bhulbh",
+   "got": "Bhulbh"
+  },
+  "family_particles": {
+   "expected": "",
+   "got": "de"
+  },
+  "given_names": {
+   "expected": "Brigid Aoibhe Sophia",
+   "got": "An tOll. An Dr. Brigid Aoibhe Sophia"
+  },
+  "text": "de Bhulbh An tOll. An Dr. Brigid Aoibhe Sophia",
+  "title": {
+   "expected": "An tOll. An Dr.",
+   "got": ""
+  }
+ },
+ "ga/nativeFull/surnameFirst": {
+  "family_base": {
+   "expected": "de Bhulbh",
+   "got": "Bhulbh"
+  },
+  "family_particles": {
+   "expected": "",
+   "got": "de"
+  },
+  "text": "de Bhulbh Brigid Aoibhe Sophia"
+ },
+ "ga/nativeG/sorting": {
+  "family": {
+   "expected": "",
+   "got": "Hozier"
+  },
+  "given_names": {
+   "expected": "Hozier",
+   "got": ""
+  },
+  "text": "Hozier"
+ },
+ "ga/nativeG/surnameFirst": {
+  "family": {
+   "expected": "",
+   "got": "Hozier"
+  },
+  "given_names": {
+   "expected": "Hozier",
+   "got": ""
+  },
+  "text": "Hozier"
+ },
+ "gd/foreignFull/givenFirst": {
+  "surname2": {
+   "expected": "González Domingo",
+   "got": ""
+  },
+  "text": "Prof. Dr. Ada Cornelia César Martín von Brühl González Domingo Jr, MD DDS"
+ },
+ "gd/foreignFull/surnameFirst": {
+  "surname2": {
+   "expected": "González Domingo",
+   "got": ""
+  },
+  "text": "von Brühl González Domingo, Prof. Dr. Ada Cornelia César Martín Jr, MD DDS"
+ },
+ "gd/foreignG/sorting": {
+  "family": {
+   "expected": "",
+   "got": "Sinbad"
+  },
+  "given_names": {
+   "expected": "Sinbad",
+   "got": ""
+  },
+  "text": "Sinbad"
+ },
+ "gd/foreignG/surnameFirst": {
+  "family": {
+   "expected": "",
+   "got": "Sinbad"
+  },
+  "given_names": {
+   "expected": "Sinbad",
+   "got": ""
+  },
+  "text": "Sinbad"
+ },
+ "gd/nativeFull/givenFirst": {
+  "family_base": {
+   "expected": "Mac a’ Ghobhainn Chorùna",
+   "got": "a’ Ghobhainn Chorùna"
+  },
+  "family_particles": {
+   "expected": "",
+   "got": "Mac"
+  },
+  "surname2": {
+   "expected": "Chorùna",
+   "got": ""
+  },
+  "text": "Mgr. Dòmhnall Iain Bàn Mac a’ Ghobhainn Chorùna am post"
+ },
+ "gd/nativeFull/sorting": {
+  "family_base": {
+   "expected": "Mac a’ Ghobhainn",
+   "got": "a’ Ghobhainn"
+  },
+  "family_particles": {
+   "expected": "",
+   "got": "Mac"
+  },
+  "text": "Mac a’ Ghobhainn, Dòmhnall Iain Bàn"
+ },
+ "gd/nativeFull/surnameFirst": {
+  "family_base": {
+   "expected": "Mac a’ Ghobhainn Chorùna",
+   "got": "a’ Ghobhainn Chorùna"
+  },
+  "family_particles": {
+   "expected": "",
+   "got": "Mac"
+  },
+  "surname2": {
+   "expected": "Chorùna",
+   "got": ""
+  },
+  "text": "Mac a’ Ghobhainn Chorùna, Mgr. Dòmhnall Iain Bàn am post"
+ },
+ "gd/nativeG/sorting": {
+  "family": {
+   "expected": "",
+   "got": "Calum"
+  },
+  "given_names": {
+   "expected": "Calum",
+   "got": ""
+  },
+  "text": "Calum"
+ },
+ "gd/nativeG/surnameFirst": {
+  "family": {
+   "expected": "",
+   "got": "Calum"
+  },
+  "given_names": {
+   "expected": "Calum",
+   "got": ""
+  },
+  "text": "Calum"
+ },
  "hr/foreignG/sorting": {
   "family": {
    "expected": "",
@@ -639,6 +864,111 @@
    "got": ""
   },
   "text": "सुन्दर"
+ },
+ "pt/foreignFull/givenFirst": {
+  "suffix": {
+   "expected": "Jr. Dr. Ph.D",
+   "got": "Jr., Ph.D"
+  },
+  "text": "Prof. Dr. Mary Lou Cesare Martín von Brühl Jr., Dr. Ph.D",
+  "title": {
+   "expected": "Prof. Dr.",
+   "got": "Prof. Dr. Dr."
+  }
+ },
+ "pt/foreignFull/surnameFirst": {
+  "family": {
+   "expected": "von Brühl",
+   "got": "von"
+  },
+  "family_base": {
+   "expected": "Brühl",
+   "got": "von"
+  },
+  "family_particles": {
+   "expected": "von",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Mary Lou Cesare Martín",
+   "got": "Brühl Prof. Dr. Mary Lou Cesare Martín"
+  },
+  "suffix": {
+   "expected": "Jr. Dr. Ph.D",
+   "got": "Jr., Ph.D"
+  },
+  "text": "von Brühl Prof. Dr. Mary Lou Cesare Martín Jr., Dr. Ph.D",
+  "title": {
+   "expected": "Prof. Dr.",
+   "got": "Dr."
+  }
+ },
+ "pt/foreignG/sorting": {
+  "family": {
+   "expected": "",
+   "got": "Sinbad"
+  },
+  "given_names": {
+   "expected": "Sinbad",
+   "got": ""
+  },
+  "text": "Sinbad"
+ },
+ "pt/foreignG/surnameFirst": {
+  "family": {
+   "expected": "",
+   "got": "Sinbad"
+  },
+  "given_names": {
+   "expected": "Sinbad",
+   "got": ""
+  },
+  "text": "Sinbad"
+ },
+ "pt/nativeFull/surnameFirst": {
+  "family": {
+   "expected": "da Silva",
+   "got": "da"
+  },
+  "family_base": {
+   "expected": "Silva",
+   "got": "da"
+  },
+  "family_particles": {
+   "expected": "da",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "José Pedro Eduardo",
+   "got": "Silva Sr. José Pedro Eduardo"
+  },
+  "text": "da Silva Sr. José Pedro Eduardo Jr., MP",
+  "title": {
+   "expected": "Sr.",
+   "got": ""
+  }
+ },
+ "pt/nativeG/sorting": {
+  "family": {
+   "expected": "",
+   "got": "Maria"
+  },
+  "given_names": {
+   "expected": "Maria",
+   "got": ""
+  },
+  "text": "Maria"
+ },
+ "pt/nativeG/surnameFirst": {
+  "family": {
+   "expected": "",
+   "got": "Maria"
+  },
+  "given_names": {
+   "expected": "Maria",
+   "got": ""
+  },
+  "text": "Maria"
  },
  "ru/foreignFull/givenFirst": {
   "family": {

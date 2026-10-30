@@ -113,9 +113,10 @@ def test_locales_module_attribute_access() -> None:
 def test_locales_get_and_available() -> None:
     assert locales.get("ru") is locales.RU
     assert set(locales.available()) == {
-        "cs", "hr", "ja", "ne", "ru", "sk", "sl", "tr_az", "zh"}
-    with pytest.raises(KeyError,
-                       match="cs, hr, ja, ne, ru, sk, sl, tr_az, zh"):
+        "cs", "ga", "gd", "hr", "ja", "ne", "pt_br", "ru", "sk", "sl", "tr_az", "zh"}
+    with pytest.raises(
+            KeyError,
+            match="cs, ga, gd, hr, ja, ne, pt_br, ru, sk, sl, tr_az, zh"):
         locales.get("xx")
     # the segmenter FACTORY is not a locale: it is an ordinary function
     # on the package, so it must not appear among the codes
@@ -1072,6 +1073,34 @@ def test_choice_rotators_cover_every_changed_word(code: str) -> None:
     assert surface and missing == []
 
 
+# The vocabulary packs' rotators: a name in each shape a reading the pack
+# turns on or prefers changes, read one way by default and another under
+# the pack (the pinned rows below say how). ga: each clan particle
+# mid-name; gd: `nic`; both: the clan `mc` preferred over the credential;
+# pt_br: `sb` behind name words, bare and dotted, in each case, and the
+# words pt's choice prefers.
+_ROTATORS["ga"] = [
+    "Máire Nic Gabhann",             # nic
+    "Máire Mhic Gabhann",            # mhic
+    "Máire Uí Bhriain",              # uí
+    "Pádraig Mic Cárthaigh",         # mic
+    "John Smith MC",                 # mc, the clan particle, not MC
+]
+_ROTATORS["gd"] = [
+    "Màiri Nic Leòid",               # nic
+    "Gabhann, Màiri Nic",            # nic ending the given part
+    "John Smith MC",                 # mc, the clan particle, not MC
+]
+_ROTATORS["pt_br"] = [
+    "JOSE CARLOS SILVA SB",          # sb
+    "Jose Carlos Silva Sb.",         # sb, dotted
+    "JOSE SILVA SB",                 # sb, one word to spare
+    "John Smith DO",                 # do, pt's particle, not DO
+    "ANA SILVA E SOUZA",             # e, pt's connective
+    "Gary Holloway Sr",              # sr, pt's Senhor, not the generation
+]
+
+
 def _marker_regexes(module: ModuleType) -> list[re.Pattern]:
     return [v for v in vars(module).values() if isinstance(v, re.Pattern)]
 
@@ -1588,6 +1617,158 @@ def test_the_west_and_south_slavic_packs_repair_their_titles_case() -> None:
     assert str(cs.capitalized(cs.parse("mudr. jan novák"))) == (
         "MUDr. Jan Novák")
     assert str(parse("mudr. jan novák").capitalized()) == "Mudr. Jan Novák"
+
+
+# -- 3h: the Irish, Scottish Gaelic and Brazilian Portuguese packs --
+#
+# Each row is a name in a shape the sweeps reach (comma shapes, one
+# case, dotted and bare, a leading word, a family-comma head), read by
+# the default and then under the pack, as (given, middle, family,
+# suffix, ambiguity kinds). The default's reading is the refusal the
+# pack lifts, so a row that moved by default fails here as well as in
+# the snapshot (decisions/vocabulary-model's 2026-10-30 phase 3h entry).
+_GA_NIC = ("Máire", "", "Nic Gabhann", "", ())
+_3H_ROWS = [
+    # the clan particles mid-name: middle by default, the surname's
+    # first word under the pack, as `ní` and `ó` read in both
+    ("GA", "Máire Nic Gabhann", ("Máire", "Nic", "Gabhann", "", ()), _GA_NIC),
+    ("GA", "Máire Mhic Gabhann",
+     ("Máire", "Mhic", "Gabhann", "", ()), ("Máire", "", "Mhic Gabhann", "", ())),
+    ("GA", "Máire Uí Bhriain",
+     ("Máire", "Uí", "Bhriain", "", ()), ("Máire", "", "Uí Bhriain", "", ())),
+    ("GA", "MÁIRE UÍ BHRIAIN",
+     ("MÁIRE", "UÍ", "BHRIAIN", "", ()), ("MÁIRE", "", "UÍ BHRIAIN", "", ())),
+    ("GA", "Pádraig Mic Cárthaigh",
+     ("Pádraig", "Mic", "Cárthaigh", "", ()),
+     ("Pádraig", "", "Mic Cárthaigh", "", ())),
+    ("GD", "Màiri Nic Leòid",
+     ("Màiri", "Nic", "Leòid", "", ()), ("Màiri", "", "Nic Leòid", "", ())),
+    # a never-given particle opening the name starts the family (rules/P1)
+    ("GA", "Uí Bhriain", ("Uí", "", "Bhriain", "", ()), ("", "", "Uí Bhriain", "", ())),
+    # Nic and Mic are given names too: a leading one stays given, reported
+    ("GA", "Nic Cage",
+     ("Nic", "", "Cage", "", ()), ("Nic", "", "Cage", "", ("PARTICLE_OR_GIVEN",))),
+    ("GD", "Nic Cage",
+     ("Nic", "", "Cage", "", ()), ("Nic", "", "Cage", "", ("PARTICLE_OR_GIVEN",))),
+    ("GA", "Mic Jagger",
+     ("Mic", "", "Jagger", "", ()), ("Mic", "", "Jagger", "", ("PARTICLE_OR_GIVEN",))),
+    # the comma shapes: a full surname before the comma is unchanged;
+    # one ending the given part joins the surname as `Ní` does by default
+    ("GA", "Nic Gabhann, Máire", _GA_NIC, _GA_NIC),
+    ("GA", "Gabhann, Máire Nic",
+     ("Máire", "Nic", "Gabhann", "", ()),
+     ("Máire", "", "Nic Gabhann", "", ("PARTICLE_OR_GIVEN",))),
+    ("GA", "Gabhann, Máire Ní", _GA_NIC[:2] + ("Ní Gabhann", "", ()),
+     _GA_NIC[:2] + ("Ní Gabhann", "", ())),
+    ("GA", ", Máire Uí Bhriain",
+     ("Máire", "Uí Bhriain", "", "", ()), ("Máire", "Uí Bhriain", "", "", ())),
+    # a surname that is the word alone keeps it
+    ("GA", "Ioana Mic", ("Ioana", "", "Mic", "", ()), ("Ioana", "", "Mic", "", ())),
+    # SB: the family name by default, gated by the count under the
+    # pack as sobrinho is (rules/S11)
+    ("PT_BR", "JOSE CARLOS SILVA SB",
+     ("JOSE", "CARLOS SILVA", "SB", "", ()),
+     ("JOSE", "CARLOS", "SILVA", "SB", ("SUFFIX_OR_NAME",))),
+    ("PT_BR", "José Silva Sb.",
+     ("José", "Silva", "Sb.", "", ()),
+     ("José", "", "Silva", "Sb.", ("SUFFIX_OR_NAME",))),
+    ("PT_BR", "SILVA, JOSE CARLOS SB",
+     ("JOSE", "CARLOS SB", "SILVA", "", ()),
+     ("JOSE", "CARLOS", "SILVA", "SB", ("SUFFIX_OR_NAME",))),
+    ("PT_BR", ", JOSE SILVA SB",
+     ("JOSE", "SILVA SB", "", "", ()), ("JOSE", "SILVA", "", "SB", ("SUFFIX_OR_NAME",))),
+    # with no words to spare it keeps the family, reported
+    ("PT_BR", "Ana SB", ("Ana", "", "SB", "", ()), ("Ana", "", "SB", "", ("SUFFIX_OR_NAME",))),
+    # an agnomen before a family comma stays in the surname, as FILHO does
+    ("PT_BR", "SILVA SB, JOSE CARLOS",
+     ("JOSE", "CARLOS", "SILVA SB", "", ()), ("JOSE", "CARLOS", "SILVA SB", "", ())),
+    # the dotted S.B. after a comma is paired initials either way (rules/C5)
+    ("PT_BR", "John Smith, S.B.",
+     ("S.B.", "", "John Smith", "", ("SUFFIX_OR_NAME",)),
+     ("S.B.", "", "John Smith", "", ("SUFFIX_OR_NAME",))),
+    # F and N, written as an initial is, are excluded, the pack included
+    # (pt-BR.toml): the family name they spell, by default and under it
+    ("PT_BR", "JOSE CARLOS SILVA F",
+     ("JOSE", "CARLOS SILVA", "F", "", ()), ("JOSE", "CARLOS SILVA", "F", "", ())),
+    ("PT_BR", "Pedro Alves N.",
+     ("Pedro", "Alves", "N.", "", ()), ("Pedro", "Alves", "N.", "", ())),
+    # the letter as an initial: before the surname, or leading, unchanged
+    ("PT_BR", "JOHN F KENNEDY",
+     ("JOHN", "F", "KENNEDY", "", ()), ("JOHN", "F", "KENNEDY", "", ())),
+    ("PT_BR", "F. Silva", ("F.", "", "Silva", "", ()), ("F.", "", "Silva", "", ())),
+    # a family comma with a title-particle head: the given part's walk
+    # keeps it a name word under the pack too
+    ("PT_BR", "Smith, Freiherr von Berg SB",
+     ("von Berg SB", "", "Smith", "", ()), ("von Berg SB", "", "Smith", "", ())),
+]
+
+
+@pytest.mark.parametrize("code, name, default, packed", _3H_ROWS,
+                         ids=[f"{r[0]}:{r[1]}" for r in _3H_ROWS])
+def test_the_3h_packs_lift_the_defaults_refusal(
+        code: str, name: str, default: tuple[object, ...],
+        packed: tuple[object, ...]) -> None:
+    assert (_fields(parse(name)),
+            _fields(parser_for(locales.get(code)).parse(name))) == (
+        default, packed)
+
+
+@pytest.mark.parametrize("order", [FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST])
+@pytest.mark.parametrize("code, name, default, packed", [
+    # a never-given particle opening the name takes one name unit under a
+    # family-first order (rules/P1), where the default reads the
+    # particle alone as the family name
+    ("GA", "Uí Bhriain Máire", ("Uí", ""), ("Uí Bhriain", "")),
+    # a possibly-given one is left to position, by default and under
+    # the pack alike
+    ("GD", "Nic Leòid Màiri", ("Nic", ""), ("Nic", "")),
+    # the agnomen ends the name under either order (family, suffix)
+    ("PT_BR", "SILVA JOSE CARLOS SB", ("SILVA", ""), ("SILVA", "SB")),
+])
+def test_the_3h_packs_under_a_family_first_order(
+        order: object, code: str, name: str, default: tuple[str, str],
+        packed: tuple[str, str]) -> None:
+    policy = Policy(name_order=order)  # type: ignore[arg-type]
+    by_default = Parser(policy=policy).parse(name)
+    by_pack = parser_for(locales.get(code), base=Parser(policy=policy)).parse(name)
+    assert ((by_default.family, by_default.suffix),
+            (by_pack.family, by_pack.suffix)) == (default, packed)
+
+
+@pytest.mark.parametrize("force", [False, True])
+@pytest.mark.parametrize("code, text, repaired", [
+    ("GA", "MÁIRE NIC GIOLLA PHÁDRAIG", "Máire Nic Giolla Phádraig"),
+    ("GD", "MÁIRE NIC GIOLLA PHÁDRAIG", "Máire Nic Giolla Phádraig"),
+    ("GA", "MÁIRE MHIC GABHANN", "Máire Mhic Gabhann"),
+    ("GA", "SEÁN MIC GABHANN", "Seán Mic Gabhann"),
+    ("GA", "MÁIRE UÍ BHRIAIN", "Máire Uí Bhriain"),
+    ("GA", "máire nic gabhann", "Máire Nic Gabhann"),
+])
+def test_the_irish_particles_keep_their_capital_under_their_pack(
+        code: str, text: str, repaired: str, force: bool) -> None:
+    # Irish writes these capitalized, as the default's repair does; a
+    # particle reading without a mask is lowercased by case repair
+    # (rules/R4), so each turned-on reading carries its own `cased`
+    packed = parser_for(locales.get(code))
+    assert str(parse(text).capitalized(force=force)) == repaired
+    assert str(packed.capitalized(packed.parse(text), force=force)) == repaired
+
+
+def test_the_pt_br_pack_selects_pt_too() -> None:
+    # pt-BR selects its ancestor's file (decisions/vocabulary-model's 3b
+    # entry, item 6): Portuguese `e` is a connective in a one-case name
+    packed = parser_for(locales.PT_BR)
+    assert parse("ANA SILVA E SOUZA").family == "SOUZA"
+    assert packed.parse("ANA SILVA E SOUZA").family == "SILVA E SOUZA"
+
+
+def test_the_sb_mask_keeps_the_degrees_capitals_under_pt_br() -> None:
+    # SB listed as an agnomen was recased to Sb by force (pt-BR.toml's
+    # note); the reading's mask keeps it SB, and only under the pack
+    packed = parser_for(locales.PT_BR)
+    name = packed.parse("jose carlos silva sb")
+    assert str(packed.capitalized(name, force=True)) == "Jose Carlos Silva SB"
+    assert str(parse("jane doe sb").capitalized(force=True)) == "Jane Doe Sb"
 
 
 # -- #269: non-Latin default vocabulary (Cyrillic, Greek, Arabic,
