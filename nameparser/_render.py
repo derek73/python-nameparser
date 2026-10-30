@@ -36,7 +36,8 @@ _NAME_RUN = re.compile(r"\w+")
 
 #: str.format keys render() accepts: the seven role fields in canonical
 #: order (derived from Role -- never restated) plus the derived views.
-_DERIVED_VIEWS = ("family_base", "family_particles", "surnames", "given_names")
+_DERIVED_VIEWS = ("family_base", "family_particles", "surnames", "given_names",
+                  "generation", "credentials")
 _RENDER_KEYS = tuple(r.value for r in Role) + _DERIVED_VIEWS
 
 #: str.format keys initials() accepts: the three name-bearing roles.

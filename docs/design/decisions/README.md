@@ -126,6 +126,7 @@ Entry conventions:
 - [R5 — the case-repair gate](R5-case-repair-gate.md)
 - [R6 — the default rendering follows the written name](R6-default-rendering-follows-the-written-name.md)
 - [R7 — no initials in a script that writes none](R7-no-initials-in-a-script-that-writes-none.md)
+- [R8 — the generation and credentials views](R8-generation-and-credentials-views.md)
 
 ## Construction & configuration diagnostics (D)
 

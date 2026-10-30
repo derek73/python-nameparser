@@ -392,26 +392,19 @@ def test_a_token_replace_or_revise_builds_has_no_reading() -> None:
             t.reading for t in pn.tokens_for(Role.GIVEN)]
 
 
-#: The suffix words the compiled sets do not split by kind: `jr` and
-#: `esq` both compile into `suffix_words` and carry the same tags, so
-#: `_vocab.suffix_kind` reads both as a post-nominal word, which is
-#: what `Ambiguity.alternative` already says of such a word
-#: (`Rinpoche`). The generation rows are the gap 4b closes by reading a
-#: listed word's kind from phase 3's reading index (3a); they are
-#: strict, so the fix has to remove the marks.
-_SPLIT_BY_KIND_LATER = pytest.mark.xfail(
-    strict=True,
-    reason="4b (#754): a listed suffix word's kind comes from 3a's "
-           "reading index; today Jr and Sr read post-nominal")
-
-
+#: A listed suffix word reads as its vocabulary kind (3.0's 4b): `jr`
+#: and `esq` compile into the same set with the same tags, and the
+#: reading index tells them apart; a credential written as a word
+#: (`博士`) is a credential, and a kind with no reading kind of its own
+#: (a courtesy, an honorific) a post-nominal word.
 @pytest.mark.parametrize("text,word,kind", [
-    pytest.param("John Smith Jr.", "Jr.", "generation",
-                 marks=_SPLIT_BY_KIND_LATER),
-    pytest.param("John Smith Sr.", "Sr.", "generation",
-                 marks=_SPLIT_BY_KIND_LATER),
+    ("John Smith Jr.", "Jr.", "generation"),
+    ("John Smith Sr.", "Sr.", "generation"),
     ("John Smith III", "III", "generation"),
+    ("Pedro Alves Filho", "Filho", "agnomen"),
     ("John Smith Esq.", "Esq.", "post-nominal"),
+    ("王小明先生", "先生", "post-nominal"),
+    ("王小明 博士", "博士", "credential"),
     ("John Smith PhD", "PhD", "credential"),
 ])
 def test_a_suffix_word_reads_as_its_vocabulary_kind(
@@ -419,6 +412,21 @@ def test_a_suffix_word_reads_as_its_vocabulary_kind(
     (tok,) = [t for t in parse(text).tokens if t.text == word]
     assert tok.reading is not None
     assert tok.reading.kind.value == kind
+
+
+@pytest.mark.parametrize("word,kind", [
+    ("Jr", "generation"), ("Junior", "generation"), ("Esq", "post-nominal"),
+])
+def test_a_suffix_words_reading_and_alternative_name_one_kind(
+        word: str, kind: str) -> None:
+    # a lone suffix word reads as a name and names the suffix reading
+    # it did not take; behind a name it takes that reading. One
+    # predicate (`_vocab.suffix_kind`) names both
+    (amb,) = parse(word).ambiguities
+    assert amb.alternative is not None
+    assert amb.alternative.kind.value == kind
+    (tok,) = parse(f"John Smith {word}").tokens_for(Role.SUFFIX)
+    assert tok.reading is not None and tok.reading.kind is amb.alternative.kind
 
 
 # -- Reading.languages (3.0, 4a's follow-up): the files holding it ------
@@ -515,12 +523,14 @@ def test_a_callers_whole_word_names_no_file_of_its_parts(
 
 def test_a_reading_from_a_callers_own_vocabulary_names_no_file() -> None:
     # a word no file holds, and one a file holds only off by default
-    # (`st`, a Czech generation written `default = false`)
+    # (`st`, a Czech generation written `default = false`): its kind is
+    # the word's, read whatever the reading's default (4b), so a pack
+    # turning it on reads it alike, but no file holds it on
     lex = Lexicon.default().add(titles={"zzq"}, suffix_words={"st"})
     pn = Parser(lexicon=lex).parse("Zzq John Smith St")
     readings = {t.text: t.reading for t in pn.tokens}
     assert readings["Zzq"] == Reading("title", "title", "vocabulary")  # type: ignore[arg-type]
-    assert readings["St"] == Reading("post-nominal", "suffix", "vocabulary")  # type: ignore[arg-type]
+    assert readings["St"] == Reading("generation", "suffix", "vocabulary")  # type: ignore[arg-type]
     assert readings["Zzq"] is not None and readings["Zzq"].languages == ()
     assert readings["St"] is not None and readings["St"].languages == ()
 

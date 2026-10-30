@@ -301,6 +301,55 @@ def test_derived_views_filter_on_stable_particle_tag() -> None:
     assert pn.given_names == "Juan"           # given + middle
 
 
+# -- the suffix's generation and credentials views (rules/R8, #326) --
+
+@pytest.mark.parametrize("text,generation,credentials", [
+    # the empty path: a name with no suffix, and a suffix of one kind
+    ("John Smith", "", ""),
+    ("John Smith PhD", "", "PhD"),
+    ("John Smith Jr.", "Jr.", ""),
+    # comma-joined as the suffix is, each view in written order
+    ("Smith, John, Jr., MD, Esq.", "Jr.", "MD, Esq."),
+    ("John Smith, PhD, Jr., III", "Jr., III", "PhD"),
+    # a run written without commas comes apart by kind; a split
+    # credential stays whole, and a connective goes with the word
+    # before it
+    ("John Smith Jr. III PhD", "Jr. III", "PhD"),
+    ("John Smith Ph. D. Jr.", "Jr.", "Ph. D."),
+    ("John Smith, PhD and MD Jr.", "Jr.", "PhD and MD"),
+    ("Doe, Jane, and Jr.", "Jr.", "and"),
+    # an agnomen is a generation; an honorific, a credential
+    ("Pedro Alves Filho", "Filho", ""),
+    ("王小明先生", "", "先生"),
+])
+def test_the_suffix_views_partition_it_by_reading(
+        text: str, generation: str, credentials: str) -> None:
+    pn = parse(text)
+    assert (pn.generation, pn.credentials) == (generation, credentials)
+
+
+def test_a_suffix_word_with_no_reading_is_a_credential() -> None:
+    # replace() records no reading, so nothing says what the word was
+    # read as (rules/R8's Accepted)
+    pn = parse("John Smith Jr.").replace(suffix="Jr. PhD")
+    assert pn.suffix == "Jr., PhD"
+    assert (pn.generation, pn.credentials) == ("", "Jr., PhD")
+    # a field it did not touch keeps its readings, and so its views
+    kept = parse("John Smith Jr., PhD").replace(given="Jack")
+    assert (kept.generation, kept.credentials) == ("Jr.", "PhD")
+
+
+def test_the_suffix_views_are_render_keys_and_not_fields() -> None:
+    pn = parse("Smith, John, Jr., MD")
+    assert pn.render("{family} {generation} ({credentials})") \
+        == "Smith Jr. (MD)"
+    # views, like family_base: as_dict and replace() take the seven
+    # roles only
+    assert "generation" not in pn.as_dict()
+    with pytest.raises(TypeError):
+        pn.replace(generation="Sr.")
+
+
 def test_tokens_for_preserves_order() -> None:
     pn = _delavega()
     assert [t.text for t in pn.tokens_for(Role.FAMILY)] == ["de", "la", "Vega"]

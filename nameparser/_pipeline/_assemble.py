@@ -67,7 +67,8 @@ def _kinds_of(*categories: str) -> frozenset[str]:
 #: The vocabulary kinds (_reading_index.CATEGORY's keys) whose rows
 #: hold a reading of each kind. A suffix reading takes the word's
 #: suffix rows whatever their finer kind, since a word has one suffix
-#: kind (the build's check 4) and the parse does not yet read it (4b).
+#: kind (the build's check 4), which `_vocab.suffix_kind` has already
+#: read the reading's kind by (4b).
 #: A name reading's rows depend on its field (`_NAME_KINDS`). An
 #: initial and a patronymic are read by shape or rule, never from a
 #: file.
@@ -303,7 +304,8 @@ def assemble(state: ParseState) -> ParsedName:
         # later (P1's fold, P6's attachment, the policy folds) needs
         # no reading of its own to keep in step. Per token, measured
         # 2026-10-29: no frame for an untagged non-suffix word, the
-        # commonest; one for a listed or shaped suffix (`suffix_kind`)
+        # commonest; one for a listed or shaped suffix (`suffix_kind`,
+        # whose index lookup for a listed word is a memo)
         # and for a tagged name word that reaches `name_source` or a
         # family word glued to the next (`_normalize`); three for a
         # suffix word nothing tags or lists (`suffix_kind`, then

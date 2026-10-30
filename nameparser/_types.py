@@ -883,7 +883,8 @@ class ReadingKind(StrEnum):
 
     #: A post-nominal credential or other acronym suffix ("MA", "X.Y.Z.").
     CREDENTIAL = "credential"
-    #: A generational suffix: a roman numeral, or a word such as "fils".
+    #: A generational suffix: a roman numeral, or a word such as "Jr."
+    #: or "fils".
     GENERATION = "generation"
     #: An agnomen, a family word that is also a suffix ("Filho", "Neto").
     AGNOMEN = "agnomen"
@@ -906,6 +907,11 @@ class ReadingKind(StrEnum):
     #: Added in 3.0 for the patronymic view; no reading of the parse
     #: takes it yet.
     PATRONYMIC = "patronymic"
+
+
+#: The reading kinds :attr:`ParsedName.generation` holds; every other
+#: suffix word is in :attr:`ParsedName.credentials` (#326).
+_GENERATION_KINDS = frozenset({ReadingKind.GENERATION, ReadingKind.AGNOMEN})
 
 
 class ReadingSource(StrEnum):
@@ -1361,8 +1367,51 @@ class ParsedName:
         return self._text_for(Role.MIDDLE, Role.FAMILY)
 
     @property
+    # rules/R8: "the suffix splits into two views that partition it"
+    # (history: decisions/R8, #326)
+    def generation(self) -> str:
+        """The suffix words read as a generation or an agnomen ("Jr.",
+        "III", "Filho"), joined as :attr:`suffix` joins them; ``''``
+        for a name with none."""
+        return self._suffix_view(True)
+
+    @property
+    def credentials(self) -> str:
+        """The rest of the suffix: credentials and every other
+        post-nominal word ("PhD", "Esq.", "さん"), joined as
+        :attr:`suffix` joins them; ``''`` for a name with none. A
+        suffix word with no :attr:`Token.reading` (one :meth:`replace`
+        or Parser.revise wrote) is counted here."""
+        return self._suffix_view(False)
+
+    @property
     def given_names(self) -> str:
         return self._text_for(Role.GIVEN, Role.MIDDLE)
+
+    def _suffix_view(self, generation: bool) -> str:
+        # the `generation` / `credentials` partition of `suffix`, each
+        # word placed by the reading it took ('D.' after 'Ph.' takes
+        # the credential's), a `joined` word attaching with a space as
+        # in `suffix` where the word before it is in the same view
+        # ('Jr. III PhD' gives 'Jr. III' and 'PhD'), and a connective
+        # going with the word it follows ('PhD and MD')
+        parts: list[str] = []
+        before: bool | None = None
+        for tok in self.tokens:
+            if tok.role is not Role.SUFFIX:
+                continue
+            kind = tok.reading.kind if tok.reading is not None else None
+            if kind is ReadingKind.CONJUNCTION and before is not None:
+                keep = before
+            else:
+                keep = (kind in _GENERATION_KINDS) is generation
+            if keep:
+                if before and "joined" in tok.tags:
+                    parts[-1] += " " + tok.text
+                else:
+                    parts.append(tok.text)
+            before = keep
+        return ", ".join(parts)
 
     # -- structured access ----------------------------------------------
 

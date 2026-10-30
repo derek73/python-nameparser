@@ -386,7 +386,7 @@ Each sub-phase is one PR, measured on its own base as phase 2's and phase 3's ar
 | Sub-phase | What | Needs |
 |---|---|---|
 | 4a | `Token.reading` and `ReadingKind.PATRONYMIC`, kind and source read at assemble from each token's final role and the tags the deciding stages left; `Reading.languages` once 3a's index exists. Landed (decisions/vocabulary-model's 2026-10-29 #754, sub-phase 4a and 4a's follow-up entries) | — (neutral); 3a for `languages` |
-| 4b | `generation` and `credentials` (#326); a listed suffix word's kind read from 3a's index, which 4a could not split (`Jr` and `Esq.` both read `post-nominal` there) | 4a (neutral); 3a for the kind |
+| 4b | `generation` and `credentials` (#326); a listed suffix word's kind read from 3a's index, which 4a could not split (`Jr` and `Esq.` both read `post-nominal` there). Landed (decisions/R8's 2026-10-29 entry) | 4a (neutral); 3a for the kind |
 | 4c | `patronymic`: the vocabulary's patronymic particles, and the RU and TR_AZ rules writing the reading | 4a (neutral) |
 | 4d | `surname2`: O6's stable tag | — (neutral) |
 | 4e | the render defaults and `ParsedName.order` | — |
