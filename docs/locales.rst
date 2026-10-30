@@ -335,11 +335,10 @@ usually the salutation (Mr.), so use it for Nepali data.
 
 .. warning::
 
-   A pack declares a name *shape*, not a language — save one that
+   A pack declares a name *shape*, not a language (save one that
    chooses languages, such as ``ne``, which names a language yet acts
    on every name holding one of its words, whatever language that name
-   is in — and it cannot tell whose name it is
-   looking at. Any surname that happens to end in a
+   is in). Either way, it cannot tell whose name it is looking at. Any surname that happens to end in a
    patronymic suffix matches the East Slavic rule, including names
    that are not East Slavic at all:
 

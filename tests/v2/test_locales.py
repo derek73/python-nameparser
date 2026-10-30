@@ -1043,7 +1043,7 @@ def test_registry_is_the_pack_contract() -> None:
         # word stands and declares that part, and only that part
         pack = locales.get(code)
         if _is_vocabulary_pack(pack):
-            assert getattr(module, "DEVIATES", None) is None, (
+            assert not hasattr(module, "DEVIATES"), (
                 f"vocabulary pack {code!r} declares DEVIATES by hand; its "
                 f"surface is derived from its choice")
             continue
@@ -1225,7 +1225,7 @@ def _pack_deviates(pack: Locale, module: ModuleType) -> Callable[[str], bool]:
 def test_a_pack_with_a_choice_and_a_patch_declares_only_the_patch() -> None:
     # the hand DEVIATES of a pack that also chooses languages covers
     # only what its patch changes: the choice's words are or'd in, so
-    # the hand copy 3b removed never comes back
+    # the hand copy 3b removed is no longer needed
     mixed = Locale(code="mixed", lexicon=Lexicon.empty(),
                    policy=PolicyPatch(patronymic_rules=frozenset(
                        {PatronymicRule.EAST_SLAVIC})),
