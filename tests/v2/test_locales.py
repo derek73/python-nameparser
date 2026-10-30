@@ -113,10 +113,11 @@ def test_locales_module_attribute_access() -> None:
 def test_locales_get_and_available() -> None:
     assert locales.get("ru") is locales.RU
     assert set(locales.available()) == {
-        "cs", "ga", "gd", "hr", "ja", "ne", "pt_br", "ru", "sk", "sl", "tr_az", "zh"}
+        "bn", "cs", "ga", "gd", "hi", "hr", "ja", "ne", "pt_br", "ru", "sk", "sl",
+        "tr_az", "zh"}
     with pytest.raises(
             KeyError,
-            match="cs, ga, gd, hr, ja, ne, pt_br, ru, sk, sl, tr_az, zh"):
+            match="bn, cs, ga, gd, hi, hr, ja, ne, pt_br, ru, sk, sl, tr_az, zh"):
         locales.get("xx")
     # the segmenter FACTORY is not a locale: it is an ordinary function
     # on the package, so it must not appear among the codes
@@ -155,6 +156,48 @@ def test_ne_reads_the_word_as_given_at_the_head_and_title_in_a_phrase() -> None:
     # written with its period at the head (rules/H2's shape), still a title
     assert ne.parse("His Holiness Guru Prasad").title == "His Holiness Guru"
     assert ne.parse("Guru. Prasad Sharma").title == "Guru."
+
+
+def test_hi_and_bn_pack_contents() -> None:
+    # 3e: two vocabulary packs, nothing but their choices; what each
+    # changes is exactly the romanized titles its file writes
+    # `default = false`, words with no reading the default compiles
+    from nameparser._reading_index import changed_words, selected
+    assert locales.HI == Locale(code="hi", lexicon=Lexicon.empty(),
+                                languages=frozenset({"hi"}))
+    assert locales.BN == Locale(code="bn", lexicon=Lexicon.empty(),
+                                languages=frozenset({"bn"}))
+    assert changed_words(selected(locales.HI.languages)) == {
+        "shrimati", "shriyut", "smt"}
+    assert changed_words(selected(locales.BN.languages)) == {
+        "adhyapak", "shrimati", "smt"}
+
+
+def test_hi_and_bn_read_the_romanized_salutation_as_the_title() -> None:
+    hi, bn = _require_packed("hi"), _require_packed("bn")
+    assert (parse("Smt Nirmala Sitharaman").title,
+            parse("Smt Nirmala Sitharaman").given) == ("", "Smt")
+    for packed in (hi, bn):
+        name = packed.parse("Smt Nirmala Sitharaman")
+        assert (name.title, name.given, name.family) == (
+            "Smt", "Nirmala", "Sitharaman")
+        assert packed.parse("Dr. Shrimati Indira Gandhi").title == (
+            "Dr. Shrimati")
+        # after a family comma, a salutation ending the given part is the
+        # title (rules/H8), as its Devanagari spelling is
+        assert packed.parse("Sitharaman, Nirmala Smt").title == "Smt"
+        # shri is left out (decisions/vocabulary-model, phase 3e): the
+        # given names written in two words that open with it keep it
+        assert packed.parse("Shri Kant Tripathi").as_dict() == parse(
+            "Shri Kant Tripathi").as_dict()
+        assert packed.parse("Sushri Sangita Behera").given == "Sushri"
+    # adhyapak is a title only at the head and only under bn; the Marathi
+    # family name ending a name keeps its place
+    assert bn.parse("Adhyapak Anisuzzaman Khan").title == "Adhyapak"
+    assert bn.parse("Anoop Adhyapak").family == "Adhyapak"
+    assert hi.parse("Adhyapak Anisuzzaman Khan").title == ""
+    assert hi.parse("Shriyut Ram Prasad").title == "Shriyut"
+    assert bn.parse("Shriyut Ram Prasad").title == ""
 
 
 def test_zh_pack_contents() -> None:
@@ -1057,6 +1100,35 @@ _ROTATORS["sl"] = [
 _ROTATORS["hr"] = [
     "Ivan Horvat ml.",               # ml
     "Ivan Horvat st.",               # st
+]
+# hi and bn: each romanized title at the head, in each case, behind a
+# listed title and after a family comma; a dotted one only where it ends
+# the given part after a family comma (rules/H8), rules/H2's shape
+# already reading it as a title at the head by default.
+_ROTATORS["hi"] = [
+    "Shrimati Indira Gandhi",        # shrimati at the head
+    "SHRIMATI INDIRA GANDHI",        # shrimati, in one case
+    "Dr. Shrimati Indira Gandhi",    # shrimati behind a listed title
+    "Gandhi, Shrimati Indira",       # shrimati after a family comma
+    "Gandhi, Indira Shrimati.",      # shrimati, dotted, ending the given part
+    "Smt Nirmala Sitharaman",        # smt
+    "smt nirmala sitharaman",        # smt, in one case
+    "Sitharaman, Smt Nirmala",       # smt after a family comma
+    "Sitharaman, Nirmala Smt.",      # smt, dotted, ending the given part
+    "Shriyut Ram Prasad",            # shriyut
+    "Mr. Shriyut Ram Prasad",        # shriyut behind a listed title
+    "Prasad, Ram Shriyut",           # shriyut ending the given part
+]
+_ROTATORS["bn"] = [
+    "Shrimati Mamata Banerjee",      # shrimati at the head
+    "Banerjee, Mamata Shrimati",     # shrimati ending the given part
+    "SMT MAMATA BANERJEE",           # smt, in one case
+    "Dr. Smt Mamata Banerjee",       # smt behind a listed title
+    "Banerjee, Mamata Smt.",         # smt, dotted, ending the given part
+    "Adhyapak Anisuzzaman Khan",     # adhyapak at the head
+    "adhyapak anisuzzaman khan",     # adhyapak, in one case
+    "Dr. Adhyapak Anisuzzaman",      # adhyapak behind a listed title
+    "Khan, Adhyapak Anisuzzaman",    # adhyapak after a family comma
 ]
 
 
