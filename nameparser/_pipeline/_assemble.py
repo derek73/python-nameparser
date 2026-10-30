@@ -38,7 +38,7 @@ from types import MappingProxyType
 
 from nameparser._lexicon import _VOCAB_FIELDS, Lexicon, _normalize
 from nameparser._pipeline._state import (
-    AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG,
+    AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, ATTACHED_TAG,
     CREDENTIAL_WORD_TAG, FIELD_READING, GENERATION_WORD_TAG,
     NAME_ROLES, PATRONYMIC_TAG, SHAPE_ACRONYM_TAG, SPLIT_CREDENTIAL_TAG,
     SPLIT_MEMBER_TAG,
@@ -54,7 +54,7 @@ from nameparser._reading_index import CATEGORY, languages_of
 from nameparser._types import (
     FOLDED_TAG, GIVEN_FIRST, UNJOINED_CONJUNCTION_TAG, UNJOINED_TAG,
     Ambiguity, AmbiguityKind, ParsedName, Reading, ReadingKind,
-    ReadingSource, Role, Token,
+    ReadingSource, Role, Span, Token,
 )
 
 #: Every Reading a token can take, built once: a `Reading` is three
@@ -203,10 +203,11 @@ def _split_partner(tokens: tuple[WorkToken, ...], dropped: set[int],
 _reading = functools.lru_cache(maxsize=1024)(Reading)
 
 
-#: classify's kind tags for a listed suffix word (rules/R8), which no
+#: classify's kind tags for a listed suffix word (rules/R8) and a
+#: patronymic particle, and P6's attachment mark (rules/R9), which no
 #: published token carries: `Token.reading` names the kind.
 _KIND_TAGS = frozenset({GENERATION_WORD_TAG, CREDENTIAL_WORD_TAG,
-                        PATRONYMIC_TAG})
+                        PATRONYMIC_TAG, ATTACHED_TAG})
 
 #: The tags that say a list or a shape made a word a suffix: without
 #: one, a suffix word stands there by position, unless the vocabulary
@@ -314,42 +315,32 @@ def _turkic_patronymics(state: ParseState,
 def _patronymic_opening(state: ParseState, dropped: set[int], i: int,
                         field: Role, folds_middle: bool) -> tuple[bool, bool]:
     """Whether the patronymic particle at `i`, read as a particle, names
-    a parent (rules/R9), and whether it names it as P6's attachment:
-    a word after it in its field, a nickname aside, is the parent's
-    name; with none, a particle P6 attached to the family written
-    before it ('Mohamad, Mahathir bin') names that family. One ending
-    its field otherwise names nobody, a family word spelled as one
-    ('Bar' in 'Fritz von Bar'). Asked only of a patronymic particle,
-    so other names pay nothing."""
+    a parent (rules/R9), and whether it names it as P6's attachment: a
+    particle P6 attached to the family written before it ('Mohamad,
+    Mahathir bin', 'Bakar, Ali bin Abu') names that family, the words
+    attached after it with it; any other names the words after it in
+    its field, a nickname aside, and one ending its field names nobody,
+    a family word spelled as one ('Bar' in 'Fritz von Bar'). Asked only
+    of a patronymic particle, so other names pay nothing."""
     tokens = state.tokens
+    if ATTACHED_TAG in tokens[i].tags:
+        return True, True
     j = i + 1
     while j < len(tokens) and (j in dropped
                                or tokens[j].role is Role.NICKNAME):
         j += 1
-    if j < len(tokens) and _field_of(tokens[j], folds_middle) is field:
-        return True, False
-    # P6's attachment and O3's middle fold both write FOLDED_TAG, so the
-    # attachment is told by its shape, not its field: a folded family
-    # word with nothing after it in its field, behind a family word not
-    # folded. O3's folded middles stand before the family under the
-    # default order, so none has one behind, and under a family-first
-    # order the attachment takes a trailing particle first, a folded
-    # middle then having a word after it, which the test above read
-    tok = tokens[i]
-    if tok.role is not Role.FAMILY or FOLDED_TAG not in tok.tags:
-        return False, False
-    attached = any(tokens[k].role is Role.FAMILY
-                   and FOLDED_TAG not in tokens[k].tags
-                   for k in range(i) if k not in dropped)
-    return attached, attached
+    return (j < len(tokens)
+            and _field_of(tokens[j], folds_middle) is field), False
 
 
 def _field_of(token: WorkToken, folds_middle: bool) -> Role:
     """The field a token stands as: its role, save a middle word the
-    policy folded into the family, which stands as the middle."""
+    policy folded into the family, which stands as the middle; a word
+    P6 attached carries the folded mark too and stands as the family."""
     role = token.role if token.role is not None else Role.GIVEN
     return (Role.MIDDLE if role is Role.FAMILY and folds_middle
-            and FOLDED_TAG in token.tags else role)
+            and FOLDED_TAG in token.tags and ATTACHED_TAG not in token.tags
+            else role)
 
 
 def _listed_suffix(text: str, lexicon: Lexicon) -> bool:
@@ -389,8 +380,11 @@ def assemble(state: ParseState) -> ParsedName:
     slavic = PatronymicRule.EAST_SLAVIC in rules
     markers = (_turkic_patronymics(state, dropped)
                if PatronymicRule.TURKIC in rules else {})
-    # the father's names of the markers read, rewritten after the walk
-    fathers: list[int] = []
+    # each marker's father, held unbuilt until its marker is read: the
+    # word before it reads `patronymic` only where the marker reads as
+    # a name word, and building its Token twice costs frames
+    held: dict[int, tuple[str, Span | None, Role, frozenset[str], Reading]] = {}
+    fathers = frozenset(markers.values())
     for i, t in enumerate(state.tokens):
         if i in dropped:
             continue
@@ -520,7 +514,8 @@ def assemble(state: ParseState) -> ParsedName:
             # (inline, not `_field_of`: a frame per token, measured
             # 2026-10-29 at 7 on the reference row)
             field = (Role.MIDDLE if role is Role.FAMILY and folds_middle
-                     and FOLDED_TAG in tags else role)
+                     and FOLDED_TAG in tags and ATTACHED_TAG not in tags
+                     else role)
             # rules/R9: "a particle the shipped vocabulary holds as a
             # patronymic", read as a particle, opens a patronymic that
             # takes the words after it in its field; an ending rule a
@@ -545,8 +540,13 @@ def assemble(state: ParseState) -> ParsedName:
                         i in markers or slavic and field is Role.MIDDLE
                         and has_patronymic_ending(t.text)):
                     kind, source = ReadingKind.PATRONYMIC, ReadingSource.SHAPE
-                    if i in markers:
-                        fathers.append(markers[i])
+            if i in markers:
+                text, span, frole, ftags, freading = held.pop(markers[i])
+                if (kind is ReadingKind.PATRONYMIC
+                        and freading.kind is not ReadingKind.PATRONYMIC):
+                    freading = _READINGS[ReadingKind.PATRONYMIC, frole,
+                                         ReadingSource.POSITION]
+                final[markers[i]] = Token(text, span, frole, ftags, freading)
             langs = _languages(t.text, kind, field) if source in _LISTED else ()
             if (not langs and source in _LISTED
                     and (langs := _part_languages(t.text, kind, field))
@@ -560,20 +560,26 @@ def assemble(state: ParseState) -> ParsedName:
             # carries the kind out, and a published tag would make a
             # name unequal to its own 2.x pickle (Token compares tags)
             tags = tags - _KIND_TAGS
-        final[i] = Token(t.text, t.span, role, tags, reading)
+        if i in fathers:
+            held[i] = (t.text, t.span, role, tags, reading)
+        else:
+            final[i] = Token(t.text, t.span, role, tags, reading)
+    if markers:
+        # a father built at its marker went in after the words between
+        # them (a nickname); `final` is read in token order
+        final = dict(sorted(final.items()))
     if attached:
         # rules/R9: "A trailing patronymic particle P6 attaches to the
         # family written before it takes that family's words as the
         # parent's name" (decisions/R9, #754)
-        fathers.extend(j for j, tok in final.items()
-                       if tok.role is Role.FAMILY
-                       and FOLDED_TAG not in tok.tags)
-    for j in fathers:
-        tok = final[j]
-        if tok.reading is not None and tok.reading.kind is not ReadingKind.PATRONYMIC:
-            final[j] = Token(tok.text, tok.span, tok.role, tok.tags,
-                             _READINGS[ReadingKind.PATRONYMIC, tok.role,
-                                       ReadingSource.POSITION])
+        for j, tok in final.items():
+            if (tok.role is Role.FAMILY and FOLDED_TAG not in tok.tags
+                    and tok.reading is not None
+                    and tok.reading.kind is not ReadingKind.PATRONYMIC):
+                final[j] = Token(tok.text, tok.span, tok.role, tok.tags,
+                                 _READINGS[ReadingKind.PATRONYMIC,
+                                           Role.FAMILY,
+                                           ReadingSource.POSITION])
     # No alphanumeric character among the SURVIVING tokens means no
     # name: a bare '.' or '- -' is not a person. v1 kept such input
     # (parse('.') -> first '.'); 2.0 empties it so bool() stays an

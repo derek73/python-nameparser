@@ -116,6 +116,12 @@ CREDENTIAL_WORD_TAG = "vocab:credential-word"
 #: names, and dropped from the published token like the kind tags above.
 PATRONYMIC_TAG = "vocab:patronymic"
 
+#: Beside FOLDED_TAG on the particles rules/P6 attaches to the family
+#: written before them, at either of its sites, so rules/R9 can tell
+#: the attachment from O3's middle fold, which writes FOLDED_TAG alone;
+#: dropped from the published token like the kind tags above.
+ATTACHED_TAG = "vocab:attached"
+
 #: On a word of `Lexicon.titles_ambiguous` whichever way classify read
 #: it (rules/H9): read as a title it carries "vocab:title" too, read
 #: out of the title it carries this alone, which is how assign finds

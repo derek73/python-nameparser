@@ -8,7 +8,7 @@ import pytest
 from nameparser import FAMILY_FIRST, GIVEN_FIRST, Lexicon, Locale, Parser, Policy, parse
 from nameparser._types import (
     STABLE_TAGS, Ambiguity, AmbiguityKind, ParsedName, Reading, Role,
-    Segmentation, Span, Token,
+    UNJOINED_TAG, Segmentation, Span, Token,
 )
 
 
@@ -1113,10 +1113,69 @@ _MAF = Policy(middle_as_family=True)
     (Policy(name_order=FAMILY_FIRST), "Ahmad Ahmad de bin", "bin Ahmad"),
     # a suffix ends the run, so a family word behind it is not in it
     (Policy(), "bin Ahmad Jr. Hasan, Ali", "bin Ahmad"),
+    # P6 attaching a patronymic particle with another particle after
+    # it: the attached words and the family they attach to, the second
+    # review's D1
+    (Policy(), "Bakar, Ali bin Abu", "bin Abu Bakar"),
+    (Policy(), "Saud, Mohammed bin Al", "bin Al Saud"),
+    (Policy(), "Mohamad, Mahathir bin de", "bin de Mohamad"),
+    (Policy(name_order=FAMILY_FIRST), "Ahmad Ali bin al", "bin al Ahmad"),
+    (_MAF, "Bakar, Ali bin Abu", "bin Abu Bakar"),
+    (Policy(), "Ahmad, Ali bin bin", "bin bin Ahmad"),
+    # a trailing particle P6 declines (no given word ahead of it) that
+    # O3 folds is no attachment: the second review's D2
+    (Policy(), "Rahman, Al bin", ""),
+    (_MAF, "Rahman, Al bin", ""),
+    (Policy(name_order=FAMILY_FIRST, middle_as_family=True),
+     "Rahman, Al bin", ""),
+    (_MAF, "Ahmad, bin bin", ""),
+    (_MAF, "Ali, van bin", ""),
+    (_MAF, "Ahmad Omar, Bar Bar", ""),
+    (_MAF, "Ahmad, Dr. bin Bar", ""),
+    # a word P6 attached stands as the family under the fold, so a
+    # folded middle's run does not reach it
+    (_MAF, "Ali, Ahmad bin Ahmad Abu", "bin Ahmad"),
 ])
 def test_the_patronymic_run_and_the_attachment_under_each_policy(
         policy: Policy, text: str, patronymic: str) -> None:
     assert Parser(policy=policy).parse(text).patronymic == patronymic
+
+
+def test_middle_as_family_moves_no_patronymic_r2_does_not_move() -> None:
+    # O3's fold changes where a middle word renders, not what it is, so
+    # a name reads the same patronymic with and without it wherever R2
+    # reads its particles alike: a part made only of particles is name
+    # words (R2's unjoined mark), and the fold can give one a base
+    # ('Ali, bin bin Abu' reads patronymic 'bin Abu' under the fold
+    # alone, rules/R9's Accepted). The words, not their order: the
+    # view writes the family's words as the family does. A grid of particle, comma and
+    # given-name shapes (2,540 texts, each under two orders, about two
+    # seconds on 2026-10-29) that holds P6's attachment apart from the
+    # fold, the second review's D2. Compared: 4,494 of the 5,080 parses,
+    # recorded 2026-10-29; the rest are the R2 shape above
+    words = ["Ahmad", "bin", "Abu", "de", "Ali,"]
+    texts = [" ".join(c) for n in range(2, 6)
+             for c in itertools.product(words, repeat=n) if "bin" in c]
+    assert len(texts) == 2540
+
+    def unjoined(pn: ParsedName) -> list[bool]:
+        return [UNJOINED_TAG in t.tags for t in pn.tokens]
+
+    moved, compared = [], 0
+    for order in (GIVEN_FIRST, FAMILY_FIRST):
+        plain = Parser(policy=Policy(name_order=order))
+        folded = Parser(policy=Policy(name_order=order, middle_as_family=True))
+        for text in texts:
+            a, b = plain.parse(text), folded.parse(text)
+            if unjoined(a) != unjoined(b):
+                continue
+            compared += 1
+            # the same words: the fold writes the family's folded words
+            # first, and the view writes the family's words as it does
+            if sorted(a.patronymic.split()) != sorted(b.patronymic.split()):
+                moved.append((text, order, a.patronymic, b.patronymic))
+    assert not moved, moved[:10]
+    assert compared == 4494
 
 
 def test_a_turkic_marker_a_caller_lists_as_a_connective_names_no_father(
@@ -1168,3 +1227,8 @@ def test_a_patronymic_parsedname_pickled_by_2_8_0_loads_equal() -> None:
     assert (loaded.patronymic, now.patronymic) == ("", "bin Mohamad")
     assert not any(t.startswith("vocab:patronymic")
                    for tok in now.tokens for t in tok.tags)
+    # nor does P6's attachment mark, on the words it attaches
+    attached = parse("Bakar, Ali bin Abu")
+    assert attached.patronymic == "bin Abu Bakar"
+    assert not any(t == "vocab:attached"
+                   for tok in attached.tokens for t in tok.tags)

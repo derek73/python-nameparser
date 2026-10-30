@@ -109,7 +109,7 @@ from nameparser._pipeline._pieces import (
     tail_reading, trailing_titles,
 )
 from nameparser._pipeline._state import (
-    AMBIGUOUS_ACRONYM_TAG, NAME_ROLES, TITLE_AMBIGUOUS_TAG, ParseState,
+    AMBIGUOUS_ACRONYM_TAG, ATTACHED_TAG, NAME_ROLES, TITLE_AMBIGUOUS_TAG, ParseState,
     Beside, Deferred, PendingAmbiguity, PendingReading, Structure,
     WorkToken, _AMBIGUOUS_CREDENTIAL_TAGS, _NEVER_FLIPPED, copy_with,
 )
@@ -991,7 +991,7 @@ def _attach_particle_tail(pieces: Sequence[Sequence[int]],
     for i in run:
         tokens[i] = copy_with(
             tokens[i], role=Role.FAMILY,
-            tags=tokens[i].tags | {FOLDED_TAG})
+            tags=tokens[i].tags | {FOLDED_TAG, ATTACHED_TAG})
 
 
 def _split_name_alt(state: ParseState, tokens: Sequence[WorkToken],

@@ -334,6 +334,7 @@
 {"name": "Badurad", "given": "Badurad", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "B."}
 {"name": "Bahadur, Ram B.K.", "given": "Ram", "middle": "B.K.", "family": "Bahadur", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "R. B. B."}
 {"name": "Bailey, Liberty Hyde", "given": "Liberty", "middle": "Hyde", "family": "Bailey", "initials": "L. H. B."}
+{"name": "Bakar, Ali bin Abu", "given": "Ali", "family": "bin Abu Bakar", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "A. B.", "capitalized_force": "Ali bin abu Bakar", "patronymic": "bin Abu Bakar"}
 {"name": "Baker (Johnson), Jenny", "given": "Jenny", "family": "Baker", "nickname": "Johnson", "initials": "J. B."}
 {"name": "Baker (Jr.), Jenny", "given": "Jenny", "family": "Baker", "suffix": "Jr.", "initials": "J. B.", "generation": "Jr."}
 {"name": "Bakker Irene", "order": "FAMILY_FIRST", "given": "Irene", "family": "Bakker", "initials": "I. B."}
@@ -2300,7 +2301,8 @@
 {"name": "Lerch, Magda von", "given": "Magda", "family": "von Lerch", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "M. L."}
 {"name": "Leschetizky, Walter", "given": "Walter", "family": "Leschetizky", "initials": "W. L."}
 {"name": "Levi, Omer Bar", "given": "Omer", "family": "Bar Levi", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "O. L.", "capitalized_force": "Omer bar Levi", "patronymic": "Bar Levi"}
-{"name": "Leyla née Aliyeva qizi", "family": "Leyla", "maiden": "Aliyeva qizi", "initials": "L.", "capitalized_force": "Leyla (Aliyeva Qizi)"}
+{"name": "Leyla Vali qizi née Rasim qizi", "given": "Leyla", "middle": "Vali", "family": "qizi", "maiden": "Rasim qizi", "initials": "L. V. q.", "capitalized_force": "Leyla Vali Qizi (Rasim Qizi)"}
+{"name": "Leyla née Rasim qizi", "family": "Leyla", "maiden": "Rasim qizi", "initials": "L.", "capitalized_force": "Leyla (Rasim Qizi)"}
 {"name": "Lezo, Blas de", "given": "Blas", "family": "de Lezo", "initials": "B. L."}
 {"name": "Liang, Shuming", "given": "Shuming", "family": "Liang", "initials": "S. L."}
 {"name": "Lianora Sanna", "given": "Lianora", "family": "Sanna", "initials": "L. S."}

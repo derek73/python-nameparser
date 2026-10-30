@@ -28,7 +28,7 @@
 "Ivanov, Ivan Ivanovich"  [ru]  →  patronymic="Ivanovich"
 "Aliyev, Heydar Alirza oglu"  [tr_az]  →  patronymic="Alirza oglu"
 "Ali Ahmad Vali oglu"  [tr_az]  →  patronymic="Vali oglu"
-"Leyla née Aliyeva qizi"  [tr_az]  →  patronymic="Aliyeva qizi"
+"Leyla née Rasim qizi"  [tr_az]  →  patronymic="Rasim qizi"
 "Ivan Ivanovich Ivanov"     →  patronymic=""  · boundary
 "Anwar Ibrahim"             →  patronymic=""
 ```
@@ -44,10 +44,11 @@
   ```
   "Fritz Freiherr und von Bar"  →  patronymic=""
   ```
-- **A trailing patronymic particle P6 attaches to the family written before it** takes that family's words as the parent's name, the view writing them in the family's order, under `middle_as_family` too.
+- **A trailing patronymic particle P6 attaches to the family written before it** takes that family's words as the parent's name, with any word P6 attached after it, the view writing them in the family's order, under `middle_as_family` too.
   ```
   "Mohamad, Mahathir bin"     →  patronymic="bin Mohamad"
   "Levi, Omer Bar"            →  patronymic="Bar Levi"
+  "Bakar, Ali bin Abu"        →  patronymic="bin Abu Bakar"
   ```
 - **A nickname inside the parent's name** is skipped, not a word of the view.
   ```
@@ -86,6 +87,12 @@
   ```
 - Under `two_family_names` O6 takes the middle word into the family as a first family name, leaving the East Slavic arm no middle to read, so `Ivan Ivanovich Ivanov` under RU with it reads family `Ivanovich Ivanov` and no patronymic.
 - A word with no reading, one that `replace()` or `Parser.revise()` wrote or in a name unpickled from 2.x, is not in the view, since nothing records what it was read as.
+- A name part made only of particles is name words (R2), and `middle_as_family`'s fold can give such a part a base, so it reads a patronymic under the fold alone: `Ali, bin bin Abu` reads patronymic `bin Abu` with the fold and none without.
+- Two patronymics are one view, in the name and the maiden name alike.
+  ```
+  "Ali bin Ahmad bin Hasan"   →  patronymic="bin Ahmad bin Hasan"
+  "Leyla Vali qizi née Rasim qizi"  [tr_az]  →  patronymic="Vali qizi Rasim qizi"
+  ```
 - A patronymic particle is the shipped vocabulary's, read whatever the reading's default, as R8 reads a suffix word's kind, so a word only a caller's `Lexicon` lists as a particle (`ben`, which the vocabulary excludes as a patronymic) is a plain particle.
 - A word the particle's run or the Turkic marker takes reads `patronymic` by position, its own reading (a name word, a bound given name, a particle) not kept in `Token.reading`.
 

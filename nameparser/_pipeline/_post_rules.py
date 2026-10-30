@@ -43,7 +43,7 @@ from nameparser._pipeline._pieces import (
     is_lone_never_given_particle, settled_by_case,
 )
 from nameparser._pipeline._state import (
-    AMBIGUOUS_ACRONYM_TAG, NAME_ROLES,
+    AMBIGUOUS_ACRONYM_TAG, ATTACHED_TAG, NAME_ROLES,
     ParseState, PendingAmbiguity, PendingReading, Structure,
     WorkToken, _NEVER_FLIPPED, comma_bucket, copy_with,
 )
@@ -755,7 +755,7 @@ def post_rules(state: ParseState) -> ParseState:
             for j in run:
                 tokens[j] = copy_with(
                     tokens[j], role=Role.FAMILY,
-                    tags=tokens[j].tags | {FOLDED_TAG})
+                    tags=tokens[j].tags | {FOLDED_TAG, ATTACHED_TAG})
             # recomputed for H1's reason, stated at H1: a stale index
             # list is the bug shape #359 fixed
             givens = _idx(tokens, Role.GIVEN)
