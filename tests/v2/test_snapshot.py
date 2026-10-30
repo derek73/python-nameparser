@@ -228,3 +228,26 @@ def test_a_moved_name_holding_a_line_break_stays_on_its_indented_line() -> None:
     lines = "\n".join(snapshot.grouped(old, new)).split("\n")
     assert lines[0] == "family: 1"
     assert all(line.startswith(" ") for line in lines[1:])
+
+
+def test_a_reading_under_a_choice_moves_what_the_choice_moves() -> None:
+    # --languages reads the tree under a choice against the default's
+    # readings; the same entry read both ways must differ where the
+    # choice settles a clash (pt: the one-case conjunction holds)
+    entry = [("ANA SILVA E SOUZA", None), ("John Smith", None)]
+    default, chosen = snapshot.read(entry), snapshot.read(entry, languages=("pt",))
+    assert default[0]["family"] == "SOUZA"
+    assert chosen[0]["family"] == "SILVA E SOUZA"
+    assert default[1] == chosen[1]
+
+
+@pytest.mark.parametrize("argv,match", [
+    (["--languages", "pt", "--record"], "records nothing"),
+    (["--languages", ","], "at least one tag"),
+    (["--languages", "pt", "--since", "v2.8.0"], "Drop --since"),
+])
+def test_a_choice_records_nothing(argv: list[str], match: str,
+                                  capsys: pytest.CaptureFixture[str]) -> None:
+    with pytest.raises(SystemExit):
+        snapshot.main(argv)
+    assert match in capsys.readouterr().err

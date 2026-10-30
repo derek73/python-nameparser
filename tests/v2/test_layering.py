@@ -117,10 +117,11 @@ ALLOWED = {
     # role may, since the index is the files' record, not the lexicon
     "_pipeline/_assemble.py": _PIPELINE_STAGE_ALLOWED + (
         "nameparser._reading_index",),
-    # Parser sits on everything except _render
+    # Parser sits on everything except _render; the reading index at
+    # call time only, where a choice of languages is applied (3b)
     "_parser.py": ("nameparser._types", "nameparser._lexicon",
                    "nameparser._policy", "nameparser._locale",
-                   "nameparser._pipeline"),
+                   "nameparser._pipeline", "nameparser._reading_index"),
     # PEP 562 lazy loader: the only static import is _locale (for the
     # Locale return type); pack modules load via importlib.import_module
     # (a runtime string, invisible to the AST walker) -- the

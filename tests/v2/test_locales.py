@@ -1076,6 +1076,74 @@ def test_non_interference_all_packs_combined() -> None:
     assert declared >= len(all_rotators)
 
 
+# -- a choice of languages (Locale.languages, phase 3b) --
+#
+# A vocabulary choice's deviation surface is DERIVED, not declared:
+# _reading_index.changed_words gives the words whose compiled readings
+# the choice changes, and a name holding none of them must parse as the
+# default does (the RFC's "Measuring a pack"). No language pack ships
+# before 3d, so the gate runs over choices of the shipped files' tags
+# that move something, each standing for a kind of effect: pt prefer
+# and the shape clash of `e`, en prefer over several languages, cs and
+# de turning a reading on (de's `i`, against ca's and pl's conjunction,
+# mul's generation staying), and two languages chosen together.
+# Measured 2026-10-29: about 1 s a choice on one worker (5 s for the
+# five, the first paying the default parses the module caches).
+_CHOICES = [("pt",), ("en",), ("cs",), ("de",), ("pt", "en")]
+
+
+def _surface_deviates(surface: frozenset[str]) -> Callable[[str], bool]:
+    """A name holding a surface word, over-declared as the gate allows:
+    each comma- or space-separated piece normalized whole, with every
+    period removed (an acronym's match), and cut at every non-word
+    character (`st.john`, `AE-RA`); an elided particle opening a piece
+    (`d'Artagnan`, `al-Rashid`); a word outside ASCII anywhere in the
+    name (a glued honorific), the name NFC-folded as the vocabulary is."""
+    import unicodedata
+
+    from nameparser._lexicon import _normalize
+    wide = [w for w in surface if not w.isascii()]
+    elided = tuple(w for w in surface if w[-1:] in ("'", "’", "-"))
+
+    def deviates(name: str) -> bool:
+        words: set[str] = set()
+        folded = unicodedata.normalize("NFC", name).casefold()
+        for piece in re.split(r"[\s,]+", folded):
+            words |= {_normalize(piece), piece.replace(".", "")}
+            words |= set(re.split(r"[^\w]+", piece))
+            if elided and piece.startswith(elided):
+                return True
+        return bool(words & surface) or any(w in folded for w in wide)
+    return deviates
+
+
+@pytest.mark.parametrize("tags", _CHOICES, ids="+".join)
+def test_non_interference_each_choice(tags: tuple[str, ...]) -> None:
+    from nameparser._reading_index import changed_words, selected
+    surface = changed_words(selected(tags))
+    choice = Locale(code="choice", lexicon=Lexicon.empty(),
+                    languages=frozenset(tags))
+    declared = _assert_non_interference(
+        parser_for(choice), _surface_deviates(surface), _default_corpus())
+    # the positive side: each choice here moves a corpus name, so the
+    # gate is not passing by parsing nothing differently
+    assert surface and declared
+
+
+def test_the_choice_gate_fails_when_its_surface_misses_a_word() -> None:
+    # the negative control: the derived surface is what the gate passes
+    # on, so the same run with `e` taken out of pt's must find the
+    # one-case names it moves (`ANA SILVA E SOUZA`) undeclared
+    from nameparser._reading_index import changed_words, selected
+    surface = changed_words(selected(["pt"]))
+    choice = Locale(code="choice", lexicon=Lexicon.empty(),
+                    languages=frozenset({"pt"}))
+    with pytest.raises(AssertionError, match="UNDECLARED deviation"):
+        _assert_non_interference(parser_for(choice),
+                                 _surface_deviates(surface - {"e"}),
+                                 _default_corpus())
+
+
 # -- #269: non-Latin default vocabulary (Cyrillic, Greek, Arabic,
 # Hebrew, Devanagari, Bengali) --
 #

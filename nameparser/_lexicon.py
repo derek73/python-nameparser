@@ -15,7 +15,7 @@ import warnings
 from collections.abc import Iterable, Mapping, Set
 from dataclasses import dataclass, field
 from types import FrameType, MappingProxyType
-from typing import cast
+from typing import Any, cast
 
 #: Vocabulary set fields, in declaration order. add()/remove() operate
 #: on exactly these and reject capitalization_exceptions (its entries
@@ -1031,6 +1031,46 @@ class Lexicon:
 
     def remove(self, **entries: Iterable[str]) -> Lexicon:
         return self._edit("remove", entries)
+
+
+#: Lexicon field -> the compiled constant it is read from, for every
+#: field the vocabulary compiles (nameparser/_reading_index.py's
+#: Compiled); `particles_ambiguous` is derived (_vocab_fields below),
+#: and `surnames` is KOREAN_SURNAMES, a segmentation list outside the
+#: per-word model. tests/v2/test_parser.py holds that these fields,
+#: read from the compile of no choice, are Lexicon.default()'s.
+_COMPILED_FIELDS = {
+    "titles": "TITLES",
+    "given_name_titles": "GIVEN_NAME_TITLES",
+    "suffix_acronyms": "SUFFIX_ACRONYMS",
+    "suffix_words": "SUFFIX_WORDS",
+    "suffix_acronyms_ambiguous": "SUFFIX_ACRONYMS_AMBIGUOUS",
+    "particles": "PARTICLES",
+    "conjunctions": "CONJUNCTIONS",
+    "conjunctions_ambiguous": "CONJUNCTIONS_AMBIGUOUS",
+    "bound_given_names": "BOUND_GIVEN_NAMES",
+    "given_name_abbreviations": "GIVEN_NAME_ABBREVIATIONS",
+    "maiden_markers": "MAIDEN_MARKERS",
+    "honorific_tails": "GLUED_HONORIFICS",
+    "after_given_titles": "AFTER_GIVEN_TITLES",
+    "suffix_words_ambiguous": "SUFFIX_WORDS_AMBIGUOUS",
+    "agnomens": "AGNOMENS",
+    "titles_ambiguous": "TITLES_AMBIGUOUS",
+    "title_modifiers": "TITLE_MODIFIERS",
+    "title_styles": "TITLE_STYLES",
+    "title_phrases": "TITLE_PHRASES",
+}
+
+
+def _vocab_fields(compiled: Mapping[str, Any]) -> dict[str, frozenset[str]]:
+    """The set-valued Lexicon fields a compile of the vocabulary gives
+    (the constants of nameparser/config/_compiled.py, or a choice's
+    compile of the reading index), `surnames` aside."""
+    out = {name: compiled[key] for name, key in _COMPILED_FIELDS.items()}
+    # FLIPPED from v1, as in _default_lexicon below
+    out["particles_ambiguous"] = (compiled["PARTICLES"]
+                                  - compiled["NON_GIVEN_NAME_PARTICLES"])
+    return out
 
 
 @functools.cache

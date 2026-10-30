@@ -11,6 +11,7 @@ Open: none in this file.
 ## Log
 
 - 2026-07 (v2 core, PR #288) — every raise in the locale-apply path is a plain TypeError/ValueError so the wrap-with-locale-code rewrap cannot break on exotic exception signatures.
+- 2026-10-29 #753, phase 3b — A CHOICE OF LANGUAGES IS WRAPPED TOO. `parser_for` checks each pack's `languages` on its own first, so a tag no vocabulary file holds is reported with the pack that named it (`while applying locale 'xx': no vocabulary file holds the language 'zz' …`), as the rule says; then it applies the packs' union as one choice, so an error the `Lexicon` raises while applying that names the languages chosen rather than any one pack (`while applying the languages chosen, en, pt: …`), the choice being every pack's at once. The raises in the choice path are plain `ValueError`s, as the Standing line asks. decisions/vocabulary-model's 2026-10-29 phase 3b entry has the rest.
 
 Declined (ambiguity kinds for script-resolved names, 2026-07-27):
 

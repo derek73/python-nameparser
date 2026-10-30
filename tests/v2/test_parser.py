@@ -2326,3 +2326,212 @@ def test_a_given_name_written_short_listed_as_a_title_is_a_title() -> None:
     p = Parser(lexicon=Lexicon.default().add(titles={"chas"}))
     assert "chas" in p.lexicon.given_name_abbreviations
     assert p.parse("Chas. Smith").title == "Chas."
+
+
+# -- a choice of languages (Locale.languages, phase 3b) --
+
+
+def _choosing(*tags: str, code: str = "choice",
+              lexicon: Lexicon | None = None) -> Locale:
+    return Locale(code=code, lexicon=lexicon or Lexicon.empty(),
+                  languages=frozenset(tags))
+
+
+def test_the_compiled_fields_are_the_default_lexicons() -> None:
+    from nameparser._lexicon import _VOCAB_FIELDS, _vocab_fields
+    from nameparser._reading_index import compile_choice
+    default = Lexicon.default()
+    fields = _vocab_fields(compile_choice(frozenset()))
+    assert {f for f in fields} | {"surnames"} == set(_VOCAB_FIELDS)
+    for name, words in fields.items():
+        assert getattr(default, name) == words, name
+
+
+def test_a_pack_choosing_no_language_leaves_the_vocabulary_as_it_is() -> None:
+    base = Parser(lexicon=Lexicon.default().add(titles={"zzq"}))
+    assert parser_for(Locale(code="xx", lexicon=Lexicon.empty()),
+                      base=base).lexicon == base.lexicon
+
+
+def test_building_a_parser_with_no_choice_never_loads_the_reading_index() -> None:
+    # the index loads on its first lookup (decisions/vocabulary-model,
+    # 3a): a parse makes one, for Reading.languages, but building a
+    # parser choosing no language never does, where a choice must
+    import subprocess
+    import sys
+    code = ("import sys, nameparser; from nameparser import locales; "
+            "nameparser.parser_for(locales.RU, locales.TR_AZ); "
+            "assert 'nameparser.config._index' not in sys.modules; "
+            "nameparser.parser_for(nameparser.Locale('pt', "
+            "nameparser.Lexicon.empty(), languages={'pt'})); "
+            "assert 'nameparser.config._index' in sys.modules")
+    subprocess.run([sys.executable, "-c", code], check=True)
+
+
+@pytest.mark.parametrize("tags,name,field,before,after", [
+    # prefer, against a shape: the one-case conjunction holds under pt
+    (("pt",), "ANA SILVA E SOUZA", "family", "SOUZA", "SILVA E SOUZA"),
+    # prefer: ar's bound given name stays, en's credential leaves
+    (("ar",), "Haddad, Abd", "given", "", "Abd"),
+    # turning on: cs's generation joins, en's Saint readings leave
+    (("cs",), "Jiří Dienstbier st.", "suffix", "", "st."),
+    # prefer: pt's preposition, en's credential gone
+    (("pt",), "John Smith DO", "family", "Smith", "DO"),
+    # and the other way: en's credential, pt's preposition gone
+    (("en",), "Maria do Carmo", "family", "do Carmo", "Carmo"),
+    # both chosen, both kept, gated as in the default
+    (("pt", "en"), "John Smith DO", "suffix", "DO", "DO"),
+    (("pt", "en"), "Maria do Carmo", "family", "do Carmo", "do Carmo"),
+])
+def test_a_choice_selects_the_readings_of_its_languages(
+        tags: tuple[str, ...], name: str, field: str, before: str,
+        after: str) -> None:
+    assert getattr(parse(name), field) == before
+    assert getattr(parser_for(_choosing(*tags)).parse(name), field) == after
+
+
+def test_a_choice_settled_by_a_name_reading_keeps_the_gate_on() -> None:
+    # en's given reading of `st` still gates the generation cs turns on
+    got = parser_for(_choosing("cs")).parse("Jiří Dienstbier st.")
+    assert [a.kind for a in got.ambiguities] == [AmbiguityKind.SUFFIX_OR_NAME]
+
+
+def test_the_packs_choices_are_one_choice_in_any_order() -> None:
+    pt, en = _choosing("pt", code="aa"), _choosing("en", code="bb")
+    both = parser_for(_choosing("pt", "en")).lexicon
+    assert parser_for(pt, en).lexicon == parser_for(en, pt).lexicon == both
+
+
+def test_a_choice_is_a_delta_that_keeps_a_callers_vocabulary() -> None:
+    base = Parser(lexicon=Lexicon.default().add(titles={"zzq"}))
+    got = parser_for(_choosing("pt"), base=base)
+    assert "zzq" in got.lexicon.titles
+    assert got.parse("ANA SILVA E SOUZA").family == "SILVA E SOUZA"
+
+
+def test_a_packs_own_fragment_is_unioned_on_after_the_choice() -> None:
+    # pt drops en's credential reading of `do`; the pack's fragment puts
+    # it back, as a caller listing a word has always asked for
+    pack = _choosing("pt", lexicon=Lexicon.empty().add(suffix_acronyms={"do"}))
+    assert parser_for(pack).parse("John Smith DO").suffix == "DO"
+
+
+@pytest.mark.parametrize("tag,match", [
+    ("xx", "while applying locale 'choice': no vocabulary file holds"),
+    ("mul", "while applying locale 'choice': 'mul' is not a language"),
+])
+def test_a_choice_no_file_can_serve_is_refused_with_the_pack(
+        tag: str, match: str) -> None:
+    with pytest.raises(ValueError, match=match):
+        parser_for(_choosing(tag))
+
+
+def test_a_lowercase_region_selects_the_regions_file() -> None:
+    assert (parser_for(_choosing("pt-br")).lexicon
+            == parser_for(_choosing("pt-BR")).lexicon)
+
+
+def test_a_word_a_choice_drops_leaves_the_callers_markers_of_it_too() -> None:
+    # a caller marked `vd` possibly given; en's credential drops nl's
+    # preposition, so the word leaves `particles`, and the caller's mark
+    # would be an orphan the Lexicon refuses (found by review, 3b)
+    base = Parser(lexicon=Lexicon.default().add(particles_ambiguous={"vd"}))
+    got = parser_for(_choosing("en"), base=base).lexicon
+    assert "vd" not in got.particles and "vd" not in got.particles_ambiguous
+
+
+def test_an_error_applying_a_choice_names_the_choice(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # an error the Lexicon raises while the choice is applied names the
+    # languages chosen, as a patch error names its pack. No shipped
+    # choice raises, so a delta joining an orphan marker stands in for
+    # one
+    import nameparser._parser as parser_mod
+    orphan: object = ({"particles_ambiguous": (frozenset(), frozenset({"zzq"}))},
+              (frozenset(), ()))
+    monkeypatch.setattr(parser_mod, "_choice_delta", lambda chosen: orphan)
+    with pytest.raises(ValueError,
+                       match="while applying the languages chosen, en, pt: "
+                             "particles_ambiguous marks"):
+        parser_for(_choosing("pt", code="aa"), _choosing("en", code="bb"))
+
+
+def test_a_choice_moves_case_masks_as_it_moves_words(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # no shipped choice changes a mask (no reading off by default or
+    # preferred away carries `cased`), so a stand-in compile does: under
+    # it `phd`'s mask leaves and `zzq`'s joins, and the delta applies the
+    # same to a caller's base, keeping the caller's own masks
+    import nameparser._parser as parser_mod
+    import nameparser._reading_index as ri
+    real = ri.compile_choice
+    default = real(frozenset())
+
+    def stand_in(chosen: frozenset[str]) -> object:
+        if not chosen:
+            return default
+        masks = {k: v for k, v in default["CAPITALIZATION_EXCEPTIONS"].items()
+                 if k != "phd"} | {"zzq": "ZzQ"}
+        return {**default, "CAPITALIZATION_EXCEPTIONS": masks}
+    monkeypatch.setattr(ri, "compile_choice", stand_in)
+    delta = parser_mod._choice_delta.__wrapped__(frozenset({"pt"}))  # type: ignore[attr-defined]
+    assert delta == ({}, (frozenset({"phd"}), (("zzq", "ZzQ"),)))
+    monkeypatch.setattr(parser_mod, "_choice_delta", lambda chosen: delta)
+    base = dataclasses.replace(Lexicon.default(), capitalization_exceptions=(
+        *Lexicon.default().capitalization_exceptions, ("abcq", "AbcQ")))
+    got = parser_mod._apply_choice(base, frozenset({"pt"}))
+    cap = got.capitalization_exceptions_map
+    assert "phd" not in cap and cap["zzq"] == "ZzQ" and cap["abcq"] == "AbcQ"
+
+
+def test_a_choice_chained_through_base_applies_after_the_bases() -> None:
+    # decided 2026-10-29 (decisions/vocabulary-model, chained choices):
+    # a choice is one call's, and a Parser records none, so en chained on
+    # pt's parser drops pt's particle after pt dropped en's credential.
+    # A change to Parser recording its choice (option b) changes this
+    # test on purpose
+    pt, en = _choosing("pt", code="pt"), _choosing("en", code="en")
+    chained = parser_for(en, base=parser_for(pt))
+    assert chained.parse("Maria do Carmo").family == "Carmo"
+    assert chained.parse("John Smith DO").family == "DO"
+    together = parser_for(pt, en)
+    assert together.parse("Maria do Carmo").family == "do Carmo"
+    assert together.parse("John Smith DO").suffix == "DO"
+    assert chained.lexicon != together.lexicon
+
+
+def test_a_choice_drops_a_callers_own_entry_it_removes() -> None:
+    # decided with the chained choices: the delta removes what the
+    # choice drops whoever listed it, and keeps every untouched entry
+    mine = Lexicon(particles=frozenset({"do", "van"}),
+                   surnames=Lexicon.default().surnames)
+    got = parser_for(_choosing("en"), base=Parser(lexicon=mine)).lexicon
+    assert got.particles == {"van"}
+
+
+def test_reading_languages_name_the_default_files_under_a_choice() -> None:
+    # decisions/vocabulary-model, 2026-10-29 phase 3b: the field names the
+    # files holding the reading on by default whatever choice built the
+    # parser, a Parser recording none. Under pt, `it`'s dropped reading of
+    # `e` is still named; under cs, the generation `st` it turned on names
+    # no file. A Parser.languages (option b) would change both on purpose
+    def languages(parser: Parser, name: str, text: str) -> tuple[str, ...]:
+        token = next(t for t in parser.parse(name).tokens if t.text == text)
+        assert token.reading is not None
+        return token.reading.languages
+    pt, cs = parser_for(_choosing("pt")), parser_for(_choosing("cs"))
+    assert pt.parse("ANA SILVA E SOUZA").family == "SILVA E SOUZA"
+    assert languages(pt, "ANA SILVA E SOUZA", "E") == ("it", "pt")
+    assert cs.parse("Jiří Dienstbier st.").suffix == "st."
+    assert languages(cs, "Jiří Dienstbier st.", "st.") == ()
+    assert languages(pt, "Maria do Carmo", "do") == ("pt",)
+
+
+def test_a_choice_that_changes_nothing_leaves_the_lexicon_itself() -> None:
+    # fr.toml holds no reading the default leaves off or another file's
+    # reading clashes with, so choosing it changes no compiled set
+    import nameparser._parser as parser_mod
+    from nameparser._reading_index import changed_words, selected
+    assert changed_words(selected(["fr"])) == frozenset()
+    mine = Lexicon.default().add(titles={"zzq"})
+    assert parser_mod._apply_choice(mine, frozenset({"fr"})) is mine

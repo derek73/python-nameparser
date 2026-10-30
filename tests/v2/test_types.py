@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from nameparser import FAMILY_FIRST, GIVEN_FIRST, Policy, parse
+from nameparser import FAMILY_FIRST, GIVEN_FIRST, Lexicon, Locale, Policy, parse
 from nameparser._types import (
     STABLE_TAGS, Ambiguity, AmbiguityKind, ParsedName, Reading, Role,
     Segmentation, Span, Token,
@@ -642,6 +642,16 @@ _REFUSED_SKEWS = [
                                          "readings"),
                  "unexpected fields: readings",
                  id="renamed-reading"),
+    # Locale.languages (3.0, phase 3b) beside the shipped fields it must
+    # not excuse
+    pytest.param(Locale, lambda: _without(_locale_state(), "languages",
+                                          "policy"),
+                 "missing fields: policy;",
+                 id="locale-missing-shipped-field-beside-missing-languages"),
+    pytest.param(Locale, lambda: _renamed(_locale_state(), "languages",
+                                          "language"),
+                 "unexpected fields: language",
+                 id="locale-renamed-languages"),
     # Reading.languages (3.0) likewise
     pytest.param(Reading, lambda: _without(_reading_state(), "languages",
                                            "source"),
@@ -652,6 +662,19 @@ _REFUSED_SKEWS = [
                  "unexpected fields: language",
                  id="renamed-languages"),
 ]
+
+
+def _locale_state() -> dict[str, object]:
+    return dict(Locale("pt", Lexicon.empty(),
+                       languages=frozenset({"pt"})).__getstate__())
+
+
+def test_a_locale_pickled_before_3_0_loads_choosing_no_language() -> None:
+    state = _without(_locale_state(), "languages")
+    loaded = Locale.__new__(Locale)
+    loaded.__setstate__(state)
+    assert loaded.languages == frozenset()
+    assert loaded == Locale("pt", Lexicon.empty())
 
 
 @pytest.mark.parametrize("cls,state,match", _REFUSED_SKEWS)

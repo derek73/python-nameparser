@@ -39,6 +39,11 @@ last recorded decides:
 A snapshot recorded before 3.0 may carry a `facade` key on a row, the
 v1 HumanName's reading where it differed; load() drops it, so a check
 against one (--since v2.8.0, an old local snapshot) compares the rest.
+--languages pt,en parses the tree under that choice of languages
+(Locale.languages, phase 3b) and compares against the default's
+readings, so with no other flag it prints every committed corpus name
+the choice moves, and with --local SOURCE --base PATH every local one,
+grouped by changed field as for the default; a choice records nothing.
 --sample N reads a fixed 1-in-N sample of
 a local corpus, chosen by a hash of the name so a sample recorded from
 one tree and checked from another holds the same names, into a
@@ -323,10 +328,12 @@ def v1_view(r: dict[str, Any]) -> dict[str, Any]:
 PARALLEL_FLOOR = 5000
 
 
-def read(entries: list[Entry], *, jobs: int = 1) -> list[dict[str, Any]]:
+def read(entries: list[Entry], *, jobs: int = 1,
+         languages: tuple[str, ...] = ()) -> list[dict[str, Any]]:
     """The tree's row for every entry, in the entries' order, read in
-    `jobs` worker processes where there are enough (parallel)."""
-    return parallel(_read_chunk, entries, jobs, module="snapshot")
+    `jobs` worker processes where there are enough (parallel), under the
+    choice of `languages` where one is given (Locale.languages)."""
+    return parallel(_read_chunk, entries, jobs, languages, module="snapshot")
 
 
 def parallel(chunk: Callable[..., tuple[str, list[T]]], items: Sequence[Any],
@@ -361,17 +368,26 @@ def parallel(chunk: Callable[..., tuple[str, list[T]]], items: Sequence[Any],
     return results
 
 
-def _read_chunk(entries: Sequence[Entry]) -> tuple[str, list[dict[str, Any]]]:
+def _read_chunk(entries: Sequence[Entry], languages: tuple[str, ...] = ()
+                ) -> tuple[str, list[dict[str, Any]]]:
     """The nameparser this process imported, and its row for every
     entry; read()'s unit of work in a worker and out of one."""
     import nameparser
-    from nameparser import Parser, Policy
+    from nameparser import Lexicon, Locale, Parser, Policy, parser_for
 
-    parsers: dict[str | None, Any] = {None: Parser()}
+    def build(policy: Policy) -> Parser:
+        base = Parser(policy=policy)
+        if not languages:
+            return base
+        choice = Locale(code="choice", lexicon=Lexicon.empty(),
+                        languages=frozenset(languages))
+        return parser_for(choice, base=base)
+
+    parsers: dict[str | None, Any] = {None: build(Policy())}
     rows = []
     for name, order in entries:
         if order not in parsers:
-            parsers[order] = Parser(policy=Policy(name_order=getattr(nameparser, order)))
+            parsers[order] = build(Policy(name_order=getattr(nameparser, order)))
         p = parsers[order].parse(name)
         v2 = {f: getattr(p, f) or "" for f in V2_FIELDS}
         v2["_ambiguities"] = sorted({a.kind.name for a in p.ambiguities})
@@ -666,28 +682,33 @@ def _describe_sample(sample: object) -> str:
     return "the whole corpus" if sample is None else f"a 1-in-{sample} sample"
 
 
-def base_root(path: str, head: Path) -> Path:
+def base_root(path: str, head: Path, chosen: bool = False) -> Path:
     """--base's checkout, resolved: refused where it holds no nameparser
     package, whose digest would key an empty tree, or where it is the
     tree being read, which would compare a tree with itself and report
-    no moves whatever the change."""
+    no moves whatever the change -- save under a choice of languages,
+    whose moves are the tree's own against its default readings."""
     root = Path(path).resolve()
     if not (root / "nameparser" / "__init__.py").is_file():
         raise SystemExit(f"--base {path}: no nameparser package at "
                          f"{root / 'nameparser'}; name a checkout")
-    if root == head:
+    if root == head and not chosen:
         raise SystemExit(f"--base {path} is the tree being read ({head}): a "
                          f"tree compared with itself reports no moves. Name "
                          f"the base checkout, or pass --tree for the other side")
     return root
 
 
-def head_line(root: Path, base: Path) -> str:
+def head_line(root: Path, base: Path, languages: tuple[str, ...] = ()) -> str:
     """Which tree was read against the base, by its package's digest,
     taken after the read so that it covers what the import saw. Two
     equal digests are said outright: a check that cannot move is a
-    clean run's look-alike."""
+    clean run's look-alike, save under a choice of languages, which is
+    the one thing that moves a tree against its own default readings."""
     head = _source_digest(root)
+    if head == _source_digest(base) and languages:
+        return (f"head: {root}, nameparser/ {head[:16]}, the base's own, "
+                f"read under the choice {', '.join(languages)}\n")
     if head == _source_digest(base):
         return (f"head: {root} holds a nameparser/ byte-identical to the "
                 f"base's ({head[:16]}), so no reading can move\n")
@@ -768,7 +789,22 @@ def main(argv: list[str] | None = None) -> int:
                          "corpus, against a snapshot of the same sample")
     ap.add_argument("--jobs", type=int, metavar="N", default=os.cpu_count() or 1,
                     help="parse in N worker processes (default: every CPU)")
+    ap.add_argument("--languages", metavar="TAGS",
+                    help="parse under a choice of languages, comma-separated "
+                         "BCP 47 tags (pt,en), and print the names it moves "
+                         "against the default's readings")
     args = ap.parse_args(argv)
+    languages = tuple(t.strip() for t in (args.languages or "").split(",")
+                      if t.strip())
+    if args.languages is not None and not languages:
+        ap.error("--languages needs at least one tag")
+    if languages and (args.record or args.out):
+        ap.error("--languages reads a choice against the default's readings "
+                 "and records nothing; drop --record and --out")
+    if languages and args.since:
+        ap.error("--languages compares a choice with this tree's default "
+                 "readings; against --since REF the moves of every change "
+                 "since REF would be reported as the choice's. Drop --since")
     if args.local and args.since:
         ap.error("--since reads a committed snapshot; a local corpus has none")
     if args.sample is not None and not args.local:
@@ -786,7 +822,7 @@ def main(argv: list[str] | None = None) -> int:
         snapshot, corpora, fetch = _local(args.local, args.sample)
     out = args.out or snapshot
     root = Path(args.tree).resolve() if args.tree else REPO_ROOT
-    base = base_root(args.base, root) if args.base else None
+    base = base_root(args.base, root, bool(languages)) if args.base else None
     if not (args.record or args.since or base or snapshot.exists()):
         raise SystemExit(f"no snapshot at {snapshot}: record one first, "
                          f"with --record (and --tree for another checkout)")
@@ -818,11 +854,11 @@ def main(argv: list[str] | None = None) -> int:
         assert fetch is not None
         based = _base_text(base, snapshot, fetch, args.local, args.sample,
                            len(entries), args.jobs)
-    rows = read(entries, jobs=args.jobs)
+    rows = read(entries, jobs=args.jobs, languages=languages)
     import nameparser
     check_source(nameparser.__file__, root)
     if base is not None:
-        print(head_line(root, base))
+        print(head_line(root, base, languages))
     if args.record:
         text = dump(rows, recorded_keys())
         out.write_text(text, encoding="utf-8")
@@ -863,6 +899,8 @@ def main(argv: list[str] | None = None) -> int:
               # alternatives until 2.7 ships
               + ("; compare.py --baseline compares the case views"
                  if CASE_VIEWS[0] in dropped else "") + "\n")
+    if languages:
+        print(f"under the choice {', '.join(languages)}\n")
     moves = grouped(old, new)
     print("\n".join(moves) or ("matches the base" if base else "matches the snapshot"))
     if not moves:
@@ -881,7 +919,7 @@ def main(argv: list[str] | None = None) -> int:
     cldr = only_in(CLDR_CORPUS, {name for name, _ in moved})
     print(f"\n{len(moved)} entries differ, {len(cldr)} of their names "
           f"held only by {CLDR_CORPUS.name}")
-    if not args.since:
+    if not args.since and not languages:
         print(f"\nif these moves are intended: {RECORD_COMMAND}")
     return 1
 

@@ -13,8 +13,8 @@ writes two modules from them, each generated and committed:
 * nameparser/config/_compiled.py, the sets the parser reads, which is
   :func:`compile_readings` run over the index.
 
-This module is the compiler both the build and, from phase 3b, a choice
-of languages run, so there is one implementation of what a reading
+This module is the compiler both the build and a choice of languages
+(phase 3b, :func:`choose`) run, so there is one implementation of what a reading
 compiles to; tests/v2/test_reading_index.py holds that compiling the
 index reproduces _compiled.py exactly. It is also the one way to read
 the index at run time (:func:`readings_of`, :func:`index`), and the
@@ -236,6 +236,119 @@ def readings_of(text: str) -> tuple[IndexReading, ...]:
     what an empty ``Reading.languages`` says; the parse reads the tags
     through :func:`languages_of`, which builds no IndexReading."""
     return tuple(from_row(text, row) for row in _by_text().get(text, ()))
+
+
+#: The tags no choice names: mul.toml's readings are every language's
+#: and und.toml's no known language's, so neither is a language to
+#: choose, and a choice never removes a reading of either (choose).
+UNCHOOSABLE = frozenset({"mul", "und"})
+
+
+@functools.cache
+def tags() -> frozenset[str]:
+    """The tags of the shipped files that hold a reading."""
+    return frozenset(row[0] for rows in _by_text().values() for row in rows)
+
+
+def selected(languages: Iterable[str]) -> frozenset[str]:
+    """The file tags a choice of `languages` selects: each chosen tag's
+    own and its ancestors', never its descendants' (``pt-BR`` selects
+    ``pt-BR`` and ``pt``; ``pt`` only ``pt``), matched without regard to
+    case, as BCP 47 tags are. No macrolanguage table is read: ``ms``
+    does not select ``id``.
+
+    Raises ValueError for ``mul`` or ``und``, and for a tag that selects
+    no file at all, naming the tags that do."""
+    by_fold = {t.casefold(): t for t in tags() - UNCHOOSABLE}
+    out: set[str] = set()
+    for tag in languages:
+        if tag.casefold() in UNCHOOSABLE:
+            raise ValueError(
+                f"{tag!r} is not a language to choose: mul.toml's readings "
+                f"are every language's and und.toml's no known language's, "
+                f"and no choice removes a reading of either; drop it")
+        parts = tag.split("-")
+        found = {by_fold[a] for a in ("-".join(parts[:i]).casefold()
+                                      for i in range(len(parts), 0, -1))
+                 if a in by_fold}
+        if not found:
+            raise ValueError(
+                f"no vocabulary file holds the language {tag!r} or one it "
+                f"belongs to; the languages that have one: "
+                f"{', '.join(sorted(by_fold.values()))}")
+        out |= found
+    return frozenset(out)
+
+
+def choose(readings: Iterable[IndexReading],
+           chosen: frozenset[str]) -> list[IndexReading]:
+    """The readings a choice of the file tags `chosen` compiles, each
+    as :func:`compile_readings` is to read it (decisions/vocabulary-model,
+    2026-10-27 #753, items 2 and 7):
+
+    * **turning on**: a chosen file's ``default = false`` readings join
+      the readings on by default;
+    * **prefer**: on a word where a chosen file holds a vocabulary
+      reading (any category but a name), the other files' vocabulary
+      readings leave, save mul.toml's, which are every language's, and
+      und.toml's, whose language is not known to be another's. Name
+      readings never leave and never settle anything (decision 15):
+      they keep the gate on;
+    * **the shape clash**: a chosen file's conjunction reading drops
+      ``may_be_initial``, the clash it records being with the initial
+      the letter spells, a shape reading, which a preference outranks
+      (decision 20).
+
+    With nothing chosen this is the readings on by default, unchanged,
+    so the default is the compile of an empty choice."""
+    if not chosen:
+        return [r for r in readings if r.on_by_default]
+    live = [r for r in readings if r.on_by_default or r.tag in chosen]
+    preferred = {r.text for r in live
+                 if r.tag in chosen and r.category != "name"}
+    out = []
+    for r in live:
+        if (r.text in preferred and r.category != "name"
+                and r.tag not in chosen and r.tag not in UNCHOOSABLE):
+            continue
+        if r.tag in chosen and ("default" in r.props
+                                or (r.category == "conjunction"
+                                    and "may_be_initial" in r.props)):
+            props = {k: v for k, v in r.props.items()
+                     if k not in ("default", "may_be_initial")}
+            r = IndexReading(r.text, r.tag, r.kind, MappingProxyType(props))
+        out.append(r)
+    return out
+
+
+@functools.cache
+def compile_choice(chosen: frozenset[str]) -> Compiled:
+    """The constants the shipped index compiles to under a choice of
+    the file tags `chosen` (:func:`selected`'s result), kept per choice:
+    a compile costs milliseconds, paid once per choice and only by a
+    caller who makes one. An empty choice compiles the default."""
+    return compile_readings(choose(index(), chosen))
+
+
+def changed_words(chosen: frozenset[str]) -> frozenset[str]:
+    """The words whose compiled readings the choice `chosen` changes:
+    every entry that joins or leaves a constant, a title phrase's two
+    words among them, and every word whose case mask changes. This is a
+    vocabulary choice's deviation surface, derived from the index rather
+    than declared by hand (the RFC's "Measuring a pack"): a name holding
+    none of these words parses under the choice as under the default."""
+    if not chosen:
+        return frozenset()
+    default, choice = compile_choice(frozenset()), compile_choice(chosen)
+    words: set[str] = set()
+    for key in default:
+        a: Any = default[key]  # type: ignore[literal-required]
+        b: Any = choice[key]  # type: ignore[literal-required]
+        if isinstance(a, dict):
+            words |= {k for k in a.keys() | b.keys() if a.get(k) != b.get(k)}
+        else:
+            words |= a ^ b
+    return frozenset(w for entry in words for w in (entry, *entry.split()))
 
 
 def languages_of(text: str, kinds: frozenset[str]) -> tuple[str, ...]:

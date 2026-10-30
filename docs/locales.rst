@@ -118,8 +118,11 @@ Pass more than one pack and they fold together in order:
 
 How each part combines:
 
-- **Lexicons union**: a pack's words are added to the base's, never
-  removed.
+- **Languages union** into one choice, applied first (see
+  `Choosing languages`_), so the order the packs are given in does not
+  change it.
+- **Lexicons union**: a pack's own words are added to the base's,
+  after the choice, never removed.
 - **Set-valued policy fields union** the same way — the fields
   declared set-valued in :class:`~nameparser.PolicyPatch`:
   ``patronymic_rules``, ``segment_scripts`` and the delimiter fields.
@@ -127,6 +130,108 @@ How each part combines:
   different codes set the same scalar field — even to the same value —
   the later one wins and a ``UserWarning`` is raised; a pack overrides
   the base parser's value silently.
+
+Choosing languages
+~~~~~~~~~~~~~~~~~~
+
+The default vocabulary is written one word at a time, each in the file
+of the language whose names it occurs in, and the default reads every
+language's words at once. Where two languages read one word
+differently, the default keeps both readings and lets the name around
+the word decide: Portuguese ``e`` ("and") is also an initial, so in a
+name written wholly in capitals it reads as the initial and reports the
+doubt.
+
+A :class:`~nameparser.Locale` with ``languages`` chooses languages,
+written as BCP 47 tags. A chosen language's readings win on a word it
+has a vocabulary reading of, and a reading its file holds off by
+default is turned on. Under Portuguese, ``E`` is the connective:
+
+.. doctest::
+
+    >>> from nameparser import Lexicon, Locale, parse, parser_for
+    >>> parse("ANA SILVA E SOUZA").family
+    'SOUZA'
+    >>> pt = Locale(code="pt", lexicon=Lexicon.empty(),
+    ...             languages=frozenset({"pt"}))
+    >>> parser_for(pt).parse("ANA SILVA E SOUZA").family
+    'SILVA E SOUZA'
+
+A choice costs the other languages' readings of the words it settles.
+English holds ``DO`` as a credential (Doctor of Osteopathy) and
+Portuguese ``do`` as a particle ("of the"), so each language, chosen
+alone, reads the other's names by its own word:
+
+.. doctest::
+
+    >>> en = Locale(code="en", lexicon=Lexicon.empty(),
+    ...             languages=frozenset({"en"}))
+    >>> parse("Maria do Carmo").family
+    'do Carmo'
+    >>> parser_for(en).parse("Maria do Carmo").family
+    'Carmo'
+    >>> parser_for(pt).parse("John Smith DO").family
+    'DO'
+    >>> parser_for(pt, en).parse("Maria do Carmo").family
+    'do Carmo'
+
+Choosing both keeps both readings, as the default does. A reading
+that a word is borne as a name never settles anything: it keeps the
+name around the word in charge, under any choice.
+
+A tag selects its own file and those of the languages it belongs to,
+never the other way: ``pt-BR`` reads ``pt.toml`` too, and ``pt``
+leaves the Brazilian words alone. No other table of related languages
+is read, so a caller with Malay and Indonesian names chooses ``ms``
+and ``id``. Tags are compared without regard to case, and a tag is
+checked in one of three ways:
+
+- **A malformed tag** (``pt_BR``, ``p``) raises ``ValueError`` when the
+  :class:`~nameparser.Locale` is built.
+- **A tag no vocabulary file holds**, itself or any language it belongs
+  to (``xx``), raises ``ValueError`` at
+  :func:`~nameparser.parser_for`, naming the tags that have a file.
+- **A region or other subtag of a language that has a file** (``pt-PT``)
+  is accepted and reads that language's file, there being none of its
+  own.
+
+A pack that chooses no language leaves the base parser's vocabulary
+exactly as it was.
+
+Choosing in one call
+^^^^^^^^^^^^^^^^^^^^
+
+A choice belongs to one :func:`~nameparser.parser_for` call: the
+languages of the packs passed together are one choice. A base parser
+records no choice of its own, so a choice made on top of a base built
+by an earlier call applies after the base's, and settles the base's
+words its own way. To choose two languages, pass both packs in one
+call:
+
+.. doctest::
+
+    >>> chained = parser_for(en, base=parser_for(pt))
+    >>> chained.parse("Maria do Carmo").family
+    'Carmo'
+    >>> chained.parse("John Smith DO").family
+    'DO'
+    >>> together = parser_for(pt, en)
+    >>> together.parse("Maria do Carmo").family, together.parse("John Smith DO").suffix
+    ('do Carmo', 'DO')
+
+A choice applied to a base also removes what it drops from the base's
+vocabulary, even where you added the word yourself, and keeps every
+word it does not touch. Under ``en``, a base listing ``do`` and ``van``
+as particles keeps only ``van``, English holding ``do`` as a
+credential:
+
+.. doctest::
+
+    >>> from nameparser import Parser
+    >>> mine = Lexicon(particles=frozenset({"do", "van"}),
+    ...                surnames=Lexicon.default().surnames)
+    >>> sorted(parser_for(en, base=Parser(lexicon=mine)).lexicon.particles)
+    ['van']
 
 Finding packs by code
 ~~~~~~~~~~~~~~~~~~~~~
