@@ -31,6 +31,14 @@ _VOCAB_FIELDS = (
     "title_modifiers", "title_styles", "title_phrases",
 )
 
+#: The metadata key a Lexicon field added after `Lexicon` first shipped
+#: carries, naming the release that added it, with a default: a pickle
+#: written before that release lacks the field and loads with the
+#: default. The same string as `_types.ADDED_IN`, the key the other
+#: frozen types' shared guard reads; layering keeps this module from
+#: importing `_types`, so tests/v2/test_lexicon.py holds the two equal.
+_ADDED_IN = "nameparser.added_in"
+
 #: (marker, base, why) triples. Each marker QUALIFIES how entries of
 #: its base vocabulary are read and carries no vocabulary of its own,
 #: so an entry outside the base is a configuration mistake -- but the
@@ -916,19 +924,28 @@ class Lexicon:
         # Fail at the unpickle site if the state comes from a different
         # Lexicon field layout (version skew) -- silently loading it
         # would defer the failure to some distant attribute read.
-        # Message kept in sync with _types._guarded_setstate by design
-        # (layering keeps this module import-free of _types). Unlike
-        # that guard it admits no field added later (`ADDED_IN`, 2.7):
-        # every Lexicon field is still required, so a release adding one
-        # breaks older Lexicon pickles until this learns the marker.
-        expected = {f.name for f in dataclasses.fields(Lexicon)} - {"_cap_map"}
-        if set(state) != expected:
-            missing = ", ".join(sorted(expected - set(state))) or "none"
+        # Layout check and message kept in sync with
+        # _types._guarded_setstate by design (layering keeps this module
+        # import-free of _types): the one skew admitted is a field
+        # marked `_ADDED_IN` with a default, missing from a pickle
+        # written before it existed. Its default joins the state before
+        # anything is set, so the validation below reads it like any
+        # value the pickle held.
+        fields = [f for f in dataclasses.fields(Lexicon) if f.name != "_cap_map"]
+        expected = {f.name for f in fields}
+        added = {f.name: f.default for f in fields
+                 if _ADDED_IN in f.metadata
+                 and f.default is not dataclasses.MISSING}
+        missing_set = expected - set(state) - set(added)
+        if missing_set or not set(state) <= expected:
+            missing = ", ".join(sorted(missing_set)) or "none"
             unexpected = ", ".join(sorted(set(state) - expected)) or "none"
             raise ValueError(
                 f"incompatible Lexicon pickle: missing fields: {missing}; "
                 f"unexpected fields: {unexpected}"
             )
+        state = {**{name: default for name, default in added.items()
+                    if name not in state}, **state}
         for name, value in state.items():
             object.__setattr__(self, name, value)
         # Re-run construction validation rather than trusting the blob.

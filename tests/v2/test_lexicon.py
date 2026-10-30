@@ -5,13 +5,15 @@ import re
 import unicodedata
 import warnings
 from collections.abc import Callable
+from pathlib import Path
+from types import MappingProxyType
 
 import pytest
 
 from nameparser import Parser
 from nameparser._lexicon import (
-    Lexicon, _MaskValueError, _PHRASE_FIELDS, _VOCAB_FIELDS, _default_lexicon,
-    _normalize, _title_key,
+    Lexicon, _ADDED_IN, _MaskValueError, _PHRASE_FIELDS, _VOCAB_FIELDS,
+    _default_lexicon, _normalize, _title_key,
 )
 from nameparser._policy import Script, _SCRIPT_RANGES
 from nameparser.config.suffixes import SUFFIX_ACRONYMS, SUFFIX_WORDS
@@ -383,6 +385,143 @@ def test_setstate_rejects_mismatched_field_layout() -> None:
     extra["zq_future_field"] = frozenset()
     with pytest.raises(ValueError, match="zq_future_field"):
         Lexicon.__new__(Lexicon).__setstate__(extra)
+
+
+def test_lexicon_marks_an_added_field_with_the_shared_key() -> None:
+    # one key for every guard: a Lexicon field marked with the key the
+    # other types read, and the other way round
+    from nameparser import _types
+    assert _ADDED_IN == _types.ADDED_IN
+
+
+_UNSET = object()
+
+
+def _mark(monkeypatch: pytest.MonkeyPatch, name: str,
+          default: object = _UNSET) -> None:
+    """Give a shipped Lexicon field the `_ADDED_IN` marker, as a field
+    added in a later release would carry, and optionally another
+    default. Patches the Field object `dataclasses.fields` returns, so
+    only the pickle guard sees it."""
+    f = Lexicon.__dataclass_fields__[name]
+    monkeypatch.setattr(f, "metadata",
+                        MappingProxyType({**f.metadata, _ADDED_IN: "9.9"}))
+    if default is not _UNSET:
+        monkeypatch.setattr(f, "default", default)
+
+
+def _lexicon_state(*without: str, **renamed: str) -> dict[str, object]:
+    state = Lexicon.default().__getstate__()
+    for name in without:
+        del state[name]
+    for old, new in renamed.items():
+        state[new] = state.pop(old)
+    return state
+
+
+#: (field marked, what loads in its place, the refusal the same state
+#: meets with the field unmarked). The third column is the negative
+#: control: the guard before it learned the marker refused exactly
+#: this, so a widening that stopped working fails the admitted half.
+_ADMITTED = [
+    ("title_phrases", frozenset(),
+     "missing fields: title_phrases; unexpected fields: none"),
+    ("capitalization_exceptions", (),
+     "missing fields: capitalization_exceptions; unexpected fields: none"),
+]
+
+
+@pytest.mark.parametrize("name,loaded,unmarked", _ADMITTED,
+                         ids=[row[0] for row in _ADMITTED])
+def test_setstate_admits_a_marked_field_missing_from_an_older_pickle(
+        monkeypatch: pytest.MonkeyPatch, name: str, loaded: object,
+        unmarked: str) -> None:
+    state = _lexicon_state(name)
+    with pytest.raises(ValueError, match=re.escape(unmarked)):
+        Lexicon.__new__(Lexicon).__setstate__(dict(state))
+    _mark(monkeypatch, name)
+    restored = Lexicon.__new__(Lexicon)
+    restored.__setstate__(dict(state))
+    assert getattr(restored, name) == loaded
+    assert restored == dataclasses.replace(Lexicon.default(), **{name: loaded})  # type: ignore[arg-type]
+    assert restored.capitalization_exceptions_map == dict(
+        restored.capitalization_exceptions)
+
+
+#: (marks, state, refusal): every skew the guard refused before it
+#: learned the marker, still refused beside a marked field, the rows of
+#: tests/v2/test_types.py's _REFUSED_SKEWS for the shared guard.
+_LEXICON_REFUSED = [
+    pytest.param({"title_phrases": _UNSET}, lambda: _lexicon_state("titles"),
+                 "missing fields: titles; unexpected fields: none",
+                 id="missing-unmarked-field"),
+    pytest.param({"title_phrases": _UNSET},
+                 lambda: _lexicon_state("titles", "title_phrases"),
+                 "missing fields: titles; unexpected fields: none",
+                 id="missing-unmarked-field-beside-a-missing-marked-one"),
+    pytest.param({"title_phrases": _UNSET},
+                 lambda: {**_lexicon_state(), "zq_future": frozenset()},
+                 "missing fields: none; unexpected fields: zq_future",
+                 id="unexpected-field"),
+    pytest.param({"title_phrases": _UNSET},
+                 lambda: {**_lexicon_state("title_phrases"),
+                          "zq_future": frozenset()},
+                 "missing fields: none; unexpected fields: zq_future",
+                 id="unexpected-field-beside-a-missing-marked-one"),
+    pytest.param({"title_phrases": _UNSET},
+                 lambda: _lexicon_state(titles="title"),
+                 "missing fields: titles; unexpected fields: title",
+                 id="renamed-field"),
+    pytest.param({"title_phrases": _UNSET},
+                 lambda: _lexicon_state(title_phrases="title_phrase"),
+                 "missing fields: none; unexpected fields: title_phrase",
+                 id="renamed-marked-field"),
+    # a marker with no default to load is no license: the field is
+    # still required, as in the shared guard
+    pytest.param({"title_phrases": dataclasses.MISSING},
+                 lambda: _lexicon_state("title_phrases"),
+                 "missing fields: title_phrases; unexpected fields: none",
+                 id="marked-field-without-a-default"),
+    # the default is validated like a value the pickle held: one that
+    # does not survive normalization is refused, not silently rewritten
+    pytest.param({"titles": frozenset({"DR."})},
+                 lambda: _lexicon_state("titles"),
+                 "not normalized (titles: DR.)",
+                 id="marked-field-whose-default-is-not-normalized"),
+]
+
+
+@pytest.mark.parametrize("marks,state,match", _LEXICON_REFUSED)
+def test_setstate_still_refuses_every_skew_beside_a_marked_field(
+        monkeypatch: pytest.MonkeyPatch, marks: dict[str, object],
+        state: Callable[[], dict[str, object]], match: str) -> None:
+    for name, default in marks.items():
+        _mark(monkeypatch, name, default)
+    with pytest.raises(ValueError, match=re.escape(match)):
+        Lexicon.__new__(Lexicon).__setstate__(state())
+
+
+def test_a_lexicon_parser_and_locale_pickled_by_2_8_0_load() -> None:
+    """tests/v2/data/lexicon_v28.pickle is a dict of
+    `Lexicon.empty().add(titles={"dean"})`, a `Parser` holding it and
+    `locales.RU`, pickled (protocol 4) by the released 2.8.0 wheel.
+    Made 2026-10-30 with `PYTHONSAFEPATH=1 uv run --isolated
+    --no-project --with 'nameparser==2.8.0'` from a directory outside
+    the checkout, version and module path asserted (AGENTS.md's v1
+    comparison trap). A field a later release adds to Lexicon takes
+    `_ADDED_IN` and a default, or this fails. pickle.load is safe
+    here: a repo-controlled fixture."""
+    from nameparser import locales
+    with open(Path(__file__).parent / "data" / "lexicon_v28.pickle",
+              "rb") as f:
+        loaded = pickle.load(f)
+    lex = Lexicon.empty().add(titles={"dean"})
+    assert loaded["lexicon"] == lex
+    # compared by part: building Parser(lexicon=lex) warns, an empty
+    # lexicon having no hangul surnames for the default policy
+    assert loaded["parser"].lexicon == lex
+    assert loaded["parser"].policy == Parser().policy
+    assert loaded["locale"] == locales.RU
 
 
 def test_normalization_lowercases_and_keeps_interior_periods() -> None:
