@@ -681,7 +681,9 @@ listed below.
        Slavic formal order (``EAST_SLAVIC``) or Turkic reversed order
        (``TURKIC``) — but stands down under a declared
        ``FAMILY_FIRST`` or ``FAMILY_FIRST_GIVEN_LAST`` ``name_order``.
-       Defaults to empty.
+       Each rule also fills ``ParsedName.patronymic``, reading a middle
+       name with the East Slavic ending, and a Turkic marker with the
+       word before it. Defaults to empty.
    * - ``middle_as_family``
      - ``bool``
      - Folds ``middle`` into ``family`` instead of splitting them —

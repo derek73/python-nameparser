@@ -615,6 +615,17 @@ _POLICY_SHAPES: dict[str, tuple[str, Parser, Callable[[Parser], bool]]] = {
         # must run for this to read "b" rather than "" or "née b"
         lambda p: p.parse("a (née b)").maiden == "b",
     ),
+    # rules/R9's ending-rule arms, which walk every name word once the
+    # policy turns a rule on (a marker and its father, a middle word's
+    # ending), and only then: the probe reads both
+    "patronymic_rules": (
+        "Ali oglu Petrovich ",
+        Parser(policy=Policy(patronymic_rules=frozenset(
+            {"east-slavic", "turkic"}))),  # type: ignore[arg-type]
+        lambda p: (p.parse("Ali Ahmad oglu").patronymic == "Ahmad oglu"
+                   and p.parse("Ivan Ivanovich Ivanov").patronymic
+                   == "Ivanovich"),
+    ),
 }
 
 

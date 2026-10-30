@@ -379,6 +379,15 @@ def suffix_kind_of(text: str) -> str | None:
     return None
 
 
+def holds_kind(text: str, kind: str) -> bool:
+    """Whether a file holds `text` in a reading of `kind` (a key of
+    :data:`CATEGORY`), on by default or not. `text` is normalized as
+    :func:`readings_of` takes it. What the parse reads a listed
+    particle's patronymic kind by (`_vocab.is_patronymic_particle`,
+    3.0's 4c)."""
+    return any(k == kind for _tag, k, _pairs in _by_text().get(text, ()))
+
+
 class CompileError(ValueError):
     """The readings cannot compile: a fact about the data, which the
     build reports as a vocabulary error (exit 2) where any other

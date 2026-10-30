@@ -76,6 +76,13 @@
   },
   "text": "上山輝一"
  },
+ "Q105302343/uk-ua/surnameFirst": {
+  "patronymic": {
+   "expected": "Сергійович",
+   "got": ""
+  },
+  "text": "Федоров Іван Сергійович"
+ },
  "Q108855843/ja-jp/surnameFirst": {
   "family": {
    "expected": "森",
@@ -450,6 +457,13 @@
   },
   "text": "渋谷健一"
  },
+ "Q118224301/uk-ua/surnameFirst": {
+  "patronymic": {
+   "expected": "Іллівна",
+   "got": ""
+  },
+  "text": "Степаненко Василиса Іллівна"
+ },
  "Q121061159/ar-sy/givenFirst": {
   "family": {
    "expected": "ذو الغنى",
@@ -460,6 +474,27 @@
    "got": "عائشة ذو"
   },
   "text": "عائشة ذو الغنى"
+ },
+ "Q12123956/uk-ua/surnameFirst": {
+  "patronymic": {
+   "expected": "Олексійович",
+   "got": ""
+  },
+  "text": "Мовчан Борис Олексійович"
+ },
+ "Q12141961/uk-ua/surnameFirst": {
+  "patronymic": {
+   "expected": "Степанович",
+   "got": ""
+  },
+  "text": "Полунін Михайло Степанович"
+ },
+ "Q12168221/uk-ua/surnameFirst": {
+  "patronymic": {
+   "expected": "Васильович",
+   "got": ""
+  },
+  "text": "Царук Олександр Васильович"
  },
  "Q12221498/ar-eg/givenFirst": {
   "family": {
@@ -615,6 +650,13 @@
   },
   "text": "伊豆田莉奈"
  },
+ "Q16172176/uk-ua/givenFirst": {
+  "patronymic": {
+   "expected": "Олексійович",
+   "got": ""
+  },
+  "text": "Олексій Олексійович Гончаренко"
+ },
  "Q16230492/ar-eg/givenFirst": {
   "family": {
    "expected": "شكر الله",
@@ -703,6 +745,13 @@
   },
   "text": "沈鵬"
  },
+ "Q20068674/uk-ua/givenFirst": {
+  "patronymic": {
+   "expected": "Михайлович",
+   "got": ""
+  },
+  "text": "Едуард Михайлович Москальов"
+ },
  "Q2017050/ja-jp/surnameFirst": {
   "family": {
    "expected": "岡",
@@ -769,6 +818,13 @@
   },
   "text": "罗隆基"
  },
+ "Q232995/uk-ua/givenFirst": {
+  "patronymic": {
+   "expected": "Сергіївна",
+   "got": ""
+  },
+  "text": "Оксана Сергіївна Баюл"
+ },
  "Q233902/ja-jp/surnameFirst": {
   "family": {
    "expected": "朴",
@@ -823,6 +879,13 @@
    "got": ""
   },
   "text": "陈静"
+ },
+ "Q25490264/kk-kz/givenFirst": {
+  "patronymic": {
+   "expected": "Болатұлы",
+   "got": ""
+  },
+  "text": "Қайрат Болатұлы Тұрлыханов"
  },
  "Q263322/zh-tw/surnameFirst": {
   "family": {
@@ -900,6 +963,13 @@
    "got": ""
   },
   "text": "陳明忠"
+ },
+ "Q28664784/kk-kz/givenFirst": {
+  "patronymic": {
+   "expected": "Васильевна",
+   "got": ""
+  },
+  "text": "Татьяна Васильевна Костина"
  },
  "Q313598/zh-tw/surnameFirst": {
   "family": {
@@ -999,6 +1069,34 @@
    "got": ""
   },
   "text": "桃田賢斗"
+ },
+ "Q4234503/uk-ua/givenFirst": {
+  "patronymic": {
+   "expected": "Олександрович",
+   "got": ""
+  },
+  "text": "Дмитро Олександрович Корчинський"
+ },
+ "Q4269586/uk-ua/surnameFirst": {
+  "patronymic": {
+   "expected": "Ігорович",
+   "got": ""
+  },
+  "text": "Луньов Святослав Ігорович"
+ },
+ "Q4373277/uk-ua/givenFirst": {
+  "patronymic": {
+   "expected": "Володимирович",
+   "got": ""
+  },
+  "text": "Андрій Володимирович Портнов"
+ },
+ "Q4417458/uk-ua/surnameFirst": {
+  "patronymic": {
+   "expected": "Кузьмич",
+   "got": ""
+  },
+  "text": "Середа Григорій Кузьмич"
  },
  "Q445244/zh-cn/surnameFirst": {
   "family": {
@@ -1186,6 +1284,20 @@
    "got": ""
   },
   "text": "東郷文彦"
+ },
+ "Q629702/uk-ua/surnameFirst": {
+  "patronymic": {
+   "expected": "Данилович",
+   "got": ""
+  },
+  "text": "Кучма Леонід Данилович"
+ },
+ "Q651264/uk-ua/givenFirst": {
+  "patronymic": {
+   "expected": "Володимирович",
+   "got": ""
+  },
+  "text": "Андрій Володимирович Бондар"
  },
  "Q6538654/zh-cn/surnameFirst": {
   "family": {
@@ -1527,6 +1639,13 @@
    "got": ""
   },
   "text": "李俊賢"
+ },
+ "Q981187/kk-kz/givenFirst": {
+  "patronymic": {
+   "expected": "Болатұлы",
+   "got": ""
+  },
+  "text": "Дәулет Болатұлы Тұрлыханов"
  },
  "Q99630410/zh-cn/surnameFirst": {
   "family": {

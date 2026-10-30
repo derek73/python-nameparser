@@ -273,13 +273,16 @@ Shipped packs
        family/given/patronymic shape (three name words, the last ending
        like a patronymic — Cyrillic and transliterated
        ``-ovich``/``-ovna``-style endings — and the middle not) and
-       assigns it accordingly.
+       assigns it accordingly. A middle name with the ending fills
+       ``patronymic`` too (``Ivan Ivanovich Ivanov`` → middle and
+       patronymic ``Ivanovich``).
    * - ``tr_az``
      - Turkic patronymic markers — detects a name of four words ending
        in a standalone marker token (``oglu``, ``qizi``, ``uulu``, and
        their Latin- and Cyrillic-script variants) and reads its first
        word as the family name (``Aliyev Ilham Heydar oglu`` → family
-       ``Aliyev``).
+       ``Aliyev``). A marker and the name before it fill
+       ``patronymic`` (``Heydar oglu`` there).
    * - ``zh``
      - Chinese surname segmentation — splits an unspaced Han name into
        surname and given name (``毛泽东`` → family ``毛``, given
@@ -326,7 +329,11 @@ order already reads ``"Сидоров Иван Петрович"`` as family ``�
 so folding the pack onto a base built with it adds nothing. Under
 ``FAMILY_FIRST_GIVEN_LAST`` the declared order wins, and the last
 word — the patronymic, or a separate ``oglu``/``qizi`` marker — reads
-as the given name.
+as the given name. ``patronymic`` does not stand down, but it reads only
+a middle name with the ending, so it follows the order: under
+``FAMILY_FIRST`` ``Ivan Ivanovich Ivanov`` reads given ``Ivanovich``
+and no patronymic. A marker and the word before it are read under
+every order.
 
 .. _segmenter-contract:
 

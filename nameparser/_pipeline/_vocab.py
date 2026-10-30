@@ -60,12 +60,12 @@ from nameparser._lexicon import (
 )
 from nameparser._policy import (CapsSuffixes, Policy, Script, _JA_SCRIPTS, _NO_INITIALS,
                                 _SCRIPT_RANGES, _script_matcher)
-from nameparser._reading_index import suffix_kind_of
+from nameparser._reading_index import holds_kind, suffix_kind_of
 from nameparser._pipeline._state import (
     AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, COMMA_CHARS,
     CREDENTIAL_WORD_TAG, Deferred, GENERATION_WORD_TAG,
-    GIVEN_ABBREVIATION_TAG, SHAPE_ACRONYM_TAG, TITLE_AMBIGUOUS_TAG,
-    PendingReading, ReadingKind, ReadingSource, Role, WorkToken,
+    GIVEN_ABBREVIATION_TAG, PATRONYMIC_TAG, SHAPE_ACRONYM_TAG,
+    TITLE_AMBIGUOUS_TAG, PendingReading, ReadingKind, ReadingSource, Role, WorkToken,
     comma_bucket,
 )
 
@@ -278,6 +278,37 @@ _ROMAN = re.compile(r'^(X|IX|IV|V?I{0,3})$', re.I)
 #: The same pattern, shared rather than copied: `_comma` filters on
 #: it before asking `reads_as_generation` (rules/C12).
 ROMAN = _ROMAN
+
+
+# Ported verbatim from v1 (nameparser/config/regexes.py), pinned by
+# tests/v2/test_regex_sync.py: the East Slavic patronymic endings and
+# the standalone Turkic patronymic markers, which rules/O1's and O2's
+# rotations and rules/R9's reading ask through the two predicates below.
+_EAST_SLAVIC = re.compile(
+    r"(ovich|ovna|evich|evna|ichna|ilyich|kuzmich|lukich|fomich|fokich)$",
+    re.I)
+_EAST_SLAVIC_CYR = re.compile(
+    r"(ович|овна|евич|евна|ична|ильич|кузьмич|лукич|фомич|фокич)$",
+    re.I)
+_TURKIC = re.compile(
+    r"^(oglu|oğlu|ogly|ogli|o['’ʻ]g['’ʻ]li"
+    r"|qizi|qızı|kizi|kyzy|gyzy|uly|uulu)$", re.I)
+_TURKIC_CYR = re.compile(
+    r"^(оглу|оглы|оғлу|ўғли|угли|кызы|гызы|қызы|қизи|улы|ұлы|уулу)$", re.I)
+
+
+def has_patronymic_ending(text: str) -> bool:
+    """Whether `text` ends in an East Slavic patronymic ending, Latin or
+    Cyrillic ("Ivanovich", "Петрович"): rules/O1's test and, under
+    `PatronymicRule.EAST_SLAVIC`, rules/R9's."""
+    return bool(_EAST_SLAVIC.search(text) or _EAST_SLAVIC_CYR.search(text))
+
+
+def is_patronymic_marker(text: str) -> bool:
+    """Whether `text` is a standalone Turkic patronymic marker ("oglu",
+    "кызы"): rules/O2's test and, under `PatronymicRule.TURKIC`,
+    rules/R9's."""
+    return bool(_TURKIC.match(text) or _TURKIC_CYR.match(text))
 
 
 # rules/S10: "the numeral reads as the generation: the numerals the
@@ -2220,6 +2251,19 @@ def listed_word_kind_tag(n: str) -> str | None:
     return _LISTED_WORD_KIND_TAGS.get(suffix_kind_of(n) or "")
 
 
+# rules/R9: "a particle the shipped vocabulary holds as a patronymic"
+# -- read at classify, as a listed suffix word's kind is (decisions/R9,
+# #754). A memo for the reason `listed_word_kind_tag` is one.
+@functools.lru_cache(maxsize=4096)
+def is_patronymic_particle(n: str) -> bool:
+    """Whether a file holds the normalized word `n` as a patronymic
+    particle (`bin`, `ibn`, `bat`), on by default or not: the kind the
+    compiled `particles` set does not record, read from the shipped
+    reading index (3.0's 4c), so a word only a caller's `Lexicon`
+    lists is a plain particle."""
+    return holds_kind(n, "patronymic")
+
+
 def name_reading(token: WorkToken, role: Role | Deferred) -> PendingReading:
     """The name reading of a word a decision read as something else,
     landing in `role`: an initial where the word is one letter or
@@ -2253,6 +2297,19 @@ def name_source(tags: Set[str]) -> ReadingSource:
 #: words after it, the last group reading as the family (rules/P2).
 PARTICLE_READING = PendingReading(ReadingKind.PARTICLE,
                                   ReadingSource.VOCABULARY, Role.FAMILY)
+#: The same for a patronymic particle (rules/R9): its particle reading
+#: is a patronymic, joining the parent's name after it.
+PATRONYMIC_READING = PendingReading(ReadingKind.PATRONYMIC,
+                                    ReadingSource.VOCABULARY, Role.FAMILY)
+
+
+def particle_reading(tags: frozenset[str]) -> PendingReading:
+    """The particle reading of a word read as something else, by the
+    kind classify tagged it with: a patronymic particle's is
+    `PATRONYMIC_READING`, any other's `PARTICLE_READING`."""
+    return PATRONYMIC_READING if PATRONYMIC_TAG in tags else PARTICLE_READING
+
+
 #: The title reading of a word read as a name.
 TITLE_READING = PendingReading(ReadingKind.TITLE, ReadingSource.VOCABULARY,
                                Role.TITLE)

@@ -26,11 +26,12 @@ class PatronymicRule(StrEnum):
 
     #: East Slavic formal order: "Sidorov Ivan Petrovich"
     #: (family, given, patronymic) is detected by the patronymic
-    #: ending and reordered. Enabled by locales.RU.
+    #: ending and reordered, and a middle word with the ending fills
+    #: ParsedName.patronymic. Enabled by locales.RU.
     EAST_SLAVIC = "east-slavic"
     #: Turkic patronymic markers: a standalone "oglu"/"qizi"/"kyzy"
-    #: (etc.) binds to the preceding name as a patronymic. Enabled by
-    #: locales.TR_AZ.
+    #: (etc.) binds to the preceding name as a patronymic, the two
+    #: filling ParsedName.patronymic. Enabled by locales.TR_AZ.
     TURKIC = "turkic"
 
 

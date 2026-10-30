@@ -1,6 +1,7 @@
 """The runner over the shared case table, tests/v2/cases.py."""
 import functools
 import re
+from collections import Counter
 from typing import Any
 
 import pytest
@@ -87,9 +88,15 @@ def test_the_family_and_the_suffix_partition_into_their_views(
 
     rules/R8's views partition the suffix the same way, its words
     exactly the generation's plus the credentials', and join this
-    walk rather than parsing the grid again.
+    walk rather than parsing the grid again; so does rules/R9's
+    patronymic, which names words the name fields and the maiden name
+    keep.
     """
     pn = _swept(case.id, order)
+    named = Counter(f"{pn.given} {pn.middle} {pn.family} {pn.maiden}".split())
+    assert not Counter(pn.patronymic.split()) - named, (
+        f"{case.text!r}: patronymic={pn.patronymic!r} names a word no "
+        f"name field holds")
     assert sorted(pn.suffix.replace(",", " ").split()) == sorted(
         (pn.generation + " " + pn.credentials).replace(",", " ").split()), (
         f"{case.text!r}: suffix={pn.suffix!r} is not partitioned by "
@@ -329,6 +336,7 @@ _FIELD_OF_KIND = {
     **dict.fromkeys((ReadingKind.CREDENTIAL, ReadingKind.GENERATION,
                      ReadingKind.AGNOMEN, ReadingKind.POST_NOMINAL), Role.SUFFIX),
     ReadingKind.TITLE: Role.TITLE, ReadingKind.PARTICLE: Role.FAMILY,
+    ReadingKind.PATRONYMIC: Role.FAMILY,
 }
 
 #: A plain word of each kind the oracle below writes in place of the

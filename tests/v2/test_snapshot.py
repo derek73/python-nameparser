@@ -76,7 +76,8 @@ def test_a_snapshot_predating_the_case_views_is_not_compared_on_them() -> None:
            for k, r in new.items()}
     # a headerless snapshot records no alternative either
     assert snapshot.unrecorded_views(None, keys, old, new) == (
-        *snapshot.CASE_VIEWS, "alternatives", *snapshot.SUFFIX_VIEWS)
+        *snapshot.CASE_VIEWS, "alternatives", *snapshot.SUFFIX_VIEWS,
+        *snapshot.PATRONYMIC_VIEW)
     assert not snapshot.grouped(old, new)
     # A snapshot that records a view on one row, or only the plain
     # view, still compares both: a name repair leaves alone records none.
@@ -84,7 +85,7 @@ def test_a_snapshot_predating_the_case_views_is_not_compared_on_them() -> None:
     new = {snapshot.key(r): dict(r) for r in rows}
     current = {k: dict(r) for k, r in new.items()}
     assert snapshot.unrecorded_views(None, keys, current, new) == (
-        "alternatives", *snapshot.SUFFIX_VIEWS)
+        "alternatives", *snapshot.SUFFIX_VIEWS, *snapshot.PATRONYMIC_VIEW)
     assert new == current
     assert not any("capitalized_force" in r for r in current.values())
 
@@ -103,7 +104,7 @@ def test_a_snapshot_predating_the_alternatives_is_not_compared_on_them(
     old = {k: {f: v for f, v in r.items() if f != "alternatives"}
            for k, r in new.items()}
     assert snapshot.unrecorded_views(None, keys, old, new) == (
-        "alternatives", *snapshot.SUFFIX_VIEWS)
+        "alternatives", *snapshot.SUFFIX_VIEWS, *snapshot.PATRONYMIC_VIEW)
     assert not snapshot.grouped(old, new)
     rows = snapshot.read([("JOHN SMITH MA", None), ("Jack MA", None)])
     new = {snapshot.key(r): dict(r) for r in rows}
@@ -136,7 +137,8 @@ def test_a_snapshot_whose_names_report_nothing_still_records_alternatives(
     case_only = frozenset(snapshot.CASE_VIEWS)
     assert snapshot.unrecorded_views(snapshot.recorded(text), case_only,
                                      old, new) == ("alternatives",
-                                                   *snapshot.SUFFIX_VIEWS)
+                                                   *snapshot.SUFFIX_VIEWS,
+                                                   *snapshot.PATRONYMIC_VIEW)
     assert not snapshot.grouped(old, new)
 
 
@@ -151,6 +153,15 @@ def test_a_row_records_the_suffix_views_where_the_suffix_holds_a_generation(
     assert not set(snapshot.SUFFIX_VIEWS) & (set(plain) | set(creds))
     assert (gen["generation"], "credentials" in gen) == ("Jr.", False)
     assert (both["generation"], both["credentials"]) == ("Jr.", "PhD")
+
+
+def test_a_row_records_the_patronymic_view_where_it_is_not_empty() -> None:
+    # the default reads a patronymic particle's (R9); a name with none
+    # records no key
+    plain, nasab = snapshot.read([("John Smith", None),
+                                  ("Mahathir bin Mohamad", None)])
+    assert "patronymic" not in plain
+    assert nasab["patronymic"] == "bin Mohamad"
 
 
 def test_a_lost_alternative_shows_beside_an_identical_one() -> None:

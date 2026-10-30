@@ -10,8 +10,10 @@ Produces: tokens with roles adjusted by the post rules (among them the
 SUFFIX role of a delimited member its writing settles after the name,
 rules/S13, with the SUFFIX_OR_NICKNAME report on any other member left
 a nickname), the stable
-"joined" tag on a post-nominal continuing the entry before it, and the
-ambiguity P6's attachment reports at the end of a name read
+"joined" tag on a post-nominal continuing the entry before it, the
+folded-middle tag on the words O3 folds and P6's no-comma attachment
+joins to the family, with the attached tag on the latter (rules/R9
+tells the two apart by it), and the ambiguity P6's attachment reports at the end of a name read
 family-first (#467) -- after a family comma, that attachment is
 assign's since #613, and behind an empty part before the comma too
 since #892.
@@ -43,31 +45,18 @@ from nameparser._pipeline._pieces import (
     is_lone_never_given_particle, settled_by_case,
 )
 from nameparser._pipeline._state import (
-    AMBIGUOUS_ACRONYM_TAG, NAME_ROLES,
+    AMBIGUOUS_ACRONYM_TAG, ATTACHED_TAG, NAME_ROLES,
     ParseState, PendingAmbiguity, PendingReading, Structure,
     WorkToken, _NEVER_FLIPPED, comma_bucket, copy_with,
 )
 from nameparser._pipeline._vocab import (
-    delimiter_cores, suffix_reading, unit_ends,
+    delimiter_cores, has_patronymic_ending, is_patronymic_marker,
+    suffix_reading, unit_ends,
 )
 from nameparser._policy import PatronymicRule
 from nameparser._types import (
     FOLDED_TAG, UNJOINED_CONJUNCTION_TAG, UNJOINED_TAG, AmbiguityKind, Role,
 )
-
-# Ported verbatim from v1 (nameparser/config/regexes.py) -- layering
-# forbids the config import; keep in sync by hand.
-_EAST_SLAVIC = re.compile(
-    r"(ovich|ovna|evich|evna|ichna|ilyich|kuzmich|lukich|fomich|fokich)$",
-    re.I)
-_EAST_SLAVIC_CYR = re.compile(
-    r"(ович|овна|евич|евна|ична|ильич|кузьмич|лукич|фомич|фокич)$",
-    re.I)
-_TURKIC = re.compile(
-    r"^(oglu|oğlu|ogly|ogli|o['’ʻ]g['’ʻ]li"
-    r"|qizi|qızı|kizi|kyzy|gyzy|uly|uulu)$", re.I)
-_TURKIC_CYR = re.compile(
-    r"^(оглу|оглы|оғлу|ўғли|угли|кызы|гызы|қызы|қизи|улы|ұлы|уулу)$", re.I)
 
 
 #: The roles that are transparent to a run of post-nominals (R1's
@@ -636,9 +625,7 @@ def post_rules(state: ParseState) -> ParseState:
             len(givens) == 1 and len(middles) == 1 and len(families) == 1:
         tail = tokens[families[0]].text
         mid = tokens[middles[0]].text
-        if (_EAST_SLAVIC.search(tail) or _EAST_SLAVIC_CYR.search(tail)) \
-                and not (_EAST_SLAVIC.search(mid)
-                         or _EAST_SLAVIC_CYR.search(mid)):
+        if has_patronymic_ending(tail) and not has_patronymic_ending(mid):
             g, m, f = givens[0], middles[0], families[0]
             _retag(tokens, m, Role.GIVEN)
             _retag(tokens, f, Role.MIDDLE)
@@ -650,7 +637,7 @@ def post_rules(state: ParseState) -> ParseState:
     if rotations_apply and PatronymicRule.TURKIC in rules and \
             len(givens) == 1 and len(middles) == 2 and len(families) == 1:
         tail = tokens[families[0]].text
-        if _TURKIC.match(tail) or _TURKIC_CYR.match(tail):
+        if is_patronymic_marker(tail):
             g, m1, m2, f = givens[0], middles[0], middles[1], families[0]
             _retag(tokens, m1, Role.GIVEN)
             _retag(tokens, m2, Role.MIDDLE)
@@ -770,7 +757,7 @@ def post_rules(state: ParseState) -> ParseState:
             for j in run:
                 tokens[j] = copy_with(
                     tokens[j], role=Role.FAMILY,
-                    tags=tokens[j].tags | {FOLDED_TAG})
+                    tags=tokens[j].tags | {FOLDED_TAG, ATTACHED_TAG})
             # recomputed for H1's reason, stated at H1: a stale index
             # list is the bug shape #359 fixed
             givens = _idx(tokens, Role.GIVEN)

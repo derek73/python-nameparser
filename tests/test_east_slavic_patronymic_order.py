@@ -1,6 +1,6 @@
 from nameparser import PatronymicRule, parse
-from nameparser._pipeline._post_rules import _EAST_SLAVIC as _LATIN
-from nameparser._pipeline._post_rules import _EAST_SLAVIC_CYR as _CYRILLIC
+from nameparser._pipeline._vocab import _EAST_SLAVIC as _LATIN
+from nameparser._pipeline._vocab import _EAST_SLAVIC_CYR as _CYRILLIC
 from tests.base import FlaggedPolicyTestBase, ParsedNameTestBase
 
 _BOTH_RULES = {"patronymic_rules": {PatronymicRule.EAST_SLAVIC,

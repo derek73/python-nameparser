@@ -109,6 +109,19 @@ AGNOMEN_TAG = "vocab:agnomen"
 GENERATION_WORD_TAG = "vocab:generation-word"
 CREDENTIAL_WORD_TAG = "vocab:credential-word"
 
+#: Beside "particle" on a word the shipped reading index holds as a
+#: patronymic particle (`bin`, `ibn`, `bat`), which the compiled sets
+#: do not record (rules/R9, 3.0's 4c): written by classify, read by
+#: assemble for `Token.reading` and by assign for the reading a report
+#: names, and dropped from the published token like the kind tags above.
+PATRONYMIC_TAG = "vocab:patronymic"
+
+#: Beside FOLDED_TAG on the particles rules/P6 attaches to the family
+#: written before them, at either of its sites, so rules/R9 can tell
+#: the attachment from O3's middle fold, which writes FOLDED_TAG alone;
+#: dropped from the published token like the kind tags above.
+ATTACHED_TAG = "vocab:attached"
+
 #: On a word of `Lexicon.titles_ambiguous` whichever way classify read
 #: it (rules/H9): read as a title it carries "vocab:title" too, read
 #: out of the title it carries this alone, which is how assign finds
@@ -276,10 +289,12 @@ class ParseState:
     SUFFIX/TITLE roles of the run a maiden take gives up (#601), AND
     tail_reads, S2's trailing run read once before its joins (#614);
     assign -> the remaining token roles AND `order`, the effective
-    order it read them under, AND the folded-middle tag on the
-    particles P6's attachment joins after a family comma (#613);
+    order it read them under, AND the folded-middle and attached tags
+    on the particles P6's attachment joins after a family comma (#613);
     post_rules -> roles again (a delimited member S13 settles becomes
-    the suffix, #810), and the ambiguity P6's no-comma attachment
+    the suffix, #810), the folded-middle tag on what O3 folds and the
+    no-comma attachment joins, with the attached tag on the latter,
+    and the ambiguity P6's no-comma attachment
     reports (#467) and SUFFIX_OR_NICKNAME on a member it leaves a
     nickname.
     Ambiguities are recorded by every stage that DECIDES one --

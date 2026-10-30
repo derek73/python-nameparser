@@ -646,19 +646,19 @@ def test_pack_vocabulary_entries_are_single_words() -> None:
                     f"whitespace and can never match")
 
 
-def test_pack_marker_regexes_stay_in_sync_with_post_rules() -> None:
+def test_pack_marker_regexes_stay_in_sync_with_the_pipeline() -> None:
     # ru.py/tr_az.py hand-copy their DEVIATES marker regexes from
-    # _pipeline._post_rules (layering forbids a pack importing the
+    # _pipeline._vocab (layering forbids a pack importing the
     # pipeline -- see each pack's module docstring). Assert pattern
     # equality mechanically so drift fails here, not at the L6
     # non-interference gate.
-    from nameparser._pipeline import _post_rules
+    from nameparser._pipeline import _vocab
 
     for pack_regex, rule_regex in (
-        (_ru._EAST_SLAVIC, _post_rules._EAST_SLAVIC),
-        (_ru._EAST_SLAVIC_CYR, _post_rules._EAST_SLAVIC_CYR),
-        (_tr_az._TURKIC, _post_rules._TURKIC),
-        (_tr_az._TURKIC_CYR, _post_rules._TURKIC_CYR),
+        (_ru._EAST_SLAVIC, _vocab._EAST_SLAVIC),
+        (_ru._EAST_SLAVIC_CYR, _vocab._EAST_SLAVIC_CYR),
+        (_tr_az._TURKIC, _vocab._TURKIC),
+        (_tr_az._TURKIC_CYR, _vocab._TURKIC_CYR),
     ):
         assert pack_regex.pattern == rule_regex.pattern
         assert pack_regex.flags == rule_regex.flags
@@ -1014,7 +1014,7 @@ def test_rotators_cover_every_marker_branch(code: str) -> None:
     # this enforces them mechanically: every alternation branch of every
     # marker regex a pack defines (any module-level re.Pattern) must be
     # hit by some rotator token, so a regex edit that adds a branch
-    # (kept in sync with _post_rules by the pattern-equality test above)
+    # (kept in sync with _vocab by the pattern-equality test above)
     # fails HERE until a rotator name covers it. Anchoring follows the
     # pattern's own shape: '^(...)$' = whole-token marker, '(...)$' =
     # token ending.

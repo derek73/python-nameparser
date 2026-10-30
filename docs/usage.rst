@@ -735,6 +735,19 @@ unchanged:
     >>> suffixed.render("{given} {family} {generation}")
     'John Smith Jr.'
 
+``patronymic`` names the words that say whose child the bearer is, a
+particle such as ``bin`` with the parent's name after it, in whatever
+field the parse put them, which keeps them. It reads no position, so a
+name written without the particle has none:
+
+.. doctest::
+
+    >>> nasab = parse("Mahathir bin Mohamad")
+    >>> nasab.patronymic, nasab.family
+    ('bin Mohamad', 'bin Mohamad')
+    >>> parse("Anwar Ibrahim").patronymic
+    ''
+
 Dicts and strings
 ------------------
 

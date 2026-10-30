@@ -1,5 +1,5 @@
 from nameparser import PatronymicRule, parse
-from nameparser._pipeline._post_rules import (
+from nameparser._pipeline._vocab import (
     _EAST_SLAVIC,
     _EAST_SLAVIC_CYR,
     _TURKIC,

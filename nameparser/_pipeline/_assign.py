@@ -6,8 +6,9 @@ once, after P3's joins and before the particle chain (#614), which the
 main segment's placement takes rather than peeling again, save where
 group's joins left no name word in front of it.
 Produces: tokens with roles set on every main-stream token, and the
-folded-middle tag on the particles P6's attachment joins to the family
-after a family comma (#613).
+folded-middle and attached tags on the particles P6's attachment joins
+to the family after a family comma (#613; the attached tag, 3.0's 4c,
+tells rules/R9 the attachment from O3's fold).
 Reads: Policy.name_order (#270), is_suffix_lenient on the trailing
 piece of a two-part comma name, and Policy.script_orders (#271, which
 overrides it when every name piece is written wholly in one script, or
@@ -94,7 +95,7 @@ from typing import NamedTuple
 from nameparser._lexicon import Lexicon, _run_addresses_by_given
 from nameparser._pipeline._vocab import (
     _ROMAN, effective_script, in_a_title_phrase, is_initial_shaped,
-    PARTICLE_READING, TITLE_READING, is_listed_numeral,
+    TITLE_READING, is_listed_numeral, particle_reading,
     is_suffix_lenient, name_reading, suffix_reading,
     numeral_leans_to_the_name, numeral_settled_by_case,
     reads_as_a_reported_numeral, reads_as_generation, resolve_script_set,
@@ -109,7 +110,7 @@ from nameparser._pipeline._pieces import (
     tail_reading, trailing_titles,
 )
 from nameparser._pipeline._state import (
-    AMBIGUOUS_ACRONYM_TAG, NAME_ROLES, TITLE_AMBIGUOUS_TAG, ParseState,
+    AMBIGUOUS_ACRONYM_TAG, ATTACHED_TAG, NAME_ROLES, TITLE_AMBIGUOUS_TAG, ParseState,
     Beside, Deferred, PendingAmbiguity, PendingReading, Structure,
     WorkToken, _AMBIGUOUS_CREDENTIAL_TAGS, _NEVER_FLIPPED, copy_with,
 )
@@ -749,7 +750,7 @@ def _assign_main(seg_idx: int, state: ParseState,
                 AmbiguityKind.PARTICLE_OR_GIVEN,
                 f"leading {tokens[head[0]].text!r} may be a family-name "
                 f"particle; read as ", tuple(head), field_tail="",
-                alternative=PARTICLE_READING))
+                alternative=particle_reading(tokens[head[0]].tags)))
     return order
 
 
@@ -870,7 +871,7 @@ def _inside_a_credential_run(seg: Sequence[Sequence[int]],
         f"{text!r} written without periods is both a post-nominal and a "
         f"family-name particle; between credentials after a family "
         f"comma it reads as a post-nominal",
-        tuple(run), alternative=PARTICLE_READING))
+        tuple(run), alternative=particle_reading(tokens[run[0]].tags)))
     return True
 
 
@@ -991,7 +992,7 @@ def _attach_particle_tail(pieces: Sequence[Sequence[int]],
     for i in run:
         tokens[i] = copy_with(
             tokens[i], role=Role.FAMILY,
-            tags=tokens[i].tags | {FOLDED_TAG})
+            tags=tokens[i].tags | {FOLDED_TAG, ATTACHED_TAG})
 
 
 def _split_name_alt(state: ParseState, tokens: Sequence[WorkToken],

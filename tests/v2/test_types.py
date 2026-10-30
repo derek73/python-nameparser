@@ -5,10 +5,13 @@ from pathlib import Path
 
 import pytest
 
-from nameparser import FAMILY_FIRST, GIVEN_FIRST, Lexicon, Locale, Parser, Policy, parse
+from nameparser import (
+    FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, GIVEN_FIRST, Lexicon, Locale, Parser,
+    Policy, parse,
+)
 from nameparser._types import (
     STABLE_TAGS, Ambiguity, AmbiguityKind, ParsedName, Reading, Role,
-    Segmentation, Span, Token,
+    UNJOINED_TAG, Segmentation, Span, Token,
 )
 
 
@@ -1034,3 +1037,221 @@ def test_a_declared_delimiter_glued_to_a_generation_keeps_it_one(
             text.format(d=delimiter))
     assert (pn.generation, pn.credentials) == (
         generation.format(d=delimiter), "MD")
+
+
+# -- the patronymic view (rules/R9, #754) --------------------------------
+
+_RU = Parser(policy=Policy(patronymic_rules={"east-slavic"}))  # type: ignore[arg-type]
+_TR = Parser(policy=Policy(patronymic_rules={"turkic"}))  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize("parser,text,patronymic,field", [
+    # the empty path: no particle, and a name written without one
+    (Parser(), "John Smith", "", "Smith"),
+    (Parser(), "Anwar Ibrahim", "", "Ibrahim"),
+    # a particle and its parent's name, the family keeping them
+    (Parser(), "Mahathir bin Mohamad", "bin Mohamad", "bin Mohamad"),
+    (Parser(), "Ahmad bin Abdul Rahman", "bin Abdul Rahman", "bin Abdul Rahman"),
+    (Parser(), "Abdul Rahman bin Ahmad", "bin Ahmad", "bin Ahmad"),
+    (Parser(), "Mahathir bin Mohamad Jr.", "bin Mohamad", "bin Mohamad"),
+    # two of them, across the middle and the family
+    (Parser(), "Ali bin Ahmad bin Hasan", "bin Ahmad bin Hasan", "bin Hasan"),
+    # P6's trailing particle: the family written before it, in the
+    # family's order
+    (Parser(), "Mohamad, Mahathir bin", "bin Mohamad", "bin Mohamad"),
+    (Parser(policy=Policy(name_order=FAMILY_FIRST)), "Mohamad Mahathir bin",
+     "bin Mohamad", "bin Mohamad"),
+    # the particle read as a name, or ending its field, names no parent
+    (Parser(), "Mahathir, bin Mohamad", "", "Mahathir"),
+    (Parser(), "Mohamad Mahathir bin", "", "bin"),
+    (Parser(), "Fritz Freiherr und von Bar", "", "Freiherr und von Bar"),
+    # a nickname inside the run is skipped
+    (Parser(), "Ahmad bin (Bob) Ali", "bin Ali", "bin Ali"),
+    # the East Slavic arm: a middle word carrying the ending
+    (_RU, "Ivan Ivanovich Ivanov", "Ivanovich", "Ivanov"),
+    (_RU, "Ivanov, Ivan Ivanovich", "Ivanovich", "Ivanov"),
+    (_RU, "Roman Abramovich", "", "Abramovich"),
+    (Parser(), "Ivan Ivanovich Ivanov", "", "Ivanov"),
+    # under middle_as_family the folded middle is still the middle
+    (Parser(policy=Policy(patronymic_rules={"east-slavic"},  # type: ignore[arg-type]
+                          middle_as_family=True)),
+     "Ivan Ivanovich Ivanov", "Ivanovich", "Ivanovich Ivanov"),
+    (Parser(policy=Policy(middle_as_family=True)),
+     "Ali bin Ahmad Hasan Musa", "bin Ahmad Hasan Musa", "bin Ahmad Hasan Musa"),
+    # the Turkic arm: a marker and the name word before it, in its part
+    (_TR, "Ali Ahmad Vali oglu", "Vali oglu", "Ali"),
+    (_TR, "Ali Ahmad oglu", "Ahmad oglu", "oglu"),
+    (_TR, "Ali (Bob) oglu", "Ali oglu", "oglu"),
+    (_TR, "oglu Ali", "", "Ali"),
+    (_TR, "Aliyev, oglu", "", "Aliyev"),
+])
+def test_the_patronymic_view_reads_a_particle_or_a_rule(
+        parser: Parser, text: str, patronymic: str, field: str) -> None:
+    pn = parser.parse(text)
+    assert pn.patronymic == patronymic
+    assert pn.family == field
+
+
+_MAF = Policy(middle_as_family=True)
+
+
+@pytest.mark.parametrize("policy,text,patronymic", [
+    # P6's attachment is told by its shape, not by the field the
+    # middle fold reads its folded mark as, so middle_as_family keeps it
+    (Policy(), "Mohamad, Mahathir bin", "bin Mohamad"),
+    (_MAF, "Mohamad, Mahathir bin", "bin Mohamad"),
+    (Policy(), "Levi, Omer Bar", "Bar Levi"),
+    (_MAF, "Levi, Omer Bar", "Bar Levi"),
+    (Policy(name_order=FAMILY_FIRST, middle_as_family=True),
+     "Mohamad Mahathir bin", "bin Mohamad"),
+    # a folded middle with a word behind it is a run, not an attachment
+    (Policy(name_order=FAMILY_FIRST, middle_as_family=True),
+     "Mohamad Mahathir bin Ali", "bin Ali"),
+    # a particle ending the family before a comma has no word after it
+    # in its field: the given name behind the comma is not its parent's
+    (Policy(), "Ali bin, Ali", ""),
+    (Policy(), "Ahmad bin, Ali", ""),
+    # P6 attaching two particles: the family's own words, not the
+    # other folded particle, are the parent's name
+    (Policy(name_order=FAMILY_FIRST), "Ahmad Ahmad de bin", "bin Ahmad"),
+    # a suffix ends the run, so a family word behind it is not in it
+    (Policy(), "bin Ahmad Jr. Hasan, Ali", "bin Ahmad"),
+    # P6 attaching a patronymic particle with another particle after
+    # it: the attached words and the family they attach to, the second
+    # review's D1
+    (Policy(), "Bakar, Ali bin Abu", "bin Abu Bakar"),
+    (Policy(), "Saud, Mohammed bin Al", "bin Al Saud"),
+    (Policy(), "Mohamad, Mahathir bin de", "bin de Mohamad"),
+    (Policy(name_order=FAMILY_FIRST), "Ahmad Ali bin al", "bin al Ahmad"),
+    (_MAF, "Bakar, Ali bin Abu", "bin Abu Bakar"),
+    (Policy(), "Ahmad, Ali bin bin", "bin bin Ahmad"),
+    # a trailing particle P6 declines (no given word ahead of it) that
+    # O3 folds is no attachment: the second review's D2
+    (Policy(), "Rahman, Al bin", ""),
+    (_MAF, "Rahman, Al bin", ""),
+    (Policy(name_order=FAMILY_FIRST, middle_as_family=True),
+     "Rahman, Al bin", ""),
+    (_MAF, "Ahmad, bin bin", ""),
+    (_MAF, "Ali, van bin", ""),
+    (_MAF, "Ahmad Omar, Bar Bar", ""),
+    (_MAF, "Ahmad, Dr. bin Bar", ""),
+    # a word P6 attached stands as the family under the fold, so a
+    # folded middle's run does not reach it
+    (_MAF, "Ali, Ahmad bin Ahmad Abu", "bin Ahmad"),
+    # behind an empty head P6 attaches the particle as the whole
+    # family, which names no one, fold or no fold: the third review's
+    # D-A, the empty-head comma (C15) the shape test refused
+    (Policy(), ", Siti Aminah binti", ""),
+    (_MAF, ", Siti Aminah binti", ""),
+    (Policy(name_order=FAMILY_FIRST, middle_as_family=True),
+     ", Siti Aminah binti", ""),
+    (_MAF, ", Ali Ali bin", ""),
+    (_MAF, ", Dr. Ali Ahmad bin", ""),
+    (_MAF, ", Dr. Siti Aminah binti Jr.", ""),
+    (_MAF, ", Siti Aminah binti (Bob)", ""),
+    (Policy(name_order=FAMILY_FIRST_GIVEN_LAST, middle_as_family=True),
+     ", Siti Aminah binti", ""),
+    # a nickname-only head, and a part past the second comma
+    (_MAF, "(Bob), Siti Aminah binti", ""),
+    (_MAF, ", Siti Aminah binti, Hasan", ""),
+])
+def test_the_patronymic_run_and_the_attachment_under_each_policy(
+        policy: Policy, text: str, patronymic: str) -> None:
+    assert Parser(policy=policy).parse(text).patronymic == patronymic
+
+
+def test_middle_as_family_moves_no_patronymic_r2_does_not_move() -> None:
+    # O3's fold changes where a middle word renders, not what it is, so
+    # a name reads the same patronymic with and without it wherever R2
+    # reads its particles alike: a part made only of particles is name
+    # words (R2's unjoined mark), and the fold can give one a base
+    # ('Ali, bin bin Abu' reads patronymic 'bin Abu' under the fold
+    # alone, rules/R9's Accepted). The words, not their order: the
+    # view writes the family's words as the family does. A grid of
+    # particle, comma and given-name shapes (2,540 texts, each under
+    # two orders, about a second on 2026-10-29); compared: 4,494 of
+    # the 5,080 parses, the rest the R2 shape above. What it guards: a
+    # word P6 attached standing as the family under the fold (10 moves
+    # on 021268ed). What it cannot see: a shape whose R2 marks differ
+    # between the policies, the second review's D2 and the third's
+    # empty-head D-A, and one the fold leaves alike, D1; the rows of
+    # the test above hold those
+    words = ["Ahmad", "bin", "Abu", "de", "Ali,"]
+    texts = [" ".join(c) for n in range(2, 6)
+             for c in itertools.product(words, repeat=n) if "bin" in c]
+    assert len(texts) == 2540
+
+    def unjoined(pn: ParsedName) -> list[bool]:
+        return [UNJOINED_TAG in t.tags for t in pn.tokens]
+
+    moved, compared = [], 0
+    for order in (GIVEN_FIRST, FAMILY_FIRST):
+        plain = Parser(policy=Policy(name_order=order))
+        folded = Parser(policy=Policy(name_order=order, middle_as_family=True))
+        for text in texts:
+            a, b = plain.parse(text), folded.parse(text)
+            if unjoined(a) != unjoined(b):
+                continue
+            compared += 1
+            # the same words: the fold writes the family's folded words
+            # first, and the view writes the family's words as it does
+            if sorted(a.patronymic.split()) != sorted(b.patronymic.split()):
+                moved.append((text, order, a.patronymic, b.patronymic))
+    assert not moved, moved[:10]
+    assert compared == 4494
+
+
+def test_a_turkic_marker_a_caller_lists_as_a_connective_names_no_father(
+        ) -> None:
+    # the marker keeps the connective reading the caller's Lexicon gives
+    # it, so neither it nor the word before it is a patronymic
+    parser = Parser(lexicon=Lexicon.default().add(conjunctions={"oglu"}),
+                    policy=Policy(patronymic_rules={"turkic"}))  # type: ignore[arg-type]
+    pn = parser.parse("Ali Ahmad Vali oglu Hasan")
+    assert pn.patronymic == ""
+    assert [t.reading.kind.value for t in pn.tokens if t.reading] == [
+        "name", "name", "name", "conjunction", "name"]
+
+
+def test_a_patronymic_word_with_no_reading_is_not_in_the_view() -> None:
+    # replace() and revise() record no reading (4a), so nothing says
+    # what the word was; a field they did not touch keeps its readings
+    pn = parse("Mahathir bin Mohamad")
+    assert pn.replace(family="bin Mohamad").patronymic == ""
+    assert Parser().revise(pn, family="bin Ali").patronymic == ""
+    assert pn.replace(given="Anwar").patronymic == "bin Mohamad"
+
+
+def test_the_patronymic_view_is_a_render_key_and_not_a_field() -> None:
+    pn = parse("Mahathir bin Mohamad")
+    assert pn.render("{given} ({patronymic})") == "Mahathir (bin Mohamad)"
+    assert "patronymic" not in pn.as_dict()
+    assert "patronymic" not in repr(pn)
+    assert pn.comparison_key() == parse("Mahathir bin Mohamad").replace(
+        family="bin Mohamad").comparison_key()
+    with pytest.raises(TypeError):
+        pn.replace(patronymic="bin Ali")  # type: ignore[call-arg]
+
+
+def test_a_patronymic_parsedname_pickled_by_2_8_0_loads_equal() -> None:
+    """tests/v2/data/parsedname_v28_patronymic.pickle is `parse("Mahathir
+    bin Mohamad")` pickled (protocol 4) by the released 2.8.0 wheel,
+    made 2026-10-29 as the fixture above was. classify's
+    `vocab:patronymic` tag never reaches a published token, which
+    compares its tags, so the 2.x name is equal to its 3.0 parse and,
+    with no readings, has no patronymic. pickle.load is safe here: a
+    repo-controlled fixture."""
+    import pickle
+    with open(Path(__file__).parent / "data"
+              / "parsedname_v28_patronymic.pickle", "rb") as f:
+        loaded = pickle.load(f)
+    now = parse("Mahathir bin Mohamad")
+    assert loaded == now
+    assert (loaded.patronymic, now.patronymic) == ("", "bin Mohamad")
+    assert not any(t.startswith("vocab:patronymic")
+                   for tok in now.tokens for t in tok.tags)
+    # nor does P6's attachment mark, on the words it attaches
+    attached = parse("Bakar, Ali bin Abu")
+    assert attached.patronymic == "bin Abu Bakar"
+    assert not any(t == "vocab:attached"
+                   for tok in attached.tokens for t in tok.tags)
