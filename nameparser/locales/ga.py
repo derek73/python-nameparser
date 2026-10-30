@@ -6,7 +6,8 @@ forms ``mhic`` and ``uí`` (of ``mac`` and ``ó``), and the genitive
 Each is then a particle that joins the surname behind it:
 ``Máire Uí Bhriain`` gives family ``Uí Bhriain`` where the default
 gives middle ``Uí``. ``nic`` and ``mic`` are given names too, so a
-leading one stays the given name, reported (rules/P1).
+leading one stays the given name in a name read given-first, reported
+(rules/P1), as ``Mac`` does by default.
 
 Data sources: the counts on each reading in ga.toml (tools/name_usage.py,
 ORCID's family box by country among them). The pack carries no lexicon

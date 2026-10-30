@@ -28,7 +28,8 @@ may_be_given = false
 issue = 753
 expands = "of the son of, the genitive of 'mac' after a woman's 'bean' or name: \"Máire Mhic Gabhann\", the married form of Mac Gabhann"
 same_as = "mac"
-note = "Off by default with the rest of the Irish married and female forms: a particle the default has never read, turned on by an Irish pack (gd.toml says why Scottish Gaelic leaves it out). No source counts it as a given name (2026-10-30: ORCID 2 family boxes, both Ireland; PSC 1 filed name; none as a given name)."
+cased = "Mhic"
+note = "Off by default with the rest of the Irish married and female forms: a particle the default has never read, turned on by an Irish pack (gd.toml says why Scottish Gaelic leaves it out). No source counts it as a given name (2026-10-30: ORCID 2 family boxes, both Ireland; PSC 1 filed name; none as a given name). The mask is the word's own title case, as on 'ní': Irish writes it capitalized, and without one case repair would lowercase it as a particle (rules/R4)."
 
 [[word]]
 text = "mic"
@@ -39,7 +40,8 @@ default = false
 issue = 753
 expands = "of the son of, the unlenited genitive of 'mac'"
 same_as = "mac"
-note = "Off by default: Mic is also a given name, a short form of Michael (its given reading), and a Romanian surname. An Irish pack turns it on, its given reading keeping a leading Mic a given name there, reported (rules/P1)."
+cased = "Mic"
+note = "Off by default: Mic is also a given name, a short form of Michael (its given reading), and a Romanian surname. An Irish pack turns it on, its given reading keeping a leading Mic a given name there, reported (rules/P1). The mask is the word's own title case, as on 'ní': Irish writes it capitalized, and without one case repair would lowercase it as a particle (rules/R4)."
 
 [[word]]
 text = "nic"
@@ -50,7 +52,8 @@ default = false
 issue = [604, 753]
 expands = "daughter of, the female form beside 'mac': \"Máire Nic Gabhann\""
 gender = "f"
-note = "Off by default: Nic is also a given name, the short form of Nicholas (its given reading), and the default serves every language written in Latin script, where an English Nic is far likelier than an Irish particle (#604). An Irish or Scottish Gaelic pack turns it on, and its given reading keeps a leading Nic a given name there, reported (rules/P1)."
+cased = "Nic"
+note = "Off by default: Nic is also a given name, the short form of Nicholas (its given reading), and the default serves every language written in Latin script, where an English Nic is far likelier than an Irish particle (#604). An Irish or Scottish Gaelic pack turns it on, and its given reading keeps a leading Nic a given name there, reported (rules/P1). The mask is the word's own title case, as on 'ní': Irish writes it capitalized, and without one case repair would lowercase it as a particle (rules/R4)."
 
 [[word]]
 text = "ní"

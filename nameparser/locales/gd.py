@@ -8,8 +8,8 @@ the default gives middle ``Nic``. The genitive ``mhic``, which the
 Irish pack turns on, is left out: in Scottish Gaelic it mostly links a
 patronymic chain, which a second particle would split (gd.toml's note).
 ``Nic`` is a given name too (its reading is in ga.toml, and holds in
-every choice), so a leading Nic stays the given name, reported
-(rules/P1).
+every choice), so a leading Nic stays the given name in a name read
+given-first, reported (rules/P1), as ``Mac`` does by default.
 
 Data sources: the counts on each reading in ga.toml and gd.toml
 (tools/name_usage.py). The pack carries no lexicon fragment and no

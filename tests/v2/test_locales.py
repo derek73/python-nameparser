@@ -1729,6 +1729,25 @@ def test_the_3h_packs_under_a_family_first_order(
             (by_pack.family, by_pack.suffix)) == (default, packed)
 
 
+@pytest.mark.parametrize("force", [False, True])
+@pytest.mark.parametrize("code, text, repaired", [
+    ("GA", "MÁIRE NIC GIOLLA PHÁDRAIG", "Máire Nic Giolla Phádraig"),
+    ("GD", "MÁIRE NIC GIOLLA PHÁDRAIG", "Máire Nic Giolla Phádraig"),
+    ("GA", "MÁIRE MHIC GABHANN", "Máire Mhic Gabhann"),
+    ("GA", "SEÁN MIC GABHANN", "Seán Mic Gabhann"),
+    ("GA", "MÁIRE UÍ BHRIAIN", "Máire Uí Bhriain"),
+    ("GA", "máire nic gabhann", "Máire Nic Gabhann"),
+])
+def test_the_irish_particles_keep_their_capital_under_their_pack(
+        code: str, text: str, repaired: str, force: bool) -> None:
+    # Irish writes these capitalized, as the default's repair does; a
+    # particle reading without a mask is lowercased by case repair
+    # (rules/R4), so each turned-on reading carries its own `cased`
+    packed = parser_for(locales.get(code))
+    assert str(parse(text).capitalized(force=force)) == repaired
+    assert str(packed.capitalized(packed.parse(text), force=force)) == repaired
+
+
 def test_the_pt_br_pack_selects_pt_too() -> None:
     # pt-BR selects its ancestor's file (decisions/vocabulary-model's 3b
     # entry, item 6): Portuguese `e` is a connective in a one-case name

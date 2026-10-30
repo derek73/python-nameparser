@@ -15,5 +15,6 @@ default = false
 issue = [604, 753]
 expands = "daughter of, the female form beside 'mac', written spaced: \"Màiri Nic Leòid\" (glued, \"NicLeòid\" is one word and needs no particle)"
 gender = "f"
-note = "Off by default, as in ga.toml, which holds the word's given and family readings: a Scottish Gaelic pack turns it on, and the given reading keeps a leading Nic a given name, reported (rules/P1). The genitive 'mhic' is left out of this file though ga.toml turns it on: written in Scottish Gaelic it mostly links a patronymic chain (\"Iain mac Dhòmhnaill mhic Sheumais\"), which a second listed particle splits at its last link, as the default already splits 'Iain mac Dhòmhnaill mac Sheumais' (2026-10-30)."
+cased = "Nic"
+note = "Off by default, as in ga.toml, which holds the word's given and family readings: a Scottish Gaelic pack turns it on, and the given reading keeps a leading Nic a given name, reported (rules/P1). The genitive 'mhic' is left out of this file though ga.toml turns it on: written in Scottish Gaelic it mostly links a patronymic chain (\"Iain mac Dhòmhnaill mhic Sheumais\"), which a second listed particle splits at its last link, as the default already splits 'Iain mac Dhòmhnaill mac Sheumais' (2026-10-30). The mask is the word's own title case, as on ga.toml's 'ní': Gaelic writes it capitalized, and without one case repair would lowercase it as a particle (rules/R4)."
 

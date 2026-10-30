@@ -349,7 +349,8 @@ Shipped packs
        default leaves off: ``Nic`` (daughter of), the married forms
        ``Mhic`` and ``Uí``, and ``Mic`` (``Máire Uí Bhriain`` → family
        ``Uí Bhriain``). ``Nic`` and ``Mic`` are also given names, so
-       one opening the name stays the given name, reported. See
+       one opening a name read given-first stays the given name,
+       reported. See
        `Packs that choose a language`_.
    * - ``gd``
      - Scottish Gaelic — chooses ``gd``, which turns on ``Nic``
@@ -497,14 +498,23 @@ none of them, and ``ga``, ``gd`` and ``pt_br`` turn them on:
 
 Each word is then read as its language reads the full word: ``SB`` is a
 suffix only where the name keeps a family name without it (``Ana SB``
-keeps family ``SB``), and ``Nic`` opening a name stays the given name
-(``Nic Cage``). Each reports its doubt in
-``ambiguities``. A choice also settles every clash its language has a
-reading for, as `Choosing languages`_ shows: under ``ga`` and ``gd``,
-``Mc`` is the clan particle and not the Military Cross
-(``John Smith MC`` → family ``MC``), and ``pt_br`` reads as ``pt``
-does (``John Smith DO`` → family ``DO``, ``J. Smith Sr.`` → title
-``Sr.``, Senhor).
+keeps family ``SB``), and in a name read given-first ``Nic`` opening it
+stays the given name (``Nic Cage``), as ``Mac`` does by default; under
+a family-first order it is the first word, read as the family name.
+Each reports its doubt in ``ambiguities``.
+
+A choice also settles every clash its language has a reading for, as
+`Choosing languages`_ shows, and that costs the other languages'
+readings of those words:
+
+- **Under ga and gd,** ``Mc`` is the clan particle, so ``John Smith MC``
+  gives family ``MC`` and loses the Military Cross.
+- **Under pt_br,** the words read as ``pt`` reads them: ``John Smith DO``
+  gives family ``DO``, and a trailing ``Sr`` is read as the Portuguese
+  title *Senhor* rather than English "Senior", so ``John Smith Sr``
+  gives family ``Sr``, a known cost not yet settled.
+- **Under pt_br,** a written S.B. degree reads as Sobrinho
+  (``Howard Gordon, MD SB`` fills ``generation`` with ``SB``).
 
 .. _segmenter-contract:
 

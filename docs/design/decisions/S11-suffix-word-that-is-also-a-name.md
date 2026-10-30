@@ -10,7 +10,7 @@
 
 - The floor holds before a generation word's case: a lower-case `fils` in a mixed-case name is the generation only where the name keeps a family word, so `Dumas fils` and `Pedro Junior fils` read family 'fils' — 2026-10-25 (Derek), #890, THE FLOOR.
 
-- The abbreviations Brazilian filings write for the agnomens are agnomen spellings `same_as` their word, gated as it is: `fh`, `fo`, `filh` (filho), `net`, `nt` (neto), `sob`, `sobr` (sobrinho), each with a `family` reading, counted or declared, so that a name of two words keeps it (`Ana Fo` → family 'Fo'); `fil` is refused on the word, `sb` is read only under a Brazilian Portuguese choice, and the single letters `F` and `N` are left as initials, under that choice too — 2026-10-27 #843; 2026-10-30 #753, phase 3h.
+- The abbreviations Brazilian filings write for the agnomens are agnomen spellings `same_as` their word, gated as it is: `fh`, `fo`, `filh` (filho), `net`, `nt` (neto), `sob`, `sobr` (sobrinho), each with a `family` reading, counted or declared, so that a name of two words keeps it (`Ana Fo` → family 'Fo'); `fil` is refused on the word, `sb` is read only under a Brazilian Portuguese choice, and the single letters `F` and `N` are left to read as the name word they are written as, an initial or, ending the name, the family (`JOSE CARLOS SILVA F` → family 'F'), under that choice too — 2026-10-27 #843; 2026-10-30 #753, phase 3h.
 
 Open: none in this file.
 
