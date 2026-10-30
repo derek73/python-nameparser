@@ -7,11 +7,15 @@ import re
 import sys
 import types
 from collections.abc import Callable, Iterable
+from pathlib import Path
 from types import ModuleType
 
 import pytest
 
-from nameparser import Locale, Parser, locales, parse, parser_for
+from nameparser import (
+    Locale, ParsedName, Parser, locales, parse, parser_for,
+)
+from nameparser import _reading_index as _ri
 from nameparser._lexicon import _VOCAB_FIELDS, Lexicon
 from nameparser._policy import (
     FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, UNSET, PatronymicRule, Policy,
@@ -1142,6 +1146,104 @@ def test_the_choice_gate_fails_when_its_surface_misses_a_word() -> None:
         _assert_non_interference(parser_for(choice),
                                  _surface_deviates(surface - {"e"}),
                                  _default_corpus())
+
+
+# -- 3c: the pack-shaped exclusions as readings off by default --
+#
+# A generation word whose collision is with OTHER languages written in
+# the same script (cs/hr/sk/sl `ml` and `st`, fr `père`) is a reading
+# written `default = false` in its own file, read by no default and
+# read once its language is chosen (decisions/vocabulary-model's
+# 2026-10-29 #753, phase 3c entry). The sweep is every such
+# reading in the index, so a later one joins it unlisted; a one-letter
+# word (es `h`, de `i`) is left out, the initial veto
+# (`_vocab.is_suffix_strict`) taking it written with its period:
+# `Anna Novak h.` reads family `h.` under es, a bare `h` suffix `h`.
+_OFF_GENERATIONS = sorted(
+    (r.text, r.tag) for r in _ri.index()
+    if r.kind == "generation" and not r.on_by_default and len(r.text) > 1)
+
+
+def test_the_off_generation_sweep_reaches_the_converted_words() -> None:
+    # an empty parametrize is a skip, not a failure
+    slavic = {"cs", "hr", "sk", "sl"}
+    assert ({("ml", t) for t in slavic} | {("st", t) for t in slavic}
+            | {("père", "fr")}) <= set(_OFF_GENERATIONS)
+
+
+@pytest.mark.parametrize("text, tag", _OFF_GENERATIONS,
+                         ids=lambda v: str(v))
+@pytest.mark.parametrize("spelling", ["{}.", "{}"])
+def test_a_chosen_language_reads_its_off_generation_and_the_default_does_not(
+        text: str, tag: str, spelling: str) -> None:
+    word = spelling.format(text)
+    name = f"Anna Novak {word}"
+    chosen = parser_for(Locale(code="choice", lexicon=Lexicon.empty(),
+                               languages=frozenset({tag})))
+    assert parse(name).suffix == ""
+    assert (chosen.parse(name).suffix, chosen.parse(name).family) == (
+        word, "Novak")
+
+
+def _fields(name: ParsedName) -> tuple[object, ...]:
+    return (name.given, name.middle, name.family, name.suffix,
+            tuple(a.kind.name for a in name.ambiguities))
+
+
+# Today's readings of the comma and initial-pair shapes, pinned (given,
+# middle, family, suffix, ambiguity kinds), default first. `ml` has no
+# name reading, so under a choice it is an ungated suffix word and its
+# comma readings take it with nothing reported (`Novak, ML` suffix
+# 'ML', where the default reads given 'ML'), a question recorded for
+# 3f in decisions/vocabulary-model's 2026-10-29 #753, phase 3c entry;
+# `père`'s family reading gates it and reports the fork.
+@pytest.mark.parametrize("tag, name, default, chosen", [
+    ("cs", "Novak, ML", ("ML", "", "Novak", "", ()),
+     ("", "", "Novak", "ML", ())),
+    ("cs", "Novak, Anna ml.", ("Anna", "ml.", "Novak", "", ()),
+     ("Anna", "", "Novak", "ml.", ())),
+    ("cs", "Novak ml., Anna", ("Anna", "", "Novak ml.", "", ()),
+     ("Anna", "", "Novak", "ml.", ())),
+    ("cs", "Anna M. L. Novak", ("Anna", "M. L.", "Novak", "", ()),
+     ("Anna", "M. L.", "Novak", "", ())),
+    ("cs", "Anna ML Novak", ("Anna", "ML", "Novak", "", ()),
+     ("Anna", "ML", "Novak", "", ())),
+    ("fr", "Jean Père", ("Jean", "", "Père", "", ()),
+     ("Jean", "", "", "Père", ("GIVEN_OR_FAMILY",))),
+])
+def test_an_off_generations_readings_in_other_shapes_are_pinned(
+        tag: str, name: str, default: tuple[object, ...],
+        chosen: tuple[object, ...]) -> None:
+    choice = parser_for(Locale(code="choice", lexicon=Lexicon.empty(),
+                               languages=frozenset({tag})))
+    assert (_fields(parse(name)), _fields(choice.parse(name))) == (
+        default, chosen)
+
+
+@pytest.mark.xfail(strict=True, reason=(
+    "a one-letter generation turned on stays inert written with its "
+    "period: the initial veto takes it before the suffix set is read, "
+    "so the choice changes nothing for it (3c's one-letter gap)"))
+@pytest.mark.parametrize("tag, name, suffix", [
+    ("es", "Juan Pérez H.", "H."),
+    ("de", "Wilhelm Karl I.", "I."),
+])
+def test_a_chosen_one_letter_generation_reads_with_its_period(
+        tag: str, name: str, suffix: str) -> None:
+    choice = parser_for(Locale(code="choice", lexicon=Lexicon.empty(),
+                               languages=frozenset({tag})))
+    assert choice.parse(name).suffix == suffix
+
+
+def test_no_exclusion_is_pack_shaped_any_more() -> None:
+    # after 3c an exclusion means wrong everywhere until a pack's PR
+    # converts its own (the RFC's Phase 3 table): a reason opening
+    # "pack-shaped" is a reading a pack turns on, so it is written as
+    # one. The recompute is decisions/vocabulary-model's grep.
+    vocab = Path(__file__).resolve().parents[2] / "nameparser" / "vocab"
+    found = [f.name for f in sorted(vocab.glob("*.toml"))
+             if "pack-shaped" in f.read_text(encoding="utf-8")]
+    assert vocab.is_dir() and found == []
 
 
 # -- #269: non-Latin default vocabulary (Cyrillic, Greek, Arabic,

@@ -54,12 +54,13 @@ note = "Vietnamese Đỗ leads a great many surnames"
 
 ```toml
 [[word]]
-text = "père"
-[word.excluded]
-generation = { reason = "pack-shaped: collides outside French", issue = [679, 684] }
+text = "duke"
+given = { us_ssa = 11595, wikidata = 151, as_of = 2026-10-19, note = "male births only" }
+family = { us_census_2010 = 35053, wikidata = 315, as_of = 2026-10-19 }
+excluded = { nobility = "a common given name (Duke Kahanamoku), and a surname besides" }
 ```
 
-`père` ("father", the French word for the Elder) is deliberately not a suffix. It has no vocabulary reading at all, only an exclusion refusing the `generation` reading with the reason. Anyone who adds `generation = {}` to `père` in any file gets a build error that quotes that reason. Its son, `fils`, was refused the same way until 2026-10-25; it now has the `generation` reading beside its `family` reading, which gates it by the name around it ([derived markers](#derived-markers)), so `Marie Fils` keeps her family name.
+`duke` is deliberately not a title. It has no vocabulary reading at all, only its two name readings and an exclusion refusing the `nobility` reading with the reason. Anyone who adds `nobility = {}` to `duke` in any file gets a build error that quotes that reason. An exclusion means the reading is wrong wherever it is read. A reading that is right in its own language and wrong only as a default is written `default = false` instead ([Properties](#properties)), as `père` ("father", the French word for the Elder) is in `fr.toml`, so that choosing French turns it on; it was an exclusion until 3.0's phase 3c. Its son, `fils`, was an exclusion too until 2026-10-25, and is now on by default: its `generation` reading stands beside its `family` reading, which gates it by the name around it ([derived markers](#derived-markers)), so `Marie Fils` keeps her family name.
 
 ```toml
 [[word]]
@@ -82,7 +83,7 @@ Two rules about the `text`:
 
 Every file but `und.toml` lists its words in one order, and the build refuses a file that does not (check 10), naming the entry to move and where it belongs:
 
-1. **By kind**, in the order of the table under [Kinds](#kinds), which lists the categories in turn and each category's kinds together. A word with several readings sorts under its first kind in that order. A word whose only vocabulary reading is a refusal (`père`, `duke`) sorts under the kind it refuses, a refused category counting as its first kind, and a name reading places a word only when it has nothing else.
+1. **By kind**, in the order of the table under [Kinds](#kinds), which lists the categories in turn and each category's kinds together. A word with several readings sorts under its first kind in that order. A word whose only vocabulary reading is a refusal (`duke`) sorts under the kind it refuses, a refused category counting as its first kind, and a name reading places a word only when it has nothing else.
 2. **Then by the word it is a spelling of**: a reading's `same_as`, or the word's own text when it has none. A head comes first and its spellings follow it, so `jr` is followed by `jnr` and `junior`, and `sr` by `snr`. A spelling that has spellings of its own heads a group inside its head's: in `ar.toml`, `el-` follows the `a…-` spellings of `al-` with its own assimilated forms after it, and `ul-` comes last. Only the file's own entries are followed, so a word that is a head in one file and a spelling in another is placed in each file by that file alone.
 3. **Then by the word's text.**
 
@@ -228,12 +229,12 @@ A name reading may stand without a count, as a particle kept possibly given unde
 
 ## Exclusions
 
-An exclusion records that a reading was considered and refused, with the reason, so that the next person to propose it meets the reason as a build error instead of rediscovering the evidence.
+An exclusion records that a reading was considered and refused, with the reason, so that the next person to propose it meets the reason as a build error instead of rediscovering the evidence. It means the reading is wrong in every language: a reading right in its own language and wrong only as a default, because another language collides with it, is written `default = false` instead ([Properties](#properties)), for a choice of that language to turn on, as cs `ml` is.
 
 - **A refused reading** is a word-level table: `[word.excluded.generation]` with a `reason`, or `excluded = { generation = "the reason" }`. It refuses that kind in every file, and also every other kind that compiles into the same set, so a generic `suffix = {}` cannot put back a refused `generation`. A category name refuses the whole category (`excluded = { suffix = "..." }`). A `name` kind refuses only itself.
 - **A refused property** sits on a reading the word keeps: `[word.honorific.excluded]` with `attached = "the reason"`. It refuses any value of that property other than the one it takes unwritten, on any reading of the category; a refused `cased`, which belongs to the word, on any reading of the word.
 
-The value is a reason string, or a table with `reason` and optionally `issue`, `decided` and `note`. The exclusion goes in the file of the language whose reading it refuses. An entry may hold exclusions and no vocabulary reading, as `père` does. An entry with no reading and no exclusion is refused as inert, and one holding only a name reading is a warning, which the test suite makes an error, unless that reading is a `given` reading carrying `same_as`, which compiles.
+The value is a reason string, or a table with `reason` and optionally `issue`, `decided` and `note`. The exclusion goes in the file of the language whose reading it refuses. An entry may hold exclusions and no vocabulary reading, as `duke` does. An entry with no reading and no exclusion is refused as inert, and one holding only a name reading is a warning, which the test suite makes an error, unless that reading is a `given` reading carrying `same_as`, which compiles.
 
 To see what has been refused, and why: `uv run python tools/vocab/query.py --excluded generation`.
 

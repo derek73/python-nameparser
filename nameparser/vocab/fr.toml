@@ -102,8 +102,7 @@ family = { us_census_2010 = 767, wikidata = 5, as_of = 2026-10-16 }
 
 [[word]]
 text = "père"
-[word.excluded]
-generation = { reason = "pack-shaped: collides outside French", issue = [679, 684] }
+generation = { default = false, expands = "father, the Elder: Alexandre Dumas père", issue = [679, 684, 753], note = "real and standard, but collides outside French, so no default reads it; a French pack turns it on" }
 
 [[word]]
 text = "d'"
