@@ -973,12 +973,25 @@ class Reading:
     #: compared: two readings are equal without it, as in 2.x.
     languages: tuple[str, ...] = field(
         default=(), compare=False, metadata={ADDED_IN: "3.0.0"})
+    #: True for a word of the family's second name unit, where a rule
+    #: read the family as two (``Márquez`` in ``Gabriel García
+    #: Márquez`` under ``two_family_names``): the words
+    #: :attr:`ParsedName.surname2` holds. False everywhere else, a
+    #: family the parse read as one unit included, and in every
+    #: :attr:`Ambiguity.alternative`. Not compared: two readings are
+    #: equal without it. Added in 3.0.
+    second_surname: bool = field(
+        default=False, compare=False, metadata={ADDED_IN: "3.0.0"})
 
     # in the class body so @dataclass(slots=True) keeps them
     __getstate__ = _guarded_getstate
     __setstate__ = _guarded_setstate
 
     def __post_init__(self) -> None:
+        if type(self.second_surname) is not bool:
+            raise TypeError(
+                f"Reading.second_surname must be a bool, got "
+                f"{self.second_surname!r}; pass True or False")
         # the members the parser passes need no coercion, and a report
         # pays no frame for it (decisions/parse-cost)
         if type(self.languages) is not tuple:
@@ -1014,8 +1027,9 @@ class Reading:
     def __repr__(self) -> str:
         langs = (f", in {' '.join(self.languages)}" if self.languages
                  else "")
+        unit = ", second surname" if self.second_surname else ""
         return (f"Reading({self.kind.value!r} as {self.role.value!r}, "
-                f"{self.source.value!r}{langs})")
+                f"{self.source.value!r}{langs}{unit})")
 
 
 @dataclass(frozen=True, slots=True)
@@ -1418,6 +1432,26 @@ class ParsedName:
             family[:0] = folded
         return " ".join(p if isinstance(p, str) else " ".join(p)
                         for p in parts)
+
+    @property
+    # rules/R10: "the family's second name unit, the one written
+    # second, makes the second-surname view" (history: decisions/R10,
+    # #754)
+    def surname2(self) -> str:
+        """The family's second name unit where the parse read the
+        family as two (``Márquez`` in ``Gabriel García Márquez`` under
+        ``two_family_names``), which :attr:`family` keeps; ``''`` for a
+        family read as one, a family comma's ("Lloyd Webber, Andrew")
+        and a hyphenated one included, for a name unpickled from 2.x,
+        and once :meth:`replace` or Parser.revise rewrites ``family``,
+        whose words then carry no reading; rewriting another field
+        keeps it."""
+        # the parse marks family words only; the role test keeps a
+        # hand-built token marked in another field out of the view
+        return " ".join(
+            tok.text for tok in self.tokens
+            if tok.role is Role.FAMILY and tok.reading is not None
+            and tok.reading.second_surname)
 
     def _suffix_view(self, generation: bool) -> str:
         # the `generation` / `credentials` partition of `suffix`, each

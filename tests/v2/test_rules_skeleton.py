@@ -304,6 +304,11 @@ BAD = {
         _sub("It is rare otherwise.\n",
              'It is rare otherwise.\nJohn V  →  family="V"\n'),
         "outside a fence"),
+    # a field name holding a digit (rules/R10's surname2) is caught too
+    "an unquoted example of a field with a digit outside a fence": (
+        _sub("It is rare otherwise.\n",
+             'It is rare otherwise.\nJohn V Smith  →  surname2="Smith"\n'),
+        "outside a fence"),
     "an unquoted example on a label's line": (
         _sub("**Then:** the thing is the suffix.",
              '**Then:** John V  →  family="V"'), "outside a fence"),

@@ -73,6 +73,20 @@
   },
   "text": "Van der Merwe Jan Koos"
  },
+ "ak/foreignFull/givenFirst": {
+  "surname2": {
+   "expected": "González Domingo",
+   "got": ""
+  },
+  "text": "Prof. Dr. Ada Cornelia César Martín von Brühl González Domingo MD DDS"
+ },
+ "ak/foreignFull/sorting": {
+  "surname2": {
+   "expected": "González Domingo",
+   "got": ""
+  },
+  "text": "von Brühl González Domingo, Prof. Dr. Ada Cornelia César Martín MD DDS"
+ },
  "ak/foreignFull/surnameFirst": {
   "family": {
    "expected": "von Brühl González Domingo",
@@ -89,6 +103,10 @@
   "given_names": {
    "expected": "Ada Cornelia César Martín",
    "got": "Brühl González Domingo Prof. Dr. Ada Cornelia César Martín"
+  },
+  "surname2": {
+   "expected": "González Domingo",
+   "got": ""
   },
   "text": "von Brühl González Domingo Prof. Dr. Ada Cornelia César Martín MD DDS",
   "title": {
@@ -183,6 +201,10 @@
    "expected": "ዶ/ር የጥርስ ዶ/ር",
    "got": ""
   },
+  "surname2": {
+   "expected": "ጎንዛሌዝ ዶሚንጎ",
+   "got": ""
+  },
   "text": "ፕ/ር ዶ/ር አዳ ኮርኔሊያ ሴዛር ማርቲን ቮን ብሩህል ጎንዛሌዝ ዶሚንጎ ዶ/ር የጥርስ ዶ/ር",
   "title": {
    "expected": "ፕ/ር ዶ/ር",
@@ -204,6 +226,10 @@
   },
   "suffix": {
    "expected": "ዶ/ር የጥርስ ዶ/ር",
+   "got": ""
+  },
+  "surname2": {
+   "expected": "ጎንዛሌዝ ዶሚንጎ",
    "got": ""
   },
   "text": "ቮን ብሩህል ጎንዛሌዝ ዶሚንጎ, ፕ/ር ዶ/ር አዳ ኮርኔሊያ ሴዛር ማርቲን ዶ/ር የጥርስ ዶ/ር",
@@ -231,6 +257,10 @@
   },
   "suffix": {
    "expected": "ዶ/ር የጥርስ ዶ/ር",
+   "got": ""
+  },
+  "surname2": {
+   "expected": "ጎንዛሌዝ ዶሚንጎ",
    "got": ""
   },
   "text": "ቮን ብሩህል ጎንዛሌዝ ዶሚንጎ ፕ/ር ዶ/ር አዳ ኮርኔሊያ ሴዛር ማርቲን ዶ/ር የጥርስ ዶ/ር",
@@ -583,6 +613,20 @@
   },
   "text": "কিশোৰ"
  },
+ "az/foreignFull/givenFirst": {
+  "surname2": {
+   "expected": "Becker Schmidt",
+   "got": ""
+  },
+  "text": "Prof. Dr. Ada Kornelia Sezar Martin van den Volf Becker Schmidt M.D. Ph.D."
+ },
+ "az/foreignFull/sorting": {
+  "surname2": {
+   "expected": "Becker Schmidt",
+   "got": ""
+  },
+  "text": "van den Volf Becker Schmidt, Prof. Dr. Ada Kornelia Sezar Martin M.D. Ph.D."
+ },
  "az/foreignFull/surnameFirst": {
   "family": {
    "expected": "van den Volf",
@@ -808,6 +852,20 @@
   },
   "text": "Урал"
  },
+ "bal_Latn/foreignFull/givenFirst": {
+  "surname2": {
+   "expected": "González Domingo",
+   "got": ""
+  },
+  "text": "Prop. Dr. Ada Cornelia César Martín von Brühl González Domingo MD DDS"
+ },
+ "bal_Latn/foreignFull/sorting": {
+  "surname2": {
+   "expected": "González Domingo",
+   "got": ""
+  },
+  "text": "von Brühl González Domingo, Prop. Dr. Ada Cornelia César Martín MD DDS"
+ },
  "bal_Latn/foreignFull/surnameFirst": {
   "family": {
    "expected": "von Brühl González Domingo",
@@ -824,6 +882,10 @@
   "given_names": {
    "expected": "Ada Cornelia César Martín",
    "got": "Brühl González Domingo Prop. Dr. Ada Cornelia César Martín"
+  },
+  "surname2": {
+   "expected": "González Domingo",
+   "got": ""
   },
   "text": "von Brühl González Domingo Prop. Dr. Ada Cornelia César Martín MD DDS",
   "title": {
@@ -1180,6 +1242,10 @@
    "expected": "MƉ",
    "got": ""
   },
+  "surname2": {
+   "expected": "ƉOMIŊGO",
+   "got": ""
+  },
   "text": "Prof. Ɖr. MƉ fan ƉAM ƉOMIŊGO Fostɛɛŋ Samʊwɛl"
  },
  "blo/foreignG/sorting": {
@@ -1315,6 +1381,10 @@
    "expected": "এম.ডি.পিএইচ.ডি.",
    "got": ""
   },
+  "surname2": {
+   "expected": "তালুকদার",
+   "got": ""
+  },
   "text": "প্রঃ ডঃ আদিরা ইভা সোফিয়া রহমান আলি তালুকদার এম.ডি.পিএইচ.ডি.",
   "title": {
    "expected": "প্রঃ ডঃ",
@@ -1336,6 +1406,10 @@
   },
   "suffix": {
    "expected": "এম.ডি.পিএইচ.ডি.",
+   "got": ""
+  },
+  "surname2": {
+   "expected": "তালুকদার",
    "got": ""
   },
   "text": "রহমান আলি তালুকদার, প্রঃ ডঃ আদিরা ইভা সোফিয়া এম.ডি.পিএইচ.ডি.",
@@ -1363,6 +1437,10 @@
   },
   "suffix": {
    "expected": "এম.ডি.পিএইচ.ডি.",
+   "got": ""
+  },
+  "surname2": {
+   "expected": "তালুকদার",
    "got": ""
   },
   "text": "রহমান আলি তালুকদার প্রঃ ডঃ আদিরা ইভা সোফিয়া এম.ডি.পিএইচ.ডি.",
@@ -1469,11 +1547,29 @@
    "expected": "dipl. stom.",
    "got": ""
   },
+  "surname2": {
+   "expected": "Hodžić",
+   "got": ""
+  },
   "text": "prof. dr. Izeta Amra von Selimović Hodžić, dipl. stom.",
   "title": {
    "expected": "prof. dr.",
    "got": "prof. dr. dipl. stom."
   }
+ },
+ "bs/foreignFull/sorting": {
+  "surname2": {
+   "expected": "Hodžić",
+   "got": ""
+  },
+  "text": "prof. dr. von Selimović Hodžić, Izeta Amra, dipl. stom."
+ },
+ "bs/foreignFull/surnameFirst": {
+  "surname2": {
+   "expected": "Hodžić",
+   "got": ""
+  },
+  "text": "prof. dr. von Selimović Hodžić, Izeta Amra, dipl. stom."
  },
  "bs/foreignG/sorting": {
   "family": {
@@ -1593,6 +1689,10 @@
    "expected": "Excma.",
    "got": ""
   },
+  "surname2": {
+   "expected": "Hoogeveen",
+   "got": ""
+  },
   "text": "Excma. Dra. Maria da Graça César Martín van Dalen Hoogeveen",
   "title": {
    "expected": "Dra.",
@@ -1607,6 +1707,10 @@
   "family_particles": {
    "expected": "",
    "got": "Van"
+  },
+  "surname2": {
+   "expected": "Hoogeveen",
+   "got": ""
   },
   "text": "Van Dalen Hoogeveen, Maria da Graça César Martín"
  },
@@ -1626,6 +1730,10 @@
   "suffix": {
    "expected": "Excma. II",
    "got": "II"
+  },
+  "surname2": {
+   "expected": "Hoogeveen",
+   "got": ""
   },
   "text": "Excma. Dra. Van Dalen Hoogeveen II, Maria da Graça César Martín",
   "title": {
@@ -1672,11 +1780,22 @@
    "expected": "Excm.",
    "got": ""
   },
+  "surname2": {
+   "expected": "Palol",
+   "got": ""
+  },
   "text": "Excm. Sr. Josep Antoni Carles Joan Lloret Palol",
   "title": {
    "expected": "Sr.",
    "got": "Excm. Sr."
   }
+ },
+ "ca/nativeFull/sorting": {
+  "surname2": {
+   "expected": "Palol",
+   "got": ""
+  },
+  "text": "Lloret Palol, Josep Antoni Carles Joan"
  },
  "ca/nativeFull/surnameFirst": {
   "family": {
@@ -1690,6 +1809,10 @@
   "suffix": {
    "expected": "Excm. II",
    "got": "Sr., II"
+  },
+  "surname2": {
+   "expected": "Palol",
+   "got": ""
   },
   "text": "Excm. Sr. Lloret Palol II, Josep Antoni Carles Joan",
   "title": {
@@ -1878,6 +2001,13 @@
   },
   "text": "ᎨᏓᏯ"
  },
+ "cs/foreignFull/givenFirst": {
+  "surname2": {
+   "expected": "González Domingo",
+   "got": ""
+  },
+  "text": "Prof. Dr. Ada Cornelia César Martín von Brühl González Domingo, M.D. DDS."
+ },
  "cs/foreignFull/sorting": {
   "suffix": {
    "expected": "",
@@ -1905,6 +2035,10 @@
   "given_names": {
    "expected": "Ada Cornelia César Martín",
    "got": "Brühl González Domingo Ada Cornelia César Martín"
+  },
+  "surname2": {
+   "expected": "González Domingo",
+   "got": ""
   },
   "text": "Prof. Dr. von Brühl González Domingo Ada Cornelia César Martín, M.D. DDS."
  },
@@ -1943,6 +2077,10 @@
    "expected": "Alexandra Zuzana",
    "got": "Alexandra Zuzana Machová"
   },
+  "surname2": {
+   "expected": "Ondřejová",
+   "got": ""
+  },
   "text": "paní Alexandra Zuzana Machová Ondřejová, Ph.D."
  },
  "cs/nativeFull/sorting": {
@@ -1968,6 +2106,10 @@
   "given_names": {
    "expected": "Alexandra Zuzana",
    "got": "Ondřejová Alexandra Zuzana"
+  },
+  "surname2": {
+   "expected": "Ondřejová",
+   "got": ""
   },
   "text": "paní Machová Ondřejová Alexandra Zuzana, Ph.D."
  },
@@ -2359,6 +2501,10 @@
    "expected": "Δρ.Ι. Δρ.Χ.Ο",
    "got": ""
   },
+  "surname2": {
+   "expected": "Γκονθάλεθ Δομίνγκο",
+   "got": ""
+  },
   "text": "Καθ. δρ. Άντα Κορνέλια Σέσαρ Μαρτίν φον Μπριλ Γκονθάλεθ Δομίνγκο Δρ.Ι. Δρ.Χ.Ο"
  },
  "el/foreignFull/sorting": {
@@ -2521,6 +2667,13 @@
   },
   "text": "Zendaya"
  },
+ "es/foreignFull/sorting": {
+  "surname2": {
+   "expected": "Jones",
+   "got": ""
+  },
+  "text": "von Miller Jones, Prof. Dr. Mary Sue Marie"
+ },
  "es/foreignFull/surnameFirst": {
   "family": {
    "expected": "von Miller Jones",
@@ -2537,6 +2690,10 @@
   "given_names": {
    "expected": "Mary Sue Marie",
    "got": "Miller Jones Mary Sue Marie"
+  },
+  "surname2": {
+   "expected": "Jones",
+   "got": ""
   },
   "text": "von Miller Jones Mary Sue Marie II, MD DDS"
  },
@@ -2562,6 +2719,13 @@
   },
   "text": "Peter"
  },
+ "es/nativeFull/sorting": {
+  "surname2": {
+   "expected": "Pérez",
+   "got": ""
+  },
+  "text": "Pablo Pérez, Sr. Miguel Ángel Juan Antonio"
+ },
  "es/nativeFull/surnameFirst": {
   "family": {
    "expected": "Pablo Pérez",
@@ -2574,6 +2738,10 @@
   "given_names": {
    "expected": "Miguel Ángel Juan Antonio",
    "got": "Pérez Miguel Ángel Juan Antonio"
+  },
+  "surname2": {
+   "expected": "Pérez",
+   "got": ""
   },
   "text": "Pablo Pérez Miguel Ángel Juan Antonio II"
  },
@@ -2615,6 +2783,10 @@
   "given_names": {
    "expected": "Anna Liina Eva Sofia",
    "got": "Vall Heinmann Laas Prof Anna Liina Eva Sofia"
+  },
+  "surname2": {
+   "expected": "Heinmann Laas",
+   "got": ""
   },
   "text": "von Vall Heinmann Laas Prof Anna Liina Eva Sofia MD, PhD",
   "title": {
@@ -2892,6 +3064,10 @@
    "expected": "Ana Christina Lëja",
    "got": "professori Ana Christina Lëja"
   },
+  "surname2": {
+   "expected": "González Domingo",
+   "got": ""
+  },
   "text": "professori Ana Christina Lëja von Wright González Domingo, MD DDS",
   "title": {
    "expected": "professori",
@@ -2910,6 +3086,10 @@
   "given_names": {
    "expected": "Ana Christina Lëja",
    "got": "professori"
+  },
+  "surname2": {
+   "expected": "González Domingo",
+   "got": ""
   },
   "text": "von Wright González Domingo Ana Christina Lëja, professori MD DDS",
   "title": {
@@ -3174,6 +3354,20 @@
   },
   "text": "Adèle"
  },
+ "ga/foreignFull/givenFirst": {
+  "surname2": {
+   "expected": "González Domingo",
+   "got": ""
+  },
+  "text": "Prof. Dr. Ada Cornelia César Martín von Brühl González Domingo M.D. Ph.D."
+ },
+ "ga/foreignFull/sorting": {
+  "surname2": {
+   "expected": "González Domingo",
+   "got": ""
+  },
+  "text": "von Brühl González Domingo, Prof. Dr. Ada Cornelia César Martín M.D. Ph.D."
+ },
  "ga/foreignFull/surnameFirst": {
   "family": {
    "expected": "von Brühl",
@@ -3286,6 +3480,20 @@
   },
   "text": "Hozier"
  },
+ "gd/foreignFull/givenFirst": {
+  "surname2": {
+   "expected": "González Domingo",
+   "got": ""
+  },
+  "text": "Prof. Dr. Ada Cornelia César Martín von Brühl González Domingo Jr, MD DDS"
+ },
+ "gd/foreignFull/surnameFirst": {
+  "surname2": {
+   "expected": "González Domingo",
+   "got": ""
+  },
+  "text": "von Brühl González Domingo, Prof. Dr. Ada Cornelia César Martín Jr, MD DDS"
+ },
  "gd/foreignG/sorting": {
   "family": {
    "expected": "",
@@ -3317,6 +3525,10 @@
    "expected": "",
    "got": "Mac"
   },
+  "surname2": {
+   "expected": "Chorùna",
+   "got": ""
+  },
   "text": "Mgr. Dòmhnall Iain Bàn Mac a’ Ghobhainn Chorùna am post"
  },
  "gd/nativeFull/sorting": {
@@ -3338,6 +3550,10 @@
   "family_particles": {
    "expected": "",
    "got": "Mac"
+  },
+  "surname2": {
+   "expected": "Chorùna",
+   "got": ""
   },
   "text": "Mac a’ Ghobhainn Chorùna, Mgr. Dòmhnall Iain Bàn am post"
  },
@@ -3380,6 +3596,10 @@
    "expected": "Erika Cornelia Anna Isabelle",
    "got": "Erika Cornelia Anna Isabelle von Brül Cabral"
   },
+  "surname2": {
+   "expected": "Cabral de Melo",
+   "got": ""
+  },
   "text": "Dra. Erika Cornelia Anna Isabelle von Brül Cabral de Melo II"
  },
  "gl/foreignFull/sorting": {
@@ -3390,6 +3610,10 @@
   "family_particles": {
    "expected": "von",
    "got": "von de"
+  },
+  "surname2": {
+   "expected": "Cabral de Melo",
+   "got": ""
   },
   "text": "Brül Cabral de Melo, Erika Cornelia Anna Isabelle von"
  },
@@ -3433,6 +3657,20 @@
    "got": ""
   },
   "text": "John"
+ },
+ "gl/nativeFull/givenFirst": {
+  "surname2": {
+   "expected": "Sáez",
+   "got": ""
+  },
+  "text": "Sr. Xosé Carlos Francisco Xavier de Castro Sáez"
+ },
+ "gl/nativeFull/sorting": {
+  "surname2": {
+   "expected": "Sáez",
+   "got": ""
+  },
+  "text": "Castro Sáez, Xosé Carlos Francisco Xavier de"
  },
  "gl/nativeG/sorting": {
   "family": {
@@ -3568,6 +3806,10 @@
    "expected": "જૂનિયર એમપી",
    "got": "જૂનિયર"
   },
+  "surname2": {
+   "expected": "પટેલ",
+   "got": ""
+  },
   "text": "શ્રી. પટેલ ખુશી કિંજલ કુમાર શાહ જૂનિયર, એમપી",
   "title": {
    "expected": "શ્રી.",
@@ -3591,6 +3833,10 @@
    "expected": "પટેલ ખુશી કિંજલ",
    "got": "પટેલ ખુશી કિંજલ કુમાર"
   },
+  "surname2": {
+   "expected": "પટેલ",
+   "got": ""
+  },
   "text": "શાહ, પટેલ ખુશી કિંજલ કુમાર"
  },
  "gu/nativeFull/surnameFirst": {
@@ -3613,6 +3859,10 @@
   "suffix": {
    "expected": "જૂનિયર એમપી",
    "got": "જૂનિયર"
+  },
+  "surname2": {
+   "expected": "પટેલ",
+   "got": ""
   },
   "text": "કુમાર શાહ શ્રી. પટેલ ખુશી કિંજલ જૂનિયર, એમપી",
   "title": {
@@ -3642,6 +3892,13 @@
   },
   "text": "કિરણ"
  },
+ "ha/foreignFull/givenFirst": {
+  "surname2": {
+   "expected": "Becker Schmidt",
+   "got": ""
+  },
+  "text": "Farf. Dr. Ada Cornelia Eva Sophia van den Wolf Becker Schmidt M.D. Ph.D."
+ },
  "ha/foreignFull/surnameFirst": {
   "family": {
    "expected": "van den Wolf Becker Schmidt",
@@ -3658,6 +3915,10 @@
   "given_names": {
    "expected": "Ada Cornelia Eva Sophia",
    "got": "den Wolf Becker Schmidt Farf. Dr. Ada Cornelia Eva Sophia"
+  },
+  "surname2": {
+   "expected": "Becker Schmidt",
+   "got": ""
   },
   "text": "van den Wolf Becker Schmidt Farf. Dr. Ada Cornelia Eva Sophia M.D. Ph.D.",
   "title": {
@@ -3752,6 +4013,10 @@
    "expected": "ד״ר",
    "got": ""
   },
+  "surname2": {
+   "expected": "גונזלס דומינגו",
+   "got": ""
+  },
   "text": "פרופ׳ עדה קורנליה סזאר מרטין פון ברוהל גונזלס דומינגו ד״ר"
  },
  "he/foreignFull/sorting": {
@@ -3769,6 +4034,10 @@
   },
   "suffix": {
    "expected": "ד״ר",
+   "got": ""
+  },
+  "surname2": {
+   "expected": "גונזלס דומינגו",
    "got": ""
   },
   "text": "פון ברוהל גונזלס דומינגו, פרופ׳ עדה קורנליה סזאר מרטין ד״ר"
@@ -3792,6 +4061,10 @@
   },
   "suffix": {
    "expected": "ד״ר",
+   "got": ""
+  },
+  "surname2": {
+   "expected": "גונזלס דומינגו",
    "got": ""
   },
   "text": "פון ברוהל גונזלס דומינגו פרופ׳ עדה קורנליה סזאר מרטין ד״ר",
@@ -3941,6 +4214,10 @@
   "suffix": {
    "expected": "एम॰डी॰, पी॰एच॰डी॰",
    "got": "पी॰एच॰डी॰"
+  },
+  "surname2": {
+   "expected": "चेस्टर",
+   "got": ""
   },
   "text": "प्रो॰ डॉ॰ माइकल जॉन वॉन वॉटसन चेस्टर, एम॰डी॰, पी॰एच॰डी॰",
   "title": {
@@ -4594,6 +4871,13 @@
    "got": "Ahmad Albar"
   },
   "text": "Akbar, Ahmad Albar bin"
+ },
+ "ig/foreignFull/givenFirst": {
+  "surname2": {
+   "expected": "Becker Schmidt",
+   "got": ""
+  },
+  "text": "Prof. Dr. Ada Cornelia Eva Sophia van den Wolf Becker Schmidt M.D. Ph.D."
  },
  "ig/foreignFull/surnameFirst": {
   "family": {
@@ -5253,6 +5537,10 @@
    "expected": "მეცნ. დოქტ.",
    "got": ""
   },
+  "surname2": {
+   "expected": "გონსალეს დომინგო",
+   "got": ""
+  },
   "text": "პროფ. დოქტ. ადა კორნელია სეზარ მარტინ ფონ ბრიული გონსალეს დომინგო მეცნ. დოქტ."
  },
  "ka/foreignFull/sorting": {
@@ -5270,6 +5558,10 @@
   },
   "suffix": {
    "expected": "მეცნ. დოქტ.",
+   "got": ""
+  },
+  "surname2": {
+   "expected": "გონსალეს დომინგო",
    "got": ""
   },
   "text": "ფონ ბრიული გონსალეს დომინგო, პროფ. დოქტ. ადა კორნელია სეზარ მარტინ მეცნ. დოქტ."
@@ -5293,6 +5585,10 @@
   },
   "suffix": {
    "expected": "მეცნ. დოქტ.",
+   "got": ""
+  },
+  "surname2": {
+   "expected": "გონსალეს დომინგო",
    "got": ""
   },
   "text": "ფონ ბრიული გონსალეს დომინგო პროფ. დოქტ. ადა კორნელია სეზარ მარტინ მეცნ. დოქტ.",
@@ -6060,6 +6356,10 @@
    "expected": "जेआर बी.ए. एल.एल.बी",
    "got": ""
   },
+  "surname2": {
+   "expected": "गॉन्जालेज डोमिंगो",
+   "got": ""
+  },
   "text": "प्रो. डॉ. आडा कोर्नेलिया सेजार मार्टिन वॉन ब्रूह्ल गॉन्जालेज डोमिंगो जेआर, बी.ए. एल.एल.बी"
  },
  "kok/foreignFull/sorting": {
@@ -6096,6 +6396,10 @@
   },
   "suffix": {
    "expected": "जेआर बी.ए. एल.एल.बी",
+   "got": ""
+  },
+  "surname2": {
+   "expected": "गॉन्जालेज डोमिंगो",
    "got": ""
   },
   "text": "वॉन ब्रूह्ल गॉन्जालेज डोमिंगो प्रो. डॉ. आडा कोर्नेलिया सेजार मार्टिन जेआर, बी.ए. एल.एल.बी",
@@ -6147,6 +6451,10 @@
    "expected": "धा. एमपी",
    "got": ""
   },
+  "surname2": {
+   "expected": "ए मेनेजेस",
+   "got": ""
+  },
   "text": "श्री फ्रांसिस शावियेर जुआंव आंतोन दे सोजा ए मेनेजेस धा., एमपी"
  },
  "kok/nativeFull/sorting": {
@@ -6185,6 +6493,10 @@
    "expected": "धा. एमपी",
    "got": ""
   },
+  "surname2": {
+   "expected": "ए मेनेजेस",
+   "got": ""
+  },
   "text": "दे सोजा ए मेनेजेस श्री फ्रांसिस शावियेर जुआंव आंतोन धा., एमपी",
   "title": {
    "expected": "श्री",
@@ -6213,6 +6525,13 @@
   },
   "text": "दिशा"
  },
+ "kok_Latn/foreignFull/givenFirst": {
+  "surname2": {
+   "expected": "González Domingo",
+   "got": ""
+  },
+  "text": "Prof. Dr. Ada Cornelia César Martín von Brühl González Domingo Jr, MD DDS"
+ },
  "kok_Latn/foreignFull/surnameFirst": {
   "family": {
    "expected": "von Brühl González Domingo",
@@ -6229,6 +6548,10 @@
   "given_names": {
    "expected": "Ada Cornelia César Martín",
    "got": "Brühl González Domingo Prof. Dr. Ada Cornelia César Martín"
+  },
+  "surname2": {
+   "expected": "González Domingo",
+   "got": ""
   },
   "text": "von Brühl González Domingo Prof. Dr. Ada Cornelia César Martín Jr, MD DDS",
   "title": {
@@ -6271,6 +6594,10 @@
    "expected": "Dk MP",
    "got": "MP"
   },
+  "surname2": {
+   "expected": "e Menezes",
+   "got": ""
+  },
   "text": "Mr. Francisco Xavier Joao Anton de Souza e Menezes Dk, MP"
  },
  "kok_Latn/nativeFull/surnameFirst": {
@@ -6281,6 +6608,10 @@
   "suffix": {
    "expected": "Dk MP",
    "got": "MP"
+  },
+  "surname2": {
+   "expected": "e Menezes",
+   "got": ""
   },
   "text": "de Souza e Menezes Mr. Francisco Xavier Joao Anton Dk, MP",
   "title": {
@@ -6331,6 +6662,10 @@
    "expected": "Илимдин кандидаты",
    "got": ""
   },
+  "surname2": {
+   "expected": "Бекер Шмидт",
+   "got": ""
+  },
   "text": "Проф. Доктор. Алтынай Сулайманова Асель Сартбаева ван ден Вольф Бекер Шмидт Илимдин кандидаты"
  },
  "ky/foreignFull/sorting": {
@@ -6348,6 +6683,10 @@
   },
   "suffix": {
    "expected": "Илимдин кандидаты",
+   "got": ""
+  },
+  "surname2": {
+   "expected": "Бекер Шмидт",
    "got": ""
   },
   "text": "ван ден Вольф Бекер Шмидт, Проф. Доктор. Алтынай Сулайманова Асель Сартбаева Илимдин кандидаты"
@@ -6418,6 +6757,10 @@
    "expected": "Парламент мүчөсү",
    "got": ""
   },
+  "surname2": {
+   "expected": "Махмудов",
+   "got": ""
+  },
   "text": "Мырза Чыңгыз Айтматов Исхак Раззаков уулу Төрөкул Махмудов Парламент мүчөсү",
   "title": {
    "expected": "Мырза",
@@ -6439,6 +6782,10 @@
   },
   "suffix": {
    "expected": "Парламент мүчөсү",
+   "got": ""
+  },
+  "surname2": {
+   "expected": "Махмудов",
    "got": ""
   },
   "text": "уулу Төрөкул Махмудов, Мырза Чыңгыз Айтматов Исхак Раззаков Парламент мүчөсү",
@@ -6660,11 +7007,22 @@
    "expected": "med. m. dr.",
    "got": ""
   },
+  "surname2": {
+   "expected": "Jankauskas-Baranauskas",
+   "got": ""
+  },
   "text": "med. m. dr. prof. dr. Ada Kornelija Eva Sofija von Vilkas Jankauskas-Baranauskas",
   "title": {
    "expected": "prof. dr.",
    "got": "med."
   }
+ },
+ "lt/foreignFull/surnameFirst": {
+  "surname2": {
+   "expected": "Jankauskas-Baranauskas",
+   "got": ""
+  },
+  "text": "prof. dr. von Vilkas Jankauskas-Baranauskas, Ada Kornelija Eva Sofija"
  },
  "lt/foreignG/sorting": {
   "family": {
@@ -6747,6 +7105,10 @@
  "lv/foreignFull/givenFirst": {
   "suffix": {
    "expected": "Dr.philol.",
+   "got": ""
+  },
+  "surname2": {
+   "expected": "Bērziņa-Kalniņa",
    "got": ""
   },
   "text": "Dr.philol. Laima Kristīne Eva Sofija van den Volfa Bērziņa-Kalniņa",
@@ -7155,6 +7517,10 @@
    "expected": "Анагаах ухааны доктор",
    "got": ""
   },
+  "surname2": {
+   "expected": "Гонзалес Доминго",
+   "got": ""
+  },
   "text": "вон Брюхл Гонзалес Доминго Проф. Др. Ада Корнелиа Эва Софиа Анагаах ухааны доктор",
   "title": {
    "expected": "Проф. Др.",
@@ -7386,6 +7752,13 @@
   },
   "text": "माधुरी"
  },
+ "ms/foreignFull/givenFirst": {
+  "surname2": {
+   "expected": "Domingo",
+   "got": ""
+  },
+  "text": "Prof. Dr. Ada Cornelia Martina von Bruhel Domingo MD DDS"
+ },
  "ms/foreignFull/surnameFirst": {
   "family": {
    "expected": "von Bruhel",
@@ -7443,6 +7816,10 @@
   "given_names": {
    "expected": "Syed Abd Aziz",
    "got": "Syed Abd Aziz Syed A Ismail"
+  },
+  "surname2": {
+   "expected": "Petra",
+   "got": ""
   },
   "text": "Tn. Syed Abd Aziz Syed A Ismail Petra MP"
  },
@@ -8284,6 +8661,10 @@
    "expected": "ਐੱਮ.ਡੀ. ਡੀ.ਡੀ.ਐੱਸ.",
    "got": ""
   },
+  "surname2": {
+   "expected": "ਬੇਕਰ ਸਮਿੱਥ",
+   "got": ""
+  },
   "text": "ਪ੍ਰੋ. ਡਾ. ਐਡਾ ਕੋਰਨੇਲੀਆ ਈਵਾ ਸੋਫ਼ੀਆ ਵੈਨ ਡੇਨ ਵੌਲਫ਼ ਬੇਕਰ ਸਮਿੱਥ ਐੱਮ.ਡੀ. ਡੀ.ਡੀ.ਐੱਸ.",
   "title": {
    "expected": "ਪ੍ਰੋ. ਡਾ.",
@@ -8647,6 +9028,10 @@
    "expected": "ایم ‌ډی ډیی ډیی ایس",
    "got": ""
   },
+  "surname2": {
+   "expected": "بیکر شمیت",
+   "got": ""
+  },
   "text": "پروفیسور ډاکټر اډا کورنیلیا ایوا سوفیا وون لیوه بیکر شمیت ایم ‌ډی ډیی ډیی ایس",
   "title": {
    "expected": "پروفیسور ډاکټر",
@@ -8668,6 +9053,10 @@
   },
   "suffix": {
    "expected": "ایم ‌ډی ډیی ډیی ایس",
+   "got": ""
+  },
+  "surname2": {
+   "expected": "بیکر شمیت",
    "got": ""
   },
   "text": "وون لیوه بیکر شمیت, پروفیسور ډاکټر اډا کورنیلیا ایوا سوفیا ایم ‌ډی ډیی ډیی ایس",
@@ -8695,6 +9084,10 @@
   },
   "suffix": {
    "expected": "ایم ‌ډی ډیی ډیی ایس",
+   "got": ""
+  },
+  "surname2": {
+   "expected": "بیکر شمیت",
    "got": ""
   },
   "text": "وون لیوه بیکر شمیت پروفیسور ډاکټر اډا کورنیلیا ایوا سوفیا ایم ‌ډی ډیی ډیی ایس",
@@ -9320,6 +9713,13 @@
   },
   "text": "Сергей"
  },
+ "sc/foreignFull/givenFirst": {
+  "surname2": {
+   "expected": "González Domingo",
+   "got": ""
+  },
+  "text": "Dut.ra Prof.ra Maria Giusepa Juana Teresa von Brühl González Domingo"
+ },
  "sc/foreignFull/surnameFirst": {
   "family": {
    "expected": "von Brühl González Domingo",
@@ -9339,6 +9739,10 @@
   },
   "suffix": {
    "expected": "MD DDS",
+   "got": ""
+  },
+  "surname2": {
+   "expected": "González Domingo",
    "got": ""
   },
   "text": "MD DDS Dut.ra Prof.ra von Brühl González Domingo Maria Giusepa Juana Teresa",
@@ -9369,6 +9773,13 @@
   },
   "text": "Sinbad"
  },
+ "sc/nativeFull/givenFirst": {
+  "surname2": {
+   "expected": "Gunale",
+   "got": ""
+  },
+  "text": "Sr. Antoni Baìngiu Torchitòriu Comita de Lacon Gunale"
+ },
  "sc/nativeFull/surnameFirst": {
   "family": {
    "expected": "de Lacon Gunale",
@@ -9388,6 +9799,10 @@
   },
   "suffix": {
    "expected": "onorèvole",
+   "got": ""
+  },
+  "surname2": {
+   "expected": "Gunale",
    "got": ""
   },
   "text": "onorèvole Sr. de Lacon Gunale Antoni Baìngiu Torchitòriu Comita",
@@ -9439,6 +9854,10 @@
    "expected": "ايم ڊي ڊي ڊي ايس",
    "got": ""
   },
+  "surname2": {
+   "expected": "گونزالس ڊومنگو",
+   "got": ""
+  },
   "text": "پروفيسر ڊاڪٽر ايڊا ڪورنيليا سيزر مارٽن وان برل گونزالس ڊومنگو ايم ڊي ڊي ڊي ايس",
   "title": {
    "expected": "پروفيسر ڊاڪٽر",
@@ -9460,6 +9879,10 @@
   },
   "suffix": {
    "expected": "ايم ڊي ڊي ڊي ايس",
+   "got": ""
+  },
+  "surname2": {
+   "expected": "گونزالس ڊومنگو",
    "got": ""
   },
   "text": "وان برل گونزالس ڊومنگو, پروفيسر ڊاڪٽر ايڊا ڪورنيليا سيزر مارٽن ايم ڊي ڊي ڊي ايس",
@@ -9487,6 +9910,10 @@
   },
   "suffix": {
    "expected": "ايم ڊي ڊي ڊي ايس",
+   "got": ""
+  },
+  "surname2": {
+   "expected": "گونزالس ڊومنگو",
    "got": ""
   },
   "text": "وان برل گونزالس ڊومنگو پروفيسر ڊاڪٽر ايڊا ڪورنيليا سيزر مارٽن ايم ڊي ڊي ڊي ايس",
@@ -9613,6 +10040,10 @@
    "expected": "မေႃယႃ",
    "got": ""
   },
+  "surname2": {
+   "expected": "ၵွၼ်ႇၸႃႇလႅတ်ႉ တူဝ်ႇမိၼ်ႇၵူဝ်",
+   "got": ""
+  },
   "text": "ၶူးမေႃယႃ ဢေႇတႃႇ ၶူဝ်ႇၼီႇလီႇယႃႇ သီႇသႃႇ မႃႇတိၼ်ႇ ဝွၼ်း ပရူဝ်ႇလ် ၵွၼ်ႇၸႃႇလႅတ်ႉ တူဝ်ႇမိၼ်ႇၵူဝ် မေႃယႃ",
   "title": {
    "expected": "ၶူးမေႃယႃ",
@@ -9634,6 +10065,10 @@
   },
   "suffix": {
    "expected": "မေႃယႃ",
+   "got": ""
+  },
+  "surname2": {
+   "expected": "ၵွၼ်ႇၸႃႇလႅတ်ႉ တူဝ်ႇမိၼ်ႇၵူဝ်",
    "got": ""
   },
   "text": "ဝွၼ်း ပရူဝ်ႇလ် ၵွၼ်ႇၸႃႇလႅတ်ႉ တူဝ်ႇမိၼ်ႇၵူဝ်, ၶူးမေႃယႃ ဢေႇတႃႇ ၶူဝ်ႇၼီႇလီႇယႃႇ သီႇသႃႇ မႃႇတိၼ်ႇ မေႃယႃ",
@@ -9661,6 +10096,10 @@
   },
   "suffix": {
    "expected": "မေႃယႃ",
+   "got": ""
+  },
+  "surname2": {
+   "expected": "ၵွၼ်ႇၸႃႇလႅတ်ႉ တူဝ်ႇမိၼ်ႇၵူဝ်",
    "got": ""
   },
   "text": "ဝွၼ်း ပရူဝ်ႇလ် ၵွၼ်ႇၸႃႇလႅတ်ႉ တူဝ်ႇမိၼ်ႇၵူဝ် ၶူးမေႃယႃ ဢေႇတႃႇ ၶူဝ်ႇၼီႇလီႇယႃႇ သီႇသႃႇ မႃႇတိၼ်ႇ မေႃယႃ",
@@ -9785,6 +10224,10 @@
   },
   "suffix": {
    "expected": "එම්.ඩී. පී.එච්.ඩී.",
+   "got": ""
+  },
+  "surname2": {
+   "expected": "ගොන්සාලෙස් ඩොමින්ගෝ",
    "got": ""
   },
   "text": "මහාචාර්ය. ආචාර්ය. ඇඩා කොර්නේලියා සීසර් මාටින් වොන් බෲල් ගොන්සාලෙස් ඩොමින්ගෝ එම්.ඩී. පී.එච්.ඩී.",
@@ -9988,6 +10431,13 @@
   },
   "text": "අයිරින් ඇඩ්ලර්"
  },
+ "sk/foreignFull/givenFirst": {
+  "surname2": {
+   "expected": "Nováková Predná",
+   "got": ""
+  },
+  "text": "Mgr. Ing. Anna Karolína Eva Kristína von Kant Nováková Predná, CSc."
+ },
  "sk/foreignFull/sorting": {
   "family": {
    "expected": "Kant von",
@@ -10023,6 +10473,10 @@
   "given_names": {
    "expected": "Anna Karolína Eva Kristína",
    "got": "Kant Nováková Predná Anna Karolína Eva Kristína"
+  },
+  "surname2": {
+   "expected": "Nováková Predná",
+   "got": ""
   },
   "text": "Mgr. Ing. von Kant Nováková Predná Anna Karolína Eva Kristína, CSc."
  },
@@ -10235,6 +10689,13 @@
    "got": ""
   },
   "text": "Svarun"
+ },
+ "so/foreignFull/givenFirst": {
+  "surname2": {
+   "expected": "González Domingo",
+   "got": ""
+  },
+  "text": "Prof. Dr. Ada Cornelia César Martín von Brühl González Domingo MD DDS"
  },
  "so/foreignFull/surnameFirst": {
   "family": {
@@ -10475,6 +10936,10 @@
    "expected": "дипл. инж.",
    "got": ""
   },
+  "surname2": {
+   "expected": "Петровић Југовић",
+   "got": ""
+  },
   "text": "проф. др Александра Ева Сара ван ден Волф Петровић Југовић дипл. инж.",
   "title": {
    "expected": "проф. др",
@@ -10618,6 +11083,10 @@
    "expected": "dipl. inž.",
    "got": ""
   },
+  "surname2": {
+   "expected": "Petrović Jugović",
+   "got": ""
+  },
   "text": "prof. dr Aleksandra Eva Sara van den Volf Petrović Jugović dipl. inž."
  },
  "sr_Latn/foreignFull/surnameFirst": {
@@ -10730,11 +11199,22 @@
    "expected": "med. dr. fil. dr. jur. dr.",
    "got": ""
   },
+  "surname2": {
+   "expected": "González Domingo",
+   "got": ""
+  },
   "text": "med. dr. fil. dr. jur. dr. Ada Cornelia César Martín von Brühl González Domingo",
   "title": {
    "expected": "",
    "got": "med. dr. fil. dr. jur. dr."
   }
+ },
+ "sv/foreignFull/sorting": {
+  "surname2": {
+   "expected": "González Domingo",
+   "got": ""
+  },
+  "text": "von Brühl González Domingo, Ada Cornelia César Martín"
  },
  "sv/foreignFull/surnameFirst": {
   "suffix": {
@@ -10818,6 +11298,10 @@
   "given_names": {
    "expected": "Salima Farida",
    "got": "Salima Farida mwana Hamisi"
+  },
+  "surname2": {
+   "expected": "Musa",
+   "got": ""
   },
   "text": "Prof. Dk. Salima Farida mwana Hamisi Musa M.D. Ph.D."
  },
@@ -11134,6 +11618,10 @@
    "expected": "ఎం. డి. పిహెచ్. డి.",
    "got": ""
   },
+  "surname2": {
+   "expected": "శర్మ చౌదరి",
+   "got": ""
+  },
   "text": "సూర్య ప్రతాప్ లాస్య ప్రియ శర్మ చౌదరి ఎం. డి. పిహెచ్. డి."
  },
  "te/foreignFull/sorting": {
@@ -11152,6 +11640,10 @@
   "given_names": {
    "expected": "సూర్య ప్రతాప్ లాస్య ప్రియ",
    "got": "సూర్య ప్రతాప్ లాస్య ప్రియ శర్మ"
+  },
+  "surname2": {
+   "expected": "శర్మ చౌదరి",
+   "got": ""
   },
   "text": "చౌదరి, సూర్య ప్రతాప్ లాస్య ప్రియ శర్మ"
  },
@@ -11174,6 +11666,10 @@
   },
   "suffix": {
    "expected": "ఎం. డి. పిహెచ్. డి.",
+   "got": ""
+  },
+  "surname2": {
+   "expected": "శర్మ చౌదరి",
    "got": ""
   },
   "text": "శర్మ చౌదరి సూర్య ప్రతాప్ లాస్య ప్రియ ఎం. డి. పిహెచ్. డి."
@@ -11277,6 +11773,10 @@
    "expected": "Ада Корнелиа Сезар Мартин",
    "got": "Ада Корнелиа Сезар Мартин вон Брухи Гонзалес"
   },
+  "surname2": {
+   "expected": "Гонзалес Доминго",
+   "got": ""
+  },
   "text": "Проф. Док. Ада Корнелиа Сезар Мартин вон Брухи Гонзалес Доминго"
  },
  "tg/foreignFull/sorting": {
@@ -11286,6 +11786,10 @@
   },
   "family_particles": {
    "expected": "вон",
+   "got": ""
+  },
+  "surname2": {
+   "expected": "Гонзалес Доминго",
    "got": ""
   },
   "text": "вон Брухи Гонзалес Доминго, Проф. Док. Ада Корнелиа Сезар Мартин"
@@ -11306,6 +11810,10 @@
   "given_names": {
    "expected": "Ада Корнелиа Сезар Мартин",
    "got": "Брухи Гонзалес Доминго Проф. Док. Ада Корнелиа Сезар Мартин"
+  },
+  "surname2": {
+   "expected": "Гонзалес Доминго",
+   "got": ""
   },
   "text": "вон Брухи Гонзалес Доминго Проф. Док. Ада Корнелиа Сезар Мартин",
   "title": {
@@ -11407,6 +11915,10 @@
   "given_names": {
    "expected": "เอดา คอร์เนเลีย เซซาร์ มาร์ติน",
    "got": "บรืล กอนซาเลซ โดมิงโก ศ.ดร. เอดา คอร์เนเลีย เซซาร์ มาร์ติน"
+  },
+  "surname2": {
+   "expected": "กอนซาเลซ โดมิงโก",
+   "got": ""
   },
   "text": "วอน บรืล กอนซาเลซ โดมิงโก ศ.ดร. เอดา คอร์เนเลีย เซซาร์ มาร์ติน พ.บ. ท.บ.",
   "title": {
@@ -11644,6 +12156,10 @@
    "expected": "Ada Kornelia Sezar Martin",
    "got": "Ada Kornelia Sezar Martin fon Brül Gonzales Domingo"
   },
+  "surname2": {
+   "expected": "Gonzales Domingo",
+   "got": ""
+  },
   "text": "ylymlaryň doktory, professor Ada Kornelia Sezar Martin fon Brül Gonzales Domingo, hirurg-stomatolog lukman",
   "title": {
    "expected": "ylymlaryň doktory, professor",
@@ -11802,6 +12318,10 @@
    "expected": "Ada Cornelia César Martín",
    "got": "Brühl Plácido Domingo Ada Cornelia César Martín"
   },
+  "surname2": {
+   "expected": "Plácido Domingo",
+   "got": ""
+  },
   "text": "Prof. Dr. von Brühl Plácido Domingo Ada Cornelia César Martín, MD DDS"
  },
  "tr/foreignG/sorting": {
@@ -11854,6 +12374,10 @@
    "expected": "Dr.",
    "got": ""
   },
+  "surname2": {
+   "expected": "Kaya",
+   "got": ""
+  },
   "text": "Sn. Yıldırım Kaya Fatma Su, Dr.",
   "title": {
    "expected": "Sn.",
@@ -11903,6 +12427,10 @@
    "expected": "д-р",
    "got": ""
   },
+  "surname2": {
+   "expected": "Гонзалес Домінго",
+   "got": ""
+  },
   "text": "проф. Анастасія Єва Софія фон Вольф Гонзалес Домінго, д-р",
   "title": {
    "expected": "проф.",
@@ -11930,6 +12458,10 @@
    "expected": "д-р",
    "got": ""
   },
+  "surname2": {
+   "expected": "Гонзалес Домінго",
+   "got": ""
+  },
   "text": "фон Вольф Гонзалес Домінго Анастасія Єва Софія, д-р, проф.",
   "title": {
    "expected": "проф.",
@@ -11955,6 +12487,10 @@
   },
   "suffix": {
    "expected": "д-р",
+   "got": ""
+  },
+  "surname2": {
+   "expected": "Гонзалес Домінго",
    "got": ""
   },
   "text": "проф. фон Вольф Гонзалес Домінго Анастасія Єва Софія д-р"
@@ -12467,6 +13003,10 @@
    "expected": "Adama Coulibaly Camara Massamba",
    "got": "Adama Coulibaly Camara Massamba won Baar Dominique"
   },
+  "surname2": {
+   "expected": "Dominique Goudiaby",
+   "got": ""
+  },
   "text": "Prof. Dr. Adama Coulibaly Camara Massamba won Baar Dominique Goudiaby MD DDS"
  },
  "wo/foreignFull/sorting": {
@@ -12476,6 +13016,10 @@
   },
   "family_particles": {
    "expected": "won",
+   "got": ""
+  },
+  "surname2": {
+   "expected": "Dominique Goudiaby",
    "got": ""
   },
   "text": "won Baar Dominique Goudiaby, Prof. Dr. Adama Coulibaly Camara Massamba MD DDS"
@@ -12496,6 +13040,10 @@
   "given_names": {
    "expected": "Adama Coulibaly Camara Massamba",
    "got": "Baar Dominique Goudiaby Prof. Dr. Adama Coulibaly Camara Massamba"
+  },
+  "surname2": {
+   "expected": "Dominique Goudiaby",
+   "got": ""
   },
   "text": "won Baar Dominique Goudiaby Prof. Dr. Adama Coulibaly Camara Massamba MD DDS",
   "title": {
@@ -13743,6 +14291,10 @@
   "given_names": {
    "expected": "u-Ada Cornelia u-Eva Sophia",
    "got": "u-Prof. Dr. u-Ada Cornelia u-Eva Sophia u-van"
+  },
+  "surname2": {
+   "expected": "u-Becker Schmidt",
+   "got": ""
   },
   "text": "u-Prof. Dr. u-Ada Cornelia u-Eva Sophia u-van den u-Wold u-Becker Schmidt M.D. Ph.D.",
   "title": {

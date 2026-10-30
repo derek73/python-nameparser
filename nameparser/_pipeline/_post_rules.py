@@ -13,7 +13,8 @@ a nickname), the stable
 "joined" tag on a post-nominal continuing the entry before it, the
 folded-middle tag on the words O3 folds and P6's no-comma attachment
 joins to the family, with the attached tag on the latter (rules/R9
-tells the two apart by it), and the ambiguity P6's attachment reports at the end of a name read
+tells the two apart by it), the second-surname tag on each word of the
+family's second unit where O6 reads two (rules/R10), and the ambiguity P6's attachment reports at the end of a name read
 family-first (#467) -- after a family comma, that attachment is
 assign's since #613, and behind an empty part before the comma too
 since #892.
@@ -45,7 +46,7 @@ from nameparser._pipeline._pieces import (
     is_lone_never_given_particle, settled_by_case,
 )
 from nameparser._pipeline._state import (
-    AMBIGUOUS_ACRONYM_TAG, ATTACHED_TAG, NAME_ROLES,
+    AMBIGUOUS_ACRONYM_TAG, ATTACHED_TAG, NAME_ROLES, SECOND_SURNAME_TAG,
     ParseState, PendingAmbiguity, PendingReading, Structure,
     WorkToken, _NEVER_FLIPPED, comma_bucket, copy_with,
 )
@@ -305,6 +306,7 @@ def _take_second_family_name(state: ParseState,
             return
         for i in take:
             _retag(tokens, i, Role.FAMILY)
+        _mark_second_surname(tokens, family)
         return
     # family first: the unit after the family joins it, and what is
     # left is a shorter name of the same order, laid out as the P1
@@ -313,12 +315,22 @@ def _take_second_family_name(state: ParseState,
     # its place.
     if family[0] > units[0][0]:
         return
-    for i in units[0]:
-        _retag(tokens, i, Role.FAMILY)
+    # the unit taken joins the family as its second
+    _mark_second_surname(tokens, units[0])
     for unit, role in zip(units[1:], _name_positions(
             state.order, len(units))[1:]):
         for i in unit:
             _retag(tokens, i, role)
+
+
+# rules/R10: "the family's second name unit, the one written second,
+# makes the second-surname view" -- whichever of the two O6 took
+# (decisions/R10, #754). It moves the unit into the family as
+# it marks it, one copy per word (frame budget).
+def _mark_second_surname(tokens: list[WorkToken], unit: list[int]) -> None:
+    for i in unit:
+        tokens[i] = copy_with(tokens[i], role=Role.FAMILY,
+                              tags=tokens[i].tags | {SECOND_SURNAME_TAG})
 
 
 def _addressing_run(titles: list[int], name_word: int) -> list[int]:

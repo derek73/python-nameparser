@@ -18,6 +18,11 @@
   ```
   "Juan Pérez de la Vega"  two_family_names  →  family="Pérez de la Vega"
   ```
+- **The family keeps the two as units**, the one written second being the second-surname view (R10), whichever of the two the rule took.
+  ```
+  "Gabriel García Márquez"  two_family_names  →  surname2="Márquez"
+  "García Márquez Gabriel"  family-first+two_family_names  →  surname2="Márquez"
+  ```
 - **Titles, suffixes and nicknames are no name words**, and a comma that sets off only suffixes leaves the name before it to this rule.
   ```
   "Gabriel García Márquez Jr."  two_family_names  →  family="García Márquez"

@@ -1,4 +1,18 @@
 {
+ "az/foreignFull/givenFirst": {
+  "surname2": {
+   "expected": "Becker Schmidt",
+   "got": ""
+  },
+  "text": "Prof. Dr. Ada Kornelia Sezar Martin van den Volf Becker Schmidt M.D. Ph.D."
+ },
+ "az/foreignFull/sorting": {
+  "surname2": {
+   "expected": "Becker Schmidt",
+   "got": ""
+  },
+  "text": "van den Volf Becker Schmidt, Prof. Dr. Ada Kornelia Sezar Martin M.D. Ph.D."
+ },
  "az/foreignFull/surnameFirst": {
   "family": {
    "expected": "van den Volf",
@@ -424,6 +438,10 @@
    "expected": "Ada Cornelia César Martín",
    "got": "Brühl Plácido Domingo Ada Cornelia César Martín"
   },
+  "surname2": {
+   "expected": "Plácido Domingo",
+   "got": ""
+  },
   "text": "Prof. Dr. von Brühl Plácido Domingo Ada Cornelia César Martín, MD DDS"
  },
  "tr/foreignG/sorting": {
@@ -474,6 +492,10 @@
   },
   "suffix": {
    "expected": "Dr.",
+   "got": ""
+  },
+  "surname2": {
+   "expected": "Kaya",
    "got": ""
   },
   "text": "Sn. Yıldırım Kaya Fatma Su, Dr.",

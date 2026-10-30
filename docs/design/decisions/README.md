@@ -128,6 +128,7 @@ Entry conventions:
 - [R7 — no initials in a script that writes none](R7-no-initials-in-a-script-that-writes-none.md)
 - [R8 — the generation and credentials views](R8-generation-and-credentials-views.md)
 - [R9 — the patronymic view](R9-patronymic-view.md)
+- [R10 — the second-surname view](R10-second-surname-view.md)
 
 ## Construction & configuration diagnostics (D)
 

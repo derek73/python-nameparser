@@ -50,10 +50,10 @@ _EXAMPLE_RE = re.compile(
     r'^\s*(?:"(?P<text>[^"]*)"|\[(?P<subject>[a-z][a-z0-9_+-]*)\])'
     r"(?:\s+(?P<annot>[a-z][a-z0-9_+-]*|\[[a-z][a-z0-9_+-]*\]))?"
     r"\s+→\s+"
-    rf"(?P<field>[a-z_]+)=(?P<value>{_VALUE})"
+    rf"(?P<field>[a-z_][a-z0-9_]*)=(?P<value>{_VALUE})"
     r"(?P<boundary>\s+·\s+boundary)?"
     r"(?:\s+deviates:\s+#(?P<issue>\d+)\s+\(today:\s+"
-    rf"(?P<tfield>[a-z_]+)=(?P<today>{_VALUE})\))?"
+    rf"(?P<tfield>[a-z_][a-z0-9_]*)=(?P<today>{_VALUE})\))?"
     r"\s*$")
 #: Any line meant to be a signal line, in any spelling (``signal:``,
 #: ``Signal :``, bold or not): above a rule's footer, or outside any
@@ -64,7 +64,7 @@ NEAR_SIGNAL_RE = re.compile(r"^\s*[*_]*signals?[*_]*\s*[:\uff1a]",
 ASSERTABLE_FIELDS = frozenset({
     "title", "given", "middle", "family", "suffix", "nickname", "maiden",
     "family_base", "family_particles", "surnames", "given_names",
-    "generation", "credentials", "patronymic", "initials", "capitalized", "capitalized_forced", "str",
+    "generation", "credentials", "patronymic", "surname2", "initials", "capitalized", "capitalized_forced", "str",
     "ambiguities", "pieces", "warns", "raises"})
 
 

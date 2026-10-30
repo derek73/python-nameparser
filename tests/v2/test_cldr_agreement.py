@@ -20,12 +20,12 @@ import json
 import sys
 from collections import Counter
 from pathlib import Path
-from types import ModuleType
+from types import ModuleType, SimpleNamespace
 from typing import Any
 
 import pytest
 
-from nameparser import locales, parse
+from nameparser import Parser, Policy, locales, parse
 
 _TOOLS = Path(__file__).parents[2] / "tools" / "differential"
 
@@ -85,13 +85,22 @@ def test_a_pending_field_is_scored_inside_its_merged_role_until_parsed_name_has_
         {"given": "Gabriel", "surname": "García", "surname2": "Márquez"},
         "Gabriel García Márquez")
     assert (roles["family"], roles["surname2"]) == ("García Márquez", "Márquez")
-    # Not scored on its own while ParsedName lacks the attribute ...
-    assert "surname2" not in agreement.got_roles(parse("Gabriel García Márquez"))
+    # Not scored on its own while a ParsedName lacks the attribute, as
+    # every one did before 3.0's 4d ...
+    pn = parse("Gabriel García Márquez")
+    before_4d = SimpleNamespace(**{
+        view: getattr(pn, view) for view in (
+            "title", "given_names", "family", "suffix", "family_particles",
+            "family_base", "patronymic")})
+    assert "surname2" not in agreement.got_roles(before_4d)  # type: ignore[arg-type]
+    # ... and on its own once it has it (rules/R10), which the default
+    # never fills: only two_family_names reads a second surname
     rows = [{"file": "Q1", "label": "x", "order": "givenFirst", "shape": None,
              "text": "Gabriel García Márquez",
              "fields": {"given": "Gabriel", "surname": "García",
                         "surname2": "Márquez"}}]
-    assert "surname2" not in agreement.disagreements(rows).get("Q1/x/givenFirst", {})
+    assert agreement.disagreements(rows)["Q1/x/givenFirst"]["surname2"] == {
+        "expected": "Márquez", "got": ""}
 
 
 @pytest.mark.parametrize("field", sorted(agreement.PENDING_ROLES))
@@ -117,10 +126,11 @@ def _summary_run(*args: str) -> tuple[int, str]:
 
 def test_the_summary_says_where_each_pending_field_is_scored() -> None:
     _, out = _summary_run()
-    # `patronymic` is a view since 3.0's 4c (rules/R9), scored on its own
-    # beside the merged role; `surname2` waits for 4d
+    # `patronymic` is a view since 3.0's 4c (rules/R9) and `surname2`
+    # since 4d (rules/R10), each scored on its own beside the merged role
     assert "(and scored inside given_names)" in out
-    assert "stated, not a ParsedName field yet (scored inside family)" in out
+    assert "(and scored inside family)" in out
+    assert "not a ParsedName field yet" not in out
 
 
 def test_a_role_parsed_name_stops_answering_still_fails_loudly(
@@ -193,10 +203,14 @@ def test_got_roles_reads_the_six_views_and_each_pending_field_parsed_name_has(
     roles = agreement.got_roles(parse("Dr. Paul von Fischer Jr."))
     assert roles == {"title": "Dr.", "given_names": "Paul", "family": "von Fischer",
                      "suffix": "Jr.", "family_particles": "von",
-                     "family_base": "Fischer", "patronymic": ""}
-    assert tuple(roles) == (*agreement.ROLES, "patronymic")
+                     "family_base": "Fischer", "surname2": "",
+                     "patronymic": ""}
+    assert tuple(roles) == (*agreement.ROLES, "surname2", "patronymic")
     assert agreement.got_roles(parse("Mahathir bin Mohamad"))["patronymic"] == (
         "bin Mohamad")
+    two = Parser(policy=Policy(two_family_names=True))
+    assert agreement.got_roles(two.parse("Gabriel García Márquez"))[
+        "surname2"] == "Márquez"
 
 
 def _row(text: str, shape: int | None, **fields: str) -> dict[str, object]:

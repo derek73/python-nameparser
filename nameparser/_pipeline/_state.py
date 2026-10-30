@@ -122,6 +122,12 @@ PATRONYMIC_TAG = "vocab:patronymic"
 #: dropped from the published token like the kind tags above.
 ATTACHED_TAG = "vocab:attached"
 
+#: On each word of the second name unit rules/O6 reads a family as,
+#: written where O6 takes its word, and dropped from the published
+#: token like the kind tags above: `Reading.second_surname` carries it
+#: out (rules/R10, 3.0's 4d).
+SECOND_SURNAME_TAG = "vocab:second-surname"
+
 #: On a word of `Lexicon.titles_ambiguous` whichever way classify read
 #: it (rules/H9): read as a title it carries "vocab:title" too, read
 #: out of the title it carries this alone, which is how assign finds
@@ -294,7 +300,9 @@ class ParseState:
     post_rules -> roles again (a delimited member S13 settles becomes
     the suffix, #810), the folded-middle tag on what O3 folds and the
     no-comma attachment joins, with the attached tag on the latter,
-    and the ambiguity P6's no-comma attachment
+    the second-surname tag on the words of the family's second unit
+    where O6 reads two (rules/R10), and the ambiguity P6's no-comma
+    attachment
     reports (#467) and SUFFIX_OR_NICKNAME on a member it leaves a
     nickname.
     Ambiguities are recorded by every stage that DECIDES one --
