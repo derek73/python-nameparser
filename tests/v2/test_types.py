@@ -334,6 +334,9 @@ def test_derived_views_filter_on_stable_particle_tag() -> None:
     ("John Smith, III; MD", "III;", "MD"),
     ("John Smith, V; MD", "V;", "MD"),
     ("John Smith, MD; Jr.", "Jr.", "MD;"),
+    # before the first comma C10 reads the delimiter as the word's, so
+    # the word is no generation word there (rules/R8's Accepted)
+    ("John Smith Jr.; MD", "", "Jr.; MD"),
     # an agnomen is a generation; an honorific, a credential
     ("Pedro Alves Filho", "Filho", ""),
     ("王小明先生", "", "先生"),

@@ -41,6 +41,11 @@
   "John Smith, Jr. and MD"    →  generation="Jr. and"
   ```
 - A suffix word with no reading, one that `replace()` or `Parser.revise()` wrote or in a name unpickled from 2.x, is in the credentials whatever it is, since nothing records what it was read as.
+- A word with a delimiter glued on keeps it in the view, as the suffix keeps it (C10), so the view can end in the delimiter; and before the first comma, where C10 reads the delimiter as part of the word, a generation word with one glued on is not read as the generation word and is in the credentials.
+  ```
+  "John Smith, Jr.; MD"       →  generation="Jr.;"
+  "John Smith Jr.; MD"        →  credentials="Jr.; MD"
+  ```
 - A name word in the suffix, one a run took in by where it stands, is in the credentials, the catch-all.
   ```
   "Smith, Jr., John"          →  credentials="John"

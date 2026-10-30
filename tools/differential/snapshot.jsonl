@@ -1741,6 +1741,7 @@
 {"name": "John Smith Jr., PhD", "given": "John", "family": "Smith", "suffix": "Jr., PhD", "initials": "J. S.", "generation": "Jr.", "credentials": "PhD"}
 {"name": "John Smith Jr., Sir AD", "title": "Sir", "given": "John", "family": "Smith", "suffix": "Jr., AD", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "J. S.", "generation": "Jr.", "credentials": "AD"}
 {"name": "John Smith Jr., þingmaður", "given": "John", "family": "Smith", "suffix": "Jr., þingmaður", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "J. S.", "capitalized_force": "John Smith Jr., Þingmaður", "generation": "Jr.", "credentials": "þingmaður"}
+{"name": "John Smith Jr.; MD", "given": "John", "family": "Smith", "suffix": "Jr.; MD", "initials": "J. S."}
 {"name": "John Smith K.C.", "given": "John", "middle": "Smith", "family": "K.C.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "J. S. K."}
 {"name": "John Smith M. D.", "given": "John", "middle": "Smith M.", "family": "D.", "initials": "J. S. M. D."}
 {"name": "John Smith M.A.", "given": "John", "family": "Smith", "suffix": "M.A.", "initials": "J. S."}
@@ -1836,6 +1837,7 @@
 {"name": "John Smith, Jr., Lt.Gov.", "title": "Lt.Gov.", "given": "John", "family": "Smith", "suffix": "Jr.", "initials": "J. S.", "generation": "Jr."}
 {"name": "John Smith, Jr., abdul Dr. Smith", "title": "Dr.", "given": "John", "family": "Smith", "suffix": "Jr., abdul Smith", "ambiguities": ["COMMA_STRUCTURE"], "initials": "J. S.", "capitalized_force": "Dr. John Smith, Jr., Abdul Smith", "generation": "Jr.", "credentials": "abdul Smith"}
 {"name": "John Smith, Jr., van der Berg Prof.", "title": "Prof.", "given": "John", "family": "Smith", "suffix": "Jr., van der Berg", "ambiguities": ["COMMA_STRUCTURE"], "initials": "J. S.", "capitalized_force": "Prof. John Smith, Jr., Van Der Berg", "generation": "Jr.", "credentials": "van der Berg"}
+{"name": "John Smith, Jr.; MD", "given": "John", "family": "Smith", "suffix": "Jr.; MD", "initials": "J. S.", "generation": "Jr.;", "credentials": "MD"}
 {"name": "John Smith, LEED AP", "given": "John", "family": "Smith", "suffix": "LEED AP", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "J. S."}
 {"name": "John Smith, M. D.", "given": "M.", "middle": "D.", "family": "John Smith", "initials": "M. D. J. S."}
 {"name": "John Smith, M.D./Ph.D.", "given": "John", "family": "Smith", "suffix": "M.D./Ph.D.", "initials": "J. S."}
