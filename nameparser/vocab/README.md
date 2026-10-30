@@ -229,7 +229,7 @@ A name reading may stand without a count, as a particle kept possibly given unde
 
 ## Exclusions
 
-An exclusion records that a reading was considered and refused, with the reason, so that the next person to propose it meets the reason as a build error instead of rediscovering the evidence.
+An exclusion records that a reading was considered and refused, with the reason, so that the next person to propose it meets the reason as a build error instead of rediscovering the evidence. It means the reading is wrong in every language: a reading right in its own language and wrong only as a default, because another language collides with it, is written `default = false` instead ([Properties](#properties)), for a choice of that language to turn on, as cs `ml` is.
 
 - **A refused reading** is a word-level table: `[word.excluded.generation]` with a `reason`, or `excluded = { generation = "the reason" }`. It refuses that kind in every file, and also every other kind that compiles into the same set, so a generic `suffix = {}` cannot put back a refused `generation`. A category name refuses the whole category (`excluded = { suffix = "..." }`). A `name` kind refuses only itself.
 - **A refused property** sits on a reading the word keeps: `[word.honorific.excluded]` with `attached = "the reason"`. It refuses any value of that property other than the one it takes unwritten, on any reading of the category; a refused `cased`, which belongs to the word, on any reading of the word.

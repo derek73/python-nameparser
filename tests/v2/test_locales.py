@@ -1154,8 +1154,9 @@ def test_the_choice_gate_fails_when_its_surface_misses_a_word() -> None:
 # read once its language is chosen (decisions/vocabulary-model's
 # 2026-10-29 #753, phase 3c entry). The sweep is every such
 # reading in the index, so a later one joins it unlisted; a one-letter
-# word (es `h`, de `i`) is left out, the initial it spells taking a
-# bare letter first (the initial veto, `_vocab.is_suffix_strict`).
+# word (es `h`, de `i`) is left out, the initial veto
+# (`_vocab.is_suffix_strict`) taking it written with its period:
+# `Anna Novak h.` reads family `h.` under es, a bare `h` suffix `h`.
 _OFF_GENERATIONS = sorted(
     (r.text, r.tag) for r in _ri.index()
     if r.kind == "generation" and not r.on_by_default and len(r.text) > 1)
