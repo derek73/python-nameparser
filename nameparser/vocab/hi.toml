@@ -6,11 +6,11 @@ excluded = { salutation = { reason = "the transliteration of श्री collid
 
 [[word]]
 text = "shrimati"
-salutation = { default = false, gender = "f", issue = [345, 753], expands = "Shrimati, Mrs., the romanized श्रीमती", after_given = true, note = "borne as a given name: ORCID's given box 3 records, likely 2 people, the word alone in the box in 2 (Shrimati Shetty, which reads title Shrimati and no given under the pack) (2026-10-30); the salutation in all 16 nepal-candidates romanizations, by their Devanagari; weighed in decisions/vocabulary-model's phase 3e entry" }
+salutation = { default = false, gender = "f", issue = [345, 753], expands = "Shrimati, Mrs., the romanized श्रीमती", after_given = true, note = "borne as a given name: ORCID's given box 3 records, likely 2 people, the word alone in the box in 2, likely 1 person (Shrimati Shetty, which reads title Shrimati and no given under the pack) (2026-10-30); the salutation in all 16 nepal-candidates romanizations, by their Devanagari; weighed in decisions/vocabulary-model's phase 3e entry" }
 
 [[word]]
 text = "smt"
-salutation = { default = false, gender = "f", issue = [345, 753], same_as = "shrimati", expands = "Smt., Shrimati abbreviated", after_given = true, note = "ORCID's given box 19 people, the salutation typed in (Smt. Rekha, Smt. Seema Sharma) (2026-10-30); NPPES 4 providers write SMT as a credential, read as the title after a comma under the pack (Jane Doe, SMT), an accepted cost" }
+salutation = { default = false, gender = "f", issue = [345, 753], same_as = "shrimati", expands = "Smt., Shrimati abbreviated", after_given = true, note = "ORCID's given box 19 people, the salutation typed in (Smt. Rekha, Smt. Seema Sharma) (2026-10-30); NPPES 4 providers write SMT as a credential, read as the title under the pack in any comma part holding it (Jane Doe, SMT; Jane Doe, PhD SMT), an accepted cost" }
 
 [[word]]
 text = "shriyut"
