@@ -46,6 +46,15 @@ def _pack_modules() -> dict[str, ModuleType]:
 
 _PACKS = _pack_modules()
 
+
+def _is_vocabulary_pack(pack: Locale) -> bool:
+    """Whether `pack` is nothing but its choice of languages, so that its
+    deviation surface is derived (mechanisms.md#LOCALE-PACKS-PURE-DATA)."""
+    return (bool(pack.languages) and pack.lexicon == Lexicon.empty()
+            and pack.policy == PolicyPatch())
+
+
+
 # ja is the one pack whose behavior is not pack data: it activates
 # segmentation and supplies nothing to segment WITH, so every parse
 # through it needs the optional nameparser[ja] segmenter. Probed once
@@ -103,8 +112,10 @@ def test_locales_module_attribute_access() -> None:
 
 def test_locales_get_and_available() -> None:
     assert locales.get("ru") is locales.RU
-    assert set(locales.available()) == {"ja", "ne", "ru", "tr_az", "zh"}
-    with pytest.raises(KeyError, match="ja, ne, ru, tr_az, zh"):
+    assert set(locales.available()) == {
+        "cs", "hr", "ja", "ne", "ru", "sk", "sl", "tr_az", "zh"}
+    with pytest.raises(KeyError,
+                       match="cs, hr, ja, ne, ru, sk, sl, tr_az, zh"):
         locales.get("xx")
     # the segmenter FACTORY is not a locale: it is an ordinary function
     # on the package, so it must not appear among the codes
@@ -1001,6 +1012,65 @@ _ROTATORS["ja"] = [
     "佐々木健",      # the iteration mark 々 inside a top-20 surname
 ]
 
+# The choice packs (3f): one name per word of the derived surface, each
+# in a shape the default reads differently, so the gate's positive side
+# reaches every word the choice changes (held by
+# test_choice_rotators_cover_every_changed_word below).
+_ROTATORS["cs"] = [
+    "BcA Tomáš Krejčí",              # bca
+    "Jan Novák, JUDr",               # judr, bare after a comma
+    "MDDr Eva Dvořáková",            # mddr
+    "MgA Petra Malá",                # mga
+    "MUDr Jan Novák",                # mudr
+    "MVDr Petr Svoboda",             # mvdr
+    "PaedDr Jana Králová",           # paeddr
+    "PharmDr Jana Králová",          # pharmdr
+    "Jan Novák PhDr.",               # phdr, dotted at the end
+    "Novák, RNDr",                   # rndr, after a one-word head
+    "ThDr Jan Hus",                  # thdr
+    "Jan Novák, DrSc",               # drsc, a credential after a comma
+    "Pan Jan Novák",                 # pan
+    "Jana Nováková roz. Svobodová",  # roz, the birth marker
+    "Jiří Dienstbier ml.",           # ml
+    "Jiří Dienstbier st.",           # st
+]
+_ROTATORS["sk"] = [
+    "Jozef Mrkva, ArtD.",            # artd, a credential after a comma
+    "Jozef Mrkva, JUDr",             # judr
+    "MDDr Eva Kováčová",             # mddr
+    "MUDr Jozef Mrkva",              # mudr
+    "MVDr Peter Horváth",            # mvdr
+    "PaedDr Jana Kováčová",          # paeddr
+    "PharmDr Jana Kováčová",         # pharmdr
+    "Jozef Mrkva PhDr.",             # phdr
+    "Mrkva, RNDr",                   # rndr
+    "ThDr Ján Chryzostom",           # thdr
+    "Jozef Mrkva, DrSc",             # drsc
+    "Ján Mrkva ml.",                 # ml
+    "Ján Mrkva st.",                 # st
+]
+_ROTATORS["sl"] = [
+    "Janez Novak ml.",               # ml
+    "Janez Novak st.",               # st
+]
+_ROTATORS["hr"] = [
+    "Ivan Horvat ml.",               # ml
+    "Ivan Horvat st.",               # st
+]
+
+
+@pytest.mark.parametrize("code", sorted(c for c in _PACKS
+                                        if _is_vocabulary_pack(
+                                            locales.get(c))))
+def test_choice_rotators_cover_every_changed_word(code: str) -> None:
+    # the choice packs' counterpart of the marker-branch sweep below:
+    # a word joining a choice's surface fails here until a rotator
+    # name holds it, so the gate's positive side cannot thin out
+    surface = _ri.changed_words(_ri.selected(locales.get(code).languages))
+    missing = sorted(w for w in surface if not any(
+        _surface_deviates(frozenset({w}))(name) for name in _ROTATORS[code]))
+    assert surface and missing == []
+
 
 def _marker_regexes(module: ModuleType) -> list[re.Pattern]:
     return [v for v in vars(module).values() if isinstance(v, re.Pattern)]
@@ -1046,6 +1116,10 @@ def test_registry_is_the_pack_contract() -> None:
             assert not hasattr(module, "DEVIATES"), (
                 f"vocabulary pack {code!r} declares DEVIATES by hand; its "
                 f"surface is derived from its choice")
+            # an empty surface would make its gate pass by parsing
+            # nothing differently
+            assert _ri.changed_words(_ri.selected(pack.languages)), (
+                f"vocabulary pack {code!r} changes no word")
             continue
         assert callable(getattr(module, "DEVIATES", None)), (
             f"pack {code!r} does not declare DEVIATES")
@@ -1144,9 +1218,17 @@ def test_non_interference_all_packs_combined() -> None:
         with pytest.warns(UserWarning, match="ja_segmenter"):
             packed = parser_for(
                 *(locales.get(code) for code in sorted(_PACKS)))
+    # the packs' languages union into ONE choice, whose surface is
+    # derived from the union rather than from each pack's own; every
+    # hand DEVIATES is or'd in whatever the pack, since a pack with a
+    # choice beside a fragment or a patch carries both
+    chosen = frozenset().union(*(locales.get(c).languages for c in _PACKS))
+    choice_deviates = _surface_deviates(
+        _ri.changed_words(_ri.selected(chosen)))
+    hand = [m.DEVIATES for m in _PACKS.values() if hasattr(m, "DEVIATES")]
     declared = _assert_non_interference(
         packed,
-        lambda n: any(_deviates(code)(n) for code in _PACKS),
+        lambda n: choice_deviates(n) or any(d(n) for d in hand),
         corpus)
     assert declared >= len(all_rotators)
 
@@ -1191,13 +1273,6 @@ def _surface_deviates(surface: frozenset[str]) -> Callable[[str], bool]:
                 return True
         return bool(words & surface) or any(w in folded for w in wide)
     return deviates
-
-
-def _is_vocabulary_pack(pack: Locale) -> bool:
-    """Whether `pack` is nothing but its choice of languages, so that its
-    deviation surface is derived (mechanisms.md#LOCALE-PACKS-PURE-DATA)."""
-    return (bool(pack.languages) and pack.lexicon == Lexicon.empty()
-            and pack.policy == PolicyPatch())
 
 
 @functools.cache
@@ -1362,6 +1437,157 @@ def test_no_exclusion_is_pack_shaped_any_more() -> None:
     found = [f.name for f in sorted(vocab.glob("*.toml"))
              if "pack-shaped" in f.read_text(encoding="utf-8")]
     assert vocab.is_dir() and found == []
+
+
+# -- 3f: the Czech, Slovak, Slovenian and Croatian packs --
+#
+# Each row: a pack (or a choice of tags joined by +), an order, a name,
+# then (title, given, middle, family, suffix, maiden, ambiguity kinds)
+# under the default and under the pack. Every row but the last two
+# groups is a case the default refuses and the pack reads; those two
+# pin what choosing the language costs, and what it leaves alone
+# (decisions/vocabulary-model's 2026-10-30 #753, phase 3f entry).
+_ORDERS = {None: Policy(), "FAMILY_FIRST": Policy(name_order=FAMILY_FIRST),
+           "FAMILY_FIRST_GIVEN_LAST": Policy(
+               name_order=FAMILY_FIRST_GIVEN_LAST)}
+
+
+@pytest.mark.parametrize("tags, order, name, default, packed", [
+    # an academic title written bare, in each comma shape and order;
+    # its dotted spelling at the head is a title by its shape in both
+    ("cs", None, "MUDr Jan Novák",
+     ("", "MUDr", "Jan", "Novák", "", "", ()),
+     ("MUDr", "Jan", "", "Novák", "", "", ())),
+    ("cs", None, "Jan Novák, MUDr",
+     ("", "MUDr", "", "Jan Novák", "", "", ()),
+     ("MUDr", "Jan", "", "Novák", "", "", ())),
+    ("cs", None, "Novák, MUDr",
+     ("", "MUDr", "", "Novák", "", "", ()),
+     ("MUDr", "", "", "Novák", "", "", ())),
+    ("cs", None, ", MUDr Jan",
+     ("", "MUDr", "Jan", "", "", "", ()),
+     ("MUDr", "", "", "Jan", "", "", ())),
+    ("cs", "FAMILY_FIRST", "MUDr Novák Jan",
+     ("", "Novák", "Jan", "MUDr", "", "", ()),
+     ("MUDr", "Jan", "", "Novák", "", "", ())),
+    ("sk", None, "PhDr Jozef Mrkva",
+     ("", "PhDr", "Jozef", "Mrkva", "", "", ()),
+     ("PhDr", "Jozef", "", "Mrkva", "", "", ())),
+    # dotted at the end, a listed title there (rules/H5), in mixed case
+    # and in one case
+    ("cs", None, "Jan Novák MUDr.",
+     ("", "Jan", "Novák", "MUDr.", "", "", ()),
+     ("MUDr.", "Jan", "", "Novák", "", "", ())),
+    ("cs", None, "JAN NOVÁK MUDR.",
+     ("", "JAN", "NOVÁK", "MUDR.", "", "", ()),
+     ("MUDR.", "JAN", "", "NOVÁK", "", "", ())),
+    # the post-nominals: a credential after a comma, where the default
+    # reverses the bare one and takes the dotted one for a title
+    ("cs", None, "Jan Novák, DrSc",
+     ("", "DrSc", "", "Jan Novák", "", "", ()),
+     ("", "Jan", "", "Novák", "DrSc", "", ())),
+    ("cs", None, "prof. MUDr. Jan Novák, DrSc.",
+     ("prof. MUDr. DrSc.", "Jan", "", "Novák", "", "", ()),
+     ("prof. MUDr.", "Jan", "", "Novák", "DrSc.", "", ())),
+    ("sk", None, "Jozef Mrkva, ArtD.",
+     ("ArtD.", "Jozef", "", "Mrkva", "", "", ()),
+     ("", "Jozef", "", "Mrkva", "ArtD.", "", ())),
+    # the salutation and the birth marker, each converted from an
+    # exclusion; pl's pan with cs's
+    ("cs", None, "Pan Jan Novák",
+     ("", "Pan", "Jan", "Novák", "", "", ()),
+     ("Pan", "Jan", "", "Novák", "", "", ())),
+    ("pl", None, "Pan Jan Kowalski",
+     ("", "Pan", "Jan", "Kowalski", "", "", ()),
+     ("Pan", "Jan", "", "Kowalski", "", "", ())),
+    ("cs", None, "Jana Nováková roz. Svobodová",
+     ("", "Jana", "Nováková roz.", "Svobodová", "", "", ()),
+     ("", "Jana", "", "Nováková", "", "Svobodová", ())),
+    # the generations 3c wrote, turned on by each language's pack; the
+    # gated st reports the fork, the ungated ml does not
+    ("sl", None, "Janez Novak st.",
+     ("st.", "Janez", "", "Novak", "", "", ()),
+     ("", "Janez", "", "Novak", "st.", "", ("SUFFIX_OR_NAME",))),
+    ("hr", None, "Ivan Horvat ml.",
+     ("", "Ivan", "Horvat", "ml.", "", "", ()),
+     ("", "Ivan", "", "Horvat", "ml.", "", ())),
+    # behind a title-particle head after a family comma, the trailing
+    # peel takes ml.; the gated st. stays in the given part unreported,
+    # as the default reads fils there (Dumas, Freiherr von Berg fils)
+    ("cs", None, "Novák, Freiherr von Berg ml.",
+     ("Freiherr", "von Berg ml.", "", "Novák", "", "", ()),
+     ("Freiherr", "von Berg", "", "Novák", "ml.", "", ())),
+    # one word before a family comma: the dotted st. is a title by H2's
+    # shape, reported suffix-or-name as the default reports Dumas, fils.;
+    # the ungated ml. is the suffix
+    ("cs", None, "Novák, st.",
+     ("st.", "", "", "Novák", "", "", ()),
+     ("st.", "", "", "Novák", "", "", ("SUFFIX_OR_NAME",))),
+    ("cs", None, "Novák, ml.",
+     ("ml.", "", "", "Novák", "", "", ()),
+     ("", "", "", "Novák", "ml.", "", ())),
+    ("cs", None, "Novák, Freiherr von Berg st.",
+     ("Freiherr", "von Berg", "", "st. Novák", "", "",
+      ("PARTICLE_OR_GIVEN",)),
+     ("Freiherr", "von Berg st.", "", "Novák", "", "", ())),
+    # the costs: Pan the surname, Roz the given name, and the Saint
+    # readings of st, which a choice of fr keeps
+    ("cs", None, "Smith, Pan",
+     ("", "Pan", "", "Smith", "", "", ()),
+     ("Pan", "", "", "Smith", "", "", ())),
+    ("cs", None, "Pan Wei",
+     ("", "Pan", "", "Wei", "", "", ()),
+     ("Pan", "", "", "Wei", "", "", ())),
+    ("cs", None, "Rosalind Roz Smith",
+     ("", "Rosalind", "Roz", "Smith", "", "", ()),
+     ("", "", "", "Rosalind", "", "Smith", ())),
+    ("cs", None, "St Clair Smith",
+     ("St", "Clair", "", "Smith", "", "", ()),
+     ("", "St", "Clair", "Smith", "", "", ())),
+    ("cs+fr", None, "St Clair Smith",
+     ("St", "Clair", "", "Smith", "", "", ()),
+     ("St", "Clair", "", "Smith", "", "", ())),
+    # left alone: a bare title ending the given part is a name word
+    # (rules/H5), the title Mgr was one already, and BC, excluded for
+    # the US credential it spells, stays one (cs.toml's bc)
+    ("cs", "FAMILY_FIRST_GIVEN_LAST", "Novák, Jan MUDr",
+     ("", "Jan", "MUDr", "Novák", "", "", ()),
+     ("", "Jan", "MUDr", "Novák", "", "", ())),
+    ("cs", None, "Mgr Jana Nováková",
+     ("Mgr", "Jana", "", "Nováková", "", "", ()),
+     ("Mgr", "Jana", "", "Nováková", "", "", ())),
+    ("cs", None, "Lora L. Beebe, PhD, PMHNP, BC",
+     ("", "Lora", "L.", "Beebe", "PhD, PMHNP, BC", "",
+      ("COMMA_STRUCTURE", "COMMA_STRUCTURE")),
+     ("", "Lora", "L.", "Beebe", "PhD, PMHNP, BC", "",
+      ("COMMA_STRUCTURE", "COMMA_STRUCTURE"))),
+])
+def test_the_west_and_south_slavic_packs_read_what_the_default_refuses(
+        tags: str, order: str | None, name: str,
+        default: tuple[object, ...], packed: tuple[object, ...]) -> None:
+    base = Parser(policy=_ORDERS[order])
+    chosen = frozenset(tags.split("+"))
+    # a shipped pack where one is registered; pl, and two tags, as a
+    # choice of languages of the same shape
+    pack = (locales.get(tags) if tags in locales.available() else
+            Locale(code="choice", lexicon=Lexicon.empty(), languages=chosen))
+    assert pack.languages == chosen
+
+    def fields(n: ParsedName) -> tuple[object, ...]:
+        return (n.title, n.given, n.middle, n.family, n.suffix, n.maiden,
+                tuple(a.kind.name for a in n.ambiguities))
+    assert (fields(base.parse(name)),
+            fields(parser_for(pack, base=base).parse(name))) == (
+        default, packed)
+
+
+def test_the_west_and_south_slavic_packs_repair_their_titles_case() -> None:
+    # the readings' cased masks join with them, so capitalized() writes
+    # the title as Czech does under the pack and leaves it otherwise
+    cs = parser_for(locales.CS)
+    assert str(cs.capitalized(cs.parse("mudr. jan novák"))) == (
+        "MUDr. Jan Novák")
+    assert str(parse("mudr. jan novák").capitalized()) == "Mudr. Jan Novák"
 
 
 # -- #269: non-Latin default vocabulary (Cyrillic, Greek, Arabic,

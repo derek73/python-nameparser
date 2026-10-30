@@ -2,7 +2,7 @@ schema = 1
 
 [[word]]
 text = "pan"
-excluded = { salutation = { reason = "Polish and Czech Mr., and the Chinese surname Pan, which leads", issue = 606, decided = 2026-10-04 } }
+salutation = { default = false, issue = [606, 753], gender = "m", note = "Polish and Czech Mr., off by default because Pan is the Chinese surname 潘, which leads (US Census 2010 12,664 bearers); a Polish or Czech choice turns it on" }
 
 [[word]]
 text = "hrabia"

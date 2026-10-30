@@ -20,6 +20,7 @@
 "Pedro Alves Neto, PhD"     →  suffix="Neto, PhD"
 "Pedro Alves Neto Júnior"   →  suffix="Neto Júnior"
 "Alexandre Dumas fils"      →  suffix="fils"
+"Jiří Dienstbier st."  [cs]  →  suffix="st."
 "Alves, Pedro Neto"         →  suffix="Neto"
 "Ana Neto"                  →  family="Neto"  · boundary
 "Ana Neto"                  →  ambiguities=("suffix-or-name",)  · boundary

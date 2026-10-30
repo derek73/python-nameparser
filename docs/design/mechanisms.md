@@ -376,7 +376,7 @@ print(len(MAIDEN_MARKERS), 'members ->', len(cls), 'structural classes')"
 
 ### FORCE-A-DECISION-TABLE — no silent defaults on growth
 
-**Contract statement.** Where adding an enum member or a file must not silently inherit a default, a local table's key set is asserted equal to the population, so growth fails the suite until someone decides — against a local table, not the constant under test. Exemplar: tests/v2/pipeline/test_vocab.py's per-script initials check; reused for the pack registry (test_registry_is_the_pack_contract: every registered pack must ship DEVIATES and its rotator list or the suite fails structurally — decisions/deviates-registry). Known gap it exposes: DEFAULT_SCRIPT_ORDERS has no such guard.
+**Contract statement.** Where adding an enum member or a file must not silently inherit a default, a local table's key set is asserted equal to the population, so growth fails the suite until someone decides — against a local table, not the constant under test. Exemplar: tests/v2/pipeline/test_vocab.py's per-script initials check; reused for the pack registry (test_registry_is_the_pack_contract: every registered policy or segmentation pack must ship DEVIATES, a pack that is nothing but a choice of languages must not, its surface being derived, and its choice must change a word, a choice beside a fragment or a patch declares only the non-choice part, and every pack needs its rotator list, or the suite fails structurally — decisions/deviates-registry). Known gap it exposes: DEFAULT_SCRIPT_ORDERS has no such guard.
 
 ### SELF-EXPIRING-GUARD — a decline keyed to a measured defect
 
