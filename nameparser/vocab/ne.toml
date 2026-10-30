@@ -9,3 +9,15 @@ text = "जेआर"
 [word.excluded.generation]
 reason = "rare, and also JR"
 issue = 679
+
+[[word]]
+text = "guru"
+given = { default = false, note = "a Nepali given name as well as a title (hi.toml, bn.toml, pa.toml): nepal-candidates holds 45 pairs whose romanization writes it (Guru 44, GURU 1), and under a Nepali choice 42 of those names read it as the given name, the default reading it as the title (tools/name_usage.py and snapshot.py --local nepal-candidates --languages ne, 2026-10-30); off by default, where a title is the commoner reading of the word, and turned on by a Nepali choice, which makes the title one only inside a title phrase (rules/H9)" }
+
+[[word]]
+text = "गुरु"
+given = { default = false, note = "the Devanagari spelling of guru, a Nepali given name as well as a title (hi.toml): nepal-candidates holds 45 pairs writing it, 41 of them read as the given name under a Nepali choice where the default reads the title (2026-10-30); off by default and turned on by a Nepali choice, as guru is" }
+
+[[word]]
+text = "श्री"
+given = { default = false, note = "a Nepali given-name element (Shree, Shri) as well as the salutation (hi.toml, mr.toml): nepal-candidates holds 220 pairs writing it (श्री 219, श्री. 1), 211 of which go from reading apart to reading alike under a Nepali choice, the romanization writing it as a name word (Shree in 191 of them, Shri in 6) (local_corpora.py alike nepal-candidates --languages ne, 2026-10-30); Wikidata 1 given (2026-10-24); off by default, where the salutation is the commoner reading, and turned on by a Nepali choice, which makes the title one only inside a title phrase (rules/H9)" }

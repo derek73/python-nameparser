@@ -19,7 +19,7 @@ from nameparser import _reading_index as _ri
 from nameparser._lexicon import _VOCAB_FIELDS, Lexicon
 from nameparser._policy import (
     FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, UNSET, PatronymicRule, Policy,
-    Script, _SCRIPT_RANGES,
+    PolicyPatch, Script, _SCRIPT_RANGES,
 )
 from nameparser._types import AmbiguityKind
 from nameparser.locales import ja as _ja
@@ -103,8 +103,8 @@ def test_locales_module_attribute_access() -> None:
 
 def test_locales_get_and_available() -> None:
     assert locales.get("ru") is locales.RU
-    assert set(locales.available()) == {"ja", "ru", "tr_az", "zh"}
-    with pytest.raises(KeyError, match="ja, ru, tr_az, zh"):
+    assert set(locales.available()) == {"ja", "ne", "ru", "tr_az", "zh"}
+    with pytest.raises(KeyError, match="ja, ne, ru, tr_az, zh"):
         locales.get("xx")
     # the segmenter FACTORY is not a locale: it is an ordinary function
     # on the package, so it must not appear among the codes
@@ -117,6 +117,32 @@ def test_tr_az_pack_contents() -> None:
     assert locales.TR_AZ.policy.patronymic_rules == frozenset(
         {PatronymicRule.TURKIC})
     assert locales.TR_AZ.lexicon == Lexicon.empty()
+
+
+def test_ne_pack_contents() -> None:
+    # 3d: the first vocabulary pack, nothing but its choice; what the
+    # choice changes is exactly the three given readings ne.toml writes
+    # `default = false`, each also a title in another file
+    from nameparser._reading_index import changed_words, selected
+    assert locales.NE == Locale(code="ne", lexicon=Lexicon.empty(),
+                                languages=frozenset({"ne"}))
+    assert changed_words(selected(locales.NE.languages)) == {
+        "guru", "गुरु", "श्री"}
+
+
+def test_ne_reads_the_word_as_given_at_the_head_and_title_in_a_phrase() -> None:
+    ne = _require_packed("ne")
+    assert parse("श्री कृष्ण श्रेष्ठ").title == "श्री"
+    assert (ne.parse("श्री कृष्ण श्रेष्ठ").given,
+            ne.parse("श्री कृष्ण श्रेष्ठ").title) == ("श्री", "")
+    # behind a listed title the word no longer joins the title run
+    assert ne.parse("Mr. Guru Sharma").as_dict() == parse(
+        "Mr. Guru Sharma").as_dict() | {
+        "title": "Mr.", "given": "Guru", "family": "Sharma"}
+    # the title reading stands: inside a title phrase (rules/H9) and
+    # written with its period at the head (rules/H2's shape), still a title
+    assert ne.parse("His Holiness Guru Prasad").title == "His Holiness Guru"
+    assert ne.parse("Guru. Prasad Sharma").title == "Guru."
 
 
 def test_zh_pack_contents() -> None:
@@ -947,6 +973,18 @@ _ROTATORS["zh"] = [
     "諸葛亮",        # traditional-script compound
     "萧红",          # the 肖/萧 merger's second simplified spelling
 ]
+# ne is a vocabulary pack: its rotators cover each word it turns on, in
+# each script it is written in, at the head of the name, behind a
+# listed title and after a family comma -- the positions where the
+# default reads the word as a title and the pack as the given name.
+_ROTATORS["ne"] = [
+    "श्री कृष्ण श्रेष्ठ",    # श्री at the head
+    "श्रेष्ठ, श्री कृष्ण",   # श्री after a family comma
+    "गुरु प्रसाद शर्मा",     # गुरु at the head
+    "Guru Prasad Sharma",   # guru at the head
+    "Mr. Guru Sharma",      # guru behind a listed title
+    "Sharma, Guru Prasad",  # guru after a family comma
+]
 # ja has no marker regexes and no vocabulary either: its rotators cover
 # the shapes only the pack PLUS its segmenter changes. Every row is
 # UNSPACED on purpose -- a spaced kana-licensed name (高橋 みなみ) now
@@ -999,6 +1037,15 @@ def test_registry_is_the_pack_contract() -> None:
     # than a reviewer remembering to extend the gate by hand.
     assert set(_PACKS) == set(locales.available())
     for code, module in _PACKS.items():
+        # a vocabulary pack's surface is derived, and only a pack that is
+        # nothing but its choice may leave DEVIATES out: a fragment or a
+        # patch beside the choice deviates where no derived word stands
+        pack = locales.get(code)
+        if _is_vocabulary_pack(pack):
+            assert getattr(module, "DEVIATES", None) is None, (
+                f"vocabulary pack {code!r} declares DEVIATES by hand; its "
+                f"surface is derived from its choice")
+            continue
         assert callable(getattr(module, "DEVIATES", None)), (
             f"pack {code!r} does not declare DEVIATES")
         # _MARKER_REGEX_PACKS selects on module-level patterns, so a
@@ -1062,7 +1109,7 @@ def test_rotator_deviates_and_declares(code: str, name: str) -> None:
     # per-name proof behind the gate's declared-count floor below
     packed = _require_packed(code)
     assert packed.parse(name).as_dict() != _default_parse(name)
-    assert _PACKS[code].DEVIATES(name)
+    assert _deviates(code)(name)
 
 
 @pytest.mark.parametrize("code", sorted(_PACKS))
@@ -1070,7 +1117,7 @@ def test_non_interference_each_pack(code: str) -> None:
     packed = _require_packed(code)
     corpus = _default_corpus() + _ROTATORS[code]
     declared = _assert_non_interference(
-        packed, _PACKS[code].DEVIATES, corpus)
+        packed, _deviates(code), corpus)
     # the positive side: every synthetic rotator (plus the corpus's own
     # in-scope names) must actually flow through the declared branch
     assert declared >= len(_ROTATORS[code])
@@ -1098,7 +1145,7 @@ def test_non_interference_all_packs_combined() -> None:
                 *(locales.get(code) for code in sorted(_PACKS)))
     declared = _assert_non_interference(
         packed,
-        lambda n: any(m.DEVIATES(n) for m in _PACKS.values()),
+        lambda n: any(_deviates(code)(n) for code in _PACKS),
         corpus)
     assert declared >= len(all_rotators)
 
@@ -1108,8 +1155,9 @@ def test_non_interference_all_packs_combined() -> None:
 # A vocabulary choice's deviation surface is DERIVED, not declared:
 # _reading_index.changed_words gives the words whose compiled readings
 # the choice changes, and a name holding none of them must parse as the
-# default does (the RFC's "Measuring a pack"). No language pack ships
-# before 3d, so the gate runs over choices of the shipped files' tags
+# default does (the RFC's "Measuring a pack"). The shipped vocabulary
+# packs (NE, since 3d) run through the registry's gate above, its
+# surface derived by _deviates; this gate runs over choices of the shipped files' tags
 # that move something, each standing for a kind of effect: pt prefer
 # and the shape clash of `e`, en prefer over several languages, cs and
 # de turning a reading on (de's `i`, against ca's and pl's conjunction,
@@ -1141,6 +1189,25 @@ def _surface_deviates(surface: frozenset[str]) -> Callable[[str], bool]:
             if elided and piece.startswith(elided):
                 return True
         return bool(words & surface) or any(w in folded for w in wide)
+    return deviates
+
+
+def _is_vocabulary_pack(pack: Locale) -> bool:
+    """Whether `pack` is nothing but its choice of languages, so that its
+    deviation surface is derived (mechanisms.md#LOCALE-PACKS-PURE-DATA)."""
+    return (bool(pack.languages) and pack.lexicon == Lexicon.empty()
+            and pack.policy == PolicyPatch())
+
+
+@functools.cache
+def _deviates(code: str) -> Callable[[str], bool]:
+    """The registered pack `code`'s deviation predicate: its DEVIATES, or
+    a vocabulary pack's surface derived from its choice."""
+    pack = locales.get(code)
+    if _is_vocabulary_pack(pack):
+        from nameparser._reading_index import changed_words, selected
+        return _surface_deviates(changed_words(selected(pack.languages)))
+    deviates: Callable[[str], bool] = _PACKS[code].DEVIATES
     return deviates
 
 

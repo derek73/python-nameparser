@@ -305,6 +305,141 @@
   },
   "text": "一郎安藤"
  },
+ "ne/foreignFull/givenFirst": {
+  "family": {
+   "expected": "भोन ब्रुहल",
+   "got": "डिडिएस"
+  },
+  "family_base": {
+   "expected": "ब्रुहल",
+   "got": "डिडिएस"
+  },
+  "family_particles": {
+   "expected": "भोन",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "एडा कर्नेलिया सिजर मार्टिन",
+   "got": "एडा कर्नेलिया सिजर मार्टिन भोन ब्रुहल एमडी"
+  },
+  "suffix": {
+   "expected": "एमडी डिडिएस",
+   "got": ""
+  },
+  "text": "एडा कर्नेलिया सिजर मार्टिन भोन ब्रुहल एमडी डिडिएस"
+ },
+ "ne/foreignFull/sorting": {
+  "family": {
+   "expected": "ब्रुहल भोन",
+   "got": "ब्रुहल"
+  },
+  "family_particles": {
+   "expected": "भोन",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "एडा कर्नेलिया सिजर मार्टिन",
+   "got": "एडा कर्नेलिया सिजर मार्टिन भोन"
+  },
+  "text": "ब्रुहल, एडा कर्नेलिया सिजर मार्टिन भोन"
+ },
+ "ne/foreignFull/surnameFirst": {
+  "family": {
+   "expected": "भोन ब्रुहल",
+   "got": "भोन"
+  },
+  "family_base": {
+   "expected": "ब्रुहल",
+   "got": "भोन"
+  },
+  "family_particles": {
+   "expected": "भोन",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "एडा कर्नेलिया सिजर मार्टिन",
+   "got": "ब्रुहल एडा कर्नेलिया सिजर मार्टिन एमडी डिडिएस"
+  },
+  "suffix": {
+   "expected": "एमडी डिडिएस",
+   "got": ""
+  },
+  "text": "भोन ब्रुहल एडा कर्नेलिया सिजर मार्टिन एमडी डिडिएस"
+ },
+ "ne/foreignG/sorting": {
+  "family": {
+   "expected": "",
+   "got": "सिनबाद"
+  },
+  "given_names": {
+   "expected": "सिनबाद",
+   "got": ""
+  },
+  "text": "सिनबाद"
+ },
+ "ne/foreignG/surnameFirst": {
+  "family": {
+   "expected": "",
+   "got": "सिनबाद"
+  },
+  "given_names": {
+   "expected": "सिनबाद",
+   "got": ""
+  },
+  "text": "सिनबाद"
+ },
+ "ne/nativeFull/givenFirst": {
+  "family": {
+   "expected": "वुस्टर",
+   "got": "एमपी"
+  },
+  "family_base": {
+   "expected": "वुस्टर",
+   "got": "एमपी"
+  },
+  "given_names": {
+   "expected": "बर्ट्राम विलबरफोर्स हेनरी रोबर्ट",
+   "got": "बर्ट्राम विलबरफोर्स हेनरी रोबर्ट वुस्टर"
+  },
+  "suffix": {
+   "expected": "एमपी",
+   "got": ""
+  },
+  "text": "बर्ट्राम विलबरफोर्स हेनरी रोबर्ट वुस्टर एमपी"
+ },
+ "ne/nativeFull/surnameFirst": {
+  "given_names": {
+   "expected": "बर्ट्राम विलबरफोर्स हेनरी रोबर्ट",
+   "got": "बर्ट्राम विलबरफोर्स हेनरी रोबर्ट एमपी"
+  },
+  "suffix": {
+   "expected": "एमपी",
+   "got": ""
+  },
+  "text": "वुस्टर बर्ट्राम विलबरफोर्स हेनरी रोबर्ट एमपी"
+ },
+ "ne/nativeG/sorting": {
+  "family": {
+   "expected": "",
+   "got": "सुन्दर"
+  },
+  "given_names": {
+   "expected": "सुन्दर",
+   "got": ""
+  },
+  "text": "सुन्दर"
+ },
+ "ne/nativeG/surnameFirst": {
+  "family": {
+   "expected": "",
+   "got": "सुन्दर"
+  },
+  "given_names": {
+   "expected": "सुन्दर",
+   "got": ""
+  },
+  "text": "सुन्दर"
+ },
  "ru/foreignFull/givenFirst": {
   "family": {
    "expected": "фон Брюль",

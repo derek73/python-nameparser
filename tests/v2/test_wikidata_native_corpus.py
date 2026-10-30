@@ -467,10 +467,11 @@ def test_every_committed_text_is_in_its_strata_script() -> None:
         row["text"], native.LANGUAGES[_STRATA[row["label"]].language].script)]
 
 
-def test_every_han_and_kana_stratum_is_scored_under_its_pack() -> None:
-    # Both ways: a zh or ja stratum missing from the scorer's NATIVE_LABELS
-    # would never be parsed with its pack, and nothing else would notice.
-    packs = {"zh": "ZH", "ja": "JA"}
+def test_every_stratum_of_a_packs_language_is_scored_under_its_pack() -> None:
+    # Both ways: a zh, ja or ne stratum missing from the scorer's
+    # NATIVE_LABELS would never be parsed with its pack, and nothing else
+    # would notice. ne joined with locales.NE (3.0's phase 3d).
+    packs = {"zh": "ZH", "ja": "JA", "ne": "NE"}
     assert agreement.NATIVE_LABELS == {s.label: packs[s.language]
                                        for s in native.STRATA if s.language in packs}
 

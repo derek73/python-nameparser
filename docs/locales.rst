@@ -243,7 +243,7 @@ look one up dynamically by its lowercase code with
 .. doctest::
 
     >>> locales.available()
-    ('ja', 'ru', 'tr_az', 'zh')
+    ('ja', 'ne', 'ru', 'tr_az', 'zh')
     >>> locales.get("ru") is locales.RU
     True
 
@@ -268,6 +268,12 @@ Shipped packs
        (``山田太郎`` → family ``山田``, given ``太郎``). The pack ships
        no surname list, because no list divides a kanji name, and no
        order: a Japanese name already reads family-first by default.
+   * - ``ne``
+     - Nepali given names — chooses the language ``ne``, which reads
+       ``श्री``, ``गुरु`` and ``Guru`` as given names where the default
+       reads them as titles (``श्री कृष्ण श्रेष्ठ`` → given ``श्री``,
+       where the default gives title ``श्री``). Each stays a title
+       inside a title phrase (``His Holiness Guru Prasad``).
    * - ``ru``
      - East Slavic patronymic order — detects the formal
        family/given/patronymic shape (three name words, the last ending
@@ -295,11 +301,30 @@ Shipped packs
        (``安藤一郎`` → family ``安``), so use ``ja`` for Japanese data.
 
 ``ja``, ``ru`` and ``tr_az`` are policy-only — they carry no vocabulary
-of their own. ``zh`` is both halves at once: a surname list, plus the
+of their own. ``ne`` is a choice of languages and nothing else: the
+readings it turns on are in the default vocabulary's ``ne.toml``, off
+until a caller chooses Nepali. ``zh`` is both halves at once: a surname list, plus the
 one policy field that turns segmentation on for the script it covers. See
 :ref:`config-containers` for how that split (language vocabulary vs. behavior)
 is drawn, and `Contributing a pack to nameparser`_ for which half a
 new naming rule belongs in.
+
+Under ``ne`` a name opening with one of its words reads it as the given
+name, a listed title in front of it included:
+
+.. doctest::
+
+    >>> ne = parser_for(locales.NE)
+    >>> parse("Guru Prasad Sharma").title
+    'Guru'
+    >>> guru = ne.parse("Guru Prasad Sharma")
+    >>> guru.title, guru.given, guru.family
+    ('', 'Guru', 'Sharma')
+    >>> ne.parse("Mr. Guru Sharma").given
+    'Guru'
+
+The choice reads Hindi and Marathi names too, where ``श्री`` is
+usually the salutation (Mr.), so use it for Nepali data.
 
 .. warning::
 
@@ -451,7 +476,10 @@ by ``tests/v2/test_locales.py``:
    ``ru`` and ``tr_az`` do. ``nameparser/vocab/README.md``'s "Rules"
    section lists the keys. A rule the table does not list is a change
    to the parser, not to a pack.
-#. Declare a module-level ``DEVIATES(name)`` predicate: given a name
+#. Declare a module-level ``DEVIATES(name)`` predicate, unless the pack
+   is nothing but a choice of languages (``ne``), whose deviations are
+   derived from the words its choice changes and which declares none:
+   given a name
    string, return whether *this pack alone* might parse it differently
    from the default parser. Over-declaring is safe; under-declaring is
    not — when in doubt, ``DEVIATES`` should say yes. A pack whose
@@ -472,6 +500,9 @@ by ``tests/v2/test_locales.py``:
      the same weight by hand — the unspaced names the pack must split,
      one per shape of the vocabulary it ships: single surname, compound
      surname, and any spelling variant it means to cover.
+   - **By a choice of languages** (``ne``): a name for each word the
+     choice changes, in each script it is written in and each position
+     where the default reads it otherwise.
    - **With no vocabulary at all**: list the shapes its *segmenter* must
      divide instead, and mark the rotator tests to skip when the
      optional dependency is absent, so the contract tests still run
