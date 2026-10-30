@@ -8,6 +8,10 @@
    "expected": "Rafael",
    "got": "Rafael Viciana"
   },
+  "surname2": {
+   "expected": "Aráez",
+   "got": ""
+  },
   "text": "Rafael Viciana Aráez"
  },
  "Q101644147/patronymic-ru/sorting": {
@@ -25,6 +29,10 @@
   "given_names": {
    "expected": "Pompilio",
    "got": "Pompilio Gutiérrez"
+  },
+  "surname2": {
+   "expected": "Arango",
+   "got": ""
   },
   "text": "Pompilio Gutiérrez Arango"
  },
@@ -51,6 +59,10 @@
    "expected": "Román",
    "got": "Román García"
   },
+  "surname2": {
+   "expected": "Rodrigo",
+   "got": ""
+  },
   "text": "Román García Rodrigo"
  },
  "Q1042940/surname2-co/givenFirst": {
@@ -61,6 +73,10 @@
   "given_names": {
    "expected": "Carlos",
    "got": "Carlos Gaviria"
+  },
+  "surname2": {
+   "expected": "Díaz",
+   "got": ""
   },
   "text": "Carlos Gaviria Díaz"
  },
@@ -73,6 +89,10 @@
    "expected": "Carlos",
    "got": "Carlos Girón"
   },
+  "surname2": {
+   "expected": "Gutiérrez",
+   "got": ""
+  },
   "text": "Carlos Girón Gutiérrez"
  },
  "Q105208032/surname2-co/givenFirst": {
@@ -84,6 +104,10 @@
    "expected": "Julio Roberto",
    "got": "Julio Roberto Gómez"
   },
+  "surname2": {
+   "expected": "Esguerra",
+   "got": ""
+  },
   "text": "Julio Roberto Gómez Esguerra"
  },
  "Q106089866/patronymic-ri/givenFirst": {
@@ -93,6 +117,13 @@
   },
   "text": "Александр Андреевич Клюшников"
  },
+ "Q106272670/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "y Ruiz",
+   "got": ""
+  },
+  "text": "Juan Anglada y Ruiz"
+ },
  "Q106561769/surname2-co/givenFirst": {
   "family": {
    "expected": "Camacho Carrizosa",
@@ -101,6 +132,10 @@
   "given_names": {
    "expected": "José",
    "got": "José Camacho"
+  },
+  "surname2": {
+   "expected": "Carrizosa",
+   "got": ""
   },
   "text": "José Camacho Carrizosa"
  },
@@ -112,6 +147,10 @@
   "given_names": {
    "expected": "Libardo",
    "got": "Libardo López"
+  },
+  "surname2": {
+   "expected": "Gómez",
+   "got": ""
   },
   "text": "Libardo López Gómez"
  },
@@ -131,6 +170,10 @@
    "expected": "José Luis",
    "got": "José Luis Covarrubias"
   },
+  "surname2": {
+   "expected": "Garza",
+   "got": ""
+  },
   "text": "José Luis Covarrubias Garza"
  },
  "Q108111287/surname2-co/givenFirst": {
@@ -141,6 +184,10 @@
   "given_names": {
    "expected": "Gabriel Jaime",
    "got": "Gabriel Jaime Santamaría"
+  },
+  "surname2": {
+   "expected": "Montoya",
+   "got": ""
   },
   "text": "Gabriel Jaime Santamaría Montoya"
  },
@@ -159,6 +206,10 @@
   "given_names": {
    "expected": "Jesús Ángel",
    "got": "Jesús Ángel González"
+  },
+  "surname2": {
+   "expected": "Arias",
+   "got": ""
   },
   "text": "Jesús Ángel González Arias"
  },
@@ -241,6 +292,10 @@
    "expected": "Javier",
    "got": "Javier López"
   },
+  "surname2": {
+   "expected": "Díaz",
+   "got": ""
+  },
   "text": "Javier López Díaz"
  },
  "Q109831094/patronymic-su/givenFirst": {
@@ -259,6 +314,10 @@
    "expected": "Carlos",
    "got": "Carlos Sáenz"
   },
+  "surname2": {
+   "expected": "Echeverría",
+   "got": ""
+  },
   "text": "Carlos Sáenz Echeverría"
  },
  "Q110144093/surname2-co/givenFirst": {
@@ -269,6 +328,10 @@
   "given_names": {
    "expected": "Emilio",
    "got": "Emilio Murillo"
+  },
+  "surname2": {
+   "expected": "Chapull",
+   "got": ""
   },
   "text": "Emilio Murillo Chapull"
  },
@@ -288,6 +351,10 @@
    "expected": "Carlos",
    "got": "Carlos Uribe"
   },
+  "surname2": {
+   "expected": "Cordovez",
+   "got": ""
+  },
   "text": "Carlos Uribe Cordovez"
  },
  "Q110721389/patronymic-ru/sorting": {
@@ -296,6 +363,13 @@
    "got": ""
   },
   "text": "Зорин, Михаил Петрович"
+ },
+ "Q111020949/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "Fernández",
+   "got": ""
+  },
+  "text": "Juan Antonio de los Heros Fernández"
  },
  "Q111080043/patronymic-ru/givenFirst": {
   "patronymic": {
@@ -313,6 +387,10 @@
    "expected": "Teógenes",
    "got": "Teógenes Díaz-Corralejo"
   },
+  "surname2": {
+   "expected": "Fernández",
+   "got": ""
+  },
   "text": "Teógenes Díaz-Corralejo Fernández"
  },
  "Q111473046/surname2-es/givenFirst": {
@@ -323,6 +401,10 @@
   "given_names": {
    "expected": "María Paz",
    "got": "María Paz Alonso"
+  },
+  "surname2": {
+   "expected": "Romero",
+   "got": ""
   },
   "text": "María Paz Alonso Romero"
  },
@@ -335,6 +417,10 @@
    "expected": "Orlando",
    "got": "Orlando Arvizu"
   },
+  "surname2": {
+   "expected": "Lara",
+   "got": ""
+  },
   "text": "Orlando Arvizu Lara"
  },
  "Q111603657/surname2-mx/givenFirst": {
@@ -345,6 +431,10 @@
   "given_names": {
    "expected": "Patricia",
    "got": "Patricia Terrazas"
+  },
+  "surname2": {
+   "expected": "Allen",
+   "got": ""
   },
   "text": "Patricia Terrazas Allen"
  },
@@ -626,6 +716,10 @@
    "expected": "",
    "got": "Pla"
   },
+  "surname2": {
+   "expected": "Pla",
+   "got": ""
+  },
   "text": "Francisco Hernández Pla"
  },
  "Q112994217/patronymic-su/sorting": {
@@ -651,6 +745,10 @@
    "expected": "Libardo",
    "got": "Libardo Simancas"
   },
+  "surname2": {
+   "expected": "Torres",
+   "got": ""
+  },
   "text": "Libardo Simancas Torres"
  },
  "Q113129508/surname2-mx/givenFirst": {
@@ -661,6 +759,10 @@
   "given_names": {
    "expected": "Fernando",
    "got": "Fernando Rosas"
+  },
+  "surname2": {
+   "expected": "Solis",
+   "got": ""
   },
   "text": "Fernando Rosas Solis"
  },
@@ -680,6 +782,10 @@
    "expected": "Fabián",
    "got": "Fabián Pérez"
   },
+  "surname2": {
+   "expected": "Ximeno",
+   "got": ""
+  },
   "text": "Fabián Pérez Ximeno"
  },
  "Q113548032/surname2-es/givenFirst": {
@@ -691,6 +797,10 @@
    "expected": "Luis",
    "got": "Luis Díaz"
   },
+  "surname2": {
+   "expected": "Moreno",
+   "got": ""
+  },
   "text": "Luis Díaz Moreno"
  },
  "Q113557761/surname2-es/givenFirst": {
@@ -701,6 +811,10 @@
   "given_names": {
    "expected": "Justo",
    "got": "Justo Novo"
+  },
+  "surname2": {
+   "expected": "Verdes",
+   "got": ""
   },
   "text": "Justo Novo Verdes"
  },
@@ -720,6 +834,10 @@
    "expected": "José",
    "got": "José Gil"
   },
+  "surname2": {
+   "expected": "Pérez",
+   "got": ""
+  },
   "text": "José Gil Pérez"
  },
  "Q114973166/surname2-es/givenFirst": {
@@ -731,6 +849,10 @@
    "expected": "Ricardo",
    "got": "Ricardo Bodenlle"
   },
+  "surname2": {
+   "expected": "Corral",
+   "got": ""
+  },
   "text": "Ricardo Bodenlle Corral"
  },
  "Q115325153/patronymic-ru/sorting": {
@@ -739,6 +861,13 @@
    "got": ""
   },
   "text": "Демидов, Иван Алексеевич"
+ },
+ "Q1153528/surname2-mx/givenFirst": {
+  "surname2": {
+   "expected": "y Pinto",
+   "got": ""
+  },
+  "text": "Rubén Rojo y Pinto"
  },
  "Q115495110/patronymic-ru/givenFirst": {
   "patronymic": {
@@ -755,6 +884,10 @@
   "given_names": {
    "expected": "Lisandro",
    "got": "Lisandro Leyva"
+  },
+  "surname2": {
+   "expected": "Mazuera",
+   "got": ""
   },
   "text": "Lisandro Leyva Mazuera"
  },
@@ -774,6 +907,10 @@
    "expected": "Rodrigo",
    "got": "Rodrigo Lara"
   },
+  "surname2": {
+   "expected": "Bonilla",
+   "got": ""
+  },
   "text": "Rodrigo Lara Bonilla"
  },
  "Q11667/patronymic-ru/givenFirst": {
@@ -791,6 +928,10 @@
   "given_names": {
    "expected": "Juan",
    "got": "Juan Cárdenas"
+  },
+  "surname2": {
+   "expected": "Arroyo",
+   "got": ""
   },
   "text": "Juan Cárdenas Arroyo"
  },
@@ -817,6 +958,10 @@
    "expected": "Pierre David",
    "got": "Pierre David Oriola"
   },
+  "surname2": {
+   "expected": "Garriga",
+   "got": ""
+  },
   "text": "Pierre David Oriola Garriga"
  },
  "Q117125906/surname2-es/givenFirst": {
@@ -827,6 +972,10 @@
   "given_names": {
    "expected": "Francisco Javier",
    "got": "Francisco Javier Lorenzo"
+  },
+  "surname2": {
+   "expected": "Oroza",
+   "got": ""
   },
   "text": "Francisco Javier Lorenzo Oroza"
  },
@@ -854,7 +1003,25 @@
    "expected": "Elvia",
    "got": "Elvia Rangel"
   },
+  "surname2": {
+   "expected": "de la Fuente",
+   "got": ""
+  },
   "text": "Elvia Rangel de la Fuente"
+ },
+ "Q11880808/surname2-mx/givenFirst": {
+  "surname2": {
+   "expected": "y Camarena",
+   "got": ""
+  },
+  "text": "Manuel Jerónimo Yerena y Camarena"
+ },
+ "Q11904189/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "y Sanjurjo",
+   "got": ""
+  },
+  "text": "Adolfo Calzado y Sanjurjo"
  },
  "Q11905781/surname2-es/givenFirst": {
   "family": {
@@ -865,7 +1032,25 @@
    "expected": "Antonio",
    "got": "Antonio Alemany"
   },
+  "surname2": {
+   "expected": "Dezcallar",
+   "got": ""
+  },
   "text": "Antonio Alemany Dezcallar"
+ },
+ "Q11921769/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "i Cirera",
+   "got": ""
+  },
+  "text": "Feliu Crespí i Cirera"
+ },
+ "Q11928486/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "i Calvet",
+   "got": ""
+  },
+  "text": "Josep Campabadal i Calvet"
  },
  "Q11946783/surname2-es/givenFirst": {
   "family": {
@@ -875,6 +1060,10 @@
   "given_names": {
    "expected": "Salvador",
    "got": "Salvador Ortiga"
+  },
+  "surname2": {
+   "expected": "Torres",
+   "got": ""
   },
   "text": "Salvador Ortiga Torres"
  },
@@ -887,6 +1076,10 @@
    "expected": "Santiago",
    "got": "Santiago Díaz"
   },
+  "surname2": {
+   "expected": "Moyano",
+   "got": ""
+  },
   "text": "Santiago Díaz Moyano"
  },
  "Q11949860/surname2-es/givenFirst": {
@@ -897,6 +1090,10 @@
   "given_names": {
    "expected": "Sinibaldo",
    "got": "Sinibaldo Gutiérrez"
+  },
+  "surname2": {
+   "expected": "Mas",
+   "got": ""
   },
   "text": "Sinibaldo Gutiérrez Mas"
  },
@@ -909,6 +1106,10 @@
    "expected": "Enrique",
    "got": "Enrique Santos"
   },
+  "surname2": {
+   "expected": "Montejo",
+   "got": ""
+  },
   "text": "Enrique Santos Montejo"
  },
  "Q119792168/surname2-es/givenFirst": {
@@ -919,6 +1120,10 @@
   "given_names": {
    "expected": "José Luis",
    "got": "José Luis Arroyo"
+  },
+  "surname2": {
+   "expected": "Carreras",
+   "got": ""
   },
   "text": "José Luis Arroyo Carreras"
  },
@@ -931,6 +1136,10 @@
    "expected": "Luis",
    "got": "Luis Guzmán"
   },
+  "surname2": {
+   "expected": "Reveles",
+   "got": ""
+  },
   "text": "Luis Guzmán Reveles"
  },
  "Q120212131/surname2-mx/givenFirst": {
@@ -941,6 +1150,10 @@
   "given_names": {
    "expected": "Hilda Luisa",
    "got": "Hilda Luisa Valdemar"
+  },
+  "surname2": {
+   "expected": "Lima",
+   "got": ""
   },
   "text": "Hilda Luisa Valdemar Lima"
  },
@@ -981,6 +1194,10 @@
    "expected": "Emilia",
    "got": "Emilia Dorado"
   },
+  "surname2": {
+   "expected": "Baltazar",
+   "got": ""
+  },
   "text": "Emilia Dorado Baltazar"
  },
  "Q122199307/patronymic-ri/givenFirst": {
@@ -999,6 +1216,10 @@
    "expected": "Luis Fernando",
    "got": "Luis Fernando Giraldo"
   },
+  "surname2": {
+   "expected": "Builes",
+   "got": ""
+  },
   "text": "Luis Fernando Giraldo Builes"
  },
  "Q123410560/surname2-co/givenFirst": {
@@ -1009,6 +1230,10 @@
   "given_names": {
    "expected": "Manuel",
    "got": "Manuel Serrano"
+  },
+  "surname2": {
+   "expected": "Blanco",
+   "got": ""
   },
   "text": "Manuel Serrano Blanco"
  },
@@ -1021,6 +1246,10 @@
    "expected": "Adel",
    "got": "Adel López"
   },
+  "surname2": {
+   "expected": "Gómez",
+   "got": ""
+  },
   "text": "Adel López Gómez"
  },
  "Q123518919/surname2-mx/givenFirst": {
@@ -1031,6 +1260,10 @@
   "given_names": {
    "expected": "Jorge",
    "got": "Jorge Valdez"
+  },
+  "surname2": {
+   "expected": "Muñoz",
+   "got": ""
   },
   "text": "Jorge Valdez Muñoz"
  },
@@ -1043,6 +1276,10 @@
    "expected": "Héctor",
    "got": "Héctor Quintana"
   },
+  "surname2": {
+   "expected": "Suárez",
+   "got": ""
+  },
   "text": "Héctor Quintana Suárez"
  },
  "Q123792443/surname2-co/givenFirst": {
@@ -1053,6 +1290,10 @@
   "given_names": {
    "expected": "Vicente",
    "got": "Vicente Becerra"
+  },
+  "surname2": {
+   "expected": "Vaca",
+   "got": ""
   },
   "text": "Vicente Becerra Vaca"
  },
@@ -1065,7 +1306,18 @@
    "expected": "María",
    "got": "María Losada"
   },
+  "surname2": {
+   "expected": "Estévez",
+   "got": ""
+  },
   "text": "María Losada Estévez"
+ },
+ "Q12383078/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "y Villazán",
+   "got": ""
+  },
+  "text": "Antonio Garrido y Villazán"
  },
  "Q124228701/surname2-co/givenFirst": {
   "family": {
@@ -1075,6 +1327,10 @@
   "given_names": {
    "expected": "Francisco",
    "got": "Francisco Giraldo"
+  },
+  "surname2": {
+   "expected": "Hernández",
+   "got": ""
   },
   "text": "Francisco Giraldo Hernández"
  },
@@ -1087,6 +1343,10 @@
    "expected": "Álvaro",
    "got": "Álvaro Londoño"
   },
+  "surname2": {
+   "expected": "Aristizábal",
+   "got": ""
+  },
   "text": "Álvaro Londoño Aristizábal"
  },
  "Q124364476/surname2-co/givenFirst": {
@@ -1097,6 +1357,10 @@
   "given_names": {
    "expected": "Gabriel",
    "got": "Gabriel Latorre"
+  },
+  "surname2": {
+   "expected": "Jaramillo",
+   "got": ""
   },
   "text": "Gabriel Latorre Jaramillo"
  },
@@ -1115,6 +1379,10 @@
   "given_names": {
    "expected": "Carlos",
    "got": "Carlos Garcés"
+  },
+  "surname2": {
+   "expected": "Córdoba",
+   "got": ""
   },
   "text": "Carlos Garcés Córdoba"
  },
@@ -1148,6 +1416,10 @@
    "expected": "Miguel",
    "got": "Miguel Sánchez"
   },
+  "surname2": {
+   "expected": "Pesquera",
+   "got": ""
+  },
   "text": "Miguel Sánchez Pesquera"
  },
  "Q126973227/patronymic-su/givenFirst": {
@@ -1173,7 +1445,18 @@
    "expected": "Jon",
    "got": "Jon Irazabal"
   },
+  "surname2": {
+   "expected": "Agirre",
+   "got": ""
+  },
   "text": "Jon Irazabal Agirre"
+ },
+ "Q130199445/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "y Aybar",
+   "got": ""
+  },
+  "text": "Luis Gonzaga de Villava y Aybar"
  },
  "Q130223803/patronymic-ru/givenFirst": {
   "patronymic": {
@@ -1191,6 +1474,10 @@
    "expected": "Juan Carlos",
    "got": "Juan Carlos Rodríguez"
   },
+  "surname2": {
+   "expected": "Agudelo",
+   "got": ""
+  },
   "text": "Juan Carlos Rodríguez Agudelo"
  },
  "Q130492677/surname2-mx/givenFirst": {
@@ -1201,6 +1488,10 @@
   "given_names": {
    "expected": "Eliseo",
    "got": "Eliseo Jiménez"
+  },
+  "surname2": {
+   "expected": "Ruiz",
+   "got": ""
   },
   "text": "Eliseo Jiménez Ruiz"
  },
@@ -1213,6 +1504,10 @@
    "expected": "Luis",
    "got": "Luis Mora"
   },
+  "surname2": {
+   "expected": "Tovar",
+   "got": ""
+  },
   "text": "Luis Mora Tovar"
  },
  "Q130706816/surname2-co/givenFirst": {
@@ -1223,6 +1518,10 @@
   "given_names": {
    "expected": "Diego Alberto",
    "got": "Diego Alberto Tamayo"
+  },
+  "surname2": {
+   "expected": "Garcera",
+   "got": ""
   },
   "text": "Diego Alberto Tamayo Garcera"
  },
@@ -1242,7 +1541,18 @@
    "expected": "Agustín",
    "got": "Agustín Gómez"
   },
+  "surname2": {
+   "expected": "Campos",
+   "got": ""
+  },
   "text": "Agustín Gómez Campos"
+ },
+ "Q131384539/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "y Martínez",
+   "got": ""
+  },
+  "text": "Manuel Velasco y Martínez"
  },
  "Q131387351/surname2-es/givenFirst": {
   "family": {
@@ -1252,6 +1562,10 @@
   "given_names": {
    "expected": "Federico",
    "got": "Federico Sánchez"
+  },
+  "surname2": {
+   "expected": "Bedoya",
+   "got": ""
   },
   "text": "Federico Sánchez Bedoya"
  },
@@ -1264,6 +1578,10 @@
    "expected": "Jesús",
    "got": "Jesús Alcántara"
   },
+  "surname2": {
+   "expected": "Miranda",
+   "got": ""
+  },
   "text": "Jesús Alcántara Miranda"
  },
  "Q131623018/surname2-es/givenFirst": {
@@ -1275,6 +1593,10 @@
    "expected": "Manuela",
    "got": "Manuela Lema"
   },
+  "surname2": {
+   "expected": "Villar",
+   "got": ""
+  },
   "text": "Manuela Lema Villar"
  },
  "Q131630714/patronymic-ru/givenFirst": {
@@ -1283,6 +1605,13 @@
    "got": ""
   },
   "text": "Алевтина Львовна Юрина"
+ },
+ "Q131701734/surname2-mx/givenFirst": {
+  "surname2": {
+   "expected": "y Prieto",
+   "got": ""
+  },
+  "text": "Rafael Alonso y Prieto"
  },
  "Q131722489/patronymic-ru/givenFirst": {
   "patronymic": {
@@ -1307,6 +1636,10 @@
    "expected": "Elvira",
    "got": "Elvira Palafox"
   },
+  "surname2": {
+   "expected": "Herrán",
+   "got": ""
+  },
   "text": "Elvira Palafox Herrán"
  },
  "Q131976309/patronymic-ru/givenFirst": {
@@ -1324,6 +1657,10 @@
   "given_names": {
    "expected": "Jorge",
    "got": "Jorge Lozano"
+  },
+  "surname2": {
+   "expected": "Márquez",
+   "got": ""
   },
   "text": "Jorge Lozano Márquez"
  },
@@ -1370,6 +1707,13 @@
   },
   "text": "Ragnar Bjarnason"
  },
+ "Q13422888/surname2-mx/givenFirst": {
+  "surname2": {
+   "expected": "y Aguirre",
+   "got": ""
+  },
+  "text": "Jesús María Echavarría y Aguirre"
+ },
  "Q13423492/surname2-es/givenFirst": {
   "family": {
    "expected": "Cañada Acebal",
@@ -1378,6 +1722,10 @@
   "given_names": {
    "expected": "Silverio",
    "got": "Silverio Cañada"
+  },
+  "surname2": {
+   "expected": "Acebal",
+   "got": ""
   },
   "text": "Silverio Cañada Acebal"
  },
@@ -1397,6 +1745,10 @@
    "expected": "Willington",
    "got": "Willington Baena"
   },
+  "surname2": {
+   "expected": "Ortiz",
+   "got": ""
+  },
   "text": "Willington Baena Ortiz"
  },
  "Q134424045/surname2-co/givenFirst": {
@@ -1407,6 +1759,10 @@
   "given_names": {
    "expected": "Joaquín",
    "got": "Joaquín Vergara"
+  },
+  "surname2": {
+   "expected": "Cárdenas",
+   "got": ""
   },
   "text": "Joaquín Vergara Cárdenas"
  },
@@ -1419,6 +1775,10 @@
    "expected": "Leonardo",
    "got": "Leonardo Porto"
   },
+  "surname2": {
+   "expected": "Egea",
+   "got": ""
+  },
   "text": "Leonardo Porto Egea"
  },
  "Q134424654/surname2-co/givenFirst": {
@@ -1429,6 +1789,10 @@
   "given_names": {
    "expected": "Martín",
    "got": "Martín Villazón"
+  },
+  "surname2": {
+   "expected": "Ochoa",
+   "got": ""
   },
   "text": "Martín Villazón Ochoa"
  },
@@ -1463,6 +1827,10 @@
    "expected": "Benigno",
    "got": "Benigno Cunillera"
   },
+  "surname2": {
+   "expected": "Torrent",
+   "got": ""
+  },
   "text": "Benigno Cunillera Torrent"
  },
  "Q134604187/patronymic-ru/givenFirst": {
@@ -1479,6 +1847,13 @@
   },
   "text": "Бойцов, Владимир Емельянович"
  },
+ "Q13476315/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "i Pagès",
+   "got": ""
+  },
+  "text": "Ramon Ferran i Pagès"
+ },
  "Q1351501/surname2-co/givenFirst": {
   "family": {
    "expected": "Rodríguez Orejuela",
@@ -1487,6 +1862,10 @@
   "given_names": {
    "expected": "Gilberto",
    "got": "Gilberto Rodríguez"
+  },
+  "surname2": {
+   "expected": "Orejuela",
+   "got": ""
   },
   "text": "Gilberto Rodríguez Orejuela"
  },
@@ -1499,6 +1878,10 @@
    "expected": "Carlos Arturo",
    "got": "Carlos Arturo Romero"
   },
+  "surname2": {
+   "expected": "Jiménez",
+   "got": ""
+  },
   "text": "Carlos Arturo Romero Jiménez"
  },
  "Q135275204/surname2-mx/givenFirst": {
@@ -1509,6 +1892,10 @@
   "given_names": {
    "expected": "Salvador",
    "got": "Salvador Rosas"
+  },
+  "surname2": {
+   "expected": "Magallón",
+   "got": ""
   },
   "text": "Salvador Rosas Magallón"
  },
@@ -1521,6 +1908,10 @@
    "expected": "Consuelo",
    "got": "Consuelo Rodríguez"
   },
+  "surname2": {
+   "expected": "López",
+   "got": ""
+  },
   "text": "Consuelo Rodríguez López"
  },
  "Q135792718/surname2-co/givenFirst": {
@@ -1531,6 +1922,10 @@
   "given_names": {
    "expected": "Ever",
    "got": "Ever Peña"
+  },
+  "surname2": {
+   "expected": "Maldonado",
+   "got": ""
   },
   "text": "Ever Peña Maldonado"
  },
@@ -1549,6 +1944,10 @@
   "given_names": {
    "expected": "Saturnino",
    "got": "Saturnino Rodríguez"
+  },
+  "surname2": {
+   "expected": "Fernández",
+   "got": ""
   },
   "text": "Saturnino Rodríguez Fernández"
  },
@@ -1576,6 +1975,10 @@
    "expected": "Leonor",
    "got": "Leonor Alinari"
   },
+  "surname2": {
+   "expected": "Adarve",
+   "got": ""
+  },
   "text": "Leonor Alinari Adarve"
  },
  "Q136349166/surname2-es/givenFirst": {
@@ -1586,6 +1989,10 @@
   "given_names": {
    "expected": "Adolfo",
    "got": "Adolfo Anta"
+  },
+  "surname2": {
+   "expected": "Seoane",
+   "got": ""
   },
   "text": "Adolfo Anta Seoane"
  },
@@ -1598,6 +2005,10 @@
    "expected": "Juan",
    "got": "Juan Samper"
   },
+  "surname2": {
+   "expected": "Sordo",
+   "got": ""
+  },
   "text": "Juan Samper Sordo"
  },
  "Q136469205/surname2-co/givenFirst": {
@@ -1609,6 +2020,10 @@
    "expected": "Adiel",
    "got": "Adiel Ascanio"
   },
+  "surname2": {
+   "expected": "Sepúlveda",
+   "got": ""
+  },
   "text": "Adiel Ascanio Sepúlveda"
  },
  "Q136487682/surname2-co/givenFirst": {
@@ -1619,6 +2034,10 @@
   "given_names": {
    "expected": "Andrés David",
    "got": "Andrés David Padilla"
+  },
+  "surname2": {
+   "expected": "Mejía",
+   "got": ""
   },
   "text": "Andrés David Padilla Mejía"
  },
@@ -1660,6 +2079,10 @@
    "expected": "Luisa",
    "got": "Luisa Álvarez"
   },
+  "surname2": {
+   "expected": "Iglesias",
+   "got": ""
+  },
   "text": "Luisa Álvarez Iglesias"
  },
  "Q137642434/patronymic-ru/givenFirst": {
@@ -1690,6 +2113,13 @@
   },
   "text": "Рубинштейн, Лев Семёнович"
  },
+ "Q137940646/surname2-co/givenFirst": {
+  "surname2": {
+   "expected": "Silva",
+   "got": ""
+  },
+  "text": "Álvaro de Brigard Silva"
+ },
  "Q137963805/surname2-es/givenFirst": {
   "family": {
    "expected": "López González",
@@ -1698,6 +2128,10 @@
   "given_names": {
    "expected": "Manuel",
    "got": "Manuel López"
+  },
+  "surname2": {
+   "expected": "González",
+   "got": ""
   },
   "text": "Manuel López González"
  },
@@ -1747,6 +2181,10 @@
    "expected": "Yenifer",
    "got": "Yenifer Córdoba"
   },
+  "surname2": {
+   "expected": "Henao",
+   "got": ""
+  },
   "text": "Yenifer Córdoba Henao"
  },
  "Q139505098/surname2-co/givenFirst": {
@@ -1757,6 +2195,10 @@
   "given_names": {
    "expected": "Carlos Mauricio",
    "got": "Carlos Mauricio Duque"
+  },
+  "surname2": {
+   "expected": "Pastrana",
+   "got": ""
   },
   "text": "Carlos Mauricio Duque Pastrana"
  },
@@ -1769,7 +2211,18 @@
    "expected": "Nicolás",
    "got": "Nicolás Leoz"
   },
+  "surname2": {
+   "expected": "Almirón",
+   "got": ""
+  },
   "text": "Nicolás Leoz Almirón"
+ },
+ "Q1396999/surname2-mx/givenFirst": {
+  "surname2": {
+   "expected": "Ixtlilxóchitl",
+   "got": ""
+  },
+  "text": "Fernando de Alva Ixtlilxóchitl"
  },
  "Q139969004/patronymic-is/givenFirst": {
   "family": {
@@ -1795,6 +2248,10 @@
    "expected": "Sebastián",
    "got": "Sebastián Lucumí"
   },
+  "surname2": {
+   "expected": "Mina",
+   "got": ""
+  },
   "text": "Sebastián Lucumí Mina"
  },
  "Q140420991/surname2-co/givenFirst": {
@@ -1805,6 +2262,10 @@
   "given_names": {
    "expected": "Robiro",
    "got": "Robiro Rojas"
+  },
+  "surname2": {
+   "expected": "Benavides",
+   "got": ""
   },
   "text": "Robiro Rojas Benavides"
  },
@@ -1831,6 +2292,10 @@
    "expected": "Milton",
    "got": "Milton Santacruz"
   },
+  "surname2": {
+   "expected": "Aguilar",
+   "got": ""
+  },
   "text": "Milton Santacruz Aguilar"
  },
  "Q141668335/surname2-co/givenFirst": {
@@ -1842,6 +2307,10 @@
    "expected": "Dionisio",
    "got": "Dionisio Guillin"
   },
+  "surname2": {
+   "expected": "Mercado",
+   "got": ""
+  },
   "text": "Dionisio Guillin Mercado"
  },
  "Q148075/surname2-mx/givenFirst": {
@@ -1852,6 +2321,10 @@
   "given_names": {
    "expected": "Roque",
    "got": "Roque González"
+  },
+  "surname2": {
+   "expected": "Garza",
+   "got": ""
   },
   "text": "Roque González Garza"
  },
@@ -1877,6 +2350,10 @@
   "given_names": {
    "expected": "Gabriel",
    "got": "Gabriel Ramos"
+  },
+  "surname2": {
+   "expected": "Millán",
+   "got": ""
   },
   "text": "Gabriel Ramos Millán"
  },
@@ -1911,6 +2388,10 @@
    "expected": "Gerónimo",
    "got": "Gerónimo Baqueiro"
   },
+  "surname2": {
+   "expected": "Foster",
+   "got": ""
+  },
   "text": "Gerónimo Baqueiro Foster"
  },
  "Q15242226/patronymic-is/givenFirst": {
@@ -1936,6 +2417,10 @@
   "given_names": {
    "expected": "Ingrid",
    "got": "Ingrid Betancourt"
+  },
+  "surname2": {
+   "expected": "Pulecio",
+   "got": ""
   },
   "text": "Ingrid Betancourt Pulecio"
  },
@@ -1970,6 +2455,10 @@
    "expected": "Mariano",
    "got": "Mariano Cuadra"
   },
+  "surname2": {
+   "expected": "Medina",
+   "got": ""
+  },
   "text": "Mariano Cuadra Medina"
  },
  "Q1601312/patronymic-is/givenFirst": {
@@ -1996,6 +2485,10 @@
    "expected": "Adolfo Ernesto",
    "got": "Adolfo Ernesto Echeverría"
   },
+  "surname2": {
+   "expected": "Comas",
+   "got": ""
+  },
   "text": "Adolfo Ernesto Echeverría Comas"
  },
  "Q16151254/surname2-mx/givenFirst": {
@@ -2007,7 +2500,32 @@
    "expected": "Patricio",
    "got": "Patricio Flores"
   },
+  "surname2": {
+   "expected": "Sandoval",
+   "got": ""
+  },
   "text": "Patricio Flores Sandoval"
+ },
+ "Q16162913/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "i Ferrer",
+   "got": ""
+  },
+  "text": "Iu Alavedra i Ferrer"
+ },
+ "Q16183326/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "i Panyella",
+   "got": ""
+  },
+  "text": "Magdalena Calonge i Panyella"
+ },
+ "Q16187988/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "i Vila",
+   "got": ""
+  },
+  "text": "Jordi Castellanos i Vila"
  },
  "Q16190279/surname2-es/givenFirst": {
   "family": {
@@ -2017,6 +2535,10 @@
   "given_names": {
    "expected": "Jordi",
    "got": "Jordi Cussà"
+  },
+  "surname2": {
+   "expected": "Balaguer",
+   "got": ""
   },
   "text": "Jordi Cussà Balaguer"
  },
@@ -2028,6 +2550,10 @@
   "given_names": {
    "expected": "Miguel Ángel",
    "got": "Miguel Ángel Félix"
+  },
+  "surname2": {
+   "expected": "Gallardo",
+   "got": ""
   },
   "text": "Miguel Ángel Félix Gallardo"
  },
@@ -2235,6 +2761,10 @@
    "expected": "Carlos",
    "got": "Carlos Colorado"
   },
+  "surname2": {
+   "expected": "Vera",
+   "got": ""
+  },
   "text": "Carlos Colorado Vera"
  },
  "Q16599489/surname2-mx/givenFirst": {
@@ -2245,6 +2775,10 @@
   "given_names": {
    "expected": "Margarita",
    "got": "Margarita Peña"
+  },
+  "surname2": {
+   "expected": "Muñoz",
+   "got": ""
   },
   "text": "Margarita Peña Muñoz"
  },
@@ -2277,6 +2811,13 @@
   },
   "text": "Евгений Францевич Бауэр"
  },
+ "Q16941606/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "i Amenós",
+   "got": ""
+  },
+  "text": "Jaume Berenguer i Amenós"
+ },
  "Q16941958/surname2-co/givenFirst": {
   "family": {
    "expected": "Mora Toro",
@@ -2285,6 +2826,10 @@
   "given_names": {
    "expected": "Libardo",
    "got": "Libardo Mora"
+  },
+  "surname2": {
+   "expected": "Toro",
+   "got": ""
   },
   "text": "Libardo Mora Toro"
  },
@@ -2297,7 +2842,18 @@
    "expected": "Diego",
    "got": "Diego Prado y Colón"
   },
+  "surname2": {
+   "expected": "y Colón de Carvajal",
+   "got": ""
+  },
   "text": "Diego Prado y Colón de Carvajal"
+ },
+ "Q16943121/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "i Olivé",
+   "got": ""
+  },
+  "text": "Josep Janés i Olivé"
  },
  "Q17037033/surname2-es/givenFirst": {
   "family": {
@@ -2307,6 +2863,10 @@
   "given_names": {
    "expected": "Francesc",
    "got": "Francesc Todó"
+  },
+  "surname2": {
+   "expected": "Garcia",
+   "got": ""
   },
   "text": "Francesc Todó Garcia"
  },
@@ -2318,6 +2878,10 @@
   "given_names": {
    "expected": "Jorge",
    "got": "Jorge González"
+  },
+  "surname2": {
+   "expected": "Camarena",
+   "got": ""
   },
   "text": "Jorge González Camarena"
  },
@@ -2345,6 +2909,10 @@
    "expected": "José",
    "got": "José Vilató"
   },
+  "surname2": {
+   "expected": "Ruiz",
+   "got": ""
+  },
   "text": "José Vilató Ruiz"
  },
  "Q1717/patronymic-ru/givenFirst": {
@@ -2354,6 +2922,13 @@
   },
   "text": "Сергей Александрович Кирдяпкин"
  },
+ "Q17301888/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "y Peña",
+   "got": ""
+  },
+  "text": "Francisco Martorell y Peña"
+ },
  "Q174100/surname2-mx/givenFirst": {
   "family": {
    "expected": "Bautista Rocha",
@@ -2362,6 +2937,10 @@
   "given_names": {
    "expected": "Daniel",
    "got": "Daniel Bautista"
+  },
+  "surname2": {
+   "expected": "Rocha",
+   "got": ""
   },
   "text": "Daniel Bautista Rocha"
  },
@@ -2374,6 +2953,10 @@
    "expected": "Xosé María",
    "got": "Xosé María Brea"
   },
+  "surname2": {
+   "expected": "Segade",
+   "got": ""
+  },
   "text": "Xosé María Brea Segade"
  },
  "Q17478000/surname2-co/givenFirst": {
@@ -2384,6 +2967,10 @@
   "given_names": {
    "expected": "Iván",
    "got": "Iván Duque"
+  },
+  "surname2": {
+   "expected": "Márquez",
+   "got": ""
   },
   "text": "Iván Duque Márquez"
  },
@@ -2473,6 +3060,10 @@
    "expected": "Manuel",
    "got": "Manuel Fernández"
   },
+  "surname2": {
+   "expected": "Castrillón",
+   "got": ""
+  },
   "text": "Manuel Fernández Castrillón"
  },
  "Q1860669/patronymic-su/sorting": {
@@ -2490,6 +3081,10 @@
   "given_names": {
    "expected": "José María",
    "got": "José María Yáñez"
+  },
+  "surname2": {
+   "expected": "Carrillo",
+   "got": ""
   },
   "text": "José María Yáñez Carrillo"
  },
@@ -2515,6 +3110,55 @@
   },
   "text": "Vigdís Finnbogadóttir"
  },
+ "Q19257718/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "y Girona",
+   "got": ""
+  },
+  "text": "Agustín Yáñez y Girona"
+ },
+ "Q19290799/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "i Cortina",
+   "got": ""
+  },
+  "text": "Francesc Arnau i Cortina"
+ },
+ "Q19299695/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "i Cabot",
+   "got": ""
+  },
+  "text": "Jaume Martí i Cabot"
+ },
+ "Q19300555/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "i Barri",
+   "got": ""
+  },
+  "text": "Josep Maria Tarridas i Barri"
+ },
+ "Q19301510/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "y Gassó",
+   "got": ""
+  },
+  "text": "Pedro Jorba y Gassó"
+ },
+ "Q19301571/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "i Curto",
+   "got": ""
+  },
+  "text": "Pere Sabaté i Curto"
+ },
+ "Q19301867/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "i Magret",
+   "got": ""
+  },
+  "text": "Sebastià Salellas i Magret"
+ },
  "Q19317268/patronymic-su/givenFirst": {
   "patronymic": {
    "expected": "Васильевич",
@@ -2531,6 +3175,10 @@
    "expected": "Simón",
    "got": "Simón Mesa"
   },
+  "surname2": {
+   "expected": "Soto",
+   "got": ""
+  },
   "text": "Simón Mesa Soto"
  },
  "Q19601974/surname2-es/givenFirst": {
@@ -2542,6 +3190,10 @@
    "expected": "Sergio",
    "got": "Sergio Marcos"
   },
+  "surname2": {
+   "expected": "González",
+   "got": ""
+  },
   "text": "Sergio Marcos González"
  },
  "Q1960343/surname2-es/givenFirst": {
@@ -2552,6 +3204,10 @@
   "given_names": {
    "expected": "Tomás",
    "got": "Tomás González"
+  },
+  "surname2": {
+   "expected": "Carvajal",
+   "got": ""
   },
   "text": "Tomás González Carvajal"
  },
@@ -2571,6 +3227,10 @@
    "expected": "Eduardo",
    "got": "Eduardo Ferrer"
   },
+  "surname2": {
+   "expected": "Comas",
+   "got": ""
+  },
   "text": "Eduardo Ferrer Comas"
  },
  "Q19694625/surname2-mx/givenFirst": {
@@ -2582,6 +3242,10 @@
    "expected": "Carlos",
    "got": "Carlos Martínez"
   },
+  "surname2": {
+   "expected": "Baena",
+   "got": ""
+  },
   "text": "Carlos Martínez Baena"
  },
  "Q1976742/surname2-mx/givenFirst": {
@@ -2592,6 +3256,10 @@
   "given_names": {
    "expected": "Ramón",
    "got": "Ramón Arellano"
+  },
+  "surname2": {
+   "expected": "Félix",
+   "got": ""
   },
   "text": "Ramón Arellano Félix"
  },
@@ -2611,6 +3279,10 @@
    "expected": "Francisco",
    "got": "Francisco Santos"
   },
+  "surname2": {
+   "expected": "Calderón",
+   "got": ""
+  },
   "text": "Francisco Santos Calderón"
  },
  "Q19816923/surname2-co/givenFirst": {
@@ -2621,6 +3293,10 @@
   "given_names": {
    "expected": "Juan de Dios",
    "got": "Juan"
+  },
+  "surname2": {
+   "expected": "y Velásquez",
+   "got": ""
   },
   "text": "Juan de Dios Sierra y Velásquez"
  },
@@ -2647,6 +3323,10 @@
    "expected": "Jorge",
    "got": "Jorge González"
   },
+  "surname2": {
+   "expected": "Díaz",
+   "got": ""
+  },
   "text": "Jorge González Díaz"
  },
  "Q20006244/surname2-es/givenFirst": {
@@ -2658,6 +3338,10 @@
    "expected": "Pere",
    "got": "Pere Rebassa"
   },
+  "surname2": {
+   "expected": "Bisquerra",
+   "got": ""
+  },
   "text": "Pere Rebassa Bisquerra"
  },
  "Q20242421/surname2-es/givenFirst": {
@@ -2668,6 +3352,10 @@
   "given_names": {
    "expected": "Albert",
    "got": "Albert Bonet"
+  },
+  "surname2": {
+   "expected": "Marrugat",
+   "got": ""
   },
   "text": "Albert Bonet Marrugat"
  },
@@ -2716,6 +3404,10 @@
    "expected": "Manuel",
    "got": "Manuel Banet"
   },
+  "surname2": {
+   "expected": "Fontenla",
+   "got": ""
+  },
   "text": "Manuel Banet Fontenla"
  },
  "Q20535225/surname2-es/givenFirst": {
@@ -2726,6 +3418,10 @@
   "given_names": {
    "expected": "José María",
    "got": "José María Guerra"
+  },
+  "surname2": {
+   "expected": "Cobián",
+   "got": ""
   },
   "text": "José María Guerra Cobián"
  },
@@ -2738,6 +3434,10 @@
    "expected": "Juan",
    "got": "Juan Harguindey"
   },
+  "surname2": {
+   "expected": "Broussain",
+   "got": ""
+  },
   "text": "Juan Harguindey Broussain"
  },
  "Q20536051/surname2-es/givenFirst": {
@@ -2748,6 +3448,10 @@
   "given_names": {
    "expected": "Laureano",
    "got": "Laureano Veres"
+  },
+  "surname2": {
+   "expected": "Acevedo",
+   "got": ""
   },
   "text": "Laureano Veres Acevedo"
  },
@@ -2782,6 +3486,10 @@
    "expected": "Alberto",
    "got": "Alberto Ortega"
   },
+  "surname2": {
+   "expected": "Martín",
+   "got": ""
+  },
   "text": "Alberto Ortega Martín"
  },
  "Q20829083/surname2-es/givenFirst": {
@@ -2792,6 +3500,10 @@
   "given_names": {
    "expected": "Elisa",
    "got": "Elisa Ruiz"
+  },
+  "surname2": {
+   "expected": "Romero",
+   "got": ""
   },
   "text": "Elisa Ruiz Romero"
  },
@@ -2804,7 +3516,18 @@
    "expected": "Enrique",
    "got": "Enrique Gorostieta"
   },
+  "surname2": {
+   "expected": "Velarde",
+   "got": ""
+  },
   "text": "Enrique Gorostieta Velarde"
+ },
+ "Q21001221/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "i Iscla",
+   "got": ""
+  },
+  "text": "Frederic Viñals i Iscla"
  },
  "Q21099074/patronymic-ru/givenFirst": {
   "patronymic": {
@@ -2843,7 +3566,18 @@
    "expected": "Jorge Ernesto",
    "got": "Jorge Ernesto Guzmán"
   },
+  "surname2": {
+   "expected": "Rodríguez",
+   "got": ""
+  },
   "text": "Jorge Ernesto Guzmán Rodríguez"
+ },
+ "Q22962489/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "y Góngora",
+   "got": ""
+  },
+  "text": "Cristóbal Bordiú y Góngora"
  },
  "Q23000865/surname2-es/givenFirst": {
   "family": {
@@ -2853,6 +3587,10 @@
   "given_names": {
    "expected": "Ángel",
    "got": "Ángel Llanos"
+  },
+  "surname2": {
+   "expected": "González",
+   "got": ""
   },
   "text": "Ángel Llanos González"
  },
@@ -2871,6 +3609,10 @@
   "given_names": {
    "expected": "Mariana",
    "got": "Mariana Duque"
+  },
+  "surname2": {
+   "expected": "Mariño",
+   "got": ""
   },
   "text": "Mariana Duque Mariño"
  },
@@ -2910,6 +3652,13 @@
   },
   "text": "Попов, Андрей Александрович"
  },
+ "Q23906983/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "y Romeo",
+   "got": ""
+  },
+  "text": "Cayetano Cardero y Romeo"
+ },
  "Q23927812/surname2-mx/givenFirst": {
   "family": {
    "expected": "Zupo Gutiérrez",
@@ -2918,6 +3667,10 @@
   "given_names": {
    "expected": "Claudio",
    "got": "Claudio Zupo"
+  },
+  "surname2": {
+   "expected": "Gutiérrez",
+   "got": ""
   },
   "text": "Claudio Zupo Gutiérrez"
  },
@@ -2930,6 +3683,10 @@
    "expected": "Valentín",
    "got": "Valentín Puga"
   },
+  "surname2": {
+   "expected": "Franco",
+   "got": ""
+  },
   "text": "Valentín Puga Franco"
  },
  "Q24239355/surname2-mx/givenFirst": {
@@ -2940,6 +3697,10 @@
   "given_names": {
    "expected": "Rómulo",
    "got": "Rómulo González"
+  },
+  "surname2": {
+   "expected": "Irigoyen",
+   "got": ""
   },
   "text": "Rómulo González Irigoyen"
  },
@@ -2952,6 +3713,10 @@
    "expected": "Antonio",
    "got": "Antonio Parra"
   },
+  "surname2": {
+   "expected": "Cabrera",
+   "got": ""
+  },
   "text": "Antonio Parra Cabrera"
  },
  "Q24279112/surname2-es/givenFirst": {
@@ -2962,6 +3727,10 @@
   "given_names": {
    "expected": "Eladio",
    "got": "Eladio Andino y del"
+  },
+  "surname2": {
+   "expected": "y del Solar",
+   "got": ""
   },
   "text": "Eladio Andino y del Solar"
  },
@@ -3004,6 +3773,10 @@
    "expected": "Manuel",
    "got": "Manuel Blanco"
   },
+  "surname2": {
+   "expected": "Romasanta",
+   "got": ""
+  },
   "text": "Manuel Blanco Romasanta"
  },
  "Q2472305/patronymic-ru/givenFirst": {
@@ -3021,6 +3794,10 @@
   "given_names": {
    "expected": "José",
    "got": "José García"
+  },
+  "surname2": {
+   "expected": "Ocejo",
+   "got": ""
   },
   "text": "José García Ocejo"
  },
@@ -3074,7 +3851,18 @@
    "expected": "Francisco",
    "got": "Francisco Posada"
   },
+  "surname2": {
+   "expected": "Díaz",
+   "got": ""
+  },
   "text": "Francisco Posada Díaz"
+ },
+ "Q25594319/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "y Hurtado",
+   "got": ""
+  },
+  "text": "Cosme Algarra y Hurtado"
  },
  "Q25598013/patronymic-su/surnameFirst": {
   "patronymic": {
@@ -3121,6 +3909,10 @@
    "expected": "Pedro",
    "got": "Pedro Infante"
   },
+  "surname2": {
+   "expected": "Torrentera",
+   "got": ""
+  },
   "text": "Pedro Infante Torrentera"
  },
  "Q2625826/surname2-mx/givenFirst": {
@@ -3131,6 +3923,10 @@
   "given_names": {
    "expected": "José Antonio",
    "got": "José Antonio Rodríguez"
+  },
+  "surname2": {
+   "expected": "Romero",
+   "got": ""
   },
   "text": "José Antonio Rodríguez Romero"
  },
@@ -3202,6 +3998,10 @@
    "expected": "Ángel",
    "got": "Ángel Bassols"
   },
+  "surname2": {
+   "expected": "Batalla",
+   "got": ""
+  },
   "text": "Ángel Bassols Batalla"
  },
  "Q28163843/surname2-co/givenFirst": {
@@ -3212,6 +4012,10 @@
   "given_names": {
    "expected": "Rafael",
    "got": "Rafael Cepeda"
+  },
+  "surname2": {
+   "expected": "Torres",
+   "got": ""
   },
   "text": "Rafael Cepeda Torres"
  },
@@ -3245,6 +4049,10 @@
    "expected": "Gilberto",
    "got": "Gilberto Martínez"
   },
+  "surname2": {
+   "expected": "Arango",
+   "got": ""
+  },
   "text": "Gilberto Martínez Arango"
  },
  "Q28355768/surname2-es/givenFirst": {
@@ -3256,6 +4064,10 @@
    "expected": "Gregorio",
    "got": "Gregorio Chillón"
   },
+  "surname2": {
+   "expected": "de la Fuente",
+   "got": ""
+  },
   "text": "Gregorio Chillón de la Fuente"
  },
  "Q2839714/surname2-co/givenFirst": {
@@ -3266,6 +4078,10 @@
   "given_names": {
    "expected": "Arturo",
    "got": "Arturo Acevedo"
+  },
+  "surname2": {
+   "expected": "Vallarino",
+   "got": ""
   },
   "text": "Arturo Acevedo Vallarino"
  },
@@ -3292,6 +4108,10 @@
    "expected": "Crisóforo",
    "got": "Crisóforo Mazón"
   },
+  "surname2": {
+   "expected": "Pineda",
+   "got": ""
+  },
   "text": "Crisóforo Mazón Pineda"
  },
  "Q28739698/surname2-es/givenFirst": {
@@ -3302,6 +4122,10 @@
   "given_names": {
    "expected": "Carlos",
    "got": "Carlos Coello"
+  },
+  "surname2": {
+   "expected": "y Pacheco",
+   "got": ""
   },
   "text": "Carlos Coello de Portugal y Pacheco"
  },
@@ -3321,6 +4145,10 @@
    "expected": "Miguel",
    "got": "Miguel Lanz"
   },
+  "surname2": {
+   "expected": "Duret",
+   "got": ""
+  },
   "text": "Miguel Lanz Duret"
  },
  "Q28792973/surname2-co/givenFirst": {
@@ -3332,6 +4160,10 @@
    "expected": "Juan",
    "got": "Juan Zuleta"
   },
+  "surname2": {
+   "expected": "Ferrer",
+   "got": ""
+  },
   "text": "Juan Zuleta Ferrer"
  },
  "Q2917254/surname2-co/givenFirst": {
@@ -3342,6 +4174,10 @@
   "given_names": {
    "expected": "Pedro",
    "got": "Pedro Cañas"
+  },
+  "surname2": {
+   "expected": "Serrano",
+   "got": ""
   },
   "text": "Pedro Cañas Serrano"
  },
@@ -3391,6 +4227,10 @@
    "expected": "Salomón",
    "got": "Salomón Villada"
   },
+  "surname2": {
+   "expected": "Hoyos",
+   "got": ""
+  },
   "text": "Salomón Villada Hoyos"
  },
  "Q297736/patronymic-ru/givenFirst": {
@@ -3408,6 +4248,10 @@
   "given_names": {
    "expected": "Felipe",
    "got": "Felipe Colomo"
+  },
+  "surname2": {
+   "expected": "Castro",
+   "got": ""
   },
   "text": "Felipe Colomo Castro"
  },
@@ -3435,6 +4279,10 @@
    "expected": "Octavio",
    "got": "Octavio Corral"
   },
+  "surname2": {
+   "expected": "Romero",
+   "got": ""
+  },
   "text": "Octavio Corral Romero"
  },
  "Q30079822/patronymic-su/givenFirst": {
@@ -3453,6 +4301,10 @@
    "expected": "Horacio",
    "got": "Horacio Gómez"
   },
+  "surname2": {
+   "expected": "Bolaños",
+   "got": ""
+  },
   "text": "Horacio Gómez Bolaños"
  },
  "Q303293/surname2-mx/givenFirst": {
@@ -3464,6 +4316,10 @@
    "expected": "Aarón",
    "got": "Aarón Padilla"
   },
+  "surname2": {
+   "expected": "Gutiérrez",
+   "got": ""
+  },
   "text": "Aarón Padilla Gutiérrez"
  },
  "Q30899494/surname2-es/givenFirst": {
@@ -3474,6 +4330,10 @@
   "given_names": {
    "expected": "Francisco",
    "got": "Francisco Freire"
+  },
+  "surname2": {
+   "expected": "Barreiro",
+   "got": ""
   },
   "text": "Francisco Freire Barreiro"
  },
@@ -3515,6 +4375,10 @@
    "expected": "Manuel",
    "got": "Manuel Uruchurtu"
   },
+  "surname2": {
+   "expected": "Ramírez",
+   "got": ""
+  },
   "text": "Manuel Uruchurtu Ramírez"
  },
  "Q31749372/patronymic-is/givenFirst": {
@@ -3555,7 +4419,18 @@
    "expected": "Guillermo",
    "got": "Guillermo García"
   },
+  "surname2": {
+   "expected": "Cantú",
+   "got": ""
+  },
   "text": "Guillermo García Cantú"
+ },
+ "Q3360558/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "y Dusay",
+   "got": ""
+  },
+  "text": "Eulogio Despujol y Dusay"
  },
  "Q3397750/surname2-es/givenFirst": {
   "family": {
@@ -3565,6 +4440,10 @@
   "given_names": {
    "expected": "Xosé María",
    "got": "Xosé María Álvarez"
+  },
+  "surname2": {
+   "expected": "Blázquez",
+   "got": ""
   },
   "text": "Xosé María Álvarez Blázquez"
  },
@@ -3628,6 +4507,10 @@
    "expected": "Martha",
    "got": "Martha Nava"
   },
+  "surname2": {
+   "expected": "García",
+   "got": ""
+  },
   "text": "Martha Nava García"
  },
  "Q351886/patronymic-ru/givenFirst": {
@@ -3652,6 +4535,10 @@
   "given_names": {
    "expected": "Elizabeth Margot",
    "got": "Elizabeth Margot Schreiber"
+  },
+  "surname2": {
+   "expected": "Castañón",
+   "got": ""
   },
   "text": "Elizabeth Margot Schreiber Castañón"
  },
@@ -3678,6 +4565,10 @@
   "given_names": {
    "expected": "José",
    "got": "José Gómez-Mena"
+  },
+  "surname2": {
+   "expected": "Vila",
+   "got": ""
   },
   "text": "José Gómez-Mena Vila"
  },
@@ -3717,6 +4608,13 @@
   },
   "text": "Юрий Ильич Скуратов"
  },
+ "Q377409/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "y Soler",
+   "got": ""
+  },
+  "text": "Vicente Martín y Soler"
+ },
  "Q3791296/patronymic-ru/sorting": {
   "patronymic": {
    "expected": "Юрьевич",
@@ -3732,6 +4630,10 @@
   "given_names": {
    "expected": "Joaquín",
    "got": "Joaquín García"
+  },
+  "surname2": {
+   "expected": "Icazbalceta",
+   "got": ""
   },
   "text": "Joaquín García Icazbalceta"
  },
@@ -3759,6 +4661,10 @@
    "expected": "José",
    "got": "José Cabrera"
   },
+  "surname2": {
+   "expected": "Gándara",
+   "got": ""
+  },
   "text": "José Cabrera Gándara"
  },
  "Q381086/patronymic-is/givenFirst": {
@@ -3785,7 +4691,18 @@
    "expected": "María de la O",
    "got": "María"
   },
+  "surname2": {
+   "expected": "y García",
+   "got": ""
+  },
   "text": "María de la O Lejárraga y García"
+ },
+ "Q3827052/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "y Salvany",
+   "got": ""
+  },
+  "text": "Félix Sardá y Salvany"
  },
  "Q3856322/patronymic-ri/givenFirst": {
   "patronymic": {
@@ -3816,6 +4733,10 @@
   "given_names": {
    "expected": "Carlos",
    "got": "Carlos Lemos"
+  },
+  "surname2": {
+   "expected": "Simmonds",
+   "got": ""
   },
   "text": "Carlos Lemos Simmonds"
  },
@@ -3983,6 +4904,10 @@
    "expected": "Juan",
    "got": "Juan Fernández"
   },
+  "surname2": {
+   "expected": "Bazán",
+   "got": ""
+  },
   "text": "Juan Fernández Bazán"
  },
  "Q4213414/patronymic-ru/givenFirst": {
@@ -4037,6 +4962,10 @@
    "expected": "Hernando",
    "got": "Hernando Calvo"
   },
+  "surname2": {
+   "expected": "Ospina",
+   "got": ""
+  },
   "text": "Hernando Calvo Ospina"
  },
  "Q4271524/patronymic-ru/givenFirst": {
@@ -4061,6 +4990,10 @@
   "given_names": {
    "expected": "Manuel",
    "got": "Manuel Tello"
+  },
+  "surname2": {
+   "expected": "Macías",
+   "got": ""
   },
   "text": "Manuel Tello Macías"
  },
@@ -4294,6 +5227,10 @@
    "expected": "Indalecio",
    "got": "Indalecio Soriano"
   },
+  "surname2": {
+   "expected": "Fuertes",
+   "got": ""
+  },
   "text": "Indalecio Soriano Fuertes"
  },
  "Q4448299/patronymic-su/givenFirst": {
@@ -4339,6 +5276,10 @@
   "given_names": {
    "expected": "Beatriz Elena",
    "got": "Beatriz Elena Paredes"
+  },
+  "surname2": {
+   "expected": "Rangel",
+   "got": ""
   },
   "text": "Beatriz Elena Paredes Rangel"
  },
@@ -4414,6 +5355,10 @@
    "expected": "Pascual",
    "got": "Pascual Ortiz"
   },
+  "surname2": {
+   "expected": "Rubio",
+   "got": ""
+  },
   "text": "Pascual Ortiz Rubio"
  },
  "Q456321/surname2-mx/givenFirst": {
@@ -4424,6 +5369,10 @@
   "given_names": {
    "expected": "Joaquín",
    "got": "Joaquín Guzmán"
+  },
+  "surname2": {
+   "expected": "Loera",
+   "got": ""
   },
   "text": "Joaquín Guzmán Loera"
  },
@@ -4473,6 +5422,10 @@
    "expected": "José",
    "got": "José Mataix"
   },
+  "surname2": {
+   "expected": "Monllor",
+   "got": ""
+  },
   "text": "José Mataix Monllor"
  },
  "Q4715527/patronymic-ru/givenFirst": {
@@ -4498,6 +5451,10 @@
    "expected": "Amado",
    "got": "Amado Aguirre"
   },
+  "surname2": {
+   "expected": "Santiago",
+   "got": ""
+  },
   "text": "Amado Aguirre Santiago"
  },
  "Q47495573/surname2-mx/givenFirst": {
@@ -4508,6 +5465,10 @@
   "given_names": {
    "expected": "Eduardo",
    "got": "Eduardo Pallares"
+  },
+  "surname2": {
+   "expected": "Portillo",
+   "got": ""
   },
   "text": "Eduardo Pallares Portillo"
  },
@@ -4534,6 +5495,10 @@
    "expected": "Antonio",
    "got": "Antonio París Sanz"
   },
+  "surname2": {
+   "expected": "Sanz de Santamaría",
+   "got": ""
+  },
   "text": "Antonio París Sanz de Santamaría"
  },
  "Q47772146/surname2-es/givenFirst": {
@@ -4544,6 +5509,10 @@
   "given_names": {
    "expected": "Julián",
    "got": "Julián Pascual"
+  },
+  "surname2": {
+   "expected": "Nunell",
+   "got": ""
   },
   "text": "Julián Pascual Nunell"
  },
@@ -4556,6 +5525,10 @@
    "expected": "Albert",
    "got": "Albert Bertomeu"
   },
+  "surname2": {
+   "expected": "Font",
+   "got": ""
+  },
   "text": "Albert Bertomeu Font"
  },
  "Q4785197/surname2-mx/givenFirst": {
@@ -4566,6 +5539,10 @@
   "given_names": {
    "expected": "Arcadio",
    "got": "Arcadio Poveda"
+  },
+  "surname2": {
+   "expected": "Ricalde",
+   "got": ""
   },
   "text": "Arcadio Poveda Ricalde"
  },
@@ -4621,6 +5598,10 @@
    "expected": "Carlos",
    "got": "Carlos Ardila"
   },
+  "surname2": {
+   "expected": "Lülle",
+   "got": ""
+  },
   "text": "Carlos Ardila Lülle"
  },
  "Q50422593/surname2-es/givenFirst": {
@@ -4632,6 +5613,10 @@
    "expected": "Catalina",
    "got": "Catalina Ruiz"
   },
+  "surname2": {
+   "expected": "Pérez",
+   "got": ""
+  },
   "text": "Catalina Ruiz Pérez"
  },
  "Q504250/surname2-mx/givenFirst": {
@@ -4642,6 +5627,10 @@
   "given_names": {
    "expected": "Ignacio",
    "got": "Ignacio Rodríguez"
+  },
+  "surname2": {
+   "expected": "Bahena",
+   "got": ""
   },
   "text": "Ignacio Rodríguez Bahena"
  },
@@ -4669,6 +5658,10 @@
    "expected": "Clara",
    "got": "Clara Brugada"
   },
+  "surname2": {
+   "expected": "Molina",
+   "got": ""
+  },
   "text": "Clara Brugada Molina"
  },
  "Q512843/surname2-es/givenFirst": {
@@ -4679,6 +5672,10 @@
   "given_names": {
    "expected": "Sócrates",
    "got": "Sócrates Gómez"
+  },
+  "surname2": {
+   "expected": "Pérez",
+   "got": ""
   },
   "text": "Sócrates Gómez Pérez"
  },
@@ -4712,6 +5709,10 @@
    "expected": "Joaquín",
    "got": "Joaquín Torres"
   },
+  "surname2": {
+   "expected": "García",
+   "got": ""
+  },
   "text": "Joaquín Torres García"
  },
  "Q525581/surname2-mx/givenFirst": {
@@ -4722,6 +5723,10 @@
   "given_names": {
    "expected": "Bernardo",
    "got": "Bernardo Hernández"
+  },
+  "surname2": {
+   "expected": "Villaseñor",
+   "got": ""
   },
   "text": "Bernardo Hernández Villaseñor"
  },
@@ -4764,6 +5769,10 @@
    "expected": "Julio Mario",
    "got": "Julio Mario Santo Domingo"
   },
+  "surname2": {
+   "expected": "Pumarejo",
+   "got": ""
+  },
   "text": "Julio Mario Santo Domingo Pumarejo"
  },
  "Q540138/patronymic-is/givenFirst": {
@@ -4790,6 +5799,10 @@
    "expected": "Francisco",
    "got": "Francisco González"
   },
+  "surname2": {
+   "expected": "Macías",
+   "got": ""
+  },
   "text": "Francisco González Macías"
  },
  "Q548164/patronymic-ru/givenFirst": {
@@ -4798,6 +5811,13 @@
    "got": ""
   },
   "text": "Владислав Юрьевич Сурков"
+ },
+ "Q5485242/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "i Coll",
+   "got": ""
+  },
+  "text": "Claudi Ametlla i Coll"
  },
  "Q54964679/patronymic-su/givenFirst": {
   "patronymic": {
@@ -4822,6 +5842,10 @@
    "expected": "Alberto",
    "got": "Alberto García"
   },
+  "surname2": {
+   "expected": "Ulecia",
+   "got": ""
+  },
   "text": "Alberto García Ulecia"
  },
  "Q554086/surname2-es/givenFirst": {
@@ -4832,6 +5856,10 @@
   "given_names": {
    "expected": "Carles",
    "got": "Carles Busquets"
+  },
+  "surname2": {
+   "expected": "Barroso",
+   "got": ""
   },
   "text": "Carles Busquets Barroso"
  },
@@ -4844,6 +5872,10 @@
    "expected": "Julián",
    "got": "Julián Ruiz"
   },
+  "surname2": {
+   "expected": "Martorell",
+   "got": ""
+  },
   "text": "Julián Ruiz Martorell"
  },
  "Q555661/surname2-mx/givenFirst": {
@@ -4854,6 +5886,10 @@
   "given_names": {
    "expected": "Miguel",
    "got": "Miguel Treviño"
+  },
+  "surname2": {
+   "expected": "Morales",
+   "got": ""
   },
   "text": "Miguel Treviño Morales"
  },
@@ -4866,6 +5902,10 @@
    "expected": "Carlos",
    "got": "Carlos Encinas"
   },
+  "surname2": {
+   "expected": "González",
+   "got": ""
+  },
   "text": "Carlos Encinas González"
  },
  "Q55769527/surname2-es/givenFirst": {
@@ -4876,6 +5916,10 @@
   "given_names": {
    "expected": "Eduardo",
    "got": "Eduardo Rodríguez"
+  },
+  "surname2": {
+   "expected": "Osorio",
+   "got": ""
   },
   "text": "Eduardo Rodríguez Osorio"
  },
@@ -4888,6 +5932,10 @@
    "expected": "Joaquín",
    "got": "Joaquín Arasanz"
   },
+  "surname2": {
+   "expected": "Raso",
+   "got": ""
+  },
   "text": "Joaquín Arasanz Raso"
  },
  "Q55999012/surname2-mx/givenFirst": {
@@ -4898,6 +5946,10 @@
   "given_names": {
    "expected": "Mercedes",
    "got": "Mercedes Díaz"
+  },
+  "surname2": {
+   "expected": "Roig",
+   "got": ""
   },
   "text": "Mercedes Díaz Roig"
  },
@@ -4925,7 +5977,18 @@
    "expected": "Alfonso",
    "got": "Alfonso Reyes"
   },
+  "surname2": {
+   "expected": "Echandía",
+   "got": ""
+  },
   "text": "Alfonso Reyes Echandía"
+ },
+ "Q56677240/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "i Serrano",
+   "got": ""
+  },
+  "text": "Jesús Huguet i Serrano"
  },
  "Q5677081/surname2-co/givenFirst": {
   "family": {
@@ -4935,6 +5998,10 @@
   "given_names": {
    "expected": "Eduardo",
    "got": "Eduardo Zalamea"
+  },
+  "surname2": {
+   "expected": "Borda",
+   "got": ""
   },
   "text": "Eduardo Zalamea Borda"
  },
@@ -4954,6 +6021,10 @@
    "expected": "José Antonio",
    "got": "José Antonio Osorio"
   },
+  "surname2": {
+   "expected": "Lizarazo",
+   "got": ""
+  },
   "text": "José Antonio Osorio Lizarazo"
  },
  "Q5704474/surname2-mx/givenFirst": {
@@ -4964,6 +6035,10 @@
   "given_names": {
    "expected": "Armando",
    "got": "Armando Domínguez"
+  },
+  "surname2": {
+   "expected": "Borrás",
+   "got": ""
   },
   "text": "Armando Domínguez Borrás"
  },
@@ -4976,7 +6051,18 @@
    "expected": "Aurelio",
    "got": "Aurelio García"
   },
+  "surname2": {
+   "expected": "Lesmes",
+   "got": ""
+  },
   "text": "Aurelio García Lesmes"
+ },
+ "Q5750459/surname2-mx/givenFirst": {
+  "surname2": {
+   "expected": "y Bocanegra",
+   "got": ""
+  },
+  "text": "Carlos García y Bocanegra"
  },
  "Q5751162/surname2-co/givenFirst": {
   "family": {
@@ -4986,6 +6072,10 @@
   "given_names": {
    "expected": "Carlos",
    "got": "Carlos Obregón"
+  },
+  "surname2": {
+   "expected": "Borrero",
+   "got": ""
   },
   "text": "Carlos Obregón Borrero"
  },
@@ -4997,6 +6087,10 @@
   "given_names": {
    "expected": "Engracia",
    "got": "Engracia Vidal"
+  },
+  "surname2": {
+   "expected": "Estévez",
+   "got": ""
   },
   "text": "Engracia Vidal Estévez"
  },
@@ -5035,6 +6129,10 @@
    "expected": "Diego",
    "got": "Diego Uribe"
   },
+  "surname2": {
+   "expected": "Vargas",
+   "got": ""
+  },
   "text": "Diego Uribe Vargas"
  },
  "Q5846831/surname2-es/givenFirst": {
@@ -5045,6 +6143,10 @@
   "given_names": {
    "expected": "José",
    "got": "José Francos"
+  },
+  "surname2": {
+   "expected": "Rodríguez",
+   "got": ""
   },
   "text": "José Francos Rodríguez"
  },
@@ -5072,7 +6174,18 @@
    "expected": "Felipe",
    "got": "Felipe Bermejo"
   },
+  "surname2": {
+   "expected": "Araujo",
+   "got": ""
+  },
   "text": "Felipe Bermejo Araujo"
+ },
+ "Q5858263/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "y Oliva",
+   "got": ""
+  },
+  "text": "Felipe José Abárzuza y Oliva"
  },
  "Q5859665/surname2-es/givenFirst": {
   "family": {
@@ -5082,6 +6195,10 @@
   "given_names": {
    "expected": "Fernando",
    "got": "Fernando Gordillo"
+  },
+  "surname2": {
+   "expected": "Escudero",
+   "got": ""
   },
   "text": "Fernando Gordillo Escudero"
  },
@@ -5094,6 +6211,10 @@
    "expected": "Fernando",
    "got": "Fernando Hiriart"
   },
+  "surname2": {
+   "expected": "Balderrama",
+   "got": ""
+  },
   "text": "Fernando Hiriart Balderrama"
  },
  "Q5865541/surname2-mx/givenFirst": {
@@ -5105,6 +6226,10 @@
    "expected": "Francisco",
    "got": "Francisco Díez-Barroso"
   },
+  "surname2": {
+   "expected": "Govantes",
+   "got": ""
+  },
   "text": "Francisco Díez-Barroso Govantes"
  },
  "Q5866696/surname2-es/givenFirst": {
@@ -5115,6 +6240,10 @@
   "given_names": {
    "expected": "Francisco",
    "got": "Francisco Martínez"
+  },
+  "surname2": {
+   "expected": "de Cenicero",
+   "got": ""
   },
   "text": "Francisco Martínez de Cenicero"
  },
@@ -5134,6 +6263,10 @@
    "expected": "Guillermo",
    "got": "Guillermo Rousset"
   },
+  "surname2": {
+   "expected": "Banda",
+   "got": ""
+  },
   "text": "Guillermo Rousset Banda"
  },
  "Q5889711/surname2-mx/givenFirst": {
@@ -5144,6 +6277,10 @@
   "given_names": {
    "expected": "Gustavo",
    "got": "Gustavo León"
+  },
+  "surname2": {
+   "expected": "González",
+   "got": ""
   },
   "text": "Gustavo León González"
  },
@@ -5186,6 +6323,10 @@
    "expected": "Jaime",
    "got": "Jaime Blanco"
   },
+  "surname2": {
+   "expected": "García",
+   "got": ""
+  },
   "text": "Jaime Blanco García"
  },
  "Q5925060/surname2-mx/givenFirst": {
@@ -5196,6 +6337,10 @@
   "given_names": {
    "expected": "Jaime",
    "got": "Jaime García"
+  },
+  "surname2": {
+   "expected": "Terrés",
+   "got": ""
   },
   "text": "Jaime García Terrés"
  },
@@ -5208,6 +6353,10 @@
    "expected": "Jesús",
    "got": "Jesús Gallego"
   },
+  "surname2": {
+   "expected": "Marquina",
+   "got": ""
+  },
   "text": "Jesús Gallego Marquina"
  },
  "Q5932430/surname2-es/givenFirst": {
@@ -5219,7 +6368,18 @@
    "expected": "Joaquín",
    "got": "Joaquín Traggia"
   },
+  "surname2": {
+   "expected": "Uribarri",
+   "got": ""
+  },
   "text": "Joaquín Traggia Uribarri"
+ },
+ "Q5936948/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "i Vallmajor",
+   "got": ""
+  },
+  "text": "Josep Vergés i Vallmajor"
  },
  "Q5942856/surname2-es/givenFirst": {
   "family": {
@@ -5229,6 +6389,10 @@
   "given_names": {
    "expected": "José María",
    "got": "José María Díaz"
+  },
+  "surname2": {
+   "expected": "Casariego",
+   "got": ""
   },
   "text": "José María Díaz Casariego"
  },
@@ -5241,6 +6405,10 @@
    "expected": "José María",
    "got": "José María Otaolaurruchi"
   },
+  "surname2": {
+   "expected": "Tobía",
+   "got": ""
+  },
   "text": "José María Otaolaurruchi Tobía"
  },
  "Q5952614/surname2-es/givenFirst": {
@@ -5252,6 +6420,10 @@
    "expected": "Juan",
    "got": "Juan Suñé"
   },
+  "surname2": {
+   "expected": "Benages",
+   "got": ""
+  },
   "text": "Juan Suñé Benages"
  },
  "Q5952704/surname2-es/givenFirst": {
@@ -5262,6 +6434,10 @@
   "given_names": {
    "expected": "Juan",
    "got": "Juan Torres"
+  },
+  "surname2": {
+   "expected": "Torres",
+   "got": ""
   },
   "text": "Juan Torres de Vera y Aragón"
  },
@@ -5287,6 +6463,13 @@
   },
   "text": "Александр Емельянович Хмель"
  },
+ "Q5994074/surname2-mx/givenFirst": {
+  "surname2": {
+   "expected": "y Acal",
+   "got": ""
+  },
+  "text": "Manuel Puga y Acal"
+ },
  "Q600678/patronymic-ri/givenFirst": {
   "patronymic": {
    "expected": "Николаевич",
@@ -5303,6 +6486,10 @@
    "expected": "Pablo Emilio",
    "got": "Pablo Emilio Riveros"
   },
+  "surname2": {
+   "expected": "Reina",
+   "got": ""
+  },
   "text": "Pablo Emilio Riveros Reina"
  },
  "Q606189/surname2-co/givenFirst": {
@@ -5314,6 +6501,10 @@
    "expected": "Antonio",
    "got": "Antonio Alvarez"
   },
+  "surname2": {
+   "expected": "Lleras",
+   "got": ""
+  },
   "text": "Antonio Alvarez Lleras"
  },
  "Q6068853/surname2-mx/givenFirst": {
@@ -5324,6 +6515,10 @@
   "given_names": {
    "expected": "Pedro",
    "got": "Pedro Galindo"
+  },
+  "surname2": {
+   "expected": "Galarza",
+   "got": ""
   },
   "text": "Pedro Galindo Galarza"
  },
@@ -5343,6 +6538,10 @@
    "expected": "Pedro",
    "got": "Pedro Morales"
   },
+  "surname2": {
+   "expected": "Pino",
+   "got": ""
+  },
   "text": "Pedro Morales Pino"
  },
  "Q6097928/surname2-es/givenFirst": {
@@ -5353,6 +6552,10 @@
   "given_names": {
    "expected": "Rafael",
    "got": "Rafael Rubio"
+  },
+  "surname2": {
+   "expected": "Carrión",
+   "got": ""
   },
   "text": "Rafael Rubio Carrión"
  },
@@ -5365,6 +6568,10 @@
    "expected": "Roberto",
    "got": "Roberto Escobar"
   },
+  "surname2": {
+   "expected": "Gaviria",
+   "got": ""
+  },
   "text": "Roberto Escobar Gaviria"
  },
  "Q6110535/surname2-mx/givenFirst": {
@@ -5375,6 +6582,10 @@
   "given_names": {
    "expected": "Rodolfo",
    "got": "Rodolfo Landeros"
+  },
+  "surname2": {
+   "expected": "Gallegos",
+   "got": ""
   },
   "text": "Rodolfo Landeros Gallegos"
  },
@@ -5387,6 +6598,10 @@
    "expected": "Tiburcio",
    "got": "Tiburcio Pérez"
   },
+  "surname2": {
+   "expected": "Cuervo",
+   "got": ""
+  },
   "text": "Tiburcio Pérez Cuervo"
  },
  "Q6161316/surname2-es/givenFirst": {
@@ -5398,6 +6613,10 @@
    "expected": "Vicente",
    "got": "Vicente Rodríguez"
   },
+  "surname2": {
+   "expected": "Casado",
+   "got": ""
+  },
   "text": "Vicente Rodríguez Casado"
  },
  "Q6165597/surname2-co/givenFirst": {
@@ -5408,6 +6627,10 @@
   "given_names": {
    "expected": "Víctor",
    "got": "Víctor Luna"
+  },
+  "surname2": {
+   "expected": "Gómez",
+   "got": ""
   },
   "text": "Víctor Luna Gómez"
  },
@@ -5427,6 +6650,10 @@
    "expected": "Rogerio",
    "got": "Rogerio Azcárraga"
   },
+  "surname2": {
+   "expected": "Madero",
+   "got": ""
+  },
   "text": "Rogerio Azcárraga Madero"
  },
  "Q617112/patronymic-su/sorting": {
@@ -5444,6 +6671,10 @@
   "given_names": {
    "expected": "Tomás",
    "got": "Tomás Iglesias"
+  },
+  "surname2": {
+   "expected": "Pérez",
+   "got": ""
   },
   "text": "Tomás Iglesias Pérez"
  },
@@ -5546,6 +6777,10 @@
    "expected": "Laura Ángeles",
    "got": "Laura Ángeles Lastra"
   },
+  "surname2": {
+   "expected": "Santos",
+   "got": ""
+  },
   "text": "Laura Ángeles Lastra Santos"
  },
  "Q62995489/surname2-mx/givenFirst": {
@@ -5557,7 +6792,18 @@
    "expected": "Rosa",
    "got": "Rosa Castillo"
   },
+  "surname2": {
+   "expected": "Santiago",
+   "got": ""
+  },
   "text": "Rosa Castillo Santiago"
+ },
+ "Q6301224/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "y González",
+   "got": ""
+  },
+  "text": "Juan de Courten y González"
  },
  "Q63196700/patronymic-ru/givenFirst": {
   "patronymic": {
@@ -5582,6 +6828,10 @@
    "expected": "Aniceto",
    "got": "Aniceto Fernández"
   },
+  "surname2": {
+   "expected": "Alonso",
+   "got": ""
+  },
   "text": "Aniceto Fernández Alonso"
  },
  "Q63970106/surname2-co/givenFirst": {
@@ -5592,6 +6842,10 @@
   "given_names": {
    "expected": "Alberto",
    "got": "Alberto Abello"
+  },
+  "surname2": {
+   "expected": "Vives",
+   "got": ""
   },
   "text": "Alberto Abello Vives"
  },
@@ -5604,7 +6858,18 @@
    "expected": "Miguel",
    "got": "Miguel García"
   },
+  "surname2": {
+   "expected": "Martínez",
+   "got": ""
+  },
   "text": "Miguel García Martínez"
+ },
+ "Q64691618/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "i Serra",
+   "got": ""
+  },
+  "text": "Frederic Bosch i Serra"
  },
  "Q65201524/patronymic-su/givenFirst": {
   "patronymic": {
@@ -5643,6 +6908,10 @@
    "expected": "Carlos",
    "got": "Carlos Landín"
   },
+  "surname2": {
+   "expected": "Martínez",
+   "got": ""
+  },
   "text": "Carlos Landín Martínez"
  },
  "Q6672254/patronymic-my/givenFirst": {
@@ -5669,6 +6938,10 @@
    "expected": "Eduardo",
    "got": "Eduardo Iglesias"
   },
+  "surname2": {
+   "expected": "Añino",
+   "got": ""
+  },
   "text": "Eduardo Iglesias Añino"
  },
  "Q6762303/surname2-mx/givenFirst": {
@@ -5679,6 +6952,10 @@
   "given_names": {
    "expected": "Mariano",
    "got": "Mariano Aguilar"
+  },
+  "surname2": {
+   "expected": "Barrera",
+   "got": ""
   },
   "text": "Mariano Aguilar Barrera"
  },
@@ -5728,6 +7005,10 @@
    "expected": "Jaime",
    "got": "Jaime Mayor"
   },
+  "surname2": {
+   "expected": "Oreja",
+   "got": ""
+  },
   "text": "Jaime Mayor Oreja"
  },
  "Q701635/patronymic-ri/givenFirst": {
@@ -5736,6 +7017,13 @@
    "got": ""
   },
   "text": "Иосиф Владимирович Гурко"
+ },
+ "Q713959/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "i Estarriol",
+   "got": ""
+  },
+  "text": "Narcís Monturiol i Estarriol"
  },
  "Q714964/patronymic-ru/givenFirst": {
   "patronymic": {
@@ -5775,6 +7063,10 @@
    "expected": "Misael Eduardo",
    "got": "Misael Eduardo Pastrana"
   },
+  "surname2": {
+   "expected": "Borrero",
+   "got": ""
+  },
   "text": "Misael Eduardo Pastrana Borrero"
  },
  "Q732502/surname2-mx/givenFirst": {
@@ -5785,6 +7077,10 @@
   "given_names": {
    "expected": "Ricardo",
    "got": "Ricardo Legorreta"
+  },
+  "surname2": {
+   "expected": "Vilchis",
+   "got": ""
   },
   "text": "Ricardo Legorreta Vilchis"
  },
@@ -5804,7 +7100,18 @@
    "expected": "Saúl",
    "got": "Saúl González"
   },
+  "surname2": {
+   "expected": "Herrera",
+   "got": ""
+  },
   "text": "Saúl González Herrera"
+ },
+ "Q75370021/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "y Medina",
+   "got": ""
+  },
+  "text": "Fernando de Borbón y Medina"
  },
  "Q76718786/patronymic-ru/givenFirst": {
   "patronymic": {
@@ -5858,7 +7165,18 @@
    "expected": "Severo",
    "got": "Severo Aguirre"
   },
+  "surname2": {
+   "expected": "Miramón",
+   "got": ""
+  },
   "text": "Severo Aguirre Miramón"
+ },
+ "Q81620714/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "y López",
+   "got": ""
+  },
+  "text": "Felipe Valdés y López"
  },
  "Q817764/surname2-mx/givenFirst": {
   "family": {
@@ -5868,6 +7186,10 @@
   "given_names": {
    "expected": "Benjamín",
    "got": "Benjamín Castillo"
+  },
+  "surname2": {
+   "expected": "Plascencia",
+   "got": ""
   },
   "text": "Benjamín Castillo Plascencia"
  },
@@ -5879,6 +7201,10 @@
   "given_names": {
    "expected": "Anna Maria",
    "got": "Anna Maria Martínez"
+  },
+  "surname2": {
+   "expected": "Sagi",
+   "got": ""
   },
   "text": "Anna Maria Martínez Sagi"
  },
@@ -5898,6 +7224,10 @@
    "expected": "Carlos",
    "got": "Carlos Romero"
   },
+  "surname2": {
+   "expected": "Deschamps",
+   "got": ""
+  },
   "text": "Carlos Romero Deschamps"
  },
  "Q83983039/surname2-es/givenFirst": {
@@ -5908,6 +7238,10 @@
   "given_names": {
    "expected": "Jesús",
    "got": "Jesús Alcolea"
+  },
+  "surname2": {
+   "expected": "Fernández",
+   "got": ""
   },
   "text": "Jesús Alcolea Fernández"
  },
@@ -5920,7 +7254,18 @@
    "expected": "María del Pilar",
    "got": "María"
   },
+  "surname2": {
+   "expected": "Montaño",
+   "got": ""
+  },
   "text": "María del Pilar Hurtado Montaño"
+ },
+ "Q85633810/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "y Reig",
+   "got": ""
+  },
+  "text": "Felipe Benicio Navarro y Reig"
  },
  "Q85689041/surname2-co/givenFirst": {
   "family": {
@@ -5930,6 +7275,10 @@
   "given_names": {
    "expected": "Alexander",
    "got": "Alexander Parra"
+  },
+  "surname2": {
+   "expected": "Uribe",
+   "got": ""
   },
   "text": "Alexander Parra Uribe"
  },
@@ -5941,6 +7290,10 @@
   "given_names": {
    "expected": "Vicente",
    "got": "Vicente Gómez"
+  },
+  "surname2": {
+   "expected": "Mier",
+   "got": ""
   },
   "text": "Vicente Gómez Mier"
  },
@@ -5959,6 +7312,10 @@
   "given_names": {
    "expected": "Gabriela",
    "got": "Gabriela Abad"
+  },
+  "surname2": {
+   "expected": "Miró",
+   "got": ""
   },
   "text": "Gabriela Abad Miró"
  },
@@ -5993,6 +7350,10 @@
    "expected": "Eulalio",
    "got": "Eulalio Ríos"
   },
+  "surname2": {
+   "expected": "Alemán",
+   "got": ""
+  },
   "text": "Eulalio Ríos Alemán"
  },
  "Q88677122/surname2-es/givenFirst": {
@@ -6004,7 +7365,25 @@
    "expected": "José",
    "got": "José Perianes"
   },
+  "surname2": {
+   "expected": "Carro",
+   "got": ""
+  },
   "text": "José Perianes Carro"
+ },
+ "Q89408005/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "i Pigem",
+   "got": ""
+  },
+  "text": "Joan Canals i Pigem"
+ },
+ "Q8961097/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "i Alaiz",
+   "got": ""
+  },
+  "text": "Felip Lorda i Alaiz"
  },
  "Q9023260/surname2-es/givenFirst": {
   "family": {
@@ -6014,6 +7393,10 @@
   "given_names": {
    "expected": "Llorenç",
    "got": "Llorenç Ferrer"
+  },
+  "surname2": {
+   "expected": "Martí",
+   "got": ""
   },
   "text": "Llorenç Ferrer Martí"
  },
@@ -6026,6 +7409,10 @@
    "expected": "Manuel",
    "got": "Manuel Sánchez"
   },
+  "surname2": {
+   "expected": "Mármol",
+   "got": ""
+  },
   "text": "Manuel Sánchez Mármol"
  },
  "Q9030148/surname2-mx/givenFirst": {
@@ -6036,6 +7423,10 @@
   "given_names": {
    "expected": "María",
    "got": "María Rubio"
+  },
+  "surname2": {
+   "expected": "Tejero",
+   "got": ""
   },
   "text": "María Rubio Tejero"
  },
@@ -6048,6 +7439,10 @@
    "expected": "Rafael",
    "got": "Rafael Ruiz"
   },
+  "surname2": {
+   "expected": "Balerdi",
+   "got": ""
+  },
   "text": "Rafael Ruiz Balerdi"
  },
  "Q9072991/surname2-mx/givenFirst": {
@@ -6058,6 +7453,10 @@
   "given_names": {
    "expected": "Salvador",
    "got": "Salvador Aguirre"
+  },
+  "surname2": {
+   "expected": "Anguiano",
+   "got": ""
   },
   "text": "Salvador Aguirre Anguiano"
  },
@@ -6070,6 +7469,10 @@
    "expected": "Antonio",
    "got": "Antonio López"
   },
+  "surname2": {
+   "expected": "Aviña",
+   "got": ""
+  },
   "text": "Antonio López Aviña"
  },
  "Q93221888/surname2-mx/givenFirst": {
@@ -6081,7 +7484,18 @@
    "expected": "Rafael",
    "got": "Rafael Aguayo"
   },
+  "surname2": {
+   "expected": "Spencer",
+   "got": ""
+  },
   "text": "Rafael Aguayo Spencer"
+ },
+ "Q93370135/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "i Pérez",
+   "got": ""
+  },
+  "text": "Eugeni Aguiló i Pérez"
  },
  "Q93419447/surname2-es/givenFirst": {
   "family": {
@@ -6091,6 +7505,10 @@
   "given_names": {
    "expected": "José Manuel",
    "got": "José Manuel López"
+  },
+  "surname2": {
+   "expected": "de Abiada",
+   "got": ""
   },
   "text": "José Manuel López de Abiada"
  },
@@ -6103,6 +7521,10 @@
    "expected": "José María",
    "got": "José María Luzón"
   },
+  "surname2": {
+   "expected": "Cuesta",
+   "got": ""
+  },
   "text": "José María Luzón Cuesta"
  },
  "Q94643621/surname2-mx/givenFirst": {
@@ -6114,7 +7536,25 @@
    "expected": "Jacinto",
    "got": "Jacinto López"
   },
+  "surname2": {
+   "expected": "Moreno",
+   "got": ""
+  },
   "text": "Jacinto López Moreno"
+ },
+ "Q94657090/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "y Grimaud",
+   "got": ""
+  },
+  "text": "Joaquín Odriozola y Grimaud"
+ },
+ "Q95422056/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "i Senserrich",
+   "got": ""
+  },
+  "text": "Josep Ibáñez i Senserrich"
  },
  "Q956043/patronymic-is/givenFirst": {
   "family": {
@@ -6140,6 +7580,10 @@
    "expected": "Crisanto",
    "got": "Crisanto Luque"
   },
+  "surname2": {
+   "expected": "Sánchez",
+   "got": ""
+  },
   "text": "Crisanto Luque Sánchez"
  },
  "Q96060653/surname2-mx/givenFirst": {
@@ -6150,6 +7594,10 @@
   "given_names": {
    "expected": "Francis Anel",
    "got": "Francis Anel Bueno"
+  },
+  "surname2": {
+   "expected": "Sánchez",
+   "got": ""
   },
   "text": "Francis Anel Bueno Sánchez"
  },
@@ -6162,7 +7610,32 @@
    "expected": "Francisco Javier",
    "got": "Francisco Javier Fortea"
   },
+  "surname2": {
+   "expected": "Pérez",
+   "got": ""
+  },
   "text": "Francisco Javier Fortea Pérez"
+ },
+ "Q96181785/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "y Medrano",
+   "got": ""
+  },
+  "text": "Antonio Atienza y Medrano"
+ },
+ "Q965486/surname2-mx/givenFirst": {
+  "surname2": {
+   "expected": "i Gimpera",
+   "got": ""
+  },
+  "text": "Pere Bosch i Gimpera"
+ },
+ "Q969084/surname2-es/givenFirst": {
+  "surname2": {
+   "expected": "i Aixalà",
+   "got": ""
+  },
+  "text": "Roger Alier i Aixalà"
  },
  "Q970917/surname2-co/givenFirst": {
   "family": {
@@ -6172,6 +7645,10 @@
   "given_names": {
    "expected": "Nemesio",
    "got": "Nemesio Camacho"
+  },
+  "surname2": {
+   "expected": "Macías",
+   "got": ""
   },
   "text": "Nemesio Camacho Macías"
  },
@@ -6210,6 +7687,10 @@
    "expected": "Pilar",
    "got": "Pilar Fernández"
   },
+  "surname2": {
+   "expected": "Seijo",
+   "got": ""
+  },
   "text": "Pilar Fernández Seijo"
  },
  "Q984003/patronymic-is/givenFirst": {
@@ -6235,6 +7716,10 @@
   "given_names": {
    "expected": "Juan",
    "got": "Juan Santos"
+  },
+  "surname2": {
+   "expected": "Fernández",
+   "got": ""
   },
   "text": "Juan Santos Fernández"
  }

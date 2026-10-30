@@ -7,7 +7,9 @@ one carrying ``field_tail`` is worded from its word's final role,
 #626), and segments, for the part a withdrawn connective report's
 letter ends (rules/P8, #721).
 Produces: a validated ParsedName, each token carrying the reading the
-parse took (`Token.reading`) -- the constructor re-checks every
+parse took (`Token.reading`), a word of the family's second unit
+marked `Reading.second_surname` where O6's tag says so (rules/R10) --
+the constructor re-checks every
 invariant (span order/bounds, ambiguity subset), so a pipeline bug
 that would produce an invalid result dies HERE, not in a renderer
 three layers away.
@@ -40,8 +42,8 @@ from nameparser._lexicon import _VOCAB_FIELDS, Lexicon, _normalize
 from nameparser._pipeline._state import (
     AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, ATTACHED_TAG,
     CREDENTIAL_WORD_TAG, FIELD_READING, GENERATION_WORD_TAG,
-    NAME_ROLES, PATRONYMIC_TAG, SHAPE_ACRONYM_TAG, SPLIT_CREDENTIAL_TAG,
-    SPLIT_MEMBER_TAG,
+    NAME_ROLES, PATRONYMIC_TAG, SECOND_SURNAME_TAG, SHAPE_ACRONYM_TAG,
+    SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG,
     TITLE_AMBIGUOUS_TAG, Beside, Deferred, ParseState, PendingAmbiguity,
     Structure, WorkToken, comma_bucket,
 )
@@ -208,6 +210,10 @@ _reading = functools.lru_cache(maxsize=1024)(Reading)
 #: published token carries: `Token.reading` names the kind.
 _KIND_TAGS = frozenset({GENERATION_WORD_TAG, CREDENTIAL_WORD_TAG,
                         PATRONYMIC_TAG, ATTACHED_TAG})
+
+#: O6's second-surname mark (rules/R10), which no published token
+#: carries either: `Reading.second_surname` names it.
+_SECOND_SURNAME = frozenset({SECOND_SURNAME_TAG})
 
 #: The tags that say a list or a shape made a word a suffix: without
 #: one, a suffix word stands there by position, unless the vocabulary
@@ -400,6 +406,13 @@ def assemble(state: ParseState) -> ParsedName:
             continue
         role = t.role if t.role is not None else Role.GIVEN
         tags = t.tags
+        # rules/R10: "the family's second name unit, the one written
+        # second, makes the second-surname view" -- O6's mark, on family
+        # words only; the word is read below as it reads without it,
+        # and its reading then carries the mark (decisions/R10, #754)
+        second = SECOND_SURNAME_TAG in tags
+        if second:
+            tags = tags - _SECOND_SURNAME
         # The reading the parse took (Token.reading): the final role
         # says which decision placed the word, and the tags the
         # deciding stages left (classify's, the `joined` and unjoined
@@ -554,8 +567,10 @@ def assemble(state: ParseState) -> ParsedName:
                 text, span, frole, ftags, freading = held.pop(markers[i])
                 if (kind is ReadingKind.PATRONYMIC
                         and freading.kind is not ReadingKind.PATRONYMIC):
-                    freading = _READINGS[ReadingKind.PATRONYMIC, frole,
-                                         ReadingSource.POSITION]
+                    # a father in the second surname keeps the mark
+                    freading = _reading(ReadingKind.PATRONYMIC, frole,
+                                        ReadingSource.POSITION, (),
+                                        freading.second_surname)
                 final[markers[i]] = Token(text, span, frole, ftags, freading)
             langs = _languages(t.text, kind, field) if source in _LISTED else ()
             if (not langs and source in _LISTED
@@ -564,6 +579,8 @@ def assemble(state: ParseState) -> ParsedName:
                 langs = ()
             reading = (_reading(kind, role, source, langs) if langs
                        else _READINGS[kind, role, source])
+            if second:
+                reading = _reading(kind, role, source, langs, True)
         if not tags.isdisjoint(_KIND_TAGS):
             # the kind tags serve the stages and this one, whatever the
             # word's field (a lone 'Jr' is a given name); the reading
@@ -586,10 +603,12 @@ def assemble(state: ParseState) -> ParsedName:
             if (tok.role is Role.FAMILY and FOLDED_TAG not in tok.tags
                     and tok.reading is not None
                     and tok.reading.kind is not ReadingKind.PATRONYMIC):
+                # a word of the second surname keeps the mark
                 final[j] = Token(tok.text, tok.span, tok.role, tok.tags,
-                                 _READINGS[ReadingKind.PATRONYMIC,
-                                           Role.FAMILY,
-                                           ReadingSource.POSITION])
+                                 _reading(ReadingKind.PATRONYMIC,
+                                          Role.FAMILY,
+                                          ReadingSource.POSITION, (),
+                                          tok.reading.second_surname))
     # No alphanumeric character among the SURVIVING tokens means no
     # name: a bare '.' or '- -' is not a person. v1 kept such input
     # (parse('.') -> first '.'); 2.0 empties it so bool() stays an

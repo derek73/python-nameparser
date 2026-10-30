@@ -975,6 +975,19 @@ an initial written alone never joins the family:
     >>> two_names.parse("Dr. Juan Pérez de la Vega Jr.").family
     'Pérez de la Vega'
 
+``surname2`` names the second of the two, which ``family`` keeps, so a
+caller addressing or filing by the first takes it off; a name the
+switch reads as one family has none:
+
+.. doctest::
+
+    >>> ana.surname2
+    'López'
+    >>> ana.family.removesuffix(" " + ana.surname2)
+    'García'
+    >>> two_names.parse("Ana María García-López").surname2
+    ''
+
 A family that already holds two names keeps what it has, whether a
 hyphen or ``y`` joins them (``"Ana María García-López"``, ``"José
 Ortega y Gasset"``) or a particle chain took them both: a compound

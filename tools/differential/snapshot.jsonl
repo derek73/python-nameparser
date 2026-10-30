@@ -1,4 +1,4 @@
-{"recorded": ["capitalized", "capitalized_force", "alternatives", "generation", "credentials", "patronymic"]}
+{"recorded": ["capitalized", "capitalized_force", "alternatives", "generation", "credentials", "patronymic", "surname2"]}
 {"name": ""}
 {"name": "\"Rick\" Edmonds", "family": "Edmonds", "nickname": "Rick", "initials": "E."}
 {"name": "'Smitty' Dr. Jones", "title": "Dr.", "family": "Jones", "nickname": "Smitty", "initials": "J."}
@@ -154,6 +154,7 @@
 {"name": "Ali Ahmad Vali oglu Jr.", "given": "Ali", "middle": "Ahmad Vali", "family": "oglu", "suffix": "Jr.", "initials": "A. A. V. o.", "capitalized_force": "Ali Ahmad Vali Oglu Jr.", "generation": "Jr."}
 {"name": "Ali Ahmad oglu", "given": "Ali", "middle": "Ahmad", "family": "oglu", "initials": "A. A. o.", "capitalized_force": "Ali Ahmad Oglu"}
 {"name": "Ali Amina", "order": "FAMILY_FIRST", "given": "Amina", "family": "Ali", "initials": "A. A."}
+{"name": "Ali Hassan bin Ahmad", "given": "Ali", "middle": "Hassan", "family": "bin Ahmad", "initials": "A. H. A.", "patronymic": "bin Ahmad"}
 {"name": "Ali Juma Hamisi", "given": "Ali", "middle": "Juma", "family": "Hamisi", "initials": "A. J. H."}
 {"name": "Ali Kara Oğlu", "given": "Ali", "middle": "Kara", "family": "Oğlu", "initials": "A. K. O."}
 {"name": "Ali bin Ahmad bin Hasan", "given": "Ali", "middle": "bin Ahmad", "family": "bin Hasan", "initials": "A. A. H.", "patronymic": "bin Ahmad bin Hasan"}
@@ -2322,6 +2323,7 @@
 {"name": "Lloret Palol II, JA", "given": "Lloret", "family": "Palol", "suffix": "II, JA", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "L. P.", "generation": "II", "credentials": "JA"}
 {"name": "Lloret Palol II, Josep Antoni", "given": "Josep", "middle": "Antoni", "family": "Lloret Palol", "suffix": "II", "initials": "J. A. L. P.", "generation": "II"}
 {"name": "Lloret Palol, Josep Antoni Carles Joan", "given": "Josep", "middle": "Antoni Carles Joan", "family": "Lloret Palol", "initials": "J. A. C. J. L. P."}
+{"name": "Lloyd Webber, Andrew", "given": "Andrew", "family": "Lloyd Webber", "initials": "A. L. W."}
 {"name": "Lluis Carod i", "given": "Lluis", "family": "Carod", "suffix": "i", "initials": "L. C.", "capitalized_force": "Lluis Carod I", "generation": "i"}
 {"name": "Lockroy", "given": "Lockroy", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "L."}
 {"name": "Lodewijk van Oranje-Nassau", "given": "Lodewijk", "family": "van Oranje-Nassau", "initials": "L. O."}

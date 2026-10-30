@@ -1255,3 +1255,172 @@ def test_a_patronymic_parsedname_pickled_by_2_8_0_loads_equal() -> None:
     assert attached.patronymic == "bin Abu Bakar"
     assert not any(t == "vocab:attached"
                    for tok in attached.tokens for t in tok.tags)
+
+
+# -- the surname2 view (rules/R10, 3.0's 4d) ---------------------------
+
+_GF, _FF, _FFGL = GIVEN_FIRST, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST
+
+#: (text, name_order, middle_as_family, surname2) under
+#: two_family_names; every row reads '' with the switch off. The ''
+#: rows are the shapes rules/O6 declines, each kept so a widening of
+#: what fills the view shows here (AGENTS.md's widened-check rule).
+_SURNAME2_ROWS = [
+    # given-first: the family O6 found is the second unit
+    ("Gabriel García Márquez", _GF, False, "Márquez"),
+    ("Ana María García López", _GF, False, "López"),
+    ("Juan Pérez de la Vega", _GF, False, "de la Vega"),
+    # O3 folds the middles left in front of both units, into neither
+    ("Ana María García López", _GF, True, "López"),
+    # titles, suffixes and nicknames are no name words
+    ("Gabriel García Márquez Jr.", _GF, False, "Márquez"),
+    ("Dr. Ana García López", _GF, False, "López"),
+    ("Gabriel García Márquez, PhD", _GF, False, "Márquez"),
+    ("Ana García (Anita) López", _GF, False, "López"),
+    # family-first: the word O6 took is the second unit
+    ("García Márquez Gabriel", _FF, False, "Márquez"),
+    ("García Márquez Ana María", _FFGL, False, "Márquez"),
+    ("García Márquez Ana María", _FF, True, "Márquez"),
+    ("García Márquez Ana María", _FFGL, True, "Márquez"),
+    ("de Mesnil Jean Paul", _FF, False, "Jean"),
+    ("van Gogh Ana María", _FF, False, "Gogh"),
+    # P6's particle attaches to the first unit and stays out
+    ("Beethoven Ludwig Maria van", _FF, False, "Ludwig"),
+    ("Beethoven Ludwig Maria van", _FF, True, "Ludwig"),
+    # a family comma alone marks nothing, in every comma shape
+    ("Lloyd Webber, Andrew", _GF, False, ""),
+    ("García López, Ana", _GF, False, ""),
+    ("García López, Ana", _FF, True, ""),
+    ("López, Ana García", _GF, True, ""),
+    ("Ana, García López", _GF, False, ""),
+    (", Ana García López", _GF, False, ""),
+    (", Ana García López", _GF, True, ""),
+    ('"Anita", Ana García López', _GF, True, ""),
+    # a family that already holds two words keeps them as one unit
+    ("Ana María García-López", _GF, False, ""),
+    ("Ana María García-López", _GF, True, ""),
+    ("José María Ortega y Gasset", _GF, False, ""),
+    ("Juan Pérez y Gómez", _GF, False, ""),
+    ("García de la Vega López", _GF, False, ""),
+    ("Ana María de la Vega Rodríguez", _GF, False, ""),
+    # O6's other declines
+    ("Ana García", _GF, False, ""),
+    ("Ana María-José López", _GF, False, ""),
+    ("Ana abdul Rahman López", _GF, False, ""),
+    ("Ana M. García", _GF, False, ""),
+    ("Juan de la Vega Rodríguez", _FF, False, ""),
+    ("王 小 明", _GF, False, ""),
+]
+
+
+@pytest.mark.parametrize("text,order,fold,want", _SURNAME2_ROWS)
+def test_the_surname2_view_reads_the_second_unit_o6_read(
+        text: str, order: tuple[Role, Role, Role], fold: bool,
+        want: str) -> None:
+    on = Parser(policy=Policy(two_family_names=True, name_order=order,
+                              middle_as_family=fold)).parse(text)
+    off = Parser(policy=Policy(name_order=order,
+                               middle_as_family=fold)).parse(text)
+    assert on.surname2 == want
+    assert off.surname2 == ""
+    if want:
+        # a part of `family`, which keeps both units, ending it
+        assert on.family.endswith(" " + want)
+    # the mark never reaches a published token, which compares its tags
+    assert not any(t == "vocab:second-surname"
+                   for tok in on.tokens for t in tok.tags)
+
+
+def test_the_second_surname_keeps_the_reading_it_took() -> None:
+    # a patronymic run in the second unit reads both views (rules/R9)
+    two = Parser(policy=Policy(two_family_names=True))
+    pn = two.parse("Ali Hassan bin Ahmad")
+    assert (pn.family, pn.surname2, pn.patronymic) == (
+        "Hassan bin Ahmad", "bin Ahmad", "bin Ahmad")
+    assert [str(t.reading) for t in pn.tokens[2:]] == [
+        "Reading('patronymic' as 'family', 'vocabulary', in ar ms, "
+        "second surname)",
+        "Reading('patronymic' as 'family', 'position', second surname)"]
+    # and a word P6's attached particle makes a parent's name keeps it
+    ff = Parser(policy=Policy(two_family_names=True,
+                              name_order=FAMILY_FIRST))
+    pn = ff.parse("Mohamad Ali Mahathir bin")
+    assert (pn.family, pn.surname2, pn.patronymic) == (
+        "bin Mohamad Ali", "Ali", "bin Mohamad Ali")
+
+
+def test_the_surname2_view_beside_an_east_slavic_patronymic() -> None:
+    from nameparser import locales, parser_for
+    ru = parser_for(locales.RU)
+    p = Parser(lexicon=ru.lexicon,
+               policy=dataclasses.replace(ru.policy, two_family_names=True))
+    pn = p.parse("Ivan Sergeyevich Petrov Ivanov")
+    assert (pn.middle, pn.family, pn.surname2, pn.patronymic) == (
+        "Sergeyevich", "Petrov Ivanov", "Ivanov", "Sergeyevich")
+    # where the rotation fires it decided the family, and O6 reads none
+    pn = p.parse("Ivanov Ivan Ivanovich")
+    assert (pn.family, pn.surname2) == ("Ivanov", "")
+
+
+def test_the_surname2_view_is_a_render_key_and_not_a_field() -> None:
+    p = Parser(policy=Policy(two_family_names=True))
+    pn = p.parse("Gabriel García Márquez")
+    assert pn.render("{surname2}, {given}") == "Márquez, Gabriel"
+    assert "surname2" not in pn.as_dict()
+    assert "surname2" not in repr(pn)
+    assert pn.comparison_key() == parse("Gabriel García Márquez").replace(
+        middle="", family="García Márquez").comparison_key()
+    with pytest.raises(TypeError):
+        pn.replace(surname2="López")  # type: ignore[call-arg]
+    # a family written by replace() or revise() carries no reading
+    assert pn.replace(family="García Márquez").surname2 == ""
+    assert p.revise(pn, family="García Márquez").surname2 == ""
+    assert pn.replace(title="Dr.").surname2 == "Márquez"
+
+
+def test_a_two_family_name_parsedname_pickled_by_2_8_0_loads_equal() -> None:
+    """tests/v2/data/parsedname_v28_two_family_names.pickle is
+    `Parser(policy=Policy(two_family_names=True)).parse("Gabriel García
+    Márquez")` pickled (protocol 4) by the released 2.8.0 wheel, made
+    2026-10-29 as the fixtures above were, version and module path
+    asserted. O6's mark never reaches a published token, and
+    `Reading.second_surname` is not compared, so the 2.x name is equal
+    to its 3.0 parse and, with no readings, has no second surname.
+    pickle.load is safe here: a repo-controlled fixture."""
+    import pickle
+    with open(Path(__file__).parent / "data"
+              / "parsedname_v28_two_family_names.pickle", "rb") as f:
+        loaded = pickle.load(f)
+    now = Parser(policy=Policy(two_family_names=True)).parse(
+        "Gabriel García Márquez")
+    assert loaded == now
+    assert (loaded.surname2, now.surname2) == ("", "Márquez")
+    again = pickle.loads(pickle.dumps(now))
+    assert again.surname2 == "Márquez"
+
+
+def test_reading_second_surname_is_a_bool_and_is_not_compared() -> None:
+    from nameparser import Reading
+    plain = Reading("name", "family", "position")  # type: ignore[arg-type]
+    second = Reading("name", "family", "position", (), True)  # type: ignore[arg-type]
+    assert plain.second_surname is False and second.second_surname is True
+    assert second == plain and hash(second) == hash(plain)
+    assert repr(second) == "Reading('name' as 'family', 'position', second surname)"
+    assert repr(plain) == "Reading('name' as 'family', 'position')"
+    with pytest.raises(TypeError, match=r"must be a bool, got 1; pass True"):
+        Reading("name", "family", "position", (), 1)  # type: ignore[arg-type]
+
+
+def test_a_reading_pickled_by_2_8_0_loads_with_no_second_surname() -> None:
+    # the alternative fixture's Reading predates the field (ADDED_IN)
+    import pickle
+    with open(Path(__file__).parent / "data"
+              / "parsedname_v28_alternative.pickle", "rb") as f:
+        loaded = pickle.load(f)
+    (amb,) = loaded.ambiguities
+    assert amb.alternative is not None
+    assert amb.alternative.second_surname is False
+    # and a fresh report's alternative never names one
+    (now,) = parse("JOHN SMITH MA").ambiguities
+    assert now.alternative is not None
+    assert now.alternative.second_surname is False

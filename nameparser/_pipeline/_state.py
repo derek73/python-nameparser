@@ -122,6 +122,12 @@ PATRONYMIC_TAG = "vocab:patronymic"
 #: dropped from the published token like the kind tags above.
 ATTACHED_TAG = "vocab:attached"
 
+#: On each word of the second name unit rules/O6 reads a family as,
+#: written where O6 takes its word, and dropped from the published
+#: token like the kind tags above: `Reading.second_surname` carries it
+#: out (rules/R10, 3.0's 4d).
+SECOND_SURNAME_TAG = "vocab:second-surname"
+
 #: On a word of `Lexicon.titles_ambiguous` whichever way classify read
 #: it (rules/H9): read as a title it carries "vocab:title" too, read
 #: out of the title it carries this alone, which is how assign finds

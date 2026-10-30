@@ -93,7 +93,7 @@ _POINTER_PART_RE = re.compile(
 _NEAR_NO_BOUNDARY_RE = re.compile(r"^\s*[*_]*no-boundary\b", re.IGNORECASE)
 #: An example's arrow and assertion, wherever it stands: outside a
 #: fence a line holding one is an example that would never run.
-_ARROW_FIELD_RE = re.compile(r"\s→\s+(?P<field>[a-z_]+)=")
+_ARROW_FIELD_RE = re.compile(r"\s→\s+(?P<field>[a-z_][a-z0-9_]*)=")
 #: A bullet marker other than `- ` then text: `* `, `+ `, a numbered
 #: item (`1. `, `1) `), or a hyphen glued to its text.
 _MALFORMED_BULLET_RE = re.compile(r"^(?:[*+](?:\s|$)|-(?! )|\d+[.)](?:\s|$))")

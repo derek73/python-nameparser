@@ -748,6 +748,21 @@ name written without the particle has none:
     >>> parse("Anwar Ibrahim").patronymic
     ''
 
+``surname2`` is the family's second name, where the parse read the
+family as two: only with ``two_family_names`` on
+(:ref:`two-family-names`), and ``family`` keeps both. Every other name
+has none, a family comma's and a hyphenated one included:
+
+.. doctest::
+
+    >>> from nameparser import Parser, Policy
+    >>> marquez = Parser(policy=Policy(two_family_names=True)).parse(
+    ...     "Gabriel García Márquez")
+    >>> marquez.family, marquez.surname2
+    ('García Márquez', 'Márquez')
+    >>> parse("Gabriel García Márquez").surname2
+    ''
+
 Dicts and strings
 ------------------
 

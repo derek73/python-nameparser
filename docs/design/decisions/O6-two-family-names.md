@@ -3,7 +3,7 @@
 ## Standing
 
 - Two family names are an opt-in `Policy` switch, `two_family_names`, off by default, and not a locale pack: the convention is Spain's and most of Latin America's but not Argentina's, and given-first it is the same string shape as a name with a middle name, so no default can read it — 2026-10-24 #754.
-- Both family names stay in `family` through 2.x; a second-surname field is the RFC's Phase 4 output model (docs/design/vocabulary-model-rfc.md, "The rules a pack can choose"), and a pack may later switch this rule on — 2026-10-24 #754.
+- Both family names stay in `family` through 2.x; a second-surname field is the RFC's Phase 4 output model (docs/design/vocabulary-model-rfc.md, "The rules a pack can choose"), and a pack may later switch this rule on — 2026-10-24 #754; landed as the `surname2` view, `family` keeping both, 2026-10-29 #754, sub-phase 4d.
 - The family's words are counted as P1's fold counts them, a connective join and a hyphen counting as their words, so a family already holding two keeps what it has; the word taken must count as one by the same count and be no initial written alone — 2026-10-24 #754.
 - A name its script (W4) reads in an order other than the declared `name_order` is left alone; where the two agree it is read like any other — 2026-10-24 #754.
 - Under a family-first order the first two name words are the family, the remainder laid out as the positions after a family — 2026-10-24 #754.
@@ -57,3 +57,5 @@
   | PH | 20,000 | 94.7% → 54.9% | 265 | 8,234 | 8,024 |
 
   Measured on master at 598167f4 over the 2025 Public Data File's extract fetched 2026-10-27. Recompute: `local_agreement.read` per record of `local_corpora.load("orcid-researchers")` with `FIELDED["orcid-researchers"]`, under `Parser()` and under `Parser(policy=Policy(two_family_names=True))` with `_title_words` of the default lexicon, grouped by the record's `country`; a record is fixed where it agrees only with the switch, broken where it agrees only without it, and the last column counts the broken records whose `family` box holds one word. A corpus capped at 20,000 records a country shows each country's convention, not how many people write it.
+
+- 2026-10-29 #754, sub-phase 4d — THE TWO UNITS THIS RULE READS REACH A VIEW: `surname2` holds the one written second, `family` keeping both as before, and the rule marks that unit's words where it takes its word; nothing it reads or declines moved. The view, the mark and their measurement are rules/R10 and decisions/R10's 2026-10-29 entry.

@@ -9,7 +9,9 @@ renders other than capitalized() does (#826). The suffix's two views
 (rules/R8) are recorded where the suffix holds a generation:
 `generation` then, and `credentials` beside it where the suffix holds
 both, so a suffix with no `generation` recorded is all credentials.
-The `patronymic` view (rules/R9) is recorded where it is not empty.
+The `patronymic` view (rules/R9) is recorded where it is not empty,
+and so is `surname2` (rules/R10), which only a policy turning on two
+family names fills, so no row of the default reading records it.
 tests/v2/test_snapshot.py fails when the tree's readings stop matching
 it. A change that moves readings re-records, and the PR diff of
 snapshot.jsonl is the list of names it moved -- one line per name, so
@@ -222,6 +224,8 @@ def row(name: str, order: str | None, v2: dict[str, Any] | None,
             out["credentials"] = v2["_credentials"]
     if v2.get("_patronymic"):
         out["patronymic"] = v2["_patronymic"]
+    if v2.get("_surname2"):
+        out["surname2"] = v2["_surname2"]
     return out
 
 
@@ -260,13 +264,17 @@ def alternatives(p: ParsedName) -> list[str]:
 SUFFIX_VIEWS = ("generation", "credentials")
 #: The patronymic view a row records where it is not empty (rules/R9).
 PATRONYMIC_VIEW = ("patronymic",)
+#: The second-surname view a row records where it is not empty
+#: (rules/R10).
+SURNAME2_VIEW = ("surname2",)
 
 #: The keys a row came to record after the snapshot existed, each with
 #: the change that added it: a snapshot recorded before it carries none
 #: of them, so a comparison against it leaves them out.
 RECORDED_LATER = ((CASE_VIEWS, "#826"), (("alternatives",), "#752 phase 2m"),
                   (SUFFIX_VIEWS, "3.0's 4b (#326)"),
-                  (PATRONYMIC_VIEW, "3.0's 4c (#754)"))
+                  (PATRONYMIC_VIEW, "3.0's 4c (#754)"),
+                  (SURNAME2_VIEW, "3.0's 4d (#754)"))
 
 #: The key of a snapshot's first line since #752 phase 2m, naming the
 #: `RECORDED_LATER` keys the tree that recorded it could record, so a
@@ -290,7 +298,9 @@ def recorded_keys() -> tuple[str, ...]:
             + (SUFFIX_VIEWS if hasattr(nameparser.ParsedName, "generation")
                else ())
             + (PATRONYMIC_VIEW
-               if hasattr(nameparser.ParsedName, "patronymic") else ()))
+               if hasattr(nameparser.ParsedName, "patronymic") else ())
+            + (SURNAME2_VIEW
+               if hasattr(nameparser.ParsedName, "surname2") else ()))
 
 
 def recorded(text: str) -> frozenset[str] | None:
@@ -420,6 +430,7 @@ def _read_chunk(entries: Sequence[Entry], languages: tuple[str, ...] = ()
         v2["_generation"] = getattr(p, "generation", "")
         v2["_credentials"] = getattr(p, "credentials", "")
         v2["_patronymic"] = getattr(p, "patronymic", "")
+        v2["_surname2"] = getattr(p, "surname2", "")
         v2.update(case_views(str(p), str(parsers[order].capitalized(p)),
                              str(parsers[order].capitalized(p, force=True))))
         rows.append(row(name, order, v2))

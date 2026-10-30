@@ -57,8 +57,10 @@ merge does, and `patronymic` inside `given_names`, since a patronymic
 is not a family name (the GND and LC convention: `Vigdís
 Finnbogadóttir` expects the family empty). They are in PENDING_ROLES,
 and each is also scored on its own once ParsedName has an attribute of
-that name (`patronymic` since 3.0's 4c, rules/R9); until then the
-summary says how many renderings state it. Scoring a field on its own does not end the merged
+that name (`patronymic` since 3.0's 4c, rules/R9, and `surname2` since
+4d, rules/R10, which only `two_family_names` fills, so every stated
+second surname is recorded as not read); until then the summary says
+how many renderings state it. Scoring a field on its own does not end the merged
 scoring; only a 3.0 decision to take the field out of `family` or
 `given_names` changes PENDING_ROLES. The conventions source's
 `honorific` is not pending: it is scored inside `suffix` by design, as
