@@ -1,6 +1,10 @@
 schema = 1
 
 [[word]]
+text = "f"
+excluded = { agnomen = { reason = "Filho written short in 15 tse-donors filed/registry pairs (2026-10-25), but written exactly as an initial is, and in those filings mostly one: turned on by a Brazilian Portuguese choice it moved 152 tse-donors names (measured with 'n' on too) that the choice of Portuguese alone does not, and in 104 of them the registry spells a surname the letter abbreviates (ANA MARIA F, registry ANA MARIA FILGUEIRAS) where in 48 it spells FILHO (2026-10-30). No writing tells the two apart, so no pack reads it", issue = [843, 753], decided = 2026-10-30 } }
+
+[[word]]
 text = "fil"
 excluded = { agnomen = { reason = "Filho written short in 10 tse-donors filed/registry pairs (2026-10-25), but a Slavic and Polish surname (US Census 220, Wikidata 6 with Poland and Ukraine) that a name of three words would lose to the suffix: the measurement against master moved 11 tse-donors names toward the registry and two UK PSC filers' surnames Fil away from the box they typed it in, one a regression, and a JRC-Names surname behind an initial", issue = [843, 752], decided = 2026-10-27 } }
 
@@ -20,6 +24,10 @@ agnomen = { same_as = "filho", gender = "m", issue = [843, 752], expands = "the 
 family = { us_census_2010 = 238, wikidata = 6, as_of = 2026-10-27, note = "Italian (Dario Fo) and Asian surname bearers; a name of two words keeps it as the family name, and a third word before it reads it as the agnomen, reported (rules/S11's Accepted clause)" }
 
 [[word]]
+text = "n"
+excluded = { agnomen = { reason = "Neto written short in 6 tse-donors filed/registry pairs (2026-10-25), but written exactly as an initial is, and in those filings mostly one: turned on by a Brazilian Portuguese choice it moved 77 tse-donors names (measured with 'f' on too) that the choice of Portuguese alone does not, and in 59 of them the registry spells a surname the letter abbreviates (EDINEI VITAL N, registry EDINEI VITAL DO NASCIMENTO) where in 18 it spells NETO (2026-10-30). No writing tells the two apart, so no pack reads it", issue = [843, 753], decided = 2026-10-30 } }
+
+[[word]]
 text = "net"
 agnomen = { same_as = "neto", gender = "m", issue = [843, 752], expands = "the grandson, abbreviated", note = "tse-donors (2026-10-25) has 12 filed/registry pairs writing NET where the registry writes NETO; NPPES has no provider writing it as a credential" }
 family = { us_census_2010 = 118, wikidata = 2, as_of = 2026-10-27 }
@@ -36,7 +44,8 @@ family = { note = "no source counts it as a name; declared as neto's is, so that
 
 [[word]]
 text = "sb"
-excluded = { agnomen = { reason = "Sobrinho written short in 11 tse-donors filed/registry pairs (2026-10-25), but also S.B., the Bachelor of Science, written SB by 23 ClinicalTrials.gov officials (9 after a comma) and 2 NPPES providers (2026-10-27): listed as an agnomen it took the degree as Sobrinho's spelling and capitalized(force=True) recased it to Sb. A credential reading is the question to settle first", issue = [843, 752], decided = 2026-10-27 } }
+agnomen = { default = false, same_as = "sobrinho", gender = "m", issue = [843, 752, 753], expands = "the nephew, abbreviated", cased = "SB", note = "Off by default: tse-donors (2026-10-25) has 11 filed/registry pairs writing SB where the registry writes SOBRINHO, but SB is also S.B., the Bachelor of Science, which 23 ClinicalTrials.gov officials (9 after a comma) and 2 NPPES providers write (2026-10-27), and listed by default it read the degree as Sobrinho's spelling. A Brazilian Portuguese pack turns it on: it then moved 13 tse-donors names that the choice of Portuguese alone does not, and the registry spells SOBRINHO in every one (2026-10-30). The mask keeps the degree's capitals, which capitalized(force=True) recased to Sb when the word was listed by default" }
+family = { note = "no source counts it as a name; declared as sobrinho's is, so that two words ending in it keep it as the family name" }
 
 [[word]]
 text = "sob"

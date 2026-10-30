@@ -321,7 +321,7 @@ look one up dynamically by its lowercase code with
 .. doctest::
 
     >>> locales.available()
-    ('cs', 'hr', 'ja', 'ne', 'ru', 'sk', 'sl', 'tr_az', 'zh')
+    ('cs', 'ga', 'gd', 'hr', 'ja', 'ne', 'pt_br', 'ru', 'sk', 'sl', 'tr_az', 'zh')
     >>> locales.get("ru") is locales.RU
     True
 
@@ -344,6 +344,16 @@ Shipped packs
        ``st.``, and in Czech and Slovak the academic titles written
        before the name and the degrees written after it (see
        :ref:`west-south-slavic-packs`).
+   * - ``ga``
+     - Irish — chooses ``ga``, which turns on the clan particles the
+       default leaves off: ``Nic`` (daughter of), the married forms
+       ``Mhic`` and ``Uí``, and ``Mic`` (``Máire Uí Bhriain`` → family
+       ``Uí Bhriain``). ``Nic`` and ``Mic`` are also given names, so
+       one opening the name stays the given name, reported. See
+       `Packs that choose a language`_.
+   * - ``gd``
+     - Scottish Gaelic — chooses ``gd``, which turns on ``Nic``
+       (``Màiri Nic Leòid`` → family ``Nic Leòid``).
    * - ``ja``
      - Japanese segmentation — activates division for unspaced
        Japanese names, which needs a segmenter to act: install
@@ -359,6 +369,13 @@ Shipped packs
        given ``श्री`` in the default order, where the default gives
        title ``श्री``). Each stays a title inside a title phrase
        (``His Holiness Guru Prasad``).
+   * - ``pt_br``
+     - Brazilian Portuguese — chooses ``pt-BR``, and with it ``pt``,
+       which turns on ``SB``, the agnomen Sobrinho as Brazilian filings
+       abbreviate it, read as a suffix where the name has words to
+       spare (``JOSE CARLOS SILVA SB`` → suffix ``SB``), and settles
+       Portuguese's clashes its way.
+       See `Packs that choose a language`_.
    * - ``ru``
      - East Slavic patronymic order — detects the formal
        family/given/patronymic shape (three name words, the last ending
@@ -385,7 +402,7 @@ Shipped packs
        Japanese name read with it can split after its first character
        (``安藤一郎`` → family ``安``), so use ``ja`` for Japanese data.
 
-``cs``, ``hr``, ``ne``, ``sk`` and ``sl`` are each a choice of languages
+``cs``, ``ga``, ``gd``, ``hr``, ``ne``, ``pt_br``, ``sk`` and ``sl`` are each a choice of languages
 and nothing else: the readings each turns on are the default
 vocabulary's own, written in its language's file (``ne.toml`` for
 Nepali) and off until a caller chooses the language. ``ja``, ``ru`` and
@@ -454,6 +471,40 @@ a middle name with the ending, so it follows the order: under
 ``FAMILY_FIRST`` ``Ivan Ivanovich Ivanov`` reads given ``Ivanovich``
 and no patronymic. A marker and the word before it are read under
 every order.
+
+Packs that choose a language
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Some words are right in one language and wrong as a default, because
+another language written in the same script reads them differently.
+Irish writes a woman's surname with ``Nic`` (daughter of) or, married,
+``Uí`` (of the descendant of) before it, but ``Nic`` is also the short
+form of Nicholas; Brazilian filings abbreviate the agnomen *Sobrinho*
+(nephew) to ``SB``, which is also the S.B. degree. The default reads
+none of them, and ``ga``, ``gd`` and ``pt_br`` turn them on:
+
+.. doctest::
+
+    >>> parse("Máire Uí Bhriain").family
+    'Bhriain'
+    >>> parser_for(locales.GA).parse("Máire Uí Bhriain").family
+    'Uí Bhriain'
+    >>> parse("JOSE CARLOS SILVA SB").family
+    'SB'
+    >>> brazil = parser_for(locales.PT_BR).parse("JOSE CARLOS SILVA SB")
+    >>> brazil.family, brazil.suffix
+    ('SILVA', 'SB')
+
+Each word is then read as its language reads the full word: ``SB`` is a
+suffix only where the name keeps a family name without it (``Ana SB``
+keeps family ``SB``), and ``Nic`` opening a name stays the given name
+(``Nic Cage``). Each reports its doubt in
+``ambiguities``. A choice also settles every clash its language has a
+reading for, as `Choosing languages`_ shows: under ``ga`` and ``gd``,
+``Mc`` is the clan particle and not the Military Cross
+(``John Smith MC`` → family ``MC``), and ``pt_br`` reads as ``pt``
+does (``John Smith DO`` → family ``DO``, ``J. Smith Sr.`` → title
+``Sr.``, Senhor).
 
 .. _segmenter-contract:
 
@@ -582,7 +633,7 @@ by ``tests/v2/test_locales.py``:
    docstring explains how the pack-contract test enforces this. A
    pack's choice of languages is never declared: its deviations are
    derived from the words the choice changes, so a pack that is nothing
-   but a choice (``ne``, ``cs``) declares no ``DEVIATES`` — the
+   but a choice (``ne``, ``cs``, ``ga``) declares no ``DEVIATES`` — the
    contract test refuses one, and refuses a choice that changes no
    word — and one with a fragment or a patch beside its choice
    declares only what those change.
@@ -600,7 +651,7 @@ by ``tests/v2/test_locales.py``:
      one per shape of the vocabulary it ships: single surname, compound
      surname, and any spelling variant it means to cover.
    - **By a choice of languages** (``ne``, ``cs``, ``sk``, ``sl``,
-     ``hr``): a name for each word the choice changes, in each script it
+     ``hr``, ``ga``, ``gd``, ``pt_br``): a name for each word the choice changes, in each script it
      is written in and each position where the default reads it
      otherwise — ``test_choice_rotators_cover_every_changed_word`` fails
      until every word is held.

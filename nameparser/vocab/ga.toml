@@ -21,10 +21,36 @@ text = "mc"
 clan = { may_be_given = false, issue = 360, expands = "son of, Mac contracted", same_as = "mac" }
 
 [[word]]
+text = "mhic"
+[word.clan]
+default = false
+may_be_given = false
+issue = 753
+expands = "of the son of, the genitive of 'mac' after a woman's 'bean' or name: \"Máire Mhic Gabhann\", the married form of Mac Gabhann"
+same_as = "mac"
+note = "Off by default with the rest of the Irish married and female forms: a particle the default has never read, turned on by an Irish pack (gd.toml says why Scottish Gaelic leaves it out). No source counts it as a given name (2026-10-30: ORCID 2 family boxes, both Ireland; PSC 1 filed name; none as a given name)."
+
+[[word]]
+text = "mic"
+given = { us_ssa = 26, wikidata = 10, as_of = 2026-10-30, note = "male births only; Wikidata is a lower bound; a short form of Michael" }
+family = { wikidata = 1, as_of = 2026-10-30, note = "ORCID's family box holds it 13 times, 4 of them in Romania (2026-10-30), the Romanian surname Mic, none in Ireland" }
+[word.clan]
+default = false
+issue = 753
+expands = "of the son of, the unlenited genitive of 'mac'"
+same_as = "mac"
+note = "Off by default: Mic is also a given name, a short form of Michael (its given reading), and a Romanian surname. An Irish pack turns it on, its given reading keeping a leading Mic a given name there, reported (rules/P1)."
+
+[[word]]
 text = "nic"
-[word.excluded.clan]
-reason = "the Irish \"daughter of\" beside 'ní', but also an abbreviation of Nicolas and Nicole and a given name of its own (Nic Cage): a leading Nic would be marked ambiguous at best, and its home is an opt-in Irish pack"
-issue = 604
+given = { us_ssa = 77, wikidata = 173, as_of = 2026-10-30, note = "male births only; Wikidata is a lower bound; nam_dict band 4 in the Netherlands, a short form of Nicholas and Nicolaas (Nic Cage)" }
+family = { us_census_2010 = 108, as_of = 2026-10-30, note = "ORCID's family box holds it 73 times, 22 of them in Ireland (2026-10-30), the Irish surname written spaced" }
+[word.clan]
+default = false
+issue = [604, 753]
+expands = "daughter of, the female form beside 'mac': \"Máire Nic Gabhann\""
+gender = "f"
+note = "Off by default: Nic is also a given name, the short form of Nicholas (its given reading), and the default serves every language written in Latin script, where an English Nic is far likelier than an Irish particle (#604). An Irish or Scottish Gaelic pack turns it on, and its given reading keeps a leading Nic a given name there, reported (rules/P1)."
 
 [[word]]
 text = "ní"
@@ -61,3 +87,14 @@ expands = "descendant of, the older spelling: \"Seán Ua Buachalla\""
 same_as = "ó"
 cased = "Ua"
 note = "No given-name use found, but searched less thoroughly than 'ó' and 'ní', and C-i defaults to AMBIGUOUS under uncertainty -- so the leading \"Ua Buachalla\" keeps the given reading and reports it, while mid-name the chain is the same either way (#604). The mask is the word's own title case, as on 'ní': the dotted 'u.a.' repairs to 'U.A.'"
+
+[[word]]
+text = "uí"
+[word.clan]
+default = false
+may_be_given = false
+issue = 753
+expands = "of the descendant of, the genitive of 'ó' after a woman's 'bean' or name: \"Máire Uí Bhriain\", the married form of Ó Briain"
+same_as = "ó"
+cased = "Uí"
+note = "Off by default with 'mhic': a particle the default has never read, turned on by an Irish pack. No source counts it as a given name (2026-10-30: ORCID 15 family boxes, 6 in Ireland; none as a given name). Unaccented 'ui' is left out: written so, it is also a pair of initials. The mask is the word's own title case, as on 'ní'."

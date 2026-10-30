@@ -142,7 +142,9 @@ _PARSERS = {None: Parser(),
 #: name to NO_CLDR; test_cldr_agreement.py fails on a pack in neither.
 LOCALE_FILES = {"zh": "ZH", "zh_Hant": "ZH", "yue": "ZH", "yue_Hans": "ZH",
                 "ja": "JA", "ne": "NE", "ru": "RU", "tr": "TR_AZ", "az": "TR_AZ",
-                "cs": "CS", "sk": "SK", "sl": "SL", "hr": "HR"}
+                "cs": "CS", "sk": "SK", "sl": "SL", "hr": "HR",
+                # CLDR's pt is Brazilian Portuguese (pt_PT is its own file)
+                "ga": "GA", "gd": "GD", "pt": "PT_BR"}
 #: Packs with no CLDR file to measure them on.
 NO_CLDR: frozenset[str] = frozenset()
 #: The locale view of the native-script Wikidata source: stratum label ->
