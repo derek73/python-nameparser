@@ -144,12 +144,15 @@ LOCALE_FILES = {"zh": "ZH", "zh_Hant": "ZH", "yue": "ZH", "yue_Hans": "ZH",
                 "ja": "JA", "ne": "NE", "ru": "RU", "tr": "TR_AZ", "az": "TR_AZ",
                 "cs": "CS", "sk": "SK", "sl": "SL", "hr": "HR",
                 # CLDR's pt is Brazilian Portuguese (pt_PT is its own file)
-                "ga": "GA", "gd": "GD", "pt": "PT_BR"}
+                "ga": "GA", "gd": "GD", "pt": "PT_BR",
+                # hi_Latn is the romanized Hindi the pack's Latin readings are for
+                "hi": "HI", "hi_Latn": "HI", "bn": "BN"}
 #: Packs with no CLDR file to measure them on.
 NO_CLDR: frozenset[str] = frozenset()
 #: The locale view of the native-script Wikidata source: stratum label ->
 #: the pack its renderings are parsed with (its QID file names no language).
-NATIVE_LABELS = {"zh-cn": "ZH", "zh-tw": "ZH", "ja-jp": "JA", "ne-np": "NE"}
+NATIVE_LABELS = {"zh-cn": "ZH", "zh-tw": "ZH", "ja-jp": "JA", "ne-np": "NE",
+                 "hi-in": "HI", "bn-in": "BN", "bn-bd": "BN"}
 #: Packs measured only where an optional extra is installed: pack -> the
 #: module the extra provides.
 _EXTRAS = {"JA": "namedivider"}

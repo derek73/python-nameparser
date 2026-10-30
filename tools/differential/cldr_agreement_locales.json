@@ -125,6 +125,188 @@
   },
   "text": "Sinbad"
  },
+ "bn/foreignFull/givenFirst": {
+  "family": {
+   "expected": "রহমান আলি তালুকদার",
+   "got": "এম.ডি.পিএইচ.ডি."
+  },
+  "family_base": {
+   "expected": "আলি তালুকদার",
+   "got": "এম.ডি.পিএইচ.ডি."
+  },
+  "family_particles": {
+   "expected": "রহমান",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "আদিরা ইভা সোফিয়া",
+   "got": "প্রঃ ডঃ আদিরা ইভা সোফিয়া রহমান আলি তালুকদার"
+  },
+  "suffix": {
+   "expected": "এম.ডি.পিএইচ.ডি.",
+   "got": ""
+  },
+  "surname2": {
+   "expected": "তালুকদার",
+   "got": ""
+  },
+  "text": "প্রঃ ডঃ আদিরা ইভা সোফিয়া রহমান আলি তালুকদার এম.ডি.পিএইচ.ডি.",
+  "title": {
+   "expected": "প্রঃ ডঃ",
+   "got": ""
+  }
+ },
+ "bn/foreignFull/sorting": {
+  "family_base": {
+   "expected": "আলি তালুকদার",
+   "got": "রহমান আলি তালুকদার"
+  },
+  "family_particles": {
+   "expected": "রহমান",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "আদিরা ইভা সোফিয়া",
+   "got": "প্রঃ ডঃ আদিরা ইভা সোফিয়া এম.ডি.পিএইচ.ডি."
+  },
+  "suffix": {
+   "expected": "এম.ডি.পিএইচ.ডি.",
+   "got": ""
+  },
+  "surname2": {
+   "expected": "তালুকদার",
+   "got": ""
+  },
+  "text": "রহমান আলি তালুকদার, প্রঃ ডঃ আদিরা ইভা সোফিয়া এম.ডি.পিএইচ.ডি.",
+  "title": {
+   "expected": "প্রঃ ডঃ",
+   "got": ""
+  }
+ },
+ "bn/foreignFull/surnameFirst": {
+  "family": {
+   "expected": "রহমান আলি তালুকদার",
+   "got": "রহমান"
+  },
+  "family_base": {
+   "expected": "আলি তালুকদার",
+   "got": "রহমান"
+  },
+  "family_particles": {
+   "expected": "রহমান",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "আদিরা ইভা সোফিয়া",
+   "got": "আলি তালুকদার প্রঃ ডঃ আদিরা ইভা সোফিয়া এম.ডি.পিএইচ.ডি."
+  },
+  "suffix": {
+   "expected": "এম.ডি.পিএইচ.ডি.",
+   "got": ""
+  },
+  "surname2": {
+   "expected": "তালুকদার",
+   "got": ""
+  },
+  "text": "রহমান আলি তালুকদার প্রঃ ডঃ আদিরা ইভা সোফিয়া এম.ডি.পিএইচ.ডি.",
+  "title": {
+   "expected": "প্রঃ ডঃ",
+   "got": ""
+  }
+ },
+ "bn/foreignG/sorting": {
+  "family": {
+   "expected": "",
+   "got": "সিনবাদ"
+  },
+  "given_names": {
+   "expected": "সিনবাদ",
+   "got": ""
+  },
+  "text": "সিনবাদ"
+ },
+ "bn/foreignG/surnameFirst": {
+  "family": {
+   "expected": "",
+   "got": "সিনবাদ"
+  },
+  "given_names": {
+   "expected": "সিনবাদ",
+   "got": ""
+  },
+  "text": "সিনবাদ"
+ },
+ "bn/nativeFull/givenFirst": {
+  "family": {
+   "expected": "গাঙ্গুলী",
+   "got": "এমপি"
+  },
+  "family_base": {
+   "expected": "গাঙ্গুলী",
+   "got": "এমপি"
+  },
+  "given_names": {
+   "expected": "এমদাদ আলি অনিল কুমার",
+   "got": "এমদাদ আলি অনিল কুমার গাঙ্গুলী"
+  },
+  "suffix": {
+   "expected": "এমপি",
+   "got": ""
+  },
+  "text": "জনাব এমদাদ আলি অনিল কুমার গাঙ্গুলী এমপি"
+ },
+ "bn/nativeFull/sorting": {
+  "given_names": {
+   "expected": "এমদাদ আলি অনিল কুমার",
+   "got": "জনাব এমদাদ আলি অনিল কুমার এমপি"
+  },
+  "suffix": {
+   "expected": "এমপি",
+   "got": ""
+  },
+  "text": "গাঙ্গুলী জনাব এমদাদ আলি অনিল কুমার এমপি",
+  "title": {
+   "expected": "জনাব",
+   "got": ""
+  }
+ },
+ "bn/nativeFull/surnameFirst": {
+  "given_names": {
+   "expected": "এমদাদ আলি অনিল কুমার",
+   "got": "জনাব এমদাদ আলি অনিল কুমার এমপি"
+  },
+  "suffix": {
+   "expected": "এমপি",
+   "got": ""
+  },
+  "text": "গাঙ্গুলী জনাব এমদাদ আলি অনিল কুমার এমপি",
+  "title": {
+   "expected": "জনাব",
+   "got": ""
+  }
+ },
+ "bn/nativeG/sorting": {
+  "family": {
+   "expected": "",
+   "got": "জেনদায়া"
+  },
+  "given_names": {
+   "expected": "জেনদায়া",
+   "got": ""
+  },
+  "text": "জেনদায়া"
+ },
+ "bn/nativeG/surnameFirst": {
+  "family": {
+   "expected": "",
+   "got": "জেনদায়া"
+  },
+  "given_names": {
+   "expected": "জেনদায়া",
+   "got": ""
+  },
+  "text": "জেনদায়া"
+ },
  "cs/foreignFull/givenFirst": {
   "surname2": {
    "expected": "González Domingo",
@@ -483,6 +665,265 @@
    "got": ""
   },
   "text": "Calum"
+ },
+ "hi/foreignFull/givenFirst": {
+  "family": {
+   "expected": "वॉन वॉटसन चेस्टर",
+   "got": "प्रो॰ डॉ॰ माइकल जॉन वॉन वॉटसन चेस्टर"
+  },
+  "family_base": {
+   "expected": "वॉटसन चेस्टर",
+   "got": "प्रो॰ डॉ॰ माइकल जॉन वॉन वॉटसन चेस्टर"
+  },
+  "family_particles": {
+   "expected": "वॉन",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "माइकल जॉन",
+   "got": "एम॰डी॰"
+  },
+  "suffix": {
+   "expected": "एम॰डी॰, पी॰एच॰डी॰",
+   "got": "पी॰एच॰डी॰"
+  },
+  "surname2": {
+   "expected": "चेस्टर",
+   "got": ""
+  },
+  "text": "प्रो॰ डॉ॰ माइकल जॉन वॉन वॉटसन चेस्टर, एम॰डी॰, पी॰एच॰डी॰",
+  "title": {
+   "expected": "प्रो॰ डॉ॰",
+   "got": ""
+  }
+ },
+ "hi/foreignFull/sorting": {
+  "family_base": {
+   "expected": "वॉटसन",
+   "got": "वॉन वॉटसन"
+  },
+  "family_particles": {
+   "expected": "वॉन",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "माइकल जॉन",
+   "got": "माइकल जॉन एम॰डी॰"
+  },
+  "suffix": {
+   "expected": "एम॰डी॰, पी॰एच॰डी॰",
+   "got": "पी॰एच॰डी॰"
+  },
+  "text": "वॉन वॉटसन, माइकल जॉन एम॰डी॰, पी॰एच॰डी॰"
+ },
+ "hi/foreignFull/surnameFirst": {
+  "family": {
+   "expected": "वॉन वॉटसन",
+   "got": "प्रो॰ डॉ॰ वॉन वॉटसन माइकल जॉन"
+  },
+  "family_base": {
+   "expected": "वॉटसन",
+   "got": "प्रो॰ डॉ॰ वॉन वॉटसन माइकल जॉन"
+  },
+  "family_particles": {
+   "expected": "वॉन",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "माइकल जॉन",
+   "got": "एम॰डी॰"
+  },
+  "suffix": {
+   "expected": "एम॰डी॰, पी॰एच॰डी॰",
+   "got": "पी॰एच॰डी॰"
+  },
+  "text": "प्रो॰ डॉ॰ वॉन वॉटसन माइकल जॉन, एम॰डी॰, पी॰एच॰डी॰",
+  "title": {
+   "expected": "प्रो॰ डॉ॰",
+   "got": ""
+  }
+ },
+ "hi/foreignG/sorting": {
+  "family": {
+   "expected": "",
+   "got": "रॉबर्ट"
+  },
+  "given_names": {
+   "expected": "रॉबर्ट",
+   "got": ""
+  },
+  "text": "रॉबर्ट"
+ },
+ "hi/foreignG/surnameFirst": {
+  "family": {
+   "expected": "",
+   "got": "रॉबर्ट"
+  },
+  "given_names": {
+   "expected": "रॉबर्ट",
+   "got": ""
+  },
+  "text": "रॉबर्ट"
+ },
+ "hi/nativeFull/givenFirst": {
+  "family": {
+   "expected": "शर्मा",
+   "got": "एम॰डी॰"
+  },
+  "family_base": {
+   "expected": "शर्मा",
+   "got": "एम॰डी॰"
+  },
+  "given_names": {
+   "expected": "ललित कुमार",
+   "got": "ललित कुमार शर्मा"
+  },
+  "suffix": {
+   "expected": "एम॰डी॰",
+   "got": ""
+  },
+  "text": "श्री ललित कुमार शर्मा एम॰डी॰"
+ },
+ "hi/nativeFull/sorting": {
+  "given_names": {
+   "expected": "ललित कुमार",
+   "got": "ललित कुमार एम॰डी॰"
+  },
+  "suffix": {
+   "expected": "एम॰डी॰",
+   "got": ""
+  },
+  "text": "शर्मा, ललित कुमार एम॰डी॰"
+ },
+ "hi/nativeFull/surnameFirst": {
+  "family": {
+   "expected": "शर्मा",
+   "got": "शर्मा ललित कुमार"
+  },
+  "family_base": {
+   "expected": "शर्मा",
+   "got": "शर्मा ललित कुमार"
+  },
+  "given_names": {
+   "expected": "ललित कुमार",
+   "got": "एम॰डी॰"
+  },
+  "suffix": {
+   "expected": "एम॰डी॰",
+   "got": ""
+  },
+  "text": "श्री शर्मा ललित कुमार, एम॰डी॰"
+ },
+ "hi/nativeG/sorting": {
+  "family": {
+   "expected": "",
+   "got": "ललित"
+  },
+  "given_names": {
+   "expected": "ललित",
+   "got": ""
+  },
+  "text": "ललित"
+ },
+ "hi/nativeG/surnameFirst": {
+  "family": {
+   "expected": "",
+   "got": "ललित"
+  },
+  "given_names": {
+   "expected": "ललित",
+   "got": ""
+  },
+  "text": "ललित"
+ },
+ "hi_Latn/foreignFull/surnameFirst": {
+  "family": {
+   "expected": "von Bruhl",
+   "got": "von"
+  },
+  "family_base": {
+   "expected": "Bruhl",
+   "got": "von"
+  },
+  "family_particles": {
+   "expected": "von",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Ada Cornelia Cesar Martin",
+   "got": "Bruhl Prof. Dr. Ada Cornelia Cesar Martin"
+  },
+  "text": "von Bruhl Prof. Dr. Ada Cornelia Cesar Martin Jr, MD DDS",
+  "title": {
+   "expected": "Prof. Dr.",
+   "got": ""
+  }
+ },
+ "hi_Latn/foreignG/sorting": {
+  "family": {
+   "expected": "",
+   "got": "Sinbad"
+  },
+  "given_names": {
+   "expected": "Sinbad",
+   "got": ""
+  },
+  "text": "Sinbad"
+ },
+ "hi_Latn/foreignG/surnameFirst": {
+  "family": {
+   "expected": "",
+   "got": "Sinbad"
+  },
+  "given_names": {
+   "expected": "Sinbad",
+   "got": ""
+  },
+  "text": "Sinbad"
+ },
+ "hi_Latn/nativeFull/givenFirst": {
+  "given_names": {
+   "expected": "Lalit Kumaar",
+   "got": "Shree Lalit Kumaar"
+  },
+  "text": "Shree Lalit Kumaar Bharati Jr, MP",
+  "title": {
+   "expected": "Shree",
+   "got": ""
+  }
+ },
+ "hi_Latn/nativeFull/surnameFirst": {
+  "given_names": {
+   "expected": "Lalit Kumaar",
+   "got": "Shree Lalit Kumaar"
+  },
+  "text": "Bharati Shree Lalit Kumaar Jr, MP",
+  "title": {
+   "expected": "Shree",
+   "got": ""
+  }
+ },
+ "hi_Latn/nativeG/sorting": {
+  "family": {
+   "expected": "",
+   "got": "Lalit"
+  },
+  "given_names": {
+   "expected": "Lalit",
+   "got": ""
+  },
+  "text": "Lalit"
+ },
+ "hi_Latn/nativeG/surnameFirst": {
+  "family": {
+   "expected": "",
+   "got": "Lalit"
+  },
+  "given_names": {
+   "expected": "Lalit",
+   "got": ""
+  },
+  "text": "Lalit"
  },
  "hr/foreignG/sorting": {
   "family": {

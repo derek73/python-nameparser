@@ -321,7 +321,7 @@ look one up dynamically by its lowercase code with
 .. doctest::
 
     >>> locales.available()
-    ('cs', 'ga', 'gd', 'hr', 'ja', 'ne', 'pt_br', 'ru', 'sk', 'sl', 'tr_az', 'zh')
+    ('bn', 'cs', 'ga', 'gd', 'hi', 'hr', 'ja', 'ne', 'pt_br', 'ru', 'sk', 'sl', 'tr_az', 'zh')
     >>> locales.get("ru") is locales.RU
     True
 
@@ -338,6 +338,12 @@ Shipped packs
 
    * - Code
      - Turns on
+   * - ``bn``
+     - Bengali — chooses ``bn``, which turns on the romanized
+       salutations ``Smt`` and ``Shrimati`` (Mrs.) and the academic
+       title ``Adhyapak`` (professor), read as titles where the default
+       reads a name word (``Smt Mamata Banerjee`` → title ``Smt``). See
+       `Romanized Indic titles`_.
    * - ``cs``, ``sk``, ``sl``, ``hr``
      - Czech, Slovak, Slovenian and Croatian vocabulary — a choice of
        that one language, which turns on the generations ``ml.`` and
@@ -355,6 +361,12 @@ Shipped packs
    * - ``gd``
      - Scottish Gaelic — chooses ``gd``, which turns on ``Nic``
        (``Màiri Nic Leòid`` → family ``Nic Leòid``).
+   * - ``hi``
+     - Hindi — chooses ``hi``, which turns on the romanized salutations
+       ``Smt`` and ``Shrimati`` (Mrs.) and ``Shriyut`` (Mr.), read as
+       titles where the default reads a name word (``Shrimati Indira
+       Gandhi`` → title ``Shrimati``). ``Shri`` is not among them. See
+       `Romanized Indic titles`_.
    * - ``ja``
      - Japanese segmentation — activates division for unspaced
        Japanese names, which needs a segmenter to act: install
@@ -403,7 +415,7 @@ Shipped packs
        Japanese name read with it can split after its first character
        (``安藤一郎`` → family ``安``), so use ``ja`` for Japanese data.
 
-``cs``, ``ga``, ``gd``, ``hr``, ``ne``, ``pt_br``, ``sk`` and ``sl`` are each a choice of languages
+``bn``, ``cs``, ``ga``, ``gd``, ``hi``, ``hr``, ``ne``, ``pt_br``, ``sk`` and ``sl`` are each a choice of languages
 and nothing else: the readings each turns on are the default
 vocabulary's own, written in its language's file (``ne.toml`` for
 Nepali) and off until a caller chooses the language. ``ja``, ``ru`` and
@@ -516,6 +528,32 @@ readings of those words:
   a known cost not yet settled.
 - **Under pt_br,** a written S.B. degree reads as Sobrinho
   (``Howard Gordon, MD SB`` fills ``generation`` with ``SB``).
+
+Romanized Indic titles
+^^^^^^^^^^^^^^^^^^^^^^
+
+The default reads the Devanagari and Bengali salutations as titles
+(``श्रीमती``, ``শ্রীমতী``), since no Latin name is spelled in those
+scripts, and leaves their romanizations to position, since a Latin
+spelling can be a name. ``hi`` and ``bn`` turn on the romanized forms
+whose leading use is the title:
+
+.. doctest::
+
+    >>> parse("Smt Nirmala Sitharaman").given
+    'Smt'
+    >>> hindi = parser_for(locales.HI).parse("Smt Nirmala Sitharaman")
+    >>> hindi.title, hindi.given
+    ('Smt', 'Nirmala')
+    >>> parser_for(locales.BN).parse("Adhyapak Anisuzzaman Khan").title
+    'Adhyapak'
+
+Two are left out, because the names that open with them outnumber the
+titles even in Indian data. ``Shri`` opens a given name written in two
+words (``Shri Kant``, ``Shri Lakshmi``), and ``Sushri`` an Odia one
+(``Sushri Sangita``), so both stay name words under the packs. ``Smt.``
+and ``Shri.`` written with their period are titles at the head of a name
+by default, packs or no.
 
 .. _segmenter-contract:
 
@@ -661,8 +699,8 @@ by ``tests/v2/test_locales.py``:
      the same weight by hand — the unspaced names the pack must split,
      one per shape of the vocabulary it ships: single surname, compound
      surname, and any spelling variant it means to cover.
-   - **By a choice of languages** (``ne``, ``cs``, ``sk``, ``sl``,
-     ``hr``, ``ga``, ``gd``, ``pt_br``): a name for each word the choice changes, in each script it
+   - **By a choice of languages** (``ne``, ``hi``, ``bn``, ``cs``, ``sk``,
+     ``sl``, ``hr``, ``ga``, ``gd``, ``pt_br``): a name for each word the choice changes, in each script it
      is written in and each position where the default reads it
      otherwise — ``test_choice_rotators_cover_every_changed_word`` fails
      until every word is held.

@@ -5,6 +5,14 @@ text = "mst"
 excluded = { salutation = { reason = "the transliteration of মোসাঃ collides with real names where the native script cannot", issue = 343 } }
 
 [[word]]
+text = "shrimati"
+salutation = { default = false, gender = "f", issue = [345, 753], expands = "Shrimati, Mrs., the romanized শ্রীমতী", after_given = true, note = "its counts are on hi.toml's reading" }
+
+[[word]]
+text = "smt"
+salutation = { default = false, gender = "f", issue = [345, 753], same_as = "shrimati", expands = "Smt., Shrimati abbreviated", after_given = true, note = "its counts, and the NPPES credential SMT it costs, are on hi.toml's reading" }
+
+[[word]]
 text = "কুমারী"
 excluded = { salutation = { reason = "Kumari is a given name and a family name in this script, so the leading claim fails C-i (decisions/vocabulary-collisions)", issue = 343, decided = 2026-09-06 } }
 
@@ -75,6 +83,10 @@ excluded = { style = { reason = "a genuine Bengali honorific (lord, master) that
 [[word]]
 text = "শেখ"
 excluded = { style = { reason = "a clan name and a family name ('শেখ হাসিনা'); the Latin sheikh cluster ships for the Arabic addressing form, while the Indic spellings name the family", issue = 343, decided = 2026-09-06 } }
+
+[[word]]
+text = "adhyapak"
+academic = { default = false, issue = [345, 753], expands = "professor, the romanized অধ্যাপক", note = "a Marathi family name too: ORCID's family box 17 people, alone in it every time (Anoop Adhyapak), its given box 1, after another word (2026-10-30); off by default and turned on by a Bengali choice, under which it is the title at the head, and a family name written with a period behind it (rules/H5) or ahead of a family comma with a name word behind it (rules/H6) reads as the title too, as for graf (rules/H1)" }
 
 [[word]]
 text = "অধ্যাপক"

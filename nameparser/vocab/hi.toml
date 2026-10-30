@@ -2,7 +2,19 @@ schema = 1
 
 [[word]]
 text = "shri"
-excluded = { salutation = { reason = "the transliteration of श्री collides with real given names where the native script cannot" } }
+excluded = { salutation = { reason = "the transliteration of श्री collides with real given names where the native script cannot: it opens given names, alone or written in two words (Shri Kant, Shri Lakshmi), 198 of ORCID's given boxes doing so, 52 of them holding it alone (its 2025 extract, 2026-10-30); nam_dict band 2 in India; Wikidata 7 given (2026-10-30). Turned on for Hindi and Bengali it broke 20 filed names and fixed none (decisions/vocabulary-model, the 2026-10-30 phase 3e entry)", issue = [345, 753], decided = 2026-10-30 } }
+
+[[word]]
+text = "shrimati"
+salutation = { default = false, gender = "f", issue = [345, 753], expands = "Shrimati, Mrs., the romanized श्रीमती", after_given = true, note = "borne as a given name: ORCID's given box 3 records, likely 2 people, the word alone in the box in 2, likely 1 person (Shrimati Shetty, which reads title Shrimati and no given under the pack) (2026-10-30); the salutation in all 16 nepal-candidates romanizations, by their Devanagari; weighed in decisions/vocabulary-model's phase 3e entry" }
+
+[[word]]
+text = "smt"
+salutation = { default = false, gender = "f", issue = [345, 753], same_as = "shrimati", expands = "Smt., Shrimati abbreviated", after_given = true, note = "ORCID's given box 19 people, the salutation typed in (Smt. Rekha, Smt. Seema Sharma) (2026-10-30); NPPES 4 providers write SMT as a credential, read as the title under the pack in any comma part holding it (Jane Doe, SMT; Jane Doe, PhD SMT), an accepted cost" }
+
+[[word]]
+text = "shriyut"
+salutation = { default = false, gender = "m", issue = [345, 753], expands = "Shriyut, Mr., the romanized श्रीयुत", after_given = true, note = "no bearer in any source tools/name_usage.py reads (2026-10-30)" }
 
 [[word]]
 text = "sri"
