@@ -1074,24 +1074,30 @@ def test_choice_rotators_cover_every_changed_word(code: str) -> None:
 
 
 # The vocabulary packs' rotators: a name in each shape a reading the pack
-# turns on changes, read one way by default and another under the pack
-# (the pinned rows below say how). ga: each clan particle mid-name;
-# gd: `nic`, its one word; pt_br: `sb` behind name words, bare and
-# dotted, in each case.
+# turns on or prefers changes, read one way by default and another under
+# the pack (the pinned rows below say how). ga: each clan particle
+# mid-name; gd: `nic`; both: the clan `mc` preferred over the credential;
+# pt_br: `sb` behind name words, bare and dotted, in each case, and the
+# words pt's choice prefers.
 _ROTATORS["ga"] = [
     "Máire Nic Gabhann",             # nic
     "Máire Mhic Gabhann",            # mhic
     "Máire Uí Bhriain",              # uí
     "Pádraig Mic Cárthaigh",         # mic
+    "John Smith MC",                 # mc, the clan particle, not MC
 ]
 _ROTATORS["gd"] = [
     "Màiri Nic Leòid",               # nic
     "Gabhann, Màiri Nic",            # nic ending the given part
+    "John Smith MC",                 # mc, the clan particle, not MC
 ]
 _ROTATORS["pt_br"] = [
     "JOSE CARLOS SILVA SB",          # sb
     "Jose Carlos Silva Sb.",         # sb, dotted
     "JOSE SILVA SB",                 # sb, one word to spare
+    "John Smith DO",                 # do, pt's particle, not DO
+    "ANA SILVA E SOUZA",             # e, pt's connective
+    "Gary Holloway Sr",              # sr, pt's Senhor, not the generation
 ]
 
 
