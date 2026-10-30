@@ -1442,8 +1442,12 @@ class ParsedName:
         family as two (``Márquez`` in ``Gabriel García Márquez`` under
         ``two_family_names``), which :attr:`family` keeps; ``''`` for a
         family read as one, a family comma's ("Lloyd Webber, Andrew")
-        and a hyphenated one included, and for a name written by
-        :meth:`replace` or unpickled from 2.x."""
+        and a hyphenated one included, for a name unpickled from 2.x,
+        and once :meth:`replace` or Parser.revise rewrites ``family``,
+        whose words then carry no reading; rewriting another field
+        keeps it."""
+        # the parse marks family words only; the role test keeps a
+        # hand-built token marked in another field out of the view
         return " ".join(
             tok.text for tok in self.tokens
             if tok.role is Role.FAMILY and tok.reading is not None

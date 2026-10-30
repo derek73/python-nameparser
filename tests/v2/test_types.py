@@ -755,6 +755,15 @@ _REFUSED_SKEWS = [
                                            "language"),
                  "unexpected fields: language",
                  id="renamed-languages"),
+    # Reading.second_surname (3.0, rules/R10) likewise
+    pytest.param(Reading, lambda: _without(_reading_state(),
+                                           "second_surname", "source"),
+                 "missing fields: source;",
+                 id="missing-shipped-field-beside-missing-second-surname"),
+    pytest.param(Reading, lambda: _renamed(_reading_state(),
+                                           "second_surname", "surname2"),
+                 "unexpected fields: surname2",
+                 id="renamed-second-surname"),
 ]
 
 
@@ -1362,6 +1371,23 @@ def test_the_surname2_view_beside_an_east_slavic_patronymic() -> None:
     assert (pn.family, pn.surname2) == ("Ivanov", "")
 
 
+@pytest.mark.parametrize("text,second,family,patronymic", [
+    ("Ali Vali oglu", "Vali", "Ali Vali", "Vali oglu"),
+    ("Leyla Rasim qizi", "Rasim", "Leyla Rasim", "Rasim qizi"),
+])
+def test_a_turkic_father_in_the_second_surname_keeps_the_mark(
+        text: str, second: str, family: str, patronymic: str) -> None:
+    # the father's reading is rebuilt at its marker, which must carry
+    # the second-surname mark over (rules/R10 beside rules/R9)
+    from nameparser import locales, parser_for
+    tr = parser_for(locales.TR_AZ)
+    p = Parser(lexicon=tr.lexicon, policy=dataclasses.replace(
+        tr.policy, two_family_names=True, name_order=FAMILY_FIRST))
+    pn = p.parse(text)
+    assert (pn.surname2, pn.family, pn.patronymic) == (
+        second, family, patronymic)
+
+
 def test_the_surname2_view_is_a_render_key_and_not_a_field() -> None:
     p = Parser(policy=Policy(two_family_names=True))
     pn = p.parse("Gabriel García Márquez")
@@ -1397,6 +1423,15 @@ def test_a_two_family_name_parsedname_pickled_by_2_8_0_loads_equal() -> None:
     assert (loaded.surname2, now.surname2) == ("", "Márquez")
     again = pickle.loads(pickle.dumps(now))
     assert again.surname2 == "Márquez"
+
+
+def test_a_hand_built_mark_outside_the_family_is_not_in_the_view() -> None:
+    from nameparser import Reading
+    marked = Reading("name", "given", "position", (), True)  # type: ignore[arg-type]
+    pn = ParsedName("Ana López", (
+        Token("Ana", Span(0, 3), Role.GIVEN, reading=marked),
+        Token("López", Span(4, 9), Role.FAMILY)))
+    assert pn.surname2 == ""
 
 
 def test_reading_second_surname_is_a_bool_and_is_not_compared() -> None:

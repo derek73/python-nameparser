@@ -577,10 +577,8 @@ def assemble(state: ParseState) -> ParsedName:
                     and (langs := _part_languages(t.text, kind, field))
                     and _listed_whole(t.text, state.lexicon)):
                 langs = ()
-            reading = (_reading(kind, role, source, langs) if langs
-                       else _READINGS[kind, role, source])
-            if second:
-                reading = _reading(kind, role, source, langs, True)
+            reading = (_reading(kind, role, source, langs, second)
+                       if langs or second else _READINGS[kind, role, source])
         if not tags.isdisjoint(_KIND_TAGS):
             # the kind tags serve the stages and this one, whatever the
             # word's field (a lone 'Jr' is a given name); the reading
