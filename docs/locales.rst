@@ -699,8 +699,8 @@ by ``tests/v2/test_locales.py``:
      the same weight by hand — the unspaced names the pack must split,
      one per shape of the vocabulary it ships: single surname, compound
      surname, and any spelling variant it means to cover.
-   - **By a choice of languages** (``ne``, ``cs``, ``sk``, ``sl``,
-     ``hr``, ``ga``, ``gd``, ``pt_br``): a name for each word the choice changes, in each script it
+   - **By a choice of languages** (``ne``, ``hi``, ``bn``, ``cs``, ``sk``,
+     ``sl``, ``hr``, ``ga``, ``gd``, ``pt_br``): a name for each word the choice changes, in each script it
      is written in and each position where the default reads it
      otherwise — ``test_choice_rotators_cover_every_changed_word`` fails
      until every word is held.
