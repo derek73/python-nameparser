@@ -1347,7 +1347,7 @@ class ParsedName:
     def maiden(self) -> str:
         return self._text_for(Role.MAIDEN)
 
-    # -- derived views (filters over roles + STABLE tags only) ----------
+    # -- derived views (filters over roles, STABLE tags and readings) ---
 
     @property
     # rules/R2: "the family name splits into further views: the
@@ -1391,25 +1391,29 @@ class ParsedName:
     def _suffix_view(self, generation: bool) -> str:
         # the `generation` / `credentials` partition of `suffix`, each
         # word placed by the reading it took ('D.' after 'Ph.' takes
-        # the credential's), a `joined` word attaching with a space as
-        # in `suffix` where the word before it is in the same view
-        # ('Jr. III PhD' gives 'Jr. III' and 'PhD'), and a connective
-        # going with the word it follows ('PhD and MD')
+        # the credential's) and a connective going with the word it
+        # follows ('PhD and MD'); two words of one view are separated
+        # as the writer separated them, by a comma where one stands
+        # anywhere between them and by a space where none does
+        # ('MD Jr. PhD' gives 'MD PhD', 'MD, Jr. PhD' gives 'MD, PhD')
         parts: list[str] = []
         before: bool | None = None
+        comma = False
         for tok in self.tokens:
             if tok.role is not Role.SUFFIX:
                 continue
+            comma = comma or "joined" not in tok.tags
             kind = tok.reading.kind if tok.reading is not None else None
             if kind is ReadingKind.CONJUNCTION and before is not None:
                 keep = before
             else:
                 keep = (kind in _GENERATION_KINDS) is generation
             if keep:
-                if before and "joined" in tok.tags:
+                if parts and not comma:
                     parts[-1] += " " + tok.text
                 else:
                     parts.append(tok.text)
+                comma = False
             before = keep
         return ", ".join(parts)
 

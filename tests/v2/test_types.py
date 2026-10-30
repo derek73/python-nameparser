@@ -311,12 +311,19 @@ def test_derived_views_filter_on_stable_particle_tag() -> None:
     # comma-joined as the suffix is, each view in written order
     ("Smith, John, Jr., MD, Esq.", "Jr.", "MD, Esq."),
     ("John Smith, PhD, Jr., III", "Jr., III", "PhD"),
-    # a run written without commas comes apart by kind; a split
-    # credential stays whole, and a connective goes with the word
-    # before it
+    # a run written without commas comes apart by kind, two words of
+    # one view keeping the separator written between them (a comma
+    # anywhere in the gap, else a space); a split credential stays
+    # whole
     ("John Smith Jr. III PhD", "Jr. III", "PhD"),
     ("John Smith Ph. D. Jr.", "Jr.", "Ph. D."),
+    ("John Smith, MD Jr. PhD", "Jr.", "MD PhD"),
+    ("John Smith, MD, Jr. PhD", "Jr.", "MD, PhD"),
+    # a connective goes with the word before it, dangling where the
+    # word after it is in the other view (rules/R8's Accepted)
     ("John Smith, PhD and MD Jr.", "Jr.", "PhD and MD"),
+    ("John Smith, Jr. and III", "Jr. and III", ""),
+    ("John Smith, Jr. and MD", "Jr. and", "MD"),
     ("Doe, Jane, and Jr.", "Jr.", "and"),
     # an agnomen is a generation; an honorific, a credential
     ("Pedro Alves Filho", "Filho", ""),

@@ -1830,6 +1830,8 @@
 {"name": "John Smith, Jr vd", "given": "John", "family": "Smith", "suffix": "Jr vd", "initials": "J. S.", "capitalized_force": "John Smith, Jr VD", "generation": "Jr", "credentials": "vd"}
 {"name": "John Smith, Jr.", "given": "John", "family": "Smith", "suffix": "Jr.", "initials": "J. S.", "generation": "Jr."}
 {"name": "John Smith, Jr. Ph. D.", "given": "John", "family": "Smith", "suffix": "Jr. Ph. D.", "initials": "J. S.", "generation": "Jr.", "credentials": "Ph. D."}
+{"name": "John Smith, Jr. and III", "given": "John", "family": "Smith", "suffix": "Jr. and III", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "J. S.", "generation": "Jr. and III"}
+{"name": "John Smith, Jr. and MD", "given": "John", "family": "Smith", "suffix": "Jr. and MD", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "J. S.", "generation": "Jr. and", "credentials": "MD"}
 {"name": "John Smith, Jr., Dr., Prof.", "title": "Dr. Prof.", "given": "John", "family": "Smith", "suffix": "Jr.", "initials": "J. S.", "generation": "Jr."}
 {"name": "John Smith, Jr., Lt.Gov.", "title": "Lt.Gov.", "given": "John", "family": "Smith", "suffix": "Jr.", "initials": "J. S.", "generation": "Jr."}
 {"name": "John Smith, Jr., abdul Dr. Smith", "title": "Dr.", "given": "John", "family": "Smith", "suffix": "Jr., abdul Smith", "ambiguities": ["COMMA_STRUCTURE"], "initials": "J. S.", "capitalized_force": "Dr. John Smith, Jr., Abdul Smith", "generation": "Jr.", "credentials": "abdul Smith"}
@@ -1846,9 +1848,11 @@
 {"name": "John Smith, MD - PhD", "given": "John", "family": "Smith", "suffix": "MD, PhD", "initials": "J. S."}
 {"name": "John Smith, MD / PhD", "given": "John", "family": "Smith", "suffix": "MD, PhD", "initials": "J. S."}
 {"name": "John Smith, MD ; PhD", "given": "John", "family": "Smith", "suffix": "MD, PhD", "initials": "J. S."}
+{"name": "John Smith, MD Jr. PhD", "given": "John", "family": "Smith", "suffix": "MD Jr. PhD", "initials": "J. S.", "generation": "Jr.", "credentials": "MD PhD"}
 {"name": "John Smith, MD MEng", "given": "John", "family": "Smith", "suffix": "MD MEng", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "J. S.", "capitalized_force": "John Smith, MD MENG"}
 {"name": "John Smith, MD – PhD", "given": "John", "family": "Smith", "suffix": "MD – PhD", "initials": "J. S."}
 {"name": "John Smith, MD, Bart", "given": "John", "family": "Smith", "suffix": "MD, Bart", "ambiguities": ["COMMA_STRUCTURE"], "initials": "J. S."}
+{"name": "John Smith, MD, Jr. PhD", "given": "John", "family": "Smith", "suffix": "MD, Jr. PhD", "initials": "J. S.", "generation": "Jr.", "credentials": "MD, PhD"}
 {"name": "John Smith, MD, Ma", "given": "John", "family": "Smith", "suffix": "MD, Ma", "ambiguities": ["COMMA_STRUCTURE"], "initials": "J. S.", "capitalized_force": "John Smith, MD, MA"}
 {"name": "John Smith, MD, Ms", "given": "John", "family": "Smith", "suffix": "MD, Ms", "initials": "J. S.", "capitalized_force": "John Smith, MD, MS"}
 {"name": "John Smith, MD, R.A.I.", "given": "John", "family": "Smith", "suffix": "MD, R.A.I.", "initials": "J. S."}
@@ -3333,7 +3337,7 @@
 {"name": "Smith, Ph. D.", "family": "Smith", "suffix": "Ph. D.", "initials": "S."}
 {"name": "Smith, Ph. D. III", "family": "Smith", "suffix": "Ph. D. III", "initials": "S.", "generation": "III", "credentials": "Ph. D."}
 {"name": "Smith, Ph. D. Jr.", "family": "Smith", "suffix": "Ph. D. Jr.", "initials": "S.", "generation": "Jr.", "credentials": "Ph. D."}
-{"name": "Smith, Ph. D. Jr. MD", "family": "Smith", "suffix": "Ph. D. Jr. MD", "initials": "S.", "generation": "Jr.", "credentials": "Ph. D., MD"}
+{"name": "Smith, Ph. D. Jr. MD", "family": "Smith", "suffix": "Ph. D. Jr. MD", "initials": "S.", "generation": "Jr.", "credentials": "Ph. D. MD"}
 {"name": "Smith, Ph. D. MD", "family": "Smith", "suffix": "Ph. D. MD", "initials": "S."}
 {"name": "Smith, Ph.D. Jr.", "family": "Smith", "suffix": "Ph.D. Jr.", "initials": "S.", "generation": "Jr.", "credentials": "Ph.D."}
 {"name": "Smith, PhD", "family": "Smith", "suffix": "PhD", "initials": "S."}

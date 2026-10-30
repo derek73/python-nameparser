@@ -4,7 +4,7 @@
 
 **Then:** every field is a view computed from the parsed words at read time, joining its words in written order — except folded family words — O3's fold and, since #379, P6's attached tussenvoegsel — which render before the rest of the family wherever they stood in the string.
 
-- **Words are separated as the writer separated them.** The suffix view is the one place this is visible, because it is the only field that can hold parts the writer comma-separated: a run of post-nominals written with spaces renders with spaces, and one written with commas keeps them.
+- **Words are separated as the writer separated them.** The suffix and its two views (R8) are the one place this is visible, because they are the only views that can hold parts the writer comma-separated: a run of post-nominals written with spaces renders with spaces, and one written with commas keeps them.
 - **The separator is the comma the writer typed**, read off the words' positions once their roles are known; the semicolon, a hyphen or slash standing alone and a delimiter the configuration names are separators too where C10 drops them, and so is any name word standing between two post-nominals.
 
 **Because:** a field is a way of reading the parse, not a stored string.

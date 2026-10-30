@@ -2203,8 +2203,8 @@ _LISTED_WORD_KINDS = {"generation": ReadingKind.GENERATION,
                       "credential": ReadingKind.CREDENTIAL}
 
 
-# rules/R8: "A listed word's kind is the shipped vocabulary's, read
-# whatever the reading's default" -- the kind the views partition the
+# rules/R8: "The kind of a word listed as a suffix word is the shipped
+# vocabulary's, read whatever the reading's default" -- the kind the views partition the
 # suffix by (decisions/R8, #326). A memo, C-level on a hit, so a suffix
 # word read before costs no frame; bounded since its key is the
 # caller's text.

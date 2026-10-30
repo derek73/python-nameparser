@@ -272,7 +272,7 @@ Languages with one to three candidates (`tr` `bay`, `it` `sig`, `lt` `jaun`, `ms
 
 ## Phase 4: order, shape and the output model
 
-Status: **the output model is agreed** (2026-10-28, #754), and sub-phase 4a has landed, `Reading.languages` with it (2026-10-29, decisions/vocabulary-model's 2026-10-29 #754, sub-phase 4a and 4a's follow-up entries). The record is decisions/vocabulary-model's 2026-10-28 #754 entry; the output-model and work-order subsections below are the design its items describe. The first two subsections, order and shape and the rules a pack can choose, are as written before and are amended only where the design reaches them. Phase 4 is 3.0 work. The core API (`parse`, `Parser`, `Lexicon`, `Policy`, `Locale`, `ParsedName`) is frozen for 3.0 except for additions (decisions/3-0-reevaluations, 2026-10-28 #925, THE CORE API), so every change below says whether it is an addition.
+Status: **the output model is agreed** (2026-10-28, #754), and sub-phases 4a, 4b and 4e have landed, `Reading.languages` with 4a (2026-10-29: decisions/vocabulary-model's 2026-10-29 #754, sub-phase 4a and 4a's follow-up entries, decisions/R8's for 4b and decisions/R6's for 4e). The record is decisions/vocabulary-model's 2026-10-28 #754 entry; the output-model and work-order subsections below are the design its items describe. The first two subsections, order and shape and the rules a pack can choose, are as written before and are amended only where the design reaches them. Phase 4 is 3.0 work. The core API (`parse`, `Parser`, `Lexicon`, `Policy`, `Locale`, `ParsedName`) is frozen for 3.0 except for additions (decisions/3-0-reevaluations, 2026-10-28 #925, THE CORE API), so every change below says whether it is an addition.
 
 ### Order is not shape
 
@@ -389,7 +389,7 @@ Each sub-phase is one PR, measured on its own base as phase 2's and phase 3's ar
 | 4b | `generation` and `credentials` (#326); a listed suffix word's kind read from 3a's index, which 4a could not split (`Jr` and `Esq.` both read `post-nominal` there). Landed (decisions/R8's 2026-10-29 entry) | 4a (neutral); 3a for the kind |
 | 4c | `patronymic`: the vocabulary's patronymic particles, and the RU and TR_AZ rules writing the reading | 4a (neutral) |
 | 4d | `surname2`: O6's stable tag | — (neutral) |
-| 4e | the render defaults and `ParsedName.order` | — |
+| 4e | the render defaults and `ParsedName.order`. Landed (decisions/R6's 2026-10-29 entry) | — |
 | 4f | `[rules]` compiled into a `Locale`'s policy patch; RU and TR_AZ rebuilt from their files | 3b |
 | 4g | the compound given name, a rule kind (#704) | 4f |
 | 4h | the shape inventory per order (#469), starting with the title between a family and a given name under `FAMILY_FIRST` | — |
