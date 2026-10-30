@@ -318,13 +318,21 @@ def _patronymic_opening(state: ParseState, dropped: set[int], i: int,
     a parent (rules/R9), and whether it names it as P6's attachment: a
     particle P6 attached to the family written before it ('Mohamad,
     Mahathir bin', 'Bakar, Ali bin Abu') names that family, the words
-    attached after it with it; any other names the words after it in
+    attached after it with it, where the family holds a word not
+    folded; any other names the words after it in
     its field, a nickname aside, and one ending its field names nobody,
     a family word spelled as one ('Bar' in 'Fritz von Bar'). Asked only
     of a patronymic particle, so other names pay nothing."""
     tokens = state.tokens
     if ATTACHED_TAG in tokens[i].tags:
-        return True, True
+        # the family it attaches to must hold a word of its own: behind
+        # an empty head P6 attaches it as the whole family (', Siti
+        # Aminah binti'), which O3's fold can give a base, and a
+        # particle with no family to name names nobody
+        named = any(tokens[k].role is Role.FAMILY
+                    and FOLDED_TAG not in tokens[k].tags
+                    for k in range(len(tokens)) if k not in dropped)
+        return named, named
     j = i + 1
     while j < len(tokens) and (j in dropped
                                or tokens[j].role is Role.NICKNAME):

@@ -10,8 +10,10 @@ Produces: tokens with roles adjusted by the post rules (among them the
 SUFFIX role of a delimited member its writing settles after the name,
 rules/S13, with the SUFFIX_OR_NICKNAME report on any other member left
 a nickname), the stable
-"joined" tag on a post-nominal continuing the entry before it, and the
-ambiguity P6's attachment reports at the end of a name read
+"joined" tag on a post-nominal continuing the entry before it, the
+folded-middle tag on the words O3 folds and P6's no-comma attachment
+joins to the family, with the attached tag on the latter (rules/R9
+tells the two apart by it), and the ambiguity P6's attachment reports at the end of a name read
 family-first (#467) -- after a family comma, that attachment is
 assign's since #613, and behind an empty part before the comma too
 since #892.

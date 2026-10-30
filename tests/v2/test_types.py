@@ -1135,6 +1135,17 @@ _MAF = Policy(middle_as_family=True)
     # a word P6 attached stands as the family under the fold, so a
     # folded middle's run does not reach it
     (_MAF, "Ali, Ahmad bin Ahmad Abu", "bin Ahmad"),
+    # behind an empty head P6 attaches the particle as the whole
+    # family, which names no one, fold or no fold: the third review's
+    # D-A, the empty-head comma (C15) the shape test refused
+    (Policy(), ", Siti Aminah binti", ""),
+    (_MAF, ", Siti Aminah binti", ""),
+    (Policy(name_order=FAMILY_FIRST, middle_as_family=True),
+     ", Siti Aminah binti", ""),
+    (_MAF, ", Ali Ali bin", ""),
+    (_MAF, ", Dr. Ali Ahmad bin", ""),
+    (_MAF, ", Dr. Siti Aminah binti Jr.", ""),
+    (_MAF, ", Siti Aminah binti (Bob)", ""),
 ])
 def test_the_patronymic_run_and_the_attachment_under_each_policy(
         policy: Policy, text: str, patronymic: str) -> None:
@@ -1148,11 +1159,15 @@ def test_middle_as_family_moves_no_patronymic_r2_does_not_move() -> None:
     # words (R2's unjoined mark), and the fold can give one a base
     # ('Ali, bin bin Abu' reads patronymic 'bin Abu' under the fold
     # alone, rules/R9's Accepted). The words, not their order: the
-    # view writes the family's words as the family does. A grid of particle, comma and
-    # given-name shapes (2,540 texts, each under two orders, about two
-    # seconds on 2026-10-29) that holds P6's attachment apart from the
-    # fold, the second review's D2. Compared: 4,494 of the 5,080 parses,
-    # recorded 2026-10-29; the rest are the R2 shape above
+    # view writes the family's words as the family does. A grid of
+    # particle, comma and given-name shapes (2,540 texts, each under
+    # two orders, about a second on 2026-10-29); compared: 4,494 of
+    # the 5,080 parses, the rest the R2 shape above. What it guards: a
+    # word P6 attached standing as the family under the fold (10 moves
+    # on 021268ed). What it cannot see: a shape whose R2 marks differ
+    # between the policies, the second review's D2 and the third's
+    # empty-head D-A, and one the fold leaves alike, D1; the rows of
+    # the test above hold those
     words = ["Ahmad", "bin", "Abu", "de", "Ali,"]
     texts = [" ".join(c) for n in range(2, 6)
              for c in itertools.product(words, repeat=n) if "bin" in c]

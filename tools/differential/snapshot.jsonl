@@ -3233,6 +3233,7 @@
 {"name": "Sita Kumari K.C", "given": "Sita", "middle": "Kumari", "family": "K.C", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "S. K. K."}
 {"name": "Siti Hasan née binti Ali", "given": "Siti", "family": "Hasan", "maiden": "binti Ali", "initials": "S. H.", "capitalized_force": "Siti Hasan (Binti Ali)", "patronymic": "binti Ali"}
 {"name": "Siti binti Abu Bakar", "given": "Siti", "family": "binti Abu Bakar", "initials": "S. B.", "capitalized_force": "Siti binti abu Bakar", "patronymic": "binti Abu Bakar"}
+{"name": "Siti binti Ahmad binti Hasan", "given": "Siti", "middle": "binti Ahmad", "family": "binti Hasan", "initials": "S. A. H.", "patronymic": "binti Ahmad binti Hasan"}
 {"name": "Siv Friðleifsdóttir", "given": "Siv", "family": "Friðleifsdóttir", "initials": "S. F."}
 {"name": "Skapti Ólafsson", "given": "Skapti", "family": "Ólafsson", "initials": "S. Ó."}
 {"name": "Skeggjason Hr. Geir Jón Magnús Brynjar yngri, þingmaður", "order": "FAMILY_FIRST", "given": "Hr.", "middle": "Geir Jón Magnús Brynjar", "family": "Skeggjason", "suffix": "yngri, þingmaður", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "H. G. J. M. B. S.", "capitalized_force": "Skeggjason Hr. Geir Jón Magnús Brynjar Yngri, Þingmaður", "generation": "yngri", "credentials": "þingmaður"}

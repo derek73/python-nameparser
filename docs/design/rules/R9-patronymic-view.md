@@ -90,7 +90,7 @@
 - A name part made only of particles is name words (R2), and `middle_as_family`'s fold can give such a part a base, so it reads a patronymic under the fold alone: `Ali, bin bin Abu` reads patronymic `bin Abu` with the fold and none without.
 - Two patronymics are one view, in the name and the maiden name alike.
   ```
-  "Ali bin Ahmad bin Hasan"   →  patronymic="bin Ahmad bin Hasan"
+  "Siti binti Ahmad binti Hasan"  →  patronymic="binti Ahmad binti Hasan"
   "Leyla Vali qizi née Rasim qizi"  [tr_az]  →  patronymic="Vali qizi Rasim qizi"
   ```
 - A patronymic particle is the shipped vocabulary's, read whatever the reading's default, as R8 reads a suffix word's kind, so a word only a caller's `Lexicon` lists as a particle (`ben`, which the vocabulary excludes as a patronymic) is a plain particle.

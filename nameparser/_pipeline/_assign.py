@@ -6,8 +6,9 @@ once, after P3's joins and before the particle chain (#614), which the
 main segment's placement takes rather than peeling again, save where
 group's joins left no name word in front of it.
 Produces: tokens with roles set on every main-stream token, and the
-folded-middle tag on the particles P6's attachment joins to the family
-after a family comma (#613).
+folded-middle and attached tags on the particles P6's attachment joins
+to the family after a family comma (#613; the attached tag, 3.0's 4c,
+tells rules/R9 the attachment from O3's fold).
 Reads: Policy.name_order (#270), is_suffix_lenient on the trailing
 piece of a two-part comma name, and Policy.script_orders (#271, which
 overrides it when every name piece is written wholly in one script, or
