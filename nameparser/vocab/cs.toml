@@ -19,9 +19,7 @@ salutation = { issue = 606, gender = "f", after_given = true }
 
 [[word]]
 text = "ml"
-[word.excluded.generation]
-reason = "pack-shaped: real and standard, but collides with ML initials in other languages written in Latin script"
-issue = [661, 679, 684]
+generation = { default = false, expands = "mladší, the Younger: Jiří Dienstbier ml.", issue = [661, 679, 684, 753], note = "real and standard, but ML is a pair of initials in other languages written in Latin script, and nothing in its writing tells the two apart, so no default reads it; a Czech pack turns it on" }
 
 [[word]]
 text = "mladší"

@@ -2528,10 +2528,10 @@ def test_reading_languages_name_the_default_files_under_a_choice() -> None:
 
 
 def test_a_choice_that_changes_nothing_leaves_the_lexicon_itself() -> None:
-    # fr.toml holds no reading the default leaves off or another file's
+    # sv.toml holds no reading the default leaves off or another file's
     # reading clashes with, so choosing it changes no compiled set
     import nameparser._parser as parser_mod
     from nameparser._reading_index import changed_words, selected
-    assert changed_words(selected(["fr"])) == frozenset()
+    assert changed_words(selected(["sv"])) == frozenset()
     mine = Lexicon.default().add(titles={"zzq"})
-    assert parser_mod._apply_choice(mine, frozenset({"fr"})) is mine
+    assert parser_mod._apply_choice(mine, frozenset({"sv"})) is mine

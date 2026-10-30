@@ -151,8 +151,8 @@ def test_an_exclusion_in_one_file_refuses_the_reading_in_another(
     files = dict(shipped)
     # appended to an ordered file, out of place: the reason still comes
     # first, check 10 running last
-    files["en.toml"] += '\n[[word]]\ntext = "père"\ngeneration = {}\n'
-    with pytest.raises(build.VocabError, match="collides outside French"):
+    files["fr.toml"] += '\n[[word]]\ntext = "duke"\nnobility = {}\n'
+    with pytest.raises(build.VocabError, match="Duke Kahanamoku"):
         _compile(files)
 
 
