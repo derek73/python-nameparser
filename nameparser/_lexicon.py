@@ -944,8 +944,8 @@ class Lexicon:
                 f"incompatible Lexicon pickle: missing fields: {missing}; "
                 f"unexpected fields: {unexpected}"
             )
-        state = {**{name: default for name, default in added.items()
-                    if name not in state}, **state}
+        defaulted = {name for name in added if name not in state}
+        state = {**{name: added[name] for name in defaulted}, **state}
         for name, value in state.items():
             object.__setattr__(self, name, value)
         # Re-run construction validation rather than trusting the blob.
@@ -977,6 +977,17 @@ class Lexicon:
                           state["capitalization_exceptions"])
         if tuple(given_pairs) != self.capitalization_exceptions:
             drifted.append("capitalization_exceptions")
+        # A drifted field the pickle lacked drifted in its CLASS default,
+        # which no pickle can fix: name the default, not the pickle.
+        faulty = [d for d in drifted if d.split(":")[0] in defaulted]
+        if faulty:
+            raise ValueError(
+                "Lexicon field default is not normalized "
+                f"({'; '.join(faulty)}): a field marked _ADDED_IN loads "
+                "its default into every pickle written before it, so "
+                "the default must be normalized entries; this is a "
+                "defect in nameparser, not in the pickle"
+            )
         if drifted:
             raise ValueError(
                 "incompatible Lexicon pickle: entries are not normalized "

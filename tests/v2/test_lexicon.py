@@ -372,7 +372,8 @@ def test_capitalization_exceptions_rejects_malformed_shapes() -> None:
 
 
 def test_setstate_rejects_mismatched_field_layout() -> None:
-    # A pickle from a different Lexicon version (field added/renamed)
+    # A pickle from a different Lexicon version (a field added without
+    # the ADDED_IN marker, or renamed)
     # must fail at load time with a message naming the mismatch, not at
     # some later attribute read far from the unpickle site.
     lex = Lexicon.empty()
@@ -486,7 +487,7 @@ _LEXICON_REFUSED = [
     # does not survive normalization is refused, not silently rewritten
     pytest.param({"titles": frozenset({"DR."})},
                  lambda: _lexicon_state("titles"),
-                 "not normalized (titles: DR.)",
+                 "default is not normalized (titles: DR.)",
                  id="marked-field-whose-default-is-not-normalized"),
 ]
 
@@ -510,18 +511,25 @@ def test_a_lexicon_parser_and_locale_pickled_by_2_8_0_load() -> None:
     the checkout, version and module path asserted (AGENTS.md's v1
     comparison trap). A field a later release adds to Lexicon takes
     `_ADDED_IN` and a default, or this fails. pickle.load is safe
-    here: a repo-controlled fixture."""
-    from nameparser import locales
+    here: a repo-controlled fixture.
+
+    What it holds is that each object LOADS: only the Lexicon, built
+    from words named here, is compared whole. The pack and the policy
+    are checked by type and code, since whole equality with
+    `locales.RU` or `Parser().policy` would fail on any 3.0 change to
+    their content, which is no layout skew and no reason to
+    re-record."""
+    from nameparser import Locale, Policy
     with open(Path(__file__).parent / "data" / "lexicon_v28.pickle",
               "rb") as f:
         loaded = pickle.load(f)
     lex = Lexicon.empty().add(titles={"dean"})
     assert loaded["lexicon"] == lex
-    # compared by part: building Parser(lexicon=lex) warns, an empty
-    # lexicon having no hangul surnames for the default policy
     assert loaded["parser"].lexicon == lex
-    assert loaded["parser"].policy == Parser().policy
-    assert loaded["locale"] == locales.RU
+    assert isinstance(loaded["parser"].policy, Policy)
+    assert isinstance(loaded["locale"], Locale)
+    assert loaded["locale"].code == "ru"
+    assert isinstance(loaded["locale"].lexicon, Lexicon)
 
 
 def test_normalization_lowercases_and_keeps_interior_periods() -> None:
