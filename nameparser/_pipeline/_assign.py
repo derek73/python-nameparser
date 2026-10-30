@@ -94,7 +94,7 @@ from typing import NamedTuple
 from nameparser._lexicon import Lexicon, _run_addresses_by_given
 from nameparser._pipeline._vocab import (
     _ROMAN, effective_script, in_a_title_phrase, is_initial_shaped,
-    PARTICLE_READING, TITLE_READING, is_listed_numeral,
+    TITLE_READING, is_listed_numeral, particle_reading,
     is_suffix_lenient, name_reading, suffix_reading,
     numeral_leans_to_the_name, numeral_settled_by_case,
     reads_as_a_reported_numeral, reads_as_generation, resolve_script_set,
@@ -749,7 +749,7 @@ def _assign_main(seg_idx: int, state: ParseState,
                 AmbiguityKind.PARTICLE_OR_GIVEN,
                 f"leading {tokens[head[0]].text!r} may be a family-name "
                 f"particle; read as ", tuple(head), field_tail="",
-                alternative=PARTICLE_READING))
+                alternative=particle_reading(tokens[head[0]].tags)))
     return order
 
 
@@ -870,7 +870,7 @@ def _inside_a_credential_run(seg: Sequence[Sequence[int]],
         f"{text!r} written without periods is both a post-nominal and a "
         f"family-name particle; between credentials after a family "
         f"comma it reads as a post-nominal",
-        tuple(run), alternative=PARTICLE_READING))
+        tuple(run), alternative=particle_reading(tokens[run[0]].tags)))
     return True
 
 

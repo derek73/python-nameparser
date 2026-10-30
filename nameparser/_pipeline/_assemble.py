@@ -13,7 +13,8 @@ that would produce an invalid result dies HERE, not in a renderer
 three layers away.
 Reads: Policy.middle_as_family, folding a report's other field as the
 policy folds a middle; Policy.name_order, for ParsedName.order where
-no positional read happened; and Lexicon.surnames, suffix_acronyms and
+no positional read happened; Policy.patronymic_rules, for the words
+an ending rule reads as a patronymic (rules/R9); and Lexicon.surnames, suffix_acronyms and
 suffix_acronyms_ambiguous, for the source of a token's reading where
 no tag gives it. Not a Lexicon: the shipped reading index
 (_reading_index.languages_of), for Reading.languages, which names the
@@ -39,13 +40,16 @@ from nameparser._lexicon import _VOCAB_FIELDS, Lexicon, _normalize
 from nameparser._pipeline._state import (
     AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG,
     CREDENTIAL_WORD_TAG, FIELD_READING, GENERATION_WORD_TAG,
-    NAME_ROLES, SHAPE_ACRONYM_TAG, SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG,
+    NAME_ROLES, PATRONYMIC_TAG, SHAPE_ACRONYM_TAG, SPLIT_CREDENTIAL_TAG,
+    SPLIT_MEMBER_TAG,
     TITLE_AMBIGUOUS_TAG, Beside, Deferred, ParseState, PendingAmbiguity,
-    Structure, WorkToken,
+    Structure, WorkToken, comma_bucket,
 )
 from nameparser._pipeline._vocab import (
-    _PERIOD_ABBREV, name_source, suffix_kind,
+    _PERIOD_ABBREV, has_patronymic_ending, is_patronymic_marker,
+    name_source, suffix_kind,
 )
+from nameparser._policy import PatronymicRule
 from nameparser._reading_index import CATEGORY, languages_of
 from nameparser._types import (
     FOLDED_TAG, GIVEN_FIRST, UNJOINED_CONJUNCTION_TAG, UNJOINED_TAG,
@@ -70,14 +74,16 @@ def _kinds_of(*categories: str) -> frozenset[str]:
 #: suffix rows whatever their finer kind, since a word has one suffix
 #: kind (the build's check 4), which `_vocab.suffix_kind` has already
 #: read the reading's kind by (4b).
-#: A name reading's rows depend on its field (`_NAME_KINDS`). An
-#: initial and a patronymic are read by shape or rule, never from a
-#: file.
+#: A name reading's rows depend on its field (`_NAME_KINDS`). A
+#: patronymic's are the patronymic particle's (rules/R9); the words its
+#: run takes, and a patronymic an ending rule reads, are read by
+#: position or shape, as an initial is, never from a file.
 _SUFFIX_KINDS = _kinds_of("suffix")
 _KINDS: MappingProxyType[ReadingKind, frozenset[str]] = MappingProxyType({
     ReadingKind.TITLE: _kinds_of("title"),
     ReadingKind.PARTICLE: _kinds_of("particle"),
     ReadingKind.CONJUNCTION: _kinds_of("conjunction"),
+    ReadingKind.PATRONYMIC: frozenset({"patronymic"}),
     ReadingKind.CREDENTIAL: _SUFFIX_KINDS,
     ReadingKind.GENERATION: _SUFFIX_KINDS,
     ReadingKind.AGNOMEN: _SUFFIX_KINDS,
@@ -199,7 +205,8 @@ _reading = functools.lru_cache(maxsize=1024)(Reading)
 
 #: classify's kind tags for a listed suffix word (rules/R8), which no
 #: published token carries: `Token.reading` names the kind.
-_KIND_TAGS = frozenset({GENERATION_WORD_TAG, CREDENTIAL_WORD_TAG})
+_KIND_TAGS = frozenset({GENERATION_WORD_TAG, CREDENTIAL_WORD_TAG,
+                        PATRONYMIC_TAG})
 
 #: The tags that say a list or a shape made a word a suffix: without
 #: one, a suffix word stands there by position, unless the vocabulary
@@ -270,6 +277,54 @@ def _opens_its_segment(state: ParseState, i: int) -> bool:
                  and state.tokens[j].role is not Role.TITLE), None) == i
 
 
+# rules/R9: "a standalone patronymic marker, O2's, with the name word
+# before it in its comma part" -- the Turkic arm (decisions/R9, #754)
+def _turkic_patronymics(state: ParseState,
+                        dropped: set[int]) -> tuple[set[int], set[int]]:
+    """The markers rules/R9's Turkic arm reads as a patronymic, and the
+    father's name before each: a marker standing in a name field, with
+    the word before it, a nickname aside, standing in one too and in
+    the marker's own comma part. Asked only where the policy turns the
+    rule on."""
+    markers: set[int] = set()
+    fathers: set[int] = set()
+    tokens = state.tokens
+    commas = state.comma_offsets
+    for i, t in enumerate(tokens):
+        if (i in dropped or t.role not in NAME_ROLES
+                or not is_patronymic_marker(t.text)):
+            continue
+        j = i - 1
+        while j >= 0 and (j in dropped or tokens[j].role is Role.NICKNAME):
+            j -= 1
+        if (j >= 0 and tokens[j].role in NAME_ROLES
+                and comma_bucket(tokens[j].span.start, commas)
+                == comma_bucket(t.span.start, commas)):
+            markers.add(i)
+            fathers.add(j)
+    return markers, fathers
+
+
+def _opens_a_patronymic(state: ParseState, dropped: set[int], i: int,
+                        field: Role) -> bool:
+    """Whether the patronymic particle at `i`, read as a particle, names
+    a parent (rules/R9): a word after it in its field, a nickname
+    aside, or the family written before it that P6 attached it to
+    ('Mohamad, Mahathir bin'). One ending its field names nobody, a
+    family word spelled as one ('Bar' in 'Fritz von Bar'). Asked only
+    of a patronymic particle, so other names pay nothing."""
+    tokens = state.tokens
+    tags = tokens[i].tags
+    if field is Role.FAMILY and FOLDED_TAG in tags:
+        return True
+    j = i + 1
+    while j < len(tokens) and (j in dropped
+                               or tokens[j].role is Role.NICKNAME):
+        j += 1
+    return (j < len(tokens) and tokens[j].role is tokens[i].role
+            and (FOLDED_TAG in tokens[j].tags) == (FOLDED_TAG in tags))
+
+
 def _listed_suffix(text: str, lexicon: Lexicon) -> bool:
     """Whether the suffix vocabulary lists, its periods removed, an
     acronym no tag marks: a bracketed member written with an interior
@@ -296,6 +351,17 @@ def assemble(state: ParseState) -> ParsedName:
     # credential split across a space, whose second word takes it
     before: Reading | None = None
     prev_split = False
+    # the field of the patronymic a patronymic particle opened, whose
+    # run takes the words after it there; and the ending rules' words,
+    # where a policy turns one on
+    run_field: Role | None = None
+    # a patronymic particle rules/P6 attached to the family written
+    # before it, whose run is that family's own words
+    attached = False
+    rules = state.policy.patronymic_rules
+    slavic = PatronymicRule.EAST_SLAVIC in rules
+    markers, fathers = (_turkic_patronymics(state, dropped)
+                        if PatronymicRule.TURKIC in rules else ((), ()))
     for i, t in enumerate(state.tokens):
         if i in dropped:
             continue
@@ -322,6 +388,7 @@ def assemble(state: ParseState) -> ParsedName:
         # frame (decisions/vocabulary-model, 2026-10-29).
         reading: Reading | None = None
         if role is Role.SUFFIX:
+            run_field = None
             kind, source = suffix_kind(t.text, tags)
             if (source is ReadingSource.VOCABULARY
                     and tags.isdisjoint(_SUFFIX_EVIDENCE)):
@@ -421,6 +488,28 @@ def assemble(state: ParseState) -> ParsedName:
             # folded into the family by the middle it stands as
             field = (Role.MIDDLE if role is Role.FAMILY and folds_middle
                      and FOLDED_TAG in tags else role)
+            # rules/R9: "a particle the shipped vocabulary holds as a
+            # patronymic", read as a particle, opens a patronymic that
+            # takes the words after it in its field; an ending rule a
+            # policy turns on reads its own words (decisions/R9, #754)
+            if (kind is ReadingKind.PARTICLE and PATRONYMIC_TAG in tags
+                    and _opens_a_patronymic(state, dropped, i, field)):
+                kind = ReadingKind.PATRONYMIC
+                run_field = field
+                attached = attached or (field is Role.FAMILY
+                                        and FOLDED_TAG in tags)
+            elif field is run_field:
+                kind, source = ReadingKind.PATRONYMIC, ReadingSource.POSITION
+            else:
+                if role is not Role.NICKNAME:
+                    run_field = None
+                if i in fathers:
+                    kind, source = (ReadingKind.PATRONYMIC,
+                                    ReadingSource.POSITION)
+                elif kind is ReadingKind.NAME and (
+                        i in markers or slavic and field is Role.MIDDLE
+                        and has_patronymic_ending(t.text)):
+                    kind, source = ReadingKind.PATRONYMIC, ReadingSource.SHAPE
             langs = _languages(t.text, kind, field) if source in _LISTED else ()
             if (not langs and source in _LISTED
                     and (langs := _part_languages(t.text, kind, field))
@@ -435,6 +524,17 @@ def assemble(state: ParseState) -> ParsedName:
             # name unequal to its own 2.x pickle (Token compares tags)
             tags = tags - _KIND_TAGS
         final[i] = Token(t.text, t.span, role, tags, reading)
+    if attached:
+        # rules/R9: "A trailing patronymic particle P6 attaches to the
+        # family written before it takes that family's words as the
+        # parent's name" (decisions/R9, #754)
+        for j, tok in final.items():
+            if (tok.role is Role.FAMILY and FOLDED_TAG not in tok.tags
+                    and tok.reading is not None
+                    and tok.reading.kind is not ReadingKind.PATRONYMIC):
+                final[j] = Token(tok.text, tok.span, tok.role, tok.tags,
+                                 _READINGS[ReadingKind.PATRONYMIC, Role.FAMILY,
+                                           ReadingSource.POSITION])
     # No alphanumeric character among the SURVIVING tokens means no
     # name: a bare '.' or '- -' is not a person. v1 kept such input
     # (parse('.') -> first '.'); 2.0 empties it so bool() stays an

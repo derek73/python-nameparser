@@ -117,8 +117,10 @@ def _summary_run(*args: str) -> tuple[int, str]:
 
 def test_the_summary_says_where_each_pending_field_is_scored() -> None:
     _, out = _summary_run()
-    assert "patronymic" in out and "(scored inside given_names)" in out
-    assert "(scored inside family)" in out
+    # `patronymic` is a view since 3.0's 4c (rules/R9), scored on its own
+    # beside the merged role; `surname2` waits for 4d
+    assert "(and scored inside given_names)" in out
+    assert "stated, not a ParsedName field yet (scored inside family)" in out
 
 
 def test_a_role_parsed_name_stops_answering_still_fails_loudly(
@@ -186,12 +188,15 @@ def test_same(expected: str, got: str, text: str, result: bool) -> None:
     assert agreement.same(expected, got, text) is result
 
 
-def test_got_roles_reads_the_six_views() -> None:
+def test_got_roles_reads_the_six_views_and_each_pending_field_parsed_name_has(
+        ) -> None:
     roles = agreement.got_roles(parse("Dr. Paul von Fischer Jr."))
     assert roles == {"title": "Dr.", "given_names": "Paul", "family": "von Fischer",
                      "suffix": "Jr.", "family_particles": "von",
-                     "family_base": "Fischer"}
-    assert tuple(roles) == agreement.ROLES
+                     "family_base": "Fischer", "patronymic": ""}
+    assert tuple(roles) == (*agreement.ROLES, "patronymic")
+    assert agreement.got_roles(parse("Mahathir bin Mohamad"))["patronymic"] == (
+        "bin Mohamad")
 
 
 def _row(text: str, shape: int | None, **fields: str) -> dict[str, object]:

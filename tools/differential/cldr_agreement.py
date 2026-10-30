@@ -49,16 +49,16 @@ Re-record deliberately, and say why in the commit, as with a watched diff.
 Each record doubles as a measured worklist: every entry is a place the
 parser and the source read a name differently.
 
-Two fields are stated but not yet scored on their own: `surname2` (a
+Two fields are stated that the seven roles do not hold: `surname2` (a
 second surname: CLDR's `surname2`, Wikidata's P1950) and `patronymic`
-(Wikidata's P5056, a field CLDR does not have). ParsedName has neither,
-so each is scored inside the role it belongs to today -- `surname2`
-inside `family`, as CLDR's own merge does, and `patronymic` inside
-`given_names`, since a patronymic is not a family name (the GND and LC
-convention: `Vigdís Finnbogadóttir` expects the family empty). They are
-in PENDING_ROLES, and each is also scored on its own the day ParsedName
-gains an attribute of that name; until then the summary says how many
-renderings state it. Scoring a field on its own does not end the merged
+(Wikidata's P5056, a field CLDR does not have). Each is scored inside
+the role it belongs to -- `surname2` inside `family`, as CLDR's own
+merge does, and `patronymic` inside `given_names`, since a patronymic
+is not a family name (the GND and LC convention: `Vigdís
+Finnbogadóttir` expects the family empty). They are in PENDING_ROLES,
+and each is also scored on its own once ParsedName has an attribute of
+that name (`patronymic` since 3.0's 4c, rules/R9); until then the
+summary says how many renderings state it. Scoring a field on its own does not end the merged
 scoring; only a 3.0 decision to take the field out of `family` or
 `given_names` changes PENDING_ROLES. The conventions source's
 `honorific` is not pending: it is scored inside `suffix` by design, as
@@ -447,7 +447,13 @@ def _summary(name: str, rows: list[dict[str, Any]],
         print(f"{role:17} {agree:5}/{totals[role]:<5} agree")
     answered = got_roles(parse_rendering("Ana Ruiz", None))
     for role, merged in PENDING_ROLES.items():
-        if totals[role] and role not in answered:
+        if not totals[role]:
+            continue
+        if role in answered:
+            agree = totals[role] - wrong[role]
+            print(f"{role:17} {agree:5}/{totals[role]:<5} agree "
+                  f"(and scored inside {merged})")
+        else:
             print(f"{role:17} {totals[role]:5} stated, not a ParsedName field "
                   f"yet (scored inside {merged})")
     problems = changes(read_record(record), current, {rendering_key(r) for r in rows})

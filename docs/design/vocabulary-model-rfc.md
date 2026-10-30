@@ -272,7 +272,7 @@ Languages with one to three candidates (`tr` `bay`, `it` `sig`, `lt` `jaun`, `ms
 
 ## Phase 4: order, shape and the output model
 
-Status: **the output model is agreed** (2026-10-28, #754), and sub-phases 4a, 4b and 4e have landed, `Reading.languages` with 4a (2026-10-29: decisions/vocabulary-model's 2026-10-29 #754, sub-phase 4a and 4a's follow-up entries, decisions/R8's for 4b and decisions/R6's for 4e). The record is decisions/vocabulary-model's 2026-10-28 #754 entry; the output-model and work-order subsections below are the design its items describe. The first two subsections, order and shape and the rules a pack can choose, are as written before and are amended only where the design reaches them. Phase 4 is 3.0 work. The core API (`parse`, `Parser`, `Lexicon`, `Policy`, `Locale`, `ParsedName`) is frozen for 3.0 except for additions (decisions/3-0-reevaluations, 2026-10-28 #925, THE CORE API), so every change below says whether it is an addition.
+Status: **the output model is agreed** (2026-10-28, #754), and sub-phases 4a, 4b, 4c and 4e have landed, `Reading.languages` with 4a (2026-10-29: decisions/vocabulary-model's 2026-10-29 #754, sub-phase 4a and 4a's follow-up entries, decisions/R8's for 4b, decisions/R9's for 4c and decisions/R6's for 4e). The record is decisions/vocabulary-model's 2026-10-28 #754 entry; the output-model and work-order subsections below are the design its items describe. The first two subsections, order and shape and the rules a pack can choose, are as written before and are amended only where the design reaches them. Phase 4 is 3.0 work. The core API (`parse`, `Parser`, `Lexicon`, `Policy`, `Locale`, `ParsedName`) is frozen for 3.0 except for additions (decisions/3-0-reevaluations, 2026-10-28 #925, THE CORE API), so every change below says whether it is an addition.
 
 ### Order is not shape
 
@@ -387,14 +387,14 @@ Each sub-phase is one PR, measured on its own base as phase 2's and phase 3's ar
 |---|---|---|
 | 4a | `Token.reading` and `ReadingKind.PATRONYMIC`, kind and source read at assemble from each token's final role and the tags the deciding stages left; `Reading.languages` once 3a's index exists. Landed (decisions/vocabulary-model's 2026-10-29 #754, sub-phase 4a and 4a's follow-up entries) | — (neutral); 3a for `languages` |
 | 4b | `generation` and `credentials` (#326); a listed suffix word's kind read from 3a's index, which 4a could not split (`Jr` and `Esq.` both read `post-nominal` there). Landed (decisions/R8's 2026-10-29 entry) | 4a (neutral); 3a for the kind |
-| 4c | `patronymic`: the vocabulary's patronymic particles, and the RU and TR_AZ rules writing the reading | 4a (neutral) |
+| 4c | `patronymic`: the vocabulary's patronymic particles, and the RU and TR_AZ rules writing the reading; a particle's patronymic kind read from 3a's index, as 4b reads a suffix word's. Landed (decisions/R9's 2026-10-29 entry) | 4a (neutral); 3a for the kind |
 | 4d | `surname2`: O6's stable tag | — (neutral) |
 | 4e | the render defaults and `ParsedName.order`. Landed (decisions/R6's 2026-10-29 entry) | — |
 | 4f | `[rules]` compiled into a `Locale`'s policy patch; RU and TR_AZ rebuilt from their files | 3b |
 | 4g | the compound given name, a rule kind (#704) | 4f |
 | 4h | the shape inventory per order (#469), starting with the title between a family and a given name under `FAMILY_FIRST` | — |
 
-**Interleaved with phase 3** (its sub-phases 3a to 3i, above): 4a can start beside 3a, its `languages` waiting for 3a's index; 4c and 4d need nothing of phase 3, and 4b needs 3a's index only for a listed suffix word's kind; they unblock its packs, `cs`'s generations (3f) and `pt-BR`'s agnomens (3h) on 4b, `es` and `pt` (3g) on 4d and 4g; 4f lands with or after 3b, since both decide what a shipped `Locale` holds; an `is` pack, which no phase 3 sub-phase lists, needs 3b, 4c and 4f. 3i, the bearers' languages strict would read, needs 3a alone, and 4e and 4h stand apart from both. So the order is 3a and 4a, then 4b to 4d with 3b and 3c (4b after 3a), then 4f, then the packs with 4g, with 4e at any point and 3i at any point after 3a.
+**Interleaved with phase 3** (its sub-phases 3a to 3i, above): 4a can start beside 3a, its `languages` waiting for 3a's index; 4d needs nothing of phase 3, and 4b and 4c need 3a's index only for a listed word's kind, a suffix word's and a particle's; they unblock its packs, `cs`'s generations (3f) and `pt-BR`'s agnomens (3h) on 4b, `es` and `pt` (3g) on 4d and 4g; 4f lands with or after 3b, since both decide what a shipped `Locale` holds; an `is` pack, which no phase 3 sub-phase lists, needs 3b, 4c and 4f. 3i, the bearers' languages strict would read, needs 3a alone, and 4e and 4h stand apart from both. So the order is 3a and 4a, then 4b to 4d with 3b and 3c (4b after 3a), then 4f, then the packs with 4g, with 4e at any point and 3i at any point after 3a.
 
 **Left open.** With no sub-phase yet: phase 1's four reserved names said to be phase 4's (`separators` with phase 4's glued words, and `bare_only`, `leading_only` and `trailing_only`, which this RFC's phase 2 section found not needed), whose build messages still name this phase.
 

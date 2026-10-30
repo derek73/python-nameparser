@@ -10,6 +10,13 @@
   },
   "text": "Rafael Viciana Aráez"
  },
+ "Q101644147/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Николаевич",
+   "got": ""
+  },
+  "text": "Бычков, Пётр Николаевич"
+ },
  "Q101688196/surname2-co/givenFirst": {
   "family": {
    "expected": "Gutiérrez Arango",
@@ -20,6 +27,20 @@
    "got": "Pompilio Gutiérrez"
   },
   "text": "Pompilio Gutiérrez Arango"
+ },
+ "Q102398858/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Митрофановна",
+   "got": ""
+  },
+  "text": "Любовь Митрофановна Шуляк"
+ },
+ "Q104148/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Васильевич",
+   "got": ""
+  },
+  "text": "Смыслов, Василий Васильевич"
  },
  "Q104155694/surname2-es/givenFirst": {
   "family": {
@@ -65,6 +86,13 @@
   },
   "text": "Julio Roberto Gómez Esguerra"
  },
+ "Q106089866/patronymic-ri/givenFirst": {
+  "patronymic": {
+   "expected": "Андреевич",
+   "got": ""
+  },
+  "text": "Александр Андреевич Клюшников"
+ },
  "Q106561769/surname2-co/givenFirst": {
   "family": {
    "expected": "Camacho Carrizosa",
@@ -86,6 +114,13 @@
    "got": "Libardo López"
   },
   "text": "Libardo López Gómez"
+ },
+ "Q107182509/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Алексеевна",
+   "got": ""
+  },
+  "text": "Дарья Алексеевна Навальная"
  },
  "Q107542992/surname2-mx/givenFirst": {
   "family": {
@@ -109,6 +144,13 @@
   },
   "text": "Gabriel Jaime Santamaría Montoya"
  },
+ "Q108702510/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Владимирович",
+   "got": ""
+  },
+  "text": "Александр Владимирович Кессених"
+ },
  "Q109044495/surname2-co/givenFirst": {
   "family": {
    "expected": "González Arias",
@@ -120,6 +162,76 @@
   },
   "text": "Jesús Ángel González Arias"
  },
+ "Q109484835/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Терентьевич",
+   "got": ""
+  },
+  "text": "Вишняков, Павел Терентьевич"
+ },
+ "Q109485696/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Алексеевич",
+   "got": ""
+  },
+  "text": "Алексей Алексеевич Никитин"
+ },
+ "Q109485696/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Алексеевич",
+   "got": ""
+  },
+  "text": "Никитин, Алексей Алексеевич"
+ },
+ "Q109486438/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Михайлович",
+   "got": ""
+  },
+  "text": "Владимир Михайлович Штейн"
+ },
+ "Q109486503/patronymic-ri/sorting": {
+  "patronymic": {
+   "expected": "Михайлович",
+   "got": ""
+  },
+  "text": "Повалишин, Владимир Михайлович"
+ },
+ "Q109487083/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Афанасьевич",
+   "got": ""
+  },
+  "text": "Владимир Афанасьевич Фатеев"
+ },
+ "Q109487989/patronymic-su/sorting": {
+  "patronymic": {
+   "expected": "Фёдорович",
+   "got": ""
+  },
+  "text": "Рязанов, Евгений Фёдорович"
+ },
+ "Q109488265/patronymic-su/sorting": {
+  "patronymic": {
+   "expected": "Емельянович",
+   "got": ""
+  },
+  "text": "Воронцов, Александр Емельянович"
+ },
+ "Q109491939/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Семёнович",
+   "got": ""
+  },
+  "text": "Алексей Семёнович Сечкин"
+ },
+ "Q109621635/patronymic-su/sorting": {
+  "patronymic": {
+   "expected": "Владимирович",
+   "got": ""
+  },
+  "text": "Шевчик, Дмитрий Владимирович"
+ },
  "Q109738043/surname2-mx/givenFirst": {
   "family": {
    "expected": "López Díaz",
@@ -130,6 +242,13 @@
    "got": "Javier López"
   },
   "text": "Javier López Díaz"
+ },
+ "Q109831094/patronymic-su/givenFirst": {
+  "patronymic": {
+   "expected": "Иосифович",
+   "got": ""
+  },
+  "text": "Залман Иосифович Якуб"
  },
  "Q109853607/surname2-co/givenFirst": {
   "family": {
@@ -153,6 +272,13 @@
   },
   "text": "Emilio Murillo Chapull"
  },
+ "Q110165407/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Алексеевич",
+   "got": ""
+  },
+  "text": "Борис Алексеевич Зозуля"
+ },
  "Q110463644/surname2-co/givenFirst": {
   "family": {
    "expected": "Uribe Cordovez",
@@ -163,6 +289,20 @@
    "got": "Carlos Uribe"
   },
   "text": "Carlos Uribe Cordovez"
+ },
+ "Q110721389/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Петрович",
+   "got": ""
+  },
+  "text": "Зорин, Михаил Петрович"
+ },
+ "Q111080043/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Алексеевич",
+   "got": ""
+  },
+  "text": "Павел Алексеевич Рубцов"
  },
  "Q111234704/surname2-es/givenFirst": {
   "family": {
@@ -217,6 +357,10 @@
    "expected": "Sigurður Ólafsson",
    "got": "Sigurður"
   },
+  "patronymic": {
+   "expected": "Ólafsson",
+   "got": ""
+  },
   "text": "Sigurður Ólafsson"
  },
  "Q112116260/patronymic-is/givenFirst": {
@@ -227,6 +371,10 @@
   "given_names": {
    "expected": "Bjarni Böðvarsson",
    "got": "Bjarni"
+  },
+  "patronymic": {
+   "expected": "Böðvarsson",
+   "got": ""
   },
   "text": "Bjarni Böðvarsson"
  },
@@ -239,6 +387,10 @@
    "expected": "Soffía Karlsdóttir",
    "got": "Soffía"
   },
+  "patronymic": {
+   "expected": "Karlsdóttir",
+   "got": ""
+  },
   "text": "Soffía Karlsdóttir"
  },
  "Q112128748/patronymic-is/givenFirst": {
@@ -249,6 +401,10 @@
   "given_names": {
    "expected": "Ketill Jensson",
    "got": "Ketill"
+  },
+  "patronymic": {
+   "expected": "Jensson",
+   "got": ""
   },
   "text": "Ketill Jensson"
  },
@@ -261,6 +417,10 @@
    "expected": "Magnús Jónsson",
    "got": "Magnús"
   },
+  "patronymic": {
+   "expected": "Jónsson",
+   "got": ""
+  },
   "text": "Magnús Jónsson"
  },
  "Q112130399/patronymic-is/givenFirst": {
@@ -271,6 +431,10 @@
   "given_names": {
    "expected": "Skapti Ólafsson",
    "got": "Skapti"
+  },
+  "patronymic": {
+   "expected": "Ólafsson",
+   "got": ""
   },
   "text": "Skapti Ólafsson"
  },
@@ -283,6 +447,10 @@
    "expected": "Jón Sigurðsson",
    "got": "Jón"
   },
+  "patronymic": {
+   "expected": "Sigurðsson",
+   "got": ""
+  },
   "text": "Jón Sigurðsson"
  },
  "Q112131257/patronymic-is/givenFirst": {
@@ -293,6 +461,10 @@
   "given_names": {
    "expected": "Gerður Benediktsdóttir",
    "got": "Gerður"
+  },
+  "patronymic": {
+   "expected": "Benediktsdóttir",
+   "got": ""
   },
   "text": "Gerður Benediktsdóttir"
  },
@@ -305,6 +477,10 @@
    "expected": "Kristján Kristjánsson",
    "got": "Kristján"
   },
+  "patronymic": {
+   "expected": "Kristjánsson",
+   "got": ""
+  },
   "text": "Kristján Kristjánsson"
  },
  "Q112135757/patronymic-is/givenFirst": {
@@ -315,6 +491,10 @@
   "given_names": {
    "expected": "Sigurdór Sigurdórsson",
    "got": "Sigurdór"
+  },
+  "patronymic": {
+   "expected": "Sigurdórsson",
+   "got": ""
   },
   "text": "Sigurdór Sigurdórsson"
  },
@@ -327,6 +507,10 @@
    "expected": "Rúnar Gunnarsson",
    "got": "Rúnar"
   },
+  "patronymic": {
+   "expected": "Gunnarsson",
+   "got": ""
+  },
   "text": "Rúnar Gunnarsson"
  },
  "Q112184468/patronymic-is/givenFirst": {
@@ -337,6 +521,10 @@
   "given_names": {
    "expected": "Grettir Björnsson",
    "got": "Grettir"
+  },
+  "patronymic": {
+   "expected": "Björnsson",
+   "got": ""
   },
   "text": "Grettir Björnsson"
  },
@@ -349,6 +537,10 @@
    "expected": "Jóhann Konráðsson",
    "got": "Jóhann"
   },
+  "patronymic": {
+   "expected": "Konráðsson",
+   "got": ""
+  },
   "text": "Jóhann Konráðsson"
  },
  "Q112340787/patronymic-is/givenFirst": {
@@ -359,6 +551,10 @@
   "given_names": {
    "expected": "Karl Einarsson",
    "got": "Karl"
+  },
+  "patronymic": {
+   "expected": "Einarsson",
+   "got": ""
   },
   "text": "Karl Einarsson"
  },
@@ -371,7 +567,18 @@
    "expected": "Ólafur Þ. Jónsson",
    "got": "Ólafur Þ."
   },
+  "patronymic": {
+   "expected": "Jónsson",
+   "got": ""
+  },
   "text": "Ólafur Þ. Jónsson"
+ },
+ "Q112506734/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Иванович",
+   "got": ""
+  },
+  "text": "Юрий Иванович Смирнов"
  },
  "Q112579257/patronymic-is/givenFirst": {
   "family": {
@@ -381,6 +588,10 @@
   "given_names": {
    "expected": "Eiður Gunnarsson",
    "got": "Eiður"
+  },
+  "patronymic": {
+   "expected": "Gunnarsson",
+   "got": ""
   },
   "text": "Eiður Gunnarsson"
  },
@@ -393,7 +604,18 @@
    "expected": "Guðmundur Óli Þorláksson",
    "got": "Guðmundur Óli"
   },
+  "patronymic": {
+   "expected": "Þorláksson",
+   "got": ""
+  },
   "text": "Guðmundur Óli Þorláksson"
+ },
+ "Q112666922/patronymic-su/givenFirst": {
+  "patronymic": {
+   "expected": "Михайлович",
+   "got": ""
+  },
+  "text": "Константин Михайлович Попов"
  },
  "Q112723929/surname2-es/givenFirst": {
   "family": {
@@ -405,6 +627,20 @@
    "got": "Pla"
   },
   "text": "Francisco Hernández Pla"
+ },
+ "Q112994217/patronymic-su/sorting": {
+  "patronymic": {
+   "expected": "Иванович",
+   "got": ""
+  },
+  "text": "Химченко, Виктор Иванович"
+ },
+ "Q112994560/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Васильевна",
+   "got": ""
+  },
+  "text": "Агеева, Валентина Васильевна"
  },
  "Q113001057/surname2-co/givenFirst": {
   "family": {
@@ -427,6 +663,13 @@
    "got": "Fernando Rosas"
   },
   "text": "Fernando Rosas Solis"
+ },
+ "Q113469289/patronymic-su/givenFirst": {
+  "patronymic": {
+   "expected": "Николаевич",
+   "got": ""
+  },
+  "text": "Николай Николаевич Пикус"
  },
  "Q113514978/surname2-mx/givenFirst": {
   "family": {
@@ -461,6 +704,13 @@
   },
   "text": "Justo Novo Verdes"
  },
+ "Q113568088/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Александровна",
+   "got": ""
+  },
+  "text": "Дарья Александровна Дугина"
+ },
  "Q114799707/surname2-es/givenFirst": {
   "family": {
    "expected": "Gil Pérez",
@@ -483,6 +733,20 @@
   },
   "text": "Ricardo Bodenlle Corral"
  },
+ "Q115325153/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Алексеевич",
+   "got": ""
+  },
+  "text": "Демидов, Иван Алексеевич"
+ },
+ "Q115495110/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Евгеньевич",
+   "got": ""
+  },
+  "text": "Вадим Евгеньевич Бойко"
+ },
  "Q115641830/surname2-co/givenFirst": {
   "family": {
    "expected": "Leyva Mazuera",
@@ -493,6 +757,13 @@
    "got": "Lisandro Leyva"
   },
   "text": "Lisandro Leyva Mazuera"
+ },
+ "Q115734976/patronymic-ri/givenFirst": {
+  "patronymic": {
+   "expected": "Николаевна",
+   "got": ""
+  },
+  "text": "Анна Николаевна Гладкова"
  },
  "Q116059/surname2-co/givenFirst": {
   "family": {
@@ -505,6 +776,13 @@
   },
   "text": "Rodrigo Lara Bonilla"
  },
+ "Q11667/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Вячеславовна",
+   "got": ""
+  },
+  "text": "Елена Вячеславовна Дементьева"
+ },
  "Q11686420/surname2-co/givenFirst": {
   "family": {
    "expected": "Cárdenas Arroyo",
@@ -515,6 +793,20 @@
    "got": "Juan Cárdenas"
   },
   "text": "Juan Cárdenas Arroyo"
+ },
+ "Q116926100/patronymic-su/sorting": {
+  "patronymic": {
+   "expected": "Васильевич",
+   "got": ""
+  },
+  "text": "Федоренко, Сергей Васильевич"
+ },
+ "Q116926100/patronymic-su/surnameFirst": {
+  "patronymic": {
+   "expected": "Васильевич",
+   "got": ""
+  },
+  "text": "Федоренко Сергей Васильевич"
  },
  "Q11699292/surname2-es/givenFirst": {
   "family": {
@@ -546,6 +838,10 @@
   "given_names": {
    "expected": "Þorsteinn Sveinsson",
    "got": "Þorsteinn"
+  },
+  "patronymic": {
+   "expected": "Sveinsson",
+   "got": ""
   },
   "text": "Þorsteinn Sveinsson"
  },
@@ -648,6 +944,34 @@
   },
   "text": "Hilda Luisa Valdemar Lima"
  },
+ "Q12107891/patronymic-su/givenFirst": {
+  "patronymic": {
+   "expected": "Феодосьевич",
+   "got": ""
+  },
+  "text": "Павел Феодосьевич Кальницкий"
+ },
+ "Q121322436/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Иванович",
+   "got": ""
+  },
+  "text": "Пётр Иванович Почивалов"
+ },
+ "Q12141961/patronymic-su/givenFirst": {
+  "patronymic": {
+   "expected": "Степанович",
+   "got": ""
+  },
+  "text": "Михаил Степанович Полунин"
+ },
+ "Q12149073/patronymic-ri/sorting": {
+  "patronymic": {
+   "expected": "Германович",
+   "got": ""
+  },
+  "text": "Рубин, Павел Германович"
+ },
  "Q122156972/surname2-mx/givenFirst": {
   "family": {
    "expected": "Dorado Baltazar",
@@ -658,6 +982,13 @@
    "got": "Emilia Dorado"
   },
   "text": "Emilia Dorado Baltazar"
+ },
+ "Q122199307/patronymic-ri/givenFirst": {
+  "patronymic": {
+   "expected": "Васильевич",
+   "got": ""
+  },
+  "text": "Виктор Васильевич Ляпунов"
  },
  "Q123013116/surname2-co/givenFirst": {
   "family": {
@@ -769,6 +1100,13 @@
   },
   "text": "Gabriel Latorre Jaramillo"
  },
+ "Q124771331/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Николаевич",
+   "got": ""
+  },
+  "text": "Богомолов, Владимир Николаевич"
+ },
  "Q125025465/surname2-co/givenFirst": {
   "family": {
    "expected": "Garcés Córdoba",
@@ -779,6 +1117,27 @@
    "got": "Carlos Garcés"
   },
   "text": "Carlos Garcés Córdoba"
+ },
+ "Q125319126/patronymic-ri/givenFirst": {
+  "patronymic": {
+   "expected": "Петрович",
+   "got": ""
+  },
+  "text": "Пётр Петрович Буренин"
+ },
+ "Q125322517/patronymic-ri/givenFirst": {
+  "patronymic": {
+   "expected": "Иванович",
+   "got": ""
+  },
+  "text": "Алексей Иванович Давыдов"
+ },
+ "Q12558493/patronymic-su/givenFirst": {
+  "patronymic": {
+   "expected": "Степановна",
+   "got": ""
+  },
+  "text": "Пелагея Степановна Генералова"
  },
  "Q126949794/surname2-es/givenFirst": {
   "family": {
@@ -791,6 +1150,20 @@
   },
   "text": "Miguel Sánchez Pesquera"
  },
+ "Q126973227/patronymic-su/givenFirst": {
+  "patronymic": {
+   "expected": "Андреевич",
+   "got": ""
+  },
+  "text": "Николай Андреевич Смирнов"
+ },
+ "Q12818587/patronymic-su/givenFirst": {
+  "patronymic": {
+   "expected": "Порфирьевич",
+   "got": ""
+  },
+  "text": "Николай Порфирьевич Архангельский"
+ },
  "Q129570988/surname2-es/givenFirst": {
   "family": {
    "expected": "Irazabal Agirre",
@@ -801,6 +1174,13 @@
    "got": "Jon Irazabal"
   },
   "text": "Jon Irazabal Agirre"
+ },
+ "Q130223803/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Савельевич",
+   "got": ""
+  },
+  "text": "Иван Савельевич Фатьянов"
  },
  "Q130383803/surname2-co/givenFirst": {
   "family": {
@@ -846,6 +1226,13 @@
   },
   "text": "Diego Alberto Tamayo Garcera"
  },
+ "Q131120/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Сергеевна",
+   "got": ""
+  },
+  "text": "Анна Сергеевна Курникова"
+ },
  "Q131151443/surname2-mx/givenFirst": {
   "family": {
    "expected": "Gómez Campos",
@@ -890,6 +1277,27 @@
   },
   "text": "Manuela Lema Villar"
  },
+ "Q131630714/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Львовна",
+   "got": ""
+  },
+  "text": "Алевтина Львовна Юрина"
+ },
+ "Q131722489/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Георгиевич",
+   "got": ""
+  },
+  "text": "Илья Георгиевич Коробков"
+ },
+ "Q131722489/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Георгиевич",
+   "got": ""
+  },
+  "text": "Коробков, Илья Георгиевич"
+ },
  "Q131756403/surname2-mx/givenFirst": {
   "family": {
    "expected": "Palafox Herrán",
@@ -900,6 +1308,13 @@
    "got": "Elvira Palafox"
   },
   "text": "Elvira Palafox Herrán"
+ },
+ "Q131976309/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Ильич",
+   "got": ""
+  },
+  "text": "Павел Ильич Таланкин"
  },
  "Q1330120/surname2-mx/givenFirst": {
   "family": {
@@ -912,6 +1327,34 @@
   },
   "text": "Jorge Lozano Márquez"
  },
+ "Q133208265/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Николаевич",
+   "got": ""
+  },
+  "text": "Егор Николаевич Свиридов"
+ },
+ "Q133299619/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Николаевич",
+   "got": ""
+  },
+  "text": "Кузнецов, Евгений Николаевич"
+ },
+ "Q133346769/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Владимирович",
+   "got": ""
+  },
+  "text": "Борис Владимирович Полянский"
+ },
+ "Q133346769/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Владимирович",
+   "got": ""
+  },
+  "text": "Полянский, Борис Владимирович"
+ },
  "Q13419335/patronymic-is/givenFirst": {
   "family": {
    "expected": "",
@@ -920,6 +1363,10 @@
   "given_names": {
    "expected": "Ragnar Bjarnason",
    "got": "Ragnar"
+  },
+  "patronymic": {
+   "expected": "Bjarnason",
+   "got": ""
   },
   "text": "Ragnar Bjarnason"
  },
@@ -933,6 +1380,13 @@
    "got": "Silverio Cañada"
   },
   "text": "Silverio Cañada Acebal"
+ },
+ "Q134369454/patronymic-su/givenFirst": {
+  "patronymic": {
+   "expected": "Сергеевич",
+   "got": ""
+  },
+  "text": "Владимир Сергеевич Шкляев"
  },
  "Q134423201/surname2-co/givenFirst": {
   "family": {
@@ -978,6 +1432,13 @@
   },
   "text": "Martín Villazón Ochoa"
  },
+ "Q134434774/patronymic-su/sorting": {
+  "patronymic": {
+   "expected": "Александрович",
+   "got": ""
+  },
+  "text": "Жилинский, Алексей Александрович"
+ },
  "Q134479122/patronymic-is/givenFirst": {
   "family": {
    "expected": "",
@@ -986,6 +1447,10 @@
   "given_names": {
    "expected": "Haraldur Sigurðsson",
    "got": "Haraldur"
+  },
+  "patronymic": {
+   "expected": "Sigurðsson",
+   "got": ""
   },
   "text": "Haraldur Sigurðsson"
  },
@@ -999,6 +1464,20 @@
    "got": "Benigno Cunillera"
   },
   "text": "Benigno Cunillera Torrent"
+ },
+ "Q134604187/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Емельянович",
+   "got": ""
+  },
+  "text": "Владимир Емельянович Бойцов"
+ },
+ "Q134604187/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Емельянович",
+   "got": ""
+  },
+  "text": "Бойцов, Владимир Емельянович"
  },
  "Q1351501/surname2-co/givenFirst": {
   "family": {
@@ -1055,6 +1534,13 @@
   },
   "text": "Ever Peña Maldonado"
  },
+ "Q136085718/patronymic-su/surnameFirst": {
+  "patronymic": {
+   "expected": "Михайлович",
+   "got": ""
+  },
+  "text": "Дмитриев Владимир Михайлович"
+ },
  "Q136100927/surname2-es/givenFirst": {
   "family": {
    "expected": "Rodríguez Fernández",
@@ -1074,6 +1560,10 @@
   "given_names": {
    "expected": "Egill Eyjólfsson",
    "got": "Egill"
+  },
+  "patronymic": {
+   "expected": "Eyjólfsson",
+   "got": ""
   },
   "text": "Egill Eyjólfsson"
  },
@@ -1141,7 +1631,25 @@
    "expected": "Teitur Þórðarson",
    "got": "Teitur"
   },
+  "patronymic": {
+   "expected": "Þórðarson",
+   "got": ""
+  },
   "text": "Teitur Þórðarson"
+ },
+ "Q1368874/patronymic-ri/givenFirst": {
+  "patronymic": {
+   "expected": "Денисович",
+   "got": ""
+  },
+  "text": "Семён Денисович Игнатьев"
+ },
+ "Q136927895/patronymic-is/givenFirst": {
+  "patronymic": {
+   "expected": "Eyjólfsson",
+   "got": ""
+  },
+  "text": "Guðmundur Eyjólfsson Geirdal"
  },
  "Q137351899/surname2-es/givenFirst": {
   "family": {
@@ -1154,6 +1662,34 @@
   },
   "text": "Luisa Álvarez Iglesias"
  },
+ "Q137642434/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Николаевна",
+   "got": ""
+  },
+  "text": "Татьяна Николаевна Семенова"
+ },
+ "Q1376506/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Иванович",
+   "got": ""
+  },
+  "text": "Геннадий Иванович Воронов"
+ },
+ "Q1376522/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Семёнович",
+   "got": ""
+  },
+  "text": "Лев Семёнович Рубинштейн"
+ },
+ "Q1376522/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Семёнович",
+   "got": ""
+  },
+  "text": "Рубинштейн, Лев Семёнович"
+ },
  "Q137963805/surname2-es/givenFirst": {
   "family": {
    "expected": "López González",
@@ -1165,6 +1701,13 @@
   },
   "text": "Manuel López González"
  },
+ "Q138647796/patronymic-su/sorting": {
+  "patronymic": {
+   "expected": "Григорьевич",
+   "got": ""
+  },
+  "text": "Липицкий, Анатолий Григорьевич"
+ },
  "Q138690631/patronymic-is/givenFirst": {
   "family": {
    "expected": "",
@@ -1173,6 +1716,10 @@
   "given_names": {
    "expected": "Sveinn Ásgeirsson",
    "got": "Sveinn"
+  },
+  "patronymic": {
+   "expected": "Ásgeirsson",
+   "got": ""
   },
   "text": "Sveinn Ásgeirsson"
  },
@@ -1184,6 +1731,10 @@
   "given_names": {
    "expected": "Haukur Ágústsson",
    "got": "Haukur"
+  },
+  "patronymic": {
+   "expected": "Ágústsson",
+   "got": ""
   },
   "text": "Haukur Ágústsson"
  },
@@ -1229,6 +1780,10 @@
    "expected": "Júlíus Agnarsson",
    "got": "Júlíus"
   },
+  "patronymic": {
+   "expected": "Agnarsson",
+   "got": ""
+  },
   "text": "Júlíus Agnarsson"
  },
  "Q140266874/surname2-co/givenFirst": {
@@ -1252,6 +1807,20 @@
    "got": "Robiro Rojas"
   },
   "text": "Robiro Rojas Benavides"
+ },
+ "Q141108157/patronymic-ri/givenFirst": {
+  "patronymic": {
+   "expected": "Ивановна",
+   "got": ""
+  },
+  "text": "Олимпиада Ивановна Шмидт"
+ },
+ "Q141441031/patronymic-su/givenFirst": {
+  "patronymic": {
+   "expected": "Гугович",
+   "got": ""
+  },
+  "text": "Иван Гугович Закс"
  },
  "Q141607976/surname2-co/givenFirst": {
   "family": {
@@ -1286,6 +1855,20 @@
   },
   "text": "Roque González Garza"
  },
+ "Q15067243/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Васильевич",
+   "got": ""
+  },
+  "text": "Иванов, Артемий Васильевич"
+ },
+ "Q15069662/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Алексеевич",
+   "got": ""
+  },
+  "text": "Костин, Иван Алексеевич"
+ },
  "Q15079846/surname2-mx/givenFirst": {
   "family": {
    "expected": "Ramos Millán",
@@ -1297,6 +1880,13 @@
   },
   "text": "Gabriel Ramos Millán"
  },
+ "Q15081249/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Иванович",
+   "got": ""
+  },
+  "text": "Сафонов, Эрнст Иванович"
+ },
  "Q15109949/patronymic-is/givenFirst": {
   "family": {
    "expected": "",
@@ -1305,6 +1895,10 @@
   "given_names": {
    "expected": "Þórunn Egilsdóttir",
    "got": "Þórunn"
+  },
+  "patronymic": {
+   "expected": "Egilsdóttir",
+   "got": ""
   },
   "text": "Þórunn Egilsdóttir"
  },
@@ -1328,6 +1922,10 @@
    "expected": "Guðrún Björnsdóttir",
    "got": "Guðrún"
   },
+  "patronymic": {
+   "expected": "Björnsdóttir",
+   "got": ""
+  },
   "text": "Guðrún Björnsdóttir"
  },
  "Q152472/surname2-co/givenFirst": {
@@ -1341,6 +1939,13 @@
   },
   "text": "Ingrid Betancourt Pulecio"
  },
+ "Q15571/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Владимирович",
+   "got": ""
+  },
+  "text": "Рыбаков, Ярослав Владимирович"
+ },
  "Q15635899/patronymic-is/givenFirst": {
   "family": {
    "expected": "",
@@ -1349,6 +1954,10 @@
   "given_names": {
    "expected": "Benedikt Erlingsson",
    "got": "Benedikt"
+  },
+  "patronymic": {
+   "expected": "Erlingsson",
+   "got": ""
   },
   "text": "Benedikt Erlingsson"
  },
@@ -1371,6 +1980,10 @@
   "given_names": {
    "expected": "Sigurður Helgason",
    "got": "Sigurður"
+  },
+  "patronymic": {
+   "expected": "Helgason",
+   "got": ""
   },
   "text": "Sigurður Helgason"
  },
@@ -1427,6 +2040,10 @@
    "expected": "Kristín Ólafsdóttir",
    "got": "Kristín"
   },
+  "patronymic": {
+   "expected": "Ólafsdóttir",
+   "got": ""
+  },
   "text": "Kristín Ólafsdóttir"
  },
  "Q16420505/patronymic-is/givenFirst": {
@@ -1437,6 +2054,10 @@
   "given_names": {
    "expected": "Ólafur Ragnarsson",
    "got": "Ólafur"
+  },
+  "patronymic": {
+   "expected": "Ragnarsson",
+   "got": ""
   },
   "text": "Ólafur Ragnarsson"
  },
@@ -1449,6 +2070,10 @@
    "expected": "Loftur Guðmundsson",
    "got": "Loftur"
   },
+  "patronymic": {
+   "expected": "Guðmundsson",
+   "got": ""
+  },
   "text": "Loftur Guðmundsson"
  },
  "Q16421121/patronymic-is/givenFirst": {
@@ -1459,6 +2084,10 @@
   "given_names": {
    "expected": "Bjarni Björnsson",
    "got": "Bjarni"
+  },
+  "patronymic": {
+   "expected": "Björnsson",
+   "got": ""
   },
   "text": "Bjarni Björnsson"
  },
@@ -1471,6 +2100,10 @@
    "expected": "Björgvin Gíslason",
    "got": "Björgvin"
   },
+  "patronymic": {
+   "expected": "Gíslason",
+   "got": ""
+  },
   "text": "Björgvin Gíslason"
  },
  "Q16421751/patronymic-is/givenFirst": {
@@ -1481,6 +2114,10 @@
   "given_names": {
    "expected": "Þorsteinn Hannesson",
    "got": "Þorsteinn"
+  },
+  "patronymic": {
+   "expected": "Hannesson",
+   "got": ""
   },
   "text": "Þorsteinn Hannesson"
  },
@@ -1493,6 +2130,10 @@
    "expected": "Rúrik Haraldsson",
    "got": "Rúrik"
   },
+  "patronymic": {
+   "expected": "Haraldsson",
+   "got": ""
+  },
   "text": "Rúrik Haraldsson"
  },
  "Q16425767/patronymic-is/givenFirst": {
@@ -1503,6 +2144,10 @@
   "given_names": {
    "expected": "Sigurður Björnsson",
    "got": "Sigurður"
+  },
+  "patronymic": {
+   "expected": "Björnsson",
+   "got": ""
   },
   "text": "Sigurður Björnsson"
  },
@@ -1515,6 +2160,10 @@
    "expected": "Guðmundur Jónsson",
    "got": "Guðmundur"
   },
+  "patronymic": {
+   "expected": "Jónsson",
+   "got": ""
+  },
   "text": "Guðmundur Jónsson"
  },
  "Q16426181/patronymic-is/givenFirst": {
@@ -1525,6 +2174,10 @@
   "given_names": {
    "expected": "Guðrún Lárusdóttir",
    "got": "Guðrún"
+  },
+  "patronymic": {
+   "expected": "Lárusdóttir",
+   "got": ""
   },
   "text": "Guðrún Lárusdóttir"
  },
@@ -1537,6 +2190,10 @@
    "expected": "Hallbjörg Bjarnadóttir",
    "got": "Hallbjörg"
   },
+  "patronymic": {
+   "expected": "Bjarnadóttir",
+   "got": ""
+  },
   "text": "Hallbjörg Bjarnadóttir"
  },
  "Q16429743/patronymic-is/givenFirst": {
@@ -1548,6 +2205,10 @@
    "expected": "Jónas Jónasson",
    "got": "Jónas"
   },
+  "patronymic": {
+   "expected": "Jónasson",
+   "got": ""
+  },
   "text": "Jónas Jónasson"
  },
  "Q16429802/patronymic-is/givenFirst": {
@@ -1558,6 +2219,10 @@
   "given_names": {
    "expected": "Jónína Jónatansdóttir",
    "got": "Jónína"
+  },
+  "patronymic": {
+   "expected": "Jónatansdóttir",
+   "got": ""
   },
   "text": "Jónína Jónatansdóttir"
  },
@@ -1583,6 +2248,13 @@
   },
   "text": "Margarita Peña Muñoz"
  },
+ "Q16628165/patronymic-ri/givenFirst": {
+  "patronymic": {
+   "expected": "Семёнович",
+   "got": ""
+  },
+  "text": "Александр Семёнович Будилович"
+ },
  "Q1684202/patronymic-is/givenFirst": {
   "family": {
    "expected": "",
@@ -1592,7 +2264,18 @@
    "expected": "Róbert Gunnarsson",
    "got": "Róbert"
   },
+  "patronymic": {
+   "expected": "Gunnarsson",
+   "got": ""
+  },
   "text": "Róbert Gunnarsson"
+ },
+ "Q1688645/patronymic-ri/givenFirst": {
+  "patronymic": {
+   "expected": "Францевич",
+   "got": ""
+  },
+  "text": "Евгений Францевич Бауэр"
  },
  "Q16941958/surname2-co/givenFirst": {
   "family": {
@@ -1647,6 +2330,10 @@
    "expected": "Jón Steingrímsson",
    "got": "Jón"
   },
+  "patronymic": {
+   "expected": "Steingrímsson",
+   "got": ""
+  },
   "text": "Jón Steingrímsson"
  },
  "Q17155819/surname2-es/givenFirst": {
@@ -1659,6 +2346,13 @@
    "got": "José Vilató"
   },
   "text": "José Vilató Ruiz"
+ },
+ "Q1717/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Александрович",
+   "got": ""
+  },
+  "text": "Сергей Александрович Кирдяпкин"
  },
  "Q174100/surname2-mx/givenFirst": {
   "family": {
@@ -1702,6 +2396,10 @@
    "expected": "Selma Björnsdóttir",
    "got": "Selma"
   },
+  "patronymic": {
+   "expected": "Björnsdóttir",
+   "got": ""
+  },
   "text": "Selma Björnsdóttir"
  },
  "Q1766810/patronymic-is/givenFirst": {
@@ -1713,7 +2411,18 @@
    "expected": "Sölvi Ottesen",
    "got": "Sölvi"
   },
+  "patronymic": {
+   "expected": "Ottesen",
+   "got": ""
+  },
   "text": "Sölvi Ottesen"
+ },
+ "Q177406/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Геннадьевна",
+   "got": ""
+  },
+  "text": "Гойщик, Татьяна Геннадьевна"
  },
  "Q177712/patronymic-is/givenFirst": {
   "family": {
@@ -1723,6 +2432,10 @@
   "given_names": {
    "expected": "Björn Þórðarson",
    "got": "Björn"
+  },
+  "patronymic": {
+   "expected": "Þórðarson",
+   "got": ""
   },
   "text": "Björn Þórðarson"
  },
@@ -1737,6 +2450,20 @@
   },
   "text": "Mahathir bin Mohamad"
  },
+ "Q18145410/patronymic-ri/sorting": {
+  "patronymic": {
+   "expected": "Григорьевич",
+   "got": ""
+  },
+  "text": "Александров, Николай Григорьевич"
+ },
+ "Q18407860/patronymic-su/sorting": {
+  "patronymic": {
+   "expected": "Михайлович",
+   "got": ""
+  },
+  "text": "Завадовский, Михаил Михайлович"
+ },
  "Q1859374/surname2-mx/givenFirst": {
   "family": {
    "expected": "Fernández Castrillón",
@@ -1747,6 +2474,13 @@
    "got": "Manuel Fernández"
   },
   "text": "Manuel Fernández Castrillón"
+ },
+ "Q1860669/patronymic-su/sorting": {
+  "patronymic": {
+   "expected": "Михайлович",
+   "got": ""
+  },
+  "text": "Саблин, Валерий Михайлович"
  },
  "Q1880038/surname2-mx/givenFirst": {
   "family": {
@@ -1759,6 +2493,13 @@
   },
   "text": "José María Yáñez Carrillo"
  },
+ "Q189665/patronymic-ri/givenFirst": {
+  "patronymic": {
+   "expected": "Александрович",
+   "got": ""
+  },
+  "text": "Иван Александрович Гончаров"
+ },
  "Q189797/patronymic-is/givenFirst": {
   "family": {
    "expected": "",
@@ -1768,7 +2509,18 @@
    "expected": "Vigdís Finnbogadóttir",
    "got": "Vigdís"
   },
+  "patronymic": {
+   "expected": "Finnbogadóttir",
+   "got": ""
+  },
   "text": "Vigdís Finnbogadóttir"
+ },
+ "Q19317268/patronymic-su/givenFirst": {
+  "patronymic": {
+   "expected": "Васильевич",
+   "got": ""
+  },
+  "text": "Николай Васильевич Владыкин"
  },
  "Q19561528/surname2-co/givenFirst": {
   "family": {
@@ -1803,6 +2555,13 @@
   },
   "text": "Tomás González Carvajal"
  },
+ "Q1968214/patronymic-su/givenFirst": {
+  "patronymic": {
+   "expected": "Иванович",
+   "got": ""
+  },
+  "text": "Николай Иванович Хохлов"
+ },
  "Q19684894/surname2-es/givenFirst": {
   "family": {
    "expected": "Ferrer Comas",
@@ -1836,6 +2595,13 @@
   },
   "text": "Ramón Arellano Félix"
  },
+ "Q1978432/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Александрович",
+   "got": ""
+  },
+  "text": "Анатолий Александрович Вассерман"
+ },
  "Q1981295/surname2-co/givenFirst": {
   "family": {
    "expected": "Santos Calderón",
@@ -1857,6 +2623,20 @@
    "got": "Juan"
   },
   "text": "Juan de Dios Sierra y Velásquez"
+ },
+ "Q19906568/patronymic-ri/givenFirst": {
+  "patronymic": {
+   "expected": "Ефремович",
+   "got": ""
+  },
+  "text": "Георгий Ефремович Катанаев"
+ },
+ "Q19907651/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Дмитриевич",
+   "got": ""
+  },
+  "text": "Антон Дмитриевич Волошин"
  },
  "Q1993924/surname2-es/givenFirst": {
   "family": {
@@ -1900,7 +2680,32 @@
    "expected": "Brynjólfur Bjarnason",
    "got": "Brynjólfur"
   },
+  "patronymic": {
+   "expected": "Bjarnason",
+   "got": ""
+  },
   "text": "Brynjólfur Bjarnason"
+ },
+ "Q2037108/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Эдуардович",
+   "got": ""
+  },
+  "text": "Леонид Эдуардович Слуцкий"
+ },
+ "Q2037108/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Эдуардович",
+   "got": ""
+  },
+  "text": "Слуцкий, Леонид Эдуардович"
+ },
+ "Q20483301/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Николаевич",
+   "got": ""
+  },
+  "text": "Егор Николаевич Булаткин"
  },
  "Q20534308/surname2-es/givenFirst": {
   "family": {
@@ -1955,7 +2760,18 @@
    "expected": "Lárus Pálsson",
    "got": "Lárus"
   },
+  "patronymic": {
+   "expected": "Pálsson",
+   "got": ""
+  },
   "text": "Lárus Pálsson"
+ },
+ "Q205981/patronymic-su/givenFirst": {
+  "patronymic": {
+   "expected": "Александрович",
+   "got": ""
+  },
+  "text": "Александр Александрович Фридман"
  },
  "Q20743706/surname2-es/givenFirst": {
   "family": {
@@ -1990,6 +2806,34 @@
   },
   "text": "Enrique Gorostieta Velarde"
  },
+ "Q21099074/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Михайлович",
+   "got": ""
+  },
+  "text": "Виктор Михайлович Иванцов"
+ },
+ "Q21101505/patronymic-ri/sorting": {
+  "patronymic": {
+   "expected": "Алексеевич",
+   "got": ""
+  },
+  "text": "Козловский, Фёдор Алексеевич"
+ },
+ "Q21106710/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Дмитриевич",
+   "got": ""
+  },
+  "text": "Медведев, Николай Дмитриевич"
+ },
+ "Q21517195/patronymic-su/givenFirst": {
+  "patronymic": {
+   "expected": "Евгеньевич",
+   "got": ""
+  },
+  "text": "Николай Евгеньевич Кабанов"
+ },
  "Q2259207/surname2-mx/givenFirst": {
   "family": {
    "expected": "Guzmán Rodríguez",
@@ -2012,6 +2856,13 @@
   },
   "text": "Ángel Llanos González"
  },
+ "Q232995/patronymic-su/givenFirst": {
+  "patronymic": {
+   "expected": "Сергіївна",
+   "got": ""
+  },
+  "text": "Оксана Сергіївна Баюл"
+ },
  "Q235562/surname2-co/givenFirst": {
   "family": {
    "expected": "Duque Mariño",
@@ -2023,6 +2874,13 @@
   },
   "text": "Mariana Duque Mariño"
  },
+ "Q2370506/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Игоревна",
+   "got": ""
+  },
+  "text": "Ольга Игоревна Кабо"
+ },
  "Q23753778/patronymic-is/givenFirst": {
   "family": {
    "expected": "",
@@ -2032,7 +2890,25 @@
    "expected": "Lilja Alfreðsdóttir",
    "got": "Lilja"
   },
+  "patronymic": {
+   "expected": "Alfreðsdóttir",
+   "got": ""
+  },
   "text": "Lilja Alfreðsdóttir"
+ },
+ "Q2376200/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Валерьевич",
+   "got": ""
+  },
+  "text": "Алексей Валерьевич Серебряков"
+ },
+ "Q2386694/patronymic-ri/sorting": {
+  "patronymic": {
+   "expected": "Александрович",
+   "got": ""
+  },
+  "text": "Попов, Андрей Александрович"
  },
  "Q23927812/surname2-mx/givenFirst": {
   "family": {
@@ -2098,6 +2974,10 @@
    "expected": "Kristján Örn Sigurðsson",
    "got": "Kristján Örn"
   },
+  "patronymic": {
+   "expected": "Sigurðsson",
+   "got": ""
+  },
   "text": "Kristján Örn Sigurðsson"
  },
  "Q24494577/patronymic-is/givenFirst": {
@@ -2108,6 +2988,10 @@
   "given_names": {
    "expected": "Halla Tómasdóttir",
    "got": "Halla"
+  },
+  "patronymic": {
+   "expected": "Tómasdóttir",
+   "got": ""
   },
   "text": "Halla Tómasdóttir"
  },
@@ -2121,6 +3005,13 @@
    "got": "Manuel Blanco"
   },
   "text": "Manuel Blanco Romasanta"
+ },
+ "Q2472305/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Михайлович",
+   "got": ""
+  },
+  "text": "Асаф Михайлович Мессерер"
  },
  "Q24961757/surname2-mx/givenFirst": {
   "family": {
@@ -2153,6 +3044,10 @@
    "expected": "Árni Þorláksson",
    "got": "Árni"
   },
+  "patronymic": {
+   "expected": "Þorláksson",
+   "got": ""
+  },
   "text": "Árni Þorláksson"
  },
  "Q252586/patronymic-is/givenFirst": {
@@ -2163,6 +3058,10 @@
   "given_names": {
    "expected": "Ásta Ragnheiður Jóhannesdóttir",
    "got": "Ásta Ragnheiður"
+  },
+  "patronymic": {
+   "expected": "Jóhannesdóttir",
+   "got": ""
   },
   "text": "Ásta Ragnheiður Jóhannesdóttir"
  },
@@ -2177,6 +3076,27 @@
   },
   "text": "Francisco Posada Díaz"
  },
+ "Q25598013/patronymic-su/surnameFirst": {
+  "patronymic": {
+   "expected": "Львович",
+   "got": ""
+  },
+  "text": "Френкель Георгий Львович"
+ },
+ "Q25796385/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Михайловна",
+   "got": ""
+  },
+  "text": "Нина Михайловна Литвинова"
+ },
+ "Q25895/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Валерьевна",
+   "got": ""
+  },
+  "text": "Мария Валерьевна Мазина"
+ },
  "Q262253/patronymic-is/givenFirst": {
   "family": {
    "expected": "",
@@ -2185,6 +3105,10 @@
   "given_names": {
    "expected": "Yrsa Sigurðardóttir",
    "got": "Yrsa"
+  },
+  "patronymic": {
+   "expected": "Sigurðardóttir",
+   "got": ""
   },
   "text": "Yrsa Sigurðardóttir"
  },
@@ -2219,6 +3143,10 @@
    "expected": "Hera Hjartardóttir",
    "got": "Hera"
   },
+  "patronymic": {
+   "expected": "Hjartardóttir",
+   "got": ""
+  },
   "text": "Hera Hjartardóttir"
  },
  "Q264516/patronymic-my/givenFirst": {
@@ -2230,7 +3158,25 @@
    "expected": "Abdul Razak Hussein",
    "got": "Abdul Razak"
   },
+  "patronymic": {
+   "expected": "Hussein",
+   "got": ""
+  },
   "text": "Abdul Razak Hussein"
+ },
+ "Q265610/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Трофимовна",
+   "got": ""
+  },
+  "text": "Жанна Трофимовна Прохоренко"
+ },
+ "Q26736115/patronymic-ri/givenFirst": {
+  "patronymic": {
+   "expected": "Иванович",
+   "got": ""
+  },
+  "text": "Александр Иванович Булгаков"
  },
  "Q2718231/patronymic-is/givenFirst": {
   "family": {
@@ -2240,6 +3186,10 @@
   "given_names": {
    "expected": "Kári Árnason",
    "got": "Kári"
+  },
+  "patronymic": {
+   "expected": "Árnason",
+   "got": ""
   },
   "text": "Kári Árnason"
  },
@@ -2264,6 +3214,27 @@
    "got": "Rafael Cepeda"
   },
   "text": "Rafael Cepeda Torres"
+ },
+ "Q2832542/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Сергеевич",
+   "got": ""
+  },
+  "text": "Грипич, Александр Сергеевич"
+ },
+ "Q2833996/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Павлович",
+   "got": ""
+  },
+  "text": "Расницын, Александр Павлович"
+ },
+ "Q2834049/patronymic-su/givenFirst": {
+  "patronymic": {
+   "expected": "Николаевич",
+   "got": ""
+  },
+  "text": "Александр Николаевич Степанов"
  },
  "Q28343272/surname2-co/givenFirst": {
   "family": {
@@ -2298,6 +3269,20 @@
   },
   "text": "Arturo Acevedo Vallarino"
  },
+ "Q2846841/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Васильевич",
+   "got": ""
+  },
+  "text": "Старовойтов, Андрей Васильевич"
+ },
+ "Q28497247/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Васильевич",
+   "got": ""
+  },
+  "text": "Валентин Васильевич Васенков"
+ },
  "Q28501494/surname2-mx/givenFirst": {
   "family": {
    "expected": "Mazón Pineda",
@@ -2319,6 +3304,13 @@
    "got": "Carlos Coello"
   },
   "text": "Carlos Coello de Portugal y Pacheco"
+ },
+ "Q28760444/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Алексеевич",
+   "got": ""
+  },
+  "text": "Богданов, Владимир Алексеевич"
  },
  "Q28792898/surname2-mx/givenFirst": {
   "family": {
@@ -2362,6 +3354,10 @@
    "expected": "Ívar Ingimarsson",
    "got": "Ívar"
   },
+  "patronymic": {
+   "expected": "Ingimarsson",
+   "got": ""
+  },
   "text": "Ívar Ingimarsson"
  },
  "Q294666/patronymic-is/givenFirst": {
@@ -2373,7 +3369,18 @@
    "expected": "Ögmundur Jónasson",
    "got": "Ögmundur"
   },
+  "patronymic": {
+   "expected": "Jónasson",
+   "got": ""
+  },
   "text": "Ögmundur Jónasson"
+ },
+ "Q29649854/patronymic-su/givenFirst": {
+  "patronymic": {
+   "expected": "Максимович",
+   "got": ""
+  },
+  "text": "Борис Максимович Келлер"
  },
  "Q29649988/surname2-co/givenFirst": {
   "family": {
@@ -2385,6 +3392,13 @@
    "got": "Salomón Villada"
   },
   "text": "Salomón Villada Hoyos"
+ },
+ "Q297736/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Александрович",
+   "got": ""
+  },
+  "text": "Евгений Александрович Евтушенко"
  },
  "Q29860266/surname2-mx/givenFirst": {
   "family": {
@@ -2406,6 +3420,10 @@
    "expected": "Anwar Ibrahim",
    "got": "Anwar"
   },
+  "patronymic": {
+   "expected": "Ibrahim",
+   "got": ""
+  },
   "text": "Anwar Ibrahim"
  },
  "Q29959449/surname2-mx/givenFirst": {
@@ -2418,6 +3436,13 @@
    "got": "Octavio Corral"
   },
   "text": "Octavio Corral Romero"
+ },
+ "Q30079822/patronymic-su/givenFirst": {
+  "patronymic": {
+   "expected": "Иванович",
+   "got": ""
+  },
+  "text": "Алексей Иванович Савельев"
  },
  "Q3031692/surname2-mx/givenFirst": {
   "family": {
@@ -2452,6 +3477,20 @@
   },
   "text": "Francisco Freire Barreiro"
  },
+ "Q310320/patronymic-su/givenFirst": {
+  "patronymic": {
+   "expected": "Евграфович",
+   "got": ""
+  },
+  "text": "Владимир Евграфович Татлин"
+ },
+ "Q311033/patronymic-ri/givenFirst": {
+  "patronymic": {
+   "expected": "Степанович",
+   "got": ""
+  },
+  "text": "Николай Степанович Гумилёв"
+ },
  "Q31186764/patronymic-my/givenFirst": {
   "family": {
    "expected": "",
@@ -2460,6 +3499,10 @@
   "given_names": {
    "expected": "Abdul Aziz Yassin",
    "got": "Abdul Aziz"
+  },
+  "patronymic": {
+   "expected": "Yassin",
+   "got": ""
   },
   "text": "Abdul Aziz Yassin"
  },
@@ -2483,7 +3526,25 @@
    "expected": "Daði Freyr Pétursson",
    "got": "Daði Freyr"
   },
+  "patronymic": {
+   "expected": "Pétursson",
+   "got": ""
+  },
   "text": "Daði Freyr Pétursson"
+ },
+ "Q32717/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Валерьевич",
+   "got": ""
+  },
+  "text": "Владимир Валерьевич Буре"
+ },
+ "Q32827/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Борисович",
+   "got": ""
+  },
+  "text": "Колкутин, Андрей Борисович"
  },
  "Q3294918/surname2-mx/givenFirst": {
   "family": {
@@ -2507,6 +3568,13 @@
   },
   "text": "Xosé María Álvarez Blázquez"
  },
+ "Q34453/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Николаевич",
+   "got": ""
+  },
+  "text": "Борис Николаевич Ельцин"
+ },
  "Q3480844/patronymic-is/givenFirst": {
   "family": {
    "expected": "",
@@ -2515,6 +3583,10 @@
   "given_names": {
    "expected": "Edda Garðarsdóttir",
    "got": "Edda"
+  },
+  "patronymic": {
+   "expected": "Garðarsdóttir",
+   "got": ""
   },
   "text": "Edda Garðarsdóttir"
  },
@@ -2527,7 +3599,25 @@
    "expected": "Sara Björk Gunnarsdóttir",
    "got": "Sara Björk"
   },
+  "patronymic": {
+   "expected": "Gunnarsdóttir",
+   "got": ""
+  },
   "text": "Sara Björk Gunnarsdóttir"
+ },
+ "Q351080/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Владимирович",
+   "got": ""
+  },
+  "text": "Вадим Владимирович Наумов"
+ },
+ "Q351080/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Владимирович",
+   "got": ""
+  },
+  "text": "Наумов, Вадим Владимирович"
  },
  "Q35160252/surname2-mx/givenFirst": {
   "family": {
@@ -2539,6 +3629,20 @@
    "got": "Martha Nava"
   },
   "text": "Martha Nava García"
+ },
+ "Q351886/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Романович",
+   "got": ""
+  },
+  "text": "Евгений Романович Устюгов"
+ },
+ "Q35448/patronymic-ri/givenFirst": {
+  "patronymic": {
+   "expected": "Николаевич",
+   "got": ""
+  },
+  "text": "Пётр Николаевич Краснов"
  },
  "Q3548080/surname2-mx/givenFirst": {
   "family": {
@@ -2560,6 +3664,10 @@
    "expected": "Steinunn Sigurðardóttir",
    "got": "Steinunn"
   },
+  "patronymic": {
+   "expected": "Sigurðardóttir",
+   "got": ""
+  },
   "text": "Steinunn Sigurðardóttir"
  },
  "Q35689580/surname2-es/givenFirst": {
@@ -2573,6 +3681,13 @@
   },
   "text": "José Gómez-Mena Vila"
  },
+ "Q360507/patronymic-ri/givenFirst": {
+  "patronymic": {
+   "expected": "Михайлович",
+   "got": ""
+  },
+  "text": "Михаил Михайлович Зощенко"
+ },
  "Q362531/patronymic-is/givenFirst": {
   "family": {
    "expected": "",
@@ -2582,7 +3697,32 @@
    "expected": "Sigurjón Birgir Sigurðsson",
    "got": "Sigurjón Birgir"
   },
+  "patronymic": {
+   "expected": "Sigurðsson",
+   "got": ""
+  },
   "text": "Sigurjón Birgir Sigurðsson"
+ },
+ "Q36499621/patronymic-ri/givenFirst": {
+  "patronymic": {
+   "expected": "Васильевич",
+   "got": ""
+  },
+  "text": "Алексей Васильевич Богдан"
+ },
+ "Q367029/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Ильич",
+   "got": ""
+  },
+  "text": "Юрий Ильич Скуратов"
+ },
+ "Q3791296/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Юрьевич",
+   "got": ""
+  },
+  "text": "Хржановский, Андрей Юрьевич"
  },
  "Q3808593/surname2-mx/givenFirst": {
   "family": {
@@ -2603,6 +3743,10 @@
   "given_names": {
    "expected": "Matthías Jochumsson",
    "got": "Matthías"
+  },
+  "patronymic": {
+   "expected": "Jochumsson",
+   "got": ""
   },
   "text": "Matthías Jochumsson"
  },
@@ -2626,6 +3770,10 @@
    "expected": "Gunnar Gunnarsson",
    "got": "Gunnar"
   },
+  "patronymic": {
+   "expected": "Gunnarsson",
+   "got": ""
+  },
   "text": "Gunnar Gunnarsson"
  },
  "Q3816879/surname2-es/givenFirst": {
@@ -2639,6 +3787,27 @@
   },
   "text": "María de la O Lejárraga y García"
  },
+ "Q3856322/patronymic-ri/givenFirst": {
+  "patronymic": {
+   "expected": "Дмитриевич",
+   "got": ""
+  },
+  "text": "Михаил Дмитриевич Чулков"
+ },
+ "Q38668675/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Сергеевна",
+   "got": ""
+  },
+  "text": "Ксения Сергеевна Александрова"
+ },
+ "Q3920829/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Леонидович",
+   "got": ""
+  },
+  "text": "Александр Леонидович Дворкин"
+ },
  "Q4016455/surname2-co/givenFirst": {
   "family": {
    "expected": "Lemos Simmonds",
@@ -2650,6 +3819,146 @@
   },
   "text": "Carlos Lemos Simmonds"
  },
+ "Q4054347/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Иванович",
+   "got": ""
+  },
+  "text": "Абатуров, Константин Иванович"
+ },
+ "Q4057185/patronymic-su/givenFirst": {
+  "patronymic": {
+   "expected": "Хаимович",
+   "got": ""
+  },
+  "text": "Самуил Хаимович Агурский"
+ },
+ "Q4061598/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Иванович",
+   "got": ""
+  },
+  "text": "Александр Иванович Алексеев"
+ },
+ "Q4061685/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Николаевич",
+   "got": ""
+  },
+  "text": "Алексеев, Михаил Николаевич"
+ },
+ "Q4093129/patronymic-su/sorting": {
+  "patronymic": {
+   "expected": "Автономович",
+   "got": ""
+  },
+  "text": "Бондарев, Николай Автономович"
+ },
+ "Q4095525/patronymic-su/givenFirst": {
+  "patronymic": {
+   "expected": "Александрович",
+   "got": ""
+  },
+  "text": "Николай Александрович Боярский"
+ },
+ "Q4100955/patronymic-su/givenFirst": {
+  "patronymic": {
+   "expected": "Васильевич",
+   "got": ""
+  },
+  "text": "Пётр Васильевич Быков"
+ },
+ "Q4102225/patronymic-ri/givenFirst": {
+  "patronymic": {
+   "expected": "Петрович",
+   "got": ""
+  },
+  "text": "Николай Петрович Вагнер"
+ },
+ "Q4102225/patronymic-ri/surnameFirst": {
+  "patronymic": {
+   "expected": "Петрович",
+   "got": ""
+  },
+  "text": "Вагнер Николай Петрович"
+ },
+ "Q4123342/patronymic-ri/givenFirst": {
+  "patronymic": {
+   "expected": "Михайлович",
+   "got": ""
+  },
+  "text": "Павел Михайлович Волков"
+ },
+ "Q4125181/patronymic-su/sorting": {
+  "patronymic": {
+   "expected": "Дмитриевич",
+   "got": ""
+  },
+  "text": "Воробьёв, Константин Дмитриевич"
+ },
+ "Q4127201/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Петрович",
+   "got": ""
+  },
+  "text": "Вронский, Юрий Петрович"
+ },
+ "Q4140268/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Владимирович",
+   "got": ""
+  },
+  "text": "Виктор Владимирович Глухов"
+ },
+ "Q4140733/patronymic-su/sorting": {
+  "patronymic": {
+   "expected": "Тимофеевна",
+   "got": ""
+  },
+  "text": "Гнилицкая, Нина Тимофеевна"
+ },
+ "Q4149792/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Иванович",
+   "got": ""
+  },
+  "text": "Гриценко, Анатолий Иванович"
+ },
+ "Q4162468/patronymic-ri/sorting": {
+  "patronymic": {
+   "expected": "Иванович",
+   "got": ""
+  },
+  "text": "Дитятин, Иван Иванович"
+ },
+ "Q4172503/patronymic-su/sorting": {
+  "patronymic": {
+   "expected": "Семёнович",
+   "got": ""
+  },
+  "text": "Дятлов, Владимир Семёнович"
+ },
+ "Q4174932/patronymic-su/givenFirst": {
+  "patronymic": {
+   "expected": "Борисович",
+   "got": ""
+  },
+  "text": "Алексей Борисович Елисеев"
+ },
+ "Q4195761/patronymic-ri/sorting": {
+  "patronymic": {
+   "expected": "Иванович",
+   "got": ""
+  },
+  "text": "Иваницкий, Николай Иванович"
+ },
+ "Q4197788/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Вячеславович",
+   "got": ""
+  },
+  "text": "Геннадий Вячеславович Игумнов"
+ },
  "Q4198159/patronymic-my/givenFirst": {
   "family": {
    "expected": "",
@@ -2658,6 +3967,10 @@
   "given_names": {
    "expected": "Ismail Abdul Rahman",
    "got": "Ismail Abdul"
+  },
+  "patronymic": {
+   "expected": "Abdul Rahman",
+   "got": ""
   },
   "text": "Ismail Abdul Rahman"
  },
@@ -2672,6 +3985,27 @@
   },
   "text": "Juan Fernández Bazán"
  },
+ "Q4213414/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Владимирович",
+   "got": ""
+  },
+  "text": "Владимир Владимирович Кара-Мурза"
+ },
+ "Q4222186/patronymic-ri/sorting": {
+  "patronymic": {
+   "expected": "Степанович",
+   "got": ""
+  },
+  "text": "Кислов, Александр Степанович"
+ },
+ "Q4234503/patronymic-su/givenFirst": {
+  "patronymic": {
+   "expected": "Олександрович",
+   "got": ""
+  },
+  "text": "Дмитро Олександрович Корчинський"
+ },
  "Q42455/patronymic-is/givenFirst": {
   "family": {
    "expected": "",
@@ -2681,7 +4015,18 @@
    "expected": "Björk Guðmundsdóttir",
    "got": "Björk"
   },
+  "patronymic": {
+   "expected": "Guðmundsdóttir",
+   "got": ""
+  },
   "text": "Björk Guðmundsdóttir"
+ },
+ "Q4256204/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Петрович",
+   "got": ""
+  },
+  "text": "Левандовский, Анатолий Петрович"
  },
  "Q425825/surname2-co/givenFirst": {
   "family": {
@@ -2694,6 +4039,20 @@
   },
   "text": "Hernando Calvo Ospina"
  },
+ "Q4271524/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Яковлевич",
+   "got": ""
+  },
+  "text": "Павел Яковлевич Любимов"
+ },
+ "Q4272531/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Игоревна",
+   "got": ""
+  },
+  "text": "Елена Игоревна Лядова"
+ },
  "Q4283792/surname2-mx/givenFirst": {
   "family": {
    "expected": "Tello Macías",
@@ -2705,6 +4064,13 @@
   },
   "text": "Manuel Tello Macías"
  },
+ "Q4284526/patronymic-su/sorting": {
+  "patronymic": {
+   "expected": "Иванович",
+   "got": ""
+  },
+  "text": "Матвеев, Герман Иванович"
+ },
  "Q42907085/patronymic-is/givenFirst": {
   "family": {
    "expected": "",
@@ -2714,7 +4080,109 @@
    "expected": "Óskar Halldórsson",
    "got": "Óskar"
   },
+  "patronymic": {
+   "expected": "Halldórsson",
+   "got": ""
+  },
   "text": "Óskar Halldórsson"
+ },
+ "Q429915/patronymic-ri/givenFirst": {
+  "patronymic": {
+   "expected": "Петрович",
+   "got": ""
+  },
+  "text": "Александр Петрович Сумароков"
+ },
+ "Q4299705/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Алексеевич",
+   "got": ""
+  },
+  "text": "Александр Алексеевич Моисеев"
+ },
+ "Q4299705/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Алексеевич",
+   "got": ""
+  },
+  "text": "Моисеев, Александр Алексеевич"
+ },
+ "Q4313956/patronymic-ri/sorting": {
+  "patronymic": {
+   "expected": "Викторович",
+   "got": ""
+  },
+  "text": "Насонов, Николай Викторович"
+ },
+ "Q4314363/patronymic-su/sorting": {
+  "patronymic": {
+   "expected": "Иванович",
+   "got": ""
+  },
+  "text": "Наумов, Михаил Иванович"
+ },
+ "Q4334317/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Сергеевич",
+   "got": ""
+  },
+  "text": "Валерий Сергеевич Ольховский"
+ },
+ "Q4334317/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Сергеевич",
+   "got": ""
+  },
+  "text": "Ольховский, Валерий Сергеевич"
+ },
+ "Q4337703/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Викторович",
+   "got": ""
+  },
+  "text": "Евгений Викторович Осин"
+ },
+ "Q43425443/patronymic-su/givenFirst": {
+  "patronymic": {
+   "expected": "Иванович",
+   "got": ""
+  },
+  "text": "Виктор Иванович Туровцев"
+ },
+ "Q4343990/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Вячеславович",
+   "got": ""
+  },
+  "text": "Алексей Вячеславович Панин"
+ },
+ "Q4343990/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Вячеславович",
+   "got": ""
+  },
+  "text": "Панин, Алексей Вячеславович"
+ },
+ "Q4372428/patronymic-ri/sorting": {
+  "patronymic": {
+   "expected": "Петрович",
+   "got": ""
+  },
+  "text": "Попов, Василий Петрович"
+ },
+ "Q4373277/patronymic-su/givenFirst": {
+  "patronymic": {
+   "expected": "Володимирович",
+   "got": ""
+  },
+  "text": "Андрій Володимирович Портнов"
+ },
+ "Q4377304/patronymic-ri/sorting": {
+  "patronymic": {
+   "expected": "Алексеевич",
+   "got": ""
+  },
+  "text": "Преображенский, Василий Алексеевич"
  },
  "Q437932/patronymic-is/givenFirst": {
   "family": {
@@ -2724,6 +4192,10 @@
   "given_names": {
    "expected": "Siv Friðleifsdóttir",
    "got": "Siv"
+  },
+  "patronymic": {
+   "expected": "Friðleifsdóttir",
+   "got": ""
   },
   "text": "Siv Friðleifsdóttir"
  },
@@ -2736,6 +4208,10 @@
    "expected": "Guðrún Eva Mínervudóttir",
    "got": "Guðrún Eva"
   },
+  "patronymic": {
+   "expected": "Mínervudóttir",
+   "got": ""
+  },
   "text": "Guðrún Eva Mínervudóttir"
  },
  "Q438031/patronymic-is/givenFirst": {
@@ -2747,7 +4223,67 @@
    "expected": "Guðbjörg Gunnarsdóttir",
    "got": "Guðbjörg"
   },
+  "patronymic": {
+   "expected": "Gunnarsdóttir",
+   "got": ""
+  },
   "text": "Guðbjörg Gunnarsdóttir"
+ },
+ "Q4387043/patronymic-ri/sorting": {
+  "patronymic": {
+   "expected": "Иванович",
+   "got": ""
+  },
+  "text": "Рагозин, Евгений Иванович"
+ },
+ "Q438839/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Гельевич",
+   "got": ""
+  },
+  "text": "Александр Гельевич Дугин"
+ },
+ "Q4388811/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Георгиевич",
+   "got": ""
+  },
+  "text": "Юрий Георгиевич Разумовский"
+ },
+ "Q4388811/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Георгиевич",
+   "got": ""
+  },
+  "text": "Разумовский, Юрий Георгиевич"
+ },
+ "Q4396579/patronymic-su/sorting": {
+  "patronymic": {
+   "expected": "Константинович",
+   "got": ""
+  },
+  "text": "Розенфельд, Михаил Константинович"
+ },
+ "Q4401515/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Андреевич",
+   "got": ""
+  },
+  "text": "Николай Андреевич Рыбин"
+ },
+ "Q4403531/patronymic-ri/sorting": {
+  "patronymic": {
+   "expected": "Алексеевич",
+   "got": ""
+  },
+  "text": "Саблин, Александр Алексеевич"
+ },
+ "Q4428563/patronymic-ri/sorting": {
+  "patronymic": {
+   "expected": "Мартынович",
+   "got": ""
+  },
+  "text": "Сольский, Семён Мартынович"
  },
  "Q4429030/surname2-es/givenFirst": {
   "family": {
@@ -2760,6 +4296,41 @@
   },
   "text": "Indalecio Soriano Fuertes"
  },
+ "Q4448299/patronymic-su/givenFirst": {
+  "patronymic": {
+   "expected": "Васильевич",
+   "got": ""
+  },
+  "text": "Федот Васильевич Сычков"
+ },
+ "Q4448725/patronymic-su/sorting": {
+  "patronymic": {
+   "expected": "Николаевич",
+   "got": ""
+  },
+  "text": "Сёмин, Виталий Николаевич"
+ },
+ "Q4459965/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Олегович",
+   "got": ""
+  },
+  "text": "Пётр Олегович Толстой"
+ },
+ "Q4477826/patronymic-su/givenFirst": {
+  "patronymic": {
+   "expected": "Александрович",
+   "got": ""
+  },
+  "text": "Владимир Александрович Усов"
+ },
+ "Q4481541/patronymic-su/sorting": {
+  "patronymic": {
+   "expected": "Ивановна",
+   "got": ""
+  },
+  "text": "Фаусек, Юлия Ивановна"
+ },
  "Q448642/surname2-mx/givenFirst": {
   "family": {
    "expected": "Paredes Rangel",
@@ -2770,6 +4341,69 @@
    "got": "Beatriz Elena Paredes"
   },
   "text": "Beatriz Elena Paredes Rangel"
+ },
+ "Q4501355/patronymic-su/givenFirst": {
+  "patronymic": {
+   "expected": "Борисович",
+   "got": ""
+  },
+  "text": "Юрий Борисович Хржановский"
+ },
+ "Q4501920/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Сергеевич",
+   "got": ""
+  },
+  "text": "Никита Сергеевич Хрущёв"
+ },
+ "Q4511967/patronymic-su/sorting": {
+  "patronymic": {
+   "expected": "Николаевич",
+   "got": ""
+  },
+  "text": "Червенков, Николай Николаевич"
+ },
+ "Q4512838/patronymic-su/givenFirst": {
+  "patronymic": {
+   "expected": "Иванович",
+   "got": ""
+  },
+  "text": "Александр Иванович Черепанов"
+ },
+ "Q4512838/patronymic-su/sorting": {
+  "patronymic": {
+   "expected": "Иванович",
+   "got": ""
+  },
+  "text": "Черепанов, Александр Иванович"
+ },
+ "Q4514365/patronymic-su/sorting": {
+  "patronymic": {
+   "expected": "Сергеевич",
+   "got": ""
+  },
+  "text": "Чернышёв, Пётр Сергеевич"
+ },
+ "Q4523811/patronymic-ri/sorting": {
+  "patronymic": {
+   "expected": "Николаевич",
+   "got": ""
+  },
+  "text": "Шиллер, Николай Николаевич"
+ },
+ "Q4531782/patronymic-su/givenFirst": {
+  "patronymic": {
+   "expected": "Александрович",
+   "got": ""
+  },
+  "text": "Николай Александрович Энгельгардт"
+ },
+ "Q45527009/patronymic-ri/givenFirst": {
+  "patronymic": {
+   "expected": "Петровна",
+   "got": ""
+  },
+  "text": "Ульяна Петровна Буянова"
  },
  "Q455683/surname2-mx/givenFirst": {
   "family": {
@@ -2793,6 +4427,13 @@
   },
   "text": "Joaquín Guzmán Loera"
  },
+ "Q460023/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Петрович",
+   "got": ""
+  },
+  "text": "Юрий Петрович Любимов"
+ },
  "Q462196/patronymic-is/givenFirst": {
   "family": {
    "expected": "",
@@ -2801,6 +4442,10 @@
   "given_names": {
    "expected": "Vilborg Davíðsdóttir",
    "got": "Vilborg"
+  },
+  "patronymic": {
+   "expected": "Davíðsdóttir",
+   "got": ""
   },
   "text": "Vilborg Davíðsdóttir"
  },
@@ -2812,6 +4457,10 @@
   "given_names": {
    "expected": "Katrín Jakobsdóttir",
    "got": "Katrín"
+  },
+  "patronymic": {
+   "expected": "Jakobsdóttir",
+   "got": ""
   },
   "text": "Katrín Jakobsdóttir"
  },
@@ -2825,6 +4474,20 @@
    "got": "José Mataix"
   },
   "text": "José Mataix Monllor"
+ },
+ "Q4715527/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Вячеславович",
+   "got": ""
+  },
+  "text": "Александр Вячеславович Жиров"
+ },
+ "Q4715527/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Вячеславович",
+   "got": ""
+  },
+  "text": "Жиров, Александр Вячеславович"
  },
  "Q4739054/surname2-mx/givenFirst": {
   "family": {
@@ -2847,6 +4510,20 @@
    "got": "Eduardo Pallares"
   },
   "text": "Eduardo Pallares Portillo"
+ },
+ "Q476758/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Андреевич",
+   "got": ""
+  },
+  "text": "Иван Андреевич Созонов"
+ },
+ "Q47711697/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Иванович",
+   "got": ""
+  },
+  "text": "Леонид Иванович Иванов"
  },
  "Q4776859/surname2-co/givenFirst": {
   "family": {
@@ -2892,6 +4569,20 @@
   },
   "text": "Arcadio Poveda Ricalde"
  },
+ "Q48145/patronymic-ri/givenFirst": {
+  "patronymic": {
+   "expected": "Афанасьевич",
+   "got": ""
+  },
+  "text": "Кирилл Афанасьевич Мерецков"
+ },
+ "Q48355/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Александрович",
+   "got": ""
+  },
+  "text": "Игорь Александрович Нетто"
+ },
  "Q48554/patronymic-is/givenFirst": {
   "family": {
    "expected": "",
@@ -2901,7 +4592,25 @@
    "expected": "Aron Jóhannsson",
    "got": "Aron"
   },
+  "patronymic": {
+   "expected": "Jóhannsson",
+   "got": ""
+  },
   "text": "Aron Jóhannsson"
+ },
+ "Q487927/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Николаевич",
+   "got": ""
+  },
+  "text": "Анатолий Николаевич Алябьев"
+ },
+ "Q502651/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Васильевич",
+   "got": ""
+  },
+  "text": "Андрей Васильевич Мягков"
  },
  "Q5041784/surname2-co/givenFirst": {
   "family": {
@@ -2945,6 +4654,10 @@
    "expected": "Steingrímur Jóhann Sigfússon",
    "got": "Steingrímur Jóhann"
   },
+  "patronymic": {
+   "expected": "Sigfússon",
+   "got": ""
+  },
   "text": "Steingrímur Jóhann Sigfússon"
  },
  "Q5125955/surname2-mx/givenFirst": {
@@ -2968,6 +4681,27 @@
    "got": "Sócrates Gómez"
   },
   "text": "Sócrates Gómez Pérez"
+ },
+ "Q516275/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Андреевна",
+   "got": ""
+  },
+  "text": "Евдокия Андреевна Никулина"
+ },
+ "Q516275/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Андреевна",
+   "got": ""
+  },
+  "text": "Никулина, Евдокия Андреевна"
+ },
+ "Q51668995/patronymic-su/givenFirst": {
+  "patronymic": {
+   "expected": "Владимирович",
+   "got": ""
+  },
+  "text": "Павел Владимирович Сорокин"
  },
  "Q520713/surname2-es/givenFirst": {
   "family": {
@@ -3000,6 +4734,10 @@
    "expected": "Margrét Lára Viðarsdóttir",
    "got": "Margrét Lára"
   },
+  "patronymic": {
+   "expected": "Viðarsdóttir",
+   "got": ""
+  },
   "text": "Margrét Lára Viðarsdóttir"
  },
  "Q539421/patronymic-is/givenFirst": {
@@ -3010,6 +4748,10 @@
   "given_names": {
    "expected": "Katrín Júlíusdóttir",
    "got": "Katrín"
+  },
+  "patronymic": {
+   "expected": "Júlíusdóttir",
+   "got": ""
   },
   "text": "Katrín Júlíusdóttir"
  },
@@ -3033,6 +4775,10 @@
    "expected": "Guðrún Helgadóttir",
    "got": "Guðrún"
   },
+  "patronymic": {
+   "expected": "Helgadóttir",
+   "got": ""
+  },
   "text": "Guðrún Helgadóttir"
  },
  "Q5412830/surname2-es/givenFirst": {
@@ -3045,6 +4791,27 @@
    "got": "Francisco González"
   },
   "text": "Francisco González Macías"
+ },
+ "Q548164/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Юрьевич",
+   "got": ""
+  },
+  "text": "Владислав Юрьевич Сурков"
+ },
+ "Q54964679/patronymic-su/givenFirst": {
+  "patronymic": {
+   "expected": "Фёдорович",
+   "got": ""
+  },
+  "text": "Валерий Фёдорович Залужный"
+ },
+ "Q55208/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Сергеевич",
+   "got": ""
+  },
+  "text": "Андрей Сергеевич Кончаловский"
  },
  "Q55229105/surname2-es/givenFirst": {
   "family": {
@@ -3143,6 +4910,10 @@
    "expected": "Jón Þorláksson",
    "got": "Jón"
   },
+  "patronymic": {
+   "expected": "Þorláksson",
+   "got": ""
+  },
   "text": "Jón Þorláksson"
  },
  "Q5667134/surname2-co/givenFirst": {
@@ -3166,6 +4937,13 @@
    "got": "Eduardo Zalamea"
   },
   "text": "Eduardo Zalamea Borda"
+ },
+ "Q56822727/patronymic-ri/givenFirst": {
+  "patronymic": {
+   "expected": "Михайлович",
+   "got": ""
+  },
+  "text": "Виссарион Михайлович Павлов"
  },
  "Q5696422/surname2-co/givenFirst": {
   "family": {
@@ -3242,6 +5020,10 @@
    "expected": "Jóhanna Sigurðardóttir",
    "got": "Jóhanna"
   },
+  "patronymic": {
+   "expected": "Sigurðardóttir",
+   "got": ""
+  },
   "text": "Jóhanna Sigurðardóttir"
  },
  "Q5806647/surname2-co/givenFirst": {
@@ -3274,6 +5056,10 @@
   "given_names": {
    "expected": "Jón Páll Sigmarsson",
    "got": "Jón Páll"
+  },
+  "patronymic": {
+   "expected": "Sigmarsson",
+   "got": ""
   },
   "text": "Jón Páll Sigmarsson"
  },
@@ -3332,6 +5118,13 @@
   },
   "text": "Francisco Martínez de Cenicero"
  },
+ "Q58709/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Васильевна",
+   "got": ""
+  },
+  "text": "Журавлёва, Людмила Васильевна"
+ },
  "Q5888901/surname2-mx/givenFirst": {
   "family": {
    "expected": "Rousset Banda",
@@ -3363,6 +5156,10 @@
    "expected": "Hera Hilmarsdóttir",
    "got": "Hera"
   },
+  "patronymic": {
+   "expected": "Hilmarsdóttir",
+   "got": ""
+  },
   "text": "Hera Hilmarsdóttir"
  },
  "Q59105/patronymic-is/givenFirst": {
@@ -3373,6 +5170,10 @@
   "given_names": {
    "expected": "Gylfi Sigurðsson",
    "got": "Gylfi"
+  },
+  "patronymic": {
+   "expected": "Sigurðsson",
+   "got": ""
   },
   "text": "Gylfi Sigurðsson"
  },
@@ -3473,7 +5274,25 @@
    "expected": "Hansína Regína Björnsdóttir",
    "got": "Hansína Regína"
   },
+  "patronymic": {
+   "expected": "Björnsdóttir",
+   "got": ""
+  },
   "text": "Hansína Regína Björnsdóttir"
+ },
+ "Q59938868/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Емельянович",
+   "got": ""
+  },
+  "text": "Александр Емельянович Хмель"
+ },
+ "Q600678/patronymic-ri/givenFirst": {
+  "patronymic": {
+   "expected": "Николаевич",
+   "got": ""
+  },
+  "text": "Алексей Николаевич Плещеев"
  },
  "Q6055948/surname2-co/givenFirst": {
   "family": {
@@ -3507,6 +5326,13 @@
    "got": "Pedro Galindo"
   },
   "text": "Pedro Galindo Galarza"
+ },
+ "Q60695279/patronymic-su/sorting": {
+  "patronymic": {
+   "expected": "Александрович",
+   "got": ""
+  },
+  "text": "Корягин, Дмитрий Александрович"
  },
  "Q6069555/surname2-co/givenFirst": {
   "family": {
@@ -3585,6 +5411,13 @@
   },
   "text": "Víctor Luna Gómez"
  },
+ "Q61668399/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Петрович",
+   "got": ""
+  },
+  "text": "Евтеев, Николай Петрович"
+ },
  "Q61697989/surname2-mx/givenFirst": {
   "family": {
    "expected": "Azcárraga Madero",
@@ -3595,6 +5428,13 @@
    "got": "Rogerio Azcárraga"
   },
   "text": "Rogerio Azcárraga Madero"
+ },
+ "Q617112/patronymic-su/sorting": {
+  "patronymic": {
+   "expected": "Петрович",
+   "got": ""
+  },
+  "text": "Кузнецов, Александр Петрович"
  },
  "Q61743963/surname2-es/givenFirst": {
   "family": {
@@ -3616,6 +5456,10 @@
    "expected": "Arnbjörg Auður Örnólfsdóttir",
    "got": "Arnbjörg Auður"
   },
+  "patronymic": {
+   "expected": "Örnólfsdóttir",
+   "got": ""
+  },
   "text": "Arnbjörg Auður Örnólfsdóttir"
  },
  "Q61972280/patronymic-is/givenFirst": {
@@ -3626,6 +5470,10 @@
   "given_names": {
    "expected": "Dóra Sigurðsson",
    "got": "Dóra"
+  },
+  "patronymic": {
+   "expected": "Sigurðsson",
+   "got": ""
   },
   "text": "Dóra Sigurðsson"
  },
@@ -3638,6 +5486,10 @@
    "expected": "Elísabet Erlingsdóttir",
    "got": "Elísabet"
   },
+  "patronymic": {
+   "expected": "Erlingsdóttir",
+   "got": ""
+  },
   "text": "Elísabet Erlingsdóttir"
  },
  "Q61972491/patronymic-is/givenFirst": {
@@ -3648,6 +5500,10 @@
   "given_names": {
    "expected": "Guðmunda Elíasdóttir",
    "got": "Guðmunda"
+  },
+  "patronymic": {
+   "expected": "Elíasdóttir",
+   "got": ""
   },
   "text": "Guðmunda Elíasdóttir"
  },
@@ -3660,6 +5516,10 @@
    "expected": "Sigrún Jónsdóttir",
    "got": "Sigrún"
   },
+  "patronymic": {
+   "expected": "Jónsdóttir",
+   "got": ""
+  },
   "text": "Sigrún Jónsdóttir"
  },
  "Q61974032/patronymic-is/givenFirst": {
@@ -3670,6 +5530,10 @@
   "given_names": {
    "expected": "Þuríður Pálsdóttir",
    "got": "Þuríður"
+  },
+  "patronymic": {
+   "expected": "Pálsdóttir",
+   "got": ""
   },
   "text": "Þuríður Pálsdóttir"
  },
@@ -3694,6 +5558,20 @@
    "got": "Rosa Castillo"
   },
   "text": "Rosa Castillo Santiago"
+ },
+ "Q63196700/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Александрович",
+   "got": ""
+  },
+  "text": "Александр Александрович Кухаренко"
+ },
+ "Q63196700/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Александрович",
+   "got": ""
+  },
+  "text": "Кухаренко, Александр Александрович"
  },
  "Q63761164/surname2-es/givenFirst": {
   "family": {
@@ -3728,6 +5606,34 @@
   },
   "text": "Miguel García Martínez"
  },
+ "Q65201524/patronymic-su/givenFirst": {
+  "patronymic": {
+   "expected": "Дмитриевич",
+   "got": ""
+  },
+  "text": "Сергей Дмитриевич Остапов"
+ },
+ "Q658050/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Дмитриевич",
+   "got": ""
+  },
+  "text": "Игорь Дмитриевич Серебряков"
+ },
+ "Q66124882/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Германович",
+   "got": ""
+  },
+  "text": "Геннадий Германович Комиссаров"
+ },
+ "Q66124882/patronymic-ru/surnameFirst": {
+  "patronymic": {
+   "expected": "Германович",
+   "got": ""
+  },
+  "text": "Комиссаров Геннадий Германович"
+ },
  "Q66464825/surname2-mx/givenFirst": {
   "family": {
    "expected": "Landín Martínez",
@@ -3747,6 +5653,10 @@
   "given_names": {
    "expected": "Azhar Ibrahim",
    "got": "Azhar"
+  },
+  "patronymic": {
+   "expected": "Ibrahim",
+   "got": ""
   },
   "text": "Azhar Ibrahim"
  },
@@ -3772,6 +5682,13 @@
   },
   "text": "Mariano Aguilar Barrera"
  },
+ "Q6849481/patronymic-su/sorting": {
+  "patronymic": {
+   "expected": "Михайлович",
+   "got": ""
+  },
+  "text": "Адамович, Михаил Михайлович"
+ },
  "Q690876/patronymic-is/givenFirst": {
   "family": {
    "expected": "",
@@ -3780,6 +5697,10 @@
   "given_names": {
    "expected": "Arnar Gunnlaugsson",
    "got": "Arnar"
+  },
+  "patronymic": {
+   "expected": "Gunnlaugsson",
+   "got": ""
   },
   "text": "Arnar Gunnlaugsson"
  },
@@ -3791,6 +5712,10 @@
   "given_names": {
    "expected": "Nanna Bryndís Hilmarsdóttir",
    "got": "Nanna Bryndís"
+  },
+  "patronymic": {
+   "expected": "Hilmarsdóttir",
+   "got": ""
   },
   "text": "Nanna Bryndís Hilmarsdóttir"
  },
@@ -3805,6 +5730,27 @@
   },
   "text": "Jaime Mayor Oreja"
  },
+ "Q701635/patronymic-ri/givenFirst": {
+  "patronymic": {
+   "expected": "Владимирович",
+   "got": ""
+  },
+  "text": "Иосиф Владимирович Гурко"
+ },
+ "Q714964/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Валерьевич",
+   "got": ""
+  },
+  "text": "Артур Валерьевич Дмитриев"
+ },
+ "Q714964/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Валерьевич",
+   "got": ""
+  },
+  "text": "Дмитриев, Артур Валерьевич"
+ },
  "Q723705/patronymic-is/givenFirst": {
   "family": {
    "expected": "",
@@ -3813,6 +5759,10 @@
   "given_names": {
    "expected": "Bjarni Viðarsson",
    "got": "Bjarni"
+  },
+  "patronymic": {
+   "expected": "Viðarsson",
+   "got": ""
   },
   "text": "Bjarni Viðarsson"
  },
@@ -3838,6 +5788,13 @@
   },
   "text": "Ricardo Legorreta Vilchis"
  },
+ "Q7429/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Александровна",
+   "got": ""
+  },
+  "text": "Нина Александровна Андреева"
+ },
  "Q7429440/surname2-mx/givenFirst": {
   "family": {
    "expected": "González Herrera",
@@ -3849,6 +5806,27 @@
   },
   "text": "Saúl González Herrera"
  },
+ "Q76718786/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Георгиевич",
+   "got": ""
+  },
+  "text": "Николай Георгиевич Зырин"
+ },
+ "Q7747/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Владимирович",
+   "got": ""
+  },
+  "text": "Владимир Владимирович Путин"
+ },
+ "Q78286708/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Иванович",
+   "got": ""
+  },
+  "text": "Владислав Иванович Мамонтов"
+ },
  "Q7882106/patronymic-is/givenFirst": {
   "family": {
    "expected": "",
@@ -3858,7 +5836,18 @@
    "expected": "Una Guðmundsdóttir",
    "got": "Una"
   },
+  "patronymic": {
+   "expected": "Guðmundsdóttir",
+   "got": ""
+  },
   "text": "Una Guðmundsdóttir"
+ },
+ "Q8003/patronymic-su/givenFirst": {
+  "patronymic": {
+   "expected": "Михайлович",
+   "got": ""
+  },
+  "text": "Сергей Михайлович Эйзенштейн"
  },
  "Q81619240/surname2-es/givenFirst": {
   "family": {
@@ -3892,6 +5881,13 @@
    "got": "Anna Maria Martínez"
   },
   "text": "Anna Maria Martínez Sagi"
+ },
+ "Q82381/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Иванович",
+   "got": ""
+  },
+  "text": "Фоменков, Валерий Иванович"
  },
  "Q8338233/surname2-mx/givenFirst": {
   "family": {
@@ -3948,6 +5944,13 @@
   },
   "text": "Vicente Gómez Mier"
  },
+ "Q86094778/patronymic-ru/sorting": {
+  "patronymic": {
+   "expected": "Фёдорович",
+   "got": ""
+  },
+  "text": "Антипов, Павел Фёдорович"
+ },
  "Q87124000/surname2-es/givenFirst": {
   "family": {
    "expected": "Abad Miró",
@@ -3959,6 +5962,13 @@
   },
   "text": "Gabriela Abad Miró"
  },
+ "Q87463195/patronymic-ru/givenFirst": {
+  "patronymic": {
+   "expected": "Арсентьевна",
+   "got": ""
+  },
+  "text": "Наталья Арсентьевна Якубович"
+ },
  "Q879568/patronymic-is/givenFirst": {
   "family": {
    "expected": "",
@@ -3967,6 +5977,10 @@
   "given_names": {
    "expected": "Björn Bjarnason",
    "got": "Björn"
+  },
+  "patronymic": {
+   "expected": "Bjarnason",
+   "got": ""
   },
   "text": "Björn Bjarnason"
  },
@@ -4111,6 +6125,10 @@
    "expected": "Kristinn Hrafnsson",
    "got": "Kristinn"
   },
+  "patronymic": {
+   "expected": "Hrafnsson",
+   "got": ""
+  },
   "text": "Kristinn Hrafnsson"
  },
  "Q959666/surname2-co/givenFirst": {
@@ -4177,6 +6195,10 @@
    "expected": "Jón Árnason",
    "got": "Jón"
   },
+  "patronymic": {
+   "expected": "Árnason",
+   "got": ""
+  },
   "text": "Jón Árnason"
  },
  "Q98069704/surname2-es/givenFirst": {
@@ -4198,6 +6220,10 @@
   "given_names": {
    "expected": "Jón Helgason",
    "got": "Jón"
+  },
+  "patronymic": {
+   "expected": "Helgason",
+   "got": ""
   },
   "text": "Jón Helgason"
  },

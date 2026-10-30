@@ -330,6 +330,22 @@ _EXPECTED_READINGS = [
      "position"),
     ("de Mesnil Jean", Policy(name_order=FAMILY_FIRST), "de", "particle",
      "vocabulary"),
+    # a patronymic particle (R9) by the vocabulary, the words its
+    # run takes and the Turkic father's name by position, an ending or
+    # a marker by its shape
+    ("Mahathir bin Mohamad", None, "bin", "patronymic", "vocabulary"),
+    ("Mahathir bin Mohamad", None, "Mohamad", "patronymic", "position"),
+    ("Ahmad bin Abdul Rahman", None, "Abdul", "patronymic", "position"),
+    ("Mohamad, Mahathir bin", None, "Mohamad", "patronymic", "position"),
+    ("Fritz Freiherr und von Bar", None, "Bar", "particle", "vocabulary"),
+    ("bin Mohamad", None, "bin", "name", "declared"),
+    ("Ivan Ivanovich Ivanov", Policy(patronymic_rules={"east-slavic"}),  # type: ignore[arg-type]
+     "Ivanovich", "patronymic", "shape"),
+    ("Ivan Ivanovich Ivanov", None, "Ivanovich", "name", "position"),
+    ("Ali Ahmad oglu", Policy(patronymic_rules={"turkic"}),  # type: ignore[arg-type]
+     "oglu", "patronymic", "shape"),
+    ("Ali Ahmad oglu", Policy(patronymic_rules={"turkic"}),  # type: ignore[arg-type]
+     "Ahmad", "patronymic", "position"),
 ]
 
 
@@ -351,8 +367,11 @@ def test_every_parsed_token_has_a_reading_of_its_own_field(case: Case) -> None:
     for t in pn.tokens:
         assert t.reading is not None, t
         assert t.reading.role is t.role, t
-        # 4c's: no rule of the parse names a patronymic yet
-        assert t.reading.kind is not ReadingKind.PATRONYMIC, t
+        # a patronymic is listed only as a particle (R9); the words
+        # its run takes and an ending rule's are not
+        if (t.reading.kind is ReadingKind.PATRONYMIC
+                and t.reading.source is ReadingSource.VOCABULARY):
+            assert "particle" in t.tags, t
         # no file holds a reading by shape or by position
         if t.reading.source in (ReadingSource.SHAPE, ReadingSource.POSITION):
             assert t.reading.languages == (), t
@@ -610,3 +629,45 @@ def test_an_alternative_names_the_files_holding_it() -> None:
     (amb,) = parse("Doe, John van DO").ambiguities
     assert amb.alternative is not None
     assert amb.alternative.languages == ("en", "nl")
+
+
+def test_a_patronymic_particle_names_its_files_and_reports_a_patronymic(
+        ) -> None:
+    # the particle's reading (R9) names the files holding it as a
+    # patronymic, and a leading one read as a given name names the
+    # patronymic as the reading not taken, as the reading taken would
+    (bin_, mohamad) = parse("Mahathir bin Mohamad").tokens_for(Role.FAMILY)
+    assert bin_.reading is not None and bin_.reading.languages == ("ar", "ms")
+    assert mohamad.reading is not None and mohamad.reading.languages == ()
+    (report,) = parse("bin Mohamad").ambiguities
+    assert report.kind is AmbiguityKind.PARTICLE_OR_GIVEN
+    assert report.alternative == Reading("patronymic", "family", "vocabulary")  # type: ignore[arg-type]
+    assert report.alternative.languages == ("ar", "ms")
+    # a particle of another kind still names a particle
+    (other,) = parse("van Gogh").ambiguities
+    assert other.alternative == Reading("particle", "family", "vocabulary")  # type: ignore[arg-type]
+
+
+def test_every_particle_reads_patronymic_exactly_where_the_index_says(
+        ) -> None:
+    # One walk over every particle (R9): behind a given name and
+    # before a parent's name, a word reads `patronymic` iff a shipped
+    # file holds it as a patronymic particle, whatever its default
+    from nameparser._reading_index import holds_kind
+    lex = Lexicon.default()
+    words = sorted(lex.particles)
+    assert len(words) > 100
+    found = set()
+    mismatched = []
+    for word in words:
+        tok = parse(f"Ahmad {word} Hasan").tokens[1]
+        if tok.reading is None or tok.reading.kind.value not in (
+                "particle", "patronymic"):
+            continue
+        is_patronymic = tok.reading.kind.value == "patronymic"
+        if is_patronymic:
+            found.add(word)
+        if is_patronymic is not holds_kind(word, "patronymic"):
+            mismatched.append((word, tok.reading))
+    assert not mismatched, mismatched[:10]
+    assert {"bin", "binti", "ibn", "bar", "بن"} <= found

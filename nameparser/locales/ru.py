@@ -1,8 +1,9 @@
 """The Russian locale pack (rule O1): policy-only -- it turns
 on the EAST_SLAVIC patronymic rule. The morphology data (-ovich/-ovna
-endings, Cyrillic and transliterated) lives inside the rule
-implementation in nameparser/_pipeline/_post_rules.py, not in the
-Lexicon (mirrors v1's patronymic_name_order flag design, v1.3.0).
+endings, Cyrillic and transliterated) lives beside the rule
+implementation, in nameparser/_pipeline/_vocab.py's patterns, which
+_post_rules.py's rotation and assemble's patronymic reading (rules/R9)
+both ask, not in the Lexicon (mirrors v1's patronymic_name_order flag design, v1.3.0).
 Cyrillic titles/conjunctions are default-lexicon vocabulary (#269),
 not pack data (mechanisms.md#LOCALE-PACKS-PURE-DATA, the sorting
 rule).
@@ -33,7 +34,7 @@ RU = Locale(
         patronymic_rules=frozenset({PatronymicRule.EAST_SLAVIC})),
 )
 
-# Ported by hand from nameparser/_pipeline/_post_rules.py's
+# Ported by hand from nameparser/_pipeline/_vocab.py's
 # _EAST_SLAVIC/_EAST_SLAVIC_CYR (the rule is the source of truth; this
 # predicate only DECLARES the deviation surface for the non-interference
 # gate -- layering forbids importing the pipeline from a pack). Keep

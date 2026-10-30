@@ -109,6 +109,13 @@ AGNOMEN_TAG = "vocab:agnomen"
 GENERATION_WORD_TAG = "vocab:generation-word"
 CREDENTIAL_WORD_TAG = "vocab:credential-word"
 
+#: Beside "particle" on a word the shipped reading index holds as a
+#: patronymic particle (`bin`, `ibn`, `bat`), which the compiled sets
+#: do not record (rules/R9, 3.0's 4c): written by classify, read by
+#: assemble for `Token.reading` and by assign for the reading a report
+#: names, and dropped from the published token like the kind tags above.
+PATRONYMIC_TAG = "vocab:patronymic"
+
 #: On a word of `Lexicon.titles_ambiguous` whichever way classify read
 #: it (rules/H9): read as a title it carries "vocab:title" too, read
 #: out of the title it carries this alone, which is how assign finds

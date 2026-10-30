@@ -61,10 +61,10 @@ def test_roman_numeral_matches_config() -> None:
 
 def test_patronymic_patterns_match_config() -> None:
     pairs = (
-        (_post_rules._EAST_SLAVIC, "east_slavic_patronymic"),
-        (_post_rules._EAST_SLAVIC_CYR, "east_slavic_patronymic_cyrillic"),
-        (_post_rules._TURKIC, "turkic_patronymic_marker"),
-        (_post_rules._TURKIC_CYR, "turkic_patronymic_marker_cyrillic"),
+        (_vocab._EAST_SLAVIC, "east_slavic_patronymic"),
+        (_vocab._EAST_SLAVIC_CYR, "east_slavic_patronymic_cyrillic"),
+        (_vocab._TURKIC, "turkic_patronymic_marker"),
+        (_vocab._TURKIC_CYR, "turkic_patronymic_marker_cyrillic"),
     )
     for copy, key in pairs:
         source = _config.REGEXES[key]
@@ -158,10 +158,10 @@ _SOURCES: dict[tuple[str, str], str | None] = {
     # SAME object, imported for the report on a numeral before a
     # credential (#721)
     ("_assign", "_ROMAN"): "roman_numeral",
-    ("_post_rules", "_EAST_SLAVIC"): "east_slavic_patronymic",
-    ("_post_rules", "_EAST_SLAVIC_CYR"): "east_slavic_patronymic_cyrillic",
-    ("_post_rules", "_TURKIC"): "turkic_patronymic_marker",
-    ("_post_rules", "_TURKIC_CYR"): "turkic_patronymic_marker_cyrillic",
+    ("_vocab", "_EAST_SLAVIC"): "east_slavic_patronymic",
+    ("_vocab", "_EAST_SLAVIC_CYR"): "east_slavic_patronymic_cyrillic",
+    ("_vocab", "_TURKIC"): "turkic_patronymic_marker",
+    ("_vocab", "_TURKIC_CYR"): "turkic_patronymic_marker_cyrillic",
     # rules/O6's hyphens (#754): no config counterpart
     ("_post_rules", "_HYPHENS"): None,
     ("_render", "_SPACES"): "spaces",

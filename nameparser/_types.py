@@ -903,9 +903,8 @@ class ReadingKind(StrEnum):
     #: An ordinary name word, given or family.
     NAME = "name"
     #: A patronymic or matronymic: a word naming the parent ("bin
-    #: Mohamad", "Ivanovich"), in whichever field the parse put it.
-    #: Added in 3.0 for the patronymic view; no reading of the parse
-    #: takes it yet.
+    #: Mohamad", "Ivanovich"), in whichever field the parse put it, the
+    #: words :attr:`ParsedName.patronymic` holds. Added in 3.0.
     PATRONYMIC = "patronymic"
 
 
@@ -1387,6 +1386,38 @@ class ParsedName:
     @property
     def given_names(self) -> str:
         return self._text_for(Role.GIVEN, Role.MIDDLE)
+
+    @property
+    # rules/R9: "the words read as a patronymic, in whichever field
+    # the parse put them" (history: decisions/R9, #754)
+    def patronymic(self) -> str:
+        """The words read as a patronymic or matronymic ("bin
+        Mohamad", and "Ivanovich" where a policy turns on the East
+        Slavic rule), in whichever field the parse put them, which
+        keeps them; ``''`` for a name with none. Space-joined in
+        written order, the family's words in the order :attr:`family`
+        writes them."""
+        parts: list[str | list[str]] = []
+        family: list[str] | None = None
+        folded: list[str] = []
+        for tok in self.tokens:
+            if (tok.reading is None
+                    or tok.reading.kind is not ReadingKind.PATRONYMIC):
+                continue
+            if tok.role is Role.FAMILY:
+                if family is None:
+                    family = []
+                    parts.append(family)
+                # a word folded into the family is written before it,
+                # as `family` writes it ('Mohamad, Mahathir bin')
+                (folded if FOLDED_TAG in tok.tags else family).append(
+                    tok.text)
+            else:
+                parts.append(tok.text)
+        if family is not None:
+            family[:0] = folded
+        return " ".join(p if isinstance(p, str) else " ".join(p)
+                        for p in parts)
 
     def _suffix_view(self, generation: bool) -> str:
         # the `generation` / `credentials` partition of `suffix`, each

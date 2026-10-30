@@ -1,7 +1,9 @@
 """The Turkish/Azerbaijani locale pack (rule O2): policy-only
 -- it turns on the TURKIC patronymic rule. The marker data (oglu/qizi/
-uulu/kyzy and Cyrillic forms) lives inside the rule implementation in
-nameparser/_pipeline/_post_rules.py (mirrors v1's flag design).
+uulu/kyzy and Cyrillic forms) lives beside the rule implementation, in
+nameparser/_pipeline/_vocab.py's patterns, which _post_rules.py's
+rotation and assemble's patronymic reading (rules/R9) both ask
+(mirrors v1's flag design).
 
 Data sources: the v1 Turkic patronymic rule (issue #185 and its test
 bank, tests/test_turkic_patronymic_order.py); the pack carries no
@@ -28,7 +30,7 @@ TR_AZ = Locale(
         patronymic_rules=frozenset({PatronymicRule.TURKIC})),
 )
 
-# Ported by hand from nameparser/_pipeline/_post_rules.py's
+# Ported by hand from nameparser/_pipeline/_vocab.py's
 # _TURKIC/_TURKIC_CYR (the rule is the source of truth; this predicate
 # only DECLARES the deviation surface for the non-interference gate --
 # layering forbids importing the pipeline from a pack). Keep both

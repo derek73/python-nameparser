@@ -278,3 +278,19 @@ def test_prefer_never_drops_a_reading_of_unknown_language() -> None:
     pool = [_r("bon", "fr", "particle"), _r("bon", "und", "particle"),
             _r("bon", "mul", "generation")]
     assert len(_kept(pool, {"fr"})) == 3
+
+
+@pytest.mark.parametrize("text,kind,held", [
+    ("bin", "patronymic", True),
+    ("بن", "patronymic", True),
+    # `ben` is excluded as a patronymic (ar.toml) and `van` is another
+    # kind of particle; a word no file holds holds nothing
+    ("ben", "patronymic", False),
+    ("van", "patronymic", False),
+    ("zzq", "patronymic", False),
+    # a reading written `default = false` is held all the same
+    ("st", "generation", True),
+])
+def test_holds_kind_reads_every_file_whatever_the_default(
+        text: str, kind: str, held: bool) -> None:
+    assert ri.holds_kind(text, kind) is held

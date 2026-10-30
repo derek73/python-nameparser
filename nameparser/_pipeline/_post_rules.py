@@ -48,26 +48,13 @@ from nameparser._pipeline._state import (
     WorkToken, _NEVER_FLIPPED, comma_bucket, copy_with,
 )
 from nameparser._pipeline._vocab import (
-    delimiter_cores, suffix_reading, unit_ends,
+    delimiter_cores, has_patronymic_ending, is_patronymic_marker,
+    suffix_reading, unit_ends,
 )
 from nameparser._policy import PatronymicRule
 from nameparser._types import (
     FOLDED_TAG, UNJOINED_CONJUNCTION_TAG, UNJOINED_TAG, AmbiguityKind, Role,
 )
-
-# Ported verbatim from v1 (nameparser/config/regexes.py) -- layering
-# forbids the config import; keep in sync by hand.
-_EAST_SLAVIC = re.compile(
-    r"(ovich|ovna|evich|evna|ichna|ilyich|kuzmich|lukich|fomich|fokich)$",
-    re.I)
-_EAST_SLAVIC_CYR = re.compile(
-    r"(ович|овна|евич|евна|ична|ильич|кузьмич|лукич|фомич|фокич)$",
-    re.I)
-_TURKIC = re.compile(
-    r"^(oglu|oğlu|ogly|ogli|o['’ʻ]g['’ʻ]li"
-    r"|qizi|qızı|kizi|kyzy|gyzy|uly|uulu)$", re.I)
-_TURKIC_CYR = re.compile(
-    r"^(оглу|оглы|оғлу|ўғли|угли|кызы|гызы|қызы|қизи|улы|ұлы|уулу)$", re.I)
 
 
 #: The roles that are transparent to a run of post-nominals (R1's
@@ -636,9 +623,7 @@ def post_rules(state: ParseState) -> ParseState:
             len(givens) == 1 and len(middles) == 1 and len(families) == 1:
         tail = tokens[families[0]].text
         mid = tokens[middles[0]].text
-        if (_EAST_SLAVIC.search(tail) or _EAST_SLAVIC_CYR.search(tail)) \
-                and not (_EAST_SLAVIC.search(mid)
-                         or _EAST_SLAVIC_CYR.search(mid)):
+        if has_patronymic_ending(tail) and not has_patronymic_ending(mid):
             g, m, f = givens[0], middles[0], families[0]
             _retag(tokens, m, Role.GIVEN)
             _retag(tokens, f, Role.MIDDLE)
@@ -650,7 +635,7 @@ def post_rules(state: ParseState) -> ParseState:
     if rotations_apply and PatronymicRule.TURKIC in rules and \
             len(givens) == 1 and len(middles) == 2 and len(families) == 1:
         tail = tokens[families[0]].text
-        if _TURKIC.match(tail) or _TURKIC_CYR.match(tail):
+        if is_patronymic_marker(tail):
             g, m1, m2, f = givens[0], middles[0], middles[1], families[0]
             _retag(tokens, m1, Role.GIVEN)
             _retag(tokens, m2, Role.MIDDLE)

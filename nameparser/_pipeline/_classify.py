@@ -33,8 +33,9 @@ namespaced (unstable): "vocab:title", "vocab:given-title",
 "vocab:after-given-title", "vocab:title-ambiguous",
 "vocab:suffix", "vocab:suffix-word", "vocab:suffix-ambiguous",
 "vocab:suffix-word-ambiguous", "vocab:agnomen",
-"vocab:generation-word", "vocab:credential-word" (read by the later
-stages and dropped by assemble, Token.reading carrying the kind out),
+"vocab:generation-word", "vocab:credential-word" and
+"vocab:patronymic" (read by the later stages and dropped by assemble,
+Token.reading carrying the kind out),
 "vocab:particle-ambiguous", "vocab:bound-given",
 "vocab:given-abbreviation", "vocab:maiden-marker",
 "vocab:maiden-marker-cont"; in a namespace of its own,
@@ -71,7 +72,7 @@ from nameparser._lexicon import _normalize, _spells_an_initial
 from nameparser._policy import CapsSuffixes
 from nameparser._pipeline._state import (
     AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG,
-    GIVEN_ABBREVIATION_TAG, SHAPE_ACRONYM_TAG,
+    GIVEN_ABBREVIATION_TAG, PATRONYMIC_TAG, SHAPE_ACRONYM_TAG,
     SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, TITLE_AMBIGUOUS_TAG, ParseState,
     Deferred, PendingAmbiguity, PendingReading,
     WorkToken, copy_with,
@@ -80,7 +81,8 @@ from nameparser._types import AmbiguityKind, ReadingKind, ReadingSource
 from nameparser._pipeline._vocab import (
     BUILTIN_GLUED_DELIMITERS, SPLIT_CHUNK, SPLIT_PAIR_OPENS, _INITIAL, caps_shape_candidate,
     composed_len, glued_cores, glued_stem, is_cased_paired_initials,
-    is_initial, is_one_case, listed_word_kind_tag, period_joined_vocab,
+    is_initial, is_one_case, is_patronymic_particle, listed_word_kind_tag,
+    period_joined_vocab,
     split_pair,
     suffix_as_written, tag_marker_runs, title_readings,
 )
@@ -174,6 +176,11 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
         tags.add("particle")
         if n in lex.particles_ambiguous:
             tags.add("vocab:particle-ambiguous")
+        # rules/R9: "a particle the shipped vocabulary holds as a
+        # patronymic" -- its kind, read here as a suffix word's is
+        # (decisions/R9, #754)
+        if is_patronymic_particle(n):
+            tags.add(PATRONYMIC_TAG)
     # rules/P8: "a single-letter connective reads as an initial
     # where the writing says so: written as a bare Latin capital in a
     # name that is not written wholly in one case, or — in a name

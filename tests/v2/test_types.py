@@ -1034,3 +1034,94 @@ def test_a_declared_delimiter_glued_to_a_generation_keeps_it_one(
             text.format(d=delimiter))
     assert (pn.generation, pn.credentials) == (
         generation.format(d=delimiter), "MD")
+
+
+# -- the patronymic view (rules/R9, #754) --------------------------------
+
+_RU = Parser(policy=Policy(patronymic_rules={"east-slavic"}))  # type: ignore[arg-type]
+_TR = Parser(policy=Policy(patronymic_rules={"turkic"}))  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize("parser,text,patronymic,field", [
+    # the empty path: no particle, and a name written without one
+    (Parser(), "John Smith", "", "Smith"),
+    (Parser(), "Anwar Ibrahim", "", "Ibrahim"),
+    # a particle and its parent's name, the family keeping them
+    (Parser(), "Mahathir bin Mohamad", "bin Mohamad", "bin Mohamad"),
+    (Parser(), "Ahmad bin Abdul Rahman", "bin Abdul Rahman", "bin Abdul Rahman"),
+    (Parser(), "Abdul Rahman bin Ahmad", "bin Ahmad", "bin Ahmad"),
+    (Parser(), "Mahathir bin Mohamad Jr.", "bin Mohamad", "bin Mohamad"),
+    # two of them, across the middle and the family
+    (Parser(), "Ali bin Ahmad bin Hasan", "bin Ahmad bin Hasan", "bin Hasan"),
+    # P6's trailing particle: the family written before it, in the
+    # family's order
+    (Parser(), "Mohamad, Mahathir bin", "bin Mohamad", "bin Mohamad"),
+    (Parser(policy=Policy(name_order=FAMILY_FIRST)), "Mohamad Mahathir bin",
+     "bin Mohamad", "bin Mohamad"),
+    # the particle read as a name, or ending its field, names no parent
+    (Parser(), "Mahathir, bin Mohamad", "", "Mahathir"),
+    (Parser(), "Mohamad Mahathir bin", "", "bin"),
+    (Parser(), "Fritz Freiherr und von Bar", "", "Freiherr und von Bar"),
+    # a nickname inside the run is skipped
+    (Parser(), "Ahmad bin (Bob) Ali", "bin Ali", "bin Ali"),
+    # the East Slavic arm: a middle word carrying the ending
+    (_RU, "Ivan Ivanovich Ivanov", "Ivanovich", "Ivanov"),
+    (_RU, "Ivanov, Ivan Ivanovich", "Ivanovich", "Ivanov"),
+    (_RU, "Roman Abramovich", "", "Abramovich"),
+    (Parser(), "Ivan Ivanovich Ivanov", "", "Ivanov"),
+    # under middle_as_family the folded middle is still the middle
+    (Parser(policy=Policy(patronymic_rules={"east-slavic"},  # type: ignore[arg-type]
+                          middle_as_family=True)),
+     "Ivan Ivanovich Ivanov", "Ivanovich", "Ivanovich Ivanov"),
+    (Parser(policy=Policy(middle_as_family=True)),
+     "Ali bin Ahmad Hasan Musa", "bin Ahmad Hasan Musa", "bin Ahmad Hasan Musa"),
+    # the Turkic arm: a marker and the name word before it, in its part
+    (_TR, "Ali Ahmad Vali oglu", "Vali oglu", "Ali"),
+    (_TR, "Ali Ahmad oglu", "Ahmad oglu", "oglu"),
+    (_TR, "Ali (Bob) oglu", "Ali oglu", "oglu"),
+    (_TR, "oglu Ali", "", "Ali"),
+    (_TR, "Aliyev, oglu", "", "Aliyev"),
+])
+def test_the_patronymic_view_reads_a_particle_or_a_rule(
+        parser: Parser, text: str, patronymic: str, field: str) -> None:
+    pn = parser.parse(text)
+    assert pn.patronymic == patronymic
+    assert pn.family == field
+
+
+def test_a_patronymic_word_with_no_reading_is_not_in_the_view() -> None:
+    # replace() records no reading (4a), so nothing says what the word
+    # was; a field it did not touch keeps its readings
+    pn = parse("Mahathir bin Mohamad")
+    assert pn.replace(family="bin Mohamad").patronymic == ""
+    assert pn.replace(given="Anwar").patronymic == "bin Mohamad"
+
+
+def test_the_patronymic_view_is_a_render_key_and_not_a_field() -> None:
+    pn = parse("Mahathir bin Mohamad")
+    assert pn.render("{given} ({patronymic})") == "Mahathir (bin Mohamad)"
+    assert "patronymic" not in pn.as_dict()
+    assert "patronymic" not in repr(pn)
+    assert pn.comparison_key() == parse("Mahathir bin Mohamad").replace(
+        family="bin Mohamad").comparison_key()
+    with pytest.raises(TypeError):
+        pn.replace(patronymic="bin Ali")  # type: ignore[call-arg]
+
+
+def test_a_patronymic_parsedname_pickled_by_2_8_0_loads_equal() -> None:
+    """tests/v2/data/parsedname_v28_patronymic.pickle is `parse("Mahathir
+    bin Mohamad")` pickled (protocol 4) by the released 2.8.0 wheel,
+    made 2026-10-29 as the fixture above was. classify's
+    `vocab:patronymic` tag never reaches a published token, which
+    compares its tags, so the 2.x name is equal to its 3.0 parse and,
+    with no readings, has no patronymic. pickle.load is safe here: a
+    repo-controlled fixture."""
+    import pickle
+    with open(Path(__file__).parent / "data"
+              / "parsedname_v28_patronymic.pickle", "rb") as f:
+        loaded = pickle.load(f)
+    now = parse("Mahathir bin Mohamad")
+    assert loaded == now
+    assert (loaded.patronymic, now.patronymic) == ("", "bin Mohamad")
+    assert not any(t.startswith("vocab:patronymic")
+                   for tok in now.tokens for t in tok.tags)
