@@ -310,8 +310,7 @@ def assemble(state: ParseState) -> ParsedName:
         # no reading of its own to keep in step. Per token, measured
         # 2026-10-29: no frame for an untagged non-suffix word, the
         # commonest; one for a listed or shaped suffix (`suffix_kind`,
-        # whose index lookup for a listed word is a memo)
-        # and for a tagged name word that reaches `name_source` or a
+        # reading the kind classify tagged) and for a tagged name word that reaches `name_source` or a
         # family word glued to the next (`_normalize`); three for a
         # suffix word nothing tags or lists (`suffix_kind`, then
         # `_listed_suffix` and its `_normalize`). `_vocab`'s two predicates

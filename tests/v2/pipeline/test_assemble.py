@@ -431,17 +431,25 @@ def test_every_suffix_words_reading_alternative_and_index_kind_agree(
                    | lex.suffix_acronyms_ambiguous)
     assert len(words) > 800
     mismatched = []
+    reported = 0
     for word in words:
         want = kinds.get(suffix_kind_of(word) or "", "post-nominal")
         taken = [t.reading.kind.value if t.reading else None
                  for t in parse(f"John Smith {word}").tokens_for(Role.SUFFIX)]
-        not_taken = [a.alternative.kind.value
-                     for a in parse(word).ambiguities
+        lone = parse(word).ambiguities
+        not_taken = [a.alternative.kind.value for a in lone
                      if a.alternative is not None
                      and a.alternative.role is Role.SUFFIX]
-        if taken != [want] or any(k != want for k in not_taken):
+        # a lone word reporting the suffix-or-name fork names the
+        # suffix reading it did not take, so the walk checks that
+        # reading rather than passing on an absent one
+        forked = any(a.kind is AmbiguityKind.SUFFIX_OR_NAME for a in lone)
+        reported += forked
+        if (taken != [want] or (forked and not not_taken)
+                or any(k != want for k in not_taken)):
             mismatched.append((word, want, taken, not_taken))
     assert not mismatched, mismatched[:10]
+    assert reported > 0
 
 
 # -- Reading.languages (3.0, 4a's follow-up): the files holding it ------

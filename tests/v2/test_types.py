@@ -333,10 +333,15 @@ def test_derived_views_filter_on_stable_particle_tag() -> None:
     ("Smith, John, Jr.; MD", "Jr.;", "MD"),
     ("John Smith, III; MD", "III;", "MD"),
     ("John Smith, V; MD", "V;", "MD"),
+    # a control: no generation word carries the delimiter, so this
+    # read alike before the glued stem's kind was read
     ("John Smith, MD; Jr.", "Jr.", "MD;"),
-    # before the first comma C10 reads the delimiter as the word's, so
-    # the word is no generation word there (rules/R8's Accepted)
+    # a word read by its period-joined chunks ('Jr.' and ';', as
+    # 'Lt.Gov.' is read) has no kind of its own, so it is a credential,
+    # one made only of generation words included (rules/R8's Accepted)
     ("John Smith Jr.; MD", "", "Jr.; MD"),
+    ("John Smith Jr.III", "", "Jr.III"),
+    ("John Smith, Jr.III", "", "Jr.III"),
     # an agnomen is a generation; an honorific, a credential
     ("Pedro Alves Filho", "Filho", ""),
     ("王小明先生", "", "先生"),

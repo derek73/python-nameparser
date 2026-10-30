@@ -41,10 +41,16 @@
   "John Smith, Jr. and MD"    →  generation="Jr. and"
   ```
 - A suffix word with no reading, one that `replace()` or `Parser.revise()` wrote or in a name unpickled from 2.x, is in the credentials whatever it is, since nothing records what it was read as.
-- A word with a delimiter glued on keeps it in the view, as the suffix keeps it (C10), so the view can end in the delimiter; and before the first comma, where C10 reads the delimiter as part of the word, a generation word with one glued on is not read as the generation word and is in the credentials.
+- A word with a delimiter glued on keeps it in the view, as the suffix keeps it (C10), so the view can end in the delimiter.
   ```
   "John Smith, Jr.; MD"       →  generation="Jr.;"
+  ```
+- A suffix word read by its period-joined chunks, as a title written `Lt.Gov.` is, is listed whole by no suffix word, so it has no kind of its own and is in the credentials, a word made only of generation words included; before the first comma a period-written generation word with a delimiter glued on reaches the suffix only this way, while one written without the period stays a name word.
+  ```
+  "John Smith Jr.III"         →  credentials="Jr.III"
+  "John Smith, Jr.III"        →  credentials="Jr.III"
   "John Smith Jr.; MD"        →  credentials="Jr.; MD"
+  "John Smith Jr; MD"         →  family="Jr;"
   ```
 - A name word in the suffix, one a run took in by where it stands, is in the credentials, the catch-all.
   ```
