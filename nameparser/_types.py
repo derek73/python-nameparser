@@ -347,7 +347,8 @@ def _guarded_getstate(self: object) -> dict[str, object]:
 #: before the release lacks it, and loads with the default (2.7, #752).
 #: A field without the key -- every field a type shipped with -- is
 #: still required, default or not, so a pickle missing `Token.tags` is
-#: refused as it always was.
+#: refused as it always was. Lexicon's own guard reads the same string
+#: as `_lexicon._ADDED_IN` (3.0, #959), layering keeping it from this one.
 ADDED_IN = "nameparser.added_in"
 
 
