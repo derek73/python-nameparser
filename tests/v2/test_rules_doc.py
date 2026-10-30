@@ -14,6 +14,7 @@ import pytest
 
 from nameparser import Parser, parse, parser_for
 from nameparser import locales
+from nameparser._lexicon import Lexicon
 from nameparser._policy import Policy
 from tests.v2.design_docs import RULES_DIR, read_rules_text
 from tests.v2.rules_doc import (
@@ -183,11 +184,12 @@ def _check_diagnostic(example: Example) -> None:
             fn()
 
 
-def _pieces(text: str, policy: Policy | None) -> list[list[str]]:
+def _pieces(text: str, policy: Policy | None,
+            lexicon: Lexicon | None = None) -> list[list[str]]:
     from nameparser._pipeline import run
     from nameparser._pipeline._state import ParseState
     from nameparser._parser import Parser as _P
-    p = _P(policy=policy) if policy is not None else _P()
+    p = _P(policy=policy or Policy(), lexicon=lexicon or Lexicon.default())
     state = run(ParseState(original=text, lexicon=p.lexicon,
                            policy=p.policy, segmenter=None))
     return [[state.tokens[i].text for i in piece]
@@ -196,12 +198,16 @@ def _pieces(text: str, policy: Policy | None) -> list[list[str]]:
 
 def _run(example: Example) -> object:
     policy: Policy | None = None
+    lexicon: Lexicon | None = None
     locale: str | None = None
     if example.annotation is not None:
         kind, obj = resolve_annotation(example.annotation)
         if kind == "policy":
             assert isinstance(obj, Policy)
             policy = obj
+        elif kind == "config":
+            assert isinstance(obj, tuple)
+            policy, lexicon = obj
         elif kind == "locale":
             assert isinstance(obj, str)
             assert obj != "ja", (
@@ -215,9 +221,12 @@ def _run(example: Example) -> object:
             assert isinstance(obj, str)
             locale = obj
     if example.field == "pieces":
-        return _pieces(example.text, policy)
+        return _pieces(example.text, policy, lexicon)
     if locale is not None:
         parsed = parser_for(locales.get(locale)).parse(example.text)
+    elif lexicon is not None:
+        parsed = Parser(policy=policy or Policy(),
+                        lexicon=lexicon).parse(example.text)
     elif policy is not None:
         parsed = Parser(policy=policy).parse(example.text)
     else:

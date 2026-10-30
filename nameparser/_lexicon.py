@@ -28,7 +28,7 @@ _VOCAB_FIELDS = (
     "given_name_abbreviations",
     "maiden_markers", "surnames", "honorific_tails", "after_given_titles",
     "suffix_words_ambiguous", "agnomens", "titles_ambiguous",
-    "title_modifiers", "title_styles", "title_phrases",
+    "title_modifiers", "title_styles", "title_phrases", "given_names",
 )
 
 #: The metadata key a Lexicon field added after `Lexicon` first shipped
@@ -780,6 +780,19 @@ class Lexicon:
     #: list:
     #: :data:`~nameparser.config.titles.TITLE_PHRASES`.
     title_phrases: frozenset[str] = frozenset()
+    #: Given names read by two-family-name handling alone
+    #: (:attr:`Policy.two_family_names
+    #: <nameparser.Policy.two_family_names>`, rules/O6): the word that
+    #: rule would take into the family stays where it is when listed, so
+    #: "José Luis Pérez" keeps family "Pérez". A word matches as
+    #: written or with its acute and grave accents and diaeresis
+    #: dropped (the tilde on n and the cedilla on c kept), so an entry
+    #: written "jose" matches "José" too. No other rule reads it, and
+    #: the default is empty: a pack carries the list for its language.
+    #: Added in 3.0, so a Lexicon pickled by 2.x loads with it empty,
+    #: which is what an older pickle means: no pack filled it then.
+    given_names: frozenset[str] = field(
+        default=frozenset(), metadata={_ADDED_IN: "3.0.0"})
     #: Lowercase word -> case mask used by capitalized(): the word's
     #: own letters and digits, each in the case it takes ("phd" ->
     #: "PhD"), laid over the word as written, so the one entry

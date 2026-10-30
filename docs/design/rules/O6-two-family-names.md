@@ -8,6 +8,8 @@
   ```
   "Gabriel García Márquez"  two_family_names  →  family="García Márquez"
   "Ana María García López"  two_family_names  →  middle="María"
+  "Ana Martín López"  two_family_names+es_given_names  →  family="Martín López"
+  "Ana de Miguel de la Vega"  two_family_names+es_given_names  →  family="de Miguel de la Vega"
   ```
 - **Under a family-first order** the word after the family joins it, and what is left is laid out as the positions after a family, as P1's family-first fold lays out its own remainder.
   ```
@@ -57,8 +59,12 @@
   ```
   ", Ana García López"  two_family_names  →  family=""
   ```
-- **What is taken must be one name word a family name could be**: a part counting as two words (a hyphenated given name, a bound given-name pair, P5) stays where it is, and so do an initial written alone, which writes a given name, and a mark or number with no letter in it. A particle chain (P2) is never split, so where taking it would leave no given name the rule declines.
+- **What is taken must be one name word a family name could be**: a part counting as two words (a hyphenated given name, a bound given-name pair, P5) stays where it is, and so do an initial written alone, which writes a given name, and a mark or number with no letter in it. A particle chain (P2) is never split, so where taking it would leave no given name the rule declines. A listed given name stays where it is too, under either order, and a list written without accents matches the word written with them: the caller's vocabulary names it a word only a given name is, so the name holds one family name. A word common in both roles is not listed, and a listed word behind a particle is a surname unit, so either is taken as before.
   ```
+  "José Luis Pérez"  two_family_names+es_given_names  →  family="Pérez"
+  "Jose Luis Perez"  two_family_names+es_given_names  →  middle="Luis"
+  "Pérez José Luis"  family-first+two_family_names+es_given_names  →  family="Pérez"
+  "Pérez Luis José"  family-first-given-last+two_family_names+es_given_names  →  family="Pérez"
   "Ana María-José López"  two_family_names  →  family="López"
   "Ana abdul Rahman López"  two_family_names  →  family="López"
   "Ana M. García"  two_family_names  →  family="García"
@@ -114,8 +120,12 @@
   ```
   "Ana María van der Berg"  two_family_names  →  family="María van der Berg"
   ```
+- A listed given name that is also someone's first surname stays a middle name, the listing saying which role the word mostly fills and not which it fills here.
+  ```
+  "Ana Jorge Flores"  two_family_names+es_given_names  →  family="Flores"
+  ```
 - The rule reports nothing: the caller declared the convention, as a declared order is followed without a report, and a report on most names of three words or more would teach the caller to ignore the field.
 
 ---
-**Signal:** none in the name: a caller switch, the family's words and the taken word's shape read as written to see whether the family already holds two
+**Signal:** none in the name: a caller switch, the family's words and the taken word's shape read as written to see whether the family already holds two, and the taken word's listing as a given name
 **history:** decisions/O6 · **implemented:** nameparser/_pipeline/_post_rules.py

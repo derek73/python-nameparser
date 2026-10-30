@@ -1163,20 +1163,53 @@ def composed_len(text: str) -> int:
     return len(text if text.isascii() else unicodedata.normalize("NFC", text))
 
 
+#: The marks a given-name key keeps: the tilde on n and the cedilla on
+#: c, which spell other letters in Spanish and Catalan (Peña, Llorenç),
+#: where an acute or grave accent or a diaeresis is how the same name
+#: is spelled with or without them (José, Jose).
+_KEPT_MARKS = frozenset({("n", "\u0303"), ("c", "\u0327")})
+
+
+def given_name_key(text: str) -> str:
+    """`text` folded as `Lexicon.given_names` is matched: the
+    `_normalize` fold, with the accents and the diaeresis dropped and
+    the tilde on n and the cedilla on c kept. tools/es_given_names.py
+    writes the list with this same fold."""
+    out: list[str] = []
+    for ch in unicodedata.normalize("NFD", _normalize(text)):
+        if unicodedata.combining(ch) and not (
+                out and (out[-1], ch) in _KEPT_MARKS):
+            continue
+        out.append(ch)
+    return unicodedata.normalize("NFC", "".join(out))
+
+
+def is_listed_given_name(text: str, lexicon: Lexicon) -> bool:
+    """Whether `text` is in `lexicon.given_names`, as written or by
+    `given_name_key`, so a caller's entry "José" matches as written
+    and a list written without accents matches "José" too (rules/O6's
+    veto, #959)."""
+    names = lexicon.given_names
+    return bool(names) and (_normalize(text) in names
+                            or given_name_key(text) in names)
+
+
 def in_any_wordlist(n: str, lexicon: Lexicon) -> bool:
     """Whether the folded word `n` is in ANY of the lexicon's wordlists
-    (`_lexicon._VOCAB_FIELDS`, the whole roster but two): the caps
+    (`_lexicon._VOCAB_FIELDS`, the whole roster but four): the caps
     shape's "unlisted" (`caps_shape_candidate`), where a word a caller
     listed even as a SURNAME must never become a credential.
 
-    The three left out: `title_phrases`, whose entries are two words and
+    The four left out: `title_phrases`, whose entries are two words and
     so never one; `titles_ambiguous`, a title that may be a given
     name, which outside a title phrase is read as the unlisted word it
     is there (rules/H9: "and elsewhere a name word") -- a phrase is two
     words and a comma part read by this shape is one; and
     `given_name_abbreviations`, a given name written short (#789),
     whose one reader is H2's shape, so anywhere else its word reads as
-    the unlisted word it is ('John Smith, JAS' keeps suffix 'JAS')."""
+    the unlisted word it is ('John Smith, JAS' keeps suffix 'JAS');
+    and `given_names`, whose one reader is O6 (#959), for the same
+    reason ('Ana Pérez, LUIS' reads as with the list empty)."""
     for field in _LISTED_FIELDS:
         if n in getattr(lexicon, field):
             return True
@@ -1185,7 +1218,8 @@ def in_any_wordlist(n: str, lexicon: Lexicon) -> bool:
 
 _LISTED_FIELDS = tuple(f for f in _VOCAB_FIELDS
                        if f not in ("title_phrases", "titles_ambiguous",
-                                    "given_name_abbreviations"))
+                                    "given_name_abbreviations",
+                                    "given_names"))
 
 
 #: The wordlists that claim a word as something OTHER than name text.
@@ -1194,7 +1228,7 @@ _LISTED_FIELDS = tuple(f for f in _VOCAB_FIELDS
 #: `titles_ambiguous`, a title that may be a given name (rules/H9), with
 #: `title_phrases`, whose two-word entries never match one word; and so
 #: is `given_name_abbreviations`, a given name written short (#789), left
-#: out of `_LISTED_FIELDS` above.
+#: out of `_LISTED_FIELDS` above, with `given_names` (#959).
 _NON_NAME_FIELDS = tuple(f for f in _LISTED_FIELDS
                          if f not in ("surnames", "bound_given_names"))
 

@@ -10,6 +10,10 @@
 - The switch runs before `middle_as_family` and is not refused beside it: given-first, the two together read as `middle_as_family` alone — 2026-10-24 #754.
 - The switch reports nothing — 2026-10-24 #754.
 - The switch reports no alternative either, so the reading it did not take is not surfaced: the caller declared the convention — 2026-10-27 #752 (Derek).
+- A listed given name (`Lexicon.given_names`) standing alone is not taken, under every order, and the name then reads as with the switch off; a listed word behind a particle is taken as before, and with the list empty the switch reads as before; no other rule reads the list, the default carries none, and the veto reports nothing — 2026-10-30 #959.
+- The list a pack carries for Spanish is generated, not per-word vocabulary: INE's 2025 census tables, pooled over every name borne in Spain, cut at a measured rank (1,000 words, 90% given use) by `tools/es_given_names.py`; a change to it is a cutoff change — 2026-10-30 #959.
+
+Open: hyphenated surnames block the switch (`Andrés Sánchez-Cid Torres` keeps `Sánchez-Cid` a middle name), 271 of the 466 Spanish records the issue's held-out per-country list still read wrong (measured on the issue, 2026-10-30) — #959. No rule example shows both switches on over a given name a particle completes (`María del Carmen de la Vega`, given `María del Carmen` under O7 alone and family `del Carmen de la Vega` with O6 on too) — #959.
 
 ## Log
 
@@ -59,3 +63,57 @@
   Measured on master at 598167f4 over the 2025 Public Data File's extract fetched 2026-10-27. Recompute: `local_agreement.read` per record of `local_corpora.load("orcid-researchers")` with `FIELDED["orcid-researchers"]`, under `Parser()` and under `Parser(policy=Policy(two_family_names=True))` with `_title_words` of the default lexicon, grouped by the record's `country`; a record is fixed where it agrees only with the switch, broken where it agrees only without it, and the last column counts the broken records whose `family` box holds one word. A corpus capped at 20,000 records a country shows each country's convention, not how many people write it.
 
 - 2026-10-29 #754, sub-phase 4d — THE TWO UNITS THIS RULE READS REACH A VIEW: `surname2` holds the one written second, `family` keeping both as before, and the rule marks that unit's words where it takes its word; nothing it reads or declines moved. The view, the mark and their measurement are rules/R10 and decisions/R10's 2026-10-29 entry.
+- 2026-10-30 #959 — A LISTED GIVEN NAME IS NOT TAKEN: an amendment to rules/O6's Except bullet "What is taken must be one name word a family name could be", not a new rule. In `José Luis Pérez` the word the switch takes is a given name, and that shape is most of what the switch gets wrong (the 2026-10-27 entry: the records it breaks nearly all hold a one-word family box). A Spanish reader settles it by vocabulary: given names are a concentrated set and few words are common in both roles, so a word only a given name is says the name holds one family name. The rule reads `Lexicon.given_names`, empty by default, and a pack carries the list; with the list empty the switch reads exactly as before (the snapshot gains the rule's example texts and moves no reading).
+  What it settles, and why each way:
+  - **Where the list lives: generated, as locales.ZH's surnames are.** `nameparser/locales/_es_given_names.py` holds the list in a block `tools/es_given_names.py` writes, for the `es` pack (sub-phase 3g of #754) to carry as a lexicon fragment, `Lexicon(given_names=GIVEN_NAMES)`. Weighed against: `given` readings in an `es` language file, which per-word TOML would carry a thousand words judged one at a time, where what is decided is a cutoff; the evidence for the set is the tool's docstring and this entry, and a change to it is decided as a cutoff change, as ZH's top 300 is (decisions/W1). The TOML build's check 11, which refuses a given reading on a word another reading claims as no name, is replaced by a test holding the list disjoint from the default's never-given particles, titles, suffixes and conjunctions (tests/v2/test_es_given_names.py, with its recorded negative control); the tool leaves every particle out.
+  - **The source: INE.** The Instituto Nacional de Estadística publishes every given name borne by at least 20 residents of Spain, by sex, and every surname borne as a first surname by at least 20, with its counts as first and second surname, both from the census of 1 January 2025. Its legal notice licenses the site's statistics as "la Creative Commons Reconocimiento 4.0 (CC BY 4.0)" (https://www.ine.es/aviso_legal, read 2026-10-30), asking the reuser to cite "Elaboración propia con datos extraídos del sitio web del INE: www.ine.es" and the date of the data, which the module's docstring does. A word's given uses are the bearers of the names holding it; its surname uses, the bearers of the surnames holding it, less those holding it behind a particle (`de Miguel`), which the switch never takes as the bare word (with them counted, `Miguel` is 89% given and falls out; without, 92%). A word is a candidate where at least 90% of its uses are given, #959's share; INE writes names without acute accents, so the parse matches a word with its accents and diaeresis dropped and the tilde on n and the cedilla on c kept (`given_name_key`), and a caller's entry also as written. Words common in both roles stay out (`Martín` 10% given, `Vicente` 63%, `Santiago` 57%, `Cruz` 18%). Weighed against: a list built from ORCID's boxes, which #959 measured on a held-out half; INE is licensed for redistribution, counts a whole population rather than researchers, and is not the population scored, so no held-out split is needed.
+  - **One pooled list, Spain's.** INE counts Spain's residents, Latin American-born ones among them, and #959 found a list pooled over six countries within half a point of per-country lists everywhere but Argentina and Peru. Peru is where the pooled list costs most: there it fixes about as many records as it breaks at every cutoff, the breaks being first surnames that are given names in Spain (`Jorge` 12, `Carlos` 11, `Pablo` 6 at the 1,000 cut), where #959's per-country list, learned from Peru's own boxes, broke 58.
+  - **The cutoff: 1,000 words** (84.3% of the given-word uses in INE's table). Measured per country with O6 on, the list cut at 100 to all 16,559 candidates; agreement in each of the six double-surname countries is within 0.3 points of the 2,000-word list at 1,000 (Venezuela the 0.3), and a band past it buys at most a tenth of a net fix per added word in those six (1,000 → 2,000: 134 fixed, 35 broken; 2,000 → 5,000: 128 fixed, 36 broken, Chile breaking as many as it fixes), where the first hundred words bought sixteen. Argentina gains 1.6 points more by 2,000 and 2.4 by all, which 3g weighs if it turns the switch on there.
+  - **Family-first, symmetric.** Under a family-first order the switch takes the unit after the family, and a listed one stays where it is: `Pérez José Luis` keeps family `Pérez`. No population the corpora hold writes Spanish names family-first with the fields stated, so it is measured on ORCID's boxes rendered family box first, which is a rendering, not anyone's writing.
+  - **A bare word only.** The veto reads a unit that is one word with no particle; a listed word behind a particle is a surname unit and is taken as before (`Ana de Miguel de la Vega` keeps family `de Miguel de la Vega`), which is what the tool's count assumes in leaving such surnames out. The first draft read the word inside a particle unit too, and the design-docs review found it reading `Ana de Miguel de la Vega` middle `de Miguel`.
+  - **O7.** With both switches on, the word O6 leaves is a middle O7 takes where it stands beside the given name, so `José Luis Pérez` reads given `José Luis`, family `Pérez` (rules/O7's precedence); `Ana María Luis Pérez` keeps middle `Luis`, O7 taking `María`. Whether O7 reads the list itself is decisions/O7's Open question.
+  - **No report**, as for the switch (the 2026-10-24 entry): the caller declared the convention and the list.
+  - **Pickling.** The field carries `_ADDED_IN` "3.0.0" and an empty default, so a `Lexicon`, `Parser` or locale pack pickled by 2.x loads with no list. That is what such a pickle meant, no pack filling the field before 3.0, so this field is the case decisions/A1's 2026-10-30 caveat does not reach: the silent drift it warns of comes from a marked field the default vocabulary fills, and the default leaves this one empty. `tests/v2/test_lexicon.py` loads the committed 2.8.0 pickle with the field empty, and refuses it with the marker taken off.
+  Measured 2026-10-30 on the branch, the 2025 Public Data File extract fetched 2026-10-27 (`orcid-researchers`), every record with both boxes filled; all boxes agreeing, by default, with the switch, and with the switch and the 1,000-word list, and the records the list fixes and breaks against the switch alone:
+
+  | Country | Records | Default | Switch | Switch + list | Fixed | Broken |
+  |---|---:|---:|---:|---:|---:|---:|
+  | ES | 19,527 | 48.8% | 93.4% | 95.3% | 434 | 60 |
+  | MX | 19,527 | 31.9% | 93.9% | 95.0% | 336 | 122 |
+  | CO | 19,359 | 24.1% | 94.5% | 97.0% | 561 | 78 |
+  | PE | 19,471 | 13.5% | 96.0% | 95.9% | 178 | 189 |
+  | CL | 19,363 | 46.9% | 94.9% | 97.3% | 495 | 25 |
+  | VE | 19,111 | 38.7% | 89.1% | 93.2% | 849 | 73 |
+  | AR | 19,377 | 82.5% | 61.2% | 89.3% | 5,500 | 59 |
+  | EC | 19,274 | 25.9% | 95.0% | 96.3% | 354 | 88 |
+  | BO | 15,319 | 20.7% | 94.9% | 96.1% | 297 | 111 |
+  | CU | 19,055 | 16.1% | 93.9% | 94.2% | 213 | 148 |
+  | UY | 7,645 | 61.8% | 93.2% | 97.0% | 308 | 16 |
+
+  By cutoff, all boxes agreeing with the switch and the list:
+
+  | Country | 100 | 200 | 500 | 1,000 | 2,000 | 5,000 | 16,559 |
+  |---|---:|---:|---:|---:|---:|---:|---:|
+  | ES | 94.9% | 95.0% | 95.2% | 95.3% | 95.4% | 95.4% | 95.5% |
+  | MX | 94.5% | 94.8% | 94.9% | 95.0% | 95.0% | 95.2% | 95.2% |
+  | CO | 96.0% | 96.4% | 96.9% | 97.0% | 97.1% | 97.1% | 97.2% |
+  | PE | 95.9% | 96.0% | 95.9% | 95.9% | 95.9% | 96.0% | 95.9% |
+  | CL | 96.6% | 97.0% | 97.2% | 97.3% | 97.3% | 97.3% | 97.3% |
+  | VE | 92.0% | 92.7% | 93.0% | 93.2% | 93.5% | 93.7% | 93.8% |
+  | AR | 77.3% | 83.2% | 86.8% | 89.3% | 90.9% | 91.5% | 91.7% |
+
+  The records each cut fixes and breaks against the switch alone, which is what chose the cut:
+
+  | Country | 100 | 200 | 500 | 1,000 | 2,000 | 5,000 | 16,559 |
+  |---|---:|---:|---:|---:|---:|---:|---:|
+  | ES | 340 / 44 | 373 / 51 | 408 / 57 | 434 / 60 | 448 / 63 | 461 / 63 | 476 / 64 |
+  | MX | 207 / 84 | 270 / 92 | 310 / 114 | 336 / 122 | 350 / 130 | 378 / 137 | 392 / 146 |
+  | CO | 351 / 52 | 435 / 62 | 532 / 74 | 561 / 78 | 582 / 84 | 598 / 86 | 610 / 91 |
+  | PE | 105 / 117 | 136 / 139 | 161 / 172 | 178 / 189 | 196 / 201 | 220 / 213 | 227 / 233 |
+  | CL | 350 / 12 | 425 / 13 | 468 / 21 | 495 / 25 | 502 / 27 | 511 / 36 | 515 / 47 |
+  | VE | 590 / 44 | 741 / 54 | 805 / 64 | 849 / 73 | 909 / 77 | 947 / 83 | 973 / 88 |
+  | AR | 3,164 / 35 | 4,308 / 41 | 5,014 / 49 | 5,500 / 59 | 5,820 / 63 | 5,948 / 65 | 5,985 / 69 |
+
+  The same boxes rendered family box first, read under FAMILY_FIRST on both sides: ES 47.6% → 91.4% → 94.5% (681 fixed, 68 broken), MX 31.4% → 94.6% → 96.3% (465, 132), CO 23.9% → 94.5% → 97.6% (640, 46), PE 12.6% → 95.9% → 95.9% (203, 205), CL 46.3% → 93.4% → 97.0% (729, 38), VE 38.5% → 88.6% → 93.3% (949, 44), AR 82.3% → 59.8% → 90.8% (6,068, 53).
+  PSC (`psc-individuals`, the fetch recorded on #849), a second population the list was not built from, by nationality, default → switch → switch and list, fixed and broken: Spanish 6,089 records 31.8% → 80.2% → 82.2% (150, 31), Mexican 402 25.9% → 80.1% → 82.1% (13, 5), Colombian 377 29.2% → 84.4% → 87.0% (15, 5), Venezuelan 237 40.5% → 75.9% → 80.6% (13, 2), Chilean 151 35.1% → 77.5% → 84.8% (12, 1), Peruvian 116 21.6% → 81.0% → 83.6% (5, 2), Argentine 320 81.9% → 45.6% → 81.9% (121, 5).
+  Recompute: `uv run --with openpyxl --with xlrd python tools/es_given_names.py --top N` writes the list for a cutoff (`--write`) and prints its coverage. For ORCID, `local_agreement.read` per record of `local_corpora.load("orcid-researchers")` with `FIELDED["orcid-researchers"]`, records with both boxes, grouped by `country`, under `Parser()`, `Parser(policy=Policy(two_family_names=True))` and that policy with `lexicon=Lexicon.default().add(given_names=...)` holding the tool's first N words, each with `_title_words` of its own lexicon; family-first, the record's `name` replaced by `family + " " + given` and each policy given `name_order=FAMILY_FIRST`. For PSC, `local_agreement.score(rows, FIELDED["psc-individuals"], parser, jobs=1)` over the records whose `group_of` is the nationality, each cell a group's `agreed` over its `scored`. A record is fixed where it agrees only with the list, broken where it agrees only without it. The comparator is the switch alone on the same tree; `local_agreement.py orcid-researchers --base` and `psc-individuals --base` against master match the base, the default reading no list.

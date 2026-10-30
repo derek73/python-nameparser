@@ -173,6 +173,27 @@ POLICIES: dict[str, Policy] = {
     "extra_suffix_delimiters-pipe": Policy(
         extra_suffix_delimiters=frozenset({" | "})),
 }
+from nameparser._lexicon import Lexicon  # noqa: E402
+from nameparser.locales._es_given_names import GIVEN_NAMES  # noqa: E402
+
+#: Named policies with a lexicon fragment beside them, for a rule that
+#: reads a Lexicon field the default leaves empty: rules/O6's veto
+#: reads ``given_names``, which a pack carries (#959). The annotation
+#: is the policy's name above plus the fragment's, ``es_given_names``
+#: naming the list ``nameparser/locales/_es_given_names.py`` ships, so
+#: a rule names the data as it names the switch.
+_ES_GIVEN = Lexicon.default().add(given_names=GIVEN_NAMES)
+CONFIGS: dict[str, tuple[Policy, Lexicon]] = {
+    "two_family_names+es_given_names": (
+        POLICIES["two_family_names"], _ES_GIVEN),
+    "family-first+two_family_names+es_given_names": (
+        POLICIES["family-first+two_family_names"], _ES_GIVEN),
+    "family-first-given-last+two_family_names+es_given_names": (
+        POLICIES["family-first-given-last+two_family_names"], _ES_GIVEN),
+    "two_family_names+two_given_names+es_given_names": (
+        POLICIES["two_family_names+two_given_names"], _ES_GIVEN),
+}
+
 #: D-section subjects: zero-arg constructions whose diagnostics the
 #: warns=/raises= assertion forms exercise.
 def _segmenterless_ja() -> object:
@@ -205,6 +226,8 @@ _LOCALE_ANNOT_RE = re.compile(r"\[[a-z_]{2,5}\]")
 def resolve_annotation(annot: str) -> tuple[str, object]:
     if annot in POLICIES:
         return "policy", POLICIES[annot]
+    if annot in CONFIGS:
+        return "config", CONFIGS[annot]
     if annot in GATES:
         return "gated_locale", GATES[annot][0]
     if _LOCALE_ANNOT_RE.fullmatch(annot):

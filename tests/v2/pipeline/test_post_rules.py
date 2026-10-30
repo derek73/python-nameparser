@@ -1,5 +1,7 @@
 import dataclasses
+import json
 import sys
+from pathlib import Path
 
 import pytest
 
@@ -12,6 +14,7 @@ from nameparser._pipeline._state import ParseState
 from nameparser._policy import (FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST,
                                 GIVEN_FIRST, PatronymicRule, Policy,
                                 Script)
+from nameparser.locales._es_given_names import GIVEN_NAMES
 from nameparser._types import (FOLDED_TAG, STABLE_TAGS,
                                UNJOINED_CONJUNCTION_TAG, UNJOINED_TAG,
                                AmbiguityKind, Role)
@@ -1296,3 +1299,129 @@ def test_two_family_names_counts_every_listed_hyphen_as_two_words(
                   Policy(two_family_names=True))
     assert _by_role(out, Role.MIDDLE) == "María"
     assert _by_role(out, Role.FAMILY) == f"García{hyphen}López"
+
+
+#: rules/O6's given-name veto (#959) reads Lexicon.given_names, which
+#: the default leaves empty; these rows carry the list a pack ships.
+_ES_GIVEN = Lexicon.default().add(given_names=GIVEN_NAMES)
+
+
+def _roles(text: str, policy: Policy, lexicon: Lexicon) -> tuple[str, ...]:
+    name = Parser(policy=policy, lexicon=lexicon).parse(text)
+    return name.given, name.middle, name.family
+
+
+#: Each row's reading with the switch alone and with the list beside
+#: it: the second column is the veto's negative control, recorded so a
+#: row the veto never reaches cannot pass as one it decides (AGENTS.md,
+#: "Guard tests"). Rows whose two columns agree are the shapes the veto
+#: must leave alone: a family comma, an empty head, a word the list does
+#: not hold, and a taken unit that already counts as two words.
+_VETO_EFFECT = [
+    ("José Luis Pérez", GIVEN_FIRST,
+     ("José", "", "Luis Pérez"), ("José", "Luis", "Pérez")),
+    ("Jose Luis Perez", GIVEN_FIRST,
+     ("Jose", "", "Luis Perez"), ("Jose", "Luis", "Perez")),
+    ("JOSÉ LUIS PÉREZ", GIVEN_FIRST,
+     ("JOSÉ", "", "LUIS PÉREZ"), ("JOSÉ", "LUIS", "PÉREZ")),
+    ("José Lúis Pérez", GIVEN_FIRST,
+     ("José", "", "Lúis Pérez"), ("José", "Lúis", "Pérez")),
+    # NFD: the accent a combining mark, dropped by the key as the
+    # composed one is
+    ("José Luís Pérez", GIVEN_FIRST,
+     ("José", "", "Luís Pérez"),
+     ("José", "Luís", "Pérez")),
+    ("Dr. José Luis Pérez Jr.", GIVEN_FIRST,
+     ("José", "", "Luis Pérez"), ("José", "Luis", "Pérez")),
+    ("José (Pepe) Luis Pérez", GIVEN_FIRST,
+     ("José", "", "Luis Pérez"), ("José", "Luis", "Pérez")),
+    ("José Luis Pérez, PhD", GIVEN_FIRST,
+     ("José", "", "Luis Pérez"), ("José", "Luis", "Pérez")),
+    ("José Luis de la Vega", GIVEN_FIRST,
+     ("José", "", "Luis de la Vega"), ("José", "Luis", "de la Vega")),
+    ("Pérez José Luis", FAMILY_FIRST,
+     ("Luis", "", "Pérez José"), ("José", "Luis", "Pérez")),
+    ("Pérez Luis José", FAMILY_FIRST_GIVEN_LAST,
+     ("José", "", "Pérez Luis"), ("José", "Luis", "Pérez")),
+    ("Pérez, José Luis", GIVEN_FIRST,
+     ("José", "Luis", "Pérez"), ("José", "Luis", "Pérez")),
+    ("Luis, José Pérez", GIVEN_FIRST,
+     ("José", "Pérez", "Luis"), ("José", "Pérez", "Luis")),
+    (", José Luis Pérez", GIVEN_FIRST,
+     ("José", "Luis Pérez", ""), ("José", "Luis Pérez", "")),
+    ("Ana Martín López", GIVEN_FIRST,
+     ("Ana", "", "Martín López"), ("Ana", "", "Martín López")),
+    ("Ana María-Luis López", GIVEN_FIRST,
+     ("Ana", "María-Luis", "López"), ("Ana", "María-Luis", "López")),
+    ("José Luis Pérez-García", GIVEN_FIRST,
+     ("José", "Luis", "Pérez-García"), ("José", "Luis", "Pérez-García")),
+    # a listed word behind a particle is a surname unit, taken as
+    # before (the #959 review: the first draft left `de Miguel`)
+    ("Ana de Miguel de la Vega", GIVEN_FIRST,
+     ("Ana", "", "de Miguel de la Vega"), ("Ana", "", "de Miguel de la Vega")),
+]
+
+
+@pytest.mark.parametrize("text,order,switch_alone,with_list", _VETO_EFFECT,
+                         ids=[row[0] for row in _VETO_EFFECT])
+def test_two_family_names_leaves_a_listed_given_name(
+        text: str, order: tuple[Role, Role, Role],
+        switch_alone: tuple[str, ...], with_list: tuple[str, ...]) -> None:
+    policy = Policy(name_order=order, two_family_names=True)
+    assert _roles(text, policy, Lexicon.default()) == switch_alone
+    assert _roles(text, policy, _ES_GIVEN) == with_list
+
+
+def test_the_veto_counts_its_rows() -> None:
+    # The table is the veto's negative control only while some row moves
+    # under it and some does not, in both families of order.
+    moved = [r for r in _VETO_EFFECT if r[2] != r[3]]
+    assert {r[1] for r in moved} == {GIVEN_FIRST, FAMILY_FIRST,
+                                     FAMILY_FIRST_GIVEN_LAST}
+    assert len(moved) == 11 and len(_VETO_EFFECT) - len(moved) == 7
+
+
+def test_the_veto_leaves_the_word_to_two_given_names() -> None:
+    # rules/O7's precedence: O6 reads first, and a listed word it leaves
+    # is the middle O7 then takes
+    both = Policy(two_family_names=True, two_given_names=True)
+    assert _roles("José Luis Pérez", both, Lexicon.default()) == (
+        "José", "", "Luis Pérez")
+    assert _roles("José Luis Pérez", both, _ES_GIVEN) == (
+        "José Luis", "", "Pérez")
+    # ... where it stands beside the given name: a given part of two
+    # units gives O7 the first, and the listed word stays a middle
+    assert _roles("Ana María Luis Pérez", both, _ES_GIVEN) == (
+        "Ana María", "Luis", "Pérez")
+
+
+def test_a_caller_entry_matches_as_written_and_by_its_key() -> None:
+    # An entry with its accent matches the word written with it; one
+    # without matches every spelling, the key dropping the accent.
+    o6 = Policy(two_family_names=True)
+    accented = Lexicon.default().add(given_names={"Lúis"})
+    assert _roles("José Lúis Pérez", o6, accented)[2] == "Pérez"
+    assert _roles("José Luis Pérez", o6, accented)[2] == "Luis Pérez"
+    bare = Lexicon.default().add(given_names={"luis"})
+    for written in ("Luis", "Lúis", "LUIS", "Luís"):
+        assert _roles(f"José {written} Pérez", o6, bare)[2] == "Pérez", written
+
+
+@pytest.mark.parametrize("policy", [
+    pytest.param(Policy(), id="default"),
+    pytest.param(Policy(two_given_names=True), id="two_given_names"),
+    pytest.param(Policy(name_order=FAMILY_FIRST), id="family-first"),
+])
+def test_the_list_reads_nothing_without_two_family_names(
+        policy: Policy) -> None:
+    # Only O6 reads the field, so a lexicon carrying it parses every
+    # rule example as one without it wherever O6 is off.
+    corpus = Path(__file__).parents[3] / "tools" / "differential" / (
+        "corpus_rules.jsonl")
+    texts = [json.loads(line) for line in
+             corpus.read_text(encoding="utf-8").split("\n") if line]
+    plain = Parser(policy=policy)
+    listed = Parser(policy=policy, lexicon=_ES_GIVEN)
+    assert texts
+    assert [t for t in texts
+            if plain.parse(t).as_dict() != listed.parse(t).as_dict()] == []
