@@ -359,11 +359,12 @@ def _take_second_given_name(state: ParseState,
             or not any(ch.isalpha() for i in take for ch in tokens[i].text)
             or not any(ch.isalpha() for i in given for ch in tokens[i].text)):
         return
-    # a patronymic is no given name: a patronymic particle's run, its
-    # reading decided at classify (R9's vocabulary arm), a word an
-    # ending rule a policy turns on reads as one, and a Turkic marker's
-    # father
-    if any(PATRONYMIC_TAG in tokens[i].tags for i in take):
+    # a patronymic is no given name, on either side of the join: a
+    # patronymic particle's run, its reading decided at classify (R9's
+    # vocabulary arm), whether it is the unit taken or the given name
+    # itself; a word an ending rule a policy turns on reads as one; and
+    # a Turkic marker's father
+    if any(PATRONYMIC_TAG in tokens[i].tags for i in take + given):
         return
     rules = state.policy.patronymic_rules
     if rules:

@@ -54,9 +54,10 @@
   "Juan 3 Pérez"  two_given_names  →  middle="3"
   "11 Elizabeth Mcguinness"  two_given_names  →  middle="Elizabeth"
   ```
-- **A patronymic is no given name**: a patronymic particle and the word it names (R9) stay in the middle, and so do a word an ending rule reads as a patronymic, a Turkic marker and the father's name in front of one.
+- **A patronymic is no given name**, on either side of the join: a patronymic particle and the word it names (R9) are neither taken nor completed, and a word an ending rule reads as a patronymic, a Turkic marker and the father's name in front of one stay in the middle.
   ```
   "Ahmad bin Ali bin Hassan"  two_given_names  →  middle="bin Ali"
+  "Ahmad, bin Ali"  two_given_names  →  given="bin"
   "Ivan Ivanovich Ivanov"  east-slavic+two_given_names  →  given="Ivan"
   "Ivan Ivanovich Ivanov"  east-slavic+two_given_names  →  middle="Ivanovich"
   ```
