@@ -79,6 +79,36 @@ jobs:
         files: ./coverage.xml
         fail_ci_if_error: false
 
+  # The suite as a distribution packager runs it: an export of the tree
+  # with no repository and nameparser NOT installed, imported from the
+  # tree alone. The build job's editable install hides a test that
+  # leans on an installed package, and its checkout hides one that
+  # reads git: #949's test passed here only through the install, and
+  # was reported from a packager's build two releases after it landed.
+  # The dev dependencies come from the lock, so this job lists none.
+  source-tree:
+    runs-on: ubuntu-latest
+    env:
+      UV_PYTHON: "3.14"
+    steps:
+    - uses: actions/checkout@v7
+    - name: Install uv
+      uses: astral-sh/setup-uv@v7
+      with:
+        enable-cache: true
+    - name: Export the tree
+      run: |
+        mkdir "$RUNNER_TEMP/export"
+        git archive HEAD | tar -x -C "$RUNNER_TEMP/export"
+    - name: Run Tests
+      working-directory: ${{ runner.temp }}/export
+      run: |
+        uv sync --group dev --no-install-project
+        # The import check first: an installed nameparser would make
+        # this job the build job again, passing for the same reason.
+        uv run --no-sync python -P -c "import importlib.util, sys; sys.exit(importlib.util.find_spec('nameparser') is not None)"
+        uv run --no-sync pytest
+
   # The optional nameparser[ja] segmenter (#272). Its own job, not a
   # matrix entry: the matrix above must keep proving that the package
   # installs and passes with NO third-party dependency at all, which is

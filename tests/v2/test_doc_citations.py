@@ -640,8 +640,12 @@ def test_no_old_design_doc_anchors() -> None:
     """rules.md and decisions.md are folders since #713, cited as
     rules/S2 and decisions/key. An old-form citation written from habit
     would not be read by the citation check at all, so its quote would
-    go unchecked; this keeps the form out of every tracked file."""
-    tracked = subprocess.run(["git", "ls-files"], cwd=REPO, check=True,
+    go unchecked; this keeps the form out of every tracked file. A tree
+    with no repository (a release tarball, the CI job testing one) has
+    no tracked files to read, so it skips."""
+    if not (REPO / ".git").exists():
+        pytest.skip("not a git checkout: no tracked files to read")
+    tracked =subprocess.run(["git", "ls-files"], cwd=REPO, check=True,
                              capture_output=True, text=True).stdout.split()
     problems = []
     for rel in tracked:
