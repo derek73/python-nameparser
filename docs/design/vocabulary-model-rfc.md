@@ -292,7 +292,7 @@ The plan is to keep order a few permutations and make shapes first-class, each o
 
 ### The rules a pack can choose
 
-A language file will hold a `[rules]` table that turns on rules implemented in the core: a default order, patronymic and married-name endings, a surname span, a compound given name. A new rule kind is a core change with a mechanisms.md entry, never code in a pack; the one code hook stays the segmenter. The existing packs fit: ZH and JA turn on segmentation, and RU and TR_AZ become ending rules, whose deviations could then be computed rather than hand-copied. Measured gaps each rule would close (2026-10-19):
+A language file will hold a `[rules]` table that turns on rules implemented in the core: a default order, patronymic and married-name endings, a surname span, a compound given name. A new rule kind is a core change with a mechanisms.md entry, never code in a pack; the one code hook stays the segmenter. The existing packs fit as 4f built them: RU's and TR_AZ's `[rules]` turn on their ending rules, the endings staying in the core with the rule kinds, and their deviations stay hand-copied, a test holding them to the rules each patch turns on; ZH and JA keep their hand-written segmentation patches (decisions/vocabulary-model's 2026-10-29 #754, sub-phase 4f entry, which reverses in part the 2026-10-27 #753 entry's item 10). Measured gaps each rule would close (2026-10-19):
 
 | Rule | Input | Today |
 |---|---|---|
