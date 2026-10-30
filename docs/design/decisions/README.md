@@ -97,6 +97,7 @@ Entry conventions:
 - [O4 — positional assignment and declared order](O4-positional-assignment-and-declared-order.md)
 - [O5 — the lone name word's convention, and reporting it](O5-lone-name-words-convention-and-reporting-it.md)
 - [O6 — two family names](O6-two-family-names.md)
+- [O7 — two given names](O7-two-given-names.md)
 
 ## Scripts & writing systems (W)
 

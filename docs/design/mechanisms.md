@@ -316,6 +316,18 @@ a fork for all ambiguous particles on "Dr. Van Jr.".
 
 **Reach for it when.** Tempted to write "remember to keep X in sync with Y."
 
+## DECLARED-SPAN — a caller switch moves one unit across a part's edge
+
+**Problem shape.** A convention says a part of the name holds two units, a family of two surnames or a given name of two, but written in its order the name is the same string shape as a name whose extra word belongs to the part beside it, so no reading of the words can tell them apart.
+
+**Contract statement.** A part that a convention spans over two units is a caller switch, a `Policy` field off by default that a pack's `[rules]` may turn on, read after the positional assignment: the part takes the ONE unit standing beside it in the part next to it, counted as UNIT-PARTITION counts one, and declines where the part already holds two words, where the unit is not one name word that part could hold, or, outside a family comma, where the order the name was read in is not the one the caller declared; after a family comma the family's switch declines, the comma having decided the family, and the given name's reads the part after it given-first.
+
+**How it works.** Each switch is a post rule that retags in place and never reorders: it reads the roles assign settled, takes the neighbouring part's units as `_units` rebuilds them from the tags, and moves the unit at the shared edge, which in text order already renders where it stands, so no view needs a tag to put it back (a nickname written inside the given part is the one exception, rendered after the joined name: `John "Jack" Fitzgerald Kennedy` under O7 renders `John Fitzgerald "Jack" Kennedy`, every word kept, accepted); only the family's switch under a family-first order, where the unit it takes is the given name's and leaves a remainder to lay out again, retags the rest by `_name_positions`. The two switches read in a fixed order, the family's first (rules/O6) and then the given name's (rules/O7), and compound-family handling (rules/O3) folds what both leave, so turning on more than one reads as each states its precedence and none needs a guard against another. A switch reports nothing, the caller having declared the convention, and a pack turns it on as data: one row in `tools/vocab/build.py`'s `RULE_KEYS` and in `_locale._RULE_VALUES`, its default refused there, so a pack can only turn it on (decisions/vocabulary-model, 2026-10-29 4f; decisions/O7, #704).
+
+**Lives in.** nameparser/_pipeline/_post_rules.py (`_take_second_family_name`, `_take_second_given_name`, and `_family_word_count`, the one count both ask), nameparser/_policy.py (`two_family_names`, `two_given_names`).
+
+**Reach for it when.** A convention moves a part's boundary by one unit and the string cannot show where it falls: make it a switch of this shape rather than a heuristic over the words, and state its precedence against the switches already here.
+
 ## LOCALE-PACKS-PURE-DATA — packs configure, they never compute
 
 **Problem shape.** Language-specific behavior needs a home that cannot drift from the core.

@@ -250,6 +250,8 @@ MUTATIONS = [
     ("rules-flag-not-true", {"ru.toml": _w('[rules]\ntwo_family_names = "yes"')}, "must be `true`"),
     ("rules-flag-an-integer", {"ru.toml": _w('[rules]\ntwo_family_names = 1')}, "must be `true`"),
     ("rules-flag-default", {"ru.toml": _w('[rules]\ntwo_family_names = false')}, "is the default"),
+    # 4g's flag (#704), refused as its default like O6's
+    ("rules-two-given-names-default", {"ru.toml": _w('[rules]\ntwo_given_names = false')}, "is the default"),
     ("rules-order-default", {"ru.toml": _w('[rules]\nname_order = "given-first"')}, "is the default"),
     ("pack-file-without-rules", {"ru.toml": OK}, "locales.RU reads its policy patch"),
     # 1: schema, unknown keys, file names
@@ -513,7 +515,8 @@ def test_every_mutation_starts_from_a_pool_the_checks_accept() -> None:
         # every [rules] key and shape, in a file a pack reads, alone or
         # beside words
         {"ru.toml": _w('[rules]\npatronymic_rules = ["east-slavic", "turkic"]\n'
-                       'name_order = "family-first-given-last"\ntwo_family_names = true')},
+                       'name_order = "family-first-given-last"\ntwo_family_names = true\n'
+                       'two_given_names = true')},
         {"tr.toml": _w('[rules]\nname_order = "family-first"\n\n' + OK.removeprefix("schema = 1\n\n"))},
         {"ja.toml": _w('[[word]]\ntext = "博士"\ncredential = { acronym = false }'),
          "zh.toml": _w('[[word]]\ntext = "博士"\ncredential = { acronym = false }')},
@@ -1300,6 +1303,26 @@ def test_the_rule_tables_agree_with_policy() -> None:
             patch = PolicyPatch(**{key: _locale._RULE_VALUES[key](value)})  # type: ignore[arg-type]
             policy = apply_patch(default, patch)
             assert getattr(policy, key) != getattr(default, key), (key, value)
+
+
+def test_a_two_given_names_table_reaches_the_parse(monkeypatch: pytest.MonkeyPatch) -> None:
+    # 4g (#704): no shipped pack turns rules/O7 on, so the table is
+    # compiled from a fixture and read through rules_patch as a pack's
+    # would be, the compiled module patched for the call
+    import nameparser.config._rules as compiled
+    from nameparser import Parser, Policy, PolicyPatch
+    from nameparser._locale import rules_patch
+
+    pool = build.load({"ru.toml": _w('[rules]\ntwo_given_names = true')})
+    namespace: dict[str, Any] = {}
+    exec(build.render_rules(pool.rules), namespace)
+    monkeypatch.setattr(compiled, "RULES", namespace["RULES"])
+    patch = rules_patch("ru")
+    assert patch == PolicyPatch(two_given_names=True)
+    parser = Parser(policy=Policy().patched(patch))
+    assert parser.parse("Juan Carlos Pérez").given == "Juan Carlos"
+    # and the default reading it moved, for the control
+    assert Parser().parse("Juan Carlos Pérez").given == "Juan"
 
 
 def test_the_pack_roster_names_shipped_packs_their_files_compile_into() -> None:

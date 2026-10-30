@@ -328,10 +328,10 @@ def test_the_2_3_positional_fields_did_not_move() -> None:
         names = tuple(f.name for f in dataclasses.fields(cls))
         assert names[:len(_FIELDS_AT_2_3)] == _FIELDS_AT_2_3, cls.__name__
         # each later cycle's fields appended behind the last: 2.4's two,
-        # then 2.6's two_family_names
+        # then 2.6's two_family_names, then 3.0's two_given_names
         assert names[len(_FIELDS_AT_2_3):] == (
             "unlisted_dotted_suffixes", "unlisted_caps_suffixes",
-            "two_family_names"), cls.__name__
+            "two_family_names", "two_given_names"), cls.__name__
     # the positional binding itself, not just the names
     assert Policy(GIVEN_FIRST, (), frozenset(), frozenset(), False,
                   frozenset(), frozenset(), frozenset(), True,
@@ -899,3 +899,21 @@ def test_unlisted_caps_suffixes_on_reads_an_all_caps_word() -> None:
     assert on.parse("John Smith Z").family == default.parse("John Smith Z").family
     assert on.parse("John Smith XY2").family == "XY2"
     assert on.parse("John Smith MC").suffix == "MC"
+
+
+def test_a_2_8_policy_pickle_loads_without_two_given_names() -> None:
+    """tests/v2/data/policy_v28.pickle is `Policy(two_family_names=True)`
+    pickled (protocol 4) by the released 2.8.0 wheel, from a directory
+    outside the checkout under `PYTHONSAFEPATH=1 uv run --isolated
+    --no-project --with 'nameparser==2.8.0'`, the version and module
+    path printed to show the wheel answered (2026-10-30). 3.0's
+    `two_given_names` (rules/O7, #704) carries ADDED_IN, so the pickle
+    loads with the field's default instead of being refused."""
+    import pickle
+    from pathlib import Path
+
+    with open(Path(__file__).parent / "data" / "policy_v28.pickle",
+              "rb") as f:
+        policy = pickle.load(f)
+    assert policy.two_given_names is False
+    assert policy == Policy(two_family_names=True)

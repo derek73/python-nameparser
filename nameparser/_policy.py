@@ -13,7 +13,8 @@ from enum import Enum, StrEnum, auto
 from typing import Any
 
 from nameparser._types import (
-    FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, GIVEN_FIRST, Role, _coerce_enum,
+    ADDED_IN, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, GIVEN_FIRST, Role,
+    _coerce_enum,
     _guarded_getstate, _guarded_setstate, _reject_bare_string_order,
     _require_iterable, _validated_order,
 )
@@ -715,6 +716,31 @@ class Policy:
     #: before middle_as_family, which then folds whatever middles are
     #: left.
     two_family_names: bool = False
+    #: Reads the given name as two name units, for data where a person
+    #: carries a compound given name and no middle name (rules/O7):
+    #: "Juan Carlos Pérez" gives given ``Juan Carlos``, family
+    #: ``Pérez``, and with ``two_family_names`` too, "María José García
+    #: López" gives given ``María José``, family ``García López``. The
+    #: middle unit beside the given name joins it -- the one after it,
+    #: or the one before it under FAMILY_FIRST_GIVEN_LAST with no family
+    #: comma, after which the part reads given-first -- and any
+    #: middles past that stay middles; a particle chain the parse left
+    #: in the middle counts with its word ("María del Carmen de la
+    #: Vega" gives given ``María del Carmen``), and an initial is taken,
+    #: a given name written short. A given name already holding two
+    #: words keeps what it has (a hyphenated or bound pair), the word
+    #: taken must be one name word, and a word an ending rule reads as a
+    #: patronymic stays where it is. A family comma leaves the given part
+    #: to this rule ("Pérez, Juan Carlos"); a name its script reads in an
+    #: order other than name_order is left alone, as two_family_names
+    #: leaves it. Runs after two_family_names, which takes its word
+    #: first ("Gabriel García Márquez" keeps given ``Gabriel``), and
+    #: before middle_as_family, which then folds whatever middles are
+    #: left. A name whose second given word is a middle name gains it
+    #: in the given name ("John Quincy Adams" gives given ``John
+    #: Quincy``), so it is off by default and reports nothing.
+    two_given_names: bool = field(
+        default=False, metadata={ADDED_IN: "3.0.0"})
 
     # in the class body so @dataclass(slots=True) keeps them
     __getstate__ = _guarded_getstate
@@ -924,6 +950,8 @@ class PolicyPatch:
     unlisted_dotted_suffixes: bool | _Unset = UNSET
     unlisted_caps_suffixes: CapsSuffixes | _Unset = UNSET
     two_family_names: bool | _Unset = UNSET
+    two_given_names: bool | _Unset = field(
+        default=UNSET, metadata={ADDED_IN: "3.0.0"})
 
     # in the class body so @dataclass(slots=True) keeps them
     __getstate__ = _guarded_getstate
@@ -975,7 +1003,8 @@ class PolicyPatch:
             object.__setattr__(self, f.name, frozenset(value))
         # middle_as_family, lenient_comma_suffixes,
         # unlisted_dotted_suffixes, unlisted_caps_suffixes, strip_emoji,
-        # strip_bidi and two_family_names are scalar (compose="override")
+        # strip_bidi, two_family_names and two_given_names are scalar
+        # (compose="override")
         # fields and DELIBERATELY get no type check here, unlike
         # name_order and the union fields above: a
         # PolicyPatch(strip_emoji="off") is constructible, and only raises

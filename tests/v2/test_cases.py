@@ -318,10 +318,11 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # King, Queen, Prince and Princess now reporting title-or-name, and
     # 'Royal Smith', each under three orders; 1448 -> 1451 on 2026-10-28,
     # #913's 'Chancellor Smith', reporting title-or-name under three
-    # orders.
-    assert claims == 1451, (
-        f"the field sweep checks {claims} claims, recorded as 1451 on "
-        f"2026-10-28")
+    # orders; 1451 -> 1452 on 2026-10-30, #954's 'bin Ali Hassan', which
+    # carries its own policy, one particle-or-given claim.
+    assert claims == 1452, (
+        f"the field sweep checks {claims} claims, recorded as 1452 on "
+        f"2026-10-30")
 
 
 #: The kinds that report a fork between two readings of a word, so carry

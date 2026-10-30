@@ -36,6 +36,7 @@
 {"name": ".,"}
 {"name": "1 & 2, 3 4 5, Mr.", "title": "Mr.", "given": "3", "middle": "4 5", "family": "1 & 2", "initials": "3. 4. 5. 1. 2."}
 {"name": "1. née Smith", "given": "1.", "maiden": "Smith", "initials": "1."}
+{"name": "11 Elizabeth Mcguinness", "given": "11", "middle": "Elizabeth", "family": "Mcguinness", "initials": "1. E. M.", "capitalized_force": "11 Elizabeth McGuinness"}
 {"name": "A. D.", "given": "A.", "family": "D.", "initials": "A. D."}
 {"name": "A. R., Sr. Maria García Rosa de la Cruz Jr.", "title": "Sr.", "given": "Maria", "middle": "García Rosa de la Cruz", "family": "A. R.", "suffix": "Jr.", "initials": "M. G. R. C. A. R.", "generation": "Jr."}
 {"name": "A. R., Sr. de la Cruz Maria García Rosa Jr.", "order": "FAMILY_FIRST", "title": "Sr.", "family": "A. R. de la Cruz Maria García Rosa", "suffix": "Jr.", "initials": "A. R. C. M. G. R.", "generation": "Jr."}
@@ -114,9 +115,11 @@
 {"name": "Ahmad al-ʿAbbas", "given": "Ahmad", "family": "al-ʿAbbas", "initials": "A. a."}
 {"name": "Ahmad ben Husain", "given": "Ahmad", "middle": "ben", "family": "Husain", "initials": "A. b. H.", "capitalized_force": "Ahmad Ben Husain"}
 {"name": "Ahmad bin Abdul Rahman", "given": "Ahmad", "family": "bin Abdul Rahman", "initials": "A. A. R.", "patronymic": "bin Abdul Rahman"}
+{"name": "Ahmad bin Ali bin Hassan", "given": "Ahmad", "middle": "bin Ali", "family": "bin Hassan", "initials": "A. A. H.", "patronymic": "bin Ali bin Hassan"}
 {"name": "Ahmad bin Dr. Ali", "given": "Ahmad", "family": "bin Dr. Ali", "initials": "A. D. A.", "patronymic": "bin Dr. Ali"}
 {"name": "Ahmad bin “Bob” Ali", "given": "Ahmad", "family": "bin Ali", "nickname": "Bob", "initials": "A. A.", "patronymic": "bin Ali"}
 {"name": "Ahmad ibn-Ali", "given": "Ahmad", "family": "ibn-Ali", "initials": "A. i."}
+{"name": "Ahmad, bin Ali", "given": "bin", "middle": "Ali", "family": "Ahmad", "initials": "b. A. A.", "capitalized_force": "Bin Ali Ahmad"}
 {"name": "Aina Kalniņa", "given": "Aina", "family": "Kalniņa", "initials": "A. K."}
 {"name": "Aishwarya Rai", "given": "Aishwarya", "family": "Rai", "initials": "A. R."}
 {"name": "Aishwarya Rai Bachchan", "given": "Aishwarya", "middle": "Rai", "family": "Bachchan", "initials": "A. R. B."}
@@ -205,6 +208,7 @@
 {"name": "Ana María García-López", "given": "Ana", "middle": "María", "family": "García-López", "initials": "A. M. G."}
 {"name": "Ana María García–López", "given": "Ana", "middle": "María", "family": "García–López", "initials": "A. M. G."}
 {"name": "Ana María García－López", "given": "Ana", "middle": "María", "family": "García－López", "initials": "A. M. G."}
+{"name": "Ana María José Pérez", "given": "Ana", "middle": "María José", "family": "Pérez", "initials": "A. M. J. P."}
 {"name": "Ana María de la Vega Rodríguez", "given": "Ana", "middle": "María", "family": "de la Vega Rodríguez", "initials": "A. M. V. R."}
 {"name": "Ana María van der Berg", "given": "Ana", "middle": "María", "family": "van der Berg", "initials": "A. M. B."}
 {"name": "Ana María-José López", "given": "Ana", "middle": "María-José", "family": "López", "initials": "A. M. L."}
@@ -819,6 +823,7 @@
 {"name": "Dr. John van der Berg", "title": "Dr.", "given": "John", "family": "van der Berg", "initials": "J. B."}
 {"name": "Dr. Jr née Jones", "title": "Dr.", "given": "Jr", "middle": "née", "family": "Jones", "initials": "J. n. J.", "capitalized_force": "Dr. Jr Née Jones"}
 {"name": "Dr. Jr., John", "given": "John", "family": "Dr.", "suffix": "Jr.", "initials": "J. D.", "generation": "Jr."}
+{"name": "Dr. Juan Carlos Pérez Jr.", "title": "Dr.", "given": "Juan", "middle": "Carlos", "family": "Pérez", "suffix": "Jr.", "initials": "J. C. P.", "generation": "Jr."}
 {"name": "Dr. Juan Q. Velasquez y Garcia", "title": "Dr.", "given": "Juan", "middle": "Q.", "family": "Velasquez y Garcia", "initials": "J. Q. V. G."}
 {"name": "Dr. Juan Q. Velasquez y Garcia III", "title": "Dr.", "given": "Juan", "middle": "Q.", "family": "Velasquez y Garcia", "suffix": "III", "initials": "J. Q. V. G.", "generation": "III"}
 {"name": "Dr. Juan Q. Velasquez y Garcia, Jr.", "title": "Dr.", "given": "Juan", "middle": "Q.", "family": "Velasquez y Garcia", "suffix": "Jr.", "initials": "J. Q. V. G.", "generation": "Jr."}
@@ -1107,6 +1112,8 @@
 {"name": "Garcia de Jalon", "given": "Garcia", "family": "de Jalon", "initials": "G. J."}
 {"name": "Garcia y Lopez", "given": "Garcia", "middle": "y", "family": "Lopez", "initials": "G. y. L."}
 {"name": "Garcia-Roza, Luiz Alfredo", "given": "Luiz", "middle": "Alfredo", "family": "Garcia-Roza", "initials": "L. A. G."}
+{"name": "García Antonio Juan Carlos", "given": "García", "middle": "Antonio Juan", "family": "Carlos", "initials": "G. A. J. C."}
+{"name": "García Juan Carlos", "given": "García", "middle": "Juan", "family": "Carlos", "initials": "G. J. C."}
 {"name": "García López, Ana", "given": "Ana", "family": "García López", "initials": "A. G. L."}
 {"name": "García Márquez Ana María", "given": "García", "middle": "Márquez Ana", "family": "María", "initials": "G. M. A. M."}
 {"name": "García Márquez Gabriel", "given": "García", "middle": "Márquez", "family": "Gabriel", "initials": "G. M. G."}
@@ -1253,6 +1260,7 @@
 {"name": "Hassan", "order": "FAMILY_FIRST", "family": "Hassan", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "H."}
 {"name": "Hassan B. Yusof", "given": "Hassan", "middle": "B.", "family": "Yusof", "initials": "H. B. Y."}
 {"name": "Hassan Mohamad Ali", "given": "Hassan", "middle": "Mohamad", "family": "Ali", "initials": "H. M. A."}
+{"name": "Hassan Mohamad Ali Omar", "given": "Hassan", "middle": "Mohamad Ali", "family": "Omar", "initials": "H. M. A. O."}
 {"name": "Hassan bin Yusof", "given": "Hassan", "family": "bin Yusof", "initials": "H. Y.", "patronymic": "bin Yusof"}
 {"name": "Hassan, Mohamad Ahmad Ali", "given": "Mohamad", "middle": "Ahmad Ali", "family": "Hassan", "initials": "M. A. A. H."}
 {"name": "Haukur Ágústsson", "given": "Haukur", "family": "Ágústsson", "initials": "H. Á."}
@@ -1388,6 +1396,7 @@
 {"name": "J née Smith", "given": "J", "maiden": "Smith", "initials": "J."}
 {"name": "J-E-P DUPONT", "given": "J-E-P", "family": "DUPONT", "initials": "J. D.", "capitalized": "J-e-P Dupont"}
 {"name": "J. A. D.", "given": "J.", "middle": "A.", "family": "D.", "initials": "J. A. D."}
+{"name": "J. Carlos Pérez", "given": "J.", "middle": "Carlos", "family": "Pérez", "initials": "J. C. P."}
 {"name": "J. None D.", "given": "J.", "middle": "None", "family": "D.", "initials": "J. N. D."}
 {"name": "J. S. V.", "given": "J.", "middle": "S.", "family": "V.", "initials": "J. S. V."}
 {"name": "J. Smith", "given": "J.", "family": "Smith", "initials": "J. S."}
@@ -1706,6 +1715,7 @@
 {"name": "John Pharm D", "given": "John", "middle": "Pharm", "family": "D", "initials": "J. P. D."}
 {"name": "John Prof. MA", "title": "Prof.", "family": "John", "suffix": "MA", "initials": "J."}
 {"name": "John Q. Smith", "given": "John", "middle": "Q.", "family": "Smith", "initials": "J. Q. S."}
+{"name": "John Quincy Adams", "given": "John", "middle": "Quincy", "family": "Adams", "initials": "J. Q. A."}
 {"name": "John Quincy Smith i", "given": "John", "middle": "Quincy", "family": "Smith", "suffix": "i", "initials": "J. Q. S.", "capitalized_force": "John Quincy Smith I", "generation": "i"}
 {"name": "John Smith", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "John Smith (Ed)", "given": "John", "family": "Smith", "nickname": "Ed", "ambiguities": ["SUFFIX_OR_NICKNAME"], "alternatives": ["SUFFIX_OR_NICKNAME: credential as suffix (vocabulary)"], "initials": "J. S."}
@@ -2060,11 +2070,15 @@
 {"name": "Jr. Van Johnson", "title": "Jr.", "given": "Van", "family": "Johnson", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "V. J."}
 {"name": "Jr., PhD", "family": "Jr.", "suffix": "PhD", "initials": "J."}
 {"name": "Juan & Garcia", "given": "Juan & Garcia", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "J. G."}
+{"name": "Juan 3 Pérez", "given": "Juan", "middle": "3", "family": "Pérez", "initials": "J. 3. P."}
 {"name": "Juan Anglada y Ruiz", "given": "Juan", "family": "Anglada y Ruiz", "initials": "J. A. R."}
 {"name": "Juan Antonio Rascón Navarro Seña y Redondo", "given": "Juan", "middle": "Antonio Rascón Navarro", "family": "Seña y Redondo", "initials": "J. A. R. N. S. R."}
 {"name": "Juan Antonio de los Heros Fernández", "given": "Juan", "middle": "Antonio", "family": "de los Heros Fernández", "initials": "J. A. H. F."}
 {"name": "Juan C. Garaikoetxea Urriza", "given": "Juan", "middle": "C. Garaikoetxea", "family": "Urriza", "initials": "J. C. G. U."}
+{"name": "Juan Carlos", "given": "Juan", "family": "Carlos", "initials": "J. C."}
 {"name": "Juan Carlos Pérez", "given": "Juan", "middle": "Carlos", "family": "Pérez", "initials": "J. C. P."}
+{"name": "Juan Carlos Pérez née López", "given": "Juan", "middle": "Carlos", "family": "Pérez", "maiden": "López", "initials": "J. C. P."}
+{"name": "Juan Carlos Pérez, PhD", "given": "Juan", "middle": "Carlos", "family": "Pérez", "suffix": "PhD", "initials": "J. C. P."}
 {"name": "Juan Carlos Rodríguez Agudelo", "given": "Juan", "middle": "Carlos Rodríguez", "family": "Agudelo", "initials": "J. C. R. A."}
 {"name": "Juan Cárdenas Arroyo", "given": "Juan", "middle": "Cárdenas", "family": "Arroyo", "initials": "J. C. A."}
 {"name": "Juan Fernández Bazán", "given": "Juan", "middle": "Fernández", "family": "Bazán", "initials": "J. F. B."}
@@ -2074,6 +2088,7 @@
 {"name": "Juan Garcia y Lopez y", "given": "Juan", "family": "Garcia y Lopez y", "initials": "J. G. L."}
 {"name": "Juan Harguindey Broussain", "given": "Juan", "middle": "Harguindey", "family": "Broussain", "initials": "J. H. B."}
 {"name": "Juan McDonald", "given": "Juan", "family": "McDonald", "initials": "J. M."}
+{"name": "Juan Pérez", "given": "Juan", "family": "Pérez", "initials": "J. P."}
 {"name": "Juan Pérez H.", "given": "Juan", "middle": "Pérez", "family": "H.", "initials": "J. P. H."}
 {"name": "Juan Pérez de la Vega", "given": "Juan", "middle": "Pérez", "family": "de la Vega", "initials": "J. P. V."}
 {"name": "Juan Q. Velasquez y Garcia", "given": "Juan", "middle": "Q.", "family": "Velasquez y Garcia", "initials": "J. Q. V. G."}
@@ -2489,6 +2504,8 @@
 {"name": "Maria Popescu", "given": "Maria", "family": "Popescu", "initials": "M. P."}
 {"name": "Maria Silva", "given": "Maria", "family": "Silva", "initials": "M. S."}
 {"name": "Maria Wijaya", "given": "Maria", "family": "Wijaya", "initials": "M. W."}
+{"name": "Maria do Carmo Silva", "given": "Maria", "family": "do Carmo Silva", "initials": "M. C. S."}
+{"name": "Maria do Carmo da Silva", "given": "Maria", "middle": "do Carmo", "family": "da Silva", "initials": "M. C. S."}
 {"name": "Mariam Geedi Hamish Hussein", "given": "Mariam", "middle": "Geedi Hamish", "family": "Hussein", "initials": "M. G. H. H."}
 {"name": "Mariana Duque Mariño", "given": "Mariana", "middle": "Duque", "family": "Mariño", "initials": "M. D. M."}
 {"name": "Marianne Schmidt", "given": "Marianne", "family": "Schmidt", "initials": "M. S."}
@@ -2542,11 +2559,14 @@
 {"name": "Mary Sue Hamish Watson", "given": "Mary", "middle": "Sue Hamish", "family": "Watson", "initials": "M. S. H. W."}
 {"name": "Mary-​Jane Smith", "given": "Mary-", "middle": "Jane", "family": "Smith", "initials": "M. J. S."}
 {"name": "María Dolores de Pablos", "given": "María", "middle": "Dolores", "family": "de Pablos", "initials": "M. D. P."}
+{"name": "María José García López", "given": "María", "middle": "José García", "family": "López", "initials": "M. J. G. L."}
 {"name": "María Losada Estévez", "given": "María", "middle": "Losada", "family": "Estévez", "initials": "M. L. E."}
 {"name": "María Paz Alonso Romero", "given": "María", "middle": "Paz Alonso", "family": "Romero", "initials": "M. P. A. R."}
 {"name": "María Rubio Tejero", "given": "María", "middle": "Rubio", "family": "Tejero", "initials": "M. R. T."}
 {"name": "María de la O Lejárraga y García", "given": "María", "family": "de la O Lejárraga y García", "initials": "M. O. L. G."}
+{"name": "María del Carmen de la Vega", "given": "María", "middle": "del Carmen", "family": "de la Vega", "initials": "M. C. V."}
 {"name": "María del Pilar Hurtado Montaño", "given": "María", "family": "del Pilar Hurtado Montaño", "initials": "M. P. H. M."}
+{"name": "María-José Ana López", "given": "María-José", "middle": "Ana", "family": "López", "initials": "M. A. L."}
 {"name": "Masalu Adam Juma Agape Shukurani MB", "order": "FAMILY_FIRST", "given": "Adam", "middle": "Juma Agape Shukurani", "family": "Masalu", "suffix": "MB", "initials": "A. J. A. S. M."}
 {"name": "Masalu, Adam Juma Agape Shukurani", "given": "Adam", "middle": "Juma Agape Shukurani", "family": "Masalu", "initials": "A. J. A. S. M."}
 {"name": "Mathilde Therese von Thurn und Taxis", "given": "Mathilde", "middle": "Therese", "family": "von Thurn und Taxis", "initials": "M. T. T. T."}
@@ -2954,6 +2974,8 @@
 {"name": "Prop. Dr. Ada Cornelia César Martín von Brühl González Domingo MD DDS", "title": "Prop. Dr.", "given": "Ada", "middle": "Cornelia César Martín", "family": "von Brühl González Domingo", "suffix": "MD DDS", "initials": "A. C. C. M. B. G. D."}
 {"name": "Pèrs, Ciro di", "given": "Ciro", "family": "di Pèrs", "ambiguities": ["PARTICLE_OR_GIVEN", "SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)", "PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "C. P."}
 {"name": "Pérez Lucía", "order": "FAMILY_FIRST", "given": "Lucía", "family": "Pérez", "initials": "L. P."}
+{"name": "Pérez, Antonio Juan Carlos", "given": "Antonio", "middle": "Juan Carlos", "family": "Pérez", "initials": "A. J. C. P."}
+{"name": "Pérez, Juan Carlos", "given": "Juan", "middle": "Carlos", "family": "Pérez", "initials": "J. C. P."}
 {"name": "Pérez, Juan Ó.", "given": "Juan", "middle": "Ó.", "family": "Pérez", "initials": "J. Ó. P."}
 {"name": "Pérez, Lucía", "given": "Lucía", "family": "Pérez", "initials": "L. P."}
 {"name": "Péricourt Louise", "order": "FAMILY_FIRST", "given": "Louise", "family": "Péricourt", "initials": "L. P."}
@@ -3783,6 +3805,7 @@
 {"name": "abdul Jr Smith Berg", "given": "abdul", "middle": "Jr Smith", "family": "Berg", "initials": "a. J. S. B.", "capitalized_force": "Abdul Jr Smith Berg"}
 {"name": "abdul Ma Smith", "given": "abdul Ma", "family": "Smith", "initials": "a. M. S.", "capitalized_force": "Abdul Ma Smith"}
 {"name": "abdul Ph. D. Smith Berg", "given": "abdul", "middle": "Smith", "family": "Berg", "suffix": "Ph. D.", "initials": "a. S. B.", "capitalized_force": "Abdul Smith Berg Ph. D."}
+{"name": "abdul Rahman Ali Khan", "given": "abdul Rahman", "middle": "Ali", "family": "Khan", "initials": "a. R. A. K.", "capitalized_force": "Abdul Rahman Ali Khan"}
 {"name": "abdul Salam, Ed", "given": "abdul", "family": "Salam", "suffix": "Ed", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (declared)"], "initials": "a. S.", "capitalized_force": "Abdul Salam, ED"}
 {"name": "abdul Sir Smith Berg", "given": "abdul Sir", "middle": "Smith", "family": "Berg", "initials": "a. S. S. B.", "capitalized_force": "Abdul Sir Smith Berg"}
 {"name": "abdul Smith Berg Ma", "given": "abdul Smith", "middle": "Berg", "family": "Ma", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "a. S. B. M.", "capitalized_force": "Abdul Smith Berg Ma"}
