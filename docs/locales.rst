@@ -512,7 +512,8 @@ readings of those words:
 - **Under pt_br,** the words read as ``pt`` reads them: ``John Smith DO``
   gives family ``DO``, and a trailing ``Sr`` is read as the Portuguese
   title *Senhor* rather than English "Senior", so ``John Smith Sr``
-  gives family ``Sr``, a known cost not yet settled.
+  gives family ``Sr`` and the dotted ``John Smith Sr.`` title ``Sr.``,
+  a known cost not yet settled.
 - **Under pt_br,** a written S.B. degree reads as Sobrinho
   (``Howard Gordon, MD SB`` fills ``generation`` with ``SB``).
 
