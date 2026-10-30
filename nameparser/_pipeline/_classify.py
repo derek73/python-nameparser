@@ -33,6 +33,8 @@ namespaced (unstable): "vocab:title", "vocab:given-title",
 "vocab:after-given-title", "vocab:title-ambiguous",
 "vocab:suffix", "vocab:suffix-word", "vocab:suffix-ambiguous",
 "vocab:suffix-word-ambiguous", "vocab:agnomen",
+"vocab:generation-word", "vocab:credential-word" (read by the later
+stages and dropped by assemble, Token.reading carrying the kind out),
 "vocab:particle-ambiguous", "vocab:bound-given",
 "vocab:given-abbreviation", "vocab:maiden-marker",
 "vocab:maiden-marker-cont"; in a namespace of its own,
@@ -78,7 +80,8 @@ from nameparser._types import AmbiguityKind, ReadingKind, ReadingSource
 from nameparser._pipeline._vocab import (
     BUILTIN_GLUED_DELIMITERS, SPLIT_CHUNK, SPLIT_PAIR_OPENS, _INITIAL, caps_shape_candidate,
     composed_len, glued_cores, glued_stem, is_cased_paired_initials,
-    is_initial, is_one_case, period_joined_vocab, split_pair,
+    is_initial, is_one_case, listed_word_kind_tag, period_joined_vocab,
+    split_pair,
     suffix_as_written, tag_marker_runs, title_readings,
 )
 from nameparser._pipeline._pieces import own_words
@@ -156,6 +159,12 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
             tags.add(AGNOMEN_TAG)
     elif n in lex.suffix_words:
         tags.add("vocab:suffix-word")
+        # rules/R8: "The kind of a word listed as a suffix word is the
+        # shipped vocabulary's" -- read here, from the word as this
+        # stage reads it (decisions/R8, #326)
+        kind_tag = listed_word_kind_tag(n)
+        if kind_tag is not None:
+            tags.add(kind_tag)
     if n in lex.suffix_acronyms_ambiguous:
         tags.add(AMBIGUOUS_ACRONYM_TAG)
     # rules/P7: "A one-letter word written with its period is an

@@ -38,7 +38,11 @@ read differently from the 2.0 surface (3 names on 2026-10-13);
 Since 2.7 a line also holds `alternatives`,
 the reading each ambiguity report did not take, one per report in
 report order, so a report losing its alternative beside an identical
-one still moves the line (#752 phase 2m). Empty values are left out,
+one still moves the line (#752 phase 2m). Since 3.0 it holds the
+suffix's two views (rules/R8, #326): `generation` where the suffix
+holds one, and `credentials` beside it where the suffix holds both,
+so a line with neither has a suffix of credentials only, or none.
+Empty values are left out,
 so a reading that gains a field shows as one added key. The file's
 first line is a header, `{"recorded": [...]}`, naming the keys added
 after the snapshot existed that the recording tree could record: a

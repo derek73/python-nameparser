@@ -37,7 +37,8 @@ from types import MappingProxyType
 
 from nameparser._lexicon import _VOCAB_FIELDS, Lexicon, _normalize
 from nameparser._pipeline._state import (
-    AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, FIELD_READING,
+    AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG,
+    CREDENTIAL_WORD_TAG, FIELD_READING, GENERATION_WORD_TAG,
     NAME_ROLES, SHAPE_ACRONYM_TAG, SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG,
     TITLE_AMBIGUOUS_TAG, Beside, Deferred, ParseState, PendingAmbiguity,
     Structure, WorkToken,
@@ -67,7 +68,8 @@ def _kinds_of(*categories: str) -> frozenset[str]:
 #: The vocabulary kinds (_reading_index.CATEGORY's keys) whose rows
 #: hold a reading of each kind. A suffix reading takes the word's
 #: suffix rows whatever their finer kind, since a word has one suffix
-#: kind (the build's check 4) and the parse does not yet read it (4b).
+#: kind (the build's check 4), which `_vocab.suffix_kind` has already
+#: read the reading's kind by (4b).
 #: A name reading's rows depend on its field (`_NAME_KINDS`). An
 #: initial and a patronymic are read by shape or rule, never from a
 #: file.
@@ -195,6 +197,10 @@ def _split_partner(tokens: tuple[WorkToken, ...], dropped: set[int],
 _reading = functools.lru_cache(maxsize=1024)(Reading)
 
 
+#: classify's kind tags for a listed suffix word (rules/R8), which no
+#: published token carries: `Token.reading` names the kind.
+_KIND_TAGS = frozenset({GENERATION_WORD_TAG, CREDENTIAL_WORD_TAG})
+
 #: The tags that say a list or a shape made a word a suffix: without
 #: one, a suffix word stands there by position, unless the vocabulary
 #: lists it (a bracketed member, which classify leaves untagged).
@@ -303,8 +309,8 @@ def assemble(state: ParseState) -> ParsedName:
         # later (P1's fold, P6's attachment, the policy folds) needs
         # no reading of its own to keep in step. Per token, measured
         # 2026-10-29: no frame for an untagged non-suffix word, the
-        # commonest; one for a listed or shaped suffix (`suffix_kind`)
-        # and for a tagged name word that reaches `name_source` or a
+        # commonest; one for a listed or shaped suffix (`suffix_kind`,
+        # reading the kind classify tagged) and for a tagged name word that reaches `name_source` or a
         # family word glued to the next (`_normalize`); three for a
         # suffix word nothing tags or lists (`suffix_kind`, then
         # `_listed_suffix` and its `_normalize`). `_vocab`'s two predicates
@@ -422,6 +428,12 @@ def assemble(state: ParseState) -> ParsedName:
                 langs = ()
             reading = (_reading(kind, role, source, langs) if langs
                        else _READINGS[kind, role, source])
+        if not tags.isdisjoint(_KIND_TAGS):
+            # the kind tags serve the stages and this one, whatever the
+            # word's field (a lone 'Jr' is a given name); the reading
+            # carries the kind out, and a published tag would make a
+            # name unequal to its own 2.x pickle (Token compares tags)
+            tags = tags - _KIND_TAGS
         final[i] = Token(t.text, t.span, role, tags, reading)
     # No alphanumeric character among the SURVIVING tokens means no
     # name: a bare '.' or '- -' is not a person. v1 kept such input

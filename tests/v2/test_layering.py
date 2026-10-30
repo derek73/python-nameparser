@@ -85,8 +85,13 @@ ALLOWED = {
     # reads WorkToken.role/span and comma_bucket, never a whole
     # ParseState. Widening this past _state is the tell that a text-
     # level predicate has grown a dependency on a stage.
+    # _reading_index joined in 3.0's 4b for a listed suffix word's
+    # kind, a fact about the word's text no compiled set records
+    # (`_vocab.suffix_kind`), and it imports nothing internal at
+    # module level.
     "_pipeline/_vocab.py": ("nameparser._lexicon", "nameparser._policy",
-                            "nameparser._pipeline._state"),
+                            "nameparser._pipeline._state",
+                            "nameparser._reading_index"),
     "_pipeline/_extract.py": _PIPELINE_STAGE_ALLOWED,
     "_pipeline/_tokenize.py": _PIPELINE_STAGE_ALLOWED,
     "_pipeline/_script_segment.py": _PIPELINE_STAGE_ALLOWED,

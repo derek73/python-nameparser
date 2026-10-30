@@ -5,7 +5,10 @@ corpus*.jsonl beside this script: the seven role fields, the reported
 ambiguity kinds, initials() and the two case-repair views. The case views are recorded only where they move
 something: `capitalized` where capitalized() renders other than the
 name as parsed, `capitalized_force` where capitalized(force=True)
-renders other than capitalized() does (#826).
+renders other than capitalized() does (#826). The suffix's two views
+(rules/R8) are recorded where the suffix holds a generation:
+`generation` then, and `credentials` beside it where the suffix holds
+both, so a suffix with no `generation` recorded is all credentials.
 tests/v2/test_snapshot.py fails when the tree's readings stop matching
 it. A change that moves readings re-records, and the PR diff of
 snapshot.jsonl is the list of names it moved -- one line per name, so
@@ -212,6 +215,10 @@ def row(name: str, order: str | None, v2: dict[str, Any] | None,
     for view in CASE_VIEWS:
         if v2[f"_{view}"]:
             out[view] = v2[f"_{view}"]
+    if v2.get("_generation"):
+        out["generation"] = v2["_generation"]
+        if v2["_credentials"]:
+            out["credentials"] = v2["_credentials"]
     return out
 
 
@@ -245,10 +252,15 @@ def alternatives(p: ParsedName) -> list[str]:
             if (alt := getattr(a, "alternative", None)) is not None]
 
 
+#: The suffix's views a row records (rules/R8), in the order row()
+#: writes them.
+SUFFIX_VIEWS = ("generation", "credentials")
+
 #: The keys a row came to record after the snapshot existed, each with
 #: the change that added it: a snapshot recorded before it carries none
 #: of them, so a comparison against it leaves them out.
-RECORDED_LATER = ((CASE_VIEWS, "#826"), (("alternatives",), "#752 phase 2m"))
+RECORDED_LATER = ((CASE_VIEWS, "#826"), (("alternatives",), "#752 phase 2m"),
+                  (SUFFIX_VIEWS, "3.0's 4b (#326)"))
 
 #: The key of a snapshot's first line since #752 phase 2m, naming the
 #: `RECORDED_LATER` keys the tree that recorded it could record, so a
@@ -260,14 +272,17 @@ HEADER = "recorded"
 
 def recorded_keys() -> tuple[str, ...]:
     """The `RECORDED_LATER` keys the imported nameparser records: the
-    case views, which every 2.x tree renders, and the alternatives where
-    its Ambiguity has the field (2.7)."""
+    case views, which every 2.x tree renders, the alternatives where
+    its Ambiguity has the field (2.7), and the suffix's views where
+    ParsedName has them (3.0)."""
     import dataclasses
 
     import nameparser
     fields = {f.name for f in dataclasses.fields(nameparser.Ambiguity)}
-    return CASE_VIEWS + (("alternatives",) if "alternative" in fields
-                         else ())
+    return (CASE_VIEWS
+            + (("alternatives",) if "alternative" in fields else ())
+            + (SUFFIX_VIEWS if hasattr(nameparser.ParsedName, "generation")
+               else ()))
 
 
 def recorded(text: str) -> frozenset[str] | None:
@@ -393,6 +408,9 @@ def _read_chunk(entries: Sequence[Entry], languages: tuple[str, ...] = ()
         v2["_ambiguities"] = sorted({a.kind.name for a in p.ambiguities})
         v2["_alternatives"] = alternatives(p)
         v2["_initials"] = p.initials() or ""
+        # none from a tree before 3.0, which `--base` reads through this
+        v2["_generation"] = getattr(p, "generation", "")
+        v2["_credentials"] = getattr(p, "credentials", "")
         v2.update(case_views(str(p), str(parsers[order].capitalized(p)),
                              str(parsers[order].capitalized(p, force=True))))
         rows.append(row(name, order, v2))

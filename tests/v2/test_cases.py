@@ -70,7 +70,7 @@ def _swept(case_id: str,
 
 
 @pytest.mark.parametrize("case,order", _SWEPT_ROWS, ids=_SWEPT_IDS)
-def test_the_family_partitions_into_particles_and_base(
+def test_the_family_and_the_suffix_partition_into_their_views(
         case: Case, order: tuple[Role, Role, Role] | None) -> None:
     """rules/R2's invariant: a particle needs a base to attach to,
     so a family made only of particles is a family whose words are not
@@ -84,8 +84,16 @@ def test_the_family_partitions_into_particles_and_base(
     strings, because the family renders in written order while the two
     views render particles first ("Vega, de la" is family 'Vega de la',
     particles 'de la', base 'Vega').
+
+    rules/R8's views partition the suffix the same way, its words
+    exactly the generation's plus the credentials', and join this
+    walk rather than parsing the grid again.
     """
     pn = _swept(case.id, order)
+    assert sorted(pn.suffix.replace(",", " ").split()) == sorted(
+        (pn.generation + " " + pn.credentials).replace(",", " ").split()), (
+        f"{case.text!r}: suffix={pn.suffix!r} is not partitioned by "
+        f"generation={pn.generation!r} + credentials={pn.credentials!r}")
     if not pn.family:
         return
     assert pn.family_base, (

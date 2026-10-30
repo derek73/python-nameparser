@@ -101,6 +101,14 @@ AMBIGUOUS_ACRONYM_TAG = "vocab:suffix-ambiguous"
 AMBIGUOUS_WORD_TAG = "vocab:suffix-word-ambiguous"
 AGNOMEN_TAG = "vocab:agnomen"
 
+#: Beside "vocab:suffix-word" on a word whose shipped reading index
+#: kind is a generation (`jr`) or a credential written as a word
+#: (`博士`), which the compiled sets do not record (rules/R8, 3.0's 4b):
+#: written by classify from the word as it reads it, a delimiter glued
+#: on removed (`Jr.;`, rules/C10), and read by `_vocab.suffix_kind`.
+GENERATION_WORD_TAG = "vocab:generation-word"
+CREDENTIAL_WORD_TAG = "vocab:credential-word"
+
 #: On a word of `Lexicon.titles_ambiguous` whichever way classify read
 #: it (rules/H9): read as a title it carries "vocab:title" too, read
 #: out of the title it carries this alone, which is how assign finds

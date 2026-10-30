@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from nameparser import FAMILY_FIRST, GIVEN_FIRST, Lexicon, Locale, Policy, parse
+from nameparser import FAMILY_FIRST, GIVEN_FIRST, Lexicon, Locale, Parser, Policy, parse
 from nameparser._types import (
     STABLE_TAGS, Ambiguity, AmbiguityKind, ParsedName, Reading, Role,
     Segmentation, Span, Token,
@@ -299,6 +299,97 @@ def test_derived_views_filter_on_stable_particle_tag() -> None:
     assert pn.family_base == "Vega"
     assert pn.surnames == "de la Vega"       # middle + family
     assert pn.given_names == "Juan"           # given + middle
+
+
+# -- the suffix's generation and credentials views (rules/R8, #326) --
+
+@pytest.mark.parametrize("text,generation,credentials", [
+    # the empty path: a name with no suffix, and a suffix of one kind
+    ("John Smith", "", ""),
+    ("John Smith PhD", "", "PhD"),
+    ("John Smith Jr.", "Jr.", ""),
+    # comma-joined as the suffix is, each view in written order
+    ("Smith, John, Jr., MD, Esq.", "Jr.", "MD, Esq."),
+    ("John Smith, PhD, Jr., III", "Jr., III", "PhD"),
+    # a run written without commas comes apart by kind, two words of
+    # one view keeping the separator written between them (a comma
+    # anywhere in the gap, else a space); a split credential stays
+    # whole
+    ("John Smith Jr. III PhD", "Jr. III", "PhD"),
+    ("John Smith Ph. D. Jr.", "Jr.", "Ph. D."),
+    ("John Smith, MD Jr. PhD", "Jr.", "MD PhD"),
+    ("John Smith, MD, Jr. PhD", "Jr.", "MD, PhD"),
+    # any entry boundary the suffix renders as a comma (rules/R1)
+    ("John Smith, MD / Jr. / PhD", "Jr.", "MD, PhD"),
+    # a connective goes with the word before it, dangling where the
+    # word after it is in the other view (rules/R8's Accepted)
+    ("John Smith, PhD and MD Jr.", "Jr.", "PhD and MD"),
+    ("John Smith, Jr. and III", "Jr. and III", ""),
+    ("John Smith, Jr. and MD", "Jr. and", "MD"),
+    ("Doe, Jane, and Jr.", "Jr.", "and"),
+    # a delimiter glued on (rules/C10) reads the word as without it,
+    # its text keeping the delimiter as the suffix does
+    ("John Smith, Jr.; MD", "Jr.;", "MD"),
+    ("Smith, John, Jr.; MD", "Jr.;", "MD"),
+    ("John Smith, III; MD", "III;", "MD"),
+    ("John Smith, V; MD", "V;", "MD"),
+    # a control: no generation word carries the delimiter, so this
+    # read alike before the glued stem's kind was read
+    ("John Smith, MD; Jr.", "Jr.", "MD;"),
+    # a word read by its period-joined chunks ('Jr.' and ';', as
+    # 'Lt.Gov.' is read) has no kind of its own, so it is a credential,
+    # one made only of generation words included (rules/R8's Accepted)
+    ("John Smith Jr.; MD", "", "Jr.; MD"),
+    ("John Smith Jr.III", "", "Jr.III"),
+    ("John Smith, Jr.III", "", "Jr.III"),
+    # an agnomen is a generation; an honorific, a credential
+    ("Pedro Alves Filho", "Filho", ""),
+    ("王小明先生", "", "先生"),
+])
+def test_the_suffix_views_partition_it_by_reading(
+        text: str, generation: str, credentials: str) -> None:
+    pn = parse(text)
+    assert (pn.generation, pn.credentials) == (generation, credentials)
+
+
+@pytest.mark.parametrize("field,kind", [
+    # a caller's word in `suffix_words` alone has no row to read a kind
+    # from; its gate's marker or the agnomen set gives it one by its tag
+    ({"suffix_words": {"zzz"}}, "post-nominal"),
+    ({"suffix_words": {"zzz"}, "suffix_words_ambiguous": {"zzz"}},
+     "generation"),
+    ({"suffix_words": {"zzz"}, "suffix_words_ambiguous": {"zzz"},
+      "agnomens": {"zzz"}}, "agnomen"),
+])
+def test_a_callers_suffix_word_reads_by_its_marker_else_post_nominal(
+        field: dict[str, set[str]], kind: str) -> None:
+    pn = Parser(lexicon=Lexicon.default().add(**field)).parse(
+        "Pedro Alves Silva zzz")
+    (tok,) = pn.tokens_for("suffix")
+    assert tok.reading is not None and tok.reading.kind.value == kind
+    assert pn.generation == ("" if kind == "post-nominal" else "zzz")
+
+
+def test_a_suffix_word_with_no_reading_is_a_credential() -> None:
+    # replace() records no reading, so nothing says what the word was
+    # read as (rules/R8's Accepted)
+    pn = parse("John Smith Jr.").replace(suffix="Jr. PhD")
+    assert pn.suffix == "Jr., PhD"
+    assert (pn.generation, pn.credentials) == ("", "Jr., PhD")
+    # a field it did not touch keeps its readings, and so its views
+    kept = parse("John Smith Jr., PhD").replace(given="Jack")
+    assert (kept.generation, kept.credentials) == ("Jr.", "PhD")
+
+
+def test_the_suffix_views_are_render_keys_and_not_fields() -> None:
+    pn = parse("Smith, John, Jr., MD")
+    assert pn.render("{family} {generation} ({credentials})") \
+        == "Smith Jr. (MD)"
+    # views, like family_base: as_dict and replace() take the seven
+    # roles only
+    assert "generation" not in pn.as_dict()
+    with pytest.raises(TypeError):
+        pn.replace(generation="Sr.")
 
 
 def test_tokens_for_preserves_order() -> None:
@@ -926,3 +1017,20 @@ def test_with_field_tokens_rejects_mismatched_roles() -> None:
     with pytest.raises(ValueError, match="has role family, not given"):
         name._with_field_tokens(
             {Role.GIVEN: (Token("x", None, Role.FAMILY),)})
+
+
+@pytest.mark.parametrize("delimiter", ["/", "-", "+", "&"])
+@pytest.mark.parametrize("text,generation", [
+    ("John Smith, Jr.{d} MD", "Jr.{d}"),
+    ("John Smith, III{d} MD", "III{d}"),
+    ("John Smith, MD {d}Jr.", "{d}Jr."),
+])
+def test_a_declared_delimiter_glued_to_a_generation_keeps_it_one(
+        delimiter: str, text: str, generation: str) -> None:
+    # the spelling sweep over the delimiter a caller declares, glued to
+    # either end (rules/C10): classify reads the stem's kind
+    pn = Parser(policy=Policy(
+        extra_suffix_delimiters=frozenset({delimiter}))).parse(
+            text.format(d=delimiter))
+    assert (pn.generation, pn.credentials) == (
+        generation.format(d=delimiter), "MD")

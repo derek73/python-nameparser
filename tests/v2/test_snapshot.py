@@ -76,7 +76,7 @@ def test_a_snapshot_predating_the_case_views_is_not_compared_on_them() -> None:
            for k, r in new.items()}
     # a headerless snapshot records no alternative either
     assert snapshot.unrecorded_views(None, keys, old, new) == (
-        *snapshot.CASE_VIEWS, "alternatives")
+        *snapshot.CASE_VIEWS, "alternatives", *snapshot.SUFFIX_VIEWS)
     assert not snapshot.grouped(old, new)
     # A snapshot that records a view on one row, or only the plain
     # view, still compares both: a name repair leaves alone records none.
@@ -84,7 +84,7 @@ def test_a_snapshot_predating_the_case_views_is_not_compared_on_them() -> None:
     new = {snapshot.key(r): dict(r) for r in rows}
     current = {k: dict(r) for k, r in new.items()}
     assert snapshot.unrecorded_views(None, keys, current, new) == (
-        "alternatives",)
+        "alternatives", *snapshot.SUFFIX_VIEWS)
     assert new == current
     assert not any("capitalized_force" in r for r in current.values())
 
@@ -103,7 +103,7 @@ def test_a_snapshot_predating_the_alternatives_is_not_compared_on_them(
     old = {k: {f: v for f, v in r.items() if f != "alternatives"}
            for k, r in new.items()}
     assert snapshot.unrecorded_views(None, keys, old, new) == (
-        "alternatives",)
+        "alternatives", *snapshot.SUFFIX_VIEWS)
     assert not snapshot.grouped(old, new)
     rows = snapshot.read([("JOHN SMITH MA", None), ("Jack MA", None)])
     new = {snapshot.key(r): dict(r) for r in rows}
@@ -135,8 +135,22 @@ def test_a_snapshot_whose_names_report_nothing_still_records_alternatives(
     # from both sides rather than reporting each as lost
     case_only = frozenset(snapshot.CASE_VIEWS)
     assert snapshot.unrecorded_views(snapshot.recorded(text), case_only,
-                                     old, new) == ("alternatives",)
+                                     old, new) == ("alternatives",
+                                                   *snapshot.SUFFIX_VIEWS)
     assert not snapshot.grouped(old, new)
+
+
+def test_a_row_records_the_suffix_views_where_the_suffix_holds_a_generation(
+        ) -> None:
+    # `generation` where there is one, `credentials` beside it where
+    # the suffix holds both; a row with neither has a suffix of
+    # credentials only, or none (rules/R8)
+    plain, creds, gen, both = snapshot.read([
+        ("John Smith", None), ("John Smith PhD", None),
+        ("John Smith Jr.", None), ("John Smith Jr., PhD", None)])
+    assert not set(snapshot.SUFFIX_VIEWS) & (set(plain) | set(creds))
+    assert (gen["generation"], "credentials" in gen) == ("Jr.", False)
+    assert (both["generation"], both["credentials"]) == ("Jr.", "PhD")
 
 
 def test_a_lost_alternative_shows_beside_an_identical_one() -> None:

@@ -366,6 +366,19 @@ def languages_of(text: str, kinds: frozenset[str]) -> tuple[str, ...]:
     return tuple(out)
 
 
+def suffix_kind_of(text: str) -> str | None:
+    """The kind of `text`'s suffix reading (a key of :data:`CATEGORY`
+    whose category is ``suffix``), on by default or not; None for a
+    word no file holds as a suffix. A word has one suffix kind in every
+    file (the build's check 4), so the first row says it. `text` is
+    normalized as :func:`readings_of` takes it. What the parse reads a
+    listed suffix word's kind by (`_vocab.suffix_kind`, 3.0's 4b)."""
+    for _tag, kind, _pairs in _by_text().get(text, ()):
+        if CATEGORY[kind] == "suffix":
+            return kind
+    return None
+
+
 class CompileError(ValueError):
     """The readings cannot compile: a fact about the data, which the
     build reports as a vocabulary error (exit 2) where any other

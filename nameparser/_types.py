@@ -883,7 +883,8 @@ class ReadingKind(StrEnum):
 
     #: A post-nominal credential or other acronym suffix ("MA", "X.Y.Z.").
     CREDENTIAL = "credential"
-    #: A generational suffix: a roman numeral, or a word such as "fils".
+    #: A generational suffix: a roman numeral, or a word such as "Jr."
+    #: or "fils".
     GENERATION = "generation"
     #: An agnomen, a family word that is also a suffix ("Filho", "Neto").
     AGNOMEN = "agnomen"
@@ -906,6 +907,11 @@ class ReadingKind(StrEnum):
     #: Added in 3.0 for the patronymic view; no reading of the parse
     #: takes it yet.
     PATRONYMIC = "patronymic"
+
+
+#: The reading kinds :attr:`ParsedName.generation` holds; every other
+#: suffix word is in :attr:`ParsedName.credentials` (#326).
+_GENERATION_KINDS = frozenset({ReadingKind.GENERATION, ReadingKind.AGNOMEN})
 
 
 class ReadingSource(StrEnum):
@@ -1341,7 +1347,7 @@ class ParsedName:
     def maiden(self) -> str:
         return self._text_for(Role.MAIDEN)
 
-    # -- derived views (filters over roles + STABLE tags only) ----------
+    # -- derived views (filters over roles, STABLE tags and readings) ---
 
     @property
     # rules/R2: "the family name splits into further views: the
@@ -1361,8 +1367,56 @@ class ParsedName:
         return self._text_for(Role.MIDDLE, Role.FAMILY)
 
     @property
+    # rules/R8: "the suffix splits into two views that partition it"
+    # (history: decisions/R8, #326)
+    def generation(self) -> str:
+        """The suffix words read as a generation or an agnomen ("Jr.",
+        "III", "Filho"), joined as :attr:`suffix` joins them; ``''``
+        for a name with none."""
+        return self._suffix_view(True)
+
+    @property
+    def credentials(self) -> str:
+        """The rest of the suffix: credentials and every other
+        post-nominal word ("PhD", "Esq.", "さん"), joined as
+        :attr:`suffix` joins them; ``''`` for a name with none. A
+        suffix word with no :attr:`Token.reading` (one :meth:`replace`
+        or Parser.revise wrote) is counted here."""
+        return self._suffix_view(False)
+
+    @property
     def given_names(self) -> str:
         return self._text_for(Role.GIVEN, Role.MIDDLE)
+
+    def _suffix_view(self, generation: bool) -> str:
+        # the `generation` / `credentials` partition of `suffix`, each
+        # word placed by the reading it took ('D.' after 'Ph.' takes
+        # the credential's) and a connective going with the word it
+        # follows ('PhD and MD'); two words of one view are separated
+        # by a comma where `suffix` holds one anywhere between them (an
+        # entry boundary, a word not `joined`) and by a space where it
+        # holds none ('MD Jr. PhD' gives 'MD PhD', 'MD, Jr. PhD' and
+        # 'MD / Jr. / PhD' give 'MD, PhD')
+        parts: list[str] = []
+        before: bool | None = None
+        comma = False
+        for tok in self.tokens:
+            if tok.role is not Role.SUFFIX:
+                continue
+            comma = comma or "joined" not in tok.tags
+            kind = tok.reading.kind if tok.reading is not None else None
+            if kind is ReadingKind.CONJUNCTION and before is not None:
+                keep = before
+            else:
+                keep = (kind in _GENERATION_KINDS) is generation
+            if keep:
+                if parts and not comma:
+                    parts[-1] += " " + tok.text
+                else:
+                    parts.append(tok.text)
+                comma = False
+            before = keep
+        return ", ".join(parts)
 
     # -- structured access ----------------------------------------------
 

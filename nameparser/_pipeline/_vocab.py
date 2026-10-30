@@ -43,7 +43,9 @@ it re-exports. They sit here because every stage that reports a fork
 builds one, and the tags they read are this module's vocabulary.
 
 Layering: imports _lexicon, _policy, and _pipeline._state (WorkToken,
-comma_bucket, PendingReading -- read-only, never a whole ParseState).
+comma_bucket, PendingReading -- read-only, never a whole ParseState),
+and _reading_index for the one fact no compiled set records, the kind
+of a listed suffix word (listed_word_kind_tag, 3.0's 4b).
 """
 from __future__ import annotations
 
@@ -58,9 +60,10 @@ from nameparser._lexicon import (
 )
 from nameparser._policy import (CapsSuffixes, Policy, Script, _JA_SCRIPTS, _NO_INITIALS,
                                 _SCRIPT_RANGES, _script_matcher)
+from nameparser._reading_index import suffix_kind_of
 from nameparser._pipeline._state import (
     AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, COMMA_CHARS,
-    Deferred,
+    CREDENTIAL_WORD_TAG, Deferred, GENERATION_WORD_TAG,
     GIVEN_ABBREVIATION_TAG, SHAPE_ACRONYM_TAG, TITLE_AMBIGUOUS_TAG,
     PendingReading, ReadingKind, ReadingSource, Role, WorkToken,
     comma_bucket,
@@ -2165,8 +2168,8 @@ _DECLARED_NAME_TAGS = frozenset({
 def suffix_reading(token: WorkToken) -> PendingReading:
     """The suffix reading of a word a decision read as a name: a
     generation or agnomen by its listed word, a numeral by its shape
-    unless listed, another listed post-nominal word as a suffix, and
-    otherwise a credential, listed or shaped."""
+    unless listed, another listed suffix word by its vocabulary kind,
+    and otherwise a credential, listed or shaped."""
     kind, source = suffix_kind(token.text, token.tags)
     return PendingReading(kind, source, Role.SUFFIX)
 
@@ -2179,17 +2182,42 @@ def suffix_kind(text: str,
     predicate."""
     if AGNOMEN_TAG in tags:
         return ReadingKind.AGNOMEN, ReadingSource.VOCABULARY
-    if AMBIGUOUS_WORD_TAG in tags:
+    if AMBIGUOUS_WORD_TAG in tags or GENERATION_WORD_TAG in tags:
         return ReadingKind.GENERATION, ReadingSource.VOCABULARY
     if _ROMAN.match(text.rstrip(".")) is not None:
         listed = "vocab:suffix" in tags or "vocab:suffix-word" in tags
         return (ReadingKind.GENERATION,
                 ReadingSource.VOCABULARY if listed else ReadingSource.SHAPE)
     if "vocab:suffix-word" in tags:
-        return ReadingKind.POST_NOMINAL, ReadingSource.VOCABULARY
+        return (ReadingKind.CREDENTIAL if CREDENTIAL_WORD_TAG in tags
+                else ReadingKind.POST_NOMINAL), ReadingSource.VOCABULARY
     return (ReadingKind.CREDENTIAL,
             ReadingSource.SHAPE if SHAPE_ACRONYM_TAG in tags
             else ReadingSource.VOCABULARY)
+
+
+#: The tag naming a listed suffix word's kind in the shipped reading
+#: index, for the kinds with a reading kind of their own; a courtesy, an
+#: honorific or a status reads as a post-nominal word, and an agnomen
+#: has its own set and tag.
+_LISTED_WORD_KIND_TAGS = {"generation": GENERATION_WORD_TAG,
+                          "credential": CREDENTIAL_WORD_TAG}
+
+
+# rules/R8: "The kind of a word listed as a suffix word is the shipped
+# vocabulary's, read whatever the reading's default" -- the kind the
+# views partition the suffix by (decisions/R8, #326). A memo, C-level
+# on a hit, so a suffix word read before costs no frame; bounded since
+# its key is the caller's text.
+@functools.lru_cache(maxsize=4096)
+def listed_word_kind_tag(n: str) -> str | None:
+    """The kind tag classify writes beside "vocab:suffix-word" on a word
+    whose normalized form `n` is the one it read (a delimiter glued on
+    removed, rules/C10): the kind the compiled sets do not record (`jr`
+    and `esq` both compile into `suffix_words`), read from the shipped
+    files' reading index (3.0's 4b), so a word only a caller's
+    `Lexicon` lists has none."""
+    return _LISTED_WORD_KIND_TAGS.get(suffix_kind_of(n) or "")
 
 
 def name_reading(token: WorkToken, role: Role | Deferred) -> PendingReading:

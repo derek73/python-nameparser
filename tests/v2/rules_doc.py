@@ -64,7 +64,7 @@ NEAR_SIGNAL_RE = re.compile(r"^\s*[*_]*signals?[*_]*\s*[:\uff1a]",
 ASSERTABLE_FIELDS = frozenset({
     "title", "given", "middle", "family", "suffix", "nickname", "maiden",
     "family_base", "family_particles", "surnames", "given_names",
-    "initials", "capitalized", "capitalized_forced", "str",
+    "generation", "credentials", "initials", "capitalized", "capitalized_forced", "str",
     "ambiguities", "pieces", "warns", "raises"})
 
 

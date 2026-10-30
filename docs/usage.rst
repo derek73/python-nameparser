@@ -720,6 +720,21 @@ is the problem the split exists to solve:
     >>> [n.family for n in sorted(names, key=lambda n: n.family.lower())]
     ['de la Vega', 'Smith', 'van Gogh']
 
+``generation`` and ``credentials`` split the suffix the way a name
+form's "Jr., III" and "PhD, MD" boxes do: a generation numbers the
+bearer among relatives of the same name, and every other word after
+the name, an honorific such as ``Esq.`` included, is a credential.
+Each joins its words as ``suffix`` does, and ``suffix`` itself is
+unchanged:
+
+.. doctest::
+
+    >>> suffixed = parse("Smith, John, Jr., MD, Esq.")
+    >>> suffixed.generation, suffixed.credentials, suffixed.suffix
+    ('Jr.', 'MD, Esq.', 'Jr., MD, Esq.')
+    >>> suffixed.render("{given} {family} {generation}")
+    'John Smith Jr.'
+
 Dicts and strings
 ------------------
 
