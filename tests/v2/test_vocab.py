@@ -236,7 +236,7 @@ def _w(body: str) -> str:
 MUTATIONS = [
     # 12: [rules], only where a pack reads it, each key a rule with a
     # value of its shape, never a scalar's default (#754, 4f)
-    ("rules-in-a-file-no-pack-reads", {"en.toml": _w('[rules]\ntwo_family_names = true')}, "no pack reads 'en'"),
+    ("rules-in-a-file-no-pack-reads", {"en.toml": _w('[rules]\ntwo_family_names = true')}, "en.toml: .* no pack reads this file's"),
     ("rules-not-a-table", {"ru.toml": "schema = 1\nrules = true\n"}, "`rules` must be a table"),
     ("rules-empty", {"ru.toml": _w("[rules]")}, "an empty table turns nothing on"),
     ("rules-unknown-key", {"ru.toml": _w('[rules]\npatronymic = ["east-slavic"]')}, "unknown key 'patronymic'"),
@@ -1278,10 +1278,17 @@ def test_the_rule_tables_agree_with_policy() -> None:
     assert build.RULE_KEYS["name_order"][1] | {build.RULE_DEFAULTS["name_order"]} == set(
         _locale._ORDERS)
     default = Policy()
-    assert _locale._ORDERS[str(build.RULE_DEFAULTS["name_order"])] == default.name_order
+    # every scalar key names its default, which converts to Policy()'s
+    # value and is refused at build time, so a new choice or flag key
+    # cannot let a pack restate it; a set key has no scalar default
+    scalars = {k for k, (shape, _) in build.RULE_KEYS.items() if shape != "set"}
+    assert set(build.RULE_DEFAULTS) == scalars
+    for key in scalars:
+        restated = _locale._RULE_VALUES[key](build.RULE_DEFAULTS[key])
+        assert restated == getattr(default, key), key
+        assert build.RULE_DEFAULTS[key] not in build.RULE_KEYS[key][1], key
     for key, (shape, names) in build.RULE_KEYS.items():
         if shape == "flag":
-            assert build.RULE_DEFAULTS[key] is getattr(default, key) is False
             values: list[object] = [True]
         elif shape == "choice":
             values = sorted(names)

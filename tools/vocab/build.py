@@ -489,7 +489,7 @@ def _load_rules(name: str, table: object) -> dict[str, Any]:
     tag = name.removesuffix(".toml")
     if tag not in PACK_RULES:
         raise VocabError(f"{name}: a [rules] table compiles into a shipped pack's "
-                         f"policy patch, and no pack reads {tag!r}'s; the files "
+                         f"policy patch, and no pack reads this file's; the files "
                          f"packs read are {sorted(PACK_RULES)} (PACK_RULES)")
     if not isinstance(table, dict):
         raise VocabError(f"{name}: `rules` must be a table ([rules])")
