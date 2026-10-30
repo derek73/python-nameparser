@@ -722,7 +722,8 @@ class Policy:
     #: ``Pérez``, and with ``two_family_names`` too, "María José García
     #: López" gives given ``María José``, family ``García López``. The
     #: middle unit beside the given name joins it -- the one after it,
-    #: or the one before it under FAMILY_FIRST_GIVEN_LAST -- and any
+    #: or the one before it under FAMILY_FIRST_GIVEN_LAST with no family
+    #: comma, after which the part reads given-first -- and any
     #: middles past that stay middles; a particle chain the parse left
     #: in the middle counts with its word ("María del Carmen de la
     #: Vega" gives given ``María del Carmen``), and an initial is taken,

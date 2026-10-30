@@ -2972,6 +2972,7 @@
 {"name": "Prop. Dr. Ada Cornelia César Martín von Brühl González Domingo MD DDS", "title": "Prop. Dr.", "given": "Ada", "middle": "Cornelia César Martín", "family": "von Brühl González Domingo", "suffix": "MD DDS", "initials": "A. C. C. M. B. G. D."}
 {"name": "Pèrs, Ciro di", "given": "Ciro", "family": "di Pèrs", "ambiguities": ["PARTICLE_OR_GIVEN", "SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)", "PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "C. P."}
 {"name": "Pérez Lucía", "order": "FAMILY_FIRST", "given": "Lucía", "family": "Pérez", "initials": "L. P."}
+{"name": "Pérez, Antonio Juan Carlos", "given": "Antonio", "middle": "Juan Carlos", "family": "Pérez", "initials": "A. J. C. P."}
 {"name": "Pérez, Juan Carlos", "given": "Juan", "middle": "Carlos", "family": "Pérez", "initials": "J. C. P."}
 {"name": "Pérez, Juan Ó.", "given": "Juan", "middle": "Ó.", "family": "Pérez", "initials": "J. Ó. P."}
 {"name": "Pérez, Lucía", "given": "Lucía", "family": "Pérez", "initials": "L. P."}

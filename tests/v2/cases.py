@@ -672,6 +672,15 @@ CASES: tuple[Case, ...] = (
          classification="feat(#704)",
          notes="the unit beside the given name is the one before it, so "
                "the two stay in written order"),
+    Case("two_given_names_reads_a_family_comma_given_first_given_last",
+         "Pérez, Antonio Juan Carlos",
+         {"given": "Antonio Juan", "middle": "Carlos", "family": "Pérez"},
+         policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST,
+                       two_given_names=True),
+         classification="feat(#704)",
+         notes="#954 review: the part after a family comma reads "
+               "given-first under every order, so the unit after the "
+               "given name is taken"),
     Case("two_given_names_takes_a_particle_chain_left_in_the_middle",
          "María del Carmen de la Vega",
          {"given": "María del Carmen", "family": "de la Vega"},

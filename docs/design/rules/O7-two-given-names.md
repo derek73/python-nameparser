@@ -10,11 +10,12 @@
   "Ana María José Pérez"  two_given_names  →  middle="José"
   "Pérez, Juan Carlos"  two_given_names  →  given="Juan Carlos"
   ```
-- **Under a family-first order** the middle after the given name joins it, and under the family-first order with the given name last the middle before it, so the two stay in the order they were written.
+- **Under a family-first order with no family comma** the middle after the given name joins it, and under the family-first order with the given name last the middle before it, so the two stay in the order they were written; after a family comma the part is read given-first under every order, as the bullet above says.
   ```
   "García Juan Carlos"  family-first+two_given_names  →  given="Juan Carlos"
   "García Antonio Juan Carlos"  family-first-given-last+two_given_names  →  given="Juan Carlos"
   "García Antonio Juan Carlos"  family-first-given-last+two_given_names  →  middle="Antonio"
+  "Pérez, Antonio Juan Carlos"  family-first-given-last+two_given_names  →  given="Antonio Juan"
   ```
 - **A unit is counted as O6 counts a name word**, so a particle chain the name left in the middle joins with its words: a given name that a particle and its word complete reads whole.
   ```
@@ -32,7 +33,7 @@
   "Juan Carlos Pérez née López"  two_given_names  →  given="Juan Carlos"
   ```
 
-**Because:** across Spain, Portugal and Latin America a person may carry a compound given name, such as María José or Juan Carlos, and has no middle name, so every given-name word the name holds is its given name. Written given-first, that name is the same string shape as a name with a middle name, so no rule can read it from the words; the caller who knows the data is written that way says so.
+**Because:** across Spain, Portugal and Latin America a person may carry a compound given name, such as María José or Juan Carlos, two names that together are the name the person goes by, where the English convention reads the second as a middle name. Written given-first, that name is the same string shape as a name with a middle name, so no rule can read it from the words; the caller who knows the data is written that way says so.
 
 ```
 "Juan Carlos Pérez"    →  given="Juan"  · boundary
@@ -88,7 +89,7 @@
   ```
   "Vincent van Gogh van Beethoven"  two_given_names  →  given="Vincent van Gogh"
   ```
-- A particle that ends the name chains every word after it into the family (P2), so a given name a particle completes is read only where a second particle starts the family: in "Maria do Carmo Silva" the family keeps "do Carmo Silva", the same string shape as "João da Silva Santos", whose family it is.
+- A particle chain running to the end of the name is the family (P2), so a given name a particle completes is read only where a second particle starts the family: in "Maria do Carmo Silva" the family keeps "do Carmo Silva", the same string shape as "João da Silva Santos", whose family it is.
   ```
   "Maria do Carmo Silva"  two_given_names  →  family="do Carmo Silva"
   ```
