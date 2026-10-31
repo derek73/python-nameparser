@@ -2387,6 +2387,10 @@ family = { us_census_2010 = 477, wikidata = 26, as_of = 2026-10-21 }
 credential = { note = "NPPES 1 US healthcare provider writes it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
 
 [[word]]
+text = "acma"
+credential = { expands = "Associate of the Chartered Institute of Management Accountants", note = "NPPES 3 US healthcare providers (August 2026 file); govuk-people 1 name (counted 2026-10-30); ORCID's family box holds it 10 times (GB 1, IR 1, 8 with no country) and its given box once, the credential typed into the box; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 965 }
+
+[[word]]
 text = "acp"
 credential = {}
 
@@ -2602,6 +2606,10 @@ text = "bts"
 credential = {}
 
 [[word]]
+text = "bvsc"
+credential = { cased = "BVSc", expands = "Bachelor of Veterinary Science", note = "NPPES 7 US healthcare providers (August 2026 file); govuk-people 1 name; ctgov-officials 4, all after a comma, written BVSc 3, BVsc 1 (counted 2026-10-30); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 965 }
+
+[[word]]
 text = "cacts"
 credential = {}
 
@@ -2738,6 +2746,10 @@ credential = {}
 [[word]]
 text = "cce"
 credential = {}
+
+[[word]]
+text = "cchem"
+credential = { cased = "CChem", expands = "Chartered Chemist", note = "govuk-people 4 names, 3 after a comma (counted 2026-10-30); ORCID's family box holds it 3 times (IN 3), the credential typed into the box; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 965 }
 
 [[word]]
 text = "cchp"
@@ -3376,6 +3388,10 @@ text = "cste"
 credential = {}
 
 [[word]]
+text = "cstj"
+credential = { cased = "CStJ", expands = "Commander of the Order of St John", note = "govuk-people 1 name, after a comma (counted 2026-10-30); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 965 }
+
+[[word]]
 text = "ctbs"
 credential = {}
 
@@ -3537,6 +3553,16 @@ credential = {}
 [[word]]
 text = "djur"
 credential = {}
+
+[[word]]
+text = "dl"
+family = { note = "DL written as a name, mostly a person's initials: ORCID's family box holds DL for 21 people and its given box 54, counted 2026-10-30 by tools/name_usage.py --boxes; psc-individuals Dl 7; no US Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer" }
+[word.credential]
+acronym = false
+cased = "DL"
+expands = "Deputy Lieutenant"
+issue = 965
+note = "govuk-people 18 names, 6 after a comma; ukec-individuals 6; ctgov-officials 12 (counted 2026-10-30). A word, not an acronym, gated by its family reading (rules/S11) as kc is: 'Jane Doe, DL' ends in the suffix, 'Anna DL' keeps the family; the dotted D.L. stays the paired initials rules/S3 leaves to the name"
 
 [[word]]
 text = "dm"
@@ -3818,6 +3844,11 @@ text = "fieee"
 credential = {}
 
 [[word]]
+text = "fiet"
+family = { us_census_2010 = 140, as_of = 2026-10-30, note = "Dutch Fiet; ORCID family box 5 (NL 2), PatentsView 3" }
+credential = { expands = "Fellow of the Institution of Engineering and Technology", note = "govuk-people 6 names, 2 after a comma; ctgov-officials 1, after a comma (counted 2026-10-30); gated by its family reading (rules/S4)", issue = 965 }
+
+[[word]]
 text = "fmp"
 credential = {}
 
@@ -3838,6 +3869,10 @@ text = "fnss"
 credential = {}
 
 [[word]]
+text = "fnuci"
+credential = { cased = "FNucI", expands = "Fellow of the Nuclear Institute", note = "govuk-people 1 name (counted 2026-10-30); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 965 }
+
+[[word]]
 text = "fp&a"
 credential = {}
 
@@ -3850,8 +3885,34 @@ text = "fpc"
 credential = {}
 
 [[word]]
+text = "fraes"
+credential = { cased = "FRAeS", expands = "Fellow of the Royal Aeronautical Society", note = "govuk-people 5 names, written FRAeS 4, FRAes 1 (counted 2026-10-30); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 965 }
+
+[[word]]
+text = "freng"
+family = { us_census_2010 = 187, wikidata = 2, as_of = 2026-10-30, note = "Norwegian Freng; ORCID family box 6 (GB 2, NO 1, US 1)" }
+[word.credential]
+expands = "Fellow of the Royal Academy of Engineering"
+issue = 965
+note = "govuk-people 14 names, 4 after a comma; ctgov-officials 1, after a comma (counted 2026-10-30); gated by its family reading (rules/S4): written FREng it reads as the name (rules/S6), as MEng does"
+[word.credential.excluded]
+cased = { reason = "a mask applies in every role, and Freng is borne as a surname: 'ANNA FRENG' would render 'Anna FREng' (measured 2026-10-30)", issue = 965 }
+
+[[word]]
 text = "frm"
 credential = {}
+
+[[word]]
+text = "frmets"
+credential = { cased = "FRMetS", expands = "Fellow of the Royal Meteorological Society", note = "govuk-people 1 name, after a comma (counted 2026-10-30); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 965 }
+
+[[word]]
+text = "frs"
+credential = { expands = "Fellow of the Royal Society", note = "govuk-people 10 names, 0 after a comma; ctgov-officials 18, all after a comma (counted 2026-10-30); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 965 }
+
+[[word]]
+text = "frsa"
+credential = { expands = "Fellow of the Royal Society of Arts", note = "govuk-people 6 names, 1 after a comma; ctgov-officials 1 (counted 2026-10-30); ORCID's family box holds it 15 times, the credential typed into the box (GB 5); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 965 }
 
 [[word]]
 text = "fsa"
@@ -3944,6 +4005,10 @@ text = "hccp"
 credential = {}
 
 [[word]]
+text = "hmi"
+credential = { expands = "His Majesty's Inspector", note = "govuk-people 1 name (counted 2026-10-30); ORCID's given box holds it once; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 965 }
+
+[[word]]
 text = "hrs"
 credential = {}
 
@@ -4013,6 +4078,17 @@ text = "kbe"
 credential = {}
 
 [[word]]
+text = "kc"
+family = { note = "Nepali K.C. (Khatri Chhetri), written bare as well as dotted. Counted 2026-10-30 by tools/name_usage.py --boxes and the local corpora, none of which this reading's keys hold: ORCID's family box writes KC for 584 people, 163 of them in Nepal (0.90% of its Nepal records); nepal-candidates writes it K.C. 342, K.C 129, Kc 21; psc-individuals Kc 30; no US Census or Wikidata count" }
+given = { us_ssa = 2794, as_of = 2026-10-30, note = "both sexes summed (F 843, M 1,951); ORCID's given box 268. A leading KC is no suffix slot, so this reading is the name's provenance, not the clash" }
+[word.credential]
+acronym = false
+cased = "KC"
+expands = "King's Counsel"
+issue = 965
+note = "a word, not an acronym: the dotted K.C. stays the Nepali surname (rules/S3's paired initials, #864); gated by its family reading (rules/S11), so 'John Smith KC' ends in the suffix and 'Ram KC' keeps the family. Accepted: 'Gita Bahadur KC' reads suffix KC, and 'Lord Doe KC' family KC, a title leaving no word to spare (decisions/S11, 2026-10-30 #965)"
+
+[[word]]
 text = "kcb"
 credential = {}
 
@@ -4035,6 +4111,10 @@ credential = {}
 [[word]]
 text = "kcvo"
 credential = {}
+
+[[word]]
+text = "kfsm"
+credential = { expands = "King's Fire Service Medal", note = "govuk-people 2 names (counted 2026-10-30); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 965 }
 
 [[word]]
 text = "kg"
@@ -4109,6 +4189,10 @@ credential = {}
 [[word]]
 text = "litp"
 credential = {}
+
+[[word]]
+text = "llb"
+credential = { expands = "Bachelor of Laws", note = "NPPES 4 US healthcare providers (August 2026 file); govuk-people 2 names; ctgov-officials 4, all after a comma (counted 2026-10-30); ORCID's family box holds it 8 times (ZA 2, GB 1, GH 1, IN 1, KE 1, 2 with no country), the credential typed into the box; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 965 }
 
 [[word]]
 text = "llm"
@@ -4226,6 +4310,10 @@ text = "mcdba"
 credential = {}
 
 [[word]]
+text = "mchema"
+credential = { cased = "MChemA", expands = "Master Chemical Analyst", note = "govuk-people 2 names, 1 after a comma (counted 2026-10-30); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 965 }
+
+[[word]]
 text = "mches"
 credential = {}
 
@@ -4294,6 +4382,14 @@ text = "mhsc"
 credential = { cased = "MHSc", expands = "Master of Health Science", note = "NPPES 80 US healthcare providers (August 2026 file); 104 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
 
 [[word]]
+text = "mibiol"
+credential = { cased = "MIBiol", expands = "Member of the Institute of Biology", note = "govuk-people 1 name, after a comma (counted 2026-10-30); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 965 }
+
+[[word]]
+text = "micfor"
+credential = { cased = "MICFor", expands = "Member of the Institute of Chartered Foresters", note = "govuk-people 2 names, both after a comma (counted 2026-10-30); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 965 }
+
+[[word]]
 text = "micp"
 credential = {}
 
@@ -4338,6 +4434,10 @@ text = "mmed"
 credential = { cased = "MMed", expands = "Master of Medicine", note = "NPPES 25 US healthcare providers (August 2026 file); 189 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
 
 [[word]]
+text = "mms"
+credential = { expands = "Master of Medical Science", note = "NPPES 582 US healthcare providers (August 2026 file); govuk-people 1 name; ctgov-officials 45, all after a comma (counted 2026-10-30); ORCID's given box holds it 5 times and its family box 3, mostly with no country; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 965 }
+
+[[word]]
 text = "mmsc"
 credential = { cased = "MMSc", expands = "Master of Medical Science", note = "NPPES 432 US healthcare providers (August 2026 file); 111 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
 
@@ -4348,6 +4448,10 @@ credential = {}
 [[word]]
 text = "mnae"
 credential = {}
+
+[[word]]
+text = "moid"
+excluded = { credential = { reason = "Moid is a borne given name, written last in South Asian and Arabic names (Syed Abdul Moid): psc-individuals writes it Moid 4, nepal-candidates 2, ORCID's given box 20 (IN 2, PK 2, US 2) and family box 14 (IN 4, US 2, 8 with no country). Listed and gated by a given reading, it would read the suffix only spelled MOID in a mixed-case name or after a comma, and take the family from a three-word name written in one case (SYED ABDUL MOID); spelled MoID, as GOV.UK writes it, it would still read as the name (rules/S6), and GOV.UK's one MoID already reads as the suffix behind a listed credential. Measured 2026-10-30 on fec-individuals (3 names writing it), govuk-people (1), orcid-researchers (0) and psc-individuals (4): no name reads differently gated or refused", issue = 965 } }
 
 [[word]]
 text = "mp"
@@ -4372,6 +4476,14 @@ credential = {}
 [[word]]
 text = "mra"
 credential = {}
+
+[[word]]
+text = "mrpharms"
+credential = { cased = "MRPharmS", expands = "Member of the Royal Pharmaceutical Society", note = "govuk-people 1 name, after a comma; ctgov-officials 3, all after a comma (counted 2026-10-30); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 965 }
+
+[[word]]
+text = "mrtpi"
+credential = { expands = "Member of the Royal Town Planning Institute", note = "govuk-people 3 names, 1 after a comma (counted 2026-10-30); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 965 }
 
 [[word]]
 text = "msa"
@@ -4552,6 +4664,16 @@ credential = { expands = "Physician Assistant", note = "NPPES 54,128 US healthca
 [[word]]
 text = "pa-c"
 credential = {}
+
+[[word]]
+text = "pc"
+family = { note = "PC written as a name, mostly a person's initials: ORCID's family box holds PC for 112 people (IN 29, US 5, NP 2) and its given box 149 (IN 20), counted 2026-10-30 by tools/name_usage.py --boxes; psc-individuals Pc 1; no US Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer" }
+[word.credential]
+acronym = false
+cased = "PC"
+expands = "Privy Counsellor"
+issue = 965
+note = "govuk-people 4 names (counted 2026-10-30); also the US Professional Corporation, NPPES 2,246 providers (written PC 1,551, P.C. 622, August 2026 file), ctgov-officials 35, 7 after a comma. A word, not an acronym, gated by its family reading (rules/S11) as kc is: 'Jane Doe PC' ends in the suffix, 'Ravi PC' keeps the family. Accepted: the dotted P.C. stays the paired initials rules/S3 leaves to the name, NPPES's 622 included (decisions/S11, 2026-10-30 #965)"
 
 [[word]]
 text = "pcc"

@@ -306,6 +306,8 @@ _EXPECTED_READINGS = [
     ("Chas. Smith", None, "Chas.", "name", "declared"),
     ("Joao Filho Silva Filho", None, "Silva", "name", "position"),
     ("Pedro Alves Filho", None, "Filho", "agnomen", "vocabulary"),
+    # a gated credential (#965): the class's tag would name a generation
+    ("John Smith KC", None, "KC", "credential", "vocabulary"),
     ("Alexandre Dumas fils", None, "fils", "generation", "vocabulary"),
     ("John Smith VI", None, "VI", "generation", "shape"),
     ("John Smith PhD", None, "PhD", "credential", "vocabulary"),

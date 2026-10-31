@@ -94,8 +94,11 @@ BEHAVIORAL: dict[str, frozenset[str]] = {
 
 #: The suffix word kinds a name reading gates (rules/S11): the third
 #: derived marker reads these, and a name reading beside another word
-#: kind marks nothing, no gate reading that clash yet.
-GATED_WORDS = frozenset({"generation", "agnomen"})
+#: kind marks nothing, no gate reading that clash yet. A credential is
+#: here for one written as a word (`acronym = false`), `kc`, `pc` and
+#: `dl`, whose dotted spellings must stay the paired initials (#965); a
+#: credential acronym's clash is the second marker's.
+GATED_WORDS = frozenset({"generation", "agnomen", "credential"})
 
 
 def indexed(kind: str) -> frozenset[str]:

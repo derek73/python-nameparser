@@ -71,7 +71,7 @@ import unicodedata
 from nameparser._lexicon import _normalize, _spells_an_initial
 from nameparser._policy import CapsSuffixes
 from nameparser._pipeline._state import (
-    AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG,
+    AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, CREDENTIAL_WORD_TAG,
     GIVEN_ABBREVIATION_TAG, PATRONYMIC_TAG, SHAPE_ACRONYM_TAG,
     SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, TITLE_AMBIGUOUS_TAG, ParseState,
     Deferred, PendingAmbiguity, PendingReading,
@@ -151,14 +151,19 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
     if suffix_as_written(n, token.text, lex):
         tags.add("vocab:suffix")
     if n in lex.suffix_words_ambiguous:
-        # rules/S11: "it reads as the generation only where the name has
-        # words to spare" -- the ambiguous class's tag, so every site
+        # rules/S11: "it reads as the suffix only where the name has words
+        # to spare" -- the ambiguous class's tag, so every site
         # that weighs a member weighs this one, and the cue tags that
         # tell `_pieces.listed_lean` how its writing leans
         tags.add(AMBIGUOUS_ACRONYM_TAG)
         tags.add(AMBIGUOUS_WORD_TAG)
         if n in lex.agnomens:
             tags.add(AGNOMEN_TAG)
+        # rules/R8: "The kind of a word listed as a suffix word is the
+        # shipped vocabulary's" -- a gated credential (`kc`, #965) reads
+        # as a credential, not the generation the class otherwise holds
+        elif listed_word_kind_tag(n) == CREDENTIAL_WORD_TAG:
+            tags.add(CREDENTIAL_WORD_TAG)
     elif n in lex.suffix_words:
         tags.add("vocab:suffix-word")
         # rules/R8: "The kind of a word listed as a suffix word is the

@@ -77,8 +77,9 @@ at fault:
     reading in any file, and has no `given` reading only where some
     other is on by default, an agnomen reading has a name reading on
     its word, which gates it (rules/S11), one on by default where the
-    agnomen is, and no other suffix word kind has one, since the gate
-    reads only those two;
+    agnomen is, and no other suffix word kind has one but a generation
+    and a credential written as a word (`acronym = false`), since the
+    gate reads only those three (GATED_WORDS);
 12. a `[rules]` table only in a file a shipped pack reads (PACK_RULES),
     non-empty, each key a RULE_KEYS rule with a value of its shape and
     names, a set's names once each, never a scalar's default (which
@@ -1169,7 +1170,8 @@ def check_pool(pool: Pool) -> None:
                              f"from tools/name_usage.py or a `note` saying why")
 
     # 11, the other suffix words: the third marker reads only a
-    # generation's and an agnomen's clash with a name (GATED_WORDS), so a
+    # generation's, an agnomen's and a credential word's clash with a
+    # name (GATED_WORDS), so a
     # name reading beside another word kind would mark nothing and leave
     # the word an ungated suffix, taking the family name from every
     # two-word name it ends; refused rather than compiled to nothing
