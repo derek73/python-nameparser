@@ -75,13 +75,20 @@ DOF_EXCERPT_VERSION = 1
 #: meta.json's detail: a change must bump it, and a corpus cut the old
 #: way is refused on load (check_dof). No refetch is needed: the cut is
 #: read from the cached days.
-DOF_CUT_VERSION = 4
+DOF_CUT_VERSION = 5
 #: The blocks kept before each block holding a "Rúbrica": the stacked
 #: signature's office lines and name, or a date line before them.
 EXCERPT_BLOCKS = 3
-#: Gates: listed notes with HTML whose note came back without it (or
-#: flagged too large to send), and "Rúbrica"s no rule could cut.
+#: Gates, each a share past which the fetch is refused: notes listed with
+#: HTML that state a size and come back without it (22 of 23,816 in
+#: 2025); notes listed with HTML that state a size of 0, published as page
+#: images (2,936 of 26,752, 11.0%), gated in case an ordinary note comes
+#: to state 0; weekdays listing no note at all (7 of 261, each a public
+#: holiday); and "Rúbrica"s no rule could cut (1,741 of 35,305 under cut
+#: version 5). Measured 2026-10-31.
 DOF_MAX_EMPTY = 0.05
+DOF_MAX_IMAGE_ONLY = 0.20
+DOF_MAX_SILENT = 0.05
 DOF_MAX_UNCUT = 0.10
 
 _DAYS = "days"
@@ -183,17 +190,30 @@ def excerpts(content: str) -> list[list[tuple[str, str]]]:
 # -- cutting a name ----------------------------------------------------------
 
 #: The spelled-out titles a name may open with, as the DOF writes them,
-#: matched case-insensitively. An abbreviated title is told by its shape
-#: instead (_ABBREVIATION).
+#: matched case-insensitively. An abbreviated title in capitals is told by
+#: its shape (_CAPITALS), one in mixed case by this list (_ABBREVIATED).
 SPELLED_TITLES = frozenset({
     "licenciado", "licenciada", "maestro", "maestra", "doctor", "doctora",
     "ingeniero", "ingeniera", "arquitecto", "arquitecta", "contador",
     "contadora", "ciudadano", "ciudadana", "profesor", "profesora",
     "actuario", "actuaria", "notario", "notaria"})
-#: An abbreviated title: one or more chunks of a capital and up to four
-#: lower-case letters, each ending in a full stop (`Lic.`, `C.`, `C.P.`,
-#: `L.C.P.`, `Mtra.`, `Lcda.`), or capitals alone (`LIC.`).
-_ABBREVIATION = re.compile(r"(?:[A-ZÁÉÍÓÚÑ](?:[a-záéíóúñ]{0,4}|[A-ZÁÉÍÓÚÑ]{0,4})\.)+")
+#: An abbreviated title in capitals: one or more chunks of up to five
+#: capitals, each ending in a full stop (`LIC.`, `C.`, `C.P.`, `L.C.P.`,
+#: `MVZ.`), the degrees too many to list. It is a shape, so a lone
+#: initial passes (`J. Guadalupe`, José's), as does a short surname in
+#: capitals ending a sentence.
+_CAPITALS = re.compile(r"(?:[A-ZÁÉÍÓÚÑ]{1,5}\.)+")
+#: The abbreviated titles in mixed case, without the full stop they are
+#: written with: the courtesy and academic titles and the ranks the DOF's
+#: 2025 signatures open with. A list, not a shape, since a capital and a
+#: few letters with a full stop is also a given name written short (`Ma.`,
+#: `Gpe.`) and a short surname ending a sentence (`Ruiz Paz. Conste`).
+_ABBREVIATED = frozenset({
+    "lic", "licda", "licdo", "lcda", "lcdo", "mtro", "mtra", "mtr", "dr", "dra",
+    "ing", "arq", "prof", "profr", "profa", "act", "abog", "biól", "biol", "geóg",
+    "psic", "med", "esp", "adm", "urb", "sen", "dip", "mag", "gral", "div", "brig",
+    "bgda", "big", "cor", "tte", "sbtte", "cap", "alm", "almte", "nav", "cab", "pil",
+    "cmdte", "magap", "ret"})  # `ret`: retirado, inside a rank (`Alm. Ret.`)
 #: An article before a title or a name (`la Lic. ...`, `el C. ...`),
 #: left out of the cut.
 _ARTICLES = frozenset({"el", "la", "los", "las"})
@@ -201,11 +221,24 @@ _ARTICLES = frozenset({"el", "la", "los", "las"})
 # noviembre de dos mil veinticinco`, `30 DE MAYO DE 2025`), and an office
 # signing without a name (`EL
 # SECRETARIO DE SALUD`), which opens with an article where a name does
-# not. A bare digit or month is not enough: `CAP. 1/O. AYTE.` is a rank
+# not (_office() has the rest). A bare digit or month is not enough: `CAP. 1/O. AYTE.` is a rank
 # and `Julio` a given name; `Del Olmo` is a surname, so `del` is not an
 # article here.
 _MONTHS = ("enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|setiembre"
            "|octubre|noviembre|diciembre")
+#: The head words of the offices that sign without a name, read only in
+#: a cut wholly in capitals (`DIRECTORA GENERAL DE RECURSOS HUMANOS`, `C.
+#: GOBERNADOR CONSTITUCIONAL DEL ESTADO`): in mixed case they open a name
+#: as an office written as a title (`Magistrado José ...`, `Jueza de
+#: Distrito Ana ...`), which is kept.
+_OFFICE_HEADS = frozenset({
+    "director", "directora", "subdirector", "subdirectora", "gobernador", "gobernadora",
+    "secretario", "secretaria", "subsecretario", "subsecretaria", "presidente",
+    "presidenta", "titular", "jefe", "jefa", "coordinador", "coordinadora", "delegado",
+    "delegada", "encargado", "encargada", "procurador", "procuradora", "fiscal",
+    "comisionado", "comisionada", "consejero", "consejera", "diputado", "diputada",
+    "senador", "senadora", "tesorero", "tesorera", "oficial", "administrador",
+    "administradora", "gerente", "representante", "apoderado", "apoderada"})
 _DATE = re.compile(rf"\bde (?:{_MONTHS})\b|\bdos mil\b|\b\d{{4}}\b", re.I)
 #: The end of the sentence before a signature: `.-` or `.–`.
 _CLAUSE_START = re.compile(r"\.\s*[-–—]\s*")
@@ -213,15 +246,31 @@ _CLAUSE_START = re.compile(r"\.\s*[-–—]\s*")
 #: full stop, with the spaces around it.
 _BEFORE_RUBRICA = re.compile(r"(?:\.\s*)?[-–—]?\s*$")
 _EDGE = " ,;:.-–—\"'()"
-#: The most words a title rule's cut may hold: the longest names in 400
-#: cuts checked by hand ran to 7 (`CAP. 1/O. AYTE. CONTAB. DANIEL LARA
+#: The most words a title rule's cut may hold: the longest name among the
+#: 800 cuts checked by hand on 2026-10-31 (200 drawn at random under each
+#: of cut versions 1, 2, 3 and 5) ran to 7 (`CAP. 1/O. AYTE. CONTAB. DANIEL LARA
 #: HERNANDEZ`).
 _TITLE_WORDS = 8
 
 
+def _office(name: str) -> bool:
+    """Whether a cut is an office signing without a name: one opening
+    with an article (`EL SECRETARIO DE SALUD`), or, in capitals, with an
+    office's head word after any titles or with `DE`/`DEL` (`DEL ESTADO`;
+    in mixed case `Del Olmo` is a surname)."""
+    words = name.split()
+    if words[0].lower() in _ARTICLES:
+        return True
+    if not name.isupper():
+        return False
+    rest = [w for w in words if not is_title(w)] or words
+    return rest[0].lower() in _OFFICE_HEADS or words[0] in ("DE", "DEL")
+
+
 def is_title(word: str) -> bool:
     """Whether `word` is a title a name may open with, by cut()'s test."""
-    return (bool(_ABBREVIATION.fullmatch(word))
+    return (bool(_CAPITALS.fullmatch(word))
+            or (word.endswith(".") and word[:-1].lower() in _ABBREVIATED)
             or word.lower().strip(".") in SPELLED_TITLES)
 
 
@@ -252,10 +301,15 @@ def cut(text: str, mask: str) -> tuple[str, str] | None:
     """The name in a signature's clause and the rule that cut it, or
     None when no rule finds one. The rules, in order:
 
-    - "bold": the last run of words with a bold letter, the run ending
-      at a word that ends in a comma (`Pardo, Presidenta ...` keeps
-      `Pardo`), with any titles directly before it (`Lic.`, which the
-      DOF mostly leaves in roman);
+    - "bold": the last run of words with a bold letter, starting after
+      the last bold word that ends in a comma, semicolon or colon, so
+      that of a run in bold throughout the part after it is kept (`GRAL.
+      BRIG. E.M., Ana Ruiz Paz` keeps `Ana Ruiz Paz`; in 2025 the part
+      after the comma was the name in about 78 of the 90 signatures
+      holding one, measured 2026-10-31 on cut version 4, the rest an
+      office after the name, which _office() mostly refuses), with any
+      titles directly before it (`Lic.`, which the DOF mostly leaves in
+      roman);
     - "title": no bold, so the run from the last title (is_title) with
       a word behind it, to the first comma after it (`Sen. Ana Ruiz,
       Secretaria` keeps `Sen. Ana Ruiz`), and no longer than
@@ -358,7 +412,7 @@ def signatures(excerpt: list[tuple[str, str]]) -> Iterator[dict[str, str] | str]
             if _DATE.search(name):
                 yield f"{layout}, cut a date"
                 continue
-            if name.split()[0].lower() in _ARTICLES:
+            if _office(name):
                 yield f"{layout}, cut an office"
                 continue
             clause = prefix + name_text
@@ -384,13 +438,16 @@ def _day_path(day: datetime.date) -> Path:
 
 
 def _get(url: str) -> dict[str, Any]:
-    """`url`'s JSON object, required to answer messageCode 200."""
-    data = _retried(url, lambda body: corpus_build.parse_json(body, url), DOF_DELAY,
-                    timeout=120)
-    if not isinstance(data, dict) or data.get("messageCode") != 200:
-        code = data.get("messageCode") if isinstance(data, dict) else type(data).__name__
-        raise ValueError(f"{url} answered {code}, not messageCode 200")
-    return data
+    """`url`'s JSON object, required to answer messageCode 200; another
+    answer is retried like a body cut short, and refused once the retries
+    run out."""
+    def read(body: bytes) -> dict[str, Any]:
+        data = corpus_build.parse_json(body, url)
+        if not isinstance(data, dict) or data.get("messageCode") != 200:
+            code = data.get("messageCode") if isinstance(data, dict) else type(data).__name__
+            raise ValueError(f"answered {code}, not messageCode 200")
+        return data
+    return _retried(url, read, DOF_DELAY, timeout=120)
 
 
 def disallowed(robots: str) -> frozenset[int]:
@@ -412,11 +469,19 @@ def disallowed(robots: str) -> frozenset[int]:
 def _fetch_day(day: datetime.date, skip: frozenset[int]) -> dict[str, Any]:
     """A day's listing and every listed note with HTML, read into
     excerpts; the counts read past are kept with them."""
-    listing = _get(DOF_DAY_URL.format(day=day.strftime("%d-%m-%Y")))
+    url = DOF_DAY_URL.format(day=day.strftime("%d-%m-%Y"))
+    listing = _get(url)
+    lacking = [e for e in DOF_EDITIONS if not isinstance(listing.get(e), list)]
+    if lacking:
+        # Every 2025 listing holds all three, a list each, an empty one
+        # on a day without that edition; a day read from a listing
+        # without one would be cached short for good.
+        raise ValueError(f"{url} lists no {', '.join(lacking)}: the listing's "
+                         f"layout may have changed under the reader")
     notes: list[dict[str, Any]] = []
     counts: Counter[str] = Counter()
     for edition in DOF_EDITIONS:
-        for entry in listing.get(edition) or []:
+        for entry in listing[edition]:
             cod = int(entry["codNota"])
             if entry.get("existeHtml") != "S":
                 counts["without html"] += 1
@@ -460,13 +525,16 @@ def _read_day(path: Path) -> dict[str, Any] | None:
 def _cache_days(*, again: bool = False) -> list[dict[str, Any]]:
     """Every day of DOF_FROM..DOF_TO, from the cache where it holds the
     day (unless `again`), else fetched and cached."""
-    skip = disallowed(_retried(DOF_ROBOTS_URL, lambda b: b.decode("utf-8"), DOF_DELAY))
+    skip: frozenset[int] | None = None  # robots.txt, read once a day needs fetching
     (directory(DOF) / _DAYS).mkdir(exist_ok=True)
     out = []
     for number, day in enumerate(_days(), 1):
         path = _day_path(day)
         held = None if again else _read_day(path)
         if held is None:
+            if skip is None:
+                skip = disallowed(_retried(DOF_ROBOTS_URL, lambda b: b.decode("utf-8"),
+                                           DOF_DELAY))
             held = _fetch_day(day, skip)
             body = (corpus_build.jsonl_line(held, sort_keys=True) + "\n").encode()
             corpus_build.write_atomic(path, gzip.compress(body, mtime=0))
@@ -481,11 +549,11 @@ def fetch_dof() -> Fetched:
     cached): the cut name, its rule, title and join (signatures()), the
     clause, the day and the note.
 
-    A listed note that states a size but comes back without HTML (one
-    stating 0 is image only, and read past), or a "Rúbrica" no rule
-    cut, is counted, and past DOF_MAX_EMPTY or DOF_MAX_UNCUT of
-    the notes or the "Rúbrica"s the fetch is refused: a changed layout
-    would otherwise read as a year with fewer signatures."""
+    A listed note that states a size but comes back without HTML, one
+    stating 0 (image only), a weekday listing no note, and a "Rúbrica"
+    no rule cut are counted, and past DOF_MAX_EMPTY, DOF_MAX_IMAGE_ONLY,
+    DOF_MAX_SILENT or DOF_MAX_UNCUT the fetch is refused: a changed
+    layout would otherwise read as a year with fewer signatures."""
     days = _cache_days()
     records: list[dict[str, str]] = []
     counts: Counter[str] = Counter()
@@ -500,8 +568,15 @@ def fetch_dof() -> Fetched:
                         continue
                     records.append({**found, "day": day["day"], "note": str(note["note"])})
     listed = counts["read"] + counts["empty"]
+    with_html = listed + counts["image only"]
+    weekdays = [day for day in days
+                if datetime.date.fromisoformat(day["day"]).weekday() < 5]
+    silent = sum(1 for day in weekdays if not sum(day["counts"].values()))
     marks = len(records) + sum(uncut.values())
     _refuse_past([(counts["empty"], listed, DOF_MAX_EMPTY, "notes with HTML came back empty"),
+                  (counts["image only"], with_html, DOF_MAX_IMAGE_ONLY,
+                   "notes with HTML stated a size of 0"),
+                  (silent, len(weekdays), DOF_MAX_SILENT, "weekdays listed no note"),
                   (sum(uncut.values()), marks, DOF_MAX_UNCUT, "Rúbricas cut no name")],
                  "the DOF's layout may have changed under the reader")
     return Fetched(records, DOF_TO.isoformat(), {
@@ -527,6 +602,12 @@ _check_cut = _pinned("cut_version", lambda: DOF_CUT_VERSION,
                      "version {wanted}; fetch again, which reads the cached days")
 
 
+_check_excerpt = _pinned("excerpt_version", lambda: DOF_EXCERPT_VERSION,
+                         "was cut from excerpts of version {held}, and this tool reads "
+                         "version {wanted}; fetch again, which reads every day again")
+
+
 def check_dof(meta: dict[str, Any]) -> str:
-    """Why a corpus of other days or another cut is refused."""
-    return _check_range(meta) or _check_to(meta) or _check_cut(meta)
+    """Why a corpus of other days, other excerpts or another cut is refused."""
+    return (_check_range(meta) or _check_to(meta) or _check_excerpt(meta)
+            or _check_cut(meta))
