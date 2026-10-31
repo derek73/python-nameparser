@@ -177,7 +177,7 @@ def test_a_record_of_another_fetch_is_refused(
         agreement.main([_PSC])
     path = _own_cache / "local" / _PSC / agreement.RECORD
     header = json.loads(path.read_text().splitlines()[0])
-    assert set(header) == {"raw_sha256", "scorer", "data_date", "tree", "entries"}
+    assert set(header) == {"raw_sha256", "scorer", "data_date", "tree", "entries", "locale"}
 
 
 def test_a_run_with_no_record_names_the_command_that_writes_one(
@@ -478,7 +478,7 @@ def test_a_score_read_in_workers_is_the_score_read_in_process(
 def test_a_score_in_workers_refuses_a_parser_it_cannot_send_them() -> None:
     from nameparser import Lexicon
     configured = Parser(lexicon=Lexicon.default().add(titles={"partner"}))
-    with pytest.raises(ValueError, match="default Parser"):
+    with pytest.raises(ValueError, match=r"parser_of\(''\)"):
         agreement.score(list(_ALL), _PSC_FIELDS, configured, jobs=2)
     agreement.score(list(_ALL), _PSC_FIELDS, configured)  # the control: in process
 
@@ -544,3 +544,130 @@ def test_a_fielded_source_naming_an_unknown_role_or_no_family_is_refused(
         fields: dict[str, str]) -> None:
     with pytest.raises(ValueError, match="each box names roles of"):
         agreement.Fielded(fields, group="nationality")
+
+
+# -- a source with a box after the name (cz-candidates) --------------------------
+
+_VOLBY = corpora.VOLBY
+_VOLBY_FIELDS = agreement.FIELDED[_VOLBY]
+
+
+def _candidate(before: str, given: str, family: str, after: str = "",
+               election: str = "kv2022") -> dict[str, str]:
+    boxes = {"titulpred": before, "jmeno": given, "prijmeni": family, "titulza": after}
+    return {"name": importlib.import_module("local_volby").compose(boxes),
+            "election": election, **{k: v for k, v in boxes.items() if v}}
+
+
+def _volby_read(record: dict[str, str], fielded: object = _VOLBY_FIELDS
+                ) -> tuple[dict[str, str], bool, bool]:
+    """The record's reading, as _read gives it, under `fielded`."""
+    reading = agreement.read(record, fielded, Parser(), _LISTED)
+    return reading.got, reading.set_aside, reading.by_suffix
+
+
+def test_a_suffix_is_compared_with_the_box_after_the_name_not_the_surname() -> None:
+    assert _volby_read(_candidate("Ing.", "Jan", "Novák", "Ph.D.")) == ({}, False, False)
+    # The control: read as a source with no suffix box, the parser's
+    # suffix is appended to the family, which the surname box then misses.
+    joined = agreement.Fielded({"titulpred": "title", "jmeno": "given+middle",
+                                "prijmeni": "family"}, group="election")
+    assert _volby_read(_candidate("Ing.", "Jan", "Novák", "Ph.D."),
+                       joined)[0] == {"family": "Novák Ph.D."}
+
+
+def test_a_title_box_the_parse_misses_is_scored_where_the_source_sets_nothing_aside() -> None:
+    # Bc. is a title by its shape (rules/H2) and listed in no vocabulary,
+    # so the title box holds an unlisted word; the parse reads the
+    # diploma after the name as a second title.
+    missed = _candidate("Bc.", "Jan", "Novák", "DiS.")
+    assert _volby_read(missed)[:2] == ({"title": "Bc. DiS.", "suffix": ""}, False)
+    # The control: a source that sets aside would excuse the parser's miss.
+    setting = agreement.Fielded(dict(_VOLBY_FIELDS.fields), group="election")
+    assert _volby_read(missed, setting)[1]
+
+
+def test_the_report_of_a_source_with_a_suffix_box_counts_by_election(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(agreement, "GROUP_FLOOR", 1)
+    rows = [_candidate("Ing.", "Jan", "Novák"), _candidate("", "Eva", "Malá", "DiS."),
+            _candidate("Mgr.", "Bo", "Dvořák", election="ps2025")]
+    result = agreement.score(rows, _VOLBY_FIELDS, Parser())
+    assert result.scored == {"kv2022": 2, "ps2025": 1}
+    assert result.misses == {"kv2022": {"title": 1, "suffix": 1}}
+    lines = agreement.report(result, _VOLBY_FIELDS, 5)
+    assert lines[:2] == ["scored 3; none set aside", "every field agrees: 2 of 3 (66.7%)"]
+    assert not any("set-aside" in line for line in lines)
+
+
+def test_a_locale_scores_its_pack_s_parser_against_a_record_of_its_own(
+        monkeypatch: pytest.MonkeyPatch, _own_cache: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    from nameparser import locales, parser_for
+    assert agreement.parser_of("cs") == parser_for(locales.CS)
+    assert agreement.parser_of("") == Parser()
+    # JUDr. et Mgr. is a run of two titles only where JUDr. is listed,
+    # as locales.CS lists it: the two parsers read it apart.
+    rows = [_candidate("JUDr. et Mgr.", "Jan", "Novák"), _candidate("Ing.", "Eva", "Malá")]
+    plant_corpus(monkeypatch, corpora, _VOLBY, rows, "kv2022 2026-03-28", "candidates",
+                 {"elections": "kv2022 ps2025", "read_version": 1})
+    assert agreement.main([_VOLBY, "--record"]) == 0
+    assert agreement.main([_VOLBY, "--record", "--locale", "CS"]) == 0
+    out = capsys.readouterr().out
+    assert "under parser_for(locales.CS)" in out
+    folder = _own_cache / "local" / _VOLBY
+    default, cs = (agreement.read_record(folder / name, corpora.load(_VOLBY), locale)
+                   for name, locale in (("agreement.jsonl", ""), ("agreement.cs.jsonl", "cs")))
+    assert len(default) == 1 and cs == {}
+    assert agreement.main([_VOLBY, "--locale", "cs"]) == 0  # its own record: no moves
+    with pytest.raises(SystemExit, match="scored under the locale 'cs', not '\\(default\\)'"):
+        agreement.read_record(folder / "agreement.cs.jsonl", corpora.load(_VOLBY))
+    loaded = corpora.load(_VOLBY)
+    assert agreement.kept_path(_VOLBY, loaded, "d" * 64, "cs") != agreement.kept_path(
+        _VOLBY, loaded, "d" * 64)
+
+
+def test_a_score_in_workers_reads_with_the_locale_s_parser(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    rows = [_candidate("JUDr. et Mgr.", "Jan", "Novák"), _candidate("Ing.", "Eva", "Malá")]
+    cs = agreement.parser_of("cs")
+    serial = agreement.score(rows, _VOLBY_FIELDS, cs)
+    monkeypatch.setattr(importlib.import_module("snapshot"), "PARALLEL_FLOOR", 1)
+    assert agreement.score(rows, _VOLBY_FIELDS, cs, jobs=2, locale="cs") == serial
+    assert serial != agreement.score(rows, _VOLBY_FIELDS, Parser())  # the control
+    with pytest.raises(ValueError, match="parser_of\\('cs'\\)"):
+        agreement.score(rows, _VOLBY_FIELDS, Parser(), jobs=2, locale="cs")
+
+
+def test_an_unknown_locale_is_refused_naming_the_packs(
+        monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    plant_corpus(monkeypatch, corpora, _VOLBY, [_candidate("Ing.", "Eva", "Malá")],
+                 "kv2022 2026-03-28", "candidates",
+                 {"elections": "kv2022 ps2025", "read_version": 1})
+    # With no record and with a base too: the locale is refused first, not
+    # as "no record" or as the base's child failing on it.
+    for extra in (["--record"], [], ["--base", str(agreement.HERE.parents[1])]):
+        with pytest.raises(SystemExit) as raised:
+            agreement.main([_VOLBY, *extra, "--locale", "xx"])
+        assert raised.value.code == 2, extra
+        assert "no such pack; the packs are" in capsys.readouterr().err, extra
+
+
+def test_a_base_check_under_a_locale_scores_the_base_under_it(
+        monkeypatch: pytest.MonkeyPatch, _own_cache: Path, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    rows = [_candidate("JUDr. et Mgr.", "Jan", "Novák"), _candidate("Ing.", "Eva", "Malá")]
+    plant_corpus(monkeypatch, corpora, _VOLBY, rows, "kv2022 2026-03-28", "candidates",
+                 {"elections": "kv2022 ps2025", "read_version": 1})
+    copy = checkout_copy(tmp_path / "copy")
+    assert agreement.main([_VOLBY, "--base", str(copy), "--locale", "cs"]) == 0
+    assert "matches the base" in capsys.readouterr().out
+    [kept] = (_own_cache / "local" / _VOLBY / agreement.KEPT).glob("*.jsonl")
+    assert kept.name.endswith("-cs.jsonl")
+    # The control: the default's base reads the JUDr. run apart, so its
+    # record, kept beside the locale's, is not the locale's.
+    assert agreement.main([_VOLBY, "--base", str(copy)]) == 0
+    records = sorted((_own_cache / "local" / _VOLBY / agreement.KEPT).glob("*.jsonl"))
+    assert len(records) == 2
+    assert {len(agreement.read_record(r, corpora.load(_VOLBY), "cs" if r == kept else ""))
+            for r in records} == {0, 1}

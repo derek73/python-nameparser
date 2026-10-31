@@ -6,7 +6,8 @@ each record's display name is parsed with the tree,
 and each field is compared with the box the filer typed it into
 (`psc-individuals`' title, forename, middle name and surname boxes;
 `orcid-researchers`' given-names box, holding the middle names too, and
-family-name box, typed by the holder). What
+family-name box, typed by the holder; `cz-candidates`' title before the
+name, given names, surname and title after it). What
 cldr_agreement.py does for the committed fields files, over names that
 are never committed -- so no CI run and no reviewer sees this score,
 and its record lives in the cache beside the corpus, where a re-run
@@ -26,6 +27,11 @@ against that shared record:
     uv run python tools/differential/local_agreement.py psc-individuals --record --tree ../master-checkout
     uv run python tools/differential/local_agreement.py psc-individuals
 
+--locale cs scores the parser of a locale pack (parser_for(locales.CS))
+instead of the default one, against a record of its own
+(agreement.cs.jsonl, and kept records keyed by the locale too), so the
+default's record and a pack's never stand for each other.
+
 The report prints counts and shapes, never a record: agreement overall
 and by the group a source states (a nationality, a country), the misses per field,
 the commonest disagreement shapes, a shape being each disagreeing
@@ -44,10 +50,12 @@ What counts:
   fold only keeps a box's case, periods, commas or spacing from reading
   as a miss: a suffix typed into the surname box after a comma
   (`Smith, Jr.`) is the parser's family and suffix rejoined.
-- There is no suffix box. A suffix the parser peels (`Jr`, `OBE`) stood
-  last in the display name, so it was typed into the last filled box,
-  normally the surname: the parser's family is compared with its suffix appended,
-  and the report counts the agreements that needed it.
+- Where a source has no suffix box, a suffix the parser peels (`Jr`,
+  `OBE`) stood last in the display name, so it was typed into the last
+  filled box, normally the surname: the parser's family is compared
+  with its suffix appended, and the report counts the agreements that
+  needed it. Where it has one (`cz-candidates`' title after the name),
+  the suffix is compared with that box alone.
 - Where a source has a title box, a filed title the parser does not read as the title, holding a word
   the vocabulary lists in neither its titles nor its connectives, is
   set aside rather than scored: a job (`Managing Partner`) or a name
@@ -103,10 +111,22 @@ class Fielded:
     values joined by a space in that order: ORCID's given-names box holds
     the middle names too. A source with no title box sets nothing aside.
     The group is title-cased for the report unless `group_cased` says
-    it is written as it should print (a country code)."""
+    it is written as it should print (a country code). `sets_aside`
+    turns off the title set-aside (read) for a source whose title box
+    holds what the law asks filed there: the Czech register's holds the
+    candidate's degrees, most of which the default vocabulary does not
+    list (`Bc.`, `Ing.`). The set-aside took 1,059 of its records on
+    2026-10-30, every one a degree or a military rank the candidate
+    filed and none a job: 756 whose box after the name holds `dis`
+    (re.search(r"\bdis\b", box.replace(".", "").casefold()); `Bc. Jan
+    Novák, DiS.` read with title `Bc. DiS.`), 179 of the rest whose
+    title box holds `et` (re.search(r"\bet\b", box); `Ing. et Ing.`
+    read as given names; 182 by that test alone, 3 holding both), and
+    124 others."""
     fields: dict[str, str]
     group: str
     group_cased: bool = False
+    sets_aside: bool = True
 
     def __post_init__(self) -> None:
         # A misspelled role would find no box (_box), and a misspelled
@@ -125,7 +145,10 @@ FIELDED = {local_corpora.PSC: Fielded(
     group_cased=True),
            local_corpora.PV: Fielded(
     {"given": "given+middle", "family": "family"}, group="country",
-    group_cased=True)}
+    group_cased=True),
+           local_corpora.VOLBY: Fielded(
+    {"titulpred": "title", "jmeno": "given+middle", "prijmeni": "family",
+     "titulza": "suffix"}, group="election", group_cased=True, sets_aside=False)}
 #: The fewest records sharing a set-aside title for the report to print
 #: it: a word typed into the title box by this many filers is no one
 #: person's name.
@@ -168,7 +191,7 @@ def read(record: dict[str, str], fielded: Fielded, parser: Parser,
     got = {role: " ".join(v for r in role.split("+") if (v := getattr(name, r)))
            for role in fielded.fields.values()}
     by_suffix = False
-    if name.suffix:
+    if name.suffix and not _box(fielded, "suffix"):
         family = fielded.fields[_box(fielded, "family")]
         with_suffix = f"{got[family]} {name.suffix}".strip()
         by_suffix = fold(with_suffix) == fold(record.get(_box(fielded, "family"), ""))
@@ -176,7 +199,7 @@ def read(record: dict[str, str], fielded: Fielded, parser: Parser,
     wrong = {role: got[role] for box, role in fielded.fields.items()
              if fold(record.get(box, "")) != fold(got[role])}
     title = record.get(_box(fielded, "title"), "")
-    if title and "title" in wrong and unlisted(title, listed):
+    if fielded.sets_aside and title and "title" in wrong and unlisted(title, listed):
         return Reading(wrong, set_aside=True)
     return Reading(wrong, by_suffix=by_suffix and not wrong)
 
@@ -224,19 +247,21 @@ class Score:
 
 
 def score(rows: Iterator[dict[str, str]] | list[dict[str, str]], fielded: Fielded,
-          parser: Parser, *, jobs: int = 1) -> Score:
+          parser: Parser, *, jobs: int = 1, locale: str = "") -> Score:
     """Every record read (read) and counted. With `jobs` above 1 the
     records are read in that many worker processes (snapshot.parallel),
-    each with a Parser() of its own, so `parser` must be the default
-    one: a configured parser cannot be sent to a worker by its name."""
+    each building the parser of its own that `locale` names (parser_of),
+    so `parser` must be that one: a configured parser cannot be sent to
+    a worker by its name."""
     rows = list(rows)
-    if jobs > 1 and parser != type(parser)():
-        raise ValueError("score() reads in workers with the default Parser(); "
-                         "pass jobs=1 to score with another parser")
+    if jobs > 1 and parser != parser_of(locale):
+        raise ValueError(f"score() reads in workers with parser_of({locale!r}); "
+                         f"pass jobs=1 to score with another parser")
     if jobs > 1:
         from snapshot import parallel
         source = next(s for s, f in FIELDED.items() if f == fielded)
-        readings = parallel(_read_chunk, rows, jobs, source, module="local_agreement")
+        readings = parallel(_read_chunk, rows, jobs, source, locale,
+                            module="local_agreement")
     else:
         listed = _title_words(parser.lexicon)
         readings = [read(record, fielded, parser, listed) for record in rows]
@@ -258,13 +283,24 @@ def score(rows: Iterator[dict[str, str]] | list[dict[str, str]], fielded: Fielde
     return result
 
 
-def _read_chunk(rows: list[dict[str, str]], source: str) -> tuple[str, list[Reading]]:
+def _read_chunk(rows: list[dict[str, str]], source: str, locale: str = ""
+                ) -> tuple[str, list[Reading]]:
     """The nameparser this process imported, and its reading of every
     record of `source`: score()'s unit of work in a worker."""
     import nameparser
-    parser = nameparser.Parser()
+    parser = parser_of(locale)
     listed = _title_words(parser.lexicon)
     return nameparser.__file__, [read(r, FIELDED[source], parser, listed) for r in rows]
+
+
+def parser_of(locale: str) -> Parser:
+    """The parser a score reads with: Parser() for no locale, else
+    parser_for the pack `locale` names (`cs` for locales.CS)."""
+    import nameparser
+    import nameparser.locales
+    if not locale:
+        return nameparser.Parser()
+    return nameparser.parser_for(getattr(nameparser.locales, locale.upper()))
 
 
 def _pct(n: int, of: int) -> str:
@@ -276,9 +312,11 @@ def report(result: Score, fielded: Fielded, top: int) -> list[str]:
     total, agreed = sum(result.scored.values()), sum(result.agreed.values())
     misses: Counter[str] = sum(result.misses.values(), Counter())
     out = [f"scored {total:,}; set aside {sum(result.set_aside.values()):,} "
-           f"(a title box the parser read otherwise, holding an unlisted word)",
-           f"every field agrees: {agreed:,} of {total:,} ({_pct(agreed, total).strip()}); "
-           f"{result.by_suffix:,} of them with the parser's suffix in the surname box",
+           f"(a title box the parser read otherwise, holding an unlisted word)"
+           if fielded.sets_aside else f"scored {total:,}; none set aside",
+           f"every field agrees: {agreed:,} of {total:,} ({_pct(agreed, total).strip()})"
+           + ("" if _box(fielded, "suffix") else
+              f"; {result.by_suffix:,} of them with the parser's suffix in the surname box"),
            "misses per field: " + ", ".join(f"{r} {misses[r]:,}" for r in roles), "",
            f"by {fielded.group} (at least {GROUP_FLOOR:,} records), misses per field:",
            f"  {fielded.group:<24} {'records':>10} {'agree':>7}  "
@@ -291,33 +329,39 @@ def report(result: Score, fielded: Fielded, top: int) -> list[str]:
                    + " ".join(f"{row[r]:>8,}" for r in roles))
     out += ["", f"the {top} commonest disagreement shapes (field: words filed->parsed):"]
     out += [f"  {n:>9,}  {s}" for s, n in result.shapes.most_common(top)]
-    out += ["", f"set-aside title boxes written by at least {TITLE_FLOOR} records:"]
-    out += [f"  {n:>9,}  {t}" for t, n in result.set_aside.most_common()
-            if n >= TITLE_FLOOR][:top]
+    if fielded.sets_aside:
+        out += ["", f"set-aside title boxes written by at least {TITLE_FLOOR} records:"]
+        out += [f"  {n:>9,}  {t}" for t, n in result.set_aside.most_common()
+                if n >= TITLE_FLOOR][:top]
     return out
 
 
-def record_path(source: str) -> Path:
-    return local_corpora.directory(source, create=False) / RECORD
+def record_path(source: str, locale: str = "") -> Path:
+    """The shared record, one per locale: agreement.jsonl for the
+    default parser, agreement.cs.jsonl for locales.CS."""
+    name = RECORD.replace(".jsonl", f".{locale}.jsonl") if locale else RECORD
+    return local_corpora.directory(source, create=False) / name
 
 
 def write_record(path: Path, local: local_corpora.Local, entries: dict[str, dict[str, Any]],
-                 tree: str) -> None:
+                 tree: str, locale: str = "") -> None:
     header = {"raw_sha256": local.meta["sha256"], "scorer": scorer_fingerprint(local.source),
               "data_date": local.meta["data_date"], "tree": tree,
-              "entries": len(entries)}
+              "entries": len(entries), "locale": locale}
     lines = [corpus_build.jsonl_line(header)]
     lines += [corpus_build.jsonl_line({"key": k, **v}) for k, v in sorted(entries.items())]
     corpus_build.write_atomic(path, ("\n".join(lines) + "\n").encode())
 
 
-def read_record(path: Path, local: local_corpora.Local) -> dict[str, dict[str, Any]]:
+def read_record(path: Path, local: local_corpora.Local, locale: str = ""
+                ) -> dict[str, dict[str, Any]]:
     """The recorded entries, or SystemExit naming the record command
     where there is no record, one that is not a record this tool wrote,
     one recorded from another fetch of the corpus, which would report
-    the records the source gained and lost as moves, or one recorded by
+    the records the source gained and lost as moves, one recorded by
     another version of the scorer, which would report its own change as
-    the parser's."""
+    the parser's, or one scored under another locale than `locale`
+    (a record written before the header named one was the default's)."""
     again = f"Record it again from the base checkout: {_record_command(local.source)}"
     if not path.exists():
         raise SystemExit(f"no record at {path}: record one first, from the base "
@@ -345,13 +389,16 @@ def read_record(path: Path, local: local_corpora.Local) -> dict[str, dict[str, A
     if recorded.get("scorer") != scorer_fingerprint(local.source):
         raise SystemExit(f"{path} was recorded by another version of this scorer, "
                          f"so its moves would be the scorer's. {again}")
+    if (held := recorded.get("locale", "")) != locale:
+        raise SystemExit(f"{path} was scored under the locale {held or '(default)'!r}, "
+                         f"not {locale or '(default)'!r}. {again}")
     return entries
 
 
 #: What decides a record's reading, besides the parser: scorer_fingerprint
 #: hashes them, as local_corpora.fold_fingerprint hashes the word fold.
 _SCORER_CODE = ("fold", "_title_words", "unlisted", "read", "_box", "Reading",
-                "key", "score", "_read_chunk")
+                "key", "score", "_read_chunk", "parser_of")
 
 
 def scorer_fingerprint(source: str) -> str:
@@ -375,42 +422,44 @@ def scorer_fingerprint(source: str) -> str:
 KEPT = "agreements"
 
 
-def kept_path(source: str, local: local_corpora.Local, digest: str) -> Path:
+def kept_path(source: str, local: local_corpora.Local, digest: str,
+              locale: str = "") -> Path:
     """Where a record of `local`'s fetch scored by a package of `digest`
     is kept: keyed by everything a record depends on besides the parser
-    (the fetch, the interpreter's minor version, the scorer), so a key
-    that matches is a record of this base."""
+    (the fetch, the interpreter's minor version, the scorer, the
+    locale), so a key that matches is a record of this base."""
     py = f"py{sys.version_info[0]}{sys.version_info[1]}"
     return (record_path(source).parent / KEPT
             / f"{local.meta['sha256'][:12]}-{digest[:16]}-{py}"
-            f"-{scorer_fingerprint(source)[:12]}.jsonl")
+            f"-{scorer_fingerprint(source)[:12]}{f'-{locale}' if locale else ''}.jsonl")
 
 
-def _score_base(root: Path, source: str, out: Path, jobs: int = 1) -> None:
+def _score_base(root: Path, source: str, out: Path, jobs: int = 1,
+                locale: str = "") -> None:
     """`root` scored into `out` in a child process (one process imports
     one nameparser), which refuses a package other than `root`'s."""
     import snapshot
     command = [sys.executable, str(HERE / "local_agreement.py"), source,
                "--record", "--tree", str(root), "--out", str(out),
-               "--jobs", str(jobs)]
+               "--jobs", str(jobs), *(["--locale", locale] if locale else [])]
     done = subprocess.run(command, env=snapshot.child_env(), capture_output=True,
                           text=True)
     if done.returncode:
         raise SystemExit(f"scoring the base {root} failed:\n{done.stdout}{done.stderr}")
 
 
-def base_entries(root: Path, local: local_corpora.Local, jobs: int = 1
-                 ) -> dict[str, dict[str, Any]]:
+def base_entries(root: Path, local: local_corpora.Local, jobs: int = 1,
+                 locale: str = "") -> dict[str, dict[str, Any]]:
     """The base checkout's record, kept for its package's digest or
     scored into one now, and a line saying which base was read. Never
     the shared record: a sibling session's would pass for this base."""
     import snapshot
     digest = snapshot._source_digest(root)
-    path = kept_path(local.source, local, digest)
+    path = kept_path(local.source, local, digest, locale)
     how = f"reused the kept record {path.name}"
     if path.exists():
         try:
-            entries = read_record(path, local)
+            entries = read_record(path, local, locale)
         except SystemExit as exc:
             print(f"deleted the kept record {path.name}: {exc}; scoring the base\n")
             path.unlink(missing_ok=True)
@@ -426,8 +475,8 @@ def base_entries(root: Path, local: local_corpora.Local, jobs: int = 1
     # the child: a record published under the key it was scored for.
     at = snapshot.scratch(path.parent)
     try:
-        _score_base(root, local.source, at / path.name, jobs)
-        entries = read_record(at / path.name, local)
+        _score_base(root, local.source, at / path.name, jobs, locale)
+        entries = read_record(at / path.name, local, locale)
         if snapshot._source_digest(root) != digest:
             raise SystemExit(f"{root / 'nameparser'} changed while it was scored, "
                              f"so its record may be half old and half new; run again")
@@ -494,7 +543,11 @@ def main(argv: list[str] | None = None) -> int:
                     help="print up to N moved records of each kind, names and all")
     ap.add_argument("--jobs", type=int, metavar="N", default=os.cpu_count() or 1,
                     help="score in N worker processes (default: every CPU)")
+    ap.add_argument("--locale", metavar="CODE", default="",
+                    help="score the parser of this locale pack (cs: locales.CS) "
+                         "instead of the default, against a record of its own")
     args = ap.parse_args(argv)
+    locale = args.locale.lower()
     if args.base and (args.record or args.out):
         ap.error("--base compares and records nothing but its kept record; "
                  "drop --record and --out")
@@ -502,26 +555,35 @@ def main(argv: list[str] | None = None) -> int:
         ap.error("--out names where --record writes")
     local = local_corpora.require(args.source)
     root = Path(args.tree).resolve() if args.tree else HERE.parents[1]
-    if args.base:
-        from snapshot import base_root
-        old = base_entries(base_root(args.base, root), local, args.jobs)
-    elif not args.record:
-        old = read_record(record_path(args.source), local)
     if args.tree:
         sys.path.insert(0, str(root))
     import nameparser
+    import nameparser.locales
     from snapshot import check_source
     at = check_source(nameparser.__file__, root)
+    # Before any record is read or base scored, whose refusals would
+    # otherwise stand in for this one ("no record", "scoring the base failed").
+    if locale and locale not in nameparser.locales.available():
+        ap.error(f"--locale {args.locale}: no such pack; the packs are "
+                 + ", ".join(nameparser.locales.available()))
+    if args.base:
+        from snapshot import base_root
+        old = base_entries(base_root(args.base, root), local, args.jobs, locale)
+    elif not args.record:
+        old = read_record(record_path(args.source, locale), local, locale)
     fielded = FIELDED[args.source]
     print(local.header())
+    if locale:
+        print(f"under parser_for(locales.{locale.upper()})")
     try:
-        result = score(records(local), fielded, nameparser.Parser(), jobs=args.jobs)
+        result = score(records(local), fielded, parser_of(locale), jobs=args.jobs,
+                       locale=locale)
     except local_corpora.CorpusDamaged as exc:
         raise SystemExit(str(exc)) from None
     print("\n".join(report(result, fielded, args.top)))
     if args.record:
-        out = args.out or record_path(args.source)
-        write_record(out, local, result.entries, str(at.parent))
+        out = args.out or record_path(args.source, locale)
+        write_record(out, local, result.entries, str(at.parent), locale)
         print(f"\nrecorded {len(result.entries):,} records that did not wholly "
               f"agree to {out}")
         return 0
