@@ -1449,7 +1449,17 @@ form to pipe somewhere:
     {"title": "", "given": "John", "middle": "", "family": "Doe", "suffix": "", "nickname": "", "maiden": ""}
 
 Add ``--locale`` to parse with a locale pack (for example ``--locale
-ru``); see :doc:`locales`.
+ru``); see :doc:`locales`. ``--order`` reads the name in another order
+— ``given-first`` (the default), ``family-first`` or
+``family-first-given-last``, the three ``Policy.name_order`` values —
+and replaces any order a pack sets. A name written wholly in Han,
+Hangul or kana keeps the order its script gives it, and a family comma
+fixes the order whatever the flag:
+
+::
+
+    $ python -m nameparser --order family-first --json "Kovács János Péter"
+    {"title": "", "given": "János", "middle": "Péter", "family": "Kovács", "suffix": "", "nickname": "", "maiden": ""}
 
 Where next
 ----------
