@@ -417,25 +417,16 @@ def parser_for(*locales: Locale, base: Parser | None = None,
             raise type(exc)(
                 f"while applying the languages chosen, "
                 f"{', '.join(sorted(languages))}: {exc}") from exc
-    # each scalar field's setter so far and the value it set: a later
-    # pack setting another value overrides it, which is warned; one
-    # setting the same value (cs and sk's two_family_names) agrees
+    # each scalar field's setter so far and the value it left in the
+    # policy: a later pack leaving another value overrides it, which is
+    # warned; one leaving the same value (cs and sk's two_family_names)
+    # agrees. Compared as the applied Policy holds it, canonical, so a
+    # mapping written in another key order (script_orders) is the value
+    # it is, not the spelling it was given in.
     scalar_setters: dict[str, tuple[str, object]] = {}
+    scalars = [f.name for f in dataclasses.fields(PolicyPatch)
+               if f.metadata.get("compose") != "union"]
     for loc in locales:
-        for f in dataclasses.fields(PolicyPatch):
-            if f.metadata.get("compose") == "union":
-                continue
-            value = getattr(loc.policy, f.name)
-            if value is UNSET:
-                continue
-            if f.name in scalar_setters:
-                code, held = scalar_setters[f.name]
-                if code != loc.code and held != value:
-                    warnings.warn(
-                        f"locale {loc.code!r} overrides scalar policy field "
-                        f"{f.name!r} already set by locale {code!r}; later wins",
-                        UserWarning, stacklevel=2)
-            scalar_setters[f.name] = (loc.code, value)
         try:
             lexicon = lexicon | loc.lexicon
             policy = apply_patch(policy, loc.policy)
@@ -445,6 +436,18 @@ def parser_for(*locales: Locale, base: Parser | None = None,
             # a subclass with extra mandatory args would break this rewrap
             raise type(exc)(
                 f"while applying locale {loc.code!r}: {exc}") from exc
+        for name in scalars:
+            if getattr(loc.policy, name) is UNSET:
+                continue
+            value = getattr(policy, name)
+            if name in scalar_setters:
+                code, held = scalar_setters[name]
+                if code != loc.code and held != value:
+                    warnings.warn(
+                        f"locale {loc.code!r} overrides scalar policy field "
+                        f"{name!r} already set by locale {code!r}; later wins",
+                        UserWarning, stacklevel=2)
+            scalar_setters[name] = (loc.code, value)
     # rules/D1: "constructing a parser that activates division for
     # scripts with no covering surnames and no segmenter warns at
     # construction, naming the dead scripts and each way out"
