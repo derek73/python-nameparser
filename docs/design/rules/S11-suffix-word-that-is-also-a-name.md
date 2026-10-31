@@ -22,7 +22,7 @@
   ```
 - **After a comma** the word is read as a member of the ambiguous class is: by the count of the name words before the comma at the first slot after it (C4), and by its writing alone where it ends the given part after a family comma (S5).
 
-**Because:** an agnomen marks its bearer against a relative of the same name, as Junior does, so it ends the name the way a generation does and is not part of the surname the family shares. But `Neto`, `Fils` and `Neta` are borne as names too, and a name of two words has no word to spare for a generation. Case tells a French surname from its generation word, and it cannot tell an agnomen, which takes the case of whatever it is written beside.
+**Because:** an agnomen marks its bearer against a relative of the same name, as Junior does, so it ends the name the way a generation does and is not part of the surname the family shares. But `Neto`, `Fils` and `Neta` are borne as names too, as KC is, PC and DL being written at the end of a name as a person's initials, and a name of two words has no word to spare for a generation or a credential. Case tells a French surname from its generation word, and it cannot tell an agnomen, which takes the case of whatever it is written beside.
 
 ```
 "Pedro Alves Neto"          →  family="Alves"
