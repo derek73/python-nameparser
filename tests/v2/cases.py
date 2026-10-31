@@ -14095,7 +14095,7 @@ CASES: tuple[Case, ...] = (
     Case("zh_mainland_surname_nong", "农建华",
          {"family": "农", "given": "建华"},
          locale="zh", classification="fix(#952)",
-         notes="mainland 198th by people; Wikidata has no 农 item"),
+         notes="mainland 198th by people, Wikidata 585th (as 農)"),
     Case("zh_mainland_surname_nong_traditional", "農建華",
          {"family": "農", "given": "建華"},
          locale="zh", classification="fix(#952)",

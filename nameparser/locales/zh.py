@@ -63,13 +63,15 @@ from nameparser._policy import PolicyPatch, Script, _script_matcher
 # * 付, 代, 候, 芦 and 农 follow it (#952): mainland surnames ranked
 #   65th, 106th, 187th, 197th and 198th by people in China's national ID
 #   registry (NCIIC, 2008), the unlisted ones in its top 200. Both
-#   rankings miss them for their regional bias: Taiwan ranks them 435th,
-#   545th, 351st, 642nd (as 蘆) and 317th (as 農), and Wikidata 393rd,
-#   589th and 610th, with no 芦 or 农. 付 stands for 傅 in mainland
-#   registration and 候 looks like the same pattern for 侯; Taiwan has
-#   under 400 bearers of either. 蘆 and 農 are their traditional forms, below, the Taiwan
-#   ranking attesting each. 代 and 芦 open Japanese surnames (代田, 芦田),
-#   a cost decisions/W1 records.
+#   rankings miss them for their regional bias: the 2023 Taiwan file
+#   ranks them 435th, 545th, 351st, 642nd (as 蘆) and 317th (as 農),
+#   and Wikidata, as fetched 2026-10-18, ranks all but 芦, which has no
+#   item, 393rd, 589th, 610th and 585th (as 農). 付 stands for 傅 in
+#   mainland registration and 候 looks like the same pattern for 侯;
+#   the 2023 Taiwan file has under 400 bearers of either. 蘆 and 農 are
+#   their traditional forms, below, the Taiwan ranking attesting each.
+#   代 and 芦 open Japanese surnames (代田, 芦田), a cost decisions/W1
+#   records with the measurements (its 2026-10-30 #952 entry).
 _SINGLE = (
     "王", "李", "张", "刘", "陈", "杨", "黄", "赵", "吴", "周",
     "徐", "孙", "马", "朱", "胡", "郭", "何", "林", "高", "罗",
