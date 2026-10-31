@@ -1452,7 +1452,9 @@ Add ``--locale`` to parse with a locale pack (for example ``--locale
 ru``); see :doc:`locales`. ``--order`` reads the name in another order
 — ``given-first`` (the default), ``family-first`` or
 ``family-first-given-last``, the three ``Policy.name_order`` values —
-and is applied after any pack:
+and replaces any order a pack sets. A name written wholly in Han,
+Hangul or kana keeps the order its script gives it, and a family comma
+fixes the order whatever the flag:
 
 ::
 
