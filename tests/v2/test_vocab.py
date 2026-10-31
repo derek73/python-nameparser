@@ -360,6 +360,11 @@ MUTATIONS = [
     # so one without would take the family name from two-word names
     ("name-reading-beside-an-honorific", {"ja.toml": _w('[[word]]\ntext = "zzt"\nhonorific = {}\nfamily = { note = "x" }')}, "gates nothing"),
     ("name-reading-beside-a-generic-suffix-word", {"en.toml": _w('[[word]]\ntext = "zzt"\nsuffix = {}\ngiven = { note = "x" }')}, "gates nothing"),
+    # every other word kind check 11 refuses, kept refused when #965
+    # widened GATED_WORDS to a credential written as a word
+    ("name-reading-beside-a-status", {"en.toml": _w('[[word]]\ntext = "zzt"\nstatus = {}\nfamily = { note = "x" }')}, "gates nothing"),
+    ("name-reading-beside-a-courtesy", {"en.toml": _w('[[word]]\ntext = "zzt"\ncourtesy = {}\nfamily = { note = "x" }')}, "gates nothing"),
+    ("name-reading-beside-a-professional-honorific", {"en.toml": _w('[[word]]\ntext = "zzt"\nprofessional_honorific = {}\nfamily = { note = "x" }')}, "gates nothing"),
     ("agnomen-as-an-acronym", {"pt.toml": _w('[[word]]\ntext = "filho"\nagnomen = { acronym = true }\nfamily = { note = "x" }')}, "an agnomen is a word"),
     ("agnomen-without-a-name-reading", {"pt.toml": _w('[[word]]\ntext = "filho"\nagnomen = {}')}, "an agnomen needs a `given` or `family` reading"),
     ("agnomen-whose-name-reading-is-elsewhere-only-as-an-exclusion", {"pt.toml": _w('[[word]]\ntext = "filho"\nagnomen = {}\nexcluded = { family = "x" }')}, "an agnomen needs a `given` or `family` reading"),

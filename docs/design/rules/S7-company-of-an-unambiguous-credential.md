@@ -28,7 +28,7 @@
 
 **Except:**
 
-- **A generation word that is also a name (S11) keeps no company**: a suffix word in front of it is no evidence, and its own count, which looks past that word, decides.
+- **A suffix word that is also a name (S11) keeps no company**: a suffix word in front of it is no evidence, and its own count, which looks past that word, decides.
   ```
   "Pedro PhD Neto"            →  family="Neto"  · boundary
   "Pedro Junior Filho"        →  family="Filho"  · boundary

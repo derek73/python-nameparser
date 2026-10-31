@@ -546,3 +546,17 @@ def test_moid_is_refused_as_a_credential() -> None:
     # GOV.UK's one MoID is left unlisted, an `excluded` entry on the word
     hn = parse("Syed Abdul Moid")
     assert (hn.family, hn.suffix) == ("Moid", "")
+
+
+def test_pc_and_dl_are_gated_as_kc_is() -> None:
+    # #965: each is written as initials too (ORCID's boxes), so a name
+    # reading gates the credential word (rules/S11): a name with a word to
+    # spare ends in it, a two-word name keeps it, and the dotted spelling
+    # stays the paired initials (rules/S3)
+    for word in ("PC", "DL"):
+        for text in (f"Jane Doe {word}", f"Jane Doe, {word}"):
+            hn = parse(text)
+            assert (hn.family, hn.credentials) == ("Doe", word), text
+        assert parse(f"Anna {word}").family == word
+        dotted = ".".join(word) + "."
+        assert parse(f"John Smith {dotted}").family == dotted

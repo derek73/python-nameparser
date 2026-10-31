@@ -3555,6 +3555,16 @@ text = "djur"
 credential = {}
 
 [[word]]
+text = "dl"
+family = { note = "DL written as a name, mostly a person's initials: ORCID's family box holds DL for 21 people and its given box 54, counted 2026-10-30 by tools/name_usage.py --boxes; psc-individuals Dl 7; no US Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer" }
+[word.credential]
+acronym = false
+cased = "DL"
+expands = "Deputy Lieutenant"
+issue = 965
+note = "govuk-people 18 names, 6 after a comma; ukec-individuals 6; ctgov-officials 12 (counted 2026-10-30). A word, not an acronym, gated by its family reading (rules/S11) as kc is: 'Jane Doe, DL' ends in the suffix, 'Anna DL' keeps the family; the dotted D.L. stays the paired initials rules/S3 leaves to the name"
+
+[[word]]
 text = "dm"
 credential = { expands = "Doctor of Medicine", note = "NPPES 80 US healthcare providers (August 2026 file); 471 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
 
@@ -4071,7 +4081,7 @@ acronym = false
 cased = "KC"
 expands = "King's Counsel"
 issue = 965
-note = "a word, not an acronym: the dotted K.C. stays the Nepali surname (rules/S3's paired initials, #864); gated by its family reading (rules/S11), so 'John Smith KC' ends in the suffix and 'Ram KC' keeps the family. Accepted: 'Ram Bahadur KC' reads suffix KC, and 'Lord Doe KC' family KC, a title leaving no word to spare (decisions/vocabulary-collisions, 2026-10-30)"
+note = "a word, not an acronym: the dotted K.C. stays the Nepali surname (rules/S3's paired initials, #864); gated by its family reading (rules/S11), so 'John Smith KC' ends in the suffix and 'Ram KC' keeps the family. Accepted: 'Gita Bahadur KC' reads suffix KC, and 'Lord Doe KC' family KC, a title leaving no word to spare (decisions/vocabulary-collisions, 2026-10-30)"
 
 [[word]]
 text = "kcb"
@@ -4649,6 +4659,16 @@ credential = { expands = "Physician Assistant", note = "NPPES 54,128 US healthca
 [[word]]
 text = "pa-c"
 credential = {}
+
+[[word]]
+text = "pc"
+family = { note = "PC written as a name, mostly a person's initials: ORCID's family box holds PC for 112 people (IN 29, US 5, NP 2) and its given box 149 (IN 20), counted 2026-10-30 by tools/name_usage.py --boxes; psc-individuals Pc 1; no US Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer" }
+[word.credential]
+acronym = false
+cased = "PC"
+expands = "Privy Counsellor"
+issue = 965
+note = "govuk-people 4 names (counted 2026-10-30); also the US Professional Corporation, NPPES 2,246 providers (written PC 1,551, P.C. 622, August 2026 file), ctgov-officials 35, 7 after a comma. A word, not an acronym, gated by its family reading (rules/S11) as kc is: 'Jane Doe PC' ends in the suffix, 'Ravi PC' keeps the family. Accepted: the dotted P.C. stays the paired initials rules/S3 leaves to the name, NPPES's 622 included (decisions/suffix-acronym-collisions, 2026-10-30)"
 
 [[word]]
 text = "pcc"

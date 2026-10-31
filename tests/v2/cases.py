@@ -1187,20 +1187,20 @@ CASES: tuple[Case, ...] = (
          classification="fix(#965)",
          notes="the other direction of the fork: the Nepali surname keeps "
                "the family, now reported"),
-    Case("title_case_kc_leans_to_the_name", "Ram Bahadur Kc",
-         {"given": "Ram", "middle": "Bahadur", "family": "Kc"},
+    Case("title_case_kc_leans_to_the_name", "Gita Bahadur Kc",
+         {"given": "Gita", "middle": "Bahadur", "family": "Kc"},
          ambiguities=("suffix-or-name",),
          classification="fix(#965)",
          notes="Title case leans a gated word to the name (rules/S6), as "
                "'Marie Fils' does"),
-    Case("dotted_kc_stays_the_nepali_surname", "Ram Bahadur K.C.",
-         {"given": "Ram", "middle": "Bahadur", "family": "K.C."},
+    Case("dotted_kc_stays_the_nepali_surname", "Gita Bahadur K.C.",
+         {"given": "Gita", "middle": "Bahadur", "family": "K.C."},
          ambiguities=("suffix-or-name",),
          classification="fix(#965)",
          notes="listed as a word, not an acronym, so the dotted pair is no "
                "spelling of it and stays #864's paired initials"),
-    Case("capitals_kc_with_a_word_to_spare_is_the_suffix", "Ram Bahadur KC",
-         {"given": "Ram", "family": "Bahadur", "suffix": "KC"},
+    Case("capitals_kc_with_a_word_to_spare_is_the_suffix", "Gita Bahadur KC",
+         {"given": "Gita", "family": "Bahadur", "suffix": "KC"},
          ambiguities=("suffix-or-name",),
          classification="fix(#965)",
          notes="the accepted cost: capitals say nothing of a gated word, "

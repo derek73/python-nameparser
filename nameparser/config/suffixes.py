@@ -82,7 +82,8 @@ SUFFIX_WORDS_AMBIGUOUS = _compiled.SUFFIX_WORDS_AMBIGUOUS
 The subset of :data:`SUFFIX_WORDS` also borne as a name: a generation
 word with a ``given`` or ``family`` reading, such as French ``fils`` and
 the Brazilian agnomens (``filho``, ``neto``), or a credential written as a
-word, King's Counsel's ``kc``, also the Nepali surname. Each is read as a suffix
+word, King's Counsel's ``kc``, also the Nepali surname, and ``pc`` and
+``dl``, also initials. Each is read as a suffix
 only where the name keeps a word for its family (rules/S11): ``Alexandre
 Dumas fils`` ends in a suffix and ``Marie Fils`` keeps her family name.
 

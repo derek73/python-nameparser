@@ -151,8 +151,8 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
     if suffix_as_written(n, token.text, lex):
         tags.add("vocab:suffix")
     if n in lex.suffix_words_ambiguous:
-        # rules/S11: "it reads as the generation only where the name has
-        # words to spare" -- the ambiguous class's tag, so every site
+        # rules/S11: "it reads as the suffix only where the name has words
+        # to spare" -- the ambiguous class's tag, so every site
         # that weighs a member weighs this one, and the cue tags that
         # tell `_pieces.listed_lean` how its writing leans
         tags.add(AMBIGUOUS_ACRONYM_TAG)

@@ -1667,6 +1667,7 @@ MAIDEN_MARKERS: frozenset[str] = frozenset({
 
 SUFFIX_WORDS: frozenset[str] = frozenset({
     '2',
+    'dl',
     'eldri',
     'esq',
     'esquire',
@@ -1701,6 +1702,7 @@ SUFFIX_WORDS: frozenset[str] = frozenset({
     'netto',
     'nt',
     'nuorempi',
+    'pc',
     'ret',
     'rinpoche',
     'snr',
@@ -1887,6 +1889,7 @@ GLUED_HONORIFICS: frozenset[str] = frozenset({
 })
 
 SUFFIX_WORDS_AMBIGUOUS: frozenset[str] = frozenset({
+    'dl',
     'fh',
     'filh',
     'filha',
@@ -1899,6 +1902,7 @@ SUFFIX_WORDS_AMBIGUOUS: frozenset[str] = frozenset({
     'neto',
     'netto',
     'nt',
+    'pc',
     'sob',
     'sobr',
     'sobrinha',
@@ -2645,6 +2649,7 @@ CAPITALIZATION_EXCEPTIONS: dict[str, str] = {
     'cpht': 'CPhT',
     'cstj': 'CStJ',
     'diplac': 'DiplAc',
+    'dl': 'DL',
     'dmin': 'DMin',
     'dmsc': 'DMSc',
     'dmsci': 'DMSci',
@@ -2679,6 +2684,7 @@ CAPITALIZATION_EXCEPTIONS: dict[str, str] = {
     'mrpharms': 'MRPharmS',
     'msc': 'MSc',
     'ní': 'Ní',
+    'pc': 'PC',
     'pharmd': 'PharmD',
     'phc': 'PhC',
     'phd': 'PhD',

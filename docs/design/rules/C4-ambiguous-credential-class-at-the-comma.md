@@ -4,7 +4,7 @@
 
 **Then:** the count before the comma is of NAME words rather than of words, and two or more of them read the part after the comma as the credential run, whatever case the name is written in.
 
-- **A generation word that is also a name (S11) is a word of this class here**, its count read the same way.
+- **A suffix word that is also a name (S11) is a word of this class here**, its count read the same way.
   ```
   "Pedro Alves, Neto"         →  suffix="Neto"
   "Silva, Neto"               →  given="Neto"  · boundary
