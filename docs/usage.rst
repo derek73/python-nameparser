@@ -697,7 +697,7 @@ absorbed as content errors.
 The command line attaches the segmenter for you: ``python -m
 nameparser --locale ja`` uses :func:`~nameparser.locales.ja_segmenter`
 when ``nameparser[ja]`` is installed, and without it divides nothing
-and warns, naming the install. :func:`~nameparser.parser_for` never
+and prints a note naming the install. :func:`~nameparser.parser_for` never
 does this on its own, so the same code parses alike wherever it runs.
 :doc:`customize` covers turning any of these behaviors off.
 
