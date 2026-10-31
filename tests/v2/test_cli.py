@@ -2,6 +2,8 @@ import importlib.util
 import json
 import subprocess
 import sys
+import warnings
+from collections.abc import Callable
 
 import pytest
 
@@ -77,55 +79,6 @@ def test_cli_locale_empty_string_errors_not_silent_default() -> None:
     assert "ru" in proc.stderr and "tr_az" in proc.stderr
 
 
-_JA_EXTRA = importlib.util.find_spec("namedivider") is not None
-
-
-@pytest.mark.skipif(_JA_EXTRA, reason="the ja extra is installed")
-def test_cli_locale_ja_without_the_extra_divides_nothing_and_warns() -> None:
-    # the ja pack ships no vocabulary, so without the segmenter --locale
-    # ja is byte-identical to the default parser on the very name the
-    # pack exists to divide, and says how to install what divides it
-    packed = _run("山田太郎", "--locale", "ja")
-    default = _run("山田太郎")
-    assert packed.returncode == 0
-    assert packed.stdout == default.stdout
-    assert "pip install 'nameparser[ja]'" in packed.stderr
-
-
-@pytest.mark.skipif(not _JA_EXTRA, reason="needs the ja extra")
-def test_cli_locale_ja_with_the_extra_divides() -> None:
-    # reached only by CI's ja-extra job
-    proc = _run("山田太郎", "--locale", "ja", "--json")
-    assert proc.returncode == 0, proc.stderr
-    fields = json.loads(proc.stdout)
-    assert (fields["family"], fields["given"]) == ("山田", "太郎")
-    assert "segment_scripts" not in proc.stderr
-
-
-def _cut_after_two(text: str) -> Segmentation:
-    return Segmentation((2,))
-
-
-def test_cli_locale_ja_attaches_the_installed_segmenter(
-        capsys: pytest.CaptureFixture[str],
-        monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(nameparser.locales, "ja_segmenter",
-                        lambda: _cut_after_two)
-    fields = _fields(capsys, "--locale", "ja", "山田太郎")
-    assert (fields["family"], fields["given"]) == ("山田", "太郎")
-
-
-def test_cli_attaches_a_segmenter_only_for_the_ja_pack(
-        capsys: pytest.CaptureFixture[str],
-        monkeypatch: pytest.MonkeyPatch) -> None:
-    # under zh the factory must not be consulted: its surname list
-    # divides, and a segmenter would answer where the list declines
-    def unexpected() -> Segmenter:
-        raise AssertionError("ja_segmenter called for zh")
-    monkeypatch.setattr(nameparser.locales, "ja_segmenter", unexpected)
-    _fields(capsys, "--locale", "zh", "王小明")
-
-
 def _fields(capsys: pytest.CaptureFixture[str], *argv: str) -> dict[str, str]:
     # in process, unlike _run: fast, and the warning tests can see what
     # main() emits
@@ -184,23 +137,6 @@ def test_cli_order_leaves_a_han_name_in_its_scripts_order(
     assert (fields["given"], fields["family"]) == ("泽东", "毛")
 
 
-def _no_ja_extra() -> Segmenter:
-    raise ImportError("no namedivider")
-
-
-def test_cli_order_with_a_locale_warns_once_from_main(
-        monkeypatch: pytest.MonkeyPatch) -> None:
-    # the parser is built once, by parser_for, which re-emits the
-    # segmenterless warning from its caller's frame (#337); the extra is
-    # made missing, since with it installed --locale ja warns nothing
-    monkeypatch.setattr(nameparser.locales, "ja_segmenter", _no_ja_extra)
-    with pytest.warns(UserWarning, match="nameparser\\[ja\\]") as record:
-        assert cli.main(["--locale", "ja", "--order", "family-first",
-                         "--json", "高橋一郎"]) == 0
-    assert len(record) == 1
-    assert record[0].filename == cli.__file__
-
-
 def test_cli_order_unknown_value_exits_2_listing_the_choices(
         capsys: pytest.CaptureFixture[str]) -> None:
     with pytest.raises(SystemExit) as exc:
@@ -211,3 +147,107 @@ def test_cli_order_unknown_value_exits_2_listing_the_choices(
 
 def test_cli_order_spellings_match_the_vocabulary_rules_tables() -> None:
     assert cli._ORDERS == _locale._ORDERS
+
+
+# --locale ja attaches the segmenter where namedivider is installed. The
+# two subprocess runs are the real thing, each in the environment it
+# needs (the extra one only in CI's ja-extra job); the in-process ones
+# stand in for the install so every branch runs everywhere.
+
+_JA_EXTRA = importlib.util.find_spec("namedivider") is not None
+_JA_NOTE = "pip install 'nameparser[ja]'"
+
+
+@pytest.mark.skipif(_JA_EXTRA, reason="the ja extra is installed")
+def test_cli_locale_ja_without_the_extra_divides_nothing_and_says_why() -> None:
+    packed = _run("山田太郎", "--locale", "ja")
+    default = _run("山田太郎")
+    assert packed.returncode == 0
+    assert packed.stdout == default.stdout
+    assert _JA_NOTE in packed.stderr
+    assert "Warning" not in packed.stderr
+
+
+@pytest.mark.skipif(not _JA_EXTRA, reason="needs the ja extra")
+def test_cli_locale_ja_with_the_extra_divides() -> None:
+    proc = _run("山田太郎", "--locale", "ja", "--json")
+    assert proc.returncode == 0, proc.stderr
+    fields = json.loads(proc.stdout)
+    assert (fields["family"], fields["given"]) == ("山田", "太郎")
+    assert proc.stderr == ""
+
+
+def _cut_after_two(text: str) -> Segmentation:
+    return Segmentation((2,))
+
+
+def _installed(monkeypatch: pytest.MonkeyPatch,
+               factory: Callable[[], Segmenter]) -> None:
+    monkeypatch.setattr(cli, "_ja_extra_installed", lambda: True)
+    monkeypatch.setattr(nameparser.locales, "ja_segmenter", factory)
+
+
+@pytest.mark.parametrize("code", ["ja", "JA"])
+@pytest.mark.parametrize("order", [(), ("--order", "given-first"),
+                                   ("--order", "family-first"),
+                                   ("--order", "family-first-given-last")])
+def test_cli_locale_ja_attaches_the_installed_segmenter(
+        capsys: pytest.CaptureFixture[str],
+        monkeypatch: pytest.MonkeyPatch,
+        code: str, order: tuple[str, ...]) -> None:
+    # --order rewrites the pack; the segmenter must survive it
+    _installed(monkeypatch, lambda: _cut_after_two)
+    with warnings.catch_warnings(record=True) as record:
+        warnings.simplefilter("always")
+        fields = _fields(capsys, "--locale", code, *order, "山田太郎")
+    assert (fields["family"], fields["given"]) == ("山田", "太郎")
+    assert record == []
+
+
+@pytest.mark.parametrize("order", [(), ("--order", "family-first")])
+def test_cli_locale_ja_without_the_extra_notes_once_and_does_not_warn(
+        capsys: pytest.CaptureFixture[str],
+        monkeypatch: pytest.MonkeyPatch, order: tuple[str, ...]) -> None:
+    # the note replaces the parser's warning (rules/D1), whose remedies
+    # are code a command line cannot pass; a print shows where warnings
+    # are filtered out
+    def unexpected() -> Segmenter:
+        raise AssertionError("ja_segmenter called without the extra")
+    monkeypatch.setattr(cli, "_ja_extra_installed", lambda: False)
+    monkeypatch.setattr(nameparser.locales, "ja_segmenter", unexpected)
+    with warnings.catch_warnings(record=True) as record:
+        warnings.simplefilter("always")
+        assert cli.main(["--locale", "ja", *order, "--json", "山田太郎"]) == 0
+    out, err = capsys.readouterr()
+    assert json.loads(out)["family"] == "山田太郎"
+    assert err.count(_JA_NOTE) == 1
+    assert record == []
+
+
+@pytest.mark.parametrize("error", [
+    ImportError("numpy.core.multiarray failed to import"),
+    OSError("libomp.dylib not found"),
+])
+def test_cli_locale_ja_a_broken_install_fails_with_its_own_error(
+        monkeypatch: pytest.MonkeyPatch, error: Exception) -> None:
+    # namedivider is there but will not load: not the missing-extra note
+    def broken() -> Segmenter:
+        raise error
+    _installed(monkeypatch, broken)
+    with pytest.raises(type(error), match=str(error)):
+        cli.main(["--locale", "ja", "山田太郎"])
+
+
+def test_cli_attaches_a_segmenter_only_for_the_ja_pack(
+        capsys: pytest.CaptureFixture[str],
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # under zh its surname list divides, and a segmenter would answer
+    # where the list declines
+    calls: list[str] = []
+
+    def factory() -> Segmenter:
+        calls.append("ja_segmenter")
+        return _cut_after_two
+    _installed(monkeypatch, factory)
+    _fields(capsys, "--locale", "zh", "王小明")
+    assert calls == []
