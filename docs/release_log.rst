@@ -21,7 +21,7 @@ Release Log
     - **Add Hindi and Bengali packs, locales.HI and locales.BN, for the romanized Indic titles.** ``parser_for(locales.HI).parse("Smt Nirmala Sitharaman")`` gives title ``Smt``, given ``Nirmala``, where 1.4.0 through 2.8.0 gave given ``Smt``, middle ``Nirmala``. ``HI`` reads ``Smt``, ``Shrimati`` and ``Shriyut`` as titles and ``BN`` ``Smt``, ``Shrimati`` and ``Adhyapak``; ``Shri`` and ``Sushri`` stay name words under both, since each opens given names (``Shri Kant``, ``Sushri Sangita``). See :doc:`locales`. :issue:`345`, :issue:`753`
 
     - **Add --order to python -m nameparser, to read a name in another order.** ``python -m nameparser --order family-first "Kovács János Péter"`` gives family ``Kovács``, given ``János``, where the command, in 2.0.0 through 2.8.0, read only the default order and gave family ``Péter``. It takes ``given-first``, ``family-first`` or ``family-first-given-last``; a name in Han, Hangul or kana keeps its script's order. :issue:`983`
-    - **Divide Japanese names under python -m nameparser --locale ja when nameparser[ja] is installed.** ``python -m nameparser --locale ja "山田太郎"`` gives family ``山田``, given ``太郎``, where 2.1.0 through 2.8.0 left family ``山田太郎`` and warned. Without the extra it reads and warns as before; ``parser_for(locales.JA)`` still needs ``segmenter=locales.ja_segmenter()``.
+    - **Divide Japanese names under python -m nameparser --locale ja when nameparser[ja] is installed.** ``python -m nameparser --locale ja "山田太郎"`` gives family ``山田``, given ``太郎``, where 2.1.0 through 2.8.0 left family ``山田太郎`` and warned. Without the extra it reads and warns as before; ``parser_for(locales.JA)`` still needs ``segmenter=locales.ja_segmenter()``. :issue:`984`
 
     **Breaking Changes**
 
