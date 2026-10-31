@@ -19,7 +19,7 @@ Closes #346, #344 and #343 as one bundle: each CLASS is decided once, and each s
 
 Elsewhere: the bundle's class-level refusals are recorded under decisions/vocabulary-exclusions, not here: the Latin forms of the Indic titles belonging to the opt-in packs of #345 (2026-09-06, #344), the native spelling shipping alone where a transliteration collides with real names (sri/shri, sant, pandit, mst), the ban on the spaced trailing set becoming glued honorifics, and the per-word title refusals (ঠাকুর/ठाकुर, कुमारी/কুমারী, बेगम/বেগম, শেখ/शेख, आचार्य, राजा/रानी), each an `excluded` entry (`uv run python tools/vocab/query.py --excluded title`).
 
-Open: #514 (whether the Tibetan prefix titles Tulku, Khenpo, Geshe, Kyabje and Jetsun fold like `Lama Zopa`); #345 (hi and bn locale packs for Latin-transliterated Indic honorifics).
+Open: #514 (whether the Tibetan prefix titles Tulku, Khenpo, Geshe, Kyabje and Jetsun fold like `Lama Zopa`); #345 (the Latin-transliterated Indic honorifics no pack reads yet: `pandit`, `sardar`, `kumari`, `babu`, `acharya`, `janab`, `begum`, and `shri` and `sushri`, which `locales.HI` and `locales.BN` left out on measurement; the packs and the words they read are decisions/vocabulary-model's 2026-10-30 phase 3e entry).
 
 ## Log
 
