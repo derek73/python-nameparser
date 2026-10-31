@@ -127,9 +127,11 @@ How each part combines:
   declared set-valued in :class:`~nameparser.PolicyPatch`:
   ``patronymic_rules``, ``segment_scripts`` and the delimiter fields.
 - **Every other, scalar field is later-wins.** If two packs with
-  different codes set the same scalar field — even to the same value —
-  the later one wins and a ``UserWarning`` is raised; a pack overrides
-  the base parser's value silently.
+  different codes set the same scalar field to different values, the
+  later one wins and a ``UserWarning`` is raised; two that set it to the
+  same value agree, so ``parser_for(locales.CS, locales.SK)``, which
+  both turn ``two_family_names`` on, is silent. A pack overrides the base
+  parser's value silently.
 
 Choosing languages
 ~~~~~~~~~~~~~~~~~~
@@ -248,8 +250,8 @@ before the name, run together in their own capitalization (``MUDr.``,
 words: ``ml.`` is also a pair of initials, ``st.`` is Saint in
 English and French, and ``Pan`` and ``Roz`` are names in other
 languages. So they wait for a pack, and each of the
-four languages is a pack of its own, which chooses that one language
-and nothing else:
+four languages is a pack of its own, which chooses that one language;
+the Czech and Slovak packs also read two family names (below):
 
 .. list-table::
    :header-rows: 1
@@ -261,10 +263,12 @@ and nothing else:
        ``JUDr.``, ``PhDr.``, ``RNDr.``, ``PaedDr.``, ``PharmDr.``,
        ``ThDr.``, ``Mgr.``, ``MgA.``, ``BcA.``; ``DrSc.``
        after the name; ``Pan`` (Mr.); ``roz.``, which routes a maiden
-       name as ``rozená`` does
+       name as ``rozená`` does; two family names
+       (``two_family_names``)
    * - ``locales.SK``
      - ``ml.``, ``st.``; the same titles but ``MgA.`` and ``BcA.``;
-       ``ArtD.`` and ``DrSc.`` after the name
+       ``ArtD.`` and ``DrSc.`` after the name; two family names
+       (``two_family_names``)
    * - ``locales.SL``, ``locales.HR``
      - ``ml.``, ``st.``
 
@@ -294,6 +298,58 @@ A word read through a pack names no language file in its
 reading is on by default, whatever the parser chose: ``ml.`` above names
 none, and ``Mgr.`` names ``en`` and ``fr``, whose Monsignor reading the
 Czech choice dropped for its own.
+
+A Czech or Slovak woman who keeps her own surname beside her
+husband's writes the two without a hyphen, ``Alena Pešová Řehořová``,
+which the default reads as a middle name and a family name. The two
+packs read two family names (``two_family_names``, see
+:ref:`two-family-names`), so the double surname stays whole. Two given
+names pay for it: with no Czech or Slovak given-name list to keep a
+given name out of the family (none is published for the whole
+population), ``Petr Pavel Novák`` reads family ``Pavel Novák``. A family
+comma keeps both as the default reads them:
+
+.. doctest::
+
+    >>> czech.parse("Alena Pešová Řehořová").family
+    'Pešová Řehořová'
+    >>> czech.parse("Petr Pavel Novák").family
+    'Pavel Novák'
+    >>> czech.parse("Novák, Petr Pavel").middle
+    'Pavel'
+
+It gains more names than it costs. Among ORCID's researchers, who split
+their own names into a given and a family box, the names agreeing in
+both rise from 95.0% to 96.4% in Czechia and from 94.8% to 96.4% in
+Slovakia; among the 170,181 records of the 2022 municipal and 2025
+Chamber elections' candidates, each a distinct set of the boxes the
+Czech registers file a name in, from 97.0% to 97.5% (measured
+2026-10-30). To keep the packs' vocabulary and
+turn the switch off, rebuild the policy:
+
+.. doctest::
+
+    >>> import dataclasses
+    >>> one_family = Parser(lexicon=czech.lexicon, policy=dataclasses.replace(
+    ...     czech.policy, two_family_names=False))
+    >>> one_family.parse("Petr Pavel Novák").family
+    'Novák'
+
+Stacked with another pack, the switch reads that pack's names too.
+With ``locales.RU`` a patronymic written after the given name joins the
+family (``Ivan Petrovich Sidorov`` → family ``Petrovich Sidorov``, where
+``locales.RU`` alone reads the patronymic ``Petrovich``), as it does
+stacked with ``locales.ES``. With ``locales.ES``, the Spanish given-name
+list is applied to Czech and Slovak names and keeps the given names it
+holds out of the family, many of them names borne in both countries
+(``Jan``, ``Marie``, ``Anna``): over the Czech registers it moved 186
+records against ``locales.CS`` alone, 134 of them to agreeing (measured
+2026-10-30).
+
+.. doctest::
+
+    >>> parser_for(locales.CS, locales.RU).parse("Ivan Petrovich Sidorov").family
+    'Petrovich Sidorov'
 
 Choosing the language costs the other readings of these words. ``Pan
 Wei`` reads title ``Pan``, ``Rosalind Roz Smith`` takes ``Smith`` for
@@ -344,12 +400,17 @@ Shipped packs
        title ``Adhyapak`` (professor), read as titles where the default
        reads a name word (``Smt Mamata Banerjee`` → title ``Smt``). See
        `Romanized Indic titles`_.
-   * - ``cs``, ``sk``, ``sl``, ``hr``
-     - Czech, Slovak, Slovenian and Croatian vocabulary — a choice of
-       that one language, which turns on the generations ``ml.`` and
-       ``st.``, and in Czech and Slovak the academic titles written
-       before the name and the degrees written after it (see
-       :ref:`west-south-slavic-packs`).
+   * - ``cs``, ``sk``
+     - Czech and Slovak — a choice of that one language, which turns on
+       the generations ``ml.`` and ``st.``, the academic titles written
+       before the name and the degrees written after it, and reads two
+       family names (``Alena Pešová Řehořová`` → family ``Pešová
+       Řehořová``), so two given names read as a given name and a family
+       name (see :ref:`west-south-slavic-packs`).
+   * - ``sl``, ``hr``
+     - Slovenian and Croatian vocabulary — a choice of that one
+       language, which turns on the generations ``ml.`` and ``st.``
+       (see :ref:`west-south-slavic-packs`).
    * - ``es``
      - Spanish — chooses ``es``, which turns on the courtesy, academic
        and professional titles that lead a Spanish name (``Lic.``,
@@ -429,14 +490,15 @@ Shipped packs
        Japanese name read with it can split after its first character
        (``安藤一郎`` → family ``安``), so use ``ja`` for Japanese data.
 
-``bn``, ``cs``, ``ga``, ``gd``, ``hi``, ``hr``, ``ne``, ``pt``, ``pt_br``, ``sk`` and ``sl`` are each a choice of languages
+``bn``, ``ga``, ``gd``, ``hi``, ``hr``, ``ne``, ``pt``, ``pt_br`` and ``sl`` are each a choice of languages
 and nothing else: the readings each turns on are the default
 vocabulary's own, written in its language's file (``ne.toml`` for
 Nepali) and off until a caller chooses the language. ``ja``, ``ru`` and
 ``tr_az`` are policy-only — they carry no vocabulary of their own.
 ``es`` is a choice with a list and one policy field beside it: it turns
 ``two_family_names`` on and carries the given names that switch leaves
-where they stand. ``zh`` is both halves at once: a surname list, plus the
+where they stand. ``cs`` and ``sk`` are a choice with that one policy
+field beside it and no list. ``zh`` is both halves at once: a surname list, plus the
 one policy field that turns segmentation on for the script it covers. See
 :ref:`config-containers` for how that split (language vocabulary vs. behavior)
 is drawn, and `Contributing a pack to nameparser`_ for which half a
@@ -758,7 +820,7 @@ by ``tests/v2/test_locales.py``:
    docstring explains how the pack-contract test enforces this. A
    pack's choice of languages is never declared: its deviations are
    derived from the words the choice changes, so a pack that is nothing
-   but a choice (``ne``, ``cs``, ``ga``) declares no ``DEVIATES`` — the
+   but a choice (``ne``, ``sl``, ``ga``) declares no ``DEVIATES`` — the
    contract test refuses one, and refuses a choice that changes no
    word — and one with a fragment or a patch beside its choice
    declares only what those change.

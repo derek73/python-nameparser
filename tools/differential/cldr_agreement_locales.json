@@ -328,23 +328,19 @@
  "cs/foreignFull/surnameFirst": {
   "family": {
    "expected": "von Brühl González Domingo",
-   "got": "von"
+   "got": "von Brühl"
   },
   "family_base": {
    "expected": "Brühl González Domingo",
-   "got": "von"
-  },
-  "family_particles": {
-   "expected": "von",
-   "got": ""
+   "got": "Brühl"
   },
   "given_names": {
    "expected": "Ada Cornelia César Martín",
-   "got": "Brühl González Domingo Ada Cornelia César Martín"
+   "got": "González Domingo Ada Cornelia César Martín"
   },
   "surname2": {
    "expected": "González Domingo",
-   "got": ""
+   "got": "Brühl"
   },
   "text": "Prof. Dr. von Brühl González Domingo Ada Cornelia César Martín, M.D. DDS."
  },
@@ -370,24 +366,27 @@
   },
   "text": "Jack"
  },
- "cs/nativeFull/givenFirst": {
+ "cs/foreignGGS/givenFirst": {
   "family": {
-   "expected": "Machová Ondřejová",
-   "got": "Ondřejová"
-  },
-  "family_base": {
-   "expected": "Machová Ondřejová",
-   "got": "Ondřejová"
+   "expected": "Stöber",
+   "got": "Hamish Stöber"
   },
   "given_names": {
-   "expected": "Alexandra Zuzana",
-   "got": "Alexandra Zuzana Machová"
+   "expected": "Zäzilia Hamish",
+   "got": "Zäzilia"
   },
-  "surname2": {
-   "expected": "Ondřejová",
-   "got": ""
+  "text": "Zäzilia Hamish Stöber"
+ },
+ "cs/foreignGGS/surnameFirst": {
+  "family": {
+   "expected": "Stöber",
+   "got": "Stöber Zäzilia"
   },
-  "text": "paní Alexandra Zuzana Machová Ondřejová, Ph.D."
+  "given_names": {
+   "expected": "Zäzilia Hamish",
+   "got": "Hamish"
+  },
+  "text": "Stöber Zäzilia Hamish"
  },
  "cs/nativeFull/sorting": {
   "given_names": {
@@ -399,25 +398,6 @@
    "got": "Ph.D."
   },
   "text": "Machová, Alexandra Zuzana (paní, Ph.D.)"
- },
- "cs/nativeFull/surnameFirst": {
-  "family": {
-   "expected": "Machová Ondřejová",
-   "got": "Machová"
-  },
-  "family_base": {
-   "expected": "Machová Ondřejová",
-   "got": "Machová"
-  },
-  "given_names": {
-   "expected": "Alexandra Zuzana",
-   "got": "Ondřejová Alexandra Zuzana"
-  },
-  "surname2": {
-   "expected": "Ondřejová",
-   "got": ""
-  },
-  "text": "paní Machová Ondřejová Alexandra Zuzana, Ph.D."
  },
  "cs/nativeG/sorting": {
   "family": {
@@ -440,6 +420,28 @@
    "got": ""
   },
   "text": "Jiří"
+ },
+ "cs/nativeGGS/givenFirst": {
+  "family": {
+   "expected": "Svoboda",
+   "got": "Václav Svoboda"
+  },
+  "given_names": {
+   "expected": "Josef Václav",
+   "got": "Josef"
+  },
+  "text": "Josef Václav Svoboda"
+ },
+ "cs/nativeGGS/surnameFirst": {
+  "family": {
+   "expected": "Svoboda",
+   "got": "Svoboda Josef"
+  },
+  "given_names": {
+   "expected": "Josef Václav",
+   "got": "Václav"
+  },
+  "text": "Svoboda Josef Václav"
  },
  "es/foreignFull/sorting": {
   "surname2": {
@@ -1633,23 +1635,19 @@
  "sk/foreignFull/surnameFirst": {
   "family": {
    "expected": "von Kant Nováková Predná",
-   "got": "von"
+   "got": "von Kant"
   },
   "family_base": {
    "expected": "Kant Nováková Predná",
-   "got": "von"
-  },
-  "family_particles": {
-   "expected": "von",
-   "got": ""
+   "got": "Kant"
   },
   "given_names": {
    "expected": "Anna Karolína Eva Kristína",
-   "got": "Kant Nováková Predná Anna Karolína Eva Kristína"
+   "got": "Nováková Predná Anna Karolína Eva Kristína"
   },
   "surname2": {
    "expected": "Nováková Predná",
-   "got": ""
+   "got": "Kant"
   },
   "text": "Mgr. Ing. von Kant Nováková Predná Anna Karolína Eva Kristína, CSc."
  },
@@ -1675,10 +1673,40 @@
   },
   "text": "Jack"
  },
+ "sk/foreignGGS/givenFirst": {
+  "family": {
+   "expected": "Stöber",
+   "got": "Hamish Stöber"
+  },
+  "given_names": {
+   "expected": "Zäzilia Hamish",
+   "got": "Zäzilia"
+  },
+  "text": "Zäzilia Hamish Stöber"
+ },
+ "sk/foreignGGS/surnameFirst": {
+  "family": {
+   "expected": "Stöber",
+   "got": "Stöber Zäzilia"
+  },
+  "given_names": {
+   "expected": "Zäzilia Hamish",
+   "got": "Hamish"
+  },
+  "text": "Stöber Zäzilia Hamish"
+ },
  "sk/nativeFull/givenFirst": {
+  "family": {
+   "expected": "Macáková",
+   "got": "Zuzana Macáková"
+  },
+  "family_base": {
+   "expected": "Macáková",
+   "got": "Zuzana Macáková"
+  },
   "given_names": {
    "expected": "Alexandra Zuzana",
-   "got": "pani Alexandra Zuzana"
+   "got": "pani Alexandra"
   },
   "text": "pani Alexandra Zuzana Macáková PhD",
   "title": {
@@ -1689,15 +1717,11 @@
  "sk/nativeFull/surnameFirst": {
   "family": {
    "expected": "Macáková",
-   "got": "pani"
+   "got": "pani Macáková"
   },
   "family_base": {
    "expected": "Macáková",
-   "got": "pani"
-  },
-  "given_names": {
-   "expected": "Alexandra Zuzana",
-   "got": "Macáková Alexandra Zuzana"
+   "got": "pani Macáková"
   },
   "text": "pani Macáková Alexandra Zuzana, PhD",
   "title": {
@@ -1726,6 +1750,28 @@
    "got": ""
   },
   "text": "Jozef"
+ },
+ "sk/nativeGGS/givenFirst": {
+  "family": {
+   "expected": "Slovák",
+   "got": "Matej Slovák"
+  },
+  "given_names": {
+   "expected": "Ján Matej",
+   "got": "Ján"
+  },
+  "text": "Ján Matej Slovák"
+ },
+ "sk/nativeGGS/surnameFirst": {
+  "family": {
+   "expected": "Slovák",
+   "got": "Slovák Ján"
+  },
+  "given_names": {
+   "expected": "Ján Matej",
+   "got": "Matej"
+  },
+  "text": "Slovák Ján Matej"
  },
  "sl/foreignFull/givenFirst": {
   "suffix": {

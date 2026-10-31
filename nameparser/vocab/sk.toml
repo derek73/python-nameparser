@@ -1,5 +1,11 @@
 schema = 1
 
+# locales.SK reads its names with two family names (rules/O6), the
+# married double surname written without a hyphen (decisions/vocabulary-model,
+# the 2026-10-30 phase 3f amended entry)
+[rules]
+two_family_names = true
+
 [[word]]
 text = "judr"
 academic = { default = false, cased = "JUDr", issue = [753, 848], expands = "doktor práv, Juris utriusque doctor" }

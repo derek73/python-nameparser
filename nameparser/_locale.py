@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import dataclasses
 import re
+import unicodedata
 from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, field
 from typing import Any
@@ -198,3 +199,39 @@ def rules_patch(tag: str) -> PolicyPatch:
     # Known mypy limitation with **dict-unpacked construction; see the
     # full explanation at Lexicon._edit in _lexicon.py.
     return PolicyPatch(**values)  # type: ignore[arg-type]
+
+
+def deviates_by_two_family_names(name: str) -> bool:
+    """The DEVIATES declaration of a pack whose patch turns on
+    ``Policy.two_family_names`` (rules/O6), the es, cs and sk packs, and
+    of the given-name list es carries beside it, which acts only where
+    O6 does. O6 acts only on a name of three or more name words, so a
+    name declares that holds three or more words, commas read as spaces,
+    or three or more units counting each run of letters and each word
+    holding no letter: the tokenizer may split one word into two runs
+    (a zero-width space, a Hangul name segmented), and a word of no
+    letter (``1``, ``-``) is a name word all the same. Titles, suffixes
+    and a family comma count here though O6 reads none of them, which
+    over-declares, the safe direction."""
+    pieces = name.replace(",", " ").split()
+    letterless = sum(1 for piece in pieces if not any(ch.isalpha() for ch in piece))
+    return len(pieces) >= 3 or _letter_runs(name) + letterless >= 3
+
+
+def _letter_runs(text: str) -> int:
+    """The runs of letters in `text`, whatever separates one from the
+    next: a hyphen, a zero-width space or an interpunct, which the
+    tokenizer may read as separators (rules/T1, T2, T3). A run of Han,
+    hangul or kana counts twice, since segmentation may divide it into a
+    family and a given name (rules/W1). A letter written with a combining
+    mark splits a run, which over-declares."""
+    runs, inside = 0, False
+    for ch in text:
+        letter = ch.isalpha()
+        if letter and not inside:
+            runs += 2 if unicodedata.name(ch, "").startswith(_CJK) else 1
+        inside = letter
+    return runs
+
+
+_CJK = ("CJK", "HANGUL", "HIRAGANA", "KATAKANA")

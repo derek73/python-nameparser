@@ -304,7 +304,8 @@ RULE_DEFAULTS: dict[str, object] = {
 #: (check_pack_rules); tests/v2/test_locales.py holds the roster to the
 #: packs. TR_AZ reads tr.toml's: no az.toml exists, and the pack's rule
 #: is one rule for both languages.
-PACK_RULES: dict[str, str] = {"ru": "RU", "tr": "TR_AZ", "es": "ES"}
+PACK_RULES: dict[str, str] = {"ru": "RU", "tr": "TR_AZ", "es": "ES", "cs": "CS",
+                             "sk": "SK"}
 
 
 class VocabError(ValueError):

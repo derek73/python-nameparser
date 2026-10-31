@@ -176,7 +176,7 @@ def test_a_reading_off_by_default_compiles_to_nothing() -> None:
         "mul.toml": _w('[[word]]\ntext = "zzq"\ngeneration = {}'),
         "de.toml": _w('[[word]]\ntext = "zzq"\ncredential = { default = false }'),
         "hr.toml": _w('[[word]]\ntext = "zzr"\nexcluded = { generation = "x" }'),
-        "cs.toml": _w('[[word]]\ntext = "zzr"\ngeneration = { default = false }'),
+        "pl.toml": _w('[[word]]\ntext = "zzr"\ngeneration = { default = false }'),
     })
     assert "zzq" in both["SUFFIX_WORDS"] and "zzq" not in both["SUFFIX_ACRONYMS"]
     assert not any("zzr" in v for v in both.values())
@@ -418,8 +418,8 @@ MUTATIONS = [
     # a title kind's exclusion refuses every other title kind, and the
     # title category every kind: one title kind made both impossible
     # before #750
-    ("excluded-title-kind-sidestepped-by-a-sibling-kind", {"cs.toml": _w('[[word]]\ntext = "pan"\nexcluded = { salutation = "the Chinese surname Pan" }'), "en.toml": _w('[[word]]\ntext = "pan"\noffice = {}')}, "the Chinese surname Pan"),
-    ("excluded-title-kind-sidestepped-by-the-generic-kind", {"cs.toml": _w('[[word]]\ntext = "pan"\nexcluded = { salutation = "the Chinese surname Pan" }'), "und.toml": _w('[[word]]\ntext = "pan"\ntitle = {}')}, "the Chinese surname Pan"),
+    ("excluded-title-kind-sidestepped-by-a-sibling-kind", {"pl.toml": _w('[[word]]\ntext = "pan"\nexcluded = { salutation = "the Chinese surname Pan" }'), "en.toml": _w('[[word]]\ntext = "pan"\noffice = {}')}, "the Chinese surname Pan"),
+    ("excluded-title-kind-sidestepped-by-the-generic-kind", {"pl.toml": _w('[[word]]\ntext = "pan"\nexcluded = { salutation = "the Chinese surname Pan" }'), "und.toml": _w('[[word]]\ntext = "pan"\ntitle = {}')}, "the Chinese surname Pan"),
     # a refused property is refused on every kind of its category, with
     # the recorded reason: keyed on the kind, check 5 would still refuse
     # this, but with its own message instead of the reason
@@ -545,7 +545,7 @@ def test_every_mutation_starts_from_a_pool_the_checks_accept() -> None:
          "de.toml": _w('[[word]]\ntext = "mister"\noffice = { same_as = "mr" }')},
         # a title kind's exclusion refuses the title set, not the word:
         # its particle reading stays free
-        {"cs.toml": _w('[[word]]\ntext = "pan"\nexcluded = { salutation = "the Chinese surname Pan" }'),
+        {"pl.toml": _w('[[word]]\ntext = "pan"\nexcluded = { salutation = "the Chinese surname Pan" }'),
          "und.toml": _w('[[word]]\ntext = "pan"\nparticle = { may_be_given = false }')},
         # one title in a different kind per file, agreeing on addresses
         {"en.toml": _w('[[word]]\ntext = "sir"\nnobility = { addresses = "given" }'),
@@ -1332,5 +1332,5 @@ def test_the_pack_roster_names_shipped_packs_their_files_compile_into() -> None:
     assert set(build.PACK_RULES.values()) <= set(locales._REGISTRY)
     for tag, attr in build.PACK_RULES.items():
         assert getattr(locales, attr).policy == rules_patch(tag), attr
-    with pytest.raises(KeyError, match="no vocabulary file 'en' holds a \\[rules\\] table; the files that do: es, ru, tr"):
+    with pytest.raises(KeyError, match="no vocabulary file 'en' holds a \\[rules\\] table; the files that do: cs, es, ru, sk, tr"):
         rules_patch("en")

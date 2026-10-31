@@ -7,7 +7,8 @@ import unicodedata
 import pytest
 
 from nameparser import (
-    Lexicon, Locale, Parser, Policy, PolicyPatch, locales, parse, parser_for,
+    Lexicon, Locale, Parser, Policy, PolicyPatch, Script, locales, parse,
+    parser_for,
 )
 from nameparser._policy import (
     CapsSuffixes, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, GIVEN_FIRST,
@@ -131,6 +132,64 @@ def test_parser_for_warns_on_scalar_conflict() -> None:
     with pytest.warns(UserWarning, match="strip_emoji"):
         p = parser_for(a, b)
     assert p.policy.strip_emoji is True  # later wins
+
+
+# Each scalar PolicyPatch field, with two values of it that differ, and
+# for a mapping-shaped field a respelling of the first in another key
+# order: the same value written differently. Held to the patch's own
+# field list below, so a new scalar field cannot escape the two tests.
+_HAN_FIRST = {Script.HAN: FAMILY_FIRST, Script.HANGUL: GIVEN_FIRST}
+_SCALARS: dict[str, tuple[object, object, object]] = {
+    "name_order": (GIVEN_FIRST, FAMILY_FIRST, GIVEN_FIRST),
+    "script_orders": (_HAN_FIRST, {Script.HAN: GIVEN_FIRST},
+                      dict(reversed(list(_HAN_FIRST.items())))),
+    "unlisted_caps_suffixes": (CapsSuffixes.OFF, CapsSuffixes.AFTER_COMMA,
+                               CapsSuffixes.OFF),
+    **{flag: (False, True, False) for flag in (
+        "middle_as_family", "lenient_comma_suffixes", "strip_emoji",
+        "strip_bidi", "unlisted_dotted_suffixes", "two_family_names",
+        "two_given_names")},
+}
+
+
+def test_the_scalar_table_is_every_scalar_patch_field() -> None:
+    assert set(_SCALARS) == {f.name for f in dataclasses.fields(PolicyPatch)
+                             if f.metadata.get("compose") != "union"}
+
+
+def _pack(code: str, field: str, value: object) -> Locale:
+    return Locale(code=code, lexicon=Lexicon.empty(),
+                  policy=PolicyPatch(**{field: value}))  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize("field", sorted(_SCALARS))
+def test_parser_for_warns_where_two_packs_set_a_scalar_differently(field: str) -> None:
+    first, other, _ = _SCALARS[field]
+    with pytest.warns(UserWarning, match=f"'bb' overrides scalar policy field {field!r} "
+                                         f"already set by locale 'aa'; later wins"):
+        stacked = parser_for(_pack("aa", field, first), _pack("bb", field, other))
+    # later wins: the field reads as the second pack alone sets it
+    assert getattr(stacked.policy, field) == getattr(
+        parser_for(_pack("bb", field, other)).policy, field)
+
+
+@pytest.mark.parametrize("field", sorted(_SCALARS))
+def test_parser_for_is_silent_where_two_packs_set_a_scalar_alike(field: str) -> None:
+    # two packs agreeing on a value override nothing, whatever spelling of
+    # it each writes (filterwarnings = error makes any warning a failure);
+    # the warning is for a value that differs, test above
+    first, _, respelled = _SCALARS[field]
+    for second in (first, respelled):
+        stacked = parser_for(_pack("aa", field, first), _pack("bb", field, second))
+        assert stacked.policy == parser_for(_pack("aa", field, first)).policy
+
+
+def test_parser_for_is_silent_over_the_shipped_packs_that_agree() -> None:
+    # cs, sk and es all turn two_family_names on: their stacks, in either
+    # order, must not fail a caller running with warnings as errors
+    for stack in ((locales.CS, locales.SK), (locales.SK, locales.CS),
+                  (locales.ES, locales.CS, locales.SK)):
+        assert parser_for(*stack).policy.two_family_names is True
 
 
 def test_matches_component_wise_case_insensitive() -> None:
