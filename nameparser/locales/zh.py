@@ -66,8 +66,8 @@ from nameparser._policy import PolicyPatch, Script, _script_matcher
 #   rankings miss them for their regional bias: Taiwan ranks them 435th,
 #   545th, 351st, 642nd (as 蘆) and 317th (as 農), and Wikidata 393rd,
 #   589th and 610th, with no 芦 or 农. 付 stands for 傅 in mainland
-#   registration and 候 looks like the same pattern for 侯; Taiwan writes
-#   neither. 蘆 and 農 are their traditional forms, below, the Taiwan
+#   registration and 候 looks like the same pattern for 侯; Taiwan has
+#   under 400 bearers of either. 蘆 and 農 are their traditional forms, below, the Taiwan
 #   ranking attesting each. 代 and 芦 open Japanese surnames (代田, 芦田),
 #   a cost decisions/W1 records.
 _SINGLE = (
