@@ -1,6 +1,6 @@
 [project]
 name = "nameparser"
-description = "A simple Python module for parsing human names into their individual components."
+description = "Parse human names into title, given, middle, family, suffix, nickname and maiden name. Typed, zero-dependency, CJK-aware."
 readme = "README.rst"
 requires-python = ">=3.11"
 license = "LGPL-2.1-or-later"
@@ -28,6 +28,12 @@ classifiers = [
   "Typing :: Typed",
 ]
 dependencies = []
+
+[project.urls]
+Documentation = "https://nameparser.readthedocs.io/en/latest/"
+Changelog = "https://nameparser.readthedocs.io/en/latest/release_log.html"
+Source = "https://github.com/derek73/python-nameparser"
+Issues = "https://github.com/derek73/python-nameparser/issues"
 
 [project.optional-dependencies]
 # Japanese kanji-name segmentation (#272), wrapped by
