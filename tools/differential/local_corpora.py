@@ -45,7 +45,9 @@ $NAMEPARSER_TOOLS_CACHE (default ~/.cache/nameparser-tools), and
   record's two boxes joined, with the boxes, the credit name and the
   country with where it came from; one distinct PatentsView inventor
   name in a country, its two boxes joined, with the boxes, the country
-  and how many people filed under it. The counts are counted from here.
+  and how many people filed under it; one distinct Czech election
+  candidate's four boxes composed into a name, with the boxes and the
+  election. The counts are counted from here.
 - corpus.jsonl -- the distinct names, in the corpus line format
   snapshot.py and compare.py --corpus read: each record's "name", and
   for nepal-candidates its Devanagari name too, and for
@@ -84,7 +86,8 @@ and what its terms allow is its module's docstring: local_ctgov.py
 local_govuk.py (govuk-people),
 local_psc.py (psc-individuals), local_jrc.py (jrc-names),
 local_nepal.py (nepal-candidates), local_orcid.py
-(orcid-researchers) and local_patentsview.py (patentsview-inventors).
+(orcid-researchers), local_patentsview.py (patentsview-inventors) and
+local_volby.py (cz-candidates).
 """
 from __future__ import annotations
 
@@ -135,6 +138,7 @@ from local_psc import PSC, check_psc, fetch_psc, renew_psc  # noqa: E402
 from local_tse import check_tse, fetch_tse  # noqa: E402
 from local_tw import fetch_tw  # noqa: E402
 from local_ukec import fetch_ukec  # noqa: E402
+from local_volby import VOLBY, check_volby, fetch_volby  # noqa: E402
 
 RAW, CORPUS, META, SNAPSHOT = "raw.jsonl", "corpus.jsonl", "meta.json", "snapshot.jsonl"
 INDEX = "wordindex.json"
@@ -257,6 +261,12 @@ SOURCES: dict[str, Source] = {
                "Open Data Portal (CC BY 4.0; credit PatentsView)",
         unit="names", fetch=fetch_pv, renew=renew_pv, check=check_pv,
         extract=pv_extract, boxes=pv_boxes),
+    VOLBY: Source(
+        credit="ČSÚ (Czech Statistical Office) election candidate registers, "
+               "volby.gov.cz (CC BY 4.0, csu.gov.cz/podminky_pro_vyuzivani_a_dalsi_"
+               "zverejnovani_statistickych_udaju_csu; each name composed from "
+               "the filed boxes, so derived data)",
+        unit="candidates", fetch=fetch_volby, check=check_volby),
 }
 
 
