@@ -217,10 +217,17 @@ def test_a_suffix_word_beside_a_name_reading_is_gated_and_an_agnomen_by_the_coun
     c = build.compile_files({"fr.toml": _w(
         '[[word]]\ntext = "zzq"\ngeneration = {}\nfamily = { note = "x" }\n\n'
         '[[word]]\ntext = "zzr"\ngeneration = {}'),
-        "pt.toml": _w('[[word]]\ntext = "zzs"\nagnomen = {}\ngiven = { note = "x" }')})
-    assert {"zzq", "zzr", "zzs"} <= c["SUFFIX_WORDS"]
-    assert c["SUFFIX_WORDS_AMBIGUOUS"] == {"zzq", "zzs"}
+        "pt.toml": _w('[[word]]\ntext = "zzs"\nagnomen = {}\ngiven = { note = "x" }'),
+        # a credential written as a word is gated as a generation is
+        # (#965's `kc`); one written as an acronym stays the second
+        # marker's, an ambiguous acronym
+        "en.toml": _w('[[word]]\ntext = "zzu"\ncredential = { acronym = false }\n'
+                      'family = { note = "x" }\n\n'
+                      '[[word]]\ntext = "zzv"\ncredential = {}\nfamily = { note = "x" }')})
+    assert {"zzq", "zzr", "zzs", "zzu"} <= c["SUFFIX_WORDS"]
+    assert c["SUFFIX_WORDS_AMBIGUOUS"] == {"zzq", "zzs", "zzu"}
     assert c["AGNOMENS"] == {"zzs"}
+    assert "zzv" in c["SUFFIX_ACRONYMS_AMBIGUOUS"] and "zzv" not in c["SUFFIX_WORDS"]
     # only the kinds a gate reads; another word kind beside a name
     # reading is refused (check 11), never left ungated
 

@@ -319,9 +319,11 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # 'Royal Smith', each under three orders; 1448 -> 1451 on 2026-10-28,
     # #913's 'Chancellor Smith', reporting title-or-name under three
     # orders; 1451 -> 1452 on 2026-10-30, #954's 'bin Ali Hassan', which
-    # carries its own policy, one particle-or-given claim.
-    assert claims == 1452, (
-        f"the field sweep checks {claims} claims, recorded as 1452 on "
+    # carries its own policy, one particle-or-given claim; 1452 -> 1476
+    # the same day, #965's eight KC rows, each reporting suffix-or-name
+    # under three orders.
+    assert claims == 1476, (
+        f"the field sweep checks {claims} claims, recorded as 1476 on "
         f"2026-10-30")
 
 
@@ -664,8 +666,11 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # 436 -> 437 on 2026-10-27, #892's ', Jane van Jr.' row under
     # FAMILY_FIRST, a particle-or-given report P6's attachment decides;
     # 437 -> 443 the same day, #843's two abbreviated-agnomen rows read
-    # as the suffix, each under the three orders
-    assert (checked, skipped) == (443, 302), (checked, skipped)
+    # as the suffix, each under the three orders; 443 -> 452 and 302 ->
+    # 305 on 2026-10-30, #965's KC rows under the three orders, nine
+    # stand-ins landing in the alternative's field and three keeping the
+    # taken one
+    assert (checked, skipped) == (452, 305), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:

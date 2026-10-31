@@ -16,7 +16,7 @@ Not standing: the split of 2026-10-17 #682, carried out.
 
 Elsewhere: the split `Ph. D.` starting the run in a main segment too, from where it stands though the walk leaves it out, and any other credential split across a space starting it as the one member of the ambiguous class that does (`John Smith Ph. D. Jones` → suffix 'Ph. D. Jones', reported; `John Smith Pharm D Jones` → suffix 'Pharm D Jones') — decisions/S12's 2026-10-25 #752 entry; a credential opening the part after the comma, and the split `Ph. D.` starting the run as `PhD` does (`Smith, John Ph. D. Jones` → suffix 'Ph. D. Jones') — decisions/C13's 2026-10-04 (Derek), #603 entry; the run stopping short of a lone letter ending the given part ahead of a further comma (`Smith, John PhD I, Jr.` → middle 'I', suffix 'PhD, Jr.') — decisions/C9's 2026-10-25 #819 entry.
 
-Open: none in this file.
+Open: #965 (an unlisted word in capitals joins a listed credential's run behind it, `CBE KC`, but not in front of it).
 
 ## Log
 

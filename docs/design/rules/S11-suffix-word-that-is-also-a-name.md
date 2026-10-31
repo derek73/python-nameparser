@@ -1,11 +1,19 @@
 # S11 — a suffix word that is also a name
 
-**When:** a generation word that is also borne as a name, or a spelling of one, stands where a suffix may stand, as in "Pedro Alves Neto" or "Alexandre Dumas fils".
+**When:** a generation word that is also borne as a name, or a spelling of one, stands where a suffix may stand, as in "Pedro Alves Neto" or "Alexandre Dumas fils", or a credential the vocabulary lists as a word rather than an acronym that is also borne as a name, as in "John Smith KC".
 
 **Then:** it reads as the generation only where the name has words to spare, as a bare ambiguous acronym does (S4), and at the slots that report, either reading carries the ambiguity flag.
 
 - **The writing is read by S6**, and for a generation word such as French `fils` it speaks at the other end of the case: lower case in a name of mixed case is the generation, Title case leans to the name, capitals say nothing. The floor holds first: lower case settles it only where the name keeps a family word, so two name words keep the family, and at the first slot after a comma the count of name words before it decides alone (C4). An agnomen, the Portuguese `Filho`, `Neto`, `Sobrinho` and their feminines, is written in the case of the name around it, so its writing never speaks and the count decides alone; so is each abbreviation of one that Brazilian filings write (`FH`, `Fo`, `Nt`, `Sobr`), a spelling of the word it shortens that takes the word's name reading with it, borne or not. Under a Brazilian Portuguese choice so is `SB`, which by default ends a name as its family word, or behind a credential as a suffix by its shape.
 - **Only name words in front of it count**: a word there that the trailing run takes, a suffix word, a roman numeral read as the generation (S10), a member of the ambiguous class its writing makes a suffix (S6) or one such a word carries in front of it (S7), is no word to spare, and a suffix word there is no company either, as it is for an acronym (S7).
+- **A credential listed as a word** is gated and written as a generation word is: King's Counsel is also the Nepali surname KC, written bare as well as dotted, and as a word, not an acronym, its dotted spelling is no spelling of it, so `K.C.` stays the paired initials S3 leaves to the name.
+  ```
+  "John Smith KC"             →  suffix="KC"
+  "Jane Doe, KC"              →  suffix="KC"
+  "Ram KC"                    →  family="KC"  · boundary
+  "Ram Bahadur Kc"            →  family="Kc"  · boundary
+  "Ram Bahadur K.C."          →  family="K.C."  · boundary
+  ```
 - **After a comma** the word is read as a member of the ambiguous class is: by the count of the name words before the comma at the first slot after it (C4), and by its writing alone where it ends the given part after a family comma (S5).
 
 **Because:** an agnomen marks its bearer against a relative of the same name, as Junior does, so it ends the name the way a generation does and is not part of the surname the family shares. But `Neto`, `Fils` and `Neta` are borne as names too, and a name of two words has no word to spare for a generation. Case tells a French surname from its generation word, and it cannot tell an agnomen, which takes the case of whatever it is written beside.
@@ -67,11 +75,16 @@
   "Pedro J. Neto"             →  family="J."
   "Pedro de Neto"             →  family="de"
   ```
+- A three-word name ending in the surname KC written in capitals loses it to the suffix, reported, the count having a word to spare and capitals saying nothing; and a title in front leaves no word to spare, so a peer's King's Counsel stays the family name.
+  ```
+  "Ram Bahadur KC"            →  suffix="KC"
+  "Lord Doe KC"               →  family="KC"
+  ```
 - A three-word name whose last word is a surname that is also an agnomen loses that surname to the suffix, reported, as `Ruth Ann Neta` does. A register whose filer typed the agnomen alone in the surname box disagrees with the reading, and one whose filer typed it after the surname before it agrees.
   ```
   "Ruth Ann Neta"             →  suffix="Neta"
   ```
 
 ---
-**Signal:** count: name words to spare beside a generation word that is also a name
+**Signal:** count: name words to spare beside a generation word, or a credential listed as a word, that is also a name
 **history:** decisions/S11 · **implemented:** nameparser/_pipeline/_classify.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py

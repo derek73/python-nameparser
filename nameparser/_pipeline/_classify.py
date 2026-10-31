@@ -71,7 +71,7 @@ import unicodedata
 from nameparser._lexicon import _normalize, _spells_an_initial
 from nameparser._policy import CapsSuffixes
 from nameparser._pipeline._state import (
-    AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG,
+    AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, CREDENTIAL_WORD_TAG,
     GIVEN_ABBREVIATION_TAG, PATRONYMIC_TAG, SHAPE_ACRONYM_TAG,
     SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, TITLE_AMBIGUOUS_TAG, ParseState,
     Deferred, PendingAmbiguity, PendingReading,
@@ -159,6 +159,11 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
         tags.add(AMBIGUOUS_WORD_TAG)
         if n in lex.agnomens:
             tags.add(AGNOMEN_TAG)
+        # rules/R8: "The kind of a word listed as a suffix word is the
+        # shipped vocabulary's" -- a gated credential (`kc`, #965) reads
+        # as a credential, not the generation the class otherwise holds
+        elif listed_word_kind_tag(n) == CREDENTIAL_WORD_TAG:
+            tags.add(CREDENTIAL_WORD_TAG)
     elif n in lex.suffix_words:
         tags.add("vocab:suffix-word")
         # rules/R8: "The kind of a word listed as a suffix word is the

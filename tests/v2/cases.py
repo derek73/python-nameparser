@@ -1161,6 +1161,57 @@ CASES: tuple[Case, ...] = (
                "member reads as the credential with no report, as "
                "'Smith, M.A.' does; before #848 this read given 'I.N.G.', "
                "reported"),
+    # #965: King's Counsel, a credential listed as a WORD and gated by
+    # its family reading (rules/S11), since KC is also the Nepali surname
+    Case("kc_ends_the_name_as_a_suffix", "John Smith KC",
+         {"given": "John", "family": "Smith", "suffix": "KC"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#965)",
+         notes="1.4.0 through 2.8.0 read the unlisted word as the family "
+               "name: middle 'Smith', family 'KC'"),
+    Case("comma_kc_is_a_suffix", "Jane Doe, KC",
+         {"given": "Jane", "family": "Doe", "suffix": "KC"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#965)",
+         notes="1.4.0 through 2.8.0 reversed the name around the unlisted "
+               "word: given 'KC', family 'Jane Doe'"),
+    Case("kc_before_a_listed_credential_joins_the_run", "Jane Doe KC CBE",
+         {"given": "Jane", "family": "Doe", "suffix": "KC CBE"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#965)",
+         notes="unlisted, KC in front of CBE read as the family name, "
+               "where behind it (`Jane Doe CBE KC`) it joined the run"),
+    Case("kc_with_no_word_to_spare_is_the_family_name", "Ram KC",
+         {"given": "Ram", "family": "KC"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#965)",
+         notes="the other direction of the fork: the Nepali surname keeps "
+               "the family, now reported"),
+    Case("title_case_kc_leans_to_the_name", "Ram Bahadur Kc",
+         {"given": "Ram", "middle": "Bahadur", "family": "Kc"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#965)",
+         notes="Title case leans a gated word to the name (rules/S6), as "
+               "'Marie Fils' does"),
+    Case("dotted_kc_stays_the_nepali_surname", "Ram Bahadur K.C.",
+         {"given": "Ram", "middle": "Bahadur", "family": "K.C."},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#965)",
+         notes="listed as a word, not an acronym, so the dotted pair is no "
+               "spelling of it and stays #864's paired initials"),
+    Case("capitals_kc_with_a_word_to_spare_is_the_suffix", "Ram Bahadur KC",
+         {"given": "Ram", "family": "Bahadur", "suffix": "KC"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#965)",
+         notes="the accepted cost: capitals say nothing of a gated word, "
+               "and the count has a word to spare (decisions/S11, "
+               "2026-10-30 #965)"),
+    Case("kc_behind_a_title_is_the_family_name", "Lord Doe KC",
+         {"title": "Lord", "given": "Doe", "family": "KC"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#965)",
+         notes="the accepted cost: a title leaves no word to spare, so a "
+               "peer's King's Counsel stays the family name, now reported"),
     Case("empty_head_si_is_a_given_name", ", Si",
          {"given": "Si"},
          ambiguities=("suffix-or-name",),
