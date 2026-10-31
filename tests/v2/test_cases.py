@@ -543,6 +543,9 @@ _EXPECTED_ALTERNATIVES: dict[tuple[str, tuple[tuple[str, Any], ...]],
         ReadingKind.AGNOMEN, Role.SUFFIX, ReadingSource.VOCABULARY)),),
     ("Jean Fils", ()): ((AmbiguityKind.SUFFIX_OR_NAME, (
         ReadingKind.GENERATION, Role.SUFFIX, ReadingSource.VOCABULARY)),),
+    # a credential gated as a generation word is (#965) names a credential
+    ("Ram KC", ()): ((AmbiguityKind.SUFFIX_OR_NAME, (
+        ReadingKind.CREDENTIAL, Role.SUFFIX, ReadingSource.VOCABULARY)),),
     ("John V", ()): ((AmbiguityKind.SUFFIX_OR_NAME, (
         ReadingKind.GENERATION, Role.SUFFIX, ReadingSource.VOCABULARY)),),
     ("John Smith Vi", ()): ((AmbiguityKind.SUFFIX_OR_NAME, (
