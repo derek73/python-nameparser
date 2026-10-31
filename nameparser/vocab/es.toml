@@ -1,5 +1,19 @@
 schema = 1
 
+# locales.ES reads its names with two family names (rules/O6), its given-name
+# list keeping a given name out of the family (decisions/vocabulary-model,
+# the 2026-10-30 phase 3g entry)
+[rules]
+two_family_names = true
+
+[[word]]
+text = "don"
+excluded = { salutation = { reason = "Don, the courtesy title, is a given name wherever names are written in Latin script, Spanish data included: it opens 80 ClinicalTrials.gov officials' names, 86 PatentsView inventors', 11 PSC filers' and 2 of 3 tse-donors filers' (registry DON JOHNSON DE OLIVEIRA E SILVA), and 2,819 FEC given parts after the family comma (ABBOTT, DON), where jrc-names' 874 openers mix it with the Italian clergy's Don (2026-10-30); US SSA 168,839 births. Counted in persons, names open with it far more often than it opens one as the title (decisions/vocabulary-model's phase 3e criterion). Spain's BOE writes it lowercase before every man it appoints (66 of 229 sampled appointment headlines, a doña 53: a doña Oana Madalina Driha), a source of titles no local corpus holds; doña, never a given name there, ships", issue = 753, decided = 2026-10-30 } }
+
+[[word]]
+text = "doña"
+salutation = { default = false, gender = "f", issue = 753, expands = "Doña, the courtesy title before a woman's given name", note = "a Spanish family name too: ORCID's family box 18 records in Spain (Doña Ortega), its given box 0 there; jrc-names writes it opening 2 names, both the title (Doña Sofía) (2026-10-30); off by default and turned on by a Spanish choice, under which it is the title at the head, where the family name is not written" }
+
 [[word]]
 text = "señor"
 salutation = { gender = "m", excluded = { after_given = "spelled SENOR, a surname (Census 2010), and middle names are drawn from surnames" } }
@@ -8,6 +22,7 @@ family = { us_census_2010 = 282, wikidata = 2, as_of = 2026-10-24, note = "the C
 [[word]]
 text = "sr"
 salutation = { gender = "m", same_as = "señor" }
+generation = { issue = 753, note = "Senior, as names written in Spanish write it too: kept beside the salutation so that a Spanish choice leaves Sr a dual position decides, a title in front and the generation behind (J. Smith Sr.), as the default reads it; without it the choice preferred the salutation and a trailing Sr read as the family name, 12 of PSC's filers (Mr Gary Holloway Sr, Ernesto Castro Sr) and 3 committed corpus names (2026-10-30, decisions/vocabulary-model's phase 3g entry)" }
 
 [[word]]
 text = "señora"
@@ -43,12 +58,68 @@ text = "srtas"
 salutation = { gender = "f", same_as = "señoritas", after_given = true }
 
 [[word]]
+text = "arq"
+academic = { default = false, issue = 753, expands = "Arq., Arquitecto or Arquitecta abbreviated", note = "no name bearer in any source tools/name_usage.py reads; ORCID's given box 12 records, the title typed in, 4 ORCID names and 2 PatentsView ones opening with it (Arq. Julia Romero) (2026-10-30)" }
+
+[[word]]
+text = "doctora"
+academic = { default = false, gender = "f", issue = 753, expands = "Doctora, the feminine of doctor", note = "no name bearer in any source tools/name_usage.py reads; ORCID's given box 4 records, the title typed in, and 2 names open with it (Doctora Yenny Nereida Montilla Polo) (2026-10-30)" }
+
+[[word]]
 text = "dra"
 academic = { gender = "f", expands = "Doctora, Doutora" }
 
 [[word]]
+text = "ingeniero"
+academic = { default = false, gender = "m", issue = 753, expands = "Ingeniero, engineer, a form of address", note = "no name bearer in any source tools/name_usage.py reads; ORCID's given box 12 records, the title typed in (2026-10-30). The abbreviation Ing. reads as a title at the head by its shape (rules/H2); written bare it stays excluded (mul.toml)" }
+
+[[word]]
+text = "ingeniera"
+academic = { default = false, gender = "f", issue = 753, same_as = "ingeniero", expands = "Ingeniera, the feminine of ingeniero", note = "no name bearer in any source tools/name_usage.py reads (2026-10-30)" }
+
+[[word]]
+text = "licenciado"
+academic = { default = false, gender = "m", issue = 753, expands = "Licenciado, the holder of a licenciatura, a form of address in Mexico and Central America", note = "no name bearer in any source tools/name_usage.py reads; 1 ORCID name opens with it (2026-10-30)" }
+
+[[word]]
+text = "lcdo"
+academic = { default = false, gender = "m", issue = 753, same_as = "licenciado", expands = "Lcdo., Licenciado abbreviated", note = "no name bearer in any source tools/name_usage.py reads; 1 ORCID name opens with it (2026-10-30)" }
+
+[[word]]
+text = "lic"
+academic = { default = false, issue = 753, same_as = "licenciado", expands = "Lic., Licenciado or Licenciada abbreviated", note = "ORCID's given box 92 records, the title typed in (Cuba 17, Ecuador 12, Mexico 6), its family box 10; 48 ORCID names open with it (Lic Arisleidy Noriega Cisneros), and ClinicalTrials.gov officials write lic. phil. and Lic. Med. after a comma (2026-10-30). With its period it already reads as a title at the head by its shape (rules/H2)" }
+
+[[word]]
+text = "licenciada"
+academic = { default = false, gender = "f", issue = 753, same_as = "licenciado", expands = "Licenciada, the feminine of licenciado", note = "no name bearer in any source tools/name_usage.py reads; 2 ORCID names open with it (2026-10-30)" }
+
+[[word]]
+text = "lcda"
+academic = { default = false, gender = "f", issue = 753, same_as = "licenciada", expands = "Lcda., Licenciada abbreviated", note = "no name bearer in any source tools/name_usage.py reads; ORCID's given box 22 records, the title typed in, 3 names opening with it (Lcda. Ligia Elena Sánchez Baque) (2026-10-30)" }
+
+[[word]]
+text = "maestro"
+excluded = { academic = { reason = "a Spanish and Italian family name (ORCID's family box 43 records in Spain, US Census 200), and the form of address is written abbreviated, Mtro., where it is written at all: only 3 names open with it in every local corpus, 2 of them a conductor's honorific (Maestro Solti) (2026-10-30); Mexico's DOF signatures spell it out now and then (Maestro Arturo Serrano Meneses), against Mtro. in 2.7% of 150 sampled", issue = 753, decided = 2026-10-30 } }
+
+[[word]]
+text = "mtra"
+academic = { default = false, gender = "f", issue = 753, expands = "Mtra., Maestra abbreviated", note = "no name bearer in any source tools/name_usage.py reads; ORCID's given box 7 records, the title typed in (2026-10-30)" }
+
+[[word]]
+text = "mtro"
+academic = { default = false, gender = "m", issue = 753, expands = "Mtro., Maestro abbreviated: the holder of a master's degree, a form of address in Mexico", note = "no name bearer in any source tools/name_usage.py reads; ORCID's given box 8 records, the title typed in, Mexico 5 (2026-10-30)" }
+
+[[word]]
+text = "profesor"
+academic = { default = false, issue = 753, expands = "Profesor, Professor", note = "no name bearer in any source tools/name_usage.py reads; 3 ORCID names open with it (Profesor José María Serbia), and ClinicalTrials.gov officials write it after a comma 107 times, mostly Polish and Romanian, a language this file does not choose (2026-10-30)" }
+
+[[word]]
+text = "profesora"
+academic = { default = false, gender = "f", issue = 753, same_as = "profesor", expands = "Profesora, the feminine of profesor", note = "no name bearer in any source tools/name_usage.py reads; 5 ORCID names open with it (Profesora Jennifer Isabel Arroyo Chacón) (2026-10-30)" }
+
+[[word]]
 text = "h"
-generation = { default = false, expands = "hijo, the son: Juan Pérez H.", issue = 752, note = "written with its period, it is exactly how an initial is written (rules/T5), so no default reads it; a Spanish pack turns it on" }
+excluded = { generation = { reason = "hijo, the son (Juan Pérez H.), but written exactly as an initial is (rules/T5), and in names mostly one: turned on by a Spanish choice it moved 6,569 FEC names, 6,565 of them a middle initial H (ABBOTT, DALLAS H read generation H), about 35 ORCID records (Chan, Charles W H; de Faria Santos, H., left with no given name), 11 JRC-Names ones (Anthony Floc h) and 8 ClinicalTrials.gov officials (Amy h, MD), and read no hijo in any of them (2026-10-30). No writing tells the two apart, so no pack reads it", issue = [752, 753], decided = 2026-10-30 } }
 
 [[word]]
 text = "de"

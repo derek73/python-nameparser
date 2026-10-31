@@ -2100,8 +2100,8 @@ CASES: tuple[Case, ...] = (
          {"given": "Juan", "middle": "Pérez", "family": "H."},
          classification="parity",
          notes="Spanish H. (hijo) is written as an initial is (rules/T5), so "
-               "its generation reading is recorded off by default, for a "
-               "pack"),
+               "its generation reading is excluded, the Spanish pack "
+               "included (decisions/vocabulary-model, phase 3g)"),
     Case("a_feminine_generational_word_in_cyrillic", "Агриппина Младшая",
          {"given": "Агриппина", "suffix": "Младшая"},
          classification="fix(#661)",

@@ -170,7 +170,7 @@ def test_a_reading_off_by_default_compiles_to_nothing() -> None:
     # the word's live readings in another file (checks 4 and 5) or be
     # refused by an exclusion, which keeps a reading out of the default
     # where this one already is (check 6)
-    off = build.compile_files({"es.toml": _w('[[word]]\ntext = "zzq"\ngeneration = { default = false }\nfamily = { note = "x" }')})
+    off = build.compile_files({"it.toml": _w('[[word]]\ntext = "zzq"\ngeneration = { default = false }\nfamily = { note = "x" }')})
     assert not any("zzq" in v for v in off.values())
     both = build.compile_files({
         "mul.toml": _w('[[word]]\ntext = "zzq"\ngeneration = {}'),
@@ -365,7 +365,7 @@ MUTATIONS = [
     ("name-default-true", {"pt.toml": _w('[[word]]\ntext = "zzq"\nfamily = { note = "x", default = true }\ncredential = {}')}, "write default = false"),
     ("name-default-not-a-bool", {"pt.toml": _w('[[word]]\ntext = "zzq"\ngiven = { note = "x", default = 0 }\ncredential = {}')}, "write default = false"),
     ("agnomen-whose-only-name-reading-is-off", {"pt.toml": _w('[[word]]\ntext = "filho"\nagnomen = {}\nfamily = { note = "x", default = false }')}, "an agnomen needs a `given` or `family` reading"),
-    ("agnomen-whose-only-name-reading-is-off-elsewhere", {"pt.toml": _w('[[word]]\ntext = "filho"\nagnomen = {}'), "es.toml": _w('[[word]]\ntext = "filho"\nfamily = { note = "x", default = false }\nexcluded = { title = "x" }')}, "an agnomen needs a `given` or `family` reading"),
+    ("agnomen-whose-only-name-reading-is-off-elsewhere", {"pt.toml": _w('[[word]]\ntext = "filho"\nagnomen = {}'), "it.toml": _w('[[word]]\ntext = "filho"\nfamily = { note = "x", default = false }\nexcluded = { title = "x" }')}, "an agnomen needs a `given` or `family` reading"),
     ("off-name-reading-beside-an-honorific", {"ja.toml": _w('[[word]]\ntext = "zzt"\nhonorific = {}\nfamily = { note = "x", default = false }')}, "gates nothing"),
     ("particle-whose-only-given-reading-is-off", {"nl.toml": _w('[[word]]\ntext = "in"\ngiven = { note = "x", default = false }\npreposition = {}')}, "only given readings are written default = false"),
     ("particle-stating-never-given-beside-an-off-given-reading", {"nl.toml": _w('[[word]]\ntext = "in"\ngiven = { note = "x", default = false }\npreposition = { may_be_given = false }')}, "only given readings are written default = false"),
@@ -1332,5 +1332,5 @@ def test_the_pack_roster_names_shipped_packs_their_files_compile_into() -> None:
     assert set(build.PACK_RULES.values()) <= set(locales._REGISTRY)
     for tag, attr in build.PACK_RULES.items():
         assert getattr(locales, attr).policy == rules_patch(tag), attr
-    with pytest.raises(KeyError, match="no vocabulary file 'en' holds a \\[rules\\] table; the files that do: ru, tr"):
+    with pytest.raises(KeyError, match="no vocabulary file 'en' holds a \\[rules\\] table; the files that do: es, ru, tr"):
         rules_patch("en")

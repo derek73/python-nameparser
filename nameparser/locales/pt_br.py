@@ -10,7 +10,9 @@ single letters ``F`` and ``N`` the same filings write for Filho and
 Neto stay out, the pack included: in those filings the letter more
 often abbreviates a surname (pt-BR.toml's exclusions).
 Choosing ``pt-BR`` also chooses ``pt``, whose readings it prefers where
-another language's clash (``do`` a particle, not the DO credential).
+another language's clash (``do`` a particle, not the DO credential),
+and whose ``default = false`` titles it turns on as locales.PT does
+(``Doutor``, ``Doutora``, ``Professora``, ``Profa.``, since phase 3g).
 
 Data sources: tse-donors, Brazilian candidates' receipts as filed beside
 the registry's spelling (tools/differential/local_tse.py); the counts

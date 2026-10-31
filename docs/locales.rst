@@ -321,7 +321,7 @@ look one up dynamically by its lowercase code with
 .. doctest::
 
     >>> locales.available()
-    ('bn', 'cs', 'ga', 'gd', 'hi', 'hr', 'ja', 'ne', 'pt_br', 'ru', 'sk', 'sl', 'tr_az', 'zh')
+    ('bn', 'cs', 'es', 'ga', 'gd', 'hi', 'hr', 'ja', 'ne', 'pt', 'pt_br', 'ru', 'sk', 'sl', 'tr_az', 'zh')
     >>> locales.get("ru") is locales.RU
     True
 
@@ -350,6 +350,15 @@ Shipped packs
        ``st.``, and in Czech and Slovak the academic titles written
        before the name and the degrees written after it (see
        :ref:`west-south-slavic-packs`).
+   * - ``es``
+     - Spanish — chooses ``es``, which turns on the courtesy, academic
+       and professional titles that lead a Spanish name (``Lic.``,
+       ``Licenciada``, ``Ingeniero``, ``Arq.``, ``Mtro.``, ``Doctora``,
+       ``Profesora``, ``Doña``; ``Lic Juan Pérez`` → title ``Lic``), and
+       reads two family names, a list of Spanish given names keeping a
+       given name out of the family (``Gabriel García Márquez`` →
+       family ``García Márquez``, ``José Luis Pérez`` → family
+       ``Pérez``). See `Spanish and Portuguese titles`_.
    * - ``ga``
      - Irish — chooses ``ga``, which turns on the clan particles the
        default leaves off: ``Nic`` (daughter of), the married forms
@@ -382,10 +391,15 @@ Shipped packs
        given ``श्री`` in the default order, where the default gives
        title ``श्री``). Each stays a title inside a title phrase
        (``His Holiness Guru Prasad``).
+   * - ``pt``
+     - Portuguese — chooses ``pt``, which turns on the academic titles
+       ``Doutor``, ``Doutora``, ``Professora`` and ``Profa.`` (``Doutor
+       João Silva`` → title ``Doutor``) and settles Portuguese's clashes
+       its way (see `Spanish and Portuguese titles`_).
    * - ``pt_br``
      - Brazilian Portuguese — chooses ``pt-BR``, and with it ``pt``,
-       which turns on ``SB``, the agnomen Sobrinho as Brazilian filings
-       abbreviate it, read as a suffix where the name has words to
+       which turns on ``pt``'s titles and ``SB``, the agnomen Sobrinho
+       as Brazilian filings abbreviate it, read as a suffix where the name has words to
        spare (``JOSE CARLOS SILVA SB`` → suffix ``SB``), and settles
        Portuguese's clashes its way.
        See `Packs that choose a language`_.
@@ -415,12 +429,14 @@ Shipped packs
        Japanese name read with it can split after its first character
        (``安藤一郎`` → family ``安``), so use ``ja`` for Japanese data.
 
-``bn``, ``cs``, ``ga``, ``gd``, ``hi``, ``hr``, ``ne``, ``pt_br``, ``sk`` and ``sl`` are each a choice of languages
+``bn``, ``cs``, ``ga``, ``gd``, ``hi``, ``hr``, ``ne``, ``pt``, ``pt_br``, ``sk`` and ``sl`` are each a choice of languages
 and nothing else: the readings each turns on are the default
 vocabulary's own, written in its language's file (``ne.toml`` for
 Nepali) and off until a caller chooses the language. ``ja``, ``ru`` and
 ``tr_az`` are policy-only — they carry no vocabulary of their own.
-``zh`` is both halves at once: a surname list, plus the
+``es`` is a choice with a list and one policy field beside it: it turns
+``two_family_names`` on and carries the given names that switch leaves
+where they stand. ``zh`` is both halves at once: a surname list, plus the
 one policy field that turns segmentation on for the script it covers. See
 :ref:`config-containers` for how that split (language vocabulary vs. behavior)
 is drawn, and `Contributing a pack to nameparser`_ for which half a
@@ -521,13 +537,65 @@ readings of those words:
 
 - **Under ga and gd,** ``Mc`` is the clan particle, so ``John Smith MC``
   gives family ``MC`` and loses the Military Cross.
-- **Under pt_br,** the words read as ``pt`` reads them: ``John Smith DO``
-  gives family ``DO``, and a trailing ``Sr`` is read as the Portuguese
-  title *Senhor* rather than English "Senior", so ``John Smith Sr``
-  gives family ``Sr`` and the dotted ``John Smith Sr.`` title ``Sr.``,
-  a known cost not yet settled.
+- **Under pt and pt_br,** the words read as ``pt`` reads them: ``John
+  Smith DO`` gives family ``DO``. ``Sr`` keeps both readings, *Senhor*
+  in front and "Senior" behind, as in the default, under ``es`` too.
 - **Under pt_br,** a written S.B. degree reads as Sobrinho
   (``Howard Gordon, MD SB`` fills ``generation`` with ``SB``).
+
+Spanish and Portuguese titles
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Spanish and Latin American usage puts an academic or professional title
+in front of a name (*Licenciado*, *Ingeniero*, *Maestro*), and Portuguese
+does the same with *Doutor* and *Professora*. Written with a period, the
+abbreviations already read as titles at the head of a name by their
+shape. Written out, or without the period, they read as given names by
+default, since the words are Spanish or Portuguese only. ``es`` and
+``pt`` turn them on:
+
+.. doctest::
+
+    >>> parse("Lic Juan Pérez").given
+    'Lic'
+    >>> spanish = parser_for(locales.ES).parse("Lic Juan Pérez")
+    >>> spanish.title, spanish.given
+    ('Lic', 'Juan')
+    >>> parser_for(locales.PT).parse("Fernanda Lucchese, Doutora").title
+    'Doutora'
+
+``Don``, ``Dona`` and ``Dom`` are not among them: names open with each
+as a given name more often than as the title, Spanish and Portuguese
+data included. An office written before a name with its complement
+(``Ministro de Hacienda Juan Pérez``) is not read either. Names are
+written that way so rarely that the packs leave it alone, and a
+particle behind a title starts the family as it does by default
+(``Doctora de la Vega`` → family ``de la Vega``).
+
+``es`` also reads a name as Spanish names are written, with two family
+names, the father's and then the mother's (``two_family_names``, see
+:ref:`two-family-names`). It carries a list of 1,000 Spanish given
+names, the ones INE's 2025 census tables count as given names in at
+least 90% of their uses, so a given name standing before the family
+stays out of it:
+
+.. doctest::
+
+    >>> spain = parser_for(locales.ES)
+    >>> spain.parse("Gabriel García Márquez").family
+    'García Márquez'
+    >>> spain.parse("José Luis Pérez").family
+    'Pérez'
+
+Among ORCID's researchers in each Spanish-speaking country, the names
+that agree in every box with the filer rise from 13.5% (Peru) to 82.5%
+(Argentina) by default to 89.3% (Argentina) to 97.3% (Chile) under the
+pack (measured 2026-10-30). A compound given name stays opt-in
+(``two_given_names``): people filling a form with a middle-name box put
+the second given name there. ``pt`` turns neither switch on: Portuguese
+names often carry several surnames, and filers write one or more of
+them as the family name, so the switch breaks about as many names as it
+mends without a Portuguese given-name list to guard it.
 
 Romanized Indic titles
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -700,7 +768,7 @@ by ``tests/v2/test_locales.py``:
      one per shape of the vocabulary it ships: single surname, compound
      surname, and any spelling variant it means to cover.
    - **By a choice of languages** (``ne``, ``hi``, ``bn``, ``cs``, ``sk``,
-     ``sl``, ``hr``, ``ga``, ``gd``, ``pt_br``): a name for each word the choice changes, in each script it
+     ``sl``, ``hr``, ``ga``, ``gd``, ``es``, ``pt``, ``pt_br``): a name for each word the choice changes, in each script it
      is written in and each position where the default reads it
      otherwise — ``test_choice_rotators_cover_every_changed_word`` fails
      until every word is held.

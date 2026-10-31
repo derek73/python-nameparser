@@ -113,11 +113,11 @@ def test_locales_module_attribute_access() -> None:
 def test_locales_get_and_available() -> None:
     assert locales.get("ru") is locales.RU
     assert set(locales.available()) == {
-        "bn", "cs", "ga", "gd", "hi", "hr", "ja", "ne", "pt_br", "ru", "sk", "sl",
-        "tr_az", "zh"}
+        "bn", "cs", "es", "ga", "gd", "hi", "hr", "ja", "ne", "pt", "pt_br",
+        "ru", "sk", "sl", "tr_az", "zh"}
     with pytest.raises(
             KeyError,
-            match="bn, cs, ga, gd, hi, hr, ja, ne, pt_br, ru, sk, sl, tr_az, zh"):
+            match="bn, cs, es, ga, gd, hi, hr, ja, ne, pt, pt_br, ru, sk, sl, tr_az, zh"):
         locales.get("xx")
     # the segmenter FACTORY is not a locale: it is an ordinary function
     # on the package, so it must not appear among the codes
@@ -198,6 +198,70 @@ def test_hi_and_bn_read_the_romanized_salutation_as_the_title() -> None:
     assert hi.parse("Adhyapak Anisuzzaman Khan").title == ""
     assert hi.parse("Shriyut Ram Prasad").title == "Shriyut"
     assert bn.parse("Shriyut Ram Prasad").title == ""
+
+
+def test_es_and_pt_pack_contents() -> None:
+    # 3g: es is its choice plus the Spanish given-name list as a lexicon
+    # fragment (read by rules/O6 alone); pt is nothing but its choice
+    from nameparser._reading_index import changed_words, selected
+    from nameparser.locales import es as _es
+    from nameparser.locales._es_given_names import GIVEN_NAMES
+    assert locales.ES == Locale(code="es",
+                                lexicon=Lexicon(given_names=GIVEN_NAMES),
+                                policy=PolicyPatch(two_family_names=True),
+                                languages=frozenset({"es"}))
+    assert locales.PT == Locale(code="pt", lexicon=Lexicon.empty(),
+                                languages=frozenset({"pt"}))
+    assert changed_words(selected(locales.ES.languages)) == {
+        "arq", "doctora", "doña", "ingeniera", "ingeniero", "lcda",
+        "lcdo", "lic", "licenciada", "licenciado", "mtra", "mtro",
+        "profesor", "profesora"}
+    assert changed_words(selected(locales.PT.languages)) == {
+        "do", "doutor", "doutora", "e", "profa", "professora"}
+    # sr keeps es's and pt's generation beside the salutation, so the
+    # choice leaves it a dual position decides, as the default reads it
+    for packed in (_require_packed("es"), _require_packed("pt"),
+                   _require_packed("pt_br")):
+        for text in ("Gary Holloway Sr", "Sr. Juan Pérez", "J. Smith Sr."):
+            assert packed.parse(text).as_dict() == parse(text).as_dict()
+    # the patch's and the fragment's declaration: rules/O6's three name
+    # words, each a run of letters whatever separates it
+    assert _es.DEVIATES("José Luis Pérez") and _es.DEVIATES("Pérez, José Luis")
+    assert _es.DEVIATES("Mary-\u200bJane Smith") and _es.DEVIATES("马丁·路德·金")
+    assert not _es.DEVIATES("Pérez García")
+
+
+def test_es_and_pt_read_a_leading_title_and_leave_don_a_given_name() -> None:
+    es, pt = _require_packed("es"), _require_packed("pt")
+    for text, title in (("Lic Juan Pérez", "Lic"), ("LIC JUAN PEREZ", "LIC"),
+                        ("Pérez, Licenciada Ana", "Licenciada"),
+                        ("Doña María Pérez", "Doña"),
+                        ("Mtro. Pérez, Edgar", "Mtro.")):
+        assert parse(text).title in ("", "Mtro.") and es.parse(text).title == title
+    assert es.parse("Ana López Profesora.").as_dict() == parse(
+        "Ana López Profesora.").as_dict() | {
+        "title": "Profesora.", "middle": "", "family": "López"}
+    assert pt.parse("Fernanda Lucchese, Doutora").as_dict() == parse(
+        "Fernanda Lucchese, Doutora").as_dict() | {
+        "title": "Doutora", "given": "Fernanda", "family": "Lucchese"}
+    # don, dona and dom are excluded: names open with them as given names
+    for packed, text in ((es, "Don Juan Pérez"), (pt, "Dona Maria Souza"),
+                         (pt, "Dom Pedro Alves")):
+        assert packed.parse(text).as_dict() == parse(text).as_dict()
+    # no title-run connective (decisions/vocabulary-model, phase 3g): a
+    # particle behind the title starts the family, as by default
+    assert es.parse("Doctora de la Vega").family == "de la Vega"
+    # the pack reads two family names, its list keeping a listed given
+    # name out of the family (rules/O6); a compound given name stays opt-in
+    assert es.parse("Gabriel García Márquez").family == "García Márquez"
+    assert parse("Gabriel García Márquez").family == "Márquez"
+    assert es.parse("José Luis Pérez").as_dict() == parse(
+        "José Luis Pérez").as_dict()
+    assert es.parse("Juan Carlos Pérez García").as_dict() == parse(
+        "Juan Carlos Pérez García").as_dict() | {
+        "middle": "Carlos", "family": "Pérez García"}
+    assert pt.parse("João Pedro Silva Santos").as_dict() == parse(
+        "João Pedro Silva Santos").as_dict()
 
 
 def test_zh_pack_contents() -> None:
@@ -1140,8 +1204,7 @@ _ROTATORS["bn"] = [
 
 
 @pytest.mark.parametrize("code", sorted(c for c in _PACKS
-                                        if _is_vocabulary_pack(
-                                            locales.get(c))))
+                                        if locales.get(c).languages))
 def test_choice_rotators_cover_every_changed_word(code: str) -> None:
     # the choice packs' counterpart of the marker-branch sweep below:
     # a word joining a choice's surface fails here until a rotator
@@ -1170,13 +1233,49 @@ _ROTATORS["gd"] = [
     "Gabhann, Màiri Nic",            # nic ending the given part
     "John Smith MC",                 # mc, the clan particle, not MC
 ]
+# es: the patch's rules/O6 (its list keeping a given name out); each title
+# the choice turns on at the head, in each case, after a
+# family comma, before one (rules/H6) and dotted ending the name (rules/H5);
+# pt: its titles likewise, and the words its choice prefers.
+_ROTATORS["es"] = [
+    "Lic Juan Pérez",                # lic
+    "LIC JUAN PEREZ",                # lic, in one case
+    "Juan Pérez Lic.",               # lic, dotted, ending the name (H5)
+    "Licenciado Noriel Sánchez",     # licenciado
+    "Lcdo Ricardo García",           # lcdo
+    "Pérez, Licenciada Ana",         # licenciada after a family comma
+    "Lcda Ligia Sánchez",            # lcda
+    "Ingeniero Juan Pérez",          # ingeniero
+    "ingeniera ana ruiz",            # ingeniera, in one case
+    "Arq Julia Romero",              # arq
+    "Mtro. Pérez, Edgar",            # mtro, dotted, before a family comma (H6)
+    "Mtra Ana Ruiz",                 # mtra
+    "Doctora Yenny Montilla",        # doctora
+    "Profesor Osvaldo Segovia",      # profesor
+    "Ana López Profesora.",          # profesora, dotted, ending the name
+    "Doña María Pérez",              # doña
+    "Gabriel García Márquez",        # rules/O6, the patch
+    "María José García López",       # rules/O6 behind a listed given name
+]
+_ROTATORS["pt"] = [
+    "Doutor João Silva",             # doutor
+    "Silva, Doutor João",            # doutor after a family comma
+    "Fernanda Lucchese, Doutora",    # doutora after the comma
+    "Professora Rosária Lima",       # professora
+    "Profa Maria Souza",             # profa
+    "John Smith DO",                 # do, pt's particle, not DO
+    "ANA SILVA E SOUZA",             # e, pt's connective
+]
 _ROTATORS["pt_br"] = [
     "JOSE CARLOS SILVA SB",          # sb
     "Jose Carlos Silva Sb.",         # sb, dotted
     "JOSE SILVA SB",                 # sb, one word to spare
     "John Smith DO",                 # do, pt's particle, not DO
     "ANA SILVA E SOUZA",             # e, pt's connective
-    "Gary Holloway Sr",              # sr, pt's Senhor, not the generation
+    "Doutor João Silva",             # doutor, pt's title
+    "Fernanda Lucchese, Doutora",    # doutora, pt's title
+    "Professora Rosária Lima",       # professora, pt's title
+    "Profa Maria Souza",             # profa, pt's title
 ]
 
 

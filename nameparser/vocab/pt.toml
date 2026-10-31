@@ -1,12 +1,21 @@
 schema = 1
 
 [[word]]
+text = "dom"
+excluded = { salutation = { reason = "Dom, the title of a bishop, abbot or prince, is a given name: it opens 20 FEC given parts after the family comma (CAGLIOTI, DOM), 5 nepal-candidates names (Dom Bahadur Thapa), 2 ClinicalTrials.gov officials' and 4 more in ORCID, PatentsView and PSC, against jrc-names' 117 openers, many the Polish word for house (DOM MAKLERSKI) (2026-10-30); US SSA 424 births", issue = 753, decided = 2026-10-30 } }
+
+[[word]]
+text = "dona"
+excluded = { salutation = { reason = "Dona, the courtesy title, is a given name: it opens 25 ORCID names (Dona Banerjee), 2 PatentsView, 2 PSC and 2 ClinicalTrials.gov ones, and 158 FEC given parts after the family comma (ABBOTT, DONA), against jrc-names' 49 openers, the title and the name mixed (Dona Amélia, Dona Abbott), and none in tse-donors (2026-10-30); US SSA 19,032 births. Counted in persons, names open with it more often than it opens one as the title (decisions/vocabulary-model's phase 3e criterion)", issue = 753, decided = 2026-10-30 } }
+
+[[word]]
 text = "senhor"
 salutation = { gender = "m", after_given = true }
 
 [[word]]
 text = "sr"
 salutation = { gender = "m", same_as = "senhor" }
+generation = { issue = 753, note = "Senior, as names written in Portuguese write it too: kept beside the salutation so that a Portuguese choice leaves Sr a dual position decides, a title in front and the generation behind (J. Smith Sr.), as the default reads it; without it the choice preferred the salutation and a trailing Sr read as the family name, 12 of PSC's filers (Mr Gary Holloway Sr, Ernesto Castro Sr) and 3 committed corpus names (2026-10-30, decisions/vocabulary-model's phase 3g entry)" }
 
 [[word]]
 text = "senhora"
@@ -21,8 +30,24 @@ text = "senhorita"
 salutation = { gender = "f", after_given = true }
 
 [[word]]
+text = "doutor"
+academic = { default = false, gender = "m", issue = 753, expands = "Doutor, doctor, a form of address", note = "ORCID's given box 3 records and family box 5 (Portugal 3); ClinicalTrials.gov officials write it after a comma twice (Francisco Edson de Lucena Feitosa, Doutor) (2026-10-30); off by default and turned on by a Portuguese choice, under which it is the title at the head" }
+
+[[word]]
+text = "doutora"
+academic = { default = false, gender = "f", issue = 753, same_as = "doutor", expands = "Doutora, the feminine of doutor", note = "no name bearer in any source tools/name_usage.py reads; ClinicalTrials.gov officials write it after a comma 4 times (Fernanda Lucchese, Doutora) (2026-10-30)" }
+
+[[word]]
 text = "dra"
 academic = { gender = "f", expands = "Doctora, Doutora" }
+
+[[word]]
+text = "professora"
+academic = { default = false, gender = "f", issue = 753, same_as = "professor", expands = "Professora, the feminine of professor", note = "no name bearer in any source tools/name_usage.py reads; ORCID's given box 7 records, Brazil 4, the title typed in, and 1 name opening with it (Professora Rosária) (2026-10-30)" }
+
+[[word]]
+text = "profa"
+academic = { default = false, gender = "f", issue = 753, same_as = "professora", expands = "Profa., Professora abbreviated", note = "no name bearer in any source tools/name_usage.py reads; ORCID's given box 5 records, the title typed in; ClinicalTrials.gov officials write Profa. Dra. after a comma twice (2026-10-30)" }
 
 [[word]]
 text = "júnior"

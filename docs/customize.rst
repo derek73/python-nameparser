@@ -1028,8 +1028,9 @@ wrong, as in ``"José Luis Pérez"``. Words that are given names and
 rarely surnames tell the two shapes apart, so the switch leaves a word
 listed in the lexicon's ``given_names`` where it stands, under any
 ``name_order``. The field is empty by default, so you supply the list
-for your data; an entry written without accents matches the word with
-them:
+for your data, or choose ``locales.ES``, which turns the switch on and
+carries 1,000 Spanish given names; an entry written without accents
+matches the word with them:
 
 .. doctest::
 
