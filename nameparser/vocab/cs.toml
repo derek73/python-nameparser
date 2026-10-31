@@ -1,5 +1,11 @@
 schema = 1
 
+# locales.CS reads its names with two family names (rules/O6), the
+# married double surname written without a hyphen (decisions/vocabulary-model,
+# the 2026-10-30 phase 3f amended entry)
+[rules]
+two_family_names = true
+
 [[word]]
 text = "pan"
 salutation = { default = false, issue = [606, 753], gender = "m", note = "Czech and Polish Mr., off by default because Pan is the Chinese surname 潘, which leads (US Census 2010 12,664 bearers; 285 of ClinicalTrials.gov's 536,981 officials write the word and 488 of ORCID's 1,831,533 records, data 2026-10-21 and 2025-10-17, nearly all of them the surname): under a Czech or Polish choice Pan Wei reads title 'Pan'. The accented paní ships" }

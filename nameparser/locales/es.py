@@ -26,10 +26,8 @@ only what the patch and the fragment change.
 """
 from __future__ import annotations
 
-import unicodedata
-
 from nameparser._lexicon import Lexicon
-from nameparser._locale import Locale, rules_patch
+from nameparser._locale import Locale, deviates_by_two_family_names, rules_patch
 from nameparser.locales._es_given_names import GIVEN_NAMES
 
 ES = Locale(
@@ -43,32 +41,8 @@ ES = Locale(
 
 def DEVIATES(name: str) -> bool:
     """True when this pack's patch or fragment may parse `name`
-    differently from the default parser: rules/O6 acts only on a name
-    of three or more name words, and the given-name list only where O6
-    acts, so a name of three or more words, commas read as spaces, or of
-    three or more runs of letters declares. Titles, suffixes and a
-    family comma count here though O6 reads none of them, which
-    over-declares, the safe direction."""
-    pieces = name.replace(",", " ").split()
-    return len(pieces) >= 3 or _letter_runs(name) >= 3
-
-
-def _letter_runs(text: str) -> int:
-    """The runs of letters in `text`, whatever separates one from the
-    next: a hyphen, a zero-width space or an interpunct, which the
-    tokenizer may read as separators (rules/T1, T2, T3). A run of Han,
-    hangul or kana counts twice, since segmentation may divide it into a
-    family and a given name (rules/W1). A letter written with a combining
-    mark splits a run, which over-declares. Written with str methods
-    rather than a pattern, since tests/v2/test_locales.py reads a
-    module-level pattern as a marker regex to sweep."""
-    runs, inside = 0, False
-    for ch in text:
-        letter = ch.isalpha()
-        if letter and not inside:
-            runs += 2 if unicodedata.name(ch, "").startswith(_CJK) else 1
-        inside = letter
-    return runs
-
-
-_CJK = ("CJK", "HANGUL", "HIRAGANA", "KATAKANA")
+    differently from the default parser: rules/O6's declaration, which
+    the cs and sk packs share (_locale.deviates_by_two_family_names);
+    the given-name list acts only where O6 does, so it declares
+    nothing more."""
+    return deviates_by_two_family_names(name)

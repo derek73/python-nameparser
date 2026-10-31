@@ -231,6 +231,26 @@ def test_es_and_pt_pack_contents() -> None:
     assert not _es.DEVIATES("Pérez García")
 
 
+def test_cs_and_sk_pack_contents() -> None:
+    # 3f, amended 2026-10-30: cs and sk are their choice plus rules/O6's
+    # patch, no fragment; sl and hr stay nothing but their choice
+    from nameparser._locale import deviates_by_two_family_names
+    from nameparser.locales import cs as _cs, es as _es, sk as _sk
+    for code, pack in (("cs", locales.CS), ("sk", locales.SK)):
+        assert pack == Locale(code=code, lexicon=Lexicon.empty(),
+                              policy=PolicyPatch(two_family_names=True),
+                              languages=frozenset({code})), code
+    for code in ("sl", "hr"):
+        assert _is_vocabulary_pack(locales.get(code)), code
+    # the patch's declaration is rules/O6's, one predicate for the three
+    # packs that turn O6 on, so their declarations cannot drift apart
+    for module in (_cs, _sk, _es):
+        for name in ("Alena Pešová Řehořová", "Novák, Petr Pavel",
+                     "Mária-\u200bJana Kováčová", "Jan Novák", "Novák"):
+            assert module.DEVIATES(name) == deviates_by_two_family_names(name)
+    assert _cs.DEVIATES("Petr Pavel Novák") and not _cs.DEVIATES("Pešová Řehořová")
+
+
 def test_es_and_pt_read_a_leading_title_and_leave_don_a_given_name() -> None:
     es, pt = _require_packed("es"), _require_packed("pt")
     for text, title in (("Lic Juan Pérez", "Lic"), ("LIC JUAN PEREZ", "LIC"),
@@ -1123,39 +1143,46 @@ _ROTATORS["ja"] = [
 # The choice packs (3f): one name per word of the derived surface, each
 # in a shape the default reads differently, so the gate's positive side
 # reaches every word the choice changes (held by
-# test_choice_rotators_cover_every_changed_word below).
+# test_choice_rotators_cover_every_changed_word below). cs and sk carry
+# rules/O6's patch too, so each word's rotator is a name the patch alone
+# leaves as the default reads it -- two name words, or a marker run in
+# brackets -- (held by test_a_choice_word_rotator_is_moved_by_the_choice_alone),
+# and the patch has rotators of its own.
 _ROTATORS["cs"] = [
-    "BcA Tomáš Krejčí",              # bca
+    "BcA Krejčí",                    # bca
     "Jan Novák, JUDr",               # judr, bare after a comma
-    "MDDr Eva Dvořáková",            # mddr
-    "MgA Petra Malá",                # mga
-    "MUDr Jan Novák",                # mudr
-    "MVDr Petr Svoboda",             # mvdr
-    "PaedDr Jana Králová",           # paeddr
-    "PharmDr Jana Králová",          # pharmdr
-    "Jan Novák PhDr.",               # phdr, dotted at the end
+    "MDDr Dvořáková",                # mddr
+    "MgA Malá",                      # mga
+    "MUDr Novák",                    # mudr
+    "MVDr Svoboda",                  # mvdr
+    "PaedDr Králová",                # paeddr
+    "PharmDr Králová",               # pharmdr
+    "Novák PhDr.",                   # phdr, dotted at the end
     "Novák, RNDr",                   # rndr, after a one-word head
-    "ThDr Jan Hus",                  # thdr
+    "ThDr Hus",                      # thdr
     "Jan Novák, DrSc",               # drsc, a credential after a comma
-    "Pan Jan Novák",                 # pan
-    "Jana Nováková roz. Svobodová",  # roz, the birth marker
-    "Jiří Dienstbier ml.",           # ml
+    "Pan Novák",                     # pan
+    "Jana Nováková (roz. Svobodová)",  # roz, the birth marker, bracketed
+    "Dienstbier ml.",                # ml
     "Jiří Dienstbier st.",           # st
+    "Alena Pešová Řehořová",         # rules/O6, the patch
+    "Ing. Alena Pešová Řehořová",    # rules/O6 behind a title
 ]
 _ROTATORS["sk"] = [
     "Jozef Mrkva, ArtD.",            # artd, a credential after a comma
     "Jozef Mrkva, JUDr",             # judr
-    "MDDr Eva Kováčová",             # mddr
-    "MUDr Jozef Mrkva",              # mudr
-    "MVDr Peter Horváth",            # mvdr
-    "PaedDr Jana Kováčová",          # paeddr
-    "PharmDr Jana Kováčová",         # pharmdr
-    "Jozef Mrkva PhDr.",             # phdr
+    "MDDr Kováčová",                 # mddr
+    "MUDr Mrkva",                    # mudr
+    "MVDr Horváth",                  # mvdr
+    "PaedDr Kováčová",               # paeddr
+    "PharmDr Kováčová",              # pharmdr
+    "Mrkva PhDr.",                   # phdr
     "Mrkva, RNDr",                   # rndr
-    "ThDr Ján Chryzostom",           # thdr
+    "ThDr Chryzostom",               # thdr
     "Jozef Mrkva, DrSc",             # drsc
-    "Ján Mrkva ml.",                 # ml
+    "Mrkva ml.",                     # ml
     "Ján Mrkva st.",                 # st
+    "Mária Nováková Kováčová",       # rules/O6, the patch
 ]
 _ROTATORS["sl"] = [
     "Janez Novak ml.",               # ml
@@ -1437,18 +1464,26 @@ def test_non_interference_all_packs_combined() -> None:
     all_rotators = [n for code in sorted(_ROTATORS) if code in _PACKED
                     for n in _ROTATORS[code]]
     corpus = _default_corpus() + all_rotators
-    if _JA_AVAILABLE:
-        packed = parser_for(
-            *(locales.get(code) for code in sorted(_PACKS)),
-            segmenter=locales.ja_segmenter())
-    else:
-        # without the extra, the stack's hiragana activation is
-        # unservable -- which construction now SAYS (the segmenterless
-        # warning, pinned in test_parser.py); expected noise here, the
-        # gate below is what this test is about
-        with pytest.warns(UserWarning, match="ja_segmenter"):
+    # cs, es and sk each set two_family_names, so the stack warns that a
+    # later pack overrides a scalar an earlier one set, to the same value
+    # (docs/locales.rst: "even to the same value"); and without the ja
+    # extra, the stack's hiragana activation is unservable -- which
+    # construction SAYS (the segmenterless warning, pinned in
+    # test_parser.py). Both are expected here, each by its message: the
+    # gate below is what this test is about.
+    expected = ["overrides scalar policy field 'two_family_names'"]
+    with pytest.warns(UserWarning) as caught:
+        if _JA_AVAILABLE:
+            packed = parser_for(
+                *(locales.get(code) for code in sorted(_PACKS)),
+                segmenter=locales.ja_segmenter())
+        else:
+            expected.append("ja_segmenter")
             packed = parser_for(
                 *(locales.get(code) for code in sorted(_PACKS)))
+    messages = [str(w.message) for w in caught]
+    assert all(any(e in m for e in expected) for m in messages), messages
+    assert all(any(e in m for m in messages) for e in expected), messages
     # the packs' languages union into ONE choice, whose surface is
     # derived from the union rather than from each pack's own; every
     # hand DEVIATES is or'd in whatever the pack, since a pack with a
@@ -1774,10 +1809,40 @@ _ORDERS = {None: Policy(), "FAMILY_FIRST": Policy(name_order=FAMILY_FIRST),
      ("", "", "", "Rosalind", "", "Smith", ())),
     ("cs", None, "St Clair Smith",
      ("St", "Clair", "", "Smith", "", "", ()),
-     ("", "St", "Clair", "Smith", "", "", ())),
+     ("", "St", "", "Clair Smith", "", "", ())),
     ("cs+fr", None, "St Clair Smith",
      ("St", "Clair", "", "Smith", "", "", ()),
      ("St", "Clair", "", "Smith", "", "", ())),
+    # the patch, two family names (rules/O6): a married double
+    # surname written without a hyphen stays whole, behind a title
+    # too and under a family-first order, and the cost, two given
+    # names, pays for it; a family comma, where O6 stands down,
+    # keeps both as the default reads them
+    # (decisions/vocabulary-model's 2026-10-30 phase 3f amended entry)
+    ("cs", None, "Alena Pešová Řehořová",
+     ("", "Alena", "Pešová", "Řehořová", "", "", ()),
+     ("", "Alena", "", "Pešová Řehořová", "", "", ())),
+    ("cs", None, "Ing. Alena Pešová Řehořová",
+     ("Ing.", "Alena", "Pešová", "Řehořová", "", "", ()),
+     ("Ing.", "Alena", "", "Pešová Řehořová", "", "", ())),
+    ("cs", "FAMILY_FIRST", "Pešová Řehořová Alena",
+     ("", "Řehořová", "Alena", "Pešová", "", "", ()),
+     ("", "Alena", "", "Pešová Řehořová", "", "", ())),
+    ("sk", None, "Mária Nováková Kováčová",
+     ("", "Mária", "Nováková", "Kováčová", "", "", ()),
+     ("", "Mária", "", "Nováková Kováčová", "", "", ())),
+    ("cs", None, "Petr Pavel Novák",
+     ("", "Petr", "Pavel", "Novák", "", "", ()),
+     ("", "Petr", "", "Pavel Novák", "", "", ())),
+    ("sk", None, "Ján Peter Mrkva",
+     ("", "Ján", "Peter", "Mrkva", "", "", ()),
+     ("", "Ján", "", "Peter Mrkva", "", "", ())),
+    ("cs", None, "Pešová Řehořová, Alena",
+     ("", "Alena", "", "Pešová Řehořová", "", "", ()),
+     ("", "Alena", "", "Pešová Řehořová", "", "", ())),
+    ("cs", None, "Novák, Petr Pavel",
+     ("", "Petr", "Pavel", "Novák", "", "", ()),
+     ("", "Petr", "Pavel", "Novák", "", "", ())),
     # left alone: a bare title ending the given part is a name word
     # (rules/H5), the title Mgr was one already, and BC, excluded for
     # the US credential it spells, stays one (cs.toml's bc)
