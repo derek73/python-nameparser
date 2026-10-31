@@ -7,6 +7,8 @@
 
 Elsewhere: the field's composition and the 2026-08-16 decision to keep it one field, which still stands, decisions/suffix-field-composition; whether `credentials` should leave the honorifics out, CLDR having no third field, is a value question under the RFC's Phase 4, Left open (docs/design/vocabulary-model-rfc.md).
 
+Elsewhere: a word the shipped vocabulary lists as a credential reads as one where a caller lists it in `suffix_words_ambiguous`, the gated credential words `kc`, `pc` and `dl` reading so, decisions/S11's 2026-10-30 #965 entry.
+
 Open: none in this file.
 
 ## Log

@@ -56,7 +56,7 @@
   ```
   "Smith, Jr., John"          →  credentials="John"
   ```
-- The kind of a word listed as a suffix word is the shipped vocabulary's, read whatever the reading's default, so a word a caller's own `Lexicon` lists in `suffix_words` alone is in the credentials, a generation word included, and so is a generation word a caller lists as an acronym; one the caller also lists in `suffix_words_ambiguous` or `agnomens` reads as a generation or an agnomen by that marker, save a word the shipped vocabulary lists as a credential, which reads as a credential in either set, as the gated `KC` does (S11).
+- The kind of a word listed as a suffix word is the shipped vocabulary's, read whatever the reading's default, so a word a caller's own `Lexicon` lists in `suffix_words` alone is in the credentials, a generation word included, and so is a generation word a caller lists as an acronym; one the caller also lists in `suffix_words_ambiguous` or `agnomens` reads as a generation or an agnomen by that marker, save a word the shipped vocabulary lists as a credential, which listed in `suffix_words_ambiguous` reads as a credential, as the gated `KC` does (S11), and listed in `agnomens` reads as an agnomen.
   ```
   "John Smith KC"             →  credentials="KC"
   ```

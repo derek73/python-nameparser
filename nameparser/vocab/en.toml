@@ -4081,7 +4081,7 @@ acronym = false
 cased = "KC"
 expands = "King's Counsel"
 issue = 965
-note = "a word, not an acronym: the dotted K.C. stays the Nepali surname (rules/S3's paired initials, #864); gated by its family reading (rules/S11), so 'John Smith KC' ends in the suffix and 'Ram KC' keeps the family. Accepted: 'Gita Bahadur KC' reads suffix KC, and 'Lord Doe KC' family KC, a title leaving no word to spare (decisions/vocabulary-collisions, 2026-10-30)"
+note = "a word, not an acronym: the dotted K.C. stays the Nepali surname (rules/S3's paired initials, #864); gated by its family reading (rules/S11), so 'John Smith KC' ends in the suffix and 'Ram KC' keeps the family. Accepted: 'Gita Bahadur KC' reads suffix KC, and 'Lord Doe KC' family KC, a title leaving no word to spare (decisions/S11, 2026-10-30 #965)"
 
 [[word]]
 text = "kcb"
@@ -4668,7 +4668,7 @@ acronym = false
 cased = "PC"
 expands = "Privy Counsellor"
 issue = 965
-note = "govuk-people 4 names (counted 2026-10-30); also the US Professional Corporation, NPPES 2,246 providers (written PC 1,551, P.C. 622, August 2026 file), ctgov-officials 35, 7 after a comma. A word, not an acronym, gated by its family reading (rules/S11) as kc is: 'Jane Doe PC' ends in the suffix, 'Ravi PC' keeps the family. Accepted: the dotted P.C. stays the paired initials rules/S3 leaves to the name, NPPES's 622 included (decisions/suffix-acronym-collisions, 2026-10-30)"
+note = "govuk-people 4 names (counted 2026-10-30); also the US Professional Corporation, NPPES 2,246 providers (written PC 1,551, P.C. 622, August 2026 file), ctgov-officials 35, 7 after a comma. A word, not an acronym, gated by its family reading (rules/S11) as kc is: 'Jane Doe PC' ends in the suffix, 'Ravi PC' keeps the family. Accepted: the dotted P.C. stays the paired initials rules/S3 leaves to the name, NPPES's 622 included (decisions/S11, 2026-10-30 #965)"
 
 [[word]]
 text = "pcc"
