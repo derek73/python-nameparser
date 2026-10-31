@@ -1,6 +1,6 @@
 # S11 — a suffix word that is also a name
 
-**When:** a generation word that is also borne as a name, or a spelling of one, stands where a suffix may stand, as in "Pedro Alves Neto" or "Alexandre Dumas fils", or a credential the vocabulary lists as a word rather than an acronym that is also borne as a name, as in "John Smith KC" or "Jane Doe, DL".
+**When:** a generation word that is also borne as a name, or a spelling of one, stands where a suffix may stand, as in "Pedro Alves Neto" or "Alexandre Dumas fils", or a credential the vocabulary lists as a word rather than an acronym that is also borne as a name or written as a person's initials, as in "John Smith KC" or "Jane Doe, DL".
 
 **Then:** it reads as the suffix only where the name has words to spare, as a bare ambiguous acronym does (S4), and at the slots that report, either reading carries the ambiguity flag.
 
@@ -9,11 +9,13 @@
 - **A credential listed as a word** is gated and written as a generation word is, and reads as a credential: King's Counsel is also the Nepali surname KC, written bare as well as dotted, and the Privy Counsellor's PC and the Deputy Lieutenant's DL are initials too, and as a word, not an acronym, the dotted spelling is no spelling of it, so `K.C.` stays the paired initials S3 leaves to the name.
   ```
   "John Smith KC"             →  suffix="KC"
+  "John Smith KC"             →  credentials="KC"
   "Jane Doe, KC"              →  suffix="KC"
   "Ram KC"                    →  family="KC"  · boundary
   "Gita Bahadur Kc"           →  family="Kc"  · boundary
   "Gita Bahadur K.C."         →  family="K.C."  · boundary
   "Jane Doe, DL"              →  suffix="DL"
+  "Jane Doe, DL"              →  credentials="DL"
   "Anna DL"                   →  family="DL"  · boundary
   "Ravi PC"                   →  family="PC"  · boundary
   "John Smith P.C."           →  family="P.C."  · boundary

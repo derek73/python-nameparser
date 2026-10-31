@@ -765,7 +765,7 @@ READINGS: tuple[tuple[str, tuple[tuple[str, str, tuple[tuple[str, object], ...]]
     ('freifrau', (('de', 'nobility', ()),)),
     ('freiherr', (('de', 'nobility', ()), ('de', 'rank', ()), ('de', 'given', ()))),
     ('freiherrin', (('de', 'rank', ()), ('de', 'given', ()))),
-    ('freng', (('en', 'credential', (('cased', 'FREng'),)), ('en', 'family', ()))),
+    ('freng', (('en', 'credential', ()), ('en', 'family', ()))),
     ('friar', (('en', 'religious', ()),)),
     ('frk', (('da', 'salutation', (('after_given', True),)), ('nb', 'salutation', (('after_given', True),)), ('sv', 'salutation', (('after_given', True),)))),
     ('frm', (('en', 'credential', ()),)),

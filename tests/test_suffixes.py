@@ -539,6 +539,9 @@ def test_fiet_and_freng_are_also_surnames() -> None:
     assert parse("Jane Doe FRS FREng").suffix == "FRS FREng"
     assert parse("Jane Doe FREng").family == "FREng"
     assert parse("Jane Doe FIET").suffix == "FIET"
+    # and neither carries a case mask, which would respell the surname
+    for text in ("ANNA FRENG", "ANNA FIET"):
+        assert str(parse(text).capitalized()) == text.title(), text
 
 
 def test_moid_is_refused_as_a_credential() -> None:

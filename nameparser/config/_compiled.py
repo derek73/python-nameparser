@@ -2659,7 +2659,6 @@ CAPITALIZATION_EXCEPTIONS: dict[str, str] = {
     'dsc': 'DSc',
     'fnuci': 'FNucI',
     'fraes': 'FRAeS',
-    'freng': 'FREng',
     'frmets': 'FRMetS',
     'gent.le': 'Gent.le',
     'gent.ma': 'Gent.ma',
