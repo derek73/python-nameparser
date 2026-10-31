@@ -47,7 +47,8 @@ $NAMEPARSER_TOOLS_CACHE (default ~/.cache/nameparser-tools), and
   name in a country, its two boxes joined, with the boxes, the country
   and how many people filed under it; one distinct Czech election
   candidate's four boxes composed into a name, with the boxes and the
-  election. The counts are counted from here.
+  election; one DOF signature, the name cut from its clause, with the
+  clause, the cut rule and the note. The counts are counted from here.
 - corpus.jsonl -- the distinct names, in the corpus line format
   snapshot.py and compare.py --corpus read: each record's "name", and
   for nepal-candidates its Devanagari name too, and for
@@ -86,8 +87,8 @@ and what its terms allow is its module's docstring: local_ctgov.py
 local_govuk.py (govuk-people),
 local_psc.py (psc-individuals), local_jrc.py (jrc-names),
 local_nepal.py (nepal-candidates), local_orcid.py
-(orcid-researchers), local_patentsview.py (patentsview-inventors) and
-local_volby.py (cz-candidates).
+(orcid-researchers), local_patentsview.py (patentsview-inventors),
+local_volby.py (cz-candidates) and local_dof.py (dof-signatures).
 """
 from __future__ import annotations
 
@@ -124,6 +125,8 @@ import corpus_build  # noqa: E402
 import local_core  # noqa: E402
 from local_core import Fetched as Fetched, Source, _again, fetch_command  # noqa: E402
 from local_ctgov import fetch_ctgov  # noqa: E402
+import local_dof  # noqa: E402
+from local_dof import DOF, check_dof, fetch_dof, renew_dof  # noqa: E402
 import local_fec  # noqa: E402
 import local_tse  # noqa: E402
 from local_fec import check_fec, fetch_fec, renew_fec  # noqa: E402
@@ -267,6 +270,12 @@ SOURCES: dict[str, Source] = {
                "zverejnovani_statistickych_udaju_csu; each name composed from "
                "the filed boxes, so derived data)",
         unit="records", fetch=fetch_volby, check=check_volby),
+    DOF: Source(
+        credit=f"Diario Oficial de la Federación (Mexico), signatures in the notes "
+               f"of {local_dof.DOF_FROM} to {local_dof.DOF_TO}, read through SIDOF's "
+               f"web services (reproduction without "
+               "profit permitted with the source cited: sidof.segob.gob.mx/avisoLegal)",
+        unit="signatures", fetch=fetch_dof, renew=renew_dof, check=check_dof),
 }
 
 
