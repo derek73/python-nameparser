@@ -108,8 +108,9 @@ there to reinterpret.
 
 A title is read at the front of forms 4 and 5, and at the end where it
 is written with a period, as in form 1. Written between the family and
-the given name, or bare at the end — where CLDR's surname-first
-sample renderings put it — it is read today as a name word. Whether a
+the given name, or bare at the end unless a credential stands before
+it, as in form 1 — where CLDR's surname-first sample renderings put
+it — it is read today as a name word. Whether a
 family-first order should read a title there is an open question, so
 these readings may change:
 

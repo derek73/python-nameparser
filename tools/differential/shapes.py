@@ -39,10 +39,15 @@ arrangements each shape's order is read in: where a title (front,
 between the family and the given name, end), a suffix (a generation
 or a credential, before or after a comma), a particle and a nickname
 sit, and the four comma shapes (none, a full head, a one-word head,
-an empty head). A SHAPE stays one canonical skeleton per order and
-comma family, the corpus tag that carries the order and the
-min_baseline; an arrangement names the shape it is written under and
-inherits both, so `build_conventions_corpus._shape_for`'s one shape
+an empty head). A SHAPE stays the corpus tag that carries the order
+and the min_baseline: one skeleton per comma family under the default
+order (2 a family comma, 3 a suffix comma, 1 none), and ONE per
+family-first order, whose rows with a family comma are tagged 4 or 5
+though those notations write none, the comma laying the part after it
+out given-first under every order (decisions/O7). An arrangement's tag
+therefore names its order, which is what the corpus reads it by, and
+its own `notation` names the arrangement. An arrangement names the
+shape it is written under and inherits both, so `build_conventions_corpus._shape_for`'s one shape
 per order and compare.py's skip are untouched. Each row records what
 the tree reads today, every role that is not empty. A row whose
 reading a person would not give carries `misread`, the open issue
@@ -286,7 +291,8 @@ ARRANGEMENTS: tuple[Arrangement, ...] = (
                 ("particle",),
                 {"given": "Gogh", "middle": "Vincent", "family": "van"},
                 note="an ambiguous particle is left to position and "
-                     "reported particle-or-given, rules/P1"),
+                     "reported particle-or-given; no rule states this "
+                     "reading under a family-first order"),
     Arrangement(4, "Family Given Particle", "Ménil Christophe du",
                 ("particle",),
                 {"given": "Christophe", "family": "du Ménil"},
