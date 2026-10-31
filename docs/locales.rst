@@ -383,7 +383,10 @@ look one up dynamically by its lowercase code with
 
 The command line accepts the same codes: ``python -m nameparser
 --locale ru --json "Сидоров Иван Петрович"`` applies the pack before
-parsing, equivalent to ``parser_for(locales.get("ru"))``.
+parsing, equivalent to ``parser_for(locales.get("ru"))``. ``--locale
+ja`` also attaches :func:`~nameparser.locales.ja_segmenter` where
+``nameparser[ja]`` is installed, which ``parser_for`` never does on its
+own (the ``ja`` row below).
 
 Shipped packs
 ~~~~~~~~~~~~~

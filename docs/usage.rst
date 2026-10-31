@@ -694,10 +694,12 @@ Exceptions are the one thing that does *not* stay inside the parse: a
 segmenter is your code, so its errors propagate rather than being
 absorbed as content errors.
 
-The command line takes the pack but not the segmenter: ``python -m
-nameparser --locale ja`` has no way to attach one, so it activates
-nothing by itself. :doc:`customize` covers turning any of these
-behaviors off.
+The command line attaches the segmenter for you: ``python -m
+nameparser --locale ja`` uses :func:`~nameparser.locales.ja_segmenter`
+when ``nameparser[ja]`` is installed, and without it divides nothing
+and prints a note naming the install. :func:`~nameparser.parser_for` never
+does this on its own, so the same code parses alike wherever it runs.
+:doc:`customize` covers turning any of these behaviors off.
 
 Aggregate views
 ----------------
