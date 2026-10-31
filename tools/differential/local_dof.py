@@ -75,7 +75,7 @@ DOF_EXCERPT_VERSION = 1
 #: meta.json's detail: a change must bump it, and a corpus cut the old
 #: way is refused on load (check_dof). No refetch is needed: the cut is
 #: read from the cached days.
-DOF_CUT_VERSION = 5
+DOF_CUT_VERSION = 6
 #: The blocks kept before each block holding a "Rúbrica": the stacked
 #: signature's office lines and name, or a date line before them.
 EXCERPT_BLOCKS = 3
@@ -84,8 +84,8 @@ EXCERPT_BLOCKS = 3
 #: 2025); notes listed with HTML that state a size of 0, published as page
 #: images (2,936 of 26,752, 11.0%), gated in case an ordinary note comes
 #: to state 0; weekdays listing no note at all (7 of 261, each a public
-#: holiday); and "Rúbrica"s no rule could cut (1,741 of 35,305 under cut
-#: version 5). Measured 2026-10-31.
+#: holiday); and "Rúbrica"s no rule could cut (1,740 of 35,305 under cut
+#: version 6). Measured 2026-10-31.
 DOF_MAX_EMPTY = 0.05
 DOF_MAX_IMAGE_ONLY = 0.20
 DOF_MAX_SILENT = 0.05
@@ -239,6 +239,10 @@ _OFFICE_HEADS = frozenset({
     "comisionado", "comisionada", "consejero", "consejera", "diputado", "diputada",
     "senador", "senadora", "tesorero", "tesorera", "oficial", "administrador",
     "administradora", "gerente", "representante", "apoderado", "apoderada"})
+#: What follows an office's head word in an office (`DIRECTORA GENERAL`,
+#: `GOBERNADOR CONSTITUCIONAL`, `SECRETARIA DE ...`), besides another head
+#: word (`DIPUTADA SECRETARIA`).
+_OFFICE_NEXT = frozenset({"DE", "DEL", "GENERAL", "CONSTITUCIONAL"})
 _DATE = re.compile(rf"\bde (?:{_MONTHS})\b|\bdos mil\b|\b\d{{4}}\b", re.I)
 #: The end of the sentence before a signature: `.-` or `.–`.
 _CLAUSE_START = re.compile(r"\.\s*[-–—]\s*")
@@ -255,16 +259,22 @@ _TITLE_WORDS = 8
 
 def _office(name: str) -> bool:
     """Whether a cut is an office signing without a name: one opening
-    with an article (`EL SECRETARIO DE SALUD`), or, in capitals, with an
-    office's head word after any titles or with `DE`/`DEL` (`DEL ESTADO`;
-    in mixed case `Del Olmo` is a surname)."""
+    with an article (`EL SECRETARIO DE SALUD`), or, in capitals, with
+    `DE`/`DEL` (`DEL ESTADO`; in mixed case `Del Olmo` is a surname) or
+    with an office's head word after any titles that is the whole cut or
+    is followed by _OFFICE_NEXT or another head word."""
     words = name.split()
     if words[0].lower() in _ARTICLES:
         return True
     if not name.isupper():
         return False
+    if words[0] in ("DE", "DEL"):
+        return True
     rest = [w for w in words if not is_title(w)] or words
-    return rest[0].lower() in _OFFICE_HEADS or words[0] in ("DE", "DEL")
+    # The head word alone, or one an office's next word follows; a name
+    # may follow it too (`CONSEJERO FRANCISCO RAMOS SILVA`), and is kept.
+    return rest[0].lower() in _OFFICE_HEADS and (
+        len(rest) == 1 or rest[1] in _OFFICE_NEXT or rest[1].lower() in _OFFICE_HEADS)
 
 
 def is_title(word: str) -> bool:
@@ -306,8 +316,10 @@ def cut(text: str, mask: str) -> tuple[str, str] | None:
       that of a run in bold throughout the part after it is kept (`GRAL.
       BRIG. E.M., Ana Ruiz Paz` keeps `Ana Ruiz Paz`; in 2025 the part
       after the comma was the name in about 78 of the 90 signatures
-      holding one, measured 2026-10-31 on cut version 4, the rest an
-      office after the name, which _office() mostly refuses), with any
+      holding one, measured 2026-10-31 on cut version 4; of the rest,
+      _office() refuses one, and an office in mixed case after the name
+      (`Director de Substanciación ...`, 3) and the motto's `NO
+      REELECCIÓN` (2) are kept), with any
       titles directly before it (`Lic.`, which the DOF mostly leaves in
       roman);
     - "title": no bold, so the run from the last title (is_title) with

@@ -172,6 +172,9 @@ def test_a_run_in_bold_throughout_keeps_the_part_after_its_last_comma() -> None:
     ("Jueza de Distrito Ana Lis Mora", False),
     ("Del Olmo Blanco", False),  # a surname
     ("LIC. ANA LIS MORA", False),
+    ("CONSEJERO FRANCISCO RAMOS SILVA", False),  # an office before a name, in capitals
+    ("DIPUTADA SECRETARIA", True),
+    ("GOBERNADORA DEL ESTADO", True),
 ])
 def test_an_office_signing_without_a_name(name: str, office: bool) -> None:
     assert dof._office(name) is office
