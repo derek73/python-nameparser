@@ -51,10 +51,11 @@ shape it is written under and inherits both, so `build_conventions_corpus._shape
 per order and compare.py's skip are untouched. Each row records what
 the tree reads today: every role that is not empty, and the kind of
 every ambiguity reported. A row whose reading a person would not give
-says why it stands: `accepted`, the document that decided it (a
-decisions/ key such as "H5", or a repository path), or `misread`, the
-open issue that holds the question, its reading pinned AS read until
-that issue decides. tests/v2/test_shape_inventory.py reads every row
+says why it stands: `accepted`, the decisions/ key whose entry decided
+it ("H5"), or `misread`, the open issue that holds the question, its
+reading pinned AS read until that issue decides. A row neither marks
+is one no decision has weighed, which decisions/vocabulary-model's
+sub-phase 4h entry lists as unweighed. tests/v2/test_shape_inventory.py reads every row
 under its order, so a change that moves one fails there and edits the
 row, and its mark, in the same diff.
 
@@ -143,9 +144,10 @@ class Arrangement(NamedTuple):
     positions: tuple[str, ...]    # of POSITIONS
     reads: dict[str, str]         # every role not empty, as read today
     kinds: tuple[str, ...] = ()   # each ambiguity's kind, in report order
-    # Where a person would not read the row so: the document deciding
-    # the reading (a decisions/ key, or a repository path), or the open
-    # issue holding it. At most one; neither where the reading is plain.
+    # Where a person would not read the row so: the decisions/ key whose
+    # entry decided the reading, or the open issue holding it. At most
+    # one; neither where the reading is plain, or where no decision has
+    # weighed it (the 4h entry's unweighed list).
     accepted: str = ""
     misread: int | None = None
     note: str = ""
@@ -244,7 +246,7 @@ ARRANGEMENTS: tuple[Arrangement, ...] = (
     Arrangement(2,
                 'Family y Family, Given',
                 'Vega y Lopez, Juan',
-                ('connective-before-comma', 'comma-one-word-head'),
+                ('connective-before-comma', 'comma-full-head'),
                 {'given': 'Juan', 'family': 'Vega y Lopez'}),
     Arrangement(2,
                 'Family y Family Suffix, Credential Name',
@@ -252,8 +254,8 @@ ARRANGEMENTS: tuple[Arrangement, ...] = (
                 ('connective-before-comma', 'suffix-before-comma'),
                 {'given': 'Vega', 'middle': 'y', 'family': 'Lopez', 'suffix': 'Jr., PhD Jones'},
                 ('suffix-or-name',),
-                accepted='nameparser/AGENTS.md',
-                note="the connective is not joined behind a suffix before the comma (#613), nameparser/AGENTS.md's one-word-path paragraph"),
+                accepted='C1',
+                note="a connective surname counts its words, so the comma is a suffix comma (decisions/C1's #613 entry, as decisions/C3 records)"),
     Arrangement(1,
                 'Title Title Particle Family Credential',
                 'Freiherr St van Berg MA',
@@ -382,10 +384,10 @@ ARRANGEMENTS: tuple[Arrangement, ...] = (
     Arrangement(4, "Particle Family Given", "van Gogh Vincent",
                 ("particle",),
                 {"given": "Gogh", "middle": "Vincent", "family": "van"},
-                ("particle-or-given",), accepted="AGENTS.md",
+                ("particle-or-given",),
                 note="an ambiguous particle opening the name is left to "
-                     "position and reported, root AGENTS.md's particles "
-                     "paragraph"),
+                     "position and reported, as root AGENTS.md describes; "
+                     "no decision weighs it under a family-first order"),
     Arrangement(4, "Family Given Particle", "Ménil Christophe du",
                 ("particle",),
                 {"given": "Christophe", "family": "du Ménil"},
@@ -405,7 +407,7 @@ ARRANGEMENTS: tuple[Arrangement, ...] = (
     Arrangement(4,
                 'Family y Family, Given',
                 'Vega y Lopez, Juan',
-                ('connective-before-comma', 'comma-one-word-head'),
+                ('connective-before-comma', 'comma-full-head'),
                 {'given': 'Juan', 'family': 'Vega y Lopez'}),
     Arrangement(4,
                 'Family y Family Suffix, Credential Name',
@@ -558,7 +560,7 @@ ARRANGEMENTS: tuple[Arrangement, ...] = (
     Arrangement(5,
                 'Family y Family, Given',
                 'Vega y Lopez, Juan',
-                ('connective-before-comma', 'comma-one-word-head'),
+                ('connective-before-comma', 'comma-full-head'),
                 {'given': 'Juan', 'family': 'Vega y Lopez'}),
     Arrangement(5,
                 'Family y Family Suffix, Credential Name',
@@ -630,6 +632,7 @@ ARRANGEMENTS: tuple[Arrangement, ...] = (
                 ('nfd', 'particle'),
                 {'given': 'Mai', 'middle': 'Me\u0301nil Thi', 'family': 'du'},
                 ('particle-or-given',),
-                accepted='AGENTS.md',
-                note="an ambiguous particle opening the name is left to position and reported, root AGENTS.md's particles paragraph"),
+                note="an ambiguous particle opening the name is left to "
+                     "position and reported, as root AGENTS.md describes; "
+                     "no decision weighs it under a family-first order"),
 )

@@ -10,22 +10,27 @@ give, and a non-strict one stops watching the row, so a change that
 moved it would pass. Pinned, any move fails here, and the change that
 moves it edits the row and its mark in the same diff.
 
-Negative control, 2026-10-30: with every row parsed under the default
-order, 31 of the 40 family-first rows of the first inventory failed;
-the 9 that still passed were the rows with a family comma, which lays
-the part after it out given-first under every order.
+Negative control, 2026-10-30, every row parsed under the default
+order instead of its own. The final grid (104 rows, after the last
+commit adding rows): 49 of its 68 family-first rows fail; of the 19
+that pass, 15 hold a family comma, an empty head included, and 4 lay
+out no name word by order (`(Bob), PhD`, `Freiherr St van Berg MA`). The first
+grid (64 rows, f879633d): 31 of its 40 family-first rows failed, the 9
+that passed being the rows with a family comma, which lays the part
+after it out given-first under every order.
 """
 from __future__ import annotations
 
 import re
 import unicodedata
+from collections.abc import Callable
 from pathlib import Path
 from typing import Protocol
 
 import pytest
 
 import nameparser
-from nameparser import Parser, Policy, Role
+from nameparser import Lexicon, Parser, Policy, Role
 
 from ._differential_fixtures import load_tool
 
@@ -97,36 +102,97 @@ def test_every_order_covers_every_position() -> None:
         assert not covered & shapes.NOT_A_SLOT[order], order
 
 
+_LEX = Lexicon.default()
+_SUFFIXES = _LEX.suffix_words | _LEX.suffix_acronyms
 _DOTTED = re.compile(r"[^\W\d_]\.[^\W\d_]\.")
+_ABBREVIATION = re.compile(r"[^\W\d_]{2,}\.")
+_ROMAN = re.compile(r"(?=[IVXLCDM]+$)M*(C[MD]|D?C{0,3})(X[CL]|L?X{0,3})(I[XV]|V?I{0,3})")
 
-#: What a position needs to see in the row's text. A row's positions
-#: are its own claim; these hold the ones the text can show.
-_TEXT_SHOWS = {
-    "comma-full-head": lambda t: "," in t and not t.startswith(","),
-    "comma-one-word-head": lambda t: "," in t and not t.startswith(","),
+
+def _fold(word: str) -> str:
+    return word.strip(".,()\"").lower()
+
+
+def _is_title(word: str) -> bool:
+    return _fold(word) in _LEX.titles or bool(_ABBREVIATION.fullmatch(word))
+
+
+def _head(t: str) -> list[str]:
+    return t.split(",")[0].split()
+
+
+def _name_words(words: list[str]) -> int:
+    """The name words of a part, counted as rules/C3 counts them for
+    the shapes here: a title, a suffix and a particle (which joins the
+    word after it) count as none, a connective as its word."""
+    return sum(1 for w in words
+               if not _is_title(w) and _fold(w) not in _SUFFIXES
+               and _fold(w) not in _LEX.particles)
+
+
+def _after_comma(t: str) -> list[str]:
+    return t.split(",", 1)[1].split() if "," in t else []
+
+
+#: What each position needs to see in the row's text. A row's
+#: positions are its own claim; every one is held to the text by a
+#: predicate here, cheap and vocabulary-read, so a mislabelled row
+#: (`numeral` on `Dr. John Smith`) fails rather than counting as cover.
+_TEXT_SHOWS: dict[str, Callable[[str], bool]] = {
+    "title-front": lambda t: _is_title(t.split()[0]) or (
+        bool(_after_comma(t)) and _is_title(_after_comma(t)[0])),
+    "title-between": lambda t: len(t.split()) > 2
+        and not _is_title(t.split()[0]) and _is_title(t.split()[1]),
+    "title-end": lambda t: _fold(t.split()[-1]) in _LEX.titles,
+    "title-after-comma": lambda t: bool(_head(t))
+        and _is_title(t.split(",")[-1].split()[0]),
+    "title-after-empty-head": lambda t: t.startswith(",")
+        and _fold(t.split()[-1]) in _LEX.titles,
+    "title-particle-head": lambda t: all(
+        _fold(w) in _LEX.titles and _fold(w) in _LEX.particles
+        for w in t.split()[:2]),
+    "dual-in-title-run": lambda t: _is_title(t.split()[0])
+        and _fold(t.split()[1]) in _LEX.titles
+        and _fold(t.split()[1]) in _SUFFIXES,
+    "shape-title": lambda t: any(
+        _ABBREVIATION.fullmatch(w) and _fold(w) not in _LEX.titles
+        for w in t.split()[:2]),
+    "suffix-no-comma": lambda t: _fold(t.split()[-1]) in _SUFFIXES
+        and "," not in t.rsplit(" ", 1)[0][-1:],
+    "suffix-before-comma": lambda t: "," in t
+        and _fold(_head(t)[-1]) in _SUFFIXES,
+    "suffix-after-comma": lambda t: any(
+        _fold(w) in _SUFFIXES for w in _after_comma(t)),
+    "numeral": lambda t: any(_ROMAN.fullmatch(w) for w in t.split()),
+    "dotted-suffix": lambda t: bool(_DOTTED.search(t.split()[-1])),
+    "undotted-suffix": lambda t: "." not in t.split()[-1]
+        and _fold(t.split()[-1]) in _LEX.suffix_words,
+    "comma-full-head": lambda t: _name_words(_head(t)) >= 2 and "," in t,
+    "comma-one-word-head": lambda t: _name_words(_head(t)) == 1
+        and "," in t,
     "comma-empty-head": lambda t: t.startswith(","),
-    "title-after-empty-head": lambda t: t.startswith(","),
-    "nickname-only-head": lambda t: t[:1] in "(\"" and "," in t,
-    "suffix-before-comma": lambda t: "," in t,
-    "suffix-after-comma": lambda t: "," in t,
-    "title-after-comma": lambda t: "," in t,
-    "connective-before-comma": lambda t: "," in t,
-    "particle-before-comma": lambda t: "," in t,
+    "nickname-only-head": lambda t: "," in t
+        and _head(t)[0][:1] in "(\"" and len(_head(t)) == 1,
+    "connective-before-comma": lambda t: "," in t
+        and any(_fold(w) in _LEX.conjunctions for w in _head(t)),
+    "particle-before-comma": lambda t: "," in t
+        and any(_fold(w) in _LEX.particles for w in _head(t)),
+    "middle": lambda t: _name_words(t.split(",")[0].split()) >= 3,
+    "particle": lambda t: any(_fold(w) in _LEX.particles
+                              for w in t.split()),
     "nickname": lambda t: '"' in t or "(" in t,
-    "dotted-suffix": lambda t: bool(_DOTTED.search(t)),
     "nfd": lambda t: unicodedata.normalize("NFC", t) != t,
-    "suffix-no-comma": lambda t: True,
 }
 
 
 def test_an_arrangement_names_known_positions_shapes_and_roles() -> None:
+    assert set(_TEXT_SHOWS) == set(shapes.POSITIONS)
     roles = {str(r) for r in Role}
     for a in ARRANGEMENTS:
         assert a.shape in shapes.SHAPES and a.shape not in (6, 7), a
         assert a.positions and set(a.positions) <= set(shapes.POSITIONS), a
         for position in a.positions:
-            shows = _TEXT_SHOWS.get(position)
-            assert shows is None or shows(a.text), (position, a.text)
+            assert _TEXT_SHOWS[position](a.text), (position, a.text)
         assert a.reads and set(a.reads) <= roles, a
         assert all(a.reads.values()), a
     texts = [(a.shape, a.text) for a in ARRANGEMENTS]
@@ -134,8 +200,8 @@ def test_an_arrangement_names_known_positions_shapes_and_roles() -> None:
 
 
 def test_a_marked_arrangement_cites_something_that_exists() -> None:
-    """`accepted` names a decisions/ key (its file must exist) or a
-    repository path; `misread` an issue number; never both."""
+    """`accepted` names a decisions/ key, whose file must exist;
+    `misread` an issue number; never both."""
     marked = [a for a in ARRANGEMENTS if a.accepted or a.misread]
     assert marked
     for a in marked:
@@ -143,7 +209,5 @@ def test_a_marked_arrangement_cites_something_that_exists() -> None:
         if a.misread is not None:
             assert isinstance(a.misread, int) and a.misread > 0, a
             continue
-        if re.fullmatch(r"[A-Z]\d+", a.accepted):
-            assert list(_DECISIONS.glob(f"{a.accepted}-*.md")), a
-        else:
-            assert (_ROOT / a.accepted).is_file(), a
+        assert re.fullmatch(r"[A-Z]\d+", a.accepted), a
+        assert list(_DECISIONS.glob(f"{a.accepted}-*.md")), a
