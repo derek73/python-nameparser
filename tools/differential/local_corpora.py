@@ -81,6 +81,7 @@ the listing gives). What each source is, what it is the population for
 and what its terms allow is its module's docstring: local_ctgov.py
 (ctgov-officials), local_fec.py (fec-individuals), local_tse.py
 (tse-donors), local_tw.py (tw-donors), local_ukec.py (ukec-individuals),
+local_govuk.py (govuk-people),
 local_psc.py (psc-individuals), local_jrc.py (jrc-names),
 local_nepal.py (nepal-candidates), local_orcid.py
 (orcid-researchers) and local_patentsview.py (patentsview-inventors).
@@ -123,6 +124,7 @@ from local_ctgov import fetch_ctgov  # noqa: E402
 import local_fec  # noqa: E402
 import local_tse  # noqa: E402
 from local_fec import check_fec, fetch_fec, renew_fec  # noqa: E402
+from local_govuk import fetch_govuk  # noqa: E402
 from local_jrc import JRC, check_jrc, fetch_jrc, renew_jrc  # noqa: E402
 from local_nepal import check_nepal, fetch_nepal  # noqa: E402
 from local_orcid import (ORCID, check_orcid, extract_path as orcid_extract,  # noqa: E402
@@ -224,6 +226,10 @@ SOURCES: dict[str, Source] = {
         credit="UK Electoral Commission register of donations, individual "
                "donors (reuse terms for the register not stated)",
         unit="names", fetch=fetch_ukec),
+    "govuk-people": Source(
+        credit="GOV.UK people pages, display names (Crown copyright; the Open "
+               "Government Licence v3 does not cover the personal data in them)",
+        unit="names", fetch=fetch_govuk),
     "nepal-candidates": Source(
         credit="Election Commission, Nepal: candidates of the 2079 BS (2022) "
                "local elections (result.election.gov.np; no licence stated)",
