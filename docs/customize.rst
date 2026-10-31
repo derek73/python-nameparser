@@ -1023,6 +1023,31 @@ breaks 8,234 names of 20,000 and mends 265. The parser
 reports nothing for the names the switch moves: the shape it reads is
 the same either way.
 
+A given name standing before the family is most of what the switch gets
+wrong, as in ``"José Luis Pérez"``. Words that are given names and
+rarely surnames tell the two shapes apart, so the switch leaves a word
+listed in the lexicon's ``given_names`` where it stands, under any
+``name_order``. The field is empty by default, so you supply the list
+for your data; an entry written without accents matches the word with
+them:
+
+.. doctest::
+
+    >>> listed = Parser(policy=Policy(two_family_names=True),
+    ...                 lexicon=Lexicon.default().add(given_names={"luis"}))
+    >>> two_names.parse("José Luis Pérez").family
+    'Luis Pérez'
+    >>> luis = listed.parse("José Luis Pérez")
+    >>> luis.middle, luis.family
+    ('Luis', 'Pérez')
+
+List words that are given names and rarely surnames in your data: a
+word common in both roles, such as ``Martín``, is better left off. A
+listed word that is someone's surname, as given names sometimes are,
+stays out of the family: written given-first it becomes a middle name,
+and under a family-first ``name_order`` the second surname becomes the
+given name or a middle name.
+
 .. _two-given-names:
 
 Names with a compound given name

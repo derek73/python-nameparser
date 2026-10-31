@@ -101,6 +101,11 @@ def test_registry_resolves_policies_and_gates() -> None:
     assert kind == "locale" and obj == "ru"
     kind, obj = resolve_annotation("[ja+segmenter]")
     assert kind == "gated_locale" and obj == "ja"
+    # a policy with a lexicon fragment (#959): the pair, the fragment's
+    # list not empty, so an example under it reads the list
+    kind, obj = resolve_annotation("two_family_names+es_given_names")
+    assert kind == "config"
+    assert isinstance(obj, tuple) and obj[1].given_names
     with pytest.raises(KeyError):
         resolve_annotation("no-such-annotation")
 

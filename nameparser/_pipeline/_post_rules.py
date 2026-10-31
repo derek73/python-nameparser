@@ -23,7 +23,8 @@ Policy.two_given_names, Policy.name_order (O6 and O7 stand down where
 the script's order differs from the declared one),
 Policy.middle_as_family,
 Policy.extra_suffix_delimiters (R1's entry pass, for the delimiter
-cores group drops); Lexicon.given_name_titles, and
+cores group drops); Lexicon.given_name_titles, Lexicon.given_names
+(O6's veto), and
 Lexicon.suffix_acronyms_ambiguous (a dotted member in a clause, which
 carries no tag there, S13).
 
@@ -53,8 +54,8 @@ from nameparser._pipeline._state import (
     WorkToken, _NEVER_FLIPPED, comma_bucket, copy_with,
 )
 from nameparser._pipeline._vocab import (
-    delimiter_cores, has_patronymic_ending, is_patronymic_marker,
-    suffix_reading, unit_ends,
+    delimiter_cores, has_patronymic_ending, is_listed_given_name,
+    is_patronymic_marker, suffix_reading, unit_ends,
 )
 from nameparser._policy import PatronymicRule
 from nameparser._types import (
@@ -297,6 +298,15 @@ def _take_second_family_name(state: ParseState,
     if len(take) == 1 and "initial" in tokens[take[0]].tags:
         return
     if not any(ch.isalpha() for i in take for ch in tokens[i].text):
+        return
+    # rules/O6: "a listed given name stays where it is" -- the caller's
+    # Lexicon.given_names (empty by default; the Spanish list ships for
+    # sub-phase 3g's es pack) names a word only a given name is, under
+    # either order. Only a unit of one token is asked: a word
+    # behind a particle ("de Miguel") is a unit of two, a surname taken
+    # as before. History: decisions/O6 (#959).
+    if len(take) == 1 and is_listed_given_name(tokens[take[0]].text,
+                                                 state.lexicon):
         return
     if state.order[0] is Role.GIVEN:
         # given, middles..., family: the middle unit standing right

@@ -530,6 +530,31 @@ def test_a_lexicon_parser_and_locale_pickled_by_2_8_0_load() -> None:
     assert isinstance(loaded["locale"], Locale)
     assert loaded["locale"].code == "ru"
     assert isinstance(loaded["locale"].lexicon, Lexicon)
+    # #959's given_names, added in 3.0 and marked, loads empty: the
+    # default an older pickle means, no pack having filled it in 2.8
+    for loaded_lexicon in (loaded["lexicon"], loaded["parser"].lexicon,
+                           loaded["locale"].lexicon):
+        assert loaded_lexicon.given_names == frozenset()
+
+
+def test_given_names_round_trips() -> None:
+    lex = Lexicon.default().add(given_names={"luis", "José"})
+    assert pickle.loads(pickle.dumps(lex)) == lex
+
+
+def test_given_names_loads_from_2_8_0_only_by_its_marker(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # The negative control for the test above: the same 2.8.0 pickle
+    # with given_names' _ADDED_IN marker taken off is refused, so the
+    # load above is the marker's doing (#959).
+    from dataclasses import fields
+    f = next(f for f in fields(Lexicon) if f.name == "given_names")
+    assert _ADDED_IN in f.metadata
+    monkeypatch.setattr(f, "metadata", MappingProxyType(
+        {k: v for k, v in f.metadata.items() if k != _ADDED_IN}))
+    with open(Path(__file__).parent / "data" / "lexicon_v28.pickle",
+              "rb") as fh, pytest.raises(ValueError, match="given_names"):
+        pickle.load(fh)
 
 
 def test_normalization_lowercases_and_keeps_interior_periods() -> None:

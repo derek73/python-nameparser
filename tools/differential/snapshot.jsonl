@@ -200,8 +200,10 @@
 {"name": "Ana García", "given": "Ana", "family": "García", "initials": "A. G."}
 {"name": "Ana García (Anita) López", "given": "Ana", "middle": "García", "family": "López", "nickname": "Anita", "initials": "A. G. L."}
 {"name": "Ana J.R. García", "given": "Ana", "middle": "J.R.", "family": "García", "initials": "A. J. G."}
+{"name": "Ana Jorge Flores", "given": "Ana", "middle": "Jorge", "family": "Flores", "initials": "A. J. F."}
 {"name": "Ana M. García", "given": "Ana", "middle": "M.", "family": "García", "initials": "A. M. G."}
 {"name": "Ana Marija Vera Kovač", "given": "Ana", "middle": "Marija Vera", "family": "Kovač", "initials": "A. M. V. K."}
+{"name": "Ana Martín López", "given": "Ana", "middle": "Martín", "family": "López", "initials": "A. M. L."}
 {"name": "Ana María 3 López", "given": "Ana", "middle": "María 3", "family": "López", "initials": "A. M. 3. L."}
 {"name": "Ana María García - López", "given": "Ana", "middle": "María García -", "family": "López", "initials": "A. M. G. -. L."}
 {"name": "Ana María García López", "given": "Ana", "middle": "María García", "family": "López", "initials": "A. M. G. L."}
@@ -209,6 +211,7 @@
 {"name": "Ana María García–López", "given": "Ana", "middle": "María", "family": "García–López", "initials": "A. M. G."}
 {"name": "Ana María García－López", "given": "Ana", "middle": "María", "family": "García－López", "initials": "A. M. G."}
 {"name": "Ana María José Pérez", "given": "Ana", "middle": "María José", "family": "Pérez", "initials": "A. M. J. P."}
+{"name": "Ana María Luis Pérez", "given": "Ana", "middle": "María Luis", "family": "Pérez", "initials": "A. M. L. P."}
 {"name": "Ana María de la Vega Rodríguez", "given": "Ana", "middle": "María", "family": "de la Vega Rodríguez", "initials": "A. M. V. R."}
 {"name": "Ana María van der Berg", "given": "Ana", "middle": "María", "family": "van der Berg", "initials": "A. M. B."}
 {"name": "Ana María-José López", "given": "Ana", "middle": "María-José", "family": "López", "initials": "A. M. L."}
@@ -216,6 +219,7 @@
 {"name": "Ana SB", "given": "Ana", "family": "SB", "initials": "A. S.", "capitalized_force": "Ana Sb"}
 {"name": "Ana Torres", "given": "Ana", "family": "Torres", "initials": "A. T."}
 {"name": "Ana abdul Rahman López", "given": "Ana", "middle": "abdul Rahman", "family": "López", "initials": "A. a. R. L.", "capitalized_force": "Ana Abdul Rahman López"}
+{"name": "Ana de Miguel de la Vega", "given": "Ana", "middle": "de Miguel", "family": "de la Vega", "initials": "A. M. V."}
 {"name": "Anan ben David", "given": "Anan", "middle": "ben", "family": "David", "initials": "A. b. D.", "capitalized_force": "Anan Ben David"}
 {"name": "Andersen Irene", "order": "FAMILY_FIRST", "given": "Irene", "family": "Andersen", "initials": "I. A."}
 {"name": "Andersen, Irene", "given": "Irene", "family": "Andersen", "initials": "I. A."}
@@ -1025,6 +1029,7 @@
 {"name": "Fischer, Paul Vinzent von", "given": "Paul", "middle": "Vinzent", "family": "von Fischer", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "P. V. F."}
 {"name": "Fitzhugh, Louise", "given": "Louise", "family": "Fitzhugh", "initials": "L. F."}
 {"name": "Fleksnes, Gregers Werle Marve Almar von", "given": "Gregers", "middle": "Werle Marve Almar", "family": "von Fleksnes", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "G. W. M. A. F."}
+{"name": "Flores Jorge Ana", "given": "Flores", "middle": "Jorge", "family": "Ana", "initials": "F. J. A."}
 {"name": "Flores Marco Antonio", "order": "FAMILY_FIRST", "given": "Marco", "middle": "Antonio", "family": "Flores", "initials": "M. A. F."}
 {"name": "Flores, Marco Antonio", "given": "Marco", "middle": "Antonio", "family": "Flores", "initials": "M. A. F."}
 {"name": "Flávio Juvenal da Silva Jr", "given": "Flávio", "middle": "Juvenal", "family": "da Silva", "suffix": "Jr", "initials": "F. J. S.", "generation": "Jr"}
@@ -2011,6 +2016,7 @@
 {"name": "Jose Aznar y Lopez", "given": "Jose", "family": "Aznar y Lopez", "initials": "J. A. L."}
 {"name": "Jose E Maria Santos", "given": "Jose", "middle": "E Maria", "family": "Santos", "initials": "J. E. M. S."}
 {"name": "Jose E. Maria Santos", "given": "Jose", "middle": "E. Maria", "family": "Santos", "initials": "J. E. M. S."}
+{"name": "Jose Luis Perez", "given": "Jose", "middle": "Luis", "family": "Perez", "initials": "J. L. P."}
 {"name": "Jose Ortega-Y-Gasset", "given": "Jose", "family": "Ortega-Y-Gasset", "initials": "J. O.", "capitalized_force": "Jose Ortega-y-Gasset"}
 {"name": "Jose e Maria", "given": "Jose", "middle": "e", "family": "Maria", "initials": "J. e. M."}
 {"name": "Jose e Maria Santos", "given": "Jose e Maria", "family": "Santos", "initials": "J. M. S."}
@@ -2047,6 +2053,7 @@
 {"name": "José Luis Bustamante y Rivero", "given": "José", "middle": "Luis", "family": "Bustamante y Rivero", "initials": "J. L. B. R."}
 {"name": "José Luis Covarrubias Garza", "given": "José", "middle": "Luis Covarrubias", "family": "Garza", "initials": "J. L. C. G."}
 {"name": "José Luis Martín Descalzo", "given": "José", "middle": "Luis Martín", "family": "Descalzo", "initials": "J. L. M. D."}
+{"name": "José Luis Pérez", "given": "José", "middle": "Luis", "family": "Pérez", "initials": "J. L. P."}
 {"name": "José López Domínguez", "given": "José", "middle": "López", "family": "Domínguez", "initials": "J. L. D."}
 {"name": "José López Portillo y Pacheco", "given": "José", "middle": "López", "family": "Portillo y Pacheco", "initials": "J. L. P. P."}
 {"name": "José Manuel López de Abiada", "given": "José", "middle": "Manuel López", "family": "de Abiada", "initials": "J. M. L. A."}
@@ -2977,7 +2984,9 @@
 {"name": "Prof. Ɖr. MƉ fan ƉAM ƉOMIŊGO Fostɛɛŋ Samʊwɛl", "order": "FAMILY_FIRST", "title": "Prof. Ɖr.", "given": "fan", "middle": "ƉAM ƉOMIŊGO Fostɛɛŋ Samʊwɛl", "family": "MƉ", "initials": "f. Ɖ. Ɖ. F. S. M.", "capitalized_force": "Prof. Ɖr. Mɖ Fan Ɖam Ɖomiŋgo Fostɛɛŋ Samʊwɛl"}
 {"name": "Prop. Dr. Ada Cornelia César Martín von Brühl González Domingo MD DDS", "title": "Prop. Dr.", "given": "Ada", "middle": "Cornelia César Martín", "family": "von Brühl González Domingo", "suffix": "MD DDS", "initials": "A. C. C. M. B. G. D."}
 {"name": "Pèrs, Ciro di", "given": "Ciro", "family": "di Pèrs", "ambiguities": ["PARTICLE_OR_GIVEN", "SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)", "PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "C. P."}
+{"name": "Pérez José Luis", "given": "Pérez", "middle": "José", "family": "Luis", "initials": "P. J. L."}
 {"name": "Pérez Lucía", "order": "FAMILY_FIRST", "given": "Lucía", "family": "Pérez", "initials": "L. P."}
+{"name": "Pérez Luis José", "given": "Pérez", "middle": "Luis", "family": "José", "initials": "P. L. J."}
 {"name": "Pérez, Antonio Juan Carlos", "given": "Antonio", "middle": "Juan Carlos", "family": "Pérez", "initials": "A. J. C. P."}
 {"name": "Pérez, Juan Carlos", "given": "Juan", "middle": "Carlos", "family": "Pérez", "initials": "J. C. P."}
 {"name": "Pérez, Juan Ó.", "given": "Juan", "middle": "Ó.", "family": "Pérez", "initials": "J. Ó. P."}

@@ -2342,7 +2342,10 @@ def test_the_compiled_fields_are_the_default_lexicons() -> None:
     from nameparser._reading_index import compile_choice
     default = Lexicon.default()
     fields = _vocab_fields(compile_choice(frozenset()))
-    assert {f for f in fields} | {"surnames"} == set(_VOCAB_FIELDS)
+    # surnames is KOREAN_SURNAMES and given_names a pack's list (#959),
+    # neither compiled from the vocabulary
+    assert {f for f in fields} | {"surnames", "given_names"} == set(
+        _VOCAB_FIELDS)
     for name, words in fields.items():
         assert getattr(default, name) == words, name
 

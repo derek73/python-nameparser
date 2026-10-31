@@ -549,14 +549,15 @@ def test_the_caps_exclusion_covers_every_vocabulary_field() -> None:
     # H9: two fields are left out on purpose -- a title that may
     # be a given name reads, outside a phrase, as the unlisted word it
     # is there, and a phrase is two words -- and #789's third: a given
-    # name written short is read only by H2's shape
+    # name written short is read only by H2's shape; and #959's fourth,
+    # the given names only O6 reads
     for field in ("titles_ambiguous", "title_phrases",
-                  "given_name_abbreviations"):
+                  "given_name_abbreviations", "given_names"):
         assert caps_shape_candidate(
             "ZZQX", base.add(**{field: {"zzqx"}}), on, False), field
     for field in _VOCAB_FIELDS:
         if field in ("titles_ambiguous", "title_phrases",
-                     "given_name_abbreviations"):
+                     "given_name_abbreviations", "given_names"):
             continue
         extra: dict[str, set[str]] = {field: {"zzqx"}}
         if field in ("honorific_tails", "suffix_words_ambiguous"):

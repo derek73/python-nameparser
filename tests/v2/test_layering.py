@@ -26,7 +26,8 @@ _MUST_EXIST = {"_types.py", "_lexicon.py", "_policy.py", "_locale.py",
                "_pipeline/_assign.py", "_pipeline/_post_rules.py",
                "_pipeline/_assemble.py", "_parser.py",
                "locales/__init__.py", "locales/ja.py",
-               "locales/ru.py", "locales/tr_az.py", "locales/zh.py"}
+               "locales/ru.py", "locales/tr_az.py", "locales/zh.py",
+               "locales/_es_given_names.py"}
 
 _PIPELINE_STAGE_ALLOWED = (
     "nameparser._types", "nameparser._lexicon", "nameparser._policy",
@@ -139,6 +140,9 @@ ALLOWED = {
     "locales/ru.py": _LOCALE_PACK_ALLOWED,
     "locales/tr_az.py": _LOCALE_PACK_ALLOWED,
     "locales/zh.py": _LOCALE_PACK_ALLOWED,
+    # a pack's data, no pack itself: rules/O6's given-name list (#959),
+    # which the es pack will carry as a lexicon fragment
+    "locales/_es_given_names.py": (),
     # the data modules' package: a docstring, no imports
     "config/__init__.py": (),
     # CLI: imports only the public package, same as
