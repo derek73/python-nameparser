@@ -14068,6 +14068,36 @@ CASES: tuple[Case, ...] = (
                "cannot guard it (DEVIATES declares all Han); "
                "Japanese data belongs under locales.JA and its "
                "segmenter instead"),
+    Case("zh_mainland_surname_fu", "付晓明",
+         {"family": "付", "given": "晓明"},
+         locale="zh", classification="fix(#952)",
+         notes="mainland 65th by people, past both rankings' top 300 "
+               "(Taiwan writes 傅); added by hand at the census "
+               "block's tail"),
+    Case("zh_mainland_surname_dai", "代红梅",
+         {"family": "代", "given": "红梅"},
+         locale="zh", classification="fix(#952)",
+         notes="mainland 106th by people, Taiwan 545th"),
+    Case("zh_mainland_surname_hou", "候建国",
+         {"family": "候", "given": "建国"},
+         locale="zh", classification="fix(#952)",
+         notes="mainland 187th by people; a registry spelling beside "
+               "侯, as 付 is beside 傅"),
+    Case("zh_mainland_surname_nong", "农建华",
+         {"family": "农", "given": "建华"},
+         locale="zh", classification="fix(#952)",
+         notes="mainland 198th by people; Wikidata has no 农 item"),
+    Case("zh_mainland_surname_nong_traditional", "農建華",
+         {"family": "農", "given": "建華"},
+         locale="zh", classification="fix(#952)",
+         notes="the one traditional form #952 adds, attested by the "
+               "Taiwan ranking (317th)"),
+    Case("zh_japanese_kanji_tradeoff_dai", "代田稔",
+         {"family": "代", "given": "田稔"},
+         locale="zh", classification="fix(#952)",
+         notes="the recorded cost of 代, as 高橋一郎 is of 高: 14 of "
+               "172,412 Japanese names open with it (代田 is the "
+               "surname), and under ZH each divides after 代"),
 
     # -- #272: the kana license + nakaguro (amendment 2026-07-29).
     # Segmenter-dependent divisions cannot live here (Case has no
