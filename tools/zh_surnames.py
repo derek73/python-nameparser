@@ -221,7 +221,7 @@ def select(moi: list[str], items: list[Item],
 
 def additions(surnames: list[Surname], listed: set[str]) -> list[str]:
     """The forms to generate: every form of every selected surname that
-    the hand-kept census rows do not already hold, in rank order."""
+    the hand-kept rows do not already hold, in rank order."""
     out: list[str] = []
     for surname in surnames:
         out.extend(sorted(surname.forms - listed - set(out)))
@@ -243,7 +243,7 @@ def rewrite(module_text: str, block: str) -> str:
 
 
 def listed_by_hand(module_text: str) -> set[str]:
-    """The census rows zh.py keeps by hand, read from its source so the
+    """The rows zh.py keeps by hand, read from its source so the
     script never imports the package it writes."""
     start = module_text.find(BEGIN)
     head = module_text if start < 0 else module_text[:start]
@@ -307,7 +307,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"{new} {s.rank:4}  Taiwan {s.moi_rank or '-':>4}  "
               f"Wikidata {s.wikidata_rank or '-':>4}  "
               f"{' '.join(sorted(s.forms))}")
-    print(f"{len(surnames)} surnames; {len(forms)} forms not in the census "
+    print(f"{len(surnames)} surnames; {len(forms)} forms not in the hand-kept "
           "rows", file=sys.stderr)
     if args.write:
         ZH_MODULE.write_text(rewrite(module_text, render(forms)),

@@ -16,7 +16,9 @@ PRC census, plus the union of two rankings' top 300 (#695): Taiwan's
 Ministry of the Interior surname ranking (內政部戶政司, 2023, used under
 the Open Government Data License, version 1) and Wikidata's Chinese
 family names ranked by bearers (CC0). tools/zh_surnames.py derives
-that block and writes it below; do not edit it by hand.
+that block and writes it below; do not edit it by hand. Five mainland
+surnames that neither ranking reaches are added by hand at the census
+block's tail (#952), each annotated there with its mainland rank.
 Traditional-script variant forms are included for names written in
 Taiwan/Hong Kong/overseas orthography; two-character compounds are
 hand-curated (see the note above _COMPOUND), never generated, since a
@@ -47,7 +49,7 @@ from nameparser._policy import PolicyPatch, Script, _script_matcher
 # 2020 census top-100 plus the annotated additions below, simplified
 # forms, census rank order, 10 per row -- append new entries at the
 # tail, do not alphabetize (rank order is the only in-file record of
-# where the coverage floor sits). Two entries are NOT census rows and
+# where the coverage floor sits). Seven entries are NOT census rows and
 # are called out so the rank-order record stays honest:
 #
 # * 阎 sits off-rank beside 闫 rather than at the tail, because the two
@@ -58,6 +60,18 @@ from nameparser._policy import PolicyPatch, Script, _script_matcher
 #   the merged 肖 (rank 33 above), but 萧 stays a distinct simplified
 #   spelling in current use and both circulate. The traditional form
 #   蕭 ships either way, below.
+# * 付, 代, 候, 芦 and 农 follow it (#952): mainland surnames ranked
+#   65th, 106th, 187th, 197th and 198th by people in China's national ID
+#   registry (NCIIC, 2008), the unlisted ones in its top 200. Both
+#   rankings miss them for their regional bias: the 2023 Taiwan file
+#   ranks them 435th, 545th, 351st, 642nd (as 蘆) and 317th (as 農),
+#   and Wikidata, as fetched 2026-10-18, ranks all but 芦, which has no
+#   item, 393rd, 589th, 610th and 585th (as 農). 付 stands for 傅 in
+#   mainland registration and 候 looks like the same pattern for 侯;
+#   the 2023 Taiwan file has under 400 bearers of either. 蘆 and 農 are
+#   their traditional forms, below, the Taiwan ranking attesting each.
+#   代 and 芦 open Japanese surnames (代田, 芦田), a cost decisions/W1
+#   records with the measurements (its 2026-10-30 #952 entry).
 _SINGLE = (
     "王", "李", "张", "刘", "陈", "杨", "黄", "赵", "吴", "周",
     "徐", "孙", "马", "朱", "胡", "郭", "何", "林", "高", "罗",
@@ -69,7 +83,7 @@ _SINGLE = (
     "孟", "秦", "邱", "侯", "江", "尹", "薛", "闫", "阎", "段",
     "雷", "龙", "黎", "史", "陶", "贺", "毛", "郝", "顾", "龚",
     "邵", "万", "覃", "武", "钱", "戴", "严", "莫", "孔", "向",
-    "常", "萧",
+    "常", "萧", "付", "代", "候", "芦", "农",
 )
 # Traditional-script forms of the above where the glyph differs. 蕭 is
 # the traditional spelling of both 萧 and the merged 肖 (see the note
@@ -78,7 +92,7 @@ _SINGLE_TRADITIONAL = (
     "張", "劉", "陳", "楊", "黃", "趙", "吳", "孫", "馬", "羅",
     "鄭", "謝", "許", "韓", "鄧", "馮", "蕭", "葉", "蘇", "呂",
     "盧", "鍾", "譚", "陸", "韋", "賈", "鄒", "閆", "閻", "龍",
-    "賀", "顧", "龔", "萬", "錢", "嚴", "蔣",
+    "賀", "顧", "龔", "萬", "錢", "嚴", "蔣", "蘆", "農",
 )
 # Both rankings' top 300 past the census rows, in combined rank order
 # (each surname's better rank of the two), both scripts.
