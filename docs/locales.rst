@@ -597,8 +597,12 @@ Portuguese-speaking country: among ORCID's researchers the switch
 mends about two names for each it breaks in Portugal (71.5% → 83.2%)
 and three in Brazil (49.5% → 74.4%), but sinks Angola (75.9% → 57.3%)
 and Mozambique (85.2% → 50.2%), and a Portuguese given-name list to
-guard it does not exist yet. For Portuguese or Brazilian data, turn it
-on beside the pack: ``parser_for(locales.PT,
+guard it does not exist yet. Whether it helps Portuguese or Brazilian
+data depends on who split the names: it gains on names their bearers
+split themselves, as ORCID's are, and costs about 5 points on names
+filed through a form, as the UK company register's Portuguese filers
+are (61.1% → 56.1%). Where it helps your data, turn it on beside the
+pack: ``parser_for(locales.PT,
 base=Parser(policy=Policy(two_family_names=True)))``.
 
 Romanized Indic titles
