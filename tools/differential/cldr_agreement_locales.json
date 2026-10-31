@@ -441,6 +441,94 @@
   },
   "text": "Jiří"
  },
+ "es/foreignFull/sorting": {
+  "surname2": {
+   "expected": "Jones",
+   "got": ""
+  },
+  "text": "von Miller Jones, Prof. Dr. Mary Sue Marie"
+ },
+ "es/foreignFull/surnameFirst": {
+  "family": {
+   "expected": "von Miller Jones",
+   "got": "von Miller"
+  },
+  "family_base": {
+   "expected": "Miller Jones",
+   "got": "Miller"
+  },
+  "given_names": {
+   "expected": "Mary Sue Marie",
+   "got": "Jones Mary Sue Marie"
+  },
+  "surname2": {
+   "expected": "Jones",
+   "got": "Miller"
+  },
+  "text": "von Miller Jones Mary Sue Marie II, MD DDS"
+ },
+ "es/foreignG/sorting": {
+  "family": {
+   "expected": "",
+   "got": "Peter"
+  },
+  "given_names": {
+   "expected": "Peter",
+   "got": ""
+  },
+  "text": "Peter"
+ },
+ "es/foreignG/surnameFirst": {
+  "family": {
+   "expected": "",
+   "got": "Peter"
+  },
+  "given_names": {
+   "expected": "Peter",
+   "got": ""
+  },
+  "text": "Peter"
+ },
+ "es/foreignGGS/givenFirst": {
+  "family": {
+   "expected": "Jacobsen",
+   "got": "Hans Jacobsen"
+  },
+  "given_names": {
+   "expected": "Christopher Hans",
+   "got": "Christopher"
+  },
+  "text": "Christopher Hans Jacobsen"
+ },
+ "es/nativeFull/sorting": {
+  "surname2": {
+   "expected": "Pérez",
+   "got": ""
+  },
+  "text": "Pablo Pérez, Sr. Miguel Ángel Juan Antonio"
+ },
+ "es/nativeG/sorting": {
+  "family": {
+   "expected": "",
+   "got": "Lola"
+  },
+  "given_names": {
+   "expected": "Lola",
+   "got": ""
+  },
+  "text": "Lola"
+ },
+ "es/nativeG/surnameFirst": {
+  "family": {
+   "expected": "",
+   "got": "Lola"
+  },
+  "given_names": {
+   "expected": "Lola",
+   "got": ""
+  },
+  "text": "Lola"
+ },
  "ga/foreignFull/givenFirst": {
   "surname2": {
    "expected": "González Domingo",

@@ -789,8 +789,8 @@ class Lexicon:
     #: dropped (the tilde on n and the cedilla on c kept), so an entry
     #: written "jose" matches "José" too. No other rule reads it. Empty
     #: by default, so the switch reads as without it; a caller passes
-    #: a list of its own, and a Spanish list ships for the ``es`` pack
-    #: to carry once that pack exists.
+    #: a list of its own, and ``locales.ES`` carries a Spanish list, with
+    #: the switch on.
     #: Added in 3.0, so a Lexicon pickled by 2.x loads with it empty,
     #: which is what an older pickle means: no pack filled it then.
     given_names: frozenset[str] = field(

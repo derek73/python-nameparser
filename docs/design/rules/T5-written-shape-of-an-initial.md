@@ -25,7 +25,7 @@
   ```
   "1. née Smith"              →  given="1."
   ```
-- A generation written as one letter and its period, the Spanish H. for hijo or a German regnal I., is that initial too, since nothing in its writing tells the two apart: the vocabulary records both readings off by default, for a language pack to turn on.
+- A generation written as one letter and its period, the Spanish H. for hijo or a German regnal I., is that initial too, since nothing in its writing tells the two apart: the vocabulary records I. off by default, for a language pack to turn on, and excludes H., measured an initial far more often.
   ```
   "Juan Pérez H."             →  family="H."
   "Wilhelm I."                →  family="I."

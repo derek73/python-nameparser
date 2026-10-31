@@ -11,6 +11,7 @@ pairs into the PolicyPatch its shipped pack carries (#754, 4f).
 
 
 RULES: tuple[tuple[str, tuple[tuple[str, object], ...]], ...] = (
+    ('es', (('two_family_names', True),)),
     ('ru', (('patronymic_rules', ('east-slavic',)),)),
     ('tr', (('patronymic_rules', ('turkic',)),)),
 )

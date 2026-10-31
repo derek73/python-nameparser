@@ -1,8 +1,8 @@
 """Spanish given names for rules/O6's veto (#959): a word only a given
 name is, which ``two_family_names`` leaves where it stands, so "José
-Luis Pérez" keeps family "Pérez". Data for the ``es`` pack to carry as
-a lexicon fragment, ``Lexicon(given_names=GIVEN_NAMES)``, as locales.ZH
-carries its surnames; no pack carries it yet.
+Luis Pérez" keeps family "Pérez". locales.ES carries it as its lexicon
+fragment, ``Lexicon(given_names=GIVEN_NAMES)``, as locales.ZH carries
+its surnames, and turns ``two_family_names`` on.
 
 Data source: Elaboración propia con datos extraídos del sitio web del
 INE: www.ine.es. Instituto Nacional de Estadística (INE), "Frecuencias

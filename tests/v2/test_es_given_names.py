@@ -145,3 +145,14 @@ def test_the_selection_keeps_the_mostly_given_words_by_rank() -> None:
     # rosa is 30 of 33 uses given (91%): in at 0.9, out at 0.95
     assert "rosa" in tool.select(given, surname, set(), share=0.9)
     assert "rosa" not in tool.select(given, surname, set(), share=0.95)
+
+
+def test_the_list_holds_the_tools_cutoff_and_the_docs_say_so() -> None:
+    # The user docs state the list's size; the cutoff is the tool's TOP,
+    # so a cutoff change fails here until the prose moves with it. The
+    # release log is a record of what shipped, so it is not held.
+    assert len(_es_given_names.GIVEN_NAMES) == len(_es_given_names._RANKED) == tool.TOP
+    docs = _PATH.parents[1] / "docs"
+    for name in ("locales.rst", "customize.rst"):
+        text = " ".join(docs.joinpath(name).read_text(encoding="utf-8").split())
+        assert f"{tool.TOP:,} Spanish given names" in text, name
