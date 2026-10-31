@@ -2,11 +2,25 @@
 
     python -m nameparser "Dr. Juan Q. Xavier de la Vega III"
     python -m nameparser --json "Doe, John"
+    python -m nameparser --order family-first "Kovács János Péter"
 """
 import argparse
+import dataclasses
 import json
 
-from nameparser import parse
+from nameparser import (
+    FAMILY_FIRST,
+    FAMILY_FIRST_GIVEN_LAST,
+    GIVEN_FIRST,
+    Parser,
+)
+
+# The CLI spelling of each Policy.name_order constant.
+_ORDERS = {
+    "given-first": GIVEN_FIRST,
+    "family-first": FAMILY_FIRST,
+    "family-first-given-last": FAMILY_FIRST_GIVEN_LAST,
+}
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -18,6 +32,10 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--locale", metavar="CODE",
                     help="parse with a locale pack (e.g. 'ru'); see "
                          "nameparser.locales")
+    ap.add_argument("--order", choices=_ORDERS,
+                    help="the order to read the name's words in "
+                         "(default: given-first); applied after --locale, "
+                         "so it wins over a pack's order")
     args = ap.parse_args(argv)
     # `is not None`, not truthiness: --locale "" must reach get() and
     # exit 2 listing the codes, not silently fall back to the default
@@ -27,9 +45,13 @@ def main(argv: list[str] | None = None) -> int:
             parser = parser_for(locales.get(args.locale))
         except KeyError as exc:
             ap.error(exc.args[0])  # exits 2, message to stderr
-        n = parser.parse(args.name)
     else:
-        n = parse(args.name)
+        parser = Parser()
+    # Applied after the pack, so the explicit flag wins over its order
+    if args.order is not None:
+        parser = dataclasses.replace(parser, policy=dataclasses.replace(
+            parser.policy, name_order=_ORDERS[args.order]))
+    n = parser.parse(args.name)
     if args.json:
         print(json.dumps(n.as_dict(), ensure_ascii=False))
         return 0
