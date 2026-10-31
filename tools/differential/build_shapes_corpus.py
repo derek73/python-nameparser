@@ -1,5 +1,5 @@
 """Regenerate corpus_shapes.jsonl from the shape-tagged rows of the
-case table.
+case table and the arrangements of tools/differential/shapes.py.
 
 Every entry here was CHOSEN (#468) -- a row someone wrote with
 reviewed expected values -- and the shape id records, once, at
@@ -24,10 +24,12 @@ the "which shapes, how many names deep" answer #468 asked for.
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import sys
 from collections import Counter
 from pathlib import Path
+from typing import Any
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
@@ -39,12 +41,24 @@ OUT = HERE / "corpus_shapes.jsonl"
 
 
 def _pairs() -> list[tuple[int, str]]:
-    """Every distinct (shape, text) pair from tagged rows, sorted for
+    """Every distinct (shape, text) pair from tagged rows and from
+    shapes.py's ARRANGEMENTS (the inventory per order, 4h), sorted for
     a deterministic file. A text tagged with TWO shapes (the
     family-first divergence pairs) is two pairs: two orders are two
     comparisons."""
-    return sorted({(case.shape, case.text) for case in CASES
-                   if case.shape is not None})
+    tagged = {(case.shape, case.text) for case in CASES
+              if case.shape is not None}
+    return sorted(tagged | {(a.shape, a.text) for a in _arrangements()})
+
+
+def _arrangements() -> tuple[Any, ...]:
+    """shapes.py's ARRANGEMENTS, loaded by path as snapshot.py loads
+    SHAPES: tools/ is not a package."""
+    spec = importlib.util.spec_from_file_location("_shapes", HERE / "shapes.py")
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.ARRANGEMENTS  # type: ignore[no-any-return]
 
 
 def selected() -> list[dict[str, object]]:
