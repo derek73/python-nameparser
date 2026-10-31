@@ -3351,7 +3351,7 @@ def test_no_module_imports_a_sibling_constant() -> None:
     import ast
     sources = {source.fetch.__module__ for source in local.SOURCES.values()}
     assert sources == {m.__name__ for m in (ctgov, fec, tse, tw, ukec, psc, jrc, nepal, orcid,
-                                            patentsview)}
+                                            patentsview)} | {"local_govuk"}
     siblings = {"local_corpora", "local_core", *sources}
     imported = {(path.stem, alias.name)
                 for path in (Path(str(local.__file__)).parent / f"{s}.py"
