@@ -3,10 +3,13 @@
 {"name": "Bridge (A.B)", "shape": 1}
 {"name": "Carod i", "shape": 1}
 {"name": "Carod y de Rovira i", "shape": 1}
+{"name": "Christophe du Ménil", "shape": 1}
 {"name": "Dr. John Smith", "shape": 1}
 {"name": "Dr. Juan de la Vega III", "shape": 1}
 {"name": "Duke of Edinburgh", "shape": 1}
 {"name": "E SMITH JONES", "shape": 1}
+{"name": "Freiherr St van Berg MA", "shape": 1}
+{"name": "Insp. John Smith", "shape": 1}
 {"name": "J.A. K.D.", "shape": 1}
 {"name": "J.R.R. Tolkien", "shape": 1}
 {"name": "JACK MA", "shape": 1}
@@ -66,7 +69,9 @@
 {"name": "John Smith B.Tech.", "shape": 1}
 {"name": "John Smith C.H.A.", "shape": 1}
 {"name": "John Smith E.S.Q.", "shape": 1}
+{"name": "John Smith III", "shape": 1}
 {"name": "John Smith J.u.n.i.o.r.", "shape": 1}
+{"name": "John Smith Jr", "shape": 1}
 {"name": "John Smith Jr.", "shape": 1}
 {"name": "John Smith MEng PhD", "shape": 1}
 {"name": "John Smith Ma", "shape": 1}
@@ -146,7 +151,9 @@
 {"name": "Хосе И Мария Сантос", "shape": 1}
 {"name": "хосе и мария сантос", "shape": 1}
 {"name": "محمد و علي", "shape": 1}
+{"name": "(Bob), PhD", "shape": 2}
 {"name": ", John", "shape": 2}
+{"name": ", Ma Dr.", "shape": 2}
 {"name": ", PhD", "shape": 2}
 {"name": "Beethoven, Ludwig van", "shape": 2}
 {"name": "Berg, Jan mc", "shape": 2}
@@ -222,6 +229,7 @@
 {"name": "Kennedy, John (Jack)", "shape": 2}
 {"name": "NASCIMENTO, EDSON ARANTES DO", "shape": 2}
 {"name": "Nascimento, Edson Arantes do", "shape": 2}
+{"name": "Rev. Sr. Smith, Mary", "shape": 2}
 {"name": "Rovira, Josep Carod i Jr.", "shape": 2}
 {"name": "Royce, Ed", "shape": 2}
 {"name": "SMITH, JOHN DO", "shape": 2}
@@ -255,6 +263,8 @@
 {"name": "Uddin, Md Karim", "shape": 2}
 {"name": "Uddin, Mr Md Karim", "shape": 2}
 {"name": "Van Buren, Ed", "shape": 2}
+{"name": "Vega y Lopez Jr., PhD Jones", "shape": 2}
+{"name": "Vega y Lopez, Juan", "shape": 2}
 {"name": "Wang, Si", "shape": 2}
 {"name": "de la Cruz, Ma", "shape": 2}
 {"name": "de la Vega, Juan", "shape": 2}
@@ -274,6 +284,7 @@
 {"name": "Jane Doe, MS LAc", "shape": 3}
 {"name": "John Smith Jr., PhD", "shape": 3}
 {"name": "John Smith, A.B.", "shape": 3}
+{"name": "John Smith, Dr.", "shape": 3}
 {"name": "John Smith, Ed", "shape": 3}
 {"name": "John Smith, Ed Ma", "shape": 3}
 {"name": "John Smith, Jr.", "shape": 3}
@@ -300,24 +311,37 @@
 {"name": "john smith, ma", "shape": 3}
 {"name": "john smith, md ma", "shape": 3}
 {"name": "john smith, phd meng", "shape": 3}
+{"name": "(Bob), PhD", "shape": 4}
 {"name": ", Xiaoming", "shape": 4}
+{"name": ", Xiaoming Dr.", "shape": 4}
 {"name": "Brühl Prof. Dr. Ada Cornelia", "shape": 4}
 {"name": "Dr. Wang Xiaoming", "shape": 4}
 {"name": "Dr. Wang, Xiaoming", "shape": 4}
+{"name": "Freiherr St van Berg MA", "shape": 4}
+{"name": "Insp. Wang Xiaoming", "shape": 4}
 {"name": "John Smith, Dr.", "shape": 4}
 {"name": "Kovács János Péter", "shape": 4}
+{"name": "Ménil Christophe du", "shape": 4}
 {"name": "Ménil Christophe du", "shape": 4}
+{"name": "Rev. Sr. Wang Xiaoming", "shape": 4}
 {"name": "Senator Wang Xiaoming", "shape": 4}
+{"name": "Vega y Lopez Jr., PhD Jones", "shape": 4}
+{"name": "Vega y Lopez, Juan", "shape": 4}
 {"name": "Wang \"Tony\" Xiaoming", "shape": 4}
 {"name": "Wang Dr Xiaoming", "shape": 4}
 {"name": "Wang Dr. Xiaoming", "shape": 4}
+{"name": "Wang Insp. Xiaoming", "shape": 4}
 {"name": "Wang Jr., Xiaoming", "shape": 4}
 {"name": "Wang Xiaoming (Tony)", "shape": 4}
 {"name": "Wang Xiaoming Dr.", "shape": 4}
+{"name": "Wang Xiaoming III", "shape": 4}
+{"name": "Wang Xiaoming Jr", "shape": 4}
 {"name": "Wang Xiaoming Jr.", "shape": 4}
 {"name": "Wang Xiaoming PhD", "shape": 4}
 {"name": "Wang Xiaoming PhD Prof", "shape": 4}
 {"name": "Wang Xiaoming Senator", "shape": 4}
+{"name": "Wang Xiaoming X.Y.Z.", "shape": 4}
+{"name": "Wang Xiaoming, Dr.", "shape": 4}
 {"name": "Wang Xiaoming, Jr.", "shape": 4}
 {"name": "Wang Xiaoming, Jr., PhD", "shape": 4}
 {"name": "Wang Xiaoming, PhD", "shape": 4}
@@ -327,26 +351,41 @@
 {"name": "de Mesnil Jean, Dr.", "shape": 4}
 {"name": "de la Cruz Juan Carlos", "shape": 4}
 {"name": "de la Cruz née Vega", "shape": 4}
+{"name": "de la Vega, Juan", "shape": 4}
 {"name": "van Gogh Vincent", "shape": 4}
+{"name": "(Bob), PhD", "shape": 5}
 {"name": ", Thi Mai", "shape": 5}
+{"name": ", Thi Mai Dr.", "shape": 5}
 {"name": "Dr. Nguyen Thi Mai", "shape": 5}
+{"name": "Freiherr St van Berg MA", "shape": 5}
+{"name": "Insp. Nguyen Thi Mai", "shape": 5}
 {"name": "Mesnil Jean de", "shape": 5}
 {"name": "Nguyen \"Tony\" Thi Mai", "shape": 5}
 {"name": "Nguyen Dr. Thi Mai", "shape": 5}
+{"name": "Nguyen Insp. Thi Mai", "shape": 5}
 {"name": "Nguyen Jr., Thi Mai", "shape": 5}
 {"name": "Nguyen Thi Mai (Tony)", "shape": 5}
 {"name": "Nguyen Thi Mai Dr.", "shape": 5}
+{"name": "Nguyen Thi Mai III", "shape": 5}
+{"name": "Nguyen Thi Mai Jr", "shape": 5}
 {"name": "Nguyen Thi Mai Jr.", "shape": 5}
 {"name": "Nguyen Thi Mai PhD", "shape": 5}
 {"name": "Nguyen Thi Mai Senator", "shape": 5}
+{"name": "Nguyen Thi Mai X.Y.Z.", "shape": 5}
+{"name": "Nguyen Thi Mai, Dr.", "shape": 5}
 {"name": "Nguyen Thi Mai, Jr.", "shape": 5}
 {"name": "Nguyen Thi Mai, PhD", "shape": 5}
 {"name": "Nguyen, Dr. Thi Mai", "shape": 5}
 {"name": "Nguyen, Thi Mai", "shape": 5}
+{"name": "Rev. Sr. Nguyen Thi Mai", "shape": 5}
+{"name": "Vega y Lopez Jr., PhD Jones", "shape": 5}
+{"name": "Vega y Lopez, Juan", "shape": 5}
 {"name": "de Mesnil Thi Mai", "shape": 5}
 {"name": "de la Cruz Juan Carlos", "shape": 5}
 {"name": "de la Cruz Juan Carlos, Dr.", "shape": 5}
 {"name": "de la Cruz née Vega", "shape": 5}
+{"name": "de la Vega, Thi Mai", "shape": 5}
+{"name": "du Ménil Thi Mai", "shape": 5}
 {"name": "高橋 みなみ", "shape": 6}
 {"name": "김 민준", "shape": 6}
 {"name": "김민준", "shape": 6}
