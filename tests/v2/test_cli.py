@@ -177,6 +177,12 @@ def test_cli_locale_ja_with_the_extra_divides() -> None:
     assert proc.stderr == ""
 
 
+def test_cli_ja_extra_check_agrees_with_the_environment() -> None:
+    # the in-process tests below stand in for this check; the real one
+    # must answer what the subprocess runs' skips assume
+    assert cli._ja_extra_installed() is _JA_EXTRA
+
+
 def _cut_after_two(text: str) -> Segmentation:
     return Segmentation((2,))
 
