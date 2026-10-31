@@ -13,7 +13,7 @@ people, on 2026-10-30, parse() read a title in 1,293 and a suffix in
 front of the name, or two people in one page (`... and ... (job
 share)`). So it is a small population for English titles, honorifics
 and post-nominals as an office writes them, and blind to case (one
-title is a lone post-nominal in capitals), to the family-comma shape and
+display name is a lone post-nominal in capitals), to the family-comma shape and
 to names outside UK government. The counts are dated by the day they were
 fetched; the data date the fetch stamps, its own start in UTC, was
 2026-10-31T01:49:34Z.
