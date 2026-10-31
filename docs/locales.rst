@@ -127,9 +127,11 @@ How each part combines:
   declared set-valued in :class:`~nameparser.PolicyPatch`:
   ``patronymic_rules``, ``segment_scripts`` and the delimiter fields.
 - **Every other, scalar field is later-wins.** If two packs with
-  different codes set the same scalar field — even to the same value —
-  the later one wins and a ``UserWarning`` is raised; a pack overrides
-  the base parser's value silently.
+  different codes set the same scalar field to different values, the
+  later one wins and a ``UserWarning`` is raised; two that set it to the
+  same value agree, so ``parser_for(locales.CS, locales.SK)``, which
+  both turn ``two_family_names`` on, is silent. A pack overrides the base
+  parser's value silently.
 
 Choosing languages
 ~~~~~~~~~~~~~~~~~~
@@ -319,9 +321,10 @@ comma keeps both as the default reads them:
 It gains more names than it costs. Among ORCID's researchers, who split
 their own names into a given and a family box, the names agreeing in
 both rise from 95.0% to 96.4% in Czechia and from 94.8% to 96.4% in
-Slovakia; among the 170,181 distinct candidates of the 2022 municipal
-and 2025 Chamber elections, filed in the Czech registers' boxes, from
-97.0% to 97.5% (measured 2026-10-30). To keep the packs' vocabulary and
+Slovakia; among the 170,181 records of the 2022 municipal and 2025
+Chamber elections' candidates, each a distinct set of the boxes the
+Czech registers file a name in, from 97.0% to 97.5% (measured
+2026-10-30). To keep the packs' vocabulary and
 turn the switch off, rebuild the policy:
 
 .. doctest::
@@ -331,6 +334,22 @@ turn the switch off, rebuild the policy:
     ...     czech.policy, two_family_names=False))
     >>> one_family.parse("Petr Pavel Novák").family
     'Novák'
+
+Stacked with another pack, the switch reads that pack's names too.
+With ``locales.RU`` a patronymic written after the given name joins the
+family (``Ivan Petrovich Sidorov`` → family ``Petrovich Sidorov``, where
+``locales.RU`` alone reads the patronymic ``Petrovich``), as it does
+stacked with ``locales.ES``. With ``locales.ES``, the Spanish given-name
+list is applied to Czech and Slovak names and keeps the given names it
+holds out of the family, many of them names borne in both countries
+(``Jan``, ``Marie``, ``Anna``): over the Czech registers it moved 186
+records against ``locales.CS`` alone, 134 of them to agreeing (measured
+2026-10-30).
+
+.. doctest::
+
+    >>> parser_for(locales.CS, locales.RU).parse("Ivan Petrovich Sidorov").family
+    'Petrovich Sidorov'
 
 Choosing the language costs the other readings of these words. ``Pan
 Wei`` reads title ``Pan``, ``Rosalind Roz Smith`` takes ``Smith`` for

@@ -249,6 +249,10 @@ def test_cs_and_sk_pack_contents() -> None:
                      "Mária-\u200bJana Kováčová", "Jan Novák", "Novák"):
             assert module.DEVIATES(name) == deviates_by_two_family_names(name)
     assert _cs.DEVIATES("Petr Pavel Novák") and not _cs.DEVIATES("Pešová Řehořová")
+    # a word the tokenizer splits beside a word of no letter is three
+    # name words (the #973 review: these moved undeclared under all three)
+    for name in ("김민준 1", "Jan\u200bPavel -"):
+        assert deviates_by_two_family_names(name), name
 
 
 def test_es_and_pt_read_a_leading_title_and_leave_don_a_given_name() -> None:
@@ -1167,6 +1171,8 @@ _ROTATORS["cs"] = [
     "Jiří Dienstbier st.",           # st
     "Alena Pešová Řehořová",         # rules/O6, the patch
     "Ing. Alena Pešová Řehořová",    # rules/O6 behind a title
+    "김민준 1",                       # rules/O6 over a segmented name and a word of no letter
+    "Jan\u200bPavel -",               # rules/O6 over a zero-width split and a lone mark
 ]
 _ROTATORS["sk"] = [
     "Jozef Mrkva, ArtD.",            # artd, a credential after a comma
@@ -1183,6 +1189,8 @@ _ROTATORS["sk"] = [
     "Mrkva ml.",                     # ml
     "Ján Mrkva st.",                 # st
     "Mária Nováková Kováčová",       # rules/O6, the patch
+    "김민준 1",                       # rules/O6 over a segmented name and a word of no letter
+    "Jan\u200bPavel -",               # rules/O6 over a zero-width split and a lone mark
 ]
 _ROTATORS["sl"] = [
     "Janez Novak ml.",               # ml
@@ -1307,6 +1315,8 @@ _ROTATORS["es"] = [
     "Doña María Pérez",              # doña
     "Gabriel García Márquez",        # rules/O6, the patch
     "María José García López",       # rules/O6 behind a two-word given part
+    "김민준 1",                       # rules/O6 over a segmented name and a word of no letter
+    "Jan\u200bPavel -",               # rules/O6 over a zero-width split and a lone mark
 ]
 _ROTATORS["pt"] = [
     "Doutor João Silva",             # doutor
@@ -1464,26 +1474,20 @@ def test_non_interference_all_packs_combined() -> None:
     all_rotators = [n for code in sorted(_ROTATORS) if code in _PACKED
                     for n in _ROTATORS[code]]
     corpus = _default_corpus() + all_rotators
-    # cs, es and sk each set two_family_names, so the stack warns that a
-    # later pack overrides a scalar an earlier one set, to the same value
-    # (docs/locales.rst: "even to the same value"); and without the ja
-    # extra, the stack's hiragana activation is unservable -- which
-    # construction SAYS (the segmenterless warning, pinned in
-    # test_parser.py). Both are expected here, each by its message: the
-    # gate below is what this test is about.
-    expected = ["overrides scalar policy field 'two_family_names'"]
-    with pytest.warns(UserWarning) as caught:
-        if _JA_AVAILABLE:
-            packed = parser_for(
-                *(locales.get(code) for code in sorted(_PACKS)),
-                segmenter=locales.ja_segmenter())
-        else:
-            expected.append("ja_segmenter")
+    # cs, es and sk each set two_family_names to the same value, which
+    # agrees and warns nothing (test_parser.py pins both sides)
+    if _JA_AVAILABLE:
+        packed = parser_for(
+            *(locales.get(code) for code in sorted(_PACKS)),
+            segmenter=locales.ja_segmenter())
+    else:
+        # without the extra, the stack's hiragana activation is
+        # unservable -- which construction now SAYS (the segmenterless
+        # warning, pinned in test_parser.py); expected noise here, the
+        # gate below is what this test is about
+        with pytest.warns(UserWarning, match="ja_segmenter"):
             packed = parser_for(
                 *(locales.get(code) for code in sorted(_PACKS)))
-    messages = [str(w.message) for w in caught]
-    assert all(any(e in m for e in expected) for m in messages), messages
-    assert all(any(e in m for m in messages) for e in expected), messages
     # the packs' languages union into ONE choice, whose surface is
     # derived from the union rather than from each pack's own; every
     # hand DEVIATES is or'd in whatever the pack, since a pack with a

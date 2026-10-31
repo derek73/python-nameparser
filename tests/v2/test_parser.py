@@ -133,6 +133,27 @@ def test_parser_for_warns_on_scalar_conflict() -> None:
     assert p.policy.strip_emoji is True  # later wins
 
 
+def test_parser_for_is_silent_where_two_packs_set_a_scalar_alike() -> None:
+    # two packs agreeing on a value override nothing: cs and sk both turn
+    # two_family_names on, and stacking them must not fail a caller
+    # running with warnings as errors (filterwarnings = error here)
+    from nameparser import locales
+    for stack in ((locales.CS, locales.SK), (locales.SK, locales.CS),
+                  (locales.ES, locales.CS, locales.SK)):
+        assert parser_for(*stack).policy.two_family_names is True
+    a = Locale(code="aa", lexicon=Lexicon.empty(),
+               policy=PolicyPatch(strip_emoji=False))
+    b = Locale(code="bb", lexicon=Lexicon.empty(),
+               policy=PolicyPatch(strip_emoji=False))
+    assert parser_for(a, b).policy.strip_emoji is False
+    # the control: a third pack setting another value still warns, named
+    # against the setter it overrides
+    c = Locale(code="cc", lexicon=Lexicon.empty(),
+               policy=PolicyPatch(strip_emoji=True))
+    with pytest.warns(UserWarning, match="'cc' overrides .*'strip_emoji' already set by locale 'bb'"):
+        assert parser_for(a, b, c).policy.strip_emoji is True
+
+
 def test_matches_component_wise_case_insensitive() -> None:
     pn = parse("John Smith")
     assert pn.matches("JOHN SMITH")

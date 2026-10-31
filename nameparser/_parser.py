@@ -363,7 +363,8 @@ def parser_for(*locales: Locale, base: Parser | None = None,
     pack are wrapped with that pack's identity (rule D2) --
     PolicyPatch validates lazily, so with stacked packs the raw error
     would otherwise point at nothing. Two packs setting the same SCALAR
-    field is a declared conflict: UserWarning, later wins.
+    field to different values is a declared conflict: UserWarning, later
+    wins; two setting it to the same value agree, and nothing is warned.
 
     A ``segmenter`` is passed straight through to the built Parser --
     ``parser_for(locales.JA, segmenter=locales.ja_segmenter())`` is how
@@ -416,20 +417,25 @@ def parser_for(*locales: Locale, base: Parser | None = None,
             raise type(exc)(
                 f"while applying the languages chosen, "
                 f"{', '.join(sorted(languages))}: {exc}") from exc
-    scalar_setters: dict[str, str] = {}
+    # each scalar field's setter so far and the value it set: a later
+    # pack setting another value overrides it, which is warned; one
+    # setting the same value (cs and sk's two_family_names) agrees
+    scalar_setters: dict[str, tuple[str, object]] = {}
     for loc in locales:
         for f in dataclasses.fields(PolicyPatch):
             if f.metadata.get("compose") == "union":
                 continue
-            if getattr(loc.policy, f.name) is UNSET:
+            value = getattr(loc.policy, f.name)
+            if value is UNSET:
                 continue
-            if f.name in scalar_setters and scalar_setters[f.name] != loc.code:
-                warnings.warn(
-                    f"locale {loc.code!r} overrides scalar policy field "
-                    f"{f.name!r} already set by locale "
-                    f"{scalar_setters[f.name]!r}; later wins",
-                    UserWarning, stacklevel=2)
-            scalar_setters[f.name] = loc.code
+            if f.name in scalar_setters:
+                code, held = scalar_setters[f.name]
+                if code != loc.code and held != value:
+                    warnings.warn(
+                        f"locale {loc.code!r} overrides scalar policy field "
+                        f"{f.name!r} already set by locale {code!r}; later wins",
+                        UserWarning, stacklevel=2)
+            scalar_setters[f.name] = (loc.code, value)
         try:
             lexicon = lexicon | loc.lexicon
             policy = apply_patch(policy, loc.policy)

@@ -203,15 +203,19 @@ def rules_patch(tag: str) -> PolicyPatch:
 
 def deviates_by_two_family_names(name: str) -> bool:
     """The DEVIATES declaration of a pack whose patch turns on
-    ``Policy.two_family_names`` (rules/O6), and of a given-name list
-    beside it, which acts only where O6 does (the es, cs and sk packs):
-    O6 acts only on a name of three or more name words, so a name of
-    three or more words, commas read as spaces, or of three or more runs
-    of letters declares. Titles, suffixes and a family comma count here
-    though O6 reads none of them, which over-declares, the safe
-    direction."""
+    ``Policy.two_family_names`` (rules/O6), the es, cs and sk packs, and
+    of the given-name list es carries beside it, which acts only where
+    O6 does. O6 acts only on a name of three or more name words, so a
+    name declares that holds three or more words, commas read as spaces,
+    or three or more units counting each run of letters and each word
+    holding no letter: the tokenizer may split one word into two runs
+    (a zero-width space, a Hangul name segmented), and a word of no
+    letter (``1``, ``-``) is a name word all the same. Titles, suffixes
+    and a family comma count here though O6 reads none of them, which
+    over-declares, the safe direction."""
     pieces = name.replace(",", " ").split()
-    return len(pieces) >= 3 or _letter_runs(name) >= 3
+    letterless = sum(1 for piece in pieces if not any(ch.isalpha() for ch in piece))
+    return len(pieces) >= 3 or _letter_runs(name) + letterless >= 3
 
 
 def _letter_runs(text: str) -> int:
