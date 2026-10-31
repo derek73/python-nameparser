@@ -2247,6 +2247,8 @@ def suffix_kind(text: str,
     predicate."""
     if AGNOMEN_TAG in tags:
         return ReadingKind.AGNOMEN, ReadingSource.VOCABULARY
+    if CREDENTIAL_WORD_TAG in tags:
+        return ReadingKind.CREDENTIAL, ReadingSource.VOCABULARY
     if AMBIGUOUS_WORD_TAG in tags or GENERATION_WORD_TAG in tags:
         return ReadingKind.GENERATION, ReadingSource.VOCABULARY
     if _ROMAN.match(text.rstrip(".")) is not None:

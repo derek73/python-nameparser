@@ -1,5 +1,7 @@
 import dataclasses
 
+import pytest
+
 from nameparser import Lexicon, ParsedName, Parser, Policy, parse
 
 from tests.base import ParsedNameTestBase
@@ -501,3 +503,63 @@ class SuffixesTestCase(ParsedNameTestBase):
         self.m(hn.suffix, "Jr.", hn)
         self.m(hn.given, "John", hn)
         self.m(hn.family, "Doe", hn)
+
+
+# #965: British post-nominals no vocabulary listed, found by the
+# govuk-people corpus, where each ended the family name (`John Smith FRS`
+# -> family 'FRS') or, after a comma, reversed the name (`Jane Doe,
+# CChem` -> given 'CChem'). Each is written as GOV.UK writes it, so the
+# case repair is held too: a mixed-case credential carries its `cased`
+# mask, and capitals need none.
+_BRITISH_POST_NOMINALS = (
+    "FRS", "KFSM", "FRSA", "FNucI", "MRTPI", "FRAeS", "CChem", "MRPharmS",
+    "MIBiol", "FRMetS", "CStJ", "MICFor", "MChemA", "ACMA", "BVSc", "HMI",
+    "MMS", "LLB", "FIET")
+
+
+@pytest.mark.parametrize("word", _BRITISH_POST_NOMINALS)
+def test_a_british_post_nominal_ends_the_name_as_a_suffix(word: str) -> None:
+    for text in (f"Jane Doe {word}", f"Jane Doe, {word}",
+                 f"Jane Doe {word} CBE", f"Jane Doe CBE {word}"):
+        hn = parse(text)
+        assert (hn.given, hn.family) == ("Jane", "Doe"), text
+        assert word in hn.suffix.replace(",", "").split(), text
+    assert str(parse(f"jane doe {word.lower()}").capitalized()) == f"Jane Doe {word}"
+
+
+def test_fiet_and_freng_are_also_surnames() -> None:
+    # #965: each is a borne surname (US Census 2010: Fiet 140, Freng 187),
+    # so a name reading gates the credential (rules/S4, S6): written as the
+    # name is, the word stays the family name
+    for text in ("John Fiet", "Anna Freng", "Jane Doe Fiet", "Jane Doe Freng"):
+        assert parse(text).family == text.split()[-1], text
+    # FREng's own mask is mixed case, which S6 reads as a name: the comma
+    # and the run behind a listed credential reach it, the bare end does not
+    assert parse("Jane Doe, FREng").suffix == "FREng"
+    assert parse("Jane Doe FRS FREng").suffix == "FRS FREng"
+    assert parse("Jane Doe FREng").family == "FREng"
+    assert parse("Jane Doe FIET").suffix == "FIET"
+    # and neither carries a case mask, which would respell the surname
+    for text in ("ANNA FRENG", "ANNA FIET"):
+        assert str(parse(text).capitalized()) == text.title(), text
+
+
+def test_moid_is_refused_as_a_credential() -> None:
+    # #965: Moid is a borne given name written last (Syed Abdul Moid), so
+    # GOV.UK's one MoID is left unlisted, an `excluded` entry on the word
+    hn = parse("Syed Abdul Moid")
+    assert (hn.family, hn.suffix) == ("Moid", "")
+
+
+def test_pc_and_dl_are_gated_as_kc_is() -> None:
+    # #965: each is written as initials too (ORCID's boxes), so a name
+    # reading gates the credential word (rules/S11): a name with a word to
+    # spare ends in it, a two-word name keeps it, and the dotted spelling
+    # stays the paired initials (rules/S3)
+    for word in ("PC", "DL"):
+        for text in (f"Jane Doe {word}", f"Jane Doe, {word}"):
+            hn = parse(text)
+            assert (hn.family, hn.credentials) == ("Doe", word), text
+        assert parse(f"Anna {word}").family == word
+        dotted = ".".join(word) + "."
+        assert parse(f"John Smith {dotted}").family == dotted

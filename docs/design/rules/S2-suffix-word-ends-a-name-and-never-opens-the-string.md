@@ -9,7 +9,7 @@
 - **A word joining that class by its shape** is read by S9.
 - **A credential with more name text behind it** is read by S8.
 - **A roman numeral** is read by S10.
-- **A generation word that is also a name** (`fils`, the agnomen `Neto`) is read by S11.
+- **A suffix word that is also a name** (`fils`, the agnomen `Neto`, `KC`) is read by S11.
 
 **Because:** generational suffixes and credentials are recognized by vocabulary, and are written after the name they belong to.
 

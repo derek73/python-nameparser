@@ -723,7 +723,7 @@ class Lexicon:
     #: :data:`~nameparser.config.titles.AFTER_GIVEN_TITLES`.
     after_given_titles: frozenset[str] = frozenset()
     #: Subset of suffix_words that are also borne as names ("fils",
-    #: "neto"). Read as a suffix only where the name has words to
+    #: "neto", and the credentials "kc", "pc" and "dl", #965). Read as a suffix only where the name has words to
     #: spare, as an ambiguous acronym is: "Pedro Alves Neto" ends in a
     #: suffix, "Ana Neto" keeps her family name, and either reading is
     #: reported (rules/S11). Written in Title case in a name of mixed

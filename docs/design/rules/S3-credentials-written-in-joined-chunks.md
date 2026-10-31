@@ -111,7 +111,7 @@
   ```
   "John Smith, Phd-Md"        →  given="Phd-Md"
   ```
-- An unlisted credential of two letters written with its periods behind a full name reads as the family name, and the reading is reported: King's Counsel, which no vocabulary lists, is the case.
+- An unlisted credential of two letters written with its periods behind a full name reads as the family name, and the reading is reported: King's Counsel, which the vocabulary lists only as the bare word, is the case, the dotted pair being the Nepali surname too (S11).
   ```
   "John Smith K.C."           →  family="K.C."
   ```

@@ -14,7 +14,7 @@
 
 Elsewhere: the case a generation word that is also a name reads (rules/S6's bullet on it) is decisions/S11's 2026-10-25 #752 entry.
 
-Open: none in this file.
+Open: #965 (a listed credential written in its own mixed-case spelling, `FREng`, reads as the name, as the surname `Freng` does; decisions/suffix-acronym-collisions' entry of 2026-10-30 has the cost).
 
 ## Log
 
