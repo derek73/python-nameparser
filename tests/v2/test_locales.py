@@ -1215,6 +1215,29 @@ def test_choice_rotators_cover_every_changed_word(code: str) -> None:
     assert surface and missing == []
 
 
+@pytest.mark.parametrize("code", sorted(
+    c for c in _PACKS if locales.get(c).languages
+    and not _is_vocabulary_pack(locales.get(c))))
+def test_a_choice_word_rotator_is_moved_by_the_choice_alone(code: str) -> None:
+    # a pack with a choice beside a fragment or a patch (es): a rotator
+    # holding a word the choice changes is that word's witness only if
+    # the choice moves it and the rest of the pack alone does not, or a
+    # title's rotator would pass on the patch's move (the #964 review:
+    # six of es's first title rotators were moved by rules/O6 alone)
+    pack = locales.get(code)
+    surface = _ri.changed_words(_ri.selected(pack.languages))
+    holds = _surface_deviates(surface)
+    choice = parser_for(Locale(code="choice", lexicon=Lexicon.empty(),
+                               languages=pack.languages))
+    rest = parser_for(Locale(code="rest", lexicon=pack.lexicon,
+                             policy=pack.policy))
+    witnesses = [n for n in _ROTATORS[code] if holds(n)]
+    assert witnesses
+    for name in witnesses:
+        assert choice.parse(name).as_dict() != _default_parse(name), name
+        assert rest.parse(name).as_dict() == _default_parse(name), name
+
+
 # The vocabulary packs' rotators: a name in each shape a reading the pack
 # turns on or prefers changes, read one way by default and another under
 # the pack (the pinned rows below say how). ga: each clan particle
@@ -1233,29 +1256,30 @@ _ROTATORS["gd"] = [
     "Gabhann, Màiri Nic",            # nic ending the given part
     "John Smith MC",                 # mc, the clan particle, not MC
 ]
-# es: the patch's rules/O6 (its list keeping a given name out); each title
-# the choice turns on at the head, in each case, after a
+# es: the patch's rules/O6; each title the choice turns on, in a name the
+# patch and the list alone leave as the default reads it (held below), at
+# the head, in each case, after a
 # family comma, before one (rules/H6) and dotted ending the name (rules/H5);
 # pt: its titles likewise, and the words its choice prefers.
 _ROTATORS["es"] = [
     "Lic Juan Pérez",                # lic
     "LIC JUAN PEREZ",                # lic, in one case
-    "Juan Pérez Lic.",               # lic, dotted, ending the name (H5)
-    "Licenciado Noriel Sánchez",     # licenciado
+    "Pérez Lic.",                    # lic, dotted, ending the name (H5)
+    "Licenciado Sánchez",            # licenciado
     "Lcdo Ricardo García",           # lcdo
     "Pérez, Licenciada Ana",         # licenciada after a family comma
-    "Lcda Ligia Sánchez",            # lcda
+    "Lcda Sánchez",                  # lcda
     "Ingeniero Juan Pérez",          # ingeniero
     "ingeniera ana ruiz",            # ingeniera, in one case
     "Arq Julia Romero",              # arq
     "Mtro. Pérez, Edgar",            # mtro, dotted, before a family comma (H6)
     "Mtra Ana Ruiz",                 # mtra
-    "Doctora Yenny Montilla",        # doctora
-    "Profesor Osvaldo Segovia",      # profesor
-    "Ana López Profesora.",          # profesora, dotted, ending the name
+    "Doctora Montilla",              # doctora
+    "Profesor Segovia",              # profesor
+    "López Profesora.",              # profesora, dotted, ending the name
     "Doña María Pérez",              # doña
     "Gabriel García Márquez",        # rules/O6, the patch
-    "María José García López",       # rules/O6 behind a listed given name
+    "María José García López",       # rules/O6 behind a two-word given part
 ]
 _ROTATORS["pt"] = [
     "Doutor João Silva",             # doutor

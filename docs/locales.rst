@@ -547,7 +547,7 @@ Spanish and Portuguese titles
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Spanish and Latin American usage puts an academic or professional title
-in front of a name (*Licenciado*, *Ingeniero*, *Maestro*), and Portuguese
+in front of a name (*Licenciado*, *Ingeniero*, *Mtro.*), and Portuguese
 does the same with *Doutor* and *Professora*. Written with a period, the
 abbreviations already read as titles at the head of a name by their
 shape. Written out, or without the period, they read as given names by
@@ -587,15 +587,19 @@ stays out of it:
     >>> spain.parse("José Luis Pérez").family
     'Pérez'
 
-Among ORCID's researchers in each Spanish-speaking country, the names
-that agree in every box with the filer rise from 13.5% (Peru) to 82.5%
-(Argentina) by default to 89.3% (Argentina) to 97.3% (Chile) under the
-pack (measured 2026-10-30). A compound given name stays opt-in
+Among ORCID's researchers in the 11 Spanish-speaking countries
+measured, the names that agree in every box with the filer rise from
+13.5% (Peru) to 82.5% (Argentina) by default to 89.3% (Argentina) to
+97.3% (Chile) under the pack (measured 2026-10-30). A compound given name stays opt-in
 (``two_given_names``): people filling a form with a middle-name box put
-the second given name there. ``pt`` turns neither switch on: Portuguese
-names often carry several surnames, and filers write one or more of
-them as the family name, so the switch breaks about as many names as it
-mends without a Portuguese given-name list to guard it.
+the second given name there. ``pt`` turns neither switch on, because it serves every
+Portuguese-speaking country: among ORCID's researchers the switch
+mends about two names for each it breaks in Portugal (71.5% → 83.2%)
+and three in Brazil (49.5% → 74.4%), but sinks Angola (75.9% → 57.3%)
+and Mozambique (85.2% → 50.2%), and a Portuguese given-name list to
+guard it does not exist yet. For Portuguese or Brazilian data, turn it
+on beside the pack: ``parser_for(locales.PT,
+base=Parser(policy=Policy(two_family_names=True)))``.
 
 Romanized Indic titles
 ^^^^^^^^^^^^^^^^^^^^^^

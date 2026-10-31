@@ -3,9 +3,10 @@ language ``pt``, which turns on the academic titles
 nameparser/vocab/pt.toml writes ``default = false`` (``Doutor``,
 ``Doutora``, ``Professora``, ``Profa.``) and prefers pt.toml's readings
 where another language's clash: ``do`` the particle, not the DO
-credential, ``e`` the connective even in a name written in one case,
-``Sr`` Senhor, not the generation (decisions/vocabulary-model, the
-2026-10-30 phase 3g entry). ``Doutor João Silva`` gives title
+credential, and ``e`` the connective even in a name written in one
+case, while ``Sr`` keeps both readings, Senhor in front and the
+generation behind, as the default reads it (decisions/vocabulary-model,
+the 2026-10-30 phase 3g entry). ``Doutor João Silva`` gives title
 ``Doutor`` where the default gives given ``Doutor``. locales.PT_BR
 chooses ``pt-BR``, which selects ``pt`` too, so it reads all of these
 the same way.

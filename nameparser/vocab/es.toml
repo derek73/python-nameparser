@@ -12,7 +12,7 @@ excluded = { salutation = { reason = "Don, the courtesy title, is a given name w
 
 [[word]]
 text = "doña"
-salutation = { default = false, gender = "f", issue = 753, expands = "Doña, the courtesy title before a woman's given name", note = "a Spanish family name too: ORCID's family box 18 records in Spain (Doña Ortega), its given box 0 there; jrc-names writes it opening 2 names, both the title (Doña Sofía) (2026-10-30); off by default and turned on by a Spanish choice, under which it is the title at the head, where the family name is not written" }
+salutation = { default = false, gender = "f", issue = 753, expands = "Doña, the courtesy title before a woman's given name", note = "a Spanish family name too: ORCID's family box 18 records in Spain (Doña Ortega), its given box 0 there; jrc-names writes it opening 2 names, both the title (Doña Sofía) (2026-10-30); off by default and turned on by a Spanish choice, under which it is the title at the head, so a name opening with the family name gives it to the title, before a family comma (Doña Ortega, María, rules/H6) or under a family-first order, accepted costs no local corpus name takes (2026-10-30)" }
 
 [[word]]
 text = "señor"
