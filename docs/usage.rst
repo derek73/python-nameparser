@@ -106,6 +106,22 @@ displaced from the family name it belongs to; form 5's trailing word
 is the given name by the caller's declaration, so there is nothing
 there to reinterpret.
 
+A title is read at the front of forms 4 and 5, and at the end where it
+is written with a period, as in form 1. Written between the family and
+the given name, or bare at the end — where CLDR's surname-first
+sample renderings put it — it is read today as a name word. Whether a
+family-first order should read a title there is an open question, so
+these readings may change:
+
+.. doctest::
+
+    >>> from nameparser import FAMILY_FIRST, Parser, Policy
+    >>> ff = Parser(policy=Policy(name_order=FAMILY_FIRST))
+    >>> ff.parse("Dr. Wang Xiaoming").title, ff.parse("Wang Xiaoming Dr.").title
+    ('Dr.', 'Dr.')
+    >>> ff.parse("Wang Dr. Xiaoming").given
+    'Dr.'
+
 Forms the script carries
 ~~~~~~~~~~~~~~~~~~~~~~~~
 

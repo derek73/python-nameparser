@@ -14,7 +14,7 @@ Count the one-word path the way C3 counts, which is neither tokens nor pieces: a
 
 ### Orders
 
-For orders the sweep already exists (`tests/v2/test_cases.py` runs every row under all three) but carries one assertion, R2's family partition, so it checks nothing a new change moves; coverage there has been vacuous before (PR #394's review found the suite passed with `name_order` discarded from grouping). Parse your change's names in each comma shape and each order, and read the ones you did not predict.
+For orders the sweep already exists (`tests/v2/test_cases.py` runs every row under all three) but carries one assertion, R2's family partition, so it checks nothing a new change moves; coverage there has been vacuous before (PR #394's review found the suite passed with `name_order` discarded from grouping). Parse your change's names in each comma shape and each order, and read the ones you did not predict. The shape inventory is that grid with its readings pinned (3.0's 4h): `tools/differential/shapes.py`'s `ARRANGEMENTS` lists, per order, the arrangements a title, suffix, particle, nickname and comma are written in, and tests/v2/test_shape_inventory.py reads each under its order, so a change that moves one fails there; an arrangement your change reaches that the inventory lacks joins it, with the reading it gives.
 
 ### Reading a grid's moves
 
