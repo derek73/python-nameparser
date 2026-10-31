@@ -129,5 +129,5 @@
 - The rule reports nothing: the caller declared the convention, as a declared order is followed without a report, and a report on most names of three words or more would teach the caller to ignore the field.
 
 ---
-**Signal:** none in the name + shape: a caller switch, the family's words and the taken word's shape read as written to see whether the family already holds two; and the taken word as written, against the caller's given-name list
+**Signal:** none in the name + position: a caller switch, the family's words and the taken word's shape read as written to see whether the family already holds two; and the word standing where the family would take one, looked up in the caller's given-name list, a vocabulary signal tagged by where the word stands as P1's is
 **history:** decisions/O6 · **implemented:** nameparser/_pipeline/_post_rules.py
