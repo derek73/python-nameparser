@@ -117,9 +117,12 @@ class Fielded:
     candidate's degrees, most of which the default vocabulary does not
     list (`Bc.`, `Ing.`). The set-aside took 1,059 of its records on
     2026-10-30, every one a degree or a military rank the candidate
-    filed and none a job: 756 a `DiS.` after the name read as a second
-    title (`Bc. Jan Novák, DiS.` read with title `Bc. DiS.`), 179 a run
-    joined by `et` read as given names (`Ing. et Ing.`), 124 others."""
+    filed and none a job: 756 whose box after the name holds `dis`
+    (re.search(r"\bdis\b", box.replace(".", "").casefold()); `Bc. Jan
+    Novák, DiS.` read with title `Bc. DiS.`), 179 of the rest whose
+    title box holds `et` (re.search(r"\bet\b", box); `Ing. et Ing.`
+    read as given names; 182 by that test alone, 3 holding both), and
+    124 others."""
     fields: dict[str, str]
     group: str
     group_cased: bool = False
@@ -552,20 +555,22 @@ def main(argv: list[str] | None = None) -> int:
         ap.error("--out names where --record writes")
     local = local_corpora.require(args.source)
     root = Path(args.tree).resolve() if args.tree else HERE.parents[1]
-    if args.base:
-        from snapshot import base_root
-        old = base_entries(base_root(args.base, root), local, args.jobs, locale)
-    elif not args.record:
-        old = read_record(record_path(args.source, locale), local, locale)
     if args.tree:
         sys.path.insert(0, str(root))
     import nameparser
     import nameparser.locales
     from snapshot import check_source
     at = check_source(nameparser.__file__, root)
+    # Before any record is read or base scored, whose refusals would
+    # otherwise stand in for this one ("no record", "scoring the base failed").
     if locale and locale not in nameparser.locales.available():
         ap.error(f"--locale {args.locale}: no such pack; the packs are "
                  + ", ".join(nameparser.locales.available()))
+    if args.base:
+        from snapshot import base_root
+        old = base_entries(base_root(args.base, root), local, args.jobs, locale)
+    elif not args.record:
+        old = read_record(record_path(args.source, locale), local, locale)
     fielded = FIELDED[args.source]
     print(local.header())
     if locale:

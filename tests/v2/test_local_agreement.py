@@ -644,9 +644,13 @@ def test_an_unknown_locale_is_refused_naming_the_packs(
     plant_corpus(monkeypatch, corpora, _VOLBY, [_candidate("Ing.", "Eva", "Malá")],
                  "kv2022 2026-03-28", "candidates",
                  {"elections": "kv2022 ps2025", "read_version": 1})
-    with pytest.raises(SystemExit):
-        agreement.main([_VOLBY, "--record", "--locale", "xx"])
-    assert "no such pack; the packs are" in capsys.readouterr().err
+    # With no record and with a base too: the locale is refused first, not
+    # as "no record" or as the base's child failing on it.
+    for extra in (["--record"], [], ["--base", str(agreement.HERE.parents[1])]):
+        with pytest.raises(SystemExit) as raised:
+            agreement.main([_VOLBY, *extra, "--locale", "xx"])
+        assert raised.value.code == 2, extra
+        assert "no such pack; the packs are" in capsys.readouterr().err, extra
 
 
 def test_a_base_check_under_a_locale_scores_the_base_under_it(

@@ -266,7 +266,7 @@ SOURCES: dict[str, Source] = {
                "volby.gov.cz (CC BY 4.0, csu.gov.cz/podminky_pro_vyuzivani_a_dalsi_"
                "zverejnovani_statistickych_udaju_csu; each name composed from "
                "the filed boxes, so derived data)",
-        unit="candidates", fetch=fetch_volby, check=check_volby),
+        unit="records", fetch=fetch_volby, check=check_volby),
 }
 
 

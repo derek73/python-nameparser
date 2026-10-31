@@ -16,7 +16,13 @@ MBA), with no courtesy titles or offices.
 A record's name is COMPOSED, not written by anyone: the boxes joined in
 the Czech convention, `TITULPRED JMENO PRIJMENI, TITULZA` (`Ing. Jan
 Novák, Ph.D.`), so it holds no case, spacing or punctuation of its own
-beyond what the boxes hold. The register's terms
+beyond what the boxes hold. A comma a filer typed inside a box before
+the last (`Dopitová, roz. Lišková` in the surname box, `Ing., Bc.` in
+the title box: 21 records on 2026-10-30) makes a comma shape nobody
+wrote in the composed name; such a record is kept, as filed, and
+counted (records_with_a_comma_inside_a_box), an accepted cost: the
+score compares the parse with the boxes, which say what was meant, so
+dropping it would only hide the miss. The register's terms
 (https://csu.gov.cz/podminky_pro_vyuzivani_a_dalsi_zverejnovani_statistickych_udaju_csu,
 which the open-data index links, read 2026-10-30) license ČSÚ's
 statistical information under CC BY 4.0, and ask that whoever spreads
@@ -44,10 +50,12 @@ VOLBY = "cz-candidates"
 VOLBY_SITE = "https://volby.gov.cz/opendata/"
 #: Each election read, by the code volby.gov.cz files it under: the
 #: register's member in the zip, and the candidates it held on
-#: 2026-10-30. An election is over and its register final, so a
-#: register holding another number is a changed file (a register
-#: trimmed to the elected, or a revision), refused until it is measured
-#: and the pin moved by hand. The index lists kv2002 to kv2026 and
+#: 2026-10-30. A register is not final when its election is held: the
+#: kv2022 one carries the by-elections held through 2024 and was
+#: re-issued with a stamp of 2026-03-28. The count pin is what protects:
+#: a register holding another number (a revision, or a register trimmed
+#: to the elected) is refused until it is measured and the pin moved by
+#: hand. The index lists kv2002 to kv2026 and
 #: ps2002 to ps2025 too; adding one is a row here, measured first.
 VOLBY_ELECTIONS: dict[str, tuple[str, int]] = {
     "kv2022": ("csv_od/kvrk.csv", 197_506),
@@ -190,11 +198,14 @@ def _volby_read(election: str, body: bytes) -> tuple[list[dict[str, str]], dict[
                          f"{candidates:,} candidates filed a title: a title column "
                          f"emptied or moved")
     records = []
+    commas = 0
     for line in sorted(kept):
         boxes = dict(zip(VOLBY_BOXES.values(), line.split("\t"), strict=True))
+        commas += any("," in boxes[k] for k in ("titulpred", "jmeno", "prijmeni"))
         records.append({"name": compose(boxes), "election": election,
                         **{k: v for k, v in boxes.items() if v}})
-    return records, {**counts, "records": len(records)}
+    return records, {**counts, "records": len(records),
+                     "records_with_a_comma_inside_a_box": commas}
 
 
 def fetch_volby() -> Fetched:

@@ -133,11 +133,13 @@ def test_a_fetch_keeps_each_candidate_s_boxes_once_with_the_composed_name(
     assert corpus.meta["data_date"] == "kv2022 2026-03-28, ps2025 2025-10-05"
     assert corpus.meta["detail"] == {
         "elections": "kv2022 ps2025", "read_version": volby.VOLBY_READ_VERSION,
-        "kv2022": {"zip": _KV_ZIP, "candidates": 5, "titled": 4, "records": 4},
-        "ps2025": {"zip": _PS_ZIP, "candidates": 2, "titled": 2, "records": 2}}
+        "kv2022": {"zip": _KV_ZIP, "candidates": 5, "titled": 4, "records": 4,
+                   "records_with_a_comma_inside_a_box": 0},
+        "ps2025": {"zip": _PS_ZIP, "candidates": 2, "titled": 2, "records": 2,
+                   "records_with_a_comma_inside_a_box": 0}}
     # One composed name in two elections is one corpus name.
     assert corpus.meta["names"] == 5
-    assert corpus.header().endswith("6 candidates (local corpus cz-candidates)")
+    assert corpus.header().endswith("6 records (local corpus cz-candidates)")
 
 
 @pytest.mark.parametrize(("boxes", "name"), [
@@ -245,7 +247,7 @@ def test_a_register_skipping_past_its_share_is_refused(
     # The control: under a share one row may pass, it is counted, not kept.
     monkeypatch.setattr(volby, "VOLBY_MAX_BAD", 1 / 5)
     detail = local.fetch(_VOLBY).meta["detail"]["kv2022"]
-    assert detail["records"] == 3 and len(detail) == 5
+    assert detail["records"] == 3 and len(detail) == 6
 
 
 def test_a_register_with_its_titles_emptied_is_refused(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -280,3 +282,15 @@ def test_a_corpus_of_other_elections_or_another_composition_is_refused_on_load(
     monkeypatch.setattr(volby, constant, value)
     with pytest.raises(ValueError, match=f"{match}.*fetch {_VOLBY} --refresh"):
         local.load(_VOLBY)
+
+
+def test_a_comma_typed_inside_a_box_is_kept_and_counted(monkeypatch: pytest.MonkeyPatch) -> None:
+    # The composed name then holds a comma shape nobody wrote; the record
+    # is kept as filed, since the score reads the boxes, and counted.
+    rows = [*_KV_ROWS[:-2], _kv("Ida", "Krátká, roz. Dlouhá"), _kv("Bo", "Malý", "Ing., Bc.")]
+    _serve(monkeypatch, kv=_zip("csv_od/kvrk.csv", _register(_KV_HEADER, rows)))
+    corpus = local.fetch(_VOLBY)
+    assert {"Ida Krátká, roz. Dlouhá", "Ing., Bc. Bo Malý"} <= {r["name"] for r in corpus.records}
+    assert corpus.meta["detail"]["kv2022"]["records_with_a_comma_inside_a_box"] == 2
+    # A comma in the box after the name is the convention's own, not counted.
+    assert corpus.meta["detail"]["ps2025"]["records_with_a_comma_inside_a_box"] == 0
