@@ -1,3 +1,4 @@
+import importlib.util
 import json
 import subprocess
 import sys
@@ -5,7 +6,14 @@ import sys
 import pytest
 
 import nameparser.locales
-from nameparser import FAMILY_FIRST, Lexicon, Locale, PolicyPatch
+from nameparser import (
+    FAMILY_FIRST,
+    Lexicon,
+    Locale,
+    PolicyPatch,
+    Segmentation,
+    Segmenter,
+)
 from nameparser import __main__ as cli
 from nameparser import _locale
 
@@ -69,17 +77,53 @@ def test_cli_locale_empty_string_errors_not_silent_default() -> None:
     assert "ru" in proc.stderr and "tr_az" in proc.stderr
 
 
-def test_cli_locale_ja_activates_nothing_by_itself() -> None:
-    # usage.rst's claim, pinned at the layer it is about: the CLI takes
-    # the pack but has no way to attach a segmenter, and the ja pack
-    # ships no vocabulary -- so --locale ja is byte-identical to the
-    # default parser on the very name the pack exists to divide. A
-    # future --segmenter flag, or a pack that grew a surname list,
-    # would land here first.
+_JA_EXTRA = importlib.util.find_spec("namedivider") is not None
+
+
+@pytest.mark.skipif(_JA_EXTRA, reason="the ja extra is installed")
+def test_cli_locale_ja_without_the_extra_divides_nothing_and_warns() -> None:
+    # the ja pack ships no vocabulary, so without the segmenter --locale
+    # ja is byte-identical to the default parser on the very name the
+    # pack exists to divide, and says how to install what divides it
     packed = _run("山田太郎", "--locale", "ja")
     default = _run("山田太郎")
     assert packed.returncode == 0
     assert packed.stdout == default.stdout
+    assert "pip install 'nameparser[ja]'" in packed.stderr
+
+
+@pytest.mark.skipif(not _JA_EXTRA, reason="needs the ja extra")
+def test_cli_locale_ja_with_the_extra_divides() -> None:
+    # reached only by CI's ja-extra job
+    proc = _run("山田太郎", "--locale", "ja", "--json")
+    assert proc.returncode == 0, proc.stderr
+    fields = json.loads(proc.stdout)
+    assert (fields["family"], fields["given"]) == ("山田", "太郎")
+    assert "segment_scripts" not in proc.stderr
+
+
+def _cut_after_two(text: str) -> Segmentation:
+    return Segmentation((2,))
+
+
+def test_cli_locale_ja_attaches_the_installed_segmenter(
+        capsys: pytest.CaptureFixture[str],
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(nameparser.locales, "ja_segmenter",
+                        lambda: _cut_after_two)
+    fields = _fields(capsys, "--locale", "ja", "山田太郎")
+    assert (fields["family"], fields["given"]) == ("山田", "太郎")
+
+
+def test_cli_attaches_a_segmenter_only_for_the_ja_pack(
+        capsys: pytest.CaptureFixture[str],
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # under zh the factory must not be consulted: its surname list
+    # divides, and a segmenter would answer where the list declines
+    def unexpected() -> Segmenter:
+        raise AssertionError("ja_segmenter called for zh")
+    monkeypatch.setattr(nameparser.locales, "ja_segmenter", unexpected)
+    _fields(capsys, "--locale", "zh", "王小明")
 
 
 def _fields(capsys: pytest.CaptureFixture[str], *argv: str) -> dict[str, str]:
@@ -140,10 +184,17 @@ def test_cli_order_leaves_a_han_name_in_its_scripts_order(
     assert (fields["given"], fields["family"]) == ("泽东", "毛")
 
 
-def test_cli_order_with_a_locale_warns_once_from_main() -> None:
+def _no_ja_extra() -> Segmenter:
+    raise ImportError("no namedivider")
+
+
+def test_cli_order_with_a_locale_warns_once_from_main(
+        monkeypatch: pytest.MonkeyPatch) -> None:
     # the parser is built once, by parser_for, which re-emits the
-    # segmenterless warning from its caller's frame (#337)
-    with pytest.warns(UserWarning, match="segment_scripts") as record:
+    # segmenterless warning from its caller's frame (#337); the extra is
+    # made missing, since with it installed --locale ja warns nothing
+    monkeypatch.setattr(nameparser.locales, "ja_segmenter", _no_ja_extra)
+    with pytest.warns(UserWarning, match="nameparser\\[ja\\]") as record:
         assert cli.main(["--locale", "ja", "--order", "family-first",
                          "--json", "高橋一郎"]) == 0
     assert len(record) == 1

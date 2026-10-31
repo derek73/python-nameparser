@@ -3,6 +3,7 @@
     python -m nameparser "Dr. Juan Q. Xavier de la Vega III"
     python -m nameparser --json "Doe, John"
     python -m nameparser --order family-first "Kovács János Péter"
+    python -m nameparser --locale ja "山田太郎"
 """
 import argparse
 import dataclasses
@@ -15,6 +16,7 @@ from nameparser import (
     Lexicon,
     Locale,
     PolicyPatch,
+    Segmenter,
     parser_for,
 )
 
@@ -36,7 +38,8 @@ def main(argv: list[str] | None = None) -> int:
                     help="print the component dict as JSON")
     ap.add_argument("--locale", metavar="CODE",
                     help="parse with a locale pack (e.g. 'ru'); see "
-                         "nameparser.locales")
+                         "nameparser.locales. 'ja' divides unspaced names "
+                         "when nameparser[ja] is installed")
     ap.add_argument("--order", choices=_ORDERS,
                     help="the order to read a name's words in "
                          "(default: given-first); a Han, Hangul or kana "
@@ -44,6 +47,7 @@ def main(argv: list[str] | None = None) -> int:
                          "comma fixes the order")
     args = ap.parse_args(argv)
     pack = None
+    segmenter: Segmenter | None = None
     # `is not None`, not truthiness: --locale "" must reach get() and
     # exit 2 listing the codes, not silently fall back to the default
     if args.locale is not None:
@@ -52,6 +56,13 @@ def main(argv: list[str] | None = None) -> int:
             pack = locales.get(args.locale)
         except KeyError as exc:
             ap.error(exc.args[0])  # exits 2, message to stderr
+        # The pack only activates division; the installed extra divides.
+        # Without it the parser warns, naming the install (rules/D1).
+        if pack.code == "ja":
+            try:
+                segmenter = locales.ja_segmenter()
+            except ImportError:
+                pass
     # The order is written into the pack's own patch, so it replaces a
     # pack's order without a two-pack conflict warning, and the parser
     # is built once, parser_for re-emitting its warnings (#337)
@@ -63,7 +74,8 @@ def main(argv: list[str] | None = None) -> int:
         else:
             pack = dataclasses.replace(pack, policy=dataclasses.replace(
                 pack.policy, name_order=order))
-    n = (parser_for() if pack is None else parser_for(pack)).parse(args.name)
+    packs = () if pack is None else (pack,)
+    n = parser_for(*packs, segmenter=segmenter).parse(args.name)
     if args.json:
         print(json.dumps(n.as_dict(), ensure_ascii=False))
         return 0
