@@ -7,12 +7,13 @@ license = "LGPL-2.1-or-later"
 license-files = ["LICENSE", "AUTHORS"]
 authors = [{name = "Derek Gulbranson", email = "derek73@gmail.com"}]
 dynamic = ["version"]
-keywords = ["names", "parser"]
+keywords = ["names", "parser", "name parsing", "human names", "nlp", "data cleaning", "record linkage", "cjk", "i18n"]
 classifiers = [
   "Intended Audience :: Developers",
   "Operating System :: OS Independent",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
@@ -20,8 +21,11 @@ classifiers = [
   "Programming Language :: Python :: 3.15",
   "Development Status :: 5 - Production/Stable",
   "Natural Language :: English",
+  "Topic :: Scientific/Engineering :: Information Analysis",
+  "Topic :: Sociology :: Genealogy",
   "Topic :: Software Development :: Libraries :: Python Modules",
   "Topic :: Text Processing :: Linguistic",
+  "Typing :: Typed",
 ]
 dependencies = []
 
