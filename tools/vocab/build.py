@@ -1389,7 +1389,8 @@ tools/vocab/build.py -- do not edit; edit the TOML and run
 One line per word in the vocabulary files, holding a row per reading,
 on by default or not: (tag, kind, properties), the tag being the file's
 BCP 47 tag and the properties the ones the compiler reads, as sorted
-(key, value) pairs.
+(key, value) pairs; then FILES, every file's tag, one holding no
+reading included.
 Read it through nameparser._reading_index (index, readings_of), which
 documents the row; _compiled.py is this index compiled.
 """
@@ -1435,11 +1436,13 @@ def index_output() -> Path:
     return OUTPUT.with_name("_index.py")
 
 
-def render_index(rows: Iterable[Any]) -> str:
+def render_index(rows: Iterable[Any], files: Iterable[str]) -> str:
     """One word per line, its rows in index order, so a change to a
     word's readings is a one-line diff; the whole tuple is one constant,
     which a cached import loads without building anything, and grouped
-    by word, so a lookup table is one dict() call."""
+    by word, so a lookup table is one dict() call. FILES follows: the
+    tag of every file, one holding only exclusions included, which a
+    strict choice may name (_reading_index.files)."""
     out = [INDEX_HEADER, "",
            "READINGS: tuple[tuple[str, tuple[tuple[str, str, "
            "tuple[tuple[str, object], ...]], ...]], ...] = ("]
@@ -1447,8 +1450,15 @@ def render_index(rows: Iterable[Any]) -> str:
     for r in rows:
         words.setdefault(r.text, []).append(_ri.to_row(r))
     out += [f"    ({text!r}, {tuple(rs)!r})," for text, rs in words.items()]
+    out += [")", "", "FILES: tuple[str, ...] = ("]
+    out += [f"    {tag!r}," for tag in sorted(files)]
     out.append(")")
     return "\n".join(out) + "\n"
+
+
+def file_tags(pool: Pool) -> list[str]:
+    """The tag of every file the pool was loaded from."""
+    return sorted(name.removesuffix(".toml") for name in pool.entries)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -1477,7 +1487,7 @@ def _run(*, check: bool) -> int:
     compiled = compile_pool(pool)
     stale = 0
     for path, text in ((OUTPUT, render(compiled)),
-                       (index_output(), render_index(index_rows(pool))),
+                       (index_output(), render_index(index_rows(pool), file_tags(pool))),
                        (rules_output(), render_rules(pool.rules))):
         stale += _refresh(path, text, check=check)
     return 1 if stale else 0

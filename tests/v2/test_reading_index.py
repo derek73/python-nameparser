@@ -113,7 +113,7 @@ def test_every_property_the_compiler_reads_survives_the_index() -> None:
 
 def test_the_committed_index_is_what_the_toml_writes() -> None:
     pool = build.load(build.read_dir())
-    fresh = build.render_index(build.index_rows(pool))
+    fresh = build.render_index(build.index_rows(pool), build.file_tags(pool))
     assert build.index_output().read_text(encoding="utf-8") == fresh, (
         f"nameparser/config/_index.py is stale against nameparser/vocab/; "
         f"run: {build.REFRESH}")
@@ -294,3 +294,79 @@ def test_prefer_never_drops_a_reading_of_unknown_language() -> None:
 def test_holds_kind_reads_every_file_whatever_the_default(
         text: str, kind: str, held: bool) -> None:
     assert ri.holds_kind(text, kind) is held
+
+
+# -- strict (#753, 3j) ------------------------------------------------
+
+@pytest.mark.parametrize("text,native", [
+    ("씨", True), ("господин", True), ("श्री", True), ("殿", True),
+    ("dr", False), ("ông", False), ("&", False), ("2", False),
+])
+def test_native_script_is_a_letter_and_no_latin_letter(
+        text: str, native: bool) -> None:
+    assert ri.is_native_script(text) is native
+
+
+def test_a_strict_pool_holds_the_chosen_files_and_native_script_only() -> None:
+    chosen = ri.selected(["pt-BR"], strict=True)
+    pool = ri.strict_pool(chosen)
+    assert {r.tag for r in pool if not ri.is_native_script(r.text)} == chosen
+    # mul.toml and und.toml are another language's file under strict
+    assert not [r for r in pool if r.tag in ri.UNCHOOSABLE
+                and not ri.is_native_script(r.text)]
+    native = [r for r in ri.index() if ri.is_native_script(r.text)]
+    assert native and all(r in pool for r in native)
+
+
+def test_a_file_holding_no_reading_is_chosen_only_strictly() -> None:
+    empty = ri.files() - ri.tags()
+    assert empty and ri.tags() <= ri.files()
+    for tag in sorted(empty):
+        with pytest.raises(ValueError, match=f"{tag}.toml holds no reading"):
+            ri.selected([tag])
+        assert ri.selected([tag], strict=True) == {tag}
+        # nothing Latin is left to compile: the native-script pool alone
+        assert ri.compile_choice(frozenset({tag}), True) == ri.compile_readings(
+            ri.choose([r for r in ri.index() if ri.is_native_script(r.text)],
+                      frozenset({tag})))
+
+
+#: The words each strict choice of one tag ungates against the plain
+#: choice of the same tag (decisions/vocabulary-model's 2026-10-30 #753,
+#: file-strict entry: 16 words, 27 word-and-tag pairs over 13 tags). A
+#: word leaves this table when a name reading is written in the chosen
+#: file whose names carry it, and joins it when a chosen file's
+#: vocabulary reading loses its gate: review each move.
+STRICT_UNGATED = {
+    "ar": {"cheikh", "sultan"},
+    "cs": {"st"},
+    "fr": {"la", "marquis", "marquise", "st"},
+    "ga": {"mac"},
+    "gd": {"mac", "nic"},
+    "hr": {"st"},
+    "it": {"del", "la", "san", "santa"},
+    "ms": {"bin", "sultan"},
+    "nl": {"den", "tho"},
+    "pt": {"da", "do", "santa"},
+    "pt-BR": {"da", "do", "santa"},
+    "sk": {"st"},
+    "sl": {"st"},
+}
+
+
+def test_the_words_strict_ungates_are_the_reviewed_set() -> None:
+    got = {}
+    for tag in sorted(ri.files() - ri.UNCHOOSABLE):
+        words = ri.strict_ungated(ri.selected([tag], strict=True))
+        if words:
+            got[tag] = set(words)
+    assert got == STRICT_UNGATED
+
+
+def test_strict_ungated_compares_with_the_plain_choice_not_the_default() -> None:
+    # cs turns on the generation `st`, gated by en's given reading; the
+    # default's markers hold no generation `st` at all, so a comparison
+    # with them would miss it
+    cs = frozenset({"cs"})
+    assert "st" not in ri.compile_choice(frozenset())["SUFFIX_WORDS"]
+    assert "st" in ri.strict_ungated(cs)

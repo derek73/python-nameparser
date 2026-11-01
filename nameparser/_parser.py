@@ -286,25 +286,29 @@ def parse(text: str) -> ParsedName:
     return _default_parser().parse(text)
 
 
-def _reading_index_selected(languages: frozenset[str]) -> frozenset[str]:
+def _reading_index_selected(languages: frozenset[str],
+                            strict: bool = False) -> frozenset[str]:
     # the reading index loads on first lookup, so a caller who chooses
     # no language never imports it (decisions/vocabulary-model, 3a)
     from nameparser._reading_index import selected
-    return selected(languages)
+    return selected(languages, strict=strict)
 
 
 @functools.cache
-def _choice_delta(chosen: frozenset[str]) -> tuple[
+def _choice_delta(chosen: frozenset[str], strict: bool = False) -> tuple[
         dict[str, tuple[frozenset[str], frozenset[str]]],
         tuple[frozenset[str], tuple[tuple[str, str], ...]]]:
     """What the choice of the file tags `chosen` changes against the
     default's compile: per Lexicon field, the entries that leave and
     the ones that join, and the case masks that leave and the ones set.
     A delta, so it applies to a caller's own Lexicon as well as to the
-    default (the RFC's "Where the provenance lives at runtime")."""
+    default (the RFC's "Where the provenance lives at runtime"); a
+    `strict` choice's delta is the same comparison, its compile holding
+    only the chosen files and native-script vocabulary."""
     from nameparser._lexicon import _vocab_fields
     from nameparser._reading_index import compile_choice
-    default, choice = compile_choice(frozenset()), compile_choice(chosen)
+    default = compile_choice(frozenset())
+    choice = compile_choice(chosen, strict)
     was, now = _vocab_fields(default), _vocab_fields(choice)
     fields = {name: (was[name] - now[name], now[name] - was[name])
               for name in was if was[name] != now[name]}
@@ -315,14 +319,15 @@ def _choice_delta(chosen: frozenset[str]) -> tuple[
     return fields, masks
 
 
-def _apply_choice(lexicon: Lexicon, languages: frozenset[str]) -> Lexicon:
+def _apply_choice(lexicon: Lexicon, languages: frozenset[str],
+                  strict: bool = False) -> Lexicon:
     """`lexicon` under the choice of `languages`, a delta against the
     default's compile: what the choice drops leaves `lexicon` whoever
     put it there, a caller included, what it turns on joins, and every
     other entry stays as the caller had it."""
     from nameparser._lexicon import _SUBSET_FIELDS
     fields, (unmasked, masks) = _choice_delta(
-        _reading_index_selected(languages))
+        _reading_index_selected(languages, strict), strict)
     updates: dict[str, object] = {
         name: (getattr(lexicon, name) - gone) | joined
         for name, (gone, joined) in fields.items()}
@@ -344,7 +349,8 @@ def _apply_choice(lexicon: Lexicon, languages: frozenset[str]) -> Lexicon:
 
 
 def parser_for(*locales: Locale, base: Parser | None = None,
-               segmenter: Segmenter | None | _Unset = UNSET) -> Parser:
+               segmenter: Segmenter | None | _Unset = UNSET,
+               strict: bool = False) -> Parser:
     """The packs' ``languages`` unioned into one choice, applied to
     base's lexicon first (so the order of the packs does not change
     it); then lexicon fragments unioned left-to-right onto the result;
@@ -358,6 +364,23 @@ def parser_for(*locales: Locale, base: Parser | None = None,
     choice after ``pt``'s and keeps neither language's reading of
     ``do``, where ``parser_for(PT, EN)`` chooses both and keeps both
     (decisions/vocabulary-model, 2026-10-29, chained choices).
+
+    ``strict=True`` makes the choice strict: only the chosen languages'
+    vocabulary files are compiled, each tag selecting its own and its
+    ancestors' as a plain choice does, plus native-script vocabulary (a
+    word with a letter and no Latin letter); every other file's
+    readings leave, mul.toml's and und.toml's among them, and with
+    them the markers they derive. It is for single-origin data
+    (``parser_for(Locale(code="ko", lexicon=Lexicon.empty(),
+    languages=frozenset({"ko"})), strict=True)`` reads ``Kim Do Hyun``
+    with no Portuguese particle ``do``). It applies as a delta, as a
+    plain choice does, so a caller's own listing of a dropped word
+    leaves too; the packs' fragments and policy patches apply after it
+    unchanged. A strict choice accepts a language whose file holds no
+    reading yet (``vi``), which a plain one refuses as changing
+    nothing, and raises ValueError when the packs choose no language,
+    since it would then strip every Latin-script reading
+    (decisions/vocabulary-model, 2026-10-30 #753, file-strict).
 
     Validation errors raised while applying a
     pack are wrapped with that pack's identity (rule D2) --
@@ -379,6 +402,8 @@ def parser_for(*locales: Locale, base: Parser | None = None,
     lexicon and policy by hand."""
     if base is not None and not isinstance(base, Parser):
         raise TypeError(f"base must be a Parser or None, got {base!r}")
+    if not isinstance(strict, bool):
+        raise TypeError(f"strict must be True or False, got {strict!r}")
     for loc in locales:
         if not isinstance(loc, Locale):
             raise TypeError(f"parser_for() takes Locale packs, got {loc!r}")
@@ -400,14 +425,16 @@ def parser_for(*locales: Locale, base: Parser | None = None,
     for loc in locales:
         if loc.languages:
             try:
-                _reading_index_selected(loc.languages)
+                _reading_index_selected(loc.languages, strict)
             except ValueError as exc:
                 raise ValueError(
                     f"while applying locale {loc.code!r}: {exc}") from exc
             languages |= loc.languages
+    if strict and not languages:
+        raise ValueError(_no_strict_language(locales))
     if languages:
         try:
-            lexicon = _apply_choice(lexicon, languages)
+            lexicon = _apply_choice(lexicon, languages, strict)
         except (TypeError, ValueError) as exc:
             # rules/D2: "applying a locale pack wraps any such error with
             # the locale's code, so a stacked configuration names which
@@ -467,3 +494,28 @@ def parser_for(*locales: Locale, base: Parser | None = None,
     for w in caught:
         warnings.warn(w.message, stacklevel=2)
     return built
+
+
+def _no_strict_language(locales: tuple[Locale, ...]) -> str:
+    """The refusal of a strict call that chooses no language, which
+    would keep only native-script vocabulary and strip every Latin one
+    in silence. The fix it offers is a pack choosing the first pack's
+    code where that is a language a strict choice accepts, else
+    ``en``."""
+    tag = "en"
+    for loc in locales[:1]:
+        try:
+            _reading_index_selected(frozenset({loc.code}), True)
+        except ValueError:
+            pass
+        else:
+            tag = loc.code
+    codes = ", ".join(repr(loc.code) for loc in locales)
+    named = ("no pack was given" if not locales
+             else f"the pack {codes} chooses none" if len(locales) == 1
+             else f"the packs {codes} choose none")
+    return (f"strict=True keeps only the chosen languages' vocabulary, and "
+            f"{named}, so it would strip every Latin-script reading; add "
+            f"a pack that chooses a language, e.g. "
+            f"Locale(code={tag!r}, lexicon=Lexicon.empty(), "
+            f"languages=frozenset({{{tag!r}}})), or drop strict=True")

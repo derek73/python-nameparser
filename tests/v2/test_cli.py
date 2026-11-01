@@ -257,3 +257,46 @@ def test_cli_attaches_a_segmenter_only_for_the_ja_pack(
     _installed(monkeypatch, factory)
     _fields(capsys, "--locale", "zh", "王小明")
     assert calls == []
+
+
+# --strict (#753, 3j) and --locale's fallback to a language tag
+
+@pytest.mark.parametrize(("argv", "roles"), [
+    (("--locale", "ko", "--strict", "Kim Do Hyun"), ("Kim", "Do", "Hyun")),
+    (("--locale", "vi", "--strict", "Do Van Minh"), ("Do", "Van", "Minh")),
+    # a pack choosing no language chooses its code under --strict
+    (("--locale", "zh", "--strict", "De Xu"), ("De", "", "Xu")),
+    # without --strict, ko's file holds nothing Latin to prefer
+    (("--locale", "ko", "Kim Do Hyun"), ("Kim", "", "Do Hyun")),
+])
+def test_cli_locale_falls_back_to_a_language_and_strict_reads_it_alone(
+        capsys: pytest.CaptureFixture[str], argv: tuple[str, ...],
+        roles: tuple[str, str, str]) -> None:
+    assert _roles(_fields(capsys, *argv)) == roles
+
+
+def test_cli_strict_without_a_locale_is_a_usage_error() -> None:
+    proc = _run("Kim Do Hyun", "--strict")
+    assert proc.returncode == 2
+    assert "--strict needs --locale" in proc.stderr
+
+
+def test_cli_locale_neither_a_pack_nor_a_language_lists_both() -> None:
+    proc = _run("John Smith", "--locale", "xx", "--strict")
+    assert proc.returncode == 2
+    # the pack codes, then the language tags
+    assert "tr_az" in proc.stderr and "nor a language" in proc.stderr
+    assert "ko" in proc.stderr.split("nor a language")[1]
+
+
+def test_cli_a_language_with_no_reading_needs_strict() -> None:
+    proc = _run("Do Van Minh", "--locale", "vi")
+    assert proc.returncode == 2
+    assert "vi.toml holds no reading yet" in proc.stderr
+    assert "(--strict) accepts it" in proc.stderr
+
+
+def test_cli_strict_with_a_pack_whose_code_is_no_language() -> None:
+    proc = _run("John Smith", "--locale", "tr_az", "--strict")
+    assert proc.returncode == 2
+    assert "chooses no language, and its code is not one" in proc.stderr

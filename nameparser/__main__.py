@@ -4,6 +4,8 @@
     python -m nameparser --json "Doe, John"
     python -m nameparser --order family-first "Kovács János Péter"
     python -m nameparser --locale ja "山田太郎"
+    python -m nameparser --locale ko --strict "Kim Do Hyun"
+    python -m nameparser --locale vi --strict "Do Van Minh"
 """
 import argparse
 import dataclasses
@@ -52,14 +54,25 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--locale", metavar="CODE",
                     help="parse with a locale pack (e.g. 'ru'); see "
                          "nameparser.locales. 'ja' divides unspaced names "
-                         "when nameparser[ja] is installed")
+                         "when nameparser[ja] is installed. A code no "
+                         "pack has but a vocabulary file does (e.g. 'ko') "
+                         "chooses that language alone")
+    ap.add_argument("--strict", action="store_true",
+                    help="read only the --locale language's vocabulary "
+                         "file and native-script words, dropping every "
+                         "other language's (for single-origin names); a "
+                         "pack choosing no language chooses its code")
     ap.add_argument("--order", choices=_ORDERS,
                     help="the order to read a name's words in "
                          "(default: given-first); a Han, Hangul or kana "
                          "name keeps its script's order, and a family "
                          "comma fixes the order")
     args = ap.parse_args(argv)
+    if args.strict and args.locale is None:
+        ap.error("--strict needs --locale: it keeps only the chosen "
+                 "language's vocabulary")
     pack = None
+    unknown = None
     segmenter: Segmenter | None = None
     noted = False
     # `is not None`, not truthiness: --locale "" must reach get() and
@@ -69,7 +82,24 @@ def main(argv: list[str] | None = None) -> int:
         try:
             pack = locales.get(args.locale)
         except KeyError as exc:
-            ap.error(exc.args[0])  # exits 2, message to stderr
+            # not a pack: a language tag chooses that language alone,
+            # which parser_for checks below; if it is neither, the error
+            # lists the codes and the tags
+            unknown = exc.args[0]
+            try:
+                pack = Locale(code="cli_language", lexicon=Lexicon.empty(),
+                              languages=frozenset({args.locale}))
+            except (TypeError, ValueError):
+                ap.error(unknown)  # exits 2, message to stderr
+        # a strict call needs a language: a pack choosing none (zh, ja,
+        # ru) chooses its own code, which parser_for checks below
+        if args.strict and not pack.languages:
+            try:
+                pack = dataclasses.replace(
+                    pack, languages=frozenset({pack.code}))
+            except ValueError:
+                ap.error(f"--strict: the pack {pack.code!r} chooses no "
+                         f"language, and its code is not one")
         # The pack only activates division; the installed extra divides.
         # Without it a note says so in the command line's terms, in
         # place of the parser's warning (rules/D1), whose other remedies
@@ -96,7 +126,14 @@ def main(argv: list[str] | None = None) -> int:
         if noted:
             warnings.filterwarnings(
                 "ignore", message="Policy.segment_scripts activates")
-        parser = parser_for(*packs, segmenter=segmenter)
+        try:
+            parser = parser_for(*packs, segmenter=segmenter,
+                                strict=args.strict)
+        except ValueError as exc:
+            # the choice's own refusal, without the pack wrapper naming
+            # the CLI's stand-in code
+            why = str(exc.__cause__ or exc).replace("strict=True", "--strict")
+            ap.error(f"{unknown}; nor a language: {why}" if unknown else why)
     n = parser.parse(args.name)
     if args.json:
         print(json.dumps(n.as_dict(), ensure_ascii=False))
