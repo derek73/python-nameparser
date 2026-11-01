@@ -186,7 +186,7 @@ never the other way: ``pt-BR`` reads ``pt.toml`` too, and ``pt``
 leaves the Brazilian words alone. No other table of related languages
 is read, so a caller with Malay and Indonesian names chooses ``ms``
 and ``id``. Tags are compared without regard to case, and a tag is
-checked in one of three ways:
+checked in one of four ways:
 
 - **A malformed tag** (``pt_BR``, ``p``) raises ``ValueError`` when the
   :class:`~nameparser.Locale` is built.
@@ -196,6 +196,10 @@ checked in one of three ways:
 - **A region or other subtag of a language that has a file** (``pt-PT``)
   is accepted and reads that language's file, there being none of its
   own.
+- **A language whose file holds no reading yet** (``vi``, whose file
+  only records words kept out) raises ``ValueError``, a choice of it
+  changing nothing; a strict choice accepts it (`Reading one language
+  only`_).
 
 A pack that chooses no language leaves the base parser's vocabulary
 exactly as it was.
@@ -234,6 +238,78 @@ credential:
     ...                surnames=Lexicon.default().surnames)
     >>> sorted(parser_for(en, base=Parser(lexicon=mine)).lexicon.particles)
     ['van']
+
+.. _strict-choice:
+
+Reading one language only
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A choice still reads every other language's words: it settles only the
+words its own language has a reading of. Names of a single origin
+written in Latin letters meet those words by accident. Many common
+Korean syllables, romanized, are spelled like another language's
+word: ``Do`` like the Portuguese particle, ``Bin`` like the Arabic
+and Malay one, ``Ra`` like an English credential and a German academic
+title. Korean's file holds no word written in Latin letters, so a
+``ko`` choice settles none of them.
+
+``parser_for(..., strict=True)`` makes the choice strict: only the
+chosen languages' files are read, each tag selecting its own and its
+ancestors' as above, plus every word written in a script other than
+Latin (the Korean, Japanese and Chinese honorifics, the Cyrillic and
+Devanagari titles), which selects itself by its script. Every other
+language's words leave, the shared ``mul`` and ``und`` files'
+included, and a word no chosen file holds is read as a name word:
+
+.. doctest::
+
+    >>> ko = Locale(code="ko", lexicon=Lexicon.empty(),
+    ...             languages=frozenset({"ko"}))
+    >>> korean = parser_for(ko, strict=True)
+    >>> parse("Kim Do Hyun").family
+    'Do Hyun'
+    >>> korean.parse("Kim Do Hyun").middle, korean.parse("Kim Do Hyun").family
+    ('Do', 'Hyun')
+    >>> parse("Kim Min Ra").suffix
+    'Ra'
+    >>> korean.parse("Kim Min Ra").family
+    'Ra'
+
+Japanese ``Gen`` and Chinese ``De`` are the same case under strict
+``ja`` and ``zh``: ``Gen Hoshino`` reads given ``Gen`` rather than a
+title, and ``De Xu`` given ``De``, family ``Xu``.
+
+Strict is for data you know to be of one origin, and what it drops it
+drops from every name:
+
+- **Other languages' words go with the accidents.** A credential
+  written in English (``Kim Min Jun, MD`` reads given ``MD``), a bare
+  ``Dr`` or ``Mr``, and an immigrant's particle from another language
+  are read as name words. A shape still reads as it does by default:
+  ``Dr.``, with its period, is a title. Where English context is part
+  of the data, choose ``en`` too, which brings back its words and its
+  costs alike:
+
+  .. doctest::
+
+      >>> parser_for(ko, en, strict=True).parse("Kim Min Ra").suffix
+      'Ra'
+      >>> parser_for(ko, en, strict=True).parse("Kim Min Jun, MD").suffix
+      'MD'
+
+- **Strict needs a language.** A strict call whose packs choose none
+  (``parser_for(locales.ZH, strict=True)``) would keep only the words
+  in other scripts, so it raises ``ValueError`` and names a pack to
+  add. A pack's own word list and policy are applied after the strict
+  choice, untouched, and so is the Korean surname list.
+- **A language whose file holds no reading yet is accepted.**
+  ``vi.toml`` holds none, so a plain ``vi`` choice is refused; a
+  strict one reads the other scripts' words and nothing in Latin
+  letters, which unchains Dutch ``van`` from a Vietnamese middle name
+  (``Do Van Minh`` reads middle ``Van``, family ``Minh``).
+- **It is a delta, like a choice.** A word a strict choice drops leaves
+  a base parser's vocabulary even where you added it yourself; add it
+  again in the pack's own lexicon, which is applied after.
 
 .. _west-south-slavic-packs:
 
