@@ -275,28 +275,42 @@ def test_cli_locale_falls_back_to_a_language_and_strict_reads_it_alone(
     assert _roles(_fields(capsys, *argv)) == roles
 
 
-def test_cli_strict_without_a_locale_is_a_usage_error() -> None:
-    proc = _run("Kim Do Hyun", "--strict")
-    assert proc.returncode == 2
-    assert "--strict needs --locale" in proc.stderr
+def _usage_error(capsys: pytest.CaptureFixture[str], *argv: str) -> str:
+    # in process, so coverage sees the branch: argparse exits 2
+    with pytest.raises(SystemExit) as info:
+        cli.main([*argv, "John Smith"])
+    assert info.value.code == 2
+    return capsys.readouterr().err
 
 
-def test_cli_locale_neither_a_pack_nor_a_language_lists_both() -> None:
-    proc = _run("John Smith", "--locale", "xx", "--strict")
-    assert proc.returncode == 2
+def test_cli_strict_without_a_locale_is_a_usage_error(
+        capsys: pytest.CaptureFixture[str]) -> None:
+    assert "--strict needs --locale" in _usage_error(capsys, "--strict")
+
+
+def test_cli_locale_neither_a_pack_nor_a_language_lists_both(
+        capsys: pytest.CaptureFixture[str]) -> None:
+    err = _usage_error(capsys, "--locale", "xx", "--strict")
     # the pack codes, then the language tags
-    assert "tr_az" in proc.stderr and "nor a language" in proc.stderr
-    assert "ko" in proc.stderr.split("nor a language")[1]
+    assert "tr_az" in err and "nor a language" in err
+    assert "ko" in err.split("nor a language")[1]
 
 
-def test_cli_a_language_with_no_reading_needs_strict() -> None:
-    proc = _run("Do Van Minh", "--locale", "vi")
-    assert proc.returncode == 2
-    assert "vi.toml holds no reading yet" in proc.stderr
-    assert "(--strict) accepts it" in proc.stderr
+def test_cli_locale_that_is_no_tag_at_all_lists_the_packs(
+        capsys: pytest.CaptureFixture[str]) -> None:
+    # "" cannot even be a tag, so the stand-in Locale refuses it
+    err = _usage_error(capsys, "--locale", "")
+    assert "tr_az" in err and "nor a language" not in err
 
 
-def test_cli_strict_with_a_pack_whose_code_is_no_language() -> None:
-    proc = _run("John Smith", "--locale", "tr_az", "--strict")
-    assert proc.returncode == 2
-    assert "chooses no language, and its code is not one" in proc.stderr
+def test_cli_a_language_with_no_reading_needs_strict(
+        capsys: pytest.CaptureFixture[str]) -> None:
+    err = _usage_error(capsys, "--locale", "vi")
+    assert "vi.toml holds no reading yet" in err
+    assert "(--strict) accepts it" in err
+
+
+def test_cli_strict_with_a_pack_whose_code_is_no_language(
+        capsys: pytest.CaptureFixture[str]) -> None:
+    err = _usage_error(capsys, "--locale", "tr_az", "--strict")
+    assert "chooses no language, and its code is not one" in err

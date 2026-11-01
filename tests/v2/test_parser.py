@@ -2650,6 +2650,8 @@ def test_a_strict_choice_drops_mul_and_keeps_native_script_vocabulary() -> None:
     ((), "no pack was given"),
     (("ZH",), "the pack 'zh' chooses none"),
     (("ZH", "RU"), "the packs 'zh', 'ru' choose none"),
+    # a code that is no language: the fix offered chooses en
+    (("TR_AZ",), "the pack 'tr_az' chooses none.*'en'"),
 ])
 def test_a_strict_call_choosing_no_language_is_refused_with_a_fix_that_runs(
         packs: tuple[str, ...], match: str) -> None:
