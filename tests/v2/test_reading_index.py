@@ -301,6 +301,8 @@ def test_holds_kind_reads_every_file_whatever_the_default(
 @pytest.mark.parametrize("text,native", [
     ("씨", True), ("господин", True), ("श्री", True), ("殿", True),
     ("dr", False), ("ông", False), ("&", False), ("2", False),
+    # one Latin letter makes a word Latin, however many others it holds
+    ("dr김", False), ("김x", False),
 ])
 def test_native_script_is_a_letter_and_no_latin_letter(
         text: str, native: bool) -> None:

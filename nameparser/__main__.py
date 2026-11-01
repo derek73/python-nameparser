@@ -80,13 +80,24 @@ def main(argv: list[str] | None = None) -> int:
     # exit 2 listing the codes, not silently fall back to the default
     if args.locale is not None:
         from nameparser import locales
+        # a tag spelled for a pack's code is that pack (pt-BR is pt_br);
+        # a region of a pack's language (zh-CN, es-MX, ja-JP) is refused
+        # naming the pack, never chosen bare: a bare choice would drop
+        # the pack's list, policy and segmenter in silence
+        code = args.locale.replace("-", "_").casefold()
+        language = code.split("_")[0]
         try:
-            pack = locales.get(args.locale)
+            pack = locales.get(code if code in locales.available()
+                               else args.locale)
         except KeyError as exc:
+            unknown = exc.args[0]
+            if language != code and language in locales.available():
+                ap.error(f"{unknown}; {args.locale!r} is a region of "
+                         f"the language of the pack {language!r}: use "
+                         f"--locale {language}")
             # not a pack: a language tag chooses that language alone,
             # which parser_for checks below; if it is neither, the error
             # lists the codes and the tags
-            unknown = exc.args[0]
             try:
                 pack = Locale(code="cli_language", lexicon=Lexicon.empty(),
                               languages=frozenset({args.locale}))
@@ -99,8 +110,10 @@ def main(argv: list[str] | None = None) -> int:
                 pack = dataclasses.replace(
                     pack, languages=frozenset({pack.code}))
             except ValueError:
-                ap.error(f"--strict: the pack {pack.code!r} chooses no "
-                         f"language, and its code is not one")
+                ap.error(f"--strict needs a language to keep: the pack "
+                         f"{pack.code!r} chooses none, and its code is not "
+                         f"a language tag; give a tag instead (e.g. "
+                         f"--locale {pack.code.split('_')[0]} --strict)")
         # The pack only activates division; the installed extra divides.
         # Without it a note says so in the command line's terms, in
         # place of the parser's warning (rules/D1), whose other remedies

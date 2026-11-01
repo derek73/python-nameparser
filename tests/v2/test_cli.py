@@ -313,4 +313,24 @@ def test_cli_a_language_with_no_reading_needs_strict(
 def test_cli_strict_with_a_pack_whose_code_is_no_language(
         capsys: pytest.CaptureFixture[str]) -> None:
     err = _usage_error(capsys, "--locale", "tr_az", "--strict")
-    assert "chooses no language, and its code is not one" in err
+    assert "--strict needs a language" in err
+    assert "--locale tr --strict" in err
+
+
+@pytest.mark.parametrize("tag,pack", [
+    # a bare choice would drop the pack's segmentation, two family
+    # names and given-name list, and the segmenter, in silence
+    ("zh-CN", "zh"), ("es-MX", "es"), ("ja-JP", "ja"), ("pt-PT", "pt"),
+])
+def test_cli_a_region_of_a_packs_language_names_the_pack(
+        capsys: pytest.CaptureFixture[str], tag: str, pack: str) -> None:
+    err = _usage_error(capsys, "--locale", tag)
+    assert f"use --locale {pack}" in err
+
+
+@pytest.mark.parametrize("tag", ["pt-BR", "pt_br", "PT-BR"])
+def test_cli_a_tag_spelled_for_a_packs_code_is_that_pack(
+        capsys: pytest.CaptureFixture[str], tag: str) -> None:
+    assert (_fields(capsys, "--locale", tag, "Pedro Silva Sb")
+            == _fields(capsys, "--locale", "pt_br", "Pedro Silva Sb"))
+    assert _fields(capsys, "--locale", tag, "Pedro Silva Sb")["suffix"] == "Sb"
