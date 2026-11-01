@@ -272,8 +272,16 @@ ATTACHED_KEYS = frozenset({"side", "issue", "decided", "note"})
 #: position and bare-letter names wait with `separators` for phase 4's
 #: shapes and glued words.
 RESERVED = {
-    "prefer": 3, "strict": 3,
     "bare_only": 4, "leading_only": 4, "trailing_only": 4, "separators": 4,
+}
+#: Names phase 1 reserved for phase 3 that phase 3 gave to the caller
+#: instead: a choice prefers (3b) and `parser_for(..., strict=True)` is
+#: strict (3j), so a strength is never data and stays refused, saying so
+#: (the RFC's phase 3 API).
+NOT_DATA = {
+    "prefer": "a choice of languages prefers its readings: choose the "
+              "language with Locale(languages=...)",
+    "strict": "strictness is the caller's: parser_for(..., strict=True)",
 }
 _TAG = re.compile(r"[a-z]{2,3}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?")
 
@@ -385,6 +393,8 @@ def _reserved_or_unknown(where: str, key: str, allowed: Iterable[str]) -> VocabE
     if key in RESERVED:
         return VocabError(f"{where}: {key!r} is reserved for phase {RESERVED[key]}; "
                           f"it has no behavior yet")
+    if key in NOT_DATA:
+        return VocabError(f"{where}: {key!r} is not data; {NOT_DATA[key]}")
     return VocabError(f"{where}: unknown key {key!r}; allowed: {sorted(allowed)}")
 
 

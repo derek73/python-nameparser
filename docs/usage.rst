@@ -1451,8 +1451,9 @@ form to pipe somewhere:
     {"title": "", "given": "John", "middle": "", "family": "Doe", "suffix": "", "nickname": "", "maiden": ""}
 
 Add ``--locale`` to parse with a locale pack (for example ``--locale
-ru``); see :doc:`locales`. A code no pack has that is a language with
-a vocabulary file (``--locale ko``) chooses that language alone.
+ru``); see :doc:`locales`. A code no pack has that is a language whose
+vocabulary file holds readings (``--locale ko``) chooses that language
+alone; one whose file holds none yet (``vi``) needs ``--strict``.
 ``--strict`` reads only that language's words (see
 :ref:`strict-choice`), and needs ``--locale``:
 

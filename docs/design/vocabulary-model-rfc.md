@@ -230,7 +230,7 @@ Two consequences were accepted with the definition:
 
 | Country | default | choice | strict | strict + en |
 |---|---|---|---|---|
-| VN | 65.48% | none: no file holds `vi` | 64.28% (+349 −589) | 64.34% (+306 −534) |
+| VN | 65.48% | none: vi.toml holds no reading, so a plain `vi` choice is refused | 64.28% (+349 −589) | 64.34% (+306 −534) |
 | KR | 92.42% | 92.42% (+0 −0) | 92.54% (+41 −17) | 92.51% (+33 −16) |
 | CN | 84.54% | 84.54% (+0 −0) | 84.65% (+23 −3) | 84.61% (+16 −3) |
 | JP | 95.59% | 95.59% (+0 −0) | 95.64% (+30 −20) | 95.54% (+11 −20) |
@@ -314,7 +314,7 @@ This rested on `Locale` and `Policy` keeping their 2.x shape after the facade's 
 
 A chosen tag selects its own file and its ancestors', never its descendants': `pt-BR` selects `pt-BR.toml` and `pt.toml`, and `pt` selects only `pt.toml`, so a caller in Portugal does not turn on the Brazilian agnomens (#843 left the single-letter `F` and `N` to a `pt-BR` pack). No macrolanguage table is read: Malay and Indonesian are separate tags, though BCP 47 counts Indonesian within the Malay macrolanguage, and a caller with names in both chooses both. The Czech, Slovak, Slovenian and Croatian files each hold the words they share, so each language is a pack of its own. Script subtags need no matching rule yet, since no file carries one.
 
-The TOML names `prefer` and `strict`, reserved for phase 3 since phase 1, stay refused, with a message saying that a strength is the caller's choice and never data.
+The TOML names `prefer` and `strict`, reserved for phase 3 since phase 1, stay refused, with a message saying that a strength is the caller's choice and never data (the message landed with 3j, 2026-10-31).
 
 ### Measuring a pack
 

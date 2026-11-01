@@ -380,7 +380,8 @@ def parser_for(*locales: Locale, base: Parser | None = None,
     reading yet (``vi``), which a plain one refuses as changing
     nothing, and raises ValueError when the packs choose no language,
     since it would then strip every Latin-script reading
-    (decisions/vocabulary-model, 2026-10-30 #753, file-strict).
+    (decisions/vocabulary-model, 2026-10-30 #753, file-strict, and
+    2026-10-31 #753, phase 3j).
 
     Validation errors raised while applying a
     pack are wrapped with that pack's identity (rule D2) --
