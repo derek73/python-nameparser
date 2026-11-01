@@ -2511,7 +2511,8 @@ def test_an_error_applying_a_choice_names_the_choice(
     import nameparser._parser as parser_mod
     orphan: object = ({"particles_ambiguous": (frozenset(), frozenset({"zzq"}))},
               (frozenset(), ()))
-    monkeypatch.setattr(parser_mod, "_choice_delta", lambda chosen: orphan)
+    monkeypatch.setattr(parser_mod, "_choice_delta",
+                        lambda chosen, strict=False: orphan)
     with pytest.raises(ValueError,
                        match="while applying the languages chosen, en, pt: "
                              "particles_ambiguous marks"):
@@ -2529,7 +2530,7 @@ def test_a_choice_moves_case_masks_as_it_moves_words(
     real = ri.compile_choice
     default = real(frozenset())
 
-    def stand_in(chosen: frozenset[str]) -> object:
+    def stand_in(chosen: frozenset[str], strict: bool = False) -> object:
         if not chosen:
             return default
         masks = {k: v for k, v in default["CAPITALIZATION_EXCEPTIONS"].items()
@@ -2538,7 +2539,8 @@ def test_a_choice_moves_case_masks_as_it_moves_words(
     monkeypatch.setattr(ri, "compile_choice", stand_in)
     delta = parser_mod._choice_delta.__wrapped__(frozenset({"pt"}))  # type: ignore[attr-defined]
     assert delta == ({}, (frozenset({"phd"}), (("zzq", "ZzQ"),)))
-    monkeypatch.setattr(parser_mod, "_choice_delta", lambda chosen: delta)
+    monkeypatch.setattr(parser_mod, "_choice_delta",
+                        lambda chosen, strict=False: delta)
     base = dataclasses.replace(Lexicon.default(), capitalization_exceptions=(
         *Lexicon.default().capitalization_exceptions, ("abcq", "AbcQ")))
     got = parser_mod._apply_choice(base, frozenset({"pt"}))
@@ -2597,3 +2599,104 @@ def test_a_choice_that_changes_nothing_leaves_the_lexicon_itself() -> None:
     assert changed_words(selected(["sv"])) == frozenset()
     mine = Lexicon.default().add(titles={"zzq"})
     assert parser_mod._apply_choice(mine, frozenset({"sv"})) is mine
+
+
+# -- strict (#753, 3j: file-strict, decisions/vocabulary-model's
+# 2026-10-30 #753, file-strict entry) ---------------------------------
+
+@pytest.mark.parametrize("tags,name,before,after", [
+    # romanized Korean: every word below is a common Korean syllable
+    # another file holds a vocabulary reading of
+    (("ko",), "Kim Do Hyun", {"family": "Do Hyun"},  # pt's particle
+     {"middle": "Do", "family": "Hyun"}),
+    (("ko",), "Kim Bin Hyun", {"family": "Bin Hyun"},  # ar's and ms's
+     {"middle": "Bin", "family": "Hyun"}),
+    (("ko",), "Ra Min Jun", {"title": "Ra"},  # de's academic title
+     {"given": "Ra", "title": ""}),
+    (("ko",), "Kim Min Ra", {"suffix": "Ra"},  # en's credential
+     {"family": "Ra", "suffix": ""}),
+    # what adding en costs: its credential is back
+    (("ko", "en"), "Kim Min Ra", {"suffix": "Ra"}, {"suffix": "Ra"}),
+    (("ja",), "Gen Hoshino", {"title": "Gen"}, {"given": "Gen"}),
+    (("zh",), "De Xu", {"family": "De Xu"},
+     {"given": "De", "family": "Xu"}),
+    # vi.toml holds no reading, which only a strict choice accepts
+    (("vi",), "Do Van Minh", {"family": "Van Minh"},
+     {"middle": "Van", "family": "Minh"}),
+])
+def test_a_strict_choice_reads_only_the_chosen_files(
+        tags: tuple[str, ...], name: str, before: dict[str, str],
+        after: dict[str, str]) -> None:
+    default = parse(name)
+    for field, value in before.items():
+        assert getattr(default, field) == value, field
+    got = parser_for(_choosing(*tags), strict=True).parse(name)
+    for field, value in after.items():
+        assert getattr(got, field) == value, field
+
+
+def test_a_strict_choice_drops_mul_and_keeps_native_script_vocabulary() -> None:
+    strict = parser_for(_choosing("vi"), strict=True)
+    # mul.toml's `dr` leaves; the period still makes a title by shape
+    assert strict.parse("Dr Minh Do").given == "Dr"
+    assert strict.parse("Dr. Minh Do").title == "Dr."
+    # a native-script word selects itself by script, whatever its file
+    assert strict.parse("김민준 씨").suffix == "씨"
+    # and the Korean surname list is outside the per-word model
+    assert strict.lexicon.surnames == Lexicon.default().surnames
+
+
+@pytest.mark.parametrize("packs,match", [
+    ((), "no pack was given"),
+    (("ZH",), "the pack 'zh' chooses none"),
+    (("ZH", "RU"), "the packs 'zh', 'ru' choose none"),
+    # a code that is no language: the fix offered chooses en
+    (("TR_AZ",), "the pack 'tr_az' chooses none.*'en'"),
+])
+def test_a_strict_call_choosing_no_language_is_refused_with_a_fix_that_runs(
+        packs: tuple[str, ...], match: str) -> None:
+    from nameparser import locales
+    given = tuple(getattr(locales, p) for p in packs)
+    with pytest.raises(ValueError, match=match) as info:
+        parser_for(*given, strict=True)
+    # the message hands the reader a pack to add: it must run
+    offered = re.search(r"e\.g\. (Locale\(.*\)\)), or", str(info.value))
+    assert offered is not None
+    pack = eval(offered.group(1), {"Locale": Locale, "Lexicon": Lexicon})
+    assert parser_for(*given, pack, strict=True).lexicon != Lexicon.default()
+
+
+def test_a_file_with_no_reading_is_a_strict_choice_only() -> None:
+    with pytest.raises(ValueError, match=r"vi\.toml holds no reading yet.*"
+                                         r"strict=True"):
+        parser_for(_choosing("vi"))
+    assert "do" not in parser_for(_choosing("vi"), strict=True).lexicon.particles
+
+
+def test_a_strict_choice_still_refuses_mul_and_an_unknown_tag() -> None:
+    for tag, match in (("mul", "a strict one drops both"),
+                       ("xx", "no vocabulary file holds")):
+        with pytest.raises(ValueError, match=match):
+            parser_for(_choosing(tag), strict=True)
+
+
+def test_strict_is_a_bool() -> None:
+    with pytest.raises(TypeError, match="strict must be True or False"):
+        parser_for(_choosing("ko"), strict=1)  # type: ignore[arg-type]
+
+
+def test_a_strict_choice_is_a_delta_over_the_union_in_any_order() -> None:
+    # a caller's listing of a dropped word leaves, a word no file holds
+    # stays (measured in the decisions entry); the union, then strict
+    base = Parser(lexicon=Lexicon.default().add(titles={"dr", "zzq"}))
+    got = parser_for(_choosing("vi"), base=base, strict=True).lexicon
+    assert "zzq" in got.titles and "dr" not in got.titles
+    ko, en = _choosing("ko", code="aa"), _choosing("en", code="bb")
+    assert (parser_for(ko, en, strict=True).lexicon
+            == parser_for(en, ko, strict=True).lexicon
+            == parser_for(_choosing("ko", "en"), strict=True).lexicon)
+
+
+def test_a_packs_fragment_is_unioned_on_after_the_strict_compile() -> None:
+    pack = _choosing("ko", lexicon=Lexicon.empty().add(suffix_acronyms={"ra"}))
+    assert parser_for(pack, strict=True).parse("Kim Min Ra").suffix == "Ra"

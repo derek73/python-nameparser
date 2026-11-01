@@ -1451,7 +1451,20 @@ form to pipe somewhere:
     {"title": "", "given": "John", "middle": "", "family": "Doe", "suffix": "", "nickname": "", "maiden": ""}
 
 Add ``--locale`` to parse with a locale pack (for example ``--locale
-ru``); see :doc:`locales`. ``--order`` reads the name in another order
+ru``); see :doc:`locales`. A code no pack has that is a language whose
+vocabulary file holds readings (``--locale ko``) chooses that language
+alone; one whose file holds none yet (``vi``) needs ``--strict``, and
+a pack's language with a region or script subtag (``zh-CN``,
+``zh-Hant``) exits naming the pack to use.
+``--strict`` reads only that language's words (see
+:ref:`strict-choice`), and needs ``--locale``:
+
+::
+
+    $ python -m nameparser --locale ko --strict --json "Kim Do Hyun"
+    {"title": "", "given": "Kim", "middle": "Do", "family": "Hyun", "suffix": "", "nickname": "", "maiden": ""}
+
+``--order`` reads the name in another order
 — ``given-first`` (the default), ``family-first`` or
 ``family-first-given-last``, the three ``Policy.name_order`` values —
 and replaces any order a pack sets. A name written wholly in Han,

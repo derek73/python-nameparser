@@ -272,8 +272,16 @@ ATTACHED_KEYS = frozenset({"side", "issue", "decided", "note"})
 #: position and bare-letter names wait with `separators` for phase 4's
 #: shapes and glued words.
 RESERVED = {
-    "prefer": 3, "strict": 3,
     "bare_only": 4, "leading_only": 4, "trailing_only": 4, "separators": 4,
+}
+#: Names phase 1 reserved for phase 3 that phase 3 gave to the caller
+#: instead: a choice prefers (3b) and `parser_for(..., strict=True)` is
+#: strict (3j), so a strength is never data and stays refused, saying so
+#: (the RFC's phase 3 API).
+NOT_DATA = {
+    "prefer": "a choice of languages prefers its readings: choose the "
+              "language with Locale(languages=...)",
+    "strict": "strictness is the caller's: parser_for(..., strict=True)",
 }
 _TAG = re.compile(r"[a-z]{2,3}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?")
 
@@ -385,6 +393,8 @@ def _reserved_or_unknown(where: str, key: str, allowed: Iterable[str]) -> VocabE
     if key in RESERVED:
         return VocabError(f"{where}: {key!r} is reserved for phase {RESERVED[key]}; "
                           f"it has no behavior yet")
+    if key in NOT_DATA:
+        return VocabError(f"{where}: {key!r} is not data; {NOT_DATA[key]}")
     return VocabError(f"{where}: unknown key {key!r}; allowed: {sorted(allowed)}")
 
 
@@ -1389,7 +1399,8 @@ tools/vocab/build.py -- do not edit; edit the TOML and run
 One line per word in the vocabulary files, holding a row per reading,
 on by default or not: (tag, kind, properties), the tag being the file's
 BCP 47 tag and the properties the ones the compiler reads, as sorted
-(key, value) pairs.
+(key, value) pairs; then FILES, every file's tag, one holding no
+reading included.
 Read it through nameparser._reading_index (index, readings_of), which
 documents the row; _compiled.py is this index compiled.
 """
@@ -1435,11 +1446,13 @@ def index_output() -> Path:
     return OUTPUT.with_name("_index.py")
 
 
-def render_index(rows: Iterable[Any]) -> str:
+def render_index(rows: Iterable[Any], files: Iterable[str]) -> str:
     """One word per line, its rows in index order, so a change to a
     word's readings is a one-line diff; the whole tuple is one constant,
     which a cached import loads without building anything, and grouped
-    by word, so a lookup table is one dict() call."""
+    by word, so a lookup table is one dict() call. FILES follows: the
+    tag of every file, one holding only exclusions included, which a
+    strict choice may name (_reading_index.files)."""
     out = [INDEX_HEADER, "",
            "READINGS: tuple[tuple[str, tuple[tuple[str, str, "
            "tuple[tuple[str, object], ...]], ...]], ...] = ("]
@@ -1447,8 +1460,15 @@ def render_index(rows: Iterable[Any]) -> str:
     for r in rows:
         words.setdefault(r.text, []).append(_ri.to_row(r))
     out += [f"    ({text!r}, {tuple(rs)!r})," for text, rs in words.items()]
+    out += [")", "", "FILES: tuple[str, ...] = ("]
+    out += [f"    {tag!r}," for tag in sorted(files)]
     out.append(")")
     return "\n".join(out) + "\n"
+
+
+def file_tags(pool: Pool) -> list[str]:
+    """The tag of every file the pool was loaded from."""
+    return sorted(name.removesuffix(".toml") for name in pool.entries)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -1477,7 +1497,7 @@ def _run(*, check: bool) -> int:
     compiled = compile_pool(pool)
     stale = 0
     for path, text in ((OUTPUT, render(compiled)),
-                       (index_output(), render_index(index_rows(pool))),
+                       (index_output(), render_index(index_rows(pool), file_tags(pool))),
                        (rules_output(), render_rules(pool.rules))):
         stale += _refresh(path, text, check=check)
     return 1 if stale else 0

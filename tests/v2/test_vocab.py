@@ -265,7 +265,11 @@ MUTATIONS = [
     ("no-schema", {"und.toml": '[[word]]\ntext = "jr"\ngeneration = {}\n'}, "needs `schema = 1`"),
     ("newer-schema", {"und.toml": OK.replace("schema = 1", "schema = 2")}, "newer than this compiler"),
     ("unknown-top-level-key", {"und.toml": "language = 'en'\n" + OK}, "unknown key 'language'"),
-    ("reserved-top-level-key", {"und.toml": "prefer = ['pt']\n" + OK}, "reserved for phase 3"),
+    ("reserved-top-level-key", {"und.toml": "separators = []\n" + OK}, "reserved for phase 4"),
+    # phase 3 gave the strengths to the caller, so they stay refused as
+    # data, the message naming the call (3j)
+    ("prefer-is-not-data", {"und.toml": "prefer = ['pt']\n" + OK}, "'prefer' is not data; a choice"),
+    ("strict-is-not-data", {"und.toml": _w('[[word]]\ntext = "mba"\ncredential = { strict = true }')}, "'strict' is not data; strictness is the caller's: parser_for"),
     ("file-name-not-a-tag", {"english.toml": OK}, "BCP 47 tag"),
     ("file-name-not-canonical-case", {"pt-br.toml": OK}, "BCP 47 tag"),
     ("file-with-no-entries", {"en.toml": OK, "und.toml": "schema = 1\n"}, "no \\[\\[word\\]\\] entries"),

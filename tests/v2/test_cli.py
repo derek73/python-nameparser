@@ -257,3 +257,82 @@ def test_cli_attaches_a_segmenter_only_for_the_ja_pack(
     _installed(monkeypatch, factory)
     _fields(capsys, "--locale", "zh", "王小明")
     assert calls == []
+
+
+# --strict (#753, 3j) and --locale's fallback to a language tag
+
+@pytest.mark.parametrize(("argv", "roles"), [
+    (("--locale", "ko", "--strict", "Kim Do Hyun"), ("Kim", "Do", "Hyun")),
+    (("--locale", "vi", "--strict", "Do Van Minh"), ("Do", "Van", "Minh")),
+    # a pack choosing no language chooses its code under --strict
+    (("--locale", "zh", "--strict", "De Xu"), ("De", "", "Xu")),
+    # without --strict, ko's file holds nothing Latin to prefer
+    (("--locale", "ko", "Kim Do Hyun"), ("Kim", "", "Do Hyun")),
+])
+def test_cli_locale_falls_back_to_a_language_and_strict_reads_it_alone(
+        capsys: pytest.CaptureFixture[str], argv: tuple[str, ...],
+        roles: tuple[str, str, str]) -> None:
+    assert _roles(_fields(capsys, *argv)) == roles
+
+
+def _usage_error(capsys: pytest.CaptureFixture[str], *argv: str) -> str:
+    # in process, so coverage sees the branch: argparse exits 2
+    with pytest.raises(SystemExit) as info:
+        cli.main([*argv, "John Smith"])
+    assert info.value.code == 2
+    return capsys.readouterr().err
+
+
+def test_cli_strict_without_a_locale_is_a_usage_error(
+        capsys: pytest.CaptureFixture[str]) -> None:
+    assert "--strict needs --locale" in _usage_error(capsys, "--strict")
+
+
+def test_cli_locale_neither_a_pack_nor_a_language_lists_both(
+        capsys: pytest.CaptureFixture[str]) -> None:
+    err = _usage_error(capsys, "--locale", "xx", "--strict")
+    # the pack codes, then the language tags
+    assert "tr_az" in err and "nor a language" in err
+    assert "ko" in err.split("nor a language")[1]
+
+
+def test_cli_locale_that_is_no_tag_at_all_lists_the_packs(
+        capsys: pytest.CaptureFixture[str]) -> None:
+    # "" cannot even be a tag, so the stand-in Locale refuses it
+    err = _usage_error(capsys, "--locale", "")
+    assert "tr_az" in err and "nor a language" not in err
+
+
+def test_cli_a_language_with_no_reading_needs_strict(
+        capsys: pytest.CaptureFixture[str]) -> None:
+    err = _usage_error(capsys, "--locale", "vi")
+    assert "vi.toml holds no reading yet" in err
+    assert "(--strict) accepts it" in err
+
+
+def test_cli_strict_with_a_pack_whose_code_is_no_language(
+        capsys: pytest.CaptureFixture[str]) -> None:
+    err = _usage_error(capsys, "--locale", "tr_az", "--strict")
+    assert "--strict needs a language" in err
+    assert "--locale tr --strict" in err
+
+
+@pytest.mark.parametrize("tag,pack", [
+    # a bare choice would drop the pack's segmentation, two family
+    # names and given-name list, and the segmenter, in silence
+    ("zh-CN", "zh"), ("es-MX", "es"), ("ja-JP", "ja"), ("pt-PT", "pt"),
+    # a script subtag is not a region, and the message says neither
+    ("zh-Hant", "zh"),
+])
+def test_cli_a_subtag_of_a_packs_language_names_the_pack(
+        capsys: pytest.CaptureFixture[str], tag: str, pack: str) -> None:
+    err = _usage_error(capsys, "--locale", tag)
+    assert f"use --locale {pack}" in err and "region" not in err
+
+
+@pytest.mark.parametrize("tag", ["pt-BR", "pt_br", "PT-BR"])
+def test_cli_a_tag_spelled_for_a_packs_code_is_that_pack(
+        capsys: pytest.CaptureFixture[str], tag: str) -> None:
+    assert (_fields(capsys, "--locale", tag, "Pedro Silva Sb")
+            == _fields(capsys, "--locale", "pt_br", "Pedro Silva Sb"))
+    assert _fields(capsys, "--locale", tag, "Pedro Silva Sb")["suffix"] == "Sb"

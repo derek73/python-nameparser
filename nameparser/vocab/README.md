@@ -283,12 +283,12 @@ These names will mean something in a later phase. Writing one now as a key, in a
 
 | Name | Phase |
 |---|---|
-| `prefer` | 3 |
-| `strict` | 3 |
 | `bare_only` | 4 |
 | `leading_only` | 4 |
 | `trailing_only` | 4 |
 | `separators` | 4 |
+
+`prefer` and `strict`, reserved for phase 3 by phase 1, are refused for good: phase 3 made each the caller's (a choice of languages prefers its readings, and `parser_for(..., strict=True)` is strict), so the build says a strength is never data.
 
 Phase 2 gave `default` and `attaches` their meaning (2026-10-25, see [Properties](#properties)). The gate's slots carry position and shape already settles a bare letter ([rules/P7](../../docs/design/rules/P7-one-letter-particle-against-the-initial-it-spells.md), a one-letter particle against the initial it spells), so `leading_only`, `trailing_only` and `bare_only` wait for phase 4's shapes, as `separators` waits for its glued words.
 

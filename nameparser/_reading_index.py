@@ -29,6 +29,7 @@ tool that rewrites it.
 from __future__ import annotations
 
 import functools
+import unicodedata
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from types import MappingProxyType
@@ -243,7 +244,9 @@ def readings_of(text: str) -> tuple[IndexReading, ...]:
 
 #: The tags no choice names: mul.toml's readings are every language's
 #: and und.toml's no known language's, so neither is a language to
-#: choose, and a choice never removes a reading of either (choose).
+#: choose. A plain choice never removes a reading of either (choose); a
+#: strict one, which keeps only the chosen files, drops both
+#: (:func:`strict_pool`).
 UNCHOOSABLE = frozenset({"mul", "und"})
 
 
@@ -253,34 +256,61 @@ def tags() -> frozenset[str]:
     return frozenset(row[0] for rows in _by_text().values() for row in rows)
 
 
-def selected(languages: Iterable[str]) -> frozenset[str]:
+@functools.cache
+def files() -> frozenset[str]:
+    """The tags of every shipped vocabulary file, one holding no
+    reading (only exclusions) included: :func:`tags` and the files a
+    strict choice may name, which a plain one may not."""
+    from nameparser.config._index import FILES
+    return frozenset(FILES)
+
+
+def selected(languages: Iterable[str], *,
+             strict: bool = False) -> frozenset[str]:
     """The file tags a choice of `languages` selects: each chosen tag's
     own and its ancestors', never its descendants' (``pt-BR`` selects
     ``pt-BR`` and ``pt``; ``pt`` only ``pt``), matched without regard to
     case, as BCP 47 tags are. No macrolanguage table is read: ``ms``
     does not select ``id``.
 
+    A plain choice selects among the files that hold a reading, since a
+    file holding none would change nothing; a `strict` one among every
+    file, since it drops whatever is not chosen and so is never inert
+    (``vi``, whose file holds only exclusions).
+
     Raises ValueError for ``mul`` or ``und``, and for a tag that selects
     no file at all, naming the tags that do."""
-    by_fold = {t.casefold(): t for t in tags() - UNCHOOSABLE}
+    held = (files() if strict else tags()) - UNCHOOSABLE
+    by_fold = {t.casefold(): t for t in held}
     out: set[str] = set()
     for tag in languages:
         if tag.casefold() in UNCHOOSABLE:
             raise ValueError(
                 f"{tag!r} is not a language to choose: mul.toml's readings "
-                f"are every language's and und.toml's no known language's, "
-                f"and no choice removes a reading of either; drop it")
-        parts = tag.split("-")
-        found = {by_fold[a] for a in ("-".join(parts[:i]).casefold()
-                                      for i in range(len(parts), 0, -1))
-                 if a in by_fold}
+                f"are every language's and und.toml's no known language's; "
+                f"a plain choice never removes a reading of either, and a "
+                f"strict one drops both. Drop it")
+        found = {by_fold[a] for a in _ancestors(tag) if a in by_fold}
         if not found:
+            empty = sorted(t for t in files() - tags() - UNCHOOSABLE
+                           if t.casefold() in _ancestors(tag))
+            if empty:
+                raise ValueError(
+                    f"{empty[0]}.toml holds no reading yet, so a plain "
+                    f"choice of {tag!r} would change nothing; a strict one "
+                    f"(strict=True) accepts it")
             raise ValueError(
                 f"no vocabulary file holds the language {tag!r} or one it "
                 f"belongs to; the languages that have one: "
                 f"{', '.join(sorted(by_fold.values()))}")
         out |= found
     return frozenset(out)
+
+
+def _ancestors(tag: str) -> list[str]:
+    """`tag` and the tags it belongs to, casefolded, longest first."""
+    parts = tag.split("-")
+    return ["-".join(parts[:i]).casefold() for i in range(len(parts), 0, -1)]
 
 
 def choose(readings: Iterable[IndexReading],
@@ -324,13 +354,54 @@ def choose(readings: Iterable[IndexReading],
     return out
 
 
+def is_native_script(text: str) -> bool:
+    """Whether a strict choice keeps `text` whatever its file: it holds
+    a letter and no Latin letter (the CJK honorifics, the Cyrillic and
+    Devanagari titles), so it selects itself by script, which is read
+    from the word as the parse always reads it. A word with no letter
+    (``&``, ``2``) is not native-script."""
+    letters = [c for c in text if c.isalpha()]
+    return bool(letters) and not any(
+        "LATIN" in unicodedata.name(c, "") for c in letters)
+
+
+def strict_pool(chosen: frozenset[str]) -> list[IndexReading]:
+    """The readings a strict choice of the file tags `chosen` compiles
+    from, before :func:`choose`: the chosen files' and native-script
+    vocabulary's, and nothing else, mul.toml's and und.toml's included
+    (file-strict; decisions/vocabulary-model, 2026-10-30)."""
+    return [r for r in index() if r.tag in chosen or is_native_script(r.text)]
+
+
 @functools.cache
-def compile_choice(chosen: frozenset[str]) -> Compiled:
+def compile_choice(chosen: frozenset[str], strict: bool = False) -> Compiled:
     """The constants the shipped index compiles to under a choice of
     the file tags `chosen` (:func:`selected`'s result), kept per choice:
     a compile costs milliseconds, paid once per choice and only by a
-    caller who makes one. An empty choice compiles the default."""
-    return compile_readings(choose(index(), chosen))
+    caller who makes one. An empty plain choice compiles the default; a
+    `strict` one compiles from :func:`strict_pool` alone."""
+    pool = strict_pool(chosen) if strict else index()
+    return compile_readings(choose(pool, chosen))
+
+
+def strict_ungated(chosen: frozenset[str]) -> frozenset[str]:
+    """The words a strict choice of the file tags `chosen` ungates: a
+    chosen file holds the word's vocabulary reading and only a dropped
+    one the name reading gating it, so under strict a possibly-given
+    particle is never-given, a title only inside a phrase is a title,
+    and a suffix gated by the count is not. Compared with the PLAIN
+    choice of the same tags, never with the default's markers, which
+    miss a reading the choice turns on (decisions/vocabulary-model,
+    2026-10-30 #753, file-strict)."""
+    plain, strict = compile_choice(chosen), compile_choice(chosen, True)
+    out = ((plain["PARTICLES"] - plain["NON_GIVEN_NAME_PARTICLES"])
+           & strict["NON_GIVEN_NAME_PARTICLES"])
+    out |= plain["TITLES_AMBIGUOUS"] & strict["TITLES"]
+    out |= plain["SUFFIX_ACRONYMS_AMBIGUOUS"] & (
+        strict["SUFFIX_ACRONYMS"] - strict["SUFFIX_ACRONYMS_AMBIGUOUS"])
+    out |= plain["SUFFIX_WORDS_AMBIGUOUS"] & (
+        strict["SUFFIX_WORDS"] - strict["SUFFIX_WORDS_AMBIGUOUS"])
+    return frozenset(out)
 
 
 def changed_words(chosen: frozenset[str]) -> frozenset[str]:
