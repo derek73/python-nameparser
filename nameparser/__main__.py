@@ -81,7 +81,8 @@ def main(argv: list[str] | None = None) -> int:
     if args.locale is not None:
         from nameparser import locales
         # a tag spelled for a pack's code is that pack (pt-BR is pt_br);
-        # a region of a pack's language (zh-CN, es-MX, ja-JP) is refused
+        # a pack's language with a region or script subtag (zh-CN,
+        # zh-Hant, es-MX, ja-JP) is refused
         # naming the pack, never chosen bare: a bare choice would drop
         # the pack's list, policy and segmenter in silence
         code = args.locale.replace("-", "_").casefold()
@@ -92,8 +93,8 @@ def main(argv: list[str] | None = None) -> int:
         except KeyError as exc:
             unknown = exc.args[0]
             if language != code and language in locales.available():
-                ap.error(f"{unknown}; {args.locale!r} is a region of "
-                         f"the language of the pack {language!r}: use "
+                ap.error(f"{unknown}; {args.locale!r} names the language "
+                         f"of the pack {language!r} with a subtag: use "
                          f"--locale {language}")
             # not a pack: a language tag chooses that language alone,
             # which parser_for checks below; if it is neither, the error

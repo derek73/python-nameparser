@@ -321,11 +321,13 @@ def test_cli_strict_with_a_pack_whose_code_is_no_language(
     # a bare choice would drop the pack's segmentation, two family
     # names and given-name list, and the segmenter, in silence
     ("zh-CN", "zh"), ("es-MX", "es"), ("ja-JP", "ja"), ("pt-PT", "pt"),
+    # a script subtag is not a region, and the message says neither
+    ("zh-Hant", "zh"),
 ])
-def test_cli_a_region_of_a_packs_language_names_the_pack(
+def test_cli_a_subtag_of_a_packs_language_names_the_pack(
         capsys: pytest.CaptureFixture[str], tag: str, pack: str) -> None:
     err = _usage_error(capsys, "--locale", tag)
-    assert f"use --locale {pack}" in err
+    assert f"use --locale {pack}" in err and "region" not in err
 
 
 @pytest.mark.parametrize("tag", ["pt-BR", "pt_br", "PT-BR"])
