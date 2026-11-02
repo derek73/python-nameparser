@@ -370,7 +370,26 @@ def strict_pool(chosen: frozenset[str]) -> list[IndexReading]:
     from, before :func:`choose`: the chosen files' and native-script
     vocabulary's, and nothing else, mul.toml's and und.toml's included
     (file-strict; decisions/vocabulary-model, 2026-10-30)."""
-    return [r for r in index() if r.tag in chosen or is_native_script(r.text)]
+    return strict_kept(index(), chosen)
+
+
+def strict_kept(readings: Iterable[IndexReading],
+                chosen: frozenset[str]) -> list[IndexReading]:
+    """The readings of `readings` a strict choice of the file tags
+    `chosen` keeps: the chosen files' and native-script ones."""
+    return [r for r in readings
+            if r.tag in chosen or is_native_script(r.text)]
+
+
+def chosen_readings(readings: Iterable[IndexReading], chosen: frozenset[str],
+                    strict: bool) -> list[IndexReading]:
+    """`readings` under the choice of the file tags `chosen`: under
+    `strict` only the chosen files' and native-script ones (as
+    :func:`strict_pool` keeps them), then :func:`choose`. What
+    :func:`compile_choice` compiles, and what a `Lexicon` under a
+    choice reads a word's readings by."""
+    return choose(strict_kept(readings, chosen) if strict else readings,
+                  chosen)
 
 
 @functools.cache
@@ -380,8 +399,7 @@ def compile_choice(chosen: frozenset[str], strict: bool = False) -> Compiled:
     a compile costs milliseconds, paid once per choice and only by a
     caller who makes one. An empty plain choice compiles the default; a
     `strict` one compiles from :func:`strict_pool` alone."""
-    pool = strict_pool(chosen) if strict else index()
-    return compile_readings(choose(pool, chosen))
+    return compile_readings(chosen_readings(index(), chosen, strict))
 
 
 def strict_ungated(chosen: frozenset[str]) -> frozenset[str]:
