@@ -270,7 +270,9 @@ def _reject_buffer(value: object, label: str, plural: str) -> None:
         )
 
 
-def _warn_at_caller(message: str) -> None:
+def _warn_at_caller(
+    message: str, category: type[Warning] = UserWarning,
+) -> None:
     # A fixed stacklevel always lands on library internals: the call
     # depth differs per entry point (Lexicon(), add(), unpickle,
     # dataclasses.replace). Walk out of this module (and dataclasses'
@@ -280,7 +282,7 @@ def _warn_at_caller(message: str) -> None:
     while frame is not None and frame.f_globals.get("__name__") in (
             __name__, "dataclasses"):
         frame, level = frame.f_back, level + 1
-    warnings.warn(message, UserWarning, stacklevel=level)
+    warnings.warn(message, category, stacklevel=level)
 
 
 def _normset(
@@ -1613,6 +1615,13 @@ def _refusal(where: str, lexicon: Lexicon,
             and lexicon == Lexicon.empty() else "lexicon"))
 
 
+_PICKLE_2X_DEPRECATION = (
+    "this Lexicon pickle was written by nameparser 2.x; 3.0 translates "
+    "it onto readings, and nameparser 3.1 will refuse it. Re-pickle "
+    "the object you loaded under 3.0 (pickle.dumps(obj)) and load that "
+    "pickle instead")
+
+
 def _translated_2x(state: Mapping[str, object]) -> dict[str, object]:
     """A 2.x `Lexicon` pickle's state as 3.0 constructor arguments: the
     sets translated onto the nearer of the two named bases, as the
@@ -1960,7 +1969,8 @@ class Lexicon:
         # one skew admitted a field marked `_ADDED_IN` with a default
         # (`_languages`, `_strict`), and then built through the
         # constructor, which validates every value as for a caller's.
-        if "titles" in state:
+        written_by_2x = "titles" in state
+        if written_by_2x:
             state = _translated_2x(state)
         fields = [f for f in dataclasses.fields(Lexicon) if f.init]
         expected = {f.name for f in fields}
@@ -2006,6 +2016,12 @@ class Lexicon:
                 "incompatible Lexicon pickle: entries are not normalized "
                 f"({'; '.join(drifted)}); this state was not written by "
                 "this version of nameparser")
+        if written_by_2x:
+            # Migration scaffolding, deleted in 3.1: warned once per
+            # Lexicon loaded, after the load succeeds. pickle.loads is
+            # C, so _warn_at_caller's walk reaches the caller's own
+            # line. decisions/vocabulary-model (#754)
+            _warn_at_caller(_PICKLE_2X_DEPRECATION, DeprecationWarning)
 
     def __or__(self, other: Lexicon) -> Lexicon:
         """The union of two lexicons: the lists unioned, the masks taken

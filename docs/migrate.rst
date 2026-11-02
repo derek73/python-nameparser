@@ -441,6 +441,13 @@ with the 23 credentials and 13 case masks 3.0 added taken out again, so it reads
 ``"Jane Doe KC"`` as 2.8.0 did. Build a new ``Parser()`` for 3.0's
 vocabulary.
 
+Loading a 2.x pickle is deprecated: it emits a ``DeprecationWarning``,
+once for each ``Lexicon`` loaded, and 3.1 will refuse it. Load it under
+3.0 and pickle the loaded object again (``pickle.dumps(obj)``); that
+pickle loads without a warning, in 3.1 too. The errors a 2.x spelling
+raises in 3.0 name the calls that replace it word by word; in 3.1 they
+point at the table above instead.
+
 A 2.x call or pickle that took a word out of a set but left it in a
 marker over that set (``remove(titles={"air"})``, which left ``air`` in
 ``title_modifiers``) reads as though the marker went with the word: in

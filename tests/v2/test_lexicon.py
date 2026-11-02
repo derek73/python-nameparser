@@ -1380,9 +1380,21 @@ def _state_2x(sets: dict[str, frozenset[str]],
     return state
 
 
+#: The 2.x pickle load's DeprecationWarning, matched in full where a test
+#: loads one: the translation is deleted in 3.1 (decisions/
+#: vocabulary-model, 2026-11-02 #754, the 2.x translation's lifetime)
+_WARNED_2X = r"written by nameparser 2\.x.*3\.1 will refuse it.*pickle\.dumps"
+
+
 def _loaded(state: dict[str, object]) -> Lexicon:
+    """A 2.x state loaded, warning once; a refused one raises its error,
+    the warning coming only after a load succeeds."""
     lex = Lexicon.__new__(Lexicon)
-    lex.__setstate__(state)
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        lex.__setstate__(state)
+    assert [(w.category, bool(re.search(_WARNED_2X, str(w.message))))
+            for w in caught] == [(DeprecationWarning, True)]
     return lex
 
 
@@ -1404,8 +1416,8 @@ def test_a_lexicon_parser_and_locale_pickled_by_2_8_0_load() -> None:
     `Parser().policy` would fail on any 3.0 change to their content."""
     from nameparser import Locale, Policy
     with open(Path(__file__).parent / "data" / "lexicon_v28.pickle",
-              "rb") as f:
-        loaded = pickle.load(f)
+              "rb") as f, pytest.warns(DeprecationWarning, match=_WARNED_2X):
+        loaded = pickle.load(f)  # noqa: S301 -- our own fixture
     lex = Lexicon.empty().add("dean", kind="title")
     assert loaded["lexicon"] == lex
     assert loaded["parser"].lexicon == lex
@@ -1417,6 +1429,51 @@ def test_a_lexicon_parser_and_locale_pickled_by_2_8_0_load() -> None:
     for loaded_lexicon in (loaded["lexicon"], loaded["parser"].lexicon,
                            loaded["locale"].lexicon):
         assert loaded_lexicon.given_names == frozenset()
+
+
+def test_a_2x_pickle_warns_once_per_lexicon_at_the_callers_line() -> None:
+    # the fixture's dict holds two Lexicons, the one its Parser shares
+    # and the pack's, so two loads; each warning names this file, the
+    # line calling pickle.loads, not the library
+    data = (Path(__file__).parent / "data" / "lexicon_v28.pickle").read_bytes()
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        loaded = pickle.loads(data)  # noqa: S301 -- our own fixture
+    assert loaded["parser"].lexicon is loaded["lexicon"]
+    assert len(caught) == 2
+    for w in caught:
+        assert w.category is DeprecationWarning
+        assert str(w.message) == (
+            "this Lexicon pickle was written by nameparser 2.x; 3.0 "
+            "translates it onto readings, and nameparser 3.1 will refuse "
+            "it. Re-pickle the object you loaded under 3.0 "
+            "(pickle.dumps(obj)) and load that pickle instead")
+        assert w.filename == __file__
+
+
+def test_the_2x_pickle_warnings_remedy_runs() -> None:
+    # load, re-pickle as the message says, load again: no warning, and
+    # the same objects
+    data = (Path(__file__).parent / "data" / "lexicon_v28.pickle").read_bytes()
+    with pytest.warns(DeprecationWarning, match=_WARNED_2X):
+        obj = pickle.loads(data)  # noqa: S301 -- our own fixture
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        again = pickle.loads(pickle.dumps(obj))
+    assert caught == []
+    assert again == obj
+
+
+def test_a_pickle_written_by_3_0_does_not_warn() -> None:
+    with open(Path(__file__).parent / "data" / "parsers_4ib.pickle",
+              "rb") as f, warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        pickle.load(f)  # noqa: S301 -- our own fixture
+    built = Lexicon.default().remove("dean", kind="given")
+    with warnings.catch_warnings(record=True) as also:
+        warnings.simplefilter("always")
+        pickle.loads(pickle.dumps(Parser(lexicon=built)))
+    assert caught == also == []
 
 
 def test_a_2x_default_loads_as_the_default() -> None:
