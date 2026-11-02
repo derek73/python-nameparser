@@ -131,8 +131,8 @@ def excluded_words() -> set[str]:
     conjunction, a title or a suffix, folded as the list is."""
     from nameparser import Lexicon
     lex = Lexicon.default()
-    pool = (lex.particles | lex.conjunctions | lex.titles
-            | lex.titles_ambiguous | lex.suffix_acronyms | lex.suffix_words)
+    pool = (lex._sets.particles | lex._sets.conjunctions | lex._sets.titles
+            | lex._sets.titles_ambiguous | lex._sets.suffix_acronyms | lex._sets.suffix_words)
     return {fold(w) for entry in pool for w in entry.split()}
 
 

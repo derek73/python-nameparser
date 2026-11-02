@@ -98,7 +98,7 @@ class Parser:
                 script.value
                 for script in self.policy.segment_scripts
                 if not any(_SCRIPT_MATCHERS[script](entry)
-                           for entry in self.lexicon.surnames))
+                           for entry in self.lexicon._sets.surnames))
             if uncovered:
                 names = ", ".join(uncovered)
                 one = len(uncovered) == 1
@@ -329,14 +329,14 @@ def _apply_choice(lexicon: Lexicon, languages: frozenset[str],
     fields, (unmasked, masks) = _choice_delta(
         _reading_index_selected(languages, strict), strict)
     updates: dict[str, object] = {
-        name: (getattr(lexicon, name) - gone) | joined
+        name: (getattr(lexicon._sets, name) - gone) | joined
         for name, (gone, joined) in fields.items()}
     # a word the choice drops from a base set leaves that set's markers
     # too, a caller's own mark of it included: marking a word the
     # vocabulary no longer holds is the orphan Lexicon refuses
     for marker, base, _ in _SUBSET_FIELDS:
         if base in fields and fields[base][0]:
-            kept = updates.get(marker, getattr(lexicon, marker))
+            kept = updates.get(marker, getattr(lexicon._sets, marker))
             updates[marker] = kept - fields[base][0]  # type: ignore[operator]
     if unmasked or masks:
         cap = {k: v for k, v in lexicon.capitalization_exceptions

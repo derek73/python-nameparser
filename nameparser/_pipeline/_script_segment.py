@@ -348,7 +348,7 @@ def _one_case(state: ParseState) -> bool:
     if state.one_case is not None:
         return state.one_case
     return is_one_case(own_words(state.tokens, state.comma_offsets,
-                                 state.lexicon.maiden_markers)[0])
+                                 state.lexicon._sets.maiden_markers)[0])
 
 
 def _postnominal_behind_a_whole_name(state: ParseState) -> bool:
@@ -446,7 +446,7 @@ def _peel_honorific_tail(state: ParseState,
     matching surname is a competing READING of the name, which a
     caller may prefer, while a shorter tail leaves a remainder that is
     not a name at all (김선생), so there is nothing to adjudicate."""
-    tails = state.lexicon.honorific_tails
+    tails = state.lexicon._sets.honorific_tails
     if not tails:
         return state
     # The NAME's runs: more than segments[0], never every segment. A
@@ -550,7 +550,7 @@ def _split_candidate(state: ParseState) -> int | None:
     # role is the order resolution's call, stop or no stop. Asked here,
     # with the core the split reads (#323), so the comma gate in front
     # learns it before asking the comma's decision (#613's /simplify)
-    if state.tokens[i].text.rstrip(FULL_STOPS) in state.lexicon.surnames:
+    if state.tokens[i].text.rstrip(FULL_STOPS) in state.lexicon._sets.surnames:
         return None
     return i
 
@@ -574,7 +574,7 @@ def _split_surname_site(state: ParseState) -> ParseState:
         return state
     token = state.tokens[i]
     text = token.text
-    surnames = state.lexicon.surnames
+    surnames = state.lexicon._sets.surnames
     # The vocabulary match reads the token's CORE (#323). Without it
     # the stop WAS the remainder: '김.' matched its own head and became
     # 김 + '.'; the stop rides with the remainder instead, so '김민준.'

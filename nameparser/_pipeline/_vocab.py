@@ -249,7 +249,7 @@ def is_title_shaped(text: str, lexicon: Lexicon) -> bool:
     """
     return (bool(_PERIOD_ABBREV.match(text))
             and (text.isascii() or not in_initialless_script(text))
-            and _normalize(text) not in lexicon.given_name_abbreviations)
+            and _normalize(text) not in lexicon._sets.given_name_abbreviations)
 
 
 def is_initial_shaped(text: str) -> bool:
@@ -578,8 +578,8 @@ def lexicon_cue(n: str, lexicon: Lexicon) -> Cue:
     """The `ambiguous_lean` cue of the folded member `n`, read off the
     lexicon by a caller that has no tags to read (`is_wholly_suffix`);
     `_pieces.listed_lean` reads the same answer off classify's tags."""
-    if n in lexicon.suffix_words_ambiguous:
-        return "none" if n in lexicon.agnomens else "word"
+    if n in lexicon._sets.suffix_words_ambiguous:
+        return "none" if n in lexicon._sets.agnomens else "word"
     return "acronym"
 
 
@@ -698,22 +698,22 @@ def split_pair(first: str, second: str, lexicon: Lexicon) -> str | None:
             or in_initialless_script(first + second)):
         return None
     fold = _normalize(a + b)
-    if (fold in lexicon.suffix_acronyms_ambiguous
-            or not (fold in lexicon.suffix_acronyms
-                    or fold in lexicon.suffix_words)):
+    if (fold in lexicon._sets.suffix_acronyms_ambiguous
+            or not (fold in lexicon._sets.suffix_acronyms
+                    or fold in lexicon._sets.suffix_words)):
         return None
     na, nb = _normalize(a), _normalize(b)
-    if ((na in lexicon.suffix_acronyms or na in lexicon.suffix_words)
-            and (nb in lexicon.suffix_acronyms
-                 or nb in lexicon.suffix_words)):
+    if ((na in lexicon._sets.suffix_acronyms or na in lexicon._sets.suffix_words)
+            and (nb in lexicon._sets.suffix_acronyms
+                 or nb in lexicon._sets.suffix_words)):
         return None
     # a particle or a connective joins name words, which is what it is
     # doing beside one ('DE A JUNIOR', the A a surname written short);
     # written with its period a letter is an initial, not the connective
     # it spells ('SAM E.', rules/T5)
     for written, n in ((first, na), (second, nb)):
-        if not written.endswith(".") and (n in lexicon.particles
-                                          or n in lexicon.conjunctions):
+        if not written.endswith(".") and (n in lexicon._sets.particles
+                                          or n in lexicon._sets.conjunctions):
             return None
     return "split"
 
@@ -735,12 +735,12 @@ def suffix_as_written(n: str, text: str, lexicon: Lexicon) -> bool:
     # removed periods only for the suffix_acronyms test); suffix WORDS
     # match on the plain normalized form
     a = n.replace(".", "")
-    if a in lexicon.suffix_acronyms_ambiguous and _dotted(text):
+    if a in lexicon._sets.suffix_acronyms_ambiguous and _dotted(text):
         return True
-    if ((a in lexicon.suffix_acronyms
-            and a not in lexicon.suffix_acronyms_ambiguous)
-            or (n in lexicon.suffix_words
-                and n not in lexicon.suffix_words_ambiguous)):
+    if ((a in lexicon._sets.suffix_acronyms
+            and a not in lexicon._sets.suffix_acronyms_ambiguous)
+            or (n in lexicon._sets.suffix_words
+                and n not in lexicon._sets.suffix_words_ambiguous)):
         return True
     # the joiners asked in C first, so a word holding neither pays no
     # frame
@@ -806,7 +806,7 @@ def _is_suffix_strict_n(n: str, text: str, lexicon: Lexicon,
             and _INITIAL.fullmatch(text.upper()) is not None):
         # period-written ambiguous acronyms are exempt from the veto
         return _dotted(text) and \
-            n.replace(".", "") in lexicon.suffix_acronyms_ambiguous
+            n.replace(".", "") in lexicon._sets.suffix_acronyms_ambiguous
     return suffix_as_written(n, text, lexicon)
 
 
@@ -828,8 +828,8 @@ def is_suffix_lenient(text: str, lexicon: Lexicon) -> bool:
     bypassing the initial veto -- only safe in unambiguous positions
     (after a comma)."""
     n = _normalize(text)
-    return (n in lexicon.suffix_words
-            and n not in lexicon.suffix_words_ambiguous) \
+    return (n in lexicon._sets.suffix_words
+            and n not in lexicon._sets.suffix_words_ambiguous) \
         or _is_suffix_strict_n(n, text, lexicon)
 
 
@@ -992,15 +992,15 @@ def period_joined_vocab(
     if not _PERIOD_NOT_AT_END.match(text):
         return None
     chunks = [_normalize(c) for c in text.split(".") if c]
-    if any(c in lexicon.titles for c in chunks):
+    if any(c in lexicon._sets.titles for c in chunks):
         return "title"
     # rules/S11: "the word is part of that one word and is weighed only
     # by the shape the joined word wears" -- no chunk claim for a
     # suffix word that is also a name ('M.Filho')
     matched = [c for c in chunks
-               if c in lexicon.suffix_acronyms
-               or (c in lexicon.suffix_words
-                   and c not in lexicon.suffix_words_ambiguous)]
+               if c in lexicon._sets.suffix_acronyms
+               or (c in lexicon._sets.suffix_words
+                   and c not in lexicon._sets.suffix_words_ambiguous)]
     if matched and not all(len(c) == 1 and c.isascii() for c in matched):
         return "suffix"
     if (len(chunks) >= 2 and all(c.isalpha() for c in chunks)
@@ -1055,8 +1055,8 @@ def ambiguous_class_member(text: str, lexicon: Lexicon) -> bool:
     if "." in text:
         return False
     n = _normalize(text)
-    return (n in lexicon.suffix_acronyms_ambiguous
-            or n in lexicon.suffix_words_ambiguous)
+    return (n in lexicon._sets.suffix_acronyms_ambiguous
+            or n in lexicon._sets.suffix_words_ambiguous)
 
 
 # #516's all-caps half, ONE PREDICATE for the shape test and its
@@ -1189,7 +1189,7 @@ def is_listed_given_name(text: str, lexicon: Lexicon) -> bool:
     `given_name_key`, so a caller's entry "José" matches as written
     and a list written without accents matches "José" too (rules/O6's
     veto, #959)."""
-    names = lexicon.given_names
+    names = lexicon._sets.given_names
     return bool(names) and (_normalize(text) in names
                             or given_name_key(text) in names)
 
@@ -1210,8 +1210,9 @@ def in_any_wordlist(n: str, lexicon: Lexicon) -> bool:
     the unlisted word it is ('John Smith, JAS' keeps suffix 'JAS');
     and `given_names`, whose one reader is O6 (#959), for the same
     reason ('Ana Pérez, LUIS' reads as with the list empty)."""
+    sets = lexicon._sets
     for field in _LISTED_FIELDS:
-        if n in getattr(lexicon, field):
+        if n in getattr(sets, field):
             return True
     return False
 
@@ -1276,8 +1277,9 @@ def claimed_as_non_name(n: str, lexicon: Lexicon) -> bool:
     asks it: such a word does not supply the name's case contrast. A
     different question from `in_any_wordlist`'s, which a surname list
     must also answer yes to."""
+    sets = lexicon._sets
     for field in _NON_NAME_FIELDS:
-        if n in getattr(lexicon, field):
+        if n in getattr(sets, field):
             return True
     return False
 
@@ -1350,7 +1352,7 @@ def ambiguous_class_candidate(text: str, lexicon: Lexicon,
                 and period_joined_vocab(text, lexicon) == "shape"):
             return False
         n = _normalize(text)
-        return (n not in lexicon.suffix_acronyms_ambiguous
+        return (n not in lexicon._sets.suffix_acronyms_ambiguous
                 and not suffix_as_written(n, text, lexicon))
     return False
 
@@ -1482,10 +1484,10 @@ def surname_unit_tags(text: str, lexicon: Lexicon,
     # for a token no whole-token title or suffix claimed ('JD.CPA'),
     # asked only of a token with a period, which it needs
     suffix = suffix_as_written(n, text, lexicon) or (
-        "." in text and n not in lexicon.titles
+        "." in text and n not in lexicon._sets.titles
         and period_joined_vocab(text, lexicon) == "suffix")
-    particle = n in lexicon.particles and not (
-        (leading and n in lexicon.titles) or _spells_an_initial(n, text))
+    particle = n in lexicon._sets.particles and not (
+        (leading and n in lexicon._sets.titles) or _spells_an_initial(n, text))
     if suffix:
         return SURNAME_UNIT_TAGS if particle else _SUFFIX_ONLY
     return _PARTICLE_ONLY if particle else _NO_TAGS
@@ -1508,7 +1510,7 @@ def in_a_title_phrase(text: str, lexicon: Lexicon) -> bool:
     """Whether a phrase of `lexicon.title_phrases` that classify can
     read holds `text`."""
     return _normalize(text) in _phrase_words(
-        lexicon.title_phrases, lexicon.titles, lexicon.titles_ambiguous)
+        lexicon._sets.title_phrases, lexicon._sets.titles, lexicon._sets.titles_ambiguous)
 
 
 @functools.lru_cache(maxsize=16)
@@ -1572,9 +1574,9 @@ def title_readings(texts: Sequence[str], folded: Sequence[str],
     reads as titles, where that is more than `titles` lists (classify's
     period-joined `Lt.Gov.`), else membership in `titles`. Only a word
     of the two sets is ever read out of the title."""
-    contested = lexicon.titles_ambiguous
-    modifiers = lexicon.title_modifiers
-    titles = lexicon.titles
+    contested = lexicon._sets.titles_ambiguous
+    modifiers = lexicon._sets.title_modifiers
+    titles = lexicon._sets.titles
     # a word in titles is a title wherever it stands, whatever else it
     # is listed as; one of titles_ambiguous alone is listed as a title
     # to its neighbours and read by its phrase
@@ -1582,7 +1584,7 @@ def title_readings(texts: Sequence[str], folded: Sequence[str],
     if titled is not None:
         reading = [r or t for r, t in zip(reading, titled)]
     listed = list(reading)
-    phrases = lexicon.title_phrases
+    phrases = lexicon._sets.title_phrases
     last = len(folded) - 1
     for i, n in enumerate(folded):
         if n in titles or n not in contested or n in modifiers:
@@ -1594,10 +1596,10 @@ def title_readings(texts: Sequence[str], folded: Sequence[str],
             # may be a given name and stands in no phrase is no partner
             # ('Grace Dean Smith')
             (prev is not None and reading[i - 1]
-             and (prev in modifiers or prev in lexicon.title_styles
+             and (prev in modifiers or prev in lexicon._sets.title_styles
                   or f"{prev} {n}" in phrases))
             or (nxt is not None
-                and ((nxt in _PHRASE_LINKS and nxt in lexicon.conjunctions)
+                and ((nxt in _PHRASE_LINKS and nxt in lexicon._sets.conjunctions)
                      or (listed[i + 1] and f"{n} {nxt}" in phrases))))
     # left to right, whether the run so far has passed 'of' or 'the': a
     # modifier after it is in the object of a phrase ('President of the
@@ -1605,7 +1607,7 @@ def title_readings(texts: Sequence[str], folded: Sequence[str],
     # coordinating connective opens no object: 'Mr. and Mrs. Wing Lau'
     # is two salutations and a given name
     linked = [False] * len(folded)
-    conjunctions = lexicon.conjunctions
+    conjunctions = lexicon._sets.conjunctions
     for i in range(1, len(folded)):
         if reading[i - 1] or folded[i - 1] in conjunctions:
             linked[i] = linked[i - 1] or folded[i - 1] in _OBJECT_LINKS
@@ -1679,13 +1681,13 @@ def name_word_count(texts: Sequence[str], lexicon: Lexicon,
     # rules/H9: "the word is a title only inside a title phrase" -- the
     # part before the comma is the head of the name, read as classify
     # reads it
-    titled = (None if lexicon.titles_ambiguous.isdisjoint(folded)
-              and lexicon.title_modifiers.isdisjoint(folded)
+    titled = (None if lexicon._sets.titles_ambiguous.isdisjoint(folded)
+              and lexicon._sets.title_modifiers.isdisjoint(folded)
               else title_readings(texts, folded, lexicon, head=True))
     for i, n in enumerate(folded):
         text = texts[i]
-        title = n in lexicon.titles if titled is None else titled[i]
-        if n in lexicon.particles:
+        title = n in lexicon._sets.titles if titled is None else titled[i]
+        if n in lexicon._sets.particles:
             has_particle = True
         suffix = (is_suffix_lenient(text, lexicon) if lenient
                   else is_suffix_strict(text, lexicon, letters_one_case))

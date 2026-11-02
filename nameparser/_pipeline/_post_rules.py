@@ -498,7 +498,7 @@ def _settle_delimited_members(state: ParseState, tokens: list[WorkToken],
         # escape
         dotted = ("." in token.text.strip(".")
                   and _normalize(token.text).replace(".", "")
-                  in lex.suffix_acronyms_ambiguous)
+                  in lex._sets.suffix_acronyms_ambiguous)
         # after the name: behind its last name word, and a name word
         # there is, so a clause in a name of no word of its own
         # ('Dr. (MA)') is not settled
@@ -559,7 +559,7 @@ def post_rules(state: ParseState) -> ParseState:
             and not _run_addresses_by_given(
                 (tokens[i].text
                  for i in _addressing_run(titles, givens[0])),
-                state.lexicon.given_name_titles)):
+                state.lexicon._sets.given_name_titles)):
         for i in givens:
             _retag(tokens, i, Role.FAMILY)
         # every rule below reads these lists; recompute after any
@@ -582,7 +582,7 @@ def post_rules(state: ParseState) -> ParseState:
             and _run_addresses_by_given(
                 (tokens[i].text
                  for i in _addressing_run(titles, families[0])),
-                state.lexicon.given_name_titles)):
+                state.lexicon._sets.given_name_titles)):
         for i in families:
             _retag(tokens, i, Role.GIVEN)
         # recomputed for H1's reason, stated above

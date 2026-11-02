@@ -86,7 +86,7 @@ def segment(state: ParseState) -> ParseState:
         if one_case is None:
             one_case = is_one_case(own_words(
                 state.tokens, state.comma_offsets,
-                state.lexicon.maiden_markers)[0])
+                state.lexicon._sets.maiden_markers)[0])
         return one_case
 
     # The texts are built inline rather than through a helper
@@ -155,7 +155,7 @@ def segment(state: ParseState) -> ParseState:
         # rules/C10: "the word keeps the delimiter in its text and reads
         # as it would without it" -- a title with one glued ('Dr;')
         # reads as the title, as classify tags it (decisions/C10)
-        titles = state.lexicon.titles
+        titles = state.lexicon._sets.titles
         cores = glued_cores(state.policy.extra_suffix_delimiters)
         rest = tuple([i for i in seg
                       if _normalize(t := state.tokens[i].text) not in titles

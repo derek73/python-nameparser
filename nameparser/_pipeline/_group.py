@@ -1401,7 +1401,7 @@ def group(state: ParseState) -> ParseState:
             part_pieces, part_ptags, taken = _group_segment(
                 part, additional, tokens, bound_join,
                 None if family_comma else ambiguities,
-                state.lexicon.given_name_titles,
+                state.lexicon._sets.given_name_titles,
                 opens_the_name=(seg_idx == 0 and not family_comma),
                 one_case=state.one_case,
                 site=site, reads=seg_reads)

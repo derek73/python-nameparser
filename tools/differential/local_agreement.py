@@ -162,7 +162,7 @@ def fold(text: str) -> str:
 
 
 def _title_words(lexicon: Lexicon) -> frozenset[str]:
-    return frozenset(lexicon.titles) | frozenset(lexicon.conjunctions)
+    return frozenset(lexicon._sets.titles) | frozenset(lexicon._sets.conjunctions)
 
 
 def unlisted(title: str, listed: frozenset[str]) -> bool:

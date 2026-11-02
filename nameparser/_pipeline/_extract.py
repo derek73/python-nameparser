@@ -54,10 +54,10 @@ def _suffix_shaped(content: str, lexicon: Lexicon) -> bool:
     veto -- v1 deliberately skipped it here."""
     stripped = _normalize(content)
     acronym = stripped.replace(".", "")
-    return ((stripped in lexicon.suffix_words
-             and stripped not in lexicon.suffix_words_ambiguous)
-            or (acronym in lexicon.suffix_acronyms
-                and acronym not in lexicon.suffix_acronyms_ambiguous)
+    return ((stripped in lexicon._sets.suffix_words
+             and stripped not in lexicon._sets.suffix_words_ambiguous)
+            or (acronym in lexicon._sets.suffix_acronyms
+                and acronym not in lexicon._sets.suffix_acronyms_ambiguous)
             or content.endswith("."))
 
 
@@ -94,7 +94,7 @@ def _maiden_marked(content: str, lexicon: Lexicon) -> bool:
     # test did for free.
     if len(words) < 2:
         return False
-    run = maiden_marker_run(words, lexicon.maiden_markers)
+    run = maiden_marker_run(words, lexicon._sets.maiden_markers)
     return (run > 0 and len(words) > run
             and not comma_follows_marker(words[run]))
 

@@ -554,7 +554,7 @@ def _assign_main(seg_idx: int, state: ParseState,
                     and _run_addresses_by_given(
                         (tokens[j].text for k in range(name_pieces[0])
                          for j in pieces[k]),
-                        state.lexicon.given_name_titles))
+                        state.lexicon._sets.given_name_titles))
         return _name_alt(tokens[i],
                          _slot_field(state, seg_idx, len(name_pieces),
                                      len(name_pieces) + 1, order),
