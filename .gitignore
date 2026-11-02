@@ -3,6 +3,7 @@
 __pycache__/
 *.py[cod]
 .python2/
+.vscode/
 MANIFEST
 nameparser.egg-info/
 build
