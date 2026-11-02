@@ -946,7 +946,7 @@ class Lexicon(_HoldsSets):
             )
         # last, from the normalized fields: what the parse reads
         object.__setattr__(self, "_sets", _LexiconSets(
-            *(getattr(self, name) for name in _VOCAB_FIELDS)))
+            **{name: getattr(self, name) for name in _VOCAB_FIELDS}))
 
     # -- constructors ----------------------------------------------------
 

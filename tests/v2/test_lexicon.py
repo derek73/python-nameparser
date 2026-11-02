@@ -1240,3 +1240,16 @@ def test_a_shipped_phrase_entry_is_stored_as_written(field: str) -> None:
         f"it stores are not the ones the data module wrote -- "
         f"{sorted(frozenset(shipped) - getattr(Lexicon.default(), field))} "
         f"were folded away or changed")
+
+
+def test_the_internal_sets_hold_each_field_under_its_own_name() -> None:
+    # 4i-a: the parse reads Lexicon._sets, built from the fields by
+    # keyword. The roster pinned here so that a field added to one and
+    # not the other fails at once (4i-b adds the derived markers); the
+    # identity check, so that a field filled from the wrong set does.
+    from nameparser._lexicon import _LexiconSets
+    assert [f.name for f in dataclasses.fields(_LexiconSets)] == list(
+        _VOCAB_FIELDS)
+    for lexicon in (Lexicon.default(), Lexicon.empty().add(titles={"x"})):
+        for name in _VOCAB_FIELDS:
+            assert getattr(lexicon._sets, name) is getattr(lexicon, name), name
