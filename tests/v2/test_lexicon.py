@@ -568,7 +568,7 @@ def test_a_derived_marker_follows_from_the_readings() -> None:
 
 
 @pytest.mark.parametrize(("call", "error", "match"), [
-    (lambda: Lexicon.empty().add("x"), TypeError, "missing required keyword argument 'kind'"),
+    (lambda: Lexicon.empty().add("x"), TypeError, "missing required keyword argument 'kind'"),  # type: ignore[call-arg]
     (lambda: Lexicon.empty().add(kind="title"), TypeError, "at least one word"),
     (lambda: Lexicon.empty().remove(), TypeError, "at least one word"),
     (lambda: Lexicon.empty().add("x", kind="titel"), ValueError, "unknown reading kind 'titel'"),
@@ -768,9 +768,9 @@ def test_each_recipe_moves_the_parse_it_names(
 #: A 2.x call per site: (site, call, the words it names). The refusal
 #: translates those words, and the translation runs.
 _REFUSED_CALLS = [
-    ("add", lambda: Lexicon.default().add(titles={"dean"}),
+    ("add", lambda: Lexicon.default().add(titles={"dean"}),  # type: ignore[call-arg]
      ".remove('dean', kind='given')"),
-    ("add", lambda: Lexicon.default().add(suffix_acronyms={"leed", "ap"}),
+    ("add", lambda: Lexicon.default().add(suffix_acronyms={"leed", "ap"}),  # type: ignore[call-arg]
      ".add('ap', 'leed', kind='credential')"),
     ("remove", lambda: Lexicon.default().remove(particles_ambiguous={"van"}),
      ".remove('van', kind='given')"),
@@ -819,12 +819,20 @@ def test_every_2x_set_field_is_refused_at_all_four_sites(field: str) -> None:
 
 
 def test_a_list_or_the_masks_through_add_is_refused_with_its_spelling() -> None:
-    with pytest.raises(TypeError, match=re.escape(
-            "lexicon | Lexicon(surnames={...})")):
-        Lexicon.default().add(surnames={"김민"})
-    with pytest.raises(TypeError, match=re.escape(
-            "lexicon | Lexicon(given_names={...})")):
-        Lexicon.default().remove(given_names={"luis"})
+    # the offered code names the caller's own words and RUNS as pasted
+    # (root AGENTS.md: a message's code must type-check and run)
+    for call, expected in (
+            (lambda: Lexicon.default().add(surnames={"김민"}),  # type: ignore[call-arg]
+             "lexicon | Lexicon(surnames={'김민'})"),
+            (lambda: Lexicon.default().remove(given_names={"luis"}),
+             "dataclasses.replace(lexicon, given_names=lexicon.given_names"
+             " - {'luis'})")):
+        with pytest.raises(TypeError, match=re.escape(expected)) as raised:
+            call()
+        code = str(raised.value).rsplit("write ", 1)[1]
+        pasted = eval(code, {"dataclasses": dataclasses,  # noqa: S307
+                             "Lexicon": Lexicon, "lexicon": Lexicon.default()})
+        assert isinstance(pasted, Lexicon)
     with pytest.raises(TypeError, match="unexpected keyword argument 'prefixes'"):
         Lexicon.default().remove(prefixes={"van"})  # a v1 name
     with pytest.raises(TypeError, match="unexpected keyword argument 'zq'"):
@@ -840,7 +848,7 @@ def test_add_capitalization_exceptions_raises_pointing_at_replace() -> None:
         "dataclasses.replace(lexicon, capitalization_exceptions="
         "(*lexicon.capitalization_exceptions, ('key', 'KEY')))")
     with pytest.raises(TypeError, match=offered) as raised:
-        Lexicon.default().add(capitalization_exceptions={"x": "X"})
+        Lexicon.default().add(capitalization_exceptions={"x": "X"})  # type: ignore[call-arg]
     code = re.search(r"dataclasses\.replace\(.*?\)\)\)",
                      str(raised.value))
     assert code is not None
@@ -851,7 +859,7 @@ def test_add_capitalization_exceptions_raises_pointing_at_replace() -> None:
 
 def test_a_spelling_that_already_reads_so_says_no_call_is_needed() -> None:
     with pytest.raises(TypeError, match="no call is needed"):
-        Lexicon.default().add(titles={"dr"})
+        Lexicon.default().add(titles={"dr"})  # type: ignore[call-arg]
 
 
 # -- the title warning (decisions/vocabulary-model, 2026-11-01) -------------
@@ -1352,7 +1360,7 @@ def test_a_2x_state_with_a_malformed_field_is_refused() -> None:
 
 def test_a_2x_spelling_with_a_malformed_value_still_says_since_3_0() -> None:
     with pytest.raises(TypeError, match="since 3.0"):
-        Lexicon.default().add(titles=5)
+        Lexicon.default().add(titles=5)  # type: ignore[call-arg]
 
 
 @pytest.mark.parametrize(("sets", "kinds"), [
@@ -1411,3 +1419,21 @@ def test_a_2x_multi_word_title_is_refused_as_a_pickle_3_0_cannot_express() -> No
     empty: dict[str, frozenset[str]] = {f: frozenset() for f in _VOCAB_FIELDS}
     with pytest.raises(ValueError, match="3.0 readings cannot express"):
         _loaded(_state_2x(empty, titles=frozenset({"grand moff"})))
+
+
+@pytest.mark.parametrize(("field", "word", "spelled"), [
+    # 2.8 left the word in a marker its base no longer held, where no
+    # parse read it (the orphan contract): it loads as the removal
+    ("titles", "air", lambda L: L.remove("air", kind="modifier")),
+    ("conjunctions", "e", lambda L: L.remove("e", kind="conjunction")),
+])
+def test_a_2x_removal_leaving_an_inert_marker_loads_as_the_removal(
+        field: str, word: str, spelled: Callable[[Lexicon], Lexicon]) -> None:
+    default = Lexicon.default()
+    sets = _fields_of(default._sets) | {"surnames": default.surnames}
+    loaded = _loaded(_state_2x(sets, default.capitalization_exceptions,
+                               **{field: sets[field] - {word}}))
+    assert loaded == spelled(default)
+    for text in ("Air Marshal John Smith", "ANA SILVA E SOUZA"):
+        assert Parser(lexicon=loaded).parse(text).as_dict() == \
+            Parser(lexicon=spelled(default)).parse(text).as_dict()

@@ -2722,3 +2722,47 @@ def test_a_strict_choice_is_a_delta_over_the_union_in_any_order() -> None:
 def test_a_packs_fragment_is_unioned_on_after_the_strict_compile() -> None:
     pack = _choosing("ko", lexicon=Lexicon.empty().add("ra", kind="credential"))
     assert parser_for(pack, strict=True).parse("Kim Min Ra").suffix == "Ra"
+
+
+def _choice_tags() -> list[tuple[str, bool]]:
+    from nameparser._reading_index import UNCHOOSABLE, files, tags
+    return ([(t, False) for t in sorted(tags() - UNCHOOSABLE)]
+            + [(t, True) for t in sorted(files() - UNCHOOSABLE)])
+
+
+#: The lexicons a choice is written into: the default, the empty one,
+#: and one a caller configured (a removed gate, an added title, two
+#: added particles, one of them a word a choice turns a suffix on for)
+_CHOICE_BASES = {
+    "default": lambda: Lexicon.default(),
+    "empty": lambda: Lexicon.empty(),
+    "configured": lambda: Lexicon.default().remove("van", "dean", kind="given")
+    .add("dean", kind="title").add("zzz", "st", kind="preposition"),
+}
+
+
+@pytest.mark.parametrize("tag,strict", _choice_tags(),
+                         ids=lambda v: str(v))
+def test_a_choice_written_as_readings_gives_the_deltas_sets(
+        tag: str, strict: bool) -> None:
+    # 4i-b writes 3b's delta as readings (`_apply_choice` through
+    # `_lexicon._edits_toward`): for every single file tag a choice may
+    # name, plain and strict, on each of _CHOICE_BASES, the compiled sets
+    # are the delta applied to the base's sets, field by field, the kind
+    # sets the views read included (decisions/vocabulary-model's
+    # 2026-11-02 #754, sub-phase 4i-b entry counts this population)
+    from nameparser._lexicon import _MARKER_BASES, _fields_of
+    from nameparser._parser import (
+        _apply_choice, _choice_delta, _reading_index_selected)
+    chosen = _reading_index_selected(frozenset({tag}), strict)
+    fields, _ = _choice_delta(chosen, strict)
+    for name, build in _CHOICE_BASES.items():
+        lexicon = build()
+        current = _fields_of(lexicon._sets)
+        want = {f: (current[f] - gone) | joined
+                for f, (gone, joined) in fields.items()}
+        for marker, base in _MARKER_BASES:
+            if base in fields and fields[base][0]:
+                want[marker] = want.get(marker, current[marker]) - fields[base][0]
+        got = _fields_of(_apply_choice(lexicon, frozenset({tag}), strict)._sets)
+        assert got == current | want, name

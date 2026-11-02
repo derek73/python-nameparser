@@ -923,7 +923,8 @@ def _check_pool(pool: Pool, words: Iterable[str]) -> None:
             raise ValueError(
                 f"{w!r} is an agnomen with no name reading, and an agnomen "
                 f"is read as the suffix only where a name reading gates "
-                f"it by the count: .add({w!r}, kind='family') beside it")
+                f"it by the count: write .add({w!r}, kind='family') "
+                f"first, then the agnomen")
         if {"bound_given", "particle"} <= kinds and "given" not in kinds:
             raise ValueError(
                 f"{w!r} is a bound given name and a particle with no given "
@@ -978,9 +979,14 @@ def _check_base(base: object) -> object:
         if not (isinstance(entry, tuple) and len(entry) == 2
                 and isinstance(entry[0], str) and isinstance(entry[1], tuple)
                 and all(isinstance(row, tuple) and len(row) == 3
+                        and isinstance(row[2], tuple)
+                        and all(isinstance(pair, tuple) and len(pair) == 2
+                                and isinstance(pair[0], str)
+                                for pair in row[2])
                         for row in entry[1])):
             raise TypeError(f"a Lexicon snapshot is (word, rows) pairs, "
-                            f"each row (tag, kind, properties), got "
+                            f"each row (tag, kind, properties), the "
+                            f"properties (name, value) pairs, got "
                             f"{entry!r}")
         for _tag, kind, _pairs in entry[1]:
             if kind not in ri.CATEGORY:
@@ -1147,6 +1153,52 @@ def _target_readings(word: str, member: frozenset[str],
     return out
 
 
+#: (marker, the sets one of which must hold a word for the parse to read
+#: the marker of it): a 2.x entry outside them was never read (the
+#: orphan contract each set's docs stated), and no reading compiles one,
+#: a property needing its reading. `_inert_dropped` takes them out of
+#: both sides of every compare, so a 2.x spelling or pickle that left
+#: one behind -- `remove(titles={"air"})` keeping `air` a modifier --
+#: translates as the removal it read as.
+_MARKER_READ_WITH = (
+    ("given_name_titles", ("titles", "titles_ambiguous")),
+    ("after_given_titles", ("titles",)),
+    ("title_modifiers", ("titles", "titles_ambiguous")),
+    ("title_styles", ("titles", "titles_ambiguous")),
+    ("conjunctions_ambiguous", ("conjunctions",)),
+    ("particles_ambiguous", ("particles",)),
+    ("patronymic_particles", ("particles",)),
+    ("suffix_acronyms_ambiguous", ("suffix_acronyms",)),
+    ("suffix_words_ambiguous", ("suffix_words",)),
+    ("honorific_tails", ("suffix_words",)),
+    ("generation_words", ("suffix_words",)),
+    ("credential_words", ("suffix_words",)),
+    ("agnomens", ("suffix_words_ambiguous",)),
+)
+
+
+def _inert_dropped(sets: Mapping[str, frozenset[str]],
+                   ) -> dict[str, frozenset[str]]:
+    """`sets` without the entries no parse reads: a marker's word its
+    base sets do not hold, and a title phrase or a given-name title run
+    holding a word that is no title. In the order of
+    `_MARKER_READ_WITH`, so an agnomen whose ambiguous suffix word went
+    goes too."""
+    out = dict(sets)
+    for marker, bases in _MARKER_READ_WITH:
+        if marker in out:
+            read = frozenset().union(*(out[b] for b in bases))
+            out[marker] = frozenset(
+                w for w in out[marker]
+                if w in read or (marker == "given_name_titles" and " " in w
+                                 and all(x in read for x in w.split())))
+    titles = out["titles"] | out["titles_ambiguous"]
+    out["title_phrases"] = frozenset(
+        p for p in out["title_phrases"]
+        if " " in p and all(w in titles for w in p.split(" ")))
+    return out
+
+
 def _edits_toward(pool: Pool, current: Mapping[str, frozenset[str]],
                   target: Mapping[str, frozenset[str]],
                   hints: Pool | None = None) -> tuple[_Edit, ...]:
@@ -1163,7 +1215,8 @@ def _edits_toward(pool: Pool, current: Mapping[str, frozenset[str]],
     ri = _index_module()
     kinds_known = all(k in target for k in _KIND_FIELDS)
     fields = _SET_FIELDS + (_KIND_FIELDS if kinds_known else ())
-    full = {f: target.get(f, current[f]) for f in fields}
+    full = _inert_dropped({f: target.get(f, current[f]) for f in fields})
+    current = _inert_dropped({f: current[f] for f in fields})
     changed: set[str] = set()
     for f in fields:
         if f == "title_phrases":
@@ -1248,7 +1301,16 @@ def _shown_value(kind: str | None, prop: str, value: object) -> str:
     if value is None and kind is not None and prop in (
             "acronym", "addresses", "after_given", "may_be_initial"):
         value = _unwritten(kind, prop)
+    if isinstance(value, tuple) and len(value) > _SHOWN_WORDS:
+        # bounded: a phrase taken out of a kind's reach lists every
+        # other title word the kind reached (`chief justice`)
+        return (repr(list(value[:_SHOWN_WORDS]))[:-1]
+                + f", ... {len(value) - _SHOWN_WORDS} more]")
     return repr(list(value) if isinstance(value, tuple) else value)
+
+
+#: The most words a refusal shows of one property's list.
+_SHOWN_WORDS = 6
 
 
 #: The most calls a refusal spells out before it counts the rest.
@@ -1268,14 +1330,23 @@ def _translation(lexicon: Lexicon, changes: Mapping[str, frozenset[str]],
     # alone, as a 2.x pickle is (the two spellings parse alike)
     wanted = {f: target.get(f, current[f]) for f in _SET_FIELDS}
     wanted["titles_ambiguous"] = wanted["titles_ambiguous"] - wanted["titles"]
+    wanted = _inert_dropped(wanted)
     try:
         edits = _edits_toward(lexicon._pool(), current, target)
-        result = _built(lexicon._base, lexicon._edits + edits)[1]
+        result = _inert_dropped(
+            _built(lexicon._base, lexicon._edits + edits)[1])
         exact = all(result[f] == wanted[f] for f in _SET_FIELDS)
     except (TypeError, ValueError):
         edits, exact = (), False
     if not edits and exact:
-        return "it already reads that way, so no call is needed"
+        return ("the lexicon already reads those words so, an entry it "
+                "would add or remove being one no parse reads; no call is "
+                "needed")
+    if not edits:
+        return ("no readings give those words exactly those sets (a word "
+                "holds one suffix kind, an acronym or a word, and a "
+                "property is read only beside its reading); "
+                "docs/migrate.rst's Lexicon table has every field")
     calls = _rendered(edits)
     shown = "".join(calls[:_SHOWN_CALLS]) + (
         f" ... ({len(calls) - _SHOWN_CALLS} calls more)"
@@ -1305,11 +1376,19 @@ def _refusal(where: str, lexicon: Lexicon,
             f"{where}")
     lists = [k for k in removed if k in _LIST_FIELDS]
     if lists:
+        name = lists[0]
+        given = removed[name]
+        words = (sorted(given) if isinstance(given, Iterable)
+                 and not isinstance(given, (str, bytes, Mapping))
+                 and all(isinstance(w, str) for w in given) and given
+                 else ["word"])
+        shown = "{" + ", ".join(map(repr, words)) + "}"
+        code = (f"dataclasses.replace(lexicon, {name}=lexicon.{name} - "
+                f"{shown})" if where.startswith("remove")
+                else f"lexicon | Lexicon({name}={shown})")
         return TypeError(
-            f"{lists[0]} is a list, changed with a fragment since 3.0: "
-            f"lexicon | Lexicon({lists[0]}={{...}}) adds to it, and "
-            f"dataclasses.replace(lexicon, {lists[0]}=...) sets it, "
-            f"not {where}")
+            f"{name} is a list, changed with a fragment since 3.0, not "
+            f"{where}: write {code}")
     return TypeError(
         f"{where} takes no {', '.join(removed)} since 3.0: a Lexicon is "
         f"configured by reading, add(*words, kind=..., **properties) and "
@@ -1356,9 +1435,12 @@ def _translated_2x(state: Mapping[str, object]) -> dict[str, object]:
             f"({'; '.join(drifted)}); this state was not written by "
             "this version of nameparser")
     sets["titles_ambiguous"] -= sets["titles"]
-    wanted = {f: sets[f] for f in _SET_FIELDS}
+    # an entry 2.x never read (an orphan marker) is no part of what the
+    # pickle parsed as, and no reading compiles one
+    wanted = _inert_dropped({f: sets[f] for f in _SET_FIELDS})
 
     def distance(compiled: Mapping[str, frozenset[str]]) -> int:
+        compiled = _inert_dropped(compiled)
         return sum(len(wanted[f] ^ compiled[f]) for f in _SET_FIELDS)
 
     base = min(("default", "empty"),
@@ -1366,7 +1448,7 @@ def _translated_2x(state: Mapping[str, object]) -> dict[str, object]:
     try:
         edits = _edits_toward(_base_pool(base), _compiled_for(base, ()),
                               wanted)
-        got = _compiled_for(base, edits)
+        got = _inert_dropped(_compiled_for(base, edits))
     except ValueError as exc:
         raise ValueError(f"a 2.x Lexicon pickle that 3.0 readings cannot "
                          f"express: {exc}") from None
@@ -1736,48 +1818,56 @@ class Lexicon:
 
     # -- editing ----------------------------------------------------------
 
-    def add(self, *words: str, kind: str | None = None,
-            **properties: object) -> Lexicon:
-        """This lexicon with a reading of `kind` added to each word:
-        `kind` a vocabulary kind as the language files write it, a key
-        of ``nameparser._reading_index.CATEGORY`` (``"title"``,
-        ``"office"``, ``"credential"``, ``"generation"``,
-        ``"preposition"``, ``"conjunction"``, ``"bound_given"``,
-        ``"birth_marker"``, ``"given"``, ``"family"``, ...), and
-        `properties` that kind's behavioral properties as the files
-        spell them (``addresses="given"``, ``after_given=True``,
-        ``attaches=[...]``, ``acronym=...``, ``attached="after"``,
-        ``may_be_initial=True``, ``same_as=...`` on a ``given``
-        reading); a property given its unwritten value (``None``,
-        ``False``) is removed. Where the word holds a reading of `kind`
-        already, the add updates its properties in every file holding
-        it; otherwise it adds the caller's own reading, which names no
-        file. Warns where it makes a title reading that a ``given``
-        reading keeps a title only inside a title phrase (rules/H9),
-        naming the ``remove`` that makes it a title everywhere."""
-        old = {k: properties.pop(k) for k in list(properties)
-               if k in _SET_FIELDS + _LIST_FIELDS
-               or k == "capitalization_exceptions"}
-        if old:
-            raise _refusal("add()", self, self._changed("add", old))
-        if kind is None:
-            raise TypeError("add() missing required keyword argument "
-                            "'kind', e.g. add('leed', kind='credential')")
-        edit = _make_edit("add", words, kind, properties)
-        added = dataclasses.replace(self, _edits=self._edits + (edit,))
-        ri = _index_module()
-        if ri.CATEGORY[edit.kind] == "title":  # type: ignore[index]
-            before = self._pool()
-            for w in edit.words:
-                if (w in added._sets.titles_ambiguous
-                        and not _updates(before.get(w, ()), edit)):
-                    _warn_at_caller(
-                        f"{w!r} holds a given reading, so it reads as a "
-                        f"title only inside a title phrase (rules/H9) and "
-                        f"this add reads no name differently elsewhere; to "
-                        f"read it as a title everywhere, write "
-                        f".remove({w!r}, kind='given')")
-        return added
+    # `kind` is required, and a type checker reads it so: the runtime
+    # default exists only to catch a 2.x call, which names no kind, and
+    # refuse it with its translation rather than with Python's own
+    # missing-argument error
+    if TYPE_CHECKING:
+        def add(self, *words: str, kind: str,
+                **properties: object) -> Lexicon: ...
+    else:
+        def add(self, *words: str, kind: str | None = None,
+                **properties: object) -> Lexicon:
+            """This lexicon with a reading of `kind` added to each word:
+            `kind` a vocabulary kind as the language files write it, a key
+            of ``nameparser._reading_index.CATEGORY`` (``"title"``,
+            ``"office"``, ``"credential"``, ``"generation"``,
+            ``"preposition"``, ``"conjunction"``, ``"bound_given"``,
+            ``"birth_marker"``, ``"given"``, ``"family"``, ...), and
+            `properties` that kind's behavioral properties as the files
+            spell them (``addresses="given"``, ``after_given=True``,
+            ``attaches=[...]``, ``acronym=...``, ``attached="after"``,
+            ``may_be_initial=True``, ``same_as=...`` on a ``given``
+            reading); a property given its unwritten value (``None``,
+            ``False``) is removed. Where the word holds a reading of `kind`
+            already, the add updates its properties in every file holding
+            it; otherwise it adds the caller's own reading, which names no
+            file. Warns where it makes a title reading that a ``given``
+            reading keeps a title only inside a title phrase (rules/H9),
+            naming the ``remove`` that makes it a title everywhere."""
+            old = {k: properties.pop(k) for k in list(properties)
+                   if k in _SET_FIELDS + _LIST_FIELDS
+                   or k == "capitalization_exceptions"}
+            if old:
+                raise _refusal("add()", self, self._changed("add", old))
+            if kind is None:
+                raise TypeError("add() missing required keyword argument "
+                                "'kind', e.g. add('leed', kind='credential')")
+            edit = _make_edit("add", words, kind, properties)
+            added = dataclasses.replace(self, _edits=self._edits + (edit,))
+            ri = _index_module()
+            if ri.CATEGORY[edit.kind] == "title":  # type: ignore[index]
+                before = self._pool()
+                for w in edit.words:
+                    if (w in added._sets.titles_ambiguous
+                            and not _updates(before.get(w, ()), edit)):
+                        _warn_at_caller(
+                            f"{w!r} holds a given reading, so it reads as a "
+                            f"title only inside a title phrase (rules/H9) and "
+                            f"this add reads no name differently elsewhere; to "
+                            f"read it as a title everywhere, write "
+                            f".remove({w!r}, kind='given')")
+            return added
 
     def remove(self, *words: str, kind: str | None = None,
                **removed: object) -> Lexicon:

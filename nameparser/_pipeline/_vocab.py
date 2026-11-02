@@ -183,7 +183,7 @@ def in_initialless_script(text: str) -> bool:
 # 'Xyz. Smith, Ed' (UNLISTED, H2-shaped) both read family 'Dr.
 # Smith'/'Xyz. Smith', given 'Ed' at the peel (since #701 the listed
 # 'Dr.' then peels into the title, rules/H6), because is_leading_title
-# reads H2's shape and a bare `folded in lexicon.titles` lookup does
+# reads H2's shape and a bare `folded in lexicon._sets.titles` lookup does
 # not -- but name_word_count's OWN count disagreed: 'Xyz.' counted as
 # a name word where 'Dr.' did not, so 'Xyz. Smith, Ed' alone flipped
 # the comma structure to a credential run
@@ -218,7 +218,7 @@ _PERIOD_ABBREV = re.compile(r'^(?:' + _LETTER + r'){2,}\.$')
 def is_title_shaped(text: str, lexicon: Lexicon) -> bool:
     """Whether TEXT reads as a title by H2's shape -- the LISTED half
     being a separate lookup at each caller's own site
-    (is_title_piece/lexicon.titles), and the one vocabulary read here
+    (is_title_piece/lexicon._sets.titles), and the one vocabulary read here
     the given name written short, which outranks the shape (rules/H2,
     #789: 'Chas.' is no title). `name_word_count` and `title_readings`
     below are its callers; `_pieces.is_leading_title` asks the same question
@@ -1504,7 +1504,7 @@ _OBJECT_LINKS = frozenset({"of", "the"})
 # of itself, asked of the phrases `attaches` compiled rather than of a
 # property of its own
 def in_a_title_phrase(text: str, lexicon: Lexicon) -> bool:
-    """Whether a phrase of `lexicon.title_phrases` that classify can
+    """Whether a phrase of `lexicon._sets.title_phrases` that classify can
     read holds `text`."""
     return _normalize(text) in _phrase_words(
         lexicon._sets.title_phrases, lexicon._sets.titles, lexicon._sets.titles_ambiguous)
@@ -1652,7 +1652,7 @@ def name_word_count(texts: Sequence[str], lexicon: Lexicon,
     predicate, the same one is_wholly_suffix asks, so the two agree
     about what a suffix word is; the title half asks BOTH the listed
     lookup and H2's shape test (`is_title_shaped`) -- a bare
-    `lexicon.titles` lookup here read 'Xyz.' as a name word where the
+    `lexicon._sets.titles` lookup here read 'Xyz.' as a name word where the
     leading peel reads it as a title, and that divergence is recorded
     once, at `is_title_shaped` itself
     (mechanisms.md#ONE-PREDICATE-PER-QUESTION).

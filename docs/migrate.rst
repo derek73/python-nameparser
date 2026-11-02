@@ -404,7 +404,8 @@ it names:
    * - ``suffix_words_ambiguous``
      - a ``generation`` and a ``family`` reading
    * - ``agnomens``
-     - ``add(w, kind="agnomen")`` and a ``family`` reading
+     - a ``family`` reading, then ``add(w, kind="agnomen")``, an agnomen
+       needing the name reading that gates it
    * - ``honorific_tails``
      - ``attached="after"`` on the suffix reading
    * - ``particles``
@@ -433,7 +434,12 @@ word that differs replaced by the readings it compiles to, so a 2.8
 ``Lexicon.empty().add("dean", kind="title")``. One no readings can
 express (a word in ``particles_ambiguous`` and ``suffix_acronyms`` but
 not ``suffix_acronyms_ambiguous``, say) is refused, naming the fields;
-so are a ``Parser`` and a ``Locale`` holding it.
+so are a ``Parser`` and a ``Locale`` holding it. A loaded lexicon keeps
+the vocabulary it was pickled with, not 3.0's: a 2.8.0 pickle of
+``Lexicon.default()``, or of a ``Parser()``, loads as the 3.0 default
+with the 23 credentials and 13 case masks 3.0 added taken out again, so it reads
+``"Jane Doe KC"`` as 2.8.0 did. Build a new ``Parser()`` for 3.0's
+vocabulary.
 
 Default word lists are frozen
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

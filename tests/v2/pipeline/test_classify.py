@@ -256,6 +256,26 @@ def test_removing_the_link_from_the_subset_restores_joining() -> None:
     assert out.ambiguities == ()
 
 
+def test_a_caseless_connective_never_enters_the_fork() -> None:
+    # Arabic و has no case, so token.upper() == token.lower() and
+    # today's rule stands whatever the name's case class is. Marked
+    # as well -- the only configuration where the casedness gate
+    # decides anything: without this, و is absent from
+    # conjunctions_ambiguous the same way every other shipped
+    # conjunction but 'e' is, so the test would pass even if the
+    # casedness check were deleted outright. Since 3.0's 4i-b no
+    # configuration marks it, `add` refusing `may_be_initial` on a
+    # caseless letter as the build does, so the sets are built by hand:
+    # the gate is the stage's own defense, and this still holds it.
+    lex = _LEX.add("و", kind="conjunction")
+    object.__setattr__(lex, "_sets", dataclasses.replace(
+        lex._sets, conjunctions_ambiguous=(
+            lex._sets.conjunctions_ambiguous | frozenset({"و"}))))
+    out = _classified_with("محمد و علي", lex)
+    assert "conjunction" in _tags(out, "و")
+    assert out.ambiguities == ()
+
+
 def test_a_multi_letter_connective_is_untouched() -> None:
     out = _classified("john and jane smith")
     assert "conjunction" in _tags(out, "and")

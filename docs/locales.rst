@@ -854,17 +854,17 @@ The lexicon fragment is validated on its own
 
 The ``policy`` half is a patch, but the ``lexicon`` half is not. A
 pack's :class:`~nameparser.Lexicon` is a complete value in its own
-right and is validated on its own, before it is unioned onto the base
-— so a fragment listing a word in ``particles_ambiguous``,
-``suffix_acronyms_ambiguous``, ``honorific_tails`` or
-``suffix_words_ambiguous`` must also list it in the set that field marks
-(``particles``, ``suffix_acronyms``, ``suffix_words``). A fragment holding ``particles_ambiguous={"van"}``
-without ``particles={"van"}`` raises ``ValueError`` before any union
-happens. ``given_name_titles``, ``conjunctions_ambiguous``,
-``after_given_titles`` and ``agnomens`` are not checked this way, and can mark a word only the base holds. ``zh`` is the
-shipped worked example: its ``Lexicon(surnames=...)`` has to satisfy
-every ``Lexicon`` rule standing alone, before anything unions it onto
-the base.
+right: its readings are checked as they are added (a phrase, a
+``may_be_initial`` on anything but a single cased letter, an agnomen
+with no name reading), and again when ``|`` joins them onto the base,
+where a reading that clashes with one the base holds raises with the
+pack's code. A fragment holding ``Lexicon.empty().add("dc",
+kind="generation")`` fails there, ``dc`` being a credential in the
+default and a word holding one suffix kind. A reading that marks
+another, as a ``given`` reading makes a particle possibly given, needs
+nothing else in the fragment: ``Lexicon.empty().add("mc", kind="given")``
+marks the base's particle ``mc``. ``zh`` is the shipped worked example:
+its ``Lexicon(surnames=...)`` holds a list and no reading.
 
 Contributing a pack to nameparser
 ----------------------------------
