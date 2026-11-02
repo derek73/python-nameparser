@@ -348,8 +348,10 @@ def parser_for(*locales: Locale, base: Parser | None = None,
     languages=frozenset({"ko"})), strict=True)`` reads ``Kim Do Hyun``
     with no Portuguese particle ``do``). A caller's own readings and the
     packs' fragments apply after it, as after a plain choice, and the
-    policy patches unchanged; a chained call whose ``strict`` differs
-    from base's recorded one raises ValueError. A strict choice accepts a language whose file holds no
+    policy patches unchanged; a chained call that chooses a language,
+    or asks for strict, with a ``strict`` other than base's recorded one
+    raises ValueError, and one choosing no language keeps base's
+    choice, its strictness included. A strict choice accepts a language whose file holds no
     reading yet (``vi``), which a plain one refuses as changing
     nothing, and raises ValueError when the packs choose no language,
     since it would then strip every Latin-script reading
@@ -397,11 +399,17 @@ def parser_for(*locales: Locale, base: Parser | None = None,
     # tag no file holds is reported with the pack that named it
     # (rules/D2)
     if lexicon.languages and lexicon.strict != strict:
-        raise ValueError(
-            f"base's lexicon was chosen with strict={lexicon.strict}, and "
-            f"a chained choice keeps it: pass strict={lexicon.strict}, or "
-            f"build the parser from Lexicon.default() with every pack, "
-            f"parser_for(*packs, strict={strict})")
+        # a call choosing no language keeps base's choice as it is, its
+        # strictness included; one that chooses or asks for strict must
+        # match it
+        if strict or any(loc.languages for loc in locales):
+            raise ValueError(
+                f"base's lexicon was chosen with strict={lexicon.strict}, "
+                f"and a chained choice keeps it: pass "
+                f"strict={lexicon.strict}, or choose every language in one "
+                f"call from the default lexicon, base's packs included, "
+                f"parser_for(*packs, strict={strict})")
+        strict = lexicon.strict
     languages = lexicon.languages
     for loc in locales:
         if loc.languages:
@@ -423,10 +431,21 @@ def parser_for(*locales: Locale, base: Parser | None = None,
         except (TypeError, ValueError) as exc:
             raise _rewrapped(exc, f"while applying locale {loc.code!r}") from exc
     try:
-        lexicon = fragments | lexicon
+        joined = fragments | lexicon
     except (TypeError, ValueError) as exc:
         raise _rewrapped(exc, "while joining the packs' lexicons to "
                          "base's") from exc
+    # a shipped mask base's lexicon holds unchanged is no statement of
+    # the caller's, as a shipped reading is none: a pack's mask of the
+    # word wins over it, as the pack's readings win over the shipped ones
+    shipped = Lexicon.default().capitalization_exceptions_map
+    over = {k: v for k, v in fragments.capitalization_exceptions_map.items()
+            if k in shipped
+            and lexicon.capitalization_exceptions_map.get(k) == shipped[k]}
+    if over:
+        joined = dataclasses.replace(joined, capitalization_exceptions=tuple(
+            sorted((dict(joined.capitalization_exceptions) | over).items())))
+    lexicon = joined
     try:
         if languages:
             # the compile and its refusals, here: a reading of the

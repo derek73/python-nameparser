@@ -220,8 +220,9 @@ two read as one call choosing both.
     True
 
 A strict choice (`Reading one language only`_) chains only with another
-strict one: a chained call whose ``strict`` differs from its base's
-raises ``ValueError``.
+strict one: a chained call that chooses a language with a ``strict``
+other than its base's raises ``ValueError``, while a pack choosing no
+language keeps the base's choice as it is.
 
 Your own words outrank a choice
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -252,8 +253,8 @@ lexicon that added it as a credential is refused under ``locales.CS``.
 
 A lexicon built from :meth:`Lexicon.empty
 <nameparser.Lexicon.empty>` holds no shipped reading, so a choice turns
-none on in it: to read only the chosen languages' vocabulary, choose
-strictly.
+none on in it, strict or not: to read only the chosen languages'
+vocabulary, choose strictly over the default lexicon.
 
 .. _strict-choice:
 

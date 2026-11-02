@@ -2635,15 +2635,24 @@ def test_the_choice_is_recorded_and_read_through_the_parser() -> None:
     strict = parser_for(_choosing("ko"), strict=True)
     assert strict.strict is strict.lexicon.strict is True
     assert Parser().languages == frozenset() and Parser().strict is False
-    # a pack choosing nothing chained on a choice keeps it
-    assert parser_for(Locale(code="xx", lexicon=Lexicon.empty()),
-                      base=plain).lexicon == plain.lexicon
+    # a pack choosing nothing chained on a choice keeps it, a strict one
+    # included, whatever strict the call leaves at its default (found by
+    # review of 4i-c: a policy-only pack on a strict parser raised)
+    nothing = Locale(code="xx", lexicon=Lexicon.empty())
+    assert parser_for(nothing, base=plain).lexicon == plain.lexicon
+    assert parser_for(nothing, base=strict).lexicon == strict.lexicon
+    assert parser_for(base=strict, segmenter=None).strict is True
 
 
 @pytest.mark.parametrize("base_strict", [False, True])
 def test_a_chained_call_of_another_strictness_is_refused(
         base_strict: bool) -> None:
+    # refused where the call chooses a language; a plain base asked for
+    # strict with none chosen is refused too, strict being asked for
     base = parser_for(_choosing("ko"), strict=base_strict)
+    if not base_strict:
+        with pytest.raises(ValueError, match="chosen with strict=False"):
+            parser_for(base=base, strict=True)
     with pytest.raises(ValueError, match=(
             f"chosen with strict={base_strict}.*pass "
             f"strict={base_strict}.*parser_for\\(\\*packs, "
@@ -2667,6 +2676,19 @@ def test_a_packs_fragment_joins_under_the_callers_lexicon() -> None:
     got = parser_for(pack, base=Parser(lexicon=mine))
     assert got.parse("John Smith DO").suffix == ""
     assert got.lexicon.capitalization_exceptions_map["zzq"] == "ZzQ"
+    # a shipped mask the caller left as shipped is no statement of the
+    # caller's, so a pack's mask of the word wins, as its readings win
+    # over shipped ones; one the caller changed outranks the pack's
+    # (found by review of 4i-c)
+    phd = _choosing("en", lexicon=dataclasses.replace(
+        Lexicon.empty(), capitalization_exceptions=(("phd", "PHD"),)))
+    assert (parser_for(phd).lexicon.capitalization_exceptions_map["phd"]
+            == "PHD")
+    changed = dataclasses.replace(Lexicon.default(), capitalization_exceptions=(
+        *(p for p in Lexicon.default().capitalization_exceptions
+          if p[0] != "phd"), ("phd", "Phd")))
+    assert (parser_for(phd, base=Parser(lexicon=changed))
+            .lexicon.capitalization_exceptions_map["phd"] == "Phd")
     # and a later pack's fragment after an earlier one's
     first = _choosing("en", code="aa",
                       lexicon=Lexicon.empty().add("zzq", kind="title"))

@@ -1469,32 +1469,6 @@ def test_the_translation_keeps_a_held_suffix_kind(
     assert got == kinds
 
 
-def test_a_choice_translation_reads_the_kinds_it_is_given() -> None:
-    # the kind sets name a word's kind where a choice's delta moves it
-    # (`_apply_choice`): a patronymic, a credential written as a word,
-    # and a gated generation that a possibly-given particle reading
-    # beside it turns into a plain suffix word
-    from nameparser._lexicon import _edits_toward
-    lex = Lexicon.empty().add("zza", "zzb", kind="particle").add(
-        "zzc", kind="generation")
-    current = _fields_of(lex._sets)
-    target = dict(current)
-    target["patronymic_particles"] = frozenset({"zza"})
-    target["suffix_words"] = current["suffix_words"] | {"zzb"}
-    target["credential_words"] = frozenset({"zzb"})
-    target["particles"] = current["particles"] - {"zzb"}
-    target["generation_words"] = frozenset()
-    target["particles"] = target["particles"] | {"zzc"}
-    target["particles_ambiguous"] = frozenset({"zzc"})
-    built = dataclasses.replace(lex, _edits=_edits_toward(
-        lex._pool(), current, target))
-    assert {r.kind for r in built.readings_of("zza")} == {"patronymic"}
-    assert [(r.kind, r.properties) for r in built.readings_of("zzb")] == [
-        ("credential", (("acronym", False),))]
-    assert {r.kind for r in built.readings_of("zzc")} == {
-        "suffix", "particle", "given"}
-
-
 def test_a_2x_multi_word_title_is_refused_as_a_pickle_3_0_cannot_express() -> None:
     # 2.x warned on a multi-word entry in a per-word set and kept it; a
     # reading of a phrase is a birth marker or a given-addressing title

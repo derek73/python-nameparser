@@ -1194,7 +1194,7 @@ def _target_readings(word: str, member: frozenset[str],
                      heads: frozenset[str] | None,
                      on: dict[str, dict[str, Any]],
                      hints: dict[str, dict[str, Any]],
-                     kinds_known: bool) -> dict[str, dict[str, Any]]:
+                     ) -> dict[str, dict[str, Any]]:
     """The readings, kind -> properties, that compile `word` into the
     sets `member` names, keeping each reading `word` holds (`on`) where
     it fits and taking a kind it lacks from `hints`, then from the
@@ -1237,11 +1237,6 @@ def _target_readings(word: str, member: frozenset[str],
     particled = bool(member & _PARTICLE_FIELDS)
     if particled:
         ks = kinds("particle") or ["particle"]
-        if kinds_known:
-            if "patronymic_particles" in member:
-                ks = ["patronymic"]
-            else:
-                ks = [k for k in ks if k != "patronymic"] or ["particle"]
         for k in ks:
             out[k] = props(k)
     if member & {"conjunctions", "conjunctions_ambiguous"}:
@@ -1266,10 +1261,6 @@ def _target_readings(word: str, member: frozenset[str],
     elif worded:
         if "agnomens" in member:
             suffix = "agnomen"
-        elif kinds_known and "generation_words" in member:
-            suffix = "generation"
-        elif kinds_known and "credential_words" in member:
-            suffix = "credential"
         elif "suffix_words_ambiguous" in member:
             # an agnomen is its own kind, so a word that stops being one
             # is the generation the gated class otherwise holds
@@ -1277,8 +1268,7 @@ def _target_readings(word: str, member: frozenset[str],
                       else "generation")
         else:
             suffix = held or "suffix"
-            if suffix == "agnomen" or (kinds_known and suffix in (
-                    "generation", "credential")) or (
+            if suffix == "agnomen" or (
                     suffix in ri.GATED_WORDS and given_needed):
                 suffix = "suffix"
     # the name readings, which gate the vocabulary readings beside them:
@@ -1384,8 +1374,7 @@ def _edits_toward(pool: Pool, current: Mapping[str, frozenset[str]],
     exact. A new kind is taken from a reading the word holds off where
     it holds one."""
     ri = _index_module()
-    kinds_known = all(k in target for k in _KIND_FIELDS)
-    fields = _SET_FIELDS + (_KIND_FIELDS if kinds_known else ())
+    fields = _SET_FIELDS
     full = _inert_dropped({f: target.get(f, current[f]) for f in fields})
     current = _inert_dropped({f: current[f] for f in fields})
     changed: set[str] = set()
@@ -1411,7 +1400,7 @@ def _edits_toward(pool: Pool, current: Mapping[str, frozenset[str]],
         new_heads = heads(full["title_phrases"], w)
         moved = new_heads != heads(current["title_phrases"], w)
         want = _target_readings(w, member, new_heads if moved else None,
-                                on, every, kinds_known)
+                                on, every)
         dropped = [k for k in on if k not in want]
         gone_categories = {k for k in dropped if ri.CATEGORY[k] == k}
         for k in dropped:
