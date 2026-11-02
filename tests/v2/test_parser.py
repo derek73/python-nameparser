@@ -2814,6 +2814,13 @@ def test_a_packs_fragment_joins_under_the_callers_lexicon() -> None:
           if p[0] != "phd"), ("phd", "Phd")))
     assert (parser_for(phd, base=Parser(lexicon=changed))
             .lexicon.capitalization_exceptions_map["phd"] == "Phd")
+    # the accepted limit: a caller's mask written as the shipped value
+    # cannot be told from the shipped one, so the pack's wins it
+    # (decisions/vocabulary-model, 2026-11-02 #754, sub-phase 4i-c)
+    shipped_value = Parser(lexicon=dataclasses.replace(
+        Lexicon.default(), capitalization_exceptions=(("phd", "PhD"),)))
+    p = parser_for(phd, base=shipped_value)
+    assert str(p.capitalized(p.parse("jan novák phd"))) == "Jan Novák PHD"
     # and a later pack's fragment after an earlier one's
     first = _choosing("en", code="aa",
                       lexicon=Lexicon.empty().add("zzq", kind="title"))
