@@ -1260,7 +1260,8 @@ the word that way, as BCP 47 tags in ``languages``: the files whose
 reading is on in the parser's own ``Lexicon``, so a choice of languages
 (:doc:`locales`) names the files it reads. A reading by shape or
 position names none, and neither does a reading you add to your own
-``Lexicon``:
+``Lexicon`` of a kind no file holds for that word; adding a kind a
+file does hold turns that file's reading on, and names it:
 
 .. doctest::
 

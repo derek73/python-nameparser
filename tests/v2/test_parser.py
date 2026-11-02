@@ -2889,6 +2889,10 @@ def test_reading_languages_follow_a_callers_readings() -> None:
         "baron", kind="title")
     assert _languages_of(Parser(lexicon=mine), "Baron John Smith",
                          "Baron") == ()
+    # a caller's add under a choice turns its kind on as with none
+    chosen = parser_for(_choosing("pt"), base=st)
+    assert _languages_of(chosen, "Jiří Dienstbier st.", "st.") == (
+        "cs", "hr", "sk", "sl")
     # the empty lexicon lists nothing, so names nothing
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", UserWarning)
