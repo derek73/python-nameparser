@@ -2644,20 +2644,29 @@ def test_the_choice_is_recorded_and_read_through_the_parser() -> None:
     assert parser_for(base=strict, segmenter=None).strict is True
 
 
-@pytest.mark.parametrize("base_strict", [False, True])
-def test_a_chained_call_of_another_strictness_is_refused(
-        base_strict: bool) -> None:
-    # refused where the call chooses a language; a plain base asked for
-    # strict with none chosen is refused too, strict being asked for
-    base = parser_for(_choosing("ko"), strict=base_strict)
-    if not base_strict:
-        with pytest.raises(ValueError, match="chosen with strict=False"):
-            parser_for(base=base, strict=True)
-    with pytest.raises(ValueError, match=(
-            f"chosen with strict={base_strict}.*pass "
-            f"strict={base_strict}.*parser_for\\(\\*packs, "
-            f"strict={not base_strict}\\)")):
-        parser_for(_choosing("en"), base=base, strict=not base_strict)
+def test_strict_has_three_states_on_a_chained_call() -> None:
+    # decided 2026-11-02 (decisions/vocabulary-model, 2026-11-02 #754,
+    # sub-phase 4i-c): strict defaults to UNSET, as segmenter does
+    ko, en = _choosing("ko", code="ko"), _choosing("en", code="en")
+    strict, plain = parser_for(ko, strict=True), parser_for(ko)
+    # omitted on a strict base: stays strict
+    assert parser_for(en, base=strict).strict is True
+    assert parser_for(base=strict).lexicon == strict.lexicon
+    # an explicit False on a strict base: refused, naming both spellings
+    for packs in ((), (en,)):
+        with pytest.raises(ValueError, match=(
+                r"chosen with strict=True.*leave strict out or pass "
+                r"strict=True.*parser_for\(\*packs, strict=False\)")):
+            parser_for(*packs, base=strict, strict=False)
+    # an explicit True on a plain base with a choice: becomes strict
+    got = parser_for(en, base=plain, strict=True)
+    assert got.strict is True
+    assert got.lexicon == parser_for(ko, en, strict=True).lexicon
+    # omitted on a plain base: stays plain
+    assert parser_for(en, base=plain).strict is False
+    # an explicit True with no language anywhere: refused, as 3j
+    with pytest.raises(ValueError, match="no pack was given"):
+        parser_for(strict=True)
 
 
 def test_a_packs_fragment_joins_under_the_callers_lexicon() -> None:

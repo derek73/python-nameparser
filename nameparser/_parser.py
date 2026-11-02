@@ -320,7 +320,7 @@ def _rewrapped(exc: Exception, message: str) -> Exception:
 
 def parser_for(*locales: Locale, base: Parser | None = None,
                segmenter: Segmenter | None | _Unset = UNSET,
-               strict: bool = False) -> Parser:
+               strict: bool | _Unset = UNSET) -> Parser:
     """The packs' ``languages`` and base's recorded choice unioned into
     one choice, recorded on the built parser's lexicon
     (:attr:`Parser.languages`), so the order of the packs, and whether
@@ -348,10 +348,11 @@ def parser_for(*locales: Locale, base: Parser | None = None,
     languages=frozenset({"ko"})), strict=True)`` reads ``Kim Do Hyun``
     with no Portuguese particle ``do``). A caller's own readings and the
     packs' fragments apply after it, as after a plain choice, and the
-    policy patches unchanged; a chained call that chooses a language,
-    or asks for strict, with a ``strict`` other than base's recorded one
-    raises ValueError, and one choosing no language keeps base's
-    choice, its strictness included. A strict choice accepts a language whose file holds no
+    policy patches unchanged. ``strict`` has three states, as
+    ``segmenter`` does: omitted (:data:`~nameparser.UNSET`) keeps base's
+    recorded strictness, ``False`` on a strict base raises ValueError, a
+    strict choice not being undone by a later call, and ``True`` on a
+    plain one makes the whole choice strict. A strict choice accepts a language whose file holds no
     reading yet (``vi``), which a plain one refuses as changing
     nothing, and raises ValueError when the packs choose no language,
     since it would then strip every Latin-script reading
@@ -378,7 +379,7 @@ def parser_for(*locales: Locale, base: Parser | None = None,
     lexicon and policy by hand."""
     if base is not None and not isinstance(base, Parser):
         raise TypeError(f"base must be a Parser or None, got {base!r}")
-    if not isinstance(strict, bool):
+    if strict is not UNSET and not isinstance(strict, bool):
         raise TypeError(f"strict must be True or False, got {strict!r}")
     for loc in locales:
         if not isinstance(loc, Locale):
@@ -398,18 +399,19 @@ def parser_for(*locales: Locale, base: Parser | None = None,
     # order-free; each pack's tags are checked on their own first, so a
     # tag no file holds is reported with the pack that named it
     # (rules/D2)
-    if lexicon.languages and lexicon.strict != strict:
-        # a call choosing no language keeps base's choice as it is, its
-        # strictness included; one that chooses or asks for strict must
-        # match it
-        if strict or any(loc.languages for loc in locales):
-            raise ValueError(
-                f"base's lexicon was chosen with strict={lexicon.strict}, "
-                f"and a chained choice keeps it: pass "
-                f"strict={lexicon.strict}, or choose every language in one "
-                f"call from the default lexicon, base's packs included, "
-                f"parser_for(*packs, strict={strict})")
+    # strict's three states, as segmenter's: omitted keeps base's
+    # strictness; an explicit False on a strict base is refused, a
+    # strict choice not being undone by a later call, and an explicit
+    # True makes a plain base's choice strict (decisions/vocabulary-model,
+    # 2026-11-02 #754, sub-phase 4i-c)
+    if isinstance(strict, _Unset):
         strict = lexicon.strict
+    elif lexicon.strict and not strict:
+        raise ValueError(
+            "base's lexicon was chosen with strict=True, and a chained "
+            "choice keeps it: leave strict out or pass strict=True, or "
+            "choose every language in one call from the default lexicon, "
+            "base's packs included, parser_for(*packs, strict=False)")
     languages = lexicon.languages
     for loc in locales:
         if loc.languages:

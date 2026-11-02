@@ -219,10 +219,11 @@ two read as one call choosing both.
     >>> chained.lexicon == parser_for(pt, en).lexicon
     True
 
-A strict choice (`Reading one language only`_) chains only with another
-strict one: a chained call that chooses a language with a ``strict``
-other than its base's raises ``ValueError``, while a pack choosing no
-language keeps the base's choice as it is.
+A chained call keeps its base's strictness (`Reading one language
+only`_) unless it passes ``strict``: ``strict=True`` makes a plain
+base's choice strict, with the call's languages joined to it, and
+``strict=False`` on a strict base raises ``ValueError``, a strict choice
+not being undone by a later call.
 
 Your own words outrank a choice
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
