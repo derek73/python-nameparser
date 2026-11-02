@@ -369,8 +369,8 @@ def _failed_layer(lexicon: Lexicon, locales: tuple[Locale, ...],
         for n, loc in enumerate(locales, 1):
             if fails(locales[:n]):
                 return f"while applying locale {loc.code!r}"
-    if not languages:
-        return "while joining the packs' lexicons to base's"
+    # base's lexicon fails alone only under the choice: with no
+    # languages a join fails only on a pack, found above
     choosers = [repr(loc.code) for loc in locales if loc.languages]
     if lexicon.languages:
         choosers.append("base")

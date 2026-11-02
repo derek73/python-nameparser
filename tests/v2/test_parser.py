@@ -2728,6 +2728,42 @@ def test_a_fragments_clash_names_its_pack(packs: tuple[str, ...],
         parser_for(*(built[p] for p in packs))
 
 
+def test_a_clash_of_base_with_a_choice_it_joins_names_base_too() -> None:
+    # base chose pt and added `st` as a credential; chained under cs,
+    # which turns on `st`'s generation, the clash is base's own with the
+    # union, and the layer names the pack that chose cs and base
+    from nameparser import locales
+    mine = Parser(lexicon=Lexicon.default().add("st", kind="credential"))
+    pt = parser_for(_choosing("pt"), base=mine)
+    with pytest.raises(ValueError, match=(
+            r"while applying the languages chosen, cs, pt "
+            r"\(by 'cs', base\): the lexicon's \.add\('st'")):
+        parser_for(locales.CS, base=pt)
+
+
+def test_a_chained_choice_restores_a_mask_it_had_changed(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # no shipped choice changes a mask the default holds, only adds or
+    # drops one, so a stand-in choice does: chained under another
+    # language, the base's change is undone to the default's value and
+    # the union's applied again, as the single call does
+    import nameparser._lexicon as lexicon_mod
+    real = lexicon_mod._choice_masks.__wrapped__  # type: ignore[attr-defined]
+
+    def stand_in(chosen: frozenset[str], strict: bool = False) -> object:
+        gone, joined = real(chosen, strict)
+        if "ga" in chosen:
+            joined = (*joined, ("phd", "PHD"))
+        return gone, tuple(sorted(joined))
+    monkeypatch.setattr(lexicon_mod, "_choice_masks", stand_in)
+    ga, en = _choosing("ga", code="ga"), _choosing("en", code="en")
+    base = parser_for(ga)
+    assert base.lexicon.capitalization_exceptions_map["phd"] == "PHD"
+    chained = parser_for(en, base=base)
+    assert chained.lexicon == parser_for(ga, en).lexicon
+    assert chained.lexicon.capitalization_exceptions_map["phd"] == "PHD"
+
+
 def test_a_packs_masks_are_laid_over_the_choices() -> None:
     # the choice moves base's masks, and a pack's are laid over them, so
     # a pack's mask of a word the choice joins or drops stands, as on
