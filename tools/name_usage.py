@@ -1937,15 +1937,15 @@ def _vocabulary(key: str) -> str:
     lexicon = Lexicon.default()
     low = key.lower()
     kinds = []
-    if low in lexicon.suffix_acronyms_ambiguous:
+    if low in lexicon._sets.suffix_acronyms_ambiguous:
         kinds.append("ambiguous acronym")
-    elif low in lexicon.suffix_acronyms:
+    elif low in lexicon._sets.suffix_acronyms:
         kinds.append("acronym")
-    if low in lexicon.suffix_words:
+    if low in lexicon._sets.suffix_words:
         kinds.append("suffix word")
-    if low in lexicon.titles:
+    if low in lexicon._sets.titles:
         kinds.append("title")
-    if low in lexicon.particles:
+    if low in lexicon._sets.particles:
         kinds.append("particle")
     return ", ".join(kinds) or "-"
 
@@ -1953,8 +1953,8 @@ def _vocabulary(key: str) -> str:
 def _listed_suffix(key: str) -> bool:
     from nameparser import Lexicon
     lexicon, low = Lexicon.default(), key.lower()
-    return (low in lexicon.suffix_acronyms_ambiguous
-            or low in lexicon.suffix_acronyms or low in lexicon.suffix_words)
+    return (low in lexicon._sets.suffix_acronyms_ambiguous
+            or low in lexicon._sets.suffix_acronyms or low in lexicon._sets.suffix_words)
 
 
 def _cell(usage: Usage, count: int | None, error: str) -> str:

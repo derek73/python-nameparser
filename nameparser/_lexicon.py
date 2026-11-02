@@ -567,8 +567,68 @@ def _normpairs(
     return tuple(sorted(deduped.items()))
 
 
+@dataclass(frozen=True, slots=True, eq=False, repr=False)
+class _LexiconSets:
+    """The vocabulary sets a parse reads, held apart from the public
+    `Lexicon` fields: the pipeline, `_render`, `_parser` and the tools
+    read `lexicon._sets.titles`, never `lexicon.titles` (#754, 4i-a;
+    tests/v2/test_layering.py holds it). One attribute per
+    `_VOCAB_FIELDS` entry, in that order, each a frozenset, so a
+    membership test stays a C-level attribute read and costs no frame.
+
+    Built once per `Lexicon`, in its `__post_init__`, from the
+    lexicon's own fields, and never compared, hashed or pickled: a
+    `Lexicon`'s equality and pickle are its fields', and a load or a
+    `dataclasses.replace` builds this again. 4i-b, which makes the
+    compiled fields internal, changes only how it is filled: from the
+    lexicon's readings rather than from its public fields, the default
+    from nameparser/config/_compiled.py as today, so the reading index
+    stays unloaded on `parse("John Smith")`; the derived markers the
+    views will read (a listed suffix word's kind, the patronymic
+    particles) join it as attributes of their own. Nothing that reads
+    it moves then.
+
+    Not a mapping and no repr of its own: it holds whole word lists,
+    and a repr of them would be unbounded."""
+
+    titles: frozenset[str]
+    given_name_titles: frozenset[str]
+    suffix_acronyms: frozenset[str]
+    suffix_words: frozenset[str]
+    suffix_acronyms_ambiguous: frozenset[str]
+    particles: frozenset[str]
+    particles_ambiguous: frozenset[str]
+    conjunctions: frozenset[str]
+    conjunctions_ambiguous: frozenset[str]
+    bound_given_names: frozenset[str]
+    given_name_abbreviations: frozenset[str]
+    maiden_markers: frozenset[str]
+    surnames: frozenset[str]
+    honorific_tails: frozenset[str]
+    after_given_titles: frozenset[str]
+    suffix_words_ambiguous: frozenset[str]
+    agnomens: frozenset[str]
+    titles_ambiguous: frozenset[str]
+    title_modifiers: frozenset[str]
+    title_styles: frozenset[str]
+    title_phrases: frozenset[str]
+    given_names: frozenset[str]
+
+
+class _HoldsSets:
+    """`Lexicon`'s one slot outside its dataclass fields, holding its
+    `_LexiconSets`. A slot inherited from a plain base, because a field,
+    even one built `init=False`, would change `dataclasses.fields`, the
+    pickled state and the 2.8 pickles' layout check, and 4i-a changes
+    nothing public; `@dataclass(slots=True)` takes no slot of its own
+    beside its fields. Set once, by `Lexicon.__post_init__`."""
+
+    __slots__ = ("_sets",)
+    _sets: _LexiconSets
+
+
 @dataclass(frozen=True, slots=True)
-class Lexicon:
+class Lexicon(_HoldsSets):
     """The vocabulary a parser matches against: which words are
     titles, particles, suffixes, and so on. Immutable and hashable.
     Start from :meth:`default` (the shipped vocabulary) or
@@ -884,6 +944,9 @@ class Lexicon:
                 f"suffix_words_ambiguous exists to impose; drop it from "
                 f"suffix_acronyms or from suffix_words_ambiguous"
             )
+        # last, from the normalized fields: what the parse reads
+        object.__setattr__(self, "_sets", _LexiconSets(
+            **{name: getattr(self, name) for name in _VOCAB_FIELDS}))
 
     # -- constructors ----------------------------------------------------
 

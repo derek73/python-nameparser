@@ -116,7 +116,7 @@ def _reads_as_conjunction(word: str, lex: Lexicon) -> bool:
     """
     # the shape on the composed spelling, as _normalize composes the
     # lookup: a decomposed 'й.' is the initial its composed twin is (#542)
-    return bool(_normalize(word) in lex.conjunctions
+    return bool(_normalize(word) in lex._sets.conjunctions
                 and not _INITIAL.fullmatch(unicodedata.normalize("NFC", word)))
 
 
@@ -472,7 +472,7 @@ def _lowers_as_particle(normalized: str, word: str, role: Role,
     Shared with _cap_text, which asks it of each whole token before
     splitting the token into words, so a marked one ("d'") is asked as
     written rather than by its stem (#700)."""
-    return (normalized in lex.particles
+    return (normalized in lex._sets.particles
             and not _spells_an_initial(normalized, word)
             and role in (Role.MIDDLE, Role.FAMILY)
             and UNJOINED_TAG not in tags
@@ -594,8 +594,8 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
     # agnomen takes no case cue and title-cases as any word does, and a
     # credential written as a word (`kc`, #965) carries a mask, which
     # this leaves to the exceptions below.
-    if (role is Role.SUFFIX and normalized in lex.suffix_words_ambiguous
-            and normalized not in lex.agnomens
+    if (role is Role.SUFFIX and normalized in lex._sets.suffix_words_ambiguous
+            and normalized not in lex._sets.agnomens
             and normalized not in lex.capitalization_exceptions_map):
         return word.lower()
     generation = role is Role.SUFFIX and "vocab:suffix" in tags
@@ -635,7 +635,7 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
     # name word -- #459's given-role half, decided: repair follows the
     # role the parse chose ('qc mp' -> 'Qc MP').
     if role is Role.SUFFIX and (
-            undotted in lex.suffix_acronyms
+            undotted in lex._sets.suffix_acronyms
             or SHAPE_ACRONYM_TAG in tags):
         return word.upper()
     # rules/R4: "A roman numeral the parse put in the suffix role is
@@ -741,7 +741,7 @@ def _joined_whole(text: str, role: Role, lex: Lexicon) -> str | None:
             masked = _apply_mask(text, mask)
             if masked is not None:
                 return masked
-    if role is Role.SUFFIX and undotted in lex.suffix_acronyms:
+    if role is Role.SUFFIX and undotted in lex._sets.suffix_acronyms:
         return text.upper()
     return None
 
@@ -809,7 +809,7 @@ def _cap_text(text: str, role: Role, tags: frozenset[str],
         if (first < at < last
                 and not _DOTTED_INITIAL.fullmatch(
                     unicodedata.normalize("NFC", part))
-                and _normalize(part) in lex.conjunctions)
+                and _normalize(part) in lex._sets.conjunctions)
         else _sub_words(cap, part)
         for at, part in enumerate(parts))
 
@@ -843,7 +843,7 @@ def _split_pairs(tokens: tuple[Token, ...], repaired: tuple[Token, ...],
         fold = _normalize(joined.replace(".", ""))
         mask = lex.capitalization_exceptions_map.get(fold)
         cased = _apply_mask(joined, mask) if mask is not None else None
-        if cased is None and fold in lex.suffix_acronyms:
+        if cased is None and fold in lex._sets.suffix_acronyms:
             cased = joined.upper()
         # a case mapping that changes the length ('ß') has no place to
         # cut the pair back into its two words

@@ -349,9 +349,276 @@ def test_every_frozen_dataclass_carries_the_pickle_guards() -> None:
                 continue
             if not dataclasses.is_dataclass(cls):
                 continue
+            if cls.__name__ == "_LexiconSets":
+                # never pickled: a Lexicon pickles its fields and
+                # rebuilds this from them at load (#754, 4i-a)
+                continue
             if cls.__name__ == "Lexicon":
                 assert "__getstate__" in cls.__dict__
                 assert "__setstate__" in cls.__dict__
                 continue
             assert cls.__dict__.get("__getstate__") is _guarded_getstate, cls
             assert cls.__dict__.get("__setstate__") is _guarded_setstate, cls
+
+
+# -- the compiled sets are read through Lexicon._sets (#754, 4i-a) --------
+
+_REPO = PKG.parent
+
+#: Where a parse reads vocabulary: every library module but `_lexicon`,
+#: which owns the fields and fills `_sets` from them. A vocabulary
+#: field read here must go through `<lexicon>._sets`, so that 4i-b can
+#: make the compiled fields internal without touching a reader.
+_LIBRARY_READERS = sorted(
+    p for p in [*PKG.glob("*.py"), *PKG.glob("_pipeline/*.py"),
+                *PKG.glob("locales/*.py")]
+    if p.name != "_lexicon.py")
+
+#: Every tool. Their own counters and records reuse the field names
+#: (`local_corpora`'s `found.titles`), so a tool is checked by what a
+#: read is taken OFF -- a lexicon, by its spelling or by a name bound
+#: to one -- rather than by the library's rule that only `_sets` may
+#: be read.
+_TOOL_READERS = sorted((_REPO / "tools").rglob("*.py"))
+
+#: Names that hold no lexicon though they carry an attribute of a
+#: vocabulary field's name: `read` is a `TailRead`, whose `titles` is
+#: the title words of a segment's trailing run (_assign, _group).
+_NOT_A_LEXICON = frozenset({"read"})
+
+
+def _lexiconish(node: ast.expr | None, aliases: frozenset[str]) -> bool:
+    """`lexicon`, `lex`, `<x>.lexicon`, `Lexicon.default()` or
+    `Lexicon.empty()`, or a name bound to one of those (`aliases`)."""
+    if isinstance(node, ast.Name):
+        return node.id in ("lexicon", "lex") or node.id in aliases
+    if isinstance(node, ast.Attribute):
+        return node.attr == "lexicon"
+    return (isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and node.func.attr in ("default", "empty")
+            and isinstance(node.func.value, ast.Name)
+            and node.func.value.id == "Lexicon")
+
+
+def _from_sets(node: ast.expr | None) -> bool:
+    return isinstance(node, ast.Attribute) and node.attr == "_sets"
+
+
+def _bindings(tree: ast.AST) -> list[tuple[str, int, ast.expr | None,
+                                           ast.expr | None]]:
+    """(name, line, value, annotation) for every binding of a plain
+    name: an assignment, annotated or augmented, a walrus, a for or
+    comprehension target, a parameter, a with or except target. The
+    value is None where the form gives a name no single value of its
+    own (a parameter, a loop target, one name of an unpacking)."""
+    out: list[tuple[str, int, ast.expr | None, ast.expr | None]] = []
+
+    def target(t: ast.expr, value: ast.expr | None) -> None:
+        if isinstance(t, ast.Name):
+            out.append((t.id, t.lineno, value, None))
+        elif isinstance(t, (ast.Tuple, ast.List)):
+            for elt in t.elts:
+                target(elt, None)
+        elif isinstance(t, ast.Starred):
+            target(t.value, None)
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Assign):
+            for t in node.targets:
+                target(t, node.value)
+        elif isinstance(node, (ast.AnnAssign, ast.AugAssign)):
+            if isinstance(node.target, ast.Name) and (
+                    isinstance(node, ast.AugAssign) or node.value is not None):
+                out.append((node.target.id, node.lineno, node.value,
+                            getattr(node, "annotation", None)))
+        elif isinstance(node, ast.NamedExpr):
+            target(node.target, node.value)
+        elif isinstance(node, (ast.For, ast.AsyncFor, ast.comprehension)):
+            target(node.target, None)
+        elif isinstance(node, ast.withitem) and node.optional_vars:
+            target(node.optional_vars, None)
+        elif isinstance(node, ast.ExceptHandler) and node.name:
+            out.append((node.name, node.lineno, None, None))
+        elif isinstance(node, ast.arguments):
+            for arg in [*node.posonlyargs, *node.args, *node.kwonlyargs,
+                        *filter(None, (node.vararg, node.kwarg))]:
+                out.append((arg.arg, arg.lineno, None, arg.annotation))
+    return out
+
+
+def _lexicon_aliases(
+        bindings: list[tuple[str, int, ast.expr | None, ast.expr | None]],
+) -> frozenset[str]:
+    """The names some binding gives a lexicon: by its value's spelling,
+    by another such name, or by a `Lexicon` annotation."""
+    aliases: frozenset[str] = frozenset()
+    while True:
+        grown = aliases | {
+            name for name, _, value, annotation in bindings
+            if _lexiconish(value, aliases) or (
+                annotation is not None
+                and "Lexicon" in ast.unparse(annotation))}
+        if grown == aliases:
+            return aliases
+        aliases = frozenset(grown)
+
+
+def _direct_reads(source: str, library: bool) -> list[tuple[int, str]]:
+    """(line, field) for every vocabulary field `source` reads off a
+    lexicon rather than through its `_sets`: an attribute load; a
+    `getattr` of a lexicon, by its spelling or through a name bound to
+    one, or, in the library, of a field named as a constant off
+    anything but a `_sets`; and a name `sets` bound by any form but an
+    assignment from a `_sets` (which would make the attribute rule's
+    `sets` a lexicon), reported as `sets =`.
+
+    Its limits, each a reach no reader has today: a lexicon handed
+    through a container, a call's return or an attribute other than
+    `.lexicon` (`self.lex.titles` in a tool) is not followed, and an
+    alias is per module, not per scope, so a name that holds a lexicon
+    in one function counts as one in every other."""
+    from nameparser._lexicon import _VOCAB_FIELDS
+    tree = ast.parse(source)
+    bindings = _bindings(tree)
+    aliases = _lexicon_aliases(bindings)
+    found = [(line, "sets =") for name, line, value, _ in bindings
+             if name == "sets" and not _from_sets(value)]
+    sets_ok = not found
+    for node in ast.walk(tree):
+        if (isinstance(node, ast.Attribute) and node.attr in _VOCAB_FIELDS
+                and isinstance(node.ctx, ast.Load)):
+            base = node.value
+            if library:
+                if not (_from_sets(base)
+                        or (isinstance(base, ast.Name) and (
+                            (base.id == "sets" and sets_ok)
+                            or base.id in _NOT_A_LEXICON))):
+                    found.append((node.lineno, node.attr))
+            elif _lexiconish(base, aliases):
+                found.append((node.lineno, node.attr))
+        elif (isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+              and node.func.id == "getattr" and node.args):
+            obj = node.args[0]
+            named = (len(node.args) > 1
+                     and isinstance(node.args[1], ast.Constant)
+                     and node.args[1].value in _VOCAB_FIELDS)
+            if _lexiconish(obj, aliases) or (
+                    library and named and not _from_sets(obj)
+                    and not (isinstance(obj, ast.Name) and obj.id == "sets"
+                             and sets_ok)):
+                found.append((node.lineno, "getattr"))
+    return sorted(found)
+
+
+def _readers() -> list[tuple[pathlib.Path, bool]]:
+    return ([(p, True) for p in _LIBRARY_READERS]
+            + [(p, False) for p in _TOOL_READERS])
+
+
+def test_the_reader_lists_name_files_that_exist() -> None:
+    # a renamed tool or stage would otherwise drop out of the check
+    # below in silence, an empty scope passing it
+    assert len(_LIBRARY_READERS) > 20
+    for path, _ in _readers():
+        assert path.is_file(), path
+
+
+def _vocab_field_ids() -> list[str]:
+    from nameparser._lexicon import _VOCAB_FIELDS
+    return list(_VOCAB_FIELDS)
+
+
+@pytest.mark.parametrize("field", _vocab_field_ids())
+def test_no_reader_takes_a_vocabulary_field_off_a_lexicon(field: str) -> None:
+    # 4i-a: the parse, the renderer, the parser and the tools read the
+    # vocabulary sets through Lexicon._sets (_lexicon._LexiconSets),
+    # never the public fields 4i-b makes internal. Per field, so that
+    # the field a stray read names is the failing test's id.
+    stray = [f"{path.relative_to(_REPO)}:{line}"
+             for path, library in _readers()
+             for line, name in _direct_reads(path.read_text(), library)
+             if name in (field, "getattr", "sets =")]
+    assert not stray, stray
+
+
+@pytest.mark.parametrize("field", _vocab_field_ids())
+@pytest.mark.parametrize("spelling,library", [
+    ("lexicon.{f}", True), ("state.lexicon.{f}", True), ("lex.{f}", True),
+    ("self.lexicon.{f}", True), ("Lexicon.default().{f}", True),
+    ("lexicon.{f}", False), ("lex.{f}", False), ("parser.lexicon.{f}", False),
+    ("Lexicon.default().{f}", False),
+])
+def test_the_check_finds_a_direct_read(field: str, spelling: str,
+                                       library: bool) -> None:
+    # the negative control, per field and spelling: a read the check
+    # above must refuse
+    source = f"x = 'w' in {spelling.format(f=field)}\n"
+    assert _direct_reads(source, library) == [(1, field)]
+    through = f"x = 'w' in {spelling.format(f='_sets.' + field)}\n"
+    assert _direct_reads(through, library) == []
+
+
+@pytest.mark.parametrize("source,expected", [
+    ("getattr(lexicon, name)\n", [(1, "getattr")]),
+    ("getattr(lexicon._sets, name)\n", []),
+    ("sets = lexicon\nsets.titles\n", [(1, "sets ="), (2, "titles")]),
+    ("sets = lexicon._sets\nsets.titles\n", []),
+    ("sets = lexicon._sets\ngetattr(sets, name)\n", []),
+    ("read.titles\n", []),
+    ("found.titles\n", [(1, "titles")]),
+    # getattr through an alias, or of a field named as a constant
+    ("lx = state.lexicon\ngetattr(lx, name)\n", [(2, "getattr")]),
+    ("def f(lx: Lexicon):\n    getattr(lx, name)\n", [(2, "getattr")]),
+    ("getattr(obj, 'titles')\n", [(1, "getattr")]),
+    ("getattr(obj, name)\n", []),
+    # every form that binds `sets` but an assignment from a `_sets`
+    ("sets: object = lexicon\nsets.titles\n", [(1, "sets ="), (2, "titles")]),
+    ("(sets := lexicon)\nsets.titles\n", [(1, "sets ="), (2, "titles")]),
+    ("sets, other = lexicon._sets, 1\nsets.titles\n",
+     [(1, "sets ="), (2, "titles")]),
+    ("for sets in lexicons:\n    sets.titles\n", [(1, "sets ="), (2, "titles")]),
+    ("def f(sets):\n    return sets.titles\n", [(1, "sets ="), (2, "titles")]),
+    ("with open() as sets:\n    sets.titles\n", [(1, "sets ="), (2, "titles")]),
+])
+def test_the_check_finds_a_roster_read_and_an_alias(
+        source: str, expected: list[tuple[int, str]]) -> None:
+    assert _direct_reads(source, True) == expected
+
+
+@pytest.mark.parametrize("source,expected", [
+    # the AGENTS.md recipe's own spelling, and an alias of an alias
+    ("L = Parser().lexicon\nL.titles - L.suffix_words\n",
+     [(2, "suffix_words"), (2, "titles")]),
+    ("a = Lexicon.default()\nb = a\nb.particles\n", [(3, "particles")]),
+    ("def f(lx: Lexicon):\n    return lx.titles\n", [(2, "titles")]),
+    ("def f(lx: 'Lexicon | None'):\n    return lx.titles\n", [(2, "titles")]),
+    ("L = Parser().lexicon\ngetattr(L, name)\n", [(2, "getattr")]),
+    # what a tool's own records may spell
+    ("found.titles\nname.given_names\n", []),
+    ("getattr(found, 'titles')\n", []),
+])
+def test_the_check_finds_a_tool_read_through_an_alias(
+        source: str, expected: list[tuple[int, str]]) -> None:
+    assert _direct_reads(source, False) == expected
+
+
+#: The reads 4i-a moved, as the check counts them on today's sources
+#: with `._sets` taken out again: the recorded negative control over
+#: the real tree, so the check above cannot pass because its walk
+#: reaches nothing. The library's 114 are 106 attribute loads, 5 roster
+#: `getattr`s (3 of them through `sets`, which the undone `sets =
+#: lexicon` makes a lexicon) and the 3 `sets =` bindings; the tools'
+#: 16 are attribute loads, every tool scanned.
+#: A reader added through `_sets` moves these, and they are re-taken
+#: then: they count what the check would refuse with the move undone.
+_UNGUARDED_READS = {"library": 114, "tools": 16}
+
+
+def test_the_check_refuses_every_read_4i_a_moved() -> None:
+    counts = {"library": 0, "tools": 0}
+    for path, library in _readers():
+        undone = path.read_text().replace("._sets", "")
+        counts["library" if library else "tools"] += len(
+            _direct_reads(undone, library))
+    assert counts == _UNGUARDED_READS

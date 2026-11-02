@@ -162,7 +162,7 @@ def _name_contrast(state: ParseState, seg0: Sequence[int],
         return False
     if clause_at is None:
         _, clause_at = own_words(state.tokens, state.comma_offsets,
-                                 state.lexicon.maiden_markers)
+                                 state.lexicon._sets.maiden_markers)
     lex = state.lexicon
     return any(
         i < clause_at and (tok := state.tokens[i]).role is None
@@ -256,7 +256,7 @@ def _behind_a_generation(state: ParseState, seg0: Sequence[int],
     # is, and a maiden clause is no word of the name ('Jane nee Smith
     # Jr., AD' reads as 'Jane Jr., AD'; own_words, as for the contrast)
     _, clause_at = own_words(state.tokens, state.comma_offsets,
-                             lex.maiden_markers)
+                             lex._sets.maiden_markers)
     front = [i for i in seg0[:-1]
              if i < clause_at and tokens[i].role is None]
     if not _whole_name(front, tokens):

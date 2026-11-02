@@ -178,8 +178,9 @@ def _listed_whole(text: str, lexicon: Lexicon) -> bool:
     only of a word whose whole form no file holds and whose parts some
     file does (`_part_languages`), so other words pay no frame."""
     n, bare = _forms(text)
+    sets = lexicon._sets
     for name in _VOCAB_FIELDS:
-        field = getattr(lexicon, name)
+        field = getattr(sets, name)
         if n in field or bare in field:
             return True
     return False
@@ -367,7 +368,7 @@ def _listed_suffix(text: str, lexicon: Lexicon) -> bool:
     always tagged, bracketed or not. Asked only of a suffix word with
     no suffix tag, so other names pay nothing."""
     n = _normalize(text).replace(".", "")
-    return n in lexicon.suffix_acronyms or n in lexicon.suffix_acronyms_ambiguous
+    return n in lexicon._sets.suffix_acronyms or n in lexicon._sets.suffix_acronyms_ambiguous
 
 
 # rules/A2: "a name with no name content parses to the empty
@@ -377,7 +378,7 @@ def _listed_suffix(text: str, lexicon: Lexicon) -> bool:
 def assemble(state: ParseState) -> ParsedName:
     dropped = set(state.dropped)
     final: dict[int, Token] = {}
-    surnames = state.lexicon.surnames
+    surnames = state.lexicon._sets.surnames
     folds_middle = state.policy.middle_as_family
     tokens = state.tokens
     last = len(tokens)
