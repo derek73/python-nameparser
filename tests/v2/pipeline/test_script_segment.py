@@ -25,14 +25,15 @@ _JA = Policy(segment_scripts=frozenset({Script.HAN, Script.HIRAGANA}))
 # 欧 AND 欧阳 both present on purpose: compound-before-single must
 # pick 欧阳 (the issue's own acceptance example); same for 남/남궁.
 # "jr" so the comma cases can reach SUFFIX_COMMA.
-_LEX = Lexicon(surnames=frozenset({"毛", "欧", "欧阳", "김", "남", "남궁"}),
-               suffix_words=frozenset({"jr"}))
-# The peel's own vocabulary (#308). Tails are also suffix words here,
-# as the shipped config asserts they are: the neighbour rule in the
+_LEX = Lexicon(surnames=frozenset({"毛", "欧", "欧阳", "김", "남", "남궁"})
+               ).add("jr", kind="suffix")
+# The peel's own vocabulary (#308): suffix readings carrying
+# `attached="after"`, so tails are also suffix words here, as the
+# shipped config asserts they are: the neighbour rule in the
 # segmenter tests below reads that membership, so a stage lexicon that
 # omitted it would pin a shape no real configuration can have.
 _TAILS = frozenset({"씨", "님", "선생님", "박사", "さん", "先生", "様"})
-_LEX_TAILS = _LEX.add(suffix_words=_TAILS, honorific_tails=_TAILS)
+_LEX_TAILS = _LEX.add(*sorted(_TAILS), kind="suffix", attached="after")
 
 
 def _run(text: str, policy: Policy = _HAN, lexicon: Lexicon = _LEX,
@@ -163,7 +164,7 @@ def test_a_family_comma_stands_the_surname_split_down() -> None:
     # boundary the writer did not draw ("남궁 민수" with a space).
     # The SPLIT only -- the stage as a whole is not inert under a
     # family comma since #312, and would not be on a lexicon carrying
-    # honorific_tails (_LEX does not; see the peel's own cases below).
+    # attached tails (_LEX does not; see the peel's own cases below).
     out = _run("남궁민수, 지훈", policy=_HANGUL)
     assert out.structure is Structure.FAMILY_COMMA
     assert _texts(out) == ["남궁민수", "지훈"]
@@ -740,7 +741,7 @@ def test_an_interpunct_gates_the_split_but_not_the_peel() -> None:
     # still an honorific, so the peel crosses it (#312). 威 is a
     # surname in this lexicon precisely so the first clause bites:
     # without the gate 威廉 would divide 威 + 廉.
-    lex = _LEX_TAILS.add(surnames={"威"})
+    lex = _LEX_TAILS | Lexicon(surnames={"威"})
     state = segment(tokenize(ParseState(
         original="威廉·莎士比亚先生", lexicon=lex, policy=_HAN)))
     assert state.interpunct_offsets
@@ -753,9 +754,8 @@ def test_a_peeled_tail_is_not_a_surname_site() -> None:
     # then treat it as a name: 남궁 opens with the listed surname 남,
     # so without the post-nominal guard the stage would split the
     # honorific it had just created.
-    lex = Lexicon(surnames=frozenset({"남"}),
-                  suffix_words=frozenset({"남궁"}),
-                  honorific_tails=frozenset({"남궁"}))
+    lex = Lexicon(surnames=frozenset({"남"})).add(
+        "남궁", kind="suffix", attached="after")
     assert _texts(_run("Anderson남궁", policy=_HANGUL,
                        lexicon=lex)) == ["Anderson", "남궁"]
 
@@ -806,7 +806,7 @@ def test_the_peel_scans_the_name_runs_and_no_further() -> None:
     # step over -- "V." ends in no tail, and 씨 would stay glued. And
     # a later junk segment would take the peel off the person's own
     # name onto 박씨, peeling the wrong 씨 of two.
-    lex = _LEX_TAILS.add(suffix_words={"v"})
+    lex = _LEX_TAILS.add("v", kind="suffix")
     assert _texts(_run("Dr 김민준씨, V.", policy=_HANGUL,
                        lexicon=lex)) == ["Dr", "김", "민준", "씨", "V."]
     assert _texts(_run("Dr 김민준씨, Jr., 박씨", policy=_HANGUL,
@@ -862,7 +862,7 @@ def test_a_wholly_suffix_run_after_a_family_comma_is_declined() -> None:
     # ends in no listed tail, so the peel is abandoned and さん stays
     # glued to 田中 (#319). The peel asks is_wholly_suffix, C1's run
     # predicate, and declines the run.
-    lex = _LEX_TAILS.add(suffix_words={"v"})
+    lex = _LEX_TAILS.add("v", kind="suffix")
     assert _texts(_run("田中さん, V.", policy=_HANGUL,
                        lexicon=lex)) == ["田中", "さん", "V."]
 
@@ -876,8 +876,8 @@ def test_a_long_wholly_suffix_post_comma_run_is_declined_too() -> None:
     # purpose -- a scan that reached this run would step over PhD and
     # MD (both post-nominals by the strict test) and stop on "V.",
     # which ends in no tail, abandoning the peel exactly as above.
-    lex = _LEX_TAILS.add(suffix_words={"v"},
-                         suffix_acronyms={"md", "phd"})
+    lex = _LEX_TAILS.add("v", kind="suffix").add(
+        "md", "phd", kind="credential")
     assert _texts(_run("田中さん, V. MD PhD", policy=_HANGUL,
                        lexicon=lex)) == ["田中", "さん", "V.", "MD", "PhD"]
 
@@ -895,7 +895,7 @@ def test_a_third_segment_does_not_reopen_the_declined_run() -> None:
     # scan it -- test_the_peel_crosses_a_family_comma_and_stops_there
     # above); the question here is only whether its presence changes
     # the answer about the SECOND.
-    lex = _LEX_TAILS.add(suffix_words={"v"})
+    lex = _LEX_TAILS.add("v", kind="suffix")
     assert _texts(_run("田中さん, V., 太郎", policy=_HANGUL,
                        lexicon=lex)) == ["田中", "さん", "V.", "太郎"]
 
@@ -913,8 +913,8 @@ def test_a_configured_suffix_delimiter_reaches_the_peel() -> None:
     # admitted by plain core membership. Each peels only with its
     # delimiter configured; the bare-policy line under each is the
     # baseline that says so.
-    lex = _LEX_TAILS.add(suffix_words={"v"},
-                         suffix_acronyms={"md", "phd"})
+    lex = _LEX_TAILS.add("v", kind="suffix").add(
+        "md", "phd", kind="credential")
     # not '/': a word joined by a slash or a hyphen whose every chunk
     # is listed reads as a suffix with no delimiter configured (#752)
     plus = Policy(extra_suffix_delimiters=frozenset({"+"}))
@@ -948,7 +948,7 @@ def test_the_peel_crosses_a_comma_and_a_dot_at_once() -> None:
     # crosses both and reaches 太郎さん on the far side of the comma.
     # Neither gate alone pins this: keying the cross-comma reach on
     # interpunct-free input passes every other case in this file.
-    lex = _LEX_TAILS.add(surnames={"威"})
+    lex = _LEX_TAILS | Lexicon(surnames={"威"})
     state = segment(tokenize(ParseState(
         original="威廉·莎士比亚, 太郎さん", lexicon=lex, policy=_HAN)))
     assert state.interpunct_offsets

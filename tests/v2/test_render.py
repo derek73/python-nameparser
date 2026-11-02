@@ -279,11 +279,12 @@ def test_repair_keeps_a_conjunction_lowercase_in_a_particle_part() -> None:
     # mechanisms.md#VOCABULARY-OVERLAP-AS-PRECONDITION: "assert the
     # intersection as a precondition" -- built here rather than found,
     # so what has to hold is the half not being added.
-    assert "y" in Lexicon.default().conjunctions, (
+    assert any(r.category == "conjunction"
+               for r in Lexicon.default().readings_of("y")), (
         "'y' left the default conjunctions; this test builds the "
         "particle/conjunction overlap it needs from the other side and "
         "no longer has one. Pick another shipped conjunction.")
-    lex = Lexicon.default().add(particles={"y"})
+    lex = Lexicon.default().add("y", kind="particle")
     p = Parser(lexicon=lex)
 
     van = p.parse("Anh y Van")
@@ -313,11 +314,12 @@ def test_initials_readmits_a_conjunction_in_a_particle_part() -> None:
     values quoted in prose by decisions/, mechanisms.md and
     `_render.py` from going stale unnoticed.
     """
-    assert "y" in Lexicon.default().conjunctions, (
+    assert any(r.category == "conjunction"
+               for r in Lexicon.default().readings_of("y")), (
         "'y' left the default conjunctions; this test builds the "
         "particle/conjunction overlap it needs from the other side and "
         "no longer has one. Pick another shipped conjunction.")
-    p = Parser(lexicon=Lexicon.default().add(particles={"y"}))
+    p = Parser(lexicon=Lexicon.default().add("y", kind="particle"))
 
     # the part the mark has turned into name words: every word of it
     # initials, the conjunction included, and the base agrees
@@ -360,7 +362,7 @@ def test_initials_readmits_a_shared_word_between_particles() -> None:
     reaches -- INV2's connective grid never puts the shared word
     between particles.
     """
-    p = Parser(lexicon=Lexicon.default().add(particles={"y"}))
+    p = Parser(lexicon=Lexicon.default().add("y", kind="particle"))
     de_y_la = p.parse("Juan de y la")
     assert de_y_la.family_base == "de y la"
     assert de_y_la.initials() == "J. d. y. l."
@@ -865,7 +867,7 @@ def test_a_mask_recases_the_word_as_the_writer_punctuated_it() -> None:
         == "John Smith Ph. D."
     # the mask is asked BEFORE the acronym clause, which would give
     # 'BSC' -- bsc is a listed acronym too
-    assert "bsc" in Lexicon.default().suffix_acronyms
+    assert "bsc" in Lexicon.default()._sets.suffix_acronyms
     # forced: a mixed-case corpus name R5 would otherwise hold back
     assert str(parse("Dr. med. univ. Margit Popp, MSc").capitalized(
         force=True)) == "Dr. Med. Univ. Margit Popp, MSc"
@@ -1484,7 +1486,8 @@ def test_a_link_inside_a_hyphenated_word_keeps_its_lowercase() -> None:
     assert mixed.capitalized() == mixed
     assert str(mixed.capitalized(force=True)) == "Jose Ortega-y-Gasset"
     # not connective vocabulary, so not reached (decisions/R4)
-    assert "a" not in Lexicon.default().conjunctions
+    assert not any(r.category == "conjunction"
+                   for r in Lexicon.default().readings_of("a"))
     assert str(parse("Te Awanui-a-Rangi Black").capitalized(
         force=True)) == "Te Awanui-A-Rangi Black"
     # a single letter marked with a period is an initial there,
@@ -1514,7 +1517,7 @@ def test_the_hyphen_is_the_writers_join_even_in_a_one_case_name() -> None:
     name is in. The cost is a one-case name whose hyphenated bare
     initials spell a connective -- 'J-E-P DUPONT' repairs to
     'J-e-P Dupont', where 1.4.0 and the parent gave 'J-E-P'. And
-    conjunctions_ambiguous, P8's knob, does not reach a hyphenated
+    a `may_be_initial` conjunction reading, P8's knob, does not reach a hyphenated
     word: marking 'y' moves the spaced spelling only."""
     for text, repaired in (("J-E-P DUPONT", "J-e-P Dupont"),
                            ("JOHN A-Y-B SMITH", "John A-y-B Smith"),
@@ -1522,7 +1525,7 @@ def test_the_hyphen_is_the_writers_join_even_in_a_one_case_name() -> None:
                            ("maria silva e sousa", "Maria Silva E Sousa")):
         assert str(parse(text).capitalized()) == repaired, text
     marked = Parser(lexicon=Lexicon.default().add(
-        conjunctions_ambiguous={"y"}))
+        "y", kind="conjunction", may_be_initial=True))
     for text, default, under_mark in (
             ("JOSE ORTEGA Y GASSET", "Jose Ortega y Gasset",
              "Jose Ortega Y Gasset"),
@@ -1544,8 +1547,8 @@ def test_a_shipped_mask_spells_its_suffix_in_either_single_case() -> None:
     lexicon = Lexicon.default()
     pairs = tuple((key, mask) for key, mask
                   in lexicon.capitalization_exceptions
-                  if key in lexicon.suffix_acronyms
-                  or key in lexicon.suffix_words)
+                  if key in lexicon._sets.suffix_acronyms
+                  or key in lexicon._sets.suffix_words)
     assert pairs  # an empty map would make the loop vacuous
     for key, mask in pairs:
         for text in (f"john smith {key}", f"JOHN SMITH {key.upper()}"):
@@ -1565,7 +1568,7 @@ def test_a_shipped_particle_mask_outranks_the_particle_lowercase() -> None:
     lexicon = Lexicon.default()
     pairs = tuple((key, mask) for key, mask
                   in lexicon.capitalization_exceptions
-                  if key in lexicon.particles)
+                  if key in lexicon._sets.particles)
     assert pairs  # an empty selection would make the loop vacuous
     for key, mask in pairs + (("de", "de"),):
         for text in (f"john {key} smith", f"JOHN {key.upper()} SMITH"):
@@ -1728,7 +1731,7 @@ def test_initials_has_no_lexicon_so_a_spliced_field_is_all_name_words()\
     for giving `Parser` an `initials` crossing. A fallback to
     `Lexicon.default()` was written and dropped: it guesses a
     vocabulary, and under a caller's own the guess erases a whole
-    field (`Lexicon.default().add(particles={'y'})`, family 'de y').
+    field (`Lexicon.default().add('y', kind='particle')`, family 'de y').
     """
     p = Parser()
     base = p.parse("john smith")
@@ -1738,7 +1741,7 @@ def test_initials_has_no_lexicon_so_a_spliced_field_is_all_name_words()\
 
     # the vocabulary a fallback would have had to guess, and the field
     # it erased when it guessed wrong
-    y_lex = Lexicon.default().add(particles={"y"})
+    y_lex = Lexicon.default().add("y", kind="particle")
     py = Parser(lexicon=y_lex)
     assert py.parse("Juan de y").initials() == "J. d. y."
     assert py.parse("Juan Perez").replace(family="de y").initials() == "J. d. y."
@@ -1906,7 +1909,7 @@ def test_a_marked_particle_lowercases_only_where_the_particle_arm_would(
     name = given_last.parse("IVOI PAUL D'")
     assert name.given == "D'"  # the declared given slot, not P6's
     assert name.capitalized().given == "D'"
-    hyphened = Parser(lexicon=Lexicon.default().add(particles={"van-der"}))
+    hyphened = Parser(lexicon=Lexicon.default().add("van-der", kind="particle"))
     assert str(hyphened.capitalized(hyphened.parse("jan van-der"))) == \
         "Jan Van-Der"
 

@@ -540,8 +540,8 @@ def assemble(state: ParseState) -> ParsedName:
             field = (Role.MIDDLE if role is Role.FAMILY and folds_middle
                      and FOLDED_TAG in tags and ATTACHED_TAG not in tags
                      else role)
-            # rules/R9: "a particle the shipped vocabulary holds as a
-            # patronymic", read as a particle, opens a patronymic that
+            # rules/R9: "a particle the lexicon holds as a patronymic",
+            # read as a particle, opens a patronymic that
             # takes the words after it in its field; an ending rule a
             # policy turns on reads its own words (decisions/R9, #754)
             opens = attaches = False

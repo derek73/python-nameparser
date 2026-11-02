@@ -8,11 +8,11 @@ from nameparser._policy import Policy
 from nameparser._types import AmbiguityKind
 
 # synthetic vocabulary: behavior given a lexicon, never default() contents
-_LEX = Lexicon(
-    suffix_acronyms=frozenset({"phd", "md", "do", "dds", "ma", "ed"}),
-    suffix_acronyms_ambiguous=frozenset({"ma", "ed", "do"}),
-    suffix_words=frozenset({"jr", "v"}),
-)
+_LEX = (Lexicon()
+        .add("phd", "md", "do", "dds", "ma", "ed", kind="credential")
+        # a family reading makes the credential ambiguous
+        .add("ma", "ed", "do", kind="family")
+        .add("jr", "v", kind="suffix"))
 
 
 def _segmented(text: str) -> ParseState:

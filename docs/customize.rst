@@ -11,164 +11,182 @@ why the split is drawn there.
 Vocabulary: Lexicon
 --------------------
 
-Adding and removing words
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+Configuring by reading
+~~~~~~~~~~~~~~~~~~~~~~~
+
+A :class:`~nameparser.Lexicon` holds **readings**: what each word may be
+read as, in the terms the shipped vocabulary files use. Configure it by
+adding and removing readings:
 
 .. doctest::
 
     >>> from nameparser import Lexicon, Parser, parse
     >>> parse("Dean Robert Johns").given
     'Dean'
-    >>> lex = Lexicon.default().add(titles={"dean"})
+    >>> [r.kind for r in Lexicon.default().readings_of("dean")]
+    ['office', 'given', 'family']
+    >>> lex = Lexicon.default().remove("dean", kind="given")
     >>> Parser(lexicon=lex).parse("Dean Robert Johns").title
     'Dean'
 
-By default ``Dean`` is a title only inside a title phrase such as
-``Dean of Students`` (:ref:`titles-also-given-names`); listing it in
-``titles`` makes it a title wherever it stands.
+``dean`` holds a title reading (its kind is ``office``) and a ``given``
+reading, and a title that may be a given name is a title only inside a
+title phrase such as ``Dean of Students``
+(:ref:`titles-also-given-names`). Removing the ``given`` reading makes
+it a title wherever it stands. Adding a title reading instead would
+change nothing outside a phrase, so ``add("dean", kind="title")`` warns
+and names the ``remove`` above.
 
-:meth:`~nameparser.Lexicon.add` and :meth:`~nameparser.Lexicon.remove`
-both return a new :class:`~nameparser.Lexicon` — the one you started
-from (here, ``Lexicon.default()``) is never mutated. Every field
-accepts a plain set of lowercase words, keyword by field name (``titles``
-above; ``particles``, ``suffix_words``, and the rest work the same
-way) — see :doc:`modules` for the full field list.
+:meth:`~nameparser.Lexicon.add` takes the words and a ``kind``, and
+:meth:`~nameparser.Lexicon.remove` the words and, optionally, a kind;
+both return a new :class:`~nameparser.Lexicon`, the one you started
+from (here, ``Lexicon.default()``) never being mutated. Where a word
+holds a reading of the kind added, ``add`` updates that reading in every
+file holding it; otherwise it adds a reading of the caller's own.
+``remove`` with no kind takes out every reading of the word, and with a
+category (``"title"``, ``"name"``) every reading of that category.
+:meth:`~nameparser.Lexicon.readings_of` answers what a word may be read
+as here, each :class:`~nameparser.LexiconReading` naming the shipped
+files that hold it; whether a parse *read* it that way is
+:attr:`Token.reading <nameparser.Token.reading>`'s question.
 
-The default word lists themselves — ``TITLES``, ``PARTICLES`` and the
-other frozensets in ``nameparser.config`` — are frozen, so a runtime
-addition belongs on a :class:`~nameparser.Lexicon` as above.
-``REGEXES`` and ``CAPITALIZATION_EXCEPTIONS`` are the two members the
-freeze does not cover — they are still plain dicts. Editing one at
-runtime is not a supported override. The parser does not read
-``REGEXES`` at all, and ``Lexicon.default()`` is cached,
-so an edit to ``CAPITALIZATION_EXCEPTIONS`` after the first parse never
-reaches it; extend a :class:`~nameparser.Lexicon`'s pairs instead
-(:ref:`case-exceptions`).
-
-Five of these lists, ``PARTICLES``, ``NON_GIVEN_NAME_PARTICLES``,
-``BOUND_GIVEN_NAMES``, ``GIVEN_NAME_TITLES`` and ``SUFFIX_WORDS``, were
-renamed in 2.2 to match the field names used here, and two modules
-moved with them; the 1.x names are gone in 3.0, and the 2.2.0 entry of
-:doc:`release_log` maps them.
-
-Vocabulary entries are matched one word at a time, with two
-exceptions, so a multi-word entry like ``titles={"grand moff"}`` can
-never match; the constructor warns when it sees one
-(``capitalization_exceptions`` keys included — they are looked up per
-word too). The exceptions are ``given_name_titles``, looked up as the
-space-joined run of words already read as titles or as that run's last
-word — several titles written together are one form of address and the
-last one does the addressing, so ``"Her Majesty Queen Elizabeth"`` is
-read by ``queen`` — and
-``maiden_markers``, matched by lookahead over the words as written:
-``maiden_markers={"z domu"}`` matches the pair and neither word alone,
-which is how the shipped Polish entry works. The words have to stand
-together — a bracketed clause or a comma between them ends the run, and
-the first word is then an ordinary name word. Where a phrase entry and a
-word entry starting with it are both configured, the phrase wins where
-it matches and the word matches everywhere else. No warning is raised
-for a multi-word entry in either of these two fields, since there it is
-not a mistake.
-
-The limit is on *storage*, not on the shape a name can have. Adjacent
-suffix words are reassembled after they match, so a multi-word
-credential is reachable as its component words even though the phrase
-itself cannot be stored:
-
-.. doctest::
-
-    >>> from nameparser import parse
-    >>> parse("John Smith, MD PhD").suffix
-    'MD PhD'
-
-That has held since 1.4.0. A credential whose words are not in the
-default vocabulary is reached by adding those words, not the phrase.
-After a comma the defaults already read an unlisted all-caps run (see
-:ref:`all-caps-credentials`), so the difference shows at the end of a
-name:
+A credential the defaults do not list is one reading per word:
 
 .. doctest::
 
     >>> parse("John Smith LEED AP").suffix
     ''
-    >>> lex = Lexicon.default().add(suffix_acronyms={"leed", "ap"})
+    >>> lex = Lexicon.default().add("leed", "ap", kind="credential")
     >>> Parser(lexicon=lex).parse("John Smith LEED AP").suffix
     'LEED AP'
 
-Removing works the same way, and drops the word from recognition:
+Removing works the same way, and a category takes out every reading of
+it:
 
 .. doctest::
 
-    >>> lean = Lexicon.default().remove(titles={"professor"})
+    >>> lean = Lexicon.default().remove("professor", kind="title")
     >>> Parser(lexicon=lean).parse("Professor Robert Johns").title
     ''
 
-Marking a subset of another field
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 2.x set fields (``titles``, ``suffix_acronyms``,
+``particles_ambiguous``, ...) are internal since 3.0, compiled from the
+readings: ``add(titles=...)``, ``Lexicon(titles=...)`` and
+``lexicon.titles`` each raise, the error naming the calls that configure
+the same words, and :doc:`migrate` has the table.
 
-Several fields mark a subset of another, qualifying how the base
-field's words are read. Their entries belong in the base field too, so
-add a word to both, and remove it from the marker first. An entry
-outside its base is an *orphan*: four markers refuse one with a
-``ValueError`` naming it, because there it would change the parse; the
-rest leave it unchecked, because there it is never read.
+The default word lists themselves — ``TITLES``, ``PARTICLES`` and the
+other frozensets in ``nameparser.config`` — are the default lexicon's
+compiled sets, frozen and read-only, so a runtime addition belongs on a
+:class:`~nameparser.Lexicon` as above. ``REGEXES`` and
+``CAPITALIZATION_EXCEPTIONS`` are the two members the freeze does not
+cover — they are still plain dicts. Editing one at runtime is not a
+supported override. The parser does not read ``REGEXES`` at all, and
+``Lexicon.default()`` is cached, so an edit to
+``CAPITALIZATION_EXCEPTIONS`` after the first parse never reaches it;
+extend a :class:`~nameparser.Lexicon`'s pairs instead
+(:ref:`case-exceptions`).
+
+Five of these lists, ``PARTICLES``, ``NON_GIVEN_NAME_PARTICLES``,
+``BOUND_GIVEN_NAMES``, ``GIVEN_NAME_TITLES`` and ``SUFFIX_WORDS``, were
+renamed in 2.2, and two modules moved with them; the 1.x names are gone
+in 3.0, and the 2.2.0 entry of :doc:`release_log` maps them.
+
+Kinds and properties
+~~~~~~~~~~~~~~~~~~~~~
+
+A kind belongs to a category, which decides what the reading does:
 
 .. list-table::
    :header-rows: 1
-   :widths: 30 34 36
+   :widths: 18 52 30
 
-   * - Marker
-     - Base
-     - An orphan
-   * - ``particles_ambiguous``
-     - ``particles``
-     - raises ``ValueError``
-   * - ``suffix_acronyms_ambiguous``
-     - ``suffix_acronyms``
-     - raises ``ValueError``
-   * - ``honorific_tails``
-     - ``suffix_words``
-     - raises ``ValueError``
-   * - ``suffix_words_ambiguous``
-     - ``suffix_words``
-     - raises ``ValueError``
-   * - ``agnomens``
-     - ``suffix_words_ambiguous``
-     - is never read
-   * - ``conjunctions_ambiguous``
-     - ``conjunctions``
-     - is never read
-   * - ``after_given_titles``
-     - ``titles``
-     - is never read
-   * - ``given_name_titles``, ``title_modifiers``, ``title_styles``
-     - ``titles`` or ``titles_ambiguous``
-     - is never read
+   * - Category
+     - Kinds
+     - Properties
+   * - title
+     - ``title``, ``salutation``, ``style``, ``academic``, ``religious``,
+       ``nobility``, ``military``, ``office``, ``occupation``,
+       ``kinship``, ``modifier``
+     - ``addresses="given"``, ``after_given=True``, ``attaches=[...]``
+   * - suffix
+     - ``suffix``, ``generation``, ``agnomen``, ``credential``,
+       ``honorific``, ``professional_honorific``, ``status``,
+       ``courtesy``
+     - ``acronym=...``, ``attached="after"``
+   * - particle
+     - ``particle``, ``preposition``, ``article``, ``patronymic``,
+       ``teknonymic``, ``clan``, ``rank``, ``saint``, ``alias``
+     - none
+   * - conjunction
+     - ``conjunction``
+     - ``may_be_initial=True``
+   * - bound_given
+     - ``bound_given``
+     - none
+   * - relation
+     - ``birth_marker``
+     - none
+   * - name
+     - ``given``, ``family``
+     - ``same_as="..."`` on ``given``
 
-So ``remove(conjunctions={"e"})`` simply works, and the stale
-``conjunctions_ambiguous`` entry is never consulted.
-``given_name_titles`` is unchecked for a second reason: it matches a
-run of titles as one space-joined string, or by the run's last word, so
-a legitimate entry like ``"sir and dame"`` is no single word of
-``titles``. ``titles_ambiguous`` is no subset of ``titles`` at all; see
-:ref:`titles-also-given-names`.
+``nameparser/vocab/README.md`` in the repository says what each kind
+and property means. A property given its unwritten value (``None``,
+``False``) is removed; ``acronym`` is unwritten-true on a
+``credential`` alone. Two things are not properties: whether a reading
+is on (a caller's always is) and its case mask (:ref:`case-exceptions`).
+
+A **name** reading beside another reading is what makes a word
+ambiguous, as the vocabulary files mark it: a title with a ``given``
+reading is a title only inside a phrase, a particle with one may be a
+given name, and a credential or a generation word with a name reading
+is read as the suffix only where the writing or the count says so
+(:ref:`ambiguous-words`). So ``add("guru", kind="given")``
+keeps ``Guru`` a title only inside a phrase, and
+``remove("van", kind="given")`` makes ``van`` a particle that is never
+a given name.
+
+A reading is of one word, with two exceptions, so ``add`` refuses a
+phrase of any other kind: a title addressing the given name
+(``add("lt col", kind="title", addresses="given")``), matched against
+the space-joined run of words already read as titles or by that run's
+last word — several titles written together are one form of address
+and the last one does the addressing, so ``"Her Majesty Queen
+Elizabeth"`` is read by ``queen`` — and a birth marker, matched by
+lookahead over the words as written: ``add("z domu",
+kind="birth_marker")`` matches the pair and neither word alone, which
+is how the shipped Polish entry works. The words have to stand
+together — a bracketed clause or a comma between them ends the run, and
+the first word is then an ordinary name word. Where a phrase and a word
+starting it are both configured, the phrase wins where it matches and
+the word matches everywhere else.
+
+The limit is on what a reading holds, not on the shape a name can have.
+Adjacent suffix words are reassembled after they match, so a multi-word
+credential is reachable as its component words:
+
+.. doctest::
+
+    >>> parse("John Smith, MD PhD").suffix
+    'MD PhD'
+
+That has held since 1.4.0.
 
 .. _title-detection-off:
 
 Turning title detection off
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The subset rule matters most when clearing a field wholesale. Emptying
-``titles`` alone orphans every ``given_name_titles`` entry, so the two
-go together, with ``titles_ambiguous``, whose words are titles inside a
-phrase ("Dean of Students") without being in ``titles``:
+Every title reading of every listed title word goes at once, the
+category matching each kind; the word lists in ``nameparser.config``
+name the words:
 
 .. doctest::
 
-    >>> d = Lexicon.default()
-    >>> lean = d.remove(titles=set(d.titles),
-    ...                 given_name_titles=set(d.given_name_titles),
-    ...                 titles_ambiguous=set(d.titles_ambiguous))
+    >>> from nameparser.config.titles import TITLES, TITLES_AMBIGUOUS
+    >>> lean = Lexicon.default().remove(*TITLES, *TITLES_AMBIGUOUS,
+    ...                                 kind="title")
     >>> Parser(lexicon=lean).parse("Dean of Students Jane Smith").title
     ''
     >>> Parser(lexicon=lean).parse("Hon Solo").given
@@ -177,8 +195,8 @@ phrase ("Dean of Students") without being in ``titles``:
 Emptying the title vocabulary does not switch titles off entirely,
 though. A word ending in a period, standing at the front of the part
 that carries the given name, is read as a title structurally, without
-consulting ``titles`` at all — that is what lets unfamiliar ranks and
-abbreviations work (see :ref:`abbreviated-titles`):
+consulting the vocabulary at all — that is what lets unfamiliar ranks
+and abbreviations work (see :ref:`abbreviated-titles`):
 
 .. doctest::
 
@@ -191,16 +209,21 @@ abbreviations work (see :ref:`abbreviated-titles`):
 Combining two lexicons
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Whole lexicons compose with ``|``, which unions field by field — handy
-for keeping a shared house vocabulary separate from a per-source one
-and combining them at parser construction:
+Whole lexicons compose with ``|`` — handy for keeping a shared house
+vocabulary separate from a per-source one and combining them at parser
+construction. The right-hand lexicon's edits apply after the left's,
+so where the two disagree the later one wins; the ``surnames`` and
+``given_names`` lists are unioned, and case masks taken right-biased:
 
 .. doctest::
 
-    >>> house = Lexicon.empty().add(titles={"dean"})
-    >>> per_source = Lexicon.empty().add(titles={"provost"})
-    >>> sorted((house | per_source).titles)
-    ['dean', 'provost']
+    >>> house = Lexicon.empty().add("dean", kind="office")
+    >>> per_source = Lexicon.empty().add("provost", kind="academic")
+    >>> both = house | per_source
+    >>> [r.kind for w in ("dean", "provost") for r in both.readings_of(w)]
+    ['office', 'academic']
+    >>> [r.kind for r in (both | Lexicon.empty().remove("dean")).readings_of("dean")]
+    []
 
 .. _case-exceptions:
 
@@ -213,8 +236,8 @@ digits, each in the case it should take (``"phd"`` → ``"PhD"``). Case
 repair lays the mask over the word as it was written and keeps every
 other character where it stood, so it recases a word and never
 re-spells it. A value that spells anything else raises ``ValueError``
-when the lexicon is built. Being pair-valued, the field isn't a fit for
-``add()``/``remove()``. Change it with ``dataclasses.replace()``
+when the lexicon is built. Being a mask rather than a reading, it isn't
+a fit for ``add()``/``remove()``. Change it with ``dataclasses.replace()``
 instead, and pass the result to ``capitalized()``:
 
 .. doctest::
@@ -295,7 +318,7 @@ inside a longer run:
 Words that need no entry
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-An acronym already listed in ``suffix_acronyms``, plain or dotted, and
+An acronym the lexicon holds as a credential, plain or dotted, and
 a roman numeral are written in capitals by case repair on its own. Most
 listed acronyms whose usual spelling is not all capitals already carry
 a shipped mask (``DSc``, ``PsyD``, ``PharmD``, ``MDiv`` and others):
@@ -322,7 +345,7 @@ in plain capitals. The reasoning is the Excluded block for
 Acronyms the vocabulary doesn't list
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-An acronym ``suffix_acronyms`` doesn't list repairs according to how it
+An acronym the lexicon holds no reading of repairs according to how it
 is written:
 
 - **Plain** (``dclinpsy``), it parses as an ordinary name word and repairs
@@ -331,7 +354,7 @@ is written:
   :ref:`unlisted-credentials`) and repairs in all capitals the same as
   a listed acronym does: ``D.CLINPSY.``.
 
-Either way, give it a ``suffix_acronyms`` entry, or a mask of its own,
+Either way, give it a credential reading, or a mask of its own,
 rather than relying on this fallback.
 
 .. _ambiguous-words:
@@ -341,21 +364,20 @@ Words that are also ordinary names
 
 Some vocabulary words are also ordinary name words: an acronym suffix
 that is also borne as a surname, a particle that doubles as a given
-name, a connective letter that doubles as an initial. Four fields mark
-them — ``suffix_acronyms_ambiguous``, ``suffix_words_ambiguous``,
-``particles_ambiguous`` and ``conjunctions_ambiguous``, one each for
-``suffix_acronyms``, ``suffix_words``, ``particles`` and
-``conjunctions``. They add no vocabulary by themselves; they narrow how
-an existing entry is read when it appears alone, and the parse reports
-the fork as an ambiguity. Titles that are also given names work
-differently, with a word list of their own, ``titles_ambiguous``
-(:ref:`titles-also-given-names`).
+name, a connective letter that doubles as an initial. What marks them is
+a second reading beside the first: a ``given`` or ``family`` reading
+beside a credential, a generation word or a particle, and the
+``may_be_initial`` property on a one-letter connective. The second
+reading adds no vocabulary by itself; it narrows how the word is read
+when it appears alone, and the parse reports the fork as an ambiguity.
+A title with a ``given`` reading works differently, being a title only
+inside a phrase (:ref:`titles-also-given-names`).
 
 Credentials that are also surnames
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-``ma`` is a shipped example of ``suffix_acronyms_ambiguous``. It is
-both a credential and a common surname, so it is listed there. Written
+``ma`` is a shipped example: it holds a credential reading and the
+name readings of a common surname. Written
 with its periods it is a suffix outright; written bare, the
 capitalization decides:
 
@@ -400,11 +422,11 @@ The full reading of a bare marked acronym, in order:
 Generation words that are also surnames
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-``suffix_words_ambiguous`` does the same for a suffix word: French
-``fils`` and the Brazilian agnomens ``Filho``, ``Neto`` and
-``Sobrinho`` mark a generation, and each is a surname too. An agnomen,
-written in the case of the name around it and listed in ``agnomens``,
-is a suffix only where the name keeps a word for its family. The
+A name reading beside a suffix word does the same: French ``fils`` and
+the Brazilian agnomens ``Filho``, ``Neto`` and ``Sobrinho`` mark a
+generation, and each is a surname too. An agnomen (the ``agnomen``
+kind), written in the case of the name around it, is a suffix only
+where the name keeps a word for its family. The
 writing of ``fils`` speaks as well: in a mixed-case name a Title-case
 ``Fils`` is the family name even with a word to spare:
 
@@ -417,16 +439,12 @@ writing of ``fils`` speaks as well: in a mixed-case name a Title-case
     >>> parse("Marie Fils").family
     'Fils'
 
-A caller whose data writes an agnomen as part of the surname takes it
-out by removing the word from ``suffix_words`` and from the two
-markers over it, together: an orphan in ``suffix_words_ambiguous``
-raises ``ValueError``, and one left in ``agnomens`` is simply never read:
+A caller whose data writes an agnomen as part of the surname takes out
+its suffix reading, leaving its name reading:
 
 .. doctest::
 
-    >>> agnomen = {"neto"}
-    >>> kept = Lexicon.default().remove(
-    ...     agnomens=agnomen, suffix_words_ambiguous=agnomen, suffix_words=agnomen)
+    >>> kept = Lexicon.default().remove("neto", kind="agnomen")
     >>> Parser(lexicon=kept).parse("Pedro Alves Neto").family
     'Neto'
 
@@ -437,17 +455,16 @@ When you add a word that is both a credential and a name, weigh how
 often it is one against the other. There are three choices, and none is
 free:
 
-- **Unambiguous** (``suffix_acronyms`` alone): the credential reading
-  is taken silently, and a wrong claim can lose a real person's surname.
-- **Marked ambiguous** (``suffix_acronyms_ambiguous`` too): the reading
-  depends on the writing as above, and every bare reading reports the
-  fork.
-- **Left out of** ``suffix_acronyms`` **altogether**: right when the name
-  reading is far more common, as for an acronym whose credential is
-  tenuous or specialized beside a common surname. That is what the
-  default vocabulary did with ``rai`` and ``cha`` in 2.3; a caller who
-  needs one adds it back with
-  ``Lexicon.default().add(suffix_acronyms={"cha"})``.
+- **A credential alone**: the credential reading is taken silently,
+  and a wrong claim can lose a real person's surname.
+- **A credential and a name reading**: the reading depends on the
+  writing as above, and every bare reading reports the fork.
+- **No credential reading at all**: right when the name reading is far
+  more common, as for an acronym whose credential is tenuous or
+  specialized beside a common surname. That is what the default
+  vocabulary did with ``rai`` and ``cha`` in 2.3; a caller who needs
+  one adds it back with ``Lexicon.default().add("cha",
+  kind="credential")``.
 
 .. _titles-also-given-names:
 
@@ -459,8 +476,8 @@ Many titles are borne as given names too: ``Dean``, ``King``,
 name after it, so at the front of a name there is no count of words to
 read, and what tells the person ``Dean Smith`` from the office in
 ``Dean of Students`` is the phrase the word stands in. Since 2.7 these
-words are listed in ``titles_ambiguous`` rather than ``titles``, and
-each is a title only inside a title phrase: behind a style
+words hold a ``given`` reading beside their title reading, and each is
+a title only inside a title phrase: behind a style
 (``His Majesty King``) or a modifier (``Associate Dean``), before
 ``of`` (``Dean of Students``), or in a listed two-word phrase
 (``Major General``). Anywhere else it is a name word:
@@ -490,40 +507,46 @@ standing alone:
     >>> parse("Grace Smith").ambiguities
     ()
 
-Four fields hold this vocabulary:
+Four things in the readings make this vocabulary:
 
-- ``titles_ambiguous`` — the titles read only inside a phrase. A
-  word listed in ``titles`` as well is a title wherever it stands, so
-  ``add(titles={"dean"})`` (the first example on this page) is how to
-  read one as a title everywhere.
-- ``title_modifiers`` — the words that qualify a head title
+- A ``given`` reading beside a title reading makes the title one read
+  only inside a phrase; removing it, as the first example on this page
+  does, reads the word as a title everywhere.
+- The ``modifier`` kind is a word that qualifies a head title
   (``associate``, ``vice``).
-- ``title_styles`` — the forms of address a title may stand behind
+- The ``style`` kind is a form of address a title may stand behind
   (``majesty``, ``highness``, ``excellency``).
-- ``title_phrases`` — the two-word phrases, each read only where
-  both words are titles. Removing one reads its words apart:
+- ``attaches`` on a title reading names the title kinds, or the title
+  words, it makes a two-word phrase with, each phrase read only where
+  both words are titles. Narrowing it reads the words of a phrase it
+  no longer reaches apart:
 
 .. doctest::
 
     >>> parse("Chief Justice John Roberts").title
     'Chief Justice'
-    >>> chief = Lexicon.default().remove(title_phrases={"chief justice"})
+    >>> [r.properties for r in Lexicon.default().readings_of("chief")]
+    [(('attaches', ('military', 'office')),)]
+    >>> chief = Lexicon.default().add("chief", kind="nobility",
+    ...                               attaches=["military"])
     >>> Parser(lexicon=chief).parse("Chief Justice John Roberts").title
     'Chief'
+    >>> Parser(lexicon=chief).parse("Chief Sergeant John Roberts").title
+    'Chief Sergeant'
 
 Particles that are also given names
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-``particles_ambiguous`` is the same idea for surname particles. A
-particle listed there may also be a given name, which is what makes a
-leading one a decision to take; a particle *not* listed there never
-is, so there is nothing to decide. That shows up in what a particle
+A ``given`` reading is the same idea for surname particles. A particle
+holding one may also be a given name, which is what makes a leading
+one a decision to take; a particle *without* one never is, so there is
+nothing to decide. That shows up in what a particle
 standing *alone* at the front of a name does: a listed one is a name
-part in its own right, while an unlisted one pulls the rest of the
+part in its own right, while one without pulls the rest of the
 name into the surname and leaves no given name at all. Which field a
-*listed* particle lands in is ``name_order``'s question, covered
-below; an unlisted one opening the name is the surname under every
-order, because a word that can never be a given name leaves the order
+particle that may be given lands in is ``name_order``'s question,
+covered below; one that may not, opening the name, is the surname
+under every order, because a word that can never be a given name leaves the order
 nothing to decide.
 
 .. doctest::
@@ -545,32 +568,32 @@ follows the comma is the given name as usual:
     >>> parse("de Mesnil, Juan").given   # the comma named the surname
     'Juan'
 
-If your data never uses ``Van`` as a given name, take it out of the
-ambiguous set: a leading ``van`` is then no decision at all, so no
+If your data never uses ``Van`` as a given name, take out its
+``given`` reading: a leading ``van`` is then no decision at all, so no
 ambiguity is recorded and it becomes part of the surname — under any
 ``name_order``, since that is what taking the word out asserted:
 
 .. doctest::
 
-    >>> lex = Lexicon.default().remove(particles_ambiguous={"van"})
+    >>> lex = Lexicon.default().remove("van", kind="given")
     >>> Parser(lexicon=lex).parse("van Gogh").family
     'van Gogh'
 
-For ``particles_ambiguous`` the default runs the other way from
-credentials: a particle that is not borne as a given name belongs
-outside the set, which is where ``mc`` and ``ste`` were moved (#360).
+For particles the default runs the other way from credentials: a
+particle that is not borne as a given name holds no ``given`` reading,
+which is where ``mc`` and ``ste`` were moved (#360).
 
 .. _connectives-also-initials:
 
 One-letter connectives that are also initials
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-``conjunctions_ambiguous`` is the same idea for one-letter connectives.
+``may_be_initial`` is the same idea for one-letter connectives.
 A single letter written against the name's own case is an initial and
 one written with it is the connective — but a name written wholly in
 one case, all upper or all lower, says nothing either way, and this is
-the set that decides it there. ``e`` and ``i`` are the two entries
-shipped: a bare ``E`` or ``I`` initial is common where those letters
+the property that decides it there. ``e`` and ``i`` are the two
+connectives shipped with it: a bare ``E`` or ``I`` initial is common where those letters
 between two surnames are rarer, and ``y`` runs the other way, so ``y``
 joins even written as a bare capital.
 
@@ -583,7 +606,7 @@ joins even written as a bare capital.
     >>> parse("Jose e Maria Santos").given        # mixed case decides itself
     'Jose e Maria'
 
-A member also reports the fork, so a caller can see which reading was
+Such a connective also reports the fork, so a caller can see which reading was
 taken:
 
 .. doctest::
@@ -596,7 +619,8 @@ does in Spanish, take it out and the connective reading comes back:
 
 .. doctest::
 
-    >>> lex = Lexicon.default().remove(conjunctions_ambiguous={"e"})
+    >>> lex = Lexicon.default().add("e", kind="conjunction",
+    ...                             may_be_initial=False)
     >>> Parser(lexicon=lex).parse("jose e maria santos").given
     'jose e maria'
 
@@ -606,7 +630,8 @@ joins in a one-case name too:
 
 .. doctest::
 
-    >>> lex = Lexicon.default().remove(conjunctions_ambiguous={"i"})
+    >>> lex = Lexicon.default().add("i", kind="conjunction",
+    ...                             may_be_initial=False)
     >>> Parser(lexicon=lex).parse("josep carod i rovira").family
     'carod i rovira'
 
@@ -615,14 +640,15 @@ never a connective, add the other one instead:
 
 .. doctest::
 
-    >>> lex = Lexicon.default().add(conjunctions_ambiguous={"y"})
+    >>> lex = Lexicon.default().add("y", kind="conjunction",
+    ...                             may_be_initial=True)
     >>> Parser(lexicon=lex).parse("juan garcia y lopez").middle
     'garcia y'
 
 Bound given names
 ~~~~~~~~~~~~~~~~~~
 
-``bound_given_names`` holds given-name prefixes that attach to the
+A ``bound_given`` reading is a given-name prefix that attaches to the
 following word to form one given name — ``abdul``, ``abu``, ``umm`` and
 their Arabic-script spellings (``عبد``, ``أبو``, ``أم``) among them:
 
@@ -631,15 +657,16 @@ their Arabic-script spellings (``عبد``, ``أبو``, ``أم``) among them:
     >>> parse("abdul salam ahmed salem").given
     'abdul salam'
 
-Add your own, or empty the set to switch the behavior off entirely:
+Add your own, or take out every one to switch the behavior off
+entirely:
 
 .. doctest::
 
-    >>> lex = Lexicon.default().add(bound_given_names={"mohamad"})
+    >>> lex = Lexicon.default().add("mohamad", kind="bound_given")
     >>> Parser(lexicon=lex).parse("mohamad salam ahmed salem").given
     'mohamad salam'
-    >>> d = Lexicon.default()
-    >>> off = d.remove(bound_given_names=set(d.bound_given_names))
+    >>> from nameparser.config.bound_given_names import BOUND_GIVEN_NAMES
+    >>> off = Lexicon.default().remove(*BOUND_GIVEN_NAMES, kind="bound_given")
     >>> Parser(lexicon=off).parse("abdul salam ahmed salem").given
     'abdul'
 
@@ -1035,7 +1062,7 @@ matches the word with them:
 .. doctest::
 
     >>> listed = Parser(policy=Policy(two_family_names=True),
-    ...                 lexicon=Lexicon.default().add(given_names={"luis"}))
+    ...                 lexicon=Lexicon.default() | Lexicon(given_names={"luis"}))
     >>> two_names.parse("José Luis Pérez").family
     'Luis Pérez'
     >>> luis = listed.parse("José Luis Pérez")
@@ -1161,12 +1188,13 @@ fields.
 Teaching the splitter a surname
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To teach the splitter a surname it doesn't ship with, add it to the
-``surnames`` vocabulary like any other word:
+To teach the splitter a surname it doesn't ship with, join a lexicon
+holding it to the ``surnames`` list, a list rather than readings since
+it divides a name instead of gating a word:
 
 .. doctest::
 
-    >>> lex = Lexicon.default().add(surnames={"김민"})
+    >>> lex = Lexicon.default() | Lexicon(surnames={"김민"})
     >>> Parser(lexicon=lex).parse("김민준").family
     '김민'
 
@@ -1218,25 +1246,24 @@ Two behaviors apply however both fields are set:
     >>> both_off.parse("田中さん").suffix
     'さん'
 
-The honorific vocabulary is the peel's off-switch. Removing an entry
-from ``honorific_tails`` leaves that honorific glued, while the spaced
-form still reads it as a suffix:
+The honorific vocabulary is the peel's off-switch. Taking the
+``attached`` property off an honorific's reading leaves that honorific
+glued, while the spaced form still reads it as a suffix:
 
 .. doctest::
 
-    >>> no_san = Parser(
-    ...     lexicon=Lexicon.default().remove(honorific_tails={"さん"}))
+    >>> no_san = Parser(lexicon=Lexicon.default().add(
+    ...     "さん", kind="honorific", attached=None))
     >>> no_san.parse("田中さん").family
     '田中さん'
     >>> no_san.parse("田中 さん").suffix
     'さん'
 
-``honorific_tails`` marks a subset of ``suffix_words``, so dropping a
-word from it alone orphans nothing and needs no matching
-``suffix_words`` edit. Emptying it is also how to opt out of what the
-peel *costs* a non-ASCII parse: an empty ``honorific_tails`` stops the
-peel at its first check, whereas ``segment_scripts`` never gated it and
-so cannot turn it off.
+The suffix reading stays, so the word is still a suffix written apart.
+Taking ``attached`` off every honorific is also how to opt out of what
+the peel *costs* a non-ASCII parse: with none attached the peel stops
+at its first check, whereas ``segment_scripts`` never gated it and so
+cannot turn it off.
 
 .. _brackets:
 
@@ -1256,7 +1283,7 @@ no brackets and nothing configured:
 
 :ref:`nicknames-and-maiden-names` in the usage guide covers how the
 marked forms read. The marker words themselves are the
-``maiden_markers`` vocabulary, a ``Lexicon`` field, shipped in several
+``birth_marker`` readings of a ``Lexicon``, shipped in several
 languages (see :mod:`nameparser.config.maiden_markers`). Add your
 own like any other word; a marker you add works bare and in brackets
 alike:
@@ -1266,7 +1293,7 @@ alike:
     >>> parse("Jane Smith formerly Jones").maiden       # not a marker
     ''
     >>> marked = Parser(
-    ...     lexicon=Lexicon.default().add(maiden_markers={"formerly"}))
+    ...     lexicon=Lexicon.default().add("formerly", kind="birth_marker"))
     >>> marked.parse("Jane Smith formerly Jones").maiden
     'Jones'
     >>> marked.parse("Jane Smith (formerly Jones)").maiden
@@ -1730,7 +1757,7 @@ you parse.
     # myapp/names.py
     from nameparser import Lexicon, Parser, Policy
 
-    lex = Lexicon.default().add(titles={"dean"})
+    lex = Lexicon.default().remove("dean", kind="given")
     policy = Policy(strip_emoji=False)
     parser = Parser(lexicon=lex, policy=policy)
 

@@ -38,7 +38,7 @@ Source: the 2015 South Korean census surname tables -- the most common
 single-syllable surnames (Kim/Lee/Park alone cover ~45% of the
 population) plus the two-syllable surnames in current use. A coverage
 floor, not the complete census roster: extend with
-``Lexicon.default().add(surnames={...})``.
+``Lexicon.default() | Lexicon(surnames={...})``.
 """
 
 

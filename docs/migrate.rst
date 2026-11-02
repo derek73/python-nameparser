@@ -12,8 +12,10 @@ per old name.
 The 3.0 API is the one 2.0 introduced — ``parse``, ``Parser``,
 ``Lexicon``, ``Policy``, ``Locale`` and ``ParsedName``, with
 :mod:`nameparser.locales` — and its names and signatures carry into 3.0
-gaining additions only. The vocabulary data modules in
-``nameparser.config`` (``titles``, ``particles`` and the rest) stay.
+gaining additions only, save one: a ``Lexicon`` is configured by
+*reading* in 3.0, its 2.x set fields internal (`Lexicon fields →
+readings`_). The vocabulary data modules in ``nameparser.config``
+(``titles``, ``particles`` and the rest) stay.
 Separately, the output model changes in 3.0: ``str()`` now renders a
 name in the order it was read in, with the separators it was written
 with (`Changed in 3.0`_). Further output changes come with the 3.0
@@ -42,12 +44,12 @@ exceptions `Finding the sites`_ names:
        the `Attribute map`_
    * - ``Constants(...)``, ``constants.copy()`` and the shared
        ``CONSTANTS``
-     - ``Parser(lexicon=Lexicon.default().add(titles={"dean"}))``, and
-       the `Config map`_ for each setting
+     - ``Parser(lexicon=Lexicon.default().remove("dean",
+       kind="given"))``, and the `Config map`_ for each setting
    * - ``SetManager``, ``TupleManager`` and ``RegexTupleManager`` in
        ``nameparser.config``
-     - ``Lexicon`` fields take plain sets:
-       ``Lexicon.default().add(titles={"dean"})``
+     - ``Lexicon.add`` and ``Lexicon.remove`` take words and a reading
+       kind: ``Lexicon.default().add("leed", kind="credential")``
    * - ``nameparser.util`` and its ``lc``
      - ``value.lower().strip(".")``
    * - Loading a pickled ``HumanName``
@@ -291,14 +293,16 @@ Vocabulary sets → Lexicon
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The vocabulary sets of a 1.x or 2.x ``Constants`` (and so of the shared
-``CONSTANTS``) map onto :class:`~nameparser.Lexicon` fields:
+``CONSTANTS``) map onto the 2.x :class:`~nameparser.Lexicon` field of
+the second column, and each of those onto the readings of
+`Lexicon fields → readings`_ below:
 
 .. list-table::
    :header-rows: 1
-   :widths: 30 40 30
+   :widths: 34 33 33
 
    * - 1.x/2.x ``Constants``
-     - 3.0 ``Lexicon``
+     - 2.x ``Lexicon`` field
      - Note
    * - ``titles``
      - ``titles``
@@ -329,32 +333,122 @@ The vocabulary sets of a 1.x or 2.x ``Constants`` (and so of the shared
      -
    * - ``capitalization_exceptions``
      - ``capitalization_exceptions``
-     - Pair-valued, so not ``add()``/``remove()``; extend the defaults
-       with ``dataclasses.replace()`` as :ref:`case-exceptions` shows.
-       Since 2.4 a value is a case mask, so ``{"md": "M.D."}`` repairs
-       ``md`` to ``MD``
-
-Some ``Lexicon`` fields never had a ``Constants`` attribute —
-``conjunctions_ambiguous``, ``maiden_markers``, ``surnames``,
-``honorific_tails``, ``after_given_titles``, ``suffix_words_ambiguous``,
-``agnomens`` and ``given_name_abbreviations`` — so code coming from
-``Constants`` has nothing to translate for them.
+     - A field still. Pair-valued, so not ``add()``/``remove()``; extend
+       the defaults with ``dataclasses.replace()`` as
+       :ref:`case-exceptions` shows. Since 2.4 a value is a case mask,
+       so ``{"md": "M.D."}`` repairs ``md`` to ``MD``
 
 .. warning::
 
-   ``non_first_name_prefixes`` and ``particles_ambiguous`` mark
-   **complementary** sets, not the same set under a new name.
    ``non_first_name_prefixes`` lists particles that are *never* read as
-   a given name; ``particles_ambiguous`` lists the particles that
-   *may* be read as one. The same holds for the config constant behind
-   it: ``particles.NON_GIVEN_NAME_PARTICLES`` marks the never-given
-   set, so it is the complement of ``particles_ambiguous`` too, however
-   much the two names suggest otherwise. Translating a customization
-   means flipping the set: ``particles_ambiguous = lexicon.particles -
-   constants.non_first_name_prefixes``. Copying
-   ``non_first_name_prefixes`` straight into ``particles_ambiguous``
-   silently inverts which particles are allowed to double as a given
-   name.
+   a given name, which 3.0 spells as a particle with no ``given``
+   reading; a particle that *may* be read as one holds a ``given``
+   reading too. The config constant ``particles.NON_GIVEN_NAME_PARTICLES``
+   marks the never-given set, however much its name suggests
+   otherwise. So a 1.x ``non_first_name_prefixes`` entry is
+   ``remove(word, kind="given")``, and a word missing from it
+   ``add(word, kind="given")``.
+
+Lexicon fields → readings
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A 3.0 :class:`~nameparser.Lexicon` holds readings, what a word may be
+read as in the vocabulary files' terms, and compiles the sets a parse
+reads from them; the 2.x set fields are internal. A caller states what
+a word is, and the lexicon derives which sets that puts it in, so
+making ``Guru`` a possible given name is ``add("guru", kind="given")``
+where 2.x needed ``remove(titles={"guru"}).add(titles_ambiguous={"guru"})``.
+Each 2.x spelling raises where it is written, translated for the words
+it names:
+
+- ``add(...)`` or ``remove(...)`` with a set field as a keyword raises
+  ``TypeError`` naming the calls for those words, so
+  ``Lexicon.default().add(titles={"dean"})`` names
+  ``.remove('dean', kind='given')``;
+- ``Lexicon(titles=...)`` and ``dataclasses.replace(lexicon,
+  titles=...)`` raise the same way;
+- reading ``lexicon.titles`` raises ``AttributeError``, naming
+  :meth:`~nameparser.Lexicon.readings_of`, and for what a parse read,
+  :attr:`Token.reading <nameparser.Token.reading>`.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 32 68
+
+   * - 2.x ``Lexicon`` field
+     - 3.0 reading
+   * - ``titles``
+     - ``add(w, kind="title")``, or a finer title kind (``office``,
+       ``academic``, ...); where the word holds a ``given`` reading,
+       ``remove(w, kind="given")`` makes it a title everywhere
+   * - ``titles_ambiguous``
+     - ``add(w, kind="title")`` and ``add(w, kind="given")``
+   * - ``given_name_titles``
+     - ``add(w, kind="title", addresses="given")``
+   * - ``after_given_titles``
+     - ``add(w, kind="salutation", after_given=True)``
+   * - ``title_modifiers``
+     - ``add(w, kind="modifier")``
+   * - ``title_styles``
+     - ``add(w, kind="style")``
+   * - ``title_phrases``
+     - ``attaches=[...]`` on the first word's title reading, naming the
+       title words or kinds it pairs with
+   * - ``suffix_acronyms``
+     - ``add(w, kind="credential")``
+   * - ``suffix_acronyms_ambiguous``
+     - a credential and a ``family`` reading
+   * - ``suffix_words``
+     - ``add(w, kind="suffix")``, or ``generation`` for a word that
+       numbers its bearer (read by the ``generation`` view)
+   * - ``suffix_words_ambiguous``
+     - a ``generation`` and a ``family`` reading
+   * - ``agnomens``
+     - a ``family`` reading, then ``add(w, kind="agnomen")``, an agnomen
+       needing the name reading that gates it
+   * - ``honorific_tails``
+     - ``attached="after"`` on the suffix reading
+   * - ``particles``
+     - ``add(w, kind="particle")``, or a finer particle kind
+   * - ``particles_ambiguous``
+     - a particle and a ``given`` reading, so
+       ``remove(particles_ambiguous=...)`` is ``remove(w, kind="given")``
+   * - ``conjunctions``
+     - ``add(w, kind="conjunction")``
+   * - ``conjunctions_ambiguous``
+     - ``may_be_initial=True`` on the conjunction reading
+   * - ``bound_given_names``
+     - ``add(w, kind="bound_given")``
+   * - ``given_name_abbreviations``
+     - ``add(w, kind="given", same_as="<full name>")``
+   * - ``maiden_markers``
+     - ``add(w, kind="birth_marker")``, a phrase whole (``"z domu"``)
+   * - ``surnames``, ``given_names``, ``capitalization_exceptions``
+     - unchanged, fields still; ``add``/``remove`` no longer take the
+       two lists, which join with ``lexicon | Lexicon(surnames={...})``
+
+A ``Lexicon`` pickled by 2.x holds the compiled sets, and loads where
+readings compile them back: as the default or empty lexicon with each
+word that differs replaced by the readings it compiles to, so a 2.8
+``Lexicon.empty().add(titles={"dean"})`` loads equal to 3.0's
+``Lexicon.empty().add("dean", kind="title")``. One no readings can
+express (a word in ``particles_ambiguous`` and ``suffix_acronyms`` but
+not ``suffix_acronyms_ambiguous``, say) is refused, naming the fields;
+so are a ``Parser`` and a ``Locale`` holding it. A loaded lexicon keeps
+the vocabulary it was pickled with, not 3.0's: a 2.8.0 pickle of
+``Lexicon.default()``, or of a ``Parser()``, loads as the 3.0 default
+with the 23 credentials and 13 case masks 3.0 added taken out again, so it reads
+``"Jane Doe KC"`` as 2.8.0 did. Build a new ``Parser()`` for 3.0's
+vocabulary.
+
+A 2.x call or pickle that took a word out of a set but left it in a
+marker over that set (``remove(titles={"air"})``, which left ``air`` in
+``title_modifiers``) reads as though the marker went with the word: in
+3.0 the marker is a property of the reading, and goes with it. 2.x still
+read such a leftover in two places, so two readings move:
+``"John Smith, AIR"`` gives suffix ``AIR`` where 2.8.0 gave given ``AIR``,
+family ``John Smith``, and after ``remove(titles={"sir"})``,
+``"Sir. Smith"`` gives family ``Smith`` where 2.8.0 gave given ``Smith``.
 
 Default word lists are frozen
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -384,7 +478,7 @@ to a parser:
     >>> from nameparser import Lexicon, Parser
     >>> parse("Dean Smith").given          # a title only in a phrase
     'Dean'
-    >>> dean_parser = Parser(lexicon=Lexicon.default().add(titles={"dean"}))
+    >>> dean_parser = Parser(lexicon=Lexicon.default().remove("dean", kind="given"))
     >>> dean_parser.parse("Dean Smith").title
     'Dean'
 
@@ -715,7 +809,7 @@ grep your fixtures for, with what 1.4 read:
   holds for ``Princess``, ``Sultana``, ``Shaikh``, ``Sheik``, ``Shekh``,
   ``Shaik``, ``Cheikh``, ``Mahdi``, ``Bard``, ``Buddha``, ``Siddha``,
   ``Gyani`` and ``Wing``, and for a lone qualifier such as ``Grand``.
-  ``Lexicon.default().add(titles={"king"})`` makes one a title
+  ``Lexicon.default().remove("king", kind="given")`` makes one a title
   everywhere.
 - ``"Chief Justice John Roberts"`` and ``"Major General John Smith"``
   (2.7) — a title phrase is one title: 1.4 read title ``Chief``, first

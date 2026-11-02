@@ -36,8 +36,8 @@ name word and repairs as one (``Dclinpsy``). Written DOTTED
 (``d.clinpsy.``) it is a suffix by shape alone, with no vocabulary
 entry needed to read it as one, and repairs in all capitals the same
 as a listed acronym does (``D.CLINPSY.``). Either way, a caller who
-wants a specific spelling needs a ``suffix_acronyms`` entry
-(``Lexicon.add(suffix_acronyms={...})``) or a mask of
+wants a specific spelling needs a credential reading
+(``Lexicon.add(..., kind="credential")``) or a mask of
 its own. The map also carries the Irish patronymic particles ``ó``,
 ``ní`` and ``ua`` (#604): case repair writes a particle in lowercase
 (``de la Vega``), Irish writes these capitalized (``Liam Ó Murchú``),

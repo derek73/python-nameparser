@@ -477,7 +477,7 @@ def test_a_score_read_in_workers_is_the_score_read_in_process(
 
 def test_a_score_in_workers_refuses_a_parser_it_cannot_send_them() -> None:
     from nameparser import Lexicon
-    configured = Parser(lexicon=Lexicon.default().add(titles={"partner"}))
+    configured = Parser(lexicon=Lexicon.default().add("partner", kind="title"))
     with pytest.raises(ValueError, match=r"parser_of\(''\)"):
         agreement.score(list(_ALL), _PSC_FIELDS, configured, jobs=2)
     agreement.score(list(_ALL), _PSC_FIELDS, configured)  # the control: in process

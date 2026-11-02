@@ -92,6 +92,9 @@ Configuration
 .. autoclass:: nameparser.Lexicon
    :members:
 
+.. autoclass:: nameparser.LexiconReading
+   :members:
+
 .. autoclass:: nameparser.Policy
    :members:
 
@@ -201,11 +204,12 @@ Locales
 Default vocabulary
 ------------------
 
-The data modules in ``nameparser.config``: the word lists
-``Lexicon.default()`` is built from,
-and the compiled patterns in ``regexes``. To change a default for your
-parses, configure a :class:`~nameparser.Lexicon` rather than the
-module (:doc:`customize`). Coming from 1.x? See :doc:`migrate`.
+The data modules in ``nameparser.config``: the sets
+``Lexicon.default()`` compiles its readings to, read-only, and the
+compiled patterns in ``regexes``. To ask what a word may be read as,
+call :meth:`Lexicon.readings_of() <nameparser.Lexicon.readings_of>`; to
+change a default for your parses, configure a
+:class:`~nameparser.Lexicon` rather than the module (:doc:`customize`). Coming from 1.x? See :doc:`migrate`.
 
 .. automodule:: nameparser.config.titles
    :members:

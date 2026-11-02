@@ -182,7 +182,7 @@ from nameparser.locales._es_given_names import GIVEN_NAMES  # noqa: E402
 #: is the policy's name above plus the fragment's, ``es_given_names``
 #: naming the list ``nameparser/locales/_es_given_names.py`` ships, so
 #: a rule names the data as it names the switch.
-_ES_GIVEN = Lexicon.default().add(given_names=GIVEN_NAMES)
+_ES_GIVEN = Lexicon.default() | Lexicon(given_names=GIVEN_NAMES)
 CONFIGS: dict[str, tuple[Policy, Lexicon]] = {
     "two_family_names+es_given_names": (
         POLICIES["two_family_names"], _ES_GIVEN),

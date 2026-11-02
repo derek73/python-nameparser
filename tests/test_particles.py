@@ -270,7 +270,7 @@ class LastNamePrefixSplitTestCase(ParsedNameTestBase):
         # path. Title is consumed first, so the fold does
         # not fire and the surname is already correct; asserts we don't corrupt
         # the title case.
-        parser = Parser(lexicon=Lexicon.default().add(titles={'gunny'}))
+        parser = Parser(lexicon=Lexicon.default().add('gunny', kind='title'))
         hn = parser.parse("Gunny de Mesnil")
         self.m(hn.title, "Gunny", hn)
         self.m(hn.given, "", hn)

@@ -1,5 +1,3 @@
-import dataclasses
-
 from nameparser import Lexicon, Parser, parse
 from tests.base import ParsedNameTestBase
 
@@ -141,8 +139,9 @@ class BoundGivenNamesTestCase(ParsedNameTestBase):
 
     # --- opt-out ---
     def test_opt_out_via_clear(self) -> None:
-        """Clearing bound_given_names restores prior behavior."""
-        lexicon = dataclasses.replace(Lexicon.default(), bound_given_names=frozenset())
+        """Removing every bound_given reading restores prior behavior."""
+        default = Lexicon.default()
+        lexicon = default.remove(*default._sets.bound_given_names, kind='bound_given')
         hn = Parser(lexicon=lexicon).parse("abdul salam ahmed salem")
         self.m(hn.given, "abdul", hn)
         self.m(hn.middle, "salam ahmed", hn)

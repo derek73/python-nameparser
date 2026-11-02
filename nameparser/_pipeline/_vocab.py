@@ -43,9 +43,7 @@ it re-exports. They sit here because every stage that reports a fork
 builds one, and the tags they read are this module's vocabulary.
 
 Layering: imports _lexicon, _policy, and _pipeline._state (WorkToken,
-comma_bucket, PendingReading -- read-only, never a whole ParseState),
-and _reading_index for the one fact no compiled set records, the kind
-of a listed suffix word (listed_word_kind_tag, 3.0's 4b).
+comma_bucket, PendingReading -- read-only, never a whole ParseState).
 """
 from __future__ import annotations
 
@@ -60,7 +58,6 @@ from nameparser._lexicon import (
 )
 from nameparser._policy import (CapsSuffixes, Policy, Script, _JA_SCRIPTS, _NO_INITIALS,
                                 _SCRIPT_RANGES, _script_matcher)
-from nameparser._reading_index import holds_kind, suffix_kind_of
 from nameparser._pipeline._state import (
     AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, COMMA_CHARS,
     CREDENTIAL_WORD_TAG, Deferred, GENERATION_WORD_TAG,
@@ -186,7 +183,7 @@ def in_initialless_script(text: str) -> bool:
 # 'Xyz. Smith, Ed' (UNLISTED, H2-shaped) both read family 'Dr.
 # Smith'/'Xyz. Smith', given 'Ed' at the peel (since #701 the listed
 # 'Dr.' then peels into the title, rules/H6), because is_leading_title
-# reads H2's shape and a bare `folded in lexicon.titles` lookup does
+# reads H2's shape and a bare `folded in lexicon._sets.titles` lookup does
 # not -- but name_word_count's OWN count disagreed: 'Xyz.' counted as
 # a name word where 'Dr.' did not, so 'Xyz. Smith, Ed' alone flipped
 # the comma structure to a credential run
@@ -221,7 +218,7 @@ _PERIOD_ABBREV = re.compile(r'^(?:' + _LETTER + r'){2,}\.$')
 def is_title_shaped(text: str, lexicon: Lexicon) -> bool:
     """Whether TEXT reads as a title by H2's shape -- the LISTED half
     being a separate lookup at each caller's own site
-    (is_title_piece/lexicon.titles), and the one vocabulary read here
+    (is_title_piece/lexicon._sets.titles), and the one vocabulary read here
     the given name written short, which outranks the shape (rules/H2,
     #789: 'Chas.' is no title). `name_word_count` and `title_readings`
     below are its callers; `_pieces.is_leading_title` asks the same question
@@ -1090,7 +1087,7 @@ def caps_shape_candidate(text: str, lexicon: Lexicon, policy: Policy,
     asks of words classify left untagged). A hand-written roster is a second place to remember,
     and it had already gone wrong: it named eleven of the thirteen
     fields, leaving `surnames` and `honorific_tails` out, so
-    `Lexicon.default().add(surnames={"dupont"})` still read
+    a `Lexicon` whose `surnames` listed "dupont" still read
     `Jean Pierre DUPONT` as suffix `DUPONT` -- a caller listing a word
     as a SURNAME and getting it read as a credential is this switch's
     own worst failure, arriving through the one wordlist that says
@@ -1507,7 +1504,7 @@ _OBJECT_LINKS = frozenset({"of", "the"})
 # of itself, asked of the phrases `attaches` compiled rather than of a
 # property of its own
 def in_a_title_phrase(text: str, lexicon: Lexicon) -> bool:
-    """Whether a phrase of `lexicon.title_phrases` that classify can
+    """Whether a phrase of `lexicon._sets.title_phrases` that classify can
     read holds `text`."""
     return _normalize(text) in _phrase_words(
         lexicon._sets.title_phrases, lexicon._sets.titles, lexicon._sets.titles_ambiguous)
@@ -1655,7 +1652,7 @@ def name_word_count(texts: Sequence[str], lexicon: Lexicon,
     predicate, the same one is_wholly_suffix asks, so the two agree
     about what a suffix word is; the title half asks BOTH the listed
     lookup and H2's shape test (`is_title_shaped`) -- a bare
-    `lexicon.titles` lookup here read 'Xyz.' as a name word where the
+    `lexicon._sets.titles` lookup here read 'Xyz.' as a name word where the
     leading peel reads it as a title, and that divergence is recorded
     once, at `is_title_shaped` itself
     (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
@@ -2263,43 +2260,6 @@ def suffix_kind(text: str,
     return (ReadingKind.CREDENTIAL,
             ReadingSource.SHAPE if SHAPE_ACRONYM_TAG in tags
             else ReadingSource.VOCABULARY)
-
-
-#: The tag naming a listed suffix word's kind in the shipped reading
-#: index, for the kinds with a reading kind of their own; a courtesy, an
-#: honorific or a status reads as a post-nominal word, and an agnomen
-#: has its own set and tag.
-_LISTED_WORD_KIND_TAGS = {"generation": GENERATION_WORD_TAG,
-                          "credential": CREDENTIAL_WORD_TAG}
-
-
-# rules/R8: "The kind of a word listed as a suffix word is the shipped
-# vocabulary's, read whatever the reading's default" -- the kind the
-# views partition the suffix by (decisions/R8, #326). A memo, C-level
-# on a hit, so a suffix word read before costs no frame; bounded since
-# its key is the caller's text.
-@functools.lru_cache(maxsize=4096)
-def listed_word_kind_tag(n: str) -> str | None:
-    """The kind tag classify writes beside "vocab:suffix-word" on a word
-    whose normalized form `n` is the one it read (a delimiter glued on
-    removed, rules/C10): the kind the compiled sets do not record (`jr`
-    and `esq` both compile into `suffix_words`), read from the shipped
-    files' reading index (3.0's 4b), so a word only a caller's
-    `Lexicon` lists has none."""
-    return _LISTED_WORD_KIND_TAGS.get(suffix_kind_of(n) or "")
-
-
-# rules/R9: "a particle the shipped vocabulary holds as a patronymic"
-# -- read at classify, as a listed suffix word's kind is (decisions/R9,
-# #754). A memo for the reason `listed_word_kind_tag` is one.
-@functools.lru_cache(maxsize=4096)
-def is_patronymic_particle(n: str) -> bool:
-    """Whether a file holds the normalized word `n` as a patronymic
-    particle (`bin`, `ibn`, `bat`), on by default or not: the kind the
-    compiled `particles` set does not record, read from the shipped
-    reading index (3.0's 4c), so a word only a caller's `Lexicon`
-    lists is a plain particle."""
-    return holds_kind(n, "patronymic")
 
 
 def name_reading(token: WorkToken, role: Role | Deferred) -> PendingReading:

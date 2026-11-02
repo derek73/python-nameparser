@@ -24,6 +24,7 @@ from nameparser import (
     Script, parse,
 )
 from nameparser._lexicon import _VOCAB_FIELDS
+from nameparser._reading_index import CATEGORY as _READING_KINDS
 from nameparser._pipeline import run
 from nameparser._pipeline._state import (AMBIGUOUS_ACRONYM_TAG,
                                          ParseState)
@@ -157,12 +158,14 @@ def test_a_leading_ambiguous_particle_is_reported_once_and_only_once(
     # vocabulary, for the reason test_parser.py's _TITLE_PARTICLES block
     # gives; a no-op against today's data, and #360-proof against
     # tomorrow's.
-    lex = Lexicon.default().add(titles={"freiherr"}, particles={"freiherr"})
+    lex = (Lexicon.default().add("freiherr", kind="title")
+           .add("freiherr", kind="particle"))
     # bound-given prefixes are excluded, not overlooked: 'abu' is both
     # an ambiguous particle and a bound given prefix, so whether it
     # forks depends on whether the bound join fired -- a second rule,
     # covered by the case corpus rather than by this sweep
-    particles = sorted(lex.particles_ambiguous - lex.bound_given_names)
+    particles = sorted(lex._sets.particles_ambiguous
+                       - lex._sets.bound_given_names)
     assert particles, "no ambiguous particles to exercise"
     failures = []
     for particle in particles:
@@ -1304,43 +1307,91 @@ _VOCAB = st.sampled_from([
     "김", "남궁", "남", "毛", "欧阳",
 ])
 
-# given_name_titles is the one field matched as a space-joined run, so
+# given_name_titles is the one set matched as a space-joined run, so
 # a multi-word phrase there is meaningful (not dead) and must not warn.
 # Derived from _VOCAB rather than duplicated, so the two pools cannot
 # drift apart.
 _TITLE_VOCAB = st.one_of(_VOCAB, st.just("grand duke"))
 
+#: Each compiled vocabulary set, by its `_LexiconSets` name, and the
+#: readings (kind, properties) a word drawn for it is given -- the
+#: readings that compile a word into that set, since 3.0 configures a
+#: Lexicon by reading (#754, 4i-b). One draw per set, as the 2.x
+#: strategy drew one per field, so every set is fuzzed in every example.
+_READINGS_FOR: dict[str, tuple[tuple[str, dict[str, object]], ...]] = {
+    "titles": (("title", {}),),
+    "given_name_titles": (("title", {"addresses": "given"}),),
+    "suffix_acronyms": (("credential", {}),),
+    "suffix_words": (("suffix", {}),),
+    "suffix_acronyms_ambiguous": (("credential", {}), ("family", {})),
+    "particles": (("particle", {}),),
+    "particles_ambiguous": (("particle", {}), ("given", {})),
+    "conjunctions": (("conjunction", {}),),
+    "conjunctions_ambiguous": (("conjunction", {"may_be_initial": True}),),
+    "bound_given_names": (("bound_given", {}),),
+    "given_name_abbreviations": (("given", {"same_as": "jack"}),),
+    "maiden_markers": (("birth_marker", {}),),
+    "honorific_tails": (("honorific", {"attached": "after"}),),
+    "after_given_titles": (("salutation", {"after_given": True}),),
+    "suffix_words_ambiguous": (("generation", {}), ("family", {})),
+    "agnomens": (("agnomen", {}), ("family", {})),
+    "titles_ambiguous": (("title", {}), ("given", {})),
+    "title_modifiers": (("modifier", {}),),
+    "title_styles": (("style", {}),),
+    # a phrase of the word and any title of kind `title` drawn
+    "title_phrases": (("title", {"attaches": ["title"]}),),
+}
 
-def _fix_invariants(**fields: frozenset[str]) -> dict[str, frozenset[str]]:
-    """Repair a random draw into a legal Lexicon instead of generating
-    one legally.
-
-    Drawing dependent subsets directly (particles_ambiguous from
-    whatever particles happened to be drawn) makes the strategy tree
-    deep and mostly rejects; intersecting after the fact keeps every
-    draw usable and still reaches every shape. The seven rules are
-    Lexicon's own, restated here on purpose -- if one changes, this
-    fails loudly rather than silently fuzzing a narrower space.
-    """
-    fields["particles_ambiguous"] &= fields["particles"]
-    fields["suffix_acronyms_ambiguous"] &= fields["suffix_acronyms"]
-    fields["suffix_words"] -= fields["suffix_acronyms_ambiguous"]
-    # order matters: must run AFTER the suffix_words subtraction above,
-    # or that later subtraction could re-orphan a tail this repair just
-    # fixed
-    fields["honorific_tails"] &= fields["suffix_words"]
-    fields["suffix_words_ambiguous"] &= fields["suffix_words"]
-    fields["suffix_words_ambiguous"] -= (
-        fields["suffix_acronyms"] - fields["suffix_acronyms_ambiguous"])
-    fields["bound_given_names"] -= (
-        fields["particles"] - fields["particles_ambiguous"])
-    return fields
-
-
-# Derived, never listed: a new vocabulary field must be fuzzed the day
-# it is added, and a hand-copied list would leave it silently unfuzzed
-# -- the invisible gap this whole layer exists to prevent.
+# Derived, never listed: a new vocabulary set must be fuzzed the day it
+# is added, and a hand-copied list would leave it silently unfuzzed --
+# the invisible gap this whole layer exists to prevent. The lists stay
+# constructor fields; every other set is reached through its readings,
+# and a set with no entry above fails here rather than going unfuzzed.
 _SET_FIELDS = _VOCAB_FIELDS
+assert set(_READINGS_FOR) == set(_SET_FIELDS) - {"surnames", "given_names"}
+
+#: The order the drawn readings are added in: titles first, so a title
+#: reading never lands on a word already holding a given one (the add
+#: that would warn, rules/H9), then the names, so a bound given name
+#: that is also a particle holds its given reading before it is bound
+#: (an add the Lexicon would refuse) -- the compiled sets are the same
+#: in any order.
+_CATEGORY_ORDER = ("title", "name", "suffix", "particle", "conjunction",
+                   "bound_given", "relation")
+
+
+def _fix_invariants(drawn: dict[str, frozenset[str]],
+                    ) -> dict[str, dict[str, dict[str, object]]]:
+    """Repair a random draw into legal readings instead of generating
+    them legally, word -> kind -> properties.
+
+    Drawing dependent memberships directly makes the strategy tree deep
+    and mostly rejects; repairing after the fact keeps every draw
+    usable and still reaches every shape. The three rules are the
+    Lexicon's own refusals, restated here on purpose -- if one changes,
+    this fails loudly rather than silently fuzzing a narrower space: a
+    word holds one suffix kind (the first drawn, in `_READINGS_FOR`
+    order, is kept); `may_be_initial` marks only a single cased letter;
+    and a bound given name that is a particle with no given reading
+    stops being a bound given name.
+    """
+    out: dict[str, dict[str, dict[str, object]]] = {}
+    for name, readings in _READINGS_FOR.items():
+        for word in sorted(drawn[name]):
+            held = out.setdefault(word, {})
+            for kind, props in readings:
+                if _READING_KINDS[kind] == "suffix" and any(
+                        _READING_KINDS[k] == "suffix" and k != kind for k in held):
+                    continue
+                if props.get("may_be_initial") and not (
+                        len(word) == 1 and word.upper() != word.lower()):
+                    props = {}
+                held.setdefault(kind, {}).update(props)
+    for word, held in out.items():
+        if ("bound_given" in held and "given" not in held
+                and any(_READING_KINDS[k] == "particle" for k in held)):
+            del held["bound_given"]
+    return out
 
 
 @st.composite
@@ -1357,14 +1408,24 @@ def _recased(draw: st.DrawFn, word: str) -> str:
 
 @st.composite
 def _lexicons(draw: st.DrawFn) -> Lexicon:
-    fields = {name: draw(st.frozensets(
+    drawn = {name: draw(st.frozensets(
         _TITLE_VOCAB if name == "given_name_titles" else _VOCAB,
         max_size=5))
               for name in _SET_FIELDS}
     keys = draw(st.lists(_VOCAB, max_size=3))
     caps = [(key, draw(_recased(key))) for key in keys]
-    return Lexicon(capitalization_exceptions=tuple(caps),
-                   **_fix_invariants(**fields))
+    lexicon = Lexicon(capitalization_exceptions=tuple(caps),
+                      surnames=drawn["surnames"],
+                      given_names=drawn["given_names"])
+    readings = _fix_invariants(drawn)
+    adds = sorted(
+        ((_READING_KINDS[kind], kind, sorted(props.items()), word)
+         for word, held in readings.items()
+         for kind, props in held.items()),
+        key=lambda a: (_CATEGORY_ORDER.index(a[0]), a[1], repr(a[2]), a[3]))
+    for _category, kind, props, word in adds:
+        lexicon = lexicon.add(word, kind=kind, **dict(props))
+    return lexicon
 
 
 # script_orders' legal values are as restricted as name_order's (only
@@ -1435,7 +1496,7 @@ def _names_using(draw: st.DrawFn, lexicon: Lexicon,
     note.
     """
     vocab = sorted({w for name in _SET_FIELDS
-                    for w in getattr(lexicon, name)})
+                    for w in getattr(lexicon._sets, name)})
     # script_segment (#271, #308) holds the two halves a space-joined
     # name can never reach, and BOTH need their token derived from the
     # draw: waiting for a drawn entry and a matching literal to
@@ -1458,8 +1519,12 @@ def _names_using(draw: st.DrawFn, lexicon: Lexicon,
     # derandomize=True seed -- peel and surname split are told apart by
     # its tail_tag argument -- and origin/master's version of this
     # strategy counts ZERO surname splits against two peels, while this
-    # one counts 23 against one. That figure is reproducible by anyone
-    # in one command and moves only when these strategies do.
+    # one counted 23 against one when this was written; re-taken on
+    # 2026-11-02, the 2.8-era strategy at 3.0's 4i-b base counted 9
+    # against 1, and the reading-built strategy that replaced it 7
+    # against 5, its `attaches` making real title phrases in the pool.
+    # Reproducible in one command, and moving only when these
+    # strategies do.
     # Being in the POOL is not the same as being in the NAME, and for
     # the surname half that gap was the whole story. Two things must
     # coincide before the shape is legal at all -- a HANGUL surname
@@ -1532,7 +1597,7 @@ def _names_using(draw: st.DrawFn, lexicon: Lexicon,
     # every index sampled_from draws -- which would defeat
     # derandomize=True on the whole strategy, not just this slice.
     unspaced = sorted(w + "민준" for w in lexicon.surnames)
-    glued = sorted("민준" + w for w in lexicon.honorific_tails)
+    glued = sorted("민준" + w for w in lexicon._sets.honorific_tails)
     # plain names and structure characters are always available, so the
     # pool is never empty even for an empty lexicon
     pieces = st.sampled_from(
@@ -1631,8 +1696,14 @@ _HOSTILE = st.sampled_from([
 _POLICY_FIELDS = tuple(f.name for f in dataclasses.fields(Policy))
 
 
-@given(st.sampled_from(_SET_FIELDS + ("capitalization_exceptions",)),
-       _HOSTILE)
+#: What a caller configures a Lexicon through: its three fields, and
+#: since 3.0 a reading of each kind, the word given to add() (#754,
+#: 4i-b). Derived from the kind table, so a new kind is fuzzed too.
+_LEXICON_INPUTS = ("surnames", "given_names", "capitalization_exceptions",
+                   *(f"kind:{k}" for k in _READING_KINDS))
+
+
+@given(st.sampled_from(_LEXICON_INPUTS), _HOSTILE)
 @settings(max_examples=200, deadline=None, derandomize=True)
 def test_bad_lexicon_field_fails_cleanly(field: str, value: object) -> None:
     """A rejected configuration must be a DOCUMENTED rejection.
@@ -1642,7 +1713,11 @@ def test_bad_lexicon_field_fails_cleanly(field: str, value: object) -> None:
     where the message no longer names the field the caller typed.
     """
     try:
-        lexicon = Lexicon(**{field: value})     # type: ignore[arg-type]
+        if field.startswith("kind:"):
+            lexicon = Lexicon.empty().add(
+                value, kind=field[len("kind:"):])  # type: ignore[arg-type]
+        else:
+            lexicon = Lexicon(**{field: value})     # type: ignore[arg-type]
     except (ValueError, TypeError):
         return
     # Accepted, so it has to survive an actual parse -- construction
@@ -1822,8 +1897,8 @@ def _class_letters(lexicon: Lexicon) -> frozenset[str]:
     grids ask this of every row and there are five lexicons between
     them.
     """
-    return frozenset(w for w in lexicon.conjunctions
-                     if w in lexicon.suffix_words)
+    return frozenset(w for w in lexicon._sets.conjunctions
+                     if w in lexicon._sets.suffix_words)
 
 
 #: The two grids' lexicon variants, module-level so
@@ -1831,13 +1906,13 @@ def _class_letters(lexicon: Lexicon) -> frozenset[str]:
 #: `_rows` for what the third element of each declares.
 _CONNECTIVE_LEXICONS: _Variants = (
     ("default", Lexicon.default(), frozenset()),
-    ("conj+v", Lexicon.default().add(conjunctions={"v"}),
+    ("conj+v", Lexicon.default().add("v", kind="conjunction"),
      frozenset({"v"})),
-    ("part+y", Lexicon.default().add(particles={"y"}),
+    ("part+y", Lexicon.default().add("y", kind="particle"),
      frozenset({"y"})))
 _OFF_SWITCH_LEXICONS: _Variants = (
     ("default", Lexicon.default(), frozenset()),
-    ("conj+v", Lexicon.default().add(conjunctions={"v"}),
+    ("conj+v", Lexicon.default().add("v", kind="conjunction"),
      frozenset({"v"})))
 
 
@@ -2164,7 +2239,7 @@ def test_the_mark_is_exactly_the_parts_with_nothing_to_join() -> None:
 
     Stated over the PAIR of marks deliberately: keyed on the new mark
     alone it fails 272 times, every one of them under
-    `add(particles={"y"})`, where the part is all-particle and R2's
+    `add("y", kind="particle")`, where the part is all-particle and R2's
     OLD mark does the readmitting. Mutation-checked, re-measured
     2026-09-20 on the trimmed grid: neutering the walk's
     lone-connective arm, so the new mark is never written, fails this
@@ -2189,7 +2264,7 @@ def test_initials_take_only_base_words_and_drop_only_joiners() -> None:
     Mutation-checked, re-measured 2026-09-20 on the trimmed grid:
     swapping the two branches of the mark walk fails this on 94
     parses (188 over the full cross product) -- `Carod y` under
-    `add(particles={"y"})`, whose base is empty while its `y`
+    `add("y", kind="particle")`, whose base is empty while its `y`
     initials.
     """
     failures = _connective_findings()["INV3/4"]
@@ -2319,7 +2394,8 @@ def _off_switch(parser: Parser, letters: frozenset[str]) -> Parser:
     key = (id(parser), letters)
     if key not in _OFF_PARSERS:
         _OFF_PARSERS[key] = Parser(
-            lexicon=parser.lexicon.remove(conjunctions=set(letters)),
+            lexicon=parser.lexicon.remove(*sorted(letters),
+                                          kind="conjunction"),
             policy=parser.policy)
     return _OFF_PARSERS[key]
 
@@ -2482,7 +2558,7 @@ def _off_switch_findings() -> dict[str, list[str]]:
         # marked subset, so 'carod y rovira, v' and its ALL-CAPS twin
         # disagree, identically at the parent 46651750 (20 rows,
         # measured 2026-09-20, every one of them strict-comma).
-        if letters <= parser.lexicon.conjunctions_ambiguous:
+        if letters <= parser.lexicon._sets.conjunctions_ambiguous:
             roles_by[(label, text)] = tuple(
                 (tok.text.lower(), tok.role.value,
                  AMBIGUOUS_ACRONYM_TAG in tok.tags) for tok in on.tokens)
@@ -2944,7 +3020,7 @@ def _link_texts() -> dict[str, str]:
     tokens and then read the first parse at those offsets.
     """
     out: dict[str, str] = {}
-    markers = sorted(Lexicon.default().maiden_markers)
+    markers = sorted(Lexicon.default()._sets.maiden_markers)
     for head, marker, body, tail, comma in itertools.product(
             _LINK_HEADS, markers, _LINK_BODIES, _LINK_TAILS,
             (False, True)):
@@ -3517,7 +3593,7 @@ def _without_particle_masks() -> Lexicon:
     default = Lexicon.default()
     return dataclasses.replace(default, capitalization_exceptions=tuple(
         (key, mask) for key, mask in default.capitalization_exceptions
-        if key not in default.particles))
+        if key not in default._sets.particles))
 
 
 @pytest.mark.parametrize("module", sorted(_P7_SITE_EFFECT))
@@ -3735,8 +3811,10 @@ def test_a_given_name_written_short_reads_as_a_given_name() -> None:
     shape fire somewhere, so a pass is not a grid the shape never
     reaches."""
     lexicon = Lexicon.default()
-    off = lexicon.remove(
-        given_name_abbreviations=set(lexicon.given_name_abbreviations))
+    abbreviations = sorted(lexicon._sets.given_name_abbreviations)
+    # the set emptied: each word keeps its given reading, without the
+    # full name that makes it one written short
+    off = lexicon.add(*abbreviations, kind="given", same_as=None)
 
     def fields(name: ParsedName, plain: str = "", head: str = "") -> dict[str, str]:
         return {k: v.replace(plain, head) if plain else v
@@ -3754,7 +3832,7 @@ def test_a_given_name_written_short_reads_as_a_given_name() -> None:
         # is compared only with the set emptied)
         stand_in = Parser(policy=dataclasses.replace(
             policy, unlisted_caps_suffixes=CapsSuffixes.OFF))
-        for word in sorted(lexicon.given_name_abbreviations):
+        for word in abbreviations:
             # the bare spellings too, which the set must never move
             for head, plain in ((word.title() + ".", "Jack"),
                                 (word.upper() + ".", "JACK"),

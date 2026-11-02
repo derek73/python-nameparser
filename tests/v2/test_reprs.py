@@ -82,8 +82,8 @@ def test_policy_repr_shows_only_nondefault_fields() -> None:
 
 def test_lexicon_repr_is_bounded() -> None:
     assert repr(Lexicon.default()) == "Lexicon(default)"
-    lex = Lexicon.default().add(titles={"zqx", "zqy"})
-    assert repr(lex) == "Lexicon(default + titles: +2)"
+    lex = Lexicon.default().add("zqx", "zqy", kind="title")
+    assert repr(lex) == "Lexicon(default + title: +2)"
     assert "zqx" not in repr(lex)  # never dump contents
 
 
@@ -107,8 +107,8 @@ def test_lexicon_repr_diffs_against_nearer_baseline() -> None:
     # An empty()-built Lexicon must not render as default() minus ~700
     # entries -- diff against whichever named constructor is nearer.
     assert repr(Lexicon.empty()) == "Lexicon(empty)"
-    lex = Lexicon.empty().add(titles={"zqx"})
-    assert repr(lex) == "Lexicon(empty + titles: +1)"
+    lex = Lexicon.empty().add("zqx", kind="title")
+    assert repr(lex) == "Lexicon(empty + title: +1)"
 
 
 def test_policy_patch_repr_shows_only_set_fields() -> None:

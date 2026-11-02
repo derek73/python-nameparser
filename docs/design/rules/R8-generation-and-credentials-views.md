@@ -56,11 +56,11 @@
   ```
   "Smith, Jr., John"          →  credentials="John"
   ```
-- The kind of a word listed as a suffix word is the shipped vocabulary's, read whatever the reading's default, so a word a caller's own `Lexicon` lists in `suffix_words` alone is in the credentials, a generation word included, and so is a generation word a caller lists as an acronym; one the caller also lists in `suffix_words_ambiguous` or `agnomens` reads as a generation or an agnomen by that marker, save a word the shipped vocabulary lists as a credential, which listed in `suffix_words_ambiguous` reads as a credential, as the gated `KC` does (S11), and listed in `agnomens` reads as an agnomen.
+- The kind of a word listed as a suffix word is the lexicon's, the kind of the suffix reading its `Lexicon` holds, so a word a caller adds as a generation (`add("secundus", kind="generation")`) reads as one, and a word added as a credential, as a plain `suffix`, or as an honorific, status or courtesy word is in the credentials, a credential written as a word (`acronym=False`) as the gated `KC` is (S11); an agnomen reads as an agnomen. On the default lexicon the kind is the shipped vocabulary's, which compiles it, and a lexicon whose readings a caller removed reads the kind it holds, not the files'.
   ```
   "John Smith KC"             →  credentials="KC"
   ```
 
 ---
 **Signal:** none in the name: the reading each suffix word took
-**history:** decisions/R8 · **implemented:** nameparser/_types.py, nameparser/_pipeline/_vocab.py, nameparser/_pipeline/_classify.py
+**history:** decisions/R8 · **implemented:** nameparser/_types.py, nameparser/_pipeline/_classify.py

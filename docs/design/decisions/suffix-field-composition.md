@@ -21,7 +21,7 @@ Open: [#326](https://github.com/derek73/python-nameparser/issues/326) — whethe
   #326 quoted one. A date does not stop rot — #326 carried one too
   — so before relying on the split, check the set still looks like it:
 
-      uv run python -c "from nameparser import Parser; print(sorted(Parser().lexicon.suffix_words))"
+      uv run python -c "from nameparser import Parser; print(sorted(Parser().lexicon._sets.suffix_words))"
 
   What is durable here is the SHAPE of the finding — three kinds of thing, the honorifics the largest — not the three integers. A test asserting the counts is deliberately not the answer: that is the constant-content pattern, and it would fail on every legitimate vocabulary addition.
 

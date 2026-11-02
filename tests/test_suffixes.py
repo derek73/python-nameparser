@@ -1,5 +1,3 @@
-import dataclasses
-
 import pytest
 
 from nameparser import Lexicon, ParsedName, Parser, Policy, parse
@@ -451,21 +449,22 @@ class SuffixesTestCase(ParsedNameTestBase):
         self.m(hn.nickname, "", hn)
 
     def test_suffix_acronyms_ambiguous_custom_entry_stays_nickname(self) -> None:
-        # A custom suffix_acronyms_ambiguous entry keeps a suffix_acronyms
-        # member classified as a nickname instead of a suffix, confirming
-        # the exception list -- not a hardcoded check -- drives the behavior.
+        # A custom credential with a family reading beside it (compiled
+        # into suffix_acronyms_ambiguous) stays a nickname instead of a
+        # suffix, confirming the readings -- not a hardcoded check -- drive
+        # the behavior.
         # Title case: capitals in a mixed-case name settle the member as
         # the credential (rules/S1, #810).
-        lexicon = Lexicon.default().add(
-            suffix_acronyms={'xyz'},
-            suffix_acronyms_ambiguous={'xyz'},
+        lexicon = (
+            Lexicon.default().add('xyz', kind='credential').add('xyz', kind='family')
         )
         hn = Parser(lexicon=lexicon).parse("Andrew Perkins (Xyz)")
         self.m(hn.nickname, "Xyz", hn)
         self.m(hn.suffix, "", hn)
 
     def test_suffix_acronyms_ambiguous_removal_routes_to_suffix(self) -> None:
-        # Removing 'jd' from a custom suffix_acronyms_ambiguous flips Jd
+        # Removing the name readings that make every listed credential
+        # ambiguous (suffix_acronyms_ambiguous, compiled) flips Jd
         # from nickname to suffix. Uses a trailing-position name (unlike the
         # JEFFREY (JD) BRICKEN regression guard in test_nicknames.py) so
         # parse_full_name's trailing-run suffix detection actually picks it
@@ -473,8 +472,9 @@ class SuffixesTestCase(ParsedNameTestBase):
         # Title case, which leaves the member a nickname while it is listed
         # (rules/S1, #810).
         assert parse("Andrew Perkins (Jd)").nickname == "Jd"
-        lexicon = dataclasses.replace(
-            Lexicon.default(), suffix_acronyms_ambiguous=frozenset())
+        default = Lexicon.default()
+        lexicon = default.remove(
+            *default._sets.suffix_acronyms_ambiguous, kind='name')
         hn = Parser(lexicon=lexicon).parse("Andrew Perkins (Jd)")
         self.m(hn.nickname, "", hn)
         self.m(hn.suffix, "Jd", hn)

@@ -16,11 +16,11 @@ from nameparser._policy import Policy
 from nameparser._types import AmbiguityKind, Role
 
 # synthetic vocabulary: behavior given a lexicon, never default() contents
-_LEX = Lexicon(
-    suffix_acronyms=frozenset({"phd", "md", "do", "dds", "ma", "ed"}),
-    suffix_acronyms_ambiguous=frozenset({"ma", "ed", "do"}),
-    suffix_words=frozenset({"jr", "v"}),
-)
+_LEX = (Lexicon()
+        .add("phd", "md", "do", "dds", "ma", "ed", kind="credential")
+        # a family reading makes the credential ambiguous
+        .add("ma", "ed", "do", kind="family")
+        .add("jr", "v", kind="suffix"))
 
 
 def _decided(text: str, lexicon: Lexicon = _LEX,
@@ -250,7 +250,7 @@ def test_the_run_test_reads_lenient_comma_suffixes() -> None:
     # is_suffix_lenient bypasses the initial veto), strict under
     # Policy(lenient_comma_suffixes=False) (v1's is_suffix, which the
     # veto reads as a middle initial instead).
-    lex = _LEX.add(suffix_words={"b"})
+    lex = _LEX.add("b", kind="suffix")
     text = "John Smith, Ma B."
     state = ParseState(original=text, lexicon=lex, policy=Policy())
     out = _comma.decide(classify(segment(tokenize(extract_delimited(state)))))
@@ -314,7 +314,7 @@ def test_a_listed_surname_still_carries_the_name_contrast() -> None:
     # is a different question. A draft shared one predicate for both
     # and this read given 'XYZ'. The all-caps spelling is the control:
     # no word before the comma is written as a name, so no contrast.
-    lex = Lexicon.default().add(surnames={"smith", "jones"})
+    lex = Lexicon.default() | Lexicon(surnames={"smith", "jones"})
     out = _decided("Smith Jones, XYZ", lexicon=lex)
     assert out.structure is Structure.SUFFIX_COMMA
     assert out.tokens[2].role is Role.SUFFIX
@@ -391,9 +391,9 @@ def test_a_generational_connective_joins_no_title_after_the_comma() -> None:
     # it in a plain join, which only caller vocabulary can spell. The
     # control is the same word as a plain connective, which joins the
     # titles.
-    generational = Lexicon.default().add(conjunctions={"og"},
-                                         suffix_words={"og"})
-    plain = Lexicon.default().add(conjunctions={"og"})
+    generational = (Lexicon.default().add("og", kind="conjunction")
+                    .add("og", kind="suffix"))
+    plain = Lexicon.default().add("og", kind="conjunction")
     name = Parser(lexicon=generational).parse("Smith, Mr. og Mrs.")
     assert (name.title, name.suffix) == ("Mr. Mrs.", "og")
     name = Parser(lexicon=plain).parse("Smith, Mr. og Mrs.")

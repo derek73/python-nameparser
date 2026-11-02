@@ -51,18 +51,14 @@ reasoning behind the default doesn't apply to you — add the entry:
 
     >>> from nameparser import Lexicon, Parser
     >>> sayyid_lex = Lexicon.default().add(
-    ...     titles={"سيد"}, given_name_titles={"سيد"})
+    ...     "سيد", kind="title", addresses="given")
     >>> sayyid = Parser(lexicon=sayyid_lex).parse("سيد محمد")
     >>> sayyid.title, sayyid.given
     ('سيد', 'محمد')
 
-Both fields, because ``given_name_titles`` is a marker over ``titles``
-rather than a separate vocabulary: ``titles`` makes the word a title at
-all, and listing it in ``given_name_titles`` says the honorific
-precedes the *given* name — as Arabic ones do — so the word after it
-isn't read as a family name. Listing it in ``given_name_titles`` alone
-does nothing, and says nothing: the word is never read as a title, so
-the entry is never consulted.
+One reading, a title, with the property ``addresses="given"``, which
+says the honorific precedes the *given* name — as Arabic ones do — so
+the word after it isn't read as a family name.
 
 East Asian names need no pack
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -234,9 +230,11 @@ credential:
 .. doctest::
 
     >>> from nameparser import Parser
-    >>> mine = Lexicon(particles=frozenset({"do", "van"}),
-    ...                surnames=Lexicon.default().surnames)
-    >>> sorted(parser_for(en, base=Parser(lexicon=mine)).lexicon.particles)
+    >>> mine = Lexicon(surnames=Lexicon.default().surnames).add(
+    ...     "do", "van", kind="preposition")
+    >>> chosen = parser_for(en, base=Parser(lexicon=mine)).lexicon
+    >>> [w for w in ("do", "van")
+    ...  if any(r.category == "particle" for r in chosen.readings_of(w))]
     ['van']
 
 .. _strict-choice:
@@ -836,7 +834,7 @@ see :meth:`Policy.patched() <nameparser.Policy.patched>`.
 .. doctest::
 
     >>> from nameparser import Lexicon, Locale, PolicyPatch, parser_for
-    >>> kapitan_lex = Lexicon.empty().add(titles={"kapitan"})
+    >>> kapitan_lex = Lexicon.empty().add("kapitan", kind="military")
     >>> corp_pack = Locale(code="mycorp", lexicon=kapitan_lex,
     ...                     policy=PolicyPatch(middle_as_family=True))
     >>> kapitan = parser_for(corp_pack).parse("Kapitan Anna Maria Schmidt")
@@ -856,17 +854,17 @@ The lexicon fragment is validated on its own
 
 The ``policy`` half is a patch, but the ``lexicon`` half is not. A
 pack's :class:`~nameparser.Lexicon` is a complete value in its own
-right and is validated on its own, before it is unioned onto the base
-— so a fragment listing a word in ``particles_ambiguous``,
-``suffix_acronyms_ambiguous``, ``honorific_tails`` or
-``suffix_words_ambiguous`` must also list it in the set that field marks
-(``particles``, ``suffix_acronyms``, ``suffix_words``). A fragment holding ``particles_ambiguous={"van"}``
-without ``particles={"van"}`` raises ``ValueError`` before any union
-happens. ``given_name_titles``, ``conjunctions_ambiguous``,
-``after_given_titles`` and ``agnomens`` are not checked this way, and can mark a word only the base holds. ``zh`` is the
-shipped worked example: its ``Lexicon(surnames=...)`` has to satisfy
-every ``Lexicon`` rule standing alone, before anything unions it onto
-the base.
+right: its readings are checked as they are added (a phrase, a
+``may_be_initial`` on anything but a single cased letter, an agnomen
+with no name reading), and again when ``|`` joins them onto the base,
+where a reading that clashes with one the base holds raises with the
+pack's code. A fragment holding ``Lexicon.empty().add("dc",
+kind="generation")`` fails there, ``dc`` being a credential in the
+default and a word holding one suffix kind. A reading that marks
+another, as a ``given`` reading makes a particle possibly given, needs
+nothing else in the fragment: ``Lexicon.empty().add("mc", kind="given")``
+marks the base's particle ``mc``. ``zh`` is the shipped worked example:
+its ``Lexicon(surnames=...)`` holds a list and no reading.
 
 Contributing a pack to nameparser
 ----------------------------------

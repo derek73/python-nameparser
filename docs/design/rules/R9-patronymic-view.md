@@ -4,7 +4,7 @@
 
 **Then:** the words read as a patronymic, in whichever field the parse put them, make the patronymic view, every field keeping them, and the view joins them with spaces in written order, the family's words in the order the family writes them.
 
-- **A patronymic particle**: a particle the shipped vocabulary holds as a patronymic, read as a particle, with the words after it in its field, the parent's name.
+- **A patronymic particle**: a particle the lexicon holds as a patronymic, read as a particle, with the words after it in its field, the parent's name.
 - **The East Slavic rule** (`PatronymicRule.EAST_SLAVIC`, which RU turns on): a middle word carrying O1's patronymic ending.
 - **The Turkic rule** (`PatronymicRule.TURKIC`, which TR_AZ turns on): a standalone patronymic marker, O2's, with the name word before it in its comma part, the father's name, a marker in the maiden name taking the maiden name's word before it.
 
@@ -94,9 +94,9 @@
   "Siti binti Ahmad binti Hasan"  →  patronymic="binti Ahmad binti Hasan"
   "Leyla Vali qizi née Rasim qizi"  [tr_az]  →  patronymic="Vali qizi Rasim qizi"
   ```
-- A patronymic particle is the shipped vocabulary's, read whatever the reading's default, as R8 reads a suffix word's kind, so a word only a caller's `Lexicon` lists as a particle (`ben`, which the vocabulary excludes as a patronymic) is a plain particle.
+- A patronymic particle is one whose `Lexicon` holds a `patronymic` reading of it, as R8 reads a suffix word's kind: on the default the shipped vocabulary's, so `ben`, which the vocabulary excludes as a patronymic, is no particle there, a caller's `add("ben", kind="patronymic")` makes it one, and a word a caller adds as another particle kind is a plain particle.
 - A word the particle's run or the Turkic marker takes reads `patronymic` by position, its own reading (a name word, a bound given name, a particle) not kept in `Token.reading`.
 
 ---
 **Signal:** neighbor + shape: a listed patronymic particle before the parent's name or an opt-in marker after it, and an opt-in patronymic ending on a middle word
-**history:** decisions/R9 · **implemented:** nameparser/_types.py, nameparser/_pipeline/_assemble.py, nameparser/_pipeline/_classify.py, nameparser/_pipeline/_vocab.py
+**history:** decisions/R9 · **implemented:** nameparser/_types.py, nameparser/_pipeline/_assemble.py, nameparser/_pipeline/_classify.py

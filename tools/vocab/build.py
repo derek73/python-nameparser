@@ -1261,7 +1261,8 @@ def _behavior(r: Reading, prop: str) -> object:
 
 
 #: The constants _compiled.py defines, in its order, each with the
-#: nameparser.config module that re-exports it.
+#: nameparser.config module that re-exports it, or None for one only
+#: `Lexicon` reads, a kind the public sets do not record (#754, 4i-b).
 CONSTANTS = (
     ("GIVEN_NAME_TITLES", "titles"),
     ("TITLES", "titles"),
@@ -1284,6 +1285,9 @@ CONSTANTS = (
     ("SUFFIX_ACRONYMS_AMBIGUOUS", "suffixes"),
     ("SUFFIX_ACRONYMS", "suffixes"),
     ("CAPITALIZATION_EXCEPTIONS", "capitalization"),
+    ("GENERATION_WORDS", None),
+    ("CREDENTIAL_WORDS", None),
+    ("PATRONYMIC_PARTICLES", None),
 )
 
 
@@ -1365,7 +1369,8 @@ tools/vocab/build.py -- do not edit; edit the TOML and run
     {REFRESH}
 
 The public names are re-exported, with their documentation, by the
-nameparser.config modules (titles, particles, suffixes, ...).
+nameparser.config modules (titles, particles, suffixes, ...); the last
+three, the kinds those sets do not record, are read by Lexicon alone.
 """
 '''
 

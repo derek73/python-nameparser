@@ -12,7 +12,9 @@ one_case -- whether the name's own words are written in one case,
 recorded for the later stages that read it (#289/#516) and left alone
 where an earlier stage already asked.
 Reads: every Lexicon vocabulary field except surnames and
-honorific_tails, which script_segment consumes upstream; and, since
+honorific_tails, which script_segment consumes upstream, and the kinds
+of its suffix words and particles (Lexicon's generation_words,
+credential_words and patronymic_particles, internal sets, 3.0); and, since
 2.4, Policy.unlisted_dotted_suffixes and Policy.unlisted_caps_suffixes,
 which decide whether an UNLISTED dotted or all-caps token joins the
 ambiguous credential class by SHAPE (#516) -- the all-caps half here
@@ -72,7 +74,7 @@ from nameparser._lexicon import _normalize, _spells_an_initial
 from nameparser._policy import CapsSuffixes
 from nameparser._pipeline._state import (
     AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, CREDENTIAL_WORD_TAG,
-    GIVEN_ABBREVIATION_TAG, PATRONYMIC_TAG, SHAPE_ACRONYM_TAG,
+    GENERATION_WORD_TAG, GIVEN_ABBREVIATION_TAG, PATRONYMIC_TAG, SHAPE_ACRONYM_TAG,
     SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, TITLE_AMBIGUOUS_TAG, ParseState,
     Deferred, PendingAmbiguity, PendingReading,
     WorkToken, copy_with,
@@ -81,7 +83,7 @@ from nameparser._types import AmbiguityKind, ReadingKind, ReadingSource
 from nameparser._pipeline._vocab import (
     BUILTIN_GLUED_DELIMITERS, SPLIT_CHUNK, SPLIT_PAIR_OPENS, _INITIAL, caps_shape_candidate,
     composed_len, glued_cores, glued_stem, is_cased_paired_initials,
-    is_initial, is_one_case, is_patronymic_particle, listed_word_kind_tag,
+    is_initial, is_one_case,
     period_joined_vocab,
     split_pair,
     suffix_as_written, tag_marker_runs, title_readings,
@@ -160,18 +162,19 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
         if n in lex._sets.agnomens:
             tags.add(AGNOMEN_TAG)
         # rules/R8: "The kind of a word listed as a suffix word is the
-        # shipped vocabulary's" -- a gated credential (`kc`, #965) reads
-        # as a credential, not the generation the class otherwise holds
-        elif listed_word_kind_tag(n) == CREDENTIAL_WORD_TAG:
+        # lexicon's" -- a gated credential (`kc`, #965) reads as a
+        # credential, not the generation the class otherwise holds
+        elif n in lex._sets.credential_words:
             tags.add(CREDENTIAL_WORD_TAG)
     elif n in lex._sets.suffix_words:
         tags.add("vocab:suffix-word")
         # rules/R8: "The kind of a word listed as a suffix word is the
-        # shipped vocabulary's" -- read here, from the word as this
-        # stage reads it (decisions/R8, #326)
-        kind_tag = listed_word_kind_tag(n)
-        if kind_tag is not None:
-            tags.add(kind_tag)
+        # lexicon's" -- read here, from the word as this stage reads it
+        # (decisions/R8, #326; #754, 4i-b)
+        if n in lex._sets.generation_words:
+            tags.add(GENERATION_WORD_TAG)
+        elif n in lex._sets.credential_words:
+            tags.add(CREDENTIAL_WORD_TAG)
     if n in lex._sets.suffix_acronyms_ambiguous:
         tags.add(AMBIGUOUS_ACRONYM_TAG)
     # rules/P7: "A one-letter word written with its period is an
@@ -181,10 +184,9 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
         tags.add("particle")
         if n in lex._sets.particles_ambiguous:
             tags.add("vocab:particle-ambiguous")
-        # rules/R9: "a particle the shipped vocabulary holds as a
-        # patronymic" -- its kind, read here as a suffix word's is
-        # (decisions/R9, #754)
-        if is_patronymic_particle(n):
+        # rules/R9: "a particle the lexicon holds as a patronymic" -- its
+        # kind, read here as a suffix word's is (decisions/R9, #754)
+        if n in lex._sets.patronymic_particles:
             tags.add(PATRONYMIC_TAG)
     # rules/P8: "a single-letter connective reads as an initial
     # where the writing says so: written as a bare Latin capital in a

@@ -53,10 +53,10 @@ def _non_name_readings(lexicon: Lexicon) -> dict[str, frozenset[str]]:
     too, `del` and `da` among them, which the tool also leaves out), a
     title (an ambiguous one too), a suffix and a conjunction."""
     fields = {
-        "particle": lexicon.particles,
-        "title": lexicon.titles | lexicon.titles_ambiguous,
-        "suffix": lexicon.suffix_acronyms | lexicon.suffix_words,
-        "conjunction": lexicon.conjunctions,
+        "particle": lexicon._sets.particles,
+        "title": lexicon._sets.titles | lexicon._sets.titles_ambiguous,
+        "suffix": lexicon._sets.suffix_acronyms | lexicon._sets.suffix_words,
+        "conjunction": lexicon._sets.conjunctions,
     }
     return {kind: frozenset(given_name_key(w) for w in words)
             for kind, words in fields.items()}

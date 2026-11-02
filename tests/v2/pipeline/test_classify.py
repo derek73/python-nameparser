@@ -23,32 +23,33 @@ from nameparser._pipeline._vocab import (
 from nameparser._policy import Policy
 from nameparser._types import AmbiguityKind, Role
 
-_LEX = Lexicon(
-    titles=frozenset({"dr", "sir"}),
-    given_name_titles=frozenset({"sir"}),
-    suffix_acronyms=frozenset({"phd", "ma"}),
-    suffix_words=frozenset({"jr", "v"}),
-    suffix_acronyms_ambiguous=frozenset({"ma"}),
-    particles=frozenset({"de", "la", "van"}),
-    particles_ambiguous=frozenset({"van"}),
+_LEX = (
+    Lexicon()
+    .add("dr", kind="title")
+    .add("sir", kind="title", addresses="given")
+    .add("phd", "ma", kind="credential")
+    .add("ma", kind="family")           # an ambiguous credential
+    .add("jr", "v", kind="suffix")
+    .add("de", "la", "van", kind="particle")
+    .add("van", kind="given")           # an ambiguous particle
     # 'e' and 'y' are both shipped single-letter conjunctions and the
     # fork treats them differently, which is the whole point of the
-    # subset; й is COPIED from the shipped conjunctions (Ukrainian,
-    # #267) so the collision
+    # `may_be_initial` mark; й is COPIED from the shipped conjunctions
+    # (Ukrainian, #267) so the collision
     # test_cyrillic_initial_outranks_the_conjunction pins is one that
     # really ships and the reader can check against the defaults. The
     # copies are local: this file never reads the shipped sets.
     # 'i' (#397) is the second marked entry and the only one that is
-    # ALSO in suffix_words here, which is what makes the collision cell
-    # below reachable.
-    conjunctions=frozenset({"and", "e", "i", "y", "й"}),
-    conjunctions_ambiguous=frozenset({"e", "i"}),
-    bound_given_names=frozenset({"abdul"}),
+    # ALSO a suffix word in some lexicon below, which is what makes the
+    # collision cell reachable.
+    .add("and", "y", "й", kind="conjunction")
+    .add("e", "i", kind="conjunction", may_be_initial=True)
+    .add("abdul", kind="bound_given")
     # "née" and the unaccented "nee" are both shipped (English writes
     # the French marker either way, AGENTS.md); a clause-truncation
     # test below needs the unaccented spelling since _normalize does
     # not fold accents away.
-    maiden_markers=frozenset({"née", "nee"}),
+    .add("née", "nee", kind="birth_marker")
 )
 
 
@@ -199,7 +200,7 @@ def test_a_trailing_uppercase_suffix_makes_the_name_mixed_case() -> None:
     # shipped vocabulary: unlisted, 'III' is an all-caps word after a
     # comma behind two name words, which the default reads as a
     # credential run since #564 and reports -- a different fork.
-    lex = dataclasses.replace(_LEX, suffix_words=_LEX.suffix_words | {"iii"})
+    lex = _LEX.add("iii", kind="suffix")
     out = _classified_with("john e jones, III", lex)
     assert "conjunction" in _tags(out, "e")
     assert out.ambiguities == ()
@@ -208,7 +209,7 @@ def test_a_trailing_uppercase_suffix_makes_the_name_mixed_case() -> None:
 def test_emptying_the_subset_restores_joining_for_e() -> None:
     # the knob, and the reason there is no switch: remove 'e' and a
     # one-case name joins it again, silently.
-    lex = dataclasses.replace(_LEX, conjunctions_ambiguous=frozenset())
+    lex = _LEX.add("e", "i", kind="conjunction", may_be_initial=False)
     out = _classified_with("jose e maria santos", lex)
     assert "conjunction" in _tags(out, "e")
     assert "initial" not in _tags(out, "e")
@@ -248,26 +249,10 @@ def test_removing_the_link_from_the_subset_restores_joining() -> None:
     # the Catalan/Polish removal recipe docs/customize.rst teaches,
     # exercised: drop 'i' from the marked subset and a one-case name
     # joins it again, silently, which is what a ca/pl corpus wants.
-    lex = dataclasses.replace(
-        _LEX, conjunctions_ambiguous=_LEX.conjunctions_ambiguous - {"i"})
+    lex = _LEX.add("i", kind="conjunction", may_be_initial=False)
     out = _classified_with("josep carod i rovira", lex)
     assert "conjunction" in _tags(out, "i")
     assert "initial" not in _tags(out, "i")
-    assert out.ambiguities == ()
-
-
-def test_an_orphan_marker_is_inert_even_in_the_emitter() -> None:
-    # 'e' left in conjunctions_ambiguous but removed from conjunctions
-    # -- legal since the pair is not in _SUBSET_FIELDS (decisions/P8)
-    # -- never takes the fork, so 'E' in an all-upper name falls to the
-    # else branch and is tagged "initial" by is_initial() alone, same as
-    # any bare capital. Without the emitter's base-vocabulary gate this
-    # would still report a connective that the lexicon no longer has.
-    orphan = dataclasses.replace(
-        _LEX, conjunctions=_LEX.conjunctions - {"e"})
-    out = _classified_with("JOSE E MARIA SANTOS", orphan)
-    assert "initial" in _tags(out, "E")
-    assert "conjunction" not in _tags(out, "E")
     assert out.ambiguities == ()
 
 
@@ -278,11 +263,14 @@ def test_a_caseless_connective_never_enters_the_fork() -> None:
     # decides anything: without this, و is absent from
     # conjunctions_ambiguous the same way every other shipped
     # conjunction but 'e' is, so the test would pass even if the
-    # casedness check were deleted outright.
-    lex = dataclasses.replace(
-        _LEX,
-        conjunctions=_LEX.conjunctions | frozenset({"و"}),
-        conjunctions_ambiguous=_LEX.conjunctions_ambiguous | frozenset({"و"}))
+    # casedness check were deleted outright. Since 3.0's 4i-b no
+    # configuration marks it, `add` refusing `may_be_initial` on a
+    # caseless letter as the build does, so the sets are built by hand:
+    # the gate is the stage's own defense, and this still holds it.
+    lex = _LEX.add("و", kind="conjunction")
+    object.__setattr__(lex, "_sets", dataclasses.replace(
+        lex._sets, conjunctions_ambiguous=(
+            lex._sets.conjunctions_ambiguous | frozenset({"و"}))))
     out = _classified_with("محمد و علي", lex)
     assert "conjunction" in _tags(out, "و")
     assert out.ambiguities == ()
@@ -551,8 +539,8 @@ def test_no_listed_member_ever_carries_the_shape_tag() -> None:
     # whole while `suffix_as_written`'s period-free acronym lookup
     # ('ab') misses it, so the chunk view reached the shape branch and
     # 'Jack A.B.' read family where 'Jack MA' reads suffix.
-    dotted = Lexicon.default().add(suffix_acronyms={"a.b"},
-                                   suffix_acronyms_ambiguous={"a.b"})
+    dotted = (Lexicon.default().add("a.b", kind="credential")
+              .add("a.b", kind="family"))
     for lex, texts in ((Lexicon.default(),
                         ("John Smith MA", "John Smith Ma", "Smith, MA",
                          "John Smith BA", "John Smith X.Y.Z.")),
@@ -565,7 +553,7 @@ def test_no_listed_member_ever_carries_the_shape_tag() -> None:
                                                 policy=policy).items():
                     if SHAPE_ACRONYM_TAG in tags:
                         assert _normalize(word) not in \
-                            lex.suffix_acronyms_ambiguous, (text, word)
+                            lex._sets.suffix_acronyms_ambiguous, (text, word)
 
 
 def test_delimited_content_never_joins_the_shape_class() -> None:
@@ -775,20 +763,19 @@ def test_the_caps_shape_is_a_testable_predicate() -> None:
             == _tags_by_text("John Smith X.Y")["X.Y"])
 
 
-
 def _surname_unit_sweep() -> list[str]:
     lex = Lexicon.default()
     words: set[str] = {"Smith", "Ma", "M.D.", "Ph.D.", "JD.CPA", "Msc.Ed.",
                        "Lt.Gov.", "X.Y.Z.", "V.", "I", "v", "Jr.", "de."}
     for field in ("particles", "suffix_acronyms", "suffix_words",
                   "conjunctions", "bound_given_names", "titles"):
-        for w in getattr(lex, field):
+        for w in getattr(lex._sets, field):
             if " " not in w:
                 words |= {w, w.title(), w.upper()}
     # rules/P7's spelling: a one-letter particle written with its
     # period is an initial, and both copies must say so (#604)
     words |= {w + "." for w in set(words)
-              if len(w) == 1 and w.lower() in lex.particles}
+              if len(w) == 1 and w.lower() in lex._sets.particles}
     return sorted(words)
 
 

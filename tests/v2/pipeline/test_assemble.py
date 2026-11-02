@@ -12,13 +12,12 @@ from nameparser._types import AmbiguityKind, ParsedName, Role, Span, Token
 
 from ..cases import CASES, Case
 
-_LEX = Lexicon(
-    titles=frozenset({"dr"}),
-    particles=frozenset({"de", "la", "van"}),
-    particles_ambiguous=frozenset({"van"}),
-    suffix_words=frozenset({"iii"}),
-    maiden_markers=frozenset({"née"}),
-)
+_LEX = (Lexicon()
+        .add("dr", kind="title")
+        .add("de", "la", "van", kind="particle")
+        .add("van", kind="given")       # an ambiguous particle
+        .add("iii", kind="suffix")
+        .add("née", kind="birth_marker"))
 
 
 def _parse(text: str) -> ParsedName:
@@ -390,7 +389,7 @@ def test_a_caller_surname_reads_from_the_vocabulary_only_where_split_off(
         ) -> None:
     # spaced, a caller's own Latin surname is placed by position; the
     # list decides only a division of one written word
-    lex = Lexicon.default().add(surnames={"smith"})
+    lex = Lexicon.default() | Lexicon(surnames={"smith"})
     pn = Parser(lexicon=lex).parse("John Smith")
     assert pn.tokens[-1].reading == Reading("name", "family", "position")  # type: ignore[arg-type]
 
@@ -447,9 +446,10 @@ def test_every_suffix_words_reading_alternative_and_index_kind_agree(
     lex = Lexicon.default()
     kinds = {"generation": "generation", "agnomen": "agnomen",
              "credential": "credential"}
-    words = sorted(lex.suffix_words | lex.suffix_acronyms
-                   | lex.suffix_words_ambiguous
-                   | lex.suffix_acronyms_ambiguous)
+    sets = lex._sets
+    words = sorted(sets.suffix_words | sets.suffix_acronyms
+                   | sets.suffix_words_ambiguous
+                   | sets.suffix_acronyms_ambiguous)
     assert len(words) > 800
     mismatched = []
     reported = 0
@@ -545,19 +545,19 @@ def test_a_reading_names_the_files_holding_it(
     assert tok.reading.languages == languages
 
 
-@pytest.mark.parametrize("field,word,text,written", [
-    ("titles", "zzq-dr", "Zzq-Dr John Smith", "Zzq-Dr"),
-    ("particles", "mac-van", "John mac-van Smith", "mac-van"),
+@pytest.mark.parametrize("kind,word,text,written", [
+    ("title", "zzq-dr", "Zzq-Dr John Smith", "Zzq-Dr"),
+    ("particle", "mac-van", "John mac-van Smith", "mac-van"),
     # listed without the periods it is written with
-    ("titles", "drma", "Dr.Ma Smith", "Dr.Ma"),
+    ("title", "drma", "Dr.Ma Smith", "Dr.Ma"),
 ])
 def test_a_callers_whole_word_names_no_file_of_its_parts(
-        field: str, word: str, text: str, written: str) -> None:
+        kind: str, word: str, text: str, written: str) -> None:
     # the parse read it whole, so the files of `dr` or `van` are not
     # its reading's; the default's own joined words still name theirs
     # (`Lt.Gov.` in _EXPECTED_LANGUAGES, and `Dr.Ma` below)
     assert parse(text).tokens[0].reading is not None
-    lex = Lexicon.default().add(**{field: {word}})
+    lex = Lexicon.default().add(word, kind=kind)
     (tok,) = [t for t in Parser(lexicon=lex).parse(text).tokens
               if t.text == written]
     assert tok.reading is not None
@@ -568,13 +568,15 @@ def test_a_callers_whole_word_names_no_file_of_its_parts(
 def test_a_reading_from_a_callers_own_vocabulary_names_no_file() -> None:
     # a word no file holds, and one a file holds only off by default
     # (`st`, a Czech generation written `default = false`): its kind is
-    # the word's, read whatever the reading's default (4b), so a pack
-    # turning it on reads it alike, but no file holds it on
-    lex = Lexicon.default().add(titles={"zzq"}, suffix_words={"st"})
+    # the lexicon's since 4i-b (rules/R8's amendment), the caller's
+    # plain suffix reading a post-nominal where 4b read the file's off
+    # generation, and no file holds either on
+    lex = (Lexicon.default().add("zzq", kind="title")
+           .add("st", kind="suffix"))
     pn = Parser(lexicon=lex).parse("Zzq John Smith St")
     readings = {t.text: t.reading for t in pn.tokens}
     assert readings["Zzq"] == Reading("title", "title", "vocabulary")  # type: ignore[arg-type]
-    assert readings["St"] == Reading("generation", "suffix", "vocabulary")  # type: ignore[arg-type]
+    assert readings["St"] == Reading("post-nominal", "suffix", "vocabulary")  # type: ignore[arg-type]
     assert readings["Zzq"] is not None and readings["Zzq"].languages == ()
     assert readings["St"] is not None and readings["St"].languages == ()
 
@@ -584,8 +586,8 @@ def test_a_callers_whole_suffix_and_its_alternative_name_no_file_of_its_parts(
     # 'md' and 'ma' are in en, and the default reads 'MD-ZZ' by its
     # parts; listed whole, the token and the report's alternative name
     # none of their files
-    lex = Lexicon.default().add(suffix_acronyms={"md-zz", "ma-zz"},
-                                suffix_acronyms_ambiguous={"ma-zz"})
+    lex = (Lexicon.default().add("md-zz", "ma-zz", kind="credential")
+           .add("ma-zz", kind="family"))
     parser = Parser(lexicon=lex)
     (md,) = [t for t in parser.parse("John Smith MD-ZZ").tokens
              if t.text == "MD-ZZ"]
@@ -657,7 +659,7 @@ def test_every_particle_reads_patronymic_exactly_where_the_index_says(
     # file holds it as a patronymic particle, whatever its default
     from nameparser._reading_index import holds_kind
     lex = Lexicon.default()
-    words = sorted(lex.particles)
+    words = sorted(lex._sets.particles)
     assert len(words) > 100
     found = set()
     mismatched = []

@@ -1,5 +1,3 @@
-import dataclasses
-
 from nameparser import Lexicon, Parser, parse
 
 from tests.base import ParsedNameTestBase
@@ -8,36 +6,38 @@ from tests.base import ParsedNameTestBase
 class LexiconCustomizationTests(ParsedNameTestBase):
 
     def test_add_title(self) -> None:
-        lexicon = Lexicon.default().add(titles={'te'})
-        self.assertEqual(len(Lexicon.default().titles) + 1, len(lexicon.titles))
+        lexicon = Lexicon.default().add('te', kind='title')
+        self.assertEqual(len(Lexicon.default()._sets.titles) + 1, len(lexicon._sets.titles))
         hn = Parser(lexicon=lexicon).parse("Te Awanui-a-Rangi Black")
         self.m(hn.title, "Te", hn)
         self.m(hn.given, "Awanui-a-Rangi", hn)
         self.m(hn.family, "Black", hn)
 
     def test_remove_title(self) -> None:
-        lexicon = Lexicon.default().remove(titles={'hon'})
-        self.assertEqual(len(Lexicon.default().titles) - 1, len(lexicon.titles))
+        lexicon = Lexicon.default().remove('hon', kind='title')
+        self.assertEqual(len(Lexicon.default()._sets.titles) - 1, len(lexicon._sets.titles))
         hn = Parser(lexicon=lexicon).parse("Hon Solo")
         self.m(hn.given, "Hon", hn)
         self.m(hn.family, "Solo", hn)
 
     def test_add_multiple_arguments(self) -> None:
-        lexicon = Lexicon.default().add(titles={'dean', 'Chemistry'})
+        lexicon = Lexicon.default().add('chemistry', kind='title').remove('dean', kind='given')
         hn = Parser(lexicon=lexicon).parse("Assoc Dean of Chemistry Robert Johns")
         self.m(hn.title, "Assoc Dean of Chemistry", hn)
         self.m(hn.given, "Robert", hn)
         self.m(hn.family, "Johns", hn)
 
     def test_remove_multiple_arguments(self) -> None:
-        lexicon = Lexicon.default().remove(titles={'hon', 'ms'})
+        lexicon = Lexicon.default().remove('hon', 'ms', kind='title')
         hn = Parser(lexicon=lexicon).parse("Ms Hon Solo")
         self.m(hn.given, "Ms", hn)
         self.m(hn.middle, "Hon", hn)
         self.m(hn.family, "Solo", hn)
 
     def test_chain_multiple_arguments(self) -> None:
-        lexicon = Lexicon.default().remove(titles={'hon', 'ms'}).add(titles={'dean'})
+        lexicon = (
+            Lexicon.default().remove('hon', 'ms', kind='title').remove('dean', kind='given')
+        )
         hn = Parser(lexicon=lexicon).parse("Dean Ms Hon Solo")
         self.m(hn.title, "Dean", hn)
         self.m(hn.given, "Ms", hn)
@@ -45,7 +45,8 @@ class LexiconCustomizationTests(ParsedNameTestBase):
         self.m(hn.family, "Solo", hn)
 
     def test_clear_removes_all_entries(self) -> None:
-        lexicon = dataclasses.replace(Lexicon.default(), titles=frozenset())
+        default = Lexicon.default()
+        lexicon = default.remove(*default._sets.titles, kind='title')
         hn = Parser(lexicon=lexicon).parse("Ms Hon Solo")
         self.m(hn.given, "Ms", hn)
         self.m(hn.middle, "Hon", hn)

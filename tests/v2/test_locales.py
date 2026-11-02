@@ -790,10 +790,10 @@ def test_ja_stacked_on_zh_pays_the_zh_packs_documented_cost() -> None:
 def test_pack_vocabulary_entries_are_single_words() -> None:
     # The shipped-vocabulary guard (test_lexicon.py's
     # test_default_lexicon_builds_warning_free), extended to the OTHER
-    # vocabulary source: a locale pack's lexicon fields are matched one
-    # word at a time same as Lexicon.default()'s, so a multi-word entry
-    # in any field but given_name_titles would be dead. Checked
-    # directly against field contents (not by capturing the
+    # vocabulary source: a locale pack's compiled sets (`_sets`) are
+    # matched one word at a time same as Lexicon.default()'s, so a
+    # multi-word entry in any set but given_name_titles would be dead.
+    # Checked directly against the sets' contents (not by capturing the
     # construction-time warning) because a pack module is imported --
     # and its Locale built -- at most once per process; a later test in
     # this file may already have forced the import, which would make a
@@ -809,7 +809,7 @@ def test_pack_vocabulary_entries_are_single_words() -> None:
         for field in _VOCAB_FIELDS:
             if field == "given_name_titles":
                 continue
-            for entry in getattr(lexicon, field):
+            for entry in getattr(lexicon._sets, field):
                 assert entry == "".join(entry.split()), (
                     f"{code}: {field} entry {entry!r} contains "
                     f"whitespace and can never match")
@@ -903,7 +903,7 @@ def test_ru_plus_tr_az_unions_patronymic_rules() -> None:
 
 
 def test_pack_over_custom_base() -> None:
-    base = Parser(lexicon=Lexicon.default().add(titles={"zqxcustom"}))
+    base = Parser(lexicon=Lexicon.default().add("zqxcustom", kind="title"))
     p = parser_for(locales.RU, base=base)
     n = p.parse("Zqxcustom Иван Петрович")
     assert n.title == "Zqxcustom"       # base lexicon survives the fold

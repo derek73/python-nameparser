@@ -53,7 +53,7 @@ def test_locale_validates_component_types() -> None:
 def test_locale_with_lexicon_pickles_round_trip() -> None:
     import pickle
 
-    loc = Locale(code="ru", lexicon=Lexicon.empty().add(titles={"Dr."}))
+    loc = Locale(code="ru", lexicon=Lexicon.empty().add("Dr.", kind="title"))
     assert pickle.loads(pickle.dumps(loc)) == loc
 
 

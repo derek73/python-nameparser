@@ -5,7 +5,7 @@ __author_email__ = 'derek73@gmail.com'
 __license__ = "LGPL"
 __url__ = "https://github.com/derek73/python-nameparser"
 
-from nameparser._lexicon import Lexicon
+from nameparser._lexicon import Lexicon, LexiconReading
 from nameparser._locale import Locale
 from nameparser._parser import Parser, parse, parser_for
 from nameparser._policy import (
@@ -40,7 +40,7 @@ __all__ = [
     "Span", "Role", "Token", "Ambiguity", "AmbiguityKind", "Reading",
     "ReadingKind", "ReadingSource", "ParsedName",
     "STABLE_TAGS", "Segmentation", "Segmenter",
-    "Lexicon", "Policy", "PolicyPatch", "PatronymicRule", "Script", "UNSET",
+    "Lexicon", "LexiconReading", "Policy", "PolicyPatch", "PatronymicRule", "Script", "UNSET",
     "CapsSuffixes",
     "GIVEN_FIRST", "FAMILY_FIRST", "FAMILY_FIRST_GIVEN_LAST",
     "DEFAULT_NICKNAME_DELIMITERS", "DEFAULT_SCRIPT_ORDERS", "Locale",
