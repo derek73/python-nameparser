@@ -1339,6 +1339,12 @@ def test_a_2x_state_missing_a_field_or_not_normalized_is_refused() -> None:
     (lambda: Lexicon(_edits=5), TypeError, "_edits must be a tuple"),  # type: ignore[arg-type]
     (lambda: Lexicon(_base=5), TypeError, "base is 'default', 'empty'"),
     (lambda: Lexicon(_base=(("x", ("bad",)),)), TypeError, "snapshot is \\(word, rows\\)"),
+    (lambda: Lexicon(_base=(("x", (("en", ["title"], ()),)),)), TypeError, "the tag and the kind strings"),
+    (lambda: Lexicon(_base=(("x", ((3, "title", ()),)),)), TypeError, "the tag and the kind strings"),
+    (lambda: Lexicon(_base=(("x", (("en", "title", (("attaches", ["a"]),)),)),)), TypeError, "a value is a string"),
+    (lambda: Lexicon(_base=(("x", (("en", "title", (("nonsense", 1),)),)),)), ValueError, "the property 'nonsense'"),
+    (lambda: Lexicon(_base=(("x", (("en", "given", (("addresses", "given"),)),)),)), ValueError, "the property 'addresses'"),
+    (lambda: Lexicon(_base=(("x", (("en", "title", ("bad",)),)),)), TypeError, "has the row"),
     (lambda: LexiconReading(5, "title", "title"), TypeError, "text must be a string"),  # type: ignore[arg-type]
     (lambda: Lexicon.default().readings_of(5), TypeError, "takes a word"),  # type: ignore[arg-type]
 ])
@@ -1453,6 +1459,9 @@ def test_a_2x_removal_leaving_an_inert_marker_loads_as_the_removal(
     (lambda: Lexicon.empty().add(suffix_words={"zzq"},  # type: ignore[call-arg]
                                  honorific_tails={"zzq"}),
      "write lexicon.add('zzq', kind='suffix', attached='after')"),
+    # an agnomen taken out of its set is the gated class's generation
+    (lambda: Lexicon.default().remove(agnomens={"neto"}),  # type: ignore[call-arg]
+     "write lexicon.remove('neto', kind='agnomen').add('neto', kind='generation')"),
     # a phrase taken out of a kind's reach lists the words left, bounded
     (lambda: Lexicon.default().remove(title_phrases={"chief justice"}),
      "more]"),
@@ -1473,3 +1482,38 @@ def test_each_2x_spelling_is_translated_or_said_to_have_none(
         call: Callable[[], object], said: str) -> None:
     with pytest.raises(TypeError, match=re.escape(said)):
         call()
+
+
+#: (field, word, text, the reading under the 2.x state with the word
+#: removed from its base set and left in a marker): the marker goes with
+#: the word, decided 2026-11-02 (decisions/vocabulary-model's #754, a
+#: marker left behind entry). 2.x read the orphan in two places, and
+#: each row pins the reading that changed, so a translation keeping the
+#: orphan's effect fails here, where the set compare above cannot see it.
+_LEFT_BEHIND = [
+    # given_name_titles: 2.x's orphan still made H2's period-shape title
+    # address the given name, reading given 'Smith'
+    ("titles", "sir", "Sir. Smith", {"title": "Sir.", "family": "Smith"}),
+    ("titles", "sir", "Smith, Sir.", {"title": "Sir.", "family": "Smith"}),
+    # title_modifiers: 2.x's orphan still counted as listed in the
+    # capitals shape, reading given 'AIR', family 'John Smith'
+    ("titles", "air", "John Smith, AIR",
+     {"given": "John", "family": "Smith", "suffix": "AIR"}),
+]
+
+
+@pytest.mark.parametrize(("field", "word", "text", "reads"), _LEFT_BEHIND)
+def test_a_marker_left_behind_goes_with_its_word(
+        field: str, word: str, text: str, reads: dict[str, str]) -> None:
+    default = Lexicon.default()
+    sets = _fields_of(default._sets) | {"surnames": default.surnames}
+    loaded = _loaded(_state_2x(sets, default.capitalization_exceptions,
+                               **{field: sets[field] - {word}}))
+    with pytest.raises(TypeError, match="since 3.0") as raised:
+        default.remove(**{field: {word}})  # type: ignore[arg-type]
+    spelled = eval(str(raised.value).rsplit("write ", 1)[1],  # noqa: S307
+                   {"lexicon": default})
+    for lexicon in (loaded, spelled):
+        parsed = Parser(lexicon=lexicon).parse(text).as_dict()
+        assert {f: parsed[f] for f in reads} == reads
+        assert not {f for f, v in parsed.items() if v and f not in reads}

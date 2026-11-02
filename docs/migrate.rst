@@ -441,6 +441,15 @@ with the 23 credentials and 13 case masks 3.0 added taken out again, so it reads
 ``"Jane Doe KC"`` as 2.8.0 did. Build a new ``Parser()`` for 3.0's
 vocabulary.
 
+A 2.x call or pickle that took a word out of a set but left it in a
+marker over that set (``remove(titles={"air"})``, which left ``air`` in
+``title_modifiers``) reads as though the marker went with the word: in
+3.0 the marker is a property of the reading, and goes with it. 2.x still
+read such a leftover in two places, so two readings move:
+``"John Smith, AIR"`` gives suffix ``AIR`` where 2.8.0 gave given ``AIR``,
+family ``John Smith``, and after ``remove(titles={"sir"})``,
+``"Sir. Smith"`` gives family ``Smith`` where 2.8.0 gave given ``Smith``.
+
 Default word lists are frozen
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

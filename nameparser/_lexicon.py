@@ -975,32 +975,50 @@ def _check_base(base: object) -> object:
     from nameparser.config._index import READINGS
     if base == READINGS:
         return "default"
+    shape = ("a Lexicon snapshot is (word, rows) pairs, each row (tag, "
+             "kind, properties), the properties (name, value) pairs")
     for entry in base:
         if not (isinstance(entry, tuple) and len(entry) == 2
-                and isinstance(entry[0], str) and isinstance(entry[1], tuple)
-                and all(isinstance(row, tuple) and len(row) == 3
-                        and isinstance(row[2], tuple)
-                        and all(isinstance(pair, tuple) and len(pair) == 2
-                                and isinstance(pair[0], str)
-                                for pair in row[2])
-                        for row in entry[1])):
-            raise TypeError(f"a Lexicon snapshot is (word, rows) pairs, "
-                            f"each row (tag, kind, properties), the "
-                            f"properties (name, value) pairs, got "
-                            f"{entry!r}")
-        for _tag, kind, _pairs in entry[1]:
+                and isinstance(entry[0], str)
+                and isinstance(entry[1], tuple)):
+            raise TypeError(f"{shape}; got {entry!r}")
+        word, rows = entry
+        for row in rows:
+            if not (isinstance(row, tuple) and len(row) == 3):
+                raise TypeError(f"{shape}; {word!r} has the row {row!r}")
+            tag, kind, pairs = row
+            if not isinstance(tag, str) or not isinstance(kind, str):
+                raise TypeError(f"{shape}, the tag and the kind strings; "
+                                f"{word!r} has the row {row!r}")
             if kind not in ri.CATEGORY:
                 raise ValueError(
                     f"a Lexicon snapshot holds the reading kind {kind!r}, "
                     f"which this release does not know")
+            if not isinstance(pairs, tuple) or not all(
+                    isinstance(p, tuple) and len(p) == 2
+                    and isinstance(p[0], str) for p in pairs):
+                raise TypeError(f"{shape}; {word!r} has the row {row!r}")
+            for name, value in pairs:
+                if name not in ri.indexed(kind):
+                    raise ValueError(
+                        f"a Lexicon snapshot gives {word!r}'s {kind} reading "
+                        f"the property {name!r}, which a {kind} reading "
+                        f"does not take in this release")
+                try:
+                    hash(value)
+                except TypeError:
+                    raise TypeError(
+                        f"a Lexicon snapshot gives {word!r}'s {kind} reading "
+                        f"{name}={value!r}; a value is a string, a bool or "
+                        f"a tuple") from None
     return base
 
 
 # -- the 2.x set fields, translated --------------------------------------
 
 #: The fields whose membership puts a word in a category. A marker set
-#: implies its base: a 2.x orphan, which no reading compiles to, is
-#: refused at the compare a pickle load makes.
+#: implies its base here; a 2.x orphan, a marker entry its base does not
+#: hold, never reaches this, `_inert_dropped` having taken it out.
 _TITLE_FIELDS = frozenset({
     "titles", "titles_ambiguous", "given_name_titles", "after_given_titles",
     "title_modifiers", "title_styles"})
@@ -1107,7 +1125,10 @@ def _target_readings(word: str, member: frozenset[str],
         elif kinds_known and "credential_words" in member:
             suffix = "credential"
         elif "suffix_words_ambiguous" in member:
-            suffix = held if held in ri.GATED_WORDS else "generation"
+            # an agnomen is its own kind, so a word that stops being one
+            # is the generation the gated class otherwise holds
+            suffix = (held if held in ri.GATED_WORDS and held != "agnomen"
+                      else "generation")
         else:
             suffix = held or "suffix"
             if suffix == "agnomen" or (kinds_known and suffix in (
@@ -1153,13 +1174,18 @@ def _target_readings(word: str, member: frozenset[str],
     return out
 
 
-#: (marker, the sets one of which must hold a word for the parse to read
-#: the marker of it): a 2.x entry outside them was never read (the
-#: orphan contract each set's docs stated), and no reading compiles one,
-#: a property needing its reading. `_inert_dropped` takes them out of
-#: both sides of every compare, so a 2.x spelling or pickle that left
+#: (marker, the sets one of which holds a word its marker qualifies): no
+#: reading compiles a marker without its base, a property needing its
+#: reading, so `_inert_dropped` takes a 2.x entry outside them out of
+#: both sides of every compare, and a 2.x spelling or pickle that left
 #: one behind -- `remove(titles={"air"})` keeping `air` a modifier --
-#: translates as the removal it read as.
+#: reads as though the marker went with its word. 2.x did read such an
+#: orphan in two places, which move, an accepted difference
+#: (decisions/vocabulary-model, 2026-11-02 #754, a marker left behind):
+#: an orphan given-name title still made rules/H2's period-shape title
+#: address the given name (`Sir. Smith` read given `Smith`), and any
+#: orphan counted as a listed word in the capitals shape (`John Smith,
+#: AIR` read given `AIR`).
 _MARKER_READ_WITH = (
     ("given_name_titles", ("titles", "titles_ambiguous")),
     ("after_given_titles", ("titles",)),
@@ -1179,9 +1205,9 @@ _MARKER_READ_WITH = (
 
 def _inert_dropped(sets: Mapping[str, frozenset[str]],
                    ) -> dict[str, frozenset[str]]:
-    """`sets` without the entries no parse reads: a marker's word its
-    base sets do not hold, and a title phrase or a given-name title run
-    holding a word that is no title. In the order of
+    """`sets` without the entries no reading compiles: a marker's word
+    its base sets do not hold, and a title phrase or a given-name title
+    run holding a word that is no title. In the order of
     `_MARKER_READ_WITH`, so an agnomen whose ambiguous suffix word went
     goes too."""
     out = dict(sets)
@@ -1340,7 +1366,8 @@ def _translation(lexicon: Lexicon, changes: Mapping[str, frozenset[str]],
         edits, exact = (), False
     if not edits and exact:
         return ("the lexicon already reads those words so, an entry it "
-                "would add or remove being one no parse reads; no call is "
+                "would add or remove being a marker without its word's "
+                "reading, which goes with that reading in 3.0; no call is "
                 "needed")
     if not edits:
         return ("no readings give those words exactly those sets (a word "
@@ -1828,8 +1855,11 @@ class Lexicon:
     else:
         def add(self, *words: str, kind: str | None = None,
                 **properties: object) -> Lexicon:
-            """This lexicon with a reading of `kind` added to each word:
-            `kind` a vocabulary kind as the language files write it, a key
+            """This lexicon with a reading of `kind` added to each word.
+            `kind` is required; the signature's default exists only so
+            that a 2.x call, which names no kind, is refused with its
+            translation. It is a vocabulary kind as the language files
+            write it, a key
             of ``nameparser._reading_index.CATEGORY`` (``"title"``,
             ``"office"``, ``"credential"``, ``"generation"``,
             ``"preposition"``, ``"conjunction"``, ``"bound_given"``,
