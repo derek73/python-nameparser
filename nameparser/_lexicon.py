@@ -675,11 +675,12 @@ def _unwritten(kind: str, prop: str) -> object:
     """The value `prop` takes on a `kind` reading that does not write
     it, read through _reading_index.ReadingProperties: `acronym` is
     true on a credential, `addresses` the family name."""
+    bare = _index_module().IndexReading("", "", kind, MappingProxyType({}))
     if prop == "acronym":
-        return kind == "credential"
+        return bare.acronym
     if prop == "addresses":
-        return "family"
-    return False
+        return bare.addresses
+    return bare.flag(prop)
 
 
 def _prop_value(kind: str, prop: str, value: object) -> object:
@@ -935,8 +936,7 @@ def _chosen_pool(base: object, chosen: frozenset[str], strict: bool) -> Pool:
     ri = _index_module()
     readings = [r for rs in pool.values() for r in rs]
     if strict:
-        readings = [r for r in readings
-                    if r.tag in chosen or ri.is_native_script(r.text)]
+        readings = ri.strict_kept(readings, chosen)
     out: dict[str, list[Any]] = {}
     for r in ri.choose(readings, chosen):
         out.setdefault(r.text, []).append(r)
@@ -991,16 +991,13 @@ def _clashes_unchosen(base: object, edits: tuple[_Edit, ...]) -> bool:
 def _compiled_for(base: object, edits: tuple[_Edit, ...],
                   chosen: frozenset[str] = frozenset(),
                   strict: bool = False) -> Mapping[str, frozenset[str]]:
-    if not edits:
-        if not chosen:
-            if base == "default":
-                return _default_compiled()
-            if base == "empty":
-                return _NO_SETS
-        elif base == "default":
-            # the shipped index under the choice, compiled once per
-            # choice by the reader every pack shares
-            return _choice_compiled(chosen, strict)
+    if not edits and base == "default":
+        # under a choice, the shipped index compiled once per choice by
+        # the reader every pack shares
+        return (_choice_compiled(chosen, strict) if chosen
+                else _default_compiled())
+    if not edits and not chosen and base == "empty":
+        return _NO_SETS
     return _built(base, edits, chosen, strict)[1]
 
 
@@ -1032,6 +1029,13 @@ class _ReadingFiles:
         self._base, self._edits = base, edits
         self._chosen, self._strict = chosen, strict
 
+    def pool(self) -> Pool:
+        """The lexicon's readings by word (`Lexicon._pool`)."""
+        if not self._edits:
+            return _chosen_pool(self._base, self._chosen, self._strict)
+        return _built(self._base, self._edits, self._chosen,
+                      self._strict)[0]
+
     def languages(self, text: str, kinds: frozenset[str]) -> tuple[str, ...]:
         """The tags of the files holding a reading of `text` (as the
         vocabulary stores it) of one of `kinds`, on in this lexicon,
@@ -1039,24 +1043,20 @@ class _ReadingFiles:
         ri = _index_module()
         readings: Iterable[Any]
         if self._edits or self._base not in ("default", "empty"):
-            readings = _built(self._base, self._edits, self._chosen,
-                              self._strict)[0].get(text, ())
+            readings = self.pool().get(text, ())
         elif self._base == "empty":
             return ()
         elif not self._chosen:
             return cast("tuple[str, ...]", ri.languages_of(text, kinds))
         else:
-            readings = ri.readings_of(text)
-            if self._strict:
-                readings = [r for r in readings if r.tag in self._chosen
-                            or ri.is_native_script(r.text)]
-            readings = ri.choose(readings, self._chosen)
+            readings = ri.chosen_readings(ri.readings_of(text), self._chosen,
+                                          self._strict)
         return tuple(sorted({r.tag for r in readings
                              if r.tag and r.kind in kinds
                              and r.on_by_default}))
 
 
-@functools.lru_cache(maxsize=64)
+@functools.lru_cache(maxsize=128)
 def _reading_files(base: object, edits: tuple[_Edit, ...],
                    chosen: frozenset[str], strict: bool) -> _ReadingFiles:
     # one per configuration, so equal lexicons share assemble's memo
@@ -1192,10 +1192,10 @@ def _rechosen_masks(lexicon: Lexicon, chosen: frozenset[str],
     """`lexicon`'s masks moved from its own choice's to `chosen`'s: the
     base's choice's moves undone, then the new choice's applied, so a
     chained choice moves them as the union does."""
-    default = _index_module().compile_choice(
-        frozenset())["CAPITALIZATION_EXCEPTIONS"]
     cap = dict(lexicon.capitalization_exceptions)
     if lexicon.languages:
+        default = _index_module().compile_choice(
+            frozenset())["CAPITALIZATION_EXCEPTIONS"]
         gone, joined = _choice_masks(lexicon._chosen, lexicon.strict)
         for k in gone:
             cap.setdefault(k, default[k])
@@ -1958,8 +1958,8 @@ class Lexicon:
         # and a log; a 3.0 one is checked for its layout as
         # _types._guarded_setstate checks the other frozen types', the
         # one skew admitted a field marked `_ADDED_IN` with a default
-        # (none yet), and then built through the constructor, which
-        # validates every value as for a caller's.
+        # (`_languages`, `_strict`), and then built through the
+        # constructor, which validates every value as for a caller's.
         if "titles" in state:
             state = _translated_2x(state)
         fields = [f for f in dataclasses.fields(Lexicon) if f.init]
@@ -2165,10 +2165,7 @@ class Lexicon:
     # -- private helpers --------------------------------------------------
 
     def _pool(self) -> Pool:
-        if not self._edits:
-            return _chosen_pool(self._base, self._chosen, self._strict)
-        return _built(self._base, self._edits, self._chosen,
-                      self._strict)[0]
+        return self._files.pool()
 
     def _changed(self, op: str,
                  entries: Mapping[str, object]) -> dict[str, object]:
