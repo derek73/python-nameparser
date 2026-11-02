@@ -1437,3 +1437,39 @@ def test_a_2x_removal_leaving_an_inert_marker_loads_as_the_removal(
     for text in ("Air Marshal John Smith", "ANA SILVA E SOUZA"):
         assert Parser(lexicon=loaded).parse(text).as_dict() == \
             Parser(lexicon=spelled(default)).parse(text).as_dict()
+
+
+@pytest.mark.parametrize(("call", "said"), [
+    (lambda: Lexicon.empty().add(titles={"zzq"}, title_modifiers={"zzq"}),  # type: ignore[call-arg]
+     "write lexicon.add('zzq', kind='modifier')"),
+    (lambda: Lexicon.empty().add(titles={"zzq"}, title_styles={"zzq"}),  # type: ignore[call-arg]
+     "write lexicon.add('zzq', kind='style')"),
+    (lambda: Lexicon.empty().add(conjunctions={"q"},  # type: ignore[call-arg]
+                                 conjunctions_ambiguous={"q"}),
+     "write lexicon.add('q', kind='conjunction', may_be_initial=True)"),
+    (lambda: Lexicon.empty().add(suffix_words={"zzq"},  # type: ignore[call-arg]
+                                 suffix_words_ambiguous={"zzq"}),
+     "write lexicon.add('zzq', kind='generation').add('zzq', kind='family')"),
+    (lambda: Lexicon.empty().add(suffix_words={"zzq"},  # type: ignore[call-arg]
+                                 honorific_tails={"zzq"}),
+     "write lexicon.add('zzq', kind='suffix', attached='after')"),
+    # a phrase taken out of a kind's reach lists the words left, bounded
+    (lambda: Lexicon.default().remove(title_phrases={"chief justice"}),
+     "more]"),
+    # one suffix kind per word: no readings give an acronym and a word
+    (lambda: Lexicon.default().add(suffix_acronyms={"jr"}),  # type: ignore[call-arg]
+     "no readings give those words exactly those sets"),
+    # the given reading a possibly-given particle needs gates the
+    # credential too, so the nearest is offered
+    (lambda: Lexicon.empty().add(particles={"xo"},  # type: ignore[call-arg]
+                                 particles_ambiguous={"xo"},
+                                 suffix_acronyms={"xo"}),
+     "the nearest is lexicon.add('xo', kind='particle')"),
+    # a phrase no reading takes: the translation itself is refused
+    (lambda: Lexicon.empty().add(titles={"grand moff"}),  # type: ignore[call-arg]
+     "no readings give those words exactly those sets"),
+])
+def test_each_2x_spelling_is_translated_or_said_to_have_none(
+        call: Callable[[], object], said: str) -> None:
+    with pytest.raises(TypeError, match=re.escape(said)):
+        call()

@@ -372,3 +372,8 @@ def test_strict_ungated_compares_with_the_plain_choice_not_the_default() -> None
     cs = frozenset({"cs"})
     assert "st" not in ri.compile_choice(frozenset())["SUFFIX_WORDS"]
     assert "st" in ri.strict_ungated(cs)
+
+
+def test_a_word_no_file_holds_as_a_suffix_has_no_suffix_kind() -> None:
+    assert ri.suffix_kind_of("dean") is None
+    assert ri.suffix_kind_of("zzqnotaword") is None
