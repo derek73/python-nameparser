@@ -92,6 +92,19 @@ class PatronymicNameOrderReorderTests(FlaggedPolicyTestBase):
         assert n.middle == "Ильич"
         assert n.family == "Иванов"
 
+    def test_irregular_forms_of_nikita_and_savva(self) -> None:
+        # Никитич and Саввич fit neither -ович nor -евич, so they are
+        # listed whole like Ильич (#994); their feminines end in -ична.
+        for text, patronymic in [
+            ("Петров Иван Никитич", "Никитич"),
+            ("Петров Иван Саввич", "Саввич"),
+            ("Petrov Ivan Nikitich", "Nikitich"),
+            ("Petrov Ivan Savvich", "Savvich"),
+        ]:
+            n = self.hn(text)
+            assert (n.given, n.middle, n.family) == (
+                text.split()[1], patronymic, text.split()[0]), text
+
     def test_title_preserved(self) -> None:
         n = self.hn("Dr. Ivanov Ivan Ivanovich")
         assert n.title == "Dr."

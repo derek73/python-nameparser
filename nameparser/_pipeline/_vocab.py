@@ -282,10 +282,10 @@ ROMAN = _ROMAN
 # the standalone Turkic patronymic markers, which rules/O1's and O2's
 # rotations and rules/R9's reading ask through the two predicates below.
 _EAST_SLAVIC = re.compile(
-    r"(ovich|ovna|evich|evna|ichna|ilyich|kuzmich|lukich|fomich|fokich)$",
+    r"(ovich|ovna|evich|evna|ichna|ilyich|kuzmich|lukich|fomich|fokich|nikitich|savvich)$",
     re.I)
 _EAST_SLAVIC_CYR = re.compile(
-    r"(ович|овна|евич|евна|ична|ильич|кузьмич|лукич|фомич|фокич)$",
+    r"(ович|овна|евич|евна|ична|ильич|кузьмич|лукич|фомич|фокич|никитич|саввич)$",
     re.I)
 _TURKIC = re.compile(
     r"^(oglu|oğlu|ogly|ogli|o['’ʻ]g['’ʻ]li"

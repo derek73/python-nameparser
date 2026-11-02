@@ -274,6 +274,7 @@ class PatronymicHandlerInteractionTests(FlaggedPolicyTestBase):
         east_slavic_examples = [
             "Ivanovich", "Ivanovna", "Sergeevich", "Sergeevna",
             "Nikitichna", "Ilyich", "Kuzmich", "Lukich", "Fomich", "Fokich",
+            "Nikitich", "Savvich",
         ]
         turkic_examples = [
             "oglu", "oğlu", "ogly", "ogli", "o'g'li",
@@ -292,6 +293,7 @@ class PatronymicHandlerInteractionTests(FlaggedPolicyTestBase):
         east_slavic_examples = [
             "Иванович", "Ивановна", "Сергеевич", "Сергеевна",
             "Никитична", "Ильич", "Кузьмич", "Лукич", "Фомич", "Фокич",
+            "Никитич", "Саввич",
         ]
         turkic_examples = [
             "оглу", "оглы", "оғлу", "ўғли", "угли",
