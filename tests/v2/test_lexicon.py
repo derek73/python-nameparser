@@ -768,6 +768,24 @@ def test_each_recipe_moves_the_parse_it_names(
 #: A 2.x call per site: (site, call, the words it names). The refusal
 #: translates those words, and the translation runs.
 _REFUSED_CALLS = [
+    # the translation's property and kind branches, each reached by a
+    # 2.x spelling alone since 4i-c retired the choice's delta, the
+    # other path through them
+    ("add", lambda: Lexicon.default().add(  # type: ignore[call-arg]
+        titles={"zzq"}, given_name_titles={"zzq"}),
+     ".add('zzq', kind='title', addresses='given')"),
+    ("add", lambda: Lexicon.default().add(  # type: ignore[call-arg]
+        titles={"zzq"}, after_given_titles={"zzq"}),
+     ".add('zzq', kind='title', after_given=True)"),
+    ("remove", lambda: Lexicon.default().remove(  # type: ignore[call-arg]
+        suffix_words_ambiguous={"neto"}),
+     ".remove('neto', kind='agnomen').add('neto', kind='suffix')"),
+    # an agnomen's name reading comes first, as add() requires (found
+    # adding the rows above: the offered calls ran the agnomen first)
+    ("add", lambda: Lexicon.default().add(  # type: ignore[call-arg]
+        suffix_words={"zzq"}, suffix_words_ambiguous={"zzq"},
+        agnomens={"zzq"}),
+     ".add('zzq', kind='family').add('zzq', kind='agnomen')"),
     ("add", lambda: Lexicon.default().add(titles={"dean"}),  # type: ignore[call-arg]
      ".remove('dean', kind='given')"),
     ("add", lambda: Lexicon.default().add(suffix_acronyms={"leed", "ap"}),  # type: ignore[call-arg]
@@ -800,6 +818,18 @@ def test_a_2x_spelling_is_refused_with_calls_that_run(
     built = eval(code, {"Lexicon": Lexicon,  # noqa: S307
                         "lexicon": Lexicon.default()})
     assert isinstance(built, Lexicon)
+
+
+def test_a_2x_spelling_with_no_exact_reading_offers_the_nearest_that_runs(
+        ) -> None:
+    # `phd` both an acronym and a word in 2.x: a word has one suffix
+    # kind, so the nearest is the credential written as a word
+    with pytest.raises(TypeError, match="the nearest is") as raised:
+        Lexicon.default().add(suffix_words={"phd"})  # type: ignore[call-arg]
+    code = str(raised.value).split("the nearest is ", 1)[1].split(", and ")[0]
+    assert code == "lexicon.add('phd', kind='credential', acronym=False)"
+    built = eval(code, {"lexicon": Lexicon.default()})  # noqa: S307
+    assert "phd" in built._sets.suffix_words
 
 
 @pytest.mark.parametrize("field", _SET_FIELDS)
@@ -1534,7 +1564,7 @@ def test_a_2x_removal_leaving_an_inert_marker_loads_as_the_removal(
      "write lexicon.add('q', kind='conjunction', may_be_initial=True)"),
     (lambda: Lexicon.empty().add(suffix_words={"zzq"},  # type: ignore[call-arg]
                                  suffix_words_ambiguous={"zzq"}),
-     "write lexicon.add('zzq', kind='generation').add('zzq', kind='family')"),
+     "write lexicon.add('zzq', kind='family').add('zzq', kind='generation')"),
     (lambda: Lexicon.empty().add(suffix_words={"zzq"},  # type: ignore[call-arg]
                                  honorific_tails={"zzq"}),
      "write lexicon.add('zzq', kind='suffix', attached='after')"),
@@ -1552,7 +1582,7 @@ def test_a_2x_removal_leaving_an_inert_marker_loads_as_the_removal(
     (lambda: Lexicon.empty().add(particles={"xo"},  # type: ignore[call-arg]
                                  particles_ambiguous={"xo"},
                                  suffix_acronyms={"xo"}),
-     "the nearest is lexicon.add('xo', kind='particle')"),
+     "the nearest is lexicon.add('xo', kind='given').add('xo', kind='particle')"),
     # a phrase no reading takes: the translation itself is refused
     (lambda: Lexicon.empty().add(titles={"grand moff"}),  # type: ignore[call-arg]
      "no readings give those words exactly those sets"),

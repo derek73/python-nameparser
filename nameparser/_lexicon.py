@@ -1410,7 +1410,11 @@ def _edits_toward(pool: Pool, current: Mapping[str, frozenset[str]],
         # another), so the delta takes each of them to `p`
         after = {k: ps for k, ps in _props_by_kind(held).items()
                  if k not in dropped and ri.CATEGORY[k] not in gone_categories}
-        for k, p in want.items():
+        # a word's name readings first: an agnomen added before the name
+        # reading that gates it is refused by `add` (check 11's agnomen
+        # clause), so the calls a refusal offers must run in this order
+        for k, p in sorted(want.items(),
+                           key=lambda kp: ri.CATEGORY[kp[0]] != "name"):
             if k in after:
                 if k in on and all(q == p for q in after[k]):
                     continue
