@@ -2669,6 +2669,36 @@ def test_strict_has_three_states_on_a_chained_call() -> None:
         parser_for(strict=True)
 
 
+def test_a_chained_choice_redoes_a_mask_the_default_lacks() -> None:
+    # cs sets `judr`'s mask, which the default holds none of; chained
+    # under en, the base's move is undone (the mask deleted) and the
+    # union's applied again, as the single call does
+    from nameparser import locales
+    en = _choosing("en", code="en")
+    chained = parser_for(en, base=parser_for(locales.CS))
+    assert chained.lexicon.capitalization_exceptions_map["judr"] == "JUDr"
+    assert chained.lexicon == parser_for(locales.CS, en).lexicon
+
+
+def test_a_join_that_cannot_be_made_names_where_it_failed() -> None:
+    # two packs whose lexicons record different choices name the pack;
+    # a pack's lexicon built on another release's base names the join
+    # with base's (rules/D2)
+    from nameparser.config._index import READINGS
+    pt = Locale(code="aa", lexicon=dataclasses.replace(
+        Lexicon.empty(), _languages=frozenset({"pt"})))
+    en = Locale(code="bb", lexicon=dataclasses.replace(
+        Lexicon.empty(), _languages=frozenset({"en"})))
+    with pytest.raises(ValueError, match="while applying locale 'bb': "
+                                         "cannot join two lexicons compiled"):
+        parser_for(pt, en)
+    older = Locale(code="cc", lexicon=Lexicon(_base=READINGS[1:]))
+    with pytest.raises(ValueError, match="while joining the packs' lexicons "
+                                         "to base's: cannot join two "
+                                         "lexicons built on different bases"):
+        parser_for(older)
+
+
 def test_a_packs_fragment_joins_under_the_callers_lexicon() -> None:
     # the caller's lexicon goes last, so its own statement outranks a
     # pack's: a pack's credential `do` against a caller's removal of it,
