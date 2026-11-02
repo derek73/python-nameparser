@@ -12,7 +12,7 @@ from types import MappingProxyType
 
 import pytest
 
-from nameparser import LexiconReading, Parser
+from nameparser import Locale, LexiconReading, Parser, parser_for
 from nameparser._lexicon import (
     Lexicon, _ADDED_IN, _KIND_FIELDS, _LIST_FIELDS, _MaskValueError,
     _SET_FIELDS, _VOCAB_FIELDS, _default_lexicon, _fields_of, _normalize,
@@ -768,6 +768,24 @@ def test_each_recipe_moves_the_parse_it_names(
 #: A 2.x call per site: (site, call, the words it names). The refusal
 #: translates those words, and the translation runs.
 _REFUSED_CALLS = [
+    # the translation's property and kind branches, each reached by a
+    # 2.x spelling alone since 4i-c retired the choice's delta, the
+    # other path through them
+    ("add", lambda: Lexicon.default().add(  # type: ignore[call-arg]
+        titles={"zzq"}, given_name_titles={"zzq"}),
+     ".add('zzq', kind='title', addresses='given')"),
+    ("add", lambda: Lexicon.default().add(  # type: ignore[call-arg]
+        titles={"zzq"}, after_given_titles={"zzq"}),
+     ".add('zzq', kind='title', after_given=True)"),
+    ("remove", lambda: Lexicon.default().remove(  # type: ignore[call-arg]
+        suffix_words_ambiguous={"neto"}),
+     ".remove('neto', kind='agnomen').add('neto', kind='suffix')"),
+    # an agnomen's name reading comes first, as add() requires (found
+    # adding the rows above: the offered calls ran the agnomen first)
+    ("add", lambda: Lexicon.default().add(  # type: ignore[call-arg]
+        suffix_words={"zzq"}, suffix_words_ambiguous={"zzq"},
+        agnomens={"zzq"}),
+     ".add('zzq', kind='family').add('zzq', kind='agnomen')"),
     ("add", lambda: Lexicon.default().add(titles={"dean"}),  # type: ignore[call-arg]
      ".remove('dean', kind='given')"),
     ("add", lambda: Lexicon.default().add(suffix_acronyms={"leed", "ap"}),  # type: ignore[call-arg]
@@ -800,6 +818,18 @@ def test_a_2x_spelling_is_refused_with_calls_that_run(
     built = eval(code, {"Lexicon": Lexicon,  # noqa: S307
                         "lexicon": Lexicon.default()})
     assert isinstance(built, Lexicon)
+
+
+def test_a_2x_spelling_with_no_exact_reading_offers_the_nearest_that_runs(
+        ) -> None:
+    # `phd` both an acronym and a word in 2.x: a word has one suffix
+    # kind, so the nearest is the credential written as a word
+    with pytest.raises(TypeError, match="the nearest is") as raised:
+        Lexicon.default().add(suffix_words={"phd"})  # type: ignore[call-arg]
+    code = str(raised.value).split("the nearest is ", 1)[1].split(", and ")[0]
+    assert code == "lexicon.add('phd', kind='credential', acronym=False)"
+    built = eval(code, {"lexicon": Lexicon.default()})  # noqa: S307
+    assert "phd" in built._sets.suffix_words
 
 
 @pytest.mark.parametrize("field", _SET_FIELDS)
@@ -1023,6 +1053,111 @@ def test_union_refuses_two_different_bases() -> None:
     assert older._base != "default"
     with pytest.raises(ValueError, match="different bases"):
         Lexicon.default() | older
+
+
+# -- the choice (decisions/vocabulary-model, 2026-11-02 #754, items 3
+# and 4) --------------------------------------------------------------------
+
+def test_the_choice_travels_with_replace_union_and_pickle() -> None:
+    chosen = dataclasses.replace(Lexicon.default(), _languages=frozenset({"pt-br"}))
+    assert chosen.languages == {"pt-BR"} and chosen.strict is False
+    assert chosen != Lexicon.default()
+    added = chosen.add("zzq", kind="title")
+    assert added.languages == {"pt-BR"}
+    assert (added | Lexicon(surnames={"김"})).languages == {"pt-BR"}
+    assert (Lexicon.empty() | added).languages == {"pt-BR"}
+    strict = dataclasses.replace(Lexicon.default(), _languages=frozenset({"vi"}),
+                                 _strict=True)
+    for lex in (chosen, added, strict):
+        loaded = pickle.loads(pickle.dumps(lex))
+        assert loaded == lex and hash(loaded) == hash(lex)
+        assert (loaded.languages, loaded.strict) == (lex.languages, lex.strict)
+
+
+#: What the parsers pickled in tests/v2/data/parsers_4ib.pickle read
+#: on the tree that wrote them, db7e8fc4 (4i-b), where a choice was 3b's
+#: delta written into the lexicon's log
+_READ_BY_4IB = [
+    ("pt", "ANA SILVA E SOUZA", "family", "SILVA E SOUZA"),
+    ("pt", "John Smith DO", "family", "DO"),
+    ("cs_strict", "Jiří Dienstbier st.", "suffix", "st."),
+    ("cs_strict", "Jan Novák, MUDr", "title", "MUDr"),
+    ("cs_strict", "Kim Min Jun, MD", "given", "MD"),
+]
+
+
+def test_a_pickle_written_before_the_choice_fields_loads_choosing_nothing(
+        ) -> None:
+    # a 4i-b pickle, from no release, holds no choice fields; its log
+    # already holds what the choice changed, so it loads choosing
+    # nothing and reads as it did (the fields are marked _ADDED_IN;
+    # found by review of 4i-c)
+    with open(Path(__file__).parent / "data" / "parsers_4ib.pickle",
+              "rb") as f:
+        parsers = pickle.load(f)  # noqa: S301 -- our own fixture
+    for key in ("pt", "cs_strict"):
+        assert parsers[key].languages == frozenset(), key
+        assert parsers[key].strict is False, key
+    for key, text, field_name, value in _READ_BY_4IB:
+        assert getattr(parsers[key].parse(text), field_name) == value, text
+
+
+@pytest.mark.parametrize("left,right", [
+    ({"_languages": {"pt"}}, {"_languages": {"en"}}),
+    ({"_languages": {"ko"}}, {"_languages": {"ko"}, "_strict": True}),
+])
+def test_union_refuses_two_different_choices_naming_parser_for(
+        left: dict[str, object], right: dict[str, object]) -> None:
+    a = dataclasses.replace(Lexicon.default(), **left)  # type: ignore[arg-type]
+    b = dataclasses.replace(Lexicon.default(), **right)  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="different choices.*parser_for"):
+        a | b
+    assert (a | a).languages == a.languages
+
+
+@pytest.mark.parametrize("kwargs,error,match", [
+    ({"_languages": "pt"}, TypeError, "_languages must be a set"),
+    ({"_languages": {"pt": 1}}, TypeError, "_languages must be a set"),
+    ({"_languages": {5}}, TypeError, "entries must be str"),
+    ({"_languages": {"pt"}, "_strict": 1}, TypeError,
+     "_strict must be True or False"),
+    ({"_strict": True}, ValueError, "chooses none"),
+    ({"_languages": {"xx"}}, ValueError, "no vocabulary file holds"),
+    ({"_languages": {"mul"}}, ValueError, "not a language to choose"),
+    # a file holding no reading is a strict choice only, as at parser_for
+    ({"_languages": {"vi"}}, ValueError, "strict=True"),
+])
+def test_the_choice_is_validated_as_parser_for_validates_one(
+        kwargs: dict[str, object], error: type[Exception], match: str) -> None:
+    with pytest.raises(error, match=match):
+        Lexicon(**kwargs)  # type: ignore[arg-type]
+
+
+def test_a_choice_filters_the_base_and_the_log_applies_after_it() -> None:
+    # en prefers its credential of `do` over pt's particle; a removal
+    # written before the choice was made still applies after it
+    # (the RFC's item 4 example)
+    removed = Lexicon.default().remove("do", kind="credential")
+    chosen = dataclasses.replace(removed, _languages=frozenset({"en"}))
+    assert [r.category for r in chosen.readings_of("do")] == ["name", "name"]
+    assert [r.kind for r in dataclasses.replace(
+        Lexicon.default(), _languages=frozenset({"pt"})).readings_of("do")
+        if r.category != "name"] == ["preposition"]
+
+
+def test_the_repr_shows_the_choice_and_counts_against_it() -> None:
+    chosen = dataclasses.replace(Lexicon.default(), _languages=frozenset({"pt"}))
+    assert repr(chosen) == "Lexicon(default, languages pt)"
+    assert (repr(chosen.add("zzq", kind="title"))
+            == "Lexicon(default + title: +1, languages pt)")
+    # the masks a strict choice drops are parser_for's to move, and the
+    # repr counts against the named lexicon with them moved
+    vi = Locale(code="vi", lexicon=Lexicon.empty(), languages=frozenset({"vi"}))
+    strict = parser_for(vi, strict=True).lexicon
+    assert repr(strict) == "Lexicon(default, languages vi, strict)"
+    many = dataclasses.replace(Lexicon.default(),
+                               _languages=frozenset({"pt", "en", "es", "de"}))
+    assert repr(many) == "Lexicon(default, languages: 4)"
 
 
 def test_the_internal_sets_hold_each_field_under_its_own_name() -> None:
@@ -1392,32 +1527,6 @@ def test_the_translation_keeps_a_held_suffix_kind(
     assert got == kinds
 
 
-def test_a_choice_translation_reads_the_kinds_it_is_given() -> None:
-    # the kind sets name a word's kind where a choice's delta moves it
-    # (`_apply_choice`): a patronymic, a credential written as a word,
-    # and a gated generation that a possibly-given particle reading
-    # beside it turns into a plain suffix word
-    from nameparser._lexicon import _edits_toward
-    lex = Lexicon.empty().add("zza", "zzb", kind="particle").add(
-        "zzc", kind="generation")
-    current = _fields_of(lex._sets)
-    target = dict(current)
-    target["patronymic_particles"] = frozenset({"zza"})
-    target["suffix_words"] = current["suffix_words"] | {"zzb"}
-    target["credential_words"] = frozenset({"zzb"})
-    target["particles"] = current["particles"] - {"zzb"}
-    target["generation_words"] = frozenset()
-    target["particles"] = target["particles"] | {"zzc"}
-    target["particles_ambiguous"] = frozenset({"zzc"})
-    built = dataclasses.replace(lex, _edits=_edits_toward(
-        lex._pool(), current, target))
-    assert {r.kind for r in built.readings_of("zza")} == {"patronymic"}
-    assert [(r.kind, r.properties) for r in built.readings_of("zzb")] == [
-        ("credential", (("acronym", False),))]
-    assert {r.kind for r in built.readings_of("zzc")} == {
-        "suffix", "particle", "given"}
-
-
 def test_a_2x_multi_word_title_is_refused_as_a_pickle_3_0_cannot_express() -> None:
     # 2.x warned on a multi-word entry in a per-word set and kept it; a
     # reading of a phrase is a birth marker or a given-addressing title
@@ -1455,7 +1564,7 @@ def test_a_2x_removal_leaving_an_inert_marker_loads_as_the_removal(
      "write lexicon.add('q', kind='conjunction', may_be_initial=True)"),
     (lambda: Lexicon.empty().add(suffix_words={"zzq"},  # type: ignore[call-arg]
                                  suffix_words_ambiguous={"zzq"}),
-     "write lexicon.add('zzq', kind='generation').add('zzq', kind='family')"),
+     "write lexicon.add('zzq', kind='family').add('zzq', kind='generation')"),
     (lambda: Lexicon.empty().add(suffix_words={"zzq"},  # type: ignore[call-arg]
                                  honorific_tails={"zzq"}),
      "write lexicon.add('zzq', kind='suffix', attached='after')"),
@@ -1473,7 +1582,7 @@ def test_a_2x_removal_leaving_an_inert_marker_loads_as_the_removal(
     (lambda: Lexicon.empty().add(particles={"xo"},  # type: ignore[call-arg]
                                  particles_ambiguous={"xo"},
                                  suffix_acronyms={"xo"}),
-     "the nearest is lexicon.add('xo', kind='particle')"),
+     "the nearest is lexicon.add('xo', kind='given').add('xo', kind='particle')"),
     # a phrase no reading takes: the translation itself is refused
     (lambda: Lexicon.empty().add(titles={"grand moff"}),  # type: ignore[call-arg]
      "no readings give those words exactly those sets"),

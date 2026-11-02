@@ -527,18 +527,6 @@ _SET_FIELDS = tuple(f for f in _VOCAB_FIELDS if f not in _LIST_FIELDS)
 _KIND_FIELDS = ("generation_words", "credential_words",
                 "patronymic_particles")
 
-#: Each marker set over the base set it qualifies. A compile from
-#: readings holds every pair by construction, the marker existing only
-#: beside its base reading; `_parser._apply_choice` reads the pairs to
-#: drop a word's marks where a choice drops it from the base.
-_MARKER_BASES = (
-    ("particles_ambiguous", "particles"),
-    ("suffix_acronyms_ambiguous", "suffix_acronyms"),
-    ("honorific_tails", "suffix_words"),
-    ("suffix_words_ambiguous", "suffix_words"),
-)
-
-
 @dataclass(frozen=True, slots=True, eq=False, repr=False)
 class _LexiconSets:
     """The vocabulary sets a parse reads: the pipeline, `_render`,
@@ -933,16 +921,54 @@ def _check_pool(pool: Pool, words: Iterable[str]) -> None:
                 f".remove({w!r}, kind='bound_given')")
 
 
+@functools.lru_cache(maxsize=32)
+def _chosen_pool(base: object, chosen: frozenset[str], strict: bool) -> Pool:
+    """A base's readings under the choice of the file tags `chosen`,
+    before the caller's edits (decisions/vocabulary-model, 2026-11-02
+    #754, item 4): `choose` over the base's readings, under `strict`
+    only the chosen files' and native-script ones; a reading an
+    unchosen file leaves off stays in the pool off, so a caller's add
+    of its kind still turns it on, as it does with no choice."""
+    pool = _base_pool(base)
+    if not chosen:
+        return pool
+    ri = _index_module()
+    readings = [r for rs in pool.values() for r in rs]
+    if strict:
+        readings = [r for r in readings
+                    if r.tag in chosen or ri.is_native_script(r.text)]
+    out: dict[str, list[Any]] = {}
+    for r in ri.choose(readings, chosen):
+        out.setdefault(r.text, []).append(r)
+    for r in readings:
+        if not r.on_by_default and r.tag not in chosen:
+            out.setdefault(r.text, []).append(r)
+    return MappingProxyType({t: tuple(rs) for t, rs in out.items()})
+
+
 @functools.lru_cache(maxsize=128)
-def _built(base: object, edits: tuple[_Edit, ...]) -> tuple[
-        Pool, Mapping[str, frozenset[str]]]:
+def _built(base: object, edits: tuple[_Edit, ...], chosen: frozenset[str],
+           strict: bool) -> tuple[Pool, Mapping[str, frozenset[str]]]:
     """A lexicon's readings by word and the sets they compile to, kept
-    per base and log: a compile costs milliseconds, paid once per
-    configuration (decisions/vocabulary-model, 2026-11-01 #754)."""
-    pool = dict(_base_pool(base))
+    per base, log and choice: a compile costs milliseconds, paid once
+    per configuration (decisions/vocabulary-model, 2026-11-01 #754).
+    The choice filters the base's readings and the log applies after
+    it, so a caller's reading survives any choice; one that clashes
+    with a reading the choice turns on is refused, naming the edit
+    (2026-11-02 #754, item 3)."""
+    pool = dict(_chosen_pool(base, chosen, strict))
     for edit in edits:
         _apply_edit(pool, edit)
-    _check_pool(pool, (w for e in edits for w in e.words))
+    for w in dict.fromkeys(w for e in edits for w in e.words):
+        try:
+            _check_pool(pool, (w,))
+        except ValueError as exc:
+            if not chosen or _clashes_unchosen(base, edits):
+                raise
+            mine = " and ".join(_rendered(e for e in edits if w in e.words))
+            raise ValueError(
+                f"the lexicon's {mine} clashes with a reading the choice "
+                f"turns on: {exc}") from None
     ri = _index_module()
     try:
         compiled = ri.compile_readings(
@@ -952,14 +978,95 @@ def _built(base: object, edits: tuple[_Edit, ...]) -> tuple[
     return MappingProxyType(pool), MappingProxyType(_vocab_fields(compiled))
 
 
-def _compiled_for(base: object,
-                  edits: tuple[_Edit, ...]) -> Mapping[str, frozenset[str]]:
+def _clashes_unchosen(base: object, edits: tuple[_Edit, ...]) -> bool:
+    """Whether `edits` clash on `base` with no choice, so that a clash
+    under one is the log's own rather than the choice's."""
+    try:
+        _built(base, edits, frozenset(), False)
+    except ValueError:
+        return True
+    return False
+
+
+def _compiled_for(base: object, edits: tuple[_Edit, ...],
+                  chosen: frozenset[str] = frozenset(),
+                  strict: bool = False) -> Mapping[str, frozenset[str]]:
     if not edits:
-        if base == "default":
-            return _default_compiled()
-        if base == "empty":
-            return _NO_SETS
-    return _built(base, edits)[1]
+        if not chosen:
+            if base == "default":
+                return _default_compiled()
+            if base == "empty":
+                return _NO_SETS
+        elif base == "default":
+            # the shipped index under the choice, compiled once per
+            # choice by the reader every pack shares
+            return _choice_compiled(chosen, strict)
+    return _built(base, edits, chosen, strict)[1]
+
+
+@functools.lru_cache(maxsize=32)
+def _choice_compiled(chosen: frozenset[str],
+                     strict: bool) -> Mapping[str, frozenset[str]]:
+    ri = _index_module()
+    return MappingProxyType(_vocab_fields(ri.compile_choice(chosen, strict)))
+
+
+def _check_choice(languages: object, strict: object) -> tuple[
+        frozenset[str], frozenset[str]]:
+    """A recorded choice validated as `parser_for` validates one: its
+    languages in canonical case and the file tags they select, the
+    selection raising for a tag no file serves (decisions/
+    vocabulary-model, 2026-11-02 #754, item 3)."""
+    if not isinstance(strict, bool):
+        raise TypeError(f"_strict must be True or False, got {strict!r}")
+    if (isinstance(languages, (str, bytes, bytearray, Mapping))
+            or not isinstance(languages, Iterable)):
+        raise TypeError(f"_languages must be a set of BCP 47 tags, e.g. "
+                        f"frozenset({{'pt'}}), got {languages!r}")
+    tags = frozenset(cast("Iterable[object]", languages))
+    for tag in tags:
+        if not isinstance(tag, str):
+            raise TypeError(f"_languages entries must be str BCP 47 tags, "
+                            f"got {tag!r}")
+    if not tags:
+        if strict:
+            raise ValueError(
+                "a strict choice keeps only the chosen languages' "
+                "vocabulary, and _languages chooses none; choose through "
+                "parser_for(..., strict=True) with a pack that chooses one")
+        return frozenset(), frozenset()
+    canon = frozenset(_canonical(cast(str, t)) for t in tags)
+    return canon, _index_module().selected(canon, strict=strict)
+
+
+def _canonical(tag: str) -> str:
+    """`tag` in BCP 47's canonical case: the language subtag lowercase,
+    a four-letter script subtag title case, a two-letter region
+    uppercase, every other subtag lowercase (RFC 5646, 2.1.1). Equal
+    choices then compare and hash equal, whatever case they were
+    written in."""
+    first, *rest = tag.split("-")
+    out = [first.lower()]
+    for sub in rest:
+        if len(sub) == 4 and sub.isalpha():
+            out.append(sub.title())
+        elif len(sub) == 2 and sub.isalpha():
+            out.append(sub.upper())
+        else:
+            out.append(sub.lower())
+    return "-".join(out)
+
+
+#: The most tags a repr lists (a `Lexicon`'s choice, a `Locale`'s); a
+#: longer choice is shown by its size, so the repr stays bounded however
+#: many languages are chosen.
+_REPR_TAGS = 3
+
+
+def _shown_choice(languages: frozenset[str]) -> str:
+    if len(languages) > _REPR_TAGS:
+        return f"languages: {len(languages)}"
+    return "languages " + "+".join(sorted(languages))
 
 
 def _check_base(base: object) -> object:
@@ -1014,6 +1121,45 @@ def _check_base(base: object) -> object:
     return base
 
 
+@functools.cache
+def _choice_masks(chosen: frozenset[str], strict: bool = False) -> tuple[
+        frozenset[str], tuple[tuple[str, str], ...]]:
+    """The case masks the choice of the file tags `chosen` moves against
+    the default's compile: the ones that leave and the ones set. A mask
+    is no reading (a `Lexicon` keeps its masks in a field of their own),
+    so `parser_for` moves them in that field, as 3b's delta did."""
+    ri = _index_module()
+    old = ri.compile_choice(frozenset())["CAPITALIZATION_EXCEPTIONS"]
+    new = ri.compile_choice(chosen, strict)["CAPITALIZATION_EXCEPTIONS"]
+    return (frozenset(old.keys() - new.keys()),
+            tuple(sorted((k, v) for k, v in new.items() if old.get(k) != v)))
+
+
+def _rechosen_masks(lexicon: Lexicon, chosen: frozenset[str],
+                    strict: bool) -> tuple[tuple[str, str], ...]:
+    """`lexicon`'s masks moved from its own choice's to `chosen`'s: the
+    base's choice's moves undone, then the new choice's applied, so a
+    chained choice moves them as the union does."""
+    default = _index_module().compile_choice(
+        frozenset())["CAPITALIZATION_EXCEPTIONS"]
+    cap = dict(lexicon.capitalization_exceptions)
+    if lexicon.languages:
+        gone, joined = _choice_masks(lexicon._chosen, lexicon.strict)
+        for k in gone:
+            cap.setdefault(k, default[k])
+        for k, v in joined:
+            if cap.get(k) == v:
+                if k in default:
+                    cap[k] = default[k]
+                else:
+                    del cap[k]
+    gone, joined = _choice_masks(chosen, strict)
+    for k in gone:
+        cap.pop(k, None)
+    cap.update(joined)
+    return tuple(sorted(cap.items()))
+
+
 # -- the 2.x set fields, translated --------------------------------------
 
 #: The fields whose membership puts a word in a category. A marker set
@@ -1048,7 +1194,7 @@ def _target_readings(word: str, member: frozenset[str],
                      heads: frozenset[str] | None,
                      on: dict[str, dict[str, Any]],
                      hints: dict[str, dict[str, Any]],
-                     kinds_known: bool) -> dict[str, dict[str, Any]]:
+                     ) -> dict[str, dict[str, Any]]:
     """The readings, kind -> properties, that compile `word` into the
     sets `member` names, keeping each reading `word` holds (`on`) where
     it fits and taking a kind it lacks from `hints`, then from the
@@ -1091,11 +1237,6 @@ def _target_readings(word: str, member: frozenset[str],
     particled = bool(member & _PARTICLE_FIELDS)
     if particled:
         ks = kinds("particle") or ["particle"]
-        if kinds_known:
-            if "patronymic_particles" in member:
-                ks = ["patronymic"]
-            else:
-                ks = [k for k in ks if k != "patronymic"] or ["particle"]
         for k in ks:
             out[k] = props(k)
     if member & {"conjunctions", "conjunctions_ambiguous"}:
@@ -1120,10 +1261,6 @@ def _target_readings(word: str, member: frozenset[str],
     elif worded:
         if "agnomens" in member:
             suffix = "agnomen"
-        elif kinds_known and "generation_words" in member:
-            suffix = "generation"
-        elif kinds_known and "credential_words" in member:
-            suffix = "credential"
         elif "suffix_words_ambiguous" in member:
             # an agnomen is its own kind, so a word that stops being one
             # is the generation the gated class otherwise holds
@@ -1131,8 +1268,7 @@ def _target_readings(word: str, member: frozenset[str],
                       else "generation")
         else:
             suffix = held or "suffix"
-            if suffix == "agnomen" or (kinds_known and suffix in (
-                    "generation", "credential")) or (
+            if suffix == "agnomen" or (
                     suffix in ri.GATED_WORDS and given_needed):
                 suffix = "suffix"
     # the name readings, which gate the vocabulary readings beside them:
@@ -1226,21 +1362,19 @@ def _inert_dropped(sets: Mapping[str, frozenset[str]],
 
 
 def _edits_toward(pool: Pool, current: Mapping[str, frozenset[str]],
-                  target: Mapping[str, frozenset[str]],
-                  hints: Pool | None = None) -> tuple[_Edit, ...]:
+                  target: Mapping[str, frozenset[str]]) -> tuple[_Edit, ...]:
     """The edits that take the readings of `pool`, which compile to the
     sets `current`, toward the sets `target` (by `_LexiconSets` name;
     a set it leaves out stays as `current` has it), word by word: for
     each word whose memberships differ, a `remove` of each kind it no
     longer holds, then an `add` of each kind it lacks or whose
     properties change. The one translation from sets to readings, which
-    the refusals of a 2.x spelling, the load of a 2.x pickle and
-    `_parser._apply_choice` share; a best effort, so each caller
-    compiles the result where it must be exact. `hints` are readings a
-    word's new kinds are taken from before its held ones (a choice's)."""
+    the refusals of a 2.x spelling and the load of a 2.x pickle share; a
+    best effort, so each caller compiles the result where it must be
+    exact. A new kind is taken from a reading the word holds off where
+    it holds one."""
     ri = _index_module()
-    kinds_known = all(k in target for k in _KIND_FIELDS)
-    fields = _SET_FIELDS + (_KIND_FIELDS if kinds_known else ())
+    fields = _SET_FIELDS
     full = _inert_dropped({f: target.get(f, current[f]) for f in fields})
     current = _inert_dropped({f: current[f] for f in fields})
     changed: set[str] = set()
@@ -1260,18 +1394,13 @@ def _edits_toward(pool: Pool, current: Mapping[str, frozenset[str]],
     for w in sorted(changed):
         held = pool.get(w, ())
         on = _by_kind(r for r in held if r.on_by_default)
-        everything = _by_kind(held)
-        # a new kind is taken from the hints first, then from the
-        # readings the word holds turned off
-        hinted = _by_kind((hints or {}).get(w, ()))
-        for k, p in everything.items():
-            hinted.setdefault(k, p)
+        every = _by_kind(held)
         member = frozenset(f for f in fields
                            if f != "title_phrases" and w in full[f])
         new_heads = heads(full["title_phrases"], w)
         moved = new_heads != heads(current["title_phrases"], w)
         want = _target_readings(w, member, new_heads if moved else None,
-                                on, hinted, kinds_known)
+                                on, every)
         dropped = [k for k in on if k not in want]
         gone_categories = {k for k in dropped if ri.CATEGORY[k] == k}
         for k in dropped:
@@ -1281,7 +1410,11 @@ def _edits_toward(pool: Pool, current: Mapping[str, frozenset[str]],
         # another), so the delta takes each of them to `p`
         after = {k: ps for k, ps in _props_by_kind(held).items()
                  if k not in dropped and ri.CATEGORY[k] not in gone_categories}
-        for k, p in want.items():
+        # a word's name readings first: an agnomen added before the name
+        # reading that gates it is refused by `add` (check 11's agnomen
+        # clause), so the calls a refusal offers must run in this order
+        for k, p in sorted(want.items(),
+                           key=lambda kp: ri.CATEGORY[kp[0]] != "name"):
             if k in after:
                 if k in on and all(q == p for q in after[k]):
                     continue
@@ -1360,7 +1493,8 @@ def _translation(lexicon: Lexicon, changes: Mapping[str, frozenset[str]],
     try:
         edits = _edits_toward(lexicon._pool(), current, target)
         result = _inert_dropped(
-            _built(lexicon._base, lexicon._edits + edits)[1])
+            _built(lexicon._base, lexicon._edits + edits, lexicon._chosen,
+                   lexicon._strict)[1])
         exact = all(result[f] == wanted[f] for f in _SET_FIELDS)
     except (TypeError, ValueError):
         edits, exact = (), False
@@ -1488,7 +1622,8 @@ def _translated_2x(state: Mapping[str, object]) -> dict[str, object]:
     return {"surnames": sets["surnames"],
             "given_names": sets["given_names"],
             "capitalization_exceptions": state["capitalization_exceptions"],
-            "_base": base, "_edits": edits}
+            "_base": base, "_edits": edits,
+            "_languages": frozenset(), "_strict": False}
 
 
 # -- the public types ----------------------------------------------------
@@ -1577,9 +1712,10 @@ class Lexicon:
     ``surnames``, ``given_names`` and ``capitalization_exceptions``.
 
     State is a base (the shipped vocabulary, none, or a pickled
-    release's), the ordered log of :meth:`add` and :meth:`remove` calls
-    applied after it, and the three fields; two lexicons are equal when
-    all of them are, the log compared call by call as written, so two
+    release's), the choice of languages :func:`~nameparser.parser_for`
+    records (:attr:`languages`, :attr:`strict`), the ordered log of
+    :meth:`add` and :meth:`remove` calls applied after the choice, and
+    the three fields; two lexicons are equal when all of them are, the log compared call by call as written, so two
     logs that read alike can still differ (decisions/vocabulary-model,
     2026-11-02 #754, item 3)."""
 
@@ -1621,12 +1757,22 @@ class Lexicon:
     # canonicalizes here; this closes the caller-aliasing hole and keeps
     # Lexicon hashable. Read via capitalization_exceptions_map.
     capitalization_exceptions: tuple[tuple[str, str], ...] = ()
-    # The base and the log: constructor parameters under underscore
-    # names, so that dataclasses.replace and copy.replace carry them,
-    # and no public API (decisions/vocabulary-model, 2026-11-02 #754,
-    # item 3). 4i-c adds the choice beside them.
+    # The base, the log and the choice: constructor parameters under
+    # underscore names, so that dataclasses.replace and copy.replace
+    # carry them, and no public API (decisions/vocabulary-model,
+    # 2026-11-02 #754, item 3); a choice is set publicly by parser_for
+    # alone, and read through `languages` and `strict`.
     _base: Any = "empty"
     _edits: tuple[_Edit, ...] = ()
+    # marked added: a 4i-b pickle, from no release, holds no choice and
+    # loads choosing nothing, its log already holding what a choice of
+    # 3b's delta had written into it
+    _languages: frozenset[str] = field(
+        default=frozenset(), metadata={_ADDED_IN: "3.0.0"})
+    _strict: bool = field(default=False, metadata={_ADDED_IN: "3.0.0"})
+    # the file tags the choice selects, derived from it
+    _chosen: frozenset[str] = field(
+        init=False, repr=False, compare=False, hash=False)
     _cap_map: Mapping[str, str] = field(
         init=False, repr=False, compare=False, hash=False)
     _sets: _LexiconSets = field(
@@ -1640,6 +1786,8 @@ class Lexicon:
                                     | Iterable[tuple[str, str]]) = (),
         _base: object = "empty",
         _edits: Iterable[_Edit] = (),
+        _languages: Iterable[str] = frozenset(),
+        _strict: bool = False,
         **removed: object,
     ) -> None:
         put = functools.partial(object.__setattr__, self)
@@ -1664,7 +1812,11 @@ class Lexicon:
                 "_edits holds an edit not in canonical form; build a "
                 "Lexicon's log with add() and remove()")
         put("_edits", canon)
-        compiled = _compiled_for(self._base, canon)
+        languages, chosen = _check_choice(_languages, _strict)
+        put("_languages", languages)
+        put("_strict", _strict)
+        put("_chosen", chosen)
+        compiled = _compiled_for(self._base, canon, chosen, _strict)
         put("_sets", _LexiconSets(
             **compiled, surnames=self.surnames, given_names=self.given_names))
         if removed:
@@ -1700,13 +1852,23 @@ class Lexicon:
         # Bounded: counts readings by kind against the nearer of the two
         # named lexicons, never naming a word (the design rule in
         # nameparser._types' module docstring)
-        if self == Lexicon.default():
-            return "Lexicon(default)"
-        if self == Lexicon.empty():
-            return "Lexicon(empty)"
+        # A choice is shown by its tags, and the readings counted against
+        # the named lexicon under the same choice
+        choice = ""
+        named = [("default", Lexicon.default()), ("empty", Lexicon.empty())]
+        if self._languages:
+            choice = ", " + _shown_choice(self._languages) + (
+                ", strict" if self._strict else "")
+            named = [(label, dataclasses.replace(
+                other, _languages=self._languages, _strict=self._strict,
+                capitalization_exceptions=_rechosen_masks(
+                    other, self._chosen, self._strict)))
+                for label, other in named]
+        for label, other in named:
+            if self == other:
+                return f"Lexicon({label}{choice})"
         candidates = [(label, self._deltas_from(other))
-                      for label, other in (("default", Lexicon.default()),
-                                           ("empty", Lexicon.empty()))]
+                      for label, other in named]
         label, (kinds, lists) = min(
             candidates,
             key=lambda c: sum(a + r for _, a, r in c[1][0] + c[1][1]))
@@ -1718,7 +1880,8 @@ class Lexicon:
                 for name, a, r in deltas)
 
         rendered = "; ".join(filter(None, (counts(kinds), counts(lists))))
-        return (f"Lexicon({label} + {rendered or f'edits: {len(self._edits)}'})")
+        return (f"Lexicon({label} + {rendered or f'edits: {len(self._edits)}'}"
+                f"{choice})")
 
     def __getstate__(self) -> dict[str, object]:
         # the base as a snapshot of its rows, so a pickle parses as it
@@ -1730,7 +1893,8 @@ class Lexicon:
             base = READINGS
         return {"surnames": self.surnames, "given_names": self.given_names,
                 "capitalization_exceptions": self.capitalization_exceptions,
-                "_base": base, "_edits": tuple(tuple(e) for e in self._edits)}
+                "_base": base, "_edits": tuple(tuple(e) for e in self._edits),
+                "_languages": self._languages, "_strict": self._strict}
 
     def __setstate__(self, state: dict[str, object]) -> None:
         # A 2.x state holds the compiled sets, translated onto a base
@@ -1791,9 +1955,19 @@ class Lexicon:
         right-biased, and the logs concatenated, this one's first, so a
         later lexicon's edits apply after an earlier one's (decisions/
         vocabulary-model, 2026-11-02 #754, item 3); the base is the one
-        that is not empty, and two different ones raise."""
+        that is not empty and the choice the one that is made, and two
+        different bases, or two different choices, raise."""
         if not isinstance(other, Lexicon):
             return NotImplemented
+        if (self._languages and other._languages
+                and (self._languages, self._strict)
+                != (other._languages, other._strict)):
+            raise ValueError(
+                "cannot join two lexicons compiled under different choices "
+                "of languages or of strictness; combine choices with "
+                "parser_for, which unions them: parser_for(*packs, "
+                "base=parser)")
+        mine = self if self._languages else other
         if "empty" in (self._base, other._base) or self._base == other._base:
             base = other._base if self._base == "empty" else self._base
         else:
@@ -1806,13 +1980,31 @@ class Lexicon:
             surnames=self.surnames | other.surnames,
             given_names=self.given_names | other.given_names,
             capitalization_exceptions=tuple(sorted(merged.items())),
-            _base=base, _edits=self._edits + other._edits)
+            _base=base, _edits=self._edits + other._edits,
+            _languages=mine._languages, _strict=mine._strict)
 
     # -- properties -------------------------------------------------------
 
     @property
     def capitalization_exceptions_map(self) -> Mapping[str, str]:
         return self._cap_map
+
+    @property
+    def languages(self) -> frozenset[str]:
+        """The languages this lexicon's readings are chosen under, as
+        BCP 47 tags; empty where none was chosen. Set by
+        :func:`~nameparser.parser_for`, which unions a base's choice
+        with its packs' (decisions/vocabulary-model, 2026-11-02 #754,
+        item 4): the shipped readings are filtered by the choice, and
+        the lexicon's own :meth:`add` and :meth:`remove` calls apply
+        after it."""
+        return self._languages
+
+    @property
+    def strict(self) -> bool:
+        """Whether the choice is strict: only the chosen languages'
+        vocabulary files and native-script vocabulary are read."""
+        return self._strict
 
     # -- access -----------------------------------------------------------
 
@@ -1917,8 +2109,9 @@ class Lexicon:
 
     def _pool(self) -> Pool:
         if not self._edits:
-            return _base_pool(self._base)
-        return _built(self._base, self._edits)[0]
+            return _chosen_pool(self._base, self._chosen, self._strict)
+        return _built(self._base, self._edits, self._chosen,
+                      self._strict)[0]
 
     def _changed(self, op: str,
                  entries: Mapping[str, object]) -> dict[str, object]:

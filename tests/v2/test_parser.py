@@ -2472,7 +2472,7 @@ def test_the_packs_choices_are_one_choice_in_any_order() -> None:
     assert parser_for(pt, en).lexicon == parser_for(en, pt).lexicon == both
 
 
-def test_a_choice_is_a_delta_that_keeps_a_callers_vocabulary() -> None:
+def test_a_choice_keeps_a_callers_vocabulary() -> None:
     base = Parser(lexicon=Lexicon.default().add("zzq", kind="title"))
     got = parser_for(_choosing("pt"), base=base)
     assert "zzq" in got.lexicon._sets.titles
@@ -2511,96 +2511,332 @@ def test_a_word_a_choice_drops_leaves_the_callers_markers_of_it_too() -> None:
     assert "vd" not in got.particles and "vd" not in got.particles_ambiguous
 
 
+@pytest.mark.parametrize("mask,error", [
+    # a value not a string: a TypeError
+    (5, TypeError),
+    # a mask spelling other letters: _lexicon._MaskValueError, whose
+    # constructor takes three arguments, rewrapped as a plain ValueError
+    ("Abc", ValueError),
+])
 def test_an_error_applying_a_choice_names_the_choice(
-        monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch: pytest.MonkeyPatch, mask: object,
+        error: type[Exception]) -> None:
     # an error the Lexicon raises while the choice is applied names the
-    # languages chosen, as a patch error names its pack. No shipped
-    # choice raises, so a delta joining a mask that is not a string
-    # stands in for one (an orphan marker did until 4i-b, which left a
-    # choice no way to write one)
+    # languages chosen, as a patch error names its pack. A shipped
+    # choice raises only on a caller's clashing reading (the `st` test
+    # below), so a choice moving a mask the Lexicon refuses stands in
     import nameparser._parser as parser_mod
-    bad_mask: object = ({}, (frozenset(), (("zzq", 5),)))
-    monkeypatch.setattr(parser_mod, "_choice_delta",
-                        lambda chosen, strict=False: bad_mask)
-    with pytest.raises(TypeError,
-                       match="while applying the languages chosen, en, pt: "
-                             "capitalization_exceptions entries must be"):
+    monkeypatch.setattr(parser_mod, "_rechosen_masks",
+                        lambda lexicon, chosen, strict: (("zzq", mask),))
+    with pytest.raises(error, match="while applying the languages chosen, "
+                                    "en, pt \\(by 'aa', 'bb'\\): "
+                                    "capitalization_exceptions"):
         parser_for(_choosing("pt", code="aa"), _choosing("en", code="bb"))
 
 
-def test_a_choice_moves_case_masks_as_it_moves_words(
-        monkeypatch: pytest.MonkeyPatch) -> None:
-    # no shipped choice changes a mask (no reading off by default or
-    # preferred away carries `cased`), so a stand-in compile does: under
-    # it `phd`'s mask leaves and `zzq`'s joins, and the delta applies the
-    # same to a caller's base, keeping the caller's own masks
-    import nameparser._parser as parser_mod
-    import nameparser._reading_index as ri
-    real = ri.compile_choice
-    default = real(frozenset())
-
-    def stand_in(chosen: frozenset[str], strict: bool = False) -> object:
-        if not chosen:
-            return default
-        masks = {k: v for k, v in default["CAPITALIZATION_EXCEPTIONS"].items()
-                 if k != "phd"} | {"zzq": "ZzQ"}
-        return {**default, "CAPITALIZATION_EXCEPTIONS": masks}
-    monkeypatch.setattr(ri, "compile_choice", stand_in)
-    delta = parser_mod._choice_delta.__wrapped__(frozenset({"pt"}))  # type: ignore[attr-defined]
-    assert delta == ({}, (frozenset({"phd"}), (("zzq", "ZzQ"),)))
-    monkeypatch.setattr(parser_mod, "_choice_delta",
-                        lambda chosen, strict=False: delta)
-    base = dataclasses.replace(Lexicon.default(), capitalization_exceptions=(
+def test_a_choice_moves_case_masks_as_it_moves_words() -> None:
+    # cs's credentials carry masks the default leaves off (`judr` ->
+    # JUDr), a strict choice drops the masks of every file it drops,
+    # and a caller's own mask the choice does not touch is kept
+    from nameparser import locales
+    mine = dataclasses.replace(Lexicon.default(), capitalization_exceptions=(
         *Lexicon.default().capitalization_exceptions, ("abcq", "AbcQ")))
-    got = parser_mod._apply_choice(base, frozenset({"pt"}))
-    cap = got.capitalization_exceptions_map
-    assert "phd" not in cap and cap["zzq"] == "ZzQ" and cap["abcq"] == "AbcQ"
+    cs = parser_for(locales.CS, base=Parser(lexicon=mine)).lexicon
+    assert cs.capitalization_exceptions_map["judr"] == "JUDr"
+    assert cs.capitalization_exceptions_map["abcq"] == "AbcQ"
+    ko = parser_for(_choosing("ko"), strict=True).lexicon
+    assert "phd" not in ko.capitalization_exceptions_map
+    # chained, the masks move as the union's do: what ko's strict choice
+    # dropped and en's keeps comes back
+    en, ko_pack = _choosing("en", code="en"), _choosing("ko", code="ko")
+    chained = parser_for(en, base=parser_for(ko_pack, strict=True),
+                         strict=True)
+    assert "phd" in chained.lexicon.capitalization_exceptions_map
+    assert chained.lexicon == parser_for(ko_pack, en, strict=True).lexicon
 
 
-def test_a_choice_chained_through_base_applies_after_the_bases() -> None:
-    # decided 2026-10-29 (decisions/vocabulary-model, chained choices):
-    # a choice is one call's, and a Parser records none, so en chained on
-    # pt's parser drops pt's particle after pt dropped en's credential.
-    # A change to Parser recording its choice (option b) changes this
-    # test on purpose
+def test_a_choice_chained_through_base_unions_with_the_bases() -> None:
+    # decisions/vocabulary-model, 2026-11-02 #754, item 4: the lexicon
+    # records its choice, so en chained on pt's parser chooses both, as
+    # one call choosing both does (superseding 2026-10-29's chained
+    # choices, where en dropped pt's particle after pt dropped en's
+    # credential: family `Carmo`, family `DO`)
     pt, en = _choosing("pt", code="pt"), _choosing("en", code="en")
     chained = parser_for(en, base=parser_for(pt))
-    assert chained.parse("Maria do Carmo").family == "Carmo"
-    assert chained.parse("John Smith DO").family == "DO"
+    assert chained.parse("Maria do Carmo").family == "do Carmo"
+    assert chained.parse("John Smith DO").suffix == "DO"
     together = parser_for(pt, en)
-    assert together.parse("Maria do Carmo").family == "do Carmo"
-    assert together.parse("John Smith DO").suffix == "DO"
-    assert chained.lexicon != together.lexicon
+    assert chained.lexicon == together.lexicon
+    assert chained.languages == together.languages == {"en", "pt"}
 
 
 def test_a_choice_whose_reading_clashes_with_the_callers_is_refused() -> None:
     # cs turns on `st`'s generation beside a caller's credential, and a
-    # word holds one suffix kind: 3b's delta broke a set guard here, and
-    # 4i-b's readings refuse it too, rather than drop the caller's
-    # reading in silence (found by review of 4i-b)
+    # word holds one suffix kind: refused at parser_for, naming the
+    # languages, the edit, and the remove that resolves it
+    # (decisions/vocabulary-model, 2026-11-02 #754, item 3)
     from nameparser import locales
     mine = Parser(lexicon=Lexicon.default().add("st", kind="credential"))
     with pytest.raises(ValueError, match=(
-            r"while applying the languages chosen, cs: the readings the "
-            r"choice turns on clash with the lexicon's own for 'st'")):
+            r"while applying the languages chosen, cs \(by 'cs'\): the "
+            r"lexicon's "
+            r"\.add\('st', kind='credential'\) clashes with a reading the "
+            r"choice turns on: 'st' would hold two suffix kinds.*"
+            r"\.remove\('st', kind='generation'\)")) as raised:
         parser_for(locales.CS, base=mine)
+    # the remove it offers applies after the choice, so it runs
+    offered = re.search(r"(\.remove\(.*\))$", str(raised.value))
+    assert offered is not None
+    fixed = eval("Lexicon.default().add('st', kind='credential')"  # noqa: S307
+                 + offered.group(1), {"Lexicon": Lexicon})
+    got = parser_for(locales.CS, base=Parser(lexicon=fixed))
+    assert got.parse("Jiří Dienstbier st.").suffix == "st."
 
 
-def test_a_choice_drops_a_callers_own_entry_it_removes() -> None:
-    # decided with the chained choices: the delta removes what the
-    # choice drops whoever listed it, and keeps every untouched entry
+def test_a_clash_the_log_makes_without_the_choice_is_not_the_choices(
+        ) -> None:
+    # an edit made on a chosen lexicon that clashes with the base alone
+    # is refused as it is with no choice, the choice not named
+    chosen = parser_for(_choosing("pt")).lexicon
+    with pytest.raises(ValueError, match="would hold two suffix kinds") as e:
+        chosen.add("jr", kind="credential")
+    assert "the choice" not in str(e.value)
+
+
+def test_a_callers_reading_survives_a_choice_whoever_wrote_first() -> None:
+    # superseding 2026-10-29's chained choices item 2, where the delta
+    # dropped what the choice removed whoever listed it: a caller's
+    # reading applies after the choice
     mine = Lexicon(surnames=Lexicon.default().surnames).add(
-        "do", "van", kind="particle")
+        "do", "van", kind="preposition")
     got = parser_for(_choosing("en"), base=Parser(lexicon=mine)).lexicon
-    assert got._sets.particles == {"van"}
+    assert got._sets.particles == {"do", "van"}
+    # and a caller's removal too: with en's credential of `do` taken out
+    # after en preferred it over pt's particle, `do` reads as neither
+    removed = Lexicon.default().remove("do", kind="credential")
+    en = parser_for(_choosing("en"), base=Parser(lexicon=removed))
+    assert en.parse("Maria do Carmo").middle == "do"
+
+
+def test_a_choice_selects_nothing_in_an_empty_base() -> None:
+    # a base built from Lexicon.empty() holds no shipped reading, so a
+    # choice turns none on (the 2026-11-02 #754 entry's item 4)
+    # (the Korean surnames kept, so the default policy's hangul
+    # segmentation has its list)
+    empty = Lexicon(surnames=Lexicon.default().surnames)
+    got = parser_for(_choosing("cs"), base=Parser(lexicon=empty))
+    assert got.languages == {"cs"}
+    from nameparser._lexicon import _fields_of
+    assert _fields_of(got.lexicon._sets) == _fields_of(empty._sets)
+
+
+def test_the_choice_is_recorded_and_read_through_the_parser() -> None:
+    plain = parser_for(_choosing("pt-br"))
+    assert plain.languages == plain.lexicon.languages == {"pt-BR"}
+    assert plain.strict is plain.lexicon.strict is False
+    strict = parser_for(_choosing("ko"), strict=True)
+    assert strict.strict is strict.lexicon.strict is True
+    assert Parser().languages == frozenset() and Parser().strict is False
+    # a pack choosing nothing chained on a choice keeps it, a strict one
+    # included, whatever strict the call leaves at its default (found by
+    # review of 4i-c: a policy-only pack on a strict parser raised)
+    nothing = Locale(code="xx", lexicon=Lexicon.empty())
+    assert parser_for(nothing, base=plain).lexicon == plain.lexicon
+    assert parser_for(nothing, base=strict).lexicon == strict.lexicon
+    assert parser_for(base=strict, segmenter=None).strict is True
+
+
+def test_strict_has_three_states_on_a_chained_call() -> None:
+    # decided 2026-11-02 (decisions/vocabulary-model, 2026-11-02 #754,
+    # sub-phase 4i-c): strict defaults to UNSET, as segmenter does
+    ko, en = _choosing("ko", code="ko"), _choosing("en", code="en")
+    strict, plain = parser_for(ko, strict=True), parser_for(ko)
+    # omitted on a strict base: stays strict
+    assert parser_for(en, base=strict).strict is True
+    assert parser_for(base=strict).lexicon == strict.lexicon
+    # an explicit False on a strict base: refused, naming both spellings
+    for packs in ((), (en,)):
+        with pytest.raises(ValueError, match=(
+                r"chosen with strict=True.*leave strict out or pass "
+                r"strict=True.*parser_for\(\*packs, strict=False\)")):
+            parser_for(*packs, base=strict, strict=False)
+    # an explicit True on a plain base with a choice: becomes strict
+    got = parser_for(en, base=plain, strict=True)
+    assert got.strict is True
+    assert got.lexicon == parser_for(ko, en, strict=True).lexicon
+    # omitted on a plain base: stays plain
+    assert parser_for(en, base=plain).strict is False
+    # an explicit True with no language anywhere: refused, as 3j
+    with pytest.raises(ValueError, match="no pack was given"):
+        parser_for(strict=True)
+
+
+def test_a_chained_choice_redoes_a_mask_the_default_lacks() -> None:
+    # cs sets `judr`'s mask, which the default holds none of; chained
+    # under en, the base's move is undone (the mask deleted) and the
+    # union's applied again, as the single call does
+    from nameparser import locales
+    en = _choosing("en", code="en")
+    chained = parser_for(en, base=parser_for(locales.CS))
+    assert chained.lexicon.capitalization_exceptions_map["judr"] == "JUDr"
+    assert chained.lexicon == parser_for(locales.CS, en).lexicon
+
+
+def test_a_join_that_cannot_be_made_names_where_it_failed() -> None:
+    # two packs whose lexicons record different choices name the pack;
+    # a pack's lexicon built on another release's base names the join
+    # with base's (rules/D2)
+    from nameparser.config._index import READINGS
+    pt = Locale(code="aa", lexicon=dataclasses.replace(
+        Lexicon.empty(), _languages=frozenset({"pt"})))
+    en = Locale(code="bb", lexicon=dataclasses.replace(
+        Lexicon.empty(), _languages=frozenset({"en"})))
+    with pytest.raises(ValueError, match="while applying locale 'bb': "
+                                         "cannot join two lexicons compiled"):
+        parser_for(pt, en)
+    older = Locale(code="cc", lexicon=Lexicon(_base=READINGS[1:]))
+    with pytest.raises(ValueError, match="while applying locale 'cc': "
+                                         "cannot join two lexicons built "
+                                         "on different bases"):
+        parser_for(older)
+
+
+@pytest.mark.parametrize("packs,match", [
+    # a fragment that clashes with base's readings names its pack, as a
+    # patch error does (rules/D2; found by review of 4i-c, where the
+    # join named no pack): `dc` is a credential in the default
+    (("mypack",), "while applying locale 'mypack': 'dc' would hold two "
+                  "suffix kinds"),
+    # and behind a pack that joins cleanly, the one that clashes
+    (("clean", "mypack"), "while applying locale 'mypack': "),
+    # a fragment that clashes with a reading the choice turns on: `st`
+    # as a credential beside cs's generation
+    (("cs_credential",), "while applying locale 'cs_credential': the "
+                         "lexicon's \\.add\\('st', kind='credential'\\)"),
+])
+def test_a_fragments_clash_names_its_pack(packs: tuple[str, ...],
+                                          match: str) -> None:
+    built = {
+        "mypack": Locale(code="mypack",
+                         lexicon=Lexicon.empty().add("dc", kind="generation")),
+        "clean": Locale(code="clean",
+                        lexicon=Lexicon.empty().add("zzq", kind="title")),
+        "cs_credential": _choosing("cs", code="cs_credential", lexicon=(
+            Lexicon.empty().add("st", kind="credential"))),
+    }
+    with pytest.raises(ValueError, match=match):
+        parser_for(*(built[p] for p in packs))
+
+
+def test_a_clash_of_base_with_a_choice_it_joins_names_base_too() -> None:
+    # base chose pt and added `st` as a credential; chained under cs,
+    # which turns on `st`'s generation, the clash is base's own with the
+    # union, and the layer names the pack that chose cs and base
+    from nameparser import locales
+    mine = Parser(lexicon=Lexicon.default().add("st", kind="credential"))
+    pt = parser_for(_choosing("pt"), base=mine)
+    with pytest.raises(ValueError, match=(
+            r"while applying the languages chosen, cs, pt "
+            r"\(by 'cs', base\): the lexicon's \.add\('st'")):
+        parser_for(locales.CS, base=pt)
+
+
+def test_a_chained_choice_restores_a_mask_it_had_changed(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # no shipped choice changes a mask the default holds, only adds or
+    # drops one, so a stand-in choice does: chained under another
+    # language, the base's change is undone to the default's value and
+    # the union's applied again, as the single call does
+    import nameparser._lexicon as lexicon_mod
+    real = lexicon_mod._choice_masks.__wrapped__  # type: ignore[attr-defined]
+
+    def stand_in(chosen: frozenset[str], strict: bool = False) -> object:
+        gone, joined = real(chosen, strict)
+        if "ga" in chosen:
+            joined = (*joined, ("phd", "PHD"))
+        return gone, tuple(sorted(joined))
+    monkeypatch.setattr(lexicon_mod, "_choice_masks", stand_in)
+    ga, en = _choosing("ga", code="ga"), _choosing("en", code="en")
+    base = parser_for(ga)
+    assert base.lexicon.capitalization_exceptions_map["phd"] == "PHD"
+    chained = parser_for(en, base=base)
+    assert chained.lexicon == parser_for(ga, en).lexicon
+    assert chained.lexicon.capitalization_exceptions_map["phd"] == "PHD"
+
+
+def test_a_packs_masks_are_laid_over_the_choices() -> None:
+    # the choice moves base's masks, and a pack's are laid over them, so
+    # a pack's mask of a word the choice joins or drops stands, as on
+    # master before 4i-c (found by review of 4i-c); a caller's own mask
+    # on a word the choice joins is the choice's, as it was
+    from nameparser import locales
+    fm = Locale(code="fm", lexicon=dataclasses.replace(
+        Lexicon.empty(), capitalization_exceptions=(
+            ("phd", "PHD"), ("judr", "JUDR"))))
+    for strict in (False, True):
+        p = parser_for(fm, locales.CS, strict=strict)
+        cap = p.lexicon.capitalization_exceptions_map
+        assert (cap["phd"], cap["judr"]) == ("PHD", "JUDR"), strict
+        rendered = str(p.capitalized(p.parse("jan novák phd judr")))
+        assert "PHD" in rendered and "JUDR" in rendered, strict
+    mine = dataclasses.replace(Lexicon.default(), capitalization_exceptions=(
+        *Lexicon.default().capitalization_exceptions, ("judr", "Judr")))
+    p = parser_for(locales.CS, base=Parser(lexicon=mine))
+    assert p.lexicon.capitalization_exceptions_map["judr"] == "JUDr"
+
+
+def test_a_packs_fragment_joins_under_the_callers_lexicon() -> None:
+    # the caller's lexicon goes last, so its own statement outranks a
+    # pack's: a pack's credential `do` against a caller's removal of it,
+    # and a pack's mask against the caller's (decisions/vocabulary-model,
+    # 2026-11-02 #754, item 3)
+    fragment = dataclasses.replace(
+        Lexicon.empty().add("do", kind="credential"),
+        capitalization_exceptions=(("zzq", "ZZq"),))
+    pack = _choosing("en", lexicon=fragment)
+    mine = dataclasses.replace(
+        Lexicon.default().remove("do", kind="credential"),
+        capitalization_exceptions=(
+            *Lexicon.default().capitalization_exceptions, ("zzq", "ZzQ")))
+    got = parser_for(pack, base=Parser(lexicon=mine))
+    assert got.parse("John Smith DO").suffix == ""
+    assert got.lexicon.capitalization_exceptions_map["zzq"] == "ZzQ"
+    # a shipped mask the caller left as shipped is no statement of the
+    # caller's, so a pack's mask of the word wins, as its readings win
+    # over shipped ones; one the caller changed outranks the pack's
+    # (found by review of 4i-c)
+    phd = _choosing("en", lexicon=dataclasses.replace(
+        Lexicon.empty(), capitalization_exceptions=(("phd", "PHD"),)))
+    assert (parser_for(phd).lexicon.capitalization_exceptions_map["phd"]
+            == "PHD")
+    changed = dataclasses.replace(Lexicon.default(), capitalization_exceptions=(
+        *(p for p in Lexicon.default().capitalization_exceptions
+          if p[0] != "phd"), ("phd", "Phd")))
+    assert (parser_for(phd, base=Parser(lexicon=changed))
+            .lexicon.capitalization_exceptions_map["phd"] == "Phd")
+    # the accepted limit: a caller's mask written as the shipped value
+    # cannot be told from the shipped one, so the pack's wins it
+    # (decisions/vocabulary-model, 2026-11-02 #754, sub-phase 4i-c)
+    shipped_value = Parser(lexicon=dataclasses.replace(
+        Lexicon.default(), capitalization_exceptions=(("phd", "PhD"),)))
+    p = parser_for(phd, base=shipped_value)
+    assert str(p.capitalized(p.parse("jan novák phd"))) == "Jan Novák PHD"
+    # and a later pack's fragment after an earlier one's
+    first = _choosing("en", code="aa",
+                      lexicon=Lexicon.empty().add("zzq", kind="title"))
+    second = _choosing("en", code="bb",
+                       lexicon=Lexicon.empty().remove("zzq", kind="title"))
+    assert parser_for(first, second).parse("Zzq Smith").title == ""
+    assert parser_for(second, first).parse("Zzq Smith").title == "Zzq"
 
 
 def test_reading_languages_name_the_default_files_under_a_choice() -> None:
     # decisions/vocabulary-model, 2026-10-29 phase 3b: the field names the
     # files holding the reading on by default whatever choice built the
-    # parser, a Parser recording none. Under pt, `it`'s dropped reading of
-    # `e` is still named; under cs, the generation `st` it turned on names
-    # no file. A Parser.languages (option b) would change both on purpose
+    # parser. Under pt, `it`'s dropped reading of `e` is still named;
+    # under cs, the generation `st` it turned on names no file. Its
+    # following the choice the lexicon now records is 4i-d's, optional,
+    # and would change both on purpose
     def languages(parser: Parser, name: str, text: str) -> tuple[str, ...]:
         token = next(t for t in parser.parse(name).tokens if t.text == text)
         assert token.reading is not None
@@ -2613,14 +2849,17 @@ def test_reading_languages_name_the_default_files_under_a_choice() -> None:
     assert languages(pt, "Maria do Carmo", "do") == ("pt",)
 
 
-def test_a_choice_that_changes_nothing_leaves_the_lexicon_itself() -> None:
+def test_a_choice_that_changes_nothing_leaves_the_sets_as_they_are() -> None:
     # sv.toml holds no reading the default leaves off or another file's
-    # reading clashes with, so choosing it changes no compiled set
-    import nameparser._parser as parser_mod
+    # reading clashes with, so choosing it changes no compiled set; the
+    # lexicon records the choice all the same
     from nameparser._reading_index import changed_words, selected
     assert changed_words(selected(["sv"])) == frozenset()
     mine = Lexicon.default().add("zzq", kind="title")
-    assert parser_mod._apply_choice(mine, frozenset({"sv"})) is mine
+    got = parser_for(_choosing("sv"), base=Parser(lexicon=mine)).lexicon
+    from nameparser._lexicon import _fields_of
+    assert _fields_of(got._sets) == _fields_of(mine._sets)
+    assert got.languages == {"sv"}
 
 
 # -- strict (#753, 3j: file-strict, decisions/vocabulary-model's
@@ -2707,12 +2946,16 @@ def test_strict_is_a_bool() -> None:
         parser_for(_choosing("ko"), strict=1)  # type: ignore[arg-type]
 
 
-def test_a_strict_choice_is_a_delta_over_the_union_in_any_order() -> None:
-    # a caller's listing of a dropped word leaves, a word no file holds
-    # stays (measured in the decisions entry); the union, then strict
+def test_a_strict_choice_keeps_a_callers_readings_over_the_union(
+        ) -> None:
+    # a caller's reading of a word strict drops stays, as one of a word
+    # no file holds does (superseding 3j's clause that the delta dropped
+    # it, decisions/vocabulary-model, 2026-11-02 #754, item 4); the
+    # union, then strict
     base = Parser(lexicon=Lexicon.default().add("dr", "zzq", kind="title"))
     got = parser_for(_choosing("vi"), base=base, strict=True).lexicon._sets
-    assert "zzq" in got.titles and "dr" not in got.titles
+    assert {"zzq", "dr"} <= got.titles
+    assert "dr" not in parser_for(_choosing("vi"), strict=True).lexicon._sets.titles
     ko, en = _choosing("ko", code="aa"), _choosing("en", code="bb")
     assert (parser_for(ko, en, strict=True).lexicon
             == parser_for(en, ko, strict=True).lexicon
@@ -2730,7 +2973,7 @@ def _choice_tags() -> list[tuple[str, bool]]:
             + [(t, True) for t in sorted(files() - UNCHOOSABLE)])
 
 
-#: The lexicons a choice is written into: the default, the empty one,
+#: The lexicons a choice is filtered under: the default, the empty one,
 #: and one a caller configured (a removed gate, an added title, two
 #: added particles, one of them a word a choice turns a suffix on for)
 _CHOICE_BASES = {
@@ -2743,26 +2986,36 @@ _CHOICE_BASES = {
 
 @pytest.mark.parametrize("tag,strict", _choice_tags(),
                          ids=lambda v: str(v))
-def test_a_choice_written_as_readings_gives_the_deltas_sets(
+def test_a_choice_moves_only_the_words_the_callers_log_leaves_alone(
         tag: str, strict: bool) -> None:
-    # 4i-b writes 3b's delta as readings (`_apply_choice` through
-    # `_lexicon._edits_toward`): for every single file tag a choice may
-    # name, plain and strict, on each of _CHOICE_BASES, the compiled sets
-    # are the delta applied to the base's sets, field by field, the kind
-    # sets the views read included (decisions/vocabulary-model's
-    # 2026-11-02 #754, sub-phase 4i-b entry counts this population)
-    from nameparser._lexicon import _MARKER_BASES, _fields_of
-    from nameparser._parser import (
-        _apply_choice, _choice_delta, _reading_index_selected)
-    chosen = _reading_index_selected(frozenset({tag}), strict)
-    fields, _ = _choice_delta(chosen, strict)
+    # 4i-c filters the base's readings by the choice and applies the
+    # caller's log after it (decisions/vocabulary-model, 2026-11-02
+    # #754, item 4): for every single file tag a choice may name, plain
+    # and strict, the default under the choice compiles as the shipped
+    # index does under it, the empty lexicon stays empty, and a
+    # configured lexicon differs from the choice alone only in entries
+    # holding a word its log names
+    from nameparser._lexicon import _NO_SETS, _built, _fields_of, _vocab_fields
+    from nameparser._reading_index import compile_choice, selected
+    chosen = selected(frozenset({tag}), strict=strict)
+    want = _vocab_fields(compile_choice(chosen, strict))
     for name, build in _CHOICE_BASES.items():
         lexicon = build()
-        current = _fields_of(lexicon._sets)
-        want = {f: (current[f] - gone) | joined
-                for f, (gone, joined) in fields.items()}
-        for marker, base in _MARKER_BASES:
-            if base in fields and fields[base][0]:
-                want[marker] = want.get(marker, current[marker]) - fields[base][0]
-        got = _fields_of(_apply_choice(lexicon, frozenset({tag}), strict)._sets)
-        assert got == current | want, name
+        got = dataclasses.replace(lexicon, _languages=frozenset({tag}),
+                                  _strict=strict)
+        assert got.languages == {tag} and got.strict is strict
+        sets = _fields_of(got._sets)
+        if name == "empty":
+            assert sets == _fields_of(_NO_SETS), name
+            continue
+        if name == "default":
+            # the shortcut every pack takes, and the compile it stands for
+            assert sets == _fields_of(want), name
+            assert _fields_of(_built("default", (), chosen, strict)[1]) == sets
+            continue
+        touched = {w for e in lexicon._edits for w in e.words}
+        for field, words in sets.items():
+            def kept(entries: frozenset[str]) -> frozenset[str]:
+                return frozenset(e for e in entries
+                                 if not touched & set(e.split()))
+            assert kept(words) == kept(want[field]), (name, field)

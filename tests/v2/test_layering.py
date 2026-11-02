@@ -613,8 +613,8 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: `getattr`s, all through `sets`, which the undone `sets = lexicon`
 #: makes a lexicon, and the 3 `sets =` bindings; the tools' 16 are
 #: attribute loads, every tool scanned. 4i-a's count was 114, with two
-#: more `getattr`s in `_parser._apply_choice`, which reads the sets
-#: through `_lexicon._fields_of` since 4i-b.
+#: more `getattr`s in `_parser._apply_choice`, which read the sets
+#: through `_lexicon._fields_of` from 4i-b until 4i-c retired it.
 #: A reader added through `_sets` moves these, and they are re-taken
 #: then: they count what the check would refuse with the move undone.
 _UNGUARDED_READS = {"library": 112, "tools": 16}
