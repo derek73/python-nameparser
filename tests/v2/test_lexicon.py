@@ -1044,6 +1044,34 @@ def test_the_choice_travels_with_replace_union_and_pickle() -> None:
         assert (loaded.languages, loaded.strict) == (lex.languages, lex.strict)
 
 
+#: What the parsers pickled in tests/v2/data/parsers_4ib.pickle read
+#: on the tree that wrote them, db7e8fc4 (4i-b), where a choice was 3b's
+#: delta written into the lexicon's log
+_READ_BY_4IB = [
+    ("pt", "ANA SILVA E SOUZA", "family", "SILVA E SOUZA"),
+    ("pt", "John Smith DO", "family", "DO"),
+    ("cs_strict", "Jiří Dienstbier st.", "suffix", "st."),
+    ("cs_strict", "Jan Novák, MUDr", "title", "MUDr"),
+    ("cs_strict", "Kim Min Jun, MD", "given", "MD"),
+]
+
+
+def test_a_pickle_written_before_the_choice_fields_loads_choosing_nothing(
+        ) -> None:
+    # a 4i-b pickle, from no release, holds no choice fields; its log
+    # already holds what the choice changed, so it loads choosing
+    # nothing and reads as it did (the fields are marked _ADDED_IN;
+    # found by review of 4i-c)
+    with open(Path(__file__).parent / "data" / "parsers_4ib.pickle",
+              "rb") as f:
+        parsers = pickle.load(f)  # noqa: S301 -- our own fixture
+    for key in ("pt", "cs_strict"):
+        assert parsers[key].languages == frozenset(), key
+        assert parsers[key].strict is False, key
+    for key, text, field_name, value in _READ_BY_4IB:
+        assert getattr(parsers[key].parse(text), field_name) == value, text
+
+
 @pytest.mark.parametrize("left,right", [
     ({"_languages": {"pt"}}, {"_languages": {"en"}}),
     ({"_languages": {"ko"}}, {"_languages": {"ko"}, "_strict": True}),

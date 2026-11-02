@@ -2529,7 +2529,8 @@ def test_an_error_applying_a_choice_names_the_choice(
     monkeypatch.setattr(parser_mod, "_rechosen_masks",
                         lambda lexicon, chosen, strict: (("zzq", mask),))
     with pytest.raises(error, match="while applying the languages chosen, "
-                                    "en, pt: capitalization_exceptions"):
+                                    "en, pt \\(by 'aa', 'bb'\\): "
+                                    "capitalization_exceptions"):
         parser_for(_choosing("pt", code="aa"), _choosing("en", code="bb"))
 
 
@@ -2577,7 +2578,8 @@ def test_a_choice_whose_reading_clashes_with_the_callers_is_refused() -> None:
     from nameparser import locales
     mine = Parser(lexicon=Lexicon.default().add("st", kind="credential"))
     with pytest.raises(ValueError, match=(
-            r"while applying the languages chosen, cs: the lexicon's "
+            r"while applying the languages chosen, cs \(by 'cs'\): the "
+            r"lexicon's "
             r"\.add\('st', kind='credential'\) clashes with a reading the "
             r"choice turns on: 'st' would hold two suffix kinds.*"
             r"\.remove\('st', kind='generation'\)")) as raised:
@@ -2693,10 +2695,58 @@ def test_a_join_that_cannot_be_made_names_where_it_failed() -> None:
                                          "cannot join two lexicons compiled"):
         parser_for(pt, en)
     older = Locale(code="cc", lexicon=Lexicon(_base=READINGS[1:]))
-    with pytest.raises(ValueError, match="while joining the packs' lexicons "
-                                         "to base's: cannot join two "
-                                         "lexicons built on different bases"):
+    with pytest.raises(ValueError, match="while applying locale 'cc': "
+                                         "cannot join two lexicons built "
+                                         "on different bases"):
         parser_for(older)
+
+
+@pytest.mark.parametrize("packs,match", [
+    # a fragment that clashes with base's readings names its pack, as a
+    # patch error does (rules/D2; found by review of 4i-c, where the
+    # join named no pack): `dc` is a credential in the default
+    (("mypack",), "while applying locale 'mypack': 'dc' would hold two "
+                  "suffix kinds"),
+    # and behind a pack that joins cleanly, the one that clashes
+    (("clean", "mypack"), "while applying locale 'mypack': "),
+    # a fragment that clashes with a reading the choice turns on: `st`
+    # as a credential beside cs's generation
+    (("cs_credential",), "while applying locale 'cs_credential': the "
+                         "lexicon's \\.add\\('st', kind='credential'\\)"),
+])
+def test_a_fragments_clash_names_its_pack(packs: tuple[str, ...],
+                                          match: str) -> None:
+    built = {
+        "mypack": Locale(code="mypack",
+                         lexicon=Lexicon.empty().add("dc", kind="generation")),
+        "clean": Locale(code="clean",
+                        lexicon=Lexicon.empty().add("zzq", kind="title")),
+        "cs_credential": _choosing("cs", code="cs_credential", lexicon=(
+            Lexicon.empty().add("st", kind="credential"))),
+    }
+    with pytest.raises(ValueError, match=match):
+        parser_for(*(built[p] for p in packs))
+
+
+def test_a_packs_masks_are_laid_over_the_choices() -> None:
+    # the choice moves base's masks, and a pack's are laid over them, so
+    # a pack's mask of a word the choice joins or drops stands, as on
+    # master before 4i-c (found by review of 4i-c); a caller's own mask
+    # on a word the choice joins is the choice's, as it was
+    from nameparser import locales
+    fm = Locale(code="fm", lexicon=dataclasses.replace(
+        Lexicon.empty(), capitalization_exceptions=(
+            ("phd", "PHD"), ("judr", "JUDR"))))
+    for strict in (False, True):
+        p = parser_for(fm, locales.CS, strict=strict)
+        cap = p.lexicon.capitalization_exceptions_map
+        assert (cap["phd"], cap["judr"]) == ("PHD", "JUDR"), strict
+        rendered = str(p.capitalized(p.parse("jan novák phd judr")))
+        assert "PHD" in rendered and "JUDR" in rendered, strict
+    mine = dataclasses.replace(Lexicon.default(), capitalization_exceptions=(
+        *Lexicon.default().capitalization_exceptions, ("judr", "Judr")))
+    p = parser_for(locales.CS, base=Parser(lexicon=mine))
+    assert p.lexicon.capitalization_exceptions_map["judr"] == "JUDr"
 
 
 def test_a_packs_fragment_joins_under_the_callers_lexicon() -> None:

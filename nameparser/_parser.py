@@ -318,6 +318,66 @@ def _rewrapped(exc: Exception, message: str) -> Exception:
         f"{message}: {exc}")
 
 
+def _with_packs(lexicon: Lexicon, locales: tuple[Locale, ...],
+                languages: frozenset[str], strict: bool) -> Lexicon:
+    """`lexicon` with the packs' fragments joined before it, in pack
+    order, so its own readings outrank every pack's and a later pack's
+    an earlier one's, and the choice of `languages` recorded, where the
+    compile and its refusals happen (decisions/vocabulary-model,
+    2026-11-02 #754, items 3 and 4). The case masks follow the same
+    order: the choice moves `lexicon`'s, the packs' are laid over them,
+    and a mask `lexicon` holds as the choice leaves the shipped one is
+    no statement of the caller's, so a pack's mask of the word wins it,
+    as a pack's readings win over the shipped ones."""
+    fragments = Lexicon.empty()
+    for loc in locales:
+        fragments = fragments | loc.lexicon
+    joined = fragments | lexicon
+    if languages:
+        chosen = _reading_index_selected(languages, strict)
+        mine = dict(_rechosen_masks(lexicon, chosen, strict))
+        shipped = dict(_rechosen_masks(Lexicon.default(), chosen, strict))
+    else:
+        mine = dict(lexicon.capitalization_exceptions)
+        shipped = dict(Lexicon.default().capitalization_exceptions)
+    masks = dict(mine)
+    for k, v in fragments.capitalization_exceptions:
+        if k not in mine or mine[k] == shipped.get(k):
+            masks[k] = v
+    cap = tuple(sorted(masks.items()))
+    if not languages and cap == joined.capitalization_exceptions:
+        return joined
+    return dataclasses.replace(
+        joined, capitalization_exceptions=cap, _languages=languages,
+        _strict=strict)
+
+
+def _failed_layer(lexicon: Lexicon, locales: tuple[Locale, ...],
+                  languages: frozenset[str], strict: bool) -> str:
+    """The layer a failed `_with_packs` names (rules/D2): the first pack
+    whose fragment fails the join, or, where base's lexicon fails under
+    the choice alone, the languages and the packs that chose them.
+    Taken on the error path only, by building again pack by pack."""
+    def fails(packs: tuple[Locale, ...]) -> bool:
+        try:
+            _with_packs(lexicon, packs, languages, strict)
+        except (TypeError, ValueError):
+            return True
+        return False
+
+    if not fails(()):
+        for n, loc in enumerate(locales, 1):
+            if fails(locales[:n]):
+                return f"while applying locale {loc.code!r}"
+    if not languages:
+        return "while joining the packs' lexicons to base's"
+    choosers = [repr(loc.code) for loc in locales if loc.languages]
+    if lexicon.languages:
+        choosers.append("base")
+    return (f"while applying the languages chosen, "
+            f"{', '.join(sorted(languages))} (by {', '.join(choosers)})")
+
+
 def parser_for(*locales: Locale, base: Parser | None = None,
                segmenter: Segmenter | None | _Unset = UNSET,
                strict: bool | _Unset = UNSET) -> Parser:
@@ -423,49 +483,18 @@ def parser_for(*locales: Locale, base: Parser | None = None,
             languages |= loc.languages
     if strict and not languages:
         raise ValueError(_no_strict_language(locales))
-    # the packs' fragments join in pack order, and the caller's lexicon
-    # after them all, so its own readings outrank every pack's
-    # (decisions/vocabulary-model, 2026-11-02 #754, item 3)
-    fragments = Lexicon.empty()
-    for loc in locales:
-        try:
-            fragments = fragments | loc.lexicon
-        except (TypeError, ValueError) as exc:
-            raise _rewrapped(exc, f"while applying locale {loc.code!r}") from exc
     try:
-        joined = fragments | lexicon
-    except (TypeError, ValueError) as exc:
-        raise _rewrapped(exc, "while joining the packs' lexicons to "
-                         "base's") from exc
-    # a shipped mask base's lexicon holds unchanged is no statement of
-    # the caller's, as a shipped reading is none: a pack's mask of the
-    # word wins over it, as the pack's readings win over the shipped ones
-    shipped = Lexicon.default().capitalization_exceptions_map
-    over = {k: v for k, v in fragments.capitalization_exceptions_map.items()
-            if k in shipped
-            and lexicon.capitalization_exceptions_map.get(k) == shipped[k]}
-    if over:
-        joined = dataclasses.replace(joined, capitalization_exceptions=tuple(
-            sorted((dict(joined.capitalization_exceptions) | over).items())))
-    lexicon = joined
-    try:
-        if languages:
-            # the compile and its refusals, here: a reading of the
-            # lexicon's own that clashes with one the choice turns on
-            # raises, naming the edit
-            lexicon = dataclasses.replace(
-                lexicon, _languages=languages, _strict=strict,
-                capitalization_exceptions=_rechosen_masks(
-                    lexicon, _reading_index_selected(languages, strict),
-                    strict))
+        lexicon = _with_packs(lexicon, locales, languages, strict)
     except (TypeError, ValueError) as exc:
         # rules/D2: "applying a locale pack wraps any such error with
         # the locale's code, so a stacked configuration names which
-        # layer broke" -- the choice is every pack's at once, so it
-        # names the languages (history: decisions/vocabulary-model,
-        # 2026-10-29 3b)
-        raise _rewrapped(exc, "while applying the languages chosen, "
-                         + ", ".join(sorted(languages))) from exc
+        # layer broke" -- the pack whose fragment broke the join, or,
+        # where base's own lexicon clashes with the choice, the
+        # languages and the packs that chose them (history:
+        # decisions/vocabulary-model, 2026-10-29 3b and 2026-11-02 #754,
+        # sub-phase 4i-c)
+        raise _rewrapped(exc, _failed_layer(
+            lexicon, locales, languages, strict)) from exc
     # each scalar field's setter so far and the value it left in the
     # policy: a later pack leaving another value overrides it, which is
     # warned; one leaving the same value (cs and sk's two_family_names)

@@ -1760,8 +1760,12 @@ class Lexicon:
     # alone, and read through `languages` and `strict`.
     _base: Any = "empty"
     _edits: tuple[_Edit, ...] = ()
-    _languages: frozenset[str] = frozenset()
-    _strict: bool = False
+    # marked added: a 4i-b pickle, from no release, holds no choice and
+    # loads choosing nothing, its log already holding what a choice of
+    # 3b's delta had written into it
+    _languages: frozenset[str] = field(
+        default=frozenset(), metadata={_ADDED_IN: "3.0.0"})
+    _strict: bool = field(default=False, metadata={_ADDED_IN: "3.0.0"})
     # the file tags the choice selects, derived from it
     _chosen: frozenset[str] = field(
         init=False, repr=False, compare=False, hash=False)
@@ -1956,8 +1960,9 @@ class Lexicon:
                 != (other._languages, other._strict)):
             raise ValueError(
                 "cannot join two lexicons compiled under different choices "
-                "of languages; combine choices with parser_for, which "
-                "unions them: parser_for(*packs, base=parser)")
+                "of languages or of strictness; combine choices with "
+                "parser_for, which unions them: parser_for(*packs, "
+                "base=parser)")
         mine = self if self._languages else other
         if "empty" in (self._base, other._base) or self._base == other._base:
             base = other._base if self._base == "empty" else self._base

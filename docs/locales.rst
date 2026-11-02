@@ -114,11 +114,13 @@ Pass more than one pack and they fold together in order:
 
 How each part combines:
 
-- **Languages union** into one choice, applied first (see
-  `Choosing languages`_), so the order the packs are given in does not
-  change it.
-- **Lexicons union**: a pack's own words are added to the base's,
-  after the choice, never removed.
+- **Languages union** into one choice, with the base's own, applied
+  first (see `Choosing languages`_), so the order the packs are given
+  in does not change it.
+- **Lexicons join in order**: the packs' lexicons in the order given,
+  then the base's, each applied after the choice, so where two
+  disagree the later wins and the base's own words win over every
+  pack's (`Your own words outrank a choice`_).
 - **Set-valued policy fields union** the same way — the fields
   declared set-valued in :class:`~nameparser.PolicyPatch`:
   ``patronymic_rules``, ``segment_scripts`` and the delimiter fields.
