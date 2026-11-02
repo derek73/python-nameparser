@@ -220,8 +220,8 @@ def test_the_documented_replacements_for_an_in_place_edit_work() -> None:
     do INSTEAD of ``TITLES.add("dean")`` was the one claim about the
     freeze with nothing checking it. "dean" is the canonical example
     for this: a common academic title and a common given name, so it is
-    deliberately absent from the shipped ``TITLES`` and a caller who
-    wants it has to add it themselves.
+    deliberately not a title outside a title phrase in the shipped
+    vocabulary, and a caller who wants it everywhere has to say so.
     """
     from nameparser import Lexicon, Parser, parse
     from nameparser.config.titles import TITLES
@@ -231,8 +231,11 @@ def test_the_documented_replacements_for_an_in_place_edit_work() -> None:
         TITLES.add("dean")  # type: ignore[attr-defined]
     assert parse("Dean Smith").title == ""
 
-    # the recipe: an extended Lexicon
-    parser = Parser(lexicon=Lexicon.default().add(titles={"dean"}))
+    # the recipe: a configured Lexicon. "dean" holds a title reading
+    # and a given one, so it reads as a title only inside a title
+    # phrase (rules/H9); removing the given reading makes it a title
+    # everywhere
+    parser = Parser(lexicon=Lexicon.default().remove("dean", kind="given"))
     assert parser.parse("Dean Smith").title == "Dean"
 
 

@@ -355,19 +355,19 @@ def test_the_suffix_views_partition_it_by_reading(
     assert (pn.generation, pn.credentials) == (generation, credentials)
 
 
-@pytest.mark.parametrize("field,kind", [
-    # a caller's word in `suffix_words` alone has no row to read a kind
-    # from; its gate's marker or the agnomen set gives it one by its tag
-    ({"suffix_words": {"zzz"}}, "post-nominal"),
-    ({"suffix_words": {"zzz"}, "suffix_words_ambiguous": {"zzz"}},
-     "generation"),
-    ({"suffix_words": {"zzz"}, "suffix_words_ambiguous": {"zzz"},
-      "agnomens": {"zzz"}}, "agnomen"),
+@pytest.mark.parametrize("kinds,kind", [
+    # a caller's own suffix reading names no file; its kind, and the
+    # family reading that gates it by the count, give it a reading kind
+    (("suffix",), "post-nominal"),
+    (("generation", "family"), "generation"),
+    (("agnomen", "family"), "agnomen"),
 ])
 def test_a_callers_suffix_word_reads_by_its_marker_else_post_nominal(
-        field: dict[str, set[str]], kind: str) -> None:
-    pn = Parser(lexicon=Lexicon.default().add(**field)).parse(
-        "Pedro Alves Silva zzz")
+        kinds: tuple[str, ...], kind: str) -> None:
+    lexicon = Lexicon.default()
+    for k in kinds:
+        lexicon = lexicon.add("zzz", kind=k)
+    pn = Parser(lexicon=lexicon).parse("Pedro Alves Silva zzz")
     (tok,) = pn.tokens_for("suffix")
     assert tok.reading is not None and tok.reading.kind.value == kind
     assert pn.generation == ("" if kind == "post-nominal" else "zzz")
@@ -1214,7 +1214,7 @@ def test_a_turkic_marker_a_caller_lists_as_a_connective_names_no_father(
         ) -> None:
     # the marker keeps the connective reading the caller's Lexicon gives
     # it, so neither it nor the word before it is a patronymic
-    parser = Parser(lexicon=Lexicon.default().add(conjunctions={"oglu"}),
+    parser = Parser(lexicon=Lexicon.default().add("oglu", kind="conjunction"),
                     policy=Policy(patronymic_rules={"turkic"}))  # type: ignore[arg-type]
     pn = parser.parse("Ali Ahmad Vali oglu Hasan")
     assert pn.patronymic == ""

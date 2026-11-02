@@ -11,7 +11,10 @@ from __future__ import annotations
 import dataclasses
 import functools
 import warnings
+from collections.abc import Mapping
 from dataclasses import dataclass, field
+from types import MappingProxyType
+from typing import Any
 
 from nameparser._lexicon import Lexicon
 from nameparser._locale import Locale
@@ -319,25 +322,45 @@ def _choice_delta(chosen: frozenset[str], strict: bool = False) -> tuple[
     return fields, masks
 
 
+@functools.cache
+def _choice_readings(chosen: frozenset[str],
+                     strict: bool = False) -> Mapping[str, tuple[Any, ...]]:
+    """The readings the choice of the file tags `chosen` compiles, by
+    word: the kinds `_apply_choice` gives a word the choice changes."""
+    from nameparser._reading_index import choose, index, strict_pool
+    by_text: dict[str, list[Any]] = {}
+    for r in choose(strict_pool(chosen) if strict else index(), chosen):
+        by_text.setdefault(r.text, []).append(r)
+    return MappingProxyType({t: tuple(rs) for t, rs in by_text.items()})
+
+
 def _apply_choice(lexicon: Lexicon, languages: frozenset[str],
                   strict: bool = False) -> Lexicon:
     """`lexicon` under the choice of `languages`, a delta against the
     default's compile: what the choice drops leaves `lexicon` whoever
     put it there, a caller included, what it turns on joins, and every
-    other entry stays as the caller had it."""
-    from nameparser._lexicon import _SUBSET_FIELDS
-    fields, (unmasked, masks) = _choice_delta(
-        _reading_index_selected(languages, strict), strict)
-    updates: dict[str, object] = {
-        name: (getattr(lexicon._sets, name) - gone) | joined
-        for name, (gone, joined) in fields.items()}
+    other entry stays as the caller had it. Written as readings, the
+    edits that take each changed word's readings to its sets under the
+    choice, appended to the lexicon's log (#754, 4i-b), until 4i-c
+    records the choice on the `Lexicon` and retires this delta."""
+    from nameparser._lexicon import _MARKER_BASES, _edits_toward, _fields_of
+    chosen = _reading_index_selected(languages, strict)
+    fields, (unmasked, masks) = _choice_delta(chosen, strict)
+    current = _fields_of(lexicon._sets)
+    target = {name: (current[name] - gone) | joined
+              for name, (gone, joined) in fields.items()}
     # a word the choice drops from a base set leaves that set's markers
-    # too, a caller's own mark of it included: marking a word the
-    # vocabulary no longer holds is the orphan Lexicon refuses
-    for marker, base, _ in _SUBSET_FIELDS:
+    # too, a caller's own mark of it included: no reading compiles a
+    # marker without its base
+    for marker, base in _MARKER_BASES:
         if base in fields and fields[base][0]:
-            kept = updates.get(marker, getattr(lexicon._sets, marker))
-            updates[marker] = kept - fields[base][0]  # type: ignore[operator]
+            target[marker] = target.get(marker, current[marker]) - fields[base][0]
+    updates: dict[str, object] = {}
+    if target:
+        edits = _edits_toward(lexicon._pool(), current, current | target,
+                              _choice_readings(chosen, strict))
+        if edits:
+            updates["_edits"] = lexicon._edits + edits
     if unmasked or masks:
         cap = {k: v for k, v in lexicon.capitalization_exceptions
                if k not in unmasked}

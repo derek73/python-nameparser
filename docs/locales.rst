@@ -51,18 +51,14 @@ reasoning behind the default doesn't apply to you — add the entry:
 
     >>> from nameparser import Lexicon, Parser
     >>> sayyid_lex = Lexicon.default().add(
-    ...     titles={"سيد"}, given_name_titles={"سيد"})
+    ...     "سيد", kind="title", addresses="given")
     >>> sayyid = Parser(lexicon=sayyid_lex).parse("سيد محمد")
     >>> sayyid.title, sayyid.given
     ('سيد', 'محمد')
 
-Both fields, because ``given_name_titles`` is a marker over ``titles``
-rather than a separate vocabulary: ``titles`` makes the word a title at
-all, and listing it in ``given_name_titles`` says the honorific
-precedes the *given* name — as Arabic ones do — so the word after it
-isn't read as a family name. Listing it in ``given_name_titles`` alone
-does nothing, and says nothing: the word is never read as a title, so
-the entry is never consulted.
+One reading, a title, with the property ``addresses="given"``, which
+says the honorific precedes the *given* name — as Arabic ones do — so
+the word after it isn't read as a family name.
 
 East Asian names need no pack
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -234,9 +230,11 @@ credential:
 .. doctest::
 
     >>> from nameparser import Parser
-    >>> mine = Lexicon(particles=frozenset({"do", "van"}),
-    ...                surnames=Lexicon.default().surnames)
-    >>> sorted(parser_for(en, base=Parser(lexicon=mine)).lexicon.particles)
+    >>> mine = Lexicon(surnames=Lexicon.default().surnames).add(
+    ...     "do", "van", kind="preposition")
+    >>> chosen = parser_for(en, base=Parser(lexicon=mine)).lexicon
+    >>> [w for w in ("do", "van")
+    ...  if any(r.category == "particle" for r in chosen.readings_of(w))]
     ['van']
 
 .. _strict-choice:
@@ -836,7 +834,7 @@ see :meth:`Policy.patched() <nameparser.Policy.patched>`.
 .. doctest::
 
     >>> from nameparser import Lexicon, Locale, PolicyPatch, parser_for
-    >>> kapitan_lex = Lexicon.empty().add(titles={"kapitan"})
+    >>> kapitan_lex = Lexicon.empty().add("kapitan", kind="military")
     >>> corp_pack = Locale(code="mycorp", lexicon=kapitan_lex,
     ...                     policy=PolicyPatch(middle_as_family=True))
     >>> kapitan = parser_for(corp_pack).parse("Kapitan Anna Maria Schmidt")

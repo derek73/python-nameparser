@@ -103,7 +103,7 @@ def test_every_order_covers_every_position() -> None:
 
 
 _LEX = Lexicon.default()
-_SUFFIXES = _LEX.suffix_words | _LEX.suffix_acronyms
+_SUFFIXES = _LEX._sets.suffix_words | _LEX._sets.suffix_acronyms
 _DOTTED = re.compile(r"[^\W\d_]\.[^\W\d_]\.")
 _ABBREVIATION = re.compile(r"[^\W\d_]{2,}\.")
 _ROMAN = re.compile(r"(?=[IVXLCDM]+$)M*(C[MD]|D?C{0,3})(X[CL]|L?X{0,3})(I[XV]|V?I{0,3})")
@@ -114,7 +114,7 @@ def _fold(word: str) -> str:
 
 
 def _is_title(word: str) -> bool:
-    return _fold(word) in _LEX.titles or bool(_ABBREVIATION.fullmatch(word))
+    return _fold(word) in _LEX._sets.titles or bool(_ABBREVIATION.fullmatch(word))
 
 
 def _head(t: str) -> list[str]:
@@ -127,7 +127,7 @@ def _name_words(words: list[str]) -> int:
     word after it) count as none, a connective as its word."""
     return sum(1 for w in words
                if not _is_title(w) and _fold(w) not in _SUFFIXES
-               and _fold(w) not in _LEX.particles)
+               and _fold(w) not in _LEX._sets.particles)
 
 
 def _after_comma(t: str) -> list[str]:
@@ -143,19 +143,19 @@ _TEXT_SHOWS: dict[str, Callable[[str], bool]] = {
         bool(_after_comma(t)) and _is_title(_after_comma(t)[0])),
     "title-between": lambda t: len(t.split()) > 2
         and not _is_title(t.split()[0]) and _is_title(t.split()[1]),
-    "title-end": lambda t: _fold(t.split()[-1]) in _LEX.titles,
+    "title-end": lambda t: _fold(t.split()[-1]) in _LEX._sets.titles,
     "title-after-comma": lambda t: bool(_head(t))
         and _is_title(t.split(",")[-1].split()[0]),
     "title-after-empty-head": lambda t: t.startswith(",")
-        and _fold(t.split()[-1]) in _LEX.titles,
+        and _fold(t.split()[-1]) in _LEX._sets.titles,
     "title-particle-head": lambda t: all(
-        _fold(w) in _LEX.titles and _fold(w) in _LEX.particles
+        _fold(w) in _LEX._sets.titles and _fold(w) in _LEX._sets.particles
         for w in t.split()[:2]),
     "dual-in-title-run": lambda t: _is_title(t.split()[0])
-        and _fold(t.split()[1]) in _LEX.titles
+        and _fold(t.split()[1]) in _LEX._sets.titles
         and _fold(t.split()[1]) in _SUFFIXES,
     "shape-title": lambda t: any(
-        _ABBREVIATION.fullmatch(w) and _fold(w) not in _LEX.titles
+        _ABBREVIATION.fullmatch(w) and _fold(w) not in _LEX._sets.titles
         for w in t.split()[:2]),
     "suffix-no-comma": lambda t: _fold(t.split()[-1]) in _SUFFIXES
         and "," not in t.rsplit(" ", 1)[0][-1:],
@@ -166,7 +166,7 @@ _TEXT_SHOWS: dict[str, Callable[[str], bool]] = {
     "numeral": lambda t: any(_ROMAN.fullmatch(w) for w in t.split()),
     "dotted-suffix": lambda t: bool(_DOTTED.search(t.split()[-1])),
     "undotted-suffix": lambda t: "." not in t.split()[-1]
-        and _fold(t.split()[-1]) in _LEX.suffix_words,
+        and _fold(t.split()[-1]) in _LEX._sets.suffix_words,
     "comma-full-head": lambda t: _name_words(_head(t)) >= 2 and "," in t,
     "comma-one-word-head": lambda t: _name_words(_head(t)) == 1
         and "," in t,
@@ -174,11 +174,11 @@ _TEXT_SHOWS: dict[str, Callable[[str], bool]] = {
     "nickname-only-head": lambda t: "," in t
         and _head(t)[0][:1] in "(\"" and len(_head(t)) == 1,
     "connective-before-comma": lambda t: "," in t
-        and any(_fold(w) in _LEX.conjunctions for w in _head(t)),
+        and any(_fold(w) in _LEX._sets.conjunctions for w in _head(t)),
     "particle-before-comma": lambda t: "," in t
-        and any(_fold(w) in _LEX.particles for w in _head(t)),
+        and any(_fold(w) in _LEX._sets.particles for w in _head(t)),
     "middle": lambda t: _name_words(t.split(",")[0].split()) >= 3,
-    "particle": lambda t: any(_fold(w) in _LEX.particles
+    "particle": lambda t: any(_fold(w) in _LEX._sets.particles
                               for w in t.split()),
     "nickname": lambda t: '"' in t or "(" in t,
     "nfd": lambda t: unicodedata.normalize("NFC", t) != t,

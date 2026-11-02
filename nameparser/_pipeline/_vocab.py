@@ -43,9 +43,7 @@ it re-exports. They sit here because every stage that reports a fork
 builds one, and the tags they read are this module's vocabulary.
 
 Layering: imports _lexicon, _policy, and _pipeline._state (WorkToken,
-comma_bucket, PendingReading -- read-only, never a whole ParseState),
-and _reading_index for the one fact no compiled set records, the kind
-of a listed suffix word (listed_word_kind_tag, 3.0's 4b).
+comma_bucket, PendingReading -- read-only, never a whole ParseState).
 """
 from __future__ import annotations
 
@@ -60,7 +58,6 @@ from nameparser._lexicon import (
 )
 from nameparser._policy import (CapsSuffixes, Policy, Script, _JA_SCRIPTS, _NO_INITIALS,
                                 _SCRIPT_RANGES, _script_matcher)
-from nameparser._reading_index import holds_kind, suffix_kind_of
 from nameparser._pipeline._state import (
     AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, COMMA_CHARS,
     CREDENTIAL_WORD_TAG, Deferred, GENERATION_WORD_TAG,
@@ -1090,7 +1087,7 @@ def caps_shape_candidate(text: str, lexicon: Lexicon, policy: Policy,
     asks of words classify left untagged). A hand-written roster is a second place to remember,
     and it had already gone wrong: it named eleven of the thirteen
     fields, leaving `surnames` and `honorific_tails` out, so
-    `Lexicon.default().add(surnames={"dupont"})` still read
+    a `Lexicon` whose `surnames` listed "dupont" still read
     `Jean Pierre DUPONT` as suffix `DUPONT` -- a caller listing a word
     as a SURNAME and getting it read as a credential is this switch's
     own worst failure, arriving through the one wordlist that says
@@ -2263,43 +2260,6 @@ def suffix_kind(text: str,
     return (ReadingKind.CREDENTIAL,
             ReadingSource.SHAPE if SHAPE_ACRONYM_TAG in tags
             else ReadingSource.VOCABULARY)
-
-
-#: The tag naming a listed suffix word's kind in the shipped reading
-#: index, for the kinds with a reading kind of their own; a courtesy, an
-#: honorific or a status reads as a post-nominal word, and an agnomen
-#: has its own set and tag.
-_LISTED_WORD_KIND_TAGS = {"generation": GENERATION_WORD_TAG,
-                          "credential": CREDENTIAL_WORD_TAG}
-
-
-# rules/R8: "The kind of a word listed as a suffix word is the shipped
-# vocabulary's, read whatever the reading's default" -- the kind the
-# views partition the suffix by (decisions/R8, #326). A memo, C-level
-# on a hit, so a suffix word read before costs no frame; bounded since
-# its key is the caller's text.
-@functools.lru_cache(maxsize=4096)
-def listed_word_kind_tag(n: str) -> str | None:
-    """The kind tag classify writes beside "vocab:suffix-word" on a word
-    whose normalized form `n` is the one it read (a delimiter glued on
-    removed, rules/C10): the kind the compiled sets do not record (`jr`
-    and `esq` both compile into `suffix_words`), read from the shipped
-    files' reading index (3.0's 4b), so a word only a caller's
-    `Lexicon` lists has none."""
-    return _LISTED_WORD_KIND_TAGS.get(suffix_kind_of(n) or "")
-
-
-# rules/R9: "a particle the shipped vocabulary holds as a patronymic"
-# -- read at classify, as a listed suffix word's kind is (decisions/R9,
-# #754). A memo for the reason `listed_word_kind_tag` is one.
-@functools.lru_cache(maxsize=4096)
-def is_patronymic_particle(n: str) -> bool:
-    """Whether a file holds the normalized word `n` as a patronymic
-    particle (`bin`, `ibn`, `bat`), on by default or not: the kind the
-    compiled `particles` set does not record, read from the shipped
-    reading index (3.0's 4c), so a word only a caller's `Lexicon`
-    lists is a plain particle."""
-    return holds_kind(n, "patronymic")
 
 
 def name_reading(token: WorkToken, role: Role | Deferred) -> PendingReading:

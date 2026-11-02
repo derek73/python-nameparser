@@ -445,8 +445,10 @@ def suffix_kind_of(text: str) -> str | None:
     whose category is ``suffix``), on by default or not; None for a
     word no file holds as a suffix. A word has one suffix kind in every
     file (the build's check 4), so the first row says it. `text` is
-    normalized as :func:`readings_of` takes it. What the parse reads a
-    listed suffix word's kind by (`_vocab.suffix_kind`, 3.0's 4b)."""
+    normalized as :func:`readings_of` takes it. The shipped files'
+    answer only: since 3.0's 4i-b the parse reads a suffix word's kind
+    from its own `Lexicon`, which compiles it (GENERATION_WORDS,
+    CREDENTIAL_WORDS), and this agrees with the default's."""
     for _tag, kind, _pairs in _by_text().get(text, ()):
         if CATEGORY[kind] == "suffix":
             return kind
@@ -456,9 +458,9 @@ def suffix_kind_of(text: str) -> str | None:
 def holds_kind(text: str, kind: str) -> bool:
     """Whether a file holds `text` in a reading of `kind` (a key of
     :data:`CATEGORY`), on by default or not. `text` is normalized as
-    :func:`readings_of` takes it. What the parse reads a listed
-    particle's patronymic kind by (`_vocab.is_patronymic_particle`,
-    3.0's 4c)."""
+    :func:`readings_of` takes it. The shipped files' answer only: since
+    3.0's 4i-b the parse reads a particle's patronymic kind from its
+    own `Lexicon` (PATRONYMIC_PARTICLES)."""
     return any(k == kind for _tag, k, _pairs in _by_text().get(text, ()))
 
 
@@ -493,6 +495,9 @@ class Compiled(TypedDict):
     SUFFIX_ACRONYMS_AMBIGUOUS: frozenset[str]
     SUFFIX_ACRONYMS: frozenset[str]
     CAPITALIZATION_EXCEPTIONS: dict[str, str]
+    GENERATION_WORDS: frozenset[str]
+    CREDENTIAL_WORDS: frozenset[str]
+    PATRONYMIC_PARTICLES: frozenset[str]
 
 
 def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
@@ -529,6 +534,9 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
     agnomens: set[str] = set()
     ambiguous: set[str] = set()
     acronyms: set[str] = set()
+    generations: set[str] = set()
+    credential_words: set[str] = set()
+    patronymics: set[str] = set()
     cased: dict[str, str] = {}
     for r, t in texts:
         p = r.props
@@ -555,8 +563,14 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
                     ambiguous_words.add(t)
                 if r.kind == "agnomen":
                     agnomens.add(t)
+                elif r.kind == "generation":
+                    generations.add(t)
+                elif r.kind == "credential":
+                    credential_words.add(t)
         elif r.category == "particle":
             particles.add(t)
+            if r.kind == "patronymic":
+                patronymics.add(t)
             if t not in given:
                 never_given.add(t)
         elif r.category == "conjunction":
@@ -613,6 +627,14 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
         SUFFIX_ACRONYMS_AMBIGUOUS=frozenset(ambiguous),
         SUFFIX_ACRONYMS=frozenset(acronyms),
         CAPITALIZATION_EXCEPTIONS=dict(sorted(cased.items())),
+        # the kinds the compiled sets above do not record, which the
+        # generation, credentials and patronymic views read (rules/R8,
+        # rules/R9): a suffix WORD's kind, `jr` and `esq` both being in
+        # SUFFIX_WORDS, and a particle's. Internal, re-exported by no
+        # config module (#754, 4i-b)
+        GENERATION_WORDS=frozenset(generations),
+        CREDENTIAL_WORDS=frozenset(credential_words),
+        PATRONYMIC_PARTICLES=frozenset(patronymics),
     )
     # One form per post-nominal: the word test strips only edge periods
     # and the acronym test strips all of them, so a word in both is

@@ -692,14 +692,14 @@ def test_own_words_is_the_name_s_own_span_and_its_clause_cut() -> None:
     # one function (#289/#516).
     state = _state_through("segment", "Jane née Jones Smith")
     texts, cut = own_words(state.tokens, state.comma_offsets,
-                           state.lexicon.maiden_markers)
+                           state.lexicon._sets.maiden_markers)
     assert texts == ["Jane"]
     assert cut == 1
     # a delimited clause's tokens arrive with a role already set, so
     # they are not the name's own words either
     state = _state_through("segment", "Andrew (Andy) Perkins")
     texts, cut = own_words(state.tokens, state.comma_offsets,
-                           state.lexicon.maiden_markers)
+                           state.lexicon._sets.maiden_markers)
     assert texts == ["Andrew", "Perkins"]
     assert cut == 3
     # `comma_offsets` is load-bearing only for a marker PHRASE whose
@@ -712,10 +712,10 @@ def test_own_words_is_the_name_s_own_span_and_its_clause_cut() -> None:
     # cut lands at 'z' instead. Measured 2026-09-17.
     state = _state_through("segment", "Anna z, domu Nowak")
     texts, cut = own_words(state.tokens, state.comma_offsets,
-                           state.lexicon.maiden_markers)
+                           state.lexicon._sets.maiden_markers)
     assert texts == ["Anna", "z", "domu", "Nowak"]
     assert cut == 4
-    texts, cut = own_words(state.tokens, (), state.lexicon.maiden_markers)
+    texts, cut = own_words(state.tokens, (), state.lexicon._sets.maiden_markers)
     assert texts == ["Anna"]
     assert cut == 1
 
@@ -726,17 +726,17 @@ def test_own_words_takes_a_marker_map_when_the_caller_has_one() -> None:
     state = _state_through("segment", "Jane née Jones Smith")
     heads = {1: "vocab:maiden-marker", 2: "vocab:maiden-marker-cont"}
     assert own_words(state.tokens, state.comma_offsets,
-                     state.lexicon.maiden_markers,
+                     state.lexicon._sets.maiden_markers,
                      heads) == (["Jane"], 1)
     # an incomplete phrase entry: no head tag, so the map's answer is
     # "no clause" -- and the self-built path agrees, since both now
     # run the SAME completion test (#289/#516)
     state = _state_through("segment", "Anna z Nowak")
     assert own_words(state.tokens, state.comma_offsets,
-                     state.lexicon.maiden_markers,
+                     state.lexicon._sets.maiden_markers,
                      {}) == (["Anna", "z", "Nowak"], 3)
     assert own_words(state.tokens, state.comma_offsets,
-                     state.lexicon.maiden_markers)[1] == 3
+                     state.lexicon._sets.maiden_markers)[1] == 3
 
 
 def test_own_words_two_spellings_agree_on_the_one_case_verdict() -> None:
@@ -759,11 +759,11 @@ def test_own_words_two_spellings_agree_on_the_one_case_verdict() -> None:
         state = _state_through("segment", text)
         folded = [_normalize(t.text) for t in state.tokens]
         built_map = tag_marker_runs(state.tokens, state.comma_offsets,
-                                    state.lexicon.maiden_markers, folded)
+                                    state.lexicon._sets.maiden_markers, folded)
         tagged = own_words(state.tokens, state.comma_offsets,
-                           state.lexicon.maiden_markers, built_map)
+                           state.lexicon._sets.maiden_markers, built_map)
         walked = own_words(state.tokens, state.comma_offsets,
-                           state.lexicon.maiden_markers)
+                           state.lexicon._sets.maiden_markers)
         assert tagged == walked, text
         assert is_one_case(tagged[0]) == is_one_case(walked[0]), text
 
@@ -785,7 +785,7 @@ def test_tag_marker_runs_answers_in_ascending_index_order() -> None:
         state = _state_through("segment", text)
         folded = [_normalize(t.text) for t in state.tokens]
         keys = list(tag_marker_runs(state.tokens, state.comma_offsets,
-                                    state.lexicon.maiden_markers,
+                                    state.lexicon._sets.maiden_markers,
                                     folded))
         assert keys == sorted(keys), text
 
@@ -860,7 +860,10 @@ def test_a_title_the_fixed_point_splices_out_keeps_no_peel_pick() -> None:
     # the only way here. Recorded negative control (2026-10-01): with
     # the drop removed, this reads the same fields and reports
     # 'suffix-or-name' on 'Ma.', a word the parse took as a title.
-    parser = Parser(lexicon=Lexicon.default().add(titles={"ma"}))
+    # `ma`'s given readings come off first, or rules/H9 keeps it a
+    # title only inside a title phrase.
+    parser = Parser(lexicon=Lexicon.default().remove("ma", kind="given")
+                    .add("ma", kind="title"))
     name = parser.parse("John Smith Ma. PhD Jr.")
     assert (name.title, name.given, name.family, name.suffix) == (
         "Ma.", "John", "Smith", "PhD Jr.")

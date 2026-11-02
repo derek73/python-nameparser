@@ -85,29 +85,12 @@ def test_the_shipped_files_pass_every_check_with_warnings_as_errors(
 
 
 def test_the_compiled_sets_are_the_default_lexicon(shipped: dict[str, str]) -> None:
+    from nameparser._lexicon import _fields_of, _vocab_fields
     c = _compile(shipped)
     lex = Lexicon.default()
-    rebuilt = Lexicon(
-        titles=c["TITLES"], given_name_titles=c["GIVEN_NAME_TITLES"],
-        suffix_acronyms=c["SUFFIX_ACRONYMS"], suffix_words=c["SUFFIX_WORDS"],
-        suffix_acronyms_ambiguous=c["SUFFIX_ACRONYMS_AMBIGUOUS"],
-        particles=c["PARTICLES"],
-        particles_ambiguous=c["PARTICLES"] - c["NON_GIVEN_NAME_PARTICLES"],
-        conjunctions=c["CONJUNCTIONS"],
-        conjunctions_ambiguous=c["CONJUNCTIONS_AMBIGUOUS"],
-        bound_given_names=c["BOUND_GIVEN_NAMES"],
-        given_name_abbreviations=c["GIVEN_NAME_ABBREVIATIONS"],
-        maiden_markers=c["MAIDEN_MARKERS"], surnames=lex.surnames,
-        honorific_tails=c["GLUED_HONORIFICS"],
-        after_given_titles=c["AFTER_GIVEN_TITLES"],
-        suffix_words_ambiguous=c["SUFFIX_WORDS_AMBIGUOUS"],
-        agnomens=c["AGNOMENS"],
-        titles_ambiguous=c["TITLES_AMBIGUOUS"],
-        title_modifiers=c["TITLE_MODIFIERS"], title_styles=c["TITLE_STYLES"],
-        title_phrases=c["TITLE_PHRASES"],
-        capitalization_exceptions=tuple(c["CAPITALIZATION_EXCEPTIONS"].items()),
-    )
-    assert rebuilt == lex
+    assert _vocab_fields(c) == _fields_of(lex._sets)
+    assert lex.capitalization_exceptions == tuple(
+        sorted(c["CAPITALIZATION_EXCEPTIONS"].items()))
 
 
 def test_the_toml_ships_as_package_data() -> None:
@@ -1073,7 +1056,9 @@ def _sets_fed(kind: str, props: str = "{}", text: str = "zzq",
 #: sets, against the same kind written bare, is the property's effect.
 _PROPERTY_PROBES = {
     "addresses": ("title", '{ addresses = "given" }', "zzq"),
-    "acronym": ("generation", "{ acronym = true }", "zzq"),
+    # a credential written as a word, the one acronym change that moves
+    # the kind set the credentials view reads (CREDENTIAL_WORDS, 4i-b)
+    "acronym": ("credential", "{ acronym = false }", "zzq"),
     "attached": ("honorific", '{ attached = { side = "after" } }', "zzq"),
     "may_be_initial": ("conjunction", "{ may_be_initial = true }", "q"),
     "cased": ("title", '{ cased = "ZzQ" }', "zzq"),
@@ -1248,11 +1233,11 @@ def test_attaches_compiles_to_a_phrase_with_each_title_of_its_kinds() -> None:
 def test_a_shipped_phrase_names_two_titles() -> None:
     # every phrase the build writes is two words, each a title or a
     # title that may be a given name, so the phrase test can reach it
-    lex = Lexicon.default()
-    for phrase in lex.title_phrases:
+    sets = Lexicon.default()._sets
+    for phrase in sets.title_phrases:
         words = phrase.split(" ")
         assert len(words) == 2, phrase
-        assert all(w in lex.titles or w in lex.titles_ambiguous
+        assert all(w in sets.titles or w in sets.titles_ambiguous
                    for w in words), phrase
 
 

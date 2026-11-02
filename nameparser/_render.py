@@ -536,10 +536,10 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
     # `conjunctions` are disjoint in the default vocabulary and in
     # every locale pack, so no shipped conjunction can sit in an
     # all-particle part and carry the mark. That is a property of the
-    # shipped DATA, not an invariant -- both sets are public,
-    # configurable API, and a caller's Lexicon may put one word in
-    # both, the way _pipeline/_post_rules.py's arms allow for. Measured:
-    # under `Lexicon.default().add(particles={'y'})`, `anh y van` has
+    # shipped DATA, not an invariant -- a caller's Lexicon may give one
+    # word both readings, the way _pipeline/_post_rules.py's arms allow
+    # for. Measured: under `Lexicon.default().add('y', kind='particle')`,
+    # `anh y van` has
     # an all-particle family whose `y` carries both tags and the mark,
     # and gives 'Anh y Van'; gating this conjunct too would give
     # 'Anh Y Van'. That is pinned by test_repair_keeps_a_conjunction_

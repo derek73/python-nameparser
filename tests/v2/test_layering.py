@@ -56,8 +56,11 @@ ALLOWED = {
     # are skipped by _nameparser_imports and need no entry.
     "_types.py": ("nameparser._render", "nameparser._parser"),
     # intent: DATA modules only -- mechanically this admits any config
-    # submodule, and since 3.0 the package holds nothing else
-    "_lexicon.py": ("nameparser.config.",),
+    # submodule, and since 3.0 the package holds nothing else; and the
+    # reading index's reader and compiler, at call time only, since
+    # tools/vocab/build.py loads this file by path (3.0's 4i-b: a
+    # Lexicon compiles its readings)
+    "_lexicon.py": ("nameparser.config.", "nameparser._reading_index"),
     "_policy.py": ("nameparser._types",),
     # the shared compiler and the reading index's reader (#753, 3a): the
     # index, a config DATA module, and nothing else. That the import is
@@ -353,7 +356,9 @@ def test_every_frozen_dataclass_carries_the_pickle_guards() -> None:
                 # never pickled: a Lexicon pickles its fields and
                 # rebuilds this from them at load (#754, 4i-a)
                 continue
-            if cls.__name__ == "Lexicon":
+            if cls.__name__ in ("Lexicon", "LexiconReading"):
+                # each keeps a copy of the guard, layering keeping
+                # _lexicon import-free of _types (LexiconReading, 4i-b)
                 assert "__getstate__" in cls.__dict__
                 assert "__setstate__" in cls.__dict__
                 continue
@@ -606,13 +611,15 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: The reads 4i-a moved, as the check counts them on today's sources
 #: with `._sets` taken out again: the recorded negative control over
 #: the real tree, so the check above cannot pass because its walk
-#: reaches nothing. The library's 114 are 106 attribute loads, 5 roster
-#: `getattr`s (3 of them through `sets`, which the undone `sets =
-#: lexicon` makes a lexicon) and the 3 `sets =` bindings; the tools'
-#: 16 are attribute loads, every tool scanned.
+#: reaches nothing. The library's 112 are 106 attribute loads, 3 roster
+#: `getattr`s, all through `sets`, which the undone `sets = lexicon`
+#: makes a lexicon, and the 3 `sets =` bindings; the tools' 16 are
+#: attribute loads, every tool scanned. 4i-a's count was 114, with two
+#: more `getattr`s in `_parser._apply_choice`, which reads the sets
+#: through `_lexicon._fields_of` since 4i-b.
 #: A reader added through `_sets` moves these, and they are re-taken
 #: then: they count what the check would refuse with the move undone.
-_UNGUARDED_READS = {"library": 114, "tools": 16}
+_UNGUARDED_READS = {"library": 112, "tools": 16}
 
 
 def test_the_check_refuses_every_read_4i_a_moved() -> None:

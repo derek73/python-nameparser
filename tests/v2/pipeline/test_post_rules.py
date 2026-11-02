@@ -27,28 +27,30 @@ from nameparser._types import (FOLDED_TAG, STABLE_TAGS,
 # found three such words when it was written (#395): `dr` and `md` were
 # absent while shipping as titles, and `la` sat in the never-given half
 # while shipping as ambiguous.
-_LEX = Lexicon(
-    titles=frozenset({"mr", "sir", "dr"}),
-    given_name_titles=frozenset({"sir"}),
-    after_given_titles=frozenset({"mr"}),
-    particles=frozenset({"de", "der", "ibn", "la", "van", "vd"}),
-    particles_ambiguous=frozenset({"la", "van"}),
+_LEX = (
+    Lexicon()
+    .add("dr", kind="title")
+    .add("mr", kind="title", after_given=True)
+    .add("sir", kind="title", addresses="given")
+    .add("de", "der", "la", "van", "vd", kind="particle")
+    .add("ibn", kind="patronymic")
+    .add("la", "van", kind="given")     # ambiguous particles
     # `씨` is a ONE-LETTER suffix word, which starts no credential run
     # (rules/S8's two-letter minimum -- any longer suffix word would,
     # an honorific included since #679), the filler a test needs where
     # a credential would now take the rest of the part
-    suffix_words=frozenset({"jr", "씨"}),
+    .add("jr", "씨", kind="suffix")
     # `vd` mirrors its shipped dual membership -- particle AND
-    # UNAMBIGUOUS suffix acronym -- which is what puts a name on P6's
+    # UNAMBIGUOUS credential -- which is what puts a name on P6's
     # suffix arm below. `ma` mirrors the ambiguous class, which starts
     # no run either.
-    suffix_acronyms=frozenset({"md", "vd", "ma"}),
-    suffix_acronyms_ambiguous=frozenset({"ma"}),
-    # and `ma` is a given name written short too (Filipino María, #789),
-    # read so only period-marked at the head of the given part
-    given_name_abbreviations=frozenset({"ma"}),
-    conjunctions=frozenset({"y"}),
-    bound_given_names=frozenset({"abdul"}),
+    .add("md", "vd", "ma", kind="credential")
+    # and `ma` is a given name written short too (Filipino María,
+    # #789), read so only period-marked at the head of the given part;
+    # the given reading is also what makes its credential ambiguous
+    .add("ma", kind="given", same_as="maría")
+    .add("y", kind="conjunction")
+    .add("abdul", kind="bound_given")
 )
 
 
@@ -290,7 +292,7 @@ def test_leading_never_given_particle_folds_into_family() -> None:
 
 
 def test_leading_ambiguous_particle_stays_given() -> None:
-    # 'van' is particles_ambiguous: the given reading stands (v1 parity)
+    # 'van' is an ambiguous particle: the given reading stands (v1 parity)
     out = _parsed("van Gogh")
     assert _by_role(out, Role.GIVEN) == "van"
     assert _by_role(out, Role.FAMILY) == "Gogh"
@@ -377,7 +379,7 @@ def test_leading_piece_scan_skips_pieces_that_hold_no_name(
     ("de", "de", ""),
     # the leading piece is not a particle
     ("Juan de Mesnil", "Juan", "de Mesnil"),
-    # 'van' is particles_ambiguous -- out of the rule's scope in EVERY
+    # 'van' is an ambiguous particle -- out of the rule's scope in EVERY
     # order, so a family-first order still splits at the particle (#360)
     ("van Gogh", "van", "Gogh"),
 ])
@@ -607,7 +609,7 @@ def test_no_never_given_particle_is_left_as_the_given_name(
     nothing about which words are in the set.
     """
     lex = Lexicon.default()
-    never_given = sorted(lex.particles - lex.particles_ambiguous)
+    never_given = sorted(lex._sets.particles - lex._sets.particles_ambiguous)
     assert never_given, "no never-given particles to exercise"
     failures = []
     for particle in never_given:
@@ -766,9 +768,8 @@ def test_the_fixture_guard_fires(
     # -- the same inertness it exists to prevent.
     assert not _fixture_mirrors_shipped("de la Cruz Juan", Policy())
     monkeypatch.setattr(sys.modules[__name__], "_LEX",
-                        dataclasses.replace(
-                            _LEX, particles=frozenset(),
-                            particles_ambiguous=frozenset()))
+                        _LEX.remove("de", "der", "ibn", "la", "van", "vd",
+                                    kind="particle"))
     assert "'de'" in _fixture_mirrors_shipped("de la Cruz Juan",
                                               Policy())
 
@@ -782,7 +783,7 @@ def test_the_stop_reads_the_effective_order_not_the_policy() -> None:
     # never read family-first. Needs a custom lexicon (every shipped
     # particle is Latin, and Latin has no script_orders entry), so it
     # builds the state directly rather than going through _parsed.
-    lex = Lexicon(particles=frozenset({"ノ"}))
+    lex = Lexicon().add("ノ", kind="particle")
     policy = Policy(name_order=FAMILY_FIRST,
                     script_orders=((Script.KATAKANA, GIVEN_FIRST),))
     out = run(ParseState(original="ノ クルス フアン カルロス",
@@ -879,11 +880,17 @@ def test_a_dual_membership_word_decides_rather_than_raising() -> None:
     # the table for the attachment to decline
     # (mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE -- report the
     # branch actually taken).
-    lex = dataclasses.replace(
-        _LEX,
-        particles=frozenset(_LEX.particles | {"zz"}),
-        particles_ambiguous=frozenset(_LEX.particles_ambiguous | {"zz"}),
-        suffix_acronyms=frozenset(_LEX.suffix_acronyms | {"zz"}))
+    #
+    # Since 3.0's 4i-b no configuration reaches it either: the `given`
+    # reading that makes a particle possibly given also gates a
+    # credential beside it, so the word is an ambiguous acronym too.
+    # The arms stay ordered all the same, and the sets are built here
+    # by hand, so the stage's defense is still what this holds.
+    lex = (_LEX.add("zz", kind="particle").add("zz", kind="given")
+           .add("zz", kind="credential"))
+    object.__setattr__(lex, "_sets", dataclasses.replace(
+        lex._sets, suffix_acronyms_ambiguous=(
+            lex._sets.suffix_acronyms_ambiguous - {"zz"})))
     out = run(ParseState(original="Berg, Jan zz", lexicon=lex,
                          policy=Policy()))
     # token order, so the attachment shows as the run joining the
@@ -1228,7 +1235,7 @@ def test_an_all_particle_part_keeps_r2s_mark_and_gains_no_other(
     # the part is all particles R2's mark already readmits every word,
     # a word that is BOTH particle and connective included. Swapping
     # the branches moves the caller's own rows.
-    p = Parser(lexicon=Lexicon.default().add(particles={"y"}))
+    p = Parser(lexicon=Lexicon.default().add("y", kind="particle"))
     r = p.parse("Juan de y")
     y = [t for t in r.tokens if t.text == "y"][0]
     assert UNJOINED_TAG in y.tags
@@ -1246,7 +1253,7 @@ def test_a_word_that_is_both_particle_and_connective_is_marked_too(
     # Without the arm the both-vocabulary word takes neither mark,
     # drops as an ordinary family particle, and the part's own base
     # disagrees with the view over it.
-    p = Parser(lexicon=Lexicon.default().add(particles={"y"}))
+    p = Parser(lexicon=Lexicon.default().add("y", kind="particle"))
     r = p.parse("Juan de y and")
     assert r.family == "de y and"
     assert r.initials() == "J. y. a."
@@ -1303,7 +1310,7 @@ def test_two_family_names_counts_every_listed_hyphen_as_two_words(
 
 #: rules/O6's given-name veto (#959) reads Lexicon.given_names, which
 #: the default leaves empty; these rows carry the list a pack ships.
-_ES_GIVEN = Lexicon.default().add(given_names=GIVEN_NAMES)
+_ES_GIVEN = Lexicon.default() | Lexicon(given_names=GIVEN_NAMES)
 
 
 def _roles(text: str, policy: Policy, lexicon: Lexicon) -> tuple[str, ...]:
@@ -1399,10 +1406,10 @@ def test_a_caller_entry_matches_as_written_and_by_its_key() -> None:
     # An entry with its accent matches the word written with it; one
     # without matches every spelling, the key dropping the accent.
     o6 = Policy(two_family_names=True)
-    accented = Lexicon.default().add(given_names={"Lúis"})
+    accented = Lexicon.default() | Lexicon(given_names={"Lúis"})
     assert _roles("José Lúis Pérez", o6, accented)[2] == "Pérez"
     assert _roles("José Luis Pérez", o6, accented)[2] == "Luis Pérez"
-    bare = Lexicon.default().add(given_names={"luis"})
+    bare = Lexicon.default() | Lexicon(given_names={"luis"})
     for written in ("Luis", "Lúis", "LUIS", "Luís"):
         assert _roles(f"José {written} Pérez", o6, bare)[2] == "Pérez", written
 

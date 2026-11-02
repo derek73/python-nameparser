@@ -74,8 +74,10 @@ class PythonApiTests(ParsedNameTestBase):
     def test_matches_parses_str_with_the_parsers_lexicon(self) -> None:
         # the custom title must not be a default one ('chancellor' is!), or
         # this passes without the custom parse path ever mattering
-        self.assertNotIn('zephyrmark', Lexicon.default().titles)
-        parser = Parser(lexicon=Lexicon.default().add(titles={'zephyrmark'}))
+        self.assertNotIn(
+            'title',
+            {r.category for r in Lexicon.default().readings_of('zephyrmark')})
+        parser = Parser(lexicon=Lexicon.default().add('zephyrmark', kind='title'))
         hn = parser.parse("Zephyrmark Jane Smith")
         # the str operand is parsed with the parser's lexicon, so the custom
         # title is recognized in the comma form; parsed with the default,

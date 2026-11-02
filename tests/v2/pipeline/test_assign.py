@@ -27,15 +27,16 @@ _ORDERS = [
     (Policy(name_order=FAMILY_FIRST_GIVEN_LAST), "family"),
 ]
 
-_LEX = Lexicon(
-    titles=frozenset({"dr", "mr", "mrs", "sir", "sr"}),
-    given_name_titles=frozenset({"sir"}),
-    suffix_acronyms=frozenset({"phd", "md"}),
-    suffix_words=frozenset({"jr", "iii", "v", "sr"}),
-    particles=frozenset({"de", "la", "van"}),
-    particles_ambiguous=frozenset({"van"}),
-    conjunctions=frozenset({"and"}),
-    maiden_markers=frozenset({"née"}),
+_LEX = (
+    Lexicon()
+    .add("dr", "mr", "mrs", "sr", kind="title")
+    .add("sir", kind="title", addresses="given")
+    .add("phd", "md", kind="credential")
+    .add("jr", "iii", "v", "sr", kind="suffix")
+    .add("de", "la", "van", kind="particle")
+    .add("van", kind="given")           # an ambiguous particle
+    .add("and", kind="conjunction")
+    .add("née", kind="birth_marker")
 )
 
 
@@ -291,8 +292,8 @@ def test_convention_details_name_the_field_the_word_lands_in(
     # only other details at this site that name a field -- H4's PEEL
     # shape ("Lord Chancellor") deliberately names none, because H1
     # retags that word after assign under the default order.
-    lex = _LEX.add(suffix_words={"rinpoche"}, conjunctions={"of"},
-                   titles={"bishop"})
+    lex = (_LEX.add("rinpoche", kind="suffix").add("of", kind="conjunction")
+           .add("bishop", kind="title"))
     (amb,) = _reported(text, policy, lexicon=lex)
     assert amb.kind is kind
     assert amb.detail == detail.format(role=role)
@@ -305,7 +306,7 @@ def test_leading_particle_detail_follows_the_effective_order() -> None:
     # resolves family-first through _effective_order while name_order
     # is untouched and still reads given-first. The head piece is the
     # FAMILY name here, and the detail has to say so.
-    han = _LEX.add(particles={"毛"}, particles_ambiguous={"毛"})
+    han = _LEX.add("毛", kind="particle").add("毛", kind="given")
     out = _assigned("毛 泽东", lexicon=han)
     assert out.policy.name_order[0] is Role.GIVEN
     assert out.policy.script_orders[0][0] is Script.HAN
@@ -412,8 +413,7 @@ def test_the_trailing_title_is_transparent_to_the_suffix_peel() -> None:
     reserve keeps a bare ambiguous acronym the family of a two-word
     name, and takes it as a credential when a full name remains.
     """
-    lex = _LEX.add(suffix_acronyms={"ma"},
-                   suffix_acronyms_ambiguous={"ma"})
+    lex = _LEX.add("ma", kind="credential").add("ma", kind="family")
     # MOVED by #289, not deleted: spliced, 'John MA' is the bare
     # 'Jack MA' shape -- an ALL-CAPS ambiguous acronym in a mixed-case
     # name leans credential and is taken with no words to spare, so
@@ -531,7 +531,7 @@ def test_family_first_order() -> None:
 
 def test_family_first_given_last_order() -> None:
     # Pinned against the actual built pipeline (2026-07-12), not guessed:
-    # 'Van' is particles_ambiguous and non-leading, so group's prefix
+    # 'Van' is an ambiguous particle and non-leading, so group's prefix
     # chain (which is name_order-agnostic -- it lands upstream of assign
     # and doesn't consult Policy) absorbs 'Van Anh Thu' into ONE piece
     # before assign ever sees it. With only two name pieces left,
