@@ -21,7 +21,7 @@ from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, field
 from typing import Any
 
-from nameparser._lexicon import Lexicon
+from nameparser._lexicon import Lexicon, _canonical, _shown_choice
 from nameparser._policy import (
     _ORDER_CONSTANT_NAMES, UNSET, PatronymicRule, PolicyPatch,
     _reject_str_and_mapping,
@@ -107,35 +107,10 @@ class Locale:
                    if getattr(self.policy, f.name) is not UNSET]
         # a choice is shown by its tags while it is short, as one is
         # (a pack chooses one or two), and by its size past that
-        if len(self.languages) > _REPR_TAGS:
-            patched.insert(0, f"languages: {len(self.languages)}")
-        elif self.languages:
-            patched.insert(0, "languages " + "+".join(sorted(self.languages)))
+        if self.languages:
+            patched.insert(0, _shown_choice(self.languages))
         suffix = f": {', '.join(patched)}" if patched else ""
         return f"Locale({self.code!r}{suffix})"
-
-
-#: The most tags Locale's repr lists; a longer choice is shown by its
-#: size, so the repr stays bounded however many languages are chosen.
-_REPR_TAGS = 3
-
-
-def _canonical(tag: str) -> str:
-    """`tag` in BCP 47's canonical case: the language subtag lowercase,
-    a four-letter script subtag title case, a two-letter region
-    uppercase, every other subtag lowercase (RFC 5646, 2.1.1). Equal
-    choices then compare and hash equal, whatever case they were
-    written in."""
-    first, *rest = tag.split("-")
-    out = [first.lower()]
-    for sub in rest:
-        if len(sub) == 4 and sub.isalpha():
-            out.append(sub.title())
-        elif len(sub) == 2 and sub.isalpha():
-            out.append(sub.upper())
-        else:
-            out.append(sub.lower())
-    return "-".join(out)
 
 
 def _tags(value: object) -> frozenset[str]:

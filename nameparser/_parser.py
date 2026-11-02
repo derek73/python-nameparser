@@ -11,11 +11,9 @@ from __future__ import annotations
 import dataclasses
 import functools
 import warnings
-from collections.abc import Mapping
 from dataclasses import dataclass, field
-from types import MappingProxyType
-from typing import Any
 
+from nameparser._lexicon import _rechosen_masks
 from nameparser._lexicon import Lexicon
 from nameparser._locale import Locale
 from nameparser._pipeline import run
@@ -140,6 +138,21 @@ class Parser:
                     or type(self.segmenter).__name__)
             seg = f", segmenter={name}"
         return f"Parser({self.lexicon!r}, {self.policy!r}{seg})"
+
+    # -- properties ------------------------------------------------------
+
+    @property
+    def languages(self) -> frozenset[str]:
+        """The languages this parser's vocabulary is chosen under,
+        :attr:`Lexicon.languages` read through: set by
+        :func:`parser_for`, empty where none was chosen."""
+        return self.lexicon.languages
+
+    @property
+    def strict(self) -> bool:
+        """Whether the choice is strict, :attr:`Lexicon.strict` read
+        through."""
+        return self.lexicon.strict
 
     def parse(self, text: str) -> ParsedName:
         """Parse one name string into a :class:`ParsedName`. Never
@@ -297,95 +310,12 @@ def _reading_index_selected(languages: frozenset[str],
     return selected(languages, strict=strict)
 
 
-@functools.cache
-def _choice_delta(chosen: frozenset[str], strict: bool = False) -> tuple[
-        dict[str, tuple[frozenset[str], frozenset[str]]],
-        tuple[frozenset[str], tuple[tuple[str, str], ...]]]:
-    """What the choice of the file tags `chosen` changes against the
-    default's compile: per Lexicon field, the entries that leave and
-    the ones that join, and the case masks that leave and the ones set.
-    A delta, so it applies to a caller's own Lexicon as well as to the
-    default (the RFC's "Where the provenance lives at runtime"); a
-    `strict` choice's delta is the same comparison, its compile holding
-    only the chosen files and native-script vocabulary."""
-    from nameparser._lexicon import _vocab_fields
-    from nameparser._reading_index import compile_choice
-    default = compile_choice(frozenset())
-    choice = compile_choice(chosen, strict)
-    was, now = _vocab_fields(default), _vocab_fields(choice)
-    fields = {name: (was[name] - now[name], now[name] - was[name])
-              for name in was if was[name] != now[name]}
-    old, new = (default["CAPITALIZATION_EXCEPTIONS"],
-                choice["CAPITALIZATION_EXCEPTIONS"])
-    masks = (frozenset(old.keys() - new.keys()),
-             tuple(sorted((k, v) for k, v in new.items() if old.get(k) != v)))
-    return fields, masks
-
-
-@functools.cache
-def _choice_readings(chosen: frozenset[str],
-                     strict: bool = False) -> Mapping[str, tuple[Any, ...]]:
-    """The readings the choice of the file tags `chosen` compiles, by
-    word: the kinds `_apply_choice` gives a word the choice changes."""
-    from nameparser._reading_index import choose, index, strict_pool
-    by_text: dict[str, list[Any]] = {}
-    for r in choose(strict_pool(chosen) if strict else index(), chosen):
-        by_text.setdefault(r.text, []).append(r)
-    return MappingProxyType({t: tuple(rs) for t, rs in by_text.items()})
-
-
-def _apply_choice(lexicon: Lexicon, languages: frozenset[str],
-                  strict: bool = False) -> Lexicon:
-    """`lexicon` under the choice of `languages`, a delta against the
-    default's compile: what the choice drops leaves `lexicon` whoever
-    put it there, a caller included, what it turns on joins, and every
-    other entry stays as the caller had it. Written as readings, the
-    edits that take each changed word's readings to its sets under the
-    choice, appended to the lexicon's log (#754, 4i-b), until 4i-c
-    records the choice on the `Lexicon` and retires this delta."""
-    from nameparser._lexicon import (
-        _MARKER_BASES, _compiled_for, _edits_toward, _fields_of)
-    chosen = _reading_index_selected(languages, strict)
-    fields, (unmasked, masks) = _choice_delta(chosen, strict)
-    current = _fields_of(lexicon._sets)
-    target = {name: (current[name] - gone) | joined
-              for name, (gone, joined) in fields.items()}
-    # a word the choice drops from a base set leaves that set's markers
-    # too, a caller's own mark of it included: no reading compiles a
-    # marker without its base
-    for marker, base in _MARKER_BASES:
-        if base in fields and fields[base][0]:
-            target[marker] = target.get(marker, current[marker]) - fields[base][0]
-    updates: dict[str, object] = {}
-    if target:
-        wanted = current | target
-        edits = _edits_toward(lexicon._pool(), current, wanted,
-                              _choice_readings(chosen, strict))
-        if edits:
-            updates["_edits"] = lexicon._edits + edits
-            # a reading the choice turns on can clash with one the
-            # caller wrote (`st`'s cs generation beside a caller's
-            # credential: one suffix kind per word), and no readings
-            # give the delta's sets back; refused, as construction
-            # refuses the same clash (decisions/vocabulary-model,
-            # 2026-11-02 #754, item 3), where 3b's delta raised the
-            # set guard it broke
-            got = _fields_of(_compiled_for(lexicon._base,
-                                           lexicon._edits + edits))
-            clash = sorted({w for f in wanted for w in got[f] ^ wanted[f]})
-            if clash:
-                raise ValueError(
-                    f"the readings the choice turns on clash with the "
-                    f"lexicon's own for {', '.join(map(repr, clash[:8]))}; "
-                    f"remove the lexicon's reading of each before choosing")
-    if unmasked or masks:
-        cap = {k: v for k, v in lexicon.capitalization_exceptions
-               if k not in unmasked}
-        updates["capitalization_exceptions"] = tuple(
-            sorted((cap | dict(masks)).items()))
-    if not updates:
-        return lexicon
-    return dataclasses.replace(lexicon, **updates)  # type: ignore[arg-type]
+def _rewrapped(exc: Exception, message: str) -> Exception:
+    """`exc`'s message with `message` before it, as a plain TypeError or
+    ValueError: a subclass may take other constructor arguments
+    (_lexicon._MaskValueError takes three)."""
+    return (TypeError if isinstance(exc, TypeError) else ValueError)(
+        f"{message}: {exc}")
 
 
 def parser_for(*locales: Locale, base: Parser | None = None,
@@ -459,10 +389,17 @@ def parser_for(*locales: Locale, base: Parser | None = None,
     # segmenter it was asked to drop.
     if segmenter is UNSET:
         segmenter = base.segmenter if base is not None else None
-    # one choice for all the packs, so applying them is order-free; each
-    # pack's tags are checked on their own first, so a tag no file holds
-    # is reported with the pack that named it (rules/D2)
-    languages: frozenset[str] = frozenset()
+    # one choice for all the packs and the base's, so applying them is
+    # order-free; each pack's tags are checked on their own first, so a
+    # tag no file holds is reported with the pack that named it
+    # (rules/D2)
+    if lexicon.languages and lexicon.strict != strict:
+        raise ValueError(
+            f"base's lexicon was chosen with strict={lexicon.strict}, and "
+            f"a chained choice keeps it: pass strict={lexicon.strict}, or "
+            f"build the parser from Lexicon.default() with every pack, "
+            f"parser_for(*packs, strict={strict})")
+    languages = lexicon.languages
     for loc in locales:
         if loc.languages:
             try:
@@ -473,18 +410,38 @@ def parser_for(*locales: Locale, base: Parser | None = None,
             languages |= loc.languages
     if strict and not languages:
         raise ValueError(_no_strict_language(locales))
-    if languages:
+    # the packs' fragments join in pack order, and the caller's lexicon
+    # after them all, so its own readings outrank every pack's
+    # (decisions/vocabulary-model, 2026-11-02 #754, item 3)
+    fragments = Lexicon.empty()
+    for loc in locales:
         try:
-            lexicon = _apply_choice(lexicon, languages, strict)
+            fragments = fragments | loc.lexicon
         except (TypeError, ValueError) as exc:
-            # rules/D2: "applying a locale pack wraps any such error with
-            # the locale's code, so a stacked configuration names which
-            # layer broke" -- the choice is every pack's at once, so it
-            # names the languages (history: decisions/vocabulary-model,
-            # 2026-10-29 3b)
-            raise type(exc)(
-                f"while applying the languages chosen, "
-                f"{', '.join(sorted(languages))}: {exc}") from exc
+            raise _rewrapped(exc, f"while applying locale {loc.code!r}") from exc
+    try:
+        lexicon = fragments | lexicon
+    except (TypeError, ValueError) as exc:
+        raise _rewrapped(exc, "while joining the packs' lexicons to "
+                         "base's") from exc
+    try:
+        if languages:
+            # the compile and its refusals, here: a reading of the
+            # lexicon's own that clashes with one the choice turns on
+            # raises, naming the edit
+            lexicon = dataclasses.replace(
+                lexicon, _languages=languages, _strict=strict,
+                capitalization_exceptions=_rechosen_masks(
+                    lexicon, _reading_index_selected(languages, strict),
+                    strict))
+    except (TypeError, ValueError) as exc:
+        # rules/D2: "applying a locale pack wraps any such error with
+        # the locale's code, so a stacked configuration names which
+        # layer broke" -- the choice is every pack's at once, so it
+        # names the languages (history: decisions/vocabulary-model,
+        # 2026-10-29 3b)
+        raise _rewrapped(exc, "while applying the languages chosen, "
+                         + ", ".join(sorted(languages))) from exc
     # each scalar field's setter so far and the value it left in the
     # policy: a later pack leaving another value overrides it, which is
     # warned; one leaving the same value (cs and sk's two_family_names)
@@ -496,14 +453,9 @@ def parser_for(*locales: Locale, base: Parser | None = None,
                if f.metadata.get("compose") != "union"]
     for loc in locales:
         try:
-            lexicon = lexicon | loc.lexicon
             policy = apply_patch(policy, loc.policy)
         except (TypeError, ValueError) as exc:
-            # safe: every raise in the apply path (Policy.__post_init__,
-            # Lexicon.__or__, apply_patch) is a PLAIN TypeError/ValueError --
-            # a subclass with extra mandatory args would break this rewrap
-            raise type(exc)(
-                f"while applying locale {loc.code!r}: {exc}") from exc
+            raise _rewrapped(exc, f"while applying locale {loc.code!r}") from exc
         for name in scalars:
             if getattr(loc.policy, name) is UNSET:
                 continue

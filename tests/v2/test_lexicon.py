@@ -12,7 +12,7 @@ from types import MappingProxyType
 
 import pytest
 
-from nameparser import LexiconReading, Parser
+from nameparser import Locale, LexiconReading, Parser, parser_for
 from nameparser._lexicon import (
     Lexicon, _ADDED_IN, _KIND_FIELDS, _LIST_FIELDS, _MaskValueError,
     _SET_FIELDS, _VOCAB_FIELDS, _default_lexicon, _fields_of, _normalize,
@@ -1023,6 +1023,83 @@ def test_union_refuses_two_different_bases() -> None:
     assert older._base != "default"
     with pytest.raises(ValueError, match="different bases"):
         Lexicon.default() | older
+
+
+# -- the choice (decisions/vocabulary-model, 2026-11-02 #754, items 3
+# and 4) --------------------------------------------------------------------
+
+def test_the_choice_travels_with_replace_union_and_pickle() -> None:
+    chosen = dataclasses.replace(Lexicon.default(), _languages=frozenset({"pt-br"}))
+    assert chosen.languages == {"pt-BR"} and chosen.strict is False
+    assert chosen != Lexicon.default()
+    added = chosen.add("zzq", kind="title")
+    assert added.languages == {"pt-BR"}
+    assert (added | Lexicon(surnames={"김"})).languages == {"pt-BR"}
+    assert (Lexicon.empty() | added).languages == {"pt-BR"}
+    strict = dataclasses.replace(Lexicon.default(), _languages=frozenset({"vi"}),
+                                 _strict=True)
+    for lex in (chosen, added, strict):
+        loaded = pickle.loads(pickle.dumps(lex))
+        assert loaded == lex and hash(loaded) == hash(lex)
+        assert (loaded.languages, loaded.strict) == (lex.languages, lex.strict)
+
+
+@pytest.mark.parametrize("left,right", [
+    ({"_languages": {"pt"}}, {"_languages": {"en"}}),
+    ({"_languages": {"ko"}}, {"_languages": {"ko"}, "_strict": True}),
+])
+def test_union_refuses_two_different_choices_naming_parser_for(
+        left: dict[str, object], right: dict[str, object]) -> None:
+    a = dataclasses.replace(Lexicon.default(), **left)  # type: ignore[arg-type]
+    b = dataclasses.replace(Lexicon.default(), **right)  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="different choices.*parser_for"):
+        a | b
+    assert (a | a).languages == a.languages
+
+
+@pytest.mark.parametrize("kwargs,error,match", [
+    ({"_languages": "pt"}, TypeError, "_languages must be a set"),
+    ({"_languages": {"pt": 1}}, TypeError, "_languages must be a set"),
+    ({"_languages": {5}}, TypeError, "entries must be str"),
+    ({"_languages": {"pt"}, "_strict": 1}, TypeError,
+     "_strict must be True or False"),
+    ({"_strict": True}, ValueError, "chooses none"),
+    ({"_languages": {"xx"}}, ValueError, "no vocabulary file holds"),
+    ({"_languages": {"mul"}}, ValueError, "not a language to choose"),
+    # a file holding no reading is a strict choice only, as at parser_for
+    ({"_languages": {"vi"}}, ValueError, "strict=True"),
+])
+def test_the_choice_is_validated_as_parser_for_validates_one(
+        kwargs: dict[str, object], error: type[Exception], match: str) -> None:
+    with pytest.raises(error, match=match):
+        Lexicon(**kwargs)  # type: ignore[arg-type]
+
+
+def test_a_choice_filters_the_base_and_the_log_applies_after_it() -> None:
+    # en prefers its credential of `do` over pt's particle; a removal
+    # written before the choice was made still applies after it
+    # (the RFC's item 4 example)
+    removed = Lexicon.default().remove("do", kind="credential")
+    chosen = dataclasses.replace(removed, _languages=frozenset({"en"}))
+    assert [r.category for r in chosen.readings_of("do")] == ["name", "name"]
+    assert [r.kind for r in dataclasses.replace(
+        Lexicon.default(), _languages=frozenset({"pt"})).readings_of("do")
+        if r.category != "name"] == ["preposition"]
+
+
+def test_the_repr_shows_the_choice_and_counts_against_it() -> None:
+    chosen = dataclasses.replace(Lexicon.default(), _languages=frozenset({"pt"}))
+    assert repr(chosen) == "Lexicon(default, languages pt)"
+    assert (repr(chosen.add("zzq", kind="title"))
+            == "Lexicon(default + title: +1, languages pt)")
+    # the masks a strict choice drops are parser_for's to move, and the
+    # repr counts against the named lexicon with them moved
+    vi = Locale(code="vi", lexicon=Lexicon.empty(), languages=frozenset({"vi"}))
+    strict = parser_for(vi, strict=True).lexicon
+    assert repr(strict) == "Lexicon(default, languages vi, strict)"
+    many = dataclasses.replace(Lexicon.default(),
+                               _languages=frozenset({"pt", "en", "es", "de"}))
+    assert repr(many) == "Lexicon(default, languages: 4)"
 
 
 def test_the_internal_sets_hold_each_field_under_its_own_name() -> None:
