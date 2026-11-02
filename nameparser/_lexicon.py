@@ -1011,6 +1011,58 @@ def _choice_compiled(chosen: frozenset[str],
     return MappingProxyType(_vocab_fields(ri.compile_choice(chosen, strict)))
 
 
+class _ReadingFiles:
+    """The files whose readings are on in one lexicon, by word: what
+    ``Reading.languages`` names (decisions/vocabulary-model, 2026-11-02
+    #754, sub-phase 4i-d). One per base, log and choice
+    (`_reading_files`), held by each `Lexicon` it describes and never
+    pickled; it hashes by identity, in C, so assemble's memo keyed by
+    it costs no frame on a hit.
+
+    The default answers from the reading index's rows
+    (`_reading_index.languages_of`), and a choice with no log from the
+    word's own rows under `choose`, which is exact because a choice's
+    preference is per word; neither builds the lexicon's whole pool,
+    which a log or a snapshot base has built already, at construction."""
+
+    __slots__ = ("_base", "_edits", "_chosen", "_strict")
+
+    def __init__(self, base: object, edits: tuple[_Edit, ...],
+                 chosen: frozenset[str], strict: bool) -> None:
+        self._base, self._edits = base, edits
+        self._chosen, self._strict = chosen, strict
+
+    def languages(self, text: str, kinds: frozenset[str]) -> tuple[str, ...]:
+        """The tags of the files holding a reading of `text` (as the
+        vocabulary stores it) of one of `kinds`, on in this lexicon,
+        sorted; a caller's own reading names none."""
+        ri = _index_module()
+        readings: Iterable[Any]
+        if self._edits or self._base not in ("default", "empty"):
+            readings = _built(self._base, self._edits, self._chosen,
+                              self._strict)[0].get(text, ())
+        elif self._base == "empty":
+            return ()
+        elif not self._chosen:
+            return cast("tuple[str, ...]", ri.languages_of(text, kinds))
+        else:
+            readings = ri.readings_of(text)
+            if self._strict:
+                readings = [r for r in readings if r.tag in self._chosen
+                            or ri.is_native_script(r.text)]
+            readings = ri.choose(readings, self._chosen)
+        return tuple(sorted({r.tag for r in readings
+                             if r.tag and r.kind in kinds
+                             and r.on_by_default}))
+
+
+@functools.lru_cache(maxsize=64)
+def _reading_files(base: object, edits: tuple[_Edit, ...],
+                   chosen: frozenset[str], strict: bool) -> _ReadingFiles:
+    # one per configuration, so equal lexicons share assemble's memo
+    return _ReadingFiles(base, edits, chosen, strict)
+
+
 def _check_choice(languages: object, strict: object) -> tuple[
         frozenset[str], frozenset[str]]:
     """A recorded choice validated as `parser_for` validates one: its
@@ -1777,6 +1829,10 @@ class Lexicon:
         init=False, repr=False, compare=False, hash=False)
     _sets: _LexiconSets = field(
         init=False, repr=False, compare=False, hash=False)
+    # what assemble keys Reading.languages by: one per base, log and
+    # choice (_ReadingFiles)
+    _files: _ReadingFiles = field(
+        init=False, repr=False, compare=False, hash=False)
 
     def __init__(
         self, *,
@@ -1817,6 +1873,7 @@ class Lexicon:
         put("_strict", _strict)
         put("_chosen", chosen)
         compiled = _compiled_for(self._base, canon, chosen, _strict)
+        put("_files", _reading_files(self._base, canon, chosen, _strict))
         put("_sets", _LexiconSets(
             **compiled, surnames=self.surnames, given_names=self.given_names))
         if removed:

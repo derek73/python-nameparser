@@ -18,9 +18,8 @@ policy folds a middle; Policy.name_order, for ParsedName.order where
 no positional read happened; Policy.patronymic_rules, for the words
 an ending rule reads as a patronymic (rules/R9); and Lexicon.surnames, suffix_acronyms and
 suffix_acronyms_ambiguous, for the source of a token's reading where
-no tag gives it. Not a Lexicon: the shipped reading index
-(_reading_index.languages_of), for Reading.languages, which names the
-files and so is the same under every Lexicon.
+no tag gives it; and the Lexicon's readings by word (Lexicon._files),
+for Reading.languages, the files whose reading is on in it.
 
 Structural tokens (dropped maiden markers) are omitted, like delimiter
 characters. A main-stream token that somehow reaches here with no role
@@ -38,7 +37,9 @@ import functools
 import unicodedata
 from types import MappingProxyType
 
-from nameparser._lexicon import _VOCAB_FIELDS, Lexicon, _normalize
+from nameparser._lexicon import (
+    _VOCAB_FIELDS, Lexicon, _normalize, _ReadingFiles,
+)
 from nameparser._pipeline._state import (
     AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, ATTACHED_TAG,
     CREDENTIAL_WORD_TAG, FIELD_READING, GENERATION_WORD_TAG,
@@ -52,7 +53,7 @@ from nameparser._pipeline._vocab import (
     name_source, suffix_kind,
 )
 from nameparser._policy import PatronymicRule
-from nameparser._reading_index import CATEGORY, languages_of
+from nameparser._reading_index import CATEGORY
 from nameparser._types import (
     FOLDED_TAG, GIVEN_FIRST, UNJOINED_CONJUNCTION_TAG, UNJOINED_TAG,
     Ambiguity, AmbiguityKind, ParsedName, Reading, ReadingKind,
@@ -118,27 +119,32 @@ def _kinds(kind: ReadingKind, role: Role) -> frozenset[str]:
 
 
 # Both lookups are memos, C-level on a hit, so a word read before costs
-# no frame (decisions/parse-cost), and both are pure functions of the
-# shipped files, bounded since what keys them comes from the caller's
-# text; so is `_reading`, of the readings that name files.
+# no frame (decisions/parse-cost): each is a pure function of the word
+# and the lexicon's readings, which `files` stands for, one object per
+# base, log and choice hashed by identity (decisions/vocabulary-model,
+# 2026-11-02 #754, sub-phase 4i-d), and bounded since what keys them
+# comes from the caller's text; so is `_reading`, of the readings that
+# name files.
 @functools.lru_cache(maxsize=4096)
-def _languages(text: str, kind: ReadingKind, role: Role) -> tuple[str, ...]:
+def _languages(text: str, kind: ReadingKind, role: Role,
+               files: _ReadingFiles) -> tuple[str, ...]:
     """The files holding the `kind` reading of `text` as written, in
-    `role`, Reading.languages: by the vocabulary's own form of the
+    `role`, on in the parse's lexicon (`files`, its `_files`),
+    Reading.languages: by the vocabulary's own form of the
     word, and then with every period removed, the form a credential is
     matched by ('M.A' in 'John Smith (M.A)') and a word listed whole
     without them ('Lt.Gen.' as 'ltgen')."""
     kinds = _kinds(kind, role)
     n = _normalize(text)
-    found = languages_of(n, kinds)
+    found = files.languages(n, kinds)
     if not found and "." in n:
-        found = languages_of(n.replace(".", ""), kinds)
+        found = files.languages(n.replace(".", ""), kinds)
     return found
 
 
 @functools.lru_cache(maxsize=4096)
-def _part_languages(text: str, kind: ReadingKind,
-                    role: Role) -> tuple[str, ...]:
+def _part_languages(text: str, kind: ReadingKind, role: Role,
+                    files: _ReadingFiles) -> tuple[str, ...]:
     """The files of the listed words `text` joins with punctuation
     ('Lt.Gov.', 'MD/PhD', 'MD;'), sorted: a suffix's parts divided by
     any mark but the period first, each an acronym ('M.D./Ph.D.'),
@@ -146,11 +152,13 @@ def _part_languages(text: str, kind: ReadingKind,
     own lexicon does not list whole (`_listed_whole`)."""
     kinds = _kinds(kind, role)
     n = _normalize(text)
-    found = _by_parts(n, kinds, ".") if kinds is _SUFFIX_KINDS else ()
-    return found or _by_parts(n, kinds, "")
+    found = (_by_parts(n, kinds, ".", files) if kinds is _SUFFIX_KINDS
+             else ())
+    return found or _by_parts(n, kinds, "", files)
 
 
-def _by_parts(n: str, kinds: frozenset[str], keep: str) -> tuple[str, ...]:
+def _by_parts(n: str, kinds: frozenset[str], keep: str,
+              files: _ReadingFiles) -> tuple[str, ...]:
     """The files of the parts of `n`, sorted: divided by punctuation,
     symbols and spaces, but for the marks in `keep`, which are removed
     from each part instead; never by a combining mark, which a `[^\\w]`
@@ -160,8 +168,8 @@ def _by_parts(n: str, kinds: frozenset[str], keep: str) -> tuple[str, ...]:
                     for c in n).split()
     return tuple(sorted({
         tag for part in parts
-        for tag in languages_of(part.replace(keep, "") if keep else part,
-                                kinds)}))
+        for tag in files.languages(
+            part.replace(keep, "") if keep else part, kinds)}))
 
 
 @functools.lru_cache(maxsize=4096)
@@ -261,9 +269,10 @@ def _alternative(pending: PendingAmbiguity, materialized: tuple[Token, ...],
     if alt.source in _LISTED:
         # a loop, not a generator, which would resume a frame per word
         for t in materialized:
-            langs = _languages(t.text, alt.kind, role)
+            langs = _languages(t.text, alt.kind, role, lexicon._files)
             if (not langs
-                    and (langs := _part_languages(t.text, alt.kind, role))
+                    and (langs := _part_languages(t.text, alt.kind, role,
+                                                  lexicon._files))
                     and _listed_whole(t.text, lexicon)):
                 langs = ()
             found.update(langs)
@@ -379,6 +388,7 @@ def assemble(state: ParseState) -> ParsedName:
     dropped = set(state.dropped)
     final: dict[int, Token] = {}
     surnames = state.lexicon._sets.surnames
+    files = state.lexicon._files
     folds_middle = state.policy.middle_as_family
     tokens = state.tokens
     last = len(tokens)
@@ -429,10 +439,10 @@ def assemble(state: ParseState) -> ParsedName:
         # `_listed_suffix` and its `_normalize`). `_vocab`'s two predicates
         # also name the sources of the reading NOT taken
         # (Ambiguity.alternative).
-        # Reading.languages, the files holding the reading taken, is
-        # read below from phase 3's reading index for a listed or
-        # declared reading, through `_languages`, whose hit costs no
-        # frame (decisions/vocabulary-model, 2026-10-29).
+        # Reading.languages, the files holding the reading taken, on in
+        # the parse's lexicon, is read below for a listed or declared
+        # reading, through `_languages`, whose hit costs no frame
+        # (decisions/vocabulary-model, 2026-10-29; 2026-11-02, 4i-d).
         reading: Reading | None = None
         if role is Role.SUFFIX:
             # a suffix ends a particle's run: the family can resume
@@ -465,9 +475,11 @@ def assemble(state: ParseState) -> ParsedName:
                 # of the two words, which the second then takes
                 written = (t.text + _split_partner(tokens, dropped, i)
                            if prev_split else t.text)
-                langs = _languages(written, kind, role) if source in _LISTED else ()
+                langs = (_languages(written, kind, role, files)
+                         if source in _LISTED else ())
                 if (not langs and source in _LISTED
-                        and (langs := _part_languages(written, kind, role))
+                        and (langs := _part_languages(written, kind, role,
+                                                      files))
                         and _listed_whole(written, state.lexicon)):
                     langs = ()
                 reading = (_reading(kind, role, source, langs) if langs
@@ -573,9 +585,11 @@ def assemble(state: ParseState) -> ParsedName:
                                         ReadingSource.POSITION, (),
                                         freading.second_surname)
                 final[markers[i]] = Token(text, span, frole, ftags, freading)
-            langs = _languages(t.text, kind, field) if source in _LISTED else ()
+            langs = (_languages(t.text, kind, field, files)
+                     if source in _LISTED else ())
             if (not langs and source in _LISTED
-                    and (langs := _part_languages(t.text, kind, field))
+                    and (langs := _part_languages(t.text, kind, field,
+                                                  files))
                     and _listed_whole(t.text, state.lexicon)):
                 langs = ()
             reading = (_reading(kind, role, source, langs, second)

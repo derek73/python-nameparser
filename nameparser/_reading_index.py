@@ -430,8 +430,10 @@ def languages_of(text: str, kinds: frozenset[str]) -> tuple[str, ...]:
     default, of one of `kinds` (keys of :data:`CATEGORY`), each once,
     in index order; empty for a word no file holds as one of them.
     `text` is normalized as :func:`readings_of` takes it. What
-    assemble fills ``Reading.languages`` with (decisions/vocabulary-
-    model, 2026-10-29); its first call in a process loads the index."""
+    ``Reading.languages`` holds under the default lexicon, which reads
+    it through ``Lexicon._files`` (decisions/vocabulary-model,
+    2026-10-29; 2026-11-02, 4i-d); its first call in a process loads
+    the index."""
     out: list[str] = []
     for tag, kind, pairs in _by_text().get(text, ()):
         if (kind in kinds and tag not in out
