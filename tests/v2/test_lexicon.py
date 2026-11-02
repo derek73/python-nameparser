@@ -1317,3 +1317,97 @@ def test_a_2x_state_missing_a_field_or_not_normalized_is_refused() -> None:
         _loaded(state)
     with pytest.raises(ValueError, match=re.escape("not normalized (titles: DR.)")):
         _loaded(_state_2x(empty, titles={"DR."}))  # type: ignore[arg-type]
+
+
+# -- the refusals and translation arms no other test reaches ----------------
+
+@pytest.mark.parametrize(("call", "error", "match"), [
+    (lambda: Lexicon(surnames={"."}), ValueError, "normalizes to empty"),
+    (lambda: Lexicon.empty().add("x", kind="office", attaches=5), TypeError, "attaches must be an iterable"),
+    (lambda: Lexicon.empty().add("x", kind="office", attaches=["a", 5]), TypeError, "attaches entries must be strings"),
+    (lambda: Lexicon(_edits=(("add", "x", "title", ()),)), TypeError, "words are a tuple"),  # type: ignore[arg-type]
+    (lambda: Lexicon(_edits=(("remove", ("x",), "title", (("a", 1),)),)), ValueError, "remove\\(\\) takes no properties"),  # type: ignore[arg-type]
+    (lambda: Lexicon(_edits=(("add", ("x",), "title", 5),)), TypeError, "properties are pairs"),  # type: ignore[arg-type]
+    (lambda: Lexicon(_edits=5), TypeError, "_edits must be a tuple"),  # type: ignore[arg-type]
+    (lambda: Lexicon(_base=5), TypeError, "base is 'default', 'empty'"),
+    (lambda: Lexicon(_base=(("x", ("bad",)),)), TypeError, "snapshot is \\(word, rows\\)"),
+    (lambda: LexiconReading(5, "title", "title"), TypeError, "text must be a string"),  # type: ignore[arg-type]
+    (lambda: Lexicon.default().readings_of(5), TypeError, "takes a word"),  # type: ignore[arg-type]
+])
+def test_a_malformed_argument_is_refused_by_name(
+        call: Callable[[], object], error: type[Exception], match: str) -> None:
+    with pytest.raises(error, match=match):
+        call()
+
+
+def test_union_with_a_non_lexicon_is_not_implemented() -> None:
+    assert Lexicon.empty().__or__(5) is NotImplemented  # type: ignore[operator]
+
+
+def test_a_2x_state_with_a_malformed_field_is_refused() -> None:
+    empty: dict[str, frozenset[str]] = {f: frozenset() for f in _VOCAB_FIELDS}
+    with pytest.raises(ValueError, match="incompatible Lexicon pickle"):
+        _loaded(_state_2x(empty, titles=5))  # type: ignore[arg-type]
+
+
+def test_a_2x_spelling_with_a_malformed_value_still_says_since_3_0() -> None:
+    with pytest.raises(TypeError, match="since 3.0"):
+        Lexicon.default().add(titles=5)
+
+
+@pytest.mark.parametrize(("sets", "kinds"), [
+    # an acronym reading on a word whose held suffix kind is a word kind
+    ({"suffix_acronyms": {"jr"}}, {"generation": (("acronym", True),)}),
+    # a credential the 2.x sets list as a word: acronym false
+    ({"suffix_words": {"zzc"}}, {"suffix": ()}),
+])
+def test_the_translation_keeps_a_held_suffix_kind(
+        sets: dict[str, set[str]], kinds: dict[str, tuple[object, ...]]) -> None:
+    from nameparser._lexicon import _edits_toward
+    lex = Lexicon.default()
+    current = _fields_of(lex._sets)
+    target = {f: frozenset(current[f] | w) for f, w in sets.items()}
+    (word,) = next(iter(sets.values()))
+    target |= {f: current[f] - {word} for f in _SET_FIELDS
+               if f not in sets and word in current[f]
+               and f not in ("suffix_acronyms_ambiguous",)}
+    edits = _edits_toward(lex._pool(), current, target)
+    built = dataclasses.replace(lex, _edits=edits)
+    got = {r.kind: r.properties for r in built.readings_of(word)
+           if r.category == "suffix"}
+    assert got == kinds
+
+
+def test_a_choice_translation_reads_the_kinds_it_is_given() -> None:
+    # the kind sets name a word's kind where a choice's delta moves it
+    # (`_apply_choice`): a patronymic, a credential written as a word,
+    # and a gated generation that a possibly-given particle reading
+    # beside it turns into a plain suffix word
+    from nameparser._lexicon import _edits_toward
+    lex = Lexicon.empty().add("zza", "zzb", kind="particle").add(
+        "zzc", kind="generation")
+    current = _fields_of(lex._sets)
+    target = dict(current)
+    target["patronymic_particles"] = frozenset({"zza"})
+    target["suffix_words"] = current["suffix_words"] | {"zzb"}
+    target["credential_words"] = frozenset({"zzb"})
+    target["particles"] = current["particles"] - {"zzb"}
+    target["generation_words"] = frozenset()
+    target["particles"] = target["particles"] | {"zzc"}
+    target["particles_ambiguous"] = frozenset({"zzc"})
+    built = dataclasses.replace(lex, _edits=_edits_toward(
+        lex._pool(), current, target))
+    assert {r.kind for r in built.readings_of("zza")} == {"patronymic"}
+    assert [(r.kind, r.properties) for r in built.readings_of("zzb")] == [
+        ("credential", (("acronym", False),))]
+    assert {r.kind for r in built.readings_of("zzc")} == {
+        "suffix", "particle", "given"}
+
+
+def test_a_2x_multi_word_title_is_refused_as_a_pickle_3_0_cannot_express() -> None:
+    # 2.x warned on a multi-word entry in a per-word set and kept it; a
+    # reading of a phrase is a birth marker or a given-addressing title
+    # alone (the build's check 8), so the load names the pickle
+    empty: dict[str, frozenset[str]] = {f: frozenset() for f in _VOCAB_FIELDS}
+    with pytest.raises(ValueError, match="3.0 readings cannot express"):
+        _loaded(_state_2x(empty, titles=frozenset({"grand moff"})))
