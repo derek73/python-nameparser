@@ -956,17 +956,23 @@ class Reading:
     #: shape, or position alone.
     source: ReadingSource
     #: The BCP 47 tags of the shipped vocabulary files that hold this
-    #: reading of the word, on by default (``("es", "fr", "it", "nl",
-    #: "pt")`` for the particle ``de``, ``("mul",)`` for the title
-    #: ``Dr.``), sorted; a name reading takes the files listing the
-    #: word as a name of its field, given or family (``Ma`` read as a
+    #: reading of the word, on in the parse's own ``Lexicon``
+    #: (``("es", "fr", "it", "nl", "pt")`` for the particle ``de`` by
+    #: default, ``("pt",)`` under a ``pt`` choice, which drops the
+    #: others' readings of it; ``("mul",)`` for the title ``Dr.``), so
+    #: a choice of languages names the files it turns on and not those
+    #: it drops; sorted. A caller's ``add`` of a kind a file holds for
+    #: the word turns that file's reading on, so the file is named
+    #: (``add("st", kind="generation")`` names ``cs``, ``hr``, ``sk``
+    #: and ``sl``), and a ``remove`` stops naming the files it took a
+    #: reading from. A name reading takes the files listing the word
+    #: as a name of its field, given or family (``Ma`` read as a
     #: family name names ``en``, which lists it so, and not ``fil``,
     #: which lists it as a given name). Empty for a reading no file
-    #: holds: a shape,
-    #: position alone, a name read into a field no file lists it in
-    #: (``van`` as a family name, ``nl`` listing it as given), a word a
-    #: caller's own ``Lexicon`` adds that no file holds in that
-    #: category, or a shipped list kept outside the per-word files (the
+    #: holds: a shape, position alone, a name read into a field no
+    #: file lists it in (``van`` as a family name, ``nl`` listing it
+    #: as given), a caller's ``add`` of a kind no file holds for the
+    #: word, or a shipped list kept outside the per-word files (the
     #: Korean surnames that divide ``김민준``).
     #: A suffix reading is matched by the word's suffix entry whatever
     #: its finer kind, a word having one. An ``Ambiguity.alternative``

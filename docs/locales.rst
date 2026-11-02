@@ -389,11 +389,20 @@ at the end of the name, where the default reads each as a name word.
     >>> czech.parse("Jana Nováková roz. Svobodová").maiden
     'Svobodová'
 
-A word read through a pack names no language file in its
-:attr:`~nameparser.Reading.languages`, which lists only the files whose
-reading is on by default, whatever the parser chose: ``ml.`` above names
-none, and ``Mgr.`` names ``en`` and ``fr``, whose Monsignor reading the
-Czech choice dropped for its own.
+A word's :attr:`~nameparser.Reading.languages` names the files whose
+reading is on under the parser's choice: ``ml.`` above names ``cs``,
+whose reading the choice turns on, and ``Mgr.`` names ``cs`` alone, the
+Czech choice having dropped the Monsignor reading of ``en`` and ``fr``
+for its own, which the default names:
+
+.. doctest::
+
+    >>> czech.parse("Jiří Dienstbier ml.").tokens[-1].reading.languages
+    ('cs',)
+    >>> parse("Mgr. Jan Novák").tokens[0].reading.languages
+    ('en', 'fr')
+    >>> czech.parse("Mgr. Jan Novák").tokens[0].reading.languages
+    ('cs',)
 
 A Czech or Slovak woman who keeps her own surname beside her
 husband's writes the two without a hyphen, ``Alena Pešová Řehořová``,

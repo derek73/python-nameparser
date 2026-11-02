@@ -3,6 +3,7 @@ import itertools
 import pickle
 import re
 import unicodedata
+import warnings
 
 import pytest
 
@@ -2830,23 +2831,92 @@ def test_a_packs_fragment_joins_under_the_callers_lexicon() -> None:
     assert parser_for(second, first).parse("Zzq Smith").title == "Zzq"
 
 
-def test_reading_languages_name_the_default_files_under_a_choice() -> None:
-    # decisions/vocabulary-model, 2026-10-29 phase 3b: the field names the
-    # files holding the reading on by default whatever choice built the
-    # parser. Under pt, `it`'s dropped reading of `e` is still named;
-    # under cs, the generation `st` it turned on names no file. Its
-    # following the choice the lexicon now records is 4i-d's, optional,
-    # and would change both on purpose
-    def languages(parser: Parser, name: str, text: str) -> tuple[str, ...]:
-        token = next(t for t in parser.parse(name).tokens if t.text == text)
-        assert token.reading is not None
-        return token.reading.languages
+def _languages_of(parser: Parser, name: str, text: str) -> tuple[str, ...]:
+    token = next(t for t in parser.parse(name).tokens if t.text == text)
+    assert token.reading is not None
+    return token.reading.languages
+
+
+def test_reading_languages_follow_the_choice() -> None:
+    # decisions/vocabulary-model, 2026-11-02 #754, sub-phase 4i-d: the
+    # field names the files whose reading is on in the parse's own
+    # lexicon. Under pt, `it`'s reading of `e`, which pt's preference
+    # drops, is no longer named; under cs, the generation `st` the
+    # choice turns on names cs; a word only an unchosen file holds keeps
+    # that file (`van`, nl's), the plain choice keeping its reading on.
+    # These were ('it', 'pt'), () and ('es', 'fr', 'it', 'nl', 'pt')
+    # before 4i-d, the files on by default whatever the choice
     pt, cs = parser_for(_choosing("pt")), parser_for(_choosing("cs"))
     assert pt.parse("ANA SILVA E SOUZA").family == "SILVA E SOUZA"
-    assert languages(pt, "ANA SILVA E SOUZA", "E") == ("it", "pt")
+    assert _languages_of(pt, "ANA SILVA E SOUZA", "E") == ("pt",)
     assert cs.parse("Jiří Dienstbier st.").suffix == "st."
-    assert languages(cs, "Jiří Dienstbier st.", "st.") == ()
-    assert languages(pt, "Maria do Carmo", "do") == ("pt",)
+    assert _languages_of(cs, "Jiří Dienstbier st.", "st.") == ("cs",)
+    assert _languages_of(pt, "Ana de Souza", "de") == ("pt",)
+    assert _languages_of(pt, "Vincent van Gogh", "van") == ("nl",)
+    # with no choice, the files on by default, as before
+    assert _languages_of(Parser(), "Ana de Souza", "de") == (
+        "es", "fr", "it", "nl", "pt")
+
+
+def test_reading_languages_under_a_strict_choice_name_the_chosen_files() -> None:
+    # a strict choice keeps only the chosen files' readings, so nothing
+    # else is named, mul.toml's included; a reading the strict lexicon
+    # does not hold names no file (the Ph./D. pair, merged by its
+    # pattern whatever the vocabulary: decisions/phd-merge)
+    en = parser_for(_choosing("en"), strict=True)
+    assert _languages_of(Parser(), "Baron John Smith", "Baron") == (
+        "de", "en", "fr", "nl")
+    assert _languages_of(en, "Baron John Smith", "Baron") == ("en",)
+    pt = parser_for(_choosing("pt"), strict=True)
+    assert pt.parse("John Smith Ph. D.").suffix == "Ph. D."
+    assert _languages_of(Parser(), "John Smith Ph. D.", "Ph.") == ("en",)
+    assert _languages_of(pt, "John Smith Ph. D.", "Ph.") == ()
+
+
+def test_reading_languages_follow_a_callers_readings() -> None:
+    # the same rule over a caller's log, with no choice: a caller's own
+    # reading names no file; an add of a kind a file holds off by
+    # default turns that file's reading on, and names it; a remove
+    # stops naming the file whose reading it took out
+    zzq = Parser(lexicon=Lexicon.default().add("zzq", kind="title"))
+    assert zzq.parse("Zzq John Smith").title == "Zzq"
+    assert _languages_of(zzq, "Zzq John Smith", "Zzq") == ()
+    st = Parser(lexicon=Lexicon.default().add("st", kind="generation"))
+    assert st.parse("Jiří Dienstbier st.").suffix == "st."
+    assert _languages_of(st, "Jiří Dienstbier st.", "st.") == (
+        "cs", "hr", "sk", "sl")
+    mine = Lexicon.default().remove("baron", kind="title").add(
+        "baron", kind="title")
+    assert _languages_of(Parser(lexicon=mine), "Baron John Smith",
+                         "Baron") == ()
+    # a caller's add under a choice turns its kind on as with none
+    chosen = parser_for(_choosing("pt"), base=st)
+    assert _languages_of(chosen, "Jiří Dienstbier st.", "st.") == (
+        "cs", "hr", "sk", "sl")
+    # the empty lexicon lists nothing, so names nothing
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", UserWarning)
+        empty = Parser(lexicon=Lexicon.empty())
+    assert _languages_of(empty, "John Smith Ph. D.", "Ph.") == ()
+
+
+def test_an_alternative_reading_names_the_files_on_under_the_choice() -> None:
+    name = "da Silva Sr. José Pedro Eduardo Jr., MP"
+    def alternatives(parser: Parser) -> list[tuple[str, ...]]:
+        return [a.alternative.languages for a in parser.parse(name).ambiguities
+                if a.alternative is not None]
+    assert alternatives(Parser()) == [("it", "pt")]
+    assert alternatives(parser_for(_choosing("pt"))) == [("pt",)]
+
+
+def test_reading_languages_survive_a_pickled_parser() -> None:
+    # the lexicon's key is rebuilt on load, never pickled, and equal
+    # lexicons share it, so a loaded parser reads as the one written
+    pt = parser_for(_choosing("pt"))
+    loaded = pickle.loads(pickle.dumps(pt))
+    assert loaded.lexicon._files is pt.lexicon._files
+    assert _languages_of(loaded, "Ana de Souza", "de") == ("pt",)
+    assert "_files" not in pt.lexicon.__getstate__()
 
 
 def test_a_choice_that_changes_nothing_leaves_the_sets_as_they_are() -> None:
