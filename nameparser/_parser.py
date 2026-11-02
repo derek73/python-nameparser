@@ -321,19 +321,22 @@ def _rewrapped(exc: Exception, message: str) -> Exception:
 def parser_for(*locales: Locale, base: Parser | None = None,
                segmenter: Segmenter | None | _Unset = UNSET,
                strict: bool = False) -> Parser:
-    """The packs' ``languages`` unioned into one choice, applied to
-    base's lexicon first (so the order of the packs does not change
-    it); then lexicon fragments unioned left-to-right onto the result;
-    policy patches applied left-to-right (later wins; set-valued fields
-    union per the patch metadata). A pack that chooses no language
-    leaves the base vocabulary exactly as it is; a choice removes from
-    base's lexicon every entry it drops, a caller's own listing of the
-    word included, and keeps every entry it does not touch. The choice
-    is this call's: a base built by an earlier ``parser_for`` records
-    none, so ``parser_for(EN, base=parser_for(PT))`` applies ``en``'s
-    choice after ``pt``'s and keeps neither language's reading of
-    ``do``, where ``parser_for(PT, EN)`` chooses both and keeps both
-    (decisions/vocabulary-model, 2026-10-29, chained choices).
+    """The packs' ``languages`` and base's recorded choice unioned into
+    one choice, recorded on the built parser's lexicon
+    (:attr:`Parser.languages`), so the order of the packs, and whether
+    they were chained through ``base``, does not change it:
+    ``parser_for(EN, base=parser_for(PT))`` reads as ``parser_for(PT,
+    EN)``. The packs' lexicon fragments are joined left-to-right and
+    base's lexicon after them, so a caller's own readings outrank every
+    pack's and a later pack's an earlier one's; the choice filters the
+    shipped readings and every lexicon's ``add`` and ``remove`` apply
+    after it, so a choice never drops a caller's word. A caller's
+    reading that cannot stand beside one the choice turns on raises
+    ValueError here, naming the call (decisions/vocabulary-model,
+    2026-11-02 #754, items 3 and 4). Policy patches apply left-to-right
+    (later wins; set-valued fields union per the patch metadata). A
+    pack that chooses no language leaves the base vocabulary exactly
+    as it is.
 
     ``strict=True`` makes the choice strict: only the chosen languages'
     vocabulary files are compiled, each tag selecting its own and its
@@ -343,10 +346,10 @@ def parser_for(*locales: Locale, base: Parser | None = None,
     them the markers they derive. It is for single-origin data
     (``parser_for(Locale(code="ko", lexicon=Lexicon.empty(),
     languages=frozenset({"ko"})), strict=True)`` reads ``Kim Do Hyun``
-    with no Portuguese particle ``do``). It applies as a delta, as a
-    plain choice does, so a caller's own listing of a dropped word
-    leaves too; the packs' fragments and policy patches apply after it
-    unchanged. A strict choice accepts a language whose file holds no
+    with no Portuguese particle ``do``). A caller's own readings and the
+    packs' fragments apply after it, as after a plain choice, and the
+    policy patches unchanged; a chained call whose ``strict`` differs
+    from base's recorded one raises ValueError. A strict choice accepts a language whose file holds no
     reading yet (``vi``), which a plain one refuses as changing
     nothing, and raises ValueError when the packs choose no language,
     since it would then strip every Latin-script reading

@@ -200,32 +200,37 @@ checked in one of four ways:
 A pack that chooses no language leaves the base parser's vocabulary
 exactly as it was.
 
-Choosing in one call
-^^^^^^^^^^^^^^^^^^^^
+Chaining choices
+^^^^^^^^^^^^^^^^
 
-A choice belongs to one :func:`~nameparser.parser_for` call: the
-languages of the packs passed together are one choice. A base parser
-records no choice of its own, so a choice made on top of a base built
-by an earlier call applies after the base's, and settles the base's
-words its own way. To choose two languages, pass both packs in one
-call:
+A parser records the languages it was chosen under, as
+:attr:`Parser.languages <nameparser.Parser.languages>` (read from its
+:attr:`Lexicon.languages <nameparser.Lexicon.languages>`), so a choice
+made on top of a base built by an earlier call joins the base's: the
+two read as one call choosing both.
 
 .. doctest::
 
     >>> chained = parser_for(en, base=parser_for(pt))
-    >>> chained.parse("Maria do Carmo").family
-    'Carmo'
-    >>> chained.parse("John Smith DO").family
-    'DO'
-    >>> together = parser_for(pt, en)
-    >>> together.parse("Maria do Carmo").family, together.parse("John Smith DO").suffix
+    >>> sorted(chained.languages)
+    ['en', 'pt']
+    >>> chained.parse("Maria do Carmo").family, chained.parse("John Smith DO").suffix
     ('do Carmo', 'DO')
+    >>> chained.lexicon == parser_for(pt, en).lexicon
+    True
 
-A choice applied to a base also removes what it drops from the base's
-vocabulary, even where you added the word yourself, and keeps every
-word it does not touch. Under ``en``, a base listing ``do`` and ``van``
-as particles keeps only ``van``, English holding ``do`` as a
-credential:
+A strict choice (`Reading one language only`_) chains only with another
+strict one: a chained call whose ``strict`` differs from its base's
+raises ``ValueError``.
+
+Your own words outrank a choice
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A choice selects among the shipped readings; what you added or removed
+with :meth:`Lexicon.add <nameparser.Lexicon.add>` and
+:meth:`Lexicon.remove <nameparser.Lexicon.remove>` applies after it,
+whichever was written first. Under ``en``, which reads ``do`` as a
+credential, a base listing ``do`` and ``van`` as particles keeps both:
 
 .. doctest::
 
@@ -235,7 +240,20 @@ credential:
     >>> chosen = parser_for(en, base=Parser(lexicon=mine)).lexicon
     >>> [w for w in ("do", "van")
     ...  if any(r.category == "particle" for r in chosen.readings_of(w))]
-    ['van']
+    ['do', 'van']
+
+A pack's own lexicon is joined before yours, so where the two disagree
+yours wins, and of two packs the later one wins. A word of yours that
+cannot stand beside a reading the choice turns on raises
+``ValueError`` at :func:`~nameparser.parser_for`, naming your call and
+the ``remove`` that resolves it: the Czech pack reads ``st.`` as a
+generation (the elder), and a word holds one kind of suffix, so a
+lexicon that added it as a credential is refused under ``locales.CS``.
+
+A lexicon built from :meth:`Lexicon.empty
+<nameparser.Lexicon.empty>` holds no shipped reading, so a choice turns
+none on in it: to read only the chosen languages' vocabulary, choose
+strictly.
 
 .. _strict-choice:
 
@@ -305,9 +323,9 @@ drops from every name:
   strict one reads the other scripts' words and nothing in Latin
   letters, which unchains Dutch ``van`` from a Vietnamese middle name
   (``Do Van Minh`` reads middle ``Van``, family ``Minh``).
-- **It is a delta, like a choice.** A word a strict choice drops leaves
-  a base parser's vocabulary even where you added it yourself; add it
-  again in the pack's own lexicon, which is applied after.
+- **Your own words stay.** A word a strict choice drops is kept where
+  you added it yourself, your lexicon's readings applying after the
+  choice (`Your own words outrank a choice`_).
 
 .. _west-south-slavic-packs:
 

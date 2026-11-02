@@ -2,9 +2,11 @@
 choice of languages.
 
 A Locale dissolves at parser construction (parser_for): the packs'
-languages are unioned into one choice, which selects among the default
-vocabulary's readings by the file each sits in, the lexicon fragments
-union onto the result, and the PolicyPatch folds via apply_patch. Packs
+languages are unioned with the base's recorded choice into one choice,
+recorded on the built Lexicon, which selects among the base's shipped
+readings by the file each sits in; the lexicon fragments join in pack
+order and the base's lexicon after them, their readings applying after
+the choice; and the PolicyPatch folds via apply_patch. Packs
 are pure data; they have no privileged capabilities
 (mechanisms.md#LOCALE-PACKS-PURE-DATA).
 
@@ -46,15 +48,18 @@ class Locale:
 
     #: Identifier, lowercase ``[a-z0-9_]+`` (e.g. "ru", "tr_az").
     code: str
-    #: Vocabulary ADDED to the base parser's lexicon (unioned after the
-    #: choice in ``languages``; the fragment never removes base
-    #: vocabulary, where a choice selects among the default's readings).
+    #: Vocabulary joined to the base parser's lexicon, before it, so the
+    #: base's own readings win where the two disagree, and applied after
+    #: the choice in ``languages``, which selects among the base's
+    #: shipped readings (decisions/vocabulary-model, 2026-11-02 #754,
+    #: item 3).
     lexicon: Lexicon
     #: Behavior changes folded onto the base policy (set-valued fields
     #: union; scalars override, later pack wins).
     policy: PolicyPatch = PolicyPatch()
     #: The languages chosen, as BCP 47 tags (``{"pt"}``, ``{"pt-BR"}``):
-    #: ``parser_for`` unions the packs' languages into one choice, which
+    #: ``parser_for`` unions the packs' languages, and the base's recorded
+    #: choice, into one choice, which
     #: turns on the chosen languages' readings the default leaves off
     #: and, on a word a chosen language holds a vocabulary reading of,
     #: drops other languages' vocabulary readings. A tag selects its own
