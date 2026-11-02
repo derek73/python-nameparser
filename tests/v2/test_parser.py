@@ -2573,6 +2573,19 @@ def test_a_choice_chained_through_base_applies_after_the_bases() -> None:
     assert chained.lexicon != together.lexicon
 
 
+def test_a_choice_whose_reading_clashes_with_the_callers_is_refused() -> None:
+    # cs turns on `st`'s generation beside a caller's credential, and a
+    # word holds one suffix kind: 3b's delta broke a set guard here, and
+    # 4i-b's readings refuse it too, rather than drop the caller's
+    # reading in silence (found by review of 4i-b)
+    from nameparser import locales
+    mine = Parser(lexicon=Lexicon.default().add("st", kind="credential"))
+    with pytest.raises(ValueError, match=(
+            r"while applying the languages chosen, cs: the readings the "
+            r"choice turns on clash with the lexicon's own for 'st'")):
+        parser_for(locales.CS, base=mine)
+
+
 def test_a_choice_drops_a_callers_own_entry_it_removes() -> None:
     # decided with the chained choices: the delta removes what the
     # choice drops whoever listed it, and keeps every untouched entry

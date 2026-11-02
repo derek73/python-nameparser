@@ -539,8 +539,9 @@ _INTO_FIELD: dict[str, Callable[[Lexicon, str], Lexicon]] = {
         w, kind="salutation", after_given=True),
     "suffix_words_ambiguous": lambda lx, w: lx.add(
         w, kind="generation").add(w, kind="family"),
-    "agnomens": lambda lx, w: lx.add(w, kind="agnomen").add(
-        w, kind="family"),
+    # the family reading first: an agnomen needs its gate (check 11)
+    "agnomens": lambda lx, w: lx.add(w, kind="family").add(
+        w, kind="agnomen"),
     "titles_ambiguous": lambda lx, w: lx.add(w, kind="title").add(
         w, kind="given"),
     "title_modifiers": lambda lx, w: lx.add(w, kind="modifier"),

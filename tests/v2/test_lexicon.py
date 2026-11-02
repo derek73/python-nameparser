@@ -593,6 +593,9 @@ def test_a_derived_marker_follows_from_the_readings() -> None:
     (lambda: Lexicon.empty().add("and", kind="conjunction", may_be_initial=True), ValueError, "not one"),
     # the build's check 4: one suffix kind per word, naming the fix
     (lambda: Lexicon.default().add("dc", kind="generation"), ValueError, re.escape(".remove('dc', kind='credential')")),
+    # check 11: an agnomen is gated by a name reading beside it
+    (lambda: Lexicon.default().add("bisneto", kind="agnomen"), ValueError, re.escape(".add('bisneto', kind='family')")),
+    (lambda: Lexicon.default().remove("neto", kind="name"), ValueError, "agnomen with no name reading"),
     # check 9: a bound given name that is a particle may be given
     (lambda: Lexicon.empty().add("dos", kind="particle").add("dos", kind="bound_given"), ValueError, re.escape(".add('dos', kind='given')")),
 ])

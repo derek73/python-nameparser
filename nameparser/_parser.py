@@ -343,7 +343,8 @@ def _apply_choice(lexicon: Lexicon, languages: frozenset[str],
     edits that take each changed word's readings to its sets under the
     choice, appended to the lexicon's log (#754, 4i-b), until 4i-c
     records the choice on the `Lexicon` and retires this delta."""
-    from nameparser._lexicon import _MARKER_BASES, _edits_toward, _fields_of
+    from nameparser._lexicon import (
+        _MARKER_BASES, _compiled_for, _edits_toward, _fields_of)
     chosen = _reading_index_selected(languages, strict)
     fields, (unmasked, masks) = _choice_delta(chosen, strict)
     current = _fields_of(lexicon._sets)
@@ -357,10 +358,26 @@ def _apply_choice(lexicon: Lexicon, languages: frozenset[str],
             target[marker] = target.get(marker, current[marker]) - fields[base][0]
     updates: dict[str, object] = {}
     if target:
-        edits = _edits_toward(lexicon._pool(), current, current | target,
+        wanted = current | target
+        edits = _edits_toward(lexicon._pool(), current, wanted,
                               _choice_readings(chosen, strict))
         if edits:
             updates["_edits"] = lexicon._edits + edits
+            # a reading the choice turns on can clash with one the
+            # caller wrote (`st`'s cs generation beside a caller's
+            # credential: one suffix kind per word), and no readings
+            # give the delta's sets back; refused, as construction
+            # refuses the same clash (decisions/vocabulary-model,
+            # 2026-11-02 #754, item 3), where 3b's delta raised the
+            # set guard it broke
+            got = _fields_of(_compiled_for(lexicon._base,
+                                           lexicon._edits + edits))
+            clash = sorted({w for f in wanted for w in got[f] ^ wanted[f]})
+            if clash:
+                raise ValueError(
+                    f"the readings the choice turns on clash with the "
+                    f"lexicon's own for {', '.join(map(repr, clash[:8]))}; "
+                    f"remove the lexicon's reading of each before choosing")
     if unmasked or masks:
         cap = {k: v for k, v in lexicon.capitalization_exceptions
                if k not in unmasked}

@@ -360,7 +360,8 @@ def test_the_suffix_views_partition_it_by_reading(
     # family reading that gates it by the count, give it a reading kind
     (("suffix",), "post-nominal"),
     (("generation", "family"), "generation"),
-    (("agnomen", "family"), "agnomen"),
+    # the family reading first: an agnomen needs its gate (check 11)
+    (("family", "agnomen"), "agnomen"),
 ])
 def test_a_callers_suffix_word_reads_by_its_marker_else_post_nominal(
         kinds: tuple[str, ...], kind: str) -> None:

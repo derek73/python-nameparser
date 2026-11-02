@@ -1,9 +1,12 @@
-"""Immutable vocabulary configuration for the 2.0 API.
+"""Immutable vocabulary configuration: a Lexicon holds readings, what
+each word may be read as, and compiles the sets a parse reads from them
+(3.0's 4i-b; decisions/vocabulary-model, 2026-11-02 #754).
 
-Layering: may import nameparser.config DATA modules (the imports in
-_default_lexicon() are the authoritative list) as the single source of
-vocabulary -- never the nameparser.config package itself. Enforced by
-tests/v2/test_layering.py.
+Layering: may import nameparser.config DATA modules as the single
+source of vocabulary -- never the nameparser.config package itself --
+and nameparser._reading_index, the shared compiler and the index's
+reader, at call time only: tools/vocab/build.py loads this module by
+path. Enforced by tests/v2/test_layering.py.
 """
 from __future__ import annotations
 
@@ -897,9 +900,10 @@ def _base_pool(base: object) -> Pool:
 
 def _check_pool(pool: Pool, words: Iterable[str]) -> None:
     """The build's checks a caller's edits can reach, over the words
-    they touch (check 8 runs per edit, in _make_edit): one suffix kind
-    per word (check 4), and a bound given name that is also a particle
-    has a given reading (check 9)."""
+    they touch (checks 3 and 8 run per edit, in _make_edit): one suffix
+    kind per word (check 4), an agnomen has a name reading (check 11's
+    agnomen clause), and a bound given name that is also a particle has
+    a given reading (check 9)."""
     for w in dict.fromkeys(words):
         on = [r for r in pool.get(w, ()) if r.on_by_default]
         suffix = {r.kind: r for r in on if r.category == "suffix"}
@@ -912,6 +916,14 @@ def _check_pool(pool: Pool, words: Iterable[str]) -> None:
                 f"remove the one it holds first: .remove({w!r}, "
                 f"kind={drop!r})")
         kinds = {r.category for r in on} | {r.kind for r in on}
+        # check 11's agnomen clause: an agnomen is written in the case of
+        # the name around it, so only the count gates it, and the gate is
+        # a name reading beside it (rules/S11)
+        if "agnomen" in kinds and "name" not in kinds:
+            raise ValueError(
+                f"{w!r} is an agnomen with no name reading, and an agnomen "
+                f"is read as the suffix only where a name reading gates "
+                f"it by the count: .add({w!r}, kind='family') beside it")
         if {"bound_given", "particle"} <= kinds and "given" not in kinds:
             raise ValueError(
                 f"{w!r} is a bound given name and a particle with no given "
@@ -1351,8 +1363,9 @@ def _translated_2x(state: Mapping[str, object]) -> dict[str, object]:
 
     base = min(("default", "empty"),
                key=lambda b: distance(_compiled_for(b, ())))
-    edits = _edits_toward(_base_pool(base), _compiled_for(base, ()), wanted)
     try:
+        edits = _edits_toward(_base_pool(base), _compiled_for(base, ()),
+                              wanted)
         got = _compiled_for(base, edits)
     except ValueError as exc:
         raise ValueError(f"a 2.x Lexicon pickle that 3.0 readings cannot "
