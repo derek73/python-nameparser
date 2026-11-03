@@ -1492,9 +1492,11 @@ def generation_word_before_a_name(token: WorkToken,
     """Whether a generation WORD ('Junior', 'Jr', 'Snr', 'mlađi') has
     behind it, in `piece`, a word of the name, asked of the piece's
     first word as `_name_word_behind` asks it: a word that is no suffix
-    word, no initial, no connective, no title word (the run reads that
-    as a title: 'Eric H. Holder Jr. Attorney General') and no maiden
-    marker, and is a particle or is written in a name of one case or,
+    word, no roman numeral, no initial, no connective, no title word
+    (the run reads that as a title: 'Eric H. Holder Jr. Attorney
+    General') and no maiden marker, so no particle that is also title
+    or suffix vocabulary ('St.', 'Mc'), and is a particle or is written
+    in a name of one case or,
     in a name of mixed case, in Title case or a script with no case --
     capitals there are a credential's writing as likely as a name's
     ('de Planta jr. CF'), and lower case is no name word's. A credential
@@ -1505,11 +1507,14 @@ def generation_word_before_a_name(token: WorkToken,
             or "suffix" in ptags or "split" in ptags):
         return False
     tags = tokens[piece[0]].tags
-    if not tags.isdisjoint(_NOT_A_NAME_BEHIND):
+    text = tokens[piece[0]].text
+    if (not tags.isdisjoint(_NOT_A_NAME_BEHIND)
+            # a numeral S10 reads by its shape carries no suffix tag
+            # ('JOHN SMITH JUNIOR VI JONES')
+            or _ROMAN.match(text.rstrip(".")) is not None):
         return False
     if "particle" in tags:
         return True
-    text = tokens[piece[0]].text
     return bool(one_case) or not (text.islower() or text.isupper())
 
 

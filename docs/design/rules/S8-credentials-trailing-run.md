@@ -25,7 +25,7 @@
   "John von PhD Jones"        →  family="von"
   "John von PhD Jones"        →  suffix="PhD Jones"
   ```
-- **What is a credential here.** A title word never starts the run, and neither does a member of the ambiguous class its writing leaves unsettled, a single letter, a connective, a word that is also particle or bound given-name vocabulary, the capitals of `DO` included: a credential is the writer's mark that the post-nominals have begun, and those carry no such mark. Where no family comma divides the name, nor does a generation word written out, a numeral aside, with a name word behind it: a particle, or a word that is no suffix word, initial, connective, title word or maiden marker, written in Title case, in a script with no case, or in a name of one case. A generation word there was typed into the middle of the name, where a filer's form puts it, or is the given name Junior, and the family name stands behind it. An honorific or a generational word otherwise carries it as a credential does, whatever its script.
+- **What is a credential here.** A title word never starts the run, and neither does a member of the ambiguous class its writing leaves unsettled, a single letter, a connective, a word that is also particle or bound given-name vocabulary, the capitals of `DO` included: a credential is the writer's mark that the post-nominals have begun, and those carry no such mark. Where no family comma divides the name, nor does a generation word written out, a numeral aside, with a name word behind it: a word that is no suffix word, roman numeral, initial, connective, title word or maiden marker, and is a particle or is written in Title case, in a script with no case, or in a name of one case. A generation word there was typed into the middle of a name written given name first, where a filer's form puts it, or is the given name Junior, and the family name stands behind it. Capitals behind it in a name of mixed case are no name word here, as they are behind a member its capitals settle: behind a generation word they are a credential's writing as likely as a name's, where behind a member they are as likely the writer's initials. An honorific or a generational word otherwise carries it as a credential does, whatever its script.
   ```
   "Mary Jane Pope Smith"      →  family="Smith"
   "Josep Carod i Rovira"      →  family="Carod i Rovira"
@@ -76,6 +76,11 @@
 
 **Accepted:**
 
+- Under the family-first orders the clause holds as written, so the word behind the generation word reads as a middle or given name, where the same name after a family comma reads it as the suffix; the filers' boxes that ground the clause are given-first, and no order is asked.
+  ```
+  "Smith John Jr. Jones"  family-first  →  middle="Jr. Jones"
+  "Smith, John Jr. Jones"  family-first  →  suffix="Jr. Jones"
+  ```
 - With no family comma, a generation word written before the family name reads as a word of the middle name, not as the suffix it may be: the run does not start there, and lifting a post-nominal out of the middle of a name was declined for every credential (decisions/S8, #602).
   ```
   "Mr Robert Alexander (Jnr) Halliday"  →  middle="Alexander Jnr"

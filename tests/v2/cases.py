@@ -1971,6 +1971,35 @@ CASES: tuple[Case, ...] = (
          notes="S8: in a name of mixed case a word in lower case is no "
                "name word's writing. 1.4.0 read middle 'Smith Jr.', "
                "family 'jones'"),
+    Case("a_generational_word_before_a_shape_numeral_starts_the_run",
+         "JOHN SMITH JUNIOR VI JONES",
+         {"given": "JOHN", "family": "SMITH",
+          "suffix": "JUNIOR VI JONES"},
+         classification="fix(#602)",
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="S8: a numeral behind the generation word is no name "
+               "word though its shape alone reads it and it carries no "
+               "suffix tag (the review found family 'JUNIOR' without the "
+               "numeral test). 1.4.0 read middle 'SMITH JUNIOR VI', "
+               "family 'JONES'"),
+    Case("a_generational_word_before_an_unsettled_member",
+         "John Smith Jr. Ma Jones",
+         {"given": "John", "middle": "Smith Jr. Ma", "family": "Jones"},
+         notes="S8: a member of the ambiguous class its writing leaves "
+               "unsettled is a name word behind the generation word, as "
+               "it is behind two name words ('John Smith Ma Jones'). "
+               "1.4.0 through 2.3.0 read the same; 2.4.0 through 2.8.0 "
+               "read suffix 'Jr. Ma Jones'"),
+    Case("a_generational_word_before_a_name_word_family_first",
+         "Smith John Jr. Jones",
+         {"given": "John", "middle": "Jr. Jones", "family": "Smith"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         classification="feat(#395)",
+         notes="S8's Accepted clause: the family-first orders are not "
+               "asked, so the word behind reads as a middle name where "
+               "the family-comma spelling reads suffix 'Jr. Jones'. "
+               "name_order has no v1 spelling; 2.4.0 through 2.8.0 "
+               "read suffix 'Jr. Jones'"),
     Case("a_generational_word_after_a_family_comma_still_starts_the_run",
          "Smith, John Jr. Jones",
          {"given": "John", "family": "Smith", "suffix": "Jr. Jones"},

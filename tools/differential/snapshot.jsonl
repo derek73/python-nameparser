@@ -3364,6 +3364,7 @@
 {"name": "Smith , John", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Smith Cecilia Angela", "order": "FAMILY_FIRST", "given": "Cecilia", "middle": "Angela", "family": "Smith", "initials": "C. A. S."}
 {"name": "Smith Dr", "given": "Smith", "family": "Dr", "initials": "S. D."}
+{"name": "Smith John Jr. Jones", "given": "Smith", "middle": "John Jr.", "family": "Jones", "initials": "S. J. J. J."}
 {"name": "Smith Jones Jr., J.A.", "given": "J.A.", "family": "Smith Jones", "suffix": "Jr.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "J. S. J.", "generation": "Jr."}
 {"name": "Smith Jones, Ph. D. Jr.", "given": "Smith", "family": "Jones", "suffix": "Ph. D. Jr.", "initials": "S. J.", "generation": "Jr.", "credentials": "Ph. D."}
 {"name": "Smith Jr.", "given": "Smith", "suffix": "Jr.", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "S.", "generation": "Jr."}
