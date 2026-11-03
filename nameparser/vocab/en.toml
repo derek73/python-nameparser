@@ -72,7 +72,7 @@ style = {}
 
 [[word]]
 text = "hon"
-style = { same_as = "honorable", note = "kept though Hon is a given name: the judges' Hon. was judged the commoner reading" }
+style = { same_as = "honorable", abbreviation = true, attaches = ["mr", "mrs", "lord", "lady", "sir", "justice"], note = "kept though Hon is a given name: the judges' Hon. was judged the commoner reading; attaches: Hon Mr, Hon Mrs, Hon Lord, Hon Lady, Hon Sir, Hon Justice (rules/H9), the phrases a Chinese choice, which gives the word zh.toml's given reading, keeps as titles (#999); six words at most, the most a refusal message shows of a list the 2.x translation rewrites (decisions/H9)" }
 
 [[word]]
 text = "honourable"
@@ -507,6 +507,11 @@ military = { same_as = "bg" }
 [[word]]
 text = "brigadier"
 military = { attaches = ["gen"], note = "attaches: Brigadier Gen (rules/H9, #999), the rank written short being a title only in a phrase" }
+
+[[word]]
+text = "brig"
+military = { same_as = "brigadier", abbreviation = true, attaches = ["gen", "general", "sir"], issue = 999, decided = 2026-11-03, note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'Brig Gen Mark Kimmitt' and 'Brig General John Smith' read the title, 'Brig Klyce' the given name, and 'Brig. Saeed Akhtar' the title by H2's shape; written with its period at the end it is H5's trailing title ('JENKINS, ROBERT G. BRIG. GEN.'); no title before #999, so a bare 'Brig John Smith' reads given 'Brig' as it did" }
+given = { us_ssa = 72, as_of = 2026-11-03, note = "a rare given name: US SSA 72 births; PatentsView inventors 12 (US 11), ORCID given boxes 11 (India 3, likely the rank typed into the box); Wikidata none found; nam_dict not listed" }
 
 [[word]]
 text = "captain"
@@ -1687,7 +1692,7 @@ occupation = { issue = 752, note = "occupation rather than modifier since 2026-1
 
 [[word]]
 text = "rt"
-occupation = { issue = 752, expands = "Right, abbreviated ('Rt Hon'); also a respiratory therapist", note = "occupation rather than modifier since 2026-10-25: a part after a comma written 'RT' is the person's role, which decision 10's modifier rule would read out of the title (decisions/vocabulary-model)" }
+occupation = { issue = 752, attaches = ["hon"], expands = "Right, abbreviated ('Rt Hon'); also a respiratory therapist", note = "occupation rather than modifier since 2026-10-25: a part after a comma written 'RT' is the person's role, which decision 10's modifier rule would read out of the title (decisions/vocabulary-model); attaches: Rt Hon (rules/H9, #999), the phrase a Chinese choice, which gives hon zh.toml's given reading, keeps as a title" }
 
 [[word]]
 text = "sailor"

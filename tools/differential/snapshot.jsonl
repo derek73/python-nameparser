@@ -465,6 +465,7 @@
 {"name": "Brian O'connor", "given": "Brian", "family": "O'connor", "initials": "B. O.", "capitalized_force": "Brian O'Connor"}
 {"name": "Bridge (1.4)", "family": "Bridge", "nickname": "1.4", "initials": "B."}
 {"name": "Bridge (A.B)", "family": "Bridge", "nickname": "A.B", "initials": "B."}
+{"name": "Brig Gen Mark Kimmitt", "title": "Brig Gen", "given": "Mark", "family": "Kimmitt", "initials": "M. K."}
 {"name": "Broermann, Bernard große", "given": "Bernard", "middle": "große", "family": "Broermann", "initials": "B. g. B.", "capitalized_force": "Bernard Große Broermann"}
 {"name": "Brossard, Sébastien de", "given": "Sébastien", "family": "de Brossard", "initials": "S. B."}
 {"name": "Bruhel, Ada Cornelia Martina von", "given": "Ada", "middle": "Cornelia Martina", "family": "von Bruhel", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "A. C. M. B."}

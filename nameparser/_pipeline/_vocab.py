@@ -1509,6 +1509,10 @@ _PHRASE_LINKS = frozenset({"of"})
 #: United States', 'The Grand Master'; 'and' joins two titles instead.
 _OBJECT_LINKS = frozenset({"of", "the"})
 
+#: The article that is the phrase partner of a style that may be a
+#: given name, written short (rules/H9, #999): `The Hon`.
+_STYLE_ARTICLES = frozenset({"the"})
+
 
 # rules/H9: "a word no listed phrase holds is a title only behind a
 # style or a modifier, or before `of`" -- whether the word heads a title
@@ -1550,7 +1554,8 @@ def title_readings(texts: Sequence[str], folded: Sequence[str],
     caller listing it makes it a title everywhere) is a title only
     beside a partner: a
     modifier, a style, or a title it stands behind in `title_phrases`,
-    before it; or 'of', or a title it stands in front of in
+    before it, and for a style of `title_abbreviations` the article
+    'the' before it ('The Hon' under a Chinese choice); or 'of', or a title it stands in front of in
     `title_phrases`, after it. A salutation is never one, nor any other
     title before it ('Mr Dean Smith'), nor a title after it that it
     does not attach to ('SMITH, DEAN MR.', a given name and the
@@ -1606,6 +1611,12 @@ def title_readings(texts: Sequence[str], folded: Sequence[str],
             (prev is not None and reading[i - 1]
              and (prev in modifiers or prev in lexicon._sets.title_styles
                   or f"{prev} {n}" in phrases))
+            # rules/H9: "a style that may be a given name, written short,
+            # has its phrase partner in the article before it" -- 'The
+            # Hon' under a Chinese choice (decisions/H9, #999)
+            or (prev in _STYLE_ARTICLES and n in lexicon._sets.title_styles
+                and n in lexicon._sets.title_abbreviations
+                and prev in lexicon._sets.conjunctions)
             or (nxt is not None
                 and ((nxt in _PHRASE_LINKS and nxt in lexicon._sets.conjunctions)
                      or (listed[i + 1] and f"{n} {nxt}" in phrases))))

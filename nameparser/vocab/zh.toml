@@ -151,3 +151,7 @@ same_as = "部長"
 issue = 671
 note = "simplified twin of 部長"
 excluded = { attached = "the simplified twin of 部長, declined with it (#707)" }
+
+[[word]]
+text = "hon"
+given = { default = false, note = "a Cantonese given name (Hon Wah Yeung, Hon Chan) as well as the style (en.toml's Hon, the Honourable): ORCID records whose given box opens with it 202 (Hong Kong 33, Malaysia 10), PatentsView 198 inventors (US 72, China 68, Singapore 22), PSC forename boxes 31 against 13 title boxes (2026-11-03); off by default, where UK registers write the style bare at the head (Hon Raymond Bonham-Carter, 10 of the 11 ukec-individuals names opening with it, the eleventh the phrase Hon Mrs), and turned on by a Chinese choice, which makes the style one only inside a title phrase (rules/H9); no words-to-spare count separates the two, a Cantonese two-syllable given name leaving two words after it as a titled name often does (#999)" }

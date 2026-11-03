@@ -3274,3 +3274,37 @@ def test_a_choice_moves_only_the_words_the_callers_log_leaves_alone(
                 return frozenset(e for e in entries
                                  if not touched & set(e.split()))
             assert kept(words) == kept(want[field]), (name, field)
+
+
+def test_a_chinese_choice_reads_hon_as_a_given_name() -> None:
+    # #999: zh.toml's given reading of 'hon', off by default, is the one
+    # word a Chinese choice changes; under it the Cantonese given name
+    # reads as one and the style is a title only in a phrase (rules/H9)
+    from nameparser._reading_index import changed_words, selected
+    assert changed_words(selected(["zh"])) == {"hon"}
+    zh = parser_for(_choosing("zh"))
+    assert parse("Hon Wah Yeung").title == "Hon"
+    assert (zh.parse("Hon Wah Yeung").given, zh.parse("Hon Wah Yeung").title) == ("Hon", "")
+    assert zh.parse("CHAN, HON WAH").given == "HON"
+    # the formal styles keep the title: an article, a title before it
+    # that attaches to it ('Rt'), a salutation or title after it that it
+    # attaches to, and its period at the head
+    for text, (title, given, family) in {
+            "The Hon John Smith": ("The Hon", "John", "Smith"),
+            "The Hon. John Smith": ("The Hon.", "John", "Smith"),
+            "Rt Hon John Smith": ("Rt Hon", "John", "Smith"),
+            "The Rt Hon John Smith": ("The Rt Hon", "John", "Smith"),
+            "Hon Mrs I Cawley": ("Hon Mrs", "I", "Cawley"),
+            "Hon Lord Smith": ("Hon Lord", "", "Smith"),
+            "Hon Lady Smith": ("Hon Lady", "", "Smith"),
+            "Hon Justice Mary Smith": ("Hon Justice", "Mary", "Smith"),
+            "Hon Sir John Smith": ("Hon Sir", "John", "Smith"),
+            "Smith, Hon Sir John": ("Hon Sir", "John", "Smith"),
+            "Hon. John Smith": ("Hon.", "John", "Smith")}.items():
+        got = zh.parse(text)
+        assert (got.title, got.given, got.family) == (title, given, family), text
+    # the cost: the style written bare, as Hong Kong writes a legislator,
+    # and alone after one comma, which reverses the name
+    cheung = zh.parse("Hon Tommy Cheung")
+    assert (cheung.title, cheung.given, cheung.middle, cheung.family) == ("", "Hon", "Tommy", "Cheung")
+    assert (zh.parse("John Smith, Hon").given, zh.parse("John Smith, Hon").family) == ("Hon", "John Smith")

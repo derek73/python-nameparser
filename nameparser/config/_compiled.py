@@ -941,6 +941,7 @@ AFTER_GIVEN_TITLES: frozenset[str] = frozenset({
 
 TITLES_AMBIGUOUS: frozenset[str] = frozenset({
     'bard',
+    'brig',
     'buddha',
     'burgess',
     'chancellor',
@@ -1141,6 +1142,9 @@ TITLE_PHRASES: frozenset[str] = frozenset({
     'adjutant gen',
     'advocate gen',
     'attorney gen',
+    'brig gen',
+    'brig general',
+    'brig sir',
     'brigadier gen',
     'chief 1lt',
     'chief 1sgt',
@@ -1164,6 +1168,7 @@ TITLE_PHRASES: frozenset[str] = frozenset({
     'chief bailiff',
     'chief bg',
     'chief bgen',
+    'chief brig',
     'chief brigadier',
     'chief briggen',
     'chief burgess',
@@ -1402,6 +1407,12 @@ TITLE_PHRASES: frozenset[str] = frozenset({
     'gen sir',
     'gov gen',
     'governor gen',
+    'hon justice',
+    'hon lady',
+    'hon lord',
+    'hon mr',
+    'hon mrs',
+    'hon sir',
     'king consort',
     'lady justice',
     'lieutenant gen',
@@ -1420,6 +1431,7 @@ TITLE_PHRASES: frozenset[str] = frozenset({
     'pro chancellor',
     'queen consort',
     'queen mother',
+    'rt hon',
     'secretary gen',
     'sergeant maj',
     'sergeant major',
@@ -3000,6 +3012,8 @@ PATRONYMIC_PARTICLES: frozenset[str] = frozenset({
 })
 
 TITLE_ABBREVIATIONS: frozenset[str] = frozenset({
+    'brig',
     'gen',
+    'hon',
     'maj',
 })

@@ -525,7 +525,8 @@ _SET_FIELDS = tuple(f for f in _VOCAB_FIELDS if f not in _LIST_FIELDS)
 
 #: What those sets do not record: the kinds the views read (rules/R8,
 #: rules/R9), and the titles written short that rules/H5's trailing
-#: chain reads where one may also be a given name (#999), which is no
+#: chain and rules/H9's article partner read where one may also be a
+#: given name (#999), which is no
 #: kind; the name is the tuple's first use.
 #: `_LexiconSets` attributes after the `_VOCAB_FIELDS` ones, each a
 #: compiled constant of its own.

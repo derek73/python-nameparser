@@ -337,9 +337,11 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # under three orders; 1521 -> 1527 the same day, #999's 'Maj
     # Sjöwall' and 'Mr Maj Zura', each reporting title-or-name under
     # three orders; 1527 -> 1533 the same day, #999's 'Gen Goto' and
-    # 'Mr Gen Zhang', each reporting title-or-name under three orders.
-    assert claims == 1533, (
-        f"the field sweep checks {claims} claims, recorded as 1533 on "
+    # 'Mr Gen Zhang', each reporting title-or-name under three orders;
+    # 1533 -> 1536 the same day, #999's 'Brig Klyce', reporting
+    # title-or-name under three orders.
+    assert claims == 1536, (
+        f"the field sweep checks {claims} claims, recorded as 1536 on "
         f"2026-11-03")
 
 

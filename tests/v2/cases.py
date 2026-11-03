@@ -13208,6 +13208,53 @@ CASES: tuple[Case, ...] = (
          ambiguities=("title-or-name",), classification="fix(#999)",
          notes="H9: a salutation is no partner; read title 'Mr Gen' "
                "1.4.0 through 2.8.1"),
+    Case("brig_gen_is_one_title", "Brig Gen Mark Kimmitt",
+         {"title": "Brig Gen", "given": "Mark", "family": "Kimmitt"},
+         classification="fix(#999)",
+         notes="H9: 'brig', a title only in a phrase, attaches to 'gen' "
+               "and 'general'; read given 'Brig', middle 'Gen Mark' 1.4.0 "
+               "through 2.8.1, 'brig' listing no title before"),
+    Case("brig_written_short_ending_the_given_part_is_a_title",
+         "JENKINS, ROBERT G. BRIG. GEN.",
+         {"title": "BRIG. GEN.", "given": "ROBERT", "middle": "G.",
+          "family": "JENKINS"},
+         classification="fix(#999)",
+         notes="H5's written-short clause, the chain taking both ranks; "
+               "1.4.0 through 2.2.0 read middle 'G. BRIG. GEN.', 2.3.0 "
+               "through 2.8.1 title 'GEN.', middle 'G. BRIG.'"),
+    Case("given_name_brig_at_the_head", "Brig Klyce",
+         {"given": "Brig", "family": "Klyce"},
+         ambiguities=("title-or-name",), classification="parity",
+         notes="H9: a rare given name, and the rank written short; "
+               "'Brig Gen' holds the word, so it reports (#999)"),
+    Case("brig_general_is_one_title", "Brig General John Smith",
+         {"title": "Brig General", "given": "John", "family": "Smith"},
+         classification="fix(#999)",
+         notes="H9: 'brig' attaches to 'general'; 1.4.0 through 2.8.1 read "
+               "given 'Brig', middle 'General John'"),
+    Case("brig_sir_is_one_title", "Brig Sir John Smith",
+         {"title": "Brig Sir", "given": "John", "family": "Smith"},
+         classification="fix(#999)",
+         notes="H9: 'brig' attaches to 'sir', as 'gen' and 'maj' do; 1.4.0 "
+               "through 2.8.1 read given 'Brig', middle 'Sir John'"),
+    Case("brig_written_short_ending_the_name_is_a_title", "John Smith Brig.",
+         {"title": "Brig.", "given": "John", "family": "Smith"},
+         classification="fix(#999)",
+         notes="H5's written-short clause: 'brig' carries the mark; 1.4.0 "
+               "through 2.8.1 read middle 'Smith', family 'Brig.'"),
+    Case("a_gated_style_not_written_short_keeps_its_article_as_epithet",
+         "The Sheikh Mohammed bin Rashid",
+         {"given": "The Sheikh", "middle": "Mohammed",
+          "family": "bin Rashid"},
+         classification="fix(#752)",
+         notes="H9: only a style written short has its partner in the "
+               "article (#999), so 'sheikh' keeps the epithet reading 2.7.0 "
+               "gave it; 1.4.0 read title 'The Sheikh'"),
+    Case("the_grace_is_an_epithet", "The Grace Smith",
+         {"given": "The Grace", "family": "Smith"},
+         classification="parity",
+         notes="H9: 'grace' is a style that may be a given name but no "
+               "abbreviation, so the article joins it as an epithet (#999)"),
     Case("lt_gen_is_one_title", "Lt Gen John Smith",
          {"title": "Lt Gen", "given": "John", "family": "Smith"},
          classification="parity",
