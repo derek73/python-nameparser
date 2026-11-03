@@ -1905,7 +1905,7 @@ _LATIN = re.compile(r"^[\x00-\u024f]*$")
 def _clause_free_latin_corpus_names() -> list[str]:
     from nameparser import DEFAULT_NICKNAME_DELIMITERS
     from nameparser._pipeline._vocab import maiden_marker_run
-    from nameparser.config.maiden_markers import MAIDEN_MARKERS
+    from nameparser.config._compiled import MAIDEN_MARKERS
 
     from ._differential_fixtures import _CORPUS_NAMES
     # "Does this name already carry a marker" is the parser's own
@@ -1938,7 +1938,7 @@ def _clause_free_latin_corpus_names() -> list[str]:
     # import re, sys; sys.path.insert(0, 'tests')
     # from nameparser import DEFAULT_NICKNAME_DELIMITERS as D
     # from nameparser._pipeline._vocab import maiden_marker_run as run
-    # from nameparser.config.maiden_markers import MAIDEN_MARKERS as M
+    # from nameparser.config._compiled import MAIDEN_MARKERS as M
     # from v2._differential_fixtures import _CORPUS_NAMES
     # base = [n for n in _CORPUS_NAMES if re.match(r'^[\x00-\u024f]*$', n) and ',' not in n]
     # strip = ''.join({c for p in D for c in p}) + '.'

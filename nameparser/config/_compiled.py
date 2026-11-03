@@ -3,9 +3,8 @@ tools/vocab/build.py -- do not edit; edit the TOML and run
 
     uv run python tools/vocab/build.py
 
-The public names are re-exported, with their documentation, by the
-nameparser.config modules (titles, particles, suffixes, ...); the last
-three, the kinds those sets do not record, are read by Lexicon alone.
+Private since 3.0 (#1007): Lexicon reads these sets, and a caller asks
+Lexicon.words(kind=...) and Lexicon.readings_of(word) instead.
 """
 
 
