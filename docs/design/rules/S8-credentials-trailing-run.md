@@ -25,7 +25,7 @@
   "John von PhD Jones"        →  family="von"
   "John von PhD Jones"        →  suffix="PhD Jones"
   ```
-- **What is a credential here.** A title word never starts the run, and neither does a member of the ambiguous class its writing leaves unsettled, a single letter, a connective, a word that is also particle or bound given-name vocabulary, the capitals of `DO` included: a credential is the writer's mark that the post-nominals have begun, and those carry no such mark. Where no family comma divides the name, nor does a credential acronym written in Title case with a name word behind it, as a settled member does not: an acronym is written in capitals, a name word in Title case, and `Md` is how Muhammad is written short. An honorific or a generational word carries it as a credential does, whatever its script.
+- **What is a credential here.** A title word never starts the run, and neither does a member of the ambiguous class its writing leaves unsettled, a single letter, a connective, a word that is also particle or bound given-name vocabulary, the capitals of `DO` included: a credential is the writer's mark that the post-nominals have begun, and those carry no such mark. Where no family comma divides the name, nor does a credential acronym written in Title case with a name word behind it, as a settled member does not: Title case is how a name word is written, and `Md` is how Muhammad is written short; the acronyms whose own writing is Title case (`Bt`, `Kt`, `Knt`) read so too. An honorific or a generational word carries it as a credential does, whatever its script.
   ```
   "Mary Jane Pope Smith"      →  family="Smith"
   "Josep Carod i Rovira"      →  family="Carod i Rovira"
@@ -81,5 +81,5 @@
   ```
 
 ---
-**Signal:** neighbor: an unambiguous credential after the name core, and the rest of its part
+**Signal:** neighbor: an unambiguous credential after the name core, and the rest of its part + case contrast: a credential acronym in Title case before a name word
 **history:** decisions/S8 · **implemented:** nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py
