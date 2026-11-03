@@ -13227,13 +13227,6 @@ CASES: tuple[Case, ...] = (
          ambiguities=("title-or-name",), classification="parity",
          notes="H9: a rare given name, and the rank written short; "
                "'Brig Gen' holds the word, so it reports (#999)"),
-    Case("the_article_is_a_gated_styles_partner", "The Grace Smith",
-         {"title": "The Grace", "family": "Smith"},
-         classification="fix(#999)",
-         notes="H9: a style that may be a given name has its partner in "
-               "the article before it, as 'The Hon' needs under a Chinese "
-               "choice; 1.4.0 through 2.8.1 read given 'The Grace', the "
-               "article joining it"),
     Case("lt_gen_is_one_title", "Lt Gen John Smith",
          {"title": "Lt Gen", "given": "John", "family": "Smith"},
          classification="parity",

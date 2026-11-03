@@ -1609,9 +1609,11 @@ def title_readings(texts: Sequence[str], folded: Sequence[str],
             (prev is not None and reading[i - 1]
              and (prev in modifiers or prev in lexicon._sets.title_styles
                   or f"{prev} {n}" in phrases))
-            # rules/H9: "a style that may be a given name has its phrase
-            # partner in the article before it" (#999's 'The Hon')
+            # rules/H9: "a style that may be a given name, written short,
+            # has its phrase partner in the article before it" -- 'The
+            # Hon' under a Chinese choice (decisions/H9, #999)
             or (prev in _STYLE_ARTICLES and n in lexicon._sets.title_styles
+                and n in lexicon._sets.title_abbreviations
                 and prev in lexicon._sets.conjunctions)
             or (nxt is not None
                 and ((nxt in _PHRASE_LINKS and nxt in lexicon._sets.conjunctions)
