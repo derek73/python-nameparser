@@ -41,10 +41,10 @@ RU = Locale(
 # gate -- layering forbids importing the pipeline from a pack). Keep
 # both alternations byte-identical to those two patterns.
 _EAST_SLAVIC = re.compile(
-    r"(ovich|ovna|evich|evna|ichna|ilyich|kuzmich|lukich|fomich|fokich)$",
+    r"(ovich|ovna|evich|evna|ichna|ilyich|kuzmich|lukich|fomich|fokich|nikitich|savvich)$",
     re.I)
 _EAST_SLAVIC_CYR = re.compile(
-    r"(ович|овна|евич|евна|ична|ильич|кузьмич|лукич|фомич|фокич)$", re.I)
+    r"(ович|овна|евич|евна|ична|ильич|кузьмич|лукич|фомич|фокич|никитич|саввич)$", re.I)
 
 
 def DEVIATES(name: str) -> bool:

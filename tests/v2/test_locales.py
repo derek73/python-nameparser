@@ -1063,6 +1063,8 @@ _ROTATORS["ru"] = [
     "Titov Pyotr Lukich",            # lukich
     "Orlov Semyon Fomich",           # fomich
     "Zaitsev Andrei Fokich",         # fokich
+    "Pronin Ivan Nikitich",          # nikitich
+    "Mamontov Ivan Savvich",         # savvich
     "Сидоров Иван Петрович",         # ович
     "Сидорова Анна Петровна",        # овна
     "Карпов Олег Сергеевич",         # евич
@@ -1073,6 +1075,8 @@ _ROTATORS["ru"] = [
     "Титов Пётр Лукич",              # лукич
     "Орлов Семён Фомич",             # фомич
     "Зайцев Андрей Фокич",           # фокич
+    "Пронин Иван Никитич",           # никитич
+    "Мамонтов Иван Саввич",          # саввич
 ]
 _ROTATORS["tr_az"] = [
     "Aliyev Ali Vali oglu",              # oglu

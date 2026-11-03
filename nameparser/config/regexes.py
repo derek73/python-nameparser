@@ -44,11 +44,11 @@ REGEXES = {
     # trailing comma before parsing (#265).
     "commas": re.compile(r'[,،，]'),
     "east_slavic_patronymic": re.compile(
-        r'(ovich|ovna|evich|evna|ichna|ilyich|kuzmich|lukich|fomich|fokich)$',
+        r'(ovich|ovna|evich|evna|ichna|ilyich|kuzmich|lukich|fomich|fokich|nikitich|savvich)$',
         re.I,
     ),
     "east_slavic_patronymic_cyrillic": re.compile(
-        r'(ович|овна|евич|евна|ична|ильич|кузьмич|лукич|фомич|фокич)$',
+        r'(ович|овна|евич|евна|ична|ильич|кузьмич|лукич|фомич|фокич|никитич|саввич)$',
         re.I,
     ),
     "turkic_patronymic_marker": re.compile(
