@@ -746,6 +746,7 @@ def test_a_derived_marker_follows_from_the_readings() -> None:
     (lambda: Lexicon.empty().add("x", kind="title", acronym=True), ValueError, "a title reading takes abbreviation, addresses, after_given, attaches"),
     (lambda: Lexicon.empty().add("x", kind="family", same_as="y"), ValueError, "a family reading takes no properties"),
     (lambda: Lexicon.empty().add("x", kind="title", after_given="yes"), TypeError, "after_given must be True or False"),
+    (lambda: Lexicon.empty().add("x", kind="title", abbreviation="yes"), TypeError, "abbreviation must be True or False"),
     (lambda: Lexicon.empty().add("x", kind="title", addresses="first"), ValueError, "addresses must be 'given' or 'family'"),
     (lambda: Lexicon.empty().add("x", kind="title", attaches="military"), TypeError, "attaches must be an iterable"),
     (lambda: Lexicon.empty().add("x", kind="honorific", attached="before"), ValueError, "attached must be 'after'"),
@@ -1897,3 +1898,27 @@ def test_migrate_s_table_covers_every_compiled_constant() -> None:
     assert '``TITLES`` and ``TITLES_AMBIGUOUS``, together\n     - ``d.words(kind="title")``' in section
     assert set(Lexicon.default().words(kind="title")) == (
         _compiled.TITLES | _compiled.TITLES_AMBIGUOUS)
+
+
+@pytest.mark.parametrize(("edit", "text", "field", "value"), [
+    # a caller marks another title that may be a given name written
+    # short, and H5's chain takes it with its period, as it takes 'Maj.'
+    (lambda d: d.add("dean", kind="office", abbreviation=True),
+     "John Smith Dean.", "title", "Dean."),
+    (lambda d: d.add("dean", kind="office", abbreviation=True),
+     "Smith, abdul Dean.", "title", "Dean."),
+    # and turns the shipped mark off, the word ending the name a name
+    # word again, as a title that may be a given name is (rules/H9)
+    (lambda d: d.add("maj", kind="military", abbreviation=False),
+     "John Smith Maj.", "family", "Maj."),
+])
+def test_abbreviation_is_a_callers_switch_on_the_trailing_title(
+        edit: Callable[[Lexicon], Lexicon], text: str, field: str,
+        value: str) -> None:
+    # rules/H5's written-short clause, reached by a caller's reading
+    # (#999); the default reads each the other way
+    lexicon = edit(Lexicon.default())
+    assert getattr(Parser(lexicon=lexicon).parse(text), field) == value
+    assert getattr(Parser().parse(text), field) != value
+    loaded = pickle.loads(pickle.dumps(lexicon))
+    assert getattr(Parser(lexicon=loaded).parse(text), field) == value

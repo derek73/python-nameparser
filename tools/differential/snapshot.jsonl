@@ -2628,6 +2628,7 @@
 {"name": "Mary Jane Pope.", "title": "Pope.", "given": "Mary", "family": "Jane", "initials": "M. J."}
 {"name": "Mary Johnson", "given": "Mary", "family": "Johnson", "initials": "M. J."}
 {"name": "Mary Nicet", "given": "Mary", "family": "Nicet", "initials": "M. N."}
+{"name": "Mary Smith née Jones Maj.", "title": "Maj.", "given": "Mary", "family": "Smith", "maiden": "Jones", "initials": "M. S."}
 {"name": "Mary Smith née Jones Prof.", "title": "Prof.", "given": "Mary", "family": "Smith", "maiden": "Jones", "initials": "M. S."}
 {"name": "Mary Sue Hamish Watson", "given": "Mary", "middle": "Sue Hamish", "family": "Watson", "initials": "M. S. H. W."}
 {"name": "Mary-​Jane Smith", "given": "Mary-", "middle": "Jane", "family": "Smith", "initials": "M. J. S."}

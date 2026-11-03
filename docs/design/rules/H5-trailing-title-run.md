@@ -51,6 +51,7 @@
 - **A maiden clause in front of a trailing title** ("Mary Smith née Jones Prof."): a maiden clause ends where the run the end of the name reads without it begins (M2), so where a trailing rule reads the part a trailing title ends the clause and is a title.
   ```
   "Mary Smith née Jones Prof." →  title="Prof."
+  "Mary Smith née Jones Maj." →  title="Maj."
   ```
 - **A bare salutation after a family comma** (H8): the bare title word this rule leaves a name word is the title where it is a listed salutation ending the given part after a family comma, the family being fixed, and the chain takes it there as it takes a period-marked title word.
   ```

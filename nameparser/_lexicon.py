@@ -1250,7 +1250,7 @@ def _rechosen_masks(lexicon: Lexicon, chosen: frozenset[str],
 #: hold, never reaches this, `_inert_dropped` having taken it out.
 _TITLE_FIELDS = frozenset({
     "titles", "titles_ambiguous", "given_name_titles", "after_given_titles",
-    "title_modifiers", "title_styles", "title_abbreviations"})
+    "title_modifiers", "title_styles"})
 _ACRONYM_FIELDS = frozenset({"suffix_acronyms", "suffix_acronyms_ambiguous"})
 _WORD_FIELDS = frozenset({
     "suffix_words", "suffix_words_ambiguous", "agnomens", "honorific_tails",
@@ -1408,7 +1408,6 @@ def _target_readings(word: str, member: frozenset[str],
 _MARKER_READ_WITH = (
     ("given_name_titles", ("titles", "titles_ambiguous")),
     ("after_given_titles", ("titles",)),
-    ("title_abbreviations", ("titles", "titles_ambiguous")),
     ("title_modifiers", ("titles", "titles_ambiguous")),
     ("title_styles", ("titles", "titles_ambiguous")),
     ("conjunctions_ambiguous", ("conjunctions",)),

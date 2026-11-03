@@ -952,8 +952,8 @@ def test_a_title_inside_the_given_parts_run_is_a_title() -> None:
 _CANDIDATE_HEADS = ("Jane Doe", "J.", "Jane van der Berg", "Mai Le",
                     "abdul Berg", "John")
 _CANDIDATE_WORDS = ("Smith", "VI", "V", "III", "MA", "Ma", "PhD", "Jr.",
-                    "Prof.", "Dr.", "Pope.", "do", "DO", "de", "X.Y.Z.",
-                    "Ph. D.", "i", "Jones")
+                    "Prof.", "Dr.", "Pope.", "Maj.", "do", "DO", "de",
+                    "X.Y.Z.", "Ph. D.", "i", "Jones")
 
 
 def _candidate_misses(monkeypatch: pytest.MonkeyPatch,
@@ -1007,9 +1007,11 @@ def test_the_trailing_candidates_cover_what_the_tail_reading_takes(
         monkeypatch: pytest.MonkeyPatch) -> None:
     """M2's take ends the clause at the trailing run the clause-free
     name reads, which it can only find if every word that run might
-    hold is in its view. 6 heads x 18 words to a tail of three after
-    'nee Smith', 37,044 parses through `group`, about 2.6s on py3.11
-    (measured 2026-10-04).
+    hold is in its view. 6 heads x 19 words to a tail of three after
+    'nee Smith', 43,434 parses through `group`, about 2.6s on py3.11
+    (measured 2026-10-04 over the 18 words before #999 added 'Maj.',
+    the title written short that may be a given name, which the
+    chain takes by classify's mark, not by `is_title_piece`).
 
     RECORDED NEGATIVE CONTROL, measured 2026-10-04 on this grid: the
     candidate loop as #601 shipped it (master 8a8459a8), which admitted
