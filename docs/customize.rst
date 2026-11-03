@@ -288,6 +288,47 @@ though, so it recases every other name with that particle too:
     >>> str(parse("ludwig van beethoven").capitalized(van_lex))
     'Ludwig Van Beethoven'
 
+Removing or replacing a shipped mask
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The shipped masks come with the vocabulary. Among them are the Gaelic
+surnames opening Mac that most of their bearers write with the inner
+capital (``MacDonald``, ``MacGregor``). Since 3.0, case repair
+title-cases any other name opening Mac (``Machado``, ``Mackenzie``),
+while ``Mc`` keeps its capital (``McDonald``).
+
+A mask belongs to the word, not to one of its readings, so removing the
+word's reading with ``remove()`` leaves the mask in place. To drop a
+mask, filter its pair out of ``capitalization_exceptions``:
+
+.. doctest::
+
+    >>> str(parse("RONALD MACDONALD").capitalized())
+    'Ronald MacDonald'
+    >>> no_mac = dataclasses.replace(
+    ...     default,
+    ...     capitalization_exceptions=tuple(
+    ...         pair for pair in default.capitalization_exceptions
+    ...         if pair[0] != "macdonald"))
+    >>> str(parse("RONALD MACDONALD").capitalized(no_mac))
+    'Ronald Macdonald'
+    >>> reading_gone = default.remove("macdonald", kind="family")
+    >>> str(parse("RONALD MACDONALD").capitalized(reading_gone))
+    'Ronald MacDonald'
+
+To write a word some other way, append your own pair, as above. When
+two pairs share a key, the later one replaces the earlier, so you don't
+need to remove the shipped pair first:
+
+.. doctest::
+
+    >>> phd_caps = dataclasses.replace(
+    ...     default,
+    ...     capitalization_exceptions=tuple(default.capitalization_exceptions)
+    ...     + (("phd", "PHD"),))
+    >>> str(parse("john smith phd").capitalized(phd_caps))
+    'John Smith PHD'
+
 How a key matches a word
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
