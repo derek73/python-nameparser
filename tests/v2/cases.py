@@ -6251,6 +6251,54 @@ CASES: tuple[Case, ...] = (
                "name word behind a member its capitals settle keeps it "
                "from starting the credential's run -- here a family name written in capitals by convention, which counts as the name word behind. "
                "1.4.0 through 2.6.0 read the same"),
+    Case("title_case_credential_before_a_name_word_stays_a_name",
+         "Badrul Akmal Hisham Md Yusoff",
+         {"given": "Badrul", "middle": "Akmal Hisham Md",
+          "family": "Yusoff"},
+         notes="S8 (#PRNUM): with no family comma a credential acronym "
+               "written in Title case with a name word behind it starts "
+               "no credential's run -- here Md, Muhammad written short. "
+               "1.4.0 through 2.3.0 read the same; 2.4.0 through 2.8.0 "
+               "read family 'Hisham', suffix 'Md Yusoff' (#602's run)"),
+    Case("title_case_credential_after_a_patronymic_stays_a_name",
+         "Ahmad Faiz Bin Md Sapir",
+         {"given": "Ahmad", "middle": "Faiz Bin Md", "family": "Sapir"},
+         notes="S8 (#PRNUM): as title_case_credential_before_a_name_"
+               "word_stays_a_name, behind a particle. 1.4.0 through "
+               "2.3.0 read the same; 2.4.0 through 2.8.0 read family "
+               "'Bin', suffix 'Md Sapir'"),
+    Case("title_case_credential_before_a_suffix_comma_stays_a_name",
+         "Badrul Hisham Md Yusoff, Jr.",
+         {"given": "Badrul", "middle": "Hisham Md", "family": "Yusoff",
+          "suffix": "Jr."},
+         notes="S8 (#PRNUM): the run's start before a suffix comma asks "
+               "the same. 1.4.0 through 2.3.0 read the same"),
+    Case("capitals_credential_before_a_name_word_starts_the_run",
+         "John Smith MD Jones",
+         {"given": "John", "family": "Smith", "suffix": "MD Jones"},
+         classification="fix(#602)",
+         ambiguities=("suffix-or-name",),
+         notes="S8 (#PRNUM): an acronym written in its capitals is the "
+               "credential's writing and still starts the run, where "
+               "title_case_credential_before_a_name_word_stays_a_name's "
+               "Md does not. 1.4.0 read middle 'Smith MD', family "
+               "'Jones'"),
+    Case("title_case_credential_before_a_credential_starts_the_run",
+         "John Smith Md Phd",
+         {"given": "John", "family": "Smith", "suffix": "Md Phd"},
+         classification="fix(#602)",
+         notes="S8 (#PRNUM): a credential behind it is no name word, so "
+               "the Title-case acronym still starts the run. 1.4.0 read "
+               "suffix 'Md, Phd'"),
+    Case("title_case_credential_in_a_family_comma_part_starts_the_run",
+         "Smith, John Md Jones",
+         {"given": "John", "family": "Smith", "suffix": "Md Jones"},
+         classification="fix(#602)",
+         ambiguities=("suffix-or-name",),
+         notes="S8 (#PRNUM): after the given word in the part after a "
+               "family comma the cue does not reach, as a settled "
+               "member's does not. 1.4.0 read middle 'Jones', suffix "
+               "'Md'"),
     Case("capitals_before_a_title_word_surname_stay_a_name",
          "Mary Jane MA Pope",
          {"given": "Mary", "middle": "Jane MA", "family": "Pope"},

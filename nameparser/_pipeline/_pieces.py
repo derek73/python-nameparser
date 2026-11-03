@@ -1468,7 +1468,8 @@ def _name_word_behind(piece: Sequence[int], ptags: Set[str],
     (Title case or capitals, title vocabulary included), that is no
     suffix word and no member its own capitals settle. A credential
     merged across a space ('Pharm D', 'Ph. D.') is no name word. Only
-    `run_start` asks it, of a settled member."""
+    `run_start` asks it, of a settled member or a credential acronym
+    written in Title case (`written_as_a_name`)."""
     if "suffix" in ptags or "split" in ptags:
         return False
     tok = tokens[piece[0]]
@@ -1481,6 +1482,24 @@ def _name_word_behind(piece: Sequence[int], ptags: Set[str],
             and SHAPE_ACRONYM_TAG not in tok.tags
             and not (AMBIGUOUS_ACRONYM_TAG in tok.tags
                      and settled_by_case(tok, one_case)))
+
+
+# rules/S8: "nor does a credential acronym written in Title case" --
+# the capitals an acronym is written in are the writer's mark, and a
+# word written as a name is written without them (decisions/S8, #PRNUM)
+def written_as_a_name(token: WorkToken) -> bool:
+    """Whether an unambiguous credential ACRONYM is written as a name
+    word is: its first letter a capital and every later letter lower
+    case ('Md', 'Phd', 'Md.'), where the credential is written in
+    capitals or its mask ('MD', 'PhD', 'M.D.'). A suffix WORD
+    (a generation or honorific, 'Jr', 'Старший') is written in Title
+    case as a matter of course and is not asked. Only `run_start`
+    asks it, where a name word stands behind the acronym."""
+    if "vocab:suffix" not in token.tags or "vocab:suffix-word" in token.tags:
+        return False
+    letters = "".join(filter(str.isalpha, token.text))
+    return (len(letters) >= 2 and letters[0].isupper()
+            and letters[1:].islower())
 
 
 # rules/S8: "A credential after the name core starts a run to the
@@ -1550,9 +1569,13 @@ def run_start(rest: Sequence[int], names: int,
                              # the walk leaves out (#827)
                              and not behind_the_merged_credential(
                                  rest, p + 1, ptags)
-                             and AMBIGUOUS_ACRONYM_TAG in tags
-                             and settled_by_case(tokens[pieces[q][0]],
-                                                 one_case)
+                             and (AMBIGUOUS_ACRONYM_TAG in tags
+                                  and settled_by_case(tokens[pieces[q][0]],
+                                                      one_case)
+                                  # rules/S8: "nor does a credential
+                                  # acronym written in Title case" --
+                                  # the writing of a name word
+                                  or written_as_a_name(tokens[pieces[q][0]]))
                              and _name_word_behind(pieces[rest[p + 1]],
                                                    ptags[rest[p + 1]],
                                                    tokens, one_case))):
