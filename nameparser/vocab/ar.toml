@@ -130,6 +130,8 @@ religious = { addresses = "given", gender = "f", issue = 269, expands = "the haj
 [[word]]
 text = "sultan"
 nobility = {}
+given = { note = "the Arabic given name, counted 2026-11-03: ORCID given boxes Saudi Arabia 265 (0.48%), UAE 32; PatentsView given boxes Saudi Arabia 46 (0.41%); nam_dict band 3 in Arabia/Persia (tools/name_usage.py --boxes); tr.toml's reading carries the Wikidata total. Strict ar, which drops tr.toml's given reading, read it as a title in 226 records of Arab countries (config_diff.py gaps on f48c88a3, decisions/vocabulary-model, 2026-11-03)" }
+family = { note = "an Arabic surname, counted 2026-11-03: ORCID family boxes Pakistan 141, Iraq 84, Egypt 59, Saudi Arabia 46, UAE 13 (tools/name_usage.py --boxes)" }
 
 [[word]]
 text = "sultana"
