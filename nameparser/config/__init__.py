@@ -12,7 +12,7 @@ from, named for its fields since 2.2 (#293); since 2.6 each (all but
 ``surnames.py``) re-exports sets compiled from the per-word TOML files
 in ``nameparser/vocab/`` (#737). 3.0 removes them too, all but
 ``surnames``, and since 2.8.1 reading one of their constants warns,
-naming the 3.0 call that lists the same words (#1007), as reading
+naming what 3.0 offers in its place (#1007), as reading
 ``nameparser.config.regexes`` does (#1008).
 
 ``RegexTupleManager`` is served from the shim purely for pickle

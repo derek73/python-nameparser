@@ -85,7 +85,7 @@ if TYPE_CHECKING:
 else:
     # 2.8.1: 3.0 deletes this module (#1007), so each live constant is
     # served by __getattr__ too and warns at the line that reads it,
-    # naming the 3.0 call that lists the same words; the library reads
+    # naming what 3.0 offers in its place; the library reads
     # _compiled, never this module
     __getattr__, __dir__ = alias_getattr(__name__, {
         "FIRST_NAME_TITLES": (
@@ -93,11 +93,10 @@ else:
     }, removed={
         "GIVEN_NAME_TITLES": words_of('kind="title", addresses="given"'),
         "TITLES": words_of(
-            'kind="title"', "with the titles that may be given names, "
-            "which TITLES leaves to TITLES_AMBIGUOUS"),
+            'kind="title"', "the titles with no given reading"),
         "AFTER_GIVEN_TITLES": words_of('kind="salutation", after_given=True'),
         "TITLES_AMBIGUOUS": words_of(
-            'kind="title"', "those holding a given reading too"),
+            'kind="title"', "the titles holding a given reading too"),
         "TITLE_MODIFIERS": words_of('kind="modifier"'),
         "TITLE_STYLES": words_of('kind="style"'),
         "TITLE_PHRASES": (

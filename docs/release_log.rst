@@ -7,7 +7,7 @@ Release Log
     **Deprecations**
 
     - **Deprecate configuring Lexicon through its set fields, which 3.0 makes internal.** ``Lexicon.default().add(titles={"dean"})`` now emits a ``DeprecationWarning`` naming the field and the migration guide's row for it; 3.0 refuses the call with a ``TypeError`` naming the readings that replace it. ``remove()``, ``Lexicon(...)`` and ``dataclasses.replace()`` with a set field warn too, and ``add()`` or ``remove()`` with ``surnames``. :issue:`754`
-    - **Deprecate the vocabulary constants in nameparser.config, which 3.0 removes.** ``from nameparser.config.titles import TITLES`` now emits a ``DeprecationWarning`` naming ``Lexicon.default().words(kind="title")``, which lists the same words in 3.0. ``nameparser.config.surnames`` stays. :issue:`1007`
+    - **Deprecate the vocabulary constants in nameparser.config, which 3.0 removes.** ``from nameparser.config.titles import TITLES`` now emits a ``DeprecationWarning`` naming ``Lexicon.default().words(kind="title")``, which lists every title in 3.0. ``nameparser.config.surnames`` stays. :issue:`1007`
     - **Deprecate nameparser.config.regexes, which 3.0 removes without a replacement.** Reading ``REGEXES`` now emits a ``DeprecationWarning``; the parser has not read it since 2.0. :issue:`1008`
 
 * 2.8.0 - October 28, 2026

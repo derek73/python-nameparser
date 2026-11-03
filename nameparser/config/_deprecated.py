@@ -62,10 +62,16 @@ _REMOVED_MESSAGE = (
 
 def words_of(args: str, which: str = "") -> str:
     """The replacement clause for a vocabulary constant: the 3.0 call
-    listing its words (``Lexicon.words``, #1007), and where the call
-    lists more than the set held, which of them it held."""
-    held = f" ({which})" if which else ""
-    return f"in 3.0, Lexicon.default().words({args}) lists them{held}"
+    listing a kind's words (``Lexicon.words``, #1007). Without `which`
+    the call lists exactly the set's words over the default vocabulary
+    (checked against master, 2026-11-02); with it the call lists more or
+    other words, and `which` says what the set held instead."""
+    call = f"in 3.0, Lexicon.default().words({args})"
+    if not which:
+        return f"{call} lists the same words"
+    return (f"{call} lists every word of that kind, where this set held "
+            f"{which}; Lexicon.default().readings_of(word) says what one "
+            f"word is")
 
 
 def removal_message(module: str, name: str) -> str | None:

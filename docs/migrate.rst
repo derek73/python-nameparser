@@ -89,7 +89,11 @@ call, naming what 3.0 does instead and linking the `3.0 migration
 guide <https://nameparser.readthedocs.io/en/latest/migrate.html>`__.
 The 3.0 spellings do not run on 2.x, so the old spelling is still the
 one to write here; filter the warning by message if it is in your way
-until you upgrade.
+until you upgrade. The one exception is ``surnames``, which 3.0 keeps
+as a field: ``lexicon | Lexicon(surnames=frozenset({"kim"}))`` and
+``dataclasses.replace(lexicon, surnames=...)`` run quietly on 2.8.1
+and in 3.0 alike, and the warning on ``add()`` and ``remove()`` with
+``surnames`` spells the call.
 
 .. list-table::
    :header-rows: 1

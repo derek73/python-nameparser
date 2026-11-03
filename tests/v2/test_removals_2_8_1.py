@@ -277,7 +277,7 @@ def test_copy_replace_with_a_set_field_warns() -> None:
         line = _line_after()
         copy.replace(lexicon, titles=frozenset({"zork"}))  # type: ignore[attr-defined]
     [w] = _deprecations(record)
-    _assert_set_field(w, "dataclasses.replace()", ["titles"], line)
+    _assert_set_field(w, "copy.replace()", ["titles"], line)
 
 
 def test_the_table_covers_every_set_field() -> None:
@@ -305,21 +305,43 @@ def test_a_mixed_constructor_names_only_the_fields_3_0_refuses() -> None:
 
 
 @pytest.mark.parametrize("op", ["add", "remove"])
-def test_surnames_through_add_or_remove_warns_naming_the_field_spellings(
+def test_surnames_through_add_or_remove_offers_code_that_runs_quietly(
         op: str) -> None:
-    lexicon = Lexicon.empty()
+    # the one 3.0 spelling that runs on 2.8.1 too, so the message hands
+    # over code: run it, quietly, and get what the 2.x call made
+    lexicon = Lexicon.empty().add(surnames=frozenset({"lee"}))
+    if op == "remove":
+        lexicon = lexicon | Lexicon(surnames=frozenset({"kim"}))
     with _caught() as record:
         line = _line_after()
-        getattr(lexicon, op)(surnames={"kim"})
+        made = getattr(lexicon, op)(surnames=iter(["Kim"]))
     [w] = _deprecations(record)
     message = str(w.message)
     assert message.startswith("Lexicon's set fields are deprecated (#754): ")
-    assert f"3.0 keeps surnames a field, but {op}() no longer takes it" in message
-    assert "lexicon | Lexicon(surnames=...)" in message
-    assert "dataclasses.replace(lexicon, surnames=...)" in message
+    assert f"3.0 keeps surnames a field, but {op}() no longer takes it: " \
+        "write " in message, message
     assert "which 3.0 makes internal" not in message
     assert message.endswith(f"See {FIELDS_GUIDE}")
     assert (w.filename, w.lineno) == (__file__, line)
+    code = message.split(": write ", 1)[1].split(", which runs on", 1)[0]
+    assert code == {
+        "add": "lexicon | Lexicon(surnames=frozenset({'kim'}))",
+        "remove": "dataclasses.replace(lexicon, "
+                  "surnames=lexicon.surnames - {'kim'})",
+    }[op]
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        offered = eval(code, {"lexicon": lexicon, "Lexicon": Lexicon,  # noqa: S307
+                              "dataclasses": dataclasses})
+    assert offered == made
+
+
+def test_a_long_surname_list_is_described_not_spelled() -> None:
+    with _caught() as record:
+        Lexicon.empty().add(surnames=frozenset("abcdefg"))
+    [w] = _deprecations(record)
+    assert "join a Lexicon holding those 7 surnames to it with |" in str(
+        w.message)
 
 
 def test_a_bad_value_raises_its_own_error_before_any_warning() -> None:

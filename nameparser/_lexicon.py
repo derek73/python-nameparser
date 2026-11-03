@@ -12,7 +12,7 @@ import functools
 import sys
 import unicodedata
 import warnings
-from collections.abc import Iterable, Mapping, Set
+from collections.abc import Iterable, Iterator, Mapping, Set
 from dataclasses import dataclass, field
 from types import FrameType, MappingProxyType
 from typing import cast
@@ -354,12 +354,14 @@ _CONSTRUCTION_MODULES = (__name__, "dataclasses", "copy")
 
 def _outside_caller(
         construction: bool,
-) -> tuple[int, Mapping[str, object] | None] | None:
+) -> tuple[int, Mapping[str, object] | None, str] | None:
     """Where a set-field warning belongs: the stacklevel, counted from
     the function that calls warnings.warn (itself called from the
     method this asks for), of the first frame outside this module,
     dataclasses and copy, with the locals of a dataclasses.replace
-    frame passed on the way; or None where the library itself made the
+    frame passed on the way and the replace the caller called
+    (``copy.replace()`` where a copy frame was passed, else
+    ``dataclasses.replace()``); or None where the library itself made the
     call -- that frame inside nameparser (Lexicon.default(), the locale
     packs, parser_for, the v1 facade), or, for a construction, a method
     of this module building the lexicon: add() and remove() warn for
@@ -368,10 +370,13 @@ def _outside_caller(
     level = 3
     frame: FrameType | None = sys._getframe(2)
     replacing: Mapping[str, object] | None = None
+    replace_call = "dataclasses.replace()"
     while frame is not None:
         module = frame.f_globals.get("__name__")
         if module not in _CONSTRUCTION_MODULES:
             break
+        if module == "copy":
+            replace_call = "copy.replace()"
         code = frame.f_code.co_name
         if (construction and module == __name__
                 and code not in ("__init__", "__post_init__")):
@@ -382,15 +387,32 @@ def _outside_caller(
     caller = "" if frame is None else frame.f_globals.get("__name__", "")
     if caller == "nameparser" or caller.startswith("nameparser."):
         return None
-    return level, replacing
+    return level, replacing, replace_call
 
 
-def _warn_set_fields(level: int, spelling: str,
-                     fields: Iterable[str]) -> None:
+def _surnames_code(op: str, words: frozenset[str]) -> str:
+    """Code doing add() or remove()'s surnames edit the 3.0 way, which
+    runs quietly on 2.8.1 too; prose for a long list, whose code would
+    swamp the message."""
+    if len(words) > 5:
+        return (f"join a Lexicon holding those {len(words)} surnames to it "
+                f"with |" if op == "add" else
+                f"subtract those {len(words)} surnames from lexicon.surnames "
+                f"in dataclasses.replace()")
+    listed = "{" + ", ".join(map(repr, sorted(words))) + "}"
+    return (f"write lexicon | Lexicon(surnames=frozenset({listed}))"
+            if op == "add" else
+            f"write dataclasses.replace(lexicon, "
+            f"surnames=lexicon.surnames - {listed})")
+
+
+def _warn_set_fields(level: int, spelling: str, fields: Iterable[str],
+                     surnames: str = "") -> None:
     """Warn at `level` (from _outside_caller) that `spelling`, a call,
     writes `fields`, naming each and the guide row that replaces it.
-    surnames gets a sentence of its own: 3.0 keeps the field, and only
-    add() and remove() stop taking it."""
+    surnames gets a sentence of its own, ending on `surnames`, the code
+    for the edit (_surnames_code): 3.0 keeps the field, and only add()
+    and remove() stop taking it."""
     fields = list(fields)
     internal = [name for name in fields if name != "surnames"]
     parts = []
@@ -403,8 +425,7 @@ def _warn_set_fields(level: int, spelling: str,
     if "surnames" in fields:
         parts.append(
             f"3.0 keeps surnames a field, but {spelling} no longer takes "
-            f"it: join a list with lexicon | Lexicon(surnames=...), or "
-            f"set one with dataclasses.replace(lexicon, surnames=...)")
+            f"it: {surnames}, which runs on 2.8.1 too")
     warnings.warn(
         f"Lexicon's set fields are deprecated (#754): {'; and '.join(parts)}. "
         f"See {_FIELDS_GUIDE}",
@@ -668,9 +689,11 @@ class Lexicon:
 
     Deprecated since 2.8.1: 3.0 makes the set fields internal and
     configures vocabulary by reading, so writing one here, through
-    ``add``, ``remove`` or ``dataclasses.replace`` warns (``surnames``
-    and ``capitalization_exceptions`` stay fields); see the migration
-    guide's "Deprecated in 2.8.1"."""
+    ``add``, ``remove`` or ``dataclasses.replace`` warns. ``surnames``
+    and ``capitalization_exceptions`` stay fields in 3.0, so passing them
+    here or to ``dataclasses.replace`` is quiet, but ``add`` and
+    ``remove`` with ``surnames`` warn, since 3.0's take readings only;
+    see the migration guide's "Deprecated in 2.8.1"."""
 
     #: Pre-nominal titles ("dr", "sir", "capt", ...). Full default
     #: list: :data:`~nameparser.config.titles.TITLES`.
@@ -893,7 +916,8 @@ class Lexicon:
             self._warn_constructed(*where)
 
     def _warn_constructed(self, level: int,
-                          replacing: Mapping[str, object] | None) -> None:
+                          replacing: Mapping[str, object] | None,
+                          replace_call: str) -> None:
         # surnames is never named here: 3.0 accepts it in Lexicon() and
         # dataclasses.replace(), as it does capitalization_exceptions
         internal = [name for name in _VOCAB_FIELDS if name != "surnames"]
@@ -912,7 +936,7 @@ class Lexicon:
                 return
             written = [name for name in internal if name in changes
                        and changes[name] is not getattr(old, name)]
-            spelling = "dataclasses.replace()"
+            spelling = replace_call
         if written:
             # one more frame than __post_init__ itself
             _warn_set_fields(level + 1, spelling, written)
@@ -1166,12 +1190,18 @@ class Lexicon:
         # 2.8.1 (#754): 3.0's add() and remove() take readings, and
         # refuse every field keyword, surnames included. The warning
         # follows a successful edit, so a bad value raises its own
-        # error first.
+        # error first. An iterator of surnames is read once here, so the
+        # warning can spell the edit and _edit still sees the words.
+        named = entries.get("surnames")
+        if isinstance(named, Iterator):
+            entries = {**entries, "surnames": tuple(named)}
         edited = self._edit(op, entries)
         if entries:
             where = _outside_caller(construction=False)
             if where is not None:
-                _warn_set_fields(where[0], f"{op}()", entries)
+                code = ("" if "surnames" not in entries else _surnames_code(
+                    op, _normset(entries["surnames"], "surnames", warn=False)))
+                _warn_set_fields(where[0], f"{op}()", entries, code)
         return edited
 
 

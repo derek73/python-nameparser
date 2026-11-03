@@ -103,8 +103,8 @@ __all__ = ["NON_GIVEN_NAME_PARTICLES", "PARTICLES"]
 
 
 # 2.8.1: 3.0 deletes this module (#1007), so each constant is served by
-# __getattr__ and warns at the line that reads it, naming the 3.0 call
-# that lists the same words (alias_getattr's docstring says how the
+# __getattr__ and warns at the line that reads it, naming what 3.0
+# offers in its place (alias_getattr's docstring says how the
 # assignment above stays documented). The library reads _compiled, never
 # this module. Hidden from mypy as alias_getattr explains; goes in 3.0.
 from typing import TYPE_CHECKING  # noqa: E402

@@ -134,17 +134,15 @@ else:
             "nameparser.config.suffixes", "SUFFIX_WORDS"),
     }, removed={
         "SUFFIX_WORDS": words_of(
-            'kind="suffix"', "with the acronyms, which SUFFIX_WORDS leaves "
-            "to SUFFIX_ACRONYMS"),
+            'kind="suffix"', "the suffixes not written as acronyms"),
         "GLUED_HONORIFICS": words_of('kind="suffix", attached="after"'),
         "SUFFIX_WORDS_AMBIGUOUS": words_of(
-            'kind="suffix"', "those holding a name reading too"),
+            'kind="suffix"', "the suffix words holding a name reading too"),
         "AGNOMENS": words_of('kind="agnomen"'),
         "SUFFIX_ACRONYMS_AMBIGUOUS": words_of(
-            'kind="credential"', "those holding a name reading too"),
+            'kind="credential"', "the acronyms holding a name reading too"),
         "SUFFIX_ACRONYMS": words_of(
-            'kind="credential"', "the acronyms; a suffix reading with "
-            "acronym=True is one too"),
+            'kind="credential"', "the suffixes written as acronyms"),
     }, namespace=globals())
 
 # Star imports read __all__ and never the module __getattr__ -- see the
