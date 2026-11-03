@@ -84,11 +84,11 @@ style = {}
 
 [[word]]
 text = "advocate"
-academic = { expands = "the address of an advocate, 'Adv. Smith' in South Africa and India" }
+academic = { expands = "the address of an advocate, 'Adv. Smith' in South Africa and India", attaches = ["gen"], note = "attaches: Judge Advocate Gen (rules/H9, #999), the rank written short being a title only in a phrase" }
 
 [[word]]
 text = "attorney"
-academic = { expands = "the address of a lawyer, 'Atty. Cruz'" }
+academic = { expands = "the address of a lawyer, 'Atty. Cruz'", attaches = ["gen"], note = "attaches: Attorney Gen (rules/H9, #999), the rank written short being a title only in a phrase" }
 
 [[word]]
 text = "engineer"
@@ -308,7 +308,7 @@ religious = { note = "stays out of GIVEN_NAME_TITLES: its traditions split on su
 
 [[word]]
 text = "vicar"
-religious = {}
+religious = { attaches = ["gen"], note = "attaches: Vicar Gen (rules/H9, #999), the rank written short being a title only in a phrase" }
 
 [[word]]
 text = "archduchess"
@@ -478,7 +478,7 @@ military = { expands = "Airman Basic" }
 
 [[word]]
 text = "adjutant"
-military = {}
+military = { attaches = ["gen"], note = "attaches: Adjutant Gen (rules/H9, #999), the rank written short being a title only in a phrase" }
 
 [[word]]
 text = "admiral"
@@ -506,7 +506,7 @@ military = { same_as = "bg" }
 
 [[word]]
 text = "brigadier"
-military = {}
+military = { attaches = ["gen"], note = "attaches: Brigadier Gen (rules/H9, #999), the rank written short being a title only in a phrase" }
 
 [[word]]
 text = "captain"
@@ -535,11 +535,11 @@ military = { expands = "Chief Master Sergeant" }
 
 [[word]]
 text = "colonel"
-military = {}
+military = { attaches = ["gen"], note = "attaches: Colonel Gen (rules/H9, #999), the rank written short being a title only in a phrase" }
 
 [[word]]
 text = "col"
-military = { same_as = "colonel" }
+military = { same_as = "colonel", attaches = ["gen"], note = "attaches: Col Gen (rules/H9, #999), the rank written short being a title only in a phrase" }
 
 [[word]]
 text = "commander"
@@ -630,7 +630,9 @@ military = {}
 
 [[word]]
 text = "gen"
-military = { same_as = "general" }
+military = { same_as = "general", abbreviation = true, attaches = ["sir"], issue = 999, decided = 2026-11-03, note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'Lt Gen John Smith' and 'Maj Gen John Smith' read the title, 'Gen Goto' and 'Mr Gen Zhang' the given name, and 'Gen. John Smith' the title by H2's shape, 'Gen Sir Nick Carter' the title 'Gen Sir'; written with its period at the end it is H5's trailing title ('SMITH, JOHN GEN.')" }
+given = { us_ssa = 79, wikidata = 102, as_of = 2026-11-03, note = "a Japanese and Chinese given name: ORCID records whose given box opens with it 680 (China 155, Japan 100), PatentsView inventors 274 (Japan 207); nam_dict band 2 in Korea, 1 in China and Japan; Wikidata is a lower bound (Japan 43, Ming dynasty 18); US SSA 79 births (67 male)" }
+family = { us_census_2010 = 162, wikidata = 4, as_of = 2026-11-03, note = "US Census rank 109,258; Wikidata Turkey 2" }
 
 [[word]]
 text = "generalissimo"
@@ -650,11 +652,11 @@ military = { expands = "Lance Corporal" }
 
 [[word]]
 text = "lieutenant"
-military = {}
+military = { attaches = ["gen"], note = "attaches: Lieutenant Gen (rules/H9, #999), the rank written short being a title only in a phrase" }
 
 [[word]]
 text = "lt"
-military = { same_as = "lieutenant" }
+military = { same_as = "lieutenant", attaches = ["gen"], note = "attaches: Lt Gen (rules/H9, #999), the rank written short being a title only in a phrase" }
 credential = {}
 
 [[word]]
@@ -679,7 +681,7 @@ military = { expands = "Lieutenant (junior grade)" }
 
 [[word]]
 text = "maj"
-military = { expands = "Major", abbreviation = true, attaches = ["gen", "general"], issue = 999, decided = 2026-11-03, note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'Maj Gen John Smith' reads the title, 'Maj Sjöwall' and 'Mr Maj Zura' the given name, and 'Maj. John Smith' the title by H2's shape; written with its period at the end it is H5's trailing title ('SMITH, JOHN B. MAJ.'); attaches: Maj Gen, Maj General" }
+military = { expands = "Major", abbreviation = true, attaches = ["gen", "general", "sir"], issue = 999, decided = 2026-11-03, note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'Maj Gen John Smith' reads the title, 'Maj Sjöwall' and 'Mr Maj Zura' the given name, and 'Maj. John Smith' the title by H2's shape; written with its period at the end it is H5's trailing title ('SMITH, JOHN B. MAJ.'); attaches: Maj Gen, Maj General" }
 given = { wikidata = 98, as_of = 2026-11-03, note = "a Scandinavian given name: nam_dict band 8 in Sweden, 6 in Denmark, 4 in Finland, 2 in Norway; Wikidata is a lower bound (Sweden 52, Denmark 12, Slovenia 8, Finland 6, Norway 5); US SSA under 5 births a year. Of the 65 local-corpus texts the gate moves (2026-11-03) 47 are given names, 2 unclear, the rest ranks written bare (ctgov's 'MAJ Ian Stewart, MD')" }
 family = { us_census_2010 = 470, wikidata = 90, as_of = 2026-11-03, note = "a Polish surname: US Census rank 45,495; Wikidata Poland 34" }
 
@@ -952,7 +954,7 @@ office = { issue = 606, note = "one of #606's English offices, completing runs l
 
 [[word]]
 text = "comptroller"
-office = {}
+office = { attaches = ["gen"], note = "attaches: Comptroller Gen (rules/H9, #999), the rank written short being a title only in a phrase" }
 
 [[word]]
 text = "controller"
@@ -998,11 +1000,11 @@ office = { same_as = "deputy" }
 
 [[word]]
 text = "director"
-office = {}
+office = { attaches = ["gen"], note = "attaches: Director Gen (rules/H9, #999), the rank written short being a title only in a phrase" }
 
 [[word]]
 text = "dir"
-office = { same_as = "director" }
+office = { same_as = "director", attaches = ["gen"], note = "attaches: Dir Gen (rules/H9, #999), the rank written short being a title only in a phrase" }
 
 [[word]]
 text = "envoy"
@@ -1010,11 +1012,11 @@ office = {}
 
 [[word]]
 text = "governor"
-office = {}
+office = { attaches = ["gen"], note = "attaches: Governor Gen (rules/H9, #999), the rank written short being a title only in a phrase" }
 
 [[word]]
 text = "gov"
-office = { same_as = "governor" }
+office = { same_as = "governor", attaches = ["gen"], note = "attaches: Gov Gen (rules/H9, #999), the rank written short being a title only in a phrase" }
 
 [[word]]
 text = "headman"
@@ -1120,7 +1122,7 @@ office = { same_as = "representative" }
 
 [[word]]
 text = "secretary"
-office = {}
+office = { attaches = ["gen"], note = "attaches: Secretary Gen (rules/H9, #999), the rank written short being a title only in a phrase" }
 
 [[word]]
 text = "senator"
@@ -1733,7 +1735,7 @@ occupation = {}
 
 [[word]]
 text = "solicitor"
-occupation = {}
+occupation = { attaches = ["gen"], note = "attaches: Solicitor Gen (rules/H9, #999), the rank written short being a title only in a phrase" }
 
 [[word]]
 text = "soprano"
@@ -1745,7 +1747,7 @@ occupation = {}
 
 [[word]]
 text = "surgeon"
-occupation = {}
+occupation = { attaches = ["gen"], note = "attaches: Surgeon Gen (rules/H9, #999), the rank written short being a title only in a phrase" }
 
 [[word]]
 text = "teacher"

@@ -1162,6 +1162,8 @@
 {"name": "Geir Jón Magnús Brynjar Skeggjason, þingmaður", "given": "þingmaður", "family": "Geir Jón Magnús Brynjar Skeggjason", "initials": "þ. G. J. M. B. S.", "capitalized_force": "Þingmaður Geir Jón Magnús Brynjar Skeggjason"}
 {"name": "Geleen und Amsterad, Gottfried Huyn von", "given": "Gottfried", "middle": "Huyn", "family": "von Geleen und Amsterad", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "G. H. G. A."}
 {"name": "Gemmingen, Pleikard Dietrich von", "given": "Pleikard", "middle": "Dietrich", "family": "von Gemmingen", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "P. D. G."}
+{"name": "Gen Goto", "given": "Gen", "family": "Goto", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "G. G."}
+{"name": "Gen Pinochet", "given": "Gen", "family": "Pinochet", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "G. P."}
 {"name": "General Major John Smith", "title": "General", "given": "Major", "middle": "John", "family": "Smith", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "M. J. S."}
 {"name": "General of Minnesota", "title": "General of Minnesota"}
 {"name": "Geng, Biao", "given": "Biao", "family": "Geng", "initials": "B. G."}
@@ -2432,6 +2434,7 @@
 {"name": "Louis de Grandmaison", "given": "Louis", "family": "de Grandmaison", "initials": "L. G."}
 {"name": "Louise Fitzhugh", "given": "Louise", "family": "Fitzhugh", "initials": "L. F."}
 {"name": "Louise Péricourt", "given": "Louise", "family": "Péricourt", "initials": "L. P."}
+{"name": "Lt Gen John Smith", "title": "Lt Gen", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Lt. Gen. John A. Kenneth Doe IV", "title": "Lt. Gen.", "given": "John", "middle": "A. Kenneth", "family": "Doe", "suffix": "IV", "initials": "J. A. K. D.", "generation": "IV"}
 {"name": "Lt. Gen. John A. Kenneth Doe, Jr.", "title": "Lt. Gen.", "given": "John", "middle": "A. Kenneth", "family": "Doe", "suffix": "Jr.", "initials": "J. A. K. D.", "generation": "Jr."}
 {"name": "Lt.Gen. John A. Kenneth Doe IV", "title": "Lt.Gen.", "given": "John", "middle": "A. Kenneth", "family": "Doe", "suffix": "IV", "initials": "J. A. K. D.", "generation": "IV"}
@@ -3210,6 +3213,7 @@
 {"name": "SMITH, DEAN MR.", "title": "MR.", "given": "DEAN", "family": "SMITH", "initials": "D. S.", "capitalized": "Mr. Dean Smith"}
 {"name": "SMITH, JOHN B. MAJ.", "title": "MAJ.", "given": "JOHN", "middle": "B.", "family": "SMITH", "initials": "J. B. S.", "capitalized": "Maj. John B. Smith"}
 {"name": "SMITH, JOHN DO", "given": "JOHN", "family": "DO SMITH", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "J. S.", "capitalized": "John do Smith"}
+{"name": "SMITH, JOHN GEN.", "title": "GEN.", "given": "JOHN", "family": "SMITH", "initials": "J. S.", "capitalized": "Gen. John Smith"}
 {"name": "SMITH, MA", "given": "MA", "family": "SMITH", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "M. S.", "capitalized": "Ma Smith"}
 {"name": "SMITH, SAM E.", "given": "SAM", "middle": "E.", "family": "SMITH", "initials": "S. E. S.", "capitalized": "Sam E. Smith"}
 {"name": "SMITH, VD DE LA MA", "family": "SMITH VD DE LA MA", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "S. M.", "capitalized": "Smith vd de la Ma"}

@@ -61,6 +61,7 @@
   ```
   "SMITH, JOHN B. MAJ."       →  title="MAJ."
   "John Smith Maj."           →  title="Maj."
+  "SMITH, JOHN GEN."          →  title="GEN."
   "John Smith Maj"            →  family="Maj"
   "John Karimi Mahdi."        →  family="Mahdi."
   ```

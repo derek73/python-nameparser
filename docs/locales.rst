@@ -299,9 +299,8 @@ name word:
     >>> korean.parse("Kim Min Ra").family
     'Ra'
 
-Japanese ``Gen`` and Chinese ``De`` are the same case under strict
-``ja`` and ``zh``: ``Gen Hoshino`` reads given ``Gen`` rather than a
-title, and ``De Xu`` given ``De``, family ``Xu``.
+Chinese ``De`` is the same case under strict ``zh``: ``De Xu`` reads
+given ``De``, family ``Xu``.
 
 Strict is for data you know to be of one origin, and what it drops it
 drops from every name:
