@@ -309,12 +309,12 @@ def test_native_script_is_a_letter_and_no_latin_letter(
     assert ri.is_native_script(text) is native
 
 
-def test_a_strict_pool_holds_the_chosen_files_and_native_script_only() -> None:
+def test_a_strict_pool_holds_the_chosen_files_mul_and_native_script_only() -> None:
     chosen = ri.selected(["pt-BR"], strict=True)
     pool = ri.strict_pool(chosen)
     assert {r.tag for r in pool if not ri.is_native_script(r.text)} == chosen | {"mul"}
     # mul.toml is every language's, so strict reads it all (#1005), and
-    # und.toml is another language's file
+    # und.toml is not read
     assert [r for r in ri.index() if r.tag == "mul"] == [
         r for r in pool if r.tag == "mul"]
     assert not [r for r in pool if r.tag == "und"

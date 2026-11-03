@@ -1,14 +1,16 @@
-# Words deliberately shared across languages.
+# Words deliberately shared across languages: a word that harms no
+# language and would otherwise be copied into every language's file.
+# Every choice reads this file, a strict one included (#1005).
 
 schema = 1
 
 [[word]]
 text = "mr"
-salutation = { gender = "m", after_given = true, note = "borne as a given name: US SSA 5 births (2026-10-24); kept for after_given (decisions/H8); kept here, not as a `given` reading, which would make the title one only inside a title phrase (rules/H9). Shared across languages: no name bearer or initials written this way in ORCID, PatentsView or PSC boxes (2026-11-02, 3.5M records), so a strict choice reads it with mul.toml", issue = 1005 }
+salutation = { gender = "m", after_given = true, note = "borne as a given name: US SSA 5 births (2026-10-24); kept for after_given (decisions/H8); kept here, not as a `given` reading, which would make the title one only inside a title phrase (rules/H9). In mul.toml (#1005): no `Mr` as a name word and no `MR` as initials in the ORCID, PatentsView or PSC boxes (2026-11-02, 3.5M records)", issue = 1005 }
 
 [[word]]
 text = "mrs"
-salutation = { gender = "f", after_given = true, note = "the English form of address, written before names in English-context data from every country, so a strict choice reads it with mul.toml; no name bearer or initials written this way in ORCID, PatentsView or PSC boxes (2026-11-02, 3.5M records; `MS` stays in en.toml, being written as South Indian initials, Sarulatha MS)", issue = 1005 }
+salutation = { gender = "f", after_given = true, note = "the English form of address, written before names in English-context data from every country; no `Mrs` as a name word and no `MRS` as initials in the ORCID, PatentsView or PSC boxes (2026-11-02, 3.5M records)", issue = 1005 }
 
 [[word]]
 text = "docent"
@@ -56,7 +58,7 @@ generation = {}
 
 [[word]]
 text = "bsc"
-credential = { cased = "BSc", note = "written after names in every country's data: a strict choice reads mul.toml, so it keeps the credential without the word in every language's file (2026-11-02)", issue = 1005 }
+credential = { cased = "BSc", note = "written after names in every country's data (ClinicalTrials.gov, ORCID; decisions/vocabulary-model, 2026-11-02 #1005), so shared rather than copied into each language's file", issue = 1005 }
 
 [[word]]
 text = "ing"
@@ -67,24 +69,24 @@ excluded = { academic = { reason = "Ing is borne as a given name (nam_dict band 
 
 [[word]]
 text = "mba"
-credential = { note = "written after names in every country's data: a strict choice reads mul.toml, so it keeps the credential without the word in every language's file (2026-11-02)", issue = 1005 }
+credential = { note = "written after names in every country's data (ClinicalTrials.gov, ORCID; decisions/vocabulary-model, 2026-11-02 #1005), so shared rather than copied into each language's file", issue = 1005 }
 
 [[word]]
 text = "md"
-credential = { note = "written after names in every country's data: a strict choice reads mul.toml, so it keeps the credential without the word in every language's file (2026-11-02)", issue = 1005 }
+credential = { note = "written after names in every country's data (ClinicalTrials.gov, ORCID; decisions/vocabulary-model, 2026-11-02 #1005), so shared rather than copied into each language's file", issue = 1005 }
 excluded = { academic = { reason = "a leading Md abbreviates Muhammad, a given name: 1,246 of 1,300 UK PSC filers with Md first in the forename box typed it there alone (2026-10-23), and a title reading took it from them", issue = 853 } }
 
 [[word]]
 text = "mph"
-credential = { note = "written after names in every country's data: a strict choice reads mul.toml, so it keeps the credential without the word in every language's file (2026-11-02)", issue = 1005 }
+credential = { note = "written after names in every country's data (ClinicalTrials.gov, ORCID; decisions/vocabulary-model, 2026-11-02 #1005), so shared rather than copied into each language's file", issue = 1005 }
 
 [[word]]
 text = "msc"
-credential = { cased = "MSc", note = "written after names in every country's data: a strict choice reads mul.toml, so it keeps the credential without the word in every language's file (2026-11-02)", issue = 1005 }
+credential = { cased = "MSc", note = "written after names in every country's data (ClinicalTrials.gov, ORCID; decisions/vocabulary-model, 2026-11-02 #1005), so shared rather than copied into each language's file", issue = 1005 }
 
 [[word]]
 text = "phd"
-credential = { expands = "Doctor of Philosophy", cased = "PhD", note = "written after names in every country's data: a strict choice reads mul.toml, so it keeps the credential without the word in every language's file (2026-11-02)", issue = 1005 }
+credential = { expands = "Doctor of Philosophy", cased = "PhD", note = "written after names in every country's data (ClinicalTrials.gov, ORCID; decisions/vocabulary-model, 2026-11-02 #1005), so shared rather than copied into each language's file", issue = 1005 }
 
 [[word]]
 text = "&"

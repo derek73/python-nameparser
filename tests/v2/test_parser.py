@@ -2978,9 +2978,9 @@ def test_reading_languages_follow_the_choice() -> None:
 def test_reading_languages_under_a_strict_choice_name_the_chosen_files() -> None:
     # a strict choice keeps only the chosen files' readings and
     # mul.toml's (#1005), so nothing else is named; a reading the strict
-    # lexicon does not hold is no reading at all (the Ph./D. pair, a
-    # credential only where the lexicon lists `phd`: decisions/phd-merge,
-    # #1000)
+    # lexicon does not hold is no reading at all (the Pharm/D pair, read
+    # as a credential only where the lexicon lists `pharmd`, as the
+    # Ph./D. pair is by `phd`: decisions/phd-merge, #1000)
     en = parser_for(_choosing("en"), strict=True)
     assert _languages_of(Parser(), "Baron John Smith", "Baron") == (
         "de", "en", "fr", "nl")
@@ -3101,11 +3101,16 @@ def test_a_strict_choice_keeps_mul_and_native_script_vocabulary() -> None:
     assert strict.parse("Minh Do, PhD").suffix == "PhD"
     assert strict.parse("Minh Do, MD").suffix == "MD"
     assert strict.parse("Minh Do III").suffix == "III"
-    # en.toml's leave: `ms`, written as South Indian initials, and `mx`
+    assert strict.parse("Mrs Minh Do").title == "Mrs"
+    # en.toml's leave: `ms`, kept there as South Indian initials, `mx`,
+    # the abbreviation for Mexico, and `rn`
     assert strict.parse("Ms Minh Do").given == "Ms"
+    assert strict.parse("Radha MS").family == "MS"
+    assert strict.parse("Mx Minh Do").given == "Mx"
     assert strict.parse("Minh Do, RN").given == "RN"
-    # the name gate of a credential that is also a name leaves with it:
-    # `do` is in no file strict vi reads, so it is a name word
+    # every reading of `do` (en.toml's credential and name readings,
+    # pt.toml's particle) is in a file strict vi does not read, so `Do`
+    # is a plain name word beside mul.toml's `MD`
     assert strict.parse("Minh Do, MD").family == "Do"
     # a native-script word selects itself by script, whatever its file
     assert strict.parse("김민준 씨").suffix == "씨"
@@ -3143,14 +3148,16 @@ def test_a_file_with_no_reading_is_a_strict_choice_only() -> None:
 def test_a_caller_removes_a_mul_word_as_any_other() -> None:
     # a mul.toml reading is a default reading like any other: a caller's
     # remove drops it, with or without a choice, strict included (#1005)
+    kept = parser_for(_choosing("pt"), strict=True)
+    assert kept.parse("Ana Souza, PhD").suffix == "PhD"
+    assert kept.parse("Dr Ana Souza").title == "Dr"
     lexicon = Lexicon.default().remove("phd", kind="credential")
     assert Parser(lexicon=lexicon).parse("Ana Souza, PhD").given == "PhD"
     for strict in (False, True):
         got = parser_for(_choosing("pt"), base=Parser(lexicon=lexicon),
                          strict=strict)
         assert got.parse("Ana Souza, PhD").given == "PhD"
-    stripped = parser_for(_choosing("pt"), strict=True).lexicon.remove(
-        "dr", kind="academic")
+    stripped = kept.lexicon.remove("dr", kind="academic")
     assert Parser(lexicon=stripped).parse("Dr Ana Souza").given == "Dr"
 
 

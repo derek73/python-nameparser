@@ -257,7 +257,8 @@ lexicon that added it as a credential is refused under ``locales.CS``.
 A lexicon built from :meth:`Lexicon.empty
 <nameparser.Lexicon.empty>` holds no shipped reading, so a choice turns
 none on in it, strict or not: to read only the chosen languages'
-vocabulary, choose strictly over the default lexicon.
+vocabulary and the shared words, choose strictly over the default
+lexicon.
 
 .. _strict-choice:
 
@@ -278,10 +279,11 @@ chosen languages' files are read, each tag selecting its own and its
 ancestors' as above, plus every word written in a script other than
 Latin (the Korean, Japanese and Chinese honorifics, the Cyrillic and
 Devanagari titles), which selects itself by its script, and the words
-every language writes alike, in the shared ``mul`` file: ``Dr``,
-``Prof``, ``Mr``, ``Mrs``, the degrees ``PhD``, ``MD``, ``MSc``, ``MBA``,
-``MPH`` and ``BSc``, and the numerals. Every other language's words
-leave, and a word no chosen file holds is read as a name word:
+every language writes alike, in the shared ``mul`` file, among them
+``Dr``, ``Prof``, ``Mr``, ``Mrs``, the degrees ``PhD``, ``MD``,
+``MSc``, ``MBA``, ``MPH`` and ``BSc``, and the numerals. Every other
+language's words leave, and a word none of these holds is read as a
+name word:
 
 .. doctest::
 
@@ -334,15 +336,15 @@ drops from every name:
       'PhD'
 
 - **Strict needs a language.** A strict call whose packs choose none
-  (``parser_for(locales.ZH, strict=True)``) would keep only the words
-  in other scripts, so it raises ``ValueError`` and names a pack to
+  (``parser_for(locales.ZH, strict=True)``) would keep only the shared
+  words and those in other scripts, so it raises ``ValueError`` and names a pack to
   add. A pack's own word list and policy are applied after the strict
   choice, untouched, and so is the Korean surname list.
 - **A language whose file holds no reading yet is accepted.**
   ``vi.toml`` holds none, so a plain ``vi`` choice is refused; a
   strict one reads the other scripts' words and, in Latin letters,
-  only the shared ones, which unchains Dutch ``van`` from a Vietnamese middle name
-  (``Do Van Minh`` reads middle ``Van``, family ``Minh``).
+  only the shared ones, which unchains Dutch ``van`` from a Vietnamese
+  middle name (``Do Van Minh`` reads middle ``Van``, family ``Minh``).
 - **Your own words stay.** A word a strict choice drops is kept where
   you added it yourself, your lexicon's readings applying after the
   choice (`Your own words outrank a choice`_).

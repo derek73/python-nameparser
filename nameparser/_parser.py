@@ -413,10 +413,11 @@ def parser_for(*locales: Locale, base: Parser | None = None,
     ``segmenter`` does: omitted (:data:`~nameparser.UNSET`) keeps base's
     recorded strictness, ``False`` on a strict base raises ValueError, a
     strict choice not being undone by a later call, and ``True`` on a
-    plain one makes the whole choice strict. A strict choice accepts a language whose file holds no
-    reading yet (``vi``), which a plain one refuses as changing
-    nothing, and raises ValueError when the packs choose no language,
-    since it would then strip every Latin-script reading
+    plain one makes the whole choice strict. A strict choice accepts a
+    language whose file holds no reading yet (``vi``), which a plain
+    one refuses as changing nothing, and raises ValueError when the
+    packs choose no language, since it would then keep no language's
+    own words, only mul.toml's and native-script vocabulary
     (decisions/vocabulary-model, 2026-10-30 #753, file-strict, and
     2026-10-31 #753, phase 3j).
 
@@ -545,8 +546,8 @@ def parser_for(*locales: Locale, base: Parser | None = None,
 
 def _no_strict_language(locales: tuple[Locale, ...]) -> str:
     """The refusal of a strict call that chooses no language, which
-    would keep only native-script vocabulary and strip every Latin one
-    in silence. The fix it offers is a pack choosing the first pack's
+    would keep only mul.toml's and native-script vocabulary, dropping
+    every language's own words in silence. The fix it offers is a pack choosing the first pack's
     code where that is a language a strict choice accepts, else
     ``en``."""
     tag = "en"
@@ -562,7 +563,8 @@ def _no_strict_language(locales: tuple[Locale, ...]) -> str:
              else f"the pack {codes} chooses none" if len(locales) == 1
              else f"the packs {codes} choose none")
     return (f"strict=True keeps only the chosen languages' vocabulary, and "
-            f"{named}, so it would strip every Latin-script reading; add "
+            f"{named}, so it would keep only the shared words (mul.toml) "
+            f"and other scripts' words; add "
             f"a pack that chooses a language, e.g. "
             f"Locale(code={tag!r}, lexicon=Lexicon.empty(), "
             f"languages=frozenset({{{tag!r}}})), or drop strict=True")

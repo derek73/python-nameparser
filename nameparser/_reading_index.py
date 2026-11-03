@@ -245,8 +245,8 @@ def readings_of(text: str) -> tuple[IndexReading, ...]:
 #: The tags no choice names: mul.toml's readings are every language's
 #: and und.toml's no known language's, so neither is a language to
 #: choose. A plain choice never removes a reading of either (choose); a
-#: strict one, which keeps only the chosen files, keeps mul.toml's, as
-#: it keeps native-script vocabulary, and drops und.toml's
+#: strict one, which drops every file not chosen, keeps mul.toml's all
+#: the same, as it keeps native-script vocabulary, and drops und.toml's
 #: (:func:`strict_pool`; decisions/vocabulary-model, 2026-11-02 #1005).
 UNCHOOSABLE = frozenset({"mul", "und"})
 
@@ -290,8 +290,8 @@ def selected(languages: Iterable[str], *,
                 f"{tag!r} is not a language to choose: mul.toml's readings "
                 f"are every language's and und.toml's no known language's; "
                 f"every choice, plain or strict, keeps mul.toml's, a plain "
-                f"one keeps und.toml's too and a strict one drops them. "
-                f"Drop it")
+                f"one keeps und.toml's too and a strict one drops "
+                f"und.toml's. Drop it")
         found = {by_fold[a] for a in _ancestors(tag) if a in by_fold}
         if not found:
             empty = sorted(t for t in files() - tags() - UNCHOOSABLE
@@ -408,8 +408,8 @@ def compile_choice(chosen: frozenset[str], strict: bool = False) -> Compiled:
 
 def strict_ungated(chosen: frozenset[str]) -> frozenset[str]:
     """The words a strict choice of the file tags `chosen` ungates: a
-    chosen file holds the word's vocabulary reading and only a dropped
-    one the name reading gating it, so under strict a possibly-given
+    chosen file or mul.toml holds the word's vocabulary reading and
+    only a dropped file the name reading gating it, so under strict a possibly-given
     particle is never-given, a title only inside a phrase is a title,
     and a suffix gated by the count is not. Compared with the PLAIN
     choice of the same tags, never with the default's markers, which
