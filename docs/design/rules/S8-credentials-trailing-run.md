@@ -79,6 +79,11 @@
   "John Smith MA Jones"       →  middle="Smith MA"
   "John Smith M.A. Jones"     →  suffix="M.A. Jones"
   ```
+- With no family comma, a credential acronym written in Title case is read as a name word before any word that reads as one, an unlisted credential and a title included: a run of Title-case credentials written without commas gives its last word to the family where that word is unlisted, and a title written after the credential becomes the family name. Neither shape was found in the local corpora (decisions/S8).
+  ```
+  "Jane Doe Rn Bsn"           →  family="Bsn"
+  "John Smith Md Dr"          →  family="Dr"
+  ```
 
 ---
 **Signal:** neighbor: an unambiguous credential after the name core, and the rest of its part + case contrast: a credential acronym in Title case before a name word
