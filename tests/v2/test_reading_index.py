@@ -340,15 +340,16 @@ def test_a_file_holding_no_reading_is_chosen_only_strictly() -> None:
 
 #: The words each strict choice of one tag ungates against the plain
 #: choice of the same tag (decisions/vocabulary-model's 2026-10-30 #753,
-#: file-strict entry: 16 words, 27 word-and-tag pairs over 13 tags). A
+#: file-strict entry measured 16 words, 27 word-and-tag pairs over 13
+#: tags on 2026-10-31; the strict-gap batches of 2026-11-03 moved it). A
 #: word leaves this table when a name reading is written in the chosen
 #: file whose names carry it, and joins it when a chosen file's
 #: vocabulary reading loses its gate: review each move.
 STRICT_UNGATED = {
     "ar": {"cheikh", "sultan"},
     "cs": {"st"},
-    "fr": {"la", "marquis", "marquise", "st"},
     "fil": {"del", "la", "san"},
+    "fr": {"la", "marquis", "marquise", "st"},
     "ga": {"mac"},
     "gd": {"mac", "nic"},
     "hr": {"st"},
