@@ -28,9 +28,9 @@ https://nameparser.readthedocs.io/en/v1.4.0/
 What 3.0 removes
 ----------------
 
-2.8 warned at the line in your code that used each of these, with the
-exceptions `Finding the sites`_ names, and 2.8.1 at the import of
-``nameparser.config.regexes``:
+2.8 warned at the line in your code that used each of these, and 2.8.1
+where code reads a constant of ``nameparser.config.regexes``, with the
+exceptions `Finding the sites`_ names:
 
 .. list-table::
    :header-rows: 1
@@ -84,9 +84,10 @@ it:
 
     python -W error::DeprecationWarning -m pytest
 
-2.8 warns where code *uses* a removed name, not where it imports one
-(the one import that warns is ``nameparser.config.regexes``, from
-2.8.1), so some code passes that check and still fails on 3.0:
+2.8 warns where code *uses* a removed name, not where it imports one,
+and 2.8.1 where code reads a constant of ``nameparser.config.regexes``
+(``from nameparser.config.regexes import REGEXES`` included), so some
+code passes that check and still fails on 3.0:
 
 * *reading* the shared ``CONSTANTS`` (``"dr" in CONSTANTS.titles``, or
   ``copy.copy(CONSTANTS)``), which 2.8 left quiet so that importing
@@ -98,6 +99,9 @@ it:
   importing ``nameparser.parser`` or the two 1.x word-list modules,
   ``nameparser.config.prefixes`` and
   ``nameparser.config.bound_first_names``
+* importing ``nameparser.config.regexes`` without reading a constant
+  from it (``import nameparser.config.regexes`` or ``from
+  nameparser.config import regexes``)
 
 So search your code for ``CONSTANTS``, ``HumanName``, ``Constants``,
 ``nameparser.parser``, ``nameparser.util``, ``config.prefixes``,
