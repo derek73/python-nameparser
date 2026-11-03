@@ -656,8 +656,11 @@ def split_pair(first: str, second: str, lexicon: Lexicon) -> str | None:
     TAG the merged pair carries, or None.
 
     "suffix": 'Ph.' then 'D.', with or without their periods, in any
-    case -- v1's fix_phd, merged as an unambiguous suffix wherever it
-    stands but the head of the string (decisions/phd-merge).
+    case, where the lexicon lists `phd` as an unambiguous credential
+    -- v1's fix_phd, merged as an unambiguous suffix wherever it
+    stands but the head of the string (decisions/phd-merge); "split"
+    where it lists `phd` as ambiguous, and an unlisted pair is asked
+    as any other below.
 
     "split": any other pair of short chunks (`SPLIT_CHUNK`) whose
     period-free concatenation is unambiguous suffix vocabulary while
@@ -680,8 +683,13 @@ def split_pair(first: str, second: str, lexicon: Lexicon) -> str | None:
     Where the merge may happen (never at the head of the string,
     rules/S2; a member pair only in a main segment and in the part
     after a comma) is the caller's question, not this one's."""
-    if _PH.fullmatch(first) is not None and _D.fullmatch(second) is not None:
-        return "suffix"
+    if (_PH.fullmatch(first) is not None and _D.fullmatch(second) is not None
+            and "phd" in lexicon._sets.suffix_acronyms):
+        # rules/S12: "is a credential only where the lexicon lists `phd`"
+        # -- the Except clause for this pair; an unlisted pair is any
+        # other two chunks, below. decisions/phd-merge (#1000)
+        return ("split" if "phd" in lexicon._sets.suffix_acronyms_ambiguous
+                else "suffix")
     if (SPLIT_CHUNK.fullmatch(first) is None
             or SPLIT_CHUNK.fullmatch(second) is None):
         return None

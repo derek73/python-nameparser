@@ -255,6 +255,53 @@ def test_phd_split_mid_name_is_a_suffix() -> None:
     assert pn.middle == ""
 
 
+def _without_phd() -> dict[str, Parser]:
+    return {
+        "removed": Parser(lexicon=Lexicon.default().remove(
+            "phd", kind="credential")),
+        "empty": Parser(lexicon=Lexicon.empty()),
+        "strict pt": parser_for(locales.PT, strict=True),
+    }
+
+
+# Each of these read suffix 'Ph. D.' under every lexicon before #1000,
+# the pair asking no vocabulary.
+_PHD_SHAPES = (
+    "John Smith Ph. D.",
+    "John Smith, Ph. D.",
+    "John Smith Ph D",
+    "John Smith Ph. D. Jr.",
+    "John Ph. D.",
+    "Smith, John Ph. D.",
+    "John Ph. D. Smith",
+)
+
+
+@pytest.mark.parametrize("text", _PHD_SHAPES)
+@pytest.mark.parametrize("label", ["removed", "empty", "strict pt"])
+def test_phd_pair_is_no_credential_where_the_lexicon_lists_no_phd(
+        label: str, text: str) -> None:
+    # decisions/phd-merge (#1000): removing `phd` turns off both spellings
+    with warnings.catch_warnings():
+        # an empty lexicon holds no hangul surnames to segment on
+        warnings.filterwarnings(
+            "ignore", message="Policy.segment_scripts activates hangul")
+        parser = _without_phd()[label]
+    spaced = parser.parse(text)
+    joined = parser.parse(re.sub(r"Ph\.? D\.?", "PhD", text))
+    assert "Ph" not in spaced.suffix
+    assert "PhD" not in joined.suffix
+
+
+def test_phd_marked_ambiguous_leaves_the_pair_to_the_count() -> None:
+    # a `phd` with a family reading is an ambiguous credential, and the
+    # pair is then a member of the class as rules/S12's other pairs are
+    lexicon = Lexicon.default().add("phd", kind="family")
+    parser = Parser(lexicon=lexicon)
+    assert parser.parse("John Smith, Ph. D.").suffix == "Ph. D."
+    assert parser.parse("John Ph. D.").family == "D."
+
+
 def test_ambiguous_acronym_reports_the_reading_it_took() -> None:
     # 'ma' is both a post-nominal and a surname, so whichever way the
     # peel resolves it is a guess -- the same shape as the leading
@@ -2370,15 +2417,16 @@ def test_the_joined_tag_never_reaches_a_title() -> None:  # #429 regression guar
     assert joined("Smith, MD Rev. Dr.") == []
 
 
-def test_the_ph_d_pair_merges_whatever_the_vocabulary_says() -> None:
-    # v1's fix_phd merged 'Ph. D.' by its spelling alone, so a config
-    # without 'phd' still read the pair as one suffix; the split
-    # credential's vocabulary pre-test must not stand in front of that
-    # answer (#752's review)
+def test_the_ph_d_pair_reads_by_the_vocabulary() -> None:
+    # v1's fix_phd merged 'Ph. D.' by its spelling alone, and through 2.8
+    # a config without 'phd' still read the pair as one suffix; since
+    # #1000 the lexicon defines both spellings (decisions/phd-merge)
     p = Parser(lexicon=Lexicon.default().remove("phd", kind="credential"))
-    assert p.parse("John Smith Ph. D.").suffix == "Ph. D."
+    s = p.parse("John Smith Ph. D.")
+    assert (s.middle, s.family, s.suffix) == ("Smith Ph.", "D.", "")
     h = p.parse("John Smith, Ph. D.")
-    assert (h.given, h.family, h.suffix) == ("John", "Smith", "Ph. D.")
+    assert (h.title, h.given, h.family, h.suffix) == (
+        "Ph.", "D.", "John Smith", "")
 
 
 def test_a_given_name_written_short_listed_as_a_title_is_a_title() -> None:
@@ -2861,16 +2909,15 @@ def test_reading_languages_follow_the_choice() -> None:
 def test_reading_languages_under_a_strict_choice_name_the_chosen_files() -> None:
     # a strict choice keeps only the chosen files' readings, so nothing
     # else is named, mul.toml's included; a reading the strict lexicon
-    # does not hold names no file (the Ph./D. pair, merged by its
-    # pattern whatever the vocabulary: decisions/phd-merge)
+    # does not hold is no reading at all (the Ph./D. pair, a credential
+    # only where the lexicon lists `phd`: decisions/phd-merge, #1000)
     en = parser_for(_choosing("en"), strict=True)
     assert _languages_of(Parser(), "Baron John Smith", "Baron") == (
         "de", "en", "fr", "nl")
     assert _languages_of(en, "Baron John Smith", "Baron") == ("en",)
     pt = parser_for(_choosing("pt"), strict=True)
-    assert pt.parse("John Smith Ph. D.").suffix == "Ph. D."
+    assert pt.parse("John Smith Ph. D.").suffix == ""
     assert _languages_of(Parser(), "John Smith Ph. D.", "Ph.") == ("en",)
-    assert _languages_of(pt, "John Smith Ph. D.", "Ph.") == ()
 
 
 def test_reading_languages_follow_a_callers_readings() -> None:

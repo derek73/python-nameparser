@@ -48,7 +48,7 @@
 
 **Except:**
 
-- **The Ph./D. pair is an unambiguous credential**, merged wherever it stands but the head of the string and read as a suffix there without the count (decisions/phd-merge), so the count does not decide it; where it overlaps another pair, it is the pair that merges.
+- **The Ph./D. pair is an unambiguous credential where the lexicon lists `phd` as one**, as the default does: merged wherever it stands but the head of the string and read as a suffix there without the count (decisions/phd-merge), so the count does not decide it, and where it overlaps another pair, it is the pair that merges. The spaced `Ph. D.` is a credential only where the lexicon lists `phd`, so removing the one spelling turns off both: under a lexicon without `phd` (a strict choice of languages whose files do not hold it, or `Lexicon.empty()`), the pair is the two words it is written as, and under one marking `phd` ambiguous it is a member of the class like any other pair, which the count decides.
   ```
   "John Ph. D."               →  suffix="Ph. D."
   "Jane Doe Dr. Ph. D."       →  title="Dr."

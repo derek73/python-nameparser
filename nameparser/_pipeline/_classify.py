@@ -508,8 +508,8 @@ def classify(state: ParseState) -> ParseState:
                     and (len(a.text.rstrip(".")) >= 2
                          or a.text.endswith(".") and b.text.endswith(".")
                          and (len(b.text) == 2 or not b.text.isascii()))
-                    # the Ph./D. pair whatever the vocabulary, as v1's
-                    # fix_phd merged it; any other only where its words
+                    # the Ph./D. pair, which `split_pair` answers by the
+                    # lexicon's `phd` (#1000); any other only where its words
                     # are not two suffix words, two credentials already,
                     # and its fold is listed, composed in C where it is
                     # not ASCII
