@@ -43,12 +43,14 @@ both return a new :class:`~nameparser.Lexicon`, the one you started
 from (here, ``Lexicon.default()``) never being mutated. Where a word
 holds a reading of the kind added, ``add`` updates that reading in every
 file holding it; otherwise it adds a reading of the caller's own.
-``remove`` with no kind takes out every reading of the word, and with a
-category (``"title"``, ``"name"``) every reading of that category.
+``remove`` with no kind takes out every reading of the word, with a
+category (``"title"``, ``"name"``) every reading of that category, and
+with a kind and ``every=True`` every word's readings of that kind.
 :meth:`~nameparser.Lexicon.readings_of` answers what a word may be read
 as here, each :class:`~nameparser.LexiconReading` naming the shipped
-files that hold it; whether a parse *read* it that way is
-:attr:`Token.reading <nameparser.Token.reading>`'s question.
+files that hold it, and :meth:`~nameparser.Lexicon.words` lists the
+words holding a reading of a kind; whether a parse *read* a word that
+way is :attr:`Token.reading <nameparser.Token.reading>`'s question.
 
 A credential the defaults do not list is one reading per word:
 
@@ -178,15 +180,18 @@ That has held since 1.4.0.
 Turning title detection off
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Every title reading of every listed title word goes at once, the
-category matching each kind; the word lists in ``nameparser.config``
-name the words:
+``every=True`` with a kind and no words takes out every word's readings
+of it, and the category ``"title"`` matches every title kind, so every
+title reading goes at once. (A call with no words and no ``every``
+raises, so an empty ``remove(*words, kind=...)`` never does this.)
 
 .. doctest::
 
-    >>> from nameparser.config.titles import TITLES, TITLES_AMBIGUOUS
-    >>> lean = Lexicon.default().remove(*TITLES, *TITLES_AMBIGUOUS,
-    ...                                 kind="title")
+    >>> len(Lexicon.default().words(kind="title")) > 800
+    True
+    >>> lean = Lexicon.default().remove(kind="title", every=True)
+    >>> lean.words(kind="title")
+    ()
     >>> Parser(lexicon=lean).parse("Dean of Students Jane Smith").title
     ''
     >>> Parser(lexicon=lean).parse("Hon Solo").given
@@ -665,8 +670,7 @@ entirely:
     >>> lex = Lexicon.default().add("mohamad", kind="bound_given")
     >>> Parser(lexicon=lex).parse("mohamad salam ahmed salem").given
     'mohamad salam'
-    >>> from nameparser.config.bound_given_names import BOUND_GIVEN_NAMES
-    >>> off = Lexicon.default().remove(*BOUND_GIVEN_NAMES, kind="bound_given")
+    >>> off = Lexicon.default().remove(kind="bound_given", every=True)
     >>> Parser(lexicon=off).parse("abdul salam ahmed salem").given
     'abdul'
 

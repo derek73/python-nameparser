@@ -514,6 +514,170 @@ def test_remove_takes_a_kind_or_a_category() -> None:
             .readings_of("dean")} == {"office"}
 
 
+def _kinds_and_categories() -> list[str]:
+    import nameparser._reading_index as ri
+    return list(ri.CATEGORY) + sorted(
+        set(ri.CATEGORY.values()) - set(ri.CATEGORY))
+
+
+#: The kinds and categories a whole-kind remove cannot take out of the
+#: default: the build's checks 9 and 11 refuse a bound given particle
+#: with no given reading and an agnomen with no name reading, naming
+#: the word, as they refuse the same remove written word by word.
+_REFUSED_WHOLE = {"given", "family", "name"}
+
+
+@pytest.mark.parametrize("kind", _kinds_and_categories())
+def test_remove_of_a_kind_with_no_words_takes_out_every_word(kind: str) -> None:
+    lex = Lexicon.default()
+    held = lex.words(kind=kind)
+    assert held  # precondition, or the removal passes vacuously
+    if kind in _REFUSED_WHOLE:
+        with pytest.raises(ValueError, match="no given reading|no name "
+                                             "reading"):
+            lex.remove(kind=kind, every=True)._sets
+        return
+    lean = lex.remove(kind=kind, every=True)
+    assert lean.words(kind=kind) == ()
+    # the same lexicon as the words removed one by one, set for set
+    by_word = lex.remove(*held, kind=kind)
+    for name in _SET_FIELDS + _KIND_FIELDS:
+        assert getattr(lean._sets, name) == getattr(by_word._sets, name), name
+    # nothing else goes: every other kind keeps its words
+    for other in _kinds_and_categories():
+        if other == kind or other in _REFUSED_WHOLE:
+            continue
+        kept = set(lex.words(kind=other)) - set(held)
+        assert kept <= set(lean.words(kind=other)), other
+
+
+def test_remove_of_a_kind_reaches_readings_a_later_choice_turns_on() -> None:
+    # `lic` is Spanish's academic title, off by default and turned on by
+    # the choice; the caller's edits apply after the choice
+    from nameparser import locales
+    assert "lic" not in Lexicon.default().words(kind="academic")
+    es = parser_for(locales.ES)
+    assert "lic" in es.lexicon.words(kind="academic")
+    assert es.parse("Lic Juan Pérez").title == "Lic"
+    lean = parser_for(locales.ES, base=Parser(
+        lexicon=Lexicon.default().remove(kind="academic", every=True)))
+    assert lean.lexicon.words(kind="academic") == ()
+    assert lean.parse("Lic Juan Pérez").title == ""
+
+
+def test_a_whole_kind_remove_takes_readings_written_off_as_a_word_remove_does() -> None:
+    # `lic`'s academic reading is es.toml's, off by default: an add of
+    # the kind turns it on, naming its file, unless a remove took it out
+    # first, word by word or whole, leaving the caller's own reading
+    lex = Lexicon.default()
+    assert lex.add("lic", kind="academic").readings_of("lic")[0].languages == (
+        "es",)
+    for removed in (lex.remove("lic", kind="academic"),
+                    lex.remove(kind="academic", every=True)):
+        (reading,) = removed.add("lic", kind="academic").readings_of("lic")
+        assert reading.languages == ()
+
+
+def test_a_whole_kind_remove_is_logged_apart_and_round_trips() -> None:
+    lex = Lexicon.default().remove("dean", kind="title").remove(
+        kind="title", every=True).add("zqtitle", kind="salutation")
+    assert lex.words(kind="title") == ("zqtitle",)
+    assert pickle.loads(pickle.dumps(lex)) == lex
+    assert pickle.loads(pickle.dumps(lex)).words(kind="title") == ("zqtitle",)
+    # the two removes stay two calls: a whole-kind remove joined to the
+    # word before it would name only `dean`
+    from nameparser._lexicon import _rendered
+    assert _rendered(lex._edits) == [
+        ".remove('dean', kind='title')", ".remove(kind='title', every=True)",
+        ".add('zqtitle', kind='salutation')"]
+
+
+@pytest.mark.parametrize("kind", _kinds_and_categories())
+def test_words_lists_exactly_the_words_holding_a_reading_of_the_kind(
+        kind: str) -> None:
+    lex = Lexicon.default().add("zqword", kind="salutation")
+    listed = lex.words(kind=kind)
+    assert list(listed) == sorted(set(listed))
+    held = {w for w in lex._pool() if any(
+        r.kind == kind or r.category == kind
+        for r in lex.readings_of(w))}
+    assert set(listed) == held
+
+
+def test_words_narrows_by_properties_as_add_spells_them() -> None:
+    lex = Lexicon.empty().add("zqsir", kind="nobility", addresses="given") \
+        .add("zqlord", kind="nobility").add("zqmrs", kind="salutation",
+                                            after_given=True)
+    assert lex.words(kind="nobility") == ("zqlord", "zqsir")
+    assert lex.words(kind="nobility", addresses="given") == ("zqsir",)
+    # the unwritten value selects the readings that do not write it
+    assert lex.words(kind="nobility", addresses="family") == ("zqlord",)
+    assert lex.words(kind="salutation", after_given=True) == ("zqmrs",)
+    assert lex.words(kind="salutation", after_given=False) == ()
+    assert Lexicon.empty().words(kind="title") == ()
+    # `title` is a kind and a category: as a category it reaches every
+    # title kind, and as a kind it takes the title reading's properties
+    assert lex.words(kind="title", addresses="given") == ("zqsir",)
+
+
+def test_words_compares_a_property_in_each_readings_own_kind() -> None:
+    # `suffix` is a kind and a category, and `acronym` is unwritten-true
+    # on a credential, false on a suffix word: asked of the category,
+    # each reading answers in its own kind
+    lex = Lexicon.empty().add("zqc", kind="credential").add(
+        "zqw", kind="credential", acronym=False).add("zqg", kind="generation")
+    assert lex.words(kind="suffix", acronym=True) == ("zqc",)
+    assert lex.words(kind="suffix", acronym=False) == ("zqg", "zqw")
+    default = Lexicon.default()
+    acronyms = set(default.words(kind="suffix", acronym=True))
+    words = set(default.words(kind="suffix", acronym=False))
+    assert "md" in acronyms and "jr" in words
+    assert acronyms.isdisjoint(words)
+    assert acronyms | words == set(default.words(kind="suffix"))
+
+
+def test_every_shipped_reading_holds_its_properties_canonical() -> None:
+    # what `words` compares a reading's properties as: held as add would
+    # write them, an unwritten value never (a written `acronym = true` on
+    # a credential would match no `words(..., acronym=True)`)
+    from nameparser._lexicon import _prop_value
+    behavioral = ("acronym", "addresses", "after_given", "attached",
+                  "attaches", "may_be_initial", "same_as")
+    held = [(w, r.kind, p, v) for w, rs in Lexicon.default()._pool().items()
+            for r in rs for p, v in r.props.items() if p in behavioral]
+    assert held  # precondition: the default writes some
+    assert [h for h in held if _prop_value(h[1], h[2], h[3]) != h[3]] == []
+
+
+def test_words_matches_a_list_property_whatever_its_order() -> None:
+    # `chief`'s nobility reading attaches to military and office titles;
+    # the asked list is folded and sorted as add folds it
+    lex = Lexicon.default()
+    held = lex.words(kind="nobility", attaches=["military", "office"])
+    assert "chief" in held
+    assert lex.words(kind="nobility", attaches=["Office", "military"]) == held
+
+
+@pytest.mark.parametrize(("call", "error", "match"), [
+    (lambda: Lexicon.empty().words(kind="titel"), ValueError, "or a category, on words"),
+    (lambda: Lexicon.empty().words(kind=None), TypeError, "kind as a string"),  # type: ignore[arg-type]
+    (lambda: Lexicon.empty().words(kind="name", same_as="x"), ValueError, "takes properties with a kind, not the category 'name'"),
+    (lambda: Lexicon.empty().words(kind="nobility", acronym=True), ValueError, "a nobility reading takes"),
+    (lambda: Lexicon.empty().words("title"), TypeError, "positional"),  # type: ignore[misc]
+    (lambda: Lexicon.empty().remove(), TypeError, re.escape("remove(kind='title', every=True)")),
+    # an empty splat is the call with no words: it raises, as in 2.x,
+    # rather than take out the whole kind
+    (lambda: Lexicon.default().remove(*[], kind="title"), TypeError, "at least one word"),
+    (lambda: Lexicon.empty().remove("dean", kind="title", every=True), TypeError, "words or every=True, not both"),
+    (lambda: Lexicon.empty().remove(every=True), TypeError, "takes a kind"),
+    (lambda: Lexicon.empty().remove(kind="title", every=1), TypeError, "every as True or False"),  # type: ignore[arg-type]
+])
+def test_words_and_a_whole_kind_remove_refuse_with_the_fix(
+        call: Callable[[], object], error: type[Exception], match: str) -> None:
+    with pytest.raises(error, match=match):
+        call()
+
+
 def test_add_of_a_held_kind_updates_it_in_every_file() -> None:
     # `e`'s conjunction is Italian and Portuguese, one-case fork and all
     lex = Lexicon.default()
