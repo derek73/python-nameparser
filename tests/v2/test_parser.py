@@ -314,6 +314,23 @@ def test_phd_pair_reads_its_two_words_where_it_does_not_merge(
     assert parser.parse("John Smith Ph.D.").suffix == "Ph.D."
 
 
+@pytest.mark.parametrize("text", [
+    # mid-name only the merged pair is a suffix, a bare `PhD` a name word
+    # (decisions/phd-merge), so no mid-name row
+    "Smith, Ph. D.", "John Ph. D.", "John Smith Ph. D."])
+def test_phd_listed_as_a_suffix_word_reads_both_spellings_alike(
+        text: str) -> None:
+    # the gate is unambiguous suffix vocabulary of either kind, as the
+    # joined spelling reads it (#1000's second review)
+    parser = Parser(lexicon=Lexicon.default().remove(
+        "phd", kind="credential").add("phd", kind="suffix"))
+    spaced = parser.parse(text)
+    joined = parser.parse(text.replace("Ph. D.", "PhD"))
+    assert spaced.suffix == "Ph. D."
+    assert joined.suffix == "PhD"
+    assert spaced.ambiguities == joined.ambiguities
+
+
 def test_phd_pair_outranks_an_overlapping_pair_only_where_it_merges() -> None:
     # 'Dr. Ph.' folds to the listed 'drph': the Ph./D. pair takes the
     # overlap where `phd` is an unambiguous credential, and leaves it to
@@ -2972,11 +2989,9 @@ def test_reading_languages_follow_a_callers_readings() -> None:
     chosen = parser_for(_choosing("pt"), base=st)
     assert _languages_of(chosen, "Jiří Dienstbier st.", "st.") == (
         "cs", "hr", "sk", "sl")
-    # the empty lexicon lists nothing, so names nothing
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", UserWarning)
-        empty = Parser(lexicon=Lexicon.empty())
-    assert _languages_of(empty, "John Smith Ph. D.", "Ph.") == ()
+    # the empty lexicon lists nothing, so names nothing: no parse under
+    # it takes a vocabulary reading since #1000, so
+    # test_an_empty_lexicon_names_no_file asks the lookup directly
 
 
 def test_an_alternative_reading_names_the_files_on_under_the_choice() -> None:

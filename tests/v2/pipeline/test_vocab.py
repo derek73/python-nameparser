@@ -254,8 +254,8 @@ def test_is_wholly_suffix() -> None:
     # an adjacent Ph./D. pair is ONE unit. 'D.' is what makes the merge
     # load-bearing: it is not suffix vocabulary in ANY lexicon, so the
     # pair fails without the merge. ('Ph.' happens to fail alone here
-    # too, but only because _SUFFIX_LEX is synthetic -- under
-    # Lexicon.default(), 'ph' IS a listed credential.)
+    # too, as it does under Lexicon.default(), which has not listed
+    # 'ph' since #459.)
     assert is_wholly_suffix(["Ph.", "D."], lex, pol)
     # either period may be left off ('Ph D', 'PH D'), v1's fix_phd
     assert is_wholly_suffix(["Ph", "D"], lex, pol)
