@@ -178,15 +178,29 @@ def _whole_name(seg0: Sequence[int], tokens: Sequence[WorkToken]) -> bool:
     `_vocab.name_word_count`'s, asked in `decide`): two or more units (a particle run and
     the name word it attaches to one unit, a connective join not, #575)
     holding a word that is not a suffix word -- a title counts, being a
-    word to the count an unambiguous credential takes."""
+    word to the count an unambiguous credential takes, and so does a
+    suffix word opening the part with a name word behind it."""
     # rules/C3: "a particle run and the one name word it attaches to are
     # one word"
     # the part before a family comma merges no member pair (rules/S12)
     pieces, ptags = _pieces(seg0, tokens, False)
     named: set[int] = set()
-    for piece, tags in zip(pieces, ptags):
+    opener: list[int] = []
+    name_behind = False
+    for k, (piece, tags) in enumerate(zip(pieces, ptags)):
         if not is_suffix_piece(piece, tags, tokens):
             named.update(piece)
+            # a title behind it is a word to this count but no name
+            # word, asked only once a suffix word has opened the part
+            if opener and not is_title_piece(piece, tags, tokens):
+                name_behind = True
+        elif k == 0 and SPLIT_MEMBER_TAG not in tokens[piece[0]].tags:
+            opener = piece
+    # rules/C3: "A suffix word opening the part is a name word to the
+    # count where a name word follows it" -- a split credential's
+    # member is half a credential, not a name (rules/S12)
+    if name_behind:
+        named.update(opener)
     if len(named) < 2:
         return False
     idx = list(seg0)
@@ -200,6 +214,17 @@ def _whole_name(seg0: Sequence[int], tokens: Sequence[WorkToken]) -> bool:
                 return True
         start = end
     return False
+
+
+def _members(seg: Sequence[int], tokens: Sequence[WorkToken]) -> set[int]:
+    """The positions in `seg` of split credentials' members, for
+    `name_word_count`'s opening word (rules/S12), on the one-letter
+    numeral's rare path; `decide` scans for them inline."""
+    members: set[int] = set()
+    for k, i in enumerate(seg):
+        if SPLIT_MEMBER_TAG in tokens[i].tags:
+            members.add(k)
+    return members
 
 
 def _behind_a_generation(state: ParseState, seg0: Sequence[int],
@@ -269,7 +294,8 @@ def _behind_a_generation(state: ParseState, seg0: Sequence[int],
     if (len(last.rstrip(".")) == 1 and is_single_letter_numeral(last)
             and name_word_count([tokens[i].text for i in front], lex,
                                 state.policy,
-                                letters_one_case=state.one_case) < 2):
+                                letters_one_case=state.one_case,
+                                members=_members(front, tokens)) < 2):
         return None
     if contrast is None:
         contrast = _name_contrast(state, seg0, clause_at)
@@ -449,8 +475,15 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
     licensed: set[int] = set()
     run = False
     if maybe:
+        # `_members` inline: a frame here is paid by every name with the
+        # ambiguous class after its comma ('John Smith, MA')
+        split_at: set[int] = set()
+        for k, i in enumerate(seg0):
+            if SPLIT_MEMBER_TAG in tokens[i].tags:
+                split_at.add(k)
         names = name_word_count([tokens[i].text for i in seg0], lex, pol,
-                                letters_one_case=state.one_case)
+                                letters_one_case=state.one_case,
+                                members=split_at)
     if names >= 2:
         # rules/C6: "An unlisted all-caps word joins the ambiguous
         # credential class [...] only where the name carries the contrast"

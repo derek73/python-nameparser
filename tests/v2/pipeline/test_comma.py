@@ -398,3 +398,24 @@ def test_a_generational_connective_joins_no_title_after_the_comma() -> None:
     assert (name.title, name.suffix) == ("Mr. Mrs.", "og")
     name = Parser(lexicon=plain).parse("Smith, Mr. og Mrs.")
     assert (name.title, name.suffix) == ("Mr. og Mrs.", "")
+
+
+def test_a_split_member_opening_the_part_is_no_name_word_to_either_count() -> None:
+    """rules/C3's opening suffix word excepts a split credential's
+    member (rules/S12): `_members` finds it among classify's tags, and
+    `name_word_count` leaves it out of the names behind the titles, as
+    `_whole_name` leaves it out of the units -- the one-letter
+    numeral's count (rules/C12) and the ambiguous class's (C4) alike."""
+    from nameparser._pipeline._vocab import name_word_count
+    lexicon, policy = Lexicon.default(), Policy()
+    state = classify(segment(tokenize(extract_delimited(ParseState(
+        original="Dr. MB ChB V, AD", lexicon=lexicon, policy=policy)))))
+    front = state.segments[0][:-1]
+    assert _texts(state, front) == ["Dr.", "MB", "ChB"]
+    assert _comma._members(front, state.tokens) == {1}
+    texts = _texts(state, front)
+    assert name_word_count(texts, lexicon, policy, members={1}) == 1
+    assert name_word_count(texts, lexicon, policy) == 2
+    # the ambiguous class's count, which decide scans for inline
+    # ("MB ChB, Ing" read suffix 'Ing' with the member counted)
+    assert parse("MB ChB, Ing").given == "Ing"

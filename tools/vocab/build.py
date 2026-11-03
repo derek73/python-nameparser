@@ -1004,7 +1004,7 @@ def _refused_by(r: Reading, excluded: str) -> bool:
     `generation` refuses a generic `suffix = {}` and a `status = {}`, either
     of which would put the word in the very set the recorded reason keeps
     it out of. In the suffix category `acronym` splits the kinds between
-    two sets. The name kinds compile to nothing and mean opposite things
+    two sets. The name kinds compile into no set an exclusion guards and mean opposite things
     (a word refused as a given name may well be a surname), so there a
     kind refuses only itself."""
     if excluded in CATEGORIES:
@@ -1230,13 +1230,17 @@ def check_pool(pool: Pool) -> None:
     # last, so every other refusal is seen first
     check_order(pool.entries)
 
-    # soft: a name reading compiles to nothing, so one on a word with no
-    # vocabulary reading and no exclusion anywhere -- an exclusion's
-    # evidence is what a name reading usually is -- informs nothing
+    # soft: a name reading compiles to nothing save a `same_as` (an
+    # abbreviated given name) or a `cased` (a case mask), so one without
+    # either on a word with no vocabulary reading and no exclusion
+    # anywhere -- an exclusion's evidence is what a name reading usually
+    # is -- informs nothing
     excluded_texts = {x.text for x in pool.exclusions if x.prop is None}
     for text, rs in by_text.items():
-        # an abbreviated given name compiles (GIVEN_NAME_ABBREVIATIONS)
-        if (all(r.category == "name" and "same_as" not in r.props for r in rs)
+        # an abbreviated given name compiles (GIVEN_NAME_ABBREVIATIONS),
+        # and a name's case mask (CAPITALIZATION_EXCEPTIONS, #1014)
+        if (all(r.category == "name" and "same_as" not in r.props
+                and "cased" not in r.props for r in rs)
                 and text not in excluded_texts):
             warnings.warn(f"{rs[0].where()}: a name reading on a word with no "
                           f"vocabulary reading is inert", VocabWarning, stacklevel=2)

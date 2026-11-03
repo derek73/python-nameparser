@@ -18,3 +18,150 @@ gender = "f"
 cased = "Nic"
 note = "Off by default, as in ga.toml, which holds the word's given and family readings: a Scottish Gaelic pack turns it on, and the given reading keeps a leading Nic a given name, reported (rules/P1). The genitive 'mhic' is left out of this file though ga.toml turns it on: written in Scottish Gaelic it mostly links a patronymic chain (\"Iain mac Dhòmhnaill mhic Sheumais\"), which a second listed particle splits at its last link, as the default already splits 'Iain mac Dhòmhnaill mac Sheumais' (2026-10-30). The mask is the word's own title case, as on ga.toml's 'ní': Gaelic writes it capitalized, and without one case repair would lowercase it as a particle (rules/R4)."
 
+[[word]]
+text = "macarthur"
+family = { cased = "MacArthur", note = "#1014: en.toml's mask, here so a strict choice of Scottish Gaelic keeps it; the counts are on the en.toml entry" }
+
+[[word]]
+text = "macaskill"
+family = { cased = "MacAskill", note = "#1014: en.toml's mask, here so a strict choice of Scottish Gaelic keeps it; the counts are on the en.toml entry" }
+
+[[word]]
+text = "maccallum"
+family = { cased = "MacCallum", note = "#1014: en.toml's mask, here so a strict choice of Scottish Gaelic keeps it; the counts are on the en.toml entry" }
+
+[[word]]
+text = "maccormick"
+family = { cased = "MacCormick", note = "#1014: en.toml's mask, here so a strict choice of Scottish Gaelic keeps it; the counts are on the en.toml entry" }
+
+[[word]]
+text = "maccready"
+family = { cased = "MacCready", note = "#1014: en.toml's mask, here so a strict choice of Scottish Gaelic keeps it; the counts are on the en.toml entry" }
+
+[[word]]
+text = "macdermid"
+family = { cased = "MacDermid", note = "#1014: en.toml's mask, here so a strict choice of Scottish Gaelic keeps it; the counts are on the en.toml entry" }
+
+[[word]]
+text = "macdiarmid"
+family = { cased = "MacDiarmid", note = "#1014: en.toml's mask, here so a strict choice of Scottish Gaelic keeps it; the counts are on the en.toml entry" }
+
+[[word]]
+text = "macdonald"
+family = { cased = "MacDonald", note = "#1014: en.toml's mask, here so a strict choice of Scottish Gaelic keeps it; the counts are on the en.toml entry" }
+
+[[word]]
+text = "macdonell"
+family = { cased = "MacDonell", note = "#1014: en.toml's mask, here so a strict choice of Scottish Gaelic keeps it; the counts are on the en.toml entry" }
+
+[[word]]
+text = "macdougall"
+family = { cased = "MacDougall", note = "#1014: en.toml's mask, here so a strict choice of Scottish Gaelic keeps it; the counts are on the en.toml entry" }
+
+[[word]]
+text = "macfarland"
+family = { cased = "MacFarland", note = "#1014: en.toml's mask, here so a strict choice of Scottish Gaelic keeps it; the counts are on the en.toml entry" }
+
+[[word]]
+text = "macgillivray"
+family = { cased = "MacGillivray", note = "#1014: en.toml's mask, here so a strict choice of Scottish Gaelic keeps it; the counts are on the en.toml entry" }
+
+[[word]]
+text = "macgowan"
+family = { cased = "MacGowan", note = "#1014: en.toml's mask, here so a strict choice of Scottish Gaelic keeps it; the counts are on the en.toml entry" }
+
+[[word]]
+text = "macgregor"
+family = { cased = "MacGregor", note = "#1014: en.toml's mask, here so a strict choice of Scottish Gaelic keeps it; the counts are on the en.toml entry" }
+
+[[word]]
+text = "macinnis"
+family = { cased = "MacInnis", note = "#1014: en.toml's mask, here so a strict choice of Scottish Gaelic keeps it; the counts are on the en.toml entry" }
+
+[[word]]
+text = "macintyre"
+family = { cased = "MacIntyre", note = "#1014: en.toml's mask, here so a strict choice of Scottish Gaelic keeps it; the counts are on the en.toml entry" }
+
+[[word]]
+text = "macisaac"
+family = { cased = "MacIsaac", note = "#1014: en.toml's mask, here so a strict choice of Scottish Gaelic keeps it; the counts are on the en.toml entry" }
+
+[[word]]
+text = "maciver"
+family = { cased = "MacIver", note = "#1014: en.toml's mask, here so a strict choice of Scottish Gaelic keeps it; the counts are on the en.toml entry" }
+
+[[word]]
+text = "mackechnie"
+family = { cased = "MacKechnie", note = "#1014: en.toml's mask, here so a strict choice of Scottish Gaelic keeps it; the counts are on the en.toml entry" }
+
+[[word]]
+text = "mackillop"
+family = { cased = "MacKillop", note = "#1014: en.toml's mask, here so a strict choice of Scottish Gaelic keeps it; the counts are on the en.toml entry" }
+
+[[word]]
+text = "mackinnon"
+family = { cased = "MacKinnon", note = "#1014: en.toml's mask, here so a strict choice of Scottish Gaelic keeps it; the counts are on the en.toml entry" }
+
+[[word]]
+text = "maclaren"
+family = { cased = "MacLaren", note = "#1014: en.toml's mask, here so a strict choice of Scottish Gaelic keeps it; the counts are on the en.toml entry" }
+
+[[word]]
+text = "maclaughlin"
+family = { cased = "MacLaughlin", note = "#1014: en.toml's mask, here so a strict choice of Scottish Gaelic keeps it; the counts are on the en.toml entry" }
+
+[[word]]
+text = "maclean"
+family = { cased = "MacLean", note = "#1014: en.toml's mask, here so a strict choice of Scottish Gaelic keeps it; the counts are on the en.toml entry" }
+
+[[word]]
+text = "maclellan"
+family = { cased = "MacLellan", note = "#1014: en.toml's mask, here so a strict choice of Scottish Gaelic keeps it; the counts are on the en.toml entry" }
+
+[[word]]
+text = "maclennan"
+family = { cased = "MacLennan", note = "#1014: en.toml's mask, here so a strict choice of Scottish Gaelic keeps it; the counts are on the en.toml entry" }
+
+[[word]]
+text = "macleod"
+family = { cased = "MacLeod", note = "#1014: en.toml's mask, here so a strict choice of Scottish Gaelic keeps it; the counts are on the en.toml entry" }
+
+[[word]]
+text = "macmaster"
+family = { cased = "MacMaster", note = "#1014: en.toml's mask, here so a strict choice of Scottish Gaelic keeps it; the counts are on the en.toml entry" }
+
+[[word]]
+text = "macmillan"
+family = { cased = "MacMillan", note = "#1014: en.toml's mask, here so a strict choice of Scottish Gaelic keeps it; the counts are on the en.toml entry" }
+
+[[word]]
+text = "macneil"
+family = { cased = "MacNeil", note = "#1014: en.toml's mask, here so a strict choice of Scottish Gaelic keeps it; the counts are on the en.toml entry" }
+
+[[word]]
+text = "macneill"
+family = { cased = "MacNeill", note = "#1014: en.toml's mask, here so a strict choice of Scottish Gaelic keeps it; the counts are on the en.toml entry" }
+
+[[word]]
+text = "macphail"
+family = { cased = "MacPhail", note = "#1014: en.toml's mask, here so a strict choice of Scottish Gaelic keeps it; the counts are on the en.toml entry" }
+
+[[word]]
+text = "macphee"
+family = { cased = "MacPhee", note = "#1014: en.toml's mask, here so a strict choice of Scottish Gaelic keeps it; the counts are on the en.toml entry" }
+
+[[word]]
+text = "macqueen"
+family = { cased = "MacQueen", note = "#1014: en.toml's mask, here so a strict choice of Scottish Gaelic keeps it; the counts are on the en.toml entry" }
+
+[[word]]
+text = "macrae"
+family = { cased = "MacRae", note = "#1014: en.toml's mask, here so a strict choice of Scottish Gaelic keeps it; the counts are on the en.toml entry" }
+
+[[word]]
+text = "macsween"
+family = { cased = "MacSween", note = "#1014: en.toml's mask, here so a strict choice of Scottish Gaelic keeps it; the counts are on the en.toml entry" }
+
+[[word]]
+text = "mactaggart"
+family = { cased = "MacTaggart", note = "#1014: en.toml's mask, here so a strict choice of Scottish Gaelic keeps it; the counts are on the en.toml entry" }

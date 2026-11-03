@@ -2448,6 +2448,71 @@ CASES: tuple[Case, ...] = (
                "three even standing alone (given 'Ortega', middle 'y'), "
                "and the count follows it. 2.3.0 read given 'Ed'",
          shape=3),
+    # rules/C3's count before the comma takes a suffix word opening the
+    # part as a name word where a name word follows it -- the given
+    # name's place, as the comma-less name reads it.
+    Case("a_credential_opening_the_part_before_a_comma_is_a_name_word",
+         "Md Rahman, PhD",
+         {"given": "Md", "family": "Rahman", "suffix": "PhD"},
+         classification="fix(c3-leading-credential)",
+         notes="'Md' (Muhammad written short) is listed only as the "
+               "credential, so the count read one name word and the "
+               "listing form took 'Md Rahman' for the family; 'Md "
+               "Rahman' alone reads given 'Md'. 2.8.0 read family 'Md "
+               "Rahman'; 1.4.0 read title 'Md', first 'Rahman'"),
+    Case("initials_spelling_a_credential_before_a_comma_are_the_given_name",
+         "JP Clancy, MD",
+         {"given": "JP", "family": "Clancy", "suffix": "MD"},
+         classification="parity",
+         notes="'jp' is a credential (Justice of the Peace), and "
+               "initials written run together spell it. 2.4.0 through "
+               "2.8.0 read family 'JP Clancy'"),
+    Case("dotted_initials_spelling_a_credential_before_a_comma_are_the_given_name",
+         "A.M. Barrett, MD",
+         {"given": "A.M.", "family": "Barrett", "suffix": "MD"},
+         classification="parity",
+         notes="'am' is a credential, matched with its periods "
+               "removed. 2.4.0 through 2.8.0 read family 'A.M. "
+               "Barrett'"),
+    Case("a_given_name_a_credential_spells_before_a_comma_is_the_given_name",
+         "Cem Akin, M.D., Ph.D.",
+         {"given": "Cem", "family": "Akin", "suffix": "M.D., Ph.D."},
+         classification="parity",
+         notes="Cem is a Turkish given name and 'cem' a listed "
+               "credential. 2.4.0 through 2.8.0 read family 'Cem Akin'"),
+    Case("a_credential_behind_a_title_before_a_comma_is_a_name_word",
+         "Dr. Md Rahman, Ing",
+         {"title": "Dr.", "given": "Md", "family": "Rahman",
+          "suffix": "Ing"},
+         classification="fix(c3-leading-credential)",
+         ambiguities=("suffix-or-name",),
+         notes="C4's count of names leaves the title out and takes the "
+               "first word after it. 2.8.0 read given 'Ing', family 'Md "
+               "Rahman'; 1.4.0 read first 'Ing', last 'Dr. Rahman', "
+               "suffix 'Md'"),
+    Case("a_credential_and_generation_before_a_comma_keep_the_given_name",
+         "Md Rahman Jr., PhD",
+         {"given": "Md", "family": "Rahman", "suffix": "Jr., PhD"},
+         classification="fix(c3-leading-credential)",
+         notes="C12's whole name in front of the generation is counted "
+               "as C3 counts. 2.8.0 read family 'Md Rahman'; 1.4.0 read "
+               "title 'Md', first 'Rahman', last 'Jr.'"),
+    Case("a_title_suffix_dual_opening_the_part_counts_as_a_title_does",
+         "Sr. van der Berg, PhD",
+         {"title": "Sr.", "given": "van", "family": "der Berg",
+          "suffix": "PhD"},
+         classification="fix(c3-leading-credential)",
+         ambiguities=("particle-or-given",),
+         notes="'sr' is title and suffix vocabulary; opening the part "
+               "it is a word to the count, as 'Dr. van der Berg, PhD' "
+               "counts its title. 2.8.0 read family 'van der Berg'; "
+               "1.4.0 read first 'van der Berg'"),
+    Case("a_credential_alone_before_a_comma_is_the_family",
+         "Md, PhD",
+         {"family": "Md", "suffix": "PhD"},
+         notes="rules/C3 boundary: no name word follows the credential, "
+               "so the part is the listing form's one word. 1.4.0 read "
+               "title 'PhD', first 'Md'"),
     Case("a_particle_surname_before_an_unambiguous_credential_stays_whole",
          "van der Berg, PhD",
          {"family": "van der Berg", "suffix": "PhD"},

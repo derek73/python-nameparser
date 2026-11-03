@@ -2,7 +2,7 @@
 
 **When:** case repair is asked of a parsed name, as in "juan mcdonald".
 
-**Then:** case repair returns a repaired copy and never mutates the parse, and where it acts at all — R5 decides where — the copy honors the casing a vocabulary entry records (PhD, BSc) and the Mac/Mc convention (McDonald), not only ordinary word-by-word casing.
+**Then:** case repair returns a repaired copy and never mutates the parse, and where it acts at all — R5 decides where — the copy honors the casing a vocabulary entry records (PhD, BSc) and the Mc convention (McDonald), not only ordinary word-by-word casing.
 
 - **Repair changes case and nothing else**: the repaired word is the word as written, recased. A word is read whole however its letters are encoded: a letter written as a base letter followed by its combining accent is repaired as the same letter written whole, and the repaired word keeps the encoding the writer used.
   ```
@@ -21,6 +21,7 @@
   "st.john smith"             →  capitalized="St.John Smith"
   "J.Smith"                   →  capitalized_forced="J.Smith"
   "J.MCDONALD SMITH"          →  capitalized="J.McDonald Smith"
+  "J.MACDONALD SMITH"         →  capitalized="J.MacDonald Smith"
   "m.ʿali smith"              →  capitalized="M.ʿAli Smith"
   "É.J. DUPONT"               →  capitalized="É.J. Dupont"
   "john 3rd smith"            →  capitalized="John 3rd Smith"  · boundary
@@ -57,7 +58,14 @@
   ```
   "Juan McDonald"             →  capitalized_forced="Juan McDonald"
   ```
-- **A credential acronym the exceptions map does not carry is an initialism**, so a single-case word the parse put in the suffix role from the acronym vocabulary (written whole across any hyphen or slash it holds, `OTR/L`, not as two name words), or read as a credential by its dotted shape alone (S3) or by its capitals (S9), repairs to its all-caps spelling rather than a title-cased one, and that repair outranks the Mac/Mc convention where a word fits both (MCSE, not McSe). A roman numeral the parse put in the suffix role is written in capitals the way a generation is written, whether or not the vocabulary lists it (VI as well as III). A suffix word that is neither an acronym, a numeral nor an exceptions-map entry -- the generational `jr`, `sr` -- keeps its title case.
+- **A name opening Mac takes an inner capital only from a mask**: Mac opens names that are not Gaelic (Machado, Macías) and Gaelic names written both ways (Mackenzie, MacKenzie), so its spelling does not say which, and repair title-cases it unless a vocabulary entry records its casing. Mc keeps its convention, the names it opens being nearly all written McX, at the cost of the few that are not (Mchunu, written McHunu).
+  ```
+  "JOHN MACHADO"              →  capitalized="John Machado"
+  "ROB ROY MACGREGOR"         →  capitalized="Rob Roy MacGregor"
+  "Ronald Macdonald"          →  capitalized_forced="Ronald MacDonald"
+  "JAMES MACKENZIE"           →  capitalized="James Mackenzie"  · boundary
+  ```
+- **A credential acronym the exceptions map does not carry is an initialism**, so a single-case word the parse put in the suffix role from the acronym vocabulary (written whole across any hyphen or slash it holds, `OTR/L`, not as two name words), or read as a credential by its dotted shape alone (S3) or by its capitals (S9), repairs to its all-caps spelling rather than a title-cased one, and that repair outranks the Mc convention where a word fits both (MCSE, not McSe). A roman numeral the parse put in the suffix role is written in capitals the way a generation is written, whether or not the vocabulary lists it (VI as well as III). A suffix word that is neither an acronym, a numeral nor an exceptions-map entry -- the generational `jr`, `sr` -- keeps its title case.
   ```
   "john smith md"             →  capitalized="John Smith MD"
   "john smith m.d."           →  capitalized="John Smith M.D."
@@ -141,5 +149,5 @@
 - The boundary is drawn per question rather than per field: the conjunction carve-out reaches a word the parse read as a conjunction, and where the parse read nothing at all it reaches what the vocabulary says. A word of that vocabulary standing at either end of a longer written word is not a conjunction there, because the hyphen clause reaches only a worded part with a worded part on each side, and an edge part is outside that reach — but a field spliced in as raw text was read by nobody, so repair asks the vocabulary and a family set to "de y" keeps its "y" lowercase. Whether a word is the conjunction or an initial is a property of the word, which a vocabulary can answer; whether a particle is acting as a particle is a property of the whole part, which the parse settles and records; re-deriving it needs a reading on every word of the part, and a spliced field has none on any, so that half falls through to particle treatment and the spliced "de la" boundary of the bullet before stands. Initials are the contrast worth knowing, and R3 states it: that view is handed no vocabulary at all, so it falls back on neither question and a spliced field's every word initials. revise() classifies the value and crosses both questions, in both of the parsed name's views: a middle revised to "e-f" repairs to "E-F" as the parsed name does, where splicing the same text in gives "e-F".
 
 ---
-**Signal:** shape: a word's own spelling: its recorded casing, the Mac/Mc convention and its punctuation
+**Signal:** shape: a word's own spelling: its recorded casing, the Mc convention and its punctuation
 **history:** decisions/R4 · **implemented:** nameparser/_render.py, nameparser/_lexicon.py

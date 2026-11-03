@@ -1,6 +1,6 @@
 # R5 — the case-repair gate
 
-**When:** case repair (R4) is asked of a parsed name, as in "Shirley Maclaine".
+**When:** case repair (R4) is asked of a parsed name, as in "Ronald Macdonald".
 
 **Then:** case repair acts only on a name written entirely in one case, and a name whose words outside the suffix are written in more than one case is kept as it was written, whether that casing is right not entering into it, unless repair was asked for anyway.
 
@@ -27,9 +27,9 @@
 
 ```
 "juan mcdonald"             →  capitalized="Juan McDonald"
-"SHIRLEY MACLAINE"          →  capitalized="Shirley MacLaine"
-"Shirley Maclaine"          →  capitalized="Shirley Maclaine"
-"Shirley Maclaine"          →  capitalized_forced="Shirley MacLaine"  · boundary
+"RONALD MACDONALD"          →  capitalized="Ronald MacDonald"
+"Ronald Macdonald"          →  capitalized="Ronald Macdonald"
+"Ronald Macdonald"          →  capitalized_forced="Ronald MacDonald"  · boundary
 ```
 
 ---
