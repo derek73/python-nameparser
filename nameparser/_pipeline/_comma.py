@@ -186,16 +186,20 @@ def _whole_name(seg0: Sequence[int], tokens: Sequence[WorkToken]) -> bool:
     pieces, ptags = _pieces(seg0, tokens, False)
     named: set[int] = set()
     opener: list[int] = []
+    name_behind = False
     for k, (piece, tags) in enumerate(zip(pieces, ptags)):
         if not is_suffix_piece(piece, tags, tokens):
             named.update(piece)
+            # a title behind it is a word to this count but no name
+            # word, asked only once a suffix word has opened the part
+            if opener and not is_title_piece(piece, tags, tokens):
+                name_behind = True
         elif k == 0 and SPLIT_MEMBER_TAG not in tokens[piece[0]].tags:
             opener = piece
     # rules/C3: "A suffix word opening the part is a name word to the
-    # count where a name word follows it" -- the first piece is a
-    # suffix piece, so a named one is behind it; a split credential's
+    # count where a name word follows it" -- a split credential's
     # member is half a credential, not a name (rules/S12)
-    if opener and named:
+    if name_behind:
         named.update(opener)
     if len(named) < 2:
         return False

@@ -20,21 +20,23 @@
   "abdul Salam, Ed"           →  suffix="Ed"  · boundary
   ```
 - **A title in front is a word to the count an unambiguous credential takes**, so 'Dr. van der Berg, PhD' reads as its part does alone.
-- **A suffix word opening the part is a name word to the count where a name word follows it**, standing where the given name stands in the name it opens, as it is read with no comma ('Md Rahman' reads given 'Md'); behind the titles it is the first word after them, and a split credential's member is half a credential rather than a name (S12), so 'MB ChB, PhD' keeps its one name word.
+- **A suffix word opening the part is a name word to the count where a name word follows it**, so the part reads as it does with no comma, where position decides what a word opening the name is (S2). Behind titles it is the first word after them, a word that is a title as well counting as the title it is; a title behind it is no name word ('Md Prof., PhD' keeps its one), and neither is a split credential's member opening the part, being half a credential (S12).
   ```
   "Md Rahman, PhD"            →  given="Md"
   "JP Clancy, MD"             →  given="JP"
   "A.M. Barrett, MD"          →  given="A.M."
   "Cem Akin, Prof."           →  given="Cem"
-  "Md Rahman Jr., PhD"        →  suffix="Jr., PhD"
+  "Md Rahman Jr., PhD"        →  given="Md"
   "Dr. Md Rahman, Ing"        →  given="Md"
   "Sr. van der Berg, PhD"     →  given="van"
   "Md, PhD"                   →  family="Md"  · boundary
+  "Md Prof., PhD"             →  family="Md Prof."  · boundary
+  "Sr. Smith, Ma"             →  given="Ma"  · boundary
   "MB ChB, PhD"               →  family="MB ChB"  · boundary
   "Md Rahman, John"           →  family="Md Rahman"  · boundary
   ```
 
-**Because:** the listing form puts a surname before the comma, and a particle surname is one surname. A word opening the part is in the given name's place whatever vocabulary it is, and it is a name the writer put there: a given name written short (Md), initials (JP), or a name a credential happens to spell (Cem).
+**Because:** the listing form puts a surname before the comma, and a particle surname is one surname. A word opening the part is a word of the name the writer put there, a given name written short (Md), initials (JP) or a name a credential happens to spell (Cem), and S2 reads it so where no comma follows.
 
 ```
 "De La Cruz, M.J. K.L."     →  given="M.J."

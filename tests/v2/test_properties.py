@@ -455,6 +455,49 @@ _MAIDEN_AGREEMENT_DIGEST = (
     "4b70727a2633fea1a9c219173d48b223cc0866a5d340b69a9eb4f14fc386ae6a")
 
 
+#: Words that open the part before the comma: names, initials and
+#: given names a credential spells, credentials, generations, the
+#: title/suffix duals, period-marked suffix words H2 reads as titles,
+#: and a plain name and a plain title beside them.
+_OPENERS = ("Md", "MD", "Cem", "JP", "A.M.", "M.S.", "Junior", "Jr", "PhD",
+            "II", "Mdiv", "Sr.", "Ms", "RA", "Jr.", "Esq.", "Md.", "Sam",
+            "Dr.")
+_OPENED_BODIES = ("Rahman", "van der Berg", "Smith Jones", "(Bob) Rahman",
+                  "Rahman nee Khan", "de la Vega")
+_CREDENTIAL_PARTS = (", PhD", ", MD", ", PhD, FACS", ", Ph.D.", ",PhD",
+                     " ,PhD")
+
+
+def test_a_head_before_a_credential_reads_as_it_does_alone() -> None:
+    """rules/C3's count is what lets C1 read the part before a
+    credential run as the whole name it is, so a head of two or more
+    words reads, the suffix aside, exactly as it reads with no comma,
+    under every order -- whatever word opens it, a suffix word
+    included ('Md Rahman, PhD' as 'Md Rahman'). A split credential's
+    member opening the part is the one exception C3 states ('MB ChB,
+    PhD'), and is left out of the grid.
+
+    Negative control, recorded 2026-11-02 on master at c1ceb3b3, before
+    C3 counted an opening suffix word: 1,062 of the 2,052 rows differed
+    from the head alone."""
+    rows = 0
+    differ = []
+    for order in (GIVEN_FIRST, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST):
+        parser = Parser(policy=Policy(name_order=order))
+        for opener, body, part in itertools.product(
+                _OPENERS, _OPENED_BODIES, _CREDENTIAL_PARTS):
+            head = f"{opener} {body}"
+            whole = parser.parse(head + part).as_dict()
+            alone = parser.parse(head).as_dict()
+            whole.pop("suffix")
+            alone.pop("suffix")
+            rows += 1
+            if whole != alone:
+                differ.append((order, head + part))
+    assert rows == 2052
+    assert differ == []
+
+
 def _one_case(text: str) -> bool | None:
     """ParseState.one_case for a whole parse -- `is_one_case` over the
     name's own words, which is exactly the span the allowlist asks

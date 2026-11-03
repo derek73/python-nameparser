@@ -2636,6 +2636,7 @@
 {"name": "Mc Donald", "family": "Mc Donald", "initials": "D.", "capitalized_force": "mc Donald"}
 {"name": "Md Abdul Karim", "given": "Md", "middle": "Abdul", "family": "Karim", "initials": "M. A. K."}
 {"name": "Md Abu Sayed", "given": "Md", "family": "Abu Sayed", "initials": "M. S.", "capitalized_force": "Md abu Sayed"}
+{"name": "Md Prof., PhD", "family": "Md Prof.", "suffix": "PhD", "initials": "M. P."}
 {"name": "Md Rahman", "given": "Md", "family": "Rahman", "initials": "M. R."}
 {"name": "Md Rahman Jr., PhD", "given": "Md", "family": "Rahman", "suffix": "Jr., PhD", "initials": "M. R.", "generation": "Jr.", "credentials": "PhD"}
 {"name": "Md Rahman, John", "given": "John", "family": "Md Rahman", "initials": "J. M. R."}
@@ -3513,6 +3514,7 @@
 {"name": "Sr. Antoni Baìngiu Torchitòriu Comita de Lacon Gunale", "title": "Sr.", "given": "Antoni", "middle": "Baìngiu Torchitòriu Comita", "family": "de Lacon Gunale", "initials": "A. B. T. C. L. G."}
 {"name": "Sr. José Pedro Eduardo da Silva Jr., MP", "title": "Sr.", "given": "José", "middle": "Pedro Eduardo", "family": "da Silva", "suffix": "Jr., MP", "initials": "J. P. E. S.", "generation": "Jr.", "credentials": "MP"}
 {"name": "Sr. Miguel Ángel Juan Antonio Pablo II", "title": "Sr.", "given": "Miguel", "middle": "Ángel Juan Antonio", "family": "Pablo", "suffix": "II", "initials": "M. Á. J. A. P.", "generation": "II"}
+{"name": "Sr. Smith, Ma", "title": "Sr.", "given": "Ma", "family": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "M. S."}
 {"name": "Sr. Xosé Carlos Francisco Xavier de Castro Sáez", "title": "Sr.", "given": "Xosé", "middle": "Carlos Francisco Xavier", "family": "de Castro Sáez", "initials": "X. C. F. X. C. S."}
 {"name": "Sr. van der Berg, PhD", "title": "Sr.", "given": "van", "family": "der Berg", "suffix": "PhD", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "v. B.", "capitalized_force": "Sr. Van der Berg, PhD"}
 {"name": "Srta. Andréia da Silva", "title": "Srta.", "given": "Andréia", "family": "da Silva", "initials": "A. S."}
