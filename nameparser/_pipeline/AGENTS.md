@@ -4,7 +4,7 @@ Loaded when a session reads or edits a pipeline stage. The root AGENTS.md carrie
 
 ## A new inner loop needs a scaling guard
 
-A loop that grows with the input -- per token, per member, per pair -- needs a row in `tests/v2/test_benchmark.py`, whose module docstring says which table; the absolute-time tests there use constant-size input and are blind to a complexity regression.
+A loop that grows with the input -- per token, per member, per pair -- needs a row in `tests/v2/test_benchmark.py`, whose module docstring says which table; the absolute-time tests there use constant-size input and are blind to a complexity regression. A loop that merges pieces gets the shift guard too, since a scaling row's clock depends on the machine: `merge_pieces`' slice assignment moves every piece behind it, and once per member that read 4.1-4.4x for 4x the input on a dev machine and 7.5-8.3x on CI's runners (#1036). Build the output in one pass and add the loop's unit to `_UNGUARDED_SHIFTS`.
 
 ## Ambiguity reports
 

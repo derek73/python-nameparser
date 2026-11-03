@@ -1098,6 +1098,35 @@ def test_a_frozen_connective_neither_joins_nor_merges_into_a_run() -> None:
                    frozen_words={"and"})[0] == ["Mr.", "and", "Mrs."]
 
 
+def test_joins_in_a_row_share_the_piece_between_them() -> None:
+    """A join's product is the left neighbour of the next connective,
+    so a chain of joins builds one piece, its title kind carried on;
+    and a frozen connective between two runs splits neither join
+    (#1036, where the loop moved from joining in the list itself to
+    building a fresh one; the expected values were read off the tree
+    before the move)."""
+    for titles_only in (True, False):
+        assert _joined("Mr. and Mrs. and Dr.", letter_stays=False,
+                       titles_only=titles_only) == (
+            ["Mr. and Mrs. and Dr."], [{"title"}]), titles_only
+        assert _joined("Mr. and of and Mrs.", letter_stays=False,
+                       titles_only=titles_only, frozen_words={"of"}) == (
+            ["Mr. and of and Mrs."], [{"title"}]), titles_only
+    assert _joined("Juan y Maria y Jose", letter_stays=False,
+                   titles_only=False)[0] == ["Juan y Maria y Jose"]
+
+
+def test_a_connective_at_either_edge_joins_its_one_neighbour() -> None:
+    """Opening the part, a connective takes its neighbour on the right;
+    ending it, the one on the left. Titles-only joins neither, nothing
+    there being a title."""
+    for text in ("and Smith", "Smith and"):
+        assert _joined(text, letter_stays=False,
+                       titles_only=False) == ([text], [set()]), text
+        assert _joined(text, letter_stays=False,
+                       titles_only=True)[0] == text.split(), text
+
+
 def test_only_groups_joins_derive_a_prefix() -> None:
     """Group's mode takes the neighbour's prefix kind, which is what
     lets a joined 'von und zu' chain on as a particle (v1 PR #191);

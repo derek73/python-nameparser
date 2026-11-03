@@ -231,14 +231,14 @@ def merge_pieces(pieces: list[list[int]], ptags: list[set[str]],
     # -- re-flattens everything accumulated so far on every call, so
     # a chain that merges into the same piece n times copies
     # 1+2+...+n and the stage goes quadratic in the length of the
-    # chain. A conjunction run ("and " * n) does exactly that: it
-    # measured 2.4x-2.9x per doubling against the 2.0x every other
-    # shape holds. No piece list is aliased outside this function
-    # (each caller builds every piece as a fresh list -- group's
-    # [i], _comma's _pieces -- and reads pieces[k] only before a
-    # merge), so mutating is safe; verified
+    # chain. A conjunction run ("and " * n) did exactly that while
+    # `join_connectives` merged through here: it measured 2.4x-2.9x
+    # per doubling against the 2.0x every other shape holds. No piece
+    # list is aliased outside this function (each caller builds every
+    # piece as a fresh list -- group's [i] -- and reads pieces[k] only
+    # before a merge), so mutating is safe; verified
     # identical token/role/tag/span/ambiguity output over 54,877
-    # names. tests/v2/test_benchmark.py's "and " shape is the guard.
+    # names.
     #
     # Every call site passes lo < hi, and this REQUIRES it: with
     # lo >= hi the slice assignment would insert rather than
@@ -249,11 +249,13 @@ def merge_pieces(pieces: list[list[int]], ptags: list[set[str]],
     #
     # The slice assignment itself still shifts every piece behind
     # `hi`, C-level work no frame guard counts, so a caller that
-    # merges once per member of a run unbounded by the input goes
-    # quadratic all the same: `join_connectives` did, until it built
-    # its lists in one pass (title_chain and link_run in
-    # tests/v2/test_benchmark.py, 7.6-8.3x per 4x input on CI at
-    # base 1600). A new looping caller builds its output that way.
+    # merges once per member of a run whose length grows with the
+    # input goes quadratic all the same. `join_connectives` and
+    # group's split-pair merge did, and build their lists in one pass
+    # instead (decisions/parse-cost, 2026-11-03); the callers left
+    # merge once per run (the particle chain, the bound join). A
+    # caller that would merge per member builds its output that way,
+    # with a row in tests/v2/test_benchmark.py's shift guards.
     combined = pieces[lo]
     for piece in pieces[lo + 1:hi]:
         combined.extend(piece)
@@ -290,8 +292,9 @@ def join_connectives(pieces: list[list[int]], ptags: list[set[str]],
     neighbour's join may still take one in."""
     # contiguous conjunction runs merge first
     #
-    # `pieces[k][0] in frozen` and not `frozen.isdisjoint(...)`:
-    # the piece this loop extends GROWS with every merge, so a
+    # The first token (`run_pieces[-1][0] in frozen`) and not
+    # `frozen.isdisjoint(...)`: the piece this loop extends GROWS
+    # with every merge, so a
     # test over its tokens costs 1+2+...+n and the stage goes
     # quadratic in the length of a connective run -- measured,
     # 'and ' x3200 took 41.8ms against 21.7ms, 6.2x per 4x input
@@ -303,9 +306,9 @@ def join_connectives(pieces: list[list[int]], ptags: list[set[str]],
     # neighbour's piece, so a piece holding a frozen token here IS
     # that token.
     #
-    # Built in one pass for the reason the join loop below gives: a
-    # run merged in place shifts the rest of the list once per member.
-    # The run being built is out[-1].
+    # Built in one pass, not through `merge_pieces`, whose slice
+    # assignment would shift the rest of the list once per member
+    # (its comment). The run being built is `run_pieces[-1]`.
     run_pieces: list[list[int]] = []
     run_tags: list[set[str]] = []
     for piece, tags in zip(pieces, ptags):
@@ -327,25 +330,23 @@ def join_connectives(pieces: list[list[int]], ptags: list[set[str]],
     # name word" (v1's Google Code issue 11 carve-out, the
     # "john e smith" bug).
     #
-    # The joins are written into fresh lists in one pass, never by
-    # merge_pieces' slice assignment: each join there shifts every
-    # piece behind it, C-level work no frame guard sees, and a run of
-    # joins ('Mr. and ' x n) shifts the rest of the list once per
-    # join -- 7.6-8.3x per 4x input on CI's runners at base 1600
-    # where the shape reads 4.2x, the guard being
-    # tests/v2/test_benchmark.py's title_chain and link_run shapes.
+    # The joins are written into fresh lists in one pass, for the
+    # same reason: a run of joins ('Mr. and ' x n) through
+    # `merge_pieces` would shift the rest of the list once per join.
     # A join takes the piece behind it off `out`, so the piece it
-    # produces is out[-1] and is the left neighbour of the next
-    # connective, as it was when the join was made in place.
+    # produces is `out[-1]`, the left neighbour of the next piece
+    # read, and `len(out)` is always the index `pieces[k]` would
+    # stand at had every join so far been made in the list itself.
     out: list[list[int]] = []
     out_tags: list[set[str]] = []
     n = len(pieces)
     k = 0
     while k < n:
         piece, tags = pieces[k], ptags[k]
-        # first token again, and here it is exact for the second
-        # reason as well: the piece a join produces is left on
-        # `out`, BEHIND `k`, so no merged piece is ever tested twice.
+        # first token again, exact for the run loop's reason (a
+        # frozen piece is one token) and for a second: the piece a
+        # join produces is left on `out`, BEHIND `k`, so no joined
+        # piece is ever tested here.
         if (not is_conj_piece(piece, tags, tokens)
                 or piece[0] in frozen):
             out.append(piece)
@@ -370,8 +371,8 @@ def join_connectives(pieces: list[list[int]], ptags: list[set[str]],
         elif has_right:
             neighbor, neighbor_tags = pieces[k + 1], ptags[k + 1]
         else:
-            # a connective alone in its part reads its own kinds, as
-            # the in-place join of the one piece did
+            # a connective alone in its part is its own neighbour,
+            # so it takes its own kinds
             neighbor, neighbor_tags = piece, tags
         derived = set()
         if is_title_piece(neighbor, neighbor_tags, tokens):
