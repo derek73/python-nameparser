@@ -240,7 +240,7 @@ religious = {}
 
 [[word]]
 text = "pope"
-religious = { addresses = "given" }
+religious = { addresses = "given", attaches = ["saint"], note = "attaches: Pope Saint (rules/H9, #913), the saint being a title only in a phrase" }
 
 [[word]]
 text = "prelate"
@@ -276,7 +276,7 @@ religious = { same_as = "reverend" }
 
 [[word]]
 text = "saint"
-religious = { issue = 913, decided = 2026-11-03, note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'Saint Clair Soares' and 'Mr Saint Martin Sterling' read the given name and 'SAINT CLAIR, ELAINE' keeps the surname whole, unreported, since no listed phrase holds it" }
+religious = { attaches = ["pope"], issue = 913, decided = 2026-11-03, note = "attaches: Saint Pope; a title only inside a title phrase, its given reading the clash (rules/H9): 'Pope Saint John Paul II' and 'Saint Pope John Paul II' read the title, 'Saint Clair Soares' and 'Mr Saint Martin Sterling' read the given name and 'SAINT CLAIR, ELAINE' keeps the surname whole, unreported, since no listed phrase holds it" }
 given = { us_ssa = 7476, wikidata = 11, as_of = 2026-11-03, note = "US SSA: male births 7,288, female 188; Wikidata is a lower bound (United States 5); the Brazilian given name Saint Clair (TSE donors, 2026-11-03)" }
 family = { us_census_2010 = 1897, wikidata = 65, as_of = 2026-11-03, note = "US Census rank 15,442; Wikidata United States 12, France 11; most borne as the first word of a two-word surname (Saint Clair, Saint Jean, Saint Victor)" }
 

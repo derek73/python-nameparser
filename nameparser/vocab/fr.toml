@@ -40,7 +40,7 @@ religious = {}
 
 [[word]]
 text = "saint"
-religious = {}
+religious = { attaches = ["pope"], note = "attaches: Saint Pope (rules/H9, #913), as in en.toml" }
 
 [[word]]
 text = "sainte"
