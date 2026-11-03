@@ -485,10 +485,11 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
               lex: Lexicon) -> str:
     # Clause order: the particle/connective arm, then the exceptions
     # map as a mask, then the acronym clause (listed or by shape),
-    # then the numeral clause, then the Mc prefix and title case per
-    # full-stop chunk (_title_chunks; v1's was str.capitalize() on the
-    # whole word). v1's cap_word had the first, second, fifth and a
-    # plainer sixth in this order;
+    # then the numeral clause, then, per full-stop chunk, the chunk's
+    # own mask, the Mc prefix and title case (_title_chunks; v1's was
+    # str.capitalize() on the whole word). v1's cap_word had the first,
+    # second, a wider fifth (Mac as well as Mc) and a plainer sixth in
+    # this order;
     # the mask ahead of the acronym clause is what gives bsc 'BSc'
     # though bsc is a listed acronym too.
     normalized = _normalize(word)

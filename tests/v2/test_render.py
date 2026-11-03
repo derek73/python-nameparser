@@ -657,7 +657,7 @@ def test_capitalized_all_lower_input_v1_parity() -> None:
     assert out.given == "Bob"
     assert out.middle == "V."
     # particles stay lower; Mac title-cased, no mask recording
-    # 'macdole' (#1014, where 1.4.0 through 3.0.0's tree gave 'MacDole')
+    # 'macdole' (#1014, where 1.4.0 through 2.8.0 gave 'MacDole')
     assert out.family == "de la Macdole-Eisenhower"
     assert out.suffix == "PhD"                       # exceptions map, a mask
     # same spans, new texts (provenance is a documented non-invariant)
@@ -824,7 +824,7 @@ def test_a_word_takes_its_capital_past_a_caseless_lead() -> None:
     once = parse("ŉa smith").capitalized()
     assert once.given == "ʼNa"
     assert once.capitalized(force=True) == once
-    # and inside the Mac/Mc prefix's name run, which the chunk step
+    # and inside the Mc prefix's name run, which the chunk step
     # repairs too
     mac = parse("mcŉa smith").capitalized()
     assert mac.given == "McʼNa"
@@ -1177,6 +1177,41 @@ def test_a_decomposed_mask_value_reads_the_same_split_as_composed() -> None:
         assert _repaired_under((("pé.x.", value),),
                                "john smith pé.x.").suffix == "Pé.X."
 
+
+
+@pytest.mark.parametrize(("text", "repaired"), [
+    # #1014: each run a full stop divides asks its own mask, first,
+    # last or both, as a word standing alone does (rules/R4)
+    ("J.MACDONALD SMITH", "J.MacDonald Smith"),
+    ("JOHN MACDONALD.SMITH", "John MacDonald.Smith"),
+    ("JOHN MACDONALD.MACLEOD", "John MacDonald.MacLeod"),
+    # a chunk no mask records is title-cased, Mac included
+    ("J.MACHADO SMITH", "J.Machado Smith"),
+    # every mask, not only a surname's: a credential chunk too
+    ("john smith msc.ed.", "John Smith MSc.Ed."),
+    ("JOHN X.PHD", "John X.PhD"),
+    # a mask matches the whole run, never a prefix of it
+    ("JOHN MACDONALDS", "John Macdonalds"),
+])
+def test_a_chunk_after_a_full_stop_takes_its_own_mask(
+        text: str, repaired: str) -> None:
+    assert str(parse(text).capitalized()) == repaired
+
+
+def test_a_callers_mask_decides_a_mac_or_mc_name() -> None:
+    # #1014: Mac takes its inner capital only from a mask, so a caller's
+    # spelling decides it, on the whole word and on a chunk; and a mask
+    # outranks the Mc convention for a name it does not fit
+    default = Lexicon.default()
+    lex = dataclasses.replace(default, capitalization_exceptions=(
+        *default.capitalization_exceptions,
+        ("machale", "MacHale"), ("mchunu", "Mchunu")))
+    for text, plain, masked in (
+            ("SEAN MACHALE", "Sean Machale", "Sean MacHale"),
+            ("J.MACHALE SMITH", "J.Machale Smith", "J.MacHale Smith"),
+            ("JOHN MCHUNU", "John McHunu", "John Mchunu")):
+        assert str(parse(text).capitalized()) == plain
+        assert str(parse(text).capitalized(lex)) == masked
 
 def _nfc_texts(name: ParsedName) -> list[str]:
     return [unicodedata.normalize("NFC", t.text) for t in name.tokens]

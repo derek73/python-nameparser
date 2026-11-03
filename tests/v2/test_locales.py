@@ -2366,3 +2366,14 @@ def test_a_gaelic_pack_keeps_the_mac_masks(
     # reading, still writes the inner capital
     parser = parser_for(pack, strict=strict)
     assert str(parser.capitalized(parser.parse(name))) == repaired
+
+
+def test_a_strict_choice_keeps_only_the_mac_masks_its_files_hold() -> None:
+    # #1014, decisions/R4: ga.toml holds the four Irish masks alone, so
+    # a strict Irish choice title-cases a Scottish Mac name, and a strict
+    # choice holding none of en, gd and ga keeps no mask at all
+    for pack in (locales.GA, locales.ES):
+        parser = parser_for(pack, strict=True)
+        assert str(parser.capitalized(parser.parse("RONALD MACDONALD"))) == "Ronald Macdonald"
+    plain = parser_for(locales.ES)
+    assert str(plain.capitalized(plain.parse("RONALD MACDONALD"))) == "Ronald MacDonald"

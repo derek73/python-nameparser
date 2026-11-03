@@ -157,6 +157,7 @@ class CapitalizationTestCase(ParsedNameTestBase):
         self.m(str(hn), 'Shirley Maclaine', hn)
 
     def test_force_capitalization(self) -> None:
+        # the macdonald mask (#1014), as test_downcasing_mac
         hn = _cap('Ronald Macdonald', force=True)
         self.m(str(hn), 'Ronald MacDonald', hn)
 
@@ -166,6 +167,7 @@ class CapitalizationTestCase(ParsedNameTestBase):
 
     # http://code.google.com/p/python-nameparser/issues/detail?id=15
     def test_downcasing_mac(self) -> None:
+        # holds through the vocabulary's macdonald mask (#1014)
         hn = _cap('RONALD MACDONALD')
         self.m(str(hn), 'Ronald MacDonald', hn)
 
@@ -175,8 +177,9 @@ class CapitalizationTestCase(ParsedNameTestBase):
         self.m(str(hn), 'Ronald McDonald', hn)
 
     # #1014: Mac is title-cased unless a mask records the name, since
-    # most Mac- names are not Gaelic (Machado, Macias) and the Gaelic
-    # ones are written both ways (Mackenzie, MacKenzie)
+    # most Mac- names are written without the inner capital (Machado,
+    # Macias) and the Gaelic ones are written both ways (Mackenzie,
+    # MacKenzie)
     def test_mac_without_a_mask_is_title_cased(self) -> None:
         for name, repaired in (('JOHN MACHADO', 'John Machado'),
                                ('MARIA MACIAS', 'Maria Macias'),
