@@ -179,6 +179,28 @@ Choosing both keeps both readings, as the default does. A reading
 that a word is borne as a name never settles anything: it keeps the
 name around the word in charge, under any choice.
 
+A name reading held off by default is how a language claims a word
+another language's titles use. ``Hon`` is the British style (the
+Honourable) and a Cantonese given name, so the default reads it as the
+title and a Chinese choice (``zh``, or ``zh-HK``) as the given name,
+the style staying a title inside a phrase (``The Hon``, ``Rt Hon``,
+``Hon Mrs``) and written with its period:
+
+.. doctest::
+
+    >>> chinese = Locale(code="zh", lexicon=Lexicon.empty(),
+    ...                  languages=frozenset({"zh"}))
+    >>> parse("Hon Wah Yeung").title
+    'Hon'
+    >>> parser_for(chinese).parse("Hon Wah Yeung").given
+    'Hon'
+    >>> parser_for(chinese).parse("The Hon John Smith").title
+    'The Hon'
+
+The choice costs the style written bare at the head, as UK registers
+and Hong Kong's legislature write it: ``Hon David Layton`` reads given
+``Hon`` under it.
+
 A tag selects its own file and those of the languages it belongs to,
 never the other way: ``pt-BR`` reads ``pt.toml`` too, and ``pt``
 leaves the Brazilian words alone. No other table of related languages

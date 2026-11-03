@@ -1509,6 +1509,9 @@ _PHRASE_LINKS = frozenset({"of"})
 #: United States', 'The Grand Master'; 'and' joins two titles instead.
 _OBJECT_LINKS = frozenset({"of", "the"})
 
+#: The article that is a style's phrase partner (rules/H9, #999).
+_STYLE_ARTICLES = frozenset({"the"})
+
 
 # rules/H9: "a word no listed phrase holds is a title only behind a
 # style or a modifier, or before `of`" -- whether the word heads a title
@@ -1606,6 +1609,10 @@ def title_readings(texts: Sequence[str], folded: Sequence[str],
             (prev is not None and reading[i - 1]
              and (prev in modifiers or prev in lexicon._sets.title_styles
                   or f"{prev} {n}" in phrases))
+            # rules/H9: "a style that may be a given name has its phrase
+            # partner in the article before it" (#999's 'The Hon')
+            or (prev in _STYLE_ARTICLES and n in lexicon._sets.title_styles
+                and prev in lexicon._sets.conjunctions)
             or (nxt is not None
                 and ((nxt in _PHRASE_LINKS and nxt in lexicon._sets.conjunctions)
                      or (listed[i + 1] and f"{n} {nxt}" in phrases))))

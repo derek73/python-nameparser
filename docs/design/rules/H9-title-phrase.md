@@ -4,13 +4,15 @@
 
 **Then:** the word is a title only inside a title phrase, and elsewhere a name word.
 
-- **A title that may be a given name** has its phrase partner in a modifier or a style before it that is a title there, in a title before it that attaches to it, in a title after it that it attaches to, or in `of` after it. No other title before it is one, a salutation least of all, and no other title after it: a donor list writes the salutation after the given name.
+- **A title that may be a given name** has its phrase partner in a modifier or a style before it that is a title there, in a title before it that attaches to it, in a title after it that it attaches to, or in `of` after it, and a style that may be a given name has its phrase partner in the article before it. No other title before it is one, a salutation least of all, and no other title after it: a donor list writes the salutation after the given name.
   ```
   "Dean of Students Jane Smith"  →  title="Dean of Students"
   "Associate Dean Smith"      →  title="Associate Dean"
   "Major General John Smith"  →  title="Major General"
   "Maj Gen John Smith"        →  title="Maj Gen"
   "Lt Gen John Smith"         →  title="Lt Gen"
+  "Brig Gen Mark Kimmitt"     →  title="Brig Gen"
+  "The Grace Smith"           →  title="The Grace"
   "Chief Justice John Roberts"  →  title="Chief Justice"
   "The Hon. Justice Mary Smith"  →  title="The Hon. Justice"
   "His Grace John Smith"      →  title="His Grace"

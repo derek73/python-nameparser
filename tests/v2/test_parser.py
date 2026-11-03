@@ -3270,3 +3270,30 @@ def test_a_choice_moves_only_the_words_the_callers_log_leaves_alone(
                 return frozenset(e for e in entries
                                  if not touched & set(e.split()))
             assert kept(words) == kept(want[field]), (name, field)
+
+
+def test_a_chinese_choice_reads_hon_as_a_given_name() -> None:
+    # #999: zh.toml's given reading of 'hon', off by default, is the one
+    # word a Chinese choice changes; under it the Cantonese given name
+    # reads as one and the style is a title only in a phrase (rules/H9)
+    from nameparser._reading_index import changed_words, selected
+    assert changed_words(selected(["zh"])) == {"hon"}
+    zh = parser_for(_choosing("zh"))
+    assert parse("Hon Wah Yeung").title == "Hon"
+    assert (zh.parse("Hon Wah Yeung").given, zh.parse("Hon Wah Yeung").title) == ("Hon", "")
+    assert zh.parse("CHAN, HON WAH").given == "HON"
+    # the formal styles keep the title: an article, a modifier, a
+    # salutation or title after it, and its period at the head
+    for text, title in (("The Hon John Smith", "The Hon"),
+                        ("The Hon. John Smith", "The Hon."),
+                        ("Rt Hon John Smith", "Rt Hon"),
+                        ("The Rt Hon John Smith", "The Rt Hon"),
+                        ("Hon Mrs I Cawley", "Hon Mrs"),
+                        ("Hon Mr Justice Smith", "Hon Mr"),
+                        ("Hon Lord Smith", "Hon Lord"),
+                        ("Hon Justice Mary Smith", "Hon Justice"),
+                        ("Hon Sir John Smith", "Hon Sir"),
+                        ("Hon. John Smith", "Hon.")):
+        assert zh.parse(text).title == title, text
+    # the cost: the style written bare, as Hong Kong writes a legislator
+    assert zh.parse("Hon Tommy Cheung").given == "Hon"

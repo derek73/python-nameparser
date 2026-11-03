@@ -13208,6 +13208,32 @@ CASES: tuple[Case, ...] = (
          ambiguities=("title-or-name",), classification="fix(#999)",
          notes="H9: a salutation is no partner; read title 'Mr Gen' "
                "1.4.0 through 2.8.1"),
+    Case("brig_gen_is_one_title", "Brig Gen Mark Kimmitt",
+         {"title": "Brig Gen", "given": "Mark", "family": "Kimmitt"},
+         classification="fix(#999)",
+         notes="H9: 'brig', a title only in a phrase, attaches to 'gen' "
+               "and 'general'; read given 'Brig', middle 'Gen Mark' 1.4.0 "
+               "through 2.8.1, 'brig' listing no title before"),
+    Case("brig_written_short_ending_the_given_part_is_a_title",
+         "JENKINS, ROBERT G. BRIG. GEN.",
+         {"title": "BRIG. GEN.", "given": "ROBERT", "middle": "G.",
+          "family": "JENKINS"},
+         classification="fix(#999)",
+         notes="H5's written-short clause, the chain taking both ranks; "
+               "1.4.0 through 2.2.0 read middle 'G. BRIG. GEN.', 2.3.0 "
+               "through 2.8.1 title 'GEN.', middle 'G. BRIG.'"),
+    Case("given_name_brig_at_the_head", "Brig Klyce",
+         {"given": "Brig", "family": "Klyce"},
+         ambiguities=("title-or-name",), classification="parity",
+         notes="H9: a rare given name, and the rank written short; "
+               "'Brig Gen' holds the word, so it reports (#999)"),
+    Case("the_article_is_a_gated_styles_partner", "The Grace Smith",
+         {"title": "The Grace", "family": "Smith"},
+         classification="fix(#999)",
+         notes="H9: a style that may be a given name has its partner in "
+               "the article before it, as 'The Hon' needs under a Chinese "
+               "choice; 1.4.0 through 2.8.1 read given 'The Grace', the "
+               "article joining it"),
     Case("lt_gen_is_one_title", "Lt Gen John Smith",
          {"title": "Lt Gen", "given": "John", "family": "Smith"},
          classification="parity",
