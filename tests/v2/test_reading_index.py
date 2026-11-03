@@ -346,6 +346,8 @@ def test_a_file_holding_no_reading_is_chosen_only_strictly() -> None:
 #: file whose names carry it, and joins it when a chosen file's
 #: vocabulary reading loses its gate: review each move.
 STRICT_UNGATED = {
+    "ar": {"cheikh", "sultan"},
+    "ca": {"del", "la"},
     "ar": {"cheikh"},
     "cs": {"st"},
     "fil": {"del", "la", "san"},

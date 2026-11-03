@@ -1,6 +1,18 @@
 schema = 1
 
 [[word]]
+text = "de"
+preposition = { may_be_given = false, expands = "of: \"Jaume de Montcada\"", note = "strict ca broke 626 records on it while only es.toml and others held it (config_diff.py gaps on f48c88a3, decisions/vocabulary-model, 2026-11-03)", issue = 1005 }
+
+[[word]]
+text = "del"
+preposition = { expands = "of the: \"Joan del Castell\"", note = "strict ca broke 208 records (config_diff.py gaps on f48c88a3, decisions/vocabulary-model, 2026-11-03)", issue = 1005 }
+
+[[word]]
+text = "la"
+article = { expands = "the, fem. sg.: \"de la Torre\"", note = "strict ca broke 197 records (config_diff.py gaps on f48c88a3, decisions/vocabulary-model, 2026-11-03)", issue = 1005 }
+
+[[word]]
 text = "i"
 [word.conjunction]
 may_be_initial = true
