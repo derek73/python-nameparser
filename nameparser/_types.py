@@ -958,7 +958,7 @@ class Reading:
     source: ReadingSource
     #: The BCP 47 tags of the shipped vocabulary files that hold this
     #: reading of the word, on in the parse's own ``Lexicon``
-    #: (``("es", "fil", "fr", "it", "nl", "pt", "si")`` for the particle ``de`` by
+    #: (``("ca", "es", "fil", "fr", "it", "nl", "pt", "si")`` for the particle ``de`` by
     #: default, ``("pt",)`` under a ``pt`` choice, which drops the
     #: others' readings of it; ``("mul",)`` for the title ``Dr.``), so
     #: a choice of languages names the files it turns on and not those
