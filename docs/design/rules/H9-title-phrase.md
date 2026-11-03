@@ -15,6 +15,7 @@
   "His Grace John Smith"      →  title="His Grace"
   "Field Marshal Bernard Montgomery"  →  title="Field Marshal"
   "Sergeant Major John Smith"  →  title="Sergeant Major"
+  "Sgt Maj John Smith"        →  title="Sgt Maj"
   "Lord Chancellor John Smith"  →  title="Lord Chancellor"
   "Mr Dean Smith"             →  given="Dean"
   "SMITH, DEAN MR."           →  given="DEAN"
@@ -115,9 +116,10 @@
   ```
   "Mr Justice Smith"          →  given="Justice"
   ```
-- A rank written short and without its period at the head of a name reads as the given name, as a bare `Dean` does, where a mixed-case name writes the rank in capitals and the given name in title case; reading the capitals would be a signal no other title word reads.
+- A rank written short and without its period at the head of a name, or of the given part after a family comma, reads as the given name, as a bare `Dean` does, where a mixed-case name writes the rank in capitals and the given name in title case; reading the capitals would be a signal no other title word reads.
   ```
   "MAJ Ian Stewart, MD"       →  given="MAJ"
+  "NOLEN, MAJ MAUREEN"        →  given="MAJ"
   "Maj Tom Mouat"             →  given="Maj"
   "Maj. Tom Mouat"            →  title="Maj."
   ```

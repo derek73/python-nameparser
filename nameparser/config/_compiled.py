@@ -1405,7 +1405,9 @@ TITLE_PHRASES: frozenset[str] = frozenset({
     'pro chancellor',
     'queen consort',
     'queen mother',
+    'sergeant maj',
     'sergeant major',
+    'sgt maj',
     'sgt major',
 })
 

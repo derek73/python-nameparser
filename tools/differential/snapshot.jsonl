@@ -2834,6 +2834,7 @@
 {"name": "Müller, Käthe", "order": "FAMILY_FIRST", "given": "Käthe", "family": "Müller", "initials": "K. M."}
 {"name": "Mūsā al-Kāẓīm", "given": "Mūsā", "family": "al-Kāẓīm", "initials": "M. a."}
 {"name": "NASCIMENTO, EDSON ARANTES DO", "given": "EDSON", "middle": "ARANTES", "family": "DO NASCIMENTO", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "E. A. N.", "capitalized": "Edson Arantes do Nascimento"}
+{"name": "NOLEN, MAJ MAUREEN", "given": "MAJ", "middle": "MAUREEN", "family": "NOLEN", "initials": "M. M. N.", "capitalized": "Maj Maureen Nolen"}
 {"name": "Nakae, Toju", "given": "Toju", "family": "Nakae", "initials": "T. N."}
 {"name": "Nakamura, Masanao", "given": "Masanao", "family": "Nakamura", "initials": "M. N."}
 {"name": "Nalî", "given": "Nalî", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "N."}
@@ -3292,6 +3293,7 @@
 {"name": "Señ Baba Wagué Amdy Raas Sañsé MP", "given": "Señ", "middle": "Baba Wagué Amdy Raas", "family": "Sañsé", "suffix": "MP", "initials": "S. B. W. A. R. S."}
 {"name": "Señor Carlos García", "title": "Señor", "given": "Carlos", "family": "García", "initials": "C. G."}
 {"name": "Señora María García", "title": "Señora", "given": "María", "family": "García", "initials": "M. G."}
+{"name": "Sgt Maj John Smith", "title": "Sgt Maj", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Sgt Marshal Smith", "title": "Sgt", "given": "Marshal", "family": "Smith", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "M. S."}
 {"name": "Shahnon Ahmad", "given": "Shahnon", "family": "Ahmad", "initials": "S. A."}
 {"name": "Shaikh Hamad bin Isa", "given": "Shaikh", "middle": "Hamad", "family": "bin Isa", "initials": "S. H. I.", "patronymic": "bin Isa"}

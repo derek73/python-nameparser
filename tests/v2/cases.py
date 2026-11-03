@@ -13120,6 +13120,11 @@ CASES: tuple[Case, ...] = (
          {"title": "Maj Gen", "given": "John", "family": "Smith"},
          classification="parity",
          notes="H9: 'maj' attaches to 'gen' and 'general' (#999)"),
+    Case("sgt_maj_is_one_title", "Sgt Maj John Smith",
+         {"title": "Sgt Maj", "given": "John", "family": "Smith"},
+         classification="parity",
+         notes="H9: 'sgt' and 'sergeant' attach to 'maj' as to 'major' "
+               "(#999)"),
     Case("major_gen_is_one_title", "Major Gen John Smith",
          {"title": "Major Gen", "given": "John", "family": "Smith"},
          classification="fix(#999)",
