@@ -25,7 +25,7 @@
   "John von PhD Jones"        →  family="von"
   "John von PhD Jones"        →  suffix="PhD Jones"
   ```
-- **What is a credential here.** A title word never starts the run, and neither does a member of the ambiguous class its writing leaves unsettled, a single letter, a connective, a word that is also particle or bound given-name vocabulary, the capitals of `DO` included: a credential is the writer's mark that the post-nominals have begun, and those carry no such mark. Where no family comma divides the name, nor does a credential acronym written in Title case with a name word behind it, as a settled member does not: Title case is how a name word is written, and `Md` is how Muhammad is written short; the acronyms whose own writing is Title case (`Bt`, `Kt`, `Knt`) read so too. An honorific or a generational word carries it as a credential does, whatever its script.
+- **What is a credential here.** A title word never starts the run, and neither does a member of the ambiguous class its writing leaves unsettled, a single letter, a connective, a word that is also particle or bound given-name vocabulary, the capitals of `DO` included: a credential is the writer's mark that the post-nominals have begun, and those carry no such mark. Where no family comma divides the name, nor does a credential acronym written in Title case with a name word behind it, as a settled member does not: Title case is how a name word is written, and `Md` is how Muhammad is written short; the acronyms whose own writing is Title case (`Bt`, `Kt`, `Knt`) read so too. Where no family comma divides the name, nor does a generation word written out, a numeral aside, with a name word behind it: a word that is no suffix word, numeral read as the generation (S10), initial, connective, title word or maiden marker, and is a particle or is written in Title case, in a script with no case, or in a name of one case. A generation word there was typed into the middle of a name written given name first, where a filer's form puts it, or is the given name Junior, and the family name stands behind it. Capitals behind it in a name of mixed case are no name word here, where behind a member its capitals settle they are one: behind that member capitals are as likely a family name or the writer's own initials as a credential, the member itself being capitals that may be initials, while a generation word is written out, so capitals behind it read as the credential that follows it as likely as a name. An honorific or a generational word otherwise carries it as a credential does, whatever its script.
   ```
   "Mary Jane Pope Smith"      →  family="Smith"
   "Josep Carod i Rovira"      →  family="Carod i Rovira"
@@ -37,10 +37,17 @@
   "John Smith Md Phd"         →  suffix="Md Phd"
   "John Smith MD Jones"       →  suffix="MD Jones"
   "Smith, John Md Jones"      →  suffix="Md Jones"
-  "Antonio Pavlović mlađi Jones"  →  suffix="mlađi Jones"
-  "Pieter Bruegel stariji Jones"  →  suffix="stariji Jones"
-  "Ана Хорват старији Џонс"   →  suffix="старији Џонс"
-  "Гай Плиний Старший Иванов"  →  suffix="Старший Иванов"
+  "Guy Andre Junior Francois"  →  family="Francois"
+  "John Smith Jr. Jones"      →  middle="Smith Jr."
+  "JOHN SMITH JR JONES"       →  family="JONES"
+  "Antonio Pavlović mlađi Jones"  →  family="Jones"
+  "Pieter Bruegel stariji Jones"  →  family="Jones"
+  "Ана Хорват старији Џонс"   →  family="Џонс"
+  "Гай Плиний Старший Иванов"  →  family="Иванов"
+  "John Smith Jr. PhD Jones"  →  suffix="Jr. PhD Jones"
+  "John Smith Jr. CF"         →  suffix="Jr. CF"
+  "Smith, John Jr. Jones"     →  suffix="Jr. Jones"
+  "John Smith Esq Jones"      →  suffix="Esq Jones"
   "राम शर्मा साहब मोहन"          →  suffix="साहब मोहन"
   ```
 - **What reports.** A name word the run absorbs is reported `suffix-or-name`.
@@ -73,6 +80,15 @@
 
 **Accepted:**
 
+- Under the family-first orders the clause holds as written, so the word behind the generation word reads as a middle or given name, where the same name after a family comma reads it as the suffix; the filers' boxes that ground the clause are given-first, and no order is asked.
+  ```
+  "Smith John Jr. Jones"  family-first  →  middle="Jr. Jones"
+  "Smith, John Jr. Jones"  family-first  →  suffix="Jr. Jones"
+  ```
+- With no family comma, a generation word written before the family name reads as a word of the middle name, not as the suffix it may be: the run does not start there, and lifting a post-nominal out of the middle of a name was declined for every credential (decisions/S8, #602).
+  ```
+  "Mr Robert Alexander (Jnr) Halliday"  →  middle="Alexander Jnr"
+  ```
 - With no family comma, a credential written in capitals with a name word behind it is read as a name word, where the same credential written with its periods starts the run: a name with its credential between its given names and its family name keeps the family name behind the credential, the capitals being read as initials as likely as a credential.
   ```
   "John Smith MA Jones"       →  family="Jones"

@@ -1038,12 +1038,13 @@ def test_a_bare_marker_maiden_clause_does_not_part_the_run() -> None:
 
     Since #601 a bare marker counts only behind a name word, so the
     clause stands between two post-nominals only inside #602's
-    credential run: 'Jr.' starts it and takes 'Smith' in, the marker
+    credential run: 'Esq.' starts it and takes 'Smith' in, the marker
     standing after that name word. The fixture was 'Smith, MD nee Jones
     PhD' until then, a marker in the given part after a family comma,
-    which is an ordinary word now."""
-    assert _entry_tags("Jane Doe Jr. Smith nee Jones PhD") == [
-        ("Jr.", False), ("Smith", True), ("PhD", True)]
+    which is an ordinary word now, and 'Jr.' started the run until a
+    generation word before a name word stopped starting it (S8)."""
+    assert _entry_tags("Jane Doe Esq. Smith nee Jones PhD") == [
+        ("Esq.", False), ("Smith", True), ("PhD", True)]
 
 
 def test_a_marker_the_policy_names_as_a_delimiter_parts_the_run() -> None:
@@ -1059,10 +1060,10 @@ def test_a_marker_the_policy_names_as_a_delimiter_parts_the_run() -> None:
     # place a bare clause stands between two post-nominals since #601
     # (the bare test above says why); it was 'John Doe, MD nee Jones
     # PhD' until then
-    assert _entry_tags("Jane Doe Jr. Smith nee Jones PhD", nee) == [
-        ("Jr.", False), ("Smith", True), ("PhD", False)]
-    assert _entry_tags("Jane Doe Jr. Smith nee Jones PhD") == [
-        ("Jr.", False), ("Smith", True), ("PhD", True)]
+    assert _entry_tags("Jane Doe Esq. Smith nee Jones PhD", nee) == [
+        ("Esq.", False), ("Smith", True), ("PhD", False)]
+    assert _entry_tags("Jane Doe Esq. Smith nee Jones PhD") == [
+        ("Esq.", False), ("Smith", True), ("PhD", True)]
 
 
 def test_a_dropped_core_parts_two_entries() -> None:

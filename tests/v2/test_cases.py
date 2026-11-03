@@ -328,9 +328,12 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # and 'Smith, John Md Jones', each reporting suffix-or-name under
     # three orders; 1488 -> 1503 the same day, #1019's review rows,
     # five credential runs ('md', 'M.d.', 'M.a.', 'Pa-c', one case)
-    # each reporting suffix-or-name under three orders.
-    assert claims == 1503, (
-        f"the field sweep checks {claims} claims, recorded as 1503 on "
+    # each reporting suffix-or-name under three orders; 1503 -> 1521
+    # the same day, #1023's generation-word rows: two lose their
+    # suffix-or-name report, six new ones carry one and one carries
+    # two, each under three orders.
+    assert claims == 1521, (
+        f"the field sweep checks {claims} claims, recorded as 1521 on "
         f"2026-11-02")
 
 
@@ -375,6 +378,9 @@ _STAND_IN_REREADS = {
     ("Andrew Perkins (X.Y.Z.)", 2),
     ("John Smith VI Ma", None), ("John Smith VI Jones", None),
     ("John Smith VI Jones", 2),
+    # a name word in VI's place stops 'JUNIOR' starting the run (S8)
+    ("JOHN SMITH JUNIOR VI JONES", None),
+    ("JOHN SMITH JUNIOR VI JONES", 2),
 }
 
 #: Reports whose deferred field assign could not name: the particle the
@@ -684,8 +690,10 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # 311 the same day, #1019's 'John Smith MD Jones' and 'Smith, John
     # Md Jones' under the three orders, each stand-in keeping the taken
     # one; 311 -> 326 the same day, #1019's review rows, five credential
-    # runs under the three orders, each stand-in keeping the taken one
-    assert (checked, skipped) == (455, 326), (checked, skipped)
+    # runs under the three orders, each stand-in keeping the taken one;
+    # 455 -> 459 and 326 -> 333 the same day, #1023's generation-word
+    # rows
+    assert (checked, skipped) == (459, 333), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:

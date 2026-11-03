@@ -3702,8 +3702,11 @@ _ONE_CASE_HEADS = (("john", "smith", "jones"), ("carod", "puig", "rovira"),
 #: letter initial taken out, with the numeral fork's one-case letter
 #: in front taken out, and with the strict suffix test's one-case veto
 #: taken out (#727: the 54 strict comma pairs and the 18 honorific
-#: ones, which are 2444f847's 72) -- each guard seen on its own
-_ONE_CASE_UNGUARDED = 387
+#: ones, which are 2444f847's 72) -- each guard seen on its own; the
+#: letter initial's re-taken 2026-11-02 when a generation word before
+#: a name word stopped starting S8's run, its unguarded letter then
+#: counting as a name word behind 'jr' in lower case only (387 -> 396)
+_ONE_CASE_UNGUARDED = 396
 _ONE_CASE_LETTER_IN_FRONT_UNGUARDED = 117
 _ONE_CASE_STRICT_VETO_UNGUARDED = 72
 
