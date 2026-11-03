@@ -2140,7 +2140,10 @@ class Lexicon:
         ``particle`` are kinds as well as categories, and take their
         own kind's properties), narrowing to the readings that carry
         them as :meth:`add` spells them, each compared in its own
-        reading's kind
+        reading's kind (so through a category an unwritten value means
+        each kind's own: ``acronym=None`` under ``suffix`` lists the
+        credentials, unwritten-true, and the suffix words, unwritten-
+        false, alike)
         (``words(kind="title", addresses="given")``, the titles that
         address a person by the given name). A phrase the lexicon holds
         whole (``"z domu"``) is one entry."""
