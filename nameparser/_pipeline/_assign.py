@@ -1827,7 +1827,9 @@ def assign(state: ParseState) -> ParseState:
         # 'RA PhD Jr. John' reads title 'RA'). A dual is a title wherever
         # a name word follows it ('Rev. Sr. Smith, Mary').
         # `is_title_piece` is H5's vocabulary read, so the two slots that
-        # refuse the shape agree on what a title word is.
+        # refuse the shape agree on what a title word is, save H5's
+        # written-short clause, which this slot does not read
+        # (decisions/H9, #999: 'Maj. Smith, John' keeps family 'Maj. Smith').
         lead = 0
         floor = len(fam_pieces)
         # the length test and the tag test first, both C-level: a part

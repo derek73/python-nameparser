@@ -102,7 +102,8 @@ A kind belongs to a category, which decides what the reading does:
      - ``title``, ``salutation``, ``style``, ``academic``, ``religious``,
        ``nobility``, ``military``, ``office``, ``occupation``,
        ``kinship``, ``modifier``
-     - ``addresses="given"``, ``after_given=True``, ``attaches=[...]``
+     - ``addresses="given"``, ``after_given=True``,
+       ``abbreviation=True``, ``attaches=[...]``
    * - suffix
      - ``suffix``, ``generation``, ``agnomen``, ``credential``,
        ``honorific``, ``professional_honorific``, ``status``,

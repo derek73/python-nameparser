@@ -14,7 +14,8 @@ where an earlier stage already asked.
 Reads: every Lexicon vocabulary field except surnames and
 honorific_tails, which script_segment consumes upstream, and the kinds
 of its suffix words and particles (Lexicon's generation_words,
-credential_words and patronymic_particles, internal sets, 3.0); and, since
+credential_words and patronymic_particles, internal sets, 3.0) and the
+titles written short (title_abbreviations, #999); and, since
 2.4, Policy.unlisted_dotted_suffixes and Policy.unlisted_caps_suffixes,
 which decide whether an UNLISTED dotted or all-caps token joins the
 ambiguous credential class by SHAPE (#516) -- the all-caps half here
@@ -35,9 +36,10 @@ namespaced (unstable): "vocab:title", "vocab:given-title",
 "vocab:after-given-title", "vocab:title-ambiguous",
 "vocab:suffix", "vocab:suffix-word", "vocab:suffix-ambiguous",
 "vocab:suffix-word-ambiguous", "vocab:agnomen",
-"vocab:generation-word", "vocab:credential-word" and
-"vocab:patronymic" (read by the later stages and dropped by assemble,
-Token.reading carrying the kind out),
+"vocab:generation-word", "vocab:credential-word",
+"vocab:patronymic" and "vocab:trailing-title" (read by the later
+stages and dropped by assemble, Token.reading carrying the kind out,
+save the last, which marks no kind),
 "vocab:particle-ambiguous", "vocab:bound-given",
 "vocab:given-abbreviation", "vocab:maiden-marker",
 "vocab:maiden-marker-cont"; in a namespace of its own,
@@ -76,7 +78,8 @@ from nameparser._policy import CapsSuffixes
 from nameparser._pipeline._state import (
     AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, CREDENTIAL_WORD_TAG,
     GENERATION_WORD_TAG, GIVEN_ABBREVIATION_TAG, PATRONYMIC_TAG, SHAPE_ACRONYM_TAG,
-    SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, TITLE_AMBIGUOUS_TAG, ParseState,
+    SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, TITLE_AMBIGUOUS_TAG,
+    TRAILING_TITLE_TAG, ParseState,
     Deferred, PendingAmbiguity, PendingReading,
     WorkToken, copy_with,
 )
@@ -147,6 +150,12 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
         tags.add("vocab:title")
     if n in lex._sets.given_name_titles:
         tags.add("vocab:given-title")
+    # rules/H5: "a title that may be a given name is title vocabulary
+    # there where its title reading is written short" -- marked here,
+    # where the sets are at hand, so the chain reads a tag
+    if (n in lex._sets.title_abbreviations
+            and n in lex._sets.titles_ambiguous):
+        tags.add(TRAILING_TITLE_TAG)
     # rules/H8: "the word joins the title field" -- tagged only where the
     # word is a title too, so an entry outside `titles` is inert
     if n in lex._sets.after_given_titles and n in lex._sets.titles:

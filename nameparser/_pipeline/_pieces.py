@@ -59,8 +59,8 @@ from typing import NamedTuple
 
 from nameparser._pipeline._state import (
     AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG,
-    GIVEN_ABBREVIATION_TAG, NAME_ROLES, SHAPE_ACRONYM_TAG, SUFFIX_OR_UNREAD, AmbiguityKind, PendingAmbiguity,
-    PendingReading,
+    GENERATION_WORD_TAG, GIVEN_ABBREVIATION_TAG, NAME_ROLES, SHAPE_ACRONYM_TAG, SUFFIX_OR_UNREAD, AmbiguityKind, PendingAmbiguity,
+    PendingReading, TRAILING_TITLE_TAG,
     WorkToken,
 )
 from nameparser._pipeline._vocab import (
@@ -1508,6 +1508,50 @@ def acronym_in_title_case(token: WorkToken) -> bool:
             and stem[1:].islower())
 
 
+# rules/S8: "nor does a generation word written out" -- the clause
+# this implements (decisions/S8)
+def generation_word_before_a_name(token: WorkToken,
+                                  piece: Sequence[int], ptags: Set[str],
+                                  tokens: Sequence[WorkToken],
+                                  one_case: bool | None) -> bool:
+    """Whether a generation WORD ('Junior', 'Jr', 'Snr', 'mlađi') has
+    behind it, in `piece`, a word of the name, asked of the piece's
+    first word as `_name_word_behind` asks it: a word that is no suffix
+    word, no numeral S10 reads as the generation, no initial, no connective, no title word
+    (the run reads that as a title: 'Eric H. Holder Jr. Attorney
+    General') and no maiden marker, so no particle that is also title
+    or suffix vocabulary ('St.', 'Mc'), and is a particle or is written
+    in a name of one case or,
+    in a name of mixed case, in Title case or a script with no case --
+    capitals there are a credential's writing as likely as a name's
+    ('de Planta jr. CF'), and lower case is no name word's. A credential
+    merged across a space is no name word. The numerals are S10's, read
+    by their own predicate, and stay out. Only `run_start` asks it."""
+    if (GENERATION_WORD_TAG not in token.tags
+            or _ROMAN.match(token.text.rstrip(".")) is not None
+            or "suffix" in ptags or "split" in ptags):
+        return False
+    tags = tokens[piece[0]].tags
+    text = tokens[piece[0]].text
+    if (not tags.isdisjoint(_NOT_A_NAME_BEHIND)
+            # a numeral S10 reads by its shape carries no suffix tag
+            # ('JOHN SMITH JUNIOR VI JONES'); asked of S10's predicate,
+            # so a Title-case 'Vi' leaning to the name stays one
+            or (_ROMAN.match(text.rstrip(".")) is not None
+                and reads_as_generation(text, tags, token.text,
+                                        one_case))):
+        return False
+    if "particle" in tags:
+        return True
+    return bool(one_case) or not (text.islower() or text.isupper())
+
+
+#: what a word behind a generation word is that is no word of the name
+_NOT_A_NAME_BEHIND = frozenset({"vocab:suffix", SHAPE_ACRONYM_TAG,
+                                "initial", "conjunction", "vocab:title",
+                                "vocab:maiden-marker"})
+
+
 # rules/S8: "A credential after the name core starts a run to the
 # end of its part" -- applied to a finished peel (#602), so every
 # reader of the trailing run (assign, P5's reserve, P2's chain stop,
@@ -1575,16 +1619,25 @@ def run_start(rest: Sequence[int], names: int,
                              # the walk leaves out (#827)
                              and not behind_the_merged_credential(
                                  rest, p + 1, ptags)
-                             and (AMBIGUOUS_ACRONYM_TAG in tags
-                                  and settled_by_case(tokens[pieces[q][0]],
-                                                      one_case)
-                                  # rules/S8: "nor does a credential
-                                  # acronym written in Title case" --
-                                  # the writing of a name word
-                                  or acronym_in_title_case(tokens[pieces[q][0]]))
-                             and _name_word_behind(pieces[rest[p + 1]],
-                                                   ptags[rest[p + 1]],
-                                                   tokens, one_case))):
+                             and ((AMBIGUOUS_ACRONYM_TAG in tags
+                                   and settled_by_case(tokens[pieces[q][0]],
+                                                       one_case)
+                                   # rules/S8: "nor does a credential
+                                   # acronym written in Title case" --
+                                   # the writing of a name word
+                                   or acronym_in_title_case(
+                                       tokens[pieces[q][0]]))
+                                  and _name_word_behind(pieces[rest[p + 1]],
+                                                        ptags[rest[p + 1]],
+                                                        tokens, one_case)
+                                  # rules/S8: "nor does a generation word
+                                  # written out" -- a filer's middle-name
+                                  # box, the family name behind it
+                                  or generation_word_before_a_name(
+                                      tokens[pieces[q][0]],
+                                      pieces[rest[p + 1]],
+                                      ptags[rest[p + 1]], tokens,
+                                      one_case)))):
                 return p
         # a lone particle is not yet a name: 'de Mesnil' is one surname
         # -- unless it opens a chain run, which is then the surname
@@ -1724,7 +1777,9 @@ def credential_run(rest: Sequence[int], peel: Peel, p: int,
 # with it 'John Smith Xyz.' would lose its family name to a title
 # (decisions/H5). The vocabulary read is is_title_piece's, shared
 # with the leading run so the two cannot disagree about what a title
-# WORD is while disagreeing, deliberately, about what a title SHAPE is.
+# WORD is while disagreeing, deliberately, about what a title SHAPE is
+# -- save the word H5's written-short clause adds, classify's
+# TRAILING_TITLE_TAG, which no leading read admits (#999).
 def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
                      ptags: Sequence[Set[str]],
                      tokens: Sequence[WorkToken],
@@ -1772,12 +1827,16 @@ def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
         idx = rest[k - 1]
         piece = pieces[idx]
         # no #323 veto on the shape here, unlike is_leading_title's:
-        # the shape is ANDed with is_title_piece, so the word is listed
-        # vocabulary, and a listed CJK title wearing a stop should read
-        # as a title.
+        # the shape is ANDed with a vocabulary read, so the word is
+        # listed, and a listed CJK title wearing a stop should read as
+        # a title. rules/H5: "a title that may be a given name is
+        # title vocabulary there where its title reading is written
+        # short" -- classify's tag, tested first, a C-level read
+        # (decisions/H5, #999)
         if len(piece) == 1 and (
                 (_PERIOD_ABBREV.match(tokens[piece[0]].text)
-                 and is_title_piece(piece, ptags[idx], tokens))
+                 and (TRAILING_TITLE_TAG in tokens[piece[0]].tags
+                      or is_title_piece(piece, ptags[idx], tokens)))
                 # rules/H8: "the given part after it ends in a word whose
                 # title reading is a salutation" -- the salutation chains
                 # as a period-marked title does ("It reads as the
@@ -1795,18 +1854,20 @@ def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
 # shape and are title vocabulary chain into the title from the end"
 # -- one word's half of that, for a caller asking it of a piece the
 # chain did not walk to: the maiden take, choosing the words the
-# clause-free view is read over (#601). `trailing_titles` asks the same three tests
+# clause-free view is read over (#601). `trailing_titles` asks the same four tests
 # INLINE, in the same order, for the frame budget its docstring
 # states; keep the two in step.
 def is_trailing_title_word(piece: Sequence[int], ptags: Set[str],
                            tokens: Sequence[WorkToken]) -> bool:
     """Whether one piece is a word H5's trailing chain takes: a lone
     token wearing the abbreviation shape that the title vocabulary
-    lists. Position is the caller's question -- this answers only
+    lists, or that classify marks as a title written short that may
+    be a given name (TRAILING_TITLE_TAG). Position is the caller's question -- this answers only
     what the word is."""
     return (len(piece) == 1
             and _PERIOD_ABBREV.match(tokens[piece[0]].text) is not None
-            and is_title_piece(piece, ptags, tokens))
+            and (TRAILING_TITLE_TAG in tokens[piece[0]].tags
+                 or is_title_piece(piece, ptags, tokens)))
 
 
 #: lone-word tags `trailing_candidates` admits on: the ambiguous class,
@@ -2225,7 +2286,9 @@ def _weighed(piece: Sequence[int], tokens: Sequence[WorkToken]) -> bool:
     period-marked title word. A word the chain joins and the reading
     weighs is a word the reading may yet take ('Freiherr von Berg MA
     X.Y.Z.' keeps suffix 'MA X.Y.Z.'), so it ends the plain run the
-    count folds into the particle (#620's review). A
+    count folds into the particle (#620's review); a title written
+    short that may be a given name is one too, H5's chain taking it
+    as it takes a listed title (#999). A
     connective join is one name word, P3's own count. The tests inline:
     this asks once per word behind a particle run."""
     if len(piece) > 1:
@@ -2234,7 +2297,7 @@ def _weighed(piece: Sequence[int], tokens: Sequence[WorkToken]) -> bool:
     return (not tok.tags.isdisjoint(_WEIGHED_TAGS)
             or _ROMAN.match(stem := tok.text.rstrip(".")) is not None
             and stem != ""
-            or "vocab:title" in tok.tags
+            or ("vocab:title" in tok.tags or TRAILING_TITLE_TAG in tok.tags)
             and _PERIOD_ABBREV.match(tok.text) is not None)
 
 

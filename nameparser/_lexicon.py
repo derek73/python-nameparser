@@ -523,11 +523,14 @@ _LIST_FIELDS = ("surnames", "given_names")
 #: `Lexicon._sets`, and the names an old spelling is refused by.
 _SET_FIELDS = tuple(f for f in _VOCAB_FIELDS if f not in _LIST_FIELDS)
 
-#: The kinds those sets do not record, which the views read (rules/R8,
-#: rules/R9): `_LexiconSets` attributes after the `_VOCAB_FIELDS` ones,
-#: each a compiled constant of its own.
+#: What those sets do not record: the kinds the views read (rules/R8,
+#: rules/R9), and the titles written short that rules/H5's trailing
+#: chain reads where one may also be a given name (#999), which is no
+#: kind; the name is the tuple's first use.
+#: `_LexiconSets` attributes after the `_VOCAB_FIELDS` ones, each a
+#: compiled constant of its own.
 _KIND_FIELDS = ("generation_words", "credential_words",
-                "patronymic_particles")
+                "patronymic_particles", "title_abbreviations")
 
 @dataclass(frozen=True, slots=True, eq=False, repr=False)
 class _LexiconSets:
@@ -578,6 +581,10 @@ class _LexiconSets:
     generation_words: frozenset[str]
     credential_words: frozenset[str]
     patronymic_particles: frozenset[str]
+    #: the words whose title reading is written `abbreviation=True`
+    #: (`maj`); rules/H5's trailing chain reads one only beside
+    #: `titles_ambiguous`, through classify's TRAILING_TITLE_TAG (#999)
+    title_abbreviations: frozenset[str]
 
 
 #: Lexicon field -> the compiled constant it is read from, for every
@@ -608,6 +615,7 @@ _COMPILED_FIELDS = {
     "generation_words": "GENERATION_WORDS",
     "credential_words": "CREDENTIAL_WORDS",
     "patronymic_particles": "PATRONYMIC_PARTICLES",
+    "title_abbreviations": "TITLE_ABBREVIATIONS",
 }
 
 
@@ -691,7 +699,7 @@ def _prop_value(kind: str, prop: str, value: object) -> object:
     if value is None or (isinstance(value, (bool, str))
                          and value == _unwritten(kind, prop)):
         return None
-    if prop in ("acronym", "after_given", "may_be_initial"):
+    if prop in ("abbreviation", "acronym", "after_given", "may_be_initial"):
         if not isinstance(value, bool):
             raise TypeError(f"{prop} must be True or False, got {value!r}")
         return value
@@ -1537,7 +1545,8 @@ def _shown_value(kind: str | None, prop: str, value: object) -> str:
     """A logged property value as a caller writes it: a removed one as
     its unwritten value where it has one (`may_be_initial=False`)."""
     if value is None and kind is not None and prop in (
-            "acronym", "addresses", "after_given", "may_be_initial"):
+            "abbreviation", "acronym", "addresses", "after_given",
+            "may_be_initial"):
         value = _unwritten(kind, prop)
     if isinstance(value, tuple) and len(value) > _SHOWN_WORDS:
         # bounded: a phrase taken out of a kind's reach lists every
@@ -2198,7 +2207,7 @@ class Lexicon:
             ``"birth_marker"``, ``"given"``, ``"family"``, ...), and
             `properties` that kind's behavioral properties as the files
             spell them (``addresses="given"``, ``after_given=True``,
-            ``attaches=[...]``, ``acronym=...``, ``attached="after"``,
+            ``abbreviation=True``, ``attaches=[...]``, ``acronym=...``, ``attached="after"``,
             ``may_be_initial=True``, ``same_as=...`` on a ``given``
             reading); a property given its unwritten value (``None``,
             ``False``) is removed. Where the word holds a reading of `kind`
