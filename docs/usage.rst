@@ -1460,7 +1460,7 @@ vocabulary file holds readings (``--locale ko``) chooses that language
 alone; one whose file holds none yet (``vi``) needs ``--strict``, and
 a pack's language with a region or script subtag (``zh-CN``,
 ``zh-Hant``) exits naming the pack to use.
-``--strict`` reads only that language's words (see
+``--strict`` reads only that language's words and the shared ones (see
 :ref:`strict-choice`), and needs ``--locale``:
 
 ::
