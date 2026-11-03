@@ -85,8 +85,8 @@ CATEGORY: dict[str, str] = {
 #: (the shipped ones on `family` readings, #1014): its other keys are
 #: evidence.
 BEHAVIORAL: dict[str, frozenset[str]] = {
-    "title": frozenset({"addresses", "after_given", "attaches", "cased",
-                        "default"}),
+    "title": frozenset({"abbreviation", "addresses", "after_given",
+                        "attaches", "cased", "default"}),
     "suffix": frozenset({"acronym", "attached", "cased", "default"}),
     "particle": frozenset({"cased", "default"}),
     "conjunction": frozenset({"may_be_initial", "cased", "default"}),
@@ -145,7 +145,8 @@ class ReadingProperties:
         return self.props.get("default", True) is not False
 
     def flag(self, prop: str) -> bool:
-        """A `may_be_*` flag or `after_given`: unwritten, false."""
+        """A `may_be_*` flag, `after_given` or `abbreviation`:
+        unwritten, false."""
         return bool(self.props.get(prop, False))
 
     @property
@@ -524,6 +525,7 @@ class Compiled(TypedDict):
     GENERATION_WORDS: frozenset[str]
     CREDENTIAL_WORDS: frozenset[str]
     PATRONYMIC_PARTICLES: frozenset[str]
+    TITLE_ABBREVIATIONS: frozenset[str]
 
 
 def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
@@ -545,6 +547,7 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
     titles: set[str] = set()
     given_titles: set[str] = set()
     after_given: set[str] = set()
+    written_short: set[str] = set()
     title_kinds: dict[str, set[str]] = {}
     attaches: dict[str, set[str]] = {}
     particles: set[str] = set()
@@ -574,6 +577,8 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
                 given_titles.add(t)
             if r.flag("after_given"):
                 after_given.add(t)
+            if r.flag("abbreviation"):
+                written_short.add(t)
             title_kinds.setdefault(t, set()).add(r.kind)
             attaches.setdefault(t, set()).update(p.get("attaches", ()))
         elif r.category == "suffix":
@@ -661,6 +666,10 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
         GENERATION_WORDS=frozenset(generations),
         CREDENTIAL_WORDS=frozenset(credential_words),
         PATRONYMIC_PARTICLES=frozenset(patronymics),
+        # the title readings written short (`abbreviation`), which H5's
+        # trailing chain takes where the word may also be a given name
+        # (#999); internal, like the kind sets above
+        TITLE_ABBREVIATIONS=frozenset(written_short),
     )
     # One form per post-nominal: the word test strips only edge periods
     # and the acronym test strips all of them, so a word in both is

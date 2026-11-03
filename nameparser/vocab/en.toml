@@ -690,11 +690,13 @@ military = { expands = "Lieutenant (junior grade)" }
 
 [[word]]
 text = "maj"
-military = { expands = "Major" }
+military = { expands = "Major", abbreviation = true, attaches = ["gen", "general"], issue = 999, decided = 2026-11-03, note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'Maj Gen John Smith' reads the title, 'Maj Sjöwall' and 'Mr Maj Zura' the given name, and 'Maj. John Smith' the title by H2's shape; written with its period at the end it is H5's trailing title ('SMITH, JOHN B. MAJ.'); attaches: Maj Gen, Maj General" }
+given = { wikidata = 98, as_of = 2026-11-03, note = "a Scandinavian given name: nam_dict band 8 in Sweden, 6 in Denmark, 4 in Finland, 2 in Norway; Wikidata is a lower bound (Sweden 52, Denmark 12, Slovenia 8, Finland 6, Norway 5); US SSA under 5 births a year. Where it opens a name in the local corpora (2026-11-03) about 46 of 65 are given names, the rest ranks written bare (ctgov's 'MAJ Ian Stewart, MD')" }
+family = { us_census_2010 = 470, wikidata = 90, as_of = 2026-11-03, note = "a Polish surname: US Census rank 45,495; Wikidata Poland 34" }
 
 [[word]]
 text = "major"
-military = { issue = 752, decided = 2026-10-25, attaches = ["general"], note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'Major General Smith' reads the title, 'Major Smith' and 'Mr Major Smith' the given name; attaches: Major General" }
+military = { issue = 752, decided = 2026-10-25, attaches = ["gen", "general"], note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'Major General Smith' reads the title, 'Major Smith' and 'Mr Major Smith' the given name; attaches: Major General, and since #999 Major Gen" }
 given = { us_ssa = 21749, wikidata = 65, as_of = 2026-10-25, note = "US SSA: female and male births added" }
 family = { us_census_2010 = 20977, wikidata = 400, as_of = 2026-10-25 }
 

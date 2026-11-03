@@ -76,7 +76,8 @@ from nameparser._policy import CapsSuffixes
 from nameparser._pipeline._state import (
     AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, CREDENTIAL_WORD_TAG,
     GENERATION_WORD_TAG, GIVEN_ABBREVIATION_TAG, PATRONYMIC_TAG, SHAPE_ACRONYM_TAG,
-    SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, TITLE_AMBIGUOUS_TAG, ParseState,
+    SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, TITLE_AMBIGUOUS_TAG,
+    TRAILING_TITLE_TAG, ParseState,
     Deferred, PendingAmbiguity, PendingReading,
     WorkToken, copy_with,
 )
@@ -147,6 +148,12 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
         tags.add("vocab:title")
     if n in lex._sets.given_name_titles:
         tags.add("vocab:given-title")
+    # rules/H5: "a title that may be a given name is title vocabulary
+    # there where its title reading is written short" -- marked here,
+    # where the sets are at hand, so the chain reads a tag
+    if (n in lex._sets.title_abbreviations
+            and n in lex._sets.titles_ambiguous):
+        tags.add(TRAILING_TITLE_TAG)
     # rules/H8: "the word joins the title field" -- tagged only where the
     # word is a title too, so an entry outside `titles` is inert
     if n in lex._sets.after_given_titles and n in lex._sets.titles:

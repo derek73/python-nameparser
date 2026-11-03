@@ -1093,6 +1093,7 @@ _PROPERTY_PROBES = {
     "may_be_initial": ("conjunction", "{ may_be_initial = true }", "q"),
     "cased": ("title", '{ cased = "ZzQ" }', "zzq"),
     "after_given": ("salutation", "{ after_given = true }", "zzq"),
+    "abbreviation": ("military", "{ abbreviation = true }", "zzq"),
     "default": ("generation", "{ default = false }", "zzq"),
     # a phrase needs the head it attaches to: a second title word
     "attaches": ("office", '{ attaches = ["occupation"] }', "zzq",

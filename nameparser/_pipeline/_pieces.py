@@ -60,7 +60,7 @@ from typing import NamedTuple
 from nameparser._pipeline._state import (
     AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG,
     GENERATION_WORD_TAG, GIVEN_ABBREVIATION_TAG, NAME_ROLES, SHAPE_ACRONYM_TAG, SUFFIX_OR_UNREAD, AmbiguityKind, PendingAmbiguity,
-    PendingReading,
+    PendingReading, TRAILING_TITLE_TAG,
     WorkToken,
 )
 from nameparser._pipeline._vocab import (
@@ -1827,10 +1827,14 @@ def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
         # no #323 veto on the shape here, unlike is_leading_title's:
         # the shape is ANDed with is_title_piece, so the word is listed
         # vocabulary, and a listed CJK title wearing a stop should read
-        # as a title.
+        # as a title. rules/H5: "a title that may be a given name is
+        # title vocabulary there where its title reading is written
+        # short" -- classify's tag, tested first, a C-level read
+        # (decisions/H5, #999)
         if len(piece) == 1 and (
                 (_PERIOD_ABBREV.match(tokens[piece[0]].text)
-                 and is_title_piece(piece, ptags[idx], tokens))
+                 and (TRAILING_TITLE_TAG in tokens[piece[0]].tags
+                      or is_title_piece(piece, ptags[idx], tokens)))
                 # rules/H8: "the given part after it ends in a word whose
                 # title reading is a salutation" -- the salutation chains
                 # as a period-marked title does ("It reads as the
@@ -1859,7 +1863,8 @@ def is_trailing_title_word(piece: Sequence[int], ptags: Set[str],
     what the word is."""
     return (len(piece) == 1
             and _PERIOD_ABBREV.match(tokens[piece[0]].text) is not None
-            and is_title_piece(piece, ptags, tokens))
+            and (TRAILING_TITLE_TAG in tokens[piece[0]].tags
+                 or is_title_piece(piece, ptags, tokens)))
 
 
 #: lone-word tags `trailing_candidates` admits on: the ambiguous class,

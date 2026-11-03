@@ -331,10 +331,12 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # each reporting suffix-or-name under three orders; 1503 -> 1521
     # the same day, #1023's generation-word rows: two lose their
     # suffix-or-name report, six new ones carry one and one carries
-    # two, each under three orders.
-    assert claims == 1521, (
-        f"the field sweep checks {claims} claims, recorded as 1521 on "
-        f"2026-11-02")
+    # two, each under three orders; 1521 -> 1527 on 2026-11-03, #999's
+    # 'Maj Sjöwall' and 'Mr Maj Zura', each reporting title-or-name
+    # under three orders.
+    assert claims == 1527, (
+        f"the field sweep checks {claims} claims, recorded as 1527 on "
+        f"2026-11-03")
 
 
 #: The kinds that report a fork between two readings of a word, so carry

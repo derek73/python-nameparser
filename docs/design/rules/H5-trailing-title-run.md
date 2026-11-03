@@ -56,6 +56,13 @@
   ```
   "Smith, Jane Mrs"           →  title="Mrs"
   ```
+- **A title that may be a given name** (H9): a title that may be a given name is title vocabulary there where its title reading is written short, as `Maj` is short for Major, so the chain takes it with its period; any other is the name word H9 reads it as, its period being no sign of a word cut short.
+  ```
+  "SMITH, JOHN B. MAJ."       →  title="MAJ."
+  "John Smith Maj."           →  title="Maj."
+  "John Smith Maj"            →  family="Maj"
+  "John Karimi Mahdi."        →  family="Mahdi."
+  ```
 - **A bound given-name word beside a trailing title** (P5): what the title chain leaves is also what counts as a name word to spare (P5). A trailing title word is not one, so a bound given-name word behind one joins exactly as it joins with the title absent — and lands in the same field, the run in FRONT of the joined pair being the run H1 asks about. Said of the comma-less writing, which is where the title chain runs before the reserve is read. After a family comma the reserve reads no peel, but the join declines a trailing title word the title chain takes (P5), so the title is read there too, save the shapes P5's Accepted clause records, as the segment written with an ordinary given name reads it.
   ```
   "Berg, abdul Prof."         →  title="Prof."
@@ -71,4 +78,4 @@
 
 ---
 **Signal:** shape: period-marked title vocabulary at the end of the name, behind the trailing suffix run
-**history:** decisions/H5 · **implemented:** nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py
+**history:** decisions/H5 · **implemented:** nameparser/_pipeline/_assign.py, nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py

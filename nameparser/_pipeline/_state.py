@@ -134,6 +134,14 @@ SECOND_SURNAME_TAG = "vocab:second-surname"
 #: the fork to report where the word opens the name.
 TITLE_AMBIGUOUS_TAG = "vocab:title-ambiguous"
 
+#: On a word of `Lexicon.titles_ambiguous` whose title reading is
+#: written short (`Lexicon.title_abbreviations`, `maj`), whichever way
+#: classify read it: rules/H5's trailing chain takes it where it wears
+#: the abbreviation shape, though the phrase test reads it out of the
+#: title. Dropped from the published token like the kind tags above,
+#: TITLE_AMBIGUOUS_TAG naming the word's class.
+TRAILING_TITLE_TAG = "vocab:trailing-title"
+
 #: On a word of `Lexicon.given_name_abbreviations`, a given name written
 #: short ('Chas.', 'Ma.'): rules/H2's shape test declines a word
 #: carrying it, so the given reading outranks the shape-derived title

@@ -13106,6 +13106,53 @@ CASES: tuple[Case, ...] = (
          {"given": "John", "middle": "Karimi", "family": "Mahdi."},
          notes="H9; 1.4.0's reading, which 2.3.0 through 2.6.0 read as "
                "title 'Mahdi.' (H5)"),
+    Case("given_name_title_maj_at_the_head", "Maj Sjöwall",
+         {"given": "Maj", "family": "Sjöwall"},
+         ambiguities=("title-or-name",), classification="fix(#999)",
+         notes="H9: the Scandinavian given name; 'Maj Gen' holds the "
+               "word, so it reports; read title 'Maj' 1.4.0 through 2.8.1"),
+    Case("given_name_title_maj_behind_a_salutation", "Mr Maj Zura",
+         {"title": "Mr", "given": "Maj", "family": "Zura"},
+         ambiguities=("title-or-name",), classification="fix(#999)",
+         notes="H9: a salutation is no partner; read title 'Mr Maj' "
+               "1.4.0 through 2.8.1"),
+    Case("maj_gen_is_one_title", "Maj Gen John Smith",
+         {"title": "Maj Gen", "given": "John", "family": "Smith"},
+         classification="parity",
+         notes="H9: 'maj' attaches to 'gen' and 'general' (#999)"),
+    Case("major_gen_is_one_title", "Major Gen John Smith",
+         {"title": "Major Gen", "given": "John", "family": "Smith"},
+         classification="fix(#999)",
+         notes="H9: 'major' attaches to 'gen' as to 'general'; read given "
+               "'Major', middle 'Gen John' 1.4.0 through 2.8.1"),
+    Case("maj_with_its_period_at_the_head_is_a_title", "Maj. John Smith",
+         {"title": "Maj.", "given": "John", "family": "Smith"},
+         classification="parity",
+         notes="H9's H2 bullet: the abbreviation shape claims it"),
+    Case("maj_written_short_ending_the_given_part_is_a_title",
+         "SMITH, JOHN B. MAJ.",
+         {"title": "MAJ.", "given": "JOHN", "middle": "B.",
+          "family": "SMITH"},
+         classification="fix(#316)",
+         notes="H5: a title that may be a given name, its title reading "
+               "written short, chains with its period (#999), FEC's "
+               "listing form; 1.4.0 through 2.2.0 read middle 'B. MAJ.'"),
+    Case("maj_written_short_ending_the_name_is_a_title", "John Smith Maj.",
+         {"title": "Maj.", "given": "John", "family": "Smith"},
+         classification="fix(#316)",
+         notes="H5's written-short clause (#999); 1.4.0 through 2.2.0 read "
+               "family 'Maj.'"),
+    Case("bound_given_join_declines_maj_written_short", "Smith, abdul Maj.",
+         {"title": "Maj.", "given": "abdul", "family": "Smith"},
+         classification="fix(#637)",
+         notes="P5: the join declines a title word a trailing rule reads "
+               "as a title, H5's written-short clause included (#999), as "
+               "it declines 'Prof.'; 1.4.0 read given 'abdul Maj.'"),
+    Case("maj_bare_ending_the_name_is_a_name_word", "John Smith Maj",
+         {"given": "John", "middle": "Smith", "family": "Maj"},
+         classification="parity",
+         notes="H5: a bare title word there is a name word; 'Maj' is a "
+               "Polish surname"),
     Case("given_name_title_bard_at_the_head", "Bard Larsen",
          {"given": "Bard", "family": "Larsen"}, classification="fix(#867)",
          notes="H9: 'Bard' is mostly Norwegian 'Bård' written without "

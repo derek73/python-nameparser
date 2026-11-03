@@ -523,11 +523,13 @@ _LIST_FIELDS = ("surnames", "given_names")
 #: `Lexicon._sets`, and the names an old spelling is refused by.
 _SET_FIELDS = tuple(f for f in _VOCAB_FIELDS if f not in _LIST_FIELDS)
 
-#: The kinds those sets do not record, which the views read (rules/R8,
-#: rules/R9): `_LexiconSets` attributes after the `_VOCAB_FIELDS` ones,
-#: each a compiled constant of its own.
+#: What those sets do not record: the kinds the views read (rules/R8,
+#: rules/R9), and the titles written short that rules/H5's trailing
+#: chain reads where one may also be a given name (#999).
+#: `_LexiconSets` attributes after the `_VOCAB_FIELDS` ones, each a
+#: compiled constant of its own.
 _KIND_FIELDS = ("generation_words", "credential_words",
-                "patronymic_particles")
+                "patronymic_particles", "title_abbreviations")
 
 @dataclass(frozen=True, slots=True, eq=False, repr=False)
 class _LexiconSets:
@@ -578,6 +580,10 @@ class _LexiconSets:
     generation_words: frozenset[str]
     credential_words: frozenset[str]
     patronymic_particles: frozenset[str]
+    #: the title readings written `abbreviation=True` (`maj`), which
+    #: rules/H5's trailing chain takes where the word may also be a
+    #: given name (#999)
+    title_abbreviations: frozenset[str]
 
 
 #: Lexicon field -> the compiled constant it is read from, for every
@@ -608,6 +614,7 @@ _COMPILED_FIELDS = {
     "generation_words": "GENERATION_WORDS",
     "credential_words": "CREDENTIAL_WORDS",
     "patronymic_particles": "PATRONYMIC_PARTICLES",
+    "title_abbreviations": "TITLE_ABBREVIATIONS",
 }
 
 
@@ -691,7 +698,7 @@ def _prop_value(kind: str, prop: str, value: object) -> object:
     if value is None or (isinstance(value, (bool, str))
                          and value == _unwritten(kind, prop)):
         return None
-    if prop in ("acronym", "after_given", "may_be_initial"):
+    if prop in ("abbreviation", "acronym", "after_given", "may_be_initial"):
         if not isinstance(value, bool):
             raise TypeError(f"{prop} must be True or False, got {value!r}")
         return value
@@ -1242,7 +1249,7 @@ def _rechosen_masks(lexicon: Lexicon, chosen: frozenset[str],
 #: hold, never reaches this, `_inert_dropped` having taken it out.
 _TITLE_FIELDS = frozenset({
     "titles", "titles_ambiguous", "given_name_titles", "after_given_titles",
-    "title_modifiers", "title_styles"})
+    "title_modifiers", "title_styles", "title_abbreviations"})
 _ACRONYM_FIELDS = frozenset({"suffix_acronyms", "suffix_acronyms_ambiguous"})
 _WORD_FIELDS = frozenset({
     "suffix_words", "suffix_words_ambiguous", "agnomens", "honorific_tails",
@@ -1400,6 +1407,7 @@ def _target_readings(word: str, member: frozenset[str],
 _MARKER_READ_WITH = (
     ("given_name_titles", ("titles", "titles_ambiguous")),
     ("after_given_titles", ("titles",)),
+    ("title_abbreviations", ("titles", "titles_ambiguous")),
     ("title_modifiers", ("titles", "titles_ambiguous")),
     ("title_styles", ("titles", "titles_ambiguous")),
     ("conjunctions_ambiguous", ("conjunctions",)),
@@ -1537,7 +1545,8 @@ def _shown_value(kind: str | None, prop: str, value: object) -> str:
     """A logged property value as a caller writes it: a removed one as
     its unwritten value where it has one (`may_be_initial=False`)."""
     if value is None and kind is not None and prop in (
-            "acronym", "addresses", "after_given", "may_be_initial"):
+            "abbreviation", "acronym", "addresses", "after_given",
+            "may_be_initial"):
         value = _unwritten(kind, prop)
     if isinstance(value, tuple) and len(value) > _SHOWN_WORDS:
         # bounded: a phrase taken out of a kind's reach lists every

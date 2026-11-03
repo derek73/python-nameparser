@@ -641,7 +641,7 @@ def test_every_shipped_reading_holds_its_properties_canonical() -> None:
     # write them, an unwritten value never (a written `acronym = true` on
     # a credential would match no `words(..., acronym=True)`)
     from nameparser._lexicon import _prop_value
-    behavioral = ("acronym", "addresses", "after_given", "attached",
+    behavioral = ("abbreviation", "acronym", "addresses", "after_given", "attached",
                   "attaches", "may_be_initial", "same_as")
     held = [(w, r.kind, p, v) for w, rs in Lexicon.default()._pool().items()
             for r in rs for p, v in r.props.items() if p in behavioral]
@@ -743,7 +743,7 @@ def test_a_derived_marker_follows_from_the_readings() -> None:
     (lambda: Lexicon.empty().remove("x", kind="titel"), ValueError, "or a category, on remove"),
     (lambda: Lexicon.empty().add("x", kind="title", default=False), ValueError, "a caller's reading is on"),
     (lambda: Lexicon.empty().add("x", kind="title", cased="X"), ValueError, "capitalization_exceptions"),
-    (lambda: Lexicon.empty().add("x", kind="title", acronym=True), ValueError, "a title reading takes addresses, after_given, attaches"),
+    (lambda: Lexicon.empty().add("x", kind="title", acronym=True), ValueError, "a title reading takes abbreviation, addresses, after_given, attaches"),
     (lambda: Lexicon.empty().add("x", kind="family", same_as="y"), ValueError, "a family reading takes no properties"),
     (lambda: Lexicon.empty().add("x", kind="title", after_given="yes"), TypeError, "after_given must be True or False"),
     (lambda: Lexicon.empty().add("x", kind="title", addresses="first"), ValueError, "addresses must be 'given' or 'family'"),
@@ -1877,7 +1877,8 @@ def test_migrate_s_words_call_reproduces_each_2x_constant(
 
 def test_migrate_s_table_covers_every_compiled_constant() -> None:
     # every public 2.x constant has a row, code or prose: the private
-    # kind sets 3.0 added (GENERATION_WORDS, ...) were never public
+    # sets 3.0 added (GENERATION_WORDS, ..., TITLE_ABBREVIATIONS) were
+    # never public
     text = (Path(__file__).parents[2] / "docs" / "migrate.rst").read_text()
     section = text.split("Vocabulary constants → Lexicon.words\n", 1)[1]
     section = section.split("\n.. doctest::", 1)[0]
@@ -1888,7 +1889,8 @@ def test_migrate_s_table_covers_every_compiled_constant() -> None:
             re.findall(r"   \* - ``([A-Z_]+)``\n", section))
     from nameparser.config import _compiled
     public_in_2x = {n for n in vars(_compiled) if n.isupper()} - {
-        "GENERATION_WORDS", "CREDENTIAL_WORDS", "PATRONYMIC_PARTICLES"}
+        "GENERATION_WORDS", "CREDENTIAL_WORDS", "PATRONYMIC_PARTICLES",
+        "TITLE_ABBREVIATIONS"}
     assert public_in_2x <= named
     assert len(_migrate_constant_rows()) >= 20  # the rows with code
     # the one row naming two constants, which the row pattern skips

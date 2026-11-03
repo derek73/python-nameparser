@@ -9,6 +9,7 @@
   "Dean of Students Jane Smith"  →  title="Dean of Students"
   "Associate Dean Smith"      →  title="Associate Dean"
   "Major General John Smith"  →  title="Major General"
+  "Maj Gen John Smith"        →  title="Maj Gen"
   "Chief Justice John Roberts"  →  title="Chief Justice"
   "The Hon. Justice Mary Smith"  →  title="The Hon. Justice"
   "His Grace John Smith"      →  title="His Grace"
@@ -19,6 +20,7 @@
   "SMITH, DEAN MR."           →  given="DEAN"
   "General Major John Smith"  →  given="Major"
   "Grace Dean Smith"          →  given="Grace"
+  "Maj Sjöwall"               →  given="Maj"
   "Sgt Marshal Smith"         →  given="Marshal"
   "Mr Mahdi Karimi"           →  given="Mahdi"
   "Buddha Bahadur Tamang"     →  given="Buddha"
@@ -55,6 +57,7 @@
   "Mr Dean Smith"             →  ambiguities=("title-or-name",)
   "Dean Smith, MD"            →  ambiguities=("title-or-name",)
   "Prince Fielder"            →  ambiguities=("title-or-name",)
+  "Maj Sjöwall"               →  ambiguities=("title-or-name",)
   "Dr. King"                  →  ambiguities=("title-or-name",)
   "Chancellor Smith"          →  ambiguities=("title-or-name",)
   "Grace Smith"               →  ambiguities=()
@@ -89,6 +92,11 @@
   "Mr Buddha. Tamang"         →  title="Mr Buddha."
   "Shaikh. Sultan Khan"       →  given="Sultan"
   ```
+- **A period-marked title written short ending the name** (H5): a title that may be a given name whose title reading is written short is the trailing title there, the period marking the word cut short, where any other stays the name word this rule reads.
+  ```
+  "John Smith Maj."           →  title="Maj."
+  "John Smith Dean."          →  family="Dean."
+  ```
 - **A title run** (H3, H4): a word this rule reads as a name word is no title word to the run, so the run stops before it and does not count it.
   ```
   "Mr Dean Smith"             →  title="Mr"
@@ -106,6 +114,12 @@
 - A judge styled with a salutation reads the salutation as the title and the word as the given name, since a salutation is never a partner; the people who write a salutation before the word file it as their forename.
   ```
   "Mr Justice Smith"          →  given="Justice"
+  ```
+- A rank written short and without its period at the head of a name reads as the given name, as a bare `Dean` does, where a mixed-case name writes the rank in capitals and the given name in title case; reading the capitals would be a signal no other title word reads.
+  ```
+  "MAJ Ian Stewart, MD"       →  given="MAJ"
+  "Maj Tom Mouat"             →  given="Maj"
+  "Maj. Tom Mouat"            →  title="Maj."
   ```
 - A modifier whose head is not a listed title loses the title, as with duke, which the vocabulary refuses, and so does a modifier written after a head that does not attach to it, with no `of` behind it.
   ```

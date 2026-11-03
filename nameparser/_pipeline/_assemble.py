@@ -45,7 +45,7 @@ from nameparser._pipeline._state import (
     CREDENTIAL_WORD_TAG, FIELD_READING, GENERATION_WORD_TAG,
     NAME_ROLES, PATRONYMIC_TAG, SECOND_SURNAME_TAG, SHAPE_ACRONYM_TAG,
     SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG,
-    TITLE_AMBIGUOUS_TAG, Beside, Deferred, ParseState, PendingAmbiguity,
+    TITLE_AMBIGUOUS_TAG, TRAILING_TITLE_TAG, Beside, Deferred, ParseState, PendingAmbiguity,
     Structure, WorkToken, comma_bucket,
 )
 from nameparser._pipeline._vocab import (
@@ -215,10 +215,12 @@ _reading = functools.lru_cache(maxsize=1024)(Reading)
 
 
 #: classify's kind tags for a listed suffix word (rules/R8) and a
-#: patronymic particle, and P6's attachment mark (rules/R9), which no
+#: patronymic particle, P6's attachment mark (rules/R9), and the mark
+#: H5's chain reads on a title written short that may be a given name,
+#: which no
 #: published token carries: `Token.reading` names the kind.
 _KIND_TAGS = frozenset({GENERATION_WORD_TAG, CREDENTIAL_WORD_TAG,
-                        PATRONYMIC_TAG, ATTACHED_TAG})
+                        PATRONYMIC_TAG, ATTACHED_TAG, TRAILING_TITLE_TAG})
 
 #: O6's second-surname mark (rules/R10), which no published token
 #: carries either: `Reading.second_surname` names it.

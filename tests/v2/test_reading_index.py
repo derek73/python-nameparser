@@ -60,7 +60,8 @@ def test_the_index_compiled_with_no_choice_is_the_committed_module() -> None:
 
 #: A value other than the unwritten one for every behavioral property,
 #: so a probe reading carrying it compiles differently from one without.
-_SET = {"addresses": "given", "after_given": True, "attaches": ["office"],
+_SET = {"abbreviation": True, "addresses": "given", "after_given": True,
+        "attaches": ["office"],
         "cased": "ZzQ", "acronym": None, "attached": {"side": "after"},
         "may_be_initial": True}
 
