@@ -3102,6 +3102,10 @@ def test_a_strict_choice_keeps_mul_and_native_script_vocabulary() -> None:
     assert strict.parse("Mr Minh Do").title == "Mr"
     assert strict.parse("Minh Do, PhD").suffix == "PhD"
     assert strict.parse("Minh Do III").suffix == "III"
+    # jr, junior and jnr, written after names in every country's data
+    # (2026-11-03, the strict-gap batches)
+    assert strict.parse("Minh Do Jr.").suffix == "Jr."
+    assert strict.parse("Do, Minh, Junior").suffix == "Junior"
     assert strict.parse("Mrs Minh Do").title == "Mrs"
     # `ms` and `miss` whole, the salutation with the credential and the
     # family reading (2026-11-03): `MS` after a comma stays the degree,

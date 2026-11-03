@@ -131,7 +131,7 @@ def test_dropping_a_name_reading_changes_the_compiled_module(shipped: dict[str, 
 
 
 def test_moving_a_word_between_files_changes_nothing(shipped: dict[str, str]) -> None:
-    entry = '[[word]]\ntext = "jr"\ngeneration = {}\n'
+    entry = '[[word]]\ntext = "sr"\ngeneration = {}\n'
     files = _edit(shipped, "en.toml", entry, "")
     files["und.toml"] += "\n" + entry
     assert build.render(_compile(files)) == build.render(_compile(shipped))

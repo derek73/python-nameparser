@@ -491,7 +491,7 @@ _EXPECTED_LANGUAGES = [
     ("Juan e Maria Smith", "e", ("it", "pt")),
     ("Pedro Alves Filho", "Filho", ("pt",)),
     # a suffix matched by its suffix entry, whatever its finer kind (4b)
-    ("John Smith Jr.", "Jr.", ("en",)),
+    ("John Smith Jr.", "Jr.", ("mul",)),
     # a name the vocabulary declares, and a bound given name
     ("van Gogh", "van", ("nl",)),
     ("Chas. Smith", "Chas.", ("en",)),
