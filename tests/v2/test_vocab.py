@@ -156,7 +156,7 @@ def test_a_reading_off_by_default_compiles_to_nothing() -> None:
     off = build.compile_files({"it.toml": _w('[[word]]\ntext = "zzq"\ngeneration = { default = false }\nfamily = { note = "x" }')})
     assert not any("zzq" in v for v in off.values())
     both = build.compile_files({
-        "mul.toml": _w('[[word]]\ntext = "zzq"\ngeneration = {}'),
+        "en.toml": _w('[[word]]\ntext = "zzq"\ngeneration = {}'),
         "de.toml": _w('[[word]]\ntext = "zzq"\ncredential = { default = false }'),
         "hr.toml": _w('[[word]]\ntext = "zzr"\nexcluded = { generation = "x" }'),
         "pl.toml": _w('[[word]]\ntext = "zzr"\ngeneration = { default = false }'),
@@ -224,6 +224,10 @@ def _w(body: str) -> str:
 
 
 MUTATIONS = [
+    # 13: a mul.toml word holds no name reading and no reading in
+    # another file, save MUL_SHARED's (#1005)
+    ("mul-word-with-a-name-reading-elsewhere", {"mul.toml": _w('[[word]]\ntext = "zzq"\ncredential = {}'), "en.toml": _w('[[word]]\ntext = "zzq"\ngiven = { note = "x" }')}, "en.toml: 'zzq' given: .* a strict choice reads where it drops"),
+    ("mul-word-with-a-reading-elsewhere", {"mul.toml": _w('[[word]]\ntext = "zzq"\ncredential = {}'), "fr.toml": _w('[[word]]\ntext = "zzq"\nacademic = {}')}, "fr.toml: 'zzq' academic: .* no choice of 'fr' can prefer"),
     # 12: [rules], only where a pack reads it, each key a rule with a
     # value of its shape, never a scalar's default (#754, 4f)
     ("rules-in-a-file-no-pack-reads", {"en.toml": _w('[rules]\ntwo_family_names = true')}, "en.toml: .* no pack reads this file's"),
@@ -522,6 +526,11 @@ def test_every_mutation_starts_from_a_pool_the_checks_accept() -> None:
         {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = {}\n\n'
                        '[[word]]\ntext = "jnr"\ngeneration = { same_as = "jr" }')},
         {"und.toml": _w('[[word]]\ntext = "abu"\ngiven = { note = "x" }\nparticle = {}\nbound_given = {}')},
+        # check 13 met: a mul.toml word's name reading in mul.toml itself,
+        # as `ing`'s, and MUL_SHARED's `i` read by another file too
+        {"mul.toml": _w('[[word]]\ntext = "zzq"\ncredential = {}\ngiven = { note = "x" }')},
+        {"mul.toml": _w('[[word]]\ntext = "i"\ngeneration = {}'),
+         "ca.toml": _w('[[word]]\ntext = "i"\nconjunction = {}')},
         # an off name reading beside a reading it would gate compiles,
         # and so does an off agnomen beside an off name reading; an off
         # given reading beside a particle is fine once another given

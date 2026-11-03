@@ -3102,6 +3102,9 @@ def test_a_strict_choice_keeps_mul_and_native_script_vocabulary() -> None:
     assert strict.parse("Minh Do, MD").suffix == "MD"
     assert strict.parse("Minh Do III").suffix == "III"
     assert strict.parse("Mrs Minh Do").title == "Mrs"
+    # the six degrees, each after a comma and in a run
+    assert strict.parse("Minh Do, MSc, MBA").suffix == "MSc, MBA"
+    assert strict.parse("Minh Do, MPH, BSc").suffix == "MPH, BSc"
     # en.toml's leave: `ms`, kept there as South Indian initials, `mx`,
     # the abbreviation for Mexico, and `rn`
     assert strict.parse("Ms Minh Do").given == "Ms"
