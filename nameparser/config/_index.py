@@ -1645,7 +1645,7 @@ READINGS: tuple[tuple[str, tuple[tuple[str, str, tuple[tuple[str, object], ...]]
     ('subaltern', (('en', 'military', ()),)),
     ('subedar', (('hi', 'military', ()),)),
     ('suffragist', (('en', 'occupation', ()),)),
-    ('sultan', (('ar', 'nobility', ()), ('ar', 'given', ()), ('ms', 'nobility', ()), ('tr', 'nobility', ()), ('tr', 'given', ()), ('tr', 'family', ()))),
+    ('sultan', (('ar', 'nobility', ()), ('ar', 'given', ()), ('ar', 'family', ()), ('ms', 'nobility', ()), ('tr', 'nobility', ()), ('tr', 'given', ()), ('tr', 'family', ()))),
     ('sultana', (('ar', 'nobility', ()), ('ar', 'given', ()), ('ar', 'family', ()))),
     ('superior', (('en', 'modifier', ()),)),
     ('supreme', (('en', 'modifier', ()),)),
