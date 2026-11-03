@@ -161,8 +161,9 @@ into one particular field — so this table is also a map of which fields
 get built by attachment rather than by position. Titles and suffixes
 attach only to *adjacent words of their own kind* (a run of titles
 chains into one, but a title never swallows a plain name); the rest
-reach forward to pull in the next word, whatever it is. Follow a row's
-name to its full vocabulary set:
+reach forward to pull in the next word, whatever it is. Each row's
+reading kind is what :meth:`Lexicon.words(kind=...)
+<nameparser.Lexicon.words>` takes to list its words:
 
 .. list-table::
    :header-rows: 1
@@ -172,27 +173,27 @@ name to its full vocabulary set:
      - Attach to
      - Field
      - Example
-   * - :mod:`Titles <nameparser.config.titles>`
+   * - Titles (``title``)
      - adjacent titles
      - ``title``
      - ``Asst. Vice Chancellor John`` → ``Asst. Vice Chancellor``
-   * - :mod:`Suffixes <nameparser.config.suffixes>`
+   * - Suffixes (``suffix``)
      - adjacent suffixes
      - ``suffix``
      - ``John Smith PhD MD`` → ``PhD MD``
-   * - :mod:`Bound given names <nameparser.config.bound_given_names>`
+   * - Bound given names (``bound_given``)
      - the following word
      - ``given``
      - ``abdul salam ahmed`` → ``abdul salam``
-   * - :mod:`Particles <nameparser.config.particles>`
+   * - Particles (``particle``)
      - the following surname
      - ``family``
      - ``Juan de la Vega`` → ``de la Vega``
-   * - :mod:`Maiden markers <nameparser.config.maiden_markers>`
+   * - Maiden markers (``birth_marker``)
      - the following name
      - ``maiden``
      - ``Jane Smith née Jones`` → ``Jones``
-   * - :mod:`Conjunctions <nameparser.config.conjunctions>`
+   * - Conjunctions (``conjunction``)
      - the words on both sides
      - any
      - ``John and Jane Smith`` → ``John and Jane``

@@ -1,5 +1,7 @@
 from nameparser.config._invariants import assert_normalized
 
+__all__ = ["KOREAN_SURNAMES"]
+
 # Born a frozenset (#293's convention: a mutable module constant edited
 # after the first parse would silently disagree with the cached
 # ``Lexicon.default()``, which read it once).

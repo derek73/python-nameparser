@@ -14,8 +14,10 @@ The 3.0 API is the one 2.0 introduced — ``parse``, ``Parser``,
 :mod:`nameparser.locales` — and its names and signatures carry into 3.0
 gaining additions only, save one: a ``Lexicon`` is configured by
 *reading* in 3.0, its 2.x set fields internal (`Lexicon fields →
-readings`_). The vocabulary data modules in ``nameparser.config``
-(``titles``, ``particles`` and the rest) stay.
+readings`_), and the modules in ``nameparser.config`` that exposed the
+default word lists as constants (``titles``, ``particles`` and the rest)
+are gone, a lexicon listing its words instead (`Vocabulary constants →
+Lexicon.words`_).
 Separately, the output model changes in 3.0: ``str()`` now renders a
 name in the order it was read in, with the separators it was written
 with (`Changed in 3.0`_). Further output changes come with the 3.0
@@ -59,8 +61,16 @@ exceptions `Finding the sites`_ names:
      - Pickle the ``Parser`` instead
    * - The 1.x names of five word lists and two of their modules,
        deprecated since 2.2
-     - Their 2.2 names, which the 2.2.0 entry of :doc:`release_log`
-       maps
+     - None in 3.0: their 2.2 names, which the 2.2.0 entry of
+       :doc:`release_log` maps, went with the vocabulary modules (next
+       row)
+   * - The vocabulary modules ``nameparser.config.titles``,
+       ``suffixes``, ``particles``, ``conjunctions``,
+       ``bound_given_names``, ``given_names``, ``maiden_markers`` and
+       ``capitalization``, which 2.8.1 warns of
+     - ``Lexicon.default().words(kind=...)``, the call or comprehension
+       for each constant in `Vocabulary constants → Lexicon.words`_;
+       ``nameparser.config.surnames`` stays
    * - ``nameparser.config.regexes`` and its ``REGEXES``, which the
        parser has not read since 2.0
      - Copy the pattern you reused into your own code; the bidi and
@@ -85,9 +95,11 @@ it:
     python -W error::DeprecationWarning -m pytest
 
 2.8 warns where code *uses* a removed name, not where it imports one,
-and 2.8.1 where code reads a constant of ``nameparser.config.regexes``
-(``from nameparser.config.regexes import REGEXES`` included), so some
-code passes that check and still fails on 3.0:
+and 2.8.1 warns where code reads a constant of a removed module,
+``nameparser.config.regexes`` or a vocabulary module
+(``from nameparser.config.titles import TITLES`` included), not where it
+imports the module, so some code passes that check and still fails on
+3.0:
 
 * *reading* the shared ``CONSTANTS`` (``"dr" in CONSTANTS.titles``, or
   ``copy.copy(CONSTANTS)``), which 2.8 left quiet so that importing
@@ -99,13 +111,18 @@ code passes that check and still fails on 3.0:
   importing ``nameparser.parser`` or the two 1.x word-list modules,
   ``nameparser.config.prefixes`` and
   ``nameparser.config.bound_first_names``
-* importing ``nameparser.config.regexes`` without reading a constant
-  from it (``import nameparser.config.regexes`` or ``from
-  nameparser.config import regexes``)
+* importing ``nameparser.config.regexes`` or a vocabulary module
+  without reading a constant from it — ``import
+  nameparser.config.regexes``, ``import nameparser.config.titles`` or
+  ``from nameparser.config import particles``
 
 So search your code for ``CONSTANTS``, ``HumanName``, ``Constants``,
 ``nameparser.parser``, ``nameparser.util``, ``config.prefixes``,
-``config.bound_first_names`` and ``config.regexes`` as well.
+``config.bound_first_names`` and ``config.regexes`` as well, and for the
+vocabulary modules: ``config.titles``, ``config.suffixes``,
+``config.particles``, ``config.conjunctions``,
+``config.bound_given_names``, ``config.given_names``,
+``config.maiden_markers`` and ``config.capitalization``.
 
 Coming from 1.x
 ~~~~~~~~~~~~~~~
@@ -132,7 +149,8 @@ Later 2.x releases changed the core API in ways 3.0 keeps:
 
 * editing a default word list in place — ``TITLES.add("dean")`` —
   raises ``AttributeError`` since 2.2, when the vocabulary sets became
-  ``frozenset`` (see `Default word lists are frozen`_)
+  ``frozenset``; 3.0 removes those constants' modules (see
+  `Vocabulary constants → Lexicon.words`_)
 * a ``capitalization_exceptions`` value that is not a case mask of its
   key — ``{"md": "Doc"}`` — raises ``ValueError`` since 2.4
 * a ``Lexicon``, ``Policy`` or ``Parser`` pickled by 2.5 or earlier
@@ -354,8 +372,8 @@ the second column, and each of those onto the readings of
    ``non_first_name_prefixes`` lists particles that are *never* read as
    a given name, which 3.0 spells as a particle with no ``given``
    reading; a particle that *may* be read as one holds a ``given``
-   reading too. The config constant ``particles.NON_GIVEN_NAME_PARTICLES``
-   marks the never-given set, however much its name suggests
+   reading too. 2.x's constant ``particles.NON_GIVEN_NAME_PARTICLES``
+   marked the never-given set, however much its name suggests
    otherwise. So a 1.x ``non_first_name_prefixes`` entry is
    ``remove(word, kind="given")``, and a word missing from it
    ``add(word, kind="given")``.
@@ -468,28 +486,78 @@ read such a leftover in two places, so two readings move:
 family ``John Smith``, and after ``remove(titles={"sir"})``,
 ``"Sir. Smith"`` gives family ``Smith`` where 2.8.0 gave given ``Smith``.
 
-Default word lists are frozen
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vocabulary constants → Lexicon.words
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Every vocabulary *set* in ``nameparser.config`` is a ``frozenset``
-as of 2.2. The freeze retires one 1.x
-idiom outright: ``TITLES.add("dean")`` — editing a default word list
-in place — raises ``AttributeError`` at the line that writes it.
-``Lexicon.default()`` is cached and
-reads the module constants once, at its first call, so an edit there
-was never a dependable way to change a default: an edit made after the
-first parse never reached it.
+Through 2.x each default word list was a module constant, frozen since
+2.2: ``from nameparser.config.titles import TITLES``. 3.0 removes those
+modules, which 2.8.1 warns of, and a lexicon lists its words instead,
+in the reading kinds it is configured by. Each 2.x constant is the call
+beside it, with ``d = Lexicon.default()``: a ``words`` call, or a
+comprehension over ``words`` and ``readings_of`` where the compiler
+derives the set from more than one reading (a title word with a
+``given`` reading and no particle reading reads as a title only inside
+a title phrase), and for ``TITLE_PHRASES`` a note, since no call lists
+it:
 
-``CAPITALIZATION_EXCEPTIONS`` is the constant the freeze left out. It
-is a mapping rather than a set, and it is still a plain mutable
-``dict`` — ``CAPITALIZATION_EXCEPTIONS["dclinpsy"] = "DClinPsy"`` runs
-and raises nothing — but the same caching applies: an edit after the
-first parse is missed by ``Lexicon.default()``. Configure a
-``Lexicon`` instead, with a ``dataclasses.replace()`` that extends the
-default pairs rather than replacing them (:ref:`case-exceptions`).
+.. list-table::
+   :header-rows: 1
+   :widths: 34 66
 
-To change a default word list, extend the default lexicon and hand it
-to a parser:
+   * - 2.x constant
+     - 3.0
+   * - ``TITLES`` and ``TITLES_AMBIGUOUS``, together
+     - ``d.words(kind="title")``
+   * - ``TITLES_AMBIGUOUS``
+     - ``[w for w in d.words(kind="title") if any(r.kind == "given" for r in d.readings_of(w)) and not any(r.category == "particle" for r in d.readings_of(w))]``
+   * - ``TITLES``
+     - ``[w for w in d.words(kind="title") if not (any(r.kind == "given" for r in d.readings_of(w)) and not any(r.category == "particle" for r in d.readings_of(w)))]``
+   * - ``GIVEN_NAME_TITLES``
+     - ``d.words(kind="title", addresses="given")``
+   * - ``AFTER_GIVEN_TITLES``
+     - ``d.words(kind="salutation", after_given=True)``
+   * - ``TITLE_MODIFIERS``
+     - ``d.words(kind="modifier")``
+   * - ``TITLE_STYLES``
+     - ``d.words(kind="style")``
+   * - ``TITLE_PHRASES``
+     - No call: each two-word phrase is compiled from a title reading's
+       ``attaches`` property (``readings_of("chief")`` shows
+       ``properties=(('attaches', ('military', 'office')),)``), and the
+       phrases are not listed
+   * - ``PARTICLES``
+     - ``d.words(kind="particle")``
+   * - ``NON_GIVEN_NAME_PARTICLES``
+     - ``[w for w in d.words(kind="particle") if not any(r.kind == "given" for r in d.readings_of(w))]``
+   * - ``CONJUNCTIONS``
+     - ``d.words(kind="conjunction")``
+   * - ``CONJUNCTIONS_AMBIGUOUS``
+     - ``d.words(kind="conjunction", may_be_initial=True)``
+   * - ``BOUND_GIVEN_NAMES``
+     - ``d.words(kind="bound_given")``
+   * - ``GIVEN_NAME_ABBREVIATIONS``
+     - ``[w for w in d.words(kind="given") if any(dict(r.properties).get("same_as") for r in d.readings_of(w))]``
+   * - ``MAIDEN_MARKERS``
+     - ``d.words(kind="birth_marker")``
+   * - ``SUFFIX_ACRONYMS``
+     - ``d.words(kind="suffix", acronym=True)``
+   * - ``SUFFIX_WORDS``
+     - ``d.words(kind="suffix", acronym=False)``
+   * - ``SUFFIX_ACRONYMS_AMBIGUOUS``
+     - ``[w for w in d.words(kind="suffix", acronym=True) if any(r.category == "name" for r in d.readings_of(w))]``
+   * - ``SUFFIX_WORDS_AMBIGUOUS``
+     - ``[w for w in d.words(kind="suffix", acronym=False) if any(r.category == "name" for r in d.readings_of(w))]``
+   * - ``AGNOMENS``
+     - ``d.words(kind="agnomen")``
+   * - ``GLUED_HONORIFICS``
+     - ``d.words(kind="suffix", attached="after")``
+   * - ``CAPITALIZATION_EXCEPTIONS``
+     - ``dict(d.capitalization_exceptions)``
+
+``KOREAN_SURNAMES`` stays in ``nameparser.config.surnames``.
+
+To change a default word list, configure a lexicon and hand it to a
+parser:
 
 .. doctest::
 

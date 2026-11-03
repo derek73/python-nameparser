@@ -362,8 +362,8 @@ How to measure in this codebase without fooling yourself. The inert-measurement 
 
 ```
 uv run python -c "
-from nameparser import parse
-from nameparser.config.maiden_markers import MAIDEN_MARKERS
+from nameparser import Lexicon, parse
+MAIDEN_MARKERS = Lexicon.default().words(kind='birth_marker')
 shapes = ['Jane Smith {m} Jones', 'Jane Smith ({m} Jones)', 'Jane Smith ({m})']
 cls = {}
 for m in sorted(MAIDEN_MARKERS):
