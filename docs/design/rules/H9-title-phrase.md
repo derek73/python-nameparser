@@ -36,6 +36,11 @@
   "Mr Deacon Smith"           →  given="Deacon"
   "Ms Queen Smith"            →  given="Queen"
   "Chancellor Smith"          →  given="Chancellor"
+  "Saint Clair Soares"        →  given="Saint"
+  "Mr Sailor Vinod"           →  given="Sailor"
+  "Pharaoh Mwale"             →  given="Pharaoh"
+  "CAMPBELL, MAJESTY BARRETT"  →  given="MAJESTY"
+  "His Majesty King Charles"  →  title="His Majesty King"
   "Cheikh Anta Diop"          →  given="Cheikh"
   "Queen Mother Elizabeth"    →  title="Queen Mother"
   ```

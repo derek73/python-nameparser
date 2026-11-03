@@ -350,7 +350,7 @@ STRICT_UNGATED = {
     "ca": {"del", "la"},
     "cs": {"st"},
     "fil": {"del", "la", "san"},
-    "fr": {"la", "marquis", "marquise", "st"},
+    "fr": {"la", "marquis", "marquise", "saint", "st"},
     "ga": {"mac"},
     "gd": {"mac", "nic"},
     "hr": {"st"},

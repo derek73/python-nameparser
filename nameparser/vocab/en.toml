@@ -80,7 +80,8 @@ style = { same_as = "honorable" }
 
 [[word]]
 text = "majesty"
-style = {}
+style = { issue = 913, decided = 2026-11-03, note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'His Majesty King Charles' and 'Her Majesty Queen Elizabeth' read the title, 'CAMPBELL, MAJESTY BARRETT' and 'Majesty Smith' the given name" }
+given = { us_ssa = 3299, as_of = 2026-11-03, note = "US SSA: female births 2,568, male 731; Wikidata lists none, which proves nothing" }
 
 [[word]]
 text = "advocate"
@@ -275,7 +276,9 @@ religious = { same_as = "reverend" }
 
 [[word]]
 text = "saint"
-religious = {}
+religious = { issue = 913, decided = 2026-11-03, note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'Saint Clair Soares' and 'Mr Saint Martin Sterling' read the given name and 'SAINT CLAIR, ELAINE' keeps the surname whole, unreported, since no listed phrase holds it" }
+given = { us_ssa = 7476, wikidata = 11, as_of = 2026-11-03, note = "US SSA: male births 7,288, female 188; Wikidata is a lower bound (United States 5); the Brazilian given name Saint Clair (TSE donors, 2026-11-03)" }
+family = { us_census_2010 = 1897, wikidata = 65, as_of = 2026-11-03, note = "US Census rank 15,442; Wikidata United States 12, France 11; most borne as the first word of a two-word surname (Saint Clair, Saint Jean, Saint Victor)" }
 
 [[word]]
 text = "saoshyant"
@@ -416,7 +419,9 @@ family = { us_census_2010 = 106, wikidata = 1, as_of = 2026-10-27, note = "US Ce
 
 [[word]]
 text = "pharaoh"
-nobility = {}
+nobility = { issue = 913, decided = 2026-11-03, note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'Pharaoh Mwale' reads the given name, unreported, since no listed phrase holds it" }
+given = { us_ssa = 1997, as_of = 2026-11-03, note = "US SSA: male births 1,992, female 5; Wikidata lists none; a Zambian given name in ORCID (2026-11-03)" }
+family = { us_census_2010 = 173, wikidata = 1, as_of = 2026-11-03, note = "US Census rank 103,655" }
 
 [[word]]
 text = "prince"
@@ -1696,7 +1701,9 @@ occupation = { issue = 752, attaches = ["hon"], expands = "Right, abbreviated ('
 
 [[word]]
 text = "sailor"
-occupation = {}
+occupation = { issue = 913, decided = 2026-11-03, note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'Sailor Smith' and 'Mr Sailor Vinod' read the given name, unreported, since no listed phrase holds it" }
+given = { us_ssa = 4290, wikidata = 8, as_of = 2026-11-03, note = "US SSA: female births 3,603, male 687; Wikidata is a lower bound (United States 5)" }
+family = { us_census_2010 = 2412, wikidata = 8, as_of = 2026-11-03, note = "US Census rank 12,789" }
 
 [[word]]
 text = "satirist"
