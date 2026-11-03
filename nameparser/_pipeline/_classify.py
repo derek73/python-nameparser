@@ -44,8 +44,9 @@ Token.reading carrying the kind out),
 "shape:acronym"; and in another, "split:credential" and
 "split:member", written on the first word of a credential split across
 a space (`_vocab.split_pair`) to name the piece the pair merges into:
-the Ph./D. pair's unambiguous suffix, or any other pair's member of the
-ambiguous class (rules/S12).
+the Ph./D. pair's unambiguous suffix where the lexicon lists `phd` as
+an unambiguous credential, or any other pair's member of the ambiguous
+class (rules/S12).
 "vocab:maiden-marker" tags the HEAD of a maiden marker, which is a
 whole marker whenever the marker is one word; the continuation tag
 carries the rest of a PHRASE marker ("z domu"), so a site asking

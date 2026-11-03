@@ -255,13 +255,23 @@ def test_phd_split_mid_name_is_a_suffix() -> None:
     assert pn.middle == ""
 
 
-def _without_phd() -> dict[str, Parser]:
-    return {
-        "removed": Parser(lexicon=Lexicon.default().remove(
-            "phd", kind="credential")),
-        "empty": Parser(lexicon=Lexicon.empty()),
-        "strict pt": parser_for(locales.PT, strict=True),
-    }
+def _without_phd(label: str) -> Parser:
+    """A parser whose lexicon lists no unambiguous `phd` (#1000)."""
+    with warnings.catch_warnings():
+        # an empty lexicon holds no hangul surnames to segment on
+        warnings.filterwarnings(
+            "ignore", message="Policy.segment_scripts activates hangul")
+        return {
+            "removed": lambda: Parser(lexicon=Lexicon.default().remove(
+                "phd", kind="credential")),
+            "ambiguous": lambda: Parser(lexicon=Lexicon.default().add(
+                "phd", kind="family")),
+            "empty": lambda: Parser(lexicon=Lexicon.empty()),
+            "strict pt": lambda: parser_for(locales.PT, strict=True),
+            "strict pt, family first": lambda: parser_for(
+                locales.PT, strict=True,
+                base=Parser(policy=Policy(name_order=FAMILY_FIRST))),
+        }[label]()
 
 
 # Each of these read suffix 'Ph. D.' under every lexicon before #1000,
@@ -278,28 +288,40 @@ _PHD_SHAPES = (
 
 
 @pytest.mark.parametrize("text", _PHD_SHAPES)
-@pytest.mark.parametrize("label", ["removed", "empty", "strict pt"])
+@pytest.mark.parametrize("label", [
+    "removed", "ambiguous", "empty", "strict pt", "strict pt, family first"])
 def test_phd_pair_is_no_credential_where_the_lexicon_lists_no_phd(
         label: str, text: str) -> None:
-    # decisions/phd-merge (#1000): removing `phd` turns off both spellings
-    with warnings.catch_warnings():
-        # an empty lexicon holds no hangul surnames to segment on
-        warnings.filterwarnings(
-            "ignore", message="Policy.segment_scripts activates hangul")
-        parser = _without_phd()[label]
-    spaced = parser.parse(text)
-    joined = parser.parse(re.sub(r"Ph\.? D\.?", "PhD", text))
-    assert "Ph" not in spaced.suffix
-    assert "PhD" not in joined.suffix
+    # decisions/phd-merge (#1000): a lexicon without `phd` as an
+    # unambiguous credential asks the pair as any other split credential,
+    # and its fold being unlisted or ambiguous, the pair is its two words
+    parser = _without_phd(label)
+    words = [t for t in parser.parse(text).tokens
+             if t.text in ("Ph.", "Ph", "D.", "D")]
+    assert len(words) == 2
+    assert all(t.role is not Role.SUFFIX for t in words)
 
 
-def test_phd_marked_ambiguous_leaves_the_pair_to_the_count() -> None:
-    # a `phd` with a family reading is an ambiguous credential, and the
-    # pair is then a member of the class as rules/S12's other pairs are
-    lexicon = Lexicon.default().add("phd", kind="family")
-    parser = Parser(lexicon=lexicon)
-    assert parser.parse("John Smith, Ph. D.").suffix == "Ph. D."
-    assert parser.parse("John Ph. D.").family == "D."
+@pytest.mark.parametrize("label", ["removed", "ambiguous"])
+def test_phd_pair_reads_its_two_words_where_it_does_not_merge(
+        label: str) -> None:
+    parser = _without_phd(label)
+    n = parser.parse("John Smith Ph. D.")
+    assert (n.middle, n.family, n.suffix) == ("Smith Ph.", "D.", "")
+    h = parser.parse("John Smith, Ph. D.")
+    assert (h.title, h.given, h.family) == ("Ph.", "D.", "John Smith")
+    # the dotted joined spelling stays a suffix by its shape (rules/S3)
+    assert parser.parse("John Smith Ph.D.").suffix == "Ph.D."
+
+
+def test_phd_pair_outranks_an_overlapping_pair_only_where_it_merges() -> None:
+    # 'Dr. Ph.' folds to the listed 'drph': the Ph./D. pair takes the
+    # overlap where `phd` is an unambiguous credential, and leaves it to
+    # that pair where it is not
+    assert parse("Jane Doe Dr. Ph. D.").title == "Dr."
+    for label in ("removed", "ambiguous"):
+        n = _without_phd(label).parse("Jane Doe Dr. Ph. D.")
+        assert (n.title, n.suffix) == ("", "Dr. Ph. D."), label
 
 
 def test_ambiguous_acronym_reports_the_reading_it_took() -> None:

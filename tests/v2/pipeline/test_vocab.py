@@ -1047,7 +1047,7 @@ def test_the_c_level_pre_tests_are_necessary_conditions_of_split_pair(
                     or first.endswith(".") and second.endswith(".")
                     and (len(second) == 2 or not second.isascii()))
             if kind == "suffix":
-                # merged whatever the vocabulary, as v1's fix_phd did
+                # the Ph./D. pair, where the lexicon lists `phd` (#1000)
                 assert SPLIT_PAIR_OPENS.fullmatch(first), (first, second)
             else:
                 assert (fold in lex._sets.suffix_acronyms
@@ -1116,8 +1116,8 @@ def test_comma_follows_marker_reads_past_what_tokenize_drops(
 
 def test_the_ph_d_pair_merges_when_both_its_words_are_listed() -> None:
     # #752's second review: classify's two-suffix-words refusal stood in
-    # front of the Ph./D. answer, which merges whatever the vocabulary
-    # lists
+    # front of the Ph./D. answer, which merges whatever its two words
+    # are listed as, where the lexicon lists `phd` (#1000)
     parser = Parser(lexicon=Lexicon.default().add("ph", "d", kind="suffix"))
     assert parser.parse("John Ph. D. Smith").suffix == "Ph. D."
     assert parser.parse("John Smith Ph. D. Jones").suffix == "Ph. D. Jones"
