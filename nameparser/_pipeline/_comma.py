@@ -62,7 +62,8 @@ def _pieces(seg: Sequence[int], tokens: Sequence[WorkToken],
     Ph./D. pair tagged "suffix" where the lexicon lists `phd` as
     unambiguous suffix vocabulary, any other "split", a member of the
     ambiguous class for rules/C4's count, unless `splits` is False.
-    Every piece a fresh list, as `merge_pieces` requires."""
+    Every piece a fresh list, as `join_connectives` requires: it
+    extends a joined piece's first list in place."""
     pieces: list[list[int]] = []
     ptags: list[set[str]] = []
     k = 0
