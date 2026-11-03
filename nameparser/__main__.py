@@ -72,7 +72,7 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
     if args.strict and args.locale is None:
         ap.error("--strict needs --locale: it keeps only the chosen "
-                 "language's vocabulary")
+                 "language's vocabulary and the shared words")
     pack = None
     unknown = None
     segmenter: Segmenter | None = None

@@ -562,9 +562,10 @@ def _no_strict_language(locales: tuple[Locale, ...]) -> str:
     named = ("no pack was given" if not locales
              else f"the pack {codes} chooses none" if len(locales) == 1
              else f"the packs {codes} choose none")
-    return (f"strict=True keeps only the chosen languages' vocabulary, and "
-            f"{named}, so it would keep only the shared words (mul.toml) "
-            f"and other scripts' words; add "
+    return (f"strict=True keeps only the chosen languages' vocabulary, "
+            f"the shared words (mul.toml) and other scripts' words, and "
+            f"{named}, so it would keep the shared and other scripts' "
+            f"words alone; add "
             f"a pack that chooses a language, e.g. "
             f"Locale(code={tag!r}, lexicon=Lexicon.empty(), "
             f"languages=frozenset({{{tag!r}}})), or drop strict=True")

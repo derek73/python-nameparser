@@ -1106,7 +1106,8 @@ def _check_choice(languages: object, strict: object) -> tuple[
         if strict:
             raise ValueError(
                 "a strict choice keeps only the chosen languages' "
-                "vocabulary, and _languages chooses none; choose through "
+                "vocabulary and the shared words (mul.toml), and "
+                "_languages chooses none; choose through "
                 "parser_for(..., strict=True) with a pack that chooses one")
         return frozenset(), frozenset()
     canon = frozenset(_canonical(cast(str, t)) for t in tags)

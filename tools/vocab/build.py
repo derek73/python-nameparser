@@ -86,8 +86,8 @@ at fault:
     would turn a caller's rule off), and every file PACK_RULES lists
     holding one (#754, 4f);
 13. a word with a mul.toml vocabulary reading, which every choice reads,
-    strict included, holds no name reading in another file, which a
-    strict choice would drop and so ungate it, and no reading in
+    strict included, holds no name reading on by default in another
+    file, which a strict choice would drop and so ungate it, and no reading in
     another file, which prefer cannot drop against mul.toml's, save
     the ones MUL_SHARED records (#1005);
 
@@ -318,6 +318,9 @@ RULE_DEFAULTS: dict[str, object] = {
 #: (check_pack_rules); tests/v2/test_locales.py holds the roster to the
 #: packs. TR_AZ reads tr.toml's: no az.toml exists, and the pack's rule
 #: is one rule for both languages.
+PACK_RULES: dict[str, str] = {"ru": "RU", "tr": "TR_AZ", "es": "ES", "cs": "CS",
+                             "sk": "SK"}
+
 #: The words check 13 lets hold a reading in another file beside their
 #: mul.toml one, each with why (#1005): `i` is mul.toml's numeral and
 #: the Catalan and Polish conjunction, and de.toml's numeral written
@@ -327,9 +330,6 @@ MUL_SHARED: dict[str, str] = {
     "i": "the numeral every language writes, beside the ca and pl "
          "conjunction and de's period-written numeral",
 }
-
-PACK_RULES: dict[str, str] = {"ru": "RU", "tr": "TR_AZ", "es": "ES", "cs": "CS",
-                             "sk": "SK"}
 
 
 class VocabError(ValueError):
@@ -1251,14 +1251,17 @@ def check_pool(pool: Pool) -> None:
         for r in rs:
             if r.tag == "mul":
                 continue
-            if r.category == "name":
+            # an off name reading is off under the plain and the strict
+            # choice of every other tag alike, and on under both of its
+            # own file's, so it ungates nothing strict does not
+            if r.category == "name" and r.on_by_default:
                 raise VocabError(
                     f"{r.where()}: {text!r} has a mul.toml reading, which "
                     f"a strict choice reads where it drops this name "
                     f"reading's file, ungating the word; keep the word in "
                     f"the files of the languages that write it, or write "
                     f"the name reading in mul.toml")
-            if text not in MUL_SHARED:
+            if r.category != "name" and text not in MUL_SHARED:
                 raise VocabError(
                     f"{r.where()}: {text!r} has a mul.toml reading, which "
                     f"no choice of {r.tag!r} can prefer this one against; "
