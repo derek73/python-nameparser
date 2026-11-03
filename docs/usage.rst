@@ -1270,7 +1270,7 @@ file does hold turns that file's reading on, and names it:
     ...     print(f"{tok.text}: {tok.reading.languages}")
     Dr.: ('mul',)
     Juan: ()
-    de: ('es', 'fr', 'it', 'nl', 'pt')
+    de: ('es', 'fr', 'it', 'nl', 'pt', 'si')
     la: ('es', 'fr', 'it')
     Vega: ()
     III: ('mul',)

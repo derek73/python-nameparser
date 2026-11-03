@@ -3,3 +3,7 @@ schema = 1
 [[word]]
 text = "ජූනියර්"
 generation = { issue = 679 }
+
+[[word]]
+text = "de"
+preposition = { may_be_given = false, expands = "of: Sri Lankan surnames of Portuguese origin, \"de Silva\", \"de Mel\", \"de Alwis\"", note = "strict si broke 334 records on it while only es.toml and others held it (config_diff.py gaps on f48c88a3, decisions/vocabulary-model, 2026-11-03)", issue = 1005 }
