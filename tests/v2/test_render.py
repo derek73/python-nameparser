@@ -164,6 +164,7 @@ def test_default_str_includes_nickname_and_maiden() -> None:
     # space, a delimiter, a dropped marker word
     ("John Smith,, Jr.", None, "John Smith Jr."),
     ("John\u200bSmith", None, "John Smith"),
+    ("John\u2063Smith", None, "John Smith"),
     ("John (Jack) Smith", None, 'John "Jack" Smith'),
     ("Jane Smith née Jones, PhD", None, "Jane Smith (Jones) PhD"),
     ("Jane (née , Jones) Smith", None, 'Jane "née, Jones" Smith'),
