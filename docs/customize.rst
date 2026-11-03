@@ -78,13 +78,11 @@ the same words, and :doc:`migrate` has the table.
 The default word lists themselves — ``TITLES``, ``PARTICLES`` and the
 other frozensets in ``nameparser.config`` — are the default lexicon's
 compiled sets, frozen and read-only, so a runtime addition belongs on a
-:class:`~nameparser.Lexicon` as above. ``REGEXES`` and
-``CAPITALIZATION_EXCEPTIONS`` are the two members the freeze does not
-cover — they are still plain dicts. Editing one at runtime is not a
-supported override. The parser does not read ``REGEXES`` at all, and
-``Lexicon.default()`` is cached, so an edit to
-``CAPITALIZATION_EXCEPTIONS`` after the first parse never reaches it;
-extend a :class:`~nameparser.Lexicon`'s pairs instead
+:class:`~nameparser.Lexicon` as above. ``CAPITALIZATION_EXCEPTIONS`` is
+the one member the freeze does not cover — it is still a plain dict.
+Editing it at runtime is not a supported override:
+``Lexicon.default()`` is cached, so an edit after the first parse never
+reaches it; extend a :class:`~nameparser.Lexicon`'s pairs instead
 (:ref:`case-exceptions`).
 
 Five of these lists, ``PARTICLES``, ``NON_GIVEN_NAME_PARTICLES``,

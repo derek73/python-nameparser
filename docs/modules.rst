@@ -229,5 +229,3 @@ change a default for your parses, configure a
    :members:
 .. automodule:: nameparser.config.capitalization
    :members:
-.. automodule:: nameparser.config.regexes
-   :members:

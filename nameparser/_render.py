@@ -61,9 +61,9 @@ _SKIP_TAGS_GIVEN = frozenset({"conjunction"})
 #: Either unjoined mark readmits the word it sits on.
 _UNJOINED_MARKS = frozenset({UNJOINED_TAG, UNJOINED_CONJUNCTION_TAG})
 
-# Ported verbatim from v1 (nameparser/config/regexes.py "initial", minus
-# the empty alternative) -- layering forbids importing the pipeline here;
-# keep in sync with _pipeline/_vocab.py by hand.
+# Ported verbatim from v1's "initial" pattern (minus the empty
+# alternative), copied from _pipeline/_vocab.py's _INITIAL -- layering
+# forbids importing the pipeline here; keep in sync by hand.
 # Its one reader is _reads_as_conjunction below, and that reader only
 # ever sees a bare string with no decision attached to it -- a field
 # spliced in by replace(), carrying UNCLASSIFIED_TAG -- or a direct
@@ -72,8 +72,7 @@ _UNJOINED_MARKS = frozenset({UNJOINED_TAG, UNJOINED_CONJUNCTION_TAG})
 # the same question about the same token -- _vocab's says what the
 # parse decided, this one says what it WOULD have decided about text
 # handed over unread -- which is why they must keep answering alike,
-# and why test_regex_sync pins the patterns against each other and
-# against config.
+# and why test_regex_sync pins the patterns against each other.
 # Deliberately NOT composed with _vocab's repertoire test (#320):
 # layering forbids the import. The divergence is reachable only for a
 # caller-added CJK conjunction spliced into a field, since no shipped
@@ -89,7 +88,7 @@ _INITIAL = re.compile(r"^(\w\.|[A-Z])$")
 #: by tests/v2/test_regex_sync.py.
 _DOTTED_INITIAL = re.compile(r"^\w\.$")
 
-# v1 regexes.py "roman_numeral", the pipeline's _vocab._ROMAN copied
+# v1's "roman_numeral" pattern, the pipeline's _vocab._ROMAN copied
 # by hand (layering, as for _INITIAL above) and pinned by
 # tests/v2/test_regex_sync.py. Read only by _cap_word's numeral
 # clause, which asks how a word the parse already put in the suffix

@@ -29,7 +29,8 @@ What 3.0 removes
 ----------------
 
 2.8 warned at the line in your code that used each of these, with the
-exceptions `Finding the sites`_ names:
+exceptions `Finding the sites`_ names, and 2.8.1 at the import of
+``nameparser.config.regexes``:
 
 .. list-table::
    :header-rows: 1
@@ -60,6 +61,11 @@ exceptions `Finding the sites`_ names:
        deprecated since 2.2
      - Their 2.2 names, which the 2.2.0 entry of :doc:`release_log`
        maps
+   * - ``nameparser.config.regexes`` and its ``REGEXES``, which the
+       parser has not read since 2.0
+     - Copy the pattern you reused into your own code; the bidi and
+       emoji strip switches are ``Policy(strip_bidi=...)`` and
+       ``Policy(strip_emoji=...)`` (:ref:`strip-flags`)
 
 The 2.8 deprecation warnings go with the code they warned about. In 3.0
 importing a removed name raises ``ImportError``, reading one as an
@@ -546,7 +552,8 @@ rendering argument, where the 3.0 equivalent isn't config at all):
 Every other ``regexes.*`` entry (``word``, ``spaces``, and the rest of
 the compiled-pattern proxy) has no 3.0 replacement — parsing behavior
 is configured entirely through named ``Policy`` fields now, not by
-handing the parser a regex.
+handing the parser a regex — and the ``nameparser.config.regexes``
+module those entries came from is gone too (`What 3.0 removes`_).
 
 Comparison
 ----------
