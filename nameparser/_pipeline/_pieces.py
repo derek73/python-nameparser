@@ -347,8 +347,8 @@ def join_connectives(pieces: list[list[int]], ptags: list[set[str]],
 # shape test is_leading_title asks (_vocab.is_title_shaped), and
 # layering only allows the move in that direction (_pieces may import
 # _vocab; _vocab may not import _pieces). tests/v2/test_regex_sync.py
-# still reaches it as `_pieces._PERIOD_ABBREV` -- an import binds the
-# same name here, so the sync test's target did not move. Out of
+# declares `_pieces._PERIOD_ABBREV` as an import of _vocab's, which an
+# import binds here under the same name. Out of
 # assign since #424 and in the piece layer since #439: the test is
 # assign's, and the chain's leading position (`chain_lead`) and the
 # trailing-run walk must start where assign starts.

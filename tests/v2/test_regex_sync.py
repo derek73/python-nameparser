@@ -1,24 +1,28 @@
-"""Pins the pipeline's hand-duplicated regex/table copies to their
-nameparser.config.regexes source of truth.
+"""Pins the pipeline's and render's hand-duplicated patterns to the
+copy each was taken from.
 
-The 2.0 layering rule forbids nameparser._pipeline/_render importing
-nameparser.config directly, so several patterns and tables are copied
-by hand into the modules that need them, each with a "keep in sync by
-hand" comment. Nothing previously enforced that promise: if
-config/regexes.py changed, the copies would silently diverge with no
-CI signal. Tests may legally import both sides (test_layering.py's own
-convention), so this module is where the promise gets checked.
+The 2.0 layering rule forbids nameparser._render importing the
+pipeline, so a pattern both need is copied by hand into _render, with
+a "keep in sync by hand" comment. Nothing else enforces that promise:
+if the pipeline's copy changed, render's would silently diverge with
+no CI signal. Tests may legally import both sides (test_layering.py's
+own convention), so this module is where the promise gets checked.
+
+Each copy is pinned to the PIPELINE's pattern, the one that parses.
+Until 3.0 both sides were pinned to nameparser.config.regexes, the v1
+table the parser had not read since 2.0, which #1008 removed
+(decisions/3-0-reevaluations). A pattern with no second copy has no
+promise to check and is declared with None.
 
 Layering is the usual reason for a copy but not the only one, so the
 scope here is the PROMISE rather than that one pair of packages: the
-comma-set pin below reads _pipeline._state instead of config.
+comma-set pin below reads _pipeline._state.
 """
 import pathlib
 import re
 
 import pytest
 
-from nameparser.config import regexes as _config
 from nameparser._pipeline import (
     _assemble, _assign, _classify, _comma, _extract, _group, _pieces,
     _post_rules, _script_segment, _segment, _state, _tokenize, _vocab,
@@ -27,60 +31,13 @@ import nameparser._pipeline
 from nameparser import _render
 
 
-def test_emoji_ranges_match_config() -> None:
-    assert _tokenize._EMOJI_RANGES == _config._EMOJI_RANGES
-
-
-def test_bidi_pattern_matches_config() -> None:
-    assert _tokenize._BIDI.pattern == _config.re_bidi.pattern
-    assert _tokenize._BIDI.flags == _config.re_bidi.flags
-
-
-def test_period_not_at_end_matches_config() -> None:
-    source = _config.REGEXES["period_not_at_end"]
-    assert _vocab._PERIOD_NOT_AT_END.pattern == source.pattern
-    assert _vocab._PERIOD_NOT_AT_END.flags == source.flags
-
-
-def test_combining_mark_class_matches_config() -> None:
-    from nameparser.config import regexes as _regexes
-    assert _vocab._MARKS == _regexes._MARKS
-
-
-def test_period_abbreviation_matches_config() -> None:
-    source = _config.REGEXES["period_abbreviation"]
-    assert _pieces._PERIOD_ABBREV.pattern == source.pattern
-    assert _pieces._PERIOD_ABBREV.flags == source.flags
-
-
-def test_roman_numeral_matches_config() -> None:
-    source = _config.REGEXES["roman_numeral"]
-    assert _vocab._ROMAN.pattern == source.pattern
-    assert _vocab._ROMAN.flags == source.flags
-
-
-def test_patronymic_patterns_match_config() -> None:
-    pairs = (
-        (_vocab._EAST_SLAVIC, "east_slavic_patronymic"),
-        (_vocab._EAST_SLAVIC_CYR, "east_slavic_patronymic_cyrillic"),
-        (_vocab._TURKIC, "turkic_patronymic_marker"),
-        (_vocab._TURKIC_CYR, "turkic_patronymic_marker_cyrillic"),
-    )
-    for copy, key in pairs:
-        source = _config.REGEXES[key]
-        assert copy.pattern == source.pattern, key
-        assert copy.flags == source.flags, key
-
-
-def test_initial_copies_agree_with_each_other_and_config() -> None:
+def test_initial_copies_agree() -> None:
     # _vocab._INITIAL and _render._INITIAL are both v1's "initial"
     # pattern minus its trailing "?" (documented at _render.py's
     # _INITIAL definition: the two call sites always fullmatch a
     # non-empty token, so the empty-string alternative is dropped on
-    # purpose). Assert both the internal-copy agreement and the exact,
-    # documented relationship to the config source, so a future edit to
-    # either side that breaks the relationship fails loudly here
-    # instead of silently drifting.
+    # purpose). Declared in _SOURCES below as well; this test keeps
+    # the reason the agreement matters beside it.
     # The two copies stopped answering the same question in #458 and
     # the agreement matters MORE for it, not less: _vocab's asks what
     # the parse decided about a token, _render's what it would have
@@ -90,13 +47,7 @@ def test_initial_copies_agree_with_each_other_and_config() -> None:
     # nothing read it; the unparsed-text fallback gave it a reader
     # again -- see _render._reads_as_conjunction.)
     assert _vocab._INITIAL.pattern == _render._INITIAL.pattern
-    source = _config.REGEXES["initial"]
-    # config's pattern is the pipeline copy with an extra "?" spliced in
-    # just before the trailing "$", making the whole group optional.
-    trimmed = _vocab._INITIAL.pattern
-    reconstructed = trimmed[:-1] + "?" + trimmed[-1:]
-    assert source.pattern == reconstructed
-    assert source.flags == _vocab._INITIAL.flags
+    assert _vocab._INITIAL.flags == _render._INITIAL.flags
 
 
 def test_dotted_initial_is_the_period_alternative_of_initial() -> None:
@@ -111,80 +62,81 @@ def test_dotted_initial_is_the_period_alternative_of_initial() -> None:
     assert _render._DOTTED_INITIAL.flags == _render._INITIAL.flags
 
 
-# The roster above grew one test at a time, and four hand-copies were
-# never added to it -- _render's _SPACES, _SPACE_BEFORE_COMMA, _MC and
-# _WORD. They had not diverged, but nothing would have said so, which
-# is the exact promise this module exists to keep. All four mirror a
-# config key whose only other reader was v1's parser.py, deleted at the
-# M11 swap, so nothing else touches them either.
-#
-# Declared as a roster rather than one test per copy, with a
-# completeness check below: adding a pattern without declaring its
-# source now fails here instead of being silently unpinned.
-_SOURCES: dict[tuple[str, str], str | None] = {
-    ("_pieces", "_PERIOD_ABBREV"): "period_abbreviation",
-    # SAME object as the entry above, not a second copy: _pieces
-    # imports it from _vocab (#289/#516, quality-review finding --
-    # is_title_shaped moved there so name_word_count could share
-    # is_leading_title's H2 shape test), so it is visible under both
-    # module names and the completeness scan below sees it twice.
-    ("_vocab", "_PERIOD_ABBREV"): "period_abbreviation",
+# The roster of every compiled pattern in the scanned modules, with a
+# completeness check below: adding a pattern without declaring where
+# it was copied from fails here instead of being silently unpinned.
+# Each value names the (module, attribute) the copy must equal, or
+# None for a pattern that is its own only copy.
+_SOURCES: dict[tuple[str, str], tuple[str, str] | None] = {
+    ("_vocab", "_PERIOD_ABBREV"): None,
+    # SAME object as _vocab's, not a second copy: _pieces imports it
+    # from _vocab (#289/#516, quality-review finding -- is_title_shaped
+    # moved there so name_word_count could share is_leading_title's H2
+    # shape test), so it is visible under both module names and the
+    # completeness scan below sees it twice.
+    ("_pieces", "_PERIOD_ABBREV"): ("_vocab", "_PERIOD_ABBREV"),
     # the same object again: assemble imports it to name a title read
     # by rules/H2's shape (`Token.reading`, 3.0)
-    ("_assemble", "_PERIOD_ABBREV"): "period_abbreviation",
+    ("_assemble", "_PERIOD_ABBREV"): ("_vocab", "_PERIOD_ABBREV"),
     # `split_pair`'s two halves, the Ph./D. split credential (#752;
-    # declared under _group until then, which had stopped holding them);
-    # no config key to mirror
+    # declared under _group until then, which had stopped holding them)
     ("_vocab", "_PH"): None,
     ("_vocab", "_D"): None,
     ("_vocab", "_DOTTED"): None,
     # #544: the chunked sibling of _DOTTED ('M.Eng.'), S3's period gate
-    # for a member with a lower-case tail; no config key to mirror
+    # for a member with a lower-case tail
     ("_vocab", "_CHUNKED"): None,
-    # the joiners of a joined credential ('MD/PhD', rules/S3, #752); no
-    # config key to mirror
+    # the joiners of a joined credential ('MD/PhD', rules/S3, #752)
     ("_vocab", "_JOINERS"): None,
-    # the caps shape's joined spelling ('PU-PH', rules/S9, #752), built
-    # from _LETTER, whose _MARKS the test above holds to config's; no
-    # config key to mirror
+    # the caps shape's joined spelling ('PU-PH', rules/S9, #752)
     ("_vocab", "_JOINED_LETTERS"): None,
     # #563: paired initials ('M.J.'), C5's exception to C4's name-word
-    # count after a comma; no config key to mirror
+    # count after a comma
     ("_vocab", "_PAIRED_INITIALS"): None,
-    ("_vocab", "_ROMAN"): "roman_numeral",
+    ("_vocab", "_ROMAN"): None,
     # SAME object, imported for the trailing read's weighed-word test
     # (#620), as _PERIOD_ABBREV is above
-    ("_pieces", "_ROMAN"): "roman_numeral",
+    ("_pieces", "_ROMAN"): ("_vocab", "_ROMAN"),
     # SAME object, imported for the report on a numeral before a
     # credential (#721)
-    ("_assign", "_ROMAN"): "roman_numeral",
-    ("_vocab", "_EAST_SLAVIC"): "east_slavic_patronymic",
-    ("_vocab", "_EAST_SLAVIC_CYR"): "east_slavic_patronymic_cyrillic",
-    ("_vocab", "_TURKIC"): "turkic_patronymic_marker",
-    ("_vocab", "_TURKIC_CYR"): "turkic_patronymic_marker_cyrillic",
-    # rules/O6's hyphens (#754): no config counterpart
-    ("_post_rules", "_HYPHENS"): None,
-    ("_render", "_SPACES"): "spaces",
-    ("_render", "_SPACE_BEFORE_COMMA"): "space_before_comma",
-    ("_render", "_MC"): "mac",
-    ("_render", "_WORD"): "word",
+    ("_assign", "_ROMAN"): ("_vocab", "_ROMAN"),
     # the numeral clause's copy of _vocab._ROMAN (#459); layering
     # forbids _render the import, so it is pinned here instead
-    ("_render", "_ROMAN"): "roman_numeral",
-    ("_vocab", "_PERIOD_NOT_AT_END"): "period_not_at_end",
-    # Deliberately NOT a straight copy -- pinned by the dedicated tests
-    # above, which assert the documented RELATIONSHIP instead:
-    ("_render", "_INITIAL"): None,      # config's pattern minus one "?"
-    ("_vocab", "_INITIAL"): None,       # same
+    ("_render", "_ROMAN"): ("_vocab", "_ROMAN"),
+    # The patronymic patterns' hand copies are in the RU and TR_AZ
+    # packs, not in a scanned module, and test_locales'
+    # test_a_packs_marker_regexes_are_the_rules_its_patch_turns_on
+    # holds them to these.
+    ("_vocab", "_EAST_SLAVIC"): None,
+    ("_vocab", "_EAST_SLAVIC_CYR"): None,
+    ("_vocab", "_TURKIC"): None,
+    ("_vocab", "_TURKIC_CYR"): None,
+    # rules/O6's hyphens (#754)
+    ("_post_rules", "_HYPHENS"): None,
+    # render's own patterns, v1's "spaces", "space_before_comma",
+    # "mac" and "word"; the v1 table they were pinned to until #1008
+    # was their only other copy
+    ("_render", "_SPACES"): None,
+    ("_render", "_SPACE_BEFORE_COMMA"): None,
+    # Mc alone since #1014
+    ("_render", "_MC"): None,
+    ("_render", "_WORD"): None,
+    ("_vocab", "_PERIOD_NOT_AT_END"): None,
+    ("_vocab", "_INITIAL"): None,
+    # layering forbids _render the import (test_initial_copies_agree
+    # above says why the agreement matters)
+    ("_render", "_INITIAL"): ("_vocab", "_INITIAL"),
     # SAME object, imported for the one-case letter initial (#723)
-    ("_classify", "_INITIAL"): None,
-    ("_render", "_DOTTED_INITIAL"): None,  # _INITIAL's period alternative
+    ("_classify", "_INITIAL"): ("_vocab", "_INITIAL"),
+    # Deliberately NOT a straight copy -- _INITIAL's period
+    # alternative, pinned by the dedicated test above:
+    ("_render", "_DOTTED_INITIAL"): None,
     # #542: the name run after an Mc prefix, read on the word as
-    # written once _MC has matched its composed spelling; no config
-    # key to mirror
+    # written once _MC has matched its composed spelling
     ("_render", "_NAME_RUN"): None,
-    ("_tokenize", "_BIDI"): None,       # re_bidi, not a REGEXES key
-    # Mirrors _pipeline._state.COMMA_CHARS, not nameparser.config
+    ("_tokenize", "_BIDI"): None,
+    # Mirrors _pipeline._state.COMMA_CHARS, a set rather than a
+    # pattern -- pinned by its own test below
     ("_render", "_COMMA_CHAR"): None,
 }
 
@@ -194,8 +146,8 @@ def test_every_pipeline_module_is_scanned_for_hand_copies() -> None:
 
     test_every_hand_copied_pattern_is_declared iterates _MODULES, so a
     module absent from that dict is not scanned loosely -- it is not
-    scanned at all, and an undeclared hand copy of a config regex in it
-    goes unpinned. Measured on a scratch copy: a new pipeline module
+    scanned at all, and an undeclared hand copy of a pattern in it goes
+    unpinned. Measured on a scratch copy: a new pipeline module
     carrying a wrong copy of the mac pattern passed all 20 tests here.
 
     Scoped to _pipeline/ for the same reason the layering twin is: it
@@ -213,7 +165,7 @@ def test_every_pipeline_module_is_scanned_for_hand_copies() -> None:
     missing = sorted(shipped - set(_MODULES))
     assert not missing, (
         f"pipeline modules absent from _MODULES, and therefore never "
-        f"scanned for undeclared hand copies of a config regex: "
+        f"scanned for undeclared hand copies of a pattern: "
         f"{missing}. Add each one; a module with no hand copies costs "
         f"nothing to scan"
     )
@@ -228,14 +180,15 @@ _MODULES = {"_assemble": _assemble, "_assign": _assign,
 
 
 @pytest.mark.parametrize(
-    "where,key", [(w, k) for w, k in _SOURCES.items() if k is not None],
-    ids=lambda v: v if isinstance(v, str) else f"{v[0]}.{v[1]}")
-def test_declared_copy_matches_its_config_source(
-        where: tuple[str, str], key: str) -> None:
+    "where,source", [(w, s) for w, s in _SOURCES.items() if s is not None],
+    ids=lambda v: f"{v[0]}.{v[1]}")
+def test_declared_copy_matches_its_source(
+        where: tuple[str, str], source: tuple[str, str]) -> None:
     copy = getattr(_MODULES[where[0]], where[1])
-    source = _config.REGEXES[key]
-    assert copy.pattern == source.pattern, f"{where[1]} vs REGEXES[{key!r}]"
-    assert copy.flags == source.flags, f"{where[1]} vs REGEXES[{key!r}]"
+    original = getattr(_MODULES[source[0]], source[1])
+    label = f"{where[0]}.{where[1]} vs {source[0]}.{source[1]}"
+    assert copy.pattern == original.pattern, label
+    assert copy.flags == original.flags, label
 
 
 def test_every_hand_copied_pattern_is_declared() -> None:
@@ -254,13 +207,13 @@ def test_every_hand_copied_pattern_is_declared() -> None:
     ]
     assert not undeclared, (
         f"compiled patterns missing from _SOURCES: {undeclared}. Add each "
-        f"with its nameparser.config.regexes key, or None if it has no "
-        f"config counterpart.")
+        f"with the (module, attribute) it was copied from, or None if it "
+        f"is its own only copy.")
 
 
 def test_comma_char_matches_the_pipeline_comma_set() -> None:
     # _render splits on the same comma characters segment does; the set
-    # lives in _state, so this one is pinned against that, not config.
+    # lives in _state, so this one is pinned against that.
     from nameparser._pipeline._state import COMMA_CHARS
 
     assert set(_render._COMMA_CHAR.pattern.strip("[]")) == set(COMMA_CHARS)
@@ -270,8 +223,8 @@ def test_every_declared_pattern_still_exists() -> None:
     """The converse of the completeness check: an entry naming a
     pattern its module no longer holds pins nothing. `_group._PH` and
     `_group._D` stood here after both moved to `_vocab`, found when
-    #752 renamed them there; an entry with no config key was never read
-    by the parametrized test above, so nothing failed."""
+    #752 renamed them there; an entry with no source was never read by
+    the parametrized test above, so nothing failed."""
     stale = sorted(where for where in _SOURCES
                    if not isinstance(getattr(_MODULES[where[0]], where[1],
                                              None), re.Pattern))

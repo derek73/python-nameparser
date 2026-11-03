@@ -76,7 +76,7 @@ from collections.abc import Iterator
 import pytest
 
 from nameparser import FAMILY_FIRST, ParsedName, Parser, Policy, Role, parse
-from nameparser.config.particles import PARTICLES as _SHIPPED_PARTICLES
+from nameparser.config._compiled import PARTICLES as _SHIPPED_PARTICLES
 
 _FF = Parser(policy=Policy(name_order=FAMILY_FIRST))
 _ROLES = tuple(r.value for r in Role)  # test_cases.py's idiom; declaration
@@ -155,7 +155,7 @@ def test_form_4_parses_as_its_comma_twin(comma: str, inline: str) -> None:
 # input-invariants, rules/P6): the ONLY members of the shipped
 # particle vocabulary where the correspondence fails are the words
 # that are both particle and suffix vocabulary. Swept over the entire
-# shipped vocabulary -- nameparser.config.particles.PARTICLES, the
+# shipped vocabulary -- nameparser.config._compiled.PARTICLES, the
 # same source the invariant's own measurements drew from, never a
 # hand copy -- rather than the small parametrized set above, so this
 # is the test that would notice if a fourth word joined the trio.

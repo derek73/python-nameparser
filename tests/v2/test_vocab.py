@@ -1131,7 +1131,7 @@ def test_the_readme_states_each_behavioral_propertys_effect() -> None:
         moved = (_sets_fed(kind, props, text, *extra)
                  ^ _sets_fed(kind, "{}", text, *extra))
         assert moved, prop  # a probe that moves nothing tests nothing
-        assert set(_code(rows[prop])) & {n for n, _ in build.CONSTANTS} == moved, prop
+        assert set(_code(rows[prop])) & set(build.CONSTANTS) == moved, prop
 
 
 def test_the_readme_states_each_behavioral_propertys_unwritten_value() -> None:
@@ -1172,16 +1172,16 @@ def test_the_readme_states_each_derived_markers_effect() -> None:
         files = {"en.toml": _w(f'[[word]]\ntext = "zzq"\n{kind} = {without}')}
         named = {"en.toml": _w(f'[[word]]\ntext = "zzq"\ngiven = {{ note = "x" }}\n{kind} = {with_}')}
         a, b = build.compile_files(files), build.compile_files(named)
-        moved = {n for n, _ in build.CONSTANTS if ("zzq" in a[n]) != ("zzq" in b[n])}
+        moved = {n for n in build.CONSTANTS if ("zzq" in a[n]) != ("zzq" in b[n])}
         assert moved, marker
-        assert set(_code(rows[marker])) & {n for n, _ in build.CONSTANTS} == moved, marker
+        assert set(_code(rows[marker])) & set(build.CONSTANTS) == moved, marker
 
 
 def test_the_readme_names_every_compiled_constant() -> None:
     # each constant is reached by a kind, a property or a derived marker
     named = {name for heading in ("## Kinds", "## Properties", "### Derived markers")
              for row in _readme_table(heading) for cell in row[1:] for name in _code(cell)}
-    assert {name for name, _ in build.CONSTANTS} <= named
+    assert set(build.CONSTANTS) <= named
 
 
 def test_the_readme_lists_the_name_reading_keys() -> None:

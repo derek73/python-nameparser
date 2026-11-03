@@ -77,22 +77,14 @@ readings: ``add(titles=...)``, ``Lexicon(titles=...)`` and
 ``lexicon.titles`` each raise, the error naming the calls that configure
 the same words, and :doc:`migrate` has the table.
 
-The default word lists themselves — ``TITLES``, ``PARTICLES`` and the
-other frozensets in ``nameparser.config`` — are the default lexicon's
-compiled sets, frozen and read-only, so a runtime addition belongs on a
-:class:`~nameparser.Lexicon` as above. ``REGEXES`` and
-``CAPITALIZATION_EXCEPTIONS`` are the two members the freeze does not
-cover — they are still plain dicts. Editing one at runtime is not a
-supported override. The parser does not read ``REGEXES`` at all, and
-``Lexicon.default()`` is cached, so an edit to
-``CAPITALIZATION_EXCEPTIONS`` after the first parse never reaches it;
-extend a :class:`~nameparser.Lexicon`'s pairs instead
-(:ref:`case-exceptions`).
-
-Five of these lists, ``PARTICLES``, ``NON_GIVEN_NAME_PARTICLES``,
-``BOUND_GIVEN_NAMES``, ``GIVEN_NAME_TITLES`` and ``SUFFIX_WORDS``, were
-renamed in 2.2, and two modules moved with them; the 1.x names are gone
-in 3.0, and the 2.2.0 entry of :doc:`release_log` maps them.
+The default word lists are asked of a lexicon too:
+:meth:`~nameparser.Lexicon.words` lists the words holding a reading of a
+kind, as the examples under :ref:`title-detection-off` do, and
+:meth:`~nameparser.Lexicon.readings_of` answers for one word. The
+modules that exposed them as constants in 2.x (``nameparser.config.titles``,
+``particles``, ``suffixes`` and the rest) are gone in 3.0, and
+:doc:`migrate` gives the call or comprehension for each constant.
+``nameparser.config.surnames``, the Korean surname list, stays.
 
 Kinds and properties
 ~~~~~~~~~~~~~~~~~~~~~
@@ -1288,7 +1280,8 @@ no brackets and nothing configured:
 :ref:`nicknames-and-maiden-names` in the usage guide covers how the
 marked forms read. The marker words themselves are the
 ``birth_marker`` readings of a ``Lexicon``, shipped in several
-languages (see :mod:`nameparser.config.maiden_markers`). Add your
+languages (``Lexicon.default().words(kind="birth_marker")`` lists them).
+Add your
 own like any other word; a marker you add works bare and in brackets
 alike:
 

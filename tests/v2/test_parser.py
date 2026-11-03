@@ -1905,7 +1905,7 @@ _LATIN = re.compile(r"^[\x00-\u024f]*$")
 def _clause_free_latin_corpus_names() -> list[str]:
     from nameparser import DEFAULT_NICKNAME_DELIMITERS
     from nameparser._pipeline._vocab import maiden_marker_run
-    from nameparser.config.maiden_markers import MAIDEN_MARKERS
+    from nameparser.config._compiled import MAIDEN_MARKERS
 
     from ._differential_fixtures import _CORPUS_NAMES
     # "Does this name already carry a marker" is the parser's own
@@ -1938,7 +1938,7 @@ def _clause_free_latin_corpus_names() -> list[str]:
     # import re, sys; sys.path.insert(0, 'tests')
     # from nameparser import DEFAULT_NICKNAME_DELIMITERS as D
     # from nameparser._pipeline._vocab import maiden_marker_run as run
-    # from nameparser.config.maiden_markers import MAIDEN_MARKERS as M
+    # from nameparser.config._compiled import MAIDEN_MARKERS as M
     # from v2._differential_fixtures import _CORPUS_NAMES
     # base = [n for n in _CORPUS_NAMES if re.match(r'^[\x00-\u024f]*$', n) and ',' not in n]
     # strip = ''.join({c for p in D for c in p}) + '.'
@@ -2305,6 +2305,22 @@ def test_a_decomposed_dotted_letter_is_dotted() -> None:
     differ), so it is pinned directly."""
     from nameparser._pipeline._vocab import _dotted
     assert _dotted(unicodedata.normalize("NFD", "Ž.")) is True
+
+
+@pytest.mark.parametrize("mark", ["\u0301", "\u1ab0", "\u1dc0",
+                                  "\u20d0", "\ufe20"])
+def test_a_mark_from_each_combining_block_stays_in_its_word(
+        mark: str) -> None:
+    """`_vocab._MARKS` names five combining blocks (#652), and NFD of a
+    letter only ever produces the first, so the twin rows above reach
+    one. A mark from each block, written after a letter, keeps the
+    abbreviation one word and its shape a title. Until 3.0 the class
+    was also pinned to config's copy, which #1008 removed; measured
+    2026-11-02, dropping U+1AB0-1AFF from `_MARKS` failed nothing else
+    in the suite."""
+    name = parse(f"Dr. inz{mark}. Janez Novak")
+    assert name.title == f"Dr. inz{mark}."
+    assert name.given == "Janez"
 
 
 # #671: the credential, office and generational words, one spelling each

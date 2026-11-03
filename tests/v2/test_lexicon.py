@@ -19,7 +19,7 @@ from nameparser._lexicon import (
     _title_key,
 )
 from nameparser._policy import Script, _SCRIPT_RANGES
-from nameparser.config.suffixes import SUFFIX_ACRONYMS, SUFFIX_WORDS
+from nameparser.config._compiled import SUFFIX_ACRONYMS, SUFFIX_WORDS
 
 
 def _quiet(lexicon: Callable[[], Lexicon]) -> Lexicon:
@@ -1847,3 +1847,51 @@ def test_a_marker_left_behind_goes_with_its_word(
         parsed = Parser(lexicon=lexicon).parse(text).as_dict()
         assert {f: parsed[f] for f in reads} == reads
         assert not {f for f, v in parsed.items() if v and f not in reads}
+
+
+def _migrate_constant_rows() -> list[tuple[str, str]]:
+    """docs/migrate.rst's "Vocabulary constants → Lexicon.words" rows
+    whose replacement is code: (constant, expression)."""
+    text = (Path(__file__).parents[2] / "docs" / "migrate.rst").read_text()
+    section = text.split("Vocabulary constants → Lexicon.words\n", 1)[1]
+    section = section.split("\n.. doctest::", 1)[0]
+    rows = re.findall(r"   \* - ``([A-Z_]+)``\n     - ``(.+?)``\n", section)
+    return rows
+
+
+@pytest.mark.parametrize(("constant", "expression"), _migrate_constant_rows())
+def test_migrate_s_words_call_reproduces_each_2x_constant(
+        constant: str, expression: str) -> None:
+    # #1007: the migration table's code is run, so a row that stops
+    # matching the compiled set it replaces fails here, not in a caller's
+    # upgrade
+    from nameparser.config import _compiled
+    d = Lexicon.default()
+    got = eval(expression, {"d": d})  # noqa: S307
+    expected = getattr(_compiled, constant)
+    if isinstance(expected, dict):
+        assert got == expected
+    else:
+        assert set(got) == set(expected)
+
+
+def test_migrate_s_table_covers_every_compiled_constant() -> None:
+    # every public 2.x constant has a row, code or prose: the private
+    # kind sets 3.0 added (GENERATION_WORDS, ...) were never public
+    text = (Path(__file__).parents[2] / "docs" / "migrate.rst").read_text()
+    section = text.split("Vocabulary constants → Lexicon.words\n", 1)[1]
+    section = section.split("\n.. doctest::", 1)[0]
+    # a row per constant, its own first cell: the two-constant row alone
+    # once let TITLES pass with no answer of its own
+    named = {c for c, _ in _migrate_constant_rows()} | {
+        "TITLE_PHRASES", "CAPITALIZATION_EXCEPTIONS"} & set(
+            re.findall(r"   \* - ``([A-Z_]+)``\n", section))
+    from nameparser.config import _compiled
+    public_in_2x = {n for n in vars(_compiled) if n.isupper()} - {
+        "GENERATION_WORDS", "CREDENTIAL_WORDS", "PATRONYMIC_PARTICLES"}
+    assert public_in_2x <= named
+    assert len(_migrate_constant_rows()) >= 20  # the rows with code
+    # the one row naming two constants, which the row pattern skips
+    assert '``TITLES`` and ``TITLES_AMBIGUOUS``, together\n     - ``d.words(kind="title")``' in section
+    assert set(Lexicon.default().words(kind="title")) == (
+        _compiled.TITLES | _compiled.TITLES_AMBIGUOUS)
