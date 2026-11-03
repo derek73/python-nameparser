@@ -1651,7 +1651,7 @@ def title_readings(texts: Sequence[str], folded: Sequence[str],
 
 def name_word_count(texts: Sequence[str], lexicon: Lexicon,
                     policy: Policy, letters_one_case: bool | None = None,
-                    ) -> int:
+                    members: Set[int] = frozenset()) -> int:
     """How many of these texts are NAME words -- not suffix
     vocabulary, not title vocabulary.
 
@@ -1675,6 +1675,10 @@ def name_word_count(texts: Sequence[str], lexicon: Lexicon,
     here: `SURNAME_UNIT_TAGS`.
 
     `letters_one_case` is `is_wholly_suffix`'s, for the same reason.
+    `members` holds the positions of split credentials' members
+    (classify's tag), each half a credential rather than a name, so
+    one opening the part stays no name word, as `_comma._whole_name`
+    reads it.
     """
     lenient = policy.lenient_comma_suffixes
 
@@ -1684,6 +1688,8 @@ def name_word_count(texts: Sequence[str], lexicon: Lexicon,
     # units -- and pay no frame the token loop did not already pay.
     names: list[bool] = []
     has_particle = False
+    lead: int | None = None
+    lead_suffix = False
     # map, not a comprehension, which is a frame of its own on 3.11
     folded = list(map(_normalize, texts))
     # rules/H9: "the word is a title only inside a title phrase" -- the
@@ -1699,7 +1705,20 @@ def name_word_count(texts: Sequence[str], lexicon: Lexicon,
             has_particle = True
         suffix = (is_suffix_lenient(text, lexicon) if lenient
                   else is_suffix_strict(text, lexicon, letters_one_case))
-        names.append(not (suffix or title or is_title_shaped(text, lexicon)))
+        name = not (suffix or title or is_title_shaped(text, lexicon))
+        # the opening word behind any titles; the shape test asked again
+        # only of a suffix word there, so a run of them pays no frame
+        if lead is None and (name or suffix and not title
+                             and not is_title_shaped(text, lexicon)):
+            lead = i
+            lead_suffix = not name and i not in members
+        names.append(name)
+    # rules/C3: "A suffix word opening the part is a name word to the
+    # count where a name word follows it" -- opening it behind its
+    # titles, which stay no name word, this count being of names
+    # (rules/C4)
+    if lead_suffix and lead is not None and any(names[lead + 1:]):
+        names[lead] = True
     if not has_particle:
         return sum(names)
     count = 0
