@@ -1140,12 +1140,19 @@ def test_a_fixed_point_does_not_reread_what_it_has_read(
 # more than this pin's whole band); `join_connectives` adds one.
 # 2,478 from 2026-10-07, one below: the name asks group's chain
 # `is_prefix_piece` once, which had gone through a closure.
+# 2,418 (py3.11) and 2,398 (py3.12-3.15) from 2026-11-03, 60 below on
+# every interpreter, each measured there: `join_connectives` builds
+# its connective runs in one pass rather than through
+# `merge_pieces`, whose slice assignment shifted the rest of the
+# piece list once per member (the title_chain and link_run shapes'
+# CI failures), so the 64-letter run here no longer pays that
+# function's frame per member.
 _LINK_BASELINE = {
-    (3, 11): 2478,
-    (3, 12): 2459,
-    (3, 13): 2459,
-    (3, 14): 2459,
-    (3, 15): 2459,
+    (3, 11): 2418,
+    (3, 12): 2398,
+    (3, 13): 2398,
+    (3, 14): 2398,
+    (3, 15): 2398,
 }
 #: The same +-2% `_CALL_BASELINE` uses, and for the same reason: frame
 #: counts are deterministic for a given tree and interpreter, so the
