@@ -44,8 +44,9 @@ Token.reading carrying the kind out),
 "shape:acronym"; and in another, "split:credential" and
 "split:member", written on the first word of a credential split across
 a space (`_vocab.split_pair`) to name the piece the pair merges into:
-the Ph./D. pair's unambiguous suffix, or any other pair's member of the
-ambiguous class (rules/S12).
+the Ph./D. pair's unambiguous suffix where the lexicon lists `phd` as
+an unambiguous credential, or any other pair's member of the ambiguous
+class (rules/S12).
 "vocab:maiden-marker" tags the HEAD of a maiden marker, which is a
 whole marker whenever the marker is one word; the continuation tag
 carries the rest of a PHRASE marker ("z domu"), so a site asking
@@ -508,8 +509,8 @@ def classify(state: ParseState) -> ParseState:
                     and (len(a.text.rstrip(".")) >= 2
                          or a.text.endswith(".") and b.text.endswith(".")
                          and (len(b.text) == 2 or not b.text.isascii()))
-                    # the Ph./D. pair whatever the vocabulary, as v1's
-                    # fix_phd merged it; any other only where its words
+                    # the Ph./D. pair, which `split_pair` answers by the
+                    # lexicon's `phd` (#1000); any other only where its words
                     # are not two suffix words, two credentials already,
                     # and its fold is listed, composed in C where it is
                     # not ASCII

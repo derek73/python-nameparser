@@ -59,7 +59,8 @@ def _pieces(seg: Sequence[int], tokens: Sequence[WorkToken],
     off the tag classify wrote on its first word), which group's first
     merge builds (group alone declines a pair at the head of the
     string, rules/S2) -- the part as it stands before any join: the
-    Ph./D. pair tagged "suffix", any other "split", a member of the
+    Ph./D. pair tagged "suffix" where the lexicon lists `phd` as
+    unambiguous suffix vocabulary, any other "split", a member of the
     ambiguous class for rules/C4's count, unless `splits` is False.
     Every piece a fresh list, as `merge_pieces` requires."""
     pieces: list[list[int]] = []
