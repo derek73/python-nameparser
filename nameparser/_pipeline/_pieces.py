@@ -231,14 +231,14 @@ def merge_pieces(pieces: list[list[int]], ptags: list[set[str]],
     # -- re-flattens everything accumulated so far on every call, so
     # a chain that merges into the same piece n times copies
     # 1+2+...+n and the stage goes quadratic in the length of the
-    # chain. A conjunction run ("and " * n) does exactly that: it
-    # measured 2.4x-2.9x per doubling against the 2.0x every other
-    # shape holds. No piece list is aliased outside this function
-    # (each caller builds every piece as a fresh list -- group's
-    # [i], _comma's _pieces -- and reads pieces[k] only before a
-    # merge), so mutating is safe; verified
+    # chain. A conjunction run ("and " * n) did exactly that while
+    # `join_connectives` merged through here: it measured 2.4x-2.9x
+    # per doubling against the 2.0x every other shape holds. No piece
+    # list is aliased outside this function (each caller builds every
+    # piece as a fresh list -- group's [i] -- and reads pieces[k] only
+    # before a merge), so mutating is safe; verified
     # identical token/role/tag/span/ambiguity output over 54,877
-    # names. tests/v2/test_benchmark.py's "and " shape is the guard.
+    # names.
     #
     # Every call site passes lo < hi, and this REQUIRES it: with
     # lo >= hi the slice assignment would insert rather than
@@ -246,6 +246,16 @@ def merge_pieces(pieces: list[list[int]], ptags: list[set[str]],
     # array, and the next merge to touch either index would extend
     # the same list twice. The old rebuild-a-fresh-list spelling
     # was harmless there. Keep the bound if you add a caller.
+    #
+    # The slice assignment itself still shifts every piece behind
+    # `hi`, C-level work no frame guard counts, so a caller that
+    # merges once per member of a run whose length grows with the
+    # input goes quadratic all the same. `join_connectives` and
+    # group's split-pair merge did, and build their lists in one pass
+    # instead (decisions/parse-cost, 2026-11-03); the callers left
+    # merge once per run (the particle chain, the bound join). A
+    # caller that would merge per member builds its output that way,
+    # with a row in tests/v2/test_benchmark.py's shift guards.
     combined = pieces[lo]
     for piece in pieces[lo + 1:hi]:
         combined.extend(piece)
@@ -282,8 +292,9 @@ def join_connectives(pieces: list[list[int]], ptags: list[set[str]],
     neighbour's join may still take one in."""
     # contiguous conjunction runs merge first
     #
-    # `pieces[k][0] in frozen` and not `frozen.isdisjoint(...)`:
-    # the piece this loop extends GROWS with every merge, so a
+    # The first token (`run_pieces[-1][0] in frozen`) and not
+    # `frozen.isdisjoint(...)`: the piece this loop extends GROWS
+    # with every merge, so a
     # test over its tokens costs 1+2+...+n and the stage goes
     # quadratic in the length of a connective run -- measured,
     # 'and ' x3200 took 41.8ms against 21.7ms, 6.2x per 4x input
@@ -294,52 +305,103 @@ def join_connectives(pieces: list[list[int]], ptags: list[set[str]],
     # loop finishes before the join below can take one into a
     # neighbour's piece, so a piece holding a frozen token here IS
     # that token.
-    k = 0
-    while k < len(pieces) - 1:
-        if (is_conj_piece(pieces[k], ptags[k], tokens)
-                and is_conj_piece(pieces[k + 1], ptags[k + 1], tokens)
-                and pieces[k][0] not in frozen
-                and pieces[k + 1][0] not in frozen):
-            merge_pieces(pieces, ptags, k, k + 2, add={"conjunction"})
+    #
+    # Built in one pass, not through `merge_pieces`, whose slice
+    # assignment would shift the rest of the list once per member
+    # (its comment). The run being built is `run_pieces[-1]`.
+    run_pieces: list[list[int]] = []
+    run_tags: list[set[str]] = []
+    for piece, tags in zip(pieces, ptags):
+        if (run_pieces
+                and is_conj_piece(run_pieces[-1], run_tags[-1], tokens)
+                and is_conj_piece(piece, tags, tokens)
+                and run_pieces[-1][0] not in frozen
+                and piece[0] not in frozen):
+            run_pieces[-1].extend(piece)
+            run_tags[-1] = joined_tags((run_tags[-1], tags), 0, 2,
+                                       add={"conjunction"})
         else:
-            k += 1
+            run_pieces.append(piece)
+            run_tags.append(tags)
+    pieces[:] = run_pieces
+    ptags[:] = run_tags
     # each conjunction joins its neighbors, rules/P3: "except a
     # single-letter connective in a three-word name, which stays a
     # name word" (v1's Google Code issue 11 carve-out, the
     # "john e smith" bug).
+    #
+    # The joins are written into fresh lists in one pass, for the
+    # same reason: a run of joins ('Mr. and ' x n) through
+    # `merge_pieces` would shift the rest of the list once per join.
+    # A join takes the piece behind it off `out`, so the piece it
+    # produces is `out[-1]`, the left neighbour of the next piece
+    # read, and `len(out)` is always the index `pieces[k]` would
+    # stand at had every join so far been made in the list itself.
+    out: list[list[int]] = []
+    out_tags: list[set[str]] = []
+    n = len(pieces)
     k = 0
-    while k < len(pieces):
-        # first token again, and here it is exact for the second
-        # reason as well: the piece a join produces is left BEHIND
-        # `k`, so no merged piece is ever tested twice.
-        if (not is_conj_piece(pieces[k], ptags[k], tokens)
-                or pieces[k][0] in frozen):
+    while k < n:
+        piece, tags = pieces[k], ptags[k]
+        # first token again, exact for the run loop's reason (a
+        # frozen piece is one token) and for a second: the piece a
+        # join produces is left on `out`, BEHIND `k`, so no joined
+        # piece is ever tested here.
+        if (not is_conj_piece(piece, tags, tokens)
+                or piece[0] in frozen):
+            out.append(piece)
+            out_tags.append(tags)
             k += 1
             continue
-        if letter_stays and len(pieces[k]) == 1:
-            text = tokens[pieces[k][0]].text
+        if letter_stays and len(piece) == 1:
+            text = tokens[piece[0]].text
             if not text.isascii():
                 # a decomposed 'й' is one letter in two code points
                 # (#665); compose it, as the lookup does
                 text = unicodedata.normalize("NFC", text)
             if len(text) == 1 and text.isalpha():
+                out.append(piece)
+                out_tags.append(tags)
                 k += 1
                 continue
-        start = max(0, k - 1)
-        end = min(len(pieces), k + 2)
-        neighbor = start if start < k else end - 1
+        has_left = bool(out)
+        has_right = k + 1 < n
+        if has_left:
+            neighbor, neighbor_tags = out[-1], out_tags[-1]
+        elif has_right:
+            neighbor, neighbor_tags = pieces[k + 1], ptags[k + 1]
+        else:
+            # a connective alone in its part is its own neighbour,
+            # so it takes its own kinds
+            neighbor, neighbor_tags = piece, tags
         derived = set()
-        if is_title_piece(pieces[neighbor], ptags[neighbor], tokens):
+        if is_title_piece(neighbor, neighbor_tags, tokens):
             derived.add("title")
         elif titles_only:
+            out.append(piece)
+            out_tags.append(tags)
             k += 1
             continue
         if (not titles_only
-                and is_prefix_piece(pieces[neighbor], ptags[neighbor],
-                                    tokens)):
+                and is_prefix_piece(neighbor, neighbor_tags, tokens)):
             derived.add("prefix")
-        merge_pieces(pieces, ptags, start, end, add=derived)
-        k = start + 1
+        parts = [piece]
+        part_tags = [tags]
+        if has_left:
+            parts.insert(0, out.pop())
+            part_tags.insert(0, out_tags.pop())
+        if has_right:
+            parts.append(pieces[k + 1])
+            part_tags.append(ptags[k + 1])
+        combined = parts[0]
+        for part in parts[1:]:
+            combined.extend(part)
+        out.append(combined)
+        out_tags.append(joined_tags(part_tags, 0, len(part_tags),
+                                    add=derived))
+        k += 2 if has_right else 1
+    pieces[:] = out
+    ptags[:] = out_tags
 
 
 # _PERIOD_ABBREV: imported from _vocab, not redefined here (#289/#516,

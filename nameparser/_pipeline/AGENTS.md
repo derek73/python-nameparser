@@ -4,7 +4,7 @@ Loaded when a session reads or edits a pipeline stage. The root AGENTS.md carrie
 
 ## A new inner loop needs a scaling guard
 
-A loop that grows with the input -- per token, per member, per pair -- needs a row in `tests/v2/test_benchmark.py`, whose module docstring says which table; the absolute-time tests there use constant-size input and are blind to a complexity regression.
+A loop that grows with the input -- per token, per member, per pair -- needs a row in `tests/v2/test_benchmark.py`, whose module docstring says which table; the absolute-time tests there use constant-size input and are blind to a complexity regression. A loop that merges pieces once per member needs a deterministic guard too, since a scaling row's clock depends on the machine: `merge_pieces`' slice assignment moves every piece behind it, and once per member that read 4.1-4.4x for 4x the input on a dev machine and 7.5-8.3x on CI's runners (#1036). Build the output in one pass, and guard it the way the loop can be reached: a loop over lists a test can hand it, as `join_connectives`' are, by `_ShiftCountingList` (`_join_shifts` calls `join_connectives` alone, so another function needs a helper of its own beside it), and a loop inside a stage that builds its own pieces, as group's split-pair merge is, by `merge_pieces`' frame count, one row per arm (`_SPLIT_PAIR_RUNS`). Record each row's control on the tree before the change.
 
 ## Ambiguity reports
 

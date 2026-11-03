@@ -348,6 +348,7 @@ def test_a_file_holding_no_reading_is_chosen_only_strictly() -> None:
 STRICT_UNGATED = {
     "ar": {"cheikh"},
     "cs": {"st"},
+    "fil": {"del", "la", "san"},
     "fr": {"la", "marquis", "marquise", "st"},
     "ga": {"mac"},
     "gd": {"mac", "nic"},

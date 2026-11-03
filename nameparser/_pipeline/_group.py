@@ -702,29 +702,51 @@ def _group_segment(seg: tuple[int, ...], additional: int,
     # Not in the part before a family comma, which reads no member as
     # a suffix ('Smith MA, John'). Classify tagged each pair's first
     # word, so the test here is a tag.
+    #
+    # Written into fresh lists in one pass, `pos` being the index the
+    # piece stands at once the merges before it are made: a merge in
+    # place shifts the rest of the list (`merge_pieces`' comment), and
+    # a run of pairs would shift it once per pair. A merged pair is
+    # never a member of another, so the scan moves past both words.
     splits = False
     given_from: int | None = None
+    out: list[Piece] = []
+    out_tags: list[set[str]] = []
+    n = len(pieces)
     k = 0
-    while k < len(pieces) - 1:
-        a, b = pieces[k], pieces[k + 1]
-        tags = tokens[a[0]].tags
-        if (len(a) == 1 and len(b) == 1
-                and not (opens_the_name and k == 0 and a[0] == 0)):
-            if SPLIT_CREDENTIAL_TAG in tags:
-                merge_pieces(pieces, ptags, k, k + 2, add={"suffix"})
-                continue
-            if SPLIT_MEMBER_TAG in tags:
-                if site is ClauseSite.TRAILING:
-                    merge_pieces(pieces, ptags, k, k + 2, add={"split"})
-                    splits = True
-                    continue
-                if site is ClauseSite.GIVEN_SLOT:
-                    if given_from is None:
-                        given_from = leading_titles(pieces, ptags, tokens)
-                    if k > given_from:
-                        merge_pieces(pieces, ptags, k, k + 2, add={"split"})
-                        continue
-        k += 1
+    while k < n:
+        a = pieces[k]
+        add: str | None = None
+        if k + 1 < n:
+            b = pieces[k + 1]
+            tags = tokens[a[0]].tags
+            pos = len(out)
+            if (len(a) == 1 and len(b) == 1
+                    and not (opens_the_name and pos == 0 and a[0] == 0)):
+                if SPLIT_CREDENTIAL_TAG in tags:
+                    add = "suffix"
+                elif SPLIT_MEMBER_TAG in tags:
+                    if site is ClauseSite.TRAILING:
+                        add = "split"
+                        splits = True
+                    elif site is ClauseSite.GIVEN_SLOT:
+                        if given_from is None:
+                            given_from = leading_titles(
+                                out + pieces[k:], out_tags + ptags[k:],
+                                tokens)
+                        if pos > given_from:
+                            add = "split"
+        if add is None:
+            out.append(a)
+            out_tags.append(ptags[k])
+            k += 1
+            continue
+        a.extend(pieces[k + 1])
+        out.append(a)
+        out_tags.append(joined_tags(ptags, k, k + 2, add={add}))
+        k += 2
+    pieces[:] = out
+    ptags[:] = out_tags
 
     # rules/M2: "A marker that counts takes the words after it as
     # the maiden name, and is itself dropped" (history:

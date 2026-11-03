@@ -61,11 +61,13 @@ calibration. The module is marked `serial` (tests/conftest.py says
 why), and a new clock-timed test elsewhere takes the mark too.
 """
 import gc
+import operator
 import os
 import sys
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from types import FrameType
+from typing import ClassVar, SupportsIndex, TypeVar, cast, overload
 
 import pytest
 
@@ -256,7 +258,7 @@ def test_a_thousand_names_still_parse_in_reasonable_time(
 #   SEGMENT count             commas ONLY -- deleting it leaves every
 #                             segment-keyed regression unguarded
 #   intra-piece accumulation  particles (one 799-token piece),
-#                             conjunctions (800) -- the merge_pieces quadratic
+#                             conjunctions (800) -- join_connectives' run loop
 #   masked-span count         delimiter_pairs, quote_pairs (0 pieces:
 #                             everything is consumed as a delimited run)
 #   NON-ASCII input           honorifics ONLY -- every other unit here is
@@ -322,7 +324,7 @@ _SHAPES = {
     "commas": "a, ",                # segment: many comma segments
     "titles": "Dr. ",               # group: one long title chain
     "particles": "van ",            # group: the prefix-chain inner loop
-    "conjunctions": "and ",         # group: merge_pieces accumulating one piece
+    "conjunctions": "and ",         # group: P3's run loop accumulating one piece
     "honorifics": "씨 ",             # script_segment: the peel's site scan
     "bound_given": "abdul ",        # group: the P5 reserve over every piece
     "maiden_clause": "nee MA ",     # group: M2's view over the segment
@@ -530,7 +532,13 @@ _PREFIXED_SHAPES: dict[
     # the chain is `_pieces.join_connectives`, group's loop, which
     # extends in place. Re-taken on the moved code 2026-10-06, py3.11,
     # this base, three runs of best-of-five: 4.47-4.49 against
-    # 9.95-10.00 with the slice rebuild planted in `merge_pieces`
+    # 9.95-10.00 with the slice rebuild planted in `merge_pieces`.
+    # That clean reading was taken on a tree that still merged
+    # through `merge_pieces` once per join, which CI's runners read
+    # at 7.5-8.3x (decisions/parse-cost, 2026-11-03); the loop builds
+    # its lists in one pass since, `merge_pieces` no longer reaches
+    # this shape, and the shift guard below the link pin holds it on
+    # any machine
     "title_chain": (
         "John Smith, ", "Mr. and ", Parser(),
         lambda text: (parse(text).given == "John"
@@ -1140,12 +1148,19 @@ def test_a_fixed_point_does_not_reread_what_it_has_read(
 # more than this pin's whole band); `join_connectives` adds one.
 # 2,478 from 2026-10-07, one below: the name asks group's chain
 # `is_prefix_piece` once, which had gone through a closure.
+# 2,418 (py3.11) and 2,398 (py3.12-3.15) from 2026-11-03, each
+# measured there, 64 below the tree before the change (2,482 and
+# 2,462: the recorded 2,478 and 2,459 had drifted inside the band):
+# `join_connectives` builds its connective runs in one pass rather
+# than through `merge_pieces`, so the 64-letter run here no longer
+# pays that function's frame per member (decisions/parse-cost,
+# 2026-11-03).
 _LINK_BASELINE = {
-    (3, 11): 2478,
-    (3, 12): 2459,
-    (3, 13): 2459,
-    (3, 14): 2459,
-    (3, 15): 2459,
+    (3, 11): 2418,
+    (3, 12): 2398,
+    (3, 13): 2398,
+    (3, 14): 2398,
+    (3, 15): 2398,
 }
 #: The same +-2% `_CALL_BASELINE` uses, and for the same reason: frame
 #: counts are deterministic for a given tree and interpreter, so the
@@ -1189,6 +1204,153 @@ def test_a_link_costs_what_it_is_pinned_at() -> None:
         f"see it: check whether `_group._between_name_words` still "
         f"answers both sides of a link in one call, then move the "
         f"baseline deliberately (#397)")
+
+
+# A MERGE THAT SHIFTS THE LIST, which neither the frame counter nor a
+# dev machine's clock can see. `merge_pieces`' slice assignment moves
+# every piece behind the merge, C-level work that emits no frame, and a
+# loop merging once per member of a run moves the rest of the list
+# once per member: `join_connectives` did, through both its loops, and
+# group's split-pair merge did too. On CI's runners title_chain and
+# link_run above read 7.5-8.3x and 6.0-6.5x for 4x the input while a
+# dev machine read 4.1-4.4x on the same tree, so the clock rows could
+# be checked nowhere but CI (decisions/parse-cost, 2026-11-03). This
+# counts the moves instead, on a list that adds up what each non-tail
+# slice assignment, `del`, `insert`, `pop(i)` or `remove` shifts, so it
+# fails on any machine and sees an inline slice as readily as one
+# inside `merge_pieces`. It cannot see a TAIL rebuild per merge
+# (`x[k:] = [m] + x[k + 2:]`), which copies the tail in Python rather
+# than shifting it in place: a loop written that way is still a
+# quadratic, and still needs reading. RECORDED NEGATIVE CONTROL, the
+# tree before the change (962301f7), py3.11, at 50 and 200 units:
+_SHIFT_UNITS = (50, 200)
+_UNGUARDED_SHIFTS = {
+    "Mr. and ": (4802, 79202),
+    "i Und ": (9702, 158802),
+    "and ": (2352, 39402),
+}
+
+
+_T = TypeVar("_T")
+
+
+class _ShiftCountingList(list[_T]):
+    """A list that counts the elements its edits shift: everything
+    behind an edit that changes the length anywhere but the end."""
+
+    moved: ClassVar[int] = 0
+
+    @overload
+    def __setitem__(self, index: SupportsIndex, value: _T) -> None: ...
+    @overload
+    def __setitem__(self, index: slice, value: Iterable[_T]) -> None: ...
+
+    def __setitem__(self, index: SupportsIndex | slice,
+                    value: _T | Iterable[_T]) -> None:
+        if isinstance(index, slice):
+            start, stop, _ = index.indices(len(self))
+            values = list(cast("Iterable[_T]", value))
+            if len(values) != stop - start:
+                _ShiftCountingList.moved += len(self) - stop
+            super().__setitem__(index, values)
+        else:
+            super().__setitem__(index, cast("_T", value))
+
+    def _at(self, index: SupportsIndex) -> int:
+        at = operator.index(index)
+        return at + len(self) if at < 0 else at
+
+    def __delitem__(self, index: SupportsIndex | slice) -> None:
+        stop = (index.indices(len(self))[1] if isinstance(index, slice)
+                else self._at(index) + 1)
+        _ShiftCountingList.moved += len(self) - stop
+        super().__delitem__(index)
+
+    def insert(self, index: SupportsIndex, value: _T) -> None:
+        _ShiftCountingList.moved += max(
+            0, len(self) - min(self._at(index), len(self)))
+        super().insert(index, value)
+
+    def pop(self, index: SupportsIndex = -1) -> _T:
+        _ShiftCountingList.moved += len(self) - self._at(index) - 1
+        return super().pop(index)
+
+    def remove(self, value: _T) -> None:
+        _ShiftCountingList.moved += len(self) - self.index(value) - 1
+        super().remove(value)
+
+
+def _join_shifts(unit: str, units: int) -> tuple[int, int]:
+    """The elements `join_connectives` shifts over `units` of `unit`,
+    and the pieces it leaves."""
+    from nameparser._lexicon import Lexicon
+    from nameparser._pipeline import STAGES
+    from nameparser._pipeline._pieces import join_connectives
+    from nameparser._pipeline._state import ParseState
+    state = ParseState(original=(unit * units).strip(),
+                       lexicon=Lexicon.default(), policy=Policy())
+    for stage in STAGES:
+        state = stage(state)
+        if stage.__name__ == "classify":
+            break
+    titles_only = unit == "Mr. and "
+    pieces: _ShiftCountingList[list[int]] = _ShiftCountingList(
+        [i] for i in state.segments[0])
+    ptags: _ShiftCountingList[set[str]] = _ShiftCountingList(
+        set() for _ in pieces)
+    _ShiftCountingList.moved = 0
+    join_connectives(pieces, ptags, list(state.tokens),
+                     letter_stays=titles_only, titles_only=titles_only)
+    return _ShiftCountingList.moved, len(pieces)
+
+
+def test_the_unguarded_shift_control_is_quadratic() -> None:
+    # the control above must show what the guard is for: 16x the
+    # shifts for 4x the units
+    for small, large in _UNGUARDED_SHIFTS.values():
+        assert large / small > 15
+
+
+@pytest.mark.parametrize("unit", list(_UNGUARDED_SHIFTS))
+def test_join_connectives_shifts_nothing_it_has_built(unit: str) -> None:
+    measured = [_join_shifts(unit, n) for n in _SHIFT_UNITS]
+    # REACHABILITY: every unit joins into one piece, so the loops this
+    # counts ran; a loop that stopped joining would shift nothing too
+    assert [left for _, left in measured] == [1, 1], unit
+    assert [moved for moved, _ in measured] == [0, 0], (
+        f"join_connectives shifted list elements for {unit!r}: a loop "
+        f"merging in place moves the rest of the list once per merge, "
+        f"which went quadratic before (recorded control "
+        f"{_UNGUARDED_SHIFTS[unit]}); build the output in one pass")
+
+
+# Group's split-pair merge, one row per arm: the Ph./D. credential, a
+# member read in the trailing run, and a member behind the given name
+# after a family comma (the GIVEN_SLOT arm).
+_SPLIT_PAIR_RUNS = {
+    "credential": ("John Smith ", "Ph. D. "),
+    "trailing_member": ("John Smith ", "Pharm. D. "),
+    "given_slot_member": ("Smith, John ", "Pharm. D. "),
+}
+
+
+@pytest.mark.parametrize("head,unit", _SPLIT_PAIR_RUNS.values(),
+                         ids=list(_SPLIT_PAIR_RUNS))
+def test_a_run_of_split_pairs_merges_in_one_pass(head: str,
+                                                 unit: str) -> None:
+    """Group's split-pair merge, which `_ShiftCountingList` cannot
+    reach (group builds its own pieces), is held by the frame count of
+    `merge_pieces` instead: a call per pair was the quadratic.
+    RECORDED NEGATIVE CONTROL: 50 and 200 calls at 50 and 200 pairs
+    on 962301f7, in each arm. A slice written inline would evade this;
+    the shift guard above is the stronger form wherever it can reach."""
+    if sys.getprofile() is not None:
+        pytest.skip("a profile hook is already installed; this test owns it")
+    for pairs in _SHIFT_UNITS:
+        text = head + unit * pairs
+        # REACHABILITY: every pair merged and read as the suffix
+        assert parse(text).suffix == (unit * pairs).strip(), text
+        assert _frames_for(text, only="merge_pieces") == 0, pairs
 
 
 def test_a_member_opening_a_comma_part_asks_no_anchor_pass() -> None:
