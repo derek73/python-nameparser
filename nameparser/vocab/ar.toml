@@ -130,6 +130,7 @@ religious = { addresses = "given", gender = "f", issue = 269, expands = "the haj
 [[word]]
 text = "sultan"
 nobility = {}
+given = { wikidata = 13, as_of = 2026-10-26, note = "the Arabic given name Sultan (Wikidata citizens of Saudi Arabia 13, a lower bound, tr.toml's count of 2026-10-26); strict ar, which drops tr.toml's given reading, read it as a title in 226 records of Arab countries' ORCID, PatentsView and PSC data (`Sultan Sameea`, Bahrain; config_diff.py gaps on f48c88a3, decisions/vocabulary-model, 2026-11-03)" }
 
 [[word]]
 text = "sultana"
