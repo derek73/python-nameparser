@@ -430,8 +430,8 @@ Apart from that signature, these change no signature but change `str()`'s output
 
 | Change | Kind |
 |---|---|
-| `Token.reading`, `Reading.languages`, `ReadingKind.PATRONYMIC` | additions; old pickles load |
-| `generation`, `credentials`, `patronymic`, `surname2` properties and render keys | additions |
+| `Token.reading`, `Reading.languages`, `ReadingKind.PATRONYMIC`, `ReadingKind.HONORIFIC` | additions; old pickles load |
+| `generation`, `credentials`, `honorifics`, `patronymic`, `surname2` properties and render keys | additions |
 | `Reading.second_surname`, marking the second surname's words (planned as a stable tag, which would have changed `==`; decisions/R10) | addition; old pickles load |
 | `ParsedName.order` | addition; old pickles load |
 | new `Policy` fields for rules, and `Locale.languages` (phase 3) | additions |
