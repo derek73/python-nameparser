@@ -1492,7 +1492,7 @@ def generation_word_before_a_name(token: WorkToken,
     """Whether a generation WORD ('Junior', 'Jr', 'Snr', 'mlađi') has
     behind it, in `piece`, a word of the name, asked of the piece's
     first word as `_name_word_behind` asks it: a word that is no suffix
-    word, no roman numeral, no initial, no connective, no title word
+    word, no numeral S10 reads as the generation, no initial, no connective, no title word
     (the run reads that as a title: 'Eric H. Holder Jr. Attorney
     General') and no maiden marker, so no particle that is also title
     or suffix vocabulary ('St.', 'Mc'), and is a particle or is written
@@ -1510,8 +1510,11 @@ def generation_word_before_a_name(token: WorkToken,
     text = tokens[piece[0]].text
     if (not tags.isdisjoint(_NOT_A_NAME_BEHIND)
             # a numeral S10 reads by its shape carries no suffix tag
-            # ('JOHN SMITH JUNIOR VI JONES')
-            or _ROMAN.match(text.rstrip(".")) is not None):
+            # ('JOHN SMITH JUNIOR VI JONES'); asked of S10's predicate,
+            # so a Title-case 'Vi' leaning to the name stays one
+            or (_ROMAN.match(text.rstrip(".")) is not None
+                and reads_as_generation(text, tags, token.text,
+                                        one_case))):
         return False
     if "particle" in tags:
         return True

@@ -324,11 +324,11 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # under three orders; 1476 -> 1482 on 2026-11-02, rules/C3's
     # leading-credential rows 'Dr. Md Rahman, Ing' (suffix-or-name) and
     # 'Sr. van der Berg, PhD' (particle-or-given), each under three
-    # orders; 1482 -> 1497 the same day, rules/S8's generation-word
-    # rows: two lose their suffix-or-name report and five new ones
-    # carry one, and one new row carries two, each under three orders.
-    assert claims == 1497, (
-        f"the field sweep checks {claims} claims, recorded as 1497 on "
+    # orders; 1482 -> 1500 the same day, rules/S8's generation-word
+    # rows: two lose their suffix-or-name report, six new ones carry
+    # one and one carries two, each under three orders.
+    assert claims == 1500, (
+        f"the field sweep checks {claims} claims, recorded as 1500 on "
         f"2026-11-02")
 
 

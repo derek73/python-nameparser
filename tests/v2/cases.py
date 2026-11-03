@@ -1982,6 +1982,17 @@ CASES: tuple[Case, ...] = (
                "suffix tag (the review found family 'JUNIOR' without the "
                "numeral test). 1.4.0 read middle 'SMITH JUNIOR VI', "
                "family 'JONES'"),
+    Case("a_generational_word_before_a_title_case_vi_keeps_the_name",
+         "Nguyen Van Jr. Vi",
+         {"given": "Nguyen", "middle": "Van Jr.", "family": "Vi"},
+         classification="fix(#1023)",
+         ambiguities=("suffix-or-name",),
+         notes="S8: the numeral behind the generation word is refused "
+               "only where S10 reads it as the generation; a Title-case "
+               "'Vi' in a name of mixed case leans to the name (the "
+               "second review found the shape alone taking it). 1.4.0 "
+               "read family 'Jr.', suffix 'Vi'; 2.3.0 through 2.8.0 read "
+               "family 'Van', suffix 'Jr. Vi'"),
     Case("a_generational_word_before_an_unsettled_member",
          "John Smith Jr. Ma Jones",
          {"given": "John", "middle": "Smith Jr. Ma", "family": "Jones"},
