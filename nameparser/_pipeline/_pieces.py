@@ -1486,7 +1486,7 @@ def _name_word_behind(piece: Sequence[int], ptags: Set[str],
 
 # rules/S8: "nor does a credential acronym written in Title case" --
 # the capitals an acronym is written in are the writer's mark, and a
-# word written as a name is written without them (decisions/S8, #PRNUM)
+# word written as a name is written without them (decisions/S8, #1019)
 def written_as_a_name(token: WorkToken) -> bool:
     """Whether an unambiguous credential ACRONYM is written as a name
     word is: its first letter a capital and every later letter lower

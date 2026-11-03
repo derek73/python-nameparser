@@ -321,7 +321,7 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # orders; 1451 -> 1452 on 2026-10-30, #954's 'bin Ali Hassan', which
     # carries its own policy, one particle-or-given claim; 1452 -> 1476
     # the same day, #965's eight KC rows, each reporting suffix-or-name
-    # under three orders; 1476 -> 1482 on 2026-11-02, #PRNUM's 'John
+    # under three orders; 1476 -> 1482 on 2026-11-02, #1019's 'John
     # Smith MD Jones' and 'Smith, John Md Jones', each reporting
     # suffix-or-name under three orders.
     assert claims == 1482, (
@@ -674,7 +674,7 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # as the suffix, each under the three orders; 443 -> 452 and 302 ->
     # 305 on 2026-10-30, #965's KC rows under the three orders, nine
     # stand-ins landing in the alternative's field and three keeping the
-    # taken one; 305 -> 311 on 2026-11-02, #PRNUM's 'John Smith MD
+    # taken one; 305 -> 311 on 2026-11-02, #1019's 'John Smith MD
     # Jones' and 'Smith, John Md Jones' under the three orders, each
     # stand-in keeping the taken one
     assert (checked, skipped) == (452, 311), (checked, skipped)
