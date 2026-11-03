@@ -41,6 +41,7 @@ Release Log
     - **Fix Policy(name_order=...) accepting a set.** ``Policy(name_order=frozenset(FAMILY_FIRST))`` raises ``TypeError``, where 2.0.0 through 2.8.0 accepted it as an order under some hash seeds and raised ``ValueError`` under others; pass the tuple. :issue:`754`
     - **Divide five more mainland Chinese surnames under locales.ZH.** ``付晓明`` under ``locales.ZH`` gives family ``付``, given ``晓明``, where 2.1.0 through 2.8.0 gave family ``付晓明``; ``代``, ``候``, ``芦`` (``蘆``) and ``农`` (``農``) divide too. A Japanese name opening with ``代`` or ``芦`` now splits after it (``芦川誠`` gives family ``芦``). :issue:`952`
     - **Read Никитич and Саввич as patronymics under locales.RU.** ``parser_for(locales.RU).parse("Петров Иван Никитич")`` gives family ``Петров``, given ``Иван``, where 2.0.0 through 2.8.0 gave family ``Никитич``, given ``Петров``; ``Саввич`` and the Latin ``Nikitich`` and ``Savvich`` read the same way. :issue:`994`
+    - **Fix a name that opens with a credential word losing its given name before a comma.** ``parse("JP Clancy, MD")`` gives given ``JP``, family ``Clancy``, where 2.4.0 through 2.8.0 gave family ``JP Clancy``; initials that spell a credential (``A.M.``, ``M.S.``), the given name ``Md`` and given names such as ``Cem`` read the same, as they do without the comma. :issue:`PRNUM`
 
 * 2.8.0 - October 28, 2026
 

@@ -3576,14 +3576,17 @@ def test_a_one_letter_particle_with_its_period_reads_as_any_initial() -> None:
 #: opening the part either way: nine of classify's, 'DO Ó., ...'
 #: shapes, and one of the facade's), and re-measured 2026-10-06 after
 #: #613 decided the comma once at group's head, which moved classify,
-#: the facade and _render one text each. Every site moves
+#: the facade and _render one text each, and again 2026-11-02, when
+#: rules/C3 began counting a suffix word opening the part before the
+#: comma as a name word, which moved classify's by one ('Jr. Ó., Jr.',
+#: whose readings with the veto off and on now agree). Every site moves
 #: some, so none is decoration. _render's is measured without the
 #: particle case masks, as for a caller's one-letter particle that has
 #: none: with the shipped 'ó' mask the repair takes the mask before
 #: the particle arm is asked (rules/R4), so the default vocabulary
 #: alone cannot see that veto.
 _P7_SITE_EFFECT = {
-    "nameparser._pipeline._classify": 404,
+    "nameparser._pipeline._classify": 403,
     "nameparser._pipeline._vocab": 21,
     "nameparser._render": 339,
 }
