@@ -2025,6 +2025,7 @@
 {"name": "John, Smith, Dr.", "title": "Dr.", "given": "Smith", "family": "John", "initials": "S. J."}
 {"name": "Johnson Mary", "order": "FAMILY_FIRST", "given": "Mary", "family": "Johnson", "initials": "M. J."}
 {"name": "Johnson, Mary", "given": "Mary", "family": "Johnson", "initials": "M. J."}
+{"name": "John⁣Smith", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "John😀Smith", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Jon Andoni Urrestaratzu", "given": "Jon", "middle": "Andoni", "family": "Urrestaratzu", "initials": "J. A. U."}
 {"name": "Jon Dough and", "given": "Jon", "family": "Dough and", "initials": "J. D."}
