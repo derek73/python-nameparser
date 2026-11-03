@@ -484,7 +484,7 @@ _EXPECTED_LANGUAGES = [
     ("Dr. Juan de la Vega III", "la", ("es", "fr", "it")),
     ("Dr. Juan de la Vega III", "Dr.", ("mul",)),
     ("Dr. Juan de la Vega III", "III", ("mul",)),
-    ("John Smith PhD", "PhD", ("en",)),
+    ("John Smith PhD", "PhD", ("mul",)),
     ("王小明先生", "先生", ("ja", "zh")),
     ("Juan e Maria Smith", "e", ("it", "pt")),
     ("Pedro Alves Filho", "Filho", ("pt",)),
@@ -507,17 +507,17 @@ _EXPECTED_LANGUAGES = [
     # an acronym by its periods removed, and a credential split across
     # a space, listed whole, each of its words naming the files
     ("John Smith (M.A)", "M.A", ("en",)),
-    ("John Smith Ph. D.", "Ph.", ("en",)),
-    ("John Smith Ph. D.", "D.", ("en",)),
-    ("Smith, Ph. D. III", "D.", ("en",)),
+    ("John Smith Ph. D.", "Ph.", ("mul",)),
+    ("John Smith Ph. D.", "D.", ("mul",)),
+    ("Smith, Ph. D. III", "D.", ("mul",)),
     ("John Smith Pharm D", "Pharm", ("en",)),
     # a nickname written between a split credential's words is passed
     # over, and the run reaches its second word
-    ('John Smith Ph. "Bob" D.', "Ph.", ("en",)),
-    ('John Smith Ph. "Bob" D.', "D.", ("en",)),
+    ('John Smith Ph. "Bob" D.', "Ph.", ("mul",)),
+    ('John Smith Ph. "Bob" D.', "D.", ("mul",)),
     # a word joining listed words, by its parts; never divided at a
     # combining mark
-    ("John Smith, M.D./Ph.D.", "M.D./Ph.D.", ("en",)),
+    ("John Smith, M.D./Ph.D.", "M.D./Ph.D.", ("mul",)),
     ("Lt.Gov. John Smith", "Lt.Gov.", ("en",)),
     # a word the lexicon lists whole without its periods is read whole,
     # not by its parts

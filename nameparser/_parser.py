@@ -400,10 +400,11 @@ def parser_for(*locales: Locale, base: Parser | None = None,
 
     ``strict=True`` makes the choice strict: only the chosen languages'
     vocabulary files are compiled, each tag selecting its own and its
-    ancestors' as a plain choice does, plus native-script vocabulary (a
-    word with a letter and no Latin letter); every other file's
-    readings leave, mul.toml's and und.toml's among them, and with
-    them the markers they derive. It is for single-origin data
+    ancestors' as a plain choice does, plus mul.toml, the words every
+    language writes alike (``Dr``, ``Prof``, ``PhD``, ``MD``, the
+    numerals), and native-script vocabulary (a word with a letter and
+    no Latin letter); every other file's readings leave, und.toml's
+    among them, and with them the markers they derive. It is for single-origin data
     (``parser_for(Locale(code="ko", lexicon=Lexicon.empty(),
     languages=frozenset({"ko"})), strict=True)`` reads ``Kim Do Hyun``
     with no Portuguese particle ``do``). A caller's own readings and the

@@ -274,10 +274,14 @@ def _without_phd(label: str) -> Parser:
                                              .add("phd", kind="credential",
                                                   acronym=False)),
             "empty": lambda: Parser(lexicon=Lexicon.empty()),
-            "strict pt": lambda: parser_for(locales.PT, strict=True),
+            # a strict choice reads mul.toml, `phd` among it (#1005), so
+            # its base removes it
+            "strict pt": lambda: parser_for(locales.PT, strict=True, base=Parser(
+                lexicon=Lexicon.default().remove("phd", kind="credential"))),
             "strict pt, family first": lambda: parser_for(
-                locales.PT, strict=True,
-                base=Parser(policy=Policy(name_order=FAMILY_FIRST))),
+                locales.PT, strict=True, base=Parser(
+                    lexicon=Lexicon.default().remove("phd", kind="credential"),
+                    policy=Policy(name_order=FAMILY_FIRST))),
         }[label]()
 
 
@@ -2648,7 +2652,8 @@ def test_an_error_applying_a_choice_names_the_choice(
 
 def test_a_choice_moves_case_masks_as_it_moves_words() -> None:
     # cs's credentials carry masks the default leaves off (`judr` ->
-    # JUDr), a strict choice drops the masks of every file it drops,
+    # JUDr), a strict choice drops the masks of every file it drops
+    # (en.toml's `dphil` under ko) and keeps mul.toml's (`phd`, #1005),
     # and a caller's own mask the choice does not touch is kept
     from nameparser import locales
     mine = dataclasses.replace(Lexicon.default(), capitalization_exceptions=(
@@ -2657,13 +2662,14 @@ def test_a_choice_moves_case_masks_as_it_moves_words() -> None:
     assert cs.capitalization_exceptions_map["judr"] == "JUDr"
     assert cs.capitalization_exceptions_map["abcq"] == "AbcQ"
     ko = parser_for(_choosing("ko"), strict=True).lexicon
-    assert "phd" not in ko.capitalization_exceptions_map
+    assert "dphil" not in ko.capitalization_exceptions_map
+    assert ko.capitalization_exceptions_map["phd"] == "PhD"
     # chained, the masks move as the union's do: what ko's strict choice
     # dropped and en's keeps comes back
     en, ko_pack = _choosing("en", code="en"), _choosing("ko", code="ko")
     chained = parser_for(en, base=parser_for(ko_pack, strict=True),
                          strict=True)
-    assert "phd" in chained.lexicon.capitalization_exceptions_map
+    assert "dphil" in chained.lexicon.capitalization_exceptions_map
     assert chained.lexicon == parser_for(ko_pack, en, strict=True).lexicon
 
 
@@ -2970,17 +2976,19 @@ def test_reading_languages_follow_the_choice() -> None:
 
 
 def test_reading_languages_under_a_strict_choice_name_the_chosen_files() -> None:
-    # a strict choice keeps only the chosen files' readings, so nothing
-    # else is named, mul.toml's included; a reading the strict lexicon
-    # does not hold is no reading at all (the Ph./D. pair, a credential
-    # only where the lexicon lists `phd`: decisions/phd-merge, #1000)
+    # a strict choice keeps only the chosen files' readings and
+    # mul.toml's (#1005), so nothing else is named; a reading the strict
+    # lexicon does not hold is no reading at all (the Ph./D. pair, a
+    # credential only where the lexicon lists `phd`: decisions/phd-merge,
+    # #1000)
     en = parser_for(_choosing("en"), strict=True)
     assert _languages_of(Parser(), "Baron John Smith", "Baron") == (
         "de", "en", "fr", "nl")
     assert _languages_of(en, "Baron John Smith", "Baron") == ("en",)
     pt = parser_for(_choosing("pt"), strict=True)
-    assert pt.parse("John Smith Ph. D.").suffix == ""
-    assert _languages_of(Parser(), "John Smith Ph. D.", "Ph.") == ("en",)
+    assert _languages_of(pt, "John Smith Ph. D.", "Ph.") == ("mul",)
+    assert pt.parse("John Smith Pharm D").suffix == ""
+    assert _languages_of(Parser(), "John Smith Pharm D", "Pharm") == ("en",)
 
 
 def test_an_empty_lexicon_names_no_file() -> None:
@@ -2989,7 +2997,7 @@ def test_an_empty_lexicon_names_no_file() -> None:
     # (the Ph./D. pair was the one that did), so the lookup is asked
     # directly
     credential = frozenset({"credential"})
-    assert Lexicon.default()._files.languages("phd", credential) == ("en",)
+    assert Lexicon.default()._files.languages("phd", credential) == ("mul",)
     assert Lexicon.empty()._files.languages("phd", credential) == ()
 
 
@@ -3084,11 +3092,21 @@ def test_a_strict_choice_reads_only_the_chosen_files(
         assert getattr(got, field) == value, field
 
 
-def test_a_strict_choice_drops_mul_and_keeps_native_script_vocabulary() -> None:
+def test_a_strict_choice_keeps_mul_and_native_script_vocabulary() -> None:
     strict = parser_for(_choosing("vi"), strict=True)
-    # mul.toml's `dr` leaves; the period still makes a title by shape
-    assert strict.parse("Dr Minh Do").given == "Dr"
-    assert strict.parse("Dr. Minh Do").title == "Dr."
+    # mul.toml's words are every language's, so a strict choice reads
+    # them (#1005): its titles, credentials and numerals
+    assert strict.parse("Dr Minh Do").title == "Dr"
+    assert strict.parse("Mr Minh Do").title == "Mr"
+    assert strict.parse("Minh Do, PhD").suffix == "PhD"
+    assert strict.parse("Minh Do, MD").suffix == "MD"
+    assert strict.parse("Minh Do III").suffix == "III"
+    # en.toml's leave: `ms`, written as South Indian initials, and `mx`
+    assert strict.parse("Ms Minh Do").given == "Ms"
+    assert strict.parse("Minh Do, RN").given == "RN"
+    # the name gate of a credential that is also a name leaves with it:
+    # `do` is in no file strict vi reads, so it is a name word
+    assert strict.parse("Minh Do, MD").family == "Do"
     # a native-script word selects itself by script, whatever its file
     assert strict.parse("김민준 씨").suffix == "씨"
     # and the Korean surname list is outside the per-word model
@@ -3122,8 +3140,22 @@ def test_a_file_with_no_reading_is_a_strict_choice_only() -> None:
     assert "do" not in parser_for(_choosing("vi"), strict=True).lexicon._sets.particles
 
 
+def test_a_caller_removes_a_mul_word_as_any_other() -> None:
+    # a mul.toml reading is a default reading like any other: a caller's
+    # remove drops it, with or without a choice, strict included (#1005)
+    lexicon = Lexicon.default().remove("phd", kind="credential")
+    assert Parser(lexicon=lexicon).parse("Ana Souza, PhD").given == "PhD"
+    for strict in (False, True):
+        got = parser_for(_choosing("pt"), base=Parser(lexicon=lexicon),
+                         strict=strict)
+        assert got.parse("Ana Souza, PhD").given == "PhD"
+    stripped = parser_for(_choosing("pt"), strict=True).lexicon.remove(
+        "dr", kind="academic")
+    assert Parser(lexicon=stripped).parse("Dr Ana Souza").given == "Dr"
+
+
 def test_a_strict_choice_still_refuses_mul_and_an_unknown_tag() -> None:
-    for tag, match in (("mul", "a strict one drops both"),
+    for tag, match in (("mul", "every choice, plain or strict, keeps"),
                        ("xx", "no vocabulary file holds")):
         with pytest.raises(ValueError, match=match):
             parser_for(_choosing(tag), strict=True)
@@ -3140,10 +3172,10 @@ def test_a_strict_choice_keeps_a_callers_readings_over_the_union(
     # no file holds does (superseding 3j's clause that the delta dropped
     # it, decisions/vocabulary-model, 2026-11-02 #754, item 4); the
     # union, then strict
-    base = Parser(lexicon=Lexicon.default().add("dr", "zzq", kind="title"))
+    base = Parser(lexicon=Lexicon.default().add("rev", "zzq", kind="title"))
     got = parser_for(_choosing("vi"), base=base, strict=True).lexicon._sets
-    assert {"zzq", "dr"} <= got.titles
-    assert "dr" not in parser_for(_choosing("vi"), strict=True).lexicon._sets.titles
+    assert {"zzq", "rev"} <= got.titles
+    assert "rev" not in parser_for(_choosing("vi"), strict=True).lexicon._sets.titles
     ko, en = _choosing("ko", code="aa"), _choosing("en", code="bb")
     assert (parser_for(ko, en, strict=True).lexicon
             == parser_for(en, ko, strict=True).lexicon

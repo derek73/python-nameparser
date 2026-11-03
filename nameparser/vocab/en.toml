@@ -37,17 +37,9 @@ text = "misses"
 salutation = { gender = "f", expands = "the plural of miss, 'the Misses Smith'", after_given = true }
 
 [[word]]
-text = "mr"
-salutation = { gender = "m", after_given = true, note = "borne as a given name: US SSA 5 births (2026-10-24); kept for after_given (decisions/H8); kept here, not as a `given` reading, which would make the title one only inside a title phrase (rules/H9)" }
-
-[[word]]
 text = "mister"
 salutation = { gender = "m", same_as = "mr", excluded = { after_given = "a given name and a surname, borne as a middle name either way" }, note = "borne as a given name: US SSA 746 births (2026-10-24); kept here, not as a `given` reading, which would make the title one only inside a title phrase (rules/H9)" }
 family = { us_census_2010 = 1211, wikidata = 2, as_of = 2026-10-24 }
-
-[[word]]
-text = "mrs"
-salutation = { gender = "f", after_given = true }
 
 [[word]]
 text = "ms"
@@ -2590,10 +2582,6 @@ text = "bs"
 credential = { expands = "Bachelor of Science", note = "NPPES 18,880 US healthcare providers (August 2026 file); 449 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
 
 [[word]]
-text = "bsc"
-credential = { cased = "BSc" }
-
-[[word]]
 text = "bt"
 credential = { cased = "Bt" }
 
@@ -4271,10 +4259,6 @@ text = "mb"
 credential = { expands = "Bachelor of Medicine", note = "NPPES 596 US healthcare providers (August 2026 file); 314 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
 
 [[word]]
-text = "mba"
-credential = {}
-
-[[word]]
 text = "mbbch"
 credential = { cased = "MBBCh", expands = "Bachelor of Medicine, Bachelor of Surgery", note = "NPPES 813 US healthcare providers (August 2026 file); 190 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
 
@@ -4344,11 +4328,6 @@ credential = {}
 [[word]]
 text = "mct"
 credential = {}
-
-[[word]]
-text = "md"
-credential = {}
-excluded = { academic = { reason = "a leading Md abbreviates Muhammad, a given name: 1,246 of 1,300 UK PSC filers with Md first in the forename box typed it there alone (2026-10-23), and a title reading took it from them", issue = 853 } }
 
 [[word]]
 text = "mdiv"
@@ -4462,10 +4441,6 @@ text = "mpa"
 credential = {}
 
 [[word]]
-text = "mph"
-credential = {}
-
-[[word]]
 text = "mphil"
 credential = { cased = "MPhil", expands = "Master of Philosophy", note = "NPPES 153 US healthcare providers (August 2026 file); 110 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
 
@@ -4488,10 +4463,6 @@ credential = { expands = "Member of the Royal Town Planning Institute", note = "
 [[word]]
 text = "msa"
 credential = {}
-
-[[word]]
-text = "msc"
-credential = { cased = "MSc" }
 
 [[word]]
 text = "mscmsm"
@@ -4707,10 +4678,6 @@ credential = { cased = "PharmD" }
 [[word]]
 text = "phc"
 credential = { cased = "PhC" }
-
-[[word]]
-text = "phd"
-credential = { expands = "Doctor of Philosophy", cased = "PhD" }
 
 [[word]]
 text = "phr"

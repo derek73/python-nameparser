@@ -277,9 +277,11 @@ title. Korean's file holds no word written in Latin letters, so a
 chosen languages' files are read, each tag selecting its own and its
 ancestors' as above, plus every word written in a script other than
 Latin (the Korean, Japanese and Chinese honorifics, the Cyrillic and
-Devanagari titles), which selects itself by its script. Every other
-language's words leave, the shared ``mul`` and ``und`` files'
-included, and a word no chosen file holds is read as a name word:
+Devanagari titles), which selects itself by its script, and the words
+every language writes alike, in the shared ``mul`` file: ``Dr``,
+``Prof``, ``Mr``, ``Mrs``, the degrees ``PhD``, ``MD``, ``MSc``, ``MBA``,
+``MPH`` and ``BSc``, and the numerals. Every other language's words
+leave, and a word no chosen file holds is read as a name word:
 
 .. doctest::
 
@@ -302,20 +304,34 @@ title, and ``De Xu`` given ``De``, family ``Xu``.
 Strict is for data you know to be of one origin, and what it drops it
 drops from every name:
 
-- **Other languages' words go with the accidents.** A credential
-  written in English (``Kim Min Jun, MD`` reads given ``MD``), a bare
-  ``Dr`` or ``Mr``, and an immigrant's particle from another language
-  are read as name words. A shape still reads as it does by default:
-  ``Dr.``, with its period, is a title. Where English context is part
+- **Other languages' words go with the accidents.** The shared words
+  stay (``Kim Min Jun, MD, PhD`` keeps both credentials), but the rest
+  of the English credentials (``Kim Min Jun, RN`` reads given ``RN``),
+  a bare ``Ms``, and an immigrant's particle from another language are
+  read as name words. A shape still reads as it does by default:
+  ``Ms.``, with its period, is a title. Where English context is part
   of the data, choose ``en`` too, which brings back its words and its
   costs alike:
 
   .. doctest::
 
+      >>> korean.parse("Kim Min Jun, MD, PhD").suffix
+      'MD, PhD'
       >>> parser_for(ko, en, strict=True).parse("Kim Min Ra").suffix
       'Ra'
-      >>> parser_for(ko, en, strict=True).parse("Kim Min Jun, MD").suffix
-      'MD'
+      >>> parser_for(ko, en, strict=True).parse("Kim Min Jun, RN").suffix
+      'RN'
+
+- **The shared words are a default like any other.** Take one out of
+  the lexicon you build on and no choice brings it back:
+
+  .. doctest::
+
+      >>> no_phd = Parser(lexicon=Lexicon.default().remove(
+      ...     "phd", kind="credential"))
+      >>> parser_for(ko, base=no_phd, strict=True).parse(
+      ...     "Kim Min Jun, PhD").given
+      'PhD'
 
 - **Strict needs a language.** A strict call whose packs choose none
   (``parser_for(locales.ZH, strict=True)``) would keep only the words
@@ -324,8 +340,8 @@ drops from every name:
   choice, untouched, and so is the Korean surname list.
 - **A language whose file holds no reading yet is accepted.**
   ``vi.toml`` holds none, so a plain ``vi`` choice is refused; a
-  strict one reads the other scripts' words and nothing in Latin
-  letters, which unchains Dutch ``van`` from a Vietnamese middle name
+  strict one reads the other scripts' words and, in Latin letters,
+  only the shared ones, which unchains Dutch ``van`` from a Vietnamese middle name
   (``Do Van Minh`` reads middle ``Van``, family ``Minh``).
 - **Your own words stay.** A word a strict choice drops is kept where
   you added it yourself, your lexicon's readings applying after the
