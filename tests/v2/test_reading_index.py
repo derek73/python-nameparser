@@ -347,6 +347,7 @@ def test_a_file_holding_no_reading_is_chosen_only_strictly() -> None:
 #: vocabulary reading loses its gate: review each move.
 STRICT_UNGATED = {
     "ar": {"cheikh", "sultan"},
+    "ca": {"del", "la"},
     "cs": {"st"},
     "fil": {"del", "la", "san"},
     "fr": {"la", "marquis", "marquise", "st"},
