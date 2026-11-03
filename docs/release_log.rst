@@ -44,6 +44,16 @@ Release Log
     - **Divide five more mainland Chinese surnames under locales.ZH.** ``付晓明`` under ``locales.ZH`` gives family ``付``, given ``晓明``, where 2.1.0 through 2.8.0 gave family ``付晓明``; ``代``, ``候``, ``芦`` (``蘆``) and ``农`` (``農``) divide too. A Japanese name opening with ``代`` or ``芦`` now splits after it (``芦川誠`` gives family ``芦``). :issue:`952`
     - **Read Никитич and Саввич as patronymics under locales.RU.** ``parser_for(locales.RU).parse("Петров Иван Никитич")`` gives family ``Петров``, given ``Иван``, where 2.0.0 through 2.8.0 gave family ``Никитич``, given ``Петров``; ``Саввич`` and the Latin ``Nikitich`` and ``Savvich`` read the same way. :issue:`994`
 
+* 2.8.1 - November 2, 2026
+
+    nameparser 2.8.1 adds warnings for three 3.0 changes 2.8.0 did not announce: writing a ``Lexicon`` set field, reading a vocabulary constant in ``nameparser.config``, and reading ``nameparser.config.regexes``. Reading a ``Lexicon`` field (``lexicon.titles``) does not warn, though 3.0 refuses that too. Code that runs with warnings as errors (``-W error``, or pytest's ``filterwarnings = error``) will fail where it does any of the three.
+
+    **Deprecations**
+
+    - **Deprecate configuring Lexicon through its set fields, which 3.0 makes internal.** ``Lexicon.default().add(titles={"dean"})`` now emits a ``DeprecationWarning`` naming the field and the migration guide's row for it; 3.0 refuses the call with a ``TypeError`` naming the readings that replace it. ``remove()``, ``Lexicon(...)`` and ``dataclasses.replace()`` with a set field warn too, and ``add()`` or ``remove()`` with ``surnames``. :issue:`754`
+    - **Deprecate the vocabulary constants in nameparser.config, which 3.0 removes.** ``from nameparser.config.titles import TITLES`` now emits a ``DeprecationWarning`` naming ``Lexicon.default().words(kind="title")``, which lists every title in 3.0. ``nameparser.config.surnames`` stays. :issue:`1007`
+    - **Deprecate nameparser.config.regexes, which 3.0 removes without a replacement.** Reading ``REGEXES`` now emits a ``DeprecationWarning``; the parser has not read it since 2.0. :issue:`1008`
+
 * 2.8.0 - October 28, 2026
 
     **nameparser 2.8** is the last 2.x feature release. It warns about everything 3.0 removes, chiefly ``HumanName`` and the rest of the 1.x compatibility layer, so that code can move to ``parse()`` while 2.x still runs it. It also carries on 2.7's reading of titles that are also given names: a title only inside a title phrase. After 2.8 the 2.x line takes fixes only, and new work goes into 3.0. Highlights:
