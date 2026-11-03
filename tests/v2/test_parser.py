@@ -3108,7 +3108,8 @@ def test_a_strict_choice_keeps_mul_and_native_script_vocabulary() -> None:
     assert strict.parse("Miss Minh Do").title == "Miss"
     assert strict.parse("A Israni, MD, MS").suffix == "MS"
     assert strict.parse("Radha MS").suffix == parse("Radha MS").suffix == "MS"
-    # the five degrees, each after a comma and in a run
+    # the five degrees #1021 moved (and `ms`'s, above), each after a
+    # comma and in a run
     assert strict.parse("Minh Do, MSc, MBA").suffix == "MSc, MBA"
     assert strict.parse("Minh Do, MPH, BSc").suffix == "MPH, BSc"
     # en.toml's leave: `md`, kept there since a leading Md abbreviates

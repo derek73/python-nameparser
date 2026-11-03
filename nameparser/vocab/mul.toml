@@ -6,7 +6,7 @@ schema = 1
 
 [[word]]
 text = "miss"
-salutation = { gender = "f", after_given = true, note = "the English form of address, written before names in English-context data from every country: 71,779 title boxes of the UK register of people with significant control across 186 nationalities (data 2026-10-22); in mul.toml with its family reading, so the gate is alike under every choice (decisions/vocabulary-model, 2026-11-03)", issue = 1005 }
+salutation = { gender = "f", after_given = true, note = "the English form of address, written before names in English-context data from every country: 71,779 title boxes of the UK register of people with significant control across 186 nationalities (data 2026-10-22); in mul.toml with its family reading, since check 13 of tools/vocab/build.py refuses a mul.toml word whose name reading on by default stands in another file; on a salutation the family reading derives no gate, only a `given` one making a title one only inside a phrase (decisions/vocabulary-model, 2026-11-03)", issue = 1005 }
 family = { us_census_2010 = 164, wikidata = 4, as_of = 2026-10-24, note = "kept for after_given (decisions/H8): a middle name of this spelling is the accepted cost" }
 
 [[word]]
