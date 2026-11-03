@@ -9,6 +9,15 @@ composable, and locale packs are opt-in.
 
 📣 **nameparser 2.8 is out, the last 2.x feature release.**
 
+⚠️ **2.8.1 adds three more DeprecationWarnings** for things 3.0 changes:
+configuring a ``Lexicon`` through its set fields
+(``Lexicon.default().add(titles={"dean"})``), reading the vocabulary
+constants in ``nameparser.config`` (``TITLES`` and the rest, all but
+``surnames``), and ``nameparser.config.regexes``. A test run that turns
+warnings into errors (``-W error``, or pytest's ``filterwarnings =
+error``) fails where your code does any of these; see the `migration
+guide <https://nameparser.readthedocs.io/en/stable/migrate.html#deprecated-in-2-8-1>`__.
+
 ⚠️ **HumanName is deprecated, and 3.0 removes it.** From 2.8 the 1.x
 compatibility layer — ``HumanName``, ``Constants`` and the shared
 ``CONSTANTS`` — emits a ``DeprecationWarning`` where your code

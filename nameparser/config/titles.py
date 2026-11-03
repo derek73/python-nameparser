@@ -73,7 +73,7 @@ reads as a title inside one.
 # sys.modules, so the lookup resolves rather than recursing.
 from typing import TYPE_CHECKING  # noqa: E402
 
-from nameparser.config._deprecated import alias_getattr  # noqa: E402
+from nameparser.config._deprecated import alias_getattr, words_of  # noqa: E402
 
 # Declared for the type checker, served by __getattr__ at runtime. The
 # split is what keeps mypy checking this module's LIVE names: an
@@ -83,10 +83,27 @@ from nameparser.config._deprecated import alias_getattr  # noqa: E402
 if TYPE_CHECKING:
     FIRST_NAME_TITLES: frozenset[str]
 else:
+    # 2.8.1: 3.0 deletes this module (#1007), so each live constant is
+    # served by __getattr__ too and warns at the line that reads it,
+    # naming what 3.0 offers in its place; the library reads
+    # _compiled, never this module
     __getattr__, __dir__ = alias_getattr(__name__, {
         "FIRST_NAME_TITLES": (
             "nameparser.config.titles", "GIVEN_NAME_TITLES"),
-    })
+    }, removed={
+        "GIVEN_NAME_TITLES": words_of('kind="title", addresses="given"'),
+        "TITLES": words_of(
+            'kind="title"', "the titles with no given reading"),
+        "AFTER_GIVEN_TITLES": words_of('kind="salutation", after_given=True'),
+        "TITLES_AMBIGUOUS": words_of(
+            'kind="title"', "the titles holding a given reading too"),
+        "TITLE_MODIFIERS": words_of('kind="modifier"'),
+        "TITLE_STYLES": words_of('kind="style"'),
+        "TITLE_PHRASES": (
+            "in 3.0, a title phrase is the attaches=[...] property of its "
+            "first word's title reading, which "
+            "Lexicon.default().readings_of(word) shows"),
+    }, namespace=globals())
 
 # Star imports read __all__ and never the module __getattr__ -- see the
 # note in prefixes.py. This module keeps its live constants, so they are

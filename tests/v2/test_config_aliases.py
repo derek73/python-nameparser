@@ -55,6 +55,14 @@ ALIASES = [
 OLD_MODULES = sorted({a.old_module for a in ALIASES})
 
 
+def _served(module: object) -> dict[str, object]:
+    """The live constants 2.8.1 moved out of a module's globals into
+    its ``__getattr__`` (#1007), each now warning on a read; empty for
+    the two data-free shims."""
+    hook = vars(module).get("__getattr__")
+    return dict(getattr(hook, "removed_values", {}))
+
+
 @pytest.mark.parametrize(
     ("old_module", "old_name", "new_module", "new_name"),
     ALIASES,
@@ -190,7 +198,8 @@ def test_dir_survives_the_module_being_dropped_from_sys_modules(
     module = importlib.import_module(old_module)
     retired = {a.old_name for a in ALIASES if a.old_module == old_module}
     monkeypatch.delitem(sys.modules, old_module)
-    assert set(dir(module)) == retired
+    # 2.8.1's served constants live in the closure too
+    assert set(dir(module)) == retired | set(_served(module))
 
 
 def test_dir_lists_the_live_names_as_well_as_the_retired_ones() -> None:
@@ -218,6 +227,12 @@ def test_dir_lists_the_live_names_as_well_as_the_retired_ones() -> None:
             dropped[old_module] = sorted(missing)
         live_seen += [name for name, value in vars(module).items()
                       if name.isupper() and isinstance(value, frozenset)]
+        # 2.8.1 serves them through __getattr__ (#1007), so dir() must
+        # list those as well
+        served = set(_served(module))
+        live_seen += sorted(served)
+        if served - set(dir(module)):
+            dropped[old_module] = sorted(served - set(dir(module)))
     # checked first: the sweep below is equally happy with four modules
     # holding no vocabulary at all, which is the shape that would make
     # it prove nothing
@@ -294,13 +309,16 @@ def test_star_import_binds_exactly_the_live_and_retired_names(
     live = {n for n, v in vars(module).items()
             if n.isupper() and not n.startswith("_")
             and isinstance(v, frozenset)}
+    # since 2.8.1 the live constants are served by __getattr__ (#1007)
+    # and warn like the retired ones
+    served = _served(module)
 
     namespace: dict[str, object] = {}
     with pytest.warns(DeprecationWarning) as record:
         exec(f"from {old_module} import *", namespace)  # noqa: S102
 
     bound = {n for n in namespace if not n.startswith("__")}
-    assert bound == live | retired
+    assert bound == live | retired | set(served)
     # NAMES alone would pass with an __all__ entry routed to the wrong
     # constant -- the set is the same either way. Each retired name is
     # checked against its destination and each live one against the
@@ -316,11 +334,15 @@ def test_star_import_binds_exactly_the_live_and_retired_names(
         assert namespace[name] is vars(module)[name], (
             f"`from {old_module} import *` bound {name} to something "
             f"other than the module's own constant")
+    for name, value in served.items():
+        assert namespace[name] is value, (
+            f"`from {old_module} import *` bound {name} to something "
+            f"other than the module's own constant")
     # the helper the bridge is built from is not vocabulary; before
     # __all__ it was the only thing a star import bound here
     assert "alias_getattr" not in bound
-    # one warning per retired name, each naming where to go
-    assert len(record) == len(retired)
+    # one warning per retired or served name, each naming where to go
+    assert len(record) == len(retired) + len(served)
     for warning in record:
         message = str(warning.message)
         assert old_module in message, message

@@ -16,6 +16,7 @@ from nameparser._lexicon import (
 from nameparser._policy import Script, _SCRIPT_RANGES
 from nameparser.config import Constants
 from nameparser.config.suffixes import SUFFIX_ACRONYMS, SUFFIX_WORDS
+from tests.removals import ignore_removals
 
 
 def test_entries_are_normalized_at_construction() -> None:
@@ -832,6 +833,7 @@ def test_multiword_given_name_title_does_not_warn() -> None:
     # are the point (see the __post_init__ note in _lexicon.py).
     with warnings.catch_warnings():
         warnings.simplefilter("error")
+        ignore_removals()  # 2.8.1's set-field warning is not this test's
         Lexicon.empty().add(given_name_titles=["lt col"])
 
 
@@ -842,6 +844,7 @@ def test_multiword_maiden_marker_does_not_warn() -> None:
     # Nowak' as maiden 'domu Nowak'.
     with warnings.catch_warnings():
         warnings.simplefilter("error")
+        ignore_removals()
         Lexicon.empty().add(maiden_markers=["z domu"])
 
 
@@ -901,6 +904,7 @@ def test_remove_does_not_warn() -> None:
     # false positive with wrong advice.
     with warnings.catch_warnings():
         warnings.simplefilter("error")
+        ignore_removals()
         Lexicon.default().remove(titles=["zqx zqy"])
 
 
@@ -933,6 +937,7 @@ def test_remove_of_a_stored_dead_entry_is_silent() -> None:
         dirty = Lexicon.empty().add(titles=["zqx zqy"])
     with warnings.catch_warnings():
         warnings.simplefilter("error")
+        ignore_removals()
         dirty.remove(titles=["zqx zqy"])
 
 

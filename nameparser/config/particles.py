@@ -100,3 +100,19 @@ PARTICLES = _compiled.PARTICLES
 # BOUND_GIVEN_NAMES did before the vocabulary moved to TOML.
 # Source order, not alphabetical -- see the note in suffixes.py.
 __all__ = ["NON_GIVEN_NAME_PARTICLES", "PARTICLES"]
+
+
+# 2.8.1: 3.0 deletes this module (#1007), so each constant is served by
+# __getattr__ and warns at the line that reads it, naming what 3.0
+# offers in its place (alias_getattr's docstring says how the
+# assignment above stays documented). The library reads _compiled, never
+# this module. Hidden from mypy as alias_getattr explains; goes in 3.0.
+from typing import TYPE_CHECKING  # noqa: E402
+
+from nameparser.config._deprecated import alias_getattr, words_of  # noqa: E402
+
+if not TYPE_CHECKING:
+    __getattr__, __dir__ = alias_getattr(__name__, {}, removed={
+        "NON_GIVEN_NAME_PARTICLES": words_of('kind="particle"', "the particles with no given reading"),
+        "PARTICLES": words_of('kind="particle"'),
+    }, namespace=globals())

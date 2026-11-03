@@ -7,11 +7,13 @@ Two unrelated things share this package. The names re-exported below --
 ``RegexTupleManager`` -- are v1 compatibility surface, and go with the
 rest of the facade in 3.0. The vocabulary data modules beside them
 (:mod:`~nameparser.config.titles`, :mod:`~nameparser.config.particles`,
-...) are not compatibility surface at all: they are the word lists the
-2.0 :class:`~nameparser.Lexicon` is built from, they are named for its
-fields since 2.2 (#293), and its documentation cross-references them.
-Since 2.6 the word lists (all but ``surnames.py``) re-export sets
-compiled from the per-word TOML files in ``nameparser/vocab/`` (#737).
+...) hold the word lists the 2.x :class:`~nameparser.Lexicon` is built
+from, named for its fields since 2.2 (#293); since 2.6 each (all but
+``surnames.py``) re-exports sets compiled from the per-word TOML files
+in ``nameparser/vocab/`` (#737). 3.0 removes them too, all but
+``surnames``, and since 2.8.1 reading one of their constants warns,
+naming what 3.0 offers in its place (#1007), as reading
+``nameparser.config.regexes`` does (#1008).
 
 ``RegexTupleManager`` is served from the shim purely for pickle
 compatibility (through ``__getattr__`` since 2.8, so loading such a blob
@@ -22,10 +24,11 @@ resolves and reconstructs that nested object before
 blob raises ``AttributeError`` looking up the class, not a clean
 compatibility failure.
 """
-# Maintainer note, deliberately outside the docstring: the vocabulary
-# DATA modules keep this package as their home in 3.0 (decided
-# 2026-10-28, decisions/3-0-reevaluations); only the five shim names
-# below go. Constants and CONSTANTS are imported eagerly -- Constants
+# Maintainer note, deliberately outside the docstring: 3.0 removes the
+# five shim names below and the vocabulary DATA modules but surnames
+# (#1007, #1008, superseding decisions/3-0-reevaluations's 2026-10-28
+# entry, which kept the modules); the modules warn per constant since
+# 2.8.1. Constants and CONSTANTS are imported eagerly -- Constants
 # warns at construction, the CONSTANTS singleton when mutated -- while
 # the three managers resolve through __getattr__ so that each caller's
 # read warns, at the caller's line, and nameparser's own reads (from
