@@ -45,7 +45,7 @@ holds a reading of the kind added, ``add`` updates that reading in every
 file holding it; otherwise it adds a reading of the caller's own.
 ``remove`` with no kind takes out every reading of the word, with a
 category (``"title"``, ``"name"``) every reading of that category, and
-with a kind and no words every word's readings of that kind.
+with a kind and ``every=True`` every word's readings of that kind.
 :meth:`~nameparser.Lexicon.readings_of` answers what a word may be read
 as here, each :class:`~nameparser.LexiconReading` naming the shipped
 files that hold it, and :meth:`~nameparser.Lexicon.words` lists the
@@ -180,15 +180,16 @@ That has held since 1.4.0.
 Turning title detection off
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A kind with no words takes out every word's readings of it, and the
-category ``"title"`` matches every title kind, so every title reading
-goes at once:
+``every=True`` with a kind and no words takes out every word's readings
+of it, and the category ``"title"`` matches every title kind, so every
+title reading goes at once. (A call with no words and no ``every``
+raises, so an empty ``remove(*words, kind=...)`` never does this.)
 
 .. doctest::
 
     >>> len(Lexicon.default().words(kind="title")) > 800
     True
-    >>> lean = Lexicon.default().remove(kind="title")
+    >>> lean = Lexicon.default().remove(kind="title", every=True)
     >>> lean.words(kind="title")
     ()
     >>> Parser(lexicon=lean).parse("Dean of Students Jane Smith").title
@@ -669,7 +670,7 @@ entirely:
     >>> lex = Lexicon.default().add("mohamad", kind="bound_given")
     >>> Parser(lexicon=lex).parse("mohamad salam ahmed salem").given
     'mohamad salam'
-    >>> off = Lexicon.default().remove(kind="bound_given")
+    >>> off = Lexicon.default().remove(kind="bound_given", every=True)
     >>> Parser(lexicon=off).parse("abdul salam ahmed salem").given
     'abdul'
 

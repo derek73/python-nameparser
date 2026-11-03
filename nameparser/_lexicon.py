@@ -761,13 +761,15 @@ def _edit_words(words: tuple[object, ...], op: str,
                 kind: str | None) -> tuple[str, ...]:
     if not words:
         if op == "remove" and kind is not None:
-            # every word's readings of `kind`: a remove of a whole kind
+            # every word's readings of `kind`: a remove of a whole kind,
+            # which `remove` writes only with every=True, so that an
+            # empty `remove(*words, kind=...)` never reaches it
             return ()
         raise TypeError(
             f"{op}() takes at least one word, e.g. {op}('dean', kind="
-            f"'title')" + (", or a kind alone to take out every word's "
-                           "readings of it, e.g. remove(kind='title')"
-                           if op == "remove" else ""))
+            f"'title')" + (", or every=True with a kind to take out every "
+                           "word's readings of it, e.g. remove(kind="
+                           "'title', every=True)" if op == "remove" else ""))
     out = []
     for w in words:
         _reject_buffer(w, f"{op}() words", "strings")
@@ -1523,6 +1525,8 @@ def _rendered(edits: Iterable[_Edit]) -> list[str]:
         if kind is not None:
             args.append(f"kind={kind!r}")
         args += [f"{k}={_shown_value(kind, k, v)}" for k, v in props]
+        if op == "remove" and not words:
+            args.append("every=True")
         out.append(f".{op}({', '.join(args)})")
     return out
 
@@ -2222,18 +2226,40 @@ class Lexicon:
             return added
 
     def remove(self, *words: str, kind: str | None = None,
-               **removed: object) -> Lexicon:
+               every: bool = False, **removed: object) -> Lexicon:
         """This lexicon without each word's readings of `kind`: a kind,
         or a category, matching every kind of it (``kind="title"`` takes
         out ``dean``'s ``office`` reading, ``kind="name"`` its ``given``
         and ``family`` ones), or None, taking out every reading, so the
-        word leaves the vocabulary. With no words, `kind` is required and
-        every word's readings of it go (``remove(kind="title")``), those
-        a later choice of languages turns on included. Removing a
-        reading the word does not hold changes nothing now, and is kept:
-        a later choice of languages may turn that reading on."""
+        word leaves the vocabulary. With ``every=True``, no words and a
+        `kind`, every word's readings of it go (``remove(kind="title",
+        every=True)``), those a later choice of languages turns on
+        included; a call with no words and no `every` raises, so an
+        empty ``remove(*words, kind=...)`` never takes out a whole kind.
+        Removing a reading the word does not hold changes nothing now,
+        and is kept: a later choice of languages may turn that reading
+        on."""
         if removed:
             raise _refusal("remove()", self, self._changed("remove", removed))
+        if not isinstance(every, bool):
+            raise TypeError(f"remove() takes every as True or False, got "
+                            f"{every!r}")
+        if every and words:
+            raise TypeError(
+                f"remove() takes words or every=True, not both: every=True "
+                f"takes out every word's readings of the kind; got "
+                f"{len(words)} word(s)")
+        if every and kind is None:
+            raise TypeError(
+                "remove(every=True) takes a kind, e.g. remove(kind='title', "
+                "every=True); to remove everything, start from "
+                "Lexicon.empty()")
+        if not every and not words:
+            raise TypeError(
+                "remove() takes at least one word, e.g. remove('dean', "
+                "kind='title'), or every=True with a kind to take out every "
+                "word's readings of it, e.g. remove(kind='title', "
+                "every=True)")
         edit = _make_edit("remove", words, kind, ())
         return dataclasses.replace(self, _edits=self._edits + (edit,))
 

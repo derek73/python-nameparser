@@ -535,9 +535,9 @@ def test_remove_of_a_kind_with_no_words_takes_out_every_word(kind: str) -> None:
     if kind in _REFUSED_WHOLE:
         with pytest.raises(ValueError, match="no given reading|no name "
                                              "reading"):
-            lex.remove(kind=kind)._sets
+            lex.remove(kind=kind, every=True)._sets
         return
-    lean = lex.remove(kind=kind)
+    lean = lex.remove(kind=kind, every=True)
     assert lean.words(kind=kind) == ()
     # the same lexicon as the words removed one by one, set for set
     by_word = lex.remove(*held, kind=kind)
@@ -560,7 +560,7 @@ def test_remove_of_a_kind_reaches_readings_a_later_choice_turns_on() -> None:
     assert "lic" in es.lexicon.words(kind="academic")
     assert es.parse("Lic Juan Pérez").title == "Lic"
     lean = parser_for(locales.ES, base=Parser(
-        lexicon=Lexicon.default().remove(kind="academic")))
+        lexicon=Lexicon.default().remove(kind="academic", every=True)))
     assert lean.lexicon.words(kind="academic") == ()
     assert lean.parse("Lic Juan Pérez").title == ""
 
@@ -573,14 +573,14 @@ def test_a_whole_kind_remove_takes_readings_written_off_as_a_word_remove_does() 
     assert lex.add("lic", kind="academic").readings_of("lic")[0].languages == (
         "es",)
     for removed in (lex.remove("lic", kind="academic"),
-                    lex.remove(kind="academic")):
+                    lex.remove(kind="academic", every=True)):
         (reading,) = removed.add("lic", kind="academic").readings_of("lic")
         assert reading.languages == ()
 
 
 def test_a_whole_kind_remove_is_logged_apart_and_round_trips() -> None:
     lex = Lexicon.default().remove("dean", kind="title").remove(
-        kind="title").add("zqtitle", kind="salutation")
+        kind="title", every=True).add("zqtitle", kind="salutation")
     assert lex.words(kind="title") == ("zqtitle",)
     assert pickle.loads(pickle.dumps(lex)) == lex
     assert pickle.loads(pickle.dumps(lex)).words(kind="title") == ("zqtitle",)
@@ -588,7 +588,7 @@ def test_a_whole_kind_remove_is_logged_apart_and_round_trips() -> None:
     # word before it would name only `dean`
     from nameparser._lexicon import _rendered
     assert _rendered(lex._edits) == [
-        ".remove('dean', kind='title')", ".remove(kind='title')",
+        ".remove('dean', kind='title')", ".remove(kind='title', every=True)",
         ".add('zqtitle', kind='salutation')"]
 
 
@@ -664,7 +664,13 @@ def test_words_matches_a_list_property_whatever_its_order() -> None:
     (lambda: Lexicon.empty().words(kind="name", same_as="x"), ValueError, "takes properties with a kind, not the category 'name'"),
     (lambda: Lexicon.empty().words(kind="nobility", acronym=True), ValueError, "a nobility reading takes"),
     (lambda: Lexicon.empty().words("title"), TypeError, "positional"),  # type: ignore[misc]
-    (lambda: Lexicon.empty().remove(), TypeError, re.escape("remove(kind='title')")),
+    (lambda: Lexicon.empty().remove(), TypeError, re.escape("remove(kind='title', every=True)")),
+    # an empty splat is the call with no words: it raises, as in 2.x,
+    # rather than take out the whole kind
+    (lambda: Lexicon.default().remove(*[], kind="title"), TypeError, "at least one word"),
+    (lambda: Lexicon.empty().remove("dean", kind="title", every=True), TypeError, "words or every=True, not both"),
+    (lambda: Lexicon.empty().remove(every=True), TypeError, "takes a kind"),
+    (lambda: Lexicon.empty().remove(kind="title", every=1), TypeError, "every as True or False"),  # type: ignore[arg-type]
 ])
 def test_words_and_a_whole_kind_remove_refuse_with_the_fix(
         call: Callable[[], object], error: type[Exception], match: str) -> None:
