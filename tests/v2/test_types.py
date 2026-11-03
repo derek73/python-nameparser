@@ -345,14 +345,46 @@ def test_derived_views_filter_on_stable_particle_tag() -> None:
     ("John Smith Jr.; MD", "", "Jr.; MD"),
     ("John Smith Jr.III", "", "Jr.III"),
     ("John Smith, Jr.III", "", "Jr.III"),
-    # an agnomen is a generation; an honorific, a credential
+    # an agnomen is a generation; an honorific is in neither view
     ("Pedro Alves Filho", "Filho", ""),
-    ("王小明先生", "", "先生"),
+    ("王小明先生", "", ""),
 ])
 def test_the_suffix_views_partition_it_by_reading(
         text: str, generation: str, credentials: str) -> None:
     pn = parse(text)
     assert (pn.generation, pn.credentials) == (generation, credentials)
+
+
+@pytest.mark.parametrize("text,generation,credentials,honorifics", [
+    # the empty path, and an honorific alone, glued or spaced
+    ("John Smith, PhD", "", "PhD", ""),
+    ("王小明先生", "", "", "先生"),
+    ("김민준 씨", "", "", "씨"),
+    ("山田太郎さん", "", "", "さん"),
+    # a courtesy and a status are credentials, not honorifics (#326)
+    ("John Smith, Esq.", "", "Esq.", ""),
+    ("John Smith, Jr., Esq.", "Jr.", "Esq.", ""),
+    # an honorific beside the other two kinds, each in its own view
+    ("田中さん, PhD", "", "PhD", "さん"),
+    ("田中さん II", "II", "", "さん"),
+    # an office CLDR files as a credential is one (#326), beside the
+    # form of address CLDR files as a title
+    ("王小明 議員", "", "議員", ""),
+    ("雅婷婷婷王二世先生，議員", "", "議員", "先生"),
+    # a credential written as a word beside a professional honorific
+    ("王小明 博士教授", "", "博士", "教授"),
+])
+def test_the_honorifics_view_takes_the_forms_of_address(
+        text: str, generation: str, credentials: str,
+        honorifics: str) -> None:
+    pn = parse(text)
+    assert (pn.generation, pn.credentials, pn.honorifics) == (
+        generation, credentials, honorifics)
+    tok = pn.tokens_for("suffix")
+    assert all(t.reading is not None for t in tok)
+    assert {t.text for t in tok if t.reading is not None
+            and t.reading.kind.value == "honorific"} == set(
+        honorifics.replace(",", " ").split())
 
 
 @pytest.mark.parametrize("kinds,kind", [

@@ -1,4 +1,4 @@
-{"recorded": ["capitalized", "capitalized_force", "alternatives", "generation", "credentials", "patronymic", "surname2"]}
+{"recorded": ["capitalized", "capitalized_force", "alternatives", "generation", "credentials", "patronymic", "surname2", "honorifics"]}
 {"name": ""}
 {"name": "\"Rick\" Edmonds", "family": "Edmonds", "nickname": "Rick", "initials": "E."}
 {"name": "'Smitty' Dr. Jones", "title": "Dr.", "family": "Jones", "nickname": "Smitty", "initials": "J."}
@@ -232,8 +232,8 @@
 {"name": "Anan ben David", "given": "Anan", "middle": "ben", "family": "David", "initials": "A. b. D.", "capitalized_force": "Anan Ben David"}
 {"name": "Andersen Irene", "order": "FAMILY_FIRST", "given": "Irene", "family": "Andersen", "initials": "I. A."}
 {"name": "Andersen, Irene", "given": "Irene", "family": "Andersen", "initials": "I. A."}
-{"name": "Andersonさん", "given": "Anderson", "suffix": "さん", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "A."}
-{"name": "Anderson선생님", "given": "Anderson", "suffix": "선생님", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "A."}
+{"name": "Andersonさん", "given": "Anderson", "suffix": "さん", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "A.", "honorifics": "さん"}
+{"name": "Anderson선생님", "given": "Anderson", "suffix": "선생님", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "A.", "honorifics": "선생님"}
 {"name": "Andersson Ingrid", "order": "FAMILY_FIRST", "given": "Ingrid", "family": "Andersson", "initials": "I. A."}
 {"name": "Andersson, Ingrid", "order": "FAMILY_FIRST", "given": "Ingrid", "family": "Andersson", "initials": "I. A."}
 {"name": "Andreas Bernardus de Quertenmont", "given": "Andreas", "middle": "Bernardus", "family": "de Quertenmont", "initials": "A. B. Q."}
@@ -814,11 +814,11 @@
 {"name": "Dr Martin Luther King, Jr.", "title": "Dr", "given": "Martin", "middle": "Luther", "family": "King", "suffix": "Jr.", "initials": "M. L. K.", "generation": "Jr."}
 {"name": "Dr Pope Jr", "title": "Dr", "family": "Pope", "suffix": "Jr", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "P.", "generation": "Jr"}
 {"name": "Dr Smith V", "title": "Dr", "given": "Smith", "family": "V", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: generation as suffix (vocabulary)"], "initials": "S. V."}
-{"name": "Dr 田中さん, V.", "title": "Dr", "family": "田中", "suffix": "さん, V.", "generation": "V.", "credentials": "さん"}
+{"name": "Dr 田中さん, V.", "title": "Dr", "family": "田中", "suffix": "さん, V.", "generation": "V.", "honorifics": "さん"}
 {"name": "Dr 김민준, Jr.", "title": "Dr", "given": "민준", "family": "김", "suffix": "Jr.", "generation": "Jr."}
 {"name": "Dr 김민준, MA", "title": "Dr", "given": "민준", "family": "김", "suffix": "MA"}
-{"name": "Dr 김민준씨, Jr.", "title": "Dr", "given": "민준", "family": "김", "suffix": "씨, Jr.", "generation": "Jr.", "credentials": "씨"}
-{"name": "Dr 김민준씨, V.", "title": "Dr", "given": "민준", "family": "김", "suffix": "씨, V.", "generation": "V.", "credentials": "씨"}
+{"name": "Dr 김민준씨, Jr.", "title": "Dr", "given": "민준", "family": "김", "suffix": "씨, Jr.", "generation": "Jr.", "honorifics": "씨"}
+{"name": "Dr 김민준씨, V.", "title": "Dr", "given": "민준", "family": "김", "suffix": "씨, V.", "generation": "V.", "honorifics": "씨"}
 {"name": "Dr.", "title": "Dr."}
 {"name": "Dr. (MA)", "title": "Dr.", "nickname": "MA", "ambiguities": ["SUFFIX_OR_NICKNAME"], "alternatives": ["SUFFIX_OR_NICKNAME: credential as suffix (vocabulary)"], "capitalized_force": "Dr. \"Ma\""}
 {"name": "Dr. Abdul Salam Hassan, MD", "title": "Dr.", "given": "Abdul Salam", "family": "Hassan", "suffix": "MD", "initials": "A. S. H."}
@@ -899,7 +899,7 @@
 {"name": "Dr. med. univ. Margit Popp", "title": "Dr. med. univ.", "given": "Margit", "family": "Popp", "initials": "M. P.", "capitalized_force": "Dr. Med. Univ. Margit Popp"}
 {"name": "Dr. med. univ. Margit Popp, MSc", "title": "Dr. med. univ.", "given": "Margit", "family": "Popp", "suffix": "MSc", "initials": "M. P.", "capitalized_force": "Dr. Med. Univ. Margit Popp, MSc"}
 {"name": "Dr. nee Smith PhD Prof.", "title": "Dr. Prof.", "given": "nee", "family": "Smith", "suffix": "PhD", "initials": "n. S.", "capitalized_force": "Dr. Prof. Nee Smith PhD"}
-{"name": "Dr. 김민준씨, MA", "title": "Dr.", "given": "민준", "family": "김", "suffix": "씨, MA"}
+{"name": "Dr. 김민준씨, MA", "title": "Dr.", "given": "민준", "family": "김", "suffix": "씨, MA", "honorifics": "씨"}
 {"name": "Dr., John", "given": "John", "family": "Dr.", "initials": "J. D."}
 {"name": "Dr.philol. Laima Kristīne Eva Sofija van den Volfa Bērziņa-Kalniņa", "title": "Dr.philol.", "given": "Laima", "middle": "Kristīne Eva Sofija", "family": "van den Volfa Bērziņa-Kalniņa", "initials": "L. K. E. S. V. B.", "capitalized_force": "Dr.Philol. Laima Kristīne Eva Sofija van den Volfa Bērziņa-Kalniņa"}
 {"name": "Dra. Andréia da Silva", "title": "Dra.", "given": "Andréia", "family": "da Silva", "initials": "A. S."}
@@ -1452,7 +1452,7 @@
 {"name": "J.R. Smith", "given": "J.R.", "family": "Smith", "initials": "J. S."}
 {"name": "J.R.R. Tolkien", "given": "J.R.R.", "family": "Tolkien", "initials": "J. T."}
 {"name": "J.Smith", "given": "J.Smith", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "J."}
-{"name": "J.씨", "given": "J.", "suffix": "씨", "initials": "J."}
+{"name": "J.씨", "given": "J.", "suffix": "씨", "initials": "J.", "honorifics": "씨"}
 {"name": "JA KD", "given": "JA", "family": "KD", "initials": "J. K.", "capitalized": "Ja Kd"}
 {"name": "JACK MA", "given": "JACK", "family": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "J. M.", "capitalized": "Jack Ma"}
 {"name": "JAMES MACKENZIE", "given": "JAMES", "family": "MACKENZIE", "initials": "J. M.", "capitalized": "James Mackenzie"}
@@ -1926,6 +1926,7 @@
 {"name": "John Smith, Jr. and III", "given": "John", "family": "Smith", "suffix": "Jr. and III", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "J. S.", "generation": "Jr. and III"}
 {"name": "John Smith, Jr. and MD", "given": "John", "family": "Smith", "suffix": "Jr. and MD", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "J. S.", "generation": "Jr. and", "credentials": "MD"}
 {"name": "John Smith, Jr., Dr., Prof.", "title": "Dr. Prof.", "given": "John", "family": "Smith", "suffix": "Jr.", "initials": "J. S.", "generation": "Jr."}
+{"name": "John Smith, Jr., Esq.", "given": "John", "family": "Smith", "suffix": "Jr., Esq.", "initials": "J. S.", "generation": "Jr.", "credentials": "Esq."}
 {"name": "John Smith, Jr., Lt.Gov.", "title": "Lt.Gov.", "given": "John", "family": "Smith", "suffix": "Jr.", "initials": "J. S.", "generation": "Jr."}
 {"name": "John Smith, Jr., PhD", "given": "John", "family": "Smith", "suffix": "Jr., PhD", "initials": "J. S.", "generation": "Jr.", "credentials": "PhD"}
 {"name": "John Smith, Jr., abdul Dr. Smith", "title": "Dr.", "given": "John", "family": "Smith", "suffix": "Jr., abdul Smith", "ambiguities": ["COMMA_STRUCTURE"], "initials": "J. S.", "capitalized_force": "Dr. John Smith, Jr., Abdul Smith", "generation": "Jr.", "credentials": "abdul Smith"}
@@ -2043,7 +2044,7 @@
 {"name": "John й Smith", "given": "John", "middle": "й", "family": "Smith", "initials": "J. й. S."}
 {"name": "John “Jack” Kennedy", "given": "John", "family": "Kennedy", "nickname": "Jack", "initials": "J. K."}
 {"name": "John 王", "given": "John", "family": "王", "initials": "J."}
-{"name": "John 田中さん, XYZ", "given": "John", "family": "田中", "suffix": "さん, XYZ", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "J."}
+{"name": "John 田中さん, XYZ", "given": "John", "family": "田中", "suffix": "さん, XYZ", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "J.", "honorifics": "さん"}
 {"name": "John ｢Jack｣ Smith", "given": "John", "family": "Smith", "nickname": "Jack", "initials": "J. S."}
 {"name": "John, Smith, Dr.", "title": "Dr.", "given": "Smith", "family": "John", "initials": "S. J."}
 {"name": "Johnson Mary", "order": "FAMILY_FIRST", "given": "Mary", "family": "Johnson", "initials": "M. J."}
@@ -2133,7 +2134,7 @@
 {"name": "Jozef", "given": "Jozef", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "J."}
 {"name": "Jozef", "order": "FAMILY_FIRST", "family": "Jozef", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "J."}
 {"name": "João Pedro Silva", "given": "João", "middle": "Pedro", "family": "Silva", "initials": "J. P. S."}
-{"name": "Jo김민준씨, DO", "family": "Jo김민준", "suffix": "씨, DO", "initials": "J."}
+{"name": "Jo김민준씨, DO", "family": "Jo김민준", "suffix": "씨, DO", "initials": "J.", "honorifics": "씨"}
 {"name": "Jr.", "title": "Jr."}
 {"name": "Jr. Ph. D.", "title": "Jr.", "suffix": "Ph. D."}
 {"name": "Jr. Van Johnson", "title": "Jr.", "given": "Van", "family": "Johnson", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "V. J."}
@@ -2299,7 +2300,7 @@
 {"name": "Kim, AE-RA", "family": "Kim", "suffix": "AE-RA", "initials": "K."}
 {"name": "Kim, Ae-Ra", "given": "Ae-Ra", "family": "Kim", "initials": "A. K."}
 {"name": "Kim, Jr.", "family": "Kim", "suffix": "Jr.", "initials": "K.", "generation": "Jr."}
-{"name": "Kim김민준씨, MA", "family": "Kim김민준", "suffix": "씨, MA", "initials": "K."}
+{"name": "Kim김민준씨, MA", "family": "Kim김민준", "suffix": "씨, MA", "initials": "K.", "honorifics": "씨"}
 {"name": "King Curtis", "given": "King", "family": "Curtis", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "K. C."}
 {"name": "King Henry", "given": "King", "family": "Henry", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "K. H."}
 {"name": "King John Alexander V", "given": "King", "middle": "John", "family": "Alexander", "suffix": "V", "ambiguities": ["SUFFIX_OR_NAME", "TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)", "SUFFIX_OR_NAME: initial as family (shape)"], "initials": "K. J. A.", "generation": "V"}
@@ -3124,6 +3125,7 @@
 {"name": "Ram Bahadur B.K.", "given": "Ram", "middle": "Bahadur", "family": "B.K.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "R. B. B."}
 {"name": "Ram Bahadur B.K., PhD", "given": "Ram", "middle": "Bahadur", "family": "B.K.", "suffix": "PhD", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "R. B. B."}
 {"name": "Ram Bahadur PhD B.K.", "given": "Ram", "family": "Bahadur", "suffix": "PhD B.K.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "R. B."}
+{"name": "Ram Das महाराज", "given": "Ram", "family": "Das", "suffix": "महाराज", "initials": "R. D."}
 {"name": "Ram KC", "given": "Ram", "family": "KC", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "R. K."}
 {"name": "Ramadhan Karta Hadimadja", "given": "Ramadhan", "middle": "Karta", "family": "Hadimadja", "initials": "R. K. H."}
 {"name": "Ramon Ferran i Pagès", "given": "Ramon", "family": "Ferran i Pagès", "initials": "R. F. P."}
@@ -3413,7 +3415,7 @@
 {"name": "Smith née Jones", "family": "Smith", "maiden": "Jones", "initials": "S."}
 {"name": "Smith née Jones PhD", "family": "Smith", "suffix": "PhD", "maiden": "Jones", "initials": "S."}
 {"name": "Smith van der", "given": "Smith", "family": "van der", "initials": "S. v. d.", "capitalized_force": "Smith Van Der"}
-{"name": "Smith 김민준씨, XYZ", "given": "Smith", "middle": "김", "family": "민준", "suffix": "씨, XYZ", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "S."}
+{"name": "Smith 김민준씨, XYZ", "given": "Smith", "middle": "김", "family": "민준", "suffix": "씨, XYZ", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "S.", "honorifics": "씨"}
 {"name": "Smith, A.B.", "given": "A.B.", "family": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "A. S."}
 {"name": "Smith, A.B.C.", "family": "Smith", "suffix": "A.B.C.", "initials": "S."}
 {"name": "Smith, A.P.", "given": "A.P.", "family": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "A. S."}
@@ -5663,7 +5665,7 @@
 {"name": "राजेश शर्मा", "given": "राजेश", "family": "शर्मा", "initials": "र. श."}
 {"name": "राजेश हमाल", "given": "राजेश", "family": "हमाल", "initials": "र. ह."}
 {"name": "राम कपूर", "given": "राम", "family": "कपूर", "initials": "र. क."}
-{"name": "राम शर्मा साहब मोहन", "given": "राम", "family": "शर्मा", "suffix": "साहब मोहन", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "र. श."}
+{"name": "राम शर्मा साहब मोहन", "given": "राम", "family": "शर्मा", "suffix": "साहब मोहन", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "र. श.", "honorifics": "साहब"}
 {"name": "राम सुतार", "given": "राम", "family": "सुतार", "initials": "र. स."}
 {"name": "राय लक्ष्मी", "order": "FAMILY_FIRST", "given": "लक्ष्मी", "family": "राय", "initials": "ल. र."}
 {"name": "राहुल गाँधी", "given": "राहुल", "family": "गाँधी", "initials": "र. ग."}
@@ -6291,7 +6293,7 @@
 {"name": "佐々木謙一郎", "family": "佐々木謙一郎"}
 {"name": "佐藤 花子 \"旧姓・田中\" (旧姓 鈴木)", "given": "花子", "family": "佐藤", "nickname": "旧姓 田中", "maiden": "鈴木"}
 {"name": "佐藤グレース恵子", "order": "FAMILY_FIRST", "family": "佐藤グレース恵子"}
-{"name": "佐藤グレース恵子さん", "order": "FAMILY_FIRST", "family": "佐藤グレース恵子", "suffix": "さん"}
+{"name": "佐藤グレース恵子さん", "order": "FAMILY_FIRST", "family": "佐藤グレース恵子", "suffix": "さん", "honorifics": "さん"}
 {"name": "佐藤恵子 国会議員", "family": "佐藤恵子", "suffix": "国会議員"}
 {"name": "佐藤恵子国会議員", "family": "佐藤恵子", "suffix": "国会議員"}
 {"name": "何炅", "family": "何炅"}
@@ -6338,7 +6340,7 @@
 {"name": "威廉 · 莎士比亚", "given": "威廉", "middle": "·", "family": "莎士比亚", "initials": "·."}
 {"name": "威廉·莎士比亚", "given": "威廉", "family": "莎士比亚"}
 {"name": "威廉·莎士比亚, PhD", "given": "威廉", "family": "莎士比亚", "suffix": "PhD"}
-{"name": "威廉·莎士比亚さん", "given": "威廉", "family": "莎士比亚", "suffix": "さん"}
+{"name": "威廉·莎士比亚さん", "given": "威廉", "family": "莎士比亚", "suffix": "さん", "honorifics": "さん"}
 {"name": "威廉・莎士比亚", "given": "莎士比亚", "family": "威廉"}
 {"name": "孙悦", "family": "孙悦"}
 {"name": "孟建柱", "family": "孟建柱"}
@@ -6351,16 +6353,16 @@
 {"name": "安達禎", "family": "安達禎"}
 {"name": "宋楠", "family": "宋楠"}
 {"name": "家豪明德林", "family": "家豪明德林"}
-{"name": "小冯·布鲁赫·艾达·科妮莉亚·塞萨尔·马丁·博士教授", "order": "FAMILY_FIRST", "given": "布鲁赫", "middle": "艾达 科妮莉亚 塞萨尔 马丁", "family": "小冯", "suffix": "博士 教授"}
-{"name": "小彭德威东升议员先生", "order": "FAMILY_FIRST", "family": "小彭德威东升议员", "suffix": "先生"}
-{"name": "小德威东升彭议员先生", "family": "小德威东升彭议员", "suffix": "先生"}
+{"name": "小冯·布鲁赫·艾达·科妮莉亚·塞萨尔·马丁·博士教授", "order": "FAMILY_FIRST", "given": "布鲁赫", "middle": "艾达 科妮莉亚 塞萨尔 马丁", "family": "小冯", "suffix": "博士 教授", "honorifics": "教授"}
+{"name": "小彭德威东升议员先生", "order": "FAMILY_FIRST", "family": "小彭德威东升议员", "suffix": "先生", "honorifics": "先生"}
+{"name": "小德威东升彭议员先生", "family": "小德威东升彭议员", "suffix": "先生", "honorifics": "先生"}
 {"name": "小明", "family": "小明"}
 {"name": "小杉 啓太", "given": "啓太", "family": "小杉"}
 {"name": "小林宏", "family": "小林宏"}
 {"name": "小林由佳", "family": "小林由佳"}
 {"name": "小柳俊一", "family": "小柳俊一"}
 {"name": "小清水 亜美", "given": "亜美", "family": "小清水"}
-{"name": "小艾达·科妮莉亚·塞萨尔·马丁·冯·布鲁赫博士教授", "given": "小艾达", "middle": "科妮莉亚 塞萨尔 马丁 冯", "family": "布鲁赫博士", "suffix": "教授"}
+{"name": "小艾达·科妮莉亚·塞萨尔·马丁·冯·布鲁赫博士教授", "given": "小艾达", "middle": "科妮莉亚 塞萨尔 马丁 冯", "family": "布鲁赫博士", "suffix": "教授", "honorifics": "教授"}
 {"name": "山田 ア゙イ", "given": "ア゙イ", "family": "山田"}
 {"name": "山田 エミ", "given": "エミ", "family": "山田"}
 {"name": "山田 太郎", "given": "太郎", "family": "山田"}
@@ -6375,7 +6377,7 @@
 {"name": "山田　太郎", "given": "太郎", "family": "山田"}
 {"name": "山田「タロ」太郎", "given": "太郎", "family": "山田", "nickname": "タロ"}
 {"name": "山田トーマス太郎", "order": "FAMILY_FIRST", "family": "山田トーマス太郎"}
-{"name": "山田太郎様", "family": "山田太郎", "suffix": "様"}
+{"name": "山田太郎様", "family": "山田太郎", "suffix": "様", "honorifics": "様"}
 {"name": "山田花子 旧姓 佐藤", "family": "山田花子", "maiden": "佐藤"}
 {"name": "山田｢ﾀﾛｰ｣太郎", "given": "太郎", "family": "山田", "nickname": "ﾀﾛｰ"}
 {"name": "山田ﾀﾛｳ", "family": "山田ﾀﾛｳ"}
@@ -6397,7 +6399,7 @@
 {"name": "彭德威 议员", "family": "彭德威", "suffix": "议员"}
 {"name": "彭德威东升", "order": "FAMILY_FIRST", "family": "彭德威东升"}
 {"name": "怡君達印馮·陳二世博士，醫學博士", "given": "怡君達印馮", "family": "陳二世博士", "suffix": "醫學博士"}
-{"name": "恵子グレース佐藤ジュニアさん", "family": "恵子グレース佐藤ジュニア", "suffix": "さん"}
+{"name": "恵子グレース佐藤ジュニアさん", "family": "恵子グレース佐藤ジュニア", "suffix": "さん", "honorifics": "さん"}
 {"name": "慎太郎", "family": "慎太郎"}
 {"name": "慎太郎", "order": "FAMILY_FIRST", "family": "慎太郎"}
 {"name": "揖斐章", "family": "揖斐章"}
@@ -6459,11 +6461,12 @@
 {"name": "王·Smith", "given": "王·Smith", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
 {"name": "王·雅婷", "order": "FAMILY_FIRST", "given": "雅婷", "family": "王"}
 {"name": "王·雅婷·婷婷", "order": "FAMILY_FIRST", "given": "雅婷", "middle": "婷婷", "family": "王"}
-{"name": "王先生", "family": "王", "suffix": "先生"}
-{"name": "王先生, V.", "given": "V.", "family": "王", "suffix": "先生", "initials": "V."}
+{"name": "王先生", "family": "王", "suffix": "先生", "honorifics": "先生"}
+{"name": "王先生, V.", "given": "V.", "family": "王", "suffix": "先生", "initials": "V.", "honorifics": "先生"}
 {"name": "王君", "family": "王君"}
-{"name": "王小明 先生", "family": "王小明", "suffix": "先生"}
-{"name": "王小明先生", "family": "王小明", "suffix": "先生"}
+{"name": "王小明 先生", "family": "王小明", "suffix": "先生", "honorifics": "先生"}
+{"name": "王小明 議員", "family": "王小明", "suffix": "議員"}
+{"name": "王小明先生", "family": "王小明", "suffix": "先生", "honorifics": "先生"}
 {"name": "王氏", "family": "王氏"}
 {"name": "王鑫", "family": "王鑫"}
 {"name": "王镇", "family": "王镇"}
@@ -6471,35 +6474,35 @@
 {"name": "王雅婷婷婷二世議員", "order": "FAMILY_FIRST", "family": "王雅婷婷婷二世", "suffix": "議員"}
 {"name": "王雅婷，議員", "family": "王雅婷", "suffix": "議員"}
 {"name": "王雪莹", "family": "王雪莹"}
-{"name": "田中 さん", "family": "田中", "suffix": "さん"}
-{"name": "田中 副社長", "given": "副", "family": "田中", "suffix": "社長"}
+{"name": "田中 さん", "family": "田中", "suffix": "さん", "honorifics": "さん"}
+{"name": "田中 副社長", "given": "副", "family": "田中", "suffix": "社長", "honorifics": "社長"}
 {"name": "田中 太郎 旧姓 佐藤 MA", "given": "太郎", "family": "田中", "suffix": "MA", "maiden": "佐藤", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as maiden (declared)"]}
-{"name": "田中 太郎 様", "given": "太郎", "family": "田中", "suffix": "様"}
+{"name": "田中 太郎 様", "given": "太郎", "family": "田中", "suffix": "様", "honorifics": "様"}
 {"name": "田中 太郎, MA", "given": "太郎", "family": "田中", "suffix": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (declared)"]}
-{"name": "田中 殿", "family": "田中", "suffix": "殿"}
-{"name": "田中 社長", "family": "田中", "suffix": "社長"}
+{"name": "田中 殿", "family": "田中", "suffix": "殿", "honorifics": "殿"}
+{"name": "田中 社長", "family": "田中", "suffix": "社長", "honorifics": "社長"}
 {"name": "田中, 太郎 MA", "given": "太郎", "family": "田中", "suffix": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as middle (declared)"]}
-{"name": "田中, 太郎さん", "given": "太郎", "family": "田中", "suffix": "さん"}
+{"name": "田中, 太郎さん", "given": "太郎", "family": "田中", "suffix": "さん", "honorifics": "さん"}
 {"name": "田中.", "family": "田中."}
 {"name": "田中. 太郎", "given": "太郎", "family": "田中."}
 {"name": "田中、太郎", "given": "田中、太郎", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
 {"name": "田中『ハナ』花子", "given": "花子", "family": "田中", "nickname": "ハナ"}
-{"name": "田中さん", "family": "田中", "suffix": "さん"}
-{"name": "田中さん II", "family": "田中", "suffix": "さん II", "generation": "II", "credentials": "さん"}
+{"name": "田中さん", "family": "田中", "suffix": "さん", "honorifics": "さん"}
+{"name": "田中さん II", "family": "田中", "suffix": "さん II", "generation": "II", "honorifics": "さん"}
 {"name": "田中さん V.", "given": "田中さん", "family": "V.", "initials": "V."}
 {"name": "田中さん v", "given": "田中さん", "family": "v", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: generation as suffix (vocabulary)"], "initials": "v.", "capitalized": "田中さん V"}
-{"name": "田中さん 様.", "family": "田中", "suffix": "さん 様."}
+{"name": "田中さん 様.", "family": "田中", "suffix": "さん 様.", "honorifics": "さん 様."}
 {"name": "田中さん, Dr.", "title": "Dr.", "family": "田中さん"}
-{"name": "田中さん, Ph. D.", "family": "田中", "suffix": "さん, Ph. D."}
-{"name": "田中さん, PhD", "family": "田中", "suffix": "さん, PhD"}
-{"name": "田中さん, V.", "given": "V.", "family": "田中", "suffix": "さん", "initials": "V."}
+{"name": "田中さん, Ph. D.", "family": "田中", "suffix": "さん, Ph. D.", "honorifics": "さん"}
+{"name": "田中さん, PhD", "family": "田中", "suffix": "さん, PhD", "honorifics": "さん"}
+{"name": "田中さん, V.", "given": "V.", "family": "田中", "suffix": "さん", "initials": "V.", "honorifics": "さん"}
 {"name": "田中さん, 太郎", "given": "太郎", "family": "田中さん"}
-{"name": "田中さん, 様.", "family": "田中", "suffix": "さん, 様."}
-{"name": "田中さん.", "family": "田中", "suffix": "さん."}
-{"name": "田中さん., V.", "given": "V.", "family": "田中", "suffix": "さん.", "initials": "V."}
+{"name": "田中さん, 様.", "family": "田中", "suffix": "さん, 様.", "honorifics": "さん, 様."}
+{"name": "田中さん.", "family": "田中", "suffix": "さん.", "honorifics": "さん."}
+{"name": "田中さん., V.", "given": "V.", "family": "田中", "suffix": "さん.", "initials": "V.", "honorifics": "さん."}
 {"name": "田中医学博士", "family": "田中", "suffix": "医学博士"}
 {"name": "田中博士", "family": "田中博士"}
-{"name": "田中社長", "family": "田中", "suffix": "社長"}
+{"name": "田中社長", "family": "田中", "suffix": "社長", "honorifics": "社長"}
 {"name": "田中部長", "family": "田中部長"}
 {"name": "白文正", "family": "白文正"}
 {"name": "石智勇", "family": "石智勇"}
@@ -6546,14 +6549,14 @@
 {"name": "鎌田 弥彦", "given": "弥彦", "family": "鎌田"}
 {"name": "钟离小凤", "family": "钟离小凤"}
 {"name": "陈·怡君·达印", "order": "FAMILY_FIRST", "given": "怡君", "middle": "达印", "family": "陈"}
-{"name": "陈·陈·怡君·教授，小·达印·博士", "order": "FAMILY_FIRST", "given": "小", "middle": "达印", "family": "陈 陈 怡君", "suffix": "教授, 博士"}
+{"name": "陈·陈·怡君·教授，小·达印·博士", "order": "FAMILY_FIRST", "given": "小", "middle": "达印", "family": "陈 陈 怡君", "suffix": "教授, 博士", "honorifics": "教授"}
 {"name": "陈俊年杰思", "order": "FAMILY_FIRST", "family": "陈俊年杰思"}
 {"name": "陈凯歌", "family": "陈凯歌"}
 {"name": "陈子媚先生，小惠仪太平绅士", "order": "FAMILY_FIRST", "given": "小惠仪", "family": "陈子媚先生", "suffix": "太平绅士"}
 {"name": "陈子媚惠仪", "order": "FAMILY_FIRST", "family": "陈子媚惠仪"}
 {"name": "陈静", "family": "陈静"}
 {"name": "陳·怡君·達印", "order": "FAMILY_FIRST", "given": "怡君", "middle": "達印", "family": "陳"}
-{"name": "陳·陳·怡君·教授，小·達印·博士", "order": "FAMILY_FIRST", "given": "小", "middle": "達印", "family": "陳 陳 怡君", "suffix": "教授, 博士"}
+{"name": "陳·陳·怡君·教授，小·達印·博士", "order": "FAMILY_FIRST", "given": "小", "middle": "達印", "family": "陳 陳 怡君", "suffix": "教授, 博士", "honorifics": "教授"}
 {"name": "陳俊傑", "family": "陳俊傑"}
 {"name": "陳婷", "family": "陳婷"}
 {"name": "陳子媚 二世", "family": "陳子媚", "suffix": "二世", "generation": "二世"}
@@ -6566,7 +6569,7 @@
 {"name": "雅婷", "family": "雅婷"}
 {"name": "雅婷", "order": "FAMILY_FIRST", "family": "雅婷"}
 {"name": "雅婷婷婷王", "family": "雅婷婷婷王"}
-{"name": "雅婷婷婷王二世先生，議員", "family": "雅婷婷婷王二世", "suffix": "先生, 議員"}
+{"name": "雅婷婷婷王二世先生，議員", "family": "雅婷婷婷王二世", "suffix": "先生, 議員", "honorifics": "先生"}
 {"name": "雅婷张", "family": "雅婷张"}
 {"name": "雅婷張", "family": "雅婷張"}
 {"name": "雅婷王", "family": "雅婷王"}
@@ -6578,7 +6581,7 @@
 {"name": "馮定國", "family": "馮定國"}
 {"name": "駒井玲子", "family": "駒井玲子"}
 {"name": "马丁·路德·金", "given": "马丁", "middle": "路德", "family": "金"}
-{"name": "马丁·路德·金씨", "given": "马丁", "middle": "路德", "family": "金", "suffix": "씨"}
+{"name": "马丁·路德·金씨", "given": "马丁", "middle": "路德", "family": "金", "suffix": "씨", "honorifics": "씨"}
 {"name": "高橋 みなみ", "given": "みなみ", "family": "高橋"}
 {"name": "高橋みなみ", "family": "高橋みなみ"}
 {"name": "高橋・一郎", "given": "一郎", "family": "高橋"}
@@ -6605,8 +6608,8 @@
 {"name": "김 민준", "given": "민준", "family": "김"}
 {"name": "김, 민준", "given": "민준", "family": "김"}
 {"name": "김, 민준 MA", "given": "민준", "family": "김", "suffix": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as middle (declared)"]}
-{"name": "김, 민준씨", "given": "민준", "family": "김", "suffix": "씨"}
-{"name": "김, 민준씨 (Jimmy)", "given": "민준", "family": "김", "suffix": "씨", "nickname": "Jimmy"}
+{"name": "김, 민준씨", "given": "민준", "family": "김", "suffix": "씨", "honorifics": "씨"}
+{"name": "김, 민준씨 (Jimmy)", "given": "민준", "family": "김", "suffix": "씨", "nickname": "Jimmy", "honorifics": "씨"}
 {"name": "김. 민준", "given": "민준", "family": "김."}
 {"name": "김゙민준", "given": "김゙민준", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
 {"name": "김경애", "given": "경애", "family": "김"}
@@ -6615,41 +6618,41 @@
 {"name": "김민규헨리", "order": "FAMILY_FIRST", "given": "민규헨리", "family": "김"}
 {"name": "김민준", "given": "민준", "family": "김"}
 {"name": "김민준 John", "given": "김", "middle": "민준", "family": "John", "initials": "J."}
-{"name": "김민준 님", "given": "민준", "family": "김", "suffix": "님"}
+{"name": "김민준 님", "given": "민준", "family": "김", "suffix": "님", "honorifics": "님"}
 {"name": "김민준 박, MA Jones", "given": "MA", "middle": "Jones", "family": "김민준 박", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "M. J.", "capitalized_force": "Ma Jones 김민준 박"}
 {"name": "김민준 박, X.Y.Z.", "given": "민준", "middle": "박", "family": "김", "suffix": "X.Y.Z."}
 {"name": "김민준 박사", "given": "민준", "family": "김", "suffix": "박사"}
-{"name": "김민준 박사 씨", "given": "민준", "family": "김", "suffix": "박사 씨"}
-{"name": "김민준 박사님", "given": "민준", "family": "김", "suffix": "박사님"}
-{"name": "김민준 씨", "given": "민준", "family": "김", "suffix": "씨"}
-{"name": "김민준 씨.", "given": "민준", "family": "김", "suffix": "씨."}
-{"name": "김민준 씨。", "given": "민준", "family": "김", "suffix": "씨。"}
-{"name": "김민준 씨．", "given": "민준", "family": "김", "suffix": "씨．"}
-{"name": "김민준 씨｡", "given": "민준", "family": "김", "suffix": "씨｡"}
-{"name": "김민준 양", "given": "민준", "family": "김", "suffix": "양"}
-{"name": "김민준 양.", "given": "민준", "family": "김", "suffix": "양."}
-{"name": "김민준, 씨", "family": "김민준", "suffix": "씨"}
-{"name": "김민준, 씨.", "family": "김민준", "suffix": "씨."}
+{"name": "김민준 박사 씨", "given": "민준", "family": "김", "suffix": "박사 씨", "honorifics": "씨"}
+{"name": "김민준 박사님", "given": "민준", "family": "김", "suffix": "박사님", "honorifics": "박사님"}
+{"name": "김민준 씨", "given": "민준", "family": "김", "suffix": "씨", "honorifics": "씨"}
+{"name": "김민준 씨.", "given": "민준", "family": "김", "suffix": "씨.", "honorifics": "씨."}
+{"name": "김민준 씨。", "given": "민준", "family": "김", "suffix": "씨。", "honorifics": "씨。"}
+{"name": "김민준 씨．", "given": "민준", "family": "김", "suffix": "씨．", "honorifics": "씨．"}
+{"name": "김민준 씨｡", "given": "민준", "family": "김", "suffix": "씨｡", "honorifics": "씨｡"}
+{"name": "김민준 양", "given": "민준", "family": "김", "suffix": "양", "honorifics": "양"}
+{"name": "김민준 양.", "given": "민준", "family": "김", "suffix": "양.", "honorifics": "양."}
+{"name": "김민준, 씨", "family": "김민준", "suffix": "씨", "honorifics": "씨"}
+{"name": "김민준, 씨.", "family": "김민준", "suffix": "씨.", "honorifics": "씨."}
 {"name": "김민준.", "given": "민준.", "family": "김"}
 {"name": "김민준. 지훈", "given": "민준.", "middle": "지훈", "family": "김"}
-{"name": "김민준님", "given": "민준", "family": "김", "suffix": "님"}
-{"name": "김민준박사님", "given": "민준", "family": "김", "suffix": "박사님"}
-{"name": "김민준씨", "given": "민준", "family": "김", "suffix": "씨"}
-{"name": "김민준씨 (Jimmy)", "given": "민준", "family": "김", "suffix": "씨", "nickname": "Jimmy"}
-{"name": "김민준씨 Jr.", "given": "민준", "family": "김", "suffix": "씨 Jr.", "generation": "Jr.", "credentials": "씨"}
-{"name": "김민준씨, J.씨", "family": "김민준", "suffix": "씨, J.씨"}
-{"name": "김민준씨, MA PhD", "family": "김민준", "suffix": "씨, MA PhD"}
-{"name": "김민준씨, V.", "given": "V.", "family": "김민준", "suffix": "씨", "initials": "V."}
-{"name": "김민준씨.", "given": "민준", "family": "김", "suffix": "씨."}
-{"name": "김민준씨., J.씨", "family": "김민준", "suffix": "씨., J.씨"}
+{"name": "김민준님", "given": "민준", "family": "김", "suffix": "님", "honorifics": "님"}
+{"name": "김민준박사님", "given": "민준", "family": "김", "suffix": "박사님", "honorifics": "박사님"}
+{"name": "김민준씨", "given": "민준", "family": "김", "suffix": "씨", "honorifics": "씨"}
+{"name": "김민준씨 (Jimmy)", "given": "민준", "family": "김", "suffix": "씨", "nickname": "Jimmy", "honorifics": "씨"}
+{"name": "김민준씨 Jr.", "given": "민준", "family": "김", "suffix": "씨 Jr.", "generation": "Jr.", "honorifics": "씨"}
+{"name": "김민준씨, J.씨", "family": "김민준", "suffix": "씨, J.씨", "honorifics": "씨"}
+{"name": "김민준씨, MA PhD", "family": "김민준", "suffix": "씨, MA PhD", "honorifics": "씨"}
+{"name": "김민준씨, V.", "given": "V.", "family": "김민준", "suffix": "씨", "initials": "V.", "honorifics": "씨"}
+{"name": "김민준씨.", "given": "민준", "family": "김", "suffix": "씨.", "honorifics": "씨."}
+{"name": "김민준씨., J.씨", "family": "김민준", "suffix": "씨., J.씨", "honorifics": "씨."}
 {"name": "김병관", "given": "병관", "family": "김"}
 {"name": "김상철", "given": "상철", "family": "김"}
-{"name": "김선생님", "family": "김", "suffix": "선생님"}
+{"name": "김선생님", "family": "김", "suffix": "선생님", "honorifics": "선생님"}
 {"name": "김선영", "given": "선영", "family": "김"}
 {"name": "김성혜", "given": "성혜", "family": "김"}
 {"name": "김성훈", "given": "성훈", "family": "김"}
 {"name": "김소은", "given": "소은", "family": "김"}
-{"name": "김씨", "family": "김", "suffix": "씨"}
+{"name": "김씨", "family": "김", "suffix": "씨", "honorifics": "씨"}
 {"name": "김약수", "given": "약수", "family": "김"}
 {"name": "김연경", "given": "연경", "family": "김"}
 {"name": "김영환", "given": "영환", "family": "김"}
@@ -6693,7 +6696,7 @@
 {"name": "박형진", "given": "형진", "family": "박"}
 {"name": "방응모", "given": "응모", "family": "방"}
 {"name": "선생님", "family": "선생님"}
-{"name": "선생님, J.씨", "given": "J.", "family": "선생님", "suffix": "씨", "initials": "J."}
+{"name": "선생님, J.씨", "given": "J.", "family": "선생님", "suffix": "씨", "initials": "J.", "honorifics": "씨"}
 {"name": "설기현", "given": "기현", "family": "설"}
 {"name": "소현박", "given": "현박", "family": "소"}
 {"name": "손태곤", "given": "태곤", "family": "손"}
@@ -6724,8 +6727,8 @@
 {"name": "육인수", "given": "인수", "family": "육"}
 {"name": "육지수", "given": "지수", "family": "육"}
 {"name": "윤아정", "given": "아정", "family": "윤"}
-{"name": "이, J.씨", "given": "J.", "family": "이", "suffix": "씨", "initials": "J."}
-{"name": "이, J.씨.", "given": "J.", "family": "이", "suffix": "씨.", "initials": "J."}
+{"name": "이, J.씨", "given": "J.", "family": "이", "suffix": "씨", "initials": "J.", "honorifics": "씨"}
+{"name": "이, J.씨.", "given": "J.", "family": "이", "suffix": "씨.", "initials": "J.", "honorifics": "씨."}
 {"name": "이강훈", "given": "강훈", "family": "이"}
 {"name": "이광노", "given": "광노", "family": "이"}
 {"name": "이만희", "given": "만희", "family": "이"}

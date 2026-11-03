@@ -887,12 +887,15 @@ def test_the_patronymic_view_reads_the_kind_the_lexicon_states() -> None:
 def test_the_default_kind_sets_are_the_shipped_index_s() -> None:
     # by the compile invariant: what the views read on the default is
     # what the shipped files say (the index lookup 4b and 4c read)
-    from nameparser._reading_index import holds_kind, suffix_kind_of
+    from nameparser._reading_index import (
+        HONORIFIC_KINDS, holds_kind, suffix_kind_of)
     sets = Lexicon.default()._sets
     for word in sets.suffix_words:
         kind = suffix_kind_of(word)
         assert (word in sets.generation_words) == (kind == "generation"), word
         assert (word in sets.credential_words) == (kind == "credential"), word
+        assert (word in sets.honorific_words) == (
+            kind in HONORIFIC_KINDS), word
     for word in sets.particles:
         assert (word in sets.patronymic_particles) == holds_kind(
             word, "patronymic"), word
@@ -1890,8 +1893,8 @@ def test_migrate_s_table_covers_every_compiled_constant() -> None:
             re.findall(r"   \* - ``([A-Z_]+)``\n", section))
     from nameparser.config import _compiled
     public_in_2x = {n for n in vars(_compiled) if n.isupper()} - {
-        "GENERATION_WORDS", "CREDENTIAL_WORDS", "PATRONYMIC_PARTICLES",
-        "TITLE_ABBREVIATIONS"}
+        "GENERATION_WORDS", "CREDENTIAL_WORDS", "HONORIFIC_WORDS",
+        "PATRONYMIC_PARTICLES", "TITLE_ABBREVIATIONS"}
     assert public_in_2x <= named
     assert len(_migrate_constant_rows()) >= 20  # the rows with code
     # the one row naming two constants, which the row pattern skips

@@ -61,7 +61,7 @@ from nameparser._policy import (CapsSuffixes, Policy, Script, _JA_SCRIPTS, _NO_I
 from nameparser._pipeline._state import (
     AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, COMMA_CHARS,
     CREDENTIAL_WORD_TAG, Deferred, GENERATION_WORD_TAG,
-    GIVEN_ABBREVIATION_TAG, PATRONYMIC_TAG, SHAPE_ACRONYM_TAG,
+    GIVEN_ABBREVIATION_TAG, HONORIFIC_WORD_TAG, PATRONYMIC_TAG, SHAPE_ACRONYM_TAG,
     TITLE_AMBIGUOUS_TAG, PendingReading, ReadingKind, ReadingSource, Role, WorkToken,
     comma_bucket,
 )
@@ -2297,6 +2297,7 @@ def suffix_kind(text: str,
                 ReadingSource.VOCABULARY if listed else ReadingSource.SHAPE)
     if "vocab:suffix-word" in tags:
         return (ReadingKind.CREDENTIAL if CREDENTIAL_WORD_TAG in tags
+                else ReadingKind.HONORIFIC if HONORIFIC_WORD_TAG in tags
                 else ReadingKind.POST_NOMINAL), ReadingSource.VOCABULARY
     return (ReadingKind.CREDENTIAL,
             ReadingSource.SHAPE if SHAPE_ACRONYM_TAG in tags

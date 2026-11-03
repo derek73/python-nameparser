@@ -741,9 +741,10 @@ is the problem the split exists to solve:
 ``generation`` and ``credentials`` split the suffix the way a name
 form's "Jr., III" and "PhD, MD" boxes do: a generation numbers the
 bearer among relatives of the same name, and every other word after
-the name, an honorific such as ``Esq.`` included, is a credential.
-Each joins its words as ``suffix`` does, and ``suffix`` itself is
-unchanged:
+the name, a courtesy such as ``Esq.`` included, is a credential, save
+a form of address written after the name (``さん``, ``씨``, ``先生``),
+which is in ``honorifics``. Each joins its words as ``suffix`` does,
+and ``suffix`` itself is unchanged:
 
 .. doctest::
 
@@ -752,6 +753,9 @@ unchanged:
     ('Jr.', 'MD, Esq.', 'Jr., MD, Esq.')
     >>> suffixed.render("{given} {family} {generation}")
     'John Smith Jr.'
+    >>> addressed = parse("田中さん, PhD")
+    >>> addressed.credentials, addressed.honorifics, addressed.suffix
+    ('PhD', 'さん', 'さん, PhD')
 
 ``patronymic`` names the words that say whose child the bearer is, a
 particle such as ``bin`` with the parent's name after it, in whatever

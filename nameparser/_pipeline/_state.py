@@ -102,12 +102,14 @@ AMBIGUOUS_WORD_TAG = "vocab:suffix-word-ambiguous"
 AGNOMEN_TAG = "vocab:agnomen"
 
 #: Beside "vocab:suffix-word" on a word whose shipped reading index
-#: kind is a generation (`jr`) or a credential written as a word
-#: (`博士`), which the compiled sets do not record (rules/R8, 3.0's 4b):
+#: kind is a generation (`jr`), a credential written as a word
+#: (`博士`) or an honorific (`さん`, #326), which the compiled sets do
+#: not record (rules/R8, 3.0's 4b):
 #: written by classify from the word as it reads it, a delimiter glued
 #: on removed (`Jr.;`, rules/C10), and read by `_vocab.suffix_kind`.
 GENERATION_WORD_TAG = "vocab:generation-word"
 CREDENTIAL_WORD_TAG = "vocab:credential-word"
+HONORIFIC_WORD_TAG = "vocab:honorific-word"
 
 #: Beside "particle" on a word the shipped reading index holds as a
 #: patronymic particle (`bin`, `ibn`, `bat`), which the compiled sets

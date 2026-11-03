@@ -87,7 +87,7 @@ def test_the_family_and_the_suffix_partition_into_their_views(
     particles 'de la', base 'Vega').
 
     rules/R8's views partition the suffix the same way, its words
-    exactly the generation's plus the credentials', and join this
+    exactly the generation's, the credentials' and the honorifics', and join this
     walk rather than parsing the grid again; so does rules/R9's
     patronymic, which names words the name fields and the maiden name
     keep.
@@ -98,9 +98,11 @@ def test_the_family_and_the_suffix_partition_into_their_views(
         f"{case.text!r}: patronymic={pn.patronymic!r} names a word no "
         f"name field holds")
     assert sorted(pn.suffix.replace(",", " ").split()) == sorted(
-        (pn.generation + " " + pn.credentials).replace(",", " ").split()), (
+        (pn.generation + " " + pn.credentials + " " + pn.honorifics)
+        .replace(",", " ").split()), (
         f"{case.text!r}: suffix={pn.suffix!r} is not partitioned by "
-        f"generation={pn.generation!r} + credentials={pn.credentials!r}")
+        f"generation={pn.generation!r} + credentials={pn.credentials!r} "
+        f"+ honorifics={pn.honorifics!r}")
     if not pn.family:
         return
     assert pn.family_base, (
@@ -355,7 +357,8 @@ _FORK_KINDS = frozenset(AmbiguityKind) - {
 #: The field a non-name reading names by what it is.
 _FIELD_OF_KIND = {
     **dict.fromkeys((ReadingKind.CREDENTIAL, ReadingKind.GENERATION,
-                     ReadingKind.AGNOMEN, ReadingKind.POST_NOMINAL), Role.SUFFIX),
+                     ReadingKind.AGNOMEN, ReadingKind.POST_NOMINAL,
+                     ReadingKind.HONORIFIC), Role.SUFFIX),
     ReadingKind.TITLE: Role.TITLE, ReadingKind.PARTICLE: Role.FAMILY,
     ReadingKind.PATRONYMIC: Role.FAMILY,
 }

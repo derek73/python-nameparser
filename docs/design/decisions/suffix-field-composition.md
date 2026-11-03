@@ -4,9 +4,9 @@
 
 - `suffix` stays one field holding generational words, credentials and postnominal honorifics; the composition is recorded, with the command that re-counts it, instead of splitting the field — 2026-08-16 #326.
 
-Elsewhere: generation and credential are separate kinds in the vocabulary, though they still compile into the one field, decisions/vocabulary-model's 2026-10-15/16 entry (item 3). The field stays one, and since 3.0 two views partition it by the reading each word took, `generation` and `credentials`, the honorifics in the second (#326, decisions/R8).
+Elsewhere: generation and credential are separate kinds in the vocabulary, though they still compile into the one field, decisions/vocabulary-model's 2026-10-15/16 entry (item 3). The field stays one, and since 3.0 three views partition it by the reading each word took, `generation`, `credentials` and `honorifics` (#326, decisions/R8).
 
-Open: [#326](https://github.com/derek73/python-nameparser/issues/326) — whether the honorifics belong in `suffix` at all, deliberately undecided here (the views' side of it is decisions/R8's).
+Open: none in this file. Whether the honorifics belong in `suffix` at all, left open here by the 2026-08-16 entry, was decided on 2026-11-03: they stay in the field and have a view of their own, decisions/R8's 2026-11-03 #326 entry.
 
 ## Log
 

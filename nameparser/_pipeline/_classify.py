@@ -14,7 +14,8 @@ where an earlier stage already asked.
 Reads: every Lexicon vocabulary field except surnames and
 honorific_tails, which script_segment consumes upstream, and the kinds
 of its suffix words and particles (Lexicon's generation_words,
-credential_words and patronymic_particles, internal sets, 3.0) and the
+credential_words, honorific_words and patronymic_particles, internal
+sets, 3.0) and the
 titles written short (title_abbreviations, #999); and, since
 2.4, Policy.unlisted_dotted_suffixes and Policy.unlisted_caps_suffixes,
 which decide whether an UNLISTED dotted or all-caps token joins the
@@ -37,7 +38,7 @@ namespaced (unstable): "vocab:title", "vocab:given-title",
 "vocab:suffix", "vocab:suffix-word", "vocab:suffix-ambiguous",
 "vocab:suffix-word-ambiguous", "vocab:agnomen",
 "vocab:generation-word", "vocab:credential-word",
-"vocab:patronymic" and "vocab:trailing-title" (read by the later
+"vocab:honorific-word", "vocab:patronymic" and "vocab:trailing-title" (read by the later
 stages and dropped by assemble, Token.reading carrying the kind out,
 save the last, which marks no kind),
 "vocab:particle-ambiguous", "vocab:bound-given",
@@ -77,8 +78,8 @@ from nameparser._lexicon import _normalize, _spells_an_initial
 from nameparser._policy import CapsSuffixes
 from nameparser._pipeline._state import (
     AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, CREDENTIAL_WORD_TAG,
-    GENERATION_WORD_TAG, GIVEN_ABBREVIATION_TAG, PATRONYMIC_TAG, SHAPE_ACRONYM_TAG,
-    SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, TITLE_AMBIGUOUS_TAG,
+    GENERATION_WORD_TAG, GIVEN_ABBREVIATION_TAG, HONORIFIC_WORD_TAG,
+    PATRONYMIC_TAG, SHAPE_ACRONYM_TAG, SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, TITLE_AMBIGUOUS_TAG,
     TRAILING_TITLE_TAG, ParseState,
     Deferred, PendingAmbiguity, PendingReading,
     WorkToken, copy_with,
@@ -185,6 +186,8 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
             tags.add(GENERATION_WORD_TAG)
         elif n in lex._sets.credential_words:
             tags.add(CREDENTIAL_WORD_TAG)
+        elif n in lex._sets.honorific_words:
+            tags.add(HONORIFIC_WORD_TAG)
     if n in lex._sets.suffix_acronyms_ambiguous:
         tags.add(AMBIGUOUS_ACRONYM_TAG)
     # rules/P7: "A one-letter word written with its period is an
