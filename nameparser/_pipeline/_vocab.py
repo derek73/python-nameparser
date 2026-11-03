@@ -66,24 +66,22 @@ from nameparser._pipeline._state import (
     comma_bucket,
 )
 
-# Ported verbatim from v1 (nameparser/config/regexes.py "initial") minus
-# its empty-string alternative -- WorkToken text is never empty. Kept in
-# sync by hand; layering forbids importing the config package here.
+# Ported verbatim from v1's "initial" pattern (the 1.x and 2.x
+# nameparser.config.regexes, removed in 3.0, #1008) minus its
+# empty-string alternative -- WorkToken text is never empty. _render
+# holds a hand copy, pinned to this one by tests/v2/test_regex_sync.py.
 # "Verbatim" is a promise about the PATTERN, not about the predicate:
 # since #320 is_initial is this SHAPE test ANDed with a repertoire test
 # (in_initialless_script, below), so _INITIAL.fullmatch(text) and
 # is_initial(text) are no longer the same question -- '씨.' answers yes
 # to the first and no to the second. Call is_initial; the bare pattern
 # is not the thing to ask. The narrowing lives in the predicate
-# precisely so this copy can stay exactly as verbatim as it ever was
-# -- REGEXES["initial"] is public v1 API and cannot narrow, and the
-# only difference between the two remains the empty alternative noted
-# above (config's `?`), which test_regex_sync splices back in.
+# precisely so this copy can stay exactly as verbatim as it ever was,
+# the pattern _render's copy must equal.
 _INITIAL = re.compile(r"^(\w\.|[A-Z])$")
 
-# Ported verbatim from v1 (nameparser/config/regexes.py
-# "period_not_at_end") -- layering forbids the config import; keep in
-# sync by hand.
+# Ported verbatim from v1's "period_not_at_end" pattern (the 1.x and
+# 2.x nameparser.config.regexes, removed in 3.0, #1008).
 _PERIOD_NOT_AT_END = re.compile(r".*\..+$", re.I)
 
 # The fix_phd credential pair ('Ph.' + 'D.' as adjacent tokens),
@@ -152,7 +150,7 @@ def _drop_kana_voicing_marks(text: str) -> str:
 
 # The repertoire half of is_initial (_policy._NO_INITIALS), kept apart
 # from _INITIAL's SHAPE half so the pattern itself stays v1-verbatim
-# and its three copies stay pinned by tests/v2/test_regex_sync.py.
+# and _render's copy stays pinned to it by tests/v2/test_regex_sync.py.
 # contains-any, not whole=True: the shape half has already admitted the
 # trailing period, so the text reaching here is '씨.' rather than '씨'
 # and a wholly-of match would be False for every case this exists for.
@@ -189,12 +187,10 @@ def in_initialless_script(text: str) -> bool:
 # the comma structure to a credential run
 # (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
 #
-# The shape shared with config's "period_abbreviation" (layering
-# forbids the config import; keep in sync by hand -- the pattern TEXT
-# is what tests/v2/test_regex_sync.py compares, reaching this object
-# through `_pieces._PERIOD_ABBREV`, an IMPORT of this one, not a second
-# definition -- the sync test's target name did not move). It is
-# composed from `_LETTER` below, so the text is v1's plus the marks.
+# v1's "period_abbreviation" shape, composed from `_LETTER` below, so
+# the text is v1's plus the marks. This is the only definition:
+# `_pieces._PERIOD_ABBREV` and `_assemble._PERIOD_ABBREV` are imports
+# of it, which tests/v2/test_regex_sync.py declares as such.
 
 # `_LETTER` is the letter every shape regex in this module spells
 # (`_PERIOD_ABBREV`, `_DOTTED`, `_CHUNKED`, `_PAIRED_INITIALS`): one
@@ -270,17 +266,20 @@ def is_initial_shaped(text: str) -> bool:
     return bool(_INITIAL.fullmatch(text))
 
 
-# v1 regexes.py "roman_numeral", pinned by tests/v2/test_regex_sync.py.
+# v1's "roman_numeral" pattern; _render's hand copy is pinned to this
+# one by tests/v2/test_regex_sync.py.
 _ROMAN = re.compile(r'^(X|IX|IV|V?I{0,3})$', re.I)
 #: The same pattern, shared rather than copied: `_comma` filters on
 #: it before asking `reads_as_generation` (rules/C12).
 ROMAN = _ROMAN
 
 
-# Ported verbatim from v1 (nameparser/config/regexes.py), pinned by
-# tests/v2/test_regex_sync.py: the East Slavic patronymic endings and
-# the standalone Turkic patronymic markers, which rules/O1's and O2's
-# rotations and rules/R9's reading ask through the two predicates below.
+# Ported verbatim from v1's patterns (the 1.x and 2.x
+# nameparser.config.regexes, removed in 3.0, #1008), the RU and TR_AZ
+# packs' copies pinned to these by tests/v2/test_locales.py: the East
+# Slavic patronymic endings and the standalone Turkic patronymic
+# markers, which rules/O1's and O2's rotations and rules/R9's reading
+# ask through the two predicates below.
 _EAST_SLAVIC = re.compile(
     r"(ovich|ovna|evich|evna|ichna|ilyich|kuzmich|lukich|fomich|fokich|nikitich|savvich)$",
     re.I)

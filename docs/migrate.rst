@@ -28,7 +28,8 @@ https://nameparser.readthedocs.io/en/v1.4.0/
 What 3.0 removes
 ----------------
 
-2.8 warned at the line in your code that used each of these, with the
+2.8 warned at the line in your code that used each of these, and 2.8.1
+where code reads a constant of ``nameparser.config.regexes``, with the
 exceptions `Finding the sites`_ names:
 
 .. list-table::
@@ -60,6 +61,11 @@ exceptions `Finding the sites`_ names:
        deprecated since 2.2
      - Their 2.2 names, which the 2.2.0 entry of :doc:`release_log`
        maps
+   * - ``nameparser.config.regexes`` and its ``REGEXES``, which the
+       parser has not read since 2.0
+     - Copy the pattern you reused into your own code; the bidi and
+       emoji strip switches are ``Policy(strip_bidi=...)`` and
+       ``Policy(strip_emoji=...)`` (:ref:`strip-flags`)
 
 The 2.8 deprecation warnings go with the code they warned about. In 3.0
 importing a removed name raises ``ImportError``, reading one as an
@@ -69,7 +75,7 @@ a ``Constants`` cannot load, because there is no class to load it into.
 Finding the sites
 ~~~~~~~~~~~~~~~~~
 
-Upgrade to 2.8 first. A ``DeprecationWarning`` is hidden by default
+Upgrade to 2.8.1 first. A ``DeprecationWarning`` is hidden by default
 outside ``__main__``, so run your tests with warnings turned into
 errors, and each use 3.0 removes stops the run at the line that makes
 it:
@@ -79,7 +85,9 @@ it:
     python -W error::DeprecationWarning -m pytest
 
 2.8 warns where code *uses* a removed name, not where it imports one,
-so some code passes that check and still fails on 3.0:
+and 2.8.1 where code reads a constant of ``nameparser.config.regexes``
+(``from nameparser.config.regexes import REGEXES`` included), so some
+code passes that check and still fails on 3.0:
 
 * *reading* the shared ``CONSTANTS`` (``"dr" in CONSTANTS.titles``, or
   ``copy.copy(CONSTANTS)``), which 2.8 left quiet so that importing
@@ -91,10 +99,13 @@ so some code passes that check and still fails on 3.0:
   importing ``nameparser.parser`` or the two 1.x word-list modules,
   ``nameparser.config.prefixes`` and
   ``nameparser.config.bound_first_names``
+* importing ``nameparser.config.regexes`` without reading a constant
+  from it (``import nameparser.config.regexes`` or ``from
+  nameparser.config import regexes``)
 
 So search your code for ``CONSTANTS``, ``HumanName``, ``Constants``,
-``nameparser.parser``, ``nameparser.util``, ``config.prefixes`` and
-``config.bound_first_names`` as well.
+``nameparser.parser``, ``nameparser.util``, ``config.prefixes``,
+``config.bound_first_names`` and ``config.regexes`` as well.
 
 Coming from 1.x
 ~~~~~~~~~~~~~~~
@@ -546,7 +557,8 @@ rendering argument, where the 3.0 equivalent isn't config at all):
 Every other ``regexes.*`` entry (``word``, ``spaces``, and the rest of
 the compiled-pattern proxy) has no 3.0 replacement — parsing behavior
 is configured entirely through named ``Policy`` fields now, not by
-handing the parser a regex.
+handing the parser a regex — and the ``nameparser.config.regexes``
+module those entries came from is gone too (`What 3.0 removes`_).
 
 Comparison
 ----------
