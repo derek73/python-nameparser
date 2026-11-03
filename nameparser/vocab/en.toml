@@ -2300,18 +2300,6 @@ given = { us_ssa = 188, wikidata = 17, as_of = 2026-10-26, note = "US SSA: femal
 family = { us_census_2010 = 12614, wikidata = 218, as_of = 2026-10-26 }
 
 [[word]]
-text = "jr"
-generation = {}
-
-[[word]]
-text = "jnr"
-generation = { same_as = "jr" }
-
-[[word]]
-text = "junior"
-generation = { same_as = "jr" }
-
-[[word]]
 text = "sr"
 generation = {}
 

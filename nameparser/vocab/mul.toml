@@ -64,6 +64,19 @@ text = "iv"
 generation = {}
 
 [[word]]
+text = "jr"
+generation = { note = "written after names in every country's data: strict choices broke 1,036 records on `jr`, 246 on `junior` and 13 on `jnr` across 15 languages' countries while it sat in en.toml (fil 408, pt-BR 336; config_diff.py gaps on f48c88a3, decisions/vocabulary-model, 2026-11-03), so shared rather than copied into each language's file", issue = 1005 }
+
+[[word]]
+text = "jnr"
+generation = { same_as = "jr" }
+
+[[word]]
+text = "junior"
+generation = { same_as = "jr" }
+
+
+[[word]]
 text = "v"
 generation = {}
 
