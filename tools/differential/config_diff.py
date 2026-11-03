@@ -18,64 +18,80 @@ lexicons, #1005's strict losses, a reviewer's grid of choices):
 `strict:<items>` are `parser_for(*items)` and `parser_for(*items,
 strict=True)`, the items joined by `+`: an item in capitals is the
 shipped pack of that name (`ES`, `PT_BR`, `ZH`, `locales.ES`), one in
-lower case a bare choice of that language tag (`Locale(code=tag,
-lexicon=Lexicon.empty(), languages={tag})`, `pt-BR` included).
-`expr:<python>` evaluates an expression returning a `Parser`, with
-`Parser`, `Policy`, `Lexicon`, `Locale`, `locales`, `parser_for` and
-`bare(tag)` in scope. The first configuration is the baseline, each
-other compared with it.
+lower case a bare choice of that language tag (`Locale(code="choice",
+lexicon=Lexicon.empty(), languages={tag})`, a region tag such as
+`pt-BR` or `en-GB` included). `expr:<python>` evaluates an expression
+returning a `Parser`, with `Parser`, `Policy`, `Lexicon`, `Locale`,
+`locales`, `parser_for` and `bare(tag)` in scope. The first
+configuration is the baseline, each other compared with it.
 
 **Inputs.** `--committed` reads the committed `corpus*.jsonl` beside
 this file (snapshot.corpus_entries, each name under its shape's order);
 `--local SOURCE` (repeatable, or `all`) a fetched local corpus's
 distinct names. With neither, the committed corpora. `--group` keeps a
 fielded local corpus's records of that country or nationality
-(local_agreement.FIELDED names the key), `--match` the names a regular
-expression finds, `--sample N` one name in N (snapshot.sampled, by a
-hash of the name, so a sample is the same in every tree and run).
+(local_agreement.FIELDED names the key, matched exactly as the corpus
+writes it), and needs `--local`: with `--committed` beside it, which
+has no groups, it is refused, as is a group no record read holds; with
+`--local all` it reads the fielded corpora alone, saying so. `--match`
+keeps the names a regular expression finds anywhere in them, `--sample
+N` one name in N (snapshot.sampled, by a hash of the name, so a sample
+is the same in every tree and run).
 
-**What is compared**: the seven role fields and the ambiguity kinds.
-The report, per configuration against the baseline: how many names
-moved, per input; the moves grouped by which fields changed, with
-examples; and the words whose token changed role, ranked, each with its
-commonest move and an example. A name whose tokens differ between the
-two parses (a choice that splits a word) has no per-word move and is
-counted under RETOKENIZED. `--json` writes every count and every moved
-name's readings, `--readings` every name's, one JSON line a name in
-sorted order, so a run in each of two trees (a word moved between
-files, say) compares line by line.
+**What is compared**: the seven role fields, the ambiguity kinds and
+3.0's views (VIEWS: `generation`, `credentials`, `patronymic`,
+`surname2`), which can move where no role does (`Ivan Ivanovich
+Petrov` under `plain:RU` gains patronymic 'Ivanovich'). The report,
+per configuration against the baseline: how many names moved, per
+input; the moves grouped by which fields changed, with examples; and
+the words whose token changed role, ranked, each with its commonest
+move and an example. A name whose tokens differ between the two parses
+(a choice that splits a word) has no per-word move and is counted under
+RETOKENIZED. `--json` writes every count and every moved name's
+readings, `--readings` every name's, one JSON line a name in sorted
+order, so a run in each of two trees (a word moved between files, say)
+compares line by line.
 
 **gaps**: the strict-gap report. For each language tag a choice can name
 (every vocabulary file but `mul` and `und`, the shipped packs riding on
-their tags, packs_for), over the records of the countries the language
-is written in (WRITTEN_IN) from the three fielded local corpora that
+their tags, gap_specs), over the records of the countries the language
+is written in (LANGUAGES_OF) from the three fielded local corpora that
 record one (ORCID by country of affiliation, PatentsView by the
 inventor's country, PSC by nationality), the plain choice against the
 strict one, each scored against the filed boxes (local_agreement.read):
 a record is BROKEN where the plain choice agrees with the boxes and the
 strict one does not, FIXED the other way round, CHANGED where the two
-parses differ. Each changed record is laid to the words in it that the
-two lexicons read differently (changed_words), ranked per language by
-records broken, each with the sets it leaves or joins, its commonest
-role move and an example; a changed record holding none is counted
-under NO_WORD, which should stay near empty. ORCID records a country
-of affiliation, not a language, and PSC is a UK register whose filers
-write `Ms` and `Miss` whatever their nationality, so a language's
-strict choice is measured on the population a caller who chose it for
-that country would face. The records whose given box opens with a word
-the default lists as a title are left out of ORCID and PatentsView (a
-holder's `Dr` typed as a given name is evidence of nothing; the
-2026-10-30 entry of decisions/vocabulary-model filtered so); PSC's are
-set aside by local_agreement.read with the default's title words, the
-same records in every column. Each group is its first --cap records in
-raw.jsonl's order.
+parses' roles differ. Each changed record is laid to the words in it
+that the two lexicons read differently (changed_words) AND whose own
+token changed role; where no such word's token moved, to those beside a
+token that did (a particle whose neighbour is taken into the family);
+where neither, to NO_WORD, which should stay small. A word is ranked
+per language by the records it broke so, with the sets it leaves or
+joins, its commonest role move and an example; `beside` counts the
+broken records it merely stood in (`do` in a name whose `Miss` broke
+it). ORCID records a country of affiliation, not a language, and PSC is
+a UK register whose filers write `Ms` and `Miss` whatever their
+nationality, so a language's strict choice is measured on the
+population a caller who chose it for that country would face. The
+records whose given box opens with a word the default lists as a title
+are left out of ORCID and PatentsView (a holder's `Dr` typed as a given
+name is evidence of nothing; the 2026-10-30 entry of
+decisions/vocabulary-model filtered so); PSC's are set aside by
+local_agreement.read with the default's title words, the same records
+in every column. Each group is its first --cap records in raw.jsonl's
+order.
 
-WRITTEN_IN, the country each language is written in, is a measurement
+LANGUAGES_OF, the language tags written in each country, and
+NATIONALITY, the country each PSC nationality names, are a measurement
 aid read by this report and nothing else: decisions/vocabulary-model
 forbids the parser any table from country to language. A country
-writing several languages (IN, ES, BE, NG) stands under each; a tag
-with no country of its own (`bo`, `yi`) has none and is reported as
-unmeasured.
+writing several languages stands under each (IN under hi, bn, ta, en
+and the rest; NG under en, yo, ha, bin), the UK's nations by their ISO
+3166-2 codes so that a Scottish filer stands under gd too; a tag no
+country is listed for (`bo`, `yi`) is in NO_COUNTRY and reported as
+unmeasured. The report closes with every group holding UNMAPPED_FLOOR
+records or more that the tables place nowhere, so the tables cannot
+miss a country in silence.
 
 Every parse runs in --jobs spawned worker processes (snapshot.parallel,
 default every CPU), each building a configuration once from its spec
@@ -85,6 +101,7 @@ names; keep it out of the tree.
 from __future__ import annotations
 
 import argparse
+import contextlib
 import dataclasses
 import json
 import os
@@ -92,7 +109,7 @@ import re
 import sys
 import warnings
 from collections import Counter, defaultdict
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Iterator, Sequence
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, NamedTuple
 
@@ -107,10 +124,13 @@ import local_corpora  # noqa: E402
 import snapshot  # noqa: E402
 
 ROLES = snapshot.V2_FIELDS
+#: 3.0's views, compared beside the roles: each can move where no role
+#: does.
+VIEWS = ("generation", "credentials", "patronymic", "surname2")
 #: Where a moved name whose two parses hold different tokens is tallied.
 RETOKENIZED = "(retokenized)"
-#: Where a changed gaps record holding no word the lexicons read
-#: differently is counted.
+#: Where a changed gaps record is counted when no word the lexicons read
+#: differently moved there or beside a token that moved.
 NO_WORD = "(no word)"
 ORCID = "orcid-researchers"
 PATENTSVIEW = "patentsview-inventors"
@@ -120,8 +140,11 @@ PSC = "psc-individuals"
 # --- configurations ---------------------------------------------------------
 
 def bare(tag: str) -> Locale:
+    """A choice of `tag` and nothing else. The code is a constant, as
+    snapshot.py's choice is: a Locale's code must be lower case, and a
+    region tag (`pt-BR`) is not."""
     from nameparser import Lexicon, Locale
-    return Locale(code=tag, lexicon=Lexicon.empty(), languages=frozenset({tag}))
+    return Locale(code="choice", lexicon=Lexicon.empty(), languages=frozenset({tag}))
 
 
 def _item(item: str) -> Locale:
@@ -137,6 +160,16 @@ def _item(item: str) -> Locale:
     return bare(name)
 
 
+@contextlib.contextmanager
+def _quiet() -> Iterator[None]:
+    """A pack whose script needs a segmenter (locales.JA) warns without
+    one, at parser_for and again at any later rebuild of the Parser; the
+    vocabulary is what is compared here."""
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", message=".*segment", category=UserWarning)
+        yield
+
+
 def build(spec: str) -> Parser:
     """The Parser a configuration names (see the module docstring)."""
     from nameparser import Lexicon, Locale, Parser, Policy, locales, parser_for
@@ -145,15 +178,13 @@ def build(spec: str) -> Parser:
         return Parser()
     if kind in ("plain", "strict") and rest:
         packs = [_item(i) for i in rest.split("+")]
-        with warnings.catch_warnings():
-            # A pack whose script needs a segmenter (locales.JA) warns
-            # without one; the vocabulary is what is compared here.
-            warnings.filterwarnings("ignore", message=".*segment", category=UserWarning)
+        with _quiet():
             return parser_for(*packs, strict=kind == "strict")
     if kind == "expr" and rest:
         scope = {"Parser": Parser, "Policy": Policy, "Lexicon": Lexicon, "Locale": Locale,
                  "locales": locales, "parser_for": parser_for, "bare": bare}
-        parser = eval(rest, scope)  # noqa: S307 -- the caller's own expression
+        with _quiet():
+            parser = eval(rest, scope)  # noqa: S307 -- the caller's own expression
         if not isinstance(parser, Parser):
             raise ValueError(f"{spec!r} evaluates to {type(parser).__name__}, not a Parser")
         return parser
@@ -166,10 +197,11 @@ def build(spec: str) -> Parser:
 
 class Reading(NamedTuple):
     """One name under one configuration: its seven role fields, its
-    ambiguity kinds, and each token's text and role."""
+    ambiguity kinds, each token's text and role, and its VIEWS."""
     fields: tuple[str, ...]
     kinds: tuple[str, ...]
     tokens: tuple[tuple[str, str], ...]
+    views: tuple[str, ...] = ()
 
 
 #: The parsers a worker has built, by (spec, order): a worker keeps its
@@ -180,11 +212,12 @@ _BUILT: dict[tuple[str, str | None], Parser] = {}
 def _parser(spec: str, order: str | None) -> Parser:
     key = (spec, order)
     if key not in _BUILT:
-        parser = build(spec)
-        if order is not None:
-            import nameparser
-            parser = dataclasses.replace(parser, policy=dataclasses.replace(
-                parser.policy, name_order=getattr(nameparser, order)))
+        with _quiet():
+            parser = build(spec)
+            if order is not None:
+                import nameparser
+                parser = dataclasses.replace(parser, policy=dataclasses.replace(
+                    parser.policy, name_order=getattr(nameparser, order)))
         _BUILT[key] = parser
     return _BUILT[key]
 
@@ -192,7 +225,8 @@ def _parser(spec: str, order: str | None) -> Parser:
 def reading(parsed: ParsedName) -> Reading:
     return Reading(tuple(str(getattr(parsed, f) or "") for f in ROLES),
                    tuple(sorted({a.kind.name for a in parsed.ambiguities})),
-                   tuple((t.text, str(t.role or "")) for t in parsed.tokens))
+                   tuple((t.text, str(t.role or "")) for t in parsed.tokens),
+                   tuple(str(getattr(parsed, v, "") or "") for v in VIEWS))
 
 
 def _read_chunk(items: Sequence[tuple[str, str | None, tuple[str, ...]]]
@@ -220,7 +254,8 @@ def fold(text: str) -> str:
 
 def changed_fields(a: Reading, b: Reading) -> tuple[str, ...]:
     moved = tuple(f for f, x, y in zip(ROLES, a.fields, b.fields) if x != y)
-    return moved + (("ambiguities",) if a.kinds != b.kinds else ())
+    views = tuple(v for v, x, y in zip(VIEWS, a.views, b.views) if x != y)
+    return moved + (("ambiguities",) if a.kinds != b.kinds else ()) + views
 
 
 def word_moves(a: Reading, b: Reading) -> list[tuple[str, str]]:
@@ -239,7 +274,7 @@ class Tally:
     total: Counter[str] = dataclasses.field(default_factory=Counter)
     by_fields: dict[tuple[str, ...], list[str]] = dataclasses.field(
         default_factory=lambda: defaultdict(list))
-    words: Counter[str] = dataclasses.field(default_factory=Counter)
+    words: Counter[str] = dataclasses.field(default_factory=Counter)  # names, once each
     word_move: dict[str, Counter[str]] = dataclasses.field(
         default_factory=lambda: defaultdict(Counter))
     word_example: dict[str, str] = dataclasses.field(default_factory=dict)
@@ -259,10 +294,11 @@ def tally(names: Sequence[tuple[str, str | None, frozenset[str]]],
             for i in inputs:
                 t.moved[i] += 1
             t.by_fields[fields].append(text)
-            for word in dict.fromkeys(w for w, _ in word_moves(rs[0], other)):
+            moves = word_moves(rs[0], other)
+            for word in dict.fromkeys(w for w, _ in moves):
                 t.words[word] += 1
                 t.word_example.setdefault(word, text)
-            for word, move in word_moves(rs[0], other):
+            for word, move in moves:
                 t.word_move[word][move] += 1
     return out
 
@@ -285,9 +321,10 @@ def format_tally(spec: str, base: str, t: Tally, top: int) -> list[str]:
 
 # --- inputs -----------------------------------------------------------------
 
-def local_names(source: str, groups: Sequence[str]) -> list[str]:
+def local_names(source: str, groups: Sequence[str]) -> tuple[list[str], set[str]]:
     """A fetched local corpus's names: every distinct one, or with
-    `groups` those of a fielded corpus's records in them."""
+    `groups` those of a fielded corpus's records in them, beside the
+    groups that held a record."""
     fielded = local_agreement.FIELDED.get(source)
     if groups and fielded is None:
         raise SystemExit(f"--group needs a fielded corpus ({', '.join(local_agreement.FIELDED)}),"
@@ -295,28 +332,51 @@ def local_names(source: str, groups: Sequence[str]) -> list[str]:
     corpus = local_corpora.require(source)
     if not groups or fielded is None:
         return list(dict.fromkeys(json.loads(line) for line in snapshot.jsonl_lines(
-            local_corpora.corpus_path(source).read_text(encoding="utf-8"))))
-    wanted = set(groups)
-    return list(dict.fromkeys(r["name"] for r in local_agreement.records(corpus)
-                              if r.get(fielded.group, "") in wanted))
+            local_corpora.corpus_path(source).read_text(encoding="utf-8")))), set()
+    wanted, found = set(groups), set()
+    names: dict[str, None] = {}
+    for r in local_agreement.records(corpus):
+        group = r.get(fielded.group, "")
+        if group in wanted:
+            found.add(group)
+            names[r["name"]] = None
+    return list(names), found
 
 
 def gather(args: argparse.Namespace) -> list[tuple[str, str | None, frozenset[str]]]:
     """Every (name, order) the inputs hold, each with the inputs holding it."""
     found: dict[tuple[str, str | None], set[str]] = defaultdict(set)
-    sources = (list(local_corpora.SOURCES) if args.local == ["all"] else args.local or [])
+    every = args.local == ["all"]
+    sources = list(local_corpora.SOURCES) if every else args.local or []
+    if args.group:
+        if not sources:
+            raise SystemExit(f"--group filters a fielded local corpus; give --local "
+                             f"{' or '.join(local_agreement.FIELDED)}")
+        if args.committed:
+            raise SystemExit("--group filters local corpora only, and the committed corpora "
+                             "have no groups: drop --committed, or --group")
+        if every:
+            sources = [s for s in sources if s in local_agreement.FIELDED]
+            print(f"(--group: reading the fielded corpora only: {', '.join(sources)})")
     if args.committed or not sources:
         for text, order in snapshot.corpus_entries():
             found[(text, order)].add("committed")
+    held: set[str] = set()
     for source in sources:
         if source == "all" or source not in local_corpora.SOURCES:
             raise SystemExit(f"--local {source}: not a local corpus; "
                              f"{', '.join(local_corpora.SOURCES)} or all")
-        if local_corpora.load(source) is None and args.local == ["all"]:
+        if every and local_corpora.load(source) is None:
             print(f"(not fetched, skipped: {source})")
             continue
-        for text in local_names(source, args.group):
+        texts, groups = local_names(source, args.group)
+        held |= groups
+        for text in texts:
             found[(text, None)].add(source)
+    if missing := sorted(set(args.group) - held):
+        raise SystemExit(f"--group {', '.join(missing)}: no record read holds it; a group is "
+                         f"matched as the corpus writes it (ORCID and PatentsView an ISO code "
+                         f"such as BR, PSC a nationality such as Brazilian)")
     pattern = re.compile(args.match) if args.match else None
     entries = [e for e in found if pattern is None or pattern.search(e[0])]
     if args.sample:
@@ -324,117 +384,143 @@ def gather(args: argparse.Namespace) -> list[tuple[str, str | None, frozenset[st
     return [(text, order, frozenset(found[(text, order)])) for text, order in entries]
 
 
-# --- gaps ----------------------------------------------------------------
+# --- gaps: where each language is written ------------------------------------------
 
-class Where(NamedTuple):
-    """Where a language is written: ISO 3166 codes for ORCID and
-    PatentsView, PSC nationalities as the register spells them."""
-    countries: tuple[str, ...] = ()
-    nationalities: tuple[str, ...] = ()
-
-
-#: The countries each language tag is written in, for the gaps report
-#: only. A choosable tag missing here fails test_config_diff, so a new
-#: vocabulary file earns a row, empty where no country writes it.
-WRITTEN_IN: dict[str, Where] = {
-    "ak": Where(("GH",), ("Ghanaian",)),
-    "am": Where(("ET",), ()),
-    "ar": Where(("EG", "SA", "IQ", "JO", "DZ", "MA"),
-                ("Moroccan", "Egyptian", "Iraqi", "Syrian", "Algerian", "Jordanian",
-                 "Saudi Arabian", "Lebanese", "Sudanese", "Tunisian", "Yemeni")),
-    "as": Where(("IN",), ("Indian",)),
-    "be": Where(("BY",), ("Belarusian",)),
-    "bg": Where(("BG",), ("Bulgarian",)),
-    "bin": Where(("NG",), ("Nigerian",)),
-    "bn": Where(("BD",), ("Bangladeshi",)),
-    "bo": Where(),
-    "bs": Where(("BA",), ()),
-    "ca": Where(("ES", "AD"), ("Spanish",)),
-    "cs": Where(("CZ",), ("Czech",)),
-    "da": Where(("DK",), ("Danish",)),
-    "de": Where(("DE", "AT", "CH"), ("German", "Austrian", "Swiss")),
-    "el": Where(("GR", "CY"), ("Greek", "Cypriot")),
-    "en": Where(("GB", "US", "AU", "NZ", "IE", "CA"),
-                ("British", "English", "Scottish", "Welsh", "Northern Irish", "Irish",
-                 "American", "Australian", "Canadian", "New Zealander")),
-    "es": Where(("ES", "MX", "AR", "CO", "CL", "PE", "EC", "CU", "VE"),
-                ("Spanish", "Mexican", "Colombian", "Argentine", "Venezuelan", "Chilean")),
-    "et": Where(("EE",), ("Estonian",)),
-    "fa": Where(("IR", "AF"), ("Iranian", "Afghan")),
-    "ff": Where(("SN", "GN"), ()),
-    "fi": Where(("FI",), ("Finnish",)),
-    "fil": Where(("PH",), ("Filipino",)),
-    "fr": Where(("FR", "BE"), ("French", "Belgian")),
-    "ga": Where(("IE",), ("Irish",)),
-    "gd": Where((), ("Scottish",)),
-    "gu": Where(("IN",), ("Indian",)),
-    "ha": Where(("NG", "NE"), ("Nigerian",)),
-    "he": Where(("IL",), ("Israeli",)),
-    "hi": Where(("IN",), ("Indian",)),
-    "hr": Where(("HR",), ("Croatian",)),
-    "hu": Where(("HU",), ("Hungarian",)),
-    "hy": Where(("AM",), ()),
-    "id": Where(("ID",), ("Indonesian",)),
-    "is": Where(("IS",), ()),
-    "it": Where(("IT",), ("Italian",)),
-    "ja": Where(("JP",), ("Japanese",)),
-    "ka": Where(("GE",), ("Georgian",)),
-    "kk": Where(("KZ",), ("Kazakh",)),
-    "km": Where(("KH",), ()),
-    "kn": Where(("IN",), ("Indian",)),
-    "ko": Where(("KR",), ("South Korean",)),
-    "kok": Where(("IN",), ("Indian",)),
-    "lo": Where(("LA",), ()),
-    "lt": Where(("LT",), ("Lithuanian",)),
-    "lv": Where(("LV",), ("Latvian",)),
-    "mi": Where(("NZ",), ("New Zealander",)),
-    "mk": Where(("MK",), ()),
-    "ml": Where(("IN",), ("Indian",)),
-    "mn": Where(("MN",), ()),
-    "mr": Where(("IN",), ("Indian",)),
-    "ms": Where(("MY", "BN", "SG"), ("Malaysian", "Singaporean")),
-    "my": Where(("MM",), ()),
-    "nb": Where(("NO",), ("Norwegian",)),
-    "ne": Where(("NP",), ("Nepalese",)),
-    "nl": Where(("NL", "BE"), ("Dutch", "Belgian")),
-    "nn": Where(("NO",), ("Norwegian",)),
-    "or": Where(("IN",), ("Indian",)),
-    "pa": Where(("IN", "PK"), ("Indian", "Pakistani")),
-    "pl": Where(("PL",), ("Polish",)),
-    "pt": Where(("PT", "AO", "MZ"), ("Portuguese",)),
-    "pt-BR": Where(("BR",), ("Brazilian",)),
-    "ro": Where(("RO", "MD"), ("Romanian", "Moldovan")),
-    "ru": Where(("RU", "BY", "KZ"), ("Russian",)),
-    "sd": Where(("PK",), ("Pakistani",)),
-    "shn": Where(("MM",), ()),
-    "si": Where(("LK",), ("Sri Lankan",)),
-    "sk": Where(("SK",), ("Slovak",)),
-    "sl": Where(("SI",), ("Slovenian",)),
-    "sr": Where(("RS", "ME", "BA"), ("Serbian",)),
-    "sv": Where(("SE",), ("Swedish",)),
-    "sw": Where(("KE", "TZ"), ("Kenyan", "Tanzanian")),
-    "ta": Where(("IN", "LK"), ("Indian", "Sri Lankan")),
-    "te": Where(("IN",), ("Indian",)),
-    "th": Where(("TH",), ("Thai",)),
-    "ti": Where(("ER", "ET"), ("Eritrean",)),
-    "tr": Where(("TR", "AZ"), ("Turkish", "Azerbaijani")),
-    "uk": Where(("UA",), ("Ukrainian",)),
-    "ur": Where(("PK",), ("Pakistani",)),
-    "vi": Where(("VN",), ("Vietnamese",)),
-    "yi": Where(),
-    "yo": Where(("NG", "BJ"), ("Nigerian", "Beninese")),
-    "zh": Where(("CN", "TW", "HK", "SG"),
-                ("Chinese", "Taiwanese", "Hong Konger", "Singaporean")),
-    "zu": Where(("ZA",), ("South African",)),
+#: The language tags written in each country, for the gaps report only:
+#: ISO 3166-1 codes as ORCID and PatentsView record them, and the UK's
+#: nations by their ISO 3166-2 codes, which only PSC's nationalities
+#: reach. Each tag is one a choice can name (test_config_diff holds it);
+#: a country none of whose languages has a file maps to ().
+LANGUAGES_OF: dict[str, tuple[str, ...]] = {
+    "AD": ("ca",), "AE": ("ar", "en"), "AF": ("fa",), "AG": ("en",), "AL": (),
+    "AM": ("hy",), "AO": ("pt",), "AQ": (), "AR": ("es",), "AS": ("en",),
+    "AT": ("de",), "AU": ("en",), "AW": ("nl",), "AX": ("sv",), "AZ": ("tr",),
+    "BA": ("bs", "hr", "sr"), "BB": ("en",), "BD": ("bn",), "BE": ("nl", "fr", "de"),
+    "BF": ("fr",), "BG": ("bg",), "BH": ("ar",), "BI": ("fr",), "BJ": ("fr", "yo"),
+    "BM": ("en",), "BN": ("ms",), "BO": ("es",), "BR": ("pt-BR",), "BS": ("en",),
+    "BT": (), "BW": ("en",), "BY": ("be", "ru"), "BZ": ("en",), "CA": ("en", "fr"),
+    "CD": ("fr",), "CF": ("fr",), "CG": ("fr",), "CH": ("de", "fr", "it"),
+    "CI": ("fr",), "CL": ("es",), "CM": ("fr", "en"), "CN": ("zh",), "CO": ("es",),
+    "CR": ("es",), "CU": ("es",), "CV": ("pt",), "CW": ("nl",), "CY": ("el", "tr"),
+    "CZ": ("cs",), "DE": ("de",), "DJ": ("fr", "ar"), "DK": ("da",), "DM": ("en",),
+    "DO": ("es",), "DZ": ("ar", "fr"), "EC": ("es",), "EE": ("et",), "EG": ("ar",),
+    "ER": ("ti", "ar"), "ES": ("es", "ca"), "ET": ("am",), "FI": ("fi", "sv"),
+    "FJ": ("en",), "FO": ("da",), "FR": ("fr",), "GA": ("fr",),
+    "GB": ("en",), "GB-ENG": ("en",), "GB-NIR": ("en", "ga"), "GB-SCT": ("en", "gd"),
+    "GB-WLS": ("en",), "GD": ("en",), "GE": ("ka",), "GF": ("fr",), "GH": ("en", "ak"),
+    "GL": ("da",), "GM": ("en",), "GN": ("fr", "ff"), "GP": ("fr",), "GQ": ("es", "fr"),
+    "GR": ("el",), "GT": ("es",), "GU": ("en",), "GW": ("pt",), "GY": ("en",),
+    "HK": ("zh", "en"), "HN": ("es",), "HR": ("hr",), "HT": ("fr",), "HU": ("hu",),
+    "ID": ("id",), "IE": ("en", "ga"), "IL": ("he", "ar"), "IM": ("en",),
+    "IN": ("hi", "bn", "ta", "te", "mr", "gu", "kn", "ml", "or", "pa", "as", "ur",
+           "kok", "sd", "ne", "en"),
+    "IQ": ("ar",), "IR": ("fa",), "IS": ("is",), "IT": ("it",), "JE": ("en",),
+    "JM": ("en",), "JO": ("ar",), "JP": ("ja",), "KE": ("sw", "en"), "KG": ("ru",),
+    "KH": ("km",), "KM": ("ar", "fr"), "KN": ("en",), "KP": ("ko",), "KR": ("ko",),
+    "KW": ("ar",), "KY": ("en",), "KZ": ("kk", "ru"), "LA": ("lo",), "LB": ("ar", "fr"),
+    "LC": ("en",), "LI": ("de",), "LK": ("si", "ta"), "LR": ("en",), "LS": ("en",),
+    "LT": ("lt",), "LU": ("fr", "de"), "LV": ("lv",), "LY": ("ar",), "MA": ("ar", "fr"),
+    "MC": ("fr",), "MD": ("ro", "ru"), "ME": ("sr",), "MG": ("fr",), "MK": ("mk",),
+    "ML": ("fr",), "MM": ("my", "shn"), "MN": ("mn",), "MO": ("zh", "pt"),
+    "MQ": ("fr",), "MR": ("ar",), "MT": ("en",), "MU": ("en", "fr"), "MV": (),
+    "MW": ("en",), "MX": ("es",), "MY": ("ms", "zh", "ta", "en"), "MZ": ("pt",),
+    "NA": ("en",), "NC": ("fr",), "NE": ("fr", "ha"), "NG": ("en", "yo", "ha", "bin"),
+    "NI": ("es",), "NL": ("nl",), "NO": ("nb", "nn"), "NP": ("ne",), "NZ": ("en", "mi"),
+    "OM": ("ar",), "PA": ("es",), "PE": ("es",), "PF": ("fr",), "PG": ("en",),
+    "PH": ("fil", "en"), "PK": ("ur", "pa", "sd", "en"), "PL": ("pl",), "PR": ("es", "en"),
+    "PS": ("ar",), "PT": ("pt",), "PY": ("es",), "QA": ("ar",), "RE": ("fr",),
+    "RO": ("ro",), "RS": ("sr",), "RU": ("ru",), "RW": ("fr", "en"), "SA": ("ar",),
+    "SC": ("en", "fr"), "SD": ("ar",), "SE": ("sv",), "SG": ("zh", "ms", "ta", "en"),
+    "SI": ("sl",), "SK": ("sk",), "SL": ("en",), "SN": ("fr", "ff"), "SO": ("ar",),
+    "SR": ("nl",), "SS": ("en",), "ST": ("pt",), "SV": ("es",), "SX": ("nl", "en"),
+    "SY": ("ar",), "SZ": ("en",), "TD": ("fr", "ar"), "TG": ("fr",), "TH": ("th",),
+    "TJ": ("ru",), "TL": ("pt",), "TM": ("ru",), "TN": ("ar", "fr"), "TR": ("tr",),
+    "TT": ("en",), "TW": ("zh",), "TZ": ("sw", "en"), "UA": ("uk", "ru"),
+    "UG": ("en", "sw"), "UM": ("en",), "US": ("en",), "UY": ("es",), "UZ": ("ru",),
+    "VE": ("es",), "VG": ("en",), "VI": ("en",), "VN": ("vi",), "XK": ("sr",),
+    "YE": ("ar",), "ZA": ("en", "zu"), "ZM": ("en",), "ZW": ("en",),
+    # no country recorded
+    "": (),
 }
 
-#: How each fielded source names its groups: the record key, and
-#: WRITTEN_IN's field read for it.
-GAP_SOURCES = ((ORCID, "country", "countries"), (PATENTSVIEW, "country", "countries"),
-               (PSC, "nationality", "nationalities"))
+#: The country each PSC nationality names, as the register spells it. A
+#: nationality joined with others (`British,Irish`) is read by its first.
+NATIONALITY: dict[str, str] = {
+    "Afghan": "AF", "Albanian": "AL", "Algerian": "DZ", "American": "US",
+    "Angolan": "AO", "Argentine": "AR", "Armenian": "AM", "Australian": "AU",
+    "Austrian": "AT", "Azerbaijani": "AZ", "Bahraini": "BH", "Bangladeshi": "BD",
+    "Barbadian": "BB", "Belarusian": "BY", "Belgian": "BE", "Beninese": "BJ",
+    "Bolivian": "BO", "Botswanan": "BW", "Brazilian": "BR", "British": "GB",
+    "British Virgin Islander": "VG", "Bulgarian": "BG", "Burkinan": "BF", "Burmese": "MM",
+    "Cameroonian": "CM", "Canadian": "CA", "Chilean": "CL", "Chinese": "CN",
+    "Citizen Of Bosnia And Herzegovina": "BA", "Colombian": "CO",
+    "Congolese (Congo)": "CG", "Congolese (Drc)": "CD", "Costa Rican": "CR",
+    "Croatian": "HR", "Cuban": "CU", "Cypriot": "CY", "Czech": "CZ", "Danish": "DK",
+    "Dominican": "DO", "Dutch": "NL", "Ecuadorean": "EC", "Egyptian": "EG",
+    "Emirati": "AE", "English": "GB-ENG", "Eritrean": "ER", "Estonian": "EE",
+    "Ethiopian": "ET", "Fijian": "FJ", "Filipino": "PH", "Finnish": "FI", "French": "FR",
+    "Gabonese": "GA", "Gambian": "GM", "Georgian": "GE", "German": "DE",
+    "Ghanaian": "GH", "Greek": "GR", "Grenadian": "GD", "Guinean": "GN",
+    "Guyanese": "GY", "Hong Konger": "HK", "Hungarian": "HU", "Icelandic": "IS",
+    "Indian": "IN", "Indonesian": "ID", "Iranian": "IR", "Iraqi": "IQ", "Irish": "IE",
+    "Israeli": "IL", "Italian": "IT", "Ivorian": "CI", "Jamaican": "JM",
+    "Japanese": "JP", "Jordanian": "JO", "Kazakh": "KZ", "Kenyan": "KE",
+    "Kittitian": "KN", "Kosovan": "XK", "Kuwaiti": "KW", "Kyrgyz": "KG",
+    "Latvian": "LV", "Lebanese": "LB", "Libyan": "LY", "Lithuanian": "LT",
+    "Luxembourger": "LU", "Macedonian": "MK", "Malagasy": "MG", "Malawian": "MW",
+    "Malaysian": "MY", "Maltese": "MT", "Mauritian": "MU", "Mexican": "MX",
+    "Moldovan": "MD", "Mongolian": "MN", "Moroccan": "MA", "Namibian": "NA",
+    "Nepalese": "NP", "New Zealander": "NZ", "Nigerian": "NG", "Nigerien": "NE",
+    "Northern Irish": "GB-NIR", "Norwegian": "NO", "Omani": "OM", "Pakistani": "PK",
+    "Palestinian": "PS", "Panamanian": "PA", "Peruvian": "PE", "Polish": "PL",
+    "Portuguese": "PT", "Qatari": "QA", "Romanian": "RO", "Russian": "RU",
+    "Rwandan": "RW", "Saudi Arabian": "SA", "Scottish": "GB-SCT", "Senegalese": "SN",
+    "Serbian": "RS", "Sierra Leonean": "SL", "Singaporean": "SG", "Slovak": "SK",
+    "Slovenian": "SI", "Somali": "SO", "South African": "ZA", "South Korean": "KR",
+    "Spanish": "ES", "Sri Lankan": "LK", "St Lucian": "LC", "Sudanese": "SD",
+    "Swedish": "SE", "Swiss": "CH", "Syrian": "SY", "Taiwanese": "TW", "Tajik": "TJ",
+    "Tanzanian": "TZ", "Thai": "TH", "Togolese": "TG", "Trinidadian": "TT",
+    "Tunisian": "TN", "Turkish": "TR", "Turkmen": "TM", "Ugandan": "UG", "Uk": "GB",
+    "Ukrainian": "UA", "United Kingdom": "GB", "Uruguayan": "UY", "Uzbek": "UZ",
+    "Venezuelan": "VE", "Vietnamese": "VN", "Welsh": "GB-WLS", "Yemeni": "YE",
+    "Zambian": "ZM", "Zimbabwean": "ZW",
+}
+
+#: Tags no country is listed for: reported as unmeasured.
+NO_COUNTRY = frozenset({"bo", "yi"})
+
+#: How each fielded source names its groups: the record key.
+GAP_SOURCES = ((ORCID, "country"), (PATENTSVIEW, "country"), (PSC, "nationality"))
 #: Records per (source, group), the first in raw.jsonl's order; ORCID's
 #: and PatentsView's caches hold at most 20,000 a country.
 CAP = 20_000
+#: The fewest records of a group the tables place nowhere for the report
+#: to name it.
+UNMAPPED_FLOOR = 100
+
+
+def country_of(source: str, group: str) -> str | None:
+    """The LANGUAGES_OF key a source's group stands for, or None where
+    the tables place it nowhere."""
+    if source != PSC:
+        return group if group in LANGUAGES_OF else None
+    for spelling in (group, group.split(",")[0].strip()):
+        if spelling in NATIONALITY:
+            return NATIONALITY[spelling]
+    return None
+
+
+def stands_under(source: str, group: str, tag: str) -> bool:
+    country = country_of(source, group)
+    return country is not None and tag in LANGUAGES_OF[country]
+
+
+def unmapped(counts: dict[tuple[str, str], int], floor: int = UNMAPPED_FLOOR
+             ) -> list[tuple[str, str, int]]:
+    """Every (source, group) holding `floor` records or more that the
+    tables place nowhere, most records first."""
+    return sorted(((s, g, n) for (s, g), n in counts.items()
+                   if n >= floor and country_of(s, g) is None), key=lambda x: (-x[2], x[0], x[1]))
 
 
 def choosable() -> list[str]:
@@ -470,6 +556,8 @@ def gap_specs(tag: str) -> tuple[str, str]:
             f"strict:{joined}")
 
 
+# --- gaps: the report --------------------------------------------------------------
+
 def _set_fields(lexicon: Lexicon) -> dict[str, frozenset[str]]:
     sets = lexicon._sets
     names = ([f.name for f in dataclasses.fields(sets)] if dataclasses.is_dataclass(sets)
@@ -494,9 +582,9 @@ def changed_words(plain: Lexicon, strict: Lexicon) -> dict[str, tuple[tuple[str,
 
 
 def words_in(tokens: Sequence[tuple[str, str]], words: Iterable[str] | dict[str, Any]
-             ) -> list[tuple[str, int]]:
-    """The words of `words` in a reading's tokens, each with the index of
-    the token it starts at, matched folded and with every period removed
+             ) -> list[tuple[str, int, int]]:
+    """The words of `words` in a reading's tokens, each with the indexes
+    of the tokens it spans, matched folded and with every period removed
     (as an acronym is); a two-word entry (a title phrase) matched across
     adjacent tokens."""
     def keys(text: str) -> set[str]:
@@ -504,11 +592,24 @@ def words_in(tokens: Sequence[tuple[str, str]], words: Iterable[str] | dict[str,
         return {folded, folded.replace(".", "")} - {""}
     found = []
     for i, (text, _role) in enumerate(tokens):
-        ks = keys(text)
+        found += [(k, i, i + 1) for k in sorted(keys(text)) if k in words]
         if i + 1 < len(tokens):
-            ks |= {f"{k} {n}" for k in keys(text) for n in keys(tokens[i + 1][0])}
-        found += [(k, i) for k in sorted(ks) if k in words]
+            found += [(k, i, i + 2) for k in sorted(
+                {f"{a} {b}" for a in keys(text) for b in keys(tokens[i + 1][0])})
+                if k in words]
     return found
+
+
+def credited(p: Reading, s: Reading, found: Sequence[tuple[str, int, int]]
+             ) -> list[tuple[str, int, int]]:
+    """The words of `found` a changed record is laid to: those whose own
+    token changed role between the two parses, or, where none did, those
+    beside a token that did; none where the parses hold different tokens."""
+    if [t for t, _ in p.tokens] != [t for t, _ in s.tokens]:
+        return []
+    moved = {i for i, ((_, a), (_, b)) in enumerate(zip(p.tokens, s.tokens)) if a != b}
+    own = [w for w in found if moved & set(range(w[1], w[2]))]
+    return own or [w for w in found if moved & {w[1] - 1, w[2]}]
 
 
 class _Parsed:
@@ -528,19 +629,24 @@ class _Parsed:
             raise AttributeError(role) from None
 
 
-def select(tags: Sequence[str], cap: int) -> dict[tuple[str, str], list[dict[str, str]]]:
-    """Every group any of `tags` reads, its first `cap` records."""
-    wanted = {(source, g) for tag in tags for source, _key, field in GAP_SOURCES
-              for g in getattr(WRITTEN_IN[tag], field)}
-    out: dict[tuple[str, str], list[dict[str, str]]] = {k: [] for k in sorted(wanted)}
-    for source, key, _field in GAP_SOURCES:
-        if not any(s == source for s, _g in wanted):
-            continue
+def select(tags: Sequence[str], cap: int
+           ) -> tuple[dict[tuple[str, str], list[dict[str, str]]], dict[tuple[str, str], int]]:
+    """Every group any of `tags` stands under, its first `cap` records,
+    beside every group's record count (for `unmapped`)."""
+    out: dict[tuple[str, str], list[dict[str, str]]] = {}
+    counts: Counter[tuple[str, str]] = Counter()
+    wanted = set(tags)
+    for source, key in GAP_SOURCES:
         for record in local_agreement.records(local_corpora.require(source)):
-            bucket = out.get((source, record.get(key, "")))
-            if bucket is not None and len(bucket) < cap:
+            group = record.get(key, "")
+            counts[(source, group)] += 1
+            country = country_of(source, group)
+            if country is None or not wanted & set(LANGUAGES_OF[country]):
+                continue
+            bucket = out.setdefault((source, group), [])
+            if len(bucket) < cap:
                 bucket.append(record)
-    return out
+    return out, dict(counts)
 
 
 def _given_opens_with_title(record: dict[str, str], titles: frozenset[str]) -> bool:
@@ -550,15 +656,16 @@ def _given_opens_with_title(record: dict[str, str], titles: frozenset[str]) -> b
 
 def gap_rows(tag: str, records: dict[tuple[str, str], list[dict[str, str]]],
              titles: frozenset[str]) -> list[tuple[str, str, dict[str, str]]]:
-    """`tag`'s (source, group, record) rows to read: its countries'
-    records, less the given boxes opening with a title word in the
-    sources with no title box."""
+    """`tag`'s (source, group, record) rows to read: the records of the
+    groups it stands under, less the given boxes opening with a title
+    word in the sources with no title box."""
     rows = []
-    for source, _key, field in GAP_SOURCES:
+    for (source, group), recs in sorted(records.items()):
+        if not stands_under(source, group, tag):
+            continue
         no_title_box = not local_agreement._box(local_agreement.FIELDED[source], "title")
-        for group in getattr(WRITTEN_IN[tag], field):
-            rows += [(source, group, r) for r in records.get((source, group), [])
-                     if not (no_title_box and _given_opens_with_title(r, titles))]
+        rows += [(source, group, r) for r in recs
+                 if not (no_title_box and _given_opens_with_title(r, titles))]
     return rows
 
 
@@ -577,6 +684,7 @@ class WordCount:
     broke: int = 0
     fixed: int = 0
     changed: int = 0
+    beside: int = 0  # broken records the word stood in, credited or not
     lost: tuple[str, ...] = ()
     gained: tuple[str, ...] = ()
     roles: Counter[str] = dataclasses.field(default_factory=Counter)
@@ -593,6 +701,12 @@ def score_gaps(tag: str, specs: tuple[str, str],
     boxes: per group the agreement of each, per word what strict moved."""
     per_group: dict[str, GroupCount] = {}
     per_word: dict[str, WordCount] = {}
+
+    def word(w: str) -> WordCount:
+        if w not in per_word:
+            per_word[w] = WordCount(lost=diff.get(w, ((), ()))[0], gained=diff.get(w, ((), ()))[1])
+        return per_word[w]
+
     for (source, group, record), (p, s) in zip(rows, readings):
         fielded = local_agreement.FIELDED[source]
         count = per_group.setdefault(f"{source} {group}", GroupCount())
@@ -603,29 +717,29 @@ def score_gaps(tag: str, specs: tuple[str, str],
         count.scored += 1
         count.plain += not rp.got
         count.strict += not rs.got
-        if p.fields == s.fields:
+        if p.fields == s.fields:  # the roles, which the boxes are scored on
             continue
         broke, fixed = not rp.got and bool(rs.got), bool(rp.got) and not rs.got
         count.changed += 1
         count.broke += broke
         count.fixed += fixed
-        same_tokens = [t for t, _ in p.tokens] == [t for t, _ in s.tokens]
-        for word, at in words_in(p.tokens, diff) or [(NO_WORD, -1)]:
-            wc = per_word.get(word)
-            if wc is None:
-                wc = per_word[word] = WordCount(0, 0, 0, *diff.get(word, ((), ())))
+        found = words_in(p.tokens, diff)
+        for w in dict.fromkeys(w for w, _i, _j in found):
+            word(w).beside += broke
+        laid = credited(p, s, found)
+        for w, i, _j in laid or [(NO_WORD, -1, -1)]:
+            wc = word(w)
             wc.changed += 1
             wc.broke += broke
             wc.fixed += fixed
-            if at >= 0:
-                after = s.tokens[at][1] if same_tokens else "?"
-                wc.roles[f"{p.tokens[at][1] or 'none'}->{after or 'none'}"] += 1
+            if i >= 0:
+                wc.roles[f"{p.tokens[i][1] or 'none'}->{s.tokens[i][1] or 'none'}"] += 1
             if not wc.example or (broke and not wc.example_broke):
                 wc.example, wc.example_broke = f"{record['name']} ({group})", broke
     return {"tag": tag, "specs": list(specs), "words_differing": len(diff),
             "groups": {k: dataclasses.asdict(v) for k, v in per_group.items()},
             "words": {k: {**dataclasses.asdict(v), "roles": dict(v.roles.most_common())}
-                      for k, v in per_word.items()}}
+                      for k, v in per_word.items() if v.changed}}
 
 
 def _short(source: str) -> str:
@@ -637,7 +751,7 @@ def format_gaps(result: dict[str, Any], top: int) -> list[str]:
     lines = [f"== {result['tag']}  ({result['specs'][0]} vs {result['specs'][1]}; "
              f"{result['words_differing']} words read differently)"]
     if not result["groups"]:
-        return [*lines, "   unmeasured: no country in WRITTEN_IN"]
+        return [*lines, "   unmeasured: no country in LANGUAGES_OF"]
     total = GroupCount()
     for key, g in result["groups"].items():
         source, group = key.split(" ", 1)
@@ -652,24 +766,23 @@ def format_gaps(result: dict[str, Any], top: int) -> list[str]:
                  f"  changed {total.changed:,}")
     ranked = sorted(result["words"].items(),
                     key=lambda kv: (-kv[1]["broke"], -kv[1]["changed"], kv[0]))
-    for word, w in ranked[:top]:
-        moved = " ".join(filter(None, (f"-{'/'.join(w['lost'])}" if w["lost"] else "",
-                                      f"+{'/'.join(w['gained'])}" if w["gained"] else "")))
-        # The word's own token's commonest move; one where it kept its
-        # role (a neighbour moved) only where it never moved.
-        role = next((r for r in w["roles"] if len(set(r.split("->"))) == 2),
-                    next(iter(w["roles"]), ""))
-        lines.append(f"   {word:12} broke {w['broke']:5,} fixed {w['fixed']:4,}"
-                     f" changed {w['changed']:5,}  {role:18} {moved:40} e.g. {w['example']}")
+    for w, c in ranked[:top]:
+        moved = " ".join(filter(None, (f"-{'/'.join(c['lost'])}" if c["lost"] else "",
+                                      f"+{'/'.join(c['gained'])}" if c["gained"] else "")))
+        role = next(iter(c["roles"]), "")
+        lines.append(f"   {w:12} broke {c['broke']:5,} (beside {c['beside']:5,}) fixed "
+                     f"{c['fixed']:4,} changed {c['changed']:5,}  {role:18} {moved:40} "
+                     f"e.g. {c['example']}")
     return lines
 
 
-def gaps(tags: Sequence[str], cap: int, jobs: int) -> list[dict[str, Any]]:
+def gaps(tags: Sequence[str], cap: int, jobs: int
+         ) -> tuple[list[dict[str, Any]], list[tuple[str, str, int]]]:
     from nameparser import Lexicon
     default = Lexicon.default()
     titles = frozenset(default._sets.titles)
     listed = local_agreement._title_words(default)
-    records = select(tags, cap)
+    records, counts = select(tags, cap)
     per_tag = {tag: gap_rows(tag, records, titles) for tag in tags}
     specs = {tag: gap_specs(tag) for tag in tags}
     items = [(r["name"], None, specs[tag]) for tag in tags for _s, _g, r in per_tag[tag]]
@@ -680,7 +793,7 @@ def gaps(tags: Sequence[str], cap: int, jobs: int) -> list[dict[str, Any]]:
         plain, strict = (build(s).lexicon for s in specs[tag])
         results.append(score_gaps(tag, specs[tag], per_tag[tag], mine,  # type: ignore[arg-type]
                                   changed_words(plain, strict), listed))
-    return results
+    return results, unmapped(counts)
 
 
 # --- command line ----------------------------------------------------------------
@@ -693,7 +806,7 @@ def main(argv: list[str] | None = None) -> int:
     d.add_argument("--committed", action="store_true", help="the committed corpus*.jsonl")
     d.add_argument("--local", action="append", metavar="SOURCE", help="a local corpus, or all")
     d.add_argument("--group", action="append", default=[], help="a fielded corpus's country "
-                   "or nationality (repeatable)")
+                   "or nationality, as the corpus writes it (repeatable; needs --local)")
     d.add_argument("--match", help="keep the names this regular expression finds")
     d.add_argument("--sample", type=int, help="one name in N, by a hash of the name")
     g = sub.add_parser("gaps", help="each language's strict choice against its plain one")
@@ -710,14 +823,19 @@ def main(argv: list[str] | None = None) -> int:
     snapshot.check_source(nameparser.__file__)
     if args.mode == "gaps":
         tags = args.tags or choosable()
-        if unknown := [t for t in tags if t not in WRITTEN_IN]:
-            ap.error(f"no WRITTEN_IN row for {unknown}; choosable tags: {', '.join(choosable())}")
-        results = gaps(tags, args.cap, args.jobs)
+        if unknown := sorted(set(tags) - set(choosable())):
+            ap.error(f"{unknown} is no tag a choice can name; choosable: {', '.join(choosable())}")
+        results, missing = gaps(tags, args.cap, args.jobs)
         print(f"strict against plain choice, {len(tags)} tags, cap {args.cap:,} a group")
         for result in results:
             print("\n".join(format_gaps(result, args.top)))
+        print(f"\ngroups of {UNMAPPED_FLOOR} records or more that LANGUAGES_OF and NATIONALITY "
+              f"place nowhere: {len(missing)}")
+        for source, group, n in missing:
+            print(f"   {_short(source):5} {group or '(none)':30} {n:,}")
         if args.json:
-            args.json.write_text(json.dumps({"cap": args.cap, "results": results},
+            args.json.write_text(json.dumps({"cap": args.cap, "results": results,
+                                             "unmapped": missing},
                                             ensure_ascii=False, indent=1), encoding="utf-8")
         return 0
     if len(args.specs) < 2:
@@ -725,8 +843,8 @@ def main(argv: list[str] | None = None) -> int:
     for spec in args.specs:
         try:
             build(spec)
-        except (ValueError, SyntaxError, NameError) as exc:
-            ap.error(str(exc))
+        except Exception as exc:  # an expr: may raise anything; report it, no traceback
+            ap.error(f"{spec}: {type(exc).__name__}: {exc}")
     names = gather(args)
     specs = tuple(args.specs)
     readings = read([(t, o, specs) for t, o, _i in names], args.jobs)
@@ -737,7 +855,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.readings:
         args.readings.write_text("".join(sorted(
             snapshot.jsonl_line({"name": text, "order": order,
-                                 "readings": {s: [list(r.fields), list(r.kinds)]
+                                 "readings": {s: [list(r.fields), list(r.kinds), list(r.views)]
                                               for s, r in zip(specs, rs)}}) + "\n"
             for (text, order, _i), rs in zip(names, readings))), encoding="utf-8")
     if args.json:
