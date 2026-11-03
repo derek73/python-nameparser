@@ -67,9 +67,11 @@ token changed role; where no such word's token moved, to those beside a
 token that did (a particle whose neighbour is taken into the family);
 where neither, to NO_WORD, which should stay small. A word is ranked
 per language by the records it broke so, with the sets it leaves or
-joins, its commonest role move and an example; `beside` counts the
-broken records it merely stood in (`do` in a name whose `Miss` broke
-it). ORCID records a country of affiliation, not a language, and PSC is
+joins, its commonest role move and an example; `beside` counts every
+broken record the word stood in, credited or not, so the gap between
+the two is the records it stood in without moving (`do` in a name whose
+`Miss` broke it). A word is credited once a record, however often it
+stands there. ORCID records a country of affiliation, not a language, and PSC is
 a UK register whose filers write `Ms` and `Miss` whatever their
 nationality, so a language's strict choice is measured on the
 population a caller who chose it for that country would face. The
@@ -89,9 +91,12 @@ writing several languages stands under each (IN under hi, bn, ta, en
 and the rest; NG under en, yo, ha, bin), the UK's nations by their ISO
 3166-2 codes so that a Scottish filer stands under gd too; a tag no
 country is listed for (`bo`, `yi`) is in NO_COUNTRY and reported as
-unmeasured. The report closes with every group holding UNMAPPED_FLOOR
-records or more that the tables place nowhere, so the tables cannot
-miss a country in silence.
+unmeasured. A PSC nationality joined with others (`British,Irish`,
+`Australian/British`) is read by its first. The report closes with
+every group the tables place nowhere, at any count (a PSC nationality
+by its first spelling), so the tables cannot miss a country in silence;
+what is left there is misspellings and free text (`Britsh`,
+`Director`).
 
 Every parse runs in --jobs spawned worker processes (snapshot.parallel,
 default every CPU), each building a configuration once from its spec
@@ -177,9 +182,15 @@ def build(spec: str) -> Parser:
     if spec == "default":
         return Parser()
     if kind in ("plain", "strict") and rest:
-        packs = [_item(i) for i in rest.split("+")]
-        with _quiet():
-            return parser_for(*packs, strict=kind == "strict")
+        items = rest.split("+")
+        packs = [_item(i) for i in items]
+        try:
+            with _quiet():
+                return parser_for(*packs, strict=kind == "strict")
+        except ValueError as exc:
+            # a bare choice's Locale is named "choice"; name what was typed
+            raise ValueError(f"{spec!r}: {', '.join(i for i in items if not i.isupper())} "
+                             f"refused: {exc}") from None
     if kind == "expr" and rest:
         scope = {"Parser": Parser, "Policy": Policy, "Lexicon": Lexicon, "Locale": Locale,
                  "locales": locales, "parser_for": parser_for, "bare": bare}
@@ -226,7 +237,7 @@ def reading(parsed: ParsedName) -> Reading:
     return Reading(tuple(str(getattr(parsed, f) or "") for f in ROLES),
                    tuple(sorted({a.kind.name for a in parsed.ambiguities})),
                    tuple((t.text, str(t.role or "")) for t in parsed.tokens),
-                   tuple(str(getattr(parsed, v, "") or "") for v in VIEWS))
+                   tuple(str(getattr(parsed, v) or "") for v in VIEWS))
 
 
 def _read_chunk(items: Sequence[tuple[str, str | None, tuple[str, ...]]]
@@ -370,13 +381,16 @@ def gather(args: argparse.Namespace) -> list[tuple[str, str | None, frozenset[st
             print(f"(not fetched, skipped: {source})")
             continue
         texts, groups = local_names(source, args.group)
+        if args.group and (absent := sorted(set(args.group) - groups)):
+            print(f"(--group {', '.join(absent)}: no record of {source} holds it)")
         held |= groups
         for text in texts:
             found[(text, None)].add(source)
     if missing := sorted(set(args.group) - held):
+        keys = "; ".join(f"{s} by {f.group}" for s, f in local_agreement.FIELDED.items())
         raise SystemExit(f"--group {', '.join(missing)}: no record read holds it; a group is "
-                         f"matched as the corpus writes it (ORCID and PatentsView an ISO code "
-                         f"such as BR, PSC a nationality such as Brazilian)")
+                         f"matched as the corpus writes it, ORCID and PatentsView an ISO code "
+                         f"such as BR, PSC a nationality such as Brazilian ({keys})")
     pattern = re.compile(args.match) if args.match else None
     entries = [e for e in found if pattern is None or pattern.search(e[0])]
     if args.sample:
@@ -437,8 +451,16 @@ LANGUAGES_OF: dict[str, tuple[str, ...]] = {
     "TJ": ("ru",), "TL": ("pt",), "TM": ("ru",), "TN": ("ar", "fr"), "TR": ("tr",),
     "TT": ("en",), "TW": ("zh",), "TZ": ("sw", "en"), "UA": ("uk", "ru"),
     "UG": ("en", "sw"), "UM": ("en",), "US": ("en",), "UY": ("es",), "UZ": ("ru",),
-    "VE": ("es",), "VG": ("en",), "VI": ("en",), "VN": ("vi",), "XK": ("sr",),
+    "VE": ("es",), "VG": ("en",), "VI": ("en",), "VN": ("vi",), "XK": (),  # Albanian, which no file holds
     "YE": ("ar",), "ZA": ("en", "zu"), "ZM": ("en",), "ZW": ("en",),
+    # territories and small states
+    "AI": ("en",), "BL": ("fr",), "BQ": ("nl",), "BV": (), "CC": ("en",), "CK": ("en",),
+    "CX": ("en",), "EH": ("ar",), "FK": ("en",), "FM": ("en",), "GG": ("en",), "GI": ("en",),
+    "GS": (), "HM": (), "IO": ("en",), "KI": ("en",), "MF": ("fr",), "MH": ("en",),
+    "MP": ("en",), "MS": ("en",), "NF": ("en",), "NR": ("en",), "NU": ("en",), "PM": ("fr",),
+    "PN": ("en",), "PW": ("en",), "SB": ("en",), "SH": ("en",), "SJ": ("nb",), "SM": ("it",),
+    "TC": ("en",), "TF": ("fr",), "TK": ("en",), "TO": ("en",), "TV": ("en",), "VA": ("it",),
+    "VC": ("en",), "VU": ("en", "fr"), "WF": ("fr",), "WS": ("en",), "YT": ("fr",),
     # no country recorded
     "": (),
 }
@@ -484,6 +506,28 @@ NATIONALITY: dict[str, str] = {
     "Ukrainian": "UA", "United Kingdom": "GB", "Uruguayan": "UY", "Uzbek": "UZ",
     "Venezuelan": "VE", "Vietnamese": "VN", "Welsh": "GB-WLS", "Yemeni": "YE",
     "Zambian": "ZM", "Zimbabwean": "ZW",
+    # under 100 records: every real nationality of 5 or more (2026-11-03)
+    "Andorran": "AD", "Bahamian": "BS", "Belizean": "BZ", "Bermudian": "BM",
+    "Bhutanese": "BT", "Bruneian": "BN", "Burundian": "BI", "Cambodian": "KH",
+    "Cape Verdean": "CV", "Cayman Islander": "KY", "Central African": "CF", "Chadian": "TD",
+    "Citizen Of Antigua And Barbuda": "AG", "Citizen Of Guinea-Bissau": "GW",
+    "Citizen Of Seychelles": "SC", "Citizen Of The Dominican Republic": "DO",
+    "Citizen Of Vanuatu": "VU", "Comoran": "KM", "Congolese": "CG", "Cornish": "GB-ENG",
+    "Cymraes": "GB-WLS", "Cymro": "GB-WLS", "Cymro / Cymraes": "GB-WLS",
+    "Djiboutian": "DJ", "East Timorese": "TL", "Equatorial Guinean": "GQ",
+    "Gibraltarian": "GI", "Guatemalan": "GT", "Haitian": "HT", "Honduran": "HN",
+    "Korean": "KR", "Lao": "LA", "Liberian": "LR", "Liechtenstein Citizen": "LI",
+    "Macanese": "MO", "Malian": "ML", "Maldivian": "MV", "Mauritanian": "MR",
+    "Monegasque": "MC", "Montenegrin": "ME", "Montserratian": "MS", "Mosotho": "LS",
+    "Mozambican": "MZ", "Nicaraguan": "NI", "North Korean": "KP", "Papua New Guinean": "PG",
+    "Paraguayan": "PY", "Salvadorean": "SV", "Sao Tomean": "ST", "Slovakian": "SK",
+    "South Sudanese": "SS", "Surinamese": "SR", "Swazi": "SZ", "Tongan": "TO",
+    "Vincentian": "VC", "Anguillan": "AI", "Srilankan": "LK",
+    # the country or a spelling of it typed where the nationality goes
+    "British Citizen": "GB", "Uk Citizen": "GB", "U.K.": "GB", "Gb": "GB", "England": "GB-ENG",
+    "New Zealand": "NZ", "Netherlands": "NL", "Romania": "RO", "Ukraine": "UA",
+    "United States": "US", "Usa": "US", "China": "CN", "Italy": "IT", "India": "IN",
+    "Spain": "ES", "Portugese": "PT",
 }
 
 #: Tags no country is listed for: reported as unmeasured.
@@ -494,9 +538,6 @@ GAP_SOURCES = ((ORCID, "country"), (PATENTSVIEW, "country"), (PSC, "nationality"
 #: Records per (source, group), the first in raw.jsonl's order; ORCID's
 #: and PatentsView's caches hold at most 20,000 a country.
 CAP = 20_000
-#: The fewest records of a group the tables place nowhere for the report
-#: to name it.
-UNMAPPED_FLOOR = 100
 
 
 def country_of(source: str, group: str) -> str | None:
@@ -504,10 +545,16 @@ def country_of(source: str, group: str) -> str | None:
     the tables place it nowhere."""
     if source != PSC:
         return group if group in LANGUAGES_OF else None
-    for spelling in (group, group.split(",")[0].strip()):
+    for spelling in (group, first_spelling(group)):
         if spelling in NATIONALITY:
             return NATIONALITY[spelling]
     return None
+
+
+def first_spelling(nationality: str) -> str:
+    """A joined PSC nationality's first (`British` of `British,Irish`
+    and of `British/Pakistani`)."""
+    return re.split(r"[,/]", nationality)[0].strip()
 
 
 def stands_under(source: str, group: str, tag: str) -> bool:
@@ -515,12 +562,14 @@ def stands_under(source: str, group: str, tag: str) -> bool:
     return country is not None and tag in LANGUAGES_OF[country]
 
 
-def unmapped(counts: dict[tuple[str, str], int], floor: int = UNMAPPED_FLOOR
-             ) -> list[tuple[str, str, int]]:
-    """Every (source, group) holding `floor` records or more that the
-    tables place nowhere, most records first."""
-    return sorted(((s, g, n) for (s, g), n in counts.items()
-                   if n >= floor and country_of(s, g) is None), key=lambda x: (-x[2], x[0], x[1]))
+def unmapped(counts: dict[tuple[str, str], int]) -> list[tuple[str, str, int]]:
+    """Every group the tables place nowhere, at any count, a PSC
+    nationality counted by its first spelling, most records first."""
+    out: Counter[tuple[str, str]] = Counter()
+    for (s, g), n in counts.items():
+        if country_of(s, g) is None:
+            out[(s, first_spelling(g) if s == PSC else g)] += n
+    return sorted(((s, g, n) for (s, g), n in out.items()), key=lambda x: (-x[2], x[0], x[1]))
 
 
 def choosable() -> list[str]:
@@ -726,7 +775,9 @@ def score_gaps(tag: str, specs: tuple[str, str],
         found = words_in(p.tokens, diff)
         for w in dict.fromkeys(w for w, _i, _j in found):
             word(w).beside += broke
-        laid = credited(p, s, found)
+        # once a word a record, at its first credited occurrence
+        # (`Sultan Sultan Hamad`), as `beside` counts above
+        laid = list({w: (w, i, j) for w, i, j in reversed(credited(p, s, found))}.values())[::-1]
         for w, i, _j in laid or [(NO_WORD, -1, -1)]:
             wc = word(w)
             wc.changed += 1
@@ -829,10 +880,11 @@ def main(argv: list[str] | None = None) -> int:
         print(f"strict against plain choice, {len(tags)} tags, cap {args.cap:,} a group")
         for result in results:
             print("\n".join(format_gaps(result, args.top)))
-        print(f"\ngroups of {UNMAPPED_FLOOR} records or more that LANGUAGES_OF and NATIONALITY "
-              f"place nowhere: {len(missing)}")
-        for source, group, n in missing:
-            print(f"   {_short(source):5} {group or '(none)':30} {n:,}")
+        print(f"\ngroups LANGUAGES_OF and NATIONALITY place nowhere, at any count: "
+              f"{len(missing)}, {sum(n for _s, _g, n in missing):,} records")
+        for source in dict.fromkeys(s for s, _g, _n in missing):
+            print(f"   {_short(source)}: " + ", ".join(
+                f"{g or '(none)'} {n}" for s, g, n in missing if s == source))
         if args.json:
             args.json.write_text(json.dumps({"cap": args.cap, "results": results,
                                              "unmapped": missing},

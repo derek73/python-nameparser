@@ -72,6 +72,11 @@ def test_a_misnamed_configuration_is_refused(spec: str) -> None:
         cd.build(spec)
 
 
+def test_a_refused_bare_tag_is_named_as_typed() -> None:
+    with pytest.raises(ValueError, match="'plain:xx': xx refused"):
+        cd.build("plain:xx")
+
+
 @pytest.mark.parametrize("spec", ["expr:Parser(1, 2, 3, 4)", "expr:Lexicon.nope()"])
 def test_an_expr_that_raises_is_a_usage_error_not_a_traceback(spec: str) -> None:
     with pytest.raises(SystemExit) as stop:
@@ -192,6 +197,17 @@ def test_a_group_that_cannot_filter_is_refused(monkeypatch: pytest.MonkeyPatch,
         cd.gather(_args(**kw))
 
 
+def test_a_source_holding_none_of_a_group_says_so(
+        monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    _psc(monkeypatch, [("Ana Souza", "Brazilian")])
+    monkeypatch.setattr(cd, "local_names", lambda source, groups: (
+        (["Ana Souza"], {"Brazilian"}) if source == cd.PSC else ([], set())))
+    monkeypatch.setattr(cd.local_corpora, "SOURCES", {cd.PSC: None, cd.ORCID: None})
+    got = cd.gather(_args(local=[cd.PSC, cd.ORCID], group=["Brazilian"]))
+    assert [t for t, _o, _i in got] == ["Ana Souza"]
+    assert f"no record of {cd.ORCID} holds it" in capsys.readouterr().out
+
+
 def test_a_group_needs_a_fielded_corpus() -> None:
     with pytest.raises(SystemExit, match="fielded"):
         cd.local_names("ctgov-officials", ["US"])
@@ -247,10 +263,19 @@ def test_a_group_is_placed_by_country_or_nationality() -> None:
     assert cd.country_of(cd.ORCID, "ZZ") is None and cd.country_of(cd.PSC, "Martian") is None
 
 
-def test_unmapped_names_every_large_group_the_tables_place_nowhere() -> None:
+def test_unmapped_names_every_group_the_tables_place_nowhere_at_any_count() -> None:
+    # #1025's second review: a floor hid real nationalities, and a
+    # joined spelling spread one over several groups
     counts = {(cd.ORCID, "ZZ"): 500, (cd.ORCID, "BR"): 900, (cd.PSC, "Martian"): 120,
-              (cd.PSC, "Venusian"): 3}
-    assert cd.unmapped(counts) == [(cd.ORCID, "ZZ", 500), (cd.PSC, "Martian", 120)]
+              (cd.PSC, "Venusian"): 3, (cd.PSC, "Venusian,British"): 2,
+              (cd.PSC, "Venusian/British"): 1, (cd.PSC, "British/Venusian"): 4}
+    assert cd.unmapped(counts) == [(cd.ORCID, "ZZ", 500), (cd.PSC, "Martian", 120),
+                                   (cd.PSC, "Venusian", 6)]
+
+
+def test_a_joined_nationality_is_read_by_its_first() -> None:
+    assert cd.first_spelling("British,Irish") == cd.first_spelling("British/Irish") == "British"
+    assert cd.country_of(cd.PSC, "Australian/British") == "AU"
 
 
 def test_changed_words_names_the_sets_a_word_leaves_and_joins() -> None:
@@ -332,6 +357,22 @@ def test_a_particle_beside_the_moved_token_is_credited_when_none_moved_itself() 
                    (("Ana", "given"), ("Da", "family"), ("Souza", "middle")))
     assert cd.credited(p, s, [("da", 1, 2)]) == [("da", 1, 2)]
     assert cd.credited(p, s, [("ana", 0, 1)]) == []
+
+
+def test_a_word_twice_in_a_record_is_credited_once() -> None:
+    # #1025's second review: `Sultan Sultan Hamad Mohammed Al Azri` gave
+    # its group 1 break and sultan 2; beside is once a record too
+    p = cd.Reading(("Sultan", "Sultan", "", "Hamad", "", "", ""), (),
+                   (("Sultan", "title"), ("Sultan", "given"), ("Hamad", "family")))
+    s = cd.Reading(("", "Sultan", "Sultan", "Hamad", "", "", ""), (),
+                   (("Sultan", "given"), ("Sultan", "middle"), ("Hamad", "family")))
+    rows = [(cd.ORCID, "XX", _orcid("Sultan Sultan Hamad", "Sultan", "Hamad"))]
+    result = cd.score_gaps("xx", ("a", "b"), rows, [(p, s)],
+                           {"sultan": (("titles",), ())}, frozenset())
+    assert result["groups"][f"{cd.ORCID} XX"]["broke"] == 1
+    word = result["words"]["sultan"]
+    assert (word["broke"], word["changed"], word["beside"]) == (1, 1, 1)
+    assert word["roles"] == {"title->given": 1}
 
 
 def test_a_changed_gaps_record_holding_no_differing_word_is_counted_apart() -> None:
