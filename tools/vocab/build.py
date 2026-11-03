@@ -140,7 +140,7 @@ def _load_lexicon_module() -> ModuleType:
     """nameparser/_lexicon.py, loaded by path rather than imported.
 
     Importing it through the package would run nameparser/__init__,
-    which imports the config modules and so _compiled.py itself -- and a
+    and a later read of the default lexicon imports _compiled.py -- and a
     _compiled.py left broken (merge-conflict markers, or a new constant
     the module does not define yet) would then stop the one tool that
     regenerates it. _lexicon imports nothing internal at module level
@@ -1260,34 +1260,34 @@ def _behavior(r: Reading, prop: str) -> object:
     return r.props.get(prop)
 
 
-#: The constants _compiled.py defines, in its order, each with the
-#: nameparser.config module that re-exports it, or None for one only
-#: `Lexicon` reads, a kind the public sets do not record (#754, 4i-b).
+#: The constants _compiled.py defines, in its order: what Lexicon reads,
+#: none of them public since 3.0, whose nameparser.config modules
+#: re-exporting them were removed (#1007).
 CONSTANTS = (
-    ("GIVEN_NAME_TITLES", "titles"),
-    ("TITLES", "titles"),
-    ("AFTER_GIVEN_TITLES", "titles"),
-    ("TITLES_AMBIGUOUS", "titles"),
-    ("TITLE_MODIFIERS", "titles"),
-    ("TITLE_STYLES", "titles"),
-    ("TITLE_PHRASES", "titles"),
-    ("NON_GIVEN_NAME_PARTICLES", "particles"),
-    ("PARTICLES", "particles"),
-    ("CONJUNCTIONS", "conjunctions"),
-    ("CONJUNCTIONS_AMBIGUOUS", "conjunctions"),
-    ("BOUND_GIVEN_NAMES", "bound_given_names"),
-    ("GIVEN_NAME_ABBREVIATIONS", "given_names"),
-    ("MAIDEN_MARKERS", "maiden_markers"),
-    ("SUFFIX_WORDS", "suffixes"),
-    ("GLUED_HONORIFICS", "suffixes"),
-    ("SUFFIX_WORDS_AMBIGUOUS", "suffixes"),
-    ("AGNOMENS", "suffixes"),
-    ("SUFFIX_ACRONYMS_AMBIGUOUS", "suffixes"),
-    ("SUFFIX_ACRONYMS", "suffixes"),
-    ("CAPITALIZATION_EXCEPTIONS", "capitalization"),
-    ("GENERATION_WORDS", None),
-    ("CREDENTIAL_WORDS", None),
-    ("PATRONYMIC_PARTICLES", None),
+    "GIVEN_NAME_TITLES",
+    "TITLES",
+    "AFTER_GIVEN_TITLES",
+    "TITLES_AMBIGUOUS",
+    "TITLE_MODIFIERS",
+    "TITLE_STYLES",
+    "TITLE_PHRASES",
+    "NON_GIVEN_NAME_PARTICLES",
+    "PARTICLES",
+    "CONJUNCTIONS",
+    "CONJUNCTIONS_AMBIGUOUS",
+    "BOUND_GIVEN_NAMES",
+    "GIVEN_NAME_ABBREVIATIONS",
+    "MAIDEN_MARKERS",
+    "SUFFIX_WORDS",
+    "GLUED_HONORIFICS",
+    "SUFFIX_WORDS_AMBIGUOUS",
+    "AGNOMENS",
+    "SUFFIX_ACRONYMS_AMBIGUOUS",
+    "SUFFIX_ACRONYMS",
+    "CAPITALIZATION_EXCEPTIONS",
+    "GENERATION_WORDS",
+    "CREDENTIAL_WORDS",
+    "PATRONYMIC_PARTICLES",
 )
 
 
@@ -1297,7 +1297,7 @@ Compiled = _ri.Compiled
 
 # the one tie between the two: mypy holds compile_pool to Compiled's
 # keys, and this holds Compiled's keys to the roster render writes
-assert tuple(Compiled.__annotations__) == tuple(name for name, _ in CONSTANTS), (
+assert tuple(Compiled.__annotations__) == CONSTANTS, (
     "Compiled and CONSTANTS list different constants")
 
 
@@ -1368,9 +1368,8 @@ tools/vocab/build.py -- do not edit; edit the TOML and run
 
     {REFRESH}
 
-The public names are re-exported, with their documentation, by the
-nameparser.config modules (titles, particles, suffixes, ...); the last
-three, the kinds those sets do not record, are read by Lexicon alone.
+Private since 3.0 (#1007): Lexicon reads these sets, and a caller asks
+Lexicon.words(kind=...) and Lexicon.readings_of(word) instead.
 """
 '''
 
@@ -1381,7 +1380,7 @@ def render(compiled: Compiled) -> str:
     # a TypedDict is read by literal key; the roster loop reads it as
     # the Mapping it also is
     values: Mapping[str, object] = compiled
-    for name, _ in CONSTANTS:
+    for name in CONSTANTS:
         v = values[name]
         out.append("")
         if isinstance(v, dict):

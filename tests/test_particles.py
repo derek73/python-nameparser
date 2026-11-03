@@ -1,8 +1,7 @@
 import pytest
 
 from nameparser import Lexicon, PatronymicRule, Parser, Policy, parse
-from nameparser.config.particles import NON_GIVEN_NAME_PARTICLES
-from nameparser.config.titles import TITLES
+from nameparser.config._compiled import NON_GIVEN_NAME_PARTICLES, TITLES
 
 from tests.base import ParsedNameTestBase
 

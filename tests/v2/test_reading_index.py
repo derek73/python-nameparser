@@ -54,7 +54,7 @@ def test_the_index_compiled_with_no_choice_is_the_committed_module() -> None:
     # compiled, byte for byte as the build writes it
     compiled = ri.compile_readings(ri.index())
     assert build.render(compiled) == build.OUTPUT.read_text(encoding="utf-8")
-    for name, _ in build.CONSTANTS:
+    for name in build.CONSTANTS:
         assert compiled[name] == getattr(_compiled, name), name  # type: ignore[literal-required]
 
 
@@ -203,7 +203,7 @@ def test_a_tag_no_file_holds_is_refused_naming_those_that_are(
 
 def test_an_empty_choice_compiles_the_default() -> None:
     compiled = ri.compile_choice(frozenset())
-    for name, _ in build.CONSTANTS:
+    for name in build.CONSTANTS:
         assert compiled[name] == getattr(_compiled, name), name  # type: ignore[literal-required]
     assert ri.changed_words(frozenset()) == frozenset()
 

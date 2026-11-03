@@ -24,11 +24,9 @@ from nameparser._pipeline._state import (
 from nameparser._policy import Policy, _SCRIPT_RANGES, _script_matcher
 from nameparser._types import Role, Span
 
-# Ported from v1 (nameparser/config/regexes.py, "emoji" and "bidi") --
-# layering forbids importing the config package here, so the tables are
-# duplicated by design with this provenance note. When editing, keep
-# both copies in sync (regexes.py builds its public re_emoji from the
-# SAME codepoint pairs). Integer ranges, not a regex character class:
+# Ported from v1's "emoji" and "bidi" patterns (the 1.x and 2.x
+# nameparser.config.regexes, removed in 3.0, #1008); this is now the
+# only copy. Integer ranges, not a regex character class:
 # the per-char test needs no regex, and CodeQL's py/overly-large-range
 # false-positives on literal astral ranges (surrogate decomposition).
 _EMOJI_RANGES = ((0x1F300, 0x1F64F), (0x1F680, 0x1F6FF),

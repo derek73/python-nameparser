@@ -276,8 +276,6 @@ def test_public_exports() -> None:
     ("nameparser.config", "SetManager"),
     ("nameparser.config", "TupleManager"),
     ("nameparser.config", "RegexTupleManager"),
-    ("nameparser.config.titles", "FIRST_NAME_TITLES"),
-    ("nameparser.config.suffixes", "SUFFIX_NOT_ACRONYMS"),
 ])
 def test_the_1x_compatibility_names_are_gone(module: str, name: str) -> None:
     # 3.0 removed the 1.x layer 2.8 warned about (#357); a name that
@@ -296,10 +294,25 @@ def test_the_1x_compatibility_modules_are_gone(module: str) -> None:
         importlib.import_module(module)
 
 
+@pytest.mark.parametrize("module", [
+    "nameparser.config.titles", "nameparser.config.suffixes",
+    "nameparser.config.particles", "nameparser.config.conjunctions",
+    "nameparser.config.bound_given_names", "nameparser.config.given_names",
+    "nameparser.config.maiden_markers", "nameparser.config.capitalization",
+])
+def test_the_vocabulary_modules_are_gone(module: str) -> None:
+    # 3.0 removed the modules that re-exported the compiled sets, which
+    # 2.8.1 warned of (#1007): Lexicon.words(kind=...) lists a kind's
+    # words, and nameparser.config.surnames is the one public module left
+    with pytest.raises(ModuleNotFoundError):
+        importlib.import_module(module)
+
+
 @pytest.mark.parametrize("statement,error", [
     ("from nameparser.config.prefixes import PREFIXES", ModuleNotFoundError),
     ("from nameparser.config.titles import FIRST_NAME_TITLES", ImportError),
     ("from nameparser.config.suffixes import SUFFIX_NOT_ACRONYMS", ImportError),
+    ("from nameparser.config.titles import TITLES", ModuleNotFoundError),
     ("from nameparser import HumanName", ImportError),
 ])
 def test_the_1x_imports_fail(statement: str, error: type[Exception]) -> None:

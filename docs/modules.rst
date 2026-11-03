@@ -204,30 +204,15 @@ Locales
 Default vocabulary
 ------------------
 
-The data modules in ``nameparser.config``: the sets
-``Lexicon.default()`` compiles its readings to, read-only, and the
-compiled patterns in ``regexes``. To ask what a word may be read as,
-call :meth:`Lexicon.readings_of() <nameparser.Lexicon.readings_of>`; to
-change a default for your parses, configure a
-:class:`~nameparser.Lexicon` rather than the module (:doc:`customize`). Coming from 1.x? See :doc:`migrate`.
+The default vocabulary is asked of a lexicon: :meth:`Lexicon.words()
+<nameparser.Lexicon.words>` lists the words holding a reading of a kind,
+and :meth:`Lexicon.readings_of() <nameparser.Lexicon.readings_of>` what
+one word may be read as; to change a default for your parses, configure
+a :class:`~nameparser.Lexicon` (:doc:`customize`). The modules that
+exposed its word lists as constants through 2.x are gone in 3.0
+(:doc:`migrate`). One data module stays in ``nameparser.config``: the
+Korean surname list.
 
-.. automodule:: nameparser.config.titles
-   :members:
-.. automodule:: nameparser.config.suffixes
-   :members:
-.. automodule:: nameparser.config.particles
-   :members:
-.. automodule:: nameparser.config.bound_given_names
-   :members:
-.. automodule:: nameparser.config.given_names
-   :members:
-.. automodule:: nameparser.config.conjunctions
-   :members:
-.. automodule:: nameparser.config.maiden_markers
-   :members:
+.. automodule:: nameparser.config
 .. automodule:: nameparser.config.surnames
-   :members:
-.. automodule:: nameparser.config.capitalization
-   :members:
-.. automodule:: nameparser.config.regexes
    :members:

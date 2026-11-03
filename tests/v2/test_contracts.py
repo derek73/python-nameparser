@@ -140,11 +140,12 @@ def test_every_vocabulary_constant_is_frozen() -> None:
     rather than from the day someone notices.
 
     Scope stops at ``nameparser/config``, which is where the hazard is:
-    the constants are public, read by callers as well as by the cached
-    ``Lexicon.default()``, so a mutable one lets a caller's copy and the
-    default disagree. A locale pack has one consumer and one moment -- the
-    ``Lexicon(...)`` in its own module body, whose fields are frozen
-    copies -- so ``locales/zh.py``'s ``_SURNAMES`` could not desync
+    the constants are module-level, reachable by callers (``surnames``
+    publicly, ``_compiled`` by its private name) as well as read by the
+    cached ``Lexicon.default()``, so a mutable one lets a caller's copy
+    and the default disagree. A locale pack has one consumer and one
+    moment -- the ``Lexicon(...)`` in its own module body, whose fields
+    are frozen copies -- so ``locales/zh.py``'s ``_SURNAMES`` could not desync
     anything even as a plain ``set``. It is a ``frozenset`` anyway.
     """
     import importlib
@@ -152,17 +153,15 @@ def test_every_vocabulary_constant_is_frozen() -> None:
 
     import nameparser.config
 
-    # The two mapping constants, EXEMPT and named rather than dropped by
-    # the isinstance filter without comment. REGEXES is a compiled-
-    # pattern table rather than vocabulary and was never in #293's
-    # scope. CAPITALIZATION_EXCEPTIONS is vocabulary-shaped and is a
-    # decided, in-scope exemption, which means the hazard the freeze
-    # closes is STILL LIVE for it -- an edit after the first parse
-    # misses the cached Lexicon.default(). Written down here, in
-    # docs/migrate.rst and in AGENTS.md so it does not read as covered.
+    # The mapping constant, EXEMPT and named rather than dropped by the
+    # isinstance filter without comment (REGEXES, the other until 3.0,
+    # left with its module, #1008). CAPITALIZATION_EXCEPTIONS is
+    # vocabulary-shaped and is a decided, in-scope exemption, which
+    # means the hazard the freeze closes is STILL LIVE for it -- an edit
+    # after the first parse misses the cached Lexicon.default(). Written
+    # down here and in AGENTS.md so it does not read as covered.
     exempt_mappings = {
-        "capitalization.CAPITALIZATION_EXCEPTIONS",
-        "regexes.REGEXES",
+        "_compiled.CAPITALIZATION_EXCEPTIONS",
     }
 
     config_dir = pathlib.Path(nameparser.config.__file__).parent
@@ -171,7 +170,12 @@ def test_every_vocabulary_constant_is_frozen() -> None:
     exempt_seen = set()
     for path in sorted(config_dir.rglob("*.py")):
         relative = path.relative_to(config_dir).with_suffix("")
-        if any(part.startswith("_") for part in relative.parts):
+        # _compiled holds the sets Lexicon.default() reads, private since
+        # their re-exporting modules went in 3.0 (#1007) but still
+        # module constants a caller can reach; the other private modules
+        # hold none
+        if (any(part.startswith("_") for part in relative.parts)
+                and relative.parts != ("_compiled",)):
             continue
         stem = ".".join(relative.parts)
         module = importlib.import_module(f"nameparser.config.{stem}")
@@ -197,14 +201,12 @@ def test_every_vocabulary_constant_is_frozen() -> None:
         f"next mutable mapping that inherits the name")
     # A FLOOR, not a presence check: `assert checked` is satisfied by
     # one surviving constant, so a filter or a path change that quietly
-    # dropped twelve of the thirteen would still read as a pass. Thirteen
-    # distinct constants across seven modules (measured 2026-10-18; the
-    # fourteenth entry before then was particles.BOUND_GIVEN_NAMES, an
-    # import for a disjointness assert that became a vocabulary build
-    # check). The private _compiled.py they are assigned from is skipped
-    # with the other private modules: its objects are the same ones.
-    # Raise this when a constant is added; a drop is the regression.
-    assert len(checked) >= 13, (
+    # dropped most of them would still read as a pass. 24 constants:
+    # _compiled's 23 sets and surnames.KOREAN_SURNAMES (measured
+    # 2026-11-02, when 3.0 removed the modules that re-exported
+    # _compiled's, #1007). Raise this when a constant is added; a drop is
+    # the regression.
+    assert len(checked) >= 24, (
         f"only {len(checked)} vocabulary set constants found under "
         f"{config_dir} ({checked}) -- the derivation shrank, and a "
         f"roster that shrinks silently stops guarding silently")
@@ -223,12 +225,14 @@ def test_the_documented_replacements_for_an_in_place_edit_work() -> None:
     deliberately not a title outside a title phrase in the shipped
     vocabulary, and a caller who wants it everywhere has to say so.
     """
-    from nameparser import Lexicon, Parser, parse
-    from nameparser.config.titles import TITLES
+    import importlib
 
-    # what the freeze retired
-    with pytest.raises(AttributeError):
-        TITLES.add("dean")  # type: ignore[attr-defined]
+    from nameparser import Lexicon, Parser, parse
+
+    # what the freeze retired, and since 3.0 the module that exposed it
+    # (#1007)
+    with pytest.raises(ModuleNotFoundError):
+        importlib.import_module("nameparser.config.titles")
     assert parse("Dean Smith").title == ""
 
     # the recipe: a configured Lexicon. "dean" holds a title reading
@@ -242,7 +246,7 @@ def test_the_documented_replacements_for_an_in_place_edit_work() -> None:
 @pytest.mark.parametrize("code", [
     "import nameparser",
     "from nameparser import *",
-    "from nameparser.config.titles import TITLES",
+    "from nameparser.config.surnames import KOREAN_SURNAMES",
     "from nameparser import parse; parse('John Smith')",
 ])
 def test_imports_and_the_core_stay_quiet(code: str) -> None:
@@ -256,15 +260,12 @@ def test_imports_and_the_core_stay_quiet(code: str) -> None:
     assert result.returncode == 0, result.stderr
 
 
-@pytest.mark.parametrize("module_name", [
-    "nameparser.config.titles", "nameparser.config.suffixes",
-    "nameparser.config.particles", "nameparser.config.given_names",
-    "nameparser.config.bound_given_names"])
+@pytest.mark.parametrize("module_name", ["nameparser.config.surnames"])
 def test_star_import_binds_the_module_s_live_constants(module_name: str) -> None:
     """``from x import *`` consults ``__all__`` and nothing else.
 
     The expected set is DERIVED from the module rather than listed, so a
-    constant added to one of these modules without a matching
+    constant added to the module without a matching
     ``__all__`` entry fails here, and each is checked to be the module's
     own object, so an ``__all__`` entry routed elsewhere fails too, as
     does a public name the module imports that a star import binds

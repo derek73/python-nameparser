@@ -1834,8 +1834,8 @@ class Lexicon:
     #: own punctuation. A value that does not spell the key's letters
     #: and digits raises ValueError. Pair-valued: change it with
     #: dataclasses.replace(); read it as a mapping via
-    #: capitalization_exceptions_map. Full default mapping:
-    #: :data:`~nameparser.config.capitalization.CAPITALIZATION_EXCEPTIONS`.
+    #: capitalization_exceptions_map; the default's are
+    #: ``Lexicon.default().capitalization_exceptions``.
     # Canonical storage: sorted tuple of (key, value) pairs. The
     # constructor tolerates any Mapping (or pair iterable) at runtime and
     # canonicalizes here; this closes the caller-aliasing hole and keeps
@@ -2328,11 +2328,11 @@ def _updates(held: Iterable[Any], edit: _Edit) -> bool:
 
 @functools.cache
 def _default_lexicon() -> Lexicon:
-    # the config data modules, compiled from nameparser/vocab/, are the
-    # single source of the default vocabulary: its sets are read from
-    # nameparser/config/_compiled.py, never compiled from the index here
-    # (_compiled_for), so Lexicon.default() loads no index.
-    from nameparser.config.capitalization import CAPITALIZATION_EXCEPTIONS
+    # nameparser/config/_compiled.py, compiled from nameparser/vocab/, is
+    # the single source of the default vocabulary: its sets are read from
+    # it, never compiled from the index here (_compiled_for), so
+    # Lexicon.default() loads no index.
+    from nameparser.config._compiled import CAPITALIZATION_EXCEPTIONS
     from nameparser.config.surnames import KOREAN_SURNAMES
 
     # every vocabulary constant is a frozenset since #293, and this
