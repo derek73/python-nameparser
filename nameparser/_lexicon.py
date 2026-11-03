@@ -530,7 +530,7 @@ _SET_FIELDS = tuple(f for f in _VOCAB_FIELDS if f not in _LIST_FIELDS)
 #: kind; the name is the tuple's first use.
 #: `_LexiconSets` attributes after the `_VOCAB_FIELDS` ones, each a
 #: compiled constant of its own.
-_KIND_FIELDS = ("generation_words", "credential_words",
+_KIND_FIELDS = ("generation_words", "credential_words", "honorific_words",
                 "patronymic_particles", "title_abbreviations")
 
 @dataclass(frozen=True, slots=True, eq=False, repr=False)
@@ -576,11 +576,13 @@ class _LexiconSets:
     title_phrases: frozenset[str]
     given_names: frozenset[str]
     #: the suffix words whose suffix reading is a generation (`jr`,
-    #: `iii`), a credential written as a word (`kc`), and the particles
-    #: read as patronymics (`bin`): the kinds rules/R8's and rules/R9's
-    #: views read, which the sets above do not record
+    #: `iii`), a credential written as a word (`kc`), or an honorific
+    #: (`さん`, `先生`), and the particles read as patronymics (`bin`):
+    #: the kinds rules/R8's and rules/R9's views read, which the sets
+    #: above do not record
     generation_words: frozenset[str]
     credential_words: frozenset[str]
+    honorific_words: frozenset[str]
     patronymic_particles: frozenset[str]
     #: the words whose title reading is written `abbreviation=True`
     #: (`maj`); rules/H5's trailing chain reads one only beside
@@ -615,6 +617,7 @@ _COMPILED_FIELDS = {
     "title_phrases": "TITLE_PHRASES",
     "generation_words": "GENERATION_WORDS",
     "credential_words": "CREDENTIAL_WORDS",
+    "honorific_words": "HONORIFIC_WORDS",
     "patronymic_particles": "PATRONYMIC_PARTICLES",
     "title_abbreviations": "TITLE_ABBREVIATIONS",
 }
@@ -1255,7 +1258,7 @@ _TITLE_FIELDS = frozenset({
 _ACRONYM_FIELDS = frozenset({"suffix_acronyms", "suffix_acronyms_ambiguous"})
 _WORD_FIELDS = frozenset({
     "suffix_words", "suffix_words_ambiguous", "agnomens", "honorific_tails",
-    "generation_words", "credential_words"})
+    "generation_words", "credential_words", "honorific_words"})
 _PARTICLE_FIELDS = frozenset({
     "particles", "particles_ambiguous", "patronymic_particles"})
 
@@ -1419,6 +1422,7 @@ _MARKER_READ_WITH = (
     ("honorific_tails", ("suffix_words",)),
     ("generation_words", ("suffix_words",)),
     ("credential_words", ("suffix_words",)),
+    ("honorific_words", ("suffix_words",)),
     ("agnomens", ("suffix_words_ambiguous",)),
 )
 

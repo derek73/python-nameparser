@@ -39,7 +39,7 @@ N` one name in N (snapshot.sampled, by a hash of the name, so a sample
 is the same in every tree and run).
 
 **What is compared**: the seven role fields, the ambiguity kinds and
-3.0's views (VIEWS: `generation`, `credentials`, `patronymic`,
+3.0's views (VIEWS: `generation`, `credentials`, `honorifics`, `patronymic`,
 `surname2`), which can move where no role does (`Ivan Ivanovich
 Petrov` under `plain:RU` gains patronymic 'Ivanovich'). The report,
 per configuration against the baseline: how many names moved, per
@@ -131,7 +131,7 @@ import snapshot  # noqa: E402
 ROLES = snapshot.V2_FIELDS
 #: 3.0's views, compared beside the roles: each can move where no role
 #: does.
-VIEWS = ("generation", "credentials", "patronymic", "surname2")
+VIEWS = ("generation", "credentials", "honorifics", "patronymic", "surname2")
 #: Where a moved name whose two parses hold different tokens is tallied.
 RETOKENIZED = "(retokenized)"
 #: Where a changed gaps record is counted when no word the lexicons read

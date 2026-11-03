@@ -1890,8 +1890,8 @@ def test_migrate_s_table_covers_every_compiled_constant() -> None:
             re.findall(r"   \* - ``([A-Z_]+)``\n", section))
     from nameparser.config import _compiled
     public_in_2x = {n for n in vars(_compiled) if n.isupper()} - {
-        "GENERATION_WORDS", "CREDENTIAL_WORDS", "PATRONYMIC_PARTICLES",
-        "TITLE_ABBREVIATIONS"}
+        "GENERATION_WORDS", "CREDENTIAL_WORDS", "HONORIFIC_WORDS",
+        "PATRONYMIC_PARTICLES", "TITLE_ABBREVIATIONS"}
     assert public_in_2x <= named
     assert len(_migrate_constant_rows()) >= 20  # the rows with code
     # the one row naming two constants, which the row pattern skips

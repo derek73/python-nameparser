@@ -77,8 +77,8 @@ from nameparser._lexicon import _normalize, _spells_an_initial
 from nameparser._policy import CapsSuffixes
 from nameparser._pipeline._state import (
     AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, CREDENTIAL_WORD_TAG,
-    GENERATION_WORD_TAG, GIVEN_ABBREVIATION_TAG, PATRONYMIC_TAG, SHAPE_ACRONYM_TAG,
-    SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, TITLE_AMBIGUOUS_TAG,
+    GENERATION_WORD_TAG, GIVEN_ABBREVIATION_TAG, HONORIFIC_WORD_TAG,
+    PATRONYMIC_TAG, SHAPE_ACRONYM_TAG, SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, TITLE_AMBIGUOUS_TAG,
     TRAILING_TITLE_TAG, ParseState,
     Deferred, PendingAmbiguity, PendingReading,
     WorkToken, copy_with,
@@ -185,6 +185,8 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
             tags.add(GENERATION_WORD_TAG)
         elif n in lex._sets.credential_words:
             tags.add(CREDENTIAL_WORD_TAG)
+        elif n in lex._sets.honorific_words:
+            tags.add(HONORIFIC_WORD_TAG)
     if n in lex._sets.suffix_acronyms_ambiguous:
         tags.add(AMBIGUOUS_ACRONYM_TAG)
     # rules/P7: "A one-letter word written with its period is an

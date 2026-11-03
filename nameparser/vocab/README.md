@@ -114,8 +114,8 @@ A reading's key is its **kind**. The table lists the kinds in their canonical or
 | `generation` | `suffix` | `SUFFIX_WORDS`, `GENERATION_WORDS` |
 | `agnomen` | `suffix` | `SUFFIX_WORDS`, `SUFFIX_WORDS_AMBIGUOUS`, `AGNOMENS` |
 | `credential` | `suffix` | `SUFFIX_ACRONYMS` |
-| `honorific` | `suffix` | `SUFFIX_WORDS` |
-| `professional_honorific` | `suffix` | `SUFFIX_WORDS` |
+| `honorific` | `suffix` | `SUFFIX_WORDS`, `HONORIFIC_WORDS` |
+| `professional_honorific` | `suffix` | `SUFFIX_WORDS`, `HONORIFIC_WORDS` |
 | `status` | `suffix` | `SUFFIX_WORDS` |
 | `courtesy` | `suffix` | `SUFFIX_WORDS` |
 | `particle` | `particle` | `PARTICLES` |
@@ -133,7 +133,7 @@ A reading's key is its **kind**. The table lists the kinds in their canonical or
 | `given` | `name` | nothing |
 | `family` | `name` | nothing |
 
-A suffix reading goes to `SUFFIX_ACRONYMS` when its `acronym` property is true and to `SUFFIX_WORDS` otherwise; the column shows where each kind goes with `acronym` unwritten. `GENERATION_WORDS`, `CREDENTIAL_WORDS` (a credential written as a word) and `PATRONYMIC_PARTICLES` record the kinds the other sets do not, which the `generation`, `credentials` and `patronymic` views read ([rules/R8](../../docs/design/rules/R8-generation-and-credentials-views.md), [rules/R9](../../docs/design/rules/R9-patronymic-view.md)); `Lexicon` reads them, and since 3.0 no constant is public (#1007). A word has at most one suffix kind (check 4). A `given` reading carrying `same_as` goes to `GIVEN_NAME_ABBREVIATIONS`, a given name written short (see [Name readings](#name-readings)).
+A suffix reading goes to `SUFFIX_ACRONYMS` when its `acronym` property is true and to `SUFFIX_WORDS` otherwise; the column shows where each kind goes with `acronym` unwritten. `GENERATION_WORDS`, `CREDENTIAL_WORDS` (a credential written as a word), `HONORIFIC_WORDS` (an `honorific` or `professional_honorific`) and `PATRONYMIC_PARTICLES` record the kinds the other sets do not, which the `generation`, `credentials`, `honorifics` and `patronymic` views read ([rules/R8](../../docs/design/rules/R8-generation-credentials-and-honorifics-views.md), [rules/R9](../../docs/design/rules/R9-patronymic-view.md)); `Lexicon` reads them, and since 3.0 no constant is public (#1007). A word has at most one suffix kind (check 4). A `given` reading carrying `same_as` goes to `GIVEN_NAME_ABBREVIATIONS`, a given name written short (see [Name readings](#name-readings)).
 
 `generation` is a word that numbers or ranks its bearer among relatives of the same name, written after the name: junior and senior and their translations, `fils`, the roman numerals the vocabulary lists. `agnomen` is the Brazilian and Portuguese kind of it (`filho`, `neto`, `sobrinho` and their feminines): it is written in the case of the name around it, so its writing settles nothing, and an agnomen reading needs a name reading on its word (check 11), which gates it by the count alone ([rules/S11](../../docs/design/rules/S11-suffix-word-that-is-also-a-name.md), a suffix word that is also a name). The column shows an agnomen with that name reading.
 

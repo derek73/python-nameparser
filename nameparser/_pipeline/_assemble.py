@@ -42,7 +42,7 @@ from nameparser._lexicon import (
 )
 from nameparser._pipeline._state import (
     AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, ATTACHED_TAG,
-    CREDENTIAL_WORD_TAG, FIELD_READING, GENERATION_WORD_TAG,
+    CREDENTIAL_WORD_TAG, FIELD_READING, GENERATION_WORD_TAG, HONORIFIC_WORD_TAG,
     NAME_ROLES, PATRONYMIC_TAG, SECOND_SURNAME_TAG, SHAPE_ACRONYM_TAG,
     SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG,
     TITLE_AMBIGUOUS_TAG, TRAILING_TITLE_TAG, Beside, Deferred, ParseState, PendingAmbiguity,
@@ -91,6 +91,7 @@ _KINDS: MappingProxyType[ReadingKind, frozenset[str]] = MappingProxyType({
     ReadingKind.GENERATION: _SUFFIX_KINDS,
     ReadingKind.AGNOMEN: _SUFFIX_KINDS,
     ReadingKind.POST_NOMINAL: _SUFFIX_KINDS,
+    ReadingKind.HONORIFIC: _SUFFIX_KINDS,
 })
 
 #: A name reading's rows by the field it lands in: a family word the
@@ -220,7 +221,7 @@ _reading = functools.lru_cache(maxsize=1024)(Reading)
 #: `Token.reading` carries out; and the written-short mark rules/H5's
 #: chain reads (#999), for which the published token keeps
 #: TITLE_AMBIGUOUS_TAG.
-_KIND_TAGS = frozenset({GENERATION_WORD_TAG, CREDENTIAL_WORD_TAG,
+_KIND_TAGS = frozenset({GENERATION_WORD_TAG, CREDENTIAL_WORD_TAG, HONORIFIC_WORD_TAG,
                         PATRONYMIC_TAG, ATTACHED_TAG, TRAILING_TITLE_TAG})
 
 #: O6's second-surname mark (rules/R10), which no published token

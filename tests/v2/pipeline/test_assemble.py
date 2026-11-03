@@ -312,7 +312,7 @@ _EXPECTED_READINGS = [
     ("John Smith PhD", None, "PhD", "credential", "vocabulary"),
     ("John Smith X.Y.Z.", None, "X.Y.Z.", "credential", "shape"),
     ("Jean-Luc Picard Esq.", None, "Esq.", "post-nominal", "vocabulary"),
-    ("王小明先生", None, "先生", "post-nominal", "vocabulary"),
+    ("王小明先生", None, "先生", "honorific", "vocabulary"),
     # a word the run takes by position, and a credential split across a
     # space, which is one credential
     ("John Smith PhD Jones", None, "Jones", "credential", "position"),
@@ -417,15 +417,17 @@ def test_a_token_replace_or_revise_builds_has_no_reading() -> None:
 #: A listed suffix word reads as its vocabulary kind (3.0's 4b): `jr`
 #: and `esq` compile into the same set with the same tags, and the
 #: reading index tells them apart; a credential written as a word
-#: (`博士`) is a credential, and a kind with no reading kind of its own
-#: (a courtesy, an honorific) a post-nominal word.
+#: (`博士`) is a credential, an honorific (`先生`) an honorific (#326),
+#: and a kind with no reading kind of its own (a courtesy, a status) a
+#: post-nominal word.
 @pytest.mark.parametrize("text,word,kind", [
     ("John Smith Jr.", "Jr.", "generation"),
     ("John Smith Sr.", "Sr.", "generation"),
     ("John Smith III", "III", "generation"),
     ("Pedro Alves Filho", "Filho", "agnomen"),
     ("John Smith Esq.", "Esq.", "post-nominal"),
-    ("王小明先生", "先生", "post-nominal"),
+    ("王小明先生", "先生", "honorific"),
+    ("김민준 씨", "씨", "honorific"),
     ("王小明 博士", "博士", "credential"),
     ("John Smith PhD", "PhD", "credential"),
 ])
@@ -447,7 +449,8 @@ def test_every_suffix_words_reading_alternative_and_index_kind_agree(
     from nameparser._reading_index import suffix_kind_of
     lex = Lexicon.default()
     kinds = {"generation": "generation", "agnomen": "agnomen",
-             "credential": "credential"}
+             "credential": "credential", "honorific": "honorific",
+             "professional_honorific": "honorific"}
     sets = lex._sets
     words = sorted(sets.suffix_words | sets.suffix_acronyms
                    | sets.suffix_words_ambiguous

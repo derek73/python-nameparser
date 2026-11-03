@@ -892,6 +892,9 @@ class ReadingKind(StrEnum):
     AGNOMEN = "agnomen"
     #: A listed post-nominal word of another kind ("Rinpoche", "Esq.").
     POST_NOMINAL = "post-nominal"
+    #: A form of address written after the name ("さん", "씨", "先生"),
+    #: the words :attr:`ParsedName.honorifics` holds. Added in 3.0.
+    HONORIFIC = "honorific"
     #: A title ("Dean", "Prince"). The one value shared with a
     #: :class:`Role`, on purpose: a title reading is the title field's,
     #: so ``ReadingKind.TITLE == Role.TITLE`` says something true.
@@ -910,9 +913,11 @@ class ReadingKind(StrEnum):
     PATRONYMIC = "patronymic"
 
 
-#: The reading kinds :attr:`ParsedName.generation` holds; every other
-#: suffix word is in :attr:`ParsedName.credentials` (#326).
+#: The reading kinds :attr:`ParsedName.generation` and
+#: :attr:`ParsedName.honorifics` hold; every other suffix word is in
+#: :attr:`ParsedName.credentials` (#326).
 _GENERATION_KINDS = frozenset({ReadingKind.GENERATION, ReadingKind.AGNOMEN})
+_HONORIFIC_KINDS = frozenset({ReadingKind.HONORIFIC})
 
 
 class ReadingSource(StrEnum):
@@ -1388,22 +1393,30 @@ class ParsedName:
         return self._text_for(Role.MIDDLE, Role.FAMILY)
 
     @property
-    # rules/R8: "the suffix splits into two views that partition it"
+    # rules/R8: "the suffix splits into three views that partition it"
     # (history: decisions/R8, #326)
     def generation(self) -> str:
         """The suffix words read as a generation or an agnomen ("Jr.",
         "III", "Filho"), joined as :attr:`suffix` joins them; ``''``
         for a name with none."""
-        return self._suffix_view(True)
+        return self._suffix_view(_GENERATION_KINDS)
 
     @property
     def credentials(self) -> str:
-        """The rest of the suffix: credentials and every other
-        post-nominal word ("PhD", "Esq.", "さん"), joined as
-        :attr:`suffix` joins them; ``''`` for a name with none. A
-        suffix word with no :attr:`Token.reading` (one :meth:`replace`
-        or Parser.revise wrote) is counted here."""
-        return self._suffix_view(False)
+        """The rest of the suffix: credentials and the post-nominal
+        words that are neither a generation nor an honorific ("PhD",
+        "Esq.", "Rinpoche"), joined as :attr:`suffix` joins them; ``''``
+        for a name with none. A suffix word with no
+        :attr:`Token.reading` (one :meth:`replace` or Parser.revise
+        wrote) is counted here."""
+        return self._suffix_view(None)
+
+    @property
+    def honorifics(self) -> str:
+        """The suffix words read as a form of address written after
+        the name ("さん", "씨", "先生"), joined as :attr:`suffix` joins
+        them; ``''`` for a name with none. Added in 3.0."""
+        return self._suffix_view(_HONORIFIC_KINDS)
 
     @property
     def given_names(self) -> str:
@@ -1461,8 +1474,10 @@ class ParsedName:
             if tok.role is Role.FAMILY and tok.reading is not None
             and tok.reading.second_surname)
 
-    def _suffix_view(self, generation: bool) -> str:
-        # the `generation` / `credentials` partition of `suffix`, each
+    def _suffix_view(self, kinds: frozenset[ReadingKind] | None) -> str:
+        # the `generation` / `honorifics` / `credentials` partition of
+        # `suffix` (`kinds` None is the credentials, every word the
+        # other two kind sets do not hold), each
         # word placed by the reading it took ('D.' after 'Ph.' takes
         # the credential's) and a connective going with the word it
         # follows ('PhD and MD'); two words of one view are separated
@@ -1480,8 +1495,11 @@ class ParsedName:
             kind = tok.reading.kind if tok.reading is not None else None
             if kind is ReadingKind.CONJUNCTION and before is not None:
                 keep = before
+            elif kinds is None:
+                keep = (kind not in _GENERATION_KINDS
+                        and kind not in _HONORIFIC_KINDS)
             else:
-                keep = (kind in _GENERATION_KINDS) is generation
+                keep = kind in kinds
             if keep:
                 if parts and not comma:
                     parts[-1] += " " + tok.text

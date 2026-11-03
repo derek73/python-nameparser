@@ -103,6 +103,11 @@ BEHAVIORAL: dict[str, frozenset[str]] = {
 #: credential acronym's clash is the second marker's.
 GATED_WORDS = frozenset({"generation", "agnomen", "credential"})
 
+#: The suffix word kinds rules/R8's `honorifics` view holds: a form of
+#: address written after the name (`さん`, `씨`, `先生`), which CLDR's
+#: `credentials` field does not hold (#326).
+HONORIFIC_KINDS = frozenset({"honorific", "professional_honorific"})
+
 
 def indexed(kind: str) -> frozenset[str]:
     """The properties of a `kind` reading the index keeps: its
@@ -475,7 +480,7 @@ def suffix_kind_of(text: str) -> str | None:
     normalized as :func:`readings_of` takes it. The shipped files'
     answer only: since 3.0's 4i-b the parse reads a suffix word's kind
     from its own `Lexicon`, which compiles it (GENERATION_WORDS,
-    CREDENTIAL_WORDS), and this agrees with the default's."""
+    CREDENTIAL_WORDS, HONORIFIC_WORDS), and this agrees with the default's."""
     for _tag, kind, _pairs in _by_text().get(text, ()):
         if CATEGORY[kind] == "suffix":
             return kind
@@ -524,6 +529,7 @@ class Compiled(TypedDict):
     CAPITALIZATION_EXCEPTIONS: dict[str, str]
     GENERATION_WORDS: frozenset[str]
     CREDENTIAL_WORDS: frozenset[str]
+    HONORIFIC_WORDS: frozenset[str]
     PATRONYMIC_PARTICLES: frozenset[str]
     TITLE_ABBREVIATIONS: frozenset[str]
 
@@ -565,6 +571,7 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
     acronyms: set[str] = set()
     generations: set[str] = set()
     credential_words: set[str] = set()
+    honorific_words: set[str] = set()
     patronymics: set[str] = set()
     cased: dict[str, str] = {}
     for r, t in texts:
@@ -598,6 +605,8 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
                     generations.add(t)
                 elif r.kind == "credential":
                     credential_words.add(t)
+                elif r.kind in HONORIFIC_KINDS:
+                    honorific_words.add(t)
         elif r.category == "particle":
             particles.add(t)
             if r.kind == "patronymic":
@@ -659,12 +668,13 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
         SUFFIX_ACRONYMS=frozenset(acronyms),
         CAPITALIZATION_EXCEPTIONS=dict(sorted(cased.items())),
         # the kinds the compiled sets above do not record, which the
-        # generation, credentials and patronymic views read (rules/R8,
+        # generation, credentials, honorifics and patronymic views read (rules/R8,
         # rules/R9): a suffix WORD's kind, `jr` and `esq` both being in
         # SUFFIX_WORDS, and a particle's. Internal, re-exported by no
         # config module (#754, 4i-b)
         GENERATION_WORDS=frozenset(generations),
         CREDENTIAL_WORDS=frozenset(credential_words),
+        HONORIFIC_WORDS=frozenset(honorific_words),
         PATRONYMIC_PARTICLES=frozenset(patronymics),
         # the title readings written short (`abbreviation`), which H5's
         # trailing chain takes where the word may also be a given name

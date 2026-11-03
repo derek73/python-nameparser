@@ -39,7 +39,8 @@ _LEX = (
     # (rules/S8's two-letter minimum -- any longer suffix word would,
     # an honorific included since #679), the filler a test needs where
     # a credential would now take the rest of the part
-    .add("jr", "씨", kind="suffix")
+    .add("jr", kind="suffix")
+    .add("씨", kind="honorific")
     # `vd` mirrors its shipped dual membership -- particle AND
     # UNAMBIGUOUS credential -- which is what puts a name on P6's
     # suffix arm below. `ma` mirrors the ambiguous class, which starts
