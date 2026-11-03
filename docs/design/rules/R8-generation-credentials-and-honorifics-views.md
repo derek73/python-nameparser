@@ -4,7 +4,7 @@
 
 **Then:** the suffix splits into three views that partition it, the generation holding its words read as a generation or an agnomen, the honorifics its words read as a form of address written after the name, and the credentials every other word, each joining its words in written order and separating two of them by a comma where the suffix holds one anywhere between them, R1's separator, and by a space where it holds none.
 
-**Because:** a generation numbers the bearer among relatives of the same name while a credential is earned, and CLDR's person-name fields keep the two apart and format them differently. A form of address after the name (`さん`, `씨`, `先生`) is neither: it is no part of the name on either side (W3), and CLDR files it as a title, while an office written there (`議員`) is a credential in CLDR as in this view. A caller wanting one had to re-read the suffix against vocabulary they would have had to rebuild (#326), and all three are views, so the suffix field itself does not change.
+**Because:** a generation numbers the bearer among relatives of the same name while a credential is earned, and CLDR's person-name fields keep the two apart and format them differently. A form of address after the name (`さん`, `님`, `先生`) is neither: it is no part of the name on either side (W3), and CLDR files it as a title, while an office written there (`議員`) is a credential in CLDR as in this view. A caller wanting one had to re-read the suffix against vocabulary they would have had to rebuild (#326), and all three are views, so the suffix field itself does not change.
 
 ```
 "Smith, John, Jr., MD, Esq."  →  generation="Jr."
