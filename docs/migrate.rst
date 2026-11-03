@@ -75,7 +75,7 @@ a ``Constants`` cannot load, because there is no class to load it into.
 Finding the sites
 ~~~~~~~~~~~~~~~~~
 
-Upgrade to 2.8 first. A ``DeprecationWarning`` is hidden by default
+Upgrade to 2.8.1 first. A ``DeprecationWarning`` is hidden by default
 outside ``__main__``, so run your tests with warnings turned into
 errors, and each use 3.0 removes stops the run at the line that makes
 it:
@@ -84,8 +84,9 @@ it:
 
     python -W error::DeprecationWarning -m pytest
 
-2.8 warns where code *uses* a removed name, not where it imports one,
-so some code passes that check and still fails on 3.0:
+2.8 warns where code *uses* a removed name, not where it imports one
+(the one import that warns is ``nameparser.config.regexes``, from
+2.8.1), so some code passes that check and still fails on 3.0:
 
 * *reading* the shared ``CONSTANTS`` (``"dr" in CONSTANTS.titles``, or
   ``copy.copy(CONSTANTS)``), which 2.8 left quiet so that importing
@@ -99,8 +100,8 @@ so some code passes that check and still fails on 3.0:
   ``nameparser.config.bound_first_names``
 
 So search your code for ``CONSTANTS``, ``HumanName``, ``Constants``,
-``nameparser.parser``, ``nameparser.util``, ``config.prefixes`` and
-``config.bound_first_names`` as well.
+``nameparser.parser``, ``nameparser.util``, ``config.prefixes``,
+``config.bound_first_names`` and ``config.regexes`` as well.
 
 Coming from 1.x
 ~~~~~~~~~~~~~~~

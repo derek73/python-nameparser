@@ -31,6 +31,20 @@ def test_collapse_is_the_254_algorithm() -> None:
     assert _collapse("") == ""
 
 
+@pytest.mark.parametrize("space", ["\t", "\u00a0", "\u3000"])
+def test_collapse_reads_any_whitespace_as_a_space(space: str) -> None:
+    # A spec may separate fields with any whitespace, and an empty field
+    # leaves two of it, or one before a comma. Until 3.0 _render's
+    # _SPACES and _SPACE_BEFORE_COMMA were also pinned to config's
+    # copies, which #1008 removed; measured 2026-11-02, narrowing
+    # either to a literal space failed nothing else in the suite.
+    pn = parse("John Smith")
+    assert render(pn, f"{{given}}{space}{{middle}}{space}{{family}}") \
+        == "John Smith"
+    assert render(pn, f"{{family}}{space}{{middle}}, {{given}}") \
+        == "Smith, John"
+
+
 def _pn(original: str, tokens: list[Token]) -> ParsedName:
     return ParsedName(original=original, tokens=tuple(tokens))
 

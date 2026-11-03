@@ -2307,6 +2307,22 @@ def test_a_decomposed_dotted_letter_is_dotted() -> None:
     assert _dotted(unicodedata.normalize("NFD", "Ž.")) is True
 
 
+@pytest.mark.parametrize("mark", ["\u0301", "\u1ab0", "\u1dc0",
+                                  "\u20d0", "\ufe20"])
+def test_a_mark_from_each_combining_block_stays_in_its_word(
+        mark: str) -> None:
+    """`_vocab._MARKS` names five combining blocks (#652), and NFD of a
+    letter only ever produces the first, so the twin rows above reach
+    one. A mark from each block, written after a letter, keeps the
+    abbreviation one word and its shape a title. Until 3.0 the class
+    was also pinned to config's copy, which #1008 removed; measured
+    2026-11-02, dropping U+1AB0-1AFF from `_MARKS` failed nothing else
+    in the suite."""
+    name = parse(f"Dr. inz{mark}. Janez Novak")
+    assert name.title == f"Dr. inz{mark}."
+    assert name.given == "Janez"
+
+
 # #671: the credential, office and generational words, one spelling each
 # per distinct entry, all spaced / after-comma vocabulary. #707 vetted
 # the glued bar ("can it END a name?") and every word passed but

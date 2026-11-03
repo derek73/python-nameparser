@@ -155,10 +155,11 @@ def test_every_vocabulary_constant_is_frozen() -> None:
     # The mapping constant, EXEMPT and named rather than dropped by the
     # isinstance filter without comment (REGEXES, the other until 3.0,
     # left with its module, #1008). CAPITALIZATION_EXCEPTIONS is
-    # vocabulary-shaped and is a decided, in-scope exemption, which means the hazard the freeze
-    # closes is STILL LIVE for it -- an edit after the first parse
-    # misses the cached Lexicon.default(). Written down here, in
-    # docs/migrate.rst and in AGENTS.md so it does not read as covered.
+    # vocabulary-shaped and is a decided, in-scope exemption, which
+    # means the hazard the freeze closes is STILL LIVE for it -- an edit
+    # after the first parse misses the cached Lexicon.default(). Written
+    # down here, in docs/migrate.rst and in AGENTS.md so it does not
+    # read as covered.
     exempt_mappings = {
         "capitalization.CAPITALIZATION_EXCEPTIONS",
     }
