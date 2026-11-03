@@ -657,9 +657,10 @@ def split_pair(first: str, second: str, lexicon: Lexicon) -> str | None:
 
     "suffix": 'Ph.' then 'D.', with or without their periods, in any
     case, where the lexicon lists `phd` as unambiguous suffix
-    vocabulary (a credential, or a suffix word) -- v1's fix_phd, merged as an unambiguous suffix wherever it
-    stands but the head of the string (decisions/phd-merge); under a
-    lexicon that does not, the pair is asked as any other below.
+    vocabulary (a credential, or a suffix word) -- v1's fix_phd,
+    merged as an unambiguous suffix wherever it stands but the head
+    of the string (decisions/phd-merge); under a lexicon that does
+    not, None, the pair being the two words it is written as.
 
     "split": any other pair of short chunks (`SPLIT_CHUNK`) whose
     period-free concatenation is unambiguous suffix vocabulary while
@@ -682,16 +683,17 @@ def split_pair(first: str, second: str, lexicon: Lexicon) -> str | None:
     Where the merge may happen (never at the head of the string,
     rules/S2; a member pair only in a main segment and in the part
     after a comma) is the caller's question, not this one's."""
-    if (_PH.fullmatch(first) is not None and _D.fullmatch(second) is not None
-            and ("phd" in lexicon._sets.suffix_acronyms
-                 and "phd" not in lexicon._sets.suffix_acronyms_ambiguous
-                 or "phd" in lexicon._sets.suffix_words
-                 and "phd" not in lexicon._sets.suffix_words_ambiguous)):
+    if _PH.fullmatch(first) is not None and _D.fullmatch(second) is not None:
         # rules/S12: "is a credential only where the lexicon lists `phd`"
         # -- as unambiguous suffix vocabulary of either kind, as the
-        # joined spelling reads it; elsewhere it is any other two
-        # chunks, below. decisions/phd-merge (#1000)
-        return "suffix"
+        # joined spelling reads it; elsewhere the two words, the fold
+        # below being `phd` itself, which an ambiguous suffix word would
+        # admit as a member. decisions/phd-merge (#1000)
+        sets = lexicon._sets
+        return ("suffix" if "phd" in sets.suffix_acronyms
+                and "phd" not in sets.suffix_acronyms_ambiguous
+                or "phd" in sets.suffix_words
+                and "phd" not in sets.suffix_words_ambiguous else None)
     if (SPLIT_CHUNK.fullmatch(first) is None
             or SPLIT_CHUNK.fullmatch(second) is None):
         return None

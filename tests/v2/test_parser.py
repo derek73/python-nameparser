@@ -266,6 +266,13 @@ def _without_phd(label: str) -> Parser:
                 "phd", kind="credential")),
             "ambiguous": lambda: Parser(lexicon=Lexicon.default().add(
                 "phd", kind="family")),
+            # an ambiguous suffix WORD, which the split-credential path
+            # would admit as a counted member (#1000's third review)
+            "ambiguous word": lambda: Parser(lexicon=Lexicon.default()
+                                             .remove("phd", kind="credential")
+                                             .add("phd", kind="family")
+                                             .add("phd", kind="credential",
+                                                  acronym=False)),
             "empty": lambda: Parser(lexicon=Lexicon.empty()),
             "strict pt": lambda: parser_for(locales.PT, strict=True),
             "strict pt, family first": lambda: parser_for(
@@ -289,7 +296,8 @@ _PHD_SHAPES = (
 
 @pytest.mark.parametrize("text", _PHD_SHAPES)
 @pytest.mark.parametrize("label", [
-    "removed", "ambiguous", "empty", "strict pt", "strict pt, family first"])
+    "removed", "ambiguous", "ambiguous word", "empty", "strict pt",
+    "strict pt, family first"])
 def test_phd_pair_is_no_credential_where_the_lexicon_lists_no_phd(
         label: str, text: str) -> None:
     # decisions/phd-merge (#1000): a lexicon without `phd` as an
@@ -302,7 +310,7 @@ def test_phd_pair_is_no_credential_where_the_lexicon_lists_no_phd(
     assert all(t.role is not Role.SUFFIX for t in words)
 
 
-@pytest.mark.parametrize("label", ["removed", "ambiguous"])
+@pytest.mark.parametrize("label", ["removed", "ambiguous", "ambiguous word"])
 def test_phd_pair_reads_its_two_words_where_it_does_not_merge(
         label: str) -> None:
     parser = _without_phd(label)

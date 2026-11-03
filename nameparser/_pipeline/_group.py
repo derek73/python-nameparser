@@ -642,7 +642,8 @@ def _group_segment(seg: tuple[int, ...], additional: int,
     # the TRAILING site, which group() never suppresses.
 
     # ph-d merge first: "Ph." "D." adjacent -> one suffix piece,
-    # where the lexicon lists `phd` (#1000)
+    # where the lexicon lists `phd` as unambiguous suffix vocabulary
+    # (#1000)
     # (decisions/phd-merge; v1 fix_phd did this by regex on the
     # raw string)
     # A suffix never BEGINS a name: position outranks the vocabulary
