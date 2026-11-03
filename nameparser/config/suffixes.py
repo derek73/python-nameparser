@@ -136,8 +136,7 @@ else:
         "SUFFIX_WORDS": words_of(
             'kind="suffix"', "with the acronyms, which SUFFIX_WORDS leaves "
             "to SUFFIX_ACRONYMS"),
-        "GLUED_HONORIFICS": words_of(
-            'kind="suffix"', "those whose reading carries attached"),
+        "GLUED_HONORIFICS": words_of('kind="suffix", attached="after"'),
         "SUFFIX_WORDS_AMBIGUOUS": words_of(
             'kind="suffix"', "those holding a name reading too"),
         "AGNOMENS": words_of('kind="agnomen"'),

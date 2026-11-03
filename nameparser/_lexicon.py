@@ -12,7 +12,7 @@ import functools
 import sys
 import unicodedata
 import warnings
-from collections.abc import Collection, Iterable, Iterator, Mapping, Set
+from collections.abc import Iterable, Mapping, Set
 from dataclasses import dataclass, field
 from types import FrameType, MappingProxyType
 from typing import cast
@@ -337,82 +337,19 @@ def _warn_dead_entry(message: str) -> None:
     warnings.warn(message, UserWarning, stacklevel=level)
 
 
-#: 2.8.1 (#754): how 3.0 spells an edit of each set field it makes
-#: internal, as (add, remove) templates over one word `{w}`, from 3.0's
-#: migration guide ("Lexicon fields → readings"). 3.0 configures a
-#: lexicon by reading -- what a word is -- and compiles these sets from
-#: the readings, so a field without a reading of its own (a marker)
-#: becomes a property of the reading or a second reading on the word.
-_SET_FIELD_READINGS: dict[str, tuple[str, str]] = {
-    "titles": (".add({w}, kind='title')", ".remove({w}, kind='title')"),
-    "given_name_titles": (
-        ".add({w}, kind='title', addresses='given')",
-        ".remove({w}, kind='title').add({w}, kind='title')"),
-    "suffix_acronyms": (
-        ".add({w}, kind='credential')", ".remove({w}, kind='suffix')"),
-    "suffix_words": (".add({w}, kind='suffix')", ".remove({w}, kind='suffix')"),
-    "suffix_acronyms_ambiguous": (
-        ".add({w}, kind='credential').add({w}, kind='family')",
-        ".remove({w}, kind='family')"),
-    "particles": (".add({w}, kind='particle')", ".remove({w}, kind='particle')"),
-    "particles_ambiguous": (
-        ".add({w}, kind='given')", ".remove({w}, kind='given')"),
-    "conjunctions": (
-        ".add({w}, kind='conjunction')", ".remove({w}, kind='conjunction')"),
-    "conjunctions_ambiguous": (
-        ".add({w}, kind='conjunction', may_be_initial=True)",
-        ".remove({w}, kind='conjunction').add({w}, kind='conjunction')"),
-    "bound_given_names": (
-        ".add({w}, kind='bound_given')", ".remove({w}, kind='bound_given')"),
-    "given_name_abbreviations": (
-        ".add({w}, kind='given', same_as='<full name>')",
-        ".remove({w}, kind='given')"),
-    "maiden_markers": (
-        ".add({w}, kind='birth_marker')", ".remove({w}, kind='birth_marker')"),
-    "honorific_tails": (
-        ".add({w}, kind='suffix', attached={{'side': 'after'}})",
-        ".remove({w}, kind='suffix').add({w}, kind='suffix')"),
-    "after_given_titles": (
-        ".add({w}, kind='salutation', after_given=True)",
-        ".remove({w}, kind='salutation').add({w}, kind='salutation')"),
-    "suffix_words_ambiguous": (
-        ".add({w}, kind='generation').add({w}, kind='family')",
-        ".remove({w}, kind='family')"),
-    "agnomens": (
-        ".add({w}, kind='family').add({w}, kind='agnomen')",
-        ".remove({w}, kind='agnomen')"),
-    "titles_ambiguous": (
-        ".add({w}, kind='title').add({w}, kind='given')",
-        ".remove({w}, kind='title')"),
-    "title_modifiers": (
-        ".add({w}, kind='modifier')", ".remove({w}, kind='modifier')"),
-    "title_styles": (".add({w}, kind='style')", ".remove({w}, kind='style')"),
-    # a phrase is the attaches property of its first word's title reading
-    "title_phrases": (
-        ".add({first}, kind='title', attaches=[{rest}])",
-        ".remove({first}, kind='title').add({first}, kind='title')"),
-}
-
-_MIGRATION_GUIDE = "https://nameparser.readthedocs.io/en/latest/migrate.html"
+#: 2.8.1 (#754): the 3.0 migration guide's table of what each set field
+#: becomes. 3.0 configures a lexicon by reading -- what a word is -- and
+#: refuses these fields with a TypeError naming the readings for the
+#: words given, a translation this release does not attempt: it depends
+#: on the word's other readings, so the guide's row and 3.0's error are
+#: the sources.
+_FIELDS_GUIDE = ("https://nameparser.readthedocs.io/en/latest/migrate.html"
+                 "#lexicon-fields-readings")
 
 #: modules whose frames sit between a caller and a Lexicon's
 #: construction: this one (add, remove, __or__, __init__),
 #: dataclasses.replace and copy.replace
 _CONSTRUCTION_MODULES = (__name__, "dataclasses", "copy")
-
-
-def _spell_edits(op: str, field: str, words: Iterable[str]) -> str:
-    """3.0's calls for one field's edit, the first three words spelled."""
-    template = _SET_FIELD_READINGS[field][op == "remove"]
-    ordered = sorted(words)
-    calls = []
-    for w in ordered[:3]:
-        first, _, rest = w.partition(" ")
-        calls.append(template.format(
-            w=repr(w), first=repr(first),
-            rest=", ".join(map(repr, rest.split()))))
-    more = f" (and {len(ordered) - 3} more)" if len(ordered) > 3 else ""
-    return "".join(calls) + more
 
 
 def _outside_caller(
@@ -448,42 +385,30 @@ def _outside_caller(
     return level, replacing
 
 
-def _warn_set_fields(level: int, spelling: str, base: str,
-                     edits: Iterable[tuple[str, str, Iterable[str]]]) -> None:
-    """Warn that a call writes a set field 3.0 makes internal, at
-    `level` (from _outside_caller), naming the 3.0 calls that make the
-    same edit: `spelling` names the call made, `base` the lexicon the
-    3.0 calls start from, and `edits` holds (op, field, words)."""
-    chained, surnames = "", []
-    for op, field_name, words in edits:
-        if field_name != "surnames":
-            chained += _spell_edits(op, field_name, words)
-            continue
-        # a list 3.0 keeps as a field, but which add() and remove() no
-        # longer take
-        listed = "{" + ", ".join(map(repr, sorted(words))) + "}"
-        surnames.append(
-            f"{base} | Lexicon(surnames={listed})" if op == "add" else
-            f"dataclasses.replace({base}, surnames={base}.surnames - {listed})")
-    calls = ([base + chained] if chained else []) + surnames
+def _warn_set_fields(level: int, spelling: str,
+                     fields: Iterable[str]) -> None:
+    """Warn at `level` (from _outside_caller) that `spelling`, a call,
+    writes `fields`, naming each and the guide row that replaces it.
+    surnames gets a sentence of its own: 3.0 keeps the field, and only
+    add() and remove() stop taking it."""
+    fields = list(fields)
+    internal = [name for name in fields if name != "surnames"]
+    parts = []
+    if internal:
+        parts.append(
+            f"{spelling} writes {', '.join(internal)}, which 3.0 makes "
+            f"internal and refuses with a TypeError naming the readings "
+            f"that replace it for the words given; the guide's \"Lexicon "
+            f"fields → readings\" table has a row for each field")
+    if "surnames" in fields:
+        parts.append(
+            f"3.0 keeps surnames a field, but {spelling} no longer takes "
+            f"it: join a list with lexicon | Lexicon(surnames=...), or "
+            f"set one with dataclasses.replace(lexicon, surnames=...)")
     warnings.warn(
-        f"Lexicon's set fields are deprecated and become internal in 3.0, "
-        f"which configures vocabulary by reading and refuses {spelling} "
-        f"(#754); in 3.0 write {'; and '.join(calls)}. See {_MIGRATION_GUIDE}",
+        f"Lexicon's set fields are deprecated (#754): {'; and '.join(parts)}. "
+        f"See {_FIELDS_GUIDE}",
         DeprecationWarning, stacklevel=level)
-
-
-def _set_field_edits(
-    op: str, entries: Mapping[str, Iterable[str]],
-) -> list[tuple[str, str, Iterable[str]]]:
-    # the fields 3.0 refuses in add()/remove(), with their words; a
-    # bytes value or an unknown field is left to _edit's own errors
-    return [(op, name, words)
-            for name, words in entries.items()
-            if name in _SET_FIELD_READINGS or name == "surnames"
-            if isinstance(words, Collection)
-            and not isinstance(words, (str, bytes, bytearray, memoryview,
-                                       Mapping))]
 
 
 def _normset(
@@ -739,7 +664,13 @@ class Lexicon:
     matched against two adjacent title words (``"chief justice"``).
     Field docs below show examples, not full
     contents; inspect any field's shipped vocabulary directly, e.g.
-    ``Lexicon.default().conjunctions``."""
+    ``Lexicon.default().conjunctions``.
+
+    Deprecated since 2.8.1: 3.0 makes the set fields internal and
+    configures vocabulary by reading, so writing one here, through
+    ``add``, ``remove`` or ``dataclasses.replace`` warns (``surnames``
+    and ``capitalization_exceptions`` stay fields); see the migration
+    guide's "Deprecated in 2.8.1"."""
 
     #: Pre-nominal titles ("dr", "sir", "capt", ...). Full default
     #: list: :data:`~nameparser.config.titles.TITLES`.
@@ -963,33 +894,28 @@ class Lexicon:
 
     def _warn_constructed(self, level: int,
                           replacing: Mapping[str, object] | None) -> None:
-        edits: list[tuple[str, str, Iterable[str]]] = []
+        # surnames is never named here: 3.0 accepts it in Lexicon() and
+        # dataclasses.replace(), as it does capitalization_exceptions
+        internal = [name for name in _VOCAB_FIELDS if name != "surnames"]
         if replacing is None:
-            for name in (*_SET_FIELD_READINGS, "surnames"):
-                words: frozenset[str] = getattr(self, name)
-                if words and name != "surnames":
-                    edits.append(("add", name, words))
-            if edits:
-                # one more frame than __post_init__ itself
-                _warn_set_fields(level + 1, "Lexicon() with a set field",
-                                 "Lexicon.empty()", edits)
-            return
-        old = replacing.get("obj")
-        changes = replacing.get("changes")
-        if not isinstance(old, Lexicon) or not isinstance(changes, Mapping):
-            return
-        for name in (*_SET_FIELD_READINGS, "surnames"):
-            if changes.get(name, getattr(old, name)) is getattr(old, name):
-                continue
-            before, after = getattr(old, name), getattr(self, name)
-            if before - after:
-                edits.append(("remove", name, before - after))
-            if after - before:
-                edits.append(("add", name, after - before))
-        if edits:
-            _warn_set_fields(
-                level + 1, "dataclasses.replace() with a set field",
-                "lexicon", edits)
+            # a field left at its default is empty, so a non-empty one
+            # was passed
+            written = [name for name in internal if getattr(self, name)]
+            spelling = "Lexicon()"
+        else:
+            # dataclasses.replace() names the instance `obj`, and 3.13's
+            # dataclasses._replace (behind copy.replace) `self`; a field
+            # not passed is filled in with the instance's own value
+            old = replacing.get("obj", replacing.get("self"))
+            changes = replacing.get("changes")
+            if not isinstance(old, Lexicon) or not isinstance(changes, Mapping):
+                return
+            written = [name for name in internal if name in changes
+                       and changes[name] is not getattr(old, name)]
+            spelling = "dataclasses.replace()"
+        if written:
+            # one more frame than __post_init__ itself
+            _warn_set_fields(level + 1, spelling, written)
 
     def _validate(self) -> None:
         for name in _VOCAB_FIELDS:
@@ -1226,26 +1152,26 @@ class Lexicon:
         return dataclasses.replace(self, **updates)  # type: ignore[arg-type]
 
     def add(self, **entries: Iterable[str]) -> Lexicon:
+        """A copy with each named field's words added. Deprecated since
+        2.8.1: 3.0's ``add`` takes readings, not fields."""
         return self._edit_warning("add", entries)
 
     def remove(self, **entries: Iterable[str]) -> Lexicon:
+        """A copy with each named field's words removed. Deprecated
+        since 2.8.1: 3.0's ``remove`` takes readings, not fields."""
         return self._edit_warning("remove", entries)
 
     def _edit_warning(self, op: str,
                       entries: Mapping[str, Iterable[str]]) -> Lexicon:
-        # 2.8.1 (#754): 3.0's add() and remove() take readings, not set
-        # fields. An iterator is read once here, so the warning can name
-        # its words and _edit still sees them; the warning follows a
-        # successful edit, so a bad value raises its own error first.
-        entries = {name: tuple(words) if isinstance(words, Iterator) else words
-                   for name, words in entries.items()}
+        # 2.8.1 (#754): 3.0's add() and remove() take readings, and
+        # refuse every field keyword, surnames included. The warning
+        # follows a successful edit, so a bad value raises its own
+        # error first.
         edited = self._edit(op, entries)
-        edits = _set_field_edits(op, entries)
-        if edits:
+        if entries:
             where = _outside_caller(construction=False)
             if where is not None:
-                _warn_set_fields(
-                    where[0], f"{op}() with a set field", "lexicon", edits)
+                _warn_set_fields(where[0], f"{op}()", entries)
         return edited
 
 

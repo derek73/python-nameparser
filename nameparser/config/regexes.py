@@ -79,9 +79,8 @@ from typing import TYPE_CHECKING  # noqa: E402
 from nameparser.config._deprecated import alias_getattr  # noqa: E402
 
 _NO_REPLACEMENT = (
-    "the parser has not read it since 2.0, and 3.0 has no replacement: copy "
-    "a pattern you reuse; Policy(strip_bidi=...) and Policy(strip_emoji=...) "
-    "replace the bidi and emoji entries")
+    "the parser has not read it since 2.0, and 3.0 removes it with no "
+    "replacement, so copy a pattern you reuse")
 
 if not TYPE_CHECKING:
     __getattr__, __dir__ = alias_getattr(__name__, {}, removed={

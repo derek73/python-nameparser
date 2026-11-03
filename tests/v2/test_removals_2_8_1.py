@@ -18,10 +18,12 @@ would cost a frame per read on the hot path (see the release log).
 """
 from __future__ import annotations
 
+import copy
 import dataclasses
 import importlib
 import inspect
 import pickle
+import sys
 import warnings
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
@@ -68,7 +70,7 @@ REMOVED_CONSTANTS = [
     ("titles", "TITLE_STYLES", 'words(kind="style")'),
     ("titles", "TITLE_PHRASES", "attaches=[...]"),
     ("suffixes", "SUFFIX_WORDS", 'words(kind="suffix")'),
-    ("suffixes", "GLUED_HONORIFICS", 'words(kind="suffix")'),
+    ("suffixes", "GLUED_HONORIFICS", 'words(kind="suffix", attached="after")'),
     ("suffixes", "SUFFIX_WORDS_AMBIGUOUS", 'words(kind="suffix")'),
     ("suffixes", "AGNOMENS", 'words(kind="agnomen")'),
     ("suffixes", "SUFFIX_ACRONYMS_AMBIGUOUS", 'words(kind="credential")'),
@@ -83,8 +85,8 @@ REMOVED_CONSTANTS = [
     ("maiden_markers", "MAIDEN_MARKERS", 'words(kind="birth_marker")'),
     ("capitalization", "CAPITALIZATION_EXCEPTIONS",
      "Lexicon.default().capitalization_exceptions"),
-    ("regexes", "re_emoji", "Policy(strip_emoji=...)"),
-    ("regexes", "re_bidi", "Policy(strip_bidi=...)"),
+    ("regexes", "re_emoji", "copy a pattern you reuse"),
+    ("regexes", "re_bidi", "copy a pattern you reuse"),
     ("regexes", "EMPTY_REGEX", "copy a pattern you reuse"),
     ("regexes", "REGEXES", "copy a pattern you reuse"),
 ]
@@ -171,50 +173,19 @@ def test_an_alias_to_a_removed_constant_warns_once_naming_both() -> None:
 
 # -- Lexicon's set fields (#754) ----------------------------------------------
 
-#: field -> (the 3.0 add() call for "zork", its remove() call). Every
-#: compiled-set field 3.0 makes internal; surnames is asserted below.
-SET_FIELDS = {
-    "titles": (".add('zork', kind='title')", ".remove('zork', kind='title')"),
-    "given_name_titles": (".add('zork', kind='title', addresses='given')",
-                          ".remove('zork', kind='title')"),
-    "suffix_acronyms": (".add('zork', kind='credential')",
-                        ".remove('zork', kind='suffix')"),
-    "suffix_words": (".add('zork', kind='suffix')",
-                     ".remove('zork', kind='suffix')"),
-    "suffix_acronyms_ambiguous": (".add('zork', kind='family')",
-                                  ".remove('zork', kind='family')"),
-    "particles": (".add('zork', kind='particle')",
-                  ".remove('zork', kind='particle')"),
-    "particles_ambiguous": (".add('zork', kind='given')",
-                            ".remove('zork', kind='given')"),
-    "conjunctions": (".add('zork', kind='conjunction')",
-                     ".remove('zork', kind='conjunction')"),
-    "conjunctions_ambiguous": (
-        ".add('zork', kind='conjunction', may_be_initial=True)",
-        ".remove('zork', kind='conjunction')"),
-    "bound_given_names": (".add('zork', kind='bound_given')",
-                          ".remove('zork', kind='bound_given')"),
-    "given_name_abbreviations": (".add('zork', kind='given', same_as=",
-                                 ".remove('zork', kind='given')"),
-    "maiden_markers": (".add('zork', kind='birth_marker')",
-                       ".remove('zork', kind='birth_marker')"),
-    "honorific_tails": (".add('zork', kind='suffix', attached=",
-                        ".remove('zork', kind='suffix')"),
-    "after_given_titles": (".add('zork', kind='salutation', after_given=True)",
-                           ".remove('zork', kind='salutation')"),
-    "suffix_words_ambiguous": (".add('zork', kind='family')",
-                               ".remove('zork', kind='family')"),
-    "agnomens": (".add('zork', kind='agnomen')",
-                 ".remove('zork', kind='agnomen')"),
-    "titles_ambiguous": (".add('zork', kind='title').add('zork', kind='given')",
-                         ".remove('zork', kind='title')"),
-    "title_modifiers": (".add('zork', kind='modifier')",
-                        ".remove('zork', kind='modifier')"),
-    "title_styles": (".add('zork', kind='style')",
-                     ".remove('zork', kind='style')"),
-    "title_phrases": (".add('zork', kind='title', attaches=['zap'])",
-                      ".remove('zork', kind='title')"),
-}
+#: Every compiled-set field 3.0 makes internal; surnames, which 3.0 keeps
+#: as a field, is asserted on its own below. The message names the field
+#: and the guide's row for it, never a computed 3.0 call: the right
+#: reading for a word depends on its other readings (decided 2026-11-02).
+SET_FIELDS = [
+    "titles", "given_name_titles", "suffix_acronyms", "suffix_words",
+    "suffix_acronyms_ambiguous", "particles", "particles_ambiguous",
+    "conjunctions", "conjunctions_ambiguous", "bound_given_names",
+    "given_name_abbreviations", "maiden_markers", "honorific_tails",
+    "after_given_titles", "suffix_words_ambiguous", "agnomens",
+    "titles_ambiguous", "title_modifiers", "title_styles", "title_phrases",
+]
+FIELDS_GUIDE = GUIDE + "#lexicon-fields-readings"
 
 #: the base a marker field needs beside it, or construction refuses it
 #: as an orphan (_lexicon._SUBSET_FIELDS)
@@ -235,37 +206,41 @@ def _entries(field: str) -> dict[str, frozenset[str]]:
 
 
 def _assert_set_field(w: warnings.WarningMessage, spelling: str,
-                      base: str, calls: str, line: int) -> None:
+                      fields: list[str], line: int) -> None:
     message = str(w.message)
     assert w.category is DeprecationWarning
-    assert message.startswith(
-        "Lexicon's set fields are deprecated and become internal in 3.0"
-    ), message
-    assert f"refuses {spelling} with a set field (#754)" in message, message
-    assert f"(#754); in 3.0 write {base}" in message, message
-    assert calls in message, message
-    assert message.endswith(f"See {GUIDE}"), message
+    assert message.startswith("Lexicon's set fields are deprecated (#754): "), (
+        message)
+    assert f"{spelling} writes {', '.join(fields)}, which 3.0 makes internal" \
+        in message, message
+    assert "TypeError" in message and '"Lexicon fields → readings"' in message
+    # no computed 3.0 call: those were wrong for many words
+    assert "kind=" not in message, message
+    assert message.endswith(f"See {FIELDS_GUIDE}"), message
     assert (w.filename, w.lineno) == (__file__, line), (w.filename, w.lineno)
 
 
 @pytest.mark.parametrize("field", SET_FIELDS)
 def test_constructing_with_a_set_field_warns(field: str) -> None:
+    entries = _entries(field)
     with _caught() as record:
         line = _line_after()
-        Lexicon(**_entries(field))  # type: ignore[arg-type]
+        Lexicon(**entries)  # type: ignore[arg-type]
     [w] = _deprecations(record)
-    _assert_set_field(w, "Lexicon()", "Lexicon.empty().",
-                      SET_FIELDS[field][0], line)
+    # named in declaration order, which _VOCAB_FIELDS keeps
+    _assert_set_field(w, "Lexicon()",
+                      [f for f in SET_FIELDS if f in entries], line)
 
 
 @pytest.mark.parametrize("field", SET_FIELDS)
 def test_add_with_a_set_field_warns(field: str) -> None:
     lexicon = Lexicon.empty()
+    entries = _entries(field)
     with _caught() as record:
         line = _line_after()
-        lexicon.add(**_entries(field))
+        lexicon.add(**entries)
     [w] = _deprecations(record)
-    _assert_set_field(w, "add()", "lexicon.", SET_FIELDS[field][0], line)
+    _assert_set_field(w, "add()", list(entries), line)
 
 
 @pytest.mark.parametrize("field", SET_FIELDS)
@@ -273,53 +248,78 @@ def test_remove_with_a_set_field_warns(field: str) -> None:
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", DeprecationWarning)
         lexicon = Lexicon(**_entries(field))  # type: ignore[arg-type]
+    entries = _entries(field)
     with _caught() as record:
         line = _line_after()
-        lexicon.remove(**_entries(field))
+        lexicon.remove(**entries)
     [w] = _deprecations(record)
-    _assert_set_field(w, "remove()", "lexicon.", SET_FIELDS[field][1], line)
+    _assert_set_field(w, "remove()", list(entries), line)
 
 
 @pytest.mark.parametrize("field", SET_FIELDS)
 def test_replace_with_a_set_field_warns(field: str) -> None:
     lexicon = Lexicon.empty()
+    entries = _entries(field)
     with _caught() as record:
         line = _line_after()
-        dataclasses.replace(lexicon, **_entries(field))  # type: ignore[arg-type]
+        dataclasses.replace(lexicon, **entries)  # type: ignore[arg-type]
     [w] = _deprecations(record)
-    _assert_set_field(w, "dataclasses.replace()", "lexicon.",
-                      SET_FIELDS[field][0], line)
+    _assert_set_field(w, "dataclasses.replace()",
+                      [f for f in SET_FIELDS if f in entries], line)
+
+
+@pytest.mark.skipif(sys.version_info < (3, 13), reason="copy.replace is 3.13+")
+def test_copy_replace_with_a_set_field_warns() -> None:
+    # 3.13's dataclasses._replace names the instance `self`, where
+    # dataclasses.replace names it `obj`
+    lexicon = Lexicon.empty()
+    with _caught() as record:
+        line = _line_after()
+        copy.replace(lexicon, titles=frozenset({"zork"}))  # type: ignore[attr-defined]
+    [w] = _deprecations(record)
+    _assert_set_field(w, "dataclasses.replace()", ["titles"], line)
 
 
 def test_the_table_covers_every_set_field() -> None:
     from nameparser._lexicon import _VOCAB_FIELDS
-    assert set(SET_FIELDS) == set(_VOCAB_FIELDS) - {"surnames"}
+    assert SET_FIELDS == [f for f in _VOCAB_FIELDS if f != "surnames"]
 
 
-def test_surnames_through_add_or_remove_names_the_field_spelling() -> None:
+def test_an_empty_set_field_still_names_the_field() -> None:
+    # 3.0 refuses the keyword whatever it holds
+    with _caught() as record:
+        line = _line_after()
+        Lexicon.empty().add(titles=frozenset())
+    [w] = _deprecations(record)
+    _assert_set_field(w, "add()", ["titles"], line)
+
+
+def test_a_mixed_constructor_names_only_the_fields_3_0_refuses() -> None:
+    with _caught() as record:
+        line = _line_after()
+        Lexicon(titles=frozenset({"zork"}), surnames=frozenset({"kim"}),
+                capitalization_exceptions=(("phd", "PhD"),))
+    [w] = _deprecations(record)
+    _assert_set_field(w, "Lexicon()", ["titles"], line)
+    assert "surnames" not in str(w.message)
+
+
+@pytest.mark.parametrize("op", ["add", "remove"])
+def test_surnames_through_add_or_remove_warns_naming_the_field_spellings(
+        op: str) -> None:
     lexicon = Lexicon.empty()
     with _caught() as record:
         line = _line_after()
-        lexicon.add(surnames={"kim"})
+        getattr(lexicon, op)(surnames={"kim"})
     [w] = _deprecations(record)
-    _assert_set_field(w, "add()", "lexicon | Lexicon(surnames={'kim'})",
-                      "", line)
-    with _caught() as record:
-        line = _line_after()
-        lexicon.remove(surnames={"kim"})
-    [w] = _deprecations(record)
-    _assert_set_field(
-        w, "remove()",
-        "dataclasses.replace(lexicon, surnames=lexicon.surnames - {'kim'})",
-        "", line)
-
-
-def test_an_iterator_is_read_once_and_still_reaches_the_edit() -> None:
-    with _caught() as record:
-        edited = Lexicon.empty().add(titles=iter(["zork"]))
-    assert edited.titles == frozenset({"zork"})
-    [w] = _deprecations(record)
-    assert ".add('zork', kind='title')" in str(w.message)
+    message = str(w.message)
+    assert message.startswith("Lexicon's set fields are deprecated (#754): ")
+    assert f"3.0 keeps surnames a field, but {op}() no longer takes it" in message
+    assert "lexicon | Lexicon(surnames=...)" in message
+    assert "dataclasses.replace(lexicon, surnames=...)" in message
+    assert "which 3.0 makes internal" not in message
+    assert message.endswith(f"See {FIELDS_GUIDE}")
+    assert (w.filename, w.lineno) == (__file__, line)
 
 
 def test_a_bad_value_raises_its_own_error_before_any_warning() -> None:
@@ -329,18 +329,29 @@ def test_a_bad_value_raises_its_own_error_before_any_warning() -> None:
             Lexicon.empty().add(titles=b"dr")  # type: ignore[arg-type]
 
 
-@pytest.mark.parametrize("make", [
+_QUIET = [
     pytest.param(lambda: Lexicon.empty(), id="empty"),
     pytest.param(lambda: Lexicon(surnames=frozenset({"kim"})), id="surnames"),
     pytest.param(lambda: Lexicon(capitalization_exceptions=(("phd", "PhD"),)),
                  id="capitalization_exceptions"),
     pytest.param(lambda: dataclasses.replace(
         Lexicon.default(), capitalization_exceptions=()), id="replace-cap"),
+    pytest.param(lambda: dataclasses.replace(
+        Lexicon.default(), surnames=frozenset({"kim"})), id="replace-surnames"),
     pytest.param(lambda: Lexicon.default() | Lexicon(surnames=frozenset({"kim"})),
                  id="union"),
     pytest.param(lambda: pickle.loads(pickle.dumps(Lexicon.default())),
                  id="pickle"),
-])
+    pytest.param(lambda: copy.deepcopy(Lexicon.default()), id="deepcopy"),
+]
+if sys.version_info >= (3, 13):
+    _QUIET.append(pytest.param(
+        lambda: copy.replace(  # type: ignore[attr-defined]
+            Lexicon.default(), surnames=frozenset({"kim"})),
+        id="copy.replace-surnames"))
+
+
+@pytest.mark.parametrize("make", _QUIET)
 def test_the_fields_3_0_keeps_stay_quiet(make: Callable[[], object]) -> None:
     with warnings.catch_warnings():
         warnings.simplefilter("error")

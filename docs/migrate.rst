@@ -41,8 +41,9 @@ makes them, on every call rather than once per process:
        ``family`` where ``HumanName`` has ``first`` and ``last``. See
        the `Attribute map`_
    * - ``Constants(...)`` and ``constants.copy()``
-     - ``Parser(lexicon=Lexicon.default().add(titles={"dean"}))``, and
-       the `Config map`_ for each setting
+     - A ``Parser`` configured with a ``Lexicon`` and a ``Policy``; the
+       `Config map`_ has each setting, and `Deprecated in 2.8.1`_ what
+       3.0 changes in ``Lexicon``
    * - Mutating the shared ``CONSTANTS`` (warned since 2.0)
      - The same ``Parser``; a private ``Constants`` is no longer a
        way out, since it goes in 3.0 too
@@ -52,8 +53,8 @@ makes them, on every call rather than once per process:
      - Pickle the ``Parser`` instead
    * - Reading ``SetManager``, ``TupleManager`` or ``RegexTupleManager``
        from ``nameparser.config``
-     - ``Lexicon`` fields take plain sets:
-       ``Lexicon.default().add(titles={"dean"})``
+     - ``Lexicon`` fields take plain sets; see `Deprecated in 2.8.1`_
+       for what 3.0 changes in them
    * - Reading ``lc`` from ``nameparser.util``
      - ``value.lower().strip(".")``
 
@@ -77,38 +78,41 @@ additions only, save ``Lexicon``'s set fields, which 2.8.1 deprecates.
 Separately, the output model changes in 3.0; details with the 3.0
 alphas.
 
+.. _deprecated-2-8-1:
+
 Deprecated in 2.8.1
 -------------------
 
 2.8.0 gave no warning for three 3.0 changes, and 2.8.1 adds one for
-each, a ``DeprecationWarning`` at the line in your code that makes the
-call, naming the 3.0 spelling. The replacements are 3.0 calls: in 2.x
-the old spelling is the only one, so silence the warning by message
-until you upgrade if it is in your way. The `3.0 migration guide
-<https://nameparser.readthedocs.io/en/latest/migrate.html>`__ has a
-row for each.
+each: a ``DeprecationWarning`` at the line in your code that makes the
+call, naming what 3.0 does instead and linking the `3.0 migration
+guide <https://nameparser.readthedocs.io/en/latest/migrate.html>`__.
+The 3.0 spellings do not run on 2.x, so the old spelling is still the
+one to write here; filter the warning by message if it is in your way
+until you upgrade.
 
 .. list-table::
    :header-rows: 1
    :widths: 40 60
 
    * - What warns
-     - 3.0 replacement
-   * - A ``Lexicon`` set field written through ``add()``,
-       ``remove()``, ``Lexicon(...)`` or ``dataclasses.replace()``
-       (``Lexicon.default().add(titles={"dean"})``)
-     - A reading: ``Lexicon.default().add("dean", kind="title")``; the
-       warning spells the call for the words and fields you wrote. 3.0
-       keeps ``surnames`` and ``capitalization_exceptions`` as fields
+     - In 3.0
+   * - A ``Lexicon`` set field written through ``add()``, ``remove()``,
+       ``Lexicon(...)`` or ``dataclasses.replace()``
+     - Refused with a ``TypeError`` naming the readings that replace
+       the call for the words it names; the 3.0 guide's "Lexicon fields
+       → readings" table has a row for each field. ``surnames`` and
+       ``capitalization_exceptions`` stay fields, so only ``add()`` and
+       ``remove()`` with ``surnames`` warn
    * - A constant of ``nameparser.config.titles``, ``suffixes``,
        ``particles``, ``conjunctions``, ``bound_given_names``,
        ``given_names``, ``maiden_markers`` or ``capitalization``
-     - ``Lexicon.default().words(kind="title")`` lists a kind's words;
-       ``nameparser.config.surnames`` stays
+     - Removed with its module. ``Lexicon.words(kind=...)`` lists a
+       kind's words, and ``Lexicon.remove(kind=..., every=True)``
+       removes a whole kind; ``nameparser.config.surnames`` stays
    * - Anything in ``nameparser.config.regexes``
-     - None: the parser has not read it since 2.0. Copy a pattern you
-       reuse; ``Policy(strip_bidi=...)`` and ``Policy(strip_emoji=...)``
-       replace the two entries that configured anything
+     - Removed with no replacement: the parser has not read it since
+       2.0, so copy a pattern you reuse
 
 Reading a ``Lexicon`` field (``lexicon.titles``) does not warn, though
 3.0 refuses it as well: the parser reads those fields for every word,

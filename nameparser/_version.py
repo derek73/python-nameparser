@@ -15,5 +15,5 @@ VERSION = (2, 8, 1)
 #: "dev" through the cycle, cleared at release. It normalizes to
 #: 2.8.0.dev0, which sorts above 2.7.0 and BELOW 2.8.0, so an install
 #: from master can never masquerade as the release it precedes.
-PRE_RELEASE = ""
+PRE_RELEASE = "dev"
 __version__ = ".".join(map(str, VERSION)) + PRE_RELEASE

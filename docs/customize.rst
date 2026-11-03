@@ -11,6 +11,15 @@ why the split is drawn there.
 Vocabulary: Lexicon
 --------------------
 
+.. note::
+
+   Every recipe in this section that names a ``Lexicon`` set field
+   (``add(titles=...)``, ``Lexicon(...)``, ``dataclasses.replace``)
+   or reads a ``nameparser.config`` constant emits a
+   ``DeprecationWarning`` since 2.8.1: 3.0 configures vocabulary by
+   reading instead. They still work throughout 2.x. See
+   :ref:`deprecated-2-8-1` for what changes.
+
 Adding and removing words
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
