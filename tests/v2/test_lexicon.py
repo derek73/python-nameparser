@@ -641,7 +641,7 @@ def test_every_shipped_reading_holds_its_properties_canonical() -> None:
     # write them, an unwritten value never (a written `acronym = true` on
     # a credential would match no `words(..., acronym=True)`)
     from nameparser._lexicon import _prop_value
-    behavioral = ("acronym", "addresses", "after_given", "attached",
+    behavioral = ("abbreviation", "acronym", "addresses", "after_given", "attached",
                   "attaches", "may_be_initial", "same_as")
     held = [(w, r.kind, p, v) for w, rs in Lexicon.default()._pool().items()
             for r in rs for p, v in r.props.items() if p in behavioral]
@@ -743,9 +743,10 @@ def test_a_derived_marker_follows_from_the_readings() -> None:
     (lambda: Lexicon.empty().remove("x", kind="titel"), ValueError, "or a category, on remove"),
     (lambda: Lexicon.empty().add("x", kind="title", default=False), ValueError, "a caller's reading is on"),
     (lambda: Lexicon.empty().add("x", kind="title", cased="X"), ValueError, "capitalization_exceptions"),
-    (lambda: Lexicon.empty().add("x", kind="title", acronym=True), ValueError, "a title reading takes addresses, after_given, attaches"),
+    (lambda: Lexicon.empty().add("x", kind="title", acronym=True), ValueError, "a title reading takes abbreviation, addresses, after_given, attaches"),
     (lambda: Lexicon.empty().add("x", kind="family", same_as="y"), ValueError, "a family reading takes no properties"),
     (lambda: Lexicon.empty().add("x", kind="title", after_given="yes"), TypeError, "after_given must be True or False"),
+    (lambda: Lexicon.empty().add("x", kind="title", abbreviation="yes"), TypeError, "abbreviation must be True or False"),
     (lambda: Lexicon.empty().add("x", kind="title", addresses="first"), ValueError, "addresses must be 'given' or 'family'"),
     (lambda: Lexicon.empty().add("x", kind="title", attaches="military"), TypeError, "attaches must be an iterable"),
     (lambda: Lexicon.empty().add("x", kind="honorific", attached="before"), ValueError, "attached must be 'after'"),
@@ -1877,7 +1878,8 @@ def test_migrate_s_words_call_reproduces_each_2x_constant(
 
 def test_migrate_s_table_covers_every_compiled_constant() -> None:
     # every public 2.x constant has a row, code or prose: the private
-    # kind sets 3.0 added (GENERATION_WORDS, ...) were never public
+    # sets 3.0 added (GENERATION_WORDS, ..., TITLE_ABBREVIATIONS) were
+    # never public
     text = (Path(__file__).parents[2] / "docs" / "migrate.rst").read_text()
     section = text.split("Vocabulary constants → Lexicon.words\n", 1)[1]
     section = section.split("\n.. doctest::", 1)[0]
@@ -1888,10 +1890,35 @@ def test_migrate_s_table_covers_every_compiled_constant() -> None:
             re.findall(r"   \* - ``([A-Z_]+)``\n", section))
     from nameparser.config import _compiled
     public_in_2x = {n for n in vars(_compiled) if n.isupper()} - {
-        "GENERATION_WORDS", "CREDENTIAL_WORDS", "PATRONYMIC_PARTICLES"}
+        "GENERATION_WORDS", "CREDENTIAL_WORDS", "PATRONYMIC_PARTICLES",
+        "TITLE_ABBREVIATIONS"}
     assert public_in_2x <= named
     assert len(_migrate_constant_rows()) >= 20  # the rows with code
     # the one row naming two constants, which the row pattern skips
     assert '``TITLES`` and ``TITLES_AMBIGUOUS``, together\n     - ``d.words(kind="title")``' in section
     assert set(Lexicon.default().words(kind="title")) == (
         _compiled.TITLES | _compiled.TITLES_AMBIGUOUS)
+
+
+@pytest.mark.parametrize(("edit", "text", "field", "value"), [
+    # a caller marks another title that may be a given name written
+    # short, and H5's chain takes it with its period, as it takes 'Maj.'
+    (lambda d: d.add("dean", kind="office", abbreviation=True),
+     "John Smith Dean.", "title", "Dean."),
+    (lambda d: d.add("dean", kind="office", abbreviation=True),
+     "Smith, abdul Dean.", "title", "Dean."),
+    # and turns the shipped mark off, the word ending the name a name
+    # word again, as a title that may be a given name is (rules/H9)
+    (lambda d: d.add("maj", kind="military", abbreviation=False),
+     "John Smith Maj.", "family", "Maj."),
+])
+def test_abbreviation_is_a_callers_switch_on_the_trailing_title(
+        edit: Callable[[Lexicon], Lexicon], text: str, field: str,
+        value: str) -> None:
+    # rules/H5's written-short clause, reached by a caller's reading
+    # (#999); the default reads each the other way
+    lexicon = edit(Lexicon.default())
+    assert getattr(Parser(lexicon=lexicon).parse(text), field) == value
+    assert getattr(Parser().parse(text), field) != value
+    loaded = pickle.loads(pickle.dumps(lexicon))
+    assert getattr(Parser(lexicon=loaded).parse(text), field) == value

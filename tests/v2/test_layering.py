@@ -622,17 +622,18 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: The reads 4i-a moved, as the check counts them on today's sources
 #: with `._sets` taken out again: the recorded negative control over
 #: the real tree, so the check above cannot pass because its walk
-#: reaches nothing. The library's 117 are 110 attribute loads, 3 roster
+#: reaches nothing. The library's 118 are 111 attribute loads, 3 roster
 #: `getattr`s, all through `sets`, which the undone `sets = lexicon`
 #: makes a lexicon, and the 4 `sets =` bindings (#1000's Ph./D. gate
-#: added one binding and four of the loads); the tools' 16 are
+#: added one binding and four of the loads; #999's gate
+#: one load, its `titles_ambiguous` half); the tools' 16 are
 #: attribute loads, every tool scanned. 4i-a's own count was 114 (on
 #: that tree's sources), two of them `getattr`s in
 #: `_parser._apply_choice`, which read the sets through
 #: `_lexicon._fields_of` from 4i-b until 4i-c retired it.
 #: A reader added through `_sets` moves these, and they are re-taken
 #: then: they count what the check would refuse with the move undone.
-_UNGUARDED_READS = {"library": 117, "tools": 16}
+_UNGUARDED_READS = {"library": 118, "tools": 16}
 
 
 def test_the_check_refuses_every_read_4i_a_moved() -> None:

@@ -77,7 +77,8 @@ from nameparser._pipeline._pieces import (
     trailing_start_past_titles,
 )
 from nameparser._pipeline._state import (
-    AMBIGUOUS_ACRONYM_TAG, SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, ParseState,
+    AMBIGUOUS_ACRONYM_TAG, SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, TRAILING_TITLE_TAG,
+    ParseState,
     Deferred, PendingAmbiguity, Structure, WorkToken,
     _AMBIGUOUS_CREDENTIAL_TAGS, copy_with,
 )
@@ -1169,7 +1170,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             # plus the bare salutations H8 adds after a family comma
             # (`salutations=True`),
             # which the LENIENT join reads no peel for and so asks here,
-            # only where a title word follows ('Berg, abdul Prof.',
+            # only where a title word or one written short follows ('Berg, abdul Prof.',
             # #637; where the given part's own walk then reads the words
             # behind it otherwise, the title stays a name word, which
             # rules/P5 accepts); in a part past the second
@@ -1196,7 +1197,17 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                         and settled_by_case(tokens[nxt[0]], one_case))
                     or ((site is ClauseSite.TAIL
                          or bound_join is BoundJoin.LENIENT)
-                        and is_title_piece(nxt, nxt_tags, tokens)
+                        and (is_title_piece(nxt, nxt_tags, tokens)
+                             # after a family comma only: a title
+                             # written short that may be a given name,
+                             # which H5's run takes with its period
+                             # (#999), the tail_reading test deciding;
+                             # past a second comma C2 reads only a
+                             # listed title
+                             or (site is not ClauseSite.TAIL
+                                 and len(nxt) == 1
+                                 and TRAILING_TITLE_TAG
+                                 in tokens[nxt[0]].tags))
                         and (site is ClauseSite.TAIL
                              or fk + 1 in tail_reading(
                                  peel_walk(fk, ptags), pieces, ptags,

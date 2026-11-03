@@ -334,10 +334,12 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # two, each under three orders; 1521 on 2026-11-03 still, #993's
     # listing of MBBS dropping the 'Nasreen Sultana, MBBS' row's
     # suffix-or-name report and its 'Jane Doe Mot' row adding one, each
-    # under three orders.
-    assert claims == 1521, (
-        f"the field sweep checks {claims} claims, recorded as 1521 on "
-        f"2026-11-02")
+    # under three orders; 1521 -> 1527 the same day, #999's 'Maj
+    # Sjöwall' and 'Mr Maj Zura', each reporting title-or-name under
+    # three orders.
+    assert claims == 1527, (
+        f"the field sweep checks {claims} claims, recorded as 1527 on "
+        f"2026-11-03")
 
 
 #: The kinds that report a fork between two readings of a word, so carry

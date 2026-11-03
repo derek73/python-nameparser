@@ -463,7 +463,6 @@ TITLES: frozenset[str] = frozenset({
     'maharajah',
     'maharani',
     'maid',
-    'maj',
     'majesty',
     'majgen',
     'manager',
@@ -954,6 +953,7 @@ TITLES_AMBIGUOUS: frozenset[str] = frozenset({
     'justice',
     'king',
     'mahdi',
+    'maj',
     'major',
     'marquis',
     'marquise',
@@ -1395,6 +1395,9 @@ TITLE_PHRASES: frozenset[str] = frozenset({
     'lord chancellor',
     'lord justice',
     'magistrate judge',
+    'maj gen',
+    'maj general',
+    'major gen',
     'major general',
     'prince consort',
     'princess consort',
@@ -1402,7 +1405,9 @@ TITLE_PHRASES: frozenset[str] = frozenset({
     'pro chancellor',
     'queen consort',
     'queen mother',
+    'sergeant maj',
     'sergeant major',
+    'sgt maj',
     'sgt major',
 })
 
@@ -2972,4 +2977,8 @@ PATRONYMIC_PARTICLES: frozenset[str] = frozenset({
     'ابن',
     'بن',
     'بنت',
+})
+
+TITLE_ABBREVIATIONS: frozenset[str] = frozenset({
+    'maj',
 })

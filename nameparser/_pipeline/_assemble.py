@@ -45,7 +45,7 @@ from nameparser._pipeline._state import (
     CREDENTIAL_WORD_TAG, FIELD_READING, GENERATION_WORD_TAG,
     NAME_ROLES, PATRONYMIC_TAG, SECOND_SURNAME_TAG, SHAPE_ACRONYM_TAG,
     SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG,
-    TITLE_AMBIGUOUS_TAG, Beside, Deferred, ParseState, PendingAmbiguity,
+    TITLE_AMBIGUOUS_TAG, TRAILING_TITLE_TAG, Beside, Deferred, ParseState, PendingAmbiguity,
     Structure, WorkToken, comma_bucket,
 )
 from nameparser._pipeline._vocab import (
@@ -214,11 +214,14 @@ def _split_partner(tokens: tuple[WorkToken, ...], dropped: set[int],
 _reading = functools.lru_cache(maxsize=1024)(Reading)
 
 
-#: classify's kind tags for a listed suffix word (rules/R8) and a
-#: patronymic particle, and P6's attachment mark (rules/R9), which no
-#: published token carries: `Token.reading` names the kind.
+#: Tags that serve the stages and reach no published token: classify's
+#: kind tags for a listed suffix word (rules/R8) and a patronymic
+#: particle, and P6's attachment mark (rules/R9), whose kind
+#: `Token.reading` carries out; and the written-short mark rules/H5's
+#: chain reads (#999), for which the published token keeps
+#: TITLE_AMBIGUOUS_TAG.
 _KIND_TAGS = frozenset({GENERATION_WORD_TAG, CREDENTIAL_WORD_TAG,
-                        PATRONYMIC_TAG, ATTACHED_TAG})
+                        PATRONYMIC_TAG, ATTACHED_TAG, TRAILING_TITLE_TAG})
 
 #: O6's second-surname mark (rules/R10), which no published token
 #: carries either: `Reading.second_surname` names it.
@@ -596,9 +599,10 @@ def assemble(state: ParseState) -> ParsedName:
                        if langs or second else _READINGS[kind, role, source])
         if not tags.isdisjoint(_KIND_TAGS):
             # the kind tags serve the stages and this one, whatever the
-            # word's field (a lone 'Jr' is a given name); the reading
-            # carries the kind out, and a published tag would make a
-            # name unequal to its own 2.x pickle (Token compares tags)
+            # word's field (a lone 'Jr' is a given name), the reading
+            # carrying the kind out; the written-short mark serves the
+            # stages alone; and a published tag would make a name
+            # unequal to its own 2.x pickle (Token compares tags)
             tags = tags - _KIND_TAGS
         if i in fathers:
             held[i] = (t.text, t.span, role, tags, reading)

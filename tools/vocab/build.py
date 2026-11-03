@@ -898,7 +898,7 @@ def _check_reading(r: Reading, pool: Pool) -> None:
         if k not in allowed:
             raise _reserved_or_unknown(where, k, allowed)
     _check_descriptive(where, p)
-    for flag in ("acronym", "may_be_initial", "after_given"):
+    for flag in ("acronym", "may_be_initial", "after_given", "abbreviation"):
         if flag in p and not isinstance(p[flag], bool):
             raise VocabError(f"{where}: {flag} must be true or false")
     _check_default(where, p)
@@ -1296,7 +1296,7 @@ def _behavior(r: Reading, prop: str) -> object:
     if prop == "attached":
         att = r.props.get("attached")
         return None if att is None else att.get("side")
-    if prop == "may_be_initial" or prop == "after_given":
+    if prop in ("may_be_initial", "after_given", "abbreviation"):
         return r.flag(prop)
     if prop == "attaches":
         att = r.props.get("attaches")
@@ -1334,6 +1334,7 @@ CONSTANTS = (
     "GENERATION_WORDS",
     "CREDENTIAL_WORDS",
     "PATRONYMIC_PARTICLES",
+    "TITLE_ABBREVIATIONS",
 )
 
 
