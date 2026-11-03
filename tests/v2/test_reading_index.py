@@ -309,12 +309,15 @@ def test_native_script_is_a_letter_and_no_latin_letter(
     assert ri.is_native_script(text) is native
 
 
-def test_a_strict_pool_holds_the_chosen_files_and_native_script_only() -> None:
+def test_a_strict_pool_holds_the_chosen_files_mul_and_native_script_only() -> None:
     chosen = ri.selected(["pt-BR"], strict=True)
     pool = ri.strict_pool(chosen)
-    assert {r.tag for r in pool if not ri.is_native_script(r.text)} == chosen
-    # mul.toml and und.toml are another language's file under strict
-    assert not [r for r in pool if r.tag in ri.UNCHOOSABLE
+    assert {r.tag for r in pool if not ri.is_native_script(r.text)} == chosen | {"mul"}
+    # mul.toml is every language's, so strict reads it all (#1005), and
+    # und.toml is not read
+    assert [r for r in ri.index() if r.tag == "mul"] == [
+        r for r in pool if r.tag == "mul"]
+    assert not [r for r in pool if r.tag == "und"
                 and not ri.is_native_script(r.text)]
     native = [r for r in ri.index() if ri.is_native_script(r.text)]
     assert native and all(r in pool for r in native)
@@ -327,10 +330,11 @@ def test_a_file_holding_no_reading_is_chosen_only_strictly() -> None:
         with pytest.raises(ValueError, match=f"{tag}.toml holds no reading"):
             ri.selected([tag])
         assert ri.selected([tag], strict=True) == {tag}
-        # nothing Latin is left to compile: the native-script pool alone
+        # nothing Latin is left to compile but mul.toml's: the
+        # native-script pool and mul.toml alone (#1005)
         assert ri.compile_choice(frozenset({tag}), True) == ri.compile_readings(
-            ri.choose([r for r in ri.index() if ri.is_native_script(r.text)],
-                      frozenset({tag})))
+            ri.choose([r for r in ri.index() if ri.is_native_script(r.text)
+                       or r.tag == "mul"], frozenset({tag})))
 
 
 #: The words each strict choice of one tag ungates against the plain

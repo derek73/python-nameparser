@@ -400,10 +400,11 @@ def parser_for(*locales: Locale, base: Parser | None = None,
 
     ``strict=True`` makes the choice strict: only the chosen languages'
     vocabulary files are compiled, each tag selecting its own and its
-    ancestors' as a plain choice does, plus native-script vocabulary (a
-    word with a letter and no Latin letter); every other file's
-    readings leave, mul.toml's and und.toml's among them, and with
-    them the markers they derive. It is for single-origin data
+    ancestors' as a plain choice does, plus mul.toml, the words every
+    language writes alike (``Dr``, ``Prof``, ``PhD``, ``MSc``, the
+    numerals), and native-script vocabulary (a word with a letter and
+    no Latin letter); every other file's readings leave, und.toml's
+    among them, and with them the markers they derive. It is for single-origin data
     (``parser_for(Locale(code="ko", lexicon=Lexicon.empty(),
     languages=frozenset({"ko"})), strict=True)`` reads ``Kim Do Hyun``
     with no Portuguese particle ``do``). A caller's own readings and the
@@ -412,10 +413,11 @@ def parser_for(*locales: Locale, base: Parser | None = None,
     ``segmenter`` does: omitted (:data:`~nameparser.UNSET`) keeps base's
     recorded strictness, ``False`` on a strict base raises ValueError, a
     strict choice not being undone by a later call, and ``True`` on a
-    plain one makes the whole choice strict. A strict choice accepts a language whose file holds no
-    reading yet (``vi``), which a plain one refuses as changing
-    nothing, and raises ValueError when the packs choose no language,
-    since it would then strip every Latin-script reading
+    plain one makes the whole choice strict. A strict choice accepts a
+    language whose file holds no reading yet (``vi``), which a plain
+    one refuses as changing nothing, and raises ValueError when the
+    packs choose no language, since it would then keep no language's
+    own words, only mul.toml's and native-script vocabulary
     (decisions/vocabulary-model, 2026-10-30 #753, file-strict, and
     2026-10-31 #753, phase 3j).
 
@@ -544,8 +546,8 @@ def parser_for(*locales: Locale, base: Parser | None = None,
 
 def _no_strict_language(locales: tuple[Locale, ...]) -> str:
     """The refusal of a strict call that chooses no language, which
-    would keep only native-script vocabulary and strip every Latin one
-    in silence. The fix it offers is a pack choosing the first pack's
+    would keep only mul.toml's and native-script vocabulary, dropping
+    every language's own words in silence. The fix it offers is a pack choosing the first pack's
     code where that is a language a strict choice accepts, else
     ``en``."""
     tag = "en"
@@ -560,8 +562,10 @@ def _no_strict_language(locales: tuple[Locale, ...]) -> str:
     named = ("no pack was given" if not locales
              else f"the pack {codes} chooses none" if len(locales) == 1
              else f"the packs {codes} choose none")
-    return (f"strict=True keeps only the chosen languages' vocabulary, and "
-            f"{named}, so it would strip every Latin-script reading; add "
+    return (f"strict=True keeps only the chosen languages' vocabulary, "
+            f"the shared words (mul.toml) and other scripts' words, and "
+            f"{named}, so it would keep the shared and other scripts' "
+            f"words alone; add "
             f"a pack that chooses a language, e.g. "
             f"Locale(code={tag!r}, lexicon=Lexicon.empty(), "
             f"languages=frozenset({{{tag!r}}})), or drop strict=True")

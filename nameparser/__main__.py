@@ -60,8 +60,9 @@ def main(argv: list[str] | None = None) -> int:
                          "reading yet (e.g. 'vi') needs --strict")
     ap.add_argument("--strict", action="store_true",
                     help="read only the --locale language's vocabulary "
-                         "file and native-script words, dropping every "
-                         "other language's (for single-origin names); a "
+                         "file, the shared words (Dr, PhD, the numerals) "
+                         "and native-script words, dropping every other "
+                         "language's (for single-origin names); a "
                          "pack choosing no language chooses its code")
     ap.add_argument("--order", choices=_ORDERS,
                     help="the order to read a name's words in "
@@ -71,7 +72,7 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
     if args.strict and args.locale is None:
         ap.error("--strict needs --locale: it keeps only the chosen "
-                 "language's vocabulary")
+                 "language's vocabulary and the shared words")
     pack = None
     unknown = None
     segmenter: Segmenter | None = None

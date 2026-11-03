@@ -25,7 +25,7 @@
   "John von PhD Jones"        →  family="von"
   "John von PhD Jones"        →  suffix="PhD Jones"
   ```
-- **What is a credential here.** A title word never starts the run, and neither does a member of the ambiguous class its writing leaves unsettled, a single letter, a connective, a word that is also particle or bound given-name vocabulary, the capitals of `DO` included: a credential is the writer's mark that the post-nominals have begun, and those carry no such mark. Where no family comma divides the name, nor does a generation word written out, a numeral aside, with a name word behind it: a word that is no suffix word, numeral read as the generation (S10), initial, connective, title word or maiden marker, and is a particle or is written in Title case, in a script with no case, or in a name of one case. A generation word there was typed into the middle of a name written given name first, where a filer's form puts it, or is the given name Junior, and the family name stands behind it. Capitals behind it in a name of mixed case are no name word here, where behind a member its capitals settle they are one: behind that member capitals are as likely a family name or the writer's own initials as a credential, the member itself being capitals that may be initials, while a generation word is written out, so capitals behind it read as the credential that follows it as likely as a name. An honorific or a generational word otherwise carries it as a credential does, whatever its script.
+- **What is a credential here.** A title word never starts the run, and neither does a member of the ambiguous class its writing leaves unsettled, a single letter, a connective, a word that is also particle or bound given-name vocabulary, the capitals of `DO` included: a credential is the writer's mark that the post-nominals have begun, and those carry no such mark. Where no family comma divides the name, nor does a credential acronym written in Title case with a name word behind it, as a settled member does not: Title case is how a name word is written, and `Md` is how Muhammad is written short; the acronyms whose own writing is Title case (`Bt`, `Kt`, `Knt`) read so too. Where no family comma divides the name, nor does a generation word written out, a numeral aside, with a name word behind it: a word that is no suffix word, numeral read as the generation (S10), initial, connective, title word or maiden marker, and is a particle or is written in Title case, in a script with no case, or in a name of one case. A generation word there was typed into the middle of a name written given name first, where a filer's form puts it, or is the given name Junior, and the family name stands behind it. Capitals behind it in a name of mixed case are no name word here, where behind a member its capitals settle they are one: behind that member capitals are as likely a family name or the writer's own initials as a credential, the member itself being capitals that may be initials, while a generation word is written out, so capitals behind it read as the credential that follows it as likely as a name. An honorific or a generational word otherwise carries it as a credential does, whatever its script.
   ```
   "Mary Jane Pope Smith"      →  family="Smith"
   "Josep Carod i Rovira"      →  family="Carod i Rovira"
@@ -33,6 +33,10 @@
   "John Smith Ma Jones"       →  family="Jones"
   "JOHN SMITH MA JONES"       →  family="JONES"
   "John Smith DO Jones"       →  family="DO Jones"
+  "Badrul Akmal Hisham Md Yusoff"  →  family="Yusoff"
+  "John Smith Md Phd"         →  suffix="Md Phd"
+  "John Smith MD Jones"       →  suffix="MD Jones"
+  "Smith, John Md Jones"      →  suffix="Md Jones"
   "Guy Andre Junior Francois"  →  family="Francois"
   "John Smith Jr. Jones"      →  middle="Smith Jr."
   "JOHN SMITH JR JONES"       →  family="JONES"
@@ -91,7 +95,12 @@
   "John Smith MA Jones"       →  middle="Smith MA"
   "John Smith M.A. Jones"     →  suffix="M.A. Jones"
   ```
+- With no family comma, a credential acronym written in Title case is read as a name word before any word that reads as one, an unlisted credential and a title included: a run of Title-case credentials written without commas gives its last word to the family where that word is unlisted, and a title written after the credential becomes the family name. Neither shape was found in the local corpora (decisions/S8).
+  ```
+  "Jane Doe Rn Bsn"           →  family="Bsn"
+  "John Smith Md Dr"          →  family="Dr"
+  ```
 
 ---
-**Signal:** neighbor: an unambiguous credential after the name core, and the rest of its part
+**Signal:** neighbor: an unambiguous credential after the name core, and the rest of its part + case contrast: a credential acronym in Title case before a name word
 **history:** decisions/S8 · **implemented:** nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py

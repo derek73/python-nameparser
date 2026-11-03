@@ -949,7 +949,8 @@ def _chosen_pool(base: object, chosen: frozenset[str], strict: bool) -> Pool:
     """A base's readings under the choice of the file tags `chosen`,
     before the caller's edits (decisions/vocabulary-model, 2026-11-02
     #754, item 4): `choose` over the base's readings, under `strict`
-    only the chosen files' and native-script ones; a reading an
+    only the chosen files', mul.toml's and native-script ones; a
+    reading an
     unchosen file leaves off stays in the pool off, so a caller's add
     of its kind still turns it on, as it does with no choice."""
     pool = _base_pool(base)
@@ -1105,7 +1106,8 @@ def _check_choice(languages: object, strict: object) -> tuple[
         if strict:
             raise ValueError(
                 "a strict choice keeps only the chosen languages' "
-                "vocabulary, and _languages chooses none; choose through "
+                "vocabulary and the shared words (mul.toml), and "
+                "_languages chooses none; choose through "
                 "parser_for(..., strict=True) with a pack that chooses one")
         return frozenset(), frozenset()
     canon = frozenset(_canonical(cast(str, t)) for t in tags)
@@ -2099,7 +2101,8 @@ class Lexicon:
     @property
     def strict(self) -> bool:
         """Whether the choice is strict: only the chosen languages'
-        vocabulary files and native-script vocabulary are read."""
+        vocabulary files, mul.toml and native-script vocabulary are
+        read."""
         return self._strict
 
     # -- access -----------------------------------------------------------

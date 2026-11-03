@@ -247,8 +247,9 @@ def readings_of(text: str) -> tuple[IndexReading, ...]:
 #: The tags no choice names: mul.toml's readings are every language's
 #: and und.toml's no known language's, so neither is a language to
 #: choose. A plain choice never removes a reading of either (choose); a
-#: strict one, which keeps only the chosen files, drops both
-#: (:func:`strict_pool`).
+#: strict one, which drops every file not chosen, keeps mul.toml's all
+#: the same, as it keeps native-script vocabulary, and drops und.toml's
+#: (:func:`strict_pool`; decisions/vocabulary-model, 2026-11-02 #1005).
 UNCHOOSABLE = frozenset({"mul", "und"})
 
 
@@ -290,8 +291,9 @@ def selected(languages: Iterable[str], *,
             raise ValueError(
                 f"{tag!r} is not a language to choose: mul.toml's readings "
                 f"are every language's and und.toml's no known language's; "
-                f"a plain choice never removes a reading of either, and a "
-                f"strict one drops both. Drop it")
+                f"every choice, plain or strict, keeps mul.toml's, a plain "
+                f"one keeps und.toml's too and a strict one drops "
+                f"und.toml's. Drop it")
         found = {by_fold[a] for a in _ancestors(tag) if a in by_fold}
         if not found:
             empty = sorted(t for t in files() - tags() - UNCHOOSABLE
@@ -369,24 +371,26 @@ def is_native_script(text: str) -> bool:
 
 def strict_pool(chosen: frozenset[str]) -> list[IndexReading]:
     """The readings a strict choice of the file tags `chosen` compiles
-    from, before :func:`choose`: the chosen files' and native-script
-    vocabulary's, and nothing else, mul.toml's and und.toml's included
-    (file-strict; decisions/vocabulary-model, 2026-10-30)."""
+    from, before :func:`choose`: the chosen files', mul.toml's and
+    native-script vocabulary's, and nothing else, und.toml's included
+    (file-strict; decisions/vocabulary-model, 2026-10-30, and
+    2026-11-02 #1005 for mul.toml)."""
     return strict_kept(index(), chosen)
 
 
 def strict_kept(readings: Iterable[IndexReading],
                 chosen: frozenset[str]) -> list[IndexReading]:
     """The readings of `readings` a strict choice of the file tags
-    `chosen` keeps: the chosen files' and native-script ones."""
+    `chosen` keeps: the chosen files', mul.toml's, which are every
+    language's, and native-script ones."""
     return [r for r in readings
-            if r.tag in chosen or is_native_script(r.text)]
+            if r.tag in chosen or r.tag == "mul" or is_native_script(r.text)]
 
 
 def chosen_readings(readings: Iterable[IndexReading], chosen: frozenset[str],
                     strict: bool) -> list[IndexReading]:
     """`readings` under the choice of the file tags `chosen`: under
-    `strict` only the chosen files' and native-script ones (as
+    `strict` only the chosen files', mul.toml's and native-script ones (as
     :func:`strict_pool` keeps them), then :func:`choose`. What
     :func:`compile_choice` compiles, and what a `Lexicon` under a
     choice reads a word's readings by."""
@@ -406,8 +410,8 @@ def compile_choice(chosen: frozenset[str], strict: bool = False) -> Compiled:
 
 def strict_ungated(chosen: frozenset[str]) -> frozenset[str]:
     """The words a strict choice of the file tags `chosen` ungates: a
-    chosen file holds the word's vocabulary reading and only a dropped
-    one the name reading gating it, so under strict a possibly-given
+    chosen file or mul.toml holds the word's vocabulary reading and
+    only a dropped file the name reading gating it, so under strict a possibly-given
     particle is never-given, a title only inside a phrase is a title,
     and a suffix gated by the count is not. Compared with the PLAIN
     choice of the same tags, never with the default's markers, which

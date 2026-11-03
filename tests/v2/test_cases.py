@@ -324,11 +324,16 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # under three orders; 1476 -> 1482 on 2026-11-02, rules/C3's
     # leading-credential rows 'Dr. Md Rahman, Ing' (suffix-or-name) and
     # 'Sr. van der Berg, PhD' (particle-or-given), each under three
-    # orders; 1482 -> 1500 the same day, rules/S8's generation-word
-    # rows: two lose their suffix-or-name report, six new ones carry
-    # one and one carries two, each under three orders.
-    assert claims == 1500, (
-        f"the field sweep checks {claims} claims, recorded as 1500 on "
+    # orders; 1482 -> 1488 the same day, #1019's 'John Smith MD Jones'
+    # and 'Smith, John Md Jones', each reporting suffix-or-name under
+    # three orders; 1488 -> 1503 the same day, #1019's review rows,
+    # five credential runs ('md', 'M.d.', 'M.a.', 'Pa-c', one case)
+    # each reporting suffix-or-name under three orders; 1503 -> 1521
+    # the same day, #1023's generation-word rows: two lose their
+    # suffix-or-name report, six new ones carry one and one carries
+    # two, each under three orders.
+    assert claims == 1521, (
+        f"the field sweep checks {claims} claims, recorded as 1521 on "
         f"2026-11-02")
 
 
@@ -681,9 +686,14 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # 305 on 2026-10-30, #965's KC rows under the three orders, nine
     # stand-ins landing in the alternative's field and three keeping the
     # taken one; 452 -> 455 on 2026-11-02, rules/C3's leading-credential
-    # rows, three stand-ins landing in the alternative's field; 455 ->
-    # 459 and 305 -> 312 the same day, rules/S8's generation-word rows
-    assert (checked, skipped) == (459, 312), (checked, skipped)
+    # rows, three stand-ins landing in the alternative's field; 305 ->
+    # 311 the same day, #1019's 'John Smith MD Jones' and 'Smith, John
+    # Md Jones' under the three orders, each stand-in keeping the taken
+    # one; 311 -> 326 the same day, #1019's review rows, five credential
+    # runs under the three orders, each stand-in keeping the taken one;
+    # 455 -> 459 and 326 -> 333 the same day, #1023's generation-word
+    # rows
+    assert (checked, skipped) == (459, 333), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:

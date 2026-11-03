@@ -85,10 +85,15 @@ at fault:
     names, a set's names once each, never a scalar's default (which
     would turn a caller's rule off), and every file PACK_RULES lists
     holding one (#754, 4f);
+13. a word with a mul.toml vocabulary reading, which every choice reads,
+    strict included, holds no name reading on by default in another
+    file, which a strict choice would drop and so ungate it, and no reading in
+    another file, which prefer cannot drop against mul.toml's, save
+    the ones MUL_SHARED records (#1005);
 
 numbered by subject, not by when they run: 1-3, 8, 7's case mask,
 11's refusals and 12 run per file as each loads, and 4-7, 9, 11's
-particle statement and agnomen and 10 over the whole pool in
+particle statement and agnomen, 13 and 10 over the whole pool in
 check_pool, 6 first and 10 last. A reading written `default = false`
 is held to 1-3, 7, 8 and 11 like any other and compiles to nothing, so
 4, 5, 6 and 9 do not weigh it, a name reading included (3a): it derives
@@ -315,6 +320,16 @@ RULE_DEFAULTS: dict[str, object] = {
 #: is one rule for both languages.
 PACK_RULES: dict[str, str] = {"ru": "RU", "tr": "TR_AZ", "es": "ES", "cs": "CS",
                              "sk": "SK"}
+
+#: The words check 13 lets hold a reading in another file beside their
+#: mul.toml one, each with why (#1005): `i` is mul.toml's numeral and
+#: the Catalan and Polish conjunction, and de.toml's numeral written
+#: with its period, a reading of the word by those languages' names that
+#: a choice of them prefers, mul.toml's numeral staying
+MUL_SHARED: dict[str, str] = {
+    "i": "the numeral every language writes, beside the ca and pl "
+         "conjunction and de's period-written numeral",
+}
 
 
 class VocabError(ValueError):
@@ -1225,6 +1240,33 @@ def check_pool(pool: Pool) -> None:
                 raise VocabError(f"{text!r}: an elided particle needs its ASCII "
                                  f"and its U+2019 spelling; add "
                                  f"{text.replace(a, b)!r}")
+
+    # 13: mul.toml's words harm no language (#1005): every choice reads
+    # them, so a name reading in another file would leave under a strict
+    # choice that drops it, ungating the word, and another file's
+    # reading of the word could not be preferred against mul.toml's
+    for text, rs in by_text.items():
+        if not any(r.tag == "mul" and r.category != "name" for r in rs):
+            continue
+        for r in rs:
+            if r.tag == "mul":
+                continue
+            # an off name reading is off under the plain and the strict
+            # choice of every other tag alike, and on under both of its
+            # own file's, so it ungates nothing strict does not
+            if r.category == "name" and r.on_by_default:
+                raise VocabError(
+                    f"{r.where()}: {text!r} has a mul.toml reading, which "
+                    f"a strict choice reads where it drops this name "
+                    f"reading's file, ungating the word; keep the word in "
+                    f"the files of the languages that write it, or write "
+                    f"the name reading in mul.toml")
+            if r.category != "name" and text not in MUL_SHARED:
+                raise VocabError(
+                    f"{r.where()}: {text!r} has a mul.toml reading, which "
+                    f"no choice of {r.tag!r} can prefer this one against; "
+                    f"keep the word out of mul.toml, or record why in "
+                    f"MUL_SHARED")
 
     # 10: no same_as loop, and each file but und.toml in word order --
     # last, so every other refusal is seen first
