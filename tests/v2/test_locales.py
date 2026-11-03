@@ -1860,11 +1860,13 @@ _ORDERS = {None: Policy(), "FAMILY_FIRST": Policy(name_order=FAMILY_FIRST),
     ("cs", None, "Mgr Jana Nováková",
      ("Mgr", "Jana", "", "Nováková", "", "", ()),
      ("Mgr", "Jana", "", "Nováková", "", "", ())),
+    # PMHNP, listed since #993, no longer reports a comma structure of
+    # its own; BC's remains
     ("cs", None, "Lora L. Beebe, PhD, PMHNP, BC",
      ("", "Lora", "L.", "Beebe", "PhD, PMHNP, BC", "",
-      ("COMMA_STRUCTURE", "COMMA_STRUCTURE")),
+      ("COMMA_STRUCTURE",)),
      ("", "Lora", "L.", "Beebe", "PhD, PMHNP, BC", "",
-      ("COMMA_STRUCTURE", "COMMA_STRUCTURE"))),
+      ("COMMA_STRUCTURE",))),
 ])
 def test_the_west_and_south_slavic_packs_read_what_the_default_refuses(
         tags: str, order: str | None, name: str,

@@ -2383,8 +2383,16 @@ text = "acma"
 credential = { expands = "Associate of the Chartered Institute of Management Accountants", note = "NPPES 3 US healthcare providers (August 2026 file); govuk-people 1 name (counted 2026-10-30); ORCID's family box holds it 10 times (GB 1, IR 1, 8 with no country) and its given box once, the credential typed into the box; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 965 }
 
 [[word]]
+text = "acnp"
+credential = { expands = "Acute Care Nurse Practitioner", note = "NPPES 2,333 US healthcare providers (August 2026 file); 12 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
 text = "acp"
 credential = {}
+
+[[word]]
+text = "acsw"
+credential = { expands = "Academy of Certified Social Workers", note = "NPPES 3,386 US healthcare providers (August 2026 file); 2 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
 
 [[word]]
 text = "ae"
@@ -2405,6 +2413,10 @@ credential = {}
 [[word]]
 text = "afm"
 credential = {}
+
+[[word]]
+text = "agacnp"
+credential = { expands = "Adult-Gerontology Acute Care Nurse Practitioner", note = "NPPES 2,011 US healthcare providers (August 2026 file); no ClinicalTrials.gov study official writes it after a comma (data 2026-10-21); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
 
 [[word]]
 text = "agacnp-bc"
@@ -2451,6 +2463,10 @@ text = "ame"
 credential = {}
 
 [[word]]
+text = "amft"
+credential = { expands = "Associate Marriage and Family Therapist", note = "NPPES 4,291 US healthcare providers (August 2026 file); no ClinicalTrials.gov study official writes it after a comma (data 2026-10-21). Not marked: Wikidata 5 family bearers (2026-11-03) against 4,291 providers, under the 200 Census and 20 Wikidata thresholds and the credential reading far the larger (C-i, 2026-10-21 rule). The counts stand here rather than as a family reading, which would mark the word (decisions/vocabulary-model, 2026-10-25)", issue = 993 }
+
+[[word]]
 text = "amieee"
 credential = {}
 
@@ -2460,12 +2476,20 @@ family = { us_census_2010 = 135, wikidata = 2, as_of = 2026-10-21 }
 credential = { note = "NPPES 5 US healthcare providers write it (healthcare only, August 2026 file). Surname reading is the larger of the two small counts (#796's revised rule).", issue = 796 }
 
 [[word]]
+text = "anp"
+credential = { expands = "Adult Nurse Practitioner", note = "NPPES 4,177 US healthcare providers (August 2026 file); 19 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
 text = "aphr"
 credential = {}
 
 [[word]]
 text = "apn"
 credential = {}
+
+[[word]]
+text = "apnp"
+credential = { expands = "Advanced Practice Nurse Prescriber", note = "NPPES 3,895 US healthcare providers (August 2026 file); 8 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
 
 [[word]]
 text = "apr"
@@ -2491,6 +2515,10 @@ credential = {}
 text = "arm"
 family = { us_census_2010 = 283, wikidata = 8, as_of = 2026-10-21 }
 credential = { note = "NPPES 1 US healthcare provider writes it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
+
+[[word]]
+text = "arnp"
+credential = { expands = "Advanced Registered Nurse Practitioner", note = "NPPES 27,998 US healthcare providers (August 2026 file); 23 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
 
 [[word]]
 text = "arrc"
@@ -2520,6 +2548,10 @@ family = { us_census_2010 = 733, wikidata = 63, as_of = 2026-10-21 }
 credential = { note = "NPPES 1 US healthcare provider writes it (healthcare only, August 2026 file). Marked on C-i: the surname reading is substantial (Census 2010 or Wikidata).", issue = 796 }
 
 [[word]]
+text = "asw"
+credential = { expands = "Associate Clinical Social Worker", note = "NPPES 2,615 US healthcare providers (August 2026 file); no ClinicalTrials.gov study official writes it after a comma (data 2026-10-21); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
 text = "atc"
 credential = {}
 
@@ -2539,6 +2571,10 @@ note = "Ba is a real surname (Vietnamese; Senegalese Fula) about as common as BA
 [[word]]
 text = "bca"
 credential = {}
+
+[[word]]
+text = "bcba"
+credential = { expands = "Board Certified Behavior Analyst", note = "NPPES 31,700 US healthcare providers (August 2026 file); 5 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
 
 [[word]]
 text = "bcl"
@@ -2582,6 +2618,14 @@ text = "bs"
 credential = { expands = "Bachelor of Science", note = "NPPES 18,880 US healthcare providers (August 2026 file); 449 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
 
 [[word]]
+text = "bsn"
+credential = { expands = "Bachelor of Science in Nursing", note = "NPPES 15,137 US healthcare providers (August 2026 file); 238 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
+text = "bsw"
+credential = { expands = "Bachelor of Social Work", note = "NPPES 4,795 US healthcare providers (August 2026 file); 6 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
 text = "bt"
 credential = { cased = "Bt" }
 
@@ -2600,6 +2644,10 @@ credential = { cased = "BVSc", expands = "Bachelor of Veterinary Science", note 
 [[word]]
 text = "cacts"
 credential = {}
+
+[[word]]
+text = "cadc"
+credential = { expands = "Certified Alcohol and Drug Counselor", note = "NPPES 4,506 US healthcare providers (August 2026 file); no ClinicalTrials.gov study official writes it after a comma (data 2026-10-21); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
 
 [[word]]
 text = "cae"
@@ -2650,6 +2698,10 @@ credential = { note = "NPPES 0 US healthcare providers write it (healthcare only
 [[word]]
 text = "cas"
 credential = {}
+
+[[word]]
+text = "casac"
+credential = { expands = "Credentialed Alcoholism and Substance Abuse Counselor", note = "NPPES 2,299 US healthcare providers (August 2026 file); no ClinicalTrials.gov study official writes it after a comma (data 2026-10-21); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
 
 [[word]]
 text = "casp"
@@ -2800,12 +2852,24 @@ text = "cdal"
 credential = {}
 
 [[word]]
+text = "cdca"
+credential = { note = "NPPES 5,008 US healthcare providers (August 2026 file); no ClinicalTrials.gov study official writes it after a comma (data 2026-10-21); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
+text = "cde"
+credential = { expands = "Certified Diabetes Educator", note = "NPPES 4,217 US healthcare providers (August 2026 file); 23 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
 text = "cdfm"
 credential = {}
 
 [[word]]
 text = "cdmp"
 credential = {}
+
+[[word]]
+text = "cdn"
+credential = { expands = "Certified Dietitian Nutritionist", note = "NPPES 2,210 US healthcare providers (August 2026 file); 3 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
 
 [[word]]
 text = "cds"
@@ -3171,6 +3235,17 @@ text = "cnp"
 credential = {}
 
 [[word]]
+text = "cns"
+credential = { expands = "Clinical Nurse Specialist", note = "NPPES 3,683 US healthcare providers (August 2026 file); 19 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
+text = "cota"
+family = { us_census_2010 = 11554, wikidata = 39, as_of = 2026-11-03, note = "Wikidata is a lower bound; also a Brazilian and Mexican surname: 91 tse-donors name pairs, 70 dof-signatures signatures (data 2026-10-23, 2025-12-31)" }
+[word.excluded.credential]
+reason = "COTA is Certified Occupational Therapy Assistant (NPPES 13,363 US healthcare providers, August 2026 file; no ClinicalTrials.gov study official writes it after a comma, data 2026-10-21), and Cota is a surname (Census 2010 11,554 bearers, Wikidata 39 family) borne at the end of the name: marked ambiguous, it took the surname from 49 tse-donors names written in capitals with no comma (ADÃO FERREIRA COTA read suffix 'COTA'), against no measured gain, so the trailing name reading dominates (decisions/suffix-acronym-collisions)"
+issue = 993
+
+[[word]]
 text = "cota/l"
 credential = { expands = "Certified Occupational Therapy Assistant, Licensed", note = "NPPES 11,917 US healthcare providers (August 2026 file); 0 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
 
@@ -3239,6 +3314,10 @@ text = "cpm"
 credential = {}
 
 [[word]]
+text = "cpnp"
+credential = { expands = "Certified Pediatric Nurse Practitioner", note = "NPPES 5,870 US healthcare providers (August 2026 file); 28 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
 text = "cpnp-pc"
 credential = { expands = "Certified Pediatric Nurse Practitioner, Primary Care", note = "NPPES 2,697 US healthcare providers (August 2026 file); 6 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
 
@@ -3279,6 +3358,10 @@ text = "cpwa"
 credential = {}
 
 [[word]]
+text = "crc"
+credential = { expands = "Certified Rehabilitation Counselor", note = "NPPES 2,221 US healthcare providers (August 2026 file); 6 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
 text = "crde"
 credential = {}
 
@@ -3297,6 +3380,10 @@ credential = {}
 [[word]]
 text = "crna"
 credential = {}
+
+[[word]]
+text = "crnp"
+credential = { expands = "Certified Registered Nurse Practitioner", note = "NPPES 23,599 US healthcare providers (August 2026 file); 73 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
 
 [[word]]
 text = "cro"
@@ -3329,6 +3416,10 @@ credential = {}
 [[word]]
 text = "cscp"
 credential = {}
+
+[[word]]
+text = "cscs"
+credential = { expands = "Certified Strength and Conditioning Specialist", note = "NPPES 3,721 US healthcare providers (August 2026 file); 15 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
 
 [[word]]
 text = "cscu"
@@ -3378,6 +3469,10 @@ credential = {}
 [[word]]
 text = "cstj"
 credential = { cased = "CStJ", expands = "Commander of the Order of St John", note = "govuk-people 1 name, after a comma (counted 2026-10-30); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 965 }
+
+[[word]]
+text = "csw"
+credential = { note = "NPPES 4,127 US healthcare providers (August 2026 file); no ClinicalTrials.gov study official writes it after a comma (data 2026-10-21); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
 
 [[word]]
 text = "ctbs"
@@ -3845,6 +3940,10 @@ text = "fmva"
 credential = {}
 
 [[word]]
+text = "fnp"
+credential = { expands = "Family Nurse Practitioner", note = "NPPES 54,178 US healthcare providers (August 2026 file); 32 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
 text = "fnp-bc"
 credential = { expands = "Family Nurse Practitioner, Board Certified", note = "NPPES 26,133 US healthcare providers (August 2026 file); 29 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
 
@@ -3993,6 +4092,10 @@ text = "hccp"
 credential = {}
 
 [[word]]
+text = "hha"
+credential = { expands = "Home Health Aide", note = "NPPES 2,095 US healthcare providers (August 2026 file); no ClinicalTrials.gov study official writes it after a comma (data 2026-10-21); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
 text = "hmi"
 credential = { expands = "His Majesty's Inspector", note = "govuk-people 1 name (counted 2026-10-30); ORCID's given box holds it once; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 965 }
 
@@ -4007,6 +4110,10 @@ credential = {}
 [[word]]
 text = "iaee"
 credential = {}
+
+[[word]]
+text = "ibclc"
+credential = { expands = "International Board Certified Lactation Consultant", note = "NPPES 6,401 US healthcare providers (August 2026 file); 7 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
 
 [[word]]
 text = "iccm-d"
@@ -4135,6 +4242,39 @@ note = "Lac is a Vietnamese given name (the trailing word in native order, Nguye
 cased = { reason = "a mask applies in every role, and Lac is a Vietnamese given name and a French surname: 'tran lac' would render 'Tran LAc' (measured 2026-09-25, #540)", issue = 459 }
 
 [[word]]
+text = "ladc"
+credential = { expands = "Licensed Alcohol and Drug Counselor", note = "NPPES 5,205 US healthcare providers (August 2026 file); no ClinicalTrials.gov study official writes it after a comma (data 2026-10-21); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
+text = "lat"
+family = { us_census_2010 = 395, wikidata = 1, as_of = 2026-11-03 }
+credential = { expands = "Licensed Athletic Trainer", note = "NPPES 10,677 US healthcare providers (August 2026 file); 1 ClinicalTrials.gov study official after a comma, as typed (data 2026-10-21) writes it. Marked on C-i: the surname reading is substantial (Census 2010 bearers 395, over the 200 threshold)", issue = 993 }
+
+[[word]]
+text = "lba"
+credential = { expands = "Licensed Behavior Analyst", note = "NPPES 4,925 US healthcare providers (August 2026 file); 1 ClinicalTrials.gov study official after a comma, as typed (data 2026-10-21) writes it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
+text = "lcadc"
+credential = { expands = "Licensed Clinical Alcohol and Drug Counselor", note = "NPPES 2,041 US healthcare providers (August 2026 file); no ClinicalTrials.gov study official writes it after a comma (data 2026-10-21); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
+text = "lcas"
+credential = { expands = "Licensed Clinical Addiction Specialist", note = "NPPES 2,155 US healthcare providers (August 2026 file); no ClinicalTrials.gov study official writes it after a comma (data 2026-10-21); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
+text = "lcdc"
+credential = { expands = "Licensed Chemical Dependency Counselor", note = "NPPES 2,994 US healthcare providers (August 2026 file); no ClinicalTrials.gov study official writes it after a comma (data 2026-10-21); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
+text = "lcmhc"
+credential = { expands = "Licensed Clinical Mental Health Counselor", note = "NPPES 4,520 US healthcare providers (August 2026 file); 1 ClinicalTrials.gov study official after a comma, as typed (data 2026-10-21) writes it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
+text = "lcmhca"
+credential = { expands = "Licensed Clinical Mental Health Counselor Associate", note = "NPPES 2,019 US healthcare providers (August 2026 file); no ClinicalTrials.gov study official writes it after a comma (data 2026-10-21); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
 text = "lcmt"
 credential = {}
 
@@ -4148,19 +4288,39 @@ credential = {}
 
 [[word]]
 text = "lcsw-c"
-credential = { expands = "Licensed Certified Social Worker-Clinical", note = "NPPES 6,745 US healthcare providers (August 2026 file); 1 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
+credential = { expands = "Licensed Certified Social Worker-Clinical", note = "NPPES 6,745 US healthcare providers (August 2026 file); 1 ClinicalTrials.gov study official after a comma, as typed (data 2026-10-21) writes it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
 
 [[word]]
 text = "lcsw-r"
 credential = { note = "NPPES 3,023 US healthcare providers (August 2026 file); 0 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
 
 [[word]]
+text = "lcswa"
+credential = { expands = "Licensed Clinical Social Worker Associate", note = "NPPES 3,865 US healthcare providers (August 2026 file); no ClinicalTrials.gov study official writes it after a comma (data 2026-10-21); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
 text = "ld"
 credential = { note = "NPPES 11,703 US healthcare providers (August 2026 file); 45 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it. Not marked: 45 US SSA births (both sexes summed, 2026-10-21) against 11,703 providers, the credential reading far the larger (C-i, 2026-10-21 rule). The given count stands here rather than as a given reading, which would mark the word (decisions/vocabulary-model, 2026-10-25)", issue = 797 }
 
 [[word]]
+text = "ldn"
+credential = { expands = "Licensed Dietitian Nutritionist", note = "NPPES 9,565 US healthcare providers (August 2026 file); 24 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
 text = "lg"
 credential = {}
+
+[[word]]
+text = "lgsw"
+credential = { expands = "Licensed Graduate Social Worker", note = "NPPES 2,284 US healthcare providers (August 2026 file); no ClinicalTrials.gov study official writes it after a comma (data 2026-10-21); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
+text = "licsw"
+credential = { expands = "Licensed Independent Clinical Social Worker", note = "NPPES 26,761 US healthcare providers (August 2026 file); 4 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
+text = "lisw"
+credential = { expands = "Licensed Independent Social Worker", note = "NPPES 7,442 US healthcare providers (August 2026 file); 2 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
 
 [[word]]
 text = "lisw-s"
@@ -4187,8 +4347,36 @@ text = "llm"
 credential = {}
 
 [[word]]
+text = "llmsw"
+credential = { expands = "Limited Licensed Master Social Worker", note = "NPPES 4,554 US healthcare providers (August 2026 file); no ClinicalTrials.gov study official writes it after a comma (data 2026-10-21); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
+text = "llp"
+credential = { expands = "Limited Licensed Psychologist", note = "NPPES 2,016 US healthcare providers (August 2026 file); no ClinicalTrials.gov study official writes it after a comma (data 2026-10-21); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
+text = "llpc"
+credential = { expands = "Limited Licensed Professional Counselor", note = "NPPES 2,467 US healthcare providers (August 2026 file); no ClinicalTrials.gov study official writes it after a comma (data 2026-10-21); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
 text = "lm"
 credential = {}
+
+[[word]]
+text = "lmft"
+credential = { expands = "Licensed Marriage and Family Therapist", note = "NPPES 39,345 US healthcare providers (August 2026 file); 1 ClinicalTrials.gov study official after a comma, as typed (data 2026-10-21) writes it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
+text = "lmhc"
+credential = { expands = "Licensed Mental Health Counselor", note = "NPPES 33,308 US healthcare providers (August 2026 file); 6 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
+text = "lmhca"
+credential = { expands = "Licensed Mental Health Counselor Associate", note = "NPPES 2,203 US healthcare providers (August 2026 file); no ClinicalTrials.gov study official writes it after a comma (data 2026-10-21); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
+text = "lmp"
+credential = { expands = "Licensed Massage Practitioner", note = "NPPES 9,495 US healthcare providers (August 2026 file); no ClinicalTrials.gov study official writes it after a comma (data 2026-10-21); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
 
 [[word]]
 text = "lmsw"
@@ -4211,6 +4399,14 @@ text = "lpc"
 credential = {}
 
 [[word]]
+text = "lpca"
+credential = { expands = "Licensed Professional Counselor Associate", note = "NPPES 2,700 US healthcare providers (August 2026 file); no ClinicalTrials.gov study official writes it after a comma (data 2026-10-21); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
+text = "lpcc"
+credential = { expands = "Licensed Professional Clinical Counselor", note = "NPPES 13,851 US healthcare providers (August 2026 file); no ClinicalTrials.gov study official writes it after a comma (data 2026-10-21); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
 text = "lpn"
 credential = {}
 
@@ -4219,12 +4415,20 @@ text = "lpss"
 credential = {}
 
 [[word]]
+text = "lpta"
+credential = { expands = "Licensed Physical Therapist Assistant", note = "NPPES 3,201 US healthcare providers (August 2026 file); no ClinicalTrials.gov study official writes it after a comma (data 2026-10-21); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
 text = "lsi"
 credential = {}
 
 [[word]]
 text = "lsit"
 credential = {}
+
+[[word]]
+text = "lsw"
+credential = { expands = "Licensed Social Worker", note = "NPPES 19,914 US healthcare providers (August 2026 file); no ClinicalTrials.gov study official writes it after a comma (data 2026-10-21); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
 
 [[word]]
 text = "lvn"
@@ -4261,6 +4465,10 @@ credential = { expands = "Bachelor of Medicine", note = "NPPES 596 US healthcare
 [[word]]
 text = "mbbch"
 credential = { cased = "MBBCh", expands = "Bachelor of Medicine, Bachelor of Surgery", note = "NPPES 813 US healthcare providers (August 2026 file); 190 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
+
+[[word]]
+text = "mbbs"
+credential = { expands = "Bachelor of Medicine, Bachelor of Surgery", note = "NPPES 7,250 US healthcare providers (August 2026 file); 4,540 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
 
 [[word]]
 text = "mbchb"
@@ -4362,6 +4570,14 @@ text = "mfa"
 credential = {}
 
 [[word]]
+text = "mft"
+credential = { expands = "Marriage and Family Therapist", note = "NPPES 13,618 US healthcare providers (August 2026 file); 3 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
+text = "mhpp"
+credential = { note = "NPPES 2,534 US healthcare providers (August 2026 file); no ClinicalTrials.gov study official writes it after a comma (data 2026-10-21); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
 text = "mhsc"
 credential = { cased = "MHSc", expands = "Master of Health Science", note = "NPPES 80 US healthcare providers (August 2026 file); 104 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
 
@@ -4438,6 +4654,11 @@ text = "moid"
 excluded = { credential = { reason = "Moid is a borne given name, written last in South Asian and Arabic names (Syed Abdul Moid): psc-individuals writes it Moid 4, nepal-candidates 2, ORCID's given box 20 (IN 2, PK 2, US 2) and family box 14 (IN 4, US 2, 8 with no country). Listed and gated by a given reading, it would read the suffix only spelled MOID in a mixed-case name or after a comma, and take the family from a three-word name written in one case (SYED ABDUL MOID); spelled MoID, as GOV.UK writes it, it would still read as the name (rules/S6), and GOV.UK's one MoID already reads as the suffix behind a listed credential. Measured 2026-10-30 on fec-individuals (3 names writing it), govuk-people (1), orcid-researchers (0) and psc-individuals (4): no name reads differently gated or refused", issue = 965 } }
 
 [[word]]
+text = "mot"
+family = { us_census_2010 = 109, wikidata = 3, as_of = 2026-11-03, note = "Wikidata is a lower bound; family by citizenship France 1, Belgium 1" }
+credential = { expands = "Master of Occupational Therapy", note = "NPPES 4,681 US healthcare providers (August 2026 file); 10 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it. Marked on C-i although its surname counts are under the 200 Census threshold: listed plain it read the surname as the credential in every case (Jane Doe Mot read suffix 'Mot'); marked, it costs only a name written in one case with a word to spare, such as tse-donors' DIVA DA MOT (family 'DA', suffix 'MOT', reported) (decisions/suffix-acronym-collisions)", issue = 993 }
+
+[[word]]
 text = "mp"
 credential = {}
 
@@ -4452,6 +4673,10 @@ credential = { cased = "MPhil", expands = "Master of Philosophy", note = "NPPES 
 [[word]]
 text = "mpse"
 credential = {}
+
+[[word]]
+text = "mpt"
+credential = { expands = "Master of Physical Therapy", note = "NPPES 9,278 US healthcare providers (August 2026 file); 135 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
 
 [[word]]
 text = "mra"
@@ -4474,8 +4699,28 @@ text = "mscmsm"
 credential = {}
 
 [[word]]
+text = "msd"
+credential = { expands = "Master of Science in Dentistry", note = "NPPES 2,328 US healthcare providers (August 2026 file); 125 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
+text = "msed"
+credential = { cased = "MSEd", expands = "Master of Science in Education", note = "NPPES 6,680 US healthcare providers (August 2026 file); 9 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
 text = "msm"
 credential = {}
+
+[[word]]
+text = "msn"
+credential = { expands = "Master of Science in Nursing", note = "NPPES 25,815 US healthcare providers (August 2026 file); 402 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
+text = "mspt"
+credential = { expands = "Master of Science in Physical Therapy", note = "NPPES 5,447 US healthcare providers (August 2026 file); 151 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
+text = "msw"
+credential = { expands = "Master of Social Work", note = "NPPES 62,731 US healthcare providers (August 2026 file); 137 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
 
 [[word]]
 text = "mt"
@@ -4530,6 +4775,10 @@ text = "ncarb"
 credential = {}
 
 [[word]]
+text = "ncc"
+credential = { expands = "National Certified Counselor", note = "NPPES 15,833 US healthcare providers (August 2026 file); no ClinicalTrials.gov study official writes it after a comma (data 2026-10-21); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
 text = "nccp"
 credential = {}
 
@@ -4560,6 +4809,10 @@ credential = {}
 [[word]]
 text = "nmd"
 credential = {}
+
+[[word]]
+text = "nnp"
+credential = { expands = "Neonatal Nurse Practitioner", note = "NPPES 2,070 US healthcare providers (August 2026 file); 11 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
 
 [[word]]
 text = "np"
@@ -4610,6 +4863,10 @@ text = "ocp"
 credential = {}
 
 [[word]]
+text = "ocs"
+credential = { expands = "Orthopaedic Clinical Specialist", note = "NPPES 2,208 US healthcare providers (August 2026 file); 25 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
 text = "od"
 credential = {}
 
@@ -4628,8 +4885,20 @@ text = "ot"
 credential = {}
 
 [[word]]
+text = "otd"
+credential = { expands = "Doctor of Occupational Therapy", note = "NPPES 7,967 US healthcare providers (August 2026 file); 48 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
+text = "otr"
+credential = { expands = "Occupational Therapist, Registered", note = "NPPES 21,981 US healthcare providers (August 2026 file); 137 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
 text = "otr/l"
 credential = { expands = "Occupational Therapist Registered, Licensed", note = "NPPES 61,789 US healthcare providers (August 2026 file); 103 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
+
+[[word]]
+text = "otrl"
+credential = { same_as = "otr/l", expands = "Occupational Therapist Registered, Licensed", note = "NPPES 4,375 US healthcare providers (August 2026 file); no ClinicalTrials.gov study official writes it after a comma (data 2026-10-21); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
 
 [[word]]
 text = "pa"
@@ -4640,6 +4909,11 @@ credential = { expands = "Physician Assistant", note = "NPPES 54,128 US healthca
 [[word]]
 text = "pa-c"
 credential = {}
+
+[[word]]
+text = "pac"
+family = { us_census_2010 = 535, wikidata = 62, as_of = 2026-11-03 }
+credential = { same_as = "pa-c", expands = "Physician Assistant, Certified", note = "NPPES 5,910 US healthcare providers (August 2026 file); no ClinicalTrials.gov study official writes it after a comma (data 2026-10-21). Marked on C-i: the surname reading is substantial (Census 2010 bearers 535, over the 200 threshold)", issue = 993 }
 
 [[word]]
 text = "pc"
@@ -4704,12 +4978,20 @@ text = "pla"
 credential = {}
 
 [[word]]
+text = "plpc"
+credential = { expands = "Provisional Licensed Professional Counselor", note = "NPPES 2,504 US healthcare providers (August 2026 file); no ClinicalTrials.gov study official writes it after a comma (data 2026-10-21); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
 text = "pls"
 credential = {}
 
 [[word]]
 text = "pmc"
 credential = {}
+
+[[word]]
+text = "pmhnp"
+credential = { expands = "Psychiatric-Mental Health Nurse Practitioner", note = "NPPES 10,684 US healthcare providers (August 2026 file); 4 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
 
 [[word]]
 text = "pmhnp-bc"
@@ -4722,6 +5004,10 @@ credential = {}
 [[word]]
 text = "pmp"
 credential = {}
+
+[[word]]
+text = "pnp"
+credential = { expands = "Pediatric Nurse Practitioner", note = "NPPES 3,400 US healthcare providers (August 2026 file); 6 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
 
 [[word]]
 text = "pp"
@@ -4776,6 +5062,14 @@ text = "qgm"
 credential = {}
 
 [[word]]
+text = "qmhp"
+credential = { expands = "Qualified Mental Health Professional", note = "NPPES 2,009 US healthcare providers (August 2026 file); no ClinicalTrials.gov study official writes it after a comma (data 2026-10-21); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
+text = "qmhs"
+credential = { note = "NPPES 2,937 US healthcare providers (August 2026 file); no ClinicalTrials.gov study official writes it after a comma (data 2026-10-21); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
 text = "qpm"
 credential = {}
 
@@ -4800,6 +5094,10 @@ issue = 342
 [[word]]
 text = "rba"
 credential = {}
+
+[[word]]
+text = "rbt"
+credential = { expands = "Registered Behavior Technician", note = "NPPES 35,073 US healthcare providers (August 2026 file); no ClinicalTrials.gov study official writes it after a comma (data 2026-10-21); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
 
 [[word]]
 text = "rci"
@@ -4858,6 +5156,10 @@ text = "rn"
 credential = {}
 
 [[word]]
+text = "rnfa"
+credential = { expands = "Registered Nurse First Assistant", note = "NPPES 2,173 US healthcare providers (August 2026 file); no ClinicalTrials.gov study official writes it after a comma (data 2026-10-21); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
 text = "rp"
 credential = {}
 
@@ -4867,7 +5169,7 @@ credential = {}
 
 [[word]]
 text = "rpa-c"
-credential = { expands = "Registered Physician Assistant, Certified", note = "NPPES 2,162 US healthcare providers (August 2026 file); 1 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
+credential = { expands = "Registered Physician Assistant, Certified", note = "NPPES 2,162 US healthcare providers (August 2026 file); 1 ClinicalTrials.gov study official after a comma, as typed (data 2026-10-21) writes it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
 
 [[word]]
 text = "rph"
@@ -4876,6 +5178,10 @@ credential = { cased = "RPh" }
 [[word]]
 text = "rpl"
 credential = {}
+
+[[word]]
+text = "rpt"
+credential = { expands = "Registered Physical Therapist", note = "NPPES 4,466 US healthcare providers (August 2026 file); 30 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
 
 [[word]]
 text = "rrc"
@@ -4968,6 +5274,14 @@ text = "siie"
 credential = {}
 
 [[word]]
+text = "slp"
+credential = { expands = "Speech-Language Pathologist", note = "NPPES 22,354 US healthcare providers (August 2026 file); 24 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
+text = "slpa"
+credential = { expands = "Speech-Language Pathology Assistant", note = "NPPES 2,591 US healthcare providers (August 2026 file); no ClinicalTrials.gov study official writes it after a comma (data 2026-10-21); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
 text = "smieee"
 credential = {}
 
@@ -5051,6 +5365,10 @@ note = "NOT marked as possibly a name (no name reading) though also a particle: 
 [[word]]
 text = "vrd"
 credential = {}
+
+[[word]]
+text = "whnp"
+credential = { expands = "Women's Health Nurse Practitioner", note = "NPPES 2,528 US healthcare providers (August 2026 file); 3 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
 
 [[word]]
 text = "whnp-bc"
