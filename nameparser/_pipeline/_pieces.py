@@ -59,7 +59,7 @@ from typing import NamedTuple
 
 from nameparser._pipeline._state import (
     AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG,
-    GIVEN_ABBREVIATION_TAG, NAME_ROLES, SHAPE_ACRONYM_TAG, SUFFIX_OR_UNREAD, AmbiguityKind, PendingAmbiguity,
+    GENERATION_WORD_TAG, GIVEN_ABBREVIATION_TAG, NAME_ROLES, SHAPE_ACRONYM_TAG, SUFFIX_OR_UNREAD, AmbiguityKind, PendingAmbiguity,
     PendingReading,
     WorkToken,
 )
@@ -1483,6 +1483,42 @@ def _name_word_behind(piece: Sequence[int], ptags: Set[str],
                      and settled_by_case(tok, one_case)))
 
 
+# rules/S8: "nor does a generation word written out" -- the clause
+# this implements (decisions/S8)
+def generation_word_before_a_name(token: WorkToken,
+                                  piece: Sequence[int], ptags: Set[str],
+                                  tokens: Sequence[WorkToken],
+                                  one_case: bool | None) -> bool:
+    """Whether a generation WORD ('Junior', 'Jr', 'Snr', 'mlađi') has
+    behind it, in `piece`, a word of the name, asked of the piece's
+    first word as `_name_word_behind` asks it: a word that is no suffix
+    word, no initial, no connective, no title word (the run reads that
+    as a title: 'Eric H. Holder Jr. Attorney General') and no maiden
+    marker, and is a particle or is written in a name of one case or,
+    in a name of mixed case, in Title case or a script with no case --
+    capitals there are a credential's writing as likely as a name's
+    ('de Planta jr. CF'), and lower case is no name word's. A credential
+    merged across a space is no name word. The numerals are S10's, read
+    by their own predicate, and stay out. Only `run_start` asks it."""
+    if (GENERATION_WORD_TAG not in token.tags
+            or _ROMAN.match(token.text.rstrip(".")) is not None
+            or "suffix" in ptags or "split" in ptags):
+        return False
+    tags = tokens[piece[0]].tags
+    if not tags.isdisjoint(_NOT_A_NAME_BEHIND):
+        return False
+    if "particle" in tags:
+        return True
+    text = tokens[piece[0]].text
+    return bool(one_case) or not (text.islower() or text.isupper())
+
+
+#: what a word behind a generation word is that is no word of the name
+_NOT_A_NAME_BEHIND = frozenset({"vocab:suffix", SHAPE_ACRONYM_TAG,
+                                "initial", "conjunction", "vocab:title",
+                                "vocab:maiden-marker"})
+
+
 # rules/S8: "A credential after the name core starts a run to the
 # end of its part" -- applied to a finished peel (#602), so every
 # reader of the trailing run (assign, P5's reserve, P2's chain stop,
@@ -1550,12 +1586,20 @@ def run_start(rest: Sequence[int], names: int,
                              # the walk leaves out (#827)
                              and not behind_the_merged_credential(
                                  rest, p + 1, ptags)
-                             and AMBIGUOUS_ACRONYM_TAG in tags
-                             and settled_by_case(tokens[pieces[q][0]],
-                                                 one_case)
-                             and _name_word_behind(pieces[rest[p + 1]],
-                                                   ptags[rest[p + 1]],
-                                                   tokens, one_case))):
+                             and (AMBIGUOUS_ACRONYM_TAG in tags
+                                  and settled_by_case(tokens[pieces[q][0]],
+                                                      one_case)
+                                  and _name_word_behind(pieces[rest[p + 1]],
+                                                        ptags[rest[p + 1]],
+                                                        tokens, one_case)
+                                  # rules/S8: "nor does a generation word
+                                  # written out" -- a filer's middle-name
+                                  # box, the family name behind it
+                                  or generation_word_before_a_name(
+                                      tokens[pieces[q][0]],
+                                      pieces[rest[p + 1]],
+                                      ptags[rest[p + 1]], tokens,
+                                      one_case)))):
                 return p
         # a lone particle is not yet a name: 'de Mesnil' is one surname
         # -- unless it opens a chain run, which is then the surname

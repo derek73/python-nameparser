@@ -317,7 +317,9 @@ _EXPECTED_READINGS = [
     # space, which is one credential
     ("John Smith PhD Jones", None, "Jones", "credential", "position"),
     ("John Smith III Jones", None, "Jones", "credential", "position"),
-    ("John Smith Jr Jones", None, "Jones", "credential", "position"),
+    ("John Smith Esq Jones", None, "Jones", "credential", "position"),
+    # a generation word before a name word starts no run (rules/S8)
+    ("John Smith Jr Jones", None, "Jr", "name", "position"),
     ("John Smith Ph. D.", None, "D.", "credential", "vocabulary"),
     ("John Smith, Jr., Foo", None, "Foo", "credential", "position"),
     ("John Smith, PhD and MD", None, "and", "conjunction", "vocabulary"),

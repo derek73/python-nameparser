@@ -25,7 +25,7 @@
   "John von PhD Jones"        →  family="von"
   "John von PhD Jones"        →  suffix="PhD Jones"
   ```
-- **What is a credential here.** A title word never starts the run, and neither does a member of the ambiguous class its writing leaves unsettled, a single letter, a connective, a word that is also particle or bound given-name vocabulary, the capitals of `DO` included: a credential is the writer's mark that the post-nominals have begun, and those carry no such mark. An honorific or a generational word carries it as a credential does, whatever its script.
+- **What is a credential here.** A title word never starts the run, and neither does a member of the ambiguous class its writing leaves unsettled, a single letter, a connective, a word that is also particle or bound given-name vocabulary, the capitals of `DO` included: a credential is the writer's mark that the post-nominals have begun, and those carry no such mark. Where no family comma divides the name, nor does a generation word written out, a numeral aside, with a name word behind it: a particle, or a word that is no suffix word, initial, connective, title word or maiden marker, written in Title case, in a script with no case, or in a name of one case. A generation word there was typed into the middle of the name, where a filer's form puts it, or is the given name Junior, and the family name stands behind it. An honorific or a generational word otherwise carries it as a credential does, whatever its script.
   ```
   "Mary Jane Pope Smith"      →  family="Smith"
   "Josep Carod i Rovira"      →  family="Carod i Rovira"
@@ -33,10 +33,17 @@
   "John Smith Ma Jones"       →  family="Jones"
   "JOHN SMITH MA JONES"       →  family="JONES"
   "John Smith DO Jones"       →  family="DO Jones"
-  "Antonio Pavlović mlađi Jones"  →  suffix="mlađi Jones"
-  "Pieter Bruegel stariji Jones"  →  suffix="stariji Jones"
-  "Ана Хорват старији Џонс"   →  suffix="старији Џонс"
-  "Гай Плиний Старший Иванов"  →  suffix="Старший Иванов"
+  "Guy Andre Junior Francois"  →  family="Francois"
+  "John Smith Jr. Jones"      →  middle="Smith Jr."
+  "JOHN SMITH JR JONES"       →  family="JONES"
+  "Antonio Pavlović mlađi Jones"  →  family="Jones"
+  "Pieter Bruegel stariji Jones"  →  family="Jones"
+  "Ана Хорват старији Џонс"   →  family="Џонс"
+  "Гай Плиний Старший Иванов"  →  family="Иванов"
+  "John Smith Jr. PhD Jones"  →  suffix="Jr. PhD Jones"
+  "John Smith Jr. CF"         →  suffix="Jr. CF"
+  "Smith, John Jr. Jones"     →  suffix="Jr. Jones"
+  "John Smith Esq Jones"      →  suffix="Esq Jones"
   "राम शर्मा साहब मोहन"          →  suffix="साहब मोहन"
   ```
 - **What reports.** A name word the run absorbs is reported `suffix-or-name`.
@@ -69,6 +76,10 @@
 
 **Accepted:**
 
+- With no family comma, a generation word written before the family name reads as a word of the middle name, not as the suffix it may be: the run does not start there, and lifting a post-nominal out of the middle of a name was declined for every credential (decisions/S8, #602).
+  ```
+  "Mr Robert Alexander (Jnr) Halliday"  →  middle="Alexander Jnr"
+  ```
 - With no family comma, a credential written in capitals with a name word behind it is read as a name word, where the same credential written with its periods starts the run: a name with its credential between its given names and its family name keeps the family name behind the credential, the capitals being read as initials as likely as a credential.
   ```
   "John Smith MA Jones"       →  family="Jones"
