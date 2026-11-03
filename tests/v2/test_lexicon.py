@@ -620,6 +620,44 @@ def test_words_narrows_by_properties_as_add_spells_them() -> None:
     assert lex.words(kind="title", addresses="given") == ("zqsir",)
 
 
+def test_words_compares_a_property_in_each_readings_own_kind() -> None:
+    # `suffix` is a kind and a category, and `acronym` is unwritten-true
+    # on a credential, false on a suffix word: asked of the category,
+    # each reading answers in its own kind
+    lex = Lexicon.empty().add("zqc", kind="credential").add(
+        "zqw", kind="credential", acronym=False).add("zqg", kind="generation")
+    assert lex.words(kind="suffix", acronym=True) == ("zqc",)
+    assert lex.words(kind="suffix", acronym=False) == ("zqg", "zqw")
+    default = Lexicon.default()
+    acronyms = set(default.words(kind="suffix", acronym=True))
+    words = set(default.words(kind="suffix", acronym=False))
+    assert "md" in acronyms and "jr" in words
+    assert acronyms.isdisjoint(words)
+    assert acronyms | words == set(default.words(kind="suffix"))
+
+
+def test_every_shipped_reading_holds_its_properties_canonical() -> None:
+    # what `words` compares a reading's properties as: held as add would
+    # write them, an unwritten value never (a written `acronym = true` on
+    # a credential would match no `words(..., acronym=True)`)
+    from nameparser._lexicon import _prop_value
+    behavioral = ("acronym", "addresses", "after_given", "attached",
+                  "attaches", "may_be_initial", "same_as")
+    held = [(w, r.kind, p, v) for w, rs in Lexicon.default()._pool().items()
+            for r in rs for p, v in r.props.items() if p in behavioral]
+    assert held  # precondition: the default writes some
+    assert [h for h in held if _prop_value(h[1], h[2], h[3]) != h[3]] == []
+
+
+def test_words_matches_a_list_property_whatever_its_order() -> None:
+    # `chief`'s nobility reading attaches to military and office titles;
+    # the asked list is folded and sorted as add folds it
+    lex = Lexicon.default()
+    held = lex.words(kind="nobility", attaches=["military", "office"])
+    assert "chief" in held
+    assert lex.words(kind="nobility", attaches=["Office", "military"]) == held
+
+
 @pytest.mark.parametrize(("call", "error", "match"), [
     (lambda: Lexicon.empty().words(kind="titel"), ValueError, "or a category, on words"),
     (lambda: Lexicon.empty().words(kind=None), TypeError, "kind as a string"),  # type: ignore[arg-type]

@@ -881,14 +881,6 @@ def _apply_edit(pool: dict[str, tuple[Any, ...]],
     return words
 
 
-def _held_value(kind: str, props: Mapping[str, Any], prop: str) -> object:
-    """A `kind` reading's value of `prop`, from its `props`, as an edit's
-    properties hold it, None where it carries the unwritten one: what
-    `words` compares."""
-    value = props.get(prop)
-    return None if value is None else _prop_value(kind, prop, value)
-
-
 def _merged(props: Mapping[str, Any], update: _Props) -> dict[str, Any]:
     out = {k: v for k, v in props.items() if k != "default"}
     for k, v in update:
@@ -2140,27 +2132,37 @@ class Lexicon:
         sorted: a kind or a category, as :meth:`remove` takes it
         (``words(kind="title")`` lists every title word, ``dean``
         among them, whichever set its readings compile to), and
-        `properties`, which only a kind takes, narrowing to the readings
-        that carry them as :meth:`add` spells them
+        `properties`, which a kind takes (``title``, ``suffix`` and
+        ``particle`` are kinds as well as categories, and take their
+        own kind's properties), narrowing to the readings that carry
+        them as :meth:`add` spells them, each compared in its own
+        reading's kind
         (``words(kind="title", addresses="given")``, the titles that
         address a person by the given name). A phrase the lexicon holds
         whole (``"z domu"``) is one entry."""
         k = _check_kind(kind, "words")
         assert k is not None
         ri = _index_module()
-        wanted: _Props = ()
         if properties:
             if k not in ri.CATEGORY:
                 raise ValueError(
                     f"words() takes properties with a kind, not the "
                     f"category {k!r}; name one of its kinds: " + ", ".join(
                         x for x, c in ri.CATEGORY.items() if c == k))
-            wanted = _edit_props(k, properties)
+            # checked against the kind named; compared below against
+            # each reading's own kind, since a kind that is also a
+            # category reaches kinds whose unwritten value differs
+            # (`acronym` is unwritten-true on a credential, false on a
+            # suffix word)
+            _edit_props(k, properties)
+
         return tuple(sorted(
             w for w, rs in self._pool().items()
             if any(r.on_by_default and (r.kind == k or r.category == k)
-                   and all(_held_value(r.kind, r.props, p) == v
-                           for p, v in wanted)
+                   # a reading holds its properties canonical, as the
+                   # build and add write them, the unwritten value never
+                   and all(r.props.get(p) == _prop_value(r.kind, p, v)
+                           for p, v in properties.items())
                    for r in rs)))
 
     # -- editing ----------------------------------------------------------
