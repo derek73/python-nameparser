@@ -2920,6 +2920,16 @@ def test_reading_languages_under_a_strict_choice_name_the_chosen_files() -> None
     assert _languages_of(Parser(), "John Smith Ph. D.", "Ph.") == ("en",)
 
 
+def test_an_empty_lexicon_names_no_file() -> None:
+    # a word the default lists, asked of a lexicon with no readings: no
+    # parse under Lexicon.empty() takes a vocabulary reading since #1000
+    # (the Ph./D. pair was the one that did), so the lookup is asked
+    # directly
+    credential = frozenset({"credential"})
+    assert Lexicon.default()._files.languages("phd", credential) == ("en",)
+    assert Lexicon.empty()._files.languages("phd", credential) == ()
+
+
 def test_reading_languages_follow_a_callers_readings() -> None:
     # the same rule over a caller's log, with no choice: a caller's own
     # reading names no file; an add of a kind a file holds off by
