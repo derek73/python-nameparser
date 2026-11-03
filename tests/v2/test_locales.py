@@ -2352,3 +2352,28 @@ def test_267_dotted_cyrillic_initial_wins_over_conjunction() -> None:
         n = parse(f"{dotted} {family}")
         assert n.given == dotted
         assert n.family == family
+
+
+@pytest.mark.parametrize(("pack", "name", "repaired"), [
+    (locales.GD, "RONALD MACDONALD", "Ronald MacDonald"),
+    (locales.GA, "JOHN MACCARTHY", "John MacCarthy"),
+])
+@pytest.mark.parametrize("strict", [False, True])
+def test_a_gaelic_pack_keeps_the_mac_masks(
+        pack: Locale, name: str, repaired: str, strict: bool) -> None:
+    # #1014: the Mac masks stand in en.toml and again in gd.toml and
+    # ga.toml, so a strict Gaelic choice, which compiles no en.toml
+    # reading, still writes the inner capital
+    parser = parser_for(pack, strict=strict)
+    assert str(parser.capitalized(parser.parse(name))) == repaired
+
+
+def test_a_strict_choice_keeps_only_the_mac_masks_its_files_hold() -> None:
+    # #1014, decisions/R4: ga.toml holds the four Irish masks alone, so
+    # a strict Irish choice title-cases a Scottish Mac name, and a strict
+    # choice holding none of en, gd and ga keeps no mask at all
+    for pack in (locales.GA, locales.ES):
+        parser = parser_for(pack, strict=True)
+        assert str(parser.capitalized(parser.parse("RONALD MACDONALD"))) == "Ronald Macdonald"
+    plain = parser_for(locales.ES)
+    assert str(plain.capitalized(plain.parse("RONALD MACDONALD"))) == "Ronald MacDonald"

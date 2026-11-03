@@ -118,7 +118,8 @@ _SOURCES: dict[tuple[str, str], tuple[str, str] | None] = {
     # was their only other copy
     ("_render", "_SPACES"): None,
     ("_render", "_SPACE_BEFORE_COMMA"): None,
-    ("_render", "_MAC"): None,
+    # Mc alone since #1014
+    ("_render", "_MC"): None,
     ("_render", "_WORD"): None,
     ("_vocab", "_PERIOD_NOT_AT_END"): None,
     ("_vocab", "_INITIAL"): None,
@@ -130,8 +131,8 @@ _SOURCES: dict[tuple[str, str], tuple[str, str] | None] = {
     # Deliberately NOT a straight copy -- _INITIAL's period
     # alternative, pinned by the dedicated test above:
     ("_render", "_DOTTED_INITIAL"): None,
-    # #542: the name run after a Mac/Mc prefix, read on the word as
-    # written once _MAC has matched its composed spelling
+    # #542: the name run after an Mc prefix, read on the word as
+    # written once _MC has matched its composed spelling
     ("_render", "_NAME_RUN"): None,
     ("_tokenize", "_BIDI"): None,
     # Mirrors _pipeline._state.COMMA_CHARS, a set rather than a

@@ -101,3 +101,19 @@ expands = "of the descendant of, the genitive of 'ó' after a woman's 'bean' or 
 same_as = "ó"
 cased = "Uí"
 note = "Off by default with 'mhic': a particle the default has never read, turned on by an Irish pack. No source counts it as a given name (2026-10-30: ORCID 15 family boxes, 6 in Ireland; none as a given name). Unaccented 'ui' is left out: written so, it is also a pair of initials. The mask is the word's own title case, as on 'ní'."
+
+[[word]]
+text = "maccarthy"
+family = { cased = "MacCarthy", note = "#1014: en.toml's mask, here so a strict choice of Irish keeps it; the counts are on the en.toml entry" }
+
+[[word]]
+text = "macdermott"
+family = { cased = "MacDermott", note = "#1014: en.toml's mask, here so a strict choice of Irish keeps it; the counts are on the en.toml entry" }
+
+[[word]]
+text = "macmahon"
+family = { cased = "MacMahon", note = "#1014: en.toml's mask, here so a strict choice of Irish keeps it; the counts are on the en.toml entry" }
+
+[[word]]
+text = "macmanus"
+family = { cased = "MacManus", note = "#1014: en.toml's mask, here so a strict choice of Irish keeps it; the counts are on the en.toml entry" }
