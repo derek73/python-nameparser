@@ -99,7 +99,7 @@ academic = { expands = "the address of an advocate, 'Adv. Smith' in South Africa
 
 [[word]]
 text = "attorney"
-academic = { expands = "the address of a lawyer, 'Atty. Cruz'" }
+academic = { expands = "the address of a lawyer, 'Atty. Cruz'", attaches = ["gen"], note = "attaches: Attorney Gen (rules/H9, #999), the rank written short being a title only in a phrase" }
 
 [[word]]
 text = "engineer"
@@ -489,7 +489,7 @@ military = { expands = "Airman Basic" }
 
 [[word]]
 text = "adjutant"
-military = {}
+military = { attaches = ["gen"], note = "attaches: Adjutant Gen (rules/H9, #999), the rank written short being a title only in a phrase" }
 
 [[word]]
 text = "admiral"
@@ -517,7 +517,7 @@ military = { same_as = "bg" }
 
 [[word]]
 text = "brigadier"
-military = {}
+military = { attaches = ["gen"], note = "attaches: Brigadier Gen (rules/H9, #999), the rank written short being a title only in a phrase" }
 
 [[word]]
 text = "captain"
@@ -641,7 +641,9 @@ military = {}
 
 [[word]]
 text = "gen"
-military = { same_as = "general" }
+military = { same_as = "general", abbreviation = true, issue = 999, decided = 2026-11-03, note = "a title only inside a title phrase, its given reading the clash (rules/H9): 'Lt Gen John Smith' and 'Maj Gen John Smith' read the title, 'Gen Goto' and 'Mr Gen Zhang' the given name, and 'Gen. John Smith' the title by H2's shape; written with its period at the end it is H5's trailing title ('SMITH, JOHN GEN.')" }
+given = { us_ssa = 79, wikidata = 102, as_of = 2026-11-03, note = "a Japanese and Chinese given name: ORCID records whose given box opens with it 680 (China 155, Japan 100), PatentsView inventors 274 (Japan 207); nam_dict band 2 in Korea, 1 in China and Japan; Wikidata is a lower bound (Japan 43, Ming dynasty 18); US SSA 79 births (67 male)" }
+family = { us_census_2010 = 162, wikidata = 4, as_of = 2026-11-03, note = "US Census rank 109,258; Wikidata Turkey 2" }
 
 [[word]]
 text = "generalissimo"
@@ -661,11 +663,11 @@ military = { expands = "Lance Corporal" }
 
 [[word]]
 text = "lieutenant"
-military = {}
+military = { attaches = ["gen"], note = "attaches: Lieutenant Gen (rules/H9, #999), the rank written short being a title only in a phrase" }
 
 [[word]]
 text = "lt"
-military = { same_as = "lieutenant" }
+military = { same_as = "lieutenant", attaches = ["gen"], note = "attaches: Lt Gen (rules/H9, #999), the rank written short being a title only in a phrase" }
 credential = {}
 
 [[word]]
@@ -1021,11 +1023,11 @@ office = {}
 
 [[word]]
 text = "governor"
-office = {}
+office = { attaches = ["gen"], note = "attaches: Governor Gen (rules/H9, #999), the rank written short being a title only in a phrase" }
 
 [[word]]
 text = "gov"
-office = { same_as = "governor" }
+office = { same_as = "governor", attaches = ["gen"], note = "attaches: Gov Gen (rules/H9, #999), the rank written short being a title only in a phrase" }
 
 [[word]]
 text = "headman"
@@ -1131,7 +1133,7 @@ office = { same_as = "representative" }
 
 [[word]]
 text = "secretary"
-office = {}
+office = { attaches = ["gen"], note = "attaches: Secretary Gen (rules/H9, #999), the rank written short being a title only in a phrase" }
 
 [[word]]
 text = "senator"
@@ -1744,7 +1746,7 @@ occupation = {}
 
 [[word]]
 text = "solicitor"
-occupation = {}
+occupation = { attaches = ["gen"], note = "attaches: Solicitor Gen (rules/H9, #999), the rank written short being a title only in a phrase" }
 
 [[word]]
 text = "soprano"
@@ -1756,7 +1758,7 @@ occupation = {}
 
 [[word]]
 text = "surgeon"
-occupation = {}
+occupation = { attaches = ["gen"], note = "attaches: Surgeon Gen (rules/H9, #999), the rank written short being a title only in a phrase" }
 
 [[word]]
 text = "teacher"

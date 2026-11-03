@@ -3074,7 +3074,9 @@ def test_a_choice_that_changes_nothing_leaves_the_sets_as_they_are() -> None:
      {"family": "Ra", "suffix": ""}),
     # what adding en costs: its credential is back
     (("ko", "en"), "Kim Min Ra", {"suffix": "Ra"}, {"suffix": "Ra"}),
-    (("ja",), "Gen Hoshino", {"title": "Gen"}, {"given": "Gen"}),
+    # en's rank; 'Gen Hoshino' stood here until #999 made 'gen' a
+    # title only in a phrase, which reads given 'Gen' with no choice
+    (("ja",), "Capt Hoshino", {"title": "Capt"}, {"given": "Capt"}),
     (("zh",), "De Xu", {"family": "De Xu"},
      {"given": "De", "family": "Xu"}),
     # vi.toml holds no reading, which only a strict choice accepts

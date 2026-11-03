@@ -349,7 +349,6 @@ TITLES: frozenset[str] = frozenset({
     'fürst',
     'fürsterzbischof',
     'gaf',
-    'gen',
     'general',
     'generalissimo',
     'gent.le',
@@ -948,6 +947,7 @@ TITLES_AMBIGUOUS: frozenset[str] = frozenset({
     'cheikh',
     'deacon',
     'dean',
+    'gen',
     'grace',
     'gyani',
     'justice',
@@ -1138,6 +1138,9 @@ TITLE_STYLES: frozenset[str] = frozenset({
 })
 
 TITLE_PHRASES: frozenset[str] = frozenset({
+    'adjutant gen',
+    'attorney gen',
+    'brigadier gen',
     'chief 1lt',
     'chief 1sgt',
     'chief 1stlt',
@@ -1390,10 +1393,14 @@ TITLE_PHRASES: frozenset[str] = frozenset({
     'deputy warden',
     'deputy न्यायमूर्ति',
     'deputy বিচারপতি',
+    'gov gen',
+    'governor gen',
     'king consort',
     'lady justice',
+    'lieutenant gen',
     'lord chancellor',
     'lord justice',
+    'lt gen',
     'magistrate judge',
     'maj gen',
     'maj general',
@@ -1405,10 +1412,13 @@ TITLE_PHRASES: frozenset[str] = frozenset({
     'pro chancellor',
     'queen consort',
     'queen mother',
+    'secretary gen',
     'sergeant maj',
     'sergeant major',
     'sgt maj',
     'sgt major',
+    'solicitor gen',
+    'surgeon gen',
 })
 
 NON_GIVEN_NAME_PARTICLES: frozenset[str] = frozenset({
@@ -2980,5 +2990,6 @@ PATRONYMIC_PARTICLES: frozenset[str] = frozenset({
 })
 
 TITLE_ABBREVIATIONS: frozenset[str] = frozenset({
+    'gen',
     'maj',
 })

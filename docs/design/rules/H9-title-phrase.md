@@ -10,6 +10,7 @@
   "Associate Dean Smith"      →  title="Associate Dean"
   "Major General John Smith"  →  title="Major General"
   "Maj Gen John Smith"        →  title="Maj Gen"
+  "Lt Gen John Smith"         →  title="Lt Gen"
   "Chief Justice John Roberts"  →  title="Chief Justice"
   "The Hon. Justice Mary Smith"  →  title="The Hon. Justice"
   "His Grace John Smith"      →  title="His Grace"
@@ -22,6 +23,7 @@
   "General Major John Smith"  →  given="Major"
   "Grace Dean Smith"          →  given="Grace"
   "Maj Sjöwall"               →  given="Maj"
+  "Gen Goto"                  →  given="Gen"
   "Sgt Marshal Smith"         →  given="Marshal"
   "Mr Mahdi Karimi"           →  given="Mahdi"
   "Buddha Bahadur Tamang"     →  given="Buddha"
@@ -59,6 +61,7 @@
   "Dean Smith, MD"            →  ambiguities=("title-or-name",)
   "Prince Fielder"            →  ambiguities=("title-or-name",)
   "Maj Sjöwall"               →  ambiguities=("title-or-name",)
+  "Gen Goto"                  →  ambiguities=("title-or-name",)
   "Dr. King"                  →  ambiguities=("title-or-name",)
   "Chancellor Smith"          →  ambiguities=("title-or-name",)
   "Grace Smith"               →  ambiguities=()
@@ -121,6 +124,7 @@
   "MAJ Ian Stewart, MD"       →  given="MAJ"
   "NOLEN, MAJ MAUREEN"        →  given="MAJ"
   "Maj Tom Mouat"             →  given="Maj"
+  "Gen Pinochet"              →  given="Gen"
   "Maj. Tom Mouat"            →  title="Maj."
   ```
 - A modifier whose head is not a listed title loses the title, as with duke, which the vocabulary refuses, and so does a modifier written after a head that does not attach to it, with no `of` behind it.

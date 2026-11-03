@@ -13197,6 +13197,36 @@ CASES: tuple[Case, ...] = (
          classification="fix(#316)",
          notes="H5's written-short clause (#999); 1.4.0 through 2.2.0 read "
                "family 'Maj.'"),
+    Case("given_name_title_gen_at_the_head", "Gen Goto",
+         {"given": "Gen", "family": "Goto"},
+         ambiguities=("title-or-name",), classification="fix(#999)",
+         notes="H9: the Japanese and Chinese given name; 'Maj Gen' and "
+               "'Lt Gen' hold the word, so it reports; read title 'Gen' "
+               "1.4.0 through 2.8.1"),
+    Case("given_name_title_gen_behind_a_salutation", "Mr Gen Zhang",
+         {"title": "Mr", "given": "Gen", "family": "Zhang"},
+         ambiguities=("title-or-name",), classification="fix(#999)",
+         notes="H9: a salutation is no partner; read title 'Mr Gen' "
+               "1.4.0 through 2.8.1"),
+    Case("lt_gen_is_one_title", "Lt Gen John Smith",
+         {"title": "Lt Gen", "given": "John", "family": "Smith"},
+         classification="parity",
+         notes="H9: 'lt' and 'lieutenant' attach to 'gen' (#999)"),
+    Case("attorney_gen_is_one_title", "Attorney Gen Smith",
+         {"title": "Attorney Gen", "family": "Smith"},
+         classification="parity",
+         notes="H9: the offices that stand before 'General' attach to "
+               "'gen' (#999)"),
+    Case("gen_with_its_period_at_the_head_is_a_title", "Gen. John Smith",
+         {"title": "Gen.", "given": "John", "family": "Smith"},
+         classification="parity",
+         notes="H9's H2 bullet: the abbreviation shape claims it"),
+    Case("gen_written_short_ending_the_given_part_is_a_title",
+         "SMITH, JOHN GEN.",
+         {"title": "GEN.", "given": "JOHN", "family": "SMITH"},
+         classification="fix(#316)",
+         notes="H5's written-short clause (#999); 1.4.0 through 2.2.0 read "
+               "middle 'GEN.'"),
     Case("bound_given_join_declines_maj_written_short", "Smith, abdul Maj.",
          {"title": "Maj.", "given": "abdul", "family": "Smith"},
          classification="fix(#637)",
