@@ -1,6 +1,6 @@
 Release Log
 ===========
-* 2.8.1 - Unreleased
+* 2.8.1 - November 2, 2026
 
     nameparser 2.8.1 adds warnings for three 3.0 changes 2.8.0 did not announce: writing a ``Lexicon`` set field, reading a vocabulary constant in ``nameparser.config``, and reading ``nameparser.config.regexes``. Reading a ``Lexicon`` field (``lexicon.titles``) does not warn, though 3.0 refuses that too. Code that runs with warnings as errors (``-W error``, or pytest's ``filterwarnings = error``) will fail where it does any of the three.
 
