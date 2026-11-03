@@ -16,3 +16,18 @@ GIVEN_NAME_ABBREVIATIONS: frozenset[str] = _compiled.GIVEN_NAME_ABBREVIATIONS
 # Star imports read __all__ and never the module __getattr__ -- see the
 # note in prefixes.py.
 __all__ = ["GIVEN_NAME_ABBREVIATIONS"]
+
+
+# 2.8.1: 3.0 deletes this module (#1007), so each constant is served by
+# __getattr__ and warns at the line that reads it, naming the 3.0 call
+# that lists the same words (alias_getattr's docstring says how the
+# assignment above stays documented). The library reads _compiled, never
+# this module. Hidden from mypy as alias_getattr explains; goes in 3.0.
+from typing import TYPE_CHECKING  # noqa: E402
+
+from nameparser.config._deprecated import alias_getattr, words_of  # noqa: E402
+
+if not TYPE_CHECKING:
+    __getattr__, __dir__ = alias_getattr(__name__, {}, removed={
+        "GIVEN_NAME_ABBREVIATIONS": words_of('kind="given"', "those whose given reading carries same_as"),
+    }, namespace=globals())

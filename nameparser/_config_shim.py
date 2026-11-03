@@ -533,8 +533,8 @@ class _RegexesProxy:
     def _regexes() -> Mapping[str, object]:
         # deferred import: see the module docstring's note on why every
         # nameparser.config.<data module> import in this file is lazy
-        from nameparser.config.regexes import REGEXES
-        return REGEXES
+        from nameparser.config.regexes import _REGEXES
+        return _REGEXES
 
     #: dict methods this read-only proxy deliberately does not carry.
     #: Without this, __getattr__ reports them as missing regexes and
@@ -777,18 +777,19 @@ def _quiet_setstate(new: object, state: dict[str, object], base: type,
 
 
 def _default_vocab() -> dict[str, frozenset[str]]:
-    # v1 data modules stay the single vocabulary source through 2.x
+    # the compiled vocabulary, read from _compiled: the public modules'
+    # constants warn at a caller's read since 2.8.1 (#1007)
     # (same rule as Lexicon.default()).
-    from nameparser.config.bound_given_names import BOUND_GIVEN_NAMES
-    from nameparser.config.conjunctions import CONJUNCTIONS
-    from nameparser.config.particles import (
+    from nameparser.config._compiled import BOUND_GIVEN_NAMES
+    from nameparser.config._compiled import CONJUNCTIONS
+    from nameparser.config._compiled import (
         NON_GIVEN_NAME_PARTICLES, PARTICLES,
     )
-    from nameparser.config.suffixes import (
+    from nameparser.config._compiled import (
         SUFFIX_ACRONYMS, SUFFIX_ACRONYMS_AMBIGUOUS, SUFFIX_WORDS,
     )
     from nameparser.config._titles_2_6_0 import TITLES_2_6_0
-    from nameparser.config.titles import (
+    from nameparser.config._compiled import (
         GIVEN_NAME_TITLES, TITLES, TITLES_AMBIGUOUS)
     return {
         "prefixes": PARTICLES,
@@ -971,7 +972,7 @@ class Constants:
                 self, name,
                 SetManager(value, _on_change=self._bump, _field=name))  # type: ignore[arg-type]
         if capitalization_exceptions is _UNSET_KWARG:
-            from nameparser.config.capitalization import (
+            from nameparser.config._compiled import (
                 CAPITALIZATION_EXCEPTIONS,
             )
             capitalization_exceptions = CAPITALIZATION_EXCEPTIONS
@@ -1164,14 +1165,14 @@ class Constants:
         singleton -- only direct attribute mutation is on the 3.0
         removal path.
         """
-        from nameparser.config.conjunctions import CONJUNCTIONS_AMBIGUOUS
-        from nameparser.config.given_names import GIVEN_NAME_ABBREVIATIONS
-        from nameparser.config.maiden_markers import MAIDEN_MARKERS
-        from nameparser.config.suffixes import (
+        from nameparser.config._compiled import CONJUNCTIONS_AMBIGUOUS
+        from nameparser.config._compiled import GIVEN_NAME_ABBREVIATIONS
+        from nameparser.config._compiled import MAIDEN_MARKERS
+        from nameparser.config._compiled import (
             AGNOMENS, GLUED_HONORIFICS, SUFFIX_WORDS_AMBIGUOUS)
         from nameparser.config.surnames import KOREAN_SURNAMES
         from nameparser.config._titles_2_6_0 import TITLES_2_6_0
-        from nameparser.config.titles import (
+        from nameparser.config._compiled import (
             AFTER_GIVEN_TITLES, TITLE_MODIFIERS, TITLE_PHRASES, TITLE_STYLES,
             TITLES_AMBIGUOUS)
         # Every set field and every capitalization_exceptions key passes

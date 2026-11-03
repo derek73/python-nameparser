@@ -9,8 +9,10 @@ code to the new :class:`~nameparser.Parser`/:class:`~nameparser.Lexicon`/
 the former today and the latter whenever it's convenient. The
 compatibility layer (``HumanName``, ``Constants`` and the shared
 ``CONSTANTS``) is removed in 3.0, and 2.8 warns wherever your code
-touches it: see `Deprecated in 2.8`_. The vocabulary data modules in
-``nameparser.config`` (``titles``, ``particles`` and the rest) stay.
+touches it: see `Deprecated in 2.8`_. 2.8.1 adds warnings for three
+more things 3.0 changes, among them the vocabulary data modules in
+``nameparser.config`` (``titles``, ``particles`` and the rest, all but
+``surnames``): see `Deprecated in 2.8.1`_.
 
 The full 1.x documentation remains the canonical reference for
 ``HumanName`` and stays online as the 1.4.0 build on readthedocs:
@@ -69,10 +71,51 @@ site:
 
     python -W error::DeprecationWarning -m pytest
 
-The 2.0 API's names and signatures carry into 3.0, gaining additions
-only: ``parse``, ``Parser``, ``Lexicon``, ``Policy``, ``Locale`` and
-``ParsedName``. Separately, the output model changes in 3.0; details
-with the 3.0 alphas.
+The 2.0 API's names carry into 3.0: ``parse``, ``Parser``, ``Lexicon``,
+``Policy``, ``Locale`` and ``ParsedName``. Their signatures gain
+additions only, save ``Lexicon``'s set fields, which 2.8.1 deprecates.
+Separately, the output model changes in 3.0; details with the 3.0
+alphas.
+
+Deprecated in 2.8.1
+-------------------
+
+2.8.0 gave no warning for three 3.0 changes, and 2.8.1 adds one for
+each, a ``DeprecationWarning`` at the line in your code that makes the
+call, naming the 3.0 spelling. The replacements are 3.0 calls: in 2.x
+the old spelling is the only one, so silence the warning by message
+until you upgrade if it is in your way. The `3.0 migration guide
+<https://nameparser.readthedocs.io/en/latest/migrate.html>`__ has a
+row for each.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 40 60
+
+   * - What warns
+     - 3.0 replacement
+   * - A ``Lexicon`` set field written through ``add()``,
+       ``remove()``, ``Lexicon(...)`` or ``dataclasses.replace()``
+       (``Lexicon.default().add(titles={"dean"})``)
+     - A reading: ``Lexicon.default().add("dean", kind="title")``; the
+       warning spells the call for the words and fields you wrote. 3.0
+       keeps ``surnames`` and ``capitalization_exceptions`` as fields
+   * - A constant of ``nameparser.config.titles``, ``suffixes``,
+       ``particles``, ``conjunctions``, ``bound_given_names``,
+       ``given_names``, ``maiden_markers`` or ``capitalization``
+     - ``Lexicon.default().words(kind="title")`` lists a kind's words;
+       ``nameparser.config.surnames`` stays
+   * - Anything in ``nameparser.config.regexes``
+     - None: the parser has not read it since 2.0. Copy a pattern you
+       reuse; ``Policy(strip_bidi=...)`` and ``Policy(strip_emoji=...)``
+       replace the two entries that configured anything
+
+Reading a ``Lexicon`` field (``lexicon.titles``) does not warn, though
+3.0 refuses it as well: the parser reads those fields for every word,
+35 times for ``John Smith``, and a property in their place cost 4% to
+11% of a parse's time (measured 2026-11-02, before any warning code).
+Search your code for reads of the fields. Importing the modules does
+not warn either; reading a constant from one does.
 
 Before you upgrade
 ------------------

@@ -66,3 +66,30 @@ REGEXES = {
 """
 All regular expressions used by the parser are precompiled and stored in the config.
 """
+
+#: The table the facade's ``CONSTANTS.regexes`` reads, by a name that
+#: does not warn: the public names below warn at the caller's line.
+_REGEXES = REGEXES
+
+# 2.8.1: 3.0 deletes this module (#1008), so each public name is served
+# by __getattr__ and warns at the line that reads it; see alias_getattr's
+# docstring, which also says why the hook is hidden from mypy. Goes in 3.0.
+from typing import TYPE_CHECKING  # noqa: E402
+
+from nameparser.config._deprecated import alias_getattr  # noqa: E402
+
+_NO_REPLACEMENT = (
+    "the parser has not read it since 2.0, and 3.0 has no replacement: copy "
+    "a pattern you reuse; Policy(strip_bidi=...) and Policy(strip_emoji=...) "
+    "replace the bidi and emoji entries")
+
+if not TYPE_CHECKING:
+    __getattr__, __dir__ = alias_getattr(__name__, {}, removed={
+        name: _NO_REPLACEMENT
+        for name in ("re_emoji", "re_bidi", "EMPTY_REGEX", "REGEXES")
+    }, namespace=globals(), issue="#1008")
+
+# Star imports read __all__ and never the module __getattr__ -- see the
+# note in prefixes.py -- so without it a star import would bind none of
+# the names served above, silently. Source order, for autodoc.
+__all__ = ["re_emoji", "re_bidi", "EMPTY_REGEX", "REGEXES"]

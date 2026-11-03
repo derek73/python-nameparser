@@ -44,3 +44,23 @@ its own. The map also carries the Irish patronymic particles ``ó``,
 (``de la Vega``), Irish writes these capitalized (``Liam Ó Murchú``),
 and a mask outranks the particle lowercase (rules/R4).
 """
+
+
+# 2.8.1: 3.0 deletes this module (#1007), so each constant is served by
+# __getattr__ and warns at the line that reads it, naming the 3.0 call
+# that lists the same words (alias_getattr's docstring says how the
+# assignment above stays documented). The library reads _compiled, never
+# this module. Hidden from mypy as alias_getattr explains; goes in 3.0.
+from typing import TYPE_CHECKING  # noqa: E402
+
+from nameparser.config._deprecated import alias_getattr  # noqa: E402
+
+if not TYPE_CHECKING:
+    __getattr__, __dir__ = alias_getattr(__name__, {}, removed={
+        "CAPITALIZATION_EXCEPTIONS": "in 3.0, read Lexicon.default().capitalization_exceptions, which stays a field",
+    }, namespace=globals())
+
+# Star imports read __all__ and never the module __getattr__ -- see the
+# note in prefixes.py -- so without it a star import would bind none
+# of the names served above, silently.
+__all__ = ["CAPITALIZATION_EXCEPTIONS"]

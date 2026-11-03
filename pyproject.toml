@@ -135,6 +135,11 @@ filterwarnings = [
     "ignore:Constants pickles stop loading in 3.0:DeprecationWarning",
     "ignore:nameparser.config.(Set|Tuple|RegexTuple)Manager is deprecated:DeprecationWarning",
     "ignore:nameparser.util.lc is deprecated:DeprecationWarning",
+    # 2.8.1's: the Lexicon set fields (#754) and the constants of the
+    # nameparser.config modules 3.0 deletes (#1007, #1008), which the
+    # suite reads throughout; tests/v2/test_removals_2_8_1.py asserts each
+    "ignore:Lexicon's set fields are deprecated:DeprecationWarning",
+    "ignore:nameparser\\.config\\.\\w+\\.\\w+ is deprecated and will be removed in 3\\.0 \\(#100[78]\\):DeprecationWarning",
 ]
 
 [tool.ruff.lint]

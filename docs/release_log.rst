@@ -1,5 +1,15 @@
 Release Log
 ===========
+* 2.8.1 - Unreleased
+
+    nameparser 2.8.1 adds the warnings 2.8.0 left out, for three more things 3.0 changes, so that every 3.0 break reaches 2.x code as a ``DeprecationWarning`` first. Code that runs with warnings as errors (``-W error``, or pytest's ``filterwarnings = error``) will fail where it uses them.
+
+    **Deprecations**
+
+    - **Deprecate configuring Lexicon through its set fields, which 3.0 makes internal.** ``Lexicon.default().add(titles={"dean"})`` now emits a ``DeprecationWarning`` naming the 3.0 call, ``.add('dean', kind='title')``; so do ``remove()``, ``Lexicon(titles=...)`` and ``dataclasses.replace(lexicon, titles=...)`` with any set field, and ``add()`` or ``remove()`` with ``surnames``. Reading a field (``lexicon.titles``) does not warn, though 3.0 refuses it too: the parser reads those fields for every word. :issue:`754`
+    - **Deprecate the vocabulary constants in nameparser.config, which 3.0 removes.** ``from nameparser.config.titles import TITLES`` now emits a ``DeprecationWarning`` naming the 3.0 call that lists the same words, ``Lexicon.default().words(kind="title")``; so does every constant of ``titles``, ``suffixes``, ``particles``, ``conjunctions``, ``bound_given_names``, ``given_names``, ``maiden_markers`` and ``capitalization``. ``nameparser.config.surnames`` stays. :issue:`1007`
+    - **Deprecate nameparser.config.regexes, which 3.0 removes.** Reading ``REGEXES`` or the module's other patterns now emits a ``DeprecationWarning``; the parser has not read them since 2.0, and ``Policy(strip_bidi=...)`` and ``Policy(strip_emoji=...)`` replace the two that configured anything. :issue:`1008`
+
 * 2.8.0 - October 28, 2026
 
     **nameparser 2.8** is the last 2.x feature release. It warns about everything 3.0 removes, chiefly ``HumanName`` and the rest of the 1.x compatibility layer, so that code can move to ``parse()`` while 2.x still runs it. It also carries on 2.7's reading of titles that are also given names: a title only inside a title phrase. After 2.8 the 2.x line takes fixes only, and new work goes into 3.0. Highlights:

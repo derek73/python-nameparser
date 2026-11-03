@@ -120,7 +120,7 @@ when matching against these pieces.
 # recursing.
 from typing import TYPE_CHECKING  # noqa: E402
 
-from nameparser.config._deprecated import alias_getattr  # noqa: E402
+from nameparser.config._deprecated import alias_getattr, words_of  # noqa: E402
 
 # Declared for the type checker, served by __getattr__ at runtime --
 # the split is what keeps mypy checking this module's LIVE names; see
@@ -128,10 +128,25 @@ from nameparser.config._deprecated import alias_getattr  # noqa: E402
 if TYPE_CHECKING:
     SUFFIX_NOT_ACRONYMS: frozenset[str]
 else:
+    # 2.8.1: 3.0 deletes this module (#1007); see the note in titles.py
     __getattr__, __dir__ = alias_getattr(__name__, {
         "SUFFIX_NOT_ACRONYMS": (
             "nameparser.config.suffixes", "SUFFIX_WORDS"),
-    })
+    }, removed={
+        "SUFFIX_WORDS": words_of(
+            'kind="suffix"', "with the acronyms, which SUFFIX_WORDS leaves "
+            "to SUFFIX_ACRONYMS"),
+        "GLUED_HONORIFICS": words_of(
+            'kind="suffix"', "those whose reading carries attached"),
+        "SUFFIX_WORDS_AMBIGUOUS": words_of(
+            'kind="suffix"', "those holding a name reading too"),
+        "AGNOMENS": words_of('kind="agnomen"'),
+        "SUFFIX_ACRONYMS_AMBIGUOUS": words_of(
+            'kind="credential"', "those holding a name reading too"),
+        "SUFFIX_ACRONYMS": words_of(
+            'kind="credential"', "the acronyms; a suffix reading with "
+            "acronym=True is one too"),
+    }, namespace=globals())
 
 # Star imports read __all__ and never the module __getattr__ -- see the
 # note in prefixes.py. Live constants listed alongside the retired name

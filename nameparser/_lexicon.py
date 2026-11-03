@@ -12,7 +12,7 @@ import functools
 import sys
 import unicodedata
 import warnings
-from collections.abc import Iterable, Mapping, Set
+from collections.abc import Collection, Iterable, Iterator, Mapping, Set
 from dataclasses import dataclass, field
 from types import FrameType, MappingProxyType
 from typing import cast
@@ -335,6 +335,155 @@ def _warn_dead_entry(message: str) -> None:
             "nameparser._config_shim", "nameparser._facade"):
         frame, level = frame.f_back, level + 1
     warnings.warn(message, UserWarning, stacklevel=level)
+
+
+#: 2.8.1 (#754): how 3.0 spells an edit of each set field it makes
+#: internal, as (add, remove) templates over one word `{w}`, from 3.0's
+#: migration guide ("Lexicon fields → readings"). 3.0 configures a
+#: lexicon by reading -- what a word is -- and compiles these sets from
+#: the readings, so a field without a reading of its own (a marker)
+#: becomes a property of the reading or a second reading on the word.
+_SET_FIELD_READINGS: dict[str, tuple[str, str]] = {
+    "titles": (".add({w}, kind='title')", ".remove({w}, kind='title')"),
+    "given_name_titles": (
+        ".add({w}, kind='title', addresses='given')",
+        ".remove({w}, kind='title').add({w}, kind='title')"),
+    "suffix_acronyms": (
+        ".add({w}, kind='credential')", ".remove({w}, kind='suffix')"),
+    "suffix_words": (".add({w}, kind='suffix')", ".remove({w}, kind='suffix')"),
+    "suffix_acronyms_ambiguous": (
+        ".add({w}, kind='credential').add({w}, kind='family')",
+        ".remove({w}, kind='family')"),
+    "particles": (".add({w}, kind='particle')", ".remove({w}, kind='particle')"),
+    "particles_ambiguous": (
+        ".add({w}, kind='given')", ".remove({w}, kind='given')"),
+    "conjunctions": (
+        ".add({w}, kind='conjunction')", ".remove({w}, kind='conjunction')"),
+    "conjunctions_ambiguous": (
+        ".add({w}, kind='conjunction', may_be_initial=True)",
+        ".remove({w}, kind='conjunction').add({w}, kind='conjunction')"),
+    "bound_given_names": (
+        ".add({w}, kind='bound_given')", ".remove({w}, kind='bound_given')"),
+    "given_name_abbreviations": (
+        ".add({w}, kind='given', same_as='<full name>')",
+        ".remove({w}, kind='given')"),
+    "maiden_markers": (
+        ".add({w}, kind='birth_marker')", ".remove({w}, kind='birth_marker')"),
+    "honorific_tails": (
+        ".add({w}, kind='suffix', attached={{'side': 'after'}})",
+        ".remove({w}, kind='suffix').add({w}, kind='suffix')"),
+    "after_given_titles": (
+        ".add({w}, kind='salutation', after_given=True)",
+        ".remove({w}, kind='salutation').add({w}, kind='salutation')"),
+    "suffix_words_ambiguous": (
+        ".add({w}, kind='generation').add({w}, kind='family')",
+        ".remove({w}, kind='family')"),
+    "agnomens": (
+        ".add({w}, kind='family').add({w}, kind='agnomen')",
+        ".remove({w}, kind='agnomen')"),
+    "titles_ambiguous": (
+        ".add({w}, kind='title').add({w}, kind='given')",
+        ".remove({w}, kind='title')"),
+    "title_modifiers": (
+        ".add({w}, kind='modifier')", ".remove({w}, kind='modifier')"),
+    "title_styles": (".add({w}, kind='style')", ".remove({w}, kind='style')"),
+    # a phrase is the attaches property of its first word's title reading
+    "title_phrases": (
+        ".add({first}, kind='title', attaches=[{rest}])",
+        ".remove({first}, kind='title').add({first}, kind='title')"),
+}
+
+_MIGRATION_GUIDE = "https://nameparser.readthedocs.io/en/latest/migrate.html"
+
+#: modules whose frames sit between a caller and a Lexicon's
+#: construction: this one (add, remove, __or__, __init__),
+#: dataclasses.replace and copy.replace
+_CONSTRUCTION_MODULES = (__name__, "dataclasses", "copy")
+
+
+def _spell_edits(op: str, field: str, words: Iterable[str]) -> str:
+    """3.0's calls for one field's edit, the first three words spelled."""
+    template = _SET_FIELD_READINGS[field][op == "remove"]
+    ordered = sorted(words)
+    calls = []
+    for w in ordered[:3]:
+        first, _, rest = w.partition(" ")
+        calls.append(template.format(
+            w=repr(w), first=repr(first),
+            rest=", ".join(map(repr, rest.split()))))
+    more = f" (and {len(ordered) - 3} more)" if len(ordered) > 3 else ""
+    return "".join(calls) + more
+
+
+def _outside_caller(
+        construction: bool,
+) -> tuple[int, Mapping[str, object] | None] | None:
+    """Where a set-field warning belongs: the stacklevel, counted from
+    the function that calls warnings.warn (itself called from the
+    method this asks for), of the first frame outside this module,
+    dataclasses and copy, with the locals of a dataclasses.replace
+    frame passed on the way; or None where the library itself made the
+    call -- that frame inside nameparser (Lexicon.default(), the locale
+    packs, parser_for, the v1 facade), or, for a construction, a method
+    of this module building the lexicon: add() and remove() warn for
+    themselves, and __or__ is 3.0's own spelling.
+    """
+    level = 3
+    frame: FrameType | None = sys._getframe(2)
+    replacing: Mapping[str, object] | None = None
+    while frame is not None:
+        module = frame.f_globals.get("__name__")
+        if module not in _CONSTRUCTION_MODULES:
+            break
+        code = frame.f_code.co_name
+        if (construction and module == __name__
+                and code not in ("__init__", "__post_init__")):
+            return None
+        if module == "dataclasses" and code in ("replace", "_replace"):
+            replacing = frame.f_locals
+        frame, level = frame.f_back, level + 1
+    caller = "" if frame is None else frame.f_globals.get("__name__", "")
+    if caller == "nameparser" or caller.startswith("nameparser."):
+        return None
+    return level, replacing
+
+
+def _warn_set_fields(level: int, spelling: str, base: str,
+                     edits: Iterable[tuple[str, str, Iterable[str]]]) -> None:
+    """Warn that a call writes a set field 3.0 makes internal, at
+    `level` (from _outside_caller), naming the 3.0 calls that make the
+    same edit: `spelling` names the call made, `base` the lexicon the
+    3.0 calls start from, and `edits` holds (op, field, words)."""
+    chained, surnames = "", []
+    for op, field_name, words in edits:
+        if field_name != "surnames":
+            chained += _spell_edits(op, field_name, words)
+            continue
+        # a list 3.0 keeps as a field, but which add() and remove() no
+        # longer take
+        listed = "{" + ", ".join(map(repr, sorted(words))) + "}"
+        surnames.append(
+            f"{base} | Lexicon(surnames={listed})" if op == "add" else
+            f"dataclasses.replace({base}, surnames={base}.surnames - {listed})")
+    calls = ([base + chained] if chained else []) + surnames
+    warnings.warn(
+        f"Lexicon's set fields are deprecated and become internal in 3.0, "
+        f"which configures vocabulary by reading and refuses {spelling} "
+        f"(#754); in 3.0 write {'; and '.join(calls)}. See {_MIGRATION_GUIDE}",
+        DeprecationWarning, stacklevel=level)
+
+
+def _set_field_edits(
+    op: str, entries: Mapping[str, Iterable[str]],
+) -> list[tuple[str, str, Iterable[str]]]:
+    # the fields 3.0 refuses in add()/remove(), with their words; a
+    # bytes value or an unknown field is left to _edit's own errors
+    return [(op, name, words)
+            for name, words in entries.items()
+            if name in _SET_FIELD_READINGS or name == "surnames"
+            if isinstance(words, Collection)
+            and not isinstance(words, (str, bytes, bytearray, memoryview,
+                                       Mapping))]
 
 
 def _normset(
@@ -804,6 +953,45 @@ class Lexicon:
         default_factory=lambda: MappingProxyType({}))
 
     def __post_init__(self) -> None:
+        self._validate()
+        # 2.8.1 (#754): a caller's construction or dataclasses.replace()
+        # with a set field 3.0 refuses. Not from __setstate__, which runs
+        # _validate alone: loading a pickle writes no field.
+        where = _outside_caller(construction=True)
+        if where is not None:
+            self._warn_constructed(*where)
+
+    def _warn_constructed(self, level: int,
+                          replacing: Mapping[str, object] | None) -> None:
+        edits: list[tuple[str, str, Iterable[str]]] = []
+        if replacing is None:
+            for name in (*_SET_FIELD_READINGS, "surnames"):
+                words: frozenset[str] = getattr(self, name)
+                if words and name != "surnames":
+                    edits.append(("add", name, words))
+            if edits:
+                # one more frame than __post_init__ itself
+                _warn_set_fields(level + 1, "Lexicon() with a set field",
+                                 "Lexicon.empty()", edits)
+            return
+        old = replacing.get("obj")
+        changes = replacing.get("changes")
+        if not isinstance(old, Lexicon) or not isinstance(changes, Mapping):
+            return
+        for name in (*_SET_FIELD_READINGS, "surnames"):
+            if changes.get(name, getattr(old, name)) is getattr(old, name):
+                continue
+            before, after = getattr(old, name), getattr(self, name)
+            if before - after:
+                edits.append(("remove", name, before - after))
+            if after - before:
+                edits.append(("add", name, after - before))
+        if edits:
+            _warn_set_fields(
+                level + 1, "dataclasses.replace() with a set field",
+                "lexicon", edits)
+
+    def _validate(self) -> None:
         for name in _VOCAB_FIELDS:
             object.__setattr__(self, name, _normset(getattr(self, name), name))
         canonical = _normpairs(self.capitalization_exceptions)
@@ -949,7 +1137,7 @@ class Lexicon:
         # without changing its name, so an old pickle would otherwise
         # load a semantically inverted lexicon in silence. Rebuilds
         # _cap_map for free, which this used to do by hand.
-        self.__post_init__()
+        self._validate()
         # __post_init__ also normalizes, and quietly accepting a
         # rewritten value would make this a place where caller data
         # changes without a word. A pickle this library wrote is always
@@ -1038,28 +1226,47 @@ class Lexicon:
         return dataclasses.replace(self, **updates)  # type: ignore[arg-type]
 
     def add(self, **entries: Iterable[str]) -> Lexicon:
-        return self._edit("add", entries)
+        return self._edit_warning("add", entries)
 
     def remove(self, **entries: Iterable[str]) -> Lexicon:
-        return self._edit("remove", entries)
+        return self._edit_warning("remove", entries)
+
+    def _edit_warning(self, op: str,
+                      entries: Mapping[str, Iterable[str]]) -> Lexicon:
+        # 2.8.1 (#754): 3.0's add() and remove() take readings, not set
+        # fields. An iterator is read once here, so the warning can name
+        # its words and _edit still sees them; the warning follows a
+        # successful edit, so a bad value raises its own error first.
+        entries = {name: tuple(words) if isinstance(words, Iterator) else words
+                   for name, words in entries.items()}
+        edited = self._edit(op, entries)
+        edits = _set_field_edits(op, entries)
+        if edits:
+            where = _outside_caller(construction=False)
+            if where is not None:
+                _warn_set_fields(
+                    where[0], f"{op}() with a set field", "lexicon", edits)
+        return edited
 
 
 @functools.cache
 def _default_lexicon() -> Lexicon:
-    # v1 data modules are the single source of vocabulary through 2.x.
-    from nameparser.config.bound_given_names import BOUND_GIVEN_NAMES
-    from nameparser.config.given_names import GIVEN_NAME_ABBREVIATIONS
-    from nameparser.config.capitalization import CAPITALIZATION_EXCEPTIONS
-    from nameparser.config.conjunctions import (
+    # The compiled vocabulary, read from _compiled rather than the public
+    # nameparser.config modules, whose constants warn at a caller's read
+    # since 2.8.1 (#1007); surnames.py is not deprecated.
+    from nameparser.config._compiled import BOUND_GIVEN_NAMES
+    from nameparser.config._compiled import GIVEN_NAME_ABBREVIATIONS
+    from nameparser.config._compiled import CAPITALIZATION_EXCEPTIONS
+    from nameparser.config._compiled import (
         CONJUNCTIONS, CONJUNCTIONS_AMBIGUOUS)
-    from nameparser.config.maiden_markers import MAIDEN_MARKERS
-    from nameparser.config.particles import NON_GIVEN_NAME_PARTICLES, PARTICLES
-    from nameparser.config.suffixes import (
+    from nameparser.config._compiled import MAIDEN_MARKERS
+    from nameparser.config._compiled import NON_GIVEN_NAME_PARTICLES, PARTICLES
+    from nameparser.config._compiled import (
         AGNOMENS, GLUED_HONORIFICS, SUFFIX_ACRONYMS, SUFFIX_ACRONYMS_AMBIGUOUS,
         SUFFIX_WORDS, SUFFIX_WORDS_AMBIGUOUS,
     )
     from nameparser.config.surnames import KOREAN_SURNAMES
-    from nameparser.config.titles import (
+    from nameparser.config._compiled import (
         AFTER_GIVEN_TITLES, GIVEN_NAME_TITLES, TITLE_MODIFIERS, TITLE_PHRASES,
         TITLE_STYLES, TITLES, TITLES_AMBIGUOUS)
 

@@ -173,6 +173,9 @@ def test_every_vocabulary_constant_is_frozen() -> None:
     exempt_mappings = {
         "capitalization.CAPITALIZATION_EXCEPTIONS",
         "regexes.REGEXES",
+        # the same dict, by the name the facade reads without the
+        # warning 2.8.1 puts on REGEXES (#1008)
+        "regexes._REGEXES",
     }
 
     config_dir = pathlib.Path(nameparser.config.__file__).parent
@@ -185,7 +188,10 @@ def test_every_vocabulary_constant_is_frozen() -> None:
             continue
         stem = ".".join(relative.parts)
         module = importlib.import_module(f"nameparser.config.{stem}")
-        for name, value in sorted(vars(module).items()):
+        # since 2.8.1 a constant 3.0 removes is held by the module's
+        # __getattr__ rather than its globals (#1007, #1008)
+        served = getattr(vars(module).get("__getattr__"), "removed_values", {})
+        for name, value in sorted({**vars(module), **served}.items()):
             if not name.isupper():
                 continue
             qualified = f"{stem}.{name}"

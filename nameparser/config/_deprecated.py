@@ -46,10 +46,49 @@ _MESSAGE = (
     "use {new_module}.{new} instead."
 )
 
+#: 3.0's migration guide, which every 2.8.1 removal message points at:
+#: Read the Docs' "latest" builds master, the 3.0 cycle.
+MIGRATION_GUIDE = "https://nameparser.readthedocs.io/en/latest/migrate.html"
+
+# 2.8.1: the live names of a module 3.0 deletes (#1007, #1008). Every
+# message opens "nameparser.config.", names the removal and closes on
+# the guide; pyproject's filterwarnings ignores the family by message,
+# and tests/v2/test_removals_2_8_1.py asserts each one.
+_REMOVED_MESSAGE = (
+    "{module}.{name} is deprecated and will be removed in 3.0 ({issue}); "
+    "{replacement}. See {guide}"
+)
+
+
+def words_of(args: str, which: str = "") -> str:
+    """The replacement clause for a vocabulary constant: the 3.0 call
+    listing its words (``Lexicon.words``, #1007), and where the call
+    lists more than the set held, which of them it held."""
+    held = f" ({which})" if which else ""
+    return f"in 3.0, Lexicon.default().words({args}) lists them{held}"
+
+
+def removal_message(module: str, name: str) -> str | None:
+    """The 2.8.1 removal message for ``module.name``, or ``None`` where
+    3.0 keeps the name. Reads the module's hook, so it warns nothing."""
+    hook = vars(importlib.import_module(module)).get("__getattr__")
+    removed: Mapping[str, str] = getattr(hook, "removed_messages", {})
+    return removed.get(name)
+
+
+def _quiet_value(module: str, name: str) -> Any:  # noqa: ANN401
+    loaded = importlib.import_module(module)
+    hook = vars(loaded).get("__getattr__")
+    held: Mapping[str, Any] = getattr(hook, "removed_values", {})
+    return held[name] if name in held else getattr(loaded, name)
+
 
 def alias_getattr(
     module: str,
     aliases: Mapping[str, tuple[str, str]],
+    removed: Mapping[str, str] | None = None,
+    namespace: dict[str, Any] | None = None,
+    issue: str = "#1007",
 ) -> tuple[Callable[[str], Any], Callable[[], list[str]]]:
     """Build the ``__getattr__``/``__dir__`` pair for a module carrying
     deprecated vocabulary names.
@@ -84,9 +123,33 @@ def alias_getattr(
     module: mypy reads no module ``__getattr__`` for the alias-bearing
     modules any more, and does not analyze the ``else`` branch it is
     assigned in. It stays ``Any`` as what ``getattr`` itself returns.
+
+    ``removed`` (2.8.1) maps each LIVE name 3.0 deletes to the clause
+    naming its 3.0 replacement, and ``namespace`` is the module's
+    ``globals()``: each such name is popped out of it into the hook, so
+    the module keeps its assignment statement -- which is where autodoc
+    finds the constant's documentation -- while every read reaches
+    ``__getattr__`` and warns at the reader's line. The library reads
+    these values from ``nameparser.config._compiled`` (and regexes.py's
+    ``_REGEXES``), never through here, so only a caller's read warns.
     """
+    removed = dict(removed or {})
+    values: dict[str, Any] = {}
+    if removed:
+        if namespace is None:
+            raise TypeError("alias_getattr: removed names need namespace=")
+        values = {name: namespace.pop(name) for name in removed}
+    messages = {
+        name: _REMOVED_MESSAGE.format(
+            module=module, name=name, issue=issue, replacement=replacement,
+            guide=MIGRATION_GUIDE)
+        for name, replacement in removed.items()}
 
     def __getattr__(name: str) -> Any:  # noqa: ANN401
+        if name in values:
+            # 2: the reading frame, as for an alias below
+            warnings.warn(messages[name], DeprecationWarning, stacklevel=2)
+            return values[name]
         target = aliases.get(name)
         if target is None:
             raise AttributeError(f"module {module!r} has no attribute {name!r}")
@@ -94,11 +157,18 @@ def alias_getattr(
         # resolved BEFORE warning, so a mistyped alias target fails as
         # a ModuleNotFoundError or an AttributeError from here rather
         # than first advising the reader to move to a path that does
-        # not exist.
-        value = getattr(importlib.import_module(new_module), new_name)
+        # not exist. Quietly: a target 3.0 removes too is held by its
+        # module's hook, whose own warning would name this file.
+        value = _quiet_value(new_module, new_name)
+        message = _MESSAGE.format(
+            module=module, old=name, new_module=new_module, new=new_name)
+        # one warning saying so, rather than advice to move to a name
+        # that warns in its turn
+        also = removal_message(new_module, new_name)
+        if also is not None:
+            message += " That name is removed in 3.0 too: " + also
         warnings.warn(
-            _MESSAGE.format(
-                module=module, old=name, new_module=new_module, new=new_name),
+            message,
             DeprecationWarning,
             # 2: the frame that touched the name -- for the
             # `from nameparser.config.prefixes import ...` form, the
@@ -126,7 +196,7 @@ def alias_getattr(
         # are still nameable, so they are what is left to list (#356).
         live = sys.modules.get(module)
         names = set(vars(live)) if live is not None else set()
-        return sorted(names | set(aliases))
+        return sorted(names | set(aliases) | set(values))
 
     # The table itself, reachable without tripping a warning. __all__ is
     # hand-written per module (it must stay in SOURCE order for autodoc,
@@ -137,5 +207,8 @@ def alias_getattr(
     # and no AttributeError. test_config_aliases
     # ::test_every_alias_table_row_reaches_star_import cross-checks them.
     __getattr__.deprecated_aliases = dict(aliases)  # type: ignore[attr-defined]
+    # the 2.8.1 removals, read by removal_message and _quiet_value
+    __getattr__.removed_messages = messages  # type: ignore[attr-defined]
+    __getattr__.removed_values = values  # type: ignore[attr-defined]
 
     return __getattr__, __dir__
