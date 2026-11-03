@@ -1139,6 +1139,7 @@ TITLE_STYLES: frozenset[str] = frozenset({
 
 TITLE_PHRASES: frozenset[str] = frozenset({
     'adjutant gen',
+    'advocate gen',
     'attorney gen',
     'brigadier gen',
     'chief 1lt',
@@ -1319,6 +1320,9 @@ TITLE_PHRASES: frozenset[str] = frozenset({
     'chief wo5',
     'chief न्यायमूर्ति',
     'chief বিচারপতি',
+    'col gen',
+    'colonel gen',
+    'comptroller gen',
     'deputy administrator',
     'deputy alderman',
     'deputy almoner',
@@ -1393,6 +1397,9 @@ TITLE_PHRASES: frozenset[str] = frozenset({
     'deputy warden',
     'deputy न्यायमूर्ति',
     'deputy বিচারপতি',
+    'dir gen',
+    'director gen',
+    'gen sir',
     'gov gen',
     'governor gen',
     'king consort',
@@ -1404,6 +1411,7 @@ TITLE_PHRASES: frozenset[str] = frozenset({
     'magistrate judge',
     'maj gen',
     'maj general',
+    'maj sir',
     'major gen',
     'major general',
     'prince consort',
@@ -1419,6 +1427,7 @@ TITLE_PHRASES: frozenset[str] = frozenset({
     'sgt major',
     'solicitor gen',
     'surgeon gen',
+    'vicar gen',
 })
 
 NON_GIVEN_NAME_PARTICLES: frozenset[str] = frozenset({

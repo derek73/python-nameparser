@@ -13217,6 +13217,23 @@ CASES: tuple[Case, ...] = (
          classification="parity",
          notes="H9: the offices that stand before 'General' attach to "
                "'gen' (#999)"),
+    Case("colonel_gen_is_one_title", "Col Gen John Smith",
+         {"title": "Col Gen", "given": "John", "family": "Smith"},
+         classification="parity",
+         notes="H9: 'colonel' and 'col' attach to 'gen', Colonel General "
+               "(#999; found missing by the design-docs review)"),
+    Case("gen_sir_is_one_title", "Gen Sir Nick Carter",
+         {"title": "Gen Sir", "given": "Nick", "family": "Carter"},
+         classification="parity",
+         notes="H9: 'gen' attaches to 'sir', the British press form "
+               "(#999); the run addresses by the given name"),
+    Case("gen_and_a_salutation_join_as_the_given_name",
+         "Gen. and Mrs. John Smith",
+         {"given": "Gen. and Mrs.", "middle": "John", "family": "Smith"},
+         classification="fix(#999)",
+         notes="H9's connective Precedence bullet: a title that may be a "
+               "given name joins 'and' as a name word, its period too; "
+               "1.4.0 through 2.8.1 read title 'Gen. and Mrs.'"),
     Case("gen_with_its_period_at_the_head_is_a_title", "Gen. John Smith",
          {"title": "Gen.", "given": "John", "family": "Smith"},
          classification="parity",
