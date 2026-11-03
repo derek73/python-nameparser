@@ -1235,8 +1235,10 @@ def check_pool(pool: Pool) -> None:
     # evidence is what a name reading usually is -- informs nothing
     excluded_texts = {x.text for x in pool.exclusions if x.prop is None}
     for text, rs in by_text.items():
-        # an abbreviated given name compiles (GIVEN_NAME_ABBREVIATIONS)
-        if (all(r.category == "name" and "same_as" not in r.props for r in rs)
+        # an abbreviated given name compiles (GIVEN_NAME_ABBREVIATIONS),
+        # and a surname's case mask (CAPITALIZATION_EXCEPTIONS, #1014)
+        if (all(r.category == "name" and "same_as" not in r.props
+                and "cased" not in r.props for r in rs)
                 and text not in excluded_texts):
             warnings.warn(f"{rs[0].where()}: a name reading on a word with no "
                           f"vocabulary reading is inert", VocabWarning, stacklevel=2)

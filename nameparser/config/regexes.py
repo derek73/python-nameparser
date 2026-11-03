@@ -28,7 +28,10 @@ EMPTY_REGEX = re.compile('')
 REGEXES = {
     "spaces": re.compile(r"\s+"),
     "word": re.compile(r"(\w|\.)+"),
-    "mac": re.compile(r'^(ma?c)(\w{2,})', re.I),
+    # the Mc prefix case repair capitalizes after (McDonald); a Mac
+    # prefix is title-cased unless a mask records the name (#1014), the
+    # key keeping its v1 name
+    "mac": re.compile(r'^(mc)(\w{2,})', re.I),
     "initial": re.compile(r'^(\w\.|[A-Z])?$'),
     "quoted_word": re.compile(r'(?<!\w)\'([^\s]*?)\'(?!\w)'),
     "double_quotes": re.compile(r'\"(.*?)\"'),

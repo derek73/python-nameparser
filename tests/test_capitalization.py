@@ -157,8 +157,8 @@ class CapitalizationTestCase(ParsedNameTestBase):
         self.m(str(hn), 'Shirley Maclaine', hn)
 
     def test_force_capitalization(self) -> None:
-        hn = _cap('Shirley Maclaine', force=True)
-        self.m(str(hn), 'Shirley MacLaine', hn)
+        hn = _cap('Ronald Macdonald', force=True)
+        self.m(str(hn), 'Ronald MacDonald', hn)
 
     def test_capitalize_diacritics(self) -> None:
         hn = _cap('matthëus schmidt')
@@ -173,6 +173,21 @@ class CapitalizationTestCase(ParsedNameTestBase):
     def test_downcasing_mc(self) -> None:
         hn = _cap('RONALD MCDONALD')
         self.m(str(hn), 'Ronald McDonald', hn)
+
+    # #1014: Mac is title-cased unless a mask records the name, since
+    # most Mac- names are not Gaelic (Machado, Macias) and the Gaelic
+    # ones are written both ways (Mackenzie, MacKenzie)
+    def test_mac_without_a_mask_is_title_cased(self) -> None:
+        for name, repaired in (('JOHN MACHADO', 'John Machado'),
+                               ('MARIA MACIAS', 'Maria Macias'),
+                               ('SHIRLEY MACLAINE', 'Shirley Maclaine'),
+                               ('JAMES MACKENZIE', 'James Mackenzie')):
+            hn = _cap(name)
+            self.m(str(hn), repaired, hn)
+
+    def test_mac_with_a_mask_keeps_its_capital(self) -> None:
+        hn = _cap('rob roy macgregor')
+        self.m(str(hn), 'Rob Roy MacGregor', hn)
 
     def test_short_names_with_mac(self) -> None:
         hn = _cap('mack johnson')

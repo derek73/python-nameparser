@@ -9,11 +9,12 @@ class OutputFormatTests(ParsedNameTestBase):
 
     def test_capitalize_name(self) -> None:
         hn = parse("bob v. de la macdole-eisenhower phd").capitalized()
-        self.assertEqual(str(hn), "Bob V. de la MacDole-Eisenhower PhD")
+        # a Mac name no mask records is title-cased (#1014)
+        self.assertEqual(str(hn), "Bob V. de la Macdole-Eisenhower PhD")
 
     def test_force_mixed_case_capitalization(self) -> None:
-        hn = parse('Shirley Maclaine').capitalized(force=True)
-        self.assertEqual(str(hn), "Shirley MacLaine")
+        hn = parse('Ronald Macdonald').capitalized(force=True)
+        self.assertEqual(str(hn), "Ronald MacDonald")
 
     def test_quote_nickname_formating(self) -> None:
         hn = parse(_KENNY)

@@ -642,7 +642,9 @@ def test_capitalized_all_lower_input_v1_parity() -> None:
     out = _lowercase_mac().capitalized()
     assert out.given == "Bob"
     assert out.middle == "V."
-    assert out.family == "de la MacDole-Eisenhower"  # particles stay lower
+    # particles stay lower; Mac title-cased, no mask recording
+    # 'macdole' (#1014, where 1.4.0 through 3.0.0's tree gave 'MacDole')
+    assert out.family == "de la Macdole-Eisenhower"
     assert out.suffix == "PhD"                       # exceptions map, a mask
     # same spans, new texts (provenance is a documented non-invariant)
     assert [t.span for t in out.tokens] == [t.span for t in _lowercase_mac().tokens]
@@ -657,12 +659,13 @@ def test_capitalized_all_upper_input() -> None:
 
 
 def test_capitalized_preserves_mixed_case_unless_forced() -> None:
-    pn = _pn("Shirley Maclaine", [
-        Token("Shirley", Span(0, 7), Role.GIVEN),
-        Token("Maclaine", Span(8, 16), Role.FAMILY),
+    pn = _pn("Ronald Macdonald", [
+        Token("Ronald", Span(0, 6), Role.GIVEN),
+        Token("Macdonald", Span(7, 16), Role.FAMILY),
     ])
     assert pn.capitalized() == pn                       # untouched
-    assert pn.capitalized(force=True).family == "MacLaine"
+    # forced, the vocabulary's mask applies (#1014)
+    assert pn.capitalized(force=True).family == "MacDonald"
 
 
 @pytest.mark.parametrize("text", ["JOHN SMITH MA", "john smith ma",
@@ -837,7 +840,7 @@ def test_a_recorded_casing_keeps_an_abbreviations_ending() -> None:
 def test_capitalized_with_explicit_lexicon() -> None:
     # empty lexicon: no particle rule, no exceptions -> plain capitalize
     out = _lowercase_mac().capitalized(Lexicon.empty())
-    assert out.family == "De La MacDole-Eisenhower"
+    assert out.family == "De La Macdole-Eisenhower"
     assert out.suffix == "Phd"
 
 
@@ -1168,10 +1171,10 @@ def _nfc_texts(name: ParsedName) -> list[str]:
 @pytest.mark.parametrize(("pairs", "text"), [
     # the plain word clause: 'a' after the mark is not a word of its own
     ((), "josé garcía"),
-    # Mac/Mc, decided on the composed spelling: 'mac' + 'ée' passes
-    # _MAC's \w{2,} composed and fails it at the mark decomposed
-    ((), "macée smith"),
-    ((), "MACÉINRÍ SMITH"),
+    # Mc, decided on the composed spelling: 'mc' + 'ée' passes _MC's
+    # \w{2,} composed and fails it at the mark decomposed
+    ((), "mcée smith"),
+    ((), "MCÉINRÍ SMITH"),
     # the split-off-initial override reads the full stop past the mark
     ((("éx", "éx"),), "john smith é.x."),
     # a letter after a mark still has the letter before it as neighbour
@@ -1184,7 +1187,7 @@ def test_a_decomposed_word_repairs_as_its_composed_twin(
         pairs: tuple[tuple[str, str], ...], text: str) -> None:
     """#542: a combining mark belongs to the letter before it, so every
     clause of case repair reads a decomposed (NFD) word as it reads the
-    composed one -- the word splitter, the Mac/Mc clause, and the mask's
+    composed one -- the word splitter, the Mc clause, and the mask's
     neighbour tests -- and the output keeps the decomposed form. These
     are the shapes the corpus walk in test_properties.py does not
     reach. The two mask rows guard _beside: 'é.x.' agreed before the
@@ -1462,7 +1465,7 @@ def test_a_link_inside_a_hyphenated_word_keeps_its_lowercase() -> None:
             ("juan garcia-lopez-y", "Juan Garcia-Lopez-Y"),
             # non-link parts inside a THREE-part hyphenated token still
             # get the full per-word repair -- the particle arm
-            # ("de"/"la") and the Mac rule ("mcnabb") each apply per
+            # ("de"/"la") and the Mc rule ("mcnabb") each apply per
             # part, not only to a two-part compound
             ("juan garcia-de-la-vega", "Juan Garcia-de-la-Vega"),
             ("donovan mcnabb-y-smith", "Donovan McNabb-y-Smith"),

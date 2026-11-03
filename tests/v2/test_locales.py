@@ -2352,3 +2352,17 @@ def test_267_dotted_cyrillic_initial_wins_over_conjunction() -> None:
         n = parse(f"{dotted} {family}")
         assert n.given == dotted
         assert n.family == family
+
+
+@pytest.mark.parametrize(("pack", "name", "repaired"), [
+    (locales.GD, "RONALD MACDONALD", "Ronald MacDonald"),
+    (locales.GA, "JOHN MACCARTHY", "John MacCarthy"),
+])
+@pytest.mark.parametrize("strict", [False, True])
+def test_a_gaelic_pack_keeps_the_mac_masks(
+        pack: Locale, name: str, repaired: str, strict: bool) -> None:
+    # #1014: the Mac masks stand in en.toml and again in gd.toml and
+    # ga.toml, so a strict Gaelic choice, which compiles no en.toml
+    # reading, still writes the inner capital
+    parser = parser_for(pack, strict=strict)
+    assert str(parser.capitalized(parser.parse(name))) == repaired

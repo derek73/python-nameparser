@@ -112,7 +112,7 @@ def test_dotted_initial_is_the_period_alternative_of_initial() -> None:
 
 
 # The roster above grew one test at a time, and four hand-copies were
-# never added to it -- _render's _SPACES, _SPACE_BEFORE_COMMA, _MAC and
+# never added to it -- _render's _SPACES, _SPACE_BEFORE_COMMA, _MC and
 # _WORD. They had not diverged, but nothing would have said so, which
 # is the exact promise this module exists to keep. All four mirror a
 # config key whose only other reader was v1's parser.py, deleted at the
@@ -166,7 +166,7 @@ _SOURCES: dict[tuple[str, str], str | None] = {
     ("_post_rules", "_HYPHENS"): None,
     ("_render", "_SPACES"): "spaces",
     ("_render", "_SPACE_BEFORE_COMMA"): "space_before_comma",
-    ("_render", "_MAC"): "mac",
+    ("_render", "_MC"): "mac",
     ("_render", "_WORD"): "word",
     # the numeral clause's copy of _vocab._ROMAN (#459); layering
     # forbids _render the import, so it is pinned here instead
@@ -179,8 +179,8 @@ _SOURCES: dict[tuple[str, str], str | None] = {
     # SAME object, imported for the one-case letter initial (#723)
     ("_classify", "_INITIAL"): None,
     ("_render", "_DOTTED_INITIAL"): None,  # _INITIAL's period alternative
-    # #542: the name run after a Mac/Mc prefix, read on the word as
-    # written once _MAC has matched its composed spelling; no config
+    # #542: the name run after an Mc prefix, read on the word as
+    # written once _MC has matched its composed spelling; no config
     # key to mirror
     ("_render", "_NAME_RUN"): None,
     ("_tokenize", "_BIDI"): None,       # re_bidi, not a REGEXES key
