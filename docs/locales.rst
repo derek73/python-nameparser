@@ -280,8 +280,8 @@ ancestors' as above, plus every word written in a script other than
 Latin (the Korean, Japanese and Chinese honorifics, the Cyrillic and
 Devanagari titles), which selects itself by its script, and the words
 every language writes alike, in the shared ``mul`` file, among them
-``Dr``, ``Prof``, ``Mr``, ``Mrs``, the degrees ``PhD``, ``MD``,
-``MSc``, ``MBA``, ``MPH`` and ``BSc``, and the numerals. Every other
+``Dr``, ``Prof``, ``Mr``, ``Mrs``, the degrees ``PhD``, ``MSc``, ``MBA``,
+``MPH`` and ``BSc``, and the numerals. Every other
 language's words leave, and a word none of these holds is read as a
 name word:
 
@@ -307,8 +307,9 @@ Strict is for data you know to be of one origin, and what it drops it
 drops from every name:
 
 - **Other languages' words go with the accidents.** The shared words
-  stay (``Kim Min Jun, MD, PhD`` keeps both credentials), but the rest
-  of the English credentials (``Kim Min Jun, RN`` reads given ``RN``),
+  stay (``Kim Min Jun, PhD, MSc`` keeps both credentials), but the rest
+  of the English credentials (``Kim Min Jun, MD`` reads given ``MD``,
+  ``MD`` staying English's since a leading ``Md`` abbreviates Muhammad),
   a bare ``Ms``, and an immigrant's particle from another language are
   read as name words. A shape still reads as it does by default:
   ``Ms.``, with its period, is a title. Where English context is part
@@ -317,12 +318,12 @@ drops from every name:
 
   .. doctest::
 
-      >>> korean.parse("Kim Min Jun, MD, PhD").suffix
-      'MD, PhD'
+      >>> korean.parse("Kim Min Jun, PhD, MSc").suffix
+      'PhD, MSc'
       >>> parser_for(ko, en, strict=True).parse("Kim Min Ra").suffix
       'Ra'
-      >>> parser_for(ko, en, strict=True).parse("Kim Min Jun, RN").suffix
-      'RN'
+      >>> parser_for(ko, en, strict=True).parse("Kim Min Jun, MD").suffix
+      'MD'
 
 - **The shared words are a default like any other.** Take one out of
   the lexicon you build on and no choice brings it back:

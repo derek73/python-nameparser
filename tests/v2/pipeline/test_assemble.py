@@ -517,7 +517,7 @@ _EXPECTED_LANGUAGES = [
     ('John Smith Ph. "Bob" D.', "D.", ("mul",)),
     # a word joining listed words, by its parts; never divided at a
     # combining mark
-    ("John Smith, M.D./Ph.D.", "M.D./Ph.D.", ("mul",)),
+    ("John Smith, M.D./Ph.D.", "M.D./Ph.D.", ("en", "mul")),
     ("Lt.Gov. John Smith", "Lt.Gov.", ("en",)),
     # a word the lexicon lists whole without its periods is read whole,
     # not by its parts

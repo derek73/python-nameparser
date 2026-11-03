@@ -3099,22 +3099,23 @@ def test_a_strict_choice_keeps_mul_and_native_script_vocabulary() -> None:
     assert strict.parse("Dr Minh Do").title == "Dr"
     assert strict.parse("Mr Minh Do").title == "Mr"
     assert strict.parse("Minh Do, PhD").suffix == "PhD"
-    assert strict.parse("Minh Do, MD").suffix == "MD"
     assert strict.parse("Minh Do III").suffix == "III"
     assert strict.parse("Mrs Minh Do").title == "Mrs"
-    # the six degrees, each after a comma and in a run
+    # the five degrees, each after a comma and in a run
     assert strict.parse("Minh Do, MSc, MBA").suffix == "MSc, MBA"
     assert strict.parse("Minh Do, MPH, BSc").suffix == "MPH, BSc"
-    # en.toml's leave: `ms`, kept there as South Indian initials, `mx`,
-    # the abbreviation for Mexico, and `rn`
+    # en.toml's leave: `md`, kept there since a leading Md abbreviates
+    # Muhammad, `ms`, kept there as South Indian initials, `mx`, the
+    # abbreviation for Mexico, and `rn`
+    assert strict.parse("Minh Do, MD").given == "MD"
     assert strict.parse("Ms Minh Do").given == "Ms"
     assert strict.parse("Radha MS").family == "MS"
     assert strict.parse("Mx Minh Do").given == "Mx"
     assert strict.parse("Minh Do, RN").given == "RN"
     # every reading of `do` (en.toml's credential and name readings,
     # pt.toml's particle) is in a file strict vi does not read, so `Do`
-    # is a plain name word beside mul.toml's `MD`
-    assert strict.parse("Minh Do, MD").family == "Do"
+    # is a plain name word beside mul.toml's `PhD`
+    assert strict.parse("Minh Do, PhD").family == "Do"
     # a native-script word selects itself by script, whatever its file
     assert strict.parse("김민준 씨").suffix == "씨"
     # and the Korean surname list is outside the per-word model
@@ -3146,6 +3147,19 @@ def test_a_file_with_no_reading_is_a_strict_choice_only() -> None:
                                          r"strict=True"):
         parser_for(_choosing("vi"))
     assert "do" not in parser_for(_choosing("vi"), strict=True).lexicon._sets.particles
+
+
+def test_md_stays_out_of_a_strict_choice_that_does_not_read_en() -> None:
+    # `md` stays in en.toml (#1005): a leading Md abbreviates Muhammad
+    # (#853), and after a family comma a strict choice reading `md`
+    # from mul.toml took the given name as a credential
+    bn = parser_for(_choosing("bn"), strict=True)
+    for text, given, middle in (("Rahman, Md", "Md", ""),
+                                ("Rahman, MD", "MD", ""),
+                                ("Karim, Md Abdul", "Md", "Abdul")):
+        got = bn.parse(text)
+        assert (got.given, got.middle, got.suffix) == (given, middle, ""), text
+    assert bn.parse("Md Rahman").given == "Md"
 
 
 def test_a_caller_removes_a_mul_word_as_any_other() -> None:
