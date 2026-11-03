@@ -1108,6 +1108,55 @@ CASES: tuple[Case, ...] = (
          notes="the other direction of PA's fork: no word to spare, so "
                "the family name. Before #797 this read the same, with "
                "no fork reported"),
+    # -- #993: 77 US credentials no list held (MSW, MBBS, MOT, ...),
+    # each written by at least 2,000 NPPES providers, and COTA refused. C6's caps shape
+    # read them after a comma in a mixed-case name only, which is the
+    # one shape #797's screen tried; every row here is a shape that
+    # lost a name field.
+    Case("trailing_unlisted_us_credential", "Jane Doe MSW",
+         {"given": "Jane", "family": "Doe", "suffix": "MSW"},
+         classification="fix(#993)",
+         notes="no comma: before #993 middle 'Doe', family 'MSW'"),
+    Case("comma_us_credential_in_capitals", "JANE DOE, MSW",
+         {"given": "JANE", "family": "DOE", "suffix": "MSW"},
+         classification="fix(#993)",
+         notes="a name in one case gives C6 no case signal: before #993 "
+               "given 'MSW', family 'JANE DOE'"),
+    Case("comma_us_credential_in_lower_case", "john smith, mbbs",
+         {"given": "john", "family": "smith", "suffix": "mbbs"},
+         classification="fix(#993)",
+         notes="before #993 given 'mbbs', family 'john smith'"),
+    Case("family_comma_given_part_ends_in_us_credential",
+         "Doe, Jane MSW",
+         {"given": "Jane", "family": "Doe", "suffix": "MSW"},
+         classification="fix(#993)",
+         notes="the given part after a family comma: before #993 "
+               "middle 'MSW'"),
+    Case("us_credential_before_a_suffix_comma", "Jane Doe MSW, PhD",
+         {"given": "Jane", "family": "Doe", "suffix": "MSW, PhD"},
+         classification="fix(#993)",
+         notes="before #993 middle 'Doe', family 'MSW', suffix 'PhD'"),
+    Case("capitals_mot_is_a_credential", "Jane Doe MOT",
+         {"given": "Jane", "family": "Doe", "suffix": "MOT"},
+         classification="fix(#993)",
+         notes="MOT is ambiguous (Census 109 family), and its capitals "
+               "settle it as the credential (rules/S6): before #993 "
+               "middle 'Doe', family 'MOT'"),
+    Case("title_case_mot_keeps_the_surname", "Jane Doe Mot",
+         {"given": "Jane", "middle": "Doe", "family": "Mot"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#993)",
+         notes="the other direction of MOT's fork, which listing it "
+               "plain would have read as the suffix: read the same "
+               "before #993 with no fork reported"),
+    Case("refused_cota_keeps_the_surname_in_capitals",
+         "ADÃO FERREIRA COTA",
+         {"given": "ADÃO", "middle": "FERREIRA", "family": "COTA"},
+         classification="parity",
+         notes="COTA, Certified Occupational Therapy Assistant, is "
+               "refused (en.toml's cota): marked ambiguous, a name in "
+               "capitals with a word to spare read it as the suffix, as "
+               "49 tse-donors names did"),
     # -- #848: Ing, the engineering degree of Czech, Slovak, Austrian
     # and Romanian names, is marked ambiguous as PA is, the surname
     # reading being substantial (Census 1,814).
@@ -13198,10 +13247,12 @@ CASES: tuple[Case, ...] = (
     Case("given_name_title_sultana_before_a_credential_comma",
          "Nasreen Sultana, MBBS",
          {"given": "Nasreen", "family": "Sultana", "suffix": "MBBS"},
-         ambiguities=("suffix-or-name",), classification="fix(#752)",
+         classification="fix(#752)",
          notes="two name words now stand before the comma, so the "
                "credential is the suffix; read given 'MBBS', family "
-               "'Nasreen Sultana' before"),
+               "'Nasreen Sultana' before. It reported suffix-or-name "
+               "while MBBS was unlisted, read by its shape; listed "
+               "since #993, it reports nothing"),
     Case("given_name_title_sultan_after_a_salutation", "Mr Sultan Khan",
          {"title": "Mr", "given": "Sultan", "family": "Khan"},
          classification="fix(#853)",
