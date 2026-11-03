@@ -911,7 +911,8 @@ def test_a_mixed_case_credential_listed_for_797_repairs_to_its_mask() -> None:
                          ("jane smith mdphd", "MDPhD"),
                          # #993: MSEd, while MSN, MSD and MSPT are
                          # written in capitals far more often than as
-                         # MsN, MsD and MsPT, so they carry no mask
+                         # MsN, MsD and MsPT (ClinicalTrials.gov
+                         # officials, data 2026-10-21), so no mask
                          ("JANE SMITH, MSED", "MSEd"),
                          ("jane smith msn", "MSN")):
         assert parse(text).capitalized().suffix == suffix, text

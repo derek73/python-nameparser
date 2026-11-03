@@ -1860,7 +1860,8 @@ _ORDERS = {None: Policy(), "FAMILY_FIRST": Policy(name_order=FAMILY_FIRST),
     ("cs", None, "Mgr Jana Nováková",
      ("Mgr", "Jana", "", "Nováková", "", "", ()),
      ("Mgr", "Jana", "", "Nováková", "", "", ())),
-    # PMHNP, listed since #993, no longer reports a comma structure
+    # PMHNP, listed since #993, no longer reports a comma structure of
+    # its own; BC's remains
     ("cs", None, "Lora L. Beebe, PhD, PMHNP, BC",
      ("", "Lora", "L.", "Beebe", "PhD, PMHNP, BC", "",
       ("COMMA_STRUCTURE",)),

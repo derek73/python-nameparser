@@ -1111,8 +1111,9 @@ CASES: tuple[Case, ...] = (
     # -- #993: 77 US credentials no list held (MSW, MBBS, MOT, ...),
     # each written by at least 2,000 NPPES providers, and COTA refused. C6's caps shape
     # read them after a comma in a mixed-case name only, which is the
-    # one shape #797's screen tried; every row here is a shape that
-    # lost a name field.
+    # one shape #797's screen tried. The first six rows are shapes that
+    # lost a name field; the last two hold the costs that marking MOT
+    # and refusing COTA avoid.
     Case("trailing_unlisted_us_credential", "Jane Doe MSW",
          {"given": "Jane", "family": "Doe", "suffix": "MSW"},
          classification="fix(#993)",
@@ -1156,7 +1157,7 @@ CASES: tuple[Case, ...] = (
          notes="COTA, Certified Occupational Therapy Assistant, is "
                "refused (en.toml's cota): marked ambiguous, a name in "
                "capitals with a word to spare read it as the suffix, as "
-               "49 tse-donors names did"),
+               "it would have in 49 tse-donors names"),
     # -- #848: Ing, the engineering degree of Czech, Slovak, Austrian
     # and Romanian names, is marked ambiguous as PA is, the surname
     # reading being substantial (Census 1,814).
