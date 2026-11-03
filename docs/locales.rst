@@ -280,7 +280,7 @@ ancestors' as above, plus every word written in a script other than
 Latin (the Korean, Japanese and Chinese honorifics, the Cyrillic and
 Devanagari titles), which selects itself by its script, and the words
 every language writes alike, in the shared ``mul`` file, among them
-``Dr``, ``Prof``, ``Mr``, ``Mrs``, the degrees ``PhD``, ``MSc``, ``MBA``,
+``Dr``, ``Prof``, ``Mr``, ``Mrs``, ``Ms``, ``Miss``, the degrees ``PhD``, ``MSc``, ``MBA``,
 ``MPH`` and ``BSc``, and the numerals. Every other
 language's words leave, and a word none of these holds is read as a
 name word:

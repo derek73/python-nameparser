@@ -396,7 +396,7 @@ def test_no_suffix_ambiguity_when_nothing_was_guessed(text: str) -> None:
 
 def test_delimited_ambiguous_acronym_reports_suffix_or_nickname() -> None:
     # inside delimiters the competing readings are suffix and nickname:
-    # "(MBA)" is unambiguously a credential and escapes to suffix, while
+    # "(MPH)" is unambiguously a credential and escapes to suffix, while
     # "(JD)" could be either, so it keeps the nickname reading -- a
     # guess, and until now a silent one
     n = parse("JEFFREY (JD) BRICKEN")
@@ -405,7 +405,7 @@ def test_delimited_ambiguous_acronym_reports_suffix_or_nickname() -> None:
         [AmbiguityKind.SUFFIX_OR_NICKNAME]
     assert [t.text for t in n.ambiguities[0].tokens] == ["JD"]
     # the unambiguous one decided on vocabulary, so it is not a guess
-    assert parse("Andrew Perkins (MBA)").ambiguities == ()
+    assert parse("Andrew Perkins (MPH)").ambiguities == ()
 
 
 def test_every_ambiguous_acronym_in_a_name_is_reported() -> None:
@@ -2370,7 +2370,7 @@ def test_a_declined_cjk_credential_word_does_not_peel_off_a_glued_name(
 
 # rules/S13 (#810): where a bracketed member reads differently from its
 # twin, a bracketed unambiguous credential in the same place. The twin
-# is MBA, a word no head holds, so the twin's reading maps back by
+# is MPH, a word no head holds, so the twin's reading maps back by
 # replacing its text. 1,080 texts, about 2s.
 _TWIN_HEADS = (
     "John Smith {c}", "Jack {c}", "{c}", "John {c}", "JOHN SMITH {c}",
@@ -2408,9 +2408,9 @@ def _twin_reading(name: ParsedName, twin: str | None, word: str) -> tuple[
 #: takes it; a part past a second comma reports what is left without
 #: the member; a name written in one case settles no capitals; a name
 #: with no word of its own (a title, a nickname, nothing) settles no
-#: clause, where the twin escapes, read as the name ('(MBA)' given
-#: 'MBA', 'Dr. (MBA)' given 'Dr.') or as the suffix behind a comma
-#: (', (MBA)'); and a clause another
+#: clause, where the twin escapes, read as the name ('(MPH)' given
+#: 'MPH', 'Dr. (MPH)' given 'Dr.') or as the suffix behind a comma
+#: (', (MPH)'); and a clause another
 #: settled one would make settle, on a second reading, is left the
 #: nickname.
 _TWIN_CENSUS = {
@@ -2443,9 +2443,9 @@ def test_where_a_bracketed_member_reads_otherwise_than_its_twin() -> None:
             _TWIN_PAIRS, _TWIN_MEMBERS, _TWIN_HEADS, _TWIN_ORDERS):
         parser = Parser(policy=Policy(name_order=order))
         name = parser.parse(head.format(c=f"{open_}{word}{close}"))
-        twin = parser.parse(head.format(c=f"{open_}MBA{close}"))
+        twin = parser.parse(head.format(c=f"{open_}MPH{close}"))
         if _twin_reading(name, None, word) != _twin_reading(
-                twin, "MBA", word):
+                twin, "MPH", word):
             key = (head, "nickname" if word in name.nickname.split()
                    else "settled")
             census[key] = census.get(key, 0) + 1
@@ -3101,15 +3101,19 @@ def test_a_strict_choice_keeps_mul_and_native_script_vocabulary() -> None:
     assert strict.parse("Minh Do, PhD").suffix == "PhD"
     assert strict.parse("Minh Do III").suffix == "III"
     assert strict.parse("Mrs Minh Do").title == "Mrs"
+    # `ms` and `miss` whole, the salutation with the credential and the
+    # family reading (2026-11-03): `MS` after a comma stays the degree,
+    # and South Indian initials read as the default reads them
+    assert strict.parse("Ms Minh Do").title == "Ms"
+    assert strict.parse("Miss Minh Do").title == "Miss"
+    assert strict.parse("A Israni, MD, MS").suffix == "MS"
+    assert strict.parse("Radha MS").suffix == parse("Radha MS").suffix == "MS"
     # the five degrees, each after a comma and in a run
     assert strict.parse("Minh Do, MSc, MBA").suffix == "MSc, MBA"
     assert strict.parse("Minh Do, MPH, BSc").suffix == "MPH, BSc"
     # en.toml's leave: `md`, kept there since a leading Md abbreviates
-    # Muhammad, `ms`, kept there as South Indian initials, `mx`, the
-    # abbreviation for Mexico, and `rn`
+    # Muhammad, `mx`, the abbreviation for Mexico, and `rn`
     assert strict.parse("Minh Do, MD").given == "MD"
-    assert strict.parse("Ms Minh Do").given == "Ms"
-    assert strict.parse("Radha MS").family == "MS"
     assert strict.parse("Mx Minh Do").given == "Mx"
     assert strict.parse("Minh Do, RN").given == "RN"
     # every reading of `do` (en.toml's credential and name readings,

@@ -775,7 +775,7 @@ def test_a_suffix_written_in_more_than_one_case_is_kept_as_written(
              "John Smith, EDD, PhD"),
             # boundary: the garbled spelling is kept too
             ("juan garcia Iii", "Juan Garcia Iii", "Juan Garcia III"),
-            ("john smith Mba", "John Smith Mba", "John Smith MBA"),
+            ("john smith Mph", "John Smith Mph", "John Smith MPH"),
             # a suffix written in ONE case is repaired as any token is
             ("juan garcia III", "Juan Garcia III", "Juan Garcia III"),
             ("JUAN GARCIA iii", "Juan Garcia III", "Juan Garcia III"),

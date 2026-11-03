@@ -1965,6 +1965,7 @@ SUFFIX_ACRONYMS_AMBIGUOUS: frozenset[str] = frozenset({
     'jd',
     'lac',
     'ma',
+    'mba',
     'meng',
     'obi',
     'oca',

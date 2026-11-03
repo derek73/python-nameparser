@@ -524,7 +524,7 @@ _EXPECTED_LANGUAGES = [
     ("Lt.Gen. John Smith", "Lt.Gen.", ("en",)),
     ("प्रोफे.डॉ. अदा शर्मा", "प्रोफे.डॉ.", ("hi", "mr")),
     # a union over parts is sorted, as a word's own files are
-    ("John Smith, MS-V", "MS-V", ("en", "mul")),
+    ("John Smith, MS-V", "MS-V", ("mul",)),
     # no file: position, shape, and a shipped list outside the per-word
     # files (the Korean surnames)
     ("Dr. Juan de la Vega III", "Juan", ()),

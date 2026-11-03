@@ -5,12 +5,23 @@
 schema = 1
 
 [[word]]
+text = "miss"
+salutation = { gender = "f", after_given = true, note = "the English form of address, written before names in English-context data from every country: 71,779 title boxes of the UK register of people with significant control across 186 nationalities (data 2026-10-22); in mul.toml with its family reading, so the gate is alike under every choice (decisions/vocabulary-model, 2026-11-03)", issue = 1005 }
+family = { us_census_2010 = 164, wikidata = 4, as_of = 2026-10-24, note = "kept for after_given (decisions/H8): a middle name of this spelling is the accepted cost" }
+
+[[word]]
 text = "mr"
 salutation = { gender = "m", after_given = true, note = "US SSA counts 5 births named Mr (2026-10-24), too few to read the word as a name anywhere, so the count stays in this note rather than as a `given` reading, which would make the title one only inside a title phrase (rules/H9); kept for after_given (decisions/H8). In mul.toml (#1005): no `Mr` as a name word and no `MR` as initials in the ORCID, PatentsView or PSC boxes (2026-11-02, 3.5M records)", issue = 1005 }
 
 [[word]]
 text = "mrs"
 salutation = { gender = "f", after_given = true, note = "the English form of address, written before names in English-context data from every country; no `Mrs` as a name word and no `MRS` as initials in the ORCID, PatentsView or PSC boxes (2026-11-02, 3.5M records)", issue = 1005 }
+
+[[word]]
+text = "ms"
+salutation = { gender = "f", note = "the English form of address, written before names in English-context data from every country: 65,690 title boxes of the UK register of people with significant control across 197 nationalities (data 2026-10-22); in mul.toml with its credential, since the salutation alone there read the degree after a comma as a title under a strict choice without en (`A Israni, MD, MS`; decisions/vocabulary-model, 2026-11-03)", issue = 1005 }
+[word.credential]
+note = "NOT marked as possibly a name (no name reading), though #296's audit table put it there for the leading-title collision: the gate is position-blind and the collision is not (gated, 'John Smith, MS' read title 'MS'); a title/credential dual that position decides (decisions/C8)"
 
 [[word]]
 text = "docent"
@@ -69,6 +80,7 @@ excluded = { academic = { reason = "Ing is borne as a given name (nam_dict band 
 
 [[word]]
 text = "mba"
+family = { us_census_2010 = 320, as_of = 2026-11-03, note = "the Igbo surname Mba (ORCID Nigeria family boxes, `Chinedu Mba`; 10 surname boxes of the UK register of people with significant control, data 2026-10-22), which the ungated credential read as a suffix with no family (decisions/suffix-acronym-collisions, 2026-11-03)" }
 credential = { note = "written after names in every country's data (ClinicalTrials.gov, ORCID; decisions/vocabulary-model, 2026-11-02 #1005), so shared rather than copied into each language's file", issue = 1005 }
 
 [[word]]

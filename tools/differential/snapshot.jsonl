@@ -249,6 +249,7 @@
 {"name": "Andrew Perkins (M.D)", "given": "Andrew", "family": "Perkins", "suffix": "M.D", "initials": "A. P."}
 {"name": "Andrew Perkins (MBA)", "given": "Andrew", "family": "Perkins", "suffix": "MBA", "initials": "A. P."}
 {"name": "Andrew Perkins (Mgr.)", "title": "Mgr.", "given": "Andrew", "family": "Perkins", "initials": "A. P."}
+{"name": "Andrew Perkins (PhD)", "given": "Andrew", "family": "Perkins", "suffix": "PhD", "initials": "A. P."}
 {"name": "Andrew Perkins (XYZ)", "given": "Andrew", "family": "Perkins", "nickname": "XYZ", "initials": "A. P.", "capitalized_force": "Andrew \"Xyz\" Perkins"}
 {"name": "Andrew Perkins «MBA»", "given": "Andrew", "family": "Perkins", "suffix": "MBA", "initials": "A. P."}
 {"name": "Andrew Perkins, Jr., Col. (Ret)", "title": "Col.", "given": "Andrew", "family": "Perkins", "suffix": "Jr., Ret", "initials": "A. P.", "generation": "Jr.", "credentials": "Ret"}
@@ -1776,7 +1777,7 @@
 {"name": "John Smith (MA.)", "given": "John", "family": "Smith", "suffix": "MA.", "initials": "J. S."}
 {"name": "John Smith (MBA PhD.)", "given": "John", "family": "Smith", "suffix": "MBA PhD.", "initials": "J. S."}
 {"name": "John Smith (Ma)", "given": "John", "family": "Smith", "nickname": "Ma", "ambiguities": ["SUFFIX_OR_NICKNAME"], "alternatives": ["SUFFIX_OR_NICKNAME: credential as suffix (vocabulary)"], "initials": "J. S."}
-{"name": "John Smith (PhD MBA)", "given": "John", "family": "Smith", "nickname": "PhD MBA", "initials": "J. S.", "capitalized_force": "John \"PhD Mba\" Smith"}
+{"name": "John Smith (PhD MSc)", "given": "John", "family": "Smith", "nickname": "PhD MSc", "initials": "J. S."}
 {"name": "John Smith ,Jr.", "given": "John", "family": "Smith", "suffix": "Jr.", "initials": "J. S.", "generation": "Jr."}
 {"name": "John Smith - Jones", "given": "John", "middle": "Smith -", "family": "Jones", "initials": "J. S. -. J."}
 {"name": "John Smith 1.4", "given": "John", "middle": "Smith", "family": "1.4", "initials": "J. S. 1."}
@@ -4082,7 +4083,7 @@
 {"name": "john smith ix", "given": "john", "family": "smith", "suffix": "ix", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "j. s.", "capitalized": "John Smith IX", "generation": "ix"}
 {"name": "john smith jr", "given": "john", "family": "smith", "suffix": "jr", "initials": "j. s.", "capitalized": "John Smith Jr", "generation": "jr"}
 {"name": "john smith m.d.", "given": "john", "family": "smith", "suffix": "m.d.", "initials": "j. s.", "capitalized": "John Smith M.D."}
-{"name": "john smith mba", "given": "john", "family": "smith", "suffix": "mba", "initials": "j. s.", "capitalized": "John Smith MBA"}
+{"name": "john smith mba", "given": "john", "family": "smith", "suffix": "mba", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)"], "initials": "j. s.", "capitalized": "John Smith MBA"}
 {"name": "john smith mcse", "given": "john", "family": "smith", "suffix": "mcse", "initials": "j. s.", "capitalized": "John Smith MCSE"}
 {"name": "john smith md", "given": "john", "family": "smith", "suffix": "md", "initials": "j. s.", "capitalized": "John Smith MD"}
 {"name": "john smith meng", "given": "john", "family": "smith", "suffix": "meng", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)"], "initials": "j. s.", "capitalized": "John Smith MENG"}
