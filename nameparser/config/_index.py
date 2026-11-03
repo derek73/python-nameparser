@@ -573,7 +573,7 @@ READINGS: tuple[tuple[str, tuple[tuple[str, str, tuple[tuple[str, object], ...]]
     ('dcvo', (('en', 'credential', ()),)),
     ('dd', (('en', 'credential', ()),)),
     ('dds', (('en', 'credential', ()),)),
-    ('de', (('ca', 'preposition', ()), ('es', 'preposition', ()), ('fil', 'preposition', ()), ('fr', 'preposition', ()), ('it', 'preposition', ()), ('nl', 'article', ()), ('pt', 'preposition', ()))),
+    ('de', (('ca', 'preposition', ()), ('es', 'preposition', ()), ('fil', 'preposition', ()), ('fr', 'preposition', ()), ('it', 'preposition', ()), ('nl', 'article', ()), ('pt', 'preposition', ()), ('si', 'preposition', ()))),
     ("de'", (('it', 'preposition', ()),)),
     ('deacon', (('en', 'religious', ()), ('en', 'given', ()), ('en', 'family', ()))),
     ('dean', (('en', 'office', ()), ('en', 'given', ()), ('en', 'family', ()))),
