@@ -730,6 +730,8 @@ def _prop_value(kind: str, prop: str, value: object) -> object:
 
 
 def _check_kind(kind: object, op: str) -> str | None:
+    """`kind` checked for `op`: a kind, or on `remove` and `words` a
+    category too; None (every reading) only on `remove`."""
     ri = _index_module()
     if kind is None and op == "remove":
         return None
@@ -741,7 +743,7 @@ def _check_kind(kind: object, op: str) -> str | None:
         return kind
     categories = set(ri.CATEGORY.values())
     if kind in categories:
-        if op == "remove":
+        if op in ("remove", "words"):
             return kind
         raise ValueError(
             f"{kind!r} is a category with no kind of its name; add() "
@@ -750,14 +752,22 @@ def _check_kind(kind: object, op: str) -> str | None:
     raise ValueError(
         f"unknown reading kind {kind!r}; the kinds are "
         + ", ".join(ri.CATEGORY)
-        + (" (or a category, on remove: "
-           + ", ".join(sorted(categories)) + ")" if op == "remove" else ""))
+        + (f" (or a category, on {op}: "
+           + ", ".join(sorted(categories)) + ")"
+           if op in ("remove", "words") else ""))
 
 
-def _edit_words(words: tuple[object, ...], op: str) -> tuple[str, ...]:
+def _edit_words(words: tuple[object, ...], op: str,
+                kind: str | None) -> tuple[str, ...]:
     if not words:
-        raise TypeError(f"{op}() takes at least one word, e.g. "
-                        f"{op}('dean', kind='title')")
+        if op == "remove" and kind is not None:
+            # every word's readings of `kind`: a remove of a whole kind
+            return ()
+        raise TypeError(
+            f"{op}() takes at least one word, e.g. {op}('dean', kind="
+            f"'title')" + (", or a kind alone to take out every word's "
+                           "readings of it, e.g. remove(kind='title')"
+                           if op == "remove" else ""))
     out = []
     for w in words:
         _reject_buffer(w, f"{op}() words", "strings")
@@ -807,8 +817,8 @@ def _make_edit(op: object, words: object, kind: object,
         raise ValueError(f"an edit is 'add' or 'remove', got {op!r}")
     if not isinstance(words, tuple):
         raise TypeError(f"an edit's words are a tuple, got {words!r}")
-    ws = _edit_words(words, op)
     k = _check_kind(kind, op)
+    ws = _edit_words(words, op, k)
     if op == "remove":
         if props:
             raise ValueError(f"remove() takes no properties, got {props!r}")
@@ -838,13 +848,20 @@ def _make_edit(op: object, words: object, kind: object,
     return _Edit(op, ws, k, p)
 
 
-def _apply_edit(pool: dict[str, tuple[Any, ...]], edit: _Edit) -> None:
-    """Apply `edit` to `pool` (word -> its readings) in place. An add of
-    a kind the word holds updates that reading's properties in every
-    file holding it, and turns a reading written `default = false` on;
-    otherwise it adds the caller's own reading, which names no file."""
+def _apply_edit(pool: dict[str, tuple[Any, ...]],
+                edit: _Edit) -> tuple[str, ...]:
+    """Apply `edit` to `pool` (word -> its readings) in place, returning
+    the words it touched. An add of a kind the word holds updates that
+    reading's properties in every file holding it, and turns a reading
+    written `default = false` on; otherwise it adds the caller's own
+    reading, which names no file. A remove with no words is one of a
+    whole kind, reaching every word in the pool that holds a reading of
+    it, whatever turned the reading on."""
     ri = _index_module()
-    for w in edit.words:
+    words = edit.words or tuple(
+        w for w, rs in pool.items()
+        if any(r.kind == edit.kind or r.category == edit.kind for r in rs))
+    for w in words:
         rs = pool.get(w, ())
         if edit.op == "remove":
             kept = tuple(r for r in rs if edit.kind is not None
@@ -861,6 +878,15 @@ def _apply_edit(pool: dict[str, tuple[Any, ...]], edit: _Edit) -> None:
             pool[w] = kept
         else:
             pool.pop(w, None)
+    return words
+
+
+def _held_value(kind: str, props: Mapping[str, Any], prop: str) -> object:
+    """A `kind` reading's value of `prop`, from its `props`, as an edit's
+    properties hold it, None where it carries the unwritten one: what
+    `words` compares."""
+    value = props.get(prop)
+    return None if value is None else _prop_value(kind, prop, value)
 
 
 def _merged(props: Mapping[str, Any], update: _Props) -> dict[str, Any]:
@@ -959,15 +985,14 @@ def _built(base: object, edits: tuple[_Edit, ...], chosen: frozenset[str],
     with a reading the choice turns on is refused, naming the edit
     (2026-11-02 #754, item 3)."""
     pool = dict(_chosen_pool(base, chosen, strict))
-    for edit in edits:
-        _apply_edit(pool, edit)
-    for w in dict.fromkeys(w for e in edits for w in e.words):
+    touched = [(edit, _apply_edit(pool, edit)) for edit in edits]
+    for w in dict.fromkeys(w for _, ws in touched for w in ws):
         try:
             _check_pool(pool, (w,))
         except ValueError as exc:
             if not chosen or _clashes_unchosen(base, edits):
                 raise
-            mine = " and ".join(_rendered(e for e in edits if w in e.words))
+            mine = " and ".join(_rendered(e for e, ws in touched if w in ws))
             raise ValueError(
                 f"the lexicon's {mine} clashes with a reading the choice "
                 f"turns on: {exc}") from None
@@ -1493,8 +1518,10 @@ def _rendered(edits: Iterable[_Edit]) -> list[str]:
     and properties joined into one call."""
     calls: list[tuple[str, list[str], str | None, _Props]] = []
     for e in edits:
-        if calls and calls[-1][0] == e.op and calls[-1][2:] == (e.kind,
-                                                               e.props):
+        # a remove of a whole kind (no words) joins no call of words
+        if (calls and e.words and calls[-1][1]
+                and calls[-1][0] == e.op
+                and calls[-1][2:] == (e.kind, e.props)):
             calls[-1][1].extend(e.words)
         else:
             calls.append((e.op, list(e.words), e.kind, e.props))
@@ -2108,6 +2135,34 @@ class Lexicon:
                 grouped.items(),
                 key=lambda item: (order.index(item[0][0]), repr(item[0][1]))))
 
+    def words(self, *, kind: str, **properties: object) -> tuple[str, ...]:
+        """The words holding a reading of `kind` on in this lexicon,
+        sorted: a kind or a category, as :meth:`remove` takes it
+        (``words(kind="title")`` lists every title word, ``dean``
+        among them, whichever set its readings compile to), and
+        `properties`, which only a kind takes, narrowing to the readings
+        that carry them as :meth:`add` spells them
+        (``words(kind="title", addresses="given")``, the titles that
+        address a person by the given name). A phrase the lexicon holds
+        whole (``"z domu"``) is one entry."""
+        k = _check_kind(kind, "words")
+        assert k is not None
+        ri = _index_module()
+        wanted: _Props = ()
+        if properties:
+            if k not in ri.CATEGORY:
+                raise ValueError(
+                    f"words() takes properties with a kind, not the "
+                    f"category {k!r}; name one of its kinds: " + ", ".join(
+                        x for x, c in ri.CATEGORY.items() if c == k))
+            wanted = _edit_props(k, properties)
+        return tuple(sorted(
+            w for w, rs in self._pool().items()
+            if any(r.on_by_default and (r.kind == k or r.category == k)
+                   and all(_held_value(r.kind, r.props, p) == v
+                           for p, v in wanted)
+                   for r in rs)))
+
     # -- editing ----------------------------------------------------------
 
     # `kind` is required, and a type checker reads it so: the runtime
@@ -2170,9 +2225,11 @@ class Lexicon:
         or a category, matching every kind of it (``kind="title"`` takes
         out ``dean``'s ``office`` reading, ``kind="name"`` its ``given``
         and ``family`` ones), or None, taking out every reading, so the
-        word leaves the vocabulary. Removing a reading the word does not
-        hold changes nothing now, and is kept: a later choice of
-        languages may turn that reading on."""
+        word leaves the vocabulary. With no words, `kind` is required and
+        every word's readings of it go (``remove(kind="title")``), those
+        a later choice of languages turns on included. Removing a
+        reading the word does not hold changes nothing now, and is kept:
+        a later choice of languages may turn that reading on."""
         if removed:
             raise _refusal("remove()", self, self._changed("remove", removed))
         edit = _make_edit("remove", words, kind, ())
