@@ -6316,6 +6316,119 @@ CASES: tuple[Case, ...] = (
                "name word behind a member its capitals settle keeps it "
                "from starting the credential's run -- here a family name written in capitals by convention, which counts as the name word behind. "
                "1.4.0 through 2.6.0 read the same"),
+    Case("title_case_credential_before_a_name_word_stays_a_name",
+         "Badrul Akmal Hisham Md Yusoff",
+         {"given": "Badrul", "middle": "Akmal Hisham Md",
+          "family": "Yusoff"},
+         notes="S8 (#1019): with no family comma a credential acronym "
+               "written in Title case with a name word behind it starts "
+               "no credential's run -- here Md, Muhammad written short. "
+               "1.4.0 through 2.3.0 read the same; 2.4.0 through 2.8.0 "
+               "read family 'Hisham', suffix 'Md Yusoff' (#602's run)"),
+    Case("title_case_credential_after_a_patronymic_stays_a_name",
+         "Ahmad Faiz Bin Md Sapir",
+         {"given": "Ahmad", "middle": "Faiz Bin Md", "family": "Sapir"},
+         notes="S8 (#1019): as title_case_credential_before_a_name_"
+               "word_stays_a_name, behind a particle. 1.4.0 through "
+               "2.3.0 read the same; 2.4.0 through 2.8.0 read family "
+               "'Bin', suffix 'Md Sapir'"),
+    Case("title_case_credential_before_a_suffix_comma_stays_a_name",
+         "Badrul Hisham Md Yusoff, Jr.",
+         {"given": "Badrul", "middle": "Hisham Md", "family": "Yusoff",
+          "suffix": "Jr."},
+         notes="S8 (#1019): before a suffix comma the run's start asks "
+               "the same. 1.4.0 through 2.3.0 read the same; 2.4.0 "
+               "through 2.8.0 read family 'Hisham', suffix 'Md Yusoff, "
+               "Jr.'"),
+    Case("capitals_credential_before_a_name_word_starts_the_run",
+         "John Smith MD Jones",
+         {"given": "John", "family": "Smith", "suffix": "MD Jones"},
+         classification="fix(#602)",
+         ambiguities=("suffix-or-name",),
+         notes="S8 (#1019): an acronym written in its capitals is the "
+               "credential's writing and still starts the run, where "
+               "title_case_credential_before_a_name_word_stays_a_name's "
+               "Md does not. 1.4.0 read middle 'Smith MD', family "
+               "'Jones'"),
+    Case("title_case_credential_before_a_credential_starts_the_run",
+         "John Smith Md Phd",
+         {"given": "John", "family": "Smith", "suffix": "Md Phd"},
+         classification="fix(#436)",
+         notes="S8 (#1019): a credential behind it is no name word, so "
+               "the Title-case acronym still starts the run. 1.4.0 "
+               "through 2.2.0 read suffix 'Md, Phd'"),
+    Case("title_case_credential_in_a_family_comma_part_starts_the_run",
+         "Smith, John Md Jones",
+         {"given": "John", "family": "Smith", "suffix": "Md Jones"},
+         classification="fix(#602)",
+         ambiguities=("suffix-or-name",),
+         notes="S8 (#1019): after the given word in the part after a "
+               "family comma the cue does not reach, as a settled "
+               "member's does not. 1.4.0 read middle 'Jones', suffix "
+               "'Md'"),
+    Case("title_case_credential_with_its_period_stays_a_name",
+         "Badrul Akmal Hisham Md. Yusoff",
+         {"given": "Badrul", "middle": "Akmal Hisham Md.",
+          "family": "Yusoff"},
+         notes="S8 (#1019): a trailing period leaves the Title case a "
+               "name word's writing. 1.4.0 through 2.3.0 read the same; 2.4.0 through 2.8.0 read family "
+               "'Hisham', suffix 'Md. Yusoff'"),
+    Case("title_case_mask_credential_before_a_name_word_stays_a_name",
+         "John Smith Bt Jones",
+         {"given": "John", "middle": "Smith Bt", "family": "Jones"},
+         notes="S8 (#1019): the mask is not consulted, so an acronym "
+               "whose own mask is Title case reads as a name too, an "
+               "accepted cost (decisions/S8). 1.4.0 through 2.3.0 read the same; 2.4.0 through 2.8.0 read suffix "
+               "'Bt Jones'"),
+    Case("title_case_credential_before_a_particle_surname_stays_a_name",
+         "Badrul Akmal Md de la Vega",
+         {"given": "Badrul", "middle": "Akmal Md", "family": "de la Vega"},
+         notes="S8 (#1019): a particle behind it is a name word. "
+               "1.4.0 through 2.3.0 read the same; 2.4.0 through 2.8.0 read family 'Akmal', suffix "
+               "'Md de la Vega'"),
+    Case("lower_case_credential_before_a_name_word_starts_the_run",
+         "Badrul Akmal Hisham md Yusoff",
+         {"given": "Badrul", "middle": "Akmal", "family": "Hisham",
+          "suffix": "md Yusoff"},
+         classification="fix(#602)",
+         ambiguities=("suffix-or-name",),
+         notes="S8 (#1019): only Title case is a name word's writing; "
+               "lower case says nothing. 1.4.0 through 2.3.0 read "
+               "middle 'Akmal Hisham md', family 'Yusoff'"),
+    Case("dotted_title_case_credential_starts_the_run",
+         "John Smith M.d. Jones",
+         {"given": "John", "family": "Smith", "suffix": "M.d. Jones"},
+         classification="fix(#602)",
+         ambiguities=("suffix-or-name",),
+         notes="S8 (#1019): periods inside the word are a credential's "
+               "writing whatever the case. 1.4.0 through 2.3.0 read "
+               "middle 'Smith M.d.', family 'Jones'"),
+    Case("dotted_title_case_member_starts_the_run",
+         "John Smith M.a. Jones",
+         {"given": "John", "family": "Smith", "suffix": "M.a. Jones"},
+         classification="fix(#602)",
+         ambiguities=("suffix-or-name",),
+         notes="S8 (#1019): an ambiguous member written with its "
+               "periods is settled as the credential (S3), and its "
+               "case does not undo that. 1.4.0 through 2.3.0 read "
+               "middle 'Smith M.a.', family 'Jones'"),
+    Case("joined_title_case_credential_starts_the_run",
+         "John Smith Pa-c Jones",
+         {"given": "John", "family": "Smith", "suffix": "Pa-c Jones"},
+         classification="fix(#602)",
+         ambiguities=("suffix-or-name",),
+         notes="S8 (#1019): a joiner inside the word is a credential's "
+               "writing whatever the case. 1.4.0 through 2.3.0 read "
+               "middle 'Smith Pa-c', family 'Jones'"),
+    Case("one_case_credential_before_a_name_word_starts_the_run",
+         "BADRUL AKMAL HISHAM MD YUSOFF",
+         {"given": "BADRUL", "middle": "AKMAL", "family": "HISHAM",
+          "suffix": "MD YUSOFF"},
+         classification="fix(#602)",
+         ambiguities=("suffix-or-name",),
+         notes="S8 (#1019): a name written in one case carries no Title "
+               "case to read, so the run starts. 1.4.0 through 2.3.0 "
+               "read middle 'AKMAL HISHAM MD', family 'YUSOFF'"),
     Case("capitals_before_a_title_word_surname_stay_a_name",
          "Mary Jane MA Pope",
          {"given": "Mary", "middle": "Jane MA", "family": "Pope"},

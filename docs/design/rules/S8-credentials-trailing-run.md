@@ -25,7 +25,7 @@
   "John von PhD Jones"        →  family="von"
   "John von PhD Jones"        →  suffix="PhD Jones"
   ```
-- **What is a credential here.** A title word never starts the run, and neither does a member of the ambiguous class its writing leaves unsettled, a single letter, a connective, a word that is also particle or bound given-name vocabulary, the capitals of `DO` included: a credential is the writer's mark that the post-nominals have begun, and those carry no such mark. An honorific or a generational word carries it as a credential does, whatever its script.
+- **What is a credential here.** A title word never starts the run, and neither does a member of the ambiguous class its writing leaves unsettled, a single letter, a connective, a word that is also particle or bound given-name vocabulary, the capitals of `DO` included: a credential is the writer's mark that the post-nominals have begun, and those carry no such mark. Where no family comma divides the name, nor does a credential acronym written in Title case with a name word behind it, as a settled member does not: Title case is how a name word is written, and `Md` is how Muhammad is written short; the acronyms whose own writing is Title case (`Bt`, `Kt`, `Knt`) read so too. An honorific or a generational word carries it as a credential does, whatever its script.
   ```
   "Mary Jane Pope Smith"      →  family="Smith"
   "Josep Carod i Rovira"      →  family="Carod i Rovira"
@@ -33,6 +33,10 @@
   "John Smith Ma Jones"       →  family="Jones"
   "JOHN SMITH MA JONES"       →  family="JONES"
   "John Smith DO Jones"       →  family="DO Jones"
+  "Badrul Akmal Hisham Md Yusoff"  →  family="Yusoff"
+  "John Smith Md Phd"         →  suffix="Md Phd"
+  "John Smith MD Jones"       →  suffix="MD Jones"
+  "Smith, John Md Jones"      →  suffix="Md Jones"
   "Antonio Pavlović mlađi Jones"  →  suffix="mlađi Jones"
   "Pieter Bruegel stariji Jones"  →  suffix="stariji Jones"
   "Ана Хорват старији Џонс"   →  suffix="старији Џонс"
@@ -75,7 +79,12 @@
   "John Smith MA Jones"       →  middle="Smith MA"
   "John Smith M.A. Jones"     →  suffix="M.A. Jones"
   ```
+- With no family comma, a credential acronym written in Title case is read as a name word before any word that reads as one, an unlisted credential and a title included: a run of Title-case credentials written without commas gives its last word to the family where that word is unlisted, and a title written after the credential becomes the family name. Neither shape was found in the local corpora (decisions/S8).
+  ```
+  "Jane Doe Rn Bsn"           →  family="Bsn"
+  "John Smith Md Dr"          →  family="Dr"
+  ```
 
 ---
-**Signal:** neighbor: an unambiguous credential after the name core, and the rest of its part
+**Signal:** neighbor: an unambiguous credential after the name core, and the rest of its part + case contrast: a credential acronym in Title case before a name word
 **history:** decisions/S8 · **implemented:** nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py
