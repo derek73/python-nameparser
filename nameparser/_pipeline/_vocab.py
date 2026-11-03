@@ -1509,7 +1509,8 @@ _PHRASE_LINKS = frozenset({"of"})
 #: United States', 'The Grand Master'; 'and' joins two titles instead.
 _OBJECT_LINKS = frozenset({"of", "the"})
 
-#: The article that is a style's phrase partner (rules/H9, #999).
+#: The article that is the phrase partner of a style that may be a
+#: given name, written short (rules/H9, #999): `The Hon`.
 _STYLE_ARTICLES = frozenset({"the"})
 
 
@@ -1553,7 +1554,8 @@ def title_readings(texts: Sequence[str], folded: Sequence[str],
     caller listing it makes it a title everywhere) is a title only
     beside a partner: a
     modifier, a style, or a title it stands behind in `title_phrases`,
-    before it; or 'of', or a title it stands in front of in
+    before it, and for a style of `title_abbreviations` the article
+    'the' before it ('The Hon' under a Chinese choice); or 'of', or a title it stands in front of in
     `title_phrases`, after it. A salutation is never one, nor any other
     title before it ('Mr Dean Smith'), nor a title after it that it
     does not attach to ('SMITH, DEAN MR.', a given name and the

@@ -199,7 +199,10 @@ the style staying a title inside a phrase (``The Hon``, ``Rt Hon``,
 
 The choice costs the style written bare at the head, as UK registers
 and Hong Kong's legislature write it: ``Hon David Layton`` reads given
-``Hon`` under it.
+``Hon`` under it, and ``John Smith, Hon`` given ``Hon``, family ``John
+Smith``. The ``zh`` pack makes no choice of languages, so it leaves
+``Hon`` a title; the reading needs a :class:`~nameparser.Locale` with
+``languages``.
 
 A tag selects its own file and those of the languages it belongs to,
 never the other way: ``pt-BR`` reads ``pt.toml`` too, and ``pt``

@@ -1692,7 +1692,7 @@ occupation = { issue = 752, note = "occupation rather than modifier since 2026-1
 
 [[word]]
 text = "rt"
-occupation = { issue = 752, attaches = ["hon"], expands = "Right, abbreviated ('Rt Hon'); also a respiratory therapist", note = "occupation rather than modifier since 2026-10-25: a part after a comma written 'RT' is the person's role, which decision 10's modifier rule would read out of the title (decisions/vocabulary-model)" }
+occupation = { issue = 752, attaches = ["hon"], expands = "Right, abbreviated ('Rt Hon'); also a respiratory therapist", note = "occupation rather than modifier since 2026-10-25: a part after a comma written 'RT' is the person's role, which decision 10's modifier rule would read out of the title (decisions/vocabulary-model); attaches: Rt Hon (rules/H9, #999), the phrase a Chinese choice, which gives hon zh.toml's given reading, keeps as a title" }
 
 [[word]]
 text = "sailor"
