@@ -349,6 +349,7 @@ STRICT_UNGATED = {
     "ar": {"cheikh", "sultan"},
     "ca": {"del", "la"},
     "cs": {"st"},
+    "fil": {"del", "la", "san"},
     "fr": {"la", "marquis", "marquise", "st"},
     "ga": {"mac"},
     "gd": {"mac", "nic"},

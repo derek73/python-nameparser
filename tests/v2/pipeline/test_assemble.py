@@ -482,8 +482,8 @@ def test_every_suffix_words_reading_alternative_and_index_kind_agree(
 _EXPECTED_LANGUAGES = [
     # a particle, by its particle rows only ('la' is a given name in es
     # too, a reading the parse did not take)
-    ("Dr. Juan de la Vega III", "de", ("ca", "es", "fr", "it", "nl", "pt")),
-    ("Dr. Juan de la Vega III", "la", ("ca", "es", "fr", "it")),
+    ("Dr. Juan de la Vega III", "de", ("ca", "es", "fil", "fr", "it", "nl", "pt")),
+    ("Dr. Juan de la Vega III", "la", ("ca", "es", "fil", "fr", "it")),
     ("Dr. Juan de la Vega III", "Dr.", ("mul",)),
     ("Dr. Juan de la Vega III", "III", ("mul",)),
     ("John Smith PhD", "PhD", ("mul",)),

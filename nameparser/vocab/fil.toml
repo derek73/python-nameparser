@@ -13,11 +13,31 @@ text = "ginoo"
 salutation = { issue = 606, gender = "m", note = "borne: ~500 surnames, in Philippine lists writing Surname, Given with a comma, forebears.io, worldwide, rounded, 2026-10-04; shipped under the graf class (decisions/salutation-titles)", after_given = true }
 
 [[word]]
+text = "de"
+preposition = { may_be_given = false, expands = "of: Spanish-derived Filipino surnames, \"De Guzman\", \"De La Cruz\"", note = "strict fil broke 473 records on it while only es.toml and others held it (config_diff.py gaps on f48c88a3, decisions/vocabulary-model, 2026-11-03)", issue = 1005 }
+
+[[word]]
+text = "del"
+preposition = { expands = "of the: \"Del Rosario\"", note = "strict fil broke 94 records (config_diff.py gaps on f48c88a3, decisions/vocabulary-model, 2026-11-03)", issue = 1005 }
+
+[[word]]
 text = "dela"
 given = { us_ssa = 565, as_of = 2026-10-25, note = "US SSA births summed over both sexes; nam_dict band 1 in Germany, 1 in Bulgaria" }
 [word.preposition]
 expands = "of the, de la contracted: \"Dela Cruz\""
 note = "Dela is a short form of Adela, and an African name meaning saviour/redeemer -- so the Filipino surname particle is not the only reading"
+
+[[word]]
+text = "la"
+article = { expands = "the, fem. sg.: \"De La Cruz\"", note = "strict fil broke 46 records (config_diff.py gaps on f48c88a3, decisions/vocabulary-model, 2026-11-03)", issue = 1005 }
+
+[[word]]
+text = "los"
+article = { may_be_given = false, expands = "the, masc. pl.: \"De Los Santos\"", note = "strict fil broke 19 records (config_diff.py gaps on f48c88a3, decisions/vocabulary-model, 2026-11-03)", issue = 1005 }
+
+[[word]]
+text = "san"
+saint = { expands = "Saint: \"San Juan\", \"San Jose\"", note = "strict fil broke 70 records (config_diff.py gaps on f48c88a3, decisions/vocabulary-model, 2026-11-03)", issue = 1005 }
 
 [[word]]
 text = "jo"
