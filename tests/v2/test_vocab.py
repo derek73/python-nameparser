@@ -1282,6 +1282,32 @@ def test_attaches_may_name_one_title_word() -> None:
     assert c["TITLE_PHRASES"] == frozenset({"zzq zzr"})
 
 
+def test_attaches_may_name_a_title_word_that_is_also_another_kind() -> None:
+    # 'pope' attaches to the word 'saint', which names a particle kind
+    # too: the pool check accepts it as the word, and the compile reads
+    # it only as the word (#913)
+    c = _compile({"en.toml": _w(
+        '[[word]]\ntext = "saint"\nreligious = {}\n\n'
+        '[[word]]\ntext = "zzq"\nreligious = { attaches = ["saint"] }')})
+    assert c["TITLE_PHRASES"] == frozenset({"zzq saint"})
+
+
+@pytest.mark.parametrize("saint", [
+    "", '[[word]]\ntext = "saint"\nreligious = { default = false }\n\n'],
+    ids=["no-title-word", "title-reading-off"])
+def test_attaches_refuses_another_kind_that_is_no_live_title_word(
+        saint: str) -> None:
+    # the half of the check the per-reading form refused before #913
+    # widened it: a kind of another category with no live title word
+    # of that name
+    with pytest.raises(build.VocabError,
+                       match="attaches names 'saint', which is not a title "
+                             "kind or a title word"):
+        _compile({"en.toml": _w(
+            saint + '[[word]]\ntext = "zzq"\nreligious = '
+            '{ attaches = ["saint"] }')})
+
+
 # ------------------------------------------------- [rules] (#754, 4f)
 def test_a_rules_table_compiles_to_sorted_pairs_a_module_holds() -> None:
     pool = build.load({"ru.toml": _w('[rules]\ntwo_family_names = true\n'
