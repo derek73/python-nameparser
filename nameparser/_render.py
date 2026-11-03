@@ -30,7 +30,7 @@ from nameparser._types import (_NAME_ORDERS, FOLDED_TAG,
 _SPACES = re.compile(r"\s+")
 _SPACE_BEFORE_COMMA = re.compile(r"\s+,")
 _COMMA_CHAR = re.compile(r"[,،，]")  # ASCII, Arabic, fullwidth
-_MAC = re.compile(r"^(ma?c)(\w{2,})", re.IGNORECASE)
+_MC = re.compile(r"^(mc)(\w{2,})", re.IGNORECASE)
 _WORD = re.compile(r"(\w|\.)+")
 _NAME_RUN = re.compile(r"\w+")
 
@@ -485,10 +485,11 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
               lex: Lexicon) -> str:
     # Clause order: the particle/connective arm, then the exceptions
     # map as a mask, then the acronym clause (listed or by shape),
-    # then the numeral clause, then Mac/Mc and title case per
-    # full-stop chunk (_title_chunks; v1's was str.capitalize() on the
-    # whole word). v1's cap_word had the first, second, fifth and a
-    # plainer sixth in this order;
+    # then the numeral clause, then, per full-stop chunk, the chunk's
+    # own mask, the Mc prefix and title case (_title_chunks; v1's was
+    # str.capitalize() on the whole word). v1's cap_word had the first,
+    # second, a wider fifth (Mac as well as Mc) and a plainer sixth in
+    # this order;
     # the mask ahead of the acronym clause is what gives bsc 'BSc'
     # though bsc is a listed acronym too.
     normalized = _normalize(word)
@@ -647,36 +648,54 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
     # through ('Carod i' forced -> 'Carod I').
     if role is Role.SUFFIX and _ROMAN.match(normalized):
         return word.upper()
-    return _title_chunks(word)
+    return _title_chunks(word, lex)
 
 
 # rules/R4: "Each run of letters a full stop divides is written as a
 # word of its own" and "A word that opens with a modifier letter that
 # has no case" "takes its capital on the letter after that mark"; "A
 # digit is not passed over that way". This is the fall-through: the
-# Mac/Mc convention and title case, for a word no clause above
-# claimed, asked of each chunk. decisions/R4 (#838).
-def _title_chunks(word: str) -> str:
+# mask, the Mc convention and title case, for a word no clause above
+# claimed, asked of each chunk. decisions/R4 (#838, #1014).
+def _title_chunks(word: str, lex: Lexicon) -> str:
     """`word` repaired chunk by chunk between its full stops, so a
     chunk after one gets what a whole word gets ('j.mcdonald' is
-    'J.McDonald')."""
-    return ".".join(_title_chunk(chunk) for chunk in word.split("."))
+    'J.McDonald', 'j.macdonald' 'J.MacDonald' by its mask). The whole
+    word's mask was asked before the split; a chunk's is asked here
+    only where the word has a full stop to split at."""
+    chunks = word.split(".")
+    if len(chunks) == 1:
+        return _title_chunk(word)
+    return ".".join(_masked_chunk(chunk, lex) for chunk in chunks)
+
+
+def _masked_chunk(chunk: str, lex: Lexicon) -> str:
+    """`chunk` under its own mask, as a word standing alone takes it,
+    else _title_chunk's repair."""
+    mask = lex.capitalization_exceptions_map.get(_normalize(chunk))
+    if mask is not None:
+        masked = _apply_mask(chunk, mask)
+        if masked is not None:
+            return masked
+    return _title_chunk(chunk)
 
 
 def _title_chunk(chunk: str) -> str:
     """`chunk` title-cased from its first character that is not a
     modifier letter (category Lm), which also holds the apostrophe
-    'ŉ' upper-cases into, so 'ʼNa' is a fixpoint of repair. The Mac/Mc
+    'ŉ' upper-cases into, so 'ʼNa' is a fixpoint of repair. The Mc
     prefix is decided on the composed spelling, so a chunk typed
-    decomposed (NFD) is read as its composed twin is: 'mac' + 'e' +
+    decomposed (NFD) is read as its composed twin is: 'mc' + 'e' +
     U+0301 + 'e' fails the regex's \\w{2,} at the mark (#542). The
     name run after the prefix is then capitalized as written, running
-    on through its marks the way _sub_words does."""
+    on through its marks the way _sub_words does. A Mac prefix is
+    title-cased like any other word: a Mac name its bearers write
+    MacX is a mask (#1014)."""
     lead = _past_modifiers(chunk, 0)
-    mac = _MAC.match(unicodedata.normalize("NFC", chunk[lead:]))
-    if not mac:
+    mc = _MC.match(unicodedata.normalize("NFC", chunk[lead:]))
+    if not mc:
         return chunk[:lead] + chunk[lead:].capitalize()
-    cut = end = lead + len(mac.group(1))
+    cut = end = lead + len(mc.group(1))
     while run := _NAME_RUN.match(chunk, end):
         end = _past_marks(chunk, run.end())
     at = _past_modifiers(chunk, cut)
@@ -748,7 +767,7 @@ def _joined_whole(text: str, role: Role, lex: Lexicon) -> str | None:
 def _cap_text(text: str, role: Role, tags: frozenset[str],
               lex: Lexicon) -> str:
     # word-by-word within the token text: hyphenated names capitalize
-    # both sides ("macdole-eisenhower" -> "MacDole-Eisenhower"). The
+    # both sides ("mcdole-eisenhower" -> "McDole-Eisenhower"). The
     # per-word walk is also why an UNCLASSIFIED token gets the
     # vocabulary asked per word: the parse would have made one token
     # per word of that text, so this is the granularity its answer
@@ -914,7 +933,7 @@ def capitalized(name: ParsedName, lexicon: Lexicon | None, *,
     word on the second pass and comes back unchanged.
     A name typed decomposed (NFD) repairs as its composed twin does
     and keeps the form it was typed in: the splitter and the mask read
-    a mark as part of the letter before it, and the shape tests (Mac/Mc,
+    a mark as part of the letter before it, and the shape tests (Mc,
     the initial tests) ask about the composed spelling."""
     if lexicon is not None and not isinstance(lexicon, Lexicon):
         # eager, before the gate: a garbage argument must not become a

@@ -321,10 +321,17 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # orders; 1451 -> 1452 on 2026-10-30, #954's 'bin Ali Hassan', which
     # carries its own policy, one particle-or-given claim; 1452 -> 1476
     # the same day, #965's eight KC rows, each reporting suffix-or-name
-    # under three orders.
-    assert claims == 1476, (
-        f"the field sweep checks {claims} claims, recorded as 1476 on "
-        f"2026-10-30")
+    # under three orders; 1476 -> 1482 on 2026-11-02, rules/C3's
+    # leading-credential rows 'Dr. Md Rahman, Ing' (suffix-or-name) and
+    # 'Sr. van der Berg, PhD' (particle-or-given), each under three
+    # orders; 1482 -> 1488 the same day, #1019's 'John Smith MD Jones'
+    # and 'Smith, John Md Jones', each reporting suffix-or-name under
+    # three orders; 1488 -> 1503 the same day, #1019's review rows,
+    # five credential runs ('md', 'M.d.', 'M.a.', 'Pa-c', one case)
+    # each reporting suffix-or-name under three orders.
+    assert claims == 1503, (
+        f"the field sweep checks {claims} claims, recorded as 1503 on "
+        f"2026-11-02")
 
 
 #: The kinds that report a fork between two readings of a word, so carry
@@ -672,8 +679,13 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # as the suffix, each under the three orders; 443 -> 452 and 302 ->
     # 305 on 2026-10-30, #965's KC rows under the three orders, nine
     # stand-ins landing in the alternative's field and three keeping the
-    # taken one
-    assert (checked, skipped) == (452, 305), (checked, skipped)
+    # taken one; 452 -> 455 on 2026-11-02, rules/C3's leading-credential
+    # rows, three stand-ins landing in the alternative's field; 305 ->
+    # 311 the same day, #1019's 'John Smith MD Jones' and 'Smith, John
+    # Md Jones' under the three orders, each stand-in keeping the taken
+    # one; 311 -> 326 the same day, #1019's review rows, five credential
+    # runs under the three orders, each stand-in keeping the taken one
+    assert (checked, skipped) == (455, 326), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:

@@ -771,6 +771,17 @@ def test_a_given_name_written_short_compiles_and_is_not_inert() -> None:
     assert _sets_fed("given") == set()
 
 
+def test_a_surnames_case_mask_compiles_and_is_not_inert() -> None:
+    # #1014: case repair title-cases Mac, so a Mac surname its bearers
+    # write with the inner capital carries a mask on its family reading;
+    # the entry, holding only that reading, compiles (`_compile` turns
+    # the inert warning into an error) and feeds no set but the masks
+    c = _compile({"en.toml": _w('[[word]]\ntext = "macgregor"\nfamily = { note = "x", cased = "MacGregor" }')})
+    assert c["CAPITALIZATION_EXCEPTIONS"] == {"macgregor": "MacGregor"}
+    assert _sets_fed("family", '{ note = "x", cased = "MacGregor" }', "macgregor") == {
+        "CAPITALIZATION_EXCEPTIONS"}
+
+
 def test_a_check_failure_names_the_refresh_command_in_main(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
     out = tmp_path / "_compiled.py"

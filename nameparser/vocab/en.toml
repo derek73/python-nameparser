@@ -5144,3 +5144,171 @@ given = { same_as = "samuel", note = "Samuel written short; no US SSA year reach
 [[word]]
 text = "thos"
 given = { us_ssa = 166, as_of = 2026-10-26, same_as = "thomas", note = "Thomas written short; US SSA male births only; Wikidata labels no one Thos as a given name" }
+
+[[word]]
+text = "macarthur"
+family = { cased = "MacArthur", note = "#1014: written MacArthur 14 times and Macarthur 4 in the ORCID, UK Electoral Commission, GOV.UK and ClinicalTrials.gov local corpora (2026-11-02); without the mask case repair title-cases it" }
+
+[[word]]
+text = "macaskill"
+family = { cased = "MacAskill", note = "#1014: written MacAskill 5 times and Macaskill 3 in the ORCID, UK Electoral Commission, GOV.UK and ClinicalTrials.gov local corpora (2026-11-02); without the mask case repair title-cases it" }
+
+[[word]]
+text = "maccallum"
+family = { cased = "MacCallum", note = "#1014: written MacCallum 5 times and Maccallum 0 in the ORCID, UK Electoral Commission, GOV.UK and ClinicalTrials.gov local corpora (2026-11-02); without the mask case repair title-cases it" }
+
+[[word]]
+text = "maccarthy"
+family = { cased = "MacCarthy", note = "#1014: written MacCarthy 10 times and Maccarthy 0 in the ORCID, UK Electoral Commission, GOV.UK and ClinicalTrials.gov local corpora (2026-11-02); without the mask case repair title-cases it" }
+
+[[word]]
+text = "maccormick"
+family = { cased = "MacCormick", note = "#1014: written MacCormick 3 times and Maccormick 0 in the ORCID, UK Electoral Commission, GOV.UK and ClinicalTrials.gov local corpora (2026-11-02); without the mask case repair title-cases it" }
+
+[[word]]
+text = "maccready"
+family = { cased = "MacCready", note = "#1014: written MacCready 3 times and Maccready 0 in the ORCID, UK Electoral Commission, GOV.UK and ClinicalTrials.gov local corpora (2026-11-02); without the mask case repair title-cases it" }
+
+[[word]]
+text = "macdermid"
+family = { cased = "MacDermid", note = "#1014: written MacDermid 20 times and Macdermid 2 in the ORCID, UK Electoral Commission, GOV.UK and ClinicalTrials.gov local corpora (2026-11-02); without the mask case repair title-cases it" }
+
+[[word]]
+text = "macdermott"
+family = { cased = "MacDermott", note = "#1014: written MacDermott 4 times and Macdermott 0 in the ORCID, UK Electoral Commission, GOV.UK and ClinicalTrials.gov local corpora (2026-11-02); without the mask case repair title-cases it" }
+
+[[word]]
+text = "macdiarmid"
+family = { cased = "MacDiarmid", note = "#1014: written MacDiarmid 8 times and Macdiarmid 1 in the ORCID, UK Electoral Commission, GOV.UK and ClinicalTrials.gov local corpora (2026-11-02); without the mask case repair title-cases it" }
+
+[[word]]
+text = "macdonald"
+family = { cased = "MacDonald", note = "#1014: written MacDonald 143 times and Macdonald 77 in the ORCID, UK Electoral Commission, GOV.UK and ClinicalTrials.gov local corpora (2026-11-02); without the mask case repair title-cases it" }
+
+[[word]]
+text = "macdonell"
+family = { cased = "MacDonell", note = "#1014: written MacDonell 4 times and Macdonell 0 in the ORCID, UK Electoral Commission, GOV.UK and ClinicalTrials.gov local corpora (2026-11-02); without the mask case repair title-cases it" }
+
+[[word]]
+text = "macdougall"
+family = { cased = "MacDougall", note = "#1014: written MacDougall 21 times and Macdougall 7 in the ORCID, UK Electoral Commission, GOV.UK and ClinicalTrials.gov local corpora (2026-11-02); without the mask case repair title-cases it" }
+
+[[word]]
+text = "macfarland"
+family = { cased = "MacFarland", note = "#1014: written MacFarland 3 times and Macfarland 0 in the ORCID, UK Electoral Commission, GOV.UK and ClinicalTrials.gov local corpora (2026-11-02); without the mask case repair title-cases it" }
+
+[[word]]
+text = "macgillivray"
+family = { cased = "MacGillivray", note = "#1014: written MacGillivray 3 times and Macgillivray 0 in the ORCID, UK Electoral Commission, GOV.UK and ClinicalTrials.gov local corpora (2026-11-02); without the mask case repair title-cases it" }
+
+[[word]]
+text = "macgowan"
+family = { cased = "MacGowan", note = "#1014: written MacGowan 2 times and Macgowan 1 in the ORCID, UK Electoral Commission, GOV.UK and ClinicalTrials.gov local corpora (2026-11-02); without the mask case repair title-cases it" }
+
+[[word]]
+text = "macgregor"
+family = { cased = "MacGregor", note = "#1014: written MacGregor 24 times and Macgregor 4 in the ORCID, UK Electoral Commission, GOV.UK and ClinicalTrials.gov local corpora (2026-11-02); without the mask case repair title-cases it" }
+
+[[word]]
+text = "macinnis"
+family = { cased = "MacInnis", note = "#1014: written MacInnis 4 times and Macinnis 0 in the ORCID, UK Electoral Commission, GOV.UK and ClinicalTrials.gov local corpora (2026-11-02); without the mask case repair title-cases it" }
+
+[[word]]
+text = "macintyre"
+family = { cased = "MacIntyre", note = "#1014: written MacIntyre 18 times and Macintyre 8 in the ORCID, UK Electoral Commission, GOV.UK and ClinicalTrials.gov local corpora (2026-11-02); without the mask case repair title-cases it" }
+
+[[word]]
+text = "macisaac"
+family = { cased = "MacIsaac", note = "#1014: written MacIsaac 3 times and Macisaac 0 in the ORCID, UK Electoral Commission, GOV.UK and ClinicalTrials.gov local corpora (2026-11-02); without the mask case repair title-cases it" }
+
+[[word]]
+text = "maciver"
+family = { cased = "MacIver", note = "#1014: written MacIver 2 times and Maciver 1 in the ORCID, UK Electoral Commission, GOV.UK and ClinicalTrials.gov local corpora (2026-11-02); without the mask case repair title-cases it" }
+
+[[word]]
+text = "mackechnie"
+family = { cased = "MacKechnie", note = "#1014: written MacKechnie 3 times and Mackechnie 1 in the ORCID, UK Electoral Commission, GOV.UK and ClinicalTrials.gov local corpora (2026-11-02); without the mask case repair title-cases it" }
+
+[[word]]
+text = "mackillop"
+family = { cased = "MacKillop", note = "#1014: written MacKillop 10 times and Mackillop 3 in the ORCID, UK Electoral Commission, GOV.UK and ClinicalTrials.gov local corpora (2026-11-02); without the mask case repair title-cases it" }
+
+[[word]]
+text = "mackinnon"
+family = { cased = "MacKinnon", note = "#1014: written MacKinnon 11 times and Mackinnon 6 in the ORCID, UK Electoral Commission, GOV.UK and ClinicalTrials.gov local corpora (2026-11-02); without the mask case repair title-cases it" }
+
+[[word]]
+text = "mackrill"
+family = { cased = "MacKrill", note = "#1014: written MacKrill 2 times and Mackrill 1 in the ORCID, UK Electoral Commission, GOV.UK and ClinicalTrials.gov local corpora (2026-11-02); without the mask case repair title-cases it" }
+
+[[word]]
+text = "maclaren"
+family = { cased = "MacLaren", note = "#1014: written MacLaren 16 times and Maclaren 2 in the ORCID, UK Electoral Commission, GOV.UK and ClinicalTrials.gov local corpora (2026-11-02); without the mask case repair title-cases it" }
+
+[[word]]
+text = "maclaughlin"
+family = { cased = "MacLaughlin", note = "#1014: written MacLaughlin 4 times and Maclaughlin 1 in the ORCID, UK Electoral Commission, GOV.UK and ClinicalTrials.gov local corpora (2026-11-02); without the mask case repair title-cases it" }
+
+[[word]]
+text = "maclean"
+family = { cased = "MacLean", note = "#1014: written MacLean 23 times and Maclean 18 in the ORCID, UK Electoral Commission, GOV.UK and ClinicalTrials.gov local corpora (2026-11-02); without the mask case repair title-cases it" }
+
+[[word]]
+text = "maclellan"
+family = { cased = "MacLellan", note = "#1014: written MacLellan 3 times and Maclellan 1 in the ORCID, UK Electoral Commission, GOV.UK and ClinicalTrials.gov local corpora (2026-11-02); without the mask case repair title-cases it" }
+
+[[word]]
+text = "maclennan"
+family = { cased = "MacLennan", note = "#1014: written MacLennan 9 times and Maclennan 1 in the ORCID, UK Electoral Commission, GOV.UK and ClinicalTrials.gov local corpora (2026-11-02); without the mask case repair title-cases it" }
+
+[[word]]
+text = "macleod"
+family = { cased = "MacLeod", note = "#1014: written MacLeod 39 times and Macleod 18 in the ORCID, UK Electoral Commission, GOV.UK and ClinicalTrials.gov local corpora (2026-11-02); without the mask case repair title-cases it" }
+
+[[word]]
+text = "macmahon"
+family = { cased = "MacMahon", note = "#1014: written MacMahon 9 times and Macmahon 0 in the ORCID, UK Electoral Commission, GOV.UK and ClinicalTrials.gov local corpora (2026-11-02); without the mask case repair title-cases it" }
+
+[[word]]
+text = "macmanus"
+family = { cased = "MacManus", note = "#1014: written MacManus 5 times and Macmanus 0 in the ORCID, UK Electoral Commission, GOV.UK and ClinicalTrials.gov local corpora (2026-11-02); without the mask case repair title-cases it" }
+
+[[word]]
+text = "macmaster"
+family = { cased = "MacMaster", note = "#1014: written MacMaster 4 times and Macmaster 0 in the ORCID, UK Electoral Commission, GOV.UK and ClinicalTrials.gov local corpora (2026-11-02); without the mask case repair title-cases it" }
+
+[[word]]
+text = "macmillan"
+family = { cased = "MacMillan", note = "#1014: written MacMillan 27 times and Macmillan 9 in the ORCID, UK Electoral Commission, GOV.UK and ClinicalTrials.gov local corpora (2026-11-02); without the mask case repair title-cases it" }
+
+[[word]]
+text = "macneil"
+family = { cased = "MacNeil", note = "#1014: written MacNeil 16 times and Macneil 0 in the ORCID, UK Electoral Commission, GOV.UK and ClinicalTrials.gov local corpora (2026-11-02); without the mask case repair title-cases it" }
+
+[[word]]
+text = "macneill"
+family = { cased = "MacNeill", note = "#1014: written MacNeill 8 times and Macneill 0 in the ORCID, UK Electoral Commission, GOV.UK and ClinicalTrials.gov local corpora (2026-11-02); without the mask case repair title-cases it" }
+
+[[word]]
+text = "macphail"
+family = { cased = "MacPhail", note = "#1014: written MacPhail 4 times and Macphail 0 in the ORCID, UK Electoral Commission, GOV.UK and ClinicalTrials.gov local corpora (2026-11-02); without the mask case repair title-cases it" }
+
+[[word]]
+text = "macphee"
+family = { cased = "MacPhee", note = "#1014: written MacPhee 2 times and Macphee 1 in the ORCID, UK Electoral Commission, GOV.UK and ClinicalTrials.gov local corpora (2026-11-02); without the mask case repair title-cases it" }
+
+[[word]]
+text = "macqueen"
+family = { cased = "MacQueen", note = "#1014: written MacQueen 7 times and Macqueen 1 in the ORCID, UK Electoral Commission, GOV.UK and ClinicalTrials.gov local corpora (2026-11-02); without the mask case repair title-cases it" }
+
+[[word]]
+text = "macrae"
+family = { cased = "MacRae", note = "#1014: written MacRae 19 times and Macrae 7 in the ORCID, UK Electoral Commission, GOV.UK and ClinicalTrials.gov local corpora (2026-11-02); without the mask case repair title-cases it" }
+
+[[word]]
+text = "macsween"
+family = { cased = "MacSween", note = "#1014: written MacSween 3 times and Macsween 0 in the ORCID, UK Electoral Commission, GOV.UK and ClinicalTrials.gov local corpora (2026-11-02); without the mask case repair title-cases it" }
+
+[[word]]
+text = "mactaggart"
+family = { cased = "MacTaggart", note = "#1014: written MacTaggart 8 times and Mactaggart 5 in the ORCID, UK Electoral Commission, GOV.UK and ClinicalTrials.gov local corpora (2026-11-02); without the mask case repair title-cases it" }

@@ -1460,15 +1460,17 @@ def behind_the_merged_credential(rest: Sequence[int], p: int,
 def _name_word_behind(piece: Sequence[int], ptags: Set[str],
                       tokens: Sequence[WorkToken],
                       one_case: bool | None) -> bool:
-    """Whether the piece behind a member its capitals settle reads as a
-    word of the name rather than a further credential, asked of its
+    """Whether the piece behind a member its capitals settle, or behind
+    a credential acronym written in Title case, reads as a word of the
+    name rather than a further credential, asked of its
     first word, since group has merged particle runs and connective
     joins by then ('de la Vega', 'Ortega y Gasset'): a particle, a word
     of a script with no case, or a cased word not written in lower case
     (Title case or capitals, title vocabulary included), that is no
     suffix word and no member its own capitals settle. A credential
     merged across a space ('Pharm D', 'Ph. D.') is no name word. Only
-    `run_start` asks it, of a settled member."""
+    `run_start` asks it, of a settled member or a credential acronym
+    written in Title case (`acronym_in_title_case`)."""
     if "suffix" in ptags or "split" in ptags:
         return False
     tok = tokens[piece[0]]
@@ -1481,6 +1483,29 @@ def _name_word_behind(piece: Sequence[int], ptags: Set[str],
             and SHAPE_ACRONYM_TAG not in tok.tags
             and not (AMBIGUOUS_ACRONYM_TAG in tok.tags
                      and settled_by_case(tok, one_case)))
+
+
+# rules/S8: "nor does a credential acronym written in Title case" --
+# the clause this implements (decisions/S8, #1019)
+def acronym_in_title_case(token: WorkToken) -> bool:
+    """Whether an unambiguous credential ACRONYM is written as a name
+    word is: one run of letters, a trailing period allowed, its first
+    letter a capital and every later one lower case ('Md', 'Phd',
+    'Md.'), where a credential's writing has capitals after the first
+    letter ('MD', 'PhD') or periods or joiners inside it ('M.D.',
+    'M.d.', 'Pa-c'). The case mask is not consulted, so 'Bt', 'Kt' and
+    'Knt', whose own masks are Title case, read as names here too. A
+    suffix WORD (a generation, honorific or other word written out:
+    'Jr', 'Esq', 'III', 'Старший') has no capitals of its own for Title
+    case to drop, so its case says nothing and it is not asked. Not
+    `_vocab.written_as_a_name`, #564's wider case contrast, which
+    admits 'McDonald'. Only `run_start` asks it, where a name word
+    stands behind the acronym."""
+    if "vocab:suffix" not in token.tags or "vocab:suffix-word" in token.tags:
+        return False
+    stem = token.text.rstrip(".")
+    return (len(stem) >= 2 and stem.isalpha() and stem[0].isupper()
+            and stem[1:].islower())
 
 
 # rules/S8: "A credential after the name core starts a run to the
@@ -1550,9 +1575,13 @@ def run_start(rest: Sequence[int], names: int,
                              # the walk leaves out (#827)
                              and not behind_the_merged_credential(
                                  rest, p + 1, ptags)
-                             and AMBIGUOUS_ACRONYM_TAG in tags
-                             and settled_by_case(tokens[pieces[q][0]],
-                                                 one_case)
+                             and (AMBIGUOUS_ACRONYM_TAG in tags
+                                  and settled_by_case(tokens[pieces[q][0]],
+                                                      one_case)
+                                  # rules/S8: "nor does a credential
+                                  # acronym written in Title case" --
+                                  # the writing of a name word
+                                  or acronym_in_title_case(tokens[pieces[q][0]]))
                              and _name_word_behind(pieces[rest[p + 1]],
                                                    ptags[rest[p + 1]],
                                                    tokens, one_case))):

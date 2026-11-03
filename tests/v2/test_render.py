@@ -164,6 +164,7 @@ def test_default_str_includes_nickname_and_maiden() -> None:
     # space, a delimiter, a dropped marker word
     ("John Smith,, Jr.", None, "John Smith Jr."),
     ("John\u200bSmith", None, "John Smith"),
+    ("John\u2063Smith", None, "John Smith"),
     ("John (Jack) Smith", None, 'John "Jack" Smith'),
     ("Jane Smith née Jones, PhD", None, "Jane Smith (Jones) PhD"),
     ("Jane (née , Jones) Smith", None, 'Jane "née, Jones" Smith'),
@@ -656,7 +657,9 @@ def test_capitalized_all_lower_input_v1_parity() -> None:
     out = _lowercase_mac().capitalized()
     assert out.given == "Bob"
     assert out.middle == "V."
-    assert out.family == "de la MacDole-Eisenhower"  # particles stay lower
+    # particles stay lower; Mac title-cased, no mask recording
+    # 'macdole' (#1014, where 1.4.0 through 2.8.0 gave 'MacDole')
+    assert out.family == "de la Macdole-Eisenhower"
     assert out.suffix == "PhD"                       # exceptions map, a mask
     # same spans, new texts (provenance is a documented non-invariant)
     assert [t.span for t in out.tokens] == [t.span for t in _lowercase_mac().tokens]
@@ -671,12 +674,13 @@ def test_capitalized_all_upper_input() -> None:
 
 
 def test_capitalized_preserves_mixed_case_unless_forced() -> None:
-    pn = _pn("Shirley Maclaine", [
-        Token("Shirley", Span(0, 7), Role.GIVEN),
-        Token("Maclaine", Span(8, 16), Role.FAMILY),
+    pn = _pn("Ronald Macdonald", [
+        Token("Ronald", Span(0, 6), Role.GIVEN),
+        Token("Macdonald", Span(7, 16), Role.FAMILY),
     ])
     assert pn.capitalized() == pn                       # untouched
-    assert pn.capitalized(force=True).family == "MacLaine"
+    # forced, the vocabulary's mask applies (#1014)
+    assert pn.capitalized(force=True).family == "MacDonald"
 
 
 @pytest.mark.parametrize("text", ["JOHN SMITH MA", "john smith ma",
@@ -821,7 +825,7 @@ def test_a_word_takes_its_capital_past_a_caseless_lead() -> None:
     once = parse("ŉa smith").capitalized()
     assert once.given == "ʼNa"
     assert once.capitalized(force=True) == once
-    # and inside the Mac/Mc prefix's name run, which the chunk step
+    # and inside the Mc prefix's name run, which the chunk step
     # repairs too
     mac = parse("mcŉa smith").capitalized()
     assert mac.given == "McʼNa"
@@ -851,7 +855,7 @@ def test_a_recorded_casing_keeps_an_abbreviations_ending() -> None:
 def test_capitalized_with_explicit_lexicon() -> None:
     # empty lexicon: no particle rule, no exceptions -> plain capitalize
     out = _lowercase_mac().capitalized(Lexicon.empty())
-    assert out.family == "De La MacDole-Eisenhower"
+    assert out.family == "De La Macdole-Eisenhower"
     assert out.suffix == "Phd"
 
 
@@ -1175,6 +1179,41 @@ def test_a_decomposed_mask_value_reads_the_same_split_as_composed() -> None:
                                "john smith pé.x.").suffix == "Pé.X."
 
 
+
+@pytest.mark.parametrize(("text", "repaired"), [
+    # #1014: each run a full stop divides asks its own mask, first,
+    # last or both, as a word standing alone does (rules/R4)
+    ("J.MACDONALD SMITH", "J.MacDonald Smith"),
+    ("JOHN MACDONALD.SMITH", "John MacDonald.Smith"),
+    ("JOHN MACDONALD.MACLEOD", "John MacDonald.MacLeod"),
+    # a chunk no mask records is title-cased, Mac included
+    ("J.MACHADO SMITH", "J.Machado Smith"),
+    # every mask, not only a surname's: a credential chunk too
+    ("john smith msc.ed.", "John Smith MSc.Ed."),
+    ("JOHN X.PHD", "John X.PhD"),
+    # a mask matches the whole run, never a prefix of it
+    ("JOHN MACDONALDS", "John Macdonalds"),
+])
+def test_a_chunk_after_a_full_stop_takes_its_own_mask(
+        text: str, repaired: str) -> None:
+    assert str(parse(text).capitalized()) == repaired
+
+
+def test_a_callers_mask_decides_a_mac_or_mc_name() -> None:
+    # #1014: Mac takes its inner capital only from a mask, so a caller's
+    # spelling decides it, on the whole word and on a chunk; and a mask
+    # outranks the Mc convention for a name it does not fit
+    default = Lexicon.default()
+    lex = dataclasses.replace(default, capitalization_exceptions=(
+        *default.capitalization_exceptions,
+        ("machale", "MacHale"), ("mchunu", "Mchunu")))
+    for text, plain, masked in (
+            ("SEAN MACHALE", "Sean Machale", "Sean MacHale"),
+            ("J.MACHALE SMITH", "J.Machale Smith", "J.MacHale Smith"),
+            ("JOHN MCHUNU", "John McHunu", "John Mchunu")):
+        assert str(parse(text).capitalized()) == plain
+        assert str(parse(text).capitalized(lex)) == masked
+
 def _nfc_texts(name: ParsedName) -> list[str]:
     return [unicodedata.normalize("NFC", t.text) for t in name.tokens]
 
@@ -1182,10 +1221,10 @@ def _nfc_texts(name: ParsedName) -> list[str]:
 @pytest.mark.parametrize(("pairs", "text"), [
     # the plain word clause: 'a' after the mark is not a word of its own
     ((), "josé garcía"),
-    # Mac/Mc, decided on the composed spelling: 'mac' + 'ée' passes
-    # _MAC's \w{2,} composed and fails it at the mark decomposed
-    ((), "macée smith"),
-    ((), "MACÉINRÍ SMITH"),
+    # Mc, decided on the composed spelling: 'mc' + 'ée' passes _MC's
+    # \w{2,} composed and fails it at the mark decomposed
+    ((), "mcée smith"),
+    ((), "MCÉINRÍ SMITH"),
     # the split-off-initial override reads the full stop past the mark
     ((("éx", "éx"),), "john smith é.x."),
     # a letter after a mark still has the letter before it as neighbour
@@ -1198,7 +1237,7 @@ def test_a_decomposed_word_repairs_as_its_composed_twin(
         pairs: tuple[tuple[str, str], ...], text: str) -> None:
     """#542: a combining mark belongs to the letter before it, so every
     clause of case repair reads a decomposed (NFD) word as it reads the
-    composed one -- the word splitter, the Mac/Mc clause, and the mask's
+    composed one -- the word splitter, the Mc clause, and the mask's
     neighbour tests -- and the output keeps the decomposed form. These
     are the shapes the corpus walk in test_properties.py does not
     reach. The two mask rows guard _beside: 'é.x.' agreed before the
@@ -1476,7 +1515,7 @@ def test_a_link_inside_a_hyphenated_word_keeps_its_lowercase() -> None:
             ("juan garcia-lopez-y", "Juan Garcia-Lopez-Y"),
             # non-link parts inside a THREE-part hyphenated token still
             # get the full per-word repair -- the particle arm
-            # ("de"/"la") and the Mac rule ("mcnabb") each apply per
+            # ("de"/"la") and the Mc rule ("mcnabb") each apply per
             # part, not only to a two-part compound
             ("juan garcia-de-la-vega", "Juan Garcia-de-la-Vega"),
             ("donovan mcnabb-y-smith", "Donovan McNabb-y-Smith"),
