@@ -911,8 +911,8 @@ parenthesized nicknames that happen to be credentials:
 
 .. doctest::
 
-    >>> parse("Andrew Perkins (MBA)").suffix
-    'MBA'
+    >>> parse("Andrew Perkins (PhD)").suffix
+    'PhD'
     >>> parse("Andrew Perkins (Ret.)").suffix
     'Ret.'
 

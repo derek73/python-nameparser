@@ -16,8 +16,8 @@
 
 - **A clause of two or more words** is not suffix-shaped, whatever it holds, unless an ASCII period stands last before its closer: suffix-shaped is asked of the whole clause, so a run of credentials keeps its brackets or quotes and reads as its pair reads it, a nickname in a nickname pair.
   ```
-  "John Smith (PhD MBA)"      →  nickname="PhD MBA"
-  "John Smith (PhD MBA)"      →  ambiguities=()
+  "John Smith (PhD MSc)"      →  nickname="PhD MSc"
+  "John Smith (PhD MSc)"      →  ambiguities=()
   "John Smith (MA PhD)"       →  ambiguities=("suffix-or-nickname",)
   "John Smith (MBA PhD.)"     →  suffix="MBA PhD."  · boundary
   ```

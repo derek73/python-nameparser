@@ -1971,6 +1971,7 @@ SUFFIX_ACRONYMS_AMBIGUOUS: frozenset[str] = frozenset({
     'lac',
     'lat',
     'ma',
+    'mba',
     'meng',
     'mot',
     'obi',

@@ -30,9 +30,9 @@
 
 **Precedence:**
 
-- **Suffix-shaped content** ("Andrew Perkins (MBA)"): S1 takes it first, and the clause is no maiden name.
+- **Suffix-shaped content** ("Andrew Perkins (PhD)"): S1 takes it first, and the clause is no maiden name.
   ```
-  "Andrew Perkins (MBA)"  maiden-parens  →  suffix="MBA"  · boundary
+  "Andrew Perkins (PhD)"  maiden-parens  →  suffix="PhD"  · boundary
   ```
 - **A pair configured for both maiden and nickname names** reads maiden: this rule wins over N1.
 

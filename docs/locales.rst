@@ -280,8 +280,8 @@ ancestors' as above, plus every word written in a script other than
 Latin (the Korean, Japanese and Chinese honorifics, the Cyrillic and
 Devanagari titles), which selects itself by its script, and the words
 every language writes alike, in the shared ``mul`` file, among them
-``Dr``, ``Prof``, ``Mr``, ``Mrs``, the degrees ``PhD``, ``MSc``, ``MBA``,
-``MPH`` and ``BSc``, and the numerals. Every other
+``Dr``, ``Prof``, ``Mr``, ``Mrs``, ``Ms`` (the salutation and the degree), ``Miss``,
+the degrees ``PhD``, ``MSc``, ``MBA``, ``MPH`` and ``BSc``, and the numerals. Every other
 language's words leave, and a word none of these holds is read as a
 name word:
 
@@ -310,9 +310,9 @@ drops from every name:
   stay (``Kim Min Jun, PhD, MSc`` keeps both credentials), but the rest
   of the English credentials (``Kim Min Jun, MD`` reads given ``MD``,
   ``MD`` staying English's since a leading ``Md`` abbreviates Muhammad),
-  a bare ``Ms``, and an immigrant's particle from another language are
+  a bare ``Mx``, and an immigrant's particle from another language are
   read as name words. A shape still reads as it does by default:
-  ``Ms.``, with its period, is a title. Where English context is part
+  ``Mx.``, with its period, is a title. Where English context is part
   of the data, choose ``en`` too, which brings back its words and its
   costs alike:
 
