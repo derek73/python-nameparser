@@ -3125,6 +3125,7 @@
 {"name": "Ram Bahadur B.K.", "given": "Ram", "middle": "Bahadur", "family": "B.K.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "R. B. B."}
 {"name": "Ram Bahadur B.K., PhD", "given": "Ram", "middle": "Bahadur", "family": "B.K.", "suffix": "PhD", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "R. B. B."}
 {"name": "Ram Bahadur PhD B.K.", "given": "Ram", "family": "Bahadur", "suffix": "PhD B.K.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "R. B."}
+{"name": "Ram Das महाराज", "given": "Ram", "family": "Das", "suffix": "महाराज", "initials": "R. D."}
 {"name": "Ram KC", "given": "Ram", "family": "KC", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "R. K."}
 {"name": "Ramadhan Karta Hadimadja", "given": "Ramadhan", "middle": "Karta", "family": "Hadimadja", "initials": "R. K. H."}
 {"name": "Ramon Ferran i Pagès", "given": "Ramon", "family": "Ferran i Pagès", "initials": "R. F. P."}
@@ -6293,14 +6294,14 @@
 {"name": "佐藤 花子 \"旧姓・田中\" (旧姓 鈴木)", "given": "花子", "family": "佐藤", "nickname": "旧姓 田中", "maiden": "鈴木"}
 {"name": "佐藤グレース恵子", "order": "FAMILY_FIRST", "family": "佐藤グレース恵子"}
 {"name": "佐藤グレース恵子さん", "order": "FAMILY_FIRST", "family": "佐藤グレース恵子", "suffix": "さん", "honorifics": "さん"}
-{"name": "佐藤恵子 国会議員", "family": "佐藤恵子", "suffix": "国会議員", "honorifics": "国会議員"}
-{"name": "佐藤恵子国会議員", "family": "佐藤恵子", "suffix": "国会議員", "honorifics": "国会議員"}
+{"name": "佐藤恵子 国会議員", "family": "佐藤恵子", "suffix": "国会議員"}
+{"name": "佐藤恵子国会議員", "family": "佐藤恵子", "suffix": "国会議員"}
 {"name": "何炅", "family": "何炅"}
 {"name": "何瑞麟", "family": "何瑞麟"}
 {"name": "俊年杰思陈", "family": "俊年杰思陈"}
 {"name": "候建国", "family": "候建国"}
-{"name": "先生子媚惠仪陈小，太平绅士", "family": "先生子媚惠仪陈小", "suffix": "太平绅士", "honorifics": "太平绅士"}
-{"name": "先生子媚惠儀陳小，太平紳士", "family": "先生子媚惠儀陳小", "suffix": "太平紳士", "honorifics": "太平紳士"}
+{"name": "先生子媚惠仪陈小，太平绅士", "family": "先生子媚惠仪陈小", "suffix": "太平绅士"}
+{"name": "先生子媚惠儀陳小，太平紳士", "family": "先生子媚惠儀陳小", "suffix": "太平紳士"}
 {"name": "克特·米勒", "given": "克特", "family": "米勒"}
 {"name": "内田誠", "family": "内田誠"}
 {"name": "内藤博文", "family": "内藤博文"}
@@ -6381,7 +6382,7 @@
 {"name": "山田｢ﾀﾛｰ｣太郎", "given": "太郎", "family": "山田", "nickname": "ﾀﾛｰ"}
 {"name": "山田ﾀﾛｳ", "family": "山田ﾀﾛｳ"}
 {"name": "岡正雄", "family": "岡正雄"}
-{"name": "岸田文雄衆議院議員", "family": "岸田文雄衆議院", "suffix": "議員", "honorifics": "議員"}
+{"name": "岸田文雄衆議院議員", "family": "岸田文雄衆議院", "suffix": "議員"}
 {"name": "崔晓桐", "family": "崔晓桐"}
 {"name": "布鲁赫·艾达·科妮莉亚·塞萨尔·马丁·冯", "order": "FAMILY_FIRST", "given": "艾达", "middle": "科妮莉亚 塞萨尔 马丁 冯", "family": "布鲁赫"}
 {"name": "平賀淳", "family": "平賀淳"}
@@ -6395,7 +6396,7 @@
 {"name": "張雅婷", "order": "FAMILY_FIRST", "family": "張雅婷"}
 {"name": "張韶涵", "family": "張韶涵"}
 {"name": "彭孟緝", "family": "彭孟緝"}
-{"name": "彭德威 议员", "family": "彭德威", "suffix": "议员", "honorifics": "议员"}
+{"name": "彭德威 议员", "family": "彭德威", "suffix": "议员"}
 {"name": "彭德威东升", "order": "FAMILY_FIRST", "family": "彭德威东升"}
 {"name": "怡君達印馮·陳二世博士，醫學博士", "given": "怡君達印馮", "family": "陳二世博士", "suffix": "醫學博士"}
 {"name": "恵子グレース佐藤ジュニアさん", "family": "恵子グレース佐藤ジュニア", "suffix": "さん", "honorifics": "さん"}
@@ -6464,13 +6465,14 @@
 {"name": "王先生, V.", "given": "V.", "family": "王", "suffix": "先生", "initials": "V.", "honorifics": "先生"}
 {"name": "王君", "family": "王君"}
 {"name": "王小明 先生", "family": "王小明", "suffix": "先生", "honorifics": "先生"}
+{"name": "王小明 議員", "family": "王小明", "suffix": "議員"}
 {"name": "王小明先生", "family": "王小明", "suffix": "先生", "honorifics": "先生"}
 {"name": "王氏", "family": "王氏"}
 {"name": "王鑫", "family": "王鑫"}
 {"name": "王镇", "family": "王镇"}
 {"name": "王雅婷婷婷", "order": "FAMILY_FIRST", "family": "王雅婷婷婷"}
-{"name": "王雅婷婷婷二世議員", "order": "FAMILY_FIRST", "family": "王雅婷婷婷二世", "suffix": "議員", "honorifics": "議員"}
-{"name": "王雅婷，議員", "family": "王雅婷", "suffix": "議員", "honorifics": "議員"}
+{"name": "王雅婷婷婷二世議員", "order": "FAMILY_FIRST", "family": "王雅婷婷婷二世", "suffix": "議員"}
+{"name": "王雅婷，議員", "family": "王雅婷", "suffix": "議員"}
 {"name": "王雪莹", "family": "王雪莹"}
 {"name": "田中 さん", "family": "田中", "suffix": "さん", "honorifics": "さん"}
 {"name": "田中 副社長", "given": "副", "family": "田中", "suffix": "社長", "honorifics": "社長"}
@@ -6550,7 +6552,7 @@
 {"name": "陈·陈·怡君·教授，小·达印·博士", "order": "FAMILY_FIRST", "given": "小", "middle": "达印", "family": "陈 陈 怡君", "suffix": "教授, 博士", "honorifics": "教授"}
 {"name": "陈俊年杰思", "order": "FAMILY_FIRST", "family": "陈俊年杰思"}
 {"name": "陈凯歌", "family": "陈凯歌"}
-{"name": "陈子媚先生，小惠仪太平绅士", "order": "FAMILY_FIRST", "given": "小惠仪", "family": "陈子媚先生", "suffix": "太平绅士", "honorifics": "太平绅士"}
+{"name": "陈子媚先生，小惠仪太平绅士", "order": "FAMILY_FIRST", "given": "小惠仪", "family": "陈子媚先生", "suffix": "太平绅士"}
 {"name": "陈子媚惠仪", "order": "FAMILY_FIRST", "family": "陈子媚惠仪"}
 {"name": "陈静", "family": "陈静"}
 {"name": "陳·怡君·達印", "order": "FAMILY_FIRST", "given": "怡君", "middle": "達印", "family": "陳"}
@@ -6558,7 +6560,7 @@
 {"name": "陳俊傑", "family": "陳俊傑"}
 {"name": "陳婷", "family": "陳婷"}
 {"name": "陳子媚 二世", "family": "陳子媚", "suffix": "二世", "generation": "二世"}
-{"name": "陳子媚先生，小惠儀太平紳士", "order": "FAMILY_FIRST", "given": "小惠儀", "family": "陳子媚先生", "suffix": "太平紳士", "honorifics": "太平紳士"}
+{"name": "陳子媚先生，小惠儀太平紳士", "order": "FAMILY_FIRST", "given": "小惠儀", "family": "陳子媚先生", "suffix": "太平紳士"}
 {"name": "陳子媚惠儀", "order": "FAMILY_FIRST", "family": "陳子媚惠儀"}
 {"name": "陳怡君 二世", "family": "陳怡君", "suffix": "二世", "generation": "二世"}
 {"name": "陳怡君二世", "family": "陳怡君", "suffix": "二世", "generation": "二世"}
@@ -6567,7 +6569,7 @@
 {"name": "雅婷", "family": "雅婷"}
 {"name": "雅婷", "order": "FAMILY_FIRST", "family": "雅婷"}
 {"name": "雅婷婷婷王", "family": "雅婷婷婷王"}
-{"name": "雅婷婷婷王二世先生，議員", "family": "雅婷婷婷王二世", "suffix": "先生, 議員", "honorifics": "先生, 議員"}
+{"name": "雅婷婷婷王二世先生，議員", "family": "雅婷婷婷王二世", "suffix": "先生, 議員", "honorifics": "先生"}
 {"name": "雅婷张", "family": "雅婷张"}
 {"name": "雅婷張", "family": "雅婷張"}
 {"name": "雅婷王", "family": "雅婷王"}

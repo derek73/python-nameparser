@@ -4,7 +4,7 @@
 
 **Then:** the suffix splits into three views that partition it, the generation holding its words read as a generation or an agnomen, the honorifics its words read as a form of address written after the name, and the credentials every other word, each joining its words in written order and separating two of them by a comma where the suffix holds one anywhere between them, R1's separator, and by a space where it holds none.
 
-**Because:** a generation numbers the bearer among relatives of the same name while a credential is earned, and CLDR's person-name fields keep the two apart and format them differently. A form of address after the name (`さん`, `씨`, `先生`) is neither: it is no part of the name on either side (W3), and CLDR's credentials field, which is written after a comma, does not hold it. A caller wanting one had to re-read the suffix against vocabulary they would have had to rebuild (#326), and all three are views, so the suffix field itself does not change.
+**Because:** a generation numbers the bearer among relatives of the same name while a credential is earned, and CLDR's person-name fields keep the two apart and format them differently. A form of address after the name (`さん`, `씨`, `先生`) is neither: it is no part of the name on either side (W3), and CLDR files it as a title, while an office written there (`議員`) is a credential in CLDR as in this view. A caller wanting one had to re-read the suffix against vocabulary they would have had to rebuild (#326), and all three are views, so the suffix field itself does not change.
 
 ```
 "Smith, John, Jr., MD, Esq."  →  generation="Jr."
@@ -18,6 +18,7 @@
 "김민준 씨"                   →  honorifics="씨"
 "田中さん, PhD"               →  credentials="PhD"
 "田中さん, PhD"               →  honorifics="さん"
+"王小明 議員"                 →  credentials="議員"
 "John Smith Jr. III PhD"    →  generation="Jr. III"
 "John Smith Jr. III PhD"    →  credentials="PhD"
 "John Smith Ph. D. Jr."     →  credentials="Ph. D."
@@ -40,9 +41,10 @@
 
 **Accepted:**
 
-- A word of the suffix vocabulary that is neither a generation, a credential nor a form of address (a courtesy such as `Esq.`, a status such as `ret.`) is in the credentials, CLDR's catch-all, which CLDR's own examples of the field include `Esq.` in; its reading's kind, a post-nominal word, tells it apart for a caller who needs it.
+- A word of the suffix vocabulary that is neither a generation, a credential nor a form of address (a courtesy such as `Esq.`, a status such as `ret.`) is in the credentials, CLDR's catch-all, which CLDR's own examples of the field include `Esq.` in; its reading's kind, a post-nominal word, tells it apart for a caller who needs it. A courtesy that is itself said to the bearer (`Rinpoche`, `महाराज`) is there too, by its kind, beside the honorifics a word like `साहब` reads as.
   ```
   "John Smith, Jr., Esq."     →  credentials="Esq."
+  "Ram Das महाराज"            →  credentials="महाराज"
   ```
 - A connective joining a generation to a credential is left at the end of the generation, the view of the word before it.
   ```

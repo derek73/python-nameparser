@@ -104,8 +104,9 @@ BEHAVIORAL: dict[str, frozenset[str]] = {
 GATED_WORDS = frozenset({"generation", "agnomen", "credential"})
 
 #: The suffix word kinds rules/R8's `honorifics` view holds: a form of
-#: address written after the name (`さん`, `씨`, `先生`), which CLDR's
-#: `credentials` field does not hold (#326).
+#: address written after the name (`さん`, `씨`, `先生`), which CLDR
+#: files as a title; an office written there (`議員`) is a credential
+#: (#326).
 HONORIFIC_KINDS = frozenset({"honorific", "professional_honorific"})
 
 

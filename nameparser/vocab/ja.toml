@@ -37,6 +37,22 @@ note = "doctorate holder, shared Han; an attested Japanese given name (ひろし
 excluded = { attached = "glued 田中博士 IS Tanaka Hiroshi, an attested given name" }
 
 [[word]]
+text = "国会議員"
+[word.credential]
+acronym = false
+issue = 671
+note = "Diet member; an office, which CLDR files in its credentials field (`cldr_fields.jsonl`, #326)"
+attached = { side = "after", issue = 707 }
+
+[[word]]
+text = "議員"
+[word.credential]
+acronym = false
+issue = 671
+note = "legislator; an office, which CLDR files in its credentials field (`cldr_fields.jsonl`, #326)"
+attached = { side = "after", issue = 707 }
+
+[[word]]
 text = "くん"
 [word.honorific]
 issue = [307, 308]
@@ -95,13 +111,6 @@ note = "zh Mr. / ja teacher-master, an honorific in both"
 attached = { side = "after", issue = 308 }
 
 [[word]]
-text = "国会議員"
-[word.professional_honorific]
-issue = 671
-note = "Diet member"
-attached = { side = "after", issue = 707 }
-
-[[word]]
 text = "教授"
 [word.professional_honorific]
 issue = [307, 308]
@@ -120,13 +129,6 @@ text = "課長"
 [word.professional_honorific]
 issue = 671
 note = "section chief; a form of address after a name"
-attached = { side = "after", issue = 707 }
-
-[[word]]
-text = "議員"
-[word.professional_honorific]
-issue = 671
-note = "legislator"
 attached = { side = "after", issue = 707 }
 
 [[word]]

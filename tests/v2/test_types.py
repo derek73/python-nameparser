@@ -367,6 +367,10 @@ def test_the_suffix_views_partition_it_by_reading(
     # an honorific beside the other two kinds, each in its own view
     ("田中さん, PhD", "", "PhD", "さん"),
     ("田中さん II", "II", "", "さん"),
+    # an office CLDR files as a credential is one (#326), beside the
+    # form of address CLDR files as a title
+    ("王小明 議員", "", "議員", ""),
+    ("雅婷婷婷王二世先生，議員", "", "議員", "先生"),
     # a credential written as a word beside a professional honorific
     ("王小明 博士教授", "", "博士", "教授"),
 ])
