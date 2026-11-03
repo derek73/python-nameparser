@@ -13153,6 +13153,15 @@ CASES: tuple[Case, ...] = (
          notes="P5: the join declines a title word a trailing rule reads "
                "as a title, H5's written-short clause included (#999), as "
                "it declines 'Prof.'; 1.4.0 read given 'abdul Maj.'"),
+    Case("maj_written_short_in_a_particle_chain_is_weighed", "Freiherr Mc Maj. V",
+         {"title": "Freiherr", "family": "Mc Maj. V"},
+         classification="fix(#620)",
+         notes="the trailing reading weighs a period-marked title "
+               "written short as it weighs 'Prof.' (#999), so the "
+               "numeral reports no suffix-or-name, which the first build "
+               "of #999 reported; nor does H4 report, a title that may be "
+               "a given name being no listed title to it, as with "
+               "'Dean.'; 1.4.0 read given 'Freiherr Mc Maj. V'"),
     Case("maj_bare_ending_the_name_is_a_name_word", "John Smith Maj",
          {"given": "John", "middle": "Smith", "family": "Maj"},
          classification="parity",

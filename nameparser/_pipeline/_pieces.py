@@ -1777,7 +1777,9 @@ def credential_run(rest: Sequence[int], peel: Peel, p: int,
 # with it 'John Smith Xyz.' would lose its family name to a title
 # (decisions/H5). The vocabulary read is is_title_piece's, shared
 # with the leading run so the two cannot disagree about what a title
-# WORD is while disagreeing, deliberately, about what a title SHAPE is.
+# WORD is while disagreeing, deliberately, about what a title SHAPE is
+# -- save the word H5's written-short clause adds, classify's
+# TRAILING_TITLE_TAG, which no leading read admits (#999).
 def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
                      ptags: Sequence[Set[str]],
                      tokens: Sequence[WorkToken],
@@ -1825,9 +1827,9 @@ def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
         idx = rest[k - 1]
         piece = pieces[idx]
         # no #323 veto on the shape here, unlike is_leading_title's:
-        # the shape is ANDed with is_title_piece, so the word is listed
-        # vocabulary, and a listed CJK title wearing a stop should read
-        # as a title. rules/H5: "a title that may be a given name is
+        # the shape is ANDed with a vocabulary read, so the word is
+        # listed, and a listed CJK title wearing a stop should read as
+        # a title. rules/H5: "a title that may be a given name is
         # title vocabulary there where its title reading is written
         # short" -- classify's tag, tested first, a C-level read
         # (decisions/H5, #999)
@@ -1852,14 +1854,15 @@ def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
 # shape and are title vocabulary chain into the title from the end"
 # -- one word's half of that, for a caller asking it of a piece the
 # chain did not walk to: the maiden take, choosing the words the
-# clause-free view is read over (#601). `trailing_titles` asks the same three tests
+# clause-free view is read over (#601). `trailing_titles` asks the same four tests
 # INLINE, in the same order, for the frame budget its docstring
 # states; keep the two in step.
 def is_trailing_title_word(piece: Sequence[int], ptags: Set[str],
                            tokens: Sequence[WorkToken]) -> bool:
     """Whether one piece is a word H5's trailing chain takes: a lone
     token wearing the abbreviation shape that the title vocabulary
-    lists. Position is the caller's question -- this answers only
+    lists, or that classify marks as a title written short that may
+    be a given name (TRAILING_TITLE_TAG). Position is the caller's question -- this answers only
     what the word is."""
     return (len(piece) == 1
             and _PERIOD_ABBREV.match(tokens[piece[0]].text) is not None
@@ -2283,7 +2286,9 @@ def _weighed(piece: Sequence[int], tokens: Sequence[WorkToken]) -> bool:
     period-marked title word. A word the chain joins and the reading
     weighs is a word the reading may yet take ('Freiherr von Berg MA
     X.Y.Z.' keeps suffix 'MA X.Y.Z.'), so it ends the plain run the
-    count folds into the particle (#620's review). A
+    count folds into the particle (#620's review); a title written
+    short that may be a given name is one too, H5's chain taking it
+    as it takes a listed title (#999). A
     connective join is one name word, P3's own count. The tests inline:
     this asks once per word behind a particle run."""
     if len(piece) > 1:
@@ -2292,7 +2297,7 @@ def _weighed(piece: Sequence[int], tokens: Sequence[WorkToken]) -> bool:
     return (not tok.tags.isdisjoint(_WEIGHED_TAGS)
             or _ROMAN.match(stem := tok.text.rstrip(".")) is not None
             and stem != ""
-            or "vocab:title" in tok.tags
+            or ("vocab:title" in tok.tags or TRAILING_TITLE_TAG in tok.tags)
             and _PERIOD_ABBREV.match(tok.text) is not None)
 
 

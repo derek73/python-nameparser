@@ -14,7 +14,8 @@ where an earlier stage already asked.
 Reads: every Lexicon vocabulary field except surnames and
 honorific_tails, which script_segment consumes upstream, and the kinds
 of its suffix words and particles (Lexicon's generation_words,
-credential_words and patronymic_particles, internal sets, 3.0); and, since
+credential_words and patronymic_particles, internal sets, 3.0) and the
+titles written short (title_abbreviations, #999); and, since
 2.4, Policy.unlisted_dotted_suffixes and Policy.unlisted_caps_suffixes,
 which decide whether an UNLISTED dotted or all-caps token joins the
 ambiguous credential class by SHAPE (#516) -- the all-caps half here
@@ -35,9 +36,10 @@ namespaced (unstable): "vocab:title", "vocab:given-title",
 "vocab:after-given-title", "vocab:title-ambiguous",
 "vocab:suffix", "vocab:suffix-word", "vocab:suffix-ambiguous",
 "vocab:suffix-word-ambiguous", "vocab:agnomen",
-"vocab:generation-word", "vocab:credential-word" and
-"vocab:patronymic" (read by the later stages and dropped by assemble,
-Token.reading carrying the kind out),
+"vocab:generation-word", "vocab:credential-word",
+"vocab:patronymic" and "vocab:trailing-title" (read by the later
+stages and dropped by assemble, Token.reading carrying the kind out,
+save the last, which marks no kind),
 "vocab:particle-ambiguous", "vocab:bound-given",
 "vocab:given-abbreviation", "vocab:maiden-marker",
 "vocab:maiden-marker-cont"; in a namespace of its own,

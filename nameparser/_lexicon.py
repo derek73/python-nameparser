@@ -525,7 +525,8 @@ _SET_FIELDS = tuple(f for f in _VOCAB_FIELDS if f not in _LIST_FIELDS)
 
 #: What those sets do not record: the kinds the views read (rules/R8,
 #: rules/R9), and the titles written short that rules/H5's trailing
-#: chain reads where one may also be a given name (#999).
+#: chain reads where one may also be a given name (#999), which is no
+#: kind; the name is the tuple's first use.
 #: `_LexiconSets` attributes after the `_VOCAB_FIELDS` ones, each a
 #: compiled constant of its own.
 _KIND_FIELDS = ("generation_words", "credential_words",
@@ -580,9 +581,9 @@ class _LexiconSets:
     generation_words: frozenset[str]
     credential_words: frozenset[str]
     patronymic_particles: frozenset[str]
-    #: the title readings written `abbreviation=True` (`maj`), which
-    #: rules/H5's trailing chain takes where the word may also be a
-    #: given name (#999)
+    #: the words whose title reading is written `abbreviation=True`
+    #: (`maj`); rules/H5's trailing chain reads one only beside
+    #: `titles_ambiguous`, through classify's TRAILING_TITLE_TAG (#999)
     title_abbreviations: frozenset[str]
 
 
@@ -2207,7 +2208,7 @@ class Lexicon:
             ``"birth_marker"``, ``"given"``, ``"family"``, ...), and
             `properties` that kind's behavioral properties as the files
             spell them (``addresses="given"``, ``after_given=True``,
-            ``attaches=[...]``, ``acronym=...``, ``attached="after"``,
+            ``abbreviation=True``, ``attaches=[...]``, ``acronym=...``, ``attached="after"``,
             ``may_be_initial=True``, ``same_as=...`` on a ``given``
             reading); a property given its unwritten value (``None``,
             ``False``) is removed. Where the word holds a reading of `kind`

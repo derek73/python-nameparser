@@ -625,8 +625,8 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: reaches nothing. The library's 118 are 111 attribute loads, 3 roster
 #: `getattr`s, all through `sets`, which the undone `sets = lexicon`
 #: makes a lexicon, and the 4 `sets =` bindings (#1000's Ph./D. gate
-#: added one binding and four of the loads; #999's written-short titles
-#: one load); the tools' 16 are
+#: added one binding and four of the loads; #999's gate
+#: one load, its `titles_ambiguous` half); the tools' 16 are
 #: attribute loads, every tool scanned. 4i-a's own count was 114 (on
 #: that tree's sources), two of them `getattr`s in
 #: `_parser._apply_choice`, which read the sets through
