@@ -2972,7 +2972,7 @@ def test_reading_languages_follow_the_choice() -> None:
     assert _languages_of(pt, "Vincent van Gogh", "van") == ("nl",)
     # with no choice, the files on by default, as before
     assert _languages_of(Parser(), "Ana de Souza", "de") == (
-        "es", "fr", "it", "nl", "pt")
+        "es", "fil", "fr", "it", "nl", "pt")
 
 
 def test_reading_languages_under_a_strict_choice_name_the_chosen_files() -> None:
