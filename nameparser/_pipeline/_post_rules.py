@@ -26,12 +26,14 @@ the script's order differs from the declared one),
 Policy.middle_as_family,
 Policy.extra_suffix_delimiters (R1's entry pass, for the delimiter
 cores group drops); Lexicon.given_name_titles, Lexicon.given_names
-(O6's veto), and
+(O6's veto), Lexicon.saint_particles (P10's saint clause; P10 runs
+under every policy and reads Policy.patronymic_rules for its Turkic
+guard), and
 Lexicon.suffix_acronyms_ambiguous (a dotted member in a clause, which
 carries no tag there, S13).
 
-Implements rules S13, H1, M4, P1, P6 (its no-comma site), O1, O2, O6,
-O7, O3 and R1 of docs/design/rules/; each is cited at its code below, and
+Implements rules S13, H1, M4, P1, P6 (its no-comma site), P10, O1, O2,
+O6, O7, O3 and R1 of docs/design/rules/; each is cited at its code below, and
 H1/P1/O1/O2's history lives in docs/design/decisions/.
 `suffix_entries` is the R1 entry pass as a state-in/state-out
 function, for Parser.revise to run over a forced-role sub-parse
@@ -344,13 +346,13 @@ def _take_second_family_name(state: ParseState,
     # rules/O6: "a given name a particle completes stays where it is" --
     # given-first, the unit taken being the one beside a given name of
     # one word, a particle run and a word classify tags from
-    # Lexicon.particle_given_names, in the shape rules/O7 reads; under a
+    # Lexicon.particle_given_names, in the shape rules/P10 reads; under a
     # family-first order the unit after the family completes no given
     # name (decisions/O6, #704)
     if (state.order[0] is Role.GIVEN and len(units) == 2
             and _one_given_word(tokens, units[0])
             and all(tokens[i].role is Role.GIVEN for i in units[0])
-            and _completes_a_given_name(tokens, take)):
+            and _completes_a_given_name(tokens, take, state.lexicon)):
         return
     if state.order[0] is Role.GIVEN:
         # given, middles..., family: the middle unit standing right
@@ -380,7 +382,7 @@ def _take_second_family_name(state: ParseState,
 
 
 def _one_given_word(tokens: list[WorkToken], given: list[int]) -> bool:
-    """Whether the given name is ONE word, as rules/O7 counts it: O6's
+    """Whether the given name is ONE word, as rules/O7 and P10 count it: O6's
     count, save that a bound given-name pair (P5) is two words though
     its bound word is also a particle the count passes over ('Abu
     Bakr')."""
@@ -389,34 +391,56 @@ def _one_given_word(tokens: list[WorkToken], given: list[int]) -> bool:
                      and "vocab:bound-given" in tokens[given[0]].tags))
 
 
-def _completes_a_given_name(tokens: list[WorkToken],
-                            unit: list[int]) -> bool:
+def _completes_a_given_name(tokens: list[WorkToken], unit: list[int],
+                            lexicon: Lexicon) -> bool:
     """Whether `unit` is a particle run and ONE word written
-    `after_particle` ('del Carmen'), the second of a compound given
-    name as rules/O7 reads one."""
+    `after_particle` ('del Carmen'), the second of a compound given name
+    as rules/P10 reads one; a run holding a saint particle ('Santa
+    María') opens a surname instead."""
     n = 0
     while n < len(unit) and "particle" in tokens[unit[n]].tags:
+        if _normalize(tokens[unit[n]].text) in lexicon._sets.saint_particles:
+            return False
         n += 1
     return (0 < n == len(unit) - 1
             and PARTICLE_GIVEN_TAG in tokens[unit[-1]].tags)
 
 
-def _take_given_phrase(state: ParseState, tokens: list[WorkToken],
-                       given: list[int]) -> None:
-    # rules/O7: "a particle run and the given name written behind it
-    # complete the given name" -- given-first with no middle between,
-    # the family's opening particle run and the one word after it, read
-    # off the tag classify gives a word of Lexicon.particle_given_names,
-    # move to the given name where a name word is left for the family
-    # (decisions/O7, #704)
+def _given_phrase_middle(state: ParseState,
+                         tokens: list[WorkToken]) -> None:
+    # rules/P10: "the particle run and that word are a middle name" --
+    # behind a lone given name of one word, read given-first with no
+    # family comma, the family's opening particle run and the one word
+    # after it, read off the tag classify gives a word of
+    # Lexicon.particle_given_names, where a name word is left for the
+    # family (decisions/P10, #704). In place, as every post rule writes.
+    # A family comma reads the phrase as a middle already, and a
+    # family-first order puts no family behind the given name.
+    # Every parse runs this, so a name holding no marked word leaves
+    # after one plain loop and no further call (the parse-cost band,
+    # decisions/parse-cost)
+    for token in tokens:
+        if PARTICLE_GIVEN_TAG in token.tags:
+            break
+    else:
+        return
+    if (state.structure is Structure.FAMILY_COMMA or state.order is None
+            or state.order[0] is not Role.GIVEN):
+        return
+    given = _idx(tokens, Role.GIVEN)
     family = _idx(tokens, Role.FAMILY)
-    # the family written after the given name: a family-first order,
-    # whose given name also stands before its middles, is turned away
-    if not family or family[0] < given[-1]:
+    # a given name no patronymic, shared name or mark, of one word, with
+    # no middle between it and the family
+    if (not given or not family or _idx(tokens, Role.MIDDLE)
+            or family[0] < given[-1]
+            or not _one_given_word(tokens, given)
+            or any(PATRONYMIC_TAG in tokens[i].tags
+                   or SHARED_NAME_TAG in tokens[i].tags for i in given)
+            or not any(ch.isalpha() for i in given for ch in tokens[i].text)):
         return
     cut = _fold_reach(tokens, family)
-    if cut >= len(family) or not _completes_a_given_name(tokens,
-                                                          family[:cut]):
+    if cut >= len(family) or not _completes_a_given_name(
+            tokens, family[:cut], state.lexicon):
         return
     # a name word left for the family: one with a letter that is no
     # connective standing alone ('María del Carmen y')
@@ -424,13 +448,13 @@ def _take_given_phrase(state: ParseState, tokens: list[WorkToken],
                and "conjunction" not in tokens[i].tags
                for i in family[cut:]):
         return
-    # and, as for the middle path, no Turkic marker behind the phrase,
-    # whose father's name it would be
+    # and no Turkic marker behind the phrase, whose father's name it
+    # would be
     if (PatronymicRule.TURKIC in state.policy.patronymic_rules
             and is_patronymic_marker(tokens[family[cut]].text)):
         return
     for i in family[:cut]:
-        _retag(tokens, i, Role.GIVEN)
+        _retag(tokens, i, Role.MIDDLE)
 
 
 def _take_second_given_name(state: ParseState,
@@ -453,20 +477,7 @@ def _take_second_given_name(state: ParseState,
     # a given name already holding two words keeps what it has: a
     # hyphenated one, or a bound given-name pair (P5), counted as O6
     # counts the family
-    if not given or not _one_given_word(tokens, given):
-        return
-    if not middle:
-        # rules/O7's particle phrase, opening the family: after a family
-        # comma the part reads it as a middle already (the path below),
-        # and a given name that is a patronymic, a shared name or no
-        # name at all is not completed, as on the middle path
-        if (given_first and state.structure is not Structure.FAMILY_COMMA
-                and not any(PATRONYMIC_TAG in tokens[i].tags
-                            or SHARED_NAME_TAG in tokens[i].tags
-                            for i in given)
-                and any(ch.isalpha() for i in given
-                        for ch in tokens[i].text)):
-            _take_given_phrase(state, tokens, given)
+    if not given or not middle or not _one_given_word(tokens, given):
         return
     # the unit beside the given name: the positions lay a given-first
     # part out given, middles..., and FAMILY_FIRST_GIVEN_LAST's
@@ -963,6 +974,7 @@ def post_rules(state: ParseState) -> ParseState:
             middles = _idx(tokens, Role.MIDDLE)
             families = _idx(tokens, Role.FAMILY)
 
+    _given_phrase_middle(state, tokens)
     if state.policy.two_family_names:
         _take_second_family_name(state, tokens)
     if state.policy.two_given_names:

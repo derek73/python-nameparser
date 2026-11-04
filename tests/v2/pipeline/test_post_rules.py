@@ -1444,7 +1444,7 @@ def test_the_list_reads_nothing_without_two_family_names(
             if plain.parse(t).as_dict() != listed.parse(t).as_dict()] == []
 
 
-#: rules/O6 and O7 read two properties of a name reading (#704): a
+#: rules/P10, O6 and O7 read two properties of a name reading (#704): a
 #: given name written behind a particle (`after_particle`, `carmen` in
 #: "María del Carmen") and a name a community gives every member
 #: (`shared`, Sikh `kaur`). Each row's reading with the shipped readings
@@ -1452,7 +1452,8 @@ def test_the_list_reads_nothing_without_two_family_names(
 #: "Guard tests"): rows whose two columns agree are the shapes the
 #: properties must leave alone -- nothing left for the family, a family
 #: comma (whose part O7 already reads whole), a word nobody listed, a
-#: given name of two words, a middle between, and the default policy.
+#: given name of two words, a middle between, and under the default
+#: policy every shape but P10's own.
 _POLICIES_704 = {
     "O7": Policy(two_given_names=True),
     "O6": Policy(two_family_names=True),
@@ -1482,7 +1483,8 @@ _EFFECT_704 = [
     ("María del Carmen de la Vega", "O6", ("María", "del Carmen", "de la Vega"), ("María", "", "del Carmen de la Vega")),
     ("María del Carmen de la Vega", "both", ("María del Carmen", "", "de la Vega"), ("María", "", "del Carmen de la Vega")),
     ("María del Carmen García López", "both", ("María del Carmen", "", "García López"), ("María", "", "del Carmen García López")),
-    ("María del Carmen García", "default", ("María", "", "del Carmen García"), ("María", "", "del Carmen García")),
+    ("María del Carmen García", "default", ("María", "del Carmen", "García"), ("María", "", "del Carmen García")),
+    ("Domingo Santa María González", "default", ("Domingo", "", "Santa María González"), ("Domingo", "", "Santa María González")),
     ("Harpreet Kaur Dhillon", "O7", ("Harpreet", "Kaur", "Dhillon"), ("Harpreet Kaur", "", "Dhillon")),
     ("Harpreet Kaur Dhillon", "O6", ("Harpreet", "Kaur", "Dhillon"), ("Harpreet", "", "Kaur Dhillon")),
     ("Harpreet Simran Kaur", "O6", ("Harpreet", "Simran", "Kaur"), ("Harpreet", "", "Simran Kaur")),
@@ -1516,12 +1518,20 @@ _EFFECT_704 = [
     ("Abu Bakr del Carmen García", "O7", ("Abu Bakr", "", "del Carmen García"), ("Abu Bakr", "", "del Carmen García")),
     ("Abu Bakr del Carmen de la Vega", "O6", ("Abu Bakr", "", "del Carmen de la Vega"), ("Abu Bakr", "", "del Carmen de la Vega")),
     ("Abu Bakr Carlos García", "O7", ("Abu Bakr", "Carlos", "García"), ("Abu Bakr", "Carlos", "García")),
+    # the #1058 test review's rows: O6 takes a family a saint particle
+    # opens, and P10's guards hold under the default policy it runs on,
+    # a patronymic and a mark as the given name; the family comma row
+    # pins the reading, the order test refusing it before the comma's
+    ("Domingo Santa María de la Vega", "O6", ("Domingo", "", "Santa María de la Vega"), ("Domingo", "", "Santa María de la Vega")),
+    ("del Carmen García, María", "default", ("María", "", "del Carmen García"), ("María", "", "del Carmen García")),
+    ("bin del Carmen García", "default", ("bin", "", "del Carmen García"), ("bin", "", "del Carmen García")),
+    ("3 del Carmen García", "default", ("3", "", "del Carmen García"), ("3", "", "del Carmen García")),
 ]
 
 
 @pytest.mark.parametrize("text,policy,shipped,bare", _EFFECT_704,
                          ids=[f"{r[1]}:{r[0]}" for r in _EFFECT_704])
-def test_the_two_name_switches_read_particle_given_and_shared_names(
+def test_p10_and_the_two_name_switches_read_particle_given_and_shared_names(
         text: str, policy: str, shipped: tuple[str, ...],
         bare: tuple[str, ...]) -> None:
     assert _roles(text, _POLICIES_704[policy], Lexicon.default()) == shipped
@@ -1532,7 +1542,7 @@ def test_the_704_table_counts_its_rows() -> None:
     # the table is the properties' negative control only while some rows
     # move without them and some do not
     moved = [r for r in _EFFECT_704 if r[2] != r[3]]
-    assert len(moved) == 12 and len(_EFFECT_704) - len(moved) == 23
+    assert len(moved) == 13 and len(_EFFECT_704) - len(moved) == 27
 
 
 def test_a_callers_reading_reaches_the_switches() -> None:
@@ -1580,3 +1590,37 @@ def test_the_704_tags_reach_no_published_token() -> None:
                  "María del Carmen García")]
     published = {tag for n in names for t in n.tokens for tag in t.tags}
     assert not published & {"vocab:shared-name", "vocab:particle-given"}
+
+
+def test_a_saint_particle_opens_no_given_name_phrase() -> None:
+    # rules/P10's saint clause: 'Santa María' is a surname, the given
+    # name phrases being written with a preposition or an article. The
+    # control reads santa as a preposition, which the phrase then takes
+    default = (Policy(), Lexicon.default())
+    assert _roles("Domingo Santa María González", *default) == (
+        "Domingo", "", "Santa María González")
+    as_preposition = (Lexicon.default().remove("santa", kind="saint")
+                      .add("santa", kind="preposition"))
+    assert _roles("Domingo Santa María González", Policy(),
+                  as_preposition) == ("Domingo", "Santa María", "González")
+
+
+def test_a_report_behind_a_given_name_phrase_names_the_family() -> None:
+    # a word behind a particle chain lands beside the chain's LAST word:
+    # rules/P10 reads the chain's opening phrase as a middle name, and
+    # the agnomen read as a name would join the family 'Cardoso Filho'
+    name = parse("Jairo do Valle Cardoso Filho")
+    assert (name.middle, name.family, name.suffix) == (
+        "do Valle", "Cardoso", "Filho")
+    assert [a.alternative.role for a in name.ambiguities
+            if a.alternative is not None] == [Role.FAMILY]
+    # and under rules/O6's family-first cut, which lays the chain's TAIL
+    # out by the order, the head's field: middle_as_family folds the
+    # tail's middle into the family, where the word lands (the first
+    # fix named the tail's 'given', #1058 second review)
+    folded = Parser(policy=Policy(name_order=FAMILY_FIRST,
+                                  two_family_names=True,
+                                  middle_as_family=True)).parse(
+        "Ana de María Pérez Filho")
+    assert [a.alternative.role for a in folded.ambiguities
+            if a.alternative is not None] == [Role.FAMILY]

@@ -165,16 +165,17 @@ GIVEN_ABBREVIATION_TAG = "vocab:given-abbreviation"
 
 #: On a word of `Lexicon.shared_names`, a name a community gives every
 #: member (Sikh 'Kaur', 'Singh'): rules/O6 and O7 decline a join that
-#: takes or completes one
-#: (`_post_rules._take_second_family_name`, `_take_second_given_name`).
+#: takes or completes one, and P10 completes none
+#: (`_post_rules._take_second_family_name`, `_take_second_given_name`,
+#: `_given_phrase_middle`).
 #: Dropped from the published token like the kind tags above (#704).
 SHARED_NAME_TAG = "vocab:shared-name"
 
 #: On a word of `Lexicon.particle_given_names`, a given name written
 #: behind a particle as the second of a compound given name ('del
-#: Carmen'): rules/O7 takes the particle run and the word into the
-#: given name, and O6 leaves them beside a one-word given name. Dropped from the published token
-#: like the kind tags above (#704).
+#: Carmen'): rules/P10 reads the particle run and the word as a
+#: middle name behind a one-word given name, and O6 leaves them there.
+#: Dropped from the published token like the kind tags above (#704).
 PARTICLE_GIVEN_TAG = "vocab:particle-given"
 
 #: EITHER way a token joins the ambiguous credential class -- the
@@ -275,10 +276,14 @@ class Beside:
     piece. Where P6 then attached that token to the family
     (`FOLDED_TAG`), which it would not have done with a word behind
     it, `unfolded`, the field the word held when the report was made,
-    stands instead."""
+    stands instead. Where the piece in front is a chain, `last` is its
+    last word: rules/P10 reads a chain's opening phrase as a middle name
+    and leaves its last word the family, where the word would join, so
+    a `last` still in the family names the field (#704)."""
 
     index: int
     unfolded: Role | None = None
+    last: int | None = None
 
 
 @dataclass(frozen=True, slots=True)

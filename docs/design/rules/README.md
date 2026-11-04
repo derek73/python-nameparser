@@ -136,6 +136,7 @@ Terms the rules use without defining them each time, each with the rule that def
 - [P7 — a one-letter particle against the initial it spells](P7-one-letter-particle-against-the-initial-it-spells.md)
 - [P8 — a single-letter connective against the initial it spells](P8-single-letter-connective-against-the-initial-it-spells.md)
 - [P9 — a particle that is also a suffix word, beside a family comma](P9-particle-that-is-also-a-suffix-word-beside-a-family-comma.md)
+- [P10 — a given name a particle completes](P10-given-name-a-particle-completes.md)
 
 ## [Suffixes: generational & credentials (S)](S-suffixes-generational-and-credentials.md)
 

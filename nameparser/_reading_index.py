@@ -82,9 +82,9 @@ CATEGORY: dict[str, str] = {
 #: Behavioral properties per category: each compiles into a field, and
 #: its allowed values are exactly what today's pipeline does. A name
 #: reading's are `default` (phase 3a), `cased`, the word's case mask
-#: (the shipped ones on `family` readings, #1014), and `shared` and
-#: `after_particle`, which rules/O6 and O7 read (#704): its other keys
-#: are evidence.
+#: (the shipped ones on `family` readings, #1014), `shared`, which
+#: rules/P10, O6 and O7 read, and `after_particle`, which P10 and O6 read
+#: (#704): its other keys are evidence.
 BEHAVIORAL: dict[str, frozenset[str]] = {
     "title": frozenset({"abbreviation", "addresses", "after_given",
                         "attaches", "cased", "default"}),
@@ -539,6 +539,7 @@ class Compiled(TypedDict):
     TITLE_CASE_NAME_WORDS: frozenset[str]
     SHARED_NAMES: frozenset[str]
     PARTICLE_GIVEN_NAMES: frozenset[str]
+    SAINT_PARTICLES: frozenset[str]
 
 
 def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
@@ -580,6 +581,7 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
     credential_words: set[str] = set()
     honorific_words: set[str] = set()
     patronymics: set[str] = set()
+    saints: set[str] = set()
     title_case_names: set[str] = set()
     shared: set[str] = set()
     after_particle: set[str] = set()
@@ -627,6 +629,8 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
             particles.add(t)
             if r.kind == "patronymic":
                 patronymics.add(t)
+            elif r.kind == "saint":
+                saints.add(t)
             if t not in given:
                 never_given.add(t)
         elif r.category == "conjunction":
@@ -707,9 +711,13 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
         SHARED_NAMES=frozenset(shared),
         # the given names written behind a particle as the second of a
         # compound given name (`del Carmen`, `de los Ángeles`), which
-        # rules/O7 takes into the given name and O6 leaves beside a
-        # one-word given name (#704)
+        # rules/P10 reads as a middle name behind a one-word given name
+        # (#704)
         PARTICLE_GIVEN_NAMES=frozenset(after_particle),
+        # the particles naming a saint (`san`, `santa`, `st`), which
+        # open a place name or a surname (`Santa María`), never a given
+        # name's second, so a given name phrase holds none (#704)
+        SAINT_PARTICLES=frozenset(saints),
     )
     # One form per post-nominal: the word test strips only edge periods
     # and the acronym test strips all of them, so a word in both is

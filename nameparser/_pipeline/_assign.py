@@ -174,9 +174,13 @@ def _name_alt(token: WorkToken, role: Role,
     bound = first and "vocab:bound-given" in tags
     if ("particle" in tags and (len(front) > 1 or not first) and not bound
             or licensed and bound and len(front) == 1):
-        # a front P6 has already attached held `role`'s field before it
+        # a front P6 has already attached held `role`'s field before it;
+        # `last` names the front's last word, which rules/P10 leaves the
+        # family where it reads the chain's opening phrase as a middle
+        # name (decisions/P10, #704)
         return copy_with(alt, role=Beside(
-            front[0], role if FOLDED_TAG in tags else tokens[front[0]].role))
+            front[0], role if FOLDED_TAG in tags else tokens[front[0]].role,
+            last=front[-1]))
     return alt
 
 

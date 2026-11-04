@@ -265,10 +265,20 @@ def _alternative(pending: PendingAmbiguity, materialized: tuple[Token, ...],
         role = (Role.FAMILY if materialized[0].role is Role.GIVEN
                 else Role.GIVEN)
     elif isinstance(role, Beside) and role.index in final:
-        front = final[role.index]
-        role = (role.unfolded
-                if FOLDED_TAG in front.tags and role.unfolded is not None
+        beside = role
+        front = final[beside.index]
+        role = (beside.unfolded
+                if FOLDED_TAG in front.tags and beside.unfolded is not None
                 else front.role)
+        # a chain whose last word stayed the family when its head left
+        # it (rules/P10's middle name, which O7 may then take) lands the
+        # word there; any other split names the head's field, and so
+        # does a last word P6 attached to the family (FOLDED_TAG) (#704)
+        if (role is not Role.FAMILY and beside.last is not None
+                and beside.last != beside.index and beside.last in final
+                and final[beside.last].role is Role.FAMILY
+                and FOLDED_TAG not in final[beside.last].tags):
+            role = Role.FAMILY
     elif isinstance(role, (Deferred, Beside)):
         # assign found no name position to name it from
         return None

@@ -128,4 +128,4 @@ family = { shared = true, us_census_2010 = 48753, wikidata = 204, as_of = 2026-1
 
 [[word]]
 text = "singh"
-family = { shared = true, us_census_2010 = 116749, wikidata = 2192, as_of = 2026-11-03, native = "ਸਿੰਘ", gender = "m", note = "the name every Sikh man is given, written as kaur is: UK PSC filers put it in the middle-name box 5,303 times (5,015 as its only word), the whole surname box 1,885 and the forename box 48 (2026-11-03, #704); also an ordinary Rajput and Nepali surname, which shared costs only under the two-name switches. Wikidata is a lower bound" }
+family = { shared = true, us_census_2010 = 116749, wikidata = 2192, as_of = 2026-11-03, native = "ਸਿੰਘ", gender = "m", note = "the name every Sikh man is given, written as kaur is: UK PSC filers put it in the middle-name box 5,303 times (5,015 as its only word), the whole surname box 1,885 and the forename box 48 (2026-11-03, #704); also an ordinary Rajput and Nepali surname, which shared costs under the two-name switches and, by default, as a one-word given name a particle phrase would complete (rules/P10). Wikidata is a lower bound" }
