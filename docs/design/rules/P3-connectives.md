@@ -29,9 +29,10 @@
   "Josep Lluis Carod i III"   →  suffix="i III"
   "Carod y de Rovira i"       →  middle="y"
   ```
-- **A numeral ending the name is no word of the three where it reads as the generation**: a numeral ending the name that the trailing fork reads as the generation is no word of the three, as a listed one is not, the question C3 asks of the part before a comma.
+- **A numeral ending the name is no word of the three where it reads as the generation**: a numeral ending the name, or standing before the suffix words a name ends with, that the trailing fork reads as the generation is no word of the three, as a listed one is not, the question C3 asks of the part before a comma.
   ```
   "Ortega y Gasset VI"        →  family="Gasset"
+  "Ortega y Gasset VI MD"     →  family="Gasset"
   "Ortega y Gasset III"       →  family="Gasset"
   ```
 - **A separator the caller declared, standing in a trailing suffix part, ends the search there as a comma would**, so a connective never joins across it (C10); anywhere else it is a word.

@@ -427,12 +427,15 @@ def test_a_split_member_opening_the_part_is_no_name_word_to_either_count() -> No
 
 # C3's numeral clause: a shape-only numeral ending the part before the
 # comma counts as the listed 'III' does, and P3's three-word count asks
-# the same of a name ending in one (#893). Each grid row is compared
+# the same of a name ending in one, or in one before its suffix words
+# (#893). Each grid row is compared
 # with its 'III' twin under all three orders.
 _GENERATION_HEADS = ("Dumas {n}", "de la Vega {n}", "Ortega y Gasset {n}",
-                     "John Dumas {n}", "(Bob) Dumas {n}", "Dr. Dumas {n}")
+                     "John Dumas {n}", "(Bob) Dumas {n}", "Dr. Dumas {n}",
+                     "Dumas {n} MD", "Dumas {n} Jr.")
 _GENERATION_TAILS = (", Jr.", ", MA", ", PhD", ", Ed", ", Filho", ", John",
-                     ", Dr.", ", AD", ", Jr., PhD", "")
+                     ", Dr.", ", AD", ", Jr., PhD", "", " MD", " Jr.",
+                     " PhD")
 
 
 @pytest.mark.parametrize("order", [GIVEN_FIRST, FAMILY_FIRST,

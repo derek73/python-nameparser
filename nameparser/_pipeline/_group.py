@@ -855,19 +855,25 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             total = sum(_is_rootname(p, t, tokens)
                         for p, t in zip(pieces, ptags)
                         if p[0] not in frozen) + additional
-            # rules/P3: "a numeral ending the name that the trailing
-            # fork reads as the generation is no word of the three, as
-            # a listed one is not" -- the C3 count's question, asked by
-            # its predicate; decisions/C3 (#893). The shape test first,
-            # a C-level match, so a name ending in a word pays no frame;
+            # rules/P3: "a numeral ending the name, or standing before
+            # the suffix words a name ends with, that the trailing fork
+            # reads as the generation is no word of the three, as a
+            # listed one is not" -- the C3 count's question, asked by
+            # its predicate; decisions/C3 (#893). The suffix words are
+            # stepped over by their tag and the shape tested by a
+            # C-level match, so a name ending in a word pays no frame;
             # a listed numeral is a suffix piece the sum left out
-            last = tokens[pieces[-1][0]]
-            if (len(pieces) > 1 and len(pieces[-1]) == 1
+            e = len(pieces) - 1
+            while (e > 0 and len(pieces[e]) == 1
+                   and "vocab:suffix" in tokens[pieces[e][0]].tags):
+                e -= 1
+            last = tokens[pieces[e][0]]
+            if (e > 0 and len(pieces[e]) == 1
                     and ROMAN.match(last.text.rstrip(".")) is not None
                     and "vocab:suffix" not in last.tags
-                    and pieces[-1][0] not in frozen
+                    and pieces[e][0] not in frozen
                     and ends_in_a_generation(
-                        [tokens[pieces[-2][-1]].text, last.text],
+                        [tokens[pieces[e - 1][-1]].text, last.text],
                         one_case)):
                 total -= 1
             # The threshold of P3's carve-out ("except a single-letter
