@@ -314,7 +314,7 @@ nobility = { gender = "m" }
 
 [[word]]
 text = "baron"
-nobility = { gender = "m" }
+nobility = { gender = "m", issue = 913, note = "kept a title, decided 2026-11-03 (decisions/H9): US SSA 7,059 births (all male), Wikidata 49 given; Census 16,308 (rank 2,234), Wikidata 568 family (France 117). Given a given reading alone it moved 129 names, about 58 given names (FEC 30 of 31, SMITH, BARON P) against about 63 titles: jrc-names' peers (Baron Falconer of Thoroton), and in PSC 15 filers put it in the title box against 6 in the forename box. The given count stands here rather than as a given reading, which would make it a title only inside a title phrase (rules/H9)" }
 
 [[word]]
 text = "baroness"
