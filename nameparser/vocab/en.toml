@@ -128,7 +128,7 @@ religious = {}
 
 [[word]]
 text = "bishop"
-religious = { issue = 913, note = "kept a title, decided 2026-11-03 (decisions/H9): US SSA 7,091 births (6,980 male), Census 116,618 (rank 262), Wikidata 43 given and 1,247 family. Given a given reading it moved 43 names: psc-individuals' title box 18 against 1 forename box, and fec-individuals' 18 mostly clergy (GORDON, BISHOP SIMON). The given count stands here rather than as a given reading, which would make it a title only inside a title phrase (rules/H9)" }
+religious = { issue = 913, note = "kept a title, decided 2026-11-03 (decisions/H9): US SSA 7,091 births (6,980 male), Census 116,618 (rank 262), Wikidata 43 given and 1,247 family. Given a given reading it moved 44 names holding it: psc-individuals' title box 18 against 1 forename box, and fec-individuals' 18 mostly clergy (GORDON, BISHOP SIMON). The given count stands here rather than as a given reading, which would make it a title only inside a title phrase (rules/H9)" }
 
 [[word]]
 text = "bp"
@@ -378,7 +378,7 @@ nobility = { gender = "m", expands = "the rank the post-nominal knt names", issu
 
 [[word]]
 text = "lady"
-nobility = { gender = "f", attaches = ["justice"], note = "attaches: Lady Justice (rules/H9, #913); kept a title in the default, decided 2026-11-03 (decisions/H9): US SSA 2,068 births (all female), Census 1,070 (rank 23,675), Wikidata 17 given (Peru 9) and 3 family; given a given reading it moved 557 names, psc-individuals' filers typing it in the title box 160 times and the forename box 19, and ukec-individuals' 59 all titles (Lady Annabel Goldsmith), while 137 orcid-researchers typed it as their given name, 111 in Spanish-speaking countries, so es.toml gives it a given reading a Spanish choice turns on; stays out of GIVEN_NAME_TITLES, decided: the given-name form ('Lady Diana') is a courtesy style for the daughters of the senior ranks alone, while every wife takes the title or surname ('Lady Thatcher'), and the text does not carry the rank (#519)" }
+nobility = { gender = "f", attaches = ["justice", "chief", "mayor", "provost", "captain"], note = "attaches: Lady Justice, Lady Chief Justice, Lady Mayor, Lady Provost, Lady Captain (rules/H9, #913), the offices it stood in front of as a title, which a Spanish choice keeps as titles; words rather than kinds, as hon's are; kept a title in the default, decided 2026-11-03 (decisions/H9): US SSA 2,068 births (all female), Census 1,070 (rank 23,675), Wikidata 17 given (Peru 9) and 3 family; given a given reading it moved 557 names, psc-individuals' filers typing it in the title box 160 times and the forename box 19, and ukec-individuals' 59 all titles (Lady Annabel Goldsmith), while 137 orcid-researchers typed it as their given name, 111 in Spanish-speaking countries, so es.toml gives it a given reading a Spanish choice turns on; stays out of GIVEN_NAME_TITLES, decided: the given-name form ('Lady Diana') is a courtesy style for the daughters of the senior ranks alone, while every wife takes the title or surname ('Lady Thatcher'), and the text does not carry the rank (#519)" }
 
 [[word]]
 text = "lord"
@@ -434,7 +434,7 @@ family = { us_census_2010 = 18557, wikidata = 66, as_of = 2026-10-27, note = "US
 
 [[word]]
 text = "sir"
-nobility = { addresses = "given", gender = "m", expands = "a knight or baronet, 'Sir John'", issue = 913, note = "kept a title, decided 2026-11-03 (decisions/H9): US SSA 2,172 births (all male), Census 245 (rank 78,040), Wikidata 1 given and 8 family. Given a given reading it moved 721 names (27 committed fixtures): psc-individuals' filers typed it in the title box 287 times and the forename box 17, and govuk-people's 195 and ukec-individuals' 141 are knights (Admiral Sir Ben Key); orcid-researchers 7 given boxes. The given count stands here rather than as a given reading, which would make it a title only inside a title phrase (rules/H9)" }
+nobility = { addresses = "given", gender = "m", expands = "a knight or baronet, 'Sir John'", issue = 913, note = "kept a title, decided 2026-11-03 (decisions/H9): US SSA 2,172 births (all male), Census 245 (rank 78,040), Wikidata 1 given and 8 family. Given a given reading it moved 742 names holding it (27 committed fixtures): psc-individuals' filers typed it in the title box 287 times and the forename box 17, and govuk-people's 195 and ukec-individuals' 141 are knights (Admiral Sir Ben Key); orcid-researchers 7 given boxes. The given count stands here rather than as a given reading, which would make it a title only inside a title phrase (rules/H9)" }
 
 [[word]]
 text = "viscount"
@@ -1220,7 +1220,7 @@ occupation = {}
 
 [[word]]
 text = "author"
-occupation = { issue = 913, note = "kept a title, decided 2026-11-03 (decisions/H9): US SSA 2,173 births (all male), Wikidata none, Census under 100. Given a given reading it moved 9 names, nearly all the word as a role label (Bob Jones, author), orcid-researchers 2 given boxes. The given count stands here rather than as a given reading, which would make it a title only inside a title phrase (rules/H9)" }
+occupation = { issue = 913, note = "kept a title, decided 2026-11-03 (decisions/H9): US SSA 2,173 births (all male), Wikidata none, Census under 100. Given a given reading it moved 9 names: 4 the word as a role label after a comma (Bob Jones, author), 4 orcid-researchers records opening with it, 2 of them typed in the given box. The given count stands here rather than as a given reading, which would make it a title only inside a title phrase (rules/H9)" }
 
 [[word]]
 text = "bandleader"

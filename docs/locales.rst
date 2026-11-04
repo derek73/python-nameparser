@@ -208,7 +208,7 @@ Smith``. The ``zh`` pack makes no choice of languages, so it leaves
 America and a British title. The default reads the title, and ``es``,
 which :data:`~nameparser.locales.ES` chooses, reads the given name, the
 title staying one in a phrase (``Hon Lady``, ``Lady Justice``, ``Lady
-of``):
+Chief Justice``, ``Lady Mayor``, ``Lady of``):
 
 .. doctest::
 
@@ -217,8 +217,10 @@ of``):
     >>> parser_for(locales.ES).parse("Lady Heidenreich").given
     'Lady'
 
-A peeress written with the bare title reads the given name under it
-(``Lady Annabel Goldsmith``).
+A peeress written with the bare title reads the given name under it,
+and the pack's two family names then take her own given name into the
+family (``Lady Annabel Goldsmith`` → given ``Lady``, family ``Annabel
+Goldsmith``).
 
 A language can have a file and no pack. Breton writes its article
 ``ar`` before the surname (``Katell ar Gall``), and the letters are
