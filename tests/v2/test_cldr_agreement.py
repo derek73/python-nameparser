@@ -69,7 +69,10 @@ def test_expected_roles_drop_fields_the_rendering_omits() -> None:
                      "family": "Pablo", "suffix": "II",
                      "family_particles": "", "family_base": "Pablo",
                      # stated, so expected empty where the rendering omits it
-                     "surname2": ""}
+                     "surname2": "",
+                     # the first surname on its own, a surname2 stated
+                     # (rules/R11)
+                     "surname1_particles": "", "surname1_base": "Pablo"}
 
 
 def test_a_pending_field_is_scored_inside_its_merged_role_until_parsed_name_has_it(
@@ -204,8 +207,10 @@ def test_got_roles_reads_the_six_views_and_each_pending_field_parsed_name_has(
     assert roles == {"title": "Dr.", "given_names": "Paul", "family": "von Fischer",
                      "suffix": "Jr.", "family_particles": "von",
                      "family_base": "Fischer", "surname2": "",
-                     "patronymic": ""}
-    assert tuple(roles) == (*agreement.ROLES, "surname2", "patronymic")
+                     "patronymic": "", "surname1_particles": "von",
+                     "surname1_base": "Fischer"}
+    assert tuple(roles) == (*agreement.ROLES, "surname2", "patronymic",
+                            *agreement.FIRST_UNIT_ROLES)
     assert agreement.got_roles(parse("Mahathir bin Mohamad"))["patronymic"] == (
         "bin Mohamad")
     two = Parser(policy=Policy(two_family_names=True))
@@ -590,3 +595,23 @@ def test_split_lists_the_view_s_renderings() -> None:
     out = _summary_run("--split")[1]
     assert "conventions/Kim Min Ho/FAMILY_FIRST: 'Kim Min Ho': given expected " \
            "'Min Ho', got 'Min'" in out
+
+
+def test_the_first_surname_is_scored_on_its_own_where_two_are_stated(
+        ) -> None:
+    """rules/R11 (#1022): CLDR's prefix and core are the first
+    surname's, scored against the first unit's views where the
+    rendering states a second surname, while the merged base keeps
+    the second surname in, so the default parse, which reads one
+    unit, is not counted twice for it."""
+    fields = {"given": "Juan", "surname-prefix": "", "surname-core": "Pérez",
+              "surname2": "de la Vega"}
+    text = "Juan Pérez de la Vega"
+    expected = agreement.expected_roles(fields, text)
+    assert (expected["family_base"], expected["surname1_base"]) == (
+        "Pérez de la Vega", "Pérez")
+    two = Parser(policy=Policy(two_family_names=True)).parse(text)
+    assert agreement.got_roles(two)["surname1_base"] == "Pérez"
+    # a rendering stating no second surname is not scored on it
+    assert "surname1_base" not in agreement.expected_roles(
+        {"given": "Juan", "surname-core": "Pérez"}, "Juan Pérez")

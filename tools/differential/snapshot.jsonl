@@ -26,6 +26,7 @@
 {"name": ", Jane van", "given": "Jane", "family": "van", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "J. v.", "capitalized_force": "Jane Van"}
 {"name": ", John", "given": "John", "initials": "J."}
 {"name": ", John (Bob) Smith", "given": "John", "middle": "Smith", "nickname": "Bob", "initials": "J. S."}
+{"name": ", John Paul", "given": "John", "middle": "Paul", "initials": "J. P."}
 {"name": ", John Smith", "given": "John", "middle": "Smith", "initials": "J. S."}
 {"name": ", John Smith Jr.", "given": "John", "middle": "Smith", "suffix": "Jr.", "initials": "J. S.", "generation": "Jr."}
 {"name": ", Jr.", "suffix": "Jr.", "generation": "Jr."}
@@ -824,6 +825,7 @@
 {"name": "Dr. (MA)", "title": "Dr.", "nickname": "MA", "ambiguities": ["SUFFIX_OR_NICKNAME"], "alternatives": ["SUFFIX_OR_NICKNAME: credential as suffix (vocabulary)"], "capitalized_force": "Dr. \"Ma\""}
 {"name": "Dr. Abdul Salam Hassan, MD", "title": "Dr.", "given": "Abdul Salam", "family": "Hassan", "suffix": "MD", "initials": "A. S. H."}
 {"name": "Dr. Ana García López", "title": "Dr.", "given": "Ana", "middle": "García", "family": "López", "initials": "A. G. L."}
+{"name": "Dr. Ana García López Jr.", "title": "Dr.", "given": "Ana", "middle": "García", "family": "López", "suffix": "Jr.", "initials": "A. G. L.", "generation": "Jr."}
 {"name": "Dr. Ardelean Dl Daniel Ionescu Dragoș Ioan Jr.", "order": "FAMILY_FIRST", "title": "Dr.", "given": "Dl", "middle": "Daniel Ionescu Dragoș Ioan", "family": "Ardelean", "suffix": "Jr.", "initials": "D. D. I. D. I. A.", "capitalized_force": "Dr. Ardelean DL Daniel Ionescu Dragoș Ioan Jr.", "generation": "Jr."}
 {"name": "Dr. Do Van Johnson, MD", "title": "Dr.", "given": "Do", "family": "Van Johnson", "suffix": "MD", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "D. J.", "capitalized_force": "Dr. Do van Johnson, MD"}
 {"name": "Dr. Freiherr von Berg, Ed", "title": "Dr.", "given": "Ed", "family": "Freiherr von Berg", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "E. B.", "capitalized_force": "Dr. Ed freiherr von Berg"}
@@ -1146,6 +1148,7 @@
 {"name": "García Antonio Juan Carlos", "given": "García", "middle": "Antonio Juan", "family": "Carlos", "initials": "G. A. J. C."}
 {"name": "García Juan Carlos", "given": "García", "middle": "Juan", "family": "Carlos", "initials": "G. J. C."}
 {"name": "García López, Ana", "given": "Ana", "family": "García López", "initials": "A. G. L."}
+{"name": "García López, Ana María", "given": "Ana", "middle": "María", "family": "García López", "initials": "A. M. G. L."}
 {"name": "García Márquez Ana María", "given": "García", "middle": "Márquez Ana", "family": "María", "initials": "G. M. A. M."}
 {"name": "García Márquez Gabriel", "given": "García", "middle": "Márquez", "family": "Gabriel", "initials": "G. M. G."}
 {"name": "García Márquez, Ed G.J.", "given": "Ed", "middle": "G.J.", "family": "García Márquez", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)", "SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "E. G. G. M."}
@@ -2193,6 +2196,7 @@
 {"name": "Juan de la Vega", "given": "Juan", "family": "de la Vega", "initials": "J. V."}
 {"name": "Juan de la Vega III", "given": "Juan", "family": "de la Vega", "suffix": "III", "initials": "J. V.", "generation": "III"}
 {"name": "Juan de la Vega Rodríguez", "given": "Juan", "family": "de la Vega Rodríguez", "initials": "J. V. R."}
+{"name": "Juan de la Vega del Valle", "given": "Juan", "middle": "de la Vega", "family": "del Valle", "initials": "J. V. V."}
 {"name": "Juan de la Vega, Jr.", "given": "Juan", "family": "de la Vega", "suffix": "Jr.", "initials": "J. V.", "generation": "Jr."}
 {"name": "Juan de la de la Vega", "given": "Juan", "family": "de la de la Vega", "initials": "J. V."}
 {"name": "Juan de la de la Vega Jr.", "given": "Juan", "family": "de la de la Vega", "suffix": "Jr.", "initials": "J. V.", "generation": "Jr."}
@@ -3094,6 +3098,11 @@
 {"name": "Pérez José Luis", "given": "Pérez", "middle": "José", "family": "Luis", "initials": "P. J. L."}
 {"name": "Pérez Lucía", "order": "FAMILY_FIRST", "given": "Lucía", "family": "Pérez", "initials": "L. P."}
 {"name": "Pérez Luis José", "given": "Pérez", "middle": "Luis", "family": "José", "initials": "P. L. J."}
+{"name": "Pérez de la Vega", "given": "Pérez", "family": "de la Vega", "initials": "P. V."}
+{"name": "Pérez de la Vega Juan", "given": "Pérez", "family": "de la Vega Juan", "initials": "P. V. J."}
+{"name": "Pérez de la Vega Juan Carlos", "given": "Pérez", "family": "de la Vega Juan Carlos", "initials": "P. V. J. C."}
+{"name": "Pérez de la Vega y Santos Juan", "given": "Pérez", "family": "de la Vega y Santos Juan", "initials": "P. V. S. J."}
+{"name": "Pérez de la Vega, Juan", "given": "Juan", "family": "Pérez de la Vega", "initials": "J. P. V."}
 {"name": "Pérez, Antonio Juan Carlos", "given": "Antonio", "middle": "Juan Carlos", "family": "Pérez", "initials": "A. J. C. P."}
 {"name": "Pérez, Juan Carlos", "given": "Juan", "middle": "Carlos", "family": "Pérez", "initials": "J. C. P."}
 {"name": "Pérez, Juan Ó.", "given": "Juan", "middle": "Ó.", "family": "Pérez", "initials": "J. Ó. P."}
@@ -3757,6 +3766,7 @@
 {"name": "Van Maximilian Carlson", "given": "Van", "middle": "Maximilian", "family": "Carlson", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "V. M. C."}
 {"name": "Van Nguyen", "given": "Van", "family": "Nguyen", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "V. N."}
 {"name": "Van Rooten, Luis", "given": "Luis", "family": "Van Rooten", "initials": "L. R.", "capitalized_force": "Luis van Rooten"}
+{"name": "Van der Merwe Jan", "given": "Van", "family": "der Merwe Jan", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "V. M. J."}
 {"name": "Van der Merwe Jan Koos", "order": "FAMILY_FIRST", "given": "der Merwe Jan Koos", "family": "Van", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "d. M. J. K. V.", "capitalized_force": "Van Der Merwe Jan Koos"}
 {"name": "Van der Merwe, Jan Koos", "given": "Jan", "middle": "Koos", "family": "Van der Merwe", "initials": "J. K. M.", "capitalized_force": "Jan Koos van der Merwe"}
 {"name": "Van der Walt", "given": "Van", "family": "der Walt", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "V. W."}
@@ -4256,6 +4266,7 @@
 {"name": "van Doe, Jane Mrs", "title": "Mrs", "given": "Jane", "family": "van Doe", "initials": "J. D."}
 {"name": "van Gogh", "given": "van", "family": "Gogh", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "v. G.", "capitalized_force": "Van Gogh"}
 {"name": "van Gogh Ana María", "given": "van", "middle": "Gogh Ana", "family": "María", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "v. G. A. M.", "capitalized_force": "Van Gogh Ana María"}
+{"name": "van Gogh Vincent", "given": "van", "middle": "Gogh", "family": "Vincent", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "v. G. V.", "capitalized_force": "Van Gogh Vincent"}
 {"name": "van Gogh Vincent", "order": "FAMILY_FIRST", "given": "Gogh", "middle": "Vincent", "family": "van", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "G. V. v.", "capitalized_force": "Van Gogh Vincent"}
 {"name": "van Gogh, Sir", "title": "Sir", "family": "van Gogh", "initials": "G."}
 {"name": "van den Berg Cornelia Margarita Sofia Aletta MBChB PhD", "order": "FAMILY_FIRST", "given": "den Berg Cornelia Margarita Sofia Aletta", "family": "van", "suffix": "MBChB PhD", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "d. B. C. M. S. A. v.", "capitalized_force": "Van Den Berg Cornelia Margarita Sofia Aletta MBChB PhD"}

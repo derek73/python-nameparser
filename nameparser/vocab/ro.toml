@@ -15,3 +15,7 @@ salutation = { issue = 606, gender = "f", after_given = true }
 [[word]]
 text = "domnul"
 salutation = { issue = 606, gender = "m", after_given = true }
+
+[[word]]
+text = "profesor"
+academic = { issue = 804, expands = "Profesor, Professor, as in es.toml", note = "the Romanian word; a ClinicalTrials.gov official with a Romanian name writes it after a comma (Ioana Grințescu, Profesor); counts are on es.toml's reading (2026-11-03)" }

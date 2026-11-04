@@ -345,14 +345,16 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # #913's 'Saint Clair Soares' and 'Mr Saint Martin Sterling', each
     # reporting title-or-name under three orders; 1542 -> 1545 the same
     # day, #1037's 'Delos Wheeler', reporting particle-or-given under
-    # three orders; 1545 -> 1572 the same day, #1039's given reading of
-    # junior and júnior: nine more suffix-or-name reports (five new rows
-    # one each, the 'Pedro Junior Filho' row two, 'Pedro Júnior Neto' a
-    # second, 'José Silva Júnior' one), each under three orders; 1572
-    # -> 1575 the same day, #1039's review row 'Smith, Junior.',
-    # reporting suffix-or-name under three orders.
-    assert claims == 1575, (
-        f"the field sweep checks {claims} claims, recorded as 1575 on "
+    # three orders; 1545 -> 1546 the same day, #1024's 'du Ménil Thi
+    # Mai', reporting particle-or-given; 1546 -> 1573 the same day,
+    # #1039's given reading of junior and júnior: nine more
+    # suffix-or-name reports (five new rows one each, the 'Pedro Junior
+    # Filho' row two, 'Pedro Júnior Neto' a second, 'José Silva Júnior'
+    # one), each under three orders; 1573 -> 1576 the same day, #1039's
+    # review row 'Smith, Junior.', reporting suffix-or-name under three
+    # orders.
+    assert claims == 1576, (
+        f"the field sweep checks {claims} claims, recorded as 1576 on "
         f"2026-11-03")
 
 

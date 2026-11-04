@@ -5,9 +5,9 @@
 - `ParsedName.surname2` holds the family's second name unit where rules/O6 read the family as two, and is empty otherwise; it is a view, not a role, so `family`, `surnames`, `as_dict()`, `replace()`'s fields and the repr are unchanged, item 5 of decisions/vocabulary-model's 2026-10-28 #754 output-model entry — 2026-10-29 #754, sub-phase 4d.
 - O6's mark is a private tag that assemble drops, carried out on `Reading.second_surname`, a field `Token.reading`'s readings gained and that is not compared, where the RFC had a stable tag: a published tag would make an O6 parse unequal to its own 2.x pickle — 2026-10-29 #754, sub-phase 4d.
 
-Elsewhere: why the second surname is a view of `family` rather than a role, the ORCID measurements behind it, and the `surnames` redefinition declined, decisions/vocabulary-model's 2026-10-28 #754 entry, item 5; how O6 counts a family's words and which names it declines, decisions/O6.
+Elsewhere: why the second surname is a view of `family` rather than a role, the ORCID measurements behind it, and the `surnames` redefinition declined, decisions/vocabulary-model's 2026-10-28 #754 entry, item 5; how O6 counts a family's words and which names it declines, decisions/O6; the first unit's views, `surname1` and its particles and base, decisions/R11 (#1022).
 
-Open: a view for the first unit and its name, `surname` standing close to the `surnames` that exists, with the per-unit particles and base CLDR's `surname-prefix` and `surname-core` would need (the RFC's render-pattern table and Left open); whether a family a connective or a hyphen joins (`Ortega y Gasset`, `García-López`) should read as two units here though O6 counts it as holding two already.
+Open: whether a family a connective or a hyphen joins (`Ortega y Gasset`, `García-López`) should read as two units here though O6 counts it as holding two already.
 
 ## Log
 
