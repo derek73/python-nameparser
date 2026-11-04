@@ -3,7 +3,7 @@
 "Nicolás Matías Gómez" keeps family "Gómez". It is locales.ES's list
 cut looser (decisions/O6, 2026-11-04): two family names are less
 settled in Argentina than in Spain, and many of its commonest second
-given names are words Spain also bears as surnames in a sixth to a
+given names are words Spain also bears as surnames in a fifth to a
 quarter of their uses (``nicolas``, ``matias``, ``sebastian``), which
 locales.ES's 90% bar leaves out. It holds every
 word of locales.ES's list, so the two packs stacked read as this one.

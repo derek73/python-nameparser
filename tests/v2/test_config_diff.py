@@ -479,9 +479,11 @@ def test_main_runs_a_score_end_to_end(monkeypatch: pytest.MonkeyPatch,
 def test_a_second_suffix_or_switches_over_an_expr_is_refused() -> None:
     with pytest.raises(ValueError, match="one @ suffix"):
         cd.build("default@two_family_names=1@two_given_names=0")
-    for spec in ("plain:ES@two_given_names=1", "expr:Parser()"):
-        with pytest.raises(ValueError, match="--switches writes"):
-            cd.expand([spec], ["two_family_names"])
+    # each names the fix that applies to it: an expr: reads no suffix
+    with pytest.raises(ValueError, match="never reads; set the fields in the expression's Policy"):
+        cd.expand(["expr:Parser()"], ["two_family_names"])
+    with pytest.raises(ValueError, match="drop the SPEC's suffix, or --switches"):
+        cd.expand(["plain:ES@two_given_names=1"], ["two_family_names"])
 
 
 def test_score_drops_title_and_empty_box_records_and_small_groups(

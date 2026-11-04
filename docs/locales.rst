@@ -605,9 +605,9 @@ Shipped packs
        ``Pérez``). See `Spanish and Portuguese titles`_.
    * - ``es_ar``
      - Argentine Spanish — ``es`` with a longer given-name list, one
-       holding given names Argentine names write before a single
-       surname that Spain bears often enough as surnames to leave off
-       ``es``'s list (``Pablo Sebastián
+       holding given names that Spain bears often enough as surnames
+       to leave off ``es``'s list, which Argentine names write before a
+       single surname (``Pablo Sebastián
        Rosales`` → family ``Rosales``, where ``es`` gives ``Sebastián
        Rosales``). See `Spanish and Portuguese titles`_.
    * - ``ga``
@@ -849,7 +849,7 @@ measured, the names that agree in every box with the filer rise from
 Two family names are less settled in Argentina than in Spain and most
 of Latin America, and many of its commonest second given names, ``Sebastián``, ``Nicolás``,
 ``Matías``, ``Andrés``, are given names Spain also bears as surnames
-in a sixth to a quarter of their uses, so ``es``'s list, which keeps
+in a fifth to a quarter of their uses, so ``es``'s list, which keeps
 only words given in at least 90% of their uses, leaves them out and the
 switch takes them into the family.
 ``es_ar`` is ``es`` with 5,000 given names from the same census tables,

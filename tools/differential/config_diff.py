@@ -93,8 +93,10 @@ agreeing in every box (local_agreement.read), and for the best one the
 records it fixes and breaks against the first. `--switches` names bool
 `Policy` fields and reads every configuration under every combination
 of them, written in full as an `@` suffix (`plain:ES@two_family_names=0,
-two_given_names=1`, which any SPEC may carry), set on the policy last,
-over what the packs patched. It is the per-country sweep a country
+two_given_names=1`), set on the policy last, over what the packs
+patched. A SPEC other than an `expr:` may carry one suffix of its own,
+in diff or in score without --switches; an `expr:` sets its switches in
+its own `Policy`. It is the per-country sweep a country
 preset is measured by:
 
     uv run python tools/differential/config_diff.py score default plain:ES \\
@@ -292,10 +294,13 @@ def expand(specs: Sequence[str], switches: Sequence[str]) -> list[str]:
     if not switches:
         return list(specs)
     for spec in specs:
-        if spec.startswith("expr:") or "@" in spec:
+        if spec.startswith("expr:"):
+            raise ValueError(f"{spec!r}: --switches writes an @ suffix, which an expr: "
+                             f"never reads; set the fields in the expression's Policy, "
+                             f"one expr: a combination")
+        if "@" in spec:
             raise ValueError(f"{spec!r}: --switches writes each configuration's @ suffix "
-                             f"itself, so it takes neither an expr: nor a configuration "
-                             f"already carrying one; set those switches in the SPEC alone")
+                             f"itself; drop the SPEC's suffix, or --switches")
     combos = itertools.product("01", repeat=len(switches))
     suffixes = [",".join(f"{s}={v}" for s, v in zip(switches, c)) for c in combos]
     return [f"{spec}@{suffix}" for spec in specs for suffix in suffixes]
