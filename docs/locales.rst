@@ -204,6 +204,20 @@ Smith``. The ``zh`` pack makes no choice of languages, so it leaves
 ``Hon`` a title; the reading needs a :class:`~nameparser.Locale` with
 ``languages``.
 
+A language can have a file and no pack. Breton writes its article
+``ar`` before the surname (``Katell ar Gall``), and the letters are
+paired initials or the Arabic article in every other language's names,
+so only a choice of ``br`` reads the particle:
+
+.. doctest::
+
+    >>> breton = Locale(code="br", lexicon=Lexicon.empty(),
+    ...                 languages=frozenset({"br"}))
+    >>> parse("Katell ar Gall").family
+    'Gall'
+    >>> parser_for(breton).parse("Katell ar Gall").family
+    'ar Gall'
+
 A tag selects its own file and those of the languages it belongs to,
 never the other way: ``pt-BR`` reads ``pt.toml`` too, and ``pt``
 leaves the Brazilian words alone. No other table of related languages
@@ -503,8 +517,7 @@ Choosing the language costs the other readings of these words. ``Pan
 Wei`` reads title ``Pan``, ``Rosalind Roz Smith`` takes ``Smith`` for
 a maiden name, and ``st`` loses its Saint readings, so ``St Clair
 Smith`` reads given ``St``. A caller whose names also hold the English
-Saint chooses French too, whose only other word the choice changes is
-``père``:
+Saint chooses French too, a choice that changes no other word:
 
 .. doctest::
 

@@ -126,14 +126,28 @@ def select(given: Counter[str], surname: Counter[str], excluded: set[str],
     return ranked[:top]
 
 
+#: Words kept though a vocabulary word folds to them, each with its
+#: reason: the fold drops accents, and these meet a different word.
+FOLD_KEPT = {
+    # the Catalan given name, which the French generation `père` (the
+    # Elder, a suffix by default since 2026-11-03, #684) folds to; the
+    # suffix peel reads `Alexandre Dumas père` before rules/O6 reads the
+    # list, and a Title-case `Père`, which the gate leaves a name word,
+    # is the French surname, which the list keeping out of a Spanish
+    # family pair costs nothing measured
+    "pere",
+}
+
+
 def excluded_words() -> set[str]:
     """Every word the default vocabulary reads as a particle, a
-    conjunction, a title or a suffix, folded as the list is."""
+    conjunction, a title or a suffix, folded as the list is, less the
+    FOLD_KEPT words."""
     from nameparser import Lexicon
     lex = Lexicon.default()
     pool = (lex._sets.particles | lex._sets.conjunctions | lex._sets.titles
             | lex._sets.titles_ambiguous | lex._sets.suffix_acronyms | lex._sets.suffix_words)
-    return {fold(w) for entry in pool for w in entry.split()}
+    return {fold(w) for entry in pool for w in entry.split()} - FOLD_KEPT
 
 
 def render(ranked: list[str]) -> str:

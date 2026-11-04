@@ -1,6 +1,10 @@
 schema = 1
 
 [[word]]
+text = "m"
+excluded = { salutation = { reason = "M., Monsieur abbreviated (M. Jean Dupont), but written exactly as an initial is (rules/T5), and in names nearly always one: 782 ORCID records and 168 PatentsView inventors open with M. before two or more name words (M. Ali Khan), every one an initial, and no local corpus writes the salutation; under any choice it would take the given initial of every M. Smith. No writing tells the two apart, so no pack reads it", issue = 658, decided = 2026-11-03 } }
+
+[[word]]
 text = "madame"
 salutation = { gender = "f", after_given = true }
 
@@ -29,6 +33,18 @@ family = { us_census_2010 = 112, wikidata = 14, as_of = 2026-10-27 }
 [[word]]
 text = "me"
 academic = { expands = "Maître, the address of a lawyer or notary" }
+
+[[word]]
+text = "professeur"
+academic = { gender = "m", issue = 804, expands = "Professeur, Professor", note = "13 ClinicalTrials.gov officials write it, 12 after a comma, and 3 ORCID records; no US Census, US SSA or nam_dict bearer, and the 3 Wikidata given labels are the word, not a name (2026-11-03)" }
+
+[[word]]
+text = "pr"
+academic = { same_as = "professeur", issue = 804, expands = "Pr, Professeur abbreviated, as Dr is Docteur: written bare, without a period", note = "ClinicalTrials.gov's officials write it 1,551 times, bare or with a period (Pr 1,335, Pr. 138, PR 70 the commonest spellings), 1,454 after a comma (Patrick Mercier, Pr), and 56 ORCID records hold it, mostly opening the name (Pr Roger Noun); US Census 2010 under 100, US SSA under 5 births a year, no Wikidata bearer (2026-11-03). As a title it takes the paired initials PR where they are the whole given part (Hills, PR, 5 names of every local corpus) or open the name (PR Narayanan, 4), as DR does, and the given name glued behind it (Pr.Brahim Benzougagh, 4), as Dr. does: accepted against the other 1,234 of the 1,247 names it moves, which it gives the title back to (decisions/salutation-titles' 2026-11-03 #804 entry)" }
+
+[[word]]
+text = "professeure"
+academic = { gender = "f", same_as = "professeur", issue = 804, expands = "Professeure, the feminine of professeur", note = "no bearer in any source tools/name_usage.py reads, and no local corpus writes it (2026-11-03)" }
 
 [[word]]
 text = "mgr"
@@ -102,7 +118,8 @@ family = { us_census_2010 = 767, wikidata = 5, as_of = 2026-10-16 }
 
 [[word]]
 text = "père"
-generation = { default = false, expands = "father, the Elder: Alexandre Dumas père", issue = [679, 684, 753], note = "real and standard, but collides outside French, so no default reads it; a French pack turns it on" }
+generation = { expands = "father, the Elder: Alexandre Dumas père", issue = [679, 684, 753], note = "read by default since 2026-11-03 (#684), gated by the family reading as fils is (rules/S11): lower case ends the name as the generation where a family word stays, Title case leans to the name (Olivier Père keeps his family name). Off by default from phase 3c until then, for a collision outside French that no measurement found: the accent is not folded, so the Catalan given name Pere is untouched; on by default it moved 4 names of every local and committed corpus, 2 to the generation (Alexandre Dumas père) and 2 gaining only the report" }
+family = { wikidata = 3, as_of = 2026-11-03, note = "a French surname: Wikidata is a lower bound; ORCID's family box 1 record in France and 1 in Belgium, and jrc-names and orcid-researchers each hold a name ending in it (Olivier Père); US Census 2010 616 bearers of PERE, which writes no accent, so they may be the Catalan Pere" }
 
 [[word]]
 text = "d'"

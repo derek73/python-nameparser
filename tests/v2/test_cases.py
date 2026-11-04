@@ -346,9 +346,11 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # reporting title-or-name under three orders; 1542 -> 1545 the same
     # day, #1037's 'Delos Wheeler', reporting particle-or-given under
     # three orders; 1545 -> 1546 the same day, #1024's 'du Ménil Thi
-    # Mai', reporting particle-or-given.
-    assert claims == 1546, (
-        f"the field sweep checks {claims} claims, recorded as 1546 on "
+    # Mai', reporting particle-or-given; 1546 -> 1552 the same day, #684's
+    # 'Alexandre Dumas père' and 'Olivier Père', each reporting
+    # suffix-or-name under three orders.
+    assert claims == 1552, (
+        f"the field sweep checks {claims} claims, recorded as 1552 on "
         f"2026-11-03")
 
 
@@ -710,8 +712,9 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # 455 -> 459 and 326 -> 333 the same day, #1023's generation-word
     # rows; 333 -> 330 on 2026-11-03, #993's listing of MBBS, the
     # 'Nasreen Sultana, MBBS' row reporting no fork under the three
-    # orders
-    assert (checked, skipped) == (459, 330), (checked, skipped)
+    # orders; 459 -> 462 the same day, #684's two père rows under the
+    # three orders
+    assert (checked, skipped) == (462, 330), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:
