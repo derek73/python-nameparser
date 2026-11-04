@@ -151,10 +151,13 @@
   "The Hon. Wing Lau"         →  title="The Hon. Wing"
   "John Smith Wing. Jr."      →  title="Wing."
   ```
-- An epithet that is also a given name, written with its article before the name or after a comma, reads as a name word, the article joining it; no name data at hand writes either shape.
+- A title that may be a given name, written with its article before the name or after a comma, reads as a name word, the article joining it, as an epithet does, unless it is a style written short or has another partner, such as `of` after it; the name data at hand writes the article there almost only before `of` or behind a style.
   ```
   "The Mahdi Muhammad Ahmad"  →  given="The Mahdi"
   "William Shakespeare, the Bard"  →  given="the Bard"
+  "The Marquis de Sade"       →  given="The Marquis"
+  "The Saint Thomas More"     →  given="The Saint"
+  "The Marquis of Tavistock"  →  title="The Marquis of Tavistock"
   ```
 - A religious title that also opens given names, in its own tradition or another, written bare, reads as a name word before a name in every tradition, behind any title but a style, a modifier or one that attaches to it; the name data at hand writes the title there almost never.
   ```
