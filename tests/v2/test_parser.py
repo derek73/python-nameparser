@@ -3112,6 +3112,12 @@ def test_a_strict_choice_keeps_mul_and_native_script_vocabulary() -> None:
     # and South Indian initials read as the default reads them
     assert strict.parse("Ms Minh Do").title == "Ms"
     assert strict.parse("Miss Minh Do").title == "Miss"
+    # `mister` with its family reading and `madam` (2026-11-03, #1038),
+    # forms of address an English-language register writes for everyone
+    assert strict.parse("Mister Minh Do").title == "Mister"
+    assert strict.parse("Madam Minh Do").title == "Madam"
+    assert strict.parse("Do, Madam Minh").title == "Madam"
+    assert strict.parse("Do, Minh Madam").title == "Madam"
     assert strict.parse("A Israni, MD, MS").suffix == "MS"
     assert strict.parse("Radha MS").suffix == parse("Radha MS").suffix == "MS"
     # the five degrees #1021 moved (and `ms`'s, above), each after a
@@ -3122,6 +3128,11 @@ def test_a_strict_choice_keeps_mul_and_native_script_vocabulary() -> None:
     # Muhammad, `mx`, the abbreviation for Mexico, and `rn`
     assert strict.parse("Minh Do, MD").given == "MD"
     assert strict.parse("Mx Minh Do").given == "Mx"
+    # and `sir`, a British honour, and the job titles `director` and
+    # `ceo` (#1038)
+    assert strict.parse("Sir Minh Do").given == "Sir"
+    assert strict.parse("Director Minh Do").given == "Director"
+    assert strict.parse("Ceo Minh Do").given == "Ceo"
     assert strict.parse("Minh Do, RN").given == "RN"
     # every reading of `do` (en.toml's credential and name readings,
     # pt.toml's particle) is in a file strict vi does not read, so `Do`
@@ -3171,6 +3182,30 @@ def test_md_stays_out_of_a_strict_choice_that_does_not_read_en() -> None:
         got = bn.parse(text)
         assert (got.given, got.middle, got.suffix) == (given, middle, ""), text
     assert bn.parse("Md Rahman").given == "Md"
+
+
+def test_a_strict_filipino_choice_reads_the_one_word_and_plural_particles() -> None:
+    # #1037: fil.toml holds delos (de los written as one word) and las,
+    # so strict fil reads them as the default does; las was es.toml's
+    # alone, and strict fil read Las Piñas as a middle and a family
+    fil = parser_for(_choosing("fil"), strict=True)
+    for text, given, middle, family in (
+            ("Juan Delos Reyes", "Juan", "", "Delos Reyes"),
+            ("Ma. Luisa Delos Santos", "Ma.", "Luisa", "Delos Santos"),
+            ("Maria Las Piñas", "Maria", "", "Las Piñas")):
+        for parser in (Parser(), fil):
+            got = parser.parse(text)
+            assert (got.given, got.middle, got.family) == (given, middle, family), text
+    # their masks: case repair keeps the title case Filipino surnames
+    # write, where a particle is otherwise lowercased (rules/R4)
+    for parser in (Parser(), fil):
+        for text, repaired in (("JUAN DELOS REYES", "Juan Delos Reyes"),
+                               ("juan dela cruz", "Juan Dela Cruz")):
+            assert str(parser.parse(text).capitalized()) == repaired, text
+        # a name written in mixed case keeps its own case unless forced
+        written = parser.parse("Juan dela Cruz")
+        assert str(written.capitalized()) == "Juan dela Cruz"
+        assert str(written.capitalized(force=True)) == "Juan Dela Cruz"
 
 
 def test_a_caller_removes_a_mul_word_as_any_other() -> None:

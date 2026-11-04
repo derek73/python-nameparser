@@ -1007,7 +1007,7 @@
 {"name": "É. y É. Smith", "given": "É.", "middle": "y É.", "family": "Smith", "initials": "É. É. S."}
 {"name": "Ế Nguyen", "given": "Ế", "family": "Nguyen", "initials": "Ế. N."}
 {"name": "F. de Lange", "given": "F.", "family": "de Lange", "initials": "F. L."}
-{"name": "FRITZ FREIHERR UND VON BAR", "given": "FRITZ", "family": "FREIHERR UND VON BAR", "initials": "F. U.", "capitalized": "Fritz freiherr und von bar"}
+{"name": "FRITZ FREIHERR UND VON BAR", "given": "FRITZ", "family": "FREIHERR UND VON BAR", "initials": "F. F. V. B.", "capitalized": "Fritz Freiherr und Von Bar"}
 {"name": "Fabbri Irene", "order": "FAMILY_FIRST", "given": "Irene", "family": "Fabbri", "initials": "I. F."}
 {"name": "Fabbri, Irene", "given": "Irene", "family": "Fabbri", "initials": "I. F."}
 {"name": "Fabián Pérez Ximeno", "given": "Fabián", "middle": "Pérez", "family": "Ximeno", "initials": "F. P. X."}
@@ -1106,7 +1106,7 @@
 {"name": "Friedrich IV.", "given": "Friedrich", "suffix": "IV.", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "F.", "generation": "IV."}
 {"name": "Friedrich Ludwig von Waldburg-Truchsess", "given": "Friedrich", "middle": "Ludwig", "family": "von Waldburg-Truchsess", "initials": "F. L. W."}
 {"name": "Friedrich V.", "given": "Friedrich", "family": "V.", "initials": "F. V."}
-{"name": "Fritz Freiherr und von Bar", "given": "Fritz", "family": "Freiherr und von Bar", "initials": "F. u.", "capitalized_force": "Fritz freiherr und von bar"}
+{"name": "Fritz Freiherr und von Bar", "given": "Fritz", "family": "Freiherr und von Bar", "initials": "F. F. v. B.", "capitalized_force": "Fritz Freiherr und Von Bar"}
 {"name": "Fritz von Unruh", "given": "Fritz", "family": "von Unruh", "initials": "F. U."}
 {"name": "Frøken Jensen", "title": "Frøken", "family": "Jensen", "initials": "J."}
 {"name": "Frühbeck de Burgos, Rafael", "given": "Rafael", "family": "Frühbeck de Burgos", "initials": "R. F. B."}
@@ -1498,7 +1498,7 @@
 {"name": "JOSÉ GARCÍA", "given": "JOSÉ", "family": "GARCÍA", "initials": "J. G.", "capitalized": "José García"}
 {"name": "JOSÉ GARCÍA", "given": "JOSÉ", "family": "GARCÍA", "initials": "J. G.", "capitalized": "José García"}
 {"name": "JP Clancy, MD", "given": "JP", "family": "Clancy", "suffix": "MD", "initials": "J. C.", "capitalized_force": "Jp Clancy, MD"}
-{"name": "JUAN DELA CRUZ", "given": "JUAN", "family": "DELA CRUZ", "initials": "J. C.", "capitalized": "Juan dela Cruz"}
+{"name": "JUAN DELA CRUZ", "given": "JUAN", "family": "DELA CRUZ", "initials": "J. C.", "capitalized": "Juan Dela Cruz"}
 {"name": "JUAN GARCIA Jr.", "given": "JUAN", "family": "GARCIA", "suffix": "Jr.", "initials": "J. G.", "capitalized": "Juan Garcia Jr.", "generation": "Jr."}
 {"name": "JUAN GARCIA Y LOPEZ", "given": "JUAN", "family": "GARCIA Y LOPEZ", "initials": "J. G. L.", "capitalized": "Juan Garcia y Lopez"}
 {"name": "JUAN Y GARCIA", "given": "JUAN", "middle": "Y", "family": "GARCIA", "initials": "J. Y. G.", "capitalized": "Juan y Garcia"}

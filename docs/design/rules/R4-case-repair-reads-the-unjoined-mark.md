@@ -116,7 +116,7 @@
   ```
   "ANH DO"                    →  capitalized="Anh Do"
   "anh van do"                →  capitalized="Anh Van Do"
-  "FRITZ FREIHERR UND VON BAR"  →  capitalized="Fritz Freiherr und Von Bar"  deviates: #939 (today: capitalized="Fritz freiherr und von bar")
+  "FRITZ FREIHERR UND VON BAR"  →  capitalized="Fritz Freiherr und Von Bar"
   ```
 - **A connective the parse read as the generation it also spells** is not a connective of this name at all, and is repaired as the generation it was read as.
   ```

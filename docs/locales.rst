@@ -306,7 +306,7 @@ Latin (the Korean, Japanese and Chinese honorifics, the Cyrillic and
 Devanagari titles), which selects itself by its script, and the words
 every language writes alike, in the shared ``mul`` file, among them
 ``Dr``, ``Prof``, ``Mr``, ``Mrs``, ``Ms`` (the salutation and the degree), ``Miss``,
-the degrees ``PhD``, ``MSc``, ``MBA``, ``MPH`` and ``BSc``, the numerals and ``Jr``. Every other
+``Mister``, ``Madam``, the degrees ``PhD``, ``MSc``, ``MBA``, ``MPH`` and ``BSc``, the numerals and ``Jr``. Every other
 language's words leave, and a word none of these holds is read as a
 name word:
 
