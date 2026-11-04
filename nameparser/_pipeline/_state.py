@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import bisect
 import dataclasses
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from enum import Enum, auto
 from types import MappingProxyType
@@ -104,14 +104,6 @@ AMBIGUOUS_WORD_TAG = "vocab:suffix-word-ambiguous"
 AGNOMEN_TAG = "vocab:agnomen"
 TITLE_CASE_NAME_TAG = "vocab:title-case-name"
 
-#: The tags that say a list or a shape made a word a suffix, or may: read
-#: by assemble for a suffix's source and by post_rules for a word the
-#: trailing read weighed inside a particle chain (rules/P1, #828).
-SUFFIX_EVIDENCE = frozenset({
-    "vocab:suffix", "vocab:suffix-word", AMBIGUOUS_ACRONYM_TAG,
-    AMBIGUOUS_WORD_TAG, AGNOMEN_TAG, SHAPE_ACRONYM_TAG,
-    SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG})
-
 #: Beside "vocab:suffix-word" on a word whose shipped reading index
 #: kind is a generation (`jr`), a credential written as a word
 #: (`博士`) or an honorific (`さん`, #326), which the compiled sets do
@@ -128,6 +120,28 @@ HONORIFIC_WORD_TAG = "vocab:honorific-word"
 #: assemble for `Token.reading` and by assign for the reading a report
 #: names, and dropped from the published token like the kind tags above.
 PATRONYMIC_TAG = "vocab:patronymic"
+
+#: On each word of a particle chain opening a family-first name past
+#: the reach of rules/P1's fold (#828), written by post_rules whether or
+#: not the fold cuts the chain there, so assemble can tell where a
+#: report's other reading would land; dropped from the published token
+#: like the kind tags above.
+PAST_REACH_TAG = "chain:past-reach"
+
+
+def reported_suffix_fork(ambiguities: Sequence[PendingAmbiguity],
+                         indices: Iterable[int],
+                         skip: PendingAmbiguity | None = None) -> bool:
+    """rules/P1's question about a chain opening a family-first name
+    that the fold would cut (#828): whether a report the trailing read
+    made, a suffix-or-name fork, names a word of `indices`, the words
+    past the fold's reach. Such a word was read against the whole chain,
+    so the chain stands. Asked by the fold in post_rules and, with `skip`
+    the report whose other reading it names, by assemble."""
+    past = set(indices)
+    return any(a is not skip and a.kind is AmbiguityKind.SUFFIX_OR_NAME
+               and not past.isdisjoint(a.indices) for a in ambiguities)
+
 
 #: Beside FOLDED_TAG on the particles rules/P6 attaches to the family
 #: written before them, at either of its sites, so rules/R9 can tell

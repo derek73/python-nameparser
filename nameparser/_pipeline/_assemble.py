@@ -35,19 +35,21 @@ from __future__ import annotations
 
 import functools
 import unicodedata
+from collections.abc import Sequence
 from types import MappingProxyType
 
 from nameparser._lexicon import (
     _VOCAB_FIELDS, Lexicon, _normalize, _ReadingFiles,
 )
 from nameparser._pipeline._state import (
-    ATTACHED_TAG,
+    AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, ATTACHED_TAG,
     CREDENTIAL_WORD_TAG, FIELD_READING, GENERATION_WORD_TAG, HONORIFIC_WORD_TAG,
-    NAME_ROLES, PATRONYMIC_TAG, SECOND_SURNAME_TAG, SHARED_NAME_TAG, PARTICLE_GIVEN_TAG,
+    NAME_ROLES, PATRONYMIC_TAG, SECOND_SURNAME_TAG, SHAPE_ACRONYM_TAG,
+    SHARED_NAME_TAG, PARTICLE_GIVEN_TAG,
     FIRST_SURNAME_TAG,
-    SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, SUFFIX_EVIDENCE,
+    SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, PAST_REACH_TAG,
     TITLE_AMBIGUOUS_TAG, TRAILING_TITLE_TAG, Beside, Deferred, ParseState, PendingAmbiguity,
-    Structure, WorkToken, comma_bucket,
+    Structure, WorkToken, comma_bucket, reported_suffix_fork,
 )
 from nameparser._pipeline._vocab import (
     _PERIOD_ABBREV, has_patronymic_ending, is_patronymic_marker,
@@ -225,7 +227,7 @@ _reading = functools.lru_cache(maxsize=1024)(Reading)
 #: rules/O6 and O7 read (#704).
 _KIND_TAGS = frozenset({GENERATION_WORD_TAG, CREDENTIAL_WORD_TAG, HONORIFIC_WORD_TAG,
                         PATRONYMIC_TAG, ATTACHED_TAG, TRAILING_TITLE_TAG,
-                        SHARED_NAME_TAG, PARTICLE_GIVEN_TAG})
+                        SHARED_NAME_TAG, PARTICLE_GIVEN_TAG, PAST_REACH_TAG})
 
 #: O6's second-surname mark (rules/R10), which no published token
 #: carries either: `Reading.second_surname` names it.
@@ -236,7 +238,10 @@ _FIRST_SURNAME = frozenset({FIRST_SURNAME_TAG})
 #: The tags that say a list or a shape made a word a suffix: without
 #: one, a suffix word stands there by position, unless the vocabulary
 #: lists it (a bracketed member, which classify leaves untagged).
-_SUFFIX_EVIDENCE = SUFFIX_EVIDENCE
+_SUFFIX_EVIDENCE = frozenset({
+    "vocab:suffix", "vocab:suffix-word", AMBIGUOUS_ACRONYM_TAG,
+    AMBIGUOUS_WORD_TAG, AGNOMEN_TAG, SHAPE_ACRONYM_TAG,
+    SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG})
 
 #: The tags that say the vocabulary lists a word as a title, in any of
 #: the title sets.
@@ -248,7 +253,9 @@ _TITLE_TAGS = frozenset({
 def _alternative(pending: PendingAmbiguity, materialized: tuple[Token, ...],
                  final: dict[int, Token], middle_as_family: bool,
                  lexicon: Lexicon,
-                 order: tuple[Role, Role, Role] | None) -> Reading | None:
+                 order: tuple[Role, Role, Role] | None,
+                 work: Sequence[WorkToken],
+                 ambiguities: Sequence[PendingAmbiguity]) -> Reading | None:
     """The public Reading of a report's PendingReading, its field named
     from the final roles where the emitter deferred it (O5's other
     primary field) and folded as `middle_as_family` folds every middle
@@ -280,17 +287,19 @@ def _alternative(pending: PendingAmbiguity, materialized: tuple[Token, ...],
         # own: rules/P1's fold takes its particles and that ONE unit
         # (#828), so the word, joining it last, is laid out by the order
         # behind the family -- the other primary where it would be the
-        # one word left, else the order's last name position -- unless a
-        # word the trailing read weighed stands in the chain, which the
-        # fold then leaves whole
+        # one word left, else the order's last name position -- unless
+        # another word past the fold's reach was read against the whole
+        # chain, which the fold then leaves whole (the one predicate the
+        # fold asks)
         elif (role is Role.FAMILY and order is not None
                 and order[0] is Role.FAMILY and beside.last is not None
                 and beside.last in final
                 and "particle" in front.tags
                 and "particle" not in final[beside.last].tags
-                and all(final[i].tags.isdisjoint(SUFFIX_EVIDENCE)
-                        for i in range(beside.index, pending.indices[0])
-                        if i in final)):
+                and not reported_suffix_fork(
+                    ambiguities,
+                    [i for i in range(beside.index, pending.indices[0])
+                     if PAST_REACH_TAG in work[i].tags], skip=pending)):
             alone = (final[beside.last].role is Role.FAMILY
                      and not any(beside.last < i < pending.indices[0]
                                  for i in final))
@@ -777,7 +786,7 @@ def assemble(state: ParseState) -> ParsedName:
             pending.kind, detail, materialized,
             _alternative(pending, materialized, final,
                          state.policy.middle_as_family, state.lexicon,
-                         state.order)))
+                         state.order, state.tokens, state.ambiguities)))
     return ParsedName(original=state.original,
                       tokens=tuple(final.values()),
                       ambiguities=tuple(ambiguities),

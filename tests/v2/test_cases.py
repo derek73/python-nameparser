@@ -407,6 +407,11 @@ _STAND_IN_REREADS = {
     # a name word in VI's place stops 'JNR' starting the run (S8)
     ("JOHN SMITH JNR VI JONES", None),
     ("JOHN SMITH JNR VI JONES", 2),
+    # a stand-in for the last of two words the trailing read reported
+    # leaves the first unreported, so the family-first fold cuts the
+    # chain it held whole (decisions/P1's 2026-11-04 #828 entry)
+    ("Freiherr von Berg X.Y.Z. X.Y.Z.", 1),
+    ("Freiherr von Berg X.Y.Z. X.Y.Z.", 2),
 }
 
 #: Reports whose deferred field assign could not name: the particle the
@@ -539,7 +544,12 @@ _REVIEW_SHAPES = ("PhD VI", "Jr VI", "III VI", "Smith, John van VI",
                   "Sir abdul VI", "Dr. mc VI", "de VI", "Smith, Dr. de VI",
                   # the PR review's: a given-name title licenses the
                   # bound join only from the leading run, as group asks
-                  "abdul VI Sir.", "Sir Dr. abdul VI", "Dr. Sir abdul VI")
+                  "abdul VI Sir.", "Sir Dr. abdul VI", "Dr. Sir abdul VI",
+                  # #828's fix review: a particle that is suffix
+                  # vocabulary, opening a chain the family-first fold
+                  # cuts, names the field the cut gives
+                  "St Mc Mesnil VI", "St vd Mesnil Jean VI",
+                  "St de Mesnil Jean V", "Freiherr von J. ma")
 
 
 @pytest.mark.parametrize("order", _INVARIANT_ORDERS)
@@ -722,8 +732,10 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # 'Nasreen Sultana, MBBS' row reporting no fork under the three
     # orders; 459 -> 462 the same day, #684's two père rows under the
     # three orders; 462 -> 477 the same day, #1039's junior rows under
-    # the three orders
-    assert (checked, skipped) == (477, 330), (checked, skipped)
+    # the three orders; 477 -> 475 and 330 -> 328 on 2026-11-04, #828's
+    # 'Freiherr von Berg X.Y.Z. X.Y.Z.' joining _STAND_IN_REREADS under
+    # the two family-first orders
+    assert (checked, skipped) == (475, 328), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:

@@ -55,10 +55,10 @@ from nameparser._pipeline._pieces import (
 )
 from nameparser._pipeline._state import (
     AMBIGUOUS_ACRONYM_TAG, ATTACHED_TAG, NAME_ROLES, PATRONYMIC_TAG,
-    PARTICLE_GIVEN_TAG, SHARED_NAME_TAG, SUFFIX_EVIDENCE,
+    PARTICLE_GIVEN_TAG, PAST_REACH_TAG, SHARED_NAME_TAG,
     FIRST_SURNAME_TAG, SECOND_SURNAME_TAG,
     ParseState, PendingAmbiguity, PendingReading, Structure,
-    WorkToken, _NEVER_FLIPPED, comma_bucket, copy_with,
+    WorkToken, _NEVER_FLIPPED, comma_bucket, copy_with, reported_suffix_fork,
 )
 from nameparser._pipeline._vocab import (
     delimiter_cores, has_patronymic_ending, is_initial, is_listed_given_name,
@@ -612,11 +612,11 @@ def _lead_folds(state: ParseState, tokens: list[WorkToken],
     if len(lead) < 2 or "particle" not in tokens[lead[0]].tags:
         return False
     reach = _fold_reach(tokens, list(lead))
-    # a word past the reach that the trailing read weighed as a suffix
-    # was decided against the whole chain, its report saying so ('St de
-    # Mesnil Jean V'): the cut would strand it, so the chain stands
-    return reach < len(lead) and all(
-        tokens[i].tags.isdisjoint(SUFFIX_EVIDENCE) for i in lead[reach:])
+    # a word past the reach the trailing read reported a fork on was read
+    # against the whole chain ('St de Mesnil Jean V', "no other word to
+    # spare"): the cut would strand it, so the chain stands
+    return reach < len(lead) and not reported_suffix_fork(
+        state.ambiguities, lead[reach:])
 
 
 # rules/S13: "where the member's writing settles it as the credential,
@@ -829,6 +829,13 @@ def post_rules(state: ParseState) -> ParseState:
     # -> given branch leaves the word this fold takes, asking the same
     # predicate (_family_settled).
     lead = _leading_name_piece(state, tokens)
+    if (state.order is not None and state.order[0] is Role.FAMILY
+            and len(lead) > 1 and "particle" in tokens[lead[0]].tags):
+        # the words past the fold's reach, marked for assemble's
+        # alternatives whether or not the fold cuts there (#828)
+        for i in lead[_fold_reach(tokens, list(lead)):]:
+            tokens[i] = copy_with(tokens[i],
+                                  tags=tokens[i].tags | {PAST_REACH_TAG})
     lead_fires = _lead_folds(state, tokens, lead)
     if len(givens) + len(middles) + len(families) > 1 and lead_fires:
         order = state.order

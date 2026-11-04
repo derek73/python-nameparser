@@ -422,11 +422,19 @@ def test_family_first_leading_particle_cases_that_do_not_fold(
     ("St abu Bakar", "abu Bakar", ""),
     # and a chain holding a word the trailing read weighed against the
     # whole chain stands, the read and its report being the chain's
-    # (#828's review): no word is stranded in the given name
+    # (#828's review): no word is stranded in the given name -- read off
+    # the read's report, not the word's vocabulary
     ("St de Mesnil Jean V", "de Mesnil Jean V", ""),
     ("Freiherr von Berg Otto Junior", "von Berg Otto Junior", ""),
     ("Freiherr von Berg Otto Ing", "von Berg Otto Ing", ""),
     ("Freiherr von Bishop X.Y.Z.", "von Bishop X.Y.Z.", ""),
+    # but a listed word the read took as a name word, reporting nothing,
+    # is no reason to keep the chain: it is cut (the fix commit's
+    # review; a vocabulary-tag test kept all four whole)
+    ("St de Mesnil Junior Jean", "de Mesnil", None),
+    ("Freiherr von Berg MA Hans", "von Berg", None),
+    ("St de Berg MA J.", "de Berg", None),
+    ("St de Mesnil Jean J. V", "de Mesnil", None),
 ])
 def test_family_first_fold_reads_the_writing_and_the_chain(
         policy: Policy, text: str, family: str, given: str | None) -> None:
