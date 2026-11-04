@@ -2372,6 +2372,7 @@
 {"name": "La Shawn K. Ford", "given": "La", "middle": "Shawn K.", "family": "Ford", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "L. S. K. F."}
 {"name": "La'tanya O'connor", "given": "La'tanya", "family": "O'connor", "initials": "L. O.", "capitalized_force": "La'Tanya O'Connor"}
 {"name": "Lacerda, Armando de", "given": "Armando", "family": "de Lacerda", "initials": "A. L."}
+{"name": "Lady Heidenreich", "title": "Lady", "family": "Heidenreich", "initials": "H."}
 {"name": "Lala Lajpat Rai", "given": "Lala", "middle": "Lajpat", "family": "Rai", "initials": "L. L. R."}
 {"name": "Lalit", "given": "Lalit", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "L."}
 {"name": "Lalit", "order": "FAMILY_FIRST", "family": "Lalit", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "L."}
@@ -3702,11 +3703,14 @@
 {"name": "The Hon. Wing Lau", "title": "The Hon. Wing", "family": "Lau", "initials": "L.", "capitalized_force": "the Hon. Wing Lau"}
 {"name": "The Lord of the Universe", "title": "The Lord of the Universe", "capitalized_force": "the Lord of the Universe"}
 {"name": "The Mahdi Muhammad Ahmad", "given": "The Mahdi", "middle": "Muhammad", "family": "Ahmad", "initials": "M. M. A.", "capitalized_force": "the Mahdi Muhammad Ahmad"}
+{"name": "The Marquis de Sade", "given": "The Marquis", "family": "de Sade", "initials": "M. S.", "capitalized_force": "the Marquis de Sade"}
+{"name": "The Marquis of Tavistock", "title": "The Marquis of Tavistock", "capitalized_force": "the Marquis of Tavistock"}
 {"name": "The Rev. Deacon John Smith", "title": "The Rev.", "given": "Deacon", "middle": "John", "family": "Smith", "initials": "D. J. S.", "capitalized_force": "the Rev. Deacon John Smith"}
 {"name": "The Right Hon. the President of the Queen's Bench Division", "title": "The Right Hon. the President of the Queen's Bench", "family": "Division", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "D.", "capitalized_force": "the Right Hon. the President of the Queen'S Bench Division"}
 {"name": "The Rt Hon", "title": "The Rt", "family": "Hon", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "H.", "capitalized_force": "the Rt Hon"}
 {"name": "The Rt Hon John Jones", "title": "The Rt Hon", "given": "John", "family": "Jones", "initials": "J. J.", "capitalized_force": "the Rt Hon John Jones"}
 {"name": "The Rt Hon Kenneth Clarke QC MP, HMG", "title": "The Rt Hon", "given": "Kenneth", "family": "Clarke", "suffix": "QC MP, HMG", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "K. C.", "capitalized_force": "the Rt Hon Kenneth Clarke QC MP, HMG"}
+{"name": "The Saint Thomas More", "given": "The Saint", "middle": "Thomas", "family": "More", "initials": "S. T. M.", "capitalized_force": "the Saint Thomas More"}
 {"name": "Theobald, Dietrich von", "given": "Dietrich", "family": "von Theobald", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "D. T."}
 {"name": "Theodor von Schön", "given": "Theodor", "family": "von Schön", "initials": "T. S."}
 {"name": "Thibaut II.", "given": "Thibaut", "suffix": "II.", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "T.", "generation": "II."}

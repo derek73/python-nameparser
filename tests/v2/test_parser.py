@@ -3343,3 +3343,36 @@ def test_a_chinese_choice_reads_hon_as_a_given_name() -> None:
     cheung = zh.parse("Hon Tommy Cheung")
     assert (cheung.title, cheung.given, cheung.middle, cheung.family) == ("", "Hon", "Tommy", "Cheung")
     assert (zh.parse("John Smith, Hon").given, zh.parse("John Smith, Hon").family) == ("Hon", "John Smith")
+
+
+def test_a_spanish_choice_reads_lady_as_a_given_name() -> None:
+    # #913: es.toml's given reading of 'lady', off by default, a given
+    # name in Spanish-speaking Latin America; under a Spanish choice, and
+    # so under locales.ES, the title is one only in a phrase (rules/H9)
+    from nameparser._reading_index import changed_words, selected
+    assert "lady" in changed_words(selected(["es"]))
+    # the default keeps the title, as 1.4.0 through 2.8.1 did
+    default = parse("Lady Heidenreich")
+    assert (default.title, default.given) == ("Lady", "")
+    for p in (parser_for(_choosing("es")), parser_for(locales.ES)):
+        got = p.parse("Lady Heidenreich")
+        assert (got.title, got.given, got.family) == ("", "Lady", "Heidenreich")
+        assert p.parse("DISIMULACION, LADY KIMA").given == "LADY"
+        # the phrases keep the title: a title before it that attaches to
+        # it, the offices it attaches to, and 'of'
+        for text, title in {"Hon Lady Smith": "Hon Lady",
+                            "Lady Justice Smith": "Lady Justice",
+                            "Lady Chief Justice Smith": "Lady Chief Justice",
+                            "Lady Mayor Smith": "Lady Mayor",
+                            "Lady Provost Smith": "Lady Provost",
+                            "Lady Captain Smith": "Lady Captain",
+                            "Lady of Shalott": "Lady of Shalott"}.items():
+            assert p.parse(text).title == title, text
+        # the costs: a peeress written with the bare title, and alone
+        # after one comma, which reverses the name
+        assert p.parse("Lady Annabel Goldsmith").given == "Lady"
+        reversed_ = p.parse("John Smith, Lady")
+        assert (reversed_.given, reversed_.family) == ("Lady", "John Smith")
+    # under the pack two family names follow, so the peeress's own given
+    # name lands in the family (rules/O6)
+    assert parser_for(locales.ES).parse("Lady Annabel Goldsmith").family == "Annabel Goldsmith"

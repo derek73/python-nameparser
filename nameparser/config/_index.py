@@ -990,7 +990,7 @@ READINGS: tuple[tuple[str, tuple[tuple[str, str, tuple[tuple[str, object], ...]]
     ('la', (('ca', 'article', ()), ('es', 'article', ()), ('es', 'given', ()), ('fil', 'article', ()), ('fr', 'article', ()), ('it', 'article', ()))),
     ('lac', (('en', 'credential', ()), ('en', 'family', ()))),
     ('ladc', (('en', 'credential', ()),)),
-    ('lady', (('en', 'nobility', (('attaches', ('justice',)),)),)),
+    ('lady', (('en', 'nobility', (('attaches', ('captain', 'chief', 'justice', 'mayor', 'provost')),)), ('es', 'given', (('default', False),)))),
     ('lama', (('bo', 'religious', (('addresses', 'given'),)), ('mn', 'religious', (('addresses', 'given'),)))),
     ('lamido', (('ff', 'nobility', ()),)),
     ('las', (('es', 'article', ()), ('fil', 'article', ()))),

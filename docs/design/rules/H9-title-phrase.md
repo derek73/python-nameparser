@@ -151,10 +151,13 @@
   "The Hon. Wing Lau"         →  title="The Hon. Wing"
   "John Smith Wing. Jr."      →  title="Wing."
   ```
-- An epithet that is also a given name, written with its article before the name or after a comma, reads as a name word, the article joining it; no name data at hand writes either shape.
+- A title that may be a given name, written with its article before the name or after a comma, reads as a name word, the article joining it, as an epithet does, unless it is a style written short or has another partner, such as `of` after it; the name data at hand writes the article there almost only before `of` or behind a style.
   ```
   "The Mahdi Muhammad Ahmad"  →  given="The Mahdi"
   "William Shakespeare, the Bard"  →  given="the Bard"
+  "The Marquis de Sade"       →  given="The Marquis"
+  "The Saint Thomas More"     →  given="The Saint"
+  "The Marquis of Tavistock"  →  title="The Marquis of Tavistock"
   ```
 - A religious title that also opens given names, in its own tradition or another, written bare, reads as a name word before a name in every tradition, behind any title but a style, a modifier or one that attaches to it; the name data at hand writes the title there almost never.
   ```
@@ -180,10 +183,12 @@
   ```
   "Chief Dean and Mary Smith" →  title="Chief Dean and Mary"
   ```
-- Whether a title word may be a given name follows the language choice, so a salutation that another language writing the same script makes the first element of a given name is a title by default, the language a text is in being unknowable from its script, and a name word under that language's choice: Nepali writes `श्री` as a given name's first word where Hindi, Marathi and Konkani write it as Mr., so `श्री कृष्ण श्रेष्ठ` reads title `श्री` by default, and under a Nepali choice `श्री` is a title only inside a title phrase (`His Excellency श्री कृष्ण श्रेष्ठ` → title `His Excellency श्री`) and elsewhere a name word placed by position (#870).
+- Whether a title word may be a given name follows the language choice, so a title that another language writing the same script makes a given name, or its first element, is a title by default, the language a text is in being unknowable from its script, and a name word under that language's choice: Spanish-speaking Latin America writes `Lady` as a given name where British names write it as a title, so `Lady Heidenreich` reads title `Lady` by default and given `Lady` under a Spanish choice, a peeress written with the bare title reading the given name there too; Nepali writes `श्री` as a given name's first word where Hindi, Marathi and Konkani write it as Mr., so `श्री कृष्ण श्रेष्ठ` reads title `श्री` by default, and under a Nepali choice `श्री` is a title only inside a title phrase (`His Excellency श्री कृष्ण श्रेष्ठ` → title `His Excellency श्री`) and elsewhere a name word placed by position (#870).
   ```
   "श्री कृष्ण श्रेष्ठ"         →  title="श्री"
   "श्री कृष्ण श्रेष्ठ"  [ne]   →  given="श्री"
+  "Lady Heidenreich"          →  title="Lady"
+  "Lady Heidenreich"  [es]    →  given="Lady"
   ```
 
 ---
