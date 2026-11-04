@@ -997,6 +997,15 @@ class Reading:
     #: equal without it. Added in 3.0.
     second_surname: bool = field(
         default=False, compare=False, metadata={ADDED_IN: "3.0.0"})
+    #: True for a word of the family's FIRST name unit where a rule read
+    #: the family as two (``García`` in ``Gabriel García Márquez`` under
+    #: ``two_family_names``) or folded middle names into it
+    #: (``middle_as_family``): the words :attr:`ParsedName.surname1`
+    #: holds there, the folded middles not among them. False everywhere
+    #: else, and in every :attr:`Ambiguity.alternative`. Not compared.
+    #: Added in 3.0.
+    first_surname: bool = field(
+        default=False, compare=False, metadata={ADDED_IN: "3.0.0"})
 
     # in the class body so @dataclass(slots=True) keeps them
     __getstate__ = _guarded_getstate
@@ -1007,6 +1016,10 @@ class Reading:
             raise TypeError(
                 f"Reading.second_surname must be a bool, got "
                 f"{self.second_surname!r}; pass True or False")
+        if type(self.first_surname) is not bool:
+            raise TypeError(
+                f"Reading.first_surname must be a bool, got "
+                f"{self.first_surname!r}; pass True or False")
         # the members the parser passes need no coercion, and a report
         # pays no frame for it (decisions/parse-cost)
         if type(self.languages) is not tuple:
@@ -1042,7 +1055,8 @@ class Reading:
     def __repr__(self) -> str:
         langs = (f", in {' '.join(self.languages)}" if self.languages
                  else "")
-        unit = ", second surname" if self.second_surname else ""
+        unit = (", second surname" if self.second_surname
+                else ", first surname" if self.first_surname else "")
         return (f"Reading({self.kind.value!r} as {self.role.value!r}, "
                 f"{self.source.value!r}{langs}{unit})")
 
@@ -1323,12 +1337,18 @@ class ParsedName:
 
     def _text_for(self, *roles: Role, tag: str | None = None,
                   without_tag: str | None = None,
-                  unless_tag: str | None = None) -> str:
+                  unless_tag: str | None = None,
+                  first_unit: bool = False) -> str:
         suffix_join = roles == (Role.SUFFIX,)
         parts: list[str] = []
         folded: list[str] = []
         for tok in self.tokens:
             if tok.role not in roles:
+                continue
+            # the first unit's words alone, where `first_unit` (the
+            # surname1 views below)
+            if first_unit and (tok.reading is None
+                               or not tok.reading.first_surname):
                 continue
             # A token carrying `unless_tag` is read as though it did
             # not carry `tag`/`without_tag` at all -- so it is EXCLUDED
@@ -1486,6 +1506,47 @@ class ParsedName:
             tok.text for tok in self.tokens
             if tok.role is Role.FAMILY and tok.reading is not None
             and tok.reading.second_surname)
+
+    # rules/R11: "the family's first name unit, the one written first,
+    # makes the first-surname view" (history: decisions/R11, #1022)
+    def _first_unit(self) -> bool:
+        """Whether the parse marked a first unit: where O6 read two
+        units or O3 folded middles in. A family whose words carry no
+        reading (replace(), Parser.revise, a 2.x pickle) is unmarked
+        and reads whole."""
+        return any(tok.role is Role.FAMILY and tok.reading is not None
+                   and tok.reading.first_surname for tok in self.tokens)
+
+    @property
+    def surname1(self) -> str:
+        """The family's first name unit where the parse read the family
+        as two (``García`` in ``Gabriel García Márquez`` under
+        ``two_family_names``, ``de la Vega`` in ``Juan de la Vega del
+        Valle``), :attr:`surname2` being the other; elsewhere the whole
+        :attr:`family`. A middle name ``middle_as_family`` folds into
+        the family is in neither (``García López`` in ``Ana María García
+        López`` under ``middle_as_family``)."""
+        return self._text_for(Role.FAMILY, first_unit=self._first_unit())
+
+    @property
+    def surname1_particles(self) -> str:
+        """:attr:`surname1`'s particles, as :attr:`family_particles` reads
+        the whole family's (``de la`` in ``Juan de la Vega del Valle``
+        under ``two_family_names``), so the two units' particles are the
+        family's."""
+        return self._text_for(Role.FAMILY, tag="particle",
+                              unless_tag=UNJOINED_TAG,
+                              first_unit=self._first_unit())
+
+    @property
+    def surname1_base(self) -> str:
+        """:attr:`surname1` without its particles, as :attr:`family_base`
+        reads the whole family (``Pérez`` in ``Juan Pérez de la Vega``
+        under ``two_family_names``, where :attr:`family_base` is
+        ``Pérez Vega``)."""
+        return self._text_for(Role.FAMILY, without_tag="particle",
+                              unless_tag=UNJOINED_TAG,
+                              first_unit=self._first_unit())
 
     def _suffix_view(self, kinds: frozenset[ReadingKind] | None) -> str:
         # the `generation` / `honorifics` / `credentials` partition of

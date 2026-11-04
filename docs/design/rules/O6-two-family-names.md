@@ -16,11 +16,20 @@
   "García Márquez Gabriel"  family-first+two_family_names  →  given="Gabriel"
   "García Márquez Ana María"  family-first-given-last+two_family_names  →  given="María"
   ```
+- **Under a family-first order, a particle chain after the family is cut where P1's family-first fold cuts its own run**: its particles and the one name word they attach to are the word taken, and what follows is laid out by the order, as after any word the rule takes.
+  ```
+  "Pérez de la Vega Juan"  family-first+two_family_names  →  family="Pérez de la Vega"
+  "Pérez de la Vega Juan"  family-first+two_family_names  →  given="Juan"
+  "Pérez de la Vega Juan Carlos"  family-first+two_family_names  →  middle="Carlos"
+  "Pérez de la Vega Juan Carlos"  family-first-given-last+two_family_names  →  given="Carlos"
+  "Juan de la Vega Rodríguez"  family-first+two_family_names  →  family="Juan de la Vega"
+  "Pérez de la Vega Juan"  family-first  →  given="de la Vega Juan"  · boundary
+  ```
 - **A name word is counted as P1's fold counts one**, so a particle run counts with the word it attaches to: "de la Vega" is one word and takes the word before it.
   ```
   "Juan Pérez de la Vega"  two_family_names  →  family="Pérez de la Vega"
   ```
-- **The family keeps the two as units**, the one written second being the second-surname view (R10), whichever of the two the rule took.
+- **The family keeps the two as units**, the one written second being the second-surname view (R10) and the one written first the first-surname views (R11), whichever of the two the rule took.
   ```
   "Gabriel García Márquez"  two_family_names  →  surname2="Márquez"
   "García Márquez Gabriel"  family-first+two_family_names  →  surname2="Márquez"
@@ -59,7 +68,7 @@
   ```
   ", Ana García López"  two_family_names  →  family=""
   ```
-- **What is taken must be one name word a family name could be**: a part counting as two words (a hyphenated given name, a bound given-name pair, P5) stays where it is, and so do an initial written alone, which writes a given name, and a mark or number with no letter in it. A particle chain (P2) is never split, so where taking it would leave no given name the rule declines. A listed given name stays where it is too, under either order, and a list written without accents matches the word written with them: the caller's vocabulary names it a word only a given name is, so the name holds one family name. A listed word behind a particle is a surname unit, taken as before.
+- **What is taken must be one name word a family name could be**: a part counting as two words (a hyphenated given name, a bound given-name pair, P5) stays where it is, and so do an initial written alone, which writes a given name, and a mark or number with no letter in it. A particle chain (P2) is split only where the family-first bullet cuts it and otherwise moves whole, and where taking it would leave no given name the rule declines. A listed given name stays where it is too, under either order, and a list written without accents matches the word written with them: the caller's vocabulary names it a word only a given name is, so the name holds one family name. A listed word behind a particle is a surname unit, taken as before.
   ```
   "José Luis Pérez"  two_family_names+es_given_names  →  family="Pérez"
   "Jose Luis Perez"  two_family_names+es_given_names  →  middle="Luis"
@@ -70,7 +79,8 @@
   "Ana M. García"  two_family_names  →  family="García"
   "Ana María García - López"  two_family_names  →  family="López"
   "Ana María 3 López"  two_family_names  →  family="López"
-  "Juan de la Vega Rodríguez"  family-first+two_family_names  →  family="Juan"
+  "Pérez de la Vega"  family-first+two_family_names  →  family="Pérez"
+  "Pérez de la Vega y Santos Juan"  family-first+two_family_names  →  given="de la Vega y Santos Juan"
   ```
 - **An order a name's script set is not a declared one** (W4), and no script it keys writes two family names as separate words, so a name its script reads in an order other than the declared `name_order` is left alone.
   ```
@@ -104,9 +114,10 @@
   ```
   "Petrov Ivan Sergeevich"  family-first+two_family_names  →  family="Petrov Ivan"
   ```
-- A lone particle the declared order left as the family counts as one word, R2 reading it as an ordinary name word, so the word after it joins.
+- A lone particle the declared order left as the family counts as one word, R2 reading it as an ordinary name word, so the word after it joins, and so does a particle chain after it, cut as the family-first bullet cuts one: one surname written with two particles reads as two.
   ```
   "van Gogh Ana María"  family-first+two_family_names  →  family="van Gogh"
+  "Van der Merwe Jan"  family-first+two_family_names  →  surname2="der Merwe"
   ```
 - Where a name's script order and the declared one agree, nothing tells the two apart, so under a declared family-first order a spaced Han or Hangul name is read like any other.
   ```
