@@ -7,7 +7,7 @@
 - The rule reads before rules/O6 and O7, so two-given-name handling takes the phrase as the middle unit beside the given name and two-family-name handling leaves it; O7 no longer reads the phrase itself — 2026-11-04 #704.
 - The rule reports nothing — 2026-11-04 #704.
 
-Open: Catalan `dels` (`Maria dels Àngels Puig`). decisions/O7 kept it out of `ca.toml` because the property moved nothing with the switch off; under this rule a `dels` particle beside `àngels` written `after_particle` reads middle 'dels Àngels', family 'Puig' by default, today's reading, so the reason no longer holds and the words want their own measurement — #704.
+Open: Catalan `dels` (`Maria dels Àngels Puig`). decisions/O7 kept it out of `ca.toml` because the property moved nothing with the switch off; under this rule a `dels` particle beside `àngels` written `after_particle` reads middle 'dels Àngels', family 'Puig' by default, today's reading, so the reason no longer holds and the words want their own measurement — #1059.
 
 ## Log
 
