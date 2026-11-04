@@ -97,7 +97,8 @@ A clash not settled at step 2 is reported at the decision site (mechanisms.md#AM
 | Reading kind | Clashes with | Form cues (step 2) | Then |
 |---|---|---|---|
 | credential, acronym | a name reading | its periods; capitals in a name of mixed case, asked of the whole name; Title case leans to the name; the joined (`MD/PhD`) and split (`Pharm. D.`) spellings | the comma count, the company, the run, the count |
-| generation, whole word (`fils`) | a family reading | lower case in a name of mixed case settles the generation; Title case leans to the name | the count |
+| generation, whole word written `title_case_is_name` (`fils`) | a family reading | lower case in a name of mixed case settles the generation; Title case leans to the name | the count |
+| generation, whole word without it (`Junior`) | a given or family reading | none: Title case is the generation's writing too (#1039) | the count |
 | generation, agnomen (`Filho`, `Neto`) | a family or given reading | none: an agnomen is written in the case of the name around it | the count |
 | generation, roman numeral | the initial, for one letter; a name word | a period makes it an initial; lower case in a name of mixed case settles the generation; Title case leans to the name; an initial before it makes it a name word | the count |
 | generation, initial-shaped (regnal `I.`; Spanish `H.` for *hijo* measured an initial far more often and excluded, phase 3g) | the initial | none: written with its period it is exactly an initial | no cue: `default = false`, for a pack |

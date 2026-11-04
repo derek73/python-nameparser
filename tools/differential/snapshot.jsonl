@@ -2982,6 +2982,7 @@
 {"name": "Pedro Jnr fils", "given": "Pedro", "middle": "Jnr", "family": "fils", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: generation as suffix (vocabulary)"], "initials": "P. J. f.", "capitalized_force": "Pedro Jnr Fils"}
 {"name": "Pedro Jorba y Gassó", "given": "Pedro", "family": "Jorba y Gassó", "initials": "P. J. G."}
 {"name": "Pedro Junior Filho", "given": "Pedro", "family": "Junior", "suffix": "Filho", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)", "SUFFIX_OR_NAME: generation as suffix (vocabulary)"], "initials": "P. J.", "generation": "Filho"}
+{"name": "Pedro Junior fils", "given": "Pedro", "family": "Junior", "suffix": "fils", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)", "SUFFIX_OR_NAME: generation as suffix (vocabulary)"], "initials": "P. J.", "generation": "fils"}
 {"name": "Pedro López Ruiz H.", "given": "Pedro", "middle": "López Ruiz", "family": "H.", "initials": "P. L. R. H."}
 {"name": "Pedro M.Filho", "given": "Pedro", "family": "M.Filho", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "P. M."}
 {"name": "Pedro MA Filho", "given": "Pedro", "middle": "MA", "family": "Filho", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: agnomen as suffix (vocabulary)"], "initials": "P. M. F.", "capitalized_force": "Pedro Ma Filho"}
@@ -3460,6 +3461,7 @@
 {"name": "Smith, John I", "given": "John", "family": "Smith", "suffix": "I", "initials": "J. S.", "generation": "I"}
 {"name": "Smith, John Jr.", "given": "John", "family": "Smith", "suffix": "Jr.", "initials": "J. S.", "generation": "Jr."}
 {"name": "Smith, John Jr. Jones", "given": "John", "family": "Smith", "suffix": "Jr. Jones", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as middle (position)"], "initials": "J. S.", "generation": "Jr.", "credentials": "Jones"}
+{"name": "Smith, John Junior", "given": "John", "family": "Smith", "suffix": "Junior", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as middle (declared)"], "initials": "J. S.", "generation": "Junior"}
 {"name": "Smith, John MA Jones", "given": "John", "family": "Smith", "suffix": "MA Jones", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as middle (position)"], "initials": "J. S."}
 {"name": "Smith, John MD/PhD", "given": "John", "family": "Smith", "suffix": "MD/PhD", "initials": "J. S."}
 {"name": "Smith, John MEng", "given": "John", "middle": "MEng", "family": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "J. M. S.", "capitalized_force": "John Meng Smith"}

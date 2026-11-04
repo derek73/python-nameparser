@@ -28,7 +28,7 @@
 
 **Except:**
 
-- **A suffix word that is also a name (S11) keeps no company**: a suffix word in front of it is no evidence, and its own count, which looks past that word, decides.
+- **A suffix word that is also a name (S11) keeps no company**: a suffix word in front of it that is not also a name is no evidence, and its own count, which looks past that word, decides; one that is also a name counts as a name word (S11).
   ```
   "Pedro PhD Neto"            →  family="Neto"  · boundary
   "Pedro Jnr Filho"           →  family="Filho"  · boundary

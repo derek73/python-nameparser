@@ -1789,13 +1789,13 @@ def test_a_2x_removal_leaving_an_inert_marker_loads_as_the_removal(
      "write lexicon.add('q', kind='conjunction', may_be_initial=True)"),
     (lambda: Lexicon.empty().add(suffix_words={"zzq"},  # type: ignore[call-arg]
                                  suffix_words_ambiguous={"zzq"}),
-     "write lexicon.add('zzq', kind='family').add('zzq', kind='generation')"),
+     "write lexicon.add('zzq', kind='family').add('zzq', kind='generation', title_case_is_name=True)"),
     (lambda: Lexicon.empty().add(suffix_words={"zzq"},  # type: ignore[call-arg]
                                  honorific_tails={"zzq"}),
      "write lexicon.add('zzq', kind='suffix', attached='after')"),
     # an agnomen taken out of its set is the gated class's generation
     (lambda: Lexicon.default().remove(agnomens={"neto"}),  # type: ignore[call-arg]
-     "write lexicon.remove('neto', kind='agnomen').add('neto', kind='generation')"),
+     "write lexicon.remove('neto', kind='agnomen').add('neto', kind='generation', title_case_is_name=True)"),
     # a phrase taken out of a kind's reach lists the words left, bounded
     (lambda: Lexicon.default().remove(title_phrases={"chief justice"}),
      "more]"),

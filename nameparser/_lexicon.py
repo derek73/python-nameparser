@@ -1399,6 +1399,12 @@ def _target_readings(word: str, member: frozenset[str],
                 p["acronym"] = False
             if "honorific_tails" in member:
                 p["attached"] = "after"
+            # 2.x leaned every gated suffix word but an agnomen by its
+            # case (rules/S6), which 3.0 reads off `title_case_is_name`
+            # (#1039): a 2.x word in the gated class keeps that lean
+            if (suffix != "agnomen" and suffix in ri.GATED_WORDS
+                    and "suffix_words_ambiguous" in member):
+                p["title_case_is_name"] = True
         out[suffix] = p
     out.update(names)
     return out

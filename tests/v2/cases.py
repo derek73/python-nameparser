@@ -2102,7 +2102,7 @@ CASES: tuple[Case, ...] = (
          {"given": "JUNIOR", "family": "SILVA"},
          classification="fix(#1039)",
          ambiguities=("suffix-or-name",),
-         notes="FEC writes 42 names this way; 1.4.0 read title 'JUNIOR', "
+         notes="FEC writes 30 names this way; 1.4.0 read title 'JUNIOR', "
                "given 'SILVA', 2.0.0 and 2.1.0 title 'JUNIOR', and "
                "2.2.0 through 2.8.1 suffix 'JUNIOR', each with no "
                "given name"),
@@ -2125,6 +2125,16 @@ CASES: tuple[Case, ...] = (
          ambiguities=("suffix-or-name",),
          notes="S5: the writing alone decides there, and Junior's says "
                "nothing, so the suffix it was stays (#1039)"),
+    Case("a_dotted_junior_opening_the_given_part_is_a_title", "Smith, Junior.",
+         {"title": "Junior.", "family": "Smith"},
+         classification="fix(#1039)",
+         ambiguities=("suffix-or-name",),
+         notes="accepted: a period-marked word opening the given part "
+               "after a family comma is a title by rules/H2's shape, as "
+               "'Smith, Neto.' is, and Junior, a name too since #1039, no "
+               "longer escapes it as a suffix word did. 1.4.0 read "
+               "title 'Junior.' with no family name, 2.0.0 and 2.1.0 "
+               "title 'Junior.', 2.2.0 through 2.8.1 suffix 'Junior.'"),
     Case("an_agnomen_is_a_generational_suffix", "Pedro Alves Filho",
          {"given": "Pedro", "family": "Alves", "suffix": "Filho"},
          classification="fix(#843)",
@@ -2218,15 +2228,15 @@ CASES: tuple[Case, ...] = (
          notes="Júnior is also a given name (#1039), so in front of an "
                "agnomen it is a name word, as Neto is in 'Pedro Neto "
                "Filho', and with no word to spare for itself it is the "
-               "family name (rules/S11). 1.4.0 read middle 'Júnior', "
-               "family 'Neto'"),
+               "family name (rules/S11). 1.4.0 through 2.8.1 read "
+               "middle 'Júnior', family 'Neto'"),
     Case("a_junior_in_front_of_an_agnomen_is_a_name_word", "Pedro Junior Filho",
          {"given": "Pedro", "family": "Junior", "suffix": "Filho"},
          classification="fix(#1039)",
          ambiguities=("suffix-or-name", "suffix-or-name"),
          notes="Junior is also a given name (#1039), so in front of an "
                "agnomen it is a name word, as Neto is in 'Pedro Neto "
-               "Filho' (rules/S11); 3.0's development tree read middle "
+               "Filho' (rules/S11); 1.4.0 through 2.8.1 read middle "
                "'Junior', family 'Filho'"),
     Case("an_abbreviated_junior_in_front_of_an_agnomen", "Pedro Jr. Filho",
          {"given": "Pedro", "middle": "Jr.", "family": "Filho"},
