@@ -30,6 +30,10 @@
   ```
   "de la Cruz Juan Carlos"  family-first  →  family="de la Cruz"
   ```
+- **Where two-family-name handling takes the chain after a family-first family, it takes the same part** the fold would, leaving to the order the given name written after it (O6).
+  ```
+  "Pérez de la Vega Juan"  family-first+two_family_names  →  given="Juan"
+  ```
 
 **Because:** a particle is written as part of the surname it precedes, and a title stands outside the name entirely.
 

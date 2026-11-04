@@ -345,9 +345,10 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # #913's 'Saint Clair Soares' and 'Mr Saint Martin Sterling', each
     # reporting title-or-name under three orders; 1542 -> 1545 the same
     # day, #1037's 'Delos Wheeler', reporting particle-or-given under
-    # three orders.
-    assert claims == 1545, (
-        f"the field sweep checks {claims} claims, recorded as 1545 on "
+    # three orders; 1545 -> 1546 the same day, #1024's 'du Ménil Thi
+    # Mai', reporting particle-or-given.
+    assert claims == 1546, (
+        f"the field sweep checks {claims} claims, recorded as 1546 on "
         f"2026-11-03")
 
 
