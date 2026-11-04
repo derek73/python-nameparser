@@ -229,9 +229,9 @@ def test_es_and_pt_pack_contents() -> None:
     assert locales.PT == Locale(code="pt", lexicon=Lexicon.empty(),
                                 languages=frozenset({"pt"}))
     assert changed_words(selected(locales.ES.languages)) == {
-        "arq", "doctora", "doña", "ingeniera", "ingeniero", "lcda",
-        "lcdo", "lic", "licenciada", "licenciado", "maestra", "mtra",
-        "mtro"}
+        "arq", "doctora", "doña", "ingeniera", "ingeniero", "lady",
+        "lcda", "lcdo", "lic", "licenciada", "licenciado", "maestra",
+        "mtra", "mtro"}
     assert changed_words(selected(locales.PT.languages)) == {
         "do", "doutor", "doutora", "e", "profa", "professora"}
     # sr keeps es's and pt's generation beside the salutation, so the
@@ -1330,6 +1330,7 @@ _ROTATORS["es"] = [
     "Lcdo Ricardo García",           # lcdo
     "Pérez, Licenciada Ana",         # licenciada after a family comma
     "Lcda Sánchez",                  # lcda
+    "Lady Heidenreich",              # lady, a given name (H9)
     "Ingeniero Juan Pérez",          # ingeniero
     "ingeniera ana ruiz",            # ingeniera, in one case
     "Arq Julia Romero",              # arq

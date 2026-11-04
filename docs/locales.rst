@@ -204,6 +204,22 @@ Smith``. The ``zh`` pack makes no choice of languages, so it leaves
 ``Hon`` a title; the reading needs a :class:`~nameparser.Locale` with
 ``languages``.
 
+``Lady`` is the same kind of word in Spanish: a given name across Latin
+America and a British title. The default reads the title, and ``es``,
+which :data:`~nameparser.locales.ES` chooses, reads the given name, the
+title staying one in a phrase (``Hon Lady``, ``Lady Justice``, ``Lady
+of``):
+
+.. doctest::
+
+    >>> parse("Lady Heidenreich").title
+    'Lady'
+    >>> parser_for(locales.ES).parse("Lady Heidenreich").given
+    'Lady'
+
+A peeress written with the bare title reads the given name under it
+(``Lady Annabel Goldsmith``).
+
 A language can have a file and no pack. Breton writes its article
 ``ar`` before the surname (``Katell ar Gall``), and the letters are
 paired initials or the Arabic article in every other language's names,
@@ -579,7 +595,8 @@ Shipped packs
      - Spanish — chooses ``es``, which turns on the courtesy, academic
        and professional titles that lead a Spanish name (``Lic.``,
        ``Licenciada``, ``Ingeniero``, ``Arq.``, ``Mtro.``, ``Doctora``,
-       ``Maestra``, ``Doña``; ``Lic Juan Pérez`` → title ``Lic``), and
+       ``Maestra``, ``Doña``; ``Lic Juan Pérez`` → title ``Lic``), reads
+       ``Lady`` as a given name (``Lady Heidenreich`` → given ``Lady``), and
        reads two family names, a list of Spanish given names keeping a
        given name out of the family (``Gabriel García Márquez`` →
        family ``García Márquez``, ``José Luis Pérez`` → family

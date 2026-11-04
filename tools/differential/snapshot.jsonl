@@ -2367,6 +2367,7 @@
 {"name": "La Shawn K. Ford", "given": "La", "middle": "Shawn K.", "family": "Ford", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "L. S. K. F."}
 {"name": "La'tanya O'connor", "given": "La'tanya", "family": "O'connor", "initials": "L. O.", "capitalized_force": "La'Tanya O'Connor"}
 {"name": "Lacerda, Armando de", "given": "Armando", "family": "de Lacerda", "initials": "A. L."}
+{"name": "Lady Heidenreich", "title": "Lady", "family": "Heidenreich", "initials": "H."}
 {"name": "Lala Lajpat Rai", "given": "Lala", "middle": "Lajpat", "family": "Rai", "initials": "L. L. R."}
 {"name": "Lalit", "given": "Lalit", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "L."}
 {"name": "Lalit", "order": "FAMILY_FIRST", "family": "Lalit", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "L."}

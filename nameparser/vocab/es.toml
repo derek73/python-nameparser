@@ -176,3 +176,7 @@ text = "y"
 [word.conjunction]
 [word.conjunction.excluded]
 may_be_initial = { reason = "the commonest Hispanic double-surname link and this library's oldest fixture, 'Velasquez y Garcia': marking it would read the link of every one-case Hispanic record as a middle initial; a caller who wants the Dutch reading adds it", issue = [383, 479] }
+
+[[word]]
+text = "lady"
+given = { default = false, note = "a given name in Spanish-speaking Latin America (Lady Heidenreich, Lady Guillén) as well as the British title (en.toml's lady): ORCID records whose given box holds it 137, 111 in Spanish-speaking countries (Ecuador 41, Colombia 30, Peru 12) and 9 in the Philippines, against psc-individuals' 160 title boxes and 19 forename boxes and ukec-individuals' 59 names opening with it, all titles (2026-11-03); off by default, and turned on by a Spanish choice, which makes the title one only inside a title phrase (rules/H9, #913)" }

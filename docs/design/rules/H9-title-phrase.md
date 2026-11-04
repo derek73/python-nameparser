@@ -184,6 +184,8 @@
   ```
   "श्री कृष्ण श्रेष्ठ"         →  title="श्री"
   "श्री कृष्ण श्रेष्ठ"  [ne]   →  given="श्री"
+  "Lady Heidenreich"          →  title="Lady"
+  "Lady Heidenreich"  [es]    →  given="Lady"
   ```
 
 ---
