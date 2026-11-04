@@ -3191,6 +3191,10 @@ def test_a_strict_filipino_choice_reads_the_one_word_and_plural_particles() -> N
         for text, repaired in (("JUAN DELOS REYES", "Juan Delos Reyes"),
                                ("juan dela cruz", "Juan Dela Cruz")):
             assert str(parser.parse(text).capitalized()) == repaired, text
+        # a name written in mixed case keeps its own case unless forced
+        written = parser.parse("Juan dela Cruz")
+        assert str(written.capitalized()) == "Juan dela Cruz"
+        assert str(written.capitalized(force=True)) == "Juan Dela Cruz"
 
 
 def test_a_caller_removes_a_mul_word_as_any_other() -> None:
