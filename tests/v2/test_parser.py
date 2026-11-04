@@ -3116,6 +3116,8 @@ def test_a_strict_choice_keeps_mul_and_native_script_vocabulary() -> None:
     # forms of address an English-language register writes for everyone
     assert strict.parse("Mister Minh Do").title == "Mister"
     assert strict.parse("Madam Minh Do").title == "Madam"
+    assert strict.parse("Do, Madam Minh").title == "Madam"
+    assert strict.parse("Do, Minh Madam").title == "Madam"
     assert strict.parse("A Israni, MD, MS").suffix == "MS"
     assert strict.parse("Radha MS").suffix == parse("Radha MS").suffix == "MS"
     # the five degrees #1021 moved (and `ms`'s, above), each after a
