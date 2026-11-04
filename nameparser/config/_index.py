@@ -1651,6 +1651,7 @@ READINGS: tuple[tuple[str, tuple[tuple[str, str, tuple[tuple[str, object], ...]]
     ('superior', (('en', 'modifier', ()),)),
     ('supreme', (('en', 'modifier', ()),)),
     ('surgeon', (('en', 'occupation', (('attaches', ('gen',)),)),)),
+    ('sushri', (('hi', 'salutation', (('after_given', True), ('default', False))), ('or', 'given', ()))),
     ('swami', (('bn', 'religious', (('addresses', 'given'),)), ('hi', 'religious', (('addresses', 'given'),)))),
     ('swordbearer', (('en', 'office', ()),)),
     ('sysselmann', (('nb', 'office', ()),)),

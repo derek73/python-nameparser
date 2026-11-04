@@ -1,6 +1,14 @@
 schema = 1
 
 [[word]]
+text = "babu"
+excluded = { salutation = { reason = "a given name and an element of compound given names in India and Nepal (Babu Ram, Babu Joseph): ORCID's whole 2025 extract opens 466 given boxes with it (India 128, Nepal 17), nepal-candidates 107 romanized names (बाबु 72, a name word), PSC 26 forenames, FEC 20 given parts; no name found opening with it as the title; US Census 1,496 as a surname (2026-11-03)", issue = 345, decided = 2026-11-03 } }
+
+[[word]]
+text = "kumari"
+excluded = { salutation = { reason = "Miss, the romanized कुमारी, which is itself a given name: it opens given names far more often than it opens a name as the title -- ORCID's whole 2025 extract opens 520 given boxes with it (India 197), 289 holding it alone; nepal-candidates 206 romanized names, 198 paired with कुमारी, a name word there; PSC 18 forenames; no name found opening with it as the title (2026-11-03)", issue = 345, decided = 2026-11-03 } }
+
+[[word]]
 text = "shri"
 excluded = { salutation = { reason = "the transliteration of श्री collides with real given names where the native script cannot: it opens given names, alone or written in two words (Shri Kant, Shri Lakshmi), 198 of ORCID's given boxes doing so, 52 of them holding it alone (its 2025 extract, 2026-10-30); nam_dict band 2 in India; Wikidata 7 given (2026-10-30). Turned on for Hindi and Bengali it broke 20 filed names and fixed none (decisions/vocabulary-model, the 2026-10-30 phase 3e entry)", issue = [345, 753], decided = 2026-10-30 } }
 
@@ -21,6 +29,10 @@ text = "sri"
 excluded = { salutation = { reason = "a given name (Sri Mulyani); the native श्री cannot collide" } }
 
 [[word]]
+text = "sushri"
+salutation = { default = false, gender = "f", issue = [345, 753], expands = "Sushri, Ms., the romanized सुश्री", after_given = true, note = "or.toml declares the Odia given name (Sushri Sangita), so a plain Hindi choice reads it as a title only inside a title phrase (rules/H9) and a strict one, which reads no or.toml, as the title; nepal-candidates pairs सुश्री with Sushree 6 times and Sushri 2, jrc-names writes Sushri Umashri Bharti (2026-11-03)" }
+
+[[word]]
 text = "कुमारी"
 excluded = { salutation = { reason = "Kumari is a given name and a family name in this script, so the leading claim fails C-i (decisions/vocabulary-collisions)", issue = 344, decided = 2026-09-06 } }
 
@@ -39,7 +51,7 @@ excluded = { salutation = { reason = "Begum is a trailing name element far more 
 
 [[word]]
 text = "श्री"
-salutation = { gender = "m", issue = 269, expands = "Shri, Mr.", note = "no Latin twin: Latin sri and shri are given names (their exclusions in hi.toml); borne as a given name: Wikidata 1 people (2026-10-24); kept here, not as a `given` reading, which would make the title one only inside a title phrase (rules/H9)", excluded = { after_given = "also an element of given names (Sri, Shri), so where it ends the given part it may be one" } }
+salutation = { gender = "m", issue = [269, 870], expands = "Shri, Mr.", note = "no Latin twin: Latin sri and shri are given names (their exclusions in hi.toml); borne as a given name: Wikidata 1 people (2026-10-24); kept here, not as a `given` reading, which would make the title one only inside a title phrase (rules/H9). The Nepali given-name element is ne.toml's reading, off by default: nepal-candidates opens 216 Devanagari names with a spaced श्री (one written श्री.), romanized as a name word in 202 (Shree 194, Shri 6, Sri 2) and as Mr in 2, a cost the default accepts for the Hindi, Marathi and Konkani salutation (rules/H1, #870, 2026-11-03)", excluded = { after_given = "also an element of given names (Sri, Shri), so where it ends the given part it may be one" } }
 
 [[word]]
 text = "श्रीमती"
@@ -56,6 +68,10 @@ salutation = { gender = "m", issue = 344, expands = "Shriyut, Mr.", after_given 
 [[word]]
 text = "सुश्री"
 salutation = { gender = "f", issue = 344, expands = "Sushri, Ms.", after_given = true }
+
+[[word]]
+text = "sardar"
+excluded = { style = { reason = "a given name in Pakistan, Iraq, India and Bangladesh (Sardar Ahmad): ORCID's whole 2025 extract opens 330 given boxes with it (Pakistan 50, Iraq 44), PSC 72 forenames, jrc-names 53 spellings, nearly all the given name; the native सरदार ships (2026-11-03)", issue = 345, decided = 2026-11-03 } }
 
 [[word]]
 text = "ठाकुर"
@@ -75,7 +91,7 @@ style = { issue = 344, expands = "Sardar" }
 
 [[word]]
 text = "pandit"
-excluded = { academic = { reason = "a common surname (Vijaya Lakshmi Pandit); the native पंडित ships", issue = 344, decided = 2026-09-06 } }
+excluded = { academic = { reason = "a common surname (Vijaya Lakshmi Pandit); the native पंडित ships. Re-measured for #345: ORCID's whole 2025 extract opens 951 family boxes with it and 33 given boxes, 25 holding it alone (Pandit Shinde); nepal-candidates 1 romanized name opens with it, paired with पण्डित; jrc-names and ctgov-officials none (2026-11-03)", issue = [344, 345], decided = 2026-09-06 } }
 
 [[word]]
 text = "डा"
@@ -108,6 +124,10 @@ academic = { issue = 344, expands = "Prof., abbreviated" }
 [[word]]
 text = "प्रोफेसर"
 academic = { issue = 344, expands = "professor, full form" }
+
+[[word]]
+text = "acharya"
+excluded = { religious = { reason = "a Brahmin surname, as the native आचार्य's exclusion says: ORCID's whole 2025 extract opens 2,068 family boxes with it (Nepal 297, India 428) against 24 given boxes, US Census 2,575; no name found opening with it as the title (2026-11-03)", issue = 345, decided = 2026-11-03 } }
 
 [[word]]
 text = "baba"
