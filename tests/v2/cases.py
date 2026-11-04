@@ -563,13 +563,27 @@ CASES: tuple[Case, ...] = (
          {"given": "Ana", "middle": "M.", "family": "García"},
          policy=_TWO, classification="parity",
          notes="#754 review: an initial writes a given name"),
-    Case("two_family_names_leaves_a_hyphenated_given_name_before_the_family",
+    Case("two_family_names_takes_a_hyphenated_word_as_one",
+         "Andrés Sánchez-Cid Torres",
+         {"given": "Andrés", "family": "Sánchez-Cid Torres"},
+         policy=_TWO, classification="feat(#959)",
+         notes="a hyphenated word counts as one when it is the word "
+               "taken; 2.8.0 kept 'Sánchez-Cid' a middle name, its two "
+               "words counted as the family's are"),
+    Case("two_family_names_takes_a_hyphenated_given_name_without_a_list",
          "Ana María-José López",
-         {"given": "Ana", "middle": "María-José", "family": "López"},
+         {"given": "Ana", "family": "María-José López"},
+         policy=_TWO, classification="feat(#959)",
+         notes="the switch's cost (O6's Accepted): with no given-name "
+               "list nothing says María-José is a given name; the "
+               "#754 review's reading, middle 'María-José', is what "
+               "the Spanish list's veto gives"),
+    Case("two_family_names_leaves_hyphenated_initials_before_the_family",
+         "Ana M.-J. López",
+         {"given": "Ana", "middle": "M.-J.", "family": "López"},
          policy=_TWO, classification="parity",
-         notes="#754 review: the hyphen's two words count against the "
-               "taken word as they count in the family; the first draft "
-               "read family 'María-José López'"),
+         notes="hyphenated initials write given names, as an initial "
+               "written alone does (#959)"),
     Case("two_family_names_leaves_a_bound_given_pair_before_the_family",
          "Ana abdul Rahman López",
          {"given": "Ana", "middle": "abdul Rahman", "family": "López"},

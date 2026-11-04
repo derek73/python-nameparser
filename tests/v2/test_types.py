@@ -1347,7 +1347,7 @@ _SURNAME2_ROWS = [
     ("Ana María de la Vega Rodríguez", _GF, False, ""),
     # O6's other declines
     ("Ana García", _GF, False, ""),
-    ("Ana María-José López", _GF, False, ""),
+    ("Ana M.-J. López", _GF, False, ""),
     ("Ana abdul Rahman López", _GF, False, ""),
     ("Ana M. García", _GF, False, ""),
     ("Juan de la Vega Rodríguez", _FF, False, ""),

@@ -211,6 +211,7 @@
 {"name": "Ana J.R. García", "given": "Ana", "middle": "J.R.", "family": "García", "initials": "A. J. G."}
 {"name": "Ana Jorge Flores", "given": "Ana", "middle": "Jorge", "family": "Flores", "initials": "A. J. F."}
 {"name": "Ana M. García", "given": "Ana", "middle": "M.", "family": "García", "initials": "A. M. G."}
+{"name": "Ana M.-J. López", "given": "Ana", "middle": "M.-J.", "family": "López", "initials": "A. M. L."}
 {"name": "Ana Marija Vera Kovač", "given": "Ana", "middle": "Marija Vera", "family": "Kovač", "initials": "A. M. V. K."}
 {"name": "Ana Martín López", "given": "Ana", "middle": "Martín", "family": "López", "initials": "A. M. L."}
 {"name": "Ana María 3 López", "given": "Ana", "middle": "María 3", "family": "López", "initials": "A. M. 3. L."}
@@ -255,6 +256,7 @@
 {"name": "Andrew Perkins, Jr., Col. (Ret)", "title": "Col.", "given": "Andrew", "family": "Perkins", "suffix": "Jr., Ret", "initials": "A. P.", "generation": "Jr.", "credentials": "Ret"}
 {"name": "Andrews, M.D.", "family": "Andrews", "suffix": "M.D.", "initials": "A."}
 {"name": "Andrés David Padilla Mejía", "given": "Andrés", "middle": "David Padilla", "family": "Mejía", "initials": "A. D. P. M."}
+{"name": "Andrés Sánchez-Cid Torres", "given": "Andrés", "middle": "Sánchez-Cid", "family": "Torres", "initials": "A. S. T."}
 {"name": "Ane Miren Urrestaratzu", "given": "Ane", "middle": "Miren", "family": "Urrestaratzu", "initials": "A. M. U."}
 {"name": "Angiviller, Charles Claude de La Billarderie d'", "given": "Charles", "middle": "Claude de La Billarderie", "family": "d' Angiviller", "initials": "C. C. B. A.", "capitalized_force": "Charles Claude de la Billarderie d' Angiviller"}
 {"name": "Angoulême, Louis Antoine d'Artois d'", "given": "Louis", "middle": "Antoine d'Artois", "family": "d' Angoulême", "initials": "L. A. d. A.", "capitalized_force": "Louis Antoine D'Artois d' Angoulême"}
@@ -3697,6 +3699,7 @@
 {"name": "Tomás Iglesias Pérez", "given": "Tomás", "middle": "Iglesias", "family": "Pérez", "initials": "T. I. P."}
 {"name": "Tony Miranda", "given": "Tony", "family": "Miranda", "initials": "T. M."}
 {"name": "Torres Ana", "order": "FAMILY_FIRST", "given": "Ana", "family": "Torres", "initials": "A. T."}
+{"name": "Torres Sánchez-Cid Andrés", "given": "Torres", "middle": "Sánchez-Cid", "family": "Andrés", "initials": "T. S. A."}
 {"name": "Torres, Ana", "given": "Ana", "family": "Torres", "initials": "A. T."}
 {"name": "Tounens, Antoine de", "given": "Antoine", "family": "de Tounens", "initials": "A. T."}
 {"name": "Traberth, Julie", "given": "Julie", "family": "Traberth", "initials": "J. T."}
