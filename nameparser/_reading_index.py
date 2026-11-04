@@ -82,9 +82,9 @@ CATEGORY: dict[str, str] = {
 #: Behavioral properties per category: each compiles into a field, and
 #: its allowed values are exactly what today's pipeline does. A name
 #: reading's are `default` (phase 3a), `cased`, the word's case mask
-#: (the shipped ones on `family` readings, #1014), and `shared` and
-#: `after_particle`, which rules/P10, O6 and O7 read (#704): its other keys
-#: are evidence.
+#: (the shipped ones on `family` readings, #1014), `shared`, which
+#: rules/P10, O6 and O7 read, and `after_particle`, which P10 and O6 read
+#: (#704): its other keys are evidence.
 BEHAVIORAL: dict[str, frozenset[str]] = {
     "title": frozenset({"abbreviation", "addresses", "after_given",
                         "attaches", "cased", "default"}),

@@ -186,7 +186,8 @@ reading kind is what :meth:`Lexicon.words(kind=...)
      - ``given``
      - ``abdul salam ahmed`` → ``abdul salam``
    * - Particles (``particle``)
-     - the following surname
+     - the following surname, save a given name's second half
+       (``del Carmen``), which is ``middle``
      - ``family``
      - ``Juan de la Vega`` → ``de la Vega``
    * - Maiden markers (``birth_marker``)

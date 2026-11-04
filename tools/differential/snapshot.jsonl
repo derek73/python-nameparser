@@ -46,6 +46,7 @@
 {"name": "1 & 2, 3 4 5, Mr.", "title": "Mr.", "given": "3", "middle": "4 5", "family": "1 & 2", "initials": "3. 4. 5. 1. 2."}
 {"name": "1. née Smith", "given": "1.", "maiden": "Smith", "initials": "1."}
 {"name": "11 Elizabeth Mcguinness", "given": "11", "middle": "Elizabeth", "family": "Mcguinness", "initials": "1. E. M.", "capitalized_force": "11 Elizabeth McGuinness"}
+{"name": "3 del Carmen García", "given": "3", "family": "del Carmen García", "initials": "3. C. G."}
 {"name": "A. D.", "given": "A.", "family": "D.", "initials": "A. D."}
 {"name": "A. R., Sr. Maria García Rosa de la Cruz Jr.", "title": "Sr.", "given": "Maria", "middle": "García Rosa de la Cruz", "family": "A. R.", "suffix": "Jr.", "initials": "M. G. R. C. A. R.", "generation": "Jr."}
 {"name": "A. R., Sr. de la Cruz Maria García Rosa Jr.", "order": "FAMILY_FIRST", "title": "Sr.", "family": "A. R. de la Cruz Maria García Rosa", "suffix": "Jr.", "initials": "A. R. C. M. G. R.", "generation": "Jr."}
@@ -1158,7 +1159,6 @@
 {"name": "García Juan Carlos", "given": "García", "middle": "Juan", "family": "Carlos", "initials": "G. J. C."}
 {"name": "García López, Ana", "given": "Ana", "family": "García López", "initials": "A. G. L."}
 {"name": "García López, Ana María", "given": "Ana", "middle": "María", "family": "García López", "initials": "A. M. G. L."}
-{"name": "García María del Carmen", "given": "García", "middle": "María", "family": "del Carmen", "initials": "G. M. C."}
 {"name": "García Márquez Ana María", "given": "García", "middle": "Márquez Ana", "family": "María", "initials": "G. M. A. M."}
 {"name": "García Márquez Gabriel", "given": "García", "middle": "Márquez", "family": "Gabriel", "initials": "G. M. G."}
 {"name": "García Márquez, Ed G.J.", "given": "Ed", "middle": "G.J.", "family": "García Márquez", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)", "SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "E. G. G. M."}
@@ -2613,6 +2613,7 @@
 {"name": "Maria da Silva Santos", "given": "Maria", "family": "da Silva Santos", "initials": "M. S. S."}
 {"name": "Maria do Carmo Silva", "given": "Maria", "family": "do Carmo Silva", "initials": "M. C. S."}
 {"name": "Maria do Carmo da Silva", "given": "Maria", "middle": "do Carmo", "family": "da Silva", "initials": "M. C. S."}
+{"name": "Maria do Socorro Silva", "given": "Maria", "middle": "do Socorro", "family": "Silva", "initials": "M. S. S."}
 {"name": "Mariam Geedi Hamish Hussein", "given": "Mariam", "middle": "Geedi Hamish", "family": "Hussein", "initials": "M. G. H. H."}
 {"name": "Mariana Duque Mariño", "given": "Mariana", "middle": "Duque", "family": "Mariño", "initials": "M. D. M."}
 {"name": "Marianne Schmidt", "given": "Marianne", "family": "Schmidt", "initials": "M. S."}
@@ -2680,6 +2681,7 @@
 {"name": "María del Carmen García, PhD", "given": "María", "middle": "del Carmen", "family": "García", "suffix": "PhD", "initials": "M. C. G."}
 {"name": "María del Carmen de la Vega", "given": "María", "middle": "del Carmen", "family": "de la Vega", "initials": "M. C. V."}
 {"name": "María del Carmen y", "given": "María", "family": "del Carmen y", "initials": "M. C."}
+{"name": "María del Carmen y García", "given": "María", "family": "del Carmen y García", "initials": "M. C. G."}
 {"name": "María del Pilar Hurtado Montaño", "given": "María", "middle": "del Pilar", "family": "Hurtado Montaño", "initials": "M. P. H. M."}
 {"name": "María-José Ana López", "given": "María-José", "middle": "Ana", "family": "López", "initials": "M. A. L."}
 {"name": "María-José del Carmen García", "given": "María-José", "family": "del Carmen García", "initials": "M. C. G."}
@@ -4040,6 +4042,7 @@
 {"name": "bin Mohamad, Mahathir", "given": "Mahathir", "family": "bin Mohamad", "initials": "M. M.", "patronymic": "bin Mohamad"}
 {"name": "bin Stromae Elizabeth Windsor Maria Teresa MP", "order": "FAMILY_FIRST", "given": "Stromae", "middle": "Elizabeth Windsor Maria Teresa", "family": "bin", "suffix": "MP", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: patronymic as family (vocabulary)"], "initials": "S. E. W. M. T. b.", "capitalized_force": "Bin Stromae Elizabeth Windsor Maria Teresa MP"}
 {"name": "bin Stromae, Elizabeth Windsor Maria Teresa MP", "given": "Elizabeth", "middle": "Windsor Maria Teresa", "family": "bin Stromae", "suffix": "MP", "initials": "E. W. M. T. S.", "patronymic": "bin Stromae"}
+{"name": "bin del Carmen García", "given": "bin", "family": "del Carmen García", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: patronymic as family (vocabulary)"], "initials": "b. C. G.", "capitalized_force": "Bin del Carmen García"}
 {"name": "bob v. de la macdole-eisenhower phd", "given": "bob", "middle": "v.", "family": "de la macdole-eisenhower", "suffix": "phd", "initials": "b. v. m.", "capitalized": "Bob V. de la Macdole-Eisenhower PhD"}
 {"name": "carod i", "given": "carod", "family": "i", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: generation as suffix (vocabulary)"], "initials": "c. i.", "capitalized": "Carod I"}
 {"name": "da Silva Sr. José Pedro Eduardo Jr., MP", "order": "FAMILY_FIRST", "given": "Silva", "middle": "Sr. José Pedro Eduardo", "family": "da", "suffix": "Jr., MP", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "S. S. J. P. E. d.", "capitalized_force": "Da Silva Sr. José Pedro Eduardo Jr., MP", "generation": "Jr.", "credentials": "MP"}

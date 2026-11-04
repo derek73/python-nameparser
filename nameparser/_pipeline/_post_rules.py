@@ -26,12 +26,14 @@ the script's order differs from the declared one),
 Policy.middle_as_family,
 Policy.extra_suffix_delimiters (R1's entry pass, for the delimiter
 cores group drops); Lexicon.given_name_titles, Lexicon.given_names
-(O6's veto), and
+(O6's veto), Lexicon.saint_particles (P10's saint clause; P10 runs
+under every policy and reads Policy.patronymic_rules for its Turkic
+guard), and
 Lexicon.suffix_acronyms_ambiguous (a dotted member in a clause, which
 carries no tag there, S13).
 
-Implements rules S13, H1, M4, P1, P6 (its no-comma site), O1, O2, O6,
-O7, O3 and R1 of docs/design/rules/; each is cited at its code below, and
+Implements rules S13, H1, M4, P1, P6 (its no-comma site), P10, O1, O2,
+O6, O7, O3 and R1 of docs/design/rules/; each is cited at its code below, and
 H1/P1/O1/O2's history lives in docs/design/decisions/.
 `suffix_entries` is the R1 entry pass as a state-in/state-out
 function, for Parser.revise to run over a forced-role sub-parse
@@ -380,7 +382,7 @@ def _take_second_family_name(state: ParseState,
 
 
 def _one_given_word(tokens: list[WorkToken], given: list[int]) -> bool:
-    """Whether the given name is ONE word, as rules/O7 counts it: O6's
+    """Whether the given name is ONE word, as rules/O7 and P10 count it: O6's
     count, save that a bound given-name pair (P5) is two words though
     its bound word is also a particle the count passes over ('Abu
     Bakr')."""

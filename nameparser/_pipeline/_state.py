@@ -165,8 +165,9 @@ GIVEN_ABBREVIATION_TAG = "vocab:given-abbreviation"
 
 #: On a word of `Lexicon.shared_names`, a name a community gives every
 #: member (Sikh 'Kaur', 'Singh'): rules/O6 and O7 decline a join that
-#: takes or completes one
-#: (`_post_rules._take_second_family_name`, `_take_second_given_name`).
+#: takes or completes one, and P10 completes none
+#: (`_post_rules._take_second_family_name`, `_take_second_given_name`,
+#: `_given_phrase_middle`).
 #: Dropped from the published token like the kind tags above (#704).
 SHARED_NAME_TAG = "vocab:shared-name"
 

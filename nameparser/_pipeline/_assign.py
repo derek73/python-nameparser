@@ -177,7 +177,9 @@ def _name_alt(token: WorkToken, role: Role,
         # a front P6 has already attached held `role`'s field before it;
         # the word lands beside the front's LAST word, which rules/P10
         # leaves the family where it reads the chain's opening phrase as
-        # a middle name (#704)
+        # a middle name; rules/O6's family-first cut, which lays the
+        # chain's tail out by the order, is the one split it does not
+        # follow (decisions/P10, #704)
         return copy_with(alt, role=Beside(
             front[-1], role if FOLDED_TAG in tags else tokens[front[0]].role))
     return alt

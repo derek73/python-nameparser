@@ -1173,7 +1173,8 @@ González"``):
     'do Carmo Silva'
 
 To mark a word of your own, add it with ``Lexicon.default().add("carmo",
-kind="given", after_particle=True)``. The two switches also leave alone
+kind="given", after_particle=True)``, which moves the default reading
+too. The two switches also leave alone
 the Sikh names Kaur and Singh, given to every Sikh woman and man and
 written after the personal name: ``"Harpreet Kaur Dhillon"`` keeps
 middle ``Kaur`` under either switch, as it does by default.

@@ -44,9 +44,9 @@ namespaced (unstable): "vocab:title", "vocab:given-title",
 stages and dropped by assemble, Token.reading carrying the kind out,
 save the last, which marks no kind),
 "vocab:particle-ambiguous", "vocab:bound-given",
-"vocab:given-abbreviation", "vocab:shared-name" and
-"vocab:particle-given" (which rules/O6 and O7 read and assemble drops,
-carrying no kind out), "vocab:maiden-marker",
+"vocab:given-abbreviation", "vocab:shared-name" (which rules/P10, O6
+and O7 read) and "vocab:particle-given" (which P10 and O6 read), each
+dropped by assemble and carrying no kind out, "vocab:maiden-marker",
 "vocab:maiden-marker-cont"; in a namespace of its own,
 "shape:acronym"; and in another, "split:credential" and
 "split:member", written on the first word of a credential split across
@@ -270,8 +270,9 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
     # carries it and only that test acts on it
     if n in lex._sets.given_name_abbreviations:
         tags.add(GIVEN_ABBREVIATION_TAG)
-    # rules/O6 and O7 read this: a name a community gives every member
-    # is neither taken nor completed by the two-name switches (#704)
+    # rules/O6, O7 and P10 read this: a name a community gives every
+    # member is neither taken nor completed by the two-name switches,
+    # nor completed by P10's particle phrase (#704)
     if n in lex._sets.shared_names:
         tags.add(SHARED_NAME_TAG)
     # rules/P10 and O6 read this: a given name written behind a particle
