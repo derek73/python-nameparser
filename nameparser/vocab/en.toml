@@ -15,10 +15,6 @@ text = "goodwife"
 salutation = { gender = "f", expands = "the archaic Mrs., 'Goodwife Proctor'", after_given = true }
 
 [[word]]
-text = "madam"
-salutation = { gender = "f", after_given = true }
-
-[[word]]
 text = "madame"
 salutation = { gender = "f", after_given = true }
 
@@ -30,11 +26,6 @@ family = { us_census_2010 = 2735, wikidata = 61, as_of = 2026-10-24 }
 [[word]]
 text = "misses"
 salutation = { gender = "f", expands = "the plural of miss, 'the Misses Smith'", after_given = true }
-
-[[word]]
-text = "mister"
-salutation = { gender = "m", same_as = "mr", excluded = { after_given = "a given name and a surname, borne as a middle name either way" }, note = "borne as a given name: US SSA 746 births (2026-10-24); kept here, not as a `given` reading, which would make the title one only inside a title phrase (rules/H9)" }
-family = { us_census_2010 = 1211, wikidata = 2, as_of = 2026-10-24 }
 
 [[word]]
 text = "mx"
