@@ -1360,8 +1360,12 @@ _VETO_EFFECT = [
      ("José", "Luis Pérez", ""), ("José", "Luis Pérez", "")),
     ("Ana Martín López", GIVEN_FIRST,
      ("Ana", "", "Martín López"), ("Ana", "", "Martín López")),
+    # a hyphenated word taken counts as one, and the veto reads each
+    # of its parts (#959): every part listed, it stays
     ("Ana María-Luis López", GIVEN_FIRST,
-     ("Ana", "María-Luis", "López"), ("Ana", "María-Luis", "López")),
+     ("Ana", "", "María-Luis López"), ("Ana", "María-Luis", "López")),
+    ("Ana María-Torres López", GIVEN_FIRST,
+     ("Ana", "", "María-Torres López"), ("Ana", "", "María-Torres López")),
     ("José Luis Pérez-García", GIVEN_FIRST,
      ("José", "Luis", "Pérez-García"), ("José", "Luis", "Pérez-García")),
     # a listed word behind a particle is a surname unit, taken as
@@ -1387,7 +1391,7 @@ def test_the_veto_counts_its_rows() -> None:
     moved = [r for r in _VETO_EFFECT if r[2] != r[3]]
     assert {r[1] for r in moved} == {GIVEN_FIRST, FAMILY_FIRST,
                                      FAMILY_FIRST_GIVEN_LAST}
-    assert len(moved) == 11 and len(_VETO_EFFECT) - len(moved) == 7
+    assert len(moved) == 12 and len(_VETO_EFFECT) - len(moved) == 7
 
 
 def test_the_veto_leaves_the_word_to_two_given_names() -> None:
