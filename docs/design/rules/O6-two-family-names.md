@@ -70,7 +70,7 @@
   ```
   ", Ana García López"  two_family_names  →  family=""
   ```
-- **What is taken must be one name word a family name could be**: a bound given-name pair (P5) written as two words stays where it is, and so do an initial written alone, which writes a given name, and a mark or number with no letter in it. A particle chain (P2) is split only where the family-first bullet cuts it and otherwise moves whole, and where taking it would leave no given name the rule declines. A listed given name stays where it is too, under either order, and so does a hyphenated word every part of which is one or an initial, and a list written without accents matches the word written with them: the caller's vocabulary names it a word only a given name is, so the name holds one family name. A listed word behind a particle is a surname unit, taken as before.
+- **What is taken must be one name word a family name could be**: a bound given-name pair (P5) written as two words stays where it is, and so do an initial written alone, which writes a given name, and a mark or number with no letter in it. A particle chain (P2) is split only where the family-first bullet cuts it and otherwise moves whole, and where taking it would leave no given name the rule declines. A listed given name stays where it is too, under either order, and so does a hyphenated word every part of which is one or an initial, and a list written without accents matches the word written with them: the caller's vocabulary names it a word only a given name is, so the name holds one family name. A listed word behind a particle is a surname unit, taken as before, unless the vocabulary marks it a given name written there (below).
   ```
   "José Luis Pérez"  two_family_names+es_given_names  →  family="Pérez"
   "Jose Luis Perez"  two_family_names+es_given_names  →  middle="Luis"
@@ -85,6 +85,18 @@
   "Ana María 3 López"  two_family_names  →  family="López"
   "Pérez de la Vega"  family-first+two_family_names  →  family="Pérez"
   "Pérez de la Vega y Santos Juan"  family-first+two_family_names  →  given="de la Vega y Santos Juan"
+  ```
+- **A given name a particle completes stays where it is**: given-first, a particle run and the word behind it that the vocabulary names a given name written that way (O7), standing beside a given name of one word, are the given name's second, not a surname. Under a family-first order the unit after the family completes no given name, and is taken as before.
+  ```
+  "María del Carmen de la Vega"  two_family_names  →  middle="del Carmen"
+  "Ana de Miguel de la Vega"  two_family_names  →  family="de Miguel de la Vega"  · boundary
+  "Juan Antonio del Valle de la Vega"  two_family_names  →  family="del Valle de la Vega"  · boundary
+  "García del Valle María"  family-first+two_family_names  →  family="García del Valle"  · boundary
+  ```
+- **A name a community gives every member is no family name of two**, on either side of the join: Sikh Kaur and Singh, written after the personal name and before a family name or as the only one, are neither taken nor joined.
+  ```
+  "Harpreet Kaur Dhillon"  two_family_names  →  family="Dhillon"
+  "Harpreet Simran Kaur"  two_family_names  →  family="Kaur"
   ```
 - **An order a name's script set is not a declared one** (W4), and no script it keys writes two family names as separate words, so a name its script reads in an order other than the declared `name_order` is left alone.
   ```
@@ -146,5 +158,5 @@
 - The rule reports nothing: the caller declared the convention, as a declared order is followed without a report, and a report on most names of three words or more would teach the caller to ignore the field.
 
 ---
-**Signal:** none in the name + position: a caller switch, the family's words and the taken word's shape read as written to see whether the family already holds two; and the word standing where the family would take one, looked up in the caller's given-name list, a vocabulary signal tagged by where the word stands as P1's is
+**Signal:** none in the name + position: a caller switch, the family's words and the taken word's shape read as written to see whether the family already holds two; and the word standing where the family would take one, looked up in the caller's given-name list, a vocabulary signal tagged by where the word stands as P1's is, as are a given name written behind a particle and a name a community gives every member, which the family's own words are looked up for too
 **history:** decisions/O6 · **implemented:** nameparser/_pipeline/_post_rules.py

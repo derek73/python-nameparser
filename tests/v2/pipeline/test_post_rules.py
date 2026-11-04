@@ -1,11 +1,12 @@
 import dataclasses
 import json
+import pickle
 import sys
 from pathlib import Path
 
 import pytest
 
-from nameparser import Parser, parse
+from nameparser import Locale, Parser, PolicyPatch, locales, parse, parser_for
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline import run
 from nameparser._pipeline import _post_rules
@@ -50,6 +51,9 @@ _LEX = (
     # #789), read so only period-marked at the head of the given part;
     # the given reading is also what makes its credential ambiguous
     .add("ma", kind="given", same_as="maría")
+    # `maría` is a given name written behind a particle too ('de
+    # María'), which rules/O7 reads (#704)
+    .add("maría", "maria", kind="given", after_particle=True)
     .add("y", kind="conjunction")
     .add("abdul", kind="bound_given")
 )
@@ -1438,3 +1442,141 @@ def test_the_list_reads_nothing_without_two_family_names(
     assert texts
     assert [t for t in texts
             if plain.parse(t).as_dict() != listed.parse(t).as_dict()] == []
+
+
+#: rules/O6 and O7 read two properties of a name reading (#704): a
+#: given name written behind a particle (`after_particle`, `carmen` in
+#: "María del Carmen") and a name a community gives every member
+#: (`shared`, Sikh `kaur`). Each row's reading with the shipped readings
+#: and with them removed, the recorded negative control (AGENTS.md,
+#: "Guard tests"): rows whose two columns agree are the shapes the
+#: properties must leave alone -- nothing left for the family, a family
+#: comma (whose part O7 already reads whole), a word nobody listed, a
+#: given name of two words, a middle between, and the default policy.
+_POLICIES_704 = {
+    "O7": Policy(two_given_names=True),
+    "O6": Policy(two_family_names=True),
+    "both": Policy(two_family_names=True, two_given_names=True),
+    "family-first+O7": Policy(name_order=FAMILY_FIRST, two_given_names=True),
+    "default": Policy(),
+    "family-first+O6": Policy(name_order=FAMILY_FIRST, two_family_names=True),
+    "family-first-given-last+O7": Policy(name_order=FAMILY_FIRST_GIVEN_LAST,
+                                         two_given_names=True),
+    "family-first+both": Policy(name_order=FAMILY_FIRST, two_given_names=True,
+                                two_family_names=True),
+    "turkic+O7": Policy(two_given_names=True,
+                        patronymic_rules=frozenset({PatronymicRule.TURKIC})),
+}
+_BARE_704 = (Lexicon.default().remove("carmen", "mar", "ángeles", kind="given")
+             .remove("kaur", "singh", kind="family"))
+_EFFECT_704 = [
+    ("María del Carmen García", "O7", ("María del Carmen", "", "García"), ("María", "", "del Carmen García")),
+    ("María de los Ángeles López Pérez", "O7", ("María de los Ángeles", "", "López Pérez"), ("María", "", "de los Ángeles López Pérez")),
+    ("Dr. María del Mar García Jr.", "O7", ("María del Mar", "", "García"), ("María", "", "del Mar García")),
+    ("María del Carmen", "O7", ("María", "", "del Carmen"), ("María", "", "del Carmen")),
+    ("García, María del Carmen", "O7", ("María del Carmen", "", "García"), ("María del Carmen", "", "García")),
+    ("Maria da Silva Santos", "O7", ("Maria", "", "da Silva Santos"), ("Maria", "", "da Silva Santos")),
+    ("María-José del Carmen García", "O7", ("María-José", "", "del Carmen García"), ("María-José", "", "del Carmen García")),
+    ("Ana María del Carmen García", "O7", ("Ana María", "", "del Carmen García"), ("Ana María", "", "del Carmen García")),
+    ("García María del Carmen", "family-first+O7", ("María del Carmen", "", "García"), ("María del Carmen", "", "García")),
+    ("María del Carmen de la Vega", "O6", ("María", "del Carmen", "de la Vega"), ("María", "", "del Carmen de la Vega")),
+    ("María del Carmen de la Vega", "both", ("María del Carmen", "", "de la Vega"), ("María", "", "del Carmen de la Vega")),
+    ("María del Carmen García López", "both", ("María del Carmen", "", "García López"), ("María", "", "del Carmen García López")),
+    ("María del Carmen García", "default", ("María", "", "del Carmen García"), ("María", "", "del Carmen García")),
+    ("Harpreet Kaur Dhillon", "O7", ("Harpreet", "Kaur", "Dhillon"), ("Harpreet Kaur", "", "Dhillon")),
+    ("Harpreet Kaur Dhillon", "O6", ("Harpreet", "Kaur", "Dhillon"), ("Harpreet", "", "Kaur Dhillon")),
+    ("Harpreet Simran Kaur", "O6", ("Harpreet", "Simran", "Kaur"), ("Harpreet", "", "Simran Kaur")),
+    ("Dhillon, Harpreet Kaur", "O7", ("Harpreet", "Kaur", "Dhillon"), ("Harpreet Kaur", "", "Dhillon")),
+    ("Harpreet Kaur", "both", ("Harpreet", "", "Kaur"), ("Harpreet", "", "Kaur")),
+    ("Harpreet Kaur Dhillon", "default", ("Harpreet", "Kaur", "Dhillon"), ("Harpreet", "Kaur", "Dhillon")),
+    # the #1057 review's rows: O6 declines only the shape O7 takes, not a
+    # family-first unit after the family or a phrase behind a middle; O7
+    # leaves no lone connective as the family, nor the father's name
+    # before a Turkic marker
+    ("García del Carmen María", "family-first+O6", ("María", "", "García del Carmen"), ("María", "", "García del Carmen")),
+    ("Juan Antonio del Carmen de la Vega", "O6", ("Juan", "Antonio", "del Carmen de la Vega"), ("Juan", "Antonio", "del Carmen de la Vega")),
+    ("María del Carmen y", "O7", ("María", "", "del Carmen y"), ("María", "", "del Carmen y")),
+    ("Ali del Carmen oglu", "turkic+O7", ("Ali", "", "del Carmen oglu"), ("Ali", "", "del Carmen oglu")),
+    # ... and a given name of two words, which O7 would not complete,
+    # leaves O6 the phrase (the second #1057 review)
+    ("María-José del Carmen de la Vega", "O6", ("María-José", "", "del Carmen de la Vega"), ("María-José", "", "del Carmen de la Vega")),
+    ("abdul Rahman del Carmen de la Vega", "O6", ("abdul Rahman", "", "del Carmen de la Vega"), ("abdul Rahman", "", "del Carmen de la Vega")),
+    # the #1057 test review's rows: a shared word as the given name (the
+    # family-first-given-last given name is the last word), a family
+    # written before the given name, the given name's own guards on the
+    # phrase path, and a bound pair whose bound word is also a particle,
+    # which O6's count passes over ('Abu Bakr', where 'abdul' is none)
+    ("Dhillon Harpreet Kaur", "family-first-given-last+O7", ("Kaur", "Harpreet", "Dhillon"), ("Harpreet Kaur", "", "Dhillon")),
+    ("Kaur Harpreet Dhillon", "O7", ("Kaur", "Harpreet", "Dhillon"), ("Kaur Harpreet", "", "Dhillon")),
+    ("de los Ángeles López María", "family-first+both", ("María", "", "de los Ángeles López"), ("María", "", "de los Ángeles López")),
+    ("3 del Carmen García", "O7", ("3", "", "del Carmen García"), ("3", "", "del Carmen García")),
+    ("María del Carmen 3", "O7", ("María", "", "del Carmen 3"), ("María", "", "del Carmen 3")),
+    ("bin del Carmen García", "O7", ("bin", "", "del Carmen García"), ("bin", "", "del Carmen García")),
+    ("Kaur del Carmen García", "O7", ("Kaur", "", "del Carmen García"), ("Kaur", "", "del Carmen García")),
+    ("Abu Bakr del Carmen García", "O7", ("Abu Bakr", "", "del Carmen García"), ("Abu Bakr", "", "del Carmen García")),
+    ("Abu Bakr del Carmen de la Vega", "O6", ("Abu Bakr", "", "del Carmen de la Vega"), ("Abu Bakr", "", "del Carmen de la Vega")),
+    ("Abu Bakr Carlos García", "O7", ("Abu Bakr", "Carlos", "García"), ("Abu Bakr", "Carlos", "García")),
+]
+
+
+@pytest.mark.parametrize("text,policy,shipped,bare", _EFFECT_704,
+                         ids=[f"{r[1]}:{r[0]}" for r in _EFFECT_704])
+def test_the_two_name_switches_read_particle_given_and_shared_names(
+        text: str, policy: str, shipped: tuple[str, ...],
+        bare: tuple[str, ...]) -> None:
+    assert _roles(text, _POLICIES_704[policy], Lexicon.default()) == shipped
+    assert _roles(text, _POLICIES_704[policy], _BARE_704) == bare
+
+
+def test_the_704_table_counts_its_rows() -> None:
+    # the table is the properties' negative control only while some rows
+    # move without them and some do not
+    moved = [r for r in _EFFECT_704 if r[2] != r[3]]
+    assert len(moved) == 12 and len(_EFFECT_704) - len(moved) == 23
+
+
+def test_a_callers_reading_reaches_the_switches() -> None:
+    # a caller's add() states the property as a file does (3.0's 4i-b)
+    o7 = Policy(two_given_names=True)
+    mine = (Lexicon.default().add("zorba", kind="given", after_particle=True)
+            .add("zeta", kind="family", shared=True))
+    assert _roles("Ana del Zorba García", o7, mine) == (
+        "Ana del Zorba", "", "García")
+    assert _roles("Ana del Zorba García", o7, Lexicon.default()) == (
+        "Ana", "", "del Zorba García")
+    assert _roles("Ana Zeta García", o7, mine) == ("Ana", "Zeta", "García")
+    assert _roles("Ana Zeta García", o7, Lexicon.default()) == (
+        "Ana Zeta", "", "García")
+    # shared on a given reading too, a name reading of either kind
+    given_shared = Lexicon.default().add("zeta", kind="given", shared=True)
+    assert _roles("Ana Zeta García", o7, given_shared) == (
+        "Ana", "Zeta", "García")
+    # and both properties survive a pickle round trip
+    loaded = pickle.loads(pickle.dumps(mine))
+    assert _roles("Ana del Zorba García", o7, loaded) == (
+        "Ana del Zorba", "", "García")
+    assert _roles("Ana Zeta García", o7, loaded) == ("Ana", "Zeta", "García")
+
+
+def test_a_strict_choice_keeps_the_704_readings() -> None:
+    # kaur and singh stand in mul.toml, which every choice reads, and the
+    # Spanish words in es.toml, so a strict Spanish parser, whose pack
+    # turns two_family_names on, keeps both (the #1057 review found the
+    # first, in pa.toml, read family 'Kaur Dhillon' there)
+    strict_es = parser_for(locales.ES, strict=True)
+    name = strict_es.parse("Harpreet Kaur Dhillon")
+    assert (name.middle, name.family) == ("Kaur", "Dhillon")
+    with_o7 = parser_for(locales.ES, Locale(
+        code="x", lexicon=Lexicon.empty(),
+        policy=PolicyPatch(two_given_names=True)), strict=True)
+    assert with_o7.parse("María del Carmen García").given == "María del Carmen"
+
+
+def test_the_704_tags_reach_no_published_token() -> None:
+    # SHARED_NAME_TAG and PARTICLE_GIVEN_TAG serve the post rules only,
+    # dropped at assemble like the kind tags (_assemble._KIND_TAGS)
+    names = [parse("Harpreet Kaur Dhillon"),
+             Parser(policy=Policy(two_given_names=True)).parse(
+                 "María del Carmen García")]
+    published = {tag for n in names for t in n.tokens for tag in t.tags}
+    assert not published & {"vocab:shared-name", "vocab:particle-given"}

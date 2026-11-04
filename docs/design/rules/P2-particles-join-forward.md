@@ -34,6 +34,10 @@
   ```
   "Pérez de la Vega Juan"  family-first+two_family_names  →  given="Juan"
   ```
+- **Where two-given-name handling completes the given name with the particle run and a word the vocabulary marks, it takes that part of the final group** (O7), leaving the rest of the chain the family.
+  ```
+  "María del Carmen García"  two_given_names  →  family="García"
+  ```
 
 **Because:** a particle is written as part of the surname it precedes, and a title stands outside the name entirely.
 

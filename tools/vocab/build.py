@@ -111,7 +111,8 @@ together, each marker set in its base) need no
 check: a flag cannot exist without its reading, and a derived marker is
 read off the reading it marks. The one soft finding, a
 name reading on a word with no vocabulary reading and no exclusion
-(save an abbreviated given name, which compiles), is
+(save an abbreviated given name, a case mask, and a `shared` or
+`after_particle` flag, each of which compiles), is
 a VocabWarning, which the shipped-data test turns into an error.
 """
 from __future__ import annotations
@@ -236,8 +237,9 @@ assert len(_RUNS) == len(set(_RUNS)), "a category's kinds are listed apart in CA
 UNORDERED = "und.toml"
 
 #: Behavioral properties per category, each compiling into a field:
-#: the compiler's, in nameparser/_reading_index.py. A name reading's one
-#: is `default` (3a); its other keys are NAME_KEYS.
+#: the compiler's, in nameparser/_reading_index.py. A name reading's
+#: are `default` (3a), `cased`, `shared` and `after_particle`; its other
+#: keys are NAME_KEYS.
 BEHAVIORAL = _ri.BEHAVIORAL
 #: Stated properties per category: compiled to nothing, but held to the
 #: word's readings (check 11). A particle states `may_be_given = false`
@@ -854,6 +856,15 @@ def _check_reading(r: Reading, pool: Pool) -> None:
             if k not in allowed_here:
                 raise _reserved_or_unknown(where, k, allowed_here)
         _check_default(where, p)
+        for flag in ("shared", "after_particle"):
+            if flag in p and p[flag] is not True:
+                # unwritten is false, so only true says anything
+                raise VocabError(f"{where}: {flag} must be true, or left "
+                                 f"unwritten")
+        if "after_particle" in p and r.kind != "given":
+            raise VocabError(f"{where}: after_particle names a given name "
+                             f"written behind a particle (rules/O7), so "
+                             f"only a `given` reading takes one")
         for src in COUNT_SOURCES & p.keys():
             if not isinstance(p[src], int) or isinstance(p[src], bool) or p[src] < 1:
                 raise VocabError(f"{where}: {src} must be a positive count "
@@ -1289,8 +1300,8 @@ def check_pool(pool: Pool) -> None:
     check_order(pool.entries)
 
     # soft: a name reading compiles to nothing save a `same_as` (an
-    # abbreviated given name) or a `cased` (a case mask), so one without
-    # either on a word with no vocabulary reading and no exclusion
+    # abbreviated given name), a `cased` (a case mask) or a `shared` or
+    # `after_particle` flag (#704), so one with none of them on a word with no vocabulary reading and no exclusion
     # anywhere -- an exclusion's evidence is what a name reading usually
     # is -- informs nothing
     excluded_texts = {x.text for x in pool.exclusions if x.prop is None}
@@ -1298,7 +1309,8 @@ def check_pool(pool: Pool) -> None:
         # an abbreviated given name compiles (GIVEN_NAME_ABBREVIATIONS),
         # and a name's case mask (CAPITALIZATION_EXCEPTIONS, #1014)
         if (all(r.category == "name" and "same_as" not in r.props
-                and "cased" not in r.props for r in rs)
+                and "cased" not in r.props and "shared" not in r.props
+                and "after_particle" not in r.props for r in rs)
                 and text not in excluded_texts):
             warnings.warn(f"{rs[0].where()}: a name reading on a word with no "
                           f"vocabulary reading is inert", VocabWarning, stacklevel=2)
@@ -1313,7 +1325,7 @@ def _behavior(r: Reading, prop: str) -> object:
         att = r.props.get("attached")
         return None if att is None else att.get("side")
     if prop in ("may_be_initial", "after_given", "abbreviation",
-                "title_case_is_name"):
+                "title_case_is_name", "shared", "after_particle"):
         return r.flag(prop)
     if prop == "attaches":
         att = r.props.get("attaches")
@@ -1354,6 +1366,8 @@ CONSTANTS = (
     "PATRONYMIC_PARTICLES",
     "TITLE_ABBREVIATIONS",
     "TITLE_CASE_NAME_WORDS",
+    "SHARED_NAMES",
+    "PARTICLE_GIVEN_NAMES",
 )
 
 

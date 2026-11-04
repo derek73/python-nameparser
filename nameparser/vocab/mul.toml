@@ -121,3 +121,11 @@ credential = { expands = "Doctor of Philosophy", cased = "PhD", note = "written 
 [[word]]
 text = "&"
 conjunction = {}
+
+[[word]]
+text = "kaur"
+family = { shared = true, us_census_2010 = 48753, wikidata = 204, as_of = 2026-11-03, native = "ਕੌਰ", gender = "f", note = "the name every Sikh woman is given, written after her personal name and before a family name where she has one (Harpreet Kaur Dhillon): in mul.toml so every choice of languages keeps it; UK PSC filers put it in the middle-name box 2,354 times (2,264 as its only word), the whole surname box 674 and the forename box 25; ORCID holders whose family box holds another surname put it in the given box 69 times and open the family box with it 3 (2026-11-03, #704). Wikidata is a lower bound" }
+
+[[word]]
+text = "singh"
+family = { shared = true, us_census_2010 = 116749, wikidata = 2192, as_of = 2026-11-03, native = "ਸਿੰਘ", gender = "m", note = "the name every Sikh man is given, written as kaur is: UK PSC filers put it in the middle-name box 5,303 times (5,015 as its only word), the whole surname box 1,885 and the forename box 48 (2026-11-03, #704); also an ordinary Rajput and Nepali surname, which shared costs only under the two-name switches. Wikidata is a lower bound" }

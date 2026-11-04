@@ -73,6 +73,7 @@
 {"name": "Abu Bakar", "given": "Abu", "family": "Bakar", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "A. B."}
 {"name": "Abu Bakar Salim", "given": "Abu Bakar", "family": "Salim", "initials": "A. B. S."}
 {"name": "Abu Bakr Al Baghdadi, MD", "given": "Abu Bakr", "family": "Al Baghdadi", "suffix": "MD", "initials": "A. B. B.", "capitalized_force": "Abu Bakr al Baghdadi, MD"}
+{"name": "Abu Bakr Carlos García", "given": "Abu Bakr", "middle": "Carlos", "family": "García", "initials": "A. B. C. G."}
 {"name": "Abu Karim", "given": "Abu", "family": "Karim", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "A. K."}
 {"name": "Abu-'l-Fidāʾ Ismāʿīl Ibn-ʿAlī", "given": "Abu-'l-Fidāʾ", "middle": "Ismāʿīl", "family": "Ibn-ʿAlī", "initials": "A. I. I.", "capitalized_force": "Abu-'L-Fidāʾ Ismāʿīl ibn-ʿAlī"}
 {"name": "Abu-'l-Qāsim Maslama Ibn-Aḥmad al-Maǧrīṭī", "given": "Abu-'l-Qāsim", "middle": "Maslama Ibn-Aḥmad", "family": "al-Maǧrīṭī", "initials": "A. M. I. a.", "capitalized_force": "Abu-'L-Qāsim Maslama ibn-Aḥmad al-Maǧrīṭī"}
@@ -1164,6 +1165,7 @@
 {"name": "García Márquez, MJ PhD", "given": "MJ", "family": "García Márquez", "suffix": "PhD", "initials": "M. G. M.", "capitalized_force": "Mj García Márquez PhD"}
 {"name": "García Márquez, Ms G.J.", "title": "Ms", "given": "G.J.", "family": "García Márquez", "initials": "G. G. M."}
 {"name": "García Márquez, PhD G.J.", "given": "García", "family": "Márquez", "suffix": "PhD G.J.", "initials": "G. M."}
+{"name": "García del Valle María", "given": "García", "family": "del Valle María", "initials": "G. V. M."}
 {"name": "García y Bellido, Antonio", "given": "Antonio", "family": "García y Bellido", "initials": "A. G. B."}
 {"name": "Gardner, Augustus P.", "given": "Augustus", "middle": "P.", "family": "Gardner", "initials": "A. P. G."}
 {"name": "Gary Strawsburg, PMP, CSCP, CLSSBB", "given": "Gary", "family": "Strawsburg", "suffix": "PMP, CSCP, CLSSBB", "ambiguities": ["COMMA_STRUCTURE"], "initials": "G. S.", "capitalized_force": "Gary Strawsburg, PMP, CSCP, Clssbb"}
@@ -1243,6 +1245,7 @@
 {"name": "Gurbanow, Meretgeldi Durdyýewiç", "given": "Meretgeldi", "middle": "Durdyýewiç", "family": "Gurbanow", "initials": "M. D. G."}
 {"name": "Gurdow Atajan Saparowiç, magistr, ylymlaryň kandidaty", "order": "FAMILY_FIRST", "given": "magistr", "family": "Gurdow Atajan Saparowiç", "suffix": "ylymlaryň kandidaty", "ambiguities": ["COMMA_STRUCTURE"], "initials": "m. G. A. S.", "capitalized_force": "Magistr Gurdow Atajan Saparowiç Ylymlaryň Kandidaty"}
 {"name": "Gurdow, Atajan Saparowiç", "given": "Atajan", "middle": "Saparowiç", "family": "Gurdow", "initials": "A. S. G."}
+{"name": "Gurpreet Singh Sandhu", "given": "Gurpreet", "middle": "Singh", "family": "Sandhu", "initials": "G. S. S."}
 {"name": "Guru Gobind Singh", "title": "Guru", "given": "Gobind", "family": "Singh", "initials": "G. S."}
 {"name": "Guru Nanak", "title": "Guru", "given": "Nanak", "initials": "N."}
 {"name": "Gustavo León González", "given": "Gustavo", "middle": "León", "family": "González", "initials": "G. L. G."}
@@ -1295,6 +1298,7 @@
 {"name": "Harietta Keopuolani Nahi'ena'ena", "given": "Harietta", "middle": "Keopuolani", "family": "Nahi'ena'ena", "initials": "H. K. N.", "capitalized_force": "Harietta Keopuolani Nahi'Ena'Ena"}
 {"name": "Harms, Claus", "given": "Claus", "family": "Harms", "initials": "C. H."}
 {"name": "Harpreet Kaur Dhillon", "given": "Harpreet", "middle": "Kaur", "family": "Dhillon", "initials": "H. K. D."}
+{"name": "Harpreet Simran Kaur", "given": "Harpreet", "middle": "Simran", "family": "Kaur", "initials": "H. S. K."}
 {"name": "Harrieta Keōpūolani Nāhiʻenaʻena", "given": "Harrieta", "middle": "Keōpūolani", "family": "Nāhiʻenaʻena", "initials": "H. K. N."}
 {"name": "Hasani Maria", "order": "FAMILY_FIRST", "given": "Maria", "family": "Hasani", "initials": "M. H."}
 {"name": "Hasani, Maria", "given": "Maria", "family": "Hasani", "initials": "M. H."}
@@ -2154,6 +2158,8 @@
 {"name": "Juan Anglada y Ruiz", "given": "Juan", "family": "Anglada y Ruiz", "initials": "J. A. R."}
 {"name": "Juan Antonio Rascón Navarro Seña y Redondo", "given": "Juan", "middle": "Antonio Rascón Navarro", "family": "Seña y Redondo", "initials": "J. A. R. N. S. R."}
 {"name": "Juan Antonio de los Heros Fernández", "given": "Juan", "middle": "Antonio", "family": "de los Heros Fernández", "initials": "J. A. H. F."}
+{"name": "Juan Antonio del Carmen de la Vega", "given": "Juan", "middle": "Antonio del Carmen", "family": "de la Vega", "initials": "J. A. C. V."}
+{"name": "Juan Antonio del Valle de la Vega", "given": "Juan", "middle": "Antonio del Valle", "family": "de la Vega", "initials": "J. A. V. V."}
 {"name": "Juan C. Garaikoetxea Urriza", "given": "Juan", "middle": "C. Garaikoetxea", "family": "Urriza", "initials": "J. C. G. U."}
 {"name": "Juan Carlos", "given": "Juan", "family": "Carlos", "initials": "J. C."}
 {"name": "Juan Carlos Pérez", "given": "Juan", "middle": "Carlos", "family": "Pérez", "initials": "J. C. P."}
@@ -2596,6 +2602,7 @@
 {"name": "Maria Popescu", "given": "Maria", "family": "Popescu", "initials": "M. P."}
 {"name": "Maria Silva", "given": "Maria", "family": "Silva", "initials": "M. S."}
 {"name": "Maria Wijaya", "given": "Maria", "family": "Wijaya", "initials": "M. W."}
+{"name": "Maria da Silva Santos", "given": "Maria", "family": "da Silva Santos", "initials": "M. S. S."}
 {"name": "Maria do Carmo Silva", "given": "Maria", "family": "do Carmo Silva", "initials": "M. C. S."}
 {"name": "Maria do Carmo da Silva", "given": "Maria", "middle": "do Carmo", "family": "da Silva", "initials": "M. C. S."}
 {"name": "Mariam Geedi Hamish Hussein", "given": "Mariam", "middle": "Geedi Hamish", "family": "Hussein", "initials": "M. G. H. H."}
@@ -2657,6 +2664,10 @@
 {"name": "María Paz Alonso Romero", "given": "María", "middle": "Paz Alonso", "family": "Romero", "initials": "M. P. A. R."}
 {"name": "María Rubio Tejero", "given": "María", "middle": "Rubio", "family": "Tejero", "initials": "M. R. T."}
 {"name": "María de la O Lejárraga y García", "given": "María", "family": "de la O Lejárraga y García", "initials": "M. O. L. G."}
+{"name": "María de los Ángeles López Pérez", "given": "María", "family": "de los Ángeles López Pérez", "initials": "M. Á. L. P."}
+{"name": "María del Carmen", "given": "María", "family": "del Carmen", "initials": "M. C."}
+{"name": "María del Carmen García", "given": "María", "family": "del Carmen García", "initials": "M. C. G."}
+{"name": "María del Carmen García López", "given": "María", "family": "del Carmen García López", "initials": "M. C. G. L."}
 {"name": "María del Carmen de la Vega", "given": "María", "middle": "del Carmen", "family": "de la Vega", "initials": "M. C. V."}
 {"name": "María del Pilar Hurtado Montaño", "given": "María", "family": "del Pilar Hurtado Montaño", "initials": "M. P. H. M."}
 {"name": "María-José Ana López", "given": "María-José", "middle": "Ana", "family": "López", "initials": "M. A. L."}

@@ -506,6 +506,12 @@ MUTATIONS = [
     ("same-as-on-a-family-reading", {"en.toml": _w('[[word]]\ntext = "smyth"\nfamily = { note = "x", same_as = "smith" }')}, "only a `given` reading takes one"),
     ("same-as-on-a-given-reading-unnormalized", {"en.toml": _w('[[word]]\ntext = "chas"\ngiven = { note = "x", same_as = "Charles" }')}, "not in normalized form; write 'charles'"),
     ("same-as-on-a-given-reading-names-itself", {"en.toml": _w('[[word]]\ntext = "chas"\ngiven = { note = "x", same_as = "chas" }')}, "names the word itself"),
+    # 3, the two name-reading properties the two-name switches read
+    # (#704): each is true or unwritten, and after_particle names a
+    # given name, so only a given reading takes it
+    ("shared-not-true", {"pa.toml": _w('[[word]]\ntext = "kaur"\nfamily = { note = "x", shared = false }')}, "shared must be true, or left unwritten"),
+    ("after-particle-not-true", {"es.toml": _w('[[word]]\ntext = "carmen"\ngiven = { note = "x", after_particle = 1 }')}, "after_particle must be true, or left unwritten"),
+    ("after-particle-on-a-family-reading", {"es.toml": _w('[[word]]\ntext = "carmen"\nfamily = { note = "x", after_particle = true }')}, "only a `given` reading takes one"),
 ]
 
 
@@ -1099,6 +1105,8 @@ _PROPERTY_PROBES = {
     "abbreviation": ("military", "{ abbreviation = true }", "zzq"),
     "default": ("generation", "{ default = false }", "zzq"),
     "title_case_is_name": ("generation", "{ title_case_is_name = true }", "zzq"),
+    "shared": ("family", '{ shared = true, note = "probe" }', "zzq"),
+    "after_particle": ("given", '{ after_particle = true, note = "probe" }', "zzq"),
     # a phrase needs the head it attaches to: a second title word
     "attaches": ("office", '{ attaches = ["occupation"] }', "zzq",
                  '\n\n[[word]]\ntext = "zzr"\noccupation = {}'),

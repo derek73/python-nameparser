@@ -124,7 +124,8 @@ A kind belongs to a category, which decides what the reading does:
      - none
    * - name
      - ``given``, ``family``
-     - ``same_as="..."`` on ``given``
+     - ``same_as="..."`` and ``after_particle=True`` on ``given``;
+       ``shared=True`` on either
 
 ``nameparser/vocab/README.md`` in the repository says what each kind
 and property means. A property given its unwritten value (``None``,
@@ -1063,7 +1064,8 @@ hyphen or ``y`` joins them (``"Ana María García-López"``, ``"José
 Ortega y Gasset"``) or a particle chain took them both: a compound
 given name opening with a particle, such as ``"María del Carmen García
 López"``, reads family ``del Carmen García López`` with the switch on
-or off. A name of two words is unchanged, and a comma naming the family
+or off, until ``two_given_names`` below takes ``del Carmen`` into the
+given name. A name of two words is unchanged, and a comma naming the family
 decides by itself, so ``"García López, Ana"`` needs no switch at all. Under a family-first ``name_order`` the *first* two
 name words are the family.
 
@@ -1149,11 +1151,30 @@ two:
     >>> both.parse("Gabriel García Márquez").given
     'Gabriel'
 
-A given name a particle completes reads whole where a second particle
-starts the family (``"María del Carmen de la Vega"`` gives given
-``María del Carmen``); where the particle's words run to the end of
-the name, as in ``"Maria do Carmo Silva"``, they stay the family with
-the switch on or off, the same shape as ``"João da Silva Santos"``.
+A given name a particle completes reads whole too. Where the
+particle's words would otherwise run on into the family, the switch
+takes them only if the vocabulary marks the word behind the particle
+as a given name written there (``after_particle``). The Spanish ones
+are marked, those that ORCID's researchers from Spain and
+Spanish-speaking America write in the given box at least nine times
+for each ten they also open a family box with it (``del
+Carmen``, ``de los Ángeles``, ``del Mar``, ``del Pilar``: 23 words in
+all on 2026-11-03). A phrase too often a surname to mark, as Portuguese ``do Carmo``
+is, stays the family, the same shape as ``"João da Silva Santos"``:
+
+.. doctest::
+
+    >>> carmen = two_given.parse("María del Carmen García")
+    >>> carmen.given, carmen.family
+    ('María del Carmen', 'García')
+    >>> two_given.parse("Maria do Carmo Silva").family
+    'do Carmo Silva'
+
+To mark a word of your own, add it with ``Lexicon.default().add("carmo",
+kind="given", after_particle=True)``. The two switches also leave alone
+the Sikh names Kaur and Singh, given to every Sikh woman and man and
+written after the personal name: ``"Harpreet Kaur Dhillon"`` keeps
+middle ``Kaur`` under either switch, as it does by default.
 
 Turn it on only for data written this way: under it every name whose
 second given word is a middle name gains it in the given name
