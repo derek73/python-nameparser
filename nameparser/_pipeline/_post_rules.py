@@ -898,12 +898,15 @@ def post_rules(state: ParseState) -> ParseState:
     # part is asked whether every word is particle vocabulary" --
     # `between` is the part's own first and last word excluded, and a
     # set-aside connective is left unmarked, so it stays in the base,
-    # initials nothing and keeps its case (decisions/R2, #939).
+    # initials nothing and keeps its case (decisions/R2, #939). A set,
+    # since the marking loop asks it per word: a list made a part
+    # alternating particle and connective quadratic (test_benchmark's
+    # `connective_between_particles` row).
     for role in (Role.GIVEN, Role.MIDDLE, Role.FAMILY):
         part = _idx(tokens, role)
         all_particle = bool(part)
         conj: list[int] = []
-        between: list[int] = []
+        between: set[int] = set()
         others = 0
         last = len(part) - 1
         for n, i in enumerate(part):
@@ -913,7 +916,7 @@ def post_rules(state: ParseState) -> ParseState:
                 conj.append(i)
             if "particle" not in tags:
                 if is_conj and 0 < n < last:
-                    between.append(i)
+                    between.add(i)
                     continue
                 all_particle = False
                 if not is_conj:
@@ -926,9 +929,12 @@ def post_rules(state: ParseState) -> ParseState:
         elif conj and not others:
             # #461: nothing here for the connective to join. The `elif`
             # is deliberate -- where the part is all-particle R2's mark
-            # already readmits every word, a word that is BOTH particle
-            # and connective included, which is what keeps a caller's
-            # `add(particles={"y"})` readings unchanged.
+            # already readmits every word but a connective it set aside,
+            # a word that is BOTH particle and connective included
+            # (never set aside, being a particle), which is what keeps
+            # a caller's `add("y", kind="particle")` readings unchanged;
+            # and it keeps this mark off a connective R2 set aside, which
+            # joins the particles around it and initials nothing.
             for i in conj:
                 tokens[i] = copy_with(
                     tokens[i],

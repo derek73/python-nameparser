@@ -405,9 +405,11 @@ def test_a_connective_between_particles_is_set_aside(
         "Fritz Freiherr und Von Bar")
     # any part, not only the family: a middle of particles joined by it
     assert parse("Bar, Fritz Freiherr und von").initials() == "F. F. v. B."
-    # at the end of the part, it is the base (rules/R3's own row)
+    # at either end of the part, it is the base (rules/R3's own row)
     assert parse("Juan de y").family_base == "y"
     assert parse("Juan de y").initials() == "J. y."
+    assert parse("y de la, Juan").family_base == "y"
+    assert parse("y de la, Juan").initials() == "J. y."
 
 
 def test_revise_recomputes_the_connective_set_aside() -> None:

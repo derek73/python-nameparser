@@ -222,7 +222,9 @@ class Span(NamedTuple):
 #: test only compares the frozenset), so edit both or neither.
 STABLE_TAGS = frozenset({"particle", "conjunction", "initial", "joined"})
 
-#: A name part whose every word is particle vocabulary is a part
+#: A name part whose every word is particle vocabulary (a connective
+#: between two of its words set aside in asking, and left unmarked,
+#: rules/R2, #939) is a part
 #: where none of them is doing a particle's work -- nothing joins them
 #: to a name -- so FOUR views read them as ordinary name words: they
 #: anchor `family_base`, drop out of `family_particles`, contribute
@@ -1145,9 +1147,11 @@ def _remarked(tokens: list[Token]) -> tuple[Token, ...]:
     is only correct for half the cases.
 
     The two predicates mirror the pipeline's single walk, including
-    its precedence: where the part is ALL particles the first mark
-    already readmits every word of it, a word that is both particle
-    and connective included, so the second is not written there.
+    its precedence: where the part is ALL particles -- a connective
+    that is no particle, between the part's first and last word, set
+    aside in asking (rules/R2, #939) -- the first mark readmits every
+    word of it but that connective, a word that is both particle and
+    connective included, so the second is not written there.
     """
     out = list(tokens)
     for role in (Role.GIVEN, Role.MIDDLE, Role.FAMILY):
