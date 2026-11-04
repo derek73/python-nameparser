@@ -98,12 +98,16 @@ text = "lcda"
 academic = { default = false, gender = "f", issue = 753, same_as = "licenciada", expands = "Lcda., Licenciada abbreviated", note = "no name bearer in any source tools/name_usage.py reads; ORCID's given box 22 records, the title typed in, 3 names opening with it (Lcda. Ligia Elena Sánchez Baque) (2026-10-30)" }
 
 [[word]]
-text = "maestro"
-excluded = { academic = { reason = "a Spanish and Italian family name (ORCID's family box 43 records in Spain, US Census 200), and the form of address is written abbreviated, Mtro., where it is written at all: only 3 names open with it in every local corpus, 2 of them a conductor's honorific (Maestro Solti) (2026-10-30); Mexico's DOF signatures spell it out now and then (Maestro Arturo Serrano Meneses), against Mtro. in 2.7% of 150 sampled", issue = 753, decided = 2026-10-30 } }
+text = "maestra"
+academic = { default = false, gender = "f", issue = 980, expands = "Maestra, the holder of a master's degree, a form of address in Mexico: Maestra Ana Ruiz Paz", note = "off by default and turned on by a Spanish choice: also the word for a schoolteacher in Spanish and Italian, and borne as a family name, ORCID's family box 9 records (2 in Spain, 1 in Italy, 6 with no country), PatentsView's 1 (Spain), FEC 1 (MAESTRA, SUSAN M.); no US Census or US SSA bearer, and Wikidata's zero proves nothing. Mexico's DOF writes it in 39 signatures (Maestra 35, MAESTRA 4), 38 opening the name; 3 of those, 2 names, continue with a complement (Maestra en Derecho, MAESTRA EN ADMINISTRACION), which the title run does not take; ORCID 1 (2026-11-03). Its masculine, maestro, is excluded, a family name" }
 
 [[word]]
 text = "mtra"
-academic = { default = false, gender = "f", issue = 753, expands = "Mtra., Maestra abbreviated", note = "no name bearer in any source tools/name_usage.py reads; ORCID's given box 7 records, the title typed in (2026-10-30)" }
+academic = { default = false, gender = "f", issue = 753, same_as = "maestra", expands = "Mtra., Maestra abbreviated", note = "no name bearer in any source tools/name_usage.py reads; ORCID's given box 7 records, the title typed in (2026-10-30)" }
+
+[[word]]
+text = "maestro"
+excluded = { academic = { reason = "a Spanish and Italian family name (ORCID's family box 43 records in Spain, US Census 200), and the form of address is written abbreviated, Mtro., where it is written at all: only 3 names open with it in every local corpus, 2 of them a conductor's honorific (Maestro Solti) (2026-10-30); Mexico's DOF signatures spell it out now and then (Maestro Arturo Serrano Meneses), against Mtro. in 2.7% of 150 sampled", issue = 753, decided = 2026-10-30 } }
 
 [[word]]
 text = "mtro"
@@ -111,11 +115,11 @@ academic = { default = false, gender = "m", issue = 753, expands = "Mtro., Maest
 
 [[word]]
 text = "profesor"
-academic = { default = false, issue = 753, expands = "Profesor, Professor", note = "no name bearer in any source tools/name_usage.py reads; 3 ORCID names open with it (Profesor José María Serbia), and ClinicalTrials.gov officials write it after a comma 107 times, mostly Polish and Romanian, a language this file does not choose (2026-10-30)" }
+academic = { issue = [753, 804], expands = "Profesor, Professor", note = "read by default since #804 (2026-11-03). ClinicalTrials.gov's officials write it in 123 records, 122 after a comma, and of the 113 distinct names whose reading the change moves, 62 stand on studies located only in France (Antoine DURRBACH, Profesor) and 9 on studies located in Poland, by a lookup of each name's study in ClinicalTrials.gov's API; Mexico's DOF signatures open 7 names with it and ORCID 3 (Profesor José María Serbia). No US Census, US SSA or nam_dict bearer; Wikidata holds 5 given-name statements (Spain 1, Russia 1, Uganda 1, the Soviet Union 1, 2 with no citizenship), a lower bound, and every ORCID given or family box holding it holds the title typed in (Profesor Andrzej) (2026-11-03)" }
 
 [[word]]
 text = "profesora"
-academic = { default = false, gender = "f", issue = 753, same_as = "profesor", expands = "Profesora, the feminine of profesor", note = "no name bearer in any source tools/name_usage.py reads; 5 ORCID names open with it (Profesora Jennifer Isabel Arroyo Chacón) (2026-10-30)" }
+academic = { gender = "f", issue = [753, 804], same_as = "profesor", expands = "Profesora, the feminine of profesor", note = "no name bearer in any source tools/name_usage.py reads; 5 ORCID names open with it (Profesora Jennifer Isabel Arroyo Chacón) (2026-10-30)" }
 
 [[word]]
 text = "h"

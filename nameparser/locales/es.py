@@ -1,7 +1,7 @@
 """The Spanish locale pack: it chooses the language ``es``, which turns
 on the readings nameparser/vocab/es.toml writes ``default = false`` --
 the courtesy, academic and professional titles that lead a name
-(``Lic.``, ``Licenciada``, ``Doctora``, ``Profesora``, ``Mtro.``,
+(``Lic.``, ``Licenciada``, ``Doctora``, ``Maestra``, ``Mtro.``,
 ``Arq.``, ``Ingeniero``, ``Doña``) -- and prefers es.toml's readings
 where another language's clash: ``Lic Juan Pérez`` gives title ``Lic``
 where the default gives given ``Lic``. It reads two family names

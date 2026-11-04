@@ -230,8 +230,8 @@ def test_es_and_pt_pack_contents() -> None:
                                 languages=frozenset({"pt"}))
     assert changed_words(selected(locales.ES.languages)) == {
         "arq", "doctora", "doña", "ingeniera", "ingeniero", "lcda",
-        "lcdo", "lic", "licenciada", "licenciado", "mtra", "mtro",
-        "profesor", "profesora"}
+        "lcdo", "lic", "licenciada", "licenciado", "maestra", "mtra",
+        "mtro"}
     assert changed_words(selected(locales.PT.languages)) == {
         "do", "doutor", "doutora", "e", "profa", "professora"}
     # sr keeps es's and pt's generation beside the salutation, so the
@@ -278,9 +278,9 @@ def test_es_and_pt_read_a_leading_title_and_leave_don_a_given_name() -> None:
                         ("Doña María Pérez", "Doña"),
                         ("Mtro. Pérez, Edgar", "Mtro.")):
         assert parse(text).title in ("", "Mtro.") and es.parse(text).title == title
-    assert es.parse("Ana López Profesora.").as_dict() == parse(
-        "Ana López Profesora.").as_dict() | {
-        "title": "Profesora.", "middle": "", "family": "López"}
+    assert es.parse("Ana López Maestra.").as_dict() == parse(
+        "Ana López Maestra.").as_dict() | {
+        "title": "Maestra.", "middle": "", "family": "López"}
     assert pt.parse("Fernanda Lucchese, Doutora").as_dict() == parse(
         "Fernanda Lucchese, Doutora").as_dict() | {
         "title": "Doutora", "given": "Fernanda", "family": "Lucchese"}
@@ -1336,8 +1336,8 @@ _ROTATORS["es"] = [
     "Mtro. Pérez, Edgar",            # mtro, dotted, before a family comma (H6)
     "Mtra Ana Ruiz",                 # mtra
     "Doctora Montilla",              # doctora
-    "Profesor Segovia",              # profesor
-    "López Profesora.",              # profesora, dotted, ending the name
+    "Maestra Ruiz",                  # maestra
+    "López Maestra.",                # maestra, dotted, ending the name
     "Doña María Pérez",              # doña
     "Gabriel García Márquez",        # rules/O6, the patch
     "María José García López",       # rules/O6 behind a two-word given part
