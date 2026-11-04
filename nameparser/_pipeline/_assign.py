@@ -65,7 +65,8 @@ holds an ambiguous particle ("Beethoven, Ludwig van").
 Emits SUFFIX_OR_NAME at these sites: the trailing roman numeral, taken
 or declined (since #718 for want of words to spare, since #752 for its
 Title case), a numeral ending the family part before a family comma,
-one of two or more letters ending a given part's walk, each
+one of two or more letters ending a given part's walk, -- since
+#877 -- a bare one-letter numeral ending that walk behind a name word, each
 ambiguous acronym the trailing peel had to resolve, the bare-suffix
 carve-out where an input that is nothing but post-nominal vocabulary
 gets its first word made into the name (H4's suffix half, #491),
@@ -1638,6 +1639,13 @@ def assign(state: ParseState) -> ParseState:
                 # the name reading of a word the walk read as a suffix:
                 # a middle name, or taken in by the name word in front
                 front = pieces[m - 1]
+                # rules/P1's fold after a family comma takes the rest of
+                # the part into the family, so a word behind a part a
+                # never-given particle opens lands there too, however
+                # far behind it the word stands (#877 review)
+                if n < m - 1 and is_lone_never_given_particle(pieces[n],
+                                                               tokens):
+                    return name_reading(token, Role.FAMILY)
                 return _name_alt(
                     token, Role.MIDDLE,
                     front if tokens[front[0]].role in NAME_ROLES else None,
@@ -1692,6 +1700,9 @@ def assign(state: ParseState) -> ParseState:
                              or m < sticky_from and suffix_here)
                         and _ROMAN.match(tok.text) is not None
                         and tokens[pieces[m - 1][0]].role in NAME_ROLES
+                        # a particle in front may take the letter into
+                        # its chain or stand alone, the field the name
+                        # reading names depending on which (#877 review)
                         and not is_prefix_piece(pieces[m - 1], ptags[m - 1],
                                                 tokens)
                         and not numeral_settled_by_case(tok.text,

@@ -3597,6 +3597,7 @@
 {"name": "Smith, Sir", "title": "Sir", "given": "Smith", "initials": "S."}
 {"name": "Smith, Sr.", "family": "Smith", "suffix": "Sr.", "initials": "S.", "generation": "Sr."}
 {"name": "Smith, V; MD", "given": "V;", "family": "Smith", "suffix": "MD", "initials": "V. S."}
+{"name": "Smith, Van V", "given": "Van", "family": "Smith", "suffix": "V", "initials": "V. S.", "generation": "V"}
 {"name": "Smith, XYZ", "given": "XYZ", "family": "Smith", "initials": "X. S.", "capitalized_force": "Xyz Smith"}
 {"name": "Smith, de Mesnil Jean", "family": "Smith de Mesnil Jean", "initials": "S. M. J."}
 {"name": "Smith, meng", "given": "meng", "family": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "m. S.", "capitalized_force": "Meng Smith"}

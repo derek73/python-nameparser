@@ -538,7 +538,11 @@ _REVIEW_SHAPES = ("PhD VI", "Jr VI", "III VI", "Smith, John van VI",
                   "Sir abdul VI", "Dr. mc VI", "de VI", "Smith, Dr. de VI",
                   # the PR review's: a given-name title licenses the
                   # bound join only from the leading run, as group asks
-                  "abdul VI Sir.", "Sir Dr. abdul VI", "Dr. Sir abdul VI")
+                  "abdul VI Sir.", "Sir Dr. abdul VI", "Dr. Sir abdul VI",
+                  # #877's review: P1's fold opening the given part
+                  # takes a letter standing past its first word
+                  "Smith, de Mesnil V", "Smith, de Mesnil VI",
+                  "Smith, Mc V I")
 
 
 @pytest.mark.parametrize("order", _INVARIANT_ORDERS)
