@@ -83,6 +83,23 @@ local_agreement.read with the default's title words, the same records
 in every column. Each group is its first --cap records in raw.jsonl's
 order.
 
+**score**: configurations scored against the filed boxes, a row a group.
+For each group of the same three fielded corpora (`--group` as the
+corpus writes it, `--languages` the groups whose country writes one of
+those tags, or every group), its first --cap records, less the given
+boxes opening with a title word and, in ORCID and PatentsView, the
+records with an empty box, each configuration's share of records
+agreeing in every box (local_agreement.read), and for the best one the
+records it fixes and breaks against the first. `--switches` names bool
+`Policy` fields and reads every configuration under every combination
+of them, written in full as an `@` suffix (`plain:ES@two_family_names=0,
+two_given_names=1`, which any SPEC may carry), set on the policy last,
+over what the packs patched. It is the per-country sweep a country
+preset is measured by:
+
+    uv run python tools/differential/config_diff.py score default plain:ES \\
+        --switches two_family_names,two_given_names --languages es
+
 LANGUAGES_OF, the language tags written in each country, and
 NATIONALITY, the country each PSC nationality names, are a measurement
 aid read by this report and nothing else: decisions/vocabulary-model
@@ -108,6 +125,7 @@ from __future__ import annotations
 import argparse
 import contextlib
 import dataclasses
+import itertools
 import json
 import os
 import re
@@ -175,8 +193,39 @@ def _quiet() -> Iterator[None]:
         yield
 
 
+def switched(spec: str) -> tuple[str, dict[str, bool]]:
+    """A configuration and the Policy switches its `@` suffix sets:
+    `plain:ES@two_family_names=0,two_given_names=1` is `plain:ES` with
+    those two fields replaced. A switch is a bool Policy field, written
+    0 or 1; an `expr:` keeps every `@` its Python holds."""
+    if spec.startswith("expr:") or "@" not in spec:
+        return spec, {}
+    from nameparser import Policy
+    base, _, suffix = spec.rpartition("@")
+    flags = {f.name for f in dataclasses.fields(Policy) if isinstance(f.default, bool)}
+    out: dict[str, bool] = {}
+    for item in suffix.split(","):
+        field, eq, value = item.partition("=")
+        if field not in flags or not eq or value not in ("0", "1"):
+            raise ValueError(f"{spec!r}: a switch is FIELD=0 or FIELD=1, the field a bool "
+                             f"Policy field ({', '.join(sorted(flags))}); got {item!r}")
+        if field in out:
+            raise ValueError(f"{spec!r}: {field} is set twice")
+        out[field] = value == "1"
+    return base, out
+
+
 def build(spec: str) -> Parser:
-    """The Parser a configuration names (see the module docstring)."""
+    """The Parser a configuration names (see the module docstring), its
+    `@` switches (switched) set on its policy last, over whatever the
+    packs patched."""
+    base, flags = switched(spec)
+    parser = _build(base)
+    return dataclasses.replace(parser, policy=dataclasses.replace(parser.policy, **flags)
+                               ) if flags else parser
+
+
+def _build(spec: str) -> Parser:
     from nameparser import Lexicon, Locale, Parser, Policy, locales, parser_for
     kind, _, rest = spec.partition(":")
     if spec == "default":
@@ -231,6 +280,17 @@ def _parser(spec: str, order: str | None) -> Parser:
                     parser.policy, name_order=getattr(nameparser, order)))
         _BUILT[key] = parser
     return _BUILT[key]
+
+
+def expand(specs: Sequence[str], switches: Sequence[str]) -> list[str]:
+    """Each configuration under every combination of `switches`, each
+    combination written out in full (`@a=0,b=1`), so a switch a pack
+    turns on is turned off where the combination says 0."""
+    if not switches:
+        return list(specs)
+    combos = itertools.product("01", repeat=len(switches))
+    suffixes = [",".join(f"{s}={v}" for s, v in zip(switches, c)) for c in combos]
+    return [f"{spec}@{suffix}" for spec in specs for suffix in suffixes]
 
 
 def reading(parsed: ParsedName) -> Reading:
@@ -703,19 +763,21 @@ def _given_opens_with_title(record: dict[str, str], titles: frozenset[str]) -> b
     return bool(words) and words[0].casefold() in titles
 
 
+def kept(source: str, recs: Iterable[dict[str, str]], titles: frozenset[str]
+         ) -> list[dict[str, str]]:
+    """`recs` less the given boxes opening with a title word, in a
+    source with no title box (a holder's `Dr` typed as a given name)."""
+    no_title_box = not local_agreement._box(local_agreement.FIELDED[source], "title")
+    return [r for r in recs if not (no_title_box and _given_opens_with_title(r, titles))]
+
+
 def gap_rows(tag: str, records: dict[tuple[str, str], list[dict[str, str]]],
              titles: frozenset[str]) -> list[tuple[str, str, dict[str, str]]]:
     """`tag`'s (source, group, record) rows to read: the records of the
     groups it stands under, less the given boxes opening with a title
     word in the sources with no title box."""
-    rows = []
-    for (source, group), recs in sorted(records.items()):
-        if not stands_under(source, group, tag):
-            continue
-        no_title_box = not local_agreement._box(local_agreement.FIELDED[source], "title")
-        rows += [(source, group, r) for r in recs
-                 if not (no_title_box and _given_opens_with_title(r, titles))]
-    return rows
+    return [(source, group, r) for (source, group), recs in sorted(records.items())
+            if stands_under(source, group, tag) for r in kept(source, recs, titles)]
 
 
 @dataclasses.dataclass
@@ -847,6 +909,110 @@ def gaps(tags: Sequence[str], cap: int, jobs: int
     return results, unmapped(counts)
 
 
+# --- score: configurations against the filed boxes, by group ---------------------
+
+def score_select(groups: Sequence[str], languages: Sequence[str], cap: int
+                 ) -> dict[tuple[str, str], list[dict[str, str]]]:
+    """The first `cap` records of each fielded group asked for: a group
+    named in `groups` (as the corpus writes it, a PSC nationality whole),
+    or one whose country writes a tag of `languages` (LANGUAGES_OF); with
+    neither, every group."""
+    out: dict[tuple[str, str], list[dict[str, str]]] = {}
+    named, tags = set(groups), set(languages)
+    for source, key in GAP_SOURCES:
+        for record in local_agreement.records(local_corpora.require(source)):
+            group = record.get(key, "")
+            country = country_of(source, group)
+            if named or tags:
+                if group not in named and not (
+                        country is not None and tags & set(LANGUAGES_OF[country])):
+                    continue
+            bucket = out.setdefault((source, group), [])
+            if len(bucket) < cap:
+                bucket.append(record)
+    return out
+
+
+@dataclasses.dataclass
+class SpecScore:
+    """One configuration's score in one group: records agreeing in
+    every box, and against the first configuration the records it
+    fixes (agree only under it) and breaks (agree only under the first)."""
+    agree: int = 0
+    fixed: int = 0
+    broken: int = 0
+
+
+def score_rows(rows: Sequence[dict[str, str]], fielded: local_agreement.Fielded,
+               readings: Sequence[tuple[Reading, ...]], listed: frozenset[str]
+               ) -> tuple[int, list[SpecScore]]:
+    """`rows` scored under each configuration's reading: the records
+    scored (local_agreement.read's set-aside, judged under the first
+    configuration, dropped from every column) and each one's score."""
+    n_specs = len(readings[0]) if readings else 0
+    out = [SpecScore() for _ in range(n_specs)]
+    scored = 0
+    for record, rs in zip(rows, readings):
+        first = local_agreement.read(record, fielded, _Parsed(rs[0]), listed)  # type: ignore[arg-type]
+        if first.set_aside:
+            continue
+        scored += 1
+        ok0 = not first.got
+        for i, r in enumerate(rs):
+            ok = ok0 if i == 0 else not local_agreement.read(
+                record, fielded, _Parsed(r), listed).got  # type: ignore[arg-type]
+            out[i].agree += ok
+            out[i].fixed += ok and not ok0
+            out[i].broken += ok0 and not ok
+    return scored, out
+
+
+def score(specs: Sequence[str], groups: Sequence[str], languages: Sequence[str],
+          cap: int, floor: int, jobs: int) -> list[dict[str, Any]]:
+    """Every selected group of at least `floor` records scored under
+    every configuration, the first the comparator."""
+    from nameparser import Lexicon
+    default = Lexicon.default()
+    titles = frozenset(default._sets.titles)
+    listed = local_agreement._title_words(default)
+    # every box filled where the form has two (ORCID, PatentsView): a
+    # holder with no family box says nothing about where it begins
+    selected = {k: [r for r in kept(k[0], v, titles) if k[0] == PSC or all(
+                    r.get(box, "").strip() for box in local_agreement.FIELDED[k[0]].fields)]
+                for k, v in sorted(score_select(groups, languages, cap).items())}
+    selected = {k: v for k, v in selected.items() if len(v) >= floor}
+    specs = tuple(specs)
+    items = [(r["name"], None, specs) for recs in selected.values() for r in recs]
+    readings = iter(read(items, jobs))
+    results = []
+    for (source, group), recs in selected.items():
+        mine = [next(readings) for _ in recs]
+        scored, per = score_rows(recs, local_agreement.FIELDED[source], mine, listed)
+        if scored >= floor:
+            results.append({"source": source, "group": group, "scored": scored,
+                            "specs": [dict(spec=s, **dataclasses.asdict(p))
+                                      for s, p in zip(specs, per)]})
+    return results
+
+
+def format_score(specs: Sequence[str], results: Sequence[dict[str, Any]]) -> list[str]:
+    """A legend numbering the configurations, then a line a group: each
+    configuration's agreement, the best one and its gain over [0] with
+    the records it fixes and breaks against [0]."""
+    lines = [f"  [{i}] {s}" for i, s in enumerate(specs)]
+    head = "".join(f" {f'[{i}]':>6}" for i in range(len(specs)))
+    lines.append(f"{'source':5} {'group':22} {'n':>7}{head}  best   gain  fixed/broken vs [0]")
+    for r in results:
+        n = r["scored"]
+        pcts = [100 * s["agree"] / n for s in r["specs"]]
+        best = max(range(len(pcts)), key=lambda i: (r["specs"][i]["agree"], -i))
+        b = r["specs"][best]
+        lines.append(f"{_short(r['source']):5} {r['group'][:22]:22} {n:7,}"
+                     + "".join(f" {p:6.2f}" for p in pcts)
+                     + f"  [{best}] {pcts[best] - pcts[0]:+6.2f}  {b['fixed']:,}/{b['broken']:,}")
+    return lines
+
+
 # --- command line ----------------------------------------------------------------
 
 def main(argv: list[str] | None = None) -> int:
@@ -863,10 +1029,22 @@ def main(argv: list[str] | None = None) -> int:
     g = sub.add_parser("gaps", help="each language's strict choice against its plain one")
     g.add_argument("tags", nargs="*", help="language tags (default: every choosable tag)")
     g.add_argument("--cap", type=int, default=CAP, help="records per (source, group)")
-    for p in (d, g):
-        p.add_argument("--top", type=int, default=15, help="words printed per configuration")
+    s = sub.add_parser("score", help="configurations scored against the filed boxes, by group")
+    s.add_argument("specs", nargs="+", metavar="SPEC", help="the first is the comparator")
+    s.add_argument("--switches", default="", help="bool Policy fields, comma-separated: "
+                   "each SPEC is read under every combination of them")
+    s.add_argument("--group", action="append", default=[], help="a country or nationality, "
+                   "as the corpus writes it (repeatable)")
+    s.add_argument("--languages", default="", help="language tags, comma-separated: the "
+                   "groups whose country writes one (LANGUAGES_OF)")
+    s.add_argument("--cap", type=int, default=CAP, help="records per (source, group)")
+    s.add_argument("--min", type=int, default=100, dest="floor",
+                   help="the fewest scored records for a group to get a row")
+    for p in (d, g, s):
         p.add_argument("--jobs", type=int, default=os.cpu_count() or 1)
         p.add_argument("--json", type=Path, help="write every count to this file")
+    for p in (d, g):
+        p.add_argument("--top", type=int, default=15, help="words printed per configuration")
     d.add_argument("--readings", type=Path, help="write every name's readings, one JSON line "
                    "a name, sorted: two trees' files compare line by line")
     args = ap.parse_args(argv)
@@ -890,13 +1068,29 @@ def main(argv: list[str] | None = None) -> int:
                                              "unmapped": missing},
                                             ensure_ascii=False, indent=1), encoding="utf-8")
         return 0
-    if len(args.specs) < 2:
+    if args.mode == "score":
+        specs = expand(args.specs, [w for w in args.switches.split(",") if w])
+    elif len(args.specs) < 2:
         ap.error("diff needs two configurations or more, the first the baseline")
-    for spec in args.specs:
+    else:
+        specs = args.specs
+    for spec in specs:
         try:
             build(spec)
         except Exception as exc:  # an expr: may raise anything; report it, no traceback
             ap.error(f"{spec}: {type(exc).__name__}: {exc}")
+    if args.mode == "score":
+        tags = [t for t in args.languages.split(",") if t]
+        if unknown := sorted(set(tags) - set(choosable())):
+            ap.error(f"--languages {unknown}: no tag a choice can name")
+        results = score(specs, args.group, tags, args.cap, args.floor, args.jobs)
+        print(f"{len(results)} groups of {args.floor:,} records or more, cap {args.cap:,}; "
+              f"all boxes agreeing, %")
+        print("\n".join(format_score(specs, results)))
+        if args.json:
+            args.json.write_text(json.dumps({"specs": specs, "cap": args.cap, "results": results},
+                                            ensure_ascii=False, indent=1), encoding="utf-8")
+        return 0
     names = gather(args)
     specs = tuple(args.specs)
     readings = read([(t, o, specs) for t, o, _i in names], args.jobs)
