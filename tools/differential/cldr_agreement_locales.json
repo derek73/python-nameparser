@@ -1,5 +1,9 @@
 {
  "az/foreignFull/givenFirst": {
+  "surname1_base": {
+   "expected": "Volf",
+   "got": "Volf Becker Schmidt"
+  },
   "surname2": {
    "expected": "Becker Schmidt",
    "got": ""
@@ -7,6 +11,10 @@
   "text": "Prof. Dr. Ada Kornelia Sezar Martin van den Volf Becker Schmidt M.D. Ph.D."
  },
  "az/foreignFull/sorting": {
+  "surname1_base": {
+   "expected": "Volf",
+   "got": "Volf Becker Schmidt"
+  },
   "surname2": {
    "expected": "Becker Schmidt",
    "got": ""
@@ -29,6 +37,14 @@
   "given_names": {
    "expected": "Ada Kornelia Sezar Martin",
    "got": "den Volf Ada Kornelia Sezar Martin"
+  },
+  "surname1_base": {
+   "expected": "Volf",
+   "got": "van"
+  },
+  "surname1_particles": {
+   "expected": "van den",
+   "got": ""
   },
   "text": "van den Volf Ada Kornelia Sezar Martin M.D. Ph.D."
  },
@@ -146,6 +162,14 @@
    "expected": "এম.ডি.পিএইচ.ডি.",
    "got": ""
   },
+  "surname1_base": {
+   "expected": "আলি",
+   "got": "এম.ডি.পিএইচ.ডি."
+  },
+  "surname1_particles": {
+   "expected": "রহমান",
+   "got": ""
+  },
   "surname2": {
    "expected": "তালুকদার",
    "got": ""
@@ -171,6 +195,14 @@
   },
   "suffix": {
    "expected": "এম.ডি.পিএইচ.ডি.",
+   "got": ""
+  },
+  "surname1_base": {
+   "expected": "আলি",
+   "got": "রহমান আলি তালুকদার"
+  },
+  "surname1_particles": {
+   "expected": "রহমান",
    "got": ""
   },
   "surname2": {
@@ -202,6 +234,14 @@
   },
   "suffix": {
    "expected": "এম.ডি.পিএইচ.ডি.",
+   "got": ""
+  },
+  "surname1_base": {
+   "expected": "আলি",
+   "got": "রহমান"
+  },
+  "surname1_particles": {
+   "expected": "রহমান",
    "got": ""
   },
   "surname2": {
@@ -308,6 +348,10 @@
   "text": "জেনদায়া"
  },
  "cs/foreignFull/givenFirst": {
+  "surname1_base": {
+   "expected": "Brühl",
+   "got": "Brühl González Domingo"
+  },
   "surname2": {
    "expected": "González Domingo",
    "got": ""
@@ -337,6 +381,10 @@
   "given_names": {
    "expected": "Ada Cornelia César Martín",
    "got": "González Domingo Ada Cornelia César Martín"
+  },
+  "surname1_base": {
+   "expected": "Brühl",
+   "got": ""
   },
   "surname2": {
    "expected": "González Domingo",
@@ -444,6 +492,10 @@
   "text": "Svoboda Josef Václav"
  },
  "es/foreignFull/sorting": {
+  "surname1_base": {
+   "expected": "Miller",
+   "got": "Miller Jones"
+  },
   "surname2": {
    "expected": "Jones",
    "got": ""
@@ -462,6 +514,10 @@
   "given_names": {
    "expected": "Mary Sue Marie",
    "got": "Jones Mary Sue Marie"
+  },
+  "surname1_base": {
+   "expected": "Miller",
+   "got": ""
   },
   "surname2": {
    "expected": "Jones",
@@ -503,6 +559,10 @@
   "text": "Christopher Hans Jacobsen"
  },
  "es/nativeFull/sorting": {
+  "surname1_base": {
+   "expected": "Pablo",
+   "got": "Pablo Pérez"
+  },
   "surname2": {
    "expected": "Pérez",
    "got": ""
@@ -532,6 +592,10 @@
   "text": "Lola"
  },
  "ga/foreignFull/givenFirst": {
+  "surname1_base": {
+   "expected": "Brühl",
+   "got": "Brühl González Domingo"
+  },
   "surname2": {
    "expected": "González Domingo",
    "got": ""
@@ -539,6 +603,10 @@
   "text": "Prof. Dr. Ada Cornelia César Martín von Brühl González Domingo M.D. Ph.D."
  },
  "ga/foreignFull/sorting": {
+  "surname1_base": {
+   "expected": "Brühl",
+   "got": "Brühl González Domingo"
+  },
   "surname2": {
    "expected": "González Domingo",
    "got": ""
@@ -561,6 +629,14 @@
   "given_names": {
    "expected": "Ada Cornelia César Martín",
    "got": "Brühl Ada Cornelia César Martín"
+  },
+  "surname1_base": {
+   "expected": "Brühl",
+   "got": "von"
+  },
+  "surname1_particles": {
+   "expected": "von",
+   "got": ""
   },
   "text": "von Brühl Ada Cornelia César Martín M.D. Ph.D."
  },
@@ -658,6 +734,10 @@
   "text": "Hozier"
  },
  "gd/foreignFull/givenFirst": {
+  "surname1_base": {
+   "expected": "Brühl",
+   "got": "Brühl González Domingo"
+  },
   "surname2": {
    "expected": "González Domingo",
    "got": ""
@@ -665,6 +745,10 @@
   "text": "Prof. Dr. Ada Cornelia César Martín von Brühl González Domingo Jr, MD DDS"
  },
  "gd/foreignFull/surnameFirst": {
+  "surname1_base": {
+   "expected": "Brühl",
+   "got": "Brühl González Domingo"
+  },
   "surname2": {
    "expected": "González Domingo",
    "got": ""
@@ -702,6 +786,14 @@
    "expected": "",
    "got": "Mac"
   },
+  "surname1_base": {
+   "expected": "Mac a’ Ghobhainn",
+   "got": "a’ Ghobhainn Chorùna"
+  },
+  "surname1_particles": {
+   "expected": "",
+   "got": "Mac"
+  },
   "surname2": {
    "expected": "Chorùna",
    "got": ""
@@ -717,6 +809,14 @@
    "expected": "",
    "got": "Mac"
   },
+  "surname1_base": {
+   "expected": "Mac a’ Ghobhainn",
+   "got": "a’ Ghobhainn"
+  },
+  "surname1_particles": {
+   "expected": "",
+   "got": "Mac"
+  },
   "text": "Mac a’ Ghobhainn, Dòmhnall Iain Bàn"
  },
  "gd/nativeFull/surnameFirst": {
@@ -725,6 +825,14 @@
    "got": "a’ Ghobhainn Chorùna"
   },
   "family_particles": {
+   "expected": "",
+   "got": "Mac"
+  },
+  "surname1_base": {
+   "expected": "Mac a’ Ghobhainn",
+   "got": "a’ Ghobhainn Chorùna"
+  },
+  "surname1_particles": {
    "expected": "",
    "got": "Mac"
   },
@@ -777,6 +885,14 @@
    "expected": "एम॰डी॰, पी॰एच॰डी॰",
    "got": "पी॰एच॰डी॰"
   },
+  "surname1_base": {
+   "expected": "वॉटसन",
+   "got": "प्रो॰ डॉ॰ माइकल जॉन वॉन वॉटसन चेस्टर"
+  },
+  "surname1_particles": {
+   "expected": "वॉन",
+   "got": ""
+  },
   "surname2": {
    "expected": "चेस्टर",
    "got": ""
@@ -804,6 +920,14 @@
    "expected": "एम॰डी॰, पी॰एच॰डी॰",
    "got": "पी॰एच॰डी॰"
   },
+  "surname1_base": {
+   "expected": "वॉटसन",
+   "got": "वॉन वॉटसन"
+  },
+  "surname1_particles": {
+   "expected": "वॉन",
+   "got": ""
+  },
   "text": "वॉन वॉटसन, माइकल जॉन एम॰डी॰, पी॰एच॰डी॰"
  },
  "hi/foreignFull/surnameFirst": {
@@ -826,6 +950,14 @@
   "suffix": {
    "expected": "एम॰डी॰, पी॰एच॰डी॰",
    "got": "पी॰एच॰डी॰"
+  },
+  "surname1_base": {
+   "expected": "वॉटसन",
+   "got": "प्रो॰ डॉ॰ वॉन वॉटसन माइकल जॉन"
+  },
+  "surname1_particles": {
+   "expected": "वॉन",
+   "got": ""
   },
   "text": "प्रो॰ डॉ॰ वॉन वॉटसन माइकल जॉन, एम॰डी॰, पी॰एच॰डी॰",
   "title": {
@@ -942,6 +1074,14 @@
   "given_names": {
    "expected": "Ada Cornelia Cesar Martin",
    "got": "Bruhl Prof. Dr. Ada Cornelia Cesar Martin"
+  },
+  "surname1_base": {
+   "expected": "Bruhl",
+   "got": "von"
+  },
+  "surname1_particles": {
+   "expected": "von",
+   "got": ""
   },
   "text": "von Bruhl Prof. Dr. Ada Cornelia Cesar Martin Jr, MD DDS",
   "title": {
@@ -1282,6 +1422,14 @@
    "expected": "एमडी डिडिएस",
    "got": ""
   },
+  "surname1_base": {
+   "expected": "ब्रुहल",
+   "got": "डिडिएस"
+  },
+  "surname1_particles": {
+   "expected": "भोन",
+   "got": ""
+  },
   "text": "एडा कर्नेलिया सिजर मार्टिन भोन ब्रुहल एमडी डिडिएस"
  },
  "ne/foreignFull/sorting": {
@@ -1296,6 +1444,10 @@
   "given_names": {
    "expected": "एडा कर्नेलिया सिजर मार्टिन",
    "got": "एडा कर्नेलिया सिजर मार्टिन भोन"
+  },
+  "surname1_particles": {
+   "expected": "भोन",
+   "got": ""
   },
   "text": "ब्रुहल, एडा कर्नेलिया सिजर मार्टिन भोन"
  },
@@ -1318,6 +1470,14 @@
   },
   "suffix": {
    "expected": "एमडी डिडिएस",
+   "got": ""
+  },
+  "surname1_base": {
+   "expected": "ब्रुहल",
+   "got": "भोन"
+  },
+  "surname1_particles": {
+   "expected": "भोन",
    "got": ""
   },
   "text": "भोन ब्रुहल एडा कर्नेलिया सिजर मार्टिन एमडी डिडिएस"
@@ -1428,6 +1588,14 @@
    "expected": "Jr. Dr. Ph.D",
    "got": "Jr., Ph.D"
   },
+  "surname1_base": {
+   "expected": "Brühl",
+   "got": "von"
+  },
+  "surname1_particles": {
+   "expected": "von",
+   "got": ""
+  },
   "text": "von Brühl Prof. Dr. Mary Lou Cesare Martín Jr., Dr. Ph.D",
   "title": {
    "expected": "Prof. Dr.",
@@ -1472,6 +1640,14 @@
   "given_names": {
    "expected": "José Pedro Eduardo",
    "got": "Silva Sr. José Pedro Eduardo"
+  },
+  "surname1_base": {
+   "expected": "Silva",
+   "got": "da"
+  },
+  "surname1_particles": {
+   "expected": "da",
+   "got": ""
   },
   "text": "da Silva Sr. José Pedro Eduardo Jr., MP",
   "title": {
@@ -1518,6 +1694,14 @@
    "expected": "Ада Корнелия Сезар Мартин",
    "got": "Ада Корнелия Сезар Мартин фон Брюль —"
   },
+  "surname1_base": {
+   "expected": "Брюль",
+   "got": "проф."
+  },
+  "surname1_particles": {
+   "expected": "фон",
+   "got": ""
+  },
   "text": "проф., д-р Ада Корнелия Сезар Мартин фон Брюль — мл., к. м. н.",
   "title": {
    "expected": "проф., д-р",
@@ -1536,6 +1720,10 @@
   "given_names": {
    "expected": "Ада Корнелия Сезар Мартин",
    "got": "Ада Корнелия Сезар Мартин фон"
+  },
+  "surname1_particles": {
+   "expected": "фон",
+   "got": ""
   },
   "text": "Брюль, Ада Корнелия Сезар Мартин фон"
  },
@@ -1558,6 +1746,14 @@
   },
   "suffix": {
    "expected": "к. м. н.",
+   "got": ""
+  },
+  "surname1_base": {
+   "expected": "Брюль",
+   "got": "фон Брюль Ада Корнелия Сезар Мартин"
+  },
+  "surname1_particles": {
+   "expected": "фон",
    "got": ""
   },
   "text": "фон Брюль Ада Корнелия Сезар Мартин, к. м. н."
@@ -1607,6 +1803,10 @@
   "text": "Сергей"
  },
  "sk/foreignFull/givenFirst": {
+  "surname1_base": {
+   "expected": "Kant",
+   "got": "Kant Nováková Predná"
+  },
   "surname2": {
    "expected": "Nováková Predná",
    "got": ""
@@ -1630,6 +1830,10 @@
    "expected": "",
    "got": "CSc."
   },
+  "surname1_particles": {
+   "expected": "von",
+   "got": ""
+  },
   "text": "Kant, Anna Karolína Eva Kristína von (Mgr. Ing., CSc.)"
  },
  "sk/foreignFull/surnameFirst": {
@@ -1644,6 +1848,10 @@
   "given_names": {
    "expected": "Anna Karolína Eva Kristína",
    "got": "Nováková Predná Anna Karolína Eva Kristína"
+  },
+  "surname1_base": {
+   "expected": "Kant",
+   "got": ""
   },
   "surname2": {
    "expected": "Nováková Predná",
@@ -1805,6 +2013,14 @@
    "expected": "dr. med., dr. dent. med.",
    "got": "dent. med."
   },
+  "surname1_base": {
+   "expected": "Brühl",
+   "got": "von"
+  },
+  "surname1_particles": {
+   "expected": "von",
+   "got": ""
+  },
   "text": "prof. dr. von Brühl Ada Cornelia César Martín, dr. med., dr. dent. med.",
   "title": {
    "expected": "prof. dr.",
@@ -1920,6 +2136,14 @@
   "given_names": {
    "expected": "Ada Cornelia César Martín",
    "got": "Brühl Plácido Domingo Ada Cornelia César Martín"
+  },
+  "surname1_base": {
+   "expected": "Brühl",
+   "got": "von"
+  },
+  "surname1_particles": {
+   "expected": "von",
+   "got": ""
   },
   "surname2": {
    "expected": "Plácido Domingo",

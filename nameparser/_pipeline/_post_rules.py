@@ -14,7 +14,9 @@ a nickname), the stable
 folded-middle tag on the words O3 folds and P6's no-comma attachment
 joins to the family, with the attached tag on the latter (rules/R9
 tells the two apart by it), the second-surname tag on each word of the
-family's second unit where O6 reads two (rules/R10), and the ambiguity P6's attachment reports at the end of a name read
+family's second unit where O6 reads two (rules/R10), the first-surname
+tag on each word of the first unit, written by O6 where it reads two
+and by O3 on the family it folds into otherwise (rules/R11), and the ambiguity P6's attachment reports at the end of a name read
 family-first (#467) -- after a family comma, that attachment is
 assign's since #613, and behind an empty part before the comma too
 since #892.
@@ -49,7 +51,7 @@ from nameparser._pipeline._pieces import (
 )
 from nameparser._pipeline._state import (
     AMBIGUOUS_ACRONYM_TAG, ATTACHED_TAG, NAME_ROLES, PATRONYMIC_TAG,
-    SECOND_SURNAME_TAG,
+    FIRST_SURNAME_TAG, SECOND_SURNAME_TAG,
     ParseState, PendingAmbiguity, PendingReading, Structure,
     WorkToken, _NEVER_FLIPPED, comma_bucket, copy_with,
 )
@@ -332,9 +334,8 @@ def _take_second_family_name(state: ParseState,
         if take[-1] > family[0] or any(
                 tokens[i].role is not Role.MIDDLE for i in take):
             return
-        for i in take:
-            _retag(tokens, i, Role.FAMILY)
-        _mark_second_surname(tokens, family)
+        _mark_surname(tokens, take, FIRST_SURNAME_TAG)
+        _mark_surname(tokens, family, SECOND_SURNAME_TAG)
         return
     # family first: the unit after the family joins it, and what is
     # left is a shorter name of the same order, laid out as the P1
@@ -344,7 +345,8 @@ def _take_second_family_name(state: ParseState,
     if family[0] > units[0][0]:
         return
     # the unit taken joins the family as its second
-    _mark_second_surname(tokens, units[0])
+    _mark_surname(tokens, family, FIRST_SURNAME_TAG)
+    _mark_surname(tokens, units[0], SECOND_SURNAME_TAG)
     for unit, role in zip(units[1:], _name_positions(
             state.order, len(units))[1:]):
         for i in unit:
@@ -409,12 +411,15 @@ def _take_second_given_name(state: ParseState,
 
 # rules/R10: "the family's second name unit, the one written second,
 # makes the second-surname view" -- whichever of the two O6 took
-# (decisions/R10, #754). It moves the unit into the family as
-# it marks it, one copy per word (frame budget).
-def _mark_second_surname(tokens: list[WorkToken], unit: list[int]) -> None:
+# (decisions/R10, #754); and rules/R11: "the family's first name unit,
+# the one written first, makes the first-surname view" -- the other one,
+# marked in the same place (decisions/R11, #1022). It moves a unit into
+# the family as it marks it, one copy per word (frame budget).
+def _mark_surname(tokens: list[WorkToken], unit: list[int],
+                  tag: str) -> None:
     for i in unit:
         tokens[i] = copy_with(tokens[i], role=Role.FAMILY,
-                              tags=tokens[i].tags | {SECOND_SURNAME_TAG})
+                              tags=tokens[i].tags | {tag})
 
 
 def _addressing_run(titles: list[int], name_word: int) -> list[int]:
@@ -871,7 +876,21 @@ def post_rules(state: ParseState) -> ParseState:
     # "tokens never move: a rule that needs different rendering order
     # tags the token, and the rendering views consult the tag"
     if state.policy.middle_as_family:
-        for i in _idx(tokens, Role.MIDDLE):
+        middles = _idx(tokens, Role.MIDDLE)
+        # rules/R11: "middle words folded into the family belong to
+        # neither unit" -- where O6 marked no units the family before the
+        # fold is the first, marked here so the views can leave the
+        # folded words out; only a fold that moves a word pays for it
+        # (decisions/R11, #1022). A family O6 split carries its marks
+        # already; a loop, not a generator, which costs a frame
+        if middles:
+            family = _idx(tokens, Role.FAMILY)
+            for i in family:
+                if FIRST_SURNAME_TAG in tokens[i].tags:
+                    break
+            else:
+                _mark_surname(tokens, family, FIRST_SURNAME_TAG)
+        for i in middles:
             tokens[i] = copy_with(
                 tokens[i], role=Role.FAMILY,
                 tags=tokens[i].tags | {FOLDED_TAG})

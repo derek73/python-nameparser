@@ -566,7 +566,7 @@ Shipped packs
      - Spanish — chooses ``es``, which turns on the courtesy, academic
        and professional titles that lead a Spanish name (``Lic.``,
        ``Licenciada``, ``Ingeniero``, ``Arq.``, ``Mtro.``, ``Doctora``,
-       ``Profesora``, ``Doña``; ``Lic Juan Pérez`` → title ``Lic``), and
+       ``Maestra``, ``Doña``; ``Lic Juan Pérez`` → title ``Lic``), and
        reads two family names, a list of Spanish given names keeping a
        given name out of the family (``Gabriel García Márquez`` →
        family ``García Márquez``, ``José Luis Pérez`` → family
@@ -765,7 +765,8 @@ does the same with *Doutor* and *Professora*. Written with a period, the
 abbreviations already read as titles at the head of a name by their
 shape. Written out, or without the period, they read as given names by
 default, since the words are Spanish or Portuguese only. ``es`` and
-``pt`` turn them on:
+``pt`` turn them on (*Profesor* and *Profesora*, written in other
+languages' names too, are titles by default):
 
 .. doctest::
 
@@ -779,7 +780,8 @@ default, since the words are Spanish or Portuguese only. ``es`` and
 
 ``Don``, ``Dona`` and ``Dom`` are not among them: names open with each
 as a given name more often than as the title, Spanish and Portuguese
-data included. An office written before a name with its complement
+data included. Nor is ``Maestro``, a Spanish family name, though
+``Maestra`` is (``Maestra Ana Ruiz Paz`` → title ``Maestra``). An office written before a name with its complement
 (``Ministro de Hacienda Juan Pérez``) is not read either. Names are
 written that way so rarely that the packs leave it alone, and a
 particle behind a title starts the family as it does by default

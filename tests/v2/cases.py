@@ -5530,6 +5530,21 @@ CASES: tuple[Case, ...] = (
                "middle 'John'. The period-marked 'Cllr.' was already "
                "a title by shape, and a bare trailing 'Cllr' stays a "
                "name word (rules/H5)"),
+    Case("profesor_after_a_comma_is_a_title",
+         "Juan Pérez, Profesor",
+         {"title": "Profesor", "given": "Juan", "family": "Pérez"},
+         classification="fix(#804)",
+         notes="the Spanish, Polish and Romanian word for Professor, "
+               "written after a comma by 122 ClinicalTrials.gov "
+               "officials; 1.4.0 through 2.8.1 read given 'Profesor', "
+               "family 'Juan Pérez'. Read by default since #804, "
+               "under locales.ES only before it"),
+    Case("profesora_opening_a_name_is_a_title",
+         "Profesora Ana López",
+         {"title": "Profesora", "given": "Ana", "family": "López"},
+         classification="fix(#804)",
+         notes="1.4.0 through 2.8.1 read given 'Profesora', middle "
+               "'Ana'"),
     Case("the_comma_count_counts_names_not_words_behind_a_suffix",
          "Smith Jr, Ma",
          {"given": "Ma", "family": "Smith", "suffix": "Jr"},

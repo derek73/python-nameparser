@@ -38,7 +38,8 @@ _NAME_RUN = re.compile(r"\w+")
 #: order (derived from Role -- never restated) plus the derived views.
 _DERIVED_VIEWS = ("family_base", "family_particles", "surnames", "given_names",
                   "generation", "credentials", "honorifics", "patronymic",
-                  "surname2")
+                  "surname2", "surname1", "surname1_particles",
+                  "surname1_base")
 _RENDER_KEYS = tuple(r.value for r in Role) + _DERIVED_VIEWS
 
 #: str.format keys initials() accepts: the three name-bearing roles.

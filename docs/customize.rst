@@ -1046,16 +1046,15 @@ an initial written alone never joins the family:
     >>> two_names.parse("Dr. Juan Pérez de la Vega Jr.").family
     'Pérez de la Vega'
 
-``surname2`` names the second of the two, which ``family`` keeps, so a
-caller addressing or filing by the first takes it off; a name the
-switch reads as one family has none:
+``surname2`` names the second of the two, which ``family`` keeps, and
+``surname1`` the first, which a caller addressing or filing by it reads
+(``surname1_base`` without its particles); a name the switch reads as
+one family has no ``surname2``, and its ``surname1`` is the family:
 
 .. doctest::
 
-    >>> ana.surname2
-    'López'
-    >>> ana.family.removesuffix(" " + ana.surname2)
-    'García'
+    >>> ana.surname2, ana.surname1
+    ('López', 'García')
     >>> two_names.parse("Ana María García-López").surname2
     ''
 

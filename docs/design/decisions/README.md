@@ -130,6 +130,7 @@ Entry conventions:
 - [R8 — the generation, credentials and honorifics views](R8-generation-credentials-and-honorifics-views.md)
 - [R9 — the patronymic view](R9-patronymic-view.md)
 - [R10 — the second-surname view](R10-second-surname-view.md)
+- [R11 — the first-surname views](R11-first-surname-views.md)
 
 ## Construction & configuration diagnostics (D)
 
