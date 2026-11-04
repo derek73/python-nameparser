@@ -431,7 +431,8 @@ it names:
      - ``add(w, kind="suffix")``, or ``generation`` for a word that
        numbers its bearer (read by the ``generation`` view)
    * - ``suffix_words_ambiguous``
-     - a ``generation`` and a ``family`` reading
+     - a ``generation`` reading with ``title_case_is_name=True`` and a
+       ``family`` reading (2.x leaned every such word by its case)
    * - ``agnomens``
      - a ``family`` reading, then ``add(w, kind="agnomen")``, an agnomen
        needing the name reading that gates it

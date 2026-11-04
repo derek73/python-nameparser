@@ -2990,6 +2990,7 @@
 {"name": "Pedro PhD Neto", "given": "Pedro", "middle": "PhD", "family": "Neto", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: agnomen as suffix (vocabulary)"], "initials": "P. P. N."}
 {"name": "Pedro VI Filho", "given": "Pedro", "middle": "VI", "family": "Filho", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: agnomen as suffix (vocabulary)"], "initials": "P. V. F.", "capitalized_force": "Pedro Vi Filho"}
 {"name": "Pedro de Neto", "given": "Pedro", "family": "de", "suffix": "Neto", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)"], "initials": "P. d.", "capitalized_force": "Pedro De Neto", "generation": "Neto"}
+{"name": "Pedro fils Neto", "given": "Pedro", "middle": "fils", "family": "Neto", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: agnomen as suffix (vocabulary)"], "initials": "P. f. N.", "capitalized_force": "Pedro Fils Neto"}
 {"name": "Pendeta Zaba", "given": "Pendeta", "family": "Zaba", "initials": "P. Z."}
 {"name": "Penkauskienė Sofija Rita", "order": "FAMILY_FIRST", "given": "Sofija", "middle": "Rita", "family": "Penkauskienė", "initials": "S. R. P."}
 {"name": "Penkauskienė, Sofija Rita", "given": "Sofija", "middle": "Rita", "family": "Penkauskienė", "initials": "S. R. P."}

@@ -5,7 +5,7 @@
 **Then:** it reads as the suffix only where the name has words to spare, as a bare ambiguous acronym does (S4), and at the slots that report, either reading carries the ambiguity flag.
 
 - **The writing is read by S6**, and for a word whose Title case is its writing as a name, French `fils` and the credentials below, it speaks at the other end of the case: lower case in a name of mixed case is the suffix, Title case leans to the name, capitals say nothing. Any other's writing never speaks, and the count decides alone: Junior is written in Title case as the generation as often as the given name. The floor holds first: lower case settles it only where the name keeps a family word, so two name words keep the family, and at the first slot after a comma the count of name words before it decides alone (C4). An agnomen, the Portuguese `Filho`, `Neto`, `Sobrinho` and their feminines, is written in the case of the name around it, so its writing never speaks and the count decides alone; so is each abbreviation of one that Brazilian filings write (`FH`, `Fo`, `Nt`, `Sobr`), a spelling of the word it shortens that takes the word's name reading with it, borne or not. Under a Brazilian Portuguese choice so is `SB`, which by default ends a name as its family word, or behind a credential as a suffix by its shape.
-- **Only name words in front of it count**: a word there that the trailing run takes, a suffix word that is not also a name, a roman numeral read as the generation (S10), a member of the ambiguous class its writing makes a suffix (S6) or one such a word carries in front of it (S7), is no word to spare, and a suffix word there is no company either, as it is for an acronym (S7). A suffix word that is also a name there is a name word, as `Pedro Neto Filho` reads family 'Neto'.
+- **Only name words in front of it count**: a word there that the trailing run takes, a suffix word that is not also a name, a roman numeral read as the generation (S10), a member of the ambiguous class its writing makes a suffix (S6) or one such a word carries in front of it (S7), is no word to spare, and a suffix word there is no company either, as it is for an acronym (S7). A suffix word that is also a name there, its writing not making it the suffix (S6), is a name word, as `Pedro Neto Filho` reads family 'Neto'.
 - **A credential listed as a word** is gated and written as `fils` is, and reads as a credential: King's Counsel is also the Nepali surname KC, written bare as well as dotted, and the Privy Counsellor's PC and the Deputy Lieutenant's DL are initials too, and as a word, not an acronym, the dotted spelling is no spelling of it, so `K.C.` stays the paired initials S3 leaves to the name.
   ```
   "John Smith KC"             →  suffix="KC"
@@ -52,6 +52,7 @@
 "PEDRO JNR FILHO"           →  family="FILHO"  · boundary
 "Pedro VI Filho"            →  family="Filho"  · boundary
 "Pedro MA Filho"            →  family="Filho"  · boundary
+"Pedro fils Neto"           →  family="Neto"  · boundary
 "Pedro Jnr Ma Filho"        →  family="Filho"  · boundary
 "Pedro Alves Junior Filho"  →  suffix="Junior Filho"
 "John Smith Junior"         →  suffix="Junior"
