@@ -8,8 +8,9 @@ and the post-nominals ``ArtD.`` and ``DrSc.``; on a word sk.toml holds a
 vocabulary reading of, other languages' vocabulary readings leave
 (`st`'s Saint title and particle, so ``St Clair`` is a given name under
 this pack; a caller whose names also hold the English Saint chooses
-``fr`` too, whose only other word the choice changes is ``père``, as
-decisions/vocabulary-model's 2026-10-30 phase 3f entry records).
+``fr`` too, a choice that changes no other
+word (decisions/vocabulary-model's 2026-10-30 phase 3f entry; ``père``,
+the one other word it named, is read by default since 2026-11-03).
 
 It reads two family names (``Policy.two_family_names``, rules/O6), its
 policy patch compiled from sk.toml's [rules] table by

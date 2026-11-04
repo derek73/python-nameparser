@@ -6,9 +6,9 @@ generations ``ml.`` (mlajši) and ``st.`` (starejši); on a word sl.toml
 holds a vocabulary reading of, other languages' vocabulary readings
 leave (`st`'s Saint title and particle, so ``St Clair`` is a given name
 under this pack; a caller whose names also hold the English Saint
-chooses ``fr`` too, whose only other word the choice changes is
-``père``, as decisions/vocabulary-model's 2026-10-30 phase 3f entry
-records).
+chooses ``fr`` too, a choice that changes no other
+word (decisions/vocabulary-model's 2026-10-30 phase 3f entry; ``père``,
+the one other word it named, is read by default since 2026-11-03).
 
 Data sources: the readings' own entries in nameparser/vocab/sl.toml,
 each with its issue and the vetting on its note; nothing is listed

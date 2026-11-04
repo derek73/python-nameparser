@@ -5516,6 +5516,58 @@ CASES: tuple[Case, ...] = (
                "middle 'John'. The period-marked 'Cllr.' was already "
                "a title by shape, and a bare trailing 'Cllr' stays a "
                "name word (rules/H5)"),
+    Case("lower_case_pere_ending_a_name_is_the_generation",
+         "Alexandre Dumas père",
+         {"given": "Alexandre", "family": "Dumas", "suffix": "père"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#684)",
+         notes="the Elder, beside fils, and gated as fils is (rules/S11) "
+               "by its family reading; 1.4.0 through 2.8.1 read middle "
+               "'Dumas', family 'père'"),
+    Case("title_case_pere_ending_a_name_is_the_surname",
+         "Olivier Père",
+         {"given": "Olivier", "family": "Père"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#684)",
+         notes="a French surname: Title case leans to the name, as for "
+               "'Marie Fils'; only the report is new"),
+    Case("bare_pr_after_a_comma_is_a_title",
+         "Jean Dupont, Pr",
+         {"title": "Pr", "given": "Jean", "family": "Dupont"},
+         classification="fix(#804)",
+         notes="'pr' is 'professeur' abbreviated, as 'dr' is 'docteur', "
+               "written bare after the name in ClinicalTrials.gov's "
+               "officials 1,454 times; 1.4.0 through 2.8.1 read given "
+               "'Pr', family 'Jean Dupont'"),
+    Case("bare_pr_opening_a_name_is_a_title",
+         "Pr Jean Dupont",
+         {"title": "Pr", "given": "Jean", "family": "Dupont"},
+         classification="fix(#804)",
+         notes="1.4.0 through 2.8.1 read given 'Pr', middle 'Jean'; the "
+               "period-marked 'Pr.' was already a title by shape "
+               "(rules/H2)"),
+    Case("professeur_opening_a_name_is_a_title",
+         "Professeur Jean Dupont",
+         {"title": "Professeur", "given": "Jean", "family": "Dupont"},
+         classification="fix(#804)",
+         notes="1.4.0 through 2.8.1 read given 'Professeur', middle "
+               "'Jean'"),
+    Case("professeure_after_a_family_comma_is_a_title",
+         "Martin, Professeure Anne",
+         {"title": "Professeure", "given": "Anne", "family": "Martin"},
+         classification="fix(#804)",
+         notes="the feminine; 1.4.0 through 2.8.1 read given "
+               "'Professeure', middle "
+               "'Anne'"),
+    Case("pr_initials_alone_after_a_family_comma_read_as_the_title",
+         "Hills, PR",
+         {"title": "PR", "family": "Hills"},
+         classification="fix(#804)",
+         notes="the accepted cost of 'pr' as a title, pinned so it is "
+               "visible: paired initials written PR as the whole given "
+               "part read as the title, as 'Hills, DR' already does; "
+               "1.4.0 through 2.8.1 read given 'PR' "
+               "(decisions/salutation-titles' 2026-11-03 #804 entry)"),
     Case("the_comma_count_counts_names_not_words_behind_a_suffix",
          "Smith Jr, Ma",
          {"given": "Ma", "family": "Smith", "suffix": "Jr"},

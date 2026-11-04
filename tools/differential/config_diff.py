@@ -90,7 +90,7 @@ forbids the parser any table from country to language. A country
 writing several languages stands under each (IN under hi, bn, ta, en
 and the rest; NG under en, yo, ha, bin), the UK's nations by their ISO
 3166-2 codes so that a Scottish filer stands under gd too; a tag no
-country is listed for (`bo`, `yi`) is in NO_COUNTRY and reported as
+country is listed for (`bo`, `br`, `yi`) is in NO_COUNTRY and reported as
 unmeasured. A PSC nationality joined with others (`British,Irish`,
 `Australian/British`) is read by its first. The report closes with
 every group the tables place nowhere, at any count (a PSC nationality
@@ -531,7 +531,7 @@ NATIONALITY: dict[str, str] = {
 }
 
 #: Tags no country is listed for: reported as unmeasured.
-NO_COUNTRY = frozenset({"bo", "yi"})
+NO_COUNTRY = frozenset({"bo", "br", "yi"})
 
 #: How each fielded source names its groups: the record key.
 GAP_SOURCES = ((ORCID, "country"), (PATENTSVIEW, "country"), (PSC, "nationality"))

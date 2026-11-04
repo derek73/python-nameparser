@@ -1618,7 +1618,7 @@ def test_the_choice_gate_fails_when_its_surface_misses_a_word() -> None:
 # -- 3c: the pack-shaped exclusions as readings off by default --
 #
 # A generation word whose collision is with OTHER languages written in
-# the same script (cs/hr/sk/sl `ml` and `st`, fr `père`) is a reading
+# the same script (cs/hr/sk/sl `ml` and `st`) is a reading
 # written `default = false` in its own file, read by no default and
 # read once its language is chosen (decisions/vocabulary-model's
 # 2026-10-29 #753, phase 3c entry). The sweep is every such
@@ -1634,8 +1634,8 @@ _OFF_GENERATIONS = sorted(
 def test_the_off_generation_sweep_reaches_the_converted_words() -> None:
     # an empty parametrize is a skip, not a failure
     slavic = {"cs", "hr", "sk", "sl"}
-    assert ({("ml", t) for t in slavic} | {("st", t) for t in slavic}
-            | {("père", "fr")}) <= set(_OFF_GENERATIONS)
+    assert ({("ml", t) for t in slavic}
+            | {("st", t) for t in slavic}) <= set(_OFF_GENERATIONS)
 
 
 @pytest.mark.parametrize("text, tag", _OFF_GENERATIONS,
@@ -1662,8 +1662,7 @@ def _fields(name: ParsedName) -> tuple[object, ...]:
 # name reading, so under a choice it is an ungated suffix word and its
 # comma readings take it with nothing reported (`Novak, ML` suffix
 # 'ML', where the default reads given 'ML'), a question recorded for
-# 3f in decisions/vocabulary-model's 2026-10-29 #753, phase 3c entry;
-# `père`'s family reading gates it and reports the fork.
+# 3f in decisions/vocabulary-model's 2026-10-29 #753, phase 3c entry.
 @pytest.mark.parametrize("tag, name, default, chosen", [
     ("cs", "Novak, ML", ("ML", "", "Novak", "", ()),
      ("", "", "Novak", "ML", ())),
@@ -1675,8 +1674,6 @@ def _fields(name: ParsedName) -> tuple[object, ...]:
      ("Anna", "M. L.", "Novak", "", ())),
     ("cs", "Anna ML Novak", ("Anna", "ML", "Novak", "", ()),
      ("Anna", "ML", "Novak", "", ())),
-    ("fr", "Jean Père", ("Jean", "", "Père", "", ()),
-     ("Jean", "", "", "Père", ("GIVEN_OR_FAMILY",))),
 ])
 def test_an_off_generations_readings_in_other_shapes_are_pinned(
         tag: str, name: str, default: tuple[object, ...],

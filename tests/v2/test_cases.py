@@ -343,9 +343,11 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # 1533 -> 1536 the same day, #999's 'Brig Klyce', reporting
     # title-or-name under three orders; 1536 -> 1542 the same day,
     # #913's 'Saint Clair Soares' and 'Mr Saint Martin Sterling', each
-    # reporting title-or-name under three orders.
-    assert claims == 1542, (
-        f"the field sweep checks {claims} claims, recorded as 1542 on "
+    # reporting title-or-name under three orders; 1542 -> 1548 the same
+    # day, #684's 'Alexandre Dumas père' and 'Olivier Père', each
+    # reporting suffix-or-name under three orders.
+    assert claims == 1548, (
+        f"the field sweep checks {claims} claims, recorded as 1548 on "
         f"2026-11-03")
 
 
@@ -707,8 +709,9 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # 455 -> 459 and 326 -> 333 the same day, #1023's generation-word
     # rows; 333 -> 330 on 2026-11-03, #993's listing of MBBS, the
     # 'Nasreen Sultana, MBBS' row reporting no fork under the three
-    # orders
-    assert (checked, skipped) == (459, 330), (checked, skipped)
+    # orders; 459 -> 462 the same day, #684's two père rows under the
+    # three orders
+    assert (checked, skipped) == (462, 330), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:

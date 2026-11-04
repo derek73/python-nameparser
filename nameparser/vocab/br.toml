@@ -1,0 +1,10 @@
+schema = 1
+
+[[word]]
+text = "ar"
+[word.article]
+default = false
+may_be_given = false
+issue = 658
+expands = "the, the Breton article: \"Katell ar Gall\""
+note = "Off by default and turned on by a choice of br (Breton): in every other language's names the letters are paired initials or the Arabic article, and read by default as a particle it moved 84 of the 202 names in the local and committed corpora that hold it, none of them Breton (Alessandro AR Rambaldi read family 'AR Rambaldi'); US Census 2010 231 bearers, Wikidata 8 as a family name (Turkish), ORCID's family box 54 in Indonesia (2026-11-03)"
