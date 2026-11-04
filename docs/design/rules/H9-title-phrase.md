@@ -36,6 +36,11 @@
   "Mr Deacon Smith"           →  given="Deacon"
   "Ms Queen Smith"            →  given="Queen"
   "Chancellor Smith"          →  given="Chancellor"
+  "Saint Clair Soares"        →  given="Saint"
+  "Mr Sailor Vinod"           →  given="Sailor"
+  "Pharaoh Mwale"             →  given="Pharaoh"
+  "CAMPBELL, MAJESTY BARRETT"  →  given="MAJESTY"
+  "Pope Saint John Paul II"   →  title="Pope Saint"
   "Cheikh Anta Diop"          →  given="Cheikh"
   "Queen Mother Elizabeth"    →  title="Queen Mother"
   ```
@@ -156,6 +161,7 @@
   "Gyani Zail Singh"          →  given="Gyani"
   "Lord Buddha Tamang"        →  given="Buddha"
   "The Rev. Deacon John Smith"  →  given="Deacon"
+  "Saint Thomas More"         →  given="Saint"
   ```
 - A ruler, a royal or a noble written with the bare title in front reads it as a name word, the given name in the default order, a style before it or `of` after it keeping the title; the record data at hand writes the word there almost only as a given name, and rulers, royals and nobles that way mostly in news text.
   ```
@@ -166,6 +172,7 @@
   "Sheikh Mohammed bin Rashid"  →  given="Sheikh"
   "Marquis de Lafayette"      →  given="Marquis"
   "Queen Elizabeth II"        →  given="Queen"
+  "Pharaoh Ramesses II"       →  given="Pharaoh"
   "His Majesty King Charles"  →  title="His Majesty King"
   "Prince of Wales"           →  title="Prince of Wales"
   ```

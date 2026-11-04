@@ -920,14 +920,8 @@ def _check_reading(r: Reading, pool: Pool) -> None:
                                  f"list of title kinds, each once")
             # a title kind, or one title word where a kind would reach
             # too far ('sergeant' attaching to 'major', not to every
-            # military title); a word is checked against the pool in
-            # check_pool
-            for k in att:
-                if k in CATEGORY and (CATEGORY[k] != "title" or k == "title"):
-                    raise VocabError(
-                        f"{where}: attaches names {k!r}, which is not a "
-                        f"title kind or a title word; the kinds: "
-                        f"{sorted(t for t, c in CATEGORY.items() if c == 'title' and t != 'title')}")
+            # military title); each is checked against the pool in
+            # check_pool, which knows the title words
         if r.flag("after_given") and r.kind != "salutation":
             # a salutation is a form of address, where an office or a
             # rank is borne as a middle name: the reason the given
@@ -1213,8 +1207,19 @@ def check_pool(pool: Pool) -> None:
     # else the phrase it asks for can never be made
     title_words = {t for t, rs in live.items()
                    if any(r.category == "title" for r in rs)}
+    # a name that is a kind of another category, or the generic
+    # 'title', is refused unless it is also a title word: 'pope'
+    # attaches to the word 'saint', which names a particle kind too,
+    # and the compile reads an entry naming no title kind as a word
+    # (#913)
     for r in pool.readings:
         for k in r.props.get("attaches", ()) if r.category == "title" else ():
+            if (k in CATEGORY and (CATEGORY[k] != "title" or k == "title")
+                    and k not in title_words):
+                raise VocabError(
+                    f"{r.where()}: attaches names {k!r}, which is not a "
+                    f"title kind or a title word; the kinds: "
+                    f"{sorted(t for t, c in CATEGORY.items() if c == 'title' and t != 'title')}")
             if k not in CATEGORY and k not in title_words:
                 raise VocabError(f"{r.where()}: attaches names {k!r}, which "
                                  f"is no title kind and no title word")

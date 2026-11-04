@@ -497,6 +497,7 @@
 {"name": "Bāqir Ḫān", "given": "Bāqir", "family": "Ḫān", "initials": "B. Ḫ."}
 {"name": "Bērziņa Anna", "order": "FAMILY_FIRST", "given": "Anna", "family": "Bērziņa", "initials": "A. B."}
 {"name": "Bērziņa Anna Paula", "order": "FAMILY_FIRST", "given": "Anna", "middle": "Paula", "family": "Bērziņa", "initials": "A. P. B."}
+{"name": "CAMPBELL, MAJESTY BARRETT", "given": "MAJESTY", "middle": "BARRETT", "family": "CAMPBELL", "initials": "M. B. C.", "capitalized": "Majesty Barrett Campbell"}
 {"name": "Caballero Calderón, Eduardo", "given": "Eduardo", "family": "Caballero Calderón", "initials": "E. C. C."}
 {"name": "Caduff, Aita", "given": "Aita", "family": "Caduff", "initials": "A. C."}
 {"name": "Caduff, Aita", "order": "FAMILY_FIRST", "given": "Aita", "family": "Caduff", "initials": "A. C."}
@@ -2768,6 +2769,7 @@
 {"name": "Mr Mahdi Karimi", "title": "Mr", "given": "Mahdi", "family": "Karimi", "initials": "M. K."}
 {"name": "Mr Md Karim Uddin", "title": "Mr", "given": "Md", "middle": "Karim", "family": "Uddin", "initials": "M. K. U."}
 {"name": "Mr Robert Alexander (Jnr) Halliday", "title": "Mr", "given": "Robert", "middle": "Alexander Jnr", "family": "Halliday", "initials": "R. A. J. H."}
+{"name": "Mr Sailor Vinod", "title": "Mr", "given": "Sailor", "family": "Vinod", "initials": "S. V."}
 {"name": "Mr Shaikh Ahmed", "title": "Mr", "given": "Shaikh", "family": "Ahmed", "initials": "S. A."}
 {"name": "Mr Smith", "title": "Mr", "family": "Smith", "initials": "S."}
 {"name": "Mr Wing Lau", "title": "Mr", "given": "Wing", "family": "Lau", "initials": "W. L."}
@@ -3003,6 +3005,8 @@
 {"name": "Ph. D., Jr.", "family": "Ph. D.", "suffix": "Jr.", "initials": "P. D.", "generation": "Jr."}
 {"name": "Ph. D., Prof. Dr. Alejandro Manuel César Mamani de la Cruz Jr.", "title": "Prof. Dr.", "given": "Alejandro", "middle": "Manuel César Mamani de la Cruz", "family": "Ph. D.", "suffix": "Jr.", "initials": "A. M. C. M. C. P. D.", "generation": "Jr."}
 {"name": "Ph. D., Prof. Dr. de la Cruz Alejandro Manuel César Mamani Jr.", "order": "FAMILY_FIRST", "title": "Prof. Dr.", "family": "Ph. D. de la Cruz Alejandro Manuel César Mamani", "suffix": "Jr.", "initials": "P. D. C. A. M. C. M.", "generation": "Jr."}
+{"name": "Pharaoh Mwale", "given": "Pharaoh", "family": "Mwale", "initials": "P. M."}
+{"name": "Pharaoh Ramesses II", "given": "Pharaoh", "family": "Ramesses", "suffix": "II", "initials": "P. R.", "generation": "II"}
 {"name": "Pharm D John Smith", "given": "Pharm", "middle": "D John", "family": "Smith", "initials": "P. D. J. S."}
 {"name": "Philipp von Breuner", "given": "Philipp", "family": "von Breuner", "initials": "P. B."}
 {"name": "Philips van Almonde", "given": "Philips", "family": "van Almonde", "initials": "P. A."}
@@ -3029,6 +3033,7 @@
 {"name": "Popa Alexandru Ioan", "order": "FAMILY_FIRST", "given": "Alexandru", "middle": "Ioan", "family": "Popa", "initials": "A. I. P."}
 {"name": "Popa, Alexandru Ioan", "given": "Alexandru", "middle": "Ioan", "family": "Popa", "initials": "A. I. P."}
 {"name": "Pope Francis", "title": "Pope", "given": "Francis", "initials": "F."}
+{"name": "Pope Saint John Paul II", "title": "Pope Saint", "given": "John", "family": "Paul", "suffix": "II", "initials": "J. P.", "generation": "II"}
 {"name": "Pope Smith, John", "title": "Pope", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Popert, Hermann Martin", "given": "Hermann", "middle": "Martin", "family": "Popert", "initials": "H. M. P."}
 {"name": "Popescu Maria", "order": "FAMILY_FIRST", "given": "Maria", "family": "Popescu", "initials": "M. P."}
@@ -3226,6 +3231,8 @@
 {"name": "Saar Samira Ahmet", "order": "FAMILY_FIRST", "given": "Samira", "middle": "Ahmet", "family": "Saar", "initials": "S. A. S."}
 {"name": "Sahagún, Bernardino de", "given": "Bernardino", "family": "de Sahagún", "initials": "B. S."}
 {"name": "Said oglu", "given": "Said", "family": "oglu", "initials": "S. o.", "capitalized_force": "Said Oglu"}
+{"name": "Saint Clair Soares", "given": "Saint", "middle": "Clair", "family": "Soares", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "S. C. S."}
+{"name": "Saint Thomas More", "given": "Saint", "middle": "Thomas", "family": "More", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "S. T. M."}
 {"name": "Saint-Exupéry, Consuelo de", "given": "Consuelo", "family": "de Saint-Exupéry", "initials": "C. S."}
 {"name": "Saint-Pol-Roux", "given": "Saint-Pol-Roux", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "S."}
 {"name": "Saki", "given": "Saki", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "S."}
