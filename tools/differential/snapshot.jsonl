@@ -3096,6 +3096,10 @@
 {"name": "Pérez José Luis", "given": "Pérez", "middle": "José", "family": "Luis", "initials": "P. J. L."}
 {"name": "Pérez Lucía", "order": "FAMILY_FIRST", "given": "Lucía", "family": "Pérez", "initials": "L. P."}
 {"name": "Pérez Luis José", "given": "Pérez", "middle": "Luis", "family": "José", "initials": "P. L. J."}
+{"name": "Pérez de la Vega", "given": "Pérez", "family": "de la Vega", "initials": "P. V."}
+{"name": "Pérez de la Vega Juan", "given": "Pérez", "family": "de la Vega Juan", "initials": "P. V. J."}
+{"name": "Pérez de la Vega Juan Carlos", "given": "Pérez", "family": "de la Vega Juan Carlos", "initials": "P. V. J. C."}
+{"name": "Pérez de la Vega y Santos Juan", "given": "Pérez", "family": "de la Vega y Santos Juan", "initials": "P. V. S. J."}
 {"name": "Pérez de la Vega, Juan", "given": "Juan", "family": "Pérez de la Vega", "initials": "J. P. V."}
 {"name": "Pérez, Antonio Juan Carlos", "given": "Antonio", "middle": "Juan Carlos", "family": "Pérez", "initials": "A. J. C. P."}
 {"name": "Pérez, Juan Carlos", "given": "Juan", "middle": "Carlos", "family": "Pérez", "initials": "J. C. P."}
@@ -3759,6 +3763,7 @@
 {"name": "Van Maximilian Carlson", "given": "Van", "middle": "Maximilian", "family": "Carlson", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "V. M. C."}
 {"name": "Van Nguyen", "given": "Van", "family": "Nguyen", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "V. N."}
 {"name": "Van Rooten, Luis", "given": "Luis", "family": "Van Rooten", "initials": "L. R.", "capitalized_force": "Luis van Rooten"}
+{"name": "Van der Merwe Jan", "given": "Van", "family": "der Merwe Jan", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "V. M. J."}
 {"name": "Van der Merwe Jan Koos", "order": "FAMILY_FIRST", "given": "der Merwe Jan Koos", "family": "Van", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "d. M. J. K. V.", "capitalized_force": "Van Der Merwe Jan Koos"}
 {"name": "Van der Merwe, Jan Koos", "given": "Jan", "middle": "Koos", "family": "Van der Merwe", "initials": "J. K. M.", "capitalized_force": "Jan Koos van der Merwe"}
 {"name": "Van der Walt", "given": "Van", "family": "der Walt", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "V. W."}

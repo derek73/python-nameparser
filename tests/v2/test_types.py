@@ -1331,6 +1331,10 @@ _SURNAME2_ROWS = [
     ("García Márquez Ana María", _FFGL, True, "Márquez"),
     ("de Mesnil Jean Paul", _FF, False, "Jean"),
     ("van Gogh Ana María", _FF, False, "Gogh"),
+    # a chain after the family is cut as P1's fold cuts it (#1024)
+    ("Juan de la Vega Rodríguez", _FF, False, "de la Vega"),
+    ("Pérez de la Vega Juan Carlos", _FFGL, False, "de la Vega"),
+    ("Pérez de la Vega Juan Carlos", _FF, True, "de la Vega"),
     # P6's particle attaches to the first unit and stays out
     ("Beethoven Ludwig Maria van", _FF, False, "Ludwig"),
     ("Beethoven Ludwig Maria van", _FF, True, "Ludwig"),
@@ -1355,7 +1359,7 @@ _SURNAME2_ROWS = [
     ("Ana M.-J. López", _GF, False, ""),
     ("Ana abdul Rahman López", _GF, False, ""),
     ("Ana M. García", _GF, False, ""),
-    ("Juan de la Vega Rodríguez", _FF, False, ""),
+    ("Pérez de la Vega", _FF, False, ""),
     ("王 小 明", _GF, False, ""),
 ]
 
