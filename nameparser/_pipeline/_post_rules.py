@@ -268,23 +268,14 @@ def _family_word_count(tokens: list[WorkToken], family: list[int],
     return words or len(family)
 
 
-def _hyphenated_initials(text: str) -> bool:
-    """A hyphenated word every part of which is an initial ("M.-J."),
-    which writes given names as an initial written alone does (#959)."""
+def _hyphenated_given(text: str, lexicon: Lexicon) -> bool:
+    """A hyphenated word that writes given names, which the taken word's
+    count (a hyphenated word counting as one) would otherwise let through
+    (#959): every part of it a listed given name or an initial
+    ("María-José" under the Spanish list, "M.-J.", "M.-José")."""
     parts = [part for part in _HYPHENS.split(text) if part]
-    return len(parts) > 1 and all(is_initial(part) for part in parts)
-
-
-def _listed_given(text: str, lexicon: Lexicon) -> bool:
-    """rules/O6's veto: `text` is a listed given name, or a hyphenated
-    word every part of which is one ("María-José" under the Spanish
-    list), which the taken word's count would otherwise let through
-    (#959)."""
-    if is_listed_given_name(text, lexicon):
-        return True
-    parts = [part for part in _HYPHENS.split(text) if part]
-    return len(parts) > 1 and all(is_listed_given_name(part, lexicon)
-                                  for part in parts)
+    return len(parts) > 1 and all(is_initial(part) or is_listed_given_name(part, lexicon)
+               for part in parts)
 
 
 def _take_second_family_name(state: ParseState,
@@ -318,8 +309,7 @@ def _take_second_family_name(state: ParseState,
     # taken), nor a lone dash or other mark with no letter in it.
     if _family_word_count(tokens, take, hyphen_joins=True) != 1:
         return
-    if len(take) == 1 and ("initial" in tokens[take[0]].tags
-                           or _hyphenated_initials(tokens[take[0]].text)):
+    if len(take) == 1 and "initial" in tokens[take[0]].tags:
         return
     if not any(ch.isalpha() for i in take for ch in tokens[i].text):
         return
@@ -329,8 +319,10 @@ def _take_second_family_name(state: ParseState,
     # either order. Only a unit of one token is asked: a word
     # behind a particle ("de Miguel") is a unit of two, a surname taken
     # as before. History: decisions/O6 (#959).
-    if len(take) == 1 and _listed_given(tokens[take[0]].text,
-                                        state.lexicon):
+    # A hyphenated word writing given names stays too (#959).
+    if len(take) == 1 and (
+            is_listed_given_name(tokens[take[0]].text, state.lexicon)
+            or _hyphenated_given(tokens[take[0]].text, state.lexicon)):
         return
     if state.order[0] is Role.GIVEN:
         # given, middles..., family: the middle unit standing right

@@ -205,6 +205,7 @@
 {"name": "Amélie Beaury-Saurel", "given": "Amélie", "family": "Beaury-Saurel", "initials": "A. B."}
 {"name": "Amīn as-Sulṭān ʿAlī Aṣġar Ḫān", "given": "Amīn", "middle": "as-Sulṭān ʿAlī Aṣġar", "family": "Ḫān", "initials": "A. a. ʿ. A. Ḫ.", "capitalized_force": "Amīn As-Sulṭān ʿAlī Aṣġar Ḫān"}
 {"name": "An tOll. An Dr. Brigid Aoibhe Sophia de Bhulbh", "given": "An", "middle": "tOll. An Dr. Brigid Aoibhe Sophia", "family": "de Bhulbh", "initials": "A. t. A. D. B. A. S. B.", "capitalized_force": "An Toll. An Dr. Brigid Aoibhe Sophia de Bhulbh"}
+{"name": "Ana Abdul-Rahman López", "given": "Ana", "middle": "Abdul-Rahman", "family": "López", "initials": "A. A. L."}
 {"name": "Ana Fo", "given": "Ana", "family": "Fo", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: agnomen as suffix (vocabulary)"], "initials": "A. F."}
 {"name": "Ana García", "given": "Ana", "family": "García", "initials": "A. G."}
 {"name": "Ana García (Anita) López", "given": "Ana", "middle": "García", "family": "López", "nickname": "Anita", "initials": "A. G. L."}
@@ -212,6 +213,7 @@
 {"name": "Ana Jorge Flores", "given": "Ana", "middle": "Jorge", "family": "Flores", "initials": "A. J. F."}
 {"name": "Ana M. García", "given": "Ana", "middle": "M.", "family": "García", "initials": "A. M. G."}
 {"name": "Ana M.-J. López", "given": "Ana", "middle": "M.-J.", "family": "López", "initials": "A. M. L."}
+{"name": "Ana M.-José López", "given": "Ana", "middle": "M.-José", "family": "López", "initials": "A. M. L."}
 {"name": "Ana Marija Vera Kovač", "given": "Ana", "middle": "Marija Vera", "family": "Kovač", "initials": "A. M. V. K."}
 {"name": "Ana Martín López", "given": "Ana", "middle": "Martín", "family": "López", "initials": "A. M. L."}
 {"name": "Ana María 3 López", "given": "Ana", "middle": "María 3", "family": "López", "initials": "A. M. 3. L."}

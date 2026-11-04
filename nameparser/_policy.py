@@ -699,9 +699,12 @@ class Policy:
     #: García-López", "Ana María de la Vega Rodríguez"), titles and
     #: suffixes count as no name word, and a name of two name words is
     #: unchanged. The word taken must be one name word a family name
-    #: could be, so an initial written alone ("Ana M. García"), a
-    #: hyphenated given name ("Ana María-José López") and a bound
-    #: given-name pair stay where they are. Under a family-first
+    #: could be, so an initial written alone ("Ana M. García"), hyphenated
+    #: initials ("Ana M.-J. López") and a bound given-name pair stay where
+    #: they are; a hyphenated word counts as one when
+    #: taken ("Andrés Sánchez-Cid Torres" gives family ``Sánchez-Cid
+    #: Torres``), so a hyphenated given name is taken unless every part
+    #: of it is a listed given name or an initial (``Lexicon.given_names``). Under a family-first
     #: name_order the FIRST two name words are the family; a name its
     #: script reads in an order other than name_order (a spaced Han or
     #: Hangul name under the default) is left alone, though under a

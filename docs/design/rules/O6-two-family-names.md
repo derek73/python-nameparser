@@ -61,7 +61,7 @@
   ```
   ", Ana García López"  two_family_names  →  family=""
   ```
-- **What is taken must be one name word a family name could be**: a bound given-name pair (P5), counting as two words, stays where it is, and so do an initial written alone or hyphenated initials, which write given names, and a mark or number with no letter in it. A particle chain (P2) is never split, so where taking it would leave no given name the rule declines. A listed given name stays where it is too, under either order, and so does a hyphenated word every part of which is one, and a list written without accents matches the word written with them: the caller's vocabulary names it a word only a given name is, so the name holds one family name. A listed word behind a particle is a surname unit, taken as before.
+- **What is taken must be one name word a family name could be**: a bound given-name pair (P5) written as two words stays where it is, and so do an initial written alone, which writes a given name, and a mark or number with no letter in it. A particle chain (P2) is never split, so where taking it would leave no given name the rule declines. A listed given name stays where it is too, under either order, and so does a hyphenated word every part of which is one or an initial, and a list written without accents matches the word written with them: the caller's vocabulary names it a word only a given name is, so the name holds one family name. A listed word behind a particle is a surname unit, taken as before.
   ```
   "José Luis Pérez"  two_family_names+es_given_names  →  family="Pérez"
   "Jose Luis Perez"  two_family_names+es_given_names  →  middle="Luis"
@@ -69,6 +69,7 @@
   "Pérez Luis José"  family-first-given-last+two_family_names+es_given_names  →  family="Pérez"
   "Ana María-José López"  two_family_names+es_given_names  →  family="López"
   "Ana M.-J. López"  two_family_names  →  family="López"
+  "Ana M.-José López"  two_family_names+es_given_names  →  family="López"
   "Ana abdul Rahman López"  two_family_names  →  family="López"
   "Ana M. García"  two_family_names  →  family="García"
   "Ana María García - López"  two_family_names  →  family="López"
@@ -103,6 +104,7 @@
   ```
   "Juan Carlos Pérez"  two_family_names  →  family="Carlos Pérez"
   "Ana María-José López"  two_family_names  →  family="María-José López"
+  "Ana Abdul-Rahman López"  two_family_names  →  family="Abdul-Rahman López"
   ```
 - A patronymic is a name word like any other here, a patronymic rule on or off, so where no rotation fired it can join the family.
   ```
