@@ -524,7 +524,7 @@ bound_given = { expands = "father of", same_as = "abu" }
 
 [[word]]
 text = "umm"
-bound_given = { expands = "mother of" }
+bound_given = { expands = "mother of", note = "no particle reading, unlike abu: every use counted opens or continues a given name (Pakistani Umm-e-Laila, Umm E Farwa; Umm Kulthum), never a surname: UK PSC filers write it 7 times, in the forename or middle-name box, and ORCID holders 70 times in the given box and in no family box but a university's name typed there; Wikidata 3 given, 0 family. A particle reading would move Syeda Umm E Farwa Zaidi to family Umm E Farwa Zaidi (2026-11-04, #704)" }
 
 [[word]]
 text = "أم"
