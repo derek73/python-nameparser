@@ -1460,7 +1460,7 @@ _POLICIES_704 = {
     "default": Policy(),
     "family-first+O6": Policy(name_order=FAMILY_FIRST, two_family_names=True),
     "turkic+O7": Policy(two_given_names=True,
-                        patronymic_rules={PatronymicRule.TURKIC}),
+                        patronymic_rules=frozenset({PatronymicRule.TURKIC})),
 }
 _BARE_704 = (Lexicon.default().remove("carmen", "mar", "ángeles", kind="given")
              .remove("kaur", "singh", kind="family"))
