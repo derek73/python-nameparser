@@ -23,8 +23,6 @@ Elsewhere: C-i reaches the titles through a `given` reading, which makes a title
 
 - A credential written as a word (`pc`, `dl`) may also earn the marking by being written as a person's initials in the position its claim acts on, which is C-i's ground read for initials, and as for a name it takes a per-word count of that writing on the word's name reading (ORCID's boxes for `pc` and `dl`) — 2026-10-30 #965.
 
-Open: #913 (the title words still read as titles that are also borne as names).
-
 ## Log
 
 - 2026-08-16 #348/#360/#342/#385 (C-i's reach for the suffix acronyms and the Applications bullet's rai clause superseded, as the notes on those bullets say) — THE COLLISION KEYSTONE: the base-rate entry that follows and the undated C-i, C-ii, "The concrete demonstration", "Applications" and "C-ii's per-word framing" bullets after it; C-i's position qualifier is the 2026-08-17 entry, and the demonstration bullet was rewritten for #296's audit.
