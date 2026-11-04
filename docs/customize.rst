@@ -108,7 +108,7 @@ A kind belongs to a category, which decides what the reading does:
      - ``suffix``, ``generation``, ``agnomen``, ``credential``,
        ``honorific``, ``professional_honorific``, ``status``,
        ``courtesy``
-     - ``acronym=...``, ``attached="after"``
+     - ``acronym=...``, ``attached="after"``, ``title_case_is_name=True``
    * - particle
      - ``particle``, ``preposition``, ``article``, ``patronymic``,
        ``teknonymic``, ``clan``, ``rank``, ``saint``, ``alias``

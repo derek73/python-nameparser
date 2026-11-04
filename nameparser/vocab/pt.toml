@@ -51,10 +51,12 @@ academic = { default = false, gender = "f", issue = 753, same_as = "professora",
 
 [[word]]
 text = "júnior"
+given = { wikidata = 37, as_of = 2026-11-03, note = "Wikidata given by citizenship: Brazil 31, Cape Verde 2; a lower bound. Gates the generation as junior's given reading does (rules/S11, #1039)" }
+family = { wikidata = 49, as_of = 2026-11-03 }
 [word.generation]
 same_as = "jr"
 issue = 843
-note = "the standard Portuguese spelling of Junior: tse-donors (2026-10-22) has 991 distinct filed names ending in it, 983 records ending in it where the tax registry's name ends JUNIOR. Its collisions are junior's: a given name (Wikidata 37+ as Júnior, 2026-10-23) where the suffix claim does not act, and 49+ Wikidata family bearers"
+note = "the standard Portuguese spelling of Junior: tse-donors (2026-10-22) has 991 distinct filed names ending in it, 983 records ending in it where the tax registry's name ends JUNIOR. Its collisions are junior's, a given name and a family name, whose readings gate it as junior's gate junior (#1039)"
 
 [[word]]
 text = "filha"

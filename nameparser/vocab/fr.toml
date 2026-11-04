@@ -113,12 +113,12 @@ occupation = {}
 
 [[word]]
 text = "fils"
-generation = { issue = [679, 752], expands = "son, the Younger: Alexandre Dumas fils", note = "gated by the family reading (rules/S11): Title case leans to the name, so Marie Fils keeps her family name, and lower case is the generation wherever the name keeps a family word" }
+generation = { title_case_is_name = true, issue = [679, 752], expands = "son, the Younger: Alexandre Dumas fils", note = "gated by the family reading (rules/S11): Title case leans to the name, so Marie Fils keeps her family name, and lower case is the generation wherever the name keeps a family word" }
 family = { us_census_2010 = 767, wikidata = 5, as_of = 2026-10-16 }
 
 [[word]]
 text = "père"
-generation = { expands = "father, the Elder: Alexandre Dumas père", issue = [679, 684, 753], note = "read by default since 2026-11-03 (#684), gated by the family reading as fils is (rules/S11): lower case ends the name as the generation where a family word stays, Title case leans to the name (Olivier Père keeps his family name). Off by default from phase 3c until then, for a collision outside French that no measurement found: the accent is not folded, so the Catalan given name Pere is untouched; on by default it moved 4 names of every local and committed corpus, 2 to the generation (Alexandre Dumas père) and 2 gaining only the report" }
+generation = { title_case_is_name = true, expands = "father, the Elder: Alexandre Dumas père", issue = [679, 684, 753], note = "read by default since 2026-11-03 (#684), gated by the family reading as fils is (rules/S11): lower case ends the name as the generation where a family word stays, Title case leans to the name (Olivier Père keeps his family name). Off by default from phase 3c until then, for a collision outside French that no measurement found: the accent is not folded, so the Catalan given name Pere is untouched; on by default it moved 4 names of every local and committed corpus, 2 to the generation (Alexandre Dumas père) and 2 gaining only the report" }
 family = { wikidata = 3, as_of = 2026-11-03, note = "a French surname: Wikidata is a lower bound; ORCID's family box 1 record in France and 1 in Belgium, and jrc-names and orcid-researchers each hold a name ending in it (Olivier Père); US Census 2010 616 bearers of PERE, which writes no accent, so they may be the Catalan Pere" }
 
 [[word]]

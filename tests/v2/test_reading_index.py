@@ -63,7 +63,7 @@ def test_the_index_compiled_with_no_choice_is_the_committed_module() -> None:
 _SET = {"abbreviation": True, "addresses": "given", "after_given": True,
         "attaches": ["office"],
         "cased": "ZzQ", "acronym": None, "attached": {"side": "after"},
-        "may_be_initial": True}
+        "may_be_initial": True, "title_case_is_name": True}
 
 
 def _probe_readings() -> list[Any]:

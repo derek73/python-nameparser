@@ -3626,6 +3626,7 @@ text = "dl"
 family = { note = "DL written as a name, mostly a person's initials: ORCID's family box holds DL for 21 people and its given box 54, counted 2026-10-30 by tools/name_usage.py --boxes; psc-individuals Dl 7; no US Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer" }
 [word.credential]
 acronym = false
+title_case_is_name = true
 cased = "DL"
 expands = "Deputy Lieutenant"
 issue = 965
@@ -4162,6 +4163,7 @@ family = { note = "Nepali K.C. (Khatri Chhetri), written bare as well as dotted.
 given = { us_ssa = 2794, as_of = 2026-10-30, note = "both sexes summed (F 843, M 1,951); ORCID's given box 268. A leading KC is no suffix slot, so this reading is the name's provenance, not the clash" }
 [word.credential]
 acronym = false
+title_case_is_name = true
 cased = "KC"
 expands = "King's Counsel"
 issue = 965
@@ -4904,6 +4906,7 @@ text = "pc"
 family = { note = "PC written as a name, mostly a person's initials: ORCID's family box holds PC for 112 people (IN 29, US 5, NP 2) and its given box 149 (IN 20), counted 2026-10-30 by tools/name_usage.py --boxes; psc-individuals Pc 1; no US Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer" }
 [word.credential]
 acronym = false
+title_case_is_name = true
 cased = "PC"
 expands = "Privy Counsellor"
 issue = 965

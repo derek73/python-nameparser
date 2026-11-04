@@ -1789,13 +1789,13 @@ def test_a_2x_removal_leaving_an_inert_marker_loads_as_the_removal(
      "write lexicon.add('q', kind='conjunction', may_be_initial=True)"),
     (lambda: Lexicon.empty().add(suffix_words={"zzq"},  # type: ignore[call-arg]
                                  suffix_words_ambiguous={"zzq"}),
-     "write lexicon.add('zzq', kind='family').add('zzq', kind='generation')"),
+     "write lexicon.add('zzq', kind='family').add('zzq', kind='generation', title_case_is_name=True)"),
     (lambda: Lexicon.empty().add(suffix_words={"zzq"},  # type: ignore[call-arg]
                                  honorific_tails={"zzq"}),
      "write lexicon.add('zzq', kind='suffix', attached='after')"),
     # an agnomen taken out of its set is the gated class's generation
     (lambda: Lexicon.default().remove(agnomens={"neto"}),  # type: ignore[call-arg]
-     "write lexicon.remove('neto', kind='agnomen').add('neto', kind='generation')"),
+     "write lexicon.remove('neto', kind='agnomen').add('neto', kind='generation', title_case_is_name=True)"),
     # a phrase taken out of a kind's reach lists the words left, bounded
     (lambda: Lexicon.default().remove(title_phrases={"chief justice"}),
      "more]"),
@@ -1881,7 +1881,7 @@ def test_migrate_s_words_call_reproduces_each_2x_constant(
 
 def test_migrate_s_table_covers_every_compiled_constant() -> None:
     # every public 2.x constant has a row, code or prose: the private
-    # sets 3.0 added (GENERATION_WORDS, ..., TITLE_ABBREVIATIONS) were
+    # sets 3.0 added (GENERATION_WORDS, ..., TITLE_CASE_NAME_WORDS) were
     # never public
     text = (Path(__file__).parents[2] / "docs" / "migrate.rst").read_text()
     section = text.split("Vocabulary constants → Lexicon.words\n", 1)[1]
@@ -1894,7 +1894,7 @@ def test_migrate_s_table_covers_every_compiled_constant() -> None:
     from nameparser.config import _compiled
     public_in_2x = {n for n in vars(_compiled) if n.isupper()} - {
         "GENERATION_WORDS", "CREDENTIAL_WORDS", "HONORIFIC_WORDS",
-        "PATRONYMIC_PARTICLES", "TITLE_ABBREVIATIONS"}
+        "PATRONYMIC_PARTICLES", "TITLE_ABBREVIATIONS", "TITLE_CASE_NAME_WORDS"}
     assert public_in_2x <= named
     assert len(_migrate_constant_rows()) >= 20  # the rows with code
     # the one row naming two constants, which the row pattern skips
@@ -1925,3 +1925,19 @@ def test_abbreviation_is_a_callers_switch_on_the_trailing_title(
     assert getattr(Parser().parse(text), field) != value
     loaded = pickle.loads(pickle.dumps(lexicon))
     assert getattr(Parser(lexicon=loaded).parse(text), field) == value
+
+
+def test_a_generation_word_that_is_a_name_leans_by_case_only_when_told() -> None:
+    # #1039: a gated generation word's writing says nothing unless its
+    # reading is written title_case_is_name, as `fils`'s is: then Title
+    # case is the name and lower case the suffix (rules/S6, S11)
+    plain = Lexicon.default().add("zzgen", kind="family").add(
+        "zzgen", kind="generation")
+    cued = Lexicon.default().add("zzgen", kind="family").add(
+        "zzgen", kind="generation", title_case_is_name=True)
+    assert Parser(lexicon=plain).parse("John Smith Zzgen").suffix == "Zzgen"
+    assert Parser(lexicon=cued).parse("John Smith Zzgen").family == "Zzgen"
+    assert Parser(lexicon=cued).parse("John Smith zzgen").suffix == "zzgen"
+    with pytest.raises(TypeError, match="title_case_is_name must be True or False"):
+        Lexicon.default().add("zzgen", kind="generation",
+                              title_case_is_name="yes")

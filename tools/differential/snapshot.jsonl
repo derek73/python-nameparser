@@ -1016,6 +1016,7 @@
 {"name": "FRITZ FREIHERR UND VON BAR", "given": "FRITZ", "family": "FREIHERR UND VON BAR", "initials": "F. F. V. B.", "capitalized": "Fritz Freiherr und Von Bar"}
 {"name": "Fabbri Irene", "order": "FAMILY_FIRST", "given": "Irene", "family": "Fabbri", "initials": "I. F."}
 {"name": "Fabbri, Irene", "given": "Irene", "family": "Fabbri", "initials": "I. F."}
+{"name": "Fabio Junior", "given": "Fabio", "family": "Junior", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: generation as suffix (vocabulary)"], "initials": "F. J."}
 {"name": "Fabián Pérez Ximeno", "given": "Fabián", "middle": "Pérez", "family": "Ximeno", "initials": "F. P. X."}
 {"name": "Fadrique de Toledo Osorio", "given": "Fadrique", "family": "de Toledo Osorio", "initials": "F. T. O."}
 {"name": "Falke, Iris", "given": "Iris", "family": "Falke", "initials": "I. F."}
@@ -1060,7 +1061,7 @@
 {"name": "Flores Marco Antonio", "order": "FAMILY_FIRST", "given": "Marco", "middle": "Antonio", "family": "Flores", "initials": "M. A. F."}
 {"name": "Flores, Marco Antonio", "given": "Marco", "middle": "Antonio", "family": "Flores", "initials": "M. A. F."}
 {"name": "Flávio Juvenal da Silva Jr", "given": "Flávio", "middle": "Juvenal", "family": "da Silva", "suffix": "Jr", "initials": "F. J. S.", "generation": "Jr"}
-{"name": "Flávio Juvenal da Silva Junior", "given": "Flávio", "middle": "Juvenal", "family": "da Silva", "suffix": "Junior", "initials": "F. J. S.", "generation": "Junior"}
+{"name": "Flávio Juvenal da Silva Junior", "given": "Flávio", "middle": "Juvenal", "family": "da Silva", "suffix": "Junior", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)"], "initials": "F. J. S.", "generation": "Junior"}
 {"name": "Foffa, Gian Carlo Ramun", "given": "Gian", "middle": "Carlo Ramun", "family": "Foffa", "initials": "G. C. R. F."}
 {"name": "Foffa, Gian Carlo Ramun", "order": "FAMILY_FIRST", "given": "Gian", "middle": "Carlo Ramun", "family": "Foffa", "initials": "G. C. R. F."}
 {"name": "Foldès, Peter", "given": "Peter", "family": "Foldès", "initials": "P. F."}
@@ -1569,7 +1570,7 @@
 {"name": "Jane Doe Mrs", "given": "Jane", "middle": "Doe", "family": "Mrs", "initials": "J. D. M."}
 {"name": "Jane Doe PhD nee Smith", "given": "Jane", "family": "Doe", "suffix": "PhD nee Smith", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)", "SUFFIX_OR_NAME: name as family (position)"], "initials": "J. D.", "capitalized_force": "Jane Doe PhD Nee Smith"}
 {"name": "Jane Doe Rn Ccrn", "given": "Jane", "middle": "Doe Rn", "family": "Ccrn", "initials": "J. D. R. C."}
-{"name": "Jane Doe de D Junior", "given": "Jane", "middle": "Doe", "family": "de D", "suffix": "Junior", "initials": "J. D. D.", "generation": "Junior"}
+{"name": "Jane Doe de D Junior", "given": "Jane", "middle": "Doe", "family": "de D", "suffix": "Junior", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)"], "initials": "J. D. D.", "generation": "Junior"}
 {"name": "Jane Doe geb. Smith MA", "given": "Jane", "family": "Doe", "suffix": "MA", "maiden": "Smith", "initials": "J. D."}
 {"name": "Jane Doe nee MA", "given": "Jane", "family": "Doe", "maiden": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "J. D.", "capitalized_force": "Jane Doe (Ma)"}
 {"name": "Jane Doe nee MA PhD", "given": "Jane", "family": "Doe", "suffix": "PhD", "maiden": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "J. D.", "capitalized_force": "Jane Doe (Ma) PhD"}
@@ -1833,6 +1834,7 @@
 {"name": "John Smith Jr.; MD", "given": "John", "family": "Smith", "suffix": "Jr.; MD", "initials": "J. S."}
 {"name": "John Smith Jr.III", "given": "John", "family": "Smith", "suffix": "Jr.III", "initials": "J. S.", "capitalized_force": "John Smith Jr.Iii"}
 {"name": "John Smith Jr; MD", "given": "John", "middle": "Smith", "family": "Jr;", "suffix": "MD", "initials": "J. S. J."}
+{"name": "John Smith Junior", "given": "John", "family": "Smith", "suffix": "Junior", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)"], "initials": "J. S.", "generation": "Junior"}
 {"name": "John Smith K.C.", "given": "John", "middle": "Smith", "family": "K.C.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "J. S. K."}
 {"name": "John Smith KC", "given": "John", "family": "Smith", "suffix": "KC", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)"], "initials": "J. S."}
 {"name": "John Smith M. D.", "given": "John", "middle": "Smith M.", "family": "D.", "initials": "J. S. M. D."}
@@ -2135,7 +2137,7 @@
 {"name": "José Mataix Monllor", "given": "José", "middle": "Mataix", "family": "Monllor", "initials": "J. M. M."}
 {"name": "José Perianes Carro", "given": "José", "middle": "Perianes", "family": "Carro", "initials": "J. P. C."}
 {"name": "José Robles Pazos", "given": "José", "middle": "Robles", "family": "Pazos", "initials": "J. R. P."}
-{"name": "José Silva Júnior", "given": "José", "family": "Silva", "suffix": "Júnior", "initials": "J. S.", "generation": "Júnior"}
+{"name": "José Silva Júnior", "given": "José", "family": "Silva", "suffix": "Júnior", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)"], "initials": "J. S.", "generation": "Júnior"}
 {"name": "José Vilató Ruiz", "given": "José", "middle": "Vilató", "family": "Ruiz", "initials": "J. V. R."}
 {"name": "Jovan Dragan Popović", "given": "Jovan", "middle": "Dragan", "family": "Popović", "initials": "J. D. P."}
 {"name": "Joybert, Marc de", "given": "Marc", "family": "de Joybert", "initials": "M. J."}
@@ -2321,6 +2323,7 @@
 {"name": "Klein, Hans Walter", "given": "Hans", "middle": "Walter", "family": "Klein", "initials": "H. W. K."}
 {"name": "Klingberg, Berta", "given": "Berta", "family": "Klingberg", "initials": "B. K."}
 {"name": "Klingenberg, Johann", "given": "Johann", "family": "Klingenberg", "initials": "J. K."}
+{"name": "Kofi Junior", "given": "Kofi", "family": "Junior", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: generation as suffix (vocabulary)"], "initials": "K. J."}
 {"name": "Kolko, Gabriel", "given": "Gabriel", "family": "Kolko", "initials": "G. K."}
 {"name": "Kong, Yingda", "given": "Yingda", "family": "Kong", "initials": "Y. K."}
 {"name": "Konráð Gíslason", "given": "Konráð", "family": "Gíslason", "initials": "K. G."}
@@ -2949,7 +2952,7 @@
 {"name": "P. V.", "given": "P.", "family": "V.", "initials": "P. V."}
 {"name": "PEDRO DA SILVA FILHO", "given": "PEDRO", "family": "DA SILVA", "suffix": "FILHO", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)"], "initials": "P. S.", "capitalized": "Pedro da Silva Filho", "generation": "FILHO"}
 {"name": "PEDRO FILHO", "given": "PEDRO", "family": "FILHO", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: agnomen as suffix (vocabulary)"], "initials": "P. F.", "capitalized": "Pedro Filho"}
-{"name": "PEDRO JUNIOR FILHO", "given": "PEDRO", "middle": "JUNIOR", "family": "FILHO", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: agnomen as suffix (vocabulary)"], "initials": "P. J. F.", "capitalized": "Pedro Junior Filho"}
+{"name": "PEDRO JNR FILHO", "given": "PEDRO", "middle": "JNR", "family": "FILHO", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: agnomen as suffix (vocabulary)"], "initials": "P. J. F.", "capitalized": "Pedro Jnr Filho"}
 {"name": "Pablo Emilio Riveros Reina", "given": "Pablo", "middle": "Emilio Riveros", "family": "Reina", "initials": "P. E. R. R."}
 {"name": "Pablo Pérez Miguel Ángel Juan Antonio II", "order": "FAMILY_FIRST", "given": "Pérez", "middle": "Miguel Ángel Juan Antonio", "family": "Pablo", "suffix": "II", "initials": "P. M. Á. J. A. P.", "generation": "II"}
 {"name": "Pablo Pérez, Sr. Miguel Ángel Juan Antonio", "title": "Sr.", "given": "Miguel", "middle": "Ángel Juan Antonio", "family": "Pablo Pérez", "initials": "M. Á. J. A. P. P."}
@@ -2968,11 +2971,11 @@
 {"name": "Pedro", "given": "Pedro", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "P."}
 {"name": "Pedro", "order": "FAMILY_FIRST", "family": "Pedro", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "P."}
 {"name": "Pedro Alves Filho", "given": "Pedro", "family": "Alves", "suffix": "Filho", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)"], "initials": "P. A.", "generation": "Filho"}
-{"name": "Pedro Alves Junior Filho", "given": "Pedro", "family": "Alves", "suffix": "Junior Filho", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)"], "initials": "P. A.", "generation": "Junior Filho"}
+{"name": "Pedro Alves Junior Filho", "given": "Pedro", "family": "Alves", "suffix": "Junior Filho", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)", "SUFFIX_OR_NAME: name as family (declared)"], "initials": "P. A.", "generation": "Junior Filho"}
 {"name": "Pedro Alves M.Filho", "given": "Pedro", "family": "Alves", "suffix": "M.Filho", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "P. A.", "capitalized_force": "Pedro Alves M.FILHO"}
 {"name": "Pedro Alves NETO", "given": "Pedro", "family": "Alves", "suffix": "NETO", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)"], "initials": "P. A.", "capitalized_force": "Pedro Alves Neto", "generation": "NETO"}
 {"name": "Pedro Alves Neto", "given": "Pedro", "family": "Alves", "suffix": "Neto", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)"], "initials": "P. A.", "generation": "Neto"}
-{"name": "Pedro Alves Neto Júnior", "given": "Pedro", "family": "Alves", "suffix": "Neto Júnior", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)"], "initials": "P. A.", "generation": "Neto Júnior"}
+{"name": "Pedro Alves Neto Júnior", "given": "Pedro", "family": "Alves", "suffix": "Neto Júnior", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)", "SUFFIX_OR_NAME: name as family (declared)"], "initials": "P. A.", "generation": "Neto Júnior"}
 {"name": "Pedro Alves Neto, AD", "given": "AD", "family": "Pedro Alves Neto", "initials": "A. P. A. N.", "capitalized_force": "Ad Pedro Alves Neto"}
 {"name": "Pedro Alves Neto, PhD", "given": "Pedro", "family": "Alves", "suffix": "Neto, PhD", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)"], "initials": "P. A.", "generation": "Neto", "credentials": "PhD"}
 {"name": "Pedro Alves Sobr.", "given": "Pedro", "family": "Alves", "suffix": "Sobr.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)"], "initials": "P. A.", "generation": "Sobr."}
@@ -2982,10 +2985,12 @@
 {"name": "Pedro Galindo Galarza", "given": "Pedro", "middle": "Galindo", "family": "Galarza", "initials": "P. G. G."}
 {"name": "Pedro Infante Torrentera", "given": "Pedro", "middle": "Infante", "family": "Torrentera", "initials": "P. I. T."}
 {"name": "Pedro J. Neto", "given": "Pedro", "family": "J.", "suffix": "Neto", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)"], "initials": "P. J.", "generation": "Neto"}
+{"name": "Pedro Jnr Filho", "given": "Pedro", "middle": "Jnr", "family": "Filho", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: agnomen as suffix (vocabulary)"], "initials": "P. J. F."}
+{"name": "Pedro Jnr Ma Filho", "given": "Pedro", "middle": "Jnr Ma", "family": "Filho", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: agnomen as suffix (vocabulary)"], "initials": "P. J. M. F."}
+{"name": "Pedro Jnr fils", "given": "Pedro", "middle": "Jnr", "family": "fils", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: generation as suffix (vocabulary)"], "initials": "P. J. f.", "capitalized_force": "Pedro Jnr Fils"}
 {"name": "Pedro Jorba y Gassó", "given": "Pedro", "family": "Jorba y Gassó", "initials": "P. J. G."}
-{"name": "Pedro Junior Filho", "given": "Pedro", "middle": "Junior", "family": "Filho", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: agnomen as suffix (vocabulary)"], "initials": "P. J. F."}
-{"name": "Pedro Junior Ma Filho", "given": "Pedro", "middle": "Junior Ma", "family": "Filho", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: agnomen as suffix (vocabulary)"], "initials": "P. J. M. F."}
-{"name": "Pedro Junior fils", "given": "Pedro", "middle": "Junior", "family": "fils", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: generation as suffix (vocabulary)"], "initials": "P. J. f.", "capitalized_force": "Pedro Junior Fils"}
+{"name": "Pedro Junior Filho", "given": "Pedro", "family": "Junior", "suffix": "Filho", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)", "SUFFIX_OR_NAME: generation as suffix (vocabulary)"], "initials": "P. J.", "generation": "Filho"}
+{"name": "Pedro Junior fils", "given": "Pedro", "family": "Junior", "suffix": "fils", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)", "SUFFIX_OR_NAME: generation as suffix (vocabulary)"], "initials": "P. J.", "generation": "fils"}
 {"name": "Pedro López Ruiz H.", "given": "Pedro", "middle": "López Ruiz", "family": "H.", "initials": "P. L. R. H."}
 {"name": "Pedro M.Filho", "given": "Pedro", "family": "M.Filho", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "P. M."}
 {"name": "Pedro MA Filho", "given": "Pedro", "middle": "MA", "family": "Filho", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: agnomen as suffix (vocabulary)"], "initials": "P. M. F.", "capitalized_force": "Pedro Ma Filho"}
@@ -2993,6 +2998,7 @@
 {"name": "Pedro PhD Neto", "given": "Pedro", "middle": "PhD", "family": "Neto", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: agnomen as suffix (vocabulary)"], "initials": "P. P. N."}
 {"name": "Pedro VI Filho", "given": "Pedro", "middle": "VI", "family": "Filho", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: agnomen as suffix (vocabulary)"], "initials": "P. V. F.", "capitalized_force": "Pedro Vi Filho"}
 {"name": "Pedro de Neto", "given": "Pedro", "family": "de", "suffix": "Neto", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)"], "initials": "P. d.", "capitalized_force": "Pedro De Neto", "generation": "Neto"}
+{"name": "Pedro fils Neto", "given": "Pedro", "middle": "fils", "family": "Neto", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: agnomen as suffix (vocabulary)"], "initials": "P. f. N.", "capitalized_force": "Pedro Fils Neto"}
 {"name": "Pendeta Zaba", "given": "Pendeta", "family": "Zaba", "initials": "P. Z."}
 {"name": "Penkauskienė Sofija Rita", "order": "FAMILY_FIRST", "given": "Sofija", "middle": "Rita", "family": "Penkauskienė", "initials": "S. R. P."}
 {"name": "Penkauskienė, Sofija Rita", "given": "Sofija", "middle": "Rita", "family": "Penkauskienė", "initials": "S. R. P."}
@@ -3361,6 +3367,7 @@
 {"name": "Silva Neto, Pedro", "given": "Pedro", "family": "Silva Neto", "initials": "P. S. N."}
 {"name": "Silva, José Pedro Eduardo da", "given": "José", "middle": "Pedro Eduardo", "family": "da Silva", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "J. P. E. S."}
 {"name": "Silva, João Pedro", "given": "João", "middle": "Pedro", "family": "Silva", "initials": "J. P. S."}
+{"name": "Silva, Junior Carlos", "given": "Junior", "middle": "Carlos", "family": "Silva", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: generation as suffix (vocabulary)"], "initials": "J. C. S."}
 {"name": "Silva, Maria", "given": "Maria", "family": "Silva", "initials": "M. S."}
 {"name": "Silva, Neto", "given": "Neto", "family": "Silva", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: agnomen as suffix (vocabulary)"], "initials": "N. S."}
 {"name": "Silverio Cañada Acebal", "given": "Silverio", "middle": "Cañada", "family": "Acebal", "initials": "S. C. A."}
@@ -3468,6 +3475,7 @@
 {"name": "Smith, John I", "given": "John", "family": "Smith", "suffix": "I", "initials": "J. S.", "generation": "I"}
 {"name": "Smith, John Jr.", "given": "John", "family": "Smith", "suffix": "Jr.", "initials": "J. S.", "generation": "Jr."}
 {"name": "Smith, John Jr. Jones", "given": "John", "family": "Smith", "suffix": "Jr. Jones", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as middle (position)"], "initials": "J. S.", "generation": "Jr.", "credentials": "Jones"}
+{"name": "Smith, John Junior", "given": "John", "family": "Smith", "suffix": "Junior", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as middle (declared)"], "initials": "J. S.", "generation": "Junior"}
 {"name": "Smith, John MA Jones", "given": "John", "family": "Smith", "suffix": "MA Jones", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as middle (position)"], "initials": "J. S."}
 {"name": "Smith, John MD/PhD", "given": "John", "family": "Smith", "suffix": "MD/PhD", "initials": "J. S."}
 {"name": "Smith, John MEng", "given": "John", "middle": "MEng", "family": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "J. M. S.", "capitalized_force": "John Meng Smith"}

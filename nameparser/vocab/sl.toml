@@ -14,7 +14,7 @@ generation = { issue = 679 }
 
 [[word]]
 text = "st"
-generation = { default = false, expands = "starejši, the Elder", issue = [661, 679, 684, 753], note = "real and standard, but St. is Saint in other languages written in Latin script, and nothing in its writing tells the two apart, so no default reads it; a Slovenian pack turns it on" }
+generation = { default = false, title_case_is_name = true, expands = "starejši, the Elder", issue = [661, 679, 684, 753], note = "real and standard, but St. is Saint in other languages written in Latin script, and nothing in its writing tells the two apart, so no default reads it; a Slovenian pack turns it on" }
 
 [[word]]
 text = "starejša"

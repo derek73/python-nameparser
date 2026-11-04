@@ -516,8 +516,9 @@ def is_one_case(texts: Sequence[str]) -> bool:
 Lean = Literal["credential", "name"]
 
 #: How a member's writing leans, by what the member is (rules/S11):
-#: an acronym's capitals are the credential, a suffix word's lower
-#: case is the suffix, and an agnomen's writing says nothing.
+#: an acronym's capitals are the credential, the lower case of a suffix
+#: word written `title_case_is_name` is the suffix, and any other suffix
+#: word's writing (an agnomen's, `Junior`'s) says nothing (#1039).
 Cue = Literal["acronym", "word", "none"]
 
 
@@ -552,12 +553,14 @@ def ambiguous_lean(text: str, one_case: bool,
     (suffix_as_written).
 
     `cue` is what the member is (rules/S11). A suffix WORD that is
-    also a name ("word", 'fils') leans the other way at one end: its
-    lower case in a mixed-case name is the suffix ("credential", the
-    suffix reading), its capitals say nothing (a surname is often
-    written so), and Title case leans to the name as an acronym's
-    does. An agnomen ("none", 'Neto') is written in the case of the
-    name around it, so its writing never leans.
+    also a name and whose Title case is its writing as a name ("word",
+    'fils', 'kc', written `title_case_is_name`) leans the other way at
+    one end: its lower case in a mixed-case name is the suffix
+    ("credential", the suffix reading), its capitals say nothing (a
+    surname is often written so), and Title case leans to the name as
+    an acronym's does. Any other ("none": an agnomen, 'Neto', written
+    in the case of the name around it; 'Junior', whose Title case is
+    the generation's writing too) never leans (#1039).
     """
     if one_case or cue == "none":
         return None
@@ -575,7 +578,8 @@ def lexicon_cue(n: str, lexicon: Lexicon) -> Cue:
     lexicon by a caller that has no tags to read (`is_wholly_suffix`);
     `_pieces.listed_lean` reads the same answer off classify's tags."""
     if n in lexicon._sets.suffix_words_ambiguous:
-        return "none" if n in lexicon._sets.agnomens else "word"
+        return ("word" if n in lexicon._sets.title_case_name_words
+                else "none")
     return "acronym"
 
 

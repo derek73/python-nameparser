@@ -898,7 +898,8 @@ def _check_reading(r: Reading, pool: Pool) -> None:
         if k not in allowed:
             raise _reserved_or_unknown(where, k, allowed)
     _check_descriptive(where, p)
-    for flag in ("acronym", "may_be_initial", "after_given", "abbreviation"):
+    for flag in ("acronym", "may_be_initial", "after_given", "abbreviation",
+                 "title_case_is_name"):
         if flag in p and not isinstance(p[flag], bool):
             raise VocabError(f"{where}: {flag} must be true or false")
     _check_default(where, p)
@@ -937,6 +938,16 @@ def _check_reading(r: Reading, pool: Pool) -> None:
             # its capitals leaning to the credential
             raise VocabError(f"{where}: an agnomen is a word; acronym = "
                              f"true is refused")
+        if r.flag("title_case_is_name") and (
+                r.kind not in ("generation", "credential") or acronym):
+            # the writing of a suffix word gated by a name reading
+            # (rules/S6, S11): an acronym's capitals lean the other way,
+            # an agnomen's writing says nothing, and no other kind is
+            # gated (#1039)
+            raise VocabError(f"{where}: title_case_is_name is allowed on "
+                             f"a generation or a credential written as a "
+                             f"word (acronym = false) only, not on "
+                             f"{'an acronym' if acronym else repr(r.kind)}")
         if acronym and "." in r.text:
             # suffix_as_written looks an acronym up with EVERY period
             # removed, so a dotted entry is never matched -- and it slips
@@ -1301,7 +1312,8 @@ def _behavior(r: Reading, prop: str) -> object:
     if prop == "attached":
         att = r.props.get("attached")
         return None if att is None else att.get("side")
-    if prop in ("may_be_initial", "after_given", "abbreviation"):
+    if prop in ("may_be_initial", "after_given", "abbreviation",
+                "title_case_is_name"):
         return r.flag(prop)
     if prop == "attaches":
         att = r.props.get("attaches")
@@ -1341,6 +1353,7 @@ CONSTANTS = (
     "HONORIFIC_WORDS",
     "PATRONYMIC_PARTICLES",
     "TITLE_ABBREVIATIONS",
+    "TITLE_CASE_NAME_WORDS",
 )
 
 

@@ -348,9 +348,14 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # three orders; 1545 -> 1546 the same day, #1024's 'du Ménil Thi
     # Mai', reporting particle-or-given; 1546 -> 1552 the same day, #684's
     # 'Alexandre Dumas père' and 'Olivier Père', each reporting
-    # suffix-or-name under three orders.
-    assert claims == 1552, (
-        f"the field sweep checks {claims} claims, recorded as 1552 on "
+    # suffix-or-name under three orders; 1552 -> 1582 the same day,
+    # #1039's given reading of junior and júnior: nine more
+    # suffix-or-name reports (five new rows one each, the 'Pedro Junior
+    # Filho' row two, 'Pedro Júnior Neto' a second, 'José Silva Júnior'
+    # one), each under three orders, and its review row 'Smith,
+    # Junior.', reporting suffix-or-name under three orders.
+    assert claims == 1582, (
+        f"the field sweep checks {claims} claims, recorded as 1582 on "
         f"2026-11-03")
 
 
@@ -396,9 +401,9 @@ _STAND_IN_REREADS = {
     ("Andrew Perkins (X.Y.Z.)", 2),
     ("John Smith VI Ma", None), ("John Smith VI Jones", None),
     ("John Smith VI Jones", 2),
-    # a name word in VI's place stops 'JUNIOR' starting the run (S8)
-    ("JOHN SMITH JUNIOR VI JONES", None),
-    ("JOHN SMITH JUNIOR VI JONES", 2),
+    # a name word in VI's place stops 'JNR' starting the run (S8)
+    ("JOHN SMITH JNR VI JONES", None),
+    ("JOHN SMITH JNR VI JONES", 2),
 }
 
 #: Reports whose deferred field assign could not name: the particle the
@@ -713,8 +718,9 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # rows; 333 -> 330 on 2026-11-03, #993's listing of MBBS, the
     # 'Nasreen Sultana, MBBS' row reporting no fork under the three
     # orders; 459 -> 462 the same day, #684's two père rows under the
-    # three orders
-    assert (checked, skipped) == (462, 330), (checked, skipped)
+    # three orders; 462 -> 477 the same day, #1039's junior rows under
+    # the three orders
+    assert (checked, skipped) == (477, 330), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:

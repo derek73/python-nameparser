@@ -58,8 +58,8 @@ from collections.abc import (
 from typing import NamedTuple
 
 from nameparser._pipeline._state import (
-    AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG,
-    GENERATION_WORD_TAG, GIVEN_ABBREVIATION_TAG, NAME_ROLES, SHAPE_ACRONYM_TAG, SUFFIX_OR_UNREAD, AmbiguityKind, PendingAmbiguity,
+    AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG,
+    GENERATION_WORD_TAG, TITLE_CASE_NAME_TAG, GIVEN_ABBREVIATION_TAG, NAME_ROLES, SHAPE_ACRONYM_TAG, SUFFIX_OR_UNREAD, AmbiguityKind, PendingAmbiguity,
     PendingReading, TRAILING_TITLE_TAG,
     WorkToken,
 )
@@ -1149,12 +1149,14 @@ def listed_lean(token: WorkToken, one_case: bool | None) -> Lean | None:
     if (one_case is None or AMBIGUOUS_ACRONYM_TAG not in token.tags
             or SHAPE_ACRONYM_TAG in token.tags):
         return None
-    # rules/S11: "An agnomen, the Portuguese `Filho`, `Neto`, `Sobrinho`
-    # and their feminines, is written in the case of the name around it,
-    # so its writing never speaks" -- the cue is what the member is
+    # rules/S11: "Any other's writing never speaks, and the count decides
+    # alone" -- only a word written `title_case_is_name` (`fils`, `kc`)
+    # takes the suffix word's cue; an agnomen and `junior` take none
+    # (decisions/S11, #1039)
     if AMBIGUOUS_WORD_TAG in token.tags:
         return ambiguous_lean(token.text, one_case,
-                              "none" if AGNOMEN_TAG in token.tags else "word")
+                              "word" if TITLE_CASE_NAME_TAG in token.tags
+                              else "none")
     return ambiguous_lean(token.text, one_case)
 
 

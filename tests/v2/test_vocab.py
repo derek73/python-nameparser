@@ -314,6 +314,9 @@ MUTATIONS = [
     ("may-be-initial-caseless", {"ar.toml": _w('[[word]]\ntext = "و"\nconjunction = { may_be_initial = true }')}, "CASED single letter"),
     ("after-given-on-an-office", {"en.toml": _w('[[word]]\ntext = "king"\nnobility = { after_given = true }')}, "after_given is allowed on a salutation reading only"),
     ("after-given-on-a-generic-title", {"und.toml": _w('[[word]]\ntext = "zzq"\ntitle = { after_given = true }')}, "after_given is allowed on a salutation reading only"),
+    ("title-case-is-name-on-an-agnomen", {"und.toml": _w('[[word]]\ntext = "zzq"\nagnomen = { title_case_is_name = true }\nfamily = {}')}, "title_case_is_name is allowed on a generation or a credential written as a word"),
+    ("title-case-is-name-on-an-acronym", {"und.toml": _w('[[word]]\ntext = "zzq"\ncredential = { title_case_is_name = true }')}, "title_case_is_name is allowed on a generation or a credential written as a word"),
+    ("title-case-is-name-on-an-honorific", {"und.toml": _w('[[word]]\ntext = "zzq"\nhonorific = { title_case_is_name = true }')}, "title_case_is_name is allowed on a generation or a credential written as a word"),
     # herr's shape: refused in de.toml, flagged in da.toml
     ("excluded-after-given-in-another-file", {"de.toml": _w('[[word]]\ntext = "herr"\nsalutation = { excluded = { after_given = "a surname" } }'), "da.toml": _w('[[word]]\ntext = "herr"\nsalutation = { after_given = true }')}, "after_given = true is excluded.*a surname"),
     ("after-given-not-a-flag", {"en.toml": _w('[[word]]\ntext = "mr"\nsalutation = { after_given = "yes" }')}, "after_given must be true or false"),
@@ -1095,6 +1098,7 @@ _PROPERTY_PROBES = {
     "after_given": ("salutation", "{ after_given = true }", "zzq"),
     "abbreviation": ("military", "{ abbreviation = true }", "zzq"),
     "default": ("generation", "{ default = false }", "zzq"),
+    "title_case_is_name": ("generation", "{ title_case_is_name = true }", "zzq"),
     # a phrase needs the head it attaches to: a second title word
     "attaches": ("office", '{ attaches = ["occupation"] }', "zzq",
                  '\n\n[[word]]\ntext = "zzr"\noccupation = {}'),

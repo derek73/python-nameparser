@@ -80,6 +80,7 @@ from nameparser._pipeline._state import (
     AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, CREDENTIAL_WORD_TAG,
     GENERATION_WORD_TAG, GIVEN_ABBREVIATION_TAG, HONORIFIC_WORD_TAG,
     PATRONYMIC_TAG, SHAPE_ACRONYM_TAG, SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, TITLE_AMBIGUOUS_TAG,
+    TITLE_CASE_NAME_TAG,
     TRAILING_TITLE_TAG, ParseState,
     Deferred, PendingAmbiguity, PendingReading,
     WorkToken, copy_with,
@@ -170,6 +171,8 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
         # tell `_pieces.listed_lean` how its writing leans
         tags.add(AMBIGUOUS_ACRONYM_TAG)
         tags.add(AMBIGUOUS_WORD_TAG)
+        if n in lex._sets.title_case_name_words:
+            tags.add(TITLE_CASE_NAME_TAG)
         if n in lex._sets.agnomens:
             tags.add(AGNOMEN_TAG)
         # rules/R8: "The kind of a word listed as a suffix word is the
