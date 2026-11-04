@@ -1146,6 +1146,7 @@
 {"name": "García Antonio Juan Carlos", "given": "García", "middle": "Antonio Juan", "family": "Carlos", "initials": "G. A. J. C."}
 {"name": "García Juan Carlos", "given": "García", "middle": "Juan", "family": "Carlos", "initials": "G. J. C."}
 {"name": "García López, Ana", "given": "Ana", "family": "García López", "initials": "A. G. L."}
+{"name": "García López, Ana María", "given": "Ana", "middle": "María", "family": "García López", "initials": "A. M. G. L."}
 {"name": "García Márquez Ana María", "given": "García", "middle": "Márquez Ana", "family": "María", "initials": "G. M. A. M."}
 {"name": "García Márquez Gabriel", "given": "García", "middle": "Márquez", "family": "Gabriel", "initials": "G. M. G."}
 {"name": "García Márquez, Ed G.J.", "given": "Ed", "middle": "G.J.", "family": "García Márquez", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)", "SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "E. G. G. M."}
@@ -4251,6 +4252,7 @@
 {"name": "van Doe, Jane Mrs", "title": "Mrs", "given": "Jane", "family": "van Doe", "initials": "J. D."}
 {"name": "van Gogh", "given": "van", "family": "Gogh", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "v. G.", "capitalized_force": "Van Gogh"}
 {"name": "van Gogh Ana María", "given": "van", "middle": "Gogh Ana", "family": "María", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "v. G. A. M.", "capitalized_force": "Van Gogh Ana María"}
+{"name": "van Gogh Vincent", "given": "van", "middle": "Gogh", "family": "Vincent", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "v. G. V.", "capitalized_force": "Van Gogh Vincent"}
 {"name": "van Gogh Vincent", "order": "FAMILY_FIRST", "given": "Gogh", "middle": "Vincent", "family": "van", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "G. V. v.", "capitalized_force": "Van Gogh Vincent"}
 {"name": "van Gogh, Sir", "title": "Sir", "family": "van Gogh", "initials": "G."}
 {"name": "van den Berg Cornelia Margarita Sofia Aletta MBChB PhD", "order": "FAMILY_FIRST", "given": "den Berg Cornelia Margarita Sofia Aletta", "family": "van", "suffix": "MBChB PhD", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "d. B. C. M. S. A. v.", "capitalized_force": "Van Den Berg Cornelia Margarita Sofia Aletta MBChB PhD"}

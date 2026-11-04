@@ -858,7 +858,17 @@ def post_rules(state: ParseState) -> ParseState:
     # "tokens never move: a rule that needs different rendering order
     # tags the token, and the rendering views consult the tag"
     if state.policy.middle_as_family:
-        for i in _idx(tokens, Role.MIDDLE):
+        middles = _idx(tokens, Role.MIDDLE)
+        # rules/R11: "middle words folded into the family belong to
+        # neither unit" -- where O6 marked no units the family before the
+        # fold is the first, marked here so the views can leave the
+        # folded words out; only a fold that moves a word pays for it
+        # (decisions/R11, #1022)
+        if middles:
+            family = _idx(tokens, Role.FAMILY)
+            if not any(SECOND_SURNAME_TAG in tokens[i].tags for i in family):
+                _mark_surname(tokens, family, FIRST_SURNAME_TAG)
+        for i in middles:
             tokens[i] = copy_with(
                 tokens[i], role=Role.FAMILY,
                 tags=tokens[i].tags | {FOLDED_TAG})

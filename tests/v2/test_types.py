@@ -1507,7 +1507,17 @@ _SURNAME1_CASES = [
      "Pérez Vega"),
     ("Ana María García-López", None, False, "García-López", "",
      "García-López"),
-    ("Ana María García López", None, True, "García", "", "García"),
+    # a first unit of nothing but particles is its own base (R2)
+    ("van Gogh Vincent", FAMILY_FIRST, False, "van", "", "van"),
+    # a patronymic in either unit keeps the mark where assemble
+    # rebuilds the reading
+    ("Mammadov Hasan Ali ibn", FAMILY_FIRST, False, "ibn Mammadov", "ibn",
+     "Mammadov"),
+    # O3's folded middles are in neither unit, one unit or two
+    ("García López, Ana María", None, True, "García López", "",
+     "García López"),
+    ("Ana María de la Vega Rodríguez", None, True, "de la Vega Rodríguez",
+     "de la", "Vega Rodríguez"),
 ]
 
 
@@ -1521,11 +1531,27 @@ def test_the_surname1_views_read_the_first_unit_o6_read(
                               **kw)).parse(text)  # type: ignore[arg-type]
     assert (pn.surname1, pn.surname1_particles, pn.surname1_base) == (
         s1, particles, base)
-    # without the switch the family is one unit, and the views are its own
-    off = Parser(policy=Policy(middle_as_family=fold, **kw)).parse(  # type: ignore[arg-type]
-        text)
+    # without the switch or a fold the family is one unit, and the
+    # views are its own
+    off = Parser(policy=Policy(**kw)).parse(text)  # type: ignore[arg-type]
     assert (off.surname1, off.surname1_particles, off.surname1_base) == (
         off.family, off.family_particles, off.family_base)
+
+
+def test_the_surname1_views_leave_out_a_fold_without_two_units() -> None:
+    """rules/R11's O3 Except (#1022): the fold's middles are in neither
+    unit where O6 read none, so the first surname is the family as it
+    stood before the fold, and a Turkic father's reading keeps it."""
+    folded = Parser(policy=Policy(middle_as_family=True)).parse(
+        "Ana María García López")
+    assert (folded.family, folded.surname1, folded.surname1_base) == (
+        "María García López", "López", "López")
+    from nameparser import PatronymicRule
+    turkic = Parser(policy=Policy(
+        two_family_names=True,
+        patronymic_rules=frozenset({PatronymicRule.TURKIC}))).parse(
+            "Ali Hasan oglu")
+    assert (turkic.surname1, turkic.surname2) == ("Hasan", "oglu")
 
 
 def test_the_surname1_views_are_render_keys_and_not_fields() -> None:

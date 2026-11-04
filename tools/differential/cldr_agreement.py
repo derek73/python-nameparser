@@ -49,6 +49,13 @@ Re-record deliberately, and say why in the commit, as with a watched diff.
 Each record doubles as a measured worklist: every entry is a place the
 parser and the source read a name differently.
 
+The first surname's split (rules/R11) is scored on its own too: where a
+rendering states CLDR's `surname-core` and a `surname2`, `surname-prefix`
+and `surname-core` are expected in `surname1_particles` and
+`surname1_base` (FIRST_UNIT_ROLES), while the merged `family_particles`
+and `family_base` keep the second surname in, so a parse reading one unit
+is not counted twice for the second surname it did not read.
+
 Two fields are stated that the seven roles do not hold: `surname2` (a
 second surname: CLDR's `surname2`, Wikidata's P1950) and `patronymic`
 (Wikidata's P5056, a field CLDR does not have). Each is scored inside
@@ -481,6 +488,11 @@ def _summary(name: str, rows: list[dict[str, Any]],
         else:
             print(f"{role:17} {totals[role]:5} stated, not a ParsedName field "
                   f"yet (scored inside {merged})")
+    for role, field in FIRST_UNIT_ROLES.items():
+        if totals[role]:
+            agree = totals[role] - wrong[role]
+            print(f"{role:17} {agree:5}/{totals[role]:<5} agree "
+                  f"(against {field}, where a surname2 is stated)")
     problems = changes(read_record(record), current, {rendering_key(r) for r in rows})
     print("\n".join(problems) or f"{name} view matches the record")
     if name in SPLIT_SOURCES:
