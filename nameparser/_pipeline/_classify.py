@@ -274,7 +274,7 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
     # is neither taken nor completed by the two-name switches (#704)
     if n in lex._sets.shared_names:
         tags.add(SHARED_NAME_TAG)
-    # rules/O7 and O6 read this: a given name written behind a particle
+    # rules/P10 and O6 read this: a given name written behind a particle
     # completes the given name it follows (#704)
     if n in lex._sets.particle_given_names:
         tags.add(PARTICLE_GIVEN_TAG)

@@ -1,8 +1,8 @@
 # O7 — two given names
 
-**When:** two-given-name handling is active and the given name stands beside a middle name, as in "Juan Carlos Pérez", or alone before a family that a particle and a given name written behind it open, as in "María del Carmen García".
+**When:** two-given-name handling is active and the given name stands beside a middle name, as in "Juan Carlos Pérez".
 
-**Then:** the given name takes the middle unit beside it, or that particle phrase, so the given name is two name units and any middles past them stay middles.
+**Then:** the given name takes the middle unit beside it, so the given name is two name units and any middles past them stay middles.
 
 - **Under the default given-first order, and after a family comma**, the middle written right after the given name joins it.
   ```
@@ -17,17 +17,12 @@
   "García Antonio Juan Carlos"  family-first-given-last+two_given_names  →  middle="Antonio"
   "Pérez, Antonio Juan Carlos"  family-first-given-last+two_given_names  →  given="Antonio Juan"
   ```
-- **A unit is counted as O6 counts a name word**, so a particle chain the name left in the middle joins with its words: a given name that a particle and its word complete reads whole.
+- **A unit is counted as O6 counts a name word**, so a particle chain the name left in the middle joins with its words: a given name that a particle and its word complete reads whole, and so does one P10 reads out of the family as a middle name.
   ```
   "María del Carmen de la Vega"  two_given_names  →  given="María del Carmen"
   "Maria do Carmo da Silva"  two_given_names  →  family="da Silva"
-  ```
-- **A particle run and the given name written behind it complete the given name**, though the particle chain runs on into the family, where the given name stands alone before the chain and a name word, no lone connective, is left for the family: the word behind the particles is one the vocabulary names a given name written that way, as in María del Carmen or María de los Ángeles.
-  ```
   "María del Carmen García"  two_given_names  →  given="María del Carmen"
-  "María del Carmen García"  two_given_names  →  family="García"
   "María de los Ángeles López Pérez"  two_given_names  →  family="López Pérez"
-  "María del Carmen"  two_given_names  →  family="del Carmen"  · boundary
   "Maria da Silva Santos"  two_given_names  →  family="da Silva Santos"  · boundary
   ```
 - **An initial is taken**, since it writes a given name short.
@@ -112,7 +107,7 @@
   ```
   "Vincent van Gogh van Beethoven"  two_given_names  →  given="Vincent van Gogh"
   ```
-- A particle chain running to the end of the name is the family (P2) unless the vocabulary names the word behind its particles, and it names only a word whose phrase ORCID holders write as a given name at least nine times in ten: in "Maria do Carmo Silva" the family keeps "do Carmo Silva", "do Carmo" being a surname too often to name, the same string shape as "João da Silva Santos", whose family it is.
+- A particle chain running to the end of the name is the family (P2) unless P10 reads its opening phrase as a middle name: in "Maria do Carmo Silva" the family keeps "do Carmo Silva", the same string shape as "João da Silva Santos", whose family it is.
   ```
   "Maria do Carmo Silva"  two_given_names  →  family="do Carmo Silva"
   ```
@@ -131,5 +126,5 @@
 - The rule reports nothing: the caller declared the convention, as O6's switch reports nothing.
 
 ---
-**Signal:** none in the name + position: a caller switch, the given name's words and the taken unit's shape read as written; and the word behind a particle, looked up as a given name written there, and a name a community gives every member, vocabulary signals tagged by where the word stands, as O6's given-name list is
+**Signal:** none in the name + position: a caller switch, the given name's words and the taken unit's shape read as written; and a name a community gives every member, a vocabulary signal tagged by where the word stands, as O6's given-name list is
 **history:** decisions/O7 · **implemented:** nameparser/_pipeline/_post_rules.py

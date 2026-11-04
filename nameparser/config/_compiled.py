@@ -3114,3 +3114,10 @@ PARTICLE_GIVEN_NAMES: frozenset[str] = frozenset({
     'valle',
     'ángeles',
 })
+
+SAINT_PARTICLES: frozenset[str] = frozenset({
+    'san',
+    'santa',
+    'st',
+    'ste',
+})

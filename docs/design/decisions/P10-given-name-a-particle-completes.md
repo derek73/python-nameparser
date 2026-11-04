@@ -1,0 +1,25 @@
+# P10 — a given name a particle completes
+
+## Standing
+
+- By default, behind a lone given name of one word read given-first, a particle chain opening with a particle run and a word whose `given` reading is written `after_particle` reads that run and word as a middle name, the chain's other words the family: `María del Carmen García` gives middle 'del Carmen', family 'García' — 2026-11-04 #704.
+- A run holding a particle of the `saint` kind (`san`, `santa`, `st`, `ste`) is never such a phrase, `Santa María` being a surname — 2026-11-04 #704.
+- The rule reads before rules/O6 and O7, so two-given-name handling takes the phrase as the middle unit beside the given name and two-family-name handling leaves it; O7 no longer reads the phrase itself — 2026-11-04 #704.
+- The rule reports nothing — 2026-11-04 #704.
+
+## Log
+
+- 2026-11-04 #704, decided in chat — A GIVEN NAME A PARTICLE COMPLETES IS A MIDDLE NAME BY DEFAULT. The default reading decisions/O7's 2026-11-03 #704 entry left undecided ("Not decided here"): `María del Carmen García` read family 'del Carmen García' in 1.4.0 through 3.0's master, and reads given 'María', middle 'del Carmen', family 'García'. SUPERSEDES that entry's reach bullet where it put the phrase in O7: the particle phrase is this rule's, read whatever the switches, and O7 takes it as it takes any middle unit, so O7's own phrase path, its vocabulary clause, and the split-candidate line in decisions/O7's Standing go.
+  - **Why default.** Filers who split such a name into boxes put the phrase with the given names: on the UK PSC register in the middle-name box (21 `del Carmen` to 2 in the surname box, 2026-11-03), and in ORCID's given box at least nine times for each ten the marked word opens a family box (the bar the word list was cut at, decisions/O7's 2026-11-03 entry). No reading of the phrase as the family is more often right than this one.
+  - **Measured** (2026-11-04, the tree against `origin/master` `3b293777` read with `--base`, py3.11):
+
+    | Population | Fixed | Broken | Changed, agreeing in neither |
+    |---|---:|---:|---:|
+    | psc-individuals (`local_agreement.py --base`) | 90 | 8 | 7 |
+    | orcid-researchers (`local_agreement.py --base`) | 3,881 | 46 | 164 |
+
+    `snapshot.py --local tse-donors --base` moves 1,561 of 854,531 Brazilian donors' names, in family and middle alone (`ADRIANA DO SOCORRO MARTINS XAVIER`, family 'MARTINS XAVIER'); that corpus states no fields, so it counts reach. The committed snapshot moves five names, and the CLDR record gains one Wikidata rendering (`María del Pilar Hurtado Montaño`). ORCID's 46 broken are the marked words borne as surnames: `del Valle` 18 (and `do Valle` 1), `del Rosario` 12, `de Jesús` 5, `de Fátima` 4 (and `da Fátima` 1), one each of five others; PSC's 8 the same words (`Del Valle Barrios`, `Do Rosario Carvalho`, `Del Carmen Marshall`). The changed records are given boxes holding the phrase and more given names (`Maria | Del Carmen Enriqueta | Alvarez Ruiz`), which the phrase alone does not reach.
+  - **The saint clause.** The prototype read `Domingo Santa María González` (the Chilean president, surname `Santa María`) as middle 'Santa María', `maría` being marked and `santa` a particle; the O7 switch merged on 2026-11-03 read it the same way. In ORCID a saint particle stands before a marked word in no given box and in 7 family boxes, all `Santa María`/`Santa Maria`, while every given box's run is `de`, `del`, `de los`, `de la`, `de las` or `do` (2026-11-04). Weighed: dropping `maría` and `maria` from the marked words, which no code needs, against refusing a run holding a `saint` particle, which keeps the `de María` given phrases (35 and 18 ORCID given boxes, 66 TSE names) and holds for a word a file or caller marks later (`Santa Rosa`); chosen, the second. The kind compiles into the internal `SAINT_PARTICLES`, the way `PATRONYMIC_PARTICLES` records its kind.
+  - **The reach** is O7's phrase path's, as reviewed on #1057: given-first, no family comma, a given name of one word (a bound pair counting two, `Abu Bakr`) that is no patronymic, shared name or mark, no middle between it and the family, and a name word left for the family that is no lone connective, no Turkic marker behind the phrase under that rule.
+  - **An ambiguity's alternative** on a word behind the chain names the field of the chain's LAST word, where the word would join, rather than its first: the first is the phrase's now (`JAIRO DO VALLE CARDOSO FILHO`'s `FILHO` read as a name would join family 'CARDOSO FILHO', and the first draft named 'middle'), found by the TSE run, where six names moved it before the fix and none after.
+  - Recompute: the commands above, `--base` a `git worktree add --detach` checkout of `3b293777`; the saint counts over ORCID's `raw.jsonl` of the 2026-10-27 fetch, a given box ending with a particle run and a word of `Lexicon.default()._sets.particle_given_names`, against a family box opening with a particle run and such a word and holding more words, grouped by the run.

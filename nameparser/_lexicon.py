@@ -533,7 +533,7 @@ _SET_FIELDS = tuple(f for f in _VOCAB_FIELDS if f not in _LIST_FIELDS)
 _KIND_FIELDS = ("generation_words", "credential_words", "honorific_words",
                 "patronymic_particles", "title_abbreviations",
                 "title_case_name_words", "shared_names",
-                "particle_given_names")
+                "particle_given_names", "saint_particles")
 
 @dataclass(frozen=True, slots=True, eq=False, repr=False)
 class _LexiconSets:
@@ -600,9 +600,12 @@ class _LexiconSets:
     shared_names: frozenset[str]
     #: the given names written `after_particle=True` (`carmen`), the
     #: second of a compound given name written behind a particle
-    #: (`María del Carmen`): rules/O7 takes one, and O6 leaves it beside
-    #: a one-word given name (#704)
+    #: (`María del Carmen`): rules/P10 reads one as a middle name behind
+    #: a one-word given name, and O6 leaves it there (#704)
     particle_given_names: frozenset[str]
+    #: the particles of the `saint` kind (`san`, `santa`, `st`): no given
+    #: name phrase opens with one, `Santa María` being a surname (#704)
+    saint_particles: frozenset[str]
 
 
 #: Lexicon field -> the compiled constant it is read from, for every
@@ -638,6 +641,7 @@ _COMPILED_FIELDS = {
     "title_case_name_words": "TITLE_CASE_NAME_WORDS",
     "shared_names": "SHARED_NAMES",
     "particle_given_names": "PARTICLE_GIVEN_NAMES",
+    "saint_particles": "SAINT_PARTICLES",
 }
 
 
@@ -1288,7 +1292,8 @@ _WORD_FIELDS = frozenset({
     "suffix_words", "suffix_words_ambiguous", "agnomens", "honorific_tails",
     "generation_words", "credential_words", "honorific_words"})
 _PARTICLE_FIELDS = frozenset({
-    "particles", "particles_ambiguous", "patronymic_particles"})
+    "particles", "particles_ambiguous", "patronymic_particles",
+    "saint_particles"})
 
 
 def _props_by_kind(readings: Iterable[Any]) -> dict[str, list[dict[str, Any]]]:
@@ -1451,6 +1456,7 @@ _MARKER_READ_WITH = (
     ("conjunctions_ambiguous", ("conjunctions",)),
     ("particles_ambiguous", ("particles",)),
     ("patronymic_particles", ("particles",)),
+    ("saint_particles", ("particles",)),
     ("suffix_acronyms_ambiguous", ("suffix_acronyms",)),
     ("suffix_words_ambiguous", ("suffix_words",)),
     ("honorific_tails", ("suffix_words",)),

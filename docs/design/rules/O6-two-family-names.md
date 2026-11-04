@@ -86,7 +86,7 @@
   "Pérez de la Vega"  family-first+two_family_names  →  family="Pérez"
   "Pérez de la Vega y Santos Juan"  family-first+two_family_names  →  given="de la Vega y Santos Juan"
   ```
-- **A given name a particle completes stays where it is**: given-first, a particle run and the word behind it that the vocabulary names a given name written that way (O7), standing beside a given name of one word, are the given name's second, not a surname. Under a family-first order the unit after the family completes no given name, and is taken as before.
+- **A given name a particle completes stays where it is**: given-first, a particle run and the word behind it that the vocabulary names a given name written that way (P10), standing beside a given name of one word, are the given name's second, not a surname. Under a family-first order the unit after the family completes no given name, and is taken as before.
   ```
   "María del Carmen de la Vega"  two_family_names  →  middle="del Carmen"
   "Ana de Miguel de la Vega"  two_family_names  →  family="de Miguel de la Vega"  · boundary

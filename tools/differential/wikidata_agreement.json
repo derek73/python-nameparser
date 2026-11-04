@@ -7246,14 +7246,6 @@
   "text": "Jesús Alcolea Fernández"
  },
  "Q85632107/surname2-co/givenFirst": {
-  "family": {
-   "expected": "Hurtado Montaño",
-   "got": "del Pilar Hurtado Montaño"
-  },
-  "given_names": {
-   "expected": "María del Pilar",
-   "got": "María"
-  },
   "surname2": {
    "expected": "Montaño",
    "got": ""

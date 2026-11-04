@@ -1482,7 +1482,8 @@ _EFFECT_704 = [
     ("María del Carmen de la Vega", "O6", ("María", "del Carmen", "de la Vega"), ("María", "", "del Carmen de la Vega")),
     ("María del Carmen de la Vega", "both", ("María del Carmen", "", "de la Vega"), ("María", "", "del Carmen de la Vega")),
     ("María del Carmen García López", "both", ("María del Carmen", "", "García López"), ("María", "", "del Carmen García López")),
-    ("María del Carmen García", "default", ("María", "", "del Carmen García"), ("María", "", "del Carmen García")),
+    ("María del Carmen García", "default", ("María", "del Carmen", "García"), ("María", "", "del Carmen García")),
+    ("Domingo Santa María González", "default", ("Domingo", "", "Santa María González"), ("Domingo", "", "Santa María González")),
     ("Harpreet Kaur Dhillon", "O7", ("Harpreet", "Kaur", "Dhillon"), ("Harpreet Kaur", "", "Dhillon")),
     ("Harpreet Kaur Dhillon", "O6", ("Harpreet", "Kaur", "Dhillon"), ("Harpreet", "", "Kaur Dhillon")),
     ("Harpreet Simran Kaur", "O6", ("Harpreet", "Simran", "Kaur"), ("Harpreet", "", "Simran Kaur")),
@@ -1532,7 +1533,7 @@ def test_the_704_table_counts_its_rows() -> None:
     # the table is the properties' negative control only while some rows
     # move without them and some do not
     moved = [r for r in _EFFECT_704 if r[2] != r[3]]
-    assert len(moved) == 12 and len(_EFFECT_704) - len(moved) == 23
+    assert len(moved) == 13 and len(_EFFECT_704) - len(moved) == 23
 
 
 def test_a_callers_reading_reaches_the_switches() -> None:
@@ -1580,3 +1581,27 @@ def test_the_704_tags_reach_no_published_token() -> None:
                  "María del Carmen García")]
     published = {tag for n in names for t in n.tokens for tag in t.tags}
     assert not published & {"vocab:shared-name", "vocab:particle-given"}
+
+
+def test_a_saint_particle_opens_no_given_name_phrase() -> None:
+    # rules/P10's saint clause: 'Santa María' is a surname, the given
+    # name phrases being written with a preposition or an article. The
+    # control reads santa as a preposition, which the phrase then takes
+    default = (Policy(), Lexicon.default())
+    assert _roles("Domingo Santa María González", *default) == (
+        "Domingo", "", "Santa María González")
+    as_preposition = (Lexicon.default().remove("santa", kind="saint")
+                      .add("santa", kind="preposition"))
+    assert _roles("Domingo Santa María González", Policy(),
+                  as_preposition) == ("Domingo", "Santa María", "González")
+
+
+def test_a_report_behind_a_given_name_phrase_names_the_family() -> None:
+    # a word behind a particle chain lands beside the chain's LAST word:
+    # rules/P10 reads the chain's opening phrase as a middle name, and
+    # the agnomen read as a name would join the family 'Cardoso Filho'
+    name = parse("Jairo do Valle Cardoso Filho")
+    assert (name.middle, name.family, name.suffix) == (
+        "do Valle", "Cardoso", "Filho")
+    assert [a.alternative.role for a in name.ambiguities
+            if a.alternative is not None] == [Role.FAMILY]

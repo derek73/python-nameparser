@@ -172,9 +172,9 @@ SHARED_NAME_TAG = "vocab:shared-name"
 
 #: On a word of `Lexicon.particle_given_names`, a given name written
 #: behind a particle as the second of a compound given name ('del
-#: Carmen'): rules/O7 takes the particle run and the word into the
-#: given name, and O6 leaves them beside a one-word given name. Dropped from the published token
-#: like the kind tags above (#704).
+#: Carmen'): rules/P10 reads the particle run and the word as a
+#: middle name behind a one-word given name, and O6 leaves them there.
+#: Dropped from the published token like the kind tags above (#704).
 PARTICLE_GIVEN_TAG = "vocab:particle-given"
 
 #: EITHER way a token joins the ambiguous credential class -- the
