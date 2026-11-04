@@ -1216,8 +1216,10 @@ def test_middle_as_family_moves_no_patronymic_r2_does_not_move() -> None:
     # alone, rules/R9's Accepted). The words, not their order: the
     # view writes the family's words as the family does. A grid of
     # particle, comma and given-name shapes (2,540 texts, each under
-    # two orders, about a second on 2026-10-29); compared: 4,494 of
-    # the 5,080 parses, the rest the R2 shape above. What it guards: a
+    # two orders, about a second on 2026-10-29); compared: 4,578 of
+    # the 5,080 parses, the rest the R2 shape above (4,494 before
+    # #670's fold took a lowercase 'bin' opening a family-first name,
+    # 2026-11-04). What it guards: a
     # word P6 attached standing as the family under the fold (10 moves
     # on 021268ed). What it cannot see: a shape whose R2 marks differ
     # between the policies, the second review's D2 and the third's
@@ -1245,7 +1247,7 @@ def test_middle_as_family_moves_no_patronymic_r2_does_not_move() -> None:
             if sorted(a.patronymic.split()) != sorted(b.patronymic.split()):
                 moved.append((text, order, a.patronymic, b.patronymic))
     assert not moved, moved[:10]
-    assert compared == 4494
+    assert compared == 4578
 
 
 def test_a_turkic_marker_a_caller_lists_as_a_connective_names_no_father(
@@ -1330,7 +1332,7 @@ _SURNAME2_ROWS = [
     ("García Márquez Ana María", _FF, True, "Márquez"),
     ("García Márquez Ana María", _FFGL, True, "Márquez"),
     ("de Mesnil Jean Paul", _FF, False, "Jean"),
-    ("van Gogh Ana María", _FF, False, "Gogh"),
+    ("Van Gogh Ana María", _FF, False, "Gogh"),
     # a chain after the family is cut as P1's fold cuts it (#1024)
     ("Juan de la Vega Rodríguez", _FF, False, "de la Vega"),
     ("Pérez de la Vega Juan Carlos", _FFGL, False, "de la Vega"),
@@ -1513,7 +1515,7 @@ _SURNAME1_CASES = [
      "García-López"),
     # a first unit O6 leaves a lone particle splits as the family does,
     # the particle working there (R11's Accepted)
-    ("van Gogh Vincent", FAMILY_FIRST, False, "van", "van", ""),
+    ("Van Gogh Vincent", FAMILY_FIRST, False, "Van", "Van", ""),
     # a patronymic in either unit keeps the mark where assemble
     # rebuilds the reading
     ("Mammadov Hasan Ali ibn", FAMILY_FIRST, False, "ibn Mammadov", "ibn",

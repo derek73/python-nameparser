@@ -383,11 +383,10 @@ ARRANGEMENTS: tuple[Arrangement, ...] = (
                 note="a never-given particle folds, rules/P1"),
     Arrangement(4, "Particle Family Given", "van Gogh Vincent",
                 ("particle",),
-                {"given": "Gogh", "middle": "Vincent", "family": "van"},
-                ("particle-or-given",),
-                note="an ambiguous particle opening the name is left to "
-                     "position and reported, as root AGENTS.md describes; "
-                     "no decision weighs it under a family-first order"),
+                {"given": "Vincent", "family": "van Gogh"},
+                note="a lowercase ambiguous particle opening a mixed-case "
+                     "name folds under a family-first order, rules/P1 "
+                     "(#670)"),
     Arrangement(4, "Family Given Particle", "Ménil Christophe du",
                 ("particle",),
                 {"given": "Christophe", "family": "du Ménil"},
@@ -630,9 +629,8 @@ ARRANGEMENTS: tuple[Arrangement, ...] = (
                 'Particle Family Middle Given (NFD)',
                 'du Me\u0301nil Thi Mai',
                 ('nfd', 'particle'),
-                {'given': 'Mai', 'middle': 'Me\u0301nil Thi', 'family': 'du'},
-                ('particle-or-given',),
-                note="an ambiguous particle opening the name is left to "
-                     "position and reported, as root AGENTS.md describes; "
-                     "no decision weighs it under a family-first order"),
+                {'given': 'Mai', 'middle': 'Thi', 'family': 'du Me\u0301nil'},
+                note="a lowercase ambiguous particle opening a mixed-case "
+                     "name folds under a family-first order, rules/P1 "
+                     "(#670)"),
 )

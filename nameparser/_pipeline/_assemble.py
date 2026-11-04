@@ -251,7 +251,8 @@ _TITLE_TAGS = frozenset({
 
 def _alternative(pending: PendingAmbiguity, materialized: tuple[Token, ...],
                  final: dict[int, Token], middle_as_family: bool,
-                 lexicon: Lexicon) -> Reading | None:
+                 lexicon: Lexicon,
+                 order: tuple[Role, Role, Role] | None) -> Reading | None:
     """The public Reading of a report's PendingReading, its field named
     from the final roles where the emitter deferred it (O5's other
     primary field) and folded as `middle_as_family` folds every middle
@@ -279,6 +280,20 @@ def _alternative(pending: PendingAmbiguity, materialized: tuple[Token, ...],
                 and final[beside.last].role is Role.FAMILY
                 and FOLDED_TAG not in final[beside.last].tags):
             role = Role.FAMILY
+        # a chain opening a family-first name holding a name word of its
+        # own: rules/P1's fold takes its particles and that ONE unit
+        # (#828), so the word, joining it last, is laid out by the order
+        # behind the family -- the other primary where it would be the
+        # one word left, else the order's last name position
+        elif (role is Role.FAMILY and order is not None
+                and order[0] is Role.FAMILY and beside.last is not None
+                and beside.last in final
+                and "particle" in front.tags
+                and "particle" not in final[beside.last].tags):
+            alone = (final[beside.last].role is Role.FAMILY
+                     and not any(beside.last < i < pending.indices[0]
+                                 for i in final))
+            role = Role.GIVEN if alone else order[2]
     elif isinstance(role, (Deferred, Beside)):
         # assign found no name position to name it from
         return None
@@ -755,12 +770,17 @@ def assemble(state: ParseState) -> ParsedName:
             # than ship the sentence's first half.
             if not materialized:
                 continue
-            detail = (f"{detail}{FIELD_READING[materialized[0].role]}"
-                      f"{pending.field_tail}")
+            # words P1's family-first fold parted across fields (#828)
+            # are read as the name, no one field of it
+            roles = {t.role for t in materialized}
+            named = ("the name" if len(roles) > 1 and roles <= set(NAME_ROLES)
+                     else FIELD_READING[materialized[0].role])
+            detail = f"{detail}{named}{pending.field_tail}"
         ambiguities.append(Ambiguity(
             pending.kind, detail, materialized,
             _alternative(pending, materialized, final,
-                         state.policy.middle_as_family, state.lexicon)))
+                         state.policy.middle_as_family, state.lexicon,
+                         state.order)))
     return ParsedName(original=state.original,
                       tokens=tuple(final.values()),
                       ambiguities=tuple(ambiguities),

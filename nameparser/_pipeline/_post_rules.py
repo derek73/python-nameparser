@@ -43,13 +43,15 @@ from __future__ import annotations
 
 import bisect
 import re
+from collections.abc import Sequence
 
 from nameparser._lexicon import Lexicon, _normalize, _run_addresses_by_given
 from nameparser._pipeline._assign import (
     _name_alt, _name_pieces, _name_positions,
 )
 from nameparser._pipeline._pieces import (
-    is_lone_never_given_particle, settled_by_case,
+    is_lone_never_given_particle, is_lowercase_ambiguous_particle,
+    settled_by_case,
 )
 from nameparser._pipeline._state import (
     AMBIGUOUS_ACRONYM_TAG, ATTACHED_TAG, NAME_ROLES, PATRONYMIC_TAG,
@@ -581,8 +583,33 @@ def _family_settled(state: ParseState, tokens: list[WorkToken],
     not open it)."""
     if state.structure is Structure.FAMILY_COMMA:
         return any("particle" in tokens[i].tags for i in families)
-    return len(families) > 1 and is_lone_never_given_particle(
-        _leading_name_piece(state, tokens), tokens)
+    return len(families) > 1 and _lead_folds(
+        state, tokens, _leading_name_piece(state, tokens))
+
+
+def _lead_folds(state: ParseState, tokens: list[WorkToken],
+                lead: Sequence[int]) -> bool:
+    """Whether rules/P1's fold takes `lead`, the piece opening the
+    name: a lone never-given particle under every order, and under a
+    family-first order two more -- a lone ambiguous particle written
+    in lower case in a name of mixed case (rules/P11, #670), and a
+    particle chain holding more than its particles and one name unit,
+    which a title-particle in front lets P2 chain (rules/P4's Except,
+    #828). The chain's last clause keeps a chain the fold would take
+    whole where it stands ('St Sir de Mesnil', 'St abu Bakar')."""
+    # rules/P1: "a particle chain behind a title-particle is cut as the
+    # run is" -- the chain clause; and rules/P11: "an ambiguous particle
+    # written in lower case, in a name of mixed case, opens the name as
+    # a never-given one does" -- the writing clause (decisions/P1 and
+    # decisions/P11, #828, #670)
+    if is_lone_never_given_particle(lead, tokens):
+        return True
+    order = state.order
+    if order is None or order[0] is not Role.FAMILY:
+        return False
+    return (is_lowercase_ambiguous_particle(lead, tokens, state.one_case)
+            or len(lead) > 1 and "particle" in tokens[lead[0]].tags
+            and _fold_reach(tokens, list(lead)) < len(lead))
 
 
 # rules/S13: "where the member's writing settles it as the credential,
@@ -787,14 +814,15 @@ def post_rules(state: ParseState) -> ParseState:
     # answer position already gave. So "Menil de" under either
     # family-first order reports given "de" -- P6 takes the trailing
     # particle only where it landed in a MIDDLE, which means nothing.
-    # Code-local: a lone PIECE is the test, so a particle group
-    # already chained forward is not a lone particle, and rule H1
+    # Code-local: a lone PIECE is the test (`_lead_folds` names the two
+    # pieces a family-first order adds), so a particle group already
+    # chained forward is not a lone particle elsewhere, and rule H1
     # above cannot be what produces the fold's family reading -- its
     # given -> family branch is gated on `not families`, and its family
     # -> given branch leaves the word this fold takes, asking the same
     # predicate (_family_settled).
     lead = _leading_name_piece(state, tokens)
-    lead_fires = is_lone_never_given_particle(lead, tokens)
+    lead_fires = _lead_folds(state, tokens, lead)
     if len(givens) + len(middles) + len(families) > 1 and lead_fires:
         order = state.order
         if lead_fires and order is not None and order[0] is Role.FAMILY:

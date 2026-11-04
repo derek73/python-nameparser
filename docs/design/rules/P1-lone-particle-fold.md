@@ -1,6 +1,6 @@
 # P1 — lone particle fold
 
-**When:** a never-given particle opens the name and has another name word behind it to attach to, as in "de Mesnil".
+**When:** a never-given particle opens the name and has another name word behind it to attach to, as in "de Mesnil"; under a family-first order, also a particle chain a title-particle lets form (below), and an ambiguous particle P11 says the writing settles.
 
 **Then:** the particle run and the name words it takes are family, under every name order; how many it takes depends on the order or a family comma (below).
 
@@ -24,6 +24,12 @@
   "de la Vega y Santos Juan"  family-first  →  family="de la Vega y Santos"
   "ibn Awf abdul Rahman"  family-first  →  given="abdul Rahman"
   "de la Cruz Juan Carlos"  family-first-given-last  →  given="Carlos"
+  ```
+- **Under a family-first order a particle chain behind a title-particle is cut as the run is.** A word that is both a title and a particle puts the leading position on itself (P4's Except), so the particle behind it chains forward and the chain, not a lone particle, opens the name; it takes its particles and one unit, and the rest is laid out by the order. A chain the fold would take whole is no different from what it was: H1's given name behind a given-name title, P5's bound given name.
+  ```
+  "St de Mesnil Jean"  family-first  →  family="de Mesnil"
+  "Freiherr von Berg Otto"  family-first  →  given="Otto"
+  "St Sir de Mesnil"  family-first  →  given="de Mesnil"
   ```
 - **After a family comma the run takes the rest of that part, whatever order is declared**: the comma has already fixed the surname, so there is no positional read left for an order to narrow.
   ```

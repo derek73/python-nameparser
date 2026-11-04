@@ -353,10 +353,13 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # suffix-or-name reports (five new rows one each, the 'Pedro Junior
     # Filho' row two, 'Pedro Júnior Neto' a second, 'José Silva Júnior'
     # one), each under three orders, and its review row 'Smith,
-    # Junior.', reporting suffix-or-name under three orders.
-    assert claims == 1582, (
-        f"the field sweep checks {claims} claims, recorded as 1582 on "
-        f"2026-11-03")
+    # Junior.', reporting suffix-or-name under three orders; 1582 ->
+    # 1570 on 2026-11-04, #670: six rows opening with a lowercase
+    # ambiguous particle no longer report particle-or-given under the
+    # two family-first orders, the fold having taken it.
+    assert claims == 1570, (
+        f"the field sweep checks {claims} claims, recorded as 1570 on "
+        f"2026-11-04")
 
 
 #: The kinds that report a fork between two readings of a word, so carry

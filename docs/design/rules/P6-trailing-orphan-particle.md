@@ -63,7 +63,7 @@
   ```
 - **Without a comma, the family must hold a base of its own**, since a family that is all particles is not a family written beside anything (R2).
   ```
-  "van Berg Jan de"  family-first  →  family="van"  · boundary
+  "Van Berg Jan de"  family-first  →  family="Van"  · boundary
   ```
 
 **Precedence:**

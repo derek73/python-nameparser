@@ -1,31 +1,4 @@
 {
- "af/foreignFull/surnameFirst": {
-  "family": {
-   "expected": "van den Berg",
-   "got": "van"
-  },
-  "family_base": {
-   "expected": "Berg",
-   "got": "van"
-  },
-  "family_particles": {
-   "expected": "van den",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Cornelia Margarita Sofia Aletta",
-   "got": "den Berg Cornelia Margarita Sofia Aletta"
-  },
-  "surname1_base": {
-   "expected": "Berg",
-   "got": "van"
-  },
-  "surname1_particles": {
-   "expected": "van den",
-   "got": ""
-  },
-  "text": "van den Berg Cornelia Margarita Sofia Aletta MBChB PhD"
- },
  "af/foreignG/sorting": {
   "family": {
    "expected": "",
@@ -106,27 +79,15 @@
  "ak/foreignFull/surnameFirst": {
   "family": {
    "expected": "von Brühl González Domingo",
-   "got": "von"
+   "got": "von Brühl"
   },
   "family_base": {
    "expected": "Brühl González Domingo",
-   "got": "von"
-  },
-  "family_particles": {
-   "expected": "von",
-   "got": ""
+   "got": "Brühl"
   },
   "given_names": {
    "expected": "Ada Cornelia César Martín",
-   "got": "Brühl González Domingo Prof. Dr. Ada Cornelia César Martín"
-  },
-  "surname1_base": {
-   "expected": "Brühl",
-   "got": "von"
-  },
-  "surname1_particles": {
-   "expected": "von",
-   "got": ""
+   "got": "González Domingo Prof. Dr. Ada Cornelia César Martín"
   },
   "surname2": {
    "expected": "González Domingo",
@@ -731,33 +692,6 @@
   },
   "text": "van den Volf Becker Schmidt, Prof. Dr. Ada Kornelia Sezar Martin M.D. Ph.D."
  },
- "az/foreignFull/surnameFirst": {
-  "family": {
-   "expected": "van den Volf",
-   "got": "van"
-  },
-  "family_base": {
-   "expected": "Volf",
-   "got": "van"
-  },
-  "family_particles": {
-   "expected": "van den",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Ada Kornelia Sezar Martin",
-   "got": "den Volf Ada Kornelia Sezar Martin"
-  },
-  "surname1_base": {
-   "expected": "Volf",
-   "got": "van"
-  },
-  "surname1_particles": {
-   "expected": "van den",
-   "got": ""
-  },
-  "text": "van den Volf Ada Kornelia Sezar Martin M.D. Ph.D."
- },
  "az/foreignG/sorting": {
   "family": {
    "expected": "",
@@ -1009,27 +943,15 @@
  "bal_Latn/foreignFull/surnameFirst": {
   "family": {
    "expected": "von Brühl González Domingo",
-   "got": "von"
+   "got": "von Brühl"
   },
   "family_base": {
    "expected": "Brühl González Domingo",
-   "got": "von"
-  },
-  "family_particles": {
-   "expected": "von",
-   "got": ""
+   "got": "Brühl"
   },
   "given_names": {
    "expected": "Ada Cornelia César Martín",
-   "got": "Brühl González Domingo Prop. Dr. Ada Cornelia César Martín"
-  },
-  "surname1_base": {
-   "expected": "Brühl",
-   "got": "von"
-  },
-  "surname1_particles": {
-   "expected": "von",
-   "got": ""
+   "got": "González Domingo Prop. Dr. Ada Cornelia César Martín"
   },
   "surname2": {
    "expected": "González Domingo",
@@ -2298,27 +2220,15 @@
  "cs/foreignFull/surnameFirst": {
   "family": {
    "expected": "von Brühl González Domingo",
-   "got": "von"
+   "got": "von Brühl"
   },
   "family_base": {
    "expected": "Brühl González Domingo",
-   "got": "von"
-  },
-  "family_particles": {
-   "expected": "von",
-   "got": ""
+   "got": "Brühl"
   },
   "given_names": {
    "expected": "Ada Cornelia César Martín",
-   "got": "Brühl González Domingo Ada Cornelia César Martín"
-  },
-  "surname1_base": {
-   "expected": "Brühl",
-   "got": "von"
-  },
-  "surname1_particles": {
-   "expected": "von",
-   "got": ""
+   "got": "González Domingo Ada Cornelia César Martín"
   },
   "surname2": {
    "expected": "González Domingo",
@@ -2543,33 +2453,6 @@
    "got": ""
   },
   "text": "Аталан"
- },
- "cy/foreignFull/surnameFirst": {
-  "family": {
-   "expected": "von Wolf",
-   "got": "von"
-  },
-  "family_base": {
-   "expected": "Wolf",
-   "got": "von"
-  },
-  "family_particles": {
-   "expected": "von",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Ada Cornelia Eva Sophia",
-   "got": "Wolf Ada Cornelia Eva Sophia"
-  },
-  "surname1_base": {
-   "expected": "Wolf",
-   "got": "von"
-  },
-  "surname1_particles": {
-   "expected": "von",
-   "got": ""
-  },
-  "text": "von Wolf Ada Cornelia Eva Sophia MD DDS"
  },
  "cy/foreignG/sorting": {
   "family": {
@@ -2926,29 +2809,9 @@
   "text": "Δημήτρης"
  },
  "en/foreignFull/surnameFirst": {
-  "family": {
-   "expected": "von Brühl",
-   "got": "von"
-  },
-  "family_base": {
-   "expected": "Brühl",
-   "got": "von"
-  },
-  "family_particles": {
-   "expected": "von",
-   "got": ""
-  },
   "given_names": {
    "expected": "Ada Cornelia César Martín",
-   "got": "Brühl Prof. Dr. Ada Cornelia César Martín"
-  },
-  "surname1_base": {
-   "expected": "Brühl",
-   "got": "von"
-  },
-  "surname1_particles": {
-   "expected": "von",
-   "got": ""
+   "got": "Prof. Dr. Ada Cornelia César Martín"
   },
   "text": "von Brühl Prof. Dr. Ada Cornelia César Martín Jr, MD DDS",
   "title": {
@@ -3025,27 +2888,15 @@
  "es/foreignFull/surnameFirst": {
   "family": {
    "expected": "von Miller Jones",
-   "got": "von"
+   "got": "von Miller"
   },
   "family_base": {
    "expected": "Miller Jones",
-   "got": "von"
-  },
-  "family_particles": {
-   "expected": "von",
-   "got": ""
+   "got": "Miller"
   },
   "given_names": {
    "expected": "Mary Sue Marie",
-   "got": "Miller Jones Mary Sue Marie"
-  },
-  "surname1_base": {
-   "expected": "Miller",
-   "got": "von"
-  },
-  "surname1_particles": {
-   "expected": "von",
-   "got": ""
+   "got": "Jones Mary Sue Marie"
   },
   "surname2": {
    "expected": "Jones",
@@ -3130,27 +2981,15 @@
  "et/foreignFull/surnameFirst": {
   "family": {
    "expected": "von Vall Heinmann Laas",
-   "got": "von"
+   "got": "von Vall"
   },
   "family_base": {
    "expected": "Vall Heinmann Laas",
-   "got": "von"
-  },
-  "family_particles": {
-   "expected": "von",
-   "got": ""
+   "got": "Vall"
   },
   "given_names": {
    "expected": "Anna Liina Eva Sofia",
-   "got": "Vall Heinmann Laas Prof Anna Liina Eva Sofia"
-  },
-  "surname1_base": {
-   "expected": "Vall",
-   "got": "von"
-  },
-  "surname1_particles": {
-   "expected": "von",
-   "got": ""
+   "got": "Heinmann Laas Prof Anna Liina Eva Sofia"
   },
   "surname2": {
    "expected": "Heinmann Laas",
@@ -3580,29 +3419,9 @@
   "text": "Louhi"
  },
  "fil/foreignFull/surnameFirst": {
-  "family": {
-   "expected": "von Brühl",
-   "got": "von"
-  },
-  "family_base": {
-   "expected": "Brühl",
-   "got": "von"
-  },
-  "family_particles": {
-   "expected": "von",
-   "got": ""
-  },
   "given_names": {
    "expected": "Ada Cornelia César Martín",
-   "got": "Brühl Prof. Dr. Ada Cornelia César Martín"
-  },
-  "surname1_base": {
-   "expected": "Brühl",
-   "got": "von"
-  },
-  "surname1_particles": {
-   "expected": "von",
-   "got": ""
+   "got": "Prof. Dr. Ada Cornelia César Martín"
   },
   "text": "von Brühl Prof. Dr. Ada Cornelia César Martín Jr, MD DDS",
   "title": {
@@ -3664,33 +3483,6 @@
    "got": ""
   },
   "text": "Zendaya"
- },
- "fr/foreignFull/surnameFirst": {
-  "family": {
-   "expected": "von Brühl",
-   "got": "von"
-  },
-  "family_base": {
-   "expected": "Brühl",
-   "got": "von"
-  },
-  "family_particles": {
-   "expected": "von",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "María Florencia Martina Cristina",
-   "got": "Brühl María Florencia Martina Cristina"
-  },
-  "surname1_base": {
-   "expected": "Brühl",
-   "got": "von"
-  },
-  "surname1_particles": {
-   "expected": "von",
-   "got": ""
-  },
-  "text": "Prof. Dr. von Brühl María Florencia Martina Cristina Jr., MD DDS"
  },
  "fr/foreignG/sorting": {
   "family": {
@@ -3791,33 +3583,6 @@
    "got": ""
   },
   "text": "von Brühl González Domingo, Prof. Dr. Ada Cornelia César Martín M.D. Ph.D."
- },
- "ga/foreignFull/surnameFirst": {
-  "family": {
-   "expected": "von Brühl",
-   "got": "von"
-  },
-  "family_base": {
-   "expected": "Brühl",
-   "got": "von"
-  },
-  "family_particles": {
-   "expected": "von",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Ada Cornelia César Martín",
-   "got": "Brühl Ada Cornelia César Martín"
-  },
-  "surname1_base": {
-   "expected": "Brühl",
-   "got": "von"
-  },
-  "surname1_particles": {
-   "expected": "von",
-   "got": ""
-  },
-  "text": "von Brühl Ada Cornelia César Martín M.D. Ph.D."
  },
  "ga/foreignG/sorting": {
   "family": {
@@ -4096,33 +3861,6 @@
    "got": ""
   },
   "text": "Brül Cabral de Melo, Erika Cornelia Anna Isabelle von"
- },
- "gl/foreignFull/surnameFirst": {
-  "family": {
-   "expected": "von Brül",
-   "got": "von"
-  },
-  "family_base": {
-   "expected": "Brül",
-   "got": "von"
-  },
-  "family_particles": {
-   "expected": "von",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Erika Cornelia Anna Isabelle",
-   "got": "Brül Erika Cornelia Anna Isabelle"
-  },
-  "surname1_base": {
-   "expected": "Brül",
-   "got": "von"
-  },
-  "surname1_particles": {
-   "expected": "von",
-   "got": ""
-  },
-  "text": "von Brül Erika Cornelia Anna Isabelle II"
  },
  "gl/foreignG/sorting": {
   "family": {
@@ -4442,27 +4180,15 @@
  "ha/foreignFull/surnameFirst": {
   "family": {
    "expected": "van den Wolf Becker Schmidt",
-   "got": "van"
+   "got": "van den Wolf"
   },
   "family_base": {
    "expected": "Wolf Becker Schmidt",
-   "got": "van"
-  },
-  "family_particles": {
-   "expected": "van den",
-   "got": ""
+   "got": "Wolf"
   },
   "given_names": {
    "expected": "Ada Cornelia Eva Sophia",
-   "got": "den Wolf Becker Schmidt Farf. Dr. Ada Cornelia Eva Sophia"
-  },
-  "surname1_base": {
-   "expected": "Wolf",
-   "got": "van"
-  },
-  "surname1_particles": {
-   "expected": "van den",
-   "got": ""
+   "got": "Becker Schmidt Farf. Dr. Ada Cornelia Eva Sophia"
   },
   "surname2": {
    "expected": "Becker Schmidt",
@@ -4961,29 +4687,9 @@
   "text": "ललित"
  },
  "hi_Latn/foreignFull/surnameFirst": {
-  "family": {
-   "expected": "von Bruhl",
-   "got": "von"
-  },
-  "family_base": {
-   "expected": "Bruhl",
-   "got": "von"
-  },
-  "family_particles": {
-   "expected": "von",
-   "got": ""
-  },
   "given_names": {
    "expected": "Ada Cornelia Cesar Martin",
-   "got": "Bruhl Prof. Dr. Ada Cornelia Cesar Martin"
-  },
-  "surname1_base": {
-   "expected": "Bruhl",
-   "got": "von"
-  },
-  "surname1_particles": {
-   "expected": "von",
-   "got": ""
+   "got": "Prof. Dr. Ada Cornelia Cesar Martin"
   },
   "text": "von Bruhl Prof. Dr. Ada Cornelia Cesar Martin Jr, MD DDS",
   "title": {
@@ -5166,33 +4872,6 @@
    "got": ""
   },
   "text": "Jurij"
- },
- "hu/foreignFull/surnameFirst": {
-  "family": {
-   "expected": "von Kovács",
-   "got": "von"
-  },
-  "family_base": {
-   "expected": "Kovács",
-   "got": "von"
-  },
-  "family_particles": {
-   "expected": "von",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Luca Sarolta Éva Erzsébet",
-   "got": "Kovács Luca Sarolta Éva Erzsébet"
-  },
-  "surname1_base": {
-   "expected": "Kovács",
-   "got": "von"
-  },
-  "surname1_particles": {
-   "expected": "von",
-   "got": ""
-  },
-  "text": "von Kovács Luca Sarolta Éva Erzsébet M.D. Ph.D."
  },
  "hu/foreignG/sorting": {
   "family": {
@@ -5508,29 +5187,9 @@
   "text": "Prof. Dr. Ada Cornelia Eva Sophia van den Wolf Becker Schmidt M.D. Ph.D."
  },
  "ig/foreignFull/surnameFirst": {
-  "family": {
-   "expected": "van den Wolf",
-   "got": "van"
-  },
-  "family_base": {
-   "expected": "Wolf",
-   "got": "van"
-  },
-  "family_particles": {
-   "expected": "van den",
-   "got": ""
-  },
   "given_names": {
    "expected": "Ada Cornelia Eva Sophia",
-   "got": "den Wolf Prof. Dr. Ada Cornelia Eva Sophia"
-  },
-  "surname1_base": {
-   "expected": "Wolf",
-   "got": "van"
-  },
-  "surname1_particles": {
-   "expected": "van den",
-   "got": ""
+   "got": "Prof. Dr. Ada Cornelia Eva Sophia"
   },
   "text": "van den Wolf Prof. Dr. Ada Cornelia Eva Sophia Jr, M.D. Ph.D.",
   "title": {
@@ -5632,29 +5291,9 @@
   "text": "Sigríður Jóna Valgerður Fanndís von Bjarnadóttir"
  },
  "is/foreignFull/surnameFirst": {
-  "family": {
-   "expected": "von Bjarnadóttir",
-   "got": "von"
-  },
-  "family_base": {
-   "expected": "Bjarnadóttir",
-   "got": "von"
-  },
-  "family_particles": {
-   "expected": "von",
-   "got": ""
-  },
   "given_names": {
    "expected": "Sigríður Jóna Valgerður Fanndís",
-   "got": "Bjarnadóttir dr. Sigríður Jóna Valgerður Fanndís"
-  },
-  "surname1_base": {
-   "expected": "Bjarnadóttir",
-   "got": "von"
-  },
-  "surname1_particles": {
-   "expected": "von",
-   "got": ""
+   "got": "dr. Sigríður Jóna Valgerður Fanndís"
   },
   "text": "von Bjarnadóttir dr. Sigríður Jóna Valgerður Fanndís yngri, M.A. í bókmenntafræði",
   "title": {
@@ -5794,33 +5433,6 @@
    "got": "Adólfsdóttir"
   },
   "text": "Íris Adólfsdóttir"
- },
- "it/foreignFull/surnameFirst": {
-  "family": {
-   "expected": "von Brühl",
-   "got": "von"
-  },
-  "family_base": {
-   "expected": "Brühl",
-   "got": "von"
-  },
-  "family_particles": {
-   "expected": "von",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Ada Cornelia César Martín",
-   "got": "Brühl Ada Cornelia César Martín"
-  },
-  "surname1_base": {
-   "expected": "Brühl",
-   "got": "von"
-  },
-  "surname1_particles": {
-   "expected": "von",
-   "got": ""
-  },
-  "text": "Prof. Dr. von Brühl Ada Cornelia César Martín Jr, MD DDS"
  },
  "it/foreignG/sorting": {
   "family": {
@@ -7371,27 +6983,15 @@
  "kok_Latn/foreignFull/surnameFirst": {
   "family": {
    "expected": "von Brühl González Domingo",
-   "got": "von"
+   "got": "von Brühl"
   },
   "family_base": {
    "expected": "Brühl González Domingo",
-   "got": "von"
-  },
-  "family_particles": {
-   "expected": "von",
-   "got": ""
+   "got": "Brühl"
   },
   "given_names": {
    "expected": "Ada Cornelia César Martín",
-   "got": "Brühl González Domingo Prof. Dr. Ada Cornelia César Martín"
-  },
-  "surname1_base": {
-   "expected": "Brühl",
-   "got": "von"
-  },
-  "surname1_particles": {
-   "expected": "von",
-   "got": ""
+   "got": "González Domingo Prof. Dr. Ada Cornelia César Martín"
   },
   "surname2": {
    "expected": "González Domingo",
@@ -8048,60 +7648,6 @@
    "expected": "",
    "got": "Dr.philol."
   }
- },
- "lv/foreignFull/sorting": {
-  "family": {
-   "expected": "van den Volfa",
-   "got": "van"
-  },
-  "family_base": {
-   "expected": "Volfa",
-   "got": "van"
-  },
-  "family_particles": {
-   "expected": "van den",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Laima Kristīne Eva Sofija",
-   "got": "den Volfa Laima Kristīne Eva Sofija"
-  },
-  "surname1_base": {
-   "expected": "Volfa",
-   "got": "van"
-  },
-  "surname1_particles": {
-   "expected": "van den",
-   "got": ""
-  },
-  "text": "van den Volfa Laima Kristīne Eva Sofija"
- },
- "lv/foreignFull/surnameFirst": {
-  "family": {
-   "expected": "van den Volfa",
-   "got": "van"
-  },
-  "family_base": {
-   "expected": "Volfa",
-   "got": "van"
-  },
-  "family_particles": {
-   "expected": "van den",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Laima Kristīne",
-   "got": "den Volfa Laima Kristīne"
-  },
-  "surname1_base": {
-   "expected": "Volfa",
-   "got": "van"
-  },
-  "surname1_particles": {
-   "expected": "van den",
-   "got": ""
-  },
-  "text": "van den Volfa Laima Kristīne"
  },
  "lv/foreignG/sorting": {
   "family": {
@@ -8787,33 +8333,6 @@
   },
   "text": "Prof. Dr. Ada Cornelia Martina von Bruhel Domingo MD DDS"
  },
- "ms/foreignFull/surnameFirst": {
-  "family": {
-   "expected": "von Bruhel",
-   "got": "von"
-  },
-  "family_base": {
-   "expected": "Bruhel",
-   "got": "von"
-  },
-  "family_particles": {
-   "expected": "von",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Ada Cornelia Martina",
-   "got": "Bruhel Ada Cornelia Martina"
-  },
-  "surname1_base": {
-   "expected": "Bruhel",
-   "got": "von"
-  },
-  "surname1_particles": {
-   "expected": "von",
-   "got": ""
-  },
-  "text": "von Bruhel Ada Cornelia Martina MD DDS"
- },
  "ms/foreignG/sorting": {
   "family": {
    "expected": "",
@@ -9272,29 +8791,9 @@
   "text": "सुन्दर"
  },
  "nl/foreignFull/surnameFirst": {
-  "family": {
-   "expected": "von Brühl",
-   "got": "von"
-  },
-  "family_base": {
-   "expected": "Brühl",
-   "got": "von"
-  },
-  "family_particles": {
-   "expected": "von",
-   "got": ""
-  },
   "given_names": {
    "expected": "Ada Cornelia César Martín",
-   "got": "Brühl mevrouw Ada Cornelia César Martín"
-  },
-  "surname1_base": {
-   "expected": "Brühl",
-   "got": "von"
-  },
-  "surname1_particles": {
-   "expected": "von",
-   "got": ""
+   "got": "mevrouw Ada Cornelia César Martín"
   },
   "text": "von Brühl mevrouw Ada Cornelia César Martín jr., PhD",
   "title": {
@@ -9433,32 +8932,8 @@
   }
  },
  "nn/nativeFull/surnameFirst": {
-  "family": {
-   "expected": "von Fleksnes",
-   "got": "von"
-  },
-  "family_base": {
-   "expected": "Fleksnes",
-   "got": "von"
-  },
-  "family_particles": {
-   "expected": "von",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Gregers Werle Marve Almar",
-   "got": "Fleksnes Gregers Werle Marve Almar"
-  },
   "suffix": {
    "expected": "st.repr.",
-   "got": ""
-  },
-  "surname1_base": {
-   "expected": "Fleksnes",
-   "got": "von"
-  },
-  "surname1_particles": {
-   "expected": "von",
    "got": ""
   },
   "text": "st.repr. von Fleksnes Gregers Werle Marve Almar",
@@ -9565,32 +9040,8 @@
   }
  },
  "no/nativeFull/surnameFirst": {
-  "family": {
-   "expected": "von Fleksnes",
-   "got": "von"
-  },
-  "family_base": {
-   "expected": "Fleksnes",
-   "got": "von"
-  },
-  "family_particles": {
-   "expected": "von",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Gregers Werle Marve Almar",
-   "got": "Fleksnes Gregers Werle Marve Almar"
-  },
   "suffix": {
    "expected": "st.repr.",
-   "got": ""
-  },
-  "surname1_base": {
-   "expected": "Fleksnes",
-   "got": "von"
-  },
-  "surname1_particles": {
-   "expected": "von",
    "got": ""
   },
   "text": "st.repr. von Fleksnes Gregers Werle Marve Almar",
@@ -10030,33 +9481,6 @@
   },
   "text": "Miret"
  },
- "pcm/nativeFull/surnameFirst": {
-  "family": {
-   "expected": "bin Stromae",
-   "got": "bin"
-  },
-  "family_base": {
-   "expected": "Stromae",
-   "got": "bin"
-  },
-  "family_particles": {
-   "expected": "bin",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Elizabeth Windsor Maria Teresa",
-   "got": "Stromae Elizabeth Windsor Maria Teresa"
-  },
-  "surname1_base": {
-   "expected": "Stromae",
-   "got": "bin"
-  },
-  "surname1_particles": {
-   "expected": "bin",
-   "got": ""
-  },
-  "text": "bin Stromae Elizabeth Windsor Maria Teresa MP"
- },
  "pcm/nativeG/sorting": {
   "family": {
    "expected": "",
@@ -10078,60 +9502,6 @@
    "got": ""
   },
   "text": "Sinbad"
- },
- "pl/foreignFull/sorting": {
-  "family": {
-   "expected": "von Brühl",
-   "got": "von"
-  },
-  "family_base": {
-   "expected": "Brühl",
-   "got": "von"
-  },
-  "family_particles": {
-   "expected": "von",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Ada Cornelia César Martín",
-   "got": "Brühl Ada Cornelia César Martín"
-  },
-  "surname1_base": {
-   "expected": "Brühl",
-   "got": "von"
-  },
-  "surname1_particles": {
-   "expected": "von",
-   "got": ""
-  },
-  "text": "von Brühl Ada Cornelia César Martín"
- },
- "pl/foreignFull/surnameFirst": {
-  "family": {
-   "expected": "von Brühl",
-   "got": "von"
-  },
-  "family_base": {
-   "expected": "Brühl",
-   "got": "von"
-  },
-  "family_particles": {
-   "expected": "von",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Ada Cornelia César Martín",
-   "got": "Brühl Ada Cornelia César Martín"
-  },
-  "surname1_base": {
-   "expected": "Brühl",
-   "got": "von"
-  },
-  "surname1_particles": {
-   "expected": "von",
-   "got": ""
-  },
-  "text": "prof. dr von Brühl Ada Cornelia César Martín"
  },
  "pl/foreignG/sorting": {
   "family": {
@@ -10425,33 +9795,13 @@
   }
  },
  "pt/foreignFull/surnameFirst": {
-  "family": {
-   "expected": "von Brühl",
-   "got": "von"
-  },
-  "family_base": {
-   "expected": "Brühl",
-   "got": "von"
-  },
-  "family_particles": {
-   "expected": "von",
-   "got": ""
-  },
   "given_names": {
    "expected": "Mary Lou Cesare Martín",
-   "got": "Brühl Prof. Dr. Mary Lou Cesare Martín"
+   "got": "Prof. Dr. Mary Lou Cesare Martín"
   },
   "suffix": {
    "expected": "Jr. Dr. Ph.D",
    "got": "Jr., Ph.D"
-  },
-  "surname1_base": {
-   "expected": "Brühl",
-   "got": "von"
-  },
-  "surname1_particles": {
-   "expected": "von",
-   "got": ""
   },
   "text": "von Brühl Prof. Dr. Mary Lou Cesare Martín Jr., Dr. Ph.D",
   "title": {
@@ -10482,29 +9832,9 @@
   "text": "Sinbad"
  },
  "pt/nativeFull/surnameFirst": {
-  "family": {
-   "expected": "da Silva",
-   "got": "da"
-  },
-  "family_base": {
-   "expected": "Silva",
-   "got": "da"
-  },
-  "family_particles": {
-   "expected": "da",
-   "got": ""
-  },
   "given_names": {
    "expected": "José Pedro Eduardo",
-   "got": "Silva Sr. José Pedro Eduardo"
-  },
-  "surname1_base": {
-   "expected": "Silva",
-   "got": "da"
-  },
-  "surname1_particles": {
-   "expected": "da",
-   "got": ""
+   "got": "Sr. José Pedro Eduardo"
   },
   "text": "da Silva Sr. José Pedro Eduardo Jr., MP",
   "title": {
@@ -11864,27 +11194,15 @@
  "sk/foreignFull/surnameFirst": {
   "family": {
    "expected": "von Kant Nováková Predná",
-   "got": "von"
+   "got": "von Kant"
   },
   "family_base": {
    "expected": "Kant Nováková Predná",
-   "got": "von"
-  },
-  "family_particles": {
-   "expected": "von",
-   "got": ""
+   "got": "Kant"
   },
   "given_names": {
    "expected": "Anna Karolína Eva Kristína",
-   "got": "Kant Nováková Predná Anna Karolína Eva Kristína"
-  },
-  "surname1_base": {
-   "expected": "Kant",
-   "got": "von"
-  },
-  "surname1_particles": {
-   "expected": "von",
-   "got": ""
+   "got": "Nováková Predná Anna Karolína Eva Kristína"
   },
   "surname2": {
    "expected": "Nováková Predná",
@@ -11990,33 +11308,9 @@
   }
  },
  "sl/foreignFull/surnameFirst": {
-  "family": {
-   "expected": "von Brühl",
-   "got": "von"
-  },
-  "family_base": {
-   "expected": "Brühl",
-   "got": "von"
-  },
-  "family_particles": {
-   "expected": "von",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Ada Cornelia César Martín",
-   "got": "Brühl Ada Cornelia César Martín"
-  },
   "suffix": {
    "expected": "dr. med., dr. dent. med.",
    "got": "dent. med."
-  },
-  "surname1_base": {
-   "expected": "Brühl",
-   "got": "von"
-  },
-  "surname1_particles": {
-   "expected": "von",
-   "got": ""
   },
   "text": "prof. dr. von Brühl Ada Cornelia César Martín, dr. med., dr. dent. med.",
   "title": {
@@ -12126,29 +11420,9 @@
   "text": "Prof. Dr. Ada Cornelia César Martín von Brühl González Domingo MD DDS"
  },
  "so/foreignFull/surnameFirst": {
-  "family": {
-   "expected": "von Brühl",
-   "got": "von"
-  },
-  "family_base": {
-   "expected": "Brühl",
-   "got": "von"
-  },
-  "family_particles": {
-   "expected": "von",
-   "got": ""
-  },
   "given_names": {
    "expected": "Ada Cornelia César Martín",
-   "got": "Brühl Prof. Dr. Ada Cornelia César Martín"
-  },
-  "surname1_base": {
-   "expected": "Brühl",
-   "got": "von"
-  },
-  "surname1_particles": {
-   "expected": "von",
-   "got": ""
+   "got": "Prof. Dr. Ada Cornelia César Martín"
   },
   "text": "von Brühl Prof. Dr. Ada Cornelia César Martín Jr, MD DDS",
   "title": {
@@ -12550,33 +11824,13 @@
   "text": "prof. dr Aleksandra Eva Sara van den Volf Petrović Jugović dipl. inž."
  },
  "sr_Latn/foreignFull/surnameFirst": {
-  "family": {
-   "expected": "van den Volf",
-   "got": "van"
-  },
-  "family_base": {
-   "expected": "Volf",
-   "got": "van"
-  },
-  "family_particles": {
-   "expected": "van den",
-   "got": ""
-  },
   "given_names": {
    "expected": "Aleksandra Eva Sara",
-   "got": "den Volf prof. dr Aleksandra Eva Sara"
+   "got": "prof. dr Aleksandra Eva Sara"
   },
   "suffix": {
    "expected": "mlađi dipl. inž.",
    "got": "mlađi"
-  },
-  "surname1_base": {
-   "expected": "Volf",
-   "got": "van"
-  },
-  "surname1_particles": {
-   "expected": "van den",
-   "got": ""
   },
   "text": "van den Volf prof. dr Aleksandra Eva Sara mlađi, dipl. inž.",
   "title": {
@@ -13900,27 +13154,15 @@
  "tr/foreignFull/surnameFirst": {
   "family": {
    "expected": "von Brühl Plácido Domingo",
-   "got": "von"
+   "got": "von Brühl"
   },
   "family_base": {
    "expected": "Brühl Plácido Domingo",
-   "got": "von"
-  },
-  "family_particles": {
-   "expected": "von",
-   "got": ""
+   "got": "Brühl"
   },
   "given_names": {
    "expected": "Ada Cornelia César Martín",
-   "got": "Brühl Plácido Domingo Ada Cornelia César Martín"
-  },
-  "surname1_base": {
-   "expected": "Brühl",
-   "got": "von"
-  },
-  "surname1_particles": {
-   "expected": "von",
-   "got": ""
+   "got": "Plácido Domingo Ada Cornelia César Martín"
   },
   "surname2": {
    "expected": "Plácido Domingo",
@@ -14394,33 +13636,6 @@
   },
   "text": "احمد"
  },
- "uz/foreignFull/surnameFirst": {
-  "family": {
-   "expected": "van den Volf",
-   "got": "van"
-  },
-  "family_base": {
-   "expected": "Volf",
-   "got": "van"
-  },
-  "family_particles": {
-   "expected": "van den",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Ada Kornelia Yeva Sofiya",
-   "got": "den Volf Ada Kornelia Yeva Sofiya"
-  },
-  "surname1_base": {
-   "expected": "Volf",
-   "got": "van"
-  },
-  "surname1_particles": {
-   "expected": "van den",
-   "got": ""
-  },
-  "text": "van den Volf Ada Kornelia Yeva Sofiya M.D. Ph.D."
- },
  "uz/foreignG/sorting": {
   "family": {
    "expected": "",
@@ -14525,33 +13740,6 @@
    "expected": "Giáo sư, Tiến sĩ",
    "got": ""
   }
- },
- "vi/foreignFull/sorting": {
-  "family": {
-   "expected": "von Brühl",
-   "got": "von"
-  },
-  "family_base": {
-   "expected": "Brühl",
-   "got": "von"
-  },
-  "family_particles": {
-   "expected": "von",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "César Martín Ada Cornelia",
-   "got": "Brühl César Martín Ada Cornelia"
-  },
-  "surname1_base": {
-   "expected": "Brühl",
-   "got": "von"
-  },
-  "surname1_particles": {
-   "expected": "von",
-   "got": ""
-  },
-  "text": "von Brühl César Martín Ada Cornelia"
  },
  "vi/foreignFull/surnameFirst": {
   "family": {
@@ -14835,33 +14023,6 @@
    "got": ""
   },
   "text": "Seynabu"
- },
- "yo/foreignFull/surnameFirst": {
-  "family": {
-   "expected": "von Brühl",
-   "got": "von"
-  },
-  "family_base": {
-   "expected": "Brühl",
-   "got": "von"
-  },
-  "family_particles": {
-   "expected": "von",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Ada Cornelia César Martín",
-   "got": "Brühl Ada Cornelia César Martín"
-  },
-  "surname1_base": {
-   "expected": "Brühl",
-   "got": "von"
-  },
-  "surname1_particles": {
-   "expected": "von",
-   "got": ""
-  },
-  "text": "von Brühl Ada Cornelia César Martín M.D. Ph.D."
  },
  "yo/foreignG/sorting": {
   "family": {

@@ -134,7 +134,7 @@
   ```
 - A lone particle the declared order left as the family counts as one word, R2 reading it as an ordinary name word, so the word after it joins, and so does a particle chain after it, cut as the family-first bullet cuts one: one surname written with two particles reads as two.
   ```
-  "van Gogh Ana María"  family-first+two_family_names  →  family="van Gogh"
+  "Van Gogh Ana María"  family-first+two_family_names  →  family="Van Gogh"
   "Van der Merwe Jan"  family-first+two_family_names  →  surname2="der Merwe"
   ```
 - Where a name's script order and the declared one agree, nothing tells the two apart, so under a declared family-first order a spaced Han or Hangul name is read like any other.
