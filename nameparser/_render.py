@@ -346,7 +346,8 @@ def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str
     and one tagged particle contributes none in middle/family
     (given-group particles always contribute); either unjoined mark
     readmits the word it sits on, so the words of an all-particle part
-    and a connective with nothing in its part to join both count;
+    (but a connective joining them, which carries neither mark) and a
+    connective with nothing in its part to join both count;
     tags come from the pipeline --
     hand-built untagged tokens all contribute, and so do the words of
     a field spliced in by replace(), which the parse never read.

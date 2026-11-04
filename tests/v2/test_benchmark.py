@@ -556,6 +556,18 @@ _PREFIXED_SHAPES: dict[
         "John Smith, ", "XY ", Parser(),
         lambda text: parse(text).given == "John",
     ),
+    # every particle is in an all-particle family a connective joins
+    # (rules/R2's set-aside, #939): the marking loop asks per word
+    # whether it was set aside, which a list made quadratic. Measured
+    # 2026-11-03, py3.11, on a host at load average ~35, this row's
+    # test three times each: 6.7x, 7.4x and 8.5x with the list, passing
+    # all three with the set
+    "connective_between_particles": (
+        "Juan de ", "y de ", Parser(),
+        lambda text: (parse(text).family_base == text[5:].strip()
+                      and parse(text).initials().count("d.")
+                      == text.count(" de")),
+    ),
     # every core is dropped behind the whole name, and the part was
     # filtered against a list of the cores
     "delimiter_cores": (
