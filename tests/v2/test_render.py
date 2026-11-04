@@ -384,6 +384,43 @@ def test_initials_readmits_a_shared_word_between_particles() -> None:
     assert p.parse("Fritz Freiherr y von Bar").initials() == "F. F. y. v. B."
 
 
+def test_a_connective_between_particles_is_set_aside(
+) -> None:
+    """rules/R2's connective set-aside under the default vocabulary
+    (#939), in each of the views it moves.
+
+    A connective that is no particle, standing between two words of a
+    part, is not asked whether it is particle vocabulary, so particles
+    joined by it are an all-particle part: they anchor the base,
+    initial and capitalize as name words, while the connective stays
+    in the base, initials nothing and keeps its lowercase. At either
+    end of the part it joins nothing and the set-aside does not reach
+    it -- the rows after the first two.
+    """
+    fritz = parse("Fritz Freiherr und von Bar")
+    assert fritz.family_base == "Freiherr und von Bar"
+    assert fritz.family_particles == ""
+    assert fritz.initials() == "F. F. v. B."
+    assert str(parse("FRITZ FREIHERR UND VON BAR").capitalized()) == (
+        "Fritz Freiherr und Von Bar")
+    # any part, not only the family: a middle of particles joined by it
+    assert parse("Bar, Fritz Freiherr und von").initials() == "F. F. v. B."
+    # at the end of the part, it is the base (rules/R3's own row)
+    assert parse("Juan de y").family_base == "y"
+    assert parse("Juan de y").initials() == "J. y."
+
+
+def test_revise_recomputes_the_connective_set_aside() -> None:
+    """`_types._remarked`, the twin of the pipeline's walk, applies
+    rules/R2's set-aside too (#939): revising another field recomputes
+    both unjoined marks over every part, and an all-particle middle
+    joined by a connective must keep reading as one."""
+    p = Parser()
+    revised = p.revise(parse("Bar, Fritz Freiherr und von"), given="Hans")
+    assert revised.middle == "Freiherr und von"
+    assert revised.initials() == "H. F. v. B."
+
+
 def test_repair_keeps_a_lone_connective_lowercase_where_it_initials(
 ) -> None:
     """rules/R4's own reading, and the view split it accepts.

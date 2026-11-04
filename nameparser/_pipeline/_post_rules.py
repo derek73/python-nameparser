@@ -892,24 +892,37 @@ def post_rules(state: ParseState) -> ParseState:
     # neither frame count (parse=406.00 facade=443.00 either way).
     # `bool(part)` says the same thing about the R2 arm as
     # `_types._remarked`'s twin of this walk does.
+    #
+    # rules/R2: "A connective that is not also particle vocabulary,
+    # standing between two words of the part, is set aside when the
+    # part is asked whether every word is particle vocabulary" --
+    # `between` is the part's own first and last word excluded, and a
+    # set-aside connective is left unmarked, so it stays in the base,
+    # initials nothing and keeps its case (decisions/R2, #939).
     for role in (Role.GIVEN, Role.MIDDLE, Role.FAMILY):
         part = _idx(tokens, role)
         all_particle = bool(part)
         conj: list[int] = []
+        between: list[int] = []
         others = 0
-        for i in part:
+        last = len(part) - 1
+        for n, i in enumerate(part):
             tags = tokens[i].tags
             is_conj = "conjunction" in tags
             if is_conj:
                 conj.append(i)
             if "particle" not in tags:
+                if is_conj and 0 < n < last:
+                    between.append(i)
+                    continue
                 all_particle = False
                 if not is_conj:
                     others += 1
         if all_particle:
             for i in part:
-                tokens[i] = copy_with(
-                    tokens[i], tags=tokens[i].tags | {UNJOINED_TAG})
+                if i not in between:
+                    tokens[i] = copy_with(
+                        tokens[i], tags=tokens[i].tags | {UNJOINED_TAG})
         elif conj and not others:
             # #461: nothing here for the connective to join. The `elif`
             # is deliberate -- where the part is all-particle R2's mark

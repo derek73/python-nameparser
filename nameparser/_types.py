@@ -1152,7 +1152,15 @@ def _remarked(tokens: list[Token]) -> tuple[Token, ...]:
     out = list(tokens)
     for role in (Role.GIVEN, Role.MIDDLE, Role.FAMILY):
         part = [i for i, t in enumerate(out) if t.role is role]
-        alone = bool(part) and all("particle" in out[i].tags for i in part)
+        # rules/R2's connective set-aside, as the pipeline's walk
+        # applies it: a connective that is no particle, between the
+        # part's first and last word, is not asked, and is not marked
+        between = {i for n, i in enumerate(part)
+                   if 0 < n < len(part) - 1
+                   and "conjunction" in out[i].tags
+                   and "particle" not in out[i].tags}
+        alone = bool(part) and all("particle" in out[i].tags
+                                   for i in part if i not in between)
         # `bool(part)` on both, and DEFENSIVE and measured inert on
         # this one (2026-09-20, #397 review question 4): an EMPTY part
         # satisfies `all` and `not any` alike, so without the guard
@@ -1167,9 +1175,10 @@ def _remarked(tokens: list[Token]) -> tuple[Token, ...]:
             for i in part)
         for i in part:
             tags = out[i].tags
-            if alone and UNJOINED_TAG not in tags:
+            unjoined = alone and i not in between
+            if unjoined and UNJOINED_TAG not in tags:
                 out[i] = dataclasses.replace(out[i], tags=tags | {UNJOINED_TAG})
-            elif not alone and UNJOINED_TAG in tags:
+            elif not unjoined and UNJOINED_TAG in tags:
                 out[i] = dataclasses.replace(out[i],
                                              tags=tags - {UNJOINED_TAG})
             # re-read: the arm above may have replaced the token
