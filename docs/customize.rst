@@ -124,8 +124,8 @@ A kind belongs to a category, which decides what the reading does:
      - none
    * - name
      - ``given``, ``family``
-     - ``same_as="..."`` and ``after_particle=True`` on ``given``,
-       ``shared=True``
+     - ``same_as="..."`` and ``after_particle=True`` on ``given``;
+       ``shared=True`` on either
 
 ``nameparser/vocab/README.md`` in the repository says what each kind
 and property means. A property given its unwritten value (``None``,
@@ -1155,8 +1155,9 @@ A given name a particle completes reads whole too. Where the
 particle's words would otherwise run on into the family, the switch
 takes them only if the vocabulary marks the word behind the particle
 as a given name written there (``after_particle``). The Spanish ones
-are marked, those that ORCID's researchers from Spain and Latin America
-write as part of the given name at least nine times in ten (``del
+are marked, those that ORCID's researchers from Spain and
+Spanish-speaking America write in the given box at least nine times
+for each ten they also open a family box with it (``del
 Carmen``, ``de los Ángeles``, ``del Mar``, ``del Pilar``: 23 words in
 all on 2026-11-03). A phrase too often a surname to mark, as Portuguese ``do Carmo``
 is, stays the family, the same shape as ``"João da Silva Santos"``:
@@ -1169,7 +1170,7 @@ is, stays the family, the same shape as ``"João da Silva Santos"``:
     >>> two_given.parse("Maria do Carmo Silva").family
     'do Carmo Silva'
 
-To mark a word of your own, add it with ``Lexicon.add("carmo",
+To mark a word of your own, add it with ``Lexicon.default().add("carmo",
 kind="given", after_particle=True)``. The two switches also leave alone
 the Sikh names Kaur and Singh, given to every Sikh woman and man and
 written after the personal name: ``"Harpreet Kaur Dhillon"`` keeps

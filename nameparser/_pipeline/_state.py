@@ -164,7 +164,8 @@ TRAILING_TITLE_TAG = "vocab:trailing-title"
 GIVEN_ABBREVIATION_TAG = "vocab:given-abbreviation"
 
 #: On a word of `Lexicon.shared_names`, a name a community gives every
-#: member (Sikh 'Kaur', 'Singh'): rules/O6 and O7 decline to move one
+#: member (Sikh 'Kaur', 'Singh'): rules/O6 and O7 decline a join that
+#: takes or completes one
 #: (`_post_rules._take_second_family_name`, `_take_second_given_name`).
 #: Dropped from the published token like the kind tags above (#704).
 SHARED_NAME_TAG = "vocab:shared-name"
@@ -172,7 +173,7 @@ SHARED_NAME_TAG = "vocab:shared-name"
 #: On a word of `Lexicon.particle_given_names`, a given name written
 #: behind a particle as the second of a compound given name ('del
 #: Carmen'): rules/O7 takes the particle run and the word into the
-#: given name, and O6 leaves them. Dropped from the published token
+#: given name, and O6 leaves them beside a one-word given name. Dropped from the published token
 #: like the kind tags above (#704).
 PARTICLE_GIVEN_TAG = "vocab:particle-given"
 

@@ -400,6 +400,8 @@ def _take_given_phrase(state: ParseState, tokens: list[WorkToken],
     # move to the given name where a name word is left for the family
     # (decisions/O7, #704)
     family = _idx(tokens, Role.FAMILY)
+    # the family written after the given name: a family-first order,
+    # whose given name also stands before its middles, is turned away
     if not family or family[0] < given[-1]:
         return
     cut = _fold_reach(tokens, family)
@@ -444,6 +446,10 @@ def _take_second_given_name(state: ParseState,
     if not given or _family_word_count(tokens, given) != 1:
         return
     if not middle:
+        # rules/O7's particle phrase, opening the family: after a family
+        # comma the part reads it as a middle already (the path below),
+        # and a given name that is a patronymic, a shared name or no
+        # name at all is not completed, as on the middle path
         if (given_first and state.structure is not Structure.FAMILY_COMMA
                 and not any(PATRONYMIC_TAG in tokens[i].tags
                             or SHARED_NAME_TAG in tokens[i].tags

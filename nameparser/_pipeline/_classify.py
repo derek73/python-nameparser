@@ -44,7 +44,9 @@ namespaced (unstable): "vocab:title", "vocab:given-title",
 stages and dropped by assemble, Token.reading carrying the kind out,
 save the last, which marks no kind),
 "vocab:particle-ambiguous", "vocab:bound-given",
-"vocab:given-abbreviation", "vocab:maiden-marker",
+"vocab:given-abbreviation", "vocab:shared-name" and
+"vocab:particle-given" (which rules/O6 and O7 read and assemble drops,
+carrying no kind out), "vocab:maiden-marker",
 "vocab:maiden-marker-cont"; in a namespace of its own,
 "shape:acronym"; and in another, "split:credential" and
 "split:member", written on the first word of a credential split across

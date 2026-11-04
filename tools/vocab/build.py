@@ -111,7 +111,8 @@ together, each marker set in its base) need no
 check: a flag cannot exist without its reading, and a derived marker is
 read off the reading it marks. The one soft finding, a
 name reading on a word with no vocabulary reading and no exclusion
-(save an abbreviated given name, which compiles), is
+(save an abbreviated given name, a case mask, and a `shared` or
+`after_particle` flag, each of which compiles), is
 a VocabWarning, which the shipped-data test turns into an error.
 """
 from __future__ import annotations
@@ -236,8 +237,9 @@ assert len(_RUNS) == len(set(_RUNS)), "a category's kinds are listed apart in CA
 UNORDERED = "und.toml"
 
 #: Behavioral properties per category, each compiling into a field:
-#: the compiler's, in nameparser/_reading_index.py. A name reading's one
-#: is `default` (3a); its other keys are NAME_KEYS.
+#: the compiler's, in nameparser/_reading_index.py. A name reading's
+#: are `default` (3a), `cased`, `shared` and `after_particle`; its other
+#: keys are NAME_KEYS.
 BEHAVIORAL = _ri.BEHAVIORAL
 #: Stated properties per category: compiled to nothing, but held to the
 #: word's readings (check 11). A particle states `may_be_given = false`
@@ -1298,8 +1300,8 @@ def check_pool(pool: Pool) -> None:
     check_order(pool.entries)
 
     # soft: a name reading compiles to nothing save a `same_as` (an
-    # abbreviated given name) or a `cased` (a case mask), so one without
-    # either on a word with no vocabulary reading and no exclusion
+    # abbreviated given name), a `cased` (a case mask) or a `shared` or
+    # `after_particle` flag (#704), so one with none of them on a word with no vocabulary reading and no exclusion
     # anywhere -- an exclusion's evidence is what a name reading usually
     # is -- informs nothing
     excluded_texts = {x.text for x in pool.exclusions if x.prop is None}

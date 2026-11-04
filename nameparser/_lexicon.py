@@ -600,7 +600,8 @@ class _LexiconSets:
     shared_names: frozenset[str]
     #: the given names written `after_particle=True` (`carmen`), the
     #: second of a compound given name written behind a particle
-    #: (`María del Carmen`): rules/O7 takes one, O6 leaves it (#704)
+    #: (`María del Carmen`): rules/O7 takes one, and O6 leaves it beside
+    #: a one-word given name (#704)
     particle_given_names: frozenset[str]
 
 
@@ -820,7 +821,8 @@ def _edit_props(kind: str, props: Mapping[str, object]) -> _Props:
     ri = _index_module()
     allowed = ri.indexed(kind) - {"default", "cased"}
     if kind == "family":
-        # a name category's property that only a given name takes
+        # a name category's property that only a given name takes: the
+        # raise below names it, so the generic message leaves it out
         allowed -= {"after_particle"}
     out: dict[str, object] = {}
     for prop, value in props.items():
@@ -2246,8 +2248,9 @@ class Lexicon:
             `properties` that kind's behavioral properties as the files
             spell them (``addresses="given"``, ``after_given=True``,
             ``abbreviation=True``, ``attaches=[...]``, ``acronym=...``, ``attached="after"``,
-            ``may_be_initial=True``, ``same_as=...`` on a ``given``
-            reading); a property given its unwritten value (``None``,
+            ``may_be_initial=True``, ``same_as=...`` and
+            ``after_particle=True`` on a ``given`` reading, ``shared=True``
+            on a name reading); a property given its unwritten value (``None``,
             ``False``) is removed. Where the word holds a reading of `kind`
             already, the add updates its properties in every file holding
             it; otherwise it adds the caller's own reading, which names no

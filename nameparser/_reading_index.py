@@ -81,9 +81,10 @@ CATEGORY: dict[str, str] = {
 
 #: Behavioral properties per category: each compiles into a field, and
 #: its allowed values are exactly what today's pipeline does. A name
-#: reading's are `default` (phase 3a) and `cased`, the word's case mask
-#: (the shipped ones on `family` readings, #1014): its other keys are
-#: evidence.
+#: reading's are `default` (phase 3a), `cased`, the word's case mask
+#: (the shipped ones on `family` readings, #1014), and `shared` and
+#: `after_particle`, which rules/O6 and O7 read (#704): its other keys
+#: are evidence.
 BEHAVIORAL: dict[str, frozenset[str]] = {
     "title": frozenset({"abbreviation", "addresses", "after_given",
                         "attaches", "cased", "default"}),
@@ -706,7 +707,8 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
         SHARED_NAMES=frozenset(shared),
         # the given names written behind a particle as the second of a
         # compound given name (`del Carmen`, `de los Ángeles`), which
-        # rules/O7 takes into the given name and O6 leaves (#704)
+        # rules/O7 takes into the given name and O6 leaves beside a
+        # one-word given name (#704)
         PARTICLE_GIVEN_NAMES=frozenset(after_particle),
     )
     # One form per post-nominal: the word test strips only edge periods
