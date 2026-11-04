@@ -250,30 +250,16 @@ def test_a_field_tail_report_in_an_emptied_name_is_withdrawn() -> None:
 
 
 def test_a_field_tail_report_names_its_first_referent_s_field() -> None:
-    # The field comes from the FIRST referent where the referents do not
-    # span several name fields -- here a title and a name word, which no
-    # emitter produces, so this pins the documented choice.
+    # The field comes from the FIRST referent: every emitter's referents
+    # share one role today, so this pins the documented choice rather
+    # than a case the pipeline produces.
     tokens = (WorkToken("General", Span(0, 7), role=Role.FAMILY),
-              WorkToken("Smith", Span(8, 13), role=Role.TITLE))
+              WorkToken("Smith", Span(8, 13), role=Role.GIVEN))
     pn = _with_reports(
         "General Smith", tokens,
         PendingAmbiguity(AmbiguityKind.TITLE_OR_NAME, "read as ", (0, 1),
                          field_tail=""))
     assert [a.detail for a in pn.ambiguities] == ["read as a family name"]
-
-
-def test_a_field_tail_report_spanning_name_fields_names_the_name() -> None:
-    # Referents P1's family-first fold parted across name fields (#828:
-    # 'Freiherr von Bishop X.Y.Z.', family 'von Bishop', given 'X.Y.Z.')
-    # are read as the name, no one field of it.
-    tokens = (WorkToken("Bishop", Span(0, 6), role=Role.FAMILY),
-              WorkToken("Smith", Span(7, 12), role=Role.GIVEN))
-    pn = _with_reports(
-        "Bishop Smith", tokens,
-        PendingAmbiguity(AmbiguityKind.TITLE_OR_NAME, "read as ", (0, 1),
-                         field_tail=" by convention"))
-    assert [a.detail for a in pn.ambiguities] == [
-        "read as the name by convention"]
 
 
 # -- Token.reading (3.0, 4a): the reading the parse took --------------

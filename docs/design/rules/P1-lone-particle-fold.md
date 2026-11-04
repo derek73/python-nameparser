@@ -4,7 +4,7 @@
 
 **Then:** the particle run and the name words it takes are family, under every name order; how many it takes depends on the order or a family comma (below).
 
-- **The run is every particle in sequence**, never-given and ambiguous alike: "de la Vega" is one group, not "de" plus a separate "la Vega". An ambiguous particle keeps whatever reading its position gives it.
+- **The run is every particle in sequence**, never-given and ambiguous alike: "de la Vega" is one group, not "de" plus a separate "la Vega". An ambiguous particle keeps whatever reading its position gives it, unless its writing settles it (P11).
   ```
   "de la Vega"                →  family="de la Vega"
   "de los Santos"             →  family="de los Santos"
@@ -25,11 +25,12 @@
   "ibn Awf abdul Rahman"  family-first  →  given="abdul Rahman"
   "de la Cruz Juan Carlos"  family-first-given-last  →  given="Carlos"
   ```
-- **Under a family-first order a particle chain behind a title-particle is cut as the run is.** A word that is both a title and a particle puts the leading position on itself (P4's Except), so the particle behind it chains forward and the chain, not a lone particle, opens the name; it takes its particles and one unit, and the rest is laid out by the order. A chain the fold would take whole is no different from what it was: H1's given name behind a given-name title, P5's bound given name.
+- **Under a family-first order a particle chain behind a title-particle is cut as the run is.** A word that is both a title and a particle puts the leading position on itself (P4's Except), so the particle behind it chains forward and the chain, not a lone particle, opens the name; it takes its particles and one unit, and the rest is laid out by the order. A chain the fold would take whole is no different from what it was: H1's given name behind a given-name title, P5's bound given name. Nor is a chain holding a word the trailing read (S2) weighed as a suffix and left in the chain, that read having counted the chain whole.
   ```
   "St de Mesnil Jean"  family-first  →  family="de Mesnil"
   "Freiherr von Berg Otto"  family-first  →  given="Otto"
-  "St Sir de Mesnil"  family-first  →  given="de Mesnil"
+  "St Sir de Mesnil"  family-first  →  given="de Mesnil"  · boundary
+  "St de Mesnil Jean V"  family-first  →  family="de Mesnil Jean V"  · boundary
   ```
 - **After a family comma the run takes the rest of that part, whatever order is declared**: the comma has already fixed the surname, so there is no positional read left for an order to narrow.
   ```

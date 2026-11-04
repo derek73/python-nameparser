@@ -41,12 +41,11 @@ from nameparser._lexicon import (
     _VOCAB_FIELDS, Lexicon, _normalize, _ReadingFiles,
 )
 from nameparser._pipeline._state import (
-    AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, ATTACHED_TAG,
+    ATTACHED_TAG,
     CREDENTIAL_WORD_TAG, FIELD_READING, GENERATION_WORD_TAG, HONORIFIC_WORD_TAG,
-    NAME_ROLES, PATRONYMIC_TAG, SECOND_SURNAME_TAG, SHAPE_ACRONYM_TAG,
-    SHARED_NAME_TAG, PARTICLE_GIVEN_TAG,
+    NAME_ROLES, PATRONYMIC_TAG, SECOND_SURNAME_TAG, SHARED_NAME_TAG, PARTICLE_GIVEN_TAG,
     FIRST_SURNAME_TAG,
-    SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG,
+    SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, SUFFIX_EVIDENCE,
     TITLE_AMBIGUOUS_TAG, TRAILING_TITLE_TAG, Beside, Deferred, ParseState, PendingAmbiguity,
     Structure, WorkToken, comma_bucket,
 )
@@ -237,10 +236,7 @@ _FIRST_SURNAME = frozenset({FIRST_SURNAME_TAG})
 #: The tags that say a list or a shape made a word a suffix: without
 #: one, a suffix word stands there by position, unless the vocabulary
 #: lists it (a bracketed member, which classify leaves untagged).
-_SUFFIX_EVIDENCE = frozenset({
-    "vocab:suffix", "vocab:suffix-word", AMBIGUOUS_ACRONYM_TAG,
-    AMBIGUOUS_WORD_TAG, AGNOMEN_TAG, SHAPE_ACRONYM_TAG,
-    SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG})
+_SUFFIX_EVIDENCE = SUFFIX_EVIDENCE
 
 #: The tags that say the vocabulary lists a word as a title, in any of
 #: the title sets.
@@ -284,12 +280,17 @@ def _alternative(pending: PendingAmbiguity, materialized: tuple[Token, ...],
         # own: rules/P1's fold takes its particles and that ONE unit
         # (#828), so the word, joining it last, is laid out by the order
         # behind the family -- the other primary where it would be the
-        # one word left, else the order's last name position
+        # one word left, else the order's last name position -- unless a
+        # word the trailing read weighed stands in the chain, which the
+        # fold then leaves whole
         elif (role is Role.FAMILY and order is not None
                 and order[0] is Role.FAMILY and beside.last is not None
                 and beside.last in final
                 and "particle" in front.tags
-                and "particle" not in final[beside.last].tags):
+                and "particle" not in final[beside.last].tags
+                and all(final[i].tags.isdisjoint(SUFFIX_EVIDENCE)
+                        for i in range(beside.index, pending.indices[0])
+                        if i in final)):
             alone = (final[beside.last].role is Role.FAMILY
                      and not any(beside.last < i < pending.indices[0]
                                  for i in final))
@@ -770,12 +771,8 @@ def assemble(state: ParseState) -> ParsedName:
             # than ship the sentence's first half.
             if not materialized:
                 continue
-            # words P1's family-first fold parted across fields (#828)
-            # are read as the name, no one field of it
-            roles = {t.role for t in materialized}
-            named = ("the name" if len(roles) > 1 and roles <= set(NAME_ROLES)
-                     else FIELD_READING[materialized[0].role])
-            detail = f"{detail}{named}{pending.field_tail}"
+            detail = (f"{detail}{FIELD_READING[materialized[0].role]}"
+                      f"{pending.field_tail}")
         ambiguities.append(Ambiguity(
             pending.kind, detail, materialized,
             _alternative(pending, materialized, final,

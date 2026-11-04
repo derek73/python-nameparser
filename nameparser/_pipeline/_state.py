@@ -104,6 +104,14 @@ AMBIGUOUS_WORD_TAG = "vocab:suffix-word-ambiguous"
 AGNOMEN_TAG = "vocab:agnomen"
 TITLE_CASE_NAME_TAG = "vocab:title-case-name"
 
+#: The tags that say a list or a shape made a word a suffix, or may: read
+#: by assemble for a suffix's source and by post_rules for a word the
+#: trailing read weighed inside a particle chain (rules/P1, #828).
+SUFFIX_EVIDENCE = frozenset({
+    "vocab:suffix", "vocab:suffix-word", AMBIGUOUS_ACRONYM_TAG,
+    AMBIGUOUS_WORD_TAG, AGNOMEN_TAG, SHAPE_ACRONYM_TAG,
+    SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG})
+
 #: Beside "vocab:suffix-word" on a word whose shipped reading index
 #: kind is a generation (`jr`), a credential written as a word
 #: (`博士`) or an honorific (`さん`, #326), which the compiled sets do

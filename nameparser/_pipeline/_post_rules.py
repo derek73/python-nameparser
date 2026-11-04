@@ -55,7 +55,7 @@ from nameparser._pipeline._pieces import (
 )
 from nameparser._pipeline._state import (
     AMBIGUOUS_ACRONYM_TAG, ATTACHED_TAG, NAME_ROLES, PATRONYMIC_TAG,
-    PARTICLE_GIVEN_TAG, SHARED_NAME_TAG,
+    PARTICLE_GIVEN_TAG, SHARED_NAME_TAG, SUFFIX_EVIDENCE,
     FIRST_SURNAME_TAG, SECOND_SURNAME_TAG,
     ParseState, PendingAmbiguity, PendingReading, Structure,
     WorkToken, _NEVER_FLIPPED, comma_bucket, copy_with,
@@ -607,9 +607,16 @@ def _lead_folds(state: ParseState, tokens: list[WorkToken],
     order = state.order
     if order is None or order[0] is not Role.FAMILY:
         return False
-    return (is_lowercase_ambiguous_particle(lead, tokens, state.one_case)
-            or len(lead) > 1 and "particle" in tokens[lead[0]].tags
-            and _fold_reach(tokens, list(lead)) < len(lead))
+    if is_lowercase_ambiguous_particle(lead, tokens, state.one_case):
+        return True
+    if len(lead) < 2 or "particle" not in tokens[lead[0]].tags:
+        return False
+    reach = _fold_reach(tokens, list(lead))
+    # a word past the reach that the trailing read weighed as a suffix
+    # was decided against the whole chain, its report saying so ('St de
+    # Mesnil Jean V'): the cut would strand it, so the chain stands
+    return reach < len(lead) and all(
+        tokens[i].tags.isdisjoint(SUFFIX_EVIDENCE) for i in lead[reach:])
 
 
 # rules/S13: "where the member's writing settles it as the credential,

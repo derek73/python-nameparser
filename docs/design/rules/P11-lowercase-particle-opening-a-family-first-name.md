@@ -22,6 +22,14 @@
 "van den Berg Cornelia"     →  given="van"  · boundary
 ```
 
+**Precedence:**
+
+- **Against H1's given name behind a given-name title**: the writing settles the particle, so it folds there too, H1 reading only a word the order placed; but a bound given name the title licenses P5 to join is one name word, no lone particle, and stays H1's.
+  ```
+  "Sir van Berg"  family-first  →  family="van Berg"
+  "Sir abu Bakar"  family-first  →  given="abu Bakar"
+  ```
+
 **Accepted:**
 
 - A family-first surname that is also an ambiguous particle, written in lower case in a name of mixed case, folds into the family: writing it so is not the convention of any language that writes it, and the capitalized form keeps its reading.

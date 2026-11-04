@@ -3425,8 +3425,10 @@
 {"name": "Sir abdul salam", "title": "Sir", "given": "abdul salam", "initials": "a. s.", "capitalized_force": "Sir Abdul Salam"}
 {"name": "Sir abdul salam Jr", "title": "Sir", "given": "abdul salam", "suffix": "Jr", "initials": "a. s.", "capitalized_force": "Sir Abdul Salam Jr", "generation": "Jr"}
 {"name": "Sir abdul van der Berg", "title": "Sir", "given": "abdul", "family": "van der Berg", "initials": "a. B.", "capitalized_force": "Sir Abdul van der Berg"}
+{"name": "Sir abu Bakar", "title": "Sir", "given": "abu Bakar", "initials": "a. B.", "capitalized_force": "Sir Abu Bakar"}
 {"name": "Sir de", "title": "Sir", "given": "de", "initials": "d.", "capitalized_force": "Sir De"}
 {"name": "Sir de Mesnil", "title": "Sir", "family": "de Mesnil", "initials": "M."}
+{"name": "Sir van Berg", "title": "Sir", "given": "van", "family": "Berg", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "v. B.", "capitalized_force": "Sir Van Berg"}
 {"name": "Sirius", "given": "Sirius", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "S."}
 {"name": "Sister Mary", "title": "Sister", "given": "Mary", "initials": "M."}
 {"name": "Sister Souljah", "title": "Sister", "given": "Souljah", "initials": "S."}
@@ -3620,6 +3622,7 @@
 {"name": "St Pierre, Ed", "given": "Ed", "family": "St Pierre", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "E. P.", "capitalized_force": "Ed st Pierre"}
 {"name": "St Sir de Mesnil", "title": "St Sir", "given": "de Mesnil", "initials": "d. M.", "capitalized_force": "St Sir De Mesnil"}
 {"name": "St de Mesnil Jean", "title": "St", "family": "de Mesnil Jean", "initials": "M. J."}
+{"name": "St de Mesnil Jean V", "title": "St", "family": "de Mesnil Jean V", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: generation as suffix (vocabulary)"], "initials": "M. J. V."}
 {"name": "St van Bishop", "title": "St", "family": "van Bishop", "ambiguities": ["PARTICLE_OR_GIVEN", "TITLE_OR_NAME"], "alternatives": ["PARTICLE_OR_GIVEN: name as given (declared)", "TITLE_OR_NAME: title as title (vocabulary)"], "initials": "B."}
 {"name": "Sta. Maria, Juan", "given": "Juan", "family": "Sta. Maria", "initials": "J. S. M."}
 {"name": "Stander Zelda Herman", "order": "FAMILY_FIRST", "given": "Zelda", "middle": "Herman", "family": "Stander", "initials": "Z. H. S."}
