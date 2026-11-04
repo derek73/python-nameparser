@@ -159,7 +159,7 @@ The particle kinds say what the word does in the names of the file's language:
 - `patronymic`: "son of" or "daughter of", where the word after it is a parent's name (`bin`, `binti`, `ibn`, `بن`, `בן`);
 - `teknonymic`: "father of", naming the bearer by a child (`abu`, `أبو`);
 - `clan`: a lineage prefix, where the word after it is a family name shared by the lineage rather than a parent's name (`mac`, `mc`, `ó`, `ní`, `آل`);
-- `rank`: a former rank written inside the surname (`freiherr`, `freiherrin`);
+- `rank`: a former rank written inside the surname (`freiherr`, `freiherrin`, `graf`, `gräfin`, `fürst`, `prinz`);
 - `saint`: "Saint" opening a surname (`san`, `santa`, `st`, `ste`);
 - `alias`: a word joining two surnames of one person (`vel`).
 

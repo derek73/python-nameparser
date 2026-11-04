@@ -51,9 +51,10 @@
   ```
   "Pope Smith, John"          →  title="Pope"
   ```
-- What keeps a word in the family is the particle stop and nothing else. German ranks the title vocabulary lists, other than 'Freiherr', are titles only, so they peel, though since 1919 a rank is part of the legal surname for all of them alike; that is the vocabulary's distinction, not this rule's.
+- What keeps a word in the family is the particle stop and nothing else. The German ranks the vocabulary reads as particles too ('Freiherr', 'Graf', 'Fürst', 'Prinz', 'Gräfin') stop the run; 'Herzog' and 'Ritter', common plain surnames, are titles only, so they peel, though since 1919 a rank is part of the legal surname for all of them alike; that is the vocabulary's distinction, not this rule's.
   ```
-  "Graf Lambsdorff, Otto"     →  title="Graf"
+  "Graf Lambsdorff, Otto"     →  family="Graf Lambsdorff"
+  "Herzog Lambsdorff, Otto"   →  title="Herzog"
   ```
 
 ---

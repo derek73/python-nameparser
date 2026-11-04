@@ -3655,6 +3655,32 @@ CASES: tuple[Case, ...] = (
                "suffix pieces -- see tests/v2/pipeline/test_group.py::"
                "test_a_suffix_shaped_leading_piece_is_not_stepped_over. "
                "1.4.0 gives title 'Jr.', last 'Van Johnson'"),
+    Case("a_german_rank_inside_the_surname_joins_it",
+         "Otto Graf Lambsdorff",
+         {"given": "Otto", "family": "Graf Lambsdorff"},
+         classification="fix(#709)",
+         notes="graf is a rank particle as freiherr is, since 1919 part "
+               "of the legal surname; 1.4.0 through 2.8.0 gave middle "
+               "'Graf', family 'Lambsdorff'"),
+    Case("a_feminine_german_rank_inside_the_surname_joins_it",
+         "Marion Gräfin Dönhoff",
+         {"given": "Marion", "family": "Gräfin Dönhoff"},
+         classification="fix(#709)",
+         notes="as the row above, for the feminine; 1.4.0 through 2.8.0 "
+               "gave middle 'Gräfin'"),
+    Case("a_german_rank_before_a_particle_joins_the_chain",
+         "Georg Friedrich Prinz von Preußen",
+         {"given": "Georg", "middle": "Friedrich",
+          "family": "Prinz von Preußen"},
+         classification="fix(#709)",
+         notes="1.4.0 through 2.8.0 gave middle 'Friedrich Prinz', "
+               "family 'von Preußen'"),
+    Case("a_rank_refused_the_particle_reading_stays_a_name_word",
+         "Werner Herzog",
+         {"given": "Werner", "family": "Herzog"},
+         classification="parity",
+         notes="herzog is refused the rank reading (#709), a common "
+               "plain surname"),
     Case("titled_particle_chain_survives_a_title_that_is_also_a_particle",
          "Freiherr von Richthofen",
          {"title": "Freiherr", "family": "von Richthofen"},
