@@ -65,7 +65,7 @@ holds an ambiguous particle ("Beethoven, Ludwig van").
 Emits SUFFIX_OR_NAME at these sites: the trailing roman numeral, taken
 or declined (since #718 for want of words to spare, since #752 for its
 Title case), a numeral ending the family part before a family comma,
-one of two or more letters ending a given part's walk, -- since
+one of two or more letters ending a given part's walk -- since
 #877 -- a bare one-letter numeral ending that walk behind a name word, each
 ambiguous acronym the trailing peel had to resolve, the bare-suffix
 carve-out where an input that is nothing but post-nominal vocabulary

@@ -542,7 +542,7 @@ _REVIEW_SHAPES = ("PhD VI", "Jr VI", "III VI", "Smith, John van VI",
                   # #877's review: P1's fold opening the given part
                   # takes a letter standing past its first word
                   "Smith, de Mesnil V", "Smith, de Mesnil VI",
-                  "Smith, Mc V I")
+                  "Smith, Mc John V I")
 
 
 @pytest.mark.parametrize("order", _INVARIANT_ORDERS)
