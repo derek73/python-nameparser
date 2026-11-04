@@ -889,12 +889,18 @@ def format_gaps(result: dict[str, Any], top: int) -> list[str]:
     return lines
 
 
-def gaps(tags: Sequence[str], cap: int, jobs: int
-         ) -> tuple[list[dict[str, Any]], list[tuple[str, str, int]]]:
+def _default_titles() -> tuple[frozenset[str], frozenset[str]]:
+    """The default's titles, which a given box opening with one drops
+    (kept), and its title and connective words, which local_agreement.read
+    sets a filed title aside by; every column is judged by the same."""
     from nameparser import Lexicon
     default = Lexicon.default()
-    titles = frozenset(default._sets.titles)
-    listed = local_agreement._title_words(default)
+    return frozenset(default._sets.titles), local_agreement._title_words(default)
+
+
+def gaps(tags: Sequence[str], cap: int, jobs: int
+         ) -> tuple[list[dict[str, Any]], list[tuple[str, str, int]]]:
+    titles, listed = _default_titles()
     records, counts = select(tags, cap)
     per_tag = {tag: gap_rows(tag, records, titles) for tag in tags}
     specs = {tag: gap_specs(tag) for tag in tags}
@@ -971,10 +977,7 @@ def score(specs: Sequence[str], groups: Sequence[str], languages: Sequence[str],
           cap: int, floor: int, jobs: int) -> list[dict[str, Any]]:
     """Every selected group of at least `floor` records scored under
     every configuration, the first the comparator."""
-    from nameparser import Lexicon
-    default = Lexicon.default()
-    titles = frozenset(default._sets.titles)
-    listed = local_agreement._title_words(default)
+    titles, listed = _default_titles()
     # every box filled where the form has two (ORCID, PatentsView): a
     # holder with no family box says nothing about where it begins
     selected = {k: [r for r in kept(k[0], v, titles) if k[0] == PSC or all(

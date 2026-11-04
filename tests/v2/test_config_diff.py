@@ -244,9 +244,18 @@ def test_every_choosable_tag_stands_under_a_country_or_is_named_unmeasured() -> 
 
 
 def test_every_shipped_pack_rides_on_some_tag() -> None:
+    from nameparser._reading_index import selected
     reached = {item.lower() for tag in cd.choosable() for spec in cd.gap_specs(tag)
                for item in spec.partition(":")[2].split("+") if item.isupper()}
-    assert set(locales.available()) <= reached
+    # a pack choosing a region tag no file holds (es_ar's es-AR) selects
+    # its language's files and nothing more, so the strict gap the report
+    # measures for the pack choosing those files is its own
+    files = {code: selected(locales.get(code).languages)
+             for code in locales.available() if locales.get(code).languages}
+    same_files = {code for code, f in files.items()
+                  if any(f == files.get(other) for other in reached - {code})}
+    assert same_files == {"es_ar"}
+    assert set(locales.available()) <= reached | same_files
 
 
 def test_a_pack_choosing_no_language_is_stacked_with_its_tag() -> None:
