@@ -1492,6 +1492,10 @@ _EFFECT_704 = [
     ("Juan Antonio del Carmen de la Vega", "O6", ("Juan", "Antonio", "del Carmen de la Vega"), ("Juan", "Antonio", "del Carmen de la Vega")),
     ("María del Carmen y", "O7", ("María", "", "del Carmen y"), ("María", "", "del Carmen y")),
     ("Ali del Carmen oglu", "turkic+O7", ("Ali", "", "del Carmen oglu"), ("Ali", "", "del Carmen oglu")),
+    # ... and a given name of two words, which O7 would not complete,
+    # leaves O6 the phrase (the second #1057 review)
+    ("María-José del Carmen de la Vega", "O6", ("María-José", "", "del Carmen de la Vega"), ("María-José", "", "del Carmen de la Vega")),
+    ("abdul Rahman del Carmen de la Vega", "O6", ("abdul Rahman", "", "del Carmen de la Vega"), ("abdul Rahman", "", "del Carmen de la Vega")),
 ]
 
 
@@ -1508,7 +1512,7 @@ def test_the_704_table_counts_its_rows() -> None:
     # the table is the properties' negative control only while some rows
     # move without them and some do not
     moved = [r for r in _EFFECT_704 if r[2] != r[3]]
-    assert len(moved) == 10 and len(_EFFECT_704) - len(moved) == 13
+    assert len(moved) == 10 and len(_EFFECT_704) - len(moved) == 15
 
 
 def test_a_callers_reading_reaches_the_switches() -> None:

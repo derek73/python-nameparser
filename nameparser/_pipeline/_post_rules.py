@@ -344,7 +344,7 @@ def _take_second_family_name(state: ParseState,
     # rules/O6: "a given name a particle completes stays where it is" --
     # given-first, the unit taken being the one beside a given name of
     # one word, a particle run and a word classify tags from
-    # Lexicon.particle_given_names, as rules/O7 would take it; under a
+    # Lexicon.particle_given_names, in the shape rules/O7 reads; under a
     # family-first order the unit after the family completes no given
     # name (decisions/O6, #704)
     if (state.order[0] is Role.GIVEN and len(units) == 2
@@ -407,9 +407,9 @@ def _take_given_phrase(state: ParseState, tokens: list[WorkToken],
                                                           family[:cut]):
         return
     # a name word left for the family: one with a letter that is no
-    # connective or particle standing alone
+    # connective standing alone ('María del Carmen y')
     if not any(any(ch.isalpha() for ch in tokens[i].text)
-               and not {"conjunction", "particle"} & tokens[i].tags
+               and "conjunction" not in tokens[i].tags
                for i in family[cut:]):
         return
     # and, as for the middle path, no Turkic marker behind the phrase,
