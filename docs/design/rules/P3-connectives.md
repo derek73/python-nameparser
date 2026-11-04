@@ -29,6 +29,11 @@
   "Josep Lluis Carod i III"   →  suffix="i III"
   "Carod y de Rovira i"       →  middle="y"
   ```
+- **A numeral ending the name is no word of the three where it reads as the generation**: a numeral ending the name that the trailing fork reads as the generation is no word of the three, as a listed one is not, the question C3 asks of the part before a comma.
+  ```
+  "Ortega y Gasset VI"        →  family="Gasset"
+  "Ortega y Gasset III"       →  family="Gasset"
+  ```
 - **A separator the caller declared, standing in a trailing suffix part, ends the search there as a comma would**, so a connective never joins across it (C10); anywhere else it is a word.
 - **Both questions asked of a name here and in P8 — how many words it has, and whether it is written in one case — are asked of the name's OWN words**: a maiden marker taken as one, and the words it takes (M2), are not among them, and neither is a delimited clause (N1, M1). So a clause beside the name changes neither whether the connective joins nor how a letter in the name reads, and a letter inside such a clause is the clause's word, read by T4 and not by P8. The two questions part at one point: a marker the pass declines and leaves as a word (M2) is a word, and counts toward the three; whether its case is asked is P8's to say.
   ```

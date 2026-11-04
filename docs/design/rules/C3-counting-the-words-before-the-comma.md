@@ -12,6 +12,13 @@
   ```
   "John van Buren, Ed"        →  suffix="Ed"  · boundary
   ```
+- **A numeral of two or more letters ending the part is no name word where it reads as the generation**: a numeral ending the part that the trailing fork reads as the generation is no name word, as a listed one is not, so a shape-only numeral counts as 'III' does. The fork's writing tests stand (S10), a Title-case numeral in a name of mixed case and one behind an initial staying name words.
+  ```
+  "Dumas VI, Jr."             →  family="Dumas"
+  "Dumas VI, MA"              →  suffix="VI, MA"
+  "Dumas Vi, Jr."             →  family="Vi"  · boundary
+  "J VI, Jr."                 →  family="VI"  · boundary
+  ```
 - **A word that is also title vocabulary is not a particle to this count where it opens the part**, reading there as the title it also is (H1); inside a surname it chains ('de St Pierre, Ed' reads given 'Ed').
 - **A connective join and a bound given-name pair are not one word here**: whether P3 joins a connective depends on the words of the whole name, which this count is part of deciding, and a bound given name builds a given name rather than a surname (P5) — a word that is a particle as well counts as the particle ('Abu Bakar, Ed' reads given 'Ed').
   ```
@@ -48,6 +55,10 @@
 
 **Accepted:**
 
+- A numeral of one letter is not set aside: S10 reads it as the generation only where the name has a word to spare for it, and a one-word name has none, so it stays a name word, and the part reads as a given name and a family name rather than the listing form's surname.
+  ```
+  "Dumas X, Jr."              →  family="X"
+  ```
 - A title in front of a particle surname, before the credential class's word, reads the listing form. The surname counts once and the title is no name word, so the count reads the listing form, and the listing form peels a title before the comma (H6) unless the word is a particle too, as 'Freiherr' is, which stays in the family. For 'Freiherr' that reading is the right one: since 1919 a former noble title is part of the legal surname, written between the given name and the particle, so 'Freiherr von Berg' is the family name in 'Freiherr von Berg, Ed', as 2.0 through 2.3 read it. A rank that is no particle peels as a title like any other ('Graf Lambsdorff, Otto' reads title 'Graf'), though the same law makes it part of the surname too; #709 asks whether it should stay. Before an unambiguous credential the same words keep the title apart ('Freiherr von Berg, PhD'), that count taking the title as a word; both are readings of one name.
   ```
   "Freiherr von Berg, Ed"     →  family="Freiherr von Berg"

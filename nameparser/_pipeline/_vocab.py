@@ -379,6 +379,21 @@ def reads_as_generation(text: str, tags: Set[str], preceding: str | None,
                     or one_case and is_initial_shaped(preceding.upper())))
 
 
+# rules/C3: "a numeral ending the part that the trailing fork reads as
+# the generation is no name word" -- asked of the shape-only numerals,
+# the listed ones being suffix words to both counts already;
+# decisions/C3 (#893)
+def ends_in_a_generation(texts: Sequence[str], one_case: bool | None,
+                         ) -> bool:
+    """Whether the last of `texts`, the part before a comma, is a
+    numeral of two or more letters the vocabulary does not list (VI to
+    X) that the trailing fork reads as the generation behind the word
+    in front of it. The callers test that the part has two words."""
+    last = texts[-1]
+    return (len(last.rstrip(".")) >= 2
+            and reads_as_generation(last, frozenset(), texts[-2], one_case))
+
+
 # rules/S10: "a Title-case numeral in a name of mixed case leans to the
 # name" -- the fork weighed it and the writing declined it, so it is
 # reported as a declined member of the ambiguous class is (#752)
@@ -1734,6 +1749,11 @@ def name_word_count(texts: Sequence[str], lexicon: Lexicon,
     # (rules/C4)
     if lead_suffix and lead is not None and any(names[lead + 1:]):
         names[lead] = True
+    # rules/C3: "a numeral ending the part that the trailing fork reads
+    # as the generation is no name word", as a listed one is not
+    if (len(texts) > 1 and names[-1]
+            and ends_in_a_generation(texts, letters_one_case)):
+        names[-1] = False
     if not has_particle:
         return sum(names)
     count = 0
