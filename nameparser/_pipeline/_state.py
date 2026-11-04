@@ -276,10 +276,14 @@ class Beside:
     piece. Where P6 then attached that token to the family
     (`FOLDED_TAG`), which it would not have done with a word behind
     it, `unfolded`, the field the word held when the report was made,
-    stands instead."""
+    stands instead. Where the piece in front is a chain, `last` is its
+    last word: rules/P10 reads a chain's opening phrase as a middle name
+    and leaves its last word the family, where the word would join, so
+    a `last` still in the family names the field (#704)."""
 
     index: int
     unfolded: Role | None = None
+    last: int | None = None
 
 
 @dataclass(frozen=True, slots=True)

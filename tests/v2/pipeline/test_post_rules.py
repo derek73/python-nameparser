@@ -1520,7 +1520,8 @@ _EFFECT_704 = [
     ("Abu Bakr Carlos García", "O7", ("Abu Bakr", "Carlos", "García"), ("Abu Bakr", "Carlos", "García")),
     # the #1058 test review's rows: O6 takes a family a saint particle
     # opens, and P10's guards hold under the default policy it runs on,
-    # a family comma, a patronymic and a mark as the given name
+    # a patronymic and a mark as the given name; the family comma row
+    # pins the reading, the order test refusing it before the comma's
     ("Domingo Santa María de la Vega", "O6", ("Domingo", "", "Santa María de la Vega"), ("Domingo", "", "Santa María de la Vega")),
     ("del Carmen García, María", "default", ("María", "", "del Carmen García"), ("María", "", "del Carmen García")),
     ("bin del Carmen García", "default", ("bin", "", "del Carmen García"), ("bin", "", "del Carmen García")),
@@ -1612,4 +1613,14 @@ def test_a_report_behind_a_given_name_phrase_names_the_family() -> None:
     assert (name.middle, name.family, name.suffix) == (
         "do Valle", "Cardoso", "Filho")
     assert [a.alternative.role for a in name.ambiguities
+            if a.alternative is not None] == [Role.FAMILY]
+    # and under rules/O6's family-first cut, which lays the chain's TAIL
+    # out by the order, the head's field: middle_as_family folds the
+    # tail's middle into the family, where the word lands (the first
+    # fix named the tail's 'given', #1058 second review)
+    folded = Parser(policy=Policy(name_order=FAMILY_FIRST,
+                                  two_family_names=True,
+                                  middle_as_family=True)).parse(
+        "Ana de María Pérez Filho")
+    assert [a.alternative.role for a in folded.ambiguities
             if a.alternative is not None] == [Role.FAMILY]

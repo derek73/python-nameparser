@@ -29,7 +29,7 @@
 
 **Except:**
 
-- **A name word must be left for the family**, one with a letter that is no connective standing alone, the phrase being one unit (a connective joining the word behind it makes the unit longer); and under the Turkic patronymic rule (R9), no marker may stand behind the phrase, whose father's name it would be.
+- **A name word must be left for the family**, one with a letter that is no connective standing alone, the phrase being one unit (a connective joining the word behind it, P3, makes the unit longer); and under the Turkic patronymic rule (R9), no marker may stand behind the phrase, whose father's name it would be.
   ```
   "María del Carmen y"        →  family="del Carmen y"
   "María del Carmen 3"        →  family="del Carmen 3"
@@ -80,5 +80,5 @@
 - The rule reports nothing: the vocabulary says which reading the word takes, and a report on every such name would teach the caller to ignore the field.
 
 ---
-**Signal:** position: the word behind a particle run opening the family, looked up as a given name written there; the run's particles, looked up for a saint; and the given name, looked up as a name a community gives every member or a patronymic: vocabulary signals tagged by where the word stands, as P1's is
+**Signal:** position: the word behind a particle run opening the family, looked up as a given name written there; the run's particles, looked up for a saint; and the given name, looked up as a name a community gives every member: vocabulary signals tagged by where the word stands, as P1's is
 **history:** decisions/P10 · **implemented:** nameparser/_pipeline/_post_rules.py

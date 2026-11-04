@@ -596,14 +596,14 @@ class _LexiconSets:
     title_case_name_words: frozenset[str]
     #: the names written `shared=True` (Sikh `kaur`, `singh`), which a
     #: community gives every member: rules/O6 and O7 neither take nor
-    #: complete one (#704)
+    #: complete one, and P10 completes none (#704)
     shared_names: frozenset[str]
     #: the given names written `after_particle=True` (`carmen`), the
     #: second of a compound given name written behind a particle
     #: (`María del Carmen`): rules/P10 reads one as a middle name behind
     #: a one-word given name, and O6 leaves it there (#704)
     particle_given_names: frozenset[str]
-    #: the particles of the `saint` kind (`san`, `santa`, `st`): no given
+    #: the particles of the `saint` kind (`san`, `santa`, `st`, `ste`): no given
     #: name phrase opens with one, `Santa María` being a surname (#704)
     saint_particles: frozenset[str]
 
