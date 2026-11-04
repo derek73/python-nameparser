@@ -9442,6 +9442,20 @@ CASES: tuple[Case, ...] = (
          {"given": "Van", "family": "Johnson"},
          ambiguities=("particle-or-given",),
          notes="v2 surfaces #121's irreducible ambiguity"),
+    Case("delos_joins_the_family", "Juan Delos Reyes",
+         {"given": "Juan", "family": "Delos Reyes"},
+         classification="fix(#1037)",
+         notes="Delos is de los written as one word, read as Dela is "
+               "(fil.toml); 1.4.0 through 2.8.0 read middle 'Delos', "
+               "family 'Reyes'"),
+    Case("delos_leading_is_a_given_name", "Delos Wheeler",
+         {"given": "Delos", "family": "Wheeler"},
+         ambiguities=("particle-or-given",),
+         classification="fix(#1037)",
+         notes="Delos is also a given name (US SSA 1,324 births), so "
+               "the particle may be given and position places it, as "
+               "Van Johnson; 1.4.0 through 2.8.0 read the same fields "
+               "and reported nothing"),
     Case("family_comma_particles", "de la Vega, Juan",
          {"given": "Juan", "family": "de la Vega"},
          notes="shape 2's particle-bearing family, before the comma",

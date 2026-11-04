@@ -25,11 +25,25 @@ text = "dela"
 given = { us_ssa = 565, as_of = 2026-10-25, note = "US SSA births summed over both sexes; nam_dict band 1 in Germany, 1 in Bulgaria" }
 [word.preposition]
 expands = "of the, de la contracted: \"Dela Cruz\""
-note = "Dela is a short form of Adela, and an African name meaning saviour/redeemer -- so the Filipino surname particle is not the only reading"
+cased = "Dela"
+note = "Dela is a short form of Adela, and an African name meaning saviour/redeemer -- so the Filipino surname particle is not the only reading. The mask is the word's own title case, the spelling Filipino surnames write (ORCID's 2025 Philippine family boxes write Dela 352 times, dela 60 and DELA 59, 2026-11-03), so case repair keeps it as written in Dela Cruz rather than lowercasing it as a particle (rules/R4, #1037)"
+
+[[word]]
+text = "delos"
+given = { us_ssa = 1324, wikidata = 44, as_of = 2026-11-03, note = "US SSA male births only; Wikidata a lower bound (27 US citizens, Delos Wheeler); ORCID's whole 2025 extract opens 3 given boxes with it and 333 family boxes, 125 of them Philippine (tools/name_usage.py delos --boxes, 2026-11-03)" }
+[word.preposition]
+expands = "of the, de los written as one word: \"Delos Santos\", \"Delos Reyes\""
+cased = "Delos"
+note = "the one-word spelling of de los, as dela is of de la; US Census 2010 counts Delos as a surname 269 times, the particle written apart from the name it joins. The mask is the word's own title case, the spelling Filipino surnames write (ORCID's 2025 Philippine family boxes write Delos 93 times, delos 17 and DELOS 15, 2026-11-03) and the case the default gave it as a name word before it was a particle: without it case repair would lowercase it (rules/R4)"
+issue = 1037
 
 [[word]]
 text = "la"
 article = { expands = "the, fem. sg.: \"De La Cruz\"", note = "strict fil broke 46 records (config_diff.py gaps on f48c88a3, decisions/vocabulary-model, 2026-11-03)", issue = 1005 }
+
+[[word]]
+text = "las"
+article = { may_be_given = false, expands = "the, fem. pl.: \"Las Piñas\"", note = "copied from es.toml; strict fil broke 3 Philippine records on it (config_diff.py gaps fil on f48c88a3, #1037)", issue = 1037 }
 
 [[word]]
 text = "los"
