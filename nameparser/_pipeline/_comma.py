@@ -208,12 +208,12 @@ def _whole_name(seg0: Sequence[int], tokens: Sequence[WorkToken],
     if name_behind:
         named.update(opener)
     # rules/C3: "a numeral ending the part, or standing before the
-    # suffix words it ends with, that the trailing fork reads as the
+    # listed suffix words it ends with, that the trailing fork reads as the
     # generation is no name word" ('Dumas VI, Jr.' and 'Dumas VI MD,
     # Ed' as their 'III' twins); decisions/C3 (#893). The suffix
-    # words are stepped over by their tag, as the loop above read them
+    # words are the pieces the loop above left out of `named`
     e = len(seg0) - 1
-    while e > 0 and "vocab:suffix" in tokens[seg0[e]].tags:
+    while e > 0 and seg0[e] not in named:
         e -= 1
     if e > 0 and seg0[e] in named and ends_in_a_generation(
             [tokens[seg0[e - 1]].text, tokens[seg0[e]].text], one_case):

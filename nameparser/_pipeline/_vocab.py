@@ -379,8 +379,8 @@ def reads_as_generation(text: str, tags: Set[str], preceding: str | None,
                     or one_case and is_initial_shaped(preceding.upper())))
 
 
-# rules/C3: "a numeral ending the part, or standing before the suffix
-# words it ends with, that the trailing fork reads as the generation is
+# rules/C3: "a numeral ending the part, or standing before the listed
+# suffix words it ends with, that the trailing fork reads as the generation is
 # no name word" -- asked of the shape-only numerals,
 # the listed ones being suffix words to both counts already;
 # decisions/C3 (#893)
@@ -1746,7 +1746,7 @@ def name_word_count(texts: Sequence[str], lexicon: Lexicon,
             lead = i
             lead_suffix = not name and i not in members
         names.append(name)
-        suffixes.append(suffix and not title)
+        suffixes.append(suffix)
     # rules/C3: "A suffix word opening the part is a name word to the
     # count where a name word follows it" -- opening it behind its
     # titles, which stay no name word, this count being of names
@@ -1754,10 +1754,11 @@ def name_word_count(texts: Sequence[str], lexicon: Lexicon,
     if lead_suffix and lead is not None and any(names[lead + 1:]):
         names[lead] = True
     # rules/C3: "a numeral ending the part, or standing before the
-    # suffix words it ends with, that the trailing fork reads as the
+    # listed suffix words it ends with, that the trailing fork reads as the
     # generation is no name word", as a listed one is not
     # -- the suffix words stepped over as `_comma._whole_name` steps
-    # over them, a title behind the numeral stopping both
+    # over them, a dual of the title and suffix vocabulary included,
+    # and a title that is no suffix word stopping both
     e = len(texts) - 1
     while e > 0 and suffixes[e]:
         e -= 1

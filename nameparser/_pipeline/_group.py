@@ -856,7 +856,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                         for p, t in zip(pieces, ptags)
                         if p[0] not in frozen) + additional
             # rules/P3: "a numeral ending the name, or standing before
-            # the suffix words a name ends with, that the trailing fork
+            # the listed suffix words a name ends with, that the trailing fork
             # reads as the generation is no word of the three, as a
             # listed one is not" -- the C3 count's question, asked by
             # its predicate; decisions/C3 (#893). The suffix words are

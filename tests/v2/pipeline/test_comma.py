@@ -432,7 +432,8 @@ def test_a_split_member_opening_the_part_is_no_name_word_to_either_count() -> No
 # with its 'III' twin under all three orders.
 _GENERATION_HEADS = ("Dumas {n}", "de la Vega {n}", "Ortega y Gasset {n}",
                      "John Dumas {n}", "(Bob) Dumas {n}", "Dr. Dumas {n}",
-                     "Dumas {n} MD", "Dumas {n} Jr.")
+                     "Dumas {n} MD", "Dumas {n} Jr.", "Dumas {n} Sr.",
+                     "Dumas {n} Ms")
 _GENERATION_TAILS = (", Jr.", ", MA", ", PhD", ", Ed", ", Filho", ", John",
                      ", Dr.", ", AD", ", Jr., PhD", "", " MD", " Jr.",
                      " PhD")

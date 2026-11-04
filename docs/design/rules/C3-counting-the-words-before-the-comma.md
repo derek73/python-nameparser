@@ -12,7 +12,7 @@
   ```
   "John van Buren, Ed"        →  suffix="Ed"  · boundary
   ```
-- **A numeral of two or more letters ending the part is no name word where it reads as the generation**: a numeral ending the part, or standing before the suffix words it ends with, that the trailing fork reads as the generation is no name word, as a listed one is not, so a shape-only numeral counts as 'III' does. The fork's writing tests stand (S10), a Title-case numeral in a name of mixed case and one behind an initial staying name words.
+- **A numeral of two or more letters ending the part is no name word where it reads as the generation**: a numeral ending the part, or standing before the listed suffix words it ends with, that the trailing fork reads as the generation is no name word, as a listed one is not, so a shape-only numeral counts as 'III' does. The fork's writing tests stand (S10), a Title-case numeral in a name of mixed case and one behind an initial staying name words.
   ```
   "Dumas VI, Jr."             →  family="Dumas"
   "Dumas VI, MA"              →  suffix="VI, MA"
