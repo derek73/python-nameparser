@@ -345,9 +345,12 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # #913's 'Saint Clair Soares' and 'Mr Saint Martin Sterling', each
     # reporting title-or-name under three orders; 1542 -> 1545 the same
     # day, #1037's 'Delos Wheeler', reporting particle-or-given under
-    # three orders.
-    assert claims == 1545, (
-        f"the field sweep checks {claims} claims, recorded as 1545 on "
+    # three orders; 1545 -> 1572 the same day, #1039's given reading of
+    # junior and júnior: nine more suffix-or-name reports (five new rows
+    # one each, the 'Pedro Junior Filho' row two, 'Pedro Júnior Neto' a
+    # second, 'José Silva Júnior' one), each under three orders.
+    assert claims == 1572, (
+        f"the field sweep checks {claims} claims, recorded as 1572 on "
         f"2026-11-03")
 
 
@@ -393,9 +396,9 @@ _STAND_IN_REREADS = {
     ("Andrew Perkins (X.Y.Z.)", 2),
     ("John Smith VI Ma", None), ("John Smith VI Jones", None),
     ("John Smith VI Jones", 2),
-    # a name word in VI's place stops 'JUNIOR' starting the run (S8)
-    ("JOHN SMITH JUNIOR VI JONES", None),
-    ("JOHN SMITH JUNIOR VI JONES", 2),
+    # a name word in VI's place stops 'JNR' starting the run (S8)
+    ("JOHN SMITH JNR VI JONES", None),
+    ("JOHN SMITH JNR VI JONES", 2),
 }
 
 #: Reports whose deferred field assign could not name: the particle the
@@ -709,8 +712,9 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # 455 -> 459 and 326 -> 333 the same day, #1023's generation-word
     # rows; 333 -> 330 on 2026-11-03, #993's listing of MBBS, the
     # 'Nasreen Sultana, MBBS' row reporting no fork under the three
-    # orders
-    assert (checked, skipped) == (459, 330), (checked, skipped)
+    # orders; 459 -> 474 the same day, #1039's junior rows, five stand-ins
+    # landing in the alternative's field under the three orders
+    assert (checked, skipped) == (474, 330), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:

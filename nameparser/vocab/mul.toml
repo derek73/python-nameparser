@@ -82,7 +82,9 @@ generation = { same_as = "jr" }
 
 [[word]]
 text = "junior"
-generation = { same_as = "jr" }
+generation = { same_as = "jr", issue = 1039, note = "gated by the given reading (rules/S11): read as the suffix only where the name has words to spare, and its Title case, the way the generation is written as well as the name, says nothing (no `title_case_is_name`), so `John Smith Junior` keeps the suffix and `Silva, Junior Carlos` the given name" }
+given = { us_ssa = 43182, wikidata = 435, as_of = 2026-11-03, note = "US SSA births summed over both sexes (F 195, M 42,987); Wikidata given by citizenship: United States 60, Brazil 53, Peru 34, United Kingdom 23, France 21; a lower bound. In mul.toml with the generation, which check 13 requires" }
+family = { us_census_2010 = 2146, wikidata = 68, as_of = 2026-11-03 }
 
 [[word]]
 text = "v"

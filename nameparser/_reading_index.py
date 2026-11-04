@@ -87,7 +87,8 @@ CATEGORY: dict[str, str] = {
 BEHAVIORAL: dict[str, frozenset[str]] = {
     "title": frozenset({"abbreviation", "addresses", "after_given",
                         "attaches", "cased", "default"}),
-    "suffix": frozenset({"acronym", "attached", "cased", "default"}),
+    "suffix": frozenset({"acronym", "attached", "cased", "default",
+                         "title_case_is_name"}),
     "particle": frozenset({"cased", "default"}),
     "conjunction": frozenset({"may_be_initial", "cased", "default"}),
     "bound_given": frozenset({"cased", "default"}),
@@ -151,8 +152,8 @@ class ReadingProperties:
         return self.props.get("default", True) is not False
 
     def flag(self, prop: str) -> bool:
-        """A `may_be_*` flag, `after_given` or `abbreviation`:
-        unwritten, false."""
+        """A `may_be_*` flag, `after_given`, `abbreviation` or
+        `title_case_is_name`: unwritten, false."""
         return bool(self.props.get(prop, False))
 
     @property
@@ -533,6 +534,7 @@ class Compiled(TypedDict):
     HONORIFIC_WORDS: frozenset[str]
     PATRONYMIC_PARTICLES: frozenset[str]
     TITLE_ABBREVIATIONS: frozenset[str]
+    TITLE_CASE_NAME_WORDS: frozenset[str]
 
 
 def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
@@ -574,6 +576,7 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
     credential_words: set[str] = set()
     honorific_words: set[str] = set()
     patronymics: set[str] = set()
+    title_case_names: set[str] = set()
     cased: dict[str, str] = {}
     for r, t in texts:
         p = r.props
@@ -600,6 +603,8 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
                     glued.add(t)
                 if t in named and r.kind in GATED_WORDS:
                     ambiguous_words.add(t)
+                if r.flag("title_case_is_name"):
+                    title_case_names.add(t)
                 if r.kind == "agnomen":
                     agnomens.add(t)
                 elif r.kind == "generation":
@@ -681,6 +686,10 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
         # trailing chain takes where the word may also be a given name
         # (#999); internal, like the kind sets above
         TITLE_ABBREVIATIONS=frozenset(written_short),
+        # the suffix words whose Title case is their writing as a name
+        # (`fils`, `kc`): of a word gated by a name reading, the one
+        # kind whose writing leans (rules/S6, S11, #1039)
+        TITLE_CASE_NAME_WORDS=frozenset(title_case_names),
     )
     # One form per post-nominal: the word test strips only edge periods
     # and the acronym test strips all of them, so a word in both is

@@ -531,7 +531,8 @@ _SET_FIELDS = tuple(f for f in _VOCAB_FIELDS if f not in _LIST_FIELDS)
 #: `_LexiconSets` attributes after the `_VOCAB_FIELDS` ones, each a
 #: compiled constant of its own.
 _KIND_FIELDS = ("generation_words", "credential_words", "honorific_words",
-                "patronymic_particles", "title_abbreviations")
+                "patronymic_particles", "title_abbreviations",
+                "title_case_name_words")
 
 @dataclass(frozen=True, slots=True, eq=False, repr=False)
 class _LexiconSets:
@@ -588,6 +589,10 @@ class _LexiconSets:
     #: (`maj`); rules/H5's trailing chain reads one only beside
     #: `titles_ambiguous`, through classify's TRAILING_TITLE_TAG (#999)
     title_abbreviations: frozenset[str]
+    #: the suffix words written `title_case_is_name=True` (`fils`,
+    #: `kc`), whose writing leans where a name reading gates them:
+    #: lower case is the suffix, Title case the name (rules/S6, #1039)
+    title_case_name_words: frozenset[str]
 
 
 #: Lexicon field -> the compiled constant it is read from, for every
@@ -620,6 +625,7 @@ _COMPILED_FIELDS = {
     "honorific_words": "HONORIFIC_WORDS",
     "patronymic_particles": "PATRONYMIC_PARTICLES",
     "title_abbreviations": "TITLE_ABBREVIATIONS",
+    "title_case_name_words": "TITLE_CASE_NAME_WORDS",
 }
 
 
@@ -703,7 +709,8 @@ def _prop_value(kind: str, prop: str, value: object) -> object:
     if value is None or (isinstance(value, (bool, str))
                          and value == _unwritten(kind, prop)):
         return None
-    if prop in ("abbreviation", "acronym", "after_given", "may_be_initial"):
+    if prop in ("abbreviation", "acronym", "after_given", "may_be_initial",
+                "title_case_is_name"):
         if not isinstance(value, bool):
             raise TypeError(f"{prop} must be True or False, got {value!r}")
         return value
@@ -1551,7 +1558,7 @@ def _shown_value(kind: str | None, prop: str, value: object) -> str:
     its unwritten value where it has one (`may_be_initial=False`)."""
     if value is None and kind is not None and prop in (
             "abbreviation", "acronym", "addresses", "after_given",
-            "may_be_initial"):
+            "may_be_initial", "title_case_is_name"):
         value = _unwritten(kind, prop)
     if isinstance(value, tuple) and len(value) > _SHOWN_WORDS:
         # bounded: a phrase taken out of a kind's reach lists every

@@ -1935,6 +1935,8 @@ SUFFIX_WORDS_AMBIGUOUS: frozenset[str] = frozenset({
     'filho',
     'fils',
     'fo',
+    'junior',
+    'júnior',
     'kc',
     'net',
     'neta',
@@ -3060,4 +3062,11 @@ TITLE_ABBREVIATIONS: frozenset[str] = frozenset({
     'gen',
     'hon',
     'maj',
+})
+
+TITLE_CASE_NAME_WORDS: frozenset[str] = frozenset({
+    'dl',
+    'fils',
+    'kc',
+    'pc',
 })

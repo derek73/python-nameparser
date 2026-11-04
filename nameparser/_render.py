@@ -592,12 +592,13 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
     # rules/S6: "its lower case in a name of mixed case is the suffix
     # wherever the name keeps a family word" -- a suffix word that is also a
     # name, in the suffix role, repairs to the one writing that keeps
-    # that reading; Title case would lean it back to the name. An
-    # agnomen takes no case cue and title-cases as any word does, and a
+    # that reading; Title case would lean it back to the name. Only a
+    # word written `title_case_is_name` takes the cue (#1039): any other,
+    # an agnomen or `junior`, title-cases as any word does, and a
     # credential written as a word (`kc`, #965) carries a mask, which
     # this leaves to the exceptions below.
     if (role is Role.SUFFIX and normalized in lex._sets.suffix_words_ambiguous
-            and normalized not in lex._sets.agnomens
+            and normalized in lex._sets.title_case_name_words
             and normalized not in lex.capitalization_exceptions_map):
         return word.lower()
     generation = role is Role.SUFFIX and "vocab:suffix" in tags

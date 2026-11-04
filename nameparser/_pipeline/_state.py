@@ -96,10 +96,13 @@ AMBIGUOUS_ACRONYM_TAG = "vocab:suffix-ambiguous"
 #: (`Lexicon.suffix_words_ambiguous`, rules/S11): the class is the
 #: same, and so is every site that weighs it, but the writing leans the
 #: other way -- lower case in a mixed-case name is the suffix, where an
-#: acronym's capitals are (`_vocab.ambiguous_lean`). `AGNOMEN_TAG`
-#: rides beside both on an agnomen, whose writing leans nowhere.
+#: acronym's capitals are (`_vocab.ambiguous_lean`), but only on a
+#: word written `title_case_is_name` (`fils`, `kc`), which
+#: `TITLE_CASE_NAME_TAG` marks; any other leans nowhere (#1039).
+#: `AGNOMEN_TAG` rides beside both on an agnomen, for its reading's kind.
 AMBIGUOUS_WORD_TAG = "vocab:suffix-word-ambiguous"
 AGNOMEN_TAG = "vocab:agnomen"
+TITLE_CASE_NAME_TAG = "vocab:title-case-name"
 
 #: Beside "vocab:suffix-word" on a word whose shipped reading index
 #: kind is a generation (`jr`), a credential written as a word

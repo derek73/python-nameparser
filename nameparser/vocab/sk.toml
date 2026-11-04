@@ -60,7 +60,7 @@ generation = { issue = 661 }
 
 [[word]]
 text = "st"
-generation = { default = false, expands = "starší, the Elder", issue = [661, 679, 684, 753], note = "real and standard, but St. is Saint in other languages written in Latin script, and nothing in its writing tells the two apart, so no default reads it; a Slovak pack turns it on" }
+generation = { default = false, title_case_is_name = true, expands = "starší, the Elder", issue = [661, 679, 684, 753], note = "real and standard, but St. is Saint in other languages written in Latin script, and nothing in its writing tells the two apart, so no default reads it; a Slovak pack turns it on" }
 
 [[word]]
 text = "staršia"
