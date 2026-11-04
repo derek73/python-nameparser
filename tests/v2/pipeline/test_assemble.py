@@ -159,7 +159,7 @@ def test_a_connective_or_initial_report_is_withdrawn_where_the_role_is_a_suffix(
     withdrawn = {
         "JOHN QUINCY SMITH I": ["suffix-or-name"],
         "john smith i": ["suffix-or-name"],
-        "SMITH, JOHN I": [],
+        "SMITH, JOHN I": ["suffix-or-name"],  # rules/C9, #877
         "HENRY SMITH I": ["suffix-or-name"],
     }
     for text, kinds in withdrawn.items():

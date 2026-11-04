@@ -12,6 +12,13 @@
   "Smith, John PhD I, Jr."    →  suffix="PhD, Jr."
   "Smith, John PhD É, Jr."    →  suffix="PhD É, Jr."  · boundary
   ```
+- **The bare letter read as the generation behind a name word is reported**, naming the middle initial it would otherwise be, as S10 reports the same letter with no comma: one letter is the shape a middle initial is written in, so a reader cannot tell the two apart there. Nothing is reported where the writing or the slot settles it: a letter behind another suffix word, a period-marked letter, one ahead of a further comma, and one in lower case in a name of mixed case (S10).
+  ```
+  "Smith, John V"             →  ambiguities=("suffix-or-name",)
+  "SMITH, JOHN I"             →  ambiguities=("suffix-or-name",)
+  "Smith, PSM I"              →  ambiguities=()
+  "Smith, John v"             →  ambiguities=()
+  ```
 - **Only the given part is touched**: a part after the comma that is nothing but suffix words is the credential run, and a letter in it continues that run up to the further comma.
 - **Longer suffix words are not in question either way**, a numeral of two or more letters being read as S10 reads one in this part.
 

@@ -104,7 +104,8 @@ from nameparser._pipeline._pieces import (
     split_credential_report,
     anchor_in_reach, credential_at_the_given_slot, given_slot_anchors,
     _NOT_A_RUN_START, has_name_content, is_lone_never_given_particle,
-    Peel, TailRead, is_suffix_piece, is_title_piece, leading_titles,
+    Peel, TailRead, is_prefix_piece, is_suffix_piece, is_title_piece,
+    leading_titles,
     particle_tail, listed_lean, peel_walk, settled_by_case,
     starts_a_credential_run,
     tail_reading, trailing_titles,
@@ -1680,6 +1681,27 @@ def assign(state: ParseState) -> ParseState:
                             tokens[pieces[m][0]].text.upper())):
                     _set_roles(tokens, pieces[m], Role.MIDDLE)
                     continue
+                # rules/C9: "behind a name word it is the generation only
+                # when written bare" -- and a bare letter there is the
+                # shape a middle initial is written in, so the reading
+                # is reported, as S10 reports it with no comma
+                # (decisions/C9, #877); `len` first, C-level
+                if (len(pieces[m]) == 1
+                        and len((tok := tokens[pieces[m][0]]).text) == 1
+                        and (m >= sticky_from and not k6 <= m < end6
+                             or m < sticky_from and suffix_here)
+                        and _ROMAN.match(tok.text) is not None
+                        and tokens[pieces[m - 1][0]].role in NAME_ROLES
+                        and not is_prefix_piece(pieces[m - 1], ptags[m - 1],
+                                                tokens)
+                        and not numeral_settled_by_case(tok.text,
+                                                        state.one_case)):
+                    ambiguities.append(PendingAmbiguity(
+                        AmbiguityKind.SUFFIX_OR_NAME,
+                        f"{tok.text!r} is a roman numeral, so it reads as a "
+                        f"generational suffix; any other single letter "
+                        f"there would be a middle initial",
+                        (pieces[m][0],), alternative=as_a_middle(m, tok)))
                 if m >= sticky_from and not k6 <= m < end6:
                     # inside the run: a title word reads as a title,
                     # every other word as a suffix, and a word the walk

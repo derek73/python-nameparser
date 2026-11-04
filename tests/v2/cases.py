@@ -7328,6 +7328,7 @@ CASES: tuple[Case, ...] = (
     Case("a_numeral_the_bound_join_would_take_stays_maiden",
          "Berg, abdul nee Smith V",
          {"given": "abdul", "middle": "nee Smith", "family": "Berg", "suffix": "V"},
+         ambiguities=("suffix-or-name",),
          classification="fix(#601)",
          notes="#601: a marker in the given part after a family comma is an "
                "ordinary word (rules/M2). Before #601: given 'abdul', "
@@ -8546,6 +8547,7 @@ CASES: tuple[Case, ...] = (
          tolerated=True),
     Case("family_comma_lenient_trailing", "Smith, John V",
          {"given": "John", "family": "Smith", "suffix": "V"},
+         ambiguities=("suffix-or-name",),
          notes="v1 #144: the trailing piece of a two-part comma name "
                "takes the lenient suffix test"),
     Case("family_comma_first_piece_is_given", "Steven Hardman, RN - CRNA",
@@ -8778,7 +8780,7 @@ CASES: tuple[Case, ...] = (
     Case("a_numeral_behind_a_class_member_keeps_the_listing_form",
          "John Smith, Ma I",
          {"given": "Ma", "family": "John Smith", "suffix": "I"},
-         ambiguities=("suffix-or-name",),
+         ambiguities=("suffix-or-name", "suffix-or-name"),
          notes="contrast for the row below: C4's run test admits no "
                "single-letter numeral, which could be an initial, so "
                "'Ma' is the given name, as b547c247 read it"),
@@ -9910,6 +9912,7 @@ CASES: tuple[Case, ...] = (
          "Smith, Freiherr von Berg V",
          {"title": "Freiherr", "given": "von Berg", "family": "Smith",
           "suffix": "V"},
+         ambiguities=("suffix-or-name",),
          classification="fix(#424)",
          notes="S4: the given part's trailing slot after a family comma "
                "is read without the count, so the one-letter numeral "
@@ -12618,6 +12621,7 @@ CASES: tuple[Case, ...] = (
     Case("family_comma_bare_numeral_after_a_name_is_the_suffix",
          "Smith, John V",
          {"given": "John", "family": "Smith", "suffix": "V"},
+         ambiguities=("suffix-or-name",),
          notes="THE BOUNDARY, and v1 parity (#144): with no period "
                "there is no abbreviation, so the numeral is the "
                "generation it looks like. This row is what makes "
@@ -13073,7 +13077,8 @@ CASES: tuple[Case, ...] = (
     Case("title_word_trailing_after_a_family_comma_behind_a_numeral",
          "Smith, John V Prof.",
          {"title": "Prof.", "given": "John", "family": "Smith",
-          "suffix": "V"}, classification="fix(#316)",
+          "suffix": "V"}, ambiguities=("suffix-or-name",),
+         classification="fix(#316)",
          notes="the mirror of the row above, and what makes the "
                "lenient test read the pieces as if the title were "
                "absent: the walk took the last piece, so 'V' is where "
