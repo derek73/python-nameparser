@@ -42,7 +42,7 @@ from __future__ import annotations
 import bisect
 import re
 
-from nameparser._lexicon import _normalize, _run_addresses_by_given
+from nameparser._lexicon import Lexicon, _normalize, _run_addresses_by_given
 from nameparser._pipeline._assign import (
     _name_alt, _name_pieces, _name_positions,
 )
@@ -56,7 +56,7 @@ from nameparser._pipeline._state import (
     WorkToken, _NEVER_FLIPPED, comma_bucket, copy_with,
 )
 from nameparser._pipeline._vocab import (
-    delimiter_cores, has_patronymic_ending, is_listed_given_name,
+    delimiter_cores, has_patronymic_ending, is_initial, is_listed_given_name,
     is_patronymic_marker, suffix_reading, unit_ends,
 )
 from nameparser._policy import PatronymicRule
@@ -252,19 +252,32 @@ def _fold_reach(tokens: list[WorkToken], name_idx: list[int]) -> int:
 _HYPHENS = re.compile("[-\u2010\u2011\u2012\u2013\u2212\ufe63\uff0d]")
 
 
-def _family_word_count(tokens: list[WorkToken], family: list[int]) -> int:
+def _family_word_count(tokens: list[WorkToken], family: list[int],
+                       hyphen_joins: bool = False) -> int:
     """The family's name words as rules/O6 counts them: a particle run
     counts with the word it attaches to, a connective counts as
     nothing and a hyphen joins words without making them one, so "de
     la Vega" is one word and "Ortega y Gasset" and "García-López" two.
     A family of nothing but particles counts each of them, R2 reading
-    them as ordinary name words."""
-    words = sum(len([part for part in _HYPHENS.split(tokens[i].text)
-                     if part])
+    them as ordinary name words. `hyphen_joins` counts a hyphenated word
+    as one, as the word O6 takes is counted (#959)."""
+    words = sum(1 if hyphen_joins
+                else len([part for part in _HYPHENS.split(tokens[i].text)
+                          if part])
                 for i in family
                 if "particle" not in tokens[i].tags
                 and "conjunction" not in tokens[i].tags)
     return words or len(family)
+
+
+def _hyphenated_given(text: str, lexicon: Lexicon) -> bool:
+    """A hyphenated word that writes given names, which the taken word's
+    count (a hyphenated word counting as one) would otherwise let through
+    (#959): every part of it a listed given name or an initial
+    ("María-José" under the Spanish list, "M.-J.", "M.-José")."""
+    parts = [part for part in _HYPHENS.split(text) if part]
+    return len(parts) > 1 and all(is_initial(part) or is_listed_given_name(part, lexicon)
+               for part in parts)
 
 
 def _take_second_family_name(state: ParseState,
@@ -299,12 +312,13 @@ def _take_second_family_name(state: ParseState,
     if len(units) < 2:
         return
     take = units[-1] if state.order[0] is Role.GIVEN else units[0]
-    # What is taken must be ONE name word, counted as the family is, so
-    # a hyphenated given name or a bound given-name pair (P5) stays put;
-    # and a word a family name could be: not an initial, which writes a
-    # given name (one written alone; "J.R." is taken), nor a lone dash
-    # or other mark with no letter in it.
-    if _family_word_count(tokens, take) != 1:
+    # What is taken must be ONE name word, so a bound given-name pair
+    # (P5) stays put; rules/O6: "A hyphenated word counts as one when it
+    # is the word taken" (decisions/O6, #959), where the family's own
+    # hyphen counts two; and a word a family name could be: not an
+    # initial, which writes a given name (one written alone; "J.R." is
+    # taken), nor a lone dash or other mark with no letter in it.
+    if _family_word_count(tokens, take, hyphen_joins=True) != 1:
         return
     if len(take) == 1 and "initial" in tokens[take[0]].tags:
         return
@@ -316,8 +330,10 @@ def _take_second_family_name(state: ParseState,
     # either order. Only a unit of one token is asked: a word
     # behind a particle ("de Miguel") is a unit of two, a surname taken
     # as before. History: decisions/O6 (#959).
-    if len(take) == 1 and is_listed_given_name(tokens[take[0]].text,
-                                                 state.lexicon):
+    # A hyphenated word writing given names stays too (#959).
+    if len(take) == 1 and (
+            is_listed_given_name(tokens[take[0]].text, state.lexicon)
+            or _hyphenated_given(tokens[take[0]].text, state.lexicon)):
         return
     if state.order[0] is Role.GIVEN:
         # given, middles..., family: the middle unit standing right
