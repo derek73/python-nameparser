@@ -49,6 +49,13 @@ Re-record deliberately, and say why in the commit, as with a watched diff.
 Each record doubles as a measured worklist: every entry is a place the
 parser and the source read a name differently.
 
+The first surname's split (rules/R11) is scored on its own too: where a
+rendering states CLDR's `surname-core` and a `surname2`, `surname-prefix`
+and `surname-core` are expected in `surname1_particles` and
+`surname1_base` (FIRST_UNIT_ROLES), while the merged `family_particles`
+and `family_base` keep the second surname in, so a parse reading one unit
+is not counted twice for the second surname it did not read.
+
 Two fields are stated that the seven roles do not hold: `surname2` (a
 second surname: CLDR's `surname2`, Wikidata's P1950) and `patronymic`
 (Wikidata's P5056, a field CLDR does not have). Each is scored inside
@@ -107,6 +114,16 @@ ROLES = ("title", "given_names", "family", "suffix",
 #: once ParsedName has it (see got_roles). Whether the merged role should
 #: then drop it is the 3.0 design's question, not this one.
 PENDING_ROLES = {"surname2": "family", "patronymic": "given_names"}
+#: The first surname's particles and base (rules/R11, #1022), scored on
+#: their own against CLDR's `surname-prefix` and `surname-core` where a
+#: rendering states a `surname2` too: those two fields are the FIRST
+#: surname's, while `family_particles` and `family_base` above are
+#: scored over the whole family, `surname2` merged in, so a parse that
+#: reads one unit (the default) is not counted twice for the second
+#: surname it did not read. Like a PENDING_ROLES field, scored only
+#: once ParsedName has the view.
+FIRST_UNIT_ROLES = {"surname1_particles": "surname-prefix",
+                    "surname1_base": "surname-core"}
 HERE = Path(__file__).resolve().parent
 # The shared JSONL reader, found as the corpus builders find corpus_build
 # (see its docstring for why the directory is appended).
@@ -246,6 +263,9 @@ def expected_roles(fields: dict[str, str], text: str) -> dict[str, str]:
     for role in PENDING_ROLES:
         if role in fields:
             roles[role] = present(role)
+    if "surname-core" in fields and "surname2" in fields:
+        for role, field in FIRST_UNIT_ROLES.items():
+            roles[role] = present(field)
     return roles
 
 
@@ -296,12 +316,13 @@ def same(expected: str, got: str, text: str) -> bool:
 
 def got_roles(name: ParsedName) -> dict[str, str]:
     """The parser's answer for every role it can answer: ROLES always,
-    a PENDING_ROLES field only once ParsedName has it."""
+    a PENDING_ROLES or FIRST_UNIT_ROLES view only once ParsedName has
+    it."""
     got = {"title": name.title, "given_names": name.given_names,
            "family": name.family, "suffix": name.suffix,
            "family_particles": name.family_particles,
            "family_base": name.family_base}
-    for role in PENDING_ROLES:
+    for role in (*PENDING_ROLES, *FIRST_UNIT_ROLES):
         value = getattr(name, role, None)
         if isinstance(value, str):
             got[role] = value
@@ -358,7 +379,8 @@ def disagreements(rows: list[dict[str, Any]],
         got = got_roles(parse_rendering(row["text"], row["shape"], pack))
         bad = {role: {"expected": expected, "got": got[role]}
                for role, expected in expected_roles(row["fields"], row["text"]).items()
-               if (role in got or role not in PENDING_ROLES)
+               if (role in got or (role not in PENDING_ROLES
+                                   and role not in FIRST_UNIT_ROLES))
                and not same(expected, got[role], row["text"])}
         if bad:
             found[rendering_key(row)] = {"text": row["text"], **bad}
@@ -466,6 +488,11 @@ def _summary(name: str, rows: list[dict[str, Any]],
         else:
             print(f"{role:17} {totals[role]:5} stated, not a ParsedName field "
                   f"yet (scored inside {merged})")
+    for role, field in FIRST_UNIT_ROLES.items():
+        if totals[role]:
+            agree = totals[role] - wrong[role]
+            print(f"{role:17} {agree:5}/{totals[role]:<5} agree "
+                  f"(against {field}, where a surname2 is stated)")
     problems = changes(read_record(record), current, {rendering_key(r) for r in rows})
     print("\n".join(problems) or f"{name} view matches the record")
     if name in SPLIT_SOURCES:
