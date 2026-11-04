@@ -842,9 +842,20 @@ whose leading use is the title:
 Two are left out, because the names that open with them outnumber the
 titles even in Indian data. ``Shri`` opens a given name written in two
 words (``Shri Kant``, ``Shri Lakshmi``), and ``Sushri`` an Odia one
-(``Sushri Sangita``), so both stay name words under the packs. ``Smt.``
-and ``Shri.`` written with their period are titles at the head of a name
-by default, packs or no.
+(``Sushri Sangita``), so both stay name words under the packs. A strict
+Hindi choice, which reads no Odia names, reads ``Sushri`` as the title:
+
+.. doctest::
+
+    >>> parser_for(locales.HI).parse("Sushri Sangita Behera").given
+    'Sushri'
+    >>> parser_for(locales.HI, strict=True).parse("Sushri Sangita Behera").title
+    'Sushri'
+
+``Smt.`` and ``Shri.`` written with their period are titles at the head
+of a name by default, packs or no. ``Pandit``, ``Sardar``, ``Kumari``,
+``Babu``, ``Acharya`` and ``Begum`` are titles under no pack: each opens
+far more names as a given name or a surname than as the title.
 
 .. _segmenter-contract:
 
@@ -1025,7 +1036,4 @@ by ``tests/v2/test_locales.py``:
 ``nameparser/locales/ru.py`` is the reference implementation for a
 policy-only pack, ``nameparser/locales/zh.py`` for one that carries
 vocabulary, and ``nameparser/locales/ja.py`` for one whose whole
-contribution is turning a stage on. Packs still in progress are
-tracked in issue `#345
-<https://github.com/derek73/python-nameparser/issues/345>`_ (``hi``
-and ``bn``).
+contribution is turning a stage on.

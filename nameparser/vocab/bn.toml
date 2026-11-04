@@ -1,6 +1,10 @@
 schema = 1
 
 [[word]]
+text = "begum"
+excluded = { salutation = { reason = "the romanized বেগম, a trailing name element far more often than a leading title, as the native spelling's exclusion says, and a Turkish given name (Begüm): ORCID's whole 2025 extract opens 236 given boxes with it (Turkey 69, Bangladesh 5) and 1,273 family boxes (Bangladesh 138); PSC 9 forenames, ctgov-officials 11 names; jrc-names writes it as the title in Begum Khaleda Zia (2026-11-03)", issue = 345, decided = 2026-11-03 } }
+
+[[word]]
 text = "mst"
 excluded = { salutation = { reason = "the transliteration of মোসাঃ collides with real names where the native script cannot", issue = 343 } }
 
