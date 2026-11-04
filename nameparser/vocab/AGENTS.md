@@ -24,7 +24,7 @@ Record what the vetting found ON the word, not in a comment or a decisions sente
 
 ## A word that becomes a particle: its case
 
-A particle reading is lowercased by case repair (rules/R4) unless its word carries a `cased` mask, so a word the default capitalizes as a name word loses its capital the moment a reading makes it a particle, in the default or under the pack that turns it on. #956 turned on Irish `nic`, `mhic` and `mic` with no mask, and `MÁIRE NIC GIOLLA PHÁDRAIG` repaired to `Máire nic Giolla Phádraig` under `ga`, where the default gives `Nic`; `ní` and `uí` had their masks and kept it. Give a capitalized particle its `cased`, and test `capitalized()` both ways (repair and `force=True`) under the parser that reads it.
+A particle reading is lowercased by case repair (rules/R4) unless its word carries a `cased` mask, so a word the default capitalizes as a name word loses its capital the moment a reading makes it a particle, in the default or under the pack that turns it on. #956 turned on Irish `nic`, `mhic` and `mic` with no mask, and `MÁIRE NIC GIOLLA PHÁDRAIG` repaired to `Máire nic Giolla Phádraig` under `ga`, where the default gives `Nic`; `ní` and `uí` had their masks and kept it. #1037 met it again in the default, giving Filipino `delos` a particle reading, and its first measurement, taken before the mask, read `JUAN DELOS REYES` repairing to `Juan delos Reyes`; `dela` had shipped that way, lowercased, where ORCID's Philippine family boxes write `Dela` three times in four (352 of 471, `dela` 60, `DELA` 59). Give a capitalized particle its `cased`, and test `capitalized()` both ways (repair and `force=True`) under the parser that reads it.
 
 ## Step 6: the user docs' doctests
 
