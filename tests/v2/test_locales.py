@@ -200,7 +200,6 @@ def test_hi_and_bn_read_the_romanized_salutation_as_the_title() -> None:
     assert bn.parse("Shriyut Ram Prasad").title == ""
 
 
-
 def test_sushri_is_the_title_only_under_a_strict_hindi_choice() -> None:
     # #345: hi.toml's sushri salutation is off by default and or.toml
     # declares the Odia given name, so the plain choice gates it (a title
@@ -215,6 +214,7 @@ def test_sushri_is_the_title_only_under_a_strict_hindi_choice() -> None:
         assert "Sushri" in strict.parse(text).title, text
     assert plain.parse("Her Excellency Sushri Sangita Behera").title == (
         "Her Excellency Sushri")
+
 
 def test_es_and_pt_pack_contents() -> None:
     # 3g: es is its choice plus the Spanish given-name list as a lexicon

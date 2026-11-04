@@ -71,11 +71,6 @@
   "Anna Greve"                →  family="Greve"
   "Greve, Anna"               →  family="Greve"
   ```
-- A salutation that another language writing the same script makes the first element of a given name is the salutation by default, the language the text is in being unknowable: Nepali writes `श्री` as a given name's first word where Hindi, Marathi and Konkani write it as Mr., so `श्री कृष्ण श्रेष्ठ` reads title `श्री`, given `कृष्ण` by default, and a Nepali choice, which reads `श्री` as a given name too, gives it to the given name (#870).
-  ```
-  "श्री कृष्ण श्रेष्ठ"         →  title="श्री"
-  "श्री कृष्ण श्रेष्ठ"  [ne]   →  given="श्री"
-  ```
 
 ---
 **Signal:** count: exactly one name word beside a title run, read by the run's addressing title
