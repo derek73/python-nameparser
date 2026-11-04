@@ -3173,7 +3173,6 @@ def test_md_stays_out_of_a_strict_choice_that_does_not_read_en() -> None:
     assert bn.parse("Md Rahman").given == "Md"
 
 
-
 def test_a_strict_filipino_choice_reads_the_one_word_and_plural_particles() -> None:
     # #1037: fil.toml holds delos (de los written as one word) and las,
     # so strict fil reads them as the default does; las was es.toml's
@@ -3186,6 +3185,13 @@ def test_a_strict_filipino_choice_reads_the_one_word_and_plural_particles() -> N
         for parser in (Parser(), fil):
             got = parser.parse(text)
             assert (got.given, got.middle, got.family) == (given, middle, family), text
+    # their masks: case repair keeps the title case Filipino surnames
+    # write, where a particle is otherwise lowercased (rules/R4)
+    for parser in (Parser(), fil):
+        for text, repaired in (("JUAN DELOS REYES", "Juan Delos Reyes"),
+                               ("juan dela cruz", "Juan Dela Cruz")):
+            assert str(parser.parse(text).capitalized()) == repaired, text
+
 
 def test_a_caller_removes_a_mul_word_as_any_other() -> None:
     # a mul.toml reading is a default reading like any other: a caller's
