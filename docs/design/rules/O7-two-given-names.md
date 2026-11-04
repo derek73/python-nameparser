@@ -55,6 +55,7 @@
   ```
   "María-José Ana López"  two_given_names  →  given="María-José"
   "abdul Rahman Ali Khan"  two_given_names  →  middle="Ali"
+  "Abu Bakr Carlos García"  two_given_names  →  middle="Carlos"
   ```
 - **What is taken must be one name word**: a part counting as two words stays where it is, and so does a mark or number with no letter in it; nor does a given name with no letter in it take anything, being no name to complete.
   ```

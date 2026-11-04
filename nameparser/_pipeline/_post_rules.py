@@ -348,7 +348,7 @@ def _take_second_family_name(state: ParseState,
     # family-first order the unit after the family completes no given
     # name (decisions/O6, #704)
     if (state.order[0] is Role.GIVEN and len(units) == 2
-            and _family_word_count(tokens, units[0]) == 1
+            and _one_given_word(tokens, units[0])
             and all(tokens[i].role is Role.GIVEN for i in units[0])
             and _completes_a_given_name(tokens, take)):
         return
@@ -377,6 +377,16 @@ def _take_second_family_name(state: ParseState,
             state.order, len(units))[1:]):
         for i in unit:
             _retag(tokens, i, role)
+
+
+def _one_given_word(tokens: list[WorkToken], given: list[int]) -> bool:
+    """Whether the given name is ONE word, as rules/O7 counts it: O6's
+    count, save that a bound given-name pair (P5) is two words though
+    its bound word is also a particle the count passes over ('Abu
+    Bakr')."""
+    return (_family_word_count(tokens, given) == 1
+            and not (len(given) > 1
+                     and "vocab:bound-given" in tokens[given[0]].tags))
 
 
 def _completes_a_given_name(tokens: list[WorkToken],
@@ -443,7 +453,7 @@ def _take_second_given_name(state: ParseState,
     # a given name already holding two words keeps what it has: a
     # hyphenated one, or a bound given-name pair (P5), counted as O6
     # counts the family
-    if not given or _family_word_count(tokens, given) != 1:
+    if not given or not _one_given_word(tokens, given):
         return
     if not middle:
         # rules/O7's particle phrase, opening the family: after a family
