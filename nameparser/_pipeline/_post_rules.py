@@ -285,6 +285,15 @@ def _take_second_family_name(state: ParseState,
     # The rest in the units assign read them as, so a particle chain
     # (P2) or a bound given-name pair (P5) moves whole or not at all.
     units = _units(tokens, others)
+    # rules/O6: "a particle chain after the family is cut where P1's
+    # family-first fold cuts its own run" -- under a family-first order,
+    # the given name the order declares after the chain left to the
+    # order (decisions/O6, #1024); under the default order the chain
+    # ends the name and stays whole
+    if state.order[0] is not Role.GIVEN and units:
+        cut = _fold_reach(tokens, units[0])
+        if cut < len(units[0]):
+            units[:1] = [units[0][:cut], *_units(tokens, units[0][cut:])]
     if len(units) < 2:
         return
     take = units[-1] if state.order[0] is Role.GIVEN else units[0]

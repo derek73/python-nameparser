@@ -534,13 +534,22 @@ CASES: tuple[Case, ...] = (
          classification="feat(#754)",
          notes="P1's family-first fold leaves family 'de Mesnil', given "
                "'Jean', middle 'Paul'; O6 then takes one unit more"),
-    Case("two_family_names_moves_a_particle_chain_whole_or_not_at_all",
+    Case("two_family_names_cuts_a_family_first_chain_as_the_fold_does",
          "Juan de la Vega Rodríguez",
-         {"given": "de la Vega Rodríguez", "family": "Juan"},
+         {"given": "Rodríguez", "family": "Juan de la Vega"},
+         policy=Policy(name_order=FAMILY_FIRST, two_family_names=True),
+         classification="feat(#1024)",
+         notes="the chain after the family is cut where P1's family-first "
+               "fold cuts its run, the particles and Vega taken, the "
+               "given name the order declares after them left to it; "
+               "2.8.0 read given 'de la Vega Rodríguez', family 'Juan'"),
+    Case("two_family_names_leaves_a_chain_that_is_the_whole_given_part",
+         "Pérez de la Vega",
+         {"given": "de la Vega", "family": "Pérez"},
          policy=Policy(name_order=FAMILY_FIRST, two_family_names=True),
          classification="parity",
-         notes="the given name is one P2 chain; taking it whole would "
-               "leave no given name, so O6 declines"),
+         notes="taking the chain would leave no given name, so O6 "
+               "declines"),
     Case("two_family_names_keeps_the_particle_p6_attached",
          "Beethoven Ludwig Maria van",
          {"given": "Maria", "family": "van Beethoven Ludwig"},
