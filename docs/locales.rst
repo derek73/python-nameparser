@@ -875,6 +875,24 @@ them write one family name. A word Spain bears mostly as a surname,
 it. Choosing ``es`` and
 ``es_ar`` together reads as ``es_ar``.
 
+The longer list costs a name written with two family names whose first
+family name is on it. ``Santiago`` is a given name in 57% of its uses
+in Spain, so ``es_ar`` lists it and reads it as a middle name, where
+``es`` keeps both family names:
+
+.. doctest::
+
+    >>> spain.parse("Carlos Santiago López").family
+    'Santiago López'
+    >>> argentina.parse("Carlos Santiago López").family
+    'López'
+
+That cost is why ``es`` keeps its shorter list: in Spain, Mexico,
+Peru, Bolivia, Ecuador, Costa Rica, Guatemala, Cuba, the Dominican
+Republic and Puerto Rico, the longer list
+reads fewer researchers' names right than ``es``'s does (measured
+2026-11-04).
+
 A compound given name stays opt-in
 (``two_given_names``): people filling a form with a middle-name box put
 the second given name there. ``pt`` turns neither switch on, because it serves every
