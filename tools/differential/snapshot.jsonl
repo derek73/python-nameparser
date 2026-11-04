@@ -1164,8 +1164,8 @@
 {"name": "García Márquez, MJ PhD", "given": "MJ", "family": "García Márquez", "suffix": "PhD", "initials": "M. G. M.", "capitalized_force": "Mj García Márquez PhD"}
 {"name": "García Márquez, Ms G.J.", "title": "Ms", "given": "G.J.", "family": "García Márquez", "initials": "G. G. M."}
 {"name": "García Márquez, PhD G.J.", "given": "García", "family": "Márquez", "suffix": "PhD G.J.", "initials": "G. M."}
+{"name": "García del Valle María", "given": "García", "family": "del Valle María", "initials": "G. V. M."}
 {"name": "García y Bellido, Antonio", "given": "Antonio", "family": "García y Bellido", "initials": "A. G. B."}
-{"name": "García, María del Carmen", "given": "María", "middle": "del Carmen", "family": "García", "initials": "M. C. G."}
 {"name": "Gardner, Augustus P.", "given": "Augustus", "middle": "P.", "family": "Gardner", "initials": "A. P. G."}
 {"name": "Gary Strawsburg, PMP, CSCP, CLSSBB", "given": "Gary", "family": "Strawsburg", "suffix": "PMP, CSCP, CLSSBB", "ambiguities": ["COMMA_STRUCTURE"], "initials": "G. S.", "capitalized_force": "Gary Strawsburg, PMP, CSCP, Clssbb"}
 {"name": "Gebhart GF", "given": "Gebhart", "family": "GF", "initials": "G. G.", "capitalized_force": "Gebhart Gf"}
@@ -2157,6 +2157,7 @@
 {"name": "Juan Anglada y Ruiz", "given": "Juan", "family": "Anglada y Ruiz", "initials": "J. A. R."}
 {"name": "Juan Antonio Rascón Navarro Seña y Redondo", "given": "Juan", "middle": "Antonio Rascón Navarro", "family": "Seña y Redondo", "initials": "J. A. R. N. S. R."}
 {"name": "Juan Antonio de los Heros Fernández", "given": "Juan", "middle": "Antonio", "family": "de los Heros Fernández", "initials": "J. A. H. F."}
+{"name": "Juan Antonio del Valle de la Vega", "given": "Juan", "middle": "Antonio del Valle", "family": "de la Vega", "initials": "J. A. V. V."}
 {"name": "Juan C. Garaikoetxea Urriza", "given": "Juan", "middle": "C. Garaikoetxea", "family": "Urriza", "initials": "J. C. G. U."}
 {"name": "Juan Carlos", "given": "Juan", "family": "Carlos", "initials": "J. C."}
 {"name": "Juan Carlos Pérez", "given": "Juan", "middle": "Carlos", "family": "Pérez", "initials": "J. C. P."}

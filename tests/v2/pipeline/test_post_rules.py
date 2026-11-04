@@ -1458,6 +1458,9 @@ _POLICIES_704 = {
     "both": Policy(two_family_names=True, two_given_names=True),
     "family-first+O7": Policy(name_order=FAMILY_FIRST, two_given_names=True),
     "default": Policy(),
+    "family-first+O6": Policy(name_order=FAMILY_FIRST, two_family_names=True),
+    "turkic+O7": Policy(two_given_names=True,
+                        patronymic_rules={PatronymicRule.TURKIC}),
 }
 _BARE_704 = (Lexicon.default().remove("carmen", "mar", "ángeles", kind="given")
              .remove("kaur", "singh", kind="family"))
@@ -1481,6 +1484,14 @@ _EFFECT_704 = [
     ("Dhillon, Harpreet Kaur", "O7", ("Harpreet", "Kaur", "Dhillon"), ("Harpreet Kaur", "", "Dhillon")),
     ("Harpreet Kaur", "both", ("Harpreet", "", "Kaur"), ("Harpreet", "", "Kaur")),
     ("Harpreet Kaur Dhillon", "default", ("Harpreet", "Kaur", "Dhillon"), ("Harpreet", "Kaur", "Dhillon")),
+    # the #1057 review's rows: O6 declines only the shape O7 takes, not a
+    # family-first unit after the family or a phrase behind a middle; O7
+    # leaves no lone connective as the family, nor the father's name
+    # before a Turkic marker
+    ("García del Carmen María", "family-first+O6", ("María", "", "García del Carmen"), ("María", "", "García del Carmen")),
+    ("Juan Antonio del Carmen de la Vega", "O6", ("Juan", "Antonio", "del Carmen de la Vega"), ("Juan", "Antonio", "del Carmen de la Vega")),
+    ("María del Carmen y", "O7", ("María", "", "del Carmen y"), ("María", "", "del Carmen y")),
+    ("Ali del Carmen oglu", "turkic+O7", ("Ali", "", "del Carmen oglu"), ("Ali", "", "del Carmen oglu")),
 ]
 
 
@@ -1497,7 +1508,7 @@ def test_the_704_table_counts_its_rows() -> None:
     # the table is the properties' negative control only while some rows
     # move without them and some do not
     moved = [r for r in _EFFECT_704 if r[2] != r[3]]
-    assert len(moved) == 10 and len(_EFFECT_704) - len(moved) == 9
+    assert len(moved) == 10 and len(_EFFECT_704) - len(moved) == 13
 
 
 def test_a_callers_reading_reaches_the_switches() -> None:

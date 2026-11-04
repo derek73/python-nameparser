@@ -1157,9 +1157,9 @@ takes them only if the vocabulary marks the word behind the particle
 as a given name written there (``after_particle``). The Spanish ones
 are marked, those that ORCID's researchers from Spain and Latin America
 write as part of the given name at least nine times in ten (``del
-Carmen``, ``de los Ángeles``, ``del Mar``, ``del Pilar`` and 19 more).
-A phrase that is as often a surname, as Portuguese ``do Carmo`` is,
-stays the family, the same shape as ``"João da Silva Santos"``:
+Carmen``, ``de los Ángeles``, ``del Mar``, ``del Pilar``: 23 words in
+all). A phrase too often a surname to mark, as Portuguese ``do Carmo``
+is, stays the family, the same shape as ``"João da Silva Santos"``:
 
 .. doctest::
 

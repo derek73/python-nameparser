@@ -1,8 +1,8 @@
 # O7 — two given names
 
-**When:** two-given-name handling is active and the given name stands beside a middle name, as in "Juan Carlos Pérez".
+**When:** two-given-name handling is active and the given name stands beside a middle name, as in "Juan Carlos Pérez", or alone before a family that a particle and a given name written behind it open, as in "María del Carmen García".
 
-**Then:** the given name takes the middle unit beside it, so the given name is two name units and any middles past them stay middles.
+**Then:** the given name takes the middle unit beside it, or that particle phrase, so the given name is two name units and any middles past them stay middles.
 
 - **Under the default given-first order, and after a family comma**, the middle written right after the given name joins it.
   ```
@@ -22,12 +22,11 @@
   "María del Carmen de la Vega"  two_given_names  →  given="María del Carmen"
   "Maria do Carmo da Silva"  two_given_names  →  family="da Silva"
   ```
-- **A particle run and the given name written behind it complete the given name**, though the particle chain runs on into the family, where the given name stands alone before the chain and a name word is left for the family: the word behind the particles is one the vocabulary names a given name written that way, as in María del Carmen or María de los Ángeles.
+- **A particle run and the given name written behind it complete the given name**, though the particle chain runs on into the family, where the given name stands alone before the chain and a name word, no connective or particle, is left for the family: the word behind the particles is one the vocabulary names a given name written that way, as in María del Carmen or María de los Ángeles.
   ```
   "María del Carmen García"  two_given_names  →  given="María del Carmen"
   "María del Carmen García"  two_given_names  →  family="García"
   "María de los Ángeles López Pérez"  two_given_names  →  family="López Pérez"
-  "García, María del Carmen"  two_given_names  →  given="María del Carmen"
   "María del Carmen"  two_given_names  →  family="del Carmen"  · boundary
   "Maria da Silva Santos"  two_given_names  →  family="da Silva Santos"  · boundary
   ```
@@ -82,7 +81,7 @@
 
 **Precedence:**
 
-- **Against two-family-name handling** ("Gabriel García Márquez" with both switches on): that rule reads first, since the caller who turns both on says the family holds two names, and this rule takes from the middles it leaves. A name of three words then keeps one given name, and a name of four whose third word that rule takes reads two and two. A listed given name that rule leaves where it is (O6) is a middle, which this rule takes where it stands beside the given name, so a name of three words whose middle is listed reads two given names and one family name. A given name a particle completes is one that rule leaves where it stands (O6), so this rule takes it with both on, and the family it leaves is read as it is written.
+- **Against two-family-name handling** ("Gabriel García Márquez" with both switches on): that rule reads first, since the caller who turns both on says the family holds two names, and this rule takes from the middles it leaves. A name of three words then keeps one given name, and a name of four whose third word that rule takes reads two and two. A listed given name that rule leaves where it is (O6) is a middle, which this rule takes where it stands beside the given name, so a name of three words whose middle is listed reads two given names and one family name. A given name a particle and a word the vocabulary marks complete is one that rule leaves where it stands (O6), so this rule takes it with both on, and the family it leaves is read as it is written; any other particle chain left in the middle that rule takes into the family first.
   ```
   "Gabriel García Márquez"  two_family_names+two_given_names  →  given="Gabriel"
   "José Luis Pérez"  two_family_names+two_given_names+es_given_names  →  given="José Luis"
@@ -92,6 +91,7 @@
   "María José García López"  two_family_names+two_given_names  →  family="García López"
   "María del Carmen de la Vega"  two_family_names+two_given_names  →  given="María del Carmen"
   "María del Carmen García López"  two_family_names+two_given_names  →  family="García López"
+  "Maria do Carmo da Silva"  two_family_names+two_given_names  →  family="do Carmo da Silva"
   ```
 - **Against compound-family handling** ("Hassan Mohamad Ali" with both switches on): this rule reads first, as a bound given-name pair (P5) joins before the fold, and O3 then folds whatever middles are left.
   ```

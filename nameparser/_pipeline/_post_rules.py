@@ -342,9 +342,15 @@ def _take_second_family_name(state: ParseState,
     if any(SHARED_NAME_TAG in tokens[i].tags for i in take + family):
         return
     # rules/O6: "a given name a particle completes stays where it is" --
-    # the unit taken being a particle run and a word classify tags from
-    # Lexicon.particle_given_names (decisions/O6, #704)
-    if _completes_a_given_name(tokens, take):
+    # given-first, the unit taken being the one beside a given name of
+    # one word, a particle run and a word classify tags from
+    # Lexicon.particle_given_names, as rules/O7 would take it; under a
+    # family-first order the unit after the family completes no given
+    # name (decisions/O6, #704)
+    if (state.order[0] is Role.GIVEN and len(units) == 2
+            and _family_word_count(tokens, units[0]) == 1
+            and all(tokens[i].role is Role.GIVEN for i in units[0])
+            and _completes_a_given_name(tokens, take)):
         return
     if state.order[0] is Role.GIVEN:
         # given, middles..., family: the middle unit standing right
@@ -385,7 +391,8 @@ def _completes_a_given_name(tokens: list[WorkToken],
             and PARTICLE_GIVEN_TAG in tokens[unit[-1]].tags)
 
 
-def _take_given_phrase(tokens: list[WorkToken], given: list[int]) -> None:
+def _take_given_phrase(state: ParseState, tokens: list[WorkToken],
+                       given: list[int]) -> None:
     # rules/O7: "a particle run and the given name written behind it
     # complete the given name" -- given-first with no middle between,
     # the family's opening particle run and the one word after it, read
@@ -399,7 +406,16 @@ def _take_given_phrase(tokens: list[WorkToken], given: list[int]) -> None:
     if cut >= len(family) or not _completes_a_given_name(tokens,
                                                           family[:cut]):
         return
-    if not any(ch.isalpha() for i in family[cut:] for ch in tokens[i].text):
+    # a name word left for the family: one with a letter that is no
+    # connective or particle standing alone
+    if not any(any(ch.isalpha() for ch in tokens[i].text)
+               and not {"conjunction", "particle"} & tokens[i].tags
+               for i in family[cut:]):
+        return
+    # and, as for the middle path, no Turkic marker behind the phrase,
+    # whose father's name it would be
+    if (PatronymicRule.TURKIC in state.policy.patronymic_rules
+            and is_patronymic_marker(tokens[family[cut]].text)):
         return
     for i in family[:cut]:
         _retag(tokens, i, Role.GIVEN)
@@ -434,7 +450,7 @@ def _take_second_given_name(state: ParseState,
                             for i in given)
                 and any(ch.isalpha() for i in given
                         for ch in tokens[i].text)):
-            _take_given_phrase(tokens, given)
+            _take_given_phrase(state, tokens, given)
         return
     # the unit beside the given name: the positions lay a given-first
     # part out given, middles..., and FAMILY_FIRST_GIVEN_LAST's
