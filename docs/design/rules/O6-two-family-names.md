@@ -20,7 +20,7 @@
   ```
   "Juan Pérez de la Vega"  two_family_names  →  family="Pérez de la Vega"
   ```
-- **The family keeps the two as units**, the one written second being the second-surname view (R10), whichever of the two the rule took.
+- **The family keeps the two as units**, the one written second being the second-surname view (R10) and the one written first the first-surname views (R11), whichever of the two the rule took.
   ```
   "Gabriel García Márquez"  two_family_names  →  surname2="Márquez"
   "García Márquez Gabriel"  family-first+two_family_names  →  surname2="Márquez"

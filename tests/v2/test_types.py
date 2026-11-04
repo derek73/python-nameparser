@@ -797,6 +797,11 @@ _REFUSED_SKEWS = [
                                            "second_surname", "surname2"),
                  "unexpected fields: surname2",
                  id="renamed-second-surname"),
+    # and Reading.first_surname (3.0, rules/R11)
+    pytest.param(Reading, lambda: _renamed(_reading_state(),
+                                           "first_surname", "surname1"),
+                 "unexpected fields: surname1",
+                 id="renamed-first-surname"),
 ]
 
 
@@ -1479,6 +1484,96 @@ def test_reading_second_surname_is_a_bool_and_is_not_compared() -> None:
         Reading("name", "family", "position", (), 1)  # type: ignore[arg-type]
 
 
+# -- the first-surname views (rules/R11, #1022) ------------------------
+
+#: (text, order, middle_as_family, surname1, surname1_particles,
+#: surname1_base) under two_family_names: the first unit O6 read, an
+#: O3-folded middle in neither unit, a P6-attached particle in the first
+_SURNAME1_CASES = [
+    ("Juan Pérez de la Vega", None, False, "Pérez", "", "Pérez"),
+    ("Juan de la Vega del Valle", None, False, "de la Vega", "de la",
+     "Vega"),
+    ("Gabriel García Márquez", None, False, "García", "", "García"),
+    ("García Márquez Gabriel", FAMILY_FIRST, False, "García", "", "García"),
+    ("García Márquez Ana María", FAMILY_FIRST_GIVEN_LAST, False, "García",
+     "", "García"),
+    ("Ana María García López", None, True, "García", "", "García"),
+    ("Beethoven Ludwig Maria van", FAMILY_FIRST, False, "van Beethoven",
+     "van", "Beethoven"),
+    ("Ali Hassan bin Ahmad", None, False, "Hassan", "", "Hassan"),
+    # one unit: the family's own views
+    ("Juan de la Vega", None, False, "de la Vega", "de la", "Vega"),
+    ("Pérez de la Vega, Juan", None, False, "Pérez de la Vega", "de la",
+     "Pérez Vega"),
+    ("Ana María García-López", None, False, "García-López", "",
+     "García-López"),
+    ("Ana María García López", None, True, "García", "", "García"),
+]
+
+
+@pytest.mark.parametrize("text,order,fold,s1,particles,base",
+                         _SURNAME1_CASES)
+def test_the_surname1_views_read_the_first_unit_o6_read(
+        text: str, order: tuple[Role, Role, Role] | None, fold: bool,
+        s1: str, particles: str, base: str) -> None:
+    kw = {} if order is None else {"name_order": order}
+    pn = Parser(policy=Policy(two_family_names=True, middle_as_family=fold,
+                              **kw)).parse(text)  # type: ignore[arg-type]
+    assert (pn.surname1, pn.surname1_particles, pn.surname1_base) == (
+        s1, particles, base)
+    # without the switch the family is one unit, and the views are its own
+    off = Parser(policy=Policy(middle_as_family=fold, **kw)).parse(  # type: ignore[arg-type]
+        text)
+    assert (off.surname1, off.surname1_particles, off.surname1_base) == (
+        off.family, off.family_particles, off.family_base)
+
+
+def test_the_surname1_views_are_render_keys_and_not_fields() -> None:
+    p = Parser(policy=Policy(two_family_names=True))
+    pn = p.parse("Juan Pérez de la Vega")
+    assert pn.render("{surname1_base}, {given}") == "Pérez, Juan"
+    assert pn.render("{surname1_particles}|{surname1}") == "|Pérez"
+    for view in ("surname1", "surname1_particles", "surname1_base"):
+        assert view not in pn.as_dict()
+        assert view not in repr(pn)
+    # the family views still read the whole family (R2), and initials
+    # it (R3)
+    assert (pn.family_base, pn.initials()) == ("Pérez Vega", "J. P. V.")
+    # a family written by replace() or revise() carries no reading, so
+    # it reads as one unit; rewriting another field keeps the units
+    spliced = pn.replace(family="Pérez de la Vega")
+    assert spliced.surname1_base == spliced.family_base
+    assert p.revise(pn, family="Pérez de la Vega").surname1 == (
+        "Pérez de la Vega")
+    assert pn.replace(title="Dr.").surname1 == "Pérez"
+
+
+def test_a_two_family_name_parsedname_pickled_by_2_8_0_reads_one_unit(
+        ) -> None:
+    # the 2.8.0 fixture above carries no readings, so its family is one
+    # unit to the first-surname views too
+    import pickle
+    with open(Path(__file__).parent / "data"
+              / "parsedname_v28_two_family_names.pickle", "rb") as f:
+        loaded = pickle.load(f)
+    assert (loaded.surname1, loaded.surname1_base) == (
+        "García Márquez", "García Márquez")
+    again = pickle.loads(pickle.dumps(Parser(policy=Policy(
+        two_family_names=True)).parse("Gabriel García Márquez")))
+    assert again.surname1 == "García"
+
+
+def test_reading_first_surname_is_a_bool_and_is_not_compared() -> None:
+    from nameparser import Reading
+    plain = Reading("name", "family", "position")  # type: ignore[arg-type]
+    first = Reading("name", "family", "position", (), False, True)  # type: ignore[arg-type]
+    assert plain.first_surname is False and first.first_surname is True
+    assert first == plain and hash(first) == hash(plain)
+    assert repr(first) == "Reading('name' as 'family', 'position', first surname)"
+    with pytest.raises(TypeError, match=r"first_surname must be a bool, got 1"):
+        Reading("name", "family", "position", (), False, 1)  # type: ignore[arg-type]
+
+
 def test_a_reading_pickled_by_2_8_0_loads_with_no_second_surname() -> None:
     # the alternative fixture's Reading predates the field (ADDED_IN)
     import pickle
@@ -1488,6 +1583,7 @@ def test_a_reading_pickled_by_2_8_0_loads_with_no_second_surname() -> None:
     (amb,) = loaded.ambiguities
     assert amb.alternative is not None
     assert amb.alternative.second_surname is False
+    assert amb.alternative.first_surname is False
     # and a fresh report's alternative never names one
     (now,) = parse("JOHN SMITH MA").ambiguities
     assert now.alternative is not None

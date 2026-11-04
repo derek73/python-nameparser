@@ -785,6 +785,22 @@ has none, a family comma's and a hyphenated one included:
     >>> parse("Gabriel García Márquez").surname2
     ''
 
+``surname1`` is the other one, the first name of the two, with
+``surname1_particles`` and ``surname1_base`` splitting it as
+``family_particles`` and ``family_base`` split the whole family. Where
+the family is read as one, they are the family's own views:
+
+.. doctest::
+
+    >>> vega = Parser(policy=Policy(two_family_names=True)).parse(
+    ...     "Juan de la Vega del Valle")
+    >>> vega.surname1, vega.surname1_particles, vega.surname1_base
+    ('de la Vega', 'de la', 'Vega')
+    >>> vega.family_base, vega.surname2
+    ('Vega Valle', 'del Valle')
+    >>> parse("Juan de la Vega").surname1_base
+    'Vega'
+
 Dicts and strings
 ------------------
 

@@ -824,6 +824,7 @@
 {"name": "Dr. (MA)", "title": "Dr.", "nickname": "MA", "ambiguities": ["SUFFIX_OR_NICKNAME"], "alternatives": ["SUFFIX_OR_NICKNAME: credential as suffix (vocabulary)"], "capitalized_force": "Dr. \"Ma\""}
 {"name": "Dr. Abdul Salam Hassan, MD", "title": "Dr.", "given": "Abdul Salam", "family": "Hassan", "suffix": "MD", "initials": "A. S. H."}
 {"name": "Dr. Ana García López", "title": "Dr.", "given": "Ana", "middle": "García", "family": "López", "initials": "A. G. L."}
+{"name": "Dr. Ana García López Jr.", "title": "Dr.", "given": "Ana", "middle": "García", "family": "López", "suffix": "Jr.", "initials": "A. G. L.", "generation": "Jr."}
 {"name": "Dr. Ardelean Dl Daniel Ionescu Dragoș Ioan Jr.", "order": "FAMILY_FIRST", "title": "Dr.", "given": "Dl", "middle": "Daniel Ionescu Dragoș Ioan", "family": "Ardelean", "suffix": "Jr.", "initials": "D. D. I. D. I. A.", "capitalized_force": "Dr. Ardelean DL Daniel Ionescu Dragoș Ioan Jr.", "generation": "Jr."}
 {"name": "Dr. Do Van Johnson, MD", "title": "Dr.", "given": "Do", "family": "Van Johnson", "suffix": "MD", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "D. J.", "capitalized_force": "Dr. Do van Johnson, MD"}
 {"name": "Dr. Freiherr von Berg, Ed", "title": "Dr.", "given": "Ed", "family": "Freiherr von Berg", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "E. B.", "capitalized_force": "Dr. Ed freiherr von Berg"}
@@ -2191,6 +2192,7 @@
 {"name": "Juan de la Vega", "given": "Juan", "family": "de la Vega", "initials": "J. V."}
 {"name": "Juan de la Vega III", "given": "Juan", "family": "de la Vega", "suffix": "III", "initials": "J. V.", "generation": "III"}
 {"name": "Juan de la Vega Rodríguez", "given": "Juan", "family": "de la Vega Rodríguez", "initials": "J. V. R."}
+{"name": "Juan de la Vega del Valle", "given": "Juan", "middle": "de la Vega", "family": "del Valle", "initials": "J. V. V."}
 {"name": "Juan de la Vega, Jr.", "given": "Juan", "family": "de la Vega", "suffix": "Jr.", "initials": "J. V.", "generation": "Jr."}
 {"name": "Juan de la de la Vega", "given": "Juan", "family": "de la de la Vega", "initials": "J. V."}
 {"name": "Juan de la de la Vega Jr.", "given": "Juan", "family": "de la de la Vega", "suffix": "Jr.", "initials": "J. V.", "generation": "Jr."}
@@ -3088,6 +3090,7 @@
 {"name": "Pérez José Luis", "given": "Pérez", "middle": "José", "family": "Luis", "initials": "P. J. L."}
 {"name": "Pérez Lucía", "order": "FAMILY_FIRST", "given": "Lucía", "family": "Pérez", "initials": "L. P."}
 {"name": "Pérez Luis José", "given": "Pérez", "middle": "Luis", "family": "José", "initials": "P. L. J."}
+{"name": "Pérez de la Vega, Juan", "given": "Juan", "family": "Pérez de la Vega", "initials": "J. P. V."}
 {"name": "Pérez, Antonio Juan Carlos", "given": "Antonio", "middle": "Juan Carlos", "family": "Pérez", "initials": "A. J. C. P."}
 {"name": "Pérez, Juan Carlos", "given": "Juan", "middle": "Carlos", "family": "Pérez", "initials": "J. C. P."}
 {"name": "Pérez, Juan Ó.", "given": "Juan", "middle": "Ó.", "family": "Pérez", "initials": "J. Ó. P."}

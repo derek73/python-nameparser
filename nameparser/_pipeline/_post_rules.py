@@ -49,7 +49,7 @@ from nameparser._pipeline._pieces import (
 )
 from nameparser._pipeline._state import (
     AMBIGUOUS_ACRONYM_TAG, ATTACHED_TAG, NAME_ROLES, PATRONYMIC_TAG,
-    SECOND_SURNAME_TAG,
+    FIRST_SURNAME_TAG, SECOND_SURNAME_TAG,
     ParseState, PendingAmbiguity, PendingReading, Structure,
     WorkToken, _NEVER_FLIPPED, comma_bucket, copy_with,
 )
@@ -316,9 +316,8 @@ def _take_second_family_name(state: ParseState,
         if take[-1] > family[0] or any(
                 tokens[i].role is not Role.MIDDLE for i in take):
             return
-        for i in take:
-            _retag(tokens, i, Role.FAMILY)
-        _mark_second_surname(tokens, family)
+        _mark_surname(tokens, take, FIRST_SURNAME_TAG)
+        _mark_surname(tokens, family, SECOND_SURNAME_TAG)
         return
     # family first: the unit after the family joins it, and what is
     # left is a shorter name of the same order, laid out as the P1
@@ -328,7 +327,8 @@ def _take_second_family_name(state: ParseState,
     if family[0] > units[0][0]:
         return
     # the unit taken joins the family as its second
-    _mark_second_surname(tokens, units[0])
+    _mark_surname(tokens, family, FIRST_SURNAME_TAG)
+    _mark_surname(tokens, units[0], SECOND_SURNAME_TAG)
     for unit, role in zip(units[1:], _name_positions(
             state.order, len(units))[1:]):
         for i in unit:
@@ -393,12 +393,15 @@ def _take_second_given_name(state: ParseState,
 
 # rules/R10: "the family's second name unit, the one written second,
 # makes the second-surname view" -- whichever of the two O6 took
-# (decisions/R10, #754). It moves the unit into the family as
-# it marks it, one copy per word (frame budget).
-def _mark_second_surname(tokens: list[WorkToken], unit: list[int]) -> None:
+# (decisions/R10, #754); and rules/R11: "the family's first name unit,
+# the one written first, makes the first-surname view" -- the other one,
+# marked in the same place (decisions/R11, #1022). It moves a unit into
+# the family as it marks it, one copy per word (frame budget).
+def _mark_surname(tokens: list[WorkToken], unit: list[int],
+                  tag: str) -> None:
     for i in unit:
         tokens[i] = copy_with(tokens[i], role=Role.FAMILY,
-                              tags=tokens[i].tags | {SECOND_SURNAME_TAG})
+                              tags=tokens[i].tags | {tag})
 
 
 def _addressing_run(titles: list[int], name_word: int) -> list[int]:

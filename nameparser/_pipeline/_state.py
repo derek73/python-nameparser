@@ -130,6 +130,13 @@ ATTACHED_TAG = "vocab:attached"
 #: out (rules/R10, 3.0's 4d).
 SECOND_SURNAME_TAG = "vocab:second-surname"
 
+#: Its twin on each word of the FIRST name unit, written in the same
+#: place: the family O6 found under a family-first order (a particle
+#: P6 attached included), the unit it took under the default one, so
+#: a middle O3 folds in afterwards is in neither unit; carried out on
+#: `Reading.first_surname` (rules/R11, #1022).
+FIRST_SURNAME_TAG = "vocab:first-surname"
+
 #: On a word of `Lexicon.titles_ambiguous` whichever way classify read
 #: it (rules/H9): read as a title it carries "vocab:title" too, read
 #: out of the title it carries this alone, which is how assign finds

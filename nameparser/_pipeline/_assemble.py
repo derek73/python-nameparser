@@ -44,6 +44,7 @@ from nameparser._pipeline._state import (
     AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, ATTACHED_TAG,
     CREDENTIAL_WORD_TAG, FIELD_READING, GENERATION_WORD_TAG, HONORIFIC_WORD_TAG,
     NAME_ROLES, PATRONYMIC_TAG, SECOND_SURNAME_TAG, SHAPE_ACRONYM_TAG,
+    FIRST_SURNAME_TAG,
     SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG,
     TITLE_AMBIGUOUS_TAG, TRAILING_TITLE_TAG, Beside, Deferred, ParseState, PendingAmbiguity,
     Structure, WorkToken, comma_bucket,
@@ -227,6 +228,8 @@ _KIND_TAGS = frozenset({GENERATION_WORD_TAG, CREDENTIAL_WORD_TAG, HONORIFIC_WORD
 #: O6's second-surname mark (rules/R10), which no published token
 #: carries either: `Reading.second_surname` names it.
 _SECOND_SURNAME = frozenset({SECOND_SURNAME_TAG})
+#: and its first-unit twin (rules/R11): `Reading.first_surname`.
+_FIRST_SURNAME = frozenset({FIRST_SURNAME_TAG})
 
 #: The tags that say a list or a shape made a word a suffix: without
 #: one, a suffix word stands there by position, unless the vocabulary
@@ -428,6 +431,12 @@ def assemble(state: ParseState) -> ParsedName:
         second = SECOND_SURNAME_TAG in tags
         if second:
             tags = tags - _SECOND_SURNAME
+        # rules/R11: "the family's first name unit, the one written
+        # first, makes the first-surname view" -- O6's other mark, read
+        # and carried out the same way (decisions/R11, #1022)
+        first = FIRST_SURNAME_TAG in tags
+        if first:
+            tags = tags - _FIRST_SURNAME
         # The reading the parse took (Token.reading): the final role
         # says which decision placed the word, and the tags the
         # deciding stages left (classify's, the `joined` and unjoined
@@ -587,7 +596,8 @@ def assemble(state: ParseState) -> ParsedName:
                     # a father in the second surname keeps the mark
                     freading = _reading(ReadingKind.PATRONYMIC, frole,
                                         ReadingSource.POSITION, (),
-                                        freading.second_surname)
+                                        freading.second_surname,
+                                        freading.first_surname)
                 final[markers[i]] = Token(text, span, frole, ftags, freading)
             langs = (_languages(t.text, kind, field, files)
                      if source in _LISTED else ())
@@ -596,8 +606,9 @@ def assemble(state: ParseState) -> ParsedName:
                                                   files))
                     and _listed_whole(t.text, state.lexicon)):
                 langs = ()
-            reading = (_reading(kind, role, source, langs, second)
-                       if langs or second else _READINGS[kind, role, source])
+            reading = (_reading(kind, role, source, langs, second, first)
+                       if langs or second or first
+                       else _READINGS[kind, role, source])
         if not tags.isdisjoint(_KIND_TAGS):
             # the kind tags serve the stages and this one, whatever the
             # word's field (a lone 'Jr' is a given name), the reading
@@ -626,7 +637,8 @@ def assemble(state: ParseState) -> ParsedName:
                                  _reading(ReadingKind.PATRONYMIC,
                                           Role.FAMILY,
                                           ReadingSource.POSITION, (),
-                                          tok.reading.second_surname))
+                                          tok.reading.second_surname,
+                                          tok.reading.first_surname))
     # No alphanumeric character among the SURVIVING tokens means no
     # name: a bare '.' or '- -' is not a person. v1 kept such input
     # (parse('.') -> first '.'); 2.0 empties it so bool() stays an
