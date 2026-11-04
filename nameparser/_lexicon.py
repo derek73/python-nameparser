@@ -532,7 +532,8 @@ _SET_FIELDS = tuple(f for f in _VOCAB_FIELDS if f not in _LIST_FIELDS)
 #: compiled constant of its own.
 _KIND_FIELDS = ("generation_words", "credential_words", "honorific_words",
                 "patronymic_particles", "title_abbreviations",
-                "title_case_name_words")
+                "title_case_name_words", "shared_names",
+                "particle_given_names")
 
 @dataclass(frozen=True, slots=True, eq=False, repr=False)
 class _LexiconSets:
@@ -593,6 +594,14 @@ class _LexiconSets:
     #: `kc`), whose writing leans where a name reading gates them:
     #: lower case is the suffix, Title case the name (rules/S6, #1039)
     title_case_name_words: frozenset[str]
+    #: the names written `shared=True` (Sikh `kaur`, `singh`), which a
+    #: community gives every member: rules/O6 and O7 neither take nor
+    #: complete one (#704)
+    shared_names: frozenset[str]
+    #: the given names written `after_particle=True` (`carmen`), the
+    #: second of a compound given name written behind a particle
+    #: (`María del Carmen`): rules/O7 takes one, O6 leaves it (#704)
+    particle_given_names: frozenset[str]
 
 
 #: Lexicon field -> the compiled constant it is read from, for every
@@ -626,6 +635,8 @@ _COMPILED_FIELDS = {
     "patronymic_particles": "PATRONYMIC_PARTICLES",
     "title_abbreviations": "TITLE_ABBREVIATIONS",
     "title_case_name_words": "TITLE_CASE_NAME_WORDS",
+    "shared_names": "SHARED_NAMES",
+    "particle_given_names": "PARTICLE_GIVEN_NAMES",
 }
 
 
@@ -710,7 +721,7 @@ def _prop_value(kind: str, prop: str, value: object) -> object:
                          and value == _unwritten(kind, prop)):
         return None
     if prop in ("abbreviation", "acronym", "after_given", "may_be_initial",
-                "title_case_is_name"):
+                "title_case_is_name", "shared", "after_particle"):
         if not isinstance(value, bool):
             raise TypeError(f"{prop} must be True or False, got {value!r}")
         return value
@@ -808,6 +819,9 @@ def _edit_words(words: tuple[object, ...], op: str,
 def _edit_props(kind: str, props: Mapping[str, object]) -> _Props:
     ri = _index_module()
     allowed = ri.indexed(kind) - {"default", "cased"}
+    if kind == "family":
+        # a name category's property that only a given name takes
+        allowed -= {"after_particle"}
     out: dict[str, object] = {}
     for prop, value in props.items():
         if prop == "default":
@@ -821,6 +835,11 @@ def _edit_props(kind: str, props: Mapping[str, object]) -> _Props:
                 "capitalization_exceptions, e.g. dataclasses.replace("
                 "lexicon, capitalization_exceptions=(*lexicon."
                 "capitalization_exceptions, ('phd', 'PhD')))")
+        if prop == "after_particle" and kind == "family":
+            raise ValueError(
+                "after_particle names a given name written behind a "
+                "particle (rules/O7), so only a given reading takes it: "
+                "write add(word, kind='given', after_particle=True)")
         if prop not in allowed:
             raise ValueError(
                 f"a {kind} reading takes "
@@ -1564,7 +1583,8 @@ def _shown_value(kind: str | None, prop: str, value: object) -> str:
     its unwritten value where it has one (`may_be_initial=False`)."""
     if value is None and kind is not None and prop in (
             "abbreviation", "acronym", "addresses", "after_given",
-            "may_be_initial", "title_case_is_name"):
+            "may_be_initial", "title_case_is_name", "shared",
+            "after_particle"):
         value = _unwritten(kind, prop)
     if isinstance(value, tuple) and len(value) > _SHOWN_WORDS:
         # bounded: a phrase taken out of a kind's reach lists every

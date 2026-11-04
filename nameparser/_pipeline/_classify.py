@@ -16,7 +16,9 @@ honorific_tails, which script_segment consumes upstream, and the kinds
 of its suffix words and particles (Lexicon's generation_words,
 credential_words, honorific_words and patronymic_particles, internal
 sets, 3.0) and the
-titles written short (title_abbreviations, #999); and, since
+titles written short (title_abbreviations, #999) and the names a
+community gives every member (shared_names) and the given names
+written behind a particle (particle_given_names, #704); and, since
 2.4, Policy.unlisted_dotted_suffixes and Policy.unlisted_caps_suffixes,
 which decide whether an UNLISTED dotted or all-caps token joins the
 ambiguous credential class by SHAPE (#516) -- the all-caps half here
@@ -79,7 +81,7 @@ from nameparser._policy import CapsSuffixes
 from nameparser._pipeline._state import (
     AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, CREDENTIAL_WORD_TAG,
     GENERATION_WORD_TAG, GIVEN_ABBREVIATION_TAG, HONORIFIC_WORD_TAG,
-    PATRONYMIC_TAG, SHAPE_ACRONYM_TAG, SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, TITLE_AMBIGUOUS_TAG,
+    PARTICLE_GIVEN_TAG, PATRONYMIC_TAG, SHAPE_ACRONYM_TAG, SHARED_NAME_TAG, SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, TITLE_AMBIGUOUS_TAG,
     TITLE_CASE_NAME_TAG,
     TRAILING_TITLE_TAG, ParseState,
     Deferred, PendingAmbiguity, PendingReading,
@@ -266,6 +268,14 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
     # carries it and only that test acts on it
     if n in lex._sets.given_name_abbreviations:
         tags.add(GIVEN_ABBREVIATION_TAG)
+    # rules/O6 and O7 read this: a name a community gives every member
+    # is neither taken nor completed by the two-name switches (#704)
+    if n in lex._sets.shared_names:
+        tags.add(SHARED_NAME_TAG)
+    # rules/O7 and O6 read this: a given name written behind a particle
+    # completes the given name it follows (#704)
+    if n in lex._sets.particle_given_names:
+        tags.add(PARTICLE_GIVEN_TAG)
     # maiden markers are NOT tagged here: an entry may be a phrase whose
     # words are not markers on their own, and this function sees one
     # token with no neighbours. `_vocab.tag_marker_runs` does the whole

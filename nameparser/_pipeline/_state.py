@@ -163,6 +163,19 @@ TRAILING_TITLE_TAG = "vocab:trailing-title"
 #: (`_pieces.is_leading_title`, `_vocab.is_title_shaped`).
 GIVEN_ABBREVIATION_TAG = "vocab:given-abbreviation"
 
+#: On a word of `Lexicon.shared_names`, a name a community gives every
+#: member (Sikh 'Kaur', 'Singh'): rules/O6 and O7 decline to move one
+#: (`_post_rules._take_second_family_name`, `_take_second_given_name`).
+#: Dropped from the published token like the kind tags above (#704).
+SHARED_NAME_TAG = "vocab:shared-name"
+
+#: On a word of `Lexicon.particle_given_names`, a given name written
+#: behind a particle as the second of a compound given name ('del
+#: Carmen'): rules/O7 takes the particle run and the word into the
+#: given name, and O6 leaves them. Dropped from the published token
+#: like the kind tags above (#704).
+PARTICLE_GIVEN_TAG = "vocab:particle-given"
+
 #: EITHER way a token joins the ambiguous credential class -- the
 #: vocabulary's claim and the writing's. The two emitters that report
 #: a fork the peel called and declined ask exactly this: `_group`'s

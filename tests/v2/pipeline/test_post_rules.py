@@ -50,6 +50,9 @@ _LEX = (
     # #789), read so only period-marked at the head of the given part;
     # the given reading is also what makes its credential ambiguous
     .add("ma", kind="given", same_as="maría")
+    # `maría` is a given name written behind a particle too ('de
+    # María'), which rules/O7 reads (#704)
+    .add("maría", "maria", kind="given", after_particle=True)
     .add("y", kind="conjunction")
     .add("abdul", kind="bound_given")
 )
@@ -1438,3 +1441,74 @@ def test_the_list_reads_nothing_without_two_family_names(
     assert texts
     assert [t for t in texts
             if plain.parse(t).as_dict() != listed.parse(t).as_dict()] == []
+
+
+#: rules/O6 and O7 read two properties of a name reading (#704): a
+#: given name written behind a particle (`after_particle`, `carmen` in
+#: "María del Carmen") and a name a community gives every member
+#: (`shared`, Sikh `kaur`). Each row's reading with the shipped readings
+#: and with them removed, the recorded negative control (AGENTS.md,
+#: "Guard tests"): rows whose two columns agree are the shapes the
+#: properties must leave alone -- nothing left for the family, a family
+#: comma (whose part O7 already reads whole), a word nobody listed, a
+#: given name of two words, a middle between, and the default policy.
+_POLICIES_704 = {
+    "O7": Policy(two_given_names=True),
+    "O6": Policy(two_family_names=True),
+    "both": Policy(two_family_names=True, two_given_names=True),
+    "family-first+O7": Policy(name_order=FAMILY_FIRST, two_given_names=True),
+    "default": Policy(),
+}
+_BARE_704 = (Lexicon.default().remove("carmen", "mar", "ángeles", kind="given")
+             .remove("kaur", "singh", kind="family"))
+_EFFECT_704 = [
+    ("María del Carmen García", "O7", ("María del Carmen", "", "García"), ("María", "", "del Carmen García")),
+    ("María de los Ángeles López Pérez", "O7", ("María de los Ángeles", "", "López Pérez"), ("María", "", "de los Ángeles López Pérez")),
+    ("Dr. María del Mar García Jr.", "O7", ("María del Mar", "", "García"), ("María", "", "del Mar García")),
+    ("María del Carmen", "O7", ("María", "", "del Carmen"), ("María", "", "del Carmen")),
+    ("García, María del Carmen", "O7", ("María del Carmen", "", "García"), ("María del Carmen", "", "García")),
+    ("Maria da Silva Santos", "O7", ("Maria", "", "da Silva Santos"), ("Maria", "", "da Silva Santos")),
+    ("María-José del Carmen García", "O7", ("María-José", "", "del Carmen García"), ("María-José", "", "del Carmen García")),
+    ("Ana María del Carmen García", "O7", ("Ana María", "", "del Carmen García"), ("Ana María", "", "del Carmen García")),
+    ("García María del Carmen", "family-first+O7", ("María del Carmen", "", "García"), ("María del Carmen", "", "García")),
+    ("María del Carmen de la Vega", "O6", ("María", "del Carmen", "de la Vega"), ("María", "", "del Carmen de la Vega")),
+    ("María del Carmen de la Vega", "both", ("María del Carmen", "", "de la Vega"), ("María", "", "del Carmen de la Vega")),
+    ("María del Carmen García López", "both", ("María del Carmen", "", "García López"), ("María", "", "del Carmen García López")),
+    ("María del Carmen García", "default", ("María", "", "del Carmen García"), ("María", "", "del Carmen García")),
+    ("Harpreet Kaur Dhillon", "O7", ("Harpreet", "Kaur", "Dhillon"), ("Harpreet Kaur", "", "Dhillon")),
+    ("Harpreet Kaur Dhillon", "O6", ("Harpreet", "Kaur", "Dhillon"), ("Harpreet", "", "Kaur Dhillon")),
+    ("Harpreet Simran Kaur", "O6", ("Harpreet", "Simran", "Kaur"), ("Harpreet", "", "Simran Kaur")),
+    ("Dhillon, Harpreet Kaur", "O7", ("Harpreet", "Kaur", "Dhillon"), ("Harpreet Kaur", "", "Dhillon")),
+    ("Harpreet Kaur", "both", ("Harpreet", "", "Kaur"), ("Harpreet", "", "Kaur")),
+    ("Harpreet Kaur Dhillon", "default", ("Harpreet", "Kaur", "Dhillon"), ("Harpreet", "Kaur", "Dhillon")),
+]
+
+
+@pytest.mark.parametrize("text,policy,shipped,bare", _EFFECT_704,
+                         ids=[f"{r[1]}:{r[0]}" for r in _EFFECT_704])
+def test_the_two_name_switches_read_particle_given_and_shared_names(
+        text: str, policy: str, shipped: tuple[str, ...],
+        bare: tuple[str, ...]) -> None:
+    assert _roles(text, _POLICIES_704[policy], Lexicon.default()) == shipped
+    assert _roles(text, _POLICIES_704[policy], _BARE_704) == bare
+
+
+def test_the_704_table_counts_its_rows() -> None:
+    # the table is the properties' negative control only while some rows
+    # move without them and some do not
+    moved = [r for r in _EFFECT_704 if r[2] != r[3]]
+    assert len(moved) == 10 and len(_EFFECT_704) - len(moved) == 9
+
+
+def test_a_callers_reading_reaches_the_switches() -> None:
+    # a caller's add() states the property as a file does (3.0's 4i-b)
+    o7 = Policy(two_given_names=True)
+    mine = (Lexicon.default().add("zorba", kind="given", after_particle=True)
+            .add("zeta", kind="family", shared=True))
+    assert _roles("Ana del Zorba García", o7, mine) == (
+        "Ana del Zorba", "", "García")
+    assert _roles("Ana del Zorba García", o7, Lexicon.default()) == (
+        "Ana", "", "del Zorba García")
+    assert _roles("Ana Zeta García", o7, mine) == ("Ana", "Zeta", "García")
+    assert _roles("Ana Zeta García", o7, Lexicon.default()) == (
+        "Ana Zeta", "", "García")

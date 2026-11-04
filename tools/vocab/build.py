@@ -854,6 +854,15 @@ def _check_reading(r: Reading, pool: Pool) -> None:
             if k not in allowed_here:
                 raise _reserved_or_unknown(where, k, allowed_here)
         _check_default(where, p)
+        for flag in ("shared", "after_particle"):
+            if flag in p and p[flag] is not True:
+                # unwritten is false, so only true says anything
+                raise VocabError(f"{where}: {flag} must be true, or left "
+                                 f"unwritten")
+        if "after_particle" in p and r.kind != "given":
+            raise VocabError(f"{where}: after_particle names a given name "
+                             f"written behind a particle (rules/O7), so "
+                             f"only a `given` reading takes one")
         for src in COUNT_SOURCES & p.keys():
             if not isinstance(p[src], int) or isinstance(p[src], bool) or p[src] < 1:
                 raise VocabError(f"{where}: {src} must be a positive count "
@@ -1298,7 +1307,8 @@ def check_pool(pool: Pool) -> None:
         # an abbreviated given name compiles (GIVEN_NAME_ABBREVIATIONS),
         # and a name's case mask (CAPITALIZATION_EXCEPTIONS, #1014)
         if (all(r.category == "name" and "same_as" not in r.props
-                and "cased" not in r.props for r in rs)
+                and "cased" not in r.props and "shared" not in r.props
+                and "after_particle" not in r.props for r in rs)
                 and text not in excluded_texts):
             warnings.warn(f"{rs[0].where()}: a name reading on a word with no "
                           f"vocabulary reading is inert", VocabWarning, stacklevel=2)
@@ -1313,7 +1323,7 @@ def _behavior(r: Reading, prop: str) -> object:
         att = r.props.get("attached")
         return None if att is None else att.get("side")
     if prop in ("may_be_initial", "after_given", "abbreviation",
-                "title_case_is_name"):
+                "title_case_is_name", "shared", "after_particle"):
         return r.flag(prop)
     if prop == "attaches":
         att = r.props.get("attaches")
@@ -1354,6 +1364,8 @@ CONSTANTS = (
     "PATRONYMIC_PARTICLES",
     "TITLE_ABBREVIATIONS",
     "TITLE_CASE_NAME_WORDS",
+    "SHARED_NAMES",
+    "PARTICLE_GIVEN_NAMES",
 )
 
 

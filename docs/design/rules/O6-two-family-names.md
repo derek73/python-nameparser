@@ -86,6 +86,16 @@
   "Pérez de la Vega"  family-first+two_family_names  →  family="Pérez"
   "Pérez de la Vega y Santos Juan"  family-first+two_family_names  →  given="de la Vega y Santos Juan"
   ```
+- **A given name a particle completes stays where it is**: a particle run and the word behind it that the vocabulary names a given name written that way (O7) are the given name's second, not a surname.
+  ```
+  "María del Carmen de la Vega"  two_family_names  →  middle="del Carmen"
+  "Ana de Miguel de la Vega"  two_family_names  →  family="de Miguel de la Vega"
+  ```
+- **A name a community gives every member is no family name of two**, on either side of the join: Sikh Kaur and Singh, written after the personal name and before a family name or as the only one, are neither taken nor joined.
+  ```
+  "Harpreet Kaur Dhillon"  two_family_names  →  family="Dhillon"
+  "Harpreet Simran Kaur"  two_family_names  →  family="Kaur"
+  ```
 - **An order a name's script set is not a declared one** (W4), and no script it keys writes two family names as separate words, so a name its script reads in an order other than the declared `name_order` is left alone.
   ```
   "王 小 明"  two_family_names  →  family="王"
@@ -146,5 +156,5 @@
 - The rule reports nothing: the caller declared the convention, as a declared order is followed without a report, and a report on most names of three words or more would teach the caller to ignore the field.
 
 ---
-**Signal:** none in the name + position: a caller switch, the family's words and the taken word's shape read as written to see whether the family already holds two; and the word standing where the family would take one, looked up in the caller's given-name list, a vocabulary signal tagged by where the word stands as P1's is
+**Signal:** none in the name + position: a caller switch, the family's words and the taken word's shape read as written to see whether the family already holds two; and the word standing where the family would take one, looked up in the caller's given-name list, a vocabulary signal tagged by where the word stands as P1's is, as are a given name written behind a particle and a name a community gives every member
 **history:** decisions/O6 · **implemented:** nameparser/_pipeline/_post_rules.py

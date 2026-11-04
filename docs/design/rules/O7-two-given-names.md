@@ -22,6 +22,15 @@
   "María del Carmen de la Vega"  two_given_names  →  given="María del Carmen"
   "Maria do Carmo da Silva"  two_given_names  →  family="da Silva"
   ```
+- **A particle run and the given name written behind it complete the given name**, though the particle chain runs on into the family, where the given name stands alone before the chain and a name word is left for the family: the word behind the particles is one the vocabulary names a given name written that way, as in María del Carmen or María de los Ángeles.
+  ```
+  "María del Carmen García"  two_given_names  →  given="María del Carmen"
+  "María del Carmen García"  two_given_names  →  family="García"
+  "María de los Ángeles López Pérez"  two_given_names  →  family="López Pérez"
+  "García, María del Carmen"  two_given_names  →  given="María del Carmen"
+  "María del Carmen"  two_given_names  →  family="del Carmen"  · boundary
+  "Maria da Silva Santos"  two_given_names  →  family="da Silva Santos"  · boundary
+  ```
 - **An initial is taken**, since it writes a given name short.
   ```
   "J. Carlos Pérez"  two_given_names  →  given="J. Carlos"
@@ -61,6 +70,11 @@
   "Ivan Ivanovich Ivanov"  east-slavic+two_given_names  →  given="Ivan"
   "Ivan Ivanovich Ivanov"  east-slavic+two_given_names  →  middle="Ivanovich"
   ```
+- **A name a community gives every member is no given name**, on either side of the join: Sikh Kaur and Singh, written after the personal name and before a family name, stay in the middle.
+  ```
+  "Harpreet Kaur Dhillon"  two_given_names  →  middle="Kaur"
+  "Gurpreet Singh Sandhu"  two_given_names  →  given="Gurpreet"
+  ```
 - **An order a name's script set is not a declared one** (W4), so a name its script reads in an order other than the declared `name_order` is left alone.
   ```
   "王 小 明"  two_given_names  →  given="小"
@@ -68,7 +82,7 @@
 
 **Precedence:**
 
-- **Against two-family-name handling** ("Gabriel García Márquez" with both switches on): that rule reads first, since the caller who turns both on says the family holds two names, and this rule takes from the middles it leaves. A name of three words then keeps one given name, and a name of four whose third word that rule takes reads two and two. A listed given name that rule leaves where it is (O6) is a middle, which this rule takes where it stands beside the given name, so a name of three words whose middle is listed reads two given names and one family name. A given name a particle completes is a particle chain that rule takes into the family first, so it is the family's with both on, where this rule alone reads it as the given name.
+- **Against two-family-name handling** ("Gabriel García Márquez" with both switches on): that rule reads first, since the caller who turns both on says the family holds two names, and this rule takes from the middles it leaves. A name of three words then keeps one given name, and a name of four whose third word that rule takes reads two and two. A listed given name that rule leaves where it is (O6) is a middle, which this rule takes where it stands beside the given name, so a name of three words whose middle is listed reads two given names and one family name. A given name a particle completes is one that rule leaves where it stands (O6), so this rule takes it with both on, and the family it leaves is read as it is written.
   ```
   "Gabriel García Márquez"  two_family_names+two_given_names  →  given="Gabriel"
   "José Luis Pérez"  two_family_names+two_given_names+es_given_names  →  given="José Luis"
@@ -76,8 +90,8 @@
   "Ana María Luis Pérez"  two_family_names+two_given_names+es_given_names  →  middle="Luis"
   "María José García López"  two_family_names+two_given_names  →  given="María José"
   "María José García López"  two_family_names+two_given_names  →  family="García López"
-  "María del Carmen de la Vega"  two_family_names+two_given_names  →  family="del Carmen de la Vega"
-  "María del Carmen de la Vega"  two_given_names  →  given="María del Carmen"
+  "María del Carmen de la Vega"  two_family_names+two_given_names  →  given="María del Carmen"
+  "María del Carmen García López"  two_family_names+two_given_names  →  family="García López"
   ```
 - **Against compound-family handling** ("Hassan Mohamad Ali" with both switches on): this rule reads first, as a bound given-name pair (P5) joins before the fold, and O3 then folds whatever middles are left.
   ```
@@ -96,9 +110,13 @@
   ```
   "Vincent van Gogh van Beethoven"  two_given_names  →  given="Vincent van Gogh"
   ```
-- A particle chain running to the end of the name is the family (P2), so a given name a particle completes is read only where a second particle starts the family: in "Maria do Carmo Silva" the family keeps "do Carmo Silva", the same string shape as "João da Silva Santos", whose family it is.
+- A particle chain running to the end of the name is the family (P2) unless the vocabulary names the word behind its particles, and it names only a word whose phrase ORCID holders write as a given name at least nine times in ten: in "Maria do Carmo Silva" the family keeps "do Carmo Silva", "do Carmo" being a surname too often to name, the same string shape as "João da Silva Santos", whose family it is.
   ```
   "Maria do Carmo Silva"  two_given_names  →  family="do Carmo Silva"
+  ```
+- The family a particle phrase leaves behind keeps the words it was written with, so with both switches on it holds two words as one unit and gives no second-surname view.
+  ```
+  "María del Carmen García López"  two_family_names+two_given_names  →  surname2=""
   ```
 - Where the declared order and a name's script agree, nothing tells the two apart, so under a declared family-first order a spaced Han or Hangul name is read like any other, as O6 reads it.
   ```
@@ -111,5 +129,5 @@
 - The rule reports nothing: the caller declared the convention, as O6's switch reports nothing.
 
 ---
-**Signal:** none in the name: a caller switch, the given name's words and the taken unit's shape read as written
+**Signal:** none in the name + position: a caller switch, the given name's words and the taken unit's shape read as written; and the word behind a particle, looked up as a given name written there, and a name a community gives every member, vocabulary signals tagged by where the word stands, as O6's given-name list is
 **history:** decisions/O7 · **implemented:** nameparser/_pipeline/_post_rules.py

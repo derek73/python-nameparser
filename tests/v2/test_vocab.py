@@ -1099,6 +1099,8 @@ _PROPERTY_PROBES = {
     "abbreviation": ("military", "{ abbreviation = true }", "zzq"),
     "default": ("generation", "{ default = false }", "zzq"),
     "title_case_is_name": ("generation", "{ title_case_is_name = true }", "zzq"),
+    "shared": ("family", '{ shared = true, note = "probe" }', "zzq"),
+    "after_particle": ("given", '{ after_particle = true, note = "probe" }', "zzq"),
     # a phrase needs the head it attaches to: a second title word
     "attaches": ("office", '{ attaches = ["occupation"] }', "zzq",
                  '\n\n[[word]]\ntext = "zzr"\noccupation = {}'),

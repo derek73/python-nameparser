@@ -93,7 +93,7 @@ BEHAVIORAL: dict[str, frozenset[str]] = {
     "conjunction": frozenset({"may_be_initial", "cased", "default"}),
     "bound_given": frozenset({"cased", "default"}),
     "relation": frozenset({"cased", "default"}),
-    "name": frozenset({"cased", "default"}),
+    "name": frozenset({"after_particle", "cased", "default", "shared"}),
 }
 
 #: The suffix word kinds a name reading gates (rules/S11): the third
@@ -152,8 +152,9 @@ class ReadingProperties:
         return self.props.get("default", True) is not False
 
     def flag(self, prop: str) -> bool:
-        """A `may_be_*` flag, `after_given`, `abbreviation` or
-        `title_case_is_name`: unwritten, false."""
+        """A `may_be_*` flag, `after_given`, `abbreviation`,
+        `title_case_is_name`, `shared` or `after_particle`: unwritten,
+        false."""
         return bool(self.props.get(prop, False))
 
     @property
@@ -535,6 +536,8 @@ class Compiled(TypedDict):
     PATRONYMIC_PARTICLES: frozenset[str]
     TITLE_ABBREVIATIONS: frozenset[str]
     TITLE_CASE_NAME_WORDS: frozenset[str]
+    SHARED_NAMES: frozenset[str]
+    PARTICLE_GIVEN_NAMES: frozenset[str]
 
 
 def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
@@ -577,11 +580,17 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
     honorific_words: set[str] = set()
     patronymics: set[str] = set()
     title_case_names: set[str] = set()
+    shared: set[str] = set()
+    after_particle: set[str] = set()
     cased: dict[str, str] = {}
     for r, t in texts:
         p = r.props
         if "cased" in p:
             cased[t] = p["cased"]
+        if r.category == "name" and r.flag("shared"):
+            shared.add(t)
+        if r.kind == "given" and r.flag("after_particle"):
+            after_particle.add(t)
         if r.category == "title":
             titles.add(t)
             if r.addresses == "given":
@@ -690,6 +699,15 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
         # (`fils`, `kc`): of a word gated by a name reading, the one
         # kind whose writing leans (rules/S6, S11, #1039)
         TITLE_CASE_NAME_WORDS=frozenset(title_case_names),
+        # the names a community gives every member (Sikh `kaur`,
+        # `singh`), no personal or family name of the bearer's own,
+        # which the two-name switches neither move nor complete
+        # (rules/O6, O7, #704); internal, like the kind sets above
+        SHARED_NAMES=frozenset(shared),
+        # the given names written behind a particle as the second of a
+        # compound given name (`del Carmen`, `de los Ángeles`), which
+        # rules/O7 takes into the given name and O6 leaves (#704)
+        PARTICLE_GIVEN_NAMES=frozenset(after_particle),
     )
     # One form per post-nominal: the word test strips only edge periods
     # and the acronym test strips all of them, so a word in both is

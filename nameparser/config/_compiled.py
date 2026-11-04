@@ -3079,3 +3079,34 @@ TITLE_CASE_NAME_WORDS: frozenset[str] = frozenset({
     'pc',
     'père',
 })
+
+SHARED_NAMES: frozenset[str] = frozenset({
+    'kaur',
+    'singh',
+})
+
+PARTICLE_GIVEN_NAMES: frozenset[str] = frozenset({
+    'angeles',
+    'caridad',
+    'carmen',
+    'cisne',
+    'concepción',
+    'consuelo',
+    'fátima',
+    'jesús',
+    'lourdes',
+    'mar',
+    'maria',
+    'maría',
+    'mercedes',
+    'milagro',
+    'milagros',
+    'nieves',
+    'pilar',
+    'rocio',
+    'rocío',
+    'rosario',
+    'socorro',
+    'valle',
+    'ángeles',
+})

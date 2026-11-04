@@ -51,6 +51,7 @@ from nameparser._pipeline._pieces import (
 )
 from nameparser._pipeline._state import (
     AMBIGUOUS_ACRONYM_TAG, ATTACHED_TAG, NAME_ROLES, PATRONYMIC_TAG,
+    PARTICLE_GIVEN_TAG, SHARED_NAME_TAG,
     FIRST_SURNAME_TAG, SECOND_SURNAME_TAG,
     ParseState, PendingAmbiguity, PendingReading, Structure,
     WorkToken, _NEVER_FLIPPED, comma_bucket, copy_with,
@@ -335,6 +336,16 @@ def _take_second_family_name(state: ParseState,
             is_listed_given_name(tokens[take[0]].text, state.lexicon)
             or _hyphenated_given(tokens[take[0]].text, state.lexicon)):
         return
+    # rules/O6: "a name a community gives every member is no family
+    # name of two" -- Kaur and Singh, on either side of the join, tagged
+    # at classify from Lexicon.shared_names (decisions/O6, #704)
+    if any(SHARED_NAME_TAG in tokens[i].tags for i in take + family):
+        return
+    # rules/O6: "a given name a particle completes stays where it is" --
+    # the unit taken being a particle run and a word classify tags from
+    # Lexicon.particle_given_names (decisions/O6, #704)
+    if _completes_a_given_name(tokens, take):
+        return
     if state.order[0] is Role.GIVEN:
         # given, middles..., family: the middle unit standing right
         # before the family joins it, and text order already renders
@@ -362,6 +373,38 @@ def _take_second_family_name(state: ParseState,
             _retag(tokens, i, role)
 
 
+def _completes_a_given_name(tokens: list[WorkToken],
+                            unit: list[int]) -> bool:
+    """Whether `unit` is a particle run and ONE word written
+    `after_particle` ('del Carmen'), the second of a compound given
+    name as rules/O7 reads one."""
+    n = 0
+    while n < len(unit) and "particle" in tokens[unit[n]].tags:
+        n += 1
+    return (0 < n == len(unit) - 1
+            and PARTICLE_GIVEN_TAG in tokens[unit[-1]].tags)
+
+
+def _take_given_phrase(tokens: list[WorkToken], given: list[int]) -> None:
+    # rules/O7: "a particle run and the given name written behind it
+    # complete the given name" -- given-first with no middle between,
+    # the family's opening particle run and the one word after it, read
+    # off the tag classify gives a word of Lexicon.particle_given_names,
+    # move to the given name where a name word is left for the family
+    # (decisions/O7, #704)
+    family = _idx(tokens, Role.FAMILY)
+    if not family or family[0] < given[-1]:
+        return
+    cut = _fold_reach(tokens, family)
+    if cut >= len(family) or not _completes_a_given_name(tokens,
+                                                          family[:cut]):
+        return
+    if not any(ch.isalpha() for i in family[cut:] for ch in tokens[i].text):
+        return
+    for i in family[:cut]:
+        _retag(tokens, i, Role.GIVEN)
+
+
 def _take_second_given_name(state: ParseState,
                             tokens: list[WorkToken]) -> None:
     # rules/O7: "the given name takes the middle unit beside it" --
@@ -382,7 +425,16 @@ def _take_second_given_name(state: ParseState,
     # a given name already holding two words keeps what it has: a
     # hyphenated one, or a bound given-name pair (P5), counted as O6
     # counts the family
-    if not given or not middle or _family_word_count(tokens, given) != 1:
+    if not given or _family_word_count(tokens, given) != 1:
+        return
+    if not middle:
+        if (given_first and state.structure is not Structure.FAMILY_COMMA
+                and not any(PATRONYMIC_TAG in tokens[i].tags
+                            or SHARED_NAME_TAG in tokens[i].tags
+                            for i in given)
+                and any(ch.isalpha() for i in given
+                        for ch in tokens[i].text)):
+            _take_given_phrase(tokens, given)
         return
     # the unit beside the given name: the positions lay a given-first
     # part out given, middles..., and FAMILY_FIRST_GIVEN_LAST's
@@ -402,6 +454,11 @@ def _take_second_given_name(state: ParseState,
     # itself; a word an ending rule a policy turns on reads as one; and
     # a Turkic marker's father
     if any(PATRONYMIC_TAG in tokens[i].tags for i in take + given):
+        return
+    # rules/O7: "a name a community gives every member is no given
+    # name" -- Kaur and Singh, on either side of the join, tagged at
+    # classify from Lexicon.shared_names (decisions/O7, #704)
+    if any(SHARED_NAME_TAG in tokens[i].tags for i in take + given):
         return
     rules = state.policy.patronymic_rules
     if rules:

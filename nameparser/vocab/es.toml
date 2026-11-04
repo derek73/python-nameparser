@@ -176,3 +176,95 @@ text = "y"
 [word.conjunction]
 [word.conjunction.excluded]
 may_be_initial = { reason = "the commonest Hispanic double-surname link and this library's oldest fixture, 'Velasquez y Garcia': marking it would read the link of every one-case Hispanic record as a middle initial; a caller who wants the Dutch reading adds it", issue = [383, 479] }
+
+[[word]]
+text = "angeles"
+given = { after_particle = true, note = "the second of a compound given name written behind a particle (de los Ángeles written without its accent): ORCID holders in Spain and Spanish-speaking America end the given box with it behind a particle 327 times and open a family box of more words with it 0 (2026-11-03, #704)" }
+
+[[word]]
+text = "caridad"
+given = { after_particle = true, note = "the second of a compound given name written behind a particle (de la Caridad): ORCID holders in Spain and Spanish-speaking America end the given box with it behind a particle 228 times and open a family box of more words with it 0 (2026-11-03, #704)" }
+
+[[word]]
+text = "carmen"
+given = { after_particle = true, note = "the second of a compound given name written behind a particle (del Carmen): ORCID holders in Spain and Spanish-speaking America end the given box with it behind a particle 1,261 times and open a family box of more words with it 5 (2026-11-03, #704)" }
+
+[[word]]
+text = "cisne"
+given = { after_particle = true, note = "the second of a compound given name written behind a particle (del Cisne): ORCID holders in Spain and Spanish-speaking America end the given box with it behind a particle 29 times and open a family box of more words with it 0 (2026-11-03, #704)" }
+
+[[word]]
+text = "concepción"
+given = { after_particle = true, note = "the second of a compound given name written behind a particle (de la Concepción): ORCID holders in Spain and Spanish-speaking America end the given box with it behind a particle 17 times and open a family box of more words with it 1 (2026-11-03, #704)" }
+
+[[word]]
+text = "consuelo"
+given = { after_particle = true, note = "the second of a compound given name written behind a particle (del Consuelo): ORCID holders in Spain and Spanish-speaking America end the given box with it behind a particle 11 times and open a family box of more words with it 0 (2026-11-03, #704)" }
+
+[[word]]
+text = "fátima"
+given = { after_particle = true, note = "the second of a compound given name written behind a particle (de Fátima): ORCID holders in Spain and Spanish-speaking America end the given box with it behind a particle 27 times and open a family box of more words with it 1; in Portugal, Brazil and Portuguese-speaking Africa 32 and 4, below the 90% the other words meet, so it is Spanish here alone (2026-11-03, #704)" }
+
+[[word]]
+text = "jesús"
+given = { after_particle = true, note = "the second of a compound given name written behind a particle (de Jesús): ORCID holders in Spain and Spanish-speaking America end the given box with it behind a particle 446 times and open a family box of more words with it 11 (2026-11-03, #704)" }
+
+[[word]]
+text = "lourdes"
+given = { after_particle = true, note = "the second of a compound given name written behind a particle (de Lourdes): ORCID holders in Spain and Spanish-speaking America end the given box with it behind a particle 76 times and open a family box of more words with it 0 (2026-11-03, #704)" }
+
+[[word]]
+text = "mar"
+given = { after_particle = true, note = "the second of a compound given name written behind a particle (del Mar): ORCID holders in Spain and Spanish-speaking America end the given box with it behind a particle 86 times and open a family box of more words with it 3 (2026-11-03, #704)" }
+
+[[word]]
+text = "maria"
+given = { after_particle = true, note = "the second of a compound given name written behind a particle (de Maria, without its accent): ORCID holders in Spain and Spanish-speaking America end the given box with it behind a particle 18 times and open a family box of more words with it 1 (2026-11-03, #704)" }
+
+[[word]]
+text = "maría"
+given = { after_particle = true, note = "the second of a compound given name written behind a particle (de María): ORCID holders in Spain and Spanish-speaking America end the given box with it behind a particle 35 times and open a family box of more words with it 3 (2026-11-03, #704)" }
+
+[[word]]
+text = "mercedes"
+given = { after_particle = true, note = "the second of a compound given name written behind a particle (de las Mercedes): ORCID holders in Spain and Spanish-speaking America end the given box with it behind a particle 56 times and open a family box of more words with it 0 (2026-11-03, #704)" }
+
+[[word]]
+text = "milagro"
+given = { after_particle = true, note = "the second of a compound given name written behind a particle (del Milagro): ORCID holders in Spain and Spanish-speaking America end the given box with it behind a particle 30 times and open a family box of more words with it 0 (2026-11-03, #704)" }
+
+[[word]]
+text = "milagros"
+given = { after_particle = true, note = "the second of a compound given name written behind a particle (de los Milagros): ORCID holders in Spain and Spanish-speaking America end the given box with it behind a particle 27 times and open a family box of more words with it 0 (2026-11-03, #704)" }
+
+[[word]]
+text = "nieves"
+given = { after_particle = true, note = "the second of a compound given name written behind a particle (de las Nieves): ORCID holders in Spain and Spanish-speaking America end the given box with it behind a particle 15 times and open a family box of more words with it 0 (2026-11-03, #704)" }
+
+[[word]]
+text = "pilar"
+given = { after_particle = true, note = "the second of a compound given name written behind a particle (del Pilar): ORCID holders in Spain and Spanish-speaking America end the given box with it behind a particle 322 times and open a family box of more words with it 1 (2026-11-03, #704)" }
+
+[[word]]
+text = "rocio"
+given = { after_particle = true, note = "the second of a compound given name written behind a particle (del Rocio, without its accent): ORCID holders in Spain and Spanish-speaking America end the given box with it behind a particle 57 times and open a family box of more words with it 0 (2026-11-03, #704)" }
+
+[[word]]
+text = "rocío"
+given = { after_particle = true, note = "the second of a compound given name written behind a particle (del Rocío): ORCID holders in Spain and Spanish-speaking America end the given box with it behind a particle 77 times and open a family box of more words with it 0 (2026-11-03, #704)" }
+
+[[word]]
+text = "rosario"
+given = { after_particle = true, note = "the second of a compound given name written behind a particle (del Rosario): ORCID holders in Spain and Spanish-speaking America end the given box with it behind a particle 260 times and open a family box of more words with it 27 (2026-11-03, #704)" }
+
+[[word]]
+text = "socorro"
+given = { after_particle = true, note = "the second of a compound given name written behind a particle (del Socorro): ORCID holders in Spain and Spanish-speaking America end the given box with it behind a particle 154 times and open a family box of more words with it 0 (2026-11-03, #704)" }
+
+[[word]]
+text = "valle"
+given = { after_particle = true, note = "the second of a compound given name written behind a particle (del Valle): ORCID holders in Spain and Spanish-speaking America end the given box with it behind a particle 235 times and open a family box of more words with it 26 (2026-11-03, #704)" }
+
+[[word]]
+text = "ángeles"
+given = { after_particle = true, note = "the second of a compound given name written behind a particle (de los Ángeles): ORCID holders in Spain and Spanish-speaking America end the given box with it behind a particle 230 times and open a family box of more words with it 1 (2026-11-03, #704)" }
