@@ -605,8 +605,9 @@ Shipped packs
        ``Pérez``). See `Spanish and Portuguese titles`_.
    * - ``es_ar``
      - Argentine Spanish — ``es`` with a longer given-name list, one
-       holding the given names Argentine names write before a single
-       surname that Spain bears mostly as surnames (``Pablo Sebastián
+       holding given names Argentine names write before a single
+       surname that Spain bears often enough as surnames to leave off
+       ``es``'s list (``Pablo Sebastián
        Rosales`` → family ``Rosales``, where ``es`` gives ``Sebastián
        Rosales``). See `Spanish and Portuguese titles`_.
    * - ``ga``
@@ -847,8 +848,10 @@ measured, the names that agree in every box with the filer rise from
 
 Two family names are less settled in Argentina than in Spain and most
 of Latin America, and many of its commonest second given names, ``Sebastián``, ``Nicolás``,
-``Matías``, ``Andrés``, are words Spain bears mostly as surnames, so
-``es``'s list leaves them out and the switch takes them into the family.
+``Matías``, ``Andrés``, are given names Spain also bears as surnames
+in a sixth to a quarter of their uses, so ``es``'s list, which keeps
+only words given in at least 90% of their uses, leaves them out and the
+switch takes them into the family.
 ``es_ar`` is ``es`` with 5,000 given names from the same census tables,
 the ones counted as given names in at least half their uses:
 
@@ -862,13 +865,14 @@ the ones counted as given names in at least half their uses:
     >>> argentina.parse("Gabriel García Márquez").family
     'García Márquez'
 
-Among the Argentine researchers ORCID holds, the names that agree in
-every box rise from 83.4% by default and 90.2% under ``es`` to 96.1%
-under ``es_ar``; among Argentine inventors on US patents, 93.8% by
+Measured again on 2026-11-04, after later changes to the parser and
+without the records whose given box opens with a title, the Argentine
+researchers' names that agree in every box rise from 83.4% by default
+and 90.2% under ``es`` to 96.1% under ``es_ar``; among Argentine inventors on US patents, 93.8% by
 default, 86.2% under ``es`` and 92.7% under ``es_ar``, since most of
-them write one family name (measured 2026-11-04). A word Spain and
-Argentina both bear mostly as a surname, ``Martín``, ``Esteban``, is
-on neither list, so the switch still takes it. Choosing ``es`` and
+them write one family name. A word Spain bears mostly as a surname,
+``Martín``, ``Esteban``, is on neither list, so the switch still takes
+it. Choosing ``es`` and
 ``es_ar`` together reads as ``es_ar``.
 
 A compound given name stays opt-in

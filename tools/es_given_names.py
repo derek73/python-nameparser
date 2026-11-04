@@ -47,13 +47,15 @@ decided against the same per-country measurement.
 LISTS names each list the tool writes by the pack that carries it, with
 its module, cutoff and share: locales.ES's 1,000 words at 0.9, and
 locales.ES_AR's 5,000 at 0.5 (decisions/O6, 2026-11-04), which keeps
-the words Spain bears mostly as surnames and Argentina as given names
+the given names Spain also bears as surnames too often for the 90% bar
 (`nicolas`, `matias`, `sebastian`). `--list es-AR` writes that one.
 
     uv run --with openpyxl --with xlrd python tools/es_given_names.py
     uv run --with openpyxl --with xlrd python tools/es_given_names.py --write
     uv run --with openpyxl --with xlrd python tools/es_given_names.py --top 500
     uv run --with openpyxl --with xlrd python tools/es_given_names.py --list es-AR --write
+    uv run --with openpyxl --with xlrd python tools/es_given_names.py --share 0.5 \
+        | awk '{print $2}' > LIST   # a candidate list, one word a line
 
 Sources are cached outside the repository, in $NAMEPARSER_TOOLS_CACHE
 or ~/.cache/nameparser-tools (shared with name_usage.py); --refresh

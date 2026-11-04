@@ -474,3 +474,37 @@ def test_main_runs_a_score_end_to_end(monkeypatch: pytest.MonkeyPatch,
     out = capsys.readouterr().out
     assert "[1] default@two_family_names=1" in out
     assert out.splitlines()[-1].split()[:5] == ["PSC", "Brazilian", "2", "100.00", "100.00"]
+
+
+def test_a_second_suffix_or_switches_over_an_expr_is_refused() -> None:
+    with pytest.raises(ValueError, match="one @ suffix"):
+        cd.build("default@two_family_names=1@two_given_names=0")
+    for spec in ("plain:ES@two_given_names=1", "expr:Parser()"):
+        with pytest.raises(ValueError, match="--switches writes"):
+            cd.expand([spec], ["two_family_names"])
+
+
+def test_score_drops_title_and_empty_box_records_and_small_groups(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    big = [_orcid("Ana García López", "Ana", "García López"),
+           _orcid("Ana López", "Ana", ""),                   # no family box: out
+           _orcid("Dr Ana López", "Dr Ana", "López")]        # a title typed as given: out
+    small = [{**_orcid("Bo Lima", "Bo", "Lima"), "country": "YY"}]
+    monkeypatch.setattr(cd, "score_select", lambda *_a: {(cd.ORCID, "XX"): big,
+                                                         (cd.ORCID, "YY"): small})
+    results = cd.score(("default",), [], [], cap=10, floor=1, jobs=1)
+    assert [(r["group"], r["scored"]) for r in results] == [("XX", 1), ("YY", 1)]
+    results = cd.score(("default",), [], [], cap=10, floor=2, jobs=1)
+    assert results == []
+
+
+def test_score_refuses_a_group_or_language_that_selects_nothing(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    _psc(monkeypatch, [("Ana Souza", "Brazilian")])
+    monkeypatch.setattr(cd, "GAP_SOURCES", ((cd.PSC, "nationality"),))
+    with pytest.raises(SystemExit, match="Brazil: no record holds it"):
+        cd.score_select(["Brazil"], [], cap=5)
+    for argv in (["--languages", "bo"], ["--min", "0"]):
+        with pytest.raises(SystemExit) as stop:
+            cd.main(["score", "default", *argv])
+        assert stop.value.code == 2

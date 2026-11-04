@@ -1,10 +1,11 @@
 """Given names for rules/O6's veto under locales.ES_AR: the words
 ``two_family_names`` leaves where they stand in Argentine names, so
 "Nicolás Matías Gómez" keeps family "Gómez". It is locales.ES's list
-cut looser (decisions/O6, 2026-11-04): Argentina writes one surname
-more often than two, and many of its commonest second given names are
-words Spain bears mostly as surnames (``nicolas``, ``matias``,
-``sebastian``), which locales.ES's 90% bar leaves out. It holds every
+cut looser (decisions/O6, 2026-11-04): two family names are less
+settled in Argentina than in Spain, and many of its commonest second
+given names are words Spain also bears as surnames in a sixth to a
+quarter of their uses (``nicolas``, ``matias``, ``sebastian``), which
+locales.ES's 90% bar leaves out. It holds every
 word of locales.ES's list, so the two packs stacked read as this one.
 
 Data source: Elaboración propia con datos extraídos del sitio web del

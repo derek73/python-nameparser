@@ -202,6 +202,9 @@ def switched(spec: str) -> tuple[str, dict[str, bool]]:
         return spec, {}
     from nameparser import Policy
     base, _, suffix = spec.rpartition("@")
+    if "@" in base:
+        raise ValueError(f"{spec!r}: a configuration carries one @ suffix; join its "
+                         f"switches with commas (`default@a=1,b=0`)")
     flags = {f.name for f in dataclasses.fields(Policy) if isinstance(f.default, bool)}
     out: dict[str, bool] = {}
     for item in suffix.split(","):
@@ -288,6 +291,11 @@ def expand(specs: Sequence[str], switches: Sequence[str]) -> list[str]:
     turns on is turned off where the combination says 0."""
     if not switches:
         return list(specs)
+    for spec in specs:
+        if spec.startswith("expr:") or "@" in spec:
+            raise ValueError(f"{spec!r}: --switches writes each configuration's @ suffix "
+                             f"itself, so it takes neither an expr: nor a configuration "
+                             f"already carrying one; set those switches in the SPEC alone")
     combos = itertools.product("01", repeat=len(switches))
     suffixes = [",".join(f"{s}={v}" for s, v in zip(switches, c)) for c in combos]
     return [f"{spec}@{suffix}" for spec in specs for suffix in suffixes]
@@ -922,7 +930,8 @@ def score_select(groups: Sequence[str], languages: Sequence[str], cap: int
     """The first `cap` records of each fielded group asked for: a group
     named in `groups` (as the corpus writes it, a PSC nationality whole),
     or one whose country writes a tag of `languages` (LANGUAGES_OF); with
-    neither, every group."""
+    neither, every group. A named group no record holds is refused, as
+    diff's --group refuses it, so a misspelling is no empty table."""
     out: dict[tuple[str, str], list[dict[str, str]]] = {}
     named, tags = set(groups), set(languages)
     for source, key in GAP_SOURCES:
@@ -936,6 +945,10 @@ def score_select(groups: Sequence[str], languages: Sequence[str], cap: int
             bucket = out.setdefault((source, group), [])
             if len(bucket) < cap:
                 bucket.append(record)
+    if missing := sorted(named - {g for _s, g in out}):
+        raise SystemExit(f"--group {', '.join(missing)}: no record holds it; a group is "
+                         f"matched as the corpus writes it, ORCID and PatentsView an ISO "
+                         f"code such as AR, PSC a nationality such as Argentine")
     return out
 
 
@@ -979,7 +992,9 @@ def score(specs: Sequence[str], groups: Sequence[str], languages: Sequence[str],
     every configuration, the first the comparator."""
     titles, listed = _default_titles()
     # every box filled where the form has two (ORCID, PatentsView): a
-    # holder with no family box says nothing about where it begins
+    # holder with no family box says nothing about where it begins. gaps
+    # keeps them, every configuration it compares reading them alike;
+    # here an absolute agreement is the figure, as decisions/O6 counts it
     selected = {k: [r for r in kept(k[0], v, titles) if k[0] == PSC or all(
                     r.get(box, "").strip() for box in local_agreement.FIELDED[k[0]].fields)]
                 for k, v in sorted(score_select(groups, languages, cap).items())}
@@ -991,7 +1006,7 @@ def score(specs: Sequence[str], groups: Sequence[str], languages: Sequence[str],
     for (source, group), recs in selected.items():
         mine = [next(readings) for _ in recs]
         scored, per = score_rows(recs, local_agreement.FIELDED[source], mine, listed)
-        if scored >= floor:
+        if scored >= max(floor, 1):
             results.append({"source": source, "group": group, "scored": scored,
                             "specs": [dict(spec=s, **dataclasses.asdict(p))
                                       for s, p in zip(specs, per)]})
@@ -1018,6 +1033,13 @@ def format_score(specs: Sequence[str], results: Sequence[dict[str, Any]]) -> lis
 
 # --- command line ----------------------------------------------------------------
 
+def _positive(text: str) -> int:
+    value = int(text)
+    if value < 1:
+        raise argparse.ArgumentTypeError(f"{value} is not a count of 1 or more")
+    return value
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     sub = ap.add_subparsers(dest="mode", required=True)
@@ -1041,7 +1063,7 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--languages", default="", help="language tags, comma-separated: the "
                    "groups whose country writes one (LANGUAGES_OF)")
     s.add_argument("--cap", type=int, default=CAP, help="records per (source, group)")
-    s.add_argument("--min", type=int, default=100, dest="floor",
+    s.add_argument("--min", type=_positive, default=100, dest="floor",
                    help="the fewest scored records for a group to get a row")
     for p in (d, g, s):
         p.add_argument("--jobs", type=int, default=os.cpu_count() or 1)
@@ -1072,7 +1094,10 @@ def main(argv: list[str] | None = None) -> int:
                                             ensure_ascii=False, indent=1), encoding="utf-8")
         return 0
     if args.mode == "score":
-        specs = expand(args.specs, [w for w in args.switches.split(",") if w])
+        try:
+            specs = expand(args.specs, [w for w in args.switches.split(",") if w])
+        except ValueError as exc:
+            ap.error(str(exc))
     elif len(args.specs) < 2:
         ap.error("diff needs two configurations or more, the first the baseline")
     else:
@@ -1086,6 +1111,9 @@ def main(argv: list[str] | None = None) -> int:
         tags = [t for t in args.languages.split(",") if t]
         if unknown := sorted(set(tags) - set(choosable())):
             ap.error(f"--languages {unknown}: no tag a choice can name")
+        written = {t for langs in LANGUAGES_OF.values() for t in langs}
+        if unplaced := sorted(set(tags) - written):
+            ap.error(f"--languages {unplaced}: no country in LANGUAGES_OF writes it")
         results = score(specs, args.group, tags, args.cap, args.floor, args.jobs)
         print(f"{len(results)} groups of {args.floor:,} records or more, cap {args.cap:,}; "
               f"all boxes agreeing, %")
