@@ -384,10 +384,6 @@
   },
   "surname1_base": {
    "expected": "Brühl",
-   "got": "von"
-  },
-  "surname1_particles": {
-   "expected": "von",
    "got": ""
   },
   "surname2": {
@@ -521,10 +517,6 @@
   },
   "surname1_base": {
    "expected": "Miller",
-   "got": "von"
-  },
-  "surname1_particles": {
-   "expected": "von",
    "got": ""
   },
   "surname2": {
@@ -1859,10 +1851,6 @@
   },
   "surname1_base": {
    "expected": "Kant",
-   "got": "von"
-  },
-  "surname1_particles": {
-   "expected": "von",
    "got": ""
   },
   "surname2": {

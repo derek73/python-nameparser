@@ -14,7 +14,9 @@ a nickname), the stable
 folded-middle tag on the words O3 folds and P6's no-comma attachment
 joins to the family, with the attached tag on the latter (rules/R9
 tells the two apart by it), the second-surname tag on each word of the
-family's second unit where O6 reads two (rules/R10), and the ambiguity P6's attachment reports at the end of a name read
+family's second unit where O6 reads two (rules/R10), the first-surname
+tag on each word of the first unit, written by O6 where it reads two
+and by O3 on the family it folds into otherwise (rules/R11), and the ambiguity P6's attachment reports at the end of a name read
 family-first (#467) -- after a family comma, that attachment is
 assign's since #613, and behind an empty part before the comma too
 since #892.
@@ -863,10 +865,14 @@ def post_rules(state: ParseState) -> ParseState:
         # neither unit" -- where O6 marked no units the family before the
         # fold is the first, marked here so the views can leave the
         # folded words out; only a fold that moves a word pays for it
-        # (decisions/R11, #1022)
+        # (decisions/R11, #1022). A family O6 split carries its marks
+        # already; a loop, not a generator, which costs a frame
         if middles:
             family = _idx(tokens, Role.FAMILY)
-            if not any(SECOND_SURNAME_TAG in tokens[i].tags for i in family):
+            for i in family:
+                if FIRST_SURNAME_TAG in tokens[i].tags:
+                    break
+            else:
                 _mark_surname(tokens, family, FIRST_SURNAME_TAG)
         for i in middles:
             tokens[i] = copy_with(

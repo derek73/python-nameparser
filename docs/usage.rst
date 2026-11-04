@@ -788,7 +788,8 @@ has none, a family comma's and a hyphenated one included:
 ``surname1`` is the other one, the first of the two family names, with
 ``surname1_particles`` and ``surname1_base`` splitting it as
 ``family_particles`` and ``family_base`` split the whole family. Where
-the family is read as one, they are the family's own views:
+the family is read as one, they are the family's own views, but for any
+middle names ``middle_as_family`` folds into it:
 
 .. doctest::
 

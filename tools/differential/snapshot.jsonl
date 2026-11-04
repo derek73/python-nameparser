@@ -26,6 +26,7 @@
 {"name": ", Jane van", "given": "Jane", "family": "van", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "J. v.", "capitalized_force": "Jane Van"}
 {"name": ", John", "given": "John", "initials": "J."}
 {"name": ", John (Bob) Smith", "given": "John", "middle": "Smith", "nickname": "Bob", "initials": "J. S."}
+{"name": ", John Paul", "given": "John", "middle": "Paul", "initials": "J. P."}
 {"name": ", John Smith", "given": "John", "middle": "Smith", "initials": "J. S."}
 {"name": ", John Smith Jr.", "given": "John", "middle": "Smith", "suffix": "Jr.", "initials": "J. S.", "generation": "Jr."}
 {"name": ", Jr.", "suffix": "Jr.", "generation": "Jr."}

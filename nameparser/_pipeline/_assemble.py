@@ -432,8 +432,9 @@ def assemble(state: ParseState) -> ParsedName:
         if second:
             tags = tags - _SECOND_SURNAME
         # rules/R11: "the family's first name unit, the one written
-        # first, makes the first-surname view" -- O6's other mark, read
-        # and carried out the same way (decisions/R11, #1022)
+        # first, makes the first-surname view" -- the first-unit mark O6
+        # or O3 writes, read and carried out the same way (decisions/R11,
+        # #1022)
         first = FIRST_SURNAME_TAG in tags
         if first:
             tags = tags - _FIRST_SURNAME

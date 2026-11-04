@@ -1509,23 +1509,13 @@ class ParsedName:
 
     # rules/R11: "the family's first name unit, the one written first,
     # makes the first-surname view" (history: decisions/R11, #1022)
-    def _first_unit(self) -> tuple[bool, bool]:
-        """Whether the parse marked a first unit, and whether every word
-        of it is particle vocabulary. Marked where O6 read two units or
-        O3 folded middles in; a family whose words carry no reading
-        (replace(), Parser.revise, a 2.x pickle) is unmarked and reads
-        whole. An all-particle unit reads its words as name words, as
-        rules/R2 reads an all-particle part ('van' in 'van Gogh
-        Vincent' read family-first under two_family_names)."""
-        marked = False
-        all_particle = True
-        for tok in self.tokens:
-            if (tok.role is Role.FAMILY and tok.reading is not None
-                    and tok.reading.first_surname):
-                marked = True
-                if "particle" not in tok.tags:
-                    all_particle = False
-        return marked, marked and all_particle
+    def _first_unit(self) -> bool:
+        """Whether the parse marked a first unit: where O6 read two
+        units or O3 folded middles in. A family whose words carry no
+        reading (replace(), Parser.revise, a 2.x pickle) is unmarked
+        and reads whole."""
+        return any(tok.role is Role.FAMILY and tok.reading is not None
+                   and tok.reading.first_surname for tok in self.tokens)
 
     @property
     def surname1(self) -> str:
@@ -1536,32 +1526,27 @@ class ParsedName:
         :attr:`family`. A middle name ``middle_as_family`` folds into
         the family is in neither (``García López`` in ``Ana María García
         López`` under ``middle_as_family``)."""
-        return self._text_for(Role.FAMILY, first_unit=self._first_unit()[0])
+        return self._text_for(Role.FAMILY, first_unit=self._first_unit())
 
     @property
     def surname1_particles(self) -> str:
         """:attr:`surname1`'s particles, as :attr:`family_particles` reads
         the whole family's (``de la`` in ``Juan de la Vega del Valle``
-        under ``two_family_names``); a unit of nothing but particles has
-        none, its words being its base."""
-        marked, all_particle = self._first_unit()
-        if all_particle:
-            return ""
+        under ``two_family_names``), so the two units' particles are the
+        family's."""
         return self._text_for(Role.FAMILY, tag="particle",
-                              unless_tag=UNJOINED_TAG, first_unit=marked)
+                              unless_tag=UNJOINED_TAG,
+                              first_unit=self._first_unit())
 
     @property
     def surname1_base(self) -> str:
         """:attr:`surname1` without its particles, as :attr:`family_base`
         reads the whole family (``Pérez`` in ``Juan Pérez de la Vega``
         under ``two_family_names``, where :attr:`family_base` is
-        ``Pérez Vega``); a unit of nothing but particles is its own
-        base."""
-        marked, all_particle = self._first_unit()
-        if all_particle:
-            return self._text_for(Role.FAMILY, first_unit=True)
+        ``Pérez Vega``)."""
         return self._text_for(Role.FAMILY, without_tag="particle",
-                              unless_tag=UNJOINED_TAG, first_unit=marked)
+                              unless_tag=UNJOINED_TAG,
+                              first_unit=self._first_unit())
 
     def _suffix_view(self, kinds: frozenset[ReadingKind] | None) -> str:
         # the `generation` / `honorifics` / `credentials` partition of

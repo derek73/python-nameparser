@@ -1,10 +1,10 @@
 # R11 — the first-surname views
 
-**When:** two-family-name handling has read a name's family as two name units (O6), as in "Juan Pérez de la Vega".
+**When:** two-family-name handling has read a name's family as two name units (O6), as in "Juan Pérez de la Vega", or compound-family handling has folded middle names into it (O3).
 
 **Then:** the family's first name unit, the one written first, makes the first-surname view, split into its particles and its base as the family's own views split the whole family (R2), and a family read as one unit is its own first surname.
 
-**Because:** CLDR's `surname-prefix` and `surname-core` describe the first of two surnames, and CLDR has no prefix field for the second, so a pattern filling them needs the first unit told apart. A base joining words of both surnames is nobody's name, and it sorts and abbreviates wrongly wherever a caller reads the base as the surname to file under. Only O6 knows where the first unit ends, so the views read the unit O6 marked and never a position.
+**Because:** CLDR's `surname-prefix` and `surname-core` describe the first of two surnames, and CLDR has no prefix field for the second, so a pattern filling them needs the first unit told apart. A base joining words of both surnames is nobody's name, and it sorts and abbreviates wrongly wherever a caller reads the base as the surname to file under. Only O6 knows where the first unit ends and only O3 which words it folded in, so the views read the marks those rules leave and never a position.
 
 ```
 "Juan Pérez de la Vega"  two_family_names  →  surname1="Pérez"
@@ -22,7 +22,6 @@
 "Juan de la Vega"           →  surname1="de la Vega"  · boundary
 "Juan de la Vega"           →  surname1_particles="de la"
 "Pérez de la Vega, Juan"  two_family_names  →  surname1_base="Pérez Vega"
-"van Gogh Vincent"  family-first+two_family_names  →  surname1_base="van"
 ```
 
 **Except:**
@@ -52,7 +51,15 @@
   "José María Ortega y Gasset"  two_family_names  →  surname1_base="Ortega y Gasset"
   ```
 - A family word with no reading, one that `replace()` or `Parser.revise()` wrote or in a name unpickled from 2.x, is in no unit, so such a family reads as one and the views are the family's.
+- A first unit of a lone particle, which O6 leaves where it reads a particle and a name word after a family-first family as two surnames, splits as the family does, the particle working there, so its base is empty; the misreading is O6's, and the two units' particles and bases still add up to the family's.
+  ```
+  "van Gogh Vincent"  family-first+two_family_names  →  surname1_base=""
+  ```
+- A fold into a family the name left empty, behind a family comma with nothing before it (C15), has no first unit to keep apart from the folded words, so they are the views.
+  ```
+  ", John Paul"  middle_as_family  →  surname1="Paul"
+  ```
 
 ---
-**Signal:** none in the name: a caller switch, read through the unit two-family-name handling took
+**Signal:** none in the name: caller switches, read through the unit two-family-name handling took and the family compound-family handling folded into
 **history:** decisions/R11 · **implemented:** nameparser/_types.py, nameparser/_pipeline/_post_rules.py, nameparser/_pipeline/_assemble.py

@@ -1507,8 +1507,9 @@ _SURNAME1_CASES = [
      "Pérez Vega"),
     ("Ana María García-López", None, False, "García-López", "",
      "García-López"),
-    # a first unit of nothing but particles is its own base (R2)
-    ("van Gogh Vincent", FAMILY_FIRST, False, "van", "", "van"),
+    # a first unit O6 leaves a lone particle splits as the family does,
+    # the particle working there (R11's Accepted)
+    ("van Gogh Vincent", FAMILY_FIRST, False, "van", "van", ""),
     # a patronymic in either unit keeps the mark where assemble
     # rebuilds the reading
     ("Mammadov Hasan Ali ibn", FAMILY_FIRST, False, "ibn Mammadov", "ibn",
@@ -1532,10 +1533,15 @@ def test_the_surname1_views_read_the_first_unit_o6_read(
     assert (pn.surname1, pn.surname1_particles, pn.surname1_base) == (
         s1, particles, base)
     # without the switch or a fold the family is one unit, and the
-    # views are its own
-    off = Parser(policy=Policy(**kw)).parse(text)  # type: ignore[arg-type]
-    assert (off.surname1, off.surname1_particles, off.surname1_base) == (
-        off.family, off.family_particles, off.family_base)
+    # views are its own; the fold switched on with no middle to fold
+    # leaves them the family's too
+    for policy in (Policy(**kw), Policy(middle_as_family=True, **kw)):  # type: ignore[arg-type]
+        off = Parser(policy=policy).parse(" ".join(text.split()[-1:])
+                                          if policy.middle_as_family
+                                          else text)
+        assert (off.surname1, off.surname1_particles,
+                off.surname1_base) == (off.family, off.family_particles,
+                                       off.family_base)
 
 
 def test_the_surname1_views_leave_out_a_fold_without_two_units() -> None:
@@ -1546,6 +1552,17 @@ def test_the_surname1_views_leave_out_a_fold_without_two_units() -> None:
         "Ana María García López")
     assert (folded.family, folded.surname1, folded.surname1_base) == (
         "María García López", "López", "López")
+    # nothing to fold: the family's own views, a family comma too
+    fold = Parser(policy=Policy(middle_as_family=True))
+    assert fold.parse("John Paul").surname1 == "Paul"
+    assert fold.parse("Smith, John").surname1 == "Smith"
+    assert fold.parse("Smith, John Paul").surname1 == "Smith"
+    # a family written by replace() reads whole again
+    assert folded.replace(family="María García López").surname1 == (
+        "María García López")
+    # a fold into an empty family has no first unit to keep apart
+    # (R11's Accepted)
+    assert fold.parse(", John Paul").surname1 == "Paul"
     from nameparser import PatronymicRule
     turkic = Parser(policy=Policy(
         two_family_names=True,
