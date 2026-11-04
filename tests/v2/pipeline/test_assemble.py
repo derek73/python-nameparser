@@ -340,7 +340,11 @@ _EXPECTED_READINGS = [
     ("Mahathir bin Mohamad", None, "Mohamad", "patronymic", "position"),
     ("Ahmad bin Abdul Rahman", None, "Abdul", "patronymic", "position"),
     ("Mohamad, Mahathir bin", None, "Mohamad", "patronymic", "position"),
-    ("Fritz Freiherr und von Bar", None, "Bar", "particle", "vocabulary"),
+    # particles joined by a connective anchor the base (rules/R2, #939),
+    # so each is a name word, read as the name its file declares
+    ("Fritz Freiherr und von Bar", None, "Bar", "name", "declared"),
+    ("Fritz Freiherr und von Bar", None, "und", "conjunction",
+     "vocabulary"),
     ("bin Mohamad", None, "bin", "name", "declared"),
     ("Ivan Ivanovich Ivanov", Policy(patronymic_rules={"east-slavic"}),  # type: ignore[arg-type]
      "Ivanovich", "patronymic", "shape"),
