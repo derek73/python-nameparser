@@ -180,6 +180,11 @@
   ```
   "Chief Dean and Mary Smith" →  title="Chief Dean and Mary"
   ```
+- Whether a title word may be a given name follows the language choice, so a salutation that another language writing the same script makes the first element of a given name is a title by default, the language a text is in being unknowable from its script, and a name word under that language's choice: Nepali writes `श्री` as a given name's first word where Hindi, Marathi and Konkani write it as Mr., so `श्री कृष्ण श्रेष्ठ` reads title `श्री` by default, and under a Nepali choice `श्री` is a title only inside a title phrase (`His Excellency श्री कृष्ण श्रेष्ठ` → title `His Excellency श्री`) and elsewhere a name word placed by position (#870).
+  ```
+  "श्री कृष्ण श्रेष्ठ"         →  title="श्री"
+  "श्री कृष्ण श्रेष्ठ"  [ne]   →  given="श्री"
+  ```
 
 ---
 **Signal:** neighbor: the titles and connectives beside a listed title word in its run of titles

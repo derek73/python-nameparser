@@ -566,7 +566,7 @@ Shipped packs
      - Spanish — chooses ``es``, which turns on the courtesy, academic
        and professional titles that lead a Spanish name (``Lic.``,
        ``Licenciada``, ``Ingeniero``, ``Arq.``, ``Mtro.``, ``Doctora``,
-       ``Profesora``, ``Doña``; ``Lic Juan Pérez`` → title ``Lic``), and
+       ``Maestra``, ``Doña``; ``Lic Juan Pérez`` → title ``Lic``), and
        reads two family names, a list of Spanish given names keeping a
        given name out of the family (``Gabriel García Márquez`` →
        family ``García Márquez``, ``José Luis Pérez`` → family
@@ -765,7 +765,8 @@ does the same with *Doutor* and *Professora*. Written with a period, the
 abbreviations already read as titles at the head of a name by their
 shape. Written out, or without the period, they read as given names by
 default, since the words are Spanish or Portuguese only. ``es`` and
-``pt`` turn them on:
+``pt`` turn them on (*Profesor* and *Profesora*, written in other
+languages' names too, are titles by default):
 
 .. doctest::
 
@@ -779,7 +780,8 @@ default, since the words are Spanish or Portuguese only. ``es`` and
 
 ``Don``, ``Dona`` and ``Dom`` are not among them: names open with each
 as a given name more often than as the title, Spanish and Portuguese
-data included. An office written before a name with its complement
+data included. Nor is ``Maestro``, a Spanish family name, though
+``Maestra`` is (``Maestra Ana Ruiz Paz`` → title ``Maestra``). An office written before a name with its complement
 (``Ministro de Hacienda Juan Pérez``) is not read either. Names are
 written that way so rarely that the packs leave it alone, and a
 particle behind a title starts the family as it does by default
@@ -840,9 +842,20 @@ whose leading use is the title:
 Two are left out, because the names that open with them outnumber the
 titles even in Indian data. ``Shri`` opens a given name written in two
 words (``Shri Kant``, ``Shri Lakshmi``), and ``Sushri`` an Odia one
-(``Sushri Sangita``), so both stay name words under the packs. ``Smt.``
-and ``Shri.`` written with their period are titles at the head of a name
-by default, packs or no.
+(``Sushri Sangita``), so both stay name words under the packs. A strict
+Hindi choice, which reads no Odia names, reads ``Sushri`` as the title:
+
+.. doctest::
+
+    >>> parser_for(locales.HI).parse("Sushri Sangita Behera").given
+    'Sushri'
+    >>> parser_for(locales.HI, strict=True).parse("Sushri Sangita Behera").title
+    'Sushri'
+
+``Smt.`` and ``Shri.`` written with their period are titles at the head
+of a name by default, packs or no. ``Pandit``, ``Sardar``, ``Kumari``,
+``Babu``, ``Acharya`` and ``Begum`` are titles under no pack: each opens
+far more names as a given name or a surname than as the title.
 
 .. _segmenter-contract:
 
@@ -1023,7 +1036,4 @@ by ``tests/v2/test_locales.py``:
 ``nameparser/locales/ru.py`` is the reference implementation for a
 policy-only pack, ``nameparser/locales/zh.py`` for one that carries
 vocabulary, and ``nameparser/locales/ja.py`` for one whose whole
-contribution is turning a stage on. Packs still in progress are
-tracked in issue `#345
-<https://github.com/derek73/python-nameparser/issues/345>`_ (``hi``
-and ``bn``).
+contribution is turning a stage on.

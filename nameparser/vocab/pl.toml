@@ -5,6 +5,10 @@ text = "pan"
 salutation = { default = false, issue = [606, 753], gender = "m", note = "Polish and Czech Mr., off by default because Pan is the Chinese surname 潘, which leads (US Census 2010 12,664 bearers); a Polish or Czech choice turns it on" }
 
 [[word]]
+text = "profesor"
+academic = { issue = 804, expands = "Profesor, Professor, as in es.toml", note = "the Polish word; 9 of the 113 ClinicalTrials.gov names whose reading #804 moves stand on studies located in Poland (Adam Zając, Profesor); counts are on es.toml's reading (2026-11-03)" }
+
+[[word]]
 text = "hrabia"
 nobility = { gender = "m", expands = "count", issue = 606, note = "borne: ~750 surnames (Poland, where registers often write the surname first), forebears.io, worldwide, rounded, 2026-10-04; shipped under the graf class (decisions/salutation-titles)" }
 
