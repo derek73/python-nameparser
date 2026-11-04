@@ -7,3 +7,7 @@ generation = { issue = 679 }
 [[word]]
 text = "ଜୁନିୟର୍"
 generation = { issue = 679 }
+
+[[word]]
+text = "sushri"
+given = { note = "an Odia given name, alone or before a second given name (Sushri Sangita Behera, Sushri Smita Sahu, Sushri Soumya Jena): ORCID's whole 2025 extract opens 16 given boxes with it, 14 of them beside an Odia family name (decisions/vocabulary-model, phase 3e); declared so that hi.toml's salutation, which a Hindi choice turns on, is a title only inside a title phrase unless the choice is strict (#345)" }

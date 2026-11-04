@@ -594,6 +594,8 @@ TITLES: frozenset[str] = frozenset({
     'producer',
     'prof',
     'prof.ssa',
+    'profesor',
+    'profesora',
     'professeur',
     'professeure',
     'professor',

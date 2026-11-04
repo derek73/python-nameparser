@@ -168,7 +168,7 @@ def test_hi_and_bn_pack_contents() -> None:
     assert locales.BN == Locale(code="bn", lexicon=Lexicon.empty(),
                                 languages=frozenset({"bn"}))
     assert changed_words(selected(locales.HI.languages)) == {
-        "shrimati", "shriyut", "smt"}
+        "shrimati", "shriyut", "smt", "sushri"}
     assert changed_words(selected(locales.BN.languages)) == {
         "adhyapak", "shrimati", "smt"}
 
@@ -200,6 +200,22 @@ def test_hi_and_bn_read_the_romanized_salutation_as_the_title() -> None:
     assert bn.parse("Shriyut Ram Prasad").title == ""
 
 
+def test_sushri_is_the_title_only_under_a_strict_hindi_choice() -> None:
+    # #345: hi.toml's sushri salutation is off by default and or.toml
+    # declares the Odia given name, so the plain choice gates it (a title
+    # only inside a title phrase, rules/H9) and a strict one, reading no
+    # or.toml, reads it as the title
+    plain = _require_packed("hi")
+    strict = parser_for(locales.HI, strict=True)
+    for text in ("Sushri Sangita Behera", "Behera, Sushri Sangita",
+                 "Dr. Sushri Sangita Behera"):
+        assert plain.parse(text).as_dict() == parse(text).as_dict(), text
+        assert strict.parse(text).given == "Sangita", text
+        assert "Sushri" in strict.parse(text).title, text
+    assert plain.parse("Her Excellency Sushri Sangita Behera").title == (
+        "Her Excellency Sushri")
+
+
 def test_es_and_pt_pack_contents() -> None:
     # 3g: es is its choice plus the Spanish given-name list as a lexicon
     # fragment (read by rules/O6 alone); pt is nothing but its choice
@@ -214,8 +230,8 @@ def test_es_and_pt_pack_contents() -> None:
                                 languages=frozenset({"pt"}))
     assert changed_words(selected(locales.ES.languages)) == {
         "arq", "doctora", "doña", "ingeniera", "ingeniero", "lcda",
-        "lcdo", "lic", "licenciada", "licenciado", "mtra", "mtro",
-        "profesor", "profesora"}
+        "lcdo", "lic", "licenciada", "licenciado", "maestra", "mtra",
+        "mtro"}
     assert changed_words(selected(locales.PT.languages)) == {
         "do", "doutor", "doutora", "e", "profa", "professora"}
     # sr keeps es's and pt's generation beside the salutation, so the
@@ -262,9 +278,9 @@ def test_es_and_pt_read_a_leading_title_and_leave_don_a_given_name() -> None:
                         ("Doña María Pérez", "Doña"),
                         ("Mtro. Pérez, Edgar", "Mtro.")):
         assert parse(text).title in ("", "Mtro.") and es.parse(text).title == title
-    assert es.parse("Ana López Profesora.").as_dict() == parse(
-        "Ana López Profesora.").as_dict() | {
-        "title": "Profesora.", "middle": "", "family": "López"}
+    assert es.parse("Ana López Maestra.").as_dict() == parse(
+        "Ana López Maestra.").as_dict() | {
+        "title": "Maestra.", "middle": "", "family": "López"}
     assert pt.parse("Fernanda Lucchese, Doutora").as_dict() == parse(
         "Fernanda Lucchese, Doutora").as_dict() | {
         "title": "Doutora", "given": "Fernanda", "family": "Lucchese"}
@@ -1226,6 +1242,12 @@ _ROTATORS["hi"] = [
     "Shrimati Gandhi, Indira",       # shrimati before a family comma (H6)
     "Smt. Sitharaman, Nirmala",      # smt, dotted, before a family comma
     ", Nirmala Smt.",                # smt, dotted, after an empty head
+    # sushri: or.toml's Odia given name gates it under the plain choice,
+    # so it is a title only inside a title phrase, a style's partner
+    # (rules/H9); at the head, behind Dr. and after a family comma it
+    # reads as the default reads it, and only a strict choice reads it
+    # as the title there
+    "Her Excellency Sushri Sangita Behera",
 ]
 _ROTATORS["bn"] = [
     "Shrimati Mamata Banerjee",      # shrimati at the head
@@ -1314,8 +1336,8 @@ _ROTATORS["es"] = [
     "Mtro. Pérez, Edgar",            # mtro, dotted, before a family comma (H6)
     "Mtra Ana Ruiz",                 # mtra
     "Doctora Montilla",              # doctora
-    "Profesor Segovia",              # profesor
-    "López Profesora.",              # profesora, dotted, ending the name
+    "Maestra Ruiz",                  # maestra
+    "López Maestra.",                # maestra, dotted, ending the name
     "Doña María Pérez",              # doña
     "Gabriel García Márquez",        # rules/O6, the patch
     "María José García López",       # rules/O6 behind a two-word given part
