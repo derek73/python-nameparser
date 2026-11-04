@@ -63,6 +63,7 @@ def _non_name_readings(lexicon: Lexicon) -> dict[str, frozenset[str]]:
 
 
 def _overlap(names: frozenset[str], lexicon: Lexicon) -> dict[str, set[str]]:
+    names = names - tool.FOLD_KEPT
     return {kind: set(names & words)
             for kind, words in _non_name_readings(lexicon).items()
             if names & words}
@@ -87,6 +88,10 @@ def test_the_list_holds_no_word_the_default_reads_as_no_name() -> None:
     # and listing it would contradict the reading that claims it.
     default = Lexicon.default()
     assert _overlap(_es_given_names.GIVEN_NAMES, default) == {}
+    # each kept word is a listed given name a vocabulary word folds to,
+    # so the exception cannot outlive its clash
+    folded = set().union(*_non_name_readings(default).values())
+    assert tool.FOLD_KEPT and tool.FOLD_KEPT <= _es_given_names.GIVEN_NAMES & folded
     planted = _es_given_names.GIVEN_NAMES | {"los", "del", "dr", "dean",
                                              "jr", "y"}
     assert _overlap(planted, default) == _UNGUARDED_EFFECT

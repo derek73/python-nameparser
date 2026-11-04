@@ -68,7 +68,7 @@
 
 **Precedence:**
 
-- **Against two-family-name handling** ("Gabriel García Márquez" with both switches on): that rule reads first, since the caller who turns both on says the family holds two names, and this rule takes from the middles it leaves. A name of three words then keeps one given name, and a name of four whose third word that rule takes reads two and two. A listed given name that rule leaves where it is (O6) is a middle, which this rule takes where it stands beside the given name, so a name of three words whose middle is listed reads two given names and one family name.
+- **Against two-family-name handling** ("Gabriel García Márquez" with both switches on): that rule reads first, since the caller who turns both on says the family holds two names, and this rule takes from the middles it leaves. A name of three words then keeps one given name, and a name of four whose third word that rule takes reads two and two. A listed given name that rule leaves where it is (O6) is a middle, which this rule takes where it stands beside the given name, so a name of three words whose middle is listed reads two given names and one family name. A given name a particle completes is a particle chain that rule takes into the family first, so it is the family's with both on, where this rule alone reads it as the given name.
   ```
   "Gabriel García Márquez"  two_family_names+two_given_names  →  given="Gabriel"
   "José Luis Pérez"  two_family_names+two_given_names+es_given_names  →  given="José Luis"
@@ -76,6 +76,8 @@
   "Ana María Luis Pérez"  two_family_names+two_given_names+es_given_names  →  middle="Luis"
   "María José García López"  two_family_names+two_given_names  →  given="María José"
   "María José García López"  two_family_names+two_given_names  →  family="García López"
+  "María del Carmen de la Vega"  two_family_names+two_given_names  →  family="del Carmen de la Vega"
+  "María del Carmen de la Vega"  two_given_names  →  given="María del Carmen"
   ```
 - **Against compound-family handling** ("Hassan Mohamad Ali" with both switches on): this rule reads first, as a bound given-name pair (P5) joins before the fold, and O3 then folds whatever middles are left.
   ```

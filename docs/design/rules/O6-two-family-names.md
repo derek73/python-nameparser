@@ -25,9 +25,11 @@
   "Juan de la Vega Rodríguez"  family-first+two_family_names  →  family="Juan de la Vega"
   "Pérez de la Vega Juan"  family-first  →  given="de la Vega Juan"  · boundary
   ```
-- **A name word is counted as P1's fold counts one**, so a particle run counts with the word it attaches to: "de la Vega" is one word and takes the word before it.
+- **A name word is counted as P1's fold counts one**, so a particle run counts with the word it attaches to: "de la Vega" is one word and takes the word before it. A hyphenated word counts as one when it is the word taken, where a hyphen in the family counts its words (Except).
   ```
   "Juan Pérez de la Vega"  two_family_names  →  family="Pérez de la Vega"
+  "Andrés Sánchez-Cid Torres"  two_family_names  →  family="Sánchez-Cid Torres"
+  "Torres Sánchez-Cid Andrés"  family-first+two_family_names  →  family="Torres Sánchez-Cid"
   ```
 - **The family keeps the two as units**, the one written second being the second-surname view (R10) and the one written first the first-surname views (R11), whichever of the two the rule took.
   ```
@@ -68,13 +70,15 @@
   ```
   ", Ana García López"  two_family_names  →  family=""
   ```
-- **What is taken must be one name word a family name could be**: a part counting as two words (a hyphenated given name, a bound given-name pair, P5) stays where it is, and so do an initial written alone, which writes a given name, and a mark or number with no letter in it. A particle chain (P2) is split only where the family-first bullet cuts it and otherwise moves whole, and where taking it would leave no given name the rule declines. A listed given name stays where it is too, under either order, and a list written without accents matches the word written with them: the caller's vocabulary names it a word only a given name is, so the name holds one family name. A listed word behind a particle is a surname unit, taken as before.
+- **What is taken must be one name word a family name could be**: a bound given-name pair (P5) written as two words stays where it is, and so do an initial written alone, which writes a given name, and a mark or number with no letter in it. A particle chain (P2) is split only where the family-first bullet cuts it and otherwise moves whole, and where taking it would leave no given name the rule declines. A listed given name stays where it is too, under either order, and so does a hyphenated word every part of which is one or an initial, and a list written without accents matches the word written with them: the caller's vocabulary names it a word only a given name is, so the name holds one family name. A listed word behind a particle is a surname unit, taken as before.
   ```
   "José Luis Pérez"  two_family_names+es_given_names  →  family="Pérez"
   "Jose Luis Perez"  two_family_names+es_given_names  →  middle="Luis"
   "Pérez José Luis"  family-first+two_family_names+es_given_names  →  family="Pérez"
   "Pérez Luis José"  family-first-given-last+two_family_names+es_given_names  →  family="Pérez"
-  "Ana María-José López"  two_family_names  →  family="López"
+  "Ana María-José López"  two_family_names+es_given_names  →  family="López"
+  "Ana M.-J. López"  two_family_names  →  family="López"
+  "Ana M.-José López"  two_family_names+es_given_names  →  family="López"
   "Ana abdul Rahman López"  two_family_names  →  family="López"
   "Ana M. García"  two_family_names  →  family="García"
   "Ana María García - López"  two_family_names  →  family="López"
@@ -109,6 +113,8 @@
 - A name with one family name behind two given names loses its second given name to the family, which is the shape the switch cannot tell from the one it is for: most Argentine and English names of three words or more read wrong under it, and so do Portuguese and Brazilian names whose writer gave the last family name alone as the family. That is why it is off by default and a caller turns it on only for data written this way.
   ```
   "Juan Carlos Pérez"  two_family_names  →  family="Carlos Pérez"
+  "Ana María-José López"  two_family_names  →  family="María-José López"
+  "Ana Abdul-Rahman López"  two_family_names  →  family="Abdul-Rahman López"
   ```
 - A patronymic is a name word like any other here, a patronymic rule on or off, so where no rotation fired it can join the family.
   ```

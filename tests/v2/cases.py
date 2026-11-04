@@ -581,13 +581,27 @@ CASES: tuple[Case, ...] = (
          {"given": "Ana", "middle": "M.", "family": "García"},
          policy=_TWO, classification="parity",
          notes="#754 review: an initial writes a given name"),
-    Case("two_family_names_leaves_a_hyphenated_given_name_before_the_family",
+    Case("two_family_names_takes_a_hyphenated_word_as_one",
+         "Andrés Sánchez-Cid Torres",
+         {"given": "Andrés", "family": "Sánchez-Cid Torres"},
+         policy=_TWO, classification="feat(#959)",
+         notes="a hyphenated word counts as one when it is the word "
+               "taken; 2.8.0 kept 'Sánchez-Cid' a middle name, its two "
+               "words counted as the family's are"),
+    Case("two_family_names_takes_a_hyphenated_given_name_without_a_list",
          "Ana María-José López",
-         {"given": "Ana", "middle": "María-José", "family": "López"},
+         {"given": "Ana", "family": "María-José López"},
+         policy=_TWO, classification="feat(#959)",
+         notes="the switch's cost (O6's Accepted): with no given-name "
+               "list nothing says María-José is a given name; the "
+               "#754 review's reading, middle 'María-José', is what "
+               "the Spanish list's veto gives"),
+    Case("two_family_names_leaves_hyphenated_initials_before_the_family",
+         "Ana M.-J. López",
+         {"given": "Ana", "middle": "M.-J.", "family": "López"},
          policy=_TWO, classification="parity",
-         notes="#754 review: the hyphen's two words count against the "
-               "taken word as they count in the family; the first draft "
-               "read family 'María-José López'"),
+         notes="hyphenated initials write given names, as an initial "
+               "written alone does (#959)"),
     Case("two_family_names_leaves_a_bound_given_pair_before_the_family",
          "Ana abdul Rahman López",
          {"given": "Ana", "middle": "abdul Rahman", "family": "López"},
@@ -5592,6 +5606,58 @@ CASES: tuple[Case, ...] = (
                "middle 'John'. The period-marked 'Cllr.' was already "
                "a title by shape, and a bare trailing 'Cllr' stays a "
                "name word (rules/H5)"),
+    Case("lower_case_pere_ending_a_name_is_the_generation",
+         "Alexandre Dumas père",
+         {"given": "Alexandre", "family": "Dumas", "suffix": "père"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#684)",
+         notes="the Elder, beside fils, and gated as fils is (rules/S11) "
+               "by its family reading; 1.4.0 through 2.8.1 read middle "
+               "'Dumas', family 'père'"),
+    Case("title_case_pere_ending_a_name_is_the_surname",
+         "Olivier Père",
+         {"given": "Olivier", "family": "Père"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#684)",
+         notes="a French surname: Title case leans to the name, as for "
+               "'Marie Fils'; only the report is new"),
+    Case("bare_pr_after_a_comma_is_a_title",
+         "Jean Dupont, Pr",
+         {"title": "Pr", "given": "Jean", "family": "Dupont"},
+         classification="fix(#804)",
+         notes="'pr' is 'professeur' abbreviated, as 'dr' is 'docteur', "
+               "written bare after the name in ClinicalTrials.gov's "
+               "officials 1,454 times; 1.4.0 through 2.8.1 read given "
+               "'Pr', family 'Jean Dupont'"),
+    Case("bare_pr_opening_a_name_is_a_title",
+         "Pr Jean Dupont",
+         {"title": "Pr", "given": "Jean", "family": "Dupont"},
+         classification="fix(#804)",
+         notes="1.4.0 through 2.8.1 read given 'Pr', middle 'Jean'; the "
+               "period-marked 'Pr.' was already a title by shape "
+               "(rules/H2)"),
+    Case("professeur_opening_a_name_is_a_title",
+         "Professeur Jean Dupont",
+         {"title": "Professeur", "given": "Jean", "family": "Dupont"},
+         classification="fix(#804)",
+         notes="1.4.0 through 2.8.1 read given 'Professeur', middle "
+               "'Jean'"),
+    Case("professeure_after_a_family_comma_is_a_title",
+         "Martin, Professeure Anne",
+         {"title": "Professeure", "given": "Anne", "family": "Martin"},
+         classification="fix(#804)",
+         notes="the feminine; 1.4.0 through 2.8.1 read given "
+               "'Professeure', middle "
+               "'Anne'"),
+    Case("pr_initials_alone_after_a_family_comma_read_as_the_title",
+         "Hills, PR",
+         {"title": "PR", "family": "Hills"},
+         classification="fix(#804)",
+         notes="the accepted cost of 'pr' as a title, pinned so it is "
+               "visible: paired initials written PR as the whole given "
+               "part read as the title, as 'Hills, DR' already does; "
+               "1.4.0 through 2.8.1 read given 'PR' "
+               "(decisions/salutation-titles' 2026-11-03 #804 entry)"),
     Case("profesor_after_a_comma_is_a_title",
          "Juan Pérez, Profesor",
          {"title": "Profesor", "given": "Juan", "family": "Pérez"},
