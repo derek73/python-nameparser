@@ -3112,6 +3112,12 @@ def test_a_strict_choice_keeps_mul_and_native_script_vocabulary() -> None:
     # and South Indian initials read as the default reads them
     assert strict.parse("Ms Minh Do").title == "Ms"
     assert strict.parse("Miss Minh Do").title == "Miss"
+    # `mister` with its family reading and `madam` (2026-11-03, #1038),
+    # forms of address an English-language register writes for everyone
+    assert strict.parse("Mister Minh Do").title == "Mister"
+    assert strict.parse("Madam Minh Do").title == "Madam"
+    assert strict.parse("Do, Madam Minh").title == "Madam"
+    assert strict.parse("Do, Minh Madam").title == "Madam"
     assert strict.parse("A Israni, MD, MS").suffix == "MS"
     assert strict.parse("Radha MS").suffix == parse("Radha MS").suffix == "MS"
     # the five degrees #1021 moved (and `ms`'s, above), each after a
@@ -3122,6 +3128,11 @@ def test_a_strict_choice_keeps_mul_and_native_script_vocabulary() -> None:
     # Muhammad, `mx`, the abbreviation for Mexico, and `rn`
     assert strict.parse("Minh Do, MD").given == "MD"
     assert strict.parse("Mx Minh Do").given == "Mx"
+    # and `sir`, a British honour, and the job titles `director` and
+    # `ceo` (#1038)
+    assert strict.parse("Sir Minh Do").given == "Sir"
+    assert strict.parse("Director Minh Do").given == "Director"
+    assert strict.parse("Ceo Minh Do").given == "Ceo"
     assert strict.parse("Minh Do, RN").given == "RN"
     # every reading of `do` (en.toml's credential and name readings,
     # pt.toml's particle) is in a file strict vi does not read, so `Do`
