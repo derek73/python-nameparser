@@ -997,6 +997,13 @@ def _parsedname_order(value: object) -> object:
     (set(GIVEN_FIRST), TypeError, "ordered iterable"),
     (5, TypeError, "must be an iterable"),
     ((Role.GIVEN, Role.FAMILY, Role.MIDDLE), ValueError, "exported orders"),
+    # ParsedName.order's fast path (3.0): one plain string in any
+    # position, and a tuple too short to index, must reach the validator
+    (("given", Role.MIDDLE, Role.FAMILY), TypeError, "must be Role members"),
+    ((Role.GIVEN, "middle", Role.FAMILY), TypeError, "must be Role members"),
+    ((Role.GIVEN, Role.MIDDLE, "family"), TypeError, "must be Role members"),
+    ((Role.GIVEN, Role.FAMILY), ValueError, "exported orders"),
+    ((), ValueError, "exported orders"),
 ])
 def test_every_name_order_field_refuses_the_same_values(
         build: Callable[[object], object], bad: object, exc: type,

@@ -1,7 +1,9 @@
 """Not a stage: converts the final ParseState into a public ParsedName.
 
 Consumes: tokens (all roles set, and their tags, which name each
-token's reading), dropped, order and structure (for ParsedName.order),
+token's reading), dropped, order (for ParsedName.order, and for the
+field a report's alternative names under rules/P1's family-first fold)
+and structure (for ParsedName.order),
 ambiguities (by index;
 one carrying ``field_tail`` is worded from its word's final role,
 #626), segments, for the part a withdrawn connective report's
@@ -127,14 +129,35 @@ def _kinds(kind: ReadingKind, role: Role) -> frozenset[str]:
             if kind is ReadingKind.NAME else _KINDS.get(kind, frozenset()))
 
 
-# Both lookups are memos, C-level on a hit, so a word read before costs
-# no frame (decisions/parse-cost): each is a pure function of the word
-# and the lexicon's readings, which `files` stands for, one object per
-# base, log and choice hashed by identity (decisions/vocabulary-model,
-# 2026-11-02 #754, sub-phase 4i-d), and bounded since what keys them
-# comes from the caller's text; so is `_reading`, of the readings that
-# name files.
+# The lookup is a memo, C-level on a hit, so a word read before costs
+# no frame (decisions/vocabulary-model, 2026-10-29): a pure function of
+# the word and the lexicon's readings, which `files` stands for, one
+# object per base, log and choice hashed by identity
+# (decisions/vocabulary-model, 2026-11-02 #754, sub-phase 4i-d), and
+# bounded (maxsize) because the caller's text keys it; so is `_reading`,
+# of the readings that name files.
 @functools.lru_cache(maxsize=4096)
+def _languages_of(text: str, kind: ReadingKind, role: Role,
+                  files: _ReadingFiles) -> tuple[tuple[str, ...], bool]:
+    """Reading.languages for the `kind` reading of `text` in `role`:
+    the files holding the word whole (`_languages`), else those holding
+    its parts (`_part_languages`); and whether they are its parts',
+    which the caller drops where the parse's own lexicon lists the word
+    whole (`_listed_whole`): that reads the lexicon's `surnames` and
+    `given_names` lists too, which `files` does not stand for, so the
+    memo cannot answer it."""
+    found = _languages(text, kind, role, files)
+    if found:
+        return found, False
+    found = _part_languages(text, kind, role, files)
+    return found, bool(found)
+
+
+#: `_languages_of`'s answer for a reading by position or shape
+#: (`source not in _LISTED`), which names no file.
+_UNLISTED: tuple[tuple[str, ...], bool] = ((), False)
+
+
 def _languages(text: str, kind: ReadingKind, role: Role,
                files: _ReadingFiles) -> tuple[str, ...]:
     """The files holding the `kind` reading of `text` as written, in
@@ -151,14 +174,14 @@ def _languages(text: str, kind: ReadingKind, role: Role,
     return found
 
 
-@functools.lru_cache(maxsize=4096)
 def _part_languages(text: str, kind: ReadingKind, role: Role,
                     files: _ReadingFiles) -> tuple[str, ...]:
     """The files of the listed words `text` joins with punctuation
     ('Lt.Gov.', 'MD/PhD', 'MD;'), sorted: a suffix's parts divided by
     any mark but the period first, each an acronym ('M.D./Ph.D.'),
-    then any word's by every mark. Read only for a word the parse's
-    own lexicon does not list whole (`_listed_whole`)."""
+    then any word's by every mark. Asked only where `_languages` finds
+    nothing (`_languages_of`); its answer is dropped where the parse's
+    own lexicon lists the word whole (`_listed_whole`)."""
     kinds = _kinds(kind, role)
     n = _normalize(text)
     found = (_by_parts(n, kinds, ".", files) if kinds is _SUFFIX_KINDS
@@ -203,6 +226,18 @@ def _listed_whole(text: str, lexicon: Lexicon) -> bool:
     return False
 
 
+def _next_word(tokens: Sequence[WorkToken], dropped: set[int], i: int,
+               step: int) -> int:
+    """The index of the nearest token past `i` in direction `step` (1
+    or -1) that is neither dropped nor a nickname: -1 or len(tokens)
+    where none is. Asked only on the rare shapes its callers name."""
+    j = i + step
+    while 0 <= j < len(tokens) and (j in dropped
+                                    or tokens[j].role is Role.NICKNAME):
+        j += step
+    return j
+
+
 def _split_partner(tokens: tuple[WorkToken, ...], dropped: set[int],
                    i: int) -> str:
     """The text of the second word of the credential split across a
@@ -211,13 +246,11 @@ def _split_partner(tokens: tuple[WorkToken, ...], dropped: set[int],
     the joined suffix word that completes it. Asked only of a split
     credential's first word, so other names pay nothing."""
     # classify tags a split's words only as a pair, so its second word
-    # always follows; an empty default keeps parse total without a
+    # always follows; the bound test keeps parse total without a
     # branch no input reaches
-    nxt = next((tokens[j] for j in range(i + 1, len(tokens))
-                if j not in dropped and tokens[j].role is not Role.NICKNAME),
-               None)
-    return (nxt.text if nxt is not None and nxt.role is Role.SUFFIX
-            and "joined" in nxt.tags else "")
+    j = _next_word(tokens, dropped, i, 1)
+    return (tokens[j].text if j < len(tokens) and tokens[j].role is Role.SUFFIX
+            and "joined" in tokens[j].tags else "")
 
 
 _reading = functools.lru_cache(maxsize=1024)(Reading)
@@ -236,11 +269,10 @@ _KIND_TAGS = frozenset({GENERATION_WORD_TAG, CREDENTIAL_WORD_TAG, HONORIFIC_WORD
                         SHARED_NAME_TAG, PARTICLE_GIVEN_TAG, PAST_REACH_TAG,
                         BOUND_PHRASE_TAG})
 
-#: O6's second-surname mark (rules/R10), which no published token
-#: carries either: `Reading.second_surname` names it.
-_SECOND_SURNAME = frozenset({SECOND_SURNAME_TAG})
-#: and its first-unit twin (rules/R11): `Reading.first_surname`.
-_FIRST_SURNAME = frozenset({FIRST_SURNAME_TAG})
+#: O6's second-surname mark (rules/R10) and the first-unit mark O6 or
+#: O3 writes (rules/R11), which no published token carries either:
+#: `Reading.second_surname` and `Reading.first_surname` name them.
+_SURNAME_UNITS = frozenset({SECOND_SURNAME_TAG, FIRST_SURNAME_TAG})
 
 #: The tags that say a list or a shape made a word a suffix: without
 #: one, a suffix word stands there by position, unless the vocabulary
@@ -258,14 +290,11 @@ _TITLE_TAGS = frozenset({
 
 
 def _alternative(pending: PendingAmbiguity, materialized: tuple[Token, ...],
-                 final: dict[int, Token], middle_as_family: bool,
-                 lexicon: Lexicon,
-                 order: tuple[Role, Role, Role] | None,
-                 work: Sequence[WorkToken],
-                 ambiguities: Sequence[PendingAmbiguity]) -> Reading | None:
+                 final: dict[int, Token],
+                 state: ParseState) -> Reading | None:
     """The public Reading of a report's PendingReading, its field named
     from the final roles where the emitter deferred it (O5's other
-    primary field) and folded as `middle_as_family` folds every middle
+    primary field) and folded as `Policy.middle_as_family` folds every middle
     (rules/O6's neighbour, the policy's own fold), and its languages
     the files holding it for any word the report names."""
     alt = pending.alternative
@@ -298,19 +327,20 @@ def _alternative(pending: PendingAmbiguity, materialized: tuple[Token, ...],
         # another word past the fold's reach was read against the whole
         # chain, which the fold then leaves whole (the one predicate the
         # fold asks)
-        elif (role is Role.FAMILY and order is not None
-                and order[0] is Role.FAMILY and beside.last is not None
+        elif (role is Role.FAMILY and state.order is not None
+                and state.order[0] is Role.FAMILY and beside.last is not None
                 and beside.last in final
                 and "particle" in front.tags
                 and "particle" not in final[beside.last].tags
                 and not reported_suffix_fork(
-                    ambiguities,
+                    state.ambiguities,
                     [i for i in range(beside.index, pending.indices[0])
-                     if PAST_REACH_TAG in work[i].tags], skip=pending)):
+                     if PAST_REACH_TAG in state.tokens[i].tags],
+                    skip=pending)):
             alone = (final[beside.last].role is Role.FAMILY
                      and not any(beside.last < i < pending.indices[0]
                                  for i in final))
-            role = Role.GIVEN if alone else order[2]
+            role = Role.GIVEN if alone else state.order[2]
     elif isinstance(role, (Deferred, Beside)):
         # assign found no name position to name it from
         return None
@@ -321,14 +351,11 @@ def _alternative(pending: PendingAmbiguity, materialized: tuple[Token, ...],
     if alt.source in _LISTED:
         # a loop, not a generator, which would resume a frame per word
         for t in materialized:
-            langs = _languages(t.text, alt.kind, role, lexicon._files)
-            if (not langs
-                    and (langs := _part_languages(t.text, alt.kind, role,
-                                                  lexicon._files))
-                    and _listed_whole(t.text, lexicon)):
-                langs = ()
-            found.update(langs)
-    if middle_as_family and role is Role.MIDDLE:
+            langs, by_parts = _languages_of(t.text, alt.kind, role,
+                                            state.lexicon._files)
+            if not (by_parts and _listed_whole(t.text, state.lexicon)):
+                found.update(langs)
+    if state.policy.middle_as_family and role is Role.MIDDLE:
         role = Role.FAMILY
     return Reading(alt.kind, role, alt.source, tuple(sorted(found)))
 
@@ -369,9 +396,7 @@ def _turkic_patronymics(state: ParseState,
         if (i in dropped or t.role not in _PATRONYMIC_FIELDS
                 or not is_patronymic_marker(t.text)):
             continue
-        j = i - 1
-        while j >= 0 and (j in dropped or tokens[j].role is Role.NICKNAME):
-            j -= 1
+        j = _next_word(tokens, dropped, i, -1)
         if (j >= 0 and tokens[j].role in _PATRONYMIC_FIELDS
                 and (tokens[j].role is Role.MAIDEN) is (t.role is Role.MAIDEN)
                 and comma_bucket(tokens[j].span.start, commas)
@@ -403,10 +428,7 @@ def _patronymic_opening(state: ParseState, dropped: set[int], i: int,
                     and k not in dropped):
                 return True, True
         return False, False
-    j = i + 1
-    while j < len(tokens) and (j in dropped
-                               or tokens[j].role is Role.NICKNAME):
-        j += 1
+    j = _next_word(tokens, dropped, i, 1)
     return (j < len(tokens)
             and _field_of(tokens[j], folds_middle) is field), False
 
@@ -474,15 +496,13 @@ def assemble(state: ParseState) -> ParsedName:
         # words only; the word is read below as it reads without it,
         # and its reading then carries the mark (decisions/R10, #754)
         second = SECOND_SURNAME_TAG in tags
-        if second:
-            tags = tags - _SECOND_SURNAME
         # rules/R11: "the family's first name unit, the one written
         # first, makes the first-surname view" -- the first-unit mark O6
         # or O3 writes, read and carried out the same way (decisions/R11,
         # #1022)
         first = FIRST_SURNAME_TAG in tags
-        if first:
-            tags = tags - _FIRST_SURNAME
+        if second or first:
+            tags = tags - _SURNAME_UNITS
         # The reading the parse took (Token.reading): the final role
         # says which decision placed the word, and the tags the
         # deciding stages left (classify's, the `joined` and unjoined
@@ -500,7 +520,8 @@ def assemble(state: ParseState) -> ParsedName:
         # (Ambiguity.alternative).
         # Reading.languages, the files holding the reading taken, on in
         # the parse's lexicon, is read below for a listed or declared
-        # reading, through `_languages`, whose hit costs no frame
+        # reading, through `_languages_of`, whose hit costs no frame,
+        # save `_listed_whole` for a word read by its parts
         # (decisions/vocabulary-model, 2026-10-29; 2026-11-02, 4i-d).
         reading: Reading | None = None
         if role is Role.SUFFIX:
@@ -534,12 +555,9 @@ def assemble(state: ParseState) -> ParsedName:
                 # of the two words, which the second then takes
                 written = (t.text + _split_partner(tokens, dropped, i)
                            if prev_split else t.text)
-                langs = (_languages(written, kind, role, files)
-                         if source in _LISTED else ())
-                if (not langs and source in _LISTED
-                        and (langs := _part_languages(written, kind, role,
-                                                      files))
-                        and _listed_whole(written, state.lexicon)):
+                langs, by_parts = (_languages_of(written, kind, role, files)
+                                   if source in _LISTED else _UNLISTED)
+                if by_parts and _listed_whole(written, state.lexicon):
                     langs = ()
                 reading = (_reading(kind, role, source, langs) if langs
                            else _READINGS[kind, role, source])
@@ -645,12 +663,9 @@ def assemble(state: ParseState) -> ParsedName:
                                         freading.second_surname,
                                         freading.first_surname)
                 final[markers[i]] = Token(text, span, frole, ftags, freading)
-            langs = (_languages(t.text, kind, field, files)
-                     if source in _LISTED else ())
-            if (not langs and source in _LISTED
-                    and (langs := _part_languages(t.text, kind, field,
-                                                  files))
-                    and _listed_whole(t.text, state.lexicon)):
+            langs, by_parts = (_languages_of(t.text, kind, field, files)
+                               if source in _LISTED else _UNLISTED)
+            if by_parts and _listed_whole(t.text, state.lexicon):
                 langs = ()
             reading = (_reading(kind, role, source, langs, second, first)
                        if langs or second or first
@@ -791,25 +806,18 @@ def assemble(state: ParseState) -> ParsedName:
                       f"{pending.field_tail}")
         ambiguities.append(Ambiguity(
             pending.kind, detail, materialized,
-            _alternative(pending, materialized, final,
-                         state.policy.middle_as_family, state.lexicon,
-                         state.order, state.tokens, state.ambiguities)))
+            _alternative(pending, materialized, final, state)))
+    # rules/R6: "the name is laid out in the order it was read in" --
+    # ParsedName.order records that order for the rendering to read:
+    # the order assign read the name in, given-first after a family
+    # comma (which fixes the family without consulting an order), and
+    # the declared name_order where no positional read happened; inline,
+    # since every parse would pay a frame for a helper (decisions/R6,
+    # #754)
+    order = (state.order if state.order is not None
+             else GIVEN_FIRST if state.structure is Structure.FAMILY_COMMA
+             else state.policy.name_order)
     return ParsedName(original=state.original,
                       tokens=tuple(final.values()),
                       ambiguities=tuple(ambiguities),
-                      order=_read_order(state))
-
-
-def _read_order(state: ParseState) -> tuple[Role, Role, Role]:
-    """ParsedName.order: the order assign read the name in, given-first
-    after a family comma (which fixes the family without consulting
-    an order), and the declared name_order where no positional read
-    happened."""
-    # rules/R6: "the name is laid out in the order it was read in" --
-    # this records that order for the rendering to read (decisions/R6,
-    # #754)
-    if state.order is not None:
-        return state.order
-    if state.structure is Structure.FAMILY_COMMA:
-        return GIVEN_FIRST
-    return state.policy.name_order
+                      order=order)
