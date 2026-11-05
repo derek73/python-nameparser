@@ -2199,6 +2199,7 @@
 {"name": "Juan Samper Sordo", "given": "Juan", "middle": "Samper", "family": "Sordo", "initials": "J. S. S."}
 {"name": "Juan Santos Fernández", "given": "Juan", "middle": "Santos", "family": "Fernández", "initials": "J. S. F."}
 {"name": "Juan Sordo Madaleno", "given": "Juan", "middle": "Sordo", "family": "Madaleno", "initials": "J. S. M."}
+{"name": "Juan Sta. Maria Reyes", "given": "Juan", "family": "Sta. Maria Reyes", "initials": "J. M. R."}
 {"name": "Juan Suñé Benages", "given": "Juan", "middle": "Suñé", "family": "Benages", "initials": "J. S. B."}
 {"name": "Juan Torres de Vera y Aragón", "given": "Juan", "middle": "Torres", "family": "de Vera y Aragón", "initials": "J. T. V. A."}
 {"name": "Juan Velasquez y Garcia", "given": "Juan", "family": "Velasquez y Garcia", "initials": "J. V. G."}
@@ -3618,7 +3619,7 @@
 {"name": "St Pierre, Ed", "given": "Ed", "family": "St Pierre", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "E. P.", "capitalized_force": "Ed st Pierre"}
 {"name": "St Sir de Mesnil", "title": "St Sir", "given": "de Mesnil", "initials": "d. M.", "capitalized_force": "St Sir De Mesnil"}
 {"name": "St van Bishop", "title": "St", "family": "van Bishop", "ambiguities": ["PARTICLE_OR_GIVEN", "TITLE_OR_NAME"], "alternatives": ["PARTICLE_OR_GIVEN: name as given (declared)", "TITLE_OR_NAME: title as title (vocabulary)"], "initials": "B."}
-{"name": "Sta. Maria, Juan", "given": "Juan", "family": "Sta. Maria", "initials": "J. S. M."}
+{"name": "Sta. Maria, Juan", "given": "Juan", "family": "Sta. Maria", "initials": "J. M."}
 {"name": "Stander Zelda Herman", "order": "FAMILY_FIRST", "given": "Zelda", "middle": "Herman", "family": "Stander", "initials": "Z. H. S."}
 {"name": "Stander, Zelda Herman", "given": "Zelda", "middle": "Herman", "family": "Stander", "initials": "Z. H. S."}
 {"name": "Stariji Bruegel", "given": "Stariji", "family": "Bruegel", "initials": "S. B."}

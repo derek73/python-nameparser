@@ -160,7 +160,7 @@ The particle kinds say what the word does in the names of the file's language:
 - `teknonymic`: "father of", naming the bearer by a child (`abu`, `أبو`);
 - `clan`: a lineage prefix, where the word after it is a family name shared by the lineage rather than a parent's name (`mac`, `mc`, `ó`, `ní`, `آل`);
 - `rank`: a former rank written inside the surname (`freiherr`, `freiherrin`);
-- `saint`: "Saint" opening a surname (`san`, `santa`, `st`, `ste`);
+- `saint`: "Saint" opening a surname (`san`, `santa`, `st`, `ste`, `sta`, `sto`);
 - `alias`: a word joining two surnames of one person (`vel`).
 
 Unlike the suffix kinds, one word may take a different particle kind in each language: `de` is a preposition in `fr.toml` and an article in `nl.toml`. Whether a particle may be given is the word's, not the reading's: its `given` reading, in any file, decides it for every particle reading (check 11). On a particle reading, `expands` is the word's meaning in that language, and `note` is reserved for vetting. A never-given particle may rest on its kind and `expands` alone: one attested bearer settles the may-be-given side, but no amount of searching settles absence, so what is recorded is what the word IS (an article, a preposition) rather than a failed search. And a word with a `given` reading whose particle readings carry no `note` in any file sits on the conservative default and nobody has examined it, and so does one whose note says so, as `heer`'s does: counts on the given reading were taken for phase 2's derivation (2026-10-25), not read against the particle position. The test is per word, because a word's note sits in one of its files, not in each: `mac` is examined though only `en.toml` holds its note.

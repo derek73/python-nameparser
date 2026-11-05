@@ -9613,6 +9613,26 @@ CASES: tuple[Case, ...] = (
                "the particle may be given and position places it, as "
                "Van Johnson; 1.4.0 through 2.8.1 read the same fields "
                "and reported nothing"),
+    Case("sta_opens_the_family", "Juan Sta. Maria",
+         {"given": "Juan", "family": "Sta. Maria"},
+         classification="fix(#725)",
+         notes="Sta. is Santa abbreviated, a saint particle (fil.toml); "
+               "1.4.0 through 2.8.1 read middle 'Sta.', family 'Maria'"),
+    Case("sta_run_is_no_second_given_name", "Juan Sta. Maria Reyes",
+         {"given": "Juan", "family": "Sta. Maria Reyes"},
+         classification="fix(#725)",
+         notes="a saint run, which P10 refuses, so 'maria' written "
+               "after_particle completes no given name; 1.4.0 through "
+               "2.8.1 read middle 'Sta. Maria', family 'Reyes'"),
+    Case("sto_opens_the_family_before_a_suffix", "Juan Sto. Tomas Jr.",
+         {"given": "Juan", "family": "Sto. Tomas", "suffix": "Jr."},
+         classification="fix(#725)",
+         notes="1.4.0 through 2.8.1 read middle 'Sto.', family 'Tomas'"),
+    Case("sta_leading_is_no_given_name", "Sta Juan",
+         {"family": "Sta Juan"},
+         classification="fix(#725)",
+         notes="no given reading, as Ste (fil.toml's counts), so P1's "
+               "fold takes the name and nothing is reported"),
     Case("family_comma_particles", "de la Vega, Juan",
          {"given": "Juan", "family": "de la Vega"},
          notes="shape 2's particle-bearing family, before the comma",
