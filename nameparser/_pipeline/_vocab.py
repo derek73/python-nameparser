@@ -382,15 +382,17 @@ def reads_as_generation(text: str, tags: Set[str], preceding: str | None,
 # rules/C3: "a numeral ending the part, or standing before the listed
 # suffix words it ends with, that the trailing fork reads as the generation is
 # no name word" -- asked of the shape-only numerals,
-# the listed ones being suffix words to both counts already;
+# the listed ones being suffix words to every count that asks it already;
 # decisions/C3 (#893)
 def ends_in_a_generation(texts: Sequence[str], one_case: bool | None,
                          ) -> bool:
     """Whether the second of `texts`, two words of a name, is a
-    numeral of two or more letters the vocabulary does not list (VI to
-    IX) that the trailing fork reads as the generation behind the
-    first. The callers find the two words: the numeral ending the name
-    words, past any suffix words behind it."""
+    numeral of two or more letters that the trailing fork reads as the
+    generation behind the first. It reads no tags, so a listed numeral
+    ('III') answers True too: each caller passes only a word it has not
+    already read as a suffix, which leaves the unlisted VI to IX, and
+    finds the two words itself, the numeral ending the name words past
+    any suffix words behind it."""
     last = texts[-1]
     return (len(last.rstrip(".")) >= 2
             and reads_as_generation(last, frozenset(), texts[-2], one_case))
@@ -1685,7 +1687,8 @@ def name_word_count(texts: Sequence[str], lexicon: Lexicon,
                     policy: Policy, letters_one_case: bool | None = None,
                     members: Set[int] = frozenset()) -> int:
     """How many of these texts are NAME words -- not suffix
-    vocabulary, not title vocabulary.
+    vocabulary, not title vocabulary, nor a numeral the trailing fork
+    reads as the generation ending the name words (rules/C3).
 
     rules/C4's count for the ambiguous class, and it is of names
     rather than of words because 'Smith Jr., MA' is two tokens and one
@@ -1706,7 +1709,8 @@ def name_word_count(texts: Sequence[str], lexicon: Lexicon,
     reads as 'Royce, Ed' does. Why the other two joins are not read
     here: `SURNAME_UNIT_TAGS`.
 
-    `letters_one_case` is `is_wholly_suffix`'s, for the same reason.
+    `letters_one_case` is `is_wholly_suffix`'s, for the same reason,
+    and the case fact the generation fork reads (`ParseState.one_case`).
     `members` holds the positions of split credentials' members
     (classify's tag), each half a credential rather than a name, so
     one opening the part stays no name word, as `_comma._whole_name`

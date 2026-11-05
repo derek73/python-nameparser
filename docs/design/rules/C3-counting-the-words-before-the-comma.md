@@ -18,6 +18,7 @@
   "Dumas VI, MA"              →  suffix="VI, MA"
   "Dumas VI MD, Ed"           →  family="Dumas"
   "Dumas Vi, Jr."             →  family="Vi"  · boundary
+  "Dumas Vi, Ed"              →  family="Vi"  · boundary
   "J VI, Jr."                 →  family="VI"  · boundary
   ```
 - **A word that is also title vocabulary is not a particle to this count where it opens the part**, reading there as the title it also is (H1); inside a surname it chains ('de St Pierre, Ed' reads given 'Ed').

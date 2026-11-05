@@ -862,7 +862,8 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             # its predicate; decisions/C3 (#893). The suffix words are
             # stepped over by their tag and the shape tested by a
             # C-level match, so a name ending in a word pays no frame;
-            # a listed numeral is a suffix piece the sum left out
+            # the walk stops short of every listed suffix word, a listed
+            # numeral included, so `last` is never one
             e = len(pieces) - 1
             while (e > 0 and len(pieces[e]) == 1
                    and "vocab:suffix" in tokens[pieces[e][0]].tags):
@@ -870,7 +871,6 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             last = tokens[pieces[e][0]]
             if (e > 0 and len(pieces[e]) == 1
                     and ROMAN.match(last.text.rstrip(".")) is not None
-                    and "vocab:suffix" not in last.tags
                     and pieces[e][0] not in frozen
                     and ends_in_a_generation(
                         [tokens[pieces[e - 1][-1]].text, last.text],

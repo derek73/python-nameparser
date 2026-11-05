@@ -183,8 +183,9 @@ def _whole_name(seg0: Sequence[int], tokens: Sequence[WorkToken],
     holding a word that is not a suffix word -- a title counts, being a
     word to the count an unambiguous credential takes, and so does a
     suffix word opening the part with a name word behind it. A numeral
-    ending the part that the trailing fork reads as the generation is
-    no name word, as a listed one is not (`one_case` is
+    ending the part, or standing before the suffix words that end it,
+    that the trailing fork reads as the generation is no name word, as
+    a listed one is not (`one_case` is
     ParseState.one_case, for that fork)."""
     # rules/C3: "a particle run and the one name word it attaches to are
     # one word"
@@ -215,7 +216,7 @@ def _whole_name(seg0: Sequence[int], tokens: Sequence[WorkToken],
     e = len(seg0) - 1
     while e > 0 and seg0[e] not in named:
         e -= 1
-    if e > 0 and seg0[e] in named and ends_in_a_generation(
+    if e > 0 and ends_in_a_generation(
             [tokens[seg0[e - 1]].text, tokens[seg0[e]].text], one_case):
         named.discard(seg0[e])
     if len(named) < 2:
