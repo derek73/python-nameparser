@@ -3553,6 +3553,7 @@
 {"name": "Smith, John", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Smith, John (Jack)", "given": "John", "family": "Smith", "nickname": "Jack", "initials": "J. S."}
 {"name": "Smith, John (MA)", "given": "John", "family": "Smith", "suffix": "MA", "initials": "J. S."}
+{"name": "Smith, John (V)", "given": "John", "family": "Smith", "suffix": "V", "initials": "J. S.", "generation": "V"}
 {"name": "Smith, John ,", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Smith, John - Paul", "given": "John", "middle": "- Paul", "family": "Smith", "initials": "J. -. P. S."}
 {"name": "Smith, John E, III, Jr", "given": "John", "middle": "E", "family": "Smith", "suffix": "III, Jr", "initials": "J. E. S.", "generation": "III, Jr"}
