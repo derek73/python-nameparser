@@ -3,7 +3,7 @@
 ## Standing
 
 - By default, behind a lone given name of one word read given-first, a particle chain opening with a particle run and a word whose `given` reading is written `after_particle` reads that run and word as a middle name, the chain's other words the family: `María del Carmen García` gives middle 'del Carmen', family 'García' — 2026-11-04 #704.
-- A run holding a particle of the `saint` kind (`san`, `santa`, `st`, `ste`) is never such a phrase, `Santa María` being a surname — 2026-11-04 #704.
+- A run holding a particle of the `saint` kind (`san`, `santa`, `st`, `ste`, and `sta` and `sto`, which decisions/H6 added for #725) is never such a phrase, `Santa María` being a surname — 2026-11-04 #704.
 - The rule reads before rules/O6 and O7, so two-given-name handling takes the phrase as the middle unit beside the given name and two-family-name handling leaves it; O7 no longer reads the phrase itself — 2026-11-04 #704.
 - The rule reports nothing — 2026-11-04 #704.
 

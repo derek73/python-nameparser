@@ -35,9 +35,10 @@
   "María del Carmen 3"        →  family="del Carmen 3"
   "María del Carmen y García"  →  family="del Carmen y García"
   ```
-- **A run holding a saint particle opens a surname**: a phrase written with San, Santa or St names a place or a family, never a given name's second half.
+- **A run holding a saint particle opens a surname**: a phrase written with San, Santa or St, or with Sta. or Sto., names a place or a family, never a given name's second half.
   ```
   "Domingo Santa María González"  →  family="Santa María González"
+  "Juan Sta. Maria Reyes"         →  family="Sta. Maria Reyes"
   ```
 - **The given name must be one name word, and a name word itself**: a given name of two words (a hyphen, a bound given-name pair, P5) keeps what it has, and a patronymic (R9), a name a community gives every member, or a mark with no letter completes nothing.
   ```
