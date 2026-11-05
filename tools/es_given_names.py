@@ -53,6 +53,11 @@ the fold runs one way and the parse's matching stays as it is.
 Martiño's n spelling is the one it leaves out: Martino is a surname in
 most of its uses.
 
+Standard output is the list: each ranked word, then each kept n
+spelling (an `n` row with its summed uses and share); a refused n
+spelling is reported on standard error. `--words` prints any words'
+tallied uses.
+
 LISTS names each list the tool writes by the pack that carries it, with
 its module, cutoff and share: locales.ES's 1,000 words at 0.9, and
 locales.ES_AR's 5,000 at 0.5 (decisions/O6, 2026-11-04), which keeps
@@ -65,6 +70,7 @@ the given names Spain also bears as surnames too often for the 90% bar
     uv run --with openpyxl --with xlrd python tools/es_given_names.py --list es-AR --write
     uv run --with openpyxl --with xlrd python tools/es_given_names.py --share 0.5 \
         | awk '{print $2}' > LIST   # a candidate list, one word a line
+    uv run --with openpyxl --with xlrd python tools/es_given_names.py --words Oña Martino
 
 Sources are cached outside the repository, in $NAMEPARSER_TOOLS_CACHE
 or ~/.cache/nameparser-tools (shared with name_usage.py); --refresh
@@ -300,11 +306,19 @@ def main(argv: list[str] | None = None) -> int:
                         help="fetch the sources again")
     parser.add_argument("--top", type=int, help="the cutoff (default: the list's)")
     parser.add_argument("--share", type=float, help="the share (default: the list's)")
+    parser.add_argument("--words", nargs="+", metavar="WORD",
+                        help="print these words' given and surname uses "
+                             "as tallied, and nothing else")
     args = parser.parse_args(argv)
     module, top, share = LISTS[args.list]
     excluded = excluded_words()
     given = tally(load_names(args.refresh))
     surname = tally(load_surnames(args.refresh), after=excluded)
+    if args.words:
+        for word in map(fold, args.words):
+            print(f"{word:20} given {given[word]:>9,}  "
+                  f"surname {surname[word]:>8,}")
+        return 0
     share = share if args.share is None else args.share
     ranked = select(given, surname, excluded,
                     top if args.top is None else args.top, share)
@@ -313,9 +327,10 @@ def main(argv: list[str] | None = None) -> int:
         print(f"{i:5}  {word:20} given {given[word]:>9,}  "
               f"surname {surname[word]:>8,}")
     for word, g, s in n_spelling_uses(ranked, given, surname, excluded):
-        verdict = "kept" if word in spellings else "refused"
+        kept = word in spellings
         print(f"    n  {word:20} given {g:>9,}  surname {s:>8,}  "
-              f"{g / (g + s):.1%} given, {verdict}")
+              f"{g / (g + s):.1%} given, {'kept' if kept else 'refused'}",
+              file=sys.stdout if kept else sys.stderr)
     covered = sum(given[w] for w in ranked)
     print(f"{len(ranked)} words, {covered / sum(given.values()):.1%} of "
           "given-word uses", file=sys.stderr)
