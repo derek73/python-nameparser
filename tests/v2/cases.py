@@ -2587,9 +2587,9 @@ CASES: tuple[Case, ...] = (
          classification="fix(#701)",
          notes="#1080: the title run is left out of the count as well "
                "as the particles. 2.7.0 through 2.8.2 read family "
-               "'Smith van der', suffix 'V'; 2.6.0 read as here; 1.4.0 "
-               "through 2.2.0 last 'Dr. Smith van der V', before H6 "
-               "peeled the title"),
+               "'Smith van der', suffix 'V'; 2.5.0 and 2.6.0 read as "
+               "here; 1.4.0 through 2.4.0 family 'Dr. Smith van der V', "
+               "before H6 peeled the title"),
     Case("a_numeral_behind_a_particle_run_before_two_commas_is_family",
          "Smith van der V, John, Jr.",
          {"given": "John", "family": "Smith van der V", "suffix": "Jr."},
