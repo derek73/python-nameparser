@@ -458,10 +458,6 @@ def parser_for(*locales: Locale, base: Parser | None = None,
     # segmenter it was asked to drop.
     if segmenter is UNSET:
         segmenter = base.segmenter if base is not None else None
-    # one choice for all the packs and the base's, so applying them is
-    # order-free; each pack's tags are checked on their own first, so a
-    # tag no file holds is reported with the pack that named it
-    # (rules/D2)
     # strict's three states, as segmenter's: omitted keeps base's
     # strictness; an explicit False on a strict base is refused, a
     # strict choice not being undone by a later call, and an explicit
@@ -475,14 +471,18 @@ def parser_for(*locales: Locale, base: Parser | None = None,
             "choice keeps it: leave strict out or pass strict=True, or "
             "choose every language in one call from the default lexicon, "
             "base's packs included, parser_for(*packs, strict=False)")
+    # one choice for all the packs and the base's, so applying them is
+    # order-free; each pack's tags are checked on their own first, so a
+    # tag no file holds is reported with the pack that named it
+    # (rules/D2)
     languages = lexicon.languages
     for loc in locales:
         if loc.languages:
             try:
                 _reading_index_selected(loc.languages, strict)
             except ValueError as exc:
-                raise ValueError(
-                    f"while applying locale {loc.code!r}: {exc}") from exc
+                raise _rewrapped(
+                    exc, f"while applying locale {loc.code!r}") from exc
             languages |= loc.languages
     if strict and not languages:
         raise ValueError(_no_strict_language(locales))
@@ -508,6 +508,9 @@ def parser_for(*locales: Locale, base: Parser | None = None,
     scalars = [f.name for f in dataclasses.fields(PolicyPatch)
                if f.metadata.get("compose") != "union"]
     for loc in locales:
+        # rules/D2: "applying a locale pack wraps any such error with
+        # the locale's code, so a stacked configuration names which layer
+        # broke" (history: decisions/D2)
         try:
             policy = apply_patch(policy, loc.policy)
         except (TypeError, ValueError) as exc:
@@ -528,9 +531,6 @@ def parser_for(*locales: Locale, base: Parser | None = None,
     # scripts with no covering surnames and no segmenter warns at
     # construction, naming the dead scripts and each way out"
     # (history: decisions/D1)
-    # rules/D2: "applying a locale pack wraps any such error with
-    # the locale's code, so a stacked configuration names which layer
-    # broke" (history: decisions/D2)
     # Construction warnings (the segmenterless-activation check in
     # Parser.__post_init__) re-emit from THIS frame: its stacklevel is
     # sized for direct Parser(...) construction, and through this
@@ -548,17 +548,17 @@ def parser_for(*locales: Locale, base: Parser | None = None,
 def _no_strict_language(locales: tuple[Locale, ...]) -> str:
     """The refusal of a strict call that chooses no language, which
     would keep only mul.toml's and native-script vocabulary, dropping
-    every language's own words in silence. The fix it offers is a pack choosing the first pack's
-    code where that is a language a strict choice accepts, else
-    ``en``."""
+    every language's own words in silence. The fix it offers is a pack
+    choosing the first pack's code where that is a language a strict
+    choice accepts, else ``en``."""
     tag = "en"
-    for loc in locales[:1]:
+    if locales:
         try:
-            _reading_index_selected(frozenset({loc.code}), True)
+            _reading_index_selected(frozenset({locales[0].code}), True)
         except ValueError:
             pass
         else:
-            tag = loc.code
+            tag = locales[0].code
     codes = ", ".join(repr(loc.code) for loc in locales)
     named = ("no pack was given" if not locales
              else f"the pack {codes} chooses none" if len(locales) == 1

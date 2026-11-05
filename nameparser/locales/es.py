@@ -39,10 +39,5 @@ ES = Locale(
 )
 
 
-def DEVIATES(name: str) -> bool:
-    """True when this pack's patch or fragment may parse `name`
-    differently from the default parser: rules/O6's declaration, which
-    the cs and sk packs share (_locale.deviates_by_two_family_names);
-    the given-name list acts only where O6 does, so it declares
-    nothing more."""
-    return deviates_by_two_family_names(name)
+# rules/O6's declaration, which every pack turning O6 on shares
+DEVIATES = deviates_by_two_family_names
