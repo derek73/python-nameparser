@@ -539,8 +539,9 @@ _REVIEW_SHAPES = ("PhD VI", "Jr VI", "III VI", "Smith, John van VI",
                   # the PR review's: a given-name title licenses the
                   # bound join only from the leading run, as group asks
                   "abdul VI Sir.", "Sir Dr. abdul VI", "Dr. Sir abdul VI",
-                  # #877's review: P1's fold opening the given part
-                  # takes a letter standing past its first word
+                  # #877's review: P1's fold opening the given part takes
+                  # a numeral standing past the part's first word into
+                  # the family
                   "Smith, de Mesnil V", "Smith, de Mesnil VI",
                   "Smith, Mc John V I")
 
@@ -727,7 +728,7 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # three orders; 462 -> 477 the same day, #1039's junior rows under
     # the three orders; 477 -> 495 on 2026-11-04, #877's report on a bare
     # letter ending the given part after a comma, six rows under the
-    # three orders
+    # three orders, each stand-in landing in the alternative's field
     assert (checked, skipped) == (495, 330), (checked, skipped)
 
 

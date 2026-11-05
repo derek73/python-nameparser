@@ -65,8 +65,9 @@ holds an ambiguous particle ("Beethoven, Ludwig van").
 Emits SUFFIX_OR_NAME at these sites: the trailing roman numeral, taken
 or declined (since #718 for want of words to spare, since #752 for its
 Title case), a numeral ending the family part before a family comma,
-one of two or more letters ending a given part's walk -- since
-#877 -- a bare one-letter numeral ending that walk behind a name word, each
+one of two or more letters ending a given part's walk, a bare I or V
+read as the generation ending that walk behind a name word (since
+#877), each
 ambiguous acronym the trailing peel had to resolve, the bare-suffix
 carve-out where an input that is nothing but post-nominal vocabulary
 gets its first word made into the name (H4's suffix half, #491),
@@ -1637,12 +1638,14 @@ def assign(state: ParseState) -> ParseState:
 
             def as_a_middle(m: int, token: WorkToken) -> PendingReading:
                 # the name reading of a word the walk read as a suffix:
-                # a middle name, or taken in by the name word in front
+                # a middle name, taken in by the name word in front, or
+                # the family where P1's fold opens the part
                 front = pieces[m - 1]
-                # rules/P1's fold after a family comma takes the rest of
-                # the part into the family, so a word behind a part a
-                # never-given particle opens lands there too, however
-                # far behind it the word stands (#877 review)
+                # P1's fold after a family comma takes the rest of the
+                # part into the family whatever the order, so a word past
+                # the opening particle's own piece lands there; the word
+                # directly behind it is `_name_alt`'s, which takes it into
+                # that piece; decisions/C9 (#877)
                 if n < m - 1 and is_lone_never_given_particle(pieces[n],
                                                                tokens):
                     return name_reading(token, Role.FAMILY)
@@ -1689,11 +1692,10 @@ def assign(state: ParseState) -> ParseState:
                             tokens[pieces[m][0]].text.upper())):
                     _set_roles(tokens, pieces[m], Role.MIDDLE)
                     continue
-                # rules/C9: "behind a name word it is the generation only
-                # when written bare" -- and a bare letter there is the
-                # shape a middle initial is written in, so the reading
-                # is reported, as S10 reports it with no comma
-                # (decisions/C9, #877); `len` first, C-level
+                # rules/C9: "The bare letter read as the generation behind
+                # a name word is reported" -- the shape a middle initial
+                # is written in, as S10 reports it with no comma;
+                # decisions/C9 (#877); `len` first, C-level
                 if (len(pieces[m]) == 1
                         and len((tok := tokens[pieces[m][0]]).text) == 1
                         and (m >= sticky_from and not k6 <= m < end6
@@ -1702,7 +1704,8 @@ def assign(state: ParseState) -> ParseState:
                         and tokens[pieces[m - 1][0]].role in NAME_ROLES
                         # a particle in front may take the letter into
                         # its chain or stand alone, the field the name
-                        # reading names depending on which (#877 review)
+                        # reading names depending on which; decisions/C9
+                        # (#877)
                         and not is_prefix_piece(pieces[m - 1], ptags[m - 1],
                                                 tokens)
                         and not numeral_settled_by_case(tok.text,

@@ -12625,7 +12625,9 @@ CASES: tuple[Case, ...] = (
          notes="THE BOUNDARY, and v1 parity (#144): with no period "
                "there is no abbreviation, so the numeral is the "
                "generation it looks like. This row is what makes "
-               "#432's fix a period test rather than a numeral test"),
+               "#432's fix a period test rather than a numeral test. "
+               "Reported since #877, the letter being the shape a "
+               "middle initial is written in (rules/C9)"),
     Case("family_comma_title_resets_the_credential_run", "Smith, RA Dr. I",
          {"title": "RA Dr.", "given": "I", "family": "Smith"},
          notes="THE RESET. A title ends the run: what follows a bare "
