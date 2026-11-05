@@ -6,6 +6,7 @@ import importlib.util
 import re
 import sys
 import types
+import unicodedata
 from collections.abc import Callable, Iterable
 from pathlib import Path
 from types import ModuleType
@@ -270,6 +271,55 @@ def test_cs_and_sk_pack_contents() -> None:
     for name in ("김민준 1", "Jan\u200bPavel -"):
         assert deviates_by_two_family_names(name), name
 
+
+
+# rules/O6's declaration counts a run of a classified script twice
+# (_locale._letter_runs), and since #1087 "classified" is the script
+# table's, the one W1 divides by. Each row: the name, its declaration,
+# and the declaration under the two definitions it replaced, recorded
+# 2026-11-05 and re-taken live below -- the character-name test the
+# function used before #1087, and the table with HANGUL at the
+# precomposed syllables alone, which would have cost the decomposed
+# names their declaration (the gate's unsafe direction).
+_TWICE_COUNTED = [
+    (unicodedata.normalize("NFD", "김. 민준"), True, True, False),
+    (unicodedata.normalize("NFD", "김 민준"), True, True, False),
+    ("ﾔﾏﾀﾞ ﾀﾛｳ", True, False, True),
+    ("ﾀﾅｶ. John", True, False, True),
+    ("ﾀﾛｳ·ﾔﾏﾀﾞ", True, False, True),
+    ("김 민준", True, True, True),
+    ("Pérez García", False, False, False),
+]
+
+
+def _by_character_name(ch: str) -> bool:
+    return unicodedata.name(ch, "").startswith(
+        ("CJK", "HANGUL", "HIRAGANA", "KATAKANA"))
+
+
+def _by_syllables_alone(ch: str) -> bool:
+    jamo = ((0x1100, 0x11FF), (0xA960, 0xA97F), (0xD7B0, 0xD7FF))
+    return any(lo <= ord(ch) <= hi
+               for spans in _SCRIPT_RANGES.values() for lo, hi in spans
+               if (lo, hi) not in jamo)
+
+
+@pytest.mark.parametrize(("name", "declared", "by_name", "by_syllables"),
+                         _TWICE_COUNTED)
+def test_the_two_family_names_declaration_counts_by_the_script_table(
+        monkeypatch: pytest.MonkeyPatch, name: str, declared: bool,
+        by_name: bool, by_syllables: bool) -> None:
+    from nameparser import _locale
+    assert _locale.deviates_by_two_family_names(name) is declared
+    monkeypatch.setattr(_locale, "_classified", _by_character_name)
+    assert _locale.deviates_by_two_family_names(name) is by_name
+    monkeypatch.setattr(_locale, "_classified", _by_syllables_alone)
+    assert _locale.deviates_by_two_family_names(name) is by_syllables
+
+
+def test_the_twice_counted_controls_each_move_a_row() -> None:
+    assert any(row[1] != row[2] for row in _TWICE_COUNTED)
+    assert any(row[1] != row[3] for row in _TWICE_COUNTED)
 
 def test_es_and_pt_read_a_leading_title_and_leave_don_a_given_name() -> None:
     es, pt = _require_packed("es"), _require_packed("pt")
