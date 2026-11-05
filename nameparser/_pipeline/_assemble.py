@@ -246,13 +246,11 @@ def _split_partner(tokens: tuple[WorkToken, ...], dropped: set[int],
     the joined suffix word that completes it. Asked only of a split
     credential's first word, so other names pay nothing."""
     # classify tags a split's words only as a pair, so its second word
-    # always follows; the empty return at the end of the tokens keeps
-    # parse total on a branch no input reaches
+    # always follows; the bound test keeps parse total without a
+    # branch no input reaches
     j = _next_word(tokens, dropped, i, 1)
-    if j == len(tokens):
-        return ""
-    nxt = tokens[j]
-    return nxt.text if nxt.role is Role.SUFFIX and "joined" in nxt.tags else ""
+    return (tokens[j].text if j < len(tokens) and tokens[j].role is Role.SUFFIX
+            and "joined" in tokens[j].tags else "")
 
 
 _reading = functools.lru_cache(maxsize=1024)(Reading)
