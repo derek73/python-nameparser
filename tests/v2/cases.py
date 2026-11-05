@@ -2542,6 +2542,22 @@ CASES: tuple[Case, ...] = (
                "the same part without one, so the particle is no word to "
                "spare and 'V' is a name word. 2.7.0 and 2.8.0 read family "
                "'SMITH VD', suffix 'V'; 2.6.0 read as here"),
+    Case("a_lone_letter_behind_a_plain_particle_before_a_comma_is_the_name_word",
+         "SMITH VAN V, JOHN",
+         {"given": "JOHN", "family": "SMITH VAN V"},
+         classification="fix(#1080)",
+         notes="#1080's table: the count leaves out every particle, not "
+               "only the word that is suffix vocabulary too, so 'VAN' is "
+               "no word to spare. 2.7.0 and 2.8.0 read family 'SMITH "
+               "VAN', suffix 'V'; 2.6.0 read as here"),
+    Case("a_lone_letter_behind_a_particle_run_before_a_comma_is_the_name_word",
+         "Smith van der V, John",
+         {"given": "John", "family": "Smith van der V"},
+         classification="fix(#1080)",
+         notes="#1080's table: a run is no word to spare either -- its "
+               "length is why the count drops the whole run and not one "
+               "particle. 2.7.0 and 2.8.0 read family 'Smith van der', "
+               "suffix 'V'; 2.6.0 read as here"),
     Case("a_comma_before_no_name_word_keeps_the_positional_read",
          "Berg de MA, Prof.",
          {"title": "Prof.", "given": "Berg", "family": "de",

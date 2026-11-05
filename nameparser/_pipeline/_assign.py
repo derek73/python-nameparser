@@ -778,8 +778,8 @@ def _assign_main(seg_idx: int, state: ParseState,
 def _family_part_numeral(word: WorkToken, preceding: str, names: int,
                          one_case: bool | None) -> Role | None:
     """The role of a roman numeral ending the family part before a
-    family comma, behind `names` pieces of that part, as the comma-less
-    name reads one ending it (rules/S10), or None where the numeral's
+    family comma, behind `names` name words of that part, as the
+    comma-less name reads one ending it (rules/S10), or None where the numeral's
     predicate reads no numeral there (an initial in front, a letter with
     its period): the suffix where it reads as the generation, a
     one-letter numeral needing two name words in front of it, and the
