@@ -324,6 +324,7 @@ def test_the_two_family_names_declaration_counts_by_the_script_table(
 def test_the_twice_counted_controls_each_move_a_row() -> None:
     assert any(row[1] != row[2] for row in _TWICE_COUNTED)
     assert any(row[1] != row[3] for row in _TWICE_COUNTED)
+    assert _NARROWED  # an empty parametrize would skip the parity test
 
 
 _NARROWED = [name for name, declared, by_name, _ in _TWICE_COUNTED
@@ -334,7 +335,6 @@ _NARROWED = [name for name, declared, by_name, _ in _TWICE_COUNTED
 @pytest.mark.parametrize("code", ["es", "es_ar", "cs", "sk"])
 def test_a_name_the_declaration_stopped_counting_twice_reads_as_the_default(
         code: str, name: str) -> None:
-    assert _NARROWED
     assert _require_packed(code).parse(name).as_dict() == _default_parse(name)
 
 

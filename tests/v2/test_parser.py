@@ -2248,6 +2248,12 @@ _UNCOMPOSED_JAMO: list[tuple[str, dict[str, str], list[AmbiguityKind], str,
      ({"given": "ꥠᅡ·김민준"}, [AmbiguityKind.GIVEN_OR_FAMILY], "ꥠ.")),
     ("김ힰ·김민준", {"given": "김ힰ", "family": "김민준"}, [], "",
      ({"given": "김ힰ·김민준"}, [AmbiguityKind.GIVEN_OR_FAMILY], "")),
+    # the ACCEPTED fillers U+1160 and U+115F, invisible and hangul
+    ("김\u1160 민준", {"given": "\u1160", "middle": "민준", "family": "김"},
+     [], "",
+     ({"given": "김\u1160", "middle": "민", "family": "준"}, [], "")),
+    ("\u115fJohn Smith", {"given": "\u115fJohn", "family": "Smith"}, [], "S.",
+     ({"given": "\u115fJohn", "family": "Smith"}, [], "\u115f. S.")),
 ]
 
 
@@ -2325,7 +2331,7 @@ def test_a_decomposed_abbreviation_reads_as_its_composed_twin(
     the jamo are HANGUL, so the hangul rows no longer fail with the
     veto's compose reverted and pin parity.
 
-    #1087 adds eight interpunct rows, one in each comma shape. Recorded
+    #1087 adds eight interpunct rows, across the comma shapes. Recorded
     control, measured 2026-11-05 against 4109b026's nameparser/: of
     their 32 twin cases 28 fail, the seven whose interpunct stands
     between hangul under all four policies, and `김민준·Smith`, whose

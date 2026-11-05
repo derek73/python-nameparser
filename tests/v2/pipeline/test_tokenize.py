@@ -211,6 +211,7 @@ _DECOMPOSED_FLANKS = [
 def test_interpunct_beside_decomposed_hangul_reads_as_composed(
         text: str, tokens: list[str]) -> None:
     nfd = unicodedata.normalize("NFD", text)
+    assert nfd != text  # sanity: the decomposition ran
     got = [unicodedata.normalize("NFC", t.text) for t in _tokenized(nfd).tokens]
     assert got == tokens
     # the composed twin reads the same
