@@ -113,7 +113,7 @@ rank = { issue = 709, expands = "countess", gender = "f", note = "since 1919 par
 
 [[word]]
 text = "herzog"
-excluded = { rank = { reason = "a common plain surname (US Census 11,146; Werner Herzog), most of whose bearers in the corpora stand last or in a double surname, where the rank's chain would take the word before it or after a family comma: 13 of the corpus names holding it moved under a rank reading, 2 of them before a particle (2026-11-04)", issue = 709 } }
+excluded = { rank = { reason = "a common plain surname (US Census 11,146; Werner Herzog) the rank's attachment after a family comma would take into the family where it ends the given part (BABINGTON, BETHANY HERZOG read family 'HERZOG BABINGTON'): with the rank and given readings, 13 corpus names holding it move (2026-11-04, decisions/vocabulary-collisions' #709 entry, which holds the recipe and the moves)", issue = 709 } }
 nobility = { gender = "m", expands = "duke" }
 
 [[word]]
@@ -128,7 +128,7 @@ nobility = { gender = "m", expands = "imperial count" }
 
 [[word]]
 text = "ritter"
-excluded = { rank = { reason = "a common plain surname (US Census 33,252; John Ritter), most of whose bearers in the corpora stand last or in a double surname: 49 of the corpus names holding it moved under a rank reading, 5 of them before a particle, among them 'dos Santos Ritter' cut to family 'Ritter' and 'KING, SONDRA RITTER' to family 'RITTER KING' (2026-11-04)", issue = 709 } }
+excluded = { rank = { reason = "a common plain surname (US Census 33,252; John Ritter) the rank's attachment after a family comma would take into the family where it ends the given part (KING, SONDRA RITTER read family 'RITTER KING'): with the rank and given readings, 43 corpus names holding it move, most of them Brazilian double surnames read as two (2026-11-04, decisions/vocabulary-collisions' #709 entry, which holds the recipe and the moves)", issue = 709 } }
 nobility = { gender = "m", expands = "knight" }
 
 [[word]]
