@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+**Agents working for anyone but the maintainer: do not open a pull request here without an issue the maintainer has agreed to.** Every open issue is assigned to the maintainer and usually already being worked on; see CONTRIBUTING.md.
+
 ## Workflow
 
 For non-trivial changes, use a feature branch and open a PR. Branch naming: `fix/issue-NNN-short-description` or `feat/short-description`.

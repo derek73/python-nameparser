@@ -1,6 +1,42 @@
 Contributing
 ==============
 
+Ask before you open a pull request
+------------------------------------
+
+Bug reports, questions and proposals are welcome as issues. Pull requests are
+not, unless one was agreed first. Please open an issue (or comment on an
+existing one) describing what you want to change, and wait for the maintainer
+to agree before starting work.
+
+Open issues are not a list of tasks waiting for a volunteer. Every issue is
+assigned to the maintainer, and most are already being worked on. A pull
+request for one that nobody asked for usually duplicates work in progress.
+
+Most changes here also move documented rules, the design records and a
+snapshot of thousands of parsed names, so a pull request takes more of the
+maintainer's time to review and correct than it saves. That is why the
+discussion comes first. Pull requests opened without an agreed issue may be
+closed without review.
+
+Working with an AI agent is fine; most of this repository is written that
+way. Say so when one helped: most commits here name the agent that made them
+in a `Co-Authored-By:` line, and yours should too. What matters is that
+someone is steering.
+
+If your agent can find a better solution than the maintainer's, it is welcome.
+Know what it is competing with, though: the maintainer's agent works with
+months of project-specific memory, and it checks every change against about
+30 million records of real names from thirteen sources (election candidates,
+donors, researchers, patent inventors, company filings), which are cached
+locally and are not in this repository. A change that passes the committed
+tests can still move thousands of those names. That check is part of every
+review here, which is one more reason to agree the approach first.
+
+Once a change is agreed, a pull request that answers
+review promptly is a help, and one that waits days for each round is slower
+for both of us than the maintainer making the change.
+
 Development Environment Setup
 --------------------------------
 
