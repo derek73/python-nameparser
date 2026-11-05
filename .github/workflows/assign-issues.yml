@@ -1,0 +1,22 @@
+name: Assign new issues
+
+# Every issue is assigned to the maintainer when it is opened, whoever opens
+# it, so no issue sits unassigned for drive-by PRs to pick up. Adding an
+# assignee who is already assigned is a no-op, so this needs no condition.
+on:
+  issues:
+    types: [opened, reopened]
+
+permissions:
+  issues: write
+
+jobs:
+  assign:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Assign the maintainer
+        run: gh issue edit "$NUMBER" --repo "$REPO" --add-assignee derek73
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NUMBER: ${{ github.event.issue.number }}
+          REPO: ${{ github.repository }}
