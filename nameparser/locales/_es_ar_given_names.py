@@ -17,7 +17,9 @@ under Creative Commons Attribution 4.0
 (https://www.ine.es/aviso_legal). This module is derived from them. The
 5,000 words most borne as a given name in Spain among those at least
 half of whose uses are given-name uses, in rank order, written as
-nameparser/locales/_es_given_names.py writes its list. No Argentine
+nameparser/locales/_es_given_names.py writes its list, n spellings
+included (#1081; Martiño's is left out, Martino being mostly a
+surname). No Argentine
 source states its given names' surname uses, so the share is Spain's.
 tools/es_given_names.py derives the block below (``--list es-AR``),
 with the cutoff and share it states; do not edit it by hand.
@@ -652,6 +654,10 @@ _RANKED = (
     "vlada", "xandre", "fatimata", "fayza", "iskander", "marat", "nilsa", "rehan",
     "shamim", "wenjie", "zakarya", "zuleyma", "abdeladim", "gentzane", "gerhard", "gica",
 )
+_N_SPELLINGS = (
+    "begona", "inigo", "inaki", "benat", "zurine", "garbine", "enaut", "argine",
+    "eguzkine", "ekine",
+)
 # -- END generated --
 
-GIVEN_NAMES = frozenset(_RANKED)
+GIVEN_NAMES = frozenset(_RANKED + _N_SPELLINGS)
