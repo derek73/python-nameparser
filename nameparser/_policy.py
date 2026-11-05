@@ -131,9 +131,9 @@ class Script(StrEnum):
 # ones hold only archaic jamo no modern name uses, the ground the kana
 # entry below leaves out the supplementary kana on: the U+1100 block
 # carries archaic jamo too, so no modern-only line can be drawn at
-# block granularity. The
-# compatibility jamo U+3131-U+318E are not conjoining and compose
-# nothing; they stay out (rules/R7 initials 'ㄱㄴ 김' as 'ㄱ.').
+# block granularity. The compatibility jamo U+3131-U+318E are not
+# conjoining and compose nothing; they stay out (rules/R7 initials
+# 'ㄱㄴ 김' as 'ㄱ.').
 # HIRAGANA/KATAKANA (#272): the two kana blocks, each in full. There
 # IS a supplementary-plane kana repertoire (Kana Supplement, Kana
 # Extended-A/B, Small Kana Extension, U+1AFF0-U+1B16F, a few hundred
@@ -188,11 +188,16 @@ class Script(StrEnum):
 # the FIRST covering entry (dict iteration order), so an overlapping
 # future script would make the result order-dependent instead of
 # well-defined.
+#: The precomposed hangul syllables, and the three conjoining jamo
+#: blocks HANGUL holds beside them (#1087), named so a test can state
+#: the table before #1087 by subtracting them rather than copying spans.
+_HANGUL_SYLLABLES = (0xAC00, 0xD7A3)
+_CONJOINING_JAMO = ((0x1100, 0x11FF), (0xA960, 0xA97F), (0xD7B0, 0xD7FF))
+
 _SCRIPT_RANGES: dict[Script, tuple[tuple[int, int], ...]] = {
     Script.HAN: ((0x3005, 0x3006), (0x3400, 0x4DBF), (0x4E00, 0x9FFF),
                  (0xF900, 0xFAFF), (0x20000, 0x323AF)),
-    Script.HANGUL: ((0x1100, 0x11FF), (0xA960, 0xA97F), (0xAC00, 0xD7A3),
-                    (0xD7B0, 0xD7FF)),
+    Script.HANGUL: tuple(sorted((_HANGUL_SYLLABLES, *_CONJOINING_JAMO))),
     Script.HIRAGANA: ((0x3040, 0x309F),),
     Script.KATAKANA: ((0x30A0, 0x30FF), (0xFF65, 0xFF9F)),
 }
@@ -275,6 +280,13 @@ def _script_matcher(*scripts: Script,
     def matcher(text: str) -> bool:
         return match(text) is not None
     return matcher
+
+
+#: One character, or a string wholly, of a script the table classifies:
+#: the question the interpunct's flank guard (rules/T3) and the
+#: two-family-names declaration's run count (_locale) both ask, defined
+#: once here because _locale may not import the pipeline (#1087).
+_classified_char = _script_matcher(*_SCRIPT_RANGES, whole=True)
 
 
 # Order-spec constants (#270), defined in _types beside Role since

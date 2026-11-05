@@ -9,7 +9,7 @@ from nameparser._pipeline._state import ParseState
 from nameparser._pipeline import _tokenize
 from nameparser._pipeline._tokenize import tokenize
 from nameparser import _policy
-from nameparser._policy import Policy
+from nameparser._policy import Policy, Script
 from nameparser._types import Role
 
 
@@ -206,9 +206,10 @@ _DECOMPOSED_FLANKS = [
 ]
 
 
-@pytest.mark.parametrize(("text", "tokens", "unguarded"), _DECOMPOSED_FLANKS)
+@pytest.mark.parametrize(("text", "tokens"),
+                         [(text, tokens) for text, tokens, _ in _DECOMPOSED_FLANKS])
 def test_interpunct_beside_decomposed_hangul_reads_as_composed(
-        text: str, tokens: list[str], unguarded: list[str]) -> None:
+        text: str, tokens: list[str]) -> None:
     nfd = unicodedata.normalize("NFD", text)
     got = [unicodedata.normalize("NFC", t.text) for t in _tokenized(nfd).tokens]
     assert got == tokens
@@ -216,20 +217,16 @@ def test_interpunct_beside_decomposed_hangul_reads_as_composed(
     assert [t.text for t in _tokenized(text).tokens] == tokens
 
 
-@pytest.mark.parametrize(("text", "tokens", "unguarded"), _DECOMPOSED_FLANKS)
+@pytest.mark.parametrize(("text", "unguarded"),
+                         [(text, unguarded) for text, _, unguarded in _DECOMPOSED_FLANKS])
 def test_decomposed_flank_control_without_the_jamo_range(
-        monkeypatch: pytest.MonkeyPatch, text: str, tokens: list[str],
-        unguarded: list[str]) -> None:
-    # the negative control: the flank classifier rebuilt over a table
-    # whose HANGUL holds the syllables alone
-    syllables = (0xAC00, 0xD7A3)
-    ranges = [span for spans in _policy._SCRIPT_RANGES.values()
-              for span in spans if span[0] < 0x1100 or span[0] > 0x11FF]
-    ranges = [span for span in ranges
-              if span not in ((0xA960, 0xA97F), (0xD7B0, 0xD7FF))]
-    assert syllables in ranges
-    monkeypatch.setattr(_tokenize, "_classified_char",
-                        lambda ch: any(lo <= ord(ch) <= hi for lo, hi in ranges))
+        monkeypatch: pytest.MonkeyPatch, text: str, unguarded: list[str]) -> None:
+    # the negative control: the flank classifier rebuilt by the shipped
+    # factory over a table whose HANGUL holds the syllables alone
+    monkeypatch.setitem(_policy._SCRIPT_RANGES, Script.HANGUL,
+                        (_policy._HANGUL_SYLLABLES,))
+    monkeypatch.setattr(_tokenize, "_classified_char", _policy._script_matcher(
+        *_policy._SCRIPT_RANGES, whole=True))
     nfd = unicodedata.normalize("NFD", text)
     got = [unicodedata.normalize("NFC", t.text) for t in _tokenized(nfd).tokens]
     assert got == unguarded

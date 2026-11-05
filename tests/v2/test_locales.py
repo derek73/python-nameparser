@@ -304,23 +304,20 @@ def _by_character_name(ch: str) -> bool:
         ("CJK", "HANGUL", "HIRAGANA", "KATAKANA"))
 
 
-def _by_syllables_alone(ch: str) -> bool:
-    jamo = ((0x1100, 0x11FF), (0xA960, 0xA97F), (0xD7B0, 0xD7FF))
-    return any(lo <= ord(ch) <= hi
-               for spans in _SCRIPT_RANGES.values() for lo, hi in spans
-               if (lo, hi) not in jamo)
-
-
 @pytest.mark.parametrize(("name", "declared", "by_name", "by_syllables"),
                          _TWICE_COUNTED)
 def test_the_two_family_names_declaration_counts_by_the_script_table(
         monkeypatch: pytest.MonkeyPatch, name: str, declared: bool,
         by_name: bool, by_syllables: bool) -> None:
-    from nameparser import _locale
+    from nameparser import _locale, _policy
     assert _locale.deviates_by_two_family_names(name) is declared
-    monkeypatch.setattr(_locale, "_classified", _by_character_name)
+    monkeypatch.setattr(_locale, "_classified_char", _by_character_name)
     assert _locale.deviates_by_two_family_names(name) is by_name
-    monkeypatch.setattr(_locale, "_classified", _by_syllables_alone)
+    # the table before #1087, built by the shipped factory
+    monkeypatch.setitem(_policy._SCRIPT_RANGES, Script.HANGUL,
+                        (_policy._HANGUL_SYLLABLES,))
+    monkeypatch.setattr(_locale, "_classified_char", _policy._script_matcher(
+        *_policy._SCRIPT_RANGES, whole=True))
     assert _locale.deviates_by_two_family_names(name) is by_syllables
 
 
@@ -329,13 +326,16 @@ def test_the_twice_counted_controls_each_move_a_row() -> None:
     assert any(row[1] != row[3] for row in _TWICE_COUNTED)
 
 
+_NARROWED = [name for name, declared, by_name, _ in _TWICE_COUNTED
+             if by_name and not declared]
+
+
+@pytest.mark.parametrize("name", _NARROWED)
 @pytest.mark.parametrize("code", ["es", "es_ar", "cs", "sk"])
 def test_a_name_the_declaration_stopped_counting_twice_reads_as_the_default(
-        code: str) -> None:
-    packed = _require_packed(code)
-    for name, declared, by_name, _ in _TWICE_COUNTED:
-        if by_name and not declared:
-            assert packed.parse(name).as_dict() == parse(name).as_dict(), name
+        code: str, name: str) -> None:
+    assert _NARROWED
+    assert _require_packed(code).parse(name).as_dict() == _default_parse(name)
 
 
 def test_es_and_pt_read_a_leading_title_and_leave_don_a_given_name() -> None:

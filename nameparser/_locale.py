@@ -24,8 +24,8 @@ from typing import Any
 
 from nameparser._lexicon import Lexicon, _canonical, _shown_choice
 from nameparser._policy import (
-    _ORDER_CONSTANT_NAMES, _SCRIPT_RANGES, UNSET, PatronymicRule, PolicyPatch,
-    _reject_str_and_mapping, _script_matcher,
+    _ORDER_CONSTANT_NAMES, UNSET, PatronymicRule, PolicyPatch,
+    _classified_char, _reject_str_and_mapping,
 )
 from nameparser._types import ADDED_IN, _guarded_getstate, _guarded_setstate
 
@@ -215,9 +215,6 @@ def _letter_runs(text: str) -> int:
     for ch in text:
         letter = ch.isalpha()
         if letter and not inside:
-            runs += 2 if _classified(ch) else 1
+            runs += 2 if _classified_char(ch) else 1
         inside = letter
     return runs
-
-
-_classified = _script_matcher(*_SCRIPT_RANGES, whole=True)
