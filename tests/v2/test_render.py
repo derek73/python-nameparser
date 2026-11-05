@@ -2057,3 +2057,32 @@ def test_a_group_of_particles_and_a_connective_initials_the_connective(
     # connective with nothing to join, so the connective is readmitted
     # and initials (#461)
     assert parse("Vega, Santa de y").initials() == "S. y. V."
+
+
+def test_every_saint_and_rank_particle_repairs_with_its_capital() -> None:
+    """rules/R4, #1069: a particle of the `saint` or `rank` kind is
+    written as a name word is, keyed on the kind, so the sweep runs over
+    the compiled set rather than a list; master at dadf39b7 repaired
+    each one lowercase (`OTTO GRAF LAMBSDORFF` -> 'Otto graf
+    Lambsdorff')."""
+    words = sorted(Lexicon.default()._sets.capitalized_particles)
+    assert len(words) >= 12  # the six saints and six ranks of 2026-11-04
+    for word in words:
+        name = parse(f"JOHN {word.upper()} SMITH")
+        assert name.family.lower() == f"{word} smith", word
+        assert name.capitalized().family == f"{word.title()} Smith", word
+
+
+@pytest.mark.parametrize(("kind", "written"), [
+    ("saint", "Zaint Smith"),
+    ("rank", "Zaint Smith"),
+    # the control: a plain particle a caller adds is still lowercased
+    ("particle", "zaint Smith"),
+])
+def test_a_caller_word_of_a_capitalized_kind_keeps_its_capital(
+        kind: str, written: str) -> None:
+    """rules/R4, #1069: the set compiles from the kind, so a caller's
+    word of either kind reaches it as a shipped one does."""
+    lex = Lexicon.default().add("zaint", kind=kind)
+    name = Parser(lexicon=lex).parse("JOHN ZAINT SMITH")
+    assert name.capitalized(lex).family == written

@@ -273,6 +273,16 @@ particles, which are written capitalized:
     >>> str(parse("JUAN DE LA VEGA").capitalized())
     'Juan de la Vega'
 
+A saint's name and a German rank written inside the surname are
+particles too, and are written with their capital without a mask:
+
+.. doctest::
+
+    >>> str(parse("JOHN ST CLAIR").capitalized())
+    'John St Clair'
+    >>> str(parse("MANFRED FREIHERR VON RICHTHOFEN").capitalized())
+    'Manfred Freiherr von Richthofen'
+
 Your own entry outranks it the same way, which is how to keep a
 family's capitalized particle. A mask applies wherever its word stands,
 though, so it recases every other name with that particle too:

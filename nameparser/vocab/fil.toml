@@ -58,8 +58,7 @@ text = "sta"
 [word.saint]
 may_be_given = false
 expands = "Santa, abbreviated: \"Sta. Maria\", \"Sta. Ana\""
-cased = "Sta"
-note = "no given reading: ORCID's 2025 extract holds it in 11 given boxes, none Philippine, five of them a surname filed with the given names and six junk, against 122 family boxes, 38 Philippine, US Census 2010 counts Sta as a surname 120 times and US SSA under 5 births (tools/name_usage.py sta --boxes, 2026-11-04), so a bare Sta opening a name begins the family, as Ste does. A saint run, so rules/P10 does not read Sta. Maria as a second given name. The mask is the word's own title case: without it case repair would lowercase it (rules/R4)"
+note = "no given reading: ORCID's 2025 extract holds it in 11 given boxes, none Philippine, five of them a surname filed with the given names and six junk, against 122 family boxes, 38 Philippine, US Census 2010 counts Sta as a surname 120 times and US SSA under 5 births (tools/name_usage.py sta --boxes, 2026-11-04), so a bare Sta opening a name begins the family, as Ste does. A saint run, so rules/P10 does not read Sta. Maria as a second given name. Case repair writes it with a capital, as every saint particle (rules/R4, #1069)"
 issue = 725
 
 [[word]]
@@ -67,8 +66,7 @@ text = "sto"
 [word.saint]
 may_be_given = false
 expands = "Santo, abbreviated: \"Sto. Tomas\", \"Sto. Domingo\""
-cased = "Sto"
-note = "no given reading: ORCID's 2025 extract holds it in 2 given boxes against 20 family boxes (tools/name_usage.py sto --boxes, 2026-11-04). The mask is the word's own title case, as Sta's"
+note = "no given reading: ORCID's 2025 extract holds it in 2 given boxes against 20 family boxes (tools/name_usage.py sto --boxes, 2026-11-04). Case repair writes it with a capital, as Sta"
 issue = 725
 
 [[word]]

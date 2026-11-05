@@ -475,6 +475,10 @@ def _lowers_as_particle(normalized: str, word: str, role: Role,
     splitting the token into words, so a marked one ("d'") is asked as
     written rather than by its stem (#700)."""
     return (normalized in lex._sets.particles
+            # rules/R4: "a particle of a kind written with a capital"
+            # -- a saint or a rank -- is written as a name word is
+            # (decisions/R4, #1069)
+            and normalized not in lex._sets.capitalized_particles
             and not _spells_an_initial(normalized, word)
             and role in (Role.MIDDLE, Role.FAMILY)
             and UNJOINED_TAG not in tags

@@ -39,13 +39,19 @@
   "Dr. med. univ. Margit Popp, MSc"  →  capitalized_forced="Dr. Med. Univ. Margit Popp, MSc"
   "MSc Dr. med. univ."        →  capitalized_forced="MSc Dr. Med. Univ."
   ```
-- **A particle is written in lowercase**, but a particle the vocabulary records a casing for takes that casing, the entry being how the word is written wherever it stands.
+- **A particle is written in lowercase**, but a particle the vocabulary records a casing for takes that casing, the entry being how the word is written wherever it stands, and a particle of a kind written with a capital is written as a name word is: a saint's name (`St Clair`, `San Martín`) and a rank written inside the surname (`Freiherr von Richthofen`) take their capital in every convention that writes them.
   ```
   "SEÁN Ó MURCHÚ"             →  capitalized="Seán Ó Murchú"
   "IVOI, PAUL D'"             →  capitalized="Paul d' Ivoi"
   "zaʿīm, ḥusnī az-"          →  capitalized="Ḥusnī az- Zaʿīm"
   "jacobus henricus van 't hoff"  →  capitalized="Jacobus Henricus van 't Hoff"
   "maria da-silva"            →  capitalized="Maria da-Silva"
+  "JOHN ST CLAIR"             →  capitalized="John St Clair"
+  "JEAN ST-PIERRE"            →  capitalized="Jean St-Pierre"
+  "JOSE SAN MARTIN"           →  capitalized="Jose San Martin"
+  "JUAN STA. MARIA REYES"     →  capitalized="Juan Sta. Maria Reyes"
+  "MANFRED FREIHERR VON RICHTHOFEN"  →  capitalized="Manfred Freiherr von Richthofen"
+  "OTTO GRAF LAMBSDORFF"      →  capitalized="Otto Graf Lambsdorff"
   "ina binti navalamar"       →  capitalized="Ina binti Navalamar"  · boundary
   "juan de la vega"           →  capitalized="Juan de la Vega"  · boundary
   ```
@@ -137,6 +143,10 @@
 
 **Accepted:**
 
+- A word of a kind written with a capital is a name word wherever it stands as a particle, so a romanized honorific spelled as a saint particle and joined to the name by a hyphen takes the capital too, as the same word spaced already does: the vocabulary records no romanized honorific, and the kind cannot tell the two apart.
+  ```
+  "Suzuki-san"  family-first  →  capitalized_forced="Suzuki-San"  · boundary
+  ```
 - An abbreviation the vocabulary does not list, whose letters after a full stop are the word's own ending rather than a word, is written as two words: the shape that divides run-together initials and joined words cannot tell an ending from either, and only a listed casing can.
   ```
   "DUT.RA MARIA SILVA"        →  capitalized="Dut.Ra Maria Silva"  · boundary
