@@ -370,6 +370,12 @@ uv run python tools/differential/config_diff.py diff default 'expr:Parser(lexico
 
 `config_diff.py gaps [tag...]` is the strict-gap report built on it: for every language tag a choice can name, over the records of the countries the language is written in (its `LANGUAGES_OF` table of the languages written in each country and `NATIONALITY` table of PSC's nationality spellings, a measurement aid nothing at parse time reads, the report closing with every group the two place nowhere, at any count) in `orcid-researchers`, `patentsview-inventors` and `psc-individuals`, the plain choice against `parser_for(..., strict=True)`, both scored against the filed boxes, and per language the words the two lexicons read differently ranked by the records strict breaks where the word's own token moved (or, where none did, a token beside it), each with every broken record it stood in, credited or not, beside that count, the sets it leaves, its commonest role move and an example. It is what a language file is missing before a strict choice of it stands alone; a whole run takes a few minutes.
 
+`config_diff.py score SPEC...` scores configurations against the filed boxes, a row per country or nationality of the same three corpora (`--group`, or `--languages es,pt` for the groups whose country writes one of those tags, or every group of at least `--min` scored records): each configuration's share of records agreeing in every box, and for the best one the records it fixes and breaks against the first. `--switches two_family_names,two_given_names` reads each configuration under every combination of those bool `Policy` fields, written as an `@` suffix (`plain:ES@two_family_names=0`), set last over the packs' patches; a SPEC other than an `expr:` may carry one suffix of its own where `--switches` is not given. ORCID and PatentsView hold the middle names in the given box, so only PSC, whose form has a middle-name box, can see `two_given_names`. Measured 2026-11-04 on a 12-CPU machine: every `es` country, eight configurations, 42 groups, 57s.
+
+```bash
+uv run python tools/differential/config_diff.py score default plain:ES --switches two_family_names,two_given_names --languages es
+```
+
 For a vocabulary word whose reading acts on a name position, `tools/vocab/word_report.py` gives the per-word view before and alongside this: the word in a grid of shapes, its incidence in every fetched local corpus, and its `name_usage.py` rows (`nameparser/vocab/README.md`, "Adding a word").
 
 ## Corpus provenance

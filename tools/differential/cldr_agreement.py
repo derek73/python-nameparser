@@ -166,8 +166,8 @@ LOCALE_FILES = {"zh": "ZH", "zh_Hant": "ZH", "yue": "ZH", "yue_Hans": "ZH",
                 "hi": "HI", "hi_Latn": "HI", "bn": "BN"}
 #: Packs with no CLDR file to measure them on. CLDR's pt is Brazilian,
 #: read with PT_BR, which chooses PT's language and more; CLDR 48 has no
-#: pt_PT names file.
-NO_CLDR: frozenset[str] = frozenset({"PT"})
+#: pt_PT names file, and no es_AR one (its es is read with ES).
+NO_CLDR: frozenset[str] = frozenset({"PT", "ES_AR"})
 #: The locale view of the native-script Wikidata source: stratum label ->
 #: the pack its renderings are parsed with (its QID file names no language).
 NATIVE_LABELS = {"zh-cn": "ZH", "zh-tw": "ZH", "ja-jp": "JA", "ne-np": "NE",

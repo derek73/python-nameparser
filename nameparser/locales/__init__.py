@@ -26,6 +26,7 @@ _REGISTRY = {
     "BN": ("nameparser.locales.bn", "BN"),
     "CS": ("nameparser.locales.cs", "CS"),
     "ES": ("nameparser.locales.es", "ES"),
+    "ES_AR": ("nameparser.locales.es_ar", "ES_AR"),
     "GA": ("nameparser.locales.ga", "GA"),
     "GD": ("nameparser.locales.gd", "GD"),
     "HI": ("nameparser.locales.hi", "HI"),

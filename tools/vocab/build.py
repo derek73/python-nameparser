@@ -319,7 +319,9 @@ RULE_DEFAULTS: dict[str, object] = {
 #: build refuses it, and a tag listed here needs the table
 #: (check_pack_rules); tests/v2/test_locales.py holds the roster to the
 #: packs. TR_AZ reads tr.toml's: no az.toml exists, and the pack's rule
-#: is one rule for both languages.
+#: is one rule for both languages. ES_AR reads es.toml's too, a country
+#: pack reading its language's table (decisions/O6, 2026-11-04); the
+#: roster names the one pack a file is listed for.
 PACK_RULES: dict[str, str] = {"ru": "RU", "tr": "TR_AZ", "es": "ES", "cs": "CS",
                              "sk": "SK"}
 
