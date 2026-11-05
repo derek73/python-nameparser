@@ -775,11 +775,25 @@ def _assign_main(seg_idx: int, state: ParseState,
     return order
 
 
+def _names_before(fam_pieces: Sequence[Sequence[int]],
+                  tokens: Sequence[WorkToken], lead: int, k: int) -> int:
+    """How many name words stand in front of the numeral at
+    `fam_pieces[k]`, the title run's `lead` pieces left out: the pieces
+    that are not wholly particles, wherever they stand in the part."""
+    # rules/S10: "a piece made wholly of particles counting as no word"
+    # -- a particle there heads the name word behind it, so it is no
+    # word to spare; a chain joined to a name word is one piece and
+    # counts (decisions/P9 (#1080))
+    return sum(1 for piece in fam_pieces[lead:k]
+               if not all("particle" in tokens[t].tags for t in piece))
+
+
 def _family_part_numeral(word: WorkToken, preceding: str, names: int,
                          one_case: bool | None) -> Role | None:
     """The role of a roman numeral ending the family part before a
-    family comma, behind `names` pieces of that part, as the comma-less
-    name reads one ending it (rules/S10), or None where the numeral's
+    family comma, behind `names` name words of that part (`_names_before`,
+    which leaves its particles out), as the comma-less name reads one
+    ending it (rules/S10), or None where the numeral's
     predicate reads no numeral there (an initial in front, a letter with
     its period): the suffix where it reads as the generation, a
     one-letter numeral needing two name words in front of it, and the
@@ -1941,7 +1955,8 @@ def assign(state: ParseState) -> ParseState:
                             for j in range(k + 1, len(fam_pieces)))
                     and (numeral := _family_part_numeral(
                         word, tokens[fam_pieces[k - 1][0]].text,
-                        k - lead, state.one_case)) is not None):
+                        _names_before(fam_pieces, tokens, lead, k),
+                        state.one_case)) is not None):
                 _set_roles(tokens, piece, numeral)
                 # reported where taken: a name word here is the family
                 # name the comma has just named, which nobody misreads
