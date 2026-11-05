@@ -1,6 +1,6 @@
 Release Log
 ===========
-* 2.8.2 - Unreleased
+* 2.8.2 - November 4, 2026
 
     **Deprecations**
 
