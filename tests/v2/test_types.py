@@ -997,6 +997,7 @@ def _parsedname_order(value: object) -> object:
     (set(GIVEN_FIRST), TypeError, "ordered iterable"),
     (5, TypeError, "must be an iterable"),
     ((Role.GIVEN, Role.FAMILY, Role.MIDDLE), ValueError, "exported orders"),
+    ((*GIVEN_FIRST, Role.FAMILY), ValueError, "exported orders"),
 ])
 def test_every_name_order_field_refuses_the_same_values(
         build: Callable[[object], object], bad: object, exc: type,

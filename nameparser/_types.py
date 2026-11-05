@@ -82,7 +82,8 @@ _NAME_ORDERS = (GIVEN_FIRST, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST)
 def _reject_bare_string_order(value: object, field_name: str) -> None:
     # tuple("gmf") would be ("g", "m", "f") -- catch the bare string
     # with the same TypeError every other iterable field raises.
-    # Single-sourced: called from Policy AND PolicyPatch __post_init__.
+    # Single-sourced: called from Policy AND PolicyPatch __post_init__,
+    # and through _validated_order for script_orders and ParsedName.order.
     # field_name is REQUIRED, with no name_order default: script_orders'
     # values obey the same rule (via _validated_order), and a defaulted
     # caller that forgot to pass it would silently name the wrong field.
@@ -1023,8 +1024,6 @@ class Reading:
             raise TypeError(
                 f"Reading.first_surname must be a bool, got "
                 f"{self.first_surname!r}; pass True or False")
-        # the members the parser passes need no coercion, and a report
-        # pays no frame for it (decisions/parse-cost)
         if type(self.languages) is not tuple:
             langs = self.languages
             if isinstance(langs, str):
@@ -1042,6 +1041,8 @@ class Reading:
                 raise TypeError(
                     f"Reading.languages must hold BCP 47 tags as str, got "
                     f"{tag!r} in {self.languages!r}")
+        # the members the parser passes need no coercion, and a report
+        # pays no frame for it (decisions/parse-cost)
         if not isinstance(self.kind, ReadingKind):
             object.__setattr__(
                 self, "kind",
@@ -1260,12 +1261,19 @@ class ParsedName:
             )
         object.__setattr__(self, "tokens", tuple(self.tokens))
         object.__setattr__(self, "ambiguities", tuple(self.ambiguities))
-        if self.order is not None:
-            # the one validator Policy.name_order goes through, so a
-            # list is stored as the tuple and a plain-string tuple is
-            # refused here as there
+        order = self.order
+        # a tuple of three Role members that is one of the orders, as
+        # every parse passes, is valid as it stands, and is asked
+        # C-level so a parse pays no frame for it; anything else goes
+        # through the one validator Policy.name_order goes through, so
+        # a list is stored as the tuple and a plain-string tuple, which
+        # compares equal to an order, is refused here as there
+        if order is not None and not (
+                type(order) is tuple and len(order) == 3
+                and type(order[0]) is Role and type(order[1]) is Role
+                and type(order[2]) is Role and order in _NAME_ORDERS):
             object.__setattr__(self, "order", _validated_order(
-                self.order, "ParsedName.order"))
+                order, "ParsedName.order"))
         for tok in self.tokens:
             if not isinstance(tok, Token):
                 raise TypeError(

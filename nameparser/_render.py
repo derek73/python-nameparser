@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import re
 import unicodedata
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 
 from nameparser._lexicon import (FULL_STOPS, Lexicon, _normalize,
                                  _spells_an_initial)
@@ -158,14 +158,12 @@ def render(name: ParsedName, spec: str | None) -> str:
     collapse. Unknown keys raise KeyError naming the valid fields.
     None renders the order-aware default (_default_render)."""
     if spec is None:
-        if name.order is None:
-            # no order recorded (a 2.x pickle, a name built by hand):
-            # 2.x's default spec, so such a name renders as it did
-            # (decisions/R6, #754)
-            return _format_spec(_V2_DEFAULT_SPEC, {
-                key: getattr(name, key) for key in _RENDER_KEYS},
-                "render", _RENDER_KEYS)
-        return _default_render(name, name.order)
+        if name.order is not None:
+            return _default_render(name, name.order)
+        # no order recorded (a 2.x pickle, a name built by hand):
+        # 2.x's default spec, so such a name renders as it did
+        # (decisions/R6, #754)
+        spec = _V2_DEFAULT_SPEC
     values = {key: getattr(name, key) for key in _RENDER_KEYS}
     return _format_spec(spec, values, "render", _RENDER_KEYS)
 
@@ -225,7 +223,7 @@ def _written_separator(gap: str) -> str | None:
     return _COMMA_WRITTEN.get(core)
 
 
-def _ordered(tokens: list[Token]) -> list[Token]:
+def _ordered(tokens: Sequence[Token]) -> list[Token]:
     # a field's words in the order its view joins them: folded words
     # first (mechanisms.md#FOLDED_TAG: "a rule that needs different
     # rendering order tags the token, and the rendering views consult
@@ -385,13 +383,14 @@ def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str
         # uniformity with the mechanism rather than reachable
         # behavior; a producer that ever folds into another part would
         # otherwise reopen #408 there.
-        tokens = (tuple(t for t in tokens if FOLDED_TAG in t.tags)
-                  + tuple(t for t in tokens if FOLDED_TAG not in t.tags))
-        letters = (_first_letter(t.text) for t in tokens)
-        values[key] = separator.join(
-            letter + delimiter for letter in letters
+        # (a loop, not a generator, which would resume a frame per word)
+        letters: list[str] = []
+        for t in _ordered(tokens):
+            letter = _first_letter(t.text)
             if letter.isascii() or not _initialless(
-                unicodedata.normalize("NFC", letter)))
+                    unicodedata.normalize("NFC", letter)):
+                letters.append(letter + delimiter)
+        values[key] = separator.join(letters)
     return _format_spec(spec, values, "initials", _INITIALS_KEYS)
 
 
