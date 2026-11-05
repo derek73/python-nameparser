@@ -1365,6 +1365,21 @@ def test_a_run_of_split_pairs_merges_in_one_pass(head: str,
         assert _frames_for(text, only="merge_pieces") == 0, pairs
 
 
+def test_a_run_of_bound_phrases_joins_in_one_pass() -> None:
+    """rules/P12's join past the start, held as the split-pair merge
+    is, by the frame count of `merge_pieces`: a call per pair, each
+    shifting every piece behind it, was the quadratic.
+    RECORDED NEGATIVE CONTROL: 50 and 200 calls at 50 and 200 pairs
+    with the join merging each pair through it (2026-11-04, #694)."""
+    if sys.getprofile() is not None:
+        pytest.skip("a profile hook is already installed; this test owns it")
+    for pairs in _SHIFT_UNITS:
+        text = "طارق " + "عبد الله " * pairs
+        # REACHABILITY: the join ran, the last pair the family
+        assert parse(text).family == "عبد الله", pairs
+        assert _frames_for(text, only="merge_pieces") == 0, pairs
+
+
 def test_a_member_opening_a_comma_part_asks_no_anchor_pass() -> None:
     """rules/S7's company clause speaks only for a member with a
     credential in FRONT of it, so a member opening the part after a

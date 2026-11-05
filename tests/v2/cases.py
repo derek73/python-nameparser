@@ -9874,6 +9874,20 @@ CASES: tuple[Case, ...] = (
          classification="fix(#694)",
          notes="P12: each listed word carries its Persian spelling (keheh "
                "and Farsi yeh) beside the Arabic one"),
+    Case("bound_given_completed_family_first", "سعيد عبد الله حسن",
+         {"given": "عبد الله", "middle": "حسن", "family": "سعيد"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         classification="fix(#694)",
+         notes="P12's pair is one unit the order lays out: 2.0.0 through "
+               "2.8.1 read given 'عبد', family 'سعيد'"),
+    Case("bound_given_completed_counts_once_for_two_family_names",
+         "سعيد حسن عبد الله",
+         {"given": "سعيد", "family": "حسن عبد الله"},
+         policy=Policy(two_family_names=True),
+         classification="fix(#694)",
+         notes="O6 counts P12's pair as one family word, so it takes حسن "
+               "as the first surname; counted as two, حسن stayed a "
+               "middle name (decisions/P12)"),
     Case("bound_given_before_an_unlisted_word_stands_alone", "نوال عبد هاشم",
          {"given": "نوال", "middle": "عبد", "family": "هاشم"},
          notes="P12: before a word that does not complete it عبد is a "

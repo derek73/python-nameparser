@@ -2265,7 +2265,8 @@ class Lexicon:
             `properties` that kind's behavioral properties as the files
             spell them (``addresses="given"``, ``after_given=True``,
             ``abbreviation=True``, ``attaches=[...]``, ``acronym=...``, ``attached="after"``,
-            ``may_be_initial=True``, ``same_as=...`` and
+            ``may_be_initial=True``, ``completed_by=[...]`` on a
+            ``bound_given`` reading, ``same_as=...`` and
             ``after_particle=True`` on a ``given`` reading, ``shared=True``
             on a name reading); a property given its unwritten value (``None``,
             ``False``) is removed. Where the word holds a reading of `kind`

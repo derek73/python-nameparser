@@ -118,7 +118,7 @@ A kind belongs to a category, which decides what the reading does:
      - ``may_be_initial=True``
    * - bound_given
      - ``bound_given``
-     - none
+     - ``completed_by=[...]``
    * - relation
      - ``birth_marker``
      - none
@@ -708,6 +708,22 @@ entirely:
     >>> off = Lexicon.default().remove(kind="bound_given", every=True)
     >>> Parser(lexicon=off).parse("abdul salam ahmed salem").given
     'abdul'
+
+Past the first name word, a bound word joins only a word its reading
+lists in ``completed_by``. Arabic-script ``عبد`` lists the names of God
+and the devotional names it completes, so the pair is one name wherever
+it stands, while the Latin ``abdul`` lists none:
+
+.. doctest::
+
+    >>> parse("طارق عبد العزيز").family
+    'عبد العزيز'
+    >>> parse("Tariq Abdul Aziz").family
+    'Aziz'
+    >>> lex = Lexicon.default().add("abdul", kind="bound_given",
+    ...                             completed_by=["aziz"])
+    >>> Parser(lexicon=lex).parse("Tariq Abdul Aziz").family
+    'Abdul Aziz'
 
 Behavior: Policy
 -----------------

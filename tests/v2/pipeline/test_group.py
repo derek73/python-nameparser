@@ -231,6 +231,18 @@ def test_a_caller_lists_the_words_that_complete_a_bound_word() -> None:
     assert _phrase_pieces("سعيد عبد الله", gone) == [["سعيد", "عبد", "الله"]]
 
 
+def test_the_phrase_tag_stays_off_the_published_tokens() -> None:
+    # the tag is group's, read by post_rules' O6 count; assemble drops
+    # it as it drops the other kind tags
+    from nameparser import parse
+    tokens = parse("طارق عبد العزيز").tokens
+    assert all(not any(t.startswith("vocab:bound-phrase") for t in tok.tags)
+               for tok in tokens)
+    # REACHABILITY: classify does put it on the bound word
+    state = _grouped("طارق عبد العزيز", lexicon=Lexicon.default())
+    assert any("vocab:bound-phrase" in tok.tags for tok in state.tokens)
+
+
 @pytest.mark.parametrize("value,error", [
     ("الله", TypeError), (["الله", 3], TypeError),
     (["عبد الله"], ValueError)])

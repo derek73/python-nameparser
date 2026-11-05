@@ -34,6 +34,7 @@
 **Accepted:**
 
 - A completing word written with its vowel points or with the alef wasla (`ٱلله`, `اَلله`) is not listed, and keeps its words apart; no corpus held one after `عبد` on 2026-11-04.
+- A kunya opening the name is P5's join of its two bound words, and the word completing the second is left to position (`أبو عبد الله محمد` reads given 'أبو عبد', middle 'الله'), as before this rule; behind a given name the kunya is the family (`محمد أبو عبد الله`).
 - A completing word with punctuation glued to it (`عبد الله،`) is not listed either: the Arabic comma is no comma to the parser.
 
 ---
