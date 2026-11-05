@@ -2534,6 +2534,14 @@ CASES: tuple[Case, ...] = (
                "mixed-case row above does. 2.2.0 and 2.3.0 read family "
                "'SMITH MA', suffix 'VD'; 2.0.0 and 2.1.0 read as here; "
                "1.4.0 last 'SMITH', suffix 'VD, MA'"),
+    Case("a_lone_letter_behind_a_particle_before_a_comma_is_the_name_word",
+         "SMITH VD V, JOHN",
+         {"given": "JOHN", "family": "SMITH VD V"},
+         classification="fix(#1080)",
+         notes="P9: a lone letter behind a particle reads as it does in "
+               "the same part without one, so the particle is no word to "
+               "spare and 'V' is a name word. 2.7.0 and 2.8.0 read family "
+               "'SMITH VD', suffix 'V'; 2.6.0 read as here"),
     Case("a_comma_before_no_name_word_keeps_the_positional_read",
          "Berg de MA, Prof.",
          {"title": "Prof.", "given": "Berg", "family": "de",

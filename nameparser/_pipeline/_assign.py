@@ -1939,9 +1939,15 @@ def assign(state: ParseState) -> ParseState:
                     and all(is_suffix_piece(fam_pieces[j], fam_tags[j],
                                             tokens)
                             for j in range(k + 1, len(fam_pieces)))
+                    # rules/P9, #1080: the numeral is read by the name
+                    # words in front of it, a particle none to spare
+                    # ('SMITH VD V, JOHN' as 'SMITH V, JOHN' reads)
                     and (numeral := _family_part_numeral(
                         word, tokens[fam_pieces[k - 1][0]].text,
-                        k - lead, state.one_case)) is not None):
+                        1 + sum(1 for j in range(lead + 1, k)
+                                if "particle"
+                                not in tokens[fam_pieces[j][0]].tags),
+                        state.one_case)) is not None):
                 _set_roles(tokens, piece, numeral)
                 # reported where taken: a name word here is the family
                 # name the comma has just named, which nobody misreads
