@@ -379,6 +379,25 @@ def reads_as_generation(text: str, tags: Set[str], preceding: str | None,
                     or one_case and is_initial_shaped(preceding.upper())))
 
 
+# rules/C3: "a numeral ending the part, or standing before the listed
+# suffix words it ends with, that the trailing fork reads as the generation is
+# no name word" -- asked of the shape-only numerals,
+# the listed ones being suffix words to every count that asks it already;
+# decisions/C3 (#893)
+def ends_in_a_generation(texts: Sequence[str], one_case: bool | None,
+                         ) -> bool:
+    """Whether the second of `texts`, two words of a name, is a
+    numeral of two or more letters that the trailing fork reads as the
+    generation behind the first. It reads no tags, so a listed numeral
+    ('III') answers True too: each caller passes only a word it has not
+    already read as a suffix, which leaves the unlisted VI to IX, and
+    finds the two words itself, the numeral ending the name words past
+    any suffix words behind it."""
+    last = texts[-1]
+    return (len(last.rstrip(".")) >= 2
+            and reads_as_generation(last, frozenset(), texts[-2], one_case))
+
+
 # rules/S10: "a Title-case numeral in a name of mixed case leans to the
 # name" -- the fork weighed it and the writing declined it, so it is
 # reported as a declined member of the ambiguous class is (#752)
@@ -1668,7 +1687,8 @@ def name_word_count(texts: Sequence[str], lexicon: Lexicon,
                     policy: Policy, letters_one_case: bool | None = None,
                     members: Set[int] = frozenset()) -> int:
     """How many of these texts are NAME words -- not suffix
-    vocabulary, not title vocabulary.
+    vocabulary, not title vocabulary, nor a numeral the trailing fork
+    reads as the generation ending the name words (rules/C3).
 
     rules/C4's count for the ambiguous class, and it is of names
     rather than of words because 'Smith Jr., MA' is two tokens and one
@@ -1689,7 +1709,8 @@ def name_word_count(texts: Sequence[str], lexicon: Lexicon,
     reads as 'Royce, Ed' does. Why the other two joins are not read
     here: `SURNAME_UNIT_TAGS`.
 
-    `letters_one_case` is `is_wholly_suffix`'s, for the same reason.
+    `letters_one_case` is `is_wholly_suffix`'s, for the same reason,
+    and the case fact the generation fork reads (`ParseState.one_case`).
     `members` holds the positions of split credentials' members
     (classify's tag), each half a credential rather than a name, so
     one opening the part stays no name word, as `_comma._whole_name`
@@ -1702,6 +1723,7 @@ def name_word_count(texts: Sequence[str], lexicon: Lexicon,
     # the count is a sum, so the commonest comma names never build the
     # units -- and pay no frame the token loop did not already pay.
     names: list[bool] = []
+    suffixes: list[bool] = []
     has_particle = False
     lead: int | None = None
     lead_suffix = False
@@ -1728,12 +1750,24 @@ def name_word_count(texts: Sequence[str], lexicon: Lexicon,
             lead = i
             lead_suffix = not name and i not in members
         names.append(name)
+        suffixes.append(suffix)
     # rules/C3: "A suffix word opening the part is a name word to the
     # count where a name word follows it" -- opening it behind its
     # titles, which stay no name word, this count being of names
     # (rules/C4)
     if lead_suffix and lead is not None and any(names[lead + 1:]):
         names[lead] = True
+    # rules/C3: "a numeral ending the part, or standing before the
+    # listed suffix words it ends with, that the trailing fork reads as the
+    # generation is no name word", as a listed one is not
+    # -- the suffix words stepped over as `_comma._whole_name` steps
+    # over them, a dual of the title and suffix vocabulary included,
+    # and a title that is no suffix word stopping both
+    e = len(texts) - 1
+    while e > 0 and suffixes[e]:
+        e -= 1
+    if e > 0 and names[e] and ends_in_a_generation(texts[e - 1:e + 1], letters_one_case):
+        names[e] = False
     if not has_particle:
         return sum(names)
     count = 0

@@ -1,4 +1,5 @@
-"""Build the Spanish given-name list rules/O6's veto reads.
+"""Build the Spanish given-name lists rules/O6's veto reads: locales.ES's,
+and locales.ES_AR's, cut from the same tables at a looser share.
 
 WHY THIS IS IN THE TREE. `Policy(two_family_names=True)` (rules/O6)
 moves the name word before the family into the family, and in "José
@@ -43,9 +44,18 @@ holds the shipped list to that. The cutoff and SHARE are measured choices
 (decisions/O6, 2026-10-30): a change to either is a cutoff change,
 decided against the same per-country measurement.
 
+LISTS names each list the tool writes by the pack that carries it, with
+its module, cutoff and share: locales.ES's 1,000 words at 0.9, and
+locales.ES_AR's 5,000 at 0.5 (decisions/O6, 2026-11-04), which keeps
+the given names Spain also bears as surnames too often for the 90% bar
+(`nicolas`, `matias`, `sebastian`). `--list es-AR` writes that one.
+
     uv run --with openpyxl --with xlrd python tools/es_given_names.py
     uv run --with openpyxl --with xlrd python tools/es_given_names.py --write
     uv run --with openpyxl --with xlrd python tools/es_given_names.py --top 500
+    uv run --with openpyxl --with xlrd python tools/es_given_names.py --list es-AR --write
+    uv run --with openpyxl --with xlrd python tools/es_given_names.py --share 0.5 \
+        | awk '{print $2}' > LIST   # a candidate list, one word a line
 
 Sources are cached outside the repository, in $NAMEPARSER_TOOLS_CACHE
 or ~/.cache/nameparser-tools (shared with name_usage.py); --refresh
@@ -69,6 +79,18 @@ MODULE = (Path(__file__).parents[1] / "nameparser" / "locales"
 #: The decided cutoff and share (decisions/O6, 2026-10-30).
 TOP = 1000
 SHARE = 0.9
+#: locales.ES_AR's list: the same tables at a looser share and a longer
+#: cutoff, decided on the per-country measurement (decisions/O6,
+#: 2026-11-04).
+AR_MODULE = MODULE.with_name("_es_ar_given_names.py")
+AR_TOP = 5000
+AR_SHARE = 0.5
+#: Each list the tool writes, by the language tag of the pack carrying
+#: it: its module, cutoff and share.
+LISTS: dict[str, tuple[Path, int, float]] = {
+    "es": (MODULE, TOP, SHARE),
+    "es-AR": (AR_MODULE, AR_TOP, AR_SHARE),
+}
 
 NAMES_URL = "https://www.ine.es/daco/daco42/nombyapel/nombres_por_edad_media.xlsx"
 NAMES_FILE = "ine_nombres_2025.xlsx"
@@ -157,10 +179,10 @@ def render(ranked: list[str]) -> str:
     return f"{BEGIN}\n_RANKED = (\n{body}\n)\n{END}"
 
 
-def rewrite(module_text: str, block: str) -> str:
+def rewrite(module_text: str, block: str, module: Path = MODULE) -> str:
     start, end = module_text.find(BEGIN), module_text.find(END)
     if start < 0 or end < start:
-        raise ValueError(f"{MODULE} has no generated block to replace")
+        raise ValueError(f"{module} has no generated block to replace")
     return module_text[:start] + block + module_text[end + len(END):]
 
 
@@ -226,17 +248,22 @@ def load_surnames(refresh: bool) -> list[tuple[str, int]]:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    parser.add_argument("--list", choices=sorted(LISTS), default="es",
+                        help="the list to build, by its pack's language tag")
     parser.add_argument("--write", action="store_true",
-                        help=f"rewrite the generated block in {MODULE.name}")
+                        help="rewrite the generated block in the list's module")
     parser.add_argument("--refresh", action="store_true",
                         help="fetch the sources again")
-    parser.add_argument("--top", type=int, default=TOP)
-    parser.add_argument("--share", type=float, default=SHARE)
+    parser.add_argument("--top", type=int, help="the cutoff (default: the list's)")
+    parser.add_argument("--share", type=float, help="the share (default: the list's)")
     args = parser.parse_args(argv)
+    module, top, share = LISTS[args.list]
     excluded = excluded_words()
     given = tally(load_names(args.refresh))
     surname = tally(load_surnames(args.refresh), after=excluded)
-    ranked = select(given, surname, excluded, args.top, args.share)
+    ranked = select(given, surname, excluded,
+                    top if args.top is None else args.top,
+                    share if args.share is None else args.share)
     for i, word in enumerate(ranked, 1):
         print(f"{i:5}  {word:20} given {given[word]:>9,}  "
               f"surname {surname[word]:>8,}")
@@ -244,9 +271,9 @@ def main(argv: list[str] | None = None) -> int:
     print(f"{len(ranked)} words, {covered / sum(given.values()):.1%} of "
           "given-word uses", file=sys.stderr)
     if args.write:
-        MODULE.write_text(rewrite(MODULE.read_text(encoding="utf-8"),
-                                  render(ranked)), encoding="utf-8")
-        print(f"wrote {MODULE}", file=sys.stderr)
+        module.write_text(rewrite(module.read_text(encoding="utf-8"),
+                                  render(ranked), module), encoding="utf-8")
+        print(f"wrote {module}", file=sys.stderr)
     return 0
 
 
