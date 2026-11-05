@@ -12,13 +12,14 @@
   "Smith, John PhD I, Jr."    →  suffix="PhD, Jr."
   "Smith, John PhD É, Jr."    →  suffix="PhD É, Jr."  · boundary
   ```
-- **The bare letter read as the generation behind a name word is reported**, naming the middle initial it would otherwise be, as S10 reports the same letter with no comma: one letter is the shape a middle initial is written in, so a reader cannot tell the two apart there. Nothing is reported where the writing or the slot settles it: a letter behind another suffix word, a period-marked letter, one ahead of a further comma, and one in lower case in a name of mixed case (S10). Nor behind a particle, which may take the letter into its chain or stand alone as the given name, so the report could not say which field the initial would land in.
+- **The bare letter read as the generation behind a name word is reported**, naming the middle initial it would otherwise be, as S10 reports the same letter with no comma: one letter is the shape a middle initial is written in, so a reader cannot tell the two apart there. Nothing is reported where the writing or the slot settles it: a letter behind another suffix word, a period-marked letter, one ahead of a further comma, and one in lower case in a name of mixed case (S10). Nor behind a lone particle, which may take the letter into its chain or stand alone as the given name, so the report could not say which field the initial would land in; behind a run of particles, which P6 attaches to the family, it is reported, a name word in its place joining the run as the middle name.
   ```
   "Smith, John V"             →  ambiguities=("suffix-or-name",)
   "SMITH, JOHN I"             →  ambiguities=("suffix-or-name",)
   "Smith, PSM I"              →  ambiguities=()
   "Smith, John v"             →  ambiguities=()
   "Smith, Van V"              →  ambiguities=()
+  "Smith, John de la V"       →  ambiguities=("suffix-or-name", "particle-or-given")
   ```
 - **Only the given part is touched**: a part after the comma that is nothing but suffix words is the credential run, and a letter in it continues that run up to the further comma.
 - **Longer suffix words are not in question either way**, a numeral of two or more letters being read as S10 reads one in this part.

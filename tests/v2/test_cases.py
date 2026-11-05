@@ -355,9 +355,11 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # one), each under three orders, and its review row 'Smith,
     # Junior.', reporting suffix-or-name under three orders; 1582 ->
     # 1600 on 2026-11-04, #877's report on a bare letter ending the
-    # given part after a comma, six rows each under three orders.
-    assert claims == 1600, (
-        f"the field sweep checks {claims} claims, recorded as 1600 on "
+    # given part after a comma, six rows each under three orders; 1600 ->
+    # 1609 the same day, its test review's particle-run and connective
+    # rows, three reports each under three orders.
+    assert claims == 1609, (
+        f"the field sweep checks {claims} claims, recorded as 1609 on "
         f"2026-11-04")
 
 
@@ -728,8 +730,10 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # three orders; 462 -> 477 the same day, #1039's junior rows under
     # the three orders; 477 -> 495 on 2026-11-04, #877's report on a bare
     # letter ending the given part after a comma, six rows under the
-    # three orders, each stand-in landing in the alternative's field
-    assert (checked, skipped) == (495, 330), (checked, skipped)
+    # three orders, each stand-in landing in the alternative's field;
+    # 495 -> 504 the same day, its test review's two rows, three
+    # reports under the three orders
+    assert (checked, skipped) == (504, 330), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:

@@ -12628,6 +12628,27 @@ CASES: tuple[Case, ...] = (
                "#432's fix a period test rather than a numeral test. "
                "Reported since #877, the letter being the shape a "
                "middle initial is written in (rules/C9)"),
+    Case("family_comma_bare_numeral_behind_a_particle_run_reports",
+         "Smith, John de la V",
+         {"given": "John", "family": "de la Smith", "suffix": "V"},
+         ambiguities=("suffix-or-name", "particle-or-given"),
+         classification="fix(#877)",
+         notes="rules/C9's report behind a particle RUN: P6 attaches "
+               "the run to the family, and with a name word in the "
+               "letter's place the run chains it as the middle name "
+               "('Smith, John de la Q' reads middle 'de la Q'), so the "
+               "report can name its field and is made; behind a lone "
+               "particle ('Smith, John de V') it is not"),
+    Case("family_comma_bare_numeral_behind_a_connective_reports",
+         "Smith, Maria y V",
+         {"given": "Maria", "middle": "y", "family": "Smith",
+          "suffix": "V"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#877)",
+         notes="rules/C9's report behind a connective, which is a "
+               "name word to the walk: with a name word in the letter's "
+               "place the connective joins it as the middle name "
+               "('Smith, Maria y Q' reads middle 'y Q')"),
     Case("family_comma_title_resets_the_credential_run", "Smith, RA Dr. I",
          {"title": "RA Dr.", "given": "I", "family": "Smith"},
          notes="THE RESET. A title ends the run: what follows a bare "

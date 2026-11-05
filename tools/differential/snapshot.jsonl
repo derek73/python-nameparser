@@ -3540,6 +3540,7 @@
 {"name": "Smith, John VI MD", "given": "John", "family": "Smith", "suffix": "VI MD", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as middle (position)"], "initials": "J. S.", "generation": "VI", "credentials": "MD"}
 {"name": "Smith, John Vi", "given": "John", "middle": "Vi", "family": "Smith", "initials": "J. V. S."}
 {"name": "Smith, John X", "given": "John", "middle": "X", "family": "Smith", "initials": "J. X. S."}
+{"name": "Smith, John de la V", "given": "John", "family": "de la Smith", "suffix": "V", "ambiguities": ["PARTICLE_OR_GIVEN", "SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: initial as middle (shape)", "PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "J. S.", "generation": "V"}
 {"name": "Smith, John e, III, Jr", "given": "John", "middle": "e", "family": "Smith", "suffix": "III, Jr", "initials": "J. e. S.", "generation": "III, Jr"}
 {"name": "Smith, John van der Berg Prof.", "title": "Prof.", "given": "John", "middle": "van der Berg", "family": "Smith", "initials": "J. B. S."}
 {"name": "Smith, John, Bob (MA)", "given": "John", "family": "Smith", "suffix": "Bob MA", "ambiguities": ["COMMA_STRUCTURE"], "initials": "J. S."}
