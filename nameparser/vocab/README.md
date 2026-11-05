@@ -273,4 +273,4 @@ Phase 2 gave `default` and `attaches` their meaning (2026-10-25, see [Properties
 
 Two property values are refused for the same reason, with a message saying a later phase: `addresses = "full"` and `"any"`, and `attached` with a `side` other than `"after"`.
 
-The locale packs' vocabulary (`nameparser/locales/`) and the Korean surname list (`nameparser/config/surnames.py`) are not in this folder: the surnames are a segmentation list, outside the per-word model, and the packs move here in phase 3.
+The locale packs' vocabulary (`nameparser/locales/`) and the Korean surname list (`nameparser/config/_ko_surnames.py`, read as `Lexicon.default().surnames`) are not in this folder: the surnames are a segmentation list, outside the per-word model, and the packs move here in phase 3.

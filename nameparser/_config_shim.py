@@ -1170,7 +1170,7 @@ class Constants:
         from nameparser.config._compiled import MAIDEN_MARKERS
         from nameparser.config._compiled import (
             AGNOMENS, GLUED_HONORIFICS, SUFFIX_WORDS_AMBIGUOUS)
-        from nameparser.config.surnames import KOREAN_SURNAMES
+        from nameparser.config._ko_surnames import KOREAN_SURNAMES
         from nameparser.config._titles_2_6_0 import TITLES_2_6_0
         from nameparser.config._compiled import (
             AFTER_GIVEN_TITLES, TITLE_MODIFIERS, TITLE_PHRASES, TITLE_STYLES,

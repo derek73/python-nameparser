@@ -12,7 +12,7 @@ composable, and locale packs are opt-in.
 ⚠️ **2.8.1 adds three more DeprecationWarnings** for things 3.0 changes:
 configuring a ``Lexicon`` through its set fields
 (``Lexicon.default().add(titles={"dean"})``), reading the vocabulary
-constants in ``nameparser.config`` (``TITLES`` and the rest, all but
+constants in ``nameparser.config`` (``TITLES`` and the rest; 2.8.2 adds
 ``surnames``), and ``nameparser.config.regexes``. A test run that turns
 warnings into errors (``-W error``, or pytest's ``filterwarnings =
 error``) fails where your code does any of these; see the `migration

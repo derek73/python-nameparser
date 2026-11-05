@@ -10,10 +10,11 @@ rest of the facade in 3.0. The vocabulary data modules beside them
 ...) hold the word lists the 2.x :class:`~nameparser.Lexicon` is built
 from, named for its fields since 2.2 (#293); since 2.6 each (all but
 ``surnames.py``) re-exports sets compiled from the per-word TOML files
-in ``nameparser/vocab/`` (#737). 3.0 removes them too, all but
-``surnames``, and since 2.8.1 reading one of their constants warns,
+in ``nameparser/vocab/`` (#737). 3.0 removes them too, and makes
+``surnames`` private; since 2.8.1 reading one of their constants warns,
 naming what 3.0 offers in its place (#1007), as reading
-``nameparser.config.regexes`` does (#1008).
+``nameparser.config.regexes`` does (#1008), and since 2.8.2 reading
+``surnames.KOREAN_SURNAMES`` does.
 
 ``RegexTupleManager`` is served from the shim purely for pickle
 compatibility (through ``__getattr__`` since 2.8, so loading such a blob
@@ -25,10 +26,10 @@ blob raises ``AttributeError`` looking up the class, not a clean
 compatibility failure.
 """
 # Maintainer note, deliberately outside the docstring: 3.0 removes the
-# five shim names below and the vocabulary DATA modules but surnames
-# (#1007, #1008, superseding decisions/3-0-reevaluations's 2026-10-28
-# entry, which kept the modules); the modules warn per constant since
-# 2.8.1. Constants and CONSTANTS are imported eagerly -- Constants
+# five shim names below and the vocabulary DATA modules, surnames made
+# private (#1007, #1008, superseding decisions/3-0-reevaluations's
+# 2026-10-28 entry, which kept the modules); the modules warn per
+# constant since 2.8.1, surnames since 2.8.2. Constants and CONSTANTS are imported eagerly -- Constants
 # warns at construction, the CONSTANTS singleton when mutated -- while
 # the three managers resolve through __getattr__ so that each caller's
 # read warns, at the caller's line, and nameparser's own reads (from

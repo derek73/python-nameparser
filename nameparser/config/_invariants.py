@@ -2,7 +2,7 @@
 
 Since the word lists moved to nameparser/vocab/*.toml, whose compiler
 (tools/vocab/build.py) refuses an unnormalized spelling itself, the one
-constant this module still checks is ``surnames.KOREAN_SURNAMES``, a
+constant this module still checks is ``_ko_surnames.KOREAN_SURNAMES``, a
 segmentation list outside the per-word model.
 
 A constant is looked up in normalized form, so a stray capital or a

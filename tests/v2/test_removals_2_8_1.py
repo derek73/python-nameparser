@@ -7,7 +7,9 @@ line and naming the 3.0 replacement and the migration guide:
   ``Lexicon(...)``, ``add()``, ``remove()`` or ``dataclasses.replace``;
 * the constants of the eight ``nameparser.config`` vocabulary modules
   3.0 deletes (#1007);
-* ``nameparser.config.regexes`` (#1008).
+* ``nameparser.config.regexes`` (#1008);
+* and, since 2.8.2, ``nameparser.config.surnames``, which 3.0 makes
+  private (its words are ``Lexicon.default().surnames``).
 
 The tables are written out literally rather than read from the modules,
 for the reason tests/v2/test_config_aliases.py gives: imported, every
@@ -58,8 +60,8 @@ def _line_after() -> int:
 # -- the vocabulary and regex modules (#1007, #1008) --------------------------
 
 #: (module, constant, a phrase its replacement clause must hold). Every
-#: public name of the nine modules, the 1.x aliases (which
-#: test_config_aliases.py asserts) aside.
+#: public name of the ten modules, the 1.x aliases (which
+#: test_config_aliases.py asserts) aside; surnames since 2.8.2.
 REMOVED_CONSTANTS = [
     ("titles", "GIVEN_NAME_TITLES", 'words(kind="title", addresses="given")'),
     ("titles", "TITLES", 'words(kind="title")'),
@@ -89,6 +91,7 @@ REMOVED_CONSTANTS = [
     ("regexes", "re_bidi", "copy a pattern you reuse"),
     ("regexes", "EMPTY_REGEX", "copy a pattern you reuse"),
     ("regexes", "REGEXES", "copy a pattern you reuse"),
+    ("surnames", "KOREAN_SURNAMES", "Lexicon.default().surnames"),
 ]
 REMOVED_MODULES = sorted({m for m, _, _ in REMOVED_CONSTANTS})
 
@@ -124,7 +127,10 @@ def test_reading_a_removed_constant_warns_at_the_reading_line(
     [w] = _deprecations(record)
     _assert_removal(w, module_name, name, phrase, line)
     # served unchanged: the library's own copy is the same object
-    if module_name != "regexes":
+    if module_name == "surnames":
+        from nameparser.config import _ko_surnames
+        assert value is _ko_surnames.KOREAN_SURNAMES
+    elif module_name != "regexes":
         from nameparser.config import _compiled
         assert value is getattr(_compiled, name)
 
@@ -151,13 +157,28 @@ def test_the_table_covers_every_public_name(module_name: str) -> None:
     assert set(module.__all__) - aliases == listed
 
 
-def test_the_module_imports_quietly_and_surnames_stays() -> None:
+def test_the_modules_import_quietly() -> None:
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         for module_name in REMOVED_MODULES:
             importlib.import_module(f"nameparser.config.{module_name}")
-        from nameparser.config.surnames import KOREAN_SURNAMES
-        assert KOREAN_SURNAMES
+
+
+def test_the_surnames_replacement_runs_quietly_and_holds_the_same_words(
+        ) -> None:
+    # 2.8.2: the message offers Lexicon.default().surnames, the field
+    # 3.0 keeps public, as the code that replaces the read; run the
+    # code it names and hold it to the constant it replaces
+    from nameparser.config import surnames
+    with _caught() as record:
+        held = surnames.KOREAN_SURNAMES
+    [w] = _deprecations(record)
+    code = str(w.message).split("; ", 1)[1].split(" holds", 1)[0]
+    assert code == "Lexicon.default().surnames"
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        offered = eval(code, {"Lexicon": Lexicon})  # noqa: S307
+    assert offered == held
 
 
 def test_an_alias_to_a_removed_constant_warns_once_naming_both() -> None:

@@ -799,7 +799,7 @@ class Lexicon:
     #: written wholly in a script :attr:`Policy.segment_scripts
     #: <nameparser.Policy.segment_scripts>` activates. The default
     #: carries the Korean census list
-    #: (:data:`~nameparser.config.surnames.KOREAN_SURNAMES`); Chinese
+    #: (``nameparser/config/_ko_surnames.py``); Chinese
     #: surnames ship in locales.ZH because Han segmentation is opt-in.
     surnames: frozenset[str] = frozenset()
     #: Honorifics, and credential, office and generational words, that
@@ -1209,7 +1209,7 @@ class Lexicon:
 def _default_lexicon() -> Lexicon:
     # The compiled vocabulary, read from _compiled rather than the public
     # nameparser.config modules, whose constants warn at a caller's read
-    # since 2.8.1 (#1007); surnames.py is not deprecated.
+    # since 2.8.1 (#1007), and surnames.py's since 2.8.2.
     from nameparser.config._compiled import BOUND_GIVEN_NAMES
     from nameparser.config._compiled import GIVEN_NAME_ABBREVIATIONS
     from nameparser.config._compiled import CAPITALIZATION_EXCEPTIONS
@@ -1221,7 +1221,7 @@ def _default_lexicon() -> Lexicon:
         AGNOMENS, GLUED_HONORIFICS, SUFFIX_ACRONYMS, SUFFIX_ACRONYMS_AMBIGUOUS,
         SUFFIX_WORDS, SUFFIX_WORDS_AMBIGUOUS,
     )
-    from nameparser.config.surnames import KOREAN_SURNAMES
+    from nameparser.config._ko_surnames import KOREAN_SURNAMES
     from nameparser.config._compiled import (
         AFTER_GIVEN_TITLES, GIVEN_NAME_TITLES, TITLE_MODIFIERS, TITLE_PHRASES,
         TITLE_STYLES, TITLES, TITLES_AMBIGUOUS)
