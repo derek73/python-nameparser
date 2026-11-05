@@ -1723,8 +1723,47 @@ def test_a_report_behind_a_given_name_phrase_names_the_family() -> None:
 def test_a_dotted_member_keeping_a_comma_in_its_clause_is_set_apart() -> None:
     # rules/S1's set-apart pass reads a dotted member with the comma its
     # clause keeps on it left off (rules/N1), so 'M.A,' joins the suffix
-    # as 'M.A' alone does; a direct test because the pass rewrites the
-    # word's text and span, which the stage-ownership map does not list
+    # as 'M.A' alone does; the comma's trim off the word is the test
+    # below's
     name = parse("John Smith (M.A, PhD)")
     assert (name.given, name.family, name.suffix, name.nickname) == (
         "John", "Smith", "M.A, PhD", "")
+
+
+#: rules/S1's comma inside a clause it sets apart, no part of the word
+#: it is written against: each row's title and suffix fields and its title
+#: and suffix tokens, as the pass leaves them with the comma trimmed off each
+#: clause word's text and span (#792).
+_SET_APART_COMMAS = {
+    "John (Dr, Prof) Smith": ("Dr Prof", "", ("Dr", "Prof")),
+    "John Smith (Dr., PhD)": ("Dr.", "PhD", ("Dr.", "PhD")),
+    "John Smith (MD ,PhD)": ("", "MD, PhD", ("MD", "PhD")),
+    "John Smith (Jr.,) III": ("", "Jr., III", ("Jr.", "III")),
+    "John Smith (M.A, PhD)": ("", "M.A, PhD", ("M.A", "PhD")),
+}
+
+#: The same rows with the trim off -- `_set_apart_clauses` giving the
+#: role and leaving text and span as tokenize cut them: the test's
+#: negative control, recorded 2026-11-05 in a scratch copy of the tree.
+#: The title keeps the comma; a suffix field reads the same where R1's
+#: entry join puts the comma back, but its word still holds it.
+_UNGUARDED_EFFECT = {
+    "John (Dr, Prof) Smith": ("Dr, Prof", "", ("Dr,", "Prof")),
+    "John Smith (Dr., PhD)": ("Dr.,", "PhD", ("Dr.,", "PhD")),
+    "John Smith (MD ,PhD)": ("", "MD ,PhD", ("MD", ",PhD")),
+    "John Smith (Jr.,) III": ("", "Jr., III", ("Jr.,", "III")),
+    "John Smith (M.A, PhD)": ("", "M.A, PhD", ("M.A,", "PhD")),
+}
+
+
+@pytest.mark.parametrize("text", sorted(_SET_APART_COMMAS))
+def test_a_set_apart_clause_trims_its_comma_off_the_word(text: str) -> None:
+    name = parse(text)
+    words = tuple(t.text for t in name.tokens
+                  if t.role in (Role.TITLE, Role.SUFFIX))
+    assert (name.title, name.suffix, words) == _SET_APART_COMMAS[text]
+    # the span is trimmed with the text, so it still slices the word
+    assert all(text[t.span.start:t.span.end] == t.text
+               for t in name.tokens if t.span is not None)
+    # and every row is one the trim moves
+    assert _SET_APART_COMMAS[text] != _UNGUARDED_EFFECT[text]

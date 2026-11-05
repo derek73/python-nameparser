@@ -130,7 +130,8 @@ def _kinds(kind: ReadingKind, role: Role) -> frozenset[str]:
 
 
 # The lookup is a memo, C-level on a hit, so a word read before costs
-# no frame (decisions/vocabulary-model, 2026-10-29): a pure function of
+# no frame (decisions/vocabulary-model, 2026-10-29; 2026-11-05 #1085,
+# which made the lookup one memo): a pure function of
 # the word and the lexicon's readings, which `files` stands for, one
 # object per base, log and choice hashed by identity
 # (decisions/vocabulary-model, 2026-11-02 #754, sub-phase 4i-d), and
@@ -522,7 +523,8 @@ def assemble(state: ParseState) -> ParsedName:
         # the parse's lexicon, is read below for a listed or declared
         # reading, through `_languages_of`, whose hit costs no frame,
         # save `_listed_whole` for a word read by its parts
-        # (decisions/vocabulary-model, 2026-10-29; 2026-11-02, 4i-d).
+        # (decisions/vocabulary-model, 2026-10-29; 2026-11-02, 4i-d;
+        # 2026-11-05 #1085).
         reading: Reading | None = None
         if role is Role.SUFFIX:
             # a suffix ends a particle's run: the family can resume
