@@ -360,11 +360,11 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # rows, three reports each under three orders; 1609 -> 1597 the
     # same day, #670: six rows opening with a lowercase ambiguous
     # particle no longer report particle-or-given under the two
-    # family-first orders, the fold having taken it; 1597 -> 1603 on
-    # 2026-11-05, #1080's two boundary rows, each reporting
-    # suffix-or-name under three orders.
-    assert claims == 1603, (
-        f"the field sweep checks {claims} claims, recorded as 1603 on "
+    # family-first orders, the fold having taken it; 1597 -> 1606 on
+    # 2026-11-05, #1080's two boundary rows and its paired-initials row,
+    # each reporting suffix-or-name under three orders.
+    assert claims == 1606, (
+        f"the field sweep checks {claims} claims, recorded as 1606 on "
         f"2026-11-05")
 
 

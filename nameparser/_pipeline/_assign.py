@@ -777,25 +777,23 @@ def _assign_main(seg_idx: int, state: ParseState,
 
 def _names_before(fam_pieces: Sequence[Sequence[int]],
                   tokens: Sequence[WorkToken], lead: int, k: int) -> int:
-    """The name words in front of the numeral at `fam_pieces[k]`, the
-    title run's `lead` pieces left out: a run of particle pieces
-    standing right in front of the numeral would attach to it were it
-    a name word, so it is no word to spare (decisions/P9, #1080)."""
-    # rules/P9: "A lone letter behind it reads as it does in the same
-    # part without the particle" -- the particles are left out of the
-    # count, so 'SMITH VD V, JOHN' reads as 'SMITH V, JOHN' does
-    j = k
-    while j > lead and all("particle" in tokens[t].tags
-                           for t in fam_pieces[j - 1]):
-        j -= 1
-    return j - lead
+    """How many name words stand in front of the numeral at
+    `fam_pieces[k]`, the title run's `lead` pieces left out: the pieces
+    that are not wholly particles, wherever they stand in the part."""
+    # rules/S10: "a piece made wholly of particles counting as no word"
+    # -- a particle there heads the name word behind it, so it is no
+    # word to spare; a chain joined to a name word is one piece and
+    # counts (decisions/P9 (#1080))
+    return sum(1 for piece in fam_pieces[lead:k]
+               if not all("particle" in tokens[t].tags for t in piece))
 
 
 def _family_part_numeral(word: WorkToken, preceding: str, names: int,
                          one_case: bool | None) -> Role | None:
     """The role of a roman numeral ending the family part before a
-    family comma, behind `names` pieces of that part, as the comma-less
-    name reads one ending it (rules/S10), or None where the numeral's
+    family comma, behind `names` name words of that part (`_names_before`,
+    which leaves its particles out), as the comma-less name reads one
+    ending it (rules/S10), or None where the numeral's
     predicate reads no numeral there (an initial in front, a letter with
     its period): the suffix where it reads as the generation, a
     one-letter numeral needing two name words in front of it, and the

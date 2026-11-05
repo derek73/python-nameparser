@@ -2101,6 +2101,7 @@
 {"name": "John van der Berg V", "given": "John", "family": "van der Berg", "suffix": "V", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: initial as family (shape)"], "initials": "J. B.", "generation": "V"}
 {"name": "John van der Berg née Jones", "given": "John", "family": "van der Berg", "maiden": "Jones", "initials": "J. B."}
 {"name": "John van der J. V", "given": "John", "family": "van der J. V", "initials": "J. J. V."}
+{"name": "John van der V, M.J.", "given": "M.J.", "family": "John van der V", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "M. J. V."}
 {"name": "John von PhD Jones", "given": "John", "family": "von", "suffix": "PhD Jones", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "J. v.", "capitalized_force": "John Von PhD Jones"}
 {"name": "John y Jane", "given": "John", "middle": "y", "family": "Jane", "initials": "J. y. J."}
 {"name": "John й Smith", "given": "John", "middle": "й", "family": "Smith", "initials": "J. й. S."}
@@ -3535,6 +3536,9 @@
 {"name": "Smith née Jones", "family": "Smith", "maiden": "Jones", "initials": "S."}
 {"name": "Smith née Jones PhD", "family": "Smith", "suffix": "PhD", "maiden": "Jones", "initials": "S."}
 {"name": "Smith van der", "given": "Smith", "family": "van der", "initials": "S. v. d.", "capitalized_force": "Smith Van Der"}
+{"name": "Smith van der Berg V, John", "given": "John", "family": "Smith van der Berg", "suffix": "V", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: initial as family (shape)"], "initials": "J. S. B.", "generation": "V"}
+{"name": "Smith van der V, John", "given": "John", "family": "Smith van der V", "initials": "J. S. V."}
+{"name": "Smith vd v, John", "given": "John", "family": "Smith", "suffix": "vd v", "initials": "J. S.", "capitalized_force": "John Smith VD V", "generation": "v", "credentials": "vd"}
 {"name": "Smith 김민준씨, XYZ", "given": "Smith", "middle": "김", "family": "민준", "suffix": "씨, XYZ", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "S.", "honorifics": "씨"}
 {"name": "Smith, A.B.", "given": "A.B.", "family": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "A. S."}
 {"name": "Smith, A.B.C.", "family": "Smith", "suffix": "A.B.C.", "initials": "S."}
@@ -4140,6 +4144,7 @@
 {"name": "de Mesnil Jean, Dr.", "order": "FAMILY_FIRST", "title": "Dr.", "given": "Jean", "family": "de Mesnil", "initials": "J. M."}
 {"name": "de Mesnil Jr.", "family": "de Mesnil", "suffix": "Jr.", "initials": "M.", "generation": "Jr."}
 {"name": "de Mesnil Thi Mai", "order": "FAMILY_FIRST_GIVEN_LAST", "given": "Mai", "middle": "Thi", "family": "de Mesnil", "initials": "M. T. M."}
+{"name": "de Mesnil V, Jean", "given": "Jean", "family": "de Mesnil V", "initials": "J. M. V."}
 {"name": "de Planta, dr. Margaritta Marionna Maria jr. CF", "order": "FAMILY_FIRST", "title": "dr.", "given": "Margaritta", "middle": "Marionna Maria", "family": "de Planta", "suffix": "jr. CF", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as middle (position)"], "initials": "M. M. M. P.", "capitalized_force": "Dr. Margaritta Marionna Maria de Planta Jr. Cf", "generation": "jr.", "credentials": "CF"}
 {"name": "de Souza e Menezes Mr. Francisco Xavier Joao Anton Dk, MP", "order": "FAMILY_FIRST", "given": "Mr.", "middle": "Francisco Xavier Joao Anton Dk", "family": "de Souza e Menezes", "suffix": "MP", "initials": "M. F. X. J. A. D. S. M."}
 {"name": "de la Cruz Juan Carlos", "family": "de la Cruz Juan Carlos", "initials": "C. J. C."}

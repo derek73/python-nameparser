@@ -2534,54 +2534,102 @@ CASES: tuple[Case, ...] = (
                "mixed-case row above does. 2.2.0 and 2.3.0 read family "
                "'SMITH MA', suffix 'VD'; 2.0.0 and 2.1.0 read as here; "
                "1.4.0 last 'SMITH', suffix 'VD, MA'"),
-    # #1080: a one-letter numeral behind such a particle, before a
-    # family comma. The particle run in front of it is no word to spare.
+    # #1080: a one-letter numeral before a family comma, its words to
+    # spare counted without the part's particles (S10).
     Case("a_numeral_behind_a_dual_particle_before_a_comma_is_family",
          "SMITH VD V, JOHN",
          {"given": "JOHN", "family": "SMITH VD V"},
          classification="parity",
-         notes="P9: a lone letter behind the particle reads as it does "
-               "in the same part without it, and 'SMITH V, JOHN' keeps "
-               "family 'SMITH V'. 2.7.0 through 2.8.2 read "
-               "family 'SMITH VD', suffix 'V', counting the "
-               "unjoined 'VD' as a name word to spare; 1.4.0 and 2.6.0 "
-               "read as here"),
+         notes="P9: a lone letter ending the part behind the particle "
+               "reads as it does in the same part without it, and "
+               "'SMITH V, JOHN' keeps family 'SMITH V'. 2.7.0 through "
+               "2.8.2 read family 'SMITH VD', suffix 'V', counting the "
+               "unjoined 'VD' as a name word to spare; 2.2.0 and 2.3.0 "
+               "family 'SMITH V', suffix 'VD' (#573); 1.4.0 through "
+               "2.1.0 and 2.4.0 through 2.6.0 read as here"),
     Case("a_numeral_behind_a_particle_run_before_a_comma_is_family",
          "Smith van der V, John",
          {"given": "John", "family": "Smith van der V"},
          classification="parity",
-         notes="#1080: the run 'van der' would attach to the numeral "
-               "were it a name word, so only 'Smith' is in front of it, "
-               "and a one-letter numeral needs two (S10). 2.7.0 through "
-               "2.8.2 read family 'Smith van der', suffix "
-               "'V'; 1.4.0 and 2.6.0 read as here"),
+         notes="S10: the run 'van der' is no word to spare, so only "
+               "'Smith' stands in front of the numeral, and a "
+               "one-letter numeral needs two. 2.7.0 through 2.8.2 read "
+               "family 'Smith van der', suffix 'V'; 1.4.0 through 2.6.0 "
+               "read as here"),
     Case("a_numeral_behind_only_particles_before_a_comma_is_family",
          "van der V, John",
          {"given": "John", "family": "van der V"},
          classification="parity",
          notes="#1080: no name word stands in front of the numeral, "
                "where the count had read the two particles as two. "
-               "2.7.0 through 2.8.2 read family 'van der', "
-               "suffix 'V'; 1.4.0 and 2.6.0 read as here"),
+               "2.7.0 through 2.8.2 read family 'van der', suffix 'V'; "
+               "1.4.0 through 2.6.0 read as here"),
+    Case("a_numeral_behind_a_leading_particle_surname_is_family",
+         "de Mesnil V, Jean",
+         {"given": "Jean", "family": "de Mesnil V"},
+         classification="parity",
+         notes="#1080: a particle opening the part heads 'Mesnil' and "
+               "is no word to spare either, so one name word stands in "
+               "front of the numeral. 2.7.0 through 2.8.2 read family "
+               "'de Mesnil', suffix 'V'; 1.4.0 through 2.6.0 read as "
+               "here"),
+    Case("a_numeral_behind_particles_on_both_sides_is_family",
+         "van Smith van V, John",
+         {"given": "John", "family": "van Smith van V"},
+         classification="parity",
+         notes="#1080: a leading particle and one in front of the "
+               "numeral both leave the count. 2.7.0 through 2.8.2 read "
+               "family 'van Smith van', suffix 'V'; 1.4.0 through 2.6.0 "
+               "read as here"),
+    Case("a_numeral_behind_a_title_and_a_particle_run_is_family",
+         "Dr. Smith van der V, John",
+         {"title": "Dr.", "given": "John", "family": "Smith van der V"},
+         classification="fix(#701)",
+         notes="#1080: the title run is left out of the count as well "
+               "as the particles. 2.7.0 through 2.8.2 read family "
+               "'Smith van der', suffix 'V'; 2.6.0 read as here; 1.4.0 "
+               "through 2.2.0 last 'Dr. Smith van der V', before H6 "
+               "peeled the title"),
+    Case("a_numeral_behind_a_particle_run_before_two_commas_is_family",
+         "Smith van der V, John, Jr.",
+         {"given": "John", "family": "Smith van der V", "suffix": "Jr."},
+         classification="parity",
+         notes="#1080 with a third comma part. 2.7.0 through 2.8.2 read "
+               "family 'Smith van der', suffix 'V, Jr.'; 1.4.0 through "
+               "2.6.0 read as here"),
+    Case("a_numeral_i_behind_a_particle_run_before_a_comma_is_family",
+         "Smith van der I, John",
+         {"given": "John", "family": "Smith van der I"},
+         classification="parity",
+         notes="#1080's spelling sweep: I is a numeral, an initial and "
+               "a pronoun. 2.7.0 through 2.8.2 read family 'Smith van "
+               "der', suffix 'I'; 1.4.0 through 2.6.0 read as here"),
+    Case("a_numeral_behind_a_particle_before_paired_initials_is_family",
+         "John van der V, M.J.",
+         {"given": "M.J.", "family": "John van der V"},
+         ambiguities=("suffix-or-name",), classification="parity",
+         notes="C1: the family part reads its numeral as the comma-less "
+               "name does, save that its particles count as no word "
+               "(S10), so this part has one name word where 'John Smith "
+               "V, M.J.' has two. 2.7.0 through 2.8.2 read family 'John "
+               "van der', suffix 'V'; 1.4.0 through 2.6.0 read as here"),
     Case("a_numeral_behind_a_joined_particle_surname_keeps_the_count",
          "Smith van der Berg V, John",
          {"given": "John", "family": "Smith van der Berg",
           "suffix": "V"},
          ambiguities=("suffix-or-name",), classification="fix(#774)",
-         notes="#1080's boundary: only particles standing unjoined "
-               "right in front of the numeral leave the count; 'van der "
-               "Berg' is a name word, so two stand in front, as in "
-               "'Smith Jones V, John'. A first draft of #1080 tested the "
-               "piece's first word and read family 'Smith van der Berg "
-               "V'. 1.4.0 and 2.6.0 read family 'Smith van der Berg V'"),
+         notes="#1080's boundary: a chain joined to a name word is one "
+               "name word, so two stand in front, as in 'Smith Jones V, "
+               "John'. 1.4.0 through 2.6.0 read family 'Smith van der "
+               "Berg V'"),
     Case("a_numeral_behind_a_particle_after_two_names_keeps_the_count",
          "Smith Jones van V, John",
          {"given": "John", "family": "Smith Jones van", "suffix": "V"},
          ambiguities=("suffix-or-name",), classification="fix(#774)",
-         notes="#1080's boundary: P9 reads the letter as the part "
-               "without the particle does, and 'Smith Jones V, John' "
-               "reads suffix 'V', two name words standing in front. "
-               "1.4.0 and 2.6.0 read family 'Smith Jones van V'"),
+         notes="#1080's boundary: the part without the particle is "
+               "'Smith Jones V, John', which reads suffix 'V', two name "
+               "words standing in front. 1.4.0 through 2.6.0 read family "
+               "'Smith Jones van V'"),
     Case("a_comma_before_no_name_word_keeps_the_positional_read",
          "Berg de MA, Prof.",
          {"title": "Prof.", "given": "Berg", "family": "de",

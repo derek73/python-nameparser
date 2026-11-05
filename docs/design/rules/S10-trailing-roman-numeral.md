@@ -92,13 +92,16 @@
   "john smith v, PhD"         →  ambiguities=()
   "john j v, PhD"             →  family="j"
   ```
-- **Before a family comma** ("John Smith V, M.J."): a numeral ending the family part is read by this rule, its words to spare counted in that part (C1). Only a generation its shape alone reads reports there; a numeral the comma leaves in the family name is silent, the comma having named the family.
+- **Before a family comma** ("John Smith V, M.J."): a numeral ending the family part is read by this rule, its words to spare counted in that part (C1), a piece made wholly of particles counting as no word: the comma has named the part a surname, where a particle heads the name word behind it, so a particle run reads as part of the word it attaches to, as C3 counts one, and a chain joined to a name word counts as that word. Only a generation its shape alone reads reports there; a numeral the comma leaves in the family name is silent, the comma having named the family.
   ```
   "Smith VI, John"            →  suffix="VI"
   "Smith VI, John"            →  ambiguities=("suffix-or-name",)
   "Smith V, John"             →  family="Smith V"
   "Smith V, John"             →  ambiguities=()
   "Smith Vi, John"            →  ambiguities=()
+  "Smith van der V, John"     →  family="Smith van der V"
+  "de Mesnil V, Jean"         →  family="de Mesnil V"
+  "Smith van der Berg V, John"  →  suffix="V"
   ```
 - **In the given part after a family comma** ("Smith, John VI"): the given part is not counted, the comma having settled the count there (S5), and no initial in front is asked. A numeral of two or more letters reads as the generation, reporting where its shape alone reads it, save a Title-case one in a mixed-case name, which stays a name word in silence; a one-letter numeral is the generation only where the vocabulary lists it and it ends the part (C9), so an unlisted one stays the middle initial.
   ```
