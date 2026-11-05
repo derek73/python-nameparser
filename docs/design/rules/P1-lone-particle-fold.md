@@ -25,7 +25,7 @@
   "ibn Awf abdul Rahman"  family-first  →  given="abdul Rahman"
   "de la Cruz Juan Carlos"  family-first-given-last  →  given="Carlos"
   ```
-- **Under a family-first order a particle chain behind a title-particle is cut as the run is.** A word that is both a title and a particle puts the leading position on itself (P4's Except), so the particle behind it chains forward and the chain, not a lone particle, opens the name; it takes its particles and one unit, and the rest is laid out by the order. A chain the fold would take whole is no different from what it was: H1's given name behind a given-name title, P5's bound given name. Nor is a chain holding a word the trailing read (S2) reported as a suffix or a name and left in the chain, that read having counted the chain whole; a listed word it read as a name word, reporting nothing, is cut like any other.
+- **Under a family-first order a particle chain behind a title-particle is cut as the run is.** A word that is both a title and a particle puts the leading position on itself (P4's Except), so the particle behind it chains forward and the chain, not a lone particle, opens the name; it takes its particles and one unit, and the rest is laid out by the order. A chain the fold would take whole is no different from what it was: H1's given name behind a given-name title, P5's bound given name. Nor is a chain holding a word reported as a suffix or a name and left in the chain (the trailing read's report, S2, or the chain's own), that read having counted the chain whole; a listed word it read as a name word, reporting nothing, is cut like any other.
   ```
   "St de Mesnil Jean"  family-first  →  family="de Mesnil"
   "Freiherr von Berg Otto"  family-first  →  given="Otto"

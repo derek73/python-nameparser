@@ -574,10 +574,11 @@ def _family_settled(state: ParseState, tokens: list[WorkToken],
     word, so H1's family -> given direction leaves it (#720). After a
     comma a particle in it is settled -- rules/C3's "the comma settles
     P1's fork for a leading particle that could be a given name"
-    ('van Gogh, Sir'); without one, P1's fold below takes a never-given
-    particle opening the name with a word behind it ('Sir de Mesnil'),
-    asked by the fold's own predicate on the same piece. An ambiguous
-    particle nothing settled, or a bare one with nothing to fold, is a
+    ('van Gogh, Sir'); without one, P1's fold below takes the piece
+    `_lead_folds` names with a word behind it ('Sir de Mesnil', and
+    under a family-first order 'Sir van Berg', rules/P11), asked by the
+    fold's own predicate on the same piece. An ambiguous particle
+    nothing settled, or a bare one with nothing to fold, is a
     word the order placed ('Sir Van', 'Sir Abu Bakar' and 'Sir de'
     under FAMILY_FIRST; 'Sir von und zu', whose never-given 'zu' does
     not open it)."""
@@ -593,10 +594,11 @@ def _lead_folds(state: ParseState, tokens: list[WorkToken],
     name: a lone never-given particle under every order, and under a
     family-first order two more -- a lone ambiguous particle written
     in lower case in a name of mixed case (rules/P11, #670), and a
-    particle chain holding more than its particles and one name unit,
-    which a title-particle in front lets P2 chain (rules/P4's Except,
-    #828). The chain's last clause keeps a chain the fold would take
-    whole where it stands ('St Sir de Mesnil', 'St abu Bakar')."""
+    particle chain a title-particle in front lets P2 build (rules/P4's
+    Except, #828), cut after its particles and one name unit unless a
+    suffix-or-name report names a word past that reach ('St de Mesnil
+    Jean V'). A chain the reach already covers is left whole ('St Sir de
+    Mesnil', 'St abu Bakar')."""
     # rules/P1: "a particle chain behind a title-particle is cut as the
     # run is" -- the chain clause; and rules/P11: "an ambiguous particle
     # written in lower case, in a name of mixed case, opens the name as
@@ -612,9 +614,9 @@ def _lead_folds(state: ParseState, tokens: list[WorkToken],
     if len(lead) < 2 or "particle" not in tokens[lead[0]].tags:
         return False
     reach = _fold_reach(tokens, list(lead))
-    # a word past the reach the trailing read reported a fork on was read
-    # against the whole chain ('St de Mesnil Jean V', "no other word to
-    # spare"): the cut would strand it, so the chain stands
+    # a word past the reach a suffix-or-name report names was read
+    # against the whole chain ('St de Mesnil Jean V', whose numeral had
+    # no word to spare): the cut would strand it, so the chain stands
     return reach < len(lead) and not reported_suffix_fork(
         state.ambiguities, lead[reach:])
 
@@ -795,7 +797,8 @@ def post_rules(state: ParseState) -> ParseState:
 
     # rules/P1: "the particle run and the name words it takes are
     # family, under every name order" -- its Then clause, for a
-    # never-given particle opening the name; how many words the run
+    # never-given particle opening the name and, under a family-first
+    # order, the two pieces `_lead_folds` adds; how many words the run
     # takes is set by the order or a family comma, in P1's bullets and
     # below (v1 handle_non_first_name_prefix; decisions/P1)
     # How far the fold reaches depends on the order the name was READ

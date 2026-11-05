@@ -435,6 +435,10 @@ def test_family_first_leading_particle_cases_that_do_not_fold(
     ("Freiherr von Berg MA Hans", "von Berg", None),
     ("St de Berg MA J.", "de Berg", None),
     ("St de Mesnil Jean J. V", "de Mesnil", None),
+    # and the suffix-comma shape, which reads its first part as the
+    # comma-less name does
+    ("St de Mesnil Jean, Jr.", "de Mesnil", None),
+    ("van der Berg Jan, PhD", "van der Berg", None),
 ])
 def test_family_first_fold_reads_the_writing_and_the_chain(
         policy: Policy, text: str, family: str, given: str | None) -> None:
@@ -445,6 +449,26 @@ def test_family_first_fold_reads_the_writing_and_the_chain(
     assert _by_role(out, Role.FAMILY) == family
     if given is not None:
         assert _by_role(out, Role.GIVEN) == given
+
+
+@pytest.mark.parametrize("policy", _FAMILY_FIRST)
+@pytest.mark.parametrize("text,last", [
+    ("St de Mesnil Jean Junior V", "V"),
+    ("Freiherr von Berg Otto Junior VI", "VI"),
+])
+def test_a_report_behind_another_names_the_whole_chain(
+        policy: Policy, text: str, last: str) -> None:
+    # two words past the fold's reach the trailing read reported keep the
+    # chain whole (#828), so the last one's name reading, every other word
+    # read as the parse read it, joins the family -- read off the words
+    # post_rules marks past the reach, which the stand-in oracle cannot
+    # check here (its stand-in rereads the other report away)
+    # Negative control, 2026-11-04: with post_rules' PAST_REACH_TAG write
+    # removed, all four parses fail.
+    out = Parser(policy=policy).parse(text)
+    alt = next(a.alternative for a in out.ambiguities
+               if [t.text for t in a.tokens] == [last])
+    assert alt is not None and alt.role is Role.FAMILY
 
 
 def test_a_lowercase_particle_the_fold_takes_is_not_reported() -> None:

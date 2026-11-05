@@ -133,10 +133,10 @@ def reported_suffix_fork(ambiguities: Sequence[PendingAmbiguity],
                          indices: Iterable[int],
                          skip: PendingAmbiguity | None = None) -> bool:
     """rules/P1's question about a chain opening a family-first name
-    that the fold would cut (#828): whether a report the trailing read
-    made, a suffix-or-name fork, names a word of `indices`, the words
-    past the fold's reach. Such a word was read against the whole chain,
-    so the chain stands. Asked by the fold in post_rules and, with `skip`
+    that the fold would cut (#828): whether a suffix-or-name report (the
+    trailing read's, or group's on a word the chain took) names a word
+    of `indices`, the words past the fold's reach. Such a word was read
+    against the whole chain, so the chain stands. Asked by the fold in post_rules and, with `skip`
     the report whose other reading it names, by assemble."""
     past = set(indices)
     return any(a is not skip and a.kind is AmbiguityKind.SUFFIX_OR_NAME

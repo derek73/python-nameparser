@@ -549,7 +549,10 @@ _REVIEW_SHAPES = ("PhD VI", "Jr VI", "III VI", "Smith, John van VI",
                   # vocabulary, opening a chain the family-first fold
                   # cuts, names the field the cut gives
                   "St Mc Mesnil VI", "St vd Mesnil Jean VI",
-                  "St de Mesnil Jean V", "Freiherr von J. ma")
+                  "St de Mesnil Jean V", "Freiherr von J. ma",
+                  # its test review: a chain of particles only, and an
+                  # inner particle before the cut
+                  "St de Mc VI", "St van der Berg VI")
 
 
 @pytest.mark.parametrize("order", _INVARIANT_ORDERS)
