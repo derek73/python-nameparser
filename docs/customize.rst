@@ -1124,7 +1124,8 @@ listed in the lexicon's ``given_names`` where it stands, under any
 ``name_order``. The field is empty by default, so you supply the list
 for your data, or choose ``locales.ES``, which turns the switch on and
 carries 1,000 Spanish given names (``locales.ES_AR``, for Argentine
-names, carries 5,000; see :doc:`locales`); an entry written without accents
+names, carries 5,000; see :ref:`spanish-portuguese-titles`); an entry
+written without accents
 matches the word with them:
 
 .. doctest::

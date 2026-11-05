@@ -145,13 +145,14 @@ class Parser:
     def languages(self) -> frozenset[str]:
         """The languages this parser's vocabulary is chosen under,
         :attr:`Lexicon.languages` read through: set by
-        :func:`parser_for`, empty where none was chosen."""
+        :func:`parser_for`, empty where none was chosen. Added in
+        3.0."""
         return self.lexicon.languages
 
     @property
     def strict(self) -> bool:
         """Whether the choice is strict, :attr:`Lexicon.strict` read
-        through."""
+        through. Added in 3.0."""
         return self.lexicon.strict
 
     def parse(self, text: str) -> ParsedName:

@@ -993,6 +993,46 @@ def test_a_2x_spelling_is_refused_with_calls_that_run(
     assert isinstance(built, Lexicon)
 
 
+@pytest.mark.parametrize("call", [
+    lambda: Lexicon(surnames={"kim"}, titles={"dr"}),  # type: ignore[call-arg]
+    lambda: Lexicon(given_names={"luis"},  # type: ignore[call-arg]
+                    capitalization_exceptions={"phd": "PhD"}, titles={"dr"}),
+    lambda: Lexicon(titles={"dr"}),  # type: ignore[call-arg]
+])
+def test_a_2x_constructor_spelling_offers_calls_on_a_lexicon_it_names(
+        call: Callable[[], object]) -> None:
+    # a bare Lexicon(...) call binds no variable, so the offered code
+    # must build the lexicon it was asked for with no `lexicon` in scope
+    with pytest.raises(TypeError, match="since 3.0") as raised:
+        call()
+    code = str(raised.value).rsplit("write ", 1)[1]
+    assert not code.startswith("lexicon"), code
+    built = eval(code, {"Lexicon": Lexicon})  # noqa: S307
+    assert isinstance(built, Lexicon)
+    assert "dr" in built._sets.titles
+    # the lists and masks the call passed are kept
+    if "kim" in code:
+        assert built.surnames == frozenset({"kim"})
+    if "luis" in code:
+        assert built.given_names == frozenset({"luis"})
+        assert built.capitalization_exceptions == (("phd", "PhD"),)
+
+
+def test_a_2x_removal_keeps_another_files_reading_of_the_word() -> None:
+    # ma is a credential (en) and a Filipino given name written short for
+    # maría (fil): taking out the credential must not rewrite the
+    # Filipino reading's full name
+    with pytest.raises(TypeError, match="since 3.0") as raised:
+        Lexicon.default().remove(suffix_acronyms={"ma"})  # type: ignore[call-arg]
+    code = str(raised.value).rsplit("write ", 1)[1]
+    assert code == "lexicon.remove('ma', kind='credential')", code
+    built = eval(code, {"lexicon": Lexicon.default()})  # noqa: S307
+    assert "ma" not in built._sets.suffix_acronyms
+    assert "ma" in built._sets.given_name_abbreviations
+    assert any(r.kind == "given" and dict(r.properties).get("same_as")
+               == "maría" for r in built.readings_of("ma"))
+
+
 def test_a_2x_spelling_with_no_exact_reading_offers_the_nearest_that_runs(
         ) -> None:
     # `phd` both an acronym and a word in 2.x: a word has one suffix

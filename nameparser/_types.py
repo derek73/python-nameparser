@@ -403,7 +403,7 @@ class Token:
     #: one :meth:`ParsedName.replace` or :meth:`Parser.revise` builds,
     #: or one loaded from a pickle written before 3.0. Not compared:
     #: two tokens equal without it, as before 3.0, and
-    #: :meth:`ParsedName.comparison_key` ignores it.
+    #: :meth:`ParsedName.comparison_key` ignores it. Added in 3.0.
     reading: Reading | None = field(
         default=None, compare=False, metadata={ADDED_IN: "3.0.0"})
 
@@ -987,7 +987,8 @@ class Reading:
     #: A suffix reading is matched by the word's suffix entry whatever
     #: its finer kind, a word having one. An ``Ambiguity.alternative``
     #: names the files holding it for any word the report names. Not
-    #: compared: two readings are equal without it, as in 2.x.
+    #: compared: two readings are equal without it, as in 2.x. Added
+    #: in 3.0.
     languages: tuple[str, ...] = field(
         default=(), compare=False, metadata={ADDED_IN: "3.0.0"})
     #: True for a word of the family's second name unit, where a rule
@@ -1244,7 +1245,7 @@ class ParsedName:
     #: (a name built by hand, or a 2.x pickle) renders as 2.x did:
     #: given-first, its words joined by spaces.
     #: Left out of ``==`` and :meth:`comparison_key`, so two equal
-    #: names can render differently.
+    #: names can render differently. Added in 3.0.
     order: tuple[Role, Role, Role] | None = field(
         default=None, compare=False, metadata={ADDED_IN: "3.0.0"})
 
@@ -1378,14 +1379,21 @@ class ParsedName:
 
     @property
     def title(self) -> str:
+        """The words read as titles ("Dr.", "Sir"), wherever in the
+        name they stand, space-joined in written order; ``''`` for a
+        name with none."""
         return self._text_for(Role.TITLE)
 
     @property
     def given(self) -> str:
+        """The given name's words, space-joined in written order;
+        ``''`` for a name with none ("de la Vega")."""
         return self._text_for(Role.GIVEN)
 
     @property
     def middle(self) -> str:
+        """The middle names' words, space-joined in written order;
+        ``''`` for a name with none."""
         return self._text_for(Role.MIDDLE)
 
     @property
@@ -1394,18 +1402,37 @@ class ParsedName:
     # folded family words" (O3's fold and P6's tussenvoegsel, which
     # render before the rest of the family)
     def family(self) -> str:
+        """The family name's words, particles included ("de la
+        Vega"), space-joined in written order, save the middle names
+        ``middle_as_family`` folds in, which come first; ``''`` for a
+        name with none ("Williams" is a given name alone)."""
         return self._text_for(Role.FAMILY)
 
     @property
     def suffix(self) -> str:
+        """The words after the name ("Jr.", "PhD", "さん"): each entry
+        the writer set apart joined to the next with ``", "``, the
+        words of one entry with a space ("MD PhD, Jr."); ``''`` for a
+        name with none. :attr:`generation`, :attr:`credentials` and
+        :attr:`honorifics` divide it by kind."""
         return self._text_for(Role.SUFFIX)
 
     @property
     def nickname(self) -> str:
+        """The words written inside nickname delimiters (quotes,
+        parentheses; :attr:`Policy.nickname_delimiters
+        <nameparser.Policy.nickname_delimiters>`), space-joined in
+        written order, the delimiters dropped; ``''`` for a name with
+        none."""
         return self._text_for(Role.NICKNAME)
 
     @property
     def maiden(self) -> str:
+        """The maiden name's words, those a birth marker ("née",
+        "geb.") introduces or a pair in :attr:`Policy.maiden_delimiters
+        <nameparser.Policy.maiden_delimiters>` encloses, space-joined
+        in written order, the marker dropped; ``''`` for a name with
+        none."""
         return self._text_for(Role.MAIDEN)
 
     # -- derived views (filters over roles, STABLE tags and readings) ---
@@ -1415,16 +1442,28 @@ class ParsedName:
     # base (the family without its particles) and the particles
     # themselves"
     def family_particles(self) -> str:
+        """The particles of :attr:`family` ("de la" in "Juan de la
+        Vega"), space-joined as :attr:`family` writes them; ``''`` for
+        a family with none. A family that :meth:`replace` or
+        Parser.revise wrote carries no particle tags, so its words are
+        all in :attr:`family_base`."""
         return self._text_for(Role.FAMILY, tag="particle",
                               unless_tag=UNJOINED_TAG)
 
     @property
     def family_base(self) -> str:
+        """:attr:`family` without its particles ("Vega" in "Juan de la
+        Vega"), space-joined as :attr:`family` writes them, so the two
+        views together hold the family's words; ``''`` for a name with
+        no family."""
         return self._text_for(Role.FAMILY, without_tag="particle",
                               unless_tag=UNJOINED_TAG)
 
     @property
     def surnames(self) -> str:
+        """The middle names and the family name together ("Q. Xavier
+        de la Vega" in "Juan Q. Xavier de la Vega"), space-joined in
+        written order; ``''`` for a name with neither ("Williams")."""
         return self._text_for(Role.MIDDLE, Role.FAMILY)
 
     @property
@@ -1433,7 +1472,7 @@ class ParsedName:
     def generation(self) -> str:
         """The suffix words read as a generation or an agnomen ("Jr.",
         "III", "Filho"), joined as :attr:`suffix` joins them; ``''``
-        for a name with none."""
+        for a name with none. Added in 3.0."""
         return self._suffix_view(_GENERATION_KINDS)
 
     @property
@@ -1443,7 +1482,7 @@ class ParsedName:
         "Esq.", "Rinpoche"), joined as :attr:`suffix` joins them; ``''``
         for a name with none. A suffix word with no
         :attr:`Token.reading` (one :meth:`replace` or Parser.revise
-        wrote) is counted here."""
+        wrote) is counted here. Added in 3.0."""
         return self._suffix_view(None)
 
     @property
@@ -1455,6 +1494,10 @@ class ParsedName:
 
     @property
     def given_names(self) -> str:
+        """The given name and the middle names together ("Juan Q.
+        Xavier" in "Juan Q. Xavier de la Vega"), space-joined in
+        written order; ``''`` for a name with neither ("de la
+        Vega")."""
         return self._text_for(Role.GIVEN, Role.MIDDLE)
 
     @property
@@ -1466,7 +1509,7 @@ class ParsedName:
         Slavic rule), in whichever field the parse put them, which
         keeps them; ``''`` for a name with none. Space-joined in
         written order, the family's words in the order :attr:`family`
-        writes them."""
+        writes them. Added in 3.0."""
         parts: list[str | list[str]] = []
         family: list[str] | None = None
         folded: list[str] = []
@@ -1501,7 +1544,7 @@ class ParsedName:
         and a hyphenated one included, for a name unpickled from 2.x,
         and once :meth:`replace` or Parser.revise rewrites ``family``,
         whose words then carry no reading; rewriting another field
-        keeps it."""
+        keeps it. Added in 3.0."""
         # the parse marks family words only; the role test keeps a
         # hand-built token marked in another field out of the view
         return " ".join(
@@ -1528,7 +1571,7 @@ class ParsedName:
         :attr:`family`. A middle name ``middle_as_family`` folds into
         the family is in neither (``María García`` in ``Ana María García
         López`` under ``middle_as_family``, whose surname1 is
-        ``López``)."""
+        ``López``). Added in 3.0."""
         return self._text_for(Role.FAMILY, first_unit=self._first_unit())
 
     @property
@@ -1536,7 +1579,7 @@ class ParsedName:
         """:attr:`surname1`'s particles, as :attr:`family_particles` reads
         the whole family's (``de la`` in ``Juan de la Vega del Valle``
         under ``two_family_names``), so the two units' particles are the
-        family's."""
+        family's. Added in 3.0."""
         return self._text_for(Role.FAMILY, tag="particle",
                               unless_tag=UNJOINED_TAG,
                               first_unit=self._first_unit())
@@ -1546,7 +1589,7 @@ class ParsedName:
         """:attr:`surname1` without its particles, as :attr:`family_base`
         reads the whole family (``Pérez`` in ``Juan Pérez de la Vega``
         under ``two_family_names``, where :attr:`family_base` is
-        ``Pérez Vega``)."""
+        ``Pérez Vega``). Added in 3.0."""
         return self._text_for(Role.FAMILY, without_tag="particle",
                               unless_tag=UNJOINED_TAG,
                               first_unit=self._first_unit())
@@ -1596,6 +1639,12 @@ class ParsedName:
         return tuple(t for t in self.tokens if t.role is role)
 
     def as_dict(self, *, include_empty: bool = True) -> dict[str, str]:
+        """The seven fields as a new dict keyed by each :class:`Role`'s
+        value (``"title"``, ``"given"``, ...), in :class:`Role` order,
+        each value the string its property gives, ``''`` included;
+        ``include_empty=False`` leaves the empty fields out. The views
+        derived from the fields (:attr:`family_base`,
+        :attr:`generation`, ...) are not in it."""
         # _text_for handles the suffix ", "-join (single-role SUFFIX call)
         d = {role.value: self._text_for(role) for role in Role}
         if not include_empty:

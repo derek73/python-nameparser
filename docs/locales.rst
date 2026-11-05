@@ -5,11 +5,17 @@ A locale pack is an opt-in bundle of policy, vocabulary and a choice
 of languages, each where a naming tradition needs it, for one specific
 pattern: East Slavic patronymics, Turkic patronymic markers, the
 titles and particles of one language, and so on. Packs apply only
-when you ask for one by name, and every pack makes the same promise:
-it never changes a name outside the shapes it declares. Read that
-precisely — a shape is a pattern, not a language, so a pack can act on
-a name from a tradition it was not written for. The warning under
-`Using a pack`_ shows what that costs.
+when you ask for one by name, and every pack is held to the same
+test: over the test corpus and the pack's own example names, every
+name it reads differently from the default is one its declared surface
+covers. A rule's surface is a shape — a patronymic ending or marker
+for ``ru`` and ``tr_az``, a script for ``zh`` and ``ja``, three name
+words or more for the packs that read two family names — and a choice
+of languages declares the words whose reading it changes. Read that precisely — a shape is a pattern, not a
+language, so a pack can act on a name from a tradition it was not
+written for, and a broad shape covers much: ``es``, ``es_ar``, ``cs``
+and ``sk`` may read any name of three words differently. The warning
+under `Using a pack`_ shows what that costs.
 
 What works without a pack
 --------------------------
@@ -799,6 +805,8 @@ readings of those words:
   in front and "Senior" behind, as in the default, under ``es`` too.
 - **Under pt_br,** a written S.B. degree reads as Sobrinho
   (``Howard Gordon, MD SB`` fills ``generation`` with ``SB``).
+
+.. _spanish-portuguese-titles:
 
 Spanish and Portuguese titles
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

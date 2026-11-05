@@ -1,8 +1,8 @@
 API reference
 =============
 
-The 2.0 API
------------
+Classes and functions
+---------------------
 
 Parsing
 ~~~~~~~

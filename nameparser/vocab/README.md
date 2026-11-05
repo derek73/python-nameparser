@@ -284,20 +284,20 @@ A rule is written only to turn it on: `name_order = "given-first"`, `two_family_
 
 A rule KIND the table does not list (a married-name ending) is a change to the parser, not to a file: a new `Policy` field (with `ADDED_IN`), a row in `build.py`'s `RULE_KEYS` and in `_locale.py`'s `_RULE_VALUES`, and a mechanisms.md entry of its own for the rule kind (mechanisms.md#LOCALE-PACKS-PURE-DATA). `tests/v2/test_vocab.py` holds the two tables to each other and to `Policy`.
 
-## Names reserved for later phases
+## Names reserved for later releases
 
-These names will mean something in a later phase. Writing one now as a key, in a file, an entry or a reading, is a build error naming its phase, so nothing reads as working before it does.
+These names are reserved for a meaning phase 4 planned and 3.0 did not build: unbuilt, 3.x. Writing one now as a key, in a file, an entry or a reading, is a build error saying so, so nothing reads as working before it does.
 
-| Name | Phase |
+| Name | Unbuilt, reserved for |
 |---|---|
-| `bare_only` | 4 |
-| `leading_only` | 4 |
-| `trailing_only` | 4 |
-| `separators` | 4 |
+| `bare_only` | 3.x |
+| `leading_only` | 3.x |
+| `trailing_only` | 3.x |
+| `separators` | 3.x |
 
 `prefer` and `strict`, reserved for phase 3 by phase 1, are refused for good: phase 3 made each the caller's (a choice of languages prefers its readings, and `parser_for(..., strict=True)` is strict), so the build says a strength is never data.
 
-Phase 2 gave `default` and `attaches` their meaning (2026-10-25, see [Properties](#properties)). The gate's slots carry position and shape already settles a bare letter ([rules/P7](../../docs/design/rules/P7-one-letter-particle-against-the-initial-it-spells.md), a one-letter particle against the initial it spells), so `leading_only`, `trailing_only` and `bare_only` wait for phase 4's shapes, as `separators` waits for its glued words.
+Phase 2 gave `default` and `attaches` their meaning (2026-10-25, see [Properties](#properties)). The gate's slots carry position and shape already settles a bare letter ([rules/P7](../../docs/design/rules/P7-one-letter-particle-against-the-initial-it-spells.md), a one-letter particle against the initial it spells), so `leading_only`, `trailing_only` and `bare_only` wait for the shapes phase 4 planned, as `separators` waits for its glued words, none of them built in 3.0.
 
 Two property values are refused for the same reason, with a message saying a later phase: `addresses = "full"` and `"any"`, and `attached` with a `side` other than `"after"`.
 

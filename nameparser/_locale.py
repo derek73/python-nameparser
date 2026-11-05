@@ -66,7 +66,8 @@ class Locale:
     #: drops other languages' vocabulary readings. A tag selects its own
     #: vocabulary file and its ancestors' (``pt-BR`` selects ``pt``
     #: too), never its descendants'. Empty, the default, chooses
-    #: nothing, and the default vocabulary stands as it is.
+    #: nothing, and the default vocabulary stands as it is. Added in
+    #: 3.0.
     languages: frozenset[str] = field(
         default=frozenset(), metadata={ADDED_IN: "3.0.0"})
 
