@@ -781,9 +781,10 @@ def _names_before(fam_pieces: Sequence[Sequence[int]],
     `fam_pieces[k]`, the title run's `lead` pieces left out: the pieces
     that are not wholly linking words (`_links`), wherever they stand
     in the part."""
-    # rules/S10: "a particle or a connective linking toward the numeral
-    # is no name word" -- the count of the family part's numeral site;
-    # a chain or join holding a name word is one piece and counts
+    # rules/S10: "a particle or a connective is no name word there,
+    # wherever it stands in the part" -- the count of the family part's
+    # numeral site; a chain or join holding a name word is one piece and
+    # counts
     # (decisions/P9 (#1080), decisions/S10 (#1093))
     return sum(1 for piece in fam_pieces[lead:k]
                if not all(_links(tokens[t].tags) for t in piece))
@@ -792,11 +793,11 @@ def _names_before(fam_pieces: Sequence[Sequence[int]],
 def _links(tags: Set[str]) -> bool:
     """Whether a word of the family part is a linking word rather than a
     name word, left out of the numeral's count: a particle, or a
-    connective that is not also generational vocabulary. One that is
-    stays in the count: beside a numeral it is the generation it spells
-    (rules/P3), assigned the suffix earlier in this walk, and counted
-    it keeps the numeral after it in the suffix with it ('Smith i V,
-    John' → suffix 'i V')."""
+    connective that is not also suffix vocabulary. One that is (the
+    generational 'i') stays in the count: beside a numeral it is the
+    generation it spells (rules/P3), assigned the suffix earlier in this
+    walk, and counted it keeps the numeral after it in the suffix with
+    it ('Smith i V, John' → suffix 'i V')."""
     return "particle" in tags or ("conjunction" in tags
                                   and "vocab:suffix" not in tags)
 
