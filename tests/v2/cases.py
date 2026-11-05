@@ -9941,6 +9941,11 @@ CASES: tuple[Case, ...] = (
          notes="P12 joins only the token right after the bound word, so "
                "the nickname taken from between them leaves it alone "
                "(#694 review)"),
+    Case("bound_given_pair_in_the_family_part_before_a_family_comma",
+         "سعيد عبد الله, طارق",
+         {"given": "طارق", "family": "سعيد عبد الله"},
+         notes="before a family comma the part is the family, P12 joining "
+               "nothing there (#694 review)"),
     Case("bound_given_before_an_unlisted_word_stands_alone", "نوال عبد هاشم",
          {"given": "نوال", "middle": "عبد", "family": "هاشم"},
          notes="P12: before a word that does not complete it عبد is a "

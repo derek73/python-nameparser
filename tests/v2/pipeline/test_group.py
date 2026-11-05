@@ -232,7 +232,7 @@ def test_a_caller_lists_the_words_that_complete_a_bound_word() -> None:
     assert _phrase_pieces("سعيد عبد الله", gone) == [["سعيد", "عبد", "الله"]]
 
 
-def test_a_delimiter_glued_to_either_word_ends_the_pair() -> None:
+def test_a_delimiter_glued_to_the_bound_word_ends_the_pair() -> None:
     # a delimiter glued to the bound word parts the pair, as a comma
     # would (the C10 rule); one glued to the word after it does not
     for text in ("حسن, سعيد عبد; الله", "حسن, سعيد عبد الله; حسين"):
