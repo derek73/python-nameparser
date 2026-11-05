@@ -231,6 +231,23 @@ def test_a_caller_lists_the_words_that_complete_a_bound_word() -> None:
     assert _phrase_pieces("سعيد عبد الله", gone) == [["سعيد", "عبد", "الله"]]
 
 
+def test_a_delimiter_glued_to_either_word_ends_the_pair() -> None:
+    # rules/C10: "no join, maiden clause or connective reaches across it"
+    for text in ("حسن, سعيد عبد; الله", "حسن, سعيد عبد الله; حسين"):
+        state = _grouped(text, lexicon=Lexicon.default())
+        joined = [p for seg in state.pieces for p in seg if len(p) > 1]
+        assert joined == ([] if "عبد;" in text else [(2, 3)]), (text, joined)
+
+
+def test_the_phrase_tag_stays_only_on_a_pair_p12_joined() -> None:
+    # P5's pair at the start is P5's, and O6 counts it as two words, as
+    # it counts the Latin abdul rahman
+    state = _grouped("عبد الله حسن سعيد", lexicon=Lexicon.default())
+    assert not any("vocab:bound-phrase" in t.tags for t in state.tokens)
+    state = _grouped("سعيد عبد الله", lexicon=Lexicon.default())
+    assert "vocab:bound-phrase" in state.tokens[1].tags
+
+
 def test_the_phrase_tag_stays_off_the_published_tokens() -> None:
     # the tag is group's, read by post_rules' O6 count; assemble drops
     # it as it drops the other kind tags

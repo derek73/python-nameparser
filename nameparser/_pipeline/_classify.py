@@ -47,7 +47,9 @@ stages and dropped by assemble, Token.reading carrying the kind out,
 save the last, which marks no kind),
 "vocab:particle-ambiguous", "vocab:bound-given",
 "vocab:given-abbreviation", "vocab:shared-name" (which rules/P10, O6
-and O7 read) and "vocab:particle-given" (which P10 and O6 read), each
+and O7 read), "vocab:particle-given" (which P10 and O6 read) and
+"vocab:bound-phrase" (on a bound word and the word after it being a
+listed pair, which P12 joins and O6 counts once, #694), each
 dropped by assemble and carrying no kind out, "vocab:maiden-marker",
 "vocab:maiden-marker-cont"; in a namespace of its own,
 "shape:acronym"; and in another, "split:credential" and
@@ -490,7 +492,10 @@ def classify(state: ParseState) -> ParseState:
             folded):
         heads = set()
         for i in range(len(folded) - 1):
-            if f"{folded[i]} {folded[i + 1]}" in phrases:
+            # rules/C10: "no join, maiden clause or connective reaches
+            # across it", so a delimiter glued to the bound word ends it
+            if (f"{folded[i]} {folded[i + 1]}" in phrases
+                    and i not in stemmed):
                 heads.add(i)
         if heads:
             tokens = tuple(

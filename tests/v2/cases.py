@@ -9888,6 +9888,20 @@ CASES: tuple[Case, ...] = (
          notes="O6 counts P12's pair as one family word, so it takes حسن "
                "as the first surname; counted as two, حسن stayed a "
                "middle name (decisions/P12)"),
+    Case("bound_given_pair_at_the_start_counts_twice_for_two_family_names",
+         "عبد الله حسن سعيد",
+         {"given": "حسن", "middle": "سعيد", "family": "عبد الله"},
+         policy=Policy(name_order=FAMILY_FIRST, two_family_names=True),
+         notes="O6 counts only a pair P12 joined as one word; P5's pair "
+               "at the start counts as two, as abdul rahman does, so O6 "
+               "takes no second surname (#694 review)"),
+    Case("bound_given_pair_in_a_particle_chain_counts_twice",
+         "سعيد محمد بن عبد الله",
+         {"given": "سعيد", "middle": "محمد", "family": "بن عبد الله"},
+         policy=Policy(two_family_names=True),
+         notes="the chain takes عبد before P12 can join it, so the pair "
+               "counts as two family words and O6 takes no محمد "
+               "(#694 review)"),
     Case("bound_given_before_an_unlisted_word_stands_alone", "نوال عبد هاشم",
          {"given": "نوال", "middle": "عبد", "family": "هاشم"},
          notes="P12: before a word that does not complete it عبد is a "

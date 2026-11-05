@@ -21,7 +21,9 @@ here (#601), so no join can reach it; marker tokens land in dropped;
 and tail_reads, rules/S2's trailing run of each main segment read
 ONCE, after P3's connective joins and before the particle chain and
 the bound-given join, and split off so neither reaches it (#614),
-which assign places and reports rather than peeling again.
+which assign places and reports rather than peeling again; and,
+last in each part, P12's join of a listed pair past the start, the
+classify tag left only on the bound word of a pair it joined (#694).
 Reads: token tags (from classify), Lexicon.given_name_titles (the
 P5 licence, #369) and Policy.extra_suffix_delimiters, whose
 delimiter-core tokens part a tail segment as a comma would and are
@@ -34,7 +36,7 @@ them). The v1
 per-parse state that dissolves with the state (v1 kept per-parse sets
 for the same reason).
 
-Implements rules P2, P3, P4 and M2, S2's trailing read (#614), C1's
+Implements rules P2, P3, P4, P12 and M2, S2's trailing read (#614), C1's
 decision through _comma, and
 the
 group half of M1 (#329: the marker dropped inside EXTRACTED maiden
@@ -626,7 +628,8 @@ def _settle_splits(pieces: list[Piece], ptags: list[set[str]]) -> None:
 # was, its reserve included; classify's tag says the word and the
 # token after it are a listed phrase (history: decisions/P12, #694)
 def _join_bound_phrases(pieces: list[Piece], ptags: list[set[str]],
-                        tokens: Sequence[WorkToken]) -> None:
+                        tokens: Sequence[WorkToken],
+                        joined_heads: set[int]) -> None:
     # built in one pass: a merge per pair would shift every piece
     # behind it, a quadratic in a run of pairs (merge_pieces' note)
     k = leading_titles(pieces, ptags, tokens) + 1
@@ -638,6 +641,7 @@ def _join_bound_phrases(pieces: list[Piece], ptags: list[set[str]],
         if (k + 1 < n and len(word) == 1 and not ptags[k]
                 and BOUND_PHRASE_TAG in tokens[word[0]].tags
                 and pieces[k + 1] == [word[0] + 1] and not ptags[k + 1]):
+            joined_heads.add(word[0])
             word.extend(pieces[k + 1])
             out.append(word)
             out_tags.append(set())
@@ -662,6 +666,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                    one_case: bool | None,
                    site: ClauseSite,
                    reads: list[TailRead | None] | None = None,
+                   phrase_heads: set[int] | None = None,
                    ) -> tuple[list[Piece], list[set[str]], MaidenTake | None]:
     pieces: list[Piece] = [[i] for i in seg]
     ptags: list[set[str]] = [set() for _ in seg]
@@ -1369,12 +1374,10 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                     # carried (rules/P5); joined_tags says why the
                     # title tag is dropped. Pinned in test_group.py.
                     merge_pieces(pieces, ptags, fk, fk + 2, drop={"title"})
-    if bound_join is not BoundJoin.DISABLED and site is not ClauseSite.TAIL:
-        # a plain loop, no frame: a name with no such word pays nothing
-        for i in seg:
-            if BOUND_PHRASE_TAG in tokens[i].tags:
-                _join_bound_phrases(pieces, ptags, tokens)
-                break
+    # `phrase_heads` is passed only for a part holding a tagged word
+    if (phrase_heads is not None and bound_join is not BoundJoin.DISABLED
+            and site is not ClauseSite.TAIL):
+        _join_bound_phrases(pieces, ptags, tokens, phrase_heads)
     if reads is not None:
         reads.append(read)
     pieces.extend(tail_pieces)
@@ -1470,13 +1473,28 @@ def group(state: ParseState) -> ParseState:
         ptags = []
         seg_reads: list[TailRead | None] = []
         for part in parts:
+            # a plain loop, no frame: a name with no listed pair pays
+            # nothing (rules/P12)
+            heads: set[int] | None = None
+            for i in part:
+                if BOUND_PHRASE_TAG in tokens[i].tags:
+                    heads = set()
+                    break
             part_pieces, part_ptags, taken = _group_segment(
                 part, additional, tokens, bound_join,
                 None if family_comma else ambiguities,
                 state.lexicon._sets.given_name_titles,
                 opens_the_name=(seg_idx == 0 and not family_comma),
                 one_case=state.one_case,
-                site=site, reads=seg_reads)
+                site=site, reads=seg_reads, phrase_heads=heads)
+            if heads is not None:
+                # the tag stays only on a pair P12 joined, which O6
+                # counts as one word; P5's pair at the start, and a
+                # pair a chain or a comma kept apart, count as two
+                for i in part:
+                    if BOUND_PHRASE_TAG in tokens[i].tags and i not in heads:
+                        tokens[i] = copy_with(
+                            tokens[i], tags=tokens[i].tags - {BOUND_PHRASE_TAG})
             pieces.extend(part_pieces)
             ptags.extend(part_ptags)
             # the marker is dropped and the maiden name's tokens become
