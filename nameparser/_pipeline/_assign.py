@@ -775,6 +775,22 @@ def _assign_main(seg_idx: int, state: ParseState,
     return order
 
 
+def _names_before(fam_pieces: Sequence[Sequence[int]],
+                  tokens: Sequence[WorkToken], lead: int, k: int) -> int:
+    """The name words in front of the numeral at `fam_pieces[k]`, the
+    title run's `lead` pieces left out: a run of particle pieces
+    standing right in front of the numeral would attach to it were it
+    a name word, so it is no word to spare (decisions/P9, #1080)."""
+    # rules/P9: "A lone letter behind it reads as it does in the same
+    # part without the particle" -- the particles are left out of the
+    # count, so 'SMITH VD V, JOHN' reads as 'SMITH V, JOHN' does
+    j = k
+    while j > lead and all("particle" in tokens[t].tags
+                           for t in fam_pieces[j - 1]):
+        j -= 1
+    return j - lead
+
+
 def _family_part_numeral(word: WorkToken, preceding: str, names: int,
                          one_case: bool | None) -> Role | None:
     """The role of a roman numeral ending the family part before a
@@ -1941,7 +1957,8 @@ def assign(state: ParseState) -> ParseState:
                             for j in range(k + 1, len(fam_pieces)))
                     and (numeral := _family_part_numeral(
                         word, tokens[fam_pieces[k - 1][0]].text,
-                        k - lead, state.one_case)) is not None):
+                        _names_before(fam_pieces, tokens, lead, k),
+                        state.one_case)) is not None):
                 _set_roles(tokens, piece, numeral)
                 # reported where taken: a name word here is the family
                 # name the comma has just named, which nobody misreads

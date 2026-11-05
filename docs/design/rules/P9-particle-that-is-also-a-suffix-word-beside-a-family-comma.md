@@ -10,8 +10,8 @@
   ```
 - **A lone letter behind it reads as it does in the same part without the particle**: a capital is a name word ('SMITH VD V, JOHN' as 'SMITH V, JOHN'), a lowercase letter in a name of mixed case the numeral ('Smith vd v, John' as 'Smith v, John'), and a name written in one case reads as its capitals (T4).
   ```
-  "SMITH VD V, JOHN"          →  family="SMITH VD V"  deviates: #1080 (today: family="SMITH VD")
-  "smith vd v, john"          →  family="smith vd v"  deviates: #1080 (today: family="smith vd")
+  "SMITH VD V, JOHN"          →  family="SMITH VD V"
+  "smith vd v, john"          →  family="smith vd v"
   ```
 - **In the part after a family comma**, where P6 attaches a particle ending the name to the family, a lone word of both the particle and the UNAMBIGUOUS suffix vocabulary standing INSIDE a run read as post-nominals — one in front of it and another behind, a credential or a generation, whatever made each one, and a title between it and the one in front transparent (H5) — is not the tussenvoegsel: that stands right behind the given name, so a post-nominal between them says the word is not one. It does not end the name, and keeps the post-nominal reading in any case, reported as S4's credential fork.
   ```

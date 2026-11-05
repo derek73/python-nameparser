@@ -3324,7 +3324,7 @@
 {"name": "SEÁN Ó MURCHÚ", "given": "SEÁN", "family": "Ó MURCHÚ", "initials": "S. M.", "capitalized": "Seán Ó Murchú"}
 {"name": "SIG.RA MARIA ROSSI", "title": "SIG.RA", "given": "MARIA", "family": "ROSSI", "initials": "M. R.", "capitalized": "Sig.ra Maria Rossi"}
 {"name": "SMITH VD MA, JOHN", "given": "JOHN", "family": "SMITH VD MA", "initials": "J. S. M.", "capitalized": "John Smith vd Ma"}
-{"name": "SMITH VD V, JOHN", "given": "JOHN", "family": "SMITH VD", "suffix": "V", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: initial as family (shape)"], "initials": "J. S.", "capitalized": "John Smith vd V", "generation": "V"}
+{"name": "SMITH VD V, JOHN", "given": "JOHN", "family": "SMITH VD V", "initials": "J. S. V.", "capitalized": "John Smith vd V"}
 {"name": "SMITH VD, JOHN", "given": "JOHN", "family": "SMITH", "suffix": "VD", "initials": "J. S.", "capitalized": "John Smith VD"}
 {"name": "SMITH, DEAN MR.", "title": "MR.", "given": "DEAN", "family": "SMITH", "initials": "D. S.", "capitalized": "Mr. Dean Smith"}
 {"name": "SMITH, JOHN B. MAJ.", "title": "MAJ.", "given": "JOHN", "middle": "B.", "family": "SMITH", "initials": "J. B. S.", "capitalized": "Maj. John B. Smith"}
@@ -4358,7 +4358,7 @@
 {"name": "scott e. werner", "given": "scott", "middle": "e.", "family": "werner", "initials": "s. e. w.", "capitalized": "Scott E. Werner"}
 {"name": "scott l. werner", "given": "scott", "middle": "l.", "family": "werner", "initials": "s. l. w.", "capitalized": "Scott L. Werner"}
 {"name": "señora María García", "title": "señora", "given": "María", "family": "García", "initials": "M. G.", "capitalized_force": "Señora María García"}
-{"name": "smith vd v, john", "given": "john", "family": "smith vd", "suffix": "v", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: initial as family (shape)"], "initials": "j. s.", "capitalized": "John Smith vd V", "generation": "v"}
+{"name": "smith vd v, john", "given": "john", "family": "smith vd v", "initials": "j. s. v.", "capitalized": "John Smith vd V"}
 {"name": "smith, de ma", "family": "smith de ma", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "s. m.", "capitalized": "Smith de Ma"}
 {"name": "smith, j y lopez", "given": "j", "middle": "y lopez", "family": "smith", "initials": "j. l. s.", "capitalized": "J y Lopez Smith"}
 {"name": "smith, john e phd", "given": "john", "middle": "e", "family": "smith", "suffix": "phd", "initials": "j. e. s.", "capitalized": "John E Smith PhD"}
