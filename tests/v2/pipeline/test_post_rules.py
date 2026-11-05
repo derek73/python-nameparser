@@ -416,6 +416,11 @@ def test_family_first_leading_particle_cases_that_do_not_fold(
     ("St de Mesnil Jean", "de Mesnil", "Jean"),
     ("Freiherr von Berg Otto", "von Berg", "Otto"),
     ("St van Berg Jan", "van Berg", "Jan"),
+    # the ranks #709 made title-particles, as freiherr is, reach the cut
+    # too (master at e5992892 read each family 'von Berg Otto' and so on)
+    ("Graf von Berg Otto", "von Berg", "Otto"),
+    ("Gräfin von Dönhoff Marion", "von Dönhoff", "Marion"),
+    ("Prinz von Hannover Ernst", "von Hannover", "Ernst"),
     # a chain the fold would take whole keeps its reading: H1's given
     # behind a given-name title, P5's bound given name
     ("St Sir de Mesnil", "", "de Mesnil"),
