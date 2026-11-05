@@ -72,8 +72,8 @@ from nameparser._pipeline._state import (
     WorkToken, _NEVER_FLIPPED, comma_bucket, copy_with, reported_suffix_fork,
 )
 from nameparser._pipeline._vocab import (
-    delimiter_cores, has_patronymic_ending, is_initial, is_listed_given_name,
-    is_patronymic_marker, set_apart, set_apart_kind, suffix_reading,
+    _DOTTED_INITIALS, delimiter_cores, has_patronymic_ending, is_initial,
+    is_listed_given_name, is_patronymic_marker, set_apart, set_apart_kind, suffix_reading,
     unit_ends, written_as_initials,
 )
 from nameparser._policy import PatronymicRule
@@ -446,14 +446,7 @@ def _given_phrase_middle(state: ParseState,
     # family (decisions/P10, #704). In place, as every post rule writes.
     # A family comma reads the phrase as a middle already, and a
     # family-first order puts no family behind the given name.
-    # Every parse runs this, so a name holding no marked word leaves
-    # after one plain loop and no further call (the parse-cost band,
-    # decisions/parse-cost)
-    for token in tokens:
-        if PARTICLE_GIVEN_TAG in token.tags:
-            break
-    else:
-        return
+    # Called only for a name holding a marked word (post_rules' loop).
     if (state.structure is Structure.FAMILY_COMMA or state.order is None
             or state.order[0] is not Role.GIVEN):
         return
@@ -622,7 +615,8 @@ def _family_settled(state: ParseState, tokens: list[WorkToken],
 
 
 def _family_first_lead_folds(state: ParseState, tokens: list[WorkToken],
-                             lead: Sequence[int]) -> bool:
+                             lead: Sequence[int],
+                             reach: int | None = None) -> bool:
     """Whether rules/P1's fold takes `lead`, the piece opening the
     name, beside the lone never-given particle it takes under every
     order (asked inline by each caller first, sparing every parse a
@@ -632,7 +626,8 @@ def _family_first_lead_folds(state: ParseState, tokens: list[WorkToken],
     Except, #828), cut after its particles and one name unit unless a
     suffix-or-name report names a word past that reach ('St de Mesnil
     Jean V'). A chain the reach already covers is left whole ('St Sir de
-    Mesnil', 'St abu Bakar')."""
+    Mesnil', 'St abu Bakar'). `reach` is `_fold_reach` over `lead`
+    where the caller has it already."""
     # rules/P1: "a particle chain behind a title-particle is cut as the
     # run is" -- the chain clause; and rules/P11: "an ambiguous particle
     # written in lower case, in a name of mixed case, opens the name as
@@ -642,7 +637,8 @@ def _family_first_lead_folds(state: ParseState, tokens: list[WorkToken],
         return True
     if len(lead) < 2 or "particle" not in tokens[lead[0]].tags:
         return False
-    reach = _fold_reach(tokens, list(lead))
+    if reach is None:
+        reach = _fold_reach(tokens, list(lead))
     # a word past the reach a suffix-or-name report names was read
     # against the whole chain ('St de Mesnil Jean V', whose numeral had
     # no word to spare): the cut would strand it, so the chain stands
@@ -744,11 +740,6 @@ def _set_apart_clauses(state: ParseState,
                 tokens[i] = copy_with(
                     token, role=Role.TITLE if title else Role.SUFFIX,
                     text=text, span=Span(start, start + len(text)))
-
-
-#: Single letters each followed by a period ('R.A.'), the writing that
-#: makes a word that is a title too a set of initials (rules/S1).
-_DOTTED_INITIALS = re.compile(r"(?:[^\W\d_]\.)+")
 
 
 def _name_ahead(state: ParseState, tokens: list[WorkToken]) -> list[bool]:
@@ -956,19 +947,21 @@ def post_rules(state: ParseState) -> ParseState:
     # predicate (_family_settled).
     lead = _leading_name_piece(state, tokens)
     family_first = state.order is not None and state.order[0] is Role.FAMILY
+    reach = None
     if (family_first and len(lead) > 1
             and "particle" in tokens[lead[0]].tags):
         # the words past the fold's reach, marked for assemble's
         # alternatives whether or not the fold cuts there (#828)
-        for i in lead[_fold_reach(tokens, list(lead)):]:
+        reach = _fold_reach(tokens, list(lead))
+        for i in lead[reach:]:
             tokens[i] = copy_with(tokens[i],
                                   tags=tokens[i].tags | {PAST_REACH_TAG})
     lead_fires = (is_lone_never_given_particle(lead, tokens)
                   or family_first
-                  and _family_first_lead_folds(state, tokens, lead))
+                  and _family_first_lead_folds(state, tokens, lead, reach))
     if len(givens) + len(middles) + len(families) > 1 and lead_fires:
         order = state.order
-        if lead_fires and order is not None and order[0] is Role.FAMILY:
+        if order is not None and order[0] is Role.FAMILY:
             # `state.order`, not policy.name_order: a script_orders
             # entry can put the family first under a given-first
             # policy, and the roles below have to match the read
@@ -1145,7 +1138,12 @@ def post_rules(state: ParseState) -> ParseState:
             middles = _idx(tokens, Role.MIDDLE)
             families = _idx(tokens, Role.FAMILY)
 
-    _given_phrase_middle(state, tokens)
+    # every parse asks this, so a name holding no marked word pays one
+    # plain loop and no call (the parse-cost band, decisions/parse-cost)
+    for token in tokens:
+        if PARTICLE_GIVEN_TAG in token.tags:
+            _given_phrase_middle(state, tokens)
+            break
     if state.policy.two_family_names:
         _take_second_family_name(state, tokens)
     if state.policy.two_given_names:

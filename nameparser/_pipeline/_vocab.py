@@ -420,10 +420,14 @@ def set_apart_kind(word: str, lexicon: Lexicon,
     return "suffix" if suffix else None
 
 
+#: Single letters each followed by a period ('R.A.'), the writing that
+#: makes a word that is a title too a set of initials (rules/S1).
+_DOTTED_INITIALS = re.compile(r"(?:[^\W\d_]\.)+")
+
 #: A word written as initials: one or two letters, with or without a
 #: period, or single letters each followed by a period ('JP', 'Md',
 #: 'MD.', 'A.M.', 'R.E.S.').
-_INITIALS_SHAPE = re.compile(r"[^\W\d_]{1,2}\.?|(?:[^\W\d_]\.)+")
+_INITIALS_SHAPE = re.compile(r"[^\W\d_]{1,2}\.?|" + _DOTTED_INITIALS.pattern)
 
 
 # rules/S1: "A credential written as initials before a name word stays
@@ -1829,7 +1833,11 @@ def name_word_count(texts: Sequence[str], lexicon: Lexicon,
     e = len(texts) - 1
     while e > 0 and suffixes[e]:
         e -= 1
-    if e > 0 and names[e] and ends_in_a_generation(texts[e - 1:e + 1], letters_one_case):
+    # the numeral's shape asked in C first, as group's count asks it, so
+    # a part ending in a plain word pays no frame
+    if (e > 0 and names[e]
+            and _ROMAN.match(texts[e].rstrip(".")) is not None
+            and ends_in_a_generation(texts[e - 1:e + 1], letters_one_case)):
         names[e] = False
     if not has_particle:
         return sum(names)
@@ -2397,8 +2405,7 @@ def suffix_kind(text: str,
         return (ReadingKind.GENERATION,
                 ReadingSource.VOCABULARY if listed else ReadingSource.SHAPE)
     if "vocab:suffix-word" in tags:
-        return (ReadingKind.CREDENTIAL if CREDENTIAL_WORD_TAG in tags
-                else ReadingKind.HONORIFIC if HONORIFIC_WORD_TAG in tags
+        return (ReadingKind.HONORIFIC if HONORIFIC_WORD_TAG in tags
                 else ReadingKind.POST_NOMINAL), ReadingSource.VOCABULARY
     return (ReadingKind.CREDENTIAL,
             ReadingSource.SHAPE if SHAPE_ACRONYM_TAG in tags
