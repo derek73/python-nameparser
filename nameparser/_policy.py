@@ -126,12 +126,12 @@ class Script(StrEnum):
 # blocks (U+1100-U+11FF, Extended-A U+A960-U+A97F, Extended-B
 # U+D7B0-U+D7FF), the letters Unicode composes a syllable from (#1087).
 # A syllable typed decomposed is jamo, and a reader of raw characters
-# (tokenize's interpunct flank, rules/T3) missed it when the table held
-# the syllables alone, so NFD 이서연·김민준 stayed one word where its
-# composed twin divides. All three blocks, though the extended ones
-# hold only archaic jamo no modern name uses (the kana precedent
-# below): the U+1100 block carries archaic jamo too, so no
-# modern-only line can be drawn at block granularity. The
+# (tokenize's interpunct flank, rules/T3) must see it as hangul
+# (decisions/nfd-shapes, #1087). All three blocks, though the extended
+# ones hold only archaic jamo no modern name uses, the ground the kana
+# entry below leaves out the supplementary kana on: the U+1100 block
+# carries archaic jamo too, so no modern-only line can be drawn at
+# block granularity. The
 # compatibility jamo U+3131-U+318E are not conjoining and compose
 # nothing; they stay out (rules/R7 initials 'ㄱㄴ 김' as 'ㄱ.').
 # HIRAGANA/KATAKANA (#272): the two kana blocks, each in full. There
@@ -245,9 +245,9 @@ def _script_matcher(*scripts: Script,
     named scripts' spans in _SCRIPT_RANGES. whole=False: True when the
     string CONTAINS any such character -- DEVIATES' contract, where
     over-declaring is the gate's safe direction. whole=True: True when
-    the string is non-empty and consists WHOLLY of such characters --
-    the ja adapter's repertoire guard and _vocab's script
-    classifiers. Meant to be called at MODULE
+    the string is non-empty and consists WHOLLY of such characters,
+    as the ja adapter's repertoire guard and _vocab's script
+    classifiers ask. Meant to be called at MODULE
     scope: "compiled once" is per matcher, and each call compiles a
     fresh pattern. The compiled pattern lives in the closure ON
     PURPOSE, and the compilation lives HERE rather than in a pack-

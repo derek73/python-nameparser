@@ -15751,12 +15751,11 @@ CASES: tuple[Case, ...] = (
                "amendment), so NFD degrades to no-split, never to a "
                "wrong split, and no "
                "token text is rewritten. Contrast 'NFD(田中さん, 様.)', "
-               "which matched before: Han does not decompose. Untagged, "
-               "like its composed twin ko_honorific_written_with_a_period. "
-               "This table's _has_cjk reads raw codepoints, and the jamo "
-               "a decomposed syllable is written in are in _SCRIPT_RANGES "
-               "since #1087, so the row reaches corpus_cjk.jsonl, where "
-               "before it was a head pin only."),
+               "which matched before: Han does not decompose. Tolerated, "
+               "like its composed twin ko_honorific_written_with_a_period: "
+               "the jamo are classified script (decisions/nfd-shapes, "
+               "#1087), so the corpus builder's _has_cjk selects it.",
+         tolerated=True),
     Case("latin_title_written_nfd_is_still_a_title",
          unicodedata.normalize("NFD", "Señor Juan Garcia"),
          {"title": unicodedata.normalize("NFD", "Señor"),

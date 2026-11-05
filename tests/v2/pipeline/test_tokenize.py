@@ -190,22 +190,26 @@ def test_interpunct_between_kana_splits() -> None:
 
 # rules/T3 on hangul typed decomposed (#1087): the flank guard reads raw
 # characters, so it sees the conjoining jamo a decomposed syllable is
-# written in. Each row: the text, its tokens, and the tokens with the
-# HANGUL range back at the precomposed syllables alone, the table before
-# #1087 (recorded 2026-11-05; the control below re-takes it live).
+# written in. Each row: the text, its tokens composed, and the tokens
+# with the HANGUL range back at the precomposed syllables alone, the
+# table before #1087 (recorded 2026-11-05; the control below re-takes it
+# live).
 _DECOMPOSED_FLANKS = [
     ("이서연·김민준", ["이서연", "김민준"], ["이서연·김민준"]),
     ("김·민준", ["김", "민준"], ["김·민준"]),
+    # one row per jamo span, the extended ones archaic and composing to
+    # nothing, so their tokens are their own text
+    ("ꥠᅡ·김민준", ["ꥠᅡ", "김민준"], ["ꥠᅡ·김민준"]),
+    ("김ힰ·김민준", ["김ힰ", "김민준"], ["김ힰ·김민준"]),
     # half-flanked: a Latin neighbour never qualifies, in either table
     ("김민준·Smith", ["김민준·Smith"], ["김민준·Smith"]),
 ]
 
 
 @pytest.mark.parametrize(("text", "tokens", "unguarded"), _DECOMPOSED_FLANKS)
-def test_interpunct_between_decomposed_hangul_splits(
+def test_interpunct_beside_decomposed_hangul_reads_as_composed(
         text: str, tokens: list[str], unguarded: list[str]) -> None:
     nfd = unicodedata.normalize("NFD", text)
-    assert nfd != text  # sanity: the decomposition ran
     got = [unicodedata.normalize("NFC", t.text) for t in _tokenized(nfd).tokens]
     assert got == tokens
     # the composed twin reads the same
@@ -229,7 +233,9 @@ def test_decomposed_flank_control_without_the_jamo_range(
     nfd = unicodedata.normalize("NFD", text)
     got = [unicodedata.normalize("NFC", t.text) for t in _tokenized(nfd).tokens]
     assert got == unguarded
-    # and the control moves at least one row
+
+
+def test_the_decomposed_flank_control_moves_a_row() -> None:
     assert any(row[1] != row[2] for row in _DECOMPOSED_FLANKS)
 
 

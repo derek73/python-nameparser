@@ -135,10 +135,11 @@ def _tokenize_region(state: ParseState, start: int, end: int,
             # Region-local flanks: a B7 at a region edge stays token
             # text, and the bound also stops a custom delimiter's
             # classified edge character from acting as a flank across
-            # a mask seam. The scan reads raw text like segmentation
-            # matching does (#272's stance): NFD hangul degrades to
-            # no-split, never wrong-split -- classification
-            # NFC-normalizes but the guard does not.
+            # a mask seam. The scan reads raw characters, not the NFC
+            # copy classification reads; the script table holds the
+            # conjoining jamo a decomposed syllable is written in, so
+            # decomposed hangul flanks as composed hangul does
+            # (decisions/nfd-shapes, #1087).
             left = _flank(text, range(i - 1, start - 1, -1),
                           state.policy)
             if left is not None and _classified_char(left):

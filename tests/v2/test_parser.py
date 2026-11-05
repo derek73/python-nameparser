@@ -1557,11 +1557,11 @@ def test_wholly_cjk_names_read_family_first_by_default() -> None:
 def test_nfd_korean_input_still_reads_family_first() -> None:
     # fix(#271) classification, landed via the #272 NFC-classification
     # amendment: NFD decomposes each Hangul syllable onto bare jamo,
-    # then outside the HANGUL range (#1087 has since widened it to the
-    # conjoining jamo), so raw NFD input used to miss
+    # then outside the HANGUL range, so raw NFD input used to miss
     # script_orders' family-first rule and fall back to the positional
-    # default -- a live gap in #294's shipped behavior until
-    # single_script started classifying an NFC-normalized copy.
+    # default until single_script classified an NFC-normalized copy.
+    # Since #1087 the jamo are in HANGUL, so this passes with or
+    # without that fold; it pins the reading, not the fold.
     n = parse(unicodedata.normalize("NFD", "김 민준"))
     # classification-only: the rendered text is exactly what was
     # typed (still NFD, spans untouched), so compare NFC-normalized --
@@ -2198,10 +2198,71 @@ _NFD_ROWS = [
     ", 씨.",
     "김. 민준",
     # #1087: the interpunct's flank guard reads raw characters, which a
-    # decomposed syllable writes as conjoining jamo (rules/T3)
+    # decomposed syllable writes as conjoining jamo (rules/T3), in each
+    # comma shape
     "이서연·김민준",
     "김민준·Smith",
+    "이서연·김민준, 씨.",
+    "김, 이서연·김민준",
+    ", 이서연·김민준",
+    "(Bob), 이서연·김민준",
+    "Smith, 이서연·김민준",
+    "이서연·김민준·박지훈",
 ]
+# Jamo that compose to no syllable (archaic, lone, Extended-A U+A960 and
+# Extended-B U+D7B0), which NFC leaves as written and so reach every
+# reader as jamo: hangul to all of them since #1087 (decisions/nfd-shapes).
+# Each row: the text, its reading (non-empty fields, report kinds,
+# initials()), and the reading before #1087, recorded 2026-11-05 against
+# 4109b026 -- the control, which moves on every row.
+_UNCOMPOSED_JAMO = [
+    # the H2 veto: no title by shape
+    ("ꥠᅡ. Smith", {"given": "ꥠᅡ.", "family": "Smith"}, [], "S.",
+     ({"title": "ꥠᅡ.", "family": "Smith"}, [], "S.")),
+    ("ᄒᆞᆫ. Smith", {"given": "ᄒᆞᆫ.", "family": "Smith"}, [], "S.",
+     ({"title": "ᄒᆞᆫ.", "family": "Smith"}, [], "S.")),
+    # the W4 order: wholly hangul reads family-first
+    ("ᄀ. 김민준", {"given": "김민준", "family": "ᄀ."}, [], "",
+     ({"given": "ᄀ.", "middle": "김", "family": "민준"}, [], "ᄀ.")),
+    ("ᄒᆞᆫ 김민준", {"given": "김민준", "family": "ᄒᆞᆫ"}, [], "",
+     ({"given": "ᄒᆞᆫ", "middle": "김", "family": "민준"}, [], "ᄒ.")),
+    ("ꥠᅡᆨ 민준", {"given": "민준", "family": "ꥠᅡᆨ"}, [], "",
+     ({"given": "ꥠᅡᆨ", "middle": "민", "family": "준"}, [], "ꥠ.")),
+    ("김민준 ᄒ", {"given": "민준", "middle": "ᄒ", "family": "김"}, [], "",
+     ({"given": "김", "middle": "민준", "family": "ᄒ"}, [], "ᄒ.")),
+    # the W1 division: a composed surname divides from them
+    ("김ᄒᆞᆫ", {"given": "ᄒᆞᆫ", "family": "김"}, [], "",
+     ({"given": "김ᄒᆞᆫ"}, [AmbiguityKind.GIVEN_OR_FAMILY], "")),
+    # the W2 peel: the honorific peels behind them
+    ("김민ힰ씨", {"given": "민ힰ", "family": "김", "suffix": "씨"}, [], "",
+     ({"given": "김민ힰ", "suffix": "씨"}, [AmbiguityKind.GIVEN_OR_FAMILY], "")),
+    # the R7 view: no initial
+    ("Mary ᄀ. Smith", {"given": "Mary", "middle": "ᄀ.", "family": "Smith"},
+     [], "M. S.",
+     ({"given": "Mary", "middle": "ᄀ.", "family": "Smith"}, [], "M. ᄀ. S.")),
+    ("John Smith, ꥠᅡ", {"given": "ꥠᅡ", "family": "John Smith"}, [], "J. S.",
+     ({"given": "ꥠᅡ", "family": "John Smith"}, [], "ꥠ. J. S.")),
+    # the T3 flank: an Extended-A or Extended-B neighbour flanks the interpunct
+    ("ꥠᅡ·김민준", {"given": "ꥠᅡ", "family": "김민준"}, [], "",
+     ({"given": "ꥠᅡ·김민준"}, [AmbiguityKind.GIVEN_OR_FAMILY], "ꥠ.")),
+    ("김ힰ·김민준", {"given": "김ힰ", "family": "김민준"}, [], "",
+     ({"given": "김ힰ·김민준"}, [AmbiguityKind.GIVEN_OR_FAMILY], "")),
+]
+
+
+@pytest.mark.parametrize(("text", "fields", "kinds", "initials", "before"),
+                         _UNCOMPOSED_JAMO)
+def test_uncomposed_jamo_read_as_hangul(
+        text: str, fields: dict[str, str], kinds: list[AmbiguityKind],
+        initials: str, before: tuple[object, ...]) -> None:
+    assert unicodedata.is_normalized("NFC", text)  # NFC leaves it as jamo
+    name = parse(text)
+    got = ({k: v for k, v in name.as_dict().items() if v},
+           [a.kind for a in name.ambiguities], name.initials())
+    assert got == (fields, kinds, initials)
+    assert got != before
+
+
 _NFD_POLICIES = [
     Policy(),
     Policy(name_order=FAMILY_FIRST),
@@ -2259,7 +2320,15 @@ def test_a_decomposed_abbreviation_reads_as_its_composed_twin(
     alone is reverted, since the composed initial shape without the
     composed veto made a decomposed '씨.' an initial. `Ivan й Petrov
     Sidorov` and `Smith, John й Jones` pass everywhere and pin parity
-    only."""
+    only. That control is the #665 population at f9b2b81c: since #1087
+    the jamo are HANGUL, so the hangul rows no longer fail with the
+    veto's compose reverted and pin parity.
+
+    #1087 adds eight interpunct rows, one in each comma shape. Recorded
+    control, measured 2026-11-05 against 4109b026's nameparser/: of
+    their 32 twin cases 28 fail, the seven whose interpunct stands
+    between hangul under all four policies, and `김민준·Smith`, whose
+    Latin flank never divides, passes everywhere."""
     composed = unicodedata.normalize("NFC", text)
     decomposed = unicodedata.normalize("NFD", text)
     assert decomposed != composed

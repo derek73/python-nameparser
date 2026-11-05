@@ -272,8 +272,7 @@ def test_cs_and_sk_pack_contents() -> None:
         assert deviates_by_two_family_names(name), name
 
 
-
-# rules/O6's declaration counts a run of a classified script twice
+# rules/O6's declaration counts a run opening with a classified character twice
 # (_locale._letter_runs), and since #1087 "classified" is the script
 # table's, the one W1 divides by. Each row: the name, its declaration,
 # and the declaration under the two definitions it replaced, recorded
@@ -288,7 +287,15 @@ _TWICE_COUNTED = [
     ("ﾀﾅｶ. John", True, False, True),
     ("ﾀﾛｳ·ﾔﾏﾀﾞ", True, False, True),
     ("김 민준", True, True, True),
+    ("ꥠᅡ Kim", True, True, False),    # Extended-A
+    ("ힰ Kim", True, True, False),      # Extended-B
     ("Pérez García", False, False, False),
+    # the narrowing: compatibility jamo and the katakana phonetic
+    # extensions were counted twice by name and are counted once now,
+    # being in no range W1 divides (the test below shows the packs
+    # read them as the default does)
+    ("ㄱㄴ ㄷㄹ", False, True, False),
+    ("ㇰㇱ ㇲ", False, True, False),
 ]
 
 
@@ -320,6 +327,16 @@ def test_the_two_family_names_declaration_counts_by_the_script_table(
 def test_the_twice_counted_controls_each_move_a_row() -> None:
     assert any(row[1] != row[2] for row in _TWICE_COUNTED)
     assert any(row[1] != row[3] for row in _TWICE_COUNTED)
+
+
+@pytest.mark.parametrize("code", ["es", "es_ar", "cs", "sk"])
+def test_a_name_the_declaration_stopped_counting_twice_reads_as_the_default(
+        code: str) -> None:
+    packed = _require_packed(code)
+    for name, declared, by_name, _ in _TWICE_COUNTED:
+        if by_name and not declared:
+            assert packed.parse(name).as_dict() == parse(name).as_dict(), name
+
 
 def test_es_and_pt_read_a_leading_title_and_leave_don_a_given_name() -> None:
     es, pt = _require_packed("es"), _require_packed("pt")

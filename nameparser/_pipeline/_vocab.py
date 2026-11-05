@@ -165,11 +165,8 @@ _has_initialless_char = _script_matcher(*_NO_INITIALS, whole=False)
 def in_initialless_script(text: str) -> bool:
     """Whether TEXT holds a character of a script that writes no
     initials (#320), asked of the composed spelling, the one every
-    shape test beside it reads (#665): a decomposed hangul syllable is
-    conjoining jamo, which no _NO_INITIALS range held until #1087
-    widened HANGUL to it, so '씨.' typed decomposed escaped the veto.
-    The composition no longer decides a hangul word and is kept so the
-    veto and the shape read one spelling. ASCII answers without the
+    shape test beside it reads, so the veto and the shape read one
+    spelling (decisions/nfd-shapes, #665, #1087). ASCII answers without the
     matcher's frame, as the callers' own `isascii()` gates do."""
     return (not text.isascii()
             and _has_initialless_char(unicodedata.normalize("NFC", text)))
@@ -2250,12 +2247,10 @@ def _normalized_for_script(text: str) -> str | None:
     NFC, not raw: NFD input decomposes precomposed katakana onto a
     base character plus a COMBINING mark (U+3099/U+309A, which sit in
     the HIRAGANA block, not katakana's), so classifying raw NFD text
-    can hand a pure-katakana token the kana license by accident; NFD
-    also decomposes Hangul syllables onto conjoining jamo
-    (U+1100-U+11FF), which were outside the HANGUL range until #1087
-    widened it, so raw NFD Korean input missed the shipped family-first
-    order rule; the HANGUL range holds them now, and normalizing first
-    is what the katakana half still needs.
+    can hand a pure-katakana token the kana license by accident.
+    Decomposed hangul is conjoining jamo, which HANGUL holds, so the
+    fold no longer decides a hangul token (decisions/nfd-shapes,
+    #1087).
 
     Voicing marks, last: NFC composes a mark only where a precomposed
     kana exists (カ + U+3099 is ガ), so ア + U+3099, ン + U+3099 and
