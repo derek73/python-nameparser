@@ -1331,6 +1331,7 @@ def _target_readings(word: str, member: frozenset[str],
                      heads: frozenset[str] | None,
                      on: dict[str, dict[str, Any]],
                      hints: dict[str, dict[str, Any]],
+                     written_for: str | None = None,
                      ) -> dict[str, dict[str, Any]]:
     """The readings, kind -> properties, that compile `word` into the
     sets `member` names, keeping each reading `word` holds (`on`) where
@@ -1424,7 +1425,7 @@ def _target_readings(word: str, member: frozenset[str],
         names["given"] = props("given")
     if "given" in names:
         if "given_name_abbreviations" in member:
-            names["given"].setdefault("same_as", word)
+            names["given"].setdefault("same_as", written_for or word)
         else:
             names["given"].pop("same_as", None)
     if (member & {"suffix_acronyms_ambiguous", "suffix_words_ambiguous"}
@@ -1508,7 +1509,8 @@ def _inert_dropped(sets: Mapping[str, frozenset[str]],
 
 
 def _edits_toward(pool: Pool, current: Mapping[str, frozenset[str]],
-                  target: Mapping[str, frozenset[str]]) -> tuple[_Edit, ...]:
+                  target: Mapping[str, frozenset[str]], *,
+                  keep_held: bool = False) -> tuple[_Edit, ...]:
     """The edits that take the readings of `pool`, which compile to the
     sets `current`, toward the sets `target` (by `_LexiconSets` name;
     a set it leaves out stays as `current` has it), word by word: for
@@ -1518,7 +1520,11 @@ def _edits_toward(pool: Pool, current: Mapping[str, frozenset[str]],
     the refusals of a 2.x spelling and the load of a 2.x pickle share; a
     best effort, so each caller compiles the result where it must be
     exact. A new kind is taken from a reading the word holds off where
-    it holds one."""
+    it holds one. With `keep_held`, a kind one of whose readings already
+    holds the properties wanted is left alone, so a call need not
+    rewrite another file's reading of it (`ma`'s Filipino `same_as`);
+    the set a property marks holds the word if any reading carries it,
+    so this is right wherever the result compiles exact."""
     ri = _index_module()
     fields = _SET_FIELDS
     full = _inert_dropped({f: target.get(f, current[f]) for f in fields})
@@ -1545,8 +1551,13 @@ def _edits_toward(pool: Pool, current: Mapping[str, frozenset[str]],
                            if f != "title_phrases" and w in full[f])
         new_heads = heads(full["title_phrases"], w)
         moved = new_heads != heads(current["title_phrases"], w)
+        # the full name a given name written short stands for, which no
+        # set records: kept from the reading that holds it (`ma`'s
+        # Filipino `maría`), the word itself where none does
+        written_for = next((p["same_as"] for p in _props_by_kind(held)
+                            .get("given", ()) if "same_as" in p), w)
         want = _target_readings(w, member, new_heads if moved else None,
-                                on, every)
+                                on, every, written_for)
         dropped = [k for k in on if k not in want]
         gone_categories = {k for k in dropped if ri.CATEGORY[k] == k}
         for k in dropped:
@@ -1562,7 +1573,8 @@ def _edits_toward(pool: Pool, current: Mapping[str, frozenset[str]],
         for k, p in sorted(want.items(),
                            key=lambda kp: ri.CATEGORY[kp[0]] != "name"):
             if k in after:
-                if k in on and all(q == p for q in after[k]):
+                if k in on and (any if keep_held else all)(
+                        q == p for q in after[k]):
                     continue
                 delta = {x: v for x, v in p.items()
                          if any(q.get(x) != v for q in after[k])}
@@ -1642,14 +1654,22 @@ def _translation(lexicon: Lexicon, changes: Mapping[str, frozenset[str]],
     wanted = {f: target.get(f, current[f]) for f in _SET_FIELDS}
     wanted["titles_ambiguous"] = wanted["titles_ambiguous"] - wanted["titles"]
     wanted = _inert_dropped(wanted)
-    try:
-        edits = _edits_toward(lexicon._pool(), current, target)
-        result = _inert_dropped(
-            _built(lexicon._base, lexicon._edits + edits, lexicon._chosen,
-                   lexicon._strict)[1])
-        exact = all(result[f] == wanted[f] for f in _SET_FIELDS)
-    except (TypeError, ValueError):
-        edits, exact = (), False
+    def attempt(keep_held: bool) -> tuple[tuple[_Edit, ...], bool]:
+        try:
+            edits = _edits_toward(lexicon._pool(), current, target,
+                                  keep_held=keep_held)
+            result = _inert_dropped(
+                _built(lexicon._base, lexicon._edits + edits,
+                       lexicon._chosen, lexicon._strict)[1])
+        except (TypeError, ValueError):
+            return (), False
+        return edits, all(result[f] == wanted[f] for f in _SET_FIELDS)
+
+    # the fewer calls first, keeping a reading another file holds of a
+    # kind; every reading of the kind rewritten where that is not exact
+    edits, exact = attempt(True)
+    if not exact:
+        edits, exact = attempt(False)
     if not edits and exact:
         return ("the lexicon already reads those words so, an entry it "
                 "would add or remove being a marker without its word's "
@@ -1708,9 +1728,22 @@ def _refusal(where: str, lexicon: Lexicon,
         f"remove(*words, kind=...); for these words, "
         + _translation(lexicon, {
             f: cast("frozenset[str]", v) for f, v in removed.items()},
-            # a bare constructor call names the base it starts from
-            "Lexicon.empty()" if where.startswith("Lexicon()")
-            and lexicon == Lexicon.empty() else "lexicon"))
+            _receiver(where, lexicon)))
+
+
+def _receiver(where: str, lexicon: Lexicon) -> str:
+    """What an offered call is made on: a bare constructor call names
+    the lexicon it built, which the caller holds in no variable, and
+    any other spelling the `lexicon` it was called on."""
+    if (not where.startswith("Lexicon()") or lexicon._base != "empty"
+            or lexicon._edits or lexicon._languages):
+        return "lexicon"
+    lists = [f"{name}={{{', '.join(map(repr, sorted(getattr(lexicon, name))))}}}"
+             for name in _LIST_FIELDS if getattr(lexicon, name)]
+    if lexicon.capitalization_exceptions:
+        lists.append("capitalization_exceptions="
+                     f"{lexicon.capitalization_exceptions!r}")
+    return f"Lexicon({', '.join(lists)})" if lists else "Lexicon.empty()"
 
 
 _PICKLE_2X_DEPRECATION = (
@@ -1805,7 +1838,8 @@ class LexiconReading:
     shipped files holding it, sorted, empty for a reading a caller
     added. Whether the parse READ a word this way is the parse's
     question, :attr:`Token.reading`: a title reading beside a ``given``
-    one is a title only inside a title phrase (rules/H9)."""
+    one is a title only inside a title phrase (rules/H9). Added in
+    3.0."""
 
     text: str
     kind: str
@@ -1898,7 +1932,7 @@ class Lexicon:
     #: written "jose" matches "José" too. No other rule reads it. Empty
     #: by default, so the switch reads as without it; a caller passes
     #: a list of its own, and ``locales.ES`` carries a Spanish list, with
-    #: the switch on.
+    #: the switch on. Added in 3.0.
     given_names: frozenset[str] = frozenset()
     #: Lowercase word -> case mask used by capitalized(): the word's
     #: own letters and digits, each in the case it takes ("phd" ->
@@ -1991,10 +2025,25 @@ class Lexicon:
 
     @classmethod
     def empty(cls) -> Lexicon:
+        """A lexicon holding no readings, no surnames, no given names
+        and no case masks, equal to ``Lexicon()``: the start for a
+        fragment to join onto another with ``|``, or for a vocabulary
+        built from nothing. A parser over it still reads by shape and
+        position (``Dr. John Smith`` keeps title ``Dr.``, a period-marked
+        word opening a name), and, the default :class:`Policy
+        <nameparser.Policy>` dividing unspaced Hangul, warns at
+        construction that no surnames cover it."""
         return cls()
 
     @classmethod
     def default(cls) -> Lexicon:
+        """The shipped vocabulary, the lexicon ``Parser()`` uses when
+        given none: every reading the language files turn on by
+        default, the Korean census surnames and the case masks, with no
+        :attr:`given_names` and no choice of languages. Cached, so
+        every call returns the same object, which being immutable is
+        safe to share; configure a copy with :meth:`add`,
+        :meth:`remove` or ``|``."""
         return _default_lexicon()
 
     # -- dunders ----------------------------------------------------------
@@ -2168,14 +2217,14 @@ class Lexicon:
         with its packs' (decisions/vocabulary-model, 2026-11-02 #754,
         item 4): the shipped readings are filtered by the choice, and
         the lexicon's own :meth:`add` and :meth:`remove` calls apply
-        after it."""
+        after it. Added in 3.0."""
         return self._languages
 
     @property
     def strict(self) -> bool:
         """Whether the choice is strict: only the chosen languages'
         vocabulary files, mul.toml and native-script vocabulary are
-        read."""
+        read. Added in 3.0."""
         return self._strict
 
     # -- access -----------------------------------------------------------
@@ -2187,7 +2236,7 @@ class Lexicon:
         of. `word` is normalized as the lexicon stores it, a phrase
         (``"z domu"``) whole. "Is X a title here?" is ``any(r.category
         == "title" for r in lexicon.readings_of(x))``; whether a parse
-        read it as one is :attr:`Token.reading`'s."""
+        read it as one is :attr:`Token.reading`'s. Added in 3.0."""
         _reject_buffer(word, "readings_of()", "characters")
         if not isinstance(word, str):
             raise TypeError(f"readings_of() takes a word, a string, got "
@@ -2222,7 +2271,7 @@ class Lexicon:
         false, alike)
         (``words(kind="title", addresses="given")``, the titles that
         address a person by the given name). A phrase the lexicon holds
-        whole (``"z domu"``) is one entry."""
+        whole (``"z domu"``) is one entry. Added in 3.0."""
         k = _check_kind(kind, "words")
         assert k is not None
         ri = _index_module()

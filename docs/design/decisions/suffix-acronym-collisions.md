@@ -33,7 +33,7 @@ Not standing: the #454 bullet's note that the `fix(suffix-routing)` ledger rule 
 
 Elsewhere: since phase 2a the ambiguous marking above is derived from a word's name reading rather than written as a flag, and no membership above moved — decisions/vocabulary-model's 2026-10-25 #752 — A CLASH WITH A NAME IS A NAME READING entry (phase 2a).
 
-Open: #965 (telling the credential `FREng`, written in mixed case, from the surname `Freng`; a case reading of S6's, held in decisions/S6).
+Open: #1053, carried over from #965 (telling the credential `FREng`, written in mixed case, from the surname `Freng`; a case reading of S6's, held in decisions/S6).
 
 ## Log
 

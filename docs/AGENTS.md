@@ -22,7 +22,7 @@ The rules below were distilled from PR #588, which restructured `customize.rst` 
 
 **A recipe is a doctest; an edge case is a unit test.** A *recipe* — how to do the thing the reader came to do — belongs in the docs as a `.. doctest::` block, which teaches and is CI-checked at once. The line between the two is whether the prose states the behavior: a claim the section makes to the reader (`edd` repairs to `EDD`, not a mask) earns a doctest beside it, which is what keeps the claim true; an edge case the prose has no reason to mention earns one sentence at most and a unit test, never a doctest (PR #216). An example sitting as prose inside a table cell is the worst of both: it teaches from the wrong place and nothing checks it.
 
-**An example must be non-vacuous.** Show the baseline before the customization, and check that they differ: an `add(titles={"chancellor"})` example once shipped (fixed in 0ab19fdb) where `chancellor` was already a default title, so the add was a no-op and the doctest passed demonstrating nothing. Prefer a word absent from the defaults for a teachable reason (`dean`, which is also a given name).
+**An example must be non-vacuous.** Show the baseline before the customization, and check that they differ: an `add(titles={"chancellor"})` example (2.x's spelling) once shipped (fixed in 0ab19fdb) where `chancellor` was already a default title, so the add was a no-op and the doctest passed demonstrating nothing. Prefer a word absent from the defaults for a teachable reason (`dean`, which is also a given name).
 
 **An example must run warning-free.** Readers paste examples, so a warning the doctest build prints is one every reader gets. Fix the example, not the build: a `Lexicon.empty()` used only to drop titles also dropped the Korean surnames and drew the segmenterless warning, and the fix was an example that empties only the field it is about. Run the doctest build under Verifying below and expect no output at all.
 
@@ -44,7 +44,7 @@ The rules below were distilled from PR #588, which restructured `customize.rst` 
 
 ## Linking
 
-**Link, don't restate.** When another page already covers a topic, give one line and a `:ref:` to it; two copies drift apart. When the content is a list the code ships (the maiden markers, the delimiter pairs), link the module with `:mod:` instead of copying the list into prose, where it goes stale the next time the list changes.
+**Link, don't restate.** When another page already covers a topic, give one line and a `:ref:` to it; two copies drift apart. When the content is a list the code ships (the maiden markers, the delimiter pairs), link the object that holds it (`` :data:`~nameparser.DEFAULT_NICKNAME_DELIMITERS` ``) or show the call that lists it (`Lexicon.default().words(kind="birth_marker")`) instead of copying the list into prose, where it goes stale the next time the list changes. Since 3.0 no vocabulary module is public for `:mod:` to name (#1007).
 
 **Put a label at the heading you link to**, and link with `:ref:` to the section rather than `:doc:` to the page, which lands the reader at the top of a long page. Add the label in the same commit as the first link to it.
 

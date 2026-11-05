@@ -272,14 +272,16 @@ NAME_KEYS = COUNT_SOURCES | {"as_of", "native", "note", "gender", "same_as"}
 #: The keys of an `excluded` value's table, and of an `attached` table.
 EXCLUSION_KEYS = frozenset({"reason", "issue", "decided", "note"})
 ATTACHED_KEYS = frozenset({"side", "issue", "decided", "note"})
-#: Names a later phase will give meaning to. Writing one now is an error
-#: that says so, rather than "unknown", so nothing reads as working.
+#: Names reserved for a meaning not yet built. Writing one now is an
+#: error that says so, rather than "unknown", so nothing reads as working.
 #: Phase 2 gave `default` and `attaches` their meaning; the gate's slots
 #: carry position, and shape settles a bare letter (rules/P7), so the
-#: position and bare-letter names wait with `separators` for phase 4's
-#: shapes and glued words.
+#: position and bare-letter names wait with `separators` for the shapes
+#: and glued words phase 4 planned, unbuilt in 3.0 and left to a 3.x
+#: release.
 RESERVED = {
-    "bare_only": 4, "leading_only": 4, "trailing_only": 4, "separators": 4,
+    "bare_only": "3.x", "leading_only": "3.x", "trailing_only": "3.x",
+    "separators": "3.x",
 }
 #: Names phase 1 reserved for phase 3 that phase 3 gave to the caller
 #: instead: a choice prefers (3b) and `parser_for(..., strict=True)` is
@@ -410,8 +412,8 @@ class Pool:
 # ---------------------------------------------------------------- loading
 def _reserved_or_unknown(where: str, key: str, allowed: Iterable[str]) -> VocabError:
     if key in RESERVED:
-        return VocabError(f"{where}: {key!r} is reserved for phase {RESERVED[key]}; "
-                          f"it has no behavior yet")
+        return VocabError(f"{where}: {key!r} is reserved, unbuilt, for "
+                          f"{RESERVED[key]}; it has no behavior yet")
     if key in NOT_DATA:
         return VocabError(f"{where}: {key!r} is not data; {NOT_DATA[key]}")
     return VocabError(f"{where}: unknown key {key!r}; allowed: {sorted(allowed)}")

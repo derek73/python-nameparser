@@ -51,7 +51,8 @@ starts a run of post-nominals and titles (``John Smith PhD Prof`` reads
 title ``Prof``; see :ref:`trailing-titles`), or, at the end of the
 given name in form 2, it is a listed salutation such as ``Mrs``
 (``Doe, Jane Mrs`` reads title ``Mrs`` since 2.6;
-``Lexicon.after_given_titles`` lists them).
+``Lexicon.default().words(kind="salutation", after_given=True)`` lists
+them).
 
 The last two differ in what the comma is doing. In form 2 it separates
 the family name from the rest, so the family name comes first; in form
@@ -960,8 +961,9 @@ a nickname however it is written:
     >>> parse("JEFFREY (JD) BRICKEN").nickname
     'JD'
 
-``JD`` is in ``suffix_acronyms_ambiguous``; see
-:ref:`ambiguous-words` for what that field marks and how to add to it.
+``JD`` holds a ``given`` reading beside its credential one
+(``Lexicon.default().readings_of("jd")``); see :ref:`ambiguous-words`
+for what that second reading marks and how to add one.
 :ref:`brackets` covers the full order these readings are tried in, and
 how to configure the delimiter pairs.
 
@@ -1017,7 +1019,8 @@ The rule is bounded so it doesn't swallow ordinary names:
 - **A given name written short** is that given name (since 2.7): the
   traditional English abbreviations such as ``Chas.``, ``Geo.`` and
   ``Wm.``, and the Filipino ``Ma.`` (María) and ``Jo.`` (José).
-  ``Lexicon.given_name_abbreviations`` lists them; written bare, or
+  Each is a ``given`` reading carrying ``same_as``, the full name
+  (``Lexicon.default().readings_of("chas")``); written bare, or
   anywhere else in the name, each word reads as it would unlisted.
 
 .. doctest::
@@ -1035,8 +1038,8 @@ The rule is bounded so it doesn't swallow ordinary names:
     >>> parse("Xyz. Smith, John").family
     'Xyz. Smith'
 
-Because this is structural rather than vocabulary-driven, emptying
-``titles`` does not switch it off; see :ref:`title-detection-off`.
+Because this is structural rather than vocabulary-driven, taking out
+every title reading does not switch it off; see :ref:`title-detection-off`.
 
 .. _trailing-titles:
 
@@ -1102,8 +1105,8 @@ When the parser had to guess
 Some names have no single correct reading. A leading ``Van`` could be
 a given name — it really is for the actor Van Johnson — or the start
 of a family name, as it is for President Van Buren. Both are the same
-shape, so no rule can tell them apart. 2.0 takes the more likely
-reading and *records* the choice on ``ambiguities`` rather than
+shape, so no rule can tell them apart. The parser takes the more
+likely reading and *records* the choice on ``ambiguities`` rather than
 deciding silently:
 
 .. doctest::

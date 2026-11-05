@@ -8,7 +8,7 @@
 - A salutation that is someone's middle name reads as the title after a family comma, an accepted cost (`Doe, Jane Miss`); so does the empty head's one given word moving to the family as the period-marked spelling moves it (`, Jane Mrs` → family 'Jane') — 2026-10-24 #835.
 - The rule reads the comma, not a declared order: `Doe Jane Mrs` under FAMILY_FIRST keeps middle 'Mrs', so the family-comma invariant of decisions/two-input-invariants does not hold for a trailing salutation — 2026-10-24 #835.
 
-Open: [#877](https://github.com/derek73/python-nameparser/issues/877) (whether a bare `I` or `V` the salutation leaves ending the given part, read as the suffix by rules/C9, should report `suffix-or-name`).
+Open: none in this file. Whether a bare `I` or `V` the salutation leaves ending the given part, read as the suffix by rules/C9, reports `suffix-or-name` was #877, decided in decisions/C9's 2026-11-04 #877 entry: it reports (`Doe, Jane V Mrs` → suffix 'V', reported).
 
 ## Log
 

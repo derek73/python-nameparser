@@ -742,7 +742,8 @@ class Policy:
     #: before middle_as_family, which then folds whatever middles are
     #: left. A name whose second given word is a middle name gains it
     #: in the given name ("John Quincy Adams" gives given ``John
-    #: Quincy``), so it is off by default and reports nothing.
+    #: Quincy``), so it is off by default and reports nothing. Added in
+    #: 3.0.
     two_given_names: bool = field(
         default=False, metadata={ADDED_IN: "3.0.0"})
 
@@ -954,6 +955,8 @@ class PolicyPatch:
     unlisted_dotted_suffixes: bool | _Unset = UNSET
     unlisted_caps_suffixes: CapsSuffixes | _Unset = UNSET
     two_family_names: bool | _Unset = UNSET
+    #: Patches :attr:`Policy.two_given_names`, a scalar (later wins).
+    #: Added in 3.0.
     two_given_names: bool | _Unset = field(
         default=UNSET, metadata={ADDED_IN: "3.0.0"})
 

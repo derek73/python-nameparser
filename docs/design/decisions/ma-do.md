@@ -12,7 +12,7 @@ Elsewhere: the rest of the case reading — Title-case `Ma` and `Do` leaning sur
 
 Elsewhere: after the name, a member whose writing settles it is the suffix, not the nickname (`John Smith (MA)`, `John Smith (M.A)`; `JOHN SMITH (MA)` and `John Smith (Ma)` keep the nickname) — decisions/S13's 2026-10-26 #810 entry, which supersedes the line above in part.
 
-Open: #792 (S1 and S8: whether a bracketed generation ends the credential run, `W. Russell (Jr.) Withers`), the neighbour of the parenthesized line above, which it does not move: `John Smith (MA) Withers` reads nickname 'MA', family 'Withers'.
+Open: none in this file. Whether a bracketed generation ends the credential run was #792, decided in decisions/S1's 2026-11-04 #792 entry (`W. Russell (Jr.) Withers` → family 'Withers', suffix 'Jr.'), which leaves a bracketed member of this set as the parenthesized line above has it: `John Smith (MA) Withers` reads nickname 'MA', family 'Withers'.
 
 ## Log
 

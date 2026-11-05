@@ -82,7 +82,7 @@ Python's `\w` and `isalpha()` do not match Mn, so a letter written as base plus 
 
 ### Widths and the initial shape
 
-A width test must count letters, not code points (`composed_len`): admitting a decomposed word to the caps set put `John Smith, MÁ` on the pair exception's wrong side, and the review's grid found it where the rows (all three letters long) did not — put a two-letter word in every caps grid. The initial shape (`_INITIAL`, `\w\.`, v1-verbatim and public) is not widened but asked of the COMPOSED word, in `is_initial_shaped` and in `_render`'s two copies; and the single-letter connective tests count composed letters, since a decomposed `й` is two code points (#665, where `É. y É. Smith` and `John й Smith` read differently decomposed).
+A width test must count letters, not code points (`composed_len`): admitting a decomposed word to the caps set put `John Smith, MÁ` on the pair exception's wrong side, and the review's grid found it where the rows (all three letters long) did not — put a two-letter word in every caps grid. The initial shape (`_INITIAL`, `\w\.`, v1-verbatim, and public as `REGEXES['initial']` until 3.0 removed it, #1008) is not widened but asked of the COMPOSED word, in `is_initial_shaped` and in `_render`'s two copies; and the single-letter connective tests count composed letters, since a decomposed `й` is two code points (#665, where `É. y É. Smith` and `John й Smith` read differently decomposed).
 
 ### Compose the WHOLE predicate
 

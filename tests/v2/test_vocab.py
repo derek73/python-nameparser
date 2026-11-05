@@ -255,7 +255,7 @@ MUTATIONS = [
     ("no-schema", {"und.toml": '[[word]]\ntext = "jr"\ngeneration = {}\n'}, "needs `schema = 1`"),
     ("newer-schema", {"und.toml": OK.replace("schema = 1", "schema = 2")}, "newer than this compiler"),
     ("unknown-top-level-key", {"und.toml": "language = 'en'\n" + OK}, "unknown key 'language'"),
-    ("reserved-top-level-key", {"und.toml": "separators = []\n" + OK}, "reserved for phase 4"),
+    ("reserved-top-level-key", {"und.toml": "separators = []\n" + OK}, "reserved, unbuilt, for 3.x"),
     # phase 3 gave the strengths to the caller, so they stay refused as
     # data, the message naming the call (3j)
     ("prefer-is-not-data", {"und.toml": "prefer = ['pt']\n" + OK}, "'prefer' is not data; a choice"),
@@ -263,7 +263,7 @@ MUTATIONS = [
     ("file-name-not-a-tag", {"english.toml": OK}, "BCP 47 tag"),
     ("file-name-not-canonical-case", {"pt-br.toml": OK}, "BCP 47 tag"),
     ("file-with-no-entries", {"en.toml": OK, "und.toml": "schema = 1\n"}, "no \\[\\[word\\]\\] entries"),
-    ("reserved-reading-property", {"und.toml": _w('[[word]]\ntext = "mba"\ncredential = { bare_only = true }')}, "reserved for phase 4"),
+    ("reserved-reading-property", {"und.toml": _w('[[word]]\ntext = "mba"\ncredential = { bare_only = true }')}, "reserved, unbuilt, for 3.x"),
     ("unknown-reading-property", {"und.toml": _w('[[word]]\ntext = "mba"\ncredential = { acronymm = true }')}, "unknown key 'acronymm'"),
     ("unknown-word-key", {"und.toml": _w('[[word]]\ntext = "jr"\ngeneration = {}\nlang = "en"')}, "unknown key 'lang'"),
     ("descriptive-key-on-the-word", {"und.toml": _w('[[word]]\ntext = "jr"\ngeneration = {}\nnote = "x"')}, "belongs on a reading"),
@@ -341,7 +341,8 @@ MUTATIONS = [
     ("flag-not-a-bool", {"und.toml": _w('[[word]]\ntext = "van"\nparticle = { may_be_given = "yes" }')}, "true or false"),
     ("issue-not-a-number", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = { issue = "661" }')}, "issue number"),
     # `default`: a reading is on unwritten, so only false is worth
-    # writing; and the four names phase 2 left reserved say which phase
+    # writing; and the four names phase 2 left reserved say they are
+    # unbuilt, for 3.x
     ("default-true", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = { default = true }')}, "write default = false"),
     ("default-not-a-bool", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = { default = "no" }')}, "write default = false"),
     ("completed_by-not-a-list", {"ar.toml": _w('[[word]]\ntext = "zzq"\nbound_given = { completed_by = "zzr" }')}, "completed_by must be a non-empty list"),
@@ -357,7 +358,7 @@ MUTATIONS = [
     ("attaches-a-word-with-no-title-reading", {"en.toml": _w('[[word]]\ntext = "chief"\noffice = { attaches = ["zzq"] }')}, "attaches names 'zzq', which is no title kind and no title word"),
     ("attaches-on-a-suffix", {"en.toml": _w('[[word]]\ntext = "phd"\ncredential = { attaches = ["office"] }')}, "unknown key 'attaches'"),
     ("attaches-differs-between-files", {"en.toml": _w('[[word]]\ntext = "chief"\noffice = { attaches = ["military"] }'), "fr.toml": _w('[[word]]\ntext = "chief"\noffice = {}')}, "attaches"),
-    ("reserved-separators", {"th.toml": _w('[[word]]\ntext = "นาย"\nsalutation = { separators = [] }')}, "reserved for phase 4"),
+    ("reserved-separators", {"th.toml": _w('[[word]]\ntext = "นาย"\nsalutation = { separators = [] }')}, "reserved, unbuilt, for 3.x"),
     # 11, the agnomen's half: an agnomen is gated by its name reading,
     # so one without would take the family name from two-word names
     ("name-reading-beside-an-honorific", {"ja.toml": _w('[[word]]\ntext = "zzt"\nhonorific = {}\nfamily = { note = "x" }')}, "gates nothing"),
@@ -1228,9 +1229,9 @@ def test_the_readme_lists_the_name_reading_keys() -> None:
     assert len(rows) == len(build.NAME_KEYS)
 
 
-def test_the_readme_lists_the_reserved_names_with_their_phases() -> None:
-    rows = _readme_table("## Names reserved for later phases")
-    assert {_code(r[0])[0]: int(r[1]) for r in rows} == build.RESERVED
+def test_the_readme_lists_the_reserved_names_with_their_releases() -> None:
+    rows = _readme_table("## Names reserved for later releases")
+    assert {_code(r[0])[0]: r[1] for r in rows} == build.RESERVED
     assert len(rows) == len(build.RESERVED)
 
 

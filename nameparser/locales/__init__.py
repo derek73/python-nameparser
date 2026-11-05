@@ -8,7 +8,7 @@ pack module; ``locales.RU`` triggers ``nameparser.locales.ru`` on
 first access and caches the Locale here.
 
 Layering: this package imports pack modules, which import _locale/
-_lexicon/_policy only (enforced by tests/v2/test_layering.py).
+_lexicon/_policy/_types only (enforced by tests/v2/test_layering.py).
 """
 from __future__ import annotations
 
@@ -72,8 +72,10 @@ def available() -> tuple[str, ...]:
 
 def ja_segmenter(*, gbdt: bool = False) -> Segmenter:
     """The Japanese segmenter factory (#272), needing the optional
-    ``pip install nameparser[ja]``; see :mod:`nameparser.locales.ja` for
-    what it wraps, what it declines, and its licensing.
+    ``pip install 'nameparser[ja]'``; the docstring of
+    ``nameparser.locales.ja`` says what it wraps, what it declines, and
+    its licensing, and :ref:`segmenter-contract` what a segmenter owes
+    its caller.
 
     A real function rather than a _REGISTRY entry, because the registry
     resolves LOCALES: __getattr__ is annotated to return one, so routing
