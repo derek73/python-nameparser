@@ -46,8 +46,5 @@ SK = Locale(
 )
 
 
-def DEVIATES(name: str) -> bool:
-    """True when this pack's patch may parse `name` differently from the
-    default parser: rules/O6's declaration, shared with the es pack
-    (_locale.deviates_by_two_family_names)."""
-    return deviates_by_two_family_names(name)
+# rules/O6's declaration, which every pack turning O6 on shares
+DEVIATES = deviates_by_two_family_names

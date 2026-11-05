@@ -1008,14 +1008,11 @@ class PolicyPatch:
                     f"{f.name} must be an iterable, got {value!r}{hint}"
                 ) from None
             object.__setattr__(self, f.name, frozenset(value))
-        # middle_as_family, lenient_comma_suffixes,
-        # unlisted_dotted_suffixes, unlisted_caps_suffixes, strip_emoji,
-        # strip_bidi, two_family_names and two_given_names are scalar
-        # (compose="override")
-        # fields and DELIBERATELY get no type check here, unlike
-        # name_order and the union fields above: a
+        # Every other field (the scalars: the bools and
+        # unlisted_caps_suffixes) DELIBERATELY gets no type check here,
+        # unlike name_order and the union fields above: a
         # PolicyPatch(strip_emoji="off") is constructible, and only raises
-        # once apply_patch runs Policy.__post_init__'s bool check. This is
+        # once apply_patch runs Policy.__post_init__'s checks. This is
         # the one place the module's eager-validation ethos doesn't apply
         # -- see the class docstring ("Values are validated when the patch
         # is applied... not at patch construction").
