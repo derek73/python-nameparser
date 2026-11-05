@@ -9632,7 +9632,14 @@ CASES: tuple[Case, ...] = (
          {"family": "Sta Juan"},
          classification="fix(#725)",
          notes="no given reading, as Ste (fil.toml's counts), so P1's "
-               "fold takes the name and nothing is reported"),
+               "fold takes the name and nothing is reported; 1.4.0 "
+               "through 2.8.1 read given 'Sta', family 'Juan'"),
+    Case("sta_opening_the_given_part_takes_the_fold", "Reyes, Sta Maria",
+         {"family": "Reyes Sta Maria"},
+         classification="fix(#725)",
+         notes="P1's fold after a family comma takes the rest of the "
+               "part; read given 'Sta', middle 'Maria' 1.4.0 through "
+               "2.8.1 (decisions/H6's #725 Accepted bullet)"),
     Case("family_comma_particles", "de la Vega, Juan",
          {"given": "Juan", "family": "de la Vega"},
          notes="shape 2's particle-bearing family, before the comma",
