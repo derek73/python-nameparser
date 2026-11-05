@@ -40,16 +40,6 @@
   "abdul Sir Smith Berg"      →  given="abdul Sir"
   "Berg, abdul van"           →  given="abdul van"
   ```
-- **A bound word written before the article joins wherever it stands** (`عبد`, which Arabic script writes apart from the name it completes, `عبد الله`): one standing past the first name word joins the word after it too, where that word is a plain name word opening with the article ال, the pair one name unit that position places; the join at the start is the one above, with its reserve. Before a word with no article it is a name of its own, as `عبد` alone is.
-  ```
-  "سعيد عبد الله"             →  family="عبد الله"
-  "محمد عبد الله أحمد"        →  middle="عبد الله"
-  "عبد اللطيف عبد الحميد"     →  given="عبد اللطيف"
-  "عبد اللطيف عبد الحميد"     →  family="عبد الحميد"
-  "عبد الله"                  →  given="عبد"  · boundary
-  "نوال عبد هاشم"             →  family="هاشم"  · boundary
-  "Tariq Abdul Aziz"          →  middle="Abdul"  · boundary
-  ```
 
 **Because:** some given-name words are incomplete alone — "abdul" is a bound form that the next word completes.
 
@@ -110,5 +100,5 @@
 - The given part after a family comma reads the words behind a title by its own walk, and where that walk reads them otherwise than the comma-less name does, the join is declined and no title is read — V before a third comma part stays a name word there, and a title word that is also a particle is attached by P6 (`Berg, abdul Prof. V, Jr.` reads middle 'Prof. V'; `Berg, abdul St.` reads family 'St. Berg'), each as the same name with an ordinary given word reads.
 
 ---
-**Signal:** neighbor: a bound given-name word and the name word after it, with a word to spare; past the start, the article opening the word after a bound word written before it
+**Signal:** neighbor: a bound given-name word and the name word after it, with a word to spare
 **history:** decisions/P5 · **implemented:** nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py

@@ -18,7 +18,9 @@ credential_words, honorific_words and patronymic_particles, internal
 sets, 3.0) and the
 titles written short (title_abbreviations, #999) and the names a
 community gives every member (shared_names) and the given names
-written behind a particle (particle_given_names, #704); and, since
+written behind a particle (particle_given_names, #704) and the
+two-word given names a bound word completes into (bound_phrases,
+#694); and, since
 2.4, Policy.unlisted_dotted_suffixes and Policy.unlisted_caps_suffixes,
 which decide whether an UNLISTED dotted or all-caps token joins the
 ambiguous credential class by SHAPE (#516) -- the all-caps half here
@@ -83,7 +85,7 @@ from nameparser._policy import CapsSuffixes
 from nameparser._pipeline._state import (
     AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, CREDENTIAL_WORD_TAG,
     GENERATION_WORD_TAG, GIVEN_ABBREVIATION_TAG, HONORIFIC_WORD_TAG,
-    BOUND_BEFORE_ARTICLE_TAG, PARTICLE_GIVEN_TAG, PATRONYMIC_TAG, SHAPE_ACRONYM_TAG, SHARED_NAME_TAG, SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, TITLE_AMBIGUOUS_TAG,
+    BOUND_PHRASE_TAG, PARTICLE_GIVEN_TAG, PATRONYMIC_TAG, SHAPE_ACRONYM_TAG, SHARED_NAME_TAG, SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, TITLE_AMBIGUOUS_TAG,
     TITLE_CASE_NAME_TAG,
     TRAILING_TITLE_TAG, ParseState,
     Deferred, PendingAmbiguity, PendingReading,
@@ -264,10 +266,6 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
             tags.add("initial")
     if n in lex._sets.bound_given_names:
         tags.add("vocab:bound-given")
-        # rules/P5 reads this: a bound word that joins a word opening
-        # with the article ال wherever it stands (#694)
-        if n in lex._sets.bound_before_article:
-            tags.add(BOUND_BEFORE_ARTICLE_TAG)
     # rules/H2: "an abbreviation the vocabulary reads as a given name
     # written short is that given name" -- the reading H2's shape test
     # weighs (`_pieces.is_leading_title`); a membership, so any spelling
@@ -482,6 +480,22 @@ def classify(state: ParseState) -> ParseState:
         tokens = tuple(
             copy_with(t, tags=t.tags - _JOINING_TAGS) if i in stemmed else t
             for i, t in enumerate(tokens))
+    # rules/P12: "the two words are one given name wherever they stand"
+    # -- the phrase test over each word and the word after it, asked
+    # only of a name holding a bound word, in a plain loop, so that no
+    # other name pays a frame; the tag goes on the bound word, and
+    # group joins the pair (decisions/P12, #694)
+    phrases = state.lexicon._sets.bound_phrases
+    if phrases and not state.lexicon._sets.bound_given_names.isdisjoint(
+            folded):
+        heads = set()
+        for i in range(len(folded) - 1):
+            if f"{folded[i]} {folded[i + 1]}" in phrases:
+                heads.add(i)
+        if heads:
+            tokens = tuple(
+                copy_with(t, tags=t.tags | {BOUND_PHRASE_TAG})
+                if i in heads else t for i, t in enumerate(tokens))
     # rules/H9: "the word is a title only inside a title phrase, and
     # elsewhere a name word" -- the phrase test (_vocab.title_readings)
     # asked per part, of the words carrying no role, and only of a part

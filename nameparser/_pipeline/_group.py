@@ -77,7 +77,7 @@ from nameparser._pipeline._pieces import (
     trailing_start_past_titles,
 )
 from nameparser._pipeline._state import (
-    AMBIGUOUS_ACRONYM_TAG, BOUND_BEFORE_ARTICLE_TAG, SPLIT_CREDENTIAL_TAG,
+    AMBIGUOUS_ACRONYM_TAG, BOUND_PHRASE_TAG, SPLIT_CREDENTIAL_TAG,
     SPLIT_MEMBER_TAG, TRAILING_TITLE_TAG, ParseState,
     Deferred, PendingAmbiguity, Structure, WorkToken,
     _AMBIGUOUS_CREDENTIAL_TAGS, copy_with,
@@ -621,33 +621,35 @@ def _settle_splits(pieces: list[Piece], ptags: list[set[str]]) -> None:
         k += 1
 
 
-#: The token tags of a word that is no plain name word: a particle or a
-#: connective (P2, P3), a title, a suffix or a marker, each a reading
-#: that a later stage places, so the join past the start takes none.
-_NO_NAME_WORD = frozenset({"particle", "conjunction", "vocab:title",
-                           "vocab:suffix", "vocab:maiden-marker"})
-
-
-#: The Arabic definite article, written joined to the word it defines.
-_ARTICLE = "\u0627\u0644"  # ال
-
-
-# rules/P5: "one standing past the first name word joins the word after it too"
-# -- the bound words written `before_article`, past the piece the leading
-# join reads, which this leaves as it was; the article test is the
-# property's (history: decisions/P5, #694)
-def _join_bound_before_article(pieces: list[Piece], ptags: list[set[str]],
-                               tokens: Sequence[WorkToken]) -> None:
+# rules/P12: "the two words are one given name wherever they stand"
+# -- past the piece P5's leading join reads, which this leaves as it
+# was, its reserve included; classify's tag says the word and the
+# token after it are a listed phrase (history: decisions/P12, #694)
+def _join_bound_phrases(pieces: list[Piece], ptags: list[set[str]],
+                        tokens: Sequence[WorkToken]) -> None:
+    # built in one pass: a merge per pair would shift every piece
+    # behind it, a quadratic in a run of pairs (merge_pieces' note)
     k = leading_titles(pieces, ptags, tokens) + 1
-    while k + 1 < len(pieces):
-        word, nxt = pieces[k], pieces[k + 1]
-        if (len(word) == 1 and not ptags[k]
-                and BOUND_BEFORE_ARTICLE_TAG in tokens[word[0]].tags
-                and len(nxt) == 1 and not ptags[k + 1]
-                and not tokens[nxt[0]].tags & _NO_NAME_WORD
-                and tokens[nxt[0]].text.startswith(_ARTICLE)):
-            merge_pieces(pieces, ptags, k, k + 2)
+    out, out_tags = pieces[:k], ptags[:k]
+    n = len(pieces)
+    joined = False
+    while k < n:
+        word = pieces[k]
+        if (k + 1 < n and len(word) == 1 and not ptags[k]
+                and BOUND_PHRASE_TAG in tokens[word[0]].tags
+                and pieces[k + 1] == [word[0] + 1] and not ptags[k + 1]):
+            word.extend(pieces[k + 1])
+            out.append(word)
+            out_tags.append(set())
+            joined = True
+            k += 2
+            continue
+        out.append(word)
+        out_tags.append(ptags[k])
         k += 1
+    if joined:
+        pieces[:] = out
+        ptags[:] = out_tags
 
 
 def _group_segment(seg: tuple[int, ...], additional: int,
@@ -1370,8 +1372,8 @@ def _group_segment(seg: tuple[int, ...], additional: int,
     if bound_join is not BoundJoin.DISABLED and site is not ClauseSite.TAIL:
         # a plain loop, no frame: a name with no such word pays nothing
         for i in seg:
-            if BOUND_BEFORE_ARTICLE_TAG in tokens[i].tags:
-                _join_bound_before_article(pieces, ptags, tokens)
+            if BOUND_PHRASE_TAG in tokens[i].tags:
+                _join_bound_phrases(pieces, ptags, tokens)
                 break
     if reads is not None:
         reads.append(read)

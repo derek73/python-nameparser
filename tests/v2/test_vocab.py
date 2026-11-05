@@ -1107,7 +1107,7 @@ _PROPERTY_PROBES = {
     "title_case_is_name": ("generation", "{ title_case_is_name = true }", "zzq"),
     "shared": ("family", '{ shared = true, note = "probe" }', "zzq"),
     "after_particle": ("given", '{ after_particle = true, note = "probe" }', "zzq"),
-    "before_article": ("bound_given", "{ before_article = true }", "zzq"),
+    "completed_by": ("bound_given", '{ completed_by = ["zzr"] }', "zzq"),
     # a phrase needs the head it attaches to: a second title word
     "attaches": ("office", '{ attaches = ["occupation"] }', "zzq",
                  '\n\n[[word]]\ntext = "zzr"\noccupation = {}'),

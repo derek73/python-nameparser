@@ -912,10 +912,22 @@ def _check_reading(r: Reading, pool: Pool) -> None:
             raise _reserved_or_unknown(where, k, allowed)
     _check_descriptive(where, p)
     for flag in ("acronym", "may_be_initial", "after_given", "abbreviation",
-                 "title_case_is_name", "before_article"):
+                 "title_case_is_name"):
         if flag in p and not isinstance(p[flag], bool):
             raise VocabError(f"{where}: {flag} must be true or false")
     _check_default(where, p)
+    if "completed_by" in p:
+        # the words that complete a bound given name into one given
+        # name wherever it stands (rules/P12): each one word, written
+        # as the fold leaves it, so the phrase test matches it
+        done = p["completed_by"]
+        if (not isinstance(done, list) or not done
+                or not all(isinstance(w, str) and w and " " not in w
+                           and _normalize(w) == w for w in done)
+                or len(set(done)) != len(done)):
+            raise VocabError(f"{where}: completed_by must be a non-empty "
+                             f"list of single words, each once and "
+                             f"written folded")
     if r.category == "title":
         addresses = r.addresses
         if addresses in ("full", "any"):
@@ -1327,11 +1339,10 @@ def _behavior(r: Reading, prop: str) -> object:
         att = r.props.get("attached")
         return None if att is None else att.get("side")
     if prop in ("may_be_initial", "after_given", "abbreviation",
-                "title_case_is_name", "shared", "after_particle",
-                "before_article"):
+                "title_case_is_name", "shared", "after_particle"):
         return r.flag(prop)
-    if prop == "attaches":
-        att = r.props.get("attaches")
+    if prop in ("attaches", "completed_by"):
+        att = r.props.get(prop)
         return None if att is None else frozenset(att)
     if prop == "default":
         return r.on_by_default
@@ -1372,7 +1383,7 @@ CONSTANTS = (
     "SHARED_NAMES",
     "PARTICLE_GIVEN_NAMES",
     "SAINT_PARTICLES",
-    "BOUND_BEFORE_ARTICLE",
+    "BOUND_PHRASES",
 )
 
 

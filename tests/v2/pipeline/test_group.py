@@ -190,46 +190,59 @@ def test_bound_given_joins_with_three_rootnames() -> None:
     assert _piece_texts(_grouped("abdul rahman")) == [["abdul", "rahman"]]
 
 
-_ARTICLE_LEX = (
+_PHRASE_LEX = (
     _LEX.add("عبد", "ابو", kind="given").add("عبد", kind="bound_given",
-                                          before_article=True)
+                                          completed_by=["الله", "الرحمن"])
     .add("ابو", kind="bound_given")
-    .add("الفان", kind="particle").add("الدكتور", kind="title")
-    .add("المرحوم", kind="birth_marker").add("الجونيور", kind="suffix")
-    .add("و", kind="conjunction"))
+    .add("المرحوم", kind="birth_marker"))
 
 
-def _article_pieces(text: str, lexicon: Lexicon = _ARTICLE_LEX) -> list[list[str]]:
+def _phrase_pieces(text: str, lexicon: Lexicon = _PHRASE_LEX) -> list[list[str]]:
     return _piece_texts(_grouped(text, lexicon=lexicon))
 
 
-def test_a_bound_word_written_before_the_article_joins_past_the_start() -> None:
-    # rules/P5 (#694): past the first name word the join needs the article
-    assert _article_pieces("سعيد عبد الله") == [["سعيد", "عبد الله"]]
-    assert _article_pieces("سعيد عبد الله عبد الرحمن") == \
+def test_a_bound_word_and_a_word_that_completes_it_join_past_the_start() -> None:
+    # rules/P12 (#694): the listed pair, wherever it stands
+    assert _phrase_pieces("سعيد عبد الله") == [["سعيد", "عبد الله"]]
+    assert _phrase_pieces("سعيد عبد الله عبد الرحمن") == \
         [["سعيد", "عبد الله", "عبد الرحمن"]]
-    # no article: a name of its own
-    assert _article_pieces("نوال عبد هاشم") == [["نوال", "عبد", "هاشم"]]
-    # a bound word without the property joins only at the start
-    assert _article_pieces("سعيد ابو الله") == [["سعيد", "ابو", "الله"]]
-    # the join at the start keeps its reserve
-    assert _article_pieces("عبد الله") == [["عبد", "الله"]]
+    # an unlisted word, with the article or without it: a name of its own
+    assert _phrase_pieces("نوال عبد هاشم") == [["نوال", "عبد", "هاشم"]]
+    assert _phrase_pieces("محمد عبد القريشي") == [["محمد", "عبد", "القريشي"]]
+    # a bound word listing nothing joins only at the start
+    assert _phrase_pieces("سعيد ابو الله") == [["سعيد", "ابو", "الله"]]
+    # P5's join at the start keeps its reserve
+    assert _phrase_pieces("عبد الله") == [["عبد", "الله"]]
     # nothing after it to join
-    assert _article_pieces("سعيد عبد") == [["سعيد", "عبد"]]
-
-
-def test_the_join_past_the_start_takes_no_word_a_later_stage_places() -> None:
-    # a particle the chain took, a title, a marker and a suffix word are
-    # each a reading of their own, though they open with the article
-    for text, after in (("سعيد عبد الفان حسن", "الفان حسن"),
-                        ("سعيد عبد الدكتور حسن", "الدكتور"),
-                        ("سعيد حسن عبد الجونيور", "الجونيور"),
-                        # a connective's join, P3, is a unit of its own
-                        ("سعيد عبد الحسن و علي", "الحسن و علي")):
-        pieces = _article_pieces(text)[0]
-        assert "عبد" in pieces and after in pieces, (text, pieces)
+    assert _phrase_pieces("سعيد عبد") == [["سعيد", "عبد"]]
     # a marker takes the words after it out of the pieces altogether
-    assert _article_pieces("سعيد عبد المرحوم حسن") == [["سعيد", "عبد"]]
+    assert _phrase_pieces("سعيد عبد المرحوم الله") == [["سعيد", "عبد"]]
+
+
+def test_a_caller_lists_the_words_that_complete_a_bound_word() -> None:
+    # the property is the caller's too: a Latin pair joins once listed
+    listed = _LEX.add("abdul", kind="bound_given", completed_by=["aziz"])
+    assert _phrase_pieces("Tariq Abdul Aziz", listed) == \
+        [["Tariq", "Abdul Aziz"]]
+    assert _phrase_pieces("Tariq Abdul Aziz", _LEX) == \
+        [["Tariq", "Abdul", "Aziz"]]
+    # and removing the reading removes the phrase
+    gone = _PHRASE_LEX.remove("عبد", kind="bound_given")
+    assert _phrase_pieces("سعيد عبد الله", gone) == [["سعيد", "عبد", "الله"]]
+
+
+@pytest.mark.parametrize("value,error", [
+    ("الله", TypeError), (["الله", 3], TypeError),
+    (["عبد الله"], ValueError)])
+def test_completed_by_refuses_what_is_no_list_of_words(value: object,
+                                                       error: type) -> None:
+    with pytest.raises(error, match="completed_by"):
+        _LEX.add("عبد", kind="bound_given", completed_by=value)
+
+
+def test_completed_by_belongs_to_a_bound_given_reading() -> None:
+    with pytest.raises(ValueError, match="completed_by"):
+        _LEX.add("zzq", kind="given", completed_by=["الله"])
 
 
 def test_phd_split_across_tokens_merges_as_suffix() -> None:

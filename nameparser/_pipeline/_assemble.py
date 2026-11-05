@@ -44,7 +44,7 @@ from nameparser._pipeline._state import (
     AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, ATTACHED_TAG,
     CREDENTIAL_WORD_TAG, FIELD_READING, GENERATION_WORD_TAG, HONORIFIC_WORD_TAG,
     NAME_ROLES, PATRONYMIC_TAG, SECOND_SURNAME_TAG, SHAPE_ACRONYM_TAG,
-    SHARED_NAME_TAG, PARTICLE_GIVEN_TAG, BOUND_BEFORE_ARTICLE_TAG,
+    SHARED_NAME_TAG, PARTICLE_GIVEN_TAG, BOUND_PHRASE_TAG,
     FIRST_SURNAME_TAG,
     SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG,
     TITLE_AMBIGUOUS_TAG, TRAILING_TITLE_TAG, Beside, Deferred, ParseState, PendingAmbiguity,
@@ -223,12 +223,12 @@ _reading = functools.lru_cache(maxsize=1024)(Reading)
 #: `Token.reading` carries out; and the written-short mark rules/H5's
 #: chain reads (#999), for which the published token keeps
 #: TITLE_AMBIGUOUS_TAG; and the shared-name and particle-given marks
-#: rules/O6 and O7 read (#704), and the bound-before-article mark rules/P5
+#: rules/O6 and O7 read (#704), and the bound-phrase mark rules/P12
 #: reads (#694).
 _KIND_TAGS = frozenset({GENERATION_WORD_TAG, CREDENTIAL_WORD_TAG, HONORIFIC_WORD_TAG,
                         PATRONYMIC_TAG, ATTACHED_TAG, TRAILING_TITLE_TAG,
                         SHARED_NAME_TAG, PARTICLE_GIVEN_TAG,
-                        BOUND_BEFORE_ARTICLE_TAG})
+                        BOUND_PHRASE_TAG})
 
 #: O6's second-surname mark (rules/R10), which no published token
 #: carries either: `Reading.second_surname` names it.

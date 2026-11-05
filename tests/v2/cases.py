@@ -9858,26 +9858,35 @@ CASES: tuple[Case, ...] = (
          {"given": "abdul", "family": "rahman"}),
     Case("bound_given_three", "abdul rahman al-said",
          {"given": "abdul rahman", "family": "al-said"}),
-    Case("bound_given_before_the_article_joins_the_family", "طارق عبد العزيز",
+    Case("bound_given_completed_past_the_start_joins_the_family", "طارق عبد العزيز",
          {"given": "طارق", "family": "عبد العزيز"},
          classification="fix(#694)",
-         notes="P5: عبد written before a word with the article joins it "
-               "past the start; Wikidata's family is 'عبد العزيز', and "
-               "1.4.0 through 2.8.1 read middle 'عبد', family 'العزيز'"),
-    Case("bound_given_before_the_article_joins_each_pair", "عبد اللطيف عبد الحميد",
+         notes="P12: العزيز completes عبد, so the pair is one name past "
+               "the start; Wikidata's family is 'عبد العزيز', and 1.4.0 "
+               "through 2.8.1 read middle 'عبد', family 'العزيز'"),
+    Case("bound_given_completed_joins_each_pair", "عبد اللطيف عبد الحميد",
          {"given": "عبد اللطيف", "family": "عبد الحميد"},
          classification="fix(#694)",
-         notes="the join at the start and the one past it; 2.0.0 through "
+         notes="P5's join at the start and P12's past it; 2.0.0 through "
                "2.8.1 read middle 'عبد', family 'الحميد'"),
-    Case("bound_given_with_no_article_stands_alone", "نوال عبد هاشم",
+    Case("bound_given_completed_in_a_persian_spelling", "علي عبد الکریم",
+         {"given": "علي", "family": "عبد الکریم"},
+         classification="fix(#694)",
+         notes="P12: each listed word carries its Persian spelling (keheh "
+               "and Farsi yeh) beside the Arabic one"),
+    Case("bound_given_before_an_unlisted_word_stands_alone", "نوال عبد هاشم",
          {"given": "نوال", "middle": "عبد", "family": "هاشم"},
-         notes="P5: before a word with no article عبد is a short given "
-               "name of its own (ORCID's family box: هاشم)"),
+         notes="P12: before a word that does not complete it عبد is a "
+               "short given name of its own (ORCID's family box: هاشم)"),
+    Case("bound_given_before_a_nisba_stands_alone", "محمد عبد القريشي",
+         {"given": "محمد", "middle": "عبد", "family": "القريشي"},
+         notes="P12 reads a list, not the article: a nisba surname opens "
+               "with ال too, and joined it would read family 'عبد القريشي' "
+               "(decisions/P12)"),
     Case("bound_given_latin_past_the_start_stays_apart", "Tariq Abdul Aziz",
          {"given": "Tariq", "middle": "Abdul", "family": "Aziz"},
-         notes="#694's Latin half: abdul is not written before_article, "
-               "the pair being a middle name as often as a family "
-               "(decisions/P5)"),
+         notes="#694's Latin half: abdul lists no completed_by, the pair "
+               "being a middle name as often as a family (decisions/P12)"),
     Case("mr_and_mrs", "Mr. and Mrs. John Smith",
          {"title": "Mr. and Mrs.", "given": "John", "family": "Smith"}),
     Case("roman_suffix", "John Smith V",

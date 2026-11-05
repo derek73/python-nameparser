@@ -533,7 +533,7 @@ _SET_FIELDS = tuple(f for f in _VOCAB_FIELDS if f not in _LIST_FIELDS)
 _KIND_FIELDS = ("generation_words", "credential_words", "honorific_words",
                 "patronymic_particles", "title_abbreviations",
                 "title_case_name_words", "shared_names",
-                "particle_given_names", "saint_particles", "bound_before_article")
+                "particle_given_names", "saint_particles", "bound_phrases")
 
 @dataclass(frozen=True, slots=True, eq=False, repr=False)
 class _LexiconSets:
@@ -606,10 +606,9 @@ class _LexiconSets:
     #: the particles of the `saint` kind (`san`, `santa`, `st`, `ste`): no given
     #: name phrase opens with one, `Santa María` being a surname (#704)
     saint_particles: frozenset[str]
-    #: the bound given names written `before_article=True` (`عبد`):
-    #: rules/P5 joins one to a word after it that opens with the article
-    #: ال wherever it stands, not only at the start (#694)
-    bound_before_article: frozenset[str]
+    #: the two-word given names a bound word's `completed_by` lists
+    #: ('عبد الله'), which rules/P12 joins wherever they stand (#694)
+    bound_phrases: frozenset[str]
 
 
 #: Lexicon field -> the compiled constant it is read from, for every
@@ -646,7 +645,7 @@ _COMPILED_FIELDS = {
     "shared_names": "SHARED_NAMES",
     "particle_given_names": "PARTICLE_GIVEN_NAMES",
     "saint_particles": "SAINT_PARTICLES",
-    "bound_before_article": "BOUND_BEFORE_ARTICLE",
+    "bound_phrases": "BOUND_PHRASES",
 }
 
 
@@ -731,8 +730,7 @@ def _prop_value(kind: str, prop: str, value: object) -> object:
                          and value == _unwritten(kind, prop)):
         return None
     if prop in ("abbreviation", "acronym", "after_given", "may_be_initial",
-                "title_case_is_name", "shared", "after_particle",
-                "before_article"):
+                "title_case_is_name", "shared", "after_particle"):
         if not isinstance(value, bool):
             raise TypeError(f"{prop} must be True or False, got {value!r}")
         return value
@@ -747,21 +745,28 @@ def _prop_value(kind: str, prop: str, value: object) -> object:
                              f"off the end of a name token) or None, "
                              f"got {value!r}")
         return value
-    if prop == "attaches":
+    if prop in ("attaches", "completed_by"):
+        what = ("title kinds or title words, e.g. attaches=['military']"
+                if prop == "attaches" else
+                "single words, e.g. completed_by=['الله']")
         if isinstance(value, (str, bytes)) or isinstance(value, Mapping):
-            raise TypeError(f"attaches must be an iterable of title kinds "
-                            f"or title words, e.g. attaches=['military'], "
+            raise TypeError(f"{prop} must be an iterable of {what}, "
                             f"got {value!r}")
         try:
             items: tuple[object, ...] = tuple(cast("Iterable[object]", value))
         except TypeError:
-            raise TypeError(f"attaches must be an iterable of title kinds "
-                            f"or title words, got {value!r}") from None
+            raise TypeError(f"{prop} must be an iterable of {what}, "
+                            f"got {value!r}") from None
         words = [x for x in items if isinstance(x, str)]
         if len(words) != len(items):
-            raise TypeError(f"attaches entries must be strings, got "
+            raise TypeError(f"{prop} entries must be strings, got "
                             f"{value!r}")
         folded = tuple(sorted({_normalize(x) for x in words} - {""}))
+        if prop == "completed_by" and any(" " in w for w in folded):
+            # rules/P12 joins a bound word to the ONE word after it
+            raise ValueError(f"completed_by entries must be single words, "
+                             f"got {value!r}; list each completing word "
+                             f"on its own")
         return folded or None
     # same_as, a given name written short's full name (#789)
     if not isinstance(value, str) or not value.strip():
@@ -1598,7 +1603,7 @@ def _shown_value(kind: str | None, prop: str, value: object) -> str:
     if value is None and kind is not None and prop in (
             "abbreviation", "acronym", "addresses", "after_given",
             "may_be_initial", "title_case_is_name", "shared",
-            "after_particle", "before_article"):
+            "after_particle"):
         value = _unwritten(kind, prop)
     if isinstance(value, tuple) and len(value) > _SHOWN_WORDS:
         # bounded: a phrase taken out of a kind's reach lists every

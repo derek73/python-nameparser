@@ -178,11 +178,11 @@ SHARED_NAME_TAG = "vocab:shared-name"
 #: Dropped from the published token like the kind tags above (#704).
 PARTICLE_GIVEN_TAG = "vocab:particle-given"
 
-#: On a word of `Lexicon.bound_before_article`, a bound given name
-#: (`عبد`) that rules/P5 joins to a word after it opening with the
-#: article ال wherever it stands (`_group._join_bound_before_article`).
-#: Dropped from the published token like the kind tags above (#694).
-BOUND_BEFORE_ARTICLE_TAG = "vocab:bound-before-article"
+#: On a bound given name whose word and the word after it are a phrase
+#: of `Lexicon.bound_phrases` ('عبد' before 'الله'), which rules/P12
+#: joins wherever it stands (`_group._join_bound_phrases`). Dropped
+#: from the published token like the kind tags above (#694).
+BOUND_PHRASE_TAG = "vocab:bound-phrase"
 
 #: EITHER way a token joins the ambiguous credential class -- the
 #: vocabulary's claim and the writing's. The two emitters that report
