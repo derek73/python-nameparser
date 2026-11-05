@@ -2215,7 +2215,8 @@ _NFD_ROWS = [
 # Each row: the text, its reading (non-empty fields, report kinds,
 # initials()), and the reading before #1087, recorded 2026-11-05 against
 # 4109b026 -- the control, which moves on every row.
-_UNCOMPOSED_JAMO = [
+_UNCOMPOSED_JAMO: list[tuple[str, dict[str, str], list[AmbiguityKind], str,
+                            tuple[object, ...]]] = [
     # the H2 veto: no title by shape
     ("ꥠᅡ. Smith", {"given": "ꥠᅡ.", "family": "Smith"}, [], "S.",
      ({"title": "ꥠᅡ.", "family": "Smith"}, [], "S.")),
