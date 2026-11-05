@@ -1888,7 +1888,7 @@ READINGS: tuple[tuple[str, tuple[tuple[str, str, tuple[tuple[str, object], ...]]
     ('سینئر', (('sd', 'generation', ()), ('ur', 'generation', ()))),
     ('سینیئر', (('sd', 'generation', ()), ('ur', 'generation', ()))),
     ('سینیور', (('fa', 'generation', ()),)),
-    ('عبد', (('ar', 'bound_given', ()),)),
+    ('عبد', (('ar', 'bound_given', (('before_article', True),)),)),
     ('مهندس', (('ar', 'academic', (('addresses', 'given'),)),)),
     ('و', (('ar', 'conjunction', ()),)),
     ('गुरु', (('hi', 'religious', (('addresses', 'given'),)), ('ne', 'given', (('default', False),)))),

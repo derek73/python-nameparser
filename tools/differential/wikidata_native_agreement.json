@@ -496,17 +496,6 @@
   },
   "text": "Царук Олександр Васильович"
  },
- "Q12221498/ar-eg/givenFirst": {
-  "family": {
-   "expected": "عبد العزيز",
-   "got": "العزيز"
-  },
-  "given_names": {
-   "expected": "طارق",
-   "got": "طارق عبد"
-  },
-  "text": "طارق عبد العزيز"
- },
  "Q123945439/zh-tw/surnameFirst": {
   "family": {
    "expected": "朱",
@@ -561,17 +550,6 @@
    "got": ""
   },
   "text": "宋楠"
- },
- "Q134298671/ar-sy/givenFirst": {
-  "family": {
-   "expected": "عبد العزيز",
-   "got": "العزيز"
-  },
-  "given_names": {
-   "expected": "سمر",
-   "got": "سمر عبد"
-  },
-  "text": "سمر عبد العزيز"
  },
  "Q1365182/zh-cn/surnameFirst": {
   "family": {
@@ -920,17 +898,6 @@
   },
   "text": "汪顺"
  },
- "Q27914098/ar-sy/givenFirst": {
-  "family": {
-   "expected": "عبد الواحد",
-   "got": "الواحد"
-  },
-  "given_names": {
-   "expected": "نورس",
-   "got": "نورس عبد"
-  },
-  "text": "نورس عبد الواحد"
- },
  "Q28068683/ja-jp/surnameFirst": {
   "family": {
    "expected": "湯浅",
@@ -1003,17 +970,6 @@
    "got": ""
   },
   "text": "多田大介"
- },
- "Q3603413/ar-sy/givenFirst": {
-  "family": {
-   "expected": "عبد الحميد",
-   "got": "الحميد"
-  },
-  "given_names": {
-   "expected": "عبد اللطيف",
-   "got": "عبد اللطيف عبد"
-  },
-  "text": "عبد اللطيف عبد الحميد"
  },
  "Q360402/zh-cn/surnameFirst": {
   "family": {

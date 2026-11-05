@@ -9858,6 +9858,26 @@ CASES: tuple[Case, ...] = (
          {"given": "abdul", "family": "rahman"}),
     Case("bound_given_three", "abdul rahman al-said",
          {"given": "abdul rahman", "family": "al-said"}),
+    Case("bound_given_before_the_article_joins_the_family", "طارق عبد العزيز",
+         {"given": "طارق", "family": "عبد العزيز"},
+         classification="fix(#694)",
+         notes="P5: عبد written before a word with the article joins it "
+               "past the start; Wikidata's family is 'عبد العزيز', and "
+               "1.4.0 through 2.8.1 read middle 'عبد', family 'العزيز'"),
+    Case("bound_given_before_the_article_joins_each_pair", "عبد اللطيف عبد الحميد",
+         {"given": "عبد اللطيف", "family": "عبد الحميد"},
+         classification="fix(#694)",
+         notes="the join at the start and the one past it; 2.0.0 through "
+               "2.8.1 read middle 'عبد', family 'الحميد'"),
+    Case("bound_given_with_no_article_stands_alone", "نوال عبد هاشم",
+         {"given": "نوال", "middle": "عبد", "family": "هاشم"},
+         notes="P5: before a word with no article عبد is a short given "
+               "name of its own (ORCID's family box: هاشم)"),
+    Case("bound_given_latin_past_the_start_stays_apart", "Tariq Abdul Aziz",
+         {"given": "Tariq", "middle": "Abdul", "family": "Aziz"},
+         notes="#694's Latin half: abdul is not written before_article, "
+               "the pair being a middle name as often as a family "
+               "(decisions/P5)"),
     Case("mr_and_mrs", "Mr. and Mrs. John Smith",
          {"title": "Mr. and Mrs.", "given": "John", "family": "Smith"}),
     Case("roman_suffix", "John Smith V",

@@ -64,7 +64,7 @@ _SET = {"abbreviation": True, "addresses": "given", "after_given": True,
         "attaches": ["office"],
         "cased": "ZzQ", "acronym": None, "attached": {"side": "after"},
         "may_be_initial": True, "title_case_is_name": True,
-        "shared": True, "after_particle": True}
+        "shared": True, "after_particle": True, "before_article": True}
 
 
 def _probe_readings() -> list[Any]:

@@ -912,7 +912,7 @@ def _check_reading(r: Reading, pool: Pool) -> None:
             raise _reserved_or_unknown(where, k, allowed)
     _check_descriptive(where, p)
     for flag in ("acronym", "may_be_initial", "after_given", "abbreviation",
-                 "title_case_is_name"):
+                 "title_case_is_name", "before_article"):
         if flag in p and not isinstance(p[flag], bool):
             raise VocabError(f"{where}: {flag} must be true or false")
     _check_default(where, p)
@@ -1327,7 +1327,8 @@ def _behavior(r: Reading, prop: str) -> object:
         att = r.props.get("attached")
         return None if att is None else att.get("side")
     if prop in ("may_be_initial", "after_given", "abbreviation",
-                "title_case_is_name", "shared", "after_particle"):
+                "title_case_is_name", "shared", "after_particle",
+                "before_article"):
         return r.flag(prop)
     if prop == "attaches":
         att = r.props.get("attaches")
@@ -1371,6 +1372,7 @@ CONSTANTS = (
     "SHARED_NAMES",
     "PARTICLE_GIVEN_NAMES",
     "SAINT_PARTICLES",
+    "BOUND_BEFORE_ARTICLE",
 )
 
 

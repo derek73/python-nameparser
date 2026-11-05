@@ -3121,3 +3121,7 @@ SAINT_PARTICLES: frozenset[str] = frozenset({
     'st',
     'ste',
 })
+
+BOUND_BEFORE_ARTICLE: frozenset[str] = frozenset({
+    'عبد',
+})

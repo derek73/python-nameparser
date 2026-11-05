@@ -533,7 +533,7 @@ _SET_FIELDS = tuple(f for f in _VOCAB_FIELDS if f not in _LIST_FIELDS)
 _KIND_FIELDS = ("generation_words", "credential_words", "honorific_words",
                 "patronymic_particles", "title_abbreviations",
                 "title_case_name_words", "shared_names",
-                "particle_given_names", "saint_particles")
+                "particle_given_names", "saint_particles", "bound_before_article")
 
 @dataclass(frozen=True, slots=True, eq=False, repr=False)
 class _LexiconSets:
@@ -606,6 +606,10 @@ class _LexiconSets:
     #: the particles of the `saint` kind (`san`, `santa`, `st`, `ste`): no given
     #: name phrase opens with one, `Santa María` being a surname (#704)
     saint_particles: frozenset[str]
+    #: the bound given names written `before_article=True` (`عبد`):
+    #: rules/P5 joins one to a word after it that opens with the article
+    #: ال wherever it stands, not only at the start (#694)
+    bound_before_article: frozenset[str]
 
 
 #: Lexicon field -> the compiled constant it is read from, for every
@@ -642,6 +646,7 @@ _COMPILED_FIELDS = {
     "shared_names": "SHARED_NAMES",
     "particle_given_names": "PARTICLE_GIVEN_NAMES",
     "saint_particles": "SAINT_PARTICLES",
+    "bound_before_article": "BOUND_BEFORE_ARTICLE",
 }
 
 
@@ -726,7 +731,8 @@ def _prop_value(kind: str, prop: str, value: object) -> object:
                          and value == _unwritten(kind, prop)):
         return None
     if prop in ("abbreviation", "acronym", "after_given", "may_be_initial",
-                "title_case_is_name", "shared", "after_particle"):
+                "title_case_is_name", "shared", "after_particle",
+                "before_article"):
         if not isinstance(value, bool):
             raise TypeError(f"{prop} must be True or False, got {value!r}")
         return value
@@ -1592,7 +1598,7 @@ def _shown_value(kind: str | None, prop: str, value: object) -> str:
     if value is None and kind is not None and prop in (
             "abbreviation", "acronym", "addresses", "after_given",
             "may_be_initial", "title_case_is_name", "shared",
-            "after_particle"):
+            "after_particle", "before_article"):
         value = _unwritten(kind, prop)
     if isinstance(value, tuple) and len(value) > _SHOWN_WORDS:
         # bounded: a phrase taken out of a kind's reach lists every

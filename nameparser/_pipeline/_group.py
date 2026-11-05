@@ -77,8 +77,8 @@ from nameparser._pipeline._pieces import (
     trailing_start_past_titles,
 )
 from nameparser._pipeline._state import (
-    AMBIGUOUS_ACRONYM_TAG, SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, TRAILING_TITLE_TAG,
-    ParseState,
+    AMBIGUOUS_ACRONYM_TAG, BOUND_BEFORE_ARTICLE_TAG, SPLIT_CREDENTIAL_TAG,
+    SPLIT_MEMBER_TAG, TRAILING_TITLE_TAG, ParseState,
     Deferred, PendingAmbiguity, Structure, WorkToken,
     _AMBIGUOUS_CREDENTIAL_TAGS, copy_with,
 )
@@ -618,6 +618,35 @@ def _settle_splits(pieces: list[Piece], ptags: list[set[str]]) -> None:
                 k += 2
                 continue
             ptags[k] = ptags[k] - {"split"}
+        k += 1
+
+
+#: The token tags of a word that is no plain name word: a particle or a
+#: connective (P2, P3), a title, a suffix or a marker, each a reading
+#: that a later stage places, so the join past the start takes none.
+_NO_NAME_WORD = frozenset({"particle", "conjunction", "vocab:title",
+                           "vocab:suffix", "vocab:maiden-marker"})
+
+
+#: The Arabic definite article, written joined to the word it defines.
+_ARTICLE = "\u0627\u0644"  # ال
+
+
+# rules/P5: "one standing past the first name word joins the word after it too"
+# -- the bound words written `before_article`, past the piece the leading
+# join reads, which this leaves as it was; the article test is the
+# property's (history: decisions/P5, #694)
+def _join_bound_before_article(pieces: list[Piece], ptags: list[set[str]],
+                               tokens: Sequence[WorkToken]) -> None:
+    k = leading_titles(pieces, ptags, tokens) + 1
+    while k + 1 < len(pieces):
+        word, nxt = pieces[k], pieces[k + 1]
+        if (len(word) == 1 and not ptags[k]
+                and BOUND_BEFORE_ARTICLE_TAG in tokens[word[0]].tags
+                and len(nxt) == 1 and not ptags[k + 1]
+                and not tokens[nxt[0]].tags & _NO_NAME_WORD
+                and tokens[nxt[0]].text.startswith(_ARTICLE)):
+            merge_pieces(pieces, ptags, k, k + 2)
         k += 1
 
 
@@ -1338,6 +1367,8 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                     # carried (rules/P5); joined_tags says why the
                     # title tag is dropped. Pinned in test_group.py.
                     merge_pieces(pieces, ptags, fk, fk + 2, drop={"title"})
+    if bound_join is not BoundJoin.DISABLED and site is not ClauseSite.TAIL:
+        _join_bound_before_article(pieces, ptags, tokens)
     if reads is not None:
         reads.append(read)
     pieces.extend(tail_pieces)

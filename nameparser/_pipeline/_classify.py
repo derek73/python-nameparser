@@ -83,7 +83,7 @@ from nameparser._policy import CapsSuffixes
 from nameparser._pipeline._state import (
     AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, CREDENTIAL_WORD_TAG,
     GENERATION_WORD_TAG, GIVEN_ABBREVIATION_TAG, HONORIFIC_WORD_TAG,
-    PARTICLE_GIVEN_TAG, PATRONYMIC_TAG, SHAPE_ACRONYM_TAG, SHARED_NAME_TAG, SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, TITLE_AMBIGUOUS_TAG,
+    BOUND_BEFORE_ARTICLE_TAG, PARTICLE_GIVEN_TAG, PATRONYMIC_TAG, SHAPE_ACRONYM_TAG, SHARED_NAME_TAG, SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, TITLE_AMBIGUOUS_TAG,
     TITLE_CASE_NAME_TAG,
     TRAILING_TITLE_TAG, ParseState,
     Deferred, PendingAmbiguity, PendingReading,
@@ -264,6 +264,10 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
             tags.add("initial")
     if n in lex._sets.bound_given_names:
         tags.add("vocab:bound-given")
+        # rules/P5 reads this: a bound word that joins a word opening
+        # with the article ال wherever it stands (#694)
+        if n in lex._sets.bound_before_article:
+            tags.add(BOUND_BEFORE_ARTICLE_TAG)
     # rules/H2: "an abbreviation the vocabulary reads as a given name
     # written short is that given name" -- the reading H2's shape test
     # weighs (`_pieces.is_leading_title`); a membership, so any spelling

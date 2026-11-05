@@ -190,6 +190,48 @@ def test_bound_given_joins_with_three_rootnames() -> None:
     assert _piece_texts(_grouped("abdul rahman")) == [["abdul", "rahman"]]
 
 
+_ARTICLE_LEX = (
+    _LEX.add("عبد", "ابو", kind="given").add("عبد", kind="bound_given",
+                                          before_article=True)
+    .add("ابو", kind="bound_given")
+    .add("الفان", kind="particle").add("الدكتور", kind="title")
+    .add("المرحوم", kind="birth_marker").add("الجونيور", kind="suffix")
+    .add("و", kind="conjunction"))
+
+
+def _article_pieces(text: str, lexicon: Lexicon = _ARTICLE_LEX) -> list[list[str]]:
+    return _piece_texts(_grouped(text, lexicon=lexicon))
+
+
+def test_a_bound_word_written_before_the_article_joins_past_the_start() -> None:
+    # rules/P5 (#694): past the first name word the join needs the article
+    assert _article_pieces("سعيد عبد الله") == [["سعيد", "عبد الله"]]
+    assert _article_pieces("سعيد عبد الله عبد الرحمن") == \
+        [["سعيد", "عبد الله", "عبد الرحمن"]]
+    # no article: a name of its own
+    assert _article_pieces("نوال عبد هاشم") == [["نوال", "عبد", "هاشم"]]
+    # a bound word without the property joins only at the start
+    assert _article_pieces("سعيد ابو الله") == [["سعيد", "ابو", "الله"]]
+    # the join at the start keeps its reserve
+    assert _article_pieces("عبد الله") == [["عبد", "الله"]]
+    # nothing after it to join
+    assert _article_pieces("سعيد عبد") == [["سعيد", "عبد"]]
+
+
+def test_the_join_past_the_start_takes_no_word_a_later_stage_places() -> None:
+    # a particle the chain took, a title, a marker and a suffix word are
+    # each a reading of their own, though they open with the article
+    for text, after in (("سعيد عبد الفان حسن", "الفان حسن"),
+                        ("سعيد عبد الدكتور حسن", "الدكتور"),
+                        ("سعيد حسن عبد الجونيور", "الجونيور"),
+                        # a connective's join, P3, is a unit of its own
+                        ("سعيد عبد الحسن و علي", "الحسن و علي")):
+        pieces = _article_pieces(text)[0]
+        assert "عبد" in pieces and after in pieces, (text, pieces)
+    # a marker takes the words after it out of the pieces altogether
+    assert _article_pieces("سعيد عبد المرحوم حسن") == [["سعيد", "عبد"]]
+
+
 def test_phd_split_across_tokens_merges_as_suffix() -> None:
     out = _grouped("John Smith Ph. D.")
     assert _piece_texts(out) == [["John", "Smith", "Ph. D."]]

@@ -92,7 +92,7 @@ BEHAVIORAL: dict[str, frozenset[str]] = {
                          "title_case_is_name"}),
     "particle": frozenset({"cased", "default"}),
     "conjunction": frozenset({"may_be_initial", "cased", "default"}),
-    "bound_given": frozenset({"cased", "default"}),
+    "bound_given": frozenset({"before_article", "cased", "default"}),
     "relation": frozenset({"cased", "default"}),
     "name": frozenset({"after_particle", "cased", "default", "shared"}),
 }
@@ -154,7 +154,7 @@ class ReadingProperties:
 
     def flag(self, prop: str) -> bool:
         """A `may_be_*` flag, `after_given`, `abbreviation`,
-        `title_case_is_name`, `shared` or `after_particle`: unwritten,
+        `title_case_is_name`, `shared`, `after_particle` or `before_article`: unwritten,
         false."""
         return bool(self.props.get(prop, False))
 
@@ -540,6 +540,7 @@ class Compiled(TypedDict):
     SHARED_NAMES: frozenset[str]
     PARTICLE_GIVEN_NAMES: frozenset[str]
     SAINT_PARTICLES: frozenset[str]
+    BOUND_BEFORE_ARTICLE: frozenset[str]
 
 
 def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
@@ -585,6 +586,7 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
     title_case_names: set[str] = set()
     shared: set[str] = set()
     after_particle: set[str] = set()
+    before_article: set[str] = set()
     cased: dict[str, str] = {}
     for r, t in texts:
         p = r.props
@@ -639,6 +641,8 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
                 initial_conjunctions.add(t)
         elif r.category == "bound_given":
             bound.add(t)
+            if r.flag("before_article"):
+                before_article.add(t)
         elif r.category == "relation":
             markers.add(t)
         elif r.kind == "given" and "same_as" in p:
@@ -718,6 +722,10 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
         # open a place name or a surname (`Santa María`), never a given
         # name's second, so a given name phrase holds none (#704)
         SAINT_PARTICLES=frozenset(saints),
+        # the bound given names (`عبد`) that rules/P5 joins to a word
+        # after them opening with the article ال wherever they stand,
+        # not only at the start (#694)
+        BOUND_BEFORE_ARTICLE=frozenset(before_article),
     )
     # One form per post-nominal: the word test strips only edge periods
     # and the acronym test strips all of them, so a word in both is

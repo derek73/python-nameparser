@@ -537,5 +537,6 @@ bound_given = { note = "\"umm\", hamza-less spelling", issue = 269, same_as = "�
 [[word]]
 text = "عبد"
 [word.bound_given]
-note = "\"abd\" (servant of): the script writes Abdul Rahman as two words, عبد + الرحمن, the article attaching to the word after it, so عبد alone covers the abdul/abdel/abdal spellings -- عبد الرحمن -> given \"عبد الرحمن\""
-issue = 269
+before_article = true
+note = "\"abd\" (servant of): the script writes Abdul Rahman as two words, عبد + الرحمن, the article attaching to the word after it, so عبد alone covers the abdul/abdel/abdal spellings -- عبد الرحمن -> given \"عبد الرحمن\". Before a word opening with the article ال it joins that word wherever it stands (rules/P5): سعيد عبد الله -> family \"عبد الله\"; ORCID's Arabic-script records whose family box holds the pair or the word after it read that box right in 65 more and 5 fewer where the article follows, and 2 more and 6 fewer where none does, a short given name standing alone there (نوال عبد هاشم, 2026-11-04, #694, decisions/P5). The Latin abdul is not marked: there the pair is a middle name as often as a family (decisions/P5)"
+issue = [269, 694]
