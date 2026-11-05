@@ -354,11 +354,15 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # Filho' row two, 'Pedro Júnior Neto' a second, 'José Silva Júnior'
     # one), each under three orders, and its review row 'Smith,
     # Junior.', reporting suffix-or-name under three orders; 1582 ->
-    # 1570 on 2026-11-04, #670: six rows opening with a lowercase
-    # ambiguous particle no longer report particle-or-given under the
-    # two family-first orders, the fold having taken it.
-    assert claims == 1570, (
-        f"the field sweep checks {claims} claims, recorded as 1570 on "
+    # 1600 on 2026-11-04, #877's report on a bare letter ending the
+    # given part after a comma, six rows each under three orders; 1600 ->
+    # 1609 the same day, its test review's particle-run and connective
+    # rows, three reports each under three orders; 1609 -> 1597 the
+    # same day, #670: six rows opening with a lowercase ambiguous
+    # particle no longer report particle-or-given under the two
+    # family-first orders, the fold having taken it.
+    assert claims == 1597, (
+        f"the field sweep checks {claims} claims, recorded as 1597 on "
         f"2026-11-04")
 
 
@@ -545,6 +549,11 @@ _REVIEW_SHAPES = ("PhD VI", "Jr VI", "III VI", "Smith, John van VI",
                   # the PR review's: a given-name title licenses the
                   # bound join only from the leading run, as group asks
                   "abdul VI Sir.", "Sir Dr. abdul VI", "Dr. Sir abdul VI",
+                  # #877's review: P1's fold opening the given part takes
+                  # a numeral standing past the part's first word into
+                  # the family
+                  "Smith, de Mesnil V", "Smith, de Mesnil VI",
+                  "Smith, Mc John V I",
                   # #828's fix review: a particle that is suffix
                   # vocabulary, opening a chain the family-first fold
                   # cuts, names the field the cut gives
@@ -735,10 +744,14 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # 'Nasreen Sultana, MBBS' row reporting no fork under the three
     # orders; 459 -> 462 the same day, #684's two père rows under the
     # three orders; 462 -> 477 the same day, #1039's junior rows under
-    # the three orders; 477 -> 475 and 330 -> 328 on 2026-11-04, #828's
-    # 'Freiherr von Berg X.Y.Z. X.Y.Z.' joining _STAND_IN_REREADS under
-    # the two family-first orders
-    assert (checked, skipped) == (475, 328), (checked, skipped)
+    # the three orders; 477 -> 495 on 2026-11-04, #877's report on a bare
+    # letter ending the given part after a comma, six rows under the
+    # three orders, each stand-in landing in the alternative's field;
+    # 495 -> 504 the same day, its test review's two rows, three
+    # reports under the three orders; 504 -> 502 and 330 -> 328 the same day,
+    # #828's 'Freiherr von Berg X.Y.Z. X.Y.Z.' joining _STAND_IN_REREADS
+    # under the two family-first orders
+    assert (checked, skipped) == (502, 328), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:
