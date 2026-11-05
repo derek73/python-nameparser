@@ -648,7 +648,11 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: `title_case_name_words`, no 2.x field either; #694's phrase gate
 #: one load, `bound_given_names`; #792's set-apart clause two `sets =`
 #: bindings and nine loads in `_vocab` and two loads in `_post_rules`,
-#: taking extract's four suffix-set loads out, 119 -> 128); the tools' 19 are 17
+#: taking extract's four suffix-set loads out, 119 -> 128; pass (b) of
+#: 3.0's simplify: the Ph./D. test's `sets =` binding and four loads,
+#: now `suffix_as_written`'s, and one of S1's two dotted-member loads,
+#: now `_post_rules._dotted_member`'s one, 128 -> 122);
+#: the tools' 19 are 17
 #: attribute loads, every tool scanned, and config_diff.py's
 #: `sets =` binding and the roster `getattr` through it (its
 #: `changed_words`, which compares two lexicons set by set), which
@@ -658,7 +662,7 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: `_lexicon._fields_of` from 4i-b until 4i-c retired it.
 #: A reader added through `_sets` moves these, and they are re-taken
 #: then: they count what the check would refuse with the move undone.
-_UNGUARDED_READS = {"library": 128, "tools": 19}
+_UNGUARDED_READS = {"library": 122, "tools": 19}
 
 
 def test_the_check_refuses_every_read_4i_a_moved() -> None:
