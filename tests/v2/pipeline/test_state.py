@@ -249,11 +249,40 @@ def test_worktoken_carries_optional_role() -> None:
 
 def _assert_comma_trim(original: str, old: WorkToken, new: WorkToken) -> None:
     """The text or span change post_rules may make: rules/S1's comma
-    trim, the token's text with its edge commas off, its span the
-    sub-slice of the original that text still is."""
+    trim, made only where its set-apart pass turns a clause's word
+    from the nickname or maiden name into a title or the suffix, the
+    token's text with its edge commas off, its span the sub-slice of
+    the original that text still is."""
+    assert old.role in (Role.NICKNAME, Role.MAIDEN), (old, new)
+    assert new.role in (Role.TITLE, Role.SUFFIX), (old, new)
     assert new.text == old.text.strip(",") != old.text, (old, new)
     assert old.span.start <= new.span.start <= new.span.end <= old.span.end
     assert original[new.span.start:new.span.end] == new.text, (old, new)
+
+
+_TRIM_ORIGINAL = "John (Dr, Prof) Smith"
+_TRIM_OLD = WorkToken("Dr,", Span(6, 9), role=Role.NICKNAME)
+
+
+@pytest.mark.parametrize("new", [
+    pytest.param(WorkToken("Dr", Span(7, 9), role=Role.TITLE),
+                 id="span-not-the-text's"),
+    pytest.param(WorkToken("Dr,", Span(6, 8), role=Role.TITLE),
+                 id="span-only"),
+    pytest.param(WorkToken("Dx", Span(6, 8), role=Role.TITLE),
+                 id="not-a-comma-strip"),
+    pytest.param(WorkToken("Dr", Span(6, 8), role=Role.NICKNAME),
+                 id="no-set-apart-role"),
+])
+def test_the_comma_trim_check_refuses_any_other_rewrite(
+        new: WorkToken) -> None:
+    # widening post_rules' token fields to text and span must leave
+    # every other text or span change refused, as the role-and-tags map
+    # refused it; the accepted trim is the control
+    _assert_comma_trim(_TRIM_ORIGINAL, _TRIM_OLD,
+                       WorkToken("Dr", Span(6, 8), role=Role.TITLE))
+    with pytest.raises(AssertionError):
+        _assert_comma_trim(_TRIM_ORIGINAL, _TRIM_OLD, new)
 
 
 def test_stage_field_ownership() -> None:
