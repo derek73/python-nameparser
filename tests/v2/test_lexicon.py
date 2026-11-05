@@ -902,6 +902,8 @@ def test_the_default_kind_sets_are_the_shipped_index_s() -> None:
             word, "patronymic"), word
         assert (word in sets.saint_particles) == holds_kind(
             word, "saint"), word
+        assert (word in sets.capitalized_particles) == (
+            holds_kind(word, "saint") or holds_kind(word, "rank")), word
 
 
 # -- the 2.x spellings, refused with their translation ----------------------
@@ -1901,6 +1903,7 @@ def test_migrate_s_table_covers_every_compiled_constant() -> None:
         "GENERATION_WORDS", "CREDENTIAL_WORDS", "HONORIFIC_WORDS",
         "PATRONYMIC_PARTICLES", "TITLE_ABBREVIATIONS", "TITLE_CASE_NAME_WORDS",
         "SHARED_NAMES", "PARTICLE_GIVEN_NAMES", "SAINT_PARTICLES",
+        "CAPITALIZED_PARTICLES",
         "BOUND_PHRASES"}
     assert public_in_2x <= named
     assert len(_migrate_constant_rows()) >= 20  # the rows with code

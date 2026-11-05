@@ -533,7 +533,8 @@ _SET_FIELDS = tuple(f for f in _VOCAB_FIELDS if f not in _LIST_FIELDS)
 _KIND_FIELDS = ("generation_words", "credential_words", "honorific_words",
                 "patronymic_particles", "title_abbreviations",
                 "title_case_name_words", "shared_names",
-                "particle_given_names", "saint_particles", "bound_phrases")
+                "particle_given_names", "saint_particles",
+                "capitalized_particles", "bound_phrases")
 
 @dataclass(frozen=True, slots=True, eq=False, repr=False)
 class _LexiconSets:
@@ -606,6 +607,10 @@ class _LexiconSets:
     #: the particles of the `saint` kind (`san`, `santa`, `st`, `ste`): no given
     #: name phrase opens with one, `Santa María` being a surname (#704)
     saint_particles: frozenset[str]
+    #: the particles of the kinds written with a capital, `saint` and
+    #: `rank` (`st`, `san`, `freiherr`, `graf`): rules/R4's case repair
+    #: writes one as a name word, not in lowercase (#1069)
+    capitalized_particles: frozenset[str]
     #: the two-word given names a bound word's `completed_by` lists
     #: ('عبد الله'), which rules/P12 joins past the first name word (#694)
     bound_phrases: frozenset[str]
@@ -645,6 +650,7 @@ _COMPILED_FIELDS = {
     "shared_names": "SHARED_NAMES",
     "particle_given_names": "PARTICLE_GIVEN_NAMES",
     "saint_particles": "SAINT_PARTICLES",
+    "capitalized_particles": "CAPITALIZED_PARTICLES",
     "bound_phrases": "BOUND_PHRASES",
 }
 
@@ -1304,7 +1310,7 @@ _WORD_FIELDS = frozenset({
     "generation_words", "credential_words", "honorific_words"})
 _PARTICLE_FIELDS = frozenset({
     "particles", "particles_ambiguous", "patronymic_particles",
-    "saint_particles"})
+    "saint_particles", "capitalized_particles"})
 
 
 def _props_by_kind(readings: Iterable[Any]) -> dict[str, list[dict[str, Any]]]:
@@ -1468,6 +1474,7 @@ _MARKER_READ_WITH = (
     ("particles_ambiguous", ("particles",)),
     ("patronymic_particles", ("particles",)),
     ("saint_particles", ("particles",)),
+    ("capitalized_particles", ("particles",)),
     ("suffix_acronyms_ambiguous", ("suffix_acronyms",)),
     ("suffix_words_ambiguous", ("suffix_words",)),
     ("honorific_tails", ("suffix_words",)),
