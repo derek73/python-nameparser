@@ -341,7 +341,8 @@ MUTATIONS = [
     ("flag-not-a-bool", {"und.toml": _w('[[word]]\ntext = "van"\nparticle = { may_be_given = "yes" }')}, "true or false"),
     ("issue-not-a-number", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = { issue = "661" }')}, "issue number"),
     # `default`: a reading is on unwritten, so only false is worth
-    # writing; and the four names phase 2 left reserved say which phase
+    # writing; and the four names phase 2 left reserved say they are
+    # unbuilt, for 3.x
     ("default-true", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = { default = true }')}, "write default = false"),
     ("default-not-a-bool", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = { default = "no" }')}, "write default = false"),
     ("completed_by-not-a-list", {"ar.toml": _w('[[word]]\ntext = "zzq"\nbound_given = { completed_by = "zzr" }')}, "completed_by must be a non-empty list"),

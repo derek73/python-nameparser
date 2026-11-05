@@ -139,7 +139,7 @@ A caller should be able to see the reading behind a parse. **An `Ambiguity` carr
 
 ### The phase 1 reserved names
 
-Phase 2 gives two of them meaning: `attaches`, the phrase partner above, a property of a title reading naming the title kinds it qualifies; and `default = false`, for readings with no cue. `leading_only` and `trailing_only` are not needed, the gate's slots carrying position; `bare_only` is settled by shape already ([rules/P7](rules/P7-one-letter-particle-against-the-initial-it-spells.md), a one-letter particle against the initial it spells); `separators` belongs with `attached` and its other side, phase 4's glued words. Those four stay reserved, their messages naming the phase that needs them.
+Phase 2 gives two of them meaning: `attaches`, the phrase partner above, a property of a title reading naming the title kinds it qualifies; and `default = false`, for readings with no cue. `leading_only` and `trailing_only` are not needed, the gate's slots carrying position; `bare_only` is settled by shape already ([rules/P7](rules/P7-one-letter-particle-against-the-initial-it-spells.md), a one-letter particle against the initial it spells); `separators` belongs with `attached` and its other side, phase 4's glued words. Those four stay reserved, their messages naming the phase that needs them (since 2026-11-05, #1079, the release instead: unbuilt, 3.x).
 
 ### The order of work
 
@@ -583,7 +583,7 @@ Each sub-phase is one PR, measured on its own base as phase 2's and phase 3's ar
 
 **Interleaved with phase 3** (its sub-phases 3a to 3j, above): 4a can start beside 3a, its `languages` waiting for 3a's index; 4d needs nothing of phase 3, and 4b and 4c need 3a's index only for a listed word's kind, a suffix word's and a particle's; they unblock its packs, `cs`'s generations (3f) and `pt-BR`'s agnomens (3h) on 4b, `es` and `pt` (3g) on 4d and 4g; 4f lands with or after 3b, since both decide what a shipped `Locale` holds; an `is` pack, which no phase 3 sub-phase lists, needs 3b, 4c and 4f. 3j, file-strict, needs 3b alone (3i, which name-strict would have read, is set aside), and 4e and 4h stand apart from both. So the order is 3a and 4a, then 4b to 4d with 3b and 3c (4b after 3a), then 4f, then the packs with 4g, with 4e at any point and 3j at any point after 3b.
 
-**Left open.** With no sub-phase yet: phase 1's four reserved names said to be phase 4's (`separators` with phase 4's glued words, and `bare_only`, `leading_only` and `trailing_only`, which this RFC's phase 2 section found not needed), whose build messages still name this phase. (The first unit's view of a family read as two, with its particles and base, was left open here until decisions/R11's 2026-11-03 #1022 entry built it.)
+**Left open.** With no sub-phase yet: phase 1's four reserved names said to be phase 4's (`separators` with phase 4's glued words, and `bare_only`, `leading_only` and `trailing_only`, which this RFC's phase 2 section found not needed), whose build messages say each is reserved, unbuilt, for 3.x (decisions/vocabulary-model, 2026-11-05 #1079). (The first unit's view of a family read as two, with its particles and base, was left open here until decisions/R11's 2026-11-03 #1022 entry built it.)
 
 A shape question, decided 2026-10-28:
 
