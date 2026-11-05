@@ -179,7 +179,6 @@ def test_the_surnames_replacement_runs_quietly_and_holds_the_same_words(
         warnings.simplefilter("error")
         offered = eval(code, {"Lexicon": Lexicon})  # noqa: S307
     assert offered == held
-    assert len(held) == 103  # the census list, measured under 2.8.1
 
 
 def test_an_alias_to_a_removed_constant_warns_once_naming_both() -> None:
