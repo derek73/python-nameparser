@@ -779,8 +779,7 @@ def _names_before(fam_pieces: Sequence[Sequence[int]],
                   tokens: Sequence[WorkToken], lead: int, k: int) -> int:
     """How many name words stand in front of the numeral at
     `fam_pieces[k]`, the title run's `lead` pieces left out: the pieces
-    that are not wholly linking words (`_is_linking_word`), wherever
-    they stand in the part."""
+    that are not wholly linking words (`_is_linking_word`)."""
     # rules/S10: "a particle or a connective is no name word there,
     # wherever it stands in the part" -- the count of the family part's
     # numeral site; a chain or join holding a name word is one piece and
@@ -798,10 +797,8 @@ def _is_linking_word(tags: Set[str], beside: bool) -> bool:
     # generational 'i' is, stays in the count where it stands in front
     # of the numeral" -- the exception's half of this predicate
     # (decisions/S10 (#1093))
-    if "particle" in tags:
-        return True
-    return "conjunction" in tags and not (beside
-                                          and "vocab:suffix" in tags)
+    return "particle" in tags or ("conjunction" in tags and not (
+        beside and "vocab:suffix" in tags))
 
 
 def _family_part_numeral(word: WorkToken, preceding: str, names: int,
@@ -1959,8 +1956,9 @@ def assign(state: ParseState) -> ParseState:
             # rules/C1: "a numeral ending the family part is read as the
             # comma-less name reads it" -- the numeral's predicate, a
             # one-letter numeral with two name words in front of it
-            # (rules/S10; name words only, `_names_before`), so 'John Smith V, M.J.' keeps suffix 'V' as
-            # 'John Smith III, M.J.' keeps 'III' (#774). `_ROMAN`
+            # (rules/S10; name words only, `_names_before`), so 'John
+            # Smith V, M.J.' keeps suffix 'V' as 'John Smith III, M.J.'
+            # keeps 'III' (#774). `_ROMAN`
             # first, C-level, so a family word pays no frame
             elif (k > lead and len(piece) == 1
                     and _ROMAN.match(
