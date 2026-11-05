@@ -779,20 +779,30 @@ def _names_before(fam_pieces: Sequence[Sequence[int]],
                   tokens: Sequence[WorkToken], lead: int, k: int) -> int:
     """How many name words stand in front of the numeral at
     `fam_pieces[k]`, the title run's `lead` pieces left out: the pieces
-    that are not wholly particles, wherever they stand in the part."""
-    # rules/S10: "a piece made wholly of particles counting as no word"
-    # -- a particle there heads the name word behind it, so it is no
-    # word to spare; a chain joined to a name word is one piece and
-    # counts (decisions/P9 (#1080))
+    that are not wholly linking words (`_links`), wherever they stand
+    in the part."""
+    # rules/S10: "a particle or a connective linking toward the numeral
+    # is no name word" -- the count of the family part's numeral site;
+    # a chain or join holding a name word is one piece and counts
+    # (decisions/P9 (#1080), decisions/S10 (#1093))
     return sum(1 for piece in fam_pieces[lead:k]
-               if not all("particle" in tokens[t].tags for t in piece))
+               if not all(_links(tokens[t].tags) for t in piece))
+
+
+def _links(tags: Set[str]) -> bool:
+    """Whether a word of the family part is a linking word rather than a
+    name word: a particle, or a connective that is not also generational
+    vocabulary (one that is, beside a numeral, is the generation it
+    spells and links nothing, rules/P3)."""
+    return "particle" in tags or ("conjunction" in tags
+                                  and "vocab:suffix" not in tags)
 
 
 def _family_part_numeral(word: WorkToken, preceding: str, names: int,
                          one_case: bool | None) -> Role | None:
     """The role of a roman numeral ending the family part before a
     family comma, behind `names` name words of that part (`_names_before`,
-    which leaves its particles out), as the comma-less name reads one
+    which leaves its linking words out), as the comma-less name reads one
     ending it (rules/S10), or None where the numeral's
     predicate reads no numeral there (an initial in front, a letter with
     its period): the suffix where it reads as the generation, a

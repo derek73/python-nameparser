@@ -3531,6 +3531,7 @@
 {"name": "Smith Vi, John", "given": "John", "family": "Smith Vi", "initials": "J. S. V."}
 {"name": "Smith and Pope", "given": "Smith and Pope", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "S. P."}
 {"name": "Smith born", "given": "Smith", "family": "born", "initials": "S. b.", "capitalized_force": "Smith Born"}
+{"name": "Smith i V, John", "given": "John", "family": "Smith", "suffix": "i V", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: initial as family (shape)"], "initials": "J. S.", "capitalized_force": "John Smith I V", "generation": "i V"}
 {"name": "Smith nee Jones, Jane MA", "given": "Jane", "family": "Smith", "suffix": "MA", "maiden": "Jones", "initials": "J. S."}
 {"name": "Smith née", "given": "Smith", "family": "née", "initials": "S. n.", "capitalized_force": "Smith Née"}
 {"name": "Smith née Jones", "family": "Smith", "maiden": "Jones", "initials": "S."}
@@ -3539,6 +3540,8 @@
 {"name": "Smith van der Berg V, John", "given": "John", "family": "Smith van der Berg", "suffix": "V", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: initial as family (shape)"], "initials": "J. S. B.", "generation": "V"}
 {"name": "Smith van der V, John", "given": "John", "family": "Smith van der V", "initials": "J. S. V."}
 {"name": "Smith vd v, John", "given": "John", "family": "Smith", "suffix": "vd v", "initials": "J. S.", "capitalized_force": "John Smith VD V", "generation": "v", "credentials": "vd"}
+{"name": "Smith y V, John", "given": "John", "family": "Smith y V", "initials": "J. S. V."}
+{"name": "Smith y VI, John", "given": "John", "family": "Smith y", "suffix": "VI", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "J. S.", "generation": "VI"}
 {"name": "Smith 김민준씨, XYZ", "given": "Smith", "middle": "김", "family": "민준", "suffix": "씨, XYZ", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "S.", "honorifics": "씨"}
 {"name": "Smith, A.B.", "given": "A.B.", "family": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "A. S."}
 {"name": "Smith, A.B.C.", "family": "Smith", "suffix": "A.B.C.", "initials": "S."}

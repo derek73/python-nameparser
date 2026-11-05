@@ -362,9 +362,10 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # particle no longer report particle-or-given under the two
     # family-first orders, the fold having taken it; 1597 -> 1606 on
     # 2026-11-05, #1080's two boundary rows and its paired-initials row,
-    # each reporting suffix-or-name under three orders.
-    assert claims == 1606, (
-        f"the field sweep checks {claims} claims, recorded as 1606 on "
+    # each reporting suffix-or-name under three orders; 1606 -> 1612 the
+    # same day, #1093's two boundary rows under three orders.
+    assert claims == 1612, (
+        f"the field sweep checks {claims} claims, recorded as 1612 on "
         f"2026-11-05")
 
 
@@ -753,8 +754,9 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # reports under the three orders; 504 -> 502 and 330 -> 328 the same day,
     # #828's 'Freiherr von Berg X.Y.Z. X.Y.Z.' joining _STAND_IN_REREADS
     # under the two family-first orders; 502 -> 508 on 2026-11-05,
-    # #1080's two boundary rows under the three orders
-    assert (checked, skipped) == (508, 328), (checked, skipped)
+    # #1080's two boundary rows under the three orders; 508 -> 514 the
+    # same day, #1093's two boundary rows under the three orders
+    assert (checked, skipped) == (514, 328), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:
