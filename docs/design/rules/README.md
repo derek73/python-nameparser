@@ -137,6 +137,7 @@ Terms the rules use without defining them each time, each with the rule that def
 - [P8 — a single-letter connective against the initial it spells](P8-single-letter-connective-against-the-initial-it-spells.md)
 - [P9 — a particle that is also a suffix word, beside a family comma](P9-particle-that-is-also-a-suffix-word-beside-a-family-comma.md)
 - [P10 — a given name a particle completes](P10-given-name-a-particle-completes.md)
+- [P11 — a lowercase particle opening a family-first name](P11-lowercase-particle-opening-a-family-first-name.md)
 - [P12 — a bound given name and the word that completes it](P12-bound-given-name-and-the-word-that-completes-it.md)
 
 ## [Suffixes: generational & credentials (S)](S-suffixes-generational-and-credentials.md)

@@ -1017,10 +1017,13 @@ consulted at all:
   every ``name_order``. ``"de Mesnil"`` is family ``de Mesnil`` under
   both family-first orders exactly as it is by default, not family
   ``de`` with ``Mesnil`` given — a word that can never be a given name
-  leaves the order nothing to decide. Only the never-given set does
-  this: ``"van Gogh"`` reads family ``van``, given ``Gogh`` under a
-  family-first order, because ``van`` *can* be a given name and so
-  leaves a real question to answer.
+  leaves the order nothing to decide. A particle that *can* be a
+  given name does this only under a family-first order, and only
+  written in lower case beside capitals (since 3.0): ``"van Gogh"``
+  reads family ``van Gogh`` there, while ``"Van Gogh"`` reads family
+  ``Van``, given ``Gogh``, its capital leaving a real question to
+  answer. Under the default order the particle is the given name in
+  both spellings.
 - **A lone name word beside a given-name title** is the given name in
   every ``name_order`` (since 2.5): ``"Sir John"`` reads given ``John``
   under both family-first orders, as it does by default, while

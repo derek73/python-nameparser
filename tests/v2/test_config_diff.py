@@ -77,6 +77,16 @@ def test_a_refused_bare_tag_is_named_as_typed() -> None:
         cd.build("plain:xx")
 
 
+@pytest.mark.parametrize("name", ["GIVEN_FIRST", "FAMILY_FIRST", "FAMILY_FIRST_GIVEN_LAST"])
+def test_an_expr_names_the_name_orders(name: str) -> None:
+    # the recipes in decisions/P1's #828 entry and decisions/P11's #670
+    # entry name an order this way; before the orders joined the scope,
+    # both raised NameError as written
+    import nameparser
+    built = cd.build(f"expr:Parser(policy=Policy(name_order={name}))")
+    assert built.policy.name_order == getattr(nameparser, name)
+
+
 @pytest.mark.parametrize("spec", ["expr:Parser(1, 2, 3, 4)", "expr:Lexicon.nope()"])
 def test_an_expr_that_raises_is_a_usage_error_not_a_traceback(spec: str) -> None:
     with pytest.raises(SystemExit) as stop:
