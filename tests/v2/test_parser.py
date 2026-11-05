@@ -3192,7 +3192,11 @@ def test_a_strict_filipino_choice_reads_the_one_word_and_plural_particles() -> N
     for text, given, middle, family in (
             ("Juan Delos Reyes", "Juan", "", "Delos Reyes"),
             ("Ma. Luisa Delos Santos", "Ma.", "Luisa", "Delos Santos"),
-            ("Maria Las Piñas", "Maria", "", "Las Piñas")):
+            ("Maria Las Piñas", "Maria", "", "Las Piñas"),
+            # a saint run, which rules/P10 never reads as a given
+            # name's second half (#725)
+            ("Juan Sta. Maria Reyes", "Juan", "", "Sta. Maria Reyes"),
+            ("Juan Sto. Tomas", "Juan", "", "Sto. Tomas")):
         for parser in (Parser(), fil):
             got = parser.parse(text)
             assert (got.given, got.middle, got.family) == (given, middle, family), text
@@ -3200,7 +3204,9 @@ def test_a_strict_filipino_choice_reads_the_one_word_and_plural_particles() -> N
     # write, where a particle is otherwise lowercased (rules/R4)
     for parser in (Parser(), fil):
         for text, repaired in (("JUAN DELOS REYES", "Juan Delos Reyes"),
-                               ("juan dela cruz", "Juan Dela Cruz")):
+                               ("juan dela cruz", "Juan Dela Cruz"),
+                               ("JUAN STA. MARIA", "Juan Sta. Maria"),
+                               ("juan sto. tomas", "Juan Sto. Tomas")):
             assert str(parser.parse(text).capitalized()) == repaired, text
         # a name written in mixed case keeps its own case unless forced
         written = parser.parse("Juan dela Cruz")

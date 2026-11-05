@@ -86,7 +86,8 @@ from nameparser._pipeline._state import (
 )
 import nameparser._pipeline._comma as _comma
 from nameparser._pipeline._vocab import (
-    comma_follows_marker, delimiter_cores, name_reading,
+    ROMAN, comma_follows_marker, delimiter_cores, ends_in_a_generation,
+    name_reading,
     reads_as_a_reported_numeral, suffix_reading,
 )
 from nameparser._types import AmbiguityKind, Role
@@ -890,6 +891,27 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             total = sum(_is_rootname(p, t, tokens)
                         for p, t in zip(pieces, ptags)
                         if p[0] not in frozen) + additional
+            # rules/P3: "a numeral ending the name, or standing before
+            # the listed suffix words a name ends with, that the trailing fork
+            # reads as the generation is no word of the three, as a
+            # listed one is not" -- the C3 count's question, asked by
+            # its predicate; decisions/C3 (#893). The suffix words are
+            # stepped over by their tag and the shape tested by a
+            # C-level match, so a name ending in a word pays no frame;
+            # the walk stops short of every listed suffix word, a listed
+            # numeral included, so `last` is never one
+            e = len(pieces) - 1
+            while (e > 0 and len(pieces[e]) == 1
+                   and "vocab:suffix" in tokens[pieces[e][0]].tags):
+                e -= 1
+            last = tokens[pieces[e][0]]
+            if (e > 0 and len(pieces[e]) == 1
+                    and ROMAN.match(last.text.rstrip(".")) is not None
+                    and pieces[e][0] not in frozen
+                    and ends_in_a_generation(
+                        [tokens[pieces[e - 1][-1]].text, last.text],
+                        one_case)):
+                total -= 1
             # The threshold of P3's carve-out ("except a single-letter
             # connective in a three-word name, which stays a name word")
             # reads the ROOTNAME count, and since #397 a connective counts

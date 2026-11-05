@@ -1511,7 +1511,9 @@ NON_GIVEN_NAME_PARTICLES: frozenset[str] = frozenset({
     'mc',
     'ní',
     'op',
+    'sta',
     'ste',
+    'sto',
     'ter',
     'ul-',
     'vd',
@@ -1612,7 +1614,9 @@ PARTICLES: frozenset[str] = frozenset({
     'san',
     'santa',
     'st',
+    'sta',
     'ste',
+    'sto',
     'te',
     'ter',
     'tho',
@@ -2874,6 +2878,8 @@ CAPITALIZATION_EXCEPTIONS: dict[str, str] = {
     'scm': 'ScM',
     'sig.na': 'Sig.na',
     'sig.ra': 'Sig.ra',
+    'sta': 'Sta',
+    'sto': 'Sto',
     'thd': 'ThD',
     'thm': 'ThM',
     'ua': 'Ua',
@@ -3119,7 +3125,9 @@ SAINT_PARTICLES: frozenset[str] = frozenset({
     'san',
     'santa',
     'st',
+    'sta',
     'ste',
+    'sto',
 })
 
 BOUND_PHRASES: frozenset[str] = frozenset({

@@ -2,7 +2,9 @@
 tagged the words (#613): `_comma.decide`. These tests were segment's
 until the decision moved; they run the stages up to classify and then
 the decision, as group does."""
-from nameparser import Parser, parse
+from nameparser import (
+    FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, GIVEN_FIRST, Parser, parse,
+)
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline import _comma
 from nameparser._pipeline._classify import classify
@@ -11,6 +13,8 @@ from nameparser._pipeline._segment import segment
 from nameparser._pipeline._state import ParseState, Structure
 from nameparser._pipeline._tokenize import tokenize
 import dataclasses
+
+import pytest
 
 from nameparser._policy import Policy
 from nameparser._types import AmbiguityKind, Role
@@ -419,3 +423,35 @@ def test_a_split_member_opening_the_part_is_no_name_word_to_either_count() -> No
     # the ambiguous class's count, which decide scans for inline
     # ("MB ChB, Ing" read suffix 'Ing' with the member counted)
     assert parse("MB ChB, Ing").given == "Ing"
+
+
+# C3's numeral clause: a shape-only numeral ending the part before the
+# comma counts as the listed 'III' does, and P3's three-word count asks
+# the same of a name ending in one, or in one before its suffix words
+# (#893). Each grid row is compared
+# with its 'III' twin under all three orders.
+_GENERATION_HEADS = ("Dumas {n}", "de la Vega {n}", "Ortega y Gasset {n}",
+                     "John Dumas {n}", "(Bob) Dumas {n}", "Dr. Dumas {n}",
+                     "Dumas {n} MD", "Dumas {n} Jr.", "Dumas {n} Sr.",
+                     "Dumas {n} Ms")
+_GENERATION_TAILS = (", Jr.", ", MA", ", PhD", ", Ed", ", Filho", ", John",
+                     ", Dr.", ", AD", ", Jr., PhD", "", " MD", " Jr.",
+                     " PhD")
+
+
+@pytest.mark.parametrize("order", [GIVEN_FIRST, FAMILY_FIRST,
+                                   FAMILY_FIRST_GIVEN_LAST])
+@pytest.mark.parametrize("numeral", ["VI", "VI.", "IX", "vi"])
+def test_a_shape_only_generation_reads_as_a_listed_one(
+        numeral: str, order: tuple[Role, Role, Role]) -> None:
+    parser = Parser(policy=Policy(name_order=order))
+    moved: list[str] = []
+    for head in _GENERATION_HEADS:
+        for tail in _GENERATION_TAILS:
+            text = head.format(n=numeral) + tail
+            listed = parser.parse(head.format(n="III") + tail).as_dict()
+            got = {k: v.replace(numeral, "III")
+                   for k, v in parser.parse(text).as_dict().items()}
+            if got != listed:
+                moved.append(text)
+    assert not moved
