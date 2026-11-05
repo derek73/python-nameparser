@@ -9686,6 +9686,21 @@ CASES: tuple[Case, ...] = (
                "(#792)"),
     Case("paren_period_escapes_nickname", "Andrew Perkins (Ret.)",
          {"given": "Andrew", "family": "Perkins", "suffix": "Ret."}),
+    # rules/S1's comma inside a set-apart clause, which post_rules trims
+    # off the word's text and span: these rows put that rewrite in front
+    # of test_state.py's ownership map, which no other row reaches
+    Case("paren_titles_with_a_comma_set_apart", "John (Dr, Prof) Smith",
+         {"title": "Dr Prof", "given": "John", "family": "Smith"},
+         classification="fix(#792)",
+         notes="the comma is no part of the title (rules/S1); 1.4.0 "
+               "and 2.8 read nickname 'Dr, Prof', 2.0.0 'Dr Prof'"),
+    Case("paren_credentials_with_a_comma_before_a_word_set_apart",
+         "John Smith (MD ,PhD)",
+         {"given": "John", "family": "Smith", "suffix": "MD, PhD"},
+         classification="fix(#792)",
+         notes="a comma opening a word is trimmed off its front, so the "
+               "word's span starts after it (rules/S1); 1.4.0 and 2.8 "
+               "read nickname 'MD ,PhD', 2.0.0 'MD PhD'"),
     # rules/S13 (#810): a member of the ambiguous class alone in the
     # brackets after the name, settled by its writing. Each row is
     # paired with a control its writing or its position does not settle.

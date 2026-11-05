@@ -247,6 +247,15 @@ def test_worktoken_carries_optional_role() -> None:
     assert t.role is Role.NICKNAME
 
 
+def _assert_comma_trim(original: str, old: WorkToken, new: WorkToken) -> None:
+    """The text or span change post_rules may make: rules/S1's comma
+    trim, the token's text with its edge commas off, its span the
+    sub-slice of the original that text still is."""
+    assert new.text == old.text.strip(",") != old.text, (old, new)
+    assert old.span.start <= new.span.start <= new.span.end <= old.span.end
+    assert original[new.span.start:new.span.end] == new.text, (old, new)
+
+
 def test_stage_field_ownership() -> None:
     # The ParseState docstring's ownership map, pinned mechanically: run
     # the whole case corpus through the fold stage by stage and assert
@@ -311,8 +320,9 @@ def test_stage_field_ownership() -> None:
     assert {s.__name__ for s in STAGES} == set(ownership)
     # Within the tokens themselves the contract is finer: texts and
     # spans are fixed at tokenize (the anti-#100 invariant -- tokens
-    # are never re-created), classify touches only tags, and the
-    # role-assigning stages touch only roles (group also tags, for the
+    # are never re-created) save post_rules' comma trim below,
+    # classify touches only tags, and the role-assigning stages touch
+    # only roles (group also tags, for the
     # ph-d "joined" marker and the caps shape's acronym marks
     # `_comma.decide` writes on a bound part (#564, #613), assign for P6's folded-middle mark after a
     # comma, and post_rules for the entry "joined" marker beside its
@@ -330,8 +340,10 @@ def test_stage_field_ownership() -> None:
         # vocab:folded-middle for the family view's prepend order, R2
         # and R3 write their unjoined marks, and R1's entry pass marks
         # a post-nominal "joined" when the writer wrote no comma
-        # before it (#436)
-        "post_rules": {"role", "tags"},
+        # before it (#436); and S1's set-apart pass trims a comma the
+        # clause kept off its word's text and span (#792), the one
+        # text or span change after tokenize, held below to a trim
+        "post_rules": {"role", "tags", "text", "span"},
     }
     for case in CASES:
         if case.locale is not None:
@@ -364,3 +376,5 @@ def test_stage_field_ownership() -> None:
                 assert token_changed <= allowed, (
                     f"{case.id}: {stage.__name__} changed token fields "
                     f"{token_changed - allowed} on {old.text!r}")
+                if token_changed & {"text", "span"}:
+                    _assert_comma_trim(state.original, old, new)
