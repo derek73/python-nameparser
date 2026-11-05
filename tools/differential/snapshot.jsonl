@@ -923,6 +923,12 @@
 {"name": "Duke Snider", "given": "Duke", "family": "Snider", "initials": "D. S."}
 {"name": "Duke of Edinburgh", "given": "Duke of Edinburgh", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "D. E."}
 {"name": "Duke of Wellington", "given": "Duke of Wellington", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "D. W."}
+{"name": "Dumas VI MD, Ed", "given": "Ed", "family": "Dumas", "suffix": "VI MD", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)", "SUFFIX_OR_NAME: name as family (position)"], "initials": "E. D.", "generation": "VI", "credentials": "MD"}
+{"name": "Dumas VI, Jr.", "family": "Dumas", "suffix": "VI, Jr.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "D.", "generation": "VI, Jr."}
+{"name": "Dumas VI, MA", "family": "Dumas", "suffix": "VI, MA", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "D.", "generation": "VI", "credentials": "MA"}
+{"name": "Dumas Vi, Ed", "given": "Dumas", "family": "Vi", "suffix": "Ed", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (declared)", "SUFFIX_OR_NAME: generation as suffix (shape)"], "initials": "D. V.", "capitalized_force": "Dumas Vi, ED"}
+{"name": "Dumas Vi, Jr.", "given": "Dumas", "family": "Vi", "suffix": "Jr.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: generation as suffix (shape)"], "initials": "D. V.", "generation": "Jr."}
+{"name": "Dumas X, Jr.", "given": "Dumas", "family": "X", "suffix": "Jr.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: generation as suffix (shape)"], "initials": "D. X.", "generation": "Jr."}
 {"name": "Dumas fils", "given": "Dumas", "family": "fils", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: generation as suffix (vocabulary)"], "initials": "D. f.", "capitalized_force": "Dumas Fils"}
 {"name": "Dumas, Alexandre Fils", "given": "Alexandre", "middle": "Fils", "family": "Dumas", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: generation as suffix (vocabulary)"], "initials": "A. F. D."}
 {"name": "Dumas, Alexandre fils", "given": "Alexandre", "family": "Dumas", "suffix": "fils", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as middle (declared)"], "initials": "A. D.", "generation": "fils"}
@@ -1450,6 +1456,7 @@
 {"name": "Iñaki", "order": "FAMILY_FIRST", "family": "Iñaki", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "I."}
 {"name": "J A D", "given": "J", "middle": "A", "family": "D", "initials": "J. A. D."}
 {"name": "J NEE SMITH", "given": "J", "maiden": "SMITH", "initials": "J.", "capitalized": "J (Smith)"}
+{"name": "J VI, Jr.", "given": "J", "family": "VI", "suffix": "Jr.", "initials": "J. V.", "capitalized": "J Vi, Jr.", "generation": "Jr."}
 {"name": "J née Smith", "given": "J", "maiden": "Smith", "initials": "J."}
 {"name": "J-E-P DUPONT", "given": "J-E-P", "family": "DUPONT", "initials": "J. D.", "capitalized": "J-e-P Dupont"}
 {"name": "J. A. D.", "given": "J.", "middle": "A.", "family": "D.", "initials": "J. A. D."}
@@ -2962,6 +2969,10 @@
 {"name": "Orléans, Ferdinand-Philippe d'", "given": "Ferdinand-Philippe", "family": "d' Orléans", "initials": "F. O."}
 {"name": "Orléans-Longueville, Jean Louis Charles d'", "given": "Jean", "middle": "Louis Charles", "family": "d' Orléans-Longueville", "initials": "J. L. C. O."}
 {"name": "Orsi, Achille d'", "given": "Achille", "family": "d' Orsi", "initials": "A. O."}
+{"name": "Ortega y Gasset III", "given": "Ortega", "middle": "y", "family": "Gasset", "suffix": "III", "initials": "O. y. G.", "generation": "III"}
+{"name": "Ortega y Gasset VI", "given": "Ortega", "middle": "y", "family": "Gasset", "suffix": "VI", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "O. y. G.", "generation": "VI"}
+{"name": "Ortega y Gasset VI MD", "given": "Ortega", "middle": "y", "family": "Gasset", "suffix": "VI MD", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "O. y. G.", "generation": "VI", "credentials": "MD"}
+{"name": "Ortega y Gasset Vi", "given": "Ortega y Gasset", "family": "Vi", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: generation as suffix (shape)"], "initials": "O. G. V."}
 {"name": "Ortega y Gasset, Dr.", "title": "Dr.", "given": "Ortega", "middle": "y", "family": "Gasset", "initials": "O. y. G."}
 {"name": "Ortega y Gasset, Ed", "given": "Ortega", "middle": "y", "family": "Gasset", "suffix": "Ed", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (declared)"], "initials": "O. y. G.", "capitalized_force": "Ortega y Gasset, ED"}
 {"name": "Orueta y Duarte, Ricardo de", "given": "Ricardo", "family": "de Orueta y Duarte", "initials": "R. O. D."}
