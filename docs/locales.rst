@@ -1,9 +1,10 @@
 Locale packs
 ============
 
-A locale pack is an opt-in bundle of policy — and, when a naming
-tradition needs it, vocabulary — for one specific pattern: East Slavic
-patronymics, Turkic patronymic markers, and so on. Packs apply only
+A locale pack is an opt-in bundle of policy, vocabulary and a choice
+of languages, each where a naming tradition needs it, for one specific
+pattern: East Slavic patronymics, Turkic patronymic markers, the
+titles and particles of one language, and so on. Packs apply only
 when you ask for one by name, and every pack makes the same promise:
 it never changes a name outside the shapes it declares. Read that
 precisely — a shape is a pattern, not a language, so a pack can act on
@@ -83,7 +84,9 @@ default: the ``zh`` and ``ja`` packs below turn it on for data whose
 language you can declare.
 
 A pack is for something different: a *structural* rule, like reordering
-a patronymic, that vocabulary alone can't express.
+a patronymic, that vocabulary alone can't express, or words that are
+right in one language and wrong as a default (`Packs that choose a
+language`_).
 
 Using a pack
 ------------
@@ -565,7 +568,9 @@ The command line accepts the same codes: ``python -m nameparser
 parsing, equivalent to ``parser_for(locales.get("ru"))``. ``--locale
 ja`` also attaches :func:`~nameparser.locales.ja_segmenter` where
 ``nameparser[ja]`` is installed, which ``parser_for`` never does on its
-own (the ``ja`` row below).
+own (the ``ja`` row below). A code no pack has but a vocabulary file
+does (``--locale ko``) chooses that language alone, and ``--strict``
+makes the choice strict (`Reading one language only`_).
 
 Shipped packs
 ~~~~~~~~~~~~~
@@ -685,9 +690,9 @@ and nothing else: the readings each turns on are the default
 vocabulary's own, written in its language's file (``ne.toml`` for
 Nepali) and off until a caller chooses the language. ``ja``, ``ru`` and
 ``tr_az`` are policy-only — they carry no vocabulary of their own.
-``es`` is a choice with a list and one policy field beside it: it turns
-``two_family_names`` on and carries the given names that switch leaves
-where they stand. ``cs`` and ``sk`` are a choice with that one policy
+``es`` and ``es_ar`` are each a choice with a list and one policy field
+beside it: each turns ``two_family_names`` on and carries the given
+names that switch leaves where they stand. ``cs`` and ``sk`` are a choice with that one policy
 field beside it and no list. ``zh`` is both halves at once: a surname list, plus the
 one policy field that turns segmentation on for the script it covers. See
 :ref:`config-containers` for how that split (language vocabulary vs. behavior)
@@ -1059,7 +1064,7 @@ by ``tests/v2/test_locales.py``:
    table in the pack's language file, list the file in ``PACK_RULES``
    in ``tools/vocab/build.py``, rebuild, and give the pack
    ``policy=rules_patch("<tag>")`` from ``nameparser._locale``, as
-   ``ru`` and ``tr_az`` do. ``nameparser/vocab/README.md``'s "Rules"
+   ``ru``, ``tr_az``, ``es``, ``cs`` and ``sk`` do. ``nameparser/vocab/README.md``'s "Rules"
    section lists the keys. A rule the table does not list is a change
    to the parser, not to a pack.
 #. Declare a module-level ``DEVIATES(name)`` predicate. Given a name

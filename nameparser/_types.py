@@ -597,8 +597,8 @@ class AmbiguityKind(StrEnum):
     certainty."""
 
     #: Reserved: the name's field order itself is uncertain (e.g. a
-    #: two-word name under a non-default name_order). Not yet emitted;
-    #: planned for 2.x. A lone name word is GIVEN_OR_FAMILY's, not
+    #: two-word name under a non-default name_order). Not yet
+    #: emitted. A lone name word is GIVEN_OR_FAMILY's, not
     #: this.
     ORDER = "order"
     #: Delimited content is an ambiguous suffix acronym, so it reads
@@ -762,8 +762,9 @@ class AmbiguityKind(StrEnum):
     #: A title that may also be a given name ("Dean", rules/H9) reports
     #: it too, where it opens the name outside a title phrase and no
     #: comma has marked the given name: "Dean Smith" gives given "Dean".
-    #: Only a word some phrase of ``Lexicon.title_phrases`` holds
-    #: reports, so "Grace Smith" does not.
+    #: Only a word some title phrase holds (a pair a title reading's
+    #: ``attaches`` property licenses) reports, so "Grace Smith" does
+    #: not.
     TITLE_OR_NAME = "title-or-name"
     #: An ambiguous particle is either a particle or a name in its own
     #: right -- "Van Johnson" is the actor's given name, a bare
@@ -798,7 +799,8 @@ class AmbiguityKind(StrEnum):
     #: an INITIAL and this reports the fork: "jose e maria santos" gives
     #: middle "e maria" and "JOSE E MARIA SANTOS" middle "E MARIA",
     #: both flagged. Only a letter the vocabulary marks both ways
-    #: reports -- ``Lexicon.conjunctions_ambiguous``, "e" and "i" by
+    #: reports -- a conjunction reading written ``may_be_initial``
+    #: (``Lexicon.words(kind="conjunction", may_be_initial=True)``), "e" and "i" by
     #: default -- because a letter outside it is not in doubt: "JUAN GARCIA Y
     #: LOPEZ" joins into family "GARCIA Y LOPEZ" and reports nothing,
     #: as does the Cyrillic "ХОСЕ И МАРИЯ САНТОС" -- whose join lands
@@ -1524,8 +1526,9 @@ class ParsedName:
         ``two_family_names``, ``de la Vega`` in ``Juan de la Vega del
         Valle``), :attr:`surname2` being the other; elsewhere the whole
         :attr:`family`. A middle name ``middle_as_family`` folds into
-        the family is in neither (``García López`` in ``Ana María García
-        López`` under ``middle_as_family``)."""
+        the family is in neither (``María García`` in ``Ana María García
+        López`` under ``middle_as_family``, whose surname1 is
+        ``López``)."""
         return self._text_for(Role.FAMILY, first_unit=self._first_unit())
 
     @property

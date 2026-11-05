@@ -184,7 +184,7 @@ threads without locking, safe to use as dict keys or cache keys, and
 equality means exactly what it says — two :class:`~nameparser.Parser`
 instances built from equal configuration are equal values, not merely
 two objects that happen to behave the same. Every piece of
-configuration in the 2.0 API is a frozen value — including the
+configuration is a frozen value — including the
 module-level default parser itself.
 
 Honest ambiguity

@@ -3870,8 +3870,10 @@ CASES: tuple[Case, ...] = (
          {"given": "John", "middle": "e", "family": "Smith"},
          notes="the mixed-case control at three words. The carve-out "
                "means the ROLE is the same as the row above; the "
-               "difference is the tag, and so the initials -- 'J. S.' "
-               "here against 'J. E. S.' for 'JOHN E SMITH'",
+               "difference is the tag, which no longer moves the "
+               "initials: since #461 a connective joining nothing "
+               "initials, so 'J. e. S.' here against 'J. E. S.' for "
+               "'JOHN E SMITH'",
          shape=1),
     Case("one_case_upper_y_joins_as_a_bare_capital", "JUAN GARCIA Y LOPEZ",
          {"given": "JUAN", "family": "GARCIA Y LOPEZ"},
@@ -3899,10 +3901,12 @@ CASES: tuple[Case, ...] = (
          notes="the boundary between the two exceptions: 'Y' is now "
                "conjunction-tagged rather than initial-tagged, and the "
                "three-word carve-out still refuses the join, so the "
-               "ROLE is unchanged. What moves is initials() -- "
-               "ParsedName.initials() gives 'J. G.' where 2.3 gave "
+               "ROLE is unchanged. What moved was initials() -- "
+               "ParsedName.initials() gave 'J. G.' where 2.3 gave "
                "'J. Y. G.', a conjunction contributing none "
-               "(rules/R3) -- and the v1 facade's "
+               "(rules/R3), until #461 gave a connective joining "
+               "nothing its initial back, 'J. Y. G.' again -- and the "
+               "v1 facade's "
                "HumanName.initials() gave 'J. Y. G.' until #528 made "
                "it read the same tags on 2026-09-13. That is the "
                "split the 'john e smith' row records, closed on the "
@@ -6865,8 +6869,8 @@ CASES: tuple[Case, ...] = (
          {"title": "Prof.", "given": "John", "family": "Doe",
           "suffix": "MA"},
          classification="fix(#531)",
-         notes="MEASURED, and a SECOND field moves: today this is "
-               "middle 'Prof. MA'. Once 'MA' leaves `walkable` the "
+         notes="MEASURED, and a SECOND field moves: before #531 this "
+               "was middle 'Prof. MA'. Once 'MA' leaves `walkable` the "
                "H5 trailing-title chain reaches 'Prof.' and takes "
                "it. That is H5's stated transparency working, and it "
                "lands this row on the same answer as its neighbour "
@@ -8473,7 +8477,7 @@ CASES: tuple[Case, ...] = (
          classification="fix(#531)",
          ambiguities=("particle-or-given",),
          notes="A FAMILY MOVE, found by measurement and accepted by Derek "
-               "2026-09-18: today this is middle 'van MA', silent. Once "
+               "2026-09-18: before #531 this was middle 'van MA', silent. Once "
                "'MA' becomes a suffix, P6's own walk looks past that "
                "post-nominal, finds 'van' as a trailing all-particle run "
                "and attaches it. That is exactly 'Berg, Jan van Jr.'s "
@@ -8493,8 +8497,8 @@ CASES: tuple[Case, ...] = (
                "reporting in the kind naming the reading it OVERRODE, "
                "which is why its report is `suffix-or-name` where 'Doe, "
                "John van MA' gives `particle-or-given`; since #785 it is "
-               "the only one, the capitals settling 'MA' (rules/S6). Today "
-               "middle 'MA', family 'vd Doe', one report ('Berg, Jan vd' "
+               "the only one, the capitals settling 'MA' (rules/S6). Before "
+               "#531 middle 'MA', family 'vd Doe', one report ('Berg, Jan vd' "
                "is that reading with nothing in front of the particle)"),
     # ---- policy rows. Through 2.x every one was _CORE_ONLY, a row the
     # facade runner could not express ---------------------------------
@@ -9063,8 +9067,8 @@ CASES: tuple[Case, ...] = (
                "reads as its titles and suffixes. Unmoved by #603, which "
                "extends that reading to a part a credential opens "
                "whatever stands behind it ('Eric H. Holder, Jr. Chief "
-               "Justice', 'justice' being no title word, reads suffix "
-               "'Jr. Justice', title 'Chief')"),
+               "Witness', 'witness' being no title word, reads suffix "
+               "'Jr. Witness', title 'Chief')"),
     Case("family_comma_lone_suffix_piece", "Andrews, M.D.",
          {"family": "Andrews", "suffix": "M.D."},
          classification="fix(comma-family)",
@@ -9772,17 +9776,19 @@ CASES: tuple[Case, ...] = (
          classification="fix(#810)",
          ambiguities=("suffix-or-nickname",),
          notes="the case is asked once, of the name's own words without "
-               "either clause, so 'MA' stays the nickname where its twin "
-               "'JOHN SMITH (mba) (MA)' makes the name mixed "
-               "(rules/S13's Accepted)"),
+               "either clause, so 'MA' stays the nickname, as it does "
+               "beside the unambiguous credential in its twin 'JOHN "
+               "SMITH (dds) (MA)', suffix 'dds' (rules/S13's Accepted); "
+               "through 2.8 the twin read suffix 'dds MA' (#792)"),
     Case("bracket_member_settled_by_another_in_a_lower_case_name",
          "john smith (M.A) (MA)",
          {"given": "john", "family": "smith", "suffix": "M.A",
           "nickname": "MA"},
          classification="fix(#810)",
          ambiguities=("suffix-or-nickname",),
-         notes="as the row above; the twin 'john smith (MBA) (MA)' "
-               "reads suffix 'MBA MA'"),
+         notes="as the row above; the twin 'john smith (DDS) (MA)' "
+               "reads suffix 'DDS', nickname 'MA', where 2.8 read "
+               "suffix 'DDS MA' (#792)"),
     Case("bracket_member_past_the_second_comma", "Smith, John, Jr. (M.A)",
          {"given": "John", "family": "Smith", "suffix": "Jr. M.A"},
          classification="fix(#810)",
@@ -9823,7 +9829,8 @@ CASES: tuple[Case, ...] = (
          classification="fix(#810)",
          ambiguities=("suffix-or-nickname",),
          notes="no name word, so no clause after the name; the twin "
-               "'Dr. (MBA)' reads given 'Dr.'"),
+               "'Dr. (DDS)' reads title 'Dr.', suffix 'DDS', where 2.8 "
+               "read given 'Dr.' (#792)"),
     Case("bracket_member_in_quotes", 'John Smith "MA"',
          {"given": "John", "family": "Smith", "suffix": "MA"},
          notes="every default nickname pair escapes alike (rules/S1)"),
@@ -9831,8 +9838,9 @@ CASES: tuple[Case, ...] = (
          {"family": "Jack", "suffix": "MA"},
          classification="fix(#810)",
          notes="the word stays N3's family name, read beside the clause "
-               "as a nickname, where its twin 'Jack (PhD)' reads given "
-               "'Jack' (rules/S13's Accepted); 1.4.0 read last 'MA', "
+               "as a nickname, as its twin 'Jack (PhD)' reads family "
+               "'Jack' (rules/S13's Accepted), where 2.8 read given "
+               "'Jack' (#792); 1.4.0 read last 'MA', "
                "2.0.0 through 2.6.0 family 'Jack', nickname 'MA'"),
     Case("bracket_member_with_a_period_after_a_lone_name_word",
          "Jack (M.A)",
@@ -15263,8 +15271,9 @@ CASES: tuple[Case, ...] = (
           "nickname": "マイケル ジャクソン"},
          classification="fix(#272)",
          notes="delimited content tokenizes under the same separator "
-               "rules: the dot renders back as a space in the nickname "
-               "join -- a decision, not an accident"),
+               "rules: the dot reads back as a space in the nickname "
+               "field's join, str() keeping it as written (rules/R6) "
+               "-- a decision, not an accident"),
     Case("zh_interpunct_transcription_source_order", "威廉·莎士比亚",
          {"given": "威廉", "family": "莎士比亚"},
          classification="fix(#298)",

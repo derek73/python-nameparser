@@ -368,11 +368,14 @@ class ParseState:
     assign -> the remaining token roles AND `order`, the effective
     order it read them under, AND the folded-middle and attached tags
     on the particles P6's attachment joins after a family comma (#613);
-    post_rules -> roles again (a delimited member S13 settles becomes
-    the suffix, #810), the folded-middle tag on what O3 folds and the
+    post_rules -> roles again (the TITLE and SUFFIX roles of a clause
+    S1 sets apart, each word's comma trimmed off its text and span,
+    #792; a delimited member S13 settles becomes the suffix, #810),
+    the folded-middle tag on what O3 folds and the
     no-comma attachment joins, with the attached tag on the latter,
     the second-surname tag on the words of the family's second unit
-    where O6 reads two (rules/R10), and the ambiguity P6's no-comma
+    where O6 reads two (rules/R10), the first-surname tag on the
+    words of its first unit (rules/R11), and the ambiguity P6's no-comma
     attachment
     reports (#467) and SUFFIX_OR_NICKNAME on a member it leaves a
     nickname.

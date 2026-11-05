@@ -4,11 +4,13 @@ Consumes: pieces + piece_tags (grouped), segments, structure, tokens,
 one_case, and tail_reads -- rules/S2's trailing run as group read it
 once, after P3's joins and before the particle chain (#614), which the
 main segment's placement takes rather than peeling again, save where
-group's joins left no name word in front of it.
+group's joins left no name word in front of it; and interpunct_offsets,
+whose 间隔号 keeps a transcription in its declared order (rules/W4).
 Produces: tokens with roles set on every main-stream token, and the
 folded-middle and attached tags on the particles P6's attachment joins
 to the family after a family comma (#613; the attached tag, 3.0's 4c,
-tells rules/R9 the attachment from O3's fold).
+tells rules/R9 the attachment from O3's fold); and order, the order
+the positional read used, None where none happened (ParseState.order).
 Reads: Policy.name_order (#270), is_suffix_lenient on the trailing
 piece of a two-part comma name, and Policy.script_orders (#271, which
 overrides it when every name piece is written wholly in one script, or
@@ -16,7 +18,9 @@ in the Han/Hiragana/Katakana repertoire the #272 kana license shares
 across pieces); token/piece tags; Lexicon only through tags already
 applied by classify (plus the leading-title period rule), and
 Lexicon.given_name_titles, which an ambiguity's alternative asks for
-rules/P5's given-name-title licence.
+rules/P5's given-name-title licence; and Lexicon.title_phrases, titles
+and titles_ambiguous through _vocab.in_a_title_phrase, for rules/H9's
+TITLE_OR_NAME report on a contested word opening the name.
 
 Implements rules H2, H4, H5, H6, H7, H8, N3, O4, O5, S10, W4, and P6 after a family comma,
 of docs/design/rules/,

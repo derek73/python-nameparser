@@ -1123,7 +1123,8 @@ rarely surnames tell the two shapes apart, so the switch leaves a word
 listed in the lexicon's ``given_names`` where it stands, under any
 ``name_order``. The field is empty by default, so you supply the list
 for your data, or choose ``locales.ES``, which turns the switch on and
-carries 1,000 Spanish given names; an entry written without accents
+carries 1,000 Spanish given names (``locales.ES_AR``, for Argentine
+names, carries 5,000; see :doc:`locales`); an entry written without accents
 matches the word with them:
 
 .. doctest::
@@ -1800,7 +1801,10 @@ at the point of output, not baked into the parse. Three methods on
 signatures:
 
 * :meth:`~nameparser.ParsedName.render` fills a format spec from the
-  seven role fields.
+  seven role fields and the views derived from them (``family_base``,
+  ``generation``, ``credentials`` and the rest). With no spec, as
+  ``str()`` calls it, it lays the name out in the order it was read in
+  (since 3.0).
 * :meth:`~nameparser.ParsedName.initials` is the same idea narrowed to
   first letters, with its own ``delimiter``/``separator`` arguments.
 * :meth:`~nameparser.ParsedName.capitalized` returns a new, case-fixed

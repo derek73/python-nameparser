@@ -59,7 +59,7 @@ Results
    — within one merged piece the tag is role-blind and every view
    joins the pair with a space, so it renders "Ph. D." as one
    piece in whatever role it lands — ``Ph. D., Jr.`` gives
-   ``last_list`` ``['Ph. D.']`` — and since #436 it also spans the pieces of one
+   family ``'Ph. D.'`` — and since #436 it also spans the pieces of one
    SUFFIX entry, the run of post-nominals the writer wrote without a
    comma — "MD PhD" — which is the half the suffix view alone reads
    and joins with a space instead of ", "). Every other tag is namespaced

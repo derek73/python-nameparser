@@ -157,7 +157,7 @@ def ja_segmenter(*, gbdt: bool = False) -> Segmenter:
     except ImportError as exc:
         raise ImportError(
             "the Japanese segmenter needs namedivider-python -- "
-            "install it with: pip install nameparser[ja]"
+            "install it with: pip install 'nameparser[ja]'"
         ) from exc
     divider = (namedivider.GBDTNameDivider() if gbdt
                else namedivider.BasicNameDivider())

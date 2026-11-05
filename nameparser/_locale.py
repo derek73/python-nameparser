@@ -39,8 +39,9 @@ _TAG = re.compile(r"[A-Za-z]{2,8}(-[A-Za-z0-9]{1,8})*")
 @dataclass(frozen=True, slots=True)
 class Locale:
     """A named, shareable bundle of vocabulary and behavior for a
-    naming tradition: a lexicon fragment plus a policy patch, applied
-    together by :func:`nameparser.parser_for`. The packs shipped with
+    naming tradition: a choice of languages, a lexicon fragment and a
+    policy patch, applied together by :func:`nameparser.parser_for`.
+    The packs shipped with
     nameparser live in :mod:`nameparser.locales`; building your own
     needs no registration -- construct one and pass it to
     ``parser_for``. See the :doc:`locale packs guide </locales>` for

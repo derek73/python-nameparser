@@ -3,7 +3,8 @@
 Consumes: tokens, segments, structure, interpunct_offsets, segmenter,
 one_case where segment recorded it, and comma_offsets, for the
 own-words span `_one_case` asks the fact over where segment did not
-(#613; the answer is not recorded, classify recording its own).
+(#613; the answer is not recorded, classify recording its own), and
+original, for the peel's ASCII bail.
 Produces: tokens, by two independent splits into sub-slices -- a
 listed honorific peeled off the END of the name's last
 non-post-nominal token, in whichever of the name's runs that falls

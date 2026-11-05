@@ -23,7 +23,7 @@ packs are opt-in. Requires Python 3.11+.
     >>> name.render("{family}, {given}")
     'de la Vega, Juan'
 
-Coming from 1.x? :doc:`migrate`.
+Coming from 1.x, or from 2.x code using ``HumanName``? :doc:`migrate`.
 
 .. toctree::
    :maxdepth: 2

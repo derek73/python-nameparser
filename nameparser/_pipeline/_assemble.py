@@ -4,11 +4,14 @@ Consumes: tokens (all roles set, and their tags, which name each
 token's reading), dropped, order and structure (for ParsedName.order),
 ambiguities (by index;
 one carrying ``field_tail`` is worded from its word's final role,
-#626), and segments, for the part a withdrawn connective report's
-letter ends (rules/P8, #721).
+#626), segments, for the part a withdrawn connective report's
+letter ends (rules/P8, #721), and comma_offsets, for the comma part
+rules/R9's Turkic arm keeps a marker and its father's name in.
 Produces: a validated ParsedName, each token carrying the reading the
 parse took (`Token.reading`), a word of the family's second unit
-marked `Reading.second_surname` where O6's tag says so (rules/R10) --
+marked `Reading.second_surname` where O6's tag says so (rules/R10)
+and `Reading.first_surname` where its first-surname tag does
+(rules/R11) --
 the constructor re-checks every
 invariant (span order/bounds, ambiguity subset), so a pipeline bug
 that would produce an invalid result dies HERE, not in a renderer
@@ -19,7 +22,9 @@ no positional read happened; Policy.patronymic_rules, for the words
 an ending rule reads as a patronymic (rules/R9); and Lexicon.surnames, suffix_acronyms and
 suffix_acronyms_ambiguous, for the source of a token's reading where
 no tag gives it; and the Lexicon's readings by word (Lexicon._files),
-for Reading.languages, the files whose reading is on in it.
+for Reading.languages, the files whose reading is on in it, with
+every vocabulary field (`_lexicon._VOCAB_FIELDS`, `_listed_whole`)
+for whether the lexicon lists a word whole rather than by its parts.
 
 Structural tokens (dropped maiden markers) are omitted, like delimiter
 characters. A main-stream token that somehow reaches here with no role

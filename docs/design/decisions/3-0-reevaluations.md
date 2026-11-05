@@ -24,7 +24,7 @@ Not standing: the harness bullet, that the snapshot and `compare.py` cannot show
 
 Elsewhere: the explicit-comma line narrowed to a description for CJK script — decisions/cjk-comma-demotion's 2026-09-01 #469, SCOPES the FAMILY_COMMA bullet entry; the 1.4 gate the harness-baseline bullet expected 3.0 to dissolve, already retired, `compare.py --baseline 1.4.0` answering the question when asked — decisions/differential-ledger's 2026-10-13 #664 entries; the vocabulary model packs are to narrow, a strict pack dropping other languages' readings — decisions/vocabulary-model's 2026-10-15/16 entry; what the shim's filter kept and dropped until #357 — decisions/R4's 2026-10-02 #541 and 2026-10-02 #582 entries.
 
-Open: #753 (phase 3, language packs; the three pack bullets carried out by its 3b, 2026-10-29, the packs themselves to come).
+Open: #753 (phase 3, language packs; the three pack bullets carried out by its 3b, 2026-10-29, and 3.0's packs shipped after it, from `locales.NE` to `locales.ES_AR`; a pack past 3.0, as `is` is in #1074, is the issue's).
 
 ## Log
 

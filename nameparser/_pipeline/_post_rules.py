@@ -7,7 +7,10 @@ rotation gate. Also comma_offsets and dropped, which R1's entry pass
 below reads to find the separators the writer typed (#436/#437), and
 extracted, one_case and original, which S1's set-apart pass reads,
 settling S13's members with its own (#810, #792), original also read
-by R1's entry pass for a comma a set-apart clause kept.
+by R1's entry pass for a comma a set-apart clause kept; and order,
+the order assign read the name under, which H1, P1's fold, P6's
+attachment, P10, O1, O2, O6 and O7 key on rather than
+Policy.name_order (#395).
 Produces: tokens with roles adjusted by the post rules (among them the
 TITLE and SUFFIX roles of a set-apart clause's words, rules/S1, each
 word's comma trimmed off its text and span, and the

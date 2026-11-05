@@ -1,6 +1,8 @@
 """Stage: classify.
 
-Consumes: tokens, comma_offsets (with token roles, the two halves of
+Consumes: tokens, segments (the part a title phrase or a split
+credential's pair is read within), extracted (whether a delimited
+clause holds a word with a comma on it, rules/S1), comma_offsets (with token roles, the two halves of
 the structural-boundary test the marker pass applies -- see
 _vocab.tag_marker_runs), and one_case where an earlier stage recorded
 it -- segment writes it lazily where C2's flag on a part past the
@@ -12,10 +14,13 @@ one_case -- whether the name's own words are written in one case,
 recorded for the later stages that read it (#289/#516) and left alone
 where an earlier stage already asked.
 Reads: every Lexicon vocabulary field except surnames and
-honorific_tails, which script_segment consumes upstream, and the kinds
+honorific_tails, which script_segment consumes upstream, and
+given_names, which only post_rules reads (rules/O6); and the kinds
 of its suffix words and particles (Lexicon's generation_words,
 credential_words, honorific_words and patronymic_particles, internal
 sets, 3.0) and the
+suffix words whose Title case leans to the name
+(title_case_name_words, rules/S6, #1039) and the
 titles written short (title_abbreviations, #999) and the names a
 community gives every member (shared_names) and the given names
 written behind a particle (particle_given_names, #704) and the
