@@ -171,13 +171,11 @@ def test_every_vocabulary_constant_is_frozen() -> None:
     exempt_seen = set()
     for path in sorted(config_dir.rglob("*.py")):
         relative = path.relative_to(config_dir).with_suffix("")
-        # _compiled holds the sets Lexicon.default() reads, private since
-        # their re-exporting modules went in 3.0 (#1007) but still
-        # module constants a caller can reach; the other private modules
-        # hold none
-        if (any(part.startswith("_") for part in relative.parts)
-                and relative.parts not in {("_compiled",),
-                                           ("_ko_surnames",)}):
+        # every module but the package's own: all of them are private
+        # since 3.0 (#1007, #1077), so a privacy filter would skip a new
+        # data module by default; _index, _rules and _invariants hold no
+        # upper-case set or mapping, and pass through unchecked
+        if relative.parts[-1] == "__init__":
             continue
         stem = ".".join(relative.parts)
         module = importlib.import_module(f"nameparser.config.{stem}")
