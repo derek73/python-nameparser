@@ -758,7 +758,8 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # under the two family-first orders; 502 -> 508 on 2026-11-05,
     # #1080's two boundary rows under the three orders; 508 -> 514 the
     # same day, #1093's two boundary rows under the three orders; 514 ->
-    # 517 the same day, its test review's joined-connective row
+    # 517 the same day, its test review's joined-connective row under the
+    # three orders
     assert (checked, skipped) == (517, 328), (checked, skipped)
 
 

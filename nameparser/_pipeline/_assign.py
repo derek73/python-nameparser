@@ -785,20 +785,23 @@ def _names_before(fam_pieces: Sequence[Sequence[int]],
     # wherever it stands in the part" -- the count of the family part's
     # numeral site; a chain or join holding a name word is one piece and
     # counts (decisions/P9 (#1080), decisions/S10 (#1093))
-    return sum(1 for piece in fam_pieces[lead:k]
-               if not all(_is_linking_word(tokens[t].tags)
-                          for t in piece))
+    return sum(1 for j in range(lead, k)
+               if not all(_is_linking_word(tokens[t].tags, j == k - 1)
+                          for t in fam_pieces[j]))
 
 
-def _is_linking_word(tags: Set[str]) -> bool:
+def _is_linking_word(tags: Set[str], beside: bool) -> bool:
     """Whether a word of the family part is a linking word, which the
-    numeral's count leaves out: a particle, or a connective that is not
-    also suffix vocabulary."""
+    numeral's count leaves out: a particle, or a connective, save one
+    that is also suffix vocabulary standing `beside` the numeral."""
     # rules/S10: "A connective that is also suffix vocabulary, as the
-    # generational 'i' is, stays in the count" -- the exception's half
-    # of this predicate (decisions/S10 (#1093))
-    return "particle" in tags or ("conjunction" in tags
-                                  and "vocab:suffix" not in tags)
+    # generational 'i' is, stays in the count where it stands in front
+    # of the numeral" -- the exception's half of this predicate
+    # (decisions/S10 (#1093))
+    if "particle" in tags:
+        return True
+    return "conjunction" in tags and not (beside
+                                          and "vocab:suffix" in tags)
 
 
 def _family_part_numeral(word: WorkToken, preceding: str, names: int,
@@ -809,9 +812,9 @@ def _family_part_numeral(word: WorkToken, preceding: str, names: int,
     ending it (rules/S10), or None where the numeral's
     predicate reads no numeral there (an initial in front, a letter with
     its period): the suffix where it reads as the generation, a
-    one-letter numeral needing two name words in front of it, and the
-    family name where that count fails or its Title case leans to the
-    name."""
+    one-letter numeral needing two name words in front of it, save one
+    its written case settles (T4), and the family name where that count
+    fails or its Title case leans to the name."""
     if reads_as_generation(word.text, word.tags, preceding, one_case):
         if (names < 2 and len(word.text) == 1
                 and not numeral_settled_by_case(word.text, one_case)):
@@ -1956,7 +1959,7 @@ def assign(state: ParseState) -> ParseState:
             # rules/C1: "a numeral ending the family part is read as the
             # comma-less name reads it" -- the numeral's predicate, a
             # one-letter numeral with two name words in front of it
-            # (rules/S10), so 'John Smith V, M.J.' keeps suffix 'V' as
+            # (rules/S10; name words only, `_names_before`), so 'John Smith V, M.J.' keeps suffix 'V' as
             # 'John Smith III, M.J.' keeps 'III' (#774). `_ROMAN`
             # first, C-level, so a family word pays no frame
             elif (k > lead and len(piece) == 1

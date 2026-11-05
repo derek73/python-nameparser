@@ -92,7 +92,7 @@
   "john smith v, PhD"         →  ambiguities=()
   "john j v, PhD"             →  family="j"
   ```
-- **Before a family comma** ("John Smith V, M.J."): a numeral ending the family part is read by this rule, its words to spare counted in that part (C1), name words only: a particle or a connective is no name word there, wherever it stands in the part. The comma has named the part a surname, where such a word links the names around it, a lone letter after one being a name written as an initial, so a particle run reads as part of the word it attaches to, as C3 counts one, and a chain or join holding a name word counts as that word. A connective that is also suffix vocabulary, as the generational 'i' is, stays in the count, being the generation it spells beside a numeral (P3), and a numeral of two or more letters asks no count, being no initial. Only a generation its shape alone reads reports there; a numeral the comma leaves in the family name is silent, the comma having named the family.
+- **Before a family comma** ("John Smith V, M.J."): a numeral ending the family part is read by this rule, its words to spare counted in that part (C1), name words only: a particle or a connective is no name word there, wherever it stands in the part. The comma has named the part a surname, where such a word links the names around it, a lone letter after one being a name written as an initial, so a particle run reads as part of the word it attaches to, as C3 counts one, and a chain or join holding a name word counts as that word. A connective that is also suffix vocabulary, as the generational 'i' is, stays in the count where it stands in front of the numeral, being the generation it spells there (P3), and a numeral of two or more letters asks no count, being no initial. Only a generation its shape alone reads reports there; a numeral the comma leaves in the family name is silent, the comma having named the family.
   ```
   "Smith VI, John"            →  suffix="VI"
   "Smith VI, John"            →  ambiguities=("suffix-or-name",)
@@ -104,6 +104,7 @@
   "Smith van der Berg V, John"  →  suffix="V"
   "Smith y V, John"           →  family="Smith y V"
   "y Smith V, John"           →  family="y Smith V"
+  "i Smith V, John"           →  family="i Smith V"
   "Smith y VI, John"          →  suffix="VI"  · boundary
   "Smith i V, John"           →  suffix="i V"  · boundary
   ```

@@ -2674,10 +2674,19 @@ CASES: tuple[Case, ...] = (
          {"given": "John", "family": "y Smith V"},
          classification="parity",
          notes="#1093: a connective is no name word wherever it stands "
-               "in the part, as a particle opening it is not ('de "
+               "in the part, as a particle opening it is none ('de "
                "Mesnil V, Jean'), so one name word stands in front of "
                "the numeral. 2.7.0 through 2.8.2 read family 'y Smith', "
-               "suffix 'V'; 1.4.0 read as here"),
+               "suffix 'V'; 1.4.0 through 2.6.0 read as here"),
+    Case("a_numeral_behind_a_generational_connective_opening_the_part_is_family",
+         "i Smith V, John",
+         {"given": "John", "family": "i Smith V"},
+         classification="parity",
+         notes="#1093's comment review: the connective that is also "
+               "suffix vocabulary stays in the count only in front of "
+               "the numeral (S10), so opening the part it is no name "
+               "word, as 'y' is not. 2.7.0 through 2.8.2 read family 'i "
+               "Smith', suffix 'V'; 1.4.0 through 2.6.0 read as here"),
     Case("a_numeral_behind_a_connective_before_initials_is_family",
          "Smith y V, J.",
          {"given": "J.", "family": "Smith y V"},
@@ -2716,10 +2725,9 @@ CASES: tuple[Case, ...] = (
          classification="parity",
          notes="#1093 left this as it reads: P3's join takes the 'VI' "
                "its own count left out as the generation, so the "
-               "numeral never reaches S10's count. The issue wants "
-               "suffix 'VI' here once P3's count asks S10's predicate; "
-               "this row is there to make that move a decision. 1.4.0 "
-               "through 2.8.2 read as here"),
+               "numeral never reaches S10's count. Left as it reads "
+               "(decisions/S10's #1093 entry). 1.4.0 through 2.8.2 read "
+               "as here"),
     Case("a_two_letter_numeral_behind_a_connective_stays_the_suffix",
          "Smith y VI, John",
          {"given": "John", "family": "Smith y", "suffix": "VI"},
@@ -2732,12 +2740,12 @@ CASES: tuple[Case, ...] = (
          "Smith i V, John",
          {"given": "John", "family": "Smith", "suffix": "i V"},
          ambiguities=("suffix-or-name",), classification="fix(#774)",
-         notes="#1093's boundary: a connective that is also "
-               "generational vocabulary links nothing beside a numeral, "
-               "being the generation it spells (P3), so it is a word of "
-               "the suffix rather than a linking word the count leaves "
-               "out. 1.4.0 through 2.6.0 read family 'Smith V', suffix "
-               "'i'"),
+         notes="#1093's boundary: a connective that is also suffix "
+               "vocabulary stays in the count in front of the numeral "
+               "(S10), so two words stand in front and the numeral reads "
+               "as the generation, the 'i' joining it in the suffix as "
+               "the generation it spells (P3). 1.4.0 through 2.6.0 read "
+               "family 'Smith V', suffix 'i'"),
     Case("a_comma_before_no_name_word_keeps_the_positional_read",
          "Berg de MA, Prof.",
          {"title": "Prof.", "given": "Berg", "family": "de",
