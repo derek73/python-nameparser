@@ -22,10 +22,11 @@
 
 **Except:**
 
-- **A word in the leading titles that is both a title and a particle puts the name's leading position on itself**, so the particle behind it is inside a name ('Freiherr von Berg'); of several such words the last does, so no particle chains inside the titles (#624). The titles are those written, before H3 gives the last one back to the name, so each such word reads as a title unless H3 gives it back.
+- **A word in the leading titles that is both a title and a particle puts the name's leading position on itself**, so the particle behind it is inside a name ('Freiherr von Berg'); of several such words the last does, so no particle chains inside the titles (#624). The titles are those written, before H3 gives the last one back to the name, so each such word reads as a title unless H3 gives it back. Under a family-first order the chain that forms is cut where P1's fold cuts a run (#828).
   ```
   "Freiherr St John Smith"    →  title="Freiherr St"
   "Freiherr St John Smith"    →  given="John"
+  "St de Mesnil Jean"  family-first  →  family="de Mesnil"
   ```
 
 ---

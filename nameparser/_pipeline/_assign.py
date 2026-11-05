@@ -59,7 +59,9 @@ and segments 2+ are read as after a family comma.
 Emits PARTICLE_OR_GIVEN when the leading name piece is a lone
 particles_ambiguous token with more pieces following ("Van Johnson",
 and since #367 "Dr. Van Johnson" too, a title no longer displacing the
-particle out of that position) -- whatever role name_order assigns --
+particle out of that position) -- whatever role name_order assigns,
+save a lowercase one in a mixed-case name under a family-first order,
+which P1's fold takes (rules/P11, #670) --
 and, since #613, at P6's attachment after a family comma where the run
 holds an ambiguous particle ("Beethoven, Ludwig van").
 Emits SUFFIX_OR_NAME at these sites: the trailing roman numeral, taken
@@ -106,6 +108,7 @@ from nameparser._pipeline._pieces import (
     split_credential_report,
     anchor_in_reach, credential_at_the_given_slot, given_slot_anchors,
     _NOT_A_RUN_START, has_name_content, is_lone_never_given_particle,
+    is_lowercase_ambiguous_particle,
     Peel, TailRead, is_prefix_piece, is_suffix_piece, is_title_piece,
     leading_titles,
     particle_tail, listed_lean, peel_walk, settled_by_case,
@@ -745,8 +748,15 @@ def _assign_main(seg_idx: int, state: ParseState,
     # leading ambiguous particle read as a name (#121 surfaced)
     if name_pieces:
         head = pieces[name_pieces[0]]
+        # rules/P11: "an ambiguous particle written in lower case, in a
+        # name of mixed case, opens the name as a never-given one does"
+        # -- and "nothing is reported" there, the writing having settled
+        # the fork (decisions/P11, #670)
         if (len(head) == 1 and len(name_pieces) > 1
-                and "vocab:particle-ambiguous" in tokens[head[0]].tags):
+                and "vocab:particle-ambiguous" in tokens[head[0]].tags
+                and not (order is not None and order[0] is Role.FAMILY
+                         and is_lowercase_ambiguous_particle(
+                             head, tokens, state.one_case))):
             # the field is assemble's to word from the final role
             # (`PendingAmbiguity.field_tail`, #626), never assumed given:
             # `order` above is _effective_order's answer, not

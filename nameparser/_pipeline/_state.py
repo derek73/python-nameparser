@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import bisect
 import dataclasses
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from enum import Enum, auto
 from types import MappingProxyType
@@ -120,6 +120,28 @@ HONORIFIC_WORD_TAG = "vocab:honorific-word"
 #: assemble for `Token.reading` and by assign for the reading a report
 #: names, and dropped from the published token like the kind tags above.
 PATRONYMIC_TAG = "vocab:patronymic"
+
+#: On each word of a particle chain opening a family-first name past
+#: the reach of rules/P1's fold (#828), written by post_rules whether or
+#: not the fold cuts the chain there, so assemble can tell where a
+#: report's other reading would land; dropped from the published token
+#: like the kind tags above.
+PAST_REACH_TAG = "chain:past-reach"
+
+
+def reported_suffix_fork(ambiguities: Sequence[PendingAmbiguity],
+                         indices: Iterable[int],
+                         skip: PendingAmbiguity | None = None) -> bool:
+    """rules/P1's question about a chain opening a family-first name
+    that the fold would cut (#828): whether a suffix-or-name report (the
+    trailing read's, or group's on a word the chain took) names a word
+    of `indices`, the words past the fold's reach. Such a word was read
+    against the whole chain, so the chain stands. Asked by the fold in post_rules and, with `skip`
+    the report whose other reading it names, by assemble."""
+    past = set(indices)
+    return any(a is not skip and a.kind is AmbiguityKind.SUFFIX_OR_NAME
+               and not past.isdisjoint(a.indices) for a in ambiguities)
+
 
 #: Beside FOLDED_TAG on the particles rules/P6 attaches to the family
 #: written before them, at either of its sites, so rules/R9 can tell

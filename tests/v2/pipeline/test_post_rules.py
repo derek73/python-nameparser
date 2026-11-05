@@ -384,15 +384,109 @@ def test_leading_piece_scan_skips_pieces_that_hold_no_name(
     ("de", "de", ""),
     # the leading piece is not a particle
     ("Juan de Mesnil", "Juan", "de Mesnil"),
-    # 'van' is an ambiguous particle -- out of the rule's scope in EVERY
-    # order, so a family-first order still splits at the particle (#360)
-    ("van Gogh", "van", "Gogh"),
+    # a capitalized ambiguous particle is out of the rule's scope in
+    # EVERY order, so a family-first order still splits at the particle
+    # (#360); a lowercase one in a mixed-case name folds (#670, below)
+    ("Van Gogh", "Van", "Gogh"),
 ])
 def test_family_first_leading_particle_cases_that_do_not_fold(
         policy: Policy, text: str, family: str, given: str) -> None:
     out = _parsed(text, policy)
     assert _by_role(out, Role.FAMILY) == family
     assert _by_role(out, Role.GIVEN) == given
+
+
+@pytest.mark.parametrize("policy", _FAMILY_FIRST)
+@pytest.mark.parametrize("text,family,given", [
+    # rules/P1's fold under a family-first order also takes an
+    # ambiguous particle the writing settles: lower case in a name of
+    # mixed case (#670)
+    ("van den Berg Cornelia", "van den Berg", "Cornelia"),
+    ("van Gogh Vincent", "van Gogh", "Vincent"),
+    ("van Gogh", "van Gogh", ""),
+    ("le Van Thanh", "le Van Thanh", ""),
+    # capitalized, or in a name of one case, the particle keeps its
+    # positional reading: the Vietnamese canaries
+    ("Le Van Thanh", "Le", "Van Thanh"),
+    ("Do Van Thanh", "Do", "Van Thanh"),
+    ("VAN GOGH VINCENT", "VAN", None),
+    ("van", "van", ""),
+    # and a particle chain a title-particle lets P2 build is cut where
+    # the fold cuts a lone particle's run (#828)
+    ("St de Mesnil Jean", "de Mesnil", "Jean"),
+    ("Freiherr von Berg Otto", "von Berg", "Otto"),
+    ("St van Berg Jan", "van Berg", "Jan"),
+    # the ranks #709 made title-particles, as freiherr is, reach the cut
+    # too (master at e5992892 read each family 'von Berg Otto' and so on)
+    ("Graf von Berg Otto", "von Berg", "Otto"),
+    ("Gräfin von Dönhoff Marion", "von Dönhoff", "Marion"),
+    ("Prinz von Hannover Ernst", "von Hannover", "Ernst"),
+    # a chain the fold would take whole keeps its reading: H1's given
+    # behind a given-name title, P5's bound given name
+    ("St Sir de Mesnil", "", "de Mesnil"),
+    ("St abu Bakar", "abu Bakar", ""),
+    # and a chain holding a word the trailing read weighed against the
+    # whole chain stands, the read and its report being the chain's
+    # (#828's review): no word is stranded in the given name -- read off
+    # the read's report, not the word's vocabulary
+    ("St de Mesnil Jean V", "de Mesnil Jean V", ""),
+    ("Freiherr von Berg Otto Junior", "von Berg Otto Junior", ""),
+    ("Freiherr von Berg Otto Ing", "von Berg Otto Ing", ""),
+    ("Freiherr von Bishop X.Y.Z.", "von Bishop X.Y.Z.", ""),
+    # but a listed word the read took as a name word, reporting nothing,
+    # is no reason to keep the chain: it is cut (the fix commit's
+    # review; a vocabulary-tag test kept all four whole)
+    ("St de Mesnil Junior Jean", "de Mesnil", None),
+    ("Freiherr von Berg MA Hans", "von Berg", None),
+    ("St de Berg MA J.", "de Berg", None),
+    ("St de Mesnil Jean J. V", "de Mesnil", None),
+    # and the suffix-comma shape, which reads its first part as the
+    # comma-less name does
+    ("St de Mesnil Jean, Jr.", "de Mesnil", None),
+    ("van der Berg Jan, PhD", "van der Berg", None),
+])
+def test_family_first_fold_reads_the_writing_and_the_chain(
+        policy: Policy, text: str, family: str, given: str | None) -> None:
+    # the shipped vocabulary, the rows' words being the particles and
+    # titles whose classification is the point
+    out = run(ParseState(original=text, lexicon=Lexicon.default(),
+                         policy=policy))
+    assert _by_role(out, Role.FAMILY) == family
+    if given is not None:
+        assert _by_role(out, Role.GIVEN) == given
+
+
+@pytest.mark.parametrize("policy", _FAMILY_FIRST)
+@pytest.mark.parametrize("text,last", [
+    ("St de Mesnil Jean Junior V", "V"),
+    ("Freiherr von Berg Otto Junior VI", "VI"),
+])
+def test_a_report_behind_another_names_the_whole_chain(
+        policy: Policy, text: str, last: str) -> None:
+    # two words past the fold's reach the trailing read reported keep the
+    # chain whole (#828), so the last one's name reading, every other word
+    # read as the parse read it, joins the family -- read off the words
+    # post_rules marks past the reach, which the stand-in oracle cannot
+    # check here (its stand-in rereads the other report away)
+    # Negative control, 2026-11-04: with post_rules' PAST_REACH_TAG write
+    # removed, all four parses fail.
+    out = Parser(policy=policy).parse(text)
+    alt = next(a.alternative for a in out.ambiguities
+               if [t.text for t in a.tokens] == [last])
+    assert alt is not None and alt.role is Role.FAMILY
+
+
+def test_a_lowercase_particle_the_fold_takes_is_not_reported() -> None:
+    # the writing settled the fork, so no particle-or-given report
+    # (#670); a capitalized one is still reported
+    ff = Parser(policy=Policy(name_order=FAMILY_FIRST))
+    assert not ff.parse("van Gogh Vincent").ambiguities
+    assert [a.kind for a in ff.parse("Van Gogh Vincent").ambiguities] == [
+        AmbiguityKind.PARTICLE_OR_GIVEN]
+    # and under the default order it is still reported: the fold
+    # does not fire there
+    assert [a.kind for a in Parser().parse("van Gogh Vincent").ambiguities
+            ] == [AmbiguityKind.PARTICLE_OR_GIVEN]
 
 
 @pytest.mark.parametrize("text,title,given,middle,family,suffix", [
@@ -504,8 +598,8 @@ def test_the_family_the_run_joins_must_have_a_base() -> None:
     # the guard is never consulted. `family` is asserted as well as the
     # tag, because inverting the guard retags the run to FAMILY without
     # the tag -- which `_folded` alone cannot see.
-    out = _parsed("van Berg Jan de", Policy(name_order=FAMILY_FIRST))
-    assert _by_role(out, Role.FAMILY) == "van"
+    out = _parsed("Van Berg Jan de", Policy(name_order=FAMILY_FIRST))
+    assert _by_role(out, Role.FAMILY) == "Van"
     assert _by_role(out, Role.MIDDLE) == "Jan de"
     assert not _folded(out)
 
@@ -748,10 +842,10 @@ def test_the_two_family_first_orders_differ_at_two_leftovers() -> None:
 
 @pytest.mark.parametrize("policy", _FAMILY_FIRST)
 @pytest.mark.parametrize("text,family", [
-    # an AMBIGUOUS leading particle is out of the rule's scope in every
-    # order: the fold never fires on it, so there is no run to stop.
-    # Untouched by #395
-    ("van Gogh Jan", "van"),
+    # a capitalized AMBIGUOUS leading particle is out of the rule's
+    # scope in every order: the fold never fires on it, so there is no
+    # run to stop. Untouched by #395 and #670
+    ("Van Gogh Jan", "Van"),
     # a family comma has already fixed the surname, so there is no
     # positional read for a declared order to narrow (state.order is
     # None on this path)

@@ -634,6 +634,23 @@ def is_lone_never_given_particle(piece: Sequence[int],
             and "vocab:particle-ambiguous" not in tokens[piece[0]].tags)
 
 
+# rules/P11: "an ambiguous particle written in lower case, in a name of
+# mixed case, opens the name as a never-given one does" -- the site
+# test, asked by the fold in post_rules and by assign's report, which
+# the fold settles (decisions/P11, #670)
+def is_lowercase_ambiguous_particle(piece: Sequence[int],
+                                    tokens: Sequence[WorkToken],
+                                    one_case: bool | None) -> bool:
+    """A piece that is one ambiguous particle written in lower case in
+    a name of mixed case: rules/P1's fold site under a family-first
+    order, where the writing settles the particle's fork as a
+    never-given particle's vocabulary does (#670). `one_case` is
+    ParseState.one_case; None (nobody asked) settles nothing."""
+    return (len(piece) == 1
+            and "vocab:particle-ambiguous" in tokens[piece[0]].tags
+            and one_case is False and tokens[piece[0]].text.islower())
+
+
 def _numeral_behind_the_initial_veto(piece: Sequence[int],
                                      tokens: Sequence[WorkToken]) -> bool:
     """Suffix vocabulary that is_suffix_piece refuses because it is

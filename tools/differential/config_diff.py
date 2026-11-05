@@ -22,7 +22,8 @@ lower case a bare choice of that language tag (`Locale(code="choice",
 lexicon=Lexicon.empty(), languages={tag})`, a region tag such as
 `pt-BR` or `en-GB` included). `expr:<python>` evaluates an expression
 returning a `Parser`, with `Parser`, `Policy`, `Lexicon`, `Locale`,
-`locales`, `parser_for` and `bare(tag)` in scope. The first
+`locales`, `parser_for`, `bare(tag)` and the three name orders
+(`GIVEN_FIRST`, `FAMILY_FIRST`, `FAMILY_FIRST_GIVEN_LAST`) in scope. The first
 configuration is the baseline, each other compared with it.
 
 **Inputs.** `--committed` reads the committed `corpus*.jsonl` beside
@@ -231,7 +232,8 @@ def build(spec: str) -> Parser:
 
 
 def _build(spec: str) -> Parser:
-    from nameparser import Lexicon, Locale, Parser, Policy, locales, parser_for
+    from nameparser import (FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, GIVEN_FIRST, Lexicon, Locale,
+                            Parser, Policy, locales, parser_for)
     kind, _, rest = spec.partition(":")
     if spec == "default":
         return Parser()
@@ -247,7 +249,9 @@ def _build(spec: str) -> Parser:
                              f"refused: {exc}") from None
     if kind == "expr" and rest:
         scope = {"Parser": Parser, "Policy": Policy, "Lexicon": Lexicon, "Locale": Locale,
-                 "locales": locales, "parser_for": parser_for, "bare": bare}
+                 "locales": locales, "parser_for": parser_for, "bare": bare,
+                 "GIVEN_FIRST": GIVEN_FIRST, "FAMILY_FIRST": FAMILY_FIRST,
+                 "FAMILY_FIRST_GIVEN_LAST": FAMILY_FIRST_GIVEN_LAST}
         with _quiet():
             parser = eval(rest, scope)  # noqa: S307 -- the caller's own expression
         if not isinstance(parser, Parser):

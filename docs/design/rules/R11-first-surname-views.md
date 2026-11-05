@@ -53,7 +53,7 @@
 - A family word with no reading, one that `replace()` or `Parser.revise()` wrote or in a name unpickled from 2.x, is in no unit, so such a family reads as one and the views are the family's.
 - A first unit of a lone particle, which O6 leaves where it reads a particle and a name word after a family-first family as two surnames, splits as the family does, the particle working there, so its base is empty; the misreading is O6's, and the two units' particles and bases still add up to the family's.
   ```
-  "van Gogh Vincent"  family-first+two_family_names  →  surname1_base=""
+  "Van Gogh Vincent"  family-first+two_family_names  →  surname1_base=""
   ```
 - A fold into a family the name left empty, behind a family comma with nothing before it (C15), has no first unit to keep apart from the folded words, so they are the views.
   ```

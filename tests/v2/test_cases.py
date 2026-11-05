@@ -357,9 +357,12 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # 1600 on 2026-11-04, #877's report on a bare letter ending the
     # given part after a comma, six rows each under three orders; 1600 ->
     # 1609 the same day, its test review's particle-run and connective
-    # rows, three reports each under three orders.
-    assert claims == 1609, (
-        f"the field sweep checks {claims} claims, recorded as 1609 on "
+    # rows, three reports each under three orders; 1609 -> 1597 the
+    # same day, #670: six rows opening with a lowercase ambiguous
+    # particle no longer report particle-or-given under the two
+    # family-first orders, the fold having taken it.
+    assert claims == 1597, (
+        f"the field sweep checks {claims} claims, recorded as 1597 on "
         f"2026-11-04")
 
 
@@ -408,6 +411,11 @@ _STAND_IN_REREADS = {
     # a name word in VI's place stops 'JNR' starting the run (S8)
     ("JOHN SMITH JNR VI JONES", None),
     ("JOHN SMITH JNR VI JONES", 2),
+    # a stand-in for the last of two words the trailing read reported
+    # leaves the first unreported, so the family-first fold cuts the
+    # chain it held whole (decisions/P1's 2026-11-04 #828 entry)
+    ("Freiherr von Berg X.Y.Z. X.Y.Z.", 1),
+    ("Freiherr von Berg X.Y.Z. X.Y.Z.", 2),
 }
 
 #: Reports whose deferred field assign could not name: the particle the
@@ -545,7 +553,15 @@ _REVIEW_SHAPES = ("PhD VI", "Jr VI", "III VI", "Smith, John van VI",
                   # a numeral standing past the part's first word into
                   # the family
                   "Smith, de Mesnil V", "Smith, de Mesnil VI",
-                  "Smith, Mc John V I")
+                  "Smith, Mc John V I",
+                  # #828's fix review: a particle that is suffix
+                  # vocabulary, opening a chain the family-first fold
+                  # cuts, names the field the cut gives
+                  "St Mc Mesnil VI", "St vd Mesnil Jean VI",
+                  "St de Mesnil Jean V", "Freiherr von J. ma",
+                  # its test review: a chain of particles only, and an
+                  # inner particle before the cut
+                  "St de Mc VI", "St van der Berg VI")
 
 
 @pytest.mark.parametrize("order", _INVARIANT_ORDERS)
@@ -732,8 +748,10 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # letter ending the given part after a comma, six rows under the
     # three orders, each stand-in landing in the alternative's field;
     # 495 -> 504 the same day, its test review's two rows, three
-    # reports under the three orders
-    assert (checked, skipped) == (504, 330), (checked, skipped)
+    # reports under the three orders; 504 -> 502 and 330 -> 328 the same day,
+    # #828's 'Freiherr von Berg X.Y.Z. X.Y.Z.' joining _STAND_IN_REREADS
+    # under the two family-first orders
+    assert (checked, skipped) == (502, 328), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:

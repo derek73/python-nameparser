@@ -43,20 +43,22 @@ from __future__ import annotations
 
 import bisect
 import re
+from collections.abc import Sequence
 
 from nameparser._lexicon import Lexicon, _normalize, _run_addresses_by_given
 from nameparser._pipeline._assign import (
     _name_alt, _name_pieces, _name_positions,
 )
 from nameparser._pipeline._pieces import (
-    is_lone_never_given_particle, settled_by_case,
+    is_lone_never_given_particle, is_lowercase_ambiguous_particle,
+    settled_by_case,
 )
 from nameparser._pipeline._state import (
     AMBIGUOUS_ACRONYM_TAG, ATTACHED_TAG, NAME_ROLES, PATRONYMIC_TAG,
-    PARTICLE_GIVEN_TAG, SHARED_NAME_TAG,
+    PARTICLE_GIVEN_TAG, PAST_REACH_TAG, SHARED_NAME_TAG,
     FIRST_SURNAME_TAG, SECOND_SURNAME_TAG,
     ParseState, PendingAmbiguity, PendingReading, Structure,
-    WorkToken, _NEVER_FLIPPED, comma_bucket, copy_with,
+    WorkToken, _NEVER_FLIPPED, comma_bucket, copy_with, reported_suffix_fork,
 )
 from nameparser._pipeline._vocab import (
     delimiter_cores, has_patronymic_ending, is_initial, is_listed_given_name,
@@ -574,15 +576,50 @@ def _family_settled(state: ParseState, tokens: list[WorkToken],
     P1's fork for a leading particle that could be a given name"
     ('van Gogh, Sir'); without one, P1's fold below takes a never-given
     particle opening the name with a word behind it ('Sir de Mesnil'),
-    asked by the fold's own predicate on the same piece. An ambiguous
-    particle nothing settled, or a bare one with nothing to fold, is a
+    or under a family-first order a piece `_family_first_lead_folds`
+    names ('Sir van Berg', rules/P11), asked by the fold's own
+    predicates on the same piece. An ambiguous particle
+    nothing settled, or a bare one with nothing to fold, is a
     word the order placed ('Sir Van', 'Sir Abu Bakar' and 'Sir de'
     under FAMILY_FIRST; 'Sir von und zu', whose never-given 'zu' does
     not open it)."""
     if state.structure is Structure.FAMILY_COMMA:
         return any("particle" in tokens[i].tags for i in families)
-    return len(families) > 1 and is_lone_never_given_particle(
-        _leading_name_piece(state, tokens), tokens)
+    if len(families) < 2:
+        return False
+    lead = _leading_name_piece(state, tokens)
+    return (is_lone_never_given_particle(lead, tokens)
+            or state.order is not None and state.order[0] is Role.FAMILY
+            and _family_first_lead_folds(state, tokens, lead))
+
+
+def _family_first_lead_folds(state: ParseState, tokens: list[WorkToken],
+                             lead: Sequence[int]) -> bool:
+    """Whether rules/P1's fold takes `lead`, the piece opening the
+    name, beside the lone never-given particle it takes under every
+    order (asked inline by each caller first, sparing every parse a
+    frame), and asked only under a family-first order: two more -- a lone ambiguous particle written
+    in lower case in a name of mixed case (rules/P11, #670), and a
+    particle chain a title-particle in front lets P2 build (rules/P4's
+    Except, #828), cut after its particles and one name unit unless a
+    suffix-or-name report names a word past that reach ('St de Mesnil
+    Jean V'). A chain the reach already covers is left whole ('St Sir de
+    Mesnil', 'St abu Bakar')."""
+    # rules/P1: "a particle chain behind a title-particle is cut as the
+    # run is" -- the chain clause; and rules/P11: "an ambiguous particle
+    # written in lower case, in a name of mixed case, opens the name as
+    # a never-given one does" -- the writing clause (decisions/P1 and
+    # decisions/P11, #828, #670)
+    if is_lowercase_ambiguous_particle(lead, tokens, state.one_case):
+        return True
+    if len(lead) < 2 or "particle" not in tokens[lead[0]].tags:
+        return False
+    reach = _fold_reach(tokens, list(lead))
+    # a word past the reach a suffix-or-name report names was read
+    # against the whole chain ('St de Mesnil Jean V', whose numeral had
+    # no word to spare): the cut would strand it, so the chain stands
+    return reach < len(lead) and not reported_suffix_fork(
+        state.ambiguities, lead[reach:])
 
 
 # rules/S13: "where the member's writing settles it as the credential,
@@ -761,7 +798,8 @@ def post_rules(state: ParseState) -> ParseState:
 
     # rules/P1: "the particle run and the name words it takes are
     # family, under every name order" -- its Then clause, for a
-    # never-given particle opening the name; how many words the run
+    # never-given particle opening the name and, under a family-first
+    # order, the two pieces `_family_first_lead_folds` adds; how many words the run
     # takes is set by the order or a family comma, in P1's bullets and
     # below (v1 handle_non_first_name_prefix; decisions/P1)
     # How far the fold reaches depends on the order the name was READ
@@ -787,14 +825,25 @@ def post_rules(state: ParseState) -> ParseState:
     # answer position already gave. So "Menil de" under either
     # family-first order reports given "de" -- P6 takes the trailing
     # particle only where it landed in a MIDDLE, which means nothing.
-    # Code-local: a lone PIECE is the test, so a particle group
-    # already chained forward is not a lone particle, and rule H1
+    # Code-local: a lone PIECE is the test (`_family_first_lead_folds` names the two
+    # pieces a family-first order adds), so a particle group already
+    # chained forward is not a lone particle elsewhere, and rule H1
     # above cannot be what produces the fold's family reading -- its
     # given -> family branch is gated on `not families`, and its family
     # -> given branch leaves the word this fold takes, asking the same
     # predicate (_family_settled).
     lead = _leading_name_piece(state, tokens)
-    lead_fires = is_lone_never_given_particle(lead, tokens)
+    family_first = state.order is not None and state.order[0] is Role.FAMILY
+    if (family_first and len(lead) > 1
+            and "particle" in tokens[lead[0]].tags):
+        # the words past the fold's reach, marked for assemble's
+        # alternatives whether or not the fold cuts there (#828)
+        for i in lead[_fold_reach(tokens, list(lead)):]:
+            tokens[i] = copy_with(tokens[i],
+                                  tags=tokens[i].tags | {PAST_REACH_TAG})
+    lead_fires = (is_lone_never_given_particle(lead, tokens)
+                  or family_first
+                  and _family_first_lead_folds(state, tokens, lead))
     if len(givens) + len(middles) + len(families) > 1 and lead_fires:
         order = state.order
         if lead_fires and order is not None and order[0] is Role.FAMILY:
