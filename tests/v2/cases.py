@@ -9913,6 +9913,107 @@ CASES: tuple[Case, ...] = (
          {"given": "abdul", "family": "rahman"}),
     Case("bound_given_three", "abdul rahman al-said",
          {"given": "abdul rahman", "family": "al-said"}),
+    Case("bound_given_completed_past_the_start_joins_the_family", "طارق عبد العزيز",
+         {"given": "طارق", "family": "عبد العزيز"},
+         classification="fix(#694)",
+         notes="P12: العزيز completes عبد, so the pair is one name past "
+               "the start; Wikidata's family is 'عبد العزيز', and 1.4.0 "
+               "through 2.8.1 read middle 'عبد', family 'العزيز'"),
+    Case("bound_given_completed_joins_each_pair", "عبد اللطيف عبد الحميد",
+         {"given": "عبد اللطيف", "family": "عبد الحميد"},
+         classification="fix(#694)",
+         notes="P5's join at the start and P12's past it; 2.0.0 through "
+               "2.8.1 read middle 'عبد', family 'الحميد'"),
+    Case("bound_given_completed_in_a_persian_spelling", "علي عبد الکریم",
+         {"given": "علي", "family": "عبد الکریم"},
+         classification="fix(#694)",
+         notes="P12: each listed word carries its Persian spelling (keheh "
+               "and Farsi yeh) beside the Arabic one"),
+    Case("bound_given_completed_family_first", "سعيد عبد الله حسن",
+         {"given": "عبد الله", "middle": "حسن", "family": "سعيد"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         classification="fix(#694)",
+         notes="P12's pair is one unit the order lays out: 2.0.0 through "
+               "2.8.1 read given 'عبد', family 'سعيد'"),
+    Case("bound_given_completed_counts_once_for_two_family_names",
+         "سعيد حسن عبد الله",
+         {"given": "سعيد", "family": "حسن عبد الله"},
+         policy=Policy(two_family_names=True),
+         classification="fix(#694)",
+         notes="O6 counts P12's pair as one family word, so it takes حسن "
+               "as the first surname; counted as two, حسن stayed a "
+               "middle name (decisions/P12)"),
+    Case("bound_given_pair_at_the_start_counts_twice_for_two_family_names",
+         "عبد الله حسن سعيد",
+         {"given": "حسن", "middle": "سعيد", "family": "عبد الله"},
+         policy=Policy(name_order=FAMILY_FIRST, two_family_names=True),
+         notes="O6 counts only a pair P12 joined as one word; P5's pair "
+               "at the start counts as two, as abdul rahman does, so O6 "
+               "takes no second surname (#694 review)"),
+    Case("bound_given_pair_in_a_particle_chain_counts_twice",
+         "سعيد محمد بن عبد الله",
+         {"given": "سعيد", "middle": "محمد", "family": "بن عبد الله"},
+         policy=Policy(two_family_names=True),
+         notes="the chain takes عبد before P12 can join it, so the pair "
+               "counts as two family words and O6 takes no محمد "
+               "(#694 review)"),
+    Case("bound_given_completed_family_first_given_last", "سعيد عبد الله حسن",
+         {"given": "حسن", "middle": "عبد الله", "family": "سعيد"},
+         policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST),
+         notes="P12's pair is one unit the order lays out (#694 review)"),
+    Case("bound_given_completed_is_the_second_surname_o6_takes",
+         "سعيد عبد الله حسن",
+         {"given": "سعيد", "family": "عبد الله حسن"},
+         policy=Policy(two_family_names=True),
+         notes="O6 takes the joined pair whole as the first surname "
+               "(#694 review)"),
+    Case("bound_given_completed_after_a_family_comma", "حسن, طارق عبد العزيز",
+         {"given": "طارق", "middle": "عبد العزيز", "family": "حسن"},
+         notes="P12 joins in the given part after a family comma "
+               "(#694 review)"),
+    Case("bound_given_completed_before_a_suffix_comma", "طارق عبد العزيز, Jr.",
+         {"given": "طارق", "family": "عبد العزيز", "suffix": "Jr."},
+         notes="#694 review"),
+    Case("bound_given_completed_behind_an_empty_head", ", طارق عبد العزيز",
+         {"given": "طارق", "middle": "عبد العزيز"},
+         notes="nothing before the comma: the pair is one middle unit "
+               "(#694 review)"),
+    Case("bound_given_pair_behind_a_title_keeps_p5s_reserve", "Dr. عبد العزيز",
+         {"title": "Dr.", "given": "عبد", "family": "العزيز"},
+         notes="P12 starts past the title run and the first name word, "
+               "which is P5's, whose reserve keeps the pair apart "
+               "(#694 review)"),
+    Case("bound_given_pair_behind_a_title_keeps_p5s_reserve_family_first",
+         "Dr. عبد العزيز",
+         {"title": "Dr.", "given": "العزيز", "family": "عبد"},
+         policy=Policy(name_order=FAMILY_FIRST), notes="#694 review"),
+    Case("bound_given_last_before_a_nickname", "طارق عبد (العزيز)",
+         {"given": "طارق", "family": "عبد", "nickname": "العزيز"},
+         notes="the bound word is the last piece: the word it would join "
+               "is the nickname, out of the pieces (#694 review)"),
+    Case("bound_given_partner_in_a_nickname_joins_nothing", 'طارق عبد "الله" حسن',
+         {"given": "طارق", "middle": "عبد", "family": "حسن", "nickname": "الله"},
+         notes="P12 joins only the token right after the bound word, so "
+               "the nickname taken from between them leaves it alone "
+               "(#694 review)"),
+    Case("bound_given_pair_in_the_family_part_before_a_family_comma",
+         "سعيد عبد الله, طارق",
+         {"given": "طارق", "family": "سعيد عبد الله"},
+         notes="before a family comma the part is the family, P12 joining "
+               "nothing there (#694 review)"),
+    Case("bound_given_before_an_unlisted_word_stands_alone", "نوال عبد هاشم",
+         {"given": "نوال", "middle": "عبد", "family": "هاشم"},
+         notes="P12: before a word that does not complete it عبد is a "
+               "short given name of its own (ORCID's family box: هاشم)"),
+    Case("bound_given_before_a_nisba_stands_alone", "محمد عبد القريشي",
+         {"given": "محمد", "middle": "عبد", "family": "القريشي"},
+         notes="P12 reads a list, not the article: a nisba surname opens "
+               "with ال too, and joined it would read family 'عبد القريشي' "
+               "(decisions/P12)"),
+    Case("bound_given_latin_past_the_start_stays_apart", "Tariq Abdul Aziz",
+         {"given": "Tariq", "middle": "Abdul", "family": "Aziz"},
+         notes="#694's Latin half: abdul lists no completed_by, the pair "
+               "being a middle name as often as a family (decisions/P12)"),
     Case("mr_and_mrs", "Mr. and Mrs. John Smith",
          {"title": "Mr. and Mrs.", "given": "John", "family": "Smith"}),
     Case("roman_suffix", "John Smith V",

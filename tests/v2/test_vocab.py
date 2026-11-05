@@ -344,6 +344,11 @@ MUTATIONS = [
     # writing; and the four names phase 2 left reserved say which phase
     ("default-true", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = { default = true }')}, "write default = false"),
     ("default-not-a-bool", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = { default = "no" }')}, "write default = false"),
+    ("completed_by-not-a-list", {"ar.toml": _w('[[word]]\ntext = "zzq"\nbound_given = { completed_by = "zzr" }')}, "completed_by must be a non-empty list"),
+    ("completed_by-empty", {"ar.toml": _w('[[word]]\ntext = "zzq"\nbound_given = { completed_by = [] }')}, "completed_by must be a non-empty list"),
+    ("completed_by-two-words", {"ar.toml": _w('[[word]]\ntext = "zzq"\nbound_given = { completed_by = ["zzr zzs"] }')}, "completed_by must be a non-empty list"),
+    ("completed_by-twice", {"ar.toml": _w('[[word]]\ntext = "zzq"\nbound_given = { completed_by = ["zzr", "zzr"] }')}, "completed_by must be a non-empty list"),
+    ("completed_by-not-folded", {"ar.toml": _w('[[word]]\ntext = "zzq"\nbound_given = { completed_by = ["Zzr"] }')}, "completed_by must be a non-empty list"),
     ("attaches-not-a-list", {"en.toml": _w('[[word]]\ntext = "chief"\noffice = { attaches = "military" }')}, "attaches must be a non-empty list of title kinds"),
     ("attaches-empty", {"en.toml": _w('[[word]]\ntext = "chief"\noffice = { attaches = [] }')}, "attaches must be a non-empty list of title kinds"),
     ("attaches-twice", {"en.toml": _w('[[word]]\ntext = "chief"\noffice = { attaches = ["military", "military"] }')}, "attaches must be a non-empty list of title kinds"),
@@ -1107,6 +1112,7 @@ _PROPERTY_PROBES = {
     "title_case_is_name": ("generation", "{ title_case_is_name = true }", "zzq"),
     "shared": ("family", '{ shared = true, note = "probe" }', "zzq"),
     "after_particle": ("given", '{ after_particle = true, note = "probe" }', "zzq"),
+    "completed_by": ("bound_given", '{ completed_by = ["zzr"] }', "zzq"),
     # a phrase needs the head it attaches to: a second title word
     "attaches": ("office", '{ attaches = ["occupation"] }', "zzq",
                  '\n\n[[word]]\ntext = "zzr"\noccupation = {}'),

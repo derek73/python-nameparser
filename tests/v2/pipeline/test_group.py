@@ -190,6 +190,92 @@ def test_bound_given_joins_with_three_rootnames() -> None:
     assert _piece_texts(_grouped("abdul rahman")) == [["abdul", "rahman"]]
 
 
+_PHRASE_LEX = (
+    _LEX.add("عبد", "ابو", kind="given").add("عبد", kind="bound_given",
+                                          completed_by=["الله", "الرحمن"])
+    .add("ابو", kind="bound_given")
+    .add("المرحوم", kind="birth_marker"))
+
+
+def _phrase_pieces(text: str, lexicon: Lexicon = _PHRASE_LEX) -> list[list[str]]:
+    return _piece_texts(_grouped(text, lexicon=lexicon))
+
+
+def test_a_bound_word_and_a_word_that_completes_it_join_past_the_start() -> None:
+    # rules/P12 (#694): the listed pair, past the first name word
+    assert _phrase_pieces("سعيد عبد الله") == [["سعيد", "عبد الله"]]
+    assert _phrase_pieces("سعيد عبد الله عبد الرحمن") == \
+        [["سعيد", "عبد الله", "عبد الرحمن"]]
+    # an unlisted word, with the article or without it: a name of its own
+    assert _phrase_pieces("نوال عبد هاشم") == [["نوال", "عبد", "هاشم"]]
+    assert _phrase_pieces("محمد عبد القريشي") == [["محمد", "عبد", "القريشي"]]
+    # a bound word listing nothing joins only at the start
+    assert _phrase_pieces("سعيد ابو الله") == [["سعيد", "ابو", "الله"]]
+    # P5's join at the start keeps its reserve
+    assert _phrase_pieces("عبد الله") == [["عبد", "الله"]]
+    # nothing after it to join
+    assert _phrase_pieces("سعيد عبد") == [["سعيد", "عبد"]]
+    # only the token right after it: a nickname taken out between them
+    # leaves the pair apart
+    assert _phrase_pieces('سعيد عبد "الله" حسن') == [["سعيد", "عبد", "حسن"]]
+
+
+def test_a_caller_lists_the_words_that_complete_a_bound_word() -> None:
+    # the property is the caller's too: a Latin pair joins once listed
+    listed = _LEX.add("abdul", kind="bound_given", completed_by=["aziz"])
+    assert _phrase_pieces("Tariq Abdul Aziz", listed) == \
+        [["Tariq", "Abdul Aziz"]]
+    assert _phrase_pieces("Tariq Abdul Aziz", _LEX) == \
+        [["Tariq", "Abdul", "Aziz"]]
+    # and removing the reading removes the phrase
+    gone = _PHRASE_LEX.remove("عبد", kind="bound_given")
+    assert _phrase_pieces("سعيد عبد الله", gone) == [["سعيد", "عبد", "الله"]]
+
+
+def test_a_delimiter_glued_to_the_bound_word_ends_the_pair() -> None:
+    # a delimiter glued to the bound word parts the pair, as a comma
+    # would (the C10 rule); one glued to the word after it does not
+    for text in ("حسن, سعيد عبد; الله", "حسن, سعيد عبد الله; حسين"):
+        state = _grouped(text, lexicon=Lexicon.default())
+        joined = [p for seg in state.pieces for p in seg if len(p) > 1]
+        assert joined == ([] if "عبد;" in text else [(2, 3)]), (text, joined)
+
+
+def test_the_phrase_tag_stays_only_on_a_pair_p12_joined() -> None:
+    # P5's pair at the start is P5's, and O6 counts it as two words, as
+    # it counts the Latin abdul rahman
+    state = _grouped("عبد الله حسن سعيد", lexicon=Lexicon.default())
+    assert not any("vocab:bound-phrase" in t.tags for t in state.tokens)
+    state = _grouped("سعيد عبد الله", lexicon=Lexicon.default())
+    assert "vocab:bound-phrase" in state.tokens[1].tags
+
+
+def test_the_phrase_tag_stays_off_the_published_tokens() -> None:
+    # the tag is group's, read by post_rules' O6 count; assemble drops
+    # it as it drops the other kind tags
+    from nameparser import parse
+    tokens = parse("طارق عبد العزيز").tokens
+    assert all(not any(t.startswith("vocab:bound-phrase") for t in tok.tags)
+               for tok in tokens)
+    # REACHABILITY: classify does put it on the bound word
+    state = _grouped("طارق عبد العزيز", lexicon=Lexicon.default())
+    assert any("vocab:bound-phrase" in tok.tags for tok in state.tokens)
+
+
+@pytest.mark.parametrize("value,error", [
+    ("الله", TypeError), (["الله", 3], TypeError),
+    (["عبد الله"], ValueError)])
+def test_completed_by_refuses_what_is_no_list_of_words(value: object,
+                                                       error: type) -> None:
+    with pytest.raises(error, match="completed_by"):
+        _LEX.add("عبد", kind="bound_given", completed_by=value)
+
+
+def test_completed_by_belongs_to_a_bound_given_reading() -> None:
+    with pytest.raises(ValueError, match="completed_by"):
+        _LEX.add("zzq", kind="given", completed_by=["الله"])
+
+
 def test_phd_split_across_tokens_merges_as_suffix() -> None:
     out = _grouped("John Smith Ph. D.")
     assert _piece_texts(out) == [["John", "Smith", "Ph. D."]]

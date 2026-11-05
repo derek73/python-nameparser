@@ -3726,6 +3726,7 @@
 {"name": "Takeyama, Michio", "given": "Michio", "family": "Takeyama", "initials": "M. T."}
 {"name": "Tammik hr Mari-Ann Henri Roobert parlamendiliige", "order": "FAMILY_FIRST", "given": "hr", "middle": "Mari-Ann Henri Roobert parlamendiliige", "family": "Tammik", "initials": "h. M. H. R. p. T.", "capitalized_force": "Tammik Hr Mari-Ann Henri Roobert Parlamendiliige"}
 {"name": "Tammik, Mari-Ann Henri Roobert, parlamendiliige", "given": "Mari-Ann", "middle": "Henri Roobert", "family": "Tammik", "suffix": "parlamendiliige", "ambiguities": ["COMMA_STRUCTURE"], "initials": "M. H. R. T.", "capitalized_force": "Mari-Ann Henri Roobert Tammik Parlamendiliige"}
+{"name": "Tariq Abdul Aziz", "given": "Tariq", "middle": "Abdul", "family": "Aziz", "initials": "T. A. A."}
 {"name": "Taufīq al-Ḥakīm", "given": "Taufīq", "family": "al-Ḥakīm", "initials": "T. a."}
 {"name": "Te Awanui-a-Rangi Black", "given": "Te", "middle": "Awanui-a-Rangi", "family": "Black", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "T. A. B.", "capitalized_force": "Te Awanui-A-Rangi Black"}
 {"name": "Teddy Bunn", "given": "Teddy", "family": "Bunn", "initials": "T. B."}
@@ -5426,13 +5427,14 @@
 {"name": "سعدیہ خان", "given": "سعدیہ", "family": "خان", "initials": "س. خ."}
 {"name": "سعدیہ دہلوی", "given": "سعدیہ", "family": "دہلوی", "initials": "س. د."}
 {"name": "سعيد حماد", "given": "سعيد", "family": "حماد", "initials": "س. ح."}
+{"name": "سعيد عبد الله", "given": "سعيد", "family": "عبد الله", "initials": "س. ع. ا."}
 {"name": "سلام امینی", "given": "سلام", "family": "امینی", "initials": "س. ا."}
 {"name": "سلطان البرقان", "given": "سلطان", "family": "البرقان", "initials": "س. ا."}
 {"name": "سلمان, محمد", "given": "محمد", "family": "سلمان", "initials": "م. س."}
 {"name": "سلمان،", "given": "سلمان", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "س."}
 {"name": "سلمان، محمد", "given": "محمد", "family": "سلمان", "initials": "م. س."}
 {"name": "سليمان الجوخدار", "given": "سليمان", "family": "الجوخدار", "initials": "س. ا."}
-{"name": "سمر عبد العزيز", "given": "سمر", "middle": "عبد", "family": "العزيز", "initials": "س. ع. ا."}
+{"name": "سمر عبد العزيز", "given": "سمر", "family": "عبد العزيز", "initials": "س. ع. ا."}
 {"name": "سمير سرور", "given": "سمير", "family": "سرور", "initials": "س. س."}
 {"name": "سميرة النجار", "given": "سميرة", "family": "النجار", "initials": "س. ا."}
 {"name": "سميرة خاشقجي", "given": "سميرة", "family": "خاشقجي", "initials": "س. خ."}
@@ -5447,7 +5449,7 @@
 {"name": "سينباد", "given": "سينباد", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "س."}
 {"name": "سينباد", "order": "FAMILY_FIRST", "family": "سينباد", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "س."}
 {"name": "سټوبر زیزیلیا همیش", "order": "FAMILY_FIRST", "given": "زیزیلیا", "middle": "همیش", "family": "سټوبر", "initials": "ز. ه. س."}
-{"name": "سید عبد الکریم عبد الحمید ایم پی", "order": "FAMILY_FIRST", "given": "عبد", "middle": "الکریم عبد الحمید ایم پی", "family": "سید", "initials": "ع. ا. ع. ا. ا. پ. س."}
+{"name": "سید عبد الکریم عبد الحمید ایم پی", "order": "FAMILY_FIRST", "given": "عبد الکریم", "middle": "عبد الحمید ایم پی", "family": "سید", "initials": "ع. ا. ع. ا. ا. پ. س."}
 {"name": "سید، عبد الکریم عبد الحمید ایم پی", "order": "FAMILY_FIRST", "given": "عبد الکریم", "middle": "عبد الحمید ایم پی", "family": "سید", "initials": "ع. ا. ع. ا. ا. پ. س."}
 {"name": "سیروس قهرمانی", "given": "سیروس", "family": "قهرمانی", "initials": "س. ق."}
 {"name": "سیروس گرجستانی", "given": "سیروس", "family": "گرجستانی", "initials": "س. گ."}
@@ -5468,7 +5470,7 @@
 {"name": "صلاح المُولَّد", "given": "صلاح", "family": "المُولَّد", "initials": "ص. ا."}
 {"name": "صنع الله إبراهيم", "given": "صنع", "middle": "الله", "family": "إبراهيم", "initials": "ص. ا. إ."}
 {"name": "طارق سلامة", "given": "طارق", "family": "سلامة", "initials": "ط. س."}
-{"name": "طارق عبد العزيز", "given": "طارق", "middle": "عبد", "family": "العزيز", "initials": "ط. ع. ا."}
+{"name": "طارق عبد العزيز", "given": "طارق", "family": "عبد العزيز", "initials": "ط. ع. ا."}
 {"name": "طارق فتح", "given": "طارق", "family": "فتح", "initials": "ط. ف."}
 {"name": "طاہر داوڑ", "given": "طاہر", "family": "داوڑ", "initials": "ط. د."}
 {"name": "طلعت زكريا", "given": "طلعت", "family": "زكريا", "initials": "ط. ز."}
@@ -5491,7 +5493,8 @@
 {"name": "عبد الستار إبراهيم", "given": "عبد الستار", "family": "إبراهيم", "initials": "ع. ا. إ."}
 {"name": "عبد العزيز الربيعي", "given": "عبد العزيز", "family": "الربيعي", "initials": "ع. ا. ا."}
 {"name": "عبد القدوس أبو صالح", "given": "عبد القدوس", "family": "أبو صالح", "initials": "ع. ا. ص."}
-{"name": "عبد اللطيف عبد الحميد", "given": "عبد اللطيف", "middle": "عبد", "family": "الحميد", "initials": "ع. ا. ع. ا."}
+{"name": "عبد اللطيف عبد الحميد", "given": "عبد اللطيف", "family": "عبد الحميد", "initials": "ع. ا. ع. ا."}
+{"name": "عبد الله", "given": "عبد", "family": "الله", "initials": "ع. ا."}
 {"name": "عبد الله الحقيل", "given": "عبد الله", "family": "الحقيل", "initials": "ع. ا. ا."}
 {"name": "عبد الهادي الباني", "given": "عبد الهادي", "family": "الباني", "initials": "ع. ا. ا."}
 {"name": "عبد الوكيل الهاشمي", "given": "عبد الوكيل", "family": "الهاشمي", "initials": "ع. ا. ا."}
@@ -5506,6 +5509,7 @@
 {"name": "عزت‌الله انتظامی", "given": "عزت‌الله", "family": "انتظامی", "initials": "ع. ا."}
 {"name": "علي الرواس", "given": "علي", "family": "الرواس", "initials": "ع. ا."}
 {"name": "علي القرني", "given": "علي", "family": "القرني", "initials": "ع. ا."}
+{"name": "علي عبد الکریم", "given": "علي", "family": "عبد الکریم", "initials": "ع. ع. ا."}
 {"name": "علی حاتمی", "given": "علی", "family": "حاتمی", "initials": "ع. ح."}
 {"name": "علیرضا بیرانوند", "given": "علیرضا", "family": "بیرانوند", "initials": "ع. ب."}
 {"name": "علی‌اصغر زارعی", "given": "علی‌اصغر", "family": "زارعی", "initials": "ع. ز."}
@@ -5547,6 +5551,8 @@
 {"name": "محمد سليم الحلواني", "given": "محمد", "middle": "سليم", "family": "الحلواني", "initials": "م. س. ا."}
 {"name": "محمد سليمان", "given": "محمد", "family": "سليمان", "initials": "م. س."}
 {"name": "محمد ضياء الدين الصابوني", "given": "محمد", "middle": "ضياء الدين", "family": "الصابوني", "initials": "م. ض. ا. ا."}
+{"name": "محمد عبد القريشي", "given": "محمد", "middle": "عبد", "family": "القريشي", "initials": "م. ع. ا."}
+{"name": "محمد عبد الله أحمد", "given": "محمد", "middle": "عبد الله", "family": "أحمد", "initials": "م. ع. ا. أ."}
 {"name": "محمد عطا", "given": "محمد", "family": "عطا", "initials": "م. ع."}
 {"name": "محمد نبيه المسيري", "given": "محمد", "middle": "نبيه", "family": "المسيري", "initials": "م. ن. ا."}
 {"name": "محمد و علي", "given": "محمد", "middle": "و", "family": "علي", "initials": "م. و. ع."}
@@ -5593,8 +5599,9 @@
 {"name": "نسرين طافش", "given": "نسرين", "family": "طافش", "initials": "ن. ط."}
 {"name": "نعيم عيسى", "given": "نعيم", "family": "عيسى", "initials": "ن. ع."}
 {"name": "نهلة القدسي", "given": "نهلة", "family": "القدسي", "initials": "ن. ا."}
+{"name": "نوال عبد هاشم", "given": "نوال", "middle": "عبد", "family": "هاشم", "initials": "ن. ع. ه."}
 {"name": "نور الدين عتر", "given": "نور", "middle": "الدين", "family": "عتر", "initials": "ن. ا. ع."}
-{"name": "نورس عبد الواحد", "given": "نورس", "middle": "عبد", "family": "الواحد", "initials": "ن. ع. ا."}
+{"name": "نورس عبد الواحد", "given": "نورس", "family": "عبد الواحد", "initials": "ن. ع. ا."}
 {"name": "هالة شكر الله", "given": "هالة", "middle": "شكر", "family": "الله", "initials": "ه. ش. ا."}
 {"name": "هدى شعراوي", "given": "هدى", "family": "شعراوي", "initials": "ه. ش."}
 {"name": "هدى عابدين", "given": "هدى", "family": "عابدين", "initials": "ه. ع."}

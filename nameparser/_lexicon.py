@@ -533,7 +533,7 @@ _SET_FIELDS = tuple(f for f in _VOCAB_FIELDS if f not in _LIST_FIELDS)
 _KIND_FIELDS = ("generation_words", "credential_words", "honorific_words",
                 "patronymic_particles", "title_abbreviations",
                 "title_case_name_words", "shared_names",
-                "particle_given_names", "saint_particles")
+                "particle_given_names", "saint_particles", "bound_phrases")
 
 @dataclass(frozen=True, slots=True, eq=False, repr=False)
 class _LexiconSets:
@@ -606,6 +606,9 @@ class _LexiconSets:
     #: the particles of the `saint` kind (`san`, `santa`, `st`, `ste`): no given
     #: name phrase opens with one, `Santa María` being a surname (#704)
     saint_particles: frozenset[str]
+    #: the two-word given names a bound word's `completed_by` lists
+    #: ('عبد الله'), which rules/P12 joins past the first name word (#694)
+    bound_phrases: frozenset[str]
 
 
 #: Lexicon field -> the compiled constant it is read from, for every
@@ -642,6 +645,7 @@ _COMPILED_FIELDS = {
     "shared_names": "SHARED_NAMES",
     "particle_given_names": "PARTICLE_GIVEN_NAMES",
     "saint_particles": "SAINT_PARTICLES",
+    "bound_phrases": "BOUND_PHRASES",
 }
 
 
@@ -741,21 +745,28 @@ def _prop_value(kind: str, prop: str, value: object) -> object:
                              f"off the end of a name token) or None, "
                              f"got {value!r}")
         return value
-    if prop == "attaches":
+    if prop in ("attaches", "completed_by"):
+        what = ("title kinds or title words, e.g. attaches=['military']"
+                if prop == "attaches" else
+                "single words, e.g. completed_by=['الله']")
         if isinstance(value, (str, bytes)) or isinstance(value, Mapping):
-            raise TypeError(f"attaches must be an iterable of title kinds "
-                            f"or title words, e.g. attaches=['military'], "
+            raise TypeError(f"{prop} must be an iterable of {what}, "
                             f"got {value!r}")
         try:
             items: tuple[object, ...] = tuple(cast("Iterable[object]", value))
         except TypeError:
-            raise TypeError(f"attaches must be an iterable of title kinds "
-                            f"or title words, got {value!r}") from None
+            raise TypeError(f"{prop} must be an iterable of {what}, "
+                            f"got {value!r}") from None
         words = [x for x in items if isinstance(x, str)]
         if len(words) != len(items):
-            raise TypeError(f"attaches entries must be strings, got "
+            raise TypeError(f"{prop} entries must be strings, got "
                             f"{value!r}")
         folded = tuple(sorted({_normalize(x) for x in words} - {""}))
+        if prop == "completed_by" and any(" " in w for w in folded):
+            # rules/P12 joins a bound word to the ONE word after it
+            raise ValueError(f"completed_by entries must be single words, "
+                             f"got {value!r}; list each completing word "
+                             f"on its own")
         return folded or None
     # same_as, a given name written short's full name (#789)
     if not isinstance(value, str) or not value.strip():
@@ -2254,7 +2265,8 @@ class Lexicon:
             `properties` that kind's behavioral properties as the files
             spell them (``addresses="given"``, ``after_given=True``,
             ``abbreviation=True``, ``attaches=[...]``, ``acronym=...``, ``attached="after"``,
-            ``may_be_initial=True``, ``same_as=...`` and
+            ``may_be_initial=True``, ``completed_by=[...]`` on a
+            ``bound_given`` reading, ``same_as=...`` and
             ``after_particle=True`` on a ``given`` reading, ``shared=True``
             on a name reading); a property given its unwritten value (``None``,
             ``False``) is removed. Where the word holds a reading of `kind`

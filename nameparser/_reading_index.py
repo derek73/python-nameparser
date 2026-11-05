@@ -92,7 +92,7 @@ BEHAVIORAL: dict[str, frozenset[str]] = {
                          "title_case_is_name"}),
     "particle": frozenset({"cased", "default"}),
     "conjunction": frozenset({"may_be_initial", "cased", "default"}),
-    "bound_given": frozenset({"cased", "default"}),
+    "bound_given": frozenset({"completed_by", "cased", "default"}),
     "relation": frozenset({"cased", "default"}),
     "name": frozenset({"after_particle", "cased", "default", "shared"}),
 }
@@ -540,6 +540,7 @@ class Compiled(TypedDict):
     SHARED_NAMES: frozenset[str]
     PARTICLE_GIVEN_NAMES: frozenset[str]
     SAINT_PARTICLES: frozenset[str]
+    BOUND_PHRASES: frozenset[str]
 
 
 def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
@@ -585,6 +586,7 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
     title_case_names: set[str] = set()
     shared: set[str] = set()
     after_particle: set[str] = set()
+    bound_phrases: set[str] = set()
     cased: dict[str, str] = {}
     for r, t in texts:
         p = r.props
@@ -639,6 +641,8 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
                 initial_conjunctions.add(t)
         elif r.category == "bound_given":
             bound.add(t)
+            bound_phrases.update(f"{t} {w}"
+                                 for w in p.get("completed_by", ()))
         elif r.category == "relation":
             markers.add(t)
         elif r.kind == "given" and "same_as" in p:
@@ -718,6 +722,10 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
         # open a place name or a surname (`Santa María`), never a given
         # name's second, so a given name phrase holds none (#704)
         SAINT_PARTICLES=frozenset(saints),
+        # `completed_by` resolved to the two-word given names it lists,
+        # the bound word and each word that completes it ('عبد الله'),
+        # which rules/P12 joins wherever they stand (#694)
+        BOUND_PHRASES=frozenset(bound_phrases),
     )
     # One form per post-nominal: the word test strips only edge periods
     # and the acronym test strips all of them, so a word in both is

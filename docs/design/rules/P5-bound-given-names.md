@@ -1,6 +1,6 @@
 # P5 — bound given names
 
-**When:** a recognized bound given-name word stands in a name with a word after it, as in "abdul salam ahmed salem".
+**When:** a recognized bound given-name word is the first name word, of the name or of the given part after a family comma, with a word after it, as in "abdul salam ahmed salem".
 
 **Then:** a recognized bound given-name word joins the word after it into one given name, where the name has a name word to spare or a family comma or a given-name title has lifted that need (below).
 

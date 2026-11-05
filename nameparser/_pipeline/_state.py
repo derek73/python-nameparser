@@ -200,6 +200,13 @@ SHARED_NAME_TAG = "vocab:shared-name"
 #: Dropped from the published token like the kind tags above (#704).
 PARTICLE_GIVEN_TAG = "vocab:particle-given"
 
+#: On a bound given name whose word and the word after it are a phrase
+#: of `Lexicon.bound_phrases` ('عبد' before 'الله'), which rules/P12
+#: joins past the first name word (`_group._join_bound_phrases`), and
+#: group leaves it only on a pair it joined. Dropped
+#: from the published token like the kind tags above (#694).
+BOUND_PHRASE_TAG = "vocab:bound-phrase"
+
 #: EITHER way a token joins the ambiguous credential class -- the
 #: vocabulary's claim and the writing's. The two emitters that report
 #: a fork the peel called and declined ask exactly this: `_group`'s

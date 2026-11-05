@@ -18,7 +18,9 @@ credential_words, honorific_words and patronymic_particles, internal
 sets, 3.0) and the
 titles written short (title_abbreviations, #999) and the names a
 community gives every member (shared_names) and the given names
-written behind a particle (particle_given_names, #704); and, since
+written behind a particle (particle_given_names, #704) and the
+two-word given names a bound word completes into (bound_phrases,
+#694); and, since
 2.4, Policy.unlisted_dotted_suffixes and Policy.unlisted_caps_suffixes,
 which decide whether an UNLISTED dotted or all-caps token joins the
 ambiguous credential class by SHAPE (#516) -- the all-caps half here
@@ -45,7 +47,9 @@ stages and dropped by assemble, Token.reading carrying the kind out,
 save the last, which marks no kind),
 "vocab:particle-ambiguous", "vocab:bound-given",
 "vocab:given-abbreviation", "vocab:shared-name" (which rules/P10, O6
-and O7 read) and "vocab:particle-given" (which P10 and O6 read), each
+and O7 read), "vocab:particle-given" (which P10 and O6 read) and
+"vocab:bound-phrase" (on a bound word and the word after it being a
+listed pair, which P12 joins and O6 counts once, #694), each
 dropped by assemble and carrying no kind out, "vocab:maiden-marker",
 "vocab:maiden-marker-cont"; in a namespace of its own,
 "shape:acronym"; and in another, "split:credential" and
@@ -83,7 +87,7 @@ from nameparser._policy import CapsSuffixes
 from nameparser._pipeline._state import (
     AGNOMEN_TAG, AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG, CREDENTIAL_WORD_TAG,
     GENERATION_WORD_TAG, GIVEN_ABBREVIATION_TAG, HONORIFIC_WORD_TAG,
-    PARTICLE_GIVEN_TAG, PATRONYMIC_TAG, SHAPE_ACRONYM_TAG, SHARED_NAME_TAG, SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, TITLE_AMBIGUOUS_TAG,
+    BOUND_PHRASE_TAG, PARTICLE_GIVEN_TAG, PATRONYMIC_TAG, SHAPE_ACRONYM_TAG, SHARED_NAME_TAG, SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, TITLE_AMBIGUOUS_TAG,
     TITLE_CASE_NAME_TAG,
     TRAILING_TITLE_TAG, ParseState,
     Deferred, PendingAmbiguity, PendingReading,
@@ -478,6 +482,25 @@ def classify(state: ParseState) -> ParseState:
         tokens = tuple(
             copy_with(t, tags=t.tags - _JOINING_TAGS) if i in stemmed else t
             for i, t in enumerate(tokens))
+    # rules/P12: "the two words are one name unit past the first name word"
+    # -- the phrase test over each word and the word after it, asked
+    # only of a name holding a bound word, in a plain loop, so that no
+    # other name pays a frame; the tag goes on the bound word, and
+    # group joins the pair (decisions/P12, #694)
+    phrases = state.lexicon._sets.bound_phrases
+    if phrases and not state.lexicon._sets.bound_given_names.isdisjoint(
+            folded):
+        heads = set()
+        for i in range(len(folded) - 1):
+            # rules/C10: "no join, maiden clause or connective reaches
+            # across it", so a delimiter glued to the bound word ends it
+            if (f"{folded[i]} {folded[i + 1]}" in phrases
+                    and i not in stemmed):
+                heads.add(i)
+        if heads:
+            tokens = tuple(
+                copy_with(t, tags=t.tags | {BOUND_PHRASE_TAG})
+                if i in heads else t for i, t in enumerate(tokens))
     # rules/H9: "the word is a title only inside a title phrase, and
     # elsewhere a name word" -- the phrase test (_vocab.title_readings)
     # asked per part, of the words carrying no role, and only of a part

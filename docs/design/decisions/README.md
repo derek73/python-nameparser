@@ -45,6 +45,7 @@ Entry conventions:
 - [P9 — a particle that is also a suffix word, beside a family comma](P9-particle-that-is-also-a-suffix-word-beside-a-family-comma.md)
 - [P10 — a given name a particle completes](P10-given-name-a-particle-completes.md)
 - [P11 — a lowercase particle opening a family-first name](P11-lowercase-particle-opening-a-family-first-name.md)
+- [P12 — a bound given name and the word that completes it](P12-bound-given-name-and-the-word-that-completes-it.md)
 
 ## Suffixes: generational & credentials (S)
 
