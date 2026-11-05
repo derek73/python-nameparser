@@ -209,6 +209,15 @@ def test_an_n_spelling_is_kept_where_its_merged_uses_pass_the_share() -> None:
     assert tool.select(given, surname, set(), share=0.5).count("martiño") == 1
     assert tool.n_spellings(["martiño"], given, Counter(), set(),
                             share=0.5) == ["martino"]
+    # the given side is summed too: zuriñe's 40 uses alone are 44% of
+    # the 90 its n spelling counts with the surname, the summed 100
+    # are 67%
+    given2 = Counter({"zuriñe": 40, "zurine": 60})
+    surname2 = Counter({"zurine": 50})
+    assert tool.n_spellings(["zuriñe"], given2, surname2, set(),
+                            share=0.5) == ["zurine"]
+    assert tool.n_spelling_uses(["zuriñe"], given2, surname2, set()) == [
+        ("zurine", 100, 50)]
 
 
 def test_the_list_holds_the_tools_cutoff_and_the_docs_say_so() -> None:

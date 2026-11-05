@@ -19,10 +19,10 @@ under Creative Commons Attribution 4.0
 half of whose uses are given-name uses, in rank order, written as
 nameparser/locales/_es_given_names.py writes its list, n spellings
 included (#1081; Martiño's is left out, Martino being mostly a
-surname). No Argentine
-source states its given names' surname uses, so the share is Spain's.
-tools/es_given_names.py derives the block below (``--list es-AR``),
-with the cutoff and share it states; do not edit it by hand.
+surname). No Argentine source states its given names' surname uses,
+so the share is Spain's. tools/es_given_names.py derives the block
+below (``--list es-AR``), with the cutoff and share it states; do not
+edit it by hand.
 """
 from __future__ import annotations
 

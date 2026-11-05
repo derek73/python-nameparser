@@ -170,14 +170,14 @@ FOLD_KEPT = {
 }
 
 
-def n_spellings(ranked: list[str], given: Counter[str],
-                surname: Counter[str], excluded: set[str],
-                share: float = SHARE) -> list[str]:
-    """The n spelling of each `ranked` word written with ñ, in rank
-    order, where that spelling is no listed or `excluded` word and
-    passes the `share` test over the uses of every spelling it stands
-    for: an ASCII writer turns Begoña and a Begona alike into
-    "Begona", so both count (#1081)."""
+def n_spelling_uses(ranked: list[str], given: Counter[str],
+                    surname: Counter[str],
+                    excluded: set[str]) -> list[tuple[str, int, int]]:
+    """Each candidate n spelling of a `ranked` word written with ñ, in
+    rank order, with its given and surname uses summed over every
+    spelling it stands for: an ASCII writer turns Begoña and a Begona
+    alike into "Begona", so both count (#1081). A spelling already
+    listed or `excluded` is no candidate."""
     def n(word: str) -> str:
         return word.replace("ñ", "n")
     merged_given: Counter[str] = Counter()
@@ -187,15 +187,20 @@ def n_spellings(ranked: list[str], given: Counter[str],
     for word, count in surname.items():
         merged_surname[n(word)] += count
     listed = set(ranked)
-    out = []
-    for word in ranked:
-        spelled = n(word)
-        if spelled == word or spelled in listed or spelled in excluded:
-            continue
-        g = merged_given[spelled]
-        if g >= share * (g + merged_surname[spelled]):
-            out.append(spelled)
-    return out
+    return [(n(word), merged_given[n(word)], merged_surname[n(word)])
+            for word in ranked
+            if n(word) != word and n(word) not in listed
+            and n(word) not in excluded]
+
+
+def n_spellings(ranked: list[str], given: Counter[str],
+                surname: Counter[str], excluded: set[str],
+                share: float = SHARE) -> list[str]:
+    """The candidate n spellings (`n_spelling_uses`) passing the
+    `share` test over their summed uses, in rank order."""
+    return [word for word, g, s in
+            n_spelling_uses(ranked, given, surname, excluded)
+            if g >= share * (g + s)]
 
 
 def excluded_words() -> set[str]:
@@ -307,8 +312,10 @@ def main(argv: list[str] | None = None) -> int:
     for i, word in enumerate(ranked, 1):
         print(f"{i:5}  {word:20} given {given[word]:>9,}  "
               f"surname {surname[word]:>8,}")
-    for word in spellings:
-        print(f"    n  {word:20} (the n spelling of a listed word)")
+    for word, g, s in n_spelling_uses(ranked, given, surname, excluded):
+        verdict = "kept" if word in spellings else "refused"
+        print(f"    n  {word:20} given {g:>9,}  surname {s:>8,}  "
+              f"{g / (g + s):.1%} given, {verdict}")
     covered = sum(given[w] for w in ranked)
     print(f"{len(ranked)} words, {covered / sum(given.values()):.1%} of "
           "given-word uses", file=sys.stderr)

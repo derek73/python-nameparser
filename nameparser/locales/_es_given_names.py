@@ -18,8 +18,9 @@ them -- lower-cased here, without accents, with ñ and ç -- which
 dropped -- and, after them, each word written with ñ again with n
 (``_N_SPELLINGS``), where that spelling passes the same share over
 every use it stands for, since data without the letter writes
-"Begona" for Begoña (#1081). tools/es_given_names.py derives the block
-below, with the cutoff and share it states; do not edit it by hand. A change to the
+"Begona" for Begoña (#1081). tools/es_given_names.py derives the
+block below, with the cutoff and share it states; do not edit it by
+hand. A change to the
 list is a change to the cutoff, decided against the per-country
 measurement in decisions/O6.
 """
