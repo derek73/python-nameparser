@@ -353,10 +353,14 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # suffix-or-name reports (five new rows one each, the 'Pedro Junior
     # Filho' row two, 'Pedro Júnior Neto' a second, 'José Silva Júnior'
     # one), each under three orders, and its review row 'Smith,
-    # Junior.', reporting suffix-or-name under three orders.
-    assert claims == 1582, (
-        f"the field sweep checks {claims} claims, recorded as 1582 on "
-        f"2026-11-03")
+    # Junior.', reporting suffix-or-name under three orders; 1582 ->
+    # 1600 on 2026-11-04, #877's report on a bare letter ending the
+    # given part after a comma, six rows each under three orders; 1600 ->
+    # 1609 the same day, its test review's particle-run and connective
+    # rows, three reports each under three orders.
+    assert claims == 1609, (
+        f"the field sweep checks {claims} claims, recorded as 1609 on "
+        f"2026-11-04")
 
 
 #: The kinds that report a fork between two readings of a word, so carry
@@ -536,7 +540,12 @@ _REVIEW_SHAPES = ("PhD VI", "Jr VI", "III VI", "Smith, John van VI",
                   "Sir abdul VI", "Dr. mc VI", "de VI", "Smith, Dr. de VI",
                   # the PR review's: a given-name title licenses the
                   # bound join only from the leading run, as group asks
-                  "abdul VI Sir.", "Sir Dr. abdul VI", "Dr. Sir abdul VI")
+                  "abdul VI Sir.", "Sir Dr. abdul VI", "Dr. Sir abdul VI",
+                  # #877's review: P1's fold opening the given part takes
+                  # a numeral standing past the part's first word into
+                  # the family
+                  "Smith, de Mesnil V", "Smith, de Mesnil VI",
+                  "Smith, Mc John V I")
 
 
 @pytest.mark.parametrize("order", _INVARIANT_ORDERS)
@@ -719,8 +728,12 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # 'Nasreen Sultana, MBBS' row reporting no fork under the three
     # orders; 459 -> 462 the same day, #684's two père rows under the
     # three orders; 462 -> 477 the same day, #1039's junior rows under
-    # the three orders
-    assert (checked, skipped) == (477, 330), (checked, skipped)
+    # the three orders; 477 -> 495 on 2026-11-04, #877's report on a bare
+    # letter ending the given part after a comma, six rows under the
+    # three orders, each stand-in landing in the alternative's field;
+    # 495 -> 504 the same day, its test review's two rows, three
+    # reports under the three orders
+    assert (checked, skipped) == (504, 330), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:
