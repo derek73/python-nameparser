@@ -1410,8 +1410,9 @@ def _phrase_shifts(pairs: int) -> int:
 def test_a_run_of_bound_phrases_shifts_nothing() -> None:
     """The join called alone on lists that count what their edits
     shift, which sees a slice or `del` per pair, as the frame count
-    above cannot. RECORDED NEGATIVE CONTROL: CONTROL with the join
-    deleting each pair's second piece in place (2026-11-04, #694)."""
+    above cannot. RECORDED NEGATIVE CONTROL: 4,900 and 79,600 elements
+    shifted at 50 and 200 pairs with the join deleting each pair's
+    second piece in place (2026-11-04, #694)."""
     assert [_phrase_shifts(n) for n in _SHIFT_UNITS] == [0, 0]
 
 
