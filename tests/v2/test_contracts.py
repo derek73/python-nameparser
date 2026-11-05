@@ -85,8 +85,8 @@ def test_every_guarded_config_module_is_imported() -> None:
 
     Since the vocabulary moved to nameparser/vocab/*.toml, whose
     compiler checks it (tests/v2/test_vocab.py), the asserts left are
-    on data still written in Python -- ``surnames`` today, which is
-    lazy (imported inside ``_snapshot``/``_default_lexicon``), so its
+    on data still written in Python -- ``_ko_surnames`` today, which is
+    lazy (imported inside ``_default_lexicon``), so its
     guard fires only incidentally, whenever some other test happens to
     build a default Lexicon. Importing them all here makes every guard
     unconditional.
@@ -101,11 +101,12 @@ def test_every_guarded_config_module_is_imported() -> None:
     import nameparser.config
 
     config_dir = pathlib.Path(nameparser.config.__file__).parent
-    # private modules excluded: _invariants DEFINES the guard (the
-    # substring hits its own def) and holds no vocabulary of its own
+    # _invariants excluded: it DEFINES the guard (the substring hits its
+    # own def) and holds no vocabulary of its own. Every module here is
+    # private since 3.0, so a privacy filter would leave nothing
     guarded = sorted(
         p.stem for p in config_dir.glob("*.py")
-        if not p.stem.startswith("_")
+        if p.stem != "_invariants"
         and "assert_normalized(" in p.read_text(encoding="utf-8"))
     assert guarded, (
         f"no guarded config module found in {config_dir} -- the "
@@ -170,12 +171,11 @@ def test_every_vocabulary_constant_is_frozen() -> None:
     exempt_seen = set()
     for path in sorted(config_dir.rglob("*.py")):
         relative = path.relative_to(config_dir).with_suffix("")
-        # _compiled holds the sets Lexicon.default() reads, private since
-        # their re-exporting modules went in 3.0 (#1007) but still
-        # module constants a caller can reach; the other private modules
-        # hold none
-        if (any(part.startswith("_") for part in relative.parts)
-                and relative.parts != ("_compiled",)):
+        # every module but the package's own: all of them are private
+        # since 3.0 (#1007, #1077), so a privacy filter would skip a new
+        # data module by default; _index, _rules and _invariants hold no
+        # upper-case set or mapping, and pass through unchecked
+        if relative.parts[-1] == "__init__":
             continue
         stem = ".".join(relative.parts)
         module = importlib.import_module(f"nameparser.config.{stem}")
@@ -202,7 +202,7 @@ def test_every_vocabulary_constant_is_frozen() -> None:
     # A FLOOR, not a presence check: `assert checked` is satisfied by
     # one surviving constant, so a filter or a path change that quietly
     # dropped most of them would still read as a pass. 24 constants:
-    # _compiled's 23 sets and surnames.KOREAN_SURNAMES (measured
+    # _compiled's 23 sets and _ko_surnames.KOREAN_SURNAMES (measured
     # 2026-11-02, when 3.0 removed the modules that re-exported
     # _compiled's, #1007). Raise this when a constant is added; a drop is
     # the regression.
@@ -246,7 +246,7 @@ def test_the_documented_replacements_for_an_in_place_edit_work() -> None:
 @pytest.mark.parametrize("code", [
     "import nameparser",
     "from nameparser import *",
-    "from nameparser.config.surnames import KOREAN_SURNAMES",
+    "from nameparser import Lexicon; Lexicon.default().surnames",
     "from nameparser import parse; parse('John Smith')",
 ])
 def test_imports_and_the_core_stay_quiet(code: str) -> None:
@@ -260,29 +260,3 @@ def test_imports_and_the_core_stay_quiet(code: str) -> None:
     assert result.returncode == 0, result.stderr
 
 
-@pytest.mark.parametrize("module_name", ["nameparser.config.surnames"])
-def test_star_import_binds_the_module_s_live_constants(module_name: str) -> None:
-    """``from x import *`` consults ``__all__`` and nothing else.
-
-    The expected set is DERIVED from the module rather than listed, so a
-    constant added to the module without a matching
-    ``__all__`` entry fails here, and each is checked to be the module's
-    own object, so an ``__all__`` entry routed elsewhere fails too, as
-    does a public name the module imports that a star import binds
-    (#356).
-    """
-    import importlib
-
-    module = importlib.import_module(module_name)
-    # every live constant is a frozenset (the 2.2 freeze), so the
-    # filter keeps any other upper-case module name out of the set
-    live = {n for n, v in vars(module).items()
-            if n.isupper() and not n.startswith("_")
-            and isinstance(v, frozenset)}
-    assert live
-    namespace: dict[str, object] = {}
-    exec(f"from {module_name} import *", namespace)  # noqa: S102
-    bound = {n for n in namespace if not n.startswith("__")}
-    assert bound == live
-    for name in live:
-        assert namespace[name] is vars(module)[name], name

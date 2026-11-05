@@ -1883,7 +1883,7 @@ class Lexicon:
     #: written wholly in a script :attr:`Policy.segment_scripts
     #: <nameparser.Policy.segment_scripts>` activates. The default
     #: carries the Korean census list
-    #: (:data:`~nameparser.config.surnames.KOREAN_SURNAMES`); Chinese
+    #: (``nameparser/config/_ko_surnames.py``); Chinese
     #: surnames ship in locales.ZH because Han segmentation is opt-in.
     #: A list, outside the per-word model: add to it with a fragment,
     #: ``lexicon | Lexicon(surnames={...})``.
@@ -2411,7 +2411,7 @@ def _default_lexicon() -> Lexicon:
     # it, never compiled from the index here (_compiled_for), so
     # Lexicon.default() loads no index.
     from nameparser.config._compiled import CAPITALIZATION_EXCEPTIONS
-    from nameparser.config.surnames import KOREAN_SURNAMES
+    from nameparser.config._ko_surnames import KOREAN_SURNAMES
 
     # every vocabulary constant is a frozenset since #293, and this
     # cache reading them ONCE is the reason they are frozen.

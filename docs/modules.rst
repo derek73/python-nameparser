@@ -210,9 +210,7 @@ and :meth:`Lexicon.readings_of() <nameparser.Lexicon.readings_of>` what
 one word may be read as; to change a default for your parses, configure
 a :class:`~nameparser.Lexicon` (:doc:`customize`). The modules that
 exposed its word lists as constants through 2.x are gone in 3.0
-(:doc:`migrate`). One data module stays in ``nameparser.config``: the
-Korean surname list.
+(:doc:`migrate`), and ``surnames``, the Korean surname list, is private:
+its words are ``Lexicon.default().surnames``.
 
 .. automodule:: nameparser.config
-.. automodule:: nameparser.config.surnames
-   :members:

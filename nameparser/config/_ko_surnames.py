@@ -1,6 +1,7 @@
+"""The Korean census surnames, read by ``Lexicon.default()`` as its
+``surnames`` field. Private since 3.0, ``nameparser.config.surnames``
+until then (2.8.2 warned of the move)."""
 from nameparser.config._invariants import assert_normalized
-
-__all__ = ["KOREAN_SURNAMES"]
 
 # Born a frozenset (#293's convention: a mutable module constant edited
 # after the first parse would silently disagree with the cached
