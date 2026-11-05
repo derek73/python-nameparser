@@ -86,7 +86,7 @@ def test_every_guarded_config_module_is_imported() -> None:
     Since the vocabulary moved to nameparser/vocab/*.toml, whose
     compiler checks it (tests/v2/test_vocab.py), the asserts left are
     on data still written in Python -- ``_ko_surnames`` today (the
-Korean census list, ``surnames.py``'s until 2.8.2), which is
+    Korean census list, ``surnames.py``'s until 2.8.2), which is
     lazy (imported inside ``_snapshot``/``_default_lexicon``), so its
     guard fires only incidentally, whenever some other test happens to
     build a default Lexicon. Importing them all here makes every guard

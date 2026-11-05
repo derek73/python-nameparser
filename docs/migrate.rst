@@ -84,13 +84,14 @@ Deprecated in 2.8.1
 -------------------
 
 2.8.0 gave no warning for three 3.0 changes, and 2.8.1 adds one for
-each: a ``DeprecationWarning`` at the line in your code that makes the
+each, 2.8.2 adding ``nameparser.config.surnames`` to the second: a ``DeprecationWarning`` at the line in your code that makes the
 call, naming what 3.0 does instead and linking the `3.0 migration
 guide <https://nameparser.readthedocs.io/en/latest/migrate.html>`__.
 The 3.0 spellings do not run on 2.x, so the old spelling is still the
 one to write here; filter the warning by message if it is in your way
-until you upgrade. The one exception is ``surnames``, which 3.0 keeps
-as a field: ``lexicon | Lexicon(surnames=frozenset({"kim"}))`` and
+until you upgrade. The one exception is the ``Lexicon`` field
+``surnames``, which 3.0 keeps (the module of that name it makes
+private): ``lexicon | Lexicon(surnames=frozenset({"kim"}))`` and
 ``dataclasses.replace(lexicon, surnames=...)`` run quietly on 2.8.1
 and in 3.0 alike, and the warning on ``add()`` and ``remove()`` with
 ``surnames`` spells the call.
