@@ -113,11 +113,11 @@ def test_locales_module_attribute_access() -> None:
 def test_locales_get_and_available() -> None:
     assert locales.get("ru") is locales.RU
     assert set(locales.available()) == {
-        "bn", "cs", "es", "ga", "gd", "hi", "hr", "ja", "ne", "pt", "pt_br",
+        "bn", "cs", "es", "es_ar", "ga", "gd", "hi", "hr", "ja", "ne", "pt", "pt_br",
         "ru", "sk", "sl", "tr_az", "zh"}
     with pytest.raises(
             KeyError,
-            match="bn, cs, es, ga, gd, hi, hr, ja, ne, pt, pt_br, ru, sk, sl, tr_az, zh"):
+            match="bn, cs, es, es_ar, ga, gd, hi, hr, ja, ne, pt, pt_br, ru, sk, sl, tr_az, zh"):
         locales.get("xx")
     # the segmenter FACTORY is not a locale: it is an ordinary function
     # on the package, so it must not appear among the codes
@@ -1345,6 +1345,13 @@ _ROTATORS["es"] = [
     "김민준 1",                       # rules/O6 over a segmented name and a word of no letter
     "Jan\u200bPavel -",               # rules/O6 over a zero-width split and a lone mark
 ]
+# es_ar: es's choice and patch, so es's rows, but for the zero-width
+# split, whose `pavel` the AR list vetoes; the list's own words read as
+# the default does, so they are no rotators (held in the contents test)
+_ROTATORS["es_ar"] = [
+    *(n for n in _ROTATORS["es"] if n != "Jan\u200bPavel -"),
+    "Ana\u200bGarcía -",              # rules/O6 over a zero-width split and a lone mark
+]
 _ROTATORS["pt"] = [
     "Doutor João Silva",             # doutor
     "Silva, Doutor João",            # doutor after a family comma
@@ -2388,6 +2395,33 @@ def test_a_gaelic_pack_keeps_the_mac_masks(
     # reading, still writes the inner capital
     parser = parser_for(pack, strict=strict)
     assert str(parser.capitalized(parser.parse(name))) == repaired
+
+
+def test_the_es_ar_pack_is_es_with_a_longer_given_name_list() -> None:
+    # decisions/O6, 2026-11-04: es's choice (es-AR selects es.toml, no
+    # file of its own) and es's [rules], with a list that holds es's
+    from nameparser._reading_index import selected
+    from nameparser.locales import es_ar as _es_ar
+    from nameparser.locales._es_ar_given_names import GIVEN_NAMES as AR
+    from nameparser.locales._es_given_names import GIVEN_NAMES as ES
+    assert locales.ES_AR == Locale(code="es_ar", lexicon=Lexicon(given_names=AR),
+                                   policy=locales.ES.policy,
+                                   languages=frozenset({"es-AR"}))
+    assert selected(locales.ES_AR.languages) == selected(locales.ES.languages)
+    assert ES < AR
+    ar, es = _require_packed("es_ar"), _require_packed("es")
+    # a word Spain bears mostly as a surname and Argentina as a given name
+    assert es.parse("Pablo Sebastián Rosales").family == "Sebastián Rosales"
+    assert ar.parse("Pablo Sebastián Rosales").family == "Rosales"
+    # two family names still read as two; a word in neither list is taken
+    assert ar.parse("Ana García López").family == "García López"
+    assert ar.parse("Juan Martín Gómez").family == "Martín Gómez"
+    # stacked on es, the union of the lists is es_ar's, and the patches agree
+    stacked = parser_for(locales.ES, locales.ES_AR)
+    for text in _ROTATORS["es_ar"] + _ROTATORS["es"]:
+        assert stacked.parse(text).as_dict() == ar.parse(text).as_dict(), text
+    assert _es_ar.DEVIATES("Pablo Sebastián Rosales")
+    assert not _es_ar.DEVIATES("Pablo Rosales")
 
 
 def test_a_strict_choice_keeps_only_the_mac_masks_its_files_hold() -> None:

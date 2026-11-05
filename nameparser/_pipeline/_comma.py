@@ -43,7 +43,8 @@ from nameparser._pipeline._state import (
 )
 from nameparser._pipeline._vocab import (
     ROMAN, caps_shape_candidate, claimed_as_non_name,
-    composed_len, delimiter_cores, glued_cores, glued_stem, glues, is_caps_word,
+    composed_len, delimiter_cores, ends_in_a_generation, glued_cores,
+    glued_stem, glues, is_caps_word,
     is_paired_initials, is_single_letter_numeral, is_wholly_suffix,
     name_reading, name_word_count, reads_as_generation, suffix_reading,
     surname_unit_facts, unit_ends, written_as_a_name,
@@ -172,7 +173,8 @@ def _name_contrast(state: ParseState, seg0: Sequence[int],
         for i in seg0)
 
 
-def _whole_name(seg0: Sequence[int], tokens: Sequence[WorkToken]) -> bool:
+def _whole_name(seg0: Sequence[int], tokens: Sequence[WorkToken],
+                one_case: bool | None) -> bool:
     """rules/C3's count before the comma for an unambiguous
     credential, read off classify's tags (the ambiguous class's count
     of NAME words, which leaves titles out, is
@@ -180,7 +182,11 @@ def _whole_name(seg0: Sequence[int], tokens: Sequence[WorkToken]) -> bool:
     the name word it attaches to one unit, a connective join not, #575)
     holding a word that is not a suffix word -- a title counts, being a
     word to the count an unambiguous credential takes, and so does a
-    suffix word opening the part with a name word behind it."""
+    suffix word opening the part with a name word behind it. A numeral
+    ending the part, or standing before the suffix words that end it,
+    that the trailing fork reads as the generation is no name word, as
+    a listed one is not (`one_case` is
+    ParseState.one_case, for that fork)."""
     # rules/C3: "a particle run and the one name word it attaches to are
     # one word"
     # the part before a family comma merges no member pair (rules/S12)
@@ -202,6 +208,17 @@ def _whole_name(seg0: Sequence[int], tokens: Sequence[WorkToken]) -> bool:
     # member is half a credential, not a name (rules/S12)
     if name_behind:
         named.update(opener)
+    # rules/C3: "a numeral ending the part, or standing before the
+    # listed suffix words it ends with, that the trailing fork reads as the
+    # generation is no name word" ('Dumas VI, Jr.' and 'Dumas VI MD,
+    # Ed' as their 'III' twins); decisions/C3 (#893). The suffix
+    # words are the pieces the loop above left out of `named`
+    e = len(seg0) - 1
+    while e > 0 and seg0[e] not in named:
+        e -= 1
+    if e > 0 and ends_in_a_generation(
+            [tokens[seg0[e - 1]].text, tokens[seg0[e]].text], one_case):
+        named.discard(seg0[e])
     if len(named) < 2:
         return False
     idx = list(seg0)
@@ -286,7 +303,7 @@ def _behind_a_generation(state: ParseState, seg0: Sequence[int],
                              lex._sets.maiden_markers)
     front = [i for i in seg0[:-1]
              if i < clause_at and tokens[i].role is None]
-    if not _whole_name(front, tokens):
+    if not _whole_name(front, tokens, state.one_case):
         return None
     # a one-letter numeral is the generation only where the name has a
     # word to spare for it, a title being none (rules/S10), and is no
@@ -368,7 +385,7 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
             if tokens[i].text in cores:
                 core_idx.append(i)
         if core_idx:
-            whole = _whole_name(seg0, tokens)
+            whole = _whole_name(seg0, tokens, state.one_case)
             if not whole:
                 core_idx = []
     # a set for the membership test: a list scanned per token was
@@ -573,7 +590,7 @@ def decide(state: ParseState, splits: bool | None = True) -> ParseState:
             anchored, absorbed, licensed, head_named=names >= 2)
     if not listing:
         if whole is None:
-            whole = _whole_name(seg0, tokens)
+            whole = _whole_name(seg0, tokens, state.one_case)
         # rules/C1: "By default a recognized suffix word counts even
         # written like an initial" -- behind a whole name ('John Smith, V.')
         # rules/C10: "A delimiter glued to a suffix word parts it from

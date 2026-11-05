@@ -244,9 +244,18 @@ def test_every_choosable_tag_stands_under_a_country_or_is_named_unmeasured() -> 
 
 
 def test_every_shipped_pack_rides_on_some_tag() -> None:
+    from nameparser._reading_index import selected
     reached = {item.lower() for tag in cd.choosable() for spec in cd.gap_specs(tag)
                for item in spec.partition(":")[2].split("+") if item.isupper()}
-    assert set(locales.available()) <= reached
+    # a pack choosing a region tag no file holds (es_ar's es-AR) selects
+    # its language's files and nothing more, so the strict gap the report
+    # measures for the pack choosing those files is its own
+    files = {code: selected(locales.get(code).languages)
+             for code in locales.available() if locales.get(code).languages}
+    same_files = {code for code, f in files.items()
+                  if any(f == files.get(other) for other in reached - {code})}
+    assert same_files == {"es_ar"}
+    assert set(locales.available()) <= reached | same_files
 
 
 def test_a_pack_choosing_no_language_is_stacked_with_its_tag() -> None:
@@ -399,3 +408,105 @@ def test_select_takes_each_groups_first_records_up_to_the_cap(
     assert [r["name"] for r in got[(cd.PSC, "Vietnamese")]] == ["Ana Souza0", "Ana Souza1"]
     assert set(got) == {(cd.PSC, "Vietnamese")}
     assert counts[(cd.PSC, "Martian")] == 1 and counts[(cd.PSC, "Vietnamese")] == 3
+
+
+# --- score -------------------------------------------------------------------------
+
+def test_a_switch_suffix_sets_bool_policy_fields_over_the_packs_patch() -> None:
+    assert cd.switched("plain:ES@two_family_names=0,two_given_names=1") == (
+        "plain:ES", {"two_family_names": False, "two_given_names": True})
+    # the switch is set last, so it turns off what the pack's [rules] turned on
+    assert not cd.build("plain:ES@two_family_names=0").policy.two_family_names
+    assert cd.build("default@two_given_names=1").policy.two_given_names
+    # an expr's own @ is Python, not a switch
+    assert cd.switched("expr:Parser()@x") == ("expr:Parser()@x", {})
+
+
+@pytest.mark.parametrize("spec", ["default@name_order=1", "default@two_family_names=yes",
+                                  "default@two_family_names", "default@nope=1",
+                                  "default@two_family_names=1,two_family_names=0"])
+def test_a_misnamed_switch_is_refused(spec: str) -> None:
+    with pytest.raises(ValueError, match="switch|twice"):
+        cd.build(spec)
+
+
+def test_expand_writes_every_combination_in_full() -> None:
+    assert cd.expand(["default"], []) == ["default"]
+    assert cd.expand(["default", "plain:ES"], ["two_family_names", "two_given_names"]) == [
+        f"{spec}@two_family_names={a},two_given_names={b}"
+        for spec in ("default", "plain:ES") for a in "01" for b in "01"]
+
+
+def test_score_rows_counts_agreement_and_fixes_and_breaks_against_the_first() -> None:
+    rows = [_orcid("Ana García López", "Ana", "García López"),   # O6 reads it right
+            _orcid("Ana María López", "Ana María", "López"),     # the default does
+            _orcid("Ana López", "Ana", "López")]                 # both do
+    specs = ("default", "default@two_family_names=1")
+    readings = cd._read_chunk([(r["name"], None, specs) for r in rows])[1]
+    scored, per = cd.score_rows(rows, cd.local_agreement.FIELDED[cd.ORCID], readings,
+                                cd.local_agreement._title_words(Lexicon.default()))
+    assert scored == 3
+    assert [(s.agree, s.fixed, s.broken) for s in per] == [(2, 0, 0), (2, 1, 1)]
+    lines = cd.format_score(specs, [{"source": cd.ORCID, "group": "XX", "scored": scored,
+                                     "specs": [dict(spec=s, agree=p.agree, fixed=p.fixed,
+                                                    broken=p.broken)
+                                               for s, p in zip(specs, per)]}])
+    assert lines[-1].split()[:5] == ["ORCID", "XX", "3", "66.67", "66.67"]
+    assert lines[-1].split()[5:] == ["[0]", "+0.00", "0/0"]
+
+
+def test_score_selects_a_named_group_or_a_languages_countries(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    _psc(monkeypatch, [("Ana Souza", "Brazilian"), ("Bo Lima", "French"),
+                       ("Cy Pena", "Spanish")])
+    monkeypatch.setattr(cd, "GAP_SOURCES", ((cd.PSC, "nationality"),))
+    assert set(cd.score_select(["French"], [], cap=5)) == {(cd.PSC, "French")}
+    assert set(cd.score_select([], ["es"], cap=5)) == {(cd.PSC, "Spanish")}
+    assert len(cd.score_select([], [], cap=5)) == 3
+
+
+def test_main_runs_a_score_end_to_end(monkeypatch: pytest.MonkeyPatch,
+                                      capsys: pytest.CaptureFixture[str]) -> None:
+    _psc(monkeypatch, [("Ana Souza", "Brazilian"), ("Bo Lima", "Brazilian")])
+    monkeypatch.setattr(cd, "GAP_SOURCES", ((cd.PSC, "nationality"),))
+    assert cd.main(["score", "default", "--switches", "two_family_names",
+                    "--group", "Brazilian", "--min", "1", "--jobs", "1"]) == 0
+    out = capsys.readouterr().out
+    assert "[1] default@two_family_names=1" in out
+    assert out.splitlines()[-1].split()[:5] == ["PSC", "Brazilian", "2", "100.00", "100.00"]
+
+
+def test_a_second_suffix_or_switches_over_an_expr_is_refused() -> None:
+    with pytest.raises(ValueError, match="one @ suffix"):
+        cd.build("default@two_family_names=1@two_given_names=0")
+    # each names the fix that applies to it: an expr: reads no suffix
+    with pytest.raises(ValueError, match="never reads; set the fields in the expression's Policy"):
+        cd.expand(["expr:Parser()"], ["two_family_names"])
+    with pytest.raises(ValueError, match="drop the SPEC's suffix, or --switches"):
+        cd.expand(["plain:ES@two_given_names=1"], ["two_family_names"])
+
+
+def test_score_drops_title_and_empty_box_records_and_small_groups(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    big = [_orcid("Ana García López", "Ana", "García López"),
+           _orcid("Ana López", "Ana", ""),                   # no family box: out
+           _orcid("Dr Ana López", "Dr Ana", "López")]        # a title typed as given: out
+    small = [{**_orcid("Bo Lima", "Bo", "Lima"), "country": "YY"}]
+    monkeypatch.setattr(cd, "score_select", lambda *_a: {(cd.ORCID, "XX"): big,
+                                                         (cd.ORCID, "YY"): small})
+    results = cd.score(("default",), [], [], cap=10, floor=1, jobs=1)
+    assert [(r["group"], r["scored"]) for r in results] == [("XX", 1), ("YY", 1)]
+    results = cd.score(("default",), [], [], cap=10, floor=2, jobs=1)
+    assert results == []
+
+
+def test_score_refuses_a_group_or_language_that_selects_nothing(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    _psc(monkeypatch, [("Ana Souza", "Brazilian")])
+    monkeypatch.setattr(cd, "GAP_SOURCES", ((cd.PSC, "nationality"),))
+    with pytest.raises(SystemExit, match="Brazil: no record holds it"):
+        cd.score_select(["Brazil"], [], cap=5)
+    for argv in (["--languages", "bo"], ["--min", "0"]):
+        with pytest.raises(SystemExit) as stop:
+            cd.main(["score", "default", *argv])
+        assert stop.value.code == 2

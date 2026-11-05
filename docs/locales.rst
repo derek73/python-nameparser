@@ -556,7 +556,7 @@ look one up dynamically by its lowercase code with
 .. doctest::
 
     >>> locales.available()
-    ('bn', 'cs', 'es', 'ga', 'gd', 'hi', 'hr', 'ja', 'ne', 'pt', 'pt_br', 'ru', 'sk', 'sl', 'tr_az', 'zh')
+    ('bn', 'cs', 'es', 'es_ar', 'ga', 'gd', 'hi', 'hr', 'ja', 'ne', 'pt', 'pt_br', 'ru', 'sk', 'sl', 'tr_az', 'zh')
     >>> locales.get("ru") is locales.RU
     True
 
@@ -603,6 +603,13 @@ Shipped packs
        given name out of the family (``Gabriel García Márquez`` →
        family ``García Márquez``, ``José Luis Pérez`` → family
        ``Pérez``). See `Spanish and Portuguese titles`_.
+   * - ``es_ar``
+     - Argentine Spanish — ``es`` with a longer given-name list, one
+       holding given names that Spain bears often enough as surnames
+       to leave off ``es``'s list, which Argentine names write before a
+       single surname (``Pablo Sebastián
+       Rosales`` → family ``Rosales``, where ``es`` gives ``Sebastián
+       Rosales``). See `Spanish and Portuguese titles`_.
    * - ``ga``
      - Irish — chooses ``ga``, which turns on the clan particles the
        default leaves off: ``Nic`` (daughter of), the married forms
@@ -837,7 +844,56 @@ stays out of it:
 Among ORCID's researchers in the 11 Spanish-speaking countries
 measured, the names that agree in every box with the filer rise from
 13.5% (Peru) to 82.5% (Argentina) by default to 89.3% (Argentina) to
-97.3% (Chile) under the pack (measured 2026-10-30). A compound given name stays opt-in
+97.3% (Chile) under the pack (measured 2026-10-30).
+
+Two family names are less settled in Argentina than in Spain and most
+of Latin America, and many of its commonest second given names, ``Sebastián``, ``Nicolás``,
+``Matías``, ``Andrés``, are given names Spain also bears as surnames
+in a fifth to a quarter of their uses, so ``es``'s list, which keeps
+only words given in at least 90% of their uses, leaves them out and the
+switch takes them into the family.
+``es_ar`` is ``es`` with 5,000 given names from the same census tables,
+the ones counted as given names in at least half their uses:
+
+.. doctest::
+
+    >>> argentina = parser_for(locales.ES_AR)
+    >>> spain.parse("Pablo Sebastián Rosales").family
+    'Sebastián Rosales'
+    >>> argentina.parse("Pablo Sebastián Rosales").family
+    'Rosales'
+    >>> argentina.parse("Gabriel García Márquez").family
+    'García Márquez'
+
+Measured again on 2026-11-04, after later changes to the parser and
+without the records whose given box opens with a title, the Argentine
+researchers' names that agree in every box rise from 83.4% by default
+and 90.2% under ``es`` to 96.1% under ``es_ar``; among Argentine inventors on US patents, 93.8% by
+default, 86.2% under ``es`` and 92.7% under ``es_ar``, since most of
+them write one family name. A word Spain bears mostly as a surname,
+``Martín``, ``Esteban``, is on neither list, so the switch still takes
+it. Choosing ``es`` and
+``es_ar`` together reads as ``es_ar``.
+
+The longer list costs a name written with two family names whose first
+family name is on it. ``Santiago`` is a given name in 57% of its uses
+in Spain, so ``es_ar`` lists it and reads it as a middle name, where
+``es`` keeps both family names:
+
+.. doctest::
+
+    >>> spain.parse("Carlos Santiago López").family
+    'Santiago López'
+    >>> argentina.parse("Carlos Santiago López").family
+    'López'
+
+That cost is why ``es`` keeps its shorter list: in Spain, Mexico,
+Peru, Bolivia, Ecuador, Costa Rica, Guatemala, Cuba, the Dominican
+Republic and Puerto Rico, the longer list
+reads fewer researchers' names right than ``es``'s does (measured
+2026-11-04).
+
+A compound given name stays opt-in
 (``two_given_names``): people filling a form with a middle-name box put
 the second given name there. ``pt`` turns neither switch on, because it serves every
 Portuguese-speaking country: among ORCID's researchers the switch
@@ -1034,7 +1090,7 @@ by ``tests/v2/test_locales.py``:
      one per shape of the vocabulary it ships: single surname, compound
      surname, and any spelling variant it means to cover.
    - **By a choice of languages** (``ne``, ``hi``, ``bn``, ``cs``, ``sk``,
-     ``sl``, ``hr``, ``ga``, ``gd``, ``es``, ``pt``, ``pt_br``): a name for each word the choice changes, in each script it
+     ``sl``, ``hr``, ``ga``, ``gd``, ``es``, ``es_ar``, ``pt``, ``pt_br``): a name for each word the choice changes, in each script it
      is written in and each position where the default reads it
      otherwise — ``test_choice_rotators_cover_every_changed_word`` fails
      until every word is held.
