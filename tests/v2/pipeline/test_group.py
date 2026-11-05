@@ -202,7 +202,7 @@ def _phrase_pieces(text: str, lexicon: Lexicon = _PHRASE_LEX) -> list[list[str]]
 
 
 def test_a_bound_word_and_a_word_that_completes_it_join_past_the_start() -> None:
-    # rules/P12 (#694): the listed pair, wherever it stands
+    # rules/P12 (#694): the listed pair, past the first name word
     assert _phrase_pieces("سعيد عبد الله") == [["سعيد", "عبد الله"]]
     assert _phrase_pieces("سعيد عبد الله عبد الرحمن") == \
         [["سعيد", "عبد الله", "عبد الرحمن"]]
@@ -232,7 +232,8 @@ def test_a_caller_lists_the_words_that_complete_a_bound_word() -> None:
 
 
 def test_a_delimiter_glued_to_either_word_ends_the_pair() -> None:
-    # rules/C10: "no join, maiden clause or connective reaches across it"
+    # a delimiter glued to the bound word parts the pair, as a comma
+    # would (the C10 rule); one glued to the word after it does not
     for text in ("حسن, سعيد عبد; الله", "حسن, سعيد عبد الله; حسين"):
         state = _grouped(text, lexicon=Lexicon.default())
         joined = [p for seg in state.pieces for p in seg if len(p) > 1]

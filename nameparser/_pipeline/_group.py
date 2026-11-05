@@ -623,7 +623,7 @@ def _settle_splits(pieces: list[Piece], ptags: list[set[str]]) -> None:
         k += 1
 
 
-# rules/P12: "the two words are one given name wherever they stand"
+# rules/P12: "the two words are one name unit past the first name word"
 # -- past the piece P5's leading join reads, which this leaves as it
 # was, its reserve included; classify's tag says the word and the
 # token after it are a listed phrase (history: decisions/P12, #694)

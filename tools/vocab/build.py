@@ -918,7 +918,7 @@ def _check_reading(r: Reading, pool: Pool) -> None:
     _check_default(where, p)
     if "completed_by" in p:
         # the words that complete a bound given name into one given
-        # name wherever it stands (rules/P12): each one word, written
+        # name past the first name word (rules/P12): each one word, written
         # as the fold leaves it, so the phrase test matches it
         done = p["completed_by"]
         if (not isinstance(done, list) or not done

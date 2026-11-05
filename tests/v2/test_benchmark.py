@@ -1370,7 +1370,10 @@ def test_a_run_of_bound_phrases_joins_in_one_pass() -> None:
     is, by the frame count of `merge_pieces`: a call per pair, each
     shifting every piece behind it, was the quadratic.
     RECORDED NEGATIVE CONTROL: 50 and 200 calls at 50 and 200 pairs
-    with the join merging each pair through it (2026-11-04, #694)."""
+    with the join merging each pair through it (2026-11-04, #694). A
+    slice written inline would evade this, as it would the split-pair
+    row's; group builds its own pieces, which `_ShiftCountingList`
+    cannot reach."""
     if sys.getprofile() is not None:
         pytest.skip("a profile hook is already installed; this test owns it")
     for pairs in _SHIFT_UNITS:

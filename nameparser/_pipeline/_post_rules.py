@@ -219,7 +219,7 @@ def _units(tokens: list[WorkToken], idx: list[int]) -> list[list[int]]:
     lone-piece site test would not fire at all.) The bound-given join grouping
     never built at all: P5 joins only where the bound word is the
     first non-title piece, save a listed two-word given name P12
-    joins wherever it stands (#694), and at a fold site the first piece
+    joins past the first name word (#694), and at a fold site the first piece
     is the particle -- "ibn Awf abdul Rahman" reaches here as four
     separate pieces. The tag is the only witness in both cases.
 
@@ -267,7 +267,7 @@ def _family_word_count(tokens: list[WorkToken], family: list[int],
     as one, as the word O6 takes is counted (#959). A bound word counts
     with the word that completes it, the pair P12 joins being one name
     ('عبد الله', #694)."""
-    # rules/P12: "the two words are one given name wherever they stand"
+    # rules/P12: "the two words are one name unit past the first name word"
     # -- so the bound word counts with the word after it
     words = sum(1 if hyphen_joins
                 else len([part for part in _HYPHENS.split(tokens[i].text)

@@ -482,7 +482,7 @@ def classify(state: ParseState) -> ParseState:
         tokens = tuple(
             copy_with(t, tags=t.tags - _JOINING_TAGS) if i in stemmed else t
             for i, t in enumerate(tokens))
-    # rules/P12: "the two words are one given name wherever they stand"
+    # rules/P12: "the two words are one name unit past the first name word"
     # -- the phrase test over each word and the word after it, asked
     # only of a name holding a bound word, in a plain loop, so that no
     # other name pays a frame; the tag goes on the bound word, and

@@ -180,7 +180,8 @@ PARTICLE_GIVEN_TAG = "vocab:particle-given"
 
 #: On a bound given name whose word and the word after it are a phrase
 #: of `Lexicon.bound_phrases` ('عبد' before 'الله'), which rules/P12
-#: joins wherever it stands (`_group._join_bound_phrases`). Dropped
+#: joins past the first name word (`_group._join_bound_phrases`), and
+#: group leaves it only on a pair it joined. Dropped
 #: from the published token like the kind tags above (#694).
 BOUND_PHRASE_TAG = "vocab:bound-phrase"
 

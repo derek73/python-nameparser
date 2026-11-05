@@ -607,7 +607,7 @@ class _LexiconSets:
     #: name phrase opens with one, `Santa María` being a surname (#704)
     saint_particles: frozenset[str]
     #: the two-word given names a bound word's `completed_by` lists
-    #: ('عبد الله'), which rules/P12 joins wherever they stand (#694)
+    #: ('عبد الله'), which rules/P12 joins past the first name word (#694)
     bound_phrases: frozenset[str]
 
 

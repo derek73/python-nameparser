@@ -2,7 +2,7 @@
 
 **When:** a bound given-name word stands past the first name word, and the word after it is one the vocabulary lists as completing it, as in "طارق عبد العزيز".
 
-**Then:** the two words are one given name wherever they stand, a name unit that position places.
+**Then:** the two words are one name unit past the first name word, a unit that position places.
 
 - **The completing word is one a reading lists** (`completed_by` on the bound word's reading): for Arabic-script `عبد`, the one-word names of God, the other divine epithets and the devotional completions written after it, each in its hamza-less and Persian spellings.
   ```
@@ -33,9 +33,8 @@
 
 **Accepted:**
 
-- A completing word written with its vowel points or with the alef wasla (`ٱلله`, `اَلله`) is not listed, and keeps its words apart; no corpus held one after `عبد` on 2026-11-04.
+- A completing word written with its vowel points or with the alef wasla (`ٱلله`, `اَلله`) is not listed, and keeps its words apart; one JRC-Names spelling held one after `عبد` on 2026-11-04 (`عبد ِالعزيز`).
 - A kunya opening the name is P5's join of its two bound words, and the word completing the second is left to position (`أبو عبد الله محمد` reads given 'أبو عبد', middle 'الله'), as before this rule; behind a given name the kunya is the family (`محمد أبو عبد الله`).
-- A completing word with punctuation glued to it (`عبد الله،`) is not listed either: the Arabic comma is no comma to the parser.
 
 ---
 **Signal:** neighbor: a bound given-name word and the word after it, which its reading lists
