@@ -13,7 +13,10 @@ compatibility layer.** ``HumanName``, ``Constants``, the shared
 names of the word lists; ``parse()`` and ``Parser`` are the
 replacement. 2.8 is the last release that has them, and it warns at
 each use 3.0 removes; `Coming from 1.x or 2.x`_ below says where to
-start. The `release log
+start. 3.0 also configures a ``Lexicon`` by reading
+(``Lexicon.default().add("leed", kind="credential")``), renders a name
+in the order it was written (``str(parse("김민준"))`` is ``'김민준'``),
+and adds packs that choose the languages a parse reads. The `release log
 <https://nameparser.readthedocs.io/en/latest/release_log.html>`__ has
 the details. Please `open an
 issue <https://github.com/derek73/python-nameparser/issues>`__ for anything
@@ -98,11 +101,11 @@ Coming from 1.x or 2.x
 3.0 has no ``HumanName``: ``parse(text)`` reads the same seven fields,
 named ``given`` and ``family`` where ``HumanName`` had ``first`` and
 ``last``, and a ``Lexicon`` and ``Policy`` handed to a ``Parser``
-replace ``Constants``. Upgrade to 2.8 first and run your tests under
+replace ``Constants``. Upgrade to 2.8.2 first and run your tests under
 ``python -W error::DeprecationWarning``: it stops at every use 3.0
-removes except a read of the shared ``CONSTANTS`` and the imports
-`Migrating to 3.0`_ lists, which 2.8 does not warn on, so search for
-those too. A pickled ``HumanName`` or
+removes except a read of the shared ``CONSTANTS`` or of a ``Lexicon``
+set field and the imports `Migrating to 3.0`_ lists, which 2.8.2 does
+not warn on, so search for those too. A pickled ``HumanName`` or
 ``Constants`` does not load in 3.0; store ``parse(text).as_dict()`` or
 the original string instead.
 `Migrating to 3.0`_ maps ``HumanName``'s attributes and the

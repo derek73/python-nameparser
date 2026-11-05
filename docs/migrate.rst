@@ -20,8 +20,7 @@ are gone, a lexicon listing its words instead (`Vocabulary constants →
 Lexicon.words`_).
 Separately, the output model changes in 3.0: ``str()`` now renders a
 name in the order it was read in, with the separators it was written
-with (`Changed in 3.0`_). Further output changes come with the 3.0
-alphas.
+with (`Changed in 3.0`_).
 
 The full 1.x documentation remains the reference for ``HumanName`` and
 stays online as the 1.4.0 build on readthedocs:
@@ -30,9 +29,11 @@ https://nameparser.readthedocs.io/en/v1.4.0/
 What 3.0 removes
 ----------------
 
-2.8 warned at the line in your code that used each of these, and 2.8.1
-where code reads a constant of ``nameparser.config.regexes``, with the
-exceptions `Finding the sites`_ names:
+2.8 warned at the line in your code that used each of these, 2.8.1
+where code reads a constant of ``nameparser.config.regexes`` or a
+vocabulary module, and 2.8.2 where it
+reads ``KOREAN_SURNAMES``, with the exceptions `Finding the sites`_
+names:
 
 .. list-table::
    :header-rows: 1
@@ -87,7 +88,7 @@ a ``Constants`` cannot load, because there is no class to load it into.
 Finding the sites
 ~~~~~~~~~~~~~~~~~
 
-Upgrade to 2.8.1 first. A ``DeprecationWarning`` is hidden by default
+Upgrade to 2.8.2 first. A ``DeprecationWarning`` is hidden by default
 outside ``__main__``, so run your tests with warnings turned into
 errors, and each use 3.0 removes stops the run at the line that makes
 it:
@@ -97,11 +98,12 @@ it:
     python -W error::DeprecationWarning -m pytest
 
 2.8 warns where code *uses* a removed name, not where it imports one,
-and 2.8.1 warns where code reads a constant of a removed module,
+2.8.1 warns where code reads a constant of a removed module,
 ``nameparser.config.regexes`` or a vocabulary module
 (``from nameparser.config.titles import TITLES`` included), not where it
-imports the module, so some code passes that check and still fails on
-3.0:
+imports the module, and 2.8.2 the same for
+``nameparser.config.surnames``, so some code passes that check and
+still fails on 3.0:
 
 * *reading* the shared ``CONSTANTS`` (``"dr" in CONSTANTS.titles``, or
   ``copy.copy(CONSTANTS)``), which 2.8 left quiet so that importing
@@ -113,14 +115,18 @@ imports the module, so some code passes that check and still fails on
   importing ``nameparser.parser`` or the two 1.x word-list modules,
   ``nameparser.config.prefixes`` and
   ``nameparser.config.bound_first_names``
-* importing ``nameparser.config.regexes`` or a vocabulary module
-  without reading a constant from it — ``import
+* importing ``nameparser.config.regexes``, ``nameparser.config.surnames``
+  or a vocabulary module without reading a constant from it — ``import
   nameparser.config.regexes``, ``import nameparser.config.titles`` or
   ``from nameparser.config import particles``
+* *reading* a ``Lexicon`` set field (``"dr" in lexicon.titles``), which
+  2.8.1 warns of only where code writes one, and which raises
+  ``AttributeError`` in 3.0 (`Lexicon fields → readings`_)
 
 So search your code for ``CONSTANTS``, ``HumanName``, ``Constants``,
 ``nameparser.parser``, ``nameparser.util``, ``config.prefixes``,
-``config.bound_first_names`` and ``config.regexes`` as well, and for the
+``config.bound_first_names``, ``config.regexes`` and ``config.surnames``
+as well, and for the
 vocabulary modules: ``config.titles``, ``config.suffixes``,
 ``config.particles``, ``config.conjunctions``,
 ``config.bound_given_names``, ``config.given_names``,
@@ -1159,3 +1165,79 @@ first character:
 
     >>> parse("김민준").initials(), parse("Kim Minjun").initials()
     ('', 'K. M.')
+
+3.0 moved these 1.4 readings too. The release log's 3.0 section
+carries the reasoning; these are the shapes to grep your fixtures for,
+with what 1.4 read:
+
+- ``"Otto Graf Lambsdorff"`` — ``Graf``, ``Gräfin``, ``Fürst`` and
+  ``Prinz`` inside a surname join it, as ``Freiherr`` does: 1.4 read
+  middle ``Graf``, last ``Lambsdorff``. Opening a name each is still a
+  title (``"Graf Zeppelin"``).
+- ``"Juan Sta. Maria Reyes"`` and ``"Juan Delos Reyes"`` — ``Sta.``,
+  ``Sto.`` and the Filipino ``Delos`` are surname particles: 1.4 read
+  middle ``Sta. Maria`` and ``Delos``, last ``Reyes``.
+- ``"María del Carmen García"`` — a compound given name written with a
+  particle is a middle name: 1.4 read last ``del Carmen García``.
+- ``"طارق عبد العزيز"`` — ``عبد`` joins a listed name of God after it:
+  1.4 read middle ``عبد``, last ``العزيز``.
+- ``"Ortega y Gasset VI"`` — 1.4 read first ``Ortega y Gasset``, last
+  ``VI``.
+- ``"John Smith (PhD, MBA)"`` and ``"Justin (JP) Stearns"`` — a
+  bracketed clause of credentials is the suffix, and initials in
+  brackets the nickname: 1.4 read nickname ``PhD, MBA`` and middle
+  ``JP``.
+- ``"Alexandre Dumas père"`` — 1.4 read middle ``Dumas``, last
+  ``père``.
+- ``"Jean Dupont, Pr"`` and ``"Juan Pérez, Profesor"`` — the French and
+  Spanish professor titles are titles: 1.4 read first ``Pr`` and
+  ``Profesor``, last ``Jean Dupont`` and ``Juan Pérez``.
+- ``"Jane Doe KC"`` and ``"Jane Doe MSW"`` — British post-nominals and
+  77 common US credentials are suffixes: 1.4 read middle ``Doe``, last
+  ``KC`` and ``MSW``.
+- ``"John⁣Smith"`` — the invisible separator divides words: 1.4
+  read first ``John⁣Smith``.
+- ``"Maj Sjöwall"``, ``"Gen Goto"``, ``"Pharaoh Mwale"`` and ``"Saint
+  Clair Soares"`` — a bare rank or ``Pharaoh``, ``Saint``, ``Sailor`` or
+  ``Majesty`` opening a name is the given name: 1.4 read title ``Maj``,
+  ``Gen``, ``Pharaoh`` and ``Saint``. ``"Brig Gen Mark Kimmitt"`` is one
+  title: 1.4 read first ``Brig``.
+- ``"Silva, Junior Carlos"`` — 1.4 read title ``Junior``, first
+  ``Carlos``.
+- capitalizing ``"JOHN ST CLAIR"``, ``"JUAN DELA CRUZ"`` and ``"JOHN
+  MACHADO"`` — 1.4 wrote ``st``, ``dela`` and ``MacHado``; saint and
+  rank particles keep their capital, and a name opening Mac is
+  title-cased unless the vocabulary records its casing (``MacDonald``).
+
+.. doctest::
+
+    >>> parse("Otto Graf Lambsdorff").family
+    'Graf Lambsdorff'
+    >>> parse("Juan Sta. Maria Reyes").family, parse("Juan Delos Reyes").family
+    ('Sta. Maria Reyes', 'Delos Reyes')
+    >>> parse("María del Carmen García").middle
+    'del Carmen'
+    >>> parse("طارق عبد العزيز").family
+    'عبد العزيز'
+    >>> parse("Ortega y Gasset VI").family
+    'Gasset'
+    >>> parse("John Smith (PhD, MBA)").suffix, parse("Justin (JP) Stearns").nickname
+    ('PhD, MBA', 'JP')
+    >>> parse("Alexandre Dumas père").suffix
+    'père'
+    >>> parse("Jean Dupont, Pr").title, parse("Juan Pérez, Profesor").title
+    ('Pr', 'Profesor')
+    >>> parse("Jane Doe KC").suffix, parse("Jane Doe MSW").suffix
+    ('KC', 'MSW')
+    >>> parse("John⁣Smith").family
+    'Smith'
+    >>> [parse(n).given for n in ("Maj Sjöwall", "Gen Goto", "Pharaoh Mwale",
+    ...     "Saint Clair Soares")]
+    ['Maj', 'Gen', 'Pharaoh', 'Saint']
+    >>> parse("Brig Gen Mark Kimmitt").title
+    'Brig Gen'
+    >>> parse("Silva, Junior Carlos").given
+    'Junior'
+    >>> [str(parse(n).capitalized()) for n in ("JOHN ST CLAIR",
+    ...     "JUAN DELA CRUZ", "JOHN MACHADO", "RONALD MACDONALD")]
+    ['John St Clair', 'Juan Dela Cruz', 'John Machado', 'Ronald MacDonald']
