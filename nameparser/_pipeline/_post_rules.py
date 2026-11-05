@@ -574,25 +574,30 @@ def _family_settled(state: ParseState, tokens: list[WorkToken],
     word, so H1's family -> given direction leaves it (#720). After a
     comma a particle in it is settled -- rules/C3's "the comma settles
     P1's fork for a leading particle that could be a given name"
-    ('van Gogh, Sir'); without one, P1's fold below takes the piece
-    `_lead_folds` names with a word behind it ('Sir de Mesnil', and
-    under a family-first order 'Sir van Berg', rules/P11), asked by the
-    fold's own predicate on the same piece. An ambiguous particle
+    ('van Gogh, Sir'); without one, P1's fold below takes a never-given
+    particle opening the name with a word behind it ('Sir de Mesnil'),
+    or under a family-first order a piece `_family_first_lead_folds`
+    names ('Sir van Berg', rules/P11), asked by the fold's own
+    predicates on the same piece. An ambiguous particle
     nothing settled, or a bare one with nothing to fold, is a
     word the order placed ('Sir Van', 'Sir Abu Bakar' and 'Sir de'
     under FAMILY_FIRST; 'Sir von und zu', whose never-given 'zu' does
     not open it)."""
     if state.structure is Structure.FAMILY_COMMA:
         return any("particle" in tokens[i].tags for i in families)
-    return len(families) > 1 and _lead_folds(
-        state, tokens, _leading_name_piece(state, tokens))
+    if len(families) < 2:
+        return False
+    lead = _leading_name_piece(state, tokens)
+    return (is_lone_never_given_particle(lead, tokens)
+            or _family_first_lead_folds(state, tokens, lead))
 
 
-def _lead_folds(state: ParseState, tokens: list[WorkToken],
-                lead: Sequence[int]) -> bool:
+def _family_first_lead_folds(state: ParseState, tokens: list[WorkToken],
+                             lead: Sequence[int]) -> bool:
     """Whether rules/P1's fold takes `lead`, the piece opening the
-    name: a lone never-given particle under every order, and under a
-    family-first order two more -- a lone ambiguous particle written
+    name, beside the lone never-given particle it takes under every
+    order (asked inline by each caller first, sparing every parse a
+    frame): under a family-first order two more -- a lone ambiguous particle written
     in lower case in a name of mixed case (rules/P11, #670), and a
     particle chain a title-particle in front lets P2 build (rules/P4's
     Except, #828), cut after its particles and one name unit unless a
@@ -604,8 +609,6 @@ def _lead_folds(state: ParseState, tokens: list[WorkToken],
     # written in lower case, in a name of mixed case, opens the name as
     # a never-given one does" -- the writing clause (decisions/P1 and
     # decisions/P11, #828, #670)
-    if is_lone_never_given_particle(lead, tokens):
-        return True
     order = state.order
     if order is None or order[0] is not Role.FAMILY:
         return False
@@ -798,7 +801,7 @@ def post_rules(state: ParseState) -> ParseState:
     # rules/P1: "the particle run and the name words it takes are
     # family, under every name order" -- its Then clause, for a
     # never-given particle opening the name and, under a family-first
-    # order, the two pieces `_lead_folds` adds; how many words the run
+    # order, the two pieces `_family_first_lead_folds` adds; how many words the run
     # takes is set by the order or a family comma, in P1's bullets and
     # below (v1 handle_non_first_name_prefix; decisions/P1)
     # How far the fold reaches depends on the order the name was READ
@@ -824,7 +827,7 @@ def post_rules(state: ParseState) -> ParseState:
     # answer position already gave. So "Menil de" under either
     # family-first order reports given "de" -- P6 takes the trailing
     # particle only where it landed in a MIDDLE, which means nothing.
-    # Code-local: a lone PIECE is the test (`_lead_folds` names the two
+    # Code-local: a lone PIECE is the test (`_family_first_lead_folds` names the two
     # pieces a family-first order adds), so a particle group already
     # chained forward is not a lone particle elsewhere, and rule H1
     # above cannot be what produces the fold's family reading -- its
@@ -832,14 +835,17 @@ def post_rules(state: ParseState) -> ParseState:
     # -> given branch leaves the word this fold takes, asking the same
     # predicate (_family_settled).
     lead = _leading_name_piece(state, tokens)
-    if (state.order is not None and state.order[0] is Role.FAMILY
-            and len(lead) > 1 and "particle" in tokens[lead[0]].tags):
+    family_first = state.order is not None and state.order[0] is Role.FAMILY
+    if (family_first and len(lead) > 1
+            and "particle" in tokens[lead[0]].tags):
         # the words past the fold's reach, marked for assemble's
         # alternatives whether or not the fold cuts there (#828)
         for i in lead[_fold_reach(tokens, list(lead)):]:
             tokens[i] = copy_with(tokens[i],
                                   tags=tokens[i].tags | {PAST_REACH_TAG})
-    lead_fires = _lead_folds(state, tokens, lead)
+    lead_fires = (is_lone_never_given_particle(lead, tokens)
+                  or family_first
+                  and _family_first_lead_folds(state, tokens, lead))
     if len(givens) + len(middles) + len(families) > 1 and lead_fires:
         order = state.order
         if lead_fires and order is not None and order[0] is Role.FAMILY:
