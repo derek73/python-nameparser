@@ -744,8 +744,16 @@ def test_single_script_range_edges() -> None:
     assert single_script("\U00020bb7") is Script.HAN  # Ext B (𠮷)
     assert single_script("가") is Script.HANGUL
     assert single_script("힣") is Script.HANGUL  # last ASSIGNED syllable
-    assert single_script("ힰ") is None          # jungseong, not a syllable
-    assert single_script("ㄱ") is None          # bare jamo
+    # the conjoining jamo, each block's first and last (#1087)
+    assert single_script("\u1100") is Script.HANGUL  # choseong kiyeok
+    assert single_script("\u11ff") is Script.HANGUL
+    assert single_script("\ua960") is Script.HANGUL  # Extended-A
+    assert single_script("\ua97f") is Script.HANGUL
+    assert single_script("ힰ") is Script.HANGUL  # Extended-B jungseong
+    assert single_script("\ud7ff") is Script.HANGUL
+    assert single_script("\u10ff") is None    # Georgian, below the block
+    assert single_script("\ua980") is None    # Javanese, above Extended-A
+    assert single_script("ㄱ") is None          # compatibility jamo
 
 
 def test_single_script_empty_string_is_no_script() -> None:
@@ -899,10 +907,10 @@ def test_nfd_katakana_still_classifies_and_declines_the_license() -> None:
 
 def test_nfd_hangul_still_classifies() -> None:
     # NFD decomposes each precomposed syllable onto 2-3 jamo
-    # (U+1100-U+11FF), entirely outside the HANGUL range -- raw NFD
-    # input would silently miss the shipped family-first order rule
-    # rather than merely misclassify. Built via normalize(), not
-    # pasted decomposed literals, same reason as above.
+    # (U+1100-U+11FF), which were outside the HANGUL range until #1087
+    # -- raw NFD input silently missed the shipped family-first order
+    # rule until classification composed first. Built via normalize(),
+    # not pasted decomposed literals, same reason as above.
     nfd = unicodedata.normalize("NFD", "김민준")
     assert nfd != "김민준"  # sanity: confirms the decomposition actually ran
     assert single_script(nfd) is Script.HANGUL

@@ -1,11 +1,14 @@
 import dataclasses
+import unicodedata
 
 import pytest
 
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline._extract import extract_delimited
 from nameparser._pipeline._state import ParseState
+from nameparser._pipeline import _tokenize
 from nameparser._pipeline._tokenize import tokenize
+from nameparser import _policy
 from nameparser._policy import Policy
 from nameparser._types import Role
 
@@ -183,6 +186,51 @@ def test_interpunct_between_kana_splits() -> None:
     # sloppy-IME katakana transcription
     state = _tokenized("マイケル·ジャクソン")
     assert [t.text for t in state.tokens] == ["マイケル", "ジャクソン"]
+
+
+# rules/T3 on hangul typed decomposed (#1087): the flank guard reads raw
+# characters, so it sees the conjoining jamo a decomposed syllable is
+# written in. Each row: the text, its tokens, and the tokens with the
+# HANGUL range back at the precomposed syllables alone, the table before
+# #1087 (recorded 2026-11-05; the control below re-takes it live).
+_DECOMPOSED_FLANKS = [
+    ("이서연·김민준", ["이서연", "김민준"], ["이서연·김민준"]),
+    ("김·민준", ["김", "민준"], ["김·민준"]),
+    # half-flanked: a Latin neighbour never qualifies, in either table
+    ("김민준·Smith", ["김민준·Smith"], ["김민준·Smith"]),
+]
+
+
+@pytest.mark.parametrize(("text", "tokens", "unguarded"), _DECOMPOSED_FLANKS)
+def test_interpunct_between_decomposed_hangul_splits(
+        text: str, tokens: list[str], unguarded: list[str]) -> None:
+    nfd = unicodedata.normalize("NFD", text)
+    assert nfd != text  # sanity: the decomposition ran
+    got = [unicodedata.normalize("NFC", t.text) for t in _tokenized(nfd).tokens]
+    assert got == tokens
+    # the composed twin reads the same
+    assert [t.text for t in _tokenized(text).tokens] == tokens
+
+
+@pytest.mark.parametrize(("text", "tokens", "unguarded"), _DECOMPOSED_FLANKS)
+def test_decomposed_flank_control_without_the_jamo_range(
+        monkeypatch: pytest.MonkeyPatch, text: str, tokens: list[str],
+        unguarded: list[str]) -> None:
+    # the negative control: the flank classifier rebuilt over a table
+    # whose HANGUL holds the syllables alone
+    syllables = (0xAC00, 0xD7A3)
+    ranges = [span for spans in _policy._SCRIPT_RANGES.values()
+              for span in spans if span[0] < 0x1100 or span[0] > 0x11FF]
+    ranges = [span for span in ranges
+              if span not in ((0xA960, 0xA97F), (0xD7B0, 0xD7FF))]
+    assert syllables in ranges
+    monkeypatch.setattr(_tokenize, "_classified_char",
+                        lambda ch: any(lo <= ord(ch) <= hi for lo, hi in ranges))
+    nfd = unicodedata.normalize("NFD", text)
+    got = [unicodedata.normalize("NFC", t.text) for t in _tokenized(nfd).tokens]
+    assert got == unguarded
+    # and the control moves at least one row
+    assert any(row[1] != row[2] for row in _DECOMPOSED_FLANKS)
 
 
 def test_interpunct_at_edges_stays() -> None:

@@ -1557,7 +1557,8 @@ def test_wholly_cjk_names_read_family_first_by_default() -> None:
 def test_nfd_korean_input_still_reads_family_first() -> None:
     # fix(#271) classification, landed via the #272 NFC-classification
     # amendment: NFD decomposes each Hangul syllable onto bare jamo,
-    # entirely outside the HANGUL range, so raw NFD input used to miss
+    # then outside the HANGUL range (#1087 has since widened it to the
+    # conjoining jamo), so raw NFD input used to miss
     # script_orders' family-first rule and fall back to the positional
     # default -- a live gap in #294's shipped behavior until
     # single_script started classifying an NFC-normalized copy.
@@ -2186,7 +2187,7 @@ _NFD_ROWS = [
     "Smith, John й Jones",
     # ... and the veto on scripts that write no initials (#320), asked
     # of the composed spelling too: decomposed hangul is conjoining
-    # jamo, outside every _NO_INITIALS range, so composing the initial
+    # jamo, outside every _NO_INITIALS range until #1087, so composing the initial
     # shape alone made a decomposed '씨.' an initial (a title or a
     # given name). Spaced or after a comma, since an UNSPACED
     # decomposed hangul name is not split (docs/usage.rst) and so has
@@ -2196,6 +2197,10 @@ _NFD_ROWS = [
     "김 민준, 씨.",
     ", 씨.",
     "김. 민준",
+    # #1087: the interpunct's flank guard reads raw characters, which a
+    # decomposed syllable writes as conjoining jamo (rules/T3)
+    "이서연·김민준",
+    "김민준·Smith",
 ]
 _NFD_POLICIES = [
     Policy(),

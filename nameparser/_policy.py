@@ -71,7 +71,8 @@ class Script(StrEnum):
     #: list, locales.JA activates the same stage for a pluggable
     #: segmenter to divide kanji names with.
     HAN = "han"
-    #: Korean Hangul (precomposed syllables). Unambiguously Korean.
+    #: Korean Hangul (precomposed syllables and the conjoining jamo).
+    #: Unambiguously Korean.
     HANGUL = "hangul"
     #: Japanese hiragana. Never transcribes foreign names, so a mixed
     #: kanji+kana token (高橋みなみ) is Japanese and resolves HERE --
@@ -121,8 +122,18 @@ class Script(StrEnum):
 # Shimeki, 〆谷 Shimetani, 〆野) -- its other uses (the envelope
 # closing mark, 〆切) never reach a name parser -- and it appears in
 # no other script's names.
-# HANGUL: precomposed syllables only -- modern Korean
-# text never writes names as bare jamo.
+# HANGUL: the precomposed syllables and the three conjoining jamo
+# blocks (U+1100-U+11FF, Extended-A U+A960-U+A97F, Extended-B
+# U+D7B0-U+D7FF), the letters Unicode composes a syllable from (#1087).
+# A syllable typed decomposed is jamo, and a reader of raw characters
+# (tokenize's interpunct flank, rules/T3) missed it when the table held
+# the syllables alone, so NFD 이서연·김민준 stayed one word where its
+# composed twin divides. All three blocks, though the extended ones
+# hold only archaic jamo no modern name uses (the kana precedent
+# below): the U+1100 block carries archaic jamo too, so no
+# modern-only line can be drawn at block granularity. The
+# compatibility jamo U+3131-U+318E are not conjoining and compose
+# nothing; they stay out (rules/R7 initials 'ㄱㄴ 김' as 'ㄱ.').
 # HIRAGANA/KATAKANA (#272): the two kana blocks, each in full. There
 # IS a supplementary-plane kana repertoire (Kana Supplement, Kana
 # Extended-A/B, Small Kana Extension, U+1AFF0-U+1B16F, a few hundred
@@ -180,7 +191,8 @@ class Script(StrEnum):
 _SCRIPT_RANGES: dict[Script, tuple[tuple[int, int], ...]] = {
     Script.HAN: ((0x3005, 0x3006), (0x3400, 0x4DBF), (0x4E00, 0x9FFF),
                  (0xF900, 0xFAFF), (0x20000, 0x323AF)),
-    Script.HANGUL: ((0xAC00, 0xD7A3),),
+    Script.HANGUL: ((0x1100, 0x11FF), (0xA960, 0xA97F), (0xAC00, 0xD7A3),
+                    (0xD7B0, 0xD7FF)),
     Script.HIRAGANA: ((0x3040, 0x309F),),
     Script.KATAKANA: ((0x30A0, 0x30FF), (0xFF65, 0xFF9F)),
 }

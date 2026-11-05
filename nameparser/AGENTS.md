@@ -86,7 +86,7 @@ A width test must count letters, not code points (`composed_len`): admitting a d
 
 ### Compose the WHOLE predicate
 
-Compose the WHOLE predicate, not one half: `is_initial` is a shape ANDed with the #320 script veto, and composing the shape alone made a decomposed `씨.` an initial, since decomposed hangul is conjoining jamo outside every script range (#665's first version; `in_initialless_script` composes too now).
+Compose the WHOLE predicate, not one half: `is_initial` is a shape ANDed with the #320 script veto, and composing the shape alone made a decomposed `씨.` an initial, since decomposed hangul was conjoining jamo outside every script range (#665's first version; `in_initialless_script` composes too now, and #1087 has since put the jamo in HANGUL).
 
 ### What is deliberately not covered
 
