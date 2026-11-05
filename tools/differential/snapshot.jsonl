@@ -1229,7 +1229,7 @@
 {"name": "Goëß, Johann von", "given": "Johann", "family": "von Goëß", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "J. G."}
 {"name": "Grace Dean Smith", "given": "Grace", "middle": "Dean", "family": "Smith", "initials": "G. D. S."}
 {"name": "Grace Smith", "given": "Grace", "family": "Smith", "initials": "G. S."}
-{"name": "Graf Lambsdorff, Otto", "title": "Graf", "given": "Otto", "family": "Lambsdorff", "initials": "O. L."}
+{"name": "Graf Lambsdorff, Otto", "given": "Otto", "family": "Graf Lambsdorff", "initials": "O. L.", "capitalized_force": "Otto graf Lambsdorff"}
 {"name": "Gragger, Robert", "given": "Robert", "family": "Gragger", "initials": "R. G."}
 {"name": "Gramont, Antoine de", "given": "Antoine", "family": "de Gramont", "initials": "A. G."}
 {"name": "Grand Duke of Tuscany", "given": "Grand", "family": "Duke of Tuscany", "initials": "G. D. T."}
@@ -1353,6 +1353,7 @@
 {"name": "Hernando Calvo Ospina", "given": "Hernando", "middle": "Calvo", "family": "Ospina", "initials": "H. C. O."}
 {"name": "Herr Klaus Schmidt", "title": "Herr", "given": "Klaus", "family": "Schmidt", "initials": "K. S."}
 {"name": "Herr Schmidt", "title": "Herr", "family": "Schmidt", "initials": "S."}
+{"name": "Herzog Lambsdorff, Otto", "title": "Herzog", "given": "Otto", "family": "Lambsdorff", "initials": "O. L."}
 {"name": "Hilda Luisa Valdemar Lima", "given": "Hilda", "middle": "Luisa Valdemar", "family": "Lima", "initials": "H. L. V. L."}
 {"name": "Hildebrand, Dietrich von", "given": "Dietrich", "family": "von Hildebrand", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "D. H."}
 {"name": "Hildebrand, Rudolf Friedrich Leopold von", "given": "Rudolf", "middle": "Friedrich Leopold", "family": "von Hildebrand", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "R. F. L. H."}
@@ -2207,6 +2208,7 @@
 {"name": "Juan Samper Sordo", "given": "Juan", "middle": "Samper", "family": "Sordo", "initials": "J. S. S."}
 {"name": "Juan Santos Fernández", "given": "Juan", "middle": "Santos", "family": "Fernández", "initials": "J. S. F."}
 {"name": "Juan Sordo Madaleno", "given": "Juan", "middle": "Sordo", "family": "Madaleno", "initials": "J. S. M."}
+{"name": "Juan Sta. Maria Reyes", "given": "Juan", "family": "Sta. Maria Reyes", "initials": "J. M. R."}
 {"name": "Juan Suñé Benages", "given": "Juan", "middle": "Suñé", "family": "Benages", "initials": "J. S. B."}
 {"name": "Juan Torres de Vera y Aragón", "given": "Juan", "middle": "Torres", "family": "de Vera y Aragón", "initials": "J. T. V. A."}
 {"name": "Juan Velasquez y Garcia", "given": "Juan", "family": "Velasquez y Garcia", "initials": "J. V. G."}
@@ -3639,7 +3641,7 @@
 {"name": "St de Mesnil Jean", "title": "St", "family": "de Mesnil Jean", "initials": "M. J."}
 {"name": "St de Mesnil Jean V", "title": "St", "family": "de Mesnil Jean V", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: generation as suffix (vocabulary)"], "initials": "M. J. V."}
 {"name": "St van Bishop", "title": "St", "family": "van Bishop", "ambiguities": ["PARTICLE_OR_GIVEN", "TITLE_OR_NAME"], "alternatives": ["PARTICLE_OR_GIVEN: name as given (declared)", "TITLE_OR_NAME: title as title (vocabulary)"], "initials": "B."}
-{"name": "Sta. Maria, Juan", "given": "Juan", "family": "Sta. Maria", "initials": "J. S. M."}
+{"name": "Sta. Maria, Juan", "given": "Juan", "family": "Sta. Maria", "initials": "J. M."}
 {"name": "Stander Zelda Herman", "order": "FAMILY_FIRST", "given": "Zelda", "middle": "Herman", "family": "Stander", "initials": "Z. H. S."}
 {"name": "Stander, Zelda Herman", "given": "Zelda", "middle": "Herman", "family": "Stander", "initials": "Z. H. S."}
 {"name": "Stariji Bruegel", "given": "Stariji", "family": "Bruegel", "initials": "S. B."}

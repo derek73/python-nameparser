@@ -23,12 +23,13 @@
 
 **Except:**
 
-- **The run stops at a word that is also a particle.** 'Freiherr' and 'St' are particles as well as titles, so they stay in the family in either spelling, keeping 'St Pierre' whole and 'Freiherr von Berg' as C3 reads it. A title in front of a particle still peels.
+- **The run stops at a word that is also a particle.** 'Freiherr', the other German ranks read as particles and 'St' are particles as well as titles, so they stay in the family in either spelling, keeping 'St Pierre' whole and 'Freiherr von Berg' as C3 reads it. A title in front of a particle still peels.
   ```
   "St Pierre, Ed"             →  family="St Pierre"  · boundary
   "Dr. St. Pierre, Ed"        →  family="St. Pierre"  · boundary
   "Freiherr von Berg, Ed"     →  family="Freiherr von Berg"
   "Dr. Freiherr von Berg, Ed" →  title="Dr."
+  "Graf Lambsdorff, Otto"     →  family="Graf Lambsdorff"
   ```
 - **The run stops at a word H9 reads out of the title**: a modifier with no head title behind it, and a title that may be a given name outside a title phrase, open the surname.
   ```
@@ -51,9 +52,9 @@
   ```
   "Pope Smith, John"          →  title="Pope"
   ```
-- What keeps a word in the family is the particle stop and nothing else. German ranks the title vocabulary lists, other than 'Freiherr', are titles only, so they peel, though since 1919 a rank is part of the legal surname for all of them alike; that is the vocabulary's distinction, not this rule's.
+- What keeps a word in the family is the particle stop and nothing else. The German ranks the vocabulary reads as particles too ('Freiherr', 'Graf', 'Fürst', 'Prinz', 'Gräfin') stop the run; 'Herzog' and 'Ritter', common plain surnames, are titles only, so they peel, though since 1919 a rank is part of the legal surname for all of them alike; that is the vocabulary's distinction, not this rule's.
   ```
-  "Graf Lambsdorff, Otto"     →  title="Graf"
+  "Herzog Lambsdorff, Otto"   →  title="Herzog"
   ```
 
 ---

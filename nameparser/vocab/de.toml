@@ -91,11 +91,15 @@ note = "Since 1919 a former noble title is part of the legal surname, written be
 
 [[word]]
 text = "fürst"
+given = { note = "carries the particle's may-be-given reading, as freiherr's does; borne as a given name: US SSA 0, Wikidata 0 (2026-10-17, #709)" }
 nobility = { gender = "m", expands = "prince" }
+rank = { issue = 709, expands = "prince", gender = "m", note = "since 1919 part of the legal surname, written before the particle (`Johannes Fürst von Thurn und Taxis`), so it chains as freiherr does; in TITLES too, so it is still a title opening a name. A common surname (US Census 2,521), which a family comma's trailing particle attachment (rules/P6) can take into the family ('Smith, Steffi Graf' reads family 'Graf Smith'), accepted on the corpus counts (decisions/vocabulary-collisions, 2026-11-04 #709)" }
 
 [[word]]
 text = "graf"
+given = { note = "carries the particle's may-be-given reading, as freiherr's does; borne as a given name: US SSA 0, Wikidata 0 (2026-10-17, #709)" }
 nobility = { gender = "m", expands = "count" }
+rank = { issue = 709, expands = "count", gender = "m", note = "since 1919 part of the legal surname, written before the particle (`Otto Graf Lambsdorff`), so it chains as freiherr does; in TITLES too, so it is still a title opening a name. A common surname (US Census 13,301), which a family comma's trailing particle attachment (rules/P6) can take into the family ('Smith, Steffi Graf' reads family 'Graf Smith'), accepted on the corpus counts (decisions/vocabulary-collisions, 2026-11-04 #709)" }
 
 [[word]]
 text = "großfürst"
@@ -103,15 +107,20 @@ nobility = { gender = "m", expands = "grand prince, grand duke" }
 
 [[word]]
 text = "gräfin"
+given = { note = "carries the particle's may-be-given reading, as freiherr's does; borne as a given name: US SSA under 5, Wikidata 0 (2026-10-17, #709)" }
 nobility = { gender = "f", expands = "countess" }
+rank = { issue = 709, expands = "countess", gender = "f", note = "since 1919 part of the legal surname, written before the particle (`Marion Gräfin Dönhoff`), so it chains as freiherr does; in TITLES too, so it is still a title opening a name. A common surname (US Census under 100), which a family comma's trailing particle attachment (rules/P6) can take into the family ('Smith, Steffi Graf' reads family 'Graf Smith'), accepted on the corpus counts (decisions/vocabulary-collisions, 2026-11-04 #709)" }
 
 [[word]]
 text = "herzog"
+excluded = { rank = { reason = "a common plain surname (US Census 11,146; Werner Herzog) the rank's attachment after a family comma would take into the family where it ends the given part (BABINGTON, BETHANY HERZOG read family 'HERZOG BABINGTON'): with the rank and given readings, 13 corpus names holding it move (2026-11-04, decisions/vocabulary-collisions' #709 entry, which holds the recipe and the moves)", issue = 709 } }
 nobility = { gender = "m", expands = "duke" }
 
 [[word]]
 text = "prinz"
+given = { note = "carries the particle's may-be-given reading, as freiherr's does; borne as a given name: US SSA 5, Wikidata 1 (2026-10-17, #709)" }
 nobility = { gender = "m", expands = "prince" }
+rank = { issue = 709, expands = "prince", gender = "m", note = "since 1919 part of the legal surname, written before the particle (`Georg Friedrich Prinz von Preußen`), so it chains as freiherr does; in TITLES too, so it is still a title opening a name. A common surname (US Census 1,578), which a family comma's trailing particle attachment (rules/P6) can take into the family ('Smith, Steffi Graf' reads family 'Graf Smith'), accepted on the corpus counts (decisions/vocabulary-collisions, 2026-11-04 #709)" }
 
 [[word]]
 text = "reichsgraf"
@@ -119,6 +128,7 @@ nobility = { gender = "m", expands = "imperial count" }
 
 [[word]]
 text = "ritter"
+excluded = { rank = { reason = "a common plain surname (US Census 33,252; John Ritter) the rank's attachment after a family comma would take into the family where it ends the given part (KING, SONDRA RITTER read family 'RITTER KING'): with the rank and given readings, 43 corpus names holding it move, most of them Brazilian double surnames read as two (2026-11-04, decisions/vocabulary-collisions' #709 entry, which holds the recipe and the moves)", issue = 709 } }
 nobility = { gender = "m", expands = "knight" }
 
 [[word]]

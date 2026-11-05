@@ -54,6 +54,24 @@ text = "san"
 saint = { expands = "Saint: \"San Juan\", \"San Jose\"", note = "strict fil broke 70 records (config_diff.py gaps on f48c88a3, decisions/vocabulary-model, 2026-11-03)", issue = 1005 }
 
 [[word]]
+text = "sta"
+[word.saint]
+may_be_given = false
+expands = "Santa, abbreviated: \"Sta. Maria\", \"Sta. Ana\""
+cased = "Sta"
+note = "no given reading: ORCID's 2025 extract holds it in 11 given boxes, none Philippine, five of them a surname filed with the given names and six junk, against 122 family boxes, 38 Philippine, US Census 2010 counts Sta as a surname 120 times and US SSA under 5 births (tools/name_usage.py sta --boxes, 2026-11-04), so a bare Sta opening a name begins the family, as Ste does. A saint run, so rules/P10 does not read Sta. Maria as a second given name. The mask is the word's own title case: without it case repair would lowercase it (rules/R4)"
+issue = 725
+
+[[word]]
+text = "sto"
+[word.saint]
+may_be_given = false
+expands = "Santo, abbreviated: \"Sto. Tomas\", \"Sto. Domingo\""
+cased = "Sto"
+note = "no given reading: ORCID's 2025 extract holds it in 2 given boxes against 20 family boxes (tools/name_usage.py sto --boxes, 2026-11-04). The mask is the word's own title case, as Sta's"
+issue = 725
+
+[[word]]
 text = "jo"
 given = { us_ssa = 180911, wikidata = 974, as_of = 2026-10-26, same_as = "josé", note = "José written short, in Philippine usage; the counts are of Jo, a given name of its own (US SSA births summed over both sexes, F 179,057, M 1,854; Wikidata a lower bound) and a Korean surname, so a period-marked Jo. opening the given part is a given name on every reading (#789)" }
 
