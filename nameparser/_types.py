@@ -82,11 +82,12 @@ _NAME_ORDERS = (GIVEN_FIRST, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST)
 def _reject_bare_string_order(value: object, field_name: str) -> None:
     # tuple("gmf") would be ("g", "m", "f") -- catch the bare string
     # with the same TypeError every other iterable field raises.
-    # Single-sourced: called from Policy AND PolicyPatch __post_init__,
-    # and through _validated_order for script_orders and ParsedName.order.
-    # field_name is REQUIRED, with no name_order default: script_orders'
-    # values obey the same rule (via _validated_order), and a defaulted
-    # caller that forgot to pass it would silently name the wrong field.
+    # Single-sourced: called directly by PolicyPatch.__post_init__ and
+    # by _validated_order, which Policy.name_order, script_orders'
+    # values and ParsedName.order (where its fast path does not accept
+    # the value) go through. field_name is REQUIRED, with no name_order
+    # default: a defaulted caller that forgot to pass it would silently
+    # name the wrong field.
     if isinstance(value, str):
         raise TypeError(
             f"{field_name} must be an iterable of three Roles, "
@@ -146,7 +147,7 @@ def _require_iterable(value: Iterable[Any], field_name: str,
 def _validated_order(value: Iterable[Any],
                      field_name: str) -> tuple[Role, Role, Role]:
     """name_order's element/permutation check, single-sourced so
-    script_orders values obey the identical rule (only the three
+    script_orders values and ParsedName.order obey the identical rule (only the three
     exported orders have implemented assignment semantics)."""
     _reject_bare_string_order(value, field_name)
     order = tuple(_require_iterable(value, field_name))
@@ -1267,7 +1268,11 @@ class ParsedName:
         # C-level so a parse pays no frame for it; anything else goes
         # through the one validator Policy.name_order goes through, so
         # a list is stored as the tuple and a plain-string tuple, which
-        # compares equal to an order, is refused here as there
+        # compares equal to an order, is refused here as there. The
+        # three `type() is Role` tests are what keep a tuple holding a
+        # plain string off the fast path, Role being a StrEnum, and the
+        # length test what keeps a short one from an IndexError: do not
+        # drop either as redundant
         if order is not None and not (
                 type(order) is tuple and len(order) == 3
                 and type(order[0]) is Role and type(order[1]) is Role

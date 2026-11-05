@@ -1,7 +1,9 @@
 """Not a stage: converts the final ParseState into a public ParsedName.
 
 Consumes: tokens (all roles set, and their tags, which name each
-token's reading), dropped, order and structure (for ParsedName.order),
+token's reading), dropped, order (for ParsedName.order, and for the
+field a report's alternative names under rules/P1's family-first fold)
+and structure (for ParsedName.order),
 ambiguities (by index;
 one carrying ``field_tail`` is worded from its word's final role,
 #626), segments, for the part a withdrawn connective report's
@@ -128,12 +130,12 @@ def _kinds(kind: ReadingKind, role: Role) -> frozenset[str]:
 
 
 # The lookup is a memo, C-level on a hit, so a word read before costs
-# no frame (decisions/parse-cost): a pure function of the word and the
-# lexicon's readings, which `files` stands for, one object per base,
-# log and choice hashed by identity (decisions/vocabulary-model,
-# 2026-11-02 #754, sub-phase 4i-d), and bounded since what keys it
-# comes from the caller's text; so is `_reading`, of the readings that
-# name files.
+# no frame (decisions/vocabulary-model, 2026-10-29): a pure function of
+# the word and the lexicon's readings, which `files` stands for, one
+# object per base, log and choice hashed by identity
+# (decisions/vocabulary-model, 2026-11-02 #754, sub-phase 4i-d), and
+# bounded (maxsize) because the caller's text keys it; so is `_reading`,
+# of the readings that name files.
 @functools.lru_cache(maxsize=4096)
 def _languages_of(text: str, kind: ReadingKind, role: Role,
                   files: _ReadingFiles) -> tuple[tuple[str, ...], bool]:
@@ -141,8 +143,9 @@ def _languages_of(text: str, kind: ReadingKind, role: Role,
     the files holding the word whole (`_languages`), else those holding
     its parts (`_part_languages`); and whether they are its parts',
     which the caller drops where the parse's own lexicon lists the word
-    whole (`_listed_whole`), a question of the lexicon's lists that
-    `files` does not stand for."""
+    whole (`_listed_whole`): that reads the lexicon's `surnames` and
+    `given_names` lists too, which `files` does not stand for, so the
+    memo cannot answer it."""
     found = _languages(text, kind, role, files)
     if found:
         return found, False
@@ -150,7 +153,8 @@ def _languages_of(text: str, kind: ReadingKind, role: Role,
     return found, bool(found)
 
 
-#: `_languages_of`'s answer for a reading no file can hold.
+#: `_languages_of`'s answer for a reading by position or shape
+#: (`source not in _LISTED`), which names no file.
 _UNLISTED: tuple[tuple[str, ...], bool] = ((), False)
 
 
@@ -175,8 +179,9 @@ def _part_languages(text: str, kind: ReadingKind, role: Role,
     """The files of the listed words `text` joins with punctuation
     ('Lt.Gov.', 'MD/PhD', 'MD;'), sorted: a suffix's parts divided by
     any mark but the period first, each an acronym ('M.D./Ph.D.'),
-    then any word's by every mark. Read only for a word the parse's
-    own lexicon does not list whole (`_listed_whole`)."""
+    then any word's by every mark. Asked only where `_languages` finds
+    nothing (`_languages_of`); its answer is dropped where the parse's
+    own lexicon lists the word whole (`_listed_whole`)."""
     kinds = _kinds(kind, role)
     n = _normalize(text)
     found = (_by_parts(n, kinds, ".", files) if kinds is _SUFFIX_KINDS
@@ -241,8 +246,8 @@ def _split_partner(tokens: tuple[WorkToken, ...], dropped: set[int],
     the joined suffix word that completes it. Asked only of a split
     credential's first word, so other names pay nothing."""
     # classify tags a split's words only as a pair, so its second word
-    # always follows; an empty default keeps parse total without a
-    # branch no input reaches
+    # always follows; the empty return at the end of the tokens keeps
+    # parse total on a branch no input reaches
     j = _next_word(tokens, dropped, i, 1)
     if j == len(tokens):
         return ""
@@ -266,8 +271,8 @@ _KIND_TAGS = frozenset({GENERATION_WORD_TAG, CREDENTIAL_WORD_TAG, HONORIFIC_WORD
                         SHARED_NAME_TAG, PARTICLE_GIVEN_TAG, PAST_REACH_TAG,
                         BOUND_PHRASE_TAG})
 
-#: O6's second-surname mark (rules/R10) and its first-unit twin
-#: (rules/R11), which no published token carries either:
+#: O6's second-surname mark (rules/R10) and the first-unit mark O6 or
+#: O3 writes (rules/R11), which no published token carries either:
 #: `Reading.second_surname` and `Reading.first_surname` name them.
 _SURNAME_UNITS = frozenset({SECOND_SURNAME_TAG, FIRST_SURNAME_TAG})
 
@@ -517,7 +522,8 @@ def assemble(state: ParseState) -> ParsedName:
         # (Ambiguity.alternative).
         # Reading.languages, the files holding the reading taken, on in
         # the parse's lexicon, is read below for a listed or declared
-        # reading, through `_languages_of`, whose hit costs no frame
+        # reading, through `_languages_of`, whose hit costs no frame,
+        # save `_listed_whole` for a word read by its parts
         # (decisions/vocabulary-model, 2026-10-29; 2026-11-02, 4i-d).
         reading: Reading | None = None
         if role is Role.SUFFIX:
