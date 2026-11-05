@@ -1070,7 +1070,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 # STRICTLY before k -- one of those titles, and, being
                 # before the title run's end, a prefix as well
                 # (`chain_lead`): a word in both vocabularies (`st`,
-                # `freiherr` by default, or any overlap a caller
+                # `freiherr` and the rank particles by default, or any overlap a caller
                 # configures). A plain title alone can no longer put a
                 # particle off the name's leading piece; it is stepped
                 # over and _assign reports the fork instead.
