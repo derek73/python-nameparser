@@ -791,9 +791,12 @@ def _names_before(fam_pieces: Sequence[Sequence[int]],
 
 def _links(tags: Set[str]) -> bool:
     """Whether a word of the family part is a linking word rather than a
-    name word: a particle, or a connective that is not also generational
-    vocabulary (one that is, beside a numeral, is the generation it
-    spells and links nothing, rules/P3)."""
+    name word, left out of the numeral's count: a particle, or a
+    connective that is not also generational vocabulary. One that is
+    stays in the count: beside a numeral it is the generation it spells
+    (rules/P3), assigned the suffix earlier in this walk, and counted
+    it keeps the numeral after it in the suffix with it ('Smith i V,
+    John' → suffix 'i V')."""
     return "particle" in tags or ("conjunction" in tags
                                   and "vocab:suffix" not in tags)
 

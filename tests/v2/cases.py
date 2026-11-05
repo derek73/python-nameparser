@@ -2669,6 +2669,22 @@ CASES: tuple[Case, ...] = (
          notes="#1093 with a third comma part. 2.7.0 through 2.8.2 read "
                "family 'Smith y', suffix 'V, Jr.'; 1.4.0 through 2.6.0 "
                "read as here"),
+    Case("a_numeral_behind_a_connective_opening_the_part_is_family",
+         "y Smith V, John",
+         {"given": "John", "family": "y Smith V"},
+         classification="parity",
+         notes="#1093: a connective is no name word wherever it stands "
+               "in the part, as a particle opening it is not ('de "
+               "Mesnil V, Jean'), so one name word stands in front of "
+               "the numeral. 2.7.0 through 2.8.2 read family 'y Smith', "
+               "suffix 'V'; 1.4.0 read as here"),
+    Case("a_numeral_behind_a_connective_before_initials_is_family",
+         "Smith y V, J.",
+         {"given": "J.", "family": "Smith y V"},
+         classification="parity",
+         notes="#1093 with an initial for the given part. 2.7.0 through "
+               "2.8.2 read family 'Smith y', suffix 'V'; 1.4.0 through "
+               "2.6.0 read as here"),
     Case("a_two_letter_numeral_behind_a_connective_stays_the_suffix",
          "Smith y VI, John",
          {"given": "John", "family": "Smith y", "suffix": "VI"},
