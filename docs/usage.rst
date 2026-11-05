@@ -194,7 +194,7 @@ names together as easily as two surnames:
     'de la Vega y Rodriguez'
 
 One shipped vocabulary works the other way round and so is not in the
-table above: :mod:`surnames <nameparser.config.surnames>` *splits* a
+table above: the Korean surnames (``Lexicon.default().surnames``) *split* a
 word instead of merging two, and is covered under `East Asian names`_.
 :doc:`customize` covers how to change which words are in each of these
 sets.

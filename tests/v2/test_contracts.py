@@ -85,7 +85,8 @@ def test_every_guarded_config_module_is_imported() -> None:
 
     Since the vocabulary moved to nameparser/vocab/*.toml, whose
     compiler checks it (tests/v2/test_vocab.py), the asserts left are
-    on data still written in Python -- ``surnames`` today, which is
+    on data still written in Python -- ``_ko_surnames`` today (the
+Korean census list, ``surnames.py``'s until 2.8.2), which is
     lazy (imported inside ``_snapshot``/``_default_lexicon``), so its
     guard fires only incidentally, whenever some other test happens to
     build a default Lexicon. Importing them all here makes every guard
@@ -101,11 +102,12 @@ def test_every_guarded_config_module_is_imported() -> None:
     import nameparser.config
 
     config_dir = pathlib.Path(nameparser.config.__file__).parent
-    # private modules excluded: _invariants DEFINES the guard (the
-    # substring hits its own def) and holds no vocabulary of its own
+    # _invariants excluded: it DEFINES the guard (the substring hits its
+    # own def) and holds no vocabulary of its own. Private modules are
+    # read, since the data moved to one in 2.8.2
     guarded = sorted(
         p.stem for p in config_dir.glob("*.py")
-        if not p.stem.startswith("_")
+        if p.stem != "_invariants"
         and "assert_normalized(" in p.read_text(encoding="utf-8"))
     assert guarded, (
         f"no guarded config module found in {config_dir} -- the "

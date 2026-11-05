@@ -434,10 +434,10 @@ def test_a_copy_leaves_the_once_per_line_registry_alone() -> None:
     "from nameparser import HumanName",
     "from nameparser.parser import HumanName",
     "from nameparser.config import CONSTANTS, Constants",
-    # the module imports quietly; its constants warn since 2.8.1 (#1007),
-    # asserted in test_removals_2_8_1.py, and surnames is not removed
+    # the modules import quietly; their constants warn since 2.8.1
+    # (#1007), surnames' since 2.8.2, asserted in test_removals_2_8_1.py
     "import nameparser.config.titles",
-    "from nameparser.config.surnames import KOREAN_SURNAMES",
+    "import nameparser.config.surnames",
     "from nameparser import parse; parse('John Smith')",
 ])
 def test_imports_and_the_core_stay_quiet(code: str) -> None:

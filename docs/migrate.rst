@@ -11,8 +11,8 @@ compatibility layer (``HumanName``, ``Constants`` and the shared
 ``CONSTANTS``) is removed in 3.0, and 2.8 warns wherever your code
 touches it: see `Deprecated in 2.8`_. 2.8.1 adds warnings for three
 more things 3.0 changes, among them the vocabulary data modules in
-``nameparser.config`` (``titles``, ``particles`` and the rest, all but
-``surnames``): see `Deprecated in 2.8.1`_.
+``nameparser.config`` (``titles``, ``particles`` and the rest), and
+2.8.2 adds the last of them, ``surnames``: see `Deprecated in 2.8.1`_.
 
 The full 1.x documentation remains the canonical reference for
 ``HumanName`` and stays online as the 1.4.0 build on readthedocs:
@@ -113,7 +113,10 @@ and in 3.0 alike, and the warning on ``add()`` and ``remove()`` with
        ``given_names``, ``maiden_markers`` or ``capitalization``
      - Removed with its module. ``Lexicon.words(kind=...)`` lists a
        kind's words, and ``Lexicon.remove(kind=..., every=True)``
-       removes a whole kind; ``nameparser.config.surnames`` stays
+       removes a whole kind
+   * - ``nameparser.config.surnames.KOREAN_SURNAMES`` (since 2.8.2)
+     - Private in 3.0. ``Lexicon.default().surnames`` holds the same
+       words, and reads quietly on 2.8.2 and in 3.0 alike
    * - Anything in ``nameparser.config.regexes``
      - Removed with no replacement: the parser has not read it since
        2.0, so copy a pattern you reuse
