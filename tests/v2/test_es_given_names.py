@@ -23,7 +23,7 @@ import pytest
 
 from nameparser import Lexicon
 from nameparser._pipeline._vocab import given_name_key
-from nameparser.locales import _es_given_names
+from nameparser.locales import _es_ar_given_names, _es_given_names
 
 _PATH = Path(__file__).parents[2] / "tools" / "es_given_names.py"
 
@@ -38,6 +38,9 @@ def _load() -> ModuleType:
 
 
 tool = _load()
+#: Every list the tool writes, by the tag LISTS keys it with: the
+#: checks below hold each of them.
+_MODULES = {"es": _es_given_names, "es-AR": _es_ar_given_names}
 
 
 @pytest.fixture(autouse=True)
@@ -81,6 +84,18 @@ _UNGUARDED_EFFECT = {
 }
 
 
+def test_the_tool_writes_one_module_a_list() -> None:
+    assert set(tool.LISTS) == set(_MODULES)
+    for tag, module in _MODULES.items():
+        assert module.__file__ is not None
+        assert tool.LISTS[tag][0] == Path(module.__file__), tag
+
+
+@pytest.mark.parametrize("tag", sorted(_MODULES))
+def test_a_list_holds_no_word_the_default_reads_as_no_name(tag: str) -> None:
+    assert _overlap(_MODULES[tag].GIVEN_NAMES, Lexicon.default()) == {}
+
+
 def test_the_list_holds_no_word_the_default_reads_as_no_name() -> None:
     # A listed word O6 declines to take is one it would otherwise take
     # into the family; one the default reads as a particle, a title, a
@@ -97,23 +112,35 @@ def test_the_list_holds_no_word_the_default_reads_as_no_name() -> None:
     assert _overlap(planted, default) == _UNGUARDED_EFFECT
 
 
-def test_every_entry_is_written_in_the_fold_it_is_matched_by() -> None:
+@pytest.mark.parametrize("tag", sorted(_MODULES))
+def test_every_entry_is_written_in_the_fold_it_is_matched_by(tag: str) -> None:
     # The parse folds the word it asks about (given_name_key) and looks
     # the fold up, so an entry written any other way is never matched.
-    ranked = _es_given_names._RANKED
+    ranked = _MODULES[tag]._RANKED
     assert ranked and len(set(ranked)) == len(ranked)
     assert [w for w in ranked if given_name_key(w) != w or not w.isalpha()] == []
-    assert _es_given_names.GIVEN_NAMES == frozenset(ranked)
+    assert _MODULES[tag].GIVEN_NAMES == frozenset(ranked)
 
 
-def test_the_module_block_is_what_the_tool_renders() -> None:
+@pytest.mark.parametrize("tag", sorted(_MODULES))
+def test_the_module_block_is_what_the_tool_renders(tag: str) -> None:
     # The block is the tool's output, so a hand edit, or a list the tool
     # would render differently, fails here.
-    text = _PATH.parents[1].joinpath(
-        "nameparser", "locales", "_es_given_names.py").read_text(
-            encoding="utf-8")
-    block = tool.render(list(_es_given_names._RANKED))
-    assert tool.rewrite(text, block) == text
+    path = tool.LISTS[tag][0]
+    text = path.read_text(encoding="utf-8")
+    block = tool.render(list(_MODULES[tag]._RANKED))
+    assert tool.rewrite(text, block, path) == text
+
+
+@pytest.mark.parametrize("tag", sorted(_MODULES))
+def test_each_list_holds_its_cutoff(tag: str) -> None:
+    assert len(_MODULES[tag]._RANKED) == tool.LISTS[tag][1]
+
+
+def test_the_argentine_list_holds_the_spanish_one() -> None:
+    # decisions/O6, 2026-11-04: a looser share and a longer cutoff over
+    # the same tables, so ES and ES_AR stacked read as ES_AR
+    assert _es_given_names.GIVEN_NAMES < _es_ar_given_names.GIVEN_NAMES
 
 
 def test_the_tool_folds_as_the_parse_does() -> None:

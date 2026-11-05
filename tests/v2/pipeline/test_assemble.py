@@ -159,7 +159,9 @@ def test_a_connective_or_initial_report_is_withdrawn_where_the_role_is_a_suffix(
     withdrawn = {
         "JOHN QUINCY SMITH I": ["suffix-or-name"],
         "john smith i": ["suffix-or-name"],
-        "SMITH, JOHN I": [],
+        # C9's report on the letter (#877); the conjunction-or-initial
+        # one is still withdrawn
+        "SMITH, JOHN I": ["suffix-or-name"],
         "HENRY SMITH I": ["suffix-or-name"],
     }
     for text, kinds in withdrawn.items():
