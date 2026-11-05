@@ -72,8 +72,8 @@ from nameparser._pipeline._state import (
     WorkToken, _NEVER_FLIPPED, comma_bucket, copy_with, reported_suffix_fork,
 )
 from nameparser._pipeline._vocab import (
-    _DOTTED_INITIALS, delimiter_cores, has_patronymic_ending, is_initial, is_listed_given_name,
-    is_patronymic_marker, set_apart, set_apart_kind, suffix_reading,
+    _DOTTED_INITIALS, delimiter_cores, has_patronymic_ending, is_initial,
+    is_listed_given_name, is_patronymic_marker, set_apart, set_apart_kind, suffix_reading,
     unit_ends, written_as_initials,
 )
 from nameparser._policy import PatronymicRule
@@ -653,18 +653,6 @@ def _family_first_lead_folds(state: ParseState, tokens: list[WorkToken],
 # the name, and a member of the ambiguous class joins one only where
 # its writing settles it after the name (rules/S13); decisions/S1
 # (#792)
-def _dotted_member(text: str, lexicon: Lexicon) -> bool:
-    """Whether a clause word is a member of the ambiguous acronym class
-    written with a period inside it ('M.A'): a dotted member carries no
-    tag in a clause (classify tags a shape only outside one), so it is
-    found by its text. A period only ending it is extract's escape.
-    Each caller asks `"." in text` first, so a word without one pays no
-    frame."""
-    return ("." in text.strip(".")
-            and _normalize(text).replace(".", "")
-            in lexicon._sets.suffix_acronyms_ambiguous)
-
-
 def _set_apart_clauses(state: ParseState,
                        tokens: list[WorkToken]) -> None:
     """Give each word of a delimited clause wholly of non-name words
@@ -702,10 +690,13 @@ def _set_apart_clauses(state: ParseState,
             token = tokens[i]
             kind = set_apart_kind(token.text, lex)
             if kind is None:
-                if not ("." in token.text
-                        and _dotted_member(token.text.strip(","), lex)
-                        or (AMBIGUOUS_ACRONYM_TAG in token.tags
-                            and settled_by_case(token, state.one_case))):
+                bare = token.text.strip(",")
+                dotted = ("." in bare.strip(".")
+                          and _normalize(bare).replace(".", "")
+                          in lex._sets.suffix_acronyms_ambiguous)
+                if not (dotted or (AMBIGUOUS_ACRONYM_TAG in token.tags
+                                   and settled_by_case(token,
+                                                       state.one_case))):
                     break
                 kind, member = "suffix", True
             kinds.append(kind)
@@ -788,8 +779,12 @@ def _report_delimited_members(tokens: list[WorkToken], lexicon: Lexicon,
     for i, token in enumerate(tokens):
         if token.role is not Role.NICKNAME:
             continue
-        if ("." in token.text and _dotted_member(token.text, lexicon)
-                or AMBIGUOUS_ACRONYM_TAG in token.tags):
+        # a period inside the word ('M.A'); one ending it is extract's
+        # escape
+        dotted = ("." in token.text.strip(".")
+                  and _normalize(token.text).replace(".", "")
+                  in lexicon._sets.suffix_acronyms_ambiguous)
+        if dotted or AMBIGUOUS_ACRONYM_TAG in token.tags:
             ambiguities.append(PendingAmbiguity(
                 AmbiguityKind.SUFFIX_OR_NICKNAME,
                 f"delimited {token.text!r} is also a post-nominal; read "

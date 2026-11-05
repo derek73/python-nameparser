@@ -1718,3 +1718,13 @@ def test_a_report_behind_a_given_name_phrase_names_the_family() -> None:
         "Ana de María Pérez Filho")
     assert [a.alternative.role for a in folded.ambiguities
             if a.alternative is not None] == [Role.FAMILY]
+
+
+def test_a_dotted_member_keeping_a_comma_in_its_clause_is_set_apart() -> None:
+    # rules/S1's set-apart pass reads a dotted member with the comma its
+    # clause keeps on it left off (rules/N1), so 'M.A,' joins the suffix
+    # as 'M.A' alone does; a direct test because the pass rewrites the
+    # word's text and span, which the stage-ownership map does not list
+    name = parse("John Smith (M.A, PhD)")
+    assert (name.given, name.family, name.suffix, name.nickname) == (
+        "John", "Smith", "M.A, PhD", "")

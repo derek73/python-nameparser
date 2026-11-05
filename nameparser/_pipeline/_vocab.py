@@ -775,12 +775,14 @@ def split_pair(first: str, second: str, lexicon: Lexicon) -> str | None:
     if _PH.fullmatch(first) is not None and _D.fullmatch(second) is not None:
         # rules/S12: "is a credential only where the lexicon lists `phd`"
         # -- as unambiguous suffix vocabulary of either kind, as the
-        # joined spelling reads it (`suffix_as_written`, whose dotted and
-        # joiner arms bare `phd` cannot reach); elsewhere the two words,
-        # the fold below being `phd` itself, which an ambiguous suffix
-        # word would admit as a member. decisions/phd-merge (#1000)
-        return ("suffix" if suffix_as_written("phd", "phd", lexicon)
-                else None)
+        # joined spelling reads it; elsewhere the two words, the fold
+        # below being `phd` itself, which an ambiguous suffix word would
+        # admit as a member. decisions/phd-merge (#1000)
+        sets = lexicon._sets
+        return ("suffix" if "phd" in sets.suffix_acronyms
+                and "phd" not in sets.suffix_acronyms_ambiguous
+                or "phd" in sets.suffix_words
+                and "phd" not in sets.suffix_words_ambiguous else None)
     if (SPLIT_CHUNK.fullmatch(first) is None
             or SPLIT_CHUNK.fullmatch(second) is None):
         return None
