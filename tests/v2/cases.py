@@ -2685,6 +2685,41 @@ CASES: tuple[Case, ...] = (
          notes="#1093 with an initial for the given part. 2.7.0 through "
                "2.8.2 read family 'Smith y', suffix 'V'; 1.4.0 through "
                "2.6.0 read as here"),
+    Case("a_numeral_behind_a_connective_before_a_credential_is_family",
+         "Smith y V PhD, John",
+         {"given": "John", "family": "Smith y V", "suffix": "PhD"},
+         classification="parity",
+         notes="#1093 with a suffix word behind the numeral in the "
+               "family part. 2.7.0 through 2.8.2 read family 'Smith y', "
+               "suffix 'V PhD'; 1.4.0 through 2.6.0 read as here"),
+    Case("a_numeral_behind_an_uppercase_connective_is_family",
+         "ИВАНОВ И V, ИВАН",
+         {"given": "ИВАН", "family": "ИВАНОВ И V"},
+         classification="parity",
+         notes="#1093's spelling sweep: a connective in capitals. A "
+               "Latin 'Y' cannot stand in, being an initial in front, "
+               "which asks no count. 2.7.0 through 2.8.2 read family "
+               "'ИВАНОВ И', suffix 'V'; 1.4.0 through 2.6.0 read as "
+               "here"),
+    Case("a_numeral_behind_a_joined_connective_surname_keeps_the_count",
+         "Smith Ortega y Gasset V, José",
+         {"given": "José", "family": "Smith Ortega y Gasset",
+          "suffix": "V"},
+         ambiguities=("suffix-or-name",), classification="fix(#774)",
+         notes="#1093's boundary: a connective joined to name words is "
+               "one name word, so two stand in front, as in 'Smith van "
+               "der Berg V, John'. 1.4.0 through 2.6.0 read family "
+               "'Smith Ortega y Gasset V'"),
+    Case("a_connective_joining_a_two_letter_numeral_keeps_it_in_the_family",
+         "Smith Jones y VI, John",
+         {"given": "John", "family": "Smith Jones y VI"},
+         classification="parity",
+         notes="#1093 left this as it reads: P3's join takes the 'VI' "
+               "its own count left out as the generation, so the "
+               "numeral never reaches S10's count. The issue wants "
+               "suffix 'VI' here once P3's count asks S10's predicate; "
+               "this row is there to make that move a decision. 1.4.0 "
+               "through 2.8.2 read as here"),
     Case("a_two_letter_numeral_behind_a_connective_stays_the_suffix",
          "Smith y VI, John",
          {"given": "John", "family": "Smith y", "suffix": "VI"},
