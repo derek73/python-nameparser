@@ -76,6 +76,12 @@ Release Log
     - **Fix the Filipino particle Delos, de los written as one word, reading as a middle name.** ``parse("Juan Delos Reyes")`` gives family ``Delos Reyes``, as ``Juan Dela Cruz`` gives ``Dela Cruz``, where 1.4.0 through 2.8.1 gave middle ``Delos``, family ``Reyes``. ``Delos`` is a given name too, so ``Delos Wheeler`` still gives given ``Delos``, now reporting particle-or-given. Case repair keeps both capitalized: ``parse("JUAN DELA CRUZ").capitalized()`` gives ``Juan Dela Cruz``, where 1.4.0 through 2.8.1 gave ``Juan dela Cruz``. :issue:`1037`
     - **Fix a family-comma name losing the given name Junior to the suffix.** ``parse("Silva, Junior Carlos")`` gives given ``Junior``, middle ``Carlos``, as 2.2.0 and 2.3.0 did, where 2.4.0 through 2.8.1 gave suffix ``Junior Carlos`` and no given name. Junior and Júnior are given names too, so a name with no word to spare keeps one as the name (``Kofi Junior`` gives family ``Junior``), while ``John Smith Junior`` still gives suffix ``Junior``. A generation word you give a name reading with ``Lexicon.add`` is weighed by the count alone, as ``Junior`` is; add it with ``title_case_is_name=True`` to have Title case read as the name, as ``fils`` does. :issue:`1039`
 
+* 2.8.2 - November 4, 2026
+
+    **Deprecations**
+
+    - **Deprecate nameparser.config.surnames, which 3.0 makes private.** ``from nameparser.config.surnames import KOREAN_SURNAMES`` now emits a ``DeprecationWarning`` naming ``Lexicon.default().surnames``, which holds the same words in 2.8.2 and 3.0. :issue:`1007`
+
 * 2.8.1 - November 2, 2026
 
     nameparser 2.8.1 adds warnings for three 3.0 changes 2.8.0 did not announce: writing a ``Lexicon`` set field, reading a vocabulary constant in ``nameparser.config``, and reading ``nameparser.config.regexes``. Reading a ``Lexicon`` field (``lexicon.titles``) does not warn, though 3.0 refuses that too. Code that runs with warnings as errors (``-W error``, or pytest's ``filterwarnings = error``) will fail where it does any of the three.
