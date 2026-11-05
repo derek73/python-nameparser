@@ -2059,18 +2059,50 @@ def test_a_group_of_particles_and_a_connective_initials_the_connective(
     assert parse("Vega, Santa de y").initials() == "S. y. V."
 
 
+#: the negative control for the sweep below: what `JOHN <WORD> SMITH`
+#: repairs to with the set emptied, every word of 2026-11-04 written
+#: lowercase, as master at dadf39b7 wrote it; recorded so the sweep
+#: cannot pass vacuously
+_UNGUARDED_CAPITALIZED = {
+    "freiherr": "freiherr Smith", "freiherrin": "freiherrin Smith",
+    "fürst": "fürst Smith", "graf": "graf Smith", "gräfin": "gräfin Smith",
+    "prinz": "prinz Smith", "san": "san Smith", "santa": "santa Smith",
+    "st": "st Smith", "sta": "sta Smith", "ste": "ste Smith",
+    "sto": "sto Smith",
+}
+
+
+def _repaired_families(lex: Lexicon) -> dict[str, str]:
+    return {word: parse(f"JOHN {word.upper()} SMITH").capitalized(lex).family
+            for word in sorted(lex._sets.capitalized_particles)}
+
+
 def test_every_saint_and_rank_particle_repairs_with_its_capital() -> None:
     """rules/R4, #1069: a particle of the `saint` or `rank` kind is
     written as a name word is, keyed on the kind, so the sweep runs over
-    the compiled set rather than a list; master at dadf39b7 repaired
-    each one lowercase (`OTTO GRAF LAMBSDORFF` -> 'Otto graf
-    Lambsdorff')."""
-    words = sorted(Lexicon.default()._sets.capitalized_particles)
-    assert len(words) >= 12  # the six saints and six ranks of 2026-11-04
-    for word in words:
-        name = parse(f"JOHN {word.upper()} SMITH")
-        assert name.family.lower() == f"{word} smith", word
-        assert name.capitalized().family == f"{word.title()} Smith", word
+    the compiled set rather than a list."""
+    lex = Lexicon.default()
+    repaired = _repaired_families(lex)
+    assert repaired.keys() >= _UNGUARDED_CAPITALIZED.keys()
+    for word, family in repaired.items():
+        assert parse(f"JOHN {word.upper()} SMITH").family.lower() == \
+            f"{word} smith", word
+        assert family == f"{word.title()} Smith", word
+
+
+def test_the_capitalized_sweep_fails_with_the_set_emptied() -> None:
+    """The negative control, taken live: a fresh lexicon whose
+    `capitalized_particles` is emptied repairs every word lowercase, as
+    `_UNGUARDED_CAPITALIZED` records."""
+    lex = Lexicon.default().add("zaint", kind="particle")  # a fresh copy
+    unguarded = dataclasses.replace(
+        lex._sets, capitalized_particles=frozenset())
+    words = sorted(lex._sets.capitalized_particles)
+    object.__setattr__(lex, "_sets", unguarded)
+    got = {word: parse(f"JOHN {word.upper()} SMITH").capitalized(lex).family
+           for word in words}
+    assert {w: got[w] for w in _UNGUARDED_CAPITALIZED} == \
+        _UNGUARDED_CAPITALIZED
 
 
 @pytest.mark.parametrize(("kind", "written"), [
