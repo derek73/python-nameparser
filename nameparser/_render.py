@@ -470,11 +470,18 @@ def _apply_mask(word: str, mask: str) -> str | None:
 def _lowers_as_particle(normalized: str, word: str, role: Role,
                         tags: frozenset[str], lex: Lexicon) -> bool:
     """_cap_word's particle arm: `word` (folded to `normalized`) is a
-    particle doing a particle's work, so it is written in lowercase.
+    particle doing a particle's work, so it is written in lowercase --
+    unless its kind is one written with a capital (a saint or a rank,
+    `lex._sets.capitalized_particles`) or the vocabulary records a
+    casing for it.
     Shared with _cap_text, which asks it of each whole token before
     splitting the token into words, so a marked one ("d'") is asked as
     written rather than by its stem (#700)."""
     return (normalized in lex._sets.particles
+            # rules/R4: "a particle of a kind written with a capital"
+            # -- a saint or a rank -- is written as a name word is
+            # (decisions/R4, #1069)
+            and normalized not in lex._sets.capitalized_particles
             and not _spells_an_initial(normalized, word)
             and role in (Role.MIDDLE, Role.FAMILY)
             and UNJOINED_TAG not in tags

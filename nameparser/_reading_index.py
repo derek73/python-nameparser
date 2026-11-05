@@ -111,6 +111,11 @@ GATED_WORDS = frozenset({"generation", "agnomen", "credential"})
 #: (#326).
 HONORIFIC_KINDS = frozenset({"honorific", "professional_honorific"})
 
+#: The particle kinds written with a capital, a saint's name (`St Clair`,
+#: `San Martín`) and a German rank inside the surname (`Freiherr von
+#: Richthofen`): rules/R4's case repair does not lowercase them (#1069).
+CAPITALIZED_PARTICLE_KINDS = frozenset({"saint", "rank"})
+
 
 def indexed(kind: str) -> frozenset[str]:
     """The properties of a `kind` reading the index keeps: its
@@ -540,6 +545,7 @@ class Compiled(TypedDict):
     SHARED_NAMES: frozenset[str]
     PARTICLE_GIVEN_NAMES: frozenset[str]
     SAINT_PARTICLES: frozenset[str]
+    CAPITALIZED_PARTICLES: frozenset[str]
     BOUND_PHRASES: frozenset[str]
 
 
@@ -583,6 +589,7 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
     honorific_words: set[str] = set()
     patronymics: set[str] = set()
     saints: set[str] = set()
+    capitalized: set[str] = set()
     title_case_names: set[str] = set()
     shared: set[str] = set()
     after_particle: set[str] = set()
@@ -633,6 +640,8 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
                 patronymics.add(t)
             elif r.kind == "saint":
                 saints.add(t)
+            if r.kind in CAPITALIZED_PARTICLE_KINDS:
+                capitalized.add(t)
             if t not in given:
                 never_given.add(t)
         elif r.category == "conjunction":
@@ -722,6 +731,10 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
         # open a place name or a surname (`Santa María`), never a given
         # name's second, so a given name phrase holds none (#704)
         SAINT_PARTICLES=frozenset(saints),
+        # the particles of the kinds written with a capital (`St`,
+        # `San`, `Freiherr`, `Graf`), which case repair does not
+        # lowercase, rules/R4 (#1069)
+        CAPITALIZED_PARTICLES=frozenset(capitalized),
         # `completed_by` resolved to the two-word given names it lists,
         # the bound word and each word that completes it ('عبد الله'),
         # which rules/P12 joins wherever they stand (#694)

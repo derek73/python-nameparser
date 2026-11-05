@@ -124,8 +124,8 @@ A reading's key is its **kind**. The table lists the kinds in their canonical or
 | `patronymic` | `particle` | `PARTICLES`, `PATRONYMIC_PARTICLES` |
 | `teknonymic` | `particle` | `PARTICLES` |
 | `clan` | `particle` | `PARTICLES` |
-| `rank` | `particle` | `PARTICLES` |
-| `saint` | `particle` | `PARTICLES`, `SAINT_PARTICLES` |
+| `rank` | `particle` | `PARTICLES`, `CAPITALIZED_PARTICLES` |
+| `saint` | `particle` | `PARTICLES`, `SAINT_PARTICLES`, `CAPITALIZED_PARTICLES` |
 | `alias` | `particle` | `PARTICLES` |
 | `conjunction` | `conjunction` | `CONJUNCTIONS` |
 | `bound_given` | `bound_given` | `BOUND_GIVEN_NAMES` |

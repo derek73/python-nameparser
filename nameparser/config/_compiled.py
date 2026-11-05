@@ -2882,8 +2882,6 @@ CAPITALIZATION_EXCEPTIONS: dict[str, str] = {
     'scm': 'ScM',
     'sig.na': 'Sig.na',
     'sig.ra': 'Sig.ra',
-    'sta': 'Sta',
-    'sto': 'Sto',
     'thd': 'ThD',
     'thm': 'ThM',
     'ua': 'Ua',
@@ -3126,6 +3124,21 @@ PARTICLE_GIVEN_NAMES: frozenset[str] = frozenset({
 })
 
 SAINT_PARTICLES: frozenset[str] = frozenset({
+    'san',
+    'santa',
+    'st',
+    'sta',
+    'ste',
+    'sto',
+})
+
+CAPITALIZED_PARTICLES: frozenset[str] = frozenset({
+    'freiherr',
+    'freiherrin',
+    'fürst',
+    'graf',
+    'gräfin',
+    'prinz',
     'san',
     'santa',
     'st',
