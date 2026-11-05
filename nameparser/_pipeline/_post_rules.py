@@ -5,9 +5,9 @@ particle fold reads the opening piece of segment 0, or of segment 1
 under a family comma (#359). structure was always read here, for the
 rotation gate. Also comma_offsets and dropped, which R1's entry pass
 below reads to find the separators the writer typed (#436/#437), and
-extracted, one_case and original, which S1's and S13's passes read
-(#810, #792), original also read by R1's entry pass for a comma a
-set-apart clause kept.
+extracted, one_case and original, which S1's set-apart pass reads,
+settling S13's members with its own (#810, #792), original also read
+by R1's entry pass for a comma a set-apart clause kept.
 Produces: tokens with roles adjusted by the post rules (among them the
 TITLE and SUFFIX roles of a set-apart clause's words, rules/S1, each
 word's comma trimmed off its text and span, and the
@@ -767,41 +767,21 @@ def _name_ahead(state: ParseState, tokens: list[WorkToken]) -> list[bool]:
 
 # rules/S13: "where the member's writing settles it as the credential,
 # the way the rules that read the writing say a credential is written,
-# it is no nickname but the suffix" -- Then and its first two bullets,
-# with the When's "no name word after it";
-# extract's period escape has sent every period-final clause through,
-# and `_set_apart_clauses`, run first, has given a clause of non-name
-# words its roles (decisions/S13 (#810), decisions/S1 (#792))
-def _settle_delimited_members(state: ParseState, tokens: list[WorkToken],
+# it is no nickname but the suffix" -- the settling itself is
+# `_set_apart_clauses`', which reads a lone member whose writing
+# settles it after the name as a clause of one non-name word; what is
+# left here is the report on a member it left the nickname
+# (decisions/S13 (#810), decisions/S1 (#792))
+def _report_delimited_members(tokens: list[WorkToken], lexicon: Lexicon,
                               ambiguities: list[PendingAmbiguity]) -> None:
-    """A nickname that is the whole of its clause and a member of the
-    ambiguous class becomes the suffix where its writing settles it and
-    it stands after the last name word; any other tagged member stays
-    the nickname and the fork is reported, a dotted member left a
-    nickname inside the name included. Asked here, first in this
-    stage, because only once roles are read is it known whether a name
-    word follows: a suffix, a title or a maiden clause after the clause
-    is no name word, whatever spelling put it there. Reported here,
-    where the escape is decided, rather than in extract, which has no
-    token index to point at. A dotted member carries no tag in a
-    clause (classify tags a shape only outside one), so it is found
-    by its text."""
-    last_name = -1
-    alone: set[int] = set()
-    for i, t in enumerate(tokens):
-        if t.role in NAME_ROLES:
-            last_name = i
-    starts = [t.span.start for t in tokens]
-    for _, clause in state.extracted:
-        lo = bisect.bisect_left(starts, clause.start)
-        # the whole clause's text, as extract's escape reads a clause:
-        # a character tokenize drops beside the member (an emoji, a
-        # zero-width space) leaves it no member alone
-        if (bisect.bisect_left(starts, clause.end) == lo + 1
-                and state.original[clause.start:clause.end].strip()
-                == tokens[lo].text):
-            alone.add(lo)
-    lex = state.lexicon
+    """Report the fork on every member of the ambiguous class left a
+    nickname: `_set_apart_clauses`, run first, has made each member its
+    writing settles after the name the suffix, so a member still a
+    nickname is one it did not settle, a dotted member inside the name
+    included. Reported here, where the clause is decided, rather than
+    in extract, which has no token index to point at. A dotted member
+    carries no tag in a clause (classify tags a shape only outside
+    one), so it is found by its text."""
     for i, token in enumerate(tokens):
         if token.role is not Role.NICKNAME:
             continue
@@ -809,14 +789,8 @@ def _settle_delimited_members(state: ParseState, tokens: list[WorkToken],
         # escape
         dotted = ("." in token.text.strip(".")
                   and _normalize(token.text).replace(".", "")
-                  in lex._sets.suffix_acronyms_ambiguous)
-        # after the name: behind its last name word, and a name word
-        # there is, so a clause in a name of no word of its own
-        # ('Dr. (MA)') is not settled
-        if 0 <= last_name < i and i in alone and (
-                dotted or settled_by_case(token, state.one_case)):
-            tokens[i] = copy_with(token, role=Role.SUFFIX)
-        elif dotted or AMBIGUOUS_ACRONYM_TAG in token.tags:
+                  in lexicon._sets.suffix_acronyms_ambiguous)
+        if dotted or AMBIGUOUS_ACRONYM_TAG in token.tags:
             ambiguities.append(PendingAmbiguity(
                 AmbiguityKind.SUFFIX_OR_NICKNAME,
                 f"delimited {token.text!r} is also a post-nominal; read "
@@ -846,7 +820,7 @@ def post_rules(state: ParseState) -> ParseState:
     ambiguities = list(state.ambiguities)
     if state.extracted:
         _set_apart_clauses(state, tokens)
-        _settle_delimited_members(state, tokens, ambiguities)
+        _report_delimited_members(tokens, state.lexicon, ambiguities)
     titles = _idx(tokens, Role.TITLE)
     givens = _idx(tokens, Role.GIVEN)
     middles = _idx(tokens, Role.MIDDLE)
