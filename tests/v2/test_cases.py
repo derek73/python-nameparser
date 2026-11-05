@@ -362,9 +362,11 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # particle no longer report particle-or-given under the two
     # family-first orders, the fold having taken it; 1597 -> 1606 on
     # 2026-11-05, #1080's two boundary rows and its paired-initials row,
-    # each reporting suffix-or-name under three orders.
-    assert claims == 1606, (
-        f"the field sweep checks {claims} claims, recorded as 1606 on "
+    # each reporting suffix-or-name under three orders; 1606 -> 1609 on
+    # 2026-11-05, #1088's 'Jean (M.A,) Smith' row reporting
+    # suffix-or-nickname under three orders.
+    assert claims == 1609, (
+        f"the field sweep checks {claims} claims, recorded as 1609 on "
         f"2026-11-05")
 
 

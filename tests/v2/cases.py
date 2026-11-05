@@ -9797,6 +9797,51 @@ CASES: tuple[Case, ...] = (
          notes="a comma opening a word is trimmed off its front, so the "
                "word's span starts after it (rules/S1); 1.4.0 and 2.8 "
                "read nickname 'MD ,PhD', 2.0.0 'MD PhD'"),
+    # rules/S1 (#1088): a credential joined by a slash or a hyphen, which
+    # S3 reads as a suffix bare, is set apart in brackets as its split
+    # spelling '(MD, PhD)' is
+    Case("paren_slash_joined_credential_set_apart", "John Smith (MD/PhD)",
+         {"given": "John", "family": "Smith", "suffix": "MD/PhD"},
+         classification="fix(#1088)",
+         notes="bare 'John Smith MD/PhD' reads suffix (rules/S3); 1.4.0 "
+               "through 2.8 read nickname 'MD/PhD'"),
+    Case("paren_hyphen_joined_credential_inside_the_name_set_apart",
+         "John (MD-PhD) Smith",
+         {"given": "John", "family": "Smith", "suffix": "MD-PhD"},
+         classification="fix(#1088)",
+         notes="no initials' shape, so S1's initials Except does not "
+               "reach it; 1.4.0 through 2.8 read nickname 'MD-PhD'"),
+    Case("paren_joined_credential_before_a_family_comma_set_apart",
+         "Smith (MD/PhD), John",
+         {"given": "John", "family": "Smith", "suffix": "MD/PhD"},
+         classification="fix(#1088)",
+         notes="as 'Smith (MD), John' reads; 1.4.0 through 2.8 read "
+               "nickname 'MD/PhD'"),
+    Case("paren_dotted_joined_credential_set_apart_not_escaped",
+         "John (M.D./Ph.D.) Smith",
+         {"given": "John", "family": "Smith", "suffix": "M.D./Ph.D."},
+         classification="fix(#1088)",
+         notes="set apart before the period escape is asked, which had "
+               "read it bare: 1.4.0 through 2.8 read middle "
+               "'M.D./Ph.D.'"),
+    Case("paren_dotted_joined_credential_after_a_lone_name_word",
+         "Jack (M.D./Ph.D.)",
+         {"family": "Jack", "suffix": "M.D./Ph.D."},
+         classification="fix(#1088)",
+         notes="the lone word is N3's family name, as in 'Jack (PhD)'; "
+               "2.8 read given 'Jack', reporting given-or-family, and "
+               "1.4.0 last 'M.D./Ph.D.'"),
+    Case("paren_joined_credential_and_name_stays_the_nickname",
+         "John Smith (MD/Bob)",
+         {"given": "John", "family": "Smith", "nickname": "MD/Bob"},
+         notes="S3 asks every chunk, and Bob is no credential"),
+    Case("paren_joined_member_chunk_stays_the_nickname",
+         "John Smith (MA/PhD)",
+         {"given": "John", "family": "Smith", "nickname": "MA/PhD"},
+         notes="a bare member of the ambiguous class is no chunk of a "
+               "joined credential (rules/S3), so the clause is not "
+               "set apart; the joined word is no member either, so "
+               "nothing reports"),
     # rules/S13 (#810): a member of the ambiguous class alone in the
     # brackets after the name, settled by its writing. Each row is
     # paired with a control its writing or its position does not settle.
@@ -9859,6 +9904,14 @@ CASES: tuple[Case, ...] = (
          ambiguities=("suffix-or-nickname",),
          notes="inside the name however it is written, and reported as "
                "a capitals member is; 1.4.0 read middle 'M.A'"),
+    Case("bracket_member_with_a_kept_comma_reports",
+         "Jean (M.A,) Smith",
+         {"given": "Jean", "family": "Smith", "nickname": "M.A,"},
+         classification="fix(#1088)",
+         ambiguities=("suffix-or-nickname",),
+         notes="the comma the clause keeps is no part of the member "
+               "(rules/N1), so it reports as 'Jean (M.A) Smith' does; "
+               "2.8 reported nothing, and 1.4.0 read nickname 'M.A,'"),
     Case("bracket_member_before_a_family_comma_stays_the_nickname",
          "Smith (MA), John",
          {"given": "John", "family": "Smith", "nickname": "MA"},

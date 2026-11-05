@@ -689,15 +689,12 @@ def _set_apart_clauses(state: ParseState,
         for i in range(lo, hi):
             token = tokens[i]
             kind = set_apart_kind(token.text, lex)
+            if kind is None and AMBIGUOUS_ACRONYM_TAG in token.tags \
+                    and settled_by_case(token, state.one_case):
+                kind = "member"
             if kind is None:
-                bare = token.text.strip(",")
-                dotted = ("." in bare.strip(".")
-                          and _normalize(bare).replace(".", "")
-                          in lex._sets.suffix_acronyms_ambiguous)
-                if not (dotted or (AMBIGUOUS_ACRONYM_TAG in token.tags
-                                   and settled_by_case(token,
-                                                       state.one_case))):
-                    break
+                break
+            if kind == "member":
                 kind, member = "suffix", True
             kinds.append(kind)
         else:
@@ -775,16 +772,18 @@ def _report_delimited_members(tokens: list[WorkToken], lexicon: Lexicon,
     included. Reported here, where the clause is decided, rather than
     in extract, which has no token index to point at. A dotted member
     carries no tag in a clause (classify tags a shape only outside
-    one), so it is found by its text."""
+    one), so it is found by its text, through `set_apart_kind` as the
+    settling finds it."""
     for i, token in enumerate(tokens):
         if token.role is not Role.NICKNAME:
             continue
-        # a period inside the word ('M.A'); one ending it is extract's
-        # escape
-        dotted = ("." in token.text.strip(".")
-                  and _normalize(token.text).replace(".", "")
-                  in lexicon._sets.suffix_acronyms_ambiguous)
-        if dotted or AMBIGUOUS_ACRONYM_TAG in token.tags:
+        # a period inside the word ('M.A'), a comma the clause kept on
+        # it left off; one ending it is extract's escape. The period is
+        # asked first, at C level, so a nickname written without one
+        # pays no frame
+        if (AMBIGUOUS_ACRONYM_TAG in token.tags
+                or "." in token.text
+                and set_apart_kind(token.text, lexicon) == "member"):
             ambiguities.append(PendingAmbiguity(
                 AmbiguityKind.SUFFIX_OR_NICKNAME,
                 f"delimited {token.text!r} is also a post-nominal; read "

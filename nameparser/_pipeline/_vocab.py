@@ -400,21 +400,28 @@ def ends_in_a_generation(texts: Sequence[str], one_case: bool | None,
 
 # rules/S1: "a clause wholly of words the vocabulary reads as no name
 # is set apart from the name" -- the word's half; `set_apart` is the
-# clause's (decisions/S1, #792)
+# clause's. Its suffix half is `suffix_as_written`'s, so a credential
+# joined by a slash or a hyphen is one here as it is bare, a member of
+# the ambiguous class asked first and left to S13's position test
+# (decisions/S1, #792, #1088)
 def set_apart_kind(word: str, lexicon: Lexicon,
-                   ) -> Literal["title", "suffix", "dual"] | None:
+                   ) -> Literal["title", "suffix", "dual", "member"] | None:
     """What a word in a delimited clause is to S1's set-apart reading:
-    a title, a suffix (an unambiguous suffix word or acronym), both, or
-    None where the vocabulary reads it as a name or not at all. A comma
-    the clause keeps on its word is no part of it (rules/N1)."""
-    folded = _normalize(word.strip(","))
+    a title, a suffix (a word `suffix_as_written` reads, joined
+    credentials included), both, a member of the ambiguous class
+    written with a period inside it, which S13 settles after the name
+    only, or None where the vocabulary reads it as a name or not at
+    all. A comma the clause keeps on its word is no part of it
+    (rules/N1)."""
+    bare = word.strip(",")
+    folded = _normalize(bare)
     sets = lexicon._sets
-    acronym = folded.replace(".", "")
-    suffix = ((folded in sets.suffix_words
-               and folded not in sets.suffix_words_ambiguous)
-              or (acronym in sets.suffix_acronyms
-                  and acronym not in sets.suffix_acronyms_ambiguous))
     title = folded in sets.titles
+    if folded.replace(".", "") in sets.suffix_acronyms_ambiguous:
+        if title:
+            return "title"
+        return "member" if "." in bare.strip(".") else None
+    suffix = suffix_as_written(folded, bare, lexicon)
     if title:
         return "dual" if suffix else "title"
     return "suffix" if suffix else None

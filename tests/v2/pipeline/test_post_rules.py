@@ -7,10 +7,11 @@ from pathlib import Path
 import pytest
 
 from nameparser import Locale, Parser, PolicyPatch, locales, parse, parser_for
-from nameparser._lexicon import Lexicon
+from nameparser._lexicon import Lexicon, _normalize
 from nameparser._pipeline import run
 from nameparser._pipeline import _post_rules
 from nameparser._pipeline._post_rules import suffix_entries
+from nameparser._pipeline._vocab import suffix_as_written
 from nameparser._pipeline._state import ParseState
 from nameparser._policy import (FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST,
                                 GIVEN_FIRST, PatronymicRule, Policy,
@@ -1767,3 +1768,57 @@ def test_a_set_apart_clause_trims_its_comma_off_the_word(text: str) -> None:
                for t in name.tokens if t.span is not None)
     # and every row is one the trim moves
     assert _SET_APART_COMMAS[text] != _UNGUARDED_EFFECT[text]
+
+
+#: rules/S1's set-apart word asks `suffix_as_written`, the question a
+#: bare word is asked, so a credential S3 reads joined by a slash or a
+#: hyphen is set apart in brackets as its split spelling is (#1088):
+#: each word bracketed after the name and inside it.
+_BRACKETED_WORDS = ("PhD", "Jr.", "MD/PhD", "MD-PhD", "md/phd", "Md-PhD",
+                    "MD/PhD/MPH", "M.D./Ph.D.", "M.A./PhD", "Jr/Sr",
+                    "MD/Bob", "MA/PhD", "Smith-Jones", "Ae-Ra", "I-V", "MD/")
+
+#: The rows the guard moves, as the tree before #1088 read them, the
+#: set-apart word asking its own copy of the unambiguous suffix sets:
+#: the test's negative control, recorded 2026-11-05 from a detached
+#: worktree of 4109b026 as (suffix, nickname). The joined words were
+#: nicknames, and the dotted one inside the name took the period escape
+#: and read as the middle name.
+_UNGUARDED_EFFECT_1088 = {
+    "John Smith (MD/PhD)": ("", "MD/PhD"),
+    "John (MD/PhD) Smith": ("", "MD/PhD"),
+    "John Smith (MD-PhD)": ("", "MD-PhD"),
+    "John (MD-PhD) Smith": ("", "MD-PhD"),
+    "John Smith (md/phd)": ("", "md/phd"),
+    "John (md/phd) Smith": ("", "md/phd"),
+    "John Smith (Md-PhD)": ("", "Md-PhD"),
+    "John (Md-PhD) Smith": ("", "Md-PhD"),
+    "John Smith (MD/PhD/MPH)": ("", "MD/PhD/MPH"),
+    "John (MD/PhD/MPH) Smith": ("", "MD/PhD/MPH"),
+    "John (M.D./Ph.D.) Smith": ("", ""),
+    "John Smith (M.A./PhD)": ("", "M.A./PhD"),
+    "John (M.A./PhD) Smith": ("", "M.A./PhD"),
+    "John Smith (Jr/Sr)": ("", "Jr/Sr"),
+    "John (Jr/Sr) Smith": ("", "Jr/Sr"),
+}
+
+
+@pytest.mark.parametrize("word", _BRACKETED_WORDS)
+def test_a_bracketed_word_is_the_suffix_where_the_bare_word_is_one(
+        word: str) -> None:
+    lexicon = Lexicon.default()
+    suffix = suffix_as_written(_normalize(word), word, lexicon)
+    for text in (f"John Smith ({word})", f"John ({word}) Smith"):
+        name = parse(text)
+        read = (name.suffix, name.nickname)
+        assert read == ((word, "") if suffix else ("", word)), text
+        if text in _UNGUARDED_EFFECT_1088:
+            assert _UNGUARDED_EFFECT_1088[text] != read
+
+
+def test_the_bracketed_word_control_names_rows_of_the_grid() -> None:
+    # a control row outside the grid would guard nothing
+    texts = {t for w in _BRACKETED_WORDS
+             for t in (f"John Smith ({w})", f"John ({w}) Smith")}
+    assert set(_UNGUARDED_EFFECT_1088) <= texts
+    assert len(_UNGUARDED_EFFECT_1088) == 15

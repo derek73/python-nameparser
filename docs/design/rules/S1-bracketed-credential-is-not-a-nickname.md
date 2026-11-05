@@ -4,7 +4,7 @@
 
 **Then:** a clause wholly of words the vocabulary reads as no name is set apart from the name: it is no nickname and no maiden name, and the words around it read as they would beside a nickname.
 
-- **Each word takes the role its vocabulary gives it**: a title is the title, a credential or a generation the suffix, and a word that is both is the title in front of the name's first word, or in a name with no word of its own, and the suffix anywhere else. The vocabulary is asked of each word on its own, so a credential whose word is also a name (S4) is no word of such a clause, and neither is a title that is also a given name (H9).
+- **Each word takes the role its vocabulary gives it**: a title is the title, a credential or a generation the suffix, one joined by a slash or a hyphen (S3) too, and a word that is both is the title in front of the name's first word, or in a name with no word of its own, and the suffix anywhere else. The vocabulary is asked of each word on its own, so a credential whose word is also a name (S4) is no word of such a clause, and neither is a title that is also a given name (H9).
   ```
   "John Smith (PhD, MBA)"     →  suffix="PhD, MBA"
   "John Smith (Dr)"           →  title="Dr"
@@ -13,7 +13,12 @@
   "(Lt)"                      →  title="Lt"
   "John (Sr.) Smith"          →  suffix="Sr."
   "John Smith (Mr, PhD)"      →  title="Mr"
+  "John Smith (MD/PhD)"       →  suffix="MD/PhD"
+  "John (MD-PhD) Smith"       →  suffix="MD-PhD"
+  "John (M.D./Ph.D.) Smith"   →  suffix="M.D./Ph.D."
   "John Smith (King)"         →  nickname="King"  · boundary
+  "John Smith (MD/Bob)"       →  nickname="MD/Bob"  · boundary
+  "John Smith (MA/PhD)"       →  nickname="MA/PhD"  · boundary
   ```
 - **The words around it read as they would beside a nickname**, so a clause between name words ends where its brackets do and takes neither neighbour, and a lone name word beside it is the family name (N3).
   ```
