@@ -85,9 +85,10 @@
   "Smith John Jr. Jones"  family-first  →  middle="Jr. Jones"
   "Smith, John Jr. Jones"  family-first  →  suffix="Jr. Jones"
   ```
-- With no family comma, a generation word written before the family name reads as a word of the middle name, not as the suffix it may be: the run does not start there, and lifting a post-nominal out of the middle of a name was declined for every credential (decisions/S8, #602).
+- With no family comma, a generation word written before the family name reads as a word of the middle name, not as the suffix it may be: the run does not start there, and lifting a post-nominal out of the middle of a name was declined for every credential (decisions/S8, #602). Bracketed, the same word is set apart from the name (S1).
   ```
-  "Mr Robert Alexander (Jnr) Halliday"  →  middle="Alexander Jnr"
+  "Mr Robert Alexander Jnr Halliday"  →  middle="Alexander Jnr"
+  "Mr Robert Alexander (Jnr) Halliday"  →  suffix="Jnr"
   ```
 - With no family comma, a credential written in capitals with a name word behind it is read as a name word, where the same credential written with its periods starts the run: a name with its credential between its given names and its family name keeps the family name behind the credential, the capitals being read as initials as likely as a credential.
   ```

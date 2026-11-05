@@ -31,14 +31,14 @@
 **Precedence:**
 
 - **A pair already configured for maiden names** ("Jane Smith (née Jones)" under a maiden pair): M1 governs and this adds nothing.
-- **Suffix-shaped content** ("Jane Smith (née Jr.)"): S1 takes it first, and the clause is no maiden name.
+- **Content ending in a period** ("Jane Smith (née Jr.)"): S1's period escape takes it first, and the clause is no maiden name.
   ```
   "Jane Smith (née Jr.)"      →  suffix="Jr."
   ```
 
 **Accepted:**
 
-- The word taken after the marker is not tested for being a name word, so unlike M2's bare take this one does not stop at a suffix word — the same two words read one way bracketed and another way bare. This does not contradict the S1 example under Precedence: S1 asks whether the WHOLE clause is suffix-shaped, which the trailing period makes true of the one and false of the other, so only the PhD clause reaches this rule.
+- The word taken after the marker is not tested for being a name word, so unlike M2's bare take this one does not stop at a suffix word — the same two words read one way bracketed and another way bare. This does not contradict the S1 example under Precedence: S1's period escape asks whether the WHOLE clause ends in a period, which is true of the one and false of the other, and the marker is no word of a clause S1 sets apart, so only the PhD clause reaches this rule.
   ```
   "Jane Smith (née PhD)"      →  maiden="PhD"
   "Jane Smith née PhD"        →  suffix="PhD"  · boundary

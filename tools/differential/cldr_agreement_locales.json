@@ -406,15 +406,15 @@
   "text": "Stöber Zäzilia Hamish"
  },
  "cs/nativeFull/sorting": {
-  "given_names": {
-   "expected": "Alexandra Zuzana",
-   "got": "Alexandra Zuzana paní"
-  },
   "suffix": {
    "expected": "",
    "got": "Ph.D."
   },
-  "text": "Machová, Alexandra Zuzana (paní, Ph.D.)"
+  "text": "Machová, Alexandra Zuzana (paní, Ph.D.)",
+  "title": {
+   "expected": "",
+   "got": "paní"
+  }
  },
  "cs/nativeG/sorting": {
   "family": {

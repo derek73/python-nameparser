@@ -622,15 +622,17 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: The reads 4i-a moved, as the check counts them on today's sources
 #: with `._sets` taken out again: the recorded negative control over
 #: the real tree, so the check above cannot pass because its walk
-#: reaches nothing. The library's 119 are 112 attribute loads, 3 roster
+#: reaches nothing. The library's 128 are 119 attribute loads, 3 roster
 #: `getattr`s, all through `sets`, which the undone `sets = lexicon`
-#: makes a lexicon, and the 4 `sets =` bindings (#1000's Ph./D. gate
+#: makes a lexicon, and the 6 `sets =` bindings (#1000's Ph./D. gate
 #: added one binding and four of the loads; #999's gate
 #: one load, its `titles_ambiguous` half, and its article partner two,
 #: `title_styles` and `conjunctions`, `title_abbreviations` being no
 #: 2.x field the check counts; #1039 moved two `agnomens` loads to
 #: `title_case_name_words`, no 2.x field either; #694's phrase gate
-#: one load, `bound_given_names`); the tools' 19 are 17
+#: one load, `bound_given_names`; #792's set-apart clause two `sets =`
+#: bindings and nine loads in `_vocab` and two loads in `_post_rules`,
+#: taking extract's four suffix-set loads out, 119 -> 128); the tools' 19 are 17
 #: attribute loads, every tool scanned, and config_diff.py's
 #: `sets =` binding and the roster `getattr` through it (its
 #: `changed_words`, which compares two lexicons set by set), which
@@ -640,7 +642,7 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: `_lexicon._fields_of` from 4i-b until 4i-c retired it.
 #: A reader added through `_sets` moves these, and they are re-taken
 #: then: they count what the check would refuse with the move undone.
-_UNGUARDED_READS = {"library": 119, "tools": 19}
+_UNGUARDED_READS = {"library": 128, "tools": 19}
 
 
 def test_the_check_refuses_every_read_4i_a_moved() -> None:

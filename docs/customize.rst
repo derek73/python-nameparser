@@ -1390,9 +1390,11 @@ A delimiter pair carries no meaning of its own, so what a clause
 enclosed in one reads as is settled in steps, and the pair is asked
 last:
 
-1. **Suffix-shaped content** is taken first. The brackets are dropped
-   and what was inside parses as if it had been written bare, which is
-   not the same as the clause becoming the suffix.
+1. **A clause of credentials, generations or titles** is taken first
+   and set apart from the name: each word becomes the suffix or the
+   title its vocabulary makes it, and the name around it reads as it
+   would beside a nickname. Other content ending in a period loses its
+   brackets and parses as if it had been written bare.
 2. **A clause that announces itself**, opening with a recognized maiden
    marker and carrying a word after it, is a maiden name inside any
    configured pair, with nothing configured (since 2.2). The marker is
@@ -1403,9 +1405,11 @@ last:
 
 .. doctest::
 
-    >>> name_jr = parse("Jane Smith (née Jr.)")         # step 1
+    >>> name_jr = parse("Jane Smith (née Jr.)")         # step 1, period
     >>> name_jr.family, name_jr.suffix
     ('née', 'Jr.')
+    >>> parse("John Smith (PhD) Withers").family        # step 1
+    'Withers'
     >>> parse("Jane Smith (née Jones)").maiden          # step 2
     'Jones'
     >>> parse('Jane Smith "née Jones"').maiden          # step 2, any pair

@@ -375,34 +375,26 @@ class SuffixesTestCase(ParsedNameTestBase):
         self.m(hn.nickname, "", hn)
 
     def test_suffix_in_parenthesis_mid_name(self) -> None:
-        # "Jr." is suffix-shaped, so parse_nicknames() no longer treats it as
-        # a nickname. But it isn't in trailing position, and parse_full_name's
-        # suffix detection only recognizes a trailing run of suffix-shaped
-        # pieces -- so it lands wherever normal parsing would put a bare
-        # mid-name "Jr." token, exactly as if the parens were never there
-        # (verified: parse("Lon Jr. Williams") parses identically).
-        # Known limitation: making this land in `suffix` would require
-        # changing parse_full_name's suffix detection, out of scope here --
-        # issue #111 is specifically about the nickname misclassification.
+        # rules/S1 sets a clause of non-name words apart from the name
+        # (#792): the brackets end it, so the generation is the suffix and
+        # the words around it read as they would beside a nickname.
+        # 1.4.0 through 2.8 read it as bare "Lon Jr. Williams", middle 'Jr.'.
         hn = parse("Lon (Jr.) Williams")
         self.m(hn.given, "Lon", hn)
-        self.m(hn.middle, "Jr.", hn)
+        self.m(hn.middle, "", hn)
         self.m(hn.family, "Williams", hn)
-        self.m(hn.suffix, "", hn)
+        self.m(hn.suffix, "Jr.", hn)
         self.m(hn.nickname, "", hn)
 
     def test_suffix_in_parenthesis_with_period(self) -> None:
-        # Same known limitation as above: "Ret." is mid-name (no comma), so
-        # it's outside the trailing run parse_full_name's suffix detection
-        # requires. It parses exactly as bare "Col. Ret. Smith" would: since
-        # "Ret." is an unrecognized period-abbreviation appearing before the
-        # first name is set, is_leading_title() treats it as a second title
-        # token (see #109), joining "Col." into a single title string.
+        # rules/S1 (#792): "Ret." is suffix vocabulary, so the clause is set
+        # apart and reads as the suffix it is; 1.4.0 through 2.8 read it as
+        # bare "Col. Ret. Smith", title 'Col. Ret.' (rules/S1's Accepted).
         hn = parse("Col. (Ret.) Smith")
-        self.m(hn.title, "Col. Ret.", hn)
+        self.m(hn.title, "Col.", hn)
         self.m(hn.given, "", hn)
         self.m(hn.family, "Smith", hn)
-        self.m(hn.suffix, "", hn)
+        self.m(hn.suffix, "Ret.", hn)
         self.m(hn.nickname, "", hn)
 
     def test_acronym_suffix_in_parenthesis(self) -> None:

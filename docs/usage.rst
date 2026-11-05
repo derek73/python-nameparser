@@ -925,11 +925,14 @@ can declare that with ``maiden_delimiters`` (see :ref:`brackets`):
     >>> parse("Cherice J. (Johnson) Williams").nickname
     'Johnson'
 
-If what's inside is a known
-suffix, or simply ends in a period, it is read as a suffix instead —
-that reading is taken before the maiden one, and parenthesized
-credentials and retired ranks are far more common than
-parenthesized nicknames that happen to be credentials:
+If every word inside is a known
+credential, generation or title, the clause is set apart from the name
+instead, each word read as the suffix or the title it is — that reading
+is taken before the maiden one, and parenthesized credentials, titles
+and retired ranks are far more common than parenthesized nicknames that
+happen to be credentials. Initials inside a name stay the nickname
+(``Justin (JP) Stearns``), and other content ending in a period is read
+as if written without its brackets:
 
 .. doctest::
 
@@ -937,6 +940,8 @@ parenthesized nicknames that happen to be credentials:
     'PhD'
     >>> parse("Andrew Perkins (Ret.)").suffix
     'Ret.'
+    >>> parse("John Smith (Dr)").title
+    'Dr'
 
 The exception to that exception is an *ambiguous* acronym — one that is
 also a plausible name or set of initials. Standing alone inside

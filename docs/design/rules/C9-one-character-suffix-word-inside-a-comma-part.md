@@ -12,12 +12,13 @@
   "Smith, John PhD I, Jr."    →  suffix="PhD, Jr."
   "Smith, John PhD É, Jr."    →  suffix="PhD É, Jr."  · boundary
   ```
-- **The bare letter read as the generation behind a name word is reported**, naming the middle initial it would otherwise be, as S10 reports the same letter with no comma: one letter is the shape a middle initial is written in, so a reader cannot tell the two apart there. Nothing is reported where the writing or the slot settles it: a letter behind another suffix word, a period-marked letter, one ahead of a further comma, and one in lower case in a name of mixed case (S10). Nor behind a lone particle, which may take the letter into its chain or stand alone as the given name, so the report could not say which field the initial would land in; behind a run of particles, which P6 attaches to the family, it is reported, a name word in its place joining the run as the middle name.
+- **The bare letter read as the generation behind a name word is reported**, naming the middle initial it would otherwise be, as S10 reports the same letter with no comma: one letter is the shape a middle initial is written in, so a reader cannot tell the two apart there. Nothing is reported where the writing or the slot settles it: a letter behind another suffix word, a period-marked letter, one set apart in brackets (S1), one ahead of a further comma, and one in lower case in a name of mixed case (S10). Nor behind a lone particle, which may take the letter into its chain or stand alone as the given name, so the report could not say which field the initial would land in; behind a run of particles, which P6 attaches to the family, it is reported, a name word in its place joining the run as the middle name.
   ```
   "Smith, John V"             →  ambiguities=("suffix-or-name",)
   "SMITH, JOHN I"             →  ambiguities=("suffix-or-name",)
   "Smith, PSM I"              →  ambiguities=()
   "Smith, John v"             →  ambiguities=()
+  "Smith, John (V)"           →  ambiguities=()
   "Smith, Van V"              →  ambiguities=()
   "Smith, John de la V"       →  ambiguities=("suffix-or-name", "particle-or-given")
   ```

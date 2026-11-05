@@ -194,11 +194,11 @@ This catalog converts discovery into a one-time cost — it does not remove disc
 
 **Contract statement.** extract may inspect a clause's content against the lexicon and, when it matches, mask only the two delimiter spans so the inner content rejoins the main token stream for ordinary downstream parsing.
 
-**How it works.** "Andrew Perkins (MBA)" is not a nickname (rule S1): the parens are masked away and MBA is classified by the normal machinery — reusing the downstream path, so the delimited and bare forms cannot drift.
+**How it works.** Content ending in a period loses its brackets (rule S1's period escape): the parens are masked away and the words are classified by the normal machinery, reusing the downstream path, so the delimited and bare forms cannot drift. A clause wholly of words the vocabulary reads as no name, "Andrew Perkins (PhD)", takes the other path since #792: it is extracted as its pair reads it and its words are given their roles once the name's are read, because there the bare reading is the wrong answer — the clause's brackets end it, where bare the credential run takes the next word (`John Smith (PhD) Withers`) and a generation joins the middle name.
 
-**Lives in.** nameparser/_pipeline/_extract.py (_suffix_shaped and the inner-span branch); and nameparser/_pipeline/_post_rules.py (`_settle_delimited_members`), the one site where content overrules the delimiter WITHOUT rejoining the bare path: a member of the ambiguous class settled by its writing after the name (rules/S13) is the suffix directly, because a dotted member's bare reading would differ (`M.A` reads as initials bare), so it is decided once the parse's roles are read rather than unmasked here (decisions/S13).
+**Lives in.** nameparser/_pipeline/_extract.py (`_period_escape` and the inner-span branch, and `_set_apart`, which routes the vocabulary clause); and nameparser/_pipeline/_post_rules.py, where content overrules the delimiter WITHOUT rejoining the bare path: `_set_apart_clauses` gives a set-apart clause's words their roles (rules/S1, decisions/S1), and the same pass makes a member of the ambiguous class settled by its writing after the name (rules/S13) the suffix, a dotted member's bare reading differing too (`M.A` reads as initials bare), and `_report_delimited_members` reports a member it leaves the nickname (decisions/S13).
 
-**Reach for it when.** About to add a second code path that duplicates what the bare form already does — #335's fix is this shape (a _maiden_marked sibling predicate). Not when the bare reading is the wrong answer for the clause: that is S13's shape.
+**Reach for it when.** About to add a second code path that duplicates what the bare form already does — #335's fix is this shape (a _maiden_marked sibling predicate). Not when the bare reading is the wrong answer for the clause: that is S1's set-apart reading and S13's shape.
 
 ## CURATED-VOCABULARY-ALTERNATION — the config already splits them
 
