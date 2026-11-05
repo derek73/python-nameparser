@@ -1368,7 +1368,11 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                     # title tag is dropped. Pinned in test_group.py.
                     merge_pieces(pieces, ptags, fk, fk + 2, drop={"title"})
     if bound_join is not BoundJoin.DISABLED and site is not ClauseSite.TAIL:
-        _join_bound_before_article(pieces, ptags, tokens)
+        # a plain loop, no frame: a name with no such word pays nothing
+        for i in seg:
+            if BOUND_BEFORE_ARTICLE_TAG in tokens[i].tags:
+                _join_bound_before_article(pieces, ptags, tokens)
+                break
     if reads is not None:
         reads.append(read)
     pieces.extend(tail_pieces)

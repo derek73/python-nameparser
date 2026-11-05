@@ -53,7 +53,7 @@ from nameparser._pipeline._pieces import (
 )
 from nameparser._pipeline._state import (
     AMBIGUOUS_ACRONYM_TAG, ATTACHED_TAG, NAME_ROLES, PATRONYMIC_TAG,
-    PARTICLE_GIVEN_TAG, SHARED_NAME_TAG,
+    BOUND_BEFORE_ARTICLE_TAG, PARTICLE_GIVEN_TAG, SHARED_NAME_TAG,
     FIRST_SURNAME_TAG, SECOND_SURNAME_TAG,
     ParseState, PendingAmbiguity, PendingReading, Structure,
     WorkToken, _NEVER_FLIPPED, comma_bucket, copy_with,
@@ -218,9 +218,9 @@ def _units(tokens: list[WorkToken], idx: list[int]) -> list[list[int]]:
     leading particle keeps its piece -- it has to, or the fold's
     lone-piece site test would not fire at all.) The bound-given join grouping
     never built at all: P5 joins only where the bound word is the
-    first non-title piece, and at a fold site the first piece is the
-    particle -- "ibn Awf abdul Rahman" reaches here as four separate
-    pieces. The tag is the only witness in both cases.
+    first non-title piece, save a word written before the article
+    (#694), and at a fold site the first piece is the particle --
+    "ibn Awf abdul Rahman" reaches here as four separate pieces. The tag is the only witness in both cases.
 
     The particle chain is what keeps this partition agreeing with the
     one `assign` reads off pieces: strip the folded run and `assign`
@@ -263,13 +263,17 @@ def _family_word_count(tokens: list[WorkToken], family: list[int],
     la Vega" is one word and "Ortega y Gasset" and "García-López" two.
     A family of nothing but particles counts each of them, R2 reading
     them as ordinary name words. `hyphen_joins` counts a hyphenated word
-    as one, as the word O6 takes is counted (#959)."""
+    as one, as the word O6 takes is counted (#959). A bound word written
+    before the article counts with the word it completes, the pair P5
+    joined past the start being one name ('عبد الله', #694)."""
     words = sum(1 if hyphen_joins
                 else len([part for part in _HYPHENS.split(tokens[i].text)
                           if part])
                 for i in family
                 if "particle" not in tokens[i].tags
-                and "conjunction" not in tokens[i].tags)
+                and "conjunction" not in tokens[i].tags
+                and not (BOUND_BEFORE_ARTICLE_TAG in tokens[i].tags
+                         and i != family[-1]))
     return words or len(family)
 
 
