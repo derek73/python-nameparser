@@ -262,27 +262,30 @@ def _assert_comma_trim(original: str, old: WorkToken, new: WorkToken) -> None:
 
 _TRIM_ORIGINAL = "John (Dr, Prof) Smith"
 _TRIM_OLD = WorkToken("Dr,", Span(6, 9), role=Role.NICKNAME)
+_TRIM_NEW = WorkToken("Dr", Span(6, 8), role=Role.TITLE)
 
 
-@pytest.mark.parametrize("new", [
-    pytest.param(WorkToken("Dr", Span(7, 9), role=Role.TITLE),
+@pytest.mark.parametrize("old,new", [
+    pytest.param(_TRIM_OLD, WorkToken("Dr", Span(7, 9), role=Role.TITLE),
                  id="span-not-the-text's"),
-    pytest.param(WorkToken("Dr,", Span(6, 8), role=Role.TITLE),
+    pytest.param(_TRIM_OLD, WorkToken("Dr,", Span(6, 8), role=Role.TITLE),
                  id="span-only"),
-    pytest.param(WorkToken("Dx", Span(6, 8), role=Role.TITLE),
+    pytest.param(_TRIM_OLD, WorkToken("Dx", Span(6, 8), role=Role.TITLE),
                  id="not-a-comma-strip"),
-    pytest.param(WorkToken("Dr", Span(6, 8), role=Role.NICKNAME),
-                 id="no-set-apart-role"),
+    pytest.param(_TRIM_OLD,
+                 WorkToken("Dr", Span(6, 8), role=Role.NICKNAME),
+                 id="to-no-set-apart-role"),
+    pytest.param(WorkToken("Dr,", Span(6, 9), role=Role.GIVEN), _TRIM_NEW,
+                 id="from-no-set-apart-role"),
 ])
 def test_the_comma_trim_check_refuses_any_other_rewrite(
-        new: WorkToken) -> None:
+        old: WorkToken, new: WorkToken) -> None:
     # widening post_rules' token fields to text and span must leave
     # every other text or span change refused, as the role-and-tags map
     # refused it; the accepted trim is the control
-    _assert_comma_trim(_TRIM_ORIGINAL, _TRIM_OLD,
-                       WorkToken("Dr", Span(6, 8), role=Role.TITLE))
+    _assert_comma_trim(_TRIM_ORIGINAL, _TRIM_OLD, _TRIM_NEW)
     with pytest.raises(AssertionError):
-        _assert_comma_trim(_TRIM_ORIGINAL, _TRIM_OLD, new)
+        _assert_comma_trim(_TRIM_ORIGINAL, old, new)
 
 
 def test_stage_field_ownership() -> None:

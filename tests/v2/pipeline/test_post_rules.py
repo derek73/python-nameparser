@@ -1731,8 +1731,8 @@ def test_a_dotted_member_keeping_a_comma_in_its_clause_is_set_apart() -> None:
 
 
 #: rules/S1's comma inside a clause it sets apart, no part of the word
-#: it is written against: each row's title, suffix and title and suffix
-#: tokens, as the pass leaves them with the comma trimmed off each
+#: it is written against: each row's title and suffix fields and its title
+#: and suffix tokens, as the pass leaves them with the comma trimmed off each
 #: clause word's text and span (#792).
 _SET_APART_COMMAS = {
     "John (Dr, Prof) Smith": ("Dr Prof", "", ("Dr", "Prof")),
