@@ -1018,6 +1018,19 @@ def test_a_2x_constructor_spelling_offers_calls_on_a_lexicon_it_names(
         assert built.capitalization_exceptions == (("phd", "PhD"),)
 
 
+def test_a_2x_replace_of_an_edited_lexicon_offers_calls_on_that_lexicon(
+        ) -> None:
+    # dataclasses.replace shares Lexicon()'s refusal; an edited lexicon
+    # is the caller's variable, which no constructor call rebuilds
+    edited = Lexicon.empty().add("zzx", kind="title")
+    with pytest.raises(TypeError, match="since 3.0") as raised:
+        dataclasses.replace(edited, titles={"zzq"})  # type: ignore[call-arg]
+    code = str(raised.value).rsplit("write ", 1)[1]
+    assert code.startswith("lexicon."), code
+    built = eval(code, {"lexicon": edited})  # noqa: S307
+    assert built._sets.titles == frozenset({"zzq"})
+
+
 def test_a_2x_removal_keeps_another_files_reading_of_the_word() -> None:
     # ma is a credential (en) and a Filipino given name written short for
     # maría (fil): taking out the credential must not rewrite the

@@ -19,7 +19,7 @@
 - Given-first, a particle run and the one word behind it whose `given` reading is written `after_particle` (rules/P10), standing beside a given name of one word, is not taken; under a family-first order it is, completing no given name there. Neither side of a join holding a name reading written `shared` (Sikh `kaur`, `singh`) is joined: each is no family name, and with the switch alone the name reads as with it off — 2026-11-03 #704, decided in chat.
 - The Spanish list, which `locales.ES` carries as its lexicon fragment since sub-phase 3g (a caller may pass a list of its own), is generated, not per-word vocabulary: INE's 2025 census tables, pooled over every name borne in Spain, cut at a measured rank (1,000 words, 90% given use) by `tools/es_given_names.py`; a change to it is a cutoff change — 2026-10-30 #959.
 
-Open: why the Spanish list does less in Latin America, and whether a list per region or another selection rule would serve it better than the one list `locales.ES` carries, Argentina's answered by `locales.ES_AR` and the rest led by the 2026-11-04 entry's table, where ES_AR's list beats ES's in most of Latin America outside Mexico, Peru and the Caribbean (the 2026-10-30 #959 entry's Latin America bullet; the 2026-10-30 #753 phase 3g entry measures the pack against the default there) — #959. A name written with ñ dropped (`Begona`, `Inigo`) matches no entry, the key keeping the tilde; whether to fold ñ for data that strips it — #959.
+Open: whether to fold ñ for data that strips it, a name written with ñ dropped (`Begona`, `Inigo`) matching no entry of the given-name list, whose key keeps the tilde — #1081.
 
 ## Log
 
