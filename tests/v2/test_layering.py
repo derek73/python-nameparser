@@ -299,13 +299,29 @@ def test_the_1x_compatibility_modules_are_gone(module: str) -> None:
     "nameparser.config.particles", "nameparser.config.conjunctions",
     "nameparser.config.bound_given_names", "nameparser.config.given_names",
     "nameparser.config.maiden_markers", "nameparser.config.capitalization",
+    "nameparser.config.surnames",
 ])
 def test_the_vocabulary_modules_are_gone(module: str) -> None:
     # 3.0 removed the modules that re-exported the compiled sets, which
     # 2.8.1 warned of (#1007): Lexicon.words(kind=...) lists a kind's
-    # words, and nameparser.config.surnames is the one public module left
+    # words. It made surnames private too, which 2.8.2 warned of:
+    # Lexicon.default().surnames holds its words, and nameparser.config
+    # has no public module left
     with pytest.raises(ModuleNotFoundError):
         importlib.import_module(module)
+
+
+def test_the_config_package_holds_no_public_module() -> None:
+    # the public surface is nameparser and nameparser.locales; a module
+    # added here without a leading underscore would be a public import
+    # path nothing documents (surnames was the last, private since 3.0)
+    import pathlib
+
+    import nameparser.config
+    root = pathlib.Path(nameparser.config.__file__).parent
+    modules = sorted(p.stem for p in root.glob("*.py"))
+    assert "_ko_surnames" in modules
+    assert [m for m in modules if not m.startswith("_")] == []
 
 
 @pytest.mark.parametrize("statement,error", [

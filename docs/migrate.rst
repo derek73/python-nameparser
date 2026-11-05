@@ -69,8 +69,10 @@ exceptions `Finding the sites`_ names:
        ``bound_given_names``, ``given_names``, ``maiden_markers`` and
        ``capitalization``, which 2.8.1 warns of
      - ``Lexicon.default().words(kind=...)``, the call or comprehension
-       for each constant in `Vocabulary constants → Lexicon.words`_;
-       ``nameparser.config.surnames`` stays
+       for each constant in `Vocabulary constants → Lexicon.words`_
+   * - ``nameparser.config.surnames`` and its ``KOREAN_SURNAMES``, which
+       2.8.2 warns of
+     - ``Lexicon.default().surnames``, which holds the same words
    * - ``nameparser.config.regexes`` and its ``REGEXES``, which the
        parser has not read since 2.0
      - Copy the pattern you reused into your own code; the bidi and
@@ -554,8 +556,14 @@ it:
      - ``d.words(kind="suffix", attached="after")``
    * - ``CAPITALIZATION_EXCEPTIONS``
      - ``dict(d.capitalization_exceptions)``
+   * - ``KOREAN_SURNAMES``
+     - ``d.surnames``
 
-``KOREAN_SURNAMES`` stays in ``nameparser.config.surnames``.
+``KOREAN_SURNAMES`` was ``nameparser.config.surnames``'s, the one
+vocabulary module 3.0 makes private rather than removes, which 2.8.2
+warns of: ``Lexicon.default().surnames`` holds the same words, on 2.x as
+in 3.0.
+
 
 To change a default word list, configure a lexicon and hand it to a
 parser:

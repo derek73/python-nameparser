@@ -1871,11 +1871,13 @@ def test_migrate_s_words_call_reproduces_each_2x_constant(
         constant: str, expression: str) -> None:
     # #1007: the migration table's code is run, so a row that stops
     # matching the compiled set it replaces fails here, not in a caller's
-    # upgrade
-    from nameparser.config import _compiled
+    # upgrade. KOREAN_SURNAMES, nameparser.config.surnames' through 2.x
+    # (2.8.2 warning of the move), is the one not compiled
+    from nameparser.config import _compiled, _ko_surnames
     d = Lexicon.default()
     got = eval(expression, {"d": d})  # noqa: S307
-    expected = getattr(_compiled, constant)
+    expected = (_ko_surnames.KOREAN_SURNAMES if constant == "KOREAN_SURNAMES"
+                else getattr(_compiled, constant))
     if isinstance(expected, dict):
         assert got == expected
     else:

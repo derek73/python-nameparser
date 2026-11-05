@@ -84,7 +84,9 @@ kind, as the examples under :ref:`title-detection-off` do, and
 modules that exposed them as constants in 2.x (``nameparser.config.titles``,
 ``particles``, ``suffixes`` and the rest) are gone in 3.0, and
 :doc:`migrate` gives the call or comprehension for each constant.
-``nameparser.config.surnames``, the Korean surname list, stays.
+The Korean surname list, ``nameparser.config.surnames`` through 2.x
+and private in 3.0, is the default lexicon's ``surnames``:
+``Lexicon.default().surnames``.
 
 Kinds and properties
 ~~~~~~~~~~~~~~~~~~~~~
