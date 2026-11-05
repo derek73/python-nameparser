@@ -589,7 +589,8 @@ def _family_settled(state: ParseState, tokens: list[WorkToken],
         return False
     lead = _leading_name_piece(state, tokens)
     return (is_lone_never_given_particle(lead, tokens)
-            or _family_first_lead_folds(state, tokens, lead))
+            or state.order is not None and state.order[0] is Role.FAMILY
+            and _family_first_lead_folds(state, tokens, lead))
 
 
 def _family_first_lead_folds(state: ParseState, tokens: list[WorkToken],
@@ -597,7 +598,7 @@ def _family_first_lead_folds(state: ParseState, tokens: list[WorkToken],
     """Whether rules/P1's fold takes `lead`, the piece opening the
     name, beside the lone never-given particle it takes under every
     order (asked inline by each caller first, sparing every parse a
-    frame): under a family-first order two more -- a lone ambiguous particle written
+    frame), and asked only under a family-first order: two more -- a lone ambiguous particle written
     in lower case in a name of mixed case (rules/P11, #670), and a
     particle chain a title-particle in front lets P2 build (rules/P4's
     Except, #828), cut after its particles and one name unit unless a
@@ -609,9 +610,6 @@ def _family_first_lead_folds(state: ParseState, tokens: list[WorkToken],
     # written in lower case, in a name of mixed case, opens the name as
     # a never-given one does" -- the writing clause (decisions/P1 and
     # decisions/P11, #828, #670)
-    order = state.order
-    if order is None or order[0] is not Role.FAMILY:
-        return False
     if is_lowercase_ambiguous_particle(lead, tokens, state.one_case):
         return True
     if len(lead) < 2 or "particle" not in tokens[lead[0]].tags:
