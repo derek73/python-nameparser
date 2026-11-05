@@ -44,6 +44,20 @@ holds the shipped list to that. The cutoff and SHARE are measured choices
 (decisions/O6, 2026-10-30): a change to either is a cutoff change,
 decided against the same per-country measurement.
 
+Each listed word written with ñ is also listed with n where that
+spelling passes the same share test, its given and surname uses summed
+over every spelling an n stands for (#1081): data from systems without
+the letter (ASCII exports, upper-case registries) writes "Begona" for
+Begoña, while a word written with ñ is never an n word misspelled, so
+the fold runs one way and the parse's matching stays as it is.
+Martiño's n spelling is the one it leaves out: Martino is a surname in
+most of its uses.
+
+Standard output is the list: each ranked word, then each kept n
+spelling (an `n` row with its summed uses and share); a refused n
+spelling is reported on standard error. `--words` prints any words'
+tallied uses.
+
 LISTS names each list the tool writes by the pack that carries it, with
 its module, cutoff and share: locales.ES's 1,000 words at 0.9, and
 locales.ES_AR's 5,000 at 0.5 (decisions/O6, 2026-11-04), which keeps
@@ -56,6 +70,7 @@ the given names Spain also bears as surnames too often for the 90% bar
     uv run --with openpyxl --with xlrd python tools/es_given_names.py --list es-AR --write
     uv run --with openpyxl --with xlrd python tools/es_given_names.py --share 0.5 \
         | awk '{print $2}' > LIST   # a candidate list, one word a line
+    uv run --with openpyxl --with xlrd python tools/es_given_names.py --words Oña Martino
 
 Sources are cached outside the repository, in $NAMEPARSER_TOOLS_CACHE
 or ~/.cache/nameparser-tools (shared with name_usage.py); --refresh
@@ -161,6 +176,39 @@ FOLD_KEPT = {
 }
 
 
+def n_spelling_uses(ranked: list[str], given: Counter[str],
+                    surname: Counter[str],
+                    excluded: set[str]) -> list[tuple[str, int, int]]:
+    """Each candidate n spelling of a `ranked` word written with ñ, in
+    rank order, with its given and surname uses summed over every
+    spelling it stands for: an ASCII writer turns Begoña and a Begona
+    alike into "Begona", so both count (#1081). A spelling already
+    listed or `excluded` is no candidate."""
+    def n(word: str) -> str:
+        return word.replace("ñ", "n")
+    merged_given: Counter[str] = Counter()
+    merged_surname: Counter[str] = Counter()
+    for word, count in given.items():
+        merged_given[n(word)] += count
+    for word, count in surname.items():
+        merged_surname[n(word)] += count
+    listed = set(ranked)
+    return [(n(word), merged_given[n(word)], merged_surname[n(word)])
+            for word in ranked
+            if n(word) != word and n(word) not in listed
+            and n(word) not in excluded]
+
+
+def n_spellings(ranked: list[str], given: Counter[str],
+                surname: Counter[str], excluded: set[str],
+                share: float = SHARE) -> list[str]:
+    """The candidate n spellings (`n_spelling_uses`) passing the
+    `share` test over their summed uses, in rank order."""
+    return [word for word, g, s in
+            n_spelling_uses(ranked, given, surname, excluded)
+            if g >= share * (g + s)]
+
+
 def excluded_words() -> set[str]:
     """Every word the default vocabulary reads as a particle, a
     conjunction, a title or a suffix, folded as the list is, less the
@@ -172,11 +220,13 @@ def excluded_words() -> set[str]:
     return {fold(w) for entry in pool for w in entry.split()} - FOLD_KEPT
 
 
-def render(ranked: list[str]) -> str:
-    rows = [", ".join(f'"{w}"' for w in ranked[i:i + 8])
-            for i in range(0, len(ranked), 8)]
-    body = "\n".join(f"    {row}," for row in rows)
-    return f"{BEGIN}\n_RANKED = (\n{body}\n)\n{END}"
+def render(ranked: list[str], spellings: list[str]) -> str:
+    def rows(words: list[str]) -> str:
+        lines = [", ".join(f'"{w}"' for w in words[i:i + 8])
+                 for i in range(0, len(words), 8)]
+        return "\n".join(f"    {line}," for line in lines)
+    return (f"{BEGIN}\n_RANKED = (\n{rows(ranked)}\n)\n"
+            f"_N_SPELLINGS = (\n{rows(spellings)}\n)\n{END}")
 
 
 def rewrite(module_text: str, block: str, module: Path = MODULE) -> str:
@@ -256,23 +306,37 @@ def main(argv: list[str] | None = None) -> int:
                         help="fetch the sources again")
     parser.add_argument("--top", type=int, help="the cutoff (default: the list's)")
     parser.add_argument("--share", type=float, help="the share (default: the list's)")
+    parser.add_argument("--words", nargs="+", metavar="WORD",
+                        help="print these words' given and surname uses "
+                             "as tallied, and nothing else")
     args = parser.parse_args(argv)
     module, top, share = LISTS[args.list]
     excluded = excluded_words()
     given = tally(load_names(args.refresh))
     surname = tally(load_surnames(args.refresh), after=excluded)
+    if args.words:
+        for word in map(fold, args.words):
+            print(f"{word:20} given {given[word]:>9,}  "
+                  f"surname {surname[word]:>8,}")
+        return 0
+    share = share if args.share is None else args.share
     ranked = select(given, surname, excluded,
-                    top if args.top is None else args.top,
-                    share if args.share is None else args.share)
+                    top if args.top is None else args.top, share)
+    spellings = n_spellings(ranked, given, surname, excluded, share)
     for i, word in enumerate(ranked, 1):
         print(f"{i:5}  {word:20} given {given[word]:>9,}  "
               f"surname {surname[word]:>8,}")
+    for word, g, s in n_spelling_uses(ranked, given, surname, excluded):
+        kept = word in spellings
+        print(f"    n  {word:20} given {g:>9,}  surname {s:>8,}  "
+              f"{g / (g + s):.1%} given, {'kept' if kept else 'refused'}",
+              file=sys.stdout if kept else sys.stderr)
     covered = sum(given[w] for w in ranked)
     print(f"{len(ranked)} words, {covered / sum(given.values()):.1%} of "
           "given-word uses", file=sys.stderr)
     if args.write:
         module.write_text(rewrite(module.read_text(encoding="utf-8"),
-                                  render(ranked), module), encoding="utf-8")
+                                  render(ranked, spellings), module), encoding="utf-8")
         print(f"wrote {module}", file=sys.stderr)
     return 0
 

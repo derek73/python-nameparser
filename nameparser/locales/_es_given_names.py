@@ -15,8 +15,12 @@ words most borne as a given name in Spain among those at least 90% of
 whose uses are given-name uses, in rank order, written as INE writes
 them -- lower-cased here, without accents, with ñ and ç -- which
 ``Lexicon.given_names`` matches against a word with its accents
-dropped. tools/es_given_names.py derives the block below, with the
-cutoff and share it states; do not edit it by hand. A change to the
+dropped -- and, after them, each word written with ñ again with n
+(``_N_SPELLINGS``), where that spelling passes the same share over
+every use it stands for, since data without the letter writes
+"Begona" for Begoña (#1081). tools/es_given_names.py derives the
+block below, with the cutoff and share it states; do not edit it by
+hand. A change to the
 list is a change to the cutoff, decided against the per-country
 measurement in decisions/O6.
 """
@@ -150,6 +154,9 @@ _RANKED = (
     "saadia", "eduarda", "basilisa", "marisa", "idoya", "amada", "llorenç", "xoel",
     "sorin", "chiara", "hodei", "mahamadou", "zuriñe", "hafsa", "immaculada", "rim",
 )
+_N_SPELLINGS = (
+    "begona", "inaki", "benat", "zurine",
+)
 # -- END generated --
 
-GIVEN_NAMES = frozenset(_RANKED)
+GIVEN_NAMES = frozenset(_RANKED + _N_SPELLINGS)

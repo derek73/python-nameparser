@@ -854,6 +854,19 @@ stays out of it:
     >>> spain.parse("José Luis Pérez").family
     'Pérez'
 
+Data from systems without the letter ñ writes ``Begoña`` as
+``Begona``, so each listed name written with ñ is listed with n too,
+where that spelling is still mostly a given name. A name written with ñ
+is never taken for one written with n: ``Oña`` is a surname, though
+``Ona`` is a listed given name.
+
+.. doctest::
+
+    >>> spain.parse("Maria Begona Lopez").family
+    'Lopez'
+    >>> spain.parse("Juan Oña Pérez").family
+    'Oña Pérez'
+
 Among ORCID's researchers in the 11 Spanish-speaking countries
 measured, the names that agree in every box with the filer rise from
 13.5% (Peru) to 82.5% (Argentina) by default to 89.3% (Argentina) to
