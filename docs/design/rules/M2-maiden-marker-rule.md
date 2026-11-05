@@ -98,7 +98,7 @@
 
 **Precedence:**
 
-- **A marker inside a delimited clause** ("Jane Doe (nee Smith MA)"): delimiters outrank every reading inside them. The whole span is the maiden name whatever its last word is, and whether or not the pair is a configured maiden delimiter (M1, M3): the writer drew the boundary, so no fork is called and nothing is reported. A word the writer left OUTSIDE the span is outside the clause and reads as it would anywhere else. Bracketed content ending in a period is the exception, because it never reaches this rule as a delimited clause: a trailing period makes the content suffix-shaped (M3 states this), so the brackets are dropped (S1) and the clause is read as if written bare.
+- **A marker inside a delimited clause that reads as the maiden name** ("Jane Doe (nee Smith MA)"): delimiters outrank every reading inside them. Where the clause reads as the maiden name, in a pair configured for maiden names (M1) or led by a marker with a word after it in any pair (M3), the whole span is the maiden name whatever its last word is: the writer drew the boundary, so no fork is called and nothing is reported. A clause of a nickname pair whose marker has no word after it, or a comma after it, is no maiden clause and stays the nickname (M3's Except). A word the writer left OUTSIDE the span is outside the clause and reads as it would anywhere else. Bracketed content ending in a period is the exception, because it never reaches this rule as a delimited clause: S1's period escape drops the brackets and the clause is read as if written bare.
   ```
   "Jane Doe (nee Smith MA)"     →  maiden="Smith MA"
   "Jane Doe (nee Smith Ma)"     →  maiden="Smith Ma"
@@ -123,7 +123,7 @@
   ```
   "Jane Smith née V"            →  maiden="V"  · boundary
   ```
-- Bracket content ending in a period is suffix-shaped (M3), so the brackets are dropped (S1) and the clause is read as if written bare — the delimiter precedence does not reach it.
+- Bracket content ending in a period loses its brackets (S1's period escape) and is read as if written bare — the delimiter precedence does not reach it.
   ```
   "Jane Doe (nee Smith Prof.)"  →  title="Prof."
   ```

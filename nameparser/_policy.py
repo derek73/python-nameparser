@@ -586,9 +586,10 @@ class Policy:
     #: LONE marker word. Since #335 a clause that opens with a marker
     #: word AND has a word after it reads as the maiden name whatever
     #: pair encloses it, so "Jane Smith (née Jones)" needs no
-    #: configuration -- unless the content is suffix-shaped, which is
-    #: taken first, the brackets dropped and the content read as if
-    #: written bare. A maiden_markers entry opening the enclosed
+    #: configuration -- unless S1 takes the clause first: a clause of
+    #: credentials, generations or titles is set apart from the name,
+    #: and other content ending in a period loses its brackets and is
+    #: read as if written bare. A maiden_markers entry opening the enclosed
     #: content is dropped from the value -- all of it, an entry being
     #: allowed to span more than one word ("z domu") -- but only where
     #: a word stands past it: a clause of nothing but its marker keeps

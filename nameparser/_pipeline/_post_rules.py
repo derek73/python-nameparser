@@ -5,8 +5,12 @@ particle fold reads the opening piece of segment 0, or of segment 1
 under a family comma (#359). structure was always read here, for the
 rotation gate. Also comma_offsets and dropped, which R1's entry pass
 below reads to find the separators the writer typed (#436/#437), and
-extracted and one_case, which S13's pass reads (#810).
+extracted, one_case and original, which S1's and S13's passes read
+(#810, #792), original also read by R1's entry pass for a comma a
+set-apart clause kept.
 Produces: tokens with roles adjusted by the post rules (among them the
+TITLE and SUFFIX roles of a set-apart clause's words, rules/S1, each
+word's comma trimmed off its text and span, and the
 SUFFIX role of a delimited member its writing settles after the name,
 rules/S13, with the SUFFIX_OR_NICKNAME report on any other member left
 a nickname), the stable
@@ -30,9 +34,12 @@ cores group drops); Lexicon.given_name_titles, Lexicon.given_names
 under every policy and reads Policy.patronymic_rules for its Turkic
 guard), and
 Lexicon.suffix_acronyms_ambiguous (a dotted member in a clause, which
-carries no tag there, S13).
+carries no tag there, S13), and for S1's set-apart clause
+Lexicon.suffix_words directly and, through `_vocab.set_apart_kind` and
+`set_apart`, Lexicon.suffix_words_ambiguous, suffix_acronyms, titles,
+title_modifiers, title_styles and after_given_titles.
 
-Implements rules S13, H1, M4, P1, P6 (its no-comma site), P10, O1, O2,
+Implements rules S1, S13, H1, M4, P1, P6 (its no-comma site), P10, O1, O2,
 O6, O7, O3 and R1 of docs/design/rules/; each is cited at its code below, and
 H1/P1/O1/O2's history lives in docs/design/decisions/.
 `suffix_entries` is the R1 entry pass as a state-in/state-out
@@ -42,6 +49,7 @@ function, for Parser.revise to run over a forced-role sub-parse
 from __future__ import annotations
 
 import bisect
+from typing import Literal
 import re
 from collections.abc import Sequence
 
@@ -62,11 +70,13 @@ from nameparser._pipeline._state import (
 )
 from nameparser._pipeline._vocab import (
     delimiter_cores, has_patronymic_ending, is_initial, is_listed_given_name,
-    is_patronymic_marker, suffix_reading, unit_ends,
+    is_patronymic_marker, set_apart, set_apart_kind, suffix_reading,
+    unit_ends, written_as_initials,
 )
 from nameparser._policy import PatronymicRule
 from nameparser._types import (
     FOLDED_TAG, UNJOINED_CONJUNCTION_TAG, UNJOINED_TAG, AmbiguityKind, Role,
+    Span,
 )
 
 
@@ -138,7 +148,16 @@ def _mark_suffix_entries(tokens: list[WorkToken], state: ParseState) -> None:
         parted = any(
             tokens[between].text in cores if between in dropped
             else tokens[between].role not in _RENDERS_ELSEWHERE
-            for between in range(previous + 1, current))
+            for between in range(previous + 1, current)) or (
+            # rules/S1: "parts its words as a comma between them would"
+            # -- a comma a set-apart clause kept on a word, which no
+            # comma bucket holds and S1's pass trimmed off the word;
+            # decisions/S1 (#792)
+            state.original[tokens[previous].span.end:
+                           tokens[previous].span.end + 1] == ","
+            or state.original[tokens[previous].span.end:
+                              tokens[current].span.start].replace(" ", "")
+            == ",")
         if same_part and not parted:
             tokens[current] = copy_with(
                 tokens[current], tags=tokens[current].tags | {"joined"})
@@ -628,12 +647,131 @@ def _family_first_lead_folds(state: ParseState, tokens: list[WorkToken],
         state.ambiguities, lead[reach:])
 
 
+# rules/S1: "it is no nickname and no maiden name, and the words around
+# it read as they would beside a nickname" -- the clause's words
+# take their roles here, once the name's words are placed: extract has
+# already lifted a clause wholly of unambiguous non-name words out of
+# the name, and a member of the ambiguous class joins one only where
+# its writing settles it after the name (rules/S13); decisions/S1
+# (#792)
+def _set_apart_clauses(state: ParseState,
+                       tokens: list[WorkToken]) -> None:
+    """Give each word of a delimited clause wholly of non-name words
+    the role its vocabulary gives it: a title a title, a credential or
+    generation the suffix, and a word that is both a title in front of
+    the name's first word or in a name with no word of its own, and the
+    suffix anywhere else. A clause extract set apart may still be
+    declined here, keeping its pair's reading: titles alone behind a
+    word read as a suffix, a credential written as initials before a
+    name word of its comma part, or a member of the ambiguous class not
+    after the name."""
+    first_name = last_name = -1
+    for i, t in enumerate(tokens):
+        if t.role in NAME_ROLES:
+            last_name = i
+            if first_name < 0:
+                first_name = i
+    starts = [t.span.start for t in tokens]
+    lex = state.lexicon
+    # whether a name word stands after each token in its comma part,
+    # built once on first need, so a name of many clauses stays linear
+    ahead: list[bool] | None = None
+    for _, clause in state.extracted:
+        lo = bisect.bisect_left(starts, clause.start)
+        hi = bisect.bisect_left(starts, clause.end)
+        words = state.original[clause.start:clause.end].split()
+        # every word one token of the clause, as extract read them
+        if not words or hi - lo != len(words) or any(
+                tokens[i].role not in (Role.NICKNAME, Role.MAIDEN)
+                for i in range(lo, hi)):
+            continue
+        kinds: list[Literal["title", "suffix", "dual"]] = []
+        member = False
+        for i in range(lo, hi):
+            token = tokens[i]
+            kind = set_apart_kind(token.text, lex)
+            if kind is None:
+                bare = token.text.strip(",")
+                dotted = ("." in bare.strip(".")
+                          and _normalize(bare).replace(".", "")
+                          in lex._sets.suffix_acronyms_ambiguous)
+                if not (dotted or (AMBIGUOUS_ACRONYM_TAG in token.tags
+                                   and settled_by_case(token,
+                                                       state.one_case))):
+                    break
+                kind, member = "suffix", True
+            kinds.append(kind)
+        else:
+            # a member is settled after the name only (rules/S13), and
+            # a credential written as initials before a name word of its
+            # comma part stays the nickname
+            if member and not 0 <= last_name < lo:
+                continue
+            # a word that is a title too counts written with a period
+            # after each letter ('R.A.'), or in capitals in a name of
+            # mixed case ('RA'): Title case reads as the title it also
+            # is ('Lt'), and capitals in a name written in one case say
+            # nothing (S6)
+            if any((kind == "suffix" or kind == "dual" and (
+                        _DOTTED_INITIALS.fullmatch(w.strip(","))
+                        or state.one_case is False
+                        and w.strip(",").isupper()))
+                   and written_as_initials(w)
+                   and _normalize(w.strip(",")) not in lex._sets.suffix_words
+                   for w, kind in zip(words, kinds)):
+                if ahead is None:
+                    ahead = _name_ahead(state, tokens)
+                if ahead[hi - 1]:
+                    continue
+            # the token in front of the clause
+            if not set_apart(words, kinds, lo > 0
+                             and tokens[lo - 1].role is Role.SUFFIX, lex):
+                continue
+            for i, kind in zip(range(lo, hi), kinds):
+                title = kind == "title" or (
+                    kind == "dual" and (first_name < 0 or i < first_name))
+                # a comma the clause kept on its word (rules/N1) is no
+                # part of a title or a suffix: the word's span is
+                # trimmed, so its text stays the original slice, and
+                # R1's entry pass reads the comma left between two
+                # suffix words
+                token = tokens[i]
+                text = token.text.strip(",")
+                start = token.span.start + token.text.index(text)
+                tokens[i] = copy_with(
+                    token, role=Role.TITLE if title else Role.SUFFIX,
+                    text=text, span=Span(start, start + len(text)))
+
+
+#: Single letters each followed by a period ('R.A.'), the writing that
+#: makes a word that is a title too a set of initials (rules/S1).
+_DOTTED_INITIALS = re.compile(r"(?:[^\W\d_]\.)+")
+
+
+def _name_ahead(state: ParseState, tokens: list[WorkToken]) -> list[bool]:
+    """For each token, whether a name word stands after it before the
+    next comma: one walk from the end, each comma part's answer reset
+    where the part changes."""
+    ahead = [False] * len(tokens)
+    seen = False
+    part = None
+    for i in range(len(tokens) - 1, -1, -1):
+        here = comma_bucket(tokens[i].span.start, state.comma_offsets)
+        if here != part:
+            part, seen = here, False
+        ahead[i] = seen
+        if tokens[i].role in NAME_ROLES:
+            seen = True
+    return ahead
+
+
 # rules/S13: "where the member's writing settles it as the credential,
 # the way the rules that read the writing say a credential is written,
 # it is no nickname but the suffix" -- Then and its first two bullets,
 # with the When's "no name word after it";
-# extract's S1 escape has already sent every suffix-shaped clause
-# through (decisions/S13 (#810))
+# extract's period escape has sent every period-final clause through,
+# and `_set_apart_clauses`, run first, has given a clause of non-name
+# words its roles (decisions/S13 (#810), decisions/S1 (#792))
 def _settle_delimited_members(state: ParseState, tokens: list[WorkToken],
                               ambiguities: list[PendingAmbiguity]) -> None:
     """A nickname that is the whole of its clause and a member of the
@@ -707,6 +845,7 @@ def post_rules(state: ParseState) -> ParseState:
     tokens = list(state.tokens)
     ambiguities = list(state.ambiguities)
     if state.extracted:
+        _set_apart_clauses(state, tokens)
         _settle_delimited_members(state, tokens, ambiguities)
     titles = _idx(tokens, Role.TITLE)
     givens = _idx(tokens, Role.GIVEN)

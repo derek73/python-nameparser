@@ -8,7 +8,7 @@
   ```
   "Jane Smith (Nee) (Jones)"  maiden-parens  →  maiden="Nee Jones"
   ```
-- **Configuring the pair is what this rule needs for a clause that does not announce itself** — markerless content, and a lone marker alike, whether that marker is one word or several. A clause holding a word past its marker reads as the maiden name inside a nickname pair as well (M3), the suffix-shaped content S1 takes excepted there as it is here.
+- **Configuring the pair is what this rule needs for a clause that does not announce itself** — markerless content, and a lone marker alike, whether that marker is one word or several. A clause holding a word past its marker reads as the maiden name inside a nickname pair as well (M3), the clauses S1 takes excepted there as they are here.
 - **A clause of nothing but its marker keeps its words**, which may themselves be a surname (Nee).
   ```
   "Jane Smith (Nee)"  maiden-parens        →  maiden="Nee"  · boundary
@@ -30,7 +30,7 @@
 
 **Precedence:**
 
-- **Suffix-shaped content** ("Andrew Perkins (PhD)"): S1 takes it first, and the clause is no maiden name.
+- **A clause S1 sets apart, or one ending in a period** ("Andrew Perkins (PhD)"): S1 takes it first, and the clause is no maiden name.
   ```
   "Andrew Perkins (PhD)"  maiden-parens  →  suffix="PhD"  · boundary
   ```

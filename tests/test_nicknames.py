@@ -195,7 +195,8 @@ class MaidenNameTestCase(ParsedNameTestBase):
         self.m(hn.maiden, "", hn)
 
     def test_suffix_shaped_content_in_maiden_bucket_stays_in_place(self) -> None:
-        # The #189 suffix-shaped carve-out applies regardless of which bucket the delimiter routes to.
+        # The #189 carve-out, rules/S1's set-apart clause since #792, applies
+        # regardless of which bucket the delimiter routes to.
         hn = _MAIDEN_PARENS.parse("Baker (Jr.), Jenny")
         self.m(hn.given, "Jenny", hn)
         self.m(hn.family, "Baker", hn)

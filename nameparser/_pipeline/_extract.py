@@ -13,9 +13,11 @@ Policy.maiden_delimiters (M1), or the content itself opens with a
 marker word (M3), which reassigns the role after the match and so is
 the one thing here that a bucket alone does not decide.
 Reads: Policy.nickname_delimiters, Policy.maiden_delimiters,
-Lexicon.maiden_markers, and
-Lexicon.suffix_words / suffix_words_ambiguous / suffix_acronyms /
-suffix_acronyms_ambiguous through _suffix_shaped.
+Lexicon.maiden_markers, and through `_vocab.set_apart_kind` and
+`set_apart` (rules/S1) Lexicon.suffix_words / suffix_words_ambiguous /
+suffix_acronyms / suffix_acronyms_ambiguous / titles /
+title_modifiers / title_styles / given_name_titles /
+after_given_titles.
 
 Implements rules N1, N2, S1, M1 and M3 of docs/design/rules/ (the #273
 matching mechanism); each is cited at its code below. One scan
@@ -34,31 +36,45 @@ from __future__ import annotations
 import bisect
 import functools
 
-from nameparser._lexicon import Lexicon, _normalize
+from nameparser._lexicon import Lexicon
 from nameparser._pipeline._state import (
     COMMA_CHARS, ParseState, PendingAmbiguity, copy_with,
 )
 from nameparser._pipeline._vocab import (
-    comma_follows_marker, maiden_marker_run,
+    comma_follows_marker, maiden_marker_run, set_apart, set_apart_kind,
 )
 from nameparser._types import AmbiguityKind, Role, Span
 
 
-# rules/S1: "an enclosed clause whose content is suffix-shaped is
-# not a nickname: the brackets or quotes are dropped and the content
-# reads exactly as if written bare"
-def _suffix_shaped(content: str, lexicon: Lexicon) -> bool:
-    """v1 parse_nicknames' escape (parser.py:1125-1141): an unambiguous
-    suffix_words member (edge-normalized), an unambiguous acronym
-    (period-free form), or anything ending in a period. No initial
-    veto -- v1 deliberately skipped it here."""
-    stripped = _normalize(content)
-    acronym = stripped.replace(".", "")
-    return ((stripped in lexicon._sets.suffix_words
-             and stripped not in lexicon._sets.suffix_words_ambiguous)
-            or (acronym in lexicon._sets.suffix_acronyms
-                and acronym not in lexicon._sets.suffix_acronyms_ambiguous)
-            or content.endswith("."))
+# rules/S1: "loses its brackets and reads exactly as if written bare,
+# the escape v1 made for any period-final content" -- asked only of a
+# clause `_set_apart` declined (decisions/S1, #792)
+def _period_escape(content: str) -> bool:
+    """v1 parse_nicknames' escape (parser.py:1125-1141) for content
+    ending in a period. v1's other two arms, an unambiguous suffix word
+    or acronym standing alone, are `_set_apart`'s since #792, which
+    takes every such clause first."""
+    return content.endswith(".")
+
+
+def _set_apart(text: str, inner: Span,
+               lexicon: Lexicon) -> bool:
+    """Whether a delimited clause is wholly of words the vocabulary
+    reads as no name, by `_vocab.set_apart_kind` and `set_apart`: the
+    unambiguous half of S1's set-apart reading, which needs no role. A
+    member of the ambiguous class settled by its writing (S13) is
+    weighed in post_rules, once it is known where the name ends, and
+    post_rules may still decline a clause this sets apart (titles
+    alone behind a credential, initials before a name word), which then
+    keeps its pair's reading and not the period escape."""
+    words = text[inner.start:inner.end].split()
+    kinds = []
+    for word in words:
+        kind = set_apart_kind(word, lexicon)
+        if kind is None:
+            return False
+        kinds.append(kind)
+    return bool(words) and set_apart(words, kinds, False, lexicon)
 
 
 # rules/M3: "a bracketed clause whose content opens with a
@@ -240,11 +256,19 @@ def extract_delimited(state: ParseState) -> ParseState:
             exhausted.add((role, open_, close))
             continue
         inner = Span(i + len(open_), j)
-        if inner.start < inner.end and _suffix_shaped(
-                text[inner.start:inner.end], state.lexicon):
-            # v1 parse_nicknames: suffix-shaped delimited content is
-            # left IN PLACE (undelimited) for normal downstream parsing
-            # -- 'Andrew Perkins (MBA)' keeps MBA a suffix, not a
+        if inner.start < inner.end and _set_apart(text, inner, state.lexicon):
+            # rules/S1: "it is no nickname and no maiden name, and the
+            # words around it read as they would beside a nickname"
+            # -- extracted as its pair reads it, post_rules giving its
+            # words their roles once the name's words are placed
+            # (decisions/S1, #792)
+            extracted.append((role, inner))
+            masked.append(Span(i, j + len(close)))
+        elif inner.start < inner.end and _period_escape(
+                text[inner.start:inner.end]):
+            # v1 parse_nicknames: period-final content S1 does not set
+            # apart is left IN PLACE (undelimited) for normal downstream
+            # parsing -- 'John Smith (M.A.)' keeps M.A. a suffix, not a
             # nickname. Spans index the original (anti-#100), so the v2
             # spelling masks only the two delimiter spans and lets the
             # inner content join the main token stream.

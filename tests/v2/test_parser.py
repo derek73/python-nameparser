@@ -2401,16 +2401,15 @@ def _twin_reading(name: ParsedName, twin: str | None, word: str) -> tuple[
 
 
 #: The census, by head and by whether the member was settled or left
-#: the nickname, recorded 2026-10-26 (#810). rules/S13's Accepted bullets
-#: and its Except bullets name each shape: a lone name word stays N3's
-#: family name beside a settled member where its twin's is given; the
-#: maiden clause stays the maiden name where the twin's credential run
-#: takes it; a part past a second comma reports what is left without
-#: the member; a name written in one case settles no capitals; a name
+#: the nickname, recorded 2026-10-26 (#810) and re-recorded 2026-11-04
+#: (#792), when rules/S1's set-apart reading of the twin left no
+#: settled member reading otherwise than it. rules/S13's Accepted
+#: bullet and its Except bullets name each shape left: a name written
+#: in one case settles no capitals; a name
 #: with no word of its own (a title, a nickname, nothing) settles no
-#: clause, where the twin escapes, read as the name ('(MPH)' given
-#: 'MPH', 'Dr. (MPH)' given 'Dr.') or as the suffix behind a comma
-#: (', (MPH)'); and a clause another
+#: clause, where the twin is set apart all the same ('(MPH)' suffix
+#: 'MPH' and no name, 'Dr. (MPH)' title 'Dr.', suffix 'MPH'; before
+#: #792 the escape read '(MPH)' as given 'MPH'); and a clause another
 #: settled one would make settle, on a second reading, is left the
 #: nickname.
 _TWIN_CENSUS = {
@@ -2419,11 +2418,6 @@ _TWIN_CENSUS = {
     ("Dr. {c}", "nickname"): 36,
     ("JOHN SMITH (m.a) {c}", "nickname"): 24,
     ("JOHN SMITH {c}", "nickname"): 24,
-    ("Jack {c}", "settled"): 36,
-    ("John Smith {c} née Jones", "settled"): 36,
-    ("John {c}", "settled"): 36,
-    ("Smith, John, Bob {c}", "settled"): 36,
-    ("Smith, John, X.Y.Z. {c}", "settled"): 36,
     ("john smith (M.A) {c}", "nickname"): 24,
     ("{c}", "nickname"): 36,
 }

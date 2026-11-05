@@ -6,7 +6,7 @@
 
 - **Written with a period inside it**, whatever case the name is in: the periods are how a credential is written and a name is not (S3).
 - **Written in capitals in a name written in more than one case**: the case is asked of the name's own words and never of the clause's, so capitals settle nothing in a name written wholly in one case, and Title case leans to the name (S6).
-- **It is the suffix, not the word read as if written bare** (S1): the brackets have already set it apart from the name's words, and bare, two letters each followed by a period but the last read as initials (S3). The rest of the name is read as beside a nickname, which is where it can differ from a bracketed unambiguous credential in the same place, its twin, as the Accepted bullets record.
+- **It is the suffix, not the word read as if written bare**: the brackets have already set it apart from the name's words, as S1 sets apart a clause of unambiguous credentials, and bare, two letters each followed by a period but the last read as initials (S3). The rest of the name reads as it would with no clause there, as it does beside a bracketed unambiguous credential in the same place, its twin.
 
 **Because:** after the name, brackets hold either a credential or the name the person goes by, and the writing tells the two apart where the count of words cannot: credentials are written in capitals and with their periods, and names are not. Inside the name the same word let out of the brackets would read as a middle name, where the brackets more likely hold the name the person goes by. So only the clause after the name is settled.
 
@@ -57,24 +57,10 @@
 
 **Accepted:**
 
-- A lone name word beside a settled member stays the family name it is beside a nickname (N3), where beside its twin, "(PhD)", it is the given name, reported.
-  ```
-  "Jack (MA)"                 →  family="Jack"
-  "Jack (MA)"                 →  ambiguities=()
-  ```
-- A maiden clause after a settled member stays the maiden name, where after its twin the credential's trailing run takes it (S8).
-  ```
-  "John Smith (MA) née Jones" →  maiden="Jones"
-  ```
-- The case is asked once, of the name's own words without any clause, so a member in capitals beside a settled one in a name otherwise written in one case stays the nickname, where its twin, joining the name's words, makes the name mixed and settles the other too.
+- The case is asked once, of the name's own words without any clause, so a member in capitals beside a settled one in a name otherwise written in one case stays the nickname, where its twin, an unambiguous credential, needs no settling and is the suffix.
   ```
   "JOHN SMITH (m.a) (MA)"     →  nickname="MA"
   "JOHN SMITH (m.a) (MA)"     →  suffix="m.a"
-  ```
-- A part past the second comma is weighed without the member, so what stands beside it decides whether the part reports, and the report names that alone, where its twin is weighed as a credential of the part.
-  ```
-  "Smith, John, X.Y.Z. (MA)"  →  ambiguities=()
-  "Smith, John, Bob (MA)"     →  ambiguities=("comma-structure",)
   ```
 
 ---

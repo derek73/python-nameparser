@@ -465,6 +465,19 @@ def classify(state: ParseState) -> ParseState:
                         folded[i] = _normalize(stem)
                         stemmed.add(i)
                     break
+    # rules/S1: "the comma is no part of the word it is written against"
+    # -- a word of a delimited clause keeps a comma written beside it
+    # (N1), and is tagged as the word without it, so a clause S1 sets apart
+    # gives each word its vocabulary whichever side of the comma it
+    # stands ('(Jr, PhD)', '(MBA, PhD)'); a maiden marker's comma
+    # unmakes the marker (M3), which the marker pass above has already
+    # read off the word as written (decisions/S1, #792)
+    if state.extracted:
+        for i, t in enumerate(state.tokens):
+            if (t.role is not None and i not in marker_tags
+                    and (bare := t.text.strip(",")) and bare != t.text):
+                readers[i] = copy_with(t, text=bare)
+                folded[i] = _normalize(bare)
     tokens = tuple(
         copy_with(
             t, tags=_tags_for(readers[i], folded[i], state, marker_tags.get(i),

@@ -69,6 +69,9 @@ def test_dotted_initial_is_the_period_alternative_of_initial() -> None:
 # None for a pattern that is its own only copy.
 _SOURCES: dict[tuple[str, str], tuple[str, str] | None] = {
     ("_vocab", "_PERIOD_ABBREV"): None,
+    # rules/S1's initials shape for a bracketed credential (#792)
+    ("_vocab", "_INITIALS_SHAPE"): None,
+    ("_post_rules", "_DOTTED_INITIALS"): None,
     # SAME object as _vocab's, not a second copy: _pieces imports it
     # from _vocab (#289/#516, quality-review finding -- is_title_shaped
     # moved there so name_word_count could share is_leading_title's H2

@@ -333,6 +333,8 @@ _SHAPES = {
     "agnomens": "Neto ",            # pieces: a gated word scans its front (#890)
     "carried_agnomens": "MA ma Neto ",  # pieces: the scan through carried members
     "bracket_members": "(M.A) ",    # post_rules: S13's clause pass (#810)
+    "set_apart": "(PhD, Dr) ",      # post_rules: S1's set-apart pass (#792)
+    "set_apart_initials": "(JP) a ",  # post_rules: S1's name-ahead walk (#792)
 }
 
 _BASE = 800

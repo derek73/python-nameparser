@@ -398,6 +398,69 @@ def ends_in_a_generation(texts: Sequence[str], one_case: bool | None,
             and reads_as_generation(last, frozenset(), texts[-2], one_case))
 
 
+# rules/S1: "a clause wholly of words the vocabulary reads as no name
+# is set apart from the name" -- the word's half; `set_apart` is the
+# clause's (decisions/S1, #792)
+def set_apart_kind(word: str, lexicon: Lexicon,
+                   ) -> Literal["title", "suffix", "dual"] | None:
+    """What a word in a delimited clause is to S1's set-apart reading:
+    a title, a suffix (an unambiguous suffix word or acronym), both, or
+    None where the vocabulary reads it as a name or not at all. A comma
+    the clause keeps on its word is no part of it (rules/N1)."""
+    folded = _normalize(word.strip(","))
+    sets = lexicon._sets
+    acronym = folded.replace(".", "")
+    suffix = ((folded in sets.suffix_words
+               and folded not in sets.suffix_words_ambiguous)
+              or (acronym in sets.suffix_acronyms
+                  and acronym not in sets.suffix_acronyms_ambiguous))
+    title = folded in sets.titles
+    if title:
+        return "dual" if suffix else "title"
+    return "suffix" if suffix else None
+
+
+#: A word written as initials: one or two letters, with or without a
+#: period, or single letters each followed by a period ('JP', 'Md',
+#: 'MD.', 'A.M.', 'R.E.S.').
+_INITIALS_SHAPE = re.compile(r"[^\W\d_]{1,2}\.?|(?:[^\W\d_]\.)+")
+
+
+# rules/S1: "A credential written as initials before a name word stays
+# the nickname" -- the brackets more likely hold the initials the person
+# goes by there; decisions/S1 (#792)
+def written_as_initials(word: str) -> bool:
+    """Whether a word of a delimited clause is written in the shape of
+    a person's initials, a comma it keeps left off."""
+    return _INITIALS_SHAPE.fullmatch(word.strip(",")) is not None
+
+
+def set_apart(words: Sequence[str],
+              kinds: Sequence[Literal["title", "suffix", "dual"]],
+              behind_a_credential: bool, lexicon: Lexicon) -> bool:
+    """rules/S1's clause tests over the words of a delimited clause,
+    each already found to be no name by `set_apart_kind` (or, after
+    the name, a member its writing settles, rules/S13): a clause of
+    nothing but title modifiers and styles is no title ('(UK)',
+    '(Hon)'), a lone title of address may be the name the person goes
+    by ('(Sir)', '(Mr)': a title addressing the given name, or a
+    salutation that may end the given part, rules/H8), and a clause
+    of titles alone straight behind a credential qualifies that
+    credential ('FRCS (SN)'). `behind_a_credential` is whether the
+    word in front of the clause was read as a suffix, which extract,
+    running before any word is read, passes as False."""
+    sets = lexicon._sets
+    folded = [_normalize(w.strip(",")) for w in words]
+    if all(f in sets.title_modifiers or f in sets.title_styles
+           for f in folded):
+        return False
+    if len(folded) == 1 and (folded[0] in sets.given_name_titles
+                             or folded[0] in sets.after_given_titles):
+        return False
+    return not (behind_a_credential and "suffix" not in kinds
+                and "dual" not in kinds)
+
+
 # rules/S10: "a Title-case numeral in a name of mixed case leans to the
 # name" -- the fork weighed it and the writing declined it, so it is
 # reported as a declined member of the ambiguous class is (#752)

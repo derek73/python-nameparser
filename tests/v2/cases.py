@@ -5784,7 +5784,7 @@ CASES: tuple[Case, ...] = (
          ambiguities=("suffix-or-name",),
          notes="MEASURED, and it NARROWS the note on "
                "caps_switch_does_not_reach_delimited_content: "
-               "`_extract._suffix_shaped` releases period-final "
+               "`_extract._period_escape` releases period-final "
                "delimited content with role None, so it is ordinary "
                "trailing material by the time classify runs and the "
                "shape class claims it -- matching '(M.D)', which the "
@@ -9674,9 +9674,12 @@ CASES: tuple[Case, ...] = (
          shape=2),
     Case("paren_suffix_escapes_nickname", "Andrew Perkins (MBA)",
          {"given": "Andrew", "family": "Perkins", "suffix": "MBA"},
-         notes="v1 parse_nicknames: suffix-shaped delimited content is "
-               "left in place for normal parsing (pinned live "
-               "2026-07-17)"),
+         notes="v1 parse_nicknames left suffix-shaped delimited content "
+               "in place for normal parsing (pinned live 2026-07-17); "
+               "'MBA' is a member of the ambiguous class since "
+               "2026-11-03, so rules/S13 settles it by its capitals, "
+               "and an unambiguous credential is set apart by rules/S1 "
+               "(#792)"),
     Case("paren_period_escapes_nickname", "Andrew Perkins (Ret.)",
          {"given": "Andrew", "family": "Perkins", "suffix": "Ret."}),
     # rules/S13 (#810): a member of the ambiguous class alone in the
@@ -9800,7 +9803,7 @@ CASES: tuple[Case, ...] = (
          classification="fix(#810)",
          ambiguities=("suffix-or-nickname",),
          notes="not the member alone, as its twin, the same clause "
-               "with PhD, is no suffix-shaped clause"),
+               "with PhD, is no clause rules/S1 sets apart"),
     Case("bracket_member_before_a_title_case_member",
          "John Smith (MA) Ma",
          {"given": "John", "middle": "Smith", "family": "Ma",
@@ -11774,7 +11777,7 @@ CASES: tuple[Case, ...] = (
          "Jane Smith (née Jr.)",
          {"given": "Jane", "middle": "Smith", "family": "née",
           "suffix": "Jr."},
-         notes="S1 takes a suffix-shaped clause before M3 is "
+         notes="S1's period escape takes the clause before M3 is "
                "consulted, and the whole reading is here because the "
                "surprising part is not the suffix: it is that the "
                "MARKER becomes the family name. S1 drops the brackets "
@@ -15812,7 +15815,7 @@ CASES: tuple[Case, ...] = (
          classification="fix(#323)",
          notes="a recorded DEGRADATION, pinned so it cannot move "
                "silently. rules/S1's bracketed-credential escape in "
-               "_extract calls a clause suffix-shaped when it ends in "
+               "_extract (its period escape) takes a clause ending in "
                "an ASCII period -- an unwidened test, deliberately -- "
                "so the brackets are dropped and the content reads as "
                "if written bare. Bare, '김민준. John Smith' used to "
