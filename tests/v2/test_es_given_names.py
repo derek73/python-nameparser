@@ -116,10 +116,23 @@ def test_the_list_holds_no_word_the_default_reads_as_no_name() -> None:
 def test_every_entry_is_written_in_the_fold_it_is_matched_by(tag: str) -> None:
     # The parse folds the word it asks about (given_name_key) and looks
     # the fold up, so an entry written any other way is never matched.
-    ranked = _MODULES[tag]._RANKED
-    assert ranked and len(set(ranked)) == len(ranked)
-    assert [w for w in ranked if given_name_key(w) != w or not w.isalpha()] == []
-    assert _MODULES[tag].GIVEN_NAMES == frozenset(ranked)
+    module = _MODULES[tag]
+    entries = module._RANKED + module._N_SPELLINGS
+    assert module._RANKED and len(set(entries)) == len(entries)
+    assert [w for w in entries if given_name_key(w) != w or not w.isalpha()] == []
+    assert module.GIVEN_NAMES == frozenset(entries)
+
+
+@pytest.mark.parametrize("tag", sorted(_MODULES))
+def test_an_n_spelling_is_a_listed_word_with_its_tilde_dropped(tag: str) -> None:
+    # #1081: the fold runs one way, from a listed word written with ñ to
+    # the n an ASCII writer puts in its place, so every extra entry is
+    # one of those and none holds ñ itself
+    module = _MODULES[tag]
+    tilded = {w.replace("ñ", "n") for w in module._RANKED if "ñ" in w}
+    assert module._N_SPELLINGS
+    assert set(module._N_SPELLINGS) <= tilded
+    assert not any("ñ" in w for w in module._N_SPELLINGS)
 
 
 @pytest.mark.parametrize("tag", sorted(_MODULES))
@@ -128,7 +141,8 @@ def test_the_module_block_is_what_the_tool_renders(tag: str) -> None:
     # would render differently, fails here.
     path = tool.LISTS[tag][0]
     text = path.read_text(encoding="utf-8")
-    block = tool.render(list(_MODULES[tag]._RANKED))
+    block = tool.render(list(_MODULES[tag]._RANKED),
+                        list(_MODULES[tag]._N_SPELLINGS))
     assert tool.rewrite(text, block, path) == text
 
 
@@ -179,12 +193,65 @@ def test_the_selection_keeps_the_mostly_given_words_by_rank() -> None:
     assert "rosa" not in tool.select(given, surname, set(), share=0.95)
 
 
+def test_an_n_spelling_is_kept_where_its_merged_uses_pass_the_share() -> None:
+    # #1081: Begona stands for Begoña and for a Begona, so both count;
+    # Martino stands for Martiño, a given name, and for Martino, mostly
+    # a surname, so it fails though martiño passes; a listed n word
+    # (marina) and an excluded one are not written twice
+    given = Counter({"begoña": 750, "martiño": 74, "martino": 15,
+                     "mariña": 9, "marina": 1000, "doña": 50})
+    surname = Counter({"begoña": 5, "martiño": 31, "martino": 304,
+                       "mariña": 3})
+    ranked = ["marina", "begoña", "martiño", "mariña", "doña"]
+    assert tool.n_spellings(ranked, given, surname, {"dona"}, share=0.5) == [
+        "begona"]
+    # martiño alone is 70% given: the merged spelling is 21%
+    assert tool.select(given, surname, set(), share=0.5).count("martiño") == 1
+    assert tool.n_spellings(["martiño"], given, Counter(), set(),
+                            share=0.5) == ["martino"]
+    # the given side is summed too: zuriñe's 40 uses alone are 44% of
+    # the 90 its n spelling counts with the surname, the summed 100
+    # are 67%
+    given2 = Counter({"zuriñe": 40, "zurine": 60})
+    surname2 = Counter({"zurine": 50})
+    assert tool.n_spellings(["zuriñe"], given2, surname2, set(),
+                            share=0.5) == ["zurine"]
+    assert tool.n_spelling_uses(["zuriñe"], given2, surname2, set()) == [
+        ("zurine", 100, 50)]
+
+
 def test_the_list_holds_the_tools_cutoff_and_the_docs_say_so() -> None:
     # The user docs state the list's size; the cutoff is the tool's TOP,
     # so a cutoff change fails here until the prose moves with it. The
     # release log is a record of what shipped, so it is not held.
-    assert len(_es_given_names.GIVEN_NAMES) == len(_es_given_names._RANKED) == tool.TOP
+    assert len(_es_given_names._RANKED) == tool.TOP
     docs = _PATH.parents[1] / "docs"
     for name in ("locales.rst", "customize.rst"):
         text = " ".join(docs.joinpath(name).read_text(encoding="utf-8").split())
         assert f"{tool.TOP:,} Spanish given names" in text, name
+
+
+#: (pack, name, field, value): #1081's one-way fold through the packs.
+#: The first rows are the fix: a listed word written without its ñ.
+#: The rest held before it and must still hold: a word written with ñ
+#: never matches an n entry (Oña against `ona`, Mariño against
+#: `marino`), and Martino, the n spelling the share test refuses, is
+#: taken into the family as before.
+_N_SPELLING_ROWS = [
+    ("ES", "Maria Begona Lopez", "middle", "Begona"),
+    ("ES", "MARIA BEGONA LOPEZ", "middle", "BEGONA"),
+    ("ES_AR", "Jon Inigo Perez", "middle", "Inigo"),
+    ("ES", "María Begoña López", "middle", "Begoña"),
+    ("ES", "Juan Oña Pérez", "family", "Oña Pérez"),
+    ("ES_AR", "Ana Mariño López", "family", "Mariño López"),
+    ("ES_AR", "Luis Martino Gil", "family", "Martino Gil"),
+    ("ES", "Jon Inigo Perez", "family", "Inigo Perez"),
+]
+
+
+@pytest.mark.parametrize(("pack", "name", "field", "value"), _N_SPELLING_ROWS)
+def test_the_n_spellings_through_the_packs(pack: str, name: str,
+                                           field: str, value: str) -> None:
+    from nameparser import locales, parser_for
+    parsed = parser_for(getattr(locales, pack)).parse(name)
+    assert getattr(parsed, field) == value
