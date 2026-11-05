@@ -117,7 +117,7 @@
   "Dean and Mary Smith"       →  given="Dean and Mary"
   "Dean. and Mary Smith"      →  given="Dean. and Mary"
   ```
-- **A title that may be a given name whose given reading a caller removes** is a title wherever it stands, since that is what removing it asks; a modifier is read by this rule however it is listed, and leaving its word out of the modifiers turns the rule off for it.
+- **A title that may be a given name whose given reading a caller removes** is a title wherever it stands, since that is what removing it asks; a modifier is read by this rule unless a caller reads its word as another title kind, and leaving its word out of the modifiers turns the rule off for it.
 
 **Accepted:**
 
