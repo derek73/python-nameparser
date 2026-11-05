@@ -275,8 +275,7 @@ def _family_word_count(tokens: list[WorkToken], family: list[int],
                 for i in family
                 if "particle" not in tokens[i].tags
                 and "conjunction" not in tokens[i].tags
-                and not (BOUND_PHRASE_TAG in tokens[i].tags
-                         and i != family[-1]))
+                and BOUND_PHRASE_TAG not in tokens[i].tags)
     return words or len(family)
 
 

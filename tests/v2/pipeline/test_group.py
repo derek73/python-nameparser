@@ -215,8 +215,9 @@ def test_a_bound_word_and_a_word_that_completes_it_join_past_the_start() -> None
     assert _phrase_pieces("عبد الله") == [["عبد", "الله"]]
     # nothing after it to join
     assert _phrase_pieces("سعيد عبد") == [["سعيد", "عبد"]]
-    # a marker takes the words after it out of the pieces altogether
-    assert _phrase_pieces("سعيد عبد المرحوم الله") == [["سعيد", "عبد"]]
+    # only the token right after it: a nickname taken out between them
+    # leaves the pair apart
+    assert _phrase_pieces('سعيد عبد "الله" حسن') == [["سعيد", "عبد", "حسن"]]
 
 
 def test_a_caller_lists_the_words_that_complete_a_bound_word() -> None:

@@ -9902,6 +9902,45 @@ CASES: tuple[Case, ...] = (
          notes="the chain takes عبد before P12 can join it, so the pair "
                "counts as two family words and O6 takes no محمد "
                "(#694 review)"),
+    Case("bound_given_completed_family_first_given_last", "سعيد عبد الله حسن",
+         {"given": "حسن", "middle": "عبد الله", "family": "سعيد"},
+         policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST),
+         notes="P12's pair is one unit the order lays out (#694 review)"),
+    Case("bound_given_completed_is_the_second_surname_o6_takes",
+         "سعيد عبد الله حسن",
+         {"given": "سعيد", "family": "عبد الله حسن"},
+         policy=Policy(two_family_names=True),
+         notes="O6 takes the joined pair whole as the first surname "
+               "(#694 review)"),
+    Case("bound_given_completed_after_a_family_comma", "حسن, طارق عبد العزيز",
+         {"given": "طارق", "middle": "عبد العزيز", "family": "حسن"},
+         notes="P12 joins in the given part after a family comma "
+               "(#694 review)"),
+    Case("bound_given_completed_before_a_suffix_comma", "طارق عبد العزيز, Jr.",
+         {"given": "طارق", "family": "عبد العزيز", "suffix": "Jr."},
+         notes="#694 review"),
+    Case("bound_given_completed_behind_an_empty_head", ", طارق عبد العزيز",
+         {"given": "طارق", "middle": "عبد العزيز"},
+         notes="nothing before the comma: the pair is one middle unit "
+               "(#694 review)"),
+    Case("bound_given_pair_behind_a_title_keeps_p5s_reserve", "Dr. عبد العزيز",
+         {"title": "Dr.", "given": "عبد", "family": "العزيز"},
+         notes="P12 starts past the title run and the first name word, "
+               "which is P5's, whose reserve keeps the pair apart "
+               "(#694 review)"),
+    Case("bound_given_pair_behind_a_title_keeps_p5s_reserve_family_first",
+         "Dr. عبد العزيز",
+         {"title": "Dr.", "given": "العزيز", "family": "عبد"},
+         policy=Policy(name_order=FAMILY_FIRST), notes="#694 review"),
+    Case("bound_given_last_before_a_nickname", "طارق عبد (العزيز)",
+         {"given": "طارق", "family": "عبد", "nickname": "العزيز"},
+         notes="the bound word is the last piece: the word it would join "
+               "is the nickname, out of the pieces (#694 review)"),
+    Case("bound_given_partner_in_a_nickname_joins_nothing", 'طارق عبد "الله" حسن',
+         {"given": "طارق", "middle": "عبد", "family": "حسن", "nickname": "الله"},
+         notes="P12 joins only the token right after the bound word, so "
+               "the nickname taken from between them leaves it alone "
+               "(#694 review)"),
     Case("bound_given_before_an_unlisted_word_stands_alone", "نوال عبد هاشم",
          {"given": "نوال", "middle": "عبد", "family": "هاشم"},
          notes="P12: before a word that does not complete it عبد is a "

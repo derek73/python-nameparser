@@ -34,6 +34,7 @@
 **Accepted:**
 
 - A completing word written with its vowel points or with the alef wasla (`ٱلله`, `اَلله`) is not listed, and keeps its words apart; one JRC-Names spelling held one after `عبد` on 2026-11-04 (`عبد ِالعزيز`).
+- A connective's join takes the word after it first (P3), so a pair behind a connective stays apart: `طارق عبد الله و عبد الرحمن` reads middle 'عبد الله و عبد', family 'الرحمن'.
 - A kunya opening the name is P5's join of its two bound words, and the word completing the second is left to position (`أبو عبد الله محمد` reads given 'أبو عبد', middle 'الله'), as before this rule; behind a given name the kunya is the family (`محمد أبو عبد الله`).
 
 ---

@@ -1383,6 +1383,38 @@ def test_a_run_of_bound_phrases_joins_in_one_pass() -> None:
         assert _frames_for(text, only="merge_pieces") == 0, pairs
 
 
+def _phrase_shifts(pairs: int) -> int:
+    """The elements rules/P12's join shifts over a run of `pairs`."""
+    from nameparser._lexicon import Lexicon
+    from nameparser._pipeline import STAGES
+    from nameparser._pipeline._group import _join_bound_phrases
+    from nameparser._pipeline._state import ParseState
+    state = ParseState(original="طارق " + "عبد الله " * pairs,
+                       lexicon=Lexicon.default(), policy=Policy())
+    for stage in STAGES:
+        if stage.__name__ == "group":
+            break
+        state = stage(state)
+    pieces: _ShiftCountingList[list[int]] = _ShiftCountingList(
+        [i] for i in state.segments[0])
+    ptags: _ShiftCountingList[set[str]] = _ShiftCountingList(
+        set() for _ in pieces)
+    _ShiftCountingList.moved = 0
+    heads: set[int] = set()
+    _join_bound_phrases(pieces, ptags, list(state.tokens), heads)
+    # REACHABILITY: every pair joined
+    assert len(heads) == pairs and len(pieces) == pairs + 1, pairs
+    return _ShiftCountingList.moved
+
+
+def test_a_run_of_bound_phrases_shifts_nothing() -> None:
+    """The join called alone on lists that count what their edits
+    shift, which sees a slice or `del` per pair, as the frame count
+    above cannot. RECORDED NEGATIVE CONTROL: CONTROL with the join
+    deleting each pair's second piece in place (2026-11-04, #694)."""
+    assert [_phrase_shifts(n) for n in _SHIFT_UNITS] == [0, 0]
+
+
 def test_a_member_opening_a_comma_part_asks_no_anchor_pass() -> None:
     """rules/S7's company clause speaks only for a member with a
     credential in FRONT of it, so a member opening the part after a
