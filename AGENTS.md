@@ -106,7 +106,18 @@ uv run sphinx-build -b html docs dist/docs
 # - Format matches existing entries — see the 2.4.0 block for a current example
 
 # Release checklist (PyPI publish is triggered automatically by GitHub Actions on release creation)
-# 0. Sweep for stale prose. Grepping for the changed SYMBOL finds almost none of
+# 0. First, a /simplify pass over every module the cycle changed that has not
+#    had one since it changed (`git diff --stat v<last release>` lists them):
+#    file-disjoint passes, one PR each, merged one at a time, each holding
+#    snapshot.jsonl byte-identical and the frame band (_CALL_BASELINE), each
+#    reviewed, then its fix commit reviewed too. A simpler form that moves a
+#    reading is out of bounds there: list it in the PR body under
+#    "Behavior-changing candidates" with what it moves, and file the ones
+#    worth weighing as issues. 3.0 ran only a Lexicon pass until three passes
+#    late in the cycle (#1083, #1084, #1085) found 6 frames and three
+#    follow-ups (#1087, #1088, #1089). Run the passes BEFORE the sweep below,
+#    since they rewrite comments and docstrings the sweep reads.
+#    Then sweep for stale prose. Grepping for the changed SYMBOL finds almost none of
 #    it: prose describes behavior in words, not identifiers. Walk these sites
 #    explicitly — every one of them has gone stale at least once.
 #    - docs/*.rst: usage.rst examples and API surface, plus any file listing
@@ -141,7 +152,13 @@ uv run sphinx-build -b html docs dist/docs
 #      grep: the excerpt and example tests catch citation and example drift,
 #      but statement and Background prose can still be wrong about behavior
 #      that changed
-#    - AGENTS.md itself, for stale commands, architecture notes, or gotchas
+#    - EVERY AGENTS.md, not just the root: nameparser/AGENTS.md,
+#      nameparser/_pipeline/AGENTS.md, nameparser/vocab/AGENTS.md,
+#      docs/AGENTS.md and docs/design/AGENTS.md (`git ls-files '*AGENTS.md'`
+#      lists them), for stale commands, architecture notes, sweeps or
+#      gotchas. READ them after the cycle's last behavior PR merges: 3.0's
+#      sweep (#1079) read four of the six, and a later check found the root's
+#      initials gotcha still naming v1's initials_separator/initials_format
 #    - the pickle-break bullet: pickle every public type (Lexicon, Policy,
 #      Parser, ParsedName, Ambiguity, a locale pack) under the
 #      last release's wheel and load each in the tree; don't derive it
@@ -321,7 +338,7 @@ Don't use the bare `python3 -m doctest <file>.rst` CLI (no `optionflags`) to che
 
 **`uv run mypy` covers `tests/` too** (`pyproject.toml`'s `[tool.mypy] packages = ["nameparser", "tests"]`, PR #250) — a test that deliberately passes an off-contract value to assert a `TypeError`/`ValueError` (e.g. `parse(None)` in `tests/v2/test_parser.py`), needs a `# type: ignore[code]` comment on that line rather than a signature change. Before reaching for an ignore, check whether the "error" is really a source annotation that hasn't caught up with already-supported runtime behavior — widen the annotation instead in that case.
 
-**`initials_separator` is intra-group only** — it controls the joiner between consecutive initials *within* a name group (e.g. two middle names in `middle_list`). Spaces *between* groups come from `initials_format`. To fully concatenate initials you need both `initials_separator=""` and `initials_format="{first}{middle}{last}"`.
+**`initials()`'s `separator` is intra-group only** — it controls the joiner between consecutive initials *within* a name group (e.g. two middle names). Spaces *between* groups come from `spec`. To fully concatenate initials you need both: `parse("John Quincy Xavier Adams").initials(spec="{given}{middle}{family}", separator="")` gives `'J.Q.X.A.'`, where `separator=""` alone gives `'J. Q.X. A.'` (v1 spelled these `initials_separator` and `initials_format`).
 
 **`pr/NNN` local branches** track upstream PRs — don't commit to them by accident. Check `git branch --show-current` before starting work.
 
