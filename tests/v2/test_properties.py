@@ -2557,6 +2557,27 @@ def _link_joins_between_name_words(on: ParsedName, off: ParsedName,
     return False
 
 
+def _linked_letters(on: ParsedName,
+                    letters: frozenset[str]) -> set[tuple[int, int]]:
+    """P3's other join (#1097): a single-letter link in front of a lone
+    letter ending the name words takes that letter as the name it
+    links, which the off-switch parse reads as the generation. The
+    spans of the letters so taken, judged on the configured parse: the
+    link and the letter after it hold the same name role."""
+    toks = _placed(on)
+    taken: set[tuple[int, int]] = set()
+    for i, (tok, _span) in enumerate(toks[:-1]):
+        if ("conjunction" not in tok.tags
+                or tok.text.lower() not in letters):
+            continue
+        nxt, nxt_span = toks[i + 1]
+        letter = nxt.text.rstrip(".")
+        if (len(letter) == 1 and letter.isalpha()
+                and nxt.role is tok.role and tok.role in _NAME_ROLES):
+            taken.add(nxt_span)
+    return taken
+
+
 @functools.cache
 def _off_switch_findings() -> dict[str, list[str]]:
     """One walk of the off-switch grid; FOUR invariants' answers.
@@ -2614,11 +2635,13 @@ def _off_switch_findings() -> dict[str, list[str]]:
         moved = _initial_reading_moved(on, off, letters)
         if not (same_fields
                 or _link_joins_between_name_words(on, off, letters)
+                or _linked_letters(on, letters)
                 or moved):
             out["INV6"].append(f"[{label}] {text!r}: {on.as_dict()} != "
                                f"off-switch {off.as_dict()}")
         if not moved:
             off_role = _off_roles(off)
+            linked = _linked_letters(on, letters)
             for role in _NAME_ROLES:
                 part = on.tokens_for(role)
                 if len(part) < 2:
@@ -2634,6 +2657,11 @@ def _off_switch_findings() -> dict[str, list[str]]:
                     # carries one, and this grid holds no spliced
                     # parse.
                     if "conjunction" in tok.tags or tok.span is None:
+                        continue
+                    # nor the lone letter P3's other join takes as the
+                    # name the link links (#1097), which the off-switch
+                    # parse reads as the generation by construction
+                    if tok.span in linked:
                         continue
                     if off_role.get(tok.span) is not Role.SUFFIX:
                         continue

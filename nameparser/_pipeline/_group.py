@@ -64,6 +64,7 @@ _is_maiden_marker_piece.
 from __future__ import annotations
 
 import bisect
+import unicodedata
 from collections.abc import Iterable, Sequence, Set
 from enum import IntEnum
 from typing import assert_never
@@ -87,7 +88,7 @@ from nameparser._pipeline._state import (
 import nameparser._pipeline._comma as _comma
 from nameparser._pipeline._vocab import (
     ROMAN, comma_follows_marker, delimiter_cores, ends_in_a_generation,
-    name_reading,
+    name_reading, numeral_settled_by_case,
     reads_as_a_reported_numeral, suffix_reading,
 )
 from nameparser._types import AmbiguityKind, Role
@@ -511,6 +512,76 @@ def _is_rootname(piece: Sequence[int], ptags: Set[str],
                 or is_suffix_piece(piece, ptags, tokens))
 
 
+def _is_lone_letter(piece: Sequence[int], tokens: Sequence[WorkToken],
+                    one_case: bool | None) -> bool:
+    """A piece of one word that is one letter, with or without its
+    period, save a lowercase one in a name of mixed case, which S10
+    reads as the generation by its writing."""
+    if len(piece) != 1:
+        return False
+    text = tokens[piece[0]].text
+    letter = text.rstrip(".")
+    if not letter.isascii():
+        letter = unicodedata.normalize("NFC", letter)
+    return (len(letter) == 1 and letter.isalpha()
+            and not numeral_settled_by_case(letter, one_case))
+
+
+def _link_the_last_letter(pieces: list[list[int]], ptags: list[set[str]],
+                          tokens: Sequence[WorkToken],
+                          one_case: bool | None, keep_a_name: bool) -> None:
+    """P3's two joins at the end of the part holding the family name,
+    made before the carve-out can keep the connective apart: a
+    single-letter connective in front of a lone letter ending the name
+    words joins the word before it to that letter, and a connective
+    not also suffix vocabulary with nothing but suffixes behind it
+    joins the word before it alone. `keep_a_name` is the whole name's
+    part, where a join is made only with a name word left in front of
+    it, so the name keeps a given name to read ('Smith y V' keeps the
+    carve-out's reading)."""
+    # rules/P3: "A single-letter connective in front of a lone letter
+    # ending the name words joins it to the word before" and "A
+    # connective with nothing to link joins the word before it alone"
+    # -- both joins, made ahead of the carve-out they outrank
+    # (decisions/P3 (#1097, #1098))
+    e = len(pieces) - 1
+    while e >= 0 and not _is_lone_letter(pieces[e], tokens, one_case):
+        piece = pieces[e]
+        if not (is_suffix_piece(piece, ptags[e], tokens)
+                or (e > 0 and len(piece) == 1
+                    and ends_in_a_generation(
+                        [tokens[pieces[e - 1][-1]].text,
+                         tokens[piece[0]].text], one_case))):
+            break
+        e -= 1
+    if e < 1:
+        return
+
+    def name_word(k: int) -> bool:
+        return not (is_conj_piece(pieces[k], ptags[k], tokens)
+                    or is_title_piece(pieces[k], ptags[k], tokens)
+                    or is_suffix_piece(pieces[k], ptags[k], tokens))
+
+    def single_letter_link(k: int) -> bool:
+        piece = pieces[k]
+        if len(piece) != 1 or "conjunction" not in tokens[piece[0]].tags:
+            return False
+        text = tokens[piece[0]].text
+        if not text.isascii():
+            text = unicodedata.normalize("NFC", text)
+        return len(text) == 1 and text.isalpha()
+
+    floor = leading_titles(pieces, ptags, tokens) + keep_a_name
+    if _is_lone_letter(pieces[e], tokens, one_case):
+        if (e - 2 >= floor and single_letter_link(e - 1)
+                and name_word(e - 2)):
+            merge_pieces(pieces, ptags, e - 2, e + 1)
+    elif (e - 1 >= floor and single_letter_link(e)
+            and "vocab:suffix" not in tokens[pieces[e][0]].tags
+            and name_word(e - 1)):
+        merge_pieces(pieces, ptags, e - 1, e + 1)
+
+
 # rules/P3: "a word the rest of the parse reads as a name word
 # rather than as a generation, a credential or an honorific, looked
 # for past any run of connectives standing between. A connective with
@@ -824,6 +895,17 @@ def _group_segment(seg: tuple[int, ...], additional: int,
     if splits and len(pieces) + additional < 3:
         _settle_splits(pieces, ptags)
     if len(pieces) + additional >= 3:
+        # the part holding the family name, and only where a
+        # single-letter connective stands: a plain loop, no frame, for
+        # a name with none
+        if site is ClauseSite.TRAILING or site is ClauseSite.FAMILY_PART:
+            for piece in pieces:
+                if (len(piece) == 1
+                        and "conjunction" in tokens[piece[0]].tags):
+                    _link_the_last_letter(
+                        pieces, ptags, tokens, one_case,
+                        keep_a_name=site is ClauseSite.TRAILING)
+                    break
         # rules/P3: "A connective that is also generational
         # vocabulary joins only where a name word stands on each side
         # of it" (#397). `frozen` holds the TOKEN index of every such

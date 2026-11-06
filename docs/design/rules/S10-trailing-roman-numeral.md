@@ -75,6 +75,12 @@
   "John J. III"               →  suffix="III"
   "john j v"                  →  family="v"
   ```
+- **So does a single-letter connective in front**, which links the letter as the name it joins to the word before (P3), the generational 'i' included; a numeral of two or more letters stays the generation, being no initial.
+  ```
+  "John Smith y V"            →  family="Smith y V"
+  "Joan Puig i V"             →  family="Puig i V"
+  "John Smith y VI"           →  suffix="VI"  · boundary
+  ```
 - **A single letter written with a period is an initial** (T5).
   ```
   "John Smith V."             →  family="V."  · boundary
@@ -92,7 +98,7 @@
   "john smith v, PhD"         →  ambiguities=()
   "john j v, PhD"             →  family="j"
   ```
-- **Before a family comma** ("John Smith V, M.J."): a numeral ending the family part is read by this rule, its words to spare counted in that part (C1), name words only: a particle or a connective is no name word there, wherever it stands in the part. The comma has named the part a surname, where such a word links the names around it, a lone letter after one being a name written as an initial, so a particle run reads as part of the word it attaches to, as C3 counts one, and a chain or join holding a name word counts as that word. A connective that is also suffix vocabulary, as the generational 'i' is, stays in the count where it stands in front of the numeral, being the generation it spells there (P3), and a numeral of two or more letters asks no count, being no initial. Only a generation its shape alone reads reports there; a numeral the comma leaves in the family name is silent, the comma having named the family.
+- **Before a family comma** ("John Smith V, M.J."): a numeral ending the family part is read by this rule, its words to spare counted in that part (C1), name words only: a particle or a connective is no name word there, wherever it stands in the part. The comma has named the part a surname, where such a word links the names around it, a lone letter after one being a name written as an initial, so a particle run reads as part of the word it attaches to, as C3 counts one, and a chain or join holding a name word counts as that word. A numeral of two or more letters asks no count, being no initial. Only a generation its shape alone reads reports there; a numeral the comma leaves in the family name is silent, the comma having named the family.
   ```
   "Smith VI, John"            →  suffix="VI"
   "Smith VI, John"            →  ambiguities=("suffix-or-name",)
@@ -106,7 +112,6 @@
   "y Smith V, John"           →  family="y Smith V"
   "i Smith V, John"           →  family="i Smith V"
   "Smith y VI, John"          →  suffix="VI"  · boundary
-  "Smith i V, John"           →  suffix="i V"  · boundary
   ```
 - **In the given part after a family comma** ("Smith, John VI"): the given part is not counted, the comma having settled the count there (S5), and no initial in front is asked. A numeral of two or more letters reads as the generation, reporting where its shape alone reads it, save a Title-case one in a mixed-case name, which stays a name word in silence; a one-letter numeral is the generation only where the vocabulary lists it and it ends the part (C9), so an unlisted one stays the middle initial.
   ```

@@ -365,9 +365,12 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # each reporting suffix-or-name under three orders; 1606 -> 1612 the
     # same day, #1093's two boundary rows under three orders; 1612 ->
     # 1615 the same day, its test review's joined-connective row under
-    # three orders.
-    assert claims == 1615, (
-        f"the field sweep checks {claims} claims, recorded as 1615 on "
+    # three orders; 1615 -> 1618 the same day, #1097 and #1098: the 'Smith
+    # i V, John' and 'Josep Lluis Carod i V' rows stop reporting and
+    # 'Smith Jones y VI, John', 'John Smith y VI' and 'Smith y V' report,
+    # each under three orders.
+    assert claims == 1618, (
+        f"the field sweep checks {claims} claims, recorded as 1618 on "
         f"2026-11-05")
 
 
@@ -421,6 +424,9 @@ _STAND_IN_REREADS = {
     # chain it held whole (decisions/P1's 2026-11-04 #828 entry)
     ("Freiherr von Berg X.Y.Z. X.Y.Z.", 1),
     ("Freiherr von Berg X.Y.Z. X.Y.Z.", 2),
+    # a name word in VI's place gives the 'y' a word to link, so P3's
+    # join takes it with 'Smith' (#1098)
+    ("John Smith y VI", 1),
 }
 
 #: Reports whose deferred field assign could not name: the particle the
@@ -759,8 +765,10 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # #1080's two boundary rows under the three orders; 508 -> 514 the
     # same day, #1093's two boundary rows under the three orders; 514 ->
     # 517 the same day, its test review's joined-connective row under the
-    # three orders
-    assert (checked, skipped) == (517, 328), (checked, skipped)
+    # three orders; 517 -> 519 the same day, #1097 and #1098's rows (two
+    # reports gone and three added under the three orders, 'John Smith y
+    # VI' under the family-first order joining _STAND_IN_REREADS)
+    assert (checked, skipped) == (519, 328), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:

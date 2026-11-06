@@ -2719,15 +2719,15 @@ CASES: tuple[Case, ...] = (
                "one name word, so two stand in front, as in 'Smith van "
                "der Berg V, John'. 1.4.0 through 2.6.0 read family "
                "'Smith Ortega y Gasset V'"),
-    Case("a_connective_joining_a_two_letter_numeral_keeps_it_in_the_family",
+    Case("a_connective_before_a_two_letter_numeral_joins_the_word_before",
          "Smith Jones y VI, John",
-         {"given": "John", "family": "Smith Jones y VI"},
-         classification="parity",
-         notes="#1093 left this as it reads: P3's join takes the 'VI' "
-               "its own count left out as the generation, so the "
-               "numeral never reaches S10's count. Left as it reads "
-               "(decisions/S10's #1093 entry). 1.4.0 through 2.8.2 read "
-               "as here"),
+         {"given": "John", "family": "Smith Jones y", "suffix": "VI"},
+         ambiguities=("suffix-or-name",), classification="fix(#1098)",
+         notes="P3: a connective with nothing but suffixes behind it "
+               "joins the word before it alone, so the join no longer "
+               "takes the 'VI' it has nothing to link (#1098), as "
+               "'Smith y VI, John' reads. 1.4.0 through 2.8.2 read "
+               "family 'Smith Jones y VI'"),
     Case("a_two_letter_numeral_behind_a_connective_stays_the_suffix",
          "Smith y VI, John",
          {"given": "John", "family": "Smith y", "suffix": "VI"},
@@ -2736,16 +2736,102 @@ CASES: tuple[Case, ...] = (
                "'y' has nothing to link and the numeral reads as the "
                "generation by its shape, asking no count (S10). 1.4.0 "
                "through 2.8.2 read family 'Smith y VI'"),
-    Case("a_generational_connective_before_a_numeral_stays_the_suffix",
+    Case("a_numeral_behind_a_generational_connective_before_a_comma_is_family",
          "Smith i V, John",
-         {"given": "John", "family": "Smith", "suffix": "i V"},
-         ambiguities=("suffix-or-name",), classification="fix(#774)",
-         notes="#1093's boundary: a connective that is also suffix "
-               "vocabulary stays in the count in front of the numeral "
-               "(S10), so two words stand in front and the numeral reads "
-               "as the generation, the 'i' joining it in the suffix as "
-               "the generation it spells (P3). 1.4.0 through 2.6.0 read "
+         {"given": "John", "family": "Smith i V"},
+         classification="fix(#1097)",
+         notes="P3: the Catalan 'i', also a numeral, links the lone "
+               "letter after it as 'y' does, the second surname written "
+               "as an initial. 2.7.0 through 2.8.2 and #1093 read "
+               "family 'Smith', suffix 'i V'; 1.4.0 through 2.6.0 "
                "family 'Smith V', suffix 'i'"),
+    # #1097, #1098: a single-letter connective in front of a lone
+    # letter ending the name words links it, and a connective with
+    # nothing to link joins the word before it (P3).
+    Case("a_numeral_behind_a_connective_without_a_comma_is_family",
+         "John Smith y V",
+         {"given": "John", "family": "Smith y V"},
+         classification="fix(#1098)",
+         notes="P3: the 'V' is the second surname the 'y' links, as "
+               "'Smith y V, John' reads since #1093. 1.4.0 through 2.8.2 "
+               "read middle 'Smith', family 'y', suffix 'V'"),
+    Case("a_numeral_behind_a_generational_connective_without_a_comma",
+         "Joan Puig i V",
+         {"given": "Joan", "family": "Puig i V"},
+         classification="fix(#1097)",
+         notes="P3: the Catalan 'i' links the letter as 'y' does. "
+               "2.0.0 through 2.8.2 read family 'Puig', suffix 'i V' or "
+               "'i, V'; 1.4.0 middle 'Puig', last 'i', suffix 'V'"),
+    Case("a_numeral_behind_a_generational_connective_in_the_part_is_family",
+         "Puig i V, Joan",
+         {"given": "Joan", "family": "Puig i V"},
+         classification="fix(#1097)",
+         notes="#1097's example. 2.7.0 through 2.8.2 read family "
+               "'Puig', suffix 'i V'; 1.4.0 through 2.6.0 family 'Puig "
+               "V', suffix 'i'"),
+    Case("an_initial_behind_a_connective_is_the_second_surname",
+         "Juan García y L.",
+         {"given": "Juan", "family": "García y L."},
+         classification="fix(#1098)",
+         notes="P3: the clause reads a lone letter whatever it spells, "
+               "an initial as a numeral, as 'John Paul García y L.' "
+               "already read through the four-word join. 1.4.0 through "
+               "2.8.2 read middle 'García y', family 'L.'"),
+    Case("a_bare_initial_behind_a_connective_is_the_second_surname",
+         "Juan García y L",
+         {"given": "Juan", "family": "García y L"},
+         classification="fix(#1098)",
+         notes="#1098 without the period. 1.4.0 through 2.8.2 read "
+               "middle 'García y', family 'L'"),
+    Case("a_connective_before_a_generation_joins_the_word_before",
+         "John Smith y III",
+         {"given": "John", "family": "Smith y", "suffix": "III"},
+         classification="fix(#1098)",
+         notes="P3: a connective with nothing but suffixes behind it "
+               "joins the word before it alone. 1.4.0 through 2.8.2 "
+               "read middle 'Smith', family 'y', suffix 'III'"),
+    Case("a_connective_before_a_shape_numeral_joins_the_word_before",
+         "John Smith y VI",
+         {"given": "John", "family": "Smith y", "suffix": "VI"},
+         ambiguities=("suffix-or-name",), classification="fix(#1098)",
+         notes="#1098's two-letter numeral, read as the generation by "
+               "its shape as 'Smith y VI, John' reads. 1.4.0 through "
+               "2.8.2 read family 'Smith y VI'; #893 family 'y', suffix "
+               "'VI'"),
+    Case("a_connective_before_a_suffix_word_joins_the_word_before",
+         "John Smith y Jr.",
+         {"given": "John", "family": "Smith y", "suffix": "Jr."},
+         classification="fix(#1098)",
+         notes="1.4.0 through 2.8.2 read middle 'Smith', family 'y', "
+               "suffix 'Jr.'"),
+    Case("a_connective_ending_the_name_joins_the_word_before",
+         "John Smith y",
+         {"given": "John", "family": "Smith y"},
+         classification="fix(#1098)",
+         notes="1.4.0 through 2.8.2 read middle 'Smith', family 'y'"),
+    Case("a_joined_connective_no_longer_takes_the_generation",
+         "John Paul Smith y III",
+         {"given": "John", "middle": "Paul", "family": "Smith y",
+          "suffix": "III"},
+         classification="fix(#1098)",
+         notes="P3: where the carve-out did not hold, the join took the "
+               "suffix on its right as the name it links. 1.4.0 through "
+               "2.8.2 read family 'Smith y III'"),
+    Case("a_three_word_name_keeps_the_carve_out",
+         "Smith y V",
+         {"given": "Smith", "family": "y", "suffix": "V"},
+         ambiguities=("suffix-or-name",), classification="parity",
+         notes="#1098's boundary: with no name word left in front of "
+               "the join, the name would keep no given name, so the "
+               "three-word carve-out stands (P3)"),
+    Case("a_generational_connective_ending_the_name_stays_the_suffix",
+         "John Quincy Smith i",
+         {"given": "John", "middle": "Quincy", "family": "Smith",
+          "suffix": "i"},
+         classification="fix(#397)",
+         notes="#1098's boundary: a connective that is also generational "
+               "vocabulary with nothing after it is the generation it "
+               "spells (P3), not a connective to join"),
     Case("a_comma_before_no_name_word_keeps_the_positional_read",
          "Berg de MA, Prof.",
          {"title": "Prof.", "given": "Berg", "family": "de",
@@ -6258,26 +6344,17 @@ CASES: tuple[Case, ...] = (
                "comma and R1 derives them from the writer's commas "
                "now",
          shape=1),
-    Case("the_neighbour_test_reads_the_peel_and_not_the_vocabulary",
+    Case("the_link_takes_a_lone_letter_ending_the_name",
          "Josep Lluis Carod i V",
-         {"given": "Josep", "middle": "Lluis", "family": "Carod",
-          "suffix": "i V"},
-         classification="fix(suffix-routing)",
-         ambiguities=("suffix-or-name",),
-         notes="why the condition asks assign's TRAILING-RUN walk "
-               "rather than the suffix-piece test: a bare 'V' is "
-               "suffix vocabulary written like an initial, so "
-               "is_suffix_piece refuses it (the initial veto, "
-               "_vocab.is_initial) and a class test spelled with that predicate "
-               "alone would let the link swallow it. The peel takes "
-               "it, so trailing_start puts it outside the name's own "
-               "words and the link stays the generation -- carrying "
-               "the fork report the swallowed reading had lost. 'MA' "
-               "is the acronym half of the same shape. Roles "
-               "unchanged from 2.0.0 through 2.3.0; 1.4.0 read middle "
-               "'Lluis Carod', last 'i', suffix 'V', which is the "
-               "two-token divergence 'Carod i' pins above and the "
-               "same fix(suffix-routing) rule describes",
+         {"given": "Josep", "middle": "Lluis", "family": "Carod i V"},
+         classification="fix(#1097)",
+         notes="P3: a single-letter connective in front of a lone "
+               "letter ending the name words joins it to the word "
+               "before, the letter being the second surname written as "
+               "an initial, the generational 'i' included (#1097). "
+               "2.0.0 through 2.8.2 read family 'Carod', suffix 'i V' "
+               "(the link the generation, the trailing run taking the "
+               "'V'); 1.4.0 middle 'Lluis Carod', last 'i', suffix 'V'",
          shape=1),
     Case("the_link_joins_nothing_across_a_family_comma_either",
          "Rovira, Josep Carod i Jr.",

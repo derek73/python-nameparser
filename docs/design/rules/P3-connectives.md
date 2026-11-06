@@ -22,7 +22,22 @@
   "Josep Carod i Rovira"      →  family="Carod i Rovira"
   "Carod i Rovira, Josep"     →  family="Carod i Rovira"
   ```
-- **A connective that is also generational vocabulary joins only where a name word stands on each side of it** — a word the rest of the parse reads as a name word rather than as a generation, a credential or an honorific, looked for past any run of connectives standing between. A connective with nothing to its right is connecting nothing, and a word of that vocabulary ending a name, or standing before the credential a name ends with, is the generation it also spells wherever S10 reads one there.
+- **A single-letter connective in front of a lone letter ending the name words joins it to the word before**, in the part holding the family name: the letter, a numeral or an initial, is the second surname written as an initial, the three-word carve-out gives way, and a connective that is also generational vocabulary links it too. Where the part is the whole name a name word must stand in front of the join, so the name keeps a given name; a lowercase letter in a name of mixed case is the generation S10 reads by its writing.
+  ```
+  "John Smith y V"            →  family="Smith y V"
+  "Juan García y L."          →  family="García y L."
+  "Puig i V, Joan"            →  family="Puig i V"
+  "Smith y V"                 →  family="y"  · boundary
+  "Smith y v, John"           →  suffix="v"  · boundary
+  ```
+- **A connective with nothing to link joins the word before it alone**: one that is not also suffix vocabulary, with nothing but suffixes behind it in the part holding the family name, joins the word in front of it and no suffix after it, the join having no name on its right to take.
+  ```
+  "John Smith y III"          →  family="Smith y"
+  "John Smith y VI"           →  family="Smith y"
+  "John Paul Smith y III"     →  suffix="III"
+  "John Smith y"              →  family="Smith y"
+  ```
+- **A connective that is also generational vocabulary joins only where a name word stands on each side of it** — a word the rest of the parse reads as a name word rather than as a generation, a credential or an honorific, looked for past any run of connectives standing between. A connective with nothing to its right is connecting nothing, and a word of that vocabulary ending a name, or standing before the credential a name ends with, is the generation it also spells wherever S10 reads one there. The lone letter the clause above links is a name word on its right.
   ```
   "John Quincy Smith i"       →  suffix="i"
   "Carod i"                   →  suffix="i"
