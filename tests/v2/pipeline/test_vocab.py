@@ -39,7 +39,9 @@ def test_ends_in_a_generation_needs_the_roman_shape(
     two ever disagreeing: `_comma._whole_name` (#1089), group's count
     and `name_word_count` each do. Every word the predicate admits here
     matches; the admitted rows are counted so the grid cannot pass by
-    admitting nothing."""
+    admitting nothing. Recorded negative control (#1089, 2026-11-05):
+    with `reads_as_generation`'s `_ROMAN` test removed, the first row to
+    fail is ('Smith', 'IIII') under each `one_case`."""
     words = ["VI", "vi", "Vi", "VI.", "VII", "ix", "X", "x.", "III", "iv",
              "II.", "IIII", "VX", "XI", "Smith", "Mi", "Dix", "Ivi", "V",
              "I", "v.", "", ".", "..", "VI..", "Ⅵ", "ⅵ", "Vİ", "MD", "Jr."]

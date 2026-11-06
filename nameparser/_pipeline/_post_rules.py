@@ -189,8 +189,9 @@ def suffix_entries(state: ParseState) -> ParseState:
 def _positions(tokens: list[WorkToken],
                ) -> tuple[list[int], list[int], list[int], list[int]]:
     """The positions of the TITLE, GIVEN, MIDDLE and FAMILY tokens, in
-    that order, each list ascending: every role this stage's rules read
-    by position, in one walk however many of them the caller wants."""
+    that order, each list ascending: the four roles post_rules' rules
+    read as position lists, in one walk however many of them the caller
+    wants."""
     # one plain loop, where a comprehension per role cost a frame of its
     # own on 3.11 beside the call's, and post_rules asks for the lists on
     # every parse (the parse-cost band, decisions/parse-cost, #1089)
@@ -1016,7 +1017,8 @@ def post_rules(state: ParseState) -> ParseState:
             _retag(tokens, m2, Role.MIDDLE)
             _retag(tokens, f, Role.MIDDLE)
             _retag(tokens, g, Role.FAMILY)
-            # recomputed for H1's reason, stated at H1
+            # recomputed for H1's reason, stated at H1: a stale index
+            # list is the bug shape #359 fixed
             _, givens, middles, families = _positions(tokens)
     # rules/P6: "a particle ending the name attaches to that family
     # name and is written before it" -- the no-comma site (#467).
@@ -1069,9 +1071,8 @@ def post_rules(state: ParseState) -> ParseState:
     # and no rule reorders those. It does NOT stop a second particle
     # joining a family that merely OPENS with one: "de Mesnil Jan de"
     # gives 'de de Mesnil', which keeps its base and is accepted.
-    # every retagging block above recomputes the lists, O1 and O2
-    # included, so they are current here (#359's bug shape; #1089 moved
-    # the recompute this site made for O1 and O2 into them)
+    # every retagging block above recomputes the lists, so they are
+    # current here (a stale index list is the bug shape #359 fixed)
     names = givens + middles + families
     if middles and families and state.order is not None:
         run: list[int] = []
@@ -1152,7 +1153,9 @@ def post_rules(state: ParseState) -> ParseState:
     # "tokens never move: a rule that needs different rendering order
     # tags the token, and the rendering views consult the tag"
     if state.policy.middle_as_family:
-        _, _, middles, family = _positions(tokens)
+        # walked again: P10, O6 and O7 above retag without updating the
+        # lists
+        _, _, middles, families = _positions(tokens)
         # rules/R11: "middle words folded into the family belong to
         # neither unit" -- where O6 marked no units the family before the
         # fold is the first, marked here so the views can leave the
@@ -1160,11 +1163,11 @@ def post_rules(state: ParseState) -> ParseState:
         # (decisions/R11, #1022). A family O6 split carries its marks
         # already; a loop, not a generator, which costs a frame
         if middles:
-            for i in family:
+            for i in families:
                 if FIRST_SURNAME_TAG in tokens[i].tags:
                     break
             else:
-                _mark_surname(tokens, family, FIRST_SURNAME_TAG)
+                _mark_surname(tokens, families, FIRST_SURNAME_TAG)
         for i in middles:
             tokens[i] = copy_with(
                 tokens[i], role=Role.FAMILY,
@@ -1212,8 +1215,8 @@ def post_rules(state: ParseState) -> ParseState:
     # since the marking loop asks it per word: a list made a part
     # alternating particle and connective quadratic (test_benchmark's
     # `connective_between_particles` row).
-    # one walk for the three parts, after every rule that moves a token
-    for part in _positions(tokens)[1:]:
+    _, givens, middles, families = _positions(tokens)
+    for part in (givens, middles, families):
         all_particle = bool(part)
         conj: list[int] = []
         between: set[int] = set()

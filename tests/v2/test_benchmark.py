@@ -71,7 +71,7 @@ from typing import ClassVar, SupportsIndex, TypeVar, cast, overload
 
 import pytest
 
-from nameparser import ParsedName, Parser, parse
+from nameparser import ParsedName, Parser, locales, parse, parser_for
 from nameparser._policy import Policy
 
 #: The whole module, though only the clock-timed tests need it: a
@@ -721,9 +721,12 @@ _RUN_MAX_RATIO = 6.0
 _RUN_HUGE_MAX_RATIO = 5.0
 
 
-def _frames_for(text: str, only: str | None = None) -> int:
-    """Python frame entries for ONE parse of `text` -- of every
-    function, or of the one named `only`.
+def _frames_for(text: str, only: str | None = None,
+                caller: str | None = None,
+                parse: Callable[[str], object] = parse) -> int:
+    """Python frame entries for ONE parse of `text` by `parse` -- of
+    every function, of the one named `only`, or of those the function
+    named `caller` calls directly.
 
     One parse, not a mean: this measures growth between two inputs, and
     the count is deterministic for a given (tree, interpreter) -- see
@@ -736,7 +739,9 @@ def _frames_for(text: str, only: str | None = None) -> int:
     def counter(frame: FrameType, event: str, arg: object) -> None:
         nonlocal calls
         if event == "call" and (only is None
-                                or frame.f_code.co_name == only):
+                                or frame.f_code.co_name == only) and (
+                caller is None or frame.f_back is not None
+                and frame.f_back.f_code.co_name == caller):
             calls += 1
 
     sys.setprofile(counter)
@@ -986,14 +991,15 @@ def test_a_given_part_with_no_particle_skips_the_chain_bound() -> None:
 
 def test_a_part_ending_in_no_numeral_skips_the_generation_test() -> None:
     """`_comma._whole_name` asks `ends_in_a_generation` only where the
-    word ending the part's name words matches `ROMAN`, the predicate's
-    own first test asked at C level (#1089), so a suffix-comma name of
-    two or more words pays no frame for C3's numeral clause. Recorded
-    negative control, #1089 (2026-11-05, py3.11): with the match removed
-    no output moves (324,720 parses compared), the predicate is entered
-    once on each name below, and 'John Smith Jr., PhD' costs 246 frames
-    against 244. That the match is a necessary half of the predicate,
-    so the two cannot disagree, is
+    word ending the part's name words matches `ROMAN`, the first test
+    of the `reads_as_generation` it calls, asked at C level (#1089), so
+    a suffix-comma name whose part, two or more words long, ends in no
+    numeral pays no frame for C3's numeral clause. Recorded negative
+    control, #1089 (2026-11-05, py3.11, a second parse of the name):
+    with the match removed no output moves (324,720 parses compared),
+    the predicate is entered once on each name below, and 'John Smith
+    Jr., PhD' costs 246 frames against 244. That the match is a
+    necessary half of the predicate, so the two cannot disagree, is
     `test_ends_in_a_generation_needs_the_roman_shape`'s."""
     if sys.getprofile() is not None:
         pytest.skip("a profile hook is already installed; this test owns it")
@@ -1007,35 +1013,37 @@ def test_a_part_ending_in_no_numeral_skips_the_generation_test() -> None:
 
 
 def test_post_rules_walks_the_roles_once_per_reader() -> None:
-    """post_rules reads the TITLE, GIVEN, MIDDLE and FAMILY positions in
-    one `_positions` walk at its head and one at R2's marking, and a
-    rule that retags walks again only when it fires (#1089). It made
-    ten one-role walks a parse before, each two frames on 3.11 (the
-    call and its comprehension): the reference row read 306.80 against
-    288.80 (2026-11-05, py3.11), outside `_CALL_BASELINE`'s band, which
-    holds the total; this test names the walk."""
+    """Under the default policy post_rules reads the TITLE, GIVEN,
+    MIDDLE and FAMILY positions in two `_positions` walks, at its head
+    and at R2's marks; a core rule that retags (H1, M4, P1's fold, O1,
+    O2, P6) walks again only when it fires, and the opt-in readers
+    (P10, O6, O7 and O3's fold) walk where their gate is on (#1089).
+    It made ten one-role scans a parse before, each two frames on 3.11
+    (the call and its comprehension): the reference row read 306.80
+    against 288.80 (2026-11-05, py3.11), outside `_CALL_BASELINE`'s
+    band, which holds the total.
+
+    The band cannot see ONE scan put back (+2 frames on 3.11, +1 on
+    3.12 and later), and a count of `_positions` by name cannot see a
+    scan written any other way, so the calls post_rules makes directly
+    are pinned too, a number no interpreter changes. Recorded negative
+    control (2026-11-05, py3.11 and py3.12): 15 on 21a4fe15, the tree
+    before, and 8 with one `_idx`-style helper call added. A deliberate new
+    call moves this pin with a reason beside it."""
     if sys.getprofile() is not None:
         pytest.skip("a profile hook is already installed; this test owns it")
     for text in ("John Smith", "Smith, John", _REFERENCE.format(i=1)):
         assert _frames_for(text, only="_positions") == 2, text
-    # REACHABILITY: a rule that fires walks again, O1's rotation here
-    from nameparser import locales, parser_for
-    ru = parser_for(locales.RU)
-    ru.parse("warm up the caches")
-    calls = 0
-
-    def counter(frame: FrameType, event: str, arg: object) -> None:
-        nonlocal calls
-        if event == "call" and frame.f_code.co_name == "_positions":
-            calls += 1
-
-    sys.setprofile(counter)
-    try:
-        name = ru.parse("Sidorov Ivan Petrovich")
-    finally:
-        sys.setprofile(None)
-    assert (name.given, name.family) == ("Ivan", "Sidorov")
-    assert calls == 3
+        assert _frames_for(text, caller="post_rules") == 7, text
+    # REACHABILITY: a rule that fires walks again, O1's rotation and
+    # O2's, and an opt-in reader walks where its gate is on
+    ru, tr = parser_for(locales.RU), parser_for(locales.TR_AZ)
+    maf = Parser(policy=Policy(middle_as_family=True))
+    for p, text in ((ru, "Sidorov Ivan Petrovich"),
+                    (tr, "Aliyev Ilham Heydar oglu"), (maf, "Juan Smith")):
+        assert _frames_for(text, only="_positions", parse=p.parse) == 3, text
+    assert ru.parse("Sidorov Ivan Petrovich").family == "Sidorov"
+    assert tr.parse("Aliyev Ilham Heydar oglu").family == "Aliyev"
 
 
 def test_a_segment_with_no_free_connective_skips_the_join() -> None:

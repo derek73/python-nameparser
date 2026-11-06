@@ -1368,6 +1368,29 @@ def test_a_word_that_is_both_particle_and_connective_is_marked_too(
     assert UNJOINED_TAG not in tags["de"]
 
 
+@pytest.mark.parametrize("pack, word, text, middle, family", [
+    (locales.RU, "petrovich", "Sidorov Ivan Petrovich", "",
+     "Petrovich Sidorov"),
+    (locales.TR_AZ, "oglu", "Mammadov Ali Huseyn oglu", "Huseyn",
+     "oglu Mammadov"),
+])
+def test_o1_and_o2_read_the_lists_after_their_own_rotation(
+        pack: Locale, word: str, text: str, middle: str, family: str) -> None:
+    # rules/O1's and O2's rotations put the name's last word in a middle
+    # under the default order; where a caller's lexicon makes that word a
+    # particle, P6 attaches it, reading the lists the rotation left. Each
+    # rotation recomputes them (#359's bug shape; decisions/parse-cost,
+    # #1089). Recorded negative control (2026-11-05): with both
+    # recomputes dropped, the rows read middle 'Petrovich', family
+    # 'Sidorov' and middle 'Huseyn oglu', family 'Mammadov'; the readings
+    # below are 21a4fe15's, the tree before the recompute moved.
+    base = parser_for(pack)
+    parser = Parser(lexicon=base.lexicon.add(word, kind="particle"),
+                    policy=base.policy)
+    name = parser.parse(text)
+    assert (name.middle, name.family) == (middle, family)
+
+
 def test_two_family_names_declines_a_family_first_name_whose_family_is_not_first() -> None:
     # rules/O6's family-first arm takes the unit after a family standing
     # FIRST; no shipped rule leaves a family-first name otherwise
