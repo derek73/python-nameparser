@@ -18,7 +18,6 @@ from __future__ import annotations
 
 import dataclasses
 import re
-import unicodedata
 from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, field
 from typing import Any
@@ -26,7 +25,7 @@ from typing import Any
 from nameparser._lexicon import Lexicon, _canonical, _shown_choice
 from nameparser._policy import (
     _ORDER_CONSTANT_NAMES, UNSET, PatronymicRule, PolicyPatch,
-    _reject_str_and_mapping,
+    _classified_char, _reject_str_and_mapping,
 )
 from nameparser._types import ADDED_IN, _guarded_getstate, _guarded_setstate
 
@@ -204,17 +203,18 @@ def deviates_by_two_family_names(name: str) -> bool:
 def _letter_runs(text: str) -> int:
     """The runs of letters in `text`, whatever separates one from the
     next: a hyphen, a zero-width space or an interpunct, which the
-    tokenizer may read as separators (rules/T1, T2, T3). A run of Han,
-    hangul or kana counts twice, since segmentation may divide it into a
-    family and a given name (rules/W1). A letter written with a combining
-    mark splits a run, which over-declares."""
+    tokenizer may read as separators (rules/T1, T2, T3). A run opening
+    with a character of a script the script table classifies counts
+    twice, since segmentation may divide it into a family and a given
+    name (rules/W1): the table every script-conditional rule reads, so
+    a character W1 can divide is one this counts twice, and one outside
+    it (a compatibility jamo, an archaic kana) is a word W1 never divides
+    (#1087). A letter written with a combining mark splits a run, which
+    over-declares."""
     runs, inside = 0, False
     for ch in text:
         letter = ch.isalpha()
         if letter and not inside:
-            runs += 2 if unicodedata.name(ch, "").startswith(_CJK) else 1
+            runs += 2 if _classified_char(ch) else 1
         inside = letter
     return runs
-
-
-_CJK = ("CJK", "HANGUL", "HIRAGANA", "KATAKANA")

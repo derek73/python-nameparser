@@ -18,7 +18,7 @@ from nameparser._lexicon import (
     _SET_FIELDS, _VOCAB_FIELDS, _default_lexicon, _fields_of, _normalize,
     _title_key,
 )
-from nameparser._policy import Script, _SCRIPT_RANGES
+from nameparser._policy import _HANGUL_SYLLABLES
 from nameparser.config._compiled import SUFFIX_ACRONYMS, SUFFIX_WORDS
 
 
@@ -311,10 +311,12 @@ def test_default_lexicon_ships_korean_surnames_only() -> None:
     assert "김" in lex.surnames and "남궁" in lex.surnames
     # Han surnames are locales.ZH's cargo (segmentation opt-in), so
     # the DEFAULT set is wholly hangul -- structural check, not
-    # content-pinning. The spans come from the shared table rather than
-    # a second hand-copy of 0xAC00/0xD7A3 (test_locales.py's precedent).
-    hangul = _SCRIPT_RANGES[Script.HANGUL]
-    assert all(all(any(lo <= ord(c) <= hi for lo, hi in hangul) for c in s)
+    # content-pinning. The span comes from the shared table rather than
+    # a hand-copy, and is the syllables alone: HANGUL holds the
+    # conjoining jamo too since #1087, and a surname written in jamo
+    # would match no composed name.
+    lo, hi = _HANGUL_SYLLABLES
+    assert all(all(lo <= ord(c) <= hi for c in s)
                and 1 <= len(s) <= 2 for s in lex.surnames)
 
 
