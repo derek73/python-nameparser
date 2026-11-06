@@ -156,6 +156,10 @@ More shapes the parser reads:
     >>> arabic = parse("محمد بن سلمان")            # Arabic: بن chains onto the family name
     >>> arabic.family, arabic.patronymic          # and marks it a patronymic
     ('بن سلمان', 'بن سلمان')
+    >>> parse("طارق عبد العزيز").family           # عبد + a name of God is one name
+    'عبد العزيز'
+    >>> parse("نوال عبد هاشم").family             # هاشم is not one, so it stands alone
+    'هاشم'
 
     >>> chinese = parser_for(locales.ZH)           # Han text does not say which language
     >>> chinese.parse("毛泽东").family              # so splitting it is opt-in
