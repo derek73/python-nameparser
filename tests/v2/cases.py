@@ -2723,7 +2723,7 @@ CASES: tuple[Case, ...] = (
          "Smith Jones y VI, John",
          {"given": "John", "family": "Smith Jones y", "suffix": "VI"},
          ambiguities=("suffix-or-name",), classification="fix(#1098)",
-         notes="P3: a connective with nothing but suffixes behind it "
+         notes="P13: a connective with nothing but suffixes behind it "
                "joins the word before it alone, so the join no longer "
                "takes the 'VI' it has nothing to link (#1098), as "
                "'Smith y VI, John' reads. 1.4.0 through 2.8.2 read "
@@ -2740,26 +2740,26 @@ CASES: tuple[Case, ...] = (
          "Smith i V, John",
          {"given": "John", "family": "Smith i V"},
          classification="fix(#1097)",
-         notes="P3: the Catalan 'i', also a numeral, links the lone "
+         notes="P13: the Catalan 'i', also a numeral, links the lone "
                "letter after it as 'y' does, the second surname written "
                "as an initial. 2.7.0 through 2.8.2 and #1093 read "
                "family 'Smith', suffix 'i V'; 1.4.0 through 2.6.0 "
                "family 'Smith V', suffix 'i'"),
     # #1097, #1098: a single-letter connective in front of a lone
     # letter ending the name words links it, and a connective with
-    # nothing to link joins the word before it (P3).
+    # nothing to link joins the word before it (P13).
     Case("a_numeral_behind_a_connective_without_a_comma_is_family",
          "John Smith y V",
          {"given": "John", "family": "Smith y V"},
          classification="fix(#1098)",
-         notes="P3: the 'V' is the second surname the 'y' links, as "
+         notes="P13: the 'V' is the second surname the 'y' links, as "
                "'Smith y V, John' reads since #1093. 1.4.0 through 2.8.2 "
                "read middle 'Smith', family 'y', suffix 'V'"),
     Case("a_numeral_behind_a_generational_connective_without_a_comma",
          "Joan Puig i V",
          {"given": "Joan", "family": "Puig i V"},
          classification="fix(#1097)",
-         notes="P3: the Catalan 'i' links the letter as 'y' does. "
+         notes="P13: the Catalan 'i' links the letter as 'y' does. "
                "2.0.0 through 2.8.2 read family 'Puig', suffix 'i V' or "
                "'i, V'; 1.4.0 middle 'Puig', last 'i', suffix 'V'"),
     Case("a_numeral_behind_a_generational_connective_in_the_part_is_family",
@@ -2773,7 +2773,7 @@ CASES: tuple[Case, ...] = (
          "Juan García y L.",
          {"given": "Juan", "family": "García y L."},
          classification="fix(#1098)",
-         notes="P3: the clause reads a lone letter whatever it spells, "
+         notes="P13: the clause reads a lone letter whatever it spells, "
                "an initial as a numeral, as 'John Paul García y L.' "
                "already read through the four-word join. 1.4.0 through "
                "2.8.2 read middle 'García y', family 'L.'"),
@@ -2787,7 +2787,7 @@ CASES: tuple[Case, ...] = (
          "John Smith y III",
          {"given": "John", "family": "Smith y", "suffix": "III"},
          classification="fix(#1098)",
-         notes="P3: a connective with nothing but suffixes behind it "
+         notes="P13: a connective with nothing but suffixes behind it "
                "joins the word before it alone. 1.4.0 through 2.8.2 "
                "read middle 'Smith', family 'y', suffix 'III'"),
     Case("a_connective_before_a_shape_numeral_joins_the_word_before",
@@ -2814,7 +2814,7 @@ CASES: tuple[Case, ...] = (
          {"given": "John", "middle": "Paul", "family": "Smith y",
           "suffix": "III"},
          classification="fix(#1098)",
-         notes="P3: where the carve-out did not hold, the join took the "
+         notes="P13: where the carve-out did not hold, the join took the "
                "suffix on its right as the name it links. 1.4.0 through "
                "2.8.2 read family 'Smith y III'"),
     Case("a_three_word_name_keeps_the_carve_out",
@@ -2920,8 +2920,8 @@ CASES: tuple[Case, ...] = (
          notes="#1098's boundary: P13 leaves a cased single letter in a "
                "one-case name be, an initial as often as a connective, "
                "so P3's four-word join takes it with the suffix behind "
-               "it, as 2.0.0 through 2.8.2 read; 1.4.0 read family "
-               "'SMITH JONES Y', suffix 'JR.' (decisions/P13)"),
+               "it, as 2.4.0 through 2.8.2 read; 1.4.0 through 2.3.0 "
+               "read family 'SMITH JONES Y', suffix 'JR.' (decisions/P13)"),
     Case("a_capital_letter_in_a_mixed_case_name_is_an_initial",
          "John Smith Y",
          {"given": "John", "middle": "Smith", "family": "Y"},
@@ -2972,6 +2972,16 @@ CASES: tuple[Case, ...] = (
          notes="#1098's boundary: a connective written as a word before "
                "a trailing title is the couple's formula, which P13's "
                "join with nothing to link leaves to P3 (decisions/P13)"),
+    Case("a_word_connective_before_a_suffix_and_a_title_joins_the_word_before",
+         "John Smith and Jr. Mrs.",
+         {"title": "Mrs.", "given": "John", "family": "Smith and",
+          "suffix": "Jr."},
+         classification="fix(#1098)",
+         notes="P13: only a title standing right behind a word "
+               "connective makes the couple's formula, so a suffix "
+               "between them leaves the join to be made. 2.0.0 through "
+               "2.8.2 read family 'Smith and Jr.'; 1.4.0 middle 'Smith "
+               "and Jr.', last 'Mrs.'"),
     Case("a_generational_connective_ending_the_name_stays_the_suffix",
          "John Quincy Smith i",
          {"given": "John", "middle": "Quincy", "family": "Smith",
@@ -6496,7 +6506,7 @@ CASES: tuple[Case, ...] = (
          "Josep Lluis Carod i V",
          {"given": "Josep", "middle": "Lluis", "family": "Carod i V"},
          classification="fix(#1097)",
-         notes="P3: a single-letter connective in front of a lone "
+         notes="P13: a single-letter connective in front of a lone "
                "letter ending the name words joins it to the word "
                "before, the letter being the second surname written as "
                "an initial, the generational 'i' included (#1097). "

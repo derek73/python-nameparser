@@ -530,6 +530,14 @@ def _is_lone_letter(piece: Sequence[int], tokens: Sequence[WorkToken],
             and not numeral_settled_by_case(letter, one_case))
 
 
+def _is_trailing_title(piece: Sequence[int], ptags: Set[str],
+                       tokens: Sequence[WorkToken]) -> bool:
+    """A period-marked title word, which H5 reads as a title ending the
+    name: P13 reads the name words past it."""
+    return (len(piece) == 1 and tokens[piece[0]].text.endswith(".")
+            and is_title_piece(piece, ptags, tokens))
+
+
 def _composed(text: str) -> str:
     """`text` NFC-folded where it is not ASCII: a letter typed as its
     base and a combining mark is one letter to P13, as the vocabulary
@@ -557,13 +565,10 @@ def _link_the_last_letter(pieces: list[list[int]], ptags: list[set[str]],
     # -- both joins, made ahead of P3's carve-out (decisions/P13
     # (#1097, #1098))
     e = len(pieces) - 1
-    titled = False
     while e >= 0 and not _is_lone_letter(pieces[e], tokens, one_case):
         piece = pieces[e]
-        title = (len(piece) == 1 and tokens[piece[0]].text.endswith(".")
-                 and is_title_piece(piece, ptags[e], tokens))
-        titled = titled or title
-        if not (title or is_suffix_piece(piece, ptags[e], tokens)
+        if not (_is_trailing_title(piece, ptags[e], tokens)
+                or is_suffix_piece(piece, ptags[e], tokens)
                 or (e > 0 and len(piece) == 1
                     and ends_in_a_generation(
                         [tokens[pieces[e - 1][-1]].text,
@@ -599,7 +604,9 @@ def _link_the_last_letter(pieces: list[list[int]], ptags: list[set[str]],
         initial_shaped = (one_case and len(text) == 1
                           and text.lower() != text.upper())
         if (text.isalpha() and not initial_shaped
-                and not (titled and len(text) > 1)
+                and not (len(text) > 1 and e + 1 < len(pieces)
+                         and _is_trailing_title(pieces[e + 1], ptags[e + 1],
+                                                tokens))
                 and "vocab:suffix" not in word.tags):
             merge_pieces(pieces, ptags, e - 1, e + 1)
 

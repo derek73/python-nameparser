@@ -28,7 +28,7 @@
 
 **Except:**
 
-- **Where the part is the whole name, a word must stand in front of the join past the title run**, so the name keeps a given name, and P3's carve-out stands.
+- **Where the part is the whole name, a word must stand in front of the join past the title run**, so a word is left in front of the joined surname, and P3's carve-out stands.
   ```
   "Smith y V"                 →  family="y"  · boundary
   "Dr. Smith y V"             →  family="y"  · boundary
@@ -38,12 +38,12 @@
   "John Dr. y V"              →  family="y"  · boundary
   "Smith y i V, John"         →  suffix="i V"  · boundary
   ```
-- **A lowercase letter in a name of mixed case is the generation S10 reads by its writing**, and a capital there is an initial (P8), no connective for this rule to read.
+- **A lowercase letter in a name of mixed case is no letter this rule links**, S10 reading a listed one as the generation by its writing, and a capital there is an initial (P8), no connective for this rule to read.
   ```
   "Smith y v, John"           →  suffix="v"  · boundary
   "John Smith Y"              →  family="Y"  · boundary
   ```
-- **A connective that is also generational vocabulary, with nothing after it, is the generation it spells** (P3), a symbol connective is no word, and in a name written in one case a single-letter connective with nothing after it keeps its reading, being an initial there as often as a connective.
+- **A connective that is also generational vocabulary, with nothing after it, is the generation it spells** (P3), a symbol connective is no word, and in a name written in one case a single-letter connective with nothing to link is not joined, the local corpora's such names being initials.
   ```
   "John Quincy Smith i"       →  suffix="i"  · boundary
   "John Smith & III"          →  family="Smith & III"  · boundary
@@ -67,5 +67,5 @@
   ```
 
 ---
-**Signal:** neighbor: a connective ending the name words, and the lone letter behind it
+**Signal:** neighbor: a connective ending the name words, and the lone letter behind it + case contrast: a single-letter connective ending a name written in one case
 **history:** decisions/P13 · **implemented:** nameparser/_pipeline/_group.py
