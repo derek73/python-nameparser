@@ -1013,11 +1013,12 @@ def test_a_part_ending_in_no_numeral_skips_the_generation_test() -> None:
 
 
 def test_post_rules_walks_the_roles_once_per_reader() -> None:
-    """Under the default policy post_rules reads the TITLE, GIVEN,
-    MIDDLE and FAMILY positions in two `_positions` walks, at its head
-    and at R2's marks; a core rule that retags (H1, M4, P1's fold, O1,
-    O2, P6) walks again only when it fires, and the opt-in readers
-    (P10, O6, O7 and O3's fold) walk where their gate is on (#1089).
+    """On a name no gated reader reaches, post_rules reads the TITLE,
+    GIVEN, MIDDLE and FAMILY positions in two `_positions` walks, at its
+    head and at R2's marks; a core rule that retags (H1, M4, P1's fold,
+    O1, O2, P6) walks again only when it fires, and the gated readers
+    (P10, on its tag, and the O6, O7 and O3 switches) walk where their
+    gate opens (#1089).
     It made ten one-role scans a parse before, each two frames on 3.11
     (the call and its comprehension): the reference row read 306.80
     against 288.80 (2026-11-05, py3.11), outside `_CALL_BASELINE`'s
@@ -1026,7 +1027,9 @@ def test_post_rules_walks_the_roles_once_per_reader() -> None:
     The band cannot see ONE scan put back (+2 frames on 3.11, +1 on
     3.12 and later), and a count of `_positions` by name cannot see a
     scan written any other way, so the calls post_rules makes directly
-    are pinned too, a number no interpreter changes. Recorded negative
+    are pinned too: a helper call put back fails it on every
+    interpreter, an inline comprehension only on 3.11, where it is a
+    frame of its own. Recorded negative
     control (2026-11-05, py3.11 and py3.12): 15 on 21a4fe15, the tree
     before, and 8 with one `_idx`-style helper call added. A deliberate new
     call moves this pin with a reason beside it."""
@@ -1036,11 +1039,14 @@ def test_post_rules_walks_the_roles_once_per_reader() -> None:
         assert _frames_for(text, only="_positions") == 2, text
         assert _frames_for(text, caller="post_rules") == 7, text
     # REACHABILITY: a rule that fires walks again, O1's rotation and
-    # O2's, and an opt-in reader walks where its gate is on
+    # O2's, and a gated reader walks where its gate opens: P10's tag
+    # under the default policy, O3's switch
     ru, tr = parser_for(locales.RU), parser_for(locales.TR_AZ)
     maf = Parser(policy=Policy(middle_as_family=True))
     for p, text in ((ru, "Sidorov Ivan Petrovich"),
-                    (tr, "Aliyev Ilham Heydar oglu"), (maf, "Juan Smith")):
+                    (tr, "Aliyev Ilham Heydar oglu"),
+                    (Parser(), "María del Carmen García"),
+                    (maf, "Juan Smith")):
         assert _frames_for(text, only="_positions", parse=p.parse) == 3, text
     assert ru.parse("Sidorov Ivan Petrovich").family == "Sidorov"
     assert tr.parse("Aliyev Ilham Heydar oglu").family == "Aliyev"
