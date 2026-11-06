@@ -9921,6 +9921,20 @@ CASES: tuple[Case, ...] = (
          'Smith (M.A.), John',
          {'given': 'John', 'family': 'Smith', 'suffix': 'M.A.'},
          notes="as the row above: the period escape, not S1's set-apart reading, which would make it a reported nickname before the comma"),
+    Case("paren_listed_hyphenated_credential_inside_the_name_set_apart",
+         "John (NP-C) Smith",
+         {"given": "John", "family": "Smith", "suffix": "NP-C"},
+         classification="fix(#792)",
+         notes="a credential listed whole is one word, not two joined: "
+               "the initials Except asks its chunks only of a word S3 "
+               "joins, and 'NP, C' is no spelling of it (#1088's second "
+               "review, whose first fix split it, reading the nickname)"),
+    Case("paren_listed_hyphenated_credential_before_a_name_set_apart",
+         "John (SHRM-CP) Smith",
+         {"given": "John", "family": "Smith", "suffix": "SHRM-CP"},
+         classification="fix(#792)",
+         notes="as the row above; CP is a listed two-letter acronym, so a "
+               "chunk test reads it as initials"),
     Case("paren_joined_credential_and_name_stays_the_nickname",
          "John Smith (MD/Bob)",
          {"given": "John", "family": "Smith", "nickname": "MD/Bob"},

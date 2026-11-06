@@ -484,10 +484,14 @@ def reads_as_initials(word: str, kind: SetApartKind,
     member of the ambiguous class counts as the credential it is
     settled as. `one_case` is ParseState.one_case. A joined credential
     counts where any of its chunks would ('JP/MD', 'MD/PhD'), as its
-    words written apart do: a chunk holds no joiner, so this is one
-    level deep."""
+    words written apart do, and one the vocabulary lists whole never
+    ('NP-C'): a chunk holds no joiner, so this is one level deep."""
     bare = word.strip(",")
-    if kind == "suffix" and ("/" in bare or "-" in bare):
+    # a credential the vocabulary lists whole ('NP-C', 'SHRM-CP') is one
+    # word, not two S3 joins, and has no other spelling written apart
+    if kind == "suffix" and ("/" in bare or "-" in bare) and not (
+            (folded := _normalize(bare)) in lexicon._sets.suffix_words
+            or folded.replace(".", "") in lexicon._sets.suffix_acronyms):
         for chunk in _JOINERS.split(bare):
             if _shaped_as_initials(chunk, set_apart_kind(chunk, lexicon),
                                    one_case, lexicon):

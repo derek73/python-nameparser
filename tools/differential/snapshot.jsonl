@@ -15,8 +15,12 @@
 {"name": "(Lt)", "title": "Lt"}
 {"name": "(Lt) John Smith", "title": "Lt", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "(M.A)", "nickname": "M.A", "ambiguities": ["SUFFIX_OR_NICKNAME"], "alternatives": ["SUFFIX_OR_NICKNAME: credential as suffix (vocabulary)"]}
+{"name": "(M.A., PhD)", "nickname": "M.A., PhD", "ambiguities": ["SUFFIX_OR_NICKNAME"], "alternatives": ["SUFFIX_OR_NICKNAME: credential as suffix (vocabulary)"]}
+{"name": "(M.A./PhD)", "suffix": "M.A./PhD"}
 {"name": "(MA) John Smith", "given": "John", "family": "Smith", "nickname": "MA", "ambiguities": ["SUFFIX_OR_NICKNAME"], "alternatives": ["SUFFIX_OR_NICKNAME: credential as suffix (vocabulary)"], "initials": "J. S.", "capitalized_force": "John \"Ma\" Smith"}
 {"name": "(MPH)", "suffix": "MPH"}
+{"name": "(PhD, Sr) John Smith", "title": "Sr", "given": "John", "family": "Smith", "suffix": "PhD", "initials": "J. S."}
+{"name": "(PhD/Sr) John Smith", "given": "John", "family": "Smith", "suffix": "PhD/Sr", "initials": "J. S."}
 {"name": "(김민준.) John Smith", "given": "김", "middle": "민준. John", "family": "Smith", "initials": "J. S."}
 {"name": ","}
 {"name": ", Ana García López", "given": "Ana", "middle": "García López", "initials": "A. G. L."}
@@ -1754,6 +1758,7 @@
 {"name": "John (Jack) Smith", "given": "John", "family": "Smith", "nickname": "Jack", "initials": "J. S."}
 {"name": "John (Jr/Sr) Smith", "given": "John", "family": "Smith", "suffix": "Jr/Sr", "initials": "J. S."}
 {"name": "John (MD-PhD) Smith", "given": "John", "family": "Smith", "nickname": "MD-PhD", "initials": "J. S.", "capitalized_force": "John \"Md-PhD\" Smith"}
+{"name": "John (NP-C) Smith", "given": "John", "family": "Smith", "suffix": "NP-C", "initials": "J. S."}
 {"name": "John (Sr) Smith", "given": "John", "family": "Smith", "suffix": "Sr", "initials": "J. S.", "generation": "Sr"}
 {"name": "John (Sr.) Smith", "given": "John", "family": "Smith", "suffix": "Sr.", "initials": "J. S.", "generation": "Sr."}
 {"name": "John . Smith", "given": "John", "middle": ".", "family": "Smith", "initials": "J. .. S."}
