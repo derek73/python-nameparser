@@ -2982,6 +2982,13 @@ CASES: tuple[Case, ...] = (
                "between them leaves the join to be made. 2.0.0 through "
                "2.8.2 read family 'Smith and Jr.'; 1.4.0 middle 'Smith "
                "and Jr.', last 'Mrs.'"),
+    Case("a_connective_before_a_merged_credential_joins_the_word_before",
+         "John Smith y Ph. D.",
+         {"given": "John", "family": "Smith y", "suffix": "Ph. D."},
+         classification="fix(#1098)",
+         notes="P13 reads past a credential group has already merged "
+               "into one piece of two words. 1.4.0 through 2.8.2 read "
+               "middle 'Smith', family 'y', suffix 'Ph. D.'"),
     Case("a_generational_connective_ending_the_name_stays_the_suffix",
          "John Quincy Smith i",
          {"given": "John", "middle": "Quincy", "family": "Smith",
