@@ -12072,7 +12072,7 @@ CASES: tuple[Case, ...] = (
                "rules/S11's count too, so N3 does not apply"),
     Case("nickname_title_word_and_a_suffix", "'Smitty' Pope Jr.",
          {"given": "Pope", "suffix": "Jr.", "nickname": "Smitty"},
-         ambiguities=("title-or-name",), classification="feat(#491)",
+         ambiguities=("title-or-name",), classification="fix(#489)",
          notes="boundary: a title word left as the one name word is "
                "rules/H4's doubt (is it a title), which reads it as a "
                "name by convention; N3 decides only a word nothing "

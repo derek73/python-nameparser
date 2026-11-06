@@ -37,7 +37,7 @@
 
 **Accepted:**
 
-- A surname the suffix vocabulary also holds, written beside a bracketed note that is not a nickname, is read as the suffix, and the given name left beside it reads as the family name with nothing reported.
+- A surname the suffix vocabulary also holds, whole or as one of its period-joined chunks, written beside a bracketed note that is not a nickname, is read as the suffix, and the given name left beside it reads as the family name with nothing reported.
   ```
   "Rewati Od (Mahar)"         →  family="Rewati"
   "Sumnime D.C(Oli)"          →  family="Sumnime"
