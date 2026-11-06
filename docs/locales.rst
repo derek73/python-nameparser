@@ -456,12 +456,15 @@ the Czech and Slovak packs also read two family names (below):
      - ``ml.``, ``st.``
 
 The doctorates (``MUDr.``, ``JUDr.``, ``PhDr.``, ``RNDr.`` and the
-rest) are titles without a pack, bare or dotted, before the name or
-after it, and so is ``Mgr.``, which the default lists as Monsignor. For
-``MgA.`` and ``BcA.``, which the default does not list, what a pack
-changes is the bare spelling, anywhere, and the dotted one at the end
-of the name, where the default reads each as a name word; at the head
-of a name the dotted spelling is a title by its shape without one.
+rest) are titles without a pack, bare or dotted before the name or
+after a comma, and dotted at the end of it, and so is ``Mgr.``, which
+the default lists as Monsignor; written bare at the end of a name, as
+any title is, each is a name word (``Jan Novák MUDr`` → family
+``MUDr``). For ``MgA.`` and ``BcA.``, which the default does not list,
+what a pack changes is the bare spelling before the name or after a
+comma, and the dotted one at the end of it, where the default reads
+each as a name word; at the head of a name the dotted spelling is a
+title by its shape without one.
 
 .. doctest::
 
@@ -835,9 +838,11 @@ Spanish and Portuguese titles
 
 Spanish and Latin American usage puts an academic or professional title
 in front of a name (*Licenciado*, *Ingeniero*, *Mtro.*), and Portuguese
-does the same with *Doutor* and *Professora*. No name bears these
-words, so the default reads them as titles, written out, abbreviated or
-dotted. ``es`` turns on the two it leaves off, ``Maestra``, which is
+does the same with *Doutor* and *Professora*. These words are borne
+as names hardly at all, so the default reads them as titles, written
+out, abbreviated or dotted; a family name written first that is one
+(``Doctora``, ``Licenciado`` and ``Lic`` are each borne once in ORCID
+or PatentsView) reads as the title. ``es`` turns on the two it leaves off, ``Maestra``, which is
 also a family name and the word for a schoolteacher, and ``Doña``, a
 family name too:
 

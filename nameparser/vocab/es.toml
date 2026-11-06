@@ -71,7 +71,7 @@ academic = { issue = 753, expands = "Arq., Arquitecto or Arquitecta abbreviated"
 
 [[word]]
 text = "doctora"
-academic = { gender = "f", issue = 753, expands = "Doctora, the feminine of doctor", note = "no name bearer in any source tools/name_usage.py reads; ORCID's given box 4 records, the title typed in, and 2 names open with it (Doctora Yenny Nereida Montilla Polo) (2026-10-30)" }
+academic = { gender = "f", issue = 753, expands = "Doctora, the feminine of doctor", note = "no name bearer in any source tools/name_usage.py reads; ORCID's given box 4 records, the title typed in, and 2 names open with it (Doctora Yenny Nereida Montilla Polo) (2026-10-30); its family box holds it once, written last (Ma. Theresa Mae Doctora, Philippines), so a name written family first that opens with it reads it as the title, read by default since #1115 (2026-11-06)" }
 
 [[word]]
 text = "dra"
@@ -87,7 +87,7 @@ academic = { gender = "f", issue = 753, same_as = "ingeniero", expands = "Ingeni
 
 [[word]]
 text = "licenciado"
-academic = { gender = "m", issue = 753, expands = "Licenciado, the holder of a licenciatura, a form of address in Mexico and Central America", note = "no name bearer in any source tools/name_usage.py reads; 1 ORCID name opens with it (2026-10-30)" }
+academic = { gender = "m", issue = 753, expands = "Licenciado, the holder of a licenciatura, a form of address in Mexico and Central America", note = "no name bearer in any source tools/name_usage.py reads; 1 ORCID name opens with it (2026-10-30); ORCID's family box holds it once, written last (Abraham Licenciado, Venezuela), so a name written family first that opens with it reads it as the title, read by default since #1115 (2026-11-06)" }
 
 [[word]]
 text = "lcdo"
@@ -95,7 +95,7 @@ academic = { gender = "m", issue = 753, same_as = "licenciado", expands = "Lcdo.
 
 [[word]]
 text = "lic"
-academic = { issue = 753, same_as = "licenciado", expands = "Lic., Licenciado or Licenciada abbreviated", note = "ORCID's given box 92 records, the title typed in (Cuba 17, Ecuador 12, Mexico 6), its family box 10; 48 ORCID names open with it (Lic Arisleidy Noriega Cisneros), and ClinicalTrials.gov officials write lic. phil. and Lic. Med. after a comma (2026-10-30). With its period it already reads as a title at the head by its shape (rules/H2)" }
+academic = { issue = 753, same_as = "licenciado", expands = "Lic., Licenciado or Licenciada abbreviated", note = "ORCID's given box 92 records, the title typed in (Cuba 17, Ecuador 12, Mexico 6), its family box 10, PatentsView's family box 1 (Alenko Lic, Austria, written last; 2026-11-06); 48 ORCID names open with it (Lic Arisleidy Noriega Cisneros), and ClinicalTrials.gov officials write lic. phil. and Lic. Med. after a comma (2026-10-30). With its period it already reads as a title at the head by its shape (rules/H2)" }
 
 [[word]]
 text = "licenciada"
