@@ -18,9 +18,10 @@ could write makes ``van`` a name word under a plain choice. The order
 already commits a caller to Vietnamese names, which is what makes the
 removal cost nothing further.
 
-Data sources: the titles' vetting and the syllables' counts are on the
-words in vi.toml and in the 2026-11-05 #1108 decisions entry
-(tools/name_usage.py, and ORCID's and PatentsView's Vietnam records).
+Data sources: the titles' vetting is on the words in vi.toml
+(tools/name_usage.py); the syllables were measured on the uit-vinames
+and vn-assembly local corpora, in the 2026-11-05 #1108 entry of
+decisions/vocabulary-model.
 
 Declared deviations (mechanisms.md#LOCALE-PACKS-PURE-DATA): the order
 moves every name a family comma does not fix, a one-word name included
