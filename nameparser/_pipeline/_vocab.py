@@ -397,23 +397,60 @@ def ends_in_a_generation(texts: Sequence[str], one_case: bool | None,
             and reads_as_generation(last, frozenset(), texts[-2], one_case))
 
 
+#: What a word of a clause S1 sets apart is: a title, a suffix, or a
+#: word that is both, its place in the name choosing (rules/S1).
+SetApartKind = Literal["title", "suffix", "dual"]
+
+
+# rules/S13: "Written with a period inside it, whatever case the name is
+# in" -- the writing that settles a member, asked of its text since a
+# clause word carries no shape tag (decisions/S13, #810, #1088)
+def dotted_member(word: str, lexicon: Lexicon) -> bool:
+    """Whether a word of a delimited clause is a member of the
+    ambiguous class (S4) written with a period inside it ('M.A',
+    'M.A.'), a comma the clause keeps on it left off (rules/N1). A
+    period ending the clause is extract's escape, not this."""
+    bare = word.strip(",")
+    return ("." in bare.strip(".")
+            and _normalize(bare).replace(".", "")
+            in lexicon._sets.suffix_acronyms_ambiguous)
+
+
 # rules/S1: "a clause wholly of words the vocabulary reads as no name
 # is set apart from the name" -- the word's half; `set_apart` is the
-# clause's (decisions/S1, #792)
+# clause's. Its suffix half is `suffix_as_written`'s, so a credential
+# joined by a slash or a hyphen is one here as it is bare, a dotted
+# member asked first and left to S13's position test (decisions/S1,
+# #792, #1088)
 def set_apart_kind(word: str, lexicon: Lexicon,
-                   ) -> Literal["title", "suffix", "dual"] | None:
+                   ) -> SetApartKind | Literal["member"] | None:
     """What a word in a delimited clause is to S1's set-apart reading:
-    a title, a suffix (an unambiguous suffix word or acronym), both, or
-    None where the vocabulary reads it as a name or not at all. A comma
-    the clause keeps on its word is no part of it (rules/N1)."""
-    folded = _normalize(word.strip(","))
+    a title, a suffix (a word `suffix_as_written` reads, joined
+    credentials included), both, a member of the ambiguous class
+    written with a period inside it (`dotted_member`), which S13
+    settles after the name only, or None where the vocabulary reads it
+    as a name or not at all. A comma the clause keeps on its word is no
+    part of it (rules/N1)."""
+    bare = word.strip(",")
+    folded = _normalize(bare)
     sets = lexicon._sets
-    acronym = folded.replace(".", "")
-    suffix = ((folded in sets.suffix_words
-               and folded not in sets.suffix_words_ambiguous)
-              or (acronym in sets.suffix_acronyms
-                  and acronym not in sets.suffix_acronyms_ambiguous))
     title = folded in sets.titles
+    # a member of the ambiguous class, the set asked inline as the
+    # necessary half of `dotted_member`, so no other word pays its
+    # frame: `suffix_as_written` would read a dotted member as a suffix
+    # wherever it stands, and reads no other member as one
+    acronym = folded.replace(".", "")
+    if acronym in sets.suffix_acronyms_ambiguous:
+        if title:
+            return "title"
+        return "member" if "." in bare and dotted_member(
+            bare, lexicon) else None
+    # the sets and the joiners asked first, at C level, the necessary
+    # half of `suffix_as_written`, so a word it could never read (a
+    # nickname) pays no frame
+    suffix = ((acronym in sets.suffix_acronyms or folded in sets.suffix_words
+               or "-" in folded or "/" in folded)
+              and suffix_as_written(folded, bare, lexicon))
     if title:
         return "dual" if suffix else "title"
     return "suffix" if suffix else None
@@ -430,16 +467,52 @@ _INITIALS_SHAPE = re.compile(r"[^\W\d_]{1,2}\.?|" + _DOTTED_INITIALS.pattern)
 
 
 # rules/S1: "A credential written as initials before a name word stays
-# the nickname" -- the brackets more likely hold the initials the person
-# goes by there; decisions/S1 (#792)
-def written_as_initials(word: str) -> bool:
-    """Whether a word of a delimited clause is written in the shape of
-    a person's initials, a comma it keeps left off."""
-    return _INITIALS_SHAPE.fullmatch(word.strip(",")) is not None
+# the nickname, and so does any word of its clause" -- asked of each
+# chunk of a credential joined by a slash or a hyphen, so it reads
+# before a name word as its split spelling does (decisions/S1, #792,
+# #1088)
+def reads_as_initials(word: str, kind: SetApartKind,
+                      one_case: bool | None, lexicon: Lexicon) -> bool:
+    """Whether a word of a clause S1 would set apart counts, before a
+    name word of its comma part, as the initials the person goes by: a
+    credential written in their shape that is no generation word, and a
+    word that is a title too only written with a period after each
+    letter ('R.A.') or in capitals in a name of mixed case ('RA'),
+    Title case reading as the title it also is and capitals in a name
+    written in one case saying nothing (S6); a title alone never. A
+    member of the ambiguous class counts as the credential it is
+    settled as. `one_case` is ParseState.one_case. A joined credential
+    counts where any of its chunks would ('JP/MD', 'MD/PhD'), as its
+    words written apart do, and one the vocabulary lists whole never
+    ('NP-C'): a chunk holds no joiner, so this is one level deep."""
+    bare = word.strip(",")
+    # a credential the vocabulary lists whole ('NP-C', 'SHRM-CP') is one
+    # word, not two S3 joins, and has no other spelling written apart
+    if kind == "suffix" and ("/" in bare or "-" in bare) and not (
+            (folded := _normalize(bare)) in lexicon._sets.suffix_words
+            or folded.replace(".", "") in lexicon._sets.suffix_acronyms):
+        for chunk in _JOINERS.split(bare):
+            if _shaped_as_initials(chunk, set_apart_kind(chunk, lexicon),
+                                   one_case, lexicon):
+                return True
+        return False
+    return _shaped_as_initials(bare, kind, one_case, lexicon)
+
+
+def _shaped_as_initials(bare: str,
+                        kind: SetApartKind | Literal["member"] | None,
+                        one_case: bool | None, lexicon: Lexicon) -> bool:
+    """`reads_as_initials` for one word holding no joiner, its kind as
+    `set_apart_kind` gives it."""
+    return ((kind == "suffix" or kind == "member" or kind == "dual" and (
+                _DOTTED_INITIALS.fullmatch(bare) is not None
+                or one_case is False and bare.isupper()))
+            and _INITIALS_SHAPE.fullmatch(bare) is not None
+            and _normalize(bare) not in lexicon._sets.suffix_words)
 
 
 def set_apart(words: Sequence[str],
-              kinds: Sequence[Literal["title", "suffix", "dual"]],
+              kinds: Sequence[SetApartKind],
               behind_a_credential: bool, lexicon: Lexicon) -> bool:
     """rules/S1's clause tests over the words of a delimited clause,
     each already found to be no name by `set_apart_kind` (or, after

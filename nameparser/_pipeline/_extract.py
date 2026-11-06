@@ -71,7 +71,7 @@ def _set_apart(text: str, inner: Span,
     kinds = []
     for word in words:
         kind = set_apart_kind(word, lexicon)
-        if kind is None:
+        if kind is None or kind == "member":
             return False
         kinds.append(kind)
     return bool(words) and set_apart(words, kinds, False, lexicon)

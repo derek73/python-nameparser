@@ -365,9 +365,11 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # each reporting suffix-or-name under three orders; 1606 -> 1612 the
     # same day, #1093's two boundary rows under three orders; 1612 ->
     # 1615 the same day, its test review's joined-connective row under
-    # three orders.
-    assert claims == 1615, (
-        f"the field sweep checks {claims} claims, recorded as 1615 on "
+    # three orders; 1615 -> 1624 the same day, #1088's three kept-comma
+    # member rows ('Jean (M.A,) Smith' and its review's two) reporting
+    # suffix-or-nickname under three orders.
+    assert claims == 1624, (
+        f"the field sweep checks {claims} claims, recorded as 1624 on "
         f"2026-11-05")
 
 

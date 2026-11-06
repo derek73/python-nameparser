@@ -71,10 +71,10 @@ _SOURCES: dict[tuple[str, str], tuple[str, str] | None] = {
     ("_vocab", "_PERIOD_ABBREV"): None,
     # rules/S1's initials shape for a bracketed credential (#792)
     ("_vocab", "_INITIALS_SHAPE"): None,
-    # its dotted alternative, from which _INITIALS_SHAPE is built; the
-    # SAME object in _post_rules, which imports it for S1's dual words
+    # its dotted alternative, from which _INITIALS_SHAPE is built, read
+    # for S1's dual words by `reads_as_initials` beside it (#1088 moved
+    # the test there from _post_rules, which imported it)
     ("_vocab", "_DOTTED_INITIALS"): None,
-    ("_post_rules", "_DOTTED_INITIALS"): ("_vocab", "_DOTTED_INITIALS"),
     # SAME object as _vocab's, not a second copy: _pieces imports it
     # from _vocab (#289/#516, quality-review finding -- is_title_shaped
     # moved there so name_word_count could share is_leading_title's H2

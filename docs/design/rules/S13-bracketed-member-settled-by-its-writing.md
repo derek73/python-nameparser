@@ -36,13 +36,14 @@
   "john smith (MA)"           →  nickname="MA"
   "John Smith (Ma)"           →  nickname="Ma"
   ```
-- **A member standing inside the name or before it** stays the nickname, however it is written, and so does one in a name with no name word of its own, or one with a word after it the parse reads as a name word, a stray full stop included.
+- **A member standing inside the name or before it** stays the nickname, however it is written, and so does one in a name with no name word of its own, or one with a word after it the parse reads as a name word, a stray full stop included. It is reported, a comma the clause keeps on it no part of it (N1).
   ```
   "Jeffrey (JD) Bricken"      →  nickname="JD"
   "JEFFREY (JD) BRICKEN"      →  nickname="JD"
   "Jean 'JD' Smith"           →  nickname="JD"
   "Jean (M.A) Smith"          →  nickname="M.A"
   "Jean (M.A) Smith"          →  ambiguities=("suffix-or-nickname",)
+  "Jean (M.A,) Smith"         →  ambiguities=("suffix-or-nickname",)
   "Smith (MA), John"          →  nickname="MA"
   "(MA) John Smith"           →  nickname="MA"
   "Dr. (MA)"                  →  nickname="MA"
@@ -65,4 +66,4 @@
 
 ---
 **Signal:** position: a member of the ambiguous class alone in brackets or quotes after the name; hub of S1, S3, S6
-**history:** decisions/S13 · **implemented:** nameparser/_pipeline/_post_rules.py
+**history:** decisions/S13 · **implemented:** nameparser/_pipeline/_post_rules.py, nameparser/_pipeline/_vocab.py
