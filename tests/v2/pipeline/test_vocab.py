@@ -9,6 +9,7 @@ from nameparser._lexicon import (
     Lexicon, _VOCAB_FIELDS, _normalize, _title_key,
 )
 from nameparser._pipeline._vocab import (
+    ROMAN, ends_in_a_generation,
     ambiguous_class_candidate, ambiguous_class_member, ambiguous_lean,
     caps_shape_candidate, comma_follows_marker, delimiter_cores, glued_cores,
     glued_stem,
@@ -27,6 +28,30 @@ _LEX = (Lexicon()
         .add("phd", "ma", kind="credential")
         .add("ma", kind="family")       # an ambiguous credential
         .add("jr", "v", kind="suffix"))
+
+
+@pytest.mark.parametrize("one_case", [None, True, False])
+def test_ends_in_a_generation_needs_the_roman_shape(
+        one_case: bool | None) -> None:
+    """`ROMAN` matching the numeral's text, its periods stripped, is a
+    necessary half of `ends_in_a_generation`, so a caller may ask the
+    C-level match first and skip the frame where it fails without the
+    two ever disagreeing: `_comma._whole_name` (#1089), group's count
+    and `name_word_count` each do. Every word the predicate admits here
+    matches; the admitted rows are counted so the grid cannot pass by
+    admitting nothing."""
+    words = ["VI", "vi", "Vi", "VI.", "VII", "ix", "X", "x.", "III", "iv",
+             "II.", "IIII", "VX", "XI", "Smith", "Mi", "Dix", "Ivi", "V",
+             "I", "v.", "", ".", "..", "VI..", "Ⅵ", "ⅵ", "Vİ", "MD", "Jr."]
+    fronts = ["Smith", "Dumas", "J", "j", "J.", "jo", "é", "Ж", "史", "VI"]
+    admitted = 0
+    for word in words:
+        for front in fronts:
+            if ends_in_a_generation([front, word], one_case):
+                admitted += 1
+                assert ROMAN.match(word.rstrip(".")) is not None, (
+                    front, word, one_case)
+    assert admitted > 0
 
 
 def test_is_initial() -> None:
