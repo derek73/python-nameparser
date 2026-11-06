@@ -592,6 +592,7 @@
 {"name": "Charles van der van der Berg", "given": "Charles", "family": "van der van der Berg", "initials": "C. B."}
 {"name": "Chas. Smith", "given": "Chas.", "family": "Smith", "initials": "C. S."}
 {"name": "Chas. Smith, Ed", "given": "Chas.", "family": "Smith", "suffix": "Ed", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (declared)"], "initials": "C. S.", "capitalized_force": "Chas. Smith, ED"}
+{"name": "Chas. née Jones", "family": "Chas.", "maiden": "Jones", "initials": "C."}
 {"name": "Chattel, Frederik Jacobus van Rossum", "given": "Frederik", "middle": "Jacobus van Rossum", "family": "Chattel", "initials": "F. J. R. C."}
 {"name": "Cheikh Anta Diop", "given": "Cheikh", "middle": "Anta", "family": "Diop", "initials": "C. A. D."}
 {"name": "Chemistry Jane Smith", "given": "Chemistry", "middle": "Jane", "family": "Smith", "initials": "C. J. S."}

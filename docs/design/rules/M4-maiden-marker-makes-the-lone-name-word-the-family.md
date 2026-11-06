@@ -24,9 +24,10 @@
 
 **Except:**
 
-- **A word the vocabulary has claimed as a given name keeps that reading, and so does a word read as an initial** (T4, T5), which is nobody's family name. Both are beyond the rule's reach for one reason: it changes what POSITION would have decided, so it cannot overrule what a word already IS (mechanisms.md#TWO-LAYER-ASSIGN).
+- **A bound given name keeps the reading its position gives it, and so does a word read as an initial** (P5, T4, T5), which is nobody's family name. Both are beyond the rule's reach for one reason: it changes what POSITION would have decided, so it cannot overrule what a word already IS (mechanisms.md#TWO-LAYER-ASSIGN). A word with only a `given` reading, such as a given name written short, claims nothing here and is flipped like any other.
   ```
   "abd née Jones"             →  given="abd"  · boundary
+  "Chas. née Jones"           →  family="Chas."  · boundary
   "J. née Jones Smith V"      →  given="J."  · boundary
   "j nee smith"               →  given="j"  · boundary
   ```
