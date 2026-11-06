@@ -90,6 +90,10 @@ More shapes the parser reads:
 
     >>> parse("The Rt Hon Sir John Smith KCB MP").title    # a run of titles
     'The Rt Hon Sir'
+    >>> parse("Dean Smith").given                   # alone, Dean is a given name
+    'Dean'
+    >>> parse("Associate Dean Jane Smith").title    # in a title phrase, a title
+    'Associate Dean'
     >>> listed = parse("Smith, John V., Jr., MD, PhD")    # listing form
     >>> listed.middle, listed.generation, listed.credentials
     ('V.', 'Jr.', 'MD, PhD')
@@ -97,6 +101,9 @@ More shapes the parser reads:
     'MA'
     >>> parse("Jack Ma").family                    # and a surname
     'Ma'
+    >>> dutch = parse("Berg, Jan van der")          # Dutch index form, particles last
+    >>> dutch.given, dutch.family
+    ('Jan', 'van der Berg')
     >>> parse("Van Johnson").ambiguities           # a guess is reported
     (Ambiguity('particle-or-given': 'Van'),)
     >>> van = parse("Ludwig van Beethoven").tokens[1]
