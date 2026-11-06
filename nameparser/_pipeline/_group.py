@@ -65,7 +65,6 @@ _is_maiden_marker_piece.
 from __future__ import annotations
 
 import bisect
-import unicodedata
 from collections.abc import Iterable, Sequence, Set
 from enum import IntEnum
 from typing import assert_never
@@ -89,7 +88,7 @@ from nameparser._pipeline._state import (
 import nameparser._pipeline._comma as _comma
 from nameparser._pipeline._vocab import (
     ROMAN, comma_follows_marker, delimiter_cores, ends_in_a_generation,
-    name_reading, numeral_settled_by_case,
+    composed, name_reading, numeral_settled_by_case,
     reads_as_a_reported_numeral, suffix_reading,
 )
 from nameparser._types import AmbiguityKind, Role
@@ -516,18 +515,28 @@ def _is_rootname(piece: Sequence[int], ptags: Set[str],
 def _is_lone_letter(piece: Sequence[int], tokens: Sequence[WorkToken],
                     one_case: bool | None) -> bool:
     """A piece of one word that is one letter, with or without its
-    period: the letter P13 links. Not a connective, which is the word
-    P13 asks about rather than the letter behind it, nor a lowercase
-    letter in a name of mixed case, which S10 reads as the generation
-    by its writing."""
+    period: the letter P13 links. Not a connective, the word P13 asks
+    about, nor a lowercase letter in a name of mixed case, which S10
+    reads as the generation by its writing."""
     if len(piece) != 1:
         return False
     tok = tokens[piece[0]]
-    if "conjunction" in tok.tags:
-        return False
-    letter = _composed(tok.text.rstrip("."))
-    return (len(letter) == 1 and letter.isalpha()
+    letter = composed(tok.text.rstrip("."))
+    return ("conjunction" not in tok.tags
+            and len(letter) == 1 and letter.isalpha()
             and not numeral_settled_by_case(letter, one_case))
+
+
+def _is_lone_connective(piece: Sequence[int],
+                        tokens: Sequence[WorkToken]) -> bool:
+    return len(piece) == 1 and "conjunction" in tokens[piece[0]].tags
+
+
+def _is_name_word(piece: Sequence[int], ptags: Set[str],
+                  tokens: Sequence[WorkToken]) -> bool:
+    return not (is_conj_piece(piece, ptags, tokens)
+                or is_title_piece(piece, ptags, tokens)
+                or is_suffix_piece(piece, ptags, tokens))
 
 
 def _is_trailing_title(piece: Sequence[int], ptags: Set[str],
@@ -538,35 +547,25 @@ def _is_trailing_title(piece: Sequence[int], ptags: Set[str],
             and is_title_piece(piece, ptags, tokens))
 
 
-def _composed(text: str) -> str:
-    """`text` NFC-folded where it is not ASCII: a letter typed as its
-    base and a combining mark is one letter to P13, as the vocabulary
-    lookup reads it (#665)."""
-    return text if text.isascii() else unicodedata.normalize("NFC", text)
-
-
 def _link_the_last_letter(pieces: list[list[int]], ptags: list[set[str]],
                           tokens: Sequence[WorkToken],
                           one_case: bool | None, keep_a_name: bool) -> None:
     """P13's two joins at the end of the part holding the family name,
-    made before P3's carve-out can keep the connective apart: a
-    single-letter connective in front of a lone letter ending the name
-    words joins the word before it to that letter, and a connective
-    written as a word, not also suffix vocabulary nor a single letter in
-    a name written in one case (an initial there as often), with nothing
-    but suffixes or a trailing title behind it joins the word before it
-    alone. `keep_a_name` is
-    the whole name's part, where a join is made only with a piece left
-    in front of it past the title run, so the name keeps a given name
-    to read ('Smith y V' keeps the carve-out's reading)."""
+    made ahead of P3's carve-out. `keep_a_name` marks the whole name's
+    part, where a piece past the title run must stand in front of the
+    join, so the name keeps a word for its given name."""
     # rules/P13: "A single-letter connective in front of a lone letter
     # ending the name words joins it to the word before" and "A
     # connective with nothing to link joins the word before it alone"
     # -- both joins, made ahead of P3's carve-out (decisions/P13
     # (#1097, #1098))
     e = len(pieces) - 1
-    while e >= 0 and not _is_lone_letter(pieces[e], tokens, one_case):
+    lone = False
+    while e >= 0:
         piece = pieces[e]
+        if _is_lone_letter(piece, tokens, one_case):
+            lone = True
+            break
         if not (_is_trailing_title(piece, ptags[e], tokens)
                 or is_suffix_piece(piece, ptags[e], tokens)
                 or (e > 0 and len(piece) == 1
@@ -577,38 +576,26 @@ def _link_the_last_letter(pieces: list[list[int]], ptags: list[set[str]],
         e -= 1
     if e < 1:
         return
-
-    def name_word(k: int) -> bool:
-        return not (is_conj_piece(pieces[k], ptags[k], tokens)
-                    or is_title_piece(pieces[k], ptags[k], tokens)
-                    or is_suffix_piece(pieces[k], ptags[k], tokens))
-
-    def connective(k: int) -> bool:
-        piece = pieces[k]
-        return len(piece) == 1 and "conjunction" in tokens[piece[0]].tags
-
     floor = leading_titles(pieces, ptags, tokens) + keep_a_name
-    if _is_lone_letter(pieces[e], tokens, one_case):
-        text = _composed(tokens[pieces[e - 1][0]].text)
-        if (e - 2 >= floor and connective(e - 1)
-                and len(text) == 1 and text.isalpha()
-                and name_word(e - 2)):
+    if lone:
+        link = composed(tokens[pieces[e - 1][0]].text)
+        if (e - 2 >= floor and _is_lone_connective(pieces[e - 1], tokens)
+                and len(link) == 1 and link.isalpha()
+                and _is_name_word(pieces[e - 2], ptags[e - 2], tokens)):
             merge_pieces(pieces, ptags, e - 2, e + 1)
-    elif e - 1 >= floor and connective(e) and name_word(e - 1):
-        word = tokens[pieces[e][0]]
-        text = _composed(word.text)
-        # a cased single letter in a name written in one case is an
-        # initial there as often as a connective, so it keeps its
-        # reading; a word connective before a trailing title is the
-        # couple's formula ('Mr. John Smith and Mrs.'), not this join
-        initial_shaped = (one_case and len(text) == 1
-                          and text.lower() != text.upper())
-        if (text.isalpha() and not initial_shaped
-                and not (len(text) > 1 and e + 1 < len(pieces)
-                         and _is_trailing_title(pieces[e + 1], ptags[e + 1],
-                                                tokens))
-                and "vocab:suffix" not in word.tags):
-            merge_pieces(pieces, ptags, e - 1, e + 1)
+        return
+    if not (e - 1 >= floor and _is_lone_connective(pieces[e], tokens)
+            and _is_name_word(pieces[e - 1], ptags[e - 1], tokens)):
+        return
+    word = tokens[pieces[e][0]]
+    text = composed(word.text)
+    initial_shaped = (one_case and len(text) == 1
+                      and text.lower() != text.upper())
+    couple = (len(text) > 1 and e + 1 < len(pieces)
+              and _is_trailing_title(pieces[e + 1], ptags[e + 1], tokens))
+    if (text.isalpha() and not initial_shaped and not couple
+            and "vocab:suffix" not in word.tags):
+        merge_pieces(pieces, ptags, e - 1, e + 1)
 
 
 # rules/P3: "a word the rest of the parse reads as a name word

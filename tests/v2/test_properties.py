@@ -2568,12 +2568,12 @@ def _linked_letters(on: ParsedName,
     letter's off-switch reading is not asked."""
     toks = _placed(on)
     taken: set[tuple[int, int]] = set()
-    for i, (tok, _span) in enumerate(toks[:-1]):
+    for i, ((tok, _span), (nxt, nxt_span)) in enumerate(
+            zip(toks, toks[1:])):
         if ("conjunction" not in tok.tags
                 or tok.text.lower() not in letters
                 or tok.role not in _NAME_ROLES):
             continue
-        nxt, nxt_span = toks[i + 1]
         letter = nxt.text.rstrip(".")
         if (len(letter) == 1 and letter.isalpha()
                 and nxt.role is tok.role

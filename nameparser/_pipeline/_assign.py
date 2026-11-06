@@ -792,9 +792,7 @@ def _names_before(fam_pieces: Sequence[Sequence[int]],
 def _is_linking_word(tags: Set[str], beside: bool) -> bool:
     """Whether a word of the family part is a linking word, which the
     numeral's count leaves out: a particle, or a connective, save one
-    that is also suffix vocabulary standing `beside` the numeral, which
-    P13 did not link (a connective in front of it, 'Smith y i V,
-    John') and which reads as the generation it spells."""
+    that is also suffix vocabulary standing `beside` the numeral."""
     # rules/S10: "A connective that is also suffix vocabulary, as the
     # generational 'i' is, stays in the count where P13 has not linked
     # the letter" -- the exception's half of this predicate
