@@ -3,8 +3,9 @@ given name last (``Policy.name_order``, FAMILY_FIRST_GIVEN_LAST), its
 policy patch compiled from nameparser/vocab/vi.toml's [rules] table by
 tools/vocab/build.py; it chooses the language ``vi``, which turns on
 the readings vi.toml writes ``default = false`` (the academic titles
-written before a name, ``TS``, ``ThS``, ``GS``, ``PGS`` and their
-stacked forms such as ``PGS.TS.``, and the office ``ĐBQH``); and its
+written before a name that are written as initials too, ``TS``, ``GS``,
+``PGS``, and their stacked forms such as ``PGS.TS.``; ``ThS`` and the
+office ``ĐBQH`` are read by default since #1115); and its
 lexicon fragment takes out the particle, connective and credential
 readings other languages give the syllables Vietnamese names are
 written with, so ``Nguyen Van Anh`` gives family ``Nguyen``, middle

@@ -33,11 +33,11 @@ academic = { default = false, cased = "BcA", issue = [753, 848], expands = "baka
 
 [[word]]
 text = "judr"
-academic = { default = false, cased = "JUDr", issue = [753, 848], expands = "doktor práv, Juris utriusque doctor" }
+academic = { cased = "JUDr", issue = [753, 848], expands = "doktor práv, Juris utriusque doctor" }
 
 [[word]]
 text = "mddr"
-academic = { default = false, cased = "MDDr", issue = [753, 848], expands = "doktor zubního lékařství, the dentistry doctorate" }
+academic = { cased = "MDDr", issue = [753, 848], expands = "doktor zubního lékařství, the dentistry doctorate" }
 
 [[word]]
 text = "mga"
@@ -49,31 +49,51 @@ academic = { default = false, issue = [753, 848], expands = "magistr, Master", n
 
 [[word]]
 text = "mudr"
-academic = { default = false, cased = "MUDr", issue = [753, 848], expands = "doktor medicíny, Medicinae universae doctor", note = "45 of ClinicalTrials.gov's 536,981 officials write it, 42 after a comma, 3 bare (data 2026-10-21)" }
+academic = { cased = "MUDr", issue = [753, 848], expands = "doktor medicíny, Medicinae universae doctor", note = "45 of ClinicalTrials.gov's 536,981 officials write it, 42 after a comma, 3 bare (data 2026-10-21)" }
 
 [[word]]
 text = "mvdr"
-academic = { default = false, cased = "MVDr", issue = [753, 848], expands = "doktor veterinární medicíny, the veterinary doctorate" }
+academic = { cased = "MVDr", issue = [753, 848], expands = "doktor veterinární medicíny, the veterinary doctorate" }
 
 [[word]]
 text = "paeddr"
-academic = { default = false, cased = "PaedDr", issue = [753, 848], expands = "doktor pedagogiky, Paedagogiae doctor" }
+academic = { cased = "PaedDr", issue = [753, 848], expands = "doktor pedagogiky, Paedagogiae doctor" }
 
 [[word]]
 text = "pharmdr"
-academic = { default = false, cased = "PharmDr", issue = [753, 848], expands = "doktor farmacie, the pharmacy doctorate" }
+academic = { cased = "PharmDr", issue = [753, 848], expands = "doktor farmacie, the pharmacy doctorate" }
 
 [[word]]
 text = "phdr"
-academic = { default = false, cased = "PhDr", issue = [753, 848], expands = "doktor filozofie, Philosophiae doctor" }
+academic = { cased = "PhDr", issue = [753, 848], expands = "doktor filozofie, Philosophiae doctor" }
 
 [[word]]
 text = "rndr"
-academic = { default = false, cased = "RNDr", issue = [753, 848], expands = "doktor přírodních věd, Rerum naturalium doctor" }
+academic = { cased = "RNDr", issue = [753, 848], expands = "doktor přírodních věd, Rerum naturalium doctor" }
+
+[[word]]
+text = "rsdr"
+academic = { cased = "RSDr", issue = 1115, expands = "doktor sociálně-politických věd, the social and political sciences doctorate", note = "no name bearer in any source tools/name_usage.py reads; cz-candidates writes it before 90 names (2026-11-06)" }
 
 [[word]]
 text = "thdr"
-academic = { default = false, cased = "ThDr", issue = [753, 848], expands = "doktor teologie, Theologiae doctor" }
+academic = { cased = "ThDr", issue = [753, 848], expands = "doktor teologie, Theologiae doctor" }
+
+[[word]]
+text = "thlic"
+academic = { cased = "ThLic", issue = 1115, expands = "licenciát teologie, the licentiate in theology", note = "no name bearer in any source tools/name_usage.py reads (2026-11-06)" }
+
+[[word]]
+text = "thmgr"
+academic = { cased = "ThMgr", issue = 1115, expands = "magistr teologie, the theology master's", note = "no name bearer in any source tools/name_usage.py reads (2026-11-06)" }
+
+[[word]]
+text = "npor"
+military = { issue = 1115, expands = "nadporučík, first lieutenant (npor. Aleš Tomek)", note = "no name bearer in any source tools/name_usage.py reads (2026-11-06)" }
+
+[[word]]
+text = "plk"
+military = { issue = 1115, expands = "plukovník, colonel (plk. Mgr. Martin Rybka)", note = "no name bearer: under 100 US Census, under 5 US SSA a year, none on Wikidata; ORCID's family box 2 records (2026-11-06)" }
 
 [[word]]
 text = "ml"

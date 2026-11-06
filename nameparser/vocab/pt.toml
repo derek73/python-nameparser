@@ -31,11 +31,11 @@ salutation = { gender = "f", after_given = true }
 
 [[word]]
 text = "doutor"
-academic = { default = false, gender = "m", issue = 753, expands = "Doutor, doctor, a form of address", note = "ORCID's given box 3 records and family box 5 (Portugal 3); ClinicalTrials.gov officials write it after a comma twice (Francisco Edson de Lucena Feitosa, Doutor) (2026-10-30); off by default and turned on by a Portuguese choice, under which it is the title at the head" }
+academic = { gender = "m", issue = 753, expands = "Doutor, doctor, a form of address", note = "ORCID's given box 3 records and family box 5 (Portugal 3); ClinicalTrials.gov officials write it after a comma twice (Francisco Edson de Lucena Feitosa, Doutor) (2026-10-30); read by default since #1115, the title at the head" }
 
 [[word]]
 text = "doutora"
-academic = { default = false, gender = "f", issue = 753, same_as = "doutor", expands = "Doutora, the feminine of doutor", note = "no name bearer in any source tools/name_usage.py reads; ClinicalTrials.gov officials write it after a comma 4 times (Fernanda Lucchese, Doutora) (2026-10-30)" }
+academic = { gender = "f", issue = 753, same_as = "doutor", expands = "Doutora, the feminine of doutor", note = "no name bearer in any source tools/name_usage.py reads; ClinicalTrials.gov officials write it after a comma 4 times (Fernanda Lucchese, Doutora) (2026-10-30)" }
 
 [[word]]
 text = "dra"
@@ -43,11 +43,11 @@ academic = { gender = "f", expands = "Doctora, Doutora" }
 
 [[word]]
 text = "professora"
-academic = { default = false, gender = "f", issue = 753, same_as = "professor", expands = "Professora, the feminine of professor", note = "no name bearer in any source tools/name_usage.py reads; ORCID's given box 7 records, Brazil 4, the title typed in, and 1 name opening with it (Professora Rosária) (2026-10-30)" }
+academic = { gender = "f", issue = 753, same_as = "professor", expands = "Professora, the feminine of professor", note = "no name bearer in any source tools/name_usage.py reads; ORCID's given box 7 records, Brazil 4, the title typed in, and 1 name opening with it (Professora Rosária) (2026-10-30)" }
 
 [[word]]
 text = "profa"
-academic = { default = false, gender = "f", issue = 753, same_as = "professora", expands = "Profa., Professora abbreviated", note = "no name bearer in any source tools/name_usage.py reads; ORCID's given box 5 records, the title typed in; ClinicalTrials.gov officials write Profa. Dra. after a comma twice (2026-10-30)" }
+academic = { gender = "f", issue = 753, same_as = "professora", expands = "Profa., Professora abbreviated", note = "no name bearer in any source tools/name_usage.py reads; ORCID's given box 5 records, the title typed in; ClinicalTrials.gov officials write Profa. Dra. after a comma twice (2026-10-30)" }
 
 [[word]]
 text = "júnior"

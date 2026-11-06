@@ -109,13 +109,13 @@ def test_cli_order_reads_the_words_in_that_order(
 
 def test_cli_order_keeps_the_locale_packs_vocabulary_and_policy(
         capsys: pytest.CaptureFixture[str]) -> None:
-    # es reads Lic as a title (the pack's lexicon); cs reads two family
-    # names (its policy), which a parser rebuilt from the order alone
-    # would lose: family 'Novák', given 'Jan', middle 'Petr'
+    # es reads Maestra as a title (the pack's lexicon); cs reads two
+    # family names (its policy), which a parser rebuilt from the order
+    # alone would lose: family 'Novák', given 'Jan', middle 'Petr'
     es = _fields(capsys, "--locale", "es", "--order", "family-first",
-                 "Lic Kovács János")
+                 "Maestra Kovács Ana")
     assert (es["title"], es["given"], es["family"]) == (
-        "Lic", "János", "Kovács")
+        "Maestra", "Ana", "Kovács")
     cs = _fields(capsys, "--locale", "cs", "--order", "family-first",
                  "Novák Jan Petr")
     assert _roles(cs) == ("Petr", "", "Novák Jan")
@@ -210,12 +210,12 @@ def test_cli_switch_turns_its_field_on_and_off(
 def test_cli_switch_wins_over_a_packs_setting(
         capsys: pytest.CaptureFixture[str]) -> None:
     # es turns two_family_names on; the flag turns it off and keeps the
-    # pack's vocabulary (Lic a title)
-    name = "Lic Gabriel García Márquez"
+    # pack's vocabulary (Maestra a title, which the default reads as a name)
+    name = "Maestra Ana García López"
     es = _fields(capsys, "--locale", "es", name)
-    assert (es["title"], es["family"]) == ("Lic", "García Márquez")
+    assert (es["title"], es["family"]) == ("Maestra", "García López")
     off = _fields(capsys, "--locale", "es", "--no-two-family-names", name)
-    assert (off["title"], off["family"]) == ("Lic", "Márquez")
+    assert (off["title"], off["family"]) == ("Maestra", "López")
 
 
 def test_cli_a_switch_left_out_keeps_the_packs_setting(

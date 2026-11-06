@@ -428,10 +428,12 @@ the elder (Czech *mladší* and *starší*, Croatian *mlađi* and
 *stariji*). Czech and Slovak also write academic degrees as titles
 before the name, run together in their own capitalization (``MUDr.``,
 ``JUDr.``, ``PhDr.``, ``Mgr.``), and a few degrees after it
-(``DrSc.``, Slovak ``ArtD.``). The default cannot read most of these
-words: ``ml.`` is also a pair of initials, ``st.`` is Saint in
-English and French, and ``Pan`` and ``Roz`` are names in other
-languages. So they wait for a pack, and each of the
+(``DrSc.``, Slovak ``ArtD.``). The default reads the doctorates
+before the name, but cannot read the other words: ``ml.`` is also a
+pair of initials, ``st.`` is Saint in English and French, ``Pan`` and
+``Roz`` are names in other languages, ``MgA.`` is written as initials
+too and ``BcA.`` is an English credential. So they wait for a pack,
+and each of the
 four languages is a pack of its own, which chooses that one language;
 the Czech and Slovak packs also read two family names (below):
 
@@ -441,25 +443,25 @@ the Czech and Slovak packs also read two family names (below):
    * - Pack
      - Turns on
    * - ``locales.CS``
-     - ``ml.``, ``st.``; the titles ``MUDr.``, ``MDDr.``, ``MVDr.``,
-       ``JUDr.``, ``PhDr.``, ``RNDr.``, ``PaedDr.``, ``PharmDr.``,
-       ``ThDr.``, ``Mgr.``, ``MgA.``, ``BcA.``; ``DrSc.``
+     - ``ml.``, ``st.``; the titles ``MgA.`` and ``BcA.``, and
+       ``Mgr.`` read as the degree; ``DrSc.``
        after the name; ``Pan`` (Mr.); ``roz.``, which routes a maiden
        name as ``rozená`` does; two family names
        (``two_family_names``)
    * - ``locales.SK``
-     - ``ml.``, ``st.``; the same titles but ``MgA.`` and ``BcA.``;
+     - ``ml.``, ``st.``; ``Mgr.`` read as the degree;
        ``ArtD.`` and ``DrSc.`` after the name; two family names
        (``two_family_names``)
    * - ``locales.SL``, ``locales.HR``
      - ``ml.``, ``st.``
 
-The dotted titles at the head of a name, and after a comma, are titles
-without a pack too, by their shape, and ``Mgr.`` is a title everywhere
-already, the default listing it as Monsignor. For the titles the
-default does not list (``MUDr.``, ``JUDr.``, ``PhDr.`` and the rest),
-what a pack changes is the bare spelling, anywhere, and the dotted one
-at the end of the name, where the default reads each as a name word.
+The doctorates (``MUDr.``, ``JUDr.``, ``PhDr.``, ``RNDr.`` and the
+rest) are titles without a pack, bare or dotted, before the name or
+after it, and so is ``Mgr.``, which the default lists as Monsignor. For
+``MgA.`` and ``BcA.``, which the default does not list, what a pack
+changes is the bare spelling, anywhere, and the dotted one at the end
+of the name, where the default reads each as a name word; at the head
+of a name the dotted spelling is a title by its shape without one.
 
 .. doctest::
 
@@ -468,10 +470,12 @@ at the end of the name, where the default reads each as a name word.
     'ml.'
     >>> czech.parse("Jiří Dienstbier ml.").suffix
     'ml.'
-    >>> parse("Jan Novák, MUDr").family
-    'Jan Novák'
-    >>> czech.parse("Jan Novák, MUDr").title
+    >>> parse("Jan Novák, MUDr").title
     'MUDr'
+    >>> parse("Jana Malá, MgA").family
+    'Jana Malá'
+    >>> czech.parse("Jana Malá, MgA").title
+    'MgA'
     >>> czech.parse("Jana Nováková roz. Svobodová").maiden
     'Svobodová'
 
@@ -597,8 +601,9 @@ Shipped packs
        `Romanized Indic titles`_.
    * - ``cs``, ``sk``
      - Czech and Slovak — a choice of that one language, which turns on
-       the generations ``ml.`` and ``st.``, the academic titles written
-       before the name and the degrees written after it, and reads two
+       the generations ``ml.`` and ``st.``, the academic titles the
+       default leaves off (``MgA.``, ``BcA.``) and the degrees written
+       after the name, and reads two
        family names (``Alena Pešová Řehořová`` → family ``Pešová
        Řehořová``), so two given names read as a given name and a family
        name (see :ref:`west-south-slavic-packs`).
@@ -607,10 +612,10 @@ Shipped packs
        language, which turns on the generations ``ml.`` and ``st.``
        (see :ref:`west-south-slavic-packs`).
    * - ``es``
-     - Spanish — chooses ``es``, which turns on the courtesy, academic
-       and professional titles that lead a Spanish name (``Lic.``,
-       ``Licenciada``, ``Ingeniero``, ``Arq.``, ``Mtro.``, ``Doctora``,
-       ``Maestra``, ``Doña``; ``Lic Juan Pérez`` → title ``Lic``), reads
+     - Spanish — chooses ``es``, which turns on the titles that lead a
+       Spanish name and that the default leaves off for the names they
+       spell (``Maestra``, ``Doña``; ``Maestra Ana Ruiz`` → title
+       ``Maestra``), reads
        ``Lady`` as a given name (``Lady Heidenreich`` → given ``Lady``), and
        reads two family names, a list of Spanish given names keeping a
        given name out of the family (``Gabriel García Márquez`` →
@@ -656,13 +661,12 @@ Shipped packs
        title ``श्री``). Each stays a title inside a title phrase
        (``His Holiness Guru Prasad``).
    * - ``pt``
-     - Portuguese — chooses ``pt``, which turns on the academic titles
-       ``Doutor``, ``Doutora``, ``Professora`` and ``Profa.`` (``Doutor
-       João Silva`` → title ``Doutor``) and settles Portuguese's clashes
-       its way (see `Spanish and Portuguese titles`_).
+     - Portuguese — chooses ``pt``, which settles Portuguese's clashes
+       its way (``do`` a particle, not the DO credential; see
+       `Spanish and Portuguese titles`_).
    * - ``pt_br``
      - Brazilian Portuguese — chooses ``pt-BR``, and with it ``pt``,
-       which turns on ``pt``'s titles and ``SB``, the agnomen Sobrinho
+       which settles ``pt``'s clashes and turns on ``SB``, the agnomen Sobrinho
        as Brazilian filings abbreviate it, read as a suffix where the name has words to
        spare (``JOSE CARLOS SILVA SB`` → suffix ``SB``), and settles
        Portuguese's clashes its way.
@@ -689,8 +693,8 @@ Shipped packs
        connectives or credentials (``Van``, ``Le``, ``Do``, ``The``,
        and ``CHI`` ending a name in capitals) as name words,
        and chooses ``vi``, which turns on the academic titles written
-       before a name and their stacked forms (``PGS.TS.``), and
-       ``ĐBQH`` (National Assembly deputy). See
+       before a name that are written as initials too (``TS``, ``GS``,
+       ``PGS``) and their stacked forms (``PGS.TS.``). See
        `Vietnamese names`_.
    * - ``zh``
      - Chinese surname segmentation — splits an unspaced Han name into
@@ -831,22 +835,21 @@ Spanish and Portuguese titles
 
 Spanish and Latin American usage puts an academic or professional title
 in front of a name (*Licenciado*, *Ingeniero*, *Mtro.*), and Portuguese
-does the same with *Doutor* and *Professora*. Written with a period, the
-abbreviations already read as titles at the head of a name by their
-shape. Written out, or without the period, they read as given names by
-default, since the words are Spanish or Portuguese only. ``es`` and
-``pt`` turn them on (*Profesor* and *Profesora*, written in other
-languages' names too, are titles by default):
+does the same with *Doutor* and *Professora*. No name bears these
+words, so the default reads them as titles, written out, abbreviated or
+dotted. ``es`` turns on the two it leaves off, ``Maestra``, which is
+also a family name and the word for a schoolteacher, and ``Doña``, a
+family name too:
 
 .. doctest::
 
-    >>> parse("Lic Juan Pérez").given
+    >>> parse("Lic Juan Pérez").title
     'Lic'
-    >>> spanish = parser_for(locales.ES).parse("Lic Juan Pérez")
+    >>> parse("Maestra Ana Ruiz").given
+    'Maestra'
+    >>> spanish = parser_for(locales.ES).parse("Maestra Ana Ruiz")
     >>> spanish.title, spanish.given
-    ('Lic', 'Juan')
-    >>> parser_for(locales.PT).parse("Fernanda Lucchese, Doutora").title
-    'Doutora'
+    ('Maestra', 'Ana')
 
 ``Don``, ``Dona`` and ``Dom`` are not among them: names open with each
 as a given name more often than as the title, Spanish and Portuguese

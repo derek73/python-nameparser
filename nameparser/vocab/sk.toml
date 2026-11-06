@@ -8,11 +8,11 @@ two_family_names = true
 
 [[word]]
 text = "judr"
-academic = { default = false, cased = "JUDr", issue = [753, 848], expands = "doktor práv, Juris utriusque doctor" }
+academic = { cased = "JUDr", issue = [753, 848], expands = "doktor práv, Juris utriusque doctor" }
 
 [[word]]
 text = "mddr"
-academic = { default = false, cased = "MDDr", issue = [753, 848], expands = "doktor zubného lekárstva, the dentistry doctorate" }
+academic = { cased = "MDDr", issue = [753, 848], expands = "doktor zubného lekárstva, the dentistry doctorate" }
 
 [[word]]
 text = "mgr"
@@ -20,31 +20,31 @@ academic = { default = false, issue = [753, 848], expands = "magister, Master", 
 
 [[word]]
 text = "mudr"
-academic = { default = false, cased = "MUDr", issue = [753, 848], expands = "doktor medicíny, Medicinae universae doctor" }
+academic = { cased = "MUDr", issue = [753, 848], expands = "doktor medicíny, Medicinae universae doctor" }
 
 [[word]]
 text = "mvdr"
-academic = { default = false, cased = "MVDr", issue = [753, 848], expands = "doktor veterinárnej medicíny, the veterinary doctorate" }
+academic = { cased = "MVDr", issue = [753, 848], expands = "doktor veterinárnej medicíny, the veterinary doctorate" }
 
 [[word]]
 text = "paeddr"
-academic = { default = false, cased = "PaedDr", issue = [753, 848], expands = "doktor pedagogiky, Paedagogiae doctor" }
+academic = { cased = "PaedDr", issue = [753, 848], expands = "doktor pedagogiky, Paedagogiae doctor" }
 
 [[word]]
 text = "pharmdr"
-academic = { default = false, cased = "PharmDr", issue = [753, 848], expands = "doktor farmácie, the pharmacy doctorate" }
+academic = { cased = "PharmDr", issue = [753, 848], expands = "doktor farmácie, the pharmacy doctorate" }
 
 [[word]]
 text = "phdr"
-academic = { default = false, cased = "PhDr", issue = [753, 848], expands = "doktor filozofie, Philosophiae doctor" }
+academic = { cased = "PhDr", issue = [753, 848], expands = "doktor filozofie, Philosophiae doctor" }
 
 [[word]]
 text = "rndr"
-academic = { default = false, cased = "RNDr", issue = [753, 848], expands = "doktor prírodných vied, Rerum naturalium doctor" }
+academic = { cased = "RNDr", issue = [753, 848], expands = "doktor prírodných vied, Rerum naturalium doctor" }
 
 [[word]]
 text = "thdr"
-academic = { default = false, cased = "ThDr", issue = [753, 848], expands = "doktor teológie, Theologiae doctor" }
+academic = { cased = "ThDr", issue = [753, 848], expands = "doktor teológie, Theologiae doctor" }
 
 [[word]]
 text = "ml"

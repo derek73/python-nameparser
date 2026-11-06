@@ -1,13 +1,11 @@
 """The Portuguese locale pack: vocabulary-only -- it chooses the
-language ``pt``, which turns on the academic titles
-nameparser/vocab/pt.toml writes ``default = false`` (``Doutor``,
-``Doutora``, ``Professora``, ``Profa.``) and prefers pt.toml's readings
+language ``pt`` and prefers pt.toml's readings
 where another language's clash: ``do`` the particle, not the DO
 credential, and ``e`` the connective even in a name written in one
 case, while ``Sr`` keeps both readings, Senhor in front and the
 generation behind, as the default reads it (decisions/vocabulary-model,
-the 2026-10-30 phase 3g entry). ``Doutor João Silva`` gives title
-``Doutor`` where the default gives given ``Doutor``. locales.PT_BR
+the 2026-10-30 phase 3g entry); its academic titles (``Doutor``,
+``Professora``) are read by default since #1115. locales.PT_BR
 chooses ``pt-BR``, which selects ``pt`` too, so it reads all of these
 the same way.
 
