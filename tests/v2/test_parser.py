@@ -3228,7 +3228,7 @@ def test_a_choice_that_changes_nothing_leaves_the_sets_as_they_are() -> None:
     (("ja",), "Capt Hoshino", {"title": "Capt"}, {"given": "Capt"}),
     (("zh",), "De Xu", {"family": "De Xu"},
      {"given": "De", "family": "Xu"}),
-    # vi.toml holds no reading, which only a strict choice accepts
+    # a strict vi choice drops pt.toml's particle do and nl.toml's van
     (("vi",), "Do Van Minh", {"family": "Van Minh"},
      {"middle": "Van", "family": "Minh"}),
 ])
@@ -3314,10 +3314,11 @@ def test_a_strict_call_choosing_no_language_is_refused_with_a_fix_that_runs(
 
 
 def test_a_file_with_no_reading_is_a_strict_choice_only() -> None:
-    with pytest.raises(ValueError, match=r"vi\.toml holds no reading yet.*"
+    # hu.toml holds only exclusions (vi.toml did until #1108)
+    with pytest.raises(ValueError, match=r"hu\.toml holds no reading yet.*"
                                          r"strict=True"):
-        parser_for(_choosing("vi"))
-    assert "do" not in parser_for(_choosing("vi"), strict=True).lexicon._sets.particles
+        parser_for(_choosing("hu"))
+    assert "do" not in parser_for(_choosing("hu"), strict=True).lexicon._sets.particles
 
 
 def test_md_stays_out_of_a_strict_choice_that_does_not_read_en() -> None:

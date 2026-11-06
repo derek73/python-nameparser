@@ -16,4 +16,5 @@ RULES: tuple[tuple[str, tuple[tuple[str, object], ...]], ...] = (
     ('ru', (('patronymic_rules', ('east-slavic',)),)),
     ('sk', (('two_family_names', True),)),
     ('tr', (('patronymic_rules', ('turkic',)),)),
+    ('vi', (('name_order', 'family-first-given-last'),)),
 )

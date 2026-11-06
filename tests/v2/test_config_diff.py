@@ -177,7 +177,8 @@ def _psc(monkeypatch: pytest.MonkeyPatch, rows: list[tuple[str, str]]) -> None:
 
 
 def _args(**kw: object) -> argparse.Namespace:
-    base = {"committed": False, "local": [cd.PSC], "group": [], "match": None, "sample": None}
+    base = {"committed": False, "local": [cd.PSC], "group": [], "match": None, "sample": None,
+            "spelling": None}
     return argparse.Namespace(**{**base, **kw})
 
 
@@ -193,6 +194,29 @@ def test_the_filters_keep_a_group_a_match_and_a_sample(monkeypatch: pytest.Monke
     sampled = {t for t, _o, _i in cd.gather(_args(sample=2))}
     assert sampled == {e[0] for e in cd.snapshot.sampled([(t, None) for t in
                                                           ["Ana Souza", "Bo Lima", "Cy Dias"]], 2)}
+
+
+def test_a_spelling_rewrites_every_name_before_it_is_read(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # #1108: --spelling stripped,upper reads a population as plain-ASCII
+    # data in capitals writes it; two names that respell alike merge
+    _psc(monkeypatch, [("Nguyễn Văn Đỗ", "Vietnamese"), ("Nguyen Van Do", "Vietnamese"),
+                       ("Lê Thị Mai", "Vietnamese")])
+    got = cd.gather(_args(spelling=("stripped", "upper")))
+    assert sorted(t for t, _o, _i in got) == ["LE THI MAI", "NGUYEN VAN DO"]
+    assert [t for t, _o, _i in cd.gather(_args(spelling=("lower",), match="mai"))] == [
+        "lê thị mai"]
+    assert cd.respell("Đỗ", ("stripped",)) == "Do"
+    assert cd.respell("đỗ", ("stripped",)) == "do"
+    # composed again, so Hangul and kana keep their syllables
+    assert cd.respell("김민준", ("stripped",)) == "김민준"
+    assert cd.respell("やまだ", ("stripped",)) == "やまだ"
+    # applied in order
+    assert cd.respell("Đỗ", ("upper", "lower")) == "đỗ"
+    for bad in ("", "title", "stripped,title"):
+        with pytest.raises(argparse.ArgumentTypeError, match="--spelling takes"):
+            cd._spellings(bad)
+    assert cd._spellings("stripped, upper") == ("stripped", "upper")
 
 
 @pytest.mark.parametrize("kw,message", [
@@ -272,7 +296,8 @@ def test_a_pack_choosing_no_language_is_stacked_with_its_tag() -> None:
     assert cd.gap_specs("zh") == ("plain:ZH+zh", "strict:ZH+zh")
     assert cd.gap_specs("tr") == ("plain:TR_AZ+tr", "strict:TR_AZ+tr")
     assert cd.gap_specs("pt-BR") == ("plain:PT_BR", "strict:PT_BR")
-    assert cd.gap_specs("vi")[0] == "default"  # vi.toml holds no reading
+    assert cd.gap_specs("vi") == ("plain:VI", "strict:VI")
+    assert cd.gap_specs("hu")[0] == "default"  # hu.toml holds no reading
 
 
 def test_a_group_is_placed_by_country_or_nationality() -> None:

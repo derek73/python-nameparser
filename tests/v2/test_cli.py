@@ -263,7 +263,10 @@ def test_cli_attaches_a_segmenter_only_for_the_ja_pack(
 
 @pytest.mark.parametrize(("argv", "roles"), [
     (("--locale", "ko", "--strict", "Kim Do Hyun"), ("Kim", "Do", "Hyun")),
-    (("--locale", "vi", "--strict", "Do Van Minh"), ("Do", "Van", "Minh")),
+    # vi is locales.VI since #1108: its order reads the given name last,
+    # with or without --strict
+    (("--locale", "vi", "--strict", "Do Van Minh"), ("Minh", "Van", "Do")),
+    (("--locale", "vi", "Do Van Minh"), ("Minh", "Van", "Do")),
     # a pack choosing no language chooses its code under --strict
     (("--locale", "zh", "--strict", "De Xu"), ("De", "", "Xu")),
     # without --strict, ko's file holds nothing Latin to prefer
@@ -305,8 +308,9 @@ def test_cli_locale_that_is_no_tag_at_all_lists_the_packs(
 
 def test_cli_a_language_with_no_reading_needs_strict(
         capsys: pytest.CaptureFixture[str]) -> None:
-    err = _usage_error(capsys, "--locale", "vi")
-    assert "vi.toml holds no reading yet" in err
+    # hu.toml holds only exclusions (vi.toml did until #1108)
+    err = _usage_error(capsys, "--locale", "hu")
+    assert "hu.toml holds no reading yet" in err
     assert "(--strict) accepts it" in err
 
 
