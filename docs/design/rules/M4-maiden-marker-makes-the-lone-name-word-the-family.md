@@ -37,7 +37,7 @@
 
 **Accepted:**
 
-- A word the vocabulary reads as possibly a given name, without the claim a bound given name makes, is the family name all the same — a given name written short, a title or a particle that may also be a given name — since the marker names the word beside it as the surname the bearer carries now, as a title does under H1.
+- A word the vocabulary reads as possibly a given name, without the claim a bound given name makes, is the family name all the same — a given name written short, a title or a particle that may also be a given name — since the marker names the word beside it as the surname the bearer carries now.
   ```
   "Chas. née Jones"           →  family="Chas."
   "Van née Jones"             →  family="Van"
