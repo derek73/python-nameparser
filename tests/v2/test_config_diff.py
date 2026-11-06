@@ -177,7 +177,8 @@ def _psc(monkeypatch: pytest.MonkeyPatch, rows: list[tuple[str, str]]) -> None:
 
 
 def _args(**kw: object) -> argparse.Namespace:
-    base = {"committed": False, "local": [cd.PSC], "group": [], "match": None, "sample": None}
+    base = {"committed": False, "local": [cd.PSC], "group": [], "match": None, "sample": None,
+            "spelling": None}
     return argparse.Namespace(**{**base, **kw})
 
 
@@ -193,6 +194,23 @@ def test_the_filters_keep_a_group_a_match_and_a_sample(monkeypatch: pytest.Monke
     sampled = {t for t, _o, _i in cd.gather(_args(sample=2))}
     assert sampled == {e[0] for e in cd.snapshot.sampled([(t, None) for t in
                                                           ["Ana Souza", "Bo Lima", "Cy Dias"]], 2)}
+
+
+def test_a_spelling_rewrites_every_name_before_it_is_read(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # #1108: --spelling stripped,upper reads a population as plain-ASCII
+    # data in capitals writes it; two names that respell alike merge
+    _psc(monkeypatch, [("Nguyễn Văn Đỗ", "Vietnamese"), ("Nguyen Van Do", "Vietnamese"),
+                       ("Lê Thị Mai", "Vietnamese")])
+    got = cd.gather(_args(spelling=("stripped", "upper")))
+    assert sorted(t for t, _o, _i in got) == ["LE THI MAI", "NGUYEN VAN DO"]
+    assert [t for t, _o, _i in cd.gather(_args(spelling=("lower",), match="mai"))] == [
+        "lê thị mai"]
+    assert cd.respell("Đỗ", ("stripped",)) == "Do"
+    for bad in ("", "title", "stripped,title"):
+        with pytest.raises(argparse.ArgumentTypeError, match="--spelling takes"):
+            cd._spellings(bad)
+    assert cd._spellings("stripped, upper") == ("stripped", "upper")
 
 
 @pytest.mark.parametrize("kw,message", [

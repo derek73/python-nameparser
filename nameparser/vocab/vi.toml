@@ -13,7 +13,7 @@ excluded = { salutation = { reason = "Ông is a Vietnamese surname and Vietnames
 
 [[word]]
 text = "bs"
-excluded = { academic = { reason = "bác sĩ, physician, written before a Vietnamese name; under a vi choice a title reading here would drop en.toml's credential BS (Bachelor of Science), so Smith, John BS read middle 'BS'; a dotted BS. before a name is a title by shape (rules/H2) without it", issue = 1108, decided = 2026-11-05 } }
+excluded = { academic = { reason = "bác sĩ, physician, written before a Vietnamese name; under a vi choice a title reading here would drop en.toml's credential BS (Bachelor of Science), so Smith, John BS would read middle 'BS'; a dotted BS. opening a name is a title by shape (rules/H2) without it", issue = 1108, decided = 2026-11-05 } }
 
 [[word]]
 text = "gs"
@@ -21,7 +21,7 @@ text = "gs"
 default = false
 expands = "giáo sư, professor"
 issue = 1108
-note = "written before the name, dotted (GS.) or bare, and stacked (GS.TS.); no Vietnamese bearer: ORCID's VN boxes 0 of 46,170, PatentsView's VN 0 of 1,065, no US Census 2010 (floor 100), SSA (floor 5 a year) or nam_dict entry (tools/name_usage.py, 2026-11-05); its 117 ORCID given and 154 family boxes elsewhere are Indian initials, which only a vi choice reaches"
+note = "written before the name, dotted (GS.) or bare, and stacked (GS.TS.); no Vietnamese bearer: ORCID's VN boxes 0 of 46,170, PatentsView's VN 0 of 1,065, no US Census 2010 (floor 100), SSA (floor 5 a year) or nam_dict entry (tools/name_usage.py, 2026-11-05); its 117 ORCID given and 154 family boxes elsewhere state no country in 70 and 100 and are otherwise mostly Indian (32 given, 46 family), initials by their shape, which only a vi choice reaches"
 
 [[word]]
 text = "pgs"
@@ -45,7 +45,7 @@ text = "ts"
 default = false
 expands = "tiến sĩ, doctor"
 issue = 1108
-note = "written before the name, dotted (TS.) or bare, and stacked behind PGS. and GS.; no Vietnamese bearer: ORCID's VN boxes 0 of 46,170, PatentsView's VN 0 of 1,065, no US Census, SSA or nam_dict entry; its 203 ORCID given and 181 family boxes elsewhere are mostly Malaysian and Indian initials, and NPPES's 42 credentials TS, which only a vi choice reaches (tools/name_usage.py, 2026-11-05)"
+note = "written before the name, dotted (TS.) or bare, and stacked behind PGS. and GS.; no Vietnamese bearer: ORCID's VN boxes 0 of 46,170, PatentsView's VN 0 of 1,065, no US Census, SSA or nam_dict entry; its 203 ORCID given and 181 family boxes elsewhere state no country in 105 and 103 and are otherwise mostly Malaysian and Indian (given MY 46, IN 27; family IN 64), and NPPES holds 42 credentials TS, which only a vi choice reaches (tools/name_usage.py, 2026-11-05)"
 
 [[word]]
 text = "đbqh"

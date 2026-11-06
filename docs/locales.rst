@@ -15,7 +15,8 @@ of languages declares the words whose reading it changes. Read that precisely �
 language, so a pack can act on a name from a tradition it was not
 written for, and a broad shape covers much: ``es``, ``es_ar``, ``cs``
 and ``sk`` may read any name of three words differently, and ``vi``,
-whose name order is its shape, any name at all. The warning
+whose name order is its shape, any name not written with a family
+comma. The warning
 under `Using a pack`_ shows what that costs.
 
 What works without a pack
@@ -683,8 +684,9 @@ Shipped packs
    * - ``vi``
      - Vietnamese — reads every name family first, the given name last
        (``Nguyen Van Anh`` → family ``Nguyen``, middle ``Van``, given
-       ``Anh``), keeps the syllables other languages read as particles
-       or connectives (``Van``, ``Le``, ``Do``, ``The``) as name words,
+       ``Anh``), keeps the syllables other languages read as particles,
+       connectives or credentials (``Van``, ``Le``, ``Do``, ``The``,
+       ``Chi``) as name words,
        and chooses ``vi``, which turns on the academic titles written
        before a name and their stacked forms (``PGS.TS.``), and
        ``ĐBQH`` (National Assembly deputy). See
@@ -713,7 +715,8 @@ field beside it and no list. ``vi`` is a choice with one policy field,
 than adding them: a choice prefers its language's reading of a word
 only where that reading is a title, a particle or another vocabulary
 kind, never a name, so no reading ``vi.toml`` could write would keep
-``Van`` a name word. ``zh`` is both halves at once: a surname list, plus the
+``Van`` a name word (its fragment takes out connective and credential
+readings of Vietnamese syllables too). ``zh`` is both halves at once: a surname list, plus the
 one policy field that turns segmentation on for the script it covers. See
 :ref:`config-containers` for how that split (language vocabulary vs. behavior)
 is drawn, and `Contributing a pack to nameparser`_ for which half a
@@ -989,11 +992,14 @@ Vietnamese names
 ^^^^^^^^^^^^^^^^
 
 A Vietnamese name is written family name first, then the middle name,
-then the given name, and in Latin letters the default reads it the
-other way round. ``vi`` reads it in its own order, keeps ``Van`` (Văn),
-``Le`` (Lê), ``Do`` (Đỗ) and ``The`` (Thế) as name words where other
-languages' particles and connectives would join them to the next word,
-and reads the academic titles written before a name:
+then the given name, and the default, reading given-first, reads it the
+other way round, diacritics or none. ``vi`` reads it in its own order,
+keeps ``Van`` (Văn), ``Le`` (Lê), ``Do`` (Đỗ) and ``The`` (Thế) as name
+words where other languages' particles and connectives would join them
+to the words beside them, keeps ``Chi``, ``Ba``, ``Do`` and ``Ma`` from
+being read as a credential ending a name written in capitals
+(``NGUYEN LINH CHI``), and reads the academic titles written before a
+name:
 
 .. doctest::
 
@@ -1008,11 +1014,15 @@ and reads the academic titles written before a name:
     >>> vietnamese.parse("PGS.TS. Nguyen Van Anh").title
     'PGS.TS.'
 
-The order holds for every name the pack reads, a one-word name
-included, so keep it for Vietnamese data: ``vietnamese.parse("John
-Smith")`` gives family ``John``. A family comma fixes the family name
-whatever the order (``Nguyen, Van Anh`` → family ``Nguyen``), and
-``Smith, John`` reads under ``vi`` as it does by default.
+The order holds for every name the pack reads without a family comma,
+a one-word name included, so keep it for Vietnamese data:
+``vietnamese.parse("John Smith")`` gives family ``John``. A family
+comma fixes the family name whatever the order, and the part after it
+reads given-first, as under every order (``Nguyen, Van Anh`` → family
+``Nguyen``, given ``Van``, middle ``Anh``), so ``Smith, John`` reads
+under ``vi`` as it does by default. A credential written after a
+Vietnamese name for English-language readers reads as a given name
+(``Nguyen Van Anh, MA`` → given ``MA``).
 
 .. _segmenter-contract:
 
@@ -1110,8 +1120,10 @@ nothing else in the fragment: ``Lexicon.empty().add("mc", kind="given")``
 marks the base's particle ``mc``. ``zh`` is the shipped worked example:
 its ``Lexicon(surnames=...)`` holds a list and no reading. A fragment's
 ``remove`` calls apply after the choice too, as a caller's own do:
-``vi``'s ``Lexicon.empty().remove("van", ..., kind="particle")`` takes
-out the particle readings of the syllables it lists, and only those.
+``vi``'s fragment, ``Lexicon.empty().remove("van", ..., kind="particle")``
+with a call each for connectives and credentials, takes out those
+readings of the syllables it lists, and only those (``mac`` stays a
+particle, ``md`` a credential).
 
 Contributing a pack to nameparser
 ----------------------------------

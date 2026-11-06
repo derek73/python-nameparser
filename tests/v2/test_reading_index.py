@@ -267,14 +267,13 @@ def test_a_choice_moves_only_words_its_own_files_hold() -> None:
     # through the phrase), never a word only other files hold
     for tag in sorted(ri.tags() - ri.UNCHOOSABLE):
         chosen = ri.selected([tag])
-        held = {r.text for r in ri.index() if r.tag in chosen}
-        held |= {w for t in held for w in t.split()}
-        surface = ri.changed_words(chosen)
         # a title phrase the choice makes is changed whole and word by
         # word (vi's office đbqh behind chief and deputy, #1108)
-        phrases = ri.compile_choice(chosen)["TITLE_PHRASES"]
-        assert surface <= held | phrases | {
-            w for t in phrases for w in t.split()}, (tag, surface - held)
+        held = {r.text for r in ri.index() if r.tag in chosen} | (
+            ri.compile_choice(chosen)["TITLE_PHRASES"])
+        held |= {w for t in held for w in t.split()}
+        surface = ri.changed_words(chosen)
+        assert surface <= held, (tag, surface - held)
 
 
 def test_prefer_never_drops_a_reading_of_unknown_language() -> None:

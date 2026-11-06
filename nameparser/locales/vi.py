@@ -3,20 +3,23 @@ given name last (``Policy.name_order``, FAMILY_FIRST_GIVEN_LAST), its
 policy patch compiled from nameparser/vocab/vi.toml's [rules] table by
 tools/vocab/build.py; it chooses the language ``vi``, which turns on
 the readings vi.toml writes ``default = false`` (the academic titles
-written before a name, ``TS``, ``PGS`` and their stacked form
-``PGS.TS.``); and its lexicon fragment takes out the particle and
-connective readings other languages give the syllables Vietnamese names
-are written with, so ``Nguyen Van Anh`` gives family ``Nguyen``, middle
+written before a name, ``TS``, ``ThS``, ``GS``, ``PGS`` and their
+stacked forms such as ``PGS.TS.``, and the office ``ĐBQH``); and its
+lexicon fragment takes out the particle, connective and credential
+readings other languages give the syllables Vietnamese names are
+written with, so ``Nguyen Van Anh`` gives family ``Nguyen``, middle
 ``Van``, given ``Anh`` where the Dutch ``van`` would chain into the
-given name ``Van Anh`` (decisions/vocabulary-model, the 2026-11-05
-#1108 entry).
+given name ``Van Anh``, and ``NGUYEN VAN DO`` keeps given ``DO`` where
+the English credential would take it (decisions/vocabulary-model, the
+2026-11-05 #1108 entry).
 
 The fragment is the one pack content that removes: a choice prefers
 only by a vocabulary reading, and a name reading never settles a clash
 (decision 15 of decisions/vocabulary-model), so no reading vi.toml
 could write makes ``van`` a name word under a plain choice. The order
-already commits a caller to Vietnamese names, which is what makes the
-removal cost nothing further.
+already commits a caller to Vietnamese names, which keeps the removals'
+cost to a credential written after a Vietnamese name for English-language
+readers (``Nguyen Van Anh, DO`` reads given ``DO``).
 
 Data sources: the titles' vetting is on the words in vi.toml
 (tools/name_usage.py); the syllables were measured on the uit-vinames
@@ -41,14 +44,19 @@ from nameparser._locale import Locale, rules_patch
 #: a particle: Văn, Lê, Đỗ, Du (Dư), Di, La, Thọ, Đa, unaccented, and
 #: San, the saint particle
 _PARTICLES = ("da", "di", "do", "du", "la", "le", "san", "tho", "van")
-#: and as a connective: Thế and Ý
+#: as a connective: Thế and Ý (a capital Y is read as an initial by
+#: rules/P8 already, so this reaches a lowercase y in a mixed-case name)
 _CONJUNCTIONS = ("the", "y")
+#: and as a credential, which takes the given name of a name in one case
+#: (``NGUYEN LINH CHI``): Đỗ, Bá, Chi, Mã
+_CREDENTIALS = ("ba", "chi", "do", "ma")
 
 VI = Locale(
     code="vi",
     lexicon=(Lexicon.empty()
              .remove(*_PARTICLES, kind="particle")
-             .remove(*_CONJUNCTIONS, kind="conjunction")),
+             .remove(*_CONJUNCTIONS, kind="conjunction")
+             .remove(*_CREDENTIALS, kind="credential")),
     # nameparser/vocab/vi.toml's [rules], compiled by tools/vocab/build.py
     policy=rules_patch("vi"),
     languages=frozenset({"vi"}),
@@ -59,5 +67,7 @@ def DEVIATES(name: str) -> bool:
     """True when this pack may parse `name` differently from the
     default parser (the declared-deviation predicate the
     non-interference gate consumes): any name holding a letter or a
-    digit, the order reading every name a family comma does not fix."""
+    digit. The order moves every name a family comma does not fix, and
+    the comma names are declared too rather than restating the comma
+    reading here."""
     return any(c.isalnum() for c in name)

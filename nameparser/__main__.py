@@ -57,7 +57,7 @@ def main(argv: list[str] | None = None) -> int:
                          "when nameparser[ja] is installed. A code no "
                          "pack has but a vocabulary file does (e.g. 'ko') "
                          "chooses that language alone; a file holding no "
-                         "reading yet (e.g. 'vi') needs --strict")
+                         "reading yet (e.g. 'hu') needs --strict")
     ap.add_argument("--strict", action="store_true",
                     help="read only the --locale language's vocabulary "
                          "file, the shared words (Dr, PhD, the numerals) "

@@ -37,7 +37,11 @@ has no groups, it is refused, as is a group no record read holds; with
 `--local all` it reads the fielded corpora alone, saying so. `--match`
 keeps the names a regular expression finds anywhere in them, `--sample
 N` one name in N (snapshot.sampled, by a hash of the name, so a sample
-is the same in every tree and run).
+is the same in every tree and run). `--spelling` rewrites every name
+before it is read, `stripped` (the marks dropped, đ as d), `upper` or
+`lower`, comma-separated and applied in order, so `--spelling
+stripped,upper` reads a population as plain-ASCII data in capitals
+writes it (#1108); names that respell alike are read once.
 
 **What is compared**: the seven role fields, the ambiguity kinds and
 3.0's views (VIEWS: `generation`, `credentials`, `honorifics`, `patronymic`,
@@ -133,6 +137,7 @@ import json
 import os
 import re
 import sys
+import unicodedata
 import warnings
 from collections import Counter, defaultdict
 from collections.abc import Iterable, Iterator, Sequence
@@ -468,11 +473,48 @@ def gather(args: argparse.Namespace) -> list[tuple[str, str | None, frozenset[st
         raise SystemExit(f"--group {', '.join(missing)}: no record read holds it; a group is "
                          f"matched as the corpus writes it, ORCID and PatentsView an ISO code "
                          f"such as BR, PSC a nationality such as Brazilian ({keys})")
+    if args.spelling:
+        respelled: defaultdict[tuple[str, str | None], set[str]] = defaultdict(set)
+        for (text, order), where in found.items():
+            respelled[(respell(text, args.spelling), order)] |= where
+        found = respelled
     pattern = re.compile(args.match) if args.match else None
     entries = [e for e in found if pattern is None or pattern.search(e[0])]
     if args.sample:
         entries = snapshot.sampled(entries, args.sample)
     return [(text, order, frozenset(found[(text, order)])) for text, order in entries]
+
+
+#: The rewrites --spelling applies to every name before it is read: the
+#: marks stripped (NFD, combining marks dropped, đ as d), as data in
+#: plain ASCII writes a name, and the name in one case (#1108).
+SPELLINGS = ("stripped", "upper", "lower")
+
+
+def respell(text: str, spellings: tuple[str, ...]) -> str:
+    """`text` with each of `spellings` applied in turn (SPELLINGS)."""
+    for spelling in spellings:
+        if spelling == "stripped":
+            text = "".join(c for c in unicodedata.normalize(
+                "NFD", text.replace("đ", "d").replace("Đ", "D"))
+                if not unicodedata.combining(c))
+        elif spelling == "upper":
+            text = text.upper()
+        else:
+            text = text.lower()
+    return text
+
+
+def _spellings(value: str) -> tuple[str, ...]:
+    """--spelling's comma-separated rewrites, each one of SPELLINGS."""
+    out = tuple(s.strip() for s in value.split(",") if s.strip())
+    bad = [s for s in out if s not in SPELLINGS]
+    if not out or bad:
+        raise argparse.ArgumentTypeError(
+            f"--spelling takes {', '.join(SPELLINGS)}, comma-separated, applied in "
+            f"order (stripped,upper); got {value!r}"
+            + (f", where {', '.join(map(repr, bad))} is none of them" if bad else ""))
+    return out
 
 
 # --- gaps: where each language is written ------------------------------------------
@@ -1060,6 +1102,9 @@ def main(argv: list[str] | None = None) -> int:
                    "or nationality, as the corpus writes it (repeatable; needs --local)")
     d.add_argument("--match", help="keep the names this regular expression finds")
     d.add_argument("--sample", type=int, help="one name in N, by a hash of the name")
+    d.add_argument("--spelling", type=_spellings, help="rewrite every name before it is "
+                   "read: stripped (no diacritics, đ as d), upper, lower, comma-separated "
+                   "and applied in order")
     g = sub.add_parser("gaps", help="each language's strict choice against its plain one")
     g.add_argument("tags", nargs="*", help="language tags (default: every choosable tag)")
     g.add_argument("--cap", type=int, default=CAP, help="records per (source, group)")
