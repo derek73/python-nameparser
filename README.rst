@@ -173,6 +173,39 @@ More shapes the parser reads:
     >>> locales.available()
     ('bn', 'cs', 'es', 'es_ar', 'ga', 'gd', 'hi', 'hr', 'ja', 'ne', 'pt', 'pt_br', 'ru', 'sk', 'sl', 'tr_az', 'zh')
 
+When a reading is wrong for your data
+-------------------------------------
+
+Each reading comes from a word's readings in the vocabulary or from a
+``Policy`` setting, and you can change both. Ask the vocabulary what a word
+may be read as, then add or remove readings and hand the new ``Lexicon``
+to a ``Parser``:
+
+.. code-block:: python
+
+    >>> [r.kind for r in Lexicon.default().readings_of("dean")]
+    ['office', 'given', 'family']
+    >>> deans = Lexicon.default().remove("dean", kind="given")    # Dean is always a title
+    >>> Parser(lexicon=deans).parse("Dean Smith").title
+    'Dean'
+    >>> leed = Lexicon.default().add("leed", "ap", kind="credential")
+    >>> Parser(lexicon=leed).parse("John Smith LEED AP").suffix
+    'LEED AP'
+
+A ``Policy`` says how positions are read, such as which name comes
+first:
+
+.. code-block:: python
+
+    >>> from nameparser import FAMILY_FIRST
+    >>> hungarian = Parser(policy=Policy(name_order=FAMILY_FIRST))
+    >>> nagy = hungarian.parse("Nagy Ádám")
+    >>> nagy.given, nagy.family
+    ('Ádám', 'Nagy')
+
+A ``Lexicon`` and a ``Policy`` are frozen, so each change returns a new
+object and nothing is shared between parsers.
+
 Learn more
 ----------
 
