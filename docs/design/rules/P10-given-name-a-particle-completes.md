@@ -12,6 +12,7 @@
   "Ana de María Pérez"        →  middle="de María"
   "Maria do Socorro Silva"    →  middle="do Socorro"
   "Maria de Lurdes Costa"     →  middle="de Lurdes"
+  "Maria de Fatima Costa"     →  middle="de Fatima"
   "Paulo de Tarso Ribeiro"    →  family="Ribeiro"
   "Maria do Carmo Silva"      →  family="do Carmo Silva"  · boundary
   "João da Silva Santos"      →  family="da Silva Santos"  · boundary
