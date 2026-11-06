@@ -48,11 +48,16 @@ $NAMEPARSER_TOOLS_CACHE (default ~/.cache/nameparser-tools), and
   and how many people filed under it; one distinct Czech election
   candidate's four boxes composed into a name, with the boxes and the
   election; one DOF signature, the name cut from its clause, with the
-  clause, the cut rule and the note. The counts are counted from here.
+  clause, the cut rule and the note; one distinct UIT-ViNames name, with
+  its gender and the parts the Vietnamese convention derives; one
+  National Assembly deputy's name composed with the title the education
+  states, with the official name, the title, the derived parts, the
+  gender and the ethnicity. The counts are counted from here.
 - corpus.jsonl -- the distinct names, in the corpus line format
   snapshot.py and compare.py --corpus read: each record's "name", and
   for nepal-candidates its Devanagari name too, and for
-  orcid-researchers the credit name (Source.corpus_keys).
+  orcid-researchers the credit name, and for vn-assembly the official
+  name (Source.corpus_keys).
 - meta.json -- the source's own date for the data, what was fetched, and
   the sha256 of both files, checked on every load: a truncated file
   would otherwise read as a run of false zeros.
@@ -88,7 +93,8 @@ local_govuk.py (govuk-people),
 local_psc.py (psc-individuals), local_jrc.py (jrc-names),
 local_nepal.py (nepal-candidates), local_orcid.py
 (orcid-researchers), local_patentsview.py (patentsview-inventors),
-local_volby.py (cz-candidates) and local_dof.py (dof-signatures).
+local_volby.py (cz-candidates), local_dof.py (dof-signatures),
+local_uit.py (uit-vinames) and local_vnassembly.py (vn-assembly).
 """
 from __future__ import annotations
 
@@ -140,7 +146,9 @@ from local_patentsview import (PV, check_pv, extract_path as pv_extract,  # noqa
 from local_psc import PSC, check_psc, fetch_psc, renew_psc  # noqa: E402
 from local_tse import check_tse, fetch_tse  # noqa: E402
 from local_tw import fetch_tw  # noqa: E402
+from local_uit import UIT, check_uit, fetch_uit  # noqa: E402
 from local_ukec import fetch_ukec  # noqa: E402
+from local_vnassembly import VN, check_vn, fetch_vn  # noqa: E402
 from local_volby import VOLBY, check_volby, fetch_volby  # noqa: E402
 
 RAW, CORPUS, META, SNAPSHOT = "raw.jsonl", "corpus.jsonl", "meta.json", "snapshot.jsonl"
@@ -276,6 +284,18 @@ SOURCES: dict[str, Source] = {
                f"web services (reproduction without "
                "profit permitted with the source cited: sidof.segob.gob.mx/avisoLegal)",
         unit="signatures", fetch=fetch_dof, renew=renew_dof, check=check_dof),
+    UIT: Source(
+        credit="UIT-ViNames (UIT NLP group, VNU-HCM; To et al., NLPIR 2020), "
+               "full names (no licence stated: offered for research use, citing "
+               "the paper; each name's parts derived by the Vietnamese convention)",
+        unit="names", fetch=fetch_uit, check=check_uit),
+    VN: Source(
+        credit="Vietnam National Assembly deputies (dbqh.quochoi.vn), read through "
+               "OpenSanctions' vn_national_assembly dataset (CC BY-NC 4.0; credit "
+               "OpenSanctions; each name composed with the title its education "
+               "states, and its parts derived, so derived data)",
+        unit="deputies", fetch=fetch_vn, check=check_vn,
+        corpus_keys=("name", "official")),
 }
 
 

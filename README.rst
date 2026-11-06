@@ -171,7 +171,7 @@ More shapes the parser reads:
     >>> ivan.given, ivan.patronymic, ivan.family
     ('Иван', 'Петрович', 'Сидоров')
     >>> locales.available()
-    ('bn', 'cs', 'es', 'es_ar', 'ga', 'gd', 'hi', 'hr', 'ja', 'ne', 'pt', 'pt_br', 'ru', 'sk', 'sl', 'tr_az', 'zh')
+    ('bn', 'cs', 'es', 'es_ar', 'ga', 'gd', 'hi', 'hr', 'ja', 'ne', 'pt', 'pt_br', 'ru', 'sk', 'sl', 'tr_az', 'vi', 'zh')
 
 When a reading is wrong for your data
 -------------------------------------

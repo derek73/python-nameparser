@@ -18,8 +18,6 @@
 "Garcia"  family-first      →  ambiguities=("given-or-family",)
 "Juan & Garcia"             →  ambiguities=("given-or-family",)
 "Smith Jr."                 →  ambiguities=("given-or-family",)
-"'Smitty' Jones Jr."        →  given="Jones"
-"'Smitty' Jones Jr."        →  ambiguities=("given-or-family",)
 ```
 
 **Except:**
@@ -40,11 +38,12 @@
   "毛泽东"                    →  family="毛泽东"
   "毛泽东"                    →  ambiguities=()
   ```
-- **A nickname beside the word also makes it the family name (N3)**, except where a suffix stands beside them too, which its count does not set aside, so `'Smitty' Jones Jr.` keeps the convention's reading and its report.
+- **A nickname beside the word also makes it the family name (N3)**, whatever suffix stands beside them.
   ```
   "'Smitty' Jones"            →  family="Jones"  · boundary
+  "'Smitty' Jones Jr."        →  ambiguities=()
   ```
-- **A maiden name beside the word also makes it the family name (M4)**, except where the vocabulary or the word's own shape has claimed the word already.
+- **A maiden name beside the word also makes it the family name (M4)**, except where the vocabulary has claimed the word as a bound given name or its shape as an initial.
   ```
   "Smith née Jones"           →  family="Smith"  · boundary
   "Smith née Jones"           →  ambiguities=()
@@ -59,6 +58,13 @@
 **Precedence:**
 
 - **Against every rule that DOES decide such a name**: that rule wins, and each of them carves out a case it declines to decide — where the convention is what is left.
+
+**Accepted:**
+
+- A pack that declares a family-first order reads a lone name word as the family name too, though a Vietnamese name written alone is usually the given name: no `Policy` field sets the convention apart from the order, and `locales.VI` sets the order (#1111 asks for one).
+  ```
+  "Anh"  [vi]                 →  family="Anh"
+  ```
 
 ---
 **Signal:** count: one name word that nothing else decided

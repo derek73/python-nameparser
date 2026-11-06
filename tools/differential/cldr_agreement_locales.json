@@ -2052,6 +2052,212 @@
   },
   "text": "Zeynep"
  },
+ "vi/foreignFull/givenFirst": {
+  "family": {
+   "expected": "von Brühl",
+   "got": "Giáo sư"
+  },
+  "family_base": {
+   "expected": "Brühl",
+   "got": "Giáo sư"
+  },
+  "family_particles": {
+   "expected": "von",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Ada Cornelia César Martín",
+   "got": "Tiến sĩ Ada Cornelia César Martín von Brühl"
+  },
+  "surname1_base": {
+   "expected": "Brühl",
+   "got": "Giáo sư"
+  },
+  "surname1_particles": {
+   "expected": "von",
+   "got": ""
+  },
+  "text": "Giáo sư, Tiến sĩ Ada Cornelia César Martín von Brühl Jr, MD DDS",
+  "title": {
+   "expected": "Giáo sư, Tiến sĩ",
+   "got": ""
+  }
+ },
+ "vi/foreignFull/surnameFirst": {
+  "family": {
+   "expected": "von Brühl",
+   "got": "MD"
+  },
+  "family_base": {
+   "expected": "Brühl",
+   "got": "MD"
+  },
+  "family_particles": {
+   "expected": "von",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "César Martín Ada Cornelia",
+   "got": "DDS von Brühl César Martín Ada Cornelia"
+  },
+  "suffix": {
+   "expected": "MD DDS",
+   "got": ""
+  },
+  "surname1_base": {
+   "expected": "Brühl",
+   "got": "MD"
+  },
+  "surname1_particles": {
+   "expected": "von",
+   "got": ""
+  },
+  "text": "MD DDS von Brühl César Martín Ada Cornelia"
+ },
+ "vi/foreignG/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Sinbad"
+  },
+  "given_names": {
+   "expected": "Sinbad",
+   "got": ""
+  },
+  "text": "Sinbad"
+ },
+ "vi/foreignG/sorting": {
+  "family": {
+   "expected": "",
+   "got": "Sinbad"
+  },
+  "given_names": {
+   "expected": "Sinbad",
+   "got": ""
+  },
+  "text": "Sinbad"
+ },
+ "vi/foreignG/surnameFirst": {
+  "family": {
+   "expected": "",
+   "got": "Sinbad"
+  },
+  "given_names": {
+   "expected": "Sinbad",
+   "got": ""
+  },
+  "text": "Sinbad"
+ },
+ "vi/foreignGGS/givenFirst": {
+  "family": {
+   "expected": "Stöber",
+   "got": "Zäzilia"
+  },
+  "given_names": {
+   "expected": "Zäzilia Hamish",
+   "got": "Hamish Stöber"
+  },
+  "text": "Zäzilia Hamish Stöber"
+ },
+ "vi/foreignGS/givenFirst": {
+  "family": {
+   "expected": "Müller",
+   "got": "Käthe"
+  },
+  "given_names": {
+   "expected": "Käthe",
+   "got": "Müller"
+  },
+  "text": "Käthe Müller"
+ },
+ "vi/nativeFull/givenFirst": {
+  "family": {
+   "expected": "Nguyễn",
+   "got": "Ông"
+  },
+  "family_base": {
+   "expected": "Nguyễn",
+   "got": "Ông"
+  },
+  "given_names": {
+   "expected": "Anh Văn",
+   "got": "Anh Văn Nguyễn ĐBQH"
+  },
+  "suffix": {
+   "expected": "ĐBQH",
+   "got": ""
+  },
+  "text": "Ông Anh Văn Nguyễn ĐBQH",
+  "title": {
+   "expected": "Ông",
+   "got": ""
+  }
+ },
+ "vi/nativeFull/surnameFirst": {
+  "suffix": {
+   "expected": "ĐBQH",
+   "got": ""
+  },
+  "text": "ĐBQH Nguyễn Văn Anh",
+  "title": {
+   "expected": "",
+   "got": "ĐBQH"
+  }
+ },
+ "vi/nativeG/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Anh"
+  },
+  "given_names": {
+   "expected": "Anh",
+   "got": ""
+  },
+  "text": "Anh"
+ },
+ "vi/nativeG/sorting": {
+  "family": {
+   "expected": "",
+   "got": "Anh"
+  },
+  "given_names": {
+   "expected": "Anh",
+   "got": ""
+  },
+  "text": "Anh"
+ },
+ "vi/nativeG/surnameFirst": {
+  "family": {
+   "expected": "",
+   "got": "Anh"
+  },
+  "given_names": {
+   "expected": "Anh",
+   "got": ""
+  },
+  "text": "Anh"
+ },
+ "vi/nativeGGS/givenFirst": {
+  "family": {
+   "expected": "Nguyễn",
+   "got": "Anh"
+  },
+  "given_names": {
+   "expected": "Anh Văn",
+   "got": "Văn Nguyễn"
+  },
+  "text": "Anh Văn Nguyễn"
+ },
+ "vi/nativeGS/givenFirst": {
+  "family": {
+   "expected": "Nguyễn",
+   "got": "Anh"
+  },
+  "given_names": {
+   "expected": "Anh",
+   "got": "Nguyễn"
+  },
+  "text": "Anh Nguyễn"
+ },
  "yue/foreignFull/givenFirst": {
   "family": {
    "expected": "陳 陳",

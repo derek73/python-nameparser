@@ -294,7 +294,7 @@ def selected(languages: Iterable[str], *,
     A plain choice selects among the files that hold a reading, since a
     file holding none would change nothing; a `strict` one among every
     file, since it drops whatever is not chosen and so is never inert
-    (``vi``, whose file holds only exclusions).
+    (``hu``, whose file holds only exclusions).
 
     Raises ValueError for ``mul`` or ``und``, and for a tag that selects
     no file at all, naming the tags that do."""

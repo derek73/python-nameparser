@@ -1,6 +1,7 @@
 """The locale pack layer (mechanisms.md#LOCALE-PACKS-PURE-DATA):
 lazy access, the shipped
 packs, composition, and the non-interference gate."""
+import dataclasses
 import functools
 import importlib.util
 import re
@@ -115,10 +116,10 @@ def test_locales_get_and_available() -> None:
     assert locales.get("ru") is locales.RU
     assert set(locales.available()) == {
         "bn", "cs", "es", "es_ar", "ga", "gd", "hi", "hr", "ja", "ne", "pt", "pt_br",
-        "ru", "sk", "sl", "tr_az", "zh"}
+        "ru", "sk", "sl", "tr_az", "vi", "zh"}
     with pytest.raises(
             KeyError,
-            match="bn, cs, es, es_ar, ga, gd, hi, hr, ja, ne, pt, pt_br, ru, sk, sl, tr_az, zh"):
+            match="bn, cs, es, es_ar, ga, gd, hi, hr, ja, ne, pt, pt_br, ru, sk, sl, tr_az, vi, zh"):
         locales.get("xx")
     # the segmenter FACTORY is not a locale: it is an ordinary function
     # on the package, so it must not appear among the codes
@@ -246,6 +247,216 @@ def test_es_and_pt_pack_contents() -> None:
     assert _es.DEVIATES("José Luis Pérez") and _es.DEVIATES("Pérez, José Luis")
     assert _es.DEVIATES("Mary-\u200bJane Smith") and _es.DEVIATES("马丁·路德·金")
     assert not _es.DEVIATES("Pérez García")
+
+
+def test_vi_pack_contents() -> None:
+    # a choice of vi, its file's [rules] order, and a fragment that only
+    # removes (decisions/vocabulary-model, the 2026-11-05 #1108 entry)
+    from nameparser.locales import vi as _vi
+    assert locales.VI.languages == {"vi"}
+    assert locales.VI.policy.name_order is FAMILY_FIRST_GIVEN_LAST
+    # chief and deputy each make a title phrase with the office đbqh
+    # (their attaches), which changed_words lists whole and word by word
+    assert _ri.changed_words(_ri.selected(locales.VI.languages)) == {
+        "gs", "pgs", "ths", "ts", "đbqh", "dbqh", "chief", "deputy",
+        "chief đbqh", "deputy đbqh", "chief dbqh", "deputy dbqh"}
+    sets = _require_packed("vi").lexicon._sets
+    # the fragment takes out the readings it names and nothing else
+    assert not {"van", "le", "do", "du", "di", "la", "tho", "da", "san"} & (
+        sets.particles)
+    assert not {"the", "y"} & sets.conjunctions
+    assert not {"do", "ba", "chi"} & sets.suffix_acronyms
+    # mac stays (decisions/vocabulary-model, 2026-11-05 #1108)
+    assert {"de", "von", "bin", "mac"} <= sets.particles
+    # ma keeps its credential (decisions/vocabulary-model, 2026-11-05 #1108)
+    assert "and" in sets.conjunctions and {"md", "bs", "ma"} <= sets.suffix_acronyms
+    assert _vi.DEVIATES("Anh") and not _vi.DEVIATES(", ")
+
+
+#: Each reading the VI fragment removes, with a name its removal alone
+#: moves: a particle or connective standing between two name words,
+#: which its reading would chain or join to its neighbours, and a
+#: credential ending a name written in one case, which its reading
+#: would take as the suffix
+_VI_REMOVALS = [
+    ("van", "particle", "Nguyen Van Anh"),
+    ("le", "particle", "Nguyen Le Anh"),
+    ("do", "particle", "Nguyen Do Anh"),
+    ("du", "particle", "Nguyen Du Anh"),
+    ("di", "particle", "Le Di Anh"),
+    ("la", "particle", "Nguyen La Anh"),
+    ("da", "particle", "Tran Da Anh"),
+    ("tho", "particle", "Nguyen Tho Anh"),
+    ("san", "particle", "Nguyen San Anh"),
+    ("the", "conjunction", "Nguyen The Tuan"),
+    ("y", "conjunction", "NGUYEN THI Y NHI"),
+    ("do", "credential", "NGUYEN VAN DO"),
+    ("ba", "credential", "NGUYEN THI BA"),
+    ("chi", "credential", "NGUYEN LINH CHI"),
+]
+
+
+def test_each_vi_removal_moves_its_own_row() -> None:
+    # the negative control for the fragment: with one removal put back,
+    # the row that witnesses it reads otherwise, so every removal is
+    # held by a reading and not only by the set assertions above
+    from nameparser.locales import vi as _vi
+    lists = {"particle": _vi._PARTICLES, "conjunction": _vi._CONJUNCTIONS,
+             "credential": _vi._CREDENTIALS}
+    assert sorted((w, k) for w, k, _ in _VI_REMOVALS) == sorted(
+        (w, k) for k, words in lists.items() for w in words)
+    vi = _require_packed("vi")
+
+    def put_back(removal: tuple[str, str] | None) -> Parser:
+        lexicon = Lexicon.empty()
+        for k, words in lists.items():
+            lexicon = lexicon.remove(
+                *[w for w in words if (w, k) != removal], kind=k)
+        return parser_for(dataclasses.replace(locales.VI, lexicon=lexicon))
+
+    # the positive control: rebuilt with nothing put back, the pack
+    # reads every row as VI does, so a difference below is the removal's
+    rebuilt = put_back(None)
+    for word, kind, text in _VI_REMOVALS:
+        assert rebuilt.parse(text).as_dict() == vi.parse(text).as_dict(), text
+        without = put_back((word, kind))
+        assert without.parse(text).as_dict() != vi.parse(text).as_dict(), (
+            word, kind, text)
+
+
+@pytest.mark.parametrize("text, title, family, middle, given, suffix", [
+    # the spelling sweep: unaccented, with diacritics, in one case
+    ("Nguyen Van Anh", "", "Nguyen", "Van", "Anh", ""),
+    ("Nguyễn Văn Anh", "", "Nguyễn", "Văn", "Anh", ""),
+    ("NGUYỄN VĂN ANH", "", "NGUYỄN", "VĂN", "ANH", ""),
+    ("nguyen van anh", "", "nguyen", "van", "anh", ""),
+    # the order, with a syllable other files read as a particle at the
+    # head, which the order reads alike without the fragment (Le Van Anh
+    # moves by van's removal, its Le by the order)
+    ("Le Van Anh", "", "Le", "Van", "Anh", ""),
+    ("Lê Văn Anh", "", "Lê", "Văn", "Anh", ""),
+    ("Do Thi Lan", "", "Do", "Thi", "Lan", ""),
+    ("Đỗ Thị Lan", "", "Đỗ", "Thị", "Lan", ""),
+    # the connective at the head, which chains without the fragment
+    ("the Thi Lan", "", "the", "Thi", "Lan", ""),
+    # each removal, the syllable between two name words (_VI_REMOVALS)
+    ("Nguyen Le Anh", "", "Nguyen", "Le", "Anh", ""),
+    ("Nguyen Do Anh", "", "Nguyen", "Do", "Anh", ""),
+    ("Nguyen Du Anh", "", "Nguyen", "Du", "Anh", ""),
+    ("Le Di Anh", "", "Le", "Di", "Anh", ""),
+    ("Nguyen La Anh", "", "Nguyen", "La", "Anh", ""),
+    ("Tran Da Anh", "", "Tran", "Da", "Anh", ""),
+    ("Nguyen Tho Anh", "", "Nguyen", "Tho", "Anh", ""),
+    ("Tran Thi San Ha", "", "Tran", "Thi San", "Ha", ""),
+    ("Tran Van Le", "", "Tran", "Van", "Le", ""),
+    ("Tran The Tuan", "", "Tran", "The", "Tuan", ""),
+    ("Nguyen Thi y Nhi", "", "Nguyen", "Thi y", "Nhi", ""),
+    ("NGUYEN THI Y NHI", "", "NGUYEN", "THI Y", "NHI", ""),
+    # a capital Y in a mixed-case name is an initial by rules/P8 with or
+    # without the fragment
+    ("Nguyen Y Anh", "", "Nguyen", "Y", "Anh", ""),
+    # the credentials, ending a name in one case, and in mixed case
+    ("NGUYEN VAN DO", "", "NGUYEN", "VAN", "DO", ""),
+    ("NGUYEN LINH CHI", "", "NGUYEN", "LINH", "CHI", ""),
+    ("NGUYEN THI BA", "", "NGUYEN", "THI", "BA", ""),
+    ("nguyen van do", "", "nguyen", "van", "do", ""),
+    ("NGUYEN VAN DO, MD", "", "NGUYEN", "VAN", "DO", "MD"),
+    ("Nguyen Linh Chi", "", "Nguyen", "Linh", "Chi", ""),
+    ("Nguyen Van Do", "", "Nguyen", "Van", "Do", ""),
+    # ma keeps its credential, so a name ending in it stays a known gap
+    ("TRAN THI MA", "", "TRAN", "", "THI", "MA"),
+    ("Nguyen Van Anh, MA", "", "Nguyen", "Van", "Anh", "MA"),
+    # the accepted cost: DO or BA written as a credential after a
+    # Vietnamese name for English-language readers reads as a name word,
+    # with a comma or without, dotted, in brackets or behind another
+    # credential, unless past a second comma; CHI only without a comma
+    ("Nguyen Van Anh, DO", "", "Nguyen Van Anh", "", "DO", ""),
+    ("Nguyen Van Anh DO", "", "Nguyen", "Van Anh", "DO", ""),
+    ("Nguyen Van Anh D.O.", "", "Nguyen", "Van Anh", "D.O.", ""),
+    ("Nguyen Van Anh MD, DO", "", "Nguyen Van Anh", "", "DO", "MD"),
+    ("Nguyen, Van Anh DO", "", "Nguyen", "Anh DO", "Van", ""),
+    ("Nguyen, Van Anh, DO", "", "Nguyen", "Anh", "Van", "DO"),
+    ("Nguyen Van Anh, BA", "", "Nguyen Van Anh", "", "BA", ""),
+    # after a comma the capitals shape (rules/C6) keeps a three-letter
+    # word in capitals a suffix, CHI's readings or none
+    ("Nguyen Van Anh, CHI", "", "Nguyen", "Van", "Anh", "CHI"),
+    # and the removals act after a family comma, where the order reads
+    # nothing differently: a particle or a credential there is a name word
+    ("Beethoven, Ludwig van", "", "Beethoven", "van", "Ludwig", ""),
+    ("Smith, John Do", "", "Smith", "Do", "John", ""),
+    # the titles at the head, bare, dotted and stacked
+    ("Ts Nguyen Van Anh", "Ts", "Nguyen", "Van", "Anh", ""),
+    ("TS NGUYEN VAN ANH", "TS", "NGUYEN", "VAN", "ANH", ""),
+    ("ThS Nguyen Van Anh", "ThS", "Nguyen", "Van", "Anh", ""),
+    ("PGS.TS. Nguyễn Văn Anh", "PGS.TS.", "Nguyễn", "Văn", "Anh", ""),
+    ("GS.TS. Nguyen Van Anh", "GS.TS.", "Nguyen", "Van", "Anh", ""),
+    ("PGS. TS. Nguyen Van Anh", "PGS. TS.", "Nguyen", "Van", "Anh", ""),
+    ("PGS.TS.BS. Nguyen Van Anh", "PGS.TS.BS.", "Nguyen", "Van", "Anh", ""),
+    ("ĐBQH Nguyễn Văn Anh", "ĐBQH", "Nguyễn", "Văn", "Anh", ""),
+    ("đbqh Nguyen Van Anh", "đbqh", "Nguyen", "Van", "Anh", ""),
+    ("DBQH Nguyen Van Anh", "DBQH", "Nguyen", "Van", "Anh", ""),
+    # a stacked title ending a name reads as the given name: rules/H5
+    # takes "successive single words that wear the abbreviation shape and
+    # are title vocabulary", and with pgs and ts listed rules/S3's
+    # unlisted dotted suffix no longer takes it, where the default reads
+    # suffix 'PGS.TS.'
+    ("Nguyen Van Anh PGS.TS.", "", "Nguyen", "Van Anh", "PGS.TS.", ""),
+    # bs has no title reading in vi.toml, so en's credential stays and a
+    # dotted BS. opening a name is a title by shape (rules/H2)
+    ("BS. Nguyen Van An", "BS.", "Nguyen", "Van", "An", ""),
+    ("Smith, John BS", "", "Smith", "", "John", "BS"),
+    # the comma shapes: a suffix comma, a family comma, a full name and
+    # a title before one, an empty head, nothing after the comma
+    ("Nguyen Van Anh, PhD", "", "Nguyen", "Van", "Anh", "PhD"),
+    ("Nguyen Van Anh, Ts", "Ts", "Nguyen", "Van", "Anh", ""),
+    ("Nguyen Van Anh, PGS.TS.", "PGS.TS.", "Nguyen", "Van", "Anh", ""),
+    ("Nguyen, Van Anh", "", "Nguyen", "Anh", "Van", ""),
+    ("Nguyen, Van Anh, Jr.", "", "Nguyen", "Anh", "Van", "Jr."),
+    ("Nguyen, Ts Van Anh", "Ts", "Nguyen", "Anh", "Van", ""),
+    ("Nguyen Van, Anh", "", "Nguyen Van", "", "Anh", ""),
+    ("Ts Nguyen, Van Anh", "Ts", "Nguyen", "Anh", "Van", ""),
+    ("ĐBQH Nguyen, Van Anh", "ĐBQH", "Nguyen", "Anh", "Van", ""),
+    (", Van Anh", "", "", "Anh", "Van", ""),
+    (", Ts Van Anh", "Ts", "", "Anh", "Van", ""),
+    # a title and one name word read the word as the family (rules/H1)
+    (", PGS.TS. Anh", "PGS.TS.", "Anh", "", "", ""),
+    ("Van,", "", "Van", "", "", ""),
+    # the order reads a one-word name as the family (rules/O5, #1111)
+    ("Anh", "", "Anh", "", "", ""),
+])
+def test_vi_reads_a_vietnamese_name_family_first_with_its_syllables(
+        text: str, title: str, family: str, middle: str, given: str,
+        suffix: str) -> None:
+    got = _require_packed("vi").parse(text)
+    assert (got.title, got.family, got.middle, got.given, got.suffix) == (
+        title, family, middle, given, suffix)
+
+
+def test_vi_reads_a_mixed_case_credential_syllable_as_a_name_unreported() -> None:
+    # in mixed case the credential removal moves only the report: the
+    # name word is read alike, and the suffix-or-name fork is gone
+    from nameparser.locales import vi as _vi
+    vi = _require_packed("vi")
+    kept = parser_for(dataclasses.replace(locales.VI, lexicon=(
+        Lexicon.empty().remove(*_vi._PARTICLES, kind="particle")
+        .remove(*_vi._CONJUNCTIONS, kind="conjunction"))))
+    for text in ("Nguyen Linh Chi", "Nguyen Van Do", "Nguyen Thi Ba"):
+        assert not vi.parse(text).ambiguities, text
+        assert vi.parse(text).as_dict() == kept.parse(text).as_dict(), text
+        assert {a.kind for a in kept.parse(text).ambiguities} == {
+            AmbiguityKind.SUFFIX_OR_NAME}, text
+
+
+def test_vi_differs_from_the_default_where_the_default_reads_given_first() -> None:
+    # the plain-vs-default contrast: a plain vi choice, no strict mode
+    vi = _require_packed("vi")
+    for text in ("Nguyen Van Anh", "Lê Văn Anh", "Tran The Tuan"):
+        assert vi.parse(text).as_dict() != _default_parse(text)
+    assert parse("Nguyen Van Anh").given == "Nguyen"
+    assert parse("Tran The Tuan").given == "Tran The Tuan"
+    # a family comma fixes the family name, so it reads alike
+    for text in ("Nguyen, Van Anh", "Smith, John"):
+        assert vi.parse(text).as_dict() == _default_parse(text)
 
 
 def test_cs_and_sk_pack_contents() -> None:
@@ -1316,6 +1527,42 @@ _ROTATORS["hi"] = [
     # as the title there
     "Her Excellency Sushri Sangita Behera",
 ]
+# vi: the order and the fragment move every name a family comma does
+# not fix, so each title's rotator stands behind a family comma, where
+# only the choice moves it (test_a_choice_word_rotator_is_moved_by_the_choice_alone).
+# The order's rows (Lê Văn Anh, Le Thi Mai) read the same with the
+# fragment or without it; each fragment row is _VI_REMOVALS' witness for
+# its removal (test_each_vi_removal_moves_its_own_row).
+_ROTATORS["vi"] = [
+    "Lê Văn Anh",                    # the order, written with diacritics
+    "Le Thi Mai",                    # the order, le at the head
+    "NGUYEN VAN ANH",                # the order and van, in one case
+    "Nguyen Van Anh",                # van, the Dutch particle removed
+    "Nguyen Le Anh",                 # le, the French article
+    "Nguyen Do Anh",                 # do, the Portuguese particle
+    "Nguyen Du Anh",                 # du
+    "Le Di Anh",                     # di
+    "Nguyen La Anh",                 # la
+    "Tran Da Anh",                   # da
+    "Nguyen Tho Anh",                # tho
+    "Tran Thi San Ha",               # san, the saint particle
+    "Nguyen The Tuan",               # the, the English connective
+    "NGUYEN THI Y NHI",              # y, the Spanish connective, in one case
+    "NGUYEN LINH CHI",               # chi, the credential, in one case
+    "NGUYEN VAN DO",                 # do's credential
+    "NGUYEN THI BA",                 # ba
+    "Nguyen, Ts Van Anh",            # ts after a family comma
+    "Nguyen, Ths Van Anh",           # ths
+    "Nguyen, Gs Van Anh",            # gs
+    "Nguyen, Pgs Van Anh",           # pgs
+    "Nguyen, PGS.TS. An",            # the stacked form
+    "Nguyen, ĐBQH Van Anh",          # đbqh, the office
+    "Nguyen, DBQH Van Anh",          # dbqh, its ASCII spelling
+    "Nguyen, Chief ĐBQH Anh",        # chief, in a phrase with đbqh
+    "Nguyen, Deputy DBQH Anh",       # deputy, in a phrase with dbqh
+    "Nguyen, Chief DBQH Anh",        # chief dbqh
+    "Nguyen, Deputy ĐBQH Anh",       # deputy đbqh
+]
 _ROTATORS["bn"] = [
     "Shrimati Mamata Banerjee",      # shrimati at the head
     "Banerjee, Mamata Shrimati",     # shrimati ending the given part
@@ -1625,9 +1872,11 @@ def _surface_deviates(surface: frozenset[str]) -> Callable[[str], bool]:
     """A name holding a surface word, over-declared as the gate allows:
     each comma- or space-separated piece normalized whole, with every
     period removed (an acronym's match), and cut at every non-word
-    character (`st.john`, `AE-RA`); an elided particle opening a piece
-    (`d'Artagnan`, `al-Rashid`); a word outside ASCII anywhere in the
-    name (a glued honorific), the name NFC-folded as the vocabulary is."""
+    character (`st.john`, `AE-RA`); two pieces side by side, a title
+    phrase's two words (`Chief DBQH`, #1108); an elided particle opening
+    a piece (`d'Artagnan`, `al-Rashid`); a word outside ASCII anywhere
+    in the name (a glued honorific), the name NFC-folded as the
+    vocabulary is."""
     import unicodedata
 
     from nameparser._lexicon import _normalize
@@ -1637,8 +1886,12 @@ def _surface_deviates(surface: frozenset[str]) -> Callable[[str], bool]:
     def deviates(name: str) -> bool:
         words: set[str] = set()
         folded = unicodedata.normalize("NFC", name).casefold()
-        for piece in re.split(r"[\s,]+", folded):
-            words |= {_normalize(piece), piece.replace(".", "")}
+        pieces = [p for p in re.split(r"[\s,]+", folded) if p]
+        normalized = [_normalize(p) for p in pieces]
+        words |= set(normalized)
+        words |= {f"{a} {b}" for a, b in zip(normalized, normalized[1:])}
+        for piece in pieces:
+            words.add(piece.replace(".", ""))
             words |= set(re.split(r"[^\w]+", piece))
             if elided and piece.startswith(elided):
                 return True
