@@ -57,9 +57,9 @@ Quick Start Example
     ('Vega', 'de la')
 
 A Spanish name usually ends in two family names, the father's first and
-the mother's second. Out of the box the parser reads names the English
-way, one family name and any middle names. The Spanish pack reads the
-two family names and gives each its own view:
+the mother's second. Out of the box the parser reads one family name,
+with the words between it and the given name as middle names. The
+Spanish pack reads the two family names and gives each its own view:
 
 .. code-block:: python
 
@@ -99,7 +99,8 @@ More shapes the parser reads:
     'Ma'
     >>> parse("Van Johnson").ambiguities           # a guess is reported
     (Ambiguity('particle-or-given': 'Van'),)
-    >>> parse("Ludwig van Beethoven").tokens[1].reading.languages
+    >>> van = parse("Ludwig van Beethoven").tokens[1]
+    >>> van.reading.languages                    # the vocabulary that read "van"
     ('nl',)
 
     >>> parse("김민준").family                     # Korean: unspaced, split on the census list
@@ -110,13 +111,14 @@ More shapes the parser reads:
     '씨'
     >>> parse("г-н Иван Петров").title             # Cyrillic title
     'г-н'
-    >>> parse("محمد بن سلمان").patronymic          # Arabic: بن begins a patronymic
-    'بن سلمان'
+    >>> arabic = parse("محمد بن سلمان")            # Arabic: بن chains onto the family name
+    >>> arabic.family, arabic.patronymic          # and marks it a patronymic
+    ('بن سلمان', 'بن سلمان')
 
     >>> chinese = parser_for(locales.ZH)           # Han text does not say which language
     >>> chinese.parse("毛泽东").family              # so splitting it is opt-in
     '毛'
-    >>> parse("Сидоров Иван Петрович").given       # by default, given first
+    >>> parse("Сидоров Иван Петрович").given       # read given-first by default
     'Сидоров'
     >>> russian = parser_for(locales.RU)           # the Russian pack reads the patronymic
     >>> ivan = russian.parse("Сидоров Иван Петрович")
