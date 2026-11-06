@@ -177,6 +177,33 @@ Learn more
 * `Locale packs <https://nameparser.readthedocs.io/en/latest/locales.html>`__ — opt-in bundles for East Slavic patronymics, Turkic markers, and more
 * There's also a CLI: ``python -m nameparser --json "Doe, John"``
 
+How well it reads names
+-----------------------
+
+Measured 2026-11-05 against the 3.0 development tree, by comparing each
+reading with the boxes the name was filed in. That is agreement with
+someone else's convention, not ground truth, after folding case,
+periods, commas and spacing:
+
+* **US patent inventors** (PatentsView, 657,991 distinct name-and-country
+  records, split into two boxes by the filing attorney): both boxes agree
+  for 94.7%, and for 98.0% outside Spanish- and Portuguese-speaking
+  countries.
+* **UK company filings** (people with significant control, 1,039,144
+  records typed into title, forename, middle and surname boxes): all four
+  agree for 96.8%.
+* **Czech election candidates** (170,181, with degrees before and after
+  the name): all four boxes agree for 97.0%, and for 97.5% with
+  ``locales.CS``.
+
+Most of what the default misses is a convention rather than a misreading.
+It reads one family name, so a Spanish double surname comes out differently
+from how its bearer files it. Choosing the language closes most of the gap:
+for ORCID researchers in Spain, ``parser_for(locales.ES)`` lifts agreement
+from 49.5% to 96.7% (Mexico 33.6% to 96.9%). The pack costs where people
+file a single surname: Argentine patent inventors agree 93.8% by default,
+86.2% under ``ES`` and 92.7% under ``ES_AR``.
+
 Coming from 1.x or 2.x
 ----------------------
 
