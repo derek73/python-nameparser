@@ -106,7 +106,18 @@ uv run sphinx-build -b html docs dist/docs
 # - Format matches existing entries — see the 2.4.0 block for a current example
 
 # Release checklist (PyPI publish is triggered automatically by GitHub Actions on release creation)
-# 0. Sweep for stale prose. Grepping for the changed SYMBOL finds almost none of
+# 0. First, a /simplify pass over every module the cycle changed that has not
+#    had one since it changed (`git diff --stat v<last release>` lists them):
+#    file-disjoint passes, one PR each, merged one at a time, each holding
+#    snapshot.jsonl byte-identical and the frame band (_CALL_BASELINE), each
+#    reviewed, then its fix commit reviewed too. A simpler form that moves a
+#    reading is out of bounds there: list it in the PR body under
+#    "Behavior-changing candidates" with what it moves, and file the ones
+#    worth weighing as issues. 3.0 ran only a Lexicon pass until three passes
+#    late in the cycle (#1083, #1084, #1085) found 6 frames and three
+#    follow-ups (#1087, #1088, #1089). Run the passes BEFORE the sweep below,
+#    since they rewrite comments and docstrings the sweep reads.
+#    Then sweep for stale prose. Grepping for the changed SYMBOL finds almost none of
 #    it: prose describes behavior in words, not identifiers. Walk these sites
 #    explicitly — every one of them has gone stale at least once.
 #    - docs/*.rst: usage.rst examples and API surface, plus any file listing
@@ -141,7 +152,13 @@ uv run sphinx-build -b html docs dist/docs
 #      grep: the excerpt and example tests catch citation and example drift,
 #      but statement and Background prose can still be wrong about behavior
 #      that changed
-#    - AGENTS.md itself, for stale commands, architecture notes, or gotchas
+#    - EVERY AGENTS.md, not just the root: nameparser/AGENTS.md,
+#      nameparser/_pipeline/AGENTS.md, nameparser/vocab/AGENTS.md,
+#      docs/AGENTS.md and docs/design/AGENTS.md (`git ls-files '*AGENTS.md'`
+#      lists them), for stale commands, architecture notes, sweeps or
+#      gotchas. READ them after the cycle's last behavior PR merges: 3.0's
+#      sweep (#1079) read four of the six, and a later check found the root's
+#      initials gotcha still naming v1's initials_separator/initials_format
 #    - the pickle-break bullet: pickle every public type (Lexicon, Policy,
 #      Parser, ParsedName, Ambiguity, a locale pack) under the
 #      last release's wheel and load each in the tree; don't derive it
@@ -277,7 +294,7 @@ The 2.0 rewrite landed as underscore-private modules beside the v1 code, which 2
 
 **Code branching on an optional extra takes the untested branch only in CI** — `namedivider` sits in the local `.venv` from earlier work but is absent from every build job, so `if _JA_AVAILABLE else None` runs the PRESENT path locally and the ABSENT path in CI. That broke #337 after a locally-green suite. Before pushing anything that touches the ja extra, run the suite without it: `uv pip uninstall namedivider-python && uv run pytest -q`, then reinstall. The editable install of nameparser itself is the same trap one step out: a distribution packager runs the suite from the sdist with nothing installed, and #949's test of `word_report.py`'s child reached `check_source` only because an import with no tree on the path fell through to the install; with none, it died on `ModuleNotFoundError` first. A test that needs a package outside the tree plants one, as that test now does, and a test that reads git skips outside a checkout. CI's `source-tree` job runs the suite from a `git archive` export with nothing installed, so both now fail at PR time.
 
-**A local run on 3.11 cannot see a deprecation newer interpreters raise** — `.python-version` pins 3.11, pytest's `filterwarnings = ["error"]` turns every warning into a failure, and CI runs 3.11 through 3.15, so a stdlib call deprecated in a later release passes here and fails the newer jobs. #795 passed `maxsplit` to `re.split` positionally (deprecated in 3.13) and failed four jobs while 3.11 and 3.12 passed. Before pushing new code, run it on the newest interpreter CI uses too: `uv run --python 3.15 pytest -q` (uv fetches it; the next plain `uv run` rebuilds the 3.11 venv). Pass `maxsplit`, `count` and `flags` to `re.split`/`re.sub` by keyword.
+**A local run on 3.11 cannot see a deprecation newer interpreters raise** — `.python-version` pins 3.11, pytest's `filterwarnings = ["error"]` turns every warning into a failure, and CI runs 3.11 through 3.15, so a stdlib call deprecated in a later release passes here and fails the newer jobs. #795 passed `maxsplit` to `re.split` positionally (deprecated in 3.13) and failed four jobs while 3.11 and 3.12 passed. Before pushing new code, run it on the newest interpreter CI uses too, in an environment of its own: `UV_PROJECT_ENVIRONMENT=<a scratch folder> uv run --python 3.15 pytest -q` (uv fetches the interpreter). A bare `uv run --python 3.15` rebuilds the worktree's shared `.venv` on 3.15, and the next plain `uv run` rebuilds it back on 3.11. A reviewer or a background run using that `.venv` meanwhile loses packages mid-run: on 2026-11-05 the #1087 session's run left the venv without `namedivider`, and #1088's lost `hypothesis` under its reviewers. With its own environment, the 3.15 run leaves `.venv` untouched (its `pyvenv.cfg` unchanged, measured that day), so it can run beside the reviewers. If a bare run already happened, `uv sync --all-extras` restores the extras. Pass `maxsplit`, `count` and `flags` to `re.split`/`re.sub` by keyword.
 
 **Parsing must never write into its config** — `Lexicon` and `Policy` are frozen, so a parse cannot write to them; v1 did, registering dotted abbreviations like `Lt.Gov.` into the shared config through 1.2.x, which made parse results order-dependent and thread-unsafe. Keep any new cache keyed and immutable for the same reason (`tests/test_constants.py`'s `JoinedPieceTests` hold the readings of that bug's inputs).
 
@@ -321,7 +338,7 @@ Don't use the bare `python3 -m doctest <file>.rst` CLI (no `optionflags`) to che
 
 **`uv run mypy` covers `tests/` too** (`pyproject.toml`'s `[tool.mypy] packages = ["nameparser", "tests"]`, PR #250) — a test that deliberately passes an off-contract value to assert a `TypeError`/`ValueError` (e.g. `parse(None)` in `tests/v2/test_parser.py`), needs a `# type: ignore[code]` comment on that line rather than a signature change. Before reaching for an ignore, check whether the "error" is really a source annotation that hasn't caught up with already-supported runtime behavior — widen the annotation instead in that case.
 
-**`initials_separator` is intra-group only** — it controls the joiner between consecutive initials *within* a name group (e.g. two middle names in `middle_list`). Spaces *between* groups come from `initials_format`. To fully concatenate initials you need both `initials_separator=""` and `initials_format="{first}{middle}{last}"`.
+**`initials()`'s `separator` is intra-group only** — it controls the joiner between consecutive initials *within* a name group (e.g. two middle names). Spaces *between* groups come from `spec`. To fully concatenate initials you need both: `parse("John Quincy Xavier Adams").initials(spec="{given}{middle}{family}", separator="")` gives `'J.Q.X.A.'`, where `separator=""` alone gives `'J. Q.X. A.'` (v1 spelled these `initials_separator` and `initials_format`).
 
 **`pr/NNN` local branches** track upstream PRs — don't commit to them by accident. Check `git branch --show-current` before starting work.
 

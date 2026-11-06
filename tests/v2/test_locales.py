@@ -6,6 +6,7 @@ import importlib.util
 import re
 import sys
 import types
+import unicodedata
 from collections.abc import Callable, Iterable
 from pathlib import Path
 from types import ModuleType
@@ -269,6 +270,72 @@ def test_cs_and_sk_pack_contents() -> None:
     # name words (the #973 review: these moved undeclared under all three)
     for name in ("김민준 1", "Jan\u200bPavel -"):
         assert deviates_by_two_family_names(name), name
+
+
+# rules/O6's declaration counts a run opening with a classified character twice
+# (_locale._letter_runs), and since #1087 "classified" is the script
+# table's, the one W1 divides by. Each row: the name, its declaration,
+# and the declaration under the two definitions it replaced, recorded
+# 2026-11-05 and re-taken live below -- the character-name test the
+# function used before #1087, and the table with HANGUL at the
+# precomposed syllables alone, which would have cost the decomposed
+# names their declaration (the gate's unsafe direction).
+_TWICE_COUNTED = [
+    (unicodedata.normalize("NFD", "김. 민준"), True, True, False),
+    (unicodedata.normalize("NFD", "김 민준"), True, True, False),
+    ("ﾔﾏﾀﾞ ﾀﾛｳ", True, False, True),
+    ("ﾀﾅｶ. John", True, False, True),
+    ("ﾀﾛｳ·ﾔﾏﾀﾞ", True, False, True),
+    ("김 민준", True, True, True),
+    ("ꥠᅡ Kim", True, True, False),    # Extended-A
+    ("ힰ Kim", True, True, False),      # Extended-B
+    ("Pérez García", False, False, False),
+    # the narrowing: compatibility jamo and the katakana phonetic
+    # extensions were counted twice by name and are counted once now,
+    # being in no range W1 divides (the test below shows the packs
+    # read them as the default does)
+    ("ㄱㄴ ㄷㄹ", False, True, False),
+    ("ㇰㇱ ㇲ", False, True, False),
+]
+
+
+def _by_character_name(ch: str) -> bool:
+    return unicodedata.name(ch, "").startswith(
+        ("CJK", "HANGUL", "HIRAGANA", "KATAKANA"))
+
+
+@pytest.mark.parametrize(("name", "declared", "by_name", "by_syllables"),
+                         _TWICE_COUNTED)
+def test_the_two_family_names_declaration_counts_by_the_script_table(
+        monkeypatch: pytest.MonkeyPatch, name: str, declared: bool,
+        by_name: bool, by_syllables: bool) -> None:
+    from nameparser import _locale, _policy
+    assert _locale.deviates_by_two_family_names(name) is declared
+    monkeypatch.setattr(_locale, "_classified_char", _by_character_name)
+    assert _locale.deviates_by_two_family_names(name) is by_name
+    # the table before #1087, built by the shipped factory
+    monkeypatch.setitem(_policy._SCRIPT_RANGES, Script.HANGUL,
+                        (_policy._HANGUL_SYLLABLES,))
+    monkeypatch.setattr(_locale, "_classified_char", _policy._script_matcher(
+        *_policy._SCRIPT_RANGES, whole=True))
+    assert _locale.deviates_by_two_family_names(name) is by_syllables
+
+
+def test_the_twice_counted_controls_each_move_a_row() -> None:
+    assert any(row[1] != row[2] for row in _TWICE_COUNTED)
+    assert any(row[1] != row[3] for row in _TWICE_COUNTED)
+    assert _NARROWED  # an empty parametrize would skip the parity test
+
+
+_NARROWED = [name for name, declared, by_name, _ in _TWICE_COUNTED
+             if by_name and not declared]
+
+
+@pytest.mark.parametrize("name", _NARROWED)
+@pytest.mark.parametrize("code", ["es", "es_ar", "cs", "sk"])
+def test_a_name_the_declaration_stopped_counting_twice_reads_as_the_default(
+        code: str, name: str) -> None:
+    assert _require_packed(code).parse(name).as_dict() == _default_parse(name)
 
 
 def test_es_and_pt_read_a_leading_title_and_leave_don_a_given_name() -> None:

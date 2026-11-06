@@ -2630,6 +2630,122 @@ CASES: tuple[Case, ...] = (
                "'Smith Jones V, John', which reads suffix 'V', two name "
                "words standing in front. 1.4.0 through 2.6.0 read family "
                "'Smith Jones van V'"),
+    # #1093: a connective in front of the numeral is no name word to
+    # spare either (S10).
+    Case("a_numeral_behind_a_connective_before_a_comma_is_family",
+         "Smith y V, John",
+         {"given": "John", "family": "Smith y V"},
+         classification="parity",
+         notes="S10: the 'y' links the 'V' as a second surname written "
+               "as an initial, so only 'Smith' stands in front of the "
+               "numeral. 2.7.0 through 2.8.2 read family 'Smith y', "
+               "suffix 'V', counting the unjoined 'y' as a name word to "
+               "spare; 1.4.0 through 2.6.0 read as here"),
+    Case("a_numeral_behind_a_portuguese_connective_is_family",
+         "Silva e V, João",
+         {"given": "João", "family": "Silva e V"},
+         classification="parity",
+         notes="#1093's spelling sweep, another single-letter "
+               "connective. 2.7.0 through 2.8.2 read family 'Silva e', "
+               "suffix 'V'; 1.4.0 through 2.6.0 read as here"),
+    Case("a_numeral_behind_a_cyrillic_connective_is_family",
+         "Иванов и V, Иван",
+         {"given": "Иван", "family": "Иванов и V"},
+         classification="parity",
+         notes="#1093's spelling sweep, a connective outside Latin "
+               "script. 2.7.0 through 2.8.2 read family 'Иванов и', "
+               "suffix 'V'; 1.4.0 through 2.6.0 read as here"),
+    Case("a_numeral_i_behind_a_connective_before_a_comma_is_family",
+         "Smith y I, John",
+         {"given": "John", "family": "Smith y I"},
+         classification="parity",
+         notes="#1093's numeral sweep: I is a numeral and an initial. "
+               "2.7.0 through 2.8.2 read family 'Smith y', suffix 'I'; "
+               "1.4.0 through 2.6.0 read as here"),
+    Case("a_numeral_behind_a_connective_before_two_commas_is_family",
+         "Smith y V, John, Jr.",
+         {"given": "John", "family": "Smith y V", "suffix": "Jr."},
+         classification="parity",
+         notes="#1093 with a third comma part. 2.7.0 through 2.8.2 read "
+               "family 'Smith y', suffix 'V, Jr.'; 1.4.0 through 2.6.0 "
+               "read as here"),
+    Case("a_numeral_behind_a_connective_opening_the_part_is_family",
+         "y Smith V, John",
+         {"given": "John", "family": "y Smith V"},
+         classification="parity",
+         notes="#1093: a connective is no name word wherever it stands "
+               "in the part, as a particle opening it is none ('de "
+               "Mesnil V, Jean'), so one name word stands in front of "
+               "the numeral. 2.7.0 through 2.8.2 read family 'y Smith', "
+               "suffix 'V'; 1.4.0 through 2.6.0 read as here"),
+    Case("a_numeral_behind_a_generational_connective_opening_the_part_is_family",
+         "i Smith V, John",
+         {"given": "John", "family": "i Smith V"},
+         classification="parity",
+         notes="#1093's comment review: the connective that is also "
+               "suffix vocabulary stays in the count only in front of "
+               "the numeral (S10), so opening the part it is no name "
+               "word, as 'y' is not. 2.7.0 through 2.8.2 read family 'i "
+               "Smith', suffix 'V'; 1.4.0 through 2.6.0 read as here"),
+    Case("a_numeral_behind_a_connective_before_initials_is_family",
+         "Smith y V, J.",
+         {"given": "J.", "family": "Smith y V"},
+         classification="parity",
+         notes="#1093 with an initial for the given part. 2.7.0 through "
+               "2.8.2 read family 'Smith y', suffix 'V'; 1.4.0 through "
+               "2.6.0 read as here"),
+    Case("a_numeral_behind_a_connective_before_a_credential_is_family",
+         "Smith y V PhD, John",
+         {"given": "John", "family": "Smith y V", "suffix": "PhD"},
+         classification="parity",
+         notes="#1093 with a suffix word behind the numeral in the "
+               "family part. 2.7.0 through 2.8.2 read family 'Smith y', "
+               "suffix 'V PhD'; 1.4.0 through 2.6.0 read as here"),
+    Case("a_numeral_behind_an_uppercase_connective_is_family",
+         "ИВАНОВ И V, ИВАН",
+         {"given": "ИВАН", "family": "ИВАНОВ И V"},
+         classification="parity",
+         notes="#1093's spelling sweep: a connective in capitals. A "
+               "Latin 'Y' cannot stand in, being an initial in front, "
+               "which asks no count. 2.7.0 through 2.8.2 read family "
+               "'ИВАНОВ И', suffix 'V'; 1.4.0 through 2.6.0 read as "
+               "here"),
+    Case("a_numeral_behind_a_joined_connective_surname_keeps_the_count",
+         "Smith Ortega y Gasset V, José",
+         {"given": "José", "family": "Smith Ortega y Gasset",
+          "suffix": "V"},
+         ambiguities=("suffix-or-name",), classification="fix(#774)",
+         notes="#1093's boundary: a connective joined to name words is "
+               "one name word, so two stand in front, as in 'Smith van "
+               "der Berg V, John'. 1.4.0 through 2.6.0 read family "
+               "'Smith Ortega y Gasset V'"),
+    Case("a_connective_joining_a_two_letter_numeral_keeps_it_in_the_family",
+         "Smith Jones y VI, John",
+         {"given": "John", "family": "Smith Jones y VI"},
+         classification="parity",
+         notes="#1093 left this as it reads: P3's join takes the 'VI' "
+               "its own count left out as the generation, so the "
+               "numeral never reaches S10's count. Left as it reads "
+               "(decisions/S10's #1093 entry). 1.4.0 through 2.8.2 read "
+               "as here"),
+    Case("a_two_letter_numeral_behind_a_connective_stays_the_suffix",
+         "Smith y VI, John",
+         {"given": "John", "family": "Smith y", "suffix": "VI"},
+         ambiguities=("suffix-or-name",), classification="fix(#893)",
+         notes="#1093's boundary: 'VI' cannot be an initial, so the "
+               "'y' has nothing to link and the numeral reads as the "
+               "generation by its shape, asking no count (S10). 1.4.0 "
+               "through 2.8.2 read family 'Smith y VI'"),
+    Case("a_generational_connective_before_a_numeral_stays_the_suffix",
+         "Smith i V, John",
+         {"given": "John", "family": "Smith", "suffix": "i V"},
+         ambiguities=("suffix-or-name",), classification="fix(#774)",
+         notes="#1093's boundary: a connective that is also suffix "
+               "vocabulary stays in the count in front of the numeral "
+               "(S10), so two words stand in front and the numeral reads "
+               "as the generation, the 'i' joining it in the suffix as "
+               "the generation it spells (P3). 1.4.0 through 2.6.0 read "
+               "family 'Smith V', suffix 'i'"),
     Case("a_comma_before_no_name_word_keeps_the_positional_read",
          "Berg de MA, Prof.",
          {"title": "Prof.", "given": "Berg", "family": "de",
@@ -15908,12 +16024,11 @@ CASES: tuple[Case, ...] = (
                "amendment), so NFD degrades to no-split, never to a "
                "wrong split, and no "
                "token text is rewritten. Contrast 'NFD(田中さん, 様.)', "
-               "which matched before: Han does not decompose. NEITHER "
-               "tolerated NOR shape-tagged, deliberately: this table's "
-               "_has_cjk reads raw codepoints (jamo sit outside "
-               "_SCRIPT_RANGES), so a decomposed text is not CJK to the "
-               "purity gate and reaches no corpus; the row is a HEAD "
-               "pin only."),
+               "which matched before: Han does not decompose. Tolerated, "
+               "like its composed twin ko_honorific_written_with_a_period: "
+               "the jamo are classified script (decisions/nfd-shapes, "
+               "#1087), so the corpus builder's _has_cjk selects it.",
+         tolerated=True),
     Case("latin_title_written_nfd_is_still_a_title",
          unicodedata.normalize("NFD", "Señor Juan Garcia"),
          {"title": unicodedata.normalize("NFD", "Señor"),
