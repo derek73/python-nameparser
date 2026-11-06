@@ -1510,6 +1510,23 @@ fixes the order whatever the flag:
     $ python -m nameparser --order family-first --json "Kovács János Péter"
     {"title": "", "given": "János", "middle": "Péter", "family": "Kovács", "suffix": "", "nickname": "", "maiden": ""}
 
+The ``Policy`` switches that turn a reading on or off have a flag each,
+spelled as the field: ``--two-given-names``, ``--two-family-names``,
+``--middle-as-family``, ``--lenient-comma-suffixes`` and
+``--unlisted-dotted-suffixes``, each with a ``--no-`` form, and
+``--unlisted-caps-suffixes`` taking ``off``, ``after-comma`` or
+``everywhere``. Like ``--order``, each replaces the setting of a pack
+given with ``--locale``, keeping the pack's vocabulary, and one left
+out keeps the pack's setting. ``es`` reads ``Lic`` as a title and two
+family names, and the flag turns only the second off:
+
+::
+
+    $ python -m nameparser --two-given-names --json "Juan Carlos García"
+    {"title": "", "given": "Juan Carlos", "middle": "", "family": "García", "suffix": "", "nickname": "", "maiden": ""}
+    $ python -m nameparser --locale es --no-two-family-names --json "Lic Gabriel García Márquez"
+    {"title": "Lic", "given": "Gabriel", "middle": "García", "family": "Márquez", "suffix": "", "nickname": "", "maiden": ""}
+
 Where next
 ----------
 
