@@ -7,7 +7,12 @@ and each field is compared with the box the filer typed it into
 (`psc-individuals`' title, forename, middle name and surname boxes;
 `orcid-researchers`' given-names box, holding the middle names too, and
 family-name box, typed by the holder; `cz-candidates`' title before the
-name, given names, surname and title after it). What
+name, given names, surname and title after it; and the two Vietnamese
+corpora, whose family, middle and given names no one filed: `uit-vinames`
+and `vn-assembly` state a name whole, in the Vietnamese order, and their
+parts are derived by the convention a reader of the name assumes, first
+word the family name and last the given (local_uit.split), with
+`vn-assembly`'s title composed from the education its deputies state). What
 cldr_agreement.py does for the committed fields files, over names that
 are never committed -- so no CI run and no reviewer sees this score,
 and its record lives in the cache beside the corpus, where a re-run
@@ -80,7 +85,7 @@ import sys
 import types
 from collections import Counter
 from collections.abc import Callable, Iterator
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -127,6 +132,13 @@ class Fielded:
     group: str
     group_cased: bool = False
     sets_aside: bool = True
+    #: The fewest records of a group for the report to give it a row,
+    #: where the source's own population is smaller than GROUP_FLOOR
+    #: (vn-assembly's 499 deputies, of whom 410 were Kinh and the next
+    #: ethnicity 19 on 2026-11-04); None for GROUP_FLOOR. Kept out of the
+    #: repr that scorer_fingerprint hashes: it decides which rows the
+    #: report prints, never a record's entry.
+    group_floor: int | None = field(default=None, repr=False)
 
     def __post_init__(self) -> None:
         # A misspelled role would find no box (_box), and a misspelled
@@ -148,7 +160,12 @@ FIELDED = {local_corpora.PSC: Fielded(
     group_cased=True),
            local_corpora.VOLBY: Fielded(
     {"titulpred": "title", "jmeno": "given+middle", "prijmeni": "family",
-     "titulza": "suffix"}, group="election", group_cased=True, sets_aside=False)}
+     "titulza": "suffix"}, group="election", group_cased=True, sets_aside=False),
+           local_corpora.UIT: Fielded(
+    {"family": "family", "middle": "middle", "given": "given"}, group="gender"),
+           local_corpora.VN: Fielded(
+    {"title": "title", "family": "family", "middle": "middle", "given": "given"},
+    group="ethnicity", group_cased=True, sets_aside=False, group_floor=10)}
 #: The fewest records sharing a set-aside title for the report to print
 #: it: a word typed into the title box by this many filers is no one
 #: person's name.
@@ -308,6 +325,7 @@ def _pct(n: int, of: int) -> str:
 
 
 def report(result: Score, fielded: Fielded, top: int) -> list[str]:
+    floor = fielded.group_floor or GROUP_FLOOR
     roles = list(fielded.fields.values())
     total, agreed = sum(result.scored.values()), sum(result.agreed.values())
     misses: Counter[str] = sum(result.misses.values(), Counter())
@@ -318,11 +336,11 @@ def report(result: Score, fielded: Fielded, top: int) -> list[str]:
            + ("" if _box(fielded, "suffix") else
               f"; {result.by_suffix:,} of them with the parser's suffix in the surname box"),
            "misses per field: " + ", ".join(f"{r} {misses[r]:,}" for r in roles), "",
-           f"by {fielded.group} (at least {GROUP_FLOOR:,} records), misses per field:",
+           f"by {fielded.group} (at least {floor:,} records), misses per field:",
            f"  {fielded.group:<24} {'records':>10} {'agree':>7}  "
            + " ".join(f"{r:>8}" for r in roles)]
     for group, n in result.scored.most_common():
-        if n < GROUP_FLOOR:
+        if n < floor:
             break
         row = result.misses.get(group, Counter())
         out.append(f"  {group[:24]:<24} {n:>10,} {_pct(result.agreed[group], n)}  "

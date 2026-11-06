@@ -212,8 +212,8 @@ def _absorbed(piece: Sequence[int], tokens: Sequence[WorkToken],
 #: could speak, so O5's convention decided nothing. Built from M4's
 #: `_NEVER_FLIPPED` pair rather than respelling it: the two sets answer
 #: different questions -- may M4 retag the word, and did anything
-#: decide the field -- and share the pair because a word vocabulary
-#: claimed as a given name, or wrote as an initial, answers both. The
+#: decide the field -- and share the pair because a bound given name,
+#: or a word written as an initial, answers both. The
 #: third, `particle`, is here alone because a lone particle's reading
 #: is P4's. None is a predicate this emitter owns: they are read off
 #: the tags classify already recorded (mechanisms.md#TWO-LAYER-ASSIGN).
@@ -447,6 +447,8 @@ def _assign_main(seg_idx: int, state: ParseState,
     # the WHOLE segment before any title peeling -- 'Xyz. (Bud) Smith'
     # has two pieces, so the title peel wins and this rule declines;
     # H1 then names Smith the family (rules/N3's title bullet)
+    # A suffix makes two pieces as a title does: that shape is N3's
+    # suffix clause, at O5's site below.
     # The nickname scan sits LAST in the test: it is a generator, which
     # every interpreter resumes once per token (seven call events on
     # the reference name), and only a one-piece segment ever reads its
@@ -618,12 +620,12 @@ def _assign_main(seg_idx: int, state: ParseState,
                 alternative=suffix_reading(tokens[head[0]])))
         # One name piece off the peel: the convention placed a lone
         # name word. A suffix beside it is not a decision -- 'Smith
-        # Jr.' and "'Smitty' Jones Jr." ARE this convention -- and the
-        # count comes off the peel rather than off name_pieces, which
-        # is what keeps the carve-out above out of these branches.
-        # Title vocabulary in the unit makes the doubt H4's or H7's (is
-        # the WORD a title), anything else O5's (which FIELD it took),
-        # so only the second reads `field_undecided`.
+        # Jr.' IS this convention -- and the count comes off the peel
+        # rather than off name_pieces, which is what keeps the carve-out
+        # above out of these branches. Title vocabulary in the unit makes
+        # the doubt H4's or H7's (is the WORD a title), anything else
+        # O5's (which FIELD it took, or N3's where a nickname decides
+        # it), so only the second reads `field_undecided`.
         if peeled.names == 1 and not resolved.by_script:
             # rules/H4: "an input whose only remaining name word
             # after the title peel is itself title vocabulary reads
@@ -665,18 +667,31 @@ def _assign_main(seg_idx: int, state: ParseState,
                             for i in head)
                     and any(c.isalnum() for i in head
                             for c in tokens[i].text)):
-                text = " ".join(tokens[i].text for i in head)
-                ambiguities.append(PendingAmbiguity(
-                    AmbiguityKind.GIVEN_OR_FAMILY,
-                    f"{text!r} is the only name word and nothing else "
-                    f"decides it; read as ", tuple(head),
-                    field_tail=" by convention, which follows the read "
-                               "order",
-                    # the other primary field, named from the final
-                    # role by assemble
-                    alternative=PendingReading(ReadingKind.NAME,
-                                               ReadingSource.POSITION,
-                                               Deferred.OTHER_PRIMARY)))
+                # rules/N3: "a name that is only a nickname and one name
+                # word reads that word as the family name, whatever
+                # suffix stands beside them" -- the suffixed shape the
+                # early count above declines, decided here, where the
+                # peel has set the suffix aside and O5's clauses have
+                # said nothing else decided the word (decisions/N3,
+                # #815). The early count's scan, behind
+                # `state.extracted`: a nickname is a clause extract set
+                # aside, so a name with none pays no frame for it.
+                if state.extracted and any(t.role is Role.NICKNAME
+                                           for t in tokens):
+                    _set_roles(tokens, head, Role.FAMILY)
+                else:
+                    text = " ".join(tokens[i].text for i in head)
+                    ambiguities.append(PendingAmbiguity(
+                        AmbiguityKind.GIVEN_OR_FAMILY,
+                        f"{text!r} is the only name word and nothing else "
+                        f"decides it; read as ", tuple(head),
+                        field_tail=" by convention, which follows the "
+                                   "read order",
+                        # the other primary field, named from the final
+                        # role by assemble
+                        alternative=PendingReading(ReadingKind.NAME,
+                                                   ReadingSource.POSITION,
+                                                   Deferred.OTHER_PRIMARY)))
     # rules/S10: "a one-letter numeral before a credential is the
     # family name, and the reading is reported" -- the part's last name
     # word with nothing but the trailing run behind it (#721, Derek:
