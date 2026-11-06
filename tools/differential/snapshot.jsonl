@@ -3531,6 +3531,7 @@
 {"name": "Smith Vi, John", "given": "John", "family": "Smith Vi", "initials": "J. S. V."}
 {"name": "Smith and Pope", "given": "Smith and Pope", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "S. P."}
 {"name": "Smith born", "given": "Smith", "family": "born", "initials": "S. b.", "capitalized_force": "Smith Born"}
+{"name": "Smith i V, John", "given": "John", "family": "Smith", "suffix": "i V", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: initial as family (shape)"], "initials": "J. S.", "capitalized_force": "John Smith I V", "generation": "i V"}
 {"name": "Smith nee Jones, Jane MA", "given": "Jane", "family": "Smith", "suffix": "MA", "maiden": "Jones", "initials": "J. S."}
 {"name": "Smith née", "given": "Smith", "family": "née", "initials": "S. n.", "capitalized_force": "Smith Née"}
 {"name": "Smith née Jones", "family": "Smith", "maiden": "Jones", "initials": "S."}
@@ -3539,6 +3540,8 @@
 {"name": "Smith van der Berg V, John", "given": "John", "family": "Smith van der Berg", "suffix": "V", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: initial as family (shape)"], "initials": "J. S. B.", "generation": "V"}
 {"name": "Smith van der V, John", "given": "John", "family": "Smith van der V", "initials": "J. S. V."}
 {"name": "Smith vd v, John", "given": "John", "family": "Smith", "suffix": "vd v", "initials": "J. S.", "capitalized_force": "John Smith VD V", "generation": "v", "credentials": "vd"}
+{"name": "Smith y V, John", "given": "John", "family": "Smith y V", "initials": "J. S. V."}
+{"name": "Smith y VI, John", "given": "John", "family": "Smith y", "suffix": "VI", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "J. S.", "generation": "VI"}
 {"name": "Smith 김민준씨, XYZ", "given": "Smith", "middle": "김", "family": "민준", "suffix": "씨, XYZ", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "S.", "honorifics": "씨"}
 {"name": "Smith, A.B.", "given": "A.B.", "family": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "A. S."}
 {"name": "Smith, A.B.C.", "family": "Smith", "suffix": "A.B.C.", "initials": "S."}
@@ -4217,6 +4220,7 @@
 {"name": "g. Janez Peter Novak ml., univ. dipl. inž.", "title": "univ. dipl. inž.", "given": "g.", "middle": "Janez Peter Novak", "family": "ml.", "initials": "g. J. P. N. m.", "capitalized_force": "Univ. Dipl. Inž. G. Janez Peter Novak Ml."}
 {"name": "g. Novak Janez Peter, univ. dipl. inž.", "order": "FAMILY_FIRST", "title": "univ. dipl. inž.", "given": "Novak", "middle": "Janez Peter", "family": "g.", "initials": "N. J. P. g.", "capitalized_force": "Univ. Dipl. Inž. G. Novak Janez Peter"}
 {"name": "hr. Hans Henrik Sven Åge Møller, MF", "title": "hr.", "given": "MF", "family": "Hans Henrik Sven Åge Møller", "initials": "M. H. H. S. Å. M.", "capitalized_force": "Hr. Mf Hans Henrik Sven Åge Møller"}
+{"name": "i Smith V, John", "given": "John", "family": "i Smith V", "initials": "J. S. V."}
 {"name": "ibn Ali Hasan", "family": "ibn Ali Hasan", "initials": "A. H.", "patronymic": "ibn Ali Hasan"}
 {"name": "ibn Awf abdul Rahman", "family": "ibn Awf abdul Rahman", "initials": "A. a. R.", "capitalized_force": "ibn Awf Abdul Rahman", "patronymic": "ibn Awf abdul Rahman"}
 {"name": "ina binti navalamar", "given": "ina", "family": "binti navalamar", "initials": "i. n.", "capitalized": "Ina binti Navalamar", "patronymic": "binti navalamar"}
@@ -4454,6 +4458,7 @@
 {"name": "won Baar Dominique Goudiaby Prof. Dr. Adama Coulibaly Camara Massamba MD DDS", "order": "FAMILY_FIRST", "given": "Baar", "middle": "Dominique Goudiaby Prof. Dr. Adama Coulibaly Camara Massamba", "family": "won", "suffix": "MD DDS", "initials": "B. D. G. P. D. A. C. C. M. w.", "capitalized_force": "Won Baar Dominique Goudiaby Prof. Dr. Adama Coulibaly Camara Massamba MD DDS"}
 {"name": "won Baar Dominique Goudiaby, Prof. Dr. Adama Coulibaly Camara Massamba MD DDS", "title": "Prof. Dr.", "given": "Adama", "middle": "Coulibaly Camara Massamba", "family": "won Baar Dominique Goudiaby", "suffix": "MD DDS", "initials": "A. C. C. M. w. B. D. G.", "capitalized_force": "Prof. Dr. Adama Coulibaly Camara Massamba Won Baar Dominique Goudiaby MD DDS"}
 {"name": "xyz. John Smith", "title": "xyz.", "given": "John", "family": "Smith", "initials": "J. S.", "capitalized_force": "Xyz. John Smith"}
+{"name": "y Smith V, John", "given": "John", "family": "y Smith V", "initials": "J. S. V."}
 {"name": "ylymlaryň doktory, professor Ada Kornelia Sezar Martin fon Brül Gonzales Domingo, hirurg-stomatolog lukman", "title": "professor", "given": "Ada", "middle": "Kornelia Sezar Martin fon Brül Gonzales Domingo", "family": "ylymlaryň doktory", "suffix": "hirurg-stomatolog lukman", "ambiguities": ["COMMA_STRUCTURE"], "initials": "A. K. S. M. f. B. G. D. y. d.", "capitalized_force": "Professor Ada Kornelia Sezar Martin Fon Brül Gonzales Domingo Ylymlaryň Doktory Hirurg-Stomatolog Lukman"}
 {"name": "zaʿīm, ḥusnī az-", "given": "ḥusnī", "family": "az- zaʿīm", "initials": "ḥ. z.", "capitalized": "Ḥusnī az- Zaʿīm"}
 {"name": "Ábrányi, Emil", "given": "Emil", "family": "Ábrányi", "initials": "E. Á."}
