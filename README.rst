@@ -121,7 +121,8 @@ and removes the particle reading, so ``Van`` stays a middle name:
     >>> ordered = Parser(policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST))
     >>> ordered.parse("Nguyen Van Anh").given     # van, Dutch, chains on
     'Van Anh'
-    >>> anh = parser_for(locales.VI).parse("Nguyen Van Anh")
+    >>> vietnamese = parser_for(locales.VI)
+    >>> anh = vietnamese.parse("Nguyen Van Anh")
     >>> anh.family, anh.middle, anh.given
     ('Nguyen', 'Van', 'Anh')
 
