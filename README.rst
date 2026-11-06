@@ -101,21 +101,27 @@ choice reads the given name, the title staying one inside a phrase:
 A `strict choice
 <https://nameparser.readthedocs.io/en/latest/locales.html#reading-one-language-only>`__
 reads only the chosen languages' words, the words every language
-shares, and words written in a script other than Latin. Vietnamese
-written without its diacritics meets the Dutch particle ``van``, which
-a strict ``vi`` choice drops (a plain one is refused, the Vietnamese
-file holding no reading yet):
+shares, and words written in a script other than Latin, so the English
+title phrase is no longer one:
 
 .. code-block:: python
 
-    >>> from nameparser import FAMILY_FIRST_GIVEN_LAST, Lexicon, Locale
+    >>> strict = parser_for(locales.ES, strict=True)
+    >>> strict.parse("Lady Justice Jane Smith").title
+    ''
+
+A pack can also take a reading out. Vietnamese written without its
+diacritics meets the Dutch particle ``van``, which chains onto the given
+name under a family-first order. The Vietnamese pack reads family-first
+and removes the particle reading, so ``Van`` stays a middle name:
+
+.. code-block:: python
+
+    >>> from nameparser import FAMILY_FIRST_GIVEN_LAST
     >>> ordered = Parser(policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST))
     >>> ordered.parse("Nguyen Van Anh").given     # van, Dutch, chains on
     'Van Anh'
-    >>> vi = Locale(code="vi", lexicon=Lexicon.empty(),
-    ...             languages=frozenset({"vi"}))
-    >>> vietnamese = parser_for(vi, base=ordered, strict=True)
-    >>> anh = vietnamese.parse("Nguyen Van Anh")
+    >>> anh = parser_for(locales.VI).parse("Nguyen Van Anh")
     >>> anh.family, anh.middle, anh.given
     ('Nguyen', 'Van', 'Anh')
 
@@ -183,6 +189,7 @@ to a ``Parser``:
 
 .. code-block:: python
 
+    >>> from nameparser import Lexicon
     >>> [r.kind for r in Lexicon.default().readings_of("dean")]
     ['office', 'given', 'family']
     >>> deans = Lexicon.default().remove("dean", kind="given")    # Dean is always a title
