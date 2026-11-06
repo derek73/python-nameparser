@@ -447,9 +447,8 @@ def _assign_main(seg_idx: int, state: ParseState,
     # the WHOLE segment before any title peeling -- 'Xyz. (Bud) Smith'
     # has two pieces, so the title peel wins and this rule declines;
     # H1 then names Smith the family (rules/N3's title bullet)
-    # A suffix makes two pieces as a title does, so the suffixed shape
-    # of a word nothing claimed is decided at O5's site below, after
-    # the peel has set the suffix aside.
+    # A suffix makes two pieces as a title does: that shape is N3's
+    # suffix clause, at O5's site below.
     # The nickname scan sits LAST in the test: it is a generator, which
     # every interpreter resumes once per token (seven call events on
     # the reference name), and only a one-piece segment ever reads its
@@ -621,13 +620,12 @@ def _assign_main(seg_idx: int, state: ParseState,
                 alternative=suffix_reading(tokens[head[0]])))
         # One name piece off the peel: the convention placed a lone
         # name word. A suffix beside it is not a decision -- 'Smith
-        # Jr.' IS this convention, and "'Smitty' Jones Jr." is N3's
-        # below -- and the count comes off the peel rather than off
-        # name_pieces, which is what keeps the carve-out above out of
-        # these branches. Title vocabulary in the unit makes the doubt
-        # H4's or H7's (is the WORD a title), anything else O5's (which
-        # FIELD it took) or N3's (a nickname deciding it), so only the
-        # second reads `field_undecided`.
+        # Jr.' IS this convention -- and the count comes off the peel
+        # rather than off name_pieces, which is what keeps the carve-out
+        # above out of these branches. Title vocabulary in the unit makes
+        # the doubt H4's or H7's (is the WORD a title), anything else
+        # O5's (which FIELD it took, or N3's where a nickname decides
+        # it), so only the second reads `field_undecided`.
         if peeled.names == 1 and not resolved.by_script:
             # rules/H4: "an input whose only remaining name word
             # after the title peel is itself title vocabulary reads
@@ -671,15 +669,13 @@ def _assign_main(seg_idx: int, state: ParseState,
                             for c in tokens[i].text)):
                 # rules/N3: "a name that is only a nickname and one name
                 # word reads that word as the family name, whatever
-                # suffix stands beside them" -- the suffixed shape, which
-                # the early count above declines (two pieces); decided
-                # here, where the peel has set the suffix aside and O5's
-                # clauses have said nothing else claimed the word
-                # (decisions/N3, #815). The nickname may stand in any
-                # part of the name ('Jones Jr., (Smitty)'), as it may for
-                # the early count. A nickname is a clause extract set
-                # aside, so `state.extracted`, asked at C level, keeps a
-                # name with none from paying the scan's frames.
+                # suffix stands beside them" -- the suffixed shape the
+                # early count above declines, decided here, where the
+                # peel has set the suffix aside and O5's clauses have
+                # said nothing else decided the word (decisions/N3,
+                # #815). The early count's scan, behind
+                # `state.extracted`: a nickname is a clause extract set
+                # aside, so a name with none pays no frame for it.
                 if state.extracted and any(t.role is Role.NICKNAME
                                            for t in tokens):
                     _set_roles(tokens, head, Role.FAMILY)

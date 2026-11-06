@@ -373,13 +373,10 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # and 'Smith y V' report, each under three orders; 1627 -> 1647 the
     # same day, the rows the reviews of #1097 and #1098 added, three of
     # them reporting suffix-or-name, and the FAMILY_FIRST row; 1647 ->
-    # 1650 the same day, #815: "'Smitty' Jones Jr." stops reporting
-    # given-or-family (-3), and its boundary rows with a one-letter
-    # numeral and a gated word report suffix-or-name (+6), each under
-    # three orders; 1650 -> 1662 the same day, its test review's
-    # boundary rows with a Title case acronym, a gated generation word,
-    # a gated credential word and a title word, each reporting under
-    # three orders.
+    # 1662 the same day, #815: "'Smitty' Jones Jr." stops reporting
+    # given-or-family (-3), and its six boundary rows (a one-letter
+    # numeral, a Title case acronym, three gated words, a title word)
+    # each report under three orders (+18).
     assert claims == 1662, (
         f"the field sweep checks {claims} claims, recorded as 1662 on "
         f"2026-11-05")
