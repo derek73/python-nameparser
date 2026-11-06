@@ -115,10 +115,10 @@ def test_locales_get_and_available() -> None:
     assert locales.get("ru") is locales.RU
     assert set(locales.available()) == {
         "bn", "cs", "es", "es_ar", "ga", "gd", "hi", "hr", "ja", "ne", "pt", "pt_br",
-        "ru", "sk", "sl", "tr_az", "zh"}
+        "ru", "sk", "sl", "tr_az", "vi", "zh"}
     with pytest.raises(
             KeyError,
-            match="bn, cs, es, es_ar, ga, gd, hi, hr, ja, ne, pt, pt_br, ru, sk, sl, tr_az, zh"):
+            match="bn, cs, es, es_ar, ga, gd, hi, hr, ja, ne, pt, pt_br, ru, sk, sl, tr_az, vi, zh"):
         locales.get("xx")
     # the segmenter FACTORY is not a locale: it is an ordinary function
     # on the package, so it must not appear among the codes
@@ -246,6 +246,72 @@ def test_es_and_pt_pack_contents() -> None:
     assert _es.DEVIATES("José Luis Pérez") and _es.DEVIATES("Pérez, José Luis")
     assert _es.DEVIATES("Mary-\u200bJane Smith") and _es.DEVIATES("马丁·路德·金")
     assert not _es.DEVIATES("Pérez García")
+
+
+def test_vi_pack_contents() -> None:
+    # a choice of vi, its file's [rules] order, and a fragment that only
+    # removes (decisions/vocabulary-model, the 2026-11-05 #1108 entry)
+    from nameparser.locales import vi as _vi
+    assert locales.VI.languages == {"vi"}
+    assert locales.VI.policy.name_order is FAMILY_FIRST_GIVEN_LAST
+    assert _ri.changed_words(_ri.selected(locales.VI.languages)) == {
+        "bs", "gs", "pgs", "ths", "ts"}
+    sets = parser_for(locales.VI).lexicon._sets
+    # the fragment takes out the readings it names and nothing else:
+    # van's particle and the's connective leave, en's credential do and
+    # the particles of other words stay
+    assert not {"van", "le", "do", "du", "di", "la", "tho", "da", "mac"} & (
+        sets.particles)
+    assert not {"the", "y"} & sets.conjunctions
+    assert {"de", "von", "bin"} <= sets.particles
+    assert "and" in sets.conjunctions and "do" in sets.suffix_acronyms
+    assert _vi.DEVIATES("Anh") and not _vi.DEVIATES(", ")
+
+
+@pytest.mark.parametrize("text, title, family, middle, given, suffix", [
+    # the spelling sweep: unaccented, with diacritics, in one case
+    ("Nguyen Van Anh", "", "Nguyen", "Van", "Anh", ""),
+    ("Nguyễn Văn Anh", "", "Nguyễn", "Văn", "Anh", ""),
+    ("NGUYỄN VĂN ANH", "", "NGUYỄN", "VĂN", "ANH", ""),
+    ("nguyen van anh", "", "nguyen", "van", "anh", ""),
+    # the surnames other files read as particles, and Thế, a connective
+    ("Le Van Anh", "", "Le", "Van", "Anh", ""),
+    ("Lê Văn Anh", "", "Lê", "Văn", "Anh", ""),
+    ("Do Thi Lan", "", "Do", "Thi", "Lan", ""),
+    ("Đỗ Thị Lan", "", "Đỗ", "Thị", "Lan", ""),
+    ("Tran Van Le", "", "Tran", "Van", "Le", ""),
+    ("Tran The Tuan", "", "Tran", "The", "Tuan", ""),
+    ("Nguyen Van Do", "", "Nguyen", "Van", "Do", ""),
+    # the titles, bare, dotted and stacked
+    ("Ts Nguyen Van Anh", "Ts", "Nguyen", "Van", "Anh", ""),
+    ("PGS.TS. Nguyễn Văn Anh", "PGS.TS.", "Nguyễn", "Văn", "Anh", ""),
+    ("PGS. TS. Nguyen Van Anh", "PGS. TS.", "Nguyen", "Van", "Anh", ""),
+    # the comma shapes: a suffix comma, a family comma, an empty head
+    ("Nguyen Van Anh, PhD", "", "Nguyen", "Van", "Anh", "PhD"),
+    ("Nguyen, Van Anh", "", "Nguyen", "Anh", "Van", ""),
+    ("Nguyen, Van Anh, Jr.", "", "Nguyen", "Anh", "Van", "Jr."),
+    ("Nguyen, Ts Van Anh", "Ts", "Nguyen", "Anh", "Van", ""),
+    (", Van Anh", "", "", "Anh", "Van", ""),
+    # the order reads a one-word name as the family
+    ("Anh", "", "Anh", "", "", ""),
+])
+def test_vi_reads_a_vietnamese_name_family_first_with_its_syllables(
+        text: str, title: str, family: str, middle: str, given: str,
+        suffix: str) -> None:
+    got = parser_for(locales.VI).parse(text)
+    assert (got.title, got.family, got.middle, got.given, got.suffix) == (
+        title, family, middle, given, suffix)
+
+
+def test_vi_differs_from_the_default_where_the_default_reads_given_first() -> None:
+    # the plain-vs-default contrast: a plain vi choice, no strict mode
+    for text in ("Nguyen Van Anh", "Lê Văn Anh", "Tran The Tuan"):
+        assert parse(text).as_dict() != parser_for(locales.VI).parse(text).as_dict()
+    assert parse("Nguyen Van Anh").given == "Nguyen"
+    assert parse("Tran The Tuan").given == "Tran The Tuan"
+    # a family comma fixes the family name, so it reads alike
+    for text in ("Nguyen, Van Anh", "Smith, John"):
+        assert parse(text).as_dict() == parser_for(locales.VI).parse(text).as_dict()
 
 
 def test_cs_and_sk_pack_contents() -> None:
@@ -1315,6 +1381,26 @@ _ROTATORS["hi"] = [
     # reads as the default reads it, and only a strict choice reads it
     # as the title there
     "Her Excellency Sushri Sangita Behera",
+]
+# vi: the order and the fragment move every name a family comma does
+# not fix, so each title's rotator stands behind a family comma, where
+# only the choice moves it (test_a_choice_word_rotator_is_moved_by_the_
+# choice_alone); the rest are the order's and the fragment's shapes.
+_ROTATORS["vi"] = [
+    "Nguyen Van Anh",                # van, the Dutch particle removed
+    "Lê Văn Anh",                    # the order, written with diacritics
+    "Le Thi Mai",                    # le, the French article removed
+    "Tran Van Le",                   # le ending the name
+    "Do Thi Lan",                    # do, the Portuguese particle removed
+    "Nguyen The Tuan",               # the, the English connective removed
+    "Nguyen Y Van",                  # y, the Spanish connective removed
+    "NGUYEN VAN ANH",                # in one case
+    "Nguyen, Ts Van Anh",            # ts after a family comma
+    "Nguyen, Ths Van Anh",           # ths
+    "Nguyen, Gs Van Anh",            # gs
+    "Nguyen, Pgs Van Anh",           # pgs
+    "Nguyen, Bs Van Anh",            # bs, preferred over en's credential
+    "Nguyen, PGS.TS. An",            # the stacked form
 ]
 _ROTATORS["bn"] = [
     "Shrimati Mamata Banerjee",      # shrimati at the head

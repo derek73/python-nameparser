@@ -39,6 +39,7 @@ _REGISTRY = {
     "SK": ("nameparser.locales.sk", "SK"),
     "SL": ("nameparser.locales.sl", "SL"),
     "TR_AZ": ("nameparser.locales.tr_az", "TR_AZ"),
+    "VI": ("nameparser.locales.vi", "VI"),
     "ZH": ("nameparser.locales.zh", "ZH"),
 }
 

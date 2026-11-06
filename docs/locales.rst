@@ -14,7 +14,8 @@ words or more for the packs that read two family names — and a choice
 of languages declares the words whose reading it changes. Read that precisely — a shape is a pattern, not a
 language, so a pack can act on a name from a tradition it was not
 written for, and a broad shape covers much: ``es``, ``es_ar``, ``cs``
-and ``sk`` may read any name of three words differently. The warning
+and ``sk`` may read any name of three words differently, and ``vi``,
+whose name order is its shape, any name at all. The warning
 under `Using a pack`_ shows what that costs.
 
 What works without a pack
@@ -260,7 +261,7 @@ checked in one of four ways:
 - **A region or other subtag of a language that has a file** (``pt-PT``)
   is accepted and reads that language's file, there being none of its
   own.
-- **A language whose file holds no reading yet** (``vi``, whose file
+- **A language whose file holds no reading yet** (``hu``, whose file
   only records words kept out) raises ``ValueError``, a choice of it
   changing nothing; a strict choice accepts it (`Reading one language
   only`_).
@@ -407,10 +408,9 @@ drops from every name:
   add. A pack's own word list and policy are applied after the strict
   choice, untouched, and so is the Korean surname list.
 - **A language whose file holds no reading yet is accepted.**
-  ``vi.toml`` holds none, so a plain ``vi`` choice is refused; a
+  ``hu.toml`` holds none, so a plain ``hu`` choice is refused; a
   strict one reads the other scripts' words and, in Latin letters,
-  only the shared ones, which unchains Dutch ``van`` from a Vietnamese
-  middle name (``Do Van Minh`` reads middle ``Van``, family ``Minh``).
+  only the shared ones.
 - **Your own words stay.** A word a strict choice drops is kept where
   you added it yourself, your lexicon's readings applying after the
   choice (`Your own words outrank a choice`_).
@@ -565,7 +565,7 @@ look one up dynamically by its lowercase code with
 .. doctest::
 
     >>> locales.available()
-    ('bn', 'cs', 'es', 'es_ar', 'ga', 'gd', 'hi', 'hr', 'ja', 'ne', 'pt', 'pt_br', 'ru', 'sk', 'sl', 'tr_az', 'zh')
+    ('bn', 'cs', 'es', 'es_ar', 'ga', 'gd', 'hi', 'hr', 'ja', 'ne', 'pt', 'pt_br', 'ru', 'sk', 'sl', 'tr_az', 'vi', 'zh')
     >>> locales.get("ru") is locales.RU
     True
 
@@ -680,6 +680,14 @@ Shipped packs
        word as the family name (``Aliyev Ilham Heydar oglu`` → family
        ``Aliyev``). A marker and the name before it fill
        ``patronymic`` (``Heydar oglu`` there).
+   * - ``vi``
+     - Vietnamese — reads every name family first, the given name last
+       (``Nguyen Van Anh`` → family ``Nguyen``, middle ``Van``, given
+       ``Anh``), keeps the syllables other languages read as particles
+       or connectives (``Van``, ``Le``, ``Do``, ``The``) as name words,
+       and chooses ``vi``, which turns on the academic titles written
+       before a name and their stacked forms (``PGS.TS.``). See
+       `Vietnamese names`_.
    * - ``zh``
      - Chinese surname segmentation — splits an unspaced Han name into
        surname and given name (``毛泽东`` → family ``毛``, given
@@ -699,7 +707,12 @@ Nepali) and off until a caller chooses the language. ``ja``, ``ru`` and
 ``es`` and ``es_ar`` are each a choice with a list and one policy field
 beside it: each turns ``two_family_names`` on and carries the given
 names that switch leaves where they stand. ``cs`` and ``sk`` are a choice with that one policy
-field beside it and no list. ``zh`` is both halves at once: a surname list, plus the
+field beside it and no list. ``vi`` is a choice with one policy field,
+``name_order``, and the one fragment that takes readings out rather
+than adding them: a choice prefers its language's reading of a word
+only where that reading is a title, a particle or another vocabulary
+kind, never a name, so no reading ``vi.toml`` could write would keep
+``Van`` a name word. ``zh`` is both halves at once: a surname list, plus the
 one policy field that turns segmentation on for the script it covers. See
 :ref:`config-containers` for how that split (language vocabulary vs. behavior)
 is drawn, and `Contributing a pack to nameparser`_ for which half a
@@ -971,6 +984,35 @@ of a name by default, packs or no. ``Pandit``, ``Sardar``, ``Kumari``,
 ``Babu``, ``Acharya`` and ``Begum`` are titles under no pack: each opens
 far more names as a given name or a surname than as the title.
 
+Vietnamese names
+^^^^^^^^^^^^^^^^
+
+A Vietnamese name is written family name first, then the middle name,
+then the given name, and in Latin letters the default reads it the
+other way round. ``vi`` reads it in its own order, keeps ``Van`` (Văn),
+``Le`` (Lê), ``Do`` (Đỗ) and ``The`` (Thế) as name words where other
+languages' particles and connectives would join them to the next word,
+and reads the academic titles written before a name:
+
+.. doctest::
+
+    >>> parse("Nguyen Van Anh").given
+    'Nguyen'
+    >>> vietnamese = parser_for(locales.VI)
+    >>> anh = vietnamese.parse("Nguyen Van Anh")
+    >>> anh.family, anh.middle, anh.given
+    ('Nguyen', 'Van', 'Anh')
+    >>> vietnamese.parse("Lê Thị Mai").family
+    'Lê'
+    >>> vietnamese.parse("PGS.TS. Nguyen Van Anh").title
+    'PGS.TS.'
+
+The order holds for every name the pack reads, a one-word name
+included, so keep it for Vietnamese data: ``vietnamese.parse("John
+Smith")`` gives family ``John``. A family comma fixes the family name
+whatever the order (``Nguyen, Van Anh`` → family ``Nguyen``), and
+``Smith, John`` reads under ``vi`` as it does by default.
+
 .. _segmenter-contract:
 
 Segmenters
@@ -1065,7 +1107,10 @@ default and a word holding one suffix kind. A reading that marks
 another, as a ``given`` reading makes a particle possibly given, needs
 nothing else in the fragment: ``Lexicon.empty().add("mc", kind="given")``
 marks the base's particle ``mc``. ``zh`` is the shipped worked example:
-its ``Lexicon(surnames=...)`` holds a list and no reading.
+its ``Lexicon(surnames=...)`` holds a list and no reading. A fragment's
+``remove`` calls apply after the choice too, as a caller's own do:
+``vi``'s ``Lexicon.empty().remove("van", ..., kind="particle")`` takes
+out the particle readings of the syllables it lists, and only those.
 
 Contributing a pack to nameparser
 ----------------------------------
@@ -1085,7 +1130,7 @@ by ``tests/v2/test_locales.py``:
    table in the pack's language file, list the file in ``PACK_RULES``
    in ``tools/vocab/build.py``, rebuild, and give the pack
    ``policy=rules_patch("<tag>")`` from ``nameparser._locale``, as
-   ``ru``, ``tr_az``, ``es``, ``cs`` and ``sk`` do. ``nameparser/vocab/README.md``'s "Rules"
+   ``ru``, ``tr_az``, ``es``, ``cs``, ``sk`` and ``vi`` do. ``nameparser/vocab/README.md``'s "Rules"
    section lists the keys. A rule the table does not list is a change
    to the parser, not to a pack.
 #. Declare a module-level ``DEVIATES(name)`` predicate. Given a name
@@ -1116,7 +1161,7 @@ by ``tests/v2/test_locales.py``:
      one per shape of the vocabulary it ships: single surname, compound
      surname, and any spelling variant it means to cover.
    - **By a choice of languages** (``ne``, ``hi``, ``bn``, ``cs``, ``sk``,
-     ``sl``, ``hr``, ``ga``, ``gd``, ``es``, ``es_ar``, ``pt``, ``pt_br``): a name for each word the choice changes, in each script it
+     ``sl``, ``hr``, ``ga``, ``gd``, ``es``, ``es_ar``, ``pt``, ``pt_br``, ``vi``): a name for each word the choice changes, in each script it
      is written in and each position where the default reads it
      otherwise — ``test_choice_rotators_cover_every_changed_word`` fails
      until every word is held.
