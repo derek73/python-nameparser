@@ -15,8 +15,9 @@ of languages declares the words whose reading it changes. Read that precisely �
 language, so a pack can act on a name from a tradition it was not
 written for, and a broad shape covers much: ``es``, ``es_ar``, ``cs``
 and ``sk`` may read any name of three words differently, and ``vi``,
-whose name order is its shape, any name not written with a family
-comma. The warning
+whose name order is its shape, any name: the order moves every name a
+family comma does not fix, and its titles and its removed readings
+reach the comma names too. The warning
 under `Using a pack`_ shows what that costs.
 
 What works without a pack
@@ -996,8 +997,8 @@ then the given name, and the default, reading given-first, reads it the
 other way round, diacritics or none. ``vi`` reads it in its own order,
 keeps ``Van`` (Văn), ``Le`` (Lê), ``Do`` (Đỗ) and ``The`` (Thế) as name
 words where other languages' particles and connectives would join them
-to the words beside them, keeps ``Chi``, ``Ba``, ``Do`` and ``Ma`` from
-being read as a credential ending a name written in capitals
+to the words beside them, keeps ``Chi``, ``Ba`` and ``Do`` from being
+read as a credential ending a name written in capitals
 (``NGUYEN LINH CHI``), and reads the academic titles written before a
 name:
 
@@ -1020,9 +1021,13 @@ a one-word name included, so keep it for Vietnamese data:
 comma fixes the family name whatever the order, and the part after it
 reads given-first, as under every order (``Nguyen, Van Anh`` → family
 ``Nguyen``, given ``Van``, middle ``Anh``), so ``Smith, John`` reads
-under ``vi`` as it does by default. A credential written after a
-Vietnamese name for English-language readers reads as a given name
-(``Nguyen Van Anh, MA`` → given ``MA``).
+under ``vi`` as it does by default; but the syllables ``vi`` keeps as
+name words are name words there too (``Beethoven, Ludwig van`` gives
+middle ``van``). ``DO``, ``BA`` or ``CHI`` written after a Vietnamese
+name as a credential, for English-language readers, reads as a name
+word, with a comma or without (``Nguyen Van Anh, DO`` gives family
+``Nguyen Van Anh``, given ``DO``); other credentials stay suffixes
+(``Nguyen Van Anh, PhD``).
 
 .. _segmenter-contract:
 
@@ -1121,9 +1126,9 @@ marks the base's particle ``mc``. ``zh`` is the shipped worked example:
 its ``Lexicon(surnames=...)`` holds a list and no reading. A fragment's
 ``remove`` calls apply after the choice too, as a caller's own do:
 ``vi``'s fragment, ``Lexicon.empty().remove("van", ..., kind="particle")``
-with a call each for connectives and credentials, takes out those
-readings of the syllables it lists, and only those (``mac`` stays a
-particle, ``md`` a credential).
+with a call each for ``kind="conjunction"`` and ``kind="credential"``,
+takes out those readings of the syllables it lists, and only those
+(``mac`` stays a particle, ``ma`` and ``md`` credentials).
 
 Contributing a pack to nameparser
 ----------------------------------

@@ -40,8 +40,9 @@ N` one name in N (snapshot.sampled, by a hash of the name, so a sample
 is the same in every tree and run). `--spelling` rewrites every name
 before it is read, `stripped` (the marks dropped, đ as d), `upper` or
 `lower`, comma-separated and applied in order, so `--spelling
-stripped,upper` reads a population as plain-ASCII data in capitals
-writes it (#1108); names that respell alike are read once.
+stripped,upper` reads a Vietnamese population as plain-ASCII data in
+capitals writes it (#1108); names that respell alike are read once, and
+`--match` and `--sample` see the respelled name.
 
 **What is compared**: the seven role fields, the ambiguity kinds and
 3.0's views (VIEWS: `generation`, `credentials`, `honorifics`, `patronymic`,
@@ -486,8 +487,8 @@ def gather(args: argparse.Namespace) -> list[tuple[str, str | None, frozenset[st
 
 
 #: The rewrites --spelling applies to every name before it is read: the
-#: marks stripped (NFD, combining marks dropped, đ as d), as data in
-#: plain ASCII writes a name, and the name in one case (#1108).
+#: combining marks dropped and đ as d, as plain-ASCII data writes a
+#: Vietnamese name (ł, ø and ß stay), and the name in one case (#1108).
 SPELLINGS = ("stripped", "upper", "lower")
 
 
@@ -495,14 +496,28 @@ def respell(text: str, spellings: tuple[str, ...]) -> str:
     """`text` with each of `spellings` applied in turn (SPELLINGS)."""
     for spelling in spellings:
         if spelling == "stripped":
-            text = "".join(c for c in unicodedata.normalize(
-                "NFD", text.replace("đ", "d").replace("Đ", "D"))
-                if not unicodedata.combining(c))
+            text = _unmark_latin(text.replace("đ", "d").replace("Đ", "D"))
         elif spelling == "upper":
             text = text.upper()
         else:
             text = text.lower()
     return text
+
+
+def _unmark_latin(text: str) -> str:
+    """`text` with the combining marks on its Latin letters dropped and
+    composed again, so a Hangul syllable keeps its jamo together and a
+    kana its voicing mark, which are no Latin letter's."""
+    out: list[str] = []
+    latin = False
+    for c in unicodedata.normalize("NFD", text):
+        if unicodedata.combining(c):
+            if not latin:
+                out.append(c)
+            continue
+        latin = "LATIN" in unicodedata.name(c, "")
+        out.append(c)
+    return unicodedata.normalize("NFC", "".join(out))
 
 
 def _spellings(value: str) -> tuple[str, ...]:

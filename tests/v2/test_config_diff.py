@@ -207,6 +207,12 @@ def test_a_spelling_rewrites_every_name_before_it_is_read(
     assert [t for t, _o, _i in cd.gather(_args(spelling=("lower",), match="mai"))] == [
         "lê thị mai"]
     assert cd.respell("Đỗ", ("stripped",)) == "Do"
+    assert cd.respell("đỗ", ("stripped",)) == "do"
+    # composed again, so Hangul and kana keep their syllables
+    assert cd.respell("김민준", ("stripped",)) == "김민준"
+    assert cd.respell("やまだ", ("stripped",)) == "やまだ"
+    # applied in order
+    assert cd.respell("Đỗ", ("upper", "lower")) == "đỗ"
     for bad in ("", "title", "stripped,title"):
         with pytest.raises(argparse.ArgumentTypeError, match="--spelling takes"):
             cd._spellings(bad)

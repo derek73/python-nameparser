@@ -18,8 +18,9 @@ only by a vocabulary reading, and a name reading never settles a clash
 (decision 15 of decisions/vocabulary-model), so no reading vi.toml
 could write makes ``van`` a name word under a plain choice. The order
 already commits a caller to Vietnamese names, which keeps the removals'
-cost to a credential written after a Vietnamese name for English-language
-readers (``Nguyen Van Anh, DO`` reads given ``DO``).
+cost to ``DO``, ``BA`` or ``CHI`` written as a credential after a
+Vietnamese name for English-language readers, with or without a comma
+(``Nguyen Van Anh, DO`` reads family ``Nguyen Van Anh``, given ``DO``).
 
 Data sources: the titles' vetting is on the words in vi.toml
 (tools/name_usage.py); the syllables were measured on the uit-vinames
@@ -29,9 +30,10 @@ decisions/vocabulary-model.
 Declared deviations (mechanisms.md#LOCALE-PACKS-PURE-DATA): the order
 moves every name a family comma does not fix, a one-word name included
 (``Andrew`` reads family ``Andrew``), and the fragment every name
-holding one of its syllables, so DEVIATES below declares every name
-holding a word: a narrower declaration would restate the comma reading
-by hand. The choice's own words are derived
+holding one of its syllables, and the choice's titles and the
+fragment's credentials reach comma names too (``Nguyen, Ts Van Anh``,
+``Nguyen Van Anh, DO``), so DEVIATES below declares every name holding
+a word. The choice's own words are derived
 (``_reading_index.changed_words``), which the non-interference gate in
 tests/v2/test_locales.py ors in.
 """
@@ -44,12 +46,13 @@ from nameparser._locale import Locale, rules_patch
 #: a particle: Văn, Lê, Đỗ, Du (Dư), Di, La, Thọ, Đa, unaccented, and
 #: San, the saint particle
 _PARTICLES = ("da", "di", "do", "du", "la", "le", "san", "tho", "van")
-#: as a connective: Thế and Ý (a capital Y is read as an initial by
-#: rules/P8 already, so this reaches a lowercase y in a mixed-case name)
+#: as a connective: Thế and Ý (rules/P8 already reads a bare capital Y
+#: in a mixed-case name as an initial, so this reaches a lowercase y
+#: there and any y in a name written in one case, ``NGUYEN THI Y NHI``)
 _CONJUNCTIONS = ("the", "y")
 #: and as a credential, which takes the given name of a name in one case
-#: (``NGUYEN LINH CHI``): Đỗ, Bá, Chi, Mã
-_CREDENTIALS = ("ba", "chi", "do", "ma")
+#: (``NGUYEN LINH CHI``): Đỗ, Bá, Chi
+_CREDENTIALS = ("ba", "chi", "do")
 
 VI = Locale(
     code="vi",
@@ -67,7 +70,7 @@ def DEVIATES(name: str) -> bool:
     """True when this pack may parse `name` differently from the
     default parser (the declared-deviation predicate the
     non-interference gate consumes): any name holding a letter or a
-    digit. The order moves every name a family comma does not fix, and
-    the comma names are declared too rather than restating the comma
-    reading here."""
+    digit: the order moves every name a family comma does not fix, and
+    the choice's titles and the fragment's credentials reach comma names
+    too, so no narrower predicate is worth stating by hand."""
     return any(c.isalnum() for c in name)
