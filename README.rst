@@ -84,9 +84,10 @@ written so:
     >>> compound.parse("Juan Carlos García de la Vega").given
     'Juan Carlos'
 
-Most packs choose languages, and a choice prefers the chosen
-language's reading of a word the others read differently. ``Lady`` is a
-British title and, across Latin America, a given name:
+Most packs choose languages, and a choice turns on the readings the
+chosen language holds and the default leaves off. ``Lady`` is a British
+title and, in Spanish-speaking Latin America, a given name; the Spanish
+choice reads the given name, the title staying one inside a phrase:
 
 .. code-block:: python
 
@@ -94,12 +95,16 @@ British title and, across Latin America, a given name:
     'Lady'
     >>> spanish.parse("Lady Heidenreich").given
     'Lady'
+    >>> spanish.parse("Lady Justice Jane Smith").title
+    'Lady Justice'
 
 A `strict choice
 <https://nameparser.readthedocs.io/en/latest/locales.html#reading-one-language-only>`__
-reads only the chosen languages' words and those every language
-shares. Vietnamese written without its diacritics meets the Dutch
-particle ``van``, which the strict choice drops:
+reads only the chosen languages' words, the words every language
+shares, and words written in a script other than Latin. Vietnamese
+written without its diacritics meets the Dutch particle ``van``, which
+a strict ``vi`` choice drops (a plain one is refused, the Vietnamese
+file holding no reading yet):
 
 .. code-block:: python
 
