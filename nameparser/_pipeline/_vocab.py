@@ -1325,6 +1325,15 @@ def is_caps_word(text: str) -> bool:
     return composed.isalpha() and composed.isupper()
 
 
+def composed(text: str) -> str:
+    """TEXT NFC-composed where it is not ASCII, so a letter typed as its
+    base and a combining mark is one letter, as the vocabulary lookup
+    reads it (#665). The per-token predicates (`is_initial_shaped`,
+    `composed_len`) fold inline instead, a call per token being the
+    frame budget's scaling cost."""
+    return text if text.isascii() else unicodedata.normalize("NFC", text)
+
+
 def composed_len(text: str) -> int:
     """The length of TEXT in letters as the writer sees them: code
     points once NFC-composed. A caps word admitted decomposed (#652)

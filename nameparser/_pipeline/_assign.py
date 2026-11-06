@@ -794,9 +794,9 @@ def _is_linking_word(tags: Set[str], beside: bool) -> bool:
     numeral's count leaves out: a particle, or a connective, save one
     that is also suffix vocabulary standing `beside` the numeral."""
     # rules/S10: "A connective that is also suffix vocabulary, as the
-    # generational 'i' is, stays in the count where it stands in front
-    # of the numeral" -- the exception's half of this predicate
-    # (decisions/S10 (#1093))
+    # generational 'i' is, stays in the count where P13 has not linked
+    # the letter" -- the exception's half of this predicate
+    # (decisions/P13 (#1097))
     return "particle" in tags or ("conjunction" in tags and not (
         beside and "vocab:suffix" in tags))
 

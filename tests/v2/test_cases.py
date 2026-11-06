@@ -367,9 +367,14 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # 1615 the same day, its test review's joined-connective row under
     # three orders; 1615 -> 1624 the same day, #1088's three kept-comma
     # member rows ('Jean (M.A,) Smith' and its review's two) reporting
-    # suffix-or-nickname under three orders.
-    assert claims == 1624, (
-        f"the field sweep checks {claims} claims, recorded as 1624 on "
+    # suffix-or-nickname under three orders; 1624 -> 1627 the same day,
+    # #1097 and #1098: the 'Smith i V, John' and 'Josep Lluis Carod i V'
+    # rows stop reporting and 'Smith Jones y VI, John', 'John Smith y VI'
+    # and 'Smith y V' report, each under three orders; 1627 -> 1647 the
+    # same day, the rows the reviews of #1097 and #1098 added, three of
+    # them reporting suffix-or-name, and the FAMILY_FIRST row.
+    assert claims == 1647, (
+        f"the field sweep checks {claims} claims, recorded as 1647 on "
         f"2026-11-05")
 
 
@@ -423,6 +428,9 @@ _STAND_IN_REREADS = {
     # chain it held whole (decisions/P1's 2026-11-04 #828 entry)
     ("Freiherr von Berg X.Y.Z. X.Y.Z.", 1),
     ("Freiherr von Berg X.Y.Z. X.Y.Z.", 2),
+    # a name word in VI's place gives the 'y' a word to link, so P3's
+    # join takes it with 'Smith' (#1098)
+    ("John Smith y VI", 1),
 }
 
 #: Reports whose deferred field assign could not name: the particle the
@@ -761,8 +769,11 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # #1080's two boundary rows under the three orders; 508 -> 514 the
     # same day, #1093's two boundary rows under the three orders; 514 ->
     # 517 the same day, its test review's joined-connective row under the
-    # three orders
-    assert (checked, skipped) == (517, 328), (checked, skipped)
+    # three orders; 517 -> 519 the same day, #1097 and #1098's rows (two
+    # reports gone and three added under the three orders, 'John Smith y
+    # VI' under the family-first order joining _STAND_IN_REREADS)
+    # 519 -> 537 the same day, the reviews of #1097 and #1098's rows
+    assert (checked, skipped) == (537, 328), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:

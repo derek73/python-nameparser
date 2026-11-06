@@ -25,7 +25,8 @@ which assign places and reports rather than peeling again; and,
 last in each part, P12's join of a listed pair past the start, the
 classify tag left only on the bound word of a pair it joined (#694).
 Reads: token tags (from classify), Lexicon.given_name_titles (the
-P5 licence, #369) and Policy.extra_suffix_delimiters, whose
+P5 licence, #369), Policy.name_order (rules/P13's joins at the end
+of a name read given-first, #1098) and Policy.extra_suffix_delimiters, whose
 delimiter-core tokens part a tail segment as a comma would and are
 dropped (v1 suffix_delimiter parity, #549), as the built-in cores'
 are (rules/C10, #889); and, through
@@ -87,7 +88,7 @@ from nameparser._pipeline._state import (
 import nameparser._pipeline._comma as _comma
 from nameparser._pipeline._vocab import (
     ROMAN, comma_follows_marker, delimiter_cores, ends_in_a_generation,
-    name_reading,
+    composed, name_reading, numeral_settled_by_case,
     reads_as_a_reported_numeral, suffix_reading,
 )
 from nameparser._types import AmbiguityKind, Role
@@ -511,6 +512,92 @@ def _is_rootname(piece: Sequence[int], ptags: Set[str],
                 or is_suffix_piece(piece, ptags, tokens))
 
 
+def _is_lone_letter(piece: Sequence[int], tokens: Sequence[WorkToken],
+                    one_case: bool | None) -> bool:
+    """A piece of one word that is one letter, with or without its
+    period: the letter P13 links. Not a connective, the word P13 asks
+    about, nor a lowercase letter in a name of mixed case, which S10
+    reads as the generation by its writing."""
+    if len(piece) != 1:
+        return False
+    tok = tokens[piece[0]]
+    letter = composed(tok.text.rstrip("."))
+    return ("conjunction" not in tok.tags
+            and len(letter) == 1 and letter.isalpha()
+            and not numeral_settled_by_case(letter, one_case))
+
+
+def _is_lone_connective(piece: Sequence[int],
+                        tokens: Sequence[WorkToken]) -> bool:
+    return len(piece) == 1 and "conjunction" in tokens[piece[0]].tags
+
+
+def _is_name_word(piece: Sequence[int], ptags: Set[str],
+                  tokens: Sequence[WorkToken]) -> bool:
+    return not (is_conj_piece(piece, ptags, tokens)
+                or is_title_piece(piece, ptags, tokens)
+                or is_suffix_piece(piece, ptags, tokens))
+
+
+def _is_trailing_title(piece: Sequence[int], ptags: Set[str],
+                       tokens: Sequence[WorkToken]) -> bool:
+    """A period-marked title word, which H5 reads as a title ending the
+    name: P13 reads the name words past it."""
+    return (len(piece) == 1 and tokens[piece[0]].text.endswith(".")
+            and is_title_piece(piece, ptags, tokens))
+
+
+def _link_the_last_letter(pieces: list[list[int]], ptags: list[set[str]],
+                          tokens: Sequence[WorkToken],
+                          one_case: bool | None, keep_a_name: bool) -> None:
+    """P13's two joins at the end of the part holding the family name,
+    made ahead of P3's carve-out. `keep_a_name` marks the whole name's
+    part, where a piece past the title run must stand in front of the
+    join, so the name keeps a word for its given name."""
+    # rules/P13: "A single-letter connective in front of a lone letter
+    # ending the name words joins it to the word before" and "A
+    # connective with nothing to link joins the word before it alone"
+    # -- both joins, made ahead of P3's carve-out (decisions/P13
+    # (#1097, #1098))
+    e = len(pieces) - 1
+    lone = False
+    while e >= 0:
+        piece = pieces[e]
+        if _is_lone_letter(piece, tokens, one_case):
+            lone = True
+            break
+        if not (_is_trailing_title(piece, ptags[e], tokens)
+                or is_suffix_piece(piece, ptags[e], tokens)
+                or (e > 0 and len(piece) == 1
+                    and ends_in_a_generation(
+                        [tokens[pieces[e - 1][-1]].text,
+                         tokens[piece[0]].text], one_case))):
+            break
+        e -= 1
+    if e < 1:
+        return
+    floor = leading_titles(pieces, ptags, tokens) + keep_a_name
+    if lone:
+        link = composed(tokens[pieces[e - 1][0]].text)
+        if (e - 2 >= floor and _is_lone_connective(pieces[e - 1], tokens)
+                and len(link) == 1 and link.isalpha()
+                and _is_name_word(pieces[e - 2], ptags[e - 2], tokens)):
+            merge_pieces(pieces, ptags, e - 2, e + 1)
+        return
+    if not (e - 1 >= floor and _is_lone_connective(pieces[e], tokens)
+            and _is_name_word(pieces[e - 1], ptags[e - 1], tokens)):
+        return
+    word = tokens[pieces[e][0]]
+    text = composed(word.text)
+    initial_shaped = (one_case and len(text) == 1
+                      and text.lower() != text.upper())
+    couple = (len(text) > 1 and e + 1 < len(pieces)
+              and _is_trailing_title(pieces[e + 1], ptags[e + 1], tokens))
+    if (text.isalpha() and not initial_shaped and not couple
+            and "vocab:suffix" not in word.tags):
+        merge_pieces(pieces, ptags, e - 1, e + 1)
+
+
 # rules/P3: "a word the rest of the parse reads as a name word
 # rather than as a generation, a credential or an honorific, looked
 # for past any run of connectives standing between. A connective with
@@ -668,6 +755,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                    site: ClauseSite,
                    reads: list[TailRead | None] | None = None,
                    phrase_heads: set[int] | None = None,
+                   given_first: bool = True,
                    ) -> tuple[list[Piece], list[set[str]], MaidenTake | None]:
     pieces: list[Piece] = [[i] for i in seg]
     ptags: list[set[str]] = [set() for _ in seg]
@@ -824,6 +912,18 @@ def _group_segment(seg: tuple[int, ...], additional: int,
     if splits and len(pieces) + additional < 3:
         _settle_splits(pieces, ptags)
     if len(pieces) + additional >= 3:
+        # the part holding the family name -- the end of the name
+        # only under a given-first order -- and only where a one-word
+        # connective stands: a plain loop, no frame, for a name with none
+        if ((site is ClauseSite.TRAILING and given_first)
+                or site is ClauseSite.FAMILY_PART):
+            for piece in pieces:
+                if (len(piece) == 1
+                        and "conjunction" in tokens[piece[0]].tags):
+                    _link_the_last_letter(
+                        pieces, ptags, tokens, one_case,
+                        keep_a_name=site is ClauseSite.TRAILING)
+                    break
         # rules/P3: "A connective that is also generational
         # vocabulary joins only where a name word stands on each side
         # of it" (#397). `frozen` holds the TOKEN index of every such
@@ -1508,7 +1608,8 @@ def group(state: ParseState) -> ParseState:
                 state.lexicon._sets.given_name_titles,
                 opens_the_name=(seg_idx == 0 and not family_comma),
                 one_case=state.one_case,
-                site=site, reads=seg_reads, phrase_heads=heads)
+                site=site, reads=seg_reads, phrase_heads=heads,
+                given_first=state.policy.name_order[0] is Role.GIVEN)
             if heads is not None:
                 # the tag stays only on a pair P12 joined, which O6
                 # counts as one word; P5's pair at the start, and a

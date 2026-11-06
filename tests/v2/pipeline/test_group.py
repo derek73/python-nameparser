@@ -1525,8 +1525,10 @@ def test_a_connective_with_nothing_to_its_right_does_not_join() -> None:
 def test_a_suffix_word_on_the_right_is_no_name_word() -> None:
     out = _grouped("Josep Lluis Carod i Jr.", lexicon=_LINK_LEX)
     assert _piece_texts(out) == [["Josep", "Lluis", "Carod", "i", "Jr."]]
+    # a connective with nothing to link joins the word before it alone
+    # (#1098), where the join had taken the suffix
     plain = _grouped("Josep Lluis Carod i Jr.", lexicon=_PLAIN_LEX)
-    assert _piece_texts(plain) == [["Josep", "Lluis", "Carod i Jr."]]
+    assert _piece_texts(plain) == [["Josep", "Lluis", "Carod i", "Jr."]]
 
 
 def test_the_right_hand_test_reads_the_peel_not_the_suffix_piece(
@@ -1535,20 +1537,24 @@ def test_the_right_hand_test_reads_the_peel_not_the_suffix_piece(
     # a ONE-CHARACTER suffix word is initial-shaped, so the
     # suffix-piece test refuses it (the initial veto,
     # `_vocab.is_initial`) while assign's trailing peel takes it. Spelled with the piece test
-    # alone, the link would swallow the generation here.
+    # alone, the link would swallow the generation here. Read in the
+    # given part after a family comma, which rules/P13's link of a lone
+    # letter ending the family name does not reach (#1097).
     lex = _LINK_LEX.add("v", kind="suffix")
-    out = _grouped("Josep Lluis Carod i V", lexicon=lex)
-    assert _piece_texts(out) == [["Josep", "Lluis", "Carod", "i", "V"]]
-    plain = _grouped("Josep Lluis Carod i V",
+    out = _grouped("Rovira, Josep Lluis Carod i V", lexicon=lex)
+    assert _piece_texts(out)[1] == ["Josep", "Lluis", "Carod", "i", "V"]
+    plain = _grouped("Rovira, Josep Lluis Carod i V",
                      lexicon=_PLAIN_LEX.add("v", kind="suffix"))
-    assert _piece_texts(plain) == [["Josep", "Lluis", "Carod i V"]]
+    assert _piece_texts(plain)[1] == ["Josep", "Lluis", "Carod i V"]
 
 
 def test_a_title_on_the_right_is_no_name_word() -> None:
     out = _grouped("Josep Lluis Carod i Mr.", lexicon=_LINK_LEX)
     assert _piece_texts(out) == [["Josep", "Lluis", "Carod", "i", "Mr."]]
+    # a connective with nothing to link joins the word before it alone,
+    # a trailing title included (rules/P13, #1098)
     plain = _grouped("Josep Lluis Carod i Mr.", lexicon=_PLAIN_LEX)
-    assert _piece_texts(plain) == [["Josep", "Lluis", "Carod i Mr."]]
+    assert _piece_texts(plain) == [["Josep", "Lluis", "Carod i", "Mr."]]
 
 
 def test_a_leading_title_on_the_left_is_no_name_word() -> None:
@@ -1651,8 +1657,11 @@ def test_a_link_that_joins_nothing_does_not_count_for_another_join(
     # gave the total four and joined the 'y'.
     out = _grouped("Carod y Rovira i", lexicon=_LINK_LEX)
     assert _piece_texts(out) == [["Carod", "y", "Rovira", "i"]]
+    # the plain 'i' has nothing to link and joins 'Rovira' alone
+    # (#1098), so it counts no rootname of its own and the 'y' keeps
+    # the carve-out too
     plain = _grouped("Carod y Rovira i", lexicon=_PLAIN_LEX)
-    assert _piece_texts(plain) == [["Carod y Rovira i"]]
+    assert _piece_texts(plain) == [["Carod", "y", "Rovira i"]]
 
 
 def test_a_connective_with_nothing_to_its_left_does_not_join() -> None:
@@ -1994,18 +2003,17 @@ def test_a_frozen_link_is_still_absorbed_by_a_neighbours_join() -> None:
     # What freezing a piece claims and what it does not (#397 second
     # review). `frozen` keeps a connective from being the SUBJECT of a
     # join; it does not keep the word out of the span another
-    # connective's join takes. The trailing 'i' here has nothing on
-    # its right and is frozen, and the 'y' beside it joins across it
+    # connective's join takes. The leading 'i' here has nothing on
+    # its left and is frozen, and the 'y' beside it joins across it
     # all the same.
     #
-    # Not a defect and not a silence: this is the reading the parent
-    # commit 46651750 gives the same name, the letter being no
-    # connective there at all, so the row is a CONTROL for the
-    # comment beside `frozen` rather than a behavior claim of its own.
-    out = Parser().parse("Josep Carod Rovira Puig y i")
-    assert out.family == "Puig y i"
-    assert out.middle == "Carod Rovira"
-    assert out.suffix == ""
+    # A CONTROL for the comment beside `frozen` rather than a behavior
+    # claim of its own. Its first input, a trailing 'i' behind 'y'
+    # ('Josep Carod Rovira Puig y i'), stopped showing it with #1098,
+    # rules/P13 joining the 'y' to the word before it alone.
+    out = Parser().parse("i y Carod Rovira Puig")
+    assert out.given == "i y Carod"
+    assert out.family == "Puig"
 
 
 def test_the_first_word_floor_holds_a_title_out_of_the_chain() -> None:
