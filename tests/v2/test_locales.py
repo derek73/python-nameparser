@@ -254,8 +254,11 @@ def test_vi_pack_contents() -> None:
     from nameparser.locales import vi as _vi
     assert locales.VI.languages == {"vi"}
     assert locales.VI.policy.name_order is FAMILY_FIRST_GIVEN_LAST
+    # chief and deputy each make a title phrase with the office đbqh
+    # (their attaches), which changed_words splits into its words
     assert _ri.changed_words(_ri.selected(locales.VI.languages)) == {
-        "bs", "gs", "pgs", "ths", "ts"}
+        "gs", "pgs", "ths", "ts", "đbqh", "dbqh", "chief", "deputy",
+        "chief đbqh", "deputy đbqh", "chief dbqh", "deputy dbqh"}
     sets = parser_for(locales.VI).lexicon._sets
     # the fragment takes out the readings it names and nothing else:
     # van's particle and the's connective leave, en's credential do and
@@ -286,6 +289,12 @@ def test_vi_pack_contents() -> None:
     ("Ts Nguyen Van Anh", "Ts", "Nguyen", "Van", "Anh", ""),
     ("PGS.TS. Nguyễn Văn Anh", "PGS.TS.", "Nguyễn", "Văn", "Anh", ""),
     ("PGS. TS. Nguyen Van Anh", "PGS. TS.", "Nguyen", "Van", "Anh", ""),
+    ("ĐBQH Nguyễn Văn Anh", "ĐBQH", "Nguyễn", "Văn", "Anh", ""),
+    ("DBQH Nguyen Van Anh", "DBQH", "Nguyen", "Van", "Anh", ""),
+    # bs has no title reading in vi.toml, so en's credential stays and a
+    # dotted BS. before the name is a title by shape (rules/H2)
+    ("BS. Nguyen Van An", "BS.", "Nguyen", "Van", "An", ""),
+    ("Smith, John BS", "", "Smith", "", "John", "BS"),
     # the comma shapes: a suffix comma, a family comma, an empty head
     ("Nguyen Van Anh, PhD", "", "Nguyen", "Van", "Anh", "PhD"),
     ("Nguyen, Van Anh", "", "Nguyen", "Anh", "Van", ""),
@@ -1399,8 +1408,13 @@ _ROTATORS["vi"] = [
     "Nguyen, Ths Van Anh",           # ths
     "Nguyen, Gs Van Anh",            # gs
     "Nguyen, Pgs Van Anh",           # pgs
-    "Nguyen, Bs Van Anh",            # bs, preferred over en's credential
     "Nguyen, PGS.TS. An",            # the stacked form
+    "Nguyen, ĐBQH Van Anh",          # đbqh, the office
+    "Nguyen, DBQH Van Anh",          # dbqh, its ASCII spelling
+    "Nguyen, Chief ĐBQH Anh",        # chief, in a phrase with đbqh
+    "Nguyen, Deputy DBQH Anh",       # deputy, in a phrase with dbqh
+    "Nguyen, Chief DBQH Anh",        # chief dbqh
+    "Nguyen, Deputy ĐBQH Anh",       # deputy đbqh
 ]
 _ROTATORS["bn"] = [
     "Shrimati Mamata Banerjee",      # shrimati at the head
@@ -1711,9 +1725,11 @@ def _surface_deviates(surface: frozenset[str]) -> Callable[[str], bool]:
     """A name holding a surface word, over-declared as the gate allows:
     each comma- or space-separated piece normalized whole, with every
     period removed (an acronym's match), and cut at every non-word
-    character (`st.john`, `AE-RA`); an elided particle opening a piece
-    (`d'Artagnan`, `al-Rashid`); a word outside ASCII anywhere in the
-    name (a glued honorific), the name NFC-folded as the vocabulary is."""
+    character (`st.john`, `AE-RA`); two pieces side by side, a title
+    phrase's two words (`Chief DBQH`, #1108); an elided particle opening
+    a piece (`d'Artagnan`, `al-Rashid`); a word outside ASCII anywhere
+    in the name (a glued honorific), the name NFC-folded as the
+    vocabulary is."""
     import unicodedata
 
     from nameparser._lexicon import _normalize
@@ -1723,7 +1739,10 @@ def _surface_deviates(surface: frozenset[str]) -> Callable[[str], bool]:
     def deviates(name: str) -> bool:
         words: set[str] = set()
         folded = unicodedata.normalize("NFC", name).casefold()
-        for piece in re.split(r"[\s,]+", folded):
+        pieces = [p for p in re.split(r"[\s,]+", folded) if p]
+        words |= {f"{_normalize(a)} {_normalize(b)}"
+                  for a, b in zip(pieces, pieces[1:])}
+        for piece in pieces:
             words |= {_normalize(piece), piece.replace(".", "")}
             words |= set(re.split(r"[^\w]+", piece))
             if elided and piece.startswith(elided):

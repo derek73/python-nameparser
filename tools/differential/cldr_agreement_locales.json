@@ -2193,23 +2193,15 @@
   }
  },
  "vi/nativeFull/surnameFirst": {
-  "family": {
-   "expected": "Nguyễn",
-   "got": "ĐBQH"
-  },
-  "family_base": {
-   "expected": "Nguyễn",
-   "got": "ĐBQH"
-  },
-  "given_names": {
-   "expected": "Văn Anh",
-   "got": "Nguyễn Văn Anh"
-  },
   "suffix": {
    "expected": "ĐBQH",
    "got": ""
   },
-  "text": "ĐBQH Nguyễn Văn Anh"
+  "text": "ĐBQH Nguyễn Văn Anh",
+  "title": {
+   "expected": "",
+   "got": "ĐBQH"
+  }
  },
  "vi/nativeG/givenFirst": {
   "family": {

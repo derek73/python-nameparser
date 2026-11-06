@@ -686,7 +686,8 @@ Shipped packs
        ``Anh``), keeps the syllables other languages read as particles
        or connectives (``Van``, ``Le``, ``Do``, ``The``) as name words,
        and chooses ``vi``, which turns on the academic titles written
-       before a name and their stacked forms (``PGS.TS.``). See
+       before a name and their stacked forms (``PGS.TS.``), and
+       ``ĐBQH`` (National Assembly deputy). See
        `Vietnamese names`_.
    * - ``zh``
      - Chinese surname segmentation — splits an unspaced Han name into

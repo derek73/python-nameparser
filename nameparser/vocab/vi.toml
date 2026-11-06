@@ -13,20 +13,52 @@ excluded = { salutation = { reason = "Ông is a Vietnamese surname and Vietnames
 
 [[word]]
 text = "bs"
-academic = { default = false, expands = "bác sĩ, physician" }
+excluded = { academic = { reason = "bác sĩ, physician, written before a Vietnamese name; under a vi choice a title reading here would drop en.toml's credential BS (Bachelor of Science), so Smith, John BS read middle 'BS'; a dotted BS. before a name is a title by shape (rules/H2) without it", issue = 1108, decided = 2026-11-05 } }
 
 [[word]]
 text = "gs"
-academic = { default = false, expands = "giáo sư, professor" }
+[word.academic]
+default = false
+expands = "giáo sư, professor"
+issue = 1108
+note = "written before the name, dotted (GS.) or bare, and stacked (GS.TS.); no Vietnamese bearer: ORCID's VN boxes 0 of 46,170, PatentsView's VN 0 of 1,065, no US Census 2010 (floor 100), SSA (floor 5 a year) or nam_dict entry (tools/name_usage.py, 2026-11-05); its 117 ORCID given and 154 family boxes elsewhere are Indian initials, which only a vi choice reaches"
 
 [[word]]
 text = "pgs"
-academic = { default = false, expands = "phó giáo sư, associate professor" }
+[word.academic]
+default = false
+expands = "phó giáo sư, associate professor"
+issue = 1108
+note = "written before the name, stacked with the degree (PGS.TS.); no bearer: ORCID 1 given and 1 family box worldwide, none in VN, no US Census, SSA or nam_dict entry (tools/name_usage.py, 2026-11-05)"
 
 [[word]]
 text = "ths"
-academic = { default = false, expands = "thạc sĩ, master" }
+[word.academic]
+default = false
+expands = "thạc sĩ, master"
+issue = 1108
+note = "written before the name (ThS.); no bearer: ORCID 1 given and 1 family box worldwide, none in VN, no US Census, SSA or nam_dict entry (tools/name_usage.py, 2026-11-05)"
 
 [[word]]
 text = "ts"
-academic = { default = false, expands = "tiến sĩ, doctor" }
+[word.academic]
+default = false
+expands = "tiến sĩ, doctor"
+issue = 1108
+note = "written before the name, dotted (TS.) or bare, and stacked behind PGS. and GS.; no Vietnamese bearer: ORCID's VN boxes 0 of 46,170, PatentsView's VN 0 of 1,065, no US Census, SSA or nam_dict entry; its 203 ORCID given and 181 family boxes elsewhere are mostly Malaysian and Indian initials, and NPPES's 42 credentials TS, which only a vi choice reaches (tools/name_usage.py, 2026-11-05)"
+
+[[word]]
+text = "đbqh"
+[word.office]
+default = false
+expands = "đại biểu Quốc hội, National Assembly deputy"
+issue = 1108
+note = "CLDR 48's vi names file writes it before the name in its surname-first rendering (ĐBQH Nguyễn Văn Anh); no bearer in any source tools/name_usage.py reads, đbqh or dbqh (2026-11-05)"
+
+[[word]]
+text = "dbqh"
+[word.office]
+default = false
+same_as = "đbqh"
+issue = 1108
+note = "ĐBQH written without the stroke on its Đ, as ASCII-only data writes it; no bearer (tools/name_usage.py, 2026-11-05)"

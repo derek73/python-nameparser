@@ -60,6 +60,13 @@
 
 - **Against every rule that DOES decide such a name**: that rule wins, and each of them carves out a case it declines to decide — where the convention is what is left.
 
+**Accepted:**
+
+- A pack that declares a family-first order reads a lone name word as the family name too, though a Vietnamese name written alone is usually the given name: no `Policy` field sets the convention apart from the order, and `locales.VI` sets the order.
+  ```
+  "Anh"  [vi]                 →  family="Anh"
+  ```
+
 ---
 **Signal:** count: one name word that nothing else decided
 **history:** decisions/O5 · **implemented:** nameparser/_pipeline/_assign.py
