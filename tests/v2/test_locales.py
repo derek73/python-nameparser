@@ -237,7 +237,7 @@ def test_es_and_pt_pack_contents() -> None:
     # the given names rules/P10 completes below the default's bar (#1118)
     assert changed_words(selected(locales.PT.languages)) == {
         "do", "doutor", "doutora", "e", "profa", "professora",
-        "cassia", "cássia", "fatima", "graca", "gracas", "graça", "graças",
+        "cassia", "cássia", "graca", "gracas", "graça", "graças",
         "kassia", "piedade"}
     # sr keeps es's and pt's generation beside the salutation, so the
     # choice leaves it a dual position decides, as the default reads it
@@ -1679,7 +1679,6 @@ _PT_PARTICLE_GIVEN = [
     "Rita de Cássia Souza",          # cássia
     "RITA DE CASSIA SOUZA",          # cassia
     "Rita de Kassia Lima",           # kassia
-    "Maria de Fatima Costa",         # fatima
     "Maria da Piedade Costa",        # piedade
 ]
 _ROTATORS["pt"] = [

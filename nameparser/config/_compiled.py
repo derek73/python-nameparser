@@ -3114,6 +3114,7 @@ PARTICLE_GIVEN_NAMES: frozenset[str] = frozenset({
     'concepción',
     'consuelo',
     'céu',
+    'fatima',
     'fátima',
     'gloria',
     'glória',

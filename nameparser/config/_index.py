@@ -763,7 +763,7 @@ READINGS: tuple[tuple[str, tuple[tuple[str, str, tuple[tuple[str, object], ...]]
     ('fasma', (('en', 'credential', ()),)),
     ('faspen', (('en', 'credential', ()),)),
     ('father', (('en', 'religious', (('addresses', 'given'),)),)),
-    ('fatima', (('pt', 'given', (('after_particle', True), ('default', False))),)),
+    ('fatima', (('es', 'given', (('after_particle', True),)),)),
     ('fca', (('en', 'credential', ()),)),
     ('fcas', (('en', 'credential', ()),)),
     ('fcela', (('en', 'credential', ()),)),

@@ -148,10 +148,6 @@ text = "céu"
 given = { after_particle = true, note = "the second of a compound given name written behind a particle (Maria do Céu): ORCID holders in Portugal, Brazil and Portuguese-speaking Africa end the given box with it behind a particle 31 times and open a family box of more words with it behind a particle 1, over the whole extract (2026-11-06, #1118)" }
 
 [[word]]
-text = "fatima"
-given = { default = false, after_particle = true, note = "Fátima written without its accent, as registries write it (de Fatima): ORCID holders in Portugal, Brazil and Portuguese-speaking Africa end the given box with it behind a particle 185 times and open a family box of more words with it behind a particle 45, 80%, below the 90% a default reading needs, so a Portuguese choice turns it on; es.toml's accented fátima is on by default on its Spanish counts (2026-11-06, #1118)" }
-
-[[word]]
 text = "gloria"
 given = { after_particle = true, note = "Glória written without its accent (da Gloria): ORCID holders in Portugal, Brazil and Portuguese-speaking Africa end the given box with it behind a particle 25 times and open a family box of more words with it behind a particle 1, over the whole extract (2026-11-06, #1118)" }
 
@@ -177,7 +173,7 @@ given = { default = false, after_particle = true, note = "the second of a compou
 
 [[word]]
 text = "kassia"
-given = { default = false, after_particle = true, note = "Kássia written without its accent (de Kassia): ORCID holders in Portugal, Brazil and Portuguese-speaking Africa end the given box with it behind a particle 19 times and open a family box of more words with it behind a particle 5, 79%, below the 90% a default reading needs, so a Portuguese choice turns it on (2026-11-06, #1118)" }
+given = { default = false, after_particle = true, note = "Kássia written without its accent (de Kassia): ORCID holders in Portugal, Brazil and Portuguese-speaking Africa end the given box with it behind a particle 19 times and open a family box of more words with it behind a particle 5, 79%, below the 90% a default reading needs, so a Portuguese choice turns it on; measured on its own, it parts from kássia, on by default (15 to 1), and no Spanish count weighs it (0 to 0) (2026-11-06, #1118)" }
 
 [[word]]
 text = "kássia"
