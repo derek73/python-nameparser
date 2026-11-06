@@ -1,6 +1,14 @@
 schema = 1
 
 [[word]]
+text = "excm"
+style = { issue = 1115, gender = "m", expands = "Excel·lentíssim, Most Excellent, the style of a high office (Excm. Sr. Josep Lloret)", note = "no name bearers in any source tools/name_usage.py reads (2026-11-06)" }
+
+[[word]]
+text = "excma"
+style = { issue = 1115, gender = "f", expands = "Excel·lentíssima, the feminine of Excm.", note = "no name bearers in any source tools/name_usage.py reads (2026-11-06)" }
+
+[[word]]
 text = "de"
 preposition = { may_be_given = false, expands = "of: \"Jaume de Montcada\"", note = "strict ca broke 626 records on it while only es.toml and others held it (config_diff.py gaps on f48c88a3, decisions/vocabulary-model, 2026-11-03)", issue = 1005 }
 

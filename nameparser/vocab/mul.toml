@@ -45,6 +45,14 @@ text = "dr"
 academic = { expands = "Doctor, abbreviated alike across the European languages" }
 
 [[word]]
+text = "drs"
+academic = { issue = 1115, expands = "doctorandus, the Dutch and Indonesian degree written before the name, and the English plural of Dr (DRS. JOHN AND KATHLEEN SMITH)", note = "no name bearers: under 100 US Census, under 5 US SSA a year, 2 Wikidata family names; ORCID's given box holds it 88 times (India 28, Indonesia 17) (2026-11-06)" }
+
+[[word]]
+text = "ir"
+academic = { issue = 1115, expands = "ingenieur, the engineer's degree written before the name in the Netherlands, Belgium and Indonesia, and the registered engineer's title in Hong Kong and Malaysia (Prof dr ir Simon Peeters, Ir Sheung Ching Tse)", note = "no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata; ORCID's given box holds it 134 times (Indonesia 51, Malaysia 16), each a title typed there (2026-11-06)" }
+
+[[word]]
 text = "prof"
 academic = { expands = "Professor, abbreviated alike across the European languages" }
 
