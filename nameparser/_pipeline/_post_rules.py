@@ -37,7 +37,7 @@ cores group drops); Lexicon.given_name_titles, Lexicon.given_names
 under every policy and reads Policy.patronymic_rules for its Turkic
 guard), and
 Lexicon.suffix_acronyms_ambiguous (a dotted member in a clause, which
-carries no tag there, S13), and for S1's set-apart clause
+carries no tag there, S13, through `_vocab.dotted_member`), and for S1's set-apart clause
 Lexicon.suffix_words directly and, through `_vocab.set_apart_kind` and
 `set_apart`, Lexicon.suffix_words_ambiguous, suffix_acronyms, titles,
 title_modifiers, title_styles and after_given_titles.
@@ -52,7 +52,6 @@ function, for Parser.revise to run over a forced-role sub-parse
 from __future__ import annotations
 
 import bisect
-from typing import Literal
 import re
 from collections.abc import Sequence
 
@@ -72,9 +71,10 @@ from nameparser._pipeline._state import (
     WorkToken, _NEVER_FLIPPED, comma_bucket, copy_with, reported_suffix_fork,
 )
 from nameparser._pipeline._vocab import (
-    _DOTTED_INITIALS, delimiter_cores, has_patronymic_ending, is_initial,
-    is_listed_given_name, is_patronymic_marker, set_apart, set_apart_kind, suffix_reading,
-    unit_ends, written_as_initials,
+    SetApartKind, delimiter_cores, dotted_member,
+    has_patronymic_ending, is_initial, is_listed_given_name,
+    is_patronymic_marker, reads_as_initials, set_apart, set_apart_kind,
+    suffix_reading, unit_ends,
 )
 from nameparser._policy import PatronymicRule
 from nameparser._types import (
@@ -186,8 +186,27 @@ def suffix_entries(state: ParseState) -> ParseState:
     return copy_with(state, tokens=tuple(tokens))
 
 
-def _idx(tokens: list[WorkToken], role: Role) -> list[int]:
-    return [i for i, t in enumerate(tokens) if t.role is role]
+def _positions(tokens: list[WorkToken],
+               ) -> tuple[list[int], list[int], list[int], list[int]]:
+    """The positions of the TITLE, GIVEN, MIDDLE and FAMILY tokens, in
+    that order, each list ascending: the four roles post_rules' rules
+    read as position lists, in one walk however many of them the caller
+    wants."""
+    # one plain loop, where a comprehension per role cost a frame of its
+    # own on 3.11 beside the call's, and post_rules asks for the lists on
+    # every parse (the parse-cost band, decisions/parse-cost, #1089)
+    titles: list[int] = []
+    givens: list[int] = []
+    middles: list[int] = []
+    families: list[int] = []
+    by_role: dict[Role | None, list[int]] = {
+        Role.TITLE: titles, Role.GIVEN: givens,
+        Role.MIDDLE: middles, Role.FAMILY: families}
+    for i, token in enumerate(tokens):
+        part = by_role.get(token.role)
+        if part is not None:
+            part.append(i)
+    return titles, givens, middles, families
 
 
 def _leading_name_piece(state: ParseState,
@@ -326,8 +345,8 @@ def _take_second_family_name(state: ParseState,
     if (state.structure is Structure.FAMILY_COMMA or state.order is None
             or state.order != state.policy.name_order):
         return
-    family = _idx(tokens, Role.FAMILY)
-    others = sorted(_idx(tokens, Role.GIVEN) + _idx(tokens, Role.MIDDLE))
+    _, given, middle, family = _positions(tokens)
+    others = sorted(given + middle)
     if not family or _family_word_count(tokens, family) != 1:
         return
     # The rest in the units assign read them as, so a particle chain
@@ -450,11 +469,10 @@ def _given_phrase_middle(state: ParseState,
     if (state.structure is Structure.FAMILY_COMMA or state.order is None
             or state.order[0] is not Role.GIVEN):
         return
-    given = _idx(tokens, Role.GIVEN)
-    family = _idx(tokens, Role.FAMILY)
+    _, given, middle, family = _positions(tokens)
     # a given name no patronymic, shared name or mark, of one word, with
     # no middle between it and the family
-    if (not given or not family or _idx(tokens, Role.MIDDLE)
+    if (not given or not family or middle
             or family[0] < given[-1]
             or not _one_given_word(tokens, given)
             or any(PATRONYMIC_TAG in tokens[i].tags
@@ -495,8 +513,7 @@ def _take_second_given_name(state: ParseState,
     else:
         given_first = state.order.index(Role.GIVEN) < state.order.index(
             Role.MIDDLE)
-    given = _idx(tokens, Role.GIVEN)
-    middle = _idx(tokens, Role.MIDDLE)
+    _, given, middle, _ = _positions(tokens)
     # a given name already holding two words keeps what it has: a
     # hyphenated one, or a bound given-name pair (P5), counted as O6
     # counts the family
@@ -684,21 +701,17 @@ def _set_apart_clauses(state: ParseState,
                 tokens[i].role not in (Role.NICKNAME, Role.MAIDEN)
                 for i in range(lo, hi)):
             continue
-        kinds: list[Literal["title", "suffix", "dual"]] = []
+        kinds: list[SetApartKind] = []
         member = False
         for i in range(lo, hi):
             token = tokens[i]
             kind = set_apart_kind(token.text, lex)
-            if kind is None:
-                bare = token.text.strip(",")
-                dotted = ("." in bare.strip(".")
-                          and _normalize(bare).replace(".", "")
-                          in lex._sets.suffix_acronyms_ambiguous)
-                if not (dotted or (AMBIGUOUS_ACRONYM_TAG in token.tags
-                                   and settled_by_case(token,
-                                                       state.one_case))):
-                    break
+            if kind == "member" or kind is None \
+                    and AMBIGUOUS_ACRONYM_TAG in token.tags \
+                    and settled_by_case(token, state.one_case):
                 kind, member = "suffix", True
+            elif kind is None:
+                break
             kinds.append(kind)
         else:
             # a member is settled after the name only (rules/S13), and
@@ -706,18 +719,13 @@ def _set_apart_clauses(state: ParseState,
             # comma part stays the nickname
             if member and not 0 <= last_name < lo:
                 continue
-            # a word that is a title too counts written with a period
-            # after each letter ('R.A.'), or in capitals in a name of
-            # mixed case ('RA'): Title case reads as the title it also
-            # is ('Lt'), and capitals in a name written in one case say
-            # nothing (S6)
-            if any((kind == "suffix" or kind == "dual" and (
-                        _DOTTED_INITIALS.fullmatch(w.strip(","))
-                        or state.one_case is False
-                        and w.strip(",").isupper()))
-                   and written_as_initials(w)
-                   and _normalize(w.strip(",")) not in lex._sets.suffix_words
-                   for w, kind in zip(words, kinds)):
+            # a name word after the clause in its comma part stands
+            # behind the last name word, so a clause after the name skips
+            # the walk; a title is never initials, asked inline
+            if last_name >= hi and any(
+                    kind != "title"
+                    and reads_as_initials(w, kind, state.one_case, lex)
+                    for w, kind in zip(words, kinds)):
                 if ahead is None:
                     ahead = _name_ahead(state, tokens)
                 if ahead[hi - 1]:
@@ -775,16 +783,15 @@ def _report_delimited_members(tokens: list[WorkToken], lexicon: Lexicon,
     included. Reported here, where the clause is decided, rather than
     in extract, which has no token index to point at. A dotted member
     carries no tag in a clause (classify tags a shape only outside
-    one), so it is found by its text."""
+    one), so it is found by its text, by `dotted_member` as the
+    settling finds it, whatever else the vocabulary reads it as."""
     for i, token in enumerate(tokens):
         if token.role is not Role.NICKNAME:
             continue
-        # a period inside the word ('M.A'); one ending it is extract's
-        # escape
-        dotted = ("." in token.text.strip(".")
-                  and _normalize(token.text).replace(".", "")
-                  in lexicon._sets.suffix_acronyms_ambiguous)
-        if dotted or AMBIGUOUS_ACRONYM_TAG in token.tags:
+        # the period asked first, at C level, so a nickname written
+        # without one pays no frame
+        if (AMBIGUOUS_ACRONYM_TAG in token.tags
+                or "." in token.text and dotted_member(token.text, lexicon)):
             ambiguities.append(PendingAmbiguity(
                 AmbiguityKind.SUFFIX_OR_NICKNAME,
                 f"delimited {token.text!r} is also a post-nominal; read "
@@ -815,10 +822,7 @@ def post_rules(state: ParseState) -> ParseState:
     if state.extracted:
         _set_apart_clauses(state, tokens)
         _report_delimited_members(tokens, state.lexicon, ambiguities)
-    titles = _idx(tokens, Role.TITLE)
-    givens = _idx(tokens, Role.GIVEN)
-    middles = _idx(tokens, Role.MIDDLE)
-    families = _idx(tokens, Role.FAMILY)
+    titles, givens, middles, families = _positions(tokens)
 
     # rules/H1: "a title followed by exactly one name word makes
     # that word the family name, whatever suffix, nickname or maiden
@@ -845,9 +849,7 @@ def post_rules(state: ParseState) -> ParseState:
         # every rule below reads these lists; recompute after any
         # retag so no guard can inspect a name that has already
         # moved -- a stale index list is the bug shape #359 fixed
-        givens = _idx(tokens, Role.GIVEN)
-        middles = _idx(tokens, Role.MIDDLE)
-        families = _idx(tokens, Role.FAMILY)
+        _, givens, middles, families = _positions(tokens)
     # rules/H1: "a comma with no given name after it does not decide
     # the field, nor does a declared order" -- the other direction, for
     # the shapes assign reads as the family before H1 can see them
@@ -866,8 +868,7 @@ def post_rules(state: ParseState) -> ParseState:
         for i in families:
             _retag(tokens, i, Role.GIVEN)
         # recomputed for H1's reason, stated above
-        givens = _idx(tokens, Role.GIVEN)
-        families = _idx(tokens, Role.FAMILY)
+        _, givens, _, families = _positions(tokens)
 
     # rules/M4: "a maiden name standing beside exactly one name
     # word makes that word the family name, whatever suffix or
@@ -905,9 +906,7 @@ def post_rules(state: ParseState) -> ParseState:
         _retag(tokens, givens[0], Role.FAMILY)
         # recomputed for H1's reason, stated at H1: a stale index list
         # is the bug shape #359 fixed
-        givens = _idx(tokens, Role.GIVEN)
-        middles = _idx(tokens, Role.MIDDLE)
-        families = _idx(tokens, Role.FAMILY)
+        _, givens, middles, families = _positions(tokens)
 
     # rules/P1: "the particle run and the name words it takes are
     # family, under every name order" -- its Then clause, for a
@@ -982,9 +981,7 @@ def post_rules(state: ParseState) -> ParseState:
             for i in givens + middles:
                 _retag(tokens, i, Role.FAMILY)
         # downstream rules key on the role counts: recompute
-        givens = _idx(tokens, Role.GIVEN)
-        middles = _idx(tokens, Role.MIDDLE)
-        families = _idx(tokens, Role.FAMILY)
+        _, givens, middles, families = _positions(tokens)
 
     # v1 gates both rotations on `not self._had_comma`; the
     # middle_as_family fold below runs comma or not (v1 order:
@@ -1004,6 +1001,9 @@ def post_rules(state: ParseState) -> ParseState:
             _retag(tokens, m, Role.GIVEN)
             _retag(tokens, f, Role.MIDDLE)
             _retag(tokens, g, Role.FAMILY)
+            # recomputed for H1's reason, stated at H1: a stale index
+            # list is the bug shape #359 fixed
+            _, givens, middles, families = _positions(tokens)
     # rules/O2: "a name of exactly four name words — titles,
     # suffixes and nicknames aside — ending in a standalone
     # patronymic marker reads family-first: the first name word is
@@ -1017,6 +1017,9 @@ def post_rules(state: ParseState) -> ParseState:
             _retag(tokens, m2, Role.MIDDLE)
             _retag(tokens, f, Role.MIDDLE)
             _retag(tokens, g, Role.FAMILY)
+            # recomputed for H1's reason, stated at H1: a stale index
+            # list is the bug shape #359 fixed
+            _, givens, middles, families = _positions(tokens)
     # rules/P6: "a particle ending the name attaches to that family
     # name and is written before it" -- the no-comma site (#467).
     # A comma is not the only thing that names the family; a declared
@@ -1068,18 +1071,15 @@ def post_rules(state: ParseState) -> ParseState:
     # and no rule reorders those. It does NOT stop a second particle
     # joining a family that merely OPENS with one: "de Mesnil Jan de"
     # gives 'de de Mesnil', which keeps its base and is accepted.
-    mids = _idx(tokens, Role.MIDDLE)
-    # O1 and O2 above retag between roles WITHOUT recomputing, so this
-    # is the first consumer of a stale list -- the bug shape #359 fixed,
-    # and every other retagging block in this stage recomputes for it.
-    families = _idx(tokens, Role.FAMILY)
-    names = _idx(tokens, Role.GIVEN) + mids + families
-    if mids and families and state.order is not None:
+    # every retagging block above recomputes the lists, so they are
+    # current here (a stale index list is the bug shape #359 fixed)
+    names = givens + middles + families
+    if middles and families and state.order is not None:
         run: list[int] = []
-        i = len(mids)
-        while i and "particle" in tokens[mids[i - 1]].tags:
+        i = len(middles)
+        while i and "particle" in tokens[middles[i - 1]].tags:
             i -= 1
-            run.append(mids[i])
+            run.append(middles[i])
         # ENDING the name is the rule's own word, and it is the whole
         # test: the trailing MIDDLE is not always the trailing NAME
         # word. Under FAMILY_FIRST_GIVEN_LAST the given name stands
@@ -1134,9 +1134,7 @@ def post_rules(state: ParseState) -> ParseState:
                     tags=tokens[j].tags | {FOLDED_TAG, ATTACHED_TAG})
             # recomputed for H1's reason, stated at H1: a stale index
             # list is the bug shape #359 fixed
-            givens = _idx(tokens, Role.GIVEN)
-            middles = _idx(tokens, Role.MIDDLE)
-            families = _idx(tokens, Role.FAMILY)
+            _, givens, middles, families = _positions(tokens)
 
     # every parse asks this, so a name holding no marked word pays one
     # plain loop and no call (the parse-cost band, decisions/parse-cost)
@@ -1155,7 +1153,9 @@ def post_rules(state: ParseState) -> ParseState:
     # "tokens never move: a rule that needs different rendering order
     # tags the token, and the rendering views consult the tag"
     if state.policy.middle_as_family:
-        middles = _idx(tokens, Role.MIDDLE)
+        # walked again: P10, O6 and O7 above retag without updating the
+        # lists
+        _, _, middles, families = _positions(tokens)
         # rules/R11: "middle words folded into the family belong to
         # neither unit" -- where O6 marked no units the family before the
         # fold is the first, marked here so the views can leave the
@@ -1163,12 +1163,11 @@ def post_rules(state: ParseState) -> ParseState:
         # (decisions/R11, #1022). A family O6 split carries its marks
         # already; a loop, not a generator, which costs a frame
         if middles:
-            family = _idx(tokens, Role.FAMILY)
-            for i in family:
+            for i in families:
                 if FIRST_SURNAME_TAG in tokens[i].tags:
                     break
             else:
-                _mark_surname(tokens, family, FIRST_SURNAME_TAG)
+                _mark_surname(tokens, families, FIRST_SURNAME_TAG)
         for i in middles:
             tokens[i] = copy_with(
                 tokens[i], role=Role.FAMILY,
@@ -1216,8 +1215,8 @@ def post_rules(state: ParseState) -> ParseState:
     # since the marking loop asks it per word: a list made a part
     # alternating particle and connective quadratic (test_benchmark's
     # `connective_between_particles` row).
-    for role in (Role.GIVEN, Role.MIDDLE, Role.FAMILY):
-        part = _idx(tokens, role)
+    _, givens, middles, families = _positions(tokens)
+    for part in (givens, middles, families):
         all_particle = bool(part)
         conj: list[int] = []
         between: set[int] = set()

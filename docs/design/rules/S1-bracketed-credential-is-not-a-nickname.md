@@ -4,7 +4,7 @@
 
 **Then:** a clause wholly of words the vocabulary reads as no name is set apart from the name: it is no nickname and no maiden name, and the words around it read as they would beside a nickname.
 
-- **Each word takes the role its vocabulary gives it**: a title is the title, a credential or a generation the suffix, and a word that is both is the title in front of the name's first word, or in a name with no word of its own, and the suffix anywhere else. The vocabulary is asked of each word on its own, so a credential whose word is also a name (S4) is no word of such a clause, and neither is a title that is also a given name (H9).
+- **Each word takes the role its vocabulary gives it**: a title is the title, a credential or a generation the suffix, one joined by a slash or a hyphen (S3) too, and a word that is both is the title in front of the name's first word, or in a name with no word of its own, and the suffix anywhere else. The vocabulary is asked of each word on its own, so a credential whose word is also a name (S4) is no word of such a clause, and neither is a title that is also a given name (H9).
   ```
   "John Smith (PhD, MBA)"     →  suffix="PhD, MBA"
   "John Smith (Dr)"           →  title="Dr"
@@ -13,7 +13,12 @@
   "(Lt)"                      →  title="Lt"
   "John (Sr.) Smith"          →  suffix="Sr."
   "John Smith (Mr, PhD)"      →  title="Mr"
+  "John Smith (MD/PhD)"       →  suffix="MD/PhD"
+  "John Smith (MD-PhD)"       →  suffix="MD-PhD"
+  "Smith (M.D./Ph.D.), John"  →  suffix="M.D./Ph.D."
   "John Smith (King)"         →  nickname="King"  · boundary
+  "John Smith (MD/Bob)"       →  nickname="MD/Bob"  · boundary
+  "John Smith (MA/PhD)"       →  nickname="MA/PhD"  · boundary
   ```
 - **The words around it read as they would beside a nickname**, so a clause between name words ends where its brackets do and takes neither neighbour, and a lone name word beside it is the family name (N3).
   ```
@@ -64,16 +69,20 @@
   "Alex Green, FRCS (SN)"     →  nickname="SN"
   "John Smith, MD (Sr)"       →  suffix="MD Sr"  · boundary
   ```
-- **A credential written as initials before a name word of its comma part** keeps its pair's reading: one or two letters with or without a period, or single letters each with its period, there are more likely the initials the person goes by, S13's reason for a member inside the name. A credential written as initials before a name word stays the nickname, and so does any word of its clause; a word that is a title too counts only written with a period after each letter, or in capitals in a name of mixed case, capitals in a name written in one case saying nothing (S6), and a generation word not at all.
+- **A credential written as initials before a name word of its comma part** keeps its pair's reading: one or two letters with or without a period, or single letters each with its period, there are more likely the initials the person goes by, S13's reason for a member inside the name. A credential written as initials before a name word stays the nickname, and so does any word of its clause; a word that is a title too counts only written with a period after each letter, or in capitals in a name of mixed case, capitals in a name written in one case saying nothing (S6), and a generation word not at all; a credential S3 reads through chunks joined by a slash or a hyphen counts where any of its chunks would, as its words written apart do, and one the vocabulary lists whole is one word.
   ```
   "Justin (JP) Stearns"       →  nickname="JP"
   "Justin (R.N.) Stearns"     →  nickname="R.N."
   "Justin (MD.) Stearns"      →  nickname="MD."
   "Justin (JP, PhD) Stearns"  →  nickname="JP, PhD"
   "John (,JP) Smith"          →  nickname=",JP"
+  "Justin (JP/MD) Stearns"    →  nickname="JP/MD"
+  "John (MD-PhD) Smith"       →  nickname="MD-PhD"
   "Robert (RA) Allen"         →  nickname="RA"
   "ROBERT (RA) ALLEN"         →  suffix="RA"  · boundary
   "John (Sr) Smith"           →  suffix="Sr"  · boundary
+  "John (Jr/Sr) Smith"        →  suffix="Jr/Sr"  · boundary
+  "John (NP-C) Smith"         →  suffix="NP-C"  · boundary
   "Smith (MD), John"          →  suffix="MD"  · boundary
   ```
 - **A clause holding a word the vocabulary reads as a name, or does not know**, is no such clause, and reads as its pair reads it, a nickname in a nickname pair. A member of the ambiguous class alone is S13's.
@@ -116,6 +125,13 @@
   "(MPH)"                     →  suffix="MPH"
   "MPH"                       →  given="MPH"
   "(Dr), John"                →  family="John"
+  ```
+- A credential joined by a slash or a hyphen is one word, so it reads otherwise than its words written apart where one of them reads by a rule of its own: a member of the ambiguous class whose position S13 does not settle, and a word that is a title too where it would be the title.
+  ```
+  "(M.A./PhD)"                →  suffix="M.A./PhD"
+  "(M.A., PhD)"               →  nickname="M.A., PhD"
+  "(PhD/Sr) John Smith"       →  suffix="PhD/Sr"
+  "(PhD, Sr) John Smith"      →  title="Sr"
   ```
 - A qualifier written after a title in front of the name is the suffix it is in the vocabulary.
   ```

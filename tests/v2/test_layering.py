@@ -648,7 +648,16 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: `title_case_name_words`, no 2.x field either; #694's phrase gate
 #: one load, `bound_given_names`; #792's set-apart clause two `sets =`
 #: bindings and nine loads in `_vocab` and two loads in `_post_rules`,
-#: taking extract's four suffix-set loads out, 119 -> 128); the tools' 19 are 17
+#: taking extract's four suffix-set loads out, 119 -> 128; #1088's
+#: set-apart word asking `suffix_as_written`, three loads out of
+#: `_vocab` and both of `_post_rules`' copies of the dotted member
+#: test, 128 -> 123; its parity fix moving the initials test into
+#: `_vocab.reads_as_initials` and the dotted test into
+#: `_vocab.dotted_member`, 123 -> 124, and its simplify pass asking
+#: two suffix sets inline ahead of `suffix_as_written`, 124 -> 126, and
+#: `reads_as_initials` leaving a credential listed whole unsplit, two
+#: more, 126 -> 128);
+#: the tools' 19 are 17
 #: attribute loads, every tool scanned, and config_diff.py's
 #: `sets =` binding and the roster `getattr` through it (its
 #: `changed_words`, which compares two lexicons set by set), which

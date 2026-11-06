@@ -365,15 +365,16 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # each reporting suffix-or-name under three orders; 1606 -> 1612 the
     # same day, #1093's two boundary rows under three orders; 1612 ->
     # 1615 the same day, its test review's joined-connective row under
-    # three orders; 1615 -> 1618 the same day, #1097 and #1098: the 'Smith
-    # i V, John' and 'Josep Lluis Carod i V' rows stop reporting and
-    # 'Smith Jones y VI, John', 'John Smith y VI' and 'Smith y V' report,
-    # each under three orders.
-    # 1618 -> 1638 the same day, the rows the reviews of #1097 and
-    # #1098 added, three of them reporting suffix-or-name, and the
-    # FAMILY_FIRST row.
-    assert claims == 1638, (
-        f"the field sweep checks {claims} claims, recorded as 1638 on "
+    # three orders; 1615 -> 1624 the same day, #1088's three kept-comma
+    # member rows ('Jean (M.A,) Smith' and its review's two) reporting
+    # suffix-or-nickname under three orders; 1624 -> 1627 the same day,
+    # #1097 and #1098: the 'Smith i V, John' and 'Josep Lluis Carod i V'
+    # rows stop reporting and 'Smith Jones y VI, John', 'John Smith y VI'
+    # and 'Smith y V' report, each under three orders; 1627 -> 1647 the
+    # same day, the rows the reviews of #1097 and #1098 added, three of
+    # them reporting suffix-or-name, and the FAMILY_FIRST row.
+    assert claims == 1647, (
+        f"the field sweep checks {claims} claims, recorded as 1647 on "
         f"2026-11-05")
 
 

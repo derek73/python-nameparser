@@ -7,10 +7,11 @@ from pathlib import Path
 import pytest
 
 from nameparser import Locale, Parser, PolicyPatch, locales, parse, parser_for
-from nameparser._lexicon import Lexicon
+from nameparser._lexicon import Lexicon, _normalize
 from nameparser._pipeline import run
 from nameparser._pipeline import _post_rules
 from nameparser._pipeline._post_rules import suffix_entries
+from nameparser._pipeline._vocab import suffix_as_written
 from nameparser._pipeline._state import ParseState
 from nameparser._policy import (FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST,
                                 GIVEN_FIRST, PatronymicRule, Policy,
@@ -1367,6 +1368,29 @@ def test_a_word_that_is_both_particle_and_connective_is_marked_too(
     assert UNJOINED_TAG not in tags["de"]
 
 
+@pytest.mark.parametrize("pack, word, text, middle, family", [
+    (locales.RU, "petrovich", "Sidorov Ivan Petrovich", "",
+     "Petrovich Sidorov"),
+    (locales.TR_AZ, "oglu", "Mammadov Ali Huseyn oglu", "Huseyn",
+     "oglu Mammadov"),
+])
+def test_o1_and_o2_read_the_lists_after_their_own_rotation(
+        pack: Locale, word: str, text: str, middle: str, family: str) -> None:
+    # rules/O1's and O2's rotations put the name's last word in a middle
+    # under the default order; where a caller's lexicon makes that word a
+    # particle, P6 attaches it, reading the lists the rotation left. Each
+    # rotation recomputes them (#359's bug shape; decisions/parse-cost,
+    # #1089). Recorded negative control (2026-11-05): with both
+    # recomputes dropped, the rows read middle 'Petrovich', family
+    # 'Sidorov' and middle 'Huseyn oglu', family 'Mammadov'; the readings
+    # below are 21a4fe15's, the tree before the recompute moved.
+    base = parser_for(pack)
+    parser = Parser(lexicon=base.lexicon.add(word, kind="particle"),
+                    policy=base.policy)
+    name = parser.parse(text)
+    assert (name.middle, name.family) == (middle, family)
+
+
 def test_two_family_names_declines_a_family_first_name_whose_family_is_not_first() -> None:
     # rules/O6's family-first arm takes the unit after a family standing
     # FIRST; no shipped rule leaves a family-first name otherwise
@@ -1767,3 +1791,138 @@ def test_a_set_apart_clause_trims_its_comma_off_the_word(text: str) -> None:
                for t in name.tokens if t.span is not None)
     # and every row is one the trim moves
     assert _SET_APART_COMMAS[text] != _UNGUARDED_EFFECT[text]
+
+
+#: rules/S1's set-apart word asks `suffix_as_written`, the question a
+#: bare word is asked, so a credential S3 reads joined by a slash or a
+#: hyphen is set apart in brackets after the name as its split spelling
+#: is (#1088). Inside the name the initials Except decides, which the
+#: two-spelling invariant below reads.
+_BRACKETED_WORDS = ("PhD", "Jr.", "MD/PhD", "MD-PhD", "md/phd", "Md-PhD",
+                    "MD/PhD/MPH", "M.D./Ph.D.", "M.A./PhD", "Jr/Sr",
+                    "MD/Bob", "MA/PhD", "Smith-Jones", "Ae-Ra", "I-V", "MD/")
+
+#: The rows the guard moves, as the tree before #1088 read them, the
+#: set-apart word asking its own copy of the unambiguous suffix sets:
+#: the test's negative control, recorded 2026-11-05 from a detached
+#: worktree of 4109b026 as (suffix, nickname).
+_UNGUARDED_EFFECT_1088 = {
+    "MD/PhD": ("", "MD/PhD"),
+    "MD-PhD": ("", "MD-PhD"),
+    "md/phd": ("", "md/phd"),
+    "Md-PhD": ("", "Md-PhD"),
+    "MD/PhD/MPH": ("", "MD/PhD/MPH"),
+    "M.A./PhD": ("", "M.A./PhD"),
+    "Jr/Sr": ("", "Jr/Sr"),
+}
+
+#: The grid's words S3 refuses, pinned apart from the predicate the
+#: test asks, so a refusal S3 lost would not move both sides at once.
+_REFUSED_JOINED = frozenset({"MD/Bob", "MA/PhD", "Smith-Jones", "Ae-Ra",
+                             "I-V", "MD/"})
+
+
+@pytest.mark.parametrize("word", _BRACKETED_WORDS)
+def test_a_bracketed_word_is_the_suffix_where_the_bare_word_is_one(
+        word: str) -> None:
+    lexicon = Lexicon.default()
+    suffix = suffix_as_written(_normalize(word), word, lexicon)
+    assert suffix is (word not in _REFUSED_JOINED)
+    name = parse(f"John Smith ({word})")
+    read = (name.suffix, name.nickname)
+    assert read == ((word, "") if suffix else ("", word))
+    if word in _UNGUARDED_EFFECT_1088:
+        assert _UNGUARDED_EFFECT_1088[word] != read
+
+
+def test_the_bracketed_word_control_names_words_of_the_grid() -> None:
+    # a control row outside the grid would guard nothing
+    assert set(_UNGUARDED_EFFECT_1088) <= set(_BRACKETED_WORDS)
+    assert len(_UNGUARDED_EFFECT_1088) == 7
+
+
+def test_a_dotted_member_a_caller_lists_as_a_title_still_reports() -> None:
+    # rules/S13's report asks the member's writing whatever else the
+    # vocabulary reads it as: a caller listing 'm.a' as a title makes a
+    # title-only clause behind a credential, which keeps its pair's
+    # reading (rules/S1), and the member left the nickname still
+    # reports (#1088's review: the first draft read the report off the
+    # set-apart kind, which answers "title" there)
+    parser = Parser(lexicon=Lexicon.default().add("m.a", kind="title"))
+    for text in ("John Smith PhD (M.A)", "John Smith PhD (M.A.)"):
+        name = parser.parse(text)
+        assert name.nickname == text[16:-1]
+        assert [a.kind for a in name.ambiguities] == [
+            AmbiguityKind.SUFFIX_OR_NICKNAME], text
+
+
+def test_a_member_a_caller_lists_as_a_title_is_the_title() -> None:
+    # a title outranks a member in a set-apart clause, as it did before
+    # #1088: unreachable with the default vocabulary, which lists no
+    # member of the ambiguous class as a title
+    parser = Parser(lexicon=Lexicon.default().add("aca", kind="title"))
+    assert "aca" in Lexicon.default()._sets.suffix_acronyms_ambiguous
+    name = parser.parse("John Smith (Aca)")
+    assert (name.title, name.nickname) == ("Aca", "")
+
+
+#: rules/S1's two spellings of a credential pair, joined by a slash or a
+#: hyphen and written apart with a comma, read alike in a clause, the
+#: initials Except asking each chunk of the joined word (#1088, axis 11
+#: of docs/design/AGENTS.md: an invariant over two inputs). The chunks
+#: are credentials S1 sets apart with no other reading -- a word that
+#: is a title too, or a member of the ambiguous class, reads by its own
+#: rules written apart -- and the second never ends in a period, which
+#: would hand the comma spelling the period escape.
+_PAIR_CHUNKS = ("MD", "PhD", "JP", "Jr", "M.D.", "RN", "Esq")
+_PAIR_SHAPES = ("John Smith ({})", "John ({}) Smith", "({}) John Smith",
+                "({})", "Smith ({}), John", "Smith, John ({})",
+                "JOHN ({}) SMITH", "Jack ({})", "John Smith ({}), Jr.",
+                ", John ({})", "John Smith, Jr. ({})")
+_PAIR_PARSERS = (Parser(), Parser(policy=Policy(name_order=FAMILY_FIRST)),
+                 Parser(policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST)))
+
+#: How many of those rows read apart with the initials Except asking
+#: the whole joined word, as the first draft of #1088 did: the negative
+#: control, recorded 2026-11-05 with `reads_as_initials`' chunk loop
+#: switched off. Each is a joined pair inside or before a name word of
+#: its comma part, set apart where its spelling written apart stays the
+#: nickname.
+_UNGUARDED_PAIRS_1088 = 540
+
+
+#: How many (pair, shape, order) rows the invariant reads, so a grid
+#: trimmed to nothing cannot pass it.
+_PAIRS_CHECKED = 2310
+
+
+def _pair_differences() -> list[str]:
+    found = []
+    checked = 0
+    for a in _PAIR_CHUNKS:
+        for b in _PAIR_CHUNKS:
+            if a == b or b.endswith("."):
+                continue
+            for joined in (f"{a}/{b}", f"{a}-{b}"):
+                # a pair S3 reads as no suffix bare ('Jr-Esq', written as
+                # a hyphenated name is) is no joined credential at all
+                if not suffix_as_written(_normalize(joined), joined,
+                                         Lexicon.default()):
+                    continue
+                for shape in _PAIR_SHAPES:
+                    for parser in _PAIR_PARSERS:
+                        apart = f"{a}, {b}"
+                        one = {k: v.replace(joined, apart) for k, v in
+                               parser.parse(shape.format(joined))
+                               .as_dict().items()}
+                        if one != parser.parse(shape.format(apart)).as_dict():
+                            found.append(shape.format(joined))
+                        checked += 1
+    assert checked == _PAIRS_CHECKED
+    return found
+
+
+def test_a_joined_credential_reads_as_its_spelling_written_apart() -> None:
+    assert _pair_differences() == []
+    # the control is a share of the grid the guard reads
+    assert 0 < _UNGUARDED_PAIRS_1088 < _PAIRS_CHECKED
