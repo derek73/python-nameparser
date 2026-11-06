@@ -2705,6 +2705,9 @@
 {"name": "Maria Silva", "given": "Maria", "family": "Silva", "initials": "M. S."}
 {"name": "Maria Wijaya", "given": "Maria", "family": "Wijaya", "initials": "M. W."}
 {"name": "Maria da Silva Santos", "given": "Maria", "family": "da Silva Santos", "initials": "M. S. S."}
+{"name": "Maria das Graças Silva", "given": "Maria", "family": "das Graças Silva", "initials": "M. G. S."}
+{"name": "Maria de Fatima Costa", "given": "Maria", "middle": "de Fatima", "family": "Costa", "initials": "M. F. C."}
+{"name": "Maria de Lurdes Costa", "given": "Maria", "middle": "de Lurdes", "family": "Costa", "initials": "M. L. C."}
 {"name": "Maria do Carmo Silva", "given": "Maria", "family": "do Carmo Silva", "initials": "M. C. S."}
 {"name": "Maria do Carmo da Silva", "given": "Maria", "middle": "do Carmo", "family": "da Silva", "initials": "M. C. S."}
 {"name": "Maria do Socorro Silva", "given": "Maria", "middle": "do Socorro", "family": "Silva", "initials": "M. S. S."}
@@ -3095,6 +3098,7 @@
 {"name": "Paul Phélypeaux de Pontchartrain", "given": "Paul", "middle": "Phélypeaux", "family": "de Pontchartrain", "initials": "P. P. P."}
 {"name": "Paul d'Ivoi", "given": "Paul", "family": "d'Ivoi", "initials": "P. d.", "capitalized_force": "Paul D'Ivoi"}
 {"name": "Paul de Maleingreau", "given": "Paul", "family": "de Maleingreau", "initials": "P. M."}
+{"name": "Paulo de Tarso Ribeiro", "given": "Paulo", "middle": "de Tarso", "family": "Ribeiro", "initials": "P. T. R."}
 {"name": "Pavlović, Antonio mlađi", "given": "Antonio", "family": "Pavlović", "suffix": "mlađi", "initials": "A. P.", "capitalized_force": "Antonio Pavlović Mlađi", "generation": "mlađi"}
 {"name": "Pedro", "given": "Pedro", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "P."}
 {"name": "Pedro", "order": "FAMILY_FIRST", "family": "Pedro", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "P."}
@@ -3261,6 +3265,7 @@
 {"name": "RA DDS", "title": "RA", "family": "DDS", "initials": "D.", "capitalized": "Ra Dds"}
 {"name": "RA PhD Jr., John", "given": "John", "family": "RA", "suffix": "PhD Jr.", "initials": "J. R.", "capitalized_force": "John Ra PhD Jr.", "generation": "Jr.", "credentials": "PhD"}
 {"name": "RAM BAHADUR B.K.", "given": "RAM", "middle": "BAHADUR", "family": "B.K.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "R. B. B.", "capitalized": "Ram Bahadur B.K."}
+{"name": "RITA DE CASSIA SOUZA", "given": "RITA", "family": "DE CASSIA SOUZA", "initials": "R. C. S.", "capitalized": "Rita de Cassia Souza"}
 {"name": "ROB ROY MACGREGOR", "given": "ROB", "middle": "ROY", "family": "MACGREGOR", "initials": "R. R. M.", "capitalized": "Rob Roy MacGregor"}
 {"name": "ROBERT (RA) ALLEN", "given": "ROBERT", "family": "ALLEN", "suffix": "RA", "initials": "R. A.", "capitalized": "Robert Allen RA"}
 {"name": "RONALD MACDONALD", "given": "RONALD", "family": "MACDONALD", "initials": "R. M.", "capitalized": "Ronald MacDonald"}

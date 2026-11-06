@@ -226,6 +226,10 @@ text = "consuelo"
 given = { after_particle = true, note = "the second of a compound given name written behind a particle (del Consuelo): ORCID holders in Spain and Spanish-speaking America end the given box with it behind a particle 11 times and open a family box of more words with it behind a particle 0 (2026-11-03, #704)" }
 
 [[word]]
+text = "fatima"
+given = { after_particle = true, note = "Fátima written without its accent (de Fatima): ORCID holders in Spain and Spanish-speaking America end the given box with it behind a particle 91 times and open a family box of more words with it behind a particle 0, over the whole extract, as fátima is marked on its Spanish counts; in Portugal, Brazil and Portuguese-speaking Africa 185 and 45 (2026-11-06, #1118)" }
+
+[[word]]
 text = "fco"
 given = { same_as = "francisco", note = "Francisco written short: ORCID given boxes 137 (Spain 75, Mexico 7), family boxes 3 (2026-11-06); written with its period at the head of a name (Fco. Javier Barbas González), it read as a title by the leading-abbreviation shape (#1115)" }
 

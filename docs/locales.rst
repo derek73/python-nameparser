@@ -789,6 +789,8 @@ a middle name with the ending, so it follows the order: under
 and no patronymic. A marker and the word before it are read under
 every order.
 
+.. _language-packs:
+
 Packs that choose a language
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -818,6 +820,20 @@ keeps family ``SB``), and in a name read given-first ``Nic`` opening it
 stays the given name (``Nic Cage``), as ``Mac`` does by default; under
 a family-first order it is the first word, read as the family name.
 Each reports its doubt in ``ambiguities``.
+
+``pt`` and ``pt_br`` also turn on the Portuguese given names written
+behind a particle that filers write as given names less surely than
+the default's bar (``das Graças``, ``de Cássia``, ``da Piedade``), so
+the phrase reads as a middle name, as ``del Carmen`` does by default
+(see :ref:`two-given-names`):
+
+.. doctest::
+
+    >>> parse("Maria das Graças Silva").family
+    'das Graças Silva'
+    >>> gracas = parser_for(locales.PT).parse("Maria das Graças Silva")
+    >>> gracas.middle, gracas.family
+    ('das Graças', 'Silva')
 
 A choice also settles every clash its language has a reading for, as
 `Choosing languages`_ shows, and that costs the other languages'

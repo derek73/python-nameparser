@@ -234,7 +234,11 @@ def test_es_and_pt_pack_contents() -> None:
     # the choice changes only the words a collision keeps off
     assert changed_words(selected(locales.ES.languages)) == {
         "doña", "lady", "maestra"}
-    assert changed_words(selected(locales.PT.languages)) == {"do", "e"}
+    # the given names rules/P10 completes below the default's bar (#1118)
+    assert changed_words(selected(locales.PT.languages)) == {
+        "do", "e",
+        "cassia", "cássia", "graca", "gracas", "graça", "graças",
+        "kassia", "piedade"}
     # sr keeps es's and pt's generation beside the salutation, so the
     # choice leaves it a dual position decides, as the default reads it
     for packed in (_require_packed("es"), _require_packed("pt"),
@@ -1630,7 +1634,20 @@ _ROTATORS["es_ar"] = [
     *(n for n in _ROTATORS["es"] if n != "Jan\u200bPavel -"),
     "Ana\u200bGarcía -",              # rules/O6 over a zero-width split and a lone mark
 ]
+# rules/P10's given names below the default's bar, which pt's choice turns
+# on, so the phrase reads as the middle name (#1118)
+_PT_PARTICLE_GIVEN = [
+    "Maria das Graças Silva",        # graças
+    "MARIA DAS GRACAS SILVA",        # gracas
+    "Maria da Graça Pereira",        # graça
+    "MARIA DA GRACA PEREIRA",        # graca
+    "Rita de Cássia Souza",          # cássia
+    "RITA DE CASSIA SOUZA",          # cassia
+    "Rita de Kassia Lima",           # kassia
+    "Maria da Piedade Costa",        # piedade
+]
 _ROTATORS["pt"] = [
+    *_PT_PARTICLE_GIVEN,
     "John Smith DO",                 # do, pt's particle, not DO
     "ANA SILVA E SOUZA",             # e, pt's connective
 ]
@@ -1638,6 +1655,7 @@ _ROTATORS["pt_br"] = [
     "JOSE CARLOS SILVA SB",          # sb
     "Jose Carlos Silva Sb.",         # sb, dotted
     "JOSE SILVA SB",                 # sb, one word to spare
+    *_PT_PARTICLE_GIVEN,             # pt's given names P10 completes
     "John Smith DO",                 # do, pt's particle, not DO
     "ANA SILVA E SOUZA",             # e, pt's connective
 ]

@@ -4,15 +4,25 @@
 
 **Then:** the particle run and that word are a middle name, so the chain's other words are the family.
 
-- **The word is one a reading marks** (`after_particle`), the second of a compound given name written behind a particle: the Marian and devotional names (del Carmen, de los Ángeles, del Pilar, de Lourdes), marked on Spanish counts and written in Portuguese names too (do Socorro, de Fátima).
+- **The word is one a reading marks** (`after_particle`), the second of a compound given name written behind a particle: the Marian and devotional names (del Carmen, de los Ángeles, del Pilar, de Lourdes), marked on Spanish counts and written in Portuguese names too (do Socorro, de Fátima), and the Portuguese ones marked on Portuguese counts (de Lurdes, do Céu, da Glória, de Tarso).
   ```
   "María del Carmen García"   →  middle="del Carmen"
   "María del Carmen García"   →  family="García"
   "María de los Ángeles López Pérez"  →  family="López Pérez"
   "Ana de María Pérez"        →  middle="de María"
   "Maria do Socorro Silva"    →  middle="do Socorro"
+  "Maria de Lurdes Costa"     →  middle="de Lurdes"
+  "Maria de Fatima Costa"     →  middle="de Fatima"
+  "Paulo de Tarso Ribeiro"    →  family="Ribeiro"
   "Maria do Carmo Silva"      →  family="do Carmo Silva"  · boundary
   "João da Silva Santos"      →  family="da Silva Santos"  · boundary
+  ```
+- **A word filers write as a given name less surely is marked for its language alone**, read where the caller chooses that language and left to the surname otherwise: Portuguese das Graças, de Cássia and da Piedade.
+  ```
+  "Maria das Graças Silva"  [pt]  →  middle="das Graças"
+  "RITA DE CASSIA SOUZA"  [pt_br]  →  family="SOUZA"
+  "Maria das Graças Silva"    →  family="das Graças Silva"  · boundary
+  "Maria das Graças Silva"  [es]  →  family="das Graças Silva"  · boundary
   ```
 - **A title, a suffix and a nickname are no name words**, so they stand outside the reading.
   ```

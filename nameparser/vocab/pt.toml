@@ -126,3 +126,71 @@ text = "e"
 may_be_initial = true
 issue = [383, 479]
 note = "a bare E initial is common (Edward, Elizabeth) and an 'e' between two surnames is rare outside couple listings, so a name written wholly in one case reads it as an initial and reports the fork (decisions/P8)"
+
+[[word]]
+text = "amparo"
+given = { after_particle = true, note = "the second of a compound given name written behind a particle (do Amparo): ORCID holders in Portugal, Brazil and Portuguese-speaking Africa end the given box with it behind a particle 11 times and open a family box of more words with it behind a particle 1, over the whole extract (2026-11-06, #1118)" }
+
+[[word]]
+text = "cassia"
+given = { default = false, after_particle = true, note = "Cássia written without its accent, as registries write it (de Cassia): ORCID holders in Portugal, Brazil and Portuguese-speaking Africa end the given box with it behind a particle 170 times and open a family box of more words with it behind a particle 31, 85%, below the 90% a default reading needs and well above a surname's (silva 32% on the same count), so a Portuguese choice turns it on (2026-11-06, #1118)" }
+
+[[word]]
+text = "ceu"
+given = { after_particle = true, note = "Céu written without its accent, as registries write it (do Ceu): 2 given boxes and 0 family boxes in ORCID's Portuguese-speaking countries, too few to decide alone, so it takes céu's reading (2026-11-06, #1118)" }
+
+[[word]]
+text = "cássia"
+given = { default = false, after_particle = true, note = "the second of a compound given name written behind a particle (Rita de Cássia): ORCID holders in Portugal, Brazil and Portuguese-speaking Africa end the given box with it behind a particle 462 times and open a family box of more words with it behind a particle 64, 88%, below the 90% a default reading needs and well above a surname's (silva 32% on the same count), so a Portuguese choice turns it on (2026-11-06, #1118)" }
+
+[[word]]
+text = "céu"
+given = { after_particle = true, note = "the second of a compound given name written behind a particle (Maria do Céu): ORCID holders in Portugal, Brazil and Portuguese-speaking Africa end the given box with it behind a particle 31 times and open a family box of more words with it behind a particle 1, over the whole extract (2026-11-06, #1118)" }
+
+[[word]]
+text = "gloria"
+given = { after_particle = true, note = "Glória written without its accent (da Gloria): ORCID holders in Portugal, Brazil and Portuguese-speaking Africa end the given box with it behind a particle 25 times and open a family box of more words with it behind a particle 1, over the whole extract (2026-11-06, #1118)" }
+
+[[word]]
+text = "glória"
+given = { after_particle = true, note = "the second of a compound given name written behind a particle (Maria da Glória): ORCID holders in Portugal, Brazil and Portuguese-speaking Africa end the given box with it behind a particle 38 times and open a family box of more words with it behind a particle 4, over the whole extract (2026-11-06, #1118)" }
+
+[[word]]
+text = "graca"
+given = { default = false, after_particle = true, note = "Graça written without its cedilla, as registries write it (da Graca): 3 given boxes and 0 family boxes in ORCID's Portuguese-speaking countries, too few to decide alone, so it takes graça's reading (2026-11-06, #1118)" }
+
+[[word]]
+text = "gracas"
+given = { default = false, after_particle = true, note = "Graças written without its cedilla, as registries write it (das Gracas): 4 given boxes and 0 family boxes in ORCID's Portuguese-speaking countries, too few to decide alone, so it takes graças's reading (2026-11-06, #1118)" }
+
+[[word]]
+text = "graça"
+given = { default = false, after_particle = true, note = "the second of a compound given name written behind a particle (Maria da Graça): ORCID holders in Portugal, Brazil and Portuguese-speaking Africa end the given box with it behind a particle 87 times and open a family box of more words with it behind a particle 20, 81%, below the 90% a default reading needs and well above a surname's (silva 32% on the same count), so a Portuguese choice turns it on (2026-11-06, #1118)" }
+
+[[word]]
+text = "graças"
+given = { default = false, after_particle = true, note = "the second of a compound given name written behind a particle (Maria das Graças): ORCID holders in Portugal, Brazil and Portuguese-speaking Africa end the given box with it behind a particle 138 times and open a family box of more words with it behind a particle 37, 79%, below the 90% a default reading needs and well above a surname's (silva 32% on the same count), so a Portuguese choice turns it on (2026-11-06, #1118)" }
+
+[[word]]
+text = "kassia"
+given = { default = false, after_particle = true, note = "Kássia written without its accent (de Kassia): ORCID holders in Portugal, Brazil and Portuguese-speaking Africa end the given box with it behind a particle 19 times and open a family box of more words with it behind a particle 5, 79%, below the 90% a default reading needs, so a Portuguese choice turns it on; measured on its own, it parts from kássia, on by default (15 to 1), and no Spanish count weighs it (0 to 0) (2026-11-06, #1118)" }
+
+[[word]]
+text = "kássia"
+given = { after_particle = true, note = "the second of a compound given name written behind a particle (Rita de Kássia): ORCID holders in Portugal, Brazil and Portuguese-speaking Africa end the given box with it behind a particle 15 times and open a family box of more words with it behind a particle 1, over the whole extract (2026-11-06, #1118)" }
+
+[[word]]
+text = "lurdes"
+given = { after_particle = true, note = "the Portuguese spelling of Lourdes, the second of a compound given name written behind a particle (Maria de Lurdes): ORCID holders in Portugal, Brazil and Portuguese-speaking Africa end the given box with it behind a particle 42 times and open a family box of more words with it behind a particle 1, over the whole extract (2026-11-06, #1118)" }
+
+[[word]]
+text = "piedade"
+given = { default = false, after_particle = true, note = "the second of a compound given name written behind a particle (Maria da Piedade): ORCID holders in Portugal, Brazil and Portuguese-speaking Africa end the given box with it behind a particle 13 times and open a family box of more words with it behind a particle 4, 76%, below the 90% a default reading needs, so a Portuguese choice turns it on (2026-11-06, #1118)" }
+
+[[word]]
+text = "ribamar"
+given = { after_particle = true, note = "the second of a compound given name written behind a particle (José de Ribamar, after the devotion of São Luís do Maranhão): ORCID holders in Portugal, Brazil and Portuguese-speaking Africa end the given box with it behind a particle 17 times and open a family box of more words with it behind a particle 1, over the whole extract (2026-11-06, #1118)" }
+
+[[word]]
+text = "tarso"
+given = { after_particle = true, note = "the second of a compound given name written behind a particle (Paulo de Tarso, Paul of Tarsus): ORCID holders in Portugal, Brazil and Portuguese-speaking Africa end the given box with it behind a particle 53 times and open a family box of more words with it behind a particle 3, over the whole extract (2026-11-06, #1118)" }
