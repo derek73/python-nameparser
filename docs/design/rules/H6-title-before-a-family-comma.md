@@ -6,7 +6,7 @@
 
 - **The run admits a title word only as vocabulary knows it**, never by H2's shape, so an abbreviated word opening a surname that the vocabulary does not list stays in the family.
 
-**Because:** the listing form moves the surname to the front and leaves everything else where it was written, so a title written ahead of the name ends up ahead of the surname — `Dr. Smith, John` is `Dr. John Smith` indexed. The comma names the family, and a title is no part of it. But the slot in front of a family comma is a surname's slot as well, and a period-marked word there is as often a surname's abbreviated head (`Sta. Maria`, `Mt. Pleasant`), a given name written short or a name word with a stray period as it is a title, which its shape cannot tell apart, so only the vocabulary claims a word there, never H2's shape, and a word that is a particle as well as a title opens a surname rather than ranking a person.
+**Because:** the listing form moves the surname to the front and leaves everything else where it was written, so a title written ahead of the name ends up ahead of the surname — `Dr. Smith, John` is `Dr. John Smith` indexed. The comma names the family, and a title is no part of it. But the slot in front of a family comma is a surname's slot as well, and a period-marked word there is as often a surname's abbreviated head (`Mt. Pleasant`), a given name written short or a name word with a stray period as it is a title, which its shape cannot tell apart, so only the vocabulary claims a word there, never H2's shape, and a word that is a particle as well as a title opens a surname rather than ranking a person.
 
 ```
 "Dr. Smith, John"           →  title="Dr."
