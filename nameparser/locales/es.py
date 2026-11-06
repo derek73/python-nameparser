@@ -1,10 +1,10 @@
 """The Spanish locale pack: it chooses the language ``es``, which turns
 on the readings nameparser/vocab/es.toml writes ``default = false`` --
-the courtesy, academic and professional titles that lead a name
-(``Lic.``, ``Licenciada``, ``Doctora``, ``Maestra``, ``Mtro.``,
-``Arq.``, ``Ingeniero``, ``Doña``) -- and prefers es.toml's readings
-where another language's clash: ``Lic Juan Pérez`` gives title ``Lic``
-where the default gives given ``Lic``. It reads two family names
+the titles that lead a name and that the default leaves off for the
+names they spell (``Maestra``, ``Doña``), the others being read by
+default since #1115 -- and prefers es.toml's readings where another
+language's clash: ``Maestra Ana Ruiz`` gives title ``Maestra`` where the
+default gives given ``Maestra``. It reads two family names
 (``Policy.two_family_names``, rules/O6), its policy patch compiled from
 es.toml's [rules] table by tools/vocab/build.py: ``Gabriel García
 Márquez`` gives family ``García Márquez``. And it carries the Spanish

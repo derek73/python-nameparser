@@ -79,12 +79,20 @@ text = "advocate"
 academic = { expands = "the address of an advocate, 'Adv. Smith' in South Africa and India", attaches = ["gen"], note = "attaches: Judge Advocate Gen (rules/H9, #999), the rank written short being a title only in a phrase" }
 
 [[word]]
+text = "adv"
+academic = { same_as = "advocate", issue = 1115, note = "Adv., the address of an advocate in India and South Africa (Adv Sakina Abdul Latif); no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata; ORCID's given box holds it 37 times (India 14), each a title typed there (2026-11-06)" }
+
+[[word]]
 text = "attorney"
 academic = { expands = "the address of a lawyer, 'Atty. Cruz'", attaches = ["gen"], note = "attaches: Attorney Gen (rules/H9, #999), the rank written short being a title only in a phrase" }
 
 [[word]]
 text = "engineer"
 academic = { expands = "the address of an engineer, 'Engr. Cruz' in the Philippines and Nigeria" }
+
+[[word]]
+text = "engr"
+academic = { same_as = "engineer", issue = 1115, note = "Engr., the address of an engineer in Pakistan, Nigeria, Bangladesh and the Philippines (Engr. Ahsen Ali); no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata; ORCID's given box holds it 255 times (Pakistan 86, Nigeria 44), each a title typed there (2026-11-06)" }
 
 [[word]]
 text = "nurse"
@@ -1871,6 +1879,10 @@ modifier = {}
 [[word]]
 text = "assistant"
 modifier = {}
+
+[[word]]
+text = "assist"
+modifier = { same_as = "assistant", issue = 1115, note = "Assist. Prof., written by ClinicalTrials.gov officials and ORCID holders in Turkey, Egypt and Iraq (Esra Oz, Assist Prof); no name bearers: under 100 US Census, under 5 US SSA a year, none on Wikidata (2026-11-06)" }
 
 [[word]]
 text = "asst"

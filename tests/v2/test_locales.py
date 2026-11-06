@@ -230,13 +230,13 @@ def test_es_and_pt_pack_contents() -> None:
                                 languages=frozenset({"es"}))
     assert locales.PT == Locale(code="pt", lexicon=Lexicon.empty(),
                                 languages=frozenset({"pt"}))
+    # the titles with no name bearer are read by default since #1115, so
+    # the choice changes only the words a collision keeps off
     assert changed_words(selected(locales.ES.languages)) == {
-        "arq", "doctora", "doña", "ingeniera", "ingeniero", "lady",
-        "lcda", "lcdo", "lic", "licenciada", "licenciado", "maestra",
-        "mtra", "mtro"}
+        "doña", "lady", "maestra"}
     # the given names rules/P10 completes below the default's bar (#1118)
     assert changed_words(selected(locales.PT.languages)) == {
-        "do", "doutor", "doutora", "e", "profa", "professora",
+        "do", "e",
         "cassia", "cássia", "graca", "gracas", "graça", "graças",
         "kassia", "piedade"}
     # sr keeps es's and pt's generation beside the salutation, so the
@@ -258,11 +258,11 @@ def test_vi_pack_contents() -> None:
     from nameparser.locales import vi as _vi
     assert locales.VI.languages == {"vi"}
     assert locales.VI.policy.name_order is FAMILY_FIRST_GIVEN_LAST
-    # chief and deputy each make a title phrase with the office đbqh
-    # (their attaches), which changed_words lists whole and word by word
+    # ths and the office đbqh are read by default since #1115, its title
+    # phrases with chief and deputy with it; gs, pgs and ts, written as
+    # initials too, stay the choice's
     assert _ri.changed_words(_ri.selected(locales.VI.languages)) == {
-        "gs", "pgs", "ths", "ts", "đbqh", "dbqh", "chief", "deputy",
-        "chief đbqh", "deputy đbqh", "chief dbqh", "deputy dbqh"}
+        "gs", "pgs", "ts"}
     sets = _require_packed("vi").lexicon._sets
     # the fragment takes out the readings it names and nothing else
     assert not {"van", "le", "do", "du", "di", "la", "tho", "da", "san"} & (
@@ -554,17 +554,20 @@ def test_a_name_the_declaration_stopped_counting_twice_reads_as_the_default(
 
 def test_es_and_pt_read_a_leading_title_and_leave_don_a_given_name() -> None:
     es, pt = _require_packed("es"), _require_packed("pt")
+    # doña stays the choice's; lic, licenciada and mtro are read by
+    # default since #1115, so the default reads them as the pack does
+    assert parse("Doña María Pérez").title == ""
+    assert es.parse("Doña María Pérez").title == "Doña"
     for text, title in (("Lic Juan Pérez", "Lic"), ("LIC JUAN PEREZ", "LIC"),
                         ("Pérez, Licenciada Ana", "Licenciada"),
-                        ("Doña María Pérez", "Doña"),
                         ("Mtro. Pérez, Edgar", "Mtro.")):
-        assert parse(text).title in ("", "Mtro.") and es.parse(text).title == title
+        assert parse(text).title == es.parse(text).title == title
     assert es.parse("Ana López Maestra.").as_dict() == parse(
         "Ana López Maestra.").as_dict() | {
         "title": "Maestra.", "middle": "", "family": "López"}
     assert pt.parse("Fernanda Lucchese, Doutora").as_dict() == parse(
-        "Fernanda Lucchese, Doutora").as_dict() | {
-        "title": "Doutora", "given": "Fernanda", "family": "Lucchese"}
+        "Fernanda Lucchese, Doutora").as_dict()
+    assert parse("Fernanda Lucchese, Doutora").title == "Doutora"
     # don, dona and dom are excluded: names open with them as given names
     for packed, text in ((es, "Don Juan Pérez"), (pt, "Dona Maria Souza"),
                          (pt, "Dom Pedro Alves")):
@@ -1455,16 +1458,7 @@ _ROTATORS["ja"] = [
 # and the patch has rotators of its own.
 _ROTATORS["cs"] = [
     "BcA Krejčí",                    # bca
-    "Jan Novák, JUDr",               # judr, bare after a comma
-    "MDDr Dvořáková",                # mddr
     "MgA Malá",                      # mga
-    "MUDr Novák",                    # mudr
-    "MVDr Svoboda",                  # mvdr
-    "PaedDr Králová",                # paeddr
-    "PharmDr Králová",               # pharmdr
-    "Novák PhDr.",                   # phdr, dotted at the end
-    "Novák, RNDr",                   # rndr, after a one-word head
-    "ThDr Hus",                      # thdr
     "Jan Novák, DrSc",               # drsc, a credential after a comma
     "Pan Novák",                     # pan
     "Jana Nováková (roz. Svobodová)",  # roz, the birth marker, bracketed
@@ -1477,15 +1471,6 @@ _ROTATORS["cs"] = [
 ]
 _ROTATORS["sk"] = [
     "Jozef Mrkva, ArtD.",            # artd, a credential after a comma
-    "Jozef Mrkva, JUDr",             # judr
-    "MDDr Kováčová",                 # mddr
-    "MUDr Mrkva",                    # mudr
-    "MVDr Horváth",                  # mvdr
-    "PaedDr Kováčová",               # paeddr
-    "PharmDr Kováčová",              # pharmdr
-    "Mrkva PhDr.",                   # phdr
-    "Mrkva, RNDr",                   # rndr
-    "ThDr Chryzostom",               # thdr
     "Jozef Mrkva, DrSc",             # drsc
     "Mrkva ml.",                     # ml
     "Ján Mrkva st.",                 # st
@@ -1555,16 +1540,9 @@ _ROTATORS["vi"] = [
     "NGUYEN VAN DO",                 # do's credential
     "NGUYEN THI BA",                 # ba
     "Nguyen, Ts Van Anh",            # ts after a family comma
-    "Nguyen, Ths Van Anh",           # ths
     "Nguyen, Gs Van Anh",            # gs
     "Nguyen, Pgs Van Anh",           # pgs
     "Nguyen, PGS.TS. An",            # the stacked form
-    "Nguyen, ĐBQH Van Anh",          # đbqh, the office
-    "Nguyen, DBQH Van Anh",          # dbqh, its ASCII spelling
-    "Nguyen, Chief ĐBQH Anh",        # chief, in a phrase with đbqh
-    "Nguyen, Deputy DBQH Anh",       # deputy, in a phrase with dbqh
-    "Nguyen, Chief DBQH Anh",        # chief dbqh
-    "Nguyen, Deputy ĐBQH Anh",       # deputy đbqh
 ]
 _ROTATORS["bn"] = [
     "Shrimati Mamata Banerjee",      # shrimati at the head
@@ -1640,20 +1618,7 @@ _ROTATORS["gd"] = [
 # family comma, before one (rules/H6) and dotted ending the name (rules/H5);
 # pt: its titles likewise, and the words its choice prefers.
 _ROTATORS["es"] = [
-    "Lic Juan Pérez",                # lic
-    "LIC JUAN PEREZ",                # lic, in one case
-    "Pérez Lic.",                    # lic, dotted, ending the name (H5)
-    "Licenciado Sánchez",            # licenciado
-    "Lcdo Ricardo García",           # lcdo
-    "Pérez, Licenciada Ana",         # licenciada after a family comma
-    "Lcda Sánchez",                  # lcda
     "Lady Heidenreich",              # lady, a given name (H9)
-    "Ingeniero Juan Pérez",          # ingeniero
-    "ingeniera ana ruiz",            # ingeniera, in one case
-    "Arq Julia Romero",              # arq
-    "Mtro. Pérez, Edgar",            # mtro, dotted, before a family comma (H6)
-    "Mtra Ana Ruiz",                 # mtra
-    "Doctora Montilla",              # doctora
     "Maestra Ruiz",                  # maestra
     "López Maestra.",                # maestra, dotted, ending the name
     "Doña María Pérez",              # doña
@@ -1683,11 +1648,6 @@ _PT_PARTICLE_GIVEN = [
 ]
 _ROTATORS["pt"] = [
     *_PT_PARTICLE_GIVEN,
-    "Doutor João Silva",             # doutor
-    "Silva, Doutor João",            # doutor after a family comma
-    "Fernanda Lucchese, Doutora",    # doutora after the comma
-    "Professora Rosária Lima",       # professora
-    "Profa Maria Souza",             # profa
     "John Smith DO",                 # do, pt's particle, not DO
     "ANA SILVA E SOUZA",             # e, pt's connective
 ]
@@ -1698,11 +1658,74 @@ _ROTATORS["pt_br"] = [
     *_PT_PARTICLE_GIVEN,             # pt's given names P10 completes
     "John Smith DO",                 # do, pt's particle, not DO
     "ANA SILVA E SOUZA",             # e, pt's connective
-    "Doutor João Silva",             # doutor, pt's title
-    "Fernanda Lucchese, Doutora",    # doutora, pt's title
-    "Professora Rosária Lima",       # professora, pt's title
-    "Profa Maria Souza",             # profa, pt's title
 ]
+
+
+# #1115 turned these titles on by default, so no choice moves them: the
+# rows that witnessed each as a choice word now witness that the default
+# reads it as the pack does, a title in each place the rotator put it
+# (decisions/vocabulary-model, the 2026-11-06 #1115 entry).
+_READ_BY_DEFAULT_SINCE_1115: dict[str, list[str]] = {
+    "cs": [
+        "Jan Novák, JUDr",               # judr, bare after a comma
+        "MDDr Dvořáková",                # mddr
+        "MUDr Novák",                    # mudr
+        "MVDr Svoboda",                  # mvdr
+        "PaedDr Králová",                # paeddr
+        "PharmDr Králová",               # pharmdr
+        "Novák PhDr.",                   # phdr, dotted at the end
+        "Novák, RNDr",                   # rndr, after a one-word head
+        "ThDr Hus",                      # thdr
+    ],
+    "sk": [
+        "Jozef Mrkva, JUDr",             # judr
+        "MDDr Kováčová",                 # mddr
+        "MUDr Mrkva",                    # mudr
+        "MVDr Horváth",                  # mvdr
+        "PaedDr Kováčová",               # paeddr
+        "PharmDr Kováčová",              # pharmdr
+        "Mrkva PhDr.",                   # phdr
+        "Mrkva, RNDr",                   # rndr
+        "ThDr Chryzostom",               # thdr
+    ],
+    "vi": [
+        "Nguyen, Ths Van Anh",           # ths
+        "Nguyen, ĐBQH Van Anh",          # đbqh, the office
+        "Nguyen, DBQH Van Anh",          # dbqh, its ASCII spelling
+        "Nguyen, Chief ĐBQH Anh",        # chief, in a phrase with đbqh
+        "Nguyen, Deputy DBQH Anh",       # deputy, in a phrase with dbqh
+        "Nguyen, Chief DBQH Anh",        # chief dbqh
+        "Nguyen, Deputy ĐBQH Anh",       # deputy đbqh
+    ],
+    "es": [
+        "Lic Juan Pérez",                # lic
+        "LIC JUAN PEREZ",                # lic, in one case
+        "Pérez Lic.",                    # lic, dotted, ending the name (H5)
+        "Licenciado Sánchez",            # licenciado
+        "Lcdo Ricardo García",           # lcdo
+        "Pérez, Licenciada Ana",         # licenciada after a family comma
+        "Lcda Sánchez",                  # lcda
+        "Ingeniero Juan Pérez",          # ingeniero
+        "ingeniera ana ruiz",            # ingeniera, in one case
+        "Arq Julia Romero",              # arq
+        "Mtro. Pérez, Edgar",            # mtro, dotted, before a family comma (H6)
+        "Mtra Ana Ruiz",                 # mtra
+        "Doctora Montilla",              # doctora
+    ],
+    "pt": [
+        "Doutor João Silva",             # doutor
+        "Silva, Doutor João",            # doutor after a family comma
+        "Fernanda Lucchese, Doutora",    # doutora after the comma
+        "Professora Rosária Lima",       # professora
+        "Profa Maria Souza",             # profa
+    ],
+    "pt_br": [
+        "Doutor João Silva",             # doutor, pt's title
+        "Fernanda Lucchese, Doutora",    # doutora, pt's title
+        "Professora Rosária Lima",       # professora, pt's title
+        "Profa Maria Souza",             # profa, pt's title
+    ],
+}
 
 
 def _marker_regexes(module: ModuleType) -> list[re.Pattern]:
@@ -1818,6 +1841,16 @@ def test_rotator_deviates_and_declares(code: str, name: str) -> None:
     packed = _require_packed(code)
     assert packed.parse(name).as_dict() != _default_parse(name)
     assert _deviates(code)(name)
+
+
+@pytest.mark.parametrize("code, name", [
+    (code, name) for code in sorted(_READ_BY_DEFAULT_SINCE_1115)
+    for name in _READ_BY_DEFAULT_SINCE_1115[code]])
+def test_a_title_read_by_default_since_1115_reads_as_its_pack_reads_it(
+        code: str, name: str) -> None:
+    default = _default_parse(name)
+    assert _require_packed(code).parse(name).as_dict() == default
+    assert default["title"], name
 
 
 @pytest.mark.parametrize("code", sorted(_PACKS))
@@ -2091,34 +2124,58 @@ _ORDERS = {None: Policy(), "FAMILY_FIRST": Policy(name_order=FAMILY_FIRST),
 
 
 @pytest.mark.parametrize("tags, order, name, default, packed", [
-    # an academic title written bare, in each comma shape and order;
-    # its dotted spelling at the head is a title by its shape in both
+    # an academic title written bare, in each comma shape and order,
+    # read by default since #1115 as the pack reads it; its dotted
+    # spelling at the head was a title by its shape in both before
     ("cs", None, "MUDr Jan Novák",
-     ("", "MUDr", "Jan", "Novák", "", "", ()),
+     ("MUDr", "Jan", "", "Novák", "", "", ()),
      ("MUDr", "Jan", "", "Novák", "", "", ())),
     ("cs", None, "Jan Novák, MUDr",
-     ("", "MUDr", "", "Jan Novák", "", "", ()),
+     ("MUDr", "Jan", "", "Novák", "", "", ()),
      ("MUDr", "Jan", "", "Novák", "", "", ())),
     ("cs", None, "Novák, MUDr",
-     ("", "MUDr", "", "Novák", "", "", ()),
+     ("MUDr", "", "", "Novák", "", "", ()),
      ("MUDr", "", "", "Novák", "", "", ())),
     ("cs", None, ", MUDr Jan",
-     ("", "MUDr", "Jan", "", "", "", ()),
+     ("MUDr", "", "", "Jan", "", "", ()),
      ("MUDr", "", "", "Jan", "", "", ())),
     ("cs", "FAMILY_FIRST", "MUDr Novák Jan",
-     ("", "Novák", "Jan", "MUDr", "", "", ()),
+     ("MUDr", "Jan", "", "Novák", "", "", ()),
      ("MUDr", "Jan", "", "Novák", "", "", ())),
     ("sk", None, "PhDr Jozef Mrkva",
-     ("", "PhDr", "Jozef", "Mrkva", "", "", ()),
+     ("PhDr", "Jozef", "", "Mrkva", "", "", ()),
      ("PhDr", "Jozef", "", "Mrkva", "", "", ())),
     # dotted at the end, a listed title there (rules/H5), in mixed case
     # and in one case
     ("cs", None, "Jan Novák MUDr.",
-     ("", "Jan", "Novák", "MUDr.", "", "", ()),
+     ("MUDr.", "Jan", "", "Novák", "", "", ()),
      ("MUDr.", "Jan", "", "Novák", "", "", ())),
     ("cs", None, "JAN NOVÁK MUDR.",
-     ("", "JAN", "NOVÁK", "MUDR.", "", "", ()),
+     ("MUDR.", "JAN", "", "NOVÁK", "", "", ()),
      ("MUDR.", "JAN", "", "NOVÁK", "", "", ())),
+    # MgA, a title only the pack reads (#1115 kept it the choice's, MGA
+    # being initials too), in the shapes the doctorates' rows walk
+    ("cs", None, "MgA Jana Malá",
+     ("", "MgA", "Jana", "Malá", "", "", ()),
+     ("MgA", "Jana", "", "Malá", "", "", ())),
+    ("cs", None, "Jana Malá, MgA",
+     ("", "MgA", "", "Jana Malá", "", "", ()),
+     ("MgA", "Jana", "", "Malá", "", "", ())),
+    ("cs", None, "Malá, MgA",
+     ("", "MgA", "", "Malá", "", "", ()),
+     ("MgA", "", "", "Malá", "", "", ())),
+    ("cs", None, ", MgA Jana",
+     ("", "MgA", "Jana", "", "", "", ()),
+     ("MgA", "", "", "Jana", "", "", ())),
+    ("cs", "FAMILY_FIRST", "MgA Malá Jana",
+     ("", "Malá", "Jana", "MgA", "", "", ()),
+     ("MgA", "Jana", "", "Malá", "", "", ())),
+    ("cs", None, "Jana Malá MgA.",
+     ("", "Jana", "Malá", "MgA.", "", "", ()),
+     ("MgA.", "Jana", "", "Malá", "", "", ())),
+    ("cs", None, "JANA MALÁ MGA.",
+     ("", "JANA", "MALÁ", "MGA.", "", "", ()),
+     ("MGA.", "JANA", "", "MALÁ", "", "", ())),
     # the post-nominals: a credential after a comma, where the default
     # reverses the bare one and takes the dotted one for a title
     ("cs", None, "Jan Novák, DrSc",
@@ -2253,11 +2310,16 @@ def test_the_west_and_south_slavic_packs_read_what_the_default_refuses(
 
 def test_the_west_and_south_slavic_packs_repair_their_titles_case() -> None:
     # the readings' cased masks join with them, so capitalized() writes
-    # the title as Czech does under the pack and leaves it otherwise
+    # the title as Czech does under the pack, and since #1115 by default
+    # for a title the default reads; one only the pack reads (MgA) is
+    # left to the default's repair otherwise
     cs = parser_for(locales.CS)
     assert str(cs.capitalized(cs.parse("mudr. jan novák"))) == (
         "MUDr. Jan Novák")
-    assert str(parse("mudr. jan novák").capitalized()) == "Mudr. Jan Novák"
+    assert str(parse("mudr. jan novák").capitalized()) == "MUDr. Jan Novák"
+    assert str(cs.capitalized(cs.parse("mga. jan novák"))) == (
+        "MgA. Jan Novák")
+    assert str(parse("mga. jan novák").capitalized()) == "Mga. Jan Novák"
 
 
 # -- 3h: the Irish, Scottish Gaelic and Brazilian Portuguese packs --

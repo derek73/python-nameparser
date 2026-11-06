@@ -2800,15 +2800,16 @@ def test_an_error_applying_a_choice_names_the_choice(
 
 
 def test_a_choice_moves_case_masks_as_it_moves_words() -> None:
-    # cs's credentials carry masks the default leaves off (`judr` ->
-    # JUDr), a strict choice drops the masks of every file it drops
+    # cs's credentials carry masks the default leaves off (`mga` ->
+    # MgA), a strict choice drops the masks of every file it drops
     # (en.toml's `dphil` under ko) and keeps mul.toml's (`phd`, #1005),
     # and a caller's own mask the choice does not touch is kept
     from nameparser import locales
     mine = dataclasses.replace(Lexicon.default(), capitalization_exceptions=(
         *Lexicon.default().capitalization_exceptions, ("abcq", "AbcQ")))
     cs = parser_for(locales.CS, base=Parser(lexicon=mine)).lexicon
-    assert cs.capitalization_exceptions_map["judr"] == "JUDr"
+    assert "mga" not in Lexicon.default().capitalization_exceptions_map
+    assert cs.capitalization_exceptions_map["mga"] == "MgA"
     assert cs.capitalization_exceptions_map["abcq"] == "AbcQ"
     ko = parser_for(_choosing("ko"), strict=True).lexicon
     assert "dphil" not in ko.capitalization_exceptions_map
@@ -2939,13 +2940,13 @@ def test_strict_has_three_states_on_a_chained_call() -> None:
 
 
 def test_a_chained_choice_redoes_a_mask_the_default_lacks() -> None:
-    # cs sets `judr`'s mask, which the default holds none of; chained
+    # cs sets `mga`'s mask, which the default holds none of; chained
     # under en, the base's move is undone (the mask deleted) and the
     # union's applied again, as the single call does
     from nameparser import locales
     en = _choosing("en", code="en")
     chained = parser_for(en, base=parser_for(locales.CS))
-    assert chained.lexicon.capitalization_exceptions_map["judr"] == "JUDr"
+    assert chained.lexicon.capitalization_exceptions_map["mga"] == "MgA"
     assert chained.lexicon == parser_for(locales.CS, en).lexicon
 
 
@@ -3039,17 +3040,17 @@ def test_a_packs_masks_are_laid_over_the_choices() -> None:
     from nameparser import locales
     fm = Locale(code="fm", lexicon=dataclasses.replace(
         Lexicon.empty(), capitalization_exceptions=(
-            ("phd", "PHD"), ("judr", "JUDR"))))
+            ("phd", "PHD"), ("mga", "MGA"))))
     for strict in (False, True):
         p = parser_for(fm, locales.CS, strict=strict)
         cap = p.lexicon.capitalization_exceptions_map
-        assert (cap["phd"], cap["judr"]) == ("PHD", "JUDR"), strict
-        rendered = str(p.capitalized(p.parse("jan novák phd judr")))
-        assert "PHD" in rendered and "JUDR" in rendered, strict
+        assert (cap["phd"], cap["mga"]) == ("PHD", "MGA"), strict
+        rendered = str(p.capitalized(p.parse("jan novák phd mga")))
+        assert "PHD" in rendered and "MGA" in rendered, strict
     mine = dataclasses.replace(Lexicon.default(), capitalization_exceptions=(
-        *Lexicon.default().capitalization_exceptions, ("judr", "Judr")))
+        *Lexicon.default().capitalization_exceptions, ("mga", "Mga")))
     p = parser_for(locales.CS, base=Parser(lexicon=mine))
-    assert p.lexicon.capitalization_exceptions_map["judr"] == "JUDr"
+    assert p.lexicon.capitalization_exceptions_map["mga"] == "MgA"
 
 
 def test_a_packs_fragment_joins_under_the_callers_lexicon() -> None:

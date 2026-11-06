@@ -7,7 +7,7 @@
     python -m nameparser --locale ko --strict "Kim Do Hyun"
     python -m nameparser --locale vi --strict "Do Van Minh"
     python -m nameparser --two-given-names "Juan Carlos García"
-    python -m nameparser --locale es --no-two-family-names "Lic Gabriel García Márquez"
+    python -m nameparser --locale es --no-two-family-names "Maestra Ana García López"
 """
 import argparse
 import dataclasses

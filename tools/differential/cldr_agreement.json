@@ -1891,11 +1891,7 @@
  "ca/foreignFull/surnameFirst": {
   "family": {
    "expected": "Dalen Hoogeveen",
-   "got": "Excma. Dra. Van Dalen Hoogeveen"
-  },
-  "family_base": {
-   "expected": "Dalen Hoogeveen",
-   "got": "Excma. Dra. Dalen Hoogeveen"
+   "got": "Van Dalen Hoogeveen"
   },
   "family_particles": {
    "expected": "",
@@ -1907,7 +1903,7 @@
   },
   "surname1_base": {
    "expected": "Dalen",
-   "got": "Excma. Dra. Dalen Hoogeveen"
+   "got": "Dalen Hoogeveen"
   },
   "surname1_particles": {
    "expected": "",
@@ -1920,7 +1916,7 @@
   "text": "Excma. Dra. Van Dalen Hoogeveen II, Maria da Graça César Martín",
   "title": {
    "expected": "Dra.",
-   "got": ""
+   "got": "Excma. Dra."
   }
  },
  "ca/foreignG/sorting": {
@@ -1988,21 +1984,13 @@
   "text": "Lloret Palol, Josep Antoni Carles Joan"
  },
  "ca/nativeFull/surnameFirst": {
-  "family": {
-   "expected": "Lloret Palol",
-   "got": "Excm. Lloret Palol"
-  },
-  "family_base": {
-   "expected": "Lloret Palol",
-   "got": "Excm. Lloret Palol"
-  },
   "suffix": {
    "expected": "Excm. II",
-   "got": "Sr., II"
+   "got": "II"
   },
   "surname1_base": {
    "expected": "Lloret",
-   "got": "Excm. Lloret Palol"
+   "got": "Lloret Palol"
   },
   "surname2": {
    "expected": "Palol",
@@ -2011,7 +1999,7 @@
   "text": "Excm. Sr. Lloret Palol II, Josep Antoni Carles Joan",
   "title": {
    "expected": "Sr.",
-   "got": ""
+   "got": "Excm. Sr."
   }
  },
  "ca/nativeG/sorting": {
@@ -13818,23 +13806,15 @@
   }
  },
  "vi/nativeFull/surnameFirst": {
-  "family": {
-   "expected": "Nguyễn",
-   "got": "ĐBQH"
-  },
-  "family_base": {
-   "expected": "Nguyễn",
-   "got": "ĐBQH"
-  },
-  "given_names": {
-   "expected": "Văn Anh",
-   "got": "Nguyễn Văn Anh"
-  },
   "suffix": {
    "expected": "ĐBQH",
    "got": ""
   },
-  "text": "ĐBQH Nguyễn Văn Anh"
+  "text": "ĐBQH Nguyễn Văn Anh",
+  "title": {
+   "expected": "",
+   "got": "ĐBQH"
+  }
  },
  "vi/nativeG/sorting": {
   "family": {
