@@ -65,6 +65,7 @@ _is_maiden_marker_piece.
 from __future__ import annotations
 
 import bisect
+import unicodedata
 from collections.abc import Iterable, Sequence, Set
 from enum import IntEnum
 from typing import assert_never
@@ -524,9 +525,16 @@ def _is_lone_letter(piece: Sequence[int], tokens: Sequence[WorkToken],
     tok = tokens[piece[0]]
     if "conjunction" in tok.tags:
         return False
-    letter = tok.text.rstrip(".")
+    letter = _composed(tok.text.rstrip("."))
     return (len(letter) == 1 and letter.isalpha()
             and not numeral_settled_by_case(letter, one_case))
+
+
+def _composed(text: str) -> str:
+    """`text` NFC-folded where it is not ASCII: a letter typed as its
+    base and a combining mark is one letter to P13, as the vocabulary
+    lookup reads it (#665)."""
+    return text if text.isascii() else unicodedata.normalize("NFC", text)
 
 
 def _link_the_last_letter(pieces: list[list[int]], ptags: list[set[str]],
@@ -549,12 +557,13 @@ def _link_the_last_letter(pieces: list[list[int]], ptags: list[set[str]],
     # -- both joins, made ahead of P3's carve-out (decisions/P13
     # (#1097, #1098))
     e = len(pieces) - 1
+    titled = False
     while e >= 0 and not _is_lone_letter(pieces[e], tokens, one_case):
         piece = pieces[e]
-        if not (is_suffix_piece(piece, ptags[e], tokens)
-                or (len(piece) == 1
-                    and tokens[piece[0]].text.endswith(".")
-                    and is_title_piece(piece, ptags[e], tokens))
+        title = (len(piece) == 1 and tokens[piece[0]].text.endswith(".")
+                 and is_title_piece(piece, ptags[e], tokens))
+        titled = titled or title
+        if not (title or is_suffix_piece(piece, ptags[e], tokens)
                 or (e > 0 and len(piece) == 1
                     and ends_in_a_generation(
                         [tokens[pieces[e - 1][-1]].text,
@@ -575,18 +584,22 @@ def _link_the_last_letter(pieces: list[list[int]], ptags: list[set[str]],
 
     floor = leading_titles(pieces, ptags, tokens) + keep_a_name
     if _is_lone_letter(pieces[e], tokens, one_case):
-        text = tokens[pieces[e - 1][0]].text
+        text = _composed(tokens[pieces[e - 1][0]].text)
         if (e - 2 >= floor and connective(e - 1)
                 and len(text) == 1 and text.isalpha()
                 and name_word(e - 2)):
             merge_pieces(pieces, ptags, e - 2, e + 1)
     elif e - 1 >= floor and connective(e) and name_word(e - 1):
         word = tokens[pieces[e][0]]
+        text = _composed(word.text)
         # a cased single letter in a name written in one case is an
-        # initial there as often as a connective, so it keeps its reading
-        initial_shaped = (one_case and len(word.text) == 1
-                          and word.text.lower() != word.text.upper())
-        if (word.text.isalpha() and not initial_shaped
+        # initial there as often as a connective, so it keeps its
+        # reading; a word connective before a trailing title is the
+        # couple's formula ('Mr. John Smith and Mrs.'), not this join
+        initial_shaped = (one_case and len(text) == 1
+                          and text.lower() != text.upper())
+        if (text.isalpha() and not initial_shaped
+                and not (titled and len(text) > 1)
                 and "vocab:suffix" not in word.tags):
             merge_pieces(pieces, ptags, e - 1, e + 1)
 

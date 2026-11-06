@@ -2945,6 +2945,33 @@ CASES: tuple[Case, ...] = (
                "under a given-first order, where the end holds the "
                "family name; 2.0.0 through 2.8.2 read as here. 1.4.0 "
                "has no name order to compare against"),
+    Case("a_decomposed_initial_behind_a_connective_is_the_second_surname",
+         'Juan García y É.',
+         {"given": "Juan", "family": 'García y É.'},
+         classification="fix(#1098)",
+         notes="#1098's encoding sweep: the initial typed as its base "
+               "and a combining accent (NFD) is one letter to P13, as "
+               "the composed 'Juan García y É.' reads. 2.4.2 through "
+               "2.8.2 read middle 'García y', family 'É.', #665 reading "
+               "the decomposed letter as an initial; 1.4.0 through "
+               "2.4.1 read as here, the letter a name word"),
+    Case("a_decomposed_connective_before_a_generation_joins_the_word_before",
+         'Петро Шевченко й III',
+         {"given": "Петро", "family": 'Шевченко й',
+          "suffix": "III"},
+         classification="fix(#1098)",
+         notes="#1098's encoding sweep: the connective typed as 'и' and "
+               "a combining breve (NFD) is the one letter 'й' to P13. "
+               "1.4.0 through 2.2.0 and 2.4.2 through 2.8.2 read middle "
+               "'Шевченко', family 'й', suffix 'III'; 2.3.0 through "
+               "2.4.1 family 'Шевченко й III'"),
+    Case("a_word_connective_before_a_trailing_title_is_a_couple",
+         "Mr. John Smith and Mrs.",
+         {"title": "Mr.", "given": "John", "family": "Smith and Mrs."},
+         classification="parity",
+         notes="#1098's boundary: a connective written as a word before "
+               "a trailing title is the couple's formula, which P13's "
+               "join with nothing to link leaves to P3 (decisions/P13)"),
     Case("a_generational_connective_ending_the_name_stays_the_suffix",
          "John Quincy Smith i",
          {"given": "John", "middle": "Quincy", "family": "Smith",
