@@ -212,12 +212,16 @@ def _whole_name(seg0: Sequence[int], tokens: Sequence[WorkToken],
     # listed suffix words it ends with, that the trailing fork reads as the
     # generation is no name word" ('Dumas VI, Jr.' and 'Dumas VI MD,
     # Ed' as their 'III' twins); decisions/C3 (#893). The suffix
-    # words are the pieces the loop above left out of `named`
+    # words are the pieces the loop above left out of `named`. The
+    # `ROMAN` match is a test the predicate makes itself
+    # (`reads_as_generation`'s first), asked here at C level so a part
+    # ending in no numeral pays no frame for it, as group's count does
     e = len(seg0) - 1
     while e > 0 and seg0[e] not in named:
         e -= 1
-    if e > 0 and ends_in_a_generation(
-            [tokens[seg0[e - 1]].text, tokens[seg0[e]].text], one_case):
+    if (e > 0 and ROMAN.match(tokens[seg0[e]].text.rstrip(".")) is not None
+            and ends_in_a_generation(
+                [tokens[seg0[e - 1]].text, tokens[seg0[e]].text], one_case)):
         named.discard(seg0[e])
     if len(named) < 2:
         return False
