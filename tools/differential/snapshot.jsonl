@@ -4542,7 +4542,7 @@
 {"name": "Þórunn Egilsdóttir", "given": "Þórunn", "family": "Egilsdóttir", "initials": "Þ. E."}
 {"name": "é nee smith", "family": "é", "maiden": "smith", "initials": "é.", "capitalized": "É (Smith)"}
 {"name": "Āqā Buzurg aṭ-Ṭihrānī", "given": "Āqā", "middle": "Buzurg", "family": "aṭ-Ṭihrānī", "initials": "Ā. B. a.", "capitalized_force": "Āqā Buzurg Aṭ-Ṭihrānī"}
-{"name": "ĐBQH Nguyễn Văn Anh", "order": "FAMILY_FIRST", "given": "Nguyễn", "middle": "Văn Anh", "family": "ĐBQH", "initials": "N. V. A. Đ.", "capitalized_force": "Đbqh Nguyễn Văn Anh"}
+{"name": "ĐBQH Nguyễn Văn Anh", "order": "FAMILY_FIRST", "title": "ĐBQH", "given": "Văn", "middle": "Anh", "family": "Nguyễn", "initials": "V. A. N.", "capitalized_force": "Đbqh Nguyễn Văn Anh"}
 {"name": "Ğawīdān _ Hānum", "given": "Ğawīdān", "middle": "_", "family": "Hānum", "initials": "Ğ. _. H."}
 {"name": "Ġazālī, Zainab al-", "given": "Zainab", "family": "al- Ġazālī", "initials": "Z. Ġ."}
 {"name": "İren Adler", "given": "İren", "family": "Adler", "initials": "İ. A."}

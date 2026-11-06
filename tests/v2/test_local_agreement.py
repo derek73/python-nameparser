@@ -606,9 +606,10 @@ def test_a_locale_scores_its_pack_s_parser_against_a_record_of_its_own(
     from nameparser import locales, parser_for
     assert agreement.parser_of("cs") == parser_for(locales.CS)
     assert agreement.parser_of("") == Parser()
-    # JUDr. et Mgr. is a run of two titles only where JUDr. is listed,
-    # as locales.CS lists it: the two parsers read it apart.
-    rows = [_candidate("JUDr. et Mgr.", "Jan", "Novák"), _candidate("Ing.", "Eva", "Malá")]
+    # MgA. et Mgr. is a run of two titles only where MgA. is listed,
+    # as locales.CS lists it and the default does not: the two parsers
+    # read it apart.
+    rows = [_candidate("MgA. et Mgr.", "Jan", "Novák"), _candidate("Ing.", "Eva", "Malá")]
     plant_corpus(monkeypatch, corpora, _VOLBY, rows, "kv2022 2026-03-28", "candidates",
                  {"elections": "kv2022 ps2025", "read_version": 1})
     assert agreement.main([_VOLBY, "--record"]) == 0
@@ -629,7 +630,7 @@ def test_a_locale_scores_its_pack_s_parser_against_a_record_of_its_own(
 
 def test_a_score_in_workers_reads_with_the_locale_s_parser(
         monkeypatch: pytest.MonkeyPatch) -> None:
-    rows = [_candidate("JUDr. et Mgr.", "Jan", "Novák"), _candidate("Ing.", "Eva", "Malá")]
+    rows = [_candidate("MgA. et Mgr.", "Jan", "Novák"), _candidate("Ing.", "Eva", "Malá")]
     cs = agreement.parser_of("cs")
     serial = agreement.score(rows, _VOLBY_FIELDS, cs)
     monkeypatch.setattr(importlib.import_module("snapshot"), "PARALLEL_FLOOR", 1)
@@ -656,7 +657,7 @@ def test_an_unknown_locale_is_refused_naming_the_packs(
 def test_a_base_check_under_a_locale_scores_the_base_under_it(
         monkeypatch: pytest.MonkeyPatch, _own_cache: Path, tmp_path: Path,
         capsys: pytest.CaptureFixture[str]) -> None:
-    rows = [_candidate("JUDr. et Mgr.", "Jan", "Novák"), _candidate("Ing.", "Eva", "Malá")]
+    rows = [_candidate("MgA. et Mgr.", "Jan", "Novák"), _candidate("Ing.", "Eva", "Malá")]
     plant_corpus(monkeypatch, corpora, _VOLBY, rows, "kv2022 2026-03-28", "candidates",
                  {"elections": "kv2022 ps2025", "read_version": 1})
     copy = checkout_copy(tmp_path / "copy")
@@ -664,7 +665,7 @@ def test_a_base_check_under_a_locale_scores_the_base_under_it(
     assert "matches the base" in capsys.readouterr().out
     [kept] = (_own_cache / "local" / _VOLBY / agreement.KEPT).glob("*.jsonl")
     assert kept.name.endswith("-cs.jsonl")
-    # The control: the default's base reads the JUDr. run apart, so its
+    # The control: the default's base reads the MgA. run apart, so its
     # record, kept beside the locale's, is not the locale's.
     assert agreement.main([_VOLBY, "--base", str(copy)]) == 0
     records = sorted((_own_cache / "local" / _VOLBY / agreement.KEPT).glob("*.jsonl"))

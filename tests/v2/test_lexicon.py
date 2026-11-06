@@ -554,29 +554,31 @@ def test_remove_of_a_kind_with_no_words_takes_out_every_word(kind: str) -> None:
 
 
 def test_remove_of_a_kind_reaches_readings_a_later_choice_turns_on() -> None:
-    # `lic` is Spanish's academic title, off by default and turned on by
-    # the choice; the caller's edits apply after the choice
+    # `maestra` is Spanish's academic title, off by default and turned on
+    # by the choice; the caller's edits apply after the choice
     from nameparser import locales
-    assert "lic" not in Lexicon.default().words(kind="academic")
+    assert "maestra" not in Lexicon.default().words(kind="academic")
     es = parser_for(locales.ES)
-    assert "lic" in es.lexicon.words(kind="academic")
-    assert es.parse("Lic Juan Pérez").title == "Lic"
+    assert "maestra" in es.lexicon.words(kind="academic")
+    assert es.parse("Maestra Ana Ruiz").title == "Maestra"
     lean = parser_for(locales.ES, base=Parser(
         lexicon=Lexicon.default().remove(kind="academic", every=True)))
     assert lean.lexicon.words(kind="academic") == ()
-    assert lean.parse("Lic Juan Pérez").title == ""
+    assert lean.parse("Maestra Ana Ruiz").title == ""
 
 
 def test_a_whole_kind_remove_takes_readings_written_off_as_a_word_remove_does() -> None:
-    # `lic`'s academic reading is es.toml's, off by default: an add of
+    # `maestra`'s academic reading is es.toml's, off by default: an add of
     # the kind turns it on, naming its file, unless a remove took it out
     # first, word by word or whole, leaving the caller's own reading
     lex = Lexicon.default()
-    assert lex.add("lic", kind="academic").readings_of("lic")[0].languages == (
-        "es",)
-    for removed in (lex.remove("lic", kind="academic"),
+    assert "maestra" not in lex.words(kind="academic")
+    assert lex.add("maestra", kind="academic").readings_of("maestra")[
+        0].languages == ("es",)
+    for removed in (lex.remove("maestra", kind="academic"),
                     lex.remove(kind="academic", every=True)):
-        (reading,) = removed.add("lic", kind="academic").readings_of("lic")
+        (reading,) = removed.add("maestra", kind="academic").readings_of(
+            "maestra")
         assert reading.languages == ()
 
 

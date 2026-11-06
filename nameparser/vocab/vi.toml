@@ -34,7 +34,6 @@ note = "written before the name, stacked with the degree (PGS.TS.); no bearer: O
 [[word]]
 text = "ths"
 [word.academic]
-default = false
 expands = "thạc sĩ, master"
 issue = 1108
 note = "written before the name (ThS.); no bearer: ORCID 1 given and 1 family box worldwide, none in VN, no US Census, SSA or nam_dict entry (tools/name_usage.py, 2026-11-05)"
@@ -50,7 +49,6 @@ note = "written before the name, dotted (TS.) or bare, and stacked behind PGS. a
 [[word]]
 text = "đbqh"
 [word.office]
-default = false
 expands = "đại biểu Quốc hội, National Assembly deputy"
 issue = 1108
 note = "CLDR 48's vi names file writes it before the name in its surname-first rendering (ĐBQH Nguyễn Văn Anh); no bearer in any source tools/name_usage.py reads, đbqh or dbqh (2026-11-05)"
@@ -58,7 +56,6 @@ note = "CLDR 48's vi names file writes it before the name in its surname-first r
 [[word]]
 text = "dbqh"
 [word.office]
-default = false
 same_as = "đbqh"
 issue = 1108
 note = "ĐBQH written without the stroke on its Đ, as ASCII-only data writes it; no bearer (tools/name_usage.py, 2026-11-05)"
