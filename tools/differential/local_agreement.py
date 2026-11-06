@@ -7,7 +7,12 @@ and each field is compared with the box the filer typed it into
 (`psc-individuals`' title, forename, middle name and surname boxes;
 `orcid-researchers`' given-names box, holding the middle names too, and
 family-name box, typed by the holder; `cz-candidates`' title before the
-name, given names, surname and title after it). What
+name, given names, surname and title after it; and the two Vietnamese
+corpora, whose family, middle and given names no one filed: `uit-vinames`
+and `vn-assembly` state a name whole, in the Vietnamese order, and their
+parts are derived by the convention a reader of the name assumes, first
+word the family name and last the given (local_uit.split), with
+`vn-assembly`'s title composed from the education its deputies state). What
 cldr_agreement.py does for the committed fields files, over names that
 are never committed -- so no CI run and no reviewer sees this score,
 and its record lives in the cache beside the corpus, where a re-run
@@ -148,13 +153,22 @@ FIELDED = {local_corpora.PSC: Fielded(
     group_cased=True),
            local_corpora.VOLBY: Fielded(
     {"titulpred": "title", "jmeno": "given+middle", "prijmeni": "family",
-     "titulza": "suffix"}, group="election", group_cased=True, sets_aside=False)}
+     "titulza": "suffix"}, group="election", group_cased=True, sets_aside=False),
+           local_corpora.UIT: Fielded(
+    {"family": "family", "middle": "middle", "given": "given"}, group="gender"),
+           local_corpora.VN: Fielded(
+    {"title": "title", "family": "family", "middle": "middle", "given": "given"},
+    group="ethnicity", group_cased=True, sets_aside=False)}
 #: The fewest records sharing a set-aside title for the report to print
 #: it: a word typed into the title box by this many filers is no one
 #: person's name.
 TITLE_FLOOR = 100
 #: The fewest records of a group for the report to give it a row.
 GROUP_FLOOR = 1_000
+#: A source's own floor, where its whole population is smaller than
+#: GROUP_FLOOR: vn-assembly's 499 deputies, of whom 410 were Kinh and the
+#: next ethnicity 19 on 2026-11-04.
+GROUP_FLOORS = {local_corpora.VN: 10}
 
 
 def fold(text: str) -> str:
@@ -307,7 +321,11 @@ def _pct(n: int, of: int) -> str:
     return f"{100 * n / of:5.1f}%" if of else "   n/a"
 
 
-def report(result: Score, fielded: Fielded, top: int) -> list[str]:
+def report(result: Score, fielded: Fielded, top: int, floor: int | None = None
+           ) -> list[str]:
+    """The report's lines, a group given a row from `floor` records
+    (GROUP_FLOOR unless a source sets its own, GROUP_FLOORS)."""
+    floor = GROUP_FLOOR if floor is None else floor
     roles = list(fielded.fields.values())
     total, agreed = sum(result.scored.values()), sum(result.agreed.values())
     misses: Counter[str] = sum(result.misses.values(), Counter())
@@ -318,11 +336,11 @@ def report(result: Score, fielded: Fielded, top: int) -> list[str]:
            + ("" if _box(fielded, "suffix") else
               f"; {result.by_suffix:,} of them with the parser's suffix in the surname box"),
            "misses per field: " + ", ".join(f"{r} {misses[r]:,}" for r in roles), "",
-           f"by {fielded.group} (at least {GROUP_FLOOR:,} records), misses per field:",
+           f"by {fielded.group} (at least {floor:,} records), misses per field:",
            f"  {fielded.group:<24} {'records':>10} {'agree':>7}  "
            + " ".join(f"{r:>8}" for r in roles)]
     for group, n in result.scored.most_common():
-        if n < GROUP_FLOOR:
+        if n < floor:
             break
         row = result.misses.get(group, Counter())
         out.append(f"  {group[:24]:<24} {n:>10,} {_pct(result.agreed[group], n)}  "
@@ -580,7 +598,7 @@ def main(argv: list[str] | None = None) -> int:
                        locale=locale)
     except local_corpora.CorpusDamaged as exc:
         raise SystemExit(str(exc)) from None
-    print("\n".join(report(result, fielded, args.top)))
+    print("\n".join(report(result, fielded, args.top, GROUP_FLOORS.get(args.source))))
     if args.record:
         out = args.out or record_path(args.source, locale)
         write_record(out, local, result.entries, str(at.parent), locale)
