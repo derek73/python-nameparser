@@ -13,7 +13,8 @@ compatibility layer.** ``HumanName``, ``Constants``, the shared
 names of the word lists; ``parse()`` and ``Parser`` are the
 replacement. 2.8 is the last release that has them, and it warns at
 each use 3.0 removes; `Coming from 1.x or 2.x`_ below says where to
-start. 3.0 also configures a ``Lexicon`` by reading
+start. 3.0 also configures a ``Lexicon`` `by reading
+<https://nameparser.readthedocs.io/en/latest/customize.html#configuring-by-reading>`__
 (``Lexicon.default().add("leed", kind="credential")``), renders a name
 in the order it was written (``str(parse("김민준"))`` is ``'김민준'``),
 and adds packs that choose the languages a parse reads. The `release log
@@ -42,48 +43,85 @@ Quick Start Example
 .. code-block:: python
 
     >>> from nameparser import parse
-    >>> name = parse("Dr. Juan Q. Xavier de la Vega III (Doc Vega)")
+    >>> name = parse("Dr. Juan Carlos García de la Vega III (Juanca)")
     >>> name
     <ParsedName: [
         title: 'Dr.'
         given: 'Juan'
-        middle: 'Q. Xavier'
+        middle: 'Carlos García'
         family: 'de la Vega'
         suffix: 'III'
-        nickname: 'Doc Vega'
+        nickname: 'Juanca'
     ]>
     >>> name.family_base, name.family_particles
     ('Vega', 'de la')
-    >>> name.given_names, name.surnames
-    ('Juan Q. Xavier', 'Q. Xavier de la Vega')
-    >>> name.render("{family}, {given}")
-    'de la Vega, Juan'
 
+A Spanish name usually ends in two family names, the father's first and
+the mother's second. Out of the box the parser reads names the English
+way, one family name and any middle names. The Spanish pack reads the
+two family names and gives each its own view:
+
+.. code-block:: python
+
+    >>> from nameparser import Parser, Policy, locales, parser_for
+    >>> spanish = parser_for(locales.ES)
+    >>> juan = spanish.parse("Dr. Juan Carlos García de la Vega III (Juanca)")
+    >>> juan.middle, juan.family
+    ('Carlos', 'García de la Vega')
+    >>> juan.surname1, juan.surname2, juan.generation
+    ('García', 'de la Vega', 'III')
+    >>> juan.render("{family}, {given}")
+    'García de la Vega, Juan'
+
+Juan Carlos may also be one compound given name. Nothing in the text
+says which, so reading it that way is a switch for data you know is
+written so:
+
+.. code-block:: python
+
+    >>> compound = parser_for(locales.ES,
+    ...                       base=Parser(policy=Policy(two_given_names=True)))
+    >>> compound.parse("Juan Carlos García de la Vega").given
+    'Juan Carlos'
+
+More shapes the parser reads:
+
+.. code-block:: python
+
+    >>> parse("The Rt Hon Sir John Smith KCB MP").title    # a run of titles
+    'The Rt Hon Sir'
+    >>> listed = parse("Smith, John V., Jr., MD, PhD")    # listing form
+    >>> listed.middle, listed.generation, listed.credentials
+    ('V.', 'Jr.', 'MD, PhD')
     >>> parse("Jack MA").suffix                    # capitals mark a credential
     'MA'
     >>> parse("Jack Ma").family                    # and a surname
     'Ma'
-    >>> parse("Jane Smith, PhD MA").suffix
-    'PhD MA'
+    >>> parse("Van Johnson").ambiguities           # a guess is reported
+    (Ambiguity('particle-or-given': 'Van'),)
+    >>> parse("Ludwig van Beethoven").tokens[1].reading.languages
+    ('nl',)
 
     >>> parse("김민준").family                     # Korean: unspaced, split on the census list
     '김'
     >>> parse("高橋 みなみ").family                 # Japanese: kanji with kana, family first
     '高橋'
-    >>> parse("김민준씨").suffix                   # an honorific written against the name
+    >>> parse("김민준씨").honorifics               # an honorific written against the name
     '씨'
     >>> parse("г-н Иван Петров").title             # Cyrillic title
     'г-н'
-    >>> parse("محمد بن سلمان").family              # Arabic: بن chains onto the family name
+    >>> parse("محمد بن سلمان").patronymic          # Arabic: بن begins a patronymic
     'بن سلمان'
 
-    >>> from nameparser import locales, parser_for
     >>> chinese = parser_for(locales.ZH)           # Han text does not say which language
     >>> chinese.parse("毛泽东").family              # so splitting it is opt-in
     '毛'
-    >>> russian = parser_for(locales.RU)
-    >>> russian.parse("Сидоров Иван Петрович").family
+    >>> parse("Сидоров Иван Петрович").given       # by default, given first
     'Сидоров'
+    >>> russian = parser_for(locales.RU)           # the Russian pack reads the patronymic
+    >>> ivan = russian.parse("Сидоров Иван Петрович")
+    >>> ivan.given, ivan.patronymic, ivan.family
+    ('Иван', 'Петрович', 'Сидоров')
     >>> locales.available()
     ('bn', 'cs', 'es', 'es_ar', 'ga', 'gd', 'hi', 'hr', 'ja', 'ne', 'pt', 'pt_br', 'ru', 'sk', 'sl', 'tr_az', 'zh')
 
