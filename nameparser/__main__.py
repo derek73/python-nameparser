@@ -7,7 +7,7 @@
     python -m nameparser --locale ko --strict "Kim Do Hyun"
     python -m nameparser --locale vi --strict "Do Van Minh"
     python -m nameparser --two-given-names "Juan Carlos García"
-    python -m nameparser --locale es --no-two-family-names "José García Márquez"
+    python -m nameparser --locale es --no-two-family-names "Lic Gabriel García Márquez"
 """
 import argparse
 import dataclasses
@@ -43,7 +43,8 @@ _ORDERS = {
 # tables, --order or _NOT_ON_THE_COMMAND_LINE.
 _SWITCHES = {
     "two_given_names": "join a middle name to the given name",
-    "two_family_names": "read the family as two family names",
+    "two_family_names": "read the last two name words as the family "
+                        "(two family names)",
     "middle_as_family": "fold the middle names into the family",
     "lenient_comma_suffixes": "read a lone V or I after a comma as a "
                               "numeral suffix (John Smith, V)",
@@ -51,8 +52,14 @@ _SWITCHES = {
                                 "as a suffix",
 }
 _CHOICES = {"unlisted_caps_suffixes": CapsSuffixes}
+_CHOICE_HELP = {
+    "unlisted_caps_suffixes": "where an unlisted all-caps word reads as a "
+                              "credential: nowhere, after a comma (the "
+                              "default), or ending a name too",
+}
 _NOT_ON_THE_COMMAND_LINE = {
-    # each needs a mapping, a set of scripts or rules, or bracket pairs
+    # each needs a mapping, a set of scripts or rules, bracket pairs or
+    # separator strings
     "script_orders", "segment_scripts", "patronymic_rules",
     "nickname_delimiters", "maiden_delimiters", "extra_suffix_delimiters",
     # input clean-up, not a reading of the name
@@ -105,7 +112,7 @@ def main(argv: list[str] | None = None) -> int:
     for field, enum in _CHOICES.items():
         rules.add_argument("--" + field.replace("_", "-"),
                            choices=[member.value for member in enum],
-                           help=f"Policy.{field}")
+                           help=_CHOICE_HELP[field])
     args = ap.parse_args(argv)
     if args.strict and args.locale is None:
         ap.error("--strict needs --locale: it keeps only the chosen "

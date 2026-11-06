@@ -5,6 +5,7 @@ import subprocess
 import sys
 import warnings
 from collections.abc import Callable
+from typing import Any
 
 import pytest
 
@@ -226,6 +227,43 @@ def test_cli_a_switch_left_out_keeps_the_packs_setting(
         "María José", "García López")
 
 
+# a stand-in pack sets each field against Policy()'s default, which no
+# shipped pack does for most of them: with no flag the pack's value
+# holds, and the flag turned the other way wins over it
+_PACK_ROWS = [
+    *[(field, name, role, off if getattr(Policy(), field) else on,
+       f"--{'' if getattr(Policy(), field) else 'no-'}"
+       f"{field.replace('_', '-')}",
+       on if getattr(Policy(), field) else off)
+      for field, name, role, on, off in _SWITCH_ROWS],
+    ("unlisted_caps_suffixes", "Jean Pierre DUPONT", "suffix", "DUPONT",
+     "--unlisted-caps-suffixes=after-comma", ""),
+]
+
+
+def test_cli_pack_rows_cover_every_flag() -> None:
+    assert [row[0] for row in _PACK_ROWS] == [
+        *cli._SWITCHES, *cli._CHOICES]
+
+
+@pytest.mark.parametrize(
+    ("field", "name", "role", "packs", "flag", "flagged"), _PACK_ROWS,
+    ids=[row[0] for row in _PACK_ROWS])
+def test_cli_flag_left_out_keeps_a_packs_setting_and_given_wins(
+        capsys: pytest.CaptureFixture[str],
+        monkeypatch: pytest.MonkeyPatch, field: str, name: str,
+        role: str, packs: str, flag: str, flagged: str) -> None:
+    default = getattr(Policy(), field)
+    value = (CapsSuffixes.EVERYWHERE if isinstance(default, CapsSuffixes)
+             else not default)
+    setting: dict[str, Any] = {field: value}
+    pack = Locale(code="xx", lexicon=Lexicon.empty(),
+                  policy=PolicyPatch(**setting))
+    monkeypatch.setattr(nameparser.locales, "get", lambda code: pack)
+    assert _fields(capsys, "--locale", "xx", name)[role] == packs
+    assert _fields(capsys, "--locale", "xx", flag, name)[role] == flagged
+
+
 def test_cli_switch_combines_with_order(
         capsys: pytest.CaptureFixture[str]) -> None:
     fields = _fields(capsys, "--order", "family-first",
@@ -261,7 +299,8 @@ def test_cli_unlisted_caps_suffixes_rows_cover_every_setting() -> None:
 def test_cli_unlisted_caps_suffixes_lists_the_enums_values(
         capsys: pytest.CaptureFixture[str]) -> None:
     err = _usage_error(capsys, "--unlisted-caps-suffixes", "bogus", "x")
-    # 3.11 quotes the choices and 3.12 on does not, so match either
+    # 3.12 lists the choices bare where 3.11 and 3.13 on quote them,
+    # so match either
     listed = err.split("choose from")[1]
     for member in CapsSuffixes:
         assert member.value in listed
