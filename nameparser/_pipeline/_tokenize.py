@@ -21,7 +21,7 @@ import re
 from nameparser._pipeline._state import (
     COMMA_CHARS, ParseState, WorkToken, copy_with,
 )
-from nameparser._policy import Policy, _SCRIPT_RANGES, _script_matcher
+from nameparser._policy import Policy, _classified_char
 from nameparser._types import Role, Span
 
 # Ported from v1's "emoji" and "bidi" patterns (the 1.x and 2.x
@@ -54,11 +54,11 @@ _INVISIBLE_SEPARATORS = frozenset({"\u200B", "\u2063", "\uFEFF"})
 _INTERPUNCT = "\u00B7"
 # rules/T3: "the interpunct divides a name only between two
 # characters of a classified East Asian script; anywhere else it is
-# part of the word" (history: decisions/T3). Per-CHAR classifier
-# for the flank guard: a one-char string is wholly-classified iff the
-# character is. Context-sensitivity is why this lives in
-# _tokenize_region (where the index exists) and not in _ignorable.
-_classified_char = _script_matcher(*_SCRIPT_RANGES, whole=True)
+# part of the word" (history: decisions/T3). The flank guard asks
+# _policy._classified_char per CHAR: a one-char string is
+# wholly-classified iff the character is. Context-sensitivity is why the
+# guard lives in _tokenize_region (where the index exists) and not in
+# _ignorable.
 
 
 def _is_emoji(ch: str) -> bool:
@@ -135,10 +135,11 @@ def _tokenize_region(state: ParseState, start: int, end: int,
             # Region-local flanks: a B7 at a region edge stays token
             # text, and the bound also stops a custom delimiter's
             # classified edge character from acting as a flank across
-            # a mask seam. The scan reads raw text like segmentation
-            # matching does (#272's stance): NFD hangul degrades to
-            # no-split, never wrong-split -- classification
-            # NFC-normalizes but the guard does not.
+            # a mask seam. The scan reads raw characters, not the NFC
+            # copy classification reads; the script table holds the
+            # conjoining jamo a decomposed syllable is written in, so
+            # decomposed hangul flanks as composed hangul does
+            # (decisions/nfd-shapes, #1087).
             left = _flank(text, range(i - 1, start - 1, -1),
                           state.policy)
             if left is not None and _classified_char(left):

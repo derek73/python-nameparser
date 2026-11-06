@@ -19,7 +19,7 @@
 
 **Accepted:**
 
-- The scripts are read by character, as the parse reads them for its own initials: a Hangul syllable written as conjoining jamo counts, composed, while compatibility jamo and the ideographic zero, which no range the parse reads holds, still initial.
+- The scripts are read by character, as the parse reads them for its own initials: a Hangul syllable written as conjoining jamo counts, as do jamo that compose to no syllable, while compatibility jamo and the ideographic zero, which no range the parse reads holds, still initial.
   ```
   "ㄱㄴ 김"                      →  initials="ㄱ."
   ```

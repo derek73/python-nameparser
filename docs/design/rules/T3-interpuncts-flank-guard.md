@@ -4,6 +4,11 @@
 
 **Then:** the interpunct divides a name only between two characters of a classified East Asian script; anywhere else it is part of the word.
 
+- **Hangul typed decomposed is classified too:** a syllable written as its conjoining jamo flanks the interpunct as the composed syllable does; the line below is typed that way.
+  ```
+  "이서연·김민준"                   →  family="김민준"
+  ```
+
 **Because:** U+00B7 is two marks in one codepoint — the Chinese 间隔号 dividing a transcribed foreign name, and the Catalan punt volat interior to words.
 
 ```

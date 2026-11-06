@@ -6312,6 +6312,8 @@
 {"name": "ცეცილია ჰეიმიშ შტიობერი", "given": "ცეცილია", "middle": "ჰეიმიშ", "family": "შტიობერი", "initials": "ც. ჰ. შ."}
 {"name": "ხვიჩა კვარაცხელია", "given": "ხვიჩა", "family": "კვარაცხელია", "initials": "ხ. კ."}
 {"name": "김. 민준", "given": "민준", "family": "김."}
+{"name": "김민준, 씨.", "family": "김민준", "suffix": "씨.", "honorifics": "씨."}
+{"name": "이서연·김민준", "given": "이서연", "family": "김민준"}
 {"name": "ሙለር ካቲ", "order": "FAMILY_FIRST", "given": "ካቲ", "family": "ሙለር", "initials": "ካ. ሙ."}
 {"name": "ሙለር፣ ካቲ", "order": "FAMILY_FIRST", "given": "ካቲ", "family": "ሙለር፣", "initials": "ካ. ሙ."}
 {"name": "ሜሪ ሱ ሃሚሽ ዋትሰን", "given": "ሜሪ", "middle": "ሱ ሃሚሽ", "family": "ዋትሰን", "initials": "ሜ. ሱ. ሃ. ዋ."}

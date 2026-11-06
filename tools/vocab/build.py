@@ -752,7 +752,8 @@ EMOJI_RANGES = ((0x1F300, 0x1F64F), (0x1F680, 0x1F6FF),
 #: hiragana, katakana): an interpunct between two of these characters
 #: divides the name (rules/T3), anywhere else it is part of the word.
 EAST_ASIAN_RANGES = ((0x3005, 0x3006), (0x3400, 0x4DBF), (0x4E00, 0x9FFF),
-                     (0xF900, 0xFAFF), (0x20000, 0x323AF), (0xAC00, 0xD7A3),
+                     (0xF900, 0xFAFF), (0x20000, 0x323AF), (0x1100, 0x11FF),
+                     (0xA960, 0xA97F), (0xAC00, 0xD7A3), (0xD7B0, 0xD7FF),
                      (0x3040, 0x309F), (0x30A0, 0x30FF), (0xFF65, 0xFF9F))
 INTERPUNCT = "\u00b7"
 #: The format characters a word may hold: the zero-width non-joiner and

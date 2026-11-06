@@ -71,7 +71,8 @@ class Script(StrEnum):
     #: list, locales.JA activates the same stage for a pluggable
     #: segmenter to divide kanji names with.
     HAN = "han"
-    #: Korean Hangul (precomposed syllables). Unambiguously Korean.
+    #: Korean Hangul (precomposed syllables and the conjoining jamo).
+    #: Unambiguously Korean.
     HANGUL = "hangul"
     #: Japanese hiragana. Never transcribes foreign names, so a mixed
     #: kanji+kana token (高橋みなみ) is Japanese and resolves HERE --
@@ -121,8 +122,18 @@ class Script(StrEnum):
 # Shimeki, 〆谷 Shimetani, 〆野) -- its other uses (the envelope
 # closing mark, 〆切) never reach a name parser -- and it appears in
 # no other script's names.
-# HANGUL: precomposed syllables only -- modern Korean
-# text never writes names as bare jamo.
+# HANGUL: the precomposed syllables and the three conjoining jamo
+# blocks (U+1100-U+11FF, Extended-A U+A960-U+A97F, Extended-B
+# U+D7B0-U+D7FF), the letters Unicode composes a syllable from (#1087).
+# A syllable typed decomposed is jamo, and a reader of raw characters
+# (tokenize's interpunct flank, rules/T3) must see it as hangul
+# (decisions/nfd-shapes, #1087). All three blocks, though the extended
+# ones hold only archaic jamo no modern name uses, the ground the kana
+# entry below leaves out the supplementary kana on: the U+1100 block
+# carries archaic jamo too, so no modern-only line can be drawn at
+# block granularity. The compatibility jamo U+3131-U+318E are not
+# conjoining and compose nothing; they stay out (rules/R7 initials
+# 'ㄱㄴ 김' as 'ㄱ.').
 # HIRAGANA/KATAKANA (#272): the two kana blocks, each in full. There
 # IS a supplementary-plane kana repertoire (Kana Supplement, Kana
 # Extended-A/B, Small Kana Extension, U+1AFF0-U+1B16F, a few hundred
@@ -177,10 +188,16 @@ class Script(StrEnum):
 # the FIRST covering entry (dict iteration order), so an overlapping
 # future script would make the result order-dependent instead of
 # well-defined.
+#: The precomposed hangul syllables, and the three conjoining jamo
+#: blocks HANGUL holds beside them (#1087), named so a test can state
+#: the table before #1087 by subtracting them rather than copying spans.
+_HANGUL_SYLLABLES = (0xAC00, 0xD7A3)
+_CONJOINING_JAMO = ((0x1100, 0x11FF), (0xA960, 0xA97F), (0xD7B0, 0xD7FF))
+
 _SCRIPT_RANGES: dict[Script, tuple[tuple[int, int], ...]] = {
     Script.HAN: ((0x3005, 0x3006), (0x3400, 0x4DBF), (0x4E00, 0x9FFF),
                  (0xF900, 0xFAFF), (0x20000, 0x323AF)),
-    Script.HANGUL: ((0xAC00, 0xD7A3),),
+    Script.HANGUL: tuple(sorted((_HANGUL_SYLLABLES, *_CONJOINING_JAMO))),
     Script.HIRAGANA: ((0x3040, 0x309F),),
     Script.KATAKANA: ((0x30A0, 0x30FF), (0xFF65, 0xFF9F)),
 }
@@ -233,9 +250,9 @@ def _script_matcher(*scripts: Script,
     named scripts' spans in _SCRIPT_RANGES. whole=False: True when the
     string CONTAINS any such character -- DEVIATES' contract, where
     over-declaring is the gate's safe direction. whole=True: True when
-    the string is non-empty and consists WHOLLY of such characters --
-    the ja adapter's repertoire guard and _vocab's script
-    classifiers. Meant to be called at MODULE
+    the string is non-empty and consists WHOLLY of such characters,
+    as the ja adapter's repertoire guard and _vocab's script
+    classifiers ask. Meant to be called at MODULE
     scope: "compiled once" is per matcher, and each call compiles a
     fresh pattern. The compiled pattern lives in the closure ON
     PURPOSE, and the compilation lives HERE rather than in a pack-
@@ -263,6 +280,13 @@ def _script_matcher(*scripts: Script,
     def matcher(text: str) -> bool:
         return match(text) is not None
     return matcher
+
+
+#: One character, or a string wholly, of a script the table classifies:
+#: the question the interpunct's flank guard (rules/T3) and the
+#: two-family-names declaration's run count (_locale) both ask, defined
+#: once here because _locale may not import the pipeline (#1087).
+_classified_char = _script_matcher(*_SCRIPT_RANGES, whole=True)
 
 
 # Order-spec constants (#270), defined in _types beside Role since

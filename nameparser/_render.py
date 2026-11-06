@@ -330,8 +330,9 @@ def _first_letter(text: str) -> str:
 
 #: rules/R7: "a word whose first letter is in a script that writes no
 #: initials contributes nothing to the initials" (decisions/R7, #754),
-#: asked of the composed letter, a decomposed hangul syllable being
-#: conjoining jamo, which no _NO_INITIALS range holds (#665).
+#: asked of the composed letter (#665), the spelling the veto in
+#: _vocab reads; the conjoining jamo a decomposed syllable is written
+#: in are HANGUL too since #1087.
 _initialless = _script_matcher(*_NO_INITIALS, whole=True)
 
 
