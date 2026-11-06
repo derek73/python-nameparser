@@ -2824,6 +2824,127 @@ CASES: tuple[Case, ...] = (
          notes="#1098's boundary: with no name word left in front of "
                "the join, the name would keep no given name, so the "
                "three-word carve-out stands (P3)"),
+    Case("a_linked_letter_keeps_the_suffix_behind_it",
+         "John Smith y V Jr.",
+         {"given": "John", "family": "Smith y V", "suffix": "Jr."},
+         classification="fix(#1098)",
+         notes="P13: the link takes the letter and no suffix "
+               "behind it. 1.4.0 through 2.8.2 read middle 'Smith y', "
+               "family 'V', suffix 'Jr.'"),
+    Case("a_link_behind_a_title_run_keeps_the_carve_out",
+         "Dr. Smith y V",
+         {"title": "Dr.", "given": "Smith", "family": "y",
+          "suffix": "V"},
+         ambiguities=("suffix-or-name",), classification="parity",
+         notes="#1098's boundary: the title run is no name word to "
+               "keep in front of the join, so the whole name's part "
+               "keeps the carve-out, as 'Smith y V' does (P13)"),
+    Case("a_title_before_the_connective_is_no_word_to_link",
+         "John Dr. y V",
+         {"given": "John", "middle": "Dr.", "family": "y",
+          "suffix": "V"},
+         ambiguities=("suffix-or-name",), classification="parity",
+         notes="#1098's boundary: P13 links the letter to a name word "
+               "only"),
+    Case("a_connective_run_before_a_numeral_keeps_the_generation",
+         "Smith y i V, John",
+         {"given": "John", "family": "Smith y", "suffix": "i V"},
+         ambiguities=("suffix-or-name",), classification="fix(#774)",
+         notes="#1097's boundary: P13 links the letter only to a name "
+               "word behind one connective, so the generational 'i' "
+               "beside the numeral stays in the count (S10) and reads "
+               "as the generation. 1.4.0 through 2.6.0 read family "
+               "'Smith y V', suffix 'i'"),
+    Case("a_linked_letter_reads_through_a_trailing_title",
+         "John Smith y V Prof.",
+         {"title": "Prof.", "given": "John", "family": "Smith y V"},
+         classification="fix(#1098)",
+         notes="P13 reads the name words past a trailing title "
+               "H5 reads. 2.8.2 read middle 'Smith', family 'y', suffix "
+               "'V'; 1.4.0 middle 'Smith y V', last 'Prof.'"),
+    Case("a_connective_before_a_trailing_title_joins_the_word_before",
+         "John Paul Smith y Prof.",
+         {"title": "Prof.", "given": "John", "middle": "Paul",
+          "family": "Smith y"},
+         classification="fix(#1098)",
+         notes="where the carve-out did not hold, the join took the "
+               "title as the name it links. 1.4.0 through 2.8.2 read "
+               "family 'Smith y Prof.'"),
+    Case("a_word_connective_before_a_suffix_joins_the_word_before",
+         "John Smith and Jr.",
+         {"given": "John", "family": "Smith and", "suffix": "Jr."},
+         classification="fix(#1098)",
+         notes="P13: a connective written as a word, of any "
+               "length. 1.4.0 through 2.8.2 read family 'Smith and Jr.'"),
+    Case("a_symbol_connective_is_no_word_with_nothing_to_link",
+         "John Smith & III",
+         {"given": "John", "family": "Smith & III"},
+         classification="parity",
+         notes="#1098's boundary: P13's join with nothing to link reads "
+               "a connective written as a word, as P3's carve-out "
+               "counts letters, not symbols"),
+    Case("a_one_case_letter_ending_the_name_keeps_its_reading",
+         "CHENG GUI Y",
+         {"given": "CHENG", "middle": "GUI", "family": "Y"},
+         classification="parity",
+         notes="#1098's boundary: in a name written in one case a single "
+               "letter ending the name is an initial as often as a "
+               "connective, so P13's join with nothing to link leaves it "
+               "be; the local corpora's four such names are initials "
+               "(decisions/P13)"),
+    Case("a_one_case_letter_ending_a_family_first_name_is_a_middle_initial",
+         "CHENG GUI Y",
+         {"given": "GUI", "middle": "Y", "family": "CHENG"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         classification="fix(#1098)",
+         notes="the same name read family-first, its likely order: the "
+               "'Y' is the middle initial. 2.0.0 through 2.8.2 read as "
+               "here; 1.4.0 has no name order to compare against"),
+    Case("a_one_case_word_connective_ending_the_name_joins_the_word_before",
+         "JOHN SMITH AND JR.",
+         {"given": "JOHN", "family": "SMITH AND", "suffix": "JR."},
+         classification="fix(#1098)",
+         notes="P13 in one case: a connective written as a word "
+               "of more than one letter is no initial. 1.4.0 through "
+               "2.8.2 read family 'SMITH AND JR.'"),
+    Case("a_one_case_linked_letter_is_the_second_surname",
+         "JOHN SMITH Y V",
+         {"given": "JOHN", "family": "SMITH Y V"},
+         classification="fix(#1098)",
+         notes="P13 in one case, as 'SMITH Y V, JOHN' reads. "
+               "1.4.0 through 2.8.2 read middle 'SMITH Y', family 'V'"),
+    Case("a_one_case_letter_before_a_suffix_is_left_to_the_connective_join",
+         "SMITH JONES Y JR., JOHN",
+         {"given": "JOHN", "family": "SMITH JONES Y JR."},
+         classification="fix(comma-family)",
+         notes="#1098's boundary: P13 leaves a cased single letter in a "
+               "one-case name be, an initial as often as a connective, "
+               "so P3's four-word join takes it with the suffix behind "
+               "it, as 2.0.0 through 2.8.2 read; 1.4.0 read family "
+               "'SMITH JONES Y', suffix 'JR.' (decisions/P13)"),
+    Case("a_capital_letter_in_a_mixed_case_name_is_an_initial",
+         "John Smith Y",
+         {"given": "John", "middle": "Smith", "family": "Y"},
+         classification="parity",
+         notes="#1098's boundary: a capital letter in a name of mixed "
+               "case is an initial, not a connective (P8), so P13 does "
+               "not read it"),
+    Case("an_arabic_connective_ending_the_name_joins_the_word_before",
+         "محمد علي و",
+         {"given": "محمد", "family": "علي و"},
+         classification="fix(#1098)",
+         notes="P13 in a script with no case. 1.4.0 through "
+               "2.8.2 read middle 'علي', family 'و'"),
+    Case("a_family_first_name_keeps_the_carve_out",
+         "John Smith y V",
+         {"given": "Smith", "middle": "y", "family": "John",
+          "suffix": "V"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         ambiguities=("suffix-or-name",), classification="fix(#1098)",
+         notes="#1098's boundary: P13 reads the end of a name only "
+               "under a given-first order, where the end holds the "
+               "family name; 2.0.0 through 2.8.2 read as here. 1.4.0 "
+               "has no name order to compare against"),
     Case("a_generational_connective_ending_the_name_stays_the_suffix",
          "John Quincy Smith i",
          {"given": "John", "middle": "Quincy", "family": "Smith",

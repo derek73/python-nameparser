@@ -369,8 +369,11 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # i V, John' and 'Josep Lluis Carod i V' rows stop reporting and
     # 'Smith Jones y VI, John', 'John Smith y VI' and 'Smith y V' report,
     # each under three orders.
-    assert claims == 1618, (
-        f"the field sweep checks {claims} claims, recorded as 1618 on "
+    # 1618 -> 1638 the same day, the rows the reviews of #1097 and
+    # #1098 added, three of them reporting suffix-or-name, and the
+    # FAMILY_FIRST row.
+    assert claims == 1638, (
+        f"the field sweep checks {claims} claims, recorded as 1638 on "
         f"2026-11-05")
 
 
@@ -768,7 +771,8 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # three orders; 517 -> 519 the same day, #1097 and #1098's rows (two
     # reports gone and three added under the three orders, 'John Smith y
     # VI' under the family-first order joining _STAND_IN_REREADS)
-    assert (checked, skipped) == (519, 328), (checked, skipped)
+    # 519 -> 537 the same day, the reviews of #1097 and #1098's rows
+    assert (checked, skipped) == (537, 328), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:

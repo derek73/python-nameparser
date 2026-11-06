@@ -779,15 +779,28 @@ def _names_before(fam_pieces: Sequence[Sequence[int]],
                   tokens: Sequence[WorkToken], lead: int, k: int) -> int:
     """How many name words stand in front of the numeral at
     `fam_pieces[k]`, the title run's `lead` pieces left out: the pieces
-    that are not wholly particles or connectives."""
+    that are not wholly linking words (`_is_linking_word`)."""
     # rules/S10: "a particle or a connective is no name word there,
     # wherever it stands in the part" -- the count of the family part's
     # numeral site; a chain or join holding a name word is one piece and
     # counts (decisions/P9 (#1080), decisions/S10 (#1093))
-    return sum(1 for piece in fam_pieces[lead:k]
-               if not all("particle" in tokens[t].tags
-                          or "conjunction" in tokens[t].tags
-                          for t in piece))
+    return sum(1 for j in range(lead, k)
+               if not all(_is_linking_word(tokens[t].tags, j == k - 1)
+                          for t in fam_pieces[j]))
+
+
+def _is_linking_word(tags: Set[str], beside: bool) -> bool:
+    """Whether a word of the family part is a linking word, which the
+    numeral's count leaves out: a particle, or a connective, save one
+    that is also suffix vocabulary standing `beside` the numeral, which
+    P13 did not link (a connective in front of it, 'Smith y i V,
+    John') and which reads as the generation it spells."""
+    # rules/S10: "A connective that is also suffix vocabulary, as the
+    # generational 'i' is, stays in the count where P13 has not linked
+    # the letter" -- the exception's half of this predicate
+    # (decisions/P13 (#1097))
+    return "particle" in tags or ("conjunction" in tags and not (
+        beside and "vocab:suffix" in tags))
 
 
 def _family_part_numeral(word: WorkToken, preceding: str, names: int,

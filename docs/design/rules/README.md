@@ -139,6 +139,7 @@ Terms the rules use without defining them each time, each with the rule that def
 - [P10 — a given name a particle completes](P10-given-name-a-particle-completes.md)
 - [P11 — a lowercase particle opening a family-first name](P11-lowercase-particle-opening-a-family-first-name.md)
 - [P12 — a bound given name and the word that completes it](P12-bound-given-name-and-the-word-that-completes-it.md)
+- [P13 — a connective ending the name words](P13-connective-ending-the-name-words.md)
 
 ## [Suffixes: generational & credentials (S)](S-suffixes-generational-and-credentials.md)
 

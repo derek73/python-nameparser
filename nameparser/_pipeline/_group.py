@@ -25,7 +25,8 @@ which assign places and reports rather than peeling again; and,
 last in each part, P12's join of a listed pair past the start, the
 classify tag left only on the bound word of a pair it joined (#694).
 Reads: token tags (from classify), Lexicon.given_name_titles (the
-P5 licence, #369) and Policy.extra_suffix_delimiters, whose
+P5 licence, #369), Policy.name_order (rules/P13's joins at the end
+of a name read given-first, #1098) and Policy.extra_suffix_delimiters, whose
 delimiter-core tokens part a tail segment as a comma would and are
 dropped (v1 suffix_delimiter parity, #549), as the built-in cores'
 are (rules/C10, #889); and, through
@@ -64,7 +65,6 @@ _is_maiden_marker_piece.
 from __future__ import annotations
 
 import bisect
-import unicodedata
 from collections.abc import Iterable, Sequence, Set
 from enum import IntEnum
 from typing import assert_never
@@ -515,14 +515,16 @@ def _is_rootname(piece: Sequence[int], ptags: Set[str],
 def _is_lone_letter(piece: Sequence[int], tokens: Sequence[WorkToken],
                     one_case: bool | None) -> bool:
     """A piece of one word that is one letter, with or without its
-    period, save a lowercase one in a name of mixed case, which S10
-    reads as the generation by its writing."""
+    period: the letter P13 links. Not a connective, which is the word
+    P13 asks about rather than the letter behind it, nor a lowercase
+    letter in a name of mixed case, which S10 reads as the generation
+    by its writing."""
     if len(piece) != 1:
         return False
-    text = tokens[piece[0]].text
-    letter = text.rstrip(".")
-    if not letter.isascii():
-        letter = unicodedata.normalize("NFC", letter)
+    tok = tokens[piece[0]]
+    if "conjunction" in tok.tags:
+        return False
+    letter = tok.text.rstrip(".")
     return (len(letter) == 1 and letter.isalpha()
             and not numeral_settled_by_case(letter, one_case))
 
@@ -530,24 +532,29 @@ def _is_lone_letter(piece: Sequence[int], tokens: Sequence[WorkToken],
 def _link_the_last_letter(pieces: list[list[int]], ptags: list[set[str]],
                           tokens: Sequence[WorkToken],
                           one_case: bool | None, keep_a_name: bool) -> None:
-    """P3's two joins at the end of the part holding the family name,
-    made before the carve-out can keep the connective apart: a
+    """P13's two joins at the end of the part holding the family name,
+    made before P3's carve-out can keep the connective apart: a
     single-letter connective in front of a lone letter ending the name
     words joins the word before it to that letter, and a connective
-    not also suffix vocabulary with nothing but suffixes behind it
-    joins the word before it alone. `keep_a_name` is the whole name's
-    part, where a join is made only with a name word left in front of
-    it, so the name keeps a given name to read ('Smith y V' keeps the
-    carve-out's reading)."""
-    # rules/P3: "A single-letter connective in front of a lone letter
+    written as a word, not also suffix vocabulary nor a single letter in
+    a name written in one case (an initial there as often), with nothing
+    but suffixes or a trailing title behind it joins the word before it
+    alone. `keep_a_name` is
+    the whole name's part, where a join is made only with a piece left
+    in front of it past the title run, so the name keeps a given name
+    to read ('Smith y V' keeps the carve-out's reading)."""
+    # rules/P13: "A single-letter connective in front of a lone letter
     # ending the name words joins it to the word before" and "A
     # connective with nothing to link joins the word before it alone"
-    # -- both joins, made ahead of the carve-out they outrank
-    # (decisions/P3 (#1097, #1098))
+    # -- both joins, made ahead of P3's carve-out (decisions/P13
+    # (#1097, #1098))
     e = len(pieces) - 1
     while e >= 0 and not _is_lone_letter(pieces[e], tokens, one_case):
         piece = pieces[e]
         if not (is_suffix_piece(piece, ptags[e], tokens)
+                or (len(piece) == 1
+                    and tokens[piece[0]].text.endswith(".")
+                    and is_title_piece(piece, ptags[e], tokens))
                 or (e > 0 and len(piece) == 1
                     and ends_in_a_generation(
                         [tokens[pieces[e - 1][-1]].text,
@@ -562,24 +569,26 @@ def _link_the_last_letter(pieces: list[list[int]], ptags: list[set[str]],
                     or is_title_piece(pieces[k], ptags[k], tokens)
                     or is_suffix_piece(pieces[k], ptags[k], tokens))
 
-    def single_letter_link(k: int) -> bool:
+    def connective(k: int) -> bool:
         piece = pieces[k]
-        if len(piece) != 1 or "conjunction" not in tokens[piece[0]].tags:
-            return False
-        text = tokens[piece[0]].text
-        if not text.isascii():
-            text = unicodedata.normalize("NFC", text)
-        return len(text) == 1 and text.isalpha()
+        return len(piece) == 1 and "conjunction" in tokens[piece[0]].tags
 
     floor = leading_titles(pieces, ptags, tokens) + keep_a_name
     if _is_lone_letter(pieces[e], tokens, one_case):
-        if (e - 2 >= floor and single_letter_link(e - 1)
+        text = tokens[pieces[e - 1][0]].text
+        if (e - 2 >= floor and connective(e - 1)
+                and len(text) == 1 and text.isalpha()
                 and name_word(e - 2)):
             merge_pieces(pieces, ptags, e - 2, e + 1)
-    elif (e - 1 >= floor and single_letter_link(e)
-            and "vocab:suffix" not in tokens[pieces[e][0]].tags
-            and name_word(e - 1)):
-        merge_pieces(pieces, ptags, e - 1, e + 1)
+    elif e - 1 >= floor and connective(e) and name_word(e - 1):
+        word = tokens[pieces[e][0]]
+        # a cased single letter in a name written in one case is an
+        # initial there as often as a connective, so it keeps its reading
+        initial_shaped = (one_case and len(word.text) == 1
+                          and word.text.lower() != word.text.upper())
+        if (word.text.isalpha() and not initial_shaped
+                and "vocab:suffix" not in word.tags):
+            merge_pieces(pieces, ptags, e - 1, e + 1)
 
 
 # rules/P3: "a word the rest of the parse reads as a name word
@@ -739,6 +748,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                    site: ClauseSite,
                    reads: list[TailRead | None] | None = None,
                    phrase_heads: set[int] | None = None,
+                   given_first: bool = True,
                    ) -> tuple[list[Piece], list[set[str]], MaidenTake | None]:
     pieces: list[Piece] = [[i] for i in seg]
     ptags: list[set[str]] = [set() for _ in seg]
@@ -895,10 +905,11 @@ def _group_segment(seg: tuple[int, ...], additional: int,
     if splits and len(pieces) + additional < 3:
         _settle_splits(pieces, ptags)
     if len(pieces) + additional >= 3:
-        # the part holding the family name, and only where a
-        # single-letter connective stands: a plain loop, no frame, for
-        # a name with none
-        if site is ClauseSite.TRAILING or site is ClauseSite.FAMILY_PART:
+        # the part holding the family name -- the end of the name
+        # only under a given-first order -- and only where a one-word
+        # connective stands: a plain loop, no frame, for a name with none
+        if ((site is ClauseSite.TRAILING and given_first)
+                or site is ClauseSite.FAMILY_PART):
             for piece in pieces:
                 if (len(piece) == 1
                         and "conjunction" in tokens[piece[0]].tags):
@@ -1590,7 +1601,8 @@ def group(state: ParseState) -> ParseState:
                 state.lexicon._sets.given_name_titles,
                 opens_the_name=(seg_idx == 0 and not family_comma),
                 one_case=state.one_case,
-                site=site, reads=seg_reads, phrase_heads=heads)
+                site=site, reads=seg_reads, phrase_heads=heads,
+                given_first=state.policy.name_order[0] is Role.GIVEN)
             if heads is not None:
                 # the tag stays only on a pair P12 joined, which O6
                 # counts as one word; P5's pair at the start, and a

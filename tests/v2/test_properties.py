@@ -2559,21 +2559,25 @@ def _link_joins_between_name_words(on: ParsedName, off: ParsedName,
 
 def _linked_letters(on: ParsedName,
                     letters: frozenset[str]) -> set[tuple[int, int]]:
-    """P3's other join (#1097): a single-letter link in front of a lone
+    """rules/P13's link (#1097): a single-letter link in front of a lone
     letter ending the name words takes that letter as the name it
-    links, which the off-switch parse reads as the generation. The
-    spans of the letters so taken, judged on the configured parse: the
-    link and the letter after it hold the same name role."""
+    links. The spans of the letters so taken, judged on the configured
+    parse: a one-letter word right after a class link, in the link's
+    name role, and the last word of that role, so a link that also
+    took a word behind the letter (a credential) is not excused. The
+    letter's off-switch reading is not asked."""
     toks = _placed(on)
     taken: set[tuple[int, int]] = set()
     for i, (tok, _span) in enumerate(toks[:-1]):
         if ("conjunction" not in tok.tags
-                or tok.text.lower() not in letters):
+                or tok.text.lower() not in letters
+                or tok.role not in _NAME_ROLES):
             continue
         nxt, nxt_span = toks[i + 1]
         letter = nxt.text.rstrip(".")
         if (len(letter) == 1 and letter.isalpha()
-                and nxt.role is tok.role and tok.role in _NAME_ROLES):
+                and nxt.role is tok.role
+                and not any(t.role is tok.role for t, _ in toks[i + 2:])):
             taken.add(nxt_span)
     return taken
 
@@ -2585,10 +2589,11 @@ def _off_switch_findings() -> dict[str, list[str]]:
     Both parses of a row -- as configured, and with the class letters
     out of the connectives -- are taken once here and handed to all
     four predicates, which is the whole of what this walk does. The
-    exemptions stay each test's own: INV6 takes the join and the
-    initial reading, INV1-strengthened the initial reading and the
-    link-free control, INV7 the join and the initial reading plus
-    R4's placed-connective sentence, exactly as their docstrings say.
+    exemptions stay each test's own: INV6 takes the join, the
+    initial reading and P13's linked letter, INV1-strengthened the
+    initial reading, the link-free control and P13's linked letter,
+    INV7 the join and the initial reading plus R4's
+    placed-connective sentence, exactly as their docstrings say.
 
     INV6b costs NO parse at all, which is why it joins this walk
     rather than opening a grid of its own: the grid already writes
@@ -2658,9 +2663,9 @@ def _off_switch_findings() -> dict[str, list[str]]:
                     # parse.
                     if "conjunction" in tok.tags or tok.span is None:
                         continue
-                    # nor the lone letter P3's other join takes as the
-                    # name the link links (#1097), which the off-switch
-                    # parse reads as the generation by construction
+                    # nor the lone letter rules/P13 links as the name
+                    # (#1097), which the off-switch parse reads as the
+                    # generation
                     if tok.span in linked:
                         continue
                     if off_role.get(tok.span) is not Role.SUFFIX:
@@ -2792,7 +2797,11 @@ def test_a_link_that_joins_nothing_changes_no_field() -> None:
     a letter that joins nothing must leave every field where the
     parent left it.
 
-    Two exemptions, both narrow and both P3's own OTHER clauses. A
+    Three exemptions, each narrow. The third, since #1097, is
+    rules/P13's: a link taking the lone letter that ends the name
+    words as the name it links (`_linked_letters`, which excuses only
+    a letter that is its role's last word). The first two are P3's own
+    OTHER clauses. A
     letter that JOINED between name words is the rule working, judged
     on the off-switch parse's classes so an absorbed suffix cannot
     pass itself off as the name word on the right. And a letter the
@@ -2800,7 +2809,8 @@ def test_a_link_that_joins_nothing_changes_no_field() -> None:
     clause, which the switch decides along with the join and so
     cannot hold fixed.
 
-    Mutation-checked, re-measured 2026-09-20 over the grid as it
+    Mutation-checked, re-measured 2026-09-20, under the exemptions
+    #1097's linked letter predates, over the grid as it
     now stands (the second review added the two trailing-title
     suffix runs, so every count here moved with it): this fails on
     1,480 parses at c8550b64, the commit the first review was
@@ -2830,13 +2840,17 @@ def test_a_trailing_credential_never_joins_into_a_name_part() -> None:
     is deliberately absent -- a link joining elsewhere in the name
     never licenses a credential joining here.
 
+    P13's linked letter is a fourth (#1097), the letter alone and not
+    the row, so a credential the link took behind it still fails here.
+
     THE LINK-FREE CONTROL is its third exemption, added by the
     second review and documented at the walk: a credential can land
     in a name part for a reason older than #397 and untouched by it,
     and deleting the link is how this asks whether the link is what
     put it there.
 
-    Mutation-checked, re-measured 2026-09-20 over the grid as it now
+    Mutation-checked, re-measured 2026-09-20, under the exemptions
+    #1097's linked letter predates, over the grid as it now
     stands: this fails on 639 parses at c8550b64, where INV1 fails
     on none of them, on the same 639 where the both-sides gate tests
     POSITION rather than class, and on 105 at dc3bdf9c -- the
@@ -2874,7 +2888,8 @@ def test_a_letter_that_did_not_join_repairs_as_the_off_switch_does() -> None:
     name must leave every repair where the parent left it, plain and
     forced.
 
-    Three exemptions. The first two are INV6's -- a name whose FIELDS
+    Three exemptions. The first two are INV6's join and initial ones
+    (not its #1097 linked-letter one) -- a name whose FIELDS
     moved is a name the join changed, and a letter the two parses
     disagree about being an INITIAL is the marked-subset clause. The
     third is rules/R4's own sentence: a connective the parse

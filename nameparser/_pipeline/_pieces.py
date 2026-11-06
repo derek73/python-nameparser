@@ -195,9 +195,10 @@ def is_prefix_piece(piece: Sequence[int], ptags: Set[str],
 
 # rules/P3: "a recognized connective joins its neighbors into one
 # name part, connective runs included — except a single-letter
-# connective in a three-word name, which stays a name word, and a
-# single-letter connective that reads as an initial instead (P8),
-# which never joins" (history: decisions/P3)
+# connective in a three-word name, which stays a name word where P13
+# has not joined it first, and a single-letter connective that reads
+# as an initial instead (P8), which never joins" (history:
+# decisions/P3)
 def is_conj_piece(piece: Sequence[int], ptags: Set[str],
                   tokens: Sequence[WorkToken]) -> bool:
     if "conjunction" in ptags:

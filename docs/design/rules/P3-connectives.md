@@ -2,7 +2,7 @@
 
 **When:** a recognized connective stands between name words, as in "Juan y Eva Garcia".
 
-**Then:** a recognized connective joins its neighbors into one name part, connective runs included — except a single-letter connective in a three-word name, which stays a name word, and a single-letter connective that reads as an initial instead (P8), which never joins.
+**Then:** a recognized connective joins its neighbors into one name part, connective runs included — except a single-letter connective in a three-word name, which stays a name word where P13 has not joined it first, and a single-letter connective that reads as an initial instead (P8), which never joins.
 
 - **The joined part is ONE name word wherever another rule counts them**, so a rule taking "one name word" takes the whole join and never half of it — except C3's count of the words before a comma, which counts particle surnames alone and states why. H1 is the counting rule that shows the one-word clause today: a title plus the join reads the whole join as the family, where the same two words unjoined are two name words and H1 does not fire. P1's leading run is the second (#395): its run takes the "Vega y Santos" join whole or stops before it.
   ```
@@ -22,22 +22,7 @@
   "Josep Carod i Rovira"      →  family="Carod i Rovira"
   "Carod i Rovira, Josep"     →  family="Carod i Rovira"
   ```
-- **A single-letter connective in front of a lone letter ending the name words joins it to the word before**, in the part holding the family name: the letter, a numeral or an initial, is the second surname written as an initial, the three-word carve-out gives way, and a connective that is also generational vocabulary links it too. Where the part is the whole name a name word must stand in front of the join, so the name keeps a given name; a lowercase letter in a name of mixed case is the generation S10 reads by its writing.
-  ```
-  "John Smith y V"            →  family="Smith y V"
-  "Juan García y L."          →  family="García y L."
-  "Puig i V, Joan"            →  family="Puig i V"
-  "Smith y V"                 →  family="y"  · boundary
-  "Smith y v, John"           →  suffix="v"  · boundary
-  ```
-- **A connective with nothing to link joins the word before it alone**: one that is not also suffix vocabulary, with nothing but suffixes behind it in the part holding the family name, joins the word in front of it and no suffix after it, the join having no name on its right to take.
-  ```
-  "John Smith y III"          →  family="Smith y"
-  "John Smith y VI"           →  family="Smith y"
-  "John Paul Smith y III"     →  suffix="III"
-  "John Smith y"              →  family="Smith y"
-  ```
-- **A connective that is also generational vocabulary joins only where a name word stands on each side of it** — a word the rest of the parse reads as a name word rather than as a generation, a credential or an honorific, looked for past any run of connectives standing between. A connective with nothing to its right is connecting nothing, and a word of that vocabulary ending a name, or standing before the credential a name ends with, is the generation it also spells wherever S10 reads one there. The lone letter the clause above links is a name word on its right.
+- **A connective that is also generational vocabulary joins only where a name word stands on each side of it** — a word the rest of the parse reads as a name word rather than as a generation, a credential or an honorific, looked for past any run of connectives standing between. A connective with nothing to its right is connecting nothing, and a word of that vocabulary ending a name, or standing before the credential a name ends with, is the generation it also spells wherever S10 reads one there. The lone letter P13 links is a name word on its right.
   ```
   "John Quincy Smith i"       →  suffix="i"
   "Carod i"                   →  suffix="i"
