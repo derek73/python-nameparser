@@ -13876,8 +13876,9 @@ CASES: tuple[Case, ...] = (
                "family comma, given 'Assist', family 'Esra Oz'"),
     Case("assist_with_no_head_title_is_a_name_word", "Assist John Smith",
          {"given": "Assist", "middle": "John", "family": "Smith"},
-         notes="a modifier with no head title behind it is no title "
-               "(rules/H9)"),
+         notes="opening the name, a modifier with no head title behind "
+               "it is no title (rules/H9); ending the name or after a "
+               "comma it is read as any title is"),
     Case("drs_ending_the_given_part_after_a_family_comma",
          "BAXTER, JENNIFER DRS.",
          {"title": "DRS.", "given": "JENNIFER", "family": "BAXTER"},
