@@ -3,3 +3,19 @@ schema = 1
 [[word]]
 text = "bapak"
 salutation = { issue = 662, gender = "m", note = "under 100 US Census bearers and none found on Wikidata (tools/name_usage.py, 2026-10-17)", after_given = true }
+
+[[word]]
+text = "ach"
+given = { same_as = "achmad", note = "Achmad written short: ORCID given boxes 94 (Indonesia 48), family boxes 17 (2026-11-06); written with its period at the head of a name (Ach. Arfan Adinata), it read as a title by the leading-abbreviation shape (#1115)" }
+
+[[word]]
+text = "moch"
+given = { same_as = "muhammad", note = "Muhammad (Mochammad) written short: ORCID given boxes 462 (Indonesia 232), family boxes 46; US Census 2010 counts Moch 540 times as a surname, Wikidata 32 family bearers, none with Indonesian citizenship (2026-11-06); written with its period at the head of a name (Moch. Agus Choiron), it read as a title by the leading-abbreviation shape (#1115)" }
+
+[[word]]
+text = "moh"
+given = { same_as = "muhammad", note = "Muhammad (Mohammad) written short: ORCID given boxes 1,158 (Indonesia 531), family boxes 156; US Census 2010 counts Moh 379 times as a surname (2026-11-06); written with its period at the head of a name (Moh. Ali Arupin), it read as a title by the leading-abbreviation shape (#1115)" }
+
+[[word]]
+text = "muh"
+given = { same_as = "muhammad", note = "Muhammad written short: ORCID given boxes 1,086 (Indonesia 610), family boxes 40 (2026-11-06); written with its period at the head of a name (Muh. Hamdan), it read as a title by the leading-abbreviation shape (#1115)" }

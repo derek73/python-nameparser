@@ -1686,14 +1686,21 @@ BOUND_GIVEN_NAMES: frozenset[str] = frozenset({
 })
 
 GIVEN_NAME_ABBREVIATIONS: frozenset[str] = frozenset({
+    'ach',
     'benj',
     'chas',
     'edw',
+    'fco',
     'geo',
     'jas',
     'jno',
     'jo',
     'ma',
+    'mhd',
+    'moch',
+    'moh',
+    'mohd',
+    'muh',
     'richd',
     'robt',
     'saml',

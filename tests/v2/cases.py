@@ -13809,6 +13809,55 @@ CASES: tuple[Case, ...] = (
                "through 2.5.0; unlisted, it is a name word again"),
     Case("wm_dotted_trailing_after_a_family_comma", "Smith, John Wm.",
          {"given": "John", "middle": "Wm.", "family": "Smith"}),
+    # -- #1115: Muhammad, Achmad and Francisco written short, mined from
+    # the words that open a name with a period. Each outranks rules/H2's
+    # shape as 'Chas.' does; 'Mo.' was left out (decisions/H6).
+    Case("mohd_dotted_opening_the_name_is_the_given_name",
+         "Mohd. Shameem Khan",
+         {"given": "Mohd.", "middle": "Shameem", "family": "Khan"},
+         classification="fix(#1115)",
+         notes="master read title 'Mohd.', given 'Shameem'"),
+    Case("mohd_dotted_in_capitals_is_the_given_name", "MOHD. AMIN SOOM",
+         {"given": "MOHD.", "middle": "AMIN", "family": "SOOM"},
+         classification="fix(#1115)"),
+    Case("muh_dotted_behind_a_title_is_the_given_name", "Dr. Muh. Hamdan",
+         {"title": "Dr.", "given": "Muh.", "family": "Hamdan"},
+         classification="fix(#1115)",
+         notes="the shape chained it into the title run: master read "
+               "title 'Dr. Muh.' with no given name"),
+    Case("moch_dotted_before_a_credential_comma", "Moch. Yunus, M.Kes.",
+         {"given": "Moch.", "family": "Yunus", "suffix": "M.Kes."},
+         classification="fix(#1115)",
+         notes="a name word now, the abbreviation gives the part before "
+               "the comma the two words that make it a whole name "
+               "(rules/C4): master read family 'Moch. Yunus', given "
+               "'M.Kes.'"),
+    Case("mohd_dotted_after_a_family_comma", "Hassan, Mohd. Ali",
+         {"given": "Mohd.", "middle": "Ali", "family": "Hassan"},
+         classification="fix(#1115)",
+         notes="master read title 'Mohd.', given 'Ali'"),
+    Case("mhd_dotted_opening_the_name_is_the_given_name",
+         "Mhd. Isam Hasan Agha",
+         {"given": "Mhd.", "middle": "Isam Hasan", "family": "Agha"},
+         classification="fix(#1115)"),
+    Case("moh_dotted_opening_the_name_is_the_given_name", "Moh. Ali Arupin",
+         {"given": "Moh.", "middle": "Ali", "family": "Arupin"},
+         classification="fix(#1115)"),
+    Case("ach_dotted_opening_the_name_is_the_given_name",
+         "Ach. Arfan Adinata",
+         {"given": "Ach.", "middle": "Arfan", "family": "Adinata"},
+         classification="fix(#1115)"),
+    Case("fco_dotted_opening_the_name_is_the_given_name",
+         "Fco. Javier Barbas González",
+         {"given": "Fco.", "middle": "Javier Barbas", "family": "González"},
+         classification="fix(#1115)",
+         notes="Francisco written short: master read title 'Fco.', "
+               "given 'Javier'"),
+    Case("mo_dotted_opening_the_name_stays_a_title", "Mo. Ibrar Khan",
+         {"title": "Mo.", "given": "Ibrar", "family": "Khan"},
+         notes="left out of #1115: bare 'Mo' is mostly the Chinese and "
+               "Korean name, so the abbreviation keeps rules/H2's "
+               "reading, as 'Md.' does (decisions/H6)"),
 
     # -- #316(a): the trailing title RUN. The leading slot has a SHAPE
     # rule that outranks vocabulary (H2); the trailing slot has no

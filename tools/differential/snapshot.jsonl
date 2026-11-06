@@ -2924,6 +2924,7 @@
 {"name": "Ms Princess Smith", "title": "Ms", "given": "Princess", "family": "Smith", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "P. S."}
 {"name": "Ms Queen Smith", "title": "Ms", "given": "Queen", "family": "Smith", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "Q. S."}
 {"name": "Ms. Rebecca Teichman", "title": "Ms.", "given": "Rebecca", "family": "Teichman", "initials": "R. T."}
+{"name": "Mt. Pleasant, Jane", "given": "Jane", "family": "Mt. Pleasant", "initials": "J. M. P."}
 {"name": "Mudane Bertram Wilberforce Henry Robert Wooster MP", "given": "Mudane", "middle": "Bertram Wilberforce Henry Robert", "family": "Wooster", "suffix": "MP", "initials": "M. B. W. H. R. W."}
 {"name": "Mueller Kathy", "order": "FAMILY_FIRST", "given": "Kathy", "family": "Mueller", "initials": "K. M."}
 {"name": "Mueller, Kathy", "given": "Kathy", "family": "Mueller", "initials": "K. M."}
