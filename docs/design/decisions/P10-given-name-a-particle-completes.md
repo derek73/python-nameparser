@@ -12,6 +12,8 @@
 
 Open: Catalan `dels` (`Maria dels Àngels Puig`). decisions/O7 kept it out of `ca.toml` because the property moved nothing with the switch off; under this rule a `dels` particle beside `àngels` written `after_particle` reads middle 'dels Àngels', family 'Puig' by default, today's reading, so the reason no longer holds and the words want their own measurement — #1059.
 
+Open: whether a strict Portuguese choice should read the words `es.toml` marks that Portuguese names write too — #1122.
+
 ## Log
 
 - 2026-11-04 #704, decided in chat — A GIVEN NAME A PARTICLE COMPLETES IS A MIDDLE NAME BY DEFAULT. The default reading decisions/O7's 2026-11-03 #704 entry left undecided ("Not decided here"): `María del Carmen García` read family 'del Carmen García' in 1.4.0 through 3.0's master, and reads given 'María', middle 'del Carmen', family 'García'. SUPERSEDES that entry's reach bullet where it put the phrase in O7: the particle phrase is this rule's, read whatever the switches, and O7 takes it as it takes any middle unit, so O7's own phrase path, its vocabulary clause, and the split-candidate line in decisions/O7's Standing go.
