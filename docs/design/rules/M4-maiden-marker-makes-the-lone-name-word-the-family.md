@@ -24,10 +24,9 @@
 
 **Except:**
 
-- **A bound given name keeps the reading its position gives it, and so does a word read as an initial** (P5, T4, T5), which is nobody's family name. Both are beyond the rule's reach for one reason: it changes what POSITION would have decided, so it cannot overrule what a word already IS (mechanisms.md#TWO-LAYER-ASSIGN). A word with only a `given` reading, such as a given name written short, claims nothing here and is flipped like any other.
+- **A bound given name keeps the reading its position gives it, and so does a word read as an initial** (P5, T4, T5). Both are beyond the rule's reach for one reason: it changes what POSITION would have decided, so it cannot overrule what a word already IS (mechanisms.md#TWO-LAYER-ASSIGN).
   ```
   "abd née Jones"             →  given="abd"  · boundary
-  "Chas. née Jones"           →  family="Chas."  · boundary
   "J. née Jones Smith V"      →  given="J."  · boundary
   "j nee smith"               →  given="j"  · boundary
   ```
@@ -35,6 +34,14 @@
 **Precedence:**
 
 - **A name carrying a TITLE** is H1's rather than this rule's, H1's given-name-title carve-out included, which keeps the word a given name.
+
+**Accepted:**
+
+- A word the vocabulary reads as possibly a given name, without the claim a bound given name makes, is the family name all the same — a given name written short, a title or a particle that may also be a given name — since the marker names the word beside it as the surname the bearer carries now, as a title does under H1.
+  ```
+  "Chas. née Jones"           →  family="Chas."
+  "Van née Jones"             →  family="Van"
+  ```
 
 ---
 **Signal:** count
