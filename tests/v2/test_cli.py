@@ -261,8 +261,10 @@ def test_cli_unlisted_caps_suffixes_rows_cover_every_setting() -> None:
 def test_cli_unlisted_caps_suffixes_lists_the_enums_values(
         capsys: pytest.CaptureFixture[str]) -> None:
     err = _usage_error(capsys, "--unlisted-caps-suffixes", "bogus", "x")
+    # 3.11 quotes the choices and 3.12 on does not, so match either
+    listed = err.split("choose from")[1]
     for member in CapsSuffixes:
-        assert repr(member.value) in err
+        assert member.value in listed
 
 
 _JA_EXTRA = importlib.util.find_spec("namedivider") is not None
