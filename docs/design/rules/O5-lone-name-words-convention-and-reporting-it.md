@@ -62,7 +62,7 @@
 
 **Accepted:**
 
-- A pack that declares a family-first order reads a lone name word as the family name too, though a Vietnamese name written alone is usually the given name: no `Policy` field sets the convention apart from the order, and `locales.VI` sets the order.
+- A pack that declares a family-first order reads a lone name word as the family name too, though a Vietnamese name written alone is usually the given name: no `Policy` field sets the convention apart from the order, and `locales.VI` sets the order (#1111 asks for one).
   ```
   "Anh"  [vi]                 →  family="Anh"
   ```

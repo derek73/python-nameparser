@@ -37,8 +37,9 @@ from nameparser._lexicon import Lexicon
 from nameparser._locale import Locale, rules_patch
 
 #: Syllables of Vietnamese names that another language's file reads as
-#: a particle: Văn, Lê, Đỗ, Du, Di, La, Thọ, Đa, Mạc, unaccented
-_PARTICLES = ("da", "di", "do", "du", "la", "le", "mac", "tho", "van")
+#: a particle: Văn, Lê, Đỗ, Du (Dư), Di, La, Thọ, Đa, unaccented, and
+#: San, the saint particle
+_PARTICLES = ("da", "di", "do", "du", "la", "le", "san", "tho", "van")
 #: and as a connective: Thế and Ý
 _CONJUNCTIONS = ("the", "y")
 

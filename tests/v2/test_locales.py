@@ -263,10 +263,11 @@ def test_vi_pack_contents() -> None:
     # the fragment takes out the readings it names and nothing else:
     # van's particle and the's connective leave, en's credential do and
     # the particles of other words stay
-    assert not {"van", "le", "do", "du", "di", "la", "tho", "da", "mac"} & (
+    assert not {"van", "le", "do", "du", "di", "la", "tho", "da", "san"} & (
         sets.particles)
     assert not {"the", "y"} & sets.conjunctions
-    assert {"de", "von", "bin"} <= sets.particles
+    # mac moved no Vietnamese-order name in any corpus and stays (#1108)
+    assert {"de", "von", "bin", "mac"} <= sets.particles
     assert "and" in sets.conjunctions and "do" in sets.suffix_acronyms
     assert _vi.DEVIATES("Anh") and not _vi.DEVIATES(", ")
 
@@ -285,6 +286,7 @@ def test_vi_pack_contents() -> None:
     ("Tran Van Le", "", "Tran", "Van", "Le", ""),
     ("Tran The Tuan", "", "Tran", "The", "Tuan", ""),
     ("Nguyen Van Do", "", "Nguyen", "Van", "Do", ""),
+    ("Tran Thi San Ha", "", "Tran", "Thi San", "Ha", ""),
     # the titles, bare, dotted and stacked
     ("Ts Nguyen Van Anh", "Ts", "Nguyen", "Van", "Anh", ""),
     ("PGS.TS. Nguyễn Văn Anh", "PGS.TS.", "Nguyễn", "Văn", "Anh", ""),
@@ -1403,6 +1405,7 @@ _ROTATORS["vi"] = [
     "Do Thi Lan",                    # do, the Portuguese particle removed
     "Nguyen The Tuan",               # the, the English connective removed
     "Nguyen Y Van",                  # y, the Spanish connective removed
+    "Tran Thi San Ha",               # san, the saint particle removed
     "NGUYEN VAN ANH",                # in one case
     "Nguyen, Ts Van Anh",            # ts after a family comma
     "Nguyen, Ths Van Anh",           # ths
