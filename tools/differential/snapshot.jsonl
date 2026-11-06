@@ -1,10 +1,13 @@
 {"recorded": ["capitalized", "capitalized_force", "alternatives", "generation", "credentials", "patronymic", "surname2", "honorifics"]}
 {"name": ""}
 {"name": "\"Rick\" Edmonds", "family": "Edmonds", "nickname": "Rick", "initials": "E."}
+{"name": "'Smitty' Abdul Jr.", "given": "Abdul", "suffix": "Jr.", "nickname": "Smitty", "initials": "A.", "generation": "Jr."}
 {"name": "'Smitty' Dr. Jones", "title": "Dr.", "family": "Jones", "nickname": "Smitty", "initials": "J."}
+{"name": "'Smitty' J.", "family": "J.", "nickname": "Smitty", "initials": "J."}
+{"name": "'Smitty' J. Jr.", "given": "J.", "suffix": "Jr.", "nickname": "Smitty", "initials": "J.", "generation": "Jr."}
 {"name": "'Smitty' John Jones", "given": "John", "family": "Jones", "nickname": "Smitty", "initials": "J. J."}
 {"name": "'Smitty' Jones", "family": "Jones", "nickname": "Smitty", "initials": "J."}
-{"name": "'Smitty' Jones Jr.", "given": "Jones", "suffix": "Jr.", "nickname": "Smitty", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "J.", "generation": "Jr."}
+{"name": "'Smitty' Jones Jr.", "family": "Jones", "suffix": "Jr.", "nickname": "Smitty", "initials": "J.", "generation": "Jr."}
 {"name": "'Smitty' Sir John", "title": "Sir", "given": "John", "nickname": "Smitty", "initials": "J."}
 {"name": "(", "ambiguities": ["UNBALANCED_DELIMITER"]}
 {"name": "()"}
@@ -2146,6 +2149,7 @@
 {"name": "Jon Dough and of", "given": "Jon", "family": "Dough and of", "initials": "J. D."}
 {"name": "Jon Irazabal Agirre", "given": "Jon", "middle": "Irazabal", "family": "Agirre", "initials": "J. I. A."}
 {"name": "Jonas Lukas Petrauskas", "given": "Jonas", "middle": "Lukas", "family": "Petrauskas", "initials": "J. L. P."}
+{"name": "Jones (Smitty) PhD", "family": "Jones", "suffix": "PhD", "nickname": "Smitty", "initials": "J."}
 {"name": "Jones Jr. née Smith", "given": "Jones", "middle": "Jr. née", "family": "Smith", "initials": "J. J. n. S.", "capitalized_force": "Jones Jr. Née Smith"}
 {"name": "Jones née", "given": "Jones", "family": "née", "initials": "J. n.", "capitalized_force": "Jones Née"}
 {"name": "Jong Anke de", "given": "Jong", "middle": "Anke", "family": "de", "initials": "J. A. d.", "capitalized_force": "Jong Anke De"}
@@ -3291,6 +3295,7 @@
 {"name": "Rev. Sr. Nguyen Thi Mai", "order": "FAMILY_FIRST_GIVEN_LAST", "title": "Rev. Sr.", "given": "Mai", "middle": "Thi", "family": "Nguyen", "initials": "M. T. N."}
 {"name": "Rev. Sr. Smith, Mary", "title": "Rev. Sr.", "given": "Mary", "family": "Smith", "initials": "M. S."}
 {"name": "Rev. Sr. Wang Xiaoming", "order": "FAMILY_FIRST", "title": "Rev. Sr.", "given": "Xiaoming", "family": "Wang", "initials": "X. W."}
+{"name": "Rewati Od (Mahar)", "family": "Rewati", "suffix": "Od", "nickname": "Mahar", "initials": "R.", "capitalized_force": "\"Mahar\" Rewati OD"}
 {"name": "Reza Hossein Zadeh", "given": "Reza", "middle": "Hossein", "family": "Zadeh", "initials": "R. H. Z."}
 {"name": "Ricardo Bodenlle Corral", "given": "Ricardo", "middle": "Bodenlle", "family": "Corral", "initials": "R. B. C."}
 {"name": "Ricardo Legorreta Vilchis", "given": "Ricardo", "middle": "Legorreta", "family": "Vilchis", "initials": "R. L. V."}

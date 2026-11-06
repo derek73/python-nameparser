@@ -13,7 +13,7 @@
   ```
   "Jane née Jones Smith"      →  family="Jane"
   ```
-- **A nickname holds nothing off:** where N3 has already named the family this rule finds nothing left to move, and where N3 declined — its count does not set a suffix aside — this rule names it.
+- **A nickname holds nothing off:** where N3 has already named the family this rule finds nothing left to move, and where a suffix stands beside the word N3 leaves a name carrying a maiden name to this rule, which names it.
 
 **Because:** a maiden name is a FORMER family name, and nobody announces the surname they used to carry where there is no surname beside it to tell it apart from. So the one name word left standing is the surname the bearer uses now, and writing the clause at all is what rules out the given-name reading O5's convention would otherwise leave it with.
 

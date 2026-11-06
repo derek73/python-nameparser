@@ -11973,13 +11973,58 @@ CASES: tuple[Case, ...] = (
          notes="rules/S2 peels the suffix and leaves ONE name word, "
                "which O5's convention then places -- the peel decided "
                "the suffix, not the field"),
-    Case("lone_name_word_beside_a_nickname_and_a_suffix_reports",
+    Case("lone_name_word_beside_a_nickname_and_a_suffix_decided",
          "'Smitty' Jones Jr.",
+         {"family": "Jones", "suffix": "Jr.", "nickname": "Smitty"},
+         classification="fix(#815)",
+         notes="rules/N3 sets the suffix aside, so the nickname decides "
+               "the one name word's field and O5's convention never "
+               "places it; read given with the family empty and a "
+               "given-or-family report through 2.8"),
+    Case("lone_name_word_beside_a_nickname_and_a_suffix_family_first",
+         "'Smitty' Jones Jr.",
+         {"family": "Jones", "suffix": "Jr.", "nickname": "Smitty"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         classification="fix(#815)",
+         notes="the field was family here already; what rules/N3's "
+               "suffix clause moves under a family-first order is the "
+               "given-or-family report, which goes, the field being "
+               "decided"),
+    Case("nickname_after_the_word_and_a_credential", "Jones (Smitty) PhD",
+         {"family": "Jones", "suffix": "PhD", "nickname": "Smitty"},
+         classification="fix(#815)",
+         notes="rules/N3 reads a nickname in brackets after the word, and a "
+               "credential rather than a generation, alike"),
+    Case("nickname_word_and_a_joined_credential", '"Smitty" Jones MD/PhD',
+         {"family": "Jones", "suffix": "MD/PhD", "nickname": "Smitty"},
+         classification="fix(#815)",
+         notes="rules/N3 again: a joined credential is one suffix the peel "
+               "sets aside whole, in a double-quoted nickname"),
+    Case("nickname_initial_and_a_suffix_keeps_the_initial",
+         "'Smitty' J. Jr.",
+         {"given": "J.", "suffix": "Jr.", "nickname": "Smitty"},
+         notes="boundary: rules/N3's Except -- an initial is claimed by "
+               "its shape (T5), so beside a suffix it keeps its "
+               "reading and nothing reports, as under M4; the bare "
+               "'Smitty' J. reads family (N3's Accepted)"),
+    Case("nickname_word_and_a_one_letter_numeral", "'Smitty' Jones V",
+         {"given": "Jones", "family": "V", "nickname": "Smitty"},
+         ambiguities=("suffix-or-name",),
+         notes="boundary: rules/S10 reads the one-letter numeral as a "
+               "second name word, so the name holds two and N3 does "
+               "not apply"),
+    Case("nickname_word_and_a_gated_suffix_word", "'Smitty' Jones fils",
+         {"given": "Jones", "family": "fils", "nickname": "Smitty"},
+         ambiguities=("suffix-or-name",),
+         notes="boundary: rules/S11's count reads the gated word as a "
+               "second name word, so N3 does not apply"),
+    Case("nickname_alone_before_a_comma_and_a_suffix",
+         "'Smitty', Jones Jr.",
          {"given": "Jones", "suffix": "Jr.", "nickname": "Smitty"},
-         ambiguities=("given-or-family",), classification="feat(#449)",
-         notes="rules/O5's own example: N3's count does not set "
-               "aside a suffix standing beside the nickname, so N3 "
-               "declines and the convention is what places 'Jones'"),
+         notes="boundary: with nothing but a nickname before the comma "
+               "the word stands in the segment after it, which neither "
+               "N3's count nor its suffix clause reaches; reads as "
+               "'Smitty', Jones does"),
     Case("lone_name_word_title_decides_it", "Dr. Smith",
          {"title": "Dr.", "family": "Smith"}, classification="parity",
          notes="negative control for both conventions: H1 decided it, "

@@ -447,6 +447,8 @@ def _assign_main(seg_idx: int, state: ParseState,
     # the WHOLE segment before any title peeling -- 'Xyz. (Bud) Smith'
     # has two pieces, so the title peel wins and this rule declines;
     # H1 then names Smith the family (rules/N3's title bullet)
+    # A suffix makes two pieces here too, so the suffixed shape is
+    # decided at O5's site below, after the peel has set it aside.
     # The nickname scan sits LAST in the test: it is a generator, which
     # every interpreter resumes once per token (seven call events on
     # the reference name), and only a one-piece segment ever reads its
@@ -618,8 +620,8 @@ def _assign_main(seg_idx: int, state: ParseState,
                 alternative=suffix_reading(tokens[head[0]])))
         # One name piece off the peel: the convention placed a lone
         # name word. A suffix beside it is not a decision -- 'Smith
-        # Jr.' and "'Smitty' Jones Jr." ARE this convention -- and the
-        # count comes off the peel rather than off name_pieces, which
+        # Jr.' IS this convention, and "'Smitty' Jones Jr." is N3's
+        # below -- and the count comes off the peel rather than off name_pieces, which
         # is what keeps the carve-out above out of these branches.
         # Title vocabulary in the unit makes the doubt H4's or H7's (is
         # the WORD a title), anything else O5's (which FIELD it took),
@@ -665,18 +667,29 @@ def _assign_main(seg_idx: int, state: ParseState,
                             for i in head)
                     and any(c.isalnum() for i in head
                             for c in tokens[i].text)):
-                text = " ".join(tokens[i].text for i in head)
-                ambiguities.append(PendingAmbiguity(
-                    AmbiguityKind.GIVEN_OR_FAMILY,
-                    f"{text!r} is the only name word and nothing else "
-                    f"decides it; read as ", tuple(head),
-                    field_tail=" by convention, which follows the read "
-                               "order",
-                    # the other primary field, named from the final
-                    # role by assemble
-                    alternative=PendingReading(ReadingKind.NAME,
-                                               ReadingSource.POSITION,
-                                               Deferred.OTHER_PRIMARY)))
+                # rules/N3: "a name that is only a nickname and one name
+                # word reads that word as the family name, whatever
+                # suffix stands beside them" -- the suffixed shape, which
+                # the early count above declines (two pieces); decided
+                # here, where the peel has set the suffix aside and O5's
+                # clauses have said nothing else claimed the word
+                # (decisions/N3, #815). The scan is asked only of a lone
+                # word nothing decided, so no other name pays it.
+                if any(t.role is Role.NICKNAME for t in tokens):
+                    _set_roles(tokens, head, Role.FAMILY)
+                else:
+                    text = " ".join(tokens[i].text for i in head)
+                    ambiguities.append(PendingAmbiguity(
+                        AmbiguityKind.GIVEN_OR_FAMILY,
+                        f"{text!r} is the only name word and nothing else "
+                        f"decides it; read as ", tuple(head),
+                        field_tail=" by convention, which follows the "
+                                   "read order",
+                        # the other primary field, named from the final
+                        # role by assemble
+                        alternative=PendingReading(ReadingKind.NAME,
+                                                   ReadingSource.POSITION,
+                                                   Deferred.OTHER_PRIMARY)))
     # rules/S10: "a one-letter numeral before a credential is the
     # family name, and the reading is reported" -- the part's last name
     # word with nothing but the trailing run behind it (#721, Derek:
