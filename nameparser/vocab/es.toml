@@ -58,6 +58,14 @@ text = "srtas"
 salutation = { gender = "f", same_as = "señoritas", after_given = true }
 
 [[word]]
+text = "excma"
+style = { issue = 1115, gender = "f", expands = "Excelentísima, the feminine of Excmo.", note = "no name bearers in any source tools/name_usage.py reads (2026-11-06)" }
+
+[[word]]
+text = "excmo"
+style = { issue = 1115, gender = "m", expands = "Excelentísimo, Most Excellent, the style of a high office (Excmo. Sr. Juan Pérez)", note = "no name bearers in any source tools/name_usage.py reads (2026-11-06)" }
+
+[[word]]
 text = "arq"
 academic = { default = false, issue = 753, expands = "Arq., Arquitecto or Arquitecta abbreviated", note = "no name bearer in any source tools/name_usage.py reads; ORCID's given box 12 records, the title typed in, 4 ORCID names and 2 PatentsView ones opening with it (Arq. Julia Romero) (2026-10-30)" }
 

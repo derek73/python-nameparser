@@ -1039,9 +1039,9 @@
 {"name": "Ever Peña Maldonado", "given": "Ever", "middle": "Peña", "family": "Maldonado", "initials": "E. P. M."}
 {"name": "Ewa Nowak", "given": "Ewa", "family": "Nowak", "initials": "E. N."}
 {"name": "Excm. Sr. Josep Antoni Carles Joan Lloret Palol", "title": "Excm. Sr.", "given": "Josep", "middle": "Antoni Carles Joan Lloret", "family": "Palol", "initials": "J. A. C. J. L. P."}
-{"name": "Excm. Sr. Lloret Palol II, Josep Antoni Carles Joan", "order": "FAMILY_FIRST", "given": "Josep", "middle": "Antoni Carles Joan", "family": "Excm. Lloret Palol", "suffix": "Sr., II", "initials": "J. A. C. J. E. L. P.", "generation": "Sr., II"}
+{"name": "Excm. Sr. Lloret Palol II, Josep Antoni Carles Joan", "order": "FAMILY_FIRST", "title": "Excm. Sr.", "given": "Josep", "middle": "Antoni Carles Joan", "family": "Lloret Palol", "suffix": "II", "initials": "J. A. C. J. L. P.", "generation": "II"}
 {"name": "Excma. Dra. Maria da Graça César Martín van Dalen Hoogeveen", "title": "Excma. Dra.", "given": "Maria", "middle": "da Graça César Martín", "family": "van Dalen Hoogeveen", "initials": "M. G. C. M. D. H."}
-{"name": "Excma. Dra. Van Dalen Hoogeveen II, Maria da Graça César Martín", "order": "FAMILY_FIRST", "given": "Maria", "middle": "da Graça César Martín", "family": "Excma. Dra. Van Dalen Hoogeveen", "suffix": "II", "initials": "M. G. C. M. E. D. D. H.", "capitalized_force": "Maria da Graça César Martín Excma. Dra. van Dalen Hoogeveen II", "generation": "II"}
+{"name": "Excma. Dra. Van Dalen Hoogeveen II, Maria da Graça César Martín", "order": "FAMILY_FIRST", "title": "Excma. Dra.", "given": "Maria", "middle": "da Graça César Martín", "family": "Van Dalen Hoogeveen", "suffix": "II", "initials": "M. G. C. M. D. H.", "capitalized_force": "Excma. Dra. Maria da Graça César Martín van Dalen Hoogeveen II", "generation": "II"}
 {"name": "Eyck, Jan van", "given": "Jan", "family": "van Eyck", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "J. E."}
 {"name": "É. y É. Smith", "given": "É.", "middle": "y É.", "family": "Smith", "initials": "É. É. S."}
 {"name": "Ế Nguyen", "given": "Ế", "family": "Nguyen", "initials": "Ế. N."}

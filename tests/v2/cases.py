@@ -13853,6 +13853,46 @@ CASES: tuple[Case, ...] = (
          classification="fix(#1115)",
          notes="Francisco written short: master read title 'Fco.', "
                "given 'Javier'"),
+    # -- #1115, the second batch: titles with no name bearers, listed so
+    # that the bare spelling, the slot before a family comma (rules/H6)
+    # and the end of the name (rules/H5) read them as the dotted head
+    # already did by rules/H2's shape.
+    Case("engr_bare_opening_the_name_is_a_title", "Engr Ahsen Ali",
+         {"title": "Engr", "given": "Ahsen", "family": "Ali"},
+         classification="fix(#1115)",
+         notes="master read given 'Engr', middle 'Ahsen'"),
+    Case("adv_bare_opening_the_name_is_a_title", "Adv Sakina Abdul Latif",
+         {"title": "Adv", "given": "Sakina", "middle": "Abdul",
+          "family": "Latif"},
+         classification="fix(#1115)"),
+    Case("ir_in_a_dutch_title_run", "Prof dr ir Simon Peeters",
+         {"title": "Prof dr ir", "given": "Simon", "family": "Peeters"},
+         classification="fix(#1115)",
+         notes="master read given 'ir', middle 'Simon'"),
+    Case("assist_prof_after_the_comma_is_the_title", "Esra Oz, Assist Prof",
+         {"title": "Assist Prof", "given": "Esra", "family": "Oz"},
+         classification="fix(#1115)",
+         notes="ClinicalTrials.gov's shape: master read the comma as a "
+               "family comma, given 'Assist', family 'Esra Oz'"),
+    Case("assist_with_no_head_title_is_a_name_word", "Assist John Smith",
+         {"given": "Assist", "middle": "John", "family": "Smith"},
+         notes="opening the name, a modifier with no head title behind "
+               "it is no title (rules/H9); ending the name or after a "
+               "comma it is read as any title is"),
+    Case("drs_ending_the_given_part_after_a_family_comma",
+         "BAXTER, JENNIFER DRS.",
+         {"title": "DRS.", "given": "JENNIFER", "family": "BAXTER"},
+         classification="fix(#1115)",
+         notes="the FEC donor list's 'Doctors': master read middle "
+               "'DRS.'"),
+    Case("excm_before_a_family_comma_is_a_title",
+         "Excm. Sr. Lloret Palol, Josep Antoni",
+         {"title": "Excm. Sr.", "given": "Josep", "middle": "Antoni",
+          "family": "Lloret Palol"},
+         classification="fix(#1115)",
+         notes="CLDR's Catalan sorting form: unlisted, Excm. stopped "
+               "rules/H6's run, so master read family 'Excm. Lloret "
+               "Palol', suffix 'Sr.'"),
     Case("mo_dotted_opening_the_name_stays_a_title", "Mo. Ibrar Khan",
          {"title": "Mo.", "given": "Ibrar", "family": "Khan"},
          notes="left out of #1115: bare 'Mo' is mostly the Chinese and "
