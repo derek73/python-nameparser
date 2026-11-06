@@ -212,8 +212,8 @@ def _absorbed(piece: Sequence[int], tokens: Sequence[WorkToken],
 #: could speak, so O5's convention decided nothing. Built from M4's
 #: `_NEVER_FLIPPED` pair rather than respelling it: the two sets answer
 #: different questions -- may M4 retag the word, and did anything
-#: decide the field -- and share the pair because a word vocabulary
-#: claimed as a given name, or wrote as an initial, answers both. The
+#: decide the field -- and share the pair because a bound given name,
+#: or a word written as an initial, answers both. The
 #: third, `particle`, is here alone because a lone particle's reading
 #: is P4's. None is a predicate this emitter owns: they are read off
 #: the tags classify already recorded (mechanisms.md#TWO-LAYER-ASSIGN).
