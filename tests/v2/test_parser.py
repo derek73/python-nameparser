@@ -2082,67 +2082,78 @@ def test_a_maiden_clause_changes_nothing_else(name: str) -> None:
             f"{getattr(with_clause, field)!r} with a maiden clause")
 
 
-#: rules/N3's suffix clause (#815), swept over every way the grid can
-#: write a nickname and a name word, suffixes of each kind the trailing
-#: peel takes whole (generation, credential, a joined pair, a run), and
-#: all three read orders. Words the S11 count gates (`fils`, `Junior`),
-#: ambiguous acronyms (`Ing`) and the one-letter numeral (`V`) are left
-#: out on purpose: each reads as a second name word, so N3 never applies
-#: (cases.py's `nickname_word_and_*` rows hold those).
+#: rules/N3's suffix clause (#815), swept over the ways the grid writes
+#: a nickname and a name word (quoted or bracketed, before or after the
+#: word), suffixes of each kind the trailing peel takes whole (a
+#: generation, a numeral listed and one read by shape, a credential
+#: dotted, merged and joined, a run), and all three read orders. Left
+#: out on purpose, each a word read as a second name word so that N3
+#: never applies: a gated word (`fils`, `Junior`, S11), an ambiguous
+#: acronym in Title case (`Ing`, S4) and the one-letter numeral (`V`,
+#: S10); cases.py's `nickname_word_and_*` boundary rows hold them. One
+#: test walks the grid rather than one per row: 660 parsed pairs take
+#: 0.11s (measured 2026-11-05, py3.11), where the grid's first draft,
+#: 432 rows as as many pytest items, took 1.32s under -n0.
 _N3_NICKNAMES = ("'Smitty' {w}", '"Smitty" {w}', "{w} (Smitty)",
-                 "(Smitty) {w}")
+                 "(Smitty) {w}", "{w} 'Smitty'")
 _N3_WORDS = ("Jones", "JONES", "jones", "Jones-Smith")
-_N3_SUFFIXES = ("Jr.", "Sr", "III", "PhD", "MD", "Esq.", "MD/PhD",
-                "Jr. PhD", "CPA")
+_N3_SUFFIXES = ("Jr.", "Sr", "III", "VI", "PhD", "Ph. D.", "MD", "Esq.",
+                "MD/PhD", "Jr. PhD", "CPA")
 _N3_ORDERS = (GIVEN_FIRST, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST)
-_N3_GRID = [(nick.format(w=w), suffix, order)
-            for nick in _N3_NICKNAMES for w in _N3_WORDS
-            for suffix in _N3_SUFFIXES for order in _N3_ORDERS]
 #: The negative control: rows of the grid that fail the test below with
 #: N3's suffix clause off, measured on master 90a9a86f (2026-11-05),
 #: where the clause did not exist. Every row fails there: under the
 #: default order the word read given with the family empty, and under
 #: both family-first orders it read family but still reported
-#: `given-or-family`.
-_N3_UNGUARDED_FAILURES = 432
+#: `given-or-family`, so there only the report's assertion bites.
+_N3_UNGUARDED_FAILURES = 660
 
 
-def test_the_suffix_grid_is_the_size_its_control_was_measured_on() -> None:
-    assert len(_N3_GRID) == _N3_UNGUARDED_FAILURES
-
-
-@pytest.mark.parametrize("base,suffix,order", _N3_GRID)
-def test_a_suffix_beside_a_nickname_and_one_word_moves_nothing(
-        base: str, suffix: str, order: tuple[Role, Role, Role]) -> None:
+def test_a_suffix_beside_a_nickname_and_one_word_moves_nothing() -> None:
     """rules/N3 sets a suffix aside (#815): the one name word beside a
-    nickname is the family name with a suffix as without one, so appending a suffix adds it and moves no name field, and the
-    word is decided, so nothing reports `given-or-family`."""
-    p = Parser(policy=Policy(name_order=order))
-    bare, suffixed = p.parse(base), p.parse(f"{base} {suffix}")
-    assert bare.family and not bare.given
-    assert (suffixed.family, suffixed.given, suffixed.middle,
-            suffixed.nickname) == (bare.family, bare.given, bare.middle,
-                                   bare.nickname)
-    assert suffixed.suffix == suffix
-    assert AmbiguityKind.GIVEN_OR_FAMILY not in {
-        a.kind for a in suffixed.ambiguities}
+    nickname is the family name with a suffix as without one, so
+    appending a suffix adds it and moves no name field, and the word
+    is decided, so nothing reports `given-or-family`."""
+    parsers = {order: Parser(policy=Policy(name_order=order))
+               for order in _N3_ORDERS}
+    rows = [(nick.format(w=w), suffix, order)
+            for nick in _N3_NICKNAMES for w in _N3_WORDS
+            for suffix in _N3_SUFFIXES for order in _N3_ORDERS]
+    assert len(rows) == _N3_UNGUARDED_FAILURES
+    failures = []
+    for base, suffix, order in rows:
+        bare = parsers[order].parse(base)
+        suffixed = parsers[order].parse(f"{base} {suffix}")
+        if not (bare.family and not bare.given
+                and (suffixed.family, suffixed.given, suffixed.middle,
+                     suffixed.nickname)
+                == (bare.family, bare.given, bare.middle, bare.nickname)
+                and suffixed.suffix == suffix
+                and AmbiguityKind.GIVEN_OR_FAMILY not in {
+                    a.kind for a in suffixed.ambiguities}):
+            failures.append((base, suffix, order, suffixed.as_dict()))
+    assert not failures, failures
 
 
-#: rules/N3's Except: a word the vocabulary or its shape claimed keeps
-#: that claim where a suffix stands beside it, while the bare spelling,
+#: rules/N3's Except: a word read as an initial (dotted, bare, or a
+#: one-case letter, T4), a bound given name or a particle keeps that
+#: reading where a suffix stands beside it, while the bare spelling,
 #: which the early count decides, reads it family (N3's Accepted).
-#: Negative control, measured 2026-11-05 by dropping the claim clause
-#: from the nickname branch only (the branch then flipping every lone
-#: word): all three rows read family under the default order.
-_N3_CLAIMED = ("'Smitty' J.", "'Smitty' Abdul", "'Smitty' de")
-_N3_CLAIMED_UNGUARDED_FAMILY = 3
+#: Negative control, measured 2026-11-05 by moving the nickname test
+#: ahead of the claim clause (the branch then flipping every lone
+#: word): every row read family under the default order.
+_N3_CLAIMED = (("'Smitty' J.", "Jr."), ("'Smitty' J", "Jr."),
+               ("'smitty' j", "jr"), ("'Smitty' Abdul", "Jr."),
+               ("'Smitty' de", "Jr."))
+_N3_CLAIMED_UNGUARDED_FAMILY = 5
 
 
-@pytest.mark.parametrize("base", _N3_CLAIMED)
-def test_a_claimed_word_keeps_its_claim_beside_a_suffix(base: str) -> None:
+@pytest.mark.parametrize("base,suffix", _N3_CLAIMED)
+def test_a_claimed_word_keeps_its_claim_beside_a_suffix(
+        base: str, suffix: str) -> None:
     word = base.split()[-1]
     assert parse(base).family == word
-    suffixed = parse(f"{base} Jr.")
+    suffixed = parse(f"{base} {suffix}")
     assert (suffixed.given, suffixed.family) == (word, "")
     assert not suffixed.ambiguities
 

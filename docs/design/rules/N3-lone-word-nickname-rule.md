@@ -20,17 +20,33 @@
 
 **Except:**
 
-- **Where a suffix stands beside them, a word the vocabulary or its own shape has claimed keeps that claim** — an initial, a bound given name, a particle (T5, T4) — as it does under M4, the suffix leaving the field to the reading the word already has.
+- **Where a suffix stands beside them, a word another rule has already read keeps that reading** — an initial (T5, T4), a bound given name (P5) or a particle (P4) — the suffix leaving the field to the reading the word already has; M4 keeps the first two and flips a particle.
   ```
   "'Smitty' J. Jr."           →  given="J."
   "'Smitty' Abdul Jr."        →  given="Abdul"
+  "'Smitty' de Jr."           →  given="de"
+  ```
+
+**Precedence:**
+
+- **A title word left as the one name word is H4's**, whose doubt is whether the word is a title at all, so it keeps H4's reading by convention and its report.
+  ```
+  "'Smitty' Pope Jr."         →  given="Pope"
+  "'Smitty' Pope Jr."         →  ambiguities=("title-or-name",)
   ```
 
 **Accepted:**
 
-- A surname the suffix vocabulary also holds, written beside a bracketed note that is not a nickname, is read as the suffix, and the given name left beside it reads as the family name with nothing reported.
+- A surname that is read as a suffix, by the suffix vocabulary or by its dotted shape, written beside a bracketed note that is not a nickname, leaves the given name beside it as the family name with nothing reported.
   ```
   "Rewati Od (Mahar)"         →  family="Rewati"
+  "Sumnime D.C(Oli)"          →  family="Sumnime"
+  ```
+- The nickname may stand in any part of the name, and so may a bracketed clause read later as a credential (S1), but the one name word must stand in the first: a nickname alone before a comma leaves the word in the part after it, where neither the count nor the suffix reaches.
+  ```
+  "Jones Jr., 'Smitty'"       →  family="Jones"
+  "Jones (PhD) Jr."           →  family="Jones"
+  "'Smitty', Jones Jr."       →  given="Jones"
   ```
 - Without a suffix the claimed word reads as the family name all the same, since the count fires before anything asks what the word is, so a suffix moves an initial from the family to the given name.
   ```
