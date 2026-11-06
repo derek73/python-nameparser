@@ -1,3 +1,4 @@
+import dataclasses
 import importlib.util
 import json
 import subprocess
@@ -10,8 +11,10 @@ import pytest
 import nameparser.locales
 from nameparser import (
     FAMILY_FIRST,
+    CapsSuffixes,
     Lexicon,
     Locale,
+    Policy,
     PolicyPatch,
     Segmentation,
     Segmenter,
@@ -153,6 +156,114 @@ def test_cli_order_spellings_match_the_vocabulary_rules_tables() -> None:
 # two subprocess runs are the real thing, each in the environment it
 # needs (the extra one only in CI's ja-extra job); the in-process ones
 # stand in for the install so every branch runs everywhere.
+
+def test_cli_sorts_every_policy_field_into_a_flag_or_a_reason() -> None:
+    # a new Policy field fails here until someone decides whether the
+    # command line sets it
+    flagged = [*cli._SWITCHES, *cli._CHOICES, "name_order"]
+    sorted_ = [*flagged, *cli._NOT_ON_THE_COMMAND_LINE]
+    assert len(sorted_) == len(set(sorted_))
+    assert set(sorted_) == {f.name for f in dataclasses.fields(Policy)}
+
+
+def test_cli_switch_tables_name_fields_of_their_kind() -> None:
+    defaults = Policy()
+    assert cli._SWITCHES
+    for field in cli._SWITCHES:
+        assert isinstance(getattr(defaults, field), bool), field
+    for field, enum in cli._CHOICES.items():
+        assert isinstance(getattr(defaults, field), enum), field
+
+
+# one row per flag in each direction: the name, and what the field it
+# sets moves, against the parse with the flag turned the other way
+_SWITCH_ROWS = [
+    ("two_given_names", "Juan Carlos García", "given",
+     "Juan Carlos", "Juan"),
+    ("two_family_names", "Gabriel García Márquez", "family",
+     "García Márquez", "Márquez"),
+    ("middle_as_family", "John Quincy Adams", "family",
+     "Quincy Adams", "Adams"),
+    ("lenient_comma_suffixes", "John Smith, V", "suffix", "V", ""),
+    ("unlisted_dotted_suffixes", "John Smith X.Y.Z.", "suffix",
+     "X.Y.Z.", ""),
+]
+
+
+def test_cli_switch_rows_cover_every_switch() -> None:
+    assert [row[0] for row in _SWITCH_ROWS] == list(cli._SWITCHES)
+
+
+@pytest.mark.parametrize(
+    ("field", "name", "role", "on", "off"), _SWITCH_ROWS,
+    ids=[row[0] for row in _SWITCH_ROWS])
+def test_cli_switch_turns_its_field_on_and_off(
+        capsys: pytest.CaptureFixture[str], field: str, name: str,
+        role: str, on: str, off: str) -> None:
+    flag = "--" + field.replace("_", "-")
+    no_flag = "--no-" + field.replace("_", "-")
+    assert _fields(capsys, flag, name)[role] == on
+    assert _fields(capsys, no_flag, name)[role] == off
+
+
+def test_cli_switch_wins_over_a_packs_setting(
+        capsys: pytest.CaptureFixture[str]) -> None:
+    # es turns two_family_names on; the flag turns it off and keeps the
+    # pack's vocabulary (Lic a title)
+    name = "Lic Gabriel García Márquez"
+    es = _fields(capsys, "--locale", "es", name)
+    assert (es["title"], es["family"]) == ("Lic", "García Márquez")
+    off = _fields(capsys, "--locale", "es", "--no-two-family-names", name)
+    assert (off["title"], off["family"]) == ("Lic", "Márquez")
+
+
+def test_cli_a_switch_left_out_keeps_the_packs_setting(
+        capsys: pytest.CaptureFixture[str]) -> None:
+    # another flag on the same pack must not reset two_family_names
+    fields = _fields(capsys, "--locale", "es", "--two-given-names",
+                     "María José García López")
+    assert (fields["given"], fields["family"]) == (
+        "María José", "García López")
+
+
+def test_cli_switch_combines_with_order(
+        capsys: pytest.CaptureFixture[str]) -> None:
+    fields = _fields(capsys, "--order", "family-first",
+                     "--two-given-names", "García Juan Carlos")
+    assert (fields["given"], fields["family"]) == ("Juan Carlos", "García")
+
+
+# the suffix each setting reads after a comma, and ending a name
+# without one: the pair tells all three apart
+_CAPS_ROWS = [
+    ("off", "", ""),
+    ("after-comma", "XYZ", ""),
+    ("everywhere", "XYZ", "DUPONT"),
+]
+
+
+@pytest.mark.parametrize(("value", "after_comma", "ending"), _CAPS_ROWS)
+def test_cli_unlisted_caps_suffixes_takes_each_setting(
+        capsys: pytest.CaptureFixture[str], value: str,
+        after_comma: str, ending: str) -> None:
+    flag = "--unlisted-caps-suffixes"
+    assert _fields(capsys, flag, value, "John Smith, XYZ")[
+        "suffix"] == after_comma
+    assert _fields(capsys, flag, value, "Jean Pierre DUPONT")[
+        "suffix"] == ending
+
+
+def test_cli_unlisted_caps_suffixes_rows_cover_every_setting() -> None:
+    assert [row[0] for row in _CAPS_ROWS] == [
+        member.value for member in CapsSuffixes]
+
+
+def test_cli_unlisted_caps_suffixes_lists_the_enums_values(
+        capsys: pytest.CaptureFixture[str]) -> None:
+    err = _usage_error(capsys, "--unlisted-caps-suffixes", "bogus", "x")
+    for member in CapsSuffixes:
+        assert repr(member.value) in err
+
 
 _JA_EXTRA = importlib.util.find_spec("namedivider") is not None
 _JA_NOTE = "pip install 'nameparser[ja]'"

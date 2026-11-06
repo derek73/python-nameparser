@@ -6,6 +6,8 @@
     python -m nameparser --locale ja "山田太郎"
     python -m nameparser --locale ko --strict "Kim Do Hyun"
     python -m nameparser --locale vi --strict "Do Van Minh"
+    python -m nameparser --two-given-names "Juan Carlos García"
+    python -m nameparser --locale es --no-two-family-names "José García Márquez"
 """
 import argparse
 import dataclasses
@@ -13,9 +15,11 @@ import importlib.util
 import json
 import sys
 import warnings
+from typing import Any
 
 from nameparser import (
     FAMILY_FIRST,
+    CapsSuffixes,
     FAMILY_FIRST_GIVEN_LAST,
     GIVEN_FIRST,
     Lexicon,
@@ -32,6 +36,27 @@ _ORDERS = {
     "given-first": GIVEN_FIRST,
     "family-first": FAMILY_FIRST,
     "family-first-given-last": FAMILY_FIRST_GIVEN_LAST,
+}
+
+# The Policy fields a rule is tested by, one flag each, spelled as the
+# field; tests/v2/test_cli.py holds every Policy field to these two
+# tables, --order or _NOT_ON_THE_COMMAND_LINE.
+_SWITCHES = {
+    "two_given_names": "join a middle name to the given name",
+    "two_family_names": "read the family as two family names",
+    "middle_as_family": "fold the middle names into the family",
+    "lenient_comma_suffixes": "read a lone V or I after a comma as a "
+                              "numeral suffix (John Smith, V)",
+    "unlisted_dotted_suffixes": "read an unlisted X.Y.Z. ending a name "
+                                "as a suffix",
+}
+_CHOICES = {"unlisted_caps_suffixes": CapsSuffixes}
+_NOT_ON_THE_COMMAND_LINE = {
+    # each needs a mapping, a set of scripts or rules, or bracket pairs
+    "script_orders", "segment_scripts", "patronymic_rules",
+    "nickname_delimiters", "maiden_delimiters", "extra_suffix_delimiters",
+    # input clean-up, not a reading of the name
+    "strip_emoji", "strip_bidi",
 }
 
 _NO_JA_EXTRA = (
@@ -69,6 +94,18 @@ def main(argv: list[str] | None = None) -> int:
                          "(default: given-first); a Han, Hangul or kana "
                          "name keeps its script's order, and a family "
                          "comma fixes the order")
+    rules = ap.add_argument_group(
+        "Policy switches",
+        "each sets the Policy field of its name, replacing a pack's "
+        "setting; one left out keeps the pack's or the default")
+    for field, what in _SWITCHES.items():
+        rules.add_argument("--" + field.replace("_", "-"),
+                           action=argparse.BooleanOptionalAction,
+                           help=what)
+    for field, enum in _CHOICES.items():
+        rules.add_argument("--" + field.replace("_", "-"),
+                           choices=[member.value for member in enum],
+                           help=f"Policy.{field}")
     args = ap.parse_args(argv)
     if args.strict and args.locale is None:
         ap.error("--strict needs --locale: it keeps only the chosen "
@@ -126,17 +163,26 @@ def main(argv: list[str] | None = None) -> int:
             else:
                 print(_NO_JA_EXTRA, file=sys.stderr)
                 noted = True
-    # The order is written into the pack's own patch, so it replaces a
-    # pack's order without a two-pack conflict warning, and the parser
-    # is built once, parser_for re-emitting its warnings (#337)
+    # The order and the switches are written into the pack's own patch,
+    # so each replaces a pack's setting without a two-pack conflict
+    # warning, and the parser is built once, parser_for re-emitting its
+    # warnings (#337)
+    updates: dict[str, Any] = {
+        field: getattr(args, field) for field in _SWITCHES
+        if getattr(args, field) is not None}
+    updates.update({
+        field: enum(getattr(args, field))
+        for field, enum in _CHOICES.items()
+        if getattr(args, field) is not None})
     if args.order is not None:
-        order = _ORDERS[args.order]
+        updates["name_order"] = _ORDERS[args.order]
+    if updates:
         if pack is None:
-            pack = Locale(code="cli_order", lexicon=Lexicon.empty(),
-                          policy=PolicyPatch(name_order=order))
+            pack = Locale(code="cli_policy", lexicon=Lexicon.empty(),
+                          policy=PolicyPatch(**updates))
         else:
             pack = dataclasses.replace(pack, policy=dataclasses.replace(
-                pack.policy, name_order=order))
+                pack.policy, **updates))
     packs = () if pack is None else (pack,)
     with warnings.catch_warnings():
         if noted:
