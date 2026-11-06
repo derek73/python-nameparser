@@ -84,6 +84,36 @@ written so:
     >>> compound.parse("Juan Carlos García de la Vega").given
     'Juan Carlos'
 
+Most packs choose languages, and a choice prefers the chosen
+language's reading of a word the others read differently. ``Lady`` is a
+British title and, across Latin America, a given name:
+
+.. code-block:: python
+
+    >>> parse("Lady Heidenreich").title
+    'Lady'
+    >>> spanish.parse("Lady Heidenreich").given
+    'Lady'
+
+A `strict choice
+<https://nameparser.readthedocs.io/en/latest/locales.html#reading-one-language-only>`__
+reads only the chosen languages' words and those every language
+shares. Vietnamese written without its diacritics meets the Dutch
+particle ``van``, which the strict choice drops:
+
+.. code-block:: python
+
+    >>> from nameparser import FAMILY_FIRST_GIVEN_LAST, Lexicon, Locale
+    >>> ordered = Parser(policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST))
+    >>> ordered.parse("Nguyen Van Anh").given     # van, Dutch, chains on
+    'Van Anh'
+    >>> vi = Locale(code="vi", lexicon=Lexicon.empty(),
+    ...             languages=frozenset({"vi"}))
+    >>> vietnamese = parser_for(vi, base=ordered, strict=True)
+    >>> anh = vietnamese.parse("Nguyen Van Anh")
+    >>> anh.family, anh.middle, anh.given
+    ('Nguyen', 'Van', 'Anh')
+
 More shapes the parser reads:
 
 .. code-block:: python
