@@ -18,9 +18,11 @@ only by a vocabulary reading, and a name reading never settles a clash
 (decision 15 of decisions/vocabulary-model), so no reading vi.toml
 could write makes ``van`` a name word under a plain choice. The order
 already commits a caller to Vietnamese names, which keeps the removals'
-cost to ``DO``, ``BA`` or ``CHI`` written as a credential after a
-Vietnamese name for English-language readers, with or without a comma
-(``Nguyen Van Anh, DO`` reads family ``Nguyen Van Anh``, given ``DO``).
+cost to ``DO`` or ``BA`` written as a credential after a Vietnamese
+name for English-language readers, with or without a comma (``Nguyen
+Van Anh, DO`` reads family ``Nguyen Van Anh``, given ``DO``), and ``CHI``
+without one (after a comma the capitals shape keeps a three-letter word
+a suffix).
 
 Data sources: the titles' vetting is on the words in vi.toml
 (tools/name_usage.py); the syllables were measured on the uit-vinames

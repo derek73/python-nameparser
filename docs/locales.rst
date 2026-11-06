@@ -687,7 +687,7 @@ Shipped packs
        (``Nguyen Van Anh`` → family ``Nguyen``, middle ``Van``, given
        ``Anh``), keeps the syllables other languages read as particles,
        connectives or credentials (``Van``, ``Le``, ``Do``, ``The``,
-       ``Chi``) as name words,
+       and ``CHI`` ending a name in capitals) as name words,
        and chooses ``vi``, which turns on the academic titles written
        before a name and their stacked forms (``PGS.TS.``), and
        ``ĐBQH`` (National Assembly deputy). See
@@ -1023,11 +1023,11 @@ reads given-first, as under every order (``Nguyen, Van Anh`` → family
 ``Nguyen``, given ``Van``, middle ``Anh``), so ``Smith, John`` reads
 under ``vi`` as it does by default; but the syllables ``vi`` keeps as
 name words are name words there too (``Beethoven, Ludwig van`` gives
-middle ``van``). ``DO``, ``BA`` or ``CHI`` written after a Vietnamese
-name as a credential, for English-language readers, reads as a name
-word, with a comma or without (``Nguyen Van Anh, DO`` gives family
-``Nguyen Van Anh``, given ``DO``); other credentials stay suffixes
-(``Nguyen Van Anh, PhD``).
+middle ``van``). ``DO`` or ``BA`` written after a Vietnamese name as a
+credential, for English-language readers, reads as a name word, with a
+comma or without (``Nguyen Van Anh, DO`` gives family ``Nguyen Van
+Anh``, given ``DO``), and ``CHI`` without a comma; other credentials,
+and ``CHI`` after a comma, stay suffixes (``Nguyen Van Anh, PhD``).
 
 .. _segmenter-contract:
 

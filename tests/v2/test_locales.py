@@ -366,16 +366,20 @@ def test_each_vi_removal_moves_its_own_row() -> None:
     # ma keeps its credential, so a name ending in it stays a known gap
     ("TRAN THI MA", "", "TRAN", "", "THI", "MA"),
     ("Nguyen Van Anh, MA", "", "Nguyen", "Van", "Anh", "MA"),
-    # the accepted cost: DO, BA or CHI written as a credential after a
+    # the accepted cost: DO or BA written as a credential after a
     # Vietnamese name for English-language readers reads as a name word,
     # with a comma or without, dotted, in brackets or behind another
-    # credential, unless past a second comma
+    # credential, unless past a second comma; CHI only without a comma
     ("Nguyen Van Anh, DO", "", "Nguyen Van Anh", "", "DO", ""),
     ("Nguyen Van Anh DO", "", "Nguyen", "Van Anh", "DO", ""),
     ("Nguyen Van Anh D.O.", "", "Nguyen", "Van Anh", "D.O.", ""),
     ("Nguyen Van Anh MD, DO", "", "Nguyen Van Anh", "", "DO", "MD"),
     ("Nguyen, Van Anh DO", "", "Nguyen", "Anh DO", "Van", ""),
     ("Nguyen, Van Anh, DO", "", "Nguyen", "Anh", "Van", "DO"),
+    ("Nguyen Van Anh, BA", "", "Nguyen Van Anh", "", "BA", ""),
+    # after a comma the capitals shape (rules/C6) keeps a three-letter
+    # word in capitals a suffix, CHI's readings or none
+    ("Nguyen Van Anh, CHI", "", "Nguyen", "Van", "Anh", "CHI"),
     # and the removals act after a family comma, where the order reads
     # nothing differently: a particle or a credential there is a name word
     ("Beethoven, Ludwig van", "", "Beethoven", "van", "Ludwig", ""),
@@ -438,6 +442,7 @@ def test_vi_reads_a_mixed_case_credential_syllable_as_a_name_unreported() -> Non
         .remove(*_vi._CONJUNCTIONS, kind="conjunction"))))
     for text in ("Nguyen Linh Chi", "Nguyen Van Do", "Nguyen Thi Ba"):
         assert not vi.parse(text).ambiguities, text
+        assert vi.parse(text).as_dict() == kept.parse(text).as_dict(), text
         assert {a.kind for a in kept.parse(text).ambiguities} == {
             AmbiguityKind.SUFFIX_OR_NAME}, text
 
