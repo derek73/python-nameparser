@@ -71,7 +71,6 @@ def _set_apart(text: str, inner: Span,
     kinds = []
     for word in words:
         kind = set_apart_kind(word, lexicon)
-        # a member settled by its writing is weighed in post_rules
         if kind is None or kind == "member":
             return False
         kinds.append(kind)

@@ -66,4 +66,4 @@
 
 ---
 **Signal:** position: a member of the ambiguous class alone in brackets or quotes after the name; hub of S1, S3, S6
-**history:** decisions/S13 · **implemented:** nameparser/_pipeline/_post_rules.py
+**history:** decisions/S13 · **implemented:** nameparser/_pipeline/_post_rules.py, nameparser/_pipeline/_vocab.py

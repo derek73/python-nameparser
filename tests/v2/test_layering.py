@@ -651,7 +651,9 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: taking extract's four suffix-set loads out, 119 -> 128; #1088's
 #: set-apart word asking `suffix_as_written`, three loads out of
 #: `_vocab` and both of `_post_rules`' copies of the dotted member
-#: test, 128 -> 123); the tools' 19 are 17
+#: test, 128 -> 123; its parity fix moving the initials test into
+#: `_vocab.reads_as_initials` and the dotted test into
+#: `_vocab.dotted_member`, 123 -> 124); the tools' 19 are 17
 #: attribute loads, every tool scanned, and config_diff.py's
 #: `sets =` binding and the roster `getattr` through it (its
 #: `changed_words`, which compares two lexicons set by set), which
@@ -661,7 +663,7 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: `_lexicon._fields_of` from 4i-b until 4i-c retired it.
 #: A reader added through `_sets` moves these, and they are re-taken
 #: then: they count what the check would refuse with the move undone.
-_UNGUARDED_READS = {"library": 123, "tools": 19}
+_UNGUARDED_READS = {"library": 124, "tools": 19}
 
 
 def test_the_check_refuses_every_read_4i_a_moved() -> None:

@@ -37,7 +37,7 @@ cores group drops); Lexicon.given_name_titles, Lexicon.given_names
 under every policy and reads Policy.patronymic_rules for its Turkic
 guard), and
 Lexicon.suffix_acronyms_ambiguous (a dotted member in a clause, which
-carries no tag there, S13), and for S1's set-apart clause
+carries no tag there, S13, through `_vocab.dotted_member`), and for S1's set-apart clause
 Lexicon.suffix_words directly and, through `_vocab.set_apart_kind` and
 `set_apart`, Lexicon.suffix_words_ambiguous, suffix_acronyms, titles,
 title_modifiers, title_styles and after_given_titles.
@@ -52,7 +52,6 @@ function, for Parser.revise to run over a forced-role sub-parse
 from __future__ import annotations
 
 import bisect
-from typing import Literal
 import re
 from collections.abc import Sequence
 
@@ -72,9 +71,10 @@ from nameparser._pipeline._state import (
     WorkToken, _NEVER_FLIPPED, comma_bucket, copy_with, reported_suffix_fork,
 )
 from nameparser._pipeline._vocab import (
-    _DOTTED_INITIALS, delimiter_cores, has_patronymic_ending, is_initial,
-    is_listed_given_name, is_patronymic_marker, set_apart, set_apart_kind, suffix_reading,
-    unit_ends, written_as_initials,
+    SetApartKind, delimiter_cores, dotted_member,
+    has_patronymic_ending, is_initial, is_listed_given_name,
+    is_patronymic_marker, reads_as_initials, set_apart, set_apart_kind,
+    suffix_reading, unit_ends,
 )
 from nameparser._policy import PatronymicRule
 from nameparser._types import (
@@ -684,7 +684,7 @@ def _set_apart_clauses(state: ParseState,
                 tokens[i].role not in (Role.NICKNAME, Role.MAIDEN)
                 for i in range(lo, hi)):
             continue
-        kinds: list[Literal["title", "suffix", "dual"]] = []
+        kinds: list[SetApartKind] = []
         member = False
         for i in range(lo, hi):
             token = tokens[i]
@@ -703,17 +703,7 @@ def _set_apart_clauses(state: ParseState,
             # comma part stays the nickname
             if member and not 0 <= last_name < lo:
                 continue
-            # a word that is a title too counts written with a period
-            # after each letter ('R.A.'), or in capitals in a name of
-            # mixed case ('RA'): Title case reads as the title it also
-            # is ('Lt'), and capitals in a name written in one case say
-            # nothing (S6)
-            if any((kind == "suffix" or kind == "dual" and (
-                        _DOTTED_INITIALS.fullmatch(w.strip(","))
-                        or state.one_case is False
-                        and w.strip(",").isupper()))
-                   and written_as_initials(w)
-                   and _normalize(w.strip(",")) not in lex._sets.suffix_words
+            if any(reads_as_initials(w, kind, state.one_case, lex)
                    for w, kind in zip(words, kinds)):
                 if ahead is None:
                     ahead = _name_ahead(state, tokens)
@@ -772,18 +762,15 @@ def _report_delimited_members(tokens: list[WorkToken], lexicon: Lexicon,
     included. Reported here, where the clause is decided, rather than
     in extract, which has no token index to point at. A dotted member
     carries no tag in a clause (classify tags a shape only outside
-    one), so it is found by its text, through `set_apart_kind` as the
-    settling finds it."""
+    one), so it is found by its text, by `dotted_member` as the
+    settling finds it, whatever else the vocabulary reads it as."""
     for i, token in enumerate(tokens):
         if token.role is not Role.NICKNAME:
             continue
-        # a period inside the word ('M.A'), a comma the clause kept on
-        # it left off; one ending it is extract's escape. The period is
-        # asked first, at C level, so a nickname written without one
-        # pays no frame
+        # the period asked first, at C level, so a nickname written
+        # without one pays no frame
         if (AMBIGUOUS_ACRONYM_TAG in token.tags
-                or "." in token.text
-                and set_apart_kind(token.text, lexicon) == "member"):
+                or "." in token.text and dotted_member(token.text, lexicon)):
             ambiguities.append(PendingAmbiguity(
                 AmbiguityKind.SUFFIX_OR_NICKNAME,
                 f"delimited {token.text!r} is also a post-nominal; read "
