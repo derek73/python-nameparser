@@ -20,7 +20,7 @@
 
 **Except:**
 
-- **Where a suffix stands beside them, a word another rule has already read keeps that reading** — an initial (T5, T4), a bound given name (P5) or a particle (P4) — the suffix leaving the field to the reading the word already has; M4 keeps the first two and flips a particle.
+- **Where a suffix stands beside them, an initial (T5, T4), a bound given name (P5) or a particle (P4) keeps the reading it already has**, the suffix leaving the field to that reading; M4 keeps the first two and flips a particle, and a given name written short (H2) is none of the three, so this rule decides it.
   ```
   "'Smitty' J. Jr."           →  given="J."
   "'Smitty' Abdul Jr."        →  given="Abdul"
@@ -37,7 +37,7 @@
 
 **Accepted:**
 
-- A surname that is read as a suffix, by the suffix vocabulary or by its dotted shape, written beside a bracketed note that is not a nickname, leaves the given name beside it as the family name with nothing reported.
+- A surname the suffix vocabulary also holds, written beside a bracketed note that is not a nickname, is read as the suffix, and the given name left beside it reads as the family name with nothing reported.
   ```
   "Rewati Od (Mahar)"         →  family="Rewati"
   "Sumnime D.C(Oli)"          →  family="Sumnime"

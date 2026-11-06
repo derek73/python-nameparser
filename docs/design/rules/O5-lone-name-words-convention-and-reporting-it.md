@@ -43,7 +43,7 @@
   "'Smitty' Jones"            →  family="Jones"  · boundary
   "'Smitty' Jones Jr."        →  ambiguities=()
   ```
-- **A maiden name beside the word also makes it the family name (M4)**, except where the vocabulary or the word's own shape has claimed the word already.
+- **A maiden name beside the word also makes it the family name (M4)**, except where the vocabulary has claimed the word as a given name or its shape as an initial.
   ```
   "Smith née Jones"           →  family="Smith"  · boundary
   "Smith née Jones"           →  ambiguities=()

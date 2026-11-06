@@ -2093,7 +2093,7 @@ def test_a_maiden_clause_changes_nothing_else(name: str) -> None:
 #: never applies: a gated word (`fils`, `Junior`, S11), an ambiguous
 #: acronym in Title case (`Ing`, S4) and the one-letter numeral (`V`,
 #: S10); cases.py's `nickname_word_and_*` boundary rows hold them. The
-#: walk parses 260 names in 0.05s (measured 2026-11-05, py3.11).
+#: walk parses 480 names in 0.05s (measured 2026-11-05, py3.11).
 _N3_NICKNAMES = ("'Smitty' {w}", '"Smitty" {w}', "{w} (Smitty)",
                  "(Smitty) {w}", "{w} 'Smitty'")
 _N3_WORDS = ("Jones", "JONES", "jones", "Jones-Smith")

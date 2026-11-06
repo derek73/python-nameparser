@@ -12003,6 +12003,7 @@ CASES: tuple[Case, ...] = (
     Case("nickname_initial_and_a_suffix_keeps_the_initial",
          "'Smitty' J. Jr.",
          {"given": "J.", "suffix": "Jr.", "nickname": "Smitty"},
+         classification="fix(suffix-routing)",
          notes="boundary: rules/N3's Except -- an initial is claimed by "
                "its shape (T5), so beside a suffix it keeps its "
                "reading and nothing reports, as under M4; the bare "
@@ -12033,8 +12034,14 @@ CASES: tuple[Case, ...] = (
                "assign, which reads it as a nickname, so N3's suffix "
                "clause names the family, as the count does for the bare "
                "'Jones (PhD)'"),
+    Case("empty_head_nickname_word_and_a_suffix", ", 'Smitty' Jones Jr.",
+         {"given": "Jones", "suffix": "Jr.", "nickname": "Smitty"},
+         notes="boundary: with nothing before the comma the word stands "
+               "in the part after it, which N3 does not reach (N3's "
+               "Accepted), as for the bare ', 'Smitty' Jones'"),
     Case("nickname_word_comma_suffix", "'Smitty' Jones, Jr.",
          {"family": "Jones", "suffix": "Jr.", "nickname": "Smitty"},
+         classification="fix(#296)",
          notes="boundary: the suffix comma takes the suffix out of the "
                "segment, so N3's early count reads one piece and names "
                "the family, as it did before #815 -- the twin the "
@@ -12065,7 +12072,7 @@ CASES: tuple[Case, ...] = (
                "rules/S11's count too, so N3 does not apply"),
     Case("nickname_title_word_and_a_suffix", "'Smitty' Pope Jr.",
          {"given": "Pope", "suffix": "Jr.", "nickname": "Smitty"},
-         ambiguities=("title-or-name",),
+         ambiguities=("title-or-name",), classification="feat(#491)",
          notes="boundary: a title word left as the one name word is "
                "rules/H4's doubt (is it a title), which reads it as a "
                "name by convention; N3 decides only a word nothing "
@@ -12073,10 +12080,10 @@ CASES: tuple[Case, ...] = (
     Case("nickname_period_shape_word_and_a_suffix", "'Smitty' Xyz. Jr.",
          {"family": "Xyz.", "suffix": "Jr.", "nickname": "Smitty"},
          classification="fix(#815)",
-         notes="Under rules/N3, H2's period shape reads 'Xyz.' as a title only "
-               "where a name word stands behind it, so beside a suffix "
-               "it is the one name word and N3 decides it; bare, "
-               "'Smitty' Xyz. reads title 'Xyz.'"),
+         notes="Bare, the shaped word is taken whole "
+               "as a title ('Smitty' Xyz. reads title 'Xyz.'), but "
+               "beside a suffix the peel leaves it as the one name "
+               "word, as in 'Xyz. Jr.', so rules/N3 decides it"),
     Case("nickname_given_abbreviation_and_a_suffix", "'Smitty' Chas. Jr.",
          {"family": "Chas.", "suffix": "Jr.", "nickname": "Smitty"},
          classification="fix(#815)",
