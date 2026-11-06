@@ -39,13 +39,16 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import sys
+import unicodedata
 from collections import Counter
 from collections.abc import Callable
 from typing import Any
 
 import corpus_build
-from local_core import Fetched, _pinned, _retried
+import local_uit
+from local_core import Fetched, _get_json, _pinned, _retried
 from local_uit import split
 
 
@@ -54,17 +57,18 @@ VN_INDEX = ("https://data.opensanctions.org/datasets/latest/"
             "vn_national_assembly/index.json")
 VN_RESOURCE = "entities.ftm.json"
 #: The academic ranks and degrees an education may state, each with the
-#: abbreviation written before a name, the longer phrase tried first
-#: (`Phó Giáo sư` holds `Giáo sư`). The doctor of science (Tiến sĩ khoa
+#: abbreviation written before a name, the higher tried first; a rank's
+#: phrase is matched where no `phó` stands before it, since `Phó Giáo
+#: sư` holds `Giáo sư`, so an education naming both reads GS. The doctor of science (Tiến sĩ khoa
 #: học, TSKH) is not told apart: no education stated it on 2026-11-04,
 #: and the phrase also opens `Tiến sĩ khoa học máy tính`, a doctorate in
 #: computer science. A rank and a degree compose glued,
 #: the rank first (`PGS.TS.`), as the press writes them.
-RANKS = (("phó giáo sư", "PGS"), ("giáo sư", "GS"))
-DEGREES = (("tiến sĩ", "TS"), ("thạc sĩ", "ThS"))
-#: How a record's title and parts are derived (title_of, local_uit.split):
-#: a change to either bumps it, and a corpus derived by another version
-#: is refused on load (check_vn).
+RANKS = ((re.compile(r"(?<!phó )giáo sư"), "GS"), (re.compile("phó giáo sư"), "PGS"))
+DEGREES = ((re.compile("tiến sĩ"), "TS"), (re.compile("thạc sĩ"), "ThS"))
+#: How a record's title is derived (title_of): a change bumps it, and a
+#: corpus derived by another version, or split by another
+#: local_uit.SPLIT_VERSION, is refused on load (check_vn).
 TITLE_VERSION = 1
 #: The least share of deputies whose education states a title: 399 of
 #: 499 on 2026-11-04. An education field emptied or renamed would
@@ -74,11 +78,17 @@ VN_MIN_TITLED = 1 / 2
 
 def title_of(education: str) -> str:
     """The title an education states, abbreviated: the highest rank and
-    the highest degree it names, glued (`PGS.TS.`), or ""."""
-    text = " ".join(education.casefold().split())
-    rank = next((short for words, short in RANKS if words in text), "")
-    degree = next((short for words, short in DEGREES if words in text), "")
+    the highest degree it names, glued (`PGS.TS.`), or "". The text is
+    NFC-composed first, so a decomposed `tiến sĩ` is still found."""
+    text = " ".join(unicodedata.normalize("NFC", education).casefold().split())
+    rank = next((short for words, short in RANKS if words.search(text)), "")
+    degree = next((short for words, short in DEGREES if words.search(text)), "")
     return "".join(f"{short}." for short in (rank, degree) if short)
+
+
+def _is_count(value: object) -> bool:
+    """An int that is not a bool, which JSON's true would be."""
+    return isinstance(value, int) and not isinstance(value, bool)
 
 
 def _resource(index: dict[str, Any]) -> tuple[str, str, int]:
@@ -86,7 +96,7 @@ def _resource(index: dict[str, Any]) -> tuple[str, str, int]:
     for resource in index.get("resources", []):
         if isinstance(resource, dict) and resource.get("name") == VN_RESOURCE:
             url, sha1, size = (resource.get(k) for k in ("url", "checksum", "size"))
-            if isinstance(url, str) and isinstance(sha1, str) and isinstance(size, int):
+            if isinstance(url, str) and isinstance(sha1, str) and _is_count(size):
                 return url, sha1, size
     raise ValueError(f"{VN_INDEX} lists no {VN_RESOURCE} with its url, checksum and size")
 
@@ -95,10 +105,10 @@ def _checked(sha1: str, size: int) -> Callable[[bytes], bytes]:
     """A reader refusing a body of another size or sha1, which _retried
     takes for a body cut short in transit."""
     def read(body: bytes) -> bytes:
-        if len(body) != size or hashlib.sha1(body).hexdigest() != sha1:
-            raise ValueError(f"the file is {len(body):,} bytes of sha1 "
-                             f"{hashlib.sha1(body).hexdigest()}, not the {size:,} "
-                             f"of {sha1} the index states")
+        digest = hashlib.sha1(body).hexdigest()
+        if len(body) != size or digest != sha1:
+            raise ValueError(f"the file is {len(body):,} bytes of sha1 {digest}, not "
+                             f"the {size:,} of {sha1} the index states")
         return body
     return read
 
@@ -120,10 +130,11 @@ def _vn_read(body: bytes, targets: int) -> tuple[list[dict[str, str]], dict[str,
             continue
         properties = entity.get("properties", {})
         names = properties.get("name") or []
-        if len(names) != 1 or len(" ".join(str(names[0]).split()).split()) < 2:
+        words = str(names[0]).split() if len(names) == 1 else []
+        if len(words) < 2:
             raise ValueError(f"a deputy holds {len(names)} names, or one of a single "
                              f"word: the dataset's shape has changed")
-        official = " ".join(str(names[0]).split())
+        official = " ".join(words)
         title = title_of("; ".join(properties.get("education") or []))
         counts["titled"] += bool(title)
         counts[f"title {title or '(none)'}"] += 1
@@ -151,17 +162,28 @@ def fetch_vn() -> Fetched:
     size and sha1 it states and hold the deputies it counts. The data
     date is the index's updated_at, the time OpenSanctions last exported
     the dataset."""
-    index = _retried(VN_INDEX, lambda body: corpus_build.parse_json(body, VN_INDEX), 0)
-    if not isinstance(index, dict) or not isinstance(index.get("target_count"), int):
+    index = _get_json(VN_INDEX)
+    if not _is_count(index.get("target_count")):
         raise ValueError(f"{VN_INDEX} states no target_count")
     url, sha1, size = _resource(index)
     print(f"downloading {url} ...", file=sys.stderr)
     body = _retried(url, _checked(sha1, size), 0)
     records, counts = _vn_read(body, index["target_count"])
     return Fetched(records, str(index.get("updated_at", "")), {
-        "version": index.get("version", ""), "title_version": TITLE_VERSION, **counts})
+        "version": index.get("version", ""), "title_version": TITLE_VERSION,
+        "split_version": local_uit.SPLIT_VERSION, **counts})
 
 
-check_vn = _pinned(
+_check_title = _pinned(
     "title_version", lambda: TITLE_VERSION,
     "the corpus was derived by version {held} of title_of, and this tool is version {wanted}")
+_check_split = _pinned(
+    "split_version", lambda: local_uit.SPLIT_VERSION,
+    "the corpus was split by version {held} of local_uit.split, and this tool is "
+    "version {wanted}")
+
+
+def check_vn(meta: dict[str, Any]) -> str:
+    """Why a corpus derived by another TITLE_VERSION, or split by another
+    local_uit.SPLIT_VERSION, is refused, or ""."""
+    return _check_title(meta) or _check_split(meta)

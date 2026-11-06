@@ -85,7 +85,7 @@ import sys
 import types
 from collections import Counter
 from collections.abc import Callable, Iterator
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -132,6 +132,13 @@ class Fielded:
     group: str
     group_cased: bool = False
     sets_aside: bool = True
+    #: The fewest records of a group for the report to give it a row,
+    #: where the source's own population is smaller than GROUP_FLOOR
+    #: (vn-assembly's 499 deputies, of whom 410 were Kinh and the next
+    #: ethnicity 19 on 2026-11-04); None for GROUP_FLOOR. Kept out of the
+    #: repr that scorer_fingerprint hashes: it decides which rows the
+    #: report prints, never a record's entry.
+    group_floor: int | None = field(default=None, repr=False)
 
     def __post_init__(self) -> None:
         # A misspelled role would find no box (_box), and a misspelled
@@ -158,17 +165,13 @@ FIELDED = {local_corpora.PSC: Fielded(
     {"family": "family", "middle": "middle", "given": "given"}, group="gender"),
            local_corpora.VN: Fielded(
     {"title": "title", "family": "family", "middle": "middle", "given": "given"},
-    group="ethnicity", group_cased=True, sets_aside=False)}
+    group="ethnicity", group_cased=True, sets_aside=False, group_floor=10)}
 #: The fewest records sharing a set-aside title for the report to print
 #: it: a word typed into the title box by this many filers is no one
 #: person's name.
 TITLE_FLOOR = 100
 #: The fewest records of a group for the report to give it a row.
 GROUP_FLOOR = 1_000
-#: A source's own floor, where its whole population is smaller than
-#: GROUP_FLOOR: vn-assembly's 499 deputies, of whom 410 were Kinh and the
-#: next ethnicity 19 on 2026-11-04.
-GROUP_FLOORS = {local_corpora.VN: 10}
 
 
 def fold(text: str) -> str:
@@ -321,11 +324,8 @@ def _pct(n: int, of: int) -> str:
     return f"{100 * n / of:5.1f}%" if of else "   n/a"
 
 
-def report(result: Score, fielded: Fielded, top: int, floor: int | None = None
-           ) -> list[str]:
-    """The report's lines, a group given a row from `floor` records
-    (GROUP_FLOOR unless a source sets its own, GROUP_FLOORS)."""
-    floor = GROUP_FLOOR if floor is None else floor
+def report(result: Score, fielded: Fielded, top: int) -> list[str]:
+    floor = fielded.group_floor or GROUP_FLOOR
     roles = list(fielded.fields.values())
     total, agreed = sum(result.scored.values()), sum(result.agreed.values())
     misses: Counter[str] = sum(result.misses.values(), Counter())
@@ -598,7 +598,7 @@ def main(argv: list[str] | None = None) -> int:
                        locale=locale)
     except local_corpora.CorpusDamaged as exc:
         raise SystemExit(str(exc)) from None
-    print("\n".join(report(result, fielded, args.top, GROUP_FLOORS.get(args.source))))
+    print("\n".join(report(result, fielded, args.top)))
     if args.record:
         out = args.out or record_path(args.source, locale)
         write_record(out, local, result.entries, str(at.parent), locale)

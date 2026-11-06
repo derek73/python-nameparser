@@ -106,7 +106,7 @@ def test_a_fetch_keeps_each_distinct_name_once_with_its_gender_and_parts(
     assert corpus.meta["data_date"] == uit.UIT_DATE
     assert corpus.meta["detail"] == {
         "commit": uit.UIT_COMMIT, "rows": len(_ROWS), "read_version": uit.UIT_READ_VERSION,
-        "names_of_one_word": 1, "names_both": 1, "names_male": 2, "names_female": 1}
+        "split_version": uit.SPLIT_VERSION, "rows_of_one_word": 1, "names_both": 1, "names_male": 2, "names_female": 1}
     assert corpus.header().endswith("4 names (local corpus uit-vinames)")
 
 
@@ -132,14 +132,17 @@ def test_a_member_of_another_shape_is_refused(monkeypatch: pytest.MonkeyPatch, b
         local.fetch(_UIT)
 
 
-def test_a_corpus_split_by_another_version_is_refused_on_load(
-        monkeypatch: pytest.MonkeyPatch) -> None:
+@pytest.mark.parametrize(("constant", "match"), [
+    ("UIT_READ_VERSION", "read by version 1 of _uit_read.*version 99"),
+    ("SPLIT_VERSION", "split by version 1 of split.*version 99"),
+])
+def test_a_corpus_read_or_split_by_another_version_is_refused_on_load(
+        monkeypatch: pytest.MonkeyPatch, constant: str, match: str) -> None:
     _serve(monkeypatch, _zip(_ROWS))
     local.fetch(_UIT)
     assert local.load(_UIT) is not None  # the control
-    monkeypatch.setattr(uit, "UIT_READ_VERSION", 99)
-    with pytest.raises(ValueError, match=f"split by version 1 of split.*version 99"
-                                         f".*fetch {_UIT} --refresh"):
+    monkeypatch.setattr(uit, constant, 99)
+    with pytest.raises(ValueError, match=f"{match}.*fetch {_UIT} --refresh"):
         local.load(_UIT)
 
 
@@ -156,3 +159,15 @@ def test_the_score_compares_each_part_with_the_convention_s(
     default = agreement.score(records, fielded, Parser())
     assert sum(default.agreed.values()) == 0
     assert set(default.entries) == {agreement.key(r) for r in records}
+
+
+def test_the_middle_name_is_scored_apart_from_the_given_name() -> None:
+    # A record whose middle name the convention reads otherwise than the
+    # parse: the middle alone misses, which ORCID's given-names box,
+    # holding both, could not tell.
+    record = {"name": "Phạm Minh Đức Châu", "gender": "male", "family": "Phạm",
+              "middle": "Minh", "given": "Đức Châu"}
+    family_first = Parser(policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST))
+    result = agreement.score([record], agreement.FIELDED[_UIT], family_first)
+    assert result.misses == {"Male": {"middle": 1, "given": 1}}
+    assert result.shapes == {"middle 1->2, given 2->1": 1}

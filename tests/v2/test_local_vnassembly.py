@@ -10,12 +10,14 @@ holding another number of deputies than the index counts, too few
 titled, and a corpus derived by another version. The network is a stub
 answering by URL.
 """
+import dataclasses
 import hashlib
 import importlib
 import json
 import time
 import urllib.error
 import urllib.request
+from collections.abc import Callable
 
 import pytest
 
@@ -36,9 +38,10 @@ def _own_cache(monkeypatch: pytest.MonkeyPatch, tmp_path_factory: pytest.TempPat
     own_cache(monkeypatch, tmp_path_factory)
 
 
-def _person(name: str, education: str = "", **extra: list[str]) -> dict[str, object]:
+def _person(name: str, education: str = "", ethnicity: str = "Kinh",
+            **extra: list[str]) -> dict[str, object]:
     return {"id": name, "schema": "Person",
-            "properties": {"name": [name], "gender": ["female"], "ethnicity": ["Kinh"],
+            "properties": {"name": [name], "gender": ["female"], "ethnicity": [ethnicity],
                            **({"education": [education]} if education else {}), **extra}}
 
 
@@ -88,6 +91,8 @@ def _serve(monkeypatch: pytest.MonkeyPatch, body: bytes, *, targets: int = 4,
     ("Thạc sĩ chuyên ngành luật; Tiến sĩ chuyên ngành luật", "TS."),
     ("Đại học chuyên ngành kinh tế; Thạc sĩ  chuyên ngành kinh tế", "ThS."),
     ("Tiến sĩ khoa học máy tính", "TS."),
+    ("Phó Giáo sư (2010), Giáo sư (2018), Tiến  sĩ ngành y", "GS.TS."),
+    ("Tie\u0302\u0301n si\u0303 ngành y", "TS."),
     ("Bác sĩ chuyên khoa II; Cử nhân chính trị", ""),
     ("", ""),
 ])
@@ -114,26 +119,37 @@ def test_a_fetch_composes_each_deputy_s_name_with_the_title_and_keeps_the_offici
          "family": "Đoàn", "middle": "Minh", "given": "Khôi", **common}]
     assert corpus.meta["data_date"] == "2026-11-04T19:43:06"
     assert corpus.meta["detail"] == {
-        "version": "v1", "title_version": vn.TITLE_VERSION, "titled": 3,
+        "version": "v1", "title_version": vn.TITLE_VERSION,
+        "split_version": importlib.import_module("local_uit").SPLIT_VERSION, "titled": 3,
         "title PGS.TS.": 1, "title TS.": 1, "title ThS.": 1, "title (none)": 1}
     # Both names are corpus names, an untitled deputy's once.
     assert corpus.meta["names"] == 7
 
 
-def test_an_index_listing_no_file_is_refused(monkeypatch: pytest.MonkeyPatch) -> None:
-    _serve(monkeypatch, _ftm(_ENTITIES), resources=[{"name": vn.VN_RESOURCE, "url": _FILE}])
+@pytest.mark.parametrize("resource", [
+    {"name": vn.VN_RESOURCE, "url": _FILE},
+    {"name": vn.VN_RESOURCE, "url": _FILE, "checksum": "0" * 40, "size": True},
+], ids=["no checksum or size", "a size of true"])
+def test_an_index_listing_no_file_is_refused(monkeypatch: pytest.MonkeyPatch,
+                                             resource: dict[str, object]) -> None:
+    _serve(monkeypatch, _ftm(_ENTITIES), resources=[resource])
     with pytest.raises(ValueError, match="lists no entities.ftm.json"):
         local.fetch(_VN)
 
 
-def test_a_file_of_another_checksum_is_retried_then_refused(
-        monkeypatch: pytest.MonkeyPatch) -> None:
+@pytest.mark.parametrize("stated", [
+    lambda body: body[:-1] + b" ",  # the size, another sha1
+    lambda body: body + b"\n",  # another size: a cut body
+], ids=["sha1", "size"])
+def test_a_file_of_another_checksum_or_size_is_retried_then_refused(
+        monkeypatch: pytest.MonkeyPatch, stated: Callable[[bytes], bytes]) -> None:
     body = _ftm(_ENTITIES)
-    asked = _serve(monkeypatch, body, stated=body[:-1] + b" ")
+    asked = _serve(monkeypatch, body, stated=stated(body))
     with pytest.raises(ValueError, match="not the .* the index states"):
         local.fetch(_VN)
     assert asked.count(_FILE) == importlib.import_module("local_core").RETRIES
     assert local.load(_VN) is None
+
 
 
 @pytest.mark.parametrize(("entities", "targets", "match"), [
@@ -141,6 +157,14 @@ def test_a_file_of_another_checksum_is_retried_then_refused(
     (_ENTITIES[1:], 4, "holds 3 deputies where the index counts 4"),
     ([*_ENTITIES[3:], _person("Mạc Hùng"), _person("Lý An")], 3, "0 of 3 deputies' education"),
     ([*_ENTITIES, _person("Khánh")], 5, "a single word"),
+    ([*_ENTITIES, {"id": "x", "schema": "Person", "properties": {"name": []}}], 5,
+     "holds 0 names"),
+    ([*_ENTITIES, {"id": "x", "schema": "Person", "properties": {"name": ["Mạc Hùng", "Mạc An"]}}],
+     5, "holds 2 names"),
+    # The titled share's boundary: one in two titled is accepted (the
+    # control below), under it refused.
+    ([*_ENTITIES[:2], _person("Mạc Hùng"), _person("Lý An"), _person("Âu Cơ")], 5,
+     "2 of 5 deputies' education"),
 ])
 def test_a_file_of_another_shape_is_refused(monkeypatch: pytest.MonkeyPatch,
                                             entities: list[dict[str, object]], targets: int,
@@ -150,14 +174,22 @@ def test_a_file_of_another_shape_is_refused(monkeypatch: pytest.MonkeyPatch,
         local.fetch(_VN)
 
 
-def test_a_corpus_derived_by_another_version_is_refused_on_load(
-        monkeypatch: pytest.MonkeyPatch) -> None:
+def test_half_the_deputies_titled_is_enough(monkeypatch: pytest.MonkeyPatch) -> None:
+    _serve(monkeypatch, _ftm([*_ENTITIES[:2], _person("Mạc Hùng"), _person("Lý An")]))
+    assert local.fetch(_VN).meta["detail"]["titled"] == 2
+
+
+@pytest.mark.parametrize(("module", "constant", "match"), [
+    ("local_vnassembly", "TITLE_VERSION", "derived by version 1 of title_of.*version 99"),
+    ("local_uit", "SPLIT_VERSION", "split by version 1 of local_uit.split.*version 99"),
+])
+def test_a_corpus_derived_or_split_by_another_version_is_refused_on_load(
+        monkeypatch: pytest.MonkeyPatch, module: str, constant: str, match: str) -> None:
     _serve(monkeypatch, _ftm(_ENTITIES))
     local.fetch(_VN)
     assert local.load(_VN) is not None  # the control
-    monkeypatch.setattr(vn, "TITLE_VERSION", 99)
-    with pytest.raises(ValueError, match=f"derived by version 1 of title_of.*version 99"
-                                         f".*fetch {_VN} --refresh"):
+    monkeypatch.setattr(importlib.import_module(module), constant, 99)
+    with pytest.raises(ValueError, match=f"{match}.*fetch {_VN} --refresh"):
         local.load(_VN)
 
 
@@ -173,3 +205,21 @@ def test_the_score_compares_the_title_and_the_parts(monkeypatch: pytest.MonkeyPa
     assert result.scored == {"Kinh": 4} and result.agreed == {"Kinh": 3}
     assert result.misses == {"Kinh": {"title": 1, "family": 1, "middle": 1}}
     assert not result.set_aside
+
+
+def test_vn_assembly_s_report_gives_a_group_from_ten_records(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # Its 499 deputies hold no group of the 1,000 GROUP_FLOOR asks, so
+    # without its own floor the report would print no ethnicity at all.
+    tay = [_person(f"Nông Văn {given}", "Tiến sĩ", "Tày") for given in "ABCDEFGHIK"]
+    ede = [_person(f"Y {given} Niê", "Thạc sĩ", "Ê-đê") for given in "ABCDEFGHI"]
+    _serve(monkeypatch, _ftm([*_ENTITIES, *tay, *ede]), targets=23)
+    corpus = local.fetch(_VN)
+    result = agreement.score(corpus.records, agreement.FIELDED[_VN], Parser())
+    fielded = agreement.FIELDED[_VN]
+    rows = [line.split()[0] for line in agreement.report(result, fielded, 5)
+            if line.startswith("  ") and line.split()[0] in ("Kinh", "Tày", "Ê-đê")]
+    assert rows == ["Tày"]  # Kinh's 4 and Ê-đê's 9 are under the floor
+    unfloored = dataclasses.replace(fielded, group_floor=None)
+    assert not [line for line in agreement.report(result, unfloored, 5)
+                if line.startswith("  Tày")]  # the control: GROUP_FLOOR alone
