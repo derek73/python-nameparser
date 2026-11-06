@@ -130,10 +130,10 @@ def _vn_read(body: bytes, targets: int) -> tuple[list[dict[str, str]], dict[str,
             continue
         properties = entity.get("properties", {})
         names = properties.get("name") or []
-        words = str(names[0]).split() if len(names) == 1 else []
+        words = names[0].split() if len(names) == 1 and isinstance(names[0], str) else []
         if len(words) < 2:
-            raise ValueError(f"a deputy holds {len(names)} names, or one of a single "
-                             f"word: the dataset's shape has changed")
+            raise ValueError(f"a deputy holds {len(names)} names, or one that is not "
+                             f"text of two words or more: the dataset's shape has changed")
         official = " ".join(words)
         title = title_of("; ".join(properties.get("education") or []))
         counts["titled"] += bool(title)
