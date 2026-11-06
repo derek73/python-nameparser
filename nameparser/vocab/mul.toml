@@ -123,6 +123,14 @@ text = "&"
 conjunction = {}
 
 [[word]]
+text = "mhd"
+given = { same_as = "muhammad", note = "Muhammad written short, in Indonesia, Syria, Turkey and Germany: ORCID given boxes 426 (Indonesia 86, Syria 37), family boxes 71 (2026-11-06); written with its period at the head of a name (Dr Mhd. Azhar Kharsa), it read as a title by the leading-abbreviation shape (#1115)" }
+
+[[word]]
+text = "mohd"
+given = { us_ssa = 87, wikidata = 363, as_of = 2026-11-06, same_as = "muhammad", note = "Muhammad written short, in Malaysia, Brunei, Singapore and India: ORCID given boxes 8,594 (Malaysia 2,739, India 1,468), PatentsView 304; US SSA male births; Wikidata is a lower bound (Malaysia 276); written with its period at the head of a name (Mohd. Shameem), it read as a title by the leading-abbreviation shape (#1115)" }
+
+[[word]]
 text = "kaur"
 family = { shared = true, us_census_2010 = 48753, wikidata = 204, as_of = 2026-11-03, native = "ਕੌਰ", gender = "f", note = "the name every Sikh woman is given, written after her personal name and before a family name where she has one (Harpreet Kaur Dhillon): in mul.toml so every choice of languages keeps it; UK PSC filers put it in the middle-name box 2,354 times (2,264 as its only word), the whole surname box 674 and the forename box 25; ORCID holders whose family box holds another surname put it in the given box 69 times and open the family box with it 3 (2026-11-03, #704). Wikidata is a lower bound" }
 

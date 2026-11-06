@@ -23,7 +23,7 @@
   "H3": {"words": 142, "then_words": 72, "because_sentences": 2, "except": 0, "precedence": 0, "accepted": 3, "accepted_words": 113},
   "H4": {"words": 410, "then_words": 183, "because_sentences": 3, "except": 1, "precedence": 1, "accepted": 1, "accepted_words": 127},
   "H5": {"words": 819, "then_words": 289, "because_sentences": 2, "except": 0, "precedence": 6, "accepted": 1, "accepted_words": 117},
-  "H6": {"words": 323, "then_words": 79, "because_sentences": 3, "except": 4, "precedence": 0, "accepted": 2, "accepted_words": 114},
+  "H6": {"words": 350, "then_words": 79, "because_sentences": 3, "except": 4, "precedence": 0, "accepted": 2, "accepted_words": 114},
   "H7": {"words": 339, "then_words": 270, "because_sentences": 2, "except": 0, "precedence": 0, "accepted": 1, "accepted_words": 54},
   "H8": {"words": 431, "then_words": 68, "because_sentences": 3, "except": 3, "precedence": 3, "accepted": 3, "accepted_words": 131},
   "H9": {"words": 784, "then_words": 292, "because_sentences": 3, "except": 0, "precedence": 6, "accepted": 11, "accepted_words": 619},
