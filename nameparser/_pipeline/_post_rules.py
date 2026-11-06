@@ -689,13 +689,12 @@ def _set_apart_clauses(state: ParseState,
         for i in range(lo, hi):
             token = tokens[i]
             kind = set_apart_kind(token.text, lex)
-            if kind is None and AMBIGUOUS_ACRONYM_TAG in token.tags \
+            if kind == "member" or kind is None \
+                    and AMBIGUOUS_ACRONYM_TAG in token.tags \
                     and settled_by_case(token, state.one_case):
-                kind = "member"
-            if kind is None:
-                break
-            if kind == "member":
                 kind, member = "suffix", True
+            elif kind is None:
+                break
             kinds.append(kind)
         else:
             # a member is settled after the name only (rules/S13), and
@@ -703,8 +702,13 @@ def _set_apart_clauses(state: ParseState,
             # comma part stays the nickname
             if member and not 0 <= last_name < lo:
                 continue
-            if any(reads_as_initials(w, kind, state.one_case, lex)
-                   for w, kind in zip(words, kinds)):
+            # a name word after the clause in its comma part stands
+            # behind the last name word, so a clause after the name skips
+            # the walk; a title is never initials, asked inline
+            if last_name >= hi and any(
+                    kind != "title"
+                    and reads_as_initials(w, kind, state.one_case, lex)
+                    for w, kind in zip(words, kinds)):
                 if ahead is None:
                     ahead = _name_ahead(state, tokens)
                 if ahead[hi - 1]:

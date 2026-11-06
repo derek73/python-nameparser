@@ -440,12 +440,18 @@ def set_apart_kind(word: str, lexicon: Lexicon,
     # necessary half of `dotted_member`, so no other word pays its
     # frame: `suffix_as_written` would read a dotted member as a suffix
     # wherever it stands, and reads no other member as one
-    if folded.replace(".", "") in sets.suffix_acronyms_ambiguous:
+    acronym = folded.replace(".", "")
+    if acronym in sets.suffix_acronyms_ambiguous:
         if title:
             return "title"
         return "member" if "." in bare and dotted_member(
             bare, lexicon) else None
-    suffix = suffix_as_written(folded, bare, lexicon)
+    # the sets and the joiners asked first, at C level, the necessary
+    # half of `suffix_as_written`, so a word it could never read (a
+    # nickname) pays no frame
+    suffix = ((acronym in sets.suffix_acronyms or folded in sets.suffix_words
+               or "-" in folded or "/" in folded)
+              and suffix_as_written(folded, bare, lexicon))
     if title:
         return "dual" if suffix else "title"
     return "suffix" if suffix else None
@@ -474,19 +480,28 @@ def reads_as_initials(word: str, kind: SetApartKind,
     word that is a title too only written with a period after each
     letter ('R.A.') or in capitals in a name of mixed case ('RA'),
     Title case reading as the title it also is and capitals in a name
-    written in one case saying nothing (S6). `one_case` is
-    ParseState.one_case. A joined credential counts where any of its
-    chunks would ('JP/MD', 'MD/PhD'), as its words written apart do."""
+    written in one case saying nothing (S6); a title alone never. A
+    member of the ambiguous class counts as the credential it is
+    settled as. `one_case` is ParseState.one_case. A joined credential
+    counts where any of its chunks would ('JP/MD', 'MD/PhD'), as its
+    words written apart do: a chunk holds no joiner, so this is one
+    level deep."""
     bare = word.strip(",")
     if kind == "suffix" and ("/" in bare or "-" in bare):
         for chunk in _JOINERS.split(bare):
-            ck = set_apart_kind(chunk, lexicon)
-            if ck is not None and ck != "title" and reads_as_initials(
-                    chunk, "suffix" if ck == "member" else ck, one_case,
-                    lexicon):
+            if _shaped_as_initials(chunk, set_apart_kind(chunk, lexicon),
+                                   one_case, lexicon):
                 return True
         return False
-    return ((kind == "suffix" or kind == "dual" and (
+    return _shaped_as_initials(bare, kind, one_case, lexicon)
+
+
+def _shaped_as_initials(bare: str,
+                        kind: SetApartKind | Literal["member"] | None,
+                        one_case: bool | None, lexicon: Lexicon) -> bool:
+    """`reads_as_initials` for one word holding no joiner, its kind as
+    `set_apart_kind` gives it."""
+    return ((kind == "suffix" or kind == "member" or kind == "dual" and (
                 _DOTTED_INITIALS.fullmatch(bare) is not None
                 or one_case is False and bare.isupper()))
             and _INITIALS_SHAPE.fullmatch(bare) is not None
