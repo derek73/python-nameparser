@@ -197,7 +197,7 @@ given = { after_particle = true, note = "the second of a compound given name wri
 
 [[word]]
 text = "piedade"
-given = { default = false, after_particle = true, note = "the second of a compound given name written behind a particle (Maria da Piedade): ORCID holders in Portugal, Brazil and Portuguese-speaking Africa end the given box with it behind a particle 13 times and open a family box of more words with it behind a particle 4, 76%, below the 90% a default reading needs, so a Portuguese choice turns it on (2026-11-06, #1118)" }
+given = { default = false, after_particle = true, note = "the second of a compound given name written behind a particle (Maria da Piedade): ORCID holders in Portugal, Brazil and Portuguese-speaking Africa end the given box with it behind a particle 13 times and open a family box of more words with it behind a particle 4, 76%, which put it in the Portuguese choice's tier (2026-11-06, #1118); scored by what its reading changes, it moves 7 names to the boxes their filers filled and 2 away from them, fewer than the ten a score needs, so it keeps that tier (decisions/P10) (2026-11-06, #1122)" }
 
 [[word]]
 text = "ribamar"

@@ -227,9 +227,11 @@ def test_sushri_is_the_title_only_under_a_strict_hindi_choice() -> None:
 ])
 def test_a_strict_portuguese_choice_reads_the_given_names_es_also_marks(
         text: str, middle: str) -> None:
-    # #1122: pt.toml holds its own reading of each word es.toml
-    # marks, decided on Portuguese names, so a strict choice reading no
-    # es.toml keeps the default's middle name
+    # #1122: pt.toml holds its own reading of the five words es.toml
+    # marks that pass on Portuguese names under the strict choice
+    # (fátima, fatima, socorro, lourdes, maria), so a strict choice
+    # reading no es.toml keeps the default's middle name; the others
+    # (carmen, pilar, rosario, ...) it leaves to the family
     assert parse(text).middle == middle
     for pack in (locales.PT, locales.PT_BR):
         assert parser_for(pack, strict=True).parse(text).middle == middle, pack
