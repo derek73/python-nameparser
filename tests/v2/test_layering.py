@@ -638,7 +638,7 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: The reads 4i-a moved, as the check counts them on today's sources
 #: with `._sets` taken out again: the recorded negative control over
 #: the real tree, so the check above cannot pass because its walk
-#: reaches nothing. The library's 130 are 121 attribute loads, 3 roster
+#: reaches nothing. The library's 132 are 123 attribute loads, 3 roster
 #: `getattr`s, all through `sets`, which the undone `sets = lexicon`
 #: makes a lexicon, and the 6 `sets =` bindings (#1000's Ph./D. gate
 #: added one binding and four of the loads; #999's gate
@@ -657,7 +657,9 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: two suffix sets inline ahead of `suffix_as_written`, 124 -> 126, and
 #: `reads_as_initials` leaving a credential listed whole unsplit, two
 #: more, 126 -> 128; #1103's cut of a joined credential reading the
-#: longest listed run of each suffix set, two more, 128 -> 130);
+#: longest listed run of each suffix set, two more, 128 -> 130;
+#: #1138's member test for a chunk, the two ambiguous suffix sets,
+#: 130 -> 132);
 #: the tools' 19 are 17
 #: attribute loads, every tool scanned, and config_diff.py's
 #: `sets =` binding and the roster `getattr` through it (its
@@ -668,7 +670,7 @@ def test_the_check_finds_a_tool_read_through_an_alias(
 #: `_lexicon._fields_of` from 4i-b until 4i-c retired it.
 #: A reader added through `_sets` moves these, and they are re-taken
 #: then: they count what the check would refuse with the move undone.
-_UNGUARDED_READS = {"library": 130, "tools": 19}
+_UNGUARDED_READS = {"library": 132, "tools": 19}
 
 
 def test_the_check_refuses_every_read_4i_a_moved() -> None:

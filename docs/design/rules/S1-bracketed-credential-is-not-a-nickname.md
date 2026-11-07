@@ -18,7 +18,7 @@
   "Smith (M.D./Ph.D.), John"  →  suffix="M.D./Ph.D."
   "John Smith (King)"         →  nickname="King"  · boundary
   "John Smith (MD/Bob)"       →  nickname="MD/Bob"  · boundary
-  "John Smith (MA/PhD)"       →  nickname="MA/PhD"  · boundary
+  "John Smith (MA/MBA)"       →  nickname="MA/MBA"  · boundary
   ```
 - **The words around it read as they would beside a nickname**, so a clause between name words ends where its brackets do and takes neither neighbour, and a lone name word beside it is the family name (N3).
   ```
@@ -35,12 +35,17 @@
   "John Smith (Jr.,) III"     →  suffix="Jr., III"
   "John Smith (MD,) (PhD)"    →  suffix="MD, PhD"
   ```
-- **A member of the ambiguous class (S4) is a word of such a clause where its writing settles it after the name**, as S13 settles a member standing alone, wherever in the clause it stands.
+- **A member of the ambiguous class (S4) is a word of such a clause where its writing settles it after the name**, as S13 settles a member standing alone, wherever in the clause it stands. A member its writing leaves unsettled is one too where a credential of the same clause settles it: the brackets hold one kind of thing, and a credential that is no name, or a member its writing settles, says which.
   ```
   "John Smith (Ph.D., MBA)"   →  suffix="Ph.D., MBA"
   "John Smith (MBA, PhD)"     →  suffix="MBA, PhD"
   "John Smith (PhD, M.A)"     →  suffix="PhD, M.A"
-  "JOHN SMITH (PHD, MBA)"     →  nickname="PHD, MBA"  · boundary
+  "JOHN SMITH (PHD, MBA)"     →  suffix="PHD, MBA"
+  "John Smith (Ma, PhD)"      →  suffix="Ma, PhD"
+  "John Smith (Ma PhD)"       →  suffix="Ma PhD"
+  "John Smith (Ma, Ed)"       →  nickname="Ma, Ed"  · boundary
+  "John Smith (Dr, Ma)"       →  nickname="Dr, Ma"  · boundary
+  "John (Ma, PhD) Smith"      →  nickname="Ma, PhD"  · boundary
   ```
 
 **Because:** brackets and quotes set off more than nicknames. A writer brackets a credential, a generation or a title to keep it apart from the name, and the words the vocabulary reads as no name say which one the brackets hold. Where every word is one of them, the brackets have drawn the clause's edges, so the name around it reads as it does beside any clause it holds apart.

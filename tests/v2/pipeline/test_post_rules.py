@@ -1803,7 +1803,8 @@ def test_a_set_apart_clause_trims_its_comma_off_the_word(text: str) -> None:
 #: two-spelling invariant below reads.
 _BRACKETED_WORDS = ("PhD", "Jr.", "MD/PhD", "MD-PhD", "md/phd", "Md-PhD",
                     "MD/PhD/MPH", "M.D./Ph.D.", "M.A./PhD", "Jr/Sr",
-                    "MD/Bob", "MA/PhD", "Smith-Jones", "Ae-Ra", "I-V", "MD/")
+                    "MD/Bob", "MA/PhD", "MA/MBA", "Smith-Jones", "Ae-Ra", "I-V",
+                    "MD/")
 
 #: The rows the guard moves, as the tree before #1088 read them, the
 #: set-apart word asking its own copy of the unambiguous suffix sets:
@@ -1821,7 +1822,7 @@ _UNGUARDED_EFFECT_1088 = {
 
 #: The grid's words S3 refuses, pinned apart from the predicate the
 #: test asks, so a refusal S3 lost would not move both sides at once.
-_REFUSED_JOINED = frozenset({"MD/Bob", "MA/PhD", "Smith-Jones", "Ae-Ra",
+_REFUSED_JOINED = frozenset({"MD/Bob", "MA/MBA", "Smith-Jones", "Ae-Ra",
                              "I-V", "MD/"})
 
 
@@ -1867,6 +1868,37 @@ def test_a_member_a_caller_lists_as_a_title_is_the_title() -> None:
     assert "aca" in Lexicon.default()._sets.suffix_acronyms_ambiguous
     name = parser.parse("John Smith (Aca)")
     assert (name.title, name.nickname) == ("Aca", "")
+
+
+@pytest.mark.parametrize("text, suffix, reported", [
+    # a member its writing leaves unsettled is settled by a credential of
+    # its clause after the name (rules/S1, #1138), with a comma, a space
+    # or a joiner between them
+    ("John Smith (Ma, PhD)", "Ma, PhD", False),
+    ("John Smith (Ma PhD)", "Ma PhD", False),
+    ("JOHN SMITH (PHD, MBA)", "PHD, MBA", False),
+    ("John Smith (MA/PhD)", "MA/PhD", False),
+    ("Smith, John (Ma, PhD)", "Ma, PhD", False),
+    # nothing settles members alone, nor a title
+    ("John Smith (Ma, Ed)", "", True),
+    ("John Smith (MA/MBA)", "", True),
+    ("John Smith (Dr, Ma)", "", True),
+    # inside the name or before it, a member stays the nickname,
+    # reported, joined or written apart (rules/S13)
+    ("John (Ma, PhD) Smith", "", True),
+    ("John (MA/PhD) Smith", "", True),
+    ("(MA/PhD) John Smith", "", True),
+    ("John (M.A/PhD) Smith", "", True),
+    # a member its periods make a suffix as written is no member here
+    ("John (M.A./PhD) Smith", "", False),
+    ("Smith (M.A./PhD), John", "M.A./PhD", False),
+])
+def test_a_credential_settles_a_member_of_its_clause_after_the_name(
+        text: str, suffix: str, reported: bool) -> None:
+    name = parse(text)
+    assert name.suffix == suffix
+    assert (AmbiguityKind.SUFFIX_OR_NICKNAME in
+            [a.kind for a in name.ambiguities]) is reported
 
 
 #: rules/S1's two spellings of a credential pair, joined by a slash or a

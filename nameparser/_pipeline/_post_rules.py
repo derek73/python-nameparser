@@ -77,8 +77,8 @@ from nameparser._pipeline._state import (
 from nameparser._pipeline._vocab import (
     _HYPHENS, SetApartKind, delimiter_cores, dotted_member,
     has_patronymic_ending, is_initial, is_listed_given_name,
-    is_patronymic_marker, reads_as_initials, set_apart, set_apart_kind,
-    suffix_reading, unit_ends,
+    is_patronymic_marker, joined_member, member_word, reads_as_initials,
+    set_apart, set_apart_kind, suffix_reading, unit_ends,
 )
 from nameparser._policy import PatronymicRule
 from nameparser._types import (
@@ -751,17 +751,28 @@ def _set_apart_clauses(state: ParseState,
             continue
         kinds: list[SetApartKind] = []
         member = False
+        unsettled = settled = False
         for i in range(lo, hi):
             token = tokens[i]
             kind = set_apart_kind(token.text, lex)
             if kind == "member" or kind is None \
                     and AMBIGUOUS_ACRONYM_TAG in token.tags \
                     and settled_by_case(token, state.one_case):
-                kind, member = "suffix", True
+                kind, member, settled = "suffix", True, True
+            elif kind is None and member_word(token.text, lex):
+                kind, member, unsettled = "suffix", True, True
             elif kind is None:
                 break
+            elif kind != "title":
+                settled = True
             kinds.append(kind)
         else:
+            # rules/S1: "a member its writing leaves unsettled is one
+            # too where a credential of the same clause settles it" --
+            # the clause holds one kind of thing, and the credential
+            # says which (decisions/S1, #1138)
+            if unsettled and not settled:
+                continue
             # a member is settled after the name only (rules/S13), and
             # a credential written as initials before a name word of its
             # comma part stays the nickname
@@ -839,7 +850,9 @@ def _report_delimited_members(tokens: list[WorkToken], lexicon: Lexicon,
         # the period asked first, at C level, so a nickname written
         # without one pays no frame
         if (AMBIGUOUS_ACRONYM_TAG in token.tags
-                or "." in token.text and dotted_member(token.text, lexicon)):
+                or "." in token.text and dotted_member(token.text, lexicon)
+                or ("/" in token.text or "-" in token.text)
+                and joined_member(token.text, lexicon)):
             ambiguities.append(PendingAmbiguity(
                 AmbiguityKind.SUFFIX_OR_NICKNAME,
                 f"delimited {token.text!r} is also a post-nominal; read "

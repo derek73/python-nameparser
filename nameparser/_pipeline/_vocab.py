@@ -482,6 +482,11 @@ def set_apart_kind(word: str, lexicon: Lexicon,
     suffix = ((acronym in sets.suffix_acronyms or folded in sets.suffix_words
                or "-" in folded or "/" in folded)
               and suffix_as_written(folded, bare, lexicon))
+    # rules/S3: "a joined word holding a member is a member itself" --
+    # settled after the name only, as S13 settles one written alone
+    # (decisions/S3, #1138)
+    if suffix and not title and joined_member(bare, lexicon):
+        return "member"
     if title:
         return "dual" if suffix else "title"
     return "suffix" if suffix else None
@@ -958,6 +963,43 @@ def suffix_as_written(n: str, text: str, lexicon: Lexicon) -> bool:
 _JOINERS = re.compile(r"[-/]")
 
 
+def _member(chunk: str, lexicon: Lexicon) -> bool:
+    """Whether CHUNK is a member of the ambiguous class (S4), however
+    written ('MA', 'Ma', 'M.A', 'M.A.'): an acronym once its periods are
+    removed, or a suffix word, that is a name too."""
+    folded = _normalize(chunk)
+    return (folded.replace(".", "") in lexicon._sets.suffix_acronyms_ambiguous
+            or folded in lexicon._sets.suffix_words_ambiguous)
+
+
+def _settles(chunk: str, lexicon: Lexicon) -> bool:
+    """Whether CHUNK, a chunk of a joined word's cut, says the word is a
+    credential: one that counts as a suffix as written ('PhD', 'M.A.'),
+    or a member written with a period inside it ('M.A')."""
+    return (suffix_as_written(_normalize(chunk), chunk, lexicon)
+            or "." in chunk and dotted_member(chunk, lexicon))
+
+
+def joined_member(word: str, lexicon: Lexicon) -> bool:
+    """Whether WORD, a word `suffix_as_written` reads, is a joined
+    credential holding among its chunks a member of the ambiguous class
+    that does not count as a suffix as written ('MA/PhD', 'M.A/PhD',
+    but not 'M.A./PhD'), a member S13 settles by its position in a
+    delimited clause. A word listed whole ('NP-C') holds none."""
+    if not ("/" in word or "-" in word) or _listed_whole(word, lexicon):
+        return False
+    return any(_member(c, lexicon)
+               and not suffix_as_written(_normalize(c), c, lexicon)
+               for c in _joined_chunks(word, lexicon) or ())
+
+
+def member_word(word: str, lexicon: Lexicon) -> bool:
+    """Whether a word of a delimited clause, a comma the clause keeps
+    on it left off (rules/N1), is a member of the ambiguous class (S4),
+    however written."""
+    return _member(word.strip(","), lexicon)
+
+
 def _listed_whole(word: str, lexicon: Lexicon) -> bool:
     """Whether the suffix vocabulary lists WORD whole, its joiners
     included ('NP-C', 'OTR/L'): as a suffix word, or as an acronym once
@@ -989,8 +1031,10 @@ def _joined_span(words: frozenset[str]) -> int:
 # (decisions/S3, #1103)
 def _joined_chunks(text: str, lexicon: Lexicon) -> list[str] | None:
     """A cut of TEXT at some of its joiners into pieces that each count
-    as a suffix as written, a run of chunks the vocabulary lists whole
-    among them, with the fewest pieces ('MS/OTR/L' is 'MS', 'OTR/L';
+    as a suffix as written or are a member of the ambiguous class
+    however written ('MA', 'M.A'), a run of chunks the vocabulary lists
+    whole among them, with the fewest pieces ('MS/OTR/L' is 'MS',
+    'OTR/L';
     'CCC/SLP/L' is 'CCC', 'SLP/L'; 'APRN-FNP-C' is 'APRN', 'FNP-C';
     'MD-PhD' is 'MD', 'PhD'), or None where no cut gives such pieces
     ('MD-Jones', 'MD/'). No piece is the whole of TEXT: each caller has
@@ -1014,8 +1058,11 @@ def _joined_chunks(text: str, lexicon: Lexicon) -> list[str] | None:
             # a run must be listed whole, which a chunk alone need not be
             if not piece or j > i + 1 and not _listed_whole(piece, lexicon):
                 continue
+            # a member is a chunk however written; `_joined_credential`
+            # asks that a chunk beside it settles it (#1138)
             if ((not pieces[j] or pieces[i] + 1 < pieces[j])
-                    and suffix_as_written(_normalize(piece), piece, lexicon)):
+                    and (suffix_as_written(_normalize(piece), piece, lexicon)
+                         or _member(piece, lexicon))):
                 pieces[j] = pieces[i] + 1
                 start[j] = i
     if not pieces[n]:
@@ -1039,10 +1086,12 @@ def _joined_credential(text: str, lexicon: Lexicon) -> bool:
     """Whether TEXT is two or more chunks joined by '-' or '/', cut so
     that each is non-empty and counts as a suffix as written (listed,
     and not a bare member of the ambiguous class, a run listed whole
-    counting as one chunk), not every one a single ASCII character,
-    and -- joined by a hyphen -- not written as a hyphenated name is
-    ('MD/PhD', 'M.A.-Ph.D.', 'PhD-Md', 'md-phd', 'PhD/NP-C', but not
-    'MA/PhD', 'Smith-Jones', 'I-V', 'Ae-Ra', 'Ae-ra' or 'MD/'). The
+    counting as one chunk) or is a member of that class however
+    written, one chunk at least settling it (`_settles`), not every one
+    a single ASCII character, and -- joined by a hyphen -- not written
+    as a hyphenated name is ('MD/PhD', 'M.A.-Ph.D.', 'MA/PhD',
+    'M.A/PhD', 'PhD-Md', 'md-phd', 'PhD/NP-C', but not 'MA/MBA',
+    'MA/Jones', 'Smith-Jones', 'I-V', 'Ae-Ra', 'Ae-ra' or 'MD/'). The
     writing is read first, so a hyphenated name ('Smith-Jones') is
     never cut."""
     # a slash joins no name, so a word holding one takes no cue
@@ -1064,6 +1113,13 @@ def _joined_credential(text: str, lexicon: Lexicon) -> bool:
             return False
     chunks = _joined_chunks(text, lexicon)
     if chunks is None:
+        return False
+    # rules/S3: "a member of the ambiguous class (S4) is a chunk too,
+    # however it is written, where the word holds a chunk that settles
+    # it" -- a credential that is no name, or a member its periods
+    # settle; a word of bare members alone has nothing to settle it
+    # (decisions/S3, #1138)
+    if not any(_settles(c, lexicon) for c in chunks):
         return False
     # rules/S3: "Every chunk the vocabulary matches is a single ASCII
     # character" -- the numerals and the digit, which are about
