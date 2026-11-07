@@ -149,6 +149,31 @@ def test_cli_order_unknown_value_exits_2_listing_the_choices(
     assert "family-first-given-last" in capsys.readouterr().err
 
 
+@pytest.mark.parametrize(("argv", "field"), [
+    ((), "given"),
+    (("--order", "family-first"), "given"),
+    (("--lone-name-word", "family"), "family"),
+    (("--lone-name-word", "family", "--order", "family-first"), "family"),
+    # the flag replaces the pack's reading, VI reading given by default
+    (("--locale", "vi", "--lone-name-word", "family"), "family"),
+    (("--lone-name-word", "given", "--order", "family-first"), "given"),
+])
+def test_cli_lone_name_word_names_the_field_of_a_one_word_name(
+        capsys: pytest.CaptureFixture[str], argv: tuple[str, ...],
+        field: str) -> None:
+    # the switch, not the order, places a lone word (O5, #1111)
+    assert _fields(capsys, *argv, "Nguyen")[field] == "Nguyen"
+
+
+def test_cli_lone_name_word_refuses_a_field_no_lone_word_takes(
+        capsys: pytest.CaptureFixture[str]) -> None:
+    with pytest.raises(SystemExit) as exc:
+        cli.main(["--lone-name-word", "middle", "Nguyen"])
+    assert exc.value.code == 2
+    err = capsys.readouterr().err
+    assert "given" in err and "family" in err
+
+
 def test_cli_order_spellings_match_the_vocabulary_rules_tables() -> None:
     assert cli._ORDERS == _locale._ORDERS
 
@@ -161,7 +186,8 @@ def test_cli_order_spellings_match_the_vocabulary_rules_tables() -> None:
 def test_cli_sorts_every_policy_field_into_a_flag_or_a_reason() -> None:
     # a new Policy field fails here until someone decides whether the
     # command line sets it
-    flagged = [*cli._SWITCHES, *cli._CHOICES, "name_order"]
+    flagged = [*cli._SWITCHES, *cli._CHOICES, "name_order",
+               "lone_name_word"]
     sorted_ = [*flagged, *cli._NOT_ON_THE_COMMAND_LINE]
     assert len(sorted_) == len(set(sorted_))
     assert set(sorted_) == {f.name for f in dataclasses.fields(Policy)}

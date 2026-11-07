@@ -59,8 +59,12 @@ def test_degenerate_inputs_are_total() -> None:
     assert parse(".,").original == ".,"     # but the raw input is kept
     single = parse("John")
     assert single.given == "John"
+    # a lone word's field is Policy.lone_name_word's, not the order's
+    # (rules/O5, #1111)
     family_first = Parser(policy=Policy(name_order=FAMILY_FIRST))
-    assert family_first.parse("Yamada").family == "Yamada"
+    assert family_first.parse("Yamada").given == "Yamada"
+    surnames = Parser(policy=Policy(lone_name_word=Role.FAMILY))
+    assert surnames.parse("Yamada").family == "Yamada"
     title_only = parse("Dr.")
     assert title_only.title == "Dr." and not title_only.given
     unbalanced = parse('Jon "Nick Smith')
@@ -146,6 +150,7 @@ _SCALARS: dict[str, tuple[object, object, object]] = {
                       dict(reversed(list(_HAN_FIRST.items())))),
     "unlisted_caps_suffixes": (CapsSuffixes.OFF, CapsSuffixes.AFTER_COMMA,
                                CapsSuffixes.OFF),
+    "lone_name_word": (Role.FAMILY, Role.GIVEN, "family"),
     **{flag: (False, True, False) for flag in (
         "middle_as_family", "lenient_comma_suffixes", "strip_emoji",
         "strip_bidi", "unlisted_dotted_suffixes", "two_family_names",

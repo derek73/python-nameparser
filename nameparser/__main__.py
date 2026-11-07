@@ -7,6 +7,7 @@
     python -m nameparser --locale ko --strict "Kim Do Hyun"
     python -m nameparser --locale vi --strict "Do Van Minh"
     python -m nameparser --two-given-names "Juan Carlos García"
+    python -m nameparser --lone-name-word family "Nguyen"
     python -m nameparser --locale es --no-two-family-names "Maestra Ana García López"
 """
 import argparse
@@ -25,6 +26,7 @@ from nameparser import (
     Lexicon,
     Locale,
     PolicyPatch,
+    Role,
     Segmenter,
     parser_for,
 )
@@ -52,6 +54,9 @@ _SWITCHES = {
                                 "as a suffix",
 }
 _CHOICES = {"unlisted_caps_suffixes": CapsSuffixes}
+# the two fields Policy.lone_name_word accepts, a flag of their own as
+# --order is, since a choice of every Role would offer the ones it refuses
+_LONE_NAME_WORD = {"given": Role.GIVEN, "family": Role.FAMILY}
 _CHOICE_HELP = {
     "unlisted_caps_suffixes": "where an unlisted all-caps word reads as a "
                               "credential: nowhere, after a comma (the "
@@ -101,6 +106,11 @@ def main(argv: list[str] | None = None) -> int:
                          "(default: given-first); a Han, Hangul or kana "
                          "name keeps its script's order, and a family "
                          "comma fixes the order")
+    ap.add_argument("--lone-name-word", choices=_LONE_NAME_WORD,
+                    help="the field a name of one word reads as, under "
+                         "every order (default: given); a title, a "
+                         "nickname or a script's own order still "
+                         "decides first")
     rules = ap.add_argument_group(
         "Policy switches",
         "each sets the Policy field of its name, replacing a pack's "
@@ -183,6 +193,8 @@ def main(argv: list[str] | None = None) -> int:
         if getattr(args, field) is not None})
     if args.order is not None:
         updates["name_order"] = _ORDERS[args.order]
+    if args.lone_name_word is not None:
+        updates["lone_name_word"] = _LONE_NAME_WORD[args.lone_name_word]
     if updates:
         if pack is None:
             pack = Locale(code="cli_policy", lexicon=Lexicon.empty(),

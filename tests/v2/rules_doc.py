@@ -113,6 +113,7 @@ class Rule:
 from nameparser._policy import (  # noqa: E402
     FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, CapsSuffixes, PatronymicRule,
     Policy)
+from nameparser._types import Role  # noqa: E402
 
 #: Named policies example annotations may reference. Grown as
 #: extraction demands; each addition is a diff to this dict only.
@@ -172,6 +173,12 @@ POLICIES: dict[str, Policy] = {
     #: standing alone built in).
     "extra_suffix_delimiters-pipe": Policy(
         extra_suffix_delimiters=frozenset({" | "})),
+    #: rules/O5's switch (#1111), named after its field with the value
+    #: it is set to, as the caps field's are, alone and with a
+    #: family-first order, which the rule says it does not follow.
+    "lone_name_word-family": Policy(lone_name_word=Role.FAMILY),
+    "family-first+lone_name_word-family": Policy(
+        name_order=FAMILY_FIRST, lone_name_word=Role.FAMILY),
 }
 from nameparser._lexicon import Lexicon  # noqa: E402
 from nameparser.locales._es_given_names import GIVEN_NAMES  # noqa: E402

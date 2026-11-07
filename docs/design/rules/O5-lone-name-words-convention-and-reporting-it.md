@@ -2,20 +2,26 @@
 
 **When:** a name has exactly one name word, as in "Smith".
 
-**Then:** a name of one name word that nothing else has decided reads that word as the given name under the default given-first order, and as the family name under a declared family-first one, and carries a `given-or-family` ambiguity naming the field the convention chose.
+**Then:** a name of one name word that nothing else has decided reads that word as the field the caller's lone-word setting names, the given name unless the caller names the family, under every order, and carries a `given-or-family` ambiguity naming the field the convention chose.
 
 - **That is a convention rather than a determination** — the same input has to read the same way every time, so one of two equally consistent readings is fixed in advance — and it is not evidence about the word.
+- **The declared order does not move it**: the order says where a longer name's words stand, and a name of one word stands nowhere relative to another. Which field a word written alone fills is a fact about where the data came from — a list of surnames, a list of the names people go by — so it is the caller's to state, and the given name is the default because a name written alone is more often the one a person goes by.
+- **A word that claimed itself is placed the same way**: a bare particle, a bound given name or an initial reports nothing, its own reading having settled what it IS, but nothing in it says which field it fills, so the setting places it too.
 - **The report is exactly as narrow as the convention**, so every rule named in Except silences it where it fires, and a family comma — a comma with a name segment after it — silences it too.
 - **A comma with nothing after it names no family and silences nothing**, so `سلمان،` and `Smith,` report where `Smith, Andrew` does not.
 - **A word with no letter or digit in it is no name word** and reports nothing (A2).
 
-**Because:** O4 reads a name by comparing where its words stand, and a name of exactly one name word gives it nothing to compare — the first name word is also the last, so the rule that decides every longer name is silent here. Nothing in such an input says whether the word is a given name or a family name: both readings fit it equally well, and the library still has to report one.
+**Because:** O4 reads a name by comparing where its words stand, and a name of exactly one name word gives it nothing to compare — the first name word is also the last, so the rule that decides every longer name is silent here, and so is the order it reads under. Nothing in such an input says whether the word is a given name or a family name: both readings fit it equally well, and the library still has to report one.
 
 ```
 "Smith"                     →  given="Smith"
-"Garcia"  family-first      →  family="Garcia"
+"Garcia"  family-first      →  given="Garcia"
+"Garcia"  lone_name_word-family  →  family="Garcia"
+"Garcia"  family-first+lone_name_word-family  →  family="Garcia"
+"de"  family-first          →  given="de"
 "Andrew"                    →  ambiguities=("given-or-family",)
 "Garcia"  family-first      →  ambiguities=("given-or-family",)
+"Garcia"  lone_name_word-family  →  ambiguities=("given-or-family",)
 "Juan & Garcia"             →  ambiguities=("given-or-family",)
 "Smith Jr."                 →  ambiguities=("given-or-family",)
 ```
@@ -28,6 +34,7 @@
   "Dr. Smith"                 →  ambiguities=()  · boundary
   "Sir John"                  →  given="John"
   "Sir John"                  →  ambiguities=()
+  "Sir John"  lone_name_word-family  →  given="John"
   ```
 - **Where the one name unit carries title vocabulary** in a word beside the one it places, or is itself title vocabulary left standing by the title peel, the doubt reported is `title-or-name` instead, which H4 and H7 state — so a title silences THIS kind, not every report at the site.
   ```
@@ -61,9 +68,10 @@
 
 **Accepted:**
 
-- A pack that declares a family-first order reads a lone name word as the family name too, though a Vietnamese name written alone is usually the given name: no `Policy` field sets the convention apart from the order, and `locales.VI` sets the order (#1111 asks for one).
+- A surname written alone under a family-first order reads as the given name unless the caller names the family, as CLDR's `Suzuki-san` does, a surname with a hyphenated honorific CLDR states as the family: the order a caller declares for longer names is not evidence about a word written alone, and a caller whose lone words are surnames says so.
   ```
-  "Anh"  [vi]                 →  family="Anh"
+  "Suzuki-san"  family-first  →  given="Suzuki-san"
+  "Anh"  [vi]                 →  given="Anh"
   ```
 
 ---

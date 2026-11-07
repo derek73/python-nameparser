@@ -55,10 +55,11 @@
   "de la Torre Vega"          →  family="de la Torre Vega"
   "de la Cruz Juan Carlos"    →  family="de la Cruz Juan Carlos"
   ```
-- A bare "de" has nothing to fold into, so it is a lone name word and reads as the declared order reads one (O5): the given name under the default order, the family name under a family-first one.
+- A bare "de" has nothing to fold into, so it is a lone name word and reads as O5 reads one, by the caller's lone-word setting: the given name by default under every order, the family name where the caller names it.
   ```
   "de"                        →  given="de"
-  "de"  family-first          →  family="de"
+  "de"  family-first          →  given="de"
+  "de"  lone_name_word-family  →  family="de"
   ```
 - Stopping the run leaves a MIDDLE where the fold never left one before, so O3 has something to claim that it could not reach until now. The family it then reports is discontiguous in the input — words 1-3 plus word 5 — and renders the folded word first, which is R1's order, not this rule's doing.
   ```

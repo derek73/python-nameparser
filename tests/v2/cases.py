@@ -37,7 +37,7 @@ from dataclasses import dataclass
 
 from nameparser._policy import CapsSuffixes
 from nameparser import (FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, GIVEN_FIRST,
-                         Policy)
+                         Policy, Role)
 # Not in nameparser.__all__: _order_repr renders a name_order for an
 # error message, Script/_SCRIPT_RANGES/_script_matcher build the same
 # borrowed predicates build_cjk_corpus.py uses to find CJK text.
@@ -11944,10 +11944,52 @@ CASES: tuple[Case, ...] = (
          notes="rules/O5 -- nothing decided this reading, so the "
                "convention picked the field and says so"),
     Case("lone_name_word_reports_the_convention_family_first", "Garcia",
-         {"family": "Garcia"}, policy=Policy(name_order=FAMILY_FIRST),
-         ambiguities=("given-or-family",), classification="feat(#449)",
-         notes="the kind cannot name the field -- the convention "
-               "follows the read order, the PARTICLE_OR_GIVEN precedent"),
+         {"given": "Garcia"}, policy=Policy(name_order=FAMILY_FIRST),
+         ambiguities=("given-or-family",), classification="feat(#1111)",
+         notes="rules/O5 -- the switch, not the order, names the field, "
+               "so a family-first order reads a lone word given by "
+               "default; read family through 2.8.2 and until #1111, the "
+               "field then following the read order"),
+    Case("lone_name_word_given_under_family_first_given_last", "Garcia",
+         {"given": "Garcia"},
+         policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST),
+         ambiguities=("given-or-family",), classification="feat(#1111)",
+         notes="the second family-first order, as the first"),
+    Case("lone_name_word_switched_to_family", "Andrew",
+         {"family": "Andrew"}, policy=Policy(lone_name_word=Role.FAMILY),
+         ambiguities=("given-or-family",), classification="feat(#1111)",
+         notes="rules/O5 -- data whose lone words are surnames sets the "
+               "switch, under the default order too, and the report "
+               "still names the convention"),
+    Case("lone_name_word_switched_to_family_family_first", "Garcia",
+         {"family": "Garcia"},
+         policy=Policy(name_order=FAMILY_FIRST, lone_name_word=Role.FAMILY),
+         ambiguities=("given-or-family",), classification="feat(#1111)",
+         notes="the reading every family-first order gave before #1111, "
+               "now asked for by the switch"),
+    Case("lone_name_word_empty_comma_family_first", "Anh,",
+         {"given": "Anh"}, policy=Policy(name_order=FAMILY_FIRST),
+         ambiguities=("given-or-family",), classification="feat(#1111)",
+         notes="rules/O5 -- a comma with nothing after it names no "
+               "family, so the convention places the word, by the switch"),
+    Case("lone_name_word_vi_pack_reads_given", "Anh",
+         {"given": "Anh"}, locale="vi",
+         ambiguities=("given-or-family",), classification="feat(#1111)",
+         notes="#1111's case: the pack declares a family-first order and "
+               "sets nothing about a lone word, which the default reads "
+               "as the name a Vietnamese person is addressed by"),
+    Case("lone_name_word_given_name_title_outranks_the_switch", "Sir John",
+         {"title": "Sir", "given": "John"},
+         policy=Policy(lone_name_word=Role.FAMILY),
+         classification="feat(#1111)",
+         notes="rules/O5's H1 Except -- a title decides the field before "
+               "the switch is read, a given-name title the given name"),
+    Case("lone_name_word_title_outranks_the_switch", "Mr. Johnson",
+         {"title": "Mr.", "family": "Johnson"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         classification="parity",
+         notes="rules/O5's H1 Except -- the title makes the word the "
+               "family whatever the switch says"),
     Case("lone_name_word_joined_by_a_connective_is_one_word", "Juan & Garcia",
          {"given": "Juan & Garcia"}, ambiguities=("given-or-family",),
          classification="feat(#449)",
@@ -11961,6 +12003,22 @@ CASES: tuple[Case, ...] = (
          {"given": "de"}, classification="parity",
          notes="negative control: a lone particle's reading is P4's, "
                "not O5's convention"),
+    Case("lone_name_word_particle_family_first", "de",
+         {"given": "de"}, policy=Policy(name_order=FAMILY_FIRST),
+         classification="feat(#1111)",
+         notes="a lone particle reports nothing, but its field is the "
+               "switch's like any lone word's: read family under both "
+               "family-first orders until #1111"),
+    Case("lone_name_word_particle_switched_to_family", "de",
+         {"family": "de"}, policy=Policy(lone_name_word=Role.FAMILY),
+         classification="feat(#1111)",
+         notes="the switch places a lone particle as it places any lone "
+               "word, and reports nothing for it"),
+    Case("lone_name_word_initial_family_first", "J.",
+         {"given": "J."}, policy=Policy(name_order=FAMILY_FIRST),
+         classification="feat(#1111)",
+         notes="a lone initial follows the switch too: read family "
+               "under both family-first orders until #1111"),
     Case("lone_name_word_initial_shape_decides_it", "J",
          {"given": "J"}, classification="parity",
          notes="negative control: the word's own SHAPE claimed it as "

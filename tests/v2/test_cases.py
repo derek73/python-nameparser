@@ -376,10 +376,14 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # 1662 the same day, #815: "'Smitty' Jones Jr." stops reporting
     # given-or-family (-3), and its six boundary rows (a one-letter
     # numeral, a Title case acronym, three gated words, a title word)
-    # each report under three orders (+18).
-    assert claims == 1662, (
-        f"the field sweep checks {claims} claims, recorded as 1662 on "
-        f"2026-11-05")
+    # each report under three orders (+18); 1662 -> 1666 on 2026-11-06,
+    # #1111's four rows carrying their own policy that report
+    # given-or-family (FAMILY_FIRST_GIVEN_LAST, the switch set to family
+    # under the default order and under FAMILY_FIRST, and 'Anh,'), one
+    # claim each.
+    assert claims == 1666, (
+        f"the field sweep checks {claims} claims, recorded as 1666 on "
+        f"2026-11-06")
 
 
 #: The kinds that report a fork between two readings of a word, so carry

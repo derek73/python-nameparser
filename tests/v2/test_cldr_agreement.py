@@ -225,13 +225,17 @@ def _row(text: str, shape: int | None, **fields: str) -> dict[str, object]:
 
 def test_a_shape_4_rendering_is_parsed_family_first() -> None:
     # The recorder and the checker share parse_rendering, so they cannot
-    # parse a rendering two ways. A lone word under FAMILY_FIRST reads as
-    # the family name, so CLDR's given name disagrees -- by design.
-    found = agreement.disagreements([_row("Lena", 4, given="Lena")])
+    # parse a rendering two ways. Two words under FAMILY_FIRST read the
+    # first as the family name, so a rendering CLDR wrote given-first
+    # disagrees -- by design.
+    found = agreement.disagreements(
+        [_row("Lena Berg", 4, given="Lena", surname="Berg")])
     assert found == {"xx/nativeG/givenFirst": {
-        "text": "Lena", "given_names": {"expected": "Lena", "got": ""},
-        "family": {"expected": "", "got": "Lena"}}}
-    assert agreement.disagreements([_row("Lena", None, given="Lena")]) == {}
+        "text": "Lena Berg",
+        "given_names": {"expected": "Lena", "got": "Berg"},
+        "family": {"expected": "Berg", "got": "Lena"}}}
+    assert agreement.disagreements(
+        [_row("Lena Berg", None, given="Lena", surname="Berg")]) == {}
 
 
 _RECORDED = {"a/nativeG/givenFirst": {"text": "A", "family": {"expected": "X", "got": "Y"}},

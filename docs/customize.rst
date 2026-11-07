@@ -808,6 +808,11 @@ listed below.
        data where people carry a compound given name and no middle
        name (``María José``). Defaults to ``False``. See
        :ref:`two-given-names`.
+   * - ``lone_name_word``
+     - ``Role.GIVEN`` or ``Role.FAMILY``
+     - The field a name of one word reads as, under every
+       ``name_order``. Defaults to ``Role.GIVEN``. See
+       :ref:`lone-name-word`.
    * - ``nickname_delimiters``
      - ``frozenset[tuple[str, str]]``
      - Routes content enclosed by these delimiter pairs to
@@ -1057,6 +1062,47 @@ consulted at all:
 
 `Words that are also ordinary names`_ covers dropping a word from a
 vocabulary, or moving one between those two sets.
+
+.. _lone-name-word:
+
+Names written as one word
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A name of one word gives the order nothing to compare, so nothing in
+it says whether the word is a given name or a family name. The parser
+reads it as the given name, under every ``name_order``, and reports the
+choice as a ``given-or-family`` ambiguity:
+
+.. doctest::
+
+    >>> from nameparser import Role
+    >>> parse("Anh").given
+    'Anh'
+    >>> family_first.parse("Anh").given
+    'Anh'
+    >>> [a.kind.value for a in family_first.parse("Anh").ambiguities]
+    ['given-or-family']
+
+Which field a word written alone fills depends on where the data came
+from rather than on the order its longer names are written in: a list
+of the names people go by holds given names, a column of surnames
+holds family names. For data whose lone words are surnames, set
+``lone_name_word``:
+
+.. doctest::
+
+    >>> surnames = Parser(policy=Policy(lone_name_word=Role.FAMILY))
+    >>> surnames.parse("Nguyen").family
+    'Nguyen'
+    >>> surnames.parse("John Smith").family          # longer names unchanged
+    'Smith'
+
+Anything that does decide the word still decides it first, whatever the
+switch says: a title (``"Mr. Johnson"`` is family ``Johnson``, ``"Sir
+John"`` given ``John``), a nickname or maiden name beside it, and a
+Han or Hangul name, which its script reads family-first. Through 2.x
+the field followed ``name_order``, so a family-first order read a
+lone word as the family name.
 
 .. _two-family-names:
 

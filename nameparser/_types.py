@@ -833,11 +833,12 @@ class AmbiguityKind(StrEnum):
     CONJUNCTION_OR_INITIAL = "conjunction-or-initial"
     #: A name of one name word that nothing else decided had to be read
     #: as one field or the other, and both readings fit it equally well
-    #: -- "Andrew", "Smith". The convention picks the given name under
-    #: the default order and the family name under a declared
-    #: family-first one, the same way every time, so ``detail`` names
-    #: the field the convention chose rather than the kind naming it:
-    #: the same reason PARTICLE_OR_GIVEN cannot. A name something DID
+    #: -- "Andrew", "Smith". The convention picks the field
+    #: ``Policy.lone_name_word`` names, the given name by default, under
+    #: every order and the same way every time, so ``detail`` names the
+    #: field the convention chose rather than the kind naming it: the
+    #: field is the caller's setting, as PARTICLE_OR_GIVEN's is the
+    #: order's. A name something DID
     #: decide reports nothing: a title, a maiden name, a family comma
     #: that names a family, a script whose own convention settles the
     #: order, or the vocabulary claiming the word (a particle, a bound

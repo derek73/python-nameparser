@@ -328,10 +328,12 @@ def test_the_2_3_positional_fields_did_not_move() -> None:
         names = tuple(f.name for f in dataclasses.fields(cls))
         assert names[:len(_FIELDS_AT_2_3)] == _FIELDS_AT_2_3, cls.__name__
         # each later cycle's fields appended behind the last: 2.4's two,
-        # then 2.6's two_family_names, then 3.0's two_given_names
+        # then 2.6's two_family_names, then 3.0's two_given_names and
+        # lone_name_word
         assert names[len(_FIELDS_AT_2_3):] == (
             "unlisted_dotted_suffixes", "unlisted_caps_suffixes",
-            "two_family_names", "two_given_names"), cls.__name__
+            "two_family_names", "two_given_names",
+            "lone_name_word"), cls.__name__
     # the positional binding itself, not just the names
     assert Policy(GIVEN_FIRST, (), frozenset(), frozenset(), False,
                   frozenset(), frozenset(), frozenset(), True,
@@ -842,6 +844,32 @@ def test_unlisted_caps_suffixes_is_a_validated_enum_defaulting_after_comma(
                      (False, "CapsSuffixes.OFF")):
         with pytest.raises(TypeError, match=new.replace(".", r"\.")):
             Policy(unlisted_caps_suffixes=old)  # type: ignore[arg-type]
+
+
+def test_lone_name_word_is_given_or_family_defaulting_given() -> None:
+    # #1111: the field a lone name word takes is the caller's, under
+    # every order, and only the two primary fields are a lone word's
+    assert Policy().lone_name_word is Role.GIVEN
+    assert Policy(lone_name_word=Role.FAMILY).lone_name_word is Role.FAMILY
+    # a plain string is coerced to the member, so equal Policies stay equal
+    coerced = Policy(lone_name_word="family")  # type: ignore[arg-type]
+    assert coerced.lone_name_word is Role.FAMILY
+    assert coerced == Policy(lone_name_word=Role.FAMILY)
+    assert Policy().patched(
+        PolicyPatch(lone_name_word=Role.FAMILY)
+    ).lone_name_word is Role.FAMILY
+    # a role that is no lone word's field, from either entry point; the
+    # message names the two that are, spelled as code that runs
+    for bad in (Role.MIDDLE, Role.TITLE, "middle", "surname"):
+        with pytest.raises(ValueError, match=r"Role\.GIVEN or Role\.FAMILY"):
+            Policy(lone_name_word=bad)  # type: ignore[arg-type]
+        with pytest.raises(ValueError, match=r"Role\.GIVEN or Role\.FAMILY"):
+            Policy().patched(PolicyPatch(
+                lone_name_word=bad))  # type: ignore[arg-type]
+    # not a string at all: a TypeError, the bool a flag-shaped guess
+    for wrong in (True, None, 1):
+        with pytest.raises(TypeError, match=r"Role\.FAMILY"):
+            Policy(lone_name_word=wrong)  # type: ignore[arg-type]
 
 
 def test_unlisted_caps_suffixes_on_reads_an_all_caps_word() -> None:

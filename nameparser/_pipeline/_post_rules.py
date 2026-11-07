@@ -32,7 +32,8 @@ since #892.
 Reads: Policy.patronymic_rules, Policy.two_family_names,
 Policy.two_given_names, Policy.name_order (O6 and O7 stand down where
 the script's order differs from the declared one),
-Policy.middle_as_family,
+Policy.middle_as_family, Policy.lone_name_word (passed on to
+the positional layout, which reads it only at one name word),
 Policy.extra_suffix_delimiters (R1's entry pass, for the delimiter
 cores group drops); Lexicon.given_name_titles, Lexicon.given_names
 (O6's veto), Lexicon.saint_particles (P10's saint clause; P10 runs
@@ -420,7 +421,8 @@ def _take_second_family_name(state: ParseState,
     _mark_surname(tokens, family, FIRST_SURNAME_TAG)
     _mark_surname(tokens, units[0], SECOND_SURNAME_TAG)
     for unit, role in zip(units[1:], _name_positions(
-            state.order, len(units))[1:]):
+            state.order, len(units),
+            lone=state.policy.lone_name_word)[1:]):
         for i in unit:
             _retag(tokens, i, role)
 
@@ -454,7 +456,8 @@ def _read_surname_pair(state: ParseState,
     _mark_surname(tokens, family, FIRST_SURNAME_TAG)
     _mark_surname(tokens, units[0], SECOND_SURNAME_TAG)
     for unit, role in zip(units[1:], _name_positions(
-            state.order, len(units))[1:]):
+            state.order, len(units),
+            lone=state.policy.lone_name_word)[1:]):
         for i in unit:
             _retag(tokens, i, role)
     after = second + 1
@@ -1016,7 +1019,8 @@ def post_rules(state: ParseState) -> ParseState:
             # rest out as _name_positions would for n + 1 pieces.
             rest = _units(tokens, name_idx[cut:])
             for unit, role in zip(rest, _name_positions(
-                    order, len(rest) + 1)[1:]):
+                    order, len(rest) + 1,
+                    lone=state.policy.lone_name_word)[1:]):
                 for i in unit:
                     _retag(tokens, i, role)
         else:
