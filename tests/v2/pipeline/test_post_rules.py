@@ -1803,7 +1803,8 @@ def test_a_set_apart_clause_trims_its_comma_off_the_word(text: str) -> None:
 #: two-spelling invariant below reads.
 _BRACKETED_WORDS = ("PhD", "Jr.", "MD/PhD", "MD-PhD", "md/phd", "Md-PhD",
                     "MD/PhD/MPH", "M.D./Ph.D.", "M.A./PhD", "Jr/Sr",
-                    "MD/Bob", "MA/PhD", "Smith-Jones", "Ae-Ra", "I-V", "MD/")
+                    "MD/Bob", "MA/PhD", "MA/MBA", "Smith-Jones", "Ae-Ra", "I-V",
+                    "MD/")
 
 #: The rows the guard moves, as the tree before #1088 read them, the
 #: set-apart word asking its own copy of the unambiguous suffix sets:
@@ -1821,7 +1822,7 @@ _UNGUARDED_EFFECT_1088 = {
 
 #: The grid's words S3 refuses, pinned apart from the predicate the
 #: test asks, so a refusal S3 lost would not move both sides at once.
-_REFUSED_JOINED = frozenset({"MD/Bob", "MA/PhD", "Smith-Jones", "Ae-Ra",
+_REFUSED_JOINED = frozenset({"MD/Bob", "MA/MBA", "Smith-Jones", "Ae-Ra",
                              "I-V", "MD/"})
 
 
@@ -1867,6 +1868,64 @@ def test_a_member_a_caller_lists_as_a_title_is_the_title() -> None:
     assert "aca" in Lexicon.default()._sets.suffix_acronyms_ambiguous
     name = parser.parse("John Smith (Aca)")
     assert (name.title, name.nickname) == ("Aca", "")
+
+
+@pytest.mark.parametrize("text, suffix, reported", [
+    # a member its writing leaves unsettled is settled by a credential of
+    # its clause after the name (rules/S1, #1138), with a comma, a space
+    # or a joiner between them
+    ("John Smith (Ma, PhD)", "Ma, PhD", False),
+    ("John Smith (Ma PhD)", "Ma PhD", False),
+    ("JOHN SMITH (PHD, MBA)", "PHD, MBA", False),
+    ("John Smith (MA/PhD)", "MA/PhD", False),
+    ("Smith, John (Ma, PhD)", "Ma, PhD", False),
+    # nothing settles members alone, nor a title
+    ("John Smith (Ma, Ed)", "", True),
+    ("John Smith (MA/MBA)", "", True),
+    ("John Smith (Dr, Ma)", "", True),
+    # inside the name or before it, a member stays the nickname,
+    # reported, joined or written apart (rules/S13)
+    ("John (Ma, PhD) Smith", "", True),
+    ("John (MA/PhD) Smith", "", True),
+    ("(MA/PhD) John Smith", "", True),
+    ("John (M.A/PhD) Smith", "", True),
+    # a member its periods make a suffix as written is no member here
+    ("John (M.A./PhD) Smith", "", False),
+    ("Smith (M.A./PhD), John", "M.A./PhD", False),
+    # before a family comma is not after the name
+    ("Smith (Ma, PhD), John", "", True),
+    # the joined spelling with a hyphen, inside the name
+    ("John (MA-PhD) Smith", "", True),
+    ("John (M.A-PhD) Smith", "", True),
+    # a credential listed whole, its member chunk no member of the word
+    ("John (CPNP-PC) Smith", "CPNP-PC", False),
+    # a member listed as a suffix WORD, not an acronym
+    ("John Smith (Junior, PhD)", "Junior, PhD", False),
+    # a member its periods settle settles another; one its capitals
+    # settle does not, as no joined chunk is settled by case
+    ("John Smith (M.A, Ma)", "M.A, Ma", False),
+    ("John Smith (MBA, Ma)", "", True),
+    ("John Smith (MA, Ed)", "", True),
+    # a generation, a numeral or a title too settles nothing: 'Ed Jr'
+    # is a name a person goes by
+    ('Edward Smith "Ed Jr"', "", True),
+    ("Edward Smith (Ed II)", "", True),
+    ("John Smith (Ma, Ms)", "", True),
+    ("John Smith (Ma/Ms)", "", True),
+    ("John Smith (Ma, 씨)", "", True),  # an honorific neither
+    # a joined word settles one where a chunk of it would
+    ("John Smith (Ed, Jr/Sr)", "", True),
+    ("John Smith (Ma, Ms/Jr)", "", True),
+    ("John Smith (Ma, PhD/Jr)", "Ma, PhD/Jr", False),
+    ("John Smith (Ma, MA/PhD)", "Ma, MA/PhD", False),
+    ("John Smith (Ma, Esq)", "Ma, Esq", False),
+])
+def test_a_credential_settles_a_member_of_its_clause_after_the_name(
+        text: str, suffix: str, reported: bool) -> None:
+    name = parse(text)
+    assert name.suffix == suffix
+    assert (AmbiguityKind.SUFFIX_OR_NICKNAME in
+            [a.kind for a in name.ambiguities]) is reported
 
 
 #: rules/S1's two spellings of a credential pair, joined by a slash or a
@@ -1947,6 +2006,58 @@ def test_a_joined_credential_reads_as_its_spelling_written_apart() -> None:
     # the control is a share of the grid the guard reads
     assert 0 < _UNGUARDED_PAIRS_1088 < _PAIRS_CHECKED
     assert 0 < _UNGUARDED_PAIRS_1103 < _PAIRS_CHECKED
+
+
+#: #1138's twin of the invariant above for a member of the ambiguous
+#: class beside a credential that settles it: joined, the word is a
+#: member S13 settles by position (rules/S3), and written apart the
+#: credential settles the member in its clause (rules/S1), so the two
+#: spellings read alike in every shape. Fields only, as above.
+_MEMBERS = ("MA", "Ma", "M.A", "MBA", "Ed", "KC", "JD")
+_SETTLERS = ("PhD", "MD", "RN", "Esq", "NP-C", "MS", "RA")
+
+#: How many rows' two spellings read differently with `set_apart_kind`
+#: reading a joined word holding a member as a plain suffix, the
+#: position test skipped: the control, recorded 2026-11-07 in-process by
+#: replacing `_vocab.joined_member` with a function returning False.
+#: Each is a joined pair inside or before a name word, set apart where
+#: its spelling written apart stays the nickname. 'MS' and 'RA', words
+#: that are titles too, joined the settlers after the second review
+#: found them settling a joined member and not a clause one.
+_UNGUARDED_MEMBER_PAIRS_1138 = 1608
+
+#: How many (pair, shape, order) rows the member invariant reads.
+_MEMBER_PAIRS_CHECKED = 4752
+
+
+def _member_pair_differences() -> tuple[list[str], int]:
+    found = []
+    checked = 0
+    for m in _MEMBERS:
+        for c in _SETTLERS:
+            for a, b in ((m, c), (c, m)):
+                for joined in (f"{a}/{b}", f"{a}-{b}"):
+                    if not suffix_as_written(_normalize(joined), joined,
+                                             Lexicon.default()):
+                        continue
+                    apart = f"{a}, {b}"
+                    for shape in _PAIR_SHAPES:
+                        for parser in _PAIR_PARSERS:
+                            one = {k: v.replace(joined, apart) for k, v in
+                                   parser.parse(shape.format(joined))
+                                   .as_dict().items()}
+                            if one != parser.parse(
+                                    shape.format(apart)).as_dict():
+                                found.append(shape.format(joined))
+                            checked += 1
+    return found, checked
+
+
+def test_a_joined_member_reads_as_its_spelling_written_apart() -> None:
+    found, checked = _member_pair_differences()
+    assert found == []
+    assert checked == _MEMBER_PAIRS_CHECKED
+    assert 0 < _UNGUARDED_MEMBER_PAIRS_1138 < _MEMBER_PAIRS_CHECKED
 
 
 # rules/W5's surname pair (#845): a four-character Han name opening with

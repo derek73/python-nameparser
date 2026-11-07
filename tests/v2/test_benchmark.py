@@ -340,6 +340,8 @@ _SHAPES = {
     "set_apart_initials": "(JP) a ",  # post_rules: S1's name-ahead walk (#792)
     "slash_chain": "MD/",           # vocab: S3's cut of a joined word (#1103)
     "hyphen_chain": "MD-",          # vocab: the same cut, hyphens only
+    "member_chain": "MA/PhD/",      # vocab: the cut's member arm (#1138)
+    "bracket_joined_members": "(MA/PhD) ",  # post_rules: joined members
 }
 
 _BASE = 800

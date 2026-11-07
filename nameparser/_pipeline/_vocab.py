@@ -451,15 +451,17 @@ def dotted_member(word: str, lexicon: Lexicon) -> bool:
 # is set apart from the name" -- the word's half; `set_apart` is the
 # clause's. Its suffix half is `suffix_as_written`'s, so a credential
 # joined by a slash or a hyphen is one here as it is bare, a dotted
-# member asked first and left to S13's position test (decisions/S1,
-# #792, #1088)
+# member asked first, and a joined word holding a member after the
+# suffix test, each left to S13's position test (decisions/S1, #792,
+# #1088; decisions/S3, #1138)
 def set_apart_kind(word: str, lexicon: Lexicon,
                    ) -> SetApartKind | Literal["member"] | None:
     """What a word in a delimited clause is to S1's set-apart reading:
     a title, a suffix (a word `suffix_as_written` reads, joined
     credentials included), both, a member of the ambiguous class
-    written with a period inside it (`dotted_member`), which S13
-    settles after the name only, or None where the vocabulary reads it
+    written with a period inside it (`dotted_member`) or a joined word
+    holding one (`joined_member`, 'MA/PhD'), which S13 settles after the
+    name only, or None where the vocabulary reads it
     as a name or not at all. A comma the clause keeps on its word is no
     part of it (rules/N1)."""
     bare = word.strip(",")
@@ -482,6 +484,11 @@ def set_apart_kind(word: str, lexicon: Lexicon,
     suffix = ((acronym in sets.suffix_acronyms or folded in sets.suffix_words
                or "-" in folded or "/" in folded)
               and suffix_as_written(folded, bare, lexicon))
+    # rules/S3: "a joined word holding a member is a member itself" --
+    # settled after the name only, as S13 settles one written alone
+    # (decisions/S3, #1138)
+    if suffix and not title and joined_member(bare, lexicon):
+        return "member"
     if title:
         return "dual" if suffix else "title"
     return "suffix" if suffix else None
@@ -958,6 +965,70 @@ def suffix_as_written(n: str, text: str, lexicon: Lexicon) -> bool:
 _JOINERS = re.compile(r"[-/]")
 
 
+def _member(chunk: str, lexicon: Lexicon) -> bool:
+    """Whether CHUNK is a member of the ambiguous class (S4), however
+    written ('MA', 'Ma', 'M.A', 'M.A.'): an acronym once its periods are
+    removed, or a suffix word, that is a name too."""
+    folded = _normalize(chunk)
+    return (folded.replace(".", "") in lexicon._sets.suffix_acronyms_ambiguous
+            or folded in lexicon._sets.suffix_words_ambiguous)
+
+
+def _settles(chunk: str, lexicon: Lexicon) -> bool:
+    """Whether CHUNK, one word or one listed run of a joined word's cut,
+    settles a member beside it: a credential that is no name
+    (`settles_a_member`), or a member written with a period inside it
+    ('M.A')."""
+    return (settles_a_member(chunk, lexicon)
+            or "." in chunk and dotted_member(chunk, lexicon))
+
+
+# rules/S1: "a credential that is no name, or a member its periods
+# settle, says which" -- the credential half, asked of a clause word
+# and of a joined word's chunk alike: a generation, a numeral, an
+# honorific or a word that is a title too says nothing of the kind,
+# 'Ed Jr' being a name a person goes by (decisions/S1, #1138)
+def settles_a_member(word: str, lexicon: Lexicon) -> bool:
+    """Whether WORD, a comma it is written against left off (rules/N1),
+    is a credential that is no name: it counts as a suffix as written
+    (a member its periods settle, 'M.A.', included) and is no
+    generation, no honorific and no title. A joined word not listed
+    whole is one where a chunk of its cut is ('PhD/Jr', not 'Jr/Sr')."""
+    bare = word.strip(",")
+    if ("/" in bare or "-" in bare) and not _listed_whole(bare, lexicon):
+        return any(_settles(c, lexicon)
+                   for c in _joined_chunks(bare, lexicon) or ())
+    folded = _normalize(bare)
+    sets = lexicon._sets
+    return (suffix_as_written(folded, bare, lexicon)
+            and folded not in sets.generation_words
+            and folded not in sets.honorific_words
+            and folded not in sets.titles)
+
+
+def joined_member(word: str, lexicon: Lexicon) -> bool:
+    """Whether WORD, joined by '/' or '-' and not listed whole ('NP-C'),
+    cuts (`_joined_chunks`) into pieces one of which is a member of the
+    ambiguous class that does not count as a suffix as written
+    ('MA/PhD', 'M.A/PhD', 'MA/MBA'; not 'M.A./PhD'). `set_apart_kind`
+    asks it of a word `suffix_as_written` reads, making that word a
+    member S13 settles by its position; `_report_delimited_members`
+    asks it of any joined nickname, so a joined word of members alone
+    reports as its words written apart do."""
+    if not ("/" in word or "-" in word) or _listed_whole(word, lexicon):
+        return False
+    return any(_member(c, lexicon)
+               and not suffix_as_written(_normalize(c), c, lexicon)
+               for c in _joined_chunks(word, lexicon) or ())
+
+
+def member_word(word: str, lexicon: Lexicon) -> bool:
+    """Whether a word of a delimited clause, a comma the clause keeps
+    on it left off (rules/N1), is a member of the ambiguous class (S4),
+    however written."""
+    return _member(word.strip(","), lexicon)
+
+
 def _listed_whole(word: str, lexicon: Lexicon) -> bool:
     """Whether the suffix vocabulary lists WORD whole, its joiners
     included ('NP-C', 'OTR/L'): as a suffix word, or as an acronym once
@@ -989,8 +1060,9 @@ def _joined_span(words: frozenset[str]) -> int:
 # (decisions/S3, #1103)
 def _joined_chunks(text: str, lexicon: Lexicon) -> list[str] | None:
     """A cut of TEXT at some of its joiners into pieces that each count
-    as a suffix as written, a run of chunks the vocabulary lists whole
-    among them, with the fewest pieces ('MS/OTR/L' is 'MS', 'OTR/L';
+    as a suffix as written or are a member of the ambiguous class
+    however written ('MA', 'M.A'), a run of chunks the vocabulary lists
+    whole among them, with the fewest pieces ('MS/OTR/L' is 'MS', 'OTR/L';
     'CCC/SLP/L' is 'CCC', 'SLP/L'; 'APRN-FNP-C' is 'APRN', 'FNP-C';
     'MD-PhD' is 'MD', 'PhD'), or None where no cut gives such pieces
     ('MD-Jones', 'MD/'). No piece is the whole of TEXT: each caller has
@@ -1014,8 +1086,11 @@ def _joined_chunks(text: str, lexicon: Lexicon) -> list[str] | None:
             # a run must be listed whole, which a chunk alone need not be
             if not piece or j > i + 1 and not _listed_whole(piece, lexicon):
                 continue
+            # a member is a chunk however written; `_joined_credential`
+            # asks that a chunk beside it settles it (#1138)
             if ((not pieces[j] or pieces[i] + 1 < pieces[j])
-                    and suffix_as_written(_normalize(piece), piece, lexicon)):
+                    and (suffix_as_written(_normalize(piece), piece, lexicon)
+                         or _member(piece, lexicon))):
                 pieces[j] = pieces[i] + 1
                 start[j] = i
     if not pieces[n]:
@@ -1039,10 +1114,13 @@ def _joined_credential(text: str, lexicon: Lexicon) -> bool:
     """Whether TEXT is two or more chunks joined by '-' or '/', cut so
     that each is non-empty and counts as a suffix as written (listed,
     and not a bare member of the ambiguous class, a run listed whole
-    counting as one chunk), not every one a single ASCII character,
-    and -- joined by a hyphen -- not written as a hyphenated name is
-    ('MD/PhD', 'M.A.-Ph.D.', 'PhD-Md', 'md-phd', 'PhD/NP-C', but not
-    'MA/PhD', 'Smith-Jones', 'I-V', 'Ae-Ra', 'Ae-ra' or 'MD/'). The
+    counting as one chunk) or is a member of that class however
+    written, where one chunk at least settles every such member
+    (`_settles`), not every one
+    a single ASCII character, and -- joined by a hyphen -- not written
+    as a hyphenated name is ('MD/PhD', 'M.A.-Ph.D.', 'MA/PhD',
+    'M.A/PhD', 'PhD-Md', 'md-phd', 'PhD/NP-C', but not 'MA/MBA',
+    'MA/Jones', 'Smith-Jones', 'I-V', 'Ae-Ra', 'Ae-ra' or 'MD/'). The
     writing is read first, so a hyphenated name ('Smith-Jones') is
     never cut."""
     # a slash joins no name, so a word holding one takes no cue
@@ -1064,6 +1142,16 @@ def _joined_credential(text: str, lexicon: Lexicon) -> bool:
             return False
     chunks = _joined_chunks(text, lexicon)
     if chunks is None:
+        return False
+    # rules/S3: "a member of the ambiguous class (S4) is a chunk too,
+    # however it is written, where the word holds a chunk that settles
+    # it" -- a credential that is no name, or a member its periods
+    # settle; a word of bare members alone has nothing to settle it
+    # (decisions/S3, #1138)
+    unsettled = any(_member(c, lexicon)
+                    and not suffix_as_written(_normalize(c), c, lexicon)
+                    for c in chunks)
+    if unsettled and not any(_settles(c, lexicon) for c in chunks):
         return False
     # rules/S3: "Every chunk the vocabulary matches is a single ASCII
     # character" -- the numerals and the digit, which are about

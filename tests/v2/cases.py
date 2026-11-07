@@ -4951,11 +4951,17 @@ CASES: tuple[Case, ...] = (
          {"given": "John", "middle": "Smith", "family": "MD-Jones"},
          notes="the boundary: every chunk, not any, because a hyphen "
                "also joins names"),
-    Case("a_joined_credential_with_a_bare_ambiguous_chunk_keeps_its_reading",
+    Case("a_joined_credential_settles_a_bare_ambiguous_chunk",
          "John Smith, MA/PhD",
-         {"given": "MA/PhD", "family": "John Smith"},
-         notes="rules/S3's Accepted cost: a bare member of the ambiguous "
-               "class is no chunk the stricter test counts"),
+         {"given": "John", "family": "Smith", "suffix": "MA/PhD"},
+         notes="rules/S3 (#1138): a bare member of the ambiguous class is "
+               "a chunk where a credential that is no name stands beside "
+               "it; 1.4.0 through 2.8.2 reversed the name around it"),
+    Case("a_joined_word_of_bare_members_keeps_its_reading",
+         "John Smith, MA/Mba",
+         {"given": "MA/Mba", "family": "John Smith"},
+         notes="rules/S3's Accepted cost: members alone, nothing settles "
+               "them"),
     # #752 (phase 2d): an unlisted word of capitals joined by a hyphen
     # or a slash is the caps shape (rules/S9), gated by the name's case
     # contrast after a comma (rules/C6) as the unjoined word is. 1.4.0
@@ -10297,13 +10303,17 @@ CASES: tuple[Case, ...] = (
          "John Smith (MD/Bob)",
          {"given": "John", "family": "Smith", "nickname": "MD/Bob"},
          notes="S3 asks every chunk, and Bob is no credential"),
-    Case("paren_joined_member_chunk_stays_the_nickname",
+    Case("paren_joined_member_chunk_is_the_suffix_after_the_name",
          "John Smith (MA/PhD)",
+         {"given": "John", "family": "Smith", "suffix": "MA/PhD"},
+         notes="a joined word holding a member is a member (rules/S3, "
+               "#1138), settled after the name (rules/S13)"),
+    Case("paren_joined_member_chunk_stays_the_nickname_inside_the_name",
+         "John (MA/PhD) Smith",
          {"given": "John", "family": "Smith", "nickname": "MA/PhD"},
-         notes="a bare member of the ambiguous class is no chunk of a "
-               "joined credential (rules/S3), so the clause is not "
-               "set apart; the joined word is no member either, so "
-               "nothing reports"),
+         ambiguities=("suffix-or-nickname",),
+         notes="a member is settled after the name only (rules/S13), as "
+               "its words written apart are"),
     # rules/S13 (#810): a member of the ambiguous class alone in the
     # brackets after the name, settled by its writing. Each row is
     # paired with a control its writing or its position does not settle.

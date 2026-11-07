@@ -434,8 +434,10 @@ def test_period_joined_vocab_retires_the_single_character_chunk() -> None:
     ("md-phd", True),
     ("M.D./Ph.D.", True),   # a chunk counts as written, periods and all
     ("M.A./Ph.D.", True),   # an ambiguous acronym written with its periods
-    ("MA/PhD", False),      # a bare member of the ambiguous class
-    ("PhD/Ed", False),
+    ("MA/PhD", True),       # a bare member a credential beside it settles
+    ("PhD/Ed", True),       # (#1138)
+    ("MA/MBA", False),      # members alone: nothing settles them
+    ("Ma/Ed", False),
     ("Smith-Jones", False),  # a hyphen also joins names
     ("MD-Jones", False),    # every chunk, not any
     ("MD/", False),         # an empty chunk is no chunk
@@ -480,6 +482,27 @@ def test_period_joined_vocab_retires_the_single_character_chunk() -> None:
     ("M.S.-O.T.R./L.", True),  # a run's periods, as a word's
     ("A.P.R.N.-F.N.P.-C.", True),
     ("I-NP-C", True),       # a run beside a numeral is no numeral alone
+    # a member is a chunk however written, where a chunk beside it
+    # settles it: a credential that is no name, or a member its periods
+    # settle (#1138)
+    ("M.A/PhD", True),
+    ("PhD/M.A", True),
+    ("M.A-CCC-SLP", True),
+    ("MA-CCC-SLP", True),   # a hyphen too
+    ("MA/CCC-SLP", True),   # beside a run listed whole
+    ("M.A/B.A", True),      # dotted members settle each other
+    ("J.D/MBA", True),      # a dotted member settles a bare one
+    ("MA/Jones", False),    # a name word beside it still refuses
+    ("M.A/Jones", False),
+    ("M.A-Smith", False),   # written as a hyphenated name is
+    ("Ma-Phd", False),
+    ("KC/PhD", True),       # a member listed as a suffix word
+    ("MA/Jr", False),       # a generation settles nothing
+    ("MA/II", False),
+    ("MA/III", False),      # nor a numeral
+    ("Ma/Ms", False),       # nor a word that is a title too
+    ("MS/MBA", False),
+    ("MA/PhD/Jr", True),    # a chunk that is no name does
 ])
 def test_suffix_as_written_reads_a_joined_credential(
         text: str, expected: bool) -> None:
@@ -495,6 +518,7 @@ def test_suffix_as_written_reads_a_joined_credential(
     ("CCC/SLP/L", ["CCC", "SLP/L"]),        # 'CCC/SLP' leaves a bare 'L'
     ("MD/CCC-SLP", ["MD", "CCC-SLP"]),      # not 'CCC', 'SLP'
     ("MD-PhD", ["MD", "PhD"]),
+    ("M.A/CCC-SLP", ["M.A", "CCC-SLP"]),    # a dotted member (#1138)
     ("MD-Jones", None),
 ])
 def test_a_joined_word_is_cut_into_the_fewest_pieces(
@@ -533,15 +557,19 @@ def test_a_joined_credential_with_a_listed_run_is_the_suffix_in_every_shape(
     assert name.suffix.lower() == word.lower()
 
 
-@pytest.mark.parametrize("text", ["OT/L", "MS/OT/L", "OT/L/MS", "NP-C"])
+@pytest.mark.parametrize("text, expected", [
+    ("OT/L", False), ("NP-C", False),
+    # a member beside a word that is a title too, which settles nothing
+    # (#1138)
+    ("MS/OT/L", False), ("OT/L/MS", False)])
 def test_a_joined_word_listed_whole_and_refused_is_not_asked_again(
-        text: str) -> None:
+        text: str, expected: bool) -> None:
     # a guard on the cut, not on a reading the base lacked: a word the
     # vocabulary lists whole that suffix_as_written refuses, being a
     # name too, reaches the joined reading, whose cut must not hand it
     # back whole, or the parse recurses without end
     lex = Lexicon.default().add("ot/l", "np-c", kind="given")
-    assert suffix_as_written(_normalize(text), text, lex) is False
+    assert suffix_as_written(_normalize(text), text, lex) is expected
     Parser(lexicon=lex).parse(f"Jane Smith {text}")
 
 

@@ -4,7 +4,7 @@
 
 **Then:** a clause wholly of words the vocabulary reads as no name is set apart from the name: it is no nickname and no maiden name, and the words around it read as they would beside a nickname.
 
-- **Each word takes the role its vocabulary gives it**: a title is the title, a credential or a generation the suffix, one joined by a slash or a hyphen (S3) too, and a word that is both is the title in front of the name's first word, or in a name with no word of its own, and the suffix anywhere else. The vocabulary is asked of each word on its own, so a credential whose word is also a name (S4) is no word of such a clause, and neither is a title that is also a given name (H9).
+- **Each word takes the role its vocabulary gives it**: a title is the title, a credential or a generation the suffix, one joined by a slash or a hyphen (S3) too, and a word that is both is the title in front of the name's first word, or in a name with no word of its own, and the suffix anywhere else. The vocabulary is asked of each word on its own, so a credential whose word is also a name (S4) is no word of such a clause unless its writing (S13) or a credential of its clause settles it (below), and neither is a title that is also a given name (H9).
   ```
   "John Smith (PhD, MBA)"     →  suffix="PhD, MBA"
   "John Smith (Dr)"           →  title="Dr"
@@ -18,7 +18,7 @@
   "Smith (M.D./Ph.D.), John"  →  suffix="M.D./Ph.D."
   "John Smith (King)"         →  nickname="King"  · boundary
   "John Smith (MD/Bob)"       →  nickname="MD/Bob"  · boundary
-  "John Smith (MA/PhD)"       →  nickname="MA/PhD"  · boundary
+  "John Smith (MA/MBA)"       →  nickname="MA/MBA"  · boundary
   ```
 - **The words around it read as they would beside a nickname**, so a clause between name words ends where its brackets do and takes neither neighbour, and a lone name word beside it is the family name (N3).
   ```
@@ -35,12 +35,23 @@
   "John Smith (Jr.,) III"     →  suffix="Jr., III"
   "John Smith (MD,) (PhD)"    →  suffix="MD, PhD"
   ```
-- **A member of the ambiguous class (S4) is a word of such a clause where its writing settles it after the name**, as S13 settles a member standing alone, wherever in the clause it stands.
+- **A member of the ambiguous class (S4) is a word of such a clause where its writing settles it after the name**, as S13 settles a member standing alone, wherever in the clause it stands. A member its writing leaves unsettled is one too where a credential of the same clause settles it: the brackets hold one kind of thing, and a credential that is no name, or a member its periods settle, says which. A joined word settles one where a chunk of it would. A generation, a numeral, an honorific, a word that is a title too and a member its capitals settle say nothing of the kind: `Ed Jr` is a name a person goes by, and a joined chunk is never settled by its case (S3).
   ```
   "John Smith (Ph.D., MBA)"   →  suffix="Ph.D., MBA"
   "John Smith (MBA, PhD)"     →  suffix="MBA, PhD"
   "John Smith (PhD, M.A)"     →  suffix="PhD, M.A"
-  "JOHN SMITH (PHD, MBA)"     →  nickname="PHD, MBA"  · boundary
+  "JOHN SMITH (PHD, MBA)"     →  suffix="PHD, MBA"
+  "John Smith (Ma, PhD)"      →  suffix="Ma, PhD"
+  "John Smith (Ma PhD)"       →  suffix="Ma PhD"
+  "John Smith (Ma, Esq)"      →  suffix="Ma, Esq"
+  "John Smith (M.A, Ma)"      →  suffix="M.A, Ma"
+  "John Smith (Ma, Ed)"       →  nickname="Ma, Ed"  · boundary
+  "John Smith (MA, Ed)"       →  nickname="MA, Ed"  · boundary
+  "Edward Smith (Ed Jr)"      →  nickname="Ed Jr"  · boundary
+  "John Smith (Ma, Ms)"       →  nickname="Ma, Ms"  · boundary
+  "John Smith (Ed, Jr/Sr)"    →  nickname="Ed, Jr/Sr"  · boundary
+  "John Smith (Dr, Ma)"       →  nickname="Dr, Ma"  · boundary
+  "John (Ma, PhD) Smith"      →  nickname="Ma, PhD"  · boundary
   ```
 
 **Because:** brackets and quotes set off more than nicknames. A writer brackets a credential, a generation or a title to keep it apart from the name, and the words the vocabulary reads as no name say which one the brackets hold. Where every word is one of them, the brackets have drawn the clause's edges, so the name around it reads as it does beside any clause it holds apart.
@@ -106,6 +117,11 @@
 
 **Accepted:**
 
+- A clause a credential settles a member of, ending in an ASCII period, takes the period escape, as one holding a member its writing settles already did: the escape is decided before it is known where the name ends, which the member's reading needs, so the clause reads as if written bare, the member then read by position.
+  ```
+  "John Smith (Ma, Ph.D.)"    →  family="Ma"
+  "John Smith (M.A, Ph.D.)"   →  family="M.A"
+  ```
 - A clause between name words reads otherwise than the same words bare: the bare generation joins the middle name (S8) and the bare credential starts the run to the end of the name, and a lone name word beside a bare credential is the given name.
   ```
   "W. Russell Jr. Withers"    →  middle="Russell Jr."
@@ -140,5 +156,5 @@
   ```
 
 ---
-**Signal:** shape: a bracketed or quoted clause every word of which the vocabulary reads as no name + neighbor: a credential in front, a name word behind + edge full stop: the period escape
+**Signal:** shape: a bracketed or quoted clause every word of which the vocabulary reads as no name + neighbor: a credential in front, a name word behind, a credential in the clause settling a member + edge full stop: the period escape
 **history:** decisions/S1 · **implemented:** nameparser/_pipeline/_classify.py, nameparser/_pipeline/_extract.py, nameparser/_pipeline/_post_rules.py, nameparser/_pipeline/_vocab.py
