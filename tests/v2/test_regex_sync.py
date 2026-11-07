@@ -103,6 +103,9 @@ _SOURCES: dict[tuple[str, str], tuple[str, str] | None] = {
     ("_vocab", "_CHUNKED"): None,
     # the joiners of a joined credential ('MD/PhD', rules/S3, #752)
     ("_vocab", "_JOINERS"): None,
+    # the same joiners, kept by the split, for S3's cut of a joined
+    # credential into listed runs (#1103)
+    ("_vocab", "_JOINER_SPLIT"): None,
     # the caps shape's joined spelling ('PU-PH', rules/S9, #752)
     ("_vocab", "_JOINED_LETTERS"): None,
     # #563: paired initials ('M.J.'), C5's exception to C4's name-word

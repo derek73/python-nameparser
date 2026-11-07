@@ -338,6 +338,8 @@ _SHAPES = {
     "bracket_members": "(M.A) ",    # post_rules: S13's clause pass (#810)
     "set_apart": "(PhD, Dr) ",      # post_rules: S1's set-apart pass (#792)
     "set_apart_initials": "(JP) a ",  # post_rules: S1's name-ahead walk (#792)
+    "slash_chain": "MD/",           # vocab: S3's cut of a joined word (#1103)
+    "hyphen_chain": "MD-",          # vocab: the same cut, hyphens only
 }
 
 _BASE = 800
@@ -402,6 +404,16 @@ _FACTOR = 4
 # strongest signal on record. The shape reads 4.13-4.21 at every one
 # of the three bases on this tree (py3.11, 2026-09-27), inside the
 # clean column; neither number moved.
+# The last two (slash_chain, hyphen_chain, #1103) are one glued token
+# of joined credentials, which S3 cuts into the fewest listed pieces:
+# 3.81-3.97 at base 800 (py3.11, 2026-11-06), at or below the clean
+# column. Two superlinear cuts were measured against them on the same
+# day: a quadratic, the cut copying its best piece list at every step,
+# 9.16-9.75 at base 800, and a cubic, a run tried to the end of the
+# word from every chunk, uncapped by the longest listed word, 29.4-34.9
+# at base 50, which at base 800 had not finished after six minutes, so
+# that regression shows here as a run that hangs rather than a ratio;
+# neither number moved.
 _MAX_RATIO = 6.0
 
 

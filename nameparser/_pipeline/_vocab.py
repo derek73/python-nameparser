@@ -515,14 +515,19 @@ def reads_as_initials(word: str, kind: SetApartKind,
     settled as. `one_case` is ParseState.one_case. A joined credential
     counts where any of its chunks would ('JP/MD', 'MD/PhD'), as its
     words written apart do, and one the vocabulary lists whole never
-    ('NP-C'): a chunk holds no joiner, so this is one level deep."""
+    ('NP-C'), a run of its chunks listed whole being one chunk
+    ('PhD/NP-C' is 'PhD', 'NP-C', as `_joined_chunks` cuts it). A
+    chunk is asked as the word it is, with no further cut by this
+    function, so its loop is one level deep."""
     bare = word.strip(",")
     # a credential the vocabulary lists whole ('NP-C', 'SHRM-CP') is one
     # word, not two S3 joins, and has no other spelling written apart
     if kind == "suffix" and ("/" in bare or "-" in bare) and not (
-            (folded := _normalize(bare)) in lexicon._sets.suffix_words
-            or folded.replace(".", "") in lexicon._sets.suffix_acronyms):
-        for chunk in _JOINERS.split(bare):
+            _listed_whole(bare, lexicon)):
+        # a word with no cut S3 admits has no chunk to ask; unreached by
+        # a parse, where a joined word not listed whole is a suffix only
+        # through a cut
+        for chunk in _joined_chunks(bare, lexicon) or ():
             if _shaped_as_initials(chunk, set_apart_kind(chunk, lexicon),
                                    one_case, lexicon):
                 return True
@@ -533,8 +538,9 @@ def reads_as_initials(word: str, kind: SetApartKind,
 def _shaped_as_initials(bare: str,
                         kind: SetApartKind | Literal["member"] | None,
                         one_case: bool | None, lexicon: Lexicon) -> bool:
-    """`reads_as_initials` for one word holding no joiner, its kind as
-    `set_apart_kind` gives it."""
+    """`reads_as_initials` for one word, or one listed run of a joined
+    word, its kind as `set_apart_kind` gives it; a run holding a joiner
+    never matches the initials shape."""
     return ((kind == "suffix" or kind == "member" or kind == "dual" and (
                 _DOTTED_INITIALS.fullmatch(bare) is not None
                 or one_case is False and bare.isupper()))
@@ -952,47 +958,121 @@ def suffix_as_written(n: str, text: str, lexicon: Lexicon) -> bool:
 _JOINERS = re.compile(r"[-/]")
 
 
+def _listed_whole(word: str, lexicon: Lexicon) -> bool:
+    """Whether the suffix vocabulary lists WORD whole, its joiners
+    included ('NP-C', 'OTR/L'): as a suffix word, or as an acronym once
+    its periods are removed. A member of an ambiguous class counts as
+    listed."""
+    folded = _normalize(word)
+    return (folded in lexicon._sets.suffix_words
+            or folded.replace(".", "") in lexicon._sets.suffix_acronyms)
+
+
+#: The joiners of a joined credential, kept: 'MS/OTR/L' splits to
+#: 'MS', '/', 'OTR', '/', 'L', the chunks at the even places.
+_JOINER_SPLIT = re.compile(r"([-/])")
+
+
+# bounded as `_longest_marker` is, for the reason given there: a set
+# per lexicon, so 16 bounds many-lexicon churn without evicting in
+# normal use
+@functools.lru_cache(maxsize=16)
+def _joined_span(words: frozenset[str]) -> int:
+    """How many chunks the most-joined of WORDS holds: the longest run a
+    listed word can be. Cached per set, which hashes once."""
+    return max((w.count("/") + w.count("-") for w in words), default=0) + 1
+
+
+# rules/S3: "a run of chunks the vocabulary lists whole, its slash or
+# hyphen included, is one credential" -- the joiner inside 'NP-C' or
+# 'OTR/L' is how that credential is spelled, not a joiner between two
+# (decisions/S3, #1103)
+def _joined_chunks(text: str, lexicon: Lexicon) -> list[str] | None:
+    """A cut of TEXT at some of its joiners into pieces that each count
+    as a suffix as written, a run of chunks the vocabulary lists whole
+    among them, with the fewest pieces ('MS/OTR/L' is 'MS', 'OTR/L';
+    'CCC/SLP/L' is 'CCC', 'SLP/L'; 'APRN-FNP-C' is 'APRN', 'FNP-C';
+    'MD-PhD' is 'MD', 'PhD'), or None where no cut gives such pieces
+    ('MD-Jones', 'MD/'). No piece is the whole of TEXT: each caller has
+    asked TEXT whole already, and a word listed whole that it refused
+    (one that is a name too) would otherwise be asked again for ever.
+    A piece is no longer than the most-joined listed word, so a long
+    chain of joiners costs linear time."""
+    parts = _JOINER_SPLIT.split(text)
+    n = (len(parts) + 1) // 2  # the chunks
+    span = max(_joined_span(lexicon._sets.suffix_words),
+               _joined_span(lexicon._sets.suffix_acronyms))
+    # pieces[k]: the fewest pieces cutting the first k chunks (0 where
+    # none does, past the start); start[k]: where the last of them starts
+    pieces = [0] * (n + 1)
+    start = [0] * (n + 1)
+    for i in range(n):
+        if i and not pieces[i]:
+            continue
+        for j in range(i + 1, min(n - (i == 0), i + span) + 1):
+            piece = "".join(parts[2 * i:2 * j - 1])
+            # a run must be listed whole, which a chunk alone need not be
+            if not piece or j > i + 1 and not _listed_whole(piece, lexicon):
+                continue
+            if ((not pieces[j] or pieces[i] + 1 < pieces[j])
+                    and suffix_as_written(_normalize(piece), piece, lexicon)):
+                pieces[j] = pieces[i] + 1
+                start[j] = i
+    if not pieces[n]:
+        return None
+    cut: list[str] = []
+    j = n
+    while j:
+        i = start[j]
+        cut.append("".join(parts[2 * i:2 * j - 1]))
+        j = i
+    cut.reverse()
+    return cut
+
+
 # rules/S3: "a word whose chunks are joined by a hyphen or a slash
 # reads as a suffix when every chunk counts as a suffix as written" --
 # the stricter test, every chunk rather than any, because a hyphen also
-# joins names (decisions/S3 (#752))
+# joins names (decisions/S3 (#752)); a chunk is a run the vocabulary
+# lists whole where one is (#1103)
 def _joined_credential(text: str, lexicon: Lexicon) -> bool:
-    """Whether TEXT is two or more chunks joined by '-' or '/', each
-    non-empty and each counting as a suffix as written: listed, and
-    not a bare member of the ambiguous class, and not every one a
-    single ASCII character, and -- joined by a hyphen -- not
-    written as a hyphenated name is ('MD/PhD', 'M.A.-Ph.D.', 'PhD-Md',
-    'md-phd', but not 'MA/PhD', 'Smith-Jones', 'I-V', 'Ae-Ra', 'Ae-ra'
-    or 'MD/'). A chunk holds no joiner,
-    so the recursion is one level deep. A loop rather than `all()` over
-    a generator, which would cost a frame per chunk: a hyphenated name
-    ('Smith-Jones') stops at its first chunk."""
-    # the caller found a joiner, so there are two chunks at least
-    chunks = _JOINERS.split(text)
-    whole = False  # a chunk that is not a single ASCII character
-    # every chunk so far written as a name's; a slash joins no name, so
-    # a word holding one takes no cue
-    named = "/" not in text
-    for k, c in enumerate(chunks):
-        if not (c and suffix_as_written(_normalize(c), c, lexicon)):
+    """Whether TEXT is two or more chunks joined by '-' or '/', cut so
+    that each is non-empty and counts as a suffix as written (listed,
+    and not a bare member of the ambiguous class, a run listed whole
+    counting as one chunk), not every one a single ASCII character,
+    and -- joined by a hyphen -- not written as a hyphenated name is
+    ('MD/PhD', 'M.A.-Ph.D.', 'PhD-Md', 'md-phd', 'PhD/NP-C', but not
+    'MA/PhD', 'Smith-Jones', 'I-V', 'Ae-Ra', 'Ae-ra' or 'MD/'). The
+    writing is read first, so a hyphenated name ('Smith-Jones') is
+    never cut."""
+    # a slash joins no name, so a word holding one takes no cue
+    if "/" not in text:
+        # rules/S3: "a word joined by a hyphen and written the way a
+        # hyphenated name is, its first chunk in Title case and every
+        # other in Title case or lower case, is a name word" -- where a
+        # credential's chunks are not (decisions/S3 (#752)); its periods
+        # are not the chunk's ('I.' is 'i'), as in a word split at its
+        # periods
+        named = True
+        for k, c in enumerate(text.split("-")):
+            bare = c.replace(".", "")
+            named = (len(bare) > 1 and bare[0].isupper() and bare[1:].islower()
+                     or k > 0 and bare.islower())
+            if not named:
+                break
+        if named:
             return False
-        # its periods are not the chunk's ('I.' is 'i'), as in a word
-        # split at its periods
-        bare = c.replace(".", "")
-        whole = whole or len(bare) > 1 or not bare.isascii()
-        # the first chunk in Title case, a later one in Title case or
-        # lower case ('Ae-Ra', 'Ae-ra')
-        named = named and (
-            len(bare) > 1 and bare[0].isupper() and bare[1:].islower()
-            or k > 0 and bare.islower())
+    chunks = _joined_chunks(text, lexicon)
+    if chunks is None:
+        return False
     # rules/S3: "Every chunk the vocabulary matches is a single ASCII
     # character" -- the numerals and the digit, which are about
-    # generations, make no joined word a suffix either ('Jack I-V');
-    # rules/S3: "a word joined by a hyphen and written the way a
-    # hyphenated name is, its first chunk in Title case and every other
-    # in Title case or lower case, is a name word" -- where a
-    # credential's chunks are not (decisions/S3 (#752))
-    return whole and not named
+    # generations, make no joined word a suffix either ('Jack I-V')
+    for c in chunks:
+        bare = c.replace(".", "")
+        if len(bare) > 1 or not bare.isascii():
+            return True
+    return False
 
 
 def _is_suffix_strict_n(n: str, text: str, lexicon: Lexicon,

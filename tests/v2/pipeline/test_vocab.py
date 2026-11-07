@@ -4,7 +4,8 @@ from collections.abc import Callable
 import pytest
 
 from nameparser._policy import CapsSuffixes
-from nameparser import Parser
+from nameparser import (FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, GIVEN_FIRST,
+                        Parser, Role)
 from nameparser._lexicon import (
     Lexicon, _VOCAB_FIELDS, _normalize, _title_key,
 )
@@ -19,7 +20,7 @@ from nameparser._pipeline._vocab import (
     is_suffix_lenient, is_suffix_strict, is_title_shaped, is_wholly_suffix,
     lexicon_cue,
     maiden_marker_run, name_word_count, period_joined_vocab, written_as_a_name,
-    resolve_script_set, single_script, suffix_as_written,
+    resolve_script_set, single_script, suffix_as_written, _joined_chunks,
 )
 from nameparser._policy import (Policy, Script, _NO_INITIALS,
                                 _SCRIPT_RANGES)
@@ -458,13 +459,90 @@ def test_period_joined_vocab_retires_the_single_character_chunk() -> None:
     ("Ae-Ra/Md", True),     # nor does a word holding a slash anywhere
     ("Md-v", False),        # a one-letter tail in lower case is a name's
     ("Phd-Md", False),      # a credential typed in Title case: S3 Accepted
+    # a run of chunks listed whole, its slash or hyphen included, is one
+    # chunk (#1103)
+    ("PhD/NP-C", True),     # a listed run inside a longer word
+    ("MS/CCC-A", True),
+    ("CCC-SLP/L", True),    # a listed run, whole
+    ("MS/OTR/L", True),
+    ("MS/CCC-SLP/L", True),
+    ("CCC/SLP/L", True),    # 'CCC', 'SLP/L', where 'CCC/SLP' is listed too
+    ("MS-OTR/L", True),     # a slash run behind a hyphen
+    ("PhD-NP-C", True),     # a hyphen run in a word holding no slash
+    ("APRN-FNP-C", True),
+    ("CPNP-PC/AC", False),  # a chunk neither listed nor of listed pieces
+    ("OTR/L/X", False),
+    ("Ae-Ra/NP-C", True),   # a slash: no name cue, as before #1103
+    ("Smith-NP-C", False),  # a run does not admit a name chunk beside it
+    ("Aprn-Fnp-c", False),  # written as a hyphenated name, never cut
+    ("MD/EMT-I/85", True),  # a run of three chunks, as long as any listed
+    ("EMT-I/85/MD", True),
+    ("M.S.-O.T.R./L.", True),  # a run's periods, as a word's
+    ("A.P.R.N.-F.N.P.-C.", True),
+    ("I-NP-C", True),       # a run beside a numeral is no numeral alone
 ])
 def test_suffix_as_written_reads_a_joined_credential(
         text: str, expected: bool) -> None:
     # a word joined by a hyphen or a slash is a suffix only
-    # where EVERY chunk counts as a suffix as written (#752)
+    # where EVERY chunk counts as a suffix as written (#752), a run of
+    # chunks listed whole counting as one (#1103)
     lex = Lexicon.default()
     assert suffix_as_written(_normalize(text), text, lex) is expected
+
+
+@pytest.mark.parametrize("text, cut", [
+    ("MS/CCC-SLP/L", ["MS", "CCC-SLP/L"]),  # not 'CCC', 'SLP/L'
+    ("CCC/SLP/L", ["CCC", "SLP/L"]),        # 'CCC/SLP' leaves a bare 'L'
+    ("MD/CCC-SLP", ["MD", "CCC-SLP"]),      # not 'CCC', 'SLP'
+    ("MD-PhD", ["MD", "PhD"]),
+    ("MD-Jones", None),
+])
+def test_a_joined_word_is_cut_into_the_fewest_pieces(
+        text: str, cut: list[str] | None) -> None:
+    # rules/S3's partition (#1103): of the cuts whose pieces each count,
+    # the one with the fewest, so a run listed whole stays one piece
+    assert _joined_chunks(text, Lexicon.default()) == cut
+
+
+def test_a_callers_longer_joined_word_reads_inside_a_longer_word() -> None:
+    # how long a run can be is read from the lexicon the parse holds, so
+    # a caller's word of four chunks is found inside a longer word
+    lex = Lexicon.default().add("abc-def/ghi-jkl", kind="credential")
+    text = "MD/ABC-DEF/GHI-JKL"
+    assert suffix_as_written(_normalize(text), text, lex) is True
+    assert Parser(lexicon=lex).parse(f"Jane Smith {text}").suffix == text
+
+
+@pytest.mark.parametrize("word", ["PhD/NP-C", "MS-OTR/L", "APRN-FNP-C",
+                                  "CCC/SLP/L"])
+@pytest.mark.parametrize("shape", ["Jane Smith {}", "Jane Smith, {}",
+                                   "Smith, Jane {}", ", {}",
+                                   "Jane Smith ({})",
+                                   "JANE SMITH {upper}", "jane smith {lower}"])
+@pytest.mark.parametrize("order", [GIVEN_FIRST, FAMILY_FIRST,
+                                   FAMILY_FIRST_GIVEN_LAST])
+def test_a_joined_credential_with_a_listed_run_is_the_suffix_in_every_shape(
+        word: str, shape: str, order: tuple[Role, Role, Role]) -> None:
+    # #1103's spellings through the comma shapes, the case of a name
+    # written in one case and the three orders; before a name word in
+    # brackets S1 reads a credential written as initials ('MS') as the
+    # nickname, joined or apart, which the pair grid in
+    # test_post_rules.py holds
+    text = shape.format(word, upper=word.upper(), lower=word.lower())
+    name = Parser(policy=Policy(name_order=order)).parse(text)
+    assert name.suffix.lower() == word.lower()
+
+
+@pytest.mark.parametrize("text", ["OT/L", "MS/OT/L", "OT/L/MS", "NP-C"])
+def test_a_joined_word_listed_whole_and_refused_is_not_asked_again(
+        text: str) -> None:
+    # a guard on the cut, not on a reading the base lacked: a word the
+    # vocabulary lists whole that suffix_as_written refuses, being a
+    # name too, reaches the joined reading, whose cut must not hand it
+    # back whole, or the parse recurses without end
+    lex = Lexicon.default().add("ot/l", "np-c", kind="given")
+    assert suffix_as_written(_normalize(text), text, lex) is False
+    Parser(lexicon=lex).parse(f"Jane Smith {text}")
 
 
 @pytest.mark.parametrize("text, expected", [
