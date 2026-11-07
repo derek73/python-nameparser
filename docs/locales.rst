@@ -608,7 +608,8 @@ Shipped packs
    * - ``cs``, ``sk``
      - Czech and Slovak — a choice of that one language, which turns on
        the generations ``ml.`` and ``st.``, the academic titles the
-       default leaves off (``MgA.``, ``BcA.``, ``mjr.``) and the degrees written
+       default leaves off (``MgA.``, ``BcA.``; for Czech also the rank
+       ``mjr.``) and the degrees written
        after the name, and reads two
        family names (``Alena Pešová Řehořová`` → family ``Pešová
        Řehořová``), so two given names read as a given name and a family
