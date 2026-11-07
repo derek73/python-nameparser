@@ -174,11 +174,9 @@ def test_four_characters_opening_with_two_surnames_divide_after_both() -> None:
     out = _run("王李小明", lexicon=_LEX_PAIR)
     assert _texts(out) == ["王", "李", "小明"]
     assert _pair_tagged(out) == ["李"]
-    # longest-first would have read 王 + 李小明: the stage decided a
-    # fork, so it records one naming both readings
-    assert [a.kind for a in out.ambiguities] == [AmbiguityKind.SEGMENTATION]
-    assert out.ambiguities[0].indices == (0, 1, 2)
-    assert "'李小明'" in out.ambiguities[0].detail
+    # whether the pair is read is post_rules' call, under the name's
+    # order, so the report is made there, not here
+    assert out.ambiguities == ()
 
 
 @pytest.mark.parametrize("text, expected", [

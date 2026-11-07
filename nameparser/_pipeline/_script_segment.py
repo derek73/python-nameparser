@@ -591,17 +591,10 @@ def _surname_pair(state: ParseState, i: int, core: str,
 def _split_surname_pair(state: ParseState, i: int, core: str) -> ParseState:
     """Token `i` divided into its two surnames and, unspaced, the given
     name behind them, the second surname tagged for post_rules to read
-    as the family's second unit. Unspaced, longest-first decided a fork
-    (王 + 李小明 also reads), and the deciding stage records it; spaced,
-    the writer settled where the given name starts."""
-    text = state.tokens[i].text
-    detail = None
-    if len(core) == 4:
-        chosen = " + ".join(map(repr, _pieces(text, (1, 2))))
-        other = " + ".join(map(repr, _pieces(text, (1,))))
-        detail = (f"{text!r} splits as {chosen} on two surnames; "
-                  f"{other} also reads")
-    state = _split(state, i, (1, 2) if len(core) == 4 else (1,), detail)
+    as the family's second unit. No report here: whether the pair is
+    read is post_rules' decision, under the order the name is read in,
+    so it reports there (mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE)."""
+    state = _split(state, i, (1, 2) if len(core) == 4 else (1,), None)
     second = state.tokens[i + 1]
     tokens = list(state.tokens)
     tokens[i + 1] = copy_with(second, tags=second.tags | {SURNAME_PAIR_TAG})

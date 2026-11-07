@@ -24,7 +24,8 @@ tells the two apart by it), the second-surname tag on each word of the
 family's second unit where O6 reads two (rules/R10), the first-surname
 tag on each word of the first unit, written by O6 where it reads two,
 both written where script_segment divided a Han surname pair (rules/W5,
-#845), and by O3 on the family it folds into otherwise (rules/R11), and the ambiguity P6's attachment reports at the end of a name read
+#845), with a SEGMENTATION report where that pair was written
+undivided, and by O3 on the family it folds into otherwise (rules/R11), and the ambiguity P6's attachment reports at the end of a name read
 family-first (#467) -- after a family comma, that attachment is
 assign's since #613, and behind an empty part before the comma too
 since #892.
@@ -424,7 +425,8 @@ def _take_second_family_name(state: ParseState,
             _retag(tokens, i, role)
 
 
-def _read_surname_pair(state: ParseState, tokens: list[WorkToken]) -> None:
+def _read_surname_pair(state: ParseState,
+                       tokens: list[WorkToken]) -> PendingAmbiguity | None:
     """rules/W5: "the two surnames are the family, in two units" -- the
     second, which script_segment tagged, joins the family assign placed
     before it, and what is left is laid out by the order as O6's
@@ -432,22 +434,43 @@ def _read_surname_pair(state: ParseState, tokens: list[WorkToken]) -> None:
 
     A Han name reads family-first by its script, so assign placed the
     first surname as the family and the second as the given name; under
-    an order that did not (`script_orders` left without Han, or a family
-    comma, where the division stands down anyway), the tag is inert."""
+    an order that did not (a name holding another script, under the
+    default order, or `script_orders` left without Han) the tag is inert
+    and the name reads as before.
+
+    The report is made here, where the pair is read, and only for a
+    name written undivided: there W1's longest listed surname first
+    reads the given name from the second surname on, and that is the
+    reading not taken, while a writer's space after the pair has
+    already said where the given name starts."""
     if state.order is None or state.order[0] is Role.GIVEN:
-        return
+        return None
     _, given, middle, family = _positions(tokens)
     units = _units(tokens, sorted(given + middle))
     if (len(family) != 1 or not units or len(units[0]) != 1
             or units[0][0] != family[0] + 1
             or SURNAME_PAIR_TAG not in tokens[units[0][0]].tags):
-        return
+        return None
+    first, second = family[0], units[0][0]
     _mark_surname(tokens, family, FIRST_SURNAME_TAG)
     _mark_surname(tokens, units[0], SECOND_SURNAME_TAG)
     for unit, role in zip(units[1:], _name_positions(
             state.order, len(units))[1:]):
         for i in unit:
             _retag(tokens, i, role)
+    after = second + 1
+    if (after == len(tokens) or tokens[after].span is None
+            or tokens[after].span.start != tokens[second].span.end):
+        return None
+    word = (tokens[first].text + tokens[second].text
+            + tokens[after].text)
+    return PendingAmbiguity(
+        AmbiguityKind.SEGMENTATION,
+        f"{word!r} splits as {tokens[first].text!r} + "
+        f"{tokens[second].text!r} + {tokens[after].text!r} on two "
+        f"surnames; {tokens[first].text!r} + "
+        f"{tokens[second].text + tokens[after].text!r} also reads",
+        (first, second, after))
 
 
 def _one_given_word(tokens: list[WorkToken], given: list[int]) -> bool:
@@ -1165,7 +1188,9 @@ def post_rules(state: ParseState) -> ParseState:
     # as P10's loop above: a name with no surname pair pays no call
     for token in tokens:
         if SURNAME_PAIR_TAG in token.tags:
-            _read_surname_pair(state, tokens)
+            report = _read_surname_pair(state, tokens)
+            if report is not None:
+                ambiguities.append(report)
             break
     if state.policy.two_family_names:
         _take_second_family_name(state, tokens)

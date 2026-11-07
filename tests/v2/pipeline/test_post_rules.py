@@ -1941,6 +1941,25 @@ def test_a_surname_pair_is_the_family_in_two_units(text: str) -> None:
     assert (name.surname1, name.surname2) == ("王", "李")
 
 
+def test_reading_an_undivided_pair_reports_the_reading_not_taken() -> None:
+    name = _ZH.parse("王李小明")
+    assert [a.kind for a in name.ambiguities] == [
+        AmbiguityKind.SEGMENTATION]
+    assert [t.text for t in name.ambiguities[0].tokens] == ["王", "李", "小明"]
+    assert "'王' + '李小明' also reads" in name.ambiguities[0].detail
+    # the writer's space already said where the given name starts
+    assert _ZH.parse("王李 小明").ambiguities == ()
+
+
+def test_a_pair_the_order_does_not_read_reports_nothing() -> None:
+    # a second script puts the name under the declared given-first
+    # order, which reads no family before the pair: it reads as before
+    # the rule (given 王, middle 李小明) and claims no division
+    name = _ZH.parse("王李小明 Amy")
+    assert (name.given, name.middle, name.family) == ("王", "李小明", "Amy")
+    assert (name.surname2, name.ambiguities) == ("", ())
+
+
 def test_a_divided_surname_pair_renders_as_written() -> None:
     assert str(_ZH.parse("王李小明")) == "王李小明"
 
