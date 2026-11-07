@@ -123,7 +123,10 @@ _SOURCES: dict[tuple[str, str], tuple[str, str] | None] = {
     ("_vocab", "_TURKIC"): None,
     ("_vocab", "_TURKIC_CYR"): None,
     # rules/O6's hyphens (#754)
-    ("_post_rules", "_HYPHENS"): None,
+    # rules/O6's hyphens, defined in _vocab since #1116 so rules/H5's
+    # trailing shape reads the same set
+    ("_vocab", "_HYPHENS"): None,
+    ("_post_rules", "_HYPHENS"): ("_vocab", "_HYPHENS"),
     # render's own patterns, v1's "spaces", "space_before_comma",
     # "mac" and "word"; the v1 table they were pinned to until #1008
     # was their only other copy

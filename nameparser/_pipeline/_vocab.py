@@ -205,6 +205,16 @@ _MARKS = '[\u0300-\u036f\u1ab0-\u1aff\u1dc0-\u1dff\u20d0-\u20ff\ufe20-\ufe2f]'
 _LETTER = r'[^\W\d_]' + _MARKS + '*'
 _PERIOD_ABBREV = re.compile(r'^(?:' + _LETTER + r'){2,}\.$')
 
+#: The hyphens and the dashes that join two family names in one written
+#: word (rules/O6), and the parts of an abbreviation written hyphenated
+#: (rules/H5, 'Dipl.‐Ing.' as a word processor writes it): hyphen-minus,
+#: hyphen, non-breaking hyphen, figure dash, en dash, minus sign (a word
+#: processor's substitute), and the small and fullwidth hyphen-minus.
+#: The em dashes are punctuation between words, not joiners, and are
+#: left out. Hyphen-minus first, so it is literal inside a class.
+_HYPHEN_CHARS = "-\u2010\u2011\u2012\u2013\u2212\ufe63\uff0d"
+_HYPHENS = re.compile("[" + _HYPHEN_CHARS + "]")
+
 # rules/H5: "A word that ends in a period and is written with a
 # period or a hyphen inside it wears the abbreviation shape too" --
 # the trailing chain's shape, _PERIOD_ABBREV widened to 'Priv.-Doz.',
@@ -212,7 +222,8 @@ _PERIOD_ABBREV = re.compile(r'^(?:' + _LETTER + r'){2,}\.$')
 # in one period, so every _PERIOD_ABBREV match is one of its matches;
 # the front slot's H2 shape stays _PERIOD_ABBREV (decisions/H5, #1116).
 _TRAILING_TITLE_SHAPE = re.compile(
-    r'^' + _LETTER + r'(?:' + _LETTER + r'|[.-])*' + _LETTER + r'\.$')
+    r'^' + _LETTER + r'(?:' + _LETTER + r'|[' + _HYPHEN_CHARS + r'.])*'
+    + _LETTER + r'\.$')
 
 
 # rules/H2: "an abbreviation opening the part of the name that

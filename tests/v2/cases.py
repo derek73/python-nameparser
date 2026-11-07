@@ -13950,6 +13950,12 @@ CASES: tuple[Case, ...] = (
           "family": "JORDAN"},
          classification="fix(#1116)",
          notes="fec-individuals' shape; master read middle 'T. LT.COL.'"),
+    Case("trailing_title_hyphenated_as_a_word_processor_writes_it_chains",
+         "Hans Meier Dipl.\u2010Ing.",
+         {"title": "Dipl.\u2010Ing.", "given": "Hans", "family": "Meier"},
+         classification="fix(#1116)",
+         notes="U+2010 HYPHEN, one of rules/O6's hyphens; master read "
+               "middle 'Meier', family 'Dipl.\u2010Ing.'"),
     Case("trailing_title_with_only_an_inside_period_stays_a_name_word",
          "Maria Rossi Dott.ssa",
          {"given": "Maria", "middle": "Rossi", "family": "Dott.ssa"},

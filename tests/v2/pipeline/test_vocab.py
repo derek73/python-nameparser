@@ -9,7 +9,7 @@ from nameparser._lexicon import (
     Lexicon, _VOCAB_FIELDS, _normalize, _title_key,
 )
 from nameparser._pipeline._vocab import (
-    ROMAN, ends_in_a_generation,
+    ROMAN, _PERIOD_ABBREV, _TRAILING_TITLE_SHAPE, ends_in_a_generation,
     ambiguous_class_candidate, ambiguous_class_member, ambiguous_lean,
     caps_shape_candidate, comma_follows_marker, delimiter_cores, glued_cores,
     glued_stem,
@@ -1276,3 +1276,29 @@ def test_only_a_phrase_classify_can_read_makes_a_contested_word_report(
     kinds = [a.kind.value for a in Parser(lexicon=lex).parse(
         "Grace Smith").ambiguities]
     assert kinds == (["title-or-name"] if reports else [])
+
+
+# rules/H5's trailing shape (#1116): _PERIOD_ABBREV widened to an
+# abbreviation written joined or hyphenated, with any of rules/O6's
+# hyphens, the trailing period kept. The rows a looser pattern would
+# admit are the refused ones.
+@pytest.mark.parametrize("text, admitted", [
+    ("Prof.", True),
+    ("Priv.-Doz.", True),
+    ("Dipl.Ing.", True),
+    ("LT.COL.", True),
+    ("Dipl.‐Ing.", True),     # hyphen, as a word processor writes it
+    ("Dipl.–Ing.", True),     # en dash
+    ("Doź.", True),          # a combining mark is part of its letter
+    ("J.", False),                 # one letter is an initial
+    ("Dott.ssa", False),           # no trailing period
+    ("-Doz.", False),              # opens on a hyphen
+    ("Priv.-.", False),            # closes on a hyphen
+    ("CWO-2.", False),             # a digit
+    ("ab_c.", False),
+    ("Dipl.—Ing.", False),    # an em dash is punctuation, not a joiner
+])
+def test_trailing_title_shape(text: str, admitted: bool) -> None:
+    assert bool(_TRAILING_TITLE_SHAPE.match(text)) is admitted
+    if _PERIOD_ABBREV.match(text):
+        assert admitted, "every _PERIOD_ABBREV match is one of its matches"
