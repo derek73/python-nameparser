@@ -1883,6 +1883,7 @@
 {"name": "John Smith 1.4", "given": "John", "middle": "Smith", "family": "1.4", "initials": "J. S. 1."}
 {"name": "John Smith B.Tech.", "given": "John", "family": "Smith", "suffix": "B.Tech.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "J. S.", "capitalized_force": "John Smith B.TECH."}
 {"name": "John Smith C.H.A.", "given": "John", "family": "Smith", "suffix": "C.H.A.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "J. S."}
+{"name": "John Smith Co-Founder", "given": "John", "middle": "Smith", "family": "Co-Founder", "initials": "J. S. C."}
 {"name": "John Smith DO Jones", "given": "John", "middle": "Smith", "family": "DO Jones", "initials": "J. S. J.", "capitalized_force": "John Smith do Jones"}
 {"name": "John Smith Dean.", "given": "John", "middle": "Smith", "family": "Dean.", "initials": "J. S. D."}
 {"name": "John Smith Dipl.Ing.", "title": "Dipl.Ing.", "given": "John", "family": "Smith", "initials": "J. S."}
@@ -1924,6 +1925,7 @@
 {"name": "John Smith Junior", "given": "John", "family": "Smith", "suffix": "Junior", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)"], "initials": "J. S.", "generation": "Junior"}
 {"name": "John Smith K.C.", "given": "John", "middle": "Smith", "family": "K.C.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "J. S. K."}
 {"name": "John Smith KC", "given": "John", "family": "Smith", "suffix": "KC", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)"], "initials": "J. S."}
+{"name": "John Smith Lt.Gov", "given": "John", "middle": "Smith", "family": "Lt.Gov", "initials": "J. S. L."}
 {"name": "John Smith M. D.", "given": "John", "middle": "Smith M.", "family": "D.", "initials": "J. S. M. D."}
 {"name": "John Smith M.A.", "given": "John", "family": "Smith", "suffix": "M.A.", "initials": "J. S."}
 {"name": "John Smith M.A. Jones", "given": "John", "family": "Smith", "suffix": "M.A. Jones", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "J. S."}
@@ -2713,7 +2715,7 @@
 {"name": "Maria Luisa y de la Cruz", "given": "Maria", "middle": "Luisa y de", "family": "la Cruz", "initials": "M. L. C."}
 {"name": "Maria López née García Pérez", "given": "Maria", "family": "López", "maiden": "García Pérez", "initials": "M. L."}
 {"name": "Maria Popescu", "given": "Maria", "family": "Popescu", "initials": "M. P."}
-{"name": "Maria Rossi Dott.ssa", "given": "Maria", "middle": "Rossi", "family": "Dott.ssa", "initials": "M. R. D."}
+{"name": "Maria Rossi Dott.ssa", "title": "Dott.ssa", "given": "Maria", "family": "Rossi", "initials": "M. R."}
 {"name": "Maria Silva", "given": "Maria", "family": "Silva", "initials": "M. S."}
 {"name": "Maria Wijaya", "given": "Maria", "family": "Wijaya", "initials": "M. W."}
 {"name": "Maria da Piedade Costa", "given": "Maria", "family": "da Piedade Costa", "initials": "M. P. C."}

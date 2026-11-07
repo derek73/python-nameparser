@@ -94,13 +94,13 @@ from nameparser._pipeline._state import (
     GENERATION_WORD_TAG, GIVEN_ABBREVIATION_TAG, HONORIFIC_WORD_TAG,
     BOUND_PHRASE_TAG, PARTICLE_GIVEN_TAG, PATRONYMIC_TAG, SHAPE_ACRONYM_TAG, SHARED_NAME_TAG, SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, TITLE_AMBIGUOUS_TAG,
     TITLE_CASE_NAME_TAG,
-    TRAILING_TITLE_TAG, ParseState,
+    JOINED_TITLE_TAG, TRAILING_TITLE_TAG, ParseState,
     Deferred, PendingAmbiguity, PendingReading,
     WorkToken, copy_with,
 )
 from nameparser._types import AmbiguityKind, ReadingKind, ReadingSource
 from nameparser._pipeline._vocab import (
-    BUILTIN_GLUED_DELIMITERS, SPLIT_CHUNK, SPLIT_PAIR_OPENS, _INITIAL, caps_shape_candidate,
+    BUILTIN_GLUED_DELIMITERS, SPLIT_CHUNK, SPLIT_PAIR_OPENS, _INITIAL, _JOINED_WORD, caps_shape_candidate,
     composed_len, glued_cores, glued_stem, is_cased_paired_initials,
     is_initial, is_one_case,
     period_joined_vocab,
@@ -163,6 +163,14 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
         tags.add(marker_tag)
     if n in lex._sets.titles:
         tags.add("vocab:title")
+        # rules/H5: "a title the vocabulary lists whole with a period
+        # inside it chains without a final one" -- marked here, where
+        # the listing is known whole; a period, since a hyphen alone
+        # joins whole words as often as abbreviations ('co-founder'), and
+        # the one hyphenated abbreviation ending a name in the corpora,
+        # 'д-р', is a credential there to CLDR (decisions/H5, #1104)
+        if "." in n and _JOINED_WORD.match(n):
+            tags.add(JOINED_TITLE_TAG)
     if n in lex._sets.given_name_titles:
         tags.add("vocab:given-title")
     # rules/H5: "a title that may be a given name is title vocabulary

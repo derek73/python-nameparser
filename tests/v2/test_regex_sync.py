@@ -74,6 +74,10 @@ _SOURCES: dict[tuple[str, str], tuple[str, str] | None] = {
     ("_vocab", "_TRAILING_TITLE_SHAPE"): None,
     # SAME object, imported for H5's trailing chain
     ("_pieces", "_TRAILING_TITLE_SHAPE"): ("_vocab", "_TRAILING_TITLE_SHAPE"),
+    # rules/H5's listed joined title (#1104's narrow half)
+    ("_vocab", "_JOINED_WORD"): None,
+    # SAME object, imported for classify's JOINED_TITLE_TAG
+    ("_classify", "_JOINED_WORD"): ("_vocab", "_JOINED_WORD"),
     # rules/S1's initials shape for a bracketed credential (#792)
     ("_vocab", "_INITIALS_SHAPE"): None,
     # its dotted alternative, from which _INITIALS_SHAPE is built, read

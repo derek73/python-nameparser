@@ -13956,11 +13956,28 @@ CASES: tuple[Case, ...] = (
          classification="fix(#1116)",
          notes="U+2010 HYPHEN, one of rules/O6's hyphens; master read "
                "middle 'Meier', family 'Dipl.\u2010Ing.'"),
-    Case("trailing_title_with_only_an_inside_period_stays_a_name_word",
+    Case("trailing_listed_title_with_an_inside_period_chains_without_a_final_one",
          "Maria Rossi Dott.ssa",
-         {"given": "Maria", "middle": "Rossi", "family": "Dott.ssa"},
-         notes="rules/H5's boundary: nothing marks the end of the word "
-               "as cut short, so the chain does not take it (#1116)"),
+         {"title": "Dott.ssa", "given": "Maria", "family": "Rossi"},
+         classification="fix(#1104)",
+         notes="the period inside marks the listed word as cut short; "
+               "#1116 had kept it a name word, middle 'Rossi', family "
+               "'Dott.ssa'"),
+    Case("trailing_hyphenated_listed_title_with_a_period_chains",
+         "Hans Meier Priv.-Doz",
+         {"title": "Priv.-Doz", "given": "Hans", "family": "Meier"},
+         classification="fix(#1104)",
+         notes="master read middle 'Meier', family 'Priv.-Doz'"),
+    Case("trailing_title_by_its_chunk_needs_a_final_period",
+         "John Smith Lt.Gov",
+         {"given": "John", "middle": "Smith", "family": "Lt.Gov"},
+         notes="rules/H5's boundary: a title only by its 'lt' chunk, "
+               "the any-chunk reach #1104 leaves open"),
+    Case("trailing_hyphen_joined_title_needs_a_final_period",
+         "John Smith Co-Founder",
+         {"given": "John", "middle": "Smith", "family": "Co-Founder"},
+         notes="rules/H5's boundary: a hyphen alone joins whole words, "
+               "and 'д-р' ending a name is a credential to CLDR (#1104)"),
     Case("trailing_unlisted_hyphenated_word_stays_a_name_word",
          "Anna Smith-Jones.",
          {"given": "Anna", "family": "Smith-Jones."},

@@ -185,6 +185,17 @@ TITLE_AMBIGUOUS_TAG = "vocab:title-ambiguous"
 #: the kind tags above; the published token keeps TITLE_AMBIGUOUS_TAG.
 TRAILING_TITLE_TAG = "vocab:trailing-title"
 
+#: Written by classify on a word of `Lexicon.titles` (not
+#: `titles_ambiguous`), listed whole, whose letters a period joins, a
+#: hyphen beside it or not (`_vocab._JOINED_WORD`: 'Dott.ssa',
+#: 'Priv.-Doz'), never on one read as a title through a chunk
+#: ('Lt.Gov') nor on one a hyphen alone joins ('Co-Founder'); read by
+#: rules/H5's trailing chain (`_pieces.trailing_titles`,
+#: `is_trailing_title_word`), which takes it without a final period,
+#: by `_pieces._weighed` and by P13's trailing title (#1104). Dropped
+#: from the published token like the kind tags above.
+JOINED_TITLE_TAG = "vocab:joined-title"
+
 #: On a word of `Lexicon.given_name_abbreviations`, a given name written
 #: short ('Chas.', 'Ma.'): rules/H2's shape test declines a word
 #: carrying it, so the given reading outranks the shape-derived title

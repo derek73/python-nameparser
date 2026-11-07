@@ -225,6 +225,17 @@ _TRAILING_TITLE_SHAPE = re.compile(
     r'^' + _LETTER + r'(?:' + _LETTER + r'|[' + _HYPHEN_CHARS + r'.])*'
     + _LETTER + r'\.$')
 
+# rules/H5: "a title the vocabulary lists whole with a period inside
+# it chains without a final one" -- the letters of such a listing
+# joined by periods and hyphens ('dott.ssa', 'priv.-doz'), read by
+# classify on the normalized word, which has no edge periods, ANDed
+# there with a period test, since the pattern alone admits a word a
+# hyphen alone joins ('co-founder'); a digit keeps a rank written with
+# a period (a caller's 'cwo.3') out (decisions/H5, #1104).
+_JOINED_WORD = re.compile(
+    r'^(?:' + _LETTER + r')+(?:[' + _HYPHEN_CHARS + r'.]+(?:'
+    + _LETTER + r')+)+$')
+
 
 # rules/H2: "an abbreviation opening the part of the name that
 # carries the given name — the whole name, or the part after a
