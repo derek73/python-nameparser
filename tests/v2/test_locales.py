@@ -218,6 +218,25 @@ def test_sushri_is_the_title_only_under_a_strict_hindi_choice() -> None:
         "Her Excellency Sushri")
 
 
+@pytest.mark.parametrize("text, middle", [
+    ("Maria de Fátima Costa", "de Fátima"),
+    ("MARIA DE FATIMA COSTA", "DE FATIMA"),
+    ("Maria do Socorro Silva", "do Socorro"),
+    ("Maria de Lourdes Costa", "de Lourdes"),
+    ("Ana de Maria Costa", "de Maria"),
+])
+def test_a_strict_portuguese_choice_reads_the_given_names_es_also_marks(
+        text: str, middle: str) -> None:
+    # #1122: pt.toml holds its own reading of the five words es.toml
+    # marks that pass on Portuguese names under the strict choice
+    # (fátima, fatima, socorro, lourdes, maria), so a strict choice
+    # reading no es.toml keeps the default's middle name; the others
+    # (carmen, pilar, rosario, ...) it leaves to the family
+    assert parse(text).middle == middle
+    for pack in (locales.PT, locales.PT_BR):
+        assert parser_for(pack, strict=True).parse(text).middle == middle, pack
+
+
 def test_es_and_pt_pack_contents() -> None:
     # 3g: es is its choice plus the Spanish given-name list as a lexicon
     # fragment (read by rules/O6 alone); pt is nothing but its choice
@@ -234,11 +253,10 @@ def test_es_and_pt_pack_contents() -> None:
     # the choice changes only the words a collision keeps off
     assert changed_words(selected(locales.ES.languages)) == {
         "doña", "lady", "maestra"}
-    # the given names rules/P10 completes below the default's bar (#1118)
+    # the given name a particle completes that changes too few names to
+    # score, kept for pt's choice (#1118, #1122)
     assert changed_words(selected(locales.PT.languages)) == {
-        "do", "e",
-        "cassia", "cássia", "graca", "gracas", "graça", "graças",
-        "kassia", "piedade"}
+        "do", "e", "piedade"}
     # sr keeps es's and pt's generation beside the salutation, so the
     # choice leaves it a dual position decides, as the default reads it
     for packed in (_require_packed("es"), _require_packed("pt"),
@@ -1632,16 +1650,9 @@ _ROTATORS["es_ar"] = [
     *(n for n in _ROTATORS["es"] if n != "Jan\u200bPavel -"),
     "Ana\u200bGarcía -",              # rules/O6 over a zero-width split and a lone mark
 ]
-# rules/P10's given names below the default's bar, which pt's choice turns
-# on, so the phrase reads as the middle name (#1118)
+# rules/P10's given name the default does not read, which pt's choice
+# turns on, so the phrase reads as the middle name (#1118, #1122)
 _PT_PARTICLE_GIVEN = [
-    "Maria das Graças Silva",        # graças
-    "MARIA DAS GRACAS SILVA",        # gracas
-    "Maria da Graça Pereira",        # graça
-    "MARIA DA GRACA PEREIRA",        # graca
-    "Rita de Cássia Souza",          # cássia
-    "RITA DE CASSIA SOUZA",          # cassia
-    "Rita de Kassia Lima",           # kassia
     "Maria da Piedade Costa",        # piedade
 ]
 _ROTATORS["pt"] = [
