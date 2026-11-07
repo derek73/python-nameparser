@@ -11991,6 +11991,21 @@ CASES: tuple[Case, ...] = (
          classification="feat(#1111)",
          notes="rules/M4 leaves an initial to O5's convention, so the "
                "switch places it"),
+    Case("lone_name_word_switched_family_behind_a_title_particle_chain",
+         "Sir Freiherr von Richthofen",
+         {"title": "Sir Freiherr", "family": "von Richthofen"},
+         policy=Policy(name_order=FAMILY_FIRST, lone_name_word=Role.FAMILY),
+         ambiguities=("particle-or-given",), classification="feat(#1111)",
+         notes="a chain behind a title-particle, one unit the switch "
+               "places in the family under a family-first order: the "
+               "route by which H1's family -> given guard asks P1's "
+               "family-first fold about a whole chain "
+               "(_family_settled, with no reach computed), which a "
+               "family-first order alone took before #1111 and only the "
+               "switch takes now. The family reads the same whatever "
+               "that question answers -- 'Freiherr' addresses the "
+               "family -- so this row holds the reading and the route, "
+               "not the answer"),
     Case("lone_name_word_vi_pack_reads_given", "Anh",
          {"given": "Anh"}, locale="vi",
          ambiguities=("given-or-family",), classification="feat(#1111)",

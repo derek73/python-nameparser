@@ -824,8 +824,10 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # 519 -> 537 the same day, the reviews of #1097 and #1098's rows;
     # 328 -> 331 skipped on 2026-11-06, #1130's 'Begum, Mst Amina'
     # under the three orders; 331 -> 334 the same day, its review's
-    # 'Akther, Mst. Nasima' the same
-    assert (checked, skipped) == (537, 334), (checked, skipped)
+    # 'Akther, Mst. Nasima' the same; 334 -> 335 the same day, #1111's
+    # 'Sir Freiherr von Richthofen' under its own policy, whose stand-in
+    # for 'von' lands in the family with the chain, as the particle did
+    assert (checked, skipped) == (537, 335), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:
