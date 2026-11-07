@@ -11,7 +11,7 @@ from collections.abc import Callable, Sequence, Set
 
 import pytest
 
-from nameparser import Parser, parse
+from nameparser import FAMILY_FIRST, GIVEN_FIRST, Parser, Role, parse
 from nameparser._lexicon import Lexicon, _normalize
 from nameparser._pipeline import STAGES
 from nameparser._pipeline._classify import classify
@@ -1371,3 +1371,29 @@ def test_the_second_unit_is_found_once_per_read(
     monkeypatch.setattr(_pieces, "second_unit", counting)
     parse("Freiherr von " + "Berg " * 32 + "MA Dr. " * 32)
     assert calls[0] == 1
+
+
+# H5's listed joined title (decisions/H5, #1104): the three readers of
+# classify's JOINED_TITLE_TAG besides the chain itself (which the
+# tests/v2/cases.py rows pin), each asked through the shape its reader serves: P13's
+# trailing title ('y'), the maiden take's candidates (`trailing_candidates`
+# via `is_trailing_title_word`) and the particle run's weighed word
+# (`_weighed`), each reading the word as 'Prof.' reads (#1104 review: each
+# of the three arms passed the suite with its read removed)
+@pytest.mark.parametrize("order", [GIVEN_FIRST, FAMILY_FIRST])
+@pytest.mark.parametrize("shape", [
+    "Maria Rossi y {}",
+    "Maria Rossi née Bianchi {}",
+    "Freiherr von Berg {} V",
+])
+def test_a_listed_joined_title_reads_as_prof_does(shape: str,
+                                                  order: tuple[Role, Role, Role]) -> None:
+    parser = Parser(policy=Policy(name_order=order))
+
+    def fields(word: str) -> tuple[object, ...]:
+        name = parser.parse(shape.format(word))
+        return (*(getattr(name, f).replace(word, "T") for f in (
+            "title", "given", "middle", "family", "suffix", "maiden")),
+            sorted(a.kind.name for a in name.ambiguities))
+
+    assert fields("Dott.ssa") == fields("Prof.")

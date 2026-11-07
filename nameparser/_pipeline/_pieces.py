@@ -60,7 +60,7 @@ from typing import NamedTuple
 from nameparser._pipeline._state import (
     AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG,
     GENERATION_WORD_TAG, TITLE_CASE_NAME_TAG, GIVEN_ABBREVIATION_TAG, NAME_ROLES, SHAPE_ACRONYM_TAG, SUFFIX_OR_UNREAD, AmbiguityKind, PendingAmbiguity,
-    PendingReading, TRAILING_TITLE_TAG,
+    JOINED_TITLE_TAG, PendingReading, TRAILING_TITLE_TAG,
     WorkToken,
 )
 from nameparser._pipeline._vocab import (
@@ -1870,8 +1870,9 @@ def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
                      salutations: bool = False) -> int:
     """How many pieces of `rest` the trailing title chain LEAVES
     standing: `rest[:kept]` are the name pieces and `rest[kept:]` the
-    title words the chain took (period-marked, or under `salutations`
-    a bare salutation), in piece order. Counted
+    title words the chain took (wearing the abbreviation shape, a title
+    listed whole with a period inside it, or under `salutations` a bare
+    salutation), in piece order. Counted
     the way `peel_trailing` counts, so the two answers compose without
     arithmetic at the call site. `rest` is the caller's NAME pieces:
     on the no-comma path what the S2 peel left, after a family comma
@@ -1893,16 +1894,17 @@ def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
     Every parse with a name word to place enters this frame -- assign
     asks the question here rather than answering a cheaper version of
     it inline (mechanisms.md#ONE-PREDICATE-PER-QUESTION) -- so what it
-    costs an ordinary name is one frame and one regex match. The
+    costs an ordinary name is one frame, one tag test and one regex
+    match. The
     exceptions return before it: a segment that is all title, and a
     comma part read wholly as a credential run, have no name piece to
     hand this (52 of the 1289 corpus parses, measured 2026-09-09 --
     'Coach', 'Lord of the Universe', 'Smith, Jr.', 'MD, PHD').
-    The shape test
-    runs BEFORE the vocabulary one to keep it at that: _TRAILING_TITLE_SHAPE
-    is a compiled regex (a C call, no Python frame) where
-    is_title_piece is a call, and almost no name ends in a
-    period-marked word, so the ordinary parse pays the one match and
+    The tag and shape tests run BEFORE the vocabulary call to keep it
+    at that: classify's JOINED_TITLE_TAG is a set membership test and
+    _TRAILING_TITLE_SHAPE a compiled regex (C calls, no Python frame)
+    where is_title_piece is a call, and almost no name ends in a
+    period-marked word, so the ordinary parse pays the two tests and
     stops (decisions/parse-cost).
     """
     k = len(rest) if end is None else end
@@ -1914,10 +1916,14 @@ def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
         # listed, and a listed CJK title wearing a stop should read as
         # a title. rules/H5: "a title that may be a given name is
         # title vocabulary there where its title reading is written
-        # short" -- classify's tag, tested first, a C-level read
-        # (decisions/H5, #999)
+        # short" -- classify's TRAILING_TITLE_TAG, tested ahead of
+        # is_title_piece, a C-level read (decisions/H5, #999)
         if len(piece) == 1 and (
-                (_TRAILING_TITLE_SHAPE.match(tokens[piece[0]].text)
+                # rules/H5: "a title the vocabulary lists whole with a
+                # period inside it chains without a final one" --
+                # classify's tag, a C-level read (decisions/H5, #1104)
+                JOINED_TITLE_TAG in tokens[piece[0]].tags
+                or (_TRAILING_TITLE_SHAPE.match(tokens[piece[0]].text)
                  and (TRAILING_TITLE_TAG in tokens[piece[0]].tags
                       or is_title_piece(piece, ptags[idx], tokens)))
                 # rules/H8: "the given part after it ends in a word whose
@@ -1934,23 +1940,29 @@ def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
 
 
 # rules/H5: "successive single words that wear the abbreviation
-# shape and are title vocabulary chain into the title from the end"
-# -- one word's half of that, for a caller asking it of a piece the
-# chain did not walk to: the maiden take, choosing the words the
-# clause-free view is read over (#601). `trailing_titles` asks the same four tests
-# INLINE, in the same order, for the frame budget its docstring
-# states; keep the two in step.
+# shape and are title vocabulary chain into the title from the end",
+# and "a title the vocabulary lists whole with a period inside it
+# chains without a final one" -- one word's half of that, for a caller
+# asking it of a piece the chain did not walk to: the maiden take,
+# choosing the words the clause-free view is read over (#601).
+# `trailing_titles` asks the same five tests INLINE, in the same order,
+# for the frame budget its docstring states, and adds its `salutations`
+# arm, which no caller of this one asks; keep the two in step.
 def is_trailing_title_word(piece: Sequence[int], ptags: Set[str],
                            tokens: Sequence[WorkToken]) -> bool:
     """Whether one piece is a word H5's trailing chain takes: a lone
     token wearing the abbreviation shape that the title vocabulary
     lists, or that classify marks as a title written short that may
-    be a given name (TRAILING_TITLE_TAG). Position is the caller's question -- this answers only
-    what the word is."""
+    be a given name (TRAILING_TITLE_TAG), or a title the vocabulary
+    lists whole with a period inside it, which classify marks
+    (JOINED_TITLE_TAG) and which needs no final period. Position is
+    the caller's question -- this answers only what the word is."""
     return (len(piece) == 1
-            and _TRAILING_TITLE_SHAPE.match(tokens[piece[0]].text) is not None
-            and (TRAILING_TITLE_TAG in tokens[piece[0]].tags
-                 or is_title_piece(piece, ptags, tokens)))
+            and (JOINED_TITLE_TAG in tokens[piece[0]].tags
+                 or _TRAILING_TITLE_SHAPE.match(tokens[piece[0]].text)
+                 is not None
+                 and (TRAILING_TITLE_TAG in tokens[piece[0]].tags
+                      or is_title_piece(piece, ptags, tokens))))
 
 
 #: lone-word tags `trailing_candidates` admits on: the ambiguous class,
@@ -1974,7 +1986,8 @@ def trailing_candidates(lo: int, pieces: Sequence[Sequence[int]],
 
     Back from the end over every piece the peel or the chain admits on
     its own terms -- a suffix piece, a member of the ambiguous class,
-    an initial-shaped suffix word, a period-marked title word -- and
+    an initial-shaped suffix word, a period-marked title word or a
+    title listed whole with a period inside it -- and
     over a roman numeral the numeral's predicate admits, asked with no
     case so it stays a superset: one of two or more letters wherever it
     stands, the peel reading it anywhere in the run (#752), and one of
@@ -2371,8 +2384,9 @@ def _weighed(piece: Sequence[int], tokens: Sequence[WorkToken]) -> bool:
     X.Y.Z.' keeps suffix 'MA X.Y.Z.'), so it ends the plain run the
     count folds into the particle (#620's review); a title written
     short that may be a given name is one too, H5's chain taking it
-    as it takes a listed title (#999). A
-    connective join is one name word, P3's own count. The tests inline:
+    as it takes a listed title (#999), and so is a title listed whole
+    with a period inside it, which the chain takes without a final one
+    (#1104). A connective join is one name word, P3's own count. The tests inline:
     this asks once per word behind a particle run."""
     if len(piece) > 1:
         return False
@@ -2380,6 +2394,7 @@ def _weighed(piece: Sequence[int], tokens: Sequence[WorkToken]) -> bool:
     return (not tok.tags.isdisjoint(_WEIGHED_TAGS)
             or _ROMAN.match(stem := tok.text.rstrip(".")) is not None
             and stem != ""
+            or JOINED_TITLE_TAG in tok.tags
             or ("vocab:title" in tok.tags or TRAILING_TITLE_TAG in tok.tags)
             and _TRAILING_TITLE_SHAPE.match(tok.text) is not None)
 

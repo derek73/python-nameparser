@@ -31,7 +31,8 @@ leading title pieces chain while no given-position name has been seen
 then positional assignment per name_order with the trailing-suffix
 rule: the piece from which everything after is a strict suffix is the
 last name-position piece, the rest are suffixes. Behind that peel a
-trailing run of period-marked title words chains into the title from
+trailing run of the title words H5's chain takes
+(`_pieces.trailing_titles`) chains into the title from
 the end, leaving one name piece standing; where the run TAKES
 something the peel was only provisional and runs again over the pieces
 with the titled ones spliced out, the two alternating until the run
