@@ -499,6 +499,10 @@ def test_period_joined_vocab_retires_the_single_character_chunk() -> None:
     ("KC/PhD", True),       # a member listed as a suffix word
     ("MA/Jr", False),       # a generation settles nothing
     ("MA/II", False),
+    ("MA/III", False),      # nor a numeral
+    ("Ma/Ms", False),       # nor a word that is a title too
+    ("MS/MBA", False),
+    ("MA/PhD/Jr", True),    # a chunk that is no name does
 ])
 def test_suffix_as_written_reads_a_joined_credential(
         text: str, expected: bool) -> None:
@@ -555,8 +559,9 @@ def test_a_joined_credential_with_a_listed_run_is_the_suffix_in_every_shape(
 
 @pytest.mark.parametrize("text, expected", [
     ("OT/L", False), ("NP-C", False),
-    # a member beside a credential that settles it (#1138)
-    ("MS/OT/L", True), ("OT/L/MS", True)])
+    # a member beside a word that is a title too, which settles nothing
+    # (#1138)
+    ("MS/OT/L", False), ("OT/L/MS", False)])
 def test_a_joined_word_listed_whole_and_refused_is_not_asked_again(
         text: str, expected: bool) -> None:
     # a guard on the cut, not on a reading the base lacked: a word the

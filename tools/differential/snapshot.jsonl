@@ -1872,6 +1872,7 @@
 {"name": "John Smith (Dr, Ma)", "given": "John", "family": "Smith", "nickname": "Dr, Ma", "ambiguities": ["SUFFIX_OR_NICKNAME"], "alternatives": ["SUFFIX_OR_NICKNAME: credential as suffix (vocabulary)"], "initials": "J. S."}
 {"name": "John Smith (Dr., PhD)", "title": "Dr.", "given": "John", "family": "Smith", "suffix": "PhD", "initials": "J. S."}
 {"name": "John Smith (Ed)", "given": "John", "family": "Smith", "nickname": "Ed", "ambiguities": ["SUFFIX_OR_NICKNAME"], "alternatives": ["SUFFIX_OR_NICKNAME: credential as suffix (vocabulary)"], "initials": "J. S."}
+{"name": "John Smith (Ed, Jr/Sr)", "given": "John", "family": "Smith", "nickname": "Ed, Jr/Sr", "ambiguities": ["SUFFIX_OR_NICKNAME"], "alternatives": ["SUFFIX_OR_NICKNAME: credential as suffix (vocabulary)"], "initials": "J. S."}
 {"name": "John Smith (Hon)", "given": "John", "family": "Smith", "nickname": "Hon", "initials": "J. S."}
 {"name": "John Smith (Hon, Vice)", "given": "John", "family": "Smith", "nickname": "Hon, Vice", "initials": "J. S."}
 {"name": "John Smith (Jr.,) III", "given": "John", "family": "Smith", "suffix": "Jr., III", "initials": "J. S.", "generation": "Jr., III"}
@@ -1985,6 +1986,7 @@
 {"name": "John Smith Ma", "given": "John", "middle": "Smith", "family": "Ma", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "J. S. M."}
 {"name": "John Smith Ma Jones", "given": "John", "middle": "Smith Ma", "family": "Jones", "initials": "J. S. M. J."}
 {"name": "John Smith Ma.", "given": "John", "middle": "Smith", "family": "Ma.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "J. S. M."}
+{"name": "John Smith Ma/Ms", "given": "John", "middle": "Smith", "family": "Ma/Ms", "initials": "J. S. M."}
 {"name": "John Smith Maj", "given": "John", "middle": "Smith", "family": "Maj", "initials": "J. S. M."}
 {"name": "John Smith Maj.", "title": "Maj.", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "John Smith Mc V", "given": "John", "family": "Smith", "suffix": "Mc V", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: initial as family (shape)"], "initials": "J. S.", "capitalized_force": "John Smith MC V", "generation": "V", "credentials": "Mc"}
@@ -2414,7 +2416,7 @@
 {"name": "KALAM Alɛ Mustafa", "order": "FAMILY_FIRST", "given": "Alɛ", "middle": "Mustafa", "family": "KALAM", "initials": "A. M. K.", "capitalized_force": "Kalam Alɛ Mustafa"}
 {"name": "KANSULO Iiɖa", "order": "FAMILY_FIRST", "given": "Iiɖa", "family": "KANSULO", "initials": "I. K.", "capitalized_force": "Kansulo Iiɖa"}
 {"name": "KIM, AE-RA", "family": "KIM", "suffix": "AE-RA", "initials": "K.", "capitalized": "Kim, AE-RA"}
-{"name": "KIM, MA-RA", "family": "KIM", "suffix": "MA-RA", "initials": "K.", "capitalized": "Kim, MA-RA"}
+{"name": "KIM, MA-AE", "family": "KIM", "suffix": "MA-AE", "initials": "K.", "capitalized": "Kim, MA-AE"}
 {"name": "Kajal Patel Hiring Globally", "given": "Kajal", "middle": "Patel Hiring", "family": "Globally", "initials": "K. P. H. G."}
 {"name": "Kalniņa Aina", "order": "FAMILY_FIRST", "given": "Aina", "family": "Kalniņa", "initials": "A. K."}
 {"name": "Kamāl Yūsuf al-Ḥāǧǧ", "given": "Kamāl", "middle": "Yūsuf", "family": "al-Ḥāǧǧ", "initials": "K. Y. a."}

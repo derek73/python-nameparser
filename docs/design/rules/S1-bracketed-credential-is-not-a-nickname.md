@@ -35,7 +35,7 @@
   "John Smith (Jr.,) III"     →  suffix="Jr., III"
   "John Smith (MD,) (PhD)"    →  suffix="MD, PhD"
   ```
-- **A member of the ambiguous class (S4) is a word of such a clause where its writing settles it after the name**, as S13 settles a member standing alone, wherever in the clause it stands. A member its writing leaves unsettled is one too where a credential of the same clause settles it: the brackets hold one kind of thing, and a credential that is no name, or a member its periods settle, says which. A generation, a numeral, a word that is a title too and a member its capitals settle say nothing of the kind: `Ed Jr` is a name a person goes by, and a joined chunk is never settled by its case (S3).
+- **A member of the ambiguous class (S4) is a word of such a clause where its writing settles it after the name**, as S13 settles a member standing alone, wherever in the clause it stands. A member its writing leaves unsettled is one too where a credential of the same clause settles it: the brackets hold one kind of thing, and a credential that is no name, or a member its periods settle, says which. A joined word settles one where a chunk of it would. A generation, a numeral, an honorific, a word that is a title too and a member its capitals settle say nothing of the kind: `Ed Jr` is a name a person goes by, and a joined chunk is never settled by its case (S3).
   ```
   "John Smith (Ph.D., MBA)"   →  suffix="Ph.D., MBA"
   "John Smith (MBA, PhD)"     →  suffix="MBA, PhD"
@@ -49,6 +49,7 @@
   "John Smith (MA, Ed)"       →  nickname="MA, Ed"  · boundary
   "Edward Smith (Ed Jr)"      →  nickname="Ed Jr"  · boundary
   "John Smith (Ma, Ms)"       →  nickname="Ma, Ms"  · boundary
+  "John Smith (Ed, Jr/Sr)"    →  nickname="Ed, Jr/Sr"  · boundary
   "John Smith (Dr, Ma)"       →  nickname="Dr, Ma"  · boundary
   "John (Ma, PhD) Smith"      →  nickname="Ma, PhD"  · boundary
   ```

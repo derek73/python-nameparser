@@ -53,7 +53,7 @@
   "Jane Smith OTR/L/X"        →  family="OTR/L/X"  · boundary
   "Jane Smith-NP-C"           →  family="Smith-NP-C"  · boundary
   ```
-- **A member of the ambiguous class (S4) is a chunk too, however it is written, where the word holds a chunk that settles it**: a credential that is no name, or a member written with a period inside it, and not a generation or a numeral, which say nothing about the member, nor a member's case, which a chunk cannot be read by. Written alone, such a member may be a name or the initials it looks like (`John Smith MA` and `John Smith M.A` keep the family), but a credential joined to it says what the whole word is, since nobody joins a name or initials to a credential. A word of bare members alone has nothing to settle it, and a name word beside a member still refuses the word.
+- **A member of the ambiguous class (S4) is a chunk too, however it is written, where the word holds a chunk that settles it**: a credential that is no name, or a member written with a period inside it, and not a generation, a numeral, an honorific or a word that is a title too, which say nothing about the member, as in a clause (S1), nor a member's case, which a chunk cannot be read by. Written alone, such a member may be a name or the initials it looks like (`John Smith MA` and `John Smith M.A` keep the family), but a credential joined to it says what the whole word is, since nobody joins a name or initials to a credential. A word of bare members alone has nothing to settle it, and a name word beside a member still refuses the word.
   ```
   "John Smith MA/PhD"         →  suffix="MA/PhD"
   "John Smith M.A/PhD"        →  suffix="M.A/PhD"
@@ -65,6 +65,7 @@
   "John Smith J.D/MBA"        →  suffix="J.D/MBA"
   "John Smith MA/MBA"         →  family="MA/MBA"  · boundary
   "John Smith MA/Jr"          →  family="MA/Jr"  · boundary
+  "John Smith Ma/Ms"          →  family="Ma/Ms"  · boundary
   "John Smith MA/Jones"       →  family="MA/Jones"  · boundary
   ```
 - **A joined word holding a member is a member itself** in brackets or quotes: the chunk beside the member has settled it, whatever the name's case, and S13's position decides the rest, so after the name it is the suffix, and inside the name or before it the nickname, reported, as its words written apart are (S1).
@@ -155,10 +156,10 @@
   "John Smith (MA/MBA)"       →  nickname="MA/MBA"
   "John Smith (MA, MBA)"      →  suffix="MA, MBA"
   ```
-- A Korean given name romanized with a hyphen between two syllables the vocabulary lists as credentials, one of them no name, written in capitals or opening in lower case, reads as the credential, unreported after a comma: a name in capitals has no Title case for the writing to show, `ae` and `ra` are such credentials, and `ra` settles `ma`, a member, beside it.
+- A Korean given name romanized with a hyphen between two syllables the vocabulary lists as unambiguous credentials, written in capitals or opening in lower case, reads as the credential, unreported after a comma: a name in capitals has no Title case for the writing to show, and `ae` and `ra` are such credentials, `ae` settling `ma`, a member, beside it.
   ```
   "KIM, AE-RA"                →  suffix="AE-RA"
-  "KIM, MA-RA"                →  suffix="MA-RA"
+  "KIM, MA-AE"                →  suffix="MA-AE"
   "Kim, AE-RA"                →  suffix="AE-RA"
   "kim, ae-ra"                →  suffix="ae-ra"
   ```

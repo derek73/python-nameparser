@@ -716,9 +716,9 @@ def _family_first_lead_folds(state: ParseState, tokens: list[WorkToken],
 # it read as they would beside a nickname" -- the clause's words
 # take their roles here, once the name's words are placed: extract has
 # already lifted a clause wholly of unambiguous non-name words out of
-# the name, and a member of the ambiguous class joins one only where
-# its writing settles it after the name (rules/S13); decisions/S1
-# (#792)
+# the name, and a member of the ambiguous class joins one only after
+# the name (rules/S13), and only where its writing or another word of
+# its clause settles it; decisions/S1 (#792, #1138)
 def _set_apart_clauses(state: ParseState,
                        tokens: list[WorkToken]) -> None:
     """Give each word of a delimited clause wholly of non-name words
@@ -728,8 +728,9 @@ def _set_apart_clauses(state: ParseState,
     suffix anywhere else. A clause extract set apart may still be
     declined here, keeping its pair's reading: titles alone behind a
     word read as a suffix, a credential written as initials before a
-    name word of its comma part, or a member of the ambiguous class not
-    after the name."""
+    name word of its comma part, a member of the ambiguous class not
+    after the name, or one neither its writing nor a credential of its
+    clause settles."""
     first_name = last_name = -1
     for i, t in enumerate(tokens):
         if t.role in NAME_ROLES:
@@ -757,8 +758,10 @@ def _set_apart_clauses(state: ParseState,
             token = tokens[i]
             kind = set_apart_kind(token.text, lex)
             # a member its periods settle, or a joined word whose own
-            # chunks settle its member, settles the others; one its
-            # capitals settle does not, as no chunk is settled by case
+            # chunks settle its member, settles the others, as does a
+            # credential that is no name (`settles_a_member`); one its
+            # capitals settle does not, so the clause reads as its
+            # joined spelling, whose chunks are never read by case
             # (#1138)
             if kind == "member":
                 kind, member, settled = "suffix", True, True
@@ -775,8 +778,8 @@ def _set_apart_clauses(state: ParseState,
         else:
             # rules/S1: "a member its writing leaves unsettled is one
             # too where a credential of the same clause settles it" --
-            # the clause holds one kind of thing, and the credential
-            # says which (decisions/S1, #1138)
+            # a credential that is no name, or a member its periods
+            # settle (decisions/S1, #1138)
             if unsettled and not settled:
                 continue
             # a member is settled after the name only (rules/S13), and
@@ -844,17 +847,18 @@ def _report_delimited_members(tokens: list[WorkToken], lexicon: Lexicon,
     """Report the fork on every member of the ambiguous class left a
     nickname: `_set_apart_clauses`, run first, has made each member its
     writing settles after the name the suffix, so a member still a
-    nickname is one it did not settle, a dotted member inside the name
-    included. Reported here, where the clause is decided, rather than
-    in extract, which has no token index to point at. A dotted member
-    carries no tag in a clause (classify tags a shape only outside
-    one), so it is found by its text, by `dotted_member` as the
-    settling finds it, whatever else the vocabulary reads it as."""
+    nickname is one it did not settle, a dotted member or a joined word
+    holding a member ('MA/PhD') inside the name included. Reported
+    here, where the clause is decided, rather than in extract, which
+    has no token index to point at. A dotted or joined member carries
+    no tag in a clause (classify tags a shape only outside one), so
+    each is found by its text, by `dotted_member` or `joined_member` as
+    the settling finds it, whatever else the vocabulary reads it as."""
     for i, token in enumerate(tokens):
         if token.role is not Role.NICKNAME:
             continue
-        # the period asked first, at C level, so a nickname written
-        # without one pays no frame
+        # the period and the joiners asked first, at C level, so a
+        # nickname written with neither pays no frame
         if (AMBIGUOUS_ACRONYM_TAG in token.tags
                 or "." in token.text and dotted_member(token.text, lexicon)
                 or ("/" in token.text or "-" in token.text)

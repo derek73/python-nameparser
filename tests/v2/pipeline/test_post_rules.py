@@ -1911,6 +1911,13 @@ def test_a_member_a_caller_lists_as_a_title_is_the_title() -> None:
     ('Edward Smith "Ed Jr"', "", True),
     ("Edward Smith (Ed II)", "", True),
     ("John Smith (Ma, Ms)", "", True),
+    ("John Smith (Ma/Ms)", "", True),
+    ("John Smith (Ma, 씨)", "", True),  # an honorific neither
+    # a joined word settles one where a chunk of it would
+    ("John Smith (Ed, Jr/Sr)", "", True),
+    ("John Smith (Ma, Ms/Jr)", "", True),
+    ("John Smith (Ma, PhD/Jr)", "Ma, PhD/Jr", False),
+    ("John Smith (Ma, MA/PhD)", "Ma, MA/PhD", False),
     ("John Smith (Ma, Esq)", "Ma, Esq", False),
 ])
 def test_a_credential_settles_a_member_of_its_clause_after_the_name(
@@ -2007,18 +2014,20 @@ def test_a_joined_credential_reads_as_its_spelling_written_apart() -> None:
 #: credential settles the member in its clause (rules/S1), so the two
 #: spellings read alike in every shape. Fields only, as above.
 _MEMBERS = ("MA", "Ma", "M.A", "MBA", "Ed", "KC", "JD")
-_SETTLERS = ("PhD", "MD", "RN", "Esq", "NP-C")
+_SETTLERS = ("PhD", "MD", "RN", "Esq", "NP-C", "MS", "RA")
 
-#: How many rows read apart with `set_apart_kind` reading a joined word
-#: holding a member as the suffix it reads bare, the position test
-#: skipped: the control, recorded 2026-11-07 in-process by replacing
-#: `_vocab.joined_member` with a function returning False. Each is a
-#: joined pair inside or before a name word, set apart where its
-#: spelling written apart stays the nickname.
-_UNGUARDED_MEMBER_PAIRS_1138 = 1536
+#: How many rows' two spellings read differently with `set_apart_kind`
+#: reading a joined word holding a member as a plain suffix, the
+#: position test skipped: the control, recorded 2026-11-07 in-process by
+#: replacing `_vocab.joined_member` with a function returning False.
+#: Each is a joined pair inside or before a name word, set apart where
+#: its spelling written apart stays the nickname. 'MS' and 'RA', words
+#: that are titles too, joined the settlers after the second review
+#: found them settling a joined member and not a clause one.
+_UNGUARDED_MEMBER_PAIRS_1138 = 1608
 
 #: How many (pair, shape, order) rows the member invariant reads.
-_MEMBER_PAIRS_CHECKED = 4488
+_MEMBER_PAIRS_CHECKED = 4752
 
 
 def _member_pair_differences() -> tuple[list[str], int]:
