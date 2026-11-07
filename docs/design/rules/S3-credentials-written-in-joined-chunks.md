@@ -130,7 +130,7 @@
   "Jane Doe Ma R.T."          →  middle="Doe Ma"
   "JANE DOE MA R.T."          →  family="R.T."
   ```
-- A word with interior periods and a title chunk, standing inside a name or ending one without a period of its own, reads as a name word: the suffix reading has given way to the title, and the trailing title run (H5) takes only a word that ends in a period, so at the end of a name the surname before it reads as a middle name.
+- A word with interior periods and a title chunk, standing inside a name or ending one without a period of its own, reads as a name word: the suffix reading has given way to the title, and the trailing title run (H5) takes such a word without a final period only where the vocabulary lists it whole, so at the end of a name the surname before it reads as a middle name.
   ```
   "John Dipl.Ing. Smith"      →  middle="Dipl.Ing."
   "John Smith Dr.PhD"         →  family="Dr.PhD"
