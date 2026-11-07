@@ -13061,6 +13061,54 @@ CASES: tuple[Case, ...] = (
                "Jones' shapes) the title reading had misread "
                "(decisions/indic-honorifics)",
          shape=2),
+    Case("mst_leading_stays_the_given_name", "Mrs Mst Nasima Akther",
+         {"title": "Mrs", "given": "Mst", "middle": "Nasima",
+          "family": "Akther"},
+         notes="'mst' (Mosammat, the romanized মোসাঃ) "
+               "has no title reading: UK filers type it as the given "
+               "name, as they do 'Md' (#853), 79 of 85 PSC filers in "
+               "the forename box, so a leading 'Mst' stays the given "
+               "name (#1130, decisions/indic-honorifics)",
+         shape=1),
+    Case("mst_after_a_comma_is_a_credential", "Mary Smith, Mst",
+         {"given": "Mary", "family": "Smith", "suffix": "Mst"},
+         classification="fix(#1130)",
+         notes="'mst' is a credential (MST, Master of Science in "
+               "Teaching; Oxford's MSt) since #1130; 1.4.0 through "
+               "the parent read the comma as a family comma, given "
+               "'Mst', family 'Mary Smith'",
+         shape=3),
+    Case("mst_inside_a_credential_run_stays_in_it",
+         "SMITH CPA MST CGMA, JOHN",
+         {"given": "JOHN", "family": "SMITH", "suffix": "CPA MST CGMA"},
+         classification="fix(#1130)",
+         notes="unlisted, 'MST' cut the run in two and joined the "
+               "family, family 'SMITH MST', suffix 'CPA, CGMA', as "
+               "1.4.0 read it too",
+         shape=2),
+    Case("mst_opening_a_family_comma_given_part_is_a_credential",
+         "Begum, Mst Amina",
+         {"family": "Begum", "suffix": "Mst Amina"},
+         classification="fix(#1130)",
+         ambiguities=("suffix-or-name",),
+         notes="an accepted cost of #1130, md's (#853) for the same "
+               "reason: a credential opening the part after a family "
+               "comma starts a credential run to its end (rules/C13), "
+               "so the given name is lost, where 1.4.0 through the parent "
+               "read given 'Mst', middle 'Amina'. No local corpus "
+               "held the shape on 2026-11-06",
+         shape=2),
+    Case("mst_with_its_period_opening_a_family_comma_given_part",
+         "Akther, Mst. Nasima",
+         {"family": "Akther", "suffix": "Mst. Nasima"},
+         classification="fix(#1130)",
+         ambiguities=("suffix-or-name",),
+         notes="an accepted cost of #1130, as for 'Md.' after a family "
+               "comma: the credential reading takes the period-marked "
+               "form there too, where 1.4.0 through the parent read "
+               "rules/H2's title 'Mst.', given 'Nasima'. Opening a "
+               "name, 'Mst.' is still H2's title",
+         shape=2),
     Case("md_behind_a_title_opening_a_family_comma_given_part",
          "Uddin, Mr Md Karim",
          {"title": "Mr", "family": "Uddin", "suffix": "Md Karim"},

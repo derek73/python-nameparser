@@ -2683,6 +2683,7 @@ SUFFIX_ACRONYMS: frozenset[str] = frozenset({
     'msm',
     'msn',
     'mspt',
+    'mst',
     'msw',
     'mt',
     'mt-bc',

@@ -1307,6 +1307,7 @@ READINGS: tuple[tuple[str, tuple[tuple[str, str, tuple[tuple[str, object], ...]]
     ('msm', (('en', 'credential', ()),)),
     ('msn', (('en', 'credential', ()),)),
     ('mspt', (('en', 'credential', ()),)),
+    ('mst', (('mul', 'credential', ()),)),
     ('msw', (('en', 'credential', ()),)),
     ('mt', (('en', 'credential', ()),)),
     ('mt-bc', (('en', 'credential', ()),)),
