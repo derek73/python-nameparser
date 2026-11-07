@@ -82,7 +82,7 @@
 
 **Accepted:**
 
-- A surname written with a marked word behind its particle reads as a middle name and the rest of the family, where the vocabulary cannot tell the two apart: `del Valle`, `del Rosario` and `de Jesús` open a family box in about one ORCID record in ten of those holding them.
+- A surname written with a marked word behind its particle reads as a middle name and the rest of the family, where the vocabulary cannot tell the two apart: `del Valle`, `del Rosario` and `de Jesús` open a family box in about one ORCID record in ten of those holding them, and in Portuguese names, where `do Valle` is mostly a surname, the reading breaks more names than it fixes, kept on by default because it passes over every language's names pooled.
   ```
   "Pedro del Valle Llufrio"   →  middle="del Valle"
   ```

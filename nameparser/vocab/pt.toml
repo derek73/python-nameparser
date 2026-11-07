@@ -132,10 +132,6 @@ text = "amparo"
 given = { after_particle = true, note = "the second of a compound given name written behind a particle (do Amparo): ORCID holders in Portugal, Brazil and Portuguese-speaking Africa end the given box with it behind a particle 11 times and open a family box of more words with it behind a particle 1, over the whole extract (2026-11-06, #1118)" }
 
 [[word]]
-text = "carmen"
-given = { after_particle = true, note = "the second of a compound given name written behind a particle (Maria del Carmen), read in Portuguese names as es.toml reads it in Spanish ones: the reading moves 35 names of ORCID holders in Portugal, Brazil and Portuguese-speaking Africa, 35 to the boxes they filled and 0 away from them, 100%, past the 75% a reading needs (decisions/P10) (2026-11-06, #1122)" }
-
-[[word]]
 text = "cassia"
 given = { after_particle = true, note = "Cássia written without its accent, as registries write it (de Cassia): the reading moves 150 names of ORCID holders in Portugal, Brazil and Portuguese-speaking Africa, 126 to the boxes they filled and 24 away from them, 84%, past the 75% a reading needs (decisions/P10); 0 in Spain and Spanish-speaking America (2026-11-06, #1122)" }
 
@@ -153,11 +149,11 @@ given = { after_particle = true, note = "the second of a compound given name wri
 
 [[word]]
 text = "fatima"
-given = { after_particle = true, note = "Fátima written without its accent, as registries write it (de Fatima), read in Portuguese names as es.toml reads it in Spanish ones: the reading moves 170 names of ORCID holders in Portugal, Brazil and Portuguese-speaking Africa, 134 to the boxes they filled and 36 away from them, 79%, past the 75% a reading needs (decisions/P10) (2026-11-06, #1122)" }
+given = { after_particle = true, note = "Fátima written without its accent, as registries write it (de Fatima), read in Portuguese names as es.toml reads it in Spanish ones, so that a strict Portuguese choice, which compiles no es.toml, reads it too: under that choice the reading moves 134 names of ORCID holders in Portugal, Brazil and Portuguese-speaking Africa to the boxes they filled and 36 away from them, 79%, past the 75% a reading needs, and 24 more it changes agree with neither reading (decisions/P10) (2026-11-06, #1122)" }
 
 [[word]]
 text = "fátima"
-given = { after_particle = true, note = "the second of a compound given name written behind a particle (Maria de Fátima), read in Portuguese names as es.toml reads it in Spanish ones: the reading moves 565 names of ORCID holders in Portugal, Brazil and Portuguese-speaking Africa, 477 to the boxes they filled and 88 away from them, 84%, past the 75% a reading needs (decisions/P10) (2026-11-06, #1122)" }
+given = { after_particle = true, note = "the second of a compound given name written behind a particle (Maria de Fátima), read in Portuguese names as es.toml reads it in Spanish ones, so that a strict Portuguese choice, which compiles no es.toml, reads it too: under that choice the reading moves 479 names of ORCID holders in Portugal, Brazil and Portuguese-speaking Africa to the boxes they filled and 88 away from them, 84%, past the 75% a reading needs, and 87 more it changes agree with neither reading (decisions/P10) (2026-11-06, #1122)" }
 
 [[word]]
 text = "gloria"
@@ -189,7 +185,7 @@ given = { after_particle = true, note = "the second of a compound given name wri
 
 [[word]]
 text = "lourdes"
-given = { after_particle = true, note = "the second of a compound given name written behind a particle (Maria de Lourdes, beside the Portuguese spelling lurdes), read in Portuguese names as es.toml reads it in Spanish ones: the reading moves 165 names of ORCID holders in Portugal, Brazil and Portuguese-speaking Africa, 149 to the boxes they filled and 16 away from them, 90%, past the 75% a reading needs (decisions/P10) (2026-11-06, #1122)" }
+given = { after_particle = true, note = "the second of a compound given name written behind a particle (Maria de Lourdes, beside the Portuguese spelling lurdes), read in Portuguese names as es.toml reads it in Spanish ones, so that a strict Portuguese choice, which compiles no es.toml, reads it too: under that choice the reading moves 149 names of ORCID holders in Portugal, Brazil and Portuguese-speaking Africa to the boxes they filled and 16 away from them, 90%, past the 75% a reading needs, and 33 more it changes agree with neither reading (decisions/P10) (2026-11-06, #1122)" }
 
 [[word]]
 text = "lurdes"
@@ -197,15 +193,11 @@ given = { after_particle = true, note = "the Portuguese spelling of Lourdes, the
 
 [[word]]
 text = "maria"
-given = { after_particle = true, note = "the second of a compound given name written behind a particle (de Maria, without its accent), read in Portuguese names as es.toml reads it in Spanish ones: the reading moves 28 names of ORCID holders in Portugal, Brazil and Portuguese-speaking Africa, 22 to the boxes they filled and 6 away from them, 79%, past the 75% a reading needs (decisions/P10) (2026-11-06, #1122)" }
+given = { after_particle = true, note = "the second of a compound given name written behind a particle (de Maria, without its accent), read in Portuguese names as es.toml reads it in Spanish ones, so that a strict Portuguese choice, which compiles no es.toml, reads it too: under that choice the reading moves 21 names of ORCID holders in Portugal, Brazil and Portuguese-speaking Africa to the boxes they filled and 6 away from them, 78%, past the 75% a reading needs, and 8 more it changes agree with neither reading (decisions/P10) (2026-11-06, #1122)" }
 
 [[word]]
 text = "piedade"
 given = { default = false, after_particle = true, note = "the second of a compound given name written behind a particle (Maria da Piedade): ORCID holders in Portugal, Brazil and Portuguese-speaking Africa end the given box with it behind a particle 13 times and open a family box of more words with it behind a particle 4, 76%, below the 90% a default reading needs, so a Portuguese choice turns it on (2026-11-06, #1118)" }
-
-[[word]]
-text = "pilar"
-given = { after_particle = true, note = "the second of a compound given name written behind a particle (Maria do Pilar), read in Portuguese names as es.toml reads it in Spanish ones: the reading moves 23 names of ORCID holders in Portugal, Brazil and Portuguese-speaking Africa, 20 to the boxes they filled and 3 away from them, 87%, past the 75% a reading needs (decisions/P10) (2026-11-06, #1122)" }
 
 [[word]]
 text = "ribamar"
@@ -213,7 +205,7 @@ given = { after_particle = true, note = "the second of a compound given name wri
 
 [[word]]
 text = "socorro"
-given = { after_particle = true, note = "the second of a compound given name written behind a particle (Maria do Socorro), read in Portuguese names as es.toml reads it in Spanish ones: the reading moves 178 names of ORCID holders in Portugal, Brazil and Portuguese-speaking Africa, 154 to the boxes they filled and 24 away from them, 87%, past the 75% a reading needs (decisions/P10) (2026-11-06, #1122)" }
+given = { after_particle = true, note = "the second of a compound given name written behind a particle (Maria do Socorro), read in Portuguese names as es.toml reads it in Spanish ones, so that a strict Portuguese choice, which compiles no es.toml, reads it too: under that choice the reading moves 149 names of ORCID holders in Portugal, Brazil and Portuguese-speaking Africa to the boxes they filled and 24 away from them, 86%, past the 75% a reading needs, and 49 more it changes agree with neither reading (decisions/P10) (2026-11-06, #1122)" }
 
 [[word]]
 text = "tarso"

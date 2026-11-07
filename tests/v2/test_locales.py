@@ -223,8 +223,6 @@ def test_sushri_is_the_title_only_under_a_strict_hindi_choice() -> None:
     ("MARIA DE FATIMA COSTA", "DE FATIMA"),
     ("Maria do Socorro Silva", "do Socorro"),
     ("Maria de Lourdes Costa", "de Lourdes"),
-    ("Maria do Carmen Costa", "do Carmen"),
-    ("Maria do Pilar Costa", "do Pilar"),
     ("Ana de Maria Costa", "de Maria"),
 ])
 def test_a_strict_portuguese_choice_reads_the_given_names_es_also_marks(

@@ -50,7 +50,7 @@
   "P7": {"words": 138, "then_words": 64, "because_sentences": 3, "except": 0, "precedence": 0, "accepted": 1, "accepted_words": 28},
   "P8": {"words": 496, "then_words": 431, "because_sentences": 2, "except": 0, "precedence": 0, "accepted": 2, "accepted_words": 309},
   "P9": {"words": 420, "then_words": 280, "because_sentences": 1, "except": 2, "precedence": 0, "accepted": 0, "accepted_words": 0},
-  "P10": {"words": 472, "then_words": 129, "because_sentences": 3, "except": 5, "precedence": 2, "accepted": 3, "accepted_words": 101},
+  "P10": {"words": 472, "then_words": 129, "because_sentences": 3, "except": 5, "precedence": 2, "accepted": 3, "accepted_words": 132},
   "P11": {"words": 229, "then_words": 80, "because_sentences": 3, "except": 0, "precedence": 1, "accepted": 2, "accepted_words": 77},
   "P12": {"words": 296, "then_words": 87, "because_sentences": 3, "except": 2, "precedence": 0, "accepted": 3, "accepted_words": 116},
   "P13": {"words": 426, "then_words": 128, "because_sentences": 2, "except": 4, "precedence": 2, "accepted": 1, "accepted_words": 42},
