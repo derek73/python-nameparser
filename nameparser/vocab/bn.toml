@@ -6,7 +6,7 @@ excluded = { salutation = { reason = "the romanized বেগম, a trailing nam
 
 [[word]]
 text = "mst"
-excluded = { salutation = { reason = "the transliteration of মোসাঃ collides with real names where the native script cannot", issue = 343 } }
+excluded = { salutation = { reason = "the romanized মোসাঃ is typed as the given name, as Md is (#853): 79 of the 85 UK PSC filers writing it put it in the forename box, 75 alone there, and 6 in the title box (2026-11-06), so a title reading broke 66 Bangladeshi PSC records by their boxes and fixed 6, and broke 38 ORCID records from Bangladesh; listed as a name by none of US Census 2010 (floor 100), SSA (floor 5 a year) or nam_dict, and its credential reading is mul.toml's", issue = [343, 1130], decided = 2026-11-06 } }
 
 [[word]]
 text = "shrimati"

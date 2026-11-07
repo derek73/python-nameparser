@@ -158,6 +158,7 @@
 {"name": "Akbar, Ahmad Albar bin", "order": "FAMILY_FIRST", "given": "Ahmad", "middle": "Albar", "family": "bin Akbar", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "A. A. A.", "patronymic": "bin Akbar"}
 {"name": "Akintola Adeolu Adegboyega", "order": "FAMILY_FIRST", "given": "Adeolu", "middle": "Adegboyega", "family": "Akintola", "initials": "A. A. A."}
 {"name": "Akintola, Adeolu Adegboyega", "given": "Adeolu", "middle": "Adegboyega", "family": "Akintola", "initials": "A. A. A."}
+{"name": "Akther, Mst. Nasima", "family": "Akther", "suffix": "Mst. Nasima", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "A.", "capitalized_force": "Akther, MST. Nasima"}
 {"name": "Al Arnold Gore, Jr.", "given": "Al", "middle": "Arnold", "family": "Gore", "suffix": "Jr.", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "A. A. G.", "generation": "Jr."}
 {"name": "Alan Ridout", "given": "Alan", "family": "Ridout", "initials": "A. R."}
 {"name": "Albert Bertomeu Font", "given": "Albert", "middle": "Bertomeu", "family": "Font", "initials": "A. B. F."}
@@ -410,6 +411,7 @@
 {"name": "Beethoven Ludwig Maria van", "given": "Beethoven", "middle": "Ludwig Maria", "family": "van", "initials": "B. L. M. v.", "capitalized_force": "Beethoven Ludwig Maria Van"}
 {"name": "Beethoven Ludwig van", "given": "Beethoven", "middle": "Ludwig", "family": "van", "initials": "B. L. v.", "capitalized_force": "Beethoven Ludwig Van"}
 {"name": "Beethoven, Ludwig van", "given": "Ludwig", "family": "van Beethoven", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "L. B."}
+{"name": "Begum, Mst Amina", "family": "Begum", "suffix": "Mst Amina", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "B.", "capitalized_force": "Begum, MST Amina"}
 {"name": "Bella Cohen Spewack", "given": "Bella", "middle": "Cohen", "family": "Spewack", "initials": "B. C. S."}
 {"name": "Ben Alex Johnson", "given": "Ben", "middle": "Alex", "family": "Johnson", "initials": "B. A. J."}
 {"name": "Ben Johnson", "given": "Ben", "family": "Johnson", "initials": "B. J."}
@@ -2777,6 +2779,7 @@
 {"name": "Mary Nicet", "given": "Mary", "family": "Nicet", "initials": "M. N."}
 {"name": "Mary Smith née Jones Maj.", "title": "Maj.", "given": "Mary", "family": "Smith", "maiden": "Jones", "initials": "M. S."}
 {"name": "Mary Smith née Jones Prof.", "title": "Prof.", "given": "Mary", "family": "Smith", "maiden": "Jones", "initials": "M. S."}
+{"name": "Mary Smith, Mst", "given": "Mary", "family": "Smith", "suffix": "Mst", "initials": "M. S.", "capitalized_force": "Mary Smith, MST"}
 {"name": "Mary Sue Hamish Watson", "given": "Mary", "middle": "Sue Hamish", "family": "Watson", "initials": "M. S. H. W."}
 {"name": "Mary-​Jane Smith", "given": "Mary-", "middle": "Jane", "family": "Smith", "initials": "M. J. S."}
 {"name": "María Dolores de Pablos", "given": "María", "middle": "Dolores", "family": "de Pablos", "initials": "M. D. P."}
@@ -2938,6 +2941,7 @@
 {"name": "Mr. and Mrs. John and Jane Smith", "title": "Mr. and Mrs.", "given": "John and Jane", "family": "Smith", "initials": "J. J. S."}
 {"name": "Mr. and Mrs. Wing Lau", "title": "Mr. and Mrs.", "given": "Wing", "family": "Lau", "initials": "W. L."}
 {"name": "Mrs Ma. Liza Cruz", "title": "Mrs", "given": "Ma.", "middle": "Liza", "family": "Cruz", "initials": "M. L. C."}
+{"name": "Mrs Mst Nasima Akther", "title": "Mrs", "given": "Mst", "middle": "Nasima", "family": "Akther", "initials": "M. N. A."}
 {"name": "Mrs. Garcia", "title": "Mrs.", "family": "Garcia", "initials": "G."}
 {"name": "Ms A.J. Smith", "title": "Ms", "given": "A.J.", "family": "Smith", "initials": "A. S."}
 {"name": "Ms Hon Solo", "title": "Ms Hon", "family": "Solo", "initials": "S."}
@@ -3390,6 +3394,7 @@
 {"name": "S. V. D.", "given": "S.", "middle": "V.", "family": "D.", "initials": "S. V. D."}
 {"name": "SEÁN Ó MURCHÚ", "given": "SEÁN", "family": "Ó MURCHÚ", "initials": "S. M.", "capitalized": "Seán Ó Murchú"}
 {"name": "SIG.RA MARIA ROSSI", "title": "SIG.RA", "given": "MARIA", "family": "ROSSI", "initials": "M. R.", "capitalized": "Sig.ra Maria Rossi"}
+{"name": "SMITH CPA MST CGMA, JOHN", "given": "JOHN", "family": "SMITH", "suffix": "CPA MST CGMA", "initials": "J. S.", "capitalized": "John Smith CPA MST CGMA"}
 {"name": "SMITH VD MA, JOHN", "given": "JOHN", "family": "SMITH VD MA", "initials": "J. S. M.", "capitalized": "John Smith vd Ma"}
 {"name": "SMITH VD V, JOHN", "given": "JOHN", "family": "SMITH VD V", "initials": "J. S. V.", "capitalized": "John Smith vd V"}
 {"name": "SMITH VD, JOHN", "given": "JOHN", "family": "SMITH", "suffix": "VD", "initials": "J. S.", "capitalized": "John Smith VD"}

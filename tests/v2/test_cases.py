@@ -415,13 +415,15 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # 1662 the same day, #815: "'Smitty' Jones Jr." stops reporting
     # given-or-family (-3), and its six boundary rows (a one-letter
     # numeral, a Title case acronym, three gated words, a title word)
-    # each report under three orders (+18); 1662 -> 1666 on 2026-11-06,
-    # #1111's four rows carrying their own policy that report
-    # given-or-family (FAMILY_FIRST_GIVEN_LAST, the switch set to family
-    # under the default order and under FAMILY_FIRST, and 'Anh,'), one
-    # claim each.
-    assert claims == 1666, (
-        f"the field sweep checks {claims} claims, recorded as 1666 on "
+    # each report under three orders (+18); 1662 -> 1665 on 2026-11-06,
+    # #1130: 'Begum, Mst Amina' reports suffix-or-name under three orders;
+    # 1665 -> 1668 the same day, its review's 'Akther, Mst. Nasima' the same;
+    # 1668 -> 1672 the same day, #1111's four rows carrying their own
+    # policy that report given-or-family (FAMILY_FIRST_GIVEN_LAST, the
+    # switch set to family under the default order and under
+    # FAMILY_FIRST, and 'Anh,'), one claim each.
+    assert claims == 1672, (
+        f"the field sweep checks {claims} claims, recorded as 1672 on "
         f"2026-11-06")
 
 
@@ -819,8 +821,11 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # three orders; 517 -> 519 the same day, #1097 and #1098's rows (two
     # reports gone and three added under the three orders, 'John Smith y
     # VI' under the family-first order joining _STAND_IN_REREADS)
-    # 519 -> 537 the same day, the reviews of #1097 and #1098's rows
-    assert (checked, skipped) == (537, 328), (checked, skipped)
+    # 519 -> 537 the same day, the reviews of #1097 and #1098's rows;
+    # 328 -> 331 skipped on 2026-11-06, #1130's 'Begum, Mst Amina'
+    # under the three orders; 331 -> 334 the same day, its review's
+    # 'Akther, Mst. Nasima' the same
+    assert (checked, skipped) == (537, 334), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:
