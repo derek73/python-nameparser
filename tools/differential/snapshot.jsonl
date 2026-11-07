@@ -101,7 +101,7 @@
 {"name": "Abɖu-Tɔyib GOMINA MUSA", "given": "Abɖu-Tɔyib", "middle": "GOMINA", "family": "MUSA", "initials": "A. G. M.", "capitalized_force": "Abɖu-Tɔyib Gomina Musa"}
 {"name": "Achille d'Orsi", "given": "Achille", "family": "d'Orsi", "initials": "A. d.", "capitalized_force": "Achille D'Orsi"}
 {"name": "Ada", "given": "Ada", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "A."}
-{"name": "Ada", "order": "FAMILY_FIRST", "family": "Ada", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "A."}
+{"name": "Ada", "order": "FAMILY_FIRST", "given": "Ada", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "A."}
 {"name": "Ada Cornelia César Martín von Brühl M.D. Ph.D.", "given": "Ada", "middle": "Cornelia César Martín", "family": "von Brühl", "suffix": "M.D. Ph.D.", "initials": "A. C. C. M. B."}
 {"name": "Ada Cornelia César Martín von Brühl MD DDS", "given": "Ada", "middle": "Cornelia César Martín", "family": "von Brühl", "suffix": "MD DDS", "initials": "A. C. C. M. B."}
 {"name": "Ada Cornelia Eva Sophia van. den. Wolf M.D. Ph.D.", "given": "Ada", "middle": "Cornelia Eva Sophia", "family": "van. den. Wolf", "suffix": "M.D. Ph.D.", "initials": "A. C. E. S. W."}
@@ -129,7 +129,7 @@
 {"name": "Advayavajra", "given": "Advayavajra", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "A."}
 {"name": "Adá Cornelia Ẹ́va Sophia ván den Wólf M.D. PhD.", "given": "Adá", "middle": "Cornelia Ẹ́va Sophia ván", "family": "den Wólf", "suffix": "M.D. PhD.", "initials": "A. C. Ẹ. S. v. W.", "capitalized_force": "Adá Cornelia Ẹ́va Sophia Ván den Wólf M.D. PhD."}
 {"name": "Adèle", "given": "Adèle", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "A."}
-{"name": "Adèle", "order": "FAMILY_FIRST", "family": "Adèle", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "A."}
+{"name": "Adèle", "order": "FAMILY_FIRST", "given": "Adèle", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "A."}
 {"name": "Adélaïde Lemaître", "given": "Adélaïde", "family": "Lemaître", "initials": "A. L."}
 {"name": "Adólfsdóttir Íris", "order": "FAMILY_FIRST", "given": "Íris", "family": "Adólfsdóttir", "initials": "Í. A."}
 {"name": "Agitu Ideo Gudeta", "given": "Agitu", "middle": "Ideo", "family": "Gudeta", "initials": "A. I. G."}
@@ -196,7 +196,7 @@
 {"name": "Ali, Amina", "given": "Amina", "family": "Ali", "initials": "A. A."}
 {"name": "Alice Rühle-Gerstel", "given": "Alice", "family": "Rühle-Gerstel", "initials": "A. R."}
 {"name": "Alina", "given": "Alina", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "A."}
-{"name": "Alina", "order": "FAMILY_FIRST", "family": "Alina", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "A."}
+{"name": "Alina", "order": "FAMILY_FIRST", "given": "Alina", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "A."}
 {"name": "Alisher Salimovich Qodirov Deputat", "given": "Alisher", "middle": "Salimovich Qodirov", "family": "Deputat", "initials": "A. S. Q. D."}
 {"name": "Alisher Sattorov", "given": "Alisher", "family": "Sattorov", "initials": "A. S."}
 {"name": "Aliyev Vusal Said oglu", "given": "Aliyev", "middle": "Vusal Said", "family": "oglu", "initials": "A. V. S. o.", "capitalized_force": "Aliyev Vusal Said Oglu"}
@@ -288,7 +288,7 @@
 {"name": "Angiviller, Charles Claude de La Billarderie d'", "given": "Charles", "middle": "Claude de La Billarderie", "family": "d' Angiviller", "initials": "C. C. B. A.", "capitalized_force": "Charles Claude de la Billarderie d' Angiviller"}
 {"name": "Angoulême, Louis Antoine d'Artois d'", "given": "Louis", "middle": "Antoine d'Artois", "family": "d' Angoulême", "initials": "L. A. d. A.", "capitalized_force": "Louis Antoine D'Artois d' Angoulême"}
 {"name": "Anh", "given": "Anh", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "A."}
-{"name": "Anh", "order": "FAMILY_FIRST", "family": "Anh", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "A."}
+{"name": "Anh", "order": "FAMILY_FIRST", "given": "Anh", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "A."}
 {"name": "Anh Do", "given": "Anh", "family": "Do", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "A. D."}
 {"name": "Anh Nguyễn", "given": "Anh", "family": "Nguyễn", "initials": "A. N."}
 {"name": "Anh Van Do", "given": "Anh", "family": "Van Do", "initials": "A. V. D."}
@@ -352,7 +352,7 @@
 {"name": "Arturo Acevedo Vallarino", "given": "Arturo", "middle": "Acevedo", "family": "Vallarino", "initials": "A. A. V."}
 {"name": "Asas Manterola, Benita", "given": "Benita", "family": "Asas Manterola", "initials": "B. A. M."}
 {"name": "Asmar", "given": "Asmar", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "A."}
-{"name": "Asmar", "order": "FAMILY_FIRST", "family": "Asmar", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "A."}
+{"name": "Asmar", "order": "FAMILY_FIRST", "given": "Asmar", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "A."}
 {"name": "Assad, Hafis al-", "given": "Hafis", "family": "al- Assad", "initials": "H. A."}
 {"name": "Assoc Dean", "title": "Assoc", "family": "Dean", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "D."}
 {"name": "Assoc Dean of Chemistry Robert Johns", "title": "Assoc Dean of Chemistry", "given": "Robert", "family": "Johns", "initials": "R. J."}
@@ -473,14 +473,14 @@
 {"name": "Björn Þórðarson", "given": "Björn", "family": "Þórðarson", "initials": "B. Þ."}
 {"name": "Blas de Lezo", "given": "Blas", "family": "de Lezo", "initials": "B. L."}
 {"name": "Blerim", "given": "Blerim", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "B."}
-{"name": "Blerim", "order": "FAMILY_FIRST", "family": "Blerim", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "B."}
+{"name": "Blerim", "order": "FAMILY_FIRST", "given": "Blerim", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "B."}
 {"name": "Bob Dole", "given": "Bob", "family": "Dole", "initials": "B. D."}
 {"name": "Bob Jones, author", "title": "author", "given": "Bob", "family": "Jones", "initials": "B. J.", "capitalized_force": "Author Bob Jones"}
 {"name": "Bob Jones, compositeur", "title": "compositeur", "given": "Bob", "family": "Jones", "initials": "B. J.", "capitalized_force": "Compositeur Bob Jones"}
 {"name": "Bobur", "given": "Bobur", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "B."}
-{"name": "Bobur", "order": "FAMILY_FIRST", "family": "Bobur", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "B."}
+{"name": "Bobur", "order": "FAMILY_FIRST", "given": "Bobur", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "B."}
 {"name": "Boluwatife", "given": "Boluwatife", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "B."}
-{"name": "Boluwatife", "order": "FAMILY_FIRST", "family": "Boluwatife", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "B."}
+{"name": "Boluwatife", "order": "FAMILY_FIRST", "given": "Boluwatife", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "B."}
 {"name": "Bonafini, Hebe de", "given": "Hebe", "family": "de Bonafini", "initials": "H. B."}
 {"name": "Bonifatius VIII.", "given": "Bonifatius", "suffix": "VIII.", "ambiguities": ["GIVEN_OR_FAMILY", "SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)", "GIVEN_OR_FAMILY: name as family (position)"], "initials": "B.", "generation": "VIII."}
 {"name": "Bonneville, Benjamin Louis Eulalie de", "given": "Benjamin", "middle": "Louis Eulalie", "family": "de Bonneville", "initials": "B. L. E. B."}
@@ -515,7 +515,7 @@
 {"name": "Buca di Beppo", "given": "Buca", "family": "di Beppo", "initials": "B. B."}
 {"name": "Buddha Bahadur Tamang", "given": "Buddha", "middle": "Bahadur", "family": "Tamang", "initials": "B. B. T."}
 {"name": "Budi", "given": "Budi", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "B."}
-{"name": "Budi", "order": "FAMILY_FIRST", "family": "Budi", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "B."}
+{"name": "Budi", "order": "FAMILY_FIRST", "given": "Budi", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "B."}
 {"name": "Bukenya Zamara Imani", "order": "FAMILY_FIRST", "given": "Zamara", "middle": "Imani", "family": "Bukenya", "initials": "Z. I. B."}
 {"name": "Bukenya, Zamara Imani", "given": "Zamara", "middle": "Imani", "family": "Bukenya", "initials": "Z. I. B."}
 {"name": "Bunn, Teddy", "given": "Teddy", "family": "Bunn", "initials": "T. B."}
@@ -537,7 +537,7 @@
 {"name": "Caimbeul, Dòmhnall Iain Tormod", "given": "Dòmhnall", "middle": "Iain Tormod", "family": "Caimbeul", "initials": "D. I. T. C."}
 {"name": "Calcar, Jan Stephan von", "given": "Jan", "middle": "Stephan", "family": "von Calcar", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "J. S. C."}
 {"name": "Calum", "given": "Calum", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "C."}
-{"name": "Calum", "order": "FAMILY_FIRST", "family": "Calum", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "C."}
+{"name": "Calum", "order": "FAMILY_FIRST", "given": "Calum", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "C."}
 {"name": "Camilo Castelo Branco", "given": "Camilo", "middle": "Castelo", "family": "Branco", "initials": "C. C. B."}
 {"name": "Campo Serrano, José María", "given": "José", "middle": "María", "family": "Campo Serrano", "initials": "J. M. C. S."}
 {"name": "Canth Ulrika Wilhelmina", "order": "FAMILY_FIRST", "given": "Ulrika", "middle": "Wilhelmina", "family": "Canth", "initials": "U. W. C."}
@@ -572,7 +572,7 @@
 {"name": "Carod i Rovira, Josep", "given": "Josep", "family": "Carod i Rovira", "initials": "J. C. R."}
 {"name": "Carod y de Rovira i", "given": "Carod", "middle": "y", "family": "de Rovira", "suffix": "i", "initials": "C. y. R.", "capitalized_force": "Carod y de Rovira I", "generation": "i"}
 {"name": "Carolina", "given": "Carolina", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "C."}
-{"name": "Carolina", "order": "FAMILY_FIRST", "family": "Carolina", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "C."}
+{"name": "Carolina", "order": "FAMILY_FIRST", "given": "Carolina", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "C."}
 {"name": "Carpentier, Pieter de", "given": "Pieter", "family": "de Carpentier", "initials": "P. C."}
 {"name": "Carrillo de Mendoza y Pimentel, Diego", "given": "Diego", "family": "Carrillo de Mendoza y Pimentel", "initials": "D. C. M. P."}
 {"name": "Carvalho Moreira, Francisco Inácio de", "given": "Francisco", "middle": "Inácio", "family": "de Carvalho Moreira", "initials": "F. I. C. M."}
@@ -988,7 +988,7 @@
 {"name": "Edward Hall", "given": "Edward", "family": "Hall", "initials": "E. H."}
 {"name": "Edwin Segundo Condori", "given": "Edwin", "middle": "Segundo", "family": "Condori", "initials": "E. S. C."}
 {"name": "Eemil", "given": "Eemil", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "E."}
-{"name": "Eemil", "order": "FAMILY_FIRST", "family": "Eemil", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "E."}
+{"name": "Eemil", "order": "FAMILY_FIRST", "given": "Eemil", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "E."}
 {"name": "Egbert van Heemskerck", "given": "Egbert", "family": "van Heemskerck", "initials": "E. H."}
 {"name": "Egill Eyjólfsson", "given": "Egill", "family": "Eyjólfsson", "initials": "E. E."}
 {"name": "Einar Arnórsson", "given": "Einar", "family": "Arnórsson", "initials": "E. A."}
@@ -1062,7 +1062,7 @@
 {"name": "Farf. Dr. Ada Cornelia Eva Sophia van den Wolf Becker Schmidt M.D. Ph.D.", "title": "Farf. Dr.", "given": "Ada", "middle": "Cornelia Eva Sophia", "family": "van den Wolf Becker Schmidt", "suffix": "M.D. Ph.D.", "initials": "A. C. E. S. W. B. S."}
 {"name": "Faria, Teodoro de", "given": "Teodoro", "family": "de Faria", "initials": "T. F."}
 {"name": "Fatima", "given": "Fatima", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "F."}
-{"name": "Fatima", "order": "FAMILY_FIRST", "family": "Fatima", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "F."}
+{"name": "Fatima", "order": "FAMILY_FIRST", "given": "Fatima", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "F."}
 {"name": "Fatima Amina Umar", "given": "Fatima", "middle": "Amina", "family": "Umar", "initials": "F. A. U."}
 {"name": "Fatimah", "given": "Fatimah", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "F."}
 {"name": "Fauveau, Félicie de", "given": "Félicie", "family": "de Fauveau", "initials": "F. F."}
@@ -1131,7 +1131,7 @@
 {"name": "Franklin, Benjamin (Ben)", "given": "Benjamin", "family": "Franklin", "nickname": "Ben", "initials": "B. F."}
 {"name": "Franklin, Benjamin (Ben), Jr.", "given": "Benjamin", "family": "Franklin", "suffix": "Jr.", "nickname": "Ben", "initials": "B. F.", "generation": "Jr."}
 {"name": "Frantziscu", "given": "Frantziscu", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "F."}
-{"name": "Frantziscu", "order": "FAMILY_FIRST", "family": "Frantziscu", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "F."}
+{"name": "Frantziscu", "order": "FAMILY_FIRST", "given": "Frantziscu", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "F."}
 {"name": "Franz I.", "given": "Franz", "family": "I.", "initials": "F. I."}
 {"name": "François de L'Aubespine", "given": "François", "family": "de L'Aubespine", "initials": "F. L."}
 {"name": "Frau Anna Müller", "title": "Frau", "given": "Anna", "family": "Müller", "initials": "A. M."}
@@ -1279,7 +1279,7 @@
 {"name": "Gunny de Mesnil", "given": "Gunny", "family": "de Mesnil", "initials": "G. M."}
 {"name": "Gunter d'Alquen", "given": "Gunter", "family": "d'Alquen", "initials": "G. d.", "capitalized_force": "Gunter D'Alquen"}
 {"name": "Gurban", "given": "Gurban", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "G."}
-{"name": "Gurban", "order": "FAMILY_FIRST", "family": "Gurban", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "G."}
+{"name": "Gurban", "order": "FAMILY_FIRST", "given": "Gurban", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "G."}
 {"name": "Gurbanow Meretgeldi Durdyýewiç", "order": "FAMILY_FIRST", "given": "Meretgeldi", "middle": "Durdyýewiç", "family": "Gurbanow", "initials": "M. D. G."}
 {"name": "Gurbanow, Meretgeldi Durdyýewiç", "given": "Meretgeldi", "middle": "Durdyýewiç", "family": "Gurbanow", "initials": "M. D. G."}
 {"name": "Gurdow Atajan Saparowiç, magistr, ylymlaryň kandidaty", "order": "FAMILY_FIRST", "given": "magistr", "family": "Gurdow Atajan Saparowiç", "suffix": "ylymlaryň kandidaty", "ambiguities": ["COMMA_STRUCTURE"], "initials": "m. G. A. S.", "capitalized_force": "Magistr Gurdow Atajan Saparowiç Ylymlaryň Kandidaty"}
@@ -1330,7 +1330,7 @@
 {"name": "Hansen, Anne Sofie Holm", "order": "FAMILY_FIRST", "given": "Anne", "middle": "Sofie Holm", "family": "Hansen", "initials": "A. S. H. H."}
 {"name": "Hansína Regína Björnsdóttir", "given": "Hansína", "middle": "Regína", "family": "Björnsdóttir", "initials": "H. R. B."}
 {"name": "Harald", "given": "Harald", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "H."}
-{"name": "Harald", "order": "FAMILY_FIRST", "family": "Harald", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "H."}
+{"name": "Harald", "order": "FAMILY_FIRST", "given": "Harald", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "H."}
 {"name": "Haraldur Sigurðsson", "given": "Haraldur", "family": "Sigurðsson", "initials": "H. S."}
 {"name": "Hardie Leannon DVM", "given": "Hardie", "family": "Leannon", "suffix": "DVM", "initials": "H. L."}
 {"name": "Hardie Leannon V", "given": "Hardie", "family": "Leannon", "suffix": "V", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: initial as family (shape)"], "initials": "H. L.", "generation": "V"}
@@ -1345,7 +1345,7 @@
 {"name": "Hase, Karl August von", "given": "Karl", "middle": "August", "family": "von Hase", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "K. A. H."}
 {"name": "Hashimoto, Chikanobu", "given": "Chikanobu", "family": "Hashimoto", "initials": "C. H."}
 {"name": "Hassan", "given": "Hassan", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "H."}
-{"name": "Hassan", "order": "FAMILY_FIRST", "family": "Hassan", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "H."}
+{"name": "Hassan", "order": "FAMILY_FIRST", "given": "Hassan", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "H."}
 {"name": "Hassan B. Yusof", "given": "Hassan", "middle": "B.", "family": "Yusof", "initials": "H. B. Y."}
 {"name": "Hassan Mohamad Ali", "given": "Hassan", "middle": "Mohamad", "family": "Ali", "initials": "H. M. A."}
 {"name": "Hassan Mohamad Ali Omar", "given": "Hassan", "middle": "Mohamad Ali", "family": "Omar", "initials": "H. M. A. O."}
@@ -1408,7 +1408,7 @@
 {"name": "Horvat, Irena", "order": "FAMILY_FIRST", "given": "Irena", "family": "Horvat", "initials": "I. H."}
 {"name": "Howard G. Buffett", "given": "Howard", "middle": "G.", "family": "Buffett", "initials": "H. G. B."}
 {"name": "Hozier", "given": "Hozier", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "H."}
-{"name": "Hozier", "order": "FAMILY_FIRST", "family": "Hozier", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "H."}
+{"name": "Hozier", "order": "FAMILY_FIRST", "given": "Hozier", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "H."}
 {"name": "Hudson, Rock", "title": "Rock", "family": "Hudson", "initials": "H."}
 {"name": "Hudā aš-Šaʿrāwī", "given": "Hudā", "family": "aš-Šaʿrāwī", "initials": "H. a.", "capitalized_force": "Hudā Aš-Šaʿrāwī"}
 {"name": "Humbelina", "given": "Humbelina", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "H."}
@@ -1471,7 +1471,7 @@
 {"name": "Iu Alavedra i Ferrer", "given": "Iu", "family": "Alavedra i Ferrer", "initials": "I. A. F."}
 {"name": "Iustinus II.", "given": "Iustinus", "suffix": "II.", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "I.", "generation": "II."}
 {"name": "Ivan", "given": "Ivan", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "I."}
-{"name": "Ivan", "order": "FAMILY_FIRST", "family": "Ivan", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "I."}
+{"name": "Ivan", "order": "FAMILY_FIRST", "given": "Ivan", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "I."}
 {"name": "Ivan Ivanov", "given": "Ivan", "family": "Ivanov", "initials": "I. I."}
 {"name": "Ivan Ivanovich Ivanov", "given": "Ivan", "middle": "Ivanovich", "family": "Ivanov", "initials": "I. I. I."}
 {"name": "Ivan Petrov Dimitrov", "given": "Ivan", "middle": "Petrov", "family": "Dimitrov", "initials": "I. P. D."}
@@ -1482,7 +1482,7 @@
 {"name": "Ivoi, Paul d'", "given": "Paul", "family": "d' Ivoi", "initials": "P. I."}
 {"name": "Iván Duque Márquez", "given": "Iván", "middle": "Duque", "family": "Márquez", "initials": "I. D. M."}
 {"name": "Iñaki", "given": "Iñaki", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "I."}
-{"name": "Iñaki", "order": "FAMILY_FIRST", "family": "Iñaki", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "I."}
+{"name": "Iñaki", "order": "FAMILY_FIRST", "given": "Iñaki", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "I."}
 {"name": "J A D", "given": "J", "middle": "A", "family": "D", "initials": "J. A. D."}
 {"name": "J NEE SMITH", "given": "J", "maiden": "SMITH", "initials": "J.", "capitalized": "J (Smith)"}
 {"name": "J VI, Jr.", "given": "J", "family": "VI", "suffix": "Jr.", "initials": "J. V.", "capitalized": "J Vi, Jr.", "generation": "Jr."}
@@ -1565,7 +1565,7 @@
 {"name": "Jaak Eerik Kask", "given": "Jaak", "middle": "Eerik", "family": "Kask", "initials": "J. E. K."}
 {"name": "Jacinto López Moreno", "given": "Jacinto", "middle": "López", "family": "Moreno", "initials": "J. L. M."}
 {"name": "Jack", "given": "Jack", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "J."}
-{"name": "Jack", "order": "FAMILY_FIRST", "family": "Jack", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "J."}
+{"name": "Jack", "order": "FAMILY_FIRST", "given": "Jack", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "J."}
 {"name": "Jack (M.A)", "family": "Jack", "suffix": "M.A", "initials": "J."}
 {"name": "Jack (PhD)", "family": "Jack", "suffix": "PhD", "initials": "J."}
 {"name": "Jack I-V", "given": "Jack", "family": "I-V", "initials": "J. I."}
@@ -1734,7 +1734,7 @@
 {"name": "Jesús Ángel González Arias", "given": "Jesús", "middle": "Ángel González", "family": "Arias", "initials": "J. Á. G. A."}
 {"name": "Jill St. John", "given": "Jill", "family": "St. John", "initials": "J. J."}
 {"name": "Jiří", "given": "Jiří", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "J."}
-{"name": "Jiří", "order": "FAMILY_FIRST", "family": "Jiří", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "J."}
+{"name": "Jiří", "order": "FAMILY_FIRST", "given": "Jiří", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "J."}
 {"name": "Jiří Dienstbier ml.", "given": "Jiří", "middle": "Dienstbier", "family": "ml.", "initials": "J. D. m.", "capitalized_force": "Jiří Dienstbier Ml."}
 {"name": "Jiří Dienstbier st.", "title": "st.", "given": "Jiří", "family": "Dienstbier", "initials": "J. D.", "capitalized_force": "St. Jiří Dienstbier"}
 {"name": "Jo Ann", "given": "Jo", "family": "Ann", "initials": "J. A."}
@@ -1766,7 +1766,7 @@
 {"name": "Johannes d'Outrein", "given": "Johannes", "family": "d'Outrein", "initials": "J. d.", "capitalized_force": "Johannes D'Outrein"}
 {"name": "Johannes de Gorter", "given": "Johannes", "family": "de Gorter", "initials": "J. G."}
 {"name": "John", "given": "John", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "J."}
-{"name": "John", "order": "FAMILY_FIRST", "family": "John", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "J."}
+{"name": "John", "order": "FAMILY_FIRST", "given": "John", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "J."}
 {"name": "John  Doe ☁️", "given": "John", "middle": "Doe", "family": "️", "initials": "J. D. ️."}
 {"name": "John  Q  Doe", "given": "John", "middle": "Q", "family": "Doe", "initials": "J. Q. D."}
 {"name": "John \"Jack\" Kennedy", "given": "John", "family": "Kennedy", "nickname": "Jack", "initials": "J. K."}
@@ -2247,7 +2247,7 @@
 {"name": "Jovan Dragan Popović", "given": "Jovan", "middle": "Dragan", "family": "Popović", "initials": "J. D. P."}
 {"name": "Joybert, Marc de", "given": "Marc", "family": "de Joybert", "initials": "M. J."}
 {"name": "Jozef", "given": "Jozef", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "J."}
-{"name": "Jozef", "order": "FAMILY_FIRST", "family": "Jozef", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "J."}
+{"name": "Jozef", "order": "FAMILY_FIRST", "given": "Jozef", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "J."}
 {"name": "João Pedro Silva", "given": "João", "middle": "Pedro", "family": "Silva", "initials": "J. P. S."}
 {"name": "João da Silva Santos", "given": "João", "family": "da Silva Santos", "initials": "J. S. S."}
 {"name": "Jo김민준씨, DO", "family": "Jo김민준", "suffix": "씨, DO", "initials": "J.", "honorifics": "씨"}
@@ -2337,12 +2337,12 @@
 {"name": "Julián Ruiz Martorell", "given": "Julián", "middle": "Ruiz", "family": "Martorell", "initials": "J. R. M."}
 {"name": "Jun Hoe", "given": "Jun", "family": "Hoe", "initials": "J. H."}
 {"name": "Jurgis", "given": "Jurgis", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "J."}
-{"name": "Jurgis", "order": "FAMILY_FIRST", "family": "Jurgis", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "J."}
+{"name": "Jurgis", "order": "FAMILY_FIRST", "given": "Jurgis", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "J."}
 {"name": "Jurij", "given": "Jurij", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "J."}
-{"name": "Jurij", "order": "FAMILY_FIRST", "family": "Jurij", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "J."}
+{"name": "Jurij", "order": "FAMILY_FIRST", "given": "Jurij", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "J."}
 {"name": "Jurk", "given": "Jurk", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "J."}
 {"name": "Juro", "given": "Juro", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "J."}
-{"name": "Juro", "order": "FAMILY_FIRST", "family": "Juro", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "J."}
+{"name": "Juro", "order": "FAMILY_FIRST", "given": "Juro", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "J."}
 {"name": "Justin (JP) Stearns", "given": "Justin", "family": "Stearns", "nickname": "JP", "initials": "J. S.", "capitalized_force": "Justin \"Jp\" Stearns"}
 {"name": "Justin (JP, PhD) Stearns", "given": "Justin", "family": "Stearns", "nickname": "JP, PhD", "initials": "J. S.", "capitalized_force": "Justin \"Jp, PhD\" Stearns"}
 {"name": "Justin (JP/MD) Stearns", "given": "Justin", "family": "Stearns", "nickname": "JP/MD", "initials": "J. S.", "capitalized_force": "Justin \"Jp/Md\" Stearns"}
@@ -2367,7 +2367,7 @@
 {"name": "Jónína Jónatansdóttir", "given": "Jónína", "family": "Jónatansdóttir", "initials": "J. J."}
 {"name": "Júlíus Agnarsson", "given": "Júlíus", "family": "Agnarsson", "initials": "J. A."}
 {"name": "Jānis", "given": "Jānis", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "J."}
-{"name": "Jānis", "order": "FAMILY_FIRST", "family": "Jānis", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "J."}
+{"name": "Jānis", "order": "FAMILY_FIRST", "given": "Jānis", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "J."}
 {"name": "K. Sivakumar", "given": "K.", "family": "Sivakumar", "initials": "K. S."}
 {"name": "KALAM Alɛ Mustafa", "order": "FAMILY_FIRST", "given": "Alɛ", "middle": "Mustafa", "family": "KALAM", "initials": "A. M. K.", "capitalized_force": "Kalam Alɛ Mustafa"}
 {"name": "KANSULO Iiɖa", "order": "FAMILY_FIRST", "given": "Iiɖa", "family": "KANSULO", "initials": "I. K.", "capitalized_force": "Kansulo Iiɖa"}
@@ -2378,7 +2378,7 @@
 {"name": "Kant, Anna Karolína Eva Kristína von (Mgr. Ing., CSc.)", "given": "Anna", "middle": "Karolína Eva Kristína von Mgr. Ing.", "family": "Kant", "suffix": "CSc.", "initials": "A. K. E. K. M. I. K.", "capitalized_force": "Anna Karolína Eva Kristína von Mgr. Ing. Kant CSC."}
 {"name": "Kar, Ida", "given": "Ida", "family": "Kar", "initials": "I. K."}
 {"name": "Karima", "given": "Karima", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "K."}
-{"name": "Karima", "order": "FAMILY_FIRST", "family": "Karima", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "K."}
+{"name": "Karima", "order": "FAMILY_FIRST", "given": "Karima", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "K."}
 {"name": "Karima Balóch", "given": "Karima", "family": "Balóch", "initials": "K. B."}
 {"name": "Karima Mehráb Balóch", "given": "Karima", "middle": "Mehráb", "family": "Balóch", "initials": "K. M. B."}
 {"name": "Karl August Ferdinand von Borcke", "given": "Karl", "middle": "August Ferdinand", "family": "von Borcke", "initials": "K. A. F. B."}
@@ -2396,7 +2396,7 @@
 {"name": "Kathy Mueller", "given": "Kathy", "family": "Mueller", "initials": "K. M."}
 {"name": "Katie Stefan", "given": "Katie", "family": "Stefan", "initials": "K. S."}
 {"name": "Katrine", "given": "Katrine", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "K."}
-{"name": "Katrine", "order": "FAMILY_FIRST", "family": "Katrine", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "K."}
+{"name": "Katrine", "order": "FAMILY_FIRST", "given": "Katrine", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "K."}
 {"name": "Katryn Müller", "given": "Katryn", "family": "Müller", "initials": "K. M."}
 {"name": "Katrín Jakobsdóttir", "given": "Katrín", "family": "Jakobsdóttir", "initials": "K. J."}
 {"name": "Katrín Júlíusdóttir", "given": "Katrín", "family": "Júlíusdóttir", "initials": "K. J."}
@@ -2418,7 +2418,7 @@
 {"name": "Kete Müller", "given": "Kete", "family": "Müller", "initials": "K. M."}
 {"name": "Ketill Jensson", "given": "Ketill", "family": "Jensson", "initials": "K. J."}
 {"name": "Kevin", "given": "Kevin", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "K."}
-{"name": "Kevin", "order": "FAMILY_FIRST", "family": "Kevin", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "K."}
+{"name": "Kevin", "order": "FAMILY_FIRST", "given": "Kevin", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "K."}
 {"name": "Khaled el-Hassani ben el-Hachemi", "given": "Khaled", "middle": "el-Hassani ben", "family": "el-Hachemi", "initials": "K. e. b. e.", "capitalized_force": "Khaled El-Hassani Ben El-Hachemi"}
 {"name": "Kho Liang Ie", "given": "Kho", "middle": "Liang", "family": "Ie", "initials": "K. L. I."}
 {"name": "Khun Malee", "given": "Khun", "family": "Malee", "initials": "K. M."}
@@ -2487,7 +2487,7 @@
 {"name": "Lady Heidenreich", "title": "Lady", "family": "Heidenreich", "initials": "H."}
 {"name": "Lala Lajpat Rai", "given": "Lala", "middle": "Lajpat", "family": "Rai", "initials": "L. L. R."}
 {"name": "Lalit", "given": "Lalit", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "L."}
-{"name": "Lalit", "order": "FAMILY_FIRST", "family": "Lalit", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "L."}
+{"name": "Lalit", "order": "FAMILY_FIRST", "given": "Lalit", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "L."}
 {"name": "Lalit Bharati", "given": "Lalit", "family": "Bharati", "initials": "L. B."}
 {"name": "Lalit Mohan Bharati", "given": "Lalit", "middle": "Mohan", "family": "Bharati", "initials": "L. M. B."}
 {"name": "Lama Zopa", "title": "Lama", "given": "Zopa", "initials": "Z."}
@@ -2513,7 +2513,7 @@
 {"name": "Lemaître, Adélaïde", "given": "Adélaïde", "family": "Lemaître", "initials": "A. L."}
 {"name": "Lemaître, Adélaïde", "order": "FAMILY_FIRST", "given": "Adélaïde", "family": "Lemaître", "initials": "A. L."}
 {"name": "Lena", "given": "Lena", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "L."}
-{"name": "Lena", "order": "FAMILY_FIRST", "family": "Lena", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "L."}
+{"name": "Lena", "order": "FAMILY_FIRST", "given": "Lena", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "L."}
 {"name": "Leonardo Porto Egea", "given": "Leonardo", "middle": "Porto", "family": "Egea", "initials": "L. P. E."}
 {"name": "Leonor Alinari Adarve", "given": "Leonor", "middle": "Alinari", "family": "Adarve", "initials": "L. A. A."}
 {"name": "Leopoldo de'Medici", "given": "Leopoldo", "family": "de'Medici", "initials": "L. d."}
@@ -2546,7 +2546,7 @@
 {"name": "Lodewijk van Oranje-Nassau", "given": "Lodewijk", "family": "van Oranje-Nassau", "initials": "L. O."}
 {"name": "Loftur Guðmundsson", "given": "Loftur", "family": "Guðmundsson", "initials": "L. G."}
 {"name": "Lola", "given": "Lola", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "L."}
-{"name": "Lola", "order": "FAMILY_FIRST", "family": "Lola", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "L."}
+{"name": "Lola", "order": "FAMILY_FIRST", "given": "Lola", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "L."}
 {"name": "Lombardi, Amarildo", "given": "Amarildo", "family": "Lombardi", "initials": "A. L."}
 {"name": "Lombardi, Amarildo A.", "order": "FAMILY_FIRST", "given": "Amarildo", "middle": "A.", "family": "Lombardi", "initials": "A. A. L."}
 {"name": "Lon (Jr.) Williams", "given": "Lon", "family": "Williams", "suffix": "Jr.", "initials": "L. W.", "generation": "Jr."}
@@ -2561,7 +2561,7 @@
 {"name": "Lord of the Universe and Supreme King of the World Lisa Simpson", "title": "Lord of the Universe and Supreme King of the World", "given": "Lisa", "family": "Simpson", "initials": "L. S."}
 {"name": "Lorenzo di Pierfranceso de'Medici", "given": "Lorenzo", "family": "di Pierfranceso de'Medici", "initials": "L. P. d."}
 {"name": "Louhi", "given": "Louhi", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "L."}
-{"name": "Louhi", "order": "FAMILY_FIRST", "family": "Louhi", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "L."}
+{"name": "Louhi", "order": "FAMILY_FIRST", "given": "Louhi", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "L."}
 {"name": "Louis Antoine d'Artois d'Angoulême", "given": "Louis", "middle": "Antoine d'Artois", "family": "d'Angoulême", "initials": "L. A. d. d.", "capitalized_force": "Louis Antoine D'Artois D'Angoulême"}
 {"name": "Louis de Funès", "given": "Louis", "family": "de Funès", "initials": "L. F."}
 {"name": "Louis de Grandmaison", "given": "Louis", "family": "de Grandmaison", "initials": "L. G."}
@@ -2654,7 +2654,7 @@
 {"name": "Mai Le née Nguyen", "given": "Mai", "family": "Le", "maiden": "Nguyen", "initials": "M. L."}
 {"name": "Maid Marion", "title": "Maid", "given": "Marion", "initials": "M."}
 {"name": "Maider", "given": "Maider", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "M."}
-{"name": "Maider", "order": "FAMILY_FIRST", "family": "Maider", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "M."}
+{"name": "Maider", "order": "FAMILY_FIRST", "given": "Maider", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "M."}
 {"name": "Maier, Amy I, Jr.", "given": "Amy", "middle": "I", "family": "Maier", "suffix": "Jr.", "initials": "A. I. M.", "generation": "Jr."}
 {"name": "Maier, Amy Lauren I", "given": "Amy", "middle": "Lauren", "family": "Maier", "suffix": "I", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: initial as middle (shape)"], "initials": "A. L. M.", "generation": "I"}
 {"name": "Maj Gen John Smith", "title": "Maj Gen", "given": "John", "family": "Smith", "initials": "J. S."}
@@ -2695,12 +2695,12 @@
 {"name": "Margarita Peña Muñoz", "given": "Margarita", "middle": "Peña", "family": "Muñoz", "initials": "M. P. M."}
 {"name": "Margrét Lára Viðarsdóttir", "given": "Margrét", "middle": "Lára", "family": "Viðarsdóttir", "initials": "M. L. V."}
 {"name": "Mari", "given": "Mari", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "M."}
-{"name": "Mari", "order": "FAMILY_FIRST", "family": "Mari", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "M."}
+{"name": "Mari", "order": "FAMILY_FIRST", "given": "Mari", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "M."}
 {"name": "Mari shu Halimatu Waly", "given": "Mari", "middle": "shu Halimatu", "family": "Waly", "initials": "M. s. H. W.", "capitalized_force": "Mari Shu Halimatu Waly"}
 {"name": "Mari' Aube'", "given": "Mari'", "family": "Aube'", "initials": "M. A."}
 {"name": "Mari-Ann Henri Roobert Tammik, parlamendiliige", "given": "parlamendiliige", "family": "Mari-Ann Henri Roobert Tammik", "initials": "p. M. H. R. T.", "capitalized_force": "Parlamendiliige Mari-Ann Henri Roobert Tammik"}
 {"name": "Maria", "given": "Maria", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "M."}
-{"name": "Maria", "order": "FAMILY_FIRST", "family": "Maria", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "M."}
+{"name": "Maria", "order": "FAMILY_FIRST", "given": "Maria", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "M."}
 {"name": "Maria Ana MA Ortega y Gasset", "given": "Maria", "middle": "Ana MA", "family": "Ortega y Gasset", "initials": "M. A. M. O. G.", "capitalized_force": "Maria Ana Ma Ortega y Gasset"}
 {"name": "Maria Ana MA Silva", "given": "Maria", "middle": "Ana MA", "family": "Silva", "initials": "M. A. M. S.", "capitalized_force": "Maria Ana Ma Silva"}
 {"name": "Maria Ana MA de la Vega", "given": "Maria", "middle": "Ana MA", "family": "de la Vega", "initials": "M. A. M. V.", "capitalized_force": "Maria Ana Ma de la Vega"}
@@ -2742,13 +2742,13 @@
 {"name": "Marie-Agnès Suzanne Gilot", "given": "Marie-Agnès", "middle": "Suzanne", "family": "Gilot", "initials": "M. S. G."}
 {"name": "Marijana Tomislav Babić", "given": "Marijana", "middle": "Tomislav", "family": "Babić", "initials": "M. T. B."}
 {"name": "Mario", "given": "Mario", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "M."}
-{"name": "Mario", "order": "FAMILY_FIRST", "family": "Mario", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "M."}
+{"name": "Mario", "order": "FAMILY_FIRST", "given": "Mario", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "M."}
 {"name": "Mario Ruiz Armengol", "given": "Mario", "middle": "Ruiz", "family": "Armengol", "initials": "M. R. A."}
 {"name": "Marić, Branko Hrvoje", "given": "Branko", "middle": "Hrvoje", "family": "Marić", "initials": "B. H. M."}
 {"name": "Marić, dr. sc. Branko Hrvoje mlađi, prof.", "order": "FAMILY_FIRST", "title": "dr. sc. prof.", "given": "Branko", "middle": "Hrvoje", "family": "Marić", "suffix": "mlađi", "initials": "B. H. M.", "capitalized_force": "Dr. Sc. Prof. Branko Hrvoje Marić Mlađi", "generation": "mlađi"}
 {"name": "Marja-Liisa Katariina Lehtola-Aalto kansanedustaja", "given": "Marja-Liisa", "middle": "Katariina Lehtola-Aalto", "family": "kansanedustaja", "initials": "M. K. L. k.", "capitalized_force": "Marja-Liisa Katariina Lehtola-Aalto Kansanedustaja"}
 {"name": "Mark", "given": "Mark", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "M."}
-{"name": "Mark", "order": "FAMILY_FIRST", "family": "Mark", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "M."}
+{"name": "Mark", "order": "FAMILY_FIRST", "given": "Mark", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "M."}
 {"name": "Marković Irena", "order": "FAMILY_FIRST", "given": "Irena", "family": "Marković", "initials": "I. M."}
 {"name": "Marković, Irena", "given": "Irena", "family": "Marković", "initials": "I. M."}
 {"name": "Markus von Wickenburg", "given": "Markus", "family": "von Wickenburg", "initials": "M. W."}
@@ -2877,11 +2877,11 @@
 {"name": "Milton Santacruz Aguilar", "given": "Milton", "middle": "Santacruz", "family": "Aguilar", "initials": "M. S. A."}
 {"name": "Min Chi", "given": "Min", "family": "Chi", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "M. C."}
 {"name": "Mina", "given": "Mina", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "M."}
-{"name": "Mina", "order": "FAMILY_FIRST", "family": "Mina", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "M."}
+{"name": "Mina", "order": "FAMILY_FIRST", "given": "Mina", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "M."}
 {"name": "Minjun KIM", "given": "Minjun", "family": "KIM", "initials": "M. K.", "capitalized_force": "Minjun Kim"}
 {"name": "Miranda, Tony", "given": "Tony", "family": "Miranda", "initials": "T. M."}
 {"name": "Miret", "given": "Miret", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "M."}
-{"name": "Miret", "order": "FAMILY_FIRST", "family": "Miret", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "M."}
+{"name": "Miret", "order": "FAMILY_FIRST", "given": "Miret", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "M."}
 {"name": "Misael Eduardo Pastrana Borrero", "given": "Misael", "middle": "Eduardo Pastrana", "family": "Borrero", "initials": "M. E. P. B."}
 {"name": "Miyamoto, Musashi", "given": "Musashi", "family": "Miyamoto", "initials": "M. M."}
 {"name": "Mkwawa John", "order": "FAMILY_FIRST", "given": "John", "family": "Mkwawa", "initials": "J. M."}
@@ -2962,7 +2962,7 @@
 {"name": "Muller, Kathe", "order": "FAMILY_FIRST", "given": "Kathe", "family": "Muller", "initials": "K. M."}
 {"name": "Muller, Kathi", "given": "Kathi", "family": "Muller", "initials": "K. M."}
 {"name": "Muniiru", "given": "Muniiru", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "M."}
-{"name": "Muniiru", "order": "FAMILY_FIRST", "family": "Muniiru", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "M."}
+{"name": "Muniiru", "order": "FAMILY_FIRST", "given": "Muniiru", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "M."}
 {"name": "Munster, Jan van", "given": "Jan", "family": "van Munster", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "J. M."}
 {"name": "Murad III.", "given": "Murad", "suffix": "III.", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "M.", "generation": "III."}
 {"name": "Murat Bey", "given": "Murat", "family": "Bey", "initials": "M. B."}
@@ -3122,7 +3122,7 @@
 {"name": "Paulo de Tarso Ribeiro", "given": "Paulo", "middle": "de Tarso", "family": "Ribeiro", "initials": "P. T. R."}
 {"name": "Pavlović, Antonio mlađi", "given": "Antonio", "family": "Pavlović", "suffix": "mlađi", "initials": "A. P.", "capitalized_force": "Antonio Pavlović Mlađi", "generation": "mlađi"}
 {"name": "Pedro", "given": "Pedro", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "P."}
-{"name": "Pedro", "order": "FAMILY_FIRST", "family": "Pedro", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "P."}
+{"name": "Pedro", "order": "FAMILY_FIRST", "given": "Pedro", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "P."}
 {"name": "Pedro Alves Filho", "given": "Pedro", "family": "Alves", "suffix": "Filho", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)"], "initials": "P. A.", "generation": "Filho"}
 {"name": "Pedro Alves Junior Filho", "given": "Pedro", "family": "Alves", "suffix": "Junior Filho", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (declared)", "SUFFIX_OR_NAME: name as family (declared)"], "initials": "P. A.", "generation": "Junior Filho"}
 {"name": "Pedro Alves M.Filho", "given": "Pedro", "family": "Alves", "suffix": "M.Filho", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "P. A.", "capitalized_force": "Pedro Alves M.FILHO"}
@@ -3160,7 +3160,7 @@
 {"name": "Pere Rebassa Bisquerra", "given": "Pere", "middle": "Rebassa", "family": "Bisquerra", "initials": "P. R. B."}
 {"name": "Pere Sabaté i Curto", "given": "Pere", "family": "Sabaté i Curto", "initials": "P. S. C."}
 {"name": "Peter", "given": "Peter", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "P."}
-{"name": "Peter", "order": "FAMILY_FIRST", "family": "Peter", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "P."}
+{"name": "Peter", "order": "FAMILY_FIRST", "given": "Peter", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "P."}
 {"name": "Petraitytė, Gabrielė Aldona", "given": "Gabrielė", "middle": "Aldona", "family": "Petraitytė", "initials": "G. A. P."}
 {"name": "Petrauskas Jonas Lukas", "order": "FAMILY_FIRST", "given": "Jonas", "middle": "Lukas", "family": "Petrauskas", "initials": "J. L. P."}
 {"name": "Petrauskas, Jonas Lukas", "given": "Jonas", "middle": "Lukas", "family": "Petrauskas", "initials": "J. L. P."}
@@ -3184,7 +3184,7 @@
 {"name": "Pierre de Nolhac", "given": "Pierre", "family": "de Nolhac", "initials": "P. N."}
 {"name": "Pierre-Louis", "given": "Pierre-Louis", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "P."}
 {"name": "Piet", "given": "Piet", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "P."}
-{"name": "Piet", "order": "FAMILY_FIRST", "family": "Piet", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "P."}
+{"name": "Piet", "order": "FAMILY_FIRST", "given": "Piet", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "P."}
 {"name": "Piet van Engelen", "given": "Piet", "family": "van Engelen", "initials": "P. E."}
 {"name": "Pieter Bruegel stariji Jones", "given": "Pieter", "middle": "Bruegel stariji", "family": "Jones", "initials": "P. B. s. J.", "capitalized_force": "Pieter Bruegel Stariji Jones"}
 {"name": "Pieter de Carpentier", "given": "Pieter", "family": "de Carpentier", "initials": "P. C."}
@@ -3212,7 +3212,7 @@
 {"name": "Potential Gotcha", "given": "Potential", "family": "Gotcha", "initials": "P. G."}
 {"name": "Prats Gonzaléz, Carlos", "given": "Carlos", "family": "Prats Gonzaléz", "initials": "C. P. G."}
 {"name": "Prema", "given": "Prema", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "P."}
-{"name": "Prema", "order": "FAMILY_FIRST", "family": "Prema", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "P."}
+{"name": "Prema", "order": "FAMILY_FIRST", "given": "Prema", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "P."}
 {"name": "President of the United States Barack Obama", "title": "President of the United States", "given": "Barack", "family": "Obama", "initials": "B. O."}
 {"name": "Prince Charles", "given": "Prince", "family": "Charles", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "P. C."}
 {"name": "Prince Consort Albert", "title": "Prince Consort", "given": "Albert", "initials": "A."}
@@ -3360,7 +3360,7 @@
 {"name": "Roig Gal·la", "order": "FAMILY_FIRST", "given": "Gal·la", "family": "Roig", "initials": "G. R.", "capitalized_force": "Roig Gal·La"}
 {"name": "Roig, Gal·la", "given": "Gal·la", "family": "Roig", "initials": "G. R.", "capitalized_force": "Gal·La Roig"}
 {"name": "Rokas", "given": "Rokas", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "R."}
-{"name": "Rokas", "order": "FAMILY_FIRST", "family": "Rokas", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "R."}
+{"name": "Rokas", "order": "FAMILY_FIRST", "given": "Rokas", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "R."}
 {"name": "Rolf Dietrich", "given": "Rolf", "family": "Dietrich", "initials": "R. D."}
 {"name": "Román García Rodrigo", "given": "Román", "middle": "García", "family": "Rodrigo", "initials": "R. G. R."}
 {"name": "Ronald Macdonald", "given": "Ronald", "family": "Macdonald", "initials": "R. M.", "capitalized_force": "Ronald MacDonald"}
@@ -3388,7 +3388,7 @@
 {"name": "Rúnar Gunnarsson", "given": "Rúnar", "family": "Gunnarsson", "initials": "R. G."}
 {"name": "Rúrik Haraldsson", "given": "Rúrik", "family": "Haraldsson", "initials": "R. H."}
 {"name": "Rüdiger", "given": "Rüdiger", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "R."}
-{"name": "Rüdiger", "order": "FAMILY_FIRST", "family": "Rüdiger", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "R."}
+{"name": "Rüdiger", "order": "FAMILY_FIRST", "given": "Rüdiger", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "R."}
 {"name": "Rühle-Gerstel, Alice", "given": "Alice", "family": "Rühle-Gerstel", "initials": "A. R."}
 {"name": "S. V.", "given": "S.", "family": "V.", "initials": "S. V."}
 {"name": "S. V. D.", "given": "S.", "middle": "V.", "family": "D.", "initials": "S. V. D."}
@@ -3426,7 +3426,7 @@
 {"name": "Salvador Rosas Magallón", "given": "Salvador", "middle": "Rosas", "family": "Magallón", "initials": "S. R. M."}
 {"name": "Sam Smith 😊", "given": "Sam", "family": "Smith", "initials": "S. S."}
 {"name": "Samba", "given": "Samba", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "S."}
-{"name": "Samba", "order": "FAMILY_FIRST", "family": "Samba", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "S."}
+{"name": "Samba", "order": "FAMILY_FIRST", "given": "Samba", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "S."}
 {"name": "Samira Ahmet Saar", "given": "Samira", "middle": "Ahmet", "family": "Saar", "initials": "S. A. S."}
 {"name": "Samuel Bourne", "given": "Samuel", "family": "Bourne", "initials": "S. B."}
 {"name": "San Pedro, Diego Fernández de", "given": "Diego", "middle": "Fernández", "family": "de San Pedro", "initials": "D. F. P."}
@@ -3447,7 +3447,7 @@
 {"name": "Sara Björk Gunnarsdóttir", "given": "Sara", "middle": "Björk", "family": "Gunnarsdóttir", "initials": "S. B. G."}
 {"name": "Sarasa, Alfonsus Antonius de", "given": "Alfonsus", "middle": "Antonius", "family": "de Sarasa", "initials": "A. A. S."}
 {"name": "Sarel", "given": "Sarel", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "S."}
-{"name": "Sarel", "order": "FAMILY_FIRST", "family": "Sarel", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "S."}
+{"name": "Sarel", "order": "FAMILY_FIRST", "given": "Sarel", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "S."}
 {"name": "Sarkīs ar-Rizzī", "given": "Sarkīs", "family": "ar-Rizzī", "initials": "S. a.", "capitalized_force": "Sarkīs Ar-Rizzī"}
 {"name": "Sasilia Hamis Stober", "given": "Sasilia", "middle": "Hamis", "family": "Stober", "initials": "S. H. S."}
 {"name": "Sattorov Alisher", "order": "FAMILY_FIRST", "given": "Alisher", "family": "Sattorov", "initials": "A. S."}
@@ -3485,7 +3485,7 @@
 {"name": "Severo Aguirre Miramón", "given": "Severo", "middle": "Aguirre", "family": "Miramón", "initials": "S. A. M."}
 {"name": "Seymour Martin Lipset", "given": "Seymour", "middle": "Martin", "family": "Lipset", "initials": "S. M. L."}
 {"name": "Seynabu", "given": "Seynabu", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "S."}
-{"name": "Seynabu", "order": "FAMILY_FIRST", "family": "Seynabu", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "S."}
+{"name": "Seynabu", "order": "FAMILY_FIRST", "given": "Seynabu", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "S."}
 {"name": "Seán Seamas Watson", "given": "Seán", "middle": "Seamas", "family": "Watson", "initials": "S. S. W."}
 {"name": "Señ Baba Wagué Amdy Raas Sañsé MP", "given": "Señ", "middle": "Baba Wagué Amdy Raas", "family": "Sañsé", "suffix": "MP", "initials": "S. B. W. A. R. S."}
 {"name": "Señor Carlos García", "title": "Señor", "given": "Carlos", "family": "García", "initials": "C. G."}
@@ -3520,7 +3520,7 @@
 {"name": "Sigurdór Sigurdórsson", "given": "Sigurdór", "family": "Sigurdórsson", "initials": "S. S."}
 {"name": "Sigurjón Birgir Sigurðsson", "given": "Sigurjón", "middle": "Birgir", "family": "Sigurðsson", "initials": "S. B. S."}
 {"name": "Sigurður", "given": "Sigurður", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "S."}
-{"name": "Sigurður", "order": "FAMILY_FIRST", "family": "Sigurður", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "S."}
+{"name": "Sigurður", "order": "FAMILY_FIRST", "given": "Sigurður", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "S."}
 {"name": "Sigurður Björnsson", "given": "Sigurður", "family": "Björnsson", "initials": "S. B."}
 {"name": "Sigurður Helgason", "given": "Sigurður", "family": "Helgason", "initials": "S. H."}
 {"name": "Sigurður Ólafsson", "given": "Sigurður", "family": "Ólafsson", "initials": "S. Ó."}
@@ -3540,11 +3540,11 @@
 {"name": "Simonyi von Vitézvár, Lajos", "given": "Lajos", "family": "Simonyi von Vitézvár", "initials": "L. S. V."}
 {"name": "Simón Mesa Soto", "given": "Simón", "middle": "Mesa", "family": "Soto", "initials": "S. M. S."}
 {"name": "Sinbad", "given": "Sinbad", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "S."}
-{"name": "Sinbad", "order": "FAMILY_FIRST", "family": "Sinbad", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "S."}
+{"name": "Sinbad", "order": "FAMILY_FIRST", "given": "Sinbad", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "S."}
 {"name": "Sinbads", "given": "Sinbads", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "S."}
-{"name": "Sinbads", "order": "FAMILY_FIRST", "family": "Sinbads", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "S."}
+{"name": "Sinbads", "order": "FAMILY_FIRST", "given": "Sinbads", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "S."}
 {"name": "Sindbad", "given": "Sindbad", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "S."}
-{"name": "Sindbad", "order": "FAMILY_FIRST", "family": "Sindbad", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "S."}
+{"name": "Sindbad", "order": "FAMILY_FIRST", "given": "Sindbad", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "S."}
 {"name": "Sinibaldo Gutiérrez Mas", "given": "Sinibaldo", "middle": "Gutiérrez", "family": "Mas", "initials": "S. G. M."}
 {"name": "Sir Abu Bakar", "title": "Sir", "given": "Abu Bakar", "initials": "A. B."}
 {"name": "Sir Bob Andrew Dole", "title": "Sir", "given": "Bob", "middle": "Andrew", "family": "Dole", "initials": "B. A. D."}
@@ -3777,7 +3777,7 @@
 {"name": "Stariji Bruegel", "given": "Stariji", "family": "Bruegel", "initials": "S. B."}
 {"name": "Ste Marie", "family": "Ste Marie", "initials": "M."}
 {"name": "Stefan", "given": "Stefan", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "S."}
-{"name": "Stefan", "order": "FAMILY_FIRST", "family": "Stefan", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "S."}
+{"name": "Stefan", "order": "FAMILY_FIRST", "given": "Stefan", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "S."}
 {"name": "Stefan Katie", "order": "FAMILY_FIRST", "given": "Katie", "family": "Stefan", "initials": "K. S."}
 {"name": "Stefan, Katie", "given": "Katie", "family": "Stefan", "initials": "K. S."}
 {"name": "Stefán Hörður Grímsson", "given": "Stefán", "middle": "Hörður", "family": "Grímsson", "initials": "S. H. G."}
@@ -3812,11 +3812,11 @@
 {"name": "Suharto", "given": "Suharto", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "S."}
 {"name": "Sukarno", "given": "Sukarno", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "S."}
 {"name": "Sulaiman", "given": "Sulaiman", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "S."}
-{"name": "Sulaiman", "order": "FAMILY_FIRST", "family": "Sulaiman", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "S."}
+{"name": "Sulaiman", "order": "FAMILY_FIRST", "given": "Sulaiman", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "S."}
 {"name": "Sulaiman Salimah", "order": "FAMILY_FIRST", "given": "Salimah", "family": "Sulaiman", "initials": "S. S."}
 {"name": "Sulaiman, Salimah", "given": "Salimah", "family": "Sulaiman", "initials": "S. S."}
 {"name": "Sule", "given": "Sule", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "S."}
-{"name": "Sule", "order": "FAMILY_FIRST", "family": "Sule", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "S."}
+{"name": "Sule", "order": "FAMILY_FIRST", "given": "Sule", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "S."}
 {"name": "Sultan Hassanal Bolkiah", "given": "Sultan", "middle": "Hassanal", "family": "Bolkiah", "initials": "S. H. B."}
 {"name": "Sultana Begum", "given": "Sultana", "family": "Begum", "initials": "S. B."}
 {"name": "Sumnime D.C(Oli)", "family": "Sumnime", "suffix": "D.C", "nickname": "Oli", "initials": "S."}
@@ -3825,9 +3825,9 @@
 {"name": "Suzuki san", "order": "FAMILY_FIRST", "given": "san", "family": "Suzuki", "initials": "s. S.", "capitalized_force": "Suzuki San"}
 {"name": "Suzuki, Shōsan", "given": "Shōsan", "family": "Suzuki", "initials": "S. S."}
 {"name": "Suzuki-san", "given": "Suzuki-san", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "S.", "capitalized_force": "Suzuki-San"}
-{"name": "Suzuki-san", "order": "FAMILY_FIRST", "family": "Suzuki-san", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "S.", "capitalized_force": "Suzuki-San"}
+{"name": "Suzuki-san", "order": "FAMILY_FIRST", "given": "Suzuki-san", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "S.", "capitalized_force": "Suzuki-San"}
 {"name": "Svarun", "given": "Svarun", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "S."}
-{"name": "Svarun", "order": "FAMILY_FIRST", "family": "Svarun", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "S."}
+{"name": "Svarun", "order": "FAMILY_FIRST", "given": "Svarun", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "S."}
 {"name": "Svavar Guðnason", "given": "Svavar", "family": "Guðnason", "initials": "S. G."}
 {"name": "Sveinn Ásgeirsson", "given": "Sveinn", "family": "Ásgeirsson", "initials": "S. Á."}
 {"name": "Svoboda Josef Václav", "order": "FAMILY_FIRST", "given": "Josef", "middle": "Václav", "family": "Svoboda", "initials": "J. V. S."}
@@ -3898,7 +3898,7 @@
 {"name": "Tokugawa, Nariaki", "given": "Nariaki", "family": "Tokugawa", "initials": "N. T."}
 {"name": "Toledo Osorio, Fadrique de", "given": "Fadrique", "family": "de Toledo Osorio", "initials": "F. T. O."}
 {"name": "Tomás", "given": "Tomás", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "T."}
-{"name": "Tomás", "order": "FAMILY_FIRST", "family": "Tomás", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "T."}
+{"name": "Tomás", "order": "FAMILY_FIRST", "given": "Tomás", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "T."}
 {"name": "Tomás Antonio de la Cerda y Aragón", "given": "Tomás", "middle": "Antonio", "family": "de la Cerda y Aragón", "initials": "T. A. C. A."}
 {"name": "Tomás González Carvajal", "given": "Tomás", "middle": "González", "family": "Carvajal", "initials": "T. G. C."}
 {"name": "Tomás Iglesias Pérez", "given": "Tomás", "middle": "Iglesias", "family": "Pérez", "initials": "T. I. P."}
@@ -3938,11 +3938,11 @@
 {"name": "Urrestaratzu, Jon Andoni", "given": "Jon", "middle": "Andoni", "family": "Urrestaratzu", "initials": "J. A. U."}
 {"name": "Urrestaratzu, Jon Andoni", "order": "FAMILY_FIRST", "given": "Jon", "middle": "Andoni", "family": "Urrestaratzu", "initials": "J. A. U."}
 {"name": "Ursina", "given": "Ursina", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "U."}
-{"name": "Ursina", "order": "FAMILY_FIRST", "family": "Ursina", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "U."}
+{"name": "Ursina", "order": "FAMILY_FIRST", "given": "Ursina", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "U."}
 {"name": "Ursula von der Leyen (geb. Albrecht)", "given": "Ursula", "family": "von der Leyen", "maiden": "Albrecht", "initials": "U. L."}
 {"name": "Ursula von der Leyen geb. Albrecht", "given": "Ursula", "family": "von der Leyen", "maiden": "Albrecht", "initials": "U. L."}
 {"name": "Uxía", "given": "Uxía", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "U."}
-{"name": "Uxía", "order": "FAMILY_FIRST", "family": "Uxía", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "U."}
+{"name": "Uxía", "order": "FAMILY_FIRST", "given": "Uxía", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "U."}
 {"name": "VAN GOGH VINCENT", "given": "VAN", "middle": "GOGH", "family": "VINCENT", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: particle as family (vocabulary)"], "initials": "V. G. V.", "capitalized": "Van Gogh Vincent"}
 {"name": "VI, AD", "given": "AD", "family": "VI", "initials": "A. V.", "capitalized": "Ad Vi"}
 {"name": "VINCENT VAN GOGH", "given": "VINCENT", "family": "VAN GOGH", "initials": "V. G.", "capitalized": "Vincent van Gogh"}
@@ -4012,7 +4012,7 @@
 {"name": "Volf, Aleksandra Eva Sara van den", "given": "Aleksandra", "middle": "Eva Sara", "family": "van den Volf", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "A. E. S. V."}
 {"name": "Vossug ed Dowleh", "given": "Vossug", "middle": "ed", "family": "Dowleh", "initials": "V. e. D.", "capitalized_force": "Vossug Ed Dowleh"}
 {"name": "Vuk", "given": "Vuk", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "V."}
-{"name": "Vuk", "order": "FAMILY_FIRST", "family": "Vuk", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "V."}
+{"name": "Vuk", "order": "FAMILY_FIRST", "given": "Vuk", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "V."}
 {"name": "Vélez de Guevara, Luis", "given": "Luis", "family": "Vélez de Guevara", "initials": "L. V. G."}
 {"name": "Víctor Luna Gómez", "given": "Víctor", "middle": "Luna", "family": "Gómez", "initials": "V. L. G."}
 {"name": "W. Russell (Jr.) Withers", "given": "W.", "middle": "Russell", "family": "Withers", "suffix": "Jr.", "initials": "W. R. W.", "generation": "Jr."}
@@ -4156,16 +4156,16 @@
 {"name": "Zelda Hamish Støver", "given": "Zelda", "middle": "Hamish", "family": "Støver", "initials": "Z. H. S."}
 {"name": "Zelda Herman Stander", "given": "Zelda", "middle": "Herman", "family": "Stander", "initials": "Z. H. S."}
 {"name": "Zendaya", "given": "Zendaya", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "Z."}
-{"name": "Zendaya", "order": "FAMILY_FIRST", "family": "Zendaya", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "Z."}
+{"name": "Zendaya", "order": "FAMILY_FIRST", "given": "Zendaya", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "Z."}
 {"name": "Zendaya Marie Coleman", "given": "Zendaya", "middle": "Marie", "family": "Coleman", "initials": "Z. M. C."}
 {"name": "Zephyrmark Jane Smith", "given": "Zephyrmark", "middle": "Jane", "family": "Smith", "initials": "Z. J. S."}
 {"name": "Zeynep", "given": "Zeynep", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "Z."}
-{"name": "Zeynep", "order": "FAMILY_FIRST", "family": "Zeynep", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "Z."}
+{"name": "Zeynep", "order": "FAMILY_FIRST", "given": "Zeynep", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "Z."}
 {"name": "Zezilia Hemiş Stöber", "given": "Zezilia", "middle": "Hemiş", "family": "Stöber", "initials": "Z. H. S."}
 {"name": "Zheng, Yisao", "given": "Yisao", "family": "Zheng", "initials": "Y. Z."}
 {"name": "Ziemowit IV.", "given": "Ziemowit", "suffix": "IV.", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "Z.", "generation": "IV."}
 {"name": "Zrinka", "given": "Zrinka", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "Z."}
-{"name": "Zrinka", "order": "FAMILY_FIRST", "family": "Zrinka", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "Z."}
+{"name": "Zrinka", "order": "FAMILY_FIRST", "given": "Zrinka", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "Z."}
 {"name": "Zuylen van Nijevelt, Julius van", "given": "Julius", "family": "van Zuylen van Nijevelt", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "J. Z. N."}
 {"name": "Zäzilia Gültan Stöber", "given": "Zäzilia", "middle": "Gültan", "family": "Stöber", "initials": "Z. G. S."}
 {"name": "Zäzilia Hamish Stöber", "given": "Zäzilia", "middle": "Hamish", "family": "Stöber", "initials": "Z. H. S."}
@@ -4621,7 +4621,7 @@
 {"name": "Γιάννης Κανάκης", "given": "Γιάννης", "family": "Κανάκης", "initials": "Γ. Κ."}
 {"name": "Γιώργος Παπαδάκης", "given": "Γιώργος", "family": "Παπαδάκης", "initials": "Γ. Π."}
 {"name": "Δημήτρης", "given": "Δημήτρης", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "Δ."}
-{"name": "Δημήτρης", "order": "FAMILY_FIRST", "family": "Δημήτρης", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "Δ."}
+{"name": "Δημήτρης", "order": "FAMILY_FIRST", "given": "Δημήτρης", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "Δ."}
 {"name": "Δημήτρης Καπράλος", "given": "Δημήτρης", "family": "Καπράλος", "initials": "Δ. Κ."}
 {"name": "Δημήτρης Μητρόπουλος", "given": "Δημήτρης", "family": "Μητρόπουλος", "initials": "Δ. Μ."}
 {"name": "Δημήτρης Μιχαηλίδης", "given": "Δημήτρης", "family": "Μιχαηλίδης", "initials": "Δ. Μ."}
@@ -4666,7 +4666,7 @@
 {"name": "Πολίτη Ειρήνη", "order": "FAMILY_FIRST", "given": "Ειρήνη", "family": "Πολίτη", "initials": "Ε. Π."}
 {"name": "Πολίτη, Ειρήνη", "given": "Ειρήνη", "family": "Πολίτη", "initials": "Ε. Π."}
 {"name": "Σινμπάντ", "given": "Σινμπάντ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "Σ."}
-{"name": "Σινμπάντ", "order": "FAMILY_FIRST", "family": "Σινμπάντ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "Σ."}
+{"name": "Σινμπάντ", "order": "FAMILY_FIRST", "given": "Σινμπάντ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "Σ."}
 {"name": "Στέμπερ Ζεζίλια Χάμις", "order": "FAMILY_FIRST", "given": "Ζεζίλια", "middle": "Χάμις", "family": "Στέμπερ", "initials": "Ζ. Χ. Σ."}
 {"name": "Στέμπερ, Ζεζίλια Χάμις", "given": "Ζεζίλια", "middle": "Χάμις", "family": "Στέμπερ", "initials": "Ζ. Χ. Σ."}
 {"name": "Στέφανος Λάντσας", "given": "Στέφανος", "family": "Λάντσας", "initials": "Σ. Λ."}
@@ -4764,12 +4764,12 @@
 {"name": "Артур Валерьевич Дмитриев", "given": "Артур", "middle": "Валерьевич", "family": "Дмитриев", "initials": "А. В. Д."}
 {"name": "Асаф Михайлович Мессерер", "given": "Асаф", "middle": "Михайлович", "family": "Мессерер", "initials": "А. М. М."}
 {"name": "Аталан", "given": "Аталан", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "А."}
-{"name": "Аталан", "order": "FAMILY_FIRST", "family": "Аталан", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "А."}
+{"name": "Аталан", "order": "FAMILY_FIRST", "given": "Аталан", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "А."}
 {"name": "Ашмарин Николай Иванович", "order": "FAMILY_FIRST", "given": "Николай", "middle": "Иванович", "family": "Ашмарин", "initials": "Н. И. А."}
 {"name": "Ашмарин, Николай Иванович", "given": "Николай", "middle": "Иванович", "family": "Ашмарин", "initials": "Н. И. А."}
 {"name": "Балдырған Қожамқұлова", "given": "Балдырған", "family": "Қожамқұлова", "initials": "Б. Қ."}
 {"name": "Бат", "given": "Бат", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "Б."}
-{"name": "Бат", "order": "FAMILY_FIRST", "family": "Бат", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "Б."}
+{"name": "Бат", "order": "FAMILY_FIRST", "given": "Бат", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "Б."}
 {"name": "Бақытжан Қанапиянов", "given": "Бақытжан", "family": "Қанапиянов", "initials": "Б. Қ."}
 {"name": "Бертрам Вилберфорс Ҳенру Роберт Вустер", "given": "Бертрам", "middle": "Вилберфорс Ҳенру Роберт", "family": "Вустер", "initials": "Б. В. Ҳ. Р. В."}
 {"name": "Бисерка Цвејић", "given": "Бисерка", "family": "Цвејић", "initials": "Б. Ц."}
@@ -4808,7 +4808,7 @@
 {"name": "Васильев Дмитрий Петрович", "order": "FAMILY_FIRST", "given": "Дмитрий", "middle": "Петрович", "family": "Васильев", "initials": "Д. П. В."}
 {"name": "Васильев, Дмитрий Петрович", "given": "Дмитрий", "middle": "Петрович", "family": "Васильев", "initials": "Д. П. В."}
 {"name": "Васіль", "given": "Васіль", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "В."}
-{"name": "Васіль", "order": "FAMILY_FIRST", "family": "Васіль", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "В."}
+{"name": "Васіль", "order": "FAMILY_FIRST", "given": "Васіль", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "В."}
 {"name": "Ватсон Мэри Сю Хамиш", "order": "FAMILY_FIRST", "given": "Мэри", "middle": "Сю Хамиш", "family": "Ватсон", "initials": "М. С. Х. В."}
 {"name": "Велизар Димитров", "given": "Велизар", "family": "Димитров", "initials": "В. Д."}
 {"name": "Велко Дачев", "given": "Велко", "family": "Дачев", "initials": "В. Д."}
@@ -4869,7 +4869,7 @@
 {"name": "Дејан Миловановић", "given": "Дејан", "family": "Миловановић", "initials": "Д. М."}
 {"name": "Дејан Стојановић", "given": "Дејан", "family": "Стојановић", "initials": "Д. С."}
 {"name": "Джон", "given": "Джон", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "Д."}
-{"name": "Джон", "order": "FAMILY_FIRST", "family": "Джон", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "Д."}
+{"name": "Джон", "order": "FAMILY_FIRST", "given": "Джон", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "Д."}
 {"name": "Джоунс, Зара Мери", "given": "Зара", "middle": "Мери", "family": "Джоунс", "initials": "З. М. Д."}
 {"name": "Джоунс, Зара Мери", "order": "FAMILY_FIRST", "given": "Зара", "middle": "Мери", "family": "Джоунс", "initials": "З. М. Д."}
 {"name": "Димитрије Нешић", "given": "Димитрије", "family": "Нешић", "initials": "Д. Н."}
@@ -4920,10 +4920,10 @@
 {"name": "Заңғар Тәуекел", "given": "Заңғар", "family": "Тәуекел", "initials": "З. Т."}
 {"name": "Здравко Палазов", "given": "Здравко", "family": "Палазов", "initials": "З. П."}
 {"name": "Зендая", "given": "Зендая", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "З."}
-{"name": "Зендая", "order": "FAMILY_FIRST", "family": "Зендая", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "З."}
+{"name": "Зендая", "order": "FAMILY_FIRST", "given": "Зендая", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "З."}
 {"name": "Зорин, Михаил Петрович", "given": "Михаил", "middle": "Петрович", "family": "Зорин", "initials": "М. П. З."}
 {"name": "Иван", "given": "Иван", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "И."}
-{"name": "Иван", "order": "FAMILY_FIRST", "family": "Иван", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "И."}
+{"name": "Иван", "order": "FAMILY_FIRST", "given": "Иван", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "И."}
 {"name": "Иван Александрович Гончаров", "given": "Иван", "middle": "Александрович", "family": "Гончаров", "initials": "И. А. Г."}
 {"name": "Иван Андонов", "given": "Иван", "family": "Андонов", "initials": "И. А."}
 {"name": "Иван Андреевич Созонов", "given": "Иван", "middle": "Андреевич", "family": "Созонов", "initials": "И. А. С."}
@@ -4982,7 +4982,7 @@
 {"name": "Костин, Иван Алексеевич", "given": "Иван", "middle": "Алексеевич", "family": "Костин", "initials": "И. А. К."}
 {"name": "Красимир Спасов", "given": "Красимир", "family": "Спасов", "initials": "К. С."}
 {"name": "Крсте", "given": "Крсте", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "К."}
-{"name": "Крсте", "order": "FAMILY_FIRST", "family": "Крсте", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "К."}
+{"name": "Крсте", "order": "FAMILY_FIRST", "given": "Крсте", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "К."}
 {"name": "Крсте Мисирков", "given": "Крсте", "family": "Мисирков", "initials": "К. М."}
 {"name": "Крсте Петков Мисирков", "given": "Крсте", "middle": "Петков", "family": "Мисирков", "initials": "К. П. М."}
 {"name": "Крум Дерменджиев", "given": "Крум", "family": "Дерменджиев", "initials": "К. Д."}
@@ -5083,7 +5083,7 @@
 {"name": "Нина Михайловна Литвинова", "given": "Нина", "middle": "Михайловна", "family": "Литвинова", "initials": "Н. М. Л."}
 {"name": "Ноён Азжаргал Төмөр", "given": "Ноён", "middle": "Азжаргал", "family": "Төмөр", "initials": "Н. А. Т."}
 {"name": "Нұрлан", "given": "Нұрлан", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "Н."}
-{"name": "Нұрлан", "order": "FAMILY_FIRST", "family": "Нұрлан", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "Н."}
+{"name": "Нұрлан", "order": "FAMILY_FIRST", "given": "Нұрлан", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "Н."}
 {"name": "Оксана Сергіївна Баюл", "given": "Оксана", "middle": "Сергіївна", "family": "Баюл", "initials": "О. С. Б."}
 {"name": "Олег Литвиненко", "given": "Олег", "family": "Литвиненко", "initials": "О. Л."}
 {"name": "Олег Сакиркин", "given": "Олег", "family": "Сакиркин", "initials": "О. С."}
@@ -5146,7 +5146,7 @@
 {"name": "Свобода Бъчварова", "given": "Свобода", "family": "Бъчварова", "initials": "С. Б."}
 {"name": "Семён Денисович Игнатьев", "given": "Семён", "middle": "Денисович", "family": "Игнатьев", "initials": "С. Д. И."}
 {"name": "Сергей", "given": "Сергей", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "С."}
-{"name": "Сергей", "order": "FAMILY_FIRST", "family": "Сергей", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "С."}
+{"name": "Сергей", "order": "FAMILY_FIRST", "given": "Сергей", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "С."}
 {"name": "Сергей Александрович Кирдяпкин", "given": "Сергей", "middle": "Александрович", "family": "Кирдяпкин", "initials": "С. А. К."}
 {"name": "Сергей Дмитриевич Остапов", "given": "Сергей", "middle": "Дмитриевич", "family": "Остапов", "initials": "С. Д. О."}
 {"name": "Сергей Каримов", "given": "Сергей", "family": "Каримов", "initials": "С. К."}
@@ -5156,9 +5156,9 @@
 {"name": "Сидоров Иван Петрович", "given": "Сидоров", "middle": "Иван", "family": "Петрович", "initials": "С. И. П."}
 {"name": "Симона Пейчева", "given": "Симона", "family": "Пейчева", "initials": "С. П."}
 {"name": "Синбад", "given": "Синбад", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "С."}
-{"name": "Синбад", "order": "FAMILY_FIRST", "family": "Синбад", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "С."}
+{"name": "Синбад", "order": "FAMILY_FIRST", "given": "Синбад", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "С."}
 {"name": "Синдбад", "given": "Синдбад", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "С."}
-{"name": "Синдбад", "order": "FAMILY_FIRST", "family": "Синдбад", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "С."}
+{"name": "Синдбад", "order": "FAMILY_FIRST", "given": "Синдбад", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "С."}
 {"name": "Синиша Михајловић", "given": "Синиша", "family": "Михајловић", "initials": "С. М."}
 {"name": "Слуцкий, Леонид Эдуардович", "given": "Леонид", "middle": "Эдуардович", "family": "Слуцкий", "initials": "Л. Э. С."}
 {"name": "Смыслов, Василий Васильевич", "given": "Василий", "middle": "Васильевич", "family": "Смыслов", "initials": "В. В. С."}
@@ -5182,10 +5182,10 @@
 {"name": "Страхил Попов", "given": "Страхил", "family": "Попов", "initials": "С. П."}
 {"name": "Страшимир Димитров", "given": "Страшимир", "family": "Димитров", "initials": "С. Д."}
 {"name": "Сыймык", "given": "Сыймык", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "С."}
-{"name": "Сыймык", "order": "FAMILY_FIRST", "family": "Сыймык", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "С."}
+{"name": "Сыймык", "order": "FAMILY_FIRST", "given": "Сыймык", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "С."}
 {"name": "Сёмин, Виталий Николаевич", "given": "Виталий", "middle": "Николаевич", "family": "Сёмин", "initials": "В. Н. С."}
 {"name": "Сіндбад", "given": "Сіндбад", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "С."}
-{"name": "Сіндбад", "order": "FAMILY_FIRST", "family": "Сіндбад", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "С."}
+{"name": "Сіндбад", "order": "FAMILY_FIRST", "given": "Сіндбад", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "С."}
 {"name": "Татьяна Васильевна Костина", "given": "Татьяна", "middle": "Васильевна", "family": "Костина", "initials": "Т. В. К."}
 {"name": "Татьяна Николаевна Семенова", "given": "Татьяна", "middle": "Николаевна", "family": "Семенова", "initials": "Т. Н. С."}
 {"name": "Теофил Панчић", "given": "Теофил", "family": "Панчић", "initials": "Т. П."}
@@ -5200,7 +5200,7 @@
 {"name": "Төмөр, Азжаргал", "given": "Азжаргал", "family": "Төмөр", "initials": "А. Т."}
 {"name": "Ульяна Петровна Буянова", "given": "Ульяна", "middle": "Петровна", "family": "Буянова", "initials": "У. П. Б."}
 {"name": "Урал", "given": "Урал", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "У."}
-{"name": "Урал", "order": "FAMILY_FIRST", "family": "Урал", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "У."}
+{"name": "Урал", "order": "FAMILY_FIRST", "given": "Урал", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "У."}
 {"name": "Урош Рачић", "given": "Урош", "family": "Рачић", "initials": "У. Р."}
 {"name": "Фаттахов Азамат Салауат улы", "order": "FAMILY_FIRST", "given": "Азамат", "middle": "Салауат улы", "family": "Фаттахов", "initials": "А. С. у. Ф.", "capitalized_force": "Фаттахов Азамат Салауат Улы"}
 {"name": "Фаттахов, Азамат Салауат улы", "given": "Азамат", "middle": "Салауат улы", "family": "Фаттахов", "initials": "А. С. у. Ф.", "capitalized_force": "Азамат Салауат Улы Фаттахов"}
@@ -5251,7 +5251,7 @@
 {"name": "Юрий Ильич Скуратов", "given": "Юрий", "middle": "Ильич", "family": "Скуратов", "initials": "Ю. И. С."}
 {"name": "Юрий Петрович Любимов", "given": "Юрий", "middle": "Петрович", "family": "Любимов", "initials": "Ю. П. Л."}
 {"name": "Юрій", "given": "Юрій", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "Ю."}
-{"name": "Юрій", "order": "FAMILY_FIRST", "family": "Юрій", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "Ю."}
+{"name": "Юрій", "order": "FAMILY_FIRST", "given": "Юрій", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "Ю."}
 {"name": "Янко Павлов", "given": "Янко", "family": "Павлов", "initials": "Я. П."}
 {"name": "Яҡупова Ирина", "order": "FAMILY_FIRST", "given": "Ирина", "family": "Яҡупова", "initials": "И. Я."}
 {"name": "Яҡупова, Ирина", "given": "Ирина", "family": "Яҡупова", "initials": "И. Я."}
@@ -5308,7 +5308,7 @@
 {"name": "Արամ Քոչարյան", "given": "Արամ", "family": "Քոչարյան", "initials": "Ա. Ք."}
 {"name": "Արայիկ Մաթևոսյան", "given": "Արայիկ", "family": "Մաթևոսյան", "initials": "Ա. Մ."}
 {"name": "Արթուր", "given": "Արթուր", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "Ա."}
-{"name": "Արթուր", "order": "FAMILY_FIRST", "family": "Արթուր", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "Ա."}
+{"name": "Արթուր", "order": "FAMILY_FIRST", "given": "Արթուր", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "Ա."}
 {"name": "Արթուր Բաղդասարյան", "given": "Արթուր", "family": "Բաղդասարյան", "initials": "Ա. Բ."}
 {"name": "Արթուր Մկրտչյան", "given": "Արթուր", "family": "Մկրտչյան", "initials": "Ա. Մ."}
 {"name": "Գառնիկ Հովհաննիսյան", "given": "Գառնիկ", "family": "Հովհաննիսյան", "initials": "Գ. Հ."}
@@ -5352,7 +5352,7 @@
 {"name": "Սերգեյ Մովսեսյան", "given": "Սերգեյ", "family": "Մովսեսյան", "initials": "Ս. Մ."}
 {"name": "Սերգեյ Ներսիսյան", "given": "Սերգեյ", "family": "Ներսիսյան", "initials": "Ս. Ն."}
 {"name": "Սինբադ", "given": "Սինբադ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "Ս."}
-{"name": "Սինբադ", "order": "FAMILY_FIRST", "family": "Սինբադ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "Ս."}
+{"name": "Սինբադ", "order": "FAMILY_FIRST", "given": "Սինբադ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "Ս."}
 {"name": "Սուրեն Բաբայան", "given": "Սուրեն", "family": "Բաբայան", "initials": "Ս. Բ."}
 {"name": "Սուրեն Երեմյան", "given": "Սուրեն", "family": "Երեմյան", "initials": "Ս. Ե."}
 {"name": "Սուրեն Ծատուրյան", "given": "Սուրեն", "family": "Ծատուրյան", "initials": "Ս. Ծ."}
@@ -5408,7 +5408,7 @@
 {"name": "ידידיה כהן", "given": "ידידיה", "family": "כהן", "initials": "י. כ."}
 {"name": "יהודה כהן", "given": "יהודה", "family": "כהן", "initials": "י. כ."}
 {"name": "יונתן", "given": "יונתן", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "י."}
-{"name": "יונתן", "order": "FAMILY_FIRST", "family": "יונתן", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "י."}
+{"name": "יונתן", "order": "FAMILY_FIRST", "given": "יונתן", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "י."}
 {"name": "יונתן חיים כהן", "given": "יונתן", "middle": "חיים", "family": "כהן", "initials": "י. ח. כ."}
 {"name": "יצחק טישלר", "given": "יצחק", "family": "טישלר", "initials": "י. ט."}
 {"name": "יצחק יעקב", "given": "יצחק", "family": "יעקב", "initials": "י. י."}
@@ -5430,7 +5430,7 @@
 {"name": "משה מזור", "given": "משה", "family": "מזור", "initials": "מ. מ."}
 {"name": "סטובר זזיליה חמיש", "order": "FAMILY_FIRST", "given": "זזיליה", "middle": "חמיש", "family": "סטובר", "initials": "ז. ח. ס."}
 {"name": "סינבד", "given": "סינבד", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ס."}
-{"name": "סינבד", "order": "FAMILY_FIRST", "family": "סינבד", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "ס."}
+{"name": "סינבד", "order": "FAMILY_FIRST", "given": "סינבד", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ס."}
 {"name": "עמוס ברנס", "given": "עמוס", "family": "ברנס", "initials": "ע. ב."}
 {"name": "עמוס הדר", "given": "עמוס", "family": "הדר", "initials": "ע. ה."}
 {"name": "עמרי שרון", "given": "עמרי", "family": "שרון", "initials": "ע. ש."}
@@ -5481,7 +5481,7 @@
 {"name": "إيهاب خورشيد", "given": "إيهاب", "family": "خورشيد", "initials": "إ. خ."}
 {"name": "ائڊلر آئرين", "order": "FAMILY_FIRST", "given": "آئرين", "family": "ائڊلر", "initials": "آ. ا."}
 {"name": "احمد", "given": "احمد", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ا."}
-{"name": "احمد", "order": "FAMILY_FIRST", "family": "احمد", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "ا."}
+{"name": "احمد", "order": "FAMILY_FIRST", "given": "احمد", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ا."}
 {"name": "احمد گلشیری", "given": "احمد", "family": "گلشیری", "initials": "ا. گ."}
 {"name": "اختر رضا خان", "given": "اختر", "middle": "رضا", "family": "خان", "initials": "ا. ر. خ."}
 {"name": "ادا كورنەليا فون بريۋل جۋنيور، ءتىس دارىگەرى", "given": "ءتىس", "middle": "دارىگەرى", "family": "ادا كورنەليا فون بريۋل جۋنيور", "initials": "ء. د. ا. ك. ف. ب. ج."}
@@ -5489,7 +5489,7 @@
 {"name": "استوبر، زازیلیا هایمیش", "order": "FAMILY_FIRST", "given": "زازیلیا", "middle": "هایمیش", "family": "استوبر", "initials": "ز. ه. ا."}
 {"name": "اسٽوبر زيزيليا ھئمش", "order": "FAMILY_FIRST", "given": "زيزيليا", "middle": "ھئمش", "family": "اسٽوبر", "initials": "ز. ھ. ا."}
 {"name": "اسەم", "given": "اسەم", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ا."}
-{"name": "اسەم", "order": "FAMILY_FIRST", "family": "اسەم", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "ا."}
+{"name": "اسەم", "order": "FAMILY_FIRST", "given": "اسەم", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ا."}
 {"name": "اصغر شازیہ", "order": "FAMILY_FIRST", "given": "شازیہ", "family": "اصغر", "initials": "ش. ا."}
 {"name": "اصغر، شازیہ", "order": "FAMILY_FIRST", "given": "شازیہ", "family": "اصغر", "initials": "ش. ا."}
 {"name": "اقبال قریشی", "given": "اقبال", "family": "قریشی", "initials": "ا. ق."}
@@ -5559,7 +5559,7 @@
 {"name": "زیزیلیا همیش سټوبر", "given": "زیزیلیا", "middle": "همیش", "family": "سټوبر", "initials": "ز. ه. س."}
 {"name": "سارہ خان", "given": "سارہ", "family": "خان", "initials": "س. خ."}
 {"name": "سامانتا", "given": "سامانتا", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "س."}
-{"name": "سامانتا", "order": "FAMILY_FIRST", "family": "سامانتا", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "س."}
+{"name": "سامانتا", "order": "FAMILY_FIRST", "given": "سامانتا", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "س."}
 {"name": "سامي الكيالي", "given": "سامي", "family": "الكيالي", "initials": "س. ا."}
 {"name": "ستوبر، زيزينيا هاميش", "order": "FAMILY_FIRST", "given": "زيزينيا", "middle": "هاميش", "family": "ستوبر", "initials": "ز. ه. س."}
 {"name": "ستیش شرما", "given": "ستیش", "family": "شرما", "initials": "س. ش."}
@@ -5580,14 +5580,14 @@
 {"name": "سميرة خاشقجي", "given": "سميرة", "family": "خاشقجي", "initials": "س. خ."}
 {"name": "سميرة عزت", "given": "سميرة", "family": "عزت", "initials": "س. ع."}
 {"name": "سنباد", "given": "سنباد", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "س."}
-{"name": "سنباد", "order": "FAMILY_FIRST", "family": "سنباد", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "س."}
+{"name": "سنباد", "order": "FAMILY_FIRST", "given": "سنباد", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "س."}
 {"name": "سندباد", "given": "سندباد", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "س."}
-{"name": "سندباد", "order": "FAMILY_FIRST", "family": "سندباد", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "س."}
+{"name": "سندباد", "order": "FAMILY_FIRST", "given": "سندباد", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "س."}
 {"name": "سهيل الغزي", "given": "سهيل", "family": "الغزي", "initials": "س. ا."}
 {"name": "سوسن ربيع", "given": "سوسن", "family": "ربيع", "initials": "س. ر."}
 {"name": "سيد كريم", "given": "سيد", "family": "كريم", "initials": "س. ك."}
 {"name": "سينباد", "given": "سينباد", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "س."}
-{"name": "سينباد", "order": "FAMILY_FIRST", "family": "سينباد", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "س."}
+{"name": "سينباد", "order": "FAMILY_FIRST", "given": "سينباد", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "س."}
 {"name": "سټوبر زیزیلیا همیش", "order": "FAMILY_FIRST", "given": "زیزیلیا", "middle": "همیش", "family": "سټوبر", "initials": "ز. ه. س."}
 {"name": "سید عبد الکریم عبد الحمید ایم پی", "order": "FAMILY_FIRST", "given": "عبد الکریم", "middle": "عبد الحمید ایم پی", "family": "سید", "initials": "ع. ا. ع. ا. ا. پ. س."}
 {"name": "سید، عبد الکریم عبد الحمید ایم پی", "order": "FAMILY_FIRST", "given": "عبد الکریم", "middle": "عبد الحمید ایم پی", "family": "سید", "initials": "ع. ا. ع. ا. ا. پ. س."}
@@ -5715,7 +5715,7 @@
 {"name": "منصور حاتم", "order": "FAMILY_FIRST", "given": "حاتم", "family": "منصور", "initials": "ح. م."}
 {"name": "منصور، حاتم", "order": "FAMILY_FIRST", "given": "حاتم", "family": "منصور", "initials": "ح. م."}
 {"name": "منير", "given": "منير", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "م."}
-{"name": "منير", "order": "FAMILY_FIRST", "family": "منير", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "م."}
+{"name": "منير", "order": "FAMILY_FIRST", "given": "منير", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "م."}
 {"name": "مها عامر", "given": "مها", "family": "عامر", "initials": "م. ع."}
 {"name": "موفق الخاني", "given": "موفق", "family": "الخاني", "initials": "م. ا."}
 {"name": "مولر کیتی", "order": "FAMILY_FIRST", "given": "کیتی", "family": "مولر", "initials": "ک. م."}
@@ -5770,7 +5770,7 @@
 {"name": "پروفيسر ڊاڪٽر ايڊا ڪورنيليا سيزر مارٽن وان برل گونزالس ڊومنگو ايم ڊي ڊي ڊي ايس", "given": "پروفيسر", "middle": "ڊاڪٽر ايڊا ڪورنيليا سيزر مارٽن وان برل گونزالس ڊومنگو ايم ڊي ڊي ڊي", "family": "ايس", "initials": "پ. ڊ. ا. ڪ. س. م. و. ب. گ. ڊ. ا. ڊ. ڊ. ڊ. ا."}
 {"name": "پروفیسور ډاکټر اډا کورنیلیا ایوا سوفیا وون لیوه بیکر شمیت ایم ‌ډی ډیی ډیی ایس", "given": "پروفیسور", "middle": "ډاکټر اډا کورنیلیا ایوا سوفیا وون لیوه بیکر شمیت ایم ‌ډی ډیی ډیی", "family": "ایس", "initials": "پ. ډ. ا. ک. ا. س. و. ل. ب. ش. ا. ‌. ډ. ډ. ا."}
 {"name": "ژیلا", "given": "ژیلا", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ژ."}
-{"name": "ژیلا", "order": "FAMILY_FIRST", "family": "ژیلا", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "ژ."}
+{"name": "ژیلا", "order": "FAMILY_FIRST", "given": "ژیلا", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ژ."}
 {"name": "ښاغلی. برټرام ولبرفورس هنري رابرټ ووسټر ایم پی", "title": "ښاغلی.", "given": "برټرام", "middle": "ولبرفورس هنري رابرټ ووسټر ایم", "family": "پی", "initials": "ب. و. ه. ر. و. ا. پ."}
 {"name": "کاتیا مولر", "given": "کاتیا", "family": "مولر", "initials": "ک. م."}
 {"name": "کمال ایرانی", "given": "کمال", "family": "ایرانی", "initials": "ک. ا."}
@@ -5823,7 +5823,7 @@
 {"name": "जोनस, मैरी सिलविया", "given": "मैरी", "middle": "सिलविया", "family": "जोनस", "initials": "म. स. ज."}
 {"name": "ज्ञानेन्द्र वीर विक्रम शाहदेव", "given": "ज्ञानेन्द्र", "middle": "वीर विक्रम", "family": "शाहदेव", "initials": "ज. व. व. श."}
 {"name": "दिशा", "given": "दिशा", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "द."}
-{"name": "दिशा", "order": "FAMILY_FIRST", "family": "दिशा", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "द."}
+{"name": "दिशा", "order": "FAMILY_FIRST", "given": "दिशा", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "द."}
 {"name": "दीपा मेहता", "given": "दीपा", "family": "मेहता", "initials": "द. म."}
 {"name": "दीप्ति भटनागर", "given": "दीप्ति", "family": "भटनागर", "initials": "द. भ."}
 {"name": "दुर्गाबाई देशमुख", "given": "दुर्गाबाई", "family": "देशमुख", "initials": "द. द."}
@@ -5876,7 +5876,7 @@
 {"name": "मनीष मल्होत्रा", "given": "मनीष", "family": "मल्होत्रा", "initials": "म. म."}
 {"name": "ममता कुलकर्णी", "given": "ममता", "family": "कुलकर्णी", "initials": "म. क."}
 {"name": "माधुरी", "given": "माधुरी", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "म."}
-{"name": "माधुरी", "order": "FAMILY_FIRST", "family": "माधुरी", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "म."}
+{"name": "माधुरी", "order": "FAMILY_FIRST", "given": "माधुरी", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "म."}
 {"name": "मानव कौल", "given": "मानव", "family": "कौल", "initials": "म. क."}
 {"name": "मारिया हेलेना फर्नॅन्डेज", "given": "मारिया", "middle": "हेलेना", "family": "फर्नॅन्डेज", "initials": "म. ह. फ."}
 {"name": "मीना शाह", "given": "मीना", "family": "शाह", "initials": "म. श."}
@@ -5912,13 +5912,13 @@
 {"name": "रिधान समीर फडके", "given": "रिधान", "middle": "समीर", "family": "फडके", "initials": "र. स. फ."}
 {"name": "रेणुका सिंह", "given": "रेणुका", "family": "सिंह", "initials": "र. स."}
 {"name": "रॉबर्ट", "given": "रॉबर्ट", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "र."}
-{"name": "रॉबर्ट", "order": "FAMILY_FIRST", "family": "रॉबर्ट", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "र."}
+{"name": "रॉबर्ट", "order": "FAMILY_FIRST", "given": "रॉबर्ट", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "र."}
 {"name": "रोहित शर्मा", "given": "रोहित", "family": "शर्मा", "initials": "र. श."}
 {"name": "लक्ष्मी गौतम", "given": "लक्ष्मी", "family": "गौतम", "initials": "ल. ग."}
 {"name": "लक्ष्मीप्रसाद देवकोटा", "given": "लक्ष्मीप्रसाद", "family": "देवकोटा", "initials": "ल. द."}
 {"name": "लता मंगेशकर", "given": "लता", "family": "मंगेशकर", "initials": "ल. म."}
 {"name": "ललित", "given": "ललित", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ल."}
-{"name": "ललित", "order": "FAMILY_FIRST", "family": "ललित", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "ल."}
+{"name": "ललित", "order": "FAMILY_FIRST", "given": "ललित", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ल."}
 {"name": "ललित मोहन शर्मा", "given": "ललित", "middle": "मोहन", "family": "शर्मा", "initials": "ल. म. श."}
 {"name": "ललित शर्मा", "given": "ललित", "family": "शर्मा", "initials": "ल. श."}
 {"name": "वसंत देसाई", "given": "वसंत", "family": "देसाई", "initials": "व. द."}
@@ -5951,12 +5951,12 @@
 {"name": "श्री. धिरज देशपांडे विजय देशपांडे देशपांडे क., एम. पी.", "title": "श्री. एम.", "given": "पी.", "family": "धिरज देशपांडे विजय देशपांडे देशपांडे क.", "initials": "प. ध. द. व. द. द. क."}
 {"name": "संजय ख़ान", "given": "संजय", "family": "ख़ान", "initials": "स. ख."}
 {"name": "सिंदबाद", "given": "सिंदबाद", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "स."}
-{"name": "सिंदबाद", "order": "FAMILY_FIRST", "family": "सिंदबाद", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "स."}
+{"name": "सिंदबाद", "order": "FAMILY_FIRST", "given": "सिंदबाद", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "स."}
 {"name": "सिनबाद", "given": "सिनबाद", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "स."}
-{"name": "सिनबाद", "order": "FAMILY_FIRST", "family": "सिनबाद", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "स."}
+{"name": "सिनबाद", "order": "FAMILY_FIRST", "given": "सिनबाद", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "स."}
 {"name": "सुनंदा पुष्कर", "given": "सुनंदा", "family": "पुष्कर", "initials": "स. प."}
 {"name": "सुन्दर", "given": "सुन्दर", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "स."}
-{"name": "सुन्दर", "order": "FAMILY_FIRST", "family": "सुन्दर", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "स."}
+{"name": "सुन्दर", "order": "FAMILY_FIRST", "given": "सुन्दर", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "स."}
 {"name": "सुशील कोइराला", "given": "सुशील", "family": "कोइराला", "initials": "स. क."}
 {"name": "सोजा, फ्रांसिस शावियेर जुआंव आंतोन दे", "given": "फ्रांसिस", "middle": "शावियेर जुआंव आंतोन दे", "family": "सोजा", "initials": "फ. श. ज. आ. द. स."}
 {"name": "सोनिया गाँधी", "given": "सोनिया", "family": "गाँधी", "initials": "स. ग."}
@@ -5987,7 +5987,7 @@
 {"name": "কামাল হোসেন", "given": "কামাল", "family": "হোসেন", "initials": "ক. হ."}
 {"name": "কিরণ আহমেদ", "given": "কিরণ", "family": "আহমেদ", "initials": "ক. আ."}
 {"name": "কিশোৰ", "given": "কিশোৰ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ক."}
-{"name": "কিশোৰ", "order": "FAMILY_FIRST", "family": "কিশোৰ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "ক."}
+{"name": "কিশোৰ", "order": "FAMILY_FIRST", "given": "কিশোৰ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ক."}
 {"name": "কুকুৰনেচীয়া, আডা কৰ্ণেলিয়া ইভা চ’ফিয়া ভেন ডেন", "given": "আডা", "middle": "কৰ্ণেলিয়া ইভা চ’ফিয়া ভেন ডেন", "family": "কুকুৰনেচীয়া", "initials": "আ. ক. ই. চ. ভ. ড. ক."}
 {"name": "কেনেথ পাওয়েল", "given": "কেনেথ", "family": "পাওয়েল", "initials": "ক. প."}
 {"name": "গাঙ্গুলী জনাব এমদাদ আলি অনিল কুমার এমপি", "order": "FAMILY_FIRST", "given": "জনাব", "middle": "এমদাদ আলি অনিল কুমার এমপি", "family": "গাঙ্গুলী", "initials": "জ. এ. আ. অ. ক. এ. গ."}
@@ -5998,7 +5998,7 @@
 {"name": "জিয়াউর রহমান", "given": "জিয়াউর", "family": "রহমান", "initials": "জ. র."}
 {"name": "জুহি চাওলা", "given": "জুহি", "family": "চাওলা", "initials": "জ. চ."}
 {"name": "জেনদায়া", "given": "জেনদায়া", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "জ."}
-{"name": "জেনদায়া", "order": "FAMILY_FIRST", "family": "জেনদায়া", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "জ."}
+{"name": "জেনদায়া", "order": "FAMILY_FIRST", "given": "জেনদায়া", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "জ."}
 {"name": "দেবী শর্মা", "given": "দেবী", "family": "শর্মা", "initials": "দ. শ."}
 {"name": "নগেন বৰা", "given": "নগেন", "family": "বৰা", "initials": "ন. ব."}
 {"name": "নমিতা বৰুৱা", "given": "নমিতা", "family": "বৰুৱা", "initials": "ন. ব."}
@@ -6036,10 +6036,10 @@
 {"name": "শৰ্মা ৰুলা কলিতা যতীন", "order": "FAMILY_FIRST", "given": "ৰুলা", "middle": "কলিতা যতীন", "family": "শৰ্মা", "initials": "ৰ. ক. য. শ."}
 {"name": "শৰ্মা, ৰুলা কলিতা যতীন", "given": "ৰুলা", "middle": "কলিতা যতীন", "family": "শৰ্মা", "initials": "ৰ. ক. য. শ."}
 {"name": "সত্যৰাম", "given": "সত্যৰাম", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "স."}
-{"name": "সত্যৰাম", "order": "FAMILY_FIRST", "family": "সত্যৰাম", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "স."}
+{"name": "সত্যৰাম", "order": "FAMILY_FIRST", "given": "সত্যৰাম", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "স."}
 {"name": "সলিল সেন", "given": "সলিল", "family": "সেন", "initials": "স. স."}
 {"name": "সিনবাদ", "given": "সিনবাদ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "স."}
-{"name": "সিনবাদ", "order": "FAMILY_FIRST", "family": "সিনবাদ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "স."}
+{"name": "সিনবাদ", "order": "FAMILY_FIRST", "given": "সিনবাদ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "স."}
 {"name": "সুজাতা মহাপাত্র", "given": "সুজাতা", "family": "মহাপাত্র", "initials": "স. ম."}
 {"name": "সুনীল কর্মকার", "given": "সুনীল", "family": "কর্মকার", "initials": "স. ক."}
 {"name": "সুবোধ সরকার", "given": "সুবোধ", "family": "সরকার", "initials": "স. স."}
@@ -6054,7 +6054,7 @@
 {"name": "ਕੈਥੀ ਮੂਲਰ", "given": "ਕੈਥੀ", "family": "ਮੂਲਰ", "initials": "ਕ. ਮ."}
 {"name": "ਜ਼ਜ਼ਿਲੀਆ ਹੇਮਿਸ਼ ਸਟੋਬਰ", "given": "ਜ਼ਜ਼ਿਲੀਆ", "middle": "ਹੇਮਿਸ਼", "family": "ਸਟੋਬਰ", "initials": "ਜ. ਹ. ਸ."}
 {"name": "ਜ਼ੈਨਡਿਆ", "given": "ਜ਼ੈਨਡਿਆ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ਜ."}
-{"name": "ਜ਼ੈਨਡਿਆ", "order": "FAMILY_FIRST", "family": "ਜ਼ੈਨਡਿਆ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "ਜ."}
+{"name": "ਜ਼ੈਨਡਿਆ", "order": "FAMILY_FIRST", "given": "ਜ਼ੈਨਡਿਆ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ਜ."}
 {"name": "ਜੌਨ ਹਾਮਿਸ਼ ਵਾਟਸਨ", "given": "ਜੌਨ", "middle": "ਹਾਮਿਸ਼", "family": "ਵਾਟਸਨ", "initials": "ਜ. ਹ. ਵ."}
 {"name": "ਪ੍ਰੋ. ਡਾ. ਐਡਾ ਕੋਰਨੇਲੀਆ ਈਵਾ ਸੋਫ਼ੀਆ ਵੈਨ ਡੇਨ ਵੌਲਫ਼ ਬੇਕਰ ਸਮਿੱਥ ਐੱਮ.ਡੀ. ਡੀ.ਡੀ.ਐੱਸ.", "given": "ਪ੍ਰੋ.", "middle": "ਡਾ. ਐਡਾ ਕੋਰਨੇਲੀਆ ਈਵਾ ਸੋਫ਼ੀਆ ਵੈਨ ਡੇਨ ਵੌਲਫ਼ ਬੇਕਰ ਸਮਿੱਥ ਐੱਮ.ਡੀ.", "family": "ਡੀ.ਡੀ.ਐੱਸ.", "initials": "ਪ. ਡ. ਐ. ਕ. ਈ. ਸ. ਵ. ਡ. ਵ. ਬ. ਸ. ਐ. ਡ."}
 {"name": "ਮੂਲਰ ਕੈਥੀ", "order": "FAMILY_FIRST", "given": "ਕੈਥੀ", "family": "ਮੂਲਰ", "initials": "ਕ. ਮ."}
@@ -6069,12 +6069,12 @@
 {"name": "ਸਟੋਬਰ, ਜ਼ਜ਼ਿਲੀਆ ਹੇਮਿਸ਼", "given": "ਜ਼ਜ਼ਿਲੀਆ", "middle": "ਹੇਮਿਸ਼", "family": "ਸਟੋਬਰ", "initials": "ਜ. ਹ. ਸ."}
 {"name": "ਸ਼੍ਰੀ ਬਰਟਰਮ ਵਿਲਬਰਫ਼ੋਰਸ ਹੈਨਰੀ ਰਾਬਰਟ ਵੂਸਟਰ ਐਮ.ਪੀ.", "given": "ਸ਼੍ਰੀ", "middle": "ਬਰਟਰਮ ਵਿਲਬਰਫ਼ੋਰਸ ਹੈਨਰੀ ਰਾਬਰਟ ਵੂਸਟਰ", "family": "ਐਮ.ਪੀ.", "initials": "ਸ. ਬ. ਵ. ਹ. ਰ. ਵ. ਐ."}
 {"name": "ਸਿੰਨਬੈਡ", "given": "ਸਿੰਨਬੈਡ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ਸ."}
-{"name": "ਸਿੰਨਬੈਡ", "order": "FAMILY_FIRST", "family": "ਸਿੰਨਬੈਡ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "ਸ."}
+{"name": "ਸਿੰਨਬੈਡ", "order": "FAMILY_FIRST", "given": "ਸਿੰਨਬੈਡ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ਸ."}
 {"name": "અદાણી આઇરીન", "order": "FAMILY_FIRST", "given": "આઇરીન", "family": "અદાણી", "initials": "આ. અ."}
 {"name": "અદાણી, આઇરીન", "given": "આઇરીન", "family": "અદાણી", "initials": "આ. અ."}
 {"name": "આઇરીન અદાણી", "given": "આઇરીન", "family": "અદાણી", "initials": "આ. અ."}
 {"name": "કિરણ", "given": "કિરણ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ક."}
-{"name": "કિરણ", "order": "FAMILY_FIRST", "family": "કિરણ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "ક."}
+{"name": "કિરણ", "order": "FAMILY_FIRST", "given": "કિરણ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ક."}
 {"name": "કુમાર શાહ શ્રી. પટેલ ખુશી કિંજલ જૂનિયર, એમપી", "order": "FAMILY_FIRST", "given": "એમપી", "family": "કુમાર શાહ શ્રી. પટેલ ખુશી કિંજલ", "suffix": "જૂનિયર", "initials": "એ. ક. શ. શ. પ. ખ. ક.", "generation": "જૂનિયર"}
 {"name": "કૅથિ મુલર", "given": "કૅથિ", "family": "મુલર", "initials": "ક. મ."}
 {"name": "ખુશી પટેલ હેતલ દવે", "given": "ખુશી", "middle": "પટેલ હેતલ", "family": "દવે", "initials": "ખ. પ. હ. દ."}
@@ -6089,7 +6089,7 @@
 {"name": "શાહ, પટેલ ખુશી કિંજલ કુમાર", "given": "પટેલ", "middle": "ખુશી કિંજલ કુમાર", "family": "શાહ", "initials": "પ. ખ. ક. ક. શ."}
 {"name": "શ્રી. પટેલ ખુશી કિંજલ કુમાર શાહ જૂનિયર, એમપી", "given": "એમપી", "family": "શ્રી. પટેલ ખુશી કિંજલ કુમાર શાહ", "suffix": "જૂનિયર", "initials": "એ. શ. પ. ખ. ક. ક. શ.", "generation": "જૂનિયર"}
 {"name": "સિનબાદ", "given": "સિનબાદ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "સ."}
-{"name": "સિનબાદ", "order": "FAMILY_FIRST", "family": "સિનબાદ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "સ."}
+{"name": "સિનબાદ", "order": "FAMILY_FIRST", "given": "સિનબાદ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "સ."}
 {"name": "સ્ટૂબર જઝિલીયા હૅમીશ", "order": "FAMILY_FIRST", "given": "જઝિલીયા", "middle": "હૅમીશ", "family": "સ્ટૂબર", "initials": "જ. હ. સ."}
 {"name": "સ્ટૂબર, જઝિલીયા હૅમીશ", "given": "જઝિલીયા", "middle": "હૅમીશ", "family": "સ્ટૂબર", "initials": "જ. હ. સ."}
 {"name": "ଆଇରେନ୍ ଆଡଲର୍", "given": "ଆଇରେନ୍", "family": "ଆଡଲର୍", "initials": "ଆ. ଆ."}
@@ -6105,9 +6105,9 @@
 {"name": "ଷ୍ଟୋବର ଜେଆର୍ ହାମିଶ", "order": "FAMILY_FIRST", "given": "ଜେଆର୍", "middle": "ହାମିଶ", "family": "ଷ୍ଟୋବର", "initials": "ଜ. ହ. ଷ."}
 {"name": "ଷ୍ଟୋବର, ଜେଆର୍ ହାମିଶ", "given": "ଜେଆର୍", "middle": "ହାମିଶ", "family": "ଷ୍ଟୋବର", "initials": "ଜ. ହ. ଷ."}
 {"name": "ସିନବାଦ", "given": "ସିନବାଦ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ସ."}
-{"name": "ସିନବାଦ", "order": "FAMILY_FIRST", "family": "ସିନବାଦ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "ସ."}
+{"name": "ସିନବାଦ", "order": "FAMILY_FIRST", "given": "ସିନବାଦ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ସ."}
 {"name": "ସିନବାଦ୍", "given": "ସିନବାଦ୍", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ସ."}
-{"name": "ସିନବାଦ୍", "order": "FAMILY_FIRST", "family": "ସିନବାଦ୍", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "ସ."}
+{"name": "ସିନବାଦ୍", "order": "FAMILY_FIRST", "given": "ସିନବାଦ୍", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ସ."}
 {"name": "ୱାଟସନ୍ ଜନ୍ ହାମିଶ", "order": "FAMILY_FIRST", "given": "ଜନ୍", "middle": "ହାମିଶ", "family": "ୱାଟସନ୍", "initials": "ଜ. ହ. ୱ."}
 {"name": "ୱାଟସନ୍, ଜନ୍ ହାମିଶ", "given": "ଜନ୍", "middle": "ହାମିଶ", "family": "ୱାଟସନ୍", "initials": "ଜ. ହ. ୱ."}
 {"name": "ୱାନ୍ ଡେନ୍ ୱୋଲ୍ଫ ଆଡା କର୍ଣ୍ଣେଲିଆ ଇଭା ସୋଫିଆ ଏମ.ଡି.ପିଏଚ.ଡି", "order": "FAMILY_FIRST", "given": "ଡେନ୍", "middle": "ୱୋଲ୍ଫ ଆଡା କର୍ଣ୍ଣେଲିଆ ଇଭା ସୋଫିଆ ଏମ.ଡି.ପିଏଚ.ଡି", "family": "ୱାନ୍", "initials": "ଡ. ୱ. ଆ. କ. ଇ. ସ. ଏ. ୱ."}
@@ -6115,7 +6115,7 @@
 {"name": "ୱୋଷ୍ଟର ବର୍ଟ୍ରାମ ୱିଲବର୍ଫୋର୍ସ ହେନେରୀ ରୋବର୍ଟ ଏମପି", "order": "FAMILY_FIRST", "given": "ବର୍ଟ୍ରାମ", "middle": "ୱିଲବର୍ଫୋର୍ସ ହେନେରୀ ରୋବର୍ଟ ଏମପି", "family": "ୱୋଷ୍ଟର", "initials": "ବ. ୱ. ହ. ର. ଏ. ୱ."}
 {"name": "ୱୋଷ୍ଟର, ବର୍ଟ୍ରାମ ୱିଲବର୍ଫୋର୍ସ ହେନେରୀ ରୋବର୍ଟ", "given": "ବର୍ଟ୍ରାମ", "middle": "ୱିଲବର୍ଫୋର୍ସ ହେନେରୀ ରୋବର୍ଟ", "family": "ୱୋଷ୍ଟର", "initials": "ବ. ୱ. ହ. ର. ୱ."}
 {"name": "அல்போன்சோ", "given": "அல்போன்சோ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "அ."}
-{"name": "அல்போன்சோ", "order": "FAMILY_FIRST", "family": "அல்போன்சோ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "அ."}
+{"name": "அல்போன்சோ", "order": "FAMILY_FIRST", "given": "அல்போன்சோ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "அ."}
 {"name": "அல்போன்சோ எர்னஸ்டோ வான் ஹெர்னாண்டஸ் பிஎச்.டி", "given": "அல்போன்சோ", "middle": "எர்னஸ்டோ வான் ஹெர்னாண்டஸ்", "family": "பிஎச்.டி", "initials": "அ. எ. வ. ஹ. ப."}
 {"name": "அல்போன்சோ எர்னஸ்டோ ஹெர்னாண்டஸ்", "given": "அல்போன்சோ", "middle": "எர்னஸ்டோ", "family": "ஹெர்னாண்டஸ்", "initials": "அ. எ. ஹ."}
 {"name": "அல்போன்சோ எர்னஸ்டோ, வான் ஹெர்னாண்டஸ்", "given": "வான்", "middle": "ஹெர்னாண்டஸ்", "family": "அல்போன்சோ எர்னஸ்டோ", "initials": "வ. ஹ. அ. எ."}
@@ -6134,7 +6134,7 @@
 {"name": "ராஜேந்திர சோழன்", "given": "ராஜேந்திர", "family": "சோழன்", "initials": "ர. ச."}
 {"name": "ராஜேந்திர சோழன்", "order": "FAMILY_FIRST", "given": "சோழன்", "family": "ராஜேந்திர", "initials": "ச. ர."}
 {"name": "ராஜேந்திரன்", "given": "ராஜேந்திரன்", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ர."}
-{"name": "ராஜேந்திரன்", "order": "FAMILY_FIRST", "family": "ராஜேந்திரன்", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "ர."}
+{"name": "ராஜேந்திரன்", "order": "FAMILY_FIRST", "given": "ராஜேந்திரன்", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ர."}
 {"name": "ஹெர்னாண்டஸ் அல்போன்சோ", "order": "FAMILY_FIRST", "given": "அல்போன்சோ", "family": "ஹெர்னாண்டஸ்", "initials": "அ. ஹ."}
 {"name": "ஹெர்னாண்டஸ் அல்போன்சோ எர்னஸ்டோ", "order": "FAMILY_FIRST", "given": "அல்போன்சோ", "middle": "எர்னஸ்டோ", "family": "ஹெர்னாண்டஸ்", "initials": "அ. எ. ஹ."}
 {"name": "ఏలేటి కుమార్ చంద్ర శేఖర్ అబ్దుల్ ఆజాద్ ఎం. పి.", "order": "FAMILY_FIRST", "given": "కుమార్", "middle": "చంద్ర శేఖర్ అబ్దుల్ ఆజాద్ ఎం. పి.", "family": "ఏలేటి", "initials": "క. చ. శ. అ. ఆ. ఎ. ప. ఏ."}
@@ -6147,9 +6147,9 @@
 {"name": "భరత్, రఘు", "given": "రఘు", "family": "భరత్", "initials": "ర. భ."}
 {"name": "రఘు భరత్", "given": "రఘు", "family": "భరత్", "initials": "ర. భ."}
 {"name": "రవి", "given": "రవి", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ర."}
-{"name": "రవి", "order": "FAMILY_FIRST", "family": "రవి", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "ర."}
+{"name": "రవి", "order": "FAMILY_FIRST", "given": "రవి", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ర."}
 {"name": "రాజశేఖర్", "given": "రాజశేఖర్", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ర."}
-{"name": "రాజశేఖర్", "order": "FAMILY_FIRST", "family": "రాజశేఖర్", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "ర."}
+{"name": "రాజశేఖర్", "order": "FAMILY_FIRST", "given": "రాజశేఖర్", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ర."}
 {"name": "రాజశేఖర్ రెడ్డి", "given": "రాజశేఖర్", "family": "రెడ్డి", "initials": "ర. ర."}
 {"name": "రెడ్డి రాజశేఖర్", "order": "FAMILY_FIRST", "given": "రాజశేఖర్", "family": "రెడ్డి", "initials": "ర. ర."}
 {"name": "రెడ్డి, రాజశేఖర్", "given": "రాజశేఖర్", "family": "రెడ్డి", "initials": "ర. ర."}
@@ -6162,7 +6162,7 @@
 {"name": "ಕ್ಯಾಥಿ ಮುಲ್ಲರ್", "given": "ಕ್ಯಾಥಿ", "family": "ಮುಲ್ಲರ್", "initials": "ಕ. ಮ."}
 {"name": "ಝಝಿಲಿಯಾ ಹಮಿಶ್ ಸ್ಟೋಬರ್", "given": "ಝಝಿಲಿಯಾ", "middle": "ಹಮಿಶ್", "family": "ಸ್ಟೋಬರ್", "initials": "ಝ. ಹ. ಸ."}
 {"name": "ಝೆಂಡಾಯಾ", "given": "ಝೆಂಡಾಯಾ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ಝ."}
-{"name": "ಝೆಂಡಾಯಾ", "order": "FAMILY_FIRST", "family": "ಝೆಂಡಾಯಾ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "ಝ."}
+{"name": "ಝೆಂಡಾಯಾ", "order": "FAMILY_FIRST", "given": "ಝೆಂಡಾಯಾ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ಝ."}
 {"name": "ಪಾಟೀಲ್ ಶ್ರೀ. ನಾರಯಣ ಕುಮಾರ್ ಶಿವ ರಾಮ ಕಿರಿ, ಎಮ್‌ಪಿ", "order": "FAMILY_FIRST", "given": "ಎಮ್‌ಪಿ", "family": "ಪಾಟೀಲ್ ಶ್ರೀ. ನಾರಯಣ ಕುಮಾರ್ ಶಿವ ರಾಮ ಕಿರಿ", "initials": "ಎ. ಪ. ಶ. ನ. ಕ. ಶ. ರ. ಕ."}
 {"name": "ಪಾಟೀಲ್, ನಾರಯಣ ಕುಮಾರ್ ಶಿವ ರಾಮ", "given": "ನಾರಯಣ", "middle": "ಕುಮಾರ್ ಶಿವ ರಾಮ", "family": "ಪಾಟೀಲ್", "initials": "ನ. ಕ. ಶ. ರ. ಪ."}
 {"name": "ಪ್ರೊ. ಡಾ. ಅಡಾ ಕಾರ್ನೆಲಿಯಾ ಸಿಸಾರ್ ಮಾರ್ಟಿನ್ ವಾನ್ ಬ್ರಾಲ್ ಜೂನಿಯರ್, ಎಂ.ಡಿ ಡಿ.ಡಿ.ಎಸ್", "given": "ಎಂ.ಡಿ", "middle": "ಡಿ.ಡಿ.ಎಸ್", "family": "ಪ್ರೊ. ಡಾ. ಅಡಾ ಕಾರ್ನೆಲಿಯಾ ಸಿಸಾರ್ ಮಾರ್ಟಿನ್ ವಾನ್ ಬ್ರಾಲ್", "suffix": "ಜೂನಿಯರ್", "initials": "ಎ. ಡ. ಪ. ಡ. ಅ. ಕ. ಸ. ಮ. ವ. ಬ.", "generation": "ಜೂನಿಯರ್"}
@@ -6178,7 +6178,7 @@
 {"name": "ಶೆಟ್ಟಿ, ರಶ್ಮಿಕಾ", "given": "ರಶ್ಮಿಕಾ", "family": "ಶೆಟ್ಟಿ", "initials": "ರ. ಶ."}
 {"name": "ಶ್ರೀ. ನಾರಯಣ ಕುಮಾರ್ ಶಿವ ರಾಮ ಪಾಟೀಲ್ ಕಿರಿ, ಎಮ್‌ಪಿ", "given": "ಎಮ್‌ಪಿ", "family": "ಶ್ರೀ. ನಾರಯಣ ಕುಮಾರ್ ಶಿವ ರಾಮ ಪಾಟೀಲ್ ಕಿರಿ", "initials": "ಎ. ಶ. ನ. ಕ. ಶ. ರ. ಪ. ಕ."}
 {"name": "ಸಿನ್‍ಬಾದ್", "given": "ಸಿನ್‍ಬಾದ್", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ಸ."}
-{"name": "ಸಿನ್‍ಬಾದ್", "order": "FAMILY_FIRST", "family": "ಸಿನ್‍ಬಾದ್", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "ಸ."}
+{"name": "ಸಿನ್‍ಬಾದ್", "order": "FAMILY_FIRST", "given": "ಸಿನ್‍ಬಾದ್", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ಸ."}
 {"name": "ಸ್ಟೋಬರ್ ಝಝಿಲಿಯಾ ಹಮಿಶ್", "order": "FAMILY_FIRST", "given": "ಝಝಿಲಿಯಾ", "middle": "ಹಮಿಶ್", "family": "ಸ್ಟೋಬರ್", "initials": "ಝ. ಹ. ಸ."}
 {"name": "ಸ್ಟೋಬರ್, ಝಝಿಲಿಯಾ ಹಮಿಶ್", "given": "ಝಝಿಲಿಯಾ", "middle": "ಹಮಿಶ್", "family": "ಸ್ಟೋಬರ್", "initials": "ಝ. ಹ. ಸ."}
 {"name": "അശ്വതി നായർ", "given": "അശ്വതി", "family": "നായർ", "initials": "അ. ന."}
@@ -6189,7 +6189,7 @@
 {"name": "ജോൺ ചാണ്ടി പടവീട്ടിൽ", "given": "ജോൺ", "middle": "ചാണ്ടി", "family": "പടവീട്ടിൽ", "initials": "ജ. ച. പ."}
 {"name": "തോമസ് കുരുവിള അന്തോണി കറുവാപ്പറമ്പിൽ എംപി", "given": "തോമസ്", "middle": "കുരുവിള അന്തോണി കറുവാപ്പറമ്പിൽ", "family": "എംപി", "initials": "ത. ക. അ. ക. എ."}
 {"name": "ദീപ", "given": "ദീപ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ദ."}
-{"name": "ദീപ", "order": "FAMILY_FIRST", "family": "ദീപ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "ദ."}
+{"name": "ദീപ", "order": "FAMILY_FIRST", "given": "ദീപ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ദ."}
 {"name": "നായർ അശ്വതി", "order": "FAMILY_FIRST", "given": "അശ്വതി", "family": "നായർ", "initials": "അ. ന."}
 {"name": "നായർ, അശ്വതി", "given": "അശ്വതി", "family": "നായർ", "initials": "അ. ന."}
 {"name": "പടവീട്ടിൽ ജോൺ ചാണ്ടി", "order": "FAMILY_FIRST", "given": "ജോൺ", "middle": "ചാണ്ടി", "family": "പടവീട്ടിൽ", "initials": "ജ. ച. പ."}
@@ -6200,7 +6200,7 @@
 {"name": "വാൻ ബ്ര്യൂൾ പ്രൊഫ. ഡോ. എയ്‌ഡ കോർണീലിയ സീസ൪ മാ൪ട്ടിൻ ജൂനിയർ, എം.ഡി. ഡി.ഡി.എസ്", "order": "FAMILY_FIRST", "given": "എം.ഡി.", "middle": "ഡി.ഡി.എസ്", "family": "വാൻ ബ്ര്യൂൾ പ്രൊഫ. ഡോ. എയ്‌ഡ കോർണീലിയ സീസ൪ മാ൪ട്ടിൻ", "suffix": "ജൂനിയർ", "initials": "എ. ഡ. വ. ബ. പ. ഡ. എ. ക. സ. മ.", "generation": "ജൂനിയർ"}
 {"name": "സസിലിയ ഹാമിഷ് സ്‌റ്റോബർ", "given": "സസിലിയ", "middle": "ഹാമിഷ്", "family": "സ്‌റ്റോബർ", "initials": "സ. ഹ. സ."}
 {"name": "സിൻബാദ്", "given": "സിൻബാദ്", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "സ."}
-{"name": "സിൻബാദ്", "order": "FAMILY_FIRST", "family": "സിൻബാദ്", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "സ."}
+{"name": "സിൻബാദ്", "order": "FAMILY_FIRST", "given": "സിൻബാദ്", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "സ."}
 {"name": "സ്‌റ്റോബർ സസിലിയ ഹാമിഷ്", "order": "FAMILY_FIRST", "given": "സസിലിയ", "middle": "ഹാമിഷ്", "family": "സ്‌റ്റോബർ", "initials": "സ. ഹ. സ."}
 {"name": "സ്‌റ്റോബർ, സസിലിയ ഹാമിഷ്", "given": "സസിലിയ", "middle": "ഹാമിഷ്", "family": "സ്‌റ്റോബർ", "initials": "സ. ഹ. സ."}
 {"name": "අයිරින් ඇඩ්ලර්", "given": "අයිරින්", "family": "ඇඩ්ලර්", "initials": "අ. ඇ."}
@@ -6222,9 +6222,9 @@
 {"name": "සාසිලියා හමිෂ් ස්ටෝබර්", "given": "සාසිලියා", "middle": "හමිෂ්", "family": "ස්ටෝබර්", "initials": "ස. හ. ස."}
 {"name": "සාසිලියා හමිෂ්, ස්ටෝබර්", "given": "ස්ටෝබර්", "family": "සාසිලියා හමිෂ්", "initials": "ස. ස. හ."}
 {"name": "සින්බෑඩ්", "given": "සින්බෑඩ්", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ස."}
-{"name": "සින්බෑඩ්", "order": "FAMILY_FIRST", "family": "සින්බෑඩ්", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "ස."}
+{"name": "සින්බෑඩ්", "order": "FAMILY_FIRST", "given": "සින්බෑඩ්", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ස."}
 {"name": "සෙන්ඩයා", "given": "සෙන්ඩයා", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ස."}
-{"name": "සෙන්ඩයා", "order": "FAMILY_FIRST", "family": "සෙන්ඩයා", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "ස."}
+{"name": "සෙන්ඩයා", "order": "FAMILY_FIRST", "given": "සෙන්ඩයා", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ස."}
 {"name": "กล้าหาญ ไอริณ", "order": "FAMILY_FIRST", "given": "ไอริณ", "family": "กล้าหาญ", "initials": "ไ. ก."}
 {"name": "กล้าหาญ, ไอริณ", "given": "ไอริณ", "family": "กล้าหาญ", "initials": "ไ. ก."}
 {"name": "กุลวุฒิ วิทิตศานต์", "given": "กุลวุฒิ", "family": "วิทิตศานต์", "initials": "ก. ว."}
@@ -6233,10 +6233,10 @@
 {"name": "ชัชวาลย์ แท่งทอง", "given": "ชัชวาลย์", "family": "แท่งทอง", "initials": "ช. แ."}
 {"name": "ซาซิเลีย ฮามิช สโตเบอร์", "given": "ซาซิเลีย", "middle": "ฮามิช", "family": "สโตเบอร์", "initials": "ซ. ฮ. ส."}
 {"name": "ซินแบด", "given": "ซินแบด", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ซ."}
-{"name": "ซินแบด", "order": "FAMILY_FIRST", "family": "ซินแบด", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "ซ."}
+{"name": "ซินแบด", "order": "FAMILY_FIRST", "given": "ซินแบด", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ซ."}
 {"name": "ทรัพย์สิรี แต้รัตนชัย", "given": "ทรัพย์สิรี", "family": "แต้รัตนชัย", "initials": "ท. แ."}
 {"name": "ธนา", "given": "ธนา", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ธ."}
-{"name": "ธนา", "order": "FAMILY_FIRST", "family": "ธนา", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "ธ."}
+{"name": "ธนา", "order": "FAMILY_FIRST", "given": "ธนา", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ธ."}
 {"name": "บรืล, เอดา คอร์เนเลีย เซซาร์ มาร์ติน วอน", "given": "เอดา", "middle": "คอร์เนเลีย เซซาร์ มาร์ติน วอน", "family": "บรืล", "initials": "เ. ค. เ. ม. ว. บ."}
 {"name": "บุญศักดิ์ พลสนะ", "given": "บุญศักดิ์", "family": "พลสนะ", "initials": "บ. พ."}
 {"name": "บุศนันทน์ อึ๊งบำรุงพันธุ์", "given": "บุศนันทน์", "family": "อึ๊งบำรุงพันธุ์", "initials": "บ. อ."}
@@ -6259,10 +6259,10 @@
 {"name": "แสงระวี, ปรีชา กล้าหาญ", "given": "ปรีชา", "middle": "กล้าหาญ", "family": "แสงระวี", "initials": "ป. ก. แ."}
 {"name": "ไอริณ กล้าหาญ", "given": "ไอริณ", "family": "กล้าหาญ", "initials": "ไ. ก."}
 {"name": "ຄຳຫຼ້າ", "given": "ຄຳຫຼ້າ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ຄ."}
-{"name": "ຄຳຫຼ້າ", "order": "FAMILY_FIRST", "family": "ຄຳຫຼ້າ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "ຄ."}
+{"name": "ຄຳຫຼ້າ", "order": "FAMILY_FIRST", "given": "ຄຳຫຼ້າ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ຄ."}
 {"name": "ຊາຊິເລຍ ຮາມີສ ສໂຕເບີ", "given": "ຊາຊິເລຍ", "middle": "ຮາມີສ", "family": "ສໂຕເບີ", "initials": "ຊ. ຮ. ສ."}
 {"name": "ຊິນແບດ", "given": "ຊິນແບດ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ຊ."}
-{"name": "ຊິນແບດ", "order": "FAMILY_FIRST", "family": "ຊິນແບດ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "ຊ."}
+{"name": "ຊິນແບດ", "order": "FAMILY_FIRST", "given": "ຊິນແບດ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ຊ."}
 {"name": "ດຣ. ປອ. ວອນ ບຣູລ ສຈ. ປອ. ເອດາ ຄໍນີເລຍ ເຊຊາ ມາຕິນ ຮຸ່ນລູກ", "order": "FAMILY_FIRST", "title": "ດຣ. ປອ.", "given": "ບຣູລ", "middle": "ສຈ. ປອ. ເອດາ ຄໍນີເລຍ ເຊຊາ ມາຕິນ ຮຸ່ນລູກ", "family": "ວອນ", "initials": "ບ. ສ. ປ. ເ. ຄ. ເ. ມ. ຮ. ວ."}
 {"name": "ດຣ. ປອ. ສຈ. ປອ. ເອດາ ຄໍນີເລຍ ເຊຊາ ມາຕິນ ວອນ ບຣູລ ຮຸ່ນລູກ", "title": "ດຣ. ປອ. ສຈ. ປອ.", "given": "ເອດາ", "middle": "ຄໍນີເລຍ ເຊຊາ ມາຕິນ ວອນ ບຣູລ", "family": "ຮຸ່ນລູກ", "initials": "ເ. ຄ. ເ. ມ. ວ. ບ. ຮ."}
 {"name": "ນາລິນ ເອກະພົນ", "given": "ນາລິນ", "family": "ເອກະພົນ", "initials": "ນ. ເ."}
@@ -6284,9 +6284,9 @@
 {"name": "စတိုဘာ ဇာဇီလာ ဟာမစ်ရှ်", "order": "FAMILY_FIRST", "given": "ဇာဇီလာ", "middle": "ဟာမစ်ရှ်", "family": "စတိုဘာ", "initials": "ဇ. ဟ. စ."}
 {"name": "စတိုဘာ၊ ဇာဇီလာ ဟာမစ်ရှ်", "order": "FAMILY_FIRST", "given": "ဇာဇီလာ", "middle": "ဟာမစ်ရှ်", "family": "စတိုဘာ၊", "initials": "ဇ. ဟ. စ."}
 {"name": "ဆင်းဘတ်", "given": "ဆင်းဘတ်", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ဆ."}
-{"name": "ဆင်းဘတ်", "order": "FAMILY_FIRST", "family": "ဆင်းဘတ်", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "ဆ."}
+{"name": "ဆင်းဘတ်", "order": "FAMILY_FIRST", "given": "ဆင်းဘတ်", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ဆ."}
 {"name": "ဇင်ဒါယာ", "given": "ဇင်ဒါယာ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ဇ."}
-{"name": "ဇင်ဒါယာ", "order": "FAMILY_FIRST", "family": "ဇင်ဒါယာ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "ဇ."}
+{"name": "ဇင်ဒါယာ", "order": "FAMILY_FIRST", "given": "ဇင်ဒါယာ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ဇ."}
 {"name": "ဇာဇီလာ ဟာမစ်ရှ် စတိုဘာ", "given": "ဇာဇီလာ", "middle": "ဟာမစ်ရှ်", "family": "စတိုဘာ", "initials": "ဇ. ဟ. စ."}
 {"name": "ပရော်ဖက်ဆာ ဒေါက်တာ အာဒါ ကွန်နီလီယာ ဆီဇာ မာတင် ဝူစ်တာ ဗွန် ဝူစ်တာ ဘရူ ဂျူနီယာ၊ ဒေါက်တာ", "given": "ပရော်ဖက်ဆာ", "middle": "ဒေါက်တာ အာဒါ ကွန်နီလီယာ ဆီဇာ မာတင် ဝူစ်တာ ဗွန် ဝူစ်တာ ဘရူ ဂျူနီယာ၊", "family": "ဒေါက်တာ", "initials": "ပ. ဒ. အ. က. ဆ. မ. ဝ. ဗ. ဝ. ဘ. ဂ. ဒ."}
 {"name": "မစ္စတာ ဘာထရမ် ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ် ဝူစ်တာ ဂျူနီယာ၊ ဒေါက်တာ", "given": "မစ္စတာ", "middle": "ဘာထရမ် ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ် ဝူစ်တာ ဂျူနီယာ၊", "family": "ဒေါက်တာ", "initials": "မ. ဘ. ဝ. ဟ. ရ. ဝ. ဂ. ဒ."}
@@ -6308,7 +6308,7 @@
 {"name": "ဝွၼ်း ပရူဝ်ႇလ် ၵွၼ်ႇၸႃႇလႅတ်ႉ တူဝ်ႇမိၼ်ႇၵူဝ်, ၶူးမေႃယႃ ဢေႇတႃႇ ၶူဝ်ႇၼီႇလီႇယႃႇ သီႇသႃႇ မႃႇတိၼ်ႇ မေႃယႃ", "given": "ၶူးမေႃယႃ", "middle": "ဢေႇတႃႇ ၶူဝ်ႇၼီႇလီႇယႃႇ သီႇသႃႇ မႃႇတိၼ်ႇ မေႃယႃ", "family": "ဝွၼ်း ပရူဝ်ႇလ် ၵွၼ်ႇၸႃႇလႅတ်ႉ တူဝ်ႇမိၼ်ႇၵူဝ်", "initials": "ၶ. ဢ. ၶ. သ. မ. မ. ဝ. ပ. ၵ. တ."}
 {"name": "သတူႇပႃႇ ၸၸီးလီႇယႃႇ ႁေးမိသျ်", "order": "FAMILY_FIRST", "given": "ၸၸီးလီႇယႃႇ", "middle": "ႁေးမိသျ်", "family": "သတူႇပႃႇ", "initials": "ၸ. ႁ. သ."}
 {"name": "သိၼ်းပၢတ်ႉ", "given": "သိၼ်းပၢတ်ႉ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "သ."}
-{"name": "သိၼ်းပၢတ်ႉ", "order": "FAMILY_FIRST", "family": "သိၼ်းပၢတ်ႉ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "သ."}
+{"name": "သိၼ်းပၢတ်ႉ", "order": "FAMILY_FIRST", "given": "သိၼ်းပၢတ်ႉ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "သ."}
 {"name": "အက်ဒ်လာ အိုင်ရင်း", "order": "FAMILY_FIRST", "given": "အိုင်ရင်း", "family": "အက်ဒ်လာ", "initials": "အ. အ."}
 {"name": "အက်ဒ်လာ၊ အိုင်ရင်း", "order": "FAMILY_FIRST", "given": "အိုင်ရင်း", "family": "အက်ဒ်လာ၊", "initials": "အ. အ."}
 {"name": "အိုင်ရင်း အက်ဒ်လာ", "given": "အိုင်ရင်း", "family": "အက်ဒ်လာ", "initials": "အ. အ."}
@@ -6318,7 +6318,7 @@
 {"name": "ၶေးတႃႇ မူးလႃႇ", "given": "ၶေးတႃႇ", "family": "မူးလႃႇ", "initials": "ၶ. မ."}
 {"name": "ၸၸီးလီႇယႃႇ ႁေးမိသျ် သတူႇပႃႇ", "given": "ၸၸီးလီႇယႃႇ", "middle": "ႁေးမိသျ်", "family": "သတူႇပႃႇ", "initials": "ၸ. ႁ. သ."}
 {"name": "ၸႅၼ်ႇတေႇယႃႇ", "given": "ၸႅၼ်ႇတေႇယႃႇ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ၸ."}
-{"name": "ၸႅၼ်ႇတေႇယႃႇ", "order": "FAMILY_FIRST", "family": "ၸႅၼ်ႇတေႇယႃႇ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "ၸ."}
+{"name": "ၸႅၼ်ႇတေႇယႃႇ", "order": "FAMILY_FIRST", "given": "ၸႅၼ်ႇတေႇယႃႇ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ၸ."}
 {"name": "აბაშიძე მარიამ მართა", "order": "FAMILY_FIRST", "given": "მარიამ", "middle": "მართა", "family": "აბაშიძე", "initials": "მ. მ. ა."}
 {"name": "აბელ მამარდაშვილი", "given": "აბელ", "family": "მამარდაშვილი", "initials": "ა. მ."}
 {"name": "ალექსანდრე იაშვილი", "given": "ალექსანდრე", "family": "იაშვილი", "initials": "ა. ი."}
@@ -6378,7 +6378,7 @@
 {"name": "ნიკოლოზ ბასილაშვილი", "given": "ნიკოლოზ", "family": "ბასილაშვილი", "initials": "ნ. ბ."}
 {"name": "ნიკოლოზ სანიშვილი", "given": "ნიკოლოზ", "family": "სანიშვილი", "initials": "ნ. ს."}
 {"name": "ნინო", "given": "ნინო", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ნ."}
-{"name": "ნინო", "order": "FAMILY_FIRST", "family": "ნინო", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "ნ."}
+{"name": "ნინო", "order": "FAMILY_FIRST", "given": "ნინო", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ნ."}
 {"name": "ნოდარ ღვალაძე", "given": "ნოდარ", "family": "ღვალაძე", "initials": "ნ. ღ."}
 {"name": "ნოდარ ცინცაძე", "given": "ნოდარ", "family": "ცინცაძე", "initials": "ნ. ც."}
 {"name": "ნოდარ ჯობავა", "given": "ნოდარ", "family": "ჯობავა", "initials": "ნ. ჯ."}
@@ -6387,7 +6387,7 @@
 {"name": "რევაზ ადამია", "given": "რევაზ", "family": "ადამია", "initials": "რ. ა."}
 {"name": "სერგო რიგვავა", "given": "სერგო", "family": "რიგვავა", "initials": "ს. რ."}
 {"name": "სინდბად", "given": "სინდბად", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ს."}
-{"name": "სინდბად", "order": "FAMILY_FIRST", "family": "სინდბად", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "ს."}
+{"name": "სინდბად", "order": "FAMILY_FIRST", "given": "სინდბად", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ს."}
 {"name": "სოსო ლიპარტელიანი", "given": "სოსო", "family": "ლიპარტელიანი", "initials": "ს. ლ."}
 {"name": "სოსო პაიჭაძე", "given": "სოსო", "family": "პაიჭაძე", "initials": "ს. პ."}
 {"name": "ტარიელ ჭიჭინაძე", "given": "ტარიელ", "family": "ჭიჭინაძე", "initials": "ტ. ჭ."}
@@ -6403,7 +6403,7 @@
 {"name": "ሙለር፣ ካቲ", "order": "FAMILY_FIRST", "given": "ካቲ", "family": "ሙለር፣", "initials": "ካ. ሙ."}
 {"name": "ሜሪ ሱ ሃሚሽ ዋትሰን", "given": "ሜሪ", "middle": "ሱ ሃሚሽ", "family": "ዋትሰን", "initials": "ሜ. ሱ. ሃ. ዋ."}
 {"name": "ሲንባድ", "given": "ሲንባድ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ሲ."}
-{"name": "ሲንባድ", "order": "FAMILY_FIRST", "family": "ሲንባድ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "ሲ."}
+{"name": "ሲንባድ", "order": "FAMILY_FIRST", "given": "ሲንባድ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ሲ."}
 {"name": "ስቶበር ዛዚሊያ ሃሚሽ", "order": "FAMILY_FIRST", "given": "ዛዚሊያ", "middle": "ሃሚሽ", "family": "ስቶበር", "initials": "ዛ. ሃ. ስ."}
 {"name": "ስቶበር፣ ዛዚሊያ ሃሚሽ", "order": "FAMILY_FIRST", "given": "ዛዚሊያ", "middle": "ሃሚሽ", "family": "ስቶበር፣", "initials": "ዛ. ሃ. ስ."}
 {"name": "ብሩሂ፣ ኣዳ ኮርኒሊያ ሲዘር ማርቲን ቮን", "order": "FAMILY_FIRST", "given": "ኣዳ", "middle": "ኮርኒሊያ ሲዘር ማርቲን ቮን", "family": "ብሩሂ፣", "initials": "ኣ. ኮ. ሲ. ማ. ቮ. ብ."}
@@ -6424,10 +6424,10 @@
 {"name": "ዋትሰን ሜሪ ሱ ሃሚሽ", "order": "FAMILY_FIRST", "given": "ሜሪ", "middle": "ሱ ሃሚሽ", "family": "ዋትሰን", "initials": "ሜ. ሱ. ሃ. ዋ."}
 {"name": "ዋትሰን፣ ሜሪ ሱ ሃሚሽ", "order": "FAMILY_FIRST", "given": "ሜሪ", "middle": "ሱ ሃሚሽ", "family": "ዋትሰን፣", "initials": "ሜ. ሱ. ሃ. ዋ."}
 {"name": "ዘንዳያ", "given": "ዘንዳያ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ዘ."}
-{"name": "ዘንዳያ", "order": "FAMILY_FIRST", "family": "ዘንዳያ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "ዘ."}
+{"name": "ዘንዳያ", "order": "FAMILY_FIRST", "given": "ዘንዳያ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ዘ."}
 {"name": "ዛዚሊያ ሃሚሽ ስቶበር", "given": "ዛዚሊያ", "middle": "ሃሚሽ", "family": "ስቶበር", "initials": "ዛ. ሃ. ስ."}
 {"name": "ዜንዳያ", "given": "ዜንዳያ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ዜ."}
-{"name": "ዜንዳያ", "order": "FAMILY_FIRST", "family": "ዜንዳያ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "ዜ."}
+{"name": "ዜንዳያ", "order": "FAMILY_FIRST", "given": "ዜንዳያ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ዜ."}
 {"name": "ፕ/ር ዶ/ር አዳ ኮርኔሊያ ሴዛር ማርቲን ቮን ብሩህል ጎንዛሌዝ ዶሚንጎ ዶ/ር የጥርስ ዶ/ር", "given": "ፕ/ር", "middle": "ዶ/ር አዳ ኮርኔሊያ ሴዛር ማርቲን ቮን ብሩህል ጎንዛሌዝ ዶሚንጎ ዶ/ር የጥርስ", "family": "ዶ/ር", "initials": "ፕ. ዶ. አ. ኮ. ሴ. ማ. ቮ. ብ. ጎ. ዶ. ዶ. የ. ዶ."}
 {"name": "ፕሮ. ዶር. ኣዳ ኮርኒሊያ ሲዘር ማርቲን ቮን ብሩሂ ማንጁስ፣ ሓኪም መጥባሕቲ ስኒ", "title": "ፕሮ. ዶር.", "given": "ኣዳ", "middle": "ኮርኒሊያ ሲዘር ማርቲን ቮን ብሩሂ ማንጁስ፣ ሓኪም መጥባሕቲ", "family": "ስኒ", "initials": "ኣ. ኮ. ሲ. ማ. ቮ. ብ. ማ. ሓ. መ. ስ."}
 {"name": "ᎠᏕᎸ ᎠᏪᏁ", "order": "FAMILY_FIRST", "given": "ᎠᏪᏁ", "family": "ᎠᏕᎸ", "initials": "Ꭰ. Ꭰ.", "capitalized": "Ꭰꮥꮈ Ꭰꮺꮑ"}
@@ -6435,7 +6435,7 @@
 {"name": "ᎠᏪᏁ ᎠᏕᎸ", "given": "ᎠᏪᏁ", "family": "ᎠᏕᎸ", "initials": "Ꭰ. Ꭰ.", "capitalized": "Ꭰꮺꮑ Ꭰꮥꮈ"}
 {"name": "ᎧᏖ ᎽᎴ", "given": "ᎧᏖ", "family": "ᎽᎴ", "initials": "Ꭷ. Ꮍ.", "capitalized": "Ꭷꮦ Ꮍꮄ"}
 {"name": "ᎨᏓᏯ", "given": "ᎨᏓᏯ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "Ꭸ.", "capitalized": "Ꭸꮣꮿ"}
-{"name": "ᎨᏓᏯ", "order": "FAMILY_FIRST", "family": "ᎨᏓᏯ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "Ꭸ.", "capitalized": "Ꭸꮣꮿ"}
+{"name": "ᎨᏓᏯ", "order": "FAMILY_FIRST", "given": "ᎨᏓᏯ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "Ꭸ.", "capitalized": "Ꭸꮣꮿ"}
 {"name": "ᎺᎵ ᏑᎢ ᎭᎻᏏ ᏩᏔᏒᎢ", "given": "ᎺᎵ", "middle": "ᏑᎢ ᎭᎻᏏ", "family": "ᏩᏔᏒᎢ", "initials": "Ꮊ. Ꮡ. Ꭽ. Ꮹ.", "capitalized": "Ꮊꮅ Ꮡꭲ Ꭽꮋꮟ Ꮹꮤꮢꭲ"}
 {"name": "ᎻᏍᏖᎢ ᏇᏔᎻ ᏫᏇᏉᏏ ᎮᏂᏇ ᏆᏇᏘ ᏬᏍᏖᎢ ᏔᎵᏁ, ᎷᏢ", "given": "ᎷᏢ", "family": "ᎻᏍᏖᎢ ᏇᏔᎻ ᏫᏇᏉᏏ ᎮᏂᏇ ᏆᏇᏘ ᏬᏍᏖᎢ ᏔᎵᏁ", "initials": "Ꮇ. Ꮋ. Ꮗ. Ꮻ. Ꭾ. Ꮖ. Ꮼ. Ꮤ.", "capitalized": "Ꮇꮲ Ꮋꮝꮦꭲ Ꮗꮤꮋ Ꮻꮗꮙꮟ Ꭾꮒꮗ Ꮖꮗꮨ Ꮼꮝꮦꭲ Ꮤꮅꮑ"}
 {"name": "ᎽᎴ ᎧᏖ", "order": "FAMILY_FIRST", "given": "ᎧᏖ", "family": "ᎽᎴ", "initials": "Ꭷ. Ꮍ.", "capitalized": "Ꮍꮄ Ꭷꮦ"}
@@ -6447,7 +6447,7 @@
 {"name": "ᏍᏙᏇᎢ ᏆᏏᎵ ᎭᎻᏍᎯ", "order": "FAMILY_FIRST", "given": "ᏆᏏᎵ", "middle": "ᎭᎻᏍᎯ", "family": "ᏍᏙᏇᎢ", "initials": "Ꮖ. Ꭽ. Ꮝ.", "capitalized": "Ꮝꮩꮗꭲ Ꮖꮟꮅ Ꭽꮋꮝꭿ"}
 {"name": "ᏍᏙᏇᎢ, ᏆᏏᎵ ᎭᎻᏍᎯ", "given": "ᏆᏏᎵ", "middle": "ᎭᎻᏍᎯ", "family": "ᏍᏙᏇᎢ", "initials": "Ꮖ. Ꭽ. Ꮝ.", "capitalized": "Ꮖꮟꮅ Ꭽꮋꮝꭿ Ꮝꮩꮗꭲ"}
 {"name": "ᏏᎾᏆᏗ", "given": "ᏏᎾᏆᏗ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "Ꮟ.", "capitalized": "Ꮟꮎꮖꮧ"}
-{"name": "ᏏᎾᏆᏗ", "order": "FAMILY_FIRST", "family": "ᏏᎾᏆᏗ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "Ꮟ.", "capitalized": "Ꮟꮎꮖꮧ"}
+{"name": "ᏏᎾᏆᏗ", "order": "FAMILY_FIRST", "given": "ᏏᎾᏆᏗ", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "Ꮟ.", "capitalized": "Ꮟꮎꮖꮧ"}
 {"name": "ᏩᏔᏒᎢ ᎺᎵ ᏑᎢ ᎭᎻᏏ", "order": "FAMILY_FIRST", "given": "ᎺᎵ", "middle": "ᏑᎢ ᎭᎻᏏ", "family": "ᏩᏔᏒᎢ", "initials": "Ꮊ. Ꮡ. Ꭽ. Ꮹ.", "capitalized": "Ꮹꮤꮢꭲ Ꮊꮅ Ꮡꭲ Ꭽꮋꮟ"}
 {"name": "ᏩᏔᏒᎢ, ᎺᎵ ᏑᎢ ᎭᎻᏏ", "given": "ᎺᎵ", "middle": "ᏑᎢ ᎭᎻᏏ", "family": "ᏩᏔᏒᎢ", "initials": "Ꮊ. Ꮡ. Ꭽ. Ꮹ.", "capitalized": "Ꮊꮅ Ꮡꭲ Ꭽꮋꮟ Ꮹꮤꮢꭲ"}
 {"name": "ᏬᏍᏖᎢ ᎻᏍᏖᎢ ᏇᏔᎻ ᏫᏇᏉᏏ ᎮᏂᏇ ᏆᏇᏘ ᏔᎵᏁ, ᎷᏢ", "order": "FAMILY_FIRST", "given": "ᎷᏢ", "family": "ᏬᏍᏖᎢ ᎻᏍᏖᎢ ᏇᏔᎻ ᏫᏇᏉᏏ ᎮᏂᏇ ᏆᏇᏘ ᏔᎵᏁ", "initials": "Ꮇ. Ꮼ. Ꮋ. Ꮗ. Ꮻ. Ꭾ. Ꮖ. Ꮤ.", "capitalized": "Ꮇꮲ Ꮼꮝꮦꭲ Ꮋꮝꮦꭲ Ꮗꮤꮋ Ꮻꮗꮙꮟ Ꭾꮒꮗ Ꮖꮗꮨ Ꮤꮅꮑ"}
@@ -6465,12 +6465,12 @@
 {"name": "វ៉េង, រិទ្ធី មករា", "given": "រិទ្ធី", "middle": "មករា", "family": "វ៉េង", "initials": "រ. ម. វ."}
 {"name": "សាស្ត្រាចារ្យបណ្ឌិត អាដា ខរនែលៀ ឆេសារ ម៉ាធីន វន់ ប្រ៊ូល ជូនៀ, ទន្ដបណ្ឌិត", "given": "ទន្ដបណ្ឌិត", "family": "សាស្ត្រាចារ្យបណ្ឌិត អាដា ខរនែលៀ ឆេសារ ម៉ាធីន វន់ ប្រ៊ូល ជូនៀ", "initials": "ទ. ស. អ. ខ. ឆ. ម. វ. ប. ជ."}
 {"name": "សុខា", "given": "សុខា", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ស."}
-{"name": "សុខា", "order": "FAMILY_FIRST", "family": "សុខា", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "ស."}
+{"name": "សុខា", "order": "FAMILY_FIRST", "given": "សុខា", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ស."}
 {"name": "សុង សុជាតិ", "order": "FAMILY_FIRST", "given": "សុជាតិ", "family": "សុង", "initials": "ស. ស."}
 {"name": "សុង, សុជាតិ", "given": "សុជាតិ", "family": "សុង", "initials": "ស. ស."}
 {"name": "សុជាតិ សុង", "given": "សុជាតិ", "family": "សុង", "initials": "ស. ស."}
 {"name": "ស៊ីនប៊ែត", "given": "ស៊ីនប៊ែត", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ស."}
-{"name": "ស៊ីនប៊ែត", "order": "FAMILY_FIRST", "family": "ស៊ីនប៊ែត", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"], "initials": "ស."}
+{"name": "ស៊ីនប៊ែត", "order": "FAMILY_FIRST", "given": "ស៊ីនប៊ែត", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "ស."}
 {"name": "ស្តូបើ ហ្សាហ្សីលៀ ហេមីស", "order": "FAMILY_FIRST", "given": "ហ្សាហ្សីលៀ", "middle": "ហេមីស", "family": "ស្តូបើ", "initials": "ហ. ហ. ស."}
 {"name": "ស្តូបើ, ហ្សាហ្សីលៀ ហេមីស", "given": "ហ្សាហ្សីលៀ", "middle": "ហេមីស", "family": "ស្តូបើ", "initials": "ហ. ហ. ស."}
 {"name": "ហ្សាហ្សីលៀ ហេមីស ស្តូបើ", "given": "ហ្សាហ្សីលៀ", "middle": "ហេមីស", "family": "ស្តូបើ", "initials": "ហ. ហ. ស."}
@@ -6508,7 +6508,7 @@
 {"name": "フォン・スミス・ソフィア・ジェニファー博士", "order": "FAMILY_FIRST", "given": "スミス", "middle": "ソフィア ジェニファー博士", "family": "フォン"}
 {"name": "ブラウン・ローズ・セシリア", "order": "FAMILY_FIRST", "given": "ローズ", "middle": "セシリア", "family": "ブラウン"}
 {"name": "マイケル", "given": "マイケル", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
-{"name": "マイケル", "order": "FAMILY_FIRST", "family": "マイケル", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as given (position)"]}
+{"name": "マイケル", "order": "FAMILY_FIRST", "given": "マイケル", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}
 {"name": "マイケル ア゙イ", "given": "マイケル", "family": "ア゙イ"}
 {"name": "マイケル ジャクソン", "given": "マイケル", "family": "ジャクソン"}
 {"name": "マイケル.", "given": "マイケル.", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"]}

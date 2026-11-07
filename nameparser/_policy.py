@@ -770,6 +770,23 @@ class Policy:
     #: 3.0.
     two_given_names: bool = field(
         default=False, metadata={ADDED_IN: "3.0.0"})
+    #: The field a name of one name word reads that word as, when
+    #: nothing else decides it (rules/O5): ``Role.GIVEN`` (the default)
+    #: or ``Role.FAMILY``, under every name_order. "Anh" gives given
+    #: ``Anh``; with ``lone_name_word=Role.FAMILY`` it gives family
+    #: ``Anh``. Which field a word written alone fills is a fact about
+    #: where the data came from -- a list of surnames, a list of the
+    #: names people go by -- not about the order its longer names are
+    #: written in, so it does not follow name_order. A title, a
+    #: nickname, a maiden name, a family comma or a script that settles
+    #: the order still decides first ("Mr. Johnson" gives family
+    #: ``Johnson``). The reading is reported as a ``given-or-family``
+    #: ambiguity either way, save a word its own reading claimed (a
+    #: particle, a bound given name, an initial), which the switch
+    #: places too and which reports nothing. Added in 3.0; through 2.x the field followed
+    #: name_order.
+    lone_name_word: Role = field(
+        default=Role.GIVEN, metadata={ADDED_IN: "3.0.0"})
 
     # in the class body so @dataclass(slots=True) keeps them
     __getstate__ = _guarded_getstate
@@ -886,6 +903,17 @@ class Policy:
         object.__setattr__(self, "unlisted_caps_suffixes", _coerce_enum(
             caps, CapsSuffixes, "unlisted_caps_suffixes value",
             "values"))
+        lone = self.lone_name_word
+        if not isinstance(lone, str):
+            raise TypeError(
+                f"lone_name_word must be a Role, got {lone!r}; use "
+                f"Role.GIVEN (the default) or Role.FAMILY")
+        if lone not in _LONE_NAME_WORD_ROLES:
+            raise ValueError(
+                f"lone_name_word must be Role.GIVEN or Role.FAMILY, got "
+                f"{lone!r}: a name of one word is read as a given or a "
+                f"family name")
+        object.__setattr__(self, "lone_name_word", Role(lone))
 
     def __repr__(self) -> str:
         # Bounded: only fields that deviate from the default are shown
@@ -927,6 +955,9 @@ class Policy:
 #: sees, and a field annotated any other way is not a plain flag.
 _BOOL_FIELDS: tuple[str, ...] = tuple(
     f.name for f in dataclasses.fields(Policy) if f.type == "bool")
+
+#: The two fields `Policy.lone_name_word` may name (rules/O5).
+_LONE_NAME_WORD_ROLES = frozenset({Role.GIVEN, Role.FAMILY})
 
 
 class _Unset(Enum):
@@ -982,6 +1013,10 @@ class PolicyPatch:
     #: Patches :attr:`Policy.two_given_names`, a scalar (later wins).
     #: Added in 3.0.
     two_given_names: bool | _Unset = field(
+        default=UNSET, metadata={ADDED_IN: "3.0.0"})
+    #: Patches :attr:`Policy.lone_name_word`, a scalar (later wins).
+    #: Added in 3.0.
+    lone_name_word: Role | _Unset = field(
         default=UNSET, metadata={ADDED_IN: "3.0.0"})
 
     # in the class body so @dataclass(slots=True) keeps them

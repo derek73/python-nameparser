@@ -1,7 +1,9 @@
 """The runner over the shared case table, tests/v2/cases.py."""
+import dataclasses
 import functools
 import re
 from collections import Counter
+from collections.abc import Iterator
 from typing import Any
 
 import pytest
@@ -24,6 +26,43 @@ def _parser_for_case(case: Case) -> Parser:
     if case.locale is not None:
         return parser_for(locales.get(case.locale))
     return Parser(policy=case.policy) if case.policy else Parser()
+
+
+def test_the_lone_name_word_switch_moves_only_a_lone_word() -> None:
+    # rules/O5 (#1111): Policy.lone_name_word decides one thing, which
+    # of the two primary fields a name of one name word fills. Over
+    # every row of the table, its policy or its pack, the two settings
+    # may differ only by that word swapping given for family -- no
+    # other field, no reported kind -- and the table holds rows where
+    # they do differ.
+    def parsers(case: Case) -> Iterator[Parser]:
+        for r in (Role.GIVEN, Role.FAMILY):
+            if case.locale is None:
+                yield Parser(policy=dataclasses.replace(
+                    case.policy or Policy(), lone_name_word=r))
+            else:
+                # the pack's parser with only the switch replaced, as a
+                # caller stacking a patch on the pack would get it
+                pack = _parser_for_case(case)
+                yield dataclasses.replace(pack, policy=dataclasses.replace(
+                    pack.policy, lone_name_word=r))
+
+    moved = 0
+    for case in CASES:
+        given, family = (p.parse(case.text) for p in parsers(case))
+        g, f = given.as_dict(), family.as_dict()
+        kinds = ([a.kind for a in given.ambiguities],
+                 [a.kind for a in family.ambiguities])
+        assert kinds[0] == kinds[1], case.id
+        if g == f:
+            continue
+        rest = ("given", "family")
+        assert ({k: v for k, v in g.items() if k not in rest}
+                == {k: v for k, v in f.items() if k not in rest}), case.id
+        assert (g["family"], f["given"], g["middle"]) == ("", "", ""), case.id
+        assert g["given"] == f["family"] != "", case.id
+        moved += 1
+    assert moved
 
 
 @pytest.mark.parametrize("case", CASES, ids=lambda c: c.id)
@@ -378,9 +417,13 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # numeral, a Title case acronym, three gated words, a title word)
     # each report under three orders (+18); 1662 -> 1665 on 2026-11-06,
     # #1130: 'Begum, Mst Amina' reports suffix-or-name under three orders;
-    # 1665 -> 1668 the same day, its review's 'Akther, Mst. Nasima' the same.
-    assert claims == 1668, (
-        f"the field sweep checks {claims} claims, recorded as 1668 on "
+    # 1665 -> 1668 the same day, its review's 'Akther, Mst. Nasima' the same;
+    # 1668 -> 1672 the same day, #1111's four rows carrying their own
+    # policy that report given-or-family (FAMILY_FIRST_GIVEN_LAST, the
+    # switch set to family under the default order and under
+    # FAMILY_FIRST, and 'Anh,'), one claim each.
+    assert claims == 1672, (
+        f"the field sweep checks {claims} claims, recorded as 1672 on "
         f"2026-11-06")
 
 
@@ -781,8 +824,10 @@ def test_the_alternative_sweep_sees_the_fields_it_checks() -> None:
     # 519 -> 537 the same day, the reviews of #1097 and #1098's rows;
     # 328 -> 331 skipped on 2026-11-06, #1130's 'Begum, Mst Amina'
     # under the three orders; 331 -> 334 the same day, its review's
-    # 'Akther, Mst. Nasima' the same
-    assert (checked, skipped) == (537, 334), (checked, skipped)
+    # 'Akther, Mst. Nasima' the same; 334 -> 335 the same day, #1111's
+    # 'Sir Freiherr von Richthofen' under its own policy, whose stand-in
+    # for 'von' lands in the family with the chain, as the particle did
+    assert (checked, skipped) == (537, 335), (checked, skipped)
 
 
 def test_every_case_name_is_unique() -> None:

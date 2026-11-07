@@ -90,7 +90,7 @@
   "Berg, abdul V"             →  given="abdul V"
   "abdul Ma Smith"            →  given="abdul Ma"
   ```
-- A given-name title plus a bound pair leaves the family empty, as H1 accepts for "Sir John" — the input names no family — under a family-first order too: the join is order-blind, and H1 moves the pair that order placed in the family back to the given name, as it does "Sir John" there.
+- A given-name title plus a bound pair leaves the family empty, as H1 accepts for "Sir John" — the input names no family — under a family-first order too: the join is order-blind, the pair is one name unit that O5's convention places, and where the caller has set that to the family H1 moves the pair back to the given name, as it does "Sir John" there.
   ```
   "Sir abdul salam"           →  family=""
   "Sir abdul salam"    family-first  →  given="abdul salam"

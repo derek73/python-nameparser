@@ -21,28 +21,6 @@
   },
   "text": "van den Volf Becker Schmidt, Prof. Dr. Ada Kornelia Sezar Martin M.D. Ph.D."
  },
- "az/foreignG/sorting": {
-  "family": {
-   "expected": "",
-   "got": "Sinbad"
-  },
-  "given_names": {
-   "expected": "Sinbad",
-   "got": ""
-  },
-  "text": "Sinbad"
- },
- "az/foreignG/surnameFirst": {
-  "family": {
-   "expected": "",
-   "got": "Sinbad"
-  },
-  "given_names": {
-   "expected": "Sinbad",
-   "got": ""
-  },
-  "text": "Sinbad"
- },
  "az/nativeFull/givenFirst": {
   "family": {
    "expected": "Aydan",
@@ -91,28 +69,6 @@
    "got": ""
   },
   "text": "Aydan Arif Aliyev İlvus Santak Deputat"
- },
- "az/nativeG/sorting": {
-  "family": {
-   "expected": "",
-   "got": "Sinbad"
-  },
-  "given_names": {
-   "expected": "Sinbad",
-   "got": ""
-  },
-  "text": "Sinbad"
- },
- "az/nativeG/surnameFirst": {
-  "family": {
-   "expected": "",
-   "got": "Sinbad"
-  },
-  "given_names": {
-   "expected": "Sinbad",
-   "got": ""
-  },
-  "text": "Sinbad"
  },
  "bn/foreignFull/givenFirst": {
   "family": {
@@ -227,28 +183,6 @@
    "got": ""
   }
  },
- "bn/foreignG/sorting": {
-  "family": {
-   "expected": "",
-   "got": "সিনবাদ"
-  },
-  "given_names": {
-   "expected": "সিনবাদ",
-   "got": ""
-  },
-  "text": "সিনবাদ"
- },
- "bn/foreignG/surnameFirst": {
-  "family": {
-   "expected": "",
-   "got": "সিনবাদ"
-  },
-  "given_names": {
-   "expected": "সিনবাদ",
-   "got": ""
-  },
-  "text": "সিনবাদ"
- },
  "bn/nativeFull/givenFirst": {
   "family": {
    "expected": "গাঙ্গুলী",
@@ -298,28 +232,6 @@
    "got": ""
   }
  },
- "bn/nativeG/sorting": {
-  "family": {
-   "expected": "",
-   "got": "জেনদায়া"
-  },
-  "given_names": {
-   "expected": "জেনদায়া",
-   "got": ""
-  },
-  "text": "জেনদায়া"
- },
- "bn/nativeG/surnameFirst": {
-  "family": {
-   "expected": "",
-   "got": "জেনদায়া"
-  },
-  "given_names": {
-   "expected": "জেনদায়া",
-   "got": ""
-  },
-  "text": "জেনদায়া"
- },
  "cs/foreignFull/givenFirst": {
   "surname1_base": {
    "expected": "Brühl",
@@ -361,28 +273,6 @@
   },
   "text": "Prof. Dr. von Brühl González Domingo Ada Cornelia César Martín, M.D. DDS."
  },
- "cs/foreignG/sorting": {
-  "family": {
-   "expected": "",
-   "got": "Jack"
-  },
-  "given_names": {
-   "expected": "Jack",
-   "got": ""
-  },
-  "text": "Jack"
- },
- "cs/foreignG/surnameFirst": {
-  "family": {
-   "expected": "",
-   "got": "Jack"
-  },
-  "given_names": {
-   "expected": "Jack",
-   "got": ""
-  },
-  "text": "Jack"
- },
  "cs/foreignGGS/givenFirst": {
   "family": {
    "expected": "Stöber",
@@ -415,28 +305,6 @@
    "expected": "",
    "got": "paní"
   }
- },
- "cs/nativeG/sorting": {
-  "family": {
-   "expected": "",
-   "got": "Jiří"
-  },
-  "given_names": {
-   "expected": "Jiří",
-   "got": ""
-  },
-  "text": "Jiří"
- },
- "cs/nativeG/surnameFirst": {
-  "family": {
-   "expected": "",
-   "got": "Jiří"
-  },
-  "given_names": {
-   "expected": "Jiří",
-   "got": ""
-  },
-  "text": "Jiří"
  },
  "cs/nativeGGS/givenFirst": {
   "family": {
@@ -471,28 +339,6 @@
   },
   "text": "von Miller Jones, Prof. Dr. Mary Sue Marie"
  },
- "es/foreignG/sorting": {
-  "family": {
-   "expected": "",
-   "got": "Peter"
-  },
-  "given_names": {
-   "expected": "Peter",
-   "got": ""
-  },
-  "text": "Peter"
- },
- "es/foreignG/surnameFirst": {
-  "family": {
-   "expected": "",
-   "got": "Peter"
-  },
-  "given_names": {
-   "expected": "Peter",
-   "got": ""
-  },
-  "text": "Peter"
- },
  "es/foreignGGS/givenFirst": {
   "family": {
    "expected": "Jacobsen",
@@ -515,28 +361,6 @@
   },
   "text": "Pablo Pérez, Sr. Miguel Ángel Juan Antonio"
  },
- "es/nativeG/sorting": {
-  "family": {
-   "expected": "",
-   "got": "Lola"
-  },
-  "given_names": {
-   "expected": "Lola",
-   "got": ""
-  },
-  "text": "Lola"
- },
- "es/nativeG/surnameFirst": {
-  "family": {
-   "expected": "",
-   "got": "Lola"
-  },
-  "given_names": {
-   "expected": "Lola",
-   "got": ""
-  },
-  "text": "Lola"
- },
  "ga/foreignFull/givenFirst": {
   "surname1_base": {
    "expected": "Brühl",
@@ -558,28 +382,6 @@
    "got": ""
   },
   "text": "von Brühl González Domingo, Prof. Dr. Ada Cornelia César Martín M.D. Ph.D."
- },
- "ga/foreignG/sorting": {
-  "family": {
-   "expected": "",
-   "got": "Sinbad"
-  },
-  "given_names": {
-   "expected": "Sinbad",
-   "got": ""
-  },
-  "text": "Sinbad"
- },
- "ga/foreignG/surnameFirst": {
-  "family": {
-   "expected": "",
-   "got": "Sinbad"
-  },
-  "given_names": {
-   "expected": "Sinbad",
-   "got": ""
-  },
-  "text": "Sinbad"
  },
  "ga/nativeFull/givenFirst": {
   "family_base": {
@@ -630,28 +432,6 @@
   },
   "text": "de Bhulbh Brigid Aoibhe Sophia"
  },
- "ga/nativeG/sorting": {
-  "family": {
-   "expected": "",
-   "got": "Hozier"
-  },
-  "given_names": {
-   "expected": "Hozier",
-   "got": ""
-  },
-  "text": "Hozier"
- },
- "ga/nativeG/surnameFirst": {
-  "family": {
-   "expected": "",
-   "got": "Hozier"
-  },
-  "given_names": {
-   "expected": "Hozier",
-   "got": ""
-  },
-  "text": "Hozier"
- },
  "gd/foreignFull/givenFirst": {
   "surname1_base": {
    "expected": "Brühl",
@@ -673,28 +453,6 @@
    "got": ""
   },
   "text": "von Brühl González Domingo, Prof. Dr. Ada Cornelia César Martín Jr, MD DDS"
- },
- "gd/foreignG/sorting": {
-  "family": {
-   "expected": "",
-   "got": "Sinbad"
-  },
-  "given_names": {
-   "expected": "Sinbad",
-   "got": ""
-  },
-  "text": "Sinbad"
- },
- "gd/foreignG/surnameFirst": {
-  "family": {
-   "expected": "",
-   "got": "Sinbad"
-  },
-  "given_names": {
-   "expected": "Sinbad",
-   "got": ""
-  },
-  "text": "Sinbad"
  },
  "gd/nativeFull/givenFirst": {
   "family_base": {
@@ -760,28 +518,6 @@
    "got": ""
   },
   "text": "Mac a’ Ghobhainn Chorùna, Mgr. Dòmhnall Iain Bàn am post"
- },
- "gd/nativeG/sorting": {
-  "family": {
-   "expected": "",
-   "got": "Calum"
-  },
-  "given_names": {
-   "expected": "Calum",
-   "got": ""
-  },
-  "text": "Calum"
- },
- "gd/nativeG/surnameFirst": {
-  "family": {
-   "expected": "",
-   "got": "Calum"
-  },
-  "given_names": {
-   "expected": "Calum",
-   "got": ""
-  },
-  "text": "Calum"
  },
  "hi/foreignFull/givenFirst": {
   "family": {
@@ -884,28 +620,6 @@
    "got": ""
   }
  },
- "hi/foreignG/sorting": {
-  "family": {
-   "expected": "",
-   "got": "रॉबर्ट"
-  },
-  "given_names": {
-   "expected": "रॉबर्ट",
-   "got": ""
-  },
-  "text": "रॉबर्ट"
- },
- "hi/foreignG/surnameFirst": {
-  "family": {
-   "expected": "",
-   "got": "रॉबर्ट"
-  },
-  "given_names": {
-   "expected": "रॉबर्ट",
-   "got": ""
-  },
-  "text": "रॉबर्ट"
- },
  "hi/nativeFull/givenFirst": {
   "family": {
    "expected": "शर्मा",
@@ -955,28 +669,6 @@
   },
   "text": "श्री शर्मा ललित कुमार, एम॰डी॰"
  },
- "hi/nativeG/sorting": {
-  "family": {
-   "expected": "",
-   "got": "ललित"
-  },
-  "given_names": {
-   "expected": "ललित",
-   "got": ""
-  },
-  "text": "ललित"
- },
- "hi/nativeG/surnameFirst": {
-  "family": {
-   "expected": "",
-   "got": "ललित"
-  },
-  "given_names": {
-   "expected": "ललित",
-   "got": ""
-  },
-  "text": "ललित"
- },
  "hi_Latn/foreignFull/surnameFirst": {
   "given_names": {
    "expected": "Ada Cornelia Cesar Martin",
@@ -987,28 +679,6 @@
    "expected": "Prof. Dr.",
    "got": ""
   }
- },
- "hi_Latn/foreignG/sorting": {
-  "family": {
-   "expected": "",
-   "got": "Sinbad"
-  },
-  "given_names": {
-   "expected": "Sinbad",
-   "got": ""
-  },
-  "text": "Sinbad"
- },
- "hi_Latn/foreignG/surnameFirst": {
-  "family": {
-   "expected": "",
-   "got": "Sinbad"
-  },
-  "given_names": {
-   "expected": "Sinbad",
-   "got": ""
-  },
-  "text": "Sinbad"
  },
  "hi_Latn/nativeFull/givenFirst": {
   "given_names": {
@@ -1032,50 +702,6 @@
    "got": ""
   }
  },
- "hi_Latn/nativeG/sorting": {
-  "family": {
-   "expected": "",
-   "got": "Lalit"
-  },
-  "given_names": {
-   "expected": "Lalit",
-   "got": ""
-  },
-  "text": "Lalit"
- },
- "hi_Latn/nativeG/surnameFirst": {
-  "family": {
-   "expected": "",
-   "got": "Lalit"
-  },
-  "given_names": {
-   "expected": "Lalit",
-   "got": ""
-  },
-  "text": "Lalit"
- },
- "hr/foreignG/sorting": {
-  "family": {
-   "expected": "",
-   "got": "Sinbad"
-  },
-  "given_names": {
-   "expected": "Sinbad",
-   "got": ""
-  },
-  "text": "Sinbad"
- },
- "hr/foreignG/surnameFirst": {
-  "family": {
-   "expected": "",
-   "got": "Sinbad"
-  },
-  "given_names": {
-   "expected": "Sinbad",
-   "got": ""
-  },
-  "text": "Sinbad"
- },
  "hr/nativeFull/givenFirst": {
   "suffix": {
    "expected": "mlađi prof.",
@@ -1097,28 +723,6 @@
    "expected": "dr. sc.",
    "got": "dr. sc. prof."
   }
- },
- "hr/nativeG/sorting": {
-  "family": {
-   "expected": "",
-   "got": "Zrinka"
-  },
-  "given_names": {
-   "expected": "Zrinka",
-   "got": ""
-  },
-  "text": "Zrinka"
- },
- "hr/nativeG/surnameFirst": {
-  "family": {
-   "expected": "",
-   "got": "Zrinka"
-  },
-  "given_names": {
-   "expected": "Zrinka",
-   "got": ""
-  },
-  "text": "Zrinka"
  },
  "ja/foreignFull/givenFirst": {
   "family": {
@@ -1188,28 +792,6 @@
    "expected": "博士",
    "got": ""
   }
- },
- "ja/foreignG/sorting": {
-  "family": {
-   "expected": "",
-   "got": "マイケル"
-  },
-  "given_names": {
-   "expected": "マイケル",
-   "got": ""
-  },
-  "text": "マイケル"
- },
- "ja/foreignG/surnameFirst": {
-  "family": {
-   "expected": "",
-   "got": "マイケル"
-  },
-  "given_names": {
-   "expected": "マイケル",
-   "got": ""
-  },
-  "text": "マイケル"
  },
  "ja/nativeFull/givenFirst": {
   "family": {
@@ -1381,28 +963,6 @@
   },
   "text": "भोन ब्रुहल एडा कर्नेलिया सिजर मार्टिन एमडी डिडिएस"
  },
- "ne/foreignG/sorting": {
-  "family": {
-   "expected": "",
-   "got": "सिनबाद"
-  },
-  "given_names": {
-   "expected": "सिनबाद",
-   "got": ""
-  },
-  "text": "सिनबाद"
- },
- "ne/foreignG/surnameFirst": {
-  "family": {
-   "expected": "",
-   "got": "सिनबाद"
-  },
-  "given_names": {
-   "expected": "सिनबाद",
-   "got": ""
-  },
-  "text": "सिनबाद"
- },
  "ne/nativeFull/givenFirst": {
   "family": {
    "expected": "वुस्टर",
@@ -1433,28 +993,6 @@
   },
   "text": "वुस्टर बर्ट्राम विलबरफोर्स हेनरी रोबर्ट एमपी"
  },
- "ne/nativeG/sorting": {
-  "family": {
-   "expected": "",
-   "got": "सुन्दर"
-  },
-  "given_names": {
-   "expected": "सुन्दर",
-   "got": ""
-  },
-  "text": "सुन्दर"
- },
- "ne/nativeG/surnameFirst": {
-  "family": {
-   "expected": "",
-   "got": "सुन्दर"
-  },
-  "given_names": {
-   "expected": "सुन्दर",
-   "got": ""
-  },
-  "text": "सुन्दर"
- },
  "pt/foreignFull/givenFirst": {
   "suffix": {
    "expected": "Jr. Dr. Ph.D",
@@ -1481,28 +1019,6 @@
    "got": "Dr."
   }
  },
- "pt/foreignG/sorting": {
-  "family": {
-   "expected": "",
-   "got": "Sinbad"
-  },
-  "given_names": {
-   "expected": "Sinbad",
-   "got": ""
-  },
-  "text": "Sinbad"
- },
- "pt/foreignG/surnameFirst": {
-  "family": {
-   "expected": "",
-   "got": "Sinbad"
-  },
-  "given_names": {
-   "expected": "Sinbad",
-   "got": ""
-  },
-  "text": "Sinbad"
- },
  "pt/nativeFull/surnameFirst": {
   "given_names": {
    "expected": "José Pedro Eduardo",
@@ -1513,28 +1029,6 @@
    "expected": "Sr.",
    "got": ""
   }
- },
- "pt/nativeG/sorting": {
-  "family": {
-   "expected": "",
-   "got": "Maria"
-  },
-  "given_names": {
-   "expected": "Maria",
-   "got": ""
-  },
-  "text": "Maria"
- },
- "pt/nativeG/surnameFirst": {
-  "family": {
-   "expected": "",
-   "got": "Maria"
-  },
-  "given_names": {
-   "expected": "Maria",
-   "got": ""
-  },
-  "text": "Maria"
  },
  "ru/foreignFull/givenFirst": {
   "family": {
@@ -1617,50 +1111,6 @@
   },
   "text": "фон Брюль Ада Корнелия Сезар Мартин, к. м. н."
  },
- "ru/foreignG/sorting": {
-  "family": {
-   "expected": "",
-   "got": "Синдбад"
-  },
-  "given_names": {
-   "expected": "Синдбад",
-   "got": ""
-  },
-  "text": "Синдбад"
- },
- "ru/foreignG/surnameFirst": {
-  "family": {
-   "expected": "",
-   "got": "Синдбад"
-  },
-  "given_names": {
-   "expected": "Синдбад",
-   "got": ""
-  },
-  "text": "Синдбад"
- },
- "ru/nativeG/sorting": {
-  "family": {
-   "expected": "",
-   "got": "Сергей"
-  },
-  "given_names": {
-   "expected": "Сергей",
-   "got": ""
-  },
-  "text": "Сергей"
- },
- "ru/nativeG/surnameFirst": {
-  "family": {
-   "expected": "",
-   "got": "Сергей"
-  },
-  "given_names": {
-   "expected": "Сергей",
-   "got": ""
-  },
-  "text": "Сергей"
- },
  "sk/foreignFull/givenFirst": {
   "surname1_base": {
    "expected": "Kant",
@@ -1713,28 +1163,6 @@
    "got": "Nováková"
   },
   "text": "Mgr. Ing. von Kant Nováková Predná Anna Karolína Eva Kristína, CSc."
- },
- "sk/foreignG/sorting": {
-  "family": {
-   "expected": "",
-   "got": "Jack"
-  },
-  "given_names": {
-   "expected": "Jack",
-   "got": ""
-  },
-  "text": "Jack"
- },
- "sk/foreignG/surnameFirst": {
-  "family": {
-   "expected": "",
-   "got": "Jack"
-  },
-  "given_names": {
-   "expected": "Jack",
-   "got": ""
-  },
-  "text": "Jack"
  },
  "sk/foreignGGS/givenFirst": {
   "family": {
@@ -1792,28 +1220,6 @@
    "got": ""
   }
  },
- "sk/nativeG/sorting": {
-  "family": {
-   "expected": "",
-   "got": "Jozef"
-  },
-  "given_names": {
-   "expected": "Jozef",
-   "got": ""
-  },
-  "text": "Jozef"
- },
- "sk/nativeG/surnameFirst": {
-  "family": {
-   "expected": "",
-   "got": "Jozef"
-  },
-  "given_names": {
-   "expected": "Jozef",
-   "got": ""
-  },
-  "text": "Jozef"
- },
  "sk/nativeGGS/givenFirst": {
   "family": {
    "expected": "Slovák",
@@ -1858,28 +1264,6 @@
    "got": "prof. dr. dr. med. dr."
   }
  },
- "sl/foreignG/sorting": {
-  "family": {
-   "expected": "",
-   "got": "Sinbad"
-  },
-  "given_names": {
-   "expected": "Sinbad",
-   "got": ""
-  },
-  "text": "Sinbad"
- },
- "sl/foreignG/surnameFirst": {
-  "family": {
-   "expected": "",
-   "got": "Sinbad"
-  },
-  "given_names": {
-   "expected": "Sinbad",
-   "got": ""
-  },
-  "text": "Sinbad"
- },
  "sl/nativeFull/givenFirst": {
   "given_names": {
    "expected": "Janez Peter",
@@ -1918,28 +1302,6 @@
    "got": "univ. dipl. inž."
   }
  },
- "sl/nativeG/sorting": {
-  "family": {
-   "expected": "",
-   "got": "Svarun"
-  },
-  "given_names": {
-   "expected": "Svarun",
-   "got": ""
-  },
-  "text": "Svarun"
- },
- "sl/nativeG/surnameFirst": {
-  "family": {
-   "expected": "",
-   "got": "Svarun"
-  },
-  "given_names": {
-   "expected": "Svarun",
-   "got": ""
-  },
-  "text": "Svarun"
- },
  "tr/foreignFull/givenFirst": {
   "given_names": {
    "expected": "Ada Cornelia César Martín",
@@ -1969,28 +1331,6 @@
    "got": ""
   },
   "text": "Prof. Dr. von Brühl Plácido Domingo Ada Cornelia César Martín, MD DDS"
- },
- "tr/foreignG/sorting": {
-  "family": {
-   "expected": "",
-   "got": "Sinbad"
-  },
-  "given_names": {
-   "expected": "Sinbad",
-   "got": ""
-  },
-  "text": "Sinbad"
- },
- "tr/foreignG/surnameFirst": {
-  "family": {
-   "expected": "",
-   "got": "Sinbad"
-  },
-  "given_names": {
-   "expected": "Sinbad",
-   "got": ""
-  },
-  "text": "Sinbad"
  },
  "tr/nativeFull/givenFirst": {
   "suffix": {
@@ -2029,28 +1369,6 @@
    "expected": "Sn.",
    "got": "Sn. Dr."
   }
- },
- "tr/nativeG/sorting": {
-  "family": {
-   "expected": "",
-   "got": "Zeynep"
-  },
-  "given_names": {
-   "expected": "Zeynep",
-   "got": ""
-  },
-  "text": "Zeynep"
- },
- "tr/nativeG/surnameFirst": {
-  "family": {
-   "expected": "",
-   "got": "Zeynep"
-  },
-  "given_names": {
-   "expected": "Zeynep",
-   "got": ""
-  },
-  "text": "Zeynep"
  },
  "vi/foreignFull/givenFirst": {
   "family": {
@@ -2114,39 +1432,6 @@
   },
   "text": "MD DDS von Brühl César Martín Ada Cornelia"
  },
- "vi/foreignG/givenFirst": {
-  "family": {
-   "expected": "",
-   "got": "Sinbad"
-  },
-  "given_names": {
-   "expected": "Sinbad",
-   "got": ""
-  },
-  "text": "Sinbad"
- },
- "vi/foreignG/sorting": {
-  "family": {
-   "expected": "",
-   "got": "Sinbad"
-  },
-  "given_names": {
-   "expected": "Sinbad",
-   "got": ""
-  },
-  "text": "Sinbad"
- },
- "vi/foreignG/surnameFirst": {
-  "family": {
-   "expected": "",
-   "got": "Sinbad"
-  },
-  "given_names": {
-   "expected": "Sinbad",
-   "got": ""
-  },
-  "text": "Sinbad"
- },
  "vi/foreignGGS/givenFirst": {
   "family": {
    "expected": "Stöber",
@@ -2202,39 +1487,6 @@
    "expected": "",
    "got": "ĐBQH"
   }
- },
- "vi/nativeG/givenFirst": {
-  "family": {
-   "expected": "",
-   "got": "Anh"
-  },
-  "given_names": {
-   "expected": "Anh",
-   "got": ""
-  },
-  "text": "Anh"
- },
- "vi/nativeG/sorting": {
-  "family": {
-   "expected": "",
-   "got": "Anh"
-  },
-  "given_names": {
-   "expected": "Anh",
-   "got": ""
-  },
-  "text": "Anh"
- },
- "vi/nativeG/surnameFirst": {
-  "family": {
-   "expected": "",
-   "got": "Anh"
-  },
-  "given_names": {
-   "expected": "Anh",
-   "got": ""
-  },
-  "text": "Anh"
  },
  "vi/nativeGGS/givenFirst": {
   "family": {

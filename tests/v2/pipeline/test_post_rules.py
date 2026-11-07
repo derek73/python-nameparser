@@ -381,8 +381,10 @@ def test_leading_piece_scan_skips_pieces_that_hold_no_name(
     # a family comma has already fixed the family; the post-comma part
     # is the given name and must not be folded into it
     ("de Mesnil, Juan", "de Mesnil", "Juan"),
-    # degenerate: nothing to fold, so no surname is invented
-    ("de", "de", ""),
+    # degenerate: nothing to fold, so no surname is invented, and a lone
+    # word is placed by Policy.lone_name_word, given by default under
+    # every order (rules/O5, #1111)
+    ("de", "", "de"),
     # the leading piece is not a particle
     ("Juan de Mesnil", "Juan", "de Mesnil"),
     # a capitalized ambiguous particle is out of the rule's scope in
@@ -411,7 +413,8 @@ def test_family_first_leading_particle_cases_that_do_not_fold(
     ("Le Van Thanh", "Le", "Van Thanh"),
     ("Do Van Thanh", "Do", "Van Thanh"),
     ("VAN GOGH VINCENT", "VAN", None),
-    ("van", "van", ""),
+    # a lone word is placed by Policy.lone_name_word (rules/O5, #1111)
+    ("van", "", "van"),
     # and a particle chain a title-particle lets P2 build is cut where
     # the fold cuts a lone particle's run (#828)
     ("St de Mesnil Jean", "de Mesnil", "Jean"),

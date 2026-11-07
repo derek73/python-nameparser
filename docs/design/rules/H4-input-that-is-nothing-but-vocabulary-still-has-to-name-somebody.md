@@ -9,7 +9,7 @@
   "Dr."                       →  title="Dr."  · boundary
   "Dr."                       →  ambiguities=()
   ```
-- **ONE site takes both halves** — the assignment that places the lone name word — so neither report depends on the declared order. Under the default order H1 retags the title-vocabulary word from given to family afterwards; under a declared family-first order the assignment places it in the family directly and H1 never runs. Same reading either way, so the same kind is reported either way.
+- **ONE site takes both halves** — the assignment that places the lone name word — so neither report depends on the declared order. Where O5's convention reads the word as the given name, the default, H1 retags the title-vocabulary word from given to family afterwards; where the caller has set it to the family the assignment places it there directly, and H1 moves it only for a given-name title. Same reading either way, so the same kind is reported either way.
 - **Where H7 meets this rule**: a name unit of more than one word carrying title vocabulary reports `title-or-name` too, by H7, the fork there being whether the word inside the unit is a title.
 
 **Because:** this is a name parser, not a title parser. Handed a string the title peel eats down to one last word which is itself title vocabulary, it still has to name somebody, and that word is the only candidate there is — a guess fixed in advance, so the same input reads the same way every time, not a claim that the word is a surname. The same reasoning covers a string that is nothing but post-nominal vocabulary: something has to be the name.

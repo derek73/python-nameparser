@@ -32,7 +32,10 @@ since #892.
 Reads: Policy.patronymic_rules, Policy.two_family_names,
 Policy.two_given_names, Policy.name_order (O6 and O7 stand down where
 the script's order differs from the declared one),
-Policy.middle_as_family,
+Policy.middle_as_family, Policy.lone_name_word (handed to the
+positional layout's signature only: every call here lays out the
+places after one already filled, so the lone slot it fills is sliced
+off and the switch moves nothing in this stage),
 Policy.extra_suffix_delimiters (R1's entry pass, for the delimiter
 cores group drops); Lexicon.given_name_titles, Lexicon.given_names
 (O6's veto), Lexicon.saint_particles (P10's saint clause; P10 runs
@@ -420,7 +423,8 @@ def _take_second_family_name(state: ParseState,
     _mark_surname(tokens, family, FIRST_SURNAME_TAG)
     _mark_surname(tokens, units[0], SECOND_SURNAME_TAG)
     for unit, role in zip(units[1:], _name_positions(
-            state.order, len(units))[1:]):
+            state.order, len(units),
+            lone=state.policy.lone_name_word)[1:]):
         for i in unit:
             _retag(tokens, i, role)
 
@@ -454,7 +458,8 @@ def _read_surname_pair(state: ParseState,
     _mark_surname(tokens, family, FIRST_SURNAME_TAG)
     _mark_surname(tokens, units[0], SECOND_SURNAME_TAG)
     for unit, role in zip(units[1:], _name_positions(
-            state.order, len(units))[1:]):
+            state.order, len(units),
+            lone=state.policy.lone_name_word)[1:]):
         for i in unit:
             _retag(tokens, i, role)
     after = second + 1
@@ -643,14 +648,14 @@ def _addressing_run(titles: list[int], name_word: int) -> list[int]:
     builds this list; `name_word` is the first GIVEN, or the first
     FAMILY in the direction #720 added. The given guard has proved it
     is the only name word there is; the family guard proves only that
-    no given or middle stands beside it, which is where a comma or a
-    declared order leaves one name word."""
+    no given or middle stands beside it, which is where a comma or
+    O5's convention set to the family leaves one name word."""
     return [i for i in titles if i < name_word] or titles
 
 
 def _family_settled(state: ParseState, tokens: list[WorkToken],
                     families: list[int]) -> bool:
-    """Whether something other than the order placed this lone family
+    """Whether something other than O5's convention placed this lone family
     word, so H1's family -> given direction leaves it (#720). After a
     comma a particle in it is settled -- rules/C3's "the comma settles
     P1's fork for a leading particle that could be a given name"
@@ -660,9 +665,10 @@ def _family_settled(state: ParseState, tokens: list[WorkToken],
     names ('Sir van Berg', rules/P11), asked by the fold's own
     predicates on the same piece. An ambiguous particle
     nothing settled, or a bare one with nothing to fold, is a
-    word the order placed ('Sir Van', 'Sir Abu Bakar' and 'Sir de'
-    under FAMILY_FIRST; 'Sir von und zu', whose never-given 'zu' does
-    not open it)."""
+    word O5's convention placed, which reaches here only with
+    `Policy.lone_name_word` set to family ('Sir Van', 'Sir Abu Bakar',
+    'Sir de', and 'Sir von und zu' under the default order, whose
+    never-given 'zu' does not open it)."""
     if state.structure is Structure.FAMILY_COMMA:
         return any("particle" in tokens[i].tags for i in families)
     if len(families) < 2:
@@ -893,13 +899,14 @@ def post_rules(state: ParseState) -> ParseState:
         # moved -- a stale index list is the bug shape #359 fixed
         _, givens, middles, families = _positions(tokens)
     # rules/H1: "a comma with no given name after it does not decide
-    # the field, nor does a declared order" -- the other direction, for
+    # the field, nor does O5's convention" -- the other direction, for
     # the shapes assign reads as the family before H1 can see them
     # (#720): a family comma with no name word after it and one before
-    # it, and the one name word of a name read family-first. The comma
-    # named no given part, and the order places a word nothing else
-    # decided (O5), so the title decides as it does in 'Sir John'
-    # ('John III, Sir' reads as 'Sir John III'), unless
+    # it, and the one name word O5's convention read as the family
+    # (`Policy.lone_name_word` set to family). The comma named no given
+    # part, and the convention places a word nothing else decided, so
+    # the title decides as it does in 'Sir John' ('John III, Sir' reads
+    # as 'Sir John III'), unless
     # something else settled the word (_family_settled).
     elif (titles and families and not givens and not middles
             and not _family_settled(state, tokens, families)
@@ -936,7 +943,7 @@ def post_rules(state: ParseState) -> ParseState:
     # another rule counts them, so the two disagree; widening moves
     # no corpus name and is not this change's to make
     # (decisions/M4).
-    # rules/M4: "a bound given name keeps the reading its position
+    # rules/M4: "a bound given name keeps the reading O5's convention
     # gives it, and so does a word read as an initial"
     # -- read off the tags classify already recorded rather than a
     # predicate of this rule's own, because this rule changes what
@@ -1016,7 +1023,8 @@ def post_rules(state: ParseState) -> ParseState:
             # rest out as _name_positions would for n + 1 pieces.
             rest = _units(tokens, name_idx[cut:])
             for unit, role in zip(rest, _name_positions(
-                    order, len(rest) + 1)[1:]):
+                    order, len(rest) + 1,
+                    lone=state.policy.lone_name_word)[1:]):
                 for i in unit:
                     _retag(tokens, i, role)
         else:

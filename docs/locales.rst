@@ -1042,9 +1042,12 @@ name:
     >>> vietnamese.parse("PGS.TS. Nguyen Van Anh").title
     'PGS.TS.'
 
-The order holds for every name the pack reads without a family comma,
-a one-word name included, so keep it for Vietnamese data:
-``vietnamese.parse("John Smith")`` gives family ``John``. A family
+The order holds for every name of two words or more the pack reads
+without a family comma, so keep it for Vietnamese data:
+``vietnamese.parse("John Smith")`` gives family ``John``. A one-word
+name reads as the given name, the name a Vietnamese person goes by, as
+it does under every order (``Policy.lone_name_word``, see
+:ref:`lone-name-word`). A family
 comma fixes the family name whatever the order, and the part after it
 reads given-first, as under every order (``Nguyen, Van Anh`` → family
 ``Nguyen``, given ``Van``, middle ``Anh``), so ``Smith, John`` reads

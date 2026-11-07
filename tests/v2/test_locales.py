@@ -439,9 +439,10 @@ def test_each_vi_removal_moves_its_own_row() -> None:
     (", Ts Van Anh", "Ts", "", "Anh", "Van", ""),
     # a title and one name word read the word as the family (rules/H1)
     (", PGS.TS. Anh", "PGS.TS.", "Anh", "", "", ""),
-    ("Van,", "", "Van", "", "", ""),
-    # the order reads a one-word name as the family (rules/O5, #1111)
-    ("Anh", "", "Anh", "", "", ""),
+    # a one-word name reads as Policy.lone_name_word names, given by
+    # default, whatever the order (rules/O5, #1111)
+    ("Van,", "", "", "", "Van", ""),
+    ("Anh", "", "", "", "Anh", ""),
 ])
 def test_vi_reads_a_vietnamese_name_family_first_with_its_syllables(
         text: str, title: str, family: str, middle: str, given: str,

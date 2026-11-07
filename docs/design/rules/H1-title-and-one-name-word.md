@@ -12,7 +12,7 @@
   "Dr. Smith II, Sir"  family-first  →  family="Smith"  · boundary
   ```
 - **Which side a title is on is decided by the name word** and by nothing else standing beside it, so a run written around a nickname is one run: the name Dr. 'Smitty' Sir John reads as Dr. Sir John does.
-- **Neither a comma with nothing but titles after it nor a declared order decides the field.** A comma with nothing but titles after it names no given part, so it says nothing about which field the word before it fills: a comma with no given name after it does not decide the field, nor does a declared order, which places only a word nothing else decided (O5), and the title decides there as it does with no comma.
+- **Neither a comma with nothing but titles after it nor a declared order decides the field.** A comma with nothing but titles after it names no given part, so it says nothing about which field the word before it fills: a comma with no given name after it does not decide the field, nor does O5's convention, which places only a word nothing else decided, and the title decides there as it does with no comma.
   ```
   "Mary II, Dame"             →  given="Mary"
   "John III, Sir"             →  given="John"

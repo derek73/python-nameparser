@@ -251,6 +251,10 @@
  "conventions/Suzuki-san/FAMILY_FIRST": {
   "family": {
    "expected": "Suzuki",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "",
    "got": "Suzuki-san"
   },
   "suffix": {

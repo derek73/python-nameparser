@@ -1521,6 +1521,7 @@ def _policies(draw: st.DrawFn) -> Policy:
         lenient_comma_suffixes=draw(st.booleans()),
         strip_emoji=draw(st.booleans()),
         strip_bidi=draw(st.booleans()),
+        lone_name_word=draw(st.sampled_from([Role.GIVEN, Role.FAMILY])),
     )
 
 
@@ -3748,8 +3749,13 @@ _ONE_CASE_HEADS = (("john", "smith", "jones"), ("carod", "puig", "rovira"),
 #: ones, which are 2444f847's 72) -- each guard seen on its own; the
 #: letter initial's re-taken 2026-11-02 when a generation word before
 #: a name word stopped starting S8's run, its unguarded letter then
-#: counting as a name word behind 'jr' in lower case only (387 -> 396)
-_ONE_CASE_UNGUARDED = 396
+#: counting as a name word behind 'jr' in lower case only (387 -> 396);
+#: re-taken 2026-11-06 when a lone word's field stopped following the
+#: order (#1111): an initial before a maiden marker, which M4 leaves to
+#: O5's convention, now reads given under the two family-first orders,
+#: where unguarded M4 makes the letter the family ('j nee smith', the
+#: three letters v, x and j behind three heads, 396 -> 414)
+_ONE_CASE_UNGUARDED = 414
 _ONE_CASE_LETTER_IN_FRONT_UNGUARDED = 117
 _ONE_CASE_STRICT_VETO_UNGUARDED = 72
 
