@@ -821,19 +821,18 @@ stays the given name (``Nic Cage``), as ``Mac`` does by default; under
 a family-first order it is the first word, read as the family name.
 Each reports its doubt in ``ambiguities``.
 
-``pt`` and ``pt_br`` also turn on the Portuguese given names written
-behind a particle that filers write as given names less surely than
-the default's bar (``das Graças``, ``de Cássia``, ``da Piedade``), so
-the phrase reads as a middle name, as ``del Carmen`` does by default
-(see :ref:`two-given-names`):
+``pt`` and ``pt_br`` also turn on a Portuguese given name written
+behind a particle that is too rare to read by default (``da
+Piedade``), so the phrase reads as a middle name, as ``das Graças``
+does by default (see :ref:`two-given-names`):
 
 .. doctest::
 
-    >>> parse("Maria das Graças Silva").family
-    'das Graças Silva'
-    >>> gracas = parser_for(locales.PT).parse("Maria das Graças Silva")
-    >>> gracas.middle, gracas.family
-    ('das Graças', 'Silva')
+    >>> parse("Maria da Piedade Costa").family
+    'da Piedade Costa'
+    >>> piedade = parser_for(locales.PT).parse("Maria da Piedade Costa")
+    >>> piedade.middle, piedade.family
+    ('da Piedade', 'Costa')
 
 A choice also settles every clash its language has a reading for, as
 `Choosing languages`_ shows, and that costs the other languages'
