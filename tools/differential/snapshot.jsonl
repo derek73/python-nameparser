@@ -934,6 +934,7 @@
 {"name": "Dr. med. univ. Margit Popp", "title": "Dr. med. univ.", "given": "Margit", "family": "Popp", "initials": "M. P.", "capitalized_force": "Dr. Med. Univ. Margit Popp"}
 {"name": "Dr. med. univ. Margit Popp, MSc", "title": "Dr. med. univ.", "given": "Margit", "family": "Popp", "suffix": "MSc", "initials": "M. P.", "capitalized_force": "Dr. Med. Univ. Margit Popp, MSc"}
 {"name": "Dr. nee Smith PhD Prof.", "title": "Dr. Prof.", "given": "nee", "family": "Smith", "suffix": "PhD", "initials": "n. S.", "capitalized_force": "Dr. Prof. Nee Smith PhD"}
+{"name": "Dr. 王李小明", "title": "Dr.", "family": "王李小明"}
 {"name": "Dr. 김민준씨, MA", "title": "Dr.", "given": "민준", "family": "김", "suffix": "씨, MA", "honorifics": "씨"}
 {"name": "Dr., John", "given": "John", "family": "Dr.", "initials": "J. D."}
 {"name": "Dr.philol. Laima Kristīne Eva Sofija van den Volfa Bērziņa-Kalniņa", "title": "Dr.philol.", "given": "Laima", "middle": "Kristīne Eva Sofija", "family": "van den Volfa Bērziņa-Kalniņa", "initials": "L. K. E. S. V. B.", "capitalized_force": "Dr.Philol. Laima Kristīne Eva Sofija van den Volfa Bērziņa-Kalniņa"}
@@ -6651,6 +6652,7 @@
 {"name": "李博", "family": "李博"}
 {"name": "李宗文", "family": "李宗文"}
 {"name": "李影", "family": "李影"}
+{"name": "李林 伟", "given": "伟", "family": "李林"}
 {"name": "李林伟", "family": "李林伟"}
 {"name": "李正中", "family": "李正中"}
 {"name": "李瞻", "family": "李瞻"}
@@ -6703,9 +6705,11 @@
 {"name": "王李", "family": "王李"}
 {"name": "王李 先生", "family": "王李", "suffix": "先生", "honorifics": "先生"}
 {"name": "王李 小明", "given": "小明", "family": "王李"}
-{"name": "王李 小明 美华", "given": "小明", "middle": "美华", "family": "王李"}
+{"name": "王李 小明 博士教授", "given": "小明", "family": "王李", "suffix": "博士 教授", "honorifics": "教授"}
+{"name": "王李, 小明", "given": "小明", "family": "王李"}
 {"name": "王李小明", "family": "王李小明"}
 {"name": "王李小明丽", "family": "王李小明丽"}
+{"name": "王李小明先生", "family": "王李小明", "suffix": "先生", "honorifics": "先生"}
 {"name": "王氏", "family": "王氏"}
 {"name": "王鑫", "family": "王鑫"}
 {"name": "王镇", "family": "王镇"}

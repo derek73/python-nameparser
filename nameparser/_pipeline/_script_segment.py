@@ -9,12 +9,15 @@ Produces: tokens, by two independent splits into sub-slices -- a
 listed honorific peeled off the END of the name's last
 non-post-nominal token, in whichever of the name's runs that falls
 (the tail token also carries this module's _PEELED_TAG), and the
-first activated-script token of the name segment split into n+1 --
-segments (index runs remapped past the insertions), ambiguities
+first activated-script token of the name segment split into n+1
+(into its two surnames and, undivided, the given name behind them,
+where a Han surname pair stands there, the second surname carrying
+SURNAME_PAIR_TAG for post_rules, rules/W5) -- segments (index runs remapped past the insertions), ambiguities
 (indices likewise remapped, plus a SEGMENTATION report when more than
 one split was vocabulary-supported, or when a segmenter's answer
 scored under the confidence floor).
-Reads: Policy.segment_scripts, Lexicon.surnames,
+Reads: Policy.segment_scripts, Lexicon.surnames, Policy.script_orders
+and Policy.name_order (the order W5's pair needs, rules/W4),
 Lexicon.honorific_tails, ParseState.segmenter, Lexicon.maiden_markers
 DIRECTLY (the own-words span `_one_case` takes, _pieces.own_words),
 everything classify and `_comma.decide` read, through
@@ -45,7 +48,8 @@ split being the half that flips "田中さん, Jr./V." under {"/"} and the
 bare core the half that flips "田中さん, /").
 
 Implements rules W1 (the vocabulary/segmenter division), W2 (the
-glued-honorific peel) and W3 (the writer's divisions are respected)
+glued-honorific peel), W3 (the writer's divisions are respected) and
+W5's division (a Han surname pair)
 of docs/design/rules/, cited at their code below; the decision
 chain (#308, #312, #319, the vetting bars, the measured
 spaced-honorific trade) is decisions/W1, #W2 and #W3. Both splits
@@ -76,11 +80,11 @@ from nameparser._pipeline._state import (
 )
 from nameparser._pipeline._vocab import (
     effective_script, is_one_case,
-    is_suffix_strict, is_wholly_suffix,
+    is_suffix_strict, is_wholly_suffix, resolve_script_set,
 )
 from nameparser._pipeline._pieces import own_words
 from nameparser._policy import Script
-from nameparser._types import AmbiguityKind, Segmentation, Span
+from nameparser._types import AmbiguityKind, Role, Segmentation, Span
 
 #: Marks the tail token the peel below MANUFACTURED, so the segmenter's
 #: neighbour test can tell it from a token somebody wrote. Namespaced,
@@ -560,31 +564,51 @@ def _split_candidate(state: ParseState) -> int | None:
 
 def _surname_pair(state: ParseState, i: int, core: str,
                   surnames: frozenset[str]) -> bool:
-    """Whether token `i`, whose longest listed surname is its first
-    character, opens with a second single surname that is the family's
-    second unit (#845).
+    """rules/W5: "whose first two are each a listed single surname" --
+    whether token `i`, whose longest listed surname is its first
+    character, so that no listed compound opens it, holds a second
+    single surname that is the family's second unit (#845).
 
-    The married double surname's shape, longest-first having taken one
-    character, so that no listed compound opens it:
-    rules/W5: "whose first two are each a listed single surname". Four characters and no other length, because a three-character
-    name is a single surname before a two-character given name as often
-    as not (李林伟), the reason no married pair is listed; and two
-    characters when the writer's space after them puts a given name
-    behind, the space having drawn the family's end. Han alone: no
-    other script segmented here writes a married surname before the
-    woman's own. History: decisions/W5 (#845)."""
-    if core[1] not in surnames or effective_script(core) is not Script.HAN:
+    Four characters written undivided, or two with a word of two
+    written after the space: a Han given name is nearly always one or
+    two characters, and a three-character name is nearly always a
+    single surname before a two-character given name (李林伟, and
+    `李林 伟` written with a stray space), the reason no married pair is
+    listed as a compound.
+
+    Only where the name will be read family-first, since only there is
+    the first surname the family for the second to join: every word of
+    the name segment written in the scripts assign's order resolution
+    keys (rules/W4), resolving to an entry, or failing one, to a
+    declared order, that puts the family first. A word in another
+    script, a Latin title included, keeps W1's division, which reads
+    the same under any order, so the stage never cuts a name the order
+    then reads otherwise. History: decisions/W5 (#845)."""
+    if core[1] not in surnames:
+        return False
+    run = state.segments[0]
+    found: set[Script] = set()
+    for j in run:
+        script = effective_script(state.tokens[j].text)
+        if script is None:
+            return False
+        found.add(script)
+    resolved = resolve_script_set(found)
+    if resolved is not Script.HAN:
+        return False
+    order = next((o for s, o in state.policy.script_orders
+                  if s is Script.HAN), state.policy.name_order)
+    if order[0] is Role.GIVEN:
         return False
     if len(core) == 4:
         return True
     if len(core) != 2:
         return False
-    run = state.segments[0]
     at = run.index(i)
     if at + 1 == len(run):
         return False
     j = run[at + 1]
-    return (effective_script(state.tokens[j].text) is Script.HAN
+    return (len(state.tokens[j].text.rstrip(FULL_STOPS)) == 2
             and not _is_post_nominal(state, j))
 
 

@@ -1384,8 +1384,9 @@ class ParsedName:
             if suffix_join and "joined" in tok.tags and parts:
                 parts[-1] += " " + tok.text
             # rules/R1: "words the writer wrote together join with
-            # nothing between them" -- a Han family divided into its two
-            # surnames (rules/W5, #845)
+            # nothing between them" -- the two halves of any word a
+            # division cut (rules/W1, W5) that land in one field; the
+            # suffix keeps its entries apart (decisions/W5, #845)
             elif (not suffix_join and parts and tok.span is not None
                   and tok.span.start == end
                   and FOLDED_TAG not in tok.tags):
@@ -1404,19 +1405,19 @@ class ParsedName:
     @property
     def title(self) -> str:
         """The words read as titles ("Dr.", "Sir"), wherever in the
-        name they stand, space-joined in written order; ``''`` for a
+        name they stand, space-joined in written order, save words written with nothing between them, which stay so; ``''`` for a
         name with none."""
         return self._text_for(Role.TITLE)
 
     @property
     def given(self) -> str:
-        """The given name's words, space-joined in written order;
+        """The given name's words, space-joined in written order, save words written with nothing between them, which stay so;
         ``''`` for a name with none ("de la Vega")."""
         return self._text_for(Role.GIVEN)
 
     @property
     def middle(self) -> str:
-        """The middle names' words, space-joined in written order;
+        """The middle names' words, space-joined in written order, save words written with nothing between them, which stay so;
         ``''`` for a name with none."""
         return self._text_for(Role.MIDDLE)
 
@@ -1489,7 +1490,7 @@ class ParsedName:
     def surnames(self) -> str:
         """The middle names and the family name together ("Q. Xavier
         de la Vega" in "Juan Q. Xavier de la Vega"), space-joined in
-        written order; ``''`` for a name with neither ("Williams")."""
+        written order, save words written with nothing between them, which stay so; ``''`` for a name with neither ("Williams")."""
         return self._text_for(Role.MIDDLE, Role.FAMILY)
 
     @property
@@ -1522,7 +1523,7 @@ class ParsedName:
     def given_names(self) -> str:
         """The given name and the middle names together ("Juan Q.
         Xavier" in "Juan Q. Xavier de la Vega"), space-joined in
-        written order; ``''`` for a name with neither ("de la
+        written order, save words written with nothing between them, which stay so; ``''`` for a name with neither ("de la
         Vega")."""
         return self._text_for(Role.GIVEN, Role.MIDDLE)
 

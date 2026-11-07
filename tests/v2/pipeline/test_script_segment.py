@@ -13,7 +13,7 @@ from nameparser._pipeline._state import (
     SURNAME_PAIR_TAG, ParseState, PendingAmbiguity, Structure,
 )
 from nameparser._pipeline._tokenize import tokenize
-from nameparser._policy import Policy, Script
+from nameparser._policy import FAMILY_FIRST, Policy, Script
 from nameparser._types import AmbiguityKind, Segmentation, Segmenter
 
 _HAN = Policy(segment_scripts=frozenset({Script.HAN}))
@@ -186,12 +186,33 @@ def test_four_characters_opening_with_two_surnames_divide_after_both() -> None:
     ("王小明丽", ["王", "小明丽"]),        # the second is no surname
     ("王李", ["王", "李"]),                # a lone pair has no given name after it
     ("王 李小明", ["王", "李小明"]),       # the writer divided after the first
+    # a word of one after the space: a three-character name with a
+    # stray space, as tw-donors' only two such names are (#845 review)
+    ("李林 伟", ["李", "林", "伟"]),
+    ("王李 美", ["王", "李", "美"]),
+    # a Latin word: the order may not be family-first, so W1's own
+    # division, which reads alike under any order
+    ("Dr 王李小明", ["Dr", "王", "李小明"]),
+    ("王李小明 Amy", ["王", "李小明", "Amy"]),
 ])
 def test_the_surname_pair_reaches_four_characters_and_nothing_else(
         text: str, expected: list[str]) -> None:
     out = _run(text, lexicon=_LEX_PAIR)
     assert _texts(out) == expected
     assert _pair_tagged(out) == []
+
+
+@pytest.mark.parametrize("policy, divides", [
+    (Policy(segment_scripts=frozenset({Script.HAN}), script_orders=()),
+     False),
+    (Policy(segment_scripts=frozenset({Script.HAN}), script_orders=(),
+            name_order=FAMILY_FIRST), True),
+])
+def test_the_surname_pair_divides_only_where_the_name_reads_family_first(
+        policy: Policy, divides: bool) -> None:
+    out = _run("王李小明", policy=policy, lexicon=_LEX_PAIR)
+    assert _texts(out) == (["王", "李", "小明"] if divides
+                           else ["王", "李小明"])
 
 
 def test_a_spaced_pair_divides_into_its_two_surnames() -> None:

@@ -1951,13 +1951,36 @@ def test_reading_an_undivided_pair_reports_the_reading_not_taken() -> None:
     assert _ZH.parse("王李 小明").ambiguities == ()
 
 
-def test_a_pair_the_order_does_not_read_reports_nothing() -> None:
-    # a second script puts the name under the declared given-first
-    # order, which reads no family before the pair: it reads as before
-    # the rule (given 王, middle 李小明) and claims no division
-    name = _ZH.parse("王李小明 Amy")
-    assert (name.given, name.middle, name.family) == ("王", "李小明", "Amy")
+@pytest.mark.parametrize("parser, text, fields", [
+    # the pair's order is not family-first, so nothing is divided past
+    # W1's own division and the name reads as before the rule (#845's
+    # review): given, middle, family and the word count
+    (parser_for(locales.ZH, base=Parser(policy=Policy(script_orders=()))),
+     "王李小明", ("王", "", "李小明", 2)),
+    (_ZH, "Amy 王李小明", ("Amy", "王", "李小明", 3)),
+    (_ZH, "王李小明 Amy", ("王", "李小明", "Amy", 3)),
+    (parser_for(locales.ZH,
+                base=Parser(policy=Policy(two_given_names=True))),
+     "王李小明 Amy", ("王李小明", "", "Amy", 3)),
+])
+def test_a_pair_the_order_does_not_read_is_not_divided(
+        parser: Parser, text: str, fields: tuple[str, str, str, int]) -> None:
+    name = parser.parse(text)
+    assert (name.given, name.middle, name.family, len(name.tokens)) == fields
     assert (name.surname2, name.ambiguities) == ("", ())
+
+
+@pytest.mark.parametrize("text", ["王李小明", "王李 小明", "王李小明 Amy"])
+def test_the_surname_pair_tag_is_never_published(text: str) -> None:
+    assert all("vocab:surname-pair" not in tok.tags
+               for tok in _ZH.parse(text).tokens)
+
+
+def test_a_word_a_division_cut_joins_whole_in_any_field() -> None:
+    # rules/R1's join is not W5's alone: W1's 김 + 민준, both given
+    # names in a mixed-script name read given-first, render as written
+    name = parse("김민준 John")
+    assert (name.given, name.middle, name.given_names) == ("김", "민준", "김민준")
 
 
 def test_a_divided_surname_pair_renders_as_written() -> None:

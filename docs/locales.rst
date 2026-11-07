@@ -707,8 +707,8 @@ Shipped packs
        without a pack. The list holds the commonest surnames of the
        mainland and Taiwan, in both scripts, and the compound surnames
        still borne; a name whose surname is not on it stays whole, and
-       a four-character name opening with two of them reads both as
-       the family (``王李小明`` → family ``王李``). A
+       a four-character name opening with two of its single surnames
+       reads both as the family (``王李小明`` → family ``王李``). A
        Japanese name read with it can split after its first character
        (``安藤一郎`` → family ``安``), so use ``ja`` for Japanese data.
 

@@ -22,10 +22,10 @@ folded-middle tag on the words O3 folds and P6's no-comma attachment
 joins to the family, with the attached tag on the latter (rules/R9
 tells the two apart by it), the second-surname tag on each word of the
 family's second unit where O6 reads two (rules/R10), the first-surname
-tag on each word of the first unit, written by O6 where it reads two,
-both written where script_segment divided a Han surname pair (rules/W5,
-#845), with a SEGMENTATION report where that pair was written
-undivided, and by O3 on the family it folds into otherwise (rules/R11), and the ambiguity P6's attachment reports at the end of a name read
+tag on each word of the first unit, written by O6 where it reads two
+and by O3 on the family it folds into otherwise (rules/R11), both unit
+tags where it reads a Han surname pair (rules/W5, #845), with a
+SEGMENTATION report where that pair was written undivided, and the ambiguity P6's attachment reports at the end of a name read
 family-first (#467) -- after a family comma, that attachment is
 assign's since #613, and behind an empty part before the comma too
 since #892.
@@ -432,11 +432,10 @@ def _read_surname_pair(state: ParseState,
     before it, and what is left is laid out by the order as O6's
     family-first branch lays out its own (decisions/W5, #845). In place.
 
-    A Han name reads family-first by its script, so assign placed the
-    first surname as the family and the second as the given name; under
-    an order that did not (a name holding another script, under the
-    default order, or `script_orders` left without Han) the tag is inert
-    and the name reads as before.
+    script_segment divides the pair only where the name is read
+    family-first, so assign placed the first surname as the family and
+    the second as the first word after it; the checks below keep the
+    tag inert anywhere else all the same.
 
     The report is made here, where the pair is read, and only for a
     name written undivided: there W1's longest listed surname first

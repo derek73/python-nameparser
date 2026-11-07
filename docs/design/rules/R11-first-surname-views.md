@@ -61,5 +61,5 @@
   ```
 
 ---
-**Signal:** none in the name: caller switches, read through the unit two-family-name handling took and the family compound-family handling folded into
+**Signal:** none in the name: caller switches or a Han surname pair, read through the unit two-family-name handling or W5 took and the family compound-family handling folded into
 **history:** decisions/R11 · **implemented:** nameparser/_types.py, nameparser/_pipeline/_post_rules.py, nameparser/_pipeline/_assemble.py

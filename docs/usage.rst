@@ -312,10 +312,12 @@ language is up to you. When you know the data is Chinese, apply the
 A Chinese name can carry two surnames. In Taiwan a married woman
 wrote her husband's surname before her own (冠夫姓) — the Civil Code's
 default until 1998, and still a choice — and a mainland child may carry
-both parents' surnames the same way. A Han given name is one or two
-characters, so under ``zh`` a four-character name whose first two
-characters are both on the surname list reads them as the family, the
-two of them its two units (``surname1`` and ``surname2``, below):
+both parents' surnames the same way. A Han given name is usually one
+or two characters, so under ``zh`` a four-character name whose first
+two characters are each a single surname on the list, and not a listed
+compound such as 歐陽, reads them as the family, the two of them its
+two units (``surname1`` and ``surname2``, below); written with a space
+after the pair (王李 小明) it reads the same way:
 
 .. doctest::
 
