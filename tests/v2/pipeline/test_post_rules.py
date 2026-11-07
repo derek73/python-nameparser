@@ -1970,6 +1970,36 @@ def test_a_pair_the_order_does_not_read_is_not_divided(
     assert (name.surname2, name.ambiguities) == ("", ())
 
 
+@pytest.mark.parametrize("text, fields", [
+    # a Latin word after the pair: the name is not wholly Han, so the
+    # pair is not read even under a declared family-first order
+    ("王李 Amy", ("王", "李", "Amy")),
+    ("Amy Amy 王李小明", ("Amy", "Amy", "王李小明")),
+])
+def test_a_declared_family_first_order_reads_no_pair_beside_latin(
+        text: str, fields: tuple[str, str, str]) -> None:
+    name = parser_for(locales.ZH, base=Parser(
+        policy=Policy(name_order=FAMILY_FIRST))).parse(text)
+    assert (name.family, name.given, name.middle) == fields
+    assert name.surname2 == ""
+
+
+def test_a_folded_middle_does_not_join_the_word_it_was_cut_from() -> None:
+    # W1's 李 + 小明, the 李 folded in front by middle_as_family: the
+    # fold renders first and apart, as v1 prepended it (rules/R1)
+    name = parser_for(locales.ZH, base=Parser(policy=Policy(
+        middle_as_family=True,
+        name_order=FAMILY_FIRST_GIVEN_LAST))).parse("李小明 Amy")
+    assert name.family == "小明 李"
+
+
+def test_a_revised_pair_family_joins_with_a_space() -> None:
+    # a revised value's words carry no spans, so the join cannot see
+    # they were written together: accepted (decisions/W5, #845)
+    revised = _ZH.revise(_ZH.parse("王李小明"), family="王李")
+    assert (revised.family, revised.given) == ("王 李", "小明")
+
+
 @pytest.mark.parametrize("text", ["王李小明", "王李 小明", "王李小明 Amy"])
 def test_the_surname_pair_tag_is_never_published(text: str) -> None:
     assert all("vocab:surname-pair" not in tok.tags

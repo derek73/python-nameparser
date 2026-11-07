@@ -222,6 +222,7 @@
 {"name": "Amina Ali", "given": "Amina", "family": "Ali", "initials": "A. A."}
 {"name": "Amy E Maid", "given": "Amy", "middle": "E", "family": "Maid", "initials": "A. E. M."}
 {"name": "Amy E. Maid", "given": "Amy", "middle": "E.", "family": "Maid", "initials": "A. E. M."}
+{"name": "Amy 王李小明", "given": "Amy", "family": "王李小明", "initials": "A."}
 {"name": "Amélie Beaury-Saurel", "given": "Amélie", "family": "Beaury-Saurel", "initials": "A. B."}
 {"name": "Amīn as-Sulṭān ʿAlī Aṣġar Ḫān", "given": "Amīn", "middle": "as-Sulṭān ʿAlī Aṣġar", "family": "Ḫān", "initials": "A. a. ʿ. A. Ḫ.", "capitalized_force": "Amīn As-Sulṭān ʿAlī Aṣġar Ḫān"}
 {"name": "An tOll. An Dr. Brigid Aoibhe Sophia de Bhulbh", "given": "An", "middle": "tOll. An Dr. Brigid Aoibhe Sophia", "family": "de Bhulbh", "initials": "A. t. A. D. B. A. S. B.", "capitalized_force": "An Toll. An Dr. Brigid Aoibhe Sophia de Bhulbh"}
@@ -6704,8 +6705,10 @@
 {"name": "王小明先生", "family": "王小明", "suffix": "先生", "honorifics": "先生"}
 {"name": "王李", "family": "王李"}
 {"name": "王李 先生", "family": "王李", "suffix": "先生", "honorifics": "先生"}
+{"name": "王李 先生 小明", "given": "先生", "middle": "小明", "family": "王李"}
 {"name": "王李 小明", "given": "小明", "family": "王李"}
 {"name": "王李 小明 博士教授", "given": "小明", "family": "王李", "suffix": "博士 教授", "honorifics": "教授"}
+{"name": "王李 小明 美华", "given": "小明", "middle": "美华", "family": "王李"}
 {"name": "王李, 小明", "given": "小明", "family": "王李"}
 {"name": "王李小明", "family": "王李小明"}
 {"name": "王李小明丽", "family": "王李小明丽"}
