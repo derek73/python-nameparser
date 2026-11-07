@@ -1603,6 +1603,7 @@
 {"name": "Jana Kováčová", "given": "Jana", "family": "Kováčová", "initials": "J. K."}
 {"name": "Jana Nováková", "given": "Jana", "family": "Nováková", "initials": "J. N."}
 {"name": "Jane (Janey, Jo) Smith", "given": "Jane", "family": "Smith", "nickname": "Janey, Jo", "initials": "J. S."}
+{"name": "Jane (PhD/NP-C) Smith", "given": "Jane", "family": "Smith", "suffix": "PhD/NP-C", "initials": "J. S."}
 {"name": "Jane (née , Jones) Smith", "given": "Jane", "family": "Smith", "nickname": "née , Jones", "initials": "J. S.", "capitalized_force": "Jane \"Née, Jones\" Smith"}
 {"name": "Jane (née ,Jones) Smith", "given": "Jane", "family": "Smith", "nickname": "née ,Jones", "initials": "J. S.", "capitalized_force": "Jane \"Née,Jones\" Smith"}
 {"name": "Jane (née Jones) Smith", "given": "Jane", "family": "Smith", "maiden": "Jones", "initials": "J. S."}
@@ -1669,11 +1670,21 @@
 {"name": "Jane Smith (Jones)", "given": "Jane", "family": "Smith", "nickname": "Jones", "initials": "J. S."}
 {"name": "Jane Smith (Nee)", "given": "Jane", "family": "Smith", "nickname": "Nee", "initials": "J. S."}
 {"name": "Jane Smith (Nee) (Jones)", "given": "Jane", "family": "Smith", "nickname": "Nee Jones", "initials": "J. S."}
+{"name": "Jane Smith (PhD/NP-C)", "given": "Jane", "family": "Smith", "suffix": "PhD/NP-C", "initials": "J. S."}
 {"name": "Jane Smith (née Jones)", "given": "Jane", "family": "Smith", "maiden": "Jones", "initials": "J. S."}
 {"name": "Jane Smith (née Jr.)", "given": "Jane", "middle": "Smith", "family": "née", "suffix": "Jr.", "initials": "J. S. n.", "capitalized_force": "Jane Smith Née Jr.", "generation": "Jr."}
 {"name": "Jane Smith (née PhD)", "given": "Jane", "family": "Smith", "maiden": "PhD", "initials": "J. S."}
 {"name": "Jane Smith (née V)", "given": "Jane", "family": "Smith", "maiden": "V", "initials": "J. S."}
 {"name": "Jane Smith (née)", "given": "Jane", "family": "Smith", "nickname": "née", "initials": "J. S.", "capitalized_force": "Jane \"Née\" Smith"}
+{"name": "Jane Smith APRN-FNP-C", "given": "Jane", "family": "Smith", "suffix": "APRN-FNP-C", "initials": "J. S."}
+{"name": "Jane Smith CCC-SLP/L", "given": "Jane", "family": "Smith", "suffix": "CCC-SLP/L", "initials": "J. S."}
+{"name": "Jane Smith CCC/SLP/L", "given": "Jane", "family": "Smith", "suffix": "CCC/SLP/L", "initials": "J. S."}
+{"name": "Jane Smith CPNP-PC/AC", "given": "Jane", "middle": "Smith", "family": "CPNP-PC/AC", "initials": "J. S. C.", "capitalized_force": "Jane Smith Cpnp-PC/Ac"}
+{"name": "Jane Smith MS-OTR/L", "given": "Jane", "family": "Smith", "suffix": "MS-OTR/L", "initials": "J. S."}
+{"name": "Jane Smith MS/CCC-A", "given": "Jane", "family": "Smith", "suffix": "MS/CCC-A", "initials": "J. S."}
+{"name": "Jane Smith MS/OTR/L", "given": "Jane", "family": "Smith", "suffix": "MS/OTR/L", "initials": "J. S."}
+{"name": "Jane Smith OTR/L/X", "given": "Jane", "middle": "Smith", "family": "OTR/L/X", "initials": "J. S. O.", "capitalized_force": "Jane Smith Otr/L/X"}
+{"name": "Jane Smith PhD/NP-C", "given": "Jane", "family": "Smith", "suffix": "PhD/NP-C", "initials": "J. S."}
 {"name": "Jane Smith Vice.", "title": "Vice.", "given": "Jane", "family": "Smith", "initials": "J. S."}
 {"name": "Jane Smith born Jones", "given": "Jane", "middle": "Smith born", "family": "Jones", "initials": "J. S. b. J.", "capitalized_force": "Jane Smith Born Jones"}
 {"name": "Jane Smith née Jones", "given": "Jane", "family": "Smith", "maiden": "Jones", "initials": "J. S."}
@@ -1681,7 +1692,9 @@
 {"name": "Jane Smith née Jones, PhD", "given": "Jane", "family": "Smith", "suffix": "PhD", "maiden": "Jones", "initials": "J. S."}
 {"name": "Jane Smith née PhD", "given": "Jane", "middle": "Smith", "family": "née", "suffix": "PhD", "initials": "J. S. n.", "capitalized_force": "Jane Smith Née PhD"}
 {"name": "Jane Smith née V", "given": "Jane", "family": "Smith", "maiden": "V", "initials": "J. S."}
+{"name": "Jane Smith, PhD/NP-C", "given": "Jane", "family": "Smith", "suffix": "PhD/NP-C", "initials": "J. S."}
 {"name": "Jane Smith, née Jones", "given": "née", "middle": "Jones", "family": "Jane Smith", "initials": "n. J. J. S.", "capitalized_force": "Née Jones Jane Smith"}
+{"name": "Jane Smith-NP-C", "given": "Jane", "family": "Smith-NP-C", "initials": "J. S.", "capitalized_force": "Jane Smith-Np-C"}
 {"name": "Jane and née Jones", "given": "Jane and née", "family": "Jones", "initials": "J. n. J.", "capitalized_force": "Jane and Née Jones"}
 {"name": "Jane de la née Jones", "given": "Jane", "family": "de la", "maiden": "Jones", "initials": "J. d. l.", "capitalized_force": "Jane De La (Jones)"}
 {"name": "Jane nee Smith Jr., AD", "given": "AD", "family": "Jane", "suffix": "Jr.", "maiden": "Smith", "initials": "A. J.", "capitalized_force": "Ad Jane (Smith) Jr.", "generation": "Jr."}
@@ -3635,6 +3648,7 @@
 {"name": "Smith, J.R.", "given": "J.R.", "family": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "J. S."}
 {"name": "Smith, Jan van Prof.", "title": "Prof.", "given": "Jan", "family": "van Smith", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "J. S."}
 {"name": "Smith, Jane Mrs", "title": "Mrs", "given": "Jane", "family": "Smith", "initials": "J. S."}
+{"name": "Smith, Jane PhD/NP-C", "given": "Jane", "family": "Smith", "suffix": "PhD/NP-C", "initials": "J. S."}
 {"name": "Smith, John", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Smith, John (Jack)", "given": "John", "family": "Smith", "nickname": "Jack", "initials": "J. S."}
 {"name": "Smith, John (MA)", "given": "John", "family": "Smith", "suffix": "MA", "initials": "J. S."}

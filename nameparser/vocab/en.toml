@@ -2552,6 +2552,10 @@ text = "atc"
 credential = {}
 
 [[word]]
+text = "atc/l"
+credential = { expands = "Athletic Trainer, Certified, Licensed", note = "NPPES 447 US healthcare providers (August 2026 file); no ClinicalTrials.gov study official writes it after a comma (data 2026-10-21); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1103 }
+
+[[word]]
 text = "awb"
 credential = {}
 
@@ -2770,6 +2774,10 @@ credential = { expands = "Certificate of Clinical Competence in Speech-Language 
 [[word]]
 text = "ccc/slp"
 credential = { same_as = "ccc-slp", expands = "Certificate of Clinical Competence in Speech-Language Pathology", note = "NPPES 4,039 US healthcare providers (August 2026 file); 0 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
+
+[[word]]
+text = "ccc-slp/l"
+credential = { expands = "Certificate of Clinical Competence in Speech-Language Pathology, Licensed", note = "NPPES 908 US healthcare providers (August 2026 file); no ClinicalTrials.gov study official writes it after a comma (data 2026-10-21); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1103 }
 
 [[word]]
 text = "ccca"
@@ -4883,6 +4891,10 @@ text = "ot"
 credential = {}
 
 [[word]]
+text = "ot/l"
+credential = { expands = "Occupational Therapist, Licensed", note = "NPPES 945 US healthcare providers (August 2026 file); 2 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1103 }
+
+[[word]]
 text = "otd"
 credential = { expands = "Doctor of Occupational Therapy", note = "NPPES 7,967 US healthcare providers (August 2026 file); 48 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
 
@@ -5039,6 +5051,10 @@ credential = {}
 [[word]]
 text = "pta"
 credential = {}
+
+[[word]]
+text = "pta/l"
+credential = { expands = "Physical Therapist Assistant, Licensed", note = "NPPES 38 US healthcare providers (August 2026 file); no ClinicalTrials.gov study official writes it after a comma (data 2026-10-21); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1103 }
 
 [[word]]
 text = "qam"
@@ -5275,6 +5291,10 @@ credential = {}
 [[word]]
 text = "slp"
 credential = { expands = "Speech-Language Pathologist", note = "NPPES 22,354 US healthcare providers (August 2026 file); 24 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
+
+[[word]]
+text = "slp/l"
+credential = { expands = "Speech-Language Pathologist, Licensed", note = "NPPES 46 US healthcare providers (August 2026 file); no ClinicalTrials.gov study official writes it after a comma (data 2026-10-21); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1103 }
 
 [[word]]
 text = "slpa"
