@@ -143,6 +143,8 @@ How each part combines:
   both turn ``two_family_names`` on, is silent. A pack overrides the base
   parser's value silently.
 
+.. _choosing-languages:
+
 Choosing languages
 ~~~~~~~~~~~~~~~~~~
 

@@ -666,26 +666,40 @@ taken:
     >>> [a.kind for a in parse("jose e maria santos").ambiguities]
     [<AmbiguityKind.CONJUNCTION_OR_INITIAL: 'conjunction-or-initial'>]
 
-If your data is Portuguese, where ``e`` links surnames the way ``y``
-does in Spanish, take it out and the connective reading comes back:
+If you know your data's language, choose it rather than editing the
+words one at a time: a chosen language's connective is a connective
+even in a name written in one case, and the fork is no longer reported.
+For Portuguese ``e``, use the ``pt`` pack (``locales.PT_BR`` reads it the
+same way):
 
 .. doctest::
 
-    >>> lex = Lexicon.default().add("e", kind="conjunction",
-    ...                             may_be_initial=False)
-    >>> Parser(lexicon=lex).parse("jose e maria santos").given
+    >>> from nameparser import Locale, locales, parser_for
+    >>> parser_for(locales.PT).parse("jose e maria santos").given
     'jose e maria'
+    >>> parser_for(locales.PT).parse("jose e maria santos").ambiguities
+    ()
 
-If your data is Catalan or Polish, where ``i`` links two surnames the
-way ``y`` does in Spanish, take that one out instead and the link
-joins in a one-case name too:
+Catalan and Polish ``i`` link two surnames the way ``y`` does in
+Spanish. Neither has a pack, but a :class:`~nameparser.Locale` that
+only chooses the language (``"ca"`` or ``"pl"``) does the same for
+them (see :ref:`choosing-languages`):
 
 .. doctest::
 
-    >>> lex = Lexicon.default().add("i", kind="conjunction",
-    ...                             may_be_initial=False)
-    >>> Parser(lexicon=lex).parse("josep carod i rovira").family
+    >>> catalan = Locale(code="ca", lexicon=Lexicon.empty(),
+    ...                  languages=frozenset({"ca"}))
+    >>> parse("josep carod i rovira").family
+    'rovira'
+    >>> parser_for(catalan).parse("josep carod i rovira").family
     'carod i rovira'
+
+Spanish ``y`` needs no choice: it is a connective by default, so
+``locales.ES`` leaves it as it is. A choice settles every word the
+language holds, not only its connective (``pt`` reads ``do`` as a
+particle, never the DO credential); to change one connective and
+nothing else, set ``may_be_initial`` on the word itself — for ``e``,
+``Lexicon.default().add("e", kind="conjunction", may_be_initial=False)``.
 
 If your data is Dutch, where a bare single letter is an initial and
 never a connective, add the other one instead:
