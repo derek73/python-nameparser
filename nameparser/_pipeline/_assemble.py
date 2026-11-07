@@ -263,8 +263,10 @@ _reading = functools.lru_cache(maxsize=1024)(Reading)
 #: `Token.reading` carries out; and the written-short mark rules/H5's
 #: chain reads (#999), for which the published token keeps
 #: TITLE_AMBIGUOUS_TAG; and the shared-name and particle-given marks
-#: rules/O6 and O7 read (#704), and the bound-phrase mark rules/P12
-#: reads (#694).
+#: rules/O6 and O7 read (#704), the bound-phrase mark rules/P12
+#: reads (#694), the past-reach mark on a particle chain past rules/P1's
+#: fold (#828), and the joined-title mark rules/H5's chain reads
+#: (#1104).
 _KIND_TAGS = frozenset({GENERATION_WORD_TAG, CREDENTIAL_WORD_TAG, HONORIFIC_WORD_TAG,
                         PATRONYMIC_TAG, ATTACHED_TAG, TRAILING_TITLE_TAG,
                         SHARED_NAME_TAG, PARTICLE_GIVEN_TAG, PAST_REACH_TAG,

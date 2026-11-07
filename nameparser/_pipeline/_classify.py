@@ -165,8 +165,10 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
         tags.add("vocab:title")
         # rules/H5: "a title the vocabulary lists whole with a period
         # inside it chains without a final one" -- marked here, where
-        # the listing is known whole; a hyphen alone joins whole words
-        # ('co-founder') and 'д-р', a credential ending a name
+        # the listing is known whole; a period, since a hyphen alone
+        # joins whole words as often as abbreviations ('co-founder'), and
+        # the one hyphenated abbreviation ending a name in the corpora,
+        # 'д-р', is a credential there to CLDR (decisions/H5, #1104)
         if "." in n and _JOINED_WORD.match(n):
             tags.add(JOINED_TITLE_TAG)
     if n in lex._sets.given_name_titles:
