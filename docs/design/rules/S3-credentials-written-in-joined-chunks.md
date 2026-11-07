@@ -75,11 +75,13 @@
   "Ram Bahadur B.K., PhD"     →  family="B.K."
   "Jane Doe nee Smith B.K."   →  maiden="Smith B.K."
   ```
-- **A word with interior periods that the vocabulary does not list whole, and any of whose chunks is title vocabulary, is a title** where a title stands before the name or after a comma, its title chunks read before its suffix chunks, so a degree written joined to its field (`Dipl.Ing.`, `Dipl.-Psych.`) reads as the title its first chunk is, the field's own chunk a credential or no word; a word listed whole, its periods removed, is read as its listing, title chunk or not.
+- **A word with interior periods that the vocabulary does not list whole, and any of whose chunks is title vocabulary, is a title** where a title stands before the name or after a comma, and ending the name or the given part after a family comma where it ends in a period (H5), its title chunks read before its suffix chunks, so a degree written joined to its field (`Dipl.Ing.`, `Dipl.-Psych.`) reads as the title its first chunk is, the field's own chunk a credential or no word; a word listed whole, its periods removed, is read as its listing, title chunk or not.
   ```
   "John Smith, Dipl.Ing."     →  title="Dipl.Ing."
   "Maxie Bunz, Dipl.Psych."   →  title="Dipl.Psych."
   "Dipl.-Kfm. Dalimil Ospalý" →  title="Dipl.-Kfm."
+  "John Smith Dipl.Ing."      →  title="Dipl.Ing."
+  "Smith, John Dipl.Ing."     →  title="Dipl.Ing."
   "John Smith, Dr.PH"         →  suffix="Dr.PH"  · boundary
   ```
 - **The position reading is a caller switch, ON by default**, and the example lines name it; turned off, such a word is name material and the chunk rule still decides the rest.
@@ -128,12 +130,11 @@
   "Jane Doe Ma R.T."          →  middle="Doe Ma"
   "JANE DOE MA R.T."          →  family="R.T."
   ```
-- A word with interior periods and a title chunk, ending a name with no comma in front of it or ending the given part after a family comma, reads as a name word: the suffix reading has given way to the title, and the trailing title run (H5) reads no word with an interior period (#1116), so at the end of a name the surname before it reads as a middle name; inside a name it is a name word too.
+- A word with interior periods and a title chunk, standing inside a name or ending one without a period of its own, reads as a name word: the suffix reading has given way to the title, and the trailing title run (H5) takes only a word that ends in a period, so at the end of a name the surname before it reads as a middle name.
   ```
-  "John Smith Dipl.Ing."      →  family="Dipl.Ing."
-  "John Smith Dipl.Ing."      →  middle="Smith"
-  "Smith, John Dipl.Ing."     →  middle="Dipl.Ing."
   "John Dipl.Ing. Smith"      →  middle="Dipl.Ing."
+  "John Smith Dr.PhD"         →  family="Dr.PhD"
+  "John Smith Dr.PhD"         →  middle="Smith"
   ```
 - The title chunk is any title, so the readings it gives beyond the degrees are its too: a credential run whose one title chunk is a title that is also a credential (`ms`, `sr`, `lt`) reads as a title, and so does a given name glued to Saint, with no given name left.
   ```

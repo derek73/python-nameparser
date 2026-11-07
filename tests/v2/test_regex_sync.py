@@ -69,6 +69,11 @@ def test_dotted_initial_is_the_period_alternative_of_initial() -> None:
 # None for a pattern that is its own only copy.
 _SOURCES: dict[tuple[str, str], tuple[str, str] | None] = {
     ("_vocab", "_PERIOD_ABBREV"): None,
+    # rules/H5's trailing shape, _PERIOD_ABBREV widened to an
+    # abbreviation written joined or hyphenated (#1116)
+    ("_vocab", "_TRAILING_TITLE_SHAPE"): None,
+    # SAME object, imported for H5's trailing chain
+    ("_pieces", "_TRAILING_TITLE_SHAPE"): ("_vocab", "_TRAILING_TITLE_SHAPE"),
     # rules/S1's initials shape for a bracketed credential (#792)
     ("_vocab", "_INITIALS_SHAPE"): None,
     # its dotted alternative, from which _INITIALS_SHAPE is built, read
@@ -118,7 +123,10 @@ _SOURCES: dict[tuple[str, str], tuple[str, str] | None] = {
     ("_vocab", "_TURKIC"): None,
     ("_vocab", "_TURKIC_CYR"): None,
     # rules/O6's hyphens (#754)
-    ("_post_rules", "_HYPHENS"): None,
+    # rules/O6's hyphens, defined in _vocab since #1116 so rules/H5's
+    # trailing shape reads the same set
+    ("_vocab", "_HYPHENS"): None,
+    ("_post_rules", "_HYPHENS"): ("_vocab", "_HYPHENS"),
     # render's own patterns, v1's "spaces", "space_before_comma",
     # "mac" and "word"; the v1 table they were pinned to until #1008
     # was their only other copy

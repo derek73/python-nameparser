@@ -52,7 +52,6 @@ function, for Parser.revise to run over a forced-role sub-parse
 from __future__ import annotations
 
 import bisect
-import re
 from collections.abc import Sequence
 
 from nameparser._lexicon import Lexicon, _normalize, _run_addresses_by_given
@@ -71,7 +70,7 @@ from nameparser._pipeline._state import (
     WorkToken, _NEVER_FLIPPED, comma_bucket, copy_with, reported_suffix_fork,
 )
 from nameparser._pipeline._vocab import (
-    SetApartKind, delimiter_cores, dotted_member,
+    _HYPHENS, SetApartKind, delimiter_cores, dotted_member,
     has_patronymic_ending, is_initial, is_listed_given_name,
     is_patronymic_marker, reads_as_initials, set_apart, set_apart_kind,
     suffix_reading, unit_ends,
@@ -291,12 +290,6 @@ def _fold_reach(tokens: list[WorkToken], name_idx: list[int]) -> int:
     return i + len(_units(tokens, name_idx[i:])[0])
 
 
-#: The hyphens and the dashes that join two family names in one written
-#: word (rules/O6): hyphen-minus, hyphen, non-breaking hyphen, figure
-#: dash, en dash, minus sign (a word processor's substitute), and the
-#: small and fullwidth hyphen-minus. The em dashes are punctuation
-#: between words, not joiners, and are left out.
-_HYPHENS = re.compile("[-\u2010\u2011\u2012\u2013\u2212\ufe63\uff0d]")
 
 
 def _family_word_count(tokens: list[WorkToken], family: list[int],

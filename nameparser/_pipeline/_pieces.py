@@ -64,7 +64,8 @@ from nameparser._pipeline._state import (
     WorkToken,
 )
 from nameparser._pipeline._vocab import (
-    _PERIOD_ABBREV, _ROMAN, Lean, ambiguous_lean, in_initialless_script,
+    _PERIOD_ABBREV, _ROMAN, _TRAILING_TITLE_SHAPE, Lean, ambiguous_lean,
+    in_initialless_script,
     is_listed_numeral, is_single_letter_numeral, numeral_leans_to_the_name,
     numeral_settled_by_case, reads_as_generation, tag_marker_runs,
 )
@@ -1898,7 +1899,7 @@ def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
     hand this (52 of the 1289 corpus parses, measured 2026-09-09 --
     'Coach', 'Lord of the Universe', 'Smith, Jr.', 'MD, PHD').
     The shape test
-    runs BEFORE the vocabulary one to keep it at that: _PERIOD_ABBREV
+    runs BEFORE the vocabulary one to keep it at that: _TRAILING_TITLE_SHAPE
     is a compiled regex (a C call, no Python frame) where
     is_title_piece is a call, and almost no name ends in a
     period-marked word, so the ordinary parse pays the one match and
@@ -1916,7 +1917,7 @@ def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
         # short" -- classify's tag, tested first, a C-level read
         # (decisions/H5, #999)
         if len(piece) == 1 and (
-                (_PERIOD_ABBREV.match(tokens[piece[0]].text)
+                (_TRAILING_TITLE_SHAPE.match(tokens[piece[0]].text)
                  and (TRAILING_TITLE_TAG in tokens[piece[0]].tags
                       or is_title_piece(piece, ptags[idx], tokens)))
                 # rules/H8: "the given part after it ends in a word whose
@@ -1947,7 +1948,7 @@ def is_trailing_title_word(piece: Sequence[int], ptags: Set[str],
     be a given name (TRAILING_TITLE_TAG). Position is the caller's question -- this answers only
     what the word is."""
     return (len(piece) == 1
-            and _PERIOD_ABBREV.match(tokens[piece[0]].text) is not None
+            and _TRAILING_TITLE_SHAPE.match(tokens[piece[0]].text) is not None
             and (TRAILING_TITLE_TAG in tokens[piece[0]].tags
                  or is_title_piece(piece, ptags, tokens)))
 
@@ -2380,7 +2381,7 @@ def _weighed(piece: Sequence[int], tokens: Sequence[WorkToken]) -> bool:
             or _ROMAN.match(stem := tok.text.rstrip(".")) is not None
             and stem != ""
             or ("vocab:title" in tok.tags or TRAILING_TITLE_TAG in tok.tags)
-            and _PERIOD_ABBREV.match(tok.text) is not None)
+            and _TRAILING_TITLE_SHAPE.match(tok.text) is not None)
 
 
 _WEIGHED_TAGS = _TRAILING_WORD_TAGS | {"initial"}

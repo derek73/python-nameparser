@@ -416,12 +416,10 @@ def test_each_vi_removal_moves_its_own_row() -> None:
     ("ĐBQH Nguyễn Văn Anh", "ĐBQH", "Nguyễn", "Văn", "Anh", ""),
     ("đbqh Nguyen Van Anh", "đbqh", "Nguyen", "Van", "Anh", ""),
     ("DBQH Nguyen Van Anh", "DBQH", "Nguyen", "Van", "Anh", ""),
-    # a stacked title ending a name reads as the given name: rules/H5
-    # takes "successive single words that wear the abbreviation shape and
-    # are title vocabulary", and with pgs and ts listed rules/S3's
-    # unlisted dotted suffix no longer takes it, where the default reads
-    # suffix 'PGS.TS.'
-    ("Nguyen Van Anh PGS.TS.", "", "Nguyen", "Van Anh", "PGS.TS.", ""),
+    # a stacked title ending a name is the title: rules/H5's chain takes
+    # a word written with a period inside it (#1116), where the default
+    # reads suffix 'PGS.TS.' by rules/S3's unlisted dotted suffix
+    ("Nguyen Van Anh PGS.TS.", "PGS.TS.", "Nguyen", "Van", "Anh", ""),
     # bs has no title reading in vi.toml, so en's credential stays and a
     # dotted BS. opening a name is a title by shape (rules/H2)
     ("BS. Nguyen Van An", "BS.", "Nguyen", "Van", "An", ""),
