@@ -621,6 +621,7 @@ READINGS: tuple[tuple[str, tuple[tuple[str, str, tuple[tuple[str, object], ...]]
     ('dfm', (('en', 'credential', ()),)),
     ('dhr', (('nl', 'salutation', (('after_given', True),)),)),
     ('di', (('it', 'preposition', ()), ('it', 'given', ()))),
+    ('dipl', (('mul', 'academic', ()),)),
     ('dipl.-ing', (('de', 'academic', ()),)),
     ('diplac', (('en', 'credential', (('cased', 'DiplAc'),)),)),
     ('diplom', (('en', 'credential', ()),)),

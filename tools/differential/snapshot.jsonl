@@ -718,6 +718,7 @@
 {"name": "Dijk, Jan van", "given": "Jan", "family": "van Dijk", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "J. D."}
 {"name": "Dionisio Aguado y García", "given": "Dionisio", "family": "Aguado y García", "initials": "D. A. G."}
 {"name": "Dionisio Guillin Mercado", "given": "Dionisio", "middle": "Guillin", "family": "Mercado", "initials": "D. G. M."}
+{"name": "Dipl.-Kfm. Dalimil Ospalý", "title": "Dipl.-Kfm.", "given": "Dalimil", "family": "Ospalý", "initials": "D. O."}
 {"name": "Diponegoro", "given": "Diponegoro", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "D."}
 {"name": "Djuanda", "given": "Djuanda", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "D."}
 {"name": "Dl Dr. Daniel Ionescu Dragoș Ioan Ardelean Jr.", "given": "Dl", "middle": "Dr. Daniel Ionescu Dragoș Ioan", "family": "Ardelean", "suffix": "Jr.", "initials": "D. D. D. I. D. I. A.", "capitalized_force": "DL Dr. Daniel Ionescu Dragoș Ioan Ardelean Jr.", "generation": "Jr."}
@@ -1660,6 +1661,7 @@
 {"name": "Jane Doe, KC", "given": "Jane", "family": "Doe", "suffix": "KC", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (declared)"], "initials": "J. D."}
 {"name": "Jane Doe, MS LAc", "given": "Jane", "family": "Doe", "suffix": "MS LAc", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (position)"], "initials": "J. D.", "capitalized_force": "Jane Doe, MS LAC"}
 {"name": "Jane Mac Beth", "given": "Jane", "family": "Mac Beth", "initials": "J. B.", "capitalized_force": "Jane mac Beth"}
+{"name": "Jane Roe, MD.MS", "title": "MD.MS", "given": "Jane", "family": "Roe", "initials": "J. R.", "capitalized_force": "Md.Ms Jane Roe"}
 {"name": "Jane Smith", "given": "Jane", "family": "Smith", "initials": "J. S."}
 {"name": "Jane Smith (Jones)", "given": "Jane", "family": "Smith", "nickname": "Jones", "initials": "J. S."}
 {"name": "Jane Smith (Nee)", "given": "Jane", "family": "Smith", "nickname": "Nee", "initials": "J. S."}
@@ -1784,6 +1786,7 @@
 {"name": "John An Smith", "given": "John", "middle": "An", "family": "Smith", "initials": "J. A. S."}
 {"name": "John Chinedu Amadi", "given": "John", "middle": "Chinedu", "family": "Amadi", "initials": "J. C. A."}
 {"name": "John Dean Smith", "given": "John", "middle": "Dean", "family": "Smith", "initials": "J. D. S."}
+{"name": "John Dipl.Ing. Smith", "given": "John", "middle": "Dipl.Ing.", "family": "Smith", "initials": "J. D. S."}
 {"name": "John Doctor Smith", "given": "John", "middle": "Doctor", "family": "Smith", "initials": "J. D. S."}
 {"name": "John Doe", "given": "John", "family": "Doe", "initials": "J. D."}
 {"name": "John Doe III", "given": "John", "family": "Doe", "suffix": "III", "initials": "J. D.", "generation": "III"}
@@ -1879,6 +1882,7 @@
 {"name": "John Smith C.H.A.", "given": "John", "family": "Smith", "suffix": "C.H.A.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "J. S."}
 {"name": "John Smith DO Jones", "given": "John", "middle": "Smith", "family": "DO Jones", "initials": "J. S. J.", "capitalized_force": "John Smith do Jones"}
 {"name": "John Smith Dean.", "given": "John", "middle": "Smith", "family": "Dean.", "initials": "J. S. D."}
+{"name": "John Smith Dipl.Ing.", "given": "John", "middle": "Smith", "family": "Dipl.Ing.", "initials": "J. S. D."}
 {"name": "John Smith Dr.", "title": "Dr.", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "John Smith Dr., Prof.", "title": "Dr. Prof.", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "John Smith E.S.Q.", "given": "John", "family": "Smith", "suffix": "E.S.Q.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "J. S."}
@@ -2005,11 +2009,13 @@
 {"name": "John Smith, A.B.", "given": "A.B.", "family": "John Smith", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "A. J. S."}
 {"name": "John Smith, A.B. Ph.D.", "given": "A.B.", "family": "John Smith", "suffix": "Ph.D.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "A. J. S."}
 {"name": "John Smith, AD", "given": "AD", "family": "John Smith", "initials": "A. J. S.", "capitalized_force": "Ad John Smith"}
+{"name": "John Smith, Dipl.Ing.", "title": "Dipl.Ing.", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "John Smith, Dr.", "title": "Dr.", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "John Smith, Dr.", "order": "FAMILY_FIRST", "title": "Dr.", "given": "Smith", "family": "John", "initials": "S. J."}
 {"name": "John Smith, Dr. / MD", "title": "Dr.", "given": "John", "family": "Smith", "suffix": "MD", "initials": "J. S."}
 {"name": "John Smith, Dr. / and MD", "title": "Dr. and MD", "given": "John", "family": "Smith", "initials": "J. S.", "capitalized_force": "Dr. and Md John Smith"}
 {"name": "John Smith, Dr. J.씨", "title": "Dr.", "given": "John", "family": "Smith", "suffix": "J.씨", "initials": "J. S."}
+{"name": "John Smith, Dr.PH", "given": "John", "family": "Smith", "suffix": "Dr.PH", "initials": "J. S."}
 {"name": "John Smith, Dr; MD", "title": "Dr;", "given": "John", "family": "Smith", "suffix": "MD", "initials": "J. S."}
 {"name": "John Smith, Ed", "given": "John", "family": "Smith", "suffix": "Ed", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (declared)"], "initials": "J. S.", "capitalized_force": "John Smith, ED"}
 {"name": "John Smith, Ed Ma", "given": "John", "family": "Smith", "suffix": "Ed Ma", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as given (declared)"], "initials": "J. S.", "capitalized_force": "John Smith, ED MA"}
@@ -2796,6 +2802,7 @@
 {"name": "Maurus Daniel Esteva a Alsina", "given": "Maurus", "middle": "Daniel Esteva a", "family": "Alsina", "initials": "M. D. E. a. A.", "capitalized_force": "Maurus Daniel Esteva A Alsina"}
 {"name": "Max Ben Mustermann", "given": "Max", "middle": "Ben", "family": "Mustermann", "initials": "M. B. M."}
 {"name": "Max Born", "given": "Max", "family": "Born", "initials": "M. B."}
+{"name": "Maxie Bunz, Dipl.Psych.", "title": "Dipl.Psych.", "given": "Maxie", "family": "Bunz", "initials": "M. B."}
 {"name": "Mayo", "given": "Mayo", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "M."}
 {"name": "Mañé i Miravet, Teresa", "given": "Teresa", "family": "Mañé i Miravet", "initials": "T. M. M."}
 {"name": "Maǧrīṭī, Abu-'l-Qāsim Maslama Ibn-Aḥmad al-", "given": "Abu-'l-Qāsim", "middle": "Maslama Ibn-Aḥmad", "family": "al- Maǧrīṭī", "initials": "A. M. I. M.", "capitalized_force": "Abu-'L-Qāsim Maslama ibn-Aḥmad al- Maǧrīṭī"}
@@ -3624,6 +3631,7 @@
 {"name": "Smith, John (V)", "given": "John", "family": "Smith", "suffix": "V", "initials": "J. S.", "generation": "V"}
 {"name": "Smith, John ,", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Smith, John - Paul", "given": "John", "middle": "- Paul", "family": "Smith", "initials": "J. -. P. S."}
+{"name": "Smith, John Dipl.Ing.", "given": "John", "middle": "Dipl.Ing.", "family": "Smith", "initials": "J. D. S."}
 {"name": "Smith, John E, III, Jr", "given": "John", "middle": "E", "family": "Smith", "suffix": "III, Jr", "initials": "J. E. S.", "generation": "III, Jr"}
 {"name": "Smith, John I", "given": "John", "family": "Smith", "suffix": "I", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: initial as middle (shape)"], "initials": "J. S.", "generation": "I"}
 {"name": "Smith, John Jr.", "given": "John", "family": "Smith", "suffix": "Jr.", "initials": "J. S.", "generation": "Jr."}
@@ -3747,6 +3755,7 @@
 {"name": "St de Mesnil Jean", "title": "St", "family": "de Mesnil Jean", "initials": "M. J."}
 {"name": "St de Mesnil Jean V", "title": "St", "family": "de Mesnil Jean V", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: generation as suffix (vocabulary)"], "initials": "M. J. V."}
 {"name": "St van Bishop", "title": "St", "family": "van Bishop", "ambiguities": ["PARTICLE_OR_GIVEN", "TITLE_OR_NAME"], "alternatives": ["PARTICLE_OR_GIVEN: name as given (declared)", "TITLE_OR_NAME: title as title (vocabulary)"], "initials": "B."}
+{"name": "St.John Smith", "title": "St.John", "family": "Smith", "initials": "S."}
 {"name": "Sta. Maria, Juan", "given": "Juan", "family": "Sta. Maria", "initials": "J. M."}
 {"name": "Stander Zelda Herman", "order": "FAMILY_FIRST", "given": "Zelda", "middle": "Herman", "family": "Stander", "initials": "Z. H. S."}
 {"name": "Stander, Zelda Herman", "given": "Zelda", "middle": "Herman", "family": "Stander", "initials": "Z. H. S."}
@@ -4411,8 +4420,8 @@
 {"name": "prof. dr. Popa, Gentiana van den", "title": "prof. dr.", "given": "Gentiana", "family": "van den Popa", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "G. P.", "capitalized_force": "Prof. Dr. Gentiana van den Popa"}
 {"name": "prof. dr. van den Popa, Gentiana M., dr. shk. mjek.", "order": "FAMILY_FIRST", "title": "prof. dr. dr.", "given": "Gentiana", "middle": "M.", "family": "van den Popa", "suffix": "shk. mjek.", "ambiguities": ["COMMA_STRUCTURE"], "initials": "G. M. P.", "capitalized_force": "Prof. Dr. Dr. Gentiana M. van den Popa Shk. Mjek."}
 {"name": "prof. dr. von Brühl Ada Cornelia César Martín, dr. med., dr. dent. med.", "order": "FAMILY_FIRST", "title": "prof. dr. dr. med. dr.", "given": "Ada", "middle": "Cornelia César Martín", "family": "von Brühl", "suffix": "dent. med.", "ambiguities": ["COMMA_STRUCTURE"], "initials": "A. C. C. M. B.", "capitalized_force": "Prof. Dr. Dr. Med., Dr. von Brühl Ada Cornelia César Martín Dent. Med."}
-{"name": "prof. dr. von Selimović Hodžić, Izeta Amra, dipl. stom.", "title": "prof. dr.", "given": "Izeta", "middle": "Amra", "family": "von Selimović Hodžić", "suffix": "dipl. stom.", "ambiguities": ["COMMA_STRUCTURE"], "initials": "I. A. S. H.", "capitalized_force": "Prof. Dr. Izeta Amra von Selimović Hodžić Dipl. Stom."}
-{"name": "prof. dr. von Selimović Hodžić, Izeta Amra, dipl. stom.", "order": "FAMILY_FIRST", "title": "prof. dr.", "given": "Izeta", "middle": "Amra", "family": "von Selimović Hodžić", "suffix": "dipl. stom.", "ambiguities": ["COMMA_STRUCTURE"], "initials": "I. A. S. H.", "capitalized_force": "Prof. Dr. Izeta Amra von Selimović Hodžić Dipl. Stom."}
+{"name": "prof. dr. von Selimović Hodžić, Izeta Amra, dipl. stom.", "title": "prof. dr. dipl.", "given": "Izeta", "middle": "Amra", "family": "von Selimović Hodžić", "suffix": "stom.", "ambiguities": ["COMMA_STRUCTURE"], "initials": "I. A. S. H.", "capitalized_force": "Prof. Dr. Dipl. Izeta Amra von Selimović Hodžić Stom."}
+{"name": "prof. dr. von Selimović Hodžić, Izeta Amra, dipl. stom.", "order": "FAMILY_FIRST", "title": "prof. dr. dipl.", "given": "Izeta", "middle": "Amra", "family": "von Selimović Hodžić", "suffix": "stom.", "ambiguities": ["COMMA_STRUCTURE"], "initials": "I. A. S. H.", "capitalized_force": "Prof. Dr. Dipl. Izeta Amra von Selimović Hodžić Stom."}
 {"name": "prof. dr. von Vilkas Jankauskas-Baranauskas, Ada Kornelija Eva Sofija", "order": "FAMILY_FIRST", "title": "prof. dr.", "given": "Ada", "middle": "Kornelija Eva Sofija", "family": "von Vilkas Jankauskas-Baranauskas", "initials": "A. K. E. S. V. J.", "capitalized_force": "Prof. Dr. Ada Kornelija Eva Sofija von Vilkas Jankauskas-Baranauskas"}
 {"name": "professori Ana Christina Lëja von Wright González Domingo, MD DDS", "given": "professori", "middle": "Ana Christina Lëja", "family": "von Wright González Domingo", "suffix": "MD DDS", "initials": "p. A. C. L. W. G. D.", "capitalized_force": "Professori Ana Christina Lëja von Wright González Domingo, MD DDS"}
 {"name": "qc mp", "given": "qc", "suffix": "mp", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (vocabulary)"], "initials": "q.", "capitalized": "Qc MP"}

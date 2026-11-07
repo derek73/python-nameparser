@@ -1712,6 +1712,10 @@
   }
  },
  "bs/foreignFull/sorting": {
+  "suffix": {
+   "expected": "dipl. stom.",
+   "got": "stom."
+  },
   "surname1_base": {
    "expected": "Selimović",
    "got": "Selimović Hodžić"
@@ -1720,9 +1724,17 @@
    "expected": "Hodžić",
    "got": ""
   },
-  "text": "prof. dr. von Selimović Hodžić, Izeta Amra, dipl. stom."
+  "text": "prof. dr. von Selimović Hodžić, Izeta Amra, dipl. stom.",
+  "title": {
+   "expected": "prof. dr.",
+   "got": "prof. dr. dipl."
+  }
  },
  "bs/foreignFull/surnameFirst": {
+  "suffix": {
+   "expected": "dipl. stom.",
+   "got": "stom."
+  },
   "surname1_base": {
    "expected": "Selimović",
    "got": "Selimović Hodžić"
@@ -1731,7 +1743,11 @@
    "expected": "Hodžić",
    "got": ""
   },
-  "text": "prof. dr. von Selimović Hodžić, Izeta Amra, dipl. stom."
+  "text": "prof. dr. von Selimović Hodžić, Izeta Amra, dipl. stom.",
+  "title": {
+   "expected": "prof. dr.",
+   "got": "prof. dr. dipl."
+  }
  },
  "bs/foreignG/sorting": {
   "family": {

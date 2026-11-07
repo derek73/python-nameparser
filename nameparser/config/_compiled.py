@@ -271,6 +271,7 @@ TITLES: frozenset[str] = frozenset({
     'detective',
     'developer',
     'dhr',
+    'dipl',
     'dipl.-ing',
     'diplomat',
     'dir',
