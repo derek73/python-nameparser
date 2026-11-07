@@ -317,7 +317,8 @@ or two characters, so under ``zh`` a four-character name whose first
 two characters are each a single surname on the list, and not a listed
 compound such as 歐陽, reads them as the family, the two of them its
 two units (``surname1`` and ``surname2``, below); written with a space
-after the pair (王李 小明) it reads the same way:
+after the pair, before a two-character given name (王李 小明), it reads
+the same way:
 
 .. doctest::
 

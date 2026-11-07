@@ -1,6 +1,6 @@
 # W5 — a Han surname pair
 
-**When:** Han division is active (W1), every word of the name is Han and the name is read family-first (W4), and the name opens with a Han name of four characters whose first two are each a listed single surname, written undivided or with a space after the pair alone, as in "王李小明".
+**When:** Han division is active (W1), every name word is Han and the name is read family-first (W4), and the name opens with a Han name of four characters whose first two are each a listed single surname, written undivided or with a space after the pair alone, as in "王李小明".
 
 **Then:** the two surnames are the family, in two units, and the last two characters are the given name.
 
@@ -21,6 +21,8 @@
 "王李小明"  [zh]  →  family="王李"
 "王李小明"  [zh]  →  given="小明"
 "王李小明先生"  [zh]  →  family="王李"
+"王李小明さん"  [zh]  →  family="王李"
+"王李小明 PhD"  [zh]  →  family="王李"
 "王李小明"    →  family="王李小明"  · boundary
 "李林伟"  [zh]  →  family="李"  · boundary
 "王李小明丽"  [zh]  →  family="王"  · boundary
@@ -58,7 +60,7 @@
   "高田栄二"  [zh]  →  family="高田"
   "高田栄二"  [zh]  →  surname2="田"
   ```
-- A name holding a word in another script, a title written in Latin letters included, keeps W1's division even where it is read family-first, since the division is made before the order is known, and a division the order then read otherwise would move the name.
+- A name holding a word in another script before the post-nominals that end it, a title written in Latin letters included, keeps W1's division even where it is read family-first, since the division is made before the order is known, and a division the order then read otherwise would move the name.
   ```
   "Dr. 王李小明"  [zh]  →  family="王"
   ```

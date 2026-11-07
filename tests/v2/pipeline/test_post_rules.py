@@ -1971,17 +1971,41 @@ def test_a_pair_the_order_does_not_read_is_not_divided(
 
 
 @pytest.mark.parametrize("text, fields", [
-    # a Latin word after the pair: the name is not wholly Han, so the
-    # pair is not read even under a declared family-first order
-    ("王李 Amy", ("王", "李", "Amy")),
-    ("Amy Amy 王李小明", ("Amy", "Amy", "王李小明")),
+    # a Latin name word beside the pair: the name is not wholly Han, so
+    # the pair is not divided even under a declared family-first order.
+    # The word count is asserted because R1's join renders an extra
+    # division inside one field as the word it was cut from
+    # (W1's own 王 + 李小明 makes four words; the pair would make five)
+    ("Amy 王李小明 Amy", ("Amy", "王", "李小明 Amy", 4)),
+    ("Amy Amy 王李小明", ("Amy", "Amy", "王李小明", 4)),
 ])
 def test_a_declared_family_first_order_reads_no_pair_beside_latin(
-        text: str, fields: tuple[str, str, str]) -> None:
+        text: str, fields: tuple[str, str, str, int]) -> None:
     name = parser_for(locales.ZH, base=Parser(
         policy=Policy(name_order=FAMILY_FIRST))).parse(text)
-    assert (name.family, name.given, name.middle) == fields
+    assert (name.family, name.given, name.middle,
+            len(name.tokens)) == fields
     assert name.surname2 == ""
+
+
+def test_hans_own_order_outranks_a_declared_one_for_the_pair() -> None:
+    # Han's script_orders entry given-first, the declaration
+    # family-first: assign reads the entry, so the pair is not divided
+    name = parser_for(locales.ZH, base=Parser(policy=Policy(
+        script_orders=((Script.HAN, GIVEN_FIRST),),
+        name_order=FAMILY_FIRST))).parse("王李小明")
+    assert (name.given, name.family, len(name.tokens)) == ("王", "李小明", 2)
+
+
+@pytest.mark.parametrize("text, suffix", [
+    ("王李小明さん", "さん"), ("王李小明씨", "씨"), ("王李小明 PhD", "PhD"),
+])
+def test_post_nominals_ending_the_name_leave_the_pair_read(
+        text: str, suffix: str) -> None:
+    # no name piece of assign's, so they key no order (#845's review)
+    name = _ZH.parse(text)
+    assert (name.family, name.given, name.suffix, name.surname2) == (
+        "王李", "小明", suffix, "李")
 
 
 def test_a_folded_middle_does_not_join_the_word_it_was_cut_from() -> None:

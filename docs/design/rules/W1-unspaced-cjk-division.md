@@ -23,7 +23,7 @@
 
 **Except:**
 
-- **A Han name of four characters opening with two listed single surnames**, read family-first, divides after both of them (W5), and so does the pair written with a space after it.
+- **A Han name of four characters opening with two listed single surnames**, read family-first, divides after both of them (W5), and so does the pair written with a space before a two-character given name.
   ```
   "王李小明"  [zh]  →  family="王李"
   "王李 小明"  [zh]  →  family="王李"

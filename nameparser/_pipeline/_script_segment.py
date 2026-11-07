@@ -578,17 +578,27 @@ def _surname_pair(state: ParseState, i: int, core: str,
 
     Only where the name will be read family-first, since only there is
     the first surname the family for the second to join: every word of
-    the name segment written in the scripts assign's order resolution
-    keys (rules/W4), resolving to an entry, or failing one, to a
-    declared order, that puts the family first. A word in another
+    the name segment but the post-nominals ending it written in the
+    scripts assign's order resolution keys (rules/W4), resolving to an
+    entry, or failing one, to a declared order, that puts the family
+    first -- the resolution assign makes over its name pieces, asked of
+    the words before titles are known. A word in another
     script, a Latin title included, keeps W1's division, which reads
     the same under any order, so the stage never cuts a name the order
     then reads otherwise. History: decisions/W5 (#845)."""
     if core[1] not in surnames:
         return False
     run = state.segments[0]
+    # post-nominals ending the name, a peeled honorific among them, are
+    # no name pieces of assign's, so they key no order (王李小明さん,
+    # 王李小明 PhD); anything before them does
+    end = len(run)
+    while (end > run.index(i) + 1
+           and (_PEELED_TAG in state.tokens[run[end - 1]].tags
+                or _is_post_nominal(state, run[end - 1]))):
+        end -= 1
     found: set[Script] = set()
-    for j in run:
+    for j in run[:end]:
         script = effective_script(state.tokens[j].text)
         if script is None:
             return False
