@@ -88,6 +88,10 @@ text = "thmgr"
 academic = { cased = "ThMgr", issue = 1115, expands = "magistr teologie, the theology master's", note = "no name bearer in any source tools/name_usage.py reads (2026-11-06)" }
 
 [[word]]
+text = "mjr"
+military = { default = false, issue = [1115, 1129], expands = "major, major (mjr. Jan Novák)", note = "off by default and turned on by a Czech choice: MJR is three initials elsewhere, and an ORCID researcher in Sri Lanka files it as the given name (MJR David); no name bearer: under 100 US Census, under 5 US SSA a year, none on Wikidata; ORCID's given box 2 records. 5 names in the local corpora open with it (2026-11-07)" }
+
+[[word]]
 text = "npor"
 military = { issue = 1115, expands = "nadporučík, first lieutenant (npor. Aleš Tomek)", note = "no name bearer in any source tools/name_usage.py reads (2026-11-06)" }
 
