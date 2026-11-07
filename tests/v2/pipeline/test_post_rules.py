@@ -2061,3 +2061,33 @@ def test_a_surname_pair_leaves_its_exceptions_alone(
         text: str, family: str, given: str) -> None:
     name = _ZH.parse(text)
     assert (name.family, name.given, name.surname2) == (family, given, "")
+
+
+@pytest.mark.parametrize("text, order, tagged", [
+    # given-first: the order reads no family before the pair
+    ("王李小明 Amy", GIVEN_FIRST, 1),
+    # family-first, the tagged word not the one right after the family
+    ("Amy Amy 王李小明", FAMILY_FIRST, 2),
+])
+def test_a_surname_pair_tag_post_rules_cannot_read_is_inert(
+        text: str, order: tuple[Role, Role, Role], tagged: int) -> None:
+    # script_segment tags only where post_rules will read the pair, so
+    # these declines are reached by a hand-placed tag alone: they keep
+    # a future drift between the two stages' order readings from
+    # marking a family the order did not build (rules/W5, #845)
+    from nameparser._pipeline import STAGES
+    from nameparser._pipeline._post_rules import post_rules
+    from nameparser._pipeline._state import (
+        SURNAME_PAIR_TAG, copy_with)
+    parser = parser_for(locales.ZH, base=Parser(
+        policy=Policy(name_order=order)))
+    state = ParseState(original=text, lexicon=parser.lexicon,
+                       policy=parser.policy)
+    for stage in STAGES[:-1]:
+        state = stage(state)
+    tokens = list(state.tokens)
+    tokens[tagged] = copy_with(
+        tokens[tagged], tags=tokens[tagged].tags | {SURNAME_PAIR_TAG})
+    out = post_rules(copy_with(state, tokens=tuple(tokens)))
+    assert not any("vocab:second-surname" in t.tags for t in out.tokens)
+    assert out.ambiguities == state.ambiguities
