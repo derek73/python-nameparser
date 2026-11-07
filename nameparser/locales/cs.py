@@ -4,7 +4,8 @@ mechanisms.md#LOCALE-PACKS-PURE-DATA). Choosing it turns on
 nameparser/vocab/cs.toml's readings written ``default = false``: the
 generations ``ml.`` (mladší) and ``st.`` (starší), the salutation
 ``pan``, the birth marker ``roz.``, the academic titles written before
-the name that the default leaves off (``MgA.``, ``BcA.``; ``Mgr.`` read
+the name that the default leaves off (``MgA.``, ``BcA.``, the rank
+``mjr.``; ``Mgr.`` read
 as the degree, the doctorates being read by default since #1115) and
 the post-nominal ``DrSc.``; on a word cs.toml holds a
 vocabulary reading of, other languages' vocabulary readings leave

@@ -433,8 +433,9 @@ before the name, run together in their own capitalization (``MUDr.``,
 (``DrSc.``, Slovak ``ArtD.``). The default reads the doctorates
 before the name, but cannot read the other words: ``ml.`` is also a
 pair of initials, ``st.`` is Saint in English and French, ``Pan`` and
-``Roz`` are names in other languages, ``MgA.`` is written as initials
-too and ``BcA.`` is an English credential. So they wait for a pack,
+``Roz`` are names in other languages, ``MgA.`` and the rank ``mjr.``
+(major) are written as initials too and ``BcA.`` is an English
+credential. So they wait for a pack,
 and each of the
 four languages is a pack of its own, which chooses that one language;
 the Czech and Slovak packs also read two family names (below):
@@ -445,7 +446,7 @@ the Czech and Slovak packs also read two family names (below):
    * - Pack
      - Turns on
    * - ``locales.CS``
-     - ``ml.``, ``st.``; the titles ``MgA.`` and ``BcA.``, and
+     - ``ml.``, ``st.``; the titles ``MgA.``, ``BcA.`` and ``mjr.``, and
        ``Mgr.`` read as the degree; ``DrSc.``
        after the name; ``Pan`` (Mr.); ``roz.``, which routes a maiden
        name as ``rozená`` does; two family names
@@ -462,7 +463,7 @@ rest) are titles without a pack, bare or dotted before the name or
 after a comma, and dotted at the end of it, and so is ``Mgr.``, which
 the default lists as Monsignor; written bare at the end of a name, as
 any title is, each is a name word (``Jan Novák MUDr`` → family
-``MUDr``). For ``MgA.`` and ``BcA.``, which the default does not list,
+``MUDr``). For ``MgA.``, ``BcA.`` and ``mjr.``, which the default does not list,
 what a pack changes is the bare spelling before the name or after a
 comma, and the dotted one at the end of it, where the default reads
 each as a name word; at the head of a name the dotted spelling is a
@@ -607,7 +608,8 @@ Shipped packs
    * - ``cs``, ``sk``
      - Czech and Slovak — a choice of that one language, which turns on
        the generations ``ml.`` and ``st.``, the academic titles the
-       default leaves off (``MgA.``, ``BcA.``) and the degrees written
+       default leaves off (``MgA.``, ``BcA.``; for Czech also the rank
+       ``mjr.``) and the degrees written
        after the name, and reads two
        family names (``Alena Pešová Řehořová`` → family ``Pešová
        Řehořová``), so two given names read as a given name and a family

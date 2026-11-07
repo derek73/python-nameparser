@@ -160,6 +160,7 @@ TITLES: frozenset[str] = frozenset({
     'biographer',
     'biologist',
     'bishop',
+    'biól',
     'blessed',
     'blogger',
     'blues',
@@ -514,6 +515,7 @@ TITLES: frozenset[str] = frozenset({
     'mevrouwe',
     'mg',
     'mgr',
+    'mgtr',
     'mgysgt',
     'military',
     'minister',
@@ -1761,6 +1763,7 @@ GIVEN_NAME_ABBREVIATIONS: frozenset[str] = frozenset({
     'richd',
     'robt',
     'saml',
+    'sk',
     'thos',
     'wm',
 })

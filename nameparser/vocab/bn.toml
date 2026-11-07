@@ -195,3 +195,7 @@ issue = [346, 344, 343]
 note = "Maharaj"
 [word.courtesy.excluded]
 attached = "जी ends बनर्जी, मुखर्जी, चटर्जी, so a glued peel would strand a bare virama (बनर् + जी); the 殿 criterion in a non-CJK script (decisions/indic-honorifics)"
+
+[[word]]
+text = "sk"
+given = { same_as = "sheikh", note = "Sheikh written short, in Bangladesh and India: ORCID given boxes 1,008 (India 351, Bangladesh 119), family boxes 403 (India 150), some of them the initials S. K.; no name bearer: under 100 US Census, under 5 US SSA a year, none on Wikidata. Written with its period at the head of a name (Sk. Abdul Karim), it read as a title by the leading-abbreviation shape, where Sheikh written out reads as the given name (#912): 71 names in the local corpora open with it, 17 read so (2026-11-07, #1129)" }

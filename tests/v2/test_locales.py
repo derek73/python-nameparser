@@ -1476,6 +1476,8 @@ _ROTATORS["ja"] = [
 _ROTATORS["cs"] = [
     "BcA Krejčí",                    # bca
     "MgA Malá",                      # mga
+    "Mjr Novák",                     # mjr, three initials elsewhere (#1129)
+    "Chief Mjr Novák",               # chief mjr, the phrase chief makes
     "Jan Novák, DrSc",               # drsc, a credential after a comma
     "Pan Novák",                     # pan
     "Jana Nováková (roz. Svobodová)",  # roz, the birth marker, bracketed

@@ -66,8 +66,16 @@ text = "excmo"
 style = { issue = 1115, gender = "m", expands = "Excelentísimo, Most Excellent, the style of a high office (Excmo. Sr. Juan Pérez)", note = "no name bearers in any source tools/name_usage.py reads (2026-11-06)" }
 
 [[word]]
+text = "act"
+excluded = { academic = { reason = "Act., Actuario or Actuaria abbreviated in Mexico, but ACT is also a credential written after names, a certified athletic trainer (Terry L Grindstaff, PhD, PT, ACT), which a title reading takes from the suffix after a comma; its dotted spelling opening a name is a title by the leading-abbreviation shape already, and the 45 local corpus names opening with it all read so (2026-11-07)", issue = [1115, 1129] } }
+
+[[word]]
 text = "arq"
 academic = { issue = 753, expands = "Arq., Arquitecto or Arquitecta abbreviated", note = "no name bearer in any source tools/name_usage.py reads; ORCID's given box 12 records, the title typed in, 4 ORCID names and 2 PatentsView ones opening with it (Arq. Julia Romero) (2026-10-30)" }
+
+[[word]]
+text = "biól"
+academic = { issue = [1115, 1129], expands = "Biól., Biólogo or Bióloga abbreviated, in Mexico (Biól. Ana Ruiz)", note = "no name bearer in any source tools/name_usage.py reads; 5 names in the local corpora open with it (2026-11-07)" }
 
 [[word]]
 text = "doctora"
@@ -120,6 +128,18 @@ academic = { gender = "f", issue = 753, same_as = "maestra", expands = "Mtra., M
 [[word]]
 text = "maestro"
 excluded = { academic = { reason = "a Spanish and Italian family name (ORCID's family box 43 records in Spain, US Census 200), and the form of address is written abbreviated, Mtro., where it is written at all: only 3 names open with it in every local corpus, 2 of them a conductor's honorific (Maestro Solti) (2026-10-30); Mexico's DOF signatures spell it out now and then (Maestro Arturo Serrano Meneses), against Mtro. in 2.7% of 150 sampled", issue = 753, decided = 2026-10-30 } }
+
+[[word]]
+text = "map"
+excluded = { academic = { reason = "MAP, Maestro or Maestra en Administración Pública in Mexico, but also an English word, a credential written after names (Jorge Luis Loáiciga Gutiérrez, MAP, Lic) and a given name filed in the US (FEC: SAN, MAP), each of which a title reading after a comma takes; under a Spanish choice it moved 3 local corpus names, 1 to the title the writer meant (2026-11-07)", issue = [1115, 1129] } }
+
+[[word]]
+text = "mgtr"
+academic = { issue = [1115, 1129], expands = "Mgtr., Magíster abbreviated, in Ecuador and Peru", note = "no name bearer: under 100 US Census, under 5 US SSA a year, none on Wikidata; ORCID's given box 7 records, the title typed in (Ecuador 5), its family box 5 (2026-11-07)" }
+
+[[word]]
+text = "mtr"
+excluded = { academic = { reason = "Mtr., Maestro or Maestra abbreviated in Mexico, but MTR is also a credential written after names, a master's in translational research (ClinicalTrials.gov officials 10, all after a comma: Shana McCormack, MD, MTR), which a title reading after a comma takes from the suffix; its dotted spelling opening a name is a title by the leading-abbreviation shape already (2026-11-07)", issue = [1115, 1129] } }
 
 [[word]]
 text = "mtro"
