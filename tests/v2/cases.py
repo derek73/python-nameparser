@@ -11972,6 +11972,25 @@ CASES: tuple[Case, ...] = (
          ambiguities=("given-or-family",), classification="feat(#1111)",
          notes="rules/O5 -- a comma with nothing after it names no "
                "family, so the convention places the word, by the switch"),
+    Case("lone_name_word_empty_head_outranks_the_switch", ", Anh",
+         {"given": "Anh"},
+         policy=Policy(name_order=FAMILY_FIRST, lone_name_word=Role.FAMILY),
+         classification="feat(#1111)",
+         notes="rules/C15 -- a comma with nothing before it names an "
+               "empty family, so the word after it is the given part's "
+               "and the switch places nothing"),
+    Case("lone_name_word_bound_given_before_a_maiden_marker_switched",
+         "abd née Jones", {"family": "abd", "maiden": "Jones"},
+         policy=Policy(lone_name_word=Role.FAMILY),
+         classification="feat(#1111)",
+         notes="rules/M4 leaves a bound given name to O5's convention, "
+               "so the switch places it"),
+    Case("lone_name_word_initial_before_a_maiden_marker_switched",
+         "J. née Jones", {"family": "J.", "maiden": "Jones"},
+         policy=Policy(lone_name_word=Role.FAMILY),
+         classification="feat(#1111)",
+         notes="rules/M4 leaves an initial to O5's convention, so the "
+               "switch places it"),
     Case("lone_name_word_vi_pack_reads_given", "Anh",
          {"given": "Anh"}, locale="vi",
          ambiguities=("given-or-family",), classification="feat(#1111)",
@@ -15921,6 +15940,15 @@ CASES: tuple[Case, ...] = (
          notes="no default Han segmentation: one token, and a lone "
                "wholly-Han token takes the script order's first "
                "role = family"),
+    Case("han_unspaced_script_order_outranks_the_lone_word_switch", "毛泽东",
+         {"given": "毛泽东"},
+         policy=Policy(script_orders=((Script.HAN, GIVEN_FIRST),),
+                       lone_name_word=Role.FAMILY),
+         classification="feat(#1111)",
+         notes="rules/O5's W4 Except in the direction the two disagree "
+               "the other way: a caller's script order reading Han "
+               "given-first places the lone word given, and reports "
+               "nothing, though the switch says family"),
     Case("han_unspaced_no_script_orders_reports_the_convention", "毛泽东",
          {"given": "毛泽东"}, policy=Policy(script_orders=()),
          ambiguities=("given-or-family",), classification="feat(#449)",

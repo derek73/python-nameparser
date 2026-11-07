@@ -144,21 +144,19 @@ def _name_pieces(state: ParseState, tokens: Sequence[WorkToken],
 
 
 def _slot_field(state: ParseState, seg_idx: int, pos: int, count: int,
-                order: tuple[Role, Role, Role] | None,
-                lone: Role | None = None) -> Role:
+                order: tuple[Role, Role, Role] | None, *,
+                lone: Role) -> Role:
     """The field position `pos` of `count` name words takes in segment
     `seg_idx`, every other word read as the parse read it: the family
     before a family comma, the given part's given or middle name after
     one, and otherwise the order the main segment's read set. `lone`
-    is the field a lone name word takes there, where the caller knows
-    a script decided it; the switch otherwise."""
+    is the field a lone name word takes there, as `_name_positions`
+    takes it: the caller says whether a script decided it."""
     if state.structure is Structure.FAMILY_COMMA:
         return (Role.FAMILY if seg_idx == 0
                 else Role.GIVEN if pos == 0 else Role.MIDDLE)
     assert order is not None  # the main segment's read sets it
-    return _name_positions(
-        order, count,
-        lone=state.policy.lone_name_word if lone is None else lone)[pos]
+    return _name_positions(order, count, lone=lone)[pos]
 
 
 def _name_alt(token: WorkToken, role: Role,
@@ -1081,7 +1079,10 @@ def _split_name_alt(state: ParseState, tokens: Sequence[WorkToken],
     piece in front of it would take it in (`_name_alt`)."""
     names = [q for q in _name_pieces(state, tokens, seg_idx)
              if q[0] < piece[0]]
-    role = _slot_field(state, seg_idx, len(names), len(names) + 1, order)
+    # count is never 1 here: a split pair stands in the trailing run,
+    # behind a name word H4's carve-out keeps, so the switch is inert
+    role = _slot_field(state, seg_idx, len(names), len(names) + 1, order,
+                       lone=state.policy.lone_name_word)
     return _name_alt(tokens[piece[0]], role, names[-1] if names else None,
                      tokens, len(names) == 1,
                      state.structure is Structure.FAMILY_COMMA)
@@ -1143,7 +1144,10 @@ def _resolve_deferred(state: ParseState, tokens: Sequence[WorkToken],
                     alt, role=Beside(i)))
                 continue
         ambiguities[r] = copy_with(report, alternative=copy_with(
-            alt, role=_slot_field(state, seg_idx, pos, count, order)))
+            # count 1 returns above unless a family comma decides, so
+            # the switch is inert here
+            alt, role=_slot_field(state, seg_idx, pos, count, order,
+                                  lone=state.policy.lone_name_word)))
 
 
 def assign(state: ParseState) -> ParseState:

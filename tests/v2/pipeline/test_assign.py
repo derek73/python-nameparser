@@ -306,7 +306,8 @@ def test_convention_details_name_the_field_the_word_lands_in(
     # PARTICLE_OR_GIVEN test above is the precedent, and these are the
     # only other details at this site that name a field -- H4's PEEL
     # shape ("Lord Chancellor") deliberately names none, because H1
-    # retags that word after assign under the default order.
+    # retags that word after assign under the default switch, whatever
+    # the order.
     lex = (_LEX.add("rinpoche", kind="suffix").add("of", kind="conjunction")
            .add("bishop", kind="title"))
     (amb,) = _reported(text, policy, lexicon=lex)

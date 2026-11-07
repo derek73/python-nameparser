@@ -778,10 +778,12 @@ class Policy:
     #: where the data came from -- a list of surnames, a list of the
     #: names people go by -- not about the order its longer names are
     #: written in, so it does not follow name_order. A title, a
-    #: nickname, a maiden name or a script that settles the order
-    #: still decides first ("Mr. Johnson" gives family ``Johnson``).
-    #: The reading is reported as a ``given-or-family`` ambiguity
-    #: either way. Added in 3.0; through 2.x the field followed
+    #: nickname, a maiden name, a family comma or a script that settles
+    #: the order still decides first ("Mr. Johnson" gives family
+    #: ``Johnson``). The reading is reported as a ``given-or-family``
+    #: ambiguity either way, save a word its own reading claimed (a
+    #: particle, a bound given name, an initial), which the switch
+    #: places too and which reports nothing. Added in 3.0; through 2.x the field followed
     #: name_order.
     lone_name_word: Role = field(
         default=Role.GIVEN, metadata={ADDED_IN: "3.0.0"})

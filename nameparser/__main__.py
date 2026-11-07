@@ -107,10 +107,10 @@ def main(argv: list[str] | None = None) -> int:
                          "name keeps its script's order, and a family "
                          "comma fixes the order")
     ap.add_argument("--lone-name-word", choices=_LONE_NAME_WORD,
-                    help="the field a name of one word reads as, under "
-                         "every order (default: given); a title, a "
-                         "nickname or a script's own order still "
-                         "decides first")
+                    help="the field a name of one name word reads as, "
+                         "under every order (default: given); a title, "
+                         "a nickname, a maiden name, a family comma or "
+                         "a script's own order still decides first")
     rules = ap.add_argument_group(
         "Policy switches",
         "each sets the Policy field of its name, replacing a pack's "

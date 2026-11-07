@@ -1,4 +1,5 @@
 """The runner over the shared case table, tests/v2/cases.py."""
+import dataclasses
 import functools
 import re
 from collections import Counter
@@ -24,6 +25,35 @@ def _parser_for_case(case: Case) -> Parser:
     if case.locale is not None:
         return parser_for(locales.get(case.locale))
     return Parser(policy=case.policy) if case.policy else Parser()
+
+
+def test_the_lone_name_word_switch_moves_only_a_lone_word() -> None:
+    # rules/O5 (#1111): Policy.lone_name_word decides one thing, which
+    # of the two primary fields a name of one name word fills. Over
+    # every policy row of the table, the two settings may differ only
+    # by that word swapping given for family -- no other field, no
+    # reported kind -- and the table holds rows where they do differ.
+    moved = 0
+    for case in CASES:
+        if case.locale is not None:
+            continue
+        base = case.policy or Policy()
+        given, family = (
+            Parser(policy=dataclasses.replace(base, lone_name_word=r))
+            .parse(case.text) for r in (Role.GIVEN, Role.FAMILY))
+        g, f = given.as_dict(), family.as_dict()
+        kinds = ([a.kind for a in given.ambiguities],
+                 [a.kind for a in family.ambiguities])
+        assert kinds[0] == kinds[1], case.id
+        if g == f:
+            continue
+        rest = ("given", "family")
+        assert ({k: v for k, v in g.items() if k not in rest}
+                == {k: v for k, v in f.items() if k not in rest}), case.id
+        assert (g["family"], f["given"], g["middle"]) == ("", "", ""), case.id
+        assert g["given"] == f["family"] != "", case.id
+        moved += 1
+    assert moved
 
 
 @pytest.mark.parametrize("case", CASES, ids=lambda c: c.id)

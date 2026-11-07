@@ -22,6 +22,7 @@
 "Andrew"                    →  ambiguities=("given-or-family",)
 "Garcia"  family-first      →  ambiguities=("given-or-family",)
 "Garcia"  lone_name_word-family  →  ambiguities=("given-or-family",)
+"Anh"  [vi]                 →  given="Anh"
 "Juan & Garcia"             →  ambiguities=("given-or-family",)
 "Smith Jr."                 →  ambiguities=("given-or-family",)
 ```
@@ -55,9 +56,10 @@
   "Smith née Jones"           →  family="Smith"  · boundary
   "Smith née Jones"           →  ambiguities=()
   ```
-- **The word's own claim decides it**: a particle, a bound given name, an initial (T5, T4).
+- **The word's own claim settles the report**: a particle, a bound given name, an initial (T5, T4) report nothing, and are placed by the setting as the Then says.
   ```
   "abd née Jones"             →  given="abd"
+  "abd née Jones"  lone_name_word-family  →  family="abd"
   "abd née Jones"             →  ambiguities=()
   "j"                         →  ambiguities=()
   ```
@@ -68,10 +70,9 @@
 
 **Accepted:**
 
-- A surname written alone under a family-first order reads as the given name unless the caller names the family, as CLDR's `Suzuki-san` does, a surname with a hyphenated honorific CLDR states as the family: the order a caller declares for longer names is not evidence about a word written alone, and a caller whose lone words are surnames says so.
+- A surname written alone under a family-first order reads as the given name unless the caller names the family, as the conventions corpus's `Suzuki-san` does, a surname with a hyphenated honorific that table states as the family `Suzuki`: the order a caller declares for longer names is not evidence about a word written alone, and a caller whose lone words are surnames says so.
   ```
   "Suzuki-san"  family-first  →  given="Suzuki-san"
-  "Anh"  [vi]                 →  given="Anh"
   ```
 
 ---

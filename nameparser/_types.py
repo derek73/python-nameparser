@@ -843,9 +843,10 @@ class AmbiguityKind(StrEnum):
     #: that names a family, a script whose own convention settles the
     #: order, or the vocabulary claiming the word (a particle, a bound
     #: given name, an initial's shape) each settle the reading, and a
-    #: settled reading is not a fork. A nickname or a suffix standing
-    #: BESIDE the one name word does not settle it -- "'Smitty' Jones
-    #: Jr." and "Smith Jr." both report.
+    #: settled reading is not a fork; so does a nickname beside it,
+    #: whatever suffix stands there too ("'Smitty' Jones Jr.", N3). A
+    #: suffix standing BESIDE the one name word does not settle it --
+    #: "Smith Jr." reports.
     GIVEN_OR_FAMILY = "given-or-family"
     #: A nickname/maiden delimiter opened without closing (or closed
     #: without opening); the text was kept as literal name content, so

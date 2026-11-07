@@ -1521,6 +1521,7 @@ def _policies(draw: st.DrawFn) -> Policy:
         lenient_comma_suffixes=draw(st.booleans()),
         strip_emoji=draw(st.booleans()),
         strip_bidi=draw(st.booleans()),
+        lone_name_word=draw(st.sampled_from([Role.GIVEN, Role.FAMILY])),
     )
 
 

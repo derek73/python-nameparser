@@ -935,8 +935,9 @@ def test_a_2_8_policy_pickle_loads_without_two_given_names() -> None:
     outside the checkout under `PYTHONSAFEPATH=1 uv run --isolated
     --no-project --with 'nameparser==2.8.0'`, the version and module
     path printed to show the wheel answered (2026-10-30). 3.0's
-    `two_given_names` (rules/O7, #704) carries ADDED_IN, so the pickle
-    loads with the field's default instead of being refused."""
+    `two_given_names` (rules/O7, #704) and `lone_name_word` (rules/O5,
+    #1111) carry ADDED_IN, so the pickle loads with the fields' defaults
+    instead of being refused."""
     import pickle
     from pathlib import Path
 
@@ -944,4 +945,5 @@ def test_a_2_8_policy_pickle_loads_without_two_given_names() -> None:
               "rb") as f:
         policy = pickle.load(f)
     assert policy.two_given_names is False
+    assert policy.lone_name_word is Role.GIVEN
     assert policy == Policy(two_family_names=True)
