@@ -2,7 +2,7 @@
 
 ## Standing
 
-- `ParsedName.surname1`, `surname1_particles` and `surname1_base` hold the family's first name unit, its particles and its base where rules/O6 read the family as two, and the family's own views where it read one; `family_particles` and `family_base` keep reading the whole family (R2 unchanged) — 2026-11-03 #1022 (Derek), THE FIRST SURNAME GETS VIEWS OF ITS OWN.
+- `ParsedName.surname1`, `surname1_particles` and `surname1_base` hold the family's first name unit, its particles and its base where rules/O6 read the family as two (and, since 2026-11-06 #845, where rules/W5 reads a Han surname pair, decisions/W5), and the family's own views where it read one; `family_particles` and `family_base` keep reading the whole family (R2 unchanged) — 2026-11-03 #1022 (Derek), THE FIRST SURNAME GETS VIEWS OF ITS OWN.
 - The first unit is the unit O6 read, so a middle word O3 folds into the family afterwards is in neither unit, and a particle P6 attached is in the first; where O6 read one unit, a fold's middles are left out all the same, the first surname being the family as it stood before the fold — 2026-11-03 #1022 (Derek), THE FIRST SURNAME GETS VIEWS OF ITS OWN; 2026-11-03 #1022 (Derek), FOLLOW-UP TO QUESTION 2.
 - `initials()` keeps reading the whole family's base — 2026-11-03 #1022 (Derek), THE FIRST SURNAME GETS VIEWS OF ITS OWN.
 - The views are `render()` keys and assertable fields of a rule's examples, and stay out of `as_dict()`, `--json`, `comparison_key()`, the repr and the snapshot — 2026-11-03 #1022 (Derek), THE FIRST SURNAME GETS VIEWS OF ITS OWN.

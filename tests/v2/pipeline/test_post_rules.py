@@ -1926,3 +1926,168 @@ def test_a_joined_credential_reads_as_its_spelling_written_apart() -> None:
     assert _pair_differences() == []
     # the control is a share of the grid the guard reads
     assert 0 < _UNGUARDED_PAIRS_1088 < _PAIRS_CHECKED
+
+
+# rules/W5's surname pair (#845): a four-character Han name opening with
+# two listed single surnames reads them as the family, two units of it.
+_ZH = parser_for(locales.ZH)
+
+
+@pytest.mark.parametrize("text", ["王李小明", "王李 小明", "王李小明先生",
+                                  "王李小明 先生"])
+def test_a_surname_pair_is_the_family_in_two_units(text: str) -> None:
+    name = _ZH.parse(text)
+    assert (name.family, name.given, name.middle) == ("王李", "小明", "")
+    assert (name.surname1, name.surname2) == ("王", "李")
+
+
+def test_reading_an_undivided_pair_reports_the_reading_not_taken() -> None:
+    name = _ZH.parse("王李小明")
+    assert [a.kind for a in name.ambiguities] == [
+        AmbiguityKind.SEGMENTATION]
+    assert [t.text for t in name.ambiguities[0].tokens] == ["王", "李", "小明"]
+    assert "'王' + '李小明' also reads" in name.ambiguities[0].detail
+    # the writer's space already said where the given name starts
+    assert _ZH.parse("王李 小明").ambiguities == ()
+
+
+@pytest.mark.parametrize("parser, text, fields", [
+    # the pair's order is not family-first, so nothing is divided past
+    # W1's own division and the name reads as before the rule (#845's
+    # review): given, middle, family and the word count
+    (parser_for(locales.ZH, base=Parser(policy=Policy(script_orders=()))),
+     "王李小明", ("王", "", "李小明", 2)),
+    (_ZH, "Amy 王李小明", ("Amy", "王", "李小明", 3)),
+    (_ZH, "王李小明 Amy", ("王", "李小明", "Amy", 3)),
+    (parser_for(locales.ZH,
+                base=Parser(policy=Policy(two_given_names=True))),
+     "王李小明 Amy", ("王李小明", "", "Amy", 3)),
+])
+def test_a_pair_the_order_does_not_read_is_not_divided(
+        parser: Parser, text: str, fields: tuple[str, str, str, int]) -> None:
+    name = parser.parse(text)
+    assert (name.given, name.middle, name.family, len(name.tokens)) == fields
+    assert (name.surname2, name.ambiguities) == ("", ())
+
+
+@pytest.mark.parametrize("text, fields", [
+    # a Latin name word beside the pair: the name is not wholly Han, so
+    # the pair is not divided even under a declared family-first order.
+    # The word count is asserted because R1's join renders an extra
+    # division inside one field as the word it was cut from
+    # (W1's own 王 + 李小明 makes four words; the pair would make five)
+    ("Amy 王李小明 Amy", ("Amy", "王", "李小明 Amy", 4)),
+    ("Amy Amy 王李小明", ("Amy", "Amy", "王李小明", 4)),
+])
+def test_a_declared_family_first_order_reads_no_pair_beside_latin(
+        text: str, fields: tuple[str, str, str, int]) -> None:
+    name = parser_for(locales.ZH, base=Parser(
+        policy=Policy(name_order=FAMILY_FIRST))).parse(text)
+    assert (name.family, name.given, name.middle,
+            len(name.tokens)) == fields
+    assert name.surname2 == ""
+
+
+def test_hans_own_order_outranks_a_declared_one_for_the_pair() -> None:
+    # Han's script_orders entry given-first, the declaration
+    # family-first: assign reads the entry, so the pair is not divided
+    name = parser_for(locales.ZH, base=Parser(policy=Policy(
+        script_orders=((Script.HAN, GIVEN_FIRST),),
+        name_order=FAMILY_FIRST))).parse("王李小明")
+    assert (name.given, name.family, len(name.tokens)) == ("王", "李小明", 2)
+
+
+@pytest.mark.parametrize("text, suffix", [
+    ("王李小明さん", "さん"), ("王李小明씨", "씨"), ("王李小明 PhD", "PhD"),
+])
+def test_post_nominals_ending_the_name_leave_the_pair_read(
+        text: str, suffix: str) -> None:
+    # no name piece of assign's, so they key no order (#845's review)
+    name = _ZH.parse(text)
+    assert (name.family, name.given, name.suffix, name.surname2) == (
+        "王李", "小明", suffix, "李")
+
+
+def test_a_folded_middle_does_not_join_the_word_it_was_cut_from() -> None:
+    # W1's 李 + 小明, the 李 folded in front by middle_as_family: the
+    # fold renders first and apart, as v1 prepended it (rules/R1)
+    name = parser_for(locales.ZH, base=Parser(policy=Policy(
+        middle_as_family=True,
+        name_order=FAMILY_FIRST_GIVEN_LAST))).parse("李小明 Amy")
+    assert name.family == "小明 李"
+
+
+def test_a_revised_pair_family_joins_with_a_space() -> None:
+    # a revised value's words carry no spans, so the join cannot see
+    # they were written together: accepted (decisions/W5, #845)
+    revised = _ZH.revise(_ZH.parse("王李小明"), family="王李")
+    assert (revised.family, revised.given) == ("王 李", "小明")
+
+
+@pytest.mark.parametrize("text", ["王李小明", "王李 小明", "王李小明 Amy"])
+def test_the_surname_pair_tag_is_never_published(text: str) -> None:
+    assert all("vocab:surname-pair" not in tok.tags
+               for tok in _ZH.parse(text).tokens)
+
+
+def test_a_word_a_division_cut_joins_whole_in_any_field() -> None:
+    # rules/R1's join is not W5's alone: W1's 김 + 민준, both given
+    # names in a mixed-script name read given-first, render as written
+    name = parse("김민준 John")
+    assert (name.given, name.middle, name.given_names) == ("김", "민준", "김민준")
+
+
+def test_a_divided_surname_pair_renders_as_written() -> None:
+    assert str(_ZH.parse("王李小明")) == "王李小明"
+
+
+def test_a_surname_pair_reads_the_same_with_two_family_names_on() -> None:
+    p = parser_for(locales.ZH,
+                   base=Parser(policy=Policy(two_family_names=True)))
+    name = p.parse("王李小明")
+    assert (name.family, name.given, name.surname2) == ("王李", "小明", "李")
+
+
+def test_a_spaced_pair_lays_the_rest_out_by_the_order() -> None:
+    name = _ZH.parse("王李 小明 美华")
+    assert (name.family, name.given, name.middle) == ("王李", "小明", "美华")
+
+
+@pytest.mark.parametrize("text, family, given", [
+    ("歐陽小明", "歐陽", "小明"),     # a listed compound keeps its reading
+    ("李林伟", "李", "林伟"),          # three characters are not reached
+])
+def test_a_surname_pair_leaves_its_exceptions_alone(
+        text: str, family: str, given: str) -> None:
+    name = _ZH.parse(text)
+    assert (name.family, name.given, name.surname2) == (family, given, "")
+
+
+@pytest.mark.parametrize("text, order, tagged", [
+    # given-first: the order reads no family before the pair
+    ("王李小明 Amy", GIVEN_FIRST, 1),
+    # family-first, the tagged word not the one right after the family
+    ("Amy Amy 王李小明", FAMILY_FIRST, 2),
+])
+def test_a_surname_pair_tag_post_rules_cannot_read_is_inert(
+        text: str, order: tuple[Role, Role, Role], tagged: int) -> None:
+    # script_segment tags only where post_rules will read the pair, so
+    # these declines are reached by a hand-placed tag alone: they keep
+    # a future drift between the two stages' order readings from
+    # marking a family the order did not build (rules/W5, #845)
+    from nameparser._pipeline import STAGES
+    from nameparser._pipeline._post_rules import post_rules
+    from nameparser._pipeline._state import (
+        SURNAME_PAIR_TAG, copy_with)
+    parser = parser_for(locales.ZH, base=Parser(
+        policy=Policy(name_order=order)))
+    state = ParseState(original=text, lexicon=parser.lexicon,
+                       policy=parser.policy)
+    for stage in STAGES[:-1]:
+        state = stage(state)
+    tokens = list(state.tokens)
+    tokens[tagged] = copy_with(
+        tokens[tagged], tags=tokens[tagged].tags | {SURNAME_PAIR_TAG})
+    out = post_rules(copy_with(state, tokens=tuple(tokens)))
+    assert not any("vocab:second-surname" in t.tags for t in out.tokens)
+    assert out.ambiguities == state.ambiguities

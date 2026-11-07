@@ -346,7 +346,8 @@ def test_stage_field_ownership() -> None:
         # attachment (#467) takes the family branch of a fork whose
         # other branches assign and group take, so each stage reports
         # the side it decides; the comma site is assign's since #613;
-        # and SUFFIX_OR_NICKNAME, with S13's decision (#810)
+        # and SUFFIX_OR_NICKNAME, with S13's decision (#810); and
+        # SEGMENTATION where it reads a Han surname pair (rules/W5, #845)
         "post_rules": {"tokens", "ambiguities"},
     }
     assert {s.__name__ for s in STAGES} == set(ownership)

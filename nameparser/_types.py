@@ -1358,6 +1358,7 @@ class ParsedName:
         suffix_join = roles == (Role.SUFFIX,)
         parts: list[str] = []
         folded: list[str] = []
+        end = -1
         for tok in self.tokens:
             if tok.role not in roles:
                 continue
@@ -1382,30 +1383,41 @@ class ParsedName:
             # view's ", " join does not split one credential in two
             if suffix_join and "joined" in tok.tags and parts:
                 parts[-1] += " " + tok.text
+            # rules/R1: "words the writer wrote together join with
+            # nothing between them" -- the two halves of any word a
+            # division cut (rules/W1, W5) that land in one field; the
+            # suffix keeps its entries apart (decisions/W5, #845)
+            elif (not suffix_join and parts and tok.span is not None
+                  and tok.span.start == end
+                  and FOLDED_TAG not in tok.tags):
+                parts[-1] += tok.text
             elif FOLDED_TAG in tok.tags:
                 # middle_as_family fold: v1 PREPENDED middle_list to
                 # last_list; spans cannot reorder, so the view does
                 folded.append(tok.text)
             else:
                 parts.append(tok.text)
+            # a folded word went to `folded`, not to the end of `parts`
+            end = (-1 if tok.span is None or FOLDED_TAG in tok.tags
+                   else tok.span.end)
         return (", " if suffix_join else " ").join(folded + parts)
 
     @property
     def title(self) -> str:
         """The words read as titles ("Dr.", "Sir"), wherever in the
-        name they stand, space-joined in written order; ``''`` for a
+        name they stand, space-joined in written order, save words written with nothing between them, which stay so; ``''`` for a
         name with none."""
         return self._text_for(Role.TITLE)
 
     @property
     def given(self) -> str:
-        """The given name's words, space-joined in written order;
+        """The given name's words, space-joined in written order, save words written with nothing between them, which stay so;
         ``''`` for a name with none ("de la Vega")."""
         return self._text_for(Role.GIVEN)
 
     @property
     def middle(self) -> str:
-        """The middle names' words, space-joined in written order;
+        """The middle names' words, space-joined in written order, save words written with nothing between them, which stay so;
         ``''`` for a name with none."""
         return self._text_for(Role.MIDDLE)
 
@@ -1416,8 +1428,10 @@ class ParsedName:
     # render before the rest of the family)
     def family(self) -> str:
         """The family name's words, particles included ("de la
-        Vega"), space-joined in written order, save the middle names
-        ``middle_as_family`` folds in, which come first; ``''`` for a
+        Vega"), space-joined in written order, save words written with
+        nothing between them, which stay so ("王李" in "王李小明" under
+        ``locales.ZH``), and the middle names ``middle_as_family`` folds
+        in, which come first; ``''`` for a
         name with none ("Williams" is a given name alone)."""
         return self._text_for(Role.FAMILY)
 
@@ -1476,7 +1490,7 @@ class ParsedName:
     def surnames(self) -> str:
         """The middle names and the family name together ("Q. Xavier
         de la Vega" in "Juan Q. Xavier de la Vega"), space-joined in
-        written order; ``''`` for a name with neither ("Williams")."""
+        written order, save words written with nothing between them, which stay so; ``''`` for a name with neither ("Williams")."""
         return self._text_for(Role.MIDDLE, Role.FAMILY)
 
     @property
@@ -1509,7 +1523,7 @@ class ParsedName:
     def given_names(self) -> str:
         """The given name and the middle names together ("Juan Q.
         Xavier" in "Juan Q. Xavier de la Vega"), space-joined in
-        written order; ``''`` for a name with neither ("de la
+        written order, save words written with nothing between them, which stay so; ``''`` for a name with neither ("de la
         Vega")."""
         return self._text_for(Role.GIVEN, Role.MIDDLE)
 
@@ -1552,7 +1566,8 @@ class ParsedName:
     def surname2(self) -> str:
         """The family's second name unit where the parse read the
         family as two (``Márquez`` in ``Gabriel García Márquez`` under
-        ``two_family_names``), which :attr:`family` keeps; ``''`` for a
+        ``two_family_names``, ``李`` in ``王李小明`` under
+        ``locales.ZH``), which :attr:`family` keeps; ``''`` for a
         family read as one, a family comma's ("Lloyd Webber, Andrew")
         and a hyphenated one included, for a name unpickled from 2.x,
         and once :meth:`replace` or Parser.revise rewrites ``family``,
@@ -1569,7 +1584,7 @@ class ParsedName:
     # makes the first-surname view" (history: decisions/R11, #1022)
     def _first_unit(self) -> bool:
         """Whether the parse marked a first unit: where O6 read two
-        units or O3 folded middles in. A family whose words carry no
+        units, W5 divided a Han surname pair or O3 folded middles in. A family whose words carry no
         reading (replace(), Parser.revise, a 2.x pickle) is unmarked
         and reads whole."""
         return any(tok.role is Role.FAMILY and tok.reading is not None

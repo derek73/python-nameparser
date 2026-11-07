@@ -163,6 +163,12 @@ SECOND_SURNAME_TAG = "vocab:second-surname"
 #: `Reading.first_surname` (rules/R11, #1022).
 FIRST_SURNAME_TAG = "vocab:first-surname"
 
+#: On the second of two listed single surnames that script_segment
+#: divides a Han name's family into (rules/W5, #845), so post_rules
+#: reads it as the family's second unit and marks both units with the
+#: two tags above; dropped from the published token like them.
+SURNAME_PAIR_TAG = "vocab:surname-pair"
+
 #: On a word of `Lexicon.titles_ambiguous` whichever way classify read
 #: it (rules/H9): read as a title it carries "vocab:title" too, read
 #: out of the title it carries this alone, which is how assign finds
@@ -385,8 +391,8 @@ class ParseState:
     the folded-middle tag on what O3 folds and the
     no-comma attachment joins, with the attached tag on the latter,
     the second-surname tag on the words of the family's second unit
-    where O6 reads two (rules/R10), the first-surname tag on the
-    words of its first unit (rules/R11), and the ambiguity P6's no-comma
+    where O6 reads two or W5 reads a Han surname pair (rules/R10), the
+    first-surname tag on the words of its first unit (rules/R11), and the ambiguity P6's no-comma
     attachment
     reports (#467) and SUFFIX_OR_NICKNAME on a member it leaves a
     nickname.

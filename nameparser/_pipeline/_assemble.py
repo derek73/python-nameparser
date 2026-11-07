@@ -11,9 +11,9 @@ letter ends (rules/P8, #721), and comma_offsets, for the comma part
 rules/R9's Turkic arm keeps a marker and its father's name in.
 Produces: a validated ParsedName, each token carrying the reading the
 parse took (`Token.reading`), a word of the family's second unit
-marked `Reading.second_surname` where O6's tag says so (rules/R10)
-and `Reading.first_surname` where its first-surname tag does
-(rules/R11) --
+marked `Reading.second_surname` where O6's or W5's tag says so
+(rules/R10) and `Reading.first_surname` where a first-surname tag
+does (rules/R11) --
 the constructor re-checks every
 invariant (span order/bounds, ambiguity subset), so a pipeline bug
 that would produce an invalid result dies HERE, not in a renderer
@@ -53,7 +53,7 @@ from nameparser._pipeline._state import (
     CREDENTIAL_WORD_TAG, FIELD_READING, GENERATION_WORD_TAG, HONORIFIC_WORD_TAG,
     NAME_ROLES, PATRONYMIC_TAG, SECOND_SURNAME_TAG, SHAPE_ACRONYM_TAG,
     SHARED_NAME_TAG, PARTICLE_GIVEN_TAG, BOUND_PHRASE_TAG,
-    FIRST_SURNAME_TAG,
+    FIRST_SURNAME_TAG, SURNAME_PAIR_TAG,
     SPLIT_CREDENTIAL_TAG, SPLIT_MEMBER_TAG, PAST_REACH_TAG,
     JOINED_TITLE_TAG, TITLE_AMBIGUOUS_TAG, TRAILING_TITLE_TAG, Beside, Deferred, ParseState, PendingAmbiguity,
     Structure, WorkToken, comma_bucket, reported_suffix_fork,
@@ -270,10 +270,12 @@ _reading = functools.lru_cache(maxsize=1024)(Reading)
 _KIND_TAGS = frozenset({GENERATION_WORD_TAG, CREDENTIAL_WORD_TAG, HONORIFIC_WORD_TAG,
                         PATRONYMIC_TAG, ATTACHED_TAG, TRAILING_TITLE_TAG,
                         SHARED_NAME_TAG, PARTICLE_GIVEN_TAG, PAST_REACH_TAG,
-                        BOUND_PHRASE_TAG, JOINED_TITLE_TAG})
+                        BOUND_PHRASE_TAG, JOINED_TITLE_TAG,
+                        SURNAME_PAIR_TAG})
 
-#: O6's second-surname mark (rules/R10) and the first-unit mark O6 or
-#: O3 writes (rules/R11), which no published token carries either:
+#: The second-surname mark O6 or W5 writes (rules/R10) and the
+#: first-unit mark O6, W5 or O3 writes (rules/R11), which no published
+#: token carries either:
 #: `Reading.second_surname` and `Reading.first_surname` name them.
 _SURNAME_UNITS = frozenset({SECOND_SURNAME_TAG, FIRST_SURNAME_TAG})
 

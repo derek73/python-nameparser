@@ -10,10 +10,10 @@ from nameparser._pipeline import STAGES
 from nameparser._pipeline._script_segment import _PEELED_TAG, script_segment
 from nameparser._pipeline._segment import segment
 from nameparser._pipeline._state import (
-    ParseState, PendingAmbiguity, Structure,
+    SURNAME_PAIR_TAG, ParseState, PendingAmbiguity, Structure,
 )
 from nameparser._pipeline._tokenize import tokenize
-from nameparser._policy import Policy, Script
+from nameparser._policy import FAMILY_FIRST, Policy, Script
 from nameparser._types import AmbiguityKind, Segmentation, Segmenter
 
 _HAN = Policy(segment_scripts=frozenset({Script.HAN}))
@@ -157,6 +157,77 @@ def test_single_possible_split_emits_no_ambiguity() -> None:
     # only 毛 matches: no fork, no noise
     assert _run("毛泽东").ambiguities == ()
     assert _run("김민준", policy=_HANGUL).ambiguities == ()
+
+
+# Two single surnames, neither pair listed as a compound (#845): the
+# married double surname's shape. 欧/欧阳 stay so a listed compound is
+# in reach; 이 beside 김 so hangul can show the rule is Han's alone.
+_LEX_PAIR = Lexicon(surnames=frozenset(
+    {"王", "李", "林", "欧", "欧阳", "김", "이"}))
+
+
+def _pair_tagged(state: ParseState) -> list[str]:
+    return [t.text for t in state.tokens if SURNAME_PAIR_TAG in t.tags]
+
+
+def test_four_characters_opening_with_two_surnames_divide_after_both() -> None:
+    out = _run("王李小明", lexicon=_LEX_PAIR)
+    assert _texts(out) == ["王", "李", "小明"]
+    assert _pair_tagged(out) == ["李"]
+    # whether the pair is read is post_rules' call, under the name's
+    # order, so the report is made there, not here
+    assert out.ambiguities == ()
+
+
+@pytest.mark.parametrize("text, expected", [
+    ("欧阳小明", ["欧阳", "小明"]),        # a listed compound keeps its reading
+    ("王李明", ["王", "李明"]),            # three characters are not reached
+    ("王李小明丽", ["王", "李小明丽"]),    # nor five
+    ("王小明丽", ["王", "小明丽"]),        # the second is no surname
+    ("王李", ["王", "李"]),                # a lone pair has no given name after it
+    ("王 李小明", ["王", "李小明"]),       # the writer divided after the first
+    # a word of one after the space: a three-character name with a
+    # stray space, as tw-donors' only two such names are (#845 review)
+    ("李林 伟", ["李", "林", "伟"]),
+    ("王李 美", ["王", "李", "美"]),
+    # a Latin word: the order may not be family-first, so W1's own
+    # division, which reads alike under any order
+    ("Dr 王李小明", ["Dr", "王", "李小明"]),
+    ("王李小明 Amy", ["王", "李小明", "Amy"]),
+])
+def test_the_surname_pair_reaches_four_characters_and_nothing_else(
+        text: str, expected: list[str]) -> None:
+    out = _run(text, lexicon=_LEX_PAIR)
+    assert _texts(out) == expected
+    assert _pair_tagged(out) == []
+
+
+@pytest.mark.parametrize("policy, divides", [
+    (Policy(segment_scripts=frozenset({Script.HAN}), script_orders=()),
+     False),
+    (Policy(segment_scripts=frozenset({Script.HAN}), script_orders=(),
+            name_order=FAMILY_FIRST), True),
+])
+def test_the_surname_pair_divides_only_where_the_name_reads_family_first(
+        policy: Policy, divides: bool) -> None:
+    out = _run("王李小明", policy=policy, lexicon=_LEX_PAIR)
+    assert _texts(out) == (["王", "李", "小明"] if divides
+                           else ["王", "李小明"])
+
+
+def test_a_spaced_pair_divides_into_its_two_surnames() -> None:
+    # the writer drew the family's end: it divides into its units, and
+    # no fork is recorded, since the space settled where the given starts
+    out = _run("王李 小明", lexicon=_LEX_PAIR)
+    assert _texts(out) == ["王", "李", "小明"]
+    assert _pair_tagged(out) == ["李"]
+    assert out.ambiguities == ()
+
+
+def test_the_surname_pair_is_hans_alone() -> None:
+    out = _run("김이수진", policy=_HANGUL, lexicon=_LEX_PAIR)
+    assert _texts(out) == ["김", "이수진"]
+    assert _pair_tagged(out) == []
 
 
 def test_a_family_comma_stands_the_surname_split_down() -> None:

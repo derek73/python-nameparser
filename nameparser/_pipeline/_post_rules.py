@@ -9,7 +9,7 @@ extracted, one_case and original, which S1's set-apart pass reads,
 settling S13's members with its own (#810, #792), original also read
 by R1's entry pass for a comma a set-apart clause kept; and order,
 the order assign read the name under, which H1, P1's fold, P6's
-attachment, P10, O1, O2, O6 and O7 key on rather than
+attachment, P10, O1, O2, O6, O7 and W5's surname pair key on rather than
 Policy.name_order (#395).
 Produces: tokens with roles adjusted by the post rules (among them the
 TITLE and SUFFIX roles of a set-apart clause's words, rules/S1, each
@@ -23,7 +23,9 @@ joins to the family, with the attached tag on the latter (rules/R9
 tells the two apart by it), the second-surname tag on each word of the
 family's second unit where O6 reads two (rules/R10), the first-surname
 tag on each word of the first unit, written by O6 where it reads two
-and by O3 on the family it folds into otherwise (rules/R11), and the ambiguity P6's attachment reports at the end of a name read
+and by O3 on the family it folds into otherwise (rules/R11), both unit
+tags where it reads a Han surname pair (rules/W5, #845), with a
+SEGMENTATION report where that pair was written undivided, and the ambiguity P6's attachment reports at the end of a name read
 family-first (#467) -- after a family comma, that attachment is
 assign's since #613, and behind an empty part before the comma too
 since #892.
@@ -65,7 +67,7 @@ from nameparser._pipeline._pieces import (
 from nameparser._pipeline._state import (
     AMBIGUOUS_ACRONYM_TAG, ATTACHED_TAG, NAME_ROLES, PATRONYMIC_TAG,
     BOUND_PHRASE_TAG, PARTICLE_GIVEN_TAG, PAST_REACH_TAG, SHARED_NAME_TAG,
-    FIRST_SURNAME_TAG, SECOND_SURNAME_TAG,
+    FIRST_SURNAME_TAG, SECOND_SURNAME_TAG, SURNAME_PAIR_TAG,
     ParseState, PendingAmbiguity, PendingReading, Structure,
     WorkToken, _NEVER_FLIPPED, comma_bucket, copy_with, reported_suffix_fork,
 )
@@ -421,6 +423,53 @@ def _take_second_family_name(state: ParseState,
             state.order, len(units))[1:]):
         for i in unit:
             _retag(tokens, i, role)
+
+
+def _read_surname_pair(state: ParseState,
+                       tokens: list[WorkToken]) -> PendingAmbiguity | None:
+    """rules/W5: "the two surnames are the family, in two units" -- the
+    second, which script_segment tagged, joins the family assign placed
+    before it, and what is left is laid out by the order as O6's
+    family-first branch lays out its own (decisions/W5, #845). In place.
+
+    script_segment divides the pair only where the name is read
+    family-first, so assign placed the first surname as the family and
+    the second as the first word after it; the checks below keep the
+    tag inert anywhere else all the same.
+
+    The report is made here, where the pair is read, and only for a
+    name written undivided: there W1's longest listed surname first
+    reads the given name from the second surname on, and that is the
+    reading not taken, while a writer's space after the pair has
+    already said where the given name starts."""
+    if state.order is None or state.order[0] is Role.GIVEN:
+        return None
+    _, given, middle, family = _positions(tokens)
+    units = _units(tokens, sorted(given + middle))
+    if (len(family) != 1 or not units or len(units[0]) != 1
+            or units[0][0] != family[0] + 1
+            or SURNAME_PAIR_TAG not in tokens[units[0][0]].tags):
+        return None
+    first, second = family[0], units[0][0]
+    _mark_surname(tokens, family, FIRST_SURNAME_TAG)
+    _mark_surname(tokens, units[0], SECOND_SURNAME_TAG)
+    for unit, role in zip(units[1:], _name_positions(
+            state.order, len(units))[1:]):
+        for i in unit:
+            _retag(tokens, i, role)
+    after = second + 1
+    if (after == len(tokens) or tokens[after].span is None
+            or tokens[after].span.start != tokens[second].span.end):
+        return None
+    word = (tokens[first].text + tokens[second].text
+            + tokens[after].text)
+    return PendingAmbiguity(
+        AmbiguityKind.SEGMENTATION,
+        f"{word!r} splits as {tokens[first].text!r} + "
+        f"{tokens[second].text!r} + {tokens[after].text!r} on two "
+        f"surnames; {tokens[first].text!r} + "
+        f"{tokens[second].text + tokens[after].text!r} also reads",
+        (first, second, after))
 
 
 def _one_given_word(tokens: list[WorkToken], given: list[int]) -> bool:
@@ -1134,6 +1183,13 @@ def post_rules(state: ParseState) -> ParseState:
     for token in tokens:
         if PARTICLE_GIVEN_TAG in token.tags:
             _given_phrase_middle(state, tokens)
+            break
+    # as P10's loop above: a name with no surname pair pays no call
+    for token in tokens:
+        if SURNAME_PAIR_TAG in token.tags:
+            report = _read_surname_pair(state, tokens)
+            if report is not None:
+                ambiguities.append(report)
             break
     if state.policy.two_family_names:
         _take_second_family_name(state, tokens)
