@@ -75,6 +75,12 @@
   "Ram Bahadur B.K., PhD"     →  family="B.K."
   "Jane Doe nee Smith B.K."   →  maiden="Smith B.K."
   ```
+- **A word with interior periods any of whose chunks is title vocabulary is a title**, its title chunk read before its suffix chunks, so a degree written joined to its field (`Dipl.Ing.`, `Dipl.-Psych.`) reads as the title its first chunk is, the field's own chunk a credential or no word.
+  ```
+  "John Smith, Dipl.Ing."     →  title="Dipl.Ing."
+  "Maxie Bunz, Dipl.Psych."   →  title="Dipl.Psych."
+  "Dipl.-Kfm. Dalimil Ospalý" →  title="Dipl.-Kfm."
+  ```
 - **The position reading is a caller switch, ON by default**, and the example lines name it; turned off, such a word is name material and the chunk rule still decides the rest.
   ```
   "John Smith X.Y.Z."  unlisted_dotted_suffixes-off  →  family="X.Y.Z."
@@ -120,6 +126,11 @@
   "Jane Doe Ma R.T."          →  family="R.T."
   "Jane Doe Ma R.T."          →  middle="Doe Ma"
   "JANE DOE MA R.T."          →  family="R.T."
+  ```
+- A word with interior periods and a title chunk, ending a name with no comma in front of it, reads as the family name: the suffix reading has given way to the title, and the trailing title run (H5) reads no word with an interior period (#1116), so the surname before it reads as a middle name.
+  ```
+  "John Smith Dipl.Ing."      →  family="Dipl.Ing."
+  "John Smith Dipl.Ing."      →  middle="Smith"
   ```
 - The initialless-script clause carries no example line of its own. Every input that exercises it composes a script that writes no abbreviations with a period that only a Latin convention writes — `John Smith 田.中.` is the shape — and a composed form no writing system produces is tolerated input rather than contract, which an example of a normative rule would promise. So the witnesses are the tolerated row tests/v2/cases.py's an_initialless_script_glued_into_periods_is_not_this_shape and the CJK assertions in tests/v2/pipeline/test_vocab.py's test_period_joined_vocab_retires_the_single_character_chunk. W3 states the same precedence for the same reason.
 

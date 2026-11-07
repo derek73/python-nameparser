@@ -718,6 +718,7 @@
 {"name": "Dijk, Jan van", "given": "Jan", "family": "van Dijk", "ambiguities": ["PARTICLE_OR_GIVEN"], "alternatives": ["PARTICLE_OR_GIVEN: name as middle (declared)"], "initials": "J. D."}
 {"name": "Dionisio Aguado y García", "given": "Dionisio", "family": "Aguado y García", "initials": "D. A. G."}
 {"name": "Dionisio Guillin Mercado", "given": "Dionisio", "middle": "Guillin", "family": "Mercado", "initials": "D. G. M."}
+{"name": "Dipl.-Kfm. Dalimil Ospalý", "title": "Dipl.-Kfm.", "given": "Dalimil", "family": "Ospalý", "initials": "D. O."}
 {"name": "Diponegoro", "given": "Diponegoro", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "D."}
 {"name": "Djuanda", "given": "Djuanda", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "D."}
 {"name": "Dl Dr. Daniel Ionescu Dragoș Ioan Ardelean Jr.", "given": "Dl", "middle": "Dr. Daniel Ionescu Dragoș Ioan", "family": "Ardelean", "suffix": "Jr.", "initials": "D. D. D. I. D. I. A.", "capitalized_force": "DL Dr. Daniel Ionescu Dragoș Ioan Ardelean Jr.", "generation": "Jr."}
@@ -1879,6 +1880,7 @@
 {"name": "John Smith C.H.A.", "given": "John", "family": "Smith", "suffix": "C.H.A.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "J. S."}
 {"name": "John Smith DO Jones", "given": "John", "middle": "Smith", "family": "DO Jones", "initials": "J. S. J.", "capitalized_force": "John Smith do Jones"}
 {"name": "John Smith Dean.", "given": "John", "middle": "Smith", "family": "Dean.", "initials": "J. S. D."}
+{"name": "John Smith Dipl.Ing.", "given": "John", "middle": "Smith", "family": "Dipl.Ing.", "initials": "J. S. D."}
 {"name": "John Smith Dr.", "title": "Dr.", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "John Smith Dr., Prof.", "title": "Dr. Prof.", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "John Smith E.S.Q.", "given": "John", "family": "Smith", "suffix": "E.S.Q.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as family (position)"], "initials": "J. S."}
@@ -2005,6 +2007,7 @@
 {"name": "John Smith, A.B.", "given": "A.B.", "family": "John Smith", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "A. J. S."}
 {"name": "John Smith, A.B. Ph.D.", "given": "A.B.", "family": "John Smith", "suffix": "Ph.D.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "A. J. S."}
 {"name": "John Smith, AD", "given": "AD", "family": "John Smith", "initials": "A. J. S.", "capitalized_force": "Ad John Smith"}
+{"name": "John Smith, Dipl.Ing.", "title": "Dipl.Ing.", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "John Smith, Dr.", "title": "Dr.", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "John Smith, Dr.", "order": "FAMILY_FIRST", "title": "Dr.", "given": "Smith", "family": "John", "initials": "S. J."}
 {"name": "John Smith, Dr. / MD", "title": "Dr.", "given": "John", "family": "Smith", "suffix": "MD", "initials": "J. S."}
@@ -2793,6 +2796,7 @@
 {"name": "Maurus Daniel Esteva a Alsina", "given": "Maurus", "middle": "Daniel Esteva a", "family": "Alsina", "initials": "M. D. E. a. A.", "capitalized_force": "Maurus Daniel Esteva A Alsina"}
 {"name": "Max Ben Mustermann", "given": "Max", "middle": "Ben", "family": "Mustermann", "initials": "M. B. M."}
 {"name": "Max Born", "given": "Max", "family": "Born", "initials": "M. B."}
+{"name": "Maxie Bunz, Dipl.Psych.", "title": "Dipl.Psych.", "given": "Maxie", "family": "Bunz", "initials": "M. B."}
 {"name": "Mayo", "given": "Mayo", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "M."}
 {"name": "Mañé i Miravet, Teresa", "given": "Teresa", "family": "Mañé i Miravet", "initials": "T. M. M."}
 {"name": "Maǧrīṭī, Abu-'l-Qāsim Maslama Ibn-Aḥmad al-", "given": "Abu-'l-Qāsim", "middle": "Maslama Ibn-Aḥmad", "family": "al- Maǧrīṭī", "initials": "A. M. I. M.", "capitalized_force": "Abu-'L-Qāsim Maslama ibn-Aḥmad al- Maǧrīṭī"}
