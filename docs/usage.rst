@@ -309,6 +309,20 @@ language is up to you. When you know the data is Chinese, apply the
     >>> parser_for(locales.ZH).parse("毛泽东").family
     '毛'
 
+A Chinese name can carry two surnames. In Taiwan a married woman
+wrote her husband's surname before her own (冠夫姓) — the Civil Code's
+default until 1998, and still a choice — and a mainland child may carry
+both parents' surnames the same way. A Han given name is one or two
+characters, so under ``zh`` a four-character name whose first two
+characters are both on the surname list reads them as the family, the
+two of them its two units (``surname1`` and ``surname2``, below):
+
+.. doctest::
+
+    >>> wangli = parser_for(locales.ZH).parse("王李小明")
+    >>> wangli.family, wangli.given, wangli.surname2
+    ('王李', '小明', '李')
+
 Transcribed foreign names
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -773,8 +787,9 @@ name written without the particle has none:
     ''
 
 ``surname2`` is the family's second name, where the parse read the
-family as two: only with ``two_family_names`` on
-(:ref:`two-family-names`), and ``family`` keeps both. Every other name
+family as two: with ``two_family_names`` on
+(:ref:`two-family-names`), or for a Chinese name opening with two
+surnames under ``zh`` (:ref:`east-asian-names`), and ``family`` keeps both. Every other name
 has none, a family comma's and a hyphenated one included:
 
 .. doctest::

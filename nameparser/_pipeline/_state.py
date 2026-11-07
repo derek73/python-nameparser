@@ -163,6 +163,12 @@ SECOND_SURNAME_TAG = "vocab:second-surname"
 #: `Reading.first_surname` (rules/R11, #1022).
 FIRST_SURNAME_TAG = "vocab:first-surname"
 
+#: On the second of two listed single surnames that script_segment
+#: divides a Han name's family into (rules/W5, #845), so post_rules
+#: reads it as the family's second unit and marks both units with the
+#: two tags above; dropped from the published token like them.
+SURNAME_PAIR_TAG = "vocab:surname-pair"
+
 #: On a word of `Lexicon.titles_ambiguous` whichever way classify read
 #: it (rules/H9): read as a title it carries "vocab:title" too, read
 #: out of the title it carries this alone, which is how assign finds

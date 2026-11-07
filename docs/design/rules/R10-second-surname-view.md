@@ -1,10 +1,10 @@
 # R10 — the second-surname view
 
-**When:** two-family-name handling has read a name's family as two name units (O6), as in "Gabriel García Márquez".
+**When:** two-family-name handling has read a name's family as two name units (O6), as in "Gabriel García Márquez", or a Han surname pair has divided one (W5).
 
 **Then:** the family's second name unit, the one written second, makes the second-surname view, the family keeping both units, and every other name has an empty one.
 
-**Because:** across Spain and most of Latin America a person carries two family names, and a caller addressing or sorting by the first one, or filling CLDR's `surname2` or Wikidata's second-family-name field, needs to know where the second begins. Only O6 knows that, since only the caller's switch says the family holds two, so the view reads the unit O6 took and never a position.
+**Because:** across Spain and most of Latin America a person carries two family names, and a caller addressing or sorting by the first one, or filling CLDR's `surname2` or Wikidata's second-family-name field, needs to know where the second begins. Only O6 knows that, since only the caller's switch says the family holds two, and W5 for a Han family, so the view reads the unit those rules took and never a position.
 
 ```
 "Gabriel García Márquez"  two_family_names  →  surname2="Márquez"

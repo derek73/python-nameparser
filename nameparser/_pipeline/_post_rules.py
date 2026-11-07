@@ -9,7 +9,7 @@ extracted, one_case and original, which S1's set-apart pass reads,
 settling S13's members with its own (#810, #792), original also read
 by R1's entry pass for a comma a set-apart clause kept; and order,
 the order assign read the name under, which H1, P1's fold, P6's
-attachment, P10, O1, O2, O6 and O7 key on rather than
+attachment, P10, O1, O2, O6, O7 and W5's surname pair key on rather than
 Policy.name_order (#395).
 Produces: tokens with roles adjusted by the post rules (among them the
 TITLE and SUFFIX roles of a set-apart clause's words, rules/S1, each
@@ -22,8 +22,9 @@ folded-middle tag on the words O3 folds and P6's no-comma attachment
 joins to the family, with the attached tag on the latter (rules/R9
 tells the two apart by it), the second-surname tag on each word of the
 family's second unit where O6 reads two (rules/R10), the first-surname
-tag on each word of the first unit, written by O6 where it reads two
-and by O3 on the family it folds into otherwise (rules/R11), and the ambiguity P6's attachment reports at the end of a name read
+tag on each word of the first unit, written by O6 where it reads two,
+both written where script_segment divided a Han surname pair (rules/W5,
+#845), and by O3 on the family it folds into otherwise (rules/R11), and the ambiguity P6's attachment reports at the end of a name read
 family-first (#467) -- after a family comma, that attachment is
 assign's since #613, and behind an empty part before the comma too
 since #892.
@@ -65,7 +66,7 @@ from nameparser._pipeline._pieces import (
 from nameparser._pipeline._state import (
     AMBIGUOUS_ACRONYM_TAG, ATTACHED_TAG, NAME_ROLES, PATRONYMIC_TAG,
     BOUND_PHRASE_TAG, PARTICLE_GIVEN_TAG, PAST_REACH_TAG, SHARED_NAME_TAG,
-    FIRST_SURNAME_TAG, SECOND_SURNAME_TAG,
+    FIRST_SURNAME_TAG, SECOND_SURNAME_TAG, SURNAME_PAIR_TAG,
     ParseState, PendingAmbiguity, PendingReading, Structure,
     WorkToken, _NEVER_FLIPPED, comma_bucket, copy_with, reported_suffix_fork,
 )
@@ -415,6 +416,32 @@ def _take_second_family_name(state: ParseState,
     if family[0] > units[0][0]:
         return
     # the unit taken joins the family as its second
+    _mark_surname(tokens, family, FIRST_SURNAME_TAG)
+    _mark_surname(tokens, units[0], SECOND_SURNAME_TAG)
+    for unit, role in zip(units[1:], _name_positions(
+            state.order, len(units))[1:]):
+        for i in unit:
+            _retag(tokens, i, role)
+
+
+def _read_surname_pair(state: ParseState, tokens: list[WorkToken]) -> None:
+    """rules/W5: "the two surnames are the family, in two units" -- the
+    second, which script_segment tagged, joins the family assign placed
+    before it, and what is left is laid out by the order as O6's
+    family-first branch lays out its own (decisions/W5, #845). In place.
+
+    A Han name reads family-first by its script, so assign placed the
+    first surname as the family and the second as the given name; under
+    an order that did not (`script_orders` left without Han, or a family
+    comma, where the division stands down anyway), the tag is inert."""
+    if state.order is None or state.order[0] is Role.GIVEN:
+        return
+    _, given, middle, family = _positions(tokens)
+    units = _units(tokens, sorted(given + middle))
+    if (len(family) != 1 or not units or len(units[0]) != 1
+            or units[0][0] != family[0] + 1
+            or SURNAME_PAIR_TAG not in tokens[units[0][0]].tags):
+        return
     _mark_surname(tokens, family, FIRST_SURNAME_TAG)
     _mark_surname(tokens, units[0], SECOND_SURNAME_TAG)
     for unit, role in zip(units[1:], _name_positions(
@@ -1134,6 +1161,11 @@ def post_rules(state: ParseState) -> ParseState:
     for token in tokens:
         if PARTICLE_GIVEN_TAG in token.tags:
             _given_phrase_middle(state, tokens)
+            break
+    # as P10's loop above: a name with no surname pair pays no call
+    for token in tokens:
+        if SURNAME_PAIR_TAG in token.tags:
+            _read_surname_pair(state, tokens)
             break
     if state.policy.two_family_names:
         _take_second_family_name(state, tokens)

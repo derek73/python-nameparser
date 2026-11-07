@@ -109,6 +109,7 @@ Entry conventions:
 - [W2 — the glued-honorific peel](W2-glued-honorific-peel.md)
 - [W3 — the writer's divisions are respected](W3-writers-divisions-are-respected.md)
 - [W4 — script-scoped order](W4-script-scoped-order.md)
+- [W5 — a Han surname pair](W5-han-surname-pair.md)
 
 ## Tokens, initials & punctuation (T)
 

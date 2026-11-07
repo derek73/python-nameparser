@@ -1,10 +1,10 @@
 # R11 — the first-surname views
 
-**When:** two-family-name handling has read a name's family as two name units (O6), as in "Juan Pérez de la Vega", or compound-family handling has folded middle names into it (O3).
+**When:** two-family-name handling has read a name's family as two name units (O6), as in "Juan Pérez de la Vega", a Han surname pair has divided one (W5), or compound-family handling has folded middle names into it (O3).
 
 **Then:** the family's first name unit, the one written first, makes the first-surname view, split into its particles and its base as the family's own views split the whole family (R2), and a family read as one unit is its own first surname.
 
-**Because:** CLDR's `surname-prefix` and `surname-core` describe the first of two surnames, and CLDR has no prefix field for the second, so a pattern filling them needs the first unit told apart. A base joining words of both surnames is nobody's name, and it sorts and abbreviates wrongly wherever a caller reads the base as the surname to file under. Only O6 knows where the first unit ends and only O3 which words it folded in, so the views read the marks those rules leave and never a position.
+**Because:** CLDR's `surname-prefix` and `surname-core` describe the first of two surnames, and CLDR has no prefix field for the second, so a pattern filling them needs the first unit told apart. A base joining words of both surnames is nobody's name, and it sorts and abbreviates wrongly wherever a caller reads the base as the surname to file under. Only O6 and W5 know where the first unit ends and only O3 which words it folded in, so the views read the marks those rules leave and never a position.
 
 ```
 "Juan Pérez de la Vega"  two_family_names  →  surname1="Pérez"

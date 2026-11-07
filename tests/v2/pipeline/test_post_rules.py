@@ -1926,3 +1926,42 @@ def test_a_joined_credential_reads_as_its_spelling_written_apart() -> None:
     assert _pair_differences() == []
     # the control is a share of the grid the guard reads
     assert 0 < _UNGUARDED_PAIRS_1088 < _PAIRS_CHECKED
+
+
+# rules/W5's surname pair (#845): a four-character Han name opening with
+# two listed single surnames reads them as the family, two units of it.
+_ZH = parser_for(locales.ZH)
+
+
+@pytest.mark.parametrize("text", ["王李小明", "王李 小明", "王李小明先生",
+                                  "王李小明 先生"])
+def test_a_surname_pair_is_the_family_in_two_units(text: str) -> None:
+    name = _ZH.parse(text)
+    assert (name.family, name.given, name.middle) == ("王李", "小明", "")
+    assert (name.surname1, name.surname2) == ("王", "李")
+
+
+def test_a_divided_surname_pair_renders_as_written() -> None:
+    assert str(_ZH.parse("王李小明")) == "王李小明"
+
+
+def test_a_surname_pair_reads_the_same_with_two_family_names_on() -> None:
+    p = parser_for(locales.ZH,
+                   base=Parser(policy=Policy(two_family_names=True)))
+    name = p.parse("王李小明")
+    assert (name.family, name.given, name.surname2) == ("王李", "小明", "李")
+
+
+def test_a_spaced_pair_lays_the_rest_out_by_the_order() -> None:
+    name = _ZH.parse("王李 小明 美华")
+    assert (name.family, name.given, name.middle) == ("王李", "小明", "美华")
+
+
+@pytest.mark.parametrize("text, family, given", [
+    ("歐陽小明", "歐陽", "小明"),     # a listed compound keeps its reading
+    ("李林伟", "李", "林伟"),          # three characters are not reached
+])
+def test_a_surname_pair_leaves_its_exceptions_alone(
+        text: str, family: str, given: str) -> None:
+    name = _ZH.parse(text)
+    assert (name.family, name.given, name.surname2) == (family, given, "")

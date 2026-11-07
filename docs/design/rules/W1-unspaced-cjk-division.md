@@ -23,6 +23,10 @@
 
 **Except:**
 
+- **A Han name of four characters opening with two listed single surnames** divides after both of them (W5).
+  ```
+  "王李小明"  [zh]  →  family="王李"
+  ```
 - **A name the interpunct divides** is already divided in the sense that matters — division stands down entirely there, vocabulary and segmenter alike (#298; decisions/T3).
   ```
   "安东尼·陈志明"  [zh]        →  family="陈志明"

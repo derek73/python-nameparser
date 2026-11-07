@@ -87,5 +87,5 @@ Excluded (CAPITALIZATION_EXCEPTIONS — md, ii, iii, iv, removed 2026-09-23, #45
 
 Excluded (locales.ZH surnames, nameparser/locales/zh.py — the two-character entries):
 
-- Married double surnames (王李, 張李, 陳李, 李林, 張陳 and the rest of the Taiwan file's two-character rows that join two single surnames). The longest match runs first, so 李林 would cut 李林伟 into 李林 + 伟, a real Chinese name read wrong where today it reads right (2026-10-18, #695). 張廖, 張簡 and 范姜 are not this class: they are clan compounds borne as one surname, and ship.
+- Married double surnames (王李, 張李, 陳李, 李林, 張陳 and the rest of the Taiwan file's two-character rows that join two single surnames). The longest match runs first, so 李林 would cut 李林伟 into 李林 + 伟, a real Chinese name read wrong where today it reads right (2026-10-18, #695). A pair is read by the name's length instead, which reaches no three-character name (rules/W5, 2026-11-06 #845). 張廖, 張簡 and 范姜 are not this class: they are clan compounds borne as one surname, and ship.
 - Japanese surnames and transcriptions in the same file (佐藤, 鈴木, 馬丁). The pack divides Chinese names; a Japanese surname belongs to `locales.JA`'s segmenter (2026-10-18, #695).

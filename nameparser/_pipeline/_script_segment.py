@@ -71,13 +71,15 @@ from nameparser._lexicon import FULL_STOPS
 import nameparser._pipeline._comma as _comma
 from nameparser._pipeline._classify import classify
 from nameparser._pipeline._state import (
-    ParseState, PendingAmbiguity, Structure, WorkToken, copy_with,
+    SURNAME_PAIR_TAG, ParseState, PendingAmbiguity, Structure, WorkToken,
+    copy_with,
 )
 from nameparser._pipeline._vocab import (
     effective_script, is_one_case,
     is_suffix_strict, is_wholly_suffix,
 )
 from nameparser._pipeline._pieces import own_words
+from nameparser._policy import Script
 from nameparser._types import AmbiguityKind, Segmentation, Span
 
 #: Marks the tail token the peel below MANUFACTURED, so the segmenter's
@@ -556,6 +558,56 @@ def _split_candidate(state: ParseState) -> int | None:
     return i
 
 
+def _surname_pair(state: ParseState, i: int, core: str,
+                  surnames: frozenset[str]) -> bool:
+    """Whether token `i`, whose longest listed surname is its first
+    character, opens with a second single surname that is the family's
+    second unit (#845).
+
+    The married double surname's shape, longest-first having taken one
+    character, so that no listed compound opens it:
+    rules/W5: "whose first two are each a listed single surname". Four characters and no other length, because a three-character
+    name is a single surname before a two-character given name as often
+    as not (李林伟), the reason no married pair is listed; and two
+    characters when the writer's space after them puts a given name
+    behind, the space having drawn the family's end. Han alone: no
+    other script segmented here writes a married surname before the
+    woman's own. History: decisions/W5 (#845)."""
+    if core[1] not in surnames or effective_script(core) is not Script.HAN:
+        return False
+    if len(core) == 4:
+        return True
+    if len(core) != 2:
+        return False
+    run = state.segments[0]
+    at = run.index(i)
+    if at + 1 == len(run):
+        return False
+    j = run[at + 1]
+    return (effective_script(state.tokens[j].text) is Script.HAN
+            and not _is_post_nominal(state, j))
+
+
+def _split_surname_pair(state: ParseState, i: int, core: str) -> ParseState:
+    """Token `i` divided into its two surnames and, unspaced, the given
+    name behind them, the second surname tagged for post_rules to read
+    as the family's second unit. Unspaced, longest-first decided a fork
+    (王 + 李小明 also reads), and the deciding stage records it; spaced,
+    the writer settled where the given name starts."""
+    text = state.tokens[i].text
+    detail = None
+    if len(core) == 4:
+        chosen = " + ".join(map(repr, _pieces(text, (1, 2))))
+        other = " + ".join(map(repr, _pieces(text, (1,))))
+        detail = (f"{text!r} splits as {chosen} on two surnames; "
+                  f"{other} also reads")
+    state = _split(state, i, (1, 2) if len(core) == 4 else (1,), detail)
+    second = state.tokens[i + 1]
+    tokens = list(state.tokens)
+    tokens[i + 1] = copy_with(second, tags=second.tags | {SURNAME_PAIR_TAG})
+    return copy_with(state, tokens=tuple(tokens))
+
+
 def _split_surname_site(state: ParseState) -> ParseState:
     """The stage's other split: the first activated-script token of the
     name part is matched longest-first against Lexicon.surnames, and a
@@ -605,6 +657,8 @@ def _split_surname_site(state: ParseState) -> ParseState:
                    if core[:length] in surnames]
     if matches:
         take = matches[0]
+        if take == 1 and _surname_pair(state, i, core, surnames):
+            return _split_surname_pair(state, i, core)
         detail = None
         if len(matches) > 1:
             # more than one vocabulary-supported split: longest-first

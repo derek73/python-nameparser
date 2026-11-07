@@ -6651,6 +6651,7 @@
 {"name": "李博", "family": "李博"}
 {"name": "李宗文", "family": "李宗文"}
 {"name": "李影", "family": "李影"}
+{"name": "李林伟", "family": "李林伟"}
 {"name": "李正中", "family": "李正中"}
 {"name": "李瞻", "family": "李瞻"}
 {"name": "李翔", "family": "李翔"}
@@ -6668,6 +6669,7 @@
 {"name": "桃田賢斗", "family": "桃田賢斗"}
 {"name": "桜井昌司", "family": "桜井昌司"}
 {"name": "森卯一", "family": "森卯一"}
+{"name": "歐陽小明", "family": "歐陽小明"}
 {"name": "毛 泽东", "given": "泽东", "family": "毛"}
 {"name": "毛 泽东 Dr.", "title": "Dr.", "given": "泽东", "family": "毛"}
 {"name": "毛 김", "given": "毛", "family": "김"}
@@ -6694,9 +6696,16 @@
 {"name": "王先生", "family": "王", "suffix": "先生", "honorifics": "先生"}
 {"name": "王先生, V.", "given": "V.", "family": "王", "suffix": "先生", "initials": "V.", "honorifics": "先生"}
 {"name": "王君", "family": "王君"}
+{"name": "王安琪拉", "family": "王安琪拉"}
 {"name": "王小明 先生", "family": "王小明", "suffix": "先生", "honorifics": "先生"}
 {"name": "王小明 議員", "family": "王小明", "suffix": "議員"}
 {"name": "王小明先生", "family": "王小明", "suffix": "先生", "honorifics": "先生"}
+{"name": "王李", "family": "王李"}
+{"name": "王李 先生", "family": "王李", "suffix": "先生", "honorifics": "先生"}
+{"name": "王李 小明", "given": "小明", "family": "王李"}
+{"name": "王李 小明 美华", "given": "小明", "middle": "美华", "family": "王李"}
+{"name": "王李小明", "family": "王李小明"}
+{"name": "王李小明丽", "family": "王李小明丽"}
 {"name": "王氏", "family": "王氏"}
 {"name": "王鑫", "family": "王鑫"}
 {"name": "王镇", "family": "王镇"}
@@ -6888,6 +6897,7 @@
 {"name": "김영환", "given": "영환", "family": "김"}
 {"name": "김용완", "given": "용완", "family": "김"}
 {"name": "김응천", "given": "응천", "family": "김"}
+{"name": "김이수진", "given": "이수진", "family": "김"}
 {"name": "김장섭", "given": "장섭", "family": "김"}
 {"name": "김재구", "given": "재구", "family": "김"}
 {"name": "김정은", "given": "정은", "family": "김"}
