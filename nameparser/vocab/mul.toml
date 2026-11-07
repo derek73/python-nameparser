@@ -128,7 +128,7 @@ credential = { cased = "MSc", note = "written after names in every country's dat
 
 [[word]]
 text = "mst"
-credential = { expands = "Master of Science in Teaching, and Oxford's Master of Studies (MSt)", note = "written after the name: NPPES 113 US healthcare providers (MST 101, M.S.T. 6), ClinicalTrials.gov officials after a comma (rauena Lopes, Mst; data 2026-11-06); no name reading, and a leading Mst stays the given name its filers type it as (bn.toml's exclusion); in mul.toml so a strict choice keeps it, as msc", issue = 1130 }
+credential = { expands = "Master of Science in Teaching, and Oxford's Master of Studies (MSt)", note = "written after the name: NPPES 113 US healthcare providers (MST 101, M.S.T. 6), ClinicalTrials.gov officials after a comma (rauena Lopes, Mst; data 2026-10-21, counted 2026-11-06); no name reading, and a leading Mst stays the given name its filers type it as (bn.toml's exclusion); in mul.toml so a strict choice keeps it, as msc", issue = 1130 }
 
 [[word]]
 text = "phd"
