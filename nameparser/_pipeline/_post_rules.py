@@ -655,7 +655,7 @@ def _addressing_run(titles: list[int], name_word: int) -> list[int]:
 
 def _family_settled(state: ParseState, tokens: list[WorkToken],
                     families: list[int]) -> bool:
-    """Whether something other than the order placed this lone family
+    """Whether something other than O5's convention placed this lone family
     word, so H1's family -> given direction leaves it (#720). After a
     comma a particle in it is settled -- rules/C3's "the comma settles
     P1's fork for a leading particle that could be a given name"
@@ -665,10 +665,10 @@ def _family_settled(state: ParseState, tokens: list[WorkToken],
     names ('Sir van Berg', rules/P11), asked by the fold's own
     predicates on the same piece. An ambiguous particle
     nothing settled, or a bare one with nothing to fold, is a
-    word O5's convention or the order placed ('Sir Van', 'Sir Abu
-    Bakar' and 'Sir de' with `Policy.lone_name_word` set to family;
-    'Sir von und zu' under FAMILY_FIRST, whose never-given 'zu' does
-    not open it)."""
+    word O5's convention placed, which reaches here only with
+    `Policy.lone_name_word` set to family ('Sir Van', 'Sir Abu Bakar',
+    'Sir de', and 'Sir von und zu' under the default order, whose
+    never-given 'zu' does not open it)."""
     if state.structure is Structure.FAMILY_COMMA:
         return any("particle" in tokens[i].tags for i in families)
     if len(families) < 2:

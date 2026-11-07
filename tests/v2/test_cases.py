@@ -3,6 +3,7 @@ import dataclasses
 import functools
 import re
 from collections import Counter
+from collections.abc import Iterator
 from typing import Any
 
 import pytest
@@ -30,17 +31,25 @@ def _parser_for_case(case: Case) -> Parser:
 def test_the_lone_name_word_switch_moves_only_a_lone_word() -> None:
     # rules/O5 (#1111): Policy.lone_name_word decides one thing, which
     # of the two primary fields a name of one name word fills. Over
-    # every policy row of the table, the two settings may differ only
-    # by that word swapping given for family -- no other field, no
-    # reported kind -- and the table holds rows where they do differ.
+    # every row of the table, its policy or its pack, the two settings
+    # may differ only by that word swapping given for family -- no
+    # other field, no reported kind -- and the table holds rows where
+    # they do differ.
+    def parsers(case: Case) -> Iterator[Parser]:
+        for r in (Role.GIVEN, Role.FAMILY):
+            if case.locale is None:
+                yield Parser(policy=dataclasses.replace(
+                    case.policy or Policy(), lone_name_word=r))
+            else:
+                # the pack's parser with only the switch replaced, as a
+                # caller stacking a patch on the pack would get it
+                pack = _parser_for_case(case)
+                yield dataclasses.replace(pack, policy=dataclasses.replace(
+                    pack.policy, lone_name_word=r))
+
     moved = 0
     for case in CASES:
-        if case.locale is not None:
-            continue
-        base = case.policy or Policy()
-        given, family = (
-            Parser(policy=dataclasses.replace(base, lone_name_word=r))
-            .parse(case.text) for r in (Role.GIVEN, Role.FAMILY))
+        given, family = (p.parse(case.text) for p in parsers(case))
         g, f = given.as_dict(), family.as_dict()
         kinds = ([a.kind for a in given.ambiguities],
                  [a.kind for a in family.ambiguities])
