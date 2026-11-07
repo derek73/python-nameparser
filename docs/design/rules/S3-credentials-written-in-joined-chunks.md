@@ -156,7 +156,7 @@
   "John Smith (MA/MBA)"       →  nickname="MA/MBA"
   "John Smith (MA, MBA)"      →  suffix="MA, MBA"
   ```
-- A Korean given name romanized with a hyphen between two syllables the vocabulary lists as unambiguous credentials, written in capitals or opening in lower case, reads as the credential, unreported after a comma: a name in capitals has no Title case for the writing to show, and `ae` and `ra` are such credentials, `ae` settling `ma`, a member, beside it.
+- A Korean given name romanized with a hyphen between two syllables the vocabulary lists as credentials, one of them no name and no title, written in capitals or opening in lower case, reads as the credential, unreported after a comma: a name in capitals has no Title case for the writing to show, and `ae` and `ra` are such credentials, `ae` settling `ma`, a member, beside it.
   ```
   "KIM, AE-RA"                →  suffix="AE-RA"
   "KIM, MA-AE"                →  suffix="MA-AE"
