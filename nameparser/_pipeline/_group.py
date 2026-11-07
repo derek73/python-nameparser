@@ -81,7 +81,7 @@ from nameparser._pipeline._pieces import (
 )
 from nameparser._pipeline._state import (
     AMBIGUOUS_ACRONYM_TAG, BOUND_PHRASE_TAG, SPLIT_CREDENTIAL_TAG,
-    SPLIT_MEMBER_TAG, TRAILING_TITLE_TAG, ParseState,
+    JOINED_TITLE_TAG, SPLIT_MEMBER_TAG, TRAILING_TITLE_TAG, ParseState,
     Deferred, PendingAmbiguity, Structure, WorkToken,
     _AMBIGUOUS_CREDENTIAL_TAGS, copy_with,
 )
@@ -543,8 +543,12 @@ def _is_trailing_title(piece: Sequence[int], ptags: Set[str],
                        tokens: Sequence[WorkToken]) -> bool:
     """A period-marked title word, which H5 reads as a title ending the
     name: P13 reads the name words past it."""
-    return (len(piece) == 1 and tokens[piece[0]].text.endswith(".")
-            and is_title_piece(piece, ptags, tokens))
+    return len(piece) == 1 and (
+        tokens[piece[0]].text.endswith(".")
+        and is_title_piece(piece, ptags, tokens)
+        # rules/H5: "a title the vocabulary lists whole with a period
+        # inside it chains without a final one"
+        or JOINED_TITLE_TAG in tokens[piece[0]].tags)
 
 
 def _link_the_last_letter(pieces: list[list[int]], ptags: list[set[str]],

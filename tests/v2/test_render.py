@@ -1029,7 +1029,7 @@ def test_a_recorded_casing_reaches_a_joined_token_in_any_role() -> None:
                         ("john smith-jones", "John SMiTH-JoNES"),
                         ("smith-jones, john", "John SMiTH-JoNES"),
                         ("dipl.-ing john smith", "dIpl.-Ing John Smith"),
-                        ("john smith dipl.-ing", "John Smith dIpl.-Ing")):
+                        ("john dipl.-ing smith", "John dIpl.-Ing Smith")):
         assert str(parser.capitalized(parser.parse(text))) == whole, text
 
 

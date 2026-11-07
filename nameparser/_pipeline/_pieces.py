@@ -60,7 +60,7 @@ from typing import NamedTuple
 from nameparser._pipeline._state import (
     AMBIGUOUS_ACRONYM_TAG, AMBIGUOUS_WORD_TAG,
     GENERATION_WORD_TAG, TITLE_CASE_NAME_TAG, GIVEN_ABBREVIATION_TAG, NAME_ROLES, SHAPE_ACRONYM_TAG, SUFFIX_OR_UNREAD, AmbiguityKind, PendingAmbiguity,
-    PendingReading, TRAILING_TITLE_TAG,
+    JOINED_TITLE_TAG, PendingReading, TRAILING_TITLE_TAG,
     WorkToken,
 )
 from nameparser._pipeline._vocab import (
@@ -1917,7 +1917,11 @@ def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
         # short" -- classify's tag, tested first, a C-level read
         # (decisions/H5, #999)
         if len(piece) == 1 and (
-                (_TRAILING_TITLE_SHAPE.match(tokens[piece[0]].text)
+                # rules/H5: "a title the vocabulary lists whole with a
+                # period inside it chains without a final one" --
+                # classify's tag, a C-level read
+                JOINED_TITLE_TAG in tokens[piece[0]].tags
+                or (_TRAILING_TITLE_SHAPE.match(tokens[piece[0]].text)
                  and (TRAILING_TITLE_TAG in tokens[piece[0]].tags
                       or is_title_piece(piece, ptags[idx], tokens)))
                 # rules/H8: "the given part after it ends in a word whose
@@ -1948,9 +1952,11 @@ def is_trailing_title_word(piece: Sequence[int], ptags: Set[str],
     be a given name (TRAILING_TITLE_TAG). Position is the caller's question -- this answers only
     what the word is."""
     return (len(piece) == 1
-            and _TRAILING_TITLE_SHAPE.match(tokens[piece[0]].text) is not None
-            and (TRAILING_TITLE_TAG in tokens[piece[0]].tags
-                 or is_title_piece(piece, ptags, tokens)))
+            and (JOINED_TITLE_TAG in tokens[piece[0]].tags
+                 or _TRAILING_TITLE_SHAPE.match(tokens[piece[0]].text)
+                 is not None
+                 and (TRAILING_TITLE_TAG in tokens[piece[0]].tags
+                      or is_title_piece(piece, ptags, tokens))))
 
 
 #: lone-word tags `trailing_candidates` admits on: the ambiguous class,
@@ -2380,6 +2386,7 @@ def _weighed(piece: Sequence[int], tokens: Sequence[WorkToken]) -> bool:
     return (not tok.tags.isdisjoint(_WEIGHED_TAGS)
             or _ROMAN.match(stem := tok.text.rstrip(".")) is not None
             and stem != ""
+            or JOINED_TITLE_TAG in tok.tags
             or ("vocab:title" in tok.tags or TRAILING_TITLE_TAG in tok.tags)
             and _TRAILING_TITLE_SHAPE.match(tok.text) is not None)
 
