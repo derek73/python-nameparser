@@ -13893,6 +13893,28 @@ CASES: tuple[Case, ...] = (
          notes="CLDR's Catalan sorting form: unlisted, Excm. stopped "
                "rules/H6's run, so master read family 'Excm. Lloret "
                "Palol', suffix 'Sr.'"),
+    # -- #1115, the Diplom degrees: `dipl` alone is listed, and a token
+    # joining it to its field with a period reads as a title through the
+    # chunk rule for period-joined tokens, whatever the field.
+    Case("dipl_hyphenated_after_a_comma_is_the_title",
+         "Anselm Crombach, Dipl.-Psych.",
+         {"title": "Dipl.-Psych.", "given": "Anselm", "family": "Crombach"},
+         classification="fix(#1115)",
+         notes="ClinicalTrials.gov's shape: 1.4.0 through 2.8.2 read "
+               "given 'Dipl.-Psych.', family 'Anselm Crombach'"),
+    Case("dipl_hyphenated_opening_the_name_is_the_title",
+         "Dipl.-Kfm. Dalimil Ospalý",
+         {"title": "Dipl.-Kfm.", "given": "Dalimil", "family": "Ospalý"},
+         classification="fix(#1115)"),
+    Case("dipl_glued_after_a_comma_is_the_title", "Josef Mareček, dipl.um.",
+         {"title": "dipl.um.", "given": "Josef", "family": "Mareček"},
+         classification="fix(#1115)",
+         notes="master read suffix 'dipl.um.'"),
+    Case("dipl_hyphenated_without_a_period_stays_a_name_word",
+         "Bettina Viereck, Dipl-Psych",
+         {"given": "Dipl-Psych", "family": "Bettina Viereck"},
+         notes="a hyphen alone joins no chunks, hyphenated surnames "
+               "holding title words (Bishop-Jones); left, #1115"),
     Case("mo_dotted_opening_the_name_stays_a_title", "Mo. Ibrar Khan",
          {"title": "Mo.", "given": "Ibrar", "family": "Khan"},
          notes="left out of #1115: bare 'Mo' is mostly the Chinese and "

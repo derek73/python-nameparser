@@ -33,6 +33,10 @@ salutation = { gender = "f", note = "the English form of address, written before
 note = "NOT marked as possibly a name (no name reading), though #296's audit table put it there for the leading-title collision: the gate is position-blind and the collision is not (gated, 'John Smith, MS' read title 'MS'); a title/credential dual that position decides (decisions/C8)"
 
 [[word]]
+text = "dipl"
+academic = { issue = 1115, expands = "Diplom, diplomovaný, the diploma degree written before its field in German, Czech, Slovak and the South Slavic languages (Dipl.-Ing., Dipl.-Psych., Dipl.-Kfm., dipl. um.); a token joining it to its field with a period reads as a title through the chunk rule (Dipl.-Psych., Dipl.Ing.)", note = "no name bearer: under 100 US Census, under 5 US SSA a year, none on Wikidata; ORCID's given box 2 and family box 6 records, PatentsView's given box 5, each the degree typed in (Mayer, Dipl.Psych., Dr.rer.nat.) (2026-11-06); in English `Dipl` is also the Diplomate of a certifying board, written after the name (Cherie Vaz, MD Dipl ABOM), which reads as a title there" }
+
+[[word]]
 text = "docent"
 academic = { expands = "the academic rank, spelled alike in Dutch, Swedish, Danish, Norwegian, Polish and Czech" }
 
