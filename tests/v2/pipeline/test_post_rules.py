@@ -1876,8 +1876,13 @@ def test_a_member_a_caller_lists_as_a_title_is_the_title() -> None:
 #: are credentials S1 sets apart with no other reading -- a word that
 #: is a title too, or a member of the ambiguous class, reads by its own
 #: rules written apart -- and the second never ends in a period, which
-#: would hand the comma spelling the period escape.
-_PAIR_CHUNKS = ("MD", "PhD", "JP", "Jr", "M.D.", "RN", "Esq")
+#: would hand the comma spelling the period escape. 'NP-C', 'OTR/L' and
+#: 'CCC-SLP' are credentials the vocabulary lists whole with a joiner of
+#: their own (#1103), the chunks a cut at every joiner breaks, the last
+#: one whose pieces are listed too, so a cut that rebuilds a run from
+#: pieces it does not list whole reads differently there.
+_PAIR_CHUNKS = ("MD", "PhD", "JP", "Jr", "M.D.", "RN", "Esq", "NP-C",
+                "OTR/L", "CCC-SLP")
 _PAIR_SHAPES = ("John Smith ({})", "John ({}) Smith", "({}) John Smith",
                 "({})", "Smith ({}), John", "Smith, John ({})",
                 "JOHN ({}) SMITH", "Jack ({})", "John Smith ({}), Jr.",
@@ -1890,13 +1895,25 @@ _PAIR_PARSERS = (Parser(), Parser(policy=Policy(name_order=FAMILY_FIRST)),
 #: control, recorded 2026-11-05 with `reads_as_initials`' chunk loop
 #: switched off. Each is a joined pair inside or before a name word of
 #: its comma part, set apart where its spelling written apart stays the
-#: nickname.
-_UNGUARDED_PAIRS_1088 = 540
+#: nickname. 540 over the grid before #1103 added its three chunks;
+#: re-taken 2026-11-06.
+_UNGUARDED_PAIRS_1088 = 918
+
+#: How many of the same rows read apart with the joined word cut at
+#: every joiner, as before #1103, recorded 2026-11-06: in-process,
+#: `_vocab._joined_chunks` replaced by a function returning
+#: `_JOINERS.split(text)` where every chunk counts as a suffix as
+#: written and None otherwise, the rows chosen by the guarded tree's
+#: `suffix_as_written` before the replacement. A pair holding a run
+#: listed whole reads as a name word or a nickname where its spelling
+#: written apart is the suffix. On the pre-#1103 tree itself the
+#: filter admits fewer pairs, so there the row count is what fails.
+_UNGUARDED_PAIRS_1103 = 1860
 
 
 #: How many (pair, shape, order) rows the invariant reads, so a grid
 #: trimmed to nothing cannot pass it.
-_PAIRS_CHECKED = 2310
+_PAIRS_CHECKED = 5280
 
 
 def _pair_differences() -> list[str]:
@@ -1929,6 +1946,7 @@ def test_a_joined_credential_reads_as_its_spelling_written_apart() -> None:
     assert _pair_differences() == []
     # the control is a share of the grid the guard reads
     assert 0 < _UNGUARDED_PAIRS_1088 < _PAIRS_CHECKED
+    assert 0 < _UNGUARDED_PAIRS_1103 < _PAIRS_CHECKED
 
 
 # rules/W5's surname pair (#845): a four-character Han name opening with

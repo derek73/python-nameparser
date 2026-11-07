@@ -37,6 +37,22 @@
   "Smith, Mary-Jane"          →  given="Mary-Jane"  · boundary
   "John Smith MD-Jones"       →  family="MD-Jones"  · boundary
   ```
+- **A run of chunks the vocabulary lists whole, its slash or hyphen included, is one credential**: the word reads as a suffix where it can be cut at some of its joiners, slashes and hyphens alike, into chunks that each count, a run the vocabulary lists whole counting as one chunk, so a listed `NP-C` or `OTR/L` inside a longer word is asked what it is asked written alone, whichever joiner stands beside it. A word with no such cut, a chunk neither listed nor made of listed pieces, still refuses it, and a word written as a hyphenated name is read by its writing before any cut.
+  ```
+  "Jane Smith PhD/NP-C"       →  suffix="PhD/NP-C"
+  "Jane Smith, PhD/NP-C"      →  suffix="PhD/NP-C"
+  "Jane Smith (PhD/NP-C)"     →  suffix="PhD/NP-C"
+  "Smith, Jane PhD/NP-C"      →  suffix="PhD/NP-C"
+  "Jane Smith MS/CCC-A"       →  suffix="MS/CCC-A"
+  "Jane Smith CCC-SLP/L"      →  suffix="CCC-SLP/L"
+  "Jane Smith MS/OTR/L"       →  suffix="MS/OTR/L"
+  "Jane Smith CCC/SLP/L"      →  suffix="CCC/SLP/L"
+  "Jane Smith MS-OTR/L"       →  suffix="MS-OTR/L"
+  "Jane Smith APRN-FNP-C"     →  suffix="APRN-FNP-C"
+  "Jane Smith CPNP-PC/AC"     →  family="CPNP-PC/AC"  · boundary
+  "Jane Smith OTR/L/X"        →  family="OTR/L/X"  · boundary
+  "Jane Smith-NP-C"           →  family="Smith-NP-C"  · boundary
+  ```
 
 **Because:** credentials are often written run together, with periods between their parts or a hyphen or a slash between two of them, and the chunks are what carry the vocabulary. A word of several chunks that no vocabulary knows is still written the way a credential is written. An acronym that is also an ordinary name is unmistakably a credential when its periods are written.
 
