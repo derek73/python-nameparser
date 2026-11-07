@@ -205,6 +205,15 @@ _MARKS = '[\u0300-\u036f\u1ab0-\u1aff\u1dc0-\u1dff\u20d0-\u20ff\ufe20-\ufe2f]'
 _LETTER = r'[^\W\d_]' + _MARKS + '*'
 _PERIOD_ABBREV = re.compile(r'^(?:' + _LETTER + r'){2,}\.$')
 
+# rules/H5: "A word that ends in a period and is written with a
+# period or a hyphen inside it wears the abbreviation shape too" --
+# the trailing chain's shape, _PERIOD_ABBREV widened to 'Priv.-Doz.',
+# 'Dipl.Ing.' and 'Lt.Col.'. It opens and closes on a letter and ends
+# in one period, so every _PERIOD_ABBREV match is one of its matches;
+# the front slot's H2 shape stays _PERIOD_ABBREV (decisions/H5, #1116).
+_TRAILING_TITLE_SHAPE = re.compile(
+    r'^' + _LETTER + r'(?:' + _LETTER + r'|[.-])*' + _LETTER + r'\.$')
+
 
 # rules/H2: "an abbreviation opening the part of the name that
 # carries the given name — the whole name, or the part after a

@@ -13921,6 +13921,46 @@ CASES: tuple[Case, ...] = (
                "Korean name, so the abbreviation keeps rules/H2's "
                "reading, as 'Md.' does (decisions/H6)"),
 
+    # -- #1116: rules/H5's trailing chain takes a title written joined
+    # or hyphenated, the word ending in a period, as it takes 'Prof.'.
+    Case("trailing_hyphenated_title_chains", "Hans Meier Priv.-Doz.",
+         {"title": "Priv.-Doz.", "given": "Hans", "family": "Meier"},
+         classification="fix(#1116)",
+         notes="master read middle 'Meier', family 'Priv.-Doz.'"),
+    Case("trailing_hyphenated_title_ends_the_given_part",
+         "Meier, Hans Priv.-Doz.",
+         {"title": "Priv.-Doz.", "given": "Hans", "family": "Meier"},
+         classification="fix(#1116)",
+         notes="master read middle 'Priv.-Doz.'"),
+    Case("trailing_hyphenated_titles_chain_as_a_run",
+         "Hans Meier Dipl.-Ing. Priv.-Doz.",
+         {"title": "Dipl.-Ing. Priv.-Doz.", "given": "Hans",
+          "family": "Meier"},
+         classification="fix(#1116)",
+         notes="master read middle 'Meier Dipl.-Ing.', family "
+               "'Priv.-Doz.'"),
+    Case("trailing_title_by_its_chunk_chains", "Maxie Bunz Dipl.Psych.",
+         {"title": "Dipl.Psych.", "given": "Maxie", "family": "Bunz"},
+         classification="fix(#1116)",
+         notes="rules/S3's title chunk: 2.8.2 read suffix "
+               "'Dipl.Psych.', #1115 family 'Dipl.Psych.'"),
+    Case("trailing_joined_rank_ends_the_given_part",
+         "JORDAN, HERBERT T. LT.COL.",
+         {"title": "LT.COL.", "given": "HERBERT", "middle": "T.",
+          "family": "JORDAN"},
+         classification="fix(#1116)",
+         notes="fec-individuals' shape; master read middle 'T. LT.COL.'"),
+    Case("trailing_title_with_only_an_inside_period_stays_a_name_word",
+         "Maria Rossi Dott.ssa",
+         {"given": "Maria", "middle": "Rossi", "family": "Dott.ssa"},
+         notes="rules/H5's boundary: nothing marks the end of the word "
+               "as cut short, so the chain does not take it (#1116)"),
+    Case("trailing_unlisted_hyphenated_word_stays_a_name_word",
+         "Anna Smith-Jones.",
+         {"given": "Anna", "family": "Smith-Jones."},
+         notes="the shape alone takes nothing at the end; the chain "
+               "asks the title vocabulary (#1116)"),
+
     # -- #316(a): the trailing title RUN. The leading slot has a SHAPE
     # rule that outranks vocabulary (H2); the trailing slot has no
     # shape rule and reads vocabulary only. #316(b), the bare-safe
