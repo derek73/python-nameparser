@@ -2602,6 +2602,7 @@
 {"name": "MAJ Ian Stewart, MD", "given": "MAJ", "middle": "Ian", "family": "Stewart", "suffix": "MD", "ambiguities": ["TITLE_OR_NAME"], "alternatives": ["TITLE_OR_NAME: title as title (vocabulary)"], "initials": "M. I. S.", "capitalized_force": "Maj Ian Stewart, MD"}
 {"name": "MANFRED FREIHERR VON RICHTHOFEN", "given": "MANFRED", "family": "FREIHERR VON RICHTHOFEN", "initials": "M. R.", "capitalized": "Manfred Freiherr von Richthofen"}
 {"name": "MANƉELA Rolanɖ Alfɔns", "order": "FAMILY_FIRST", "given": "Rolanɖ", "middle": "Alfɔns", "family": "MANƉELA", "initials": "R. A. M.", "capitalized_force": "Manɖela Rolanɖ Alfɔns"}
+{"name": "MARIA DA PIEDADE COSTA", "given": "MARIA", "family": "DA PIEDADE COSTA", "initials": "M. P. C.", "capitalized": "Maria da Piedade Costa"}
 {"name": "MARIA DA SILVA E SOUZA", "given": "MARIA", "family": "DA SILVA E SOUZA", "ambiguities": ["CONJUNCTION_OR_INITIAL"], "alternatives": ["CONJUNCTION_OR_INITIAL: conjunction as family (vocabulary)"], "initials": "M. S. E. S.", "capitalized": "Maria da Silva E Souza"}
 {"name": "MB ChB, PhD", "family": "MB ChB", "suffix": "PhD", "initials": "M. C.", "capitalized_force": "Mb Chb, PhD"}
 {"name": "MD - DO - DDS", "given": "MD", "middle": "-", "family": "DO -", "suffix": "DDS", "initials": "M. -. -.", "capitalized": "Md - do - DDS"}
@@ -2710,8 +2711,9 @@
 {"name": "Maria Popescu", "given": "Maria", "family": "Popescu", "initials": "M. P."}
 {"name": "Maria Silva", "given": "Maria", "family": "Silva", "initials": "M. S."}
 {"name": "Maria Wijaya", "given": "Maria", "family": "Wijaya", "initials": "M. W."}
+{"name": "Maria da Piedade Costa", "given": "Maria", "family": "da Piedade Costa", "initials": "M. P. C."}
 {"name": "Maria da Silva Santos", "given": "Maria", "family": "da Silva Santos", "initials": "M. S. S."}
-{"name": "Maria das Graças Silva", "given": "Maria", "family": "das Graças Silva", "initials": "M. G. S."}
+{"name": "Maria das Graças Silva", "given": "Maria", "middle": "das Graças", "family": "Silva", "initials": "M. G. S."}
 {"name": "Maria de Fatima Costa", "given": "Maria", "middle": "de Fatima", "family": "Costa", "initials": "M. F. C."}
 {"name": "Maria de Lurdes Costa", "given": "Maria", "middle": "de Lurdes", "family": "Costa", "initials": "M. L. C."}
 {"name": "Maria do Carmo Silva", "given": "Maria", "family": "do Carmo Silva", "initials": "M. C. S."}
@@ -3272,7 +3274,7 @@
 {"name": "RA DDS", "title": "RA", "family": "DDS", "initials": "D.", "capitalized": "Ra Dds"}
 {"name": "RA PhD Jr., John", "given": "John", "family": "RA", "suffix": "PhD Jr.", "initials": "J. R.", "capitalized_force": "John Ra PhD Jr.", "generation": "Jr.", "credentials": "PhD"}
 {"name": "RAM BAHADUR B.K.", "given": "RAM", "middle": "BAHADUR", "family": "B.K.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "R. B. B.", "capitalized": "Ram Bahadur B.K."}
-{"name": "RITA DE CASSIA SOUZA", "given": "RITA", "family": "DE CASSIA SOUZA", "initials": "R. C. S.", "capitalized": "Rita de Cassia Souza"}
+{"name": "RITA DE CASSIA SOUZA", "given": "RITA", "middle": "DE CASSIA", "family": "SOUZA", "initials": "R. C. S.", "capitalized": "Rita de Cassia Souza"}
 {"name": "ROB ROY MACGREGOR", "given": "ROB", "middle": "ROY", "family": "MACGREGOR", "initials": "R. R. M.", "capitalized": "Rob Roy MacGregor"}
 {"name": "ROBERT (RA) ALLEN", "given": "ROBERT", "family": "ALLEN", "suffix": "RA", "initials": "R. A.", "capitalized": "Robert Allen RA"}
 {"name": "RONALD MACDONALD", "given": "RONALD", "family": "MACDONALD", "initials": "R. M.", "capitalized": "Ronald MacDonald"}
