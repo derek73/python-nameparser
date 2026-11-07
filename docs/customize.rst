@@ -1187,13 +1187,13 @@ particle's words would otherwise run on into the family, the parser
 reads them as a middle name, with or without the switch, if the
 vocabulary marks the word behind the particle as a given name written
 there (``after_particle``), and the switch then takes them into the
-given name. The words marked are those that ORCID's researchers write
-in the given box at least nine times for each ten they also open a
-family box with it: from Spain and Spanish-speaking America (``del
-Carmen``, ``de los Ángeles``, ``del Mar``, ``del Pilar``), and from
-Portugal and Brazil (``de Lurdes``, ``do Céu``, ``da Glória``, ``de
-Tarso``). Portuguese words written as given names less surely
-(``das Graças``, ``de Cássia``) are read only under ``locales.PT`` and
+given name. The words marked are those whose reading, among the ORCID
+researchers' names it changes, matches the boxes they filled at least
+three times for each time it does not: from Spain and Spanish-speaking
+America (``del Carmen``, ``de los Ángeles``, ``del Mar``, ``del
+Pilar``), and from Portugal and Brazil (``de Lurdes``, ``das Graças``,
+``de Cássia``, ``de Tarso``). A Portuguese word too rare to measure
+(``da Piedade``) is read only under ``locales.PT`` and
 ``locales.PT_BR`` (see :ref:`language-packs`). A phrase too often a
 surname to mark, as Portuguese ``do Carmo`` is, stays the family, the same shape as ``"João da Silva
 Santos"``, and so does one opening with a saint (``"Domingo Santa María
