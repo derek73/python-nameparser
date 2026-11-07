@@ -1621,11 +1621,12 @@ Credentials written joined or split
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A hyphen or a slash written between two credentials with no space needs
-no declaring when every part is a listed credential that is not also a
-name, because the word then reads as one credential (since 2.7). A part
-that may be a name, such as ``MA``, keeps the word a name word, since a
-hyphen also joins surnames, unless the word is written in capitals,
-which :ref:`all-caps-credentials` reads on its own terms:
+no declaring when every part is a listed credential, because the word
+then reads as one credential (since 2.7). A part that may also be a
+name, such as ``MA``, counts where a part that is not a name stands
+beside it (since 3.0). Parts that may all be names keep the word a name
+word, since a hyphen also joins surnames, unless the word is written in
+capitals, which :ref:`all-caps-credentials` reads on its own terms:
 
 .. doctest::
 
@@ -1633,8 +1634,11 @@ which :ref:`all-caps-credentials` reads on its own terms:
     >>> joined.given, joined.family, joined.suffix
     ('Jane', 'Smith', 'RN/CRNA')
     >>> joined = parse("Jane Smith, MA/PhD")
+    >>> joined.given, joined.family, joined.suffix
+    ('Jane', 'Smith', 'MA/PhD')
+    >>> joined = parse("Jane Smith, MA/Mba")
     >>> joined.given, joined.family
-    ('MA/PhD', 'Jane Smith')
+    ('MA/Mba', 'Jane Smith')
 
 A credential written with a space inside it, such as ``Pharm D``, is
 read as one credential too (since 2.7), where the name has words to

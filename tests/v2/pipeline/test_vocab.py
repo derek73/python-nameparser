@@ -496,6 +496,9 @@ def test_period_joined_vocab_retires_the_single_character_chunk() -> None:
     ("M.A/Jones", False),
     ("M.A-Smith", False),   # written as a hyphenated name is
     ("Ma-Phd", False),
+    ("KC/PhD", True),       # a member listed as a suffix word
+    ("MA/Jr", False),       # a generation settles nothing
+    ("MA/II", False),
 ])
 def test_suffix_as_written_reads_a_joined_credential(
         text: str, expected: bool) -> None:

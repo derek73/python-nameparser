@@ -53,7 +53,7 @@
   "Jane Smith OTR/L/X"        →  family="OTR/L/X"  · boundary
   "Jane Smith-NP-C"           →  family="Smith-NP-C"  · boundary
   ```
-- **A member of the ambiguous class (S4) is a chunk too, however it is written, where the word holds a chunk that settles it**: a credential that is no name, or a member written with a period inside it. Written alone, such a member may be a name or the initials it looks like (`John Smith MA` and `John Smith M.A` keep the family), but a credential joined to it says what the whole word is, since nobody joins a name or initials to a credential. A word of bare members alone has nothing to settle it, and a name word beside a member still refuses the word.
+- **A member of the ambiguous class (S4) is a chunk too, however it is written, where the word holds a chunk that settles it**: a credential that is no name, or a member written with a period inside it, and not a generation or a numeral, which say nothing about the member, nor a member's case, which a chunk cannot be read by. Written alone, such a member may be a name or the initials it looks like (`John Smith MA` and `John Smith M.A` keep the family), but a credential joined to it says what the whole word is, since nobody joins a name or initials to a credential. A word of bare members alone has nothing to settle it, and a name word beside a member still refuses the word.
   ```
   "John Smith MA/PhD"         →  suffix="MA/PhD"
   "John Smith M.A/PhD"        →  suffix="M.A/PhD"
@@ -64,12 +64,14 @@
   "Jane Smith SLP-M.A"        →  suffix="SLP-M.A"
   "John Smith J.D/MBA"        →  suffix="J.D/MBA"
   "John Smith MA/MBA"         →  family="MA/MBA"  · boundary
+  "John Smith MA/Jr"          →  family="MA/Jr"  · boundary
   "John Smith MA/Jones"       →  family="MA/Jones"  · boundary
   ```
-- **A joined word holding a member is a member itself** in brackets or quotes, which S13 settles by position: after the name it is the suffix, and inside the name or before it the nickname, reported, as its words written apart are.
+- **A joined word holding a member is a member itself** in brackets or quotes: the chunk beside the member has settled it, whatever the name's case, and S13's position decides the rest, so after the name it is the suffix, and inside the name or before it the nickname, reported, as its words written apart are (S1).
   ```
   "John Smith (MA/PhD)"       →  suffix="MA/PhD"
   "John Smith (M.A/PhD)"      →  suffix="M.A/PhD"
+  "JOHN SMITH (MA/PHD)"       →  suffix="MA/PHD"
   "John (MA/PhD) Smith"       →  nickname="MA/PhD"
   "John (MA/PhD) Smith"       →  ambiguities=("suffix-or-nickname",)
   "John (M.A/PhD) Smith"      →  nickname="M.A/PhD"
@@ -147,6 +149,11 @@
   ```
   "John Smith, MA/Mba"        →  given="MA/Mba"
   "John Smith, MA/Mba"        →  family="John Smith"
+  ```
+- A joined word of members alone in brackets after the name stays the nickname, where its words written apart are the suffix when the name's case settles each of them (S13): a joined chunk is never read by its case.
+  ```
+  "John Smith (MA/MBA)"       →  nickname="MA/MBA"
+  "John Smith (MA, MBA)"      →  suffix="MA, MBA"
   ```
 - A Korean given name romanized with a hyphen between two syllables the vocabulary lists as credentials, one of them no name, written in capitals or opening in lower case, reads as the credential, unreported after a comma: a name in capitals has no Title case for the writing to show, `ae` and `ra` are such credentials, and `ra` settles `ma`, a member, beside it.
   ```

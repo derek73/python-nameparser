@@ -78,7 +78,8 @@ from nameparser._pipeline._vocab import (
     _HYPHENS, SetApartKind, delimiter_cores, dotted_member,
     has_patronymic_ending, is_initial, is_listed_given_name,
     is_patronymic_marker, joined_member, member_word, reads_as_initials,
-    set_apart, set_apart_kind, suffix_reading, unit_ends,
+    set_apart, set_apart_kind, settles_a_member, suffix_reading,
+    unit_ends,
 )
 from nameparser._policy import PatronymicRule
 from nameparser._types import (
@@ -755,16 +756,21 @@ def _set_apart_clauses(state: ParseState,
         for i in range(lo, hi):
             token = tokens[i]
             kind = set_apart_kind(token.text, lex)
-            if kind == "member" or kind is None \
-                    and AMBIGUOUS_ACRONYM_TAG in token.tags \
-                    and settled_by_case(token, state.one_case):
+            # a member its periods settle, or a joined word whose own
+            # chunks settle its member, settles the others; one its
+            # capitals settle does not, as no chunk is settled by case
+            # (#1138)
+            if kind == "member":
                 kind, member, settled = "suffix", True, True
+            elif kind is None and AMBIGUOUS_ACRONYM_TAG in token.tags \
+                    and settled_by_case(token, state.one_case):
+                kind, member = "suffix", True
             elif kind is None and member_word(token.text, lex):
                 kind, member, unsettled = "suffix", True, True
             elif kind is None:
                 break
-            elif kind != "title":
-                settled = True
+            elif not settled:
+                settled = settles_a_member(token.text, lex)
             kinds.append(kind)
         else:
             # rules/S1: "a member its writing leaves unsettled is one

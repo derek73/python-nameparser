@@ -974,10 +974,34 @@ def _member(chunk: str, lexicon: Lexicon) -> bool:
 
 def _settles(chunk: str, lexicon: Lexicon) -> bool:
     """Whether CHUNK, a chunk of a joined word's cut, says the word is a
-    credential: one that counts as a suffix as written ('PhD', 'M.A.'),
-    or a member written with a period inside it ('M.A')."""
-    return (suffix_as_written(_normalize(chunk), chunk, lexicon)
+    credential: a credential that is no name, a word that is a title
+    too counting here as S3 reads it ('MS'), or a member written with a
+    period inside it ('M.A')."""
+    return (_no_name_credential(chunk, lexicon)
             or "." in chunk and dotted_member(chunk, lexicon))
+
+
+def _no_name_credential(word: str, lexicon: Lexicon) -> bool:
+    """Whether WORD counts as a suffix as written and is no generation
+    and no honorific."""
+    folded = _normalize(word)
+    sets = lexicon._sets
+    return (suffix_as_written(folded, word, lexicon)
+            and folded not in sets.generation_words
+            and folded not in sets.honorific_words)
+
+
+# rules/S1: "a credential that is no name, or a member its periods
+# settle, says which" -- the credential half; a generation, a numeral
+# or a word that is a title too says nothing of the kind, 'Ed Jr' being
+# a name a person goes by (decisions/S1, #1138)
+def settles_a_member(word: str, lexicon: Lexicon) -> bool:
+    """Whether WORD, a comma it is written against left off (rules/N1),
+    is a credential that is no name: it counts as a suffix as written,
+    and is no generation, no honorific and no title."""
+    bare = word.strip(",")
+    return (_no_name_credential(bare, lexicon)
+            and _normalize(bare) not in lexicon._sets.titles)
 
 
 def joined_member(word: str, lexicon: Lexicon) -> bool:
@@ -1119,7 +1143,10 @@ def _joined_credential(text: str, lexicon: Lexicon) -> bool:
     # it" -- a credential that is no name, or a member its periods
     # settle; a word of bare members alone has nothing to settle it
     # (decisions/S3, #1138)
-    if not any(_settles(c, lexicon) for c in chunks):
+    unsettled = any(_member(c, lexicon)
+                    and not suffix_as_written(_normalize(c), c, lexicon)
+                    for c in chunks)
+    if unsettled and not any(_settles(c, lexicon) for c in chunks):
         return False
     # rules/S3: "Every chunk the vocabulary matches is a single ASCII
     # character" -- the numerals and the digit, which are about
