@@ -1207,8 +1207,8 @@ def period_joined_credential(text: str, lexicon: Lexicon) -> bool:
     whose last chunk is a glued honorific ('J.씨') reads as one too:
     the honorific is the suffix there and the chunk before it the
     initial it is written as (rules/W2). The chunks are two or more,
-    save one where the period meets only an ampersand or a semicolon
-    at the word's edge ('MD.&', as 'MD.& PhD' writes it)."""
+    save one where the word's periods all stand at its edge beside an
+    ampersand or a semicolon ('MD.&', as 'MD.& PhD' writes it)."""
     chunks = _period_chunks(text)
     if chunks is None:
         return False
@@ -1222,8 +1222,8 @@ def period_joined_credential(text: str, lexicon: Lexicon) -> bool:
             continue
         # rules/S11: "the word is part of that one word and is weighed
         # only by the shape the joined word wears" -- no chunk claim
-        # for a suffix word that is also a name ('MD.Filho', which MD
-        # would otherwise settle as a member)
+        # for a suffix word that is also a name ('MD.Filho', whose Filho
+        # MD would otherwise settle as a member)
         if folded in sets.suffix_words_ambiguous or not _member(c, lexicon):
             return False
         unsettled = True
@@ -1236,8 +1236,8 @@ def period_joined_credential(text: str, lexicon: Lexicon) -> bool:
 
 def _period_chunks(text: str) -> list[str] | None:
     """TEXT cut at its periods, or None where it holds none inside it
-    (one chunk where only an edge '&' or ';' follows the period,
-    'MD.&').
+    (one chunk where every period stands at the word's edge and an '&'
+    or ';' there keeps one off the outer end: 'MD.&', ';.MD').
     ASCII punctuation beside an interior period is no part of the chunk
     ('MD.&PhD'); at the word's outer edges only its periods, a glued
     semicolon (rules/C10, 'Jr.;') and an ampersand joining the next
