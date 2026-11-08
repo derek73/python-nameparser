@@ -249,6 +249,42 @@ from 49.5% to 96.7% (Mexico 33.6% to 96.9%). The pack costs where people
 file a single surname: Argentine patent inventors agree 93.8% by default,
 86.2% under ``ES`` and 92.7% under ``ES_AR``.
 
+Speed and testing
+-----------------
+
+Measured 2026-11-07 on an Apple M3 Pro, one core, Python 3.11, by
+parsing the 7,106 names in the committed `corpus snapshot`_ with one
+``Parser``, the median of seven passes after a warm-up:
+
+* **About 90 µs a name**, some 11,000 names a second on one core. Parse
+  time grows linearly with the length of the input, and the scaling
+  tests fail when a name's cost grows faster than that as one of its
+  shapes repeats.
+* **Pure Python, with no runtime dependencies.** Only the optional
+  ``ja`` extra installs one, for dividing unspaced Japanese kanji names.
+* **Build one Parser and reuse it.** Its ``Lexicon`` and ``Policy`` are
+  frozen and a parse never writes to them, so one parser can be shared
+  across threads without locking. It pickles for ``multiprocessing`` too,
+  provided the segmenter you gave it, if any, pickles.
+
+And the tests that hold the readings in place:
+
+* **40,256 tests** (collected 2026-11-07), run in CI on Python 3.11
+  through 3.15, plus a run with the ``ja`` extra installed and one from
+  a source export with nothing installed.
+* **Every corpus name's reading is recorded** in the snapshot, and a
+  test fails when the parser reads one differently, so a change
+  that moves a reading lists every name it moved in its pull request.
+* **Every example is a doctest.** Each one with a ``>>>`` prompt, in
+  this README and in the documentation, runs in CI.
+* **The parsing rules** are written down with examples the suite runs, in
+  `docs/design/rules <https://github.com/derek73/python-nameparser/tree/master/docs/design/rules>`__.
+  Where the parser falls short of a rule, the example carries a
+  ``deviates:`` marker naming its issue, and the suite fails once the gap
+  closes until the marker comes off.
+
+.. _corpus snapshot: https://github.com/derek73/python-nameparser/blob/master/tools/differential/README.md
+
 Coming from 1.x or 2.x
 ----------------------
 
