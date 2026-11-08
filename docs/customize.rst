@@ -1184,7 +1184,7 @@ holds family names. For data whose lone words are surnames, set
 Anything that does decide the word still decides it first, whatever the
 switch says: a title (``"Mr. Johnson"`` is family ``Johnson``, ``"Sir
 John"`` given ``John``), a nickname or maiden name beside it, a family
-comma, and a name its script reads family-first: Han, Hangul, or kana other than
+comma (``"Anh, Jr."`` is family ``Anh``, ``", Anh"`` given ``Anh``), and a name its script reads family-first: Han, Hangul, or kana other than
 katakana alone (``"みなみ"`` is family ``みなみ``). Through 2.x
 the field followed ``name_order``, so a family-first order read a
 lone word as the family name.

@@ -450,7 +450,7 @@ def test_period_joined_vocab_retires_the_single_character_chunk() -> None:
     ("Ma.Ed", False),       # members alone, nothing settles them
     ("M.Filho", False),     # a suffix word that is also a name (S11)
     ("Msc.Filho", False),
-    ("MD.Filho", False),    # the clause's own example; the same path as Msc.Filho
+    ("MD.Filho", False),    # the example under period_joined_credential's S11 quote; Msc.Filho's path
     ("X.Y.I.", False),      # the single-character exception
     ("BM.BS", False),       # 'bm' unlisted
     ("PhD", False),         # no period, no chunks

@@ -79,7 +79,8 @@ words as the family (:ref:`two-family-names`), and the opt-in
 ``two_given_names``, which gives the given name the middle name beside
 it (:ref:`two-given-names`). A name of one name word has no first and
 last to tell apart: it is the given name under every ``name_order``, or the
-family name where ``lone_name_word`` says so (:ref:`lone-name-word`).
+family name where ``lone_name_word`` says so or its script settles the
+order (``"王"``) (:ref:`lone-name-word`).
 ``script_orders`` covers the East Asian writing that settles its own
 order: a name wholly in Han or hangul, or a Japanese name in kanji and
 kana — any of them, hiragana alone included — unless it is katakana
