@@ -153,7 +153,7 @@ def _slot_field(state: ParseState, seg_idx: int, pos: int, count: int,
     `count` is two or more wherever no family comma decides, so rules/O5's
     lone-word field is never asked here: `as_a_name` counts one more than
     the name pieces, of which assign always places one (its lone-piece
-    branches read the first, so none is a parse that completes); a split
+    branches index the first, so a parse with none would raise there); a split
     pair stands behind a name word H4's carve-out keeps; and
     `_resolve_deferred` counts a chained word one more than its name's,
     and reads a join that would leave the name one word as no join
