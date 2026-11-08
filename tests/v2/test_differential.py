@@ -161,9 +161,9 @@ _BOTH = frozenset({"capitalized", "capitalized_force"})
     # worker recorded no view and a bare compare.py against 3.0.0
     # reported 669 of 7,107 entries moved in a tree that moved none
     # (2026-11-08)
-    ("John Smith Jr., MD", None, frozenset()),
-    ("田中さん", None, frozenset()),
-    ("Mahathir bin Mohamad", None, frozenset()),
+    ("John Smith Jr., MD", None, frozenset({"generation", "credentials"})),
+    ("田中さん", None, frozenset({"honorifics"})),
+    ("Mahathir bin Mohamad", None, frozenset({"patronymic"})),
 ])
 def test_the_worker_reads_a_line_as_the_tree_does(
         name: str, order: str | None, views: frozenset[str]) -> None:
@@ -174,7 +174,9 @@ def test_the_worker_reads_a_line_as_the_tree_does(
     assert set(raw) == {"v2"}
     tree = snapshot.read([(name, order)])[0]
     # the row still reaches the arm it is here for
-    assert set(snapshot.CASE_VIEWS) & set(tree) == views
+    every_view = {*snapshot.CASE_VIEWS,
+                  *(k for keys in compare.VIEW_KEYS.values() for k in keys)}
+    assert every_view & set(tree) == views
     assert snapshot.row(name, order, raw["v2"]) == tree
     if name == "Jack":
         assert tree["alternatives"] == [
