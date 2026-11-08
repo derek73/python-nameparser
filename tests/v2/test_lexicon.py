@@ -750,14 +750,14 @@ def test_a_derived_marker_follows_from_the_readings() -> None:
     (lambda: Lexicon.empty().add("x", kind="title", default=False), ValueError, "a caller's reading is on"),
     (lambda: Lexicon.empty().add("x", kind="title", cased="X"), ValueError, "capitalization_exceptions"),
     (lambda: Lexicon.empty().add("x", kind="title", acronym=True), ValueError, "a title reading takes abbreviation, addresses, after_given, attaches"),
-    (lambda: Lexicon.empty().add("x", kind="family", same_as="y"), ValueError, "a family reading takes shared; got 'same_as'"),
+    (lambda: Lexicon.empty().add("x", kind="family", after_particle=True), ValueError, "after_particle names a given name"),
     (lambda: Lexicon.empty().add("x", kind="family", after_particle=True), ValueError, "only a given reading takes it"),
     (lambda: Lexicon.empty().add("x", kind="title", after_given="yes"), TypeError, "after_given must be True or False"),
     (lambda: Lexicon.empty().add("x", kind="title", abbreviation="yes"), TypeError, "abbreviation must be True or False"),
     (lambda: Lexicon.empty().add("x", kind="title", addresses="first"), ValueError, "addresses must be 'given' or 'family'"),
     (lambda: Lexicon.empty().add("x", kind="title", attaches="military"), TypeError, "attaches must be an iterable"),
     (lambda: Lexicon.empty().add("x", kind="honorific", attached="before"), ValueError, "attached must be 'after'"),
-    (lambda: Lexicon.empty().add("x", kind="given", same_as=""), TypeError, "same_as must be the full given name"),
+    (lambda: Lexicon.empty().add("x", kind="given", same_as=""), TypeError, "same_as must be the word this one is a spelling of"),
     # the build's check 8: a phrase matches only as a marker or a run of
     # titles addressing the given name
     (lambda: Lexicon.empty().add("chief justice", kind="title"), ValueError, "a phrase, which can never match as a title"),
@@ -1968,7 +1968,7 @@ def test_migrate_s_table_covers_every_compiled_constant() -> None:
         "PATRONYMIC_PARTICLES", "TITLE_ABBREVIATIONS", "TITLE_CASE_NAME_WORDS",
         "SHARED_NAMES", "PARTICLE_GIVEN_NAMES", "SAINT_PARTICLES",
         "CAPITALIZED_PARTICLES",
-        "BOUND_PHRASES"}
+        "BOUND_PHRASES", "SAME_AS"}
     assert public_in_2x <= named
     assert len(_migrate_constant_rows()) >= 20  # the rows with code
     # the one row naming two constants, which the row pattern skips
@@ -2015,3 +2015,33 @@ def test_a_generation_word_that_is_a_name_leans_by_case_only_when_told() -> None
     with pytest.raises(TypeError, match="title_case_is_name must be True or False"):
         Lexicon.default().add("zzgen", kind="generation",
                               title_case_is_name="yes")
+
+
+def test_same_as_compiles_for_every_kind() -> None:
+    lex = Lexicon.default()
+    assert lex._headword("junior") == lex._headword("jr")
+    assert lex._headword("wm") == "william"
+    assert lex._headword("Wm.") == "william"
+    assert lex._headword("capt") == lex._headword("captain")
+    assert lex._headword("smith") == "smith"
+
+
+def test_a_callers_same_as_on_a_title_reaches_the_map() -> None:
+    lex = Lexicon.default().add("brgdr", kind="military", same_as="brigadier")
+    assert lex._headword("Brgdr.") == lex._headword("brigadier")
+    assert Lexicon.default()._headword("brgdr") == "brgdr"
+
+
+def test_a_same_as_loop_in_a_callers_edits_ends_at_the_word_closing_it() -> None:
+    lex = (Lexicon.empty().add("aa", kind="military", same_as="bb")
+           .add("bb", kind="military", same_as="aa"))
+    assert lex._headword("aa") == "bb"
+    assert lex._headword("bb") == "aa"
+
+
+def test_same_as_does_not_move_which_set_a_word_compiles_into() -> None:
+    lex = Lexicon.default().add("brgdr", kind="military", same_as="brigadier")
+    assert "brgdr" in lex._sets.titles
+    assert "wm" in lex._sets.given_name_abbreviations
+    assert "capt" not in lex._sets.given_name_abbreviations
+    assert "junior" not in lex._sets.given_name_abbreviations

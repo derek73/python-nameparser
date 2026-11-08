@@ -171,7 +171,7 @@ The `name` kinds compile to nothing on their own. They record that a word is bor
 
 ## Properties
 
-A property is **behavioral** when it compiles into a set and so changes how names are parsed, **stated** when it compiles to nothing but the build holds it to the word's readings, and **descriptive** when it is checked and recorded but compiled to nothing, save `same_as` on a `given` reading, which compiles the word into `GIVEN_NAME_ABBREVIATIONS` (see [Name readings](#name-readings)). Each is allowed only on the categories listed; a `name` reading takes its own keys (see [Name readings](#name-readings)). Two of the sets are not properties at all but [derived markers](#derived-markers), read off a word's name readings.
+A property is **behavioral** when it compiles into a set and so changes how names are parsed, **stated** when it compiles to nothing but the build holds it to the word's readings, and **descriptive** when it is checked and recorded but compiled to nothing, save `same_as`, which compiles into `SAME_AS` on every kind and, on a `given` reading, also puts the word in `GIVEN_NAME_ABBREVIATIONS` (see [Name readings](#name-readings)). Each is allowed only on the categories listed; a `name` reading takes its own keys (see [Name readings](#name-readings)). Two of the sets are not properties at all but [derived markers](#derived-markers), read off a word's name readings.
 
 | Property | Type | Applies to | Unwritten | Effect |
 |---|---|---|---|---|
@@ -193,7 +193,7 @@ A property is **behavioral** when it compiles into a set and so changes how name
 | `issue` | descriptive | every category but `name` | | an issue number, or a list of them |
 | `decided` | descriptive | every category but `name` | | a TOML date |
 | `expands` | descriptive | every category but `name` | | the meaning the entry was added for, not every meaning |
-| `same_as` | descriptive | every category | | another word of the same category that this one is a spelling of (`jnr` is `jr`); on a `given` reading, the full given name the word abbreviates, which compiles the word into `GIVEN_NAME_ABBREVIATIONS` (see [Name readings](#name-readings)) |
+| `same_as` | descriptive | every category | | another word of the same category that this one is a spelling of (`jnr` is `jr`); every reading's `same_as` compiles into `SAME_AS`, the word-to-headword map `Lexicon` reads to tell two listed spellings of one word apart from two words (`Wm.` and `William`, `Jr.` and `Junior`), which moves no word between sets; on a `given` reading, the full given name the word abbreviates, which also compiles the word into `GIVEN_NAME_ABBREVIATIONS` (see [Name readings](#name-readings)) |
 | `native` | descriptive | every category, a `name` reading included | | a native-script spelling |
 | `gender` | descriptive | every category, a `name` reading included | | `"f"`, `"m"` or `"n"`, only where the word gives a definitive clue |
 

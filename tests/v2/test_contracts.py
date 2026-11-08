@@ -163,6 +163,9 @@ def test_every_vocabulary_constant_is_frozen() -> None:
     # down here and in AGENTS.md so it does not read as covered.
     exempt_mappings = {
         "_compiled.CAPITALIZATION_EXCEPTIONS",
+        # word -> headword, private since it compiled, read once into
+        # each Lexicon's own frozen `_same_as`: the same live hazard
+        "_compiled.SAME_AS",
     }
 
     config_dir = pathlib.Path(nameparser.config.__file__).parent

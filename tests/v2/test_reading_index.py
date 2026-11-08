@@ -389,3 +389,15 @@ def test_strict_ungated_compares_with_the_plain_choice_not_the_default() -> None
 def test_a_word_no_file_holds_as_a_suffix_has_no_suffix_kind() -> None:
     assert ri.suffix_kind_of("dean") is None
     assert ri.suffix_kind_of("zzqnotaword") is None
+
+
+def test_same_as_compiles_for_readings_of_every_kind() -> None:
+    from nameparser import _reading_index as ri
+    compiled = ri.compile_choice(frozenset())
+    assert compiled["SAME_AS"]["wm"] == "william"
+    assert compiled["SAME_AS"]["junior"] == "jr"
+    assert compiled["SAME_AS"]["capt"] == "captain"
+    assert list(compiled["SAME_AS"]) == sorted(compiled["SAME_AS"])
+    # only a given reading's same_as makes an abbreviated given name
+    assert "wm" in compiled["GIVEN_NAME_ABBREVIATIONS"]
+    assert not {"junior", "capt"} & compiled["GIVEN_NAME_ABBREVIATIONS"]

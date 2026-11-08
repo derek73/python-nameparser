@@ -119,12 +119,11 @@ CAPITALIZED_PARTICLE_KINDS = frozenset({"saint", "rank"})
 
 def indexed(kind: str) -> frozenset[str]:
     """The properties of a `kind` reading the index keeps: its
-    category's behavioral ones, and on a `given` reading `same_as`,
-    which compiles the word into GIVEN_NAME_ABBREVIATIONS (#789).
-    Everything else a reading carries is evidence, compiled to
-    nothing."""
-    keep = BEHAVIORAL[CATEGORY[kind]]
-    return keep | {"same_as"} if kind == "given" else keep
+    category's behavioral ones, and on every kind `same_as`, the word a
+    spelling stands for, which compiles into SAME_AS and on a `given`
+    reading also into GIVEN_NAME_ABBREVIATIONS (#789). Everything else
+    a reading carries is evidence, compiled to nothing."""
+    return BEHAVIORAL[CATEGORY[kind]] | {"same_as"}
 
 
 class ReadingProperties:
@@ -458,6 +457,10 @@ def changed_words(chosen: frozenset[str]) -> frozenset[str]:
     default, choice = compile_choice(frozenset()), compile_choice(chosen)
     words: set[str] = set()
     for key in default:
+        if key == "SAME_AS":
+            # a word's listed spelling moves no word between sets, so it
+            # changes no parse: a choice's `sr` of `senhor`, not `señor`
+            continue
         a: Any = default[key]  # type: ignore[literal-required]
         b: Any = choice[key]  # type: ignore[literal-required]
         if isinstance(a, dict):
@@ -550,6 +553,7 @@ class Compiled(TypedDict):
     SAINT_PARTICLES: frozenset[str]
     CAPITALIZED_PARTICLES: frozenset[str]
     BOUND_PHRASES: frozenset[str]
+    SAME_AS: dict[str, str]
 
 
 def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
@@ -598,8 +602,11 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
     after_particle: set[str] = set()
     bound_phrases: set[str] = set()
     cased: dict[str, str] = {}
+    same_as: dict[str, str] = {}
     for r, t in texts:
         p = r.props
+        if "same_as" in p:
+            same_as.setdefault(t, p["same_as"])
         if "cased" in p:
             cased[t] = p["cased"]
         if r.category == "name" and r.flag("shared"):
@@ -742,6 +749,10 @@ def compile_readings(readings: Iterable[ReadingProperties]) -> Compiled:
         # the bound word and each word that completes it ('عبد الله'),
         # which rules/P12 joins wherever they stand (#694)
         BOUND_PHRASES=frozenset(bound_phrases),
+        # every reading's `same_as`, of any kind: the word it is a
+        # listed spelling of (`wm` of `william`, `junior` of `jr`,
+        # `capt` of `captain`), which no set above records
+        SAME_AS=dict(sorted(same_as.items())),
     )
     # One form per post-nominal: the word test strips only edge periods
     # and the acronym test strips all of them, so a word in both is

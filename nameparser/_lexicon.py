@@ -655,6 +655,13 @@ _COMPILED_FIELDS = {
 }
 
 
+def _same_as_of(compiled: Mapping[str, Any]) -> Mapping[str, str]:
+    """The compile's `SAME_AS` as the lexicon keeps it: each headword
+    normalized, as a caller's `same_as` is written free-form."""
+    return MappingProxyType(
+        {w: _normalize(h) for w, h in compiled["SAME_AS"].items()})
+
+
 def _vocab_fields(compiled: Mapping[str, Any]) -> dict[str, frozenset[str]]:
     """The sets a compile of the vocabulary gives, by `_LexiconSets`
     name (the constants of nameparser/config/_compiled.py, or a compile
@@ -674,6 +681,12 @@ def _default_compiled() -> Mapping[str, frozenset[str]]:
     # model, 2026-10-29 3a; its 2026-11-02 #754 entry, item 4)
     import nameparser.config._compiled as compiled
     return MappingProxyType(_vocab_fields(vars(compiled)))
+
+
+@functools.cache
+def _default_same_as() -> Mapping[str, str]:
+    import nameparser.config._compiled as compiled
+    return _same_as_of(vars(compiled))
 
 
 _NO_SETS: Mapping[str, frozenset[str]] = MappingProxyType(
@@ -774,10 +787,11 @@ def _prop_value(kind: str, prop: str, value: object) -> object:
                              f"got {value!r}; list each completing word "
                              f"on its own")
         return folded or None
-    # same_as, a given name written short's full name (#789)
+    # same_as: the word this one is a listed spelling of, a given name
+    # written short's full name (#789) or a title's or suffix's full form
     if not isinstance(value, str) or not value.strip():
-        raise TypeError(f"same_as must be the full given name, a "
-                        f"non-empty string, got {value!r}")
+        raise TypeError(f"same_as must be the word this one is a spelling "
+                        f"of, a non-empty string, got {value!r}")
     return value
 
 
@@ -1032,7 +1046,8 @@ def _chosen_pool(base: object, chosen: frozenset[str], strict: bool) -> Pool:
 
 @functools.lru_cache(maxsize=128)
 def _built(base: object, edits: tuple[_Edit, ...], chosen: frozenset[str],
-           strict: bool) -> tuple[Pool, Mapping[str, frozenset[str]]]:
+           strict: bool) -> tuple[Pool, Mapping[str, frozenset[str]],
+                                  Mapping[str, str]]:
     """A lexicon's readings by word and the sets they compile to, kept
     per base, log and choice: a compile costs milliseconds, paid once
     per configuration (decisions/vocabulary-model, 2026-11-01 #754).
@@ -1058,7 +1073,8 @@ def _built(base: object, edits: tuple[_Edit, ...], chosen: frozenset[str],
             r for rs in pool.values() for r in rs)
     except ri.CompileError as exc:
         raise ValueError(str(exc)) from None
-    return MappingProxyType(pool), MappingProxyType(_vocab_fields(compiled))
+    return (MappingProxyType(pool), MappingProxyType(_vocab_fields(compiled)),
+            _same_as_of(compiled))
 
 
 def _clashes_unchosen(base: object, edits: tuple[_Edit, ...]) -> bool:
@@ -1082,6 +1098,25 @@ def _compiled_for(base: object, edits: tuple[_Edit, ...],
     if not edits and not chosen and base == "empty":
         return _NO_SETS
     return _built(base, edits, chosen, strict)[1]
+
+
+def _same_as_for(base: object, edits: tuple[_Edit, ...],
+                 chosen: frozenset[str] = frozenset(),
+                 strict: bool = False) -> Mapping[str, str]:
+    """`_compiled_for`'s twin for the word -> headword map."""
+    if not edits and base == "default":
+        return (_choice_same_as(chosen, strict) if chosen
+                else _default_same_as())
+    if not edits and not chosen and base == "empty":
+        return MappingProxyType({})
+    return _built(base, edits, chosen, strict)[2]
+
+
+@functools.lru_cache(maxsize=32)
+def _choice_same_as(chosen: frozenset[str],
+                    strict: bool) -> Mapping[str, str]:
+    ri = _index_module()
+    return _same_as_of(ri.compile_choice(chosen, strict))
 
 
 @functools.lru_cache(maxsize=32)
@@ -1970,6 +2005,11 @@ class Lexicon:
         init=False, repr=False, compare=False, hash=False)
     _sets: _LexiconSets = field(
         init=False, repr=False, compare=False, hash=False)
+    # word -> the word it is a listed spelling of (`wm` -> `william`),
+    # from every reading's `same_as`; built at construction, never
+    # pickled, like `_cap_map`
+    _same_as: Mapping[str, str] = field(
+        init=False, repr=False, compare=False, hash=False)
     # what assemble keys Reading.languages by: one per base, log and
     # choice (_ReadingFiles)
     _files: _ReadingFiles = field(
@@ -2015,6 +2055,7 @@ class Lexicon:
         put("_chosen", chosen)
         compiled = _compiled_for(self._base, canon, chosen, _strict)
         put("_files", _reading_files(self._base, canon, chosen, _strict))
+        put("_same_as", _same_as_for(self._base, canon, chosen, _strict))
         put("_sets", _LexiconSets(
             **compiled, surnames=self.surnames, given_names=self.given_names))
         if removed:
@@ -2397,6 +2438,20 @@ class Lexicon:
 
     def _pool(self) -> Pool:
         return self._files.pool()
+
+    def _headword(self, word: str) -> str:
+        """The word `word` is a listed spelling of, followed through
+        its `same_as` chain (`Wm.` -> `william`, `Junior` -> `jr`), or
+        the word itself, normalized, where it names none; two words are
+        listed spellings of each other where their headwords agree. A
+        chain that loops, which a caller's edits can write where the
+        build refuses it in the files, ends at the word that closes it."""
+        w = _normalize(word)
+        seen = {w}
+        while (head := self._same_as.get(w)) is not None and head not in seen:
+            w = head
+            seen.add(w)
+        return w
 
     def _changed(self, op: str,
                  entries: Mapping[str, object]) -> dict[str, object]:
