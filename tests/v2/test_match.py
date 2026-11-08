@@ -365,11 +365,12 @@ def test_consistent_names_always_share_a_key(accept: frozenset[Outcome]) -> None
     removed, given-one-side fails on ("John A. Smith", "Mr. Smith"); with
     the alternative readings' keys removed, other-reading fails on
     ("Mr. Smith", "Della Smith"); with the middle words' initials removed,
-    across-roles fails on ("John A. Smith", "Ann Smith-Jones"), with the
-    nickname's on ('William "Bill" Clinton', "Bill Clinton") and with the
-    maiden name's words on ("J. Smith", "Jane Doe (née Smith)"), the
-    all-opt-ins setting passing each through given-one-side's bare
-    family keys. Each is the first pair to fail, measured 2026-11-08;
+    across-roles fails on ("Wm. Smith", "John Wm. Smith"), and with the
+    nickname's on ('William "Bill" Clinton', "Bill Clinton"), the
+    all-opt-ins setting passing both through given-one-side's bare
+    family keys; with the maiden name's words removed, across-roles and
+    all-opt-ins both fail on ("J. Smith", "Jane Doe (née Smith)"). Each
+    is the first pair to fail, measured 2026-11-08;
     hyphenated-part adds no key, its halves sharing the given initial."""
     matching = Matching(Parser(), accept)
     for a, b in itertools.product(PARSED, repeat=2):
