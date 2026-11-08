@@ -1999,6 +1999,7 @@
 {"name": "John Smith Md Phd", "given": "John", "family": "Smith", "suffix": "Md Phd", "initials": "J. S.", "capitalized_force": "John Smith MD PhD"}
 {"name": "John Smith Mr.", "title": "Mr.", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "John Smith Msc.Ed", "given": "John", "family": "Smith", "suffix": "Msc.Ed", "initials": "J. S.", "capitalized_force": "John Smith MSc.Ed"}
+{"name": "John Smith Msc.Ed!", "given": "John", "middle": "Smith", "family": "Msc.Ed!", "initials": "J. S. M.", "capitalized_force": "John Smith MSc.Ed!"}
 {"name": "John Smith Msc.Ed.", "given": "John", "family": "Smith", "suffix": "Msc.Ed.", "initials": "J. S.", "capitalized_force": "John Smith MSc.Ed."}
 {"name": "John Smith P.C.", "given": "John", "middle": "Smith", "family": "P.C.", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: credential as suffix (shape)"], "initials": "J. S. P."}
 {"name": "John Smith Ph.", "given": "John", "middle": "Smith", "family": "Ph.", "initials": "J. S. P."}

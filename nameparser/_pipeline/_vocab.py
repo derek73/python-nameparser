@@ -559,8 +559,12 @@ def reads_as_initials(word: str, kind: SetApartKind,
             and _normalize(bare).replace(".", "")
             not in lexicon._sets.suffix_acronyms
             and period_joined_credential(bare, lexicon)):
-        return any(_shaped_as_initials(chunk, set_apart_kind(chunk, lexicon),
-                                       one_case, lexicon)
+        # a single letter before a glued honorific is the initial it is
+        # written as ('J.씨', the one chunk the every-chunk test lets
+        # count as nothing)
+        return any(len(chunk) == 1 and chunk.isalpha()
+                   or _shaped_as_initials(chunk, set_apart_kind(chunk, lexicon),
+                                          one_case, lexicon)
                    for chunk in _period_chunks(bare) or ())
     return _shaped_as_initials(bare, kind, one_case, lexicon)
 
@@ -1228,23 +1232,26 @@ def period_joined_credential(text: str, lexicon: Lexicon) -> bool:
 
 
 def _period_chunks(text: str) -> list[str] | None:
-    """TEXT cut at its periods, or None where it holds none. ASCII
-    punctuation beside a period is no part of the chunk ('MD.&PhD',
-    'Jr.;', a delimiter glued after the period, rules/C10), and a chunk
-    of nothing else is no chunk, so a word of one chunk beside it reads
-    as that chunk; the word's own outer edges are kept ('[Msc.Ed]')."""
-    raw = text.split(".")
-    if len(raw) < 2:
+    """TEXT cut at its periods, or None where it holds none inside it.
+    ASCII punctuation beside an interior period is no part of the chunk
+    ('MD.&PhD'); at the word's outer edges only its periods, a glued
+    semicolon (rules/C10, 'Jr.;') and an ampersand joining the next
+    credential ('MD.& PhD') are, so a word wearing any other there
+    is no period-joined word at all, as a single word or a slash word
+    wearing it is a name word ('Msc.Ed!', 'Msc.Ed.]', '[Msc.Ed]' as
+    'MD!', 'MD/PhD]'). A chunk of nothing but punctuation is no
+    chunk."""
+    if "." not in text.strip("."):
         return None
-    last = len(raw) - 1
-    chunks = []
-    for k, c in enumerate(raw):
-        if k:
-            c = c.lstrip(_ASCII_PUNCTUATION)
-        if k < last:
-            c = c.rstrip(_ASCII_PUNCTUATION)
-        if c:
-            chunks.append(c)
+    i, j = 0, len(text)
+    while i < j and text[i] in _ASCII_PUNCTUATION:
+        i += 1
+    while j > i and text[j - 1] in _ASCII_PUNCTUATION:
+        j -= 1
+    if any(c not in ".;&" for c in text[:i] + text[j:]):
+        return None
+    chunks = [b for c in text[i:j].split(".")
+              if (b := c.strip(_ASCII_PUNCTUATION))]
     return chunks or None
 
 

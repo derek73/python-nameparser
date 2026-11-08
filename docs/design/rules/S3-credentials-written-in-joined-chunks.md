@@ -9,7 +9,7 @@
   "John Smith M.A."           →  suffix="M.A."
   "Wang M.Eng."               →  suffix="M.Eng."
   ```
-- **Every chunk counts, the periods' as a slash's do**: a chunk counts as a suffix as written, or is a member of the ambiguous class (S4) another chunk settles, as in a word a slash joins (below), and a chunk of no letter or digit is no chunk. A word with a chunk that does not count is read by position, so a name glued to a credential by a period is no credential by that credential alone, and where it is the suffix the reading is reported. In brackets the same word is set apart as the slash's is (S1), and a word holding a member is a member itself there (below).
+- **Every chunk counts, the periods' as a slash's do**: a chunk counts as a suffix as written, or is a member of the ambiguous class (S4) another chunk settles, as in a word a slash joins (below), and a chunk of no letter or digit is no chunk; punctuation at the word's edge other than its periods, a glued semicolon and an ampersand makes it no such word, as it makes a single credential or a slash word a name word. A word with a chunk that does not count is read by position, so a name glued to a credential by a period is no credential by that credential alone, and where it is the suffix the reading is reported. In brackets the same word is set apart as the slash's is (S1), and a word holding a member is a member itself there (below).
   ```
   "John Smith Msc.Ed"         →  suffix="Msc.Ed"
   "John Smith JD.CPA"         →  suffix="JD.CPA"
@@ -20,6 +20,7 @@
   "John (Msc.Ed) Smith"       →  ambiguities=("suffix-or-nickname",)
   "John Smith (Bob.PhD)"      →  nickname="Bob.PhD"  · boundary
   "John Smith [Msc.Ed]"       →  family="[Msc.Ed]"  · boundary
+  "John Smith Msc.Ed!"        →  family="Msc.Ed!"  · boundary
   "John Smith Jr.; MD"        →  suffix="Jr.; MD"
   "John Smith, Dr. J.씨"       →  suffix="J.씨"
   ```

@@ -441,7 +441,9 @@ def test_period_joined_vocab_retires_the_single_character_chunk() -> None:
     ("PhD.Jr.", True),
     ("MD.&PhD", True),      # punctuation at a chunk's edge is no part of it
     ("Jr.;", True),         # nor is a chunk of nothing but punctuation
-    ("[Msc.Ed]", False),    # the word's own outer edges are kept
+    ("[Msc.Ed]", False),    # punctuation at the word's edge refuses it,
+    ("Msc.Ed!", False),     # as it does 'MD!' and 'MD/PhD]'
+    ("Msc.Ed.]", False),    # after the final period too
     ("J.씨", True),          # a glued honorific ends it (rules/W2)
     ("Bob.PhD", False),     # 'bob' counts as nothing
     ("Smith.Jr.", False),
