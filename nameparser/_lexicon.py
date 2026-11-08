@@ -1457,8 +1457,8 @@ class Lexicon:
     Since 3.0 the sets a parse reads are compiled from the readings and
     are internal; the 2.x set fields (``titles``, ``suffix_acronyms``,
     ...) are refused wherever they were written, each refusal naming
-    the calls that configure the same words (docs/migrate.rst has the
-    table). Three fields stay, being outside the per-word model:
+    the field and pointing at docs/migrate.rst's table of the kind each
+    field's words take. Three fields stay, being outside the per-word model:
     ``surnames``, ``given_names`` and ``capitalization_exceptions``.
 
     State is a base (the shipped vocabulary, none, or a pickled

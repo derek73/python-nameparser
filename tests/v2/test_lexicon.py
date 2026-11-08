@@ -598,6 +598,23 @@ def test_a_whole_kind_remove_is_logged_apart_and_round_trips() -> None:
         ".add('zqtitle', kind='salutation')"]
 
 
+def test_a_clash_message_renders_edits_as_a_caller_writes_them() -> None:
+    # _built's clash message renders the caller's edits through
+    # _rendered: consecutive edits of one kind join into one call, a
+    # long list is cut at six words, and a removed property shows its
+    # unwritten value. The 2.x translation's refusals reached these
+    # paths until 3.1 deleted it (#1003).
+    from nameparser._lexicon import _rendered
+    lex = (Lexicon.empty().add("zzb", kind="title").add("zzc", kind="title")
+           .add("zzt", kind="office", attaches=list("abcdefg"))
+           .add("zzt", kind="office", addresses=None))
+    assert _rendered(lex._edits) == [
+        ".add('zzb', 'zzc', kind='title')",
+        ".add('zzt', kind='office', attaches=['a', 'b', 'c', 'd', 'e', 'f', "
+        "... 1 more])",
+        ".add('zzt', kind='office', addresses='family')"]
+
+
 @pytest.mark.parametrize("kind", _kinds_and_categories())
 def test_words_lists_exactly_the_words_holding_a_reading_of_the_kind(
         kind: str) -> None:
