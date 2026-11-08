@@ -252,36 +252,42 @@ file a single surname: Argentine patent inventors agree 93.8% by default,
 Speed and testing
 -----------------
 
-Measured 2026-11-07 on an Apple M3 Pro, one core, Python 3.11, by
-parsing the 7,106 names in the committed `corpus snapshot`_ with one
-``Parser``, the median of seven passes after a warm-up:
-
-* **About 90 µs a name**, some 11,000 names a second on one core. Parse
-  time grows linearly with the length of the input, and the scaling
-  tests fail when a name's cost grows faster than that as one of its
-  shapes repeats.
+* **About 90 µs a name**, some 11,000 names a second. Measured
+  2026-11-07 against the 3.0 development tree on an Apple M3 Pro, one
+  core, Python 3.11, with one ``Parser`` reading the 7,106 entries of
+  the committed `corpus snapshot`_ (6,897 distinct names, some read
+  under more than one name order), the median of seven passes after a
+  warm-up.
+* **Linear in the input, on the shapes the scaling tests repeat.** Those
+  tests ran 32 costly input shapes on 2026-11-07, each at four times
+  its length, and fail when the cost grows well past four times.
 * **Pure Python, with no runtime dependencies.** Only the optional
-  ``ja`` extra installs one, for dividing unspaced Japanese kanji names.
-* **Build one Parser and reuse it.** Its ``Lexicon`` and ``Policy`` are
-  frozen and a parse never writes to them, so one parser can be shared
-  across threads without locking. It pickles for ``multiprocessing`` too,
-  provided the segmenter you gave it, if any, pickles.
+  ``ja`` extra adds any: namedivider-python and its numeric stack, for
+  dividing unspaced Japanese kanji names.
+* **Build one Parser and reuse it.** A parser for a locale costs about
+  as much as twenty parses to build (``parser_for(locales.ES)`` took
+  1.7 ms the same day). Its ``Lexicon`` and ``Policy`` are frozen and
+  a parse never writes to them, so one parser can be shared across
+  threads without locking, and it pickles for ``multiprocessing``. A
+  segmenter you supply has to be thread-safe and picklable too, and the
+  ``ja`` extra's segmenter does not pickle.
 
 And the tests that hold the readings in place:
 
-* **40,256 tests** (collected 2026-11-07), run in CI on Python 3.11
-  through 3.15, plus a run with the ``ja`` extra installed and one from
-  a source export with nothing installed.
+* **40,256 tests** (collected 2026-11-07), all run in CI on each of
+  Python 3.11 through 3.15. A job with the ``ja`` extra reruns the 39,652
+  under ``tests/v2/``, and another runs the suite from a source export without
+  nameparser installed.
 * **Every corpus name's reading is recorded** in the snapshot, and a
-  test fails when the parser reads one differently, so a change
-  that moves a reading lists every name it moved in its pull request.
-* **Every example is a doctest.** Each one with a ``>>>`` prompt, in
-  this README and in the documentation, runs in CI.
+  test fails when the parser reads one differently, so a change that
+  moves a reading lists every name it moved in its pull request.
+* **Every interactive example runs.** Each one with a ``>>>`` prompt, in
+  this README and in the documentation, is a doctest run in CI.
 * **The parsing rules** are written down with examples the suite runs, in
   `docs/design/rules <https://github.com/derek73/python-nameparser/tree/master/docs/design/rules>`__.
-  Where the parser falls short of a rule, the example carries a
-  ``deviates:`` marker naming its issue, and the suite fails once the gap
-  closes until the marker comes off.
+  Where the parser is known to fall short of a rule, the example carries
+  a ``deviates:`` marker naming its issue, and the suite fails once the
+  gap closes until the marker comes off.
 
 .. _corpus snapshot: https://github.com/derek73/python-nameparser/blob/master/tools/differential/README.md
 
