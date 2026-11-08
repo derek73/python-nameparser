@@ -192,17 +192,19 @@ class Matching:
         `John Smith` and with `Jane Smith`, which are not consistent
         with each other.
 
-        Where the names as parsed are not consistent, each side's other
-        readings are tried too: one per `Ambiguity` with an
-        `alternative`, its words moved to the alternative's role, one
-        ambiguity at a time and never two together. The table reported
+        Where `other-reading` is accepted and the names as parsed are
+        not consistent, each side's other readings are tried too: one
+        per `Ambiguity` with an `alternative`, its words moved to the
+        alternative's role, one ambiguity at a time and never two
+        together, save an alternative into the title or suffix, roles
+        that never conflict, which could only empty a role that does. The table reported
         is the one with the strongest outcomes, every role the
         alternative moved a word into or out of that would otherwise be
         accepted reading `other-reading`, so the pair is consistent
         through it only where `other-reading` is accepted."""
         left, right = self._parsed(a), self._parsed(b)
         best = self._result(left, right, frozenset())
-        if best.consistent:
+        if best.consistent or Outcome.OTHER_READING not in self.accept:
             return best
         readings_a, readings_b = self._readings(left), self._readings(right)
         if len(readings_a) == len(readings_b) == 1:
@@ -253,7 +255,8 @@ class Matching:
     def _readings(self, name: ParsedName
                   ) -> list[tuple[ParsedName, frozenset[Role]]]:
         """The name as parsed, with no role moved, then one other
-        reading per ambiguity whose `alternative` moves a word: that
+        reading per ambiguity whose `alternative` moves a word into a
+        role that can conflict (not the title or suffix): that
         ambiguity's words moved to the alternative's role by
         `Parser.revise`, with the roles it changed."""
         readings: list[tuple[ParsedName, frozenset[Role]]] = [(name, frozenset())]
@@ -261,6 +264,8 @@ class Matching:
             if ambiguity.alternative is None:
                 continue
             target = ambiguity.alternative.role
+            if target in _NEVER_CONFLICT:
+                continue
             words = [t for t in ambiguity.tokens if t.role is not target]
             if not words:
                 continue
@@ -317,6 +322,9 @@ _WORDS = re.compile(r"[\s-]+")
 #: single character in one of them is a whole word, never an initial.
 _initialless = _script_matcher(*_NO_INITIALS, whole=True)
 _RANK = {o: i for i, o in enumerate(Outcome)}
+#: The roles whose outcome is never a conflict; an alternative reading
+#: moving a word into one of them is not tried.
+_NEVER_CONFLICT = frozenset({Role.TITLE, Role.SUFFIX})
 
 
 _ACCENTED_SCRIPTS = ("LATIN ", "GREEK ", "CYRILLIC ")

@@ -6,7 +6,7 @@ import pickle
 
 import pytest
 
-from nameparser import Parser, Role
+from nameparser import ParsedName, Parser, Role
 from nameparser._match import (
     DEFAULT_ACCEPT,
     Matching,
@@ -35,7 +35,12 @@ NAMES: tuple[str, ...] = (
     "Ana Jo", "Ana José", "Ana Ma", "Ana María", "Maria Mà", "Maria Ma",
     "Hong Guo", "Hong-Yi Guo", "Yi Guo", "Mr. S", "John Stallbaum",
     "Van Gogh", "Gogh", "Vincent Van Gogh", "JOHN SMITH MA", "Sukarno",
+    "Dean Gogh", "Dean Smith", "Della Smith", "Mary Smith",
 )
+
+#: NAMES parsed once by the default parser, for the grid tests, so a
+#: pair's check under each setting re-parses nothing.
+PARSED: tuple[ParsedName, ...] = tuple(Parser().parse(n) for n in NAMES)
 
 #: The opt-in outcomes this module's settings sweep adds to the default.
 OPT_INS: tuple[Outcome, ...] = (
@@ -269,8 +274,9 @@ def test_cjk_names_compare_as_same_and_never_as_initials() -> None:
 @pytest.mark.parametrize("accept", SETTINGS, ids=_SETTING_IDS)
 def test_the_check_is_symmetric(accept: frozenset[Outcome]) -> None:
     matching = Matching(Parser(), accept)
-    for a, b in itertools.product(NAMES, repeat=2):
-        assert matching.check(b, a) == matching.check(a, b).mirrored(), (a, b)
+    for a, b in itertools.product(PARSED, repeat=2):
+        assert matching.check(b, a) == matching.check(a, b).mirrored(), (
+            a.original, b.original)
 
 
 def test_a_single_han_character_is_never_an_initial() -> None:
@@ -336,9 +342,9 @@ def test_consistent_names_always_share_a_key(accept: frozenset[Outcome]) -> None
     2026-11-08; hyphenated-part adds no key, its halves sharing the
     given initial."""
     matching = Matching(Parser(), accept)
-    for a, b in itertools.product(NAMES, repeat=2):
+    for a, b in itertools.product(PARSED, repeat=2):
         if matching.check(a, b).consistent:
-            assert matching.keys(a) & matching.keys(b), (a, b)
+            assert matching.keys(a) & matching.keys(b), (a.original, b.original)
 
 
 @pytest.mark.parametrize("a, b", [
@@ -399,7 +405,7 @@ def test_a_given_name_against_the_second_half_still_conflicts() -> None:
 def test_the_other_reading_is_consistent_where_accepted() -> None:
     r = m.check("Suharto", "Suharto")
     assert not r.consistent
-    assert role(r, Role.FAMILY).outcome is Outcome.OTHER_READING
+    assert role(r, Role.FAMILY).outcome is Outcome.CONFLICT
     opted = _with(Outcome.OTHER_READING)
     r = opted.check("Suharto", "Suharto")
     assert r.consistent
@@ -428,3 +434,29 @@ def test_the_other_reading_of_one_side_meets_the_other_as_parsed() -> None:
     assert r.consistent and role(r, Role.GIVEN).outcome is Outcome.OTHER_READING
     assert (role(r, Role.FAMILY).left, role(r, Role.FAMILY).right) == (
         "Van Gogh", "Van Gogh")
+
+
+def test_the_default_reports_the_names_as_parsed() -> None:
+    # no alternative reading is searched unless other-reading is accepted
+    r = m.check("Van Gogh", "Dean Smith")
+    assert not r.consistent
+    assert (role(r, Role.GIVEN).left, role(r, Role.GIVEN).right) == ("Van", "Dean")
+    assert role(r, Role.GIVEN).outcome is Outcome.CONFLICT
+    assert role(r, Role.FAMILY).left == "Gogh"
+    for a, b in (("Della Smith", "Mary Smith"), ("Van Gogh", "Dean Gogh")):
+        r = m.check(a, b)
+        assert not r.consistent
+        assert role(r, Role.GIVEN).outcome is Outcome.CONFLICT, (a, b)
+
+
+@pytest.mark.parametrize("a, b", [
+    ("Van Gogh", "Dean Gogh"), ("Van Gogh", "Dean Smith"),
+    ("Della Smith", "Mary Smith"),
+])
+def test_the_other_reading_does_not_make_conflicting_given_names_agree(
+        a: str, b: str) -> None:
+    # an alternative into a role that never conflicts (Dean as a title)
+    # is not used, so it cannot empty a given role to agree with another
+    opted = _with(Outcome.OTHER_READING)
+    assert not opted.check(a, b).consistent
+    assert not opted.check(b, a).consistent
