@@ -4,7 +4,7 @@ Loaded when a session reads a vocabulary TOML file. The steps for adding a word 
 
 ## Step 1: its other readings
 
-First check the word's OTHER readings: `uv run python tools/vocab/query.py --word <word>` lists every reading and exclusion of it in every file, which is where the overlaps between categories now show. Real overlaps exist: `st`/`freiherr` ∈ `PARTICLES` ∩ `TITLES`, and `do`/`mc`/`vd` ∈ `PARTICLES` ∩ `SUFFIX_ACRONYMS`; `abd` = "ABD" ∈ `SUFFIX_ACRONYMS`; `abu` ∈ `PARTICLES` ∩ `BOUND_GIVEN_NAMES` (position-dependent: leading token → given-name join, mid-name → family-name join). Usually position-dependent and harmless, but can force a guard or an exclusion (the `last_base` all-particles guard; `abd`, kept out of `BOUND_GIVEN_NAMES` until decisions/P5 found the credential collision cost nothing at either end).
+First check the word's OTHER readings: `uv run python tools/vocab/query.py --word <word>` lists every reading and exclusion of it in every file, which is where the overlaps between categories now show. Real overlaps exist: `st`/`freiherr` and the ranks `graf`, `gräfin`, `fürst`, `prinz` (#709) ∈ `PARTICLES` ∩ `TITLES`, and `do`/`mc`/`vd` ∈ `PARTICLES` ∩ `SUFFIX_ACRONYMS`; `abd` = "ABD" ∈ `SUFFIX_ACRONYMS`; `abu` ∈ `PARTICLES` ∩ `BOUND_GIVEN_NAMES` (position-dependent: leading token → given-name join, mid-name → family-name join). Usually position-dependent and harmless, but can force a guard or an exclusion (the `last_base` all-particles guard; `abd`, kept out of `BOUND_GIVEN_NAMES` until decisions/P5 found the credential collision cost nothing at either end).
 
 ## Step 2: real names, not memory
 

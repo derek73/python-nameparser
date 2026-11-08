@@ -475,7 +475,7 @@ not ``suffix_acronyms_ambiguous``, say) is refused, naming the fields;
 so are a ``Parser`` and a ``Locale`` holding it. A loaded lexicon keeps
 the vocabulary it was pickled with, not 3.0's: a 2.8.0 pickle of
 ``Lexicon.default()``, or of a ``Parser()``, loads as the 3.0 default
-with the 23 credentials and 13 case masks 3.0 added taken out again, so it reads
+with the credentials and case masks 3.0 added taken out again, so it reads
 ``"Jane Doe KC"`` as 2.8.0 did. Build a new ``Parser()`` for 3.0's
 vocabulary.
 
@@ -1208,6 +1208,31 @@ with what 1.4 read:
   MACHADO"`` — 1.4 wrote ``st``, ``dela`` and ``MacHado``; saint and
   rank particles keep their capital, and a name opening Mac is
   title-cased unless the vocabulary records its casing (``MacDonald``).
+- ``"John Smith y V"`` — a lone letter after a connective is part of
+  the family: 1.4 read middle ``Smith``, last ``y``, suffix ``V``.
+- ``"이서연·김민준"`` typed decomposed (NFD) — the interpunct divides
+  it as it does the composed spelling: 1.4 read first
+  ``이서연·김민준``.
+- ``"Hans Meier Priv.-Doz."`` — a listed title with a period or hyphen
+  inside it ending a name is a title: 1.4 read middle ``Meier``, last
+  ``Priv.-Doz.``.
+- ``"Jane Smith PhD/NP-C"`` and ``"John Smith MA/PhD"`` — a joined
+  credential is the suffix, a credential listed with its own joiner and
+  a credential that is also a name beside one that is not included: 1.4
+  read middle ``Smith``, last ``PhD/NP-C`` and ``MA/PhD``.
+- ``"John Smith (Ma, PhD)"`` and ``"John Smith (Msc.Ed)"`` — 1.4 read
+  nickname ``Ma, PhD`` and ``Msc.Ed``.
+- ``"'Smitty' Jones Jr."`` — a nickname, one name word and a suffix read
+  the word as the family: 1.4 read first ``Jones``, last ``Jr.``.
+- ``"Mohd. Shameem Khan"`` — Muhammad, Achmad, Francisco and Sheikh
+  written short are given names: 1.4 read title ``Mohd.``, first
+  ``Shameem``.
+- ``"Jan Novák, MUDr"``, ``"Licenciado Juan Pérez"``, ``"Esra Oz, Assist
+  Prof"``, ``"Engr Ahsen Ali"`` and ``"Anselm Crombach, Dipl.-Psych."``
+  — titles no name bears are titles: 1.4 read first ``MUDr``,
+  ``Licenciado``, ``Assist``, ``Engr`` and ``Dipl.-Psych.``.
+- ``"Mary Smith, Mst"`` — ``Mst`` after a name is a credential: 1.4
+  read first ``Mst``, last ``Mary Smith``.
 
 .. doctest::
 
@@ -1241,3 +1266,25 @@ with what 1.4 read:
     >>> [str(parse(n).capitalized()) for n in ("JOHN ST CLAIR",
     ...     "JUAN DELA CRUZ", "JOHN MACHADO", "RONALD MACDONALD")]
     ['John St Clair', 'Juan Dela Cruz', 'John Machado', 'Ronald MacDonald']
+    >>> parse("John Smith y V").family
+    'Smith y V'
+    >>> import unicodedata
+    >>> nfd = parse(unicodedata.normalize("NFD", "이서연·김민준"))
+    >>> nfd.given == unicodedata.normalize("NFD", "이서연")
+    True
+    >>> parse("Hans Meier Priv.-Doz.").title
+    'Priv.-Doz.'
+    >>> parse("Jane Smith PhD/NP-C").suffix, parse("John Smith MA/PhD").suffix
+    ('PhD/NP-C', 'MA/PhD')
+    >>> parse("John Smith (Ma, PhD)").suffix, parse("John Smith (Msc.Ed)").suffix
+    ('Ma, PhD', 'Msc.Ed')
+    >>> parse("'Smitty' Jones Jr.").family
+    'Jones'
+    >>> parse("Mohd. Shameem Khan").given
+    'Mohd.'
+    >>> [parse(n).title for n in ("Jan Novák, MUDr", "Licenciado Juan Pérez",
+    ...     "Esra Oz, Assist Prof", "Engr Ahsen Ali",
+    ...     "Anselm Crombach, Dipl.-Psych.")]
+    ['MUDr', 'Licenciado', 'Assist Prof', 'Engr', 'Dipl.-Psych.']
+    >>> parse("Mary Smith, Mst").suffix
+    'Mst'

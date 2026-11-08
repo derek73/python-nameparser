@@ -22,7 +22,8 @@ already commits a caller to Vietnamese names, which keeps the removals'
 cost to ``DO`` or ``BA`` written as a credential after a Vietnamese
 name for English-language readers, with or without a comma (``Nguyen
 Van Anh, DO`` reads family ``Nguyen Van Anh``, given ``DO``), and ``CHI``
-without one (after a comma the capitals shape keeps a three-letter word
+without one or in a name written wholly in capitals (after a comma in a
+name written in mixed case the capitals shape keeps a three-letter word
 a suffix).
 
 Data sources: the titles' vetting is on the words in vi.toml
@@ -37,7 +38,7 @@ every order, given by default, rules/O5), and the fragment every name
 holding one of its syllables, and the choice's titles and the
 fragment's credentials reach comma names too (``Nguyen, Ts Van Anh``,
 ``Nguyen Van Anh, DO``), so DEVIATES below declares every name holding
-a word. The choice's own words are derived
+a letter or a digit. The choice's own words are derived
 (``_reading_index.changed_words``), which the non-interference gate in
 tests/v2/test_locales.py ors in.
 """

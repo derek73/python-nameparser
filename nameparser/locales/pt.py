@@ -1,5 +1,8 @@
 """The Portuguese locale pack: vocabulary-only -- it chooses the
-language ``pt`` and prefers pt.toml's readings
+language ``pt``, which turns on the one reading pt.toml writes
+``default = false``, ``piedade`` as the second half of a compound
+given name behind a particle (``Maria da Piedade Silva`` gives middle
+``da Piedade``, rules/P10, #1118, #1122), and prefers pt.toml's readings
 where another language's clash: ``do`` the particle, not the DO
 credential, and ``e`` the connective even in a name written in one
 case, while ``Sr`` keeps both readings, Senhor in front and the

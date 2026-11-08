@@ -77,7 +77,9 @@ and ``script_orders`` change what "first" and "last" mean here, as
 does the opt-in ``two_family_names``, which takes the last two name
 words as the family (:ref:`two-family-names`), and the opt-in
 ``two_given_names``, which gives the given name the middle name beside
-it (:ref:`two-given-names`).
+it (:ref:`two-given-names`). A name of one name word has no first and
+last to tell apart: it is the given name under every order, or the
+family name where ``lone_name_word`` says so (:ref:`lone-name-word`).
 ``script_orders`` covers the East Asian writing that settles its own
 order: a name wholly in Han or hangul, or a Japanese name in kanji and
 kana — any of them, hiragana alone included — unless it is katakana
@@ -85,7 +87,7 @@ alone, which is how a foreign name is transcribed. The Chinese
 interpunct ``·`` dividing such a name walks that back, marking a
 transcription that follows ``name_order`` like any other name. Three rules can still
 override the arrangement: a lone name word beside a given-name title
-such as ``Sir`` is the given name under every order, a particle that can never be a given name,
+such as ``Sir`` is the given name whatever ``lone_name_word`` says, a particle that can never be a given name,
 opening the name, opens the surname under every order rather than
 becoming the given name (both in :ref:`order-vocabulary-first`), and the
 opt-in ``patronymic_rules`` reorder, under the default order, a name

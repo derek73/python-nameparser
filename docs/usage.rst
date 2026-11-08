@@ -1593,6 +1593,15 @@ fixes the order whatever the flag:
     $ python -m nameparser --order family-first --json "Kovács János Péter"
     {"title": "", "given": "János", "middle": "Péter", "family": "Kovács", "suffix": "", "nickname": "", "maiden": ""}
 
+``--lone-name-word`` takes ``given`` (the default) or ``family``, the
+field a name of one name word reads as under every order
+(:ref:`lone-name-word`):
+
+::
+
+    $ python -m nameparser --lone-name-word family --json "Anh"
+    {"title": "", "given": "", "middle": "", "family": "Anh", "suffix": "", "nickname": "", "maiden": ""}
+
 The ``Policy`` switches that turn a reading on or off have a flag each,
 spelled as the field: ``--two-given-names``, ``--two-family-names``,
 ``--middle-as-family``, ``--lenient-comma-suffixes`` and

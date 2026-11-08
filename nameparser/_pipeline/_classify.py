@@ -47,9 +47,11 @@ namespaced (unstable): "vocab:title", "vocab:given-title",
 "vocab:suffix", "vocab:suffix-word", "vocab:suffix-ambiguous",
 "vocab:suffix-word-ambiguous", "vocab:agnomen",
 "vocab:generation-word", "vocab:credential-word",
-"vocab:honorific-word", "vocab:patronymic" and "vocab:trailing-title" (read by the later
-stages and dropped by assemble, Token.reading carrying the kind out,
-save the last, which marks no kind),
+"vocab:honorific-word", "vocab:patronymic", "vocab:trailing-title"
+and "vocab:joined-title" (read by the later stages and dropped by
+assemble, Token.reading carrying the kind out, save the last two,
+which mark no kind), "vocab:title-case-name" (a suffix word whose
+Title case leans to the name, rules/S6, kept on the published token),
 "vocab:particle-ambiguous", "vocab:bound-given",
 "vocab:given-abbreviation", "vocab:shared-name" (which rules/P10, O6
 and O7 read), "vocab:particle-given" (which P10 and O6 read) and

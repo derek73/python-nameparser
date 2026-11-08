@@ -545,7 +545,8 @@ class Policy:
     only what you change -- ``Policy(maiden_delimiters=frozenset({("(", ")")}))``
     -- and pass the result to ``Parser(policy=...)``."""
 
-    #: How positional (no-comma) input maps onto given/middle/family.
+    #: How positional (no-comma) input maps onto given/middle/family
+    #: (a name of one name word is placed by lone_name_word instead).
     #: Valid values are exactly the three exported
     #: :ref:`name-order constants <name-order-constants>` --
     #: GIVEN_FIRST (the default), FAMILY_FIRST, and
@@ -1067,8 +1068,8 @@ class PolicyPatch:
                     f"{f.name} must be an iterable, got {value!r}{hint}"
                 ) from None
             object.__setattr__(self, f.name, frozenset(value))
-        # Every other field (the scalars: the bools and
-        # unlisted_caps_suffixes) DELIBERATELY gets no type check here,
+        # Every other field (the scalars: the bools,
+        # unlisted_caps_suffixes and lone_name_word) DELIBERATELY gets no type check here,
         # unlike name_order and the union fields above: a
         # PolicyPatch(strip_emoji="off") is constructible, and only raises
         # once apply_patch runs Policy.__post_init__'s checks. This is
