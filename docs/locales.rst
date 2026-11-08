@@ -191,7 +191,9 @@ alone, reads the other's names by its own word:
 
 Choosing both keeps both readings, as the default does. A reading
 that a word is borne as a name never settles anything: it keeps the
-name around the word in charge, under any choice.
+name around the word in charge, under any plain choice. A strict
+choice drops a name reading with the rest of the word where no chosen
+file holds it (`Reading one language only`_).
 
 A name reading held off by default is how a language claims a word
 another language's titles use. ``Hon`` is the British style (the
@@ -1042,7 +1044,7 @@ Vietnamese names
 A Vietnamese name is written family name first, then the middle name,
 then the given name, and the default, reading given-first, reads it the
 other way round, diacritics or none. ``vi`` reads it in its own order,
-keeps ``Van`` (Văn), ``Le`` (Lê), ``Do`` (Đỗ) and ``The`` (Thế) as name
+keeps syllables such as ``Van`` (Văn), ``Le`` (Lê), ``Do`` (Đỗ) and ``The`` (Thế) as name
 words where other languages' particles and connectives would join them
 to the words beside them, keeps ``Chi``, ``Ba`` and ``Do`` from being
 read as a credential ending a name written in capitals

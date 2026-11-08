@@ -436,14 +436,17 @@ when it appears alone, and the parse reports the fork as an ambiguity.
 A title with a ``given`` reading works differently, being a title only
 inside a phrase (:ref:`titles-also-given-names`).
 
-A choice of languages keeps every name reading, so it settles none of
-these words where the chosen language's own file holds both readings.
-English lists ``ma`` as a credential and as a surname, so a strict
-English choice (:ref:`strict-choice`) still reads ``JOHN SMITH MA`` by
-the count and reports it, and Dutch lists ``van`` as a particle and as
-a given name. A choice ends such a fork only where it switches off
-another language's reading of the word (below). The recipes in this
-section are the way to settle the rest.
+A choice of languages keeps the chosen files' name readings, so it
+settles none of these words where the chosen language's own file holds
+both readings. English lists ``ma`` as a credential and as a surname,
+so a strict English choice (:ref:`strict-choice`) still reads ``JOHN
+SMITH MA`` by the count and reports it, and Dutch lists ``van`` as a
+particle and as a given name. A choice ends such a fork where it
+switches off another language's reading of the word (below), and a
+strict choice also where no chosen file holds the word at all, every
+reading of it leaving: a strict Dutch choice reads ``JOHN SMITH MA``
+family ``MA``, unreported. The recipes in this section are the way to
+settle the rest.
 
 Credentials that are also surnames
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -976,9 +979,9 @@ Nothing keys this order to a script the way the East Asian defaults
 below do — Vietnamese is written in the Latin alphabet, which carries
 no order of its own — so it applies only where you set it. For
 Vietnamese data, the ``vi`` pack (``parser_for(locales.VI)``) sets this
-order and also keeps ``Van``, ``Le``, ``Do`` and ``The`` as name words,
-where other languages read them as particles or connectives, and
-``Chi``, ``Ba`` and ``Do`` out of the credentials (see
+order and also keeps the Vietnamese syllables other languages read as
+particles or connectives (``Van``, ``Le``, ``Do``, ``The`` and others)
+as name words, and ``Chi``, ``Ba`` and ``Do`` out of the credentials (see
 :ref:`vietnamese-names`);
 the bare ``Policy`` above is for data that wants the order alone.
 

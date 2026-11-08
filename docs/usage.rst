@@ -1342,7 +1342,8 @@ Since 3.0 every token also says how the parse read it, whether or not
 a fork was reported. ``Token.reading`` is a :class:`~nameparser.Reading`
 with the same parts, its role the token's own field, and two flags
 besides, ``first_surname`` and ``second_surname``, marking the words
-``surname1`` and ``surname2`` hold where the family was read as two:
+``surname1`` and ``surname2`` hold where the family was read as two,
+or had middle names folded into it (``middle_as_family``):
 
 .. doctest::
 
