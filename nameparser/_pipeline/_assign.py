@@ -151,8 +151,8 @@ def _slot_field(state: ParseState, seg_idx: int, pos: int, count: int,
     before a family comma, the given part's given or middle name after
     one, and otherwise the order the main segment's read set. `lone`
     is the field a lone name word takes there: `_assign_main` passes
-    the field it placed (a script's order where W4 decided), and None
-    reads `Policy.lone_name_word`."""
+    the field it gives a lone name word (a script's order where W4
+    decided), and None reads `Policy.lone_name_word`."""
     if state.structure is Structure.FAMILY_COMMA:
         return (Role.FAMILY if seg_idx == 0
                 else Role.GIVEN if pos == 0 else Role.MIDDLE)
