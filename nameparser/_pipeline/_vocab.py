@@ -462,18 +462,19 @@ def set_apart_kind(word: str, lexicon: Lexicon,
     credentials included), both, a member of the ambiguous class
     written with a period inside it (`dotted_member`) or a joined word
     holding one (`joined_member`, 'MA/PhD'), which S13 settles after the
-    name only, or None where the vocabulary reads it
-    as a name or not at all. A comma the clause keeps on its word is no
-    part of it (rules/N1)."""
+    name only, or None where the vocabulary reads it as a name or not at
+    all. A comma the clause keeps on its word is no part of it
+    (rules/N1)."""
     bare = word.strip(",")
     folded = _normalize(bare)
+    acronym = folded.replace(".", "")
     sets = lexicon._sets
     # rules/S1: "one joined by a slash, a hyphen or a period (S3) too,
     # every chunk counting" -- a word with interior periods read here as
     # at the end of a name ('(Msc.Ed)', '(Lt.Gov)'; not '(Bob.PhD)'),
     # the period test asked at C level first (decisions/S3, #1131)
-    joined = "." in folded and folded not in sets.titles and (
-        folded.replace(".", "") not in sets.suffix_acronyms)
+    joined = ("." in folded and folded not in sets.titles
+              and acronym not in sets.suffix_acronyms)
     title = folded in sets.titles or joined and period_joined_title(
         bare, lexicon)
     if joined and not title and period_joined_credential(bare, lexicon):
@@ -484,7 +485,6 @@ def set_apart_kind(word: str, lexicon: Lexicon,
     # necessary half of `dotted_member`, so no other word pays its
     # frame: `suffix_as_written` would read a dotted member as a suffix
     # wherever it stands, and reads no other member as one
-    acronym = folded.replace(".", "")
     if acronym in sets.suffix_acronyms_ambiguous:
         if title:
             return "title"
@@ -988,7 +988,9 @@ def suffix_as_written(n: str, text: str, lexicon: Lexicon) -> bool:
     return ("-" in n or "/" in n) and _joined_credential(text, lexicon)
 
 
-#: What joins the chunks of a joined credential ('MD/PhD', 'MD-PhD').
+#: What joins the letter chunks of the caps shape's joined spelling
+#: ('PU-PH', `_joined_capitals`); a joined credential is cut by
+#: `_JOINER_SPLIT`, which keeps them.
 _JOINERS = re.compile(r"[-/]")
 
 
@@ -1143,8 +1145,7 @@ def _joined_credential(text: str, lexicon: Lexicon) -> bool:
     and not a bare member of the ambiguous class, a run listed whole
     counting as one chunk) or is a member of that class however
     written, where one chunk at least settles every such member
-    (`_settles`), not every one
-    a single ASCII character, and -- joined by a hyphen -- not written
+    (`_settles`), not every one a single ASCII character, and -- joined by a hyphen -- not written
     as a hyphenated name is ('MD/PhD', 'M.A.-Ph.D.', 'MA/PhD',
     'M.A/PhD', 'PhD-Md', 'md-phd', 'PhD/NP-C', but not 'MA/MBA',
     'MA/Jones', 'Smith-Jones', 'I-V', 'Ae-Ra', 'Ae-ra' or 'MD/'). The
@@ -1189,9 +1190,6 @@ def _joined_credential(text: str, lexicon: Lexicon) -> bool:
             return True
     return False
 
-
-#: What `period_joined_credential` strips from a chunk's edges.
-_ASCII_PUNCTUATION = string.punctuation
 
 # rules/S3: "a word with interior periods reads as a suffix when
 # every one of its period-separated chunks counts as a suffix as
@@ -1244,14 +1242,14 @@ def _period_chunks(text: str) -> list[str] | None:
     if "." not in text.strip("."):
         return None
     i, j = 0, len(text)
-    while i < j and text[i] in _ASCII_PUNCTUATION:
+    while i < j and text[i] in string.punctuation:
         i += 1
-    while j > i and text[j - 1] in _ASCII_PUNCTUATION:
+    while j > i and text[j - 1] in string.punctuation:
         j -= 1
     if any(c not in ".;&" for c in text[:i] + text[j:]):
         return None
     chunks = [b for c in text[i:j].split(".")
-              if (b := c.strip(_ASCII_PUNCTUATION))]
+              if (b := c.strip(string.punctuation))]
     return chunks or None
 
 
@@ -1269,11 +1267,12 @@ def period_member(word: str, lexicon: Lexicon) -> bool:
     a period-joined credential (`period_joined_credential`) holding a
     member of the ambiguous class ('Msc.Ed'): `joined_member`'s
     question for a word the periods join (rules/S3, #1131)."""
-    folded = _normalize(word.strip(","))
+    bare = word.strip(",")
+    folded = _normalize(bare)
     return ("." in folded
             and folded.replace(".", "") not in lexicon._sets.suffix_acronyms
-            and period_joined_credential(word.strip(","), lexicon)
-            and _holds_a_member(word.strip(","), lexicon))
+            and period_joined_credential(bare, lexicon)
+            and _holds_a_member(bare, lexicon))
 
 
 # rules/H5: "a word with interior periods every one of whose chunks is
