@@ -4,7 +4,7 @@
 
 **Then:** a clause wholly of words the vocabulary reads as no name is set apart from the name: it is no nickname and no maiden name, and the words around it read as they would beside a nickname.
 
-- **Each word takes the role its vocabulary gives it**: a title is the title, a credential or a generation the suffix, one joined by a slash or a hyphen (S3) too, and a word that is both is the title in front of the name's first word, or in a name with no word of its own, and the suffix anywhere else. The vocabulary is asked of each word on its own, so a credential whose word is also a name (S4) is no word of such a clause unless its writing (S13) or a credential of its clause settles it (below), and neither is a title that is also a given name (H9).
+- **Each word takes the role its vocabulary gives it**: a title is the title, a credential or a generation the suffix, one joined by a slash, a hyphen or a period (S3) too, every chunk counting, and a word that is both is the title in front of the name's first word, or in a name with no word of its own, and the suffix anywhere else. The vocabulary is asked of each word on its own, so a credential whose word is also a name (S4) is no word of such a clause unless its writing (S13) or a credential of its clause settles it (below), and neither is a title that is also a given name (H9).
   ```
   "John Smith (PhD, MBA)"     →  suffix="PhD, MBA"
   "John Smith (Dr)"           →  title="Dr"
@@ -80,7 +80,7 @@
   "Alex Green, FRCS (SN)"     →  nickname="SN"
   "John Smith, MD (Sr)"       →  suffix="MD Sr"  · boundary
   ```
-- **A credential written as initials before a name word of its comma part** keeps its pair's reading: one or two letters with or without a period, or single letters each with its period, there are more likely the initials the person goes by, S13's reason for a member inside the name. A credential written as initials before a name word stays the nickname, and so does any word of its clause; a word that is a title too counts only written with a period after each letter, or in capitals in a name of mixed case, capitals in a name written in one case saying nothing (S6), and a generation word not at all; a credential S3 reads through chunks joined by a slash or a hyphen counts where any of its chunks would, as its words written apart do, and one the vocabulary lists whole is one word, as is each run of its chunks the vocabulary lists whole (S3).
+- **A credential written as initials before a name word of its comma part** keeps its pair's reading: one or two letters with or without a period, or single letters each with its period, there are more likely the initials the person goes by, S13's reason for a member inside the name. A credential written as initials before a name word stays the nickname, and so does any word of its clause; a word that is a title too counts only written with a period after each letter, or in capitals in a name of mixed case, capitals in a name written in one case saying nothing (S6), and a generation word not at all; a credential S3 reads through chunks joined by a slash, a hyphen or a period counts where any of its chunks would, as its words written apart do, and one the vocabulary lists whole is one word, as is each run of its chunks the vocabulary lists whole (S3).
   ```
   "Justin (JP) Stearns"       →  nickname="JP"
   "Justin (R.N.) Stearns"     →  nickname="R.N."
@@ -88,6 +88,7 @@
   "Justin (JP, PhD) Stearns"  →  nickname="JP, PhD"
   "John (,JP) Smith"          →  nickname=",JP"
   "Justin (JP/MD) Stearns"    →  nickname="JP/MD"
+  "Justin (JP.MD) Stearns"    →  nickname="JP.MD"
   "John (MD-PhD) Smith"       →  nickname="MD-PhD"
   "Robert (RA) Allen"         →  nickname="RA"
   "ROBERT (RA) ALLEN"         →  suffix="RA"  · boundary

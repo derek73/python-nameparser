@@ -2577,6 +2577,10 @@ text = "bcba"
 credential = { expands = "Board Certified Behavior Analyst", note = "NPPES 31,700 US healthcare providers (August 2026 file); 5 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 993 }
 
 [[word]]
+text = "bch"
+excluded = { credential = { reason = "Bachelor of Surgery (B.Ch., 270 ClinicalTrials.gov officials after a comma), the second half of the split MB BCh (rules/S12), kept out as chb is (measured 2026-11-07); B.Ch is read by its shape, rules/S3", issue = 1131, decided = 2026-11-07 } }
+
+[[word]]
 text = "bcl"
 credential = {}
 
@@ -2616,6 +2620,10 @@ credential = {}
 [[word]]
 text = "bs"
 credential = { expands = "Bachelor of Science", note = "NPPES 18,880 US healthcare providers (August 2026 file); 449 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
+
+[[word]]
+text = "bscmed"
+credential = { cased = "BScMed", expands = "Bachelor of Medical Science", note = "NPPES 1 US healthcare provider (August 2026 file); 7 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1131 }
 
 [[word]]
 text = "bsn"
@@ -3037,6 +3045,10 @@ text = "cha"
 [word.excluded.credential]
 reason = "Cha, the Korean 차, dominates CHA (Certified Hotel Administrator): removed 2026-09-07 by the relative-frequency criterion (decisions/suffix-acronym-collisions)"
 issue = 342
+
+[[word]]
+text = "chb"
+excluded = { credential = { reason = "Bachelor of Surgery (Ch.B., 368 ClinicalTrials.gov officials after a comma), but listed alone it stops MB ChB merging into the split MBChB (rules/S12): MB ChB, PhD read family MB, suffix ChB, PhD (measured 2026-11-07); Ch.B. is read by its shape, rules/S3", issue = 1131, decided = 2026-11-07 } }
 
 [[word]]
 text = "chba"
@@ -4508,6 +4520,10 @@ text = "mcdba"
 credential = {}
 
 [[word]]
+text = "mch"
+credential = { cased = "MCh", expands = "Master of Surgery", note = "NPPES 37 US healthcare providers (August 2026 file); 118 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 1131 }
+
+[[word]]
 text = "mchema"
 credential = { cased = "MChemA", expands = "Master Chemical Analyst", note = "govuk-people 2 names, 1 after a comma (counted 2026-10-30); no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 965 }
 
@@ -4555,6 +4571,10 @@ credential = { cased = "MDiv" }
 [[word]]
 text = "mdphd"
 credential = { cased = "MDPhD", expands = "Doctor of Medicine and Doctor of Philosophy", note = "NPPES 61 US healthcare providers (August 2026 file); 129 ClinicalTrials.gov study officials after a comma, as typed (data 2026-10-21) write it; no Census 2010 (floor 100), SSA (floor 5 a year) or Wikidata bearer", issue = 797 }
+
+[[word]]
+text = "med"
+excluded = { credential = { reason = "Master of Education, 20,201 NPPES providers (August 2026 file) and 2,121 ClinicalTrials.gov officials after a comma, but med is the German medical field in Dr. med. and Dr. med. dent.: its mask MEd would write Dr. MEd. into every such title, and without the mask listing it leaves M.Ed. force-repairing to M.ED., as the shape reading does without it, so it buys nothing (measured 2026-11-07); M.Ed. is read by its shape, rules/S3", issue = 1131, decided = 2026-11-07 } }
 
 [[word]]
 text = "mem"
