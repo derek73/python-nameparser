@@ -1,4 +1,5 @@
-"""Shared handles on tools/differential/: its corpora and its modules.
+"""Shared handles on tools/: the differential corpora, and any tool's
+module loaded by path.
 
 Neither is importable the ordinary way: `tools/` is outside
 `testpaths` and is not a package, so its modules are loaded by path,
@@ -58,15 +59,33 @@ def load_tool(stem: str) -> ModuleType:
     local_corpora.py its local_core and local_<source> modules, which it
     imports under their bare names: a test reaches those with
     importlib.import_module, never a second load by path)."""
-    spec = importlib.util.spec_from_file_location(
-        f"differential_{stem}", _TOOLS / f"{stem}.py")
-    assert spec is not None and spec.loader is not None, stem
+    return load_by_path(f"differential_{stem}", _TOOLS / f"{stem}.py")
+
+
+def load_by_path(name: str, path: Path) -> ModuleType:
+    """The module at `path`, loaded under `name`: any script under tools/.
+
+    A tool that exits at import (tools/vocab/build.py exits 3 when a
+    module it loads by path is broken or missing) fails the calling test
+    module's collection instead: an exit would end the whole pytest
+    session. A failed load leaves nothing in sys.modules, as build.py's
+    own loader does, so a later lookup meets the real error again rather
+    than a half-run module."""
+    spec = importlib.util.spec_from_file_location(name, path)
+    assert spec is not None and spec.loader is not None, path
     module = importlib.util.module_from_spec(spec)
     # Registered before it runs: @dataclass looks the module up in
     # sys.modules to check string annotations, and fails on a module
     # loaded by path that is not in it (local_corpora.py's dataclasses).
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
+    sys.modules[name] = module
+    try:
+        spec.loader.exec_module(module)
+    except SystemExit as stop:
+        del sys.modules[name]
+        pytest.fail(f"{path.name} exited {stop.code} at import", pytrace=False)
+    except BaseException:
+        del sys.modules[name]
+        raise
     return module
 
 

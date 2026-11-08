@@ -11,8 +11,6 @@ implementations.
 from __future__ import annotations
 
 import ast
-import importlib.util
-import sys
 import unicodedata
 from pathlib import Path
 from types import ModuleType
@@ -25,22 +23,13 @@ from typing import Any
 from nameparser import _reading_index as ri
 from nameparser.config import _compiled, _index
 
+from ._differential_fixtures import load_by_path
+
 _BUILD = Path(__file__).resolve().parents[2] / "tools" / "vocab" / "build.py"
 
 
 def _load_build() -> ModuleType:
-    spec = importlib.util.spec_from_file_location("vocab_build_for_index", _BUILD)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    try:
-        spec.loader.exec_module(module)
-    except SystemExit as stop:
-        # the build exits 3 at import when a module it loads by path
-        # is broken; an exit would end the whole pytest session, so
-        # fail this module's collection instead
-        pytest.fail(f"tools/vocab/build.py exited {stop.code} at import", pytrace=False)
-    return module
+    return load_by_path("vocab_build_for_index", _BUILD)
 
 
 # the build reads the TOML and writes the generated modules in the tree

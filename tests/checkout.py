@@ -20,8 +20,9 @@ flag:
 - `HAS_DOCS`: are the user docs here? A test reading docs/*.rst skips
   without them, through `needs_docs`.
 
-tests/test_checkout.py holds both flags to what a git checkout has, so
-neither can turn tests into skips there without failing.
+tests/test_checkout.py holds both flags to what a whole tree has (a git
+checkout, or an export of one), so neither can turn tests into skips
+there without failing.
 """
 from __future__ import annotations
 
