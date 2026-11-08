@@ -144,21 +144,22 @@ def _name_pieces(state: ParseState, tokens: Sequence[WorkToken],
 
 
 def _slot_field(state: ParseState, seg_idx: int, pos: int, count: int,
-                order: tuple[Role, Role, Role] | None, *,
-                lone: Role | None = None) -> Role:
+                order: tuple[Role, Role, Role] | None) -> Role:
     """The field position `pos` of `count` name words takes in segment
     `seg_idx`, every other word read as the parse read it: the family
     before a family comma, the given part's given or middle name after
-    one, and otherwise the order the main segment's read set. `lone`
-    is the field a lone name word takes there: `_assign_main` passes
-    the field it gives a lone name word (a script's order where W4
-    decided), and None reads `Policy.lone_name_word`."""
+    one, and otherwise the order the main segment's read set.
+
+    `count` is two or more wherever no family comma decides, so rules/O5's
+    lone-word field is never asked here: `as_a_name` counts one more than
+    the name pieces, of which assign always places one; a split pair
+    stands behind a name word H4's carve-out keeps; and
+    `_resolve_deferred` reads a join that would leave the name one word
+    as no join (rules/P3) before it asks."""
     if state.structure is Structure.FAMILY_COMMA:
         return (Role.FAMILY if seg_idx == 0
                 else Role.GIVEN if pos == 0 else Role.MIDDLE)
     assert order is not None  # the main segment's read sets it
-    if count == 1:
-        return state.policy.lone_name_word if lone is None else lone
     return _name_positions(order, count)[pos]
 
 
@@ -363,10 +364,10 @@ def _name_positions(order: tuple[Role, Role, Role],
     """Roles for `count` name pieces (titles/suffixes already peeled),
     per name_order. GIVEN_FIRST: given, middles..., family.
     FAMILY_FIRST: family, given, middles... FAMILY_FIRST_GIVEN_LAST:
-    family, middles..., given. One piece takes order[0], which a
-    caller placing a lone name word overrides with rules/O5's field
-    (`_assign_main`, `_slot_field`); two pieces take order[0] and the
-    other primary."""
+    family, middles..., given. One piece takes order[0], which
+    `_assign_main`, placing a lone name word, overrides with rules/O5's
+    field (every other caller lays out two or more, or slices the first
+    slot off); two pieces take order[0] and the other primary."""
     first, second = order[0], order[1]
     if count == 1:
         return [first]
@@ -590,8 +591,7 @@ def _assign_main(seg_idx: int, state: ParseState,
                         state.lexicon._sets.given_name_titles))
         return _name_alt(tokens[i],
                          _slot_field(state, seg_idx, len(name_pieces),
-                                     len(name_pieces) + 1, order,
-                                     lone=lone_field),
+                                     len(name_pieces) + 1, order),
                          front, tokens, len(name_pieces) == 1, licensed)
 
     for r in range(trailing_alts, len(ambiguities)):
