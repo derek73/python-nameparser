@@ -2,23 +2,28 @@
 parliaments, as each parliament writes their names.
 
 opensanctions-parliaments -- the members OpenSanctions' crawlers read
-off seventeen national parliaments' own websites (DATASETS), each
+off twenty national chambers' own websites, and the regional heads
+Indonesia elected in 2018 (DATASETS), each
 dataset's `targets.simple.csv`: a row per person, the `name` column as
 the parliament writes it and `aliases` the other forms the crawler
 found, joined by ";" (another script, Kazakh beside Russian Cyrillic,
 Uzbek Cyrillic beside its Latin, Devanagari beside Latin; a short
 parliamentary name, `Jorge Costa` for `Jorge Fernando Magalhães da
 Costa`; the name with its title, `Shrimati Savitri Kulaste`; another
-surname, in Ukraine's). A row is a target; on 2026-11-08 every one of the
-13,354 was a Person, 2,602 of them spelled two ways or more, 17,041
-spellings in all, distinct within each member. The parliaments write
+surname, in Ukraine's; another transliteration, in Ethiopia's). A row
+is a target; on 2026-11-08 every one of the 18,485 was a Person, 2,748
+of them spelled two ways or more, 22,325 spellings in all, distinct
+within each member. The parliaments write
 the shapes the other corpora barely hold: Turkic patronymics (`Həmid
 qızı`, `Серикбайулы`, `Bolatuly`, `Gurbangulyyevich`, `o‘g‘li`) and East
 Slavic ones, in Cyrillic and in Latin, family first and last, the family
 often in capitals (`AĞAZADƏ Əminə`, `Mehmet DEMİR`); Indic titles and
 initials (`Shri`, `Smt.`, `Dr.`, initials before the name); Slavic and
-Portuguese double surnames. Issues #1186 to #1192 were read from it, in
-a 2026-11-07/08 check of the shipped packs.
+Portuguese double surnames; Indonesian names in capitals with `H.`
+(Haji) or `R.` (Raden) before them and no family name; Ethiopian names
+of given, father's and grandfather's name. Issues #1186 to #1192 were
+read from it, in a 2026-11-07/08 check of the shipped packs; the
+Indonesian datasets measure #1205 and #1206, and Ethiopia's #1203.
 
 A record is one distinct spelling of one member: the spelling (`name`),
 the member (`entity`, the dataset and OpenSanctions' id, so a member of
@@ -50,12 +55,16 @@ import local_jrc
 
 PARLIAMENTS = "opensanctions-parliaments"
 #: The datasets read, each a national chamber's members as its own
-#: website lists them; a corpus fetched over another list is refused on
-#: load (check_parliaments).
+#: website lists them, save id_regional_2018: the governors, regents and
+#: mayors Indonesia elected in 2018, as its election commission lists
+#: them, read beside the two chambers because it writes names as they do
+#: and holds most of their `H.` (Haji), 128 of 138 on 2026-11-08. A
+#: corpus fetched over another list is refused on load (check_parliaments).
 DATASETS = ("az_parliament", "kg_jogorku_kenesh", "uz_legislative_chamber", "uz_senate",
             "kz_mazhilis", "kz_senate", "tm_mejlis", "tr_parliament", "hr_sabor",
             "si_dz_rs", "sk_nrsr_poslanci", "pt_parliament", "in_sansad", "ua_rada",
-            "by_council_republic", "ru_duma_deputies", "ru_federation_council")
+            "by_council_republic", "ru_duma_deputies", "ru_federation_council",
+            "id_dpr", "id_dpd", "id_regional_2018", "et_hopr")
 INDEX_URL = "https://data.opensanctions.org/datasets/latest/{dataset}/index.json"
 RESOURCE = "targets.simple.csv"
 #: The columns read; the file holds others (birth dates, contacts), and
