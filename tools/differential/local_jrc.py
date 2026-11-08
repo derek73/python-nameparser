@@ -57,7 +57,9 @@ JRC_DATE = "2024-03-15T14:08:28Z"
 #: the Unicode version script() read: a change to what _jrc_read keeps,
 #: to how it builds a name or to script() must bump it by hand, and a
 #: corpus read the old way is then refused on load (check_jrc) rather
-#: than counted under labels the code no longer gives.
+#: than counted under labels the code no longer gives. opensanctions-parliaments
+#: labels its records by script() too and pins this version, so a change
+#: to script() refuses its corpus as well (local_parliaments.check_parliaments).
 JRC_READ_VERSION = 2
 #: A line: entity id, type, language and name, tab-separated, the name's
 #: words joined by "+". Lines end in CRLF.

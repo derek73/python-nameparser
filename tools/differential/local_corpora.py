@@ -52,7 +52,9 @@ $NAMEPARSER_TOOLS_CACHE (default ~/.cache/nameparser-tools), and
   its gender and the parts the Vietnamese convention derives; one
   National Assembly deputy's name composed with the title the education
   states, with the official name, the title, the derived parts, the
-  gender and the ethnicity. The counts are counted from here.
+  gender and the ethnicity; one distinct spelling of a member of a
+  national parliament, with the member, its script, the dataset and
+  whether it is the name or an alias. The counts are counted from here.
 - corpus.jsonl -- the distinct names, in the corpus line format
   snapshot.py and compare.py --corpus read: each record's "name", and
   for nepal-candidates its Devanagari name too, and for
@@ -94,7 +96,8 @@ local_psc.py (psc-individuals), local_jrc.py (jrc-names),
 local_nepal.py (nepal-candidates), local_orcid.py
 (orcid-researchers), local_patentsview.py (patentsview-inventors),
 local_volby.py (cz-candidates), local_dof.py (dof-signatures),
-local_uit.py (uit-vinames) and local_vnassembly.py (vn-assembly).
+local_uit.py (uit-vinames), local_vnassembly.py (vn-assembly) and
+local_parliaments.py (opensanctions-parliaments).
 """
 from __future__ import annotations
 
@@ -141,6 +144,7 @@ from local_jrc import JRC, check_jrc, fetch_jrc, renew_jrc  # noqa: E402
 from local_nepal import check_nepal, fetch_nepal  # noqa: E402
 from local_orcid import (ORCID, check_orcid, extract_path as orcid_extract,  # noqa: E402
                          fetch_orcid, orcid_boxes, renew_orcid)
+from local_parliaments import PARLIAMENTS, check_parliaments, fetch_parliaments  # noqa: E402
 from local_patentsview import (PV, check_pv, extract_path as pv_extract,  # noqa: E402
                                fetch_pv, pv_boxes, renew_pv)
 from local_psc import PSC, check_psc, fetch_psc, renew_psc  # noqa: E402
@@ -296,6 +300,11 @@ SOURCES: dict[str, Source] = {
                "states, and its parts derived, so derived data)",
         unit="deputies", fetch=fetch_vn, check=check_vn,
         corpus_keys=("name", "official")),
+    PARLIAMENTS: Source(
+        credit="National parliaments' members, read through OpenSanctions' "
+               "parliament datasets (CC BY-NC 4.0; credit OpenSanctions)",
+        unit="spellings", fetch=fetch_parliaments, check=check_parliaments,
+        group="dataset"),
 }
 
 
@@ -913,7 +922,7 @@ def format_groups(found: GroupCounts, top: int) -> str:
 ALIKE_UNITS = {"entity": "persons", "devanagari": "pairs", "registry": "pairs"}
 #: The sources whose records pair spellings: the ones the alike view
 #: reads, and measure.py runs it for.
-ALIKE_SOURCES = (JRC, "nepal-candidates", "tse-donors")
+ALIKE_SOURCES = (JRC, "nepal-candidates", "tse-donors", PARLIAMENTS)
 
 
 def alike_kind(local: Local) -> str:

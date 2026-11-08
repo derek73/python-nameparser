@@ -14,6 +14,7 @@ import argparse
 import importlib
 import importlib.util
 import sys
+import types
 from pathlib import Path
 from types import ModuleType
 from typing import Any
@@ -239,23 +240,41 @@ def test_a_source_holding_none_of_a_group_says_so(
     _psc(monkeypatch, [("Ana Souza", "Brazilian")])
     monkeypatch.setattr(cd, "local_names", lambda source, groups: (
         (["Ana Souza"], {"Brazilian"}) if source == cd.PSC else ([], set())))
-    monkeypatch.setattr(cd.local_corpora, "SOURCES", {cd.PSC: None, cd.ORCID: None})
+    stand_in = types.SimpleNamespace(group="")  # gather may read a source's group key
+    monkeypatch.setattr(cd.local_corpora, "SOURCES", {cd.PSC: stand_in, cd.ORCID: stand_in})
     got = cd.gather(_args(local=[cd.PSC, cd.ORCID], group=["Brazilian"]))
     assert [t for t, _o, _i in got] == ["Ana Souza"]
     assert f"no record of {cd.ORCID} holds it" in capsys.readouterr().out
 
 
-def test_a_group_needs_a_fielded_corpus() -> None:
-    with pytest.raises(SystemExit, match="fielded"):
+def test_a_group_needs_a_grouped_corpus() -> None:
+    with pytest.raises(SystemExit, match="needs a grouped corpus"):
         cd.local_names("ctgov-officials", ["US"])
 
 
-def test_local_all_with_a_group_reads_the_fielded_corpora_only(
+def test_local_all_with_a_group_reads_the_grouped_corpora_only(
         monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
     _psc(monkeypatch, [("Ana Souza", "Brazilian"), ("Cy Dias", "French")])
     got = cd.gather(_args(local=["all"], group=["Brazilian"]))
     assert [t for t, _o, _i in got] == ["Ana Souza"]
-    assert "fielded corpora only" in capsys.readouterr().out
+    assert "grouped corpora only" in capsys.readouterr().out
+
+
+def test_a_group_keeps_a_grouped_corpus_s_records_by_its_source_s_key(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # opensanctions-parliaments has no fields to score, and so no FIELDED
+    # entry, but its Source names the key its records' group stands in.
+    source = importlib.import_module("local_parliaments").PARLIAMENTS
+    records = [{"name": name, "entity": f"{dataset}:{name}", "script": "Latin",
+                "dataset": dataset, "form": "name"}
+               for name, dataset in (("Ana Souza", "pt_parliament"),
+                                     ("Bo Lima", "kz_mazhilis"))]
+    plant_corpus(monkeypatch, cd.local_corpora, source, records, "2026-11-08", "spellings")
+    cd.local_corpora.fetch(source)
+    assert cd.group_keys()[source] == "dataset"
+    assert cd.local_names(source, ["kz_mazhilis"]) == (["Bo Lima"], {"kz_mazhilis"})
+    got = cd.gather(_args(local=[source], group=["pt_parliament"]))
+    assert [t for t, _o, _i in got] == ["Ana Souza"]
 
 
 @needs_checkout

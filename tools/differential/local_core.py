@@ -10,6 +10,7 @@ the source modules to build SOURCES.
 """
 from __future__ import annotations
 
+import hashlib
 import http.client
 import os
 import sys
@@ -68,6 +69,11 @@ class Source:
     #: for tools/name_usage.py's per-country rows.
     extract: Callable[[], Path] | None = None
     boxes: Callable[[Path], Iterator[tuple[str, str, str, int]]] | None = None
+    #: For a source with no fields to score (no local_agreement.FIELDED
+    #: entry) whose records name a group all the same: the record key
+    #: holding it (opensanctions-parliaments' "dataset"), which
+    #: config_diff.py --group keeps, as it keeps a fielded source's.
+    group: str = ""
 
 
 #: Attempts per request, for every source that retries.
@@ -125,6 +131,35 @@ def _refuse_past(rows: Iterable[tuple[int, int, float, str]], why: str) -> None:
     for count, of, share, what in rows:
         if count > of * share:
             raise ValueError(f"{count:,} of {of:,} {what}: {why}")
+
+
+def _is_count(value: object) -> bool:
+    """An int that is not a bool, which JSON's true would be."""
+    return isinstance(value, int) and not isinstance(value, bool)
+
+
+def _listed_resource(index: dict[str, Any], name: str, where: str) -> tuple[str, str, int]:
+    """The URL, sha1 and size an OpenSanctions dataset's index (read from
+    `where`) states for its resource `name`: vn-assembly's FtM file,
+    opensanctions-parliaments' simple CSVs."""
+    for resource in index.get("resources", []):
+        if isinstance(resource, dict) and resource.get("name") == name:
+            url, sha1, size = (resource.get(k) for k in ("url", "checksum", "size"))
+            if isinstance(url, str) and isinstance(sha1, str) and _is_count(size):
+                return url, sha1, size
+    raise ValueError(f"{where} lists no {name} with its url, checksum and size")
+
+
+def _sha1_checked(sha1: str, size: int) -> Callable[[bytes], bytes]:
+    """A reader refusing a body of another size or sha1, which _retried
+    takes for a body cut short in transit."""
+    def read(body: bytes) -> bytes:
+        digest = hashlib.sha1(body).hexdigest()
+        if len(body) != size or digest != sha1:
+            raise ValueError(f"the file is {len(body):,} bytes of sha1 {digest}, not "
+                             f"the {size:,} of {sha1} the index states")
+        return body
+    return read
 
 
 def _backed_off(exc: Exception, attempt: int, url: str, retries: int | None = None) -> bool:
