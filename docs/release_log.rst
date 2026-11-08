@@ -1,5 +1,9 @@
 Release Log
 ===========
+* 3.0.1 - November 8, 2026
+
+    - **Fix the test suite run against the installed package.** Run as Debian's autopkgtest runs it, with the tests beside the installed package and no source tree, 3.0.0's suite stopped during collection; it now passes, and a test that reads the source tree or the user docs skips there. The library is unchanged from 3.0.0. :issue:`1184`
+
 * 3.0.0 - November 8, 2026
 
     **nameparser 3.0** removes ``HumanName``, ``Constants`` and the rest of the 1.x compatibility layer, which 2.8 deprecates, and rebuilds the vocabulary as readings of words, kept in files by language. A parser can be built for a choice of languages, the suffix splits by kind and the family name into two surnames, and every parsed word records the reading it took. :doc:`migrate` gives the 3.0 call for each 1.x and 2.x one. Highlights:
