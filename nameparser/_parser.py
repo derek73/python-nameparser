@@ -405,10 +405,9 @@ def parser_for(*locales: Locale, base: Parser | None = None,
     language writes alike (``Dr``, ``Prof``, ``PhD``, ``MSc``, the
     numerals), and a native-script word's readings (one with a letter
     and no Latin letter), name readings included, as a plain choice of
-    the same languages keeps them; every other
-    file's readings leave, und.toml's
-    among them, and with them the markers they derive. It is for single-origin data
-    (``parser_for(Locale(code="ko", lexicon=Lexicon.empty(),
+    the same languages keeps them; every other file's readings leave,
+    und.toml's among them, and with them the markers they derive. It is
+    for single-origin data (``parser_for(Locale(code="ko", lexicon=Lexicon.empty(),
     languages=frozenset({"ko"})), strict=True)`` reads ``Kim Do Hyun``
     with no Portuguese particle ``do``). A caller's own readings and the
     packs' fragments apply after it, as after a plain choice, and the

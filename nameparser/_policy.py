@@ -783,8 +783,8 @@ class Policy:
     #: ``Johnson``). The reading is reported as a ``given-or-family``
     #: ambiguity either way, save a word its own reading claimed (a
     #: particle, a bound given name, an initial), which the switch
-    #: places too and which reports nothing. Added in 3.0; through 2.x the field followed
-    #: name_order.
+    #: places too and which reports nothing. Added in 3.0; through 2.x
+    #: the field followed name_order.
     lone_name_word: Role = field(
         default=Role.GIVEN, metadata={ADDED_IN: "3.0.0"})
 

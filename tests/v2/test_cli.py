@@ -198,7 +198,7 @@ def test_cli_switch_tables_name_fields_of_their_kind() -> None:
     assert cli._SWITCHES
     for field in cli._SWITCHES:
         assert isinstance(getattr(defaults, field), bool), field
-    for field, enum in cli._CHOICES.items():
+    for field, (enum, _) in cli._CHOICES.items():
         assert isinstance(getattr(defaults, field), enum), field
 
 
