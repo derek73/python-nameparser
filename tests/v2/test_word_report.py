@@ -17,7 +17,13 @@ from typing import Any
 
 import pytest
 
+from tests.checkout import require_checkout
+
+
 from ._differential_fixtures import checkout_copy, own_cache, plant_corpus
+
+# the report refuses a nameparser imported from outside the checkout
+require_checkout()
 
 _PATH = Path(__file__).parents[2] / "tools" / "vocab" / "word_report.py"
 

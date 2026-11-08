@@ -35,6 +35,9 @@ from typing import Any
 
 import pytest
 
+from tests.checkout import require_checkout
+
+
 from ._differential_fixtures import (
     _Response,
     checkout_copy,
@@ -42,6 +45,9 @@ from ._differential_fixtures import (
     own_cache,
     plant_corpus,
 )
+
+# the harness refuses a nameparser imported from outside the checkout
+require_checkout()
 
 local = load_tool("local_corpora")
 snapshot = load_tool("snapshot")

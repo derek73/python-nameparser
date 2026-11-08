@@ -16,9 +16,15 @@ from pathlib import Path
 
 import pytest
 
+from tests.checkout import require_checkout
+
+
 from nameparser import Parser
 
 from ._differential_fixtures import checkout_copy, load_tool, own_cache, plant_corpus
+
+# the harness refuses a nameparser imported from outside the checkout
+require_checkout()
 
 agreement = load_tool("local_agreement")
 corpora = agreement.local_corpora

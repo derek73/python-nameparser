@@ -12,7 +12,13 @@ from pathlib import Path
 
 import pytest
 
+from tests.checkout import require_checkout
+
+
 from ._differential_fixtures import load_tool, own_cache
+
+# the harness refuses a nameparser imported from outside the checkout
+require_checkout()
 
 measure = load_tool("measure")
 corpora = measure.local_corpora

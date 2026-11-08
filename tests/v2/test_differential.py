@@ -20,7 +20,13 @@ from typing import Any
 
 import pytest
 
+from tests.checkout import require_checkout
+
+
 from ._differential_fixtures import _TOOLS, load_tool
+
+# the harness refuses a nameparser imported from outside the checkout
+require_checkout()
 
 compare = load_tool("compare")
 shapes = load_tool("shapes")

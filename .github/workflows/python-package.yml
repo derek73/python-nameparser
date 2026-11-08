@@ -109,6 +109,44 @@ jobs:
         uv run --no-sync python -P -c "import importlib.util, sys; sys.exit(importlib.util.find_spec('nameparser') is not None)"
         uv run --no-sync pytest
 
+  # The other half of a packager's run: nameparser INSTALLED from its
+  # wheel and no source package beside the tests, the layout Debian's
+  # autopkgtest copies (debian/pybuild.testfiles: tests, tools,
+  # docs/design, pyproject.toml and the vocabulary README). A test that
+  # finds a package file by its path in the checkout fails here; one
+  # whose subject is the checkout skips through tests/checkout.py. 3.0
+  # aborted at collection in this layout, the vocabulary build exiting
+  # where it loads nameparser/_reading_index.py by path, with 36
+  # failures and errors behind it under Debian's own skip list (#1184).
+  installed-package:
+    runs-on: ubuntu-latest
+    env:
+      UV_PYTHON: "3.14"
+    steps:
+    - uses: actions/checkout@v7
+    - name: Install uv
+      uses: astral-sh/setup-uv@v7
+      with:
+        enable-cache: true
+    - name: Build the wheel
+      run: uv build --wheel -o "$RUNNER_TEMP/wheel"
+    - name: Lay out the tests without the source package
+      run: |
+        layout="$RUNNER_TEMP/layout"
+        mkdir -p "$layout/docs" "$layout/nameparser/vocab"
+        cp -R tests tools pyproject.toml uv.lock "$layout/"
+        cp -R docs/design "$layout/docs/"
+        cp nameparser/vocab/README.md "$layout/nameparser/vocab/"
+    - name: Run Tests
+      working-directory: ${{ runner.temp }}/layout
+      run: |
+        uv sync --group dev --no-install-project
+        uv pip install "$RUNNER_TEMP"/wheel/*.whl
+        # The import check first: a nameparser read from the layout
+        # would make this the source-tree job again.
+        uv run --no-sync python -P -c "import nameparser, pathlib, sys; sys.exit(pathlib.Path(nameparser.__file__).resolve().is_relative_to(pathlib.Path.cwd().resolve()))"
+        uv run --no-sync pytest
+
   # The optional nameparser[ja] segmenter (#272). Its own job, not a
   # matrix entry: the matrix above must keep proving that the package
   # installs and passes with NO third-party dependency at all, which is

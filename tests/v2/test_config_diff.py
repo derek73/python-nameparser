@@ -20,6 +20,8 @@ from typing import Any
 
 import pytest
 
+from tests.checkout import needs_checkout
+
 from nameparser import Lexicon, Parser, locales, parse
 
 from ._differential_fixtures import own_cache, plant_corpus
@@ -87,6 +89,7 @@ def test_an_expr_names_the_name_orders(name: str) -> None:
     assert built.policy.name_order == getattr(nameparser, name)
 
 
+@needs_checkout  # the run goes through the harness's import check
 @pytest.mark.parametrize("spec", ["expr:Parser(1, 2, 3, 4)", "expr:Lexicon.nope()"])
 def test_an_expr_that_raises_is_a_usage_error_not_a_traceback(spec: str) -> None:
     with pytest.raises(SystemExit) as stop:
@@ -255,6 +258,7 @@ def test_local_all_with_a_group_reads_the_fielded_corpora_only(
     assert "fielded corpora only" in capsys.readouterr().out
 
 
+@needs_checkout
 def test_main_runs_a_diff_end_to_end(monkeypatch: pytest.MonkeyPatch,
                                      capsys: pytest.CaptureFixture[str], tmp_path: Path) -> None:
     _psc(monkeypatch, [("Ana Souza PhD", "Brazilian"), ("Bo Lima", "Brazilian")])
@@ -500,6 +504,7 @@ def test_score_selects_a_named_group_or_a_languages_countries(
     assert len(cd.score_select([], [], cap=5)) == 3
 
 
+@needs_checkout
 def test_main_runs_a_score_end_to_end(monkeypatch: pytest.MonkeyPatch,
                                       capsys: pytest.CaptureFixture[str]) -> None:
     _psc(monkeypatch, [("Ana Souza", "Brazilian"), ("Bo Lima", "Brazilian")])
@@ -535,6 +540,7 @@ def test_score_drops_title_and_empty_box_records_and_small_groups(
     assert results == []
 
 
+@needs_checkout
 def test_score_refuses_a_group_or_language_that_selects_nothing(
         monkeypatch: pytest.MonkeyPatch) -> None:
     _psc(monkeypatch, [("Ana Souza", "Brazilian")])

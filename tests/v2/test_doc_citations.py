@@ -25,11 +25,17 @@ from typing import NamedTuple
 
 import pytest
 
+from tests.checkout import require_checkout
+
+
 from tests.v2.design_docs import (
     DECISIONS_DIR, MECHANISMS_DOC, MENTION_RE, RULES_DIR,
     read_decision_files, read_rules_text)
 from tests.v2.rules_doc import Rule, parse_rules_doc, prose_blocks
 from tests.v2.rules_skeleton import skeleton_prose
+
+# the citations it checks are comments in the source package
+require_checkout()
 
 REPO = Path(__file__).resolve().parents[2]
 MECH_DOC = MECHANISMS_DOC

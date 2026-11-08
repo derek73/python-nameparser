@@ -30,6 +30,8 @@ from typing import Any
 
 import pytest
 
+from tests.checkout import require_checkout
+
 from nameparser._lexicon import Lexicon
 
 _BUILD = Path(__file__).resolve().parents[2] / "tools" / "vocab" / "build.py"
@@ -46,6 +48,8 @@ def _load_build() -> ModuleType:
     return module
 
 
+# the build reads the TOML and writes the generated modules in the tree
+require_checkout()
 build = _load_build()
 
 

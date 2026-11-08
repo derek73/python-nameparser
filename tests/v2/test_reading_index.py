@@ -18,6 +18,8 @@ from pathlib import Path
 from types import ModuleType
 
 import pytest
+
+from tests.checkout import require_checkout
 from typing import Any
 
 from nameparser import _reading_index as ri
@@ -35,6 +37,8 @@ def _load_build() -> ModuleType:
     return module
 
 
+# the build reads the TOML and writes the generated modules in the tree
+require_checkout()
 build = _load_build()
 
 
