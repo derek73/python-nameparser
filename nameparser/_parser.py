@@ -11,7 +11,9 @@ from __future__ import annotations
 import dataclasses
 import functools
 import warnings
+from collections.abc import Iterable
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
 
 from nameparser._lexicon import _rechosen_masks
 from nameparser._lexicon import Lexicon
@@ -26,6 +28,9 @@ from nameparser._types import (
     FOLDED_TAG, ParsedName, Role, Segmenter, Token, _guarded_getstate,
     _guarded_setstate, _validated_field_strings,
 )
+
+if TYPE_CHECKING:
+    from nameparser._match import Matching, Outcome
 
 
 @dataclass(frozen=True, slots=True)
@@ -277,6 +282,20 @@ class Parser:
         elif not isinstance(b, ParsedName):
             raise TypeError(f"matches() takes str or ParsedName, got {b!r}")
         return a.comparison_key() == b.comparison_key()
+
+    def matching(
+        self, accept: Iterable[Outcome | str] | None = None,
+    ) -> Matching:
+        """A :class:`~nameparser._match.Matching` bound to THIS parser,
+        so its ``check`` and ``keys`` parse str arguments with this
+        parser's lexicon and policy. A ParsedName argument is compared
+        as given, whatever parser produced it. ``accept`` is the
+        iterable of outcomes counted as consistent; None takes
+        ``DEFAULT_ACCEPT``, and any other value is validated by
+        ``Matching``, which raises for a bad one."""
+        from nameparser._match import DEFAULT_ACCEPT, Matching
+        return Matching(
+            self, DEFAULT_ACCEPT if accept is None else accept)  # type: ignore[arg-type]
 
     # -- rendering delegates ----------------------------------------------
 
