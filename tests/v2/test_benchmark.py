@@ -1029,10 +1029,11 @@ def test_a_part_ending_in_no_numeral_skips_the_generation_test() -> None:
 def test_post_rules_walks_the_roles_once_per_reader() -> None:
     """On a name no gated reader reaches, post_rules reads the TITLE,
     GIVEN, MIDDLE and FAMILY positions in two `_positions` walks, at its
-    head and at R2's marks; a core rule that retags (H1, M4, P1's fold,
-    O1, O2, P6) walks again only when it fires, and the gated readers
-    (P10, on its tag, and the O6, O7 and O3 switches) walk where their
-    gate opens (#1089).
+    head and before O3's fold and R2's marks, which share the second; a
+    core rule that retags (H1, M4, P1's fold, O1, O2, P6) walks again
+    only when it fires, and the gated readers (P10 and W5's pair, each
+    on its tag, and the O6 and O7 switches) walk where their gate opens
+    (#1089, #1157).
     It made ten one-role scans a parse before, each two frames on 3.11
     (the call and its comprehension): the reference row read 306.80
     against 288.80 (2026-11-05, py3.11), outside `_CALL_BASELINE`'s
@@ -1054,14 +1055,16 @@ def test_post_rules_walks_the_roles_once_per_reader() -> None:
         assert _frames_for(text, caller="post_rules") == 7, text
     # REACHABILITY: a rule that fires walks again, O1's rotation and
     # O2's, and a gated reader walks where its gate opens: P10's tag
-    # under the default policy, O3's switch
+    # under the default policy
     ru, tr = parser_for(locales.RU), parser_for(locales.TR_AZ)
-    maf = Parser(policy=Policy(middle_as_family=True))
     for p, text in ((ru, "Sidorov Ivan Petrovich"),
                     (tr, "Aliyev Ilham Heydar oglu"),
-                    (Parser(), "María del Carmen García"),
-                    (maf, "Juan Smith")):
+                    (Parser(), "María del Carmen García")):
         assert _frames_for(text, only="_positions", parse=p.parse) == 3, text
+    # O3's switch walks no more than the default: its fold and R2 share
+    # the walk taken before the fold, which the fold then updates
+    maf = Parser(policy=Policy(middle_as_family=True))
+    assert _frames_for("Juan Smith", only="_positions", parse=maf.parse) == 2
     assert ru.parse("Sidorov Ivan Petrovich").family == "Sidorov"
     assert tr.parse("Aliyev Ilham Heydar oglu").family == "Aliyev"
 
