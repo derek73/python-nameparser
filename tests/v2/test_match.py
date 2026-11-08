@@ -1,6 +1,7 @@
 """Name matching: the settings object and the result types."""
 from __future__ import annotations
 
+import itertools
 import pickle
 
 import pytest
@@ -13,7 +14,28 @@ from nameparser._match import (
     Outcome,
     RoleMatch,
     Side,
+    _fold,
 )
+
+#: Every name string the check's tests compare; the symmetry test runs
+#: every ordered pair of them.
+NAMES: tuple[str, ...] = (
+    "John A. Smith", "John Smith", "J. Smith", "John Smith Jr.",
+    "John Smith Sr.", "María Vega", "MARIA VEGA", "Mari\u0301a Vega",
+    "Wm. Smith", "William Smith", "Juan de la Vega", "Juan Vega",
+    "SELENNA AGNES DE MELO SCHMITT", "SELENNA AGNES DE MELO SCHMITT E BRAGA",
+    "Ann Smith-Jones", "Ann Smith", "J.-P. Dupont", "Jean-Pierre Dupont",
+    "Cristiane S", "Cristiane Stallbaum", "Mr. Smith", "Dr. John Smith",
+    "Mr. John Smith", "John Smith PhD", "James Smith", "Suharto", "",
+    "김민준", "王小明", "王小", "John Smith Junior", "John A. B. Smith",
+    "John Anne Beth Smith", "John A. Beth Smith", "John Anne Smith",
+)
+
+m = Matching(Parser())
+
+
+def role(r: MatchResult, which: Role) -> RoleMatch:
+    return next(x for x in r.roles if x.role is which)
 
 
 def _result() -> MatchResult:
@@ -121,3 +143,134 @@ def test_matching_repr_shows_only_the_deviation() -> None:
     assert repr(Matching(
         Parser(), (DEFAULT_ACCEPT - {Outcome.NOTED}) | {Outcome.ACROSS_ROLES},
     )) == "Matching(default + across-roles - noted)"
+
+
+def test_fold_drops_case_accents_and_periods_but_keeps_hyphens() -> None:
+    assert _fold("J.-P. O'Mári\u0301a") == "j-p omaria"
+    assert _fold("María") == _fold("Mari\u0301a") == "maria"
+
+
+def test_the_table_has_one_entry_per_role_in_role_order() -> None:
+    assert [x.role for x in m.check("John Smith", "John Smith").roles] == list(Role)
+
+
+def test_check_takes_a_parsed_name() -> None:
+    from nameparser import parse
+    assert m.check(parse("John Smith"), "John Smith").consistent
+
+
+def test_check_rejects_a_non_name() -> None:
+    with pytest.raises(TypeError, match="ParsedName"):
+        m.check(3, "John Smith")  # type: ignore[arg-type]
+
+
+def test_a_missing_middle_name_is_consistent_and_says_which_side() -> None:
+    r = m.check("John A. Smith", "John Smith")
+    assert r.consistent
+    assert (role(r, Role.MIDDLE).outcome, role(r, Role.MIDDLE).more) == (Outcome.ONE_SIDE, Side.LEFT)
+
+
+def test_an_initial_against_a_name_is_consistent() -> None:
+    r = m.check("J. Smith", "John A. Smith")
+    assert r.consistent and role(r, Role.GIVEN).outcome is Outcome.INITIAL
+    assert role(r, Role.GIVEN).more is Side.RIGHT
+
+
+def test_different_generations_conflict() -> None:
+    assert not m.check("John Smith Jr.", "John Smith Sr.").consistent
+
+
+def test_a_generation_on_one_side_is_its_own_outcome() -> None:
+    r = m.check("John Smith", "John Smith Jr.")
+    assert r.consistent and role(r, Role.SUFFIX).outcome is Outcome.GENERATION_ONE_SIDE
+
+
+def test_folding_ignores_case_and_accents() -> None:
+    assert role(m.check("María Vega", "MARIA VEGA"), Role.GIVEN).outcome is Outcome.FOLDED
+
+
+def test_fold_treats_nfc_and_nfd_alike() -> None:
+    assert m.check("María Vega", "Mari\u0301a Vega").consistent
+
+
+def test_listed_spellings_are_consistent() -> None:
+    assert role(m.check("Wm. Smith", "William Smith"), Role.GIVEN).outcome is Outcome.LISTED_SPELLING
+
+
+def test_particles_are_set_aside() -> None:
+    assert role(m.check("Juan de la Vega", "Juan Vega"), Role.FAMILY).outcome is Outcome.PARTICLES_ASIDE
+
+
+def test_a_cut_short_surname_list_is_part_of_the_other() -> None:
+    r = m.check("SELENNA AGNES DE MELO SCHMITT", "SELENNA AGNES DE MELO SCHMITT E BRAGA")
+    assert r.consistent and role(r, Role.FAMILY).outcome is Outcome.PART_OF_OTHER
+
+
+def test_a_hyphenated_surname_against_one_half_is_part_of_the_other() -> None:
+    assert role(m.check("Ann Smith-Jones", "Ann Smith"), Role.FAMILY).outcome is Outcome.PART_OF_OTHER
+
+
+def test_hyphenated_initials_match_their_hyphenated_name() -> None:
+    assert role(m.check("J.-P. Dupont", "Jean-Pierre Dupont"), Role.GIVEN).outcome is Outcome.INITIAL
+
+
+def test_a_family_initial_is_not_consistent_by_default() -> None:
+    r = m.check("Cristiane S", "Cristiane Stallbaum")
+    assert not r.consistent
+    assert role(r, Role.FAMILY).outcome is Outcome.FAMILY_INITIAL
+
+
+def test_a_missing_given_name_is_not_consistent_by_default() -> None:
+    r = m.check("Mr. Smith", "John Smith")
+    assert not r.consistent
+    assert role(r, Role.GIVEN).outcome is Outcome.GIVEN_ONE_SIDE
+
+
+def test_titles_and_credentials_never_conflict() -> None:
+    assert m.check("Dr. John Smith", "Mr. John Smith").consistent
+    assert m.check("John Smith PhD", "John Smith").consistent
+
+
+def test_different_given_names_conflict() -> None:
+    assert role(m.check("John Smith", "James Smith"), Role.GIVEN).outcome is Outcome.CONFLICT
+
+
+def test_a_name_with_no_family_is_consistent_with_nothing_by_default() -> None:
+    assert not m.check("Suharto", "Suharto").consistent
+    assert not m.check("", "").consistent
+
+
+def test_cjk_names_compare_as_same_and_never_as_initials() -> None:
+    assert m.check("김민준", "김민준").consistent
+    assert role(m.check("王小明", "王小"), Role.GIVEN).outcome is not Outcome.INITIAL
+
+
+def test_the_check_is_symmetric() -> None:
+    for a, b in itertools.product(NAMES, repeat=2):
+        assert m.check(b, a) == m.check(a, b).mirrored(), (a, b)
+
+
+def test_a_single_han_character_is_never_an_initial() -> None:
+    from nameparser import parse
+    base = parse("John Smith")
+    r = m.check(base.replace(given="小"), base.replace(given="小明"))
+    assert role(r, Role.GIVEN).outcome is Outcome.CONFLICT
+
+
+def test_initials_written_apart_agree_with_the_same_initials_joined() -> None:
+    from nameparser import parse
+    base = parse("John Smith")
+    r = m.check(base.replace(given="J.-P."), base.replace(given="J. P."))
+    assert r.consistent and role(r, Role.GIVEN).outcome is Outcome.INITIALS_AGREE
+
+
+def test_a_listed_generation_spelling_does_not_conflict() -> None:
+    r = m.check("John Smith Jr.", "John Smith Junior")
+    assert r.consistent and role(r, Role.SUFFIX).outcome is Outcome.LISTED_SPELLING
+
+
+def test_a_middle_name_compares_word_by_word_taking_the_weakest() -> None:
+    r = m.check("John A. B. Smith", "John Anne Beth Smith")
+    assert role(r, Role.MIDDLE).outcome is Outcome.INITIAL
+    r = m.check("John A. Beth Smith", "John Anne Smith")
+    assert role(r, Role.MIDDLE).outcome is Outcome.ONE_SIDE

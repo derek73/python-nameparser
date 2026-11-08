@@ -64,8 +64,11 @@ ALLOWED = {
     # Lexicon compiles its readings)
     "_lexicon.py": ("nameparser.config.", "nameparser._reading_index"),
     "_policy.py": ("nameparser._types",),
-    # name matching: the types and settings only; Parser is TYPE_CHECKING
-    "_match.py": ("nameparser._types", "nameparser._lexicon"),
+    # name matching: the types, the lexicon's listed spellings, and the
+    # scripts that write no initials (as _render reads them); Parser is
+    # TYPE_CHECKING
+    "_match.py": ("nameparser._types", "nameparser._lexicon",
+                  "nameparser._policy"),
     # the shared compiler and the reading index's reader (#753, 3a): the
     # index, a config DATA module, and nothing else. That the import is
     # at call time only, nothing internal at module level, since

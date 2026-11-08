@@ -1,30 +1,37 @@
-"""Name matching: the settings object and the result types.
+"""Name matching: the settings object, the result types and the check.
 
-Consumes: nothing at parse time. This module holds the types a match
-reads and reports; `Matching` carries a `Parser` and the set of outcomes
-the caller accepts.
+Not a stage: nothing here runs inside a parse. `Matching` carries a
+`Parser` and the set of outcomes the caller accepts, and its `check`
+compares two parsed names role by role.
 Produces: `Outcome`, `Side`, `RoleMatch`, `MatchResult`, `DEFAULT_ACCEPT`
 and `Matching`.
-Reads: no `Policy` or `Lexicon` field; the `Parser` is held, not read.
+Reads: the `Parser`'s `Lexicon`, for the listed spellings (`same_as`)
+through `Lexicon._headword`; no `Policy` field.
 
 Consistent means nothing in the two names contradicts it, under the
-outcomes the caller accepts. The module imports `_types` and `_lexicon`
-only, `Parser` for typing alone.
+outcomes the caller accepts. The module imports `_types` and `_policy`
+(for the scripts that write no initials), `Lexicon` and `Parser` for
+typing alone.
 """
 from __future__ import annotations
 
+import re
+import unicodedata
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from enum import StrEnum
 from typing import TYPE_CHECKING
 
+from nameparser._policy import _NO_INITIALS, _script_matcher
 from nameparser._types import (
+    ParsedName,
     Role,
     _guarded_getstate,
     _guarded_setstate,
 )
 
 if TYPE_CHECKING:
+    from nameparser._lexicon import Lexicon
     from nameparser._parser import Parser
 
 
@@ -173,3 +180,183 @@ class Matching:
             parts.append("- " + ", ".join(removed))
         return f"Matching({' '.join(parts)})"
 
+    def check(self, a: str | ParsedName, b: str | ParsedName) -> MatchResult:
+        """Compare two names role by role. A string is parsed with this
+        settings object's parser. The result is consistent when every
+        role's outcome is among the accepted ones; `conflict` never is,
+        and an empty family role on either side is a conflict. The
+        check is symmetric: swapping the names gives the mirrored
+        result. It is not transitive: `J. Smith` is consistent with
+        `John Smith` and with `Jane Smith`, which are not consistent
+        with each other."""
+        left, right = self._parsed(a), self._parsed(b)
+        lexicon = self.parser.lexicon
+        roles = tuple(_compare_role(role, left, right, lexicon) for role in Role)
+        return MatchResult(all(r.outcome in self.accept for r in roles), roles)
+
+    def _parsed(self, name: object) -> ParsedName:
+        if isinstance(name, ParsedName):
+            return name
+        if isinstance(name, str):
+            return self.parser.parse(name)
+        raise TypeError(
+            f"check takes a name string or a ParsedName, got "
+            f"{type(name).__name__} {name!r}; pass the text, or "
+            f"parser.parse(text)")
+
+
+# -- the check -------------------------------------------------------------
+
+_DROPPED = str.maketrans("", "", ".'")
+_WORDS = re.compile(r"[\s-]+")
+#: rules/R7's scripts that write no initials (_policy._NO_INITIALS): a
+#: single character in one of them is a whole word, never an initial.
+_initialless = _script_matcher(*_NO_INITIALS, whole=True)
+_RANK = {o: i for i, o in enumerate(Outcome)}
+
+
+def _fold(text: str) -> str:
+    """The text with case, accents, full stops and apostrophes folded
+    away: NFC then NFD, combining marks (Mn) dropped, casefolded, `.`
+    and `'` removed. Hyphens and spaces are kept."""
+    decomposed = unicodedata.normalize(
+        "NFD", unicodedata.normalize("NFC", text))
+    bare = "".join(c for c in decomposed if unicodedata.category(c) != "Mn")
+    return bare.casefold().translate(_DROPPED)
+
+
+def _weakest(outcomes: Iterable[Outcome]) -> Outcome:
+    return max(outcomes, key=_RANK.__getitem__)
+
+
+def _letters(text: str) -> int:
+    return sum(c.isalnum() for c in _fold(text))
+
+
+def _more(left: str, right: str) -> Side:
+    a, b = _letters(left), _letters(right)
+    return Side.LEFT if a > b else Side.RIGHT if b > a else Side.NEITHER
+
+
+def _is_initial(folded: str) -> bool:
+    return len(folded) == 1 and folded.isalpha() and not _initialless(folded)
+
+
+def _part_agrees(a: str, b: str, lexicon: Lexicon) -> Outcome | None:
+    """One word against one word: `same` where they are equal once
+    folded or listed as one spelling, `initial` where one is an initial
+    of the other's first letter, else `None`. A hyphenated word is compared part by part against the
+    other's hyphen-split parts (`J.-P.` / `Jean-Pierre`)."""
+    fa, fb = _fold(a), _fold(b)
+    if fa == fb or lexicon._headword(a) == lexicon._headword(b):
+        return Outcome.SAME
+    if (_is_initial(fa) and fb[:1] == fa) or (_is_initial(fb) and fa[:1] == fb):
+        return Outcome.INITIAL
+    pa, pb = a.split("-"), b.split("-")
+    if len(pa) > 1 and len(pa) == len(pb):
+        parts = [_part_agrees(x, y, lexicon) for x, y in zip(pa, pb)]
+        if None not in parts:
+            return _weakest(p for p in parts if p is not None)
+    return None
+
+
+def _initials_only(text: str) -> bool:
+    return all(_is_initial(w) for w in _WORDS.split(_fold(text)) if w)
+
+
+def _text_outcome(a: str, b: str, lexicon: Lexicon, *, family: bool = False,
+                  bases: tuple[str, str] = ("", "")) -> Outcome:
+    """Two non-empty texts of one role, by the strongest outcome that
+    holds: same, folded, listed spelling, then for a family particles
+    set aside and part of the other, then initial against name (family
+    initial in the family role), then initials agree, else conflict."""
+    if a == b:
+        return Outcome.SAME
+    if _fold(a) == _fold(b):
+        return Outcome.FOLDED
+    wa, wb = a.split(), b.split()
+    if len(wa) == len(wb) and all(
+            lexicon._headword(x) == lexicon._headword(y) for x, y in zip(wa, wb)):
+        return Outcome.LISTED_SPELLING
+    if family:
+        if bases[0] and _fold(bases[0]) == _fold(bases[1]):
+            return Outcome.PARTICLES_ASIDE
+        sa = set(_WORDS.split(_fold(a))) - {""}
+        sb = set(_WORDS.split(_fold(b))) - {""}
+        if sa <= sb or sb <= sa:
+            return Outcome.PART_OF_OTHER
+    if len(wa) == len(wb):
+        parts = [_part_agrees(x, y, lexicon) for x, y in zip(wa, wb)]
+        if None not in parts and Outcome.INITIAL in parts:
+            return Outcome.FAMILY_INITIAL if family else Outcome.INITIAL
+    if _initials_only(a) and _initials_only(b) and (
+            _WORDS.split(_fold(a)) == _WORDS.split(_fold(b))):
+        return Outcome.INITIALS_AGREE
+    return Outcome.CONFLICT
+
+
+def _middle_outcome(a: str, b: str, lexicon: Lexicon) -> Outcome:
+    """The middle role word by word, in order: each aligned pair by
+    `_text_outcome`, each word past the shorter side one-sided, the role
+    taking the weakest."""
+    wa, wb = a.split(), b.split()
+    outcomes = [_text_outcome(x, y, lexicon) for x, y in zip(wa, wb)]
+    if len(wa) != len(wb):
+        outcomes.append(Outcome.ONE_SIDE)
+    return _weakest(outcomes)
+
+
+def _noted(a: str, b: str, lexicon: Lexicon) -> Outcome:
+    """A role that never conflicts: equal by any spelling, else noted."""
+    if not a and not b:
+        return Outcome.SAME
+    if a and b:
+        outcome = _text_outcome(a, b, lexicon)
+        if outcome in (Outcome.SAME, Outcome.FOLDED, Outcome.LISTED_SPELLING):
+            return outcome
+    return Outcome.NOTED
+
+
+def _suffix_outcome(left: ParsedName, right: ParsedName,
+                    lexicon: Lexicon) -> Outcome:
+    """A different generation conflicts and one on one side only is its
+    own outcome; the rest of the suffix (credentials, honorifics) is
+    noted."""
+    if left.suffix == right.suffix:
+        return Outcome.SAME
+    ga, gb = left.generation, right.generation
+    if ga and gb:
+        generation = _noted(ga, gb, lexicon)
+        if generation is Outcome.NOTED:
+            return Outcome.CONFLICT
+    elif ga or gb:
+        generation = Outcome.GENERATION_ONE_SIDE
+    else:
+        generation = Outcome.SAME
+    rest = _noted(" ".join(filter(None, (left.credentials, left.honorifics))),
+                  " ".join(filter(None, (right.credentials, right.honorifics))),
+                  lexicon)
+    return _weakest((generation, rest))
+
+
+def _compare_role(role: Role, left: ParsedName, right: ParsedName,
+                  lexicon: Lexicon) -> RoleMatch:
+    a, b = getattr(left, role), getattr(right, role)
+    if role is Role.SUFFIX:
+        outcome = _suffix_outcome(left, right, lexicon)
+    elif role is Role.TITLE:
+        outcome = _noted(a, b, lexicon)
+    elif role is Role.FAMILY and not (a and b):
+        outcome = Outcome.CONFLICT
+    elif not a and not b:
+        outcome = Outcome.SAME
+    elif role is Role.MIDDLE:
+        outcome = _middle_outcome(a, b, lexicon)
+    elif not (a and b):
+        outcome = Outcome.GIVEN_ONE_SIDE if role is Role.GIVEN else Outcome.ONE_SIDE
+    else:
+        outcome = _text_outcome(
+            a, b, lexicon, family=role is Role.FAMILY,
+            bases=(left.family_base, right.family_base))
+    more = Side.NEITHER if outcome is Outcome.CONFLICT else _more(a, b)
+    return RoleMatch(role, outcome, a, b, more)
