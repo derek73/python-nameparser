@@ -13,11 +13,12 @@ Vocabulary: Lexicon
 
 When your data is in a known language, choosing it is the first thing
 to try, before editing words one at a time. A choice of languages
-(:ref:`choosing-languages`) settles the words its file lists as one
-kind of vocabulary and another language's as another (a particle in
-one, a credential in the other), and turns on the readings the file
-holds off by default; a strict choice (:ref:`strict-choice`) also drops
-the other languages' words. The edits below are for what a choice
+(:ref:`choosing-languages`) makes the chosen language's reading win on
+a word it lists as vocabulary, switching off another language's
+(Portuguese ``do`` the particle over English ``DO`` the credential),
+and turns on the readings its file holds off by default; a strict
+choice (:ref:`strict-choice`) also drops the other languages' words
+written in Latin letters. The edits below are for what a choice
 leaves open, and for data whose language you cannot declare, which the
 default vocabulary, reading every language at once, already serves.
 
@@ -435,11 +436,14 @@ when it appears alone, and the parse reports the fork as an ambiguity.
 A title with a ``given`` reading works differently, being a title only
 inside a phrase (:ref:`titles-also-given-names`).
 
-A choice of languages does not settle these words. A reading that a
-word is borne as a name keeps the name around it in charge under any
-choice, strict ones included, so a strict English parser still reads
-``JOHN SMITH MA`` by the count and reports it. The recipes in this
-section are the way to settle them.
+A choice of languages keeps every name reading, so it settles none of
+these words where the chosen language's own file holds both readings.
+English lists ``ma`` as a credential and as a surname, so a strict
+English choice (:ref:`strict-choice`) still reads ``JOHN SMITH MA`` by
+the count and reports it, and Dutch lists ``van`` as a particle and as
+a given name. A choice ends such a fork only where it switches off
+another language's reading of the word (below). The recipes in this
+section are the way to settle the rest.
 
 Credentials that are also surnames
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -534,11 +538,21 @@ free:
   one adds it back with ``Lexicon.default().add("cha",
   kind="credential")``.
 
-A clash between two languages' readings is a different case, with no
-name reading in it: English lists ``DO`` as a credential and Portuguese
-``do`` as a particle. Choosing the language settles that one
-(``parser_for(locales.PT)`` reads ``do`` as the particle; see
-:ref:`choosing-languages`), with no edit.
+Where the credential reading is another language's, choosing the
+language settles the word with no edit. English lists ``DO`` as a
+credential (Doctor of Osteopathy), and Portuguese lists ``do`` as a
+particle, so choosing Portuguese switches the credential reading off
+and a trailing ``DO`` is a name word, with no fork left to report
+(:ref:`choosing-languages`):
+
+.. doctest::
+
+    >>> from nameparser import locales, parser_for
+    >>> parse("JOSE SILVA DO").suffix, parse("JOSE SILVA DO").ambiguities
+    ('DO', (Ambiguity('suffix-or-name': 'DO'),))
+    >>> portuguese = parser_for(locales.PT).parse("JOSE SILVA DO")
+    >>> portuguese.family, portuguese.ambiguities
+    ('DO', ())
 
 .. _titles-also-given-names:
 
@@ -570,7 +584,9 @@ a title only inside a title phrase: behind a style
 A language can run the other way, holding a given-name reading of a
 title that its file leaves off until the language is chosen. ``Lady``
 is a given name under a Spanish choice (``locales.ES``), ``Hon`` under
-a Chinese one, and ``Guru`` under ``locales.NE``, each staying a title
+a Chinese choice of languages (a :class:`~nameparser.Locale` with
+``languages=frozenset({"zh"})``; the ``zh`` pack makes none, so it
+leaves ``Hon`` a title), and ``Guru`` under ``locales.NE``, each staying a title
 inside a phrase; :ref:`choosing-languages` shows the first two, and the table of shipped
 packs in :doc:`locales` the third.
 
@@ -960,8 +976,10 @@ Nothing keys this order to a script the way the East Asian defaults
 below do — Vietnamese is written in the Latin alphabet, which carries
 no order of its own — so it applies only where you set it. For
 Vietnamese data, the ``vi`` pack (``parser_for(locales.VI)``) sets this
-order and also keeps the syllables other languages read as particles,
-connectives or credentials as name words (see :ref:`vietnamese-names`);
+order and also keeps ``Van``, ``Le``, ``Do`` and ``The`` as name words,
+where other languages read them as particles or connectives, and
+``Chi``, ``Ba`` and ``Do`` out of the credentials (see
+:ref:`vietnamese-names`);
 the bare ``Policy`` above is for data that wants the order alone.
 
 Declaring the order settles where a surname ends

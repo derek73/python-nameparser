@@ -400,8 +400,8 @@ class Token:
     #: The reading the parse took for this word: what it was read as,
     #: the field it landed in (always this token's :attr:`role`), and
     #: why -- a listed word, a declared name, a shape, or position
-    #: alone -- and, for a listed word, the language files that list it
-    #: (:attr:`Reading.languages`). The twin of :attr:`Ambiguity.alternative`, which holds
+    #: alone -- and the shipped files whose reading of it is on in the
+    #: parse's lexicon (:attr:`Reading.languages`). The twin of :attr:`Ambiguity.alternative`, which holds
     #: the reading NOT taken. None for a token the parse did not read:
     #: one :meth:`ParsedName.replace` or :meth:`Parser.revise` builds,
     #: or one loaded from a pickle written before 3.0. Not compared:

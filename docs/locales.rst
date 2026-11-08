@@ -906,16 +906,16 @@ stays out of it:
 
 ``family`` keeps both names, and the parse gives each its own view:
 ``surname1`` and ``surname2``, with ``surname1_base`` for filing by
-the first surname without its particles (see the aggregate views in
-:doc:`usage`):
+the first surname without its particles (see :ref:`aggregate-views`):
 
 .. doctest::
 
     >>> marquez_es = spain.parse("Gabriel García Márquez")
     >>> marquez_es.surname1, marquez_es.surname2
     ('García', 'Márquez')
-    >>> spain.parse("Juan Pérez de la Vega").surname1_base
-    'Pérez'
+    >>> vega_es = spain.parse("Juan de la Vega del Valle")
+    >>> vega_es.surname1, vega_es.surname1_base
+    ('de la Vega', 'Vega')
 
 Data from systems without the letter ñ writes ``Begoña`` as
 ``Begona``, so each listed name written with ñ is listed with n too,

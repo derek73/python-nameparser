@@ -192,9 +192,9 @@ reading kind is what :meth:`Lexicon.words(kind=...)
        (``del Carmen``), which is ``middle``
      - ``family``
      - ``Juan de la Vega`` → ``de la Vega``
-   * - Titles that are also particles (``rank``, ``saint``)
-     - the following surname, inside the name; opening it, they are
-       titles
+   * - Ranks (``rank``)
+     - the following surname, inside the name; opening it, most are
+       titles (below)
      - ``family``
      - ``Jan Freiherr von Berg`` → ``Freiherr von Berg``
    * - Maiden markers (``birth_marker``)
@@ -217,8 +217,13 @@ names together as easily as two surnames:
     >>> parse("Juan de la Vega y Rodriguez").family
     'de la Vega y Rodriguez'
 
-A title that is also a particle reads by where it stands: opening the
-name it is a title, and inside it the surname takes it in:
+Most ranks (``Freiherr``, ``Graf``, ``Prinz``) are titles as well as
+particles, and read by where they stand: opening the name each is a
+title, and inside it the surname takes it in. ``Freiherrin`` holds no
+title reading, so opening a name it is a name word. ``St`` reads the same
+way, a title and a ``saint`` particle; the other ``saint`` words
+(``San``, ``Sta``, ...) hold no title reading, so opening a name none
+of them is a title:
 
 .. doctest::
 
@@ -226,6 +231,8 @@ name it is a title, and inside it the surname takes it in:
     'Freiherr'
     >>> parse("Jan Freiherr von Berg").family
     'Freiherr von Berg'
+    >>> parse("St John Smith").title, parse("John St Clair").family
+    ('St', 'St Clair')
 
 Two shipped vocabularies work the other way round and so are not in
 the table above: they *split* a word instead of merging two. The
@@ -256,7 +263,7 @@ read it as is the token's, :attr:`Token.reading
     Reading('particle' as 'family', 'vocabulary', in nl)
 
 A lexicon answers for the readings it has on. A reading its file holds
-off until a caller chooses the language (:doc:`locales`) is not among
+off until a caller chooses the language (:ref:`choosing-languages`) is not among
 the default lexicon's: ``Lady`` is a given name only under a Spanish
 choice, and only that parser's lexicon lists the reading:
 
@@ -771,6 +778,8 @@ when ``nameparser[ja]`` is installed, and without it divides nothing
 and prints a note naming the install. :func:`~nameparser.parser_for` never
 does this on its own, so the same code parses alike wherever it runs.
 :doc:`customize` covers turning any of these behaviors off.
+
+.. _aggregate-views:
 
 Aggregate views
 ----------------
@@ -1331,7 +1340,9 @@ The reading each word took
 
 Since 3.0 every token also says how the parse read it, whether or not
 a fork was reported. ``Token.reading`` is a :class:`~nameparser.Reading`
-with the same parts, its role the token's own field:
+with the same parts, its role the token's own field, and two flags
+besides, ``first_surname`` and ``second_surname``, marking the words
+``surname1`` and ``surname2`` hold where the family was read as two:
 
 .. doctest::
 
