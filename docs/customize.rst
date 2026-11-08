@@ -449,7 +449,8 @@ reading of the word (below), and a strict choice also wherever one of
 the two readings of a word in Latin letters sits in another language's
 file: it keeps only the chosen files' and the ``mul`` file's readings
 of such a word, dropping the others, name readings included (a word
-written in another script keeps every file's). A strict Dutch choice reads ``JOHN SMITH MA`` family ``MA``,
+written in another script keeps the readings a plain choice of the
+same languages gives it). A strict Dutch choice reads ``JOHN SMITH MA`` family ``MA``,
 and a strict Portuguese one ``Do Smith`` family ``Do Smith``, both
 unreported. The recipes in this
 section are the way to settle the rest.

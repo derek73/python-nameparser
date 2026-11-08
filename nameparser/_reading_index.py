@@ -263,7 +263,8 @@ def readings_of(text: str) -> tuple[IndexReading, ...]:
 #: and und.toml's no known language's, so neither is a language to
 #: choose. A plain choice never removes a reading of either (choose); a
 #: strict one, which drops every file not chosen, keeps mul.toml's all
-#: the same, as it keeps native-script vocabulary, and drops und.toml's
+#: the same, as it keeps native-script words' readings, and drops
+#: und.toml's
 #: (:func:`strict_pool`; decisions/vocabulary-model, 2026-11-02 #1005).
 UNCHOOSABLE = frozenset({"mul", "und"})
 

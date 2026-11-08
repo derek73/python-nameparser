@@ -2223,8 +2223,8 @@ class Lexicon:
     @property
     def strict(self) -> bool:
         """Whether the choice is strict: only the chosen languages'
-        vocabulary files, mul.toml and native-script vocabulary are
-        read. Added in 3.0."""
+        vocabulary files, mul.toml and native-script words' readings (as a
+        plain choice of the same languages keeps them) are read. Added in 3.0."""
         return self._strict
 
     # -- access -----------------------------------------------------------

@@ -403,8 +403,10 @@ def parser_for(*locales: Locale, base: Parser | None = None,
     vocabulary files are compiled, each tag selecting its own and its
     ancestors' as a plain choice does, plus mul.toml, the words every
     language writes alike (``Dr``, ``Prof``, ``PhD``, ``MSc``, the
-    numerals), and native-script vocabulary (a word with a letter and
-    no Latin letter); every other file's readings leave, und.toml's
+    numerals), and a native-script word's readings (one with a letter
+    and no Latin letter), name readings included, as a plain choice of
+    the same languages keeps them; every other
+    file's readings leave, und.toml's
     among them, and with them the markers they derive. It is for single-origin data
     (``parser_for(Locale(code="ko", lexicon=Lexicon.empty(),
     languages=frozenset({"ko"})), strict=True)`` reads ``Kim Do Hyun``
@@ -418,7 +420,7 @@ def parser_for(*locales: Locale, base: Parser | None = None,
     language whose file holds no reading yet (``hu``), which a plain
     one refuses as changing nothing, and raises ValueError when the
     packs choose no language, since it would then keep no language's
-    own words, only mul.toml's and native-script vocabulary
+    own words, only mul.toml's and native-script words' readings
     (decisions/vocabulary-model, 2026-10-30 #753, file-strict, and
     2026-10-31 #753, phase 3j).
 
@@ -547,7 +549,7 @@ def parser_for(*locales: Locale, base: Parser | None = None,
 
 def _no_strict_language(locales: tuple[Locale, ...]) -> str:
     """The refusal of a strict call that chooses no language, which
-    would keep only mul.toml's and native-script vocabulary, dropping
+    would keep only mul.toml's and native-script words' readings, dropping
     every language's own words in silence. The fix it offers is a pack
     choosing the first pack's code where that is a language a strict
     choice accepts, else ``en``."""
