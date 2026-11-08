@@ -551,6 +551,17 @@ def reads_as_initials(word: str, kind: SetApartKind,
                                    one_case, lexicon):
                 return True
         return False
+    # rules/S1: "a credential S3 reads through chunks joined by a slash,
+    # a hyphen or a period counts where any of its chunks would" -- a
+    # period-joined word's chunks asked as a slash's are ('JP.MD' as
+    # 'JP/MD'), one listed whole ('M.D.', 'MD.PhD') never (#1131)
+    if (kind == "suffix" and "." in bare.strip(".")
+            and _normalize(bare).replace(".", "")
+            not in lexicon._sets.suffix_acronyms
+            and period_joined_credential(bare, lexicon)):
+        return any(_shaped_as_initials(chunk, set_apart_kind(chunk, lexicon),
+                                       one_case, lexicon)
+                   for chunk in _period_chunks(bare) or ())
     return _shaped_as_initials(bare, kind, one_case, lexicon)
 
 
@@ -1190,15 +1201,10 @@ def period_joined_credential(text: str, lexicon: Lexicon) -> bool:
     ('Msc.Ed', 'JD.CPA'; not 'Bob.PhD', 'Ma.Ed' or 'X.Y.I.'). A word
     whose last chunk is a glued honorific ('J.씨') reads as one too:
     the honorific is the suffix there and the chunk before it the
-    initial it is written as (rules/W2). ASCII punctuation at a
-    chunk's edge is no part of it ('MD.&PhD', 'Jr.;', a delimiter glued
-    after the period, rules/C10), and a chunk of nothing else is no
-    chunk, so a word of one chunk beside it reads as that chunk."""
-    raw = text.split(".")
-    if len(raw) < 2:
-        return False
-    chunks = [b for c in raw if (b := c.strip(_ASCII_PUNCTUATION))]
-    if not chunks:
+    initial it is written as (rules/W2). The chunks are
+    `_period_chunks`'."""
+    chunks = _period_chunks(text)
+    if chunks is None:
         return False
     sets = lexicon._sets
     if _normalize(chunks[-1]) in sets.honorific_tails:
@@ -1221,13 +1227,34 @@ def period_joined_credential(text: str, lexicon: Lexicon) -> bool:
     return not all(len(c) == 1 and c.isascii() for c in chunks)
 
 
+def _period_chunks(text: str) -> list[str] | None:
+    """TEXT cut at its periods, or None where it holds none. ASCII
+    punctuation beside a period is no part of the chunk ('MD.&PhD',
+    'Jr.;', a delimiter glued after the period, rules/C10), and a chunk
+    of nothing else is no chunk, so a word of one chunk beside it reads
+    as that chunk; the word's own outer edges are kept ('[Msc.Ed]')."""
+    raw = text.split(".")
+    if len(raw) < 2:
+        return None
+    last = len(raw) - 1
+    chunks = []
+    for k, c in enumerate(raw):
+        if k:
+            c = c.lstrip(_ASCII_PUNCTUATION)
+        if k < last:
+            c = c.rstrip(_ASCII_PUNCTUATION)
+        if c:
+            chunks.append(c)
+    return chunks or None
+
+
 def _holds_a_member(text: str, lexicon: Lexicon) -> bool:
-    """Whether a chunk of TEXT cut at its periods is a member of the
-    ambiguous class that does not count as a suffix as written ('Ed'
-    in 'Msc.Ed')."""
+    """Whether a chunk of TEXT cut at its periods (`_period_chunks`) is
+    a member of the ambiguous class that does not count as a suffix as
+    written ('Ed' in 'Msc.Ed')."""
     return any(_member(c, lexicon)
                and not suffix_as_written(_normalize(c), c, lexicon)
-               for c in text.split(".") if c)
+               for c in _period_chunks(text) or ())
 
 
 def period_member(word: str, lexicon: Lexicon) -> bool:
@@ -1405,16 +1432,17 @@ def period_joined_vocab(
 
     "shape" is the third verdict and it is the absence of a claim
     worth acting on (#516): two or more chunks, EVERY one of them
-    alphabetic, and nothing the vocabulary matches except -- possibly
-    -- chunks that are a SINGLE ASCII CHARACTER. That exception is the
+    alphabetic, that the every-chunk test does not read as a suffix
+    ('Bob.PhD', 'BM.BS', #1131), chunks that are a SINGLE ASCII
+    CHARACTER among them. That single-character exception is the
     roman-numeral accident retired narrowly: measured 2026-09-15 the
     one-character suffix vocabulary is {'2', 'i', 'v'} plus the glued
     CJK honorific tails, so 'John Smith R.A.I.' was reading as a
     generational suffix off the chunk 'i'. CHARACTER rather than
     LETTER because '2' is a digit and is in the set; ASCII because
     '씨' is the single character that must KEEP its claim ('J.씨'). A
-    multi-character match still reads as it always did, so 'Msc.Ed.',
-    'JD.CPA' and 'Lt.Gov.' are untouched -- the WIDE retirement, where
+    word whose every chunk counts still reads as a suffix, so 'Msc.Ed.'
+    and 'JD.CPA' are untouched -- the WIDE retirement, where
     any chunk match yields to the shape, was measured and rejected: it
     costs 'Doe, John Msc.Ed.' a real credential and re-routes the
     honorific peel of '김민준씨, J.씨' for nothing this design wants

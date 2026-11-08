@@ -19,6 +19,7 @@
   "John (Msc.Ed) Smith"       →  nickname="Msc.Ed"
   "John (Msc.Ed) Smith"       →  ambiguities=("suffix-or-nickname",)
   "John Smith (Bob.PhD)"      →  nickname="Bob.PhD"  · boundary
+  "John Smith [Msc.Ed]"       →  family="[Msc.Ed]"  · boundary
   "John Smith Jr.; MD"        →  suffix="Jr.; MD"
   "John Smith, Dr. J.씨"       →  suffix="J.씨"
   ```

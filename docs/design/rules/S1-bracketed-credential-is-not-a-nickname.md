@@ -80,7 +80,7 @@
   "Alex Green, FRCS (SN)"     →  nickname="SN"
   "John Smith, MD (Sr)"       →  suffix="MD Sr"  · boundary
   ```
-- **A credential written as initials before a name word of its comma part** keeps its pair's reading: one or two letters with or without a period, or single letters each with its period, there are more likely the initials the person goes by, S13's reason for a member inside the name. A credential written as initials before a name word stays the nickname, and so does any word of its clause; a word that is a title too counts only written with a period after each letter, or in capitals in a name of mixed case, capitals in a name written in one case saying nothing (S6), and a generation word not at all; a credential S3 reads through chunks joined by a slash or a hyphen counts where any of its chunks would, as its words written apart do, and one the vocabulary lists whole is one word, as is each run of its chunks the vocabulary lists whole (S3).
+- **A credential written as initials before a name word of its comma part** keeps its pair's reading: one or two letters with or without a period, or single letters each with its period, there are more likely the initials the person goes by, S13's reason for a member inside the name. A credential written as initials before a name word stays the nickname, and so does any word of its clause; a word that is a title too counts only written with a period after each letter, or in capitals in a name of mixed case, capitals in a name written in one case saying nothing (S6), and a generation word not at all; a credential S3 reads through chunks joined by a slash, a hyphen or a period counts where any of its chunks would, as its words written apart do, and one the vocabulary lists whole is one word, as is each run of its chunks the vocabulary lists whole (S3).
   ```
   "Justin (JP) Stearns"       →  nickname="JP"
   "Justin (R.N.) Stearns"     →  nickname="R.N."
@@ -88,6 +88,7 @@
   "Justin (JP, PhD) Stearns"  →  nickname="JP, PhD"
   "John (,JP) Smith"          →  nickname=",JP"
   "Justin (JP/MD) Stearns"    →  nickname="JP/MD"
+  "Justin (JP.MD) Stearns"    →  nickname="JP.MD"
   "John (MD-PhD) Smith"       →  nickname="MD-PhD"
   "Robert (RA) Allen"         →  nickname="RA"
   "ROBERT (RA) ALLEN"         →  suffix="RA"  · boundary

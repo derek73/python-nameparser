@@ -2049,6 +2049,7 @@
 {"name": "John Smith XYZ", "given": "John", "middle": "Smith", "family": "XYZ", "initials": "J. S. X.", "capitalized_force": "John Smith Xyz"}
 {"name": "John Smith Xyz.", "given": "John", "middle": "Smith", "family": "Xyz.", "initials": "J. S. X."}
 {"name": "John Smith Y", "given": "John", "middle": "Smith", "family": "Y", "initials": "J. S. Y."}
+{"name": "John Smith [Msc.Ed]", "given": "John", "middle": "Smith", "family": "[Msc.Ed]", "initials": "J. S. [.", "capitalized_force": "John Smith [MSc.Ed]"}
 {"name": "John Smith and Jr.", "given": "John", "family": "Smith and", "suffix": "Jr.", "initials": "J. S.", "generation": "Jr."}
 {"name": "John Smith nee Jones R.A.I.", "given": "John", "family": "Smith", "suffix": "R.A.I.", "maiden": "Jones", "ambiguities": ["SUFFIX_OR_NAME"], "alternatives": ["SUFFIX_OR_NAME: name as maiden (position)"], "initials": "J. S."}
 {"name": "John Smith vi", "given": "John", "family": "Smith", "suffix": "vi", "initials": "J. S.", "capitalized_force": "John Smith VI", "generation": "vi"}
@@ -2395,6 +2396,7 @@
 {"name": "Juro", "order": "FAMILY_FIRST", "given": "Juro", "ambiguities": ["GIVEN_OR_FAMILY"], "alternatives": ["GIVEN_OR_FAMILY: name as family (position)"], "initials": "J."}
 {"name": "Justin (JP) Stearns", "given": "Justin", "family": "Stearns", "nickname": "JP", "initials": "J. S.", "capitalized_force": "Justin \"Jp\" Stearns"}
 {"name": "Justin (JP, PhD) Stearns", "given": "Justin", "family": "Stearns", "nickname": "JP, PhD", "initials": "J. S.", "capitalized_force": "Justin \"Jp, PhD\" Stearns"}
+{"name": "Justin (JP.MD) Stearns", "given": "Justin", "family": "Stearns", "nickname": "JP.MD", "initials": "J. S.", "capitalized_force": "Justin \"Jp.Md\" Stearns"}
 {"name": "Justin (JP/MD) Stearns", "given": "Justin", "family": "Stearns", "nickname": "JP/MD", "initials": "J. S.", "capitalized_force": "Justin \"Jp/Md\" Stearns"}
 {"name": "Justin (MD.) Stearns", "given": "Justin", "family": "Stearns", "nickname": "MD.", "initials": "J. S.", "capitalized_force": "Justin \"Md.\" Stearns"}
 {"name": "Justin (R.N.) Stearns", "given": "Justin", "family": "Stearns", "nickname": "R.N.", "initials": "J. S."}
