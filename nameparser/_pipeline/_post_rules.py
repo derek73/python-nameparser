@@ -32,10 +32,7 @@ since #892.
 Reads: Policy.patronymic_rules, Policy.two_family_names,
 Policy.two_given_names, Policy.name_order (O6 and O7 stand down where
 the script's order differs from the declared one),
-Policy.middle_as_family, Policy.lone_name_word (handed to the
-positional layout's signature only: every call here lays out the
-places after one already filled, so the lone slot it fills is sliced
-off and the switch moves nothing in this stage),
+Policy.middle_as_family,
 Policy.extra_suffix_delimiters (R1's entry pass, for the delimiter
 cores group drops); Lexicon.given_name_titles, Lexicon.given_names
 (O6's veto), Lexicon.saint_particles (P10's saint clause; P10 runs
@@ -192,6 +189,11 @@ def suffix_entries(state: ParseState) -> ParseState:
     return copy_with(state, tokens=tuple(tokens))
 
 
+#: Each role `_positions` lists, by its place in the answer.
+_POSITION_SLOT: dict[Role | None, int] = {
+    Role.TITLE: 0, Role.GIVEN: 1, Role.MIDDLE: 2, Role.FAMILY: 3}
+
+
 def _positions(tokens: list[WorkToken],
                ) -> tuple[list[int], list[int], list[int], list[int]]:
     """The positions of the TITLE, GIVEN, MIDDLE and FAMILY tokens, in
@@ -201,18 +203,13 @@ def _positions(tokens: list[WorkToken],
     # one plain loop, where a comprehension per role cost a frame of its
     # own on 3.11 beside the call's, and post_rules asks for the lists on
     # every parse (the parse-cost band, decisions/parse-cost, #1089)
-    titles: list[int] = []
-    givens: list[int] = []
-    middles: list[int] = []
-    families: list[int] = []
-    by_role: dict[Role | None, list[int]] = {
-        Role.TITLE: titles, Role.GIVEN: givens,
-        Role.MIDDLE: middles, Role.FAMILY: families}
+    lists: tuple[list[int], list[int], list[int], list[int]] = (
+        [], [], [], [])
     for i, token in enumerate(tokens):
-        part = by_role.get(token.role)
-        if part is not None:
-            part.append(i)
-    return titles, givens, middles, families
+        slot = _POSITION_SLOT.get(token.role)
+        if slot is not None:
+            lists[slot].append(i)
+    return lists
 
 
 def _leading_name_piece(state: ParseState,
@@ -295,8 +292,6 @@ def _fold_reach(tokens: list[WorkToken], name_idx: list[int]) -> int:
     if i == len(name_idx):
         return i
     return i + len(_units(tokens, name_idx[i:])[0])
-
-
 
 
 def _family_word_count(tokens: list[WorkToken], family: list[int],
@@ -422,11 +417,20 @@ def _take_second_family_name(state: ParseState,
     if family[0] > units[0][0]:
         return
     # the unit taken joins the family as its second
+    _join_second_surname(tokens, family, units, state.order)
+
+
+def _join_second_surname(tokens: list[WorkToken], family: list[int],
+                         units: list[list[int]],
+                         order: tuple[Role, Role, Role]) -> None:
+    """The family-first join O6 and W5's pair share, in place: `family`
+    becomes the first surname and `units[0]`, the unit after it, the
+    second, and the units left are laid out as a shorter name of the
+    same order, one family already placed."""
     _mark_surname(tokens, family, FIRST_SURNAME_TAG)
     _mark_surname(tokens, units[0], SECOND_SURNAME_TAG)
     for unit, role in zip(units[1:], _name_positions(
-            state.order, len(units),
-            lone=state.policy.lone_name_word)[1:]):
+            order, len(units))[1:]):
         for i in unit:
             _retag(tokens, i, role)
 
@@ -457,13 +461,7 @@ def _read_surname_pair(state: ParseState,
             or SURNAME_PAIR_TAG not in tokens[units[0][0]].tags):
         return None
     first, second = family[0], units[0][0]
-    _mark_surname(tokens, family, FIRST_SURNAME_TAG)
-    _mark_surname(tokens, units[0], SECOND_SURNAME_TAG)
-    for unit, role in zip(units[1:], _name_positions(
-            state.order, len(units),
-            lone=state.policy.lone_name_word)[1:]):
-        for i in unit:
-            _retag(tokens, i, role)
+    _join_second_surname(tokens, family, units, state.order)
     after = second + 1
     if (after == len(tokens) or tokens[after].span is None
             or tokens[after].span.start != tokens[second].span.end):
@@ -755,6 +753,8 @@ def _set_apart_clauses(state: ParseState,
         kinds: list[SetApartKind] = []
         member = False
         unsettled = settled = False
+        # the words a credential settling a member may be among
+        others: list[str] = []
         for i in range(lo, hi):
             token = tokens[i]
             kind = set_apart_kind(token.text, lex)
@@ -773,16 +773,21 @@ def _set_apart_clauses(state: ParseState,
                 kind, member, unsettled = "suffix", True, True
             elif kind is None:
                 break
-            elif not settled:
-                settled = settles_a_member(token.text, lex)
+            else:
+                others.append(token.text)
             kinds.append(kind)
         else:
             # rules/S1: "a member its writing leaves unsettled is one
             # too where a credential of the same clause settles it" --
             # a credential that is no name, or a member its periods
-            # settle (decisions/S1, #1138)
+            # settle (decisions/S1, #1138); asked only of a clause
+            # holding such a member, so one with none pays nothing
             if unsettled and not settled:
-                continue
+                for text in others:
+                    if settles_a_member(text, lex):
+                        break
+                else:
+                    continue
             # a member is settled after the name only (rules/S13), and
             # a credential written as initials before a name word of its
             # comma part stays the nickname
@@ -1049,8 +1054,7 @@ def post_rules(state: ParseState) -> ParseState:
             # rest out as _name_positions would for n + 1 pieces.
             rest = _units(tokens, name_idx[cut:])
             for unit, role in zip(rest, _name_positions(
-                    order, len(rest) + 1,
-                    lone=state.policy.lone_name_word)[1:]):
+                    order, len(rest) + 1)[1:]):
                 for i in unit:
                     _retag(tokens, i, role)
         else:
@@ -1212,19 +1216,19 @@ def post_rules(state: ParseState) -> ParseState:
             # list is the bug shape #359 fixed
             _, givens, middles, families = _positions(tokens)
 
-    # every parse asks this, so a name holding no marked word pays one
-    # plain loop and no call (the parse-cost band, decisions/parse-cost)
+    # every parse asks these, so a name holding no marked word pays one
+    # plain loop and no call (the parse-cost band, decisions/parse-cost);
+    # P10 runs first, and adds no surname pair's tag
+    phrase = pair = False
     for token in tokens:
         if PARTICLE_GIVEN_TAG in token.tags:
-            _given_phrase_middle(state, tokens)
-            break
-    # as P10's loop above: a name with no surname pair pays no call
-    for token in tokens:
+            phrase = True
         if SURNAME_PAIR_TAG in token.tags:
-            report = _read_surname_pair(state, tokens)
-            if report is not None:
-                ambiguities.append(report)
-            break
+            pair = True
+    if phrase:
+        _given_phrase_middle(state, tokens)
+    if pair and (report := _read_surname_pair(state, tokens)) is not None:
+        ambiguities.append(report)
     if state.policy.two_family_names:
         _take_second_family_name(state, tokens)
     if state.policy.two_given_names:
@@ -1235,10 +1239,11 @@ def post_rules(state: ParseState) -> ParseState:
     # PREPENDED middle_list to last_list; mechanisms.md#FOLDED_TAG:
     # "tokens never move: a rule that needs different rendering order
     # tags the token, and the rendering views consult the tag"
+    #
+    # The lists walked again, for this fold and R2 below: P10, W5's
+    # pair, O6 and O7 above retag without updating them.
+    _, givens, middles, families = _positions(tokens)
     if state.policy.middle_as_family:
-        # walked again: P10, O6 and O7 above retag without updating the
-        # lists
-        _, _, middles, families = _positions(tokens)
         # rules/R11: "middle words folded into the family belong to
         # neither unit" -- where O6 marked no units the family before the
         # fold is the first, marked here so the views can leave the
@@ -1255,6 +1260,9 @@ def post_rules(state: ParseState) -> ParseState:
             tokens[i] = copy_with(
                 tokens[i], role=Role.FAMILY,
                 tags=tokens[i].tags | {FOLDED_TAG})
+        # the lists as a walk would now find them, for R2
+        families = sorted(families + middles)
+        middles = []
     # rules/R2: "a name part whose every word is particle
     # vocabulary is a part where none of them is doing a particle's
     # work — nothing joins them to a name — so they read as ordinary
@@ -1298,7 +1306,6 @@ def post_rules(state: ParseState) -> ParseState:
     # since the marking loop asks it per word: a list made a part
     # alternating particle and connective quadratic (test_benchmark's
     # `connective_between_particles` row).
-    _, givens, middles, families = _positions(tokens)
     for part in (givens, middles, families):
         all_particle = bool(part)
         conj: list[int] = []

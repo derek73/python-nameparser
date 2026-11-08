@@ -145,18 +145,21 @@ def _name_pieces(state: ParseState, tokens: Sequence[WorkToken],
 
 def _slot_field(state: ParseState, seg_idx: int, pos: int, count: int,
                 order: tuple[Role, Role, Role] | None, *,
-                lone: Role) -> Role:
+                lone: Role | None = None) -> Role:
     """The field position `pos` of `count` name words takes in segment
     `seg_idx`, every other word read as the parse read it: the family
     before a family comma, the given part's given or middle name after
     one, and otherwise the order the main segment's read set. `lone`
-    is the field a lone name word takes there, as `_name_positions`
-    takes it: the caller says whether a script decided it."""
+    is the field a lone name word takes there, as `_assign_main` sets
+    it, None for `Policy.lone_name_word`: the caller says whether a
+    script decided it."""
     if state.structure is Structure.FAMILY_COMMA:
         return (Role.FAMILY if seg_idx == 0
                 else Role.GIVEN if pos == 0 else Role.MIDDLE)
     assert order is not None  # the main segment's read sets it
-    return _name_positions(order, count, lone=lone)[pos]
+    if count == 1:
+        return state.policy.lone_name_word if lone is None else lone
+    return _name_positions(order, count)[pos]
 
 
 def _name_alt(token: WorkToken, role: Role,
@@ -355,25 +358,18 @@ def _effective_order(policy: Policy,
 # rules/O4: "words no vocabulary has claimed read by position. In
 # the default given-first order the first name word is the given name,
 # the last is the family name, and everything between is middle names"
-def _name_positions(order: tuple[Role, Role, Role], count: int, *,
-                    lone: Role) -> list[Role]:
+def _name_positions(order: tuple[Role, Role, Role],
+                    count: int) -> list[Role]:
     """Roles for `count` name pieces (titles/suffixes already peeled),
     per name_order. GIVEN_FIRST: given, middles..., family.
     FAMILY_FIRST: family, given, middles... FAMILY_FIRST_GIVEN_LAST:
-    family, middles..., given. One piece takes `lone`; two pieces take
-    order[0] and the other primary."""
+    family, middles..., given. One piece takes order[0], which a
+    caller placing a lone name word overrides with rules/O5's field
+    (`_assign_main`, `_slot_field`); two pieces take order[0] and the
+    other primary."""
     first, second = order[0], order[1]
-    # rules/O5: "a name of one name word that nothing else has
-    # decided reads that word as the field the caller's lone-word
-    # setting names" -- `Policy.lone_name_word`, a convention, not a
-    # determination: O4 has no positions
-    # to compare at one word, so this line is where the library picks
-    # one of two equally consistent readings and picks it the same way
-    # every time. The caller passes the switch, or order[0] where a
-    # script's own order decided (W4). The rules that DO decide such a
-    # name (H1, N3, M4) run after this and retag (decisions/O5, #1111).
     if count == 1:
-        return [lone]
+        return [first]
     if first is Role.GIVEN:                      # GIVEN_FIRST
         return ([Role.GIVEN] + [Role.MIDDLE] * (count - 2)
                 + [Role.FAMILY])
@@ -460,7 +456,9 @@ def _assign_main(seg_idx: int, state: ParseState,
     # the reference name), and only a one-piece segment ever reads its
     # answer. Hoisting it to the top of the read, where it once stood,
     # is what put 3.12-3.15 one call over the band (decisions/parse-cost).
-    if (len(pieces) == 1 and len(rest) == 1
+    # Behind `state.extracted`, as at N3's suffix clause below: a
+    # nickname is a clause extract set aside.
+    if (len(pieces) == 1 and len(rest) == 1 and state.extracted
             and any(t.role is Role.NICKNAME for t in tokens)):
         _set_roles(tokens, pieces[rest[0]], Role.FAMILY)
         return None
@@ -553,11 +551,19 @@ def _assign_main(seg_idx: int, state: ParseState,
     resolved = _effective_order(state.policy, pieces, name_pieces, tokens,
                                 dot_divided=bool(state.interpunct_offsets))
     order = resolved.order
-    # a script that settles the order decides a lone word's field too
-    # (rules/O5's W4 Except); otherwise the caller's switch does
+    # rules/O5: "a name of one name word that nothing else has
+    # decided reads that word as the field the caller's lone-word
+    # setting names" -- `Policy.lone_name_word`, a convention, not a
+    # determination: O4 has no positions to compare at one word, so
+    # this line is where the library picks one of two equally
+    # consistent readings and picks it the same way every time. A
+    # script that settles the order decides a lone word's field too
+    # (O5's W4 Except). The rules that DO decide such a name (H1, N3,
+    # M4) run after this and retag (decisions/O5, #1111).
     lone_field = (order[0] if resolved.by_script
                   else state.policy.lone_name_word)
-    roles = _name_positions(order, len(name_pieces), lone=lone_field)
+    roles = ([lone_field] if len(name_pieces) == 1
+             else _name_positions(order, len(name_pieces)))
     for pos, piece_idx in enumerate(name_pieces):
         _set_roles(tokens, pieces[piece_idx], roles[pos])
     for piece_idx in suffix_pieces:
@@ -685,8 +691,8 @@ def _assign_main(seg_idx: int, state: ParseState,
                 # peel has set the suffix aside and O5's clauses have
                 # said nothing else decided the word (decisions/N3,
                 # #815). The early count's scan, behind
-                # `state.extracted`: a nickname is a clause extract set
-                # aside, so a name with none pays no frame for it.
+                # `state.extracted` as there, so a name with no clause
+                # pays no frame for it.
                 if state.extracted and any(t.role is Role.NICKNAME
                                            for t in tokens):
                     _set_roles(tokens, head, Role.FAMILY)
@@ -1079,10 +1085,7 @@ def _split_name_alt(state: ParseState, tokens: Sequence[WorkToken],
     piece in front of it would take it in (`_name_alt`)."""
     names = [q for q in _name_pieces(state, tokens, seg_idx)
              if q[0] < piece[0]]
-    # count is never 1 here: a split pair stands in the trailing run,
-    # behind a name word H4's carve-out keeps, so the switch is inert
-    role = _slot_field(state, seg_idx, len(names), len(names) + 1, order,
-                       lone=state.policy.lone_name_word)
+    role = _slot_field(state, seg_idx, len(names), len(names) + 1, order)
     return _name_alt(tokens[piece[0]], role, names[-1] if names else None,
                      tokens, len(names) == 1,
                      state.structure is Structure.FAMILY_COMMA)
@@ -1144,10 +1147,7 @@ def _resolve_deferred(state: ParseState, tokens: Sequence[WorkToken],
                     alt, role=Beside(i)))
                 continue
         ambiguities[r] = copy_with(report, alternative=copy_with(
-            # count 1 returns above unless a family comma decides, so
-            # the switch is inert here
-            alt, role=_slot_field(state, seg_idx, pos, count, order,
-                                  lone=state.policy.lone_name_word)))
+            alt, role=_slot_field(state, seg_idx, pos, count, order)))
 
 
 def assign(state: ParseState) -> ParseState:
