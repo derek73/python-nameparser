@@ -31,7 +31,7 @@ and vn-assembly local corpora, in the 2026-11-05 #1108 entry of
 decisions/vocabulary-model.
 
 Declared deviations (mechanisms.md#LOCALE-PACKS-PURE-DATA): the order
-moves every name of two name words or more that a family comma does
+can move any name of two name words or more that a family comma does
 not fix (a one-word name reads as ``Policy.lone_name_word`` names under
 every order, given by default, rules/O5), and the fragment every name
 holding one of its syllables, and the choice's titles and the
@@ -74,8 +74,8 @@ def DEVIATES(name: str) -> bool:
     """True when this pack may parse `name` differently from the
     default parser (the declared-deviation predicate the
     non-interference gate consumes): any name holding a letter or a
-    digit, since the order moves every name of two name words or more
-    that a family comma does not fix, and the choice's titles and the fragment's credentials
-    reach comma names too, so no narrower predicate is worth stating by
-    hand."""
+    digit, since the order can move any name of two name words or more
+    that a family comma does not fix, and the choice's titles and the
+    fragment's credentials reach comma names too, so no narrower
+    predicate is worth stating by hand."""
     return any(c.isalnum() for c in name)
