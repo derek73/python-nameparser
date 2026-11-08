@@ -266,9 +266,10 @@ Speed and testing
   ``ja`` extra adds any: namedivider-python and what it brings (numpy,
   pandas, scipy and lightgbm among them), for dividing unspaced Japanese kanji names.
 * **Build one Parser and reuse it.** The first parser for a choice of
-  languages in a process loads the reading index and compiles the
-  choice, which took tens of milliseconds the same day, several hundred
-  parses. Another choice after it took a few milliseconds, and a later
+  languages in a process compiles the choice and, unless a parse has
+  already loaded it, loads the reading index, about two thirds of the cost:
+  together tens of milliseconds the same day, several hundred parses.
+  Another choice after it took a few milliseconds, and a later
   build of the same choice about 1 ms. Its ``Lexicon`` and
   ``Policy`` are frozen and a parse never writes to them, so one parser
   can be shared across threads without locking, and it pickles for
