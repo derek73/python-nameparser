@@ -17,8 +17,9 @@ to try, before editing words one at a time. A choice of languages
 a word it lists as vocabulary, switching off another language's
 (Portuguese ``do`` the particle over English ``DO`` the credential),
 and turns on the readings its file holds off by default; a strict
-choice (:ref:`strict-choice`) also drops the other languages' words
-written in Latin letters. The edits below are for what a choice
+choice (:ref:`strict-choice`) also drops the readings other languages'
+files hold of words written in Latin letters, name readings included,
+keeping the shared ``mul`` words. The edits below are for what a choice
 leaves open, and for data whose language you cannot declare, which the
 default vocabulary, reading every language at once, already serves.
 
@@ -444,8 +445,10 @@ strict English choice still reads ``JOHN SMITH MA`` by the count and
 reports it, and Dutch lists ``van`` as a particle and as a given name.
 A choice ends such a fork where it switches off another language's
 vocabulary reading of the word (below), and a strict choice also
-wherever one of the two readings sits in a file it does not choose,
-which it drops, name readings included: a strict Dutch choice reads
+wherever one of the two readings sits in another language's file
+written in Latin letters, which it drops, name readings included (it
+keeps the shared ``mul`` words and words in other scripts whatever
+file holds them): a strict Dutch choice reads
 ``JOHN SMITH MA`` family ``MA``, and a strict Portuguese one ``Do
 Smith`` family ``Do Smith``, both unreported. The recipes in this
 section are the way to settle the rest.
