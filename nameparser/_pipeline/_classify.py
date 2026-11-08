@@ -103,7 +103,7 @@ from nameparser._pipeline._vocab import (
     BUILTIN_GLUED_DELIMITERS, SPLIT_CHUNK, SPLIT_PAIR_OPENS, _INITIAL, _JOINED_WORD, caps_shape_candidate,
     composed_len, glued_cores, glued_stem, is_cased_paired_initials,
     is_initial, is_one_case,
-    period_joined_vocab,
+    period_joined_title, period_joined_vocab,
     split_pair,
     suffix_as_written, tag_marker_runs, title_readings,
 )
@@ -306,7 +306,7 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
     # period-joined derivation (parse_pieces): a token with a period
     # not at the end, ANY of whose period chunks is a title, is a
     # title as a whole ('Lt.Gov.', and by the ANY rule 'Mr.Smith');
-    # else ANY suffix chunk makes it a suffix ('JD.CPA'). Title wins
+    # else a suffix where EVERY chunk counts ('JD.CPA', #1131). Title wins
     # (v1's continue). The third and fourth are 2.4's by-shape halves
     # (#516; rules/S9: "joins the ambiguous class (S4) by SHAPE, in
     # the positions each shape is admitted") and reach only a
@@ -334,6 +334,11 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
         derived = period_joined_vocab(token.text, lex)
         if derived == "title":
             tags.add("vocab:title")
+            # rules/H5: "a word with interior periods every one of whose
+            # chunks is a title chains without a final period" -- marked
+            # as a title listed whole is (decisions/H5, #1131)
+            if period_joined_title(token.text, lex):
+                tags.add(JOINED_TITLE_TAG)
         elif derived == "suffix":
             tags.add("vocab:suffix")
         elif (derived == "shape" and token.role is None

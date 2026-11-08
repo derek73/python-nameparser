@@ -2,12 +2,25 @@
 
 **When:** a word written in chunks, joined by interior periods or by a hyphen or a slash, stands in a name, as in "John Smith Msc.Ed.".
 
-**Then:** a word with interior periods reads as a suffix when any of its period-separated chunks is suffix vocabulary, a word joined by a hyphen or a slash when every one of its chunks is, and a word of two or more period-separated chunks that no vocabulary claims is read by POSITION instead, as a bare ambiguous acronym is (S4).
+**Then:** a word with interior periods reads as a suffix when every one of its period-separated chunks counts as a suffix as written, a word joined by a hyphen or a slash the same way, and a word of two or more period-separated chunks that the chunks do not make a suffix is read by POSITION instead, as a bare ambiguous acronym is (S4).
 
 - **An ambiguous acronym written with its periods**, one after each letter or one after each of two or more letter chunks, counts unambiguously; a single trailing period is the abbreviation shape any word can wear and does not. Written so, it is not the bare acronym S4 counts words to spare for: the periods are how a credential is written and a name is not.
   ```
   "John Smith M.A."           →  suffix="M.A."
   "Wang M.Eng."               →  suffix="M.Eng."
+  ```
+- **Every chunk counts, the periods' as a slash's do**: a chunk counts as a suffix as written, or is a member of the ambiguous class (S4) another chunk settles, as in a word a slash joins (below), and a chunk of no letter or digit is no chunk. A word with a chunk that does not count is read by position, so a name glued to a credential by a period is no credential by that credential alone, and where it is the suffix the reading is reported. In brackets the same word is set apart as the slash's is (S1), and a word holding a member is a member itself there (below).
+  ```
+  "John Smith Msc.Ed"         →  suffix="Msc.Ed"
+  "John Smith JD.CPA"         →  suffix="JD.CPA"
+  "John Smith Bob.PhD"        →  suffix="Bob.PhD"
+  "John Smith Bob.PhD"        →  ambiguities=("suffix-or-name",)
+  "John Smith (Msc.Ed)"       →  suffix="Msc.Ed"
+  "John (Msc.Ed) Smith"       →  nickname="Msc.Ed"
+  "John (Msc.Ed) Smith"       →  ambiguities=("suffix-or-nickname",)
+  "John Smith (Bob.PhD)"      →  nickname="Bob.PhD"  · boundary
+  "John Smith Jr.; MD"        →  suffix="Jr.; MD"
+  "John Smith, Dr. J.씨"       →  suffix="J.씨"
   ```
 - **A word no vocabulary claims, read by position**, is a credential where the name has words to spare, a name word where it does not, either reading reported at the slots S4 reports at, and the same at a comma — which means the FIRST piece after a family comma, the word trailing the given part after one, the word ending a maiden marker's clause (M2), and the part before a SUFFIX comma. The part before a FAMILY comma never reports, the comma having already named it the family.
   ```
@@ -22,7 +35,7 @@
   "john smith x.y.z."         →  suffix="x.y.z."
   "John Smith 1.4"            →  family="1.4"  · boundary
   ```
-- **A word joined by a hyphen or a slash** is read by a stricter test than the periods' any: a word whose chunks are joined by a hyphen or a slash reads as a suffix when every chunk counts as a suffix as written, which is to say listed and not a bare member of the ambiguous class (S4), save a member another chunk settles (below), a chunk's own periods counting as they do in a word of its own. One chunk that does not count leaves the word as it would be without this bullet, and a joiner standing alone or glued to one side joins nothing, as do the dash characters other than the hyphen-minus and a split credential's halves (`MD/Ph. D.`).
+- **A word joined by a hyphen or a slash** is read by the periods' test: a word whose chunks are joined by a hyphen or a slash reads as a suffix when every chunk counts as a suffix as written, which is to say listed and not a bare member of the ambiguous class (S4), save a member another chunk settles (below), a chunk's own periods counting as they do in a word of its own. One chunk that does not count leaves the word as it would be without this bullet, and a joiner standing alone or glued to one side joins nothing, as do the dash characters other than the hyphen-minus and a split credential's halves (`MD/Ph. D.`).
   ```
   "John Smith, MD/PhD"        →  suffix="MD/PhD"
   "John Smith MD-PhD"         →  suffix="MD-PhD"
@@ -116,7 +129,7 @@
   "Ram Bahadur B.K., PhD"     →  family="B.K."
   "Jane Doe nee Smith B.K."   →  maiden="Smith B.K."
   ```
-- **A word with interior periods that the vocabulary does not list whole, and any of whose chunks is title vocabulary, is a title** where a title stands before the name or after a comma, and ending the name or the given part after a family comma where it ends in a period (H5), its title chunks read before its suffix chunks, so a degree written joined to its field (`Dipl.Ing.`, `Dipl.-Psych.`) reads as the title its first chunk is, the field's own chunk a credential or no word; a word listed whole, its periods removed, is read as its listing, title chunk or not.
+- **A word with interior periods that the vocabulary does not list whole, and any of whose chunks is title vocabulary, is a title** where a title stands before the name or after a comma, and ending the name or the given part after a family comma where it ends in a period or every chunk is a title (H5), its title chunks read before its suffix chunks, so a degree written joined to its field (`Dipl.Ing.`, `Dipl.-Psych.`) reads as the title its first chunk is, the field's own chunk a credential or no word; a word listed whole, its periods removed, is read as its listing, title chunk or not.
   ```
   "John Smith, Dipl.Ing."     →  title="Dipl.Ing."
   "Maxie Bunz, Dipl.Psych."   →  title="Dipl.Psych."
@@ -177,11 +190,16 @@
   "Jane Doe Ma R.T."          →  middle="Doe Ma"
   "JANE DOE MA R.T."          →  family="R.T."
   ```
-- A word with interior periods and a title chunk that the vocabulary does not list whole, standing inside a name or ending one without a period of its own, reads as a name word: the suffix reading has given way to the title, and the trailing title run (H5) takes such a word without a final period only where the vocabulary lists it whole, so at the end of a name the surname before it reads as a middle name.
+- A word with interior periods and a title chunk that the vocabulary does not list whole, standing inside a name or ending one without a period of its own, reads as a name word: the suffix reading has given way to the title, and the trailing title run (H5) takes such a word without a final period only where the vocabulary lists it whole or every chunk is a title, so at the end of a name the surname before it reads as a middle name.
   ```
   "John Dipl.Ing. Smith"      →  middle="Dipl.Ing."
   "John Smith Dr.PhD"         →  family="Dr.PhD"
   "John Smith Dr.PhD"         →  middle="Smith"
+  ```
+- A credential written with periods between chunks the vocabulary does not list, single letters or an unlisted abbreviation beside a listed one, is read by position, as the shape is, though one listed chunk would say it is a credential: after a family comma it is the given name, reported, as a name glued to a credential by a period is.
+  ```
+  "Whinnett, BM.BS"           →  given="BM.BS"
+  "Whinnett, BM.BS"           →  ambiguities=("suffix-or-name",)
   ```
 - The title chunk is any title, so the readings it gives beyond the degrees are its too: a credential run whose one title chunk is a title that is also a credential (`ms`, `sr`, `lt`) reads as a title, and so does a given name glued to Saint, with no given name left.
   ```

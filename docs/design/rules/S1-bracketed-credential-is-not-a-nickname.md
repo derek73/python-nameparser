@@ -4,7 +4,7 @@
 
 **Then:** a clause wholly of words the vocabulary reads as no name is set apart from the name: it is no nickname and no maiden name, and the words around it read as they would beside a nickname.
 
-- **Each word takes the role its vocabulary gives it**: a title is the title, a credential or a generation the suffix, one joined by a slash or a hyphen (S3) too, and a word that is both is the title in front of the name's first word, or in a name with no word of its own, and the suffix anywhere else. The vocabulary is asked of each word on its own, so a credential whose word is also a name (S4) is no word of such a clause unless its writing (S13) or a credential of its clause settles it (below), and neither is a title that is also a given name (H9).
+- **Each word takes the role its vocabulary gives it**: a title is the title, a credential or a generation the suffix, one joined by a slash, a hyphen or a period (S3) too, every chunk counting, and a word that is both is the title in front of the name's first word, or in a name with no word of its own, and the suffix anywhere else. The vocabulary is asked of each word on its own, so a credential whose word is also a name (S4) is no word of such a clause unless its writing (S13) or a credential of its clause settles it (below), and neither is a title that is also a given name (H9).
   ```
   "John Smith (PhD, MBA)"     →  suffix="PhD, MBA"
   "John Smith (Dr)"           →  title="Dr"

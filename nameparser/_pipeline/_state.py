@@ -188,8 +188,10 @@ TRAILING_TITLE_TAG = "vocab:trailing-title"
 #: Written by classify on a word of `Lexicon.titles` (not
 #: `titles_ambiguous`), listed whole, whose letters a period joins, a
 #: hyphen beside it or not (`_vocab._JOINED_WORD`: 'Dott.ssa',
-#: 'Priv.-Doz'), never on one read as a title through a chunk
-#: ('Lt.Gov') nor on one a hyphen alone joins ('Co-Founder'); read by
+#: 'Priv.-Doz'), and on a word with interior periods every chunk of
+#: which is a title ('Lt.Gov', #1131), never on one read as a title
+#: through some chunk only ('Dr.PhD', 'St.John') nor on one a hyphen
+#: alone joins ('Co-Founder'); read by
 #: rules/H5's trailing chain (`_pieces.trailing_titles`,
 #: `is_trailing_title_word`), which takes it without a final period,
 #: by `_pieces._weighed` and by P13's trailing title (#1104). Dropped

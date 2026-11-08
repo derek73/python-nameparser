@@ -49,6 +49,7 @@ from __future__ import annotations
 
 import functools
 import re
+import string
 import unicodedata
 from collections.abc import Callable, Iterable, Sequence, Set
 from typing import Literal
@@ -467,7 +468,18 @@ def set_apart_kind(word: str, lexicon: Lexicon,
     bare = word.strip(",")
     folded = _normalize(bare)
     sets = lexicon._sets
-    title = folded in sets.titles
+    # rules/S1: "one joined by a slash, a hyphen or a period (S3) too,
+    # every chunk counting" -- a word with interior periods read here as
+    # at the end of a name ('(Msc.Ed)', '(Lt.Gov)'; not '(Bob.PhD)'),
+    # the period test asked at C level first (decisions/S3, #1131)
+    joined = "." in folded and folded not in sets.titles and (
+        folded.replace(".", "") not in sets.suffix_acronyms)
+    title = folded in sets.titles or joined and period_joined_title(
+        bare, lexicon)
+    if joined and not title and period_joined_credential(bare, lexicon):
+        # rules/S3: "a joined word holding a member is a member itself"
+        # -- 'Msc.Ed' as 'MA/PhD', settled by S13's position (#1138)
+        return "member" if _holds_a_member(bare, lexicon) else "suffix"
     # a member of the ambiguous class, the set asked inline as the
     # necessary half of `dotted_member`, so no other word pays its
     # frame: `suffix_as_written` would read a dotted member as a suffix
@@ -1163,6 +1175,85 @@ def _joined_credential(text: str, lexicon: Lexicon) -> bool:
     return False
 
 
+#: What `period_joined_credential` strips from a chunk's edges.
+_ASCII_PUNCTUATION = string.punctuation
+
+# rules/S3: "a word with interior periods reads as a suffix when
+# every one of its period-separated chunks counts as a suffix as
+# written" -- the joined words' every chunk, the periods being the one
+# sign the word is joined at all (decisions/S3, #1131)
+def period_joined_credential(text: str, lexicon: Lexicon) -> bool:
+    """Whether TEXT, cut at its periods, is two or more chunks that
+    each count as a suffix as written or are a member of the ambiguous
+    class, one chunk at least settling every such member (`_settles`),
+    and not every chunk the vocabulary matches a single ASCII character
+    ('Msc.Ed', 'JD.CPA'; not 'Bob.PhD', 'Ma.Ed' or 'X.Y.I.'). A word
+    whose last chunk is a glued honorific ('J.씨') reads as one too:
+    the honorific is the suffix there and the chunk before it the
+    initial it is written as (rules/W2). ASCII punctuation at a
+    chunk's edge is no part of it ('MD.&PhD', 'Jr.;', a delimiter glued
+    after the period, rules/C10), and a chunk of nothing else is no
+    chunk, so a word of one chunk beside it reads as that chunk."""
+    raw = text.split(".")
+    if len(raw) < 2:
+        return False
+    chunks = [b for c in raw if (b := c.strip(_ASCII_PUNCTUATION))]
+    if not chunks:
+        return False
+    sets = lexicon._sets
+    if _normalize(chunks[-1]) in sets.honorific_tails:
+        return True
+    unsettled = False
+    for c in chunks:
+        folded = _normalize(c)
+        if suffix_as_written(folded, c, lexicon):
+            continue
+        # rules/S11: "the word is part of that one word and is weighed
+        # only by the shape the joined word wears" -- no chunk claim
+        # for a suffix word that is also a name ('M.Filho')
+        if folded in sets.suffix_words_ambiguous or not _member(c, lexicon):
+            return False
+        unsettled = True
+    if unsettled and not any(_settles(c, lexicon) for c in chunks):
+        return False
+    # rules/S3: "Every chunk the vocabulary matches is a single ASCII
+    # character" -- a numeral or the digit says nothing of a credential
+    return not all(len(c) == 1 and c.isascii() for c in chunks)
+
+
+def _holds_a_member(text: str, lexicon: Lexicon) -> bool:
+    """Whether a chunk of TEXT cut at its periods is a member of the
+    ambiguous class that does not count as a suffix as written ('Ed'
+    in 'Msc.Ed')."""
+    return any(_member(c, lexicon)
+               and not suffix_as_written(_normalize(c), c, lexicon)
+               for c in text.split(".") if c)
+
+
+def period_member(word: str, lexicon: Lexicon) -> bool:
+    """Whether WORD, a word with interior periods not listed whole, is
+    a period-joined credential (`period_joined_credential`) holding a
+    member of the ambiguous class ('Msc.Ed'): `joined_member`'s
+    question for a word the periods join (rules/S3, #1131)."""
+    folded = _normalize(word.strip(","))
+    return ("." in folded
+            and folded.replace(".", "") not in lexicon._sets.suffix_acronyms
+            and period_joined_credential(word.strip(","), lexicon)
+            and _holds_a_member(word.strip(","), lexicon))
+
+
+# rules/H5: "a word with interior periods every one of whose chunks is
+# a title chains without a final period" -- 'Lt.Gov', where the
+# periods join nothing but titles (decisions/H5, #1131)
+def period_joined_title(text: str, lexicon: Lexicon) -> bool:
+    """Whether TEXT, cut at its periods, is two or more chunks every
+    one of which is title vocabulary ('Lt.Gov', 'Lt.Col'; not
+    'Dr.PhD' or 'St.John')."""
+    chunks = [_normalize(c) for c in text.split(".") if c]
+    return len(chunks) >= 2 and all(
+        c in lexicon._sets.titles for c in chunks)
+
+
 def _is_suffix_strict_n(n: str, text: str, lexicon: Lexicon,
                         one_case: bool | None = None) -> bool:
     # rules/T4: "in a name written wholly in one case, which says
@@ -1293,22 +1384,24 @@ def splits_into_suffixes(text: str, cores: frozenset[str],
 
 
 # rules/S3: "a word with interior periods reads as a suffix when
-# any of its period-separated chunks is suffix vocabulary" --
-# "every chunk the vocabulary matches is a single ASCII character,
-# the roman numerals and the lone digit the vocabulary lists, which
-# are about generations rather than credentials". The chunk rule and
-# its single-character exception (decisions/S3).
+# every one of its period-separated chunks counts as a suffix as
+# written" -- "every chunk the vocabulary matches is a single ASCII
+# character, the roman numerals and the lone digit the vocabulary
+# lists, which are about generations rather than credentials". The
+# chunk rule and its single-character exception (decisions/S3,
+# #1131).
 def period_joined_vocab(
         text: str, lexicon: Lexicon,
 ) -> Literal["title", "suffix", "shape"] | None:
     """v1's parse_pieces derivation for interior-period tokens
     ('Lt.Gov.', 'Msc.Ed.', and by the ANY rule 'Mr.Smith'): ANY title
     chunk makes the token a title (checked first, v1's continue); else
-    ANY suffix chunk makes it a suffix. Chunk-level suffix membership
-    is v1's is_suffix: bare ambiguous acronyms COUNT ('Msc.Ed.'
-    derives via 'ed') -- the ambiguous period-gate applies to whole
-    tokens only -- while a suffix word that is also a name does not
-    ('M.Filho', rules/S11). Returns "title", "suffix", "shape", or None.
+    the token is a suffix where EVERY chunk counts
+    (`period_joined_credential`, #1131: 'Msc.Ed.', whose member 'ed'
+    'msc' settles, but not 'Bob.PhD', which the shape verdict below
+    reads by position). A suffix word that is also a name is a member
+    there, settled by a credential beside it ('M.Filho' is no suffix,
+    rules/S11). Returns "title", "suffix", "shape", or None.
 
     "shape" is the third verdict and it is the absence of a claim
     worth acting on (#516): two or more chunks, EVERY one of them
@@ -1363,14 +1456,7 @@ def period_joined_vocab(
     chunks = [_normalize(c) for c in text.split(".") if c]
     if any(c in lexicon._sets.titles for c in chunks):
         return "title"
-    # rules/S11: "the word is part of that one word and is weighed only
-    # by the shape the joined word wears" -- no chunk claim for a
-    # suffix word that is also a name ('M.Filho')
-    matched = [c for c in chunks
-               if c in lexicon._sets.suffix_acronyms
-               or (c in lexicon._sets.suffix_words
-                   and c not in lexicon._sets.suffix_words_ambiguous)]
-    if matched and not all(len(c) == 1 and c.isascii() for c in matched):
+    if period_joined_credential(text, lexicon):
         return "suffix"
     if (len(chunks) >= 2 and all(c.isalpha() for c in chunks)
             and (text.isascii() or not in_initialless_script(text))):

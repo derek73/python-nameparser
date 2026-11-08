@@ -14147,11 +14147,17 @@ CASES: tuple[Case, ...] = (
          {"title": "Priv.-Doz", "given": "Hans", "family": "Meier"},
          classification="fix(#1104)",
          notes="master read middle 'Meier', family 'Priv.-Doz'"),
-    Case("trailing_title_by_its_chunk_needs_a_final_period",
+    Case("trailing_title_by_every_chunk_chains_without_a_final_period",
          "John Smith Lt.Gov",
-         {"given": "John", "middle": "Smith", "family": "Lt.Gov"},
-         notes="rules/H5's boundary: a title only by its 'lt' chunk, "
-               "the any-chunk reach #1104 leaves open"),
+         {"title": "Lt.Gov", "given": "John", "family": "Smith"},
+         classification="fix(#1131)",
+         notes="every chunk a title; master read middle 'Smith', "
+               "family 'Lt.Gov'"),
+    Case("trailing_title_by_some_chunk_needs_a_final_period",
+         "John Smith Dr.PhD",
+         {"given": "John", "middle": "Smith", "family": "Dr.PhD"},
+         notes="rules/H5's boundary: a title only by its 'dr' chunk, "
+               "'phd' no title (#1131)"),
     Case("trailing_hyphen_joined_title_needs_a_final_period",
          "John Smith Co-Founder",
          {"given": "John", "middle": "Smith", "family": "Co-Founder"},

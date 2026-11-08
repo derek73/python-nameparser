@@ -4,7 +4,7 @@
 
 **Then:** after the trailing suffix run has been taken, successive single words that wear the abbreviation shape and are title vocabulary chain into the title from the end, leaving one name word standing; a bare title word there is a name word, and an unlisted abbreviation there is a name word.
 
-- **A title written joined or hyphenated.** A word that ends in a period and is written with a period or a hyphen inside it wears the abbreviation shape too, so a title written that way chains as the single word it is, and so does a word S3 reads as a title by one of its chunks. Without the final period, a title the vocabulary lists whole with a period inside it chains without a final one, the period inside marking the word as cut short; a word that is a title only by one of its chunks, or one a hyphen alone joins, is a name word there.
+- **A title written joined or hyphenated.** A word that ends in a period and is written with a period or a hyphen inside it wears the abbreviation shape too, so a title written that way chains as the single word it is, and so does a word S3 reads as a title by one of its chunks. Without the final period, a title the vocabulary lists whole with a period inside it chains without a final one, the period inside marking the word as cut short, and a word with interior periods every one of whose chunks is a title chains without a final period too; a word that is a title only by some of its chunks, or one a hyphen alone joins, is a name word there.
   ```
   "Hans Meier Priv.-Doz."     →  title="Priv.-Doz."
   "Hans Meier Priv.-Doz."     →  family="Meier"
@@ -12,7 +12,9 @@
   "John Smith Dipl.Ing."      →  title="Dipl.Ing."
   "Maria Rossi Dott.ssa"      →  title="Dott.ssa"
   "Maria Rossi Dott.ssa"      →  family="Rossi"
-  "John Smith Lt.Gov"         →  family="Lt.Gov"  · boundary
+  "John Smith Lt.Gov"         →  title="Lt.Gov"
+  "Smith, John Lt.Col"        →  title="Lt.Col"
+  "John Smith Dr.PhD"         →  family="Dr.PhD"  · boundary
   "John Smith Co-Founder"     →  family="Co-Founder"  · boundary
   ```
 - **The title is transparent to the suffix reading**: where two or more name words stand, what stands once the chain is taken reads exactly as it would read written without the title, plus the title. Where the chain leaves ONE name word and no title run stands in front of it, there is no second reading for it to be transparent to, and the title behind that word decides its field as a title in front of it would (H1). Where a run DOES stand in front, that run addresses and the chained title only joins the title field, so the transparency holds for the one-word name too.

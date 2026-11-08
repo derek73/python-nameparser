@@ -77,7 +77,8 @@ from nameparser._pipeline._state import (
 from nameparser._pipeline._vocab import (
     _HYPHENS, SetApartKind, delimiter_cores, dotted_member,
     has_patronymic_ending, is_initial, is_listed_given_name,
-    is_patronymic_marker, joined_member, member_word, reads_as_initials,
+    is_patronymic_marker, joined_member, member_word, period_member,
+    reads_as_initials,
     set_apart, set_apart_kind, settles_a_member, suffix_reading,
     unit_ends,
 )
@@ -860,7 +861,9 @@ def _report_delimited_members(tokens: list[WorkToken], lexicon: Lexicon,
         # the period and the joiners asked first, at C level, so a
         # nickname written with neither pays no frame
         if (AMBIGUOUS_ACRONYM_TAG in token.tags
-                or "." in token.text and dotted_member(token.text, lexicon)
+                or "." in token.text and (
+                    dotted_member(token.text, lexicon)
+                    or period_member(token.text, lexicon))
                 or ("/" in token.text or "-" in token.text)
                 and joined_member(token.text, lexicon)):
             ambiguities.append(PendingAmbiguity(

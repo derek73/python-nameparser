@@ -2176,6 +2176,7 @@ SUFFIX_ACRONYMS: frozenset[str] = frozenset({
     'bpt',
     'bs',
     'bsc',
+    'bscmed',
     'bsn',
     'bsw',
     'bt',
@@ -2628,6 +2629,7 @@ SUFFIX_ACRONYMS: frozenset[str] = frozenset({
     'mc',
     'mcct',
     'mcdba',
+    'mch',
     'mchema',
     'mches',
     'mcm',
@@ -2854,6 +2856,7 @@ SUFFIX_ACRONYMS: frozenset[str] = frozenset({
 
 CAPITALIZATION_EXCEPTIONS: dict[str, str] = {
     'bsc': 'BSc',
+    'bscmed': 'BScMed',
     'bt': 'Bt',
     'bvsc': 'BVSc',
     'cchem': 'CChem',
@@ -2930,6 +2933,7 @@ CAPITALIZATION_EXCEPTIONS: dict[str, str] = {
     'mactaggart': 'MacTaggart',
     'mbbch': 'MBBCh',
     'mbchb': 'MBChB',
+    'mch': 'MCh',
     'mchema': 'MChemA',
     'mddr': 'MDDr',
     'mdiv': 'MDiv',

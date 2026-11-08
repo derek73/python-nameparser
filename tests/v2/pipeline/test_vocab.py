@@ -19,7 +19,8 @@ from nameparser._pipeline._vocab import (
     is_single_letter_numeral, split_pair,
     is_suffix_lenient, is_suffix_strict, is_title_shaped, is_wholly_suffix,
     lexicon_cue,
-    maiden_marker_run, name_word_count, period_joined_vocab, written_as_a_name,
+    maiden_marker_run, name_word_count, period_joined_credential,
+    period_joined_title, period_joined_vocab, written_as_a_name,
     resolve_script_set, single_script, suffix_as_written, _joined_chunks,
 )
 from nameparser._policy import (Policy, Script, _NO_INITIALS,
@@ -299,7 +300,9 @@ def test_is_wholly_suffix() -> None:
     # the merge, each with the input that reaches ONLY it. Both die in
     # the v1 banks and the case table today, so a break here is
     # diagnosed a long way from its cause.
-    assert is_wholly_suffix(["Lt.Jr."], lex, pol)        # period-joined
+    assert is_wholly_suffix(["PhD.Jr."], lex, pol)       # period-joined
+    # every chunk counts, as a slash's or a hyphen's do (#1131)
+    assert not is_wholly_suffix(["Lt.Jr."], lex, pol)
     assert not is_wholly_suffix(["Lt.Smith"], lex, pol)  # no suffix chunk
     delim = Policy(extra_suffix_delimiters=frozenset({"+"}))
     assert is_wholly_suffix(["PhD+MD"], lex, delim)      # delimiter split
@@ -405,7 +408,8 @@ def test_period_joined_vocab_retires_the_single_character_chunk() -> None:
     assert period_joined_vocab("R.A.I.", lex) == "shape"
     assert period_joined_vocab("X.Y.I.", lex) == "shape"
     assert period_joined_vocab("J.u.n.i.o.r.", lex) == "shape"
-    assert period_joined_vocab("Msc.Ed.", lex) == "suffix"   # 'ed', two chars
+    assert period_joined_vocab("Msc.Ed.", lex) == "suffix"   # every chunk
+    assert period_joined_vocab("Bob.PhD", lex) == "shape"    # not every (#1131)
     assert period_joined_vocab("JD.CPA", lex) == "suffix"
     assert period_joined_vocab("J.씨", lex) == "suffix"       # not ASCII
     assert period_joined_vocab("Lt.Gov.", lex) == "title"     # title wins
@@ -425,6 +429,46 @@ def test_period_joined_vocab_retires_the_single_character_chunk() -> None:
     assert period_joined_vocab("田.中.", lex) is None
     assert period_joined_vocab("이.박.", lex) is None
     assert period_joined_vocab("たな.か.", lex) is None
+
+
+# #1131: every chunk counts, the periods' as a slash's do -- one
+# listed chunk no longer claims the word, which the shape verdict
+# then reads by position
+@pytest.mark.parametrize("text, expected", [
+    ("Msc.Ed", True),       # 'ed' a member 'msc' settles
+    ("Msc.Ed.", True),
+    ("JD.CPA", True),
+    ("PhD.Jr.", True),
+    ("MD.&PhD", True),      # punctuation at a chunk's edge is no part of it
+    ("Jr.;", True),         # nor is a chunk of nothing but punctuation
+    ("J.씨", True),          # a glued honorific ends it (rules/W2)
+    ("Bob.PhD", False),     # 'bob' counts as nothing
+    ("Smith.Jr.", False),
+    ("Ma.Ed", False),       # members alone, nothing settles them
+    ("M.Filho", False),     # a suffix word that is also a name (S11)
+    ("Msc.Filho", False),
+    ("X.Y.I.", False),      # the single-character exception
+    ("BM.BS", False),       # 'bm' unlisted
+    ("PhD", False),         # no period, no chunks
+])
+def test_period_joined_credential_asks_every_chunk(text: str,
+                                                  expected: bool) -> None:
+    assert period_joined_credential(text, Lexicon.default()) is expected
+
+
+@pytest.mark.parametrize("text, expected", [
+    ("Lt.Gov", True),
+    ("Lt.Gov.", True),
+    ("Lt.Col", True),
+    ("Prof.Dr", True),
+    ("Dr.PhD", False),      # 'phd' no title
+    ("St.John", False),
+    ("Dipl.Ing", False),
+    ("Lt", False),          # one chunk
+])
+def test_period_joined_title_asks_every_chunk(text: str,
+                                              expected: bool) -> None:
+    assert period_joined_title(text, Lexicon.default()) is expected
 
 
 @pytest.mark.parametrize("text, expected", [
