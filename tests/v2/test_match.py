@@ -338,7 +338,7 @@ def test_consistent_names_always_share_a_key(accept: frozenset[Outcome]) -> None
     ("Cristiane S", "Cristiane Stallbaum"); with the bare family keys
     removed, given-one-side fails on ("John A. Smith", "Mr. Smith"); with
     the alternative readings' keys removed, other-reading fails on
-    ("Suharto", "Suharto"). Each is the first pair to fail, measured
+    ("Mr. Smith", "Della Smith"). Each is the first pair to fail, measured
     2026-11-08; hyphenated-part adds no key, its halves sharing the
     given initial."""
     matching = Matching(Parser(), accept)
