@@ -992,6 +992,28 @@ as name words, and ``Chi``, ``Ba`` and ``Do`` out of the credentials (see
 :ref:`vietnamese-names`);
 the bare ``Policy`` above is for data that wants the order alone.
 
+``name_order`` describes where the data came from, not the language
+of the people in it. Many administrative records list the family name
+first whatever language the names are in: French lists write
+``DUPONT Jean``, and Algerian ones follow the same convention in
+Arabic script as well as in Latin, so a candidate list writes Salima
+Bouzid as ``بوزيد سليمة``. Nothing in the name says which order it is
+in, and the capitals in ``DUPONT`` don't count as a signal either, so
+the order has to come from knowing the source:
+
+.. doctest::
+
+    >>> parse("بوزيد سليمة").given                    # default GIVEN_FIRST
+    'بوزيد'
+    >>> bouzid = family_first.parse("بوزيد سليمة")
+    >>> bouzid.family, bouzid.given
+    ('بوزيد', 'سليمة')
+
+A locale pack could not supply this order for Arabic or French names,
+because the same names are written given-first in running text. The
+order belongs to the record, so it goes in a ``Policy`` you choose for
+that source.
+
 Declaring the order settles where a surname ends
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
